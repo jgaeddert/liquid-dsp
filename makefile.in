@@ -104,7 +104,7 @@ agc_autotests :=						\
 
 # benchmarks
 agc_benchmarks :=						\
-	src/agc/bench/agc_benchmark.h				\
+	src/agc/bench/agc_benchmark.c				\
 
 #
 # MODULE : audio
@@ -147,7 +147,7 @@ buffer_autotests :=						\
 	src/buffer/tests/window_autotest.c			\
 
 buffer_benchmarks :=						\
-	src/buffer/bench/window_benchmark.h			\
+	src/buffer/bench/window_benchmark.c			\
 
 # 
 # MODULE : dotprod
@@ -172,9 +172,9 @@ dotprod_autotests :=						\
 	src/dotprod/tests/dotprod_crcf_autotest.c		\
 
 dotprod_benchmarks :=						\
-	src/dotprod/bench/dotprod_cccf_benchmark.h		\
-	src/dotprod/bench/dotprod_crcf_benchmark.h		\
-	src/dotprod/bench/dotprod_rrrf_benchmark.h		\
+	src/dotprod/bench/dotprod_cccf_benchmark.c		\
+	src/dotprod/bench/dotprod_crcf_benchmark.c		\
+	src/dotprod/bench/dotprod_rrrf_benchmark.c		\
 
 # 
 # MODULE : equalization
@@ -194,8 +194,8 @@ equalization_autotests :=					\
 
 # benchmarks
 equalization_benchmarks :=					\
-	src/equalization/bench/eqlms_cccf_benchmark.h		\
-	src/equalization/bench/eqrls_cccf_benchmark.h		\
+	src/equalization/bench/eqlms_cccf_benchmark.c		\
+	src/equalization/bench/eqrls_cccf_benchmark.c		\
 
 # 
 # MODULE : fec - forward error-correction
@@ -255,10 +255,10 @@ fec_autotests :=						\
 
 # benchmarks
 fec_benchmarks :=						\
-	src/fec/bench/crc_benchmark.h				\
-	src/fec/bench/fec_encode_benchmark.h			\
-	src/fec/bench/fec_decode_benchmark.h			\
-	src/fec/bench/fecsoft_decode_benchmark.h		\
+	src/fec/bench/crc_benchmark.c				\
+	src/fec/bench/fec_encode_benchmark.c			\
+	src/fec/bench/fec_decode_benchmark.c			\
+	src/fec/bench/fecsoft_decode_benchmark.c		\
 
 # 
 # MODULE : fft - fast Fourier transforms, discrete sine/cosine transforms, etc.
@@ -304,9 +304,9 @@ fft_autotests :=						\
 
 
 fft_benchmarks :=						\
-	src/fft/bench/mdct_benchmark.h				\
-	src/fft/bench/fft_benchmark.h				\
-	src/fft/bench/fft_r2r_benchmark.h			\
+	src/fft/bench/mdct_benchmark.c				\
+	src/fft/bench/fft_benchmark.c				\
+	src/fft/bench/fft_r2r_benchmark.c			\
 
 #
 # MODULE : filter
@@ -402,14 +402,14 @@ filter_autotests :=						\
 
 
 filter_benchmarks :=						\
-	src/filter/bench/decim_benchmark.h			\
-	src/filter/bench/firhilb_benchmark.h			\
-	src/filter/bench/firfilt_crcf_benchmark.h		\
-	src/filter/bench/iirfilt_crcf_benchmark.h		\
-	src/filter/bench/interp_benchmark.h			\
-	src/filter/bench/resamp_benchmark.h			\
-	src/filter/bench/resamp2_benchmark.h			\
-	src/filter/bench/symsync_benchmark.h			\
+	src/filter/bench/decim_benchmark.c			\
+	src/filter/bench/firhilb_benchmark.c			\
+	src/filter/bench/firfilt_crcf_benchmark.c		\
+	src/filter/bench/iirfilt_crcf_benchmark.c		\
+	src/filter/bench/interp_benchmark.c			\
+	src/filter/bench/resamp_benchmark.c			\
+	src/filter/bench/resamp2_benchmark.c			\
+	src/filter/bench/symsync_benchmark.c			\
 
 # 
 # MODULE : framing
@@ -475,9 +475,9 @@ framing_autotests :=						\
 
 
 framing_benchmarks :=						\
-	src/framing/bench/bpacketsync_benchmark.h		\
-	src/framing/bench/flexframesync_benchmark.h		\
-	src/framing/bench/interleaver_benchmark.h		\
+	src/framing/bench/bpacketsync_benchmark.c		\
+	src/framing/bench/flexframesync_benchmark.c		\
+	src/framing/bench/interleaver_benchmark.c		\
 
 
 # 
@@ -620,10 +620,10 @@ modem_autotests :=						\
 
 
 modem_benchmarks :=						\
-	src/modem/bench/gmskmodem_benchmark.h			\
-	src/modem/bench/modem_modulate_benchmark.h		\
-	src/modem/bench/modem_demodulate_benchmark.h		\
-	src/modem/bench/modem_demodsoft_benchmark.h		\
+	src/modem/bench/gmskmodem_benchmark.c			\
+	src/modem/bench/modem_modulate_benchmark.c		\
+	src/modem/bench/modem_demodulate_benchmark.c		\
+	src/modem/bench/modem_demodsoft_benchmark.c		\
 
 # 
 # MODULE : multicarrier
@@ -652,10 +652,10 @@ multicarrier_autotests :=					\
 
 # benchmarks
 multicarrier_benchmarks :=					\
-	src/multicarrier/bench/firpfbch_benchmark.h		\
-	src/multicarrier/bench/ofdmframesync_acquire_benchmark.h	\
-	src/multicarrier/bench/ofdmframesync_rxsymbol_benchmark.h	\
-	src/multicarrier/bench/ofdmoqam_benchmark.h		\
+	src/multicarrier/bench/firpfbch_benchmark.c		\
+	src/multicarrier/bench/ofdmframesync_acquire_benchmark.c	\
+	src/multicarrier/bench/ofdmframesync_rxsymbol_benchmark.c	\
+	src/multicarrier/bench/ofdmoqam_benchmark.c		\
 
 # 
 # MODULE : nco - numerically-controlled oscillator
@@ -681,8 +681,8 @@ nco_autotests :=						\
 
 # benchmarks
 nco_benchmarks :=						\
-	src/nco/bench/nco_benchmark.h				\
-	src/nco/bench/vco_benchmark.h				\
+	src/nco/bench/nco_benchmark.c				\
+	src/nco/bench/vco_benchmark.c				\
 
 # 
 # MODULE : optim - optimization
@@ -744,8 +744,8 @@ quantization_autotests :=					\
 
 # benchmarks
 quantization_benchmarks :=					\
-	src/quantization/bench/quantizer_benchmark.h		\
-	src/quantization/bench/compander_benchmark.h		\
+	src/quantization/bench/quantizer_benchmark.c		\
+	src/quantization/bench/compander_benchmark.c		\
 
 # 
 # MODULE : random
@@ -773,7 +773,7 @@ random_autotests :=						\
 
 # benchmarks
 random_benchmarks :=						\
-	src/random/bench/random_benchmark.h			\
+	src/random/bench/random_benchmark.c			\
 
 
 # 
@@ -910,8 +910,8 @@ autotest_sources :=						\
 	@EXPERIMENTAL_AUTOTESTS@
 	
 
-benchmark_headers :=						\
-	bench/null_benchmark.h					\
+benchmark_sources :=						\
+	bench/null_benchmark.c					\
 	$(agc_benchmarks)					\
 	$(audio_benchmarks)					\
 	$(buffer_benchmarks)					\
@@ -1082,16 +1082,16 @@ BENCH_CFLAGS	= -Wall $(INCLUDE_CFLAGS) $(CONFIG_CFLAGS)
 BENCH_LDFLAGS	= $(LDFLAGS)
 
 # run the benchmark generator script to create benchmark_include.h
-benchmark_include.h : scripts/autoscript $(benchmark_headers) $(include_headers)
-	./scripts/autoscript $(PATHSEP) benchmark $(benchmark_headers) > $@
+benchmark_include.h : scripts/autoscript $(benchmark_sources) $(include_headers)
+	./scripts/autoscript $(PATHSEP) benchmark $(benchmark_sources) > $@
 
 # benchmark objects
 # NOTE: by default, gcc compiles any file with a '.h' extension as a 'pre-compiled
 #       header' so we need to explicity tell it to compile as a c source file with
 #       the '-x c' flag
-benchmark_obj = $(patsubst %.h,%.o,$(benchmark_headers))
-$(benchmark_obj) : %.o : %.h $(include_headers)
-	$(CC) $(BENCH_CFLAGS) -x c $< -c -o $@
+benchmark_obj = $(patsubst %.c,%.o,$(benchmark_sources))
+$(benchmark_obj) : %.o : %.c $(include_headers)
+	$(CC) $(BENCH_CFLAGS) $< -c -o $@
 
 # compile the benchmark program without linking
 $(bench_prog).o: bench/bench.c benchmark_include.h bench/bench.c
