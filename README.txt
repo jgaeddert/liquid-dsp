@@ -23,12 +23,8 @@ http://ganymede.ece.vt.edu/downloads/liquid.pdf
 liquid-dsp only relies on libc (standard C) and libm (standard math)
 libraries to run, however takes advantage of other packages (such as
 FFTW [fftw:web]) if they are available.
-
-Mac OS X:
-    $ sudo port install fftw-3-single
-
-Ubuntu
-    $ sudo apt-get install libfftw3-dev
+  * Mac OS X: sudo port install fftw-3-single
+  * Ubuntu:   sudo apt-get install libfftw3-dev
 
 BUILD:
     $ ./reconf
@@ -48,9 +44,8 @@ EXAMPLES: Nearly all signal processing elements have a corresponding
           example in the 'examples/' directory.  Most example scripts
           generate an output .m file for plotting with GNU octave
           [octave:web].
-    $ make examples
-    -- or --
-    $ make examples/some_specific_example
+    $ make examples                         # build all examples
+    $ make examples/iirfilt_crcf_example    # build a specific example
 
 BENCHMARK:
     $ make bench
@@ -98,11 +93,24 @@ Additional:
   * automatic test scripts ('make check') for validating the code's
     functionality
   * full documentation ('make doc') complete with tutorials, code
-  * examples, and interface descriptions
+    examples, and interface descriptions. Requires the following programs
+    and packages:
+      - pdflatex    LaTeX compiler [http://www.ctan.org]
+      - bibtex      LaTeX bibliography generator [http://www.ctan.org]
+      - pgf (v2.0)  LaTeX figures [http://sourceforge.net/projects/pgf/]
+      - epstopdf    convert .eps to .pdf (necessary for figures)
+      - gnuplot     plotting program [http://www.gnuplot.info]
+      - pygmentize  pretty syntax hilighting program [http://pygments.org]
 
 =========================================================================
  References
 =========================================================================
     [fftw:web] FFTW website, http://www.fftw.org/
     [octave:web] GNU Octave website, http://www.gnu.org/software/octave/
+    [ctan:web] The Comprehensive TeX Archive Network, Online:
+        http://www.ctan.org/
+    [pygments:web] Python Syntax Highlighter, Online: http://pygments.org/
+    [gnuplot:web] Gnuplot homepage, Online: http://www.gnuplot.info/
+    [pgf:web] PGF and TikZ, Graphics systems for TeX, Online:
+        http://sourceforge.net/projects/pgf/
 
