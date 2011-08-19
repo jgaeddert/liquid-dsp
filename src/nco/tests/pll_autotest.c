@@ -18,9 +18,6 @@
  * along with liquid.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef __LIQUID_NCO_AUTOTEST_H__
-#define __LIQUID_NCO_AUTOTEST_H__
-
 #include <complex.h>
 #include "autotest/autotest.h"
 #include "liquid.h"
@@ -126,6 +123,4 @@ void autotest_pll_frequency_offset() {
     nco_crcf_destroy(nco_tx);
     nco_crcf_destroy(nco_rx);
 }
-
-#endif // __LIQUID_NCO_AUTOTEST_H__
 

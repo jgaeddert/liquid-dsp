@@ -25,9 +25,6 @@
 //      Continuous and Discrete," 4th ed., Prentice Hall, Upper
 //      Saddle River, NJ, 1998
 
-#ifndef __LIQUID_IIRDES_AUTOTEST_H__
-#define __LIQUID_IIRDES_AUTOTEST_H__
-
 #include "autotest/autotest.h"
 #include "liquid.internal.h"
 
@@ -300,4 +297,3 @@ void autotest_iirdes_isstable_n2_no()
     CONTEND_EQUALITY( stable, 0 );
 }
 
-#endif // __LIQUID_IIRDES_AUTOTEST_H__

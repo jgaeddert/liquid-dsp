@@ -18,9 +18,6 @@
  * along with liquid.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef __LIQUID_DECIM_AUTOTEST_H__
-#define __LIQUID_DECIM_AUTOTEST_H__
-
 #include "autotest/autotest.h"
 #include "liquid.h"
 
@@ -59,6 +56,4 @@ void autotest_decim_rrrf_generic()
 
     decim_rrrf_destroy(q);
 }
-
-#endif // __LIQUID_DECIM_AUTOTEST_H__
 

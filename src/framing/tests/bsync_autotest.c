@@ -18,9 +18,6 @@
  * along with liquid.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef __LIQUID_BSYNC_AUTOTEST_H__
-#define __LIQUID_BSYNC_AUTOTEST_H__
-
 #include "autotest/autotest.h"
 #include "liquid.h"
 
@@ -150,6 +147,4 @@ void xautotest_bsync_crcf_phase_15()
     // clean it up
     bsync_crcf_destroy(fs);
 }
-
-#endif 
 

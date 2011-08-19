@@ -18,9 +18,6 @@
  * along with liquid.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef __LIQUID_QUANTIZE_AUTOTEST_H__
-#define __LIQUID_QUANTIZE_AUTOTEST_H__
-
 #include "autotest/autotest.h"
 #include "liquid.internal.h"
 
@@ -53,6 +50,4 @@ void autotest_quantize_float_n8() {
         x = (x > 1.0f) ? 1.0f : x;
     }
 }
-
-#endif // __LIQUID_QUANTIZE_AUTOTEST_H__
 

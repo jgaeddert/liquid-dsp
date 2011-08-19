@@ -18,9 +18,6 @@
  * along with liquid.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef __LIQUID_FIRPFB_AUTOTEST_H__
-#define __LIQUID_FIRPFB_AUTOTEST_H__
-
 #include "autotest/autotest.h"
 #include "liquid.h"
 
@@ -76,6 +73,4 @@ void autotest_firpfb_impulse_response()
     
     firpfb_rrrf_destroy(f);
 }
-
-#endif // __LIQUID_FIRPFB_AUTOTEST_H__
 

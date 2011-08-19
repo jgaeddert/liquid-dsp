@@ -19,9 +19,6 @@
  * along with liquid.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef __LIQUID_AUTOTEST_NCO__
-#define __LIQUID_AUTOTEST_NCO__
-
 #include <complex.h>
 #include "autotest/autotest.h"
 #include "liquid.h"
@@ -111,6 +108,4 @@ void autotest_nco_mixing() {
         nco_crcf_step(p);
     }
 }
-
-#endif // __AUTOTEST_NCO__
 

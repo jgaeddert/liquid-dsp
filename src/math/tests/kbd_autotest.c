@@ -19,9 +19,6 @@
  * along with liquid.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef __LIQUID_KBD_AUTOTEST_H__
-#define __LIQUID_KBD_AUTOTEST_H__
-
 #include "autotest/autotest.h"
 #include "liquid.h"
 
@@ -58,6 +55,4 @@ void liquid_kbd_window_test(unsigned int _n,
 void autotest_kbd_n16() { liquid_kbd_window_test(16, 10.0f); }
 void autotest_kbd_n32() { liquid_kbd_window_test(32, 20.0f); }
 void autotest_kbd_n48() { liquid_kbd_window_test(48, 12.0f); }
-
-#endif 
 

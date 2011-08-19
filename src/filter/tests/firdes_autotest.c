@@ -19,9 +19,6 @@
  * along with liquid.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef __LIQUID_FIRDES_AUTOTEST_H__
-#define __LIQUID_FIRDES_AUTOTEST_H__
-
 #include "autotest/autotest.h"
 #include "liquid.h"
 
@@ -119,6 +116,4 @@ void autotest_design_rkaiser_filter()
     CONTEND_LESS_THAN(isi_rms, isi_test);
 }
 
-
-#endif // __LIQUID_FIRDES_AUTOTEST_H__
 

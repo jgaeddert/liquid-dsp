@@ -26,9 +26,6 @@
 //      Digital Filters," IEEE Transactions on Audio and
 //      Electroacoustics, vol. AU-21, No. 6, December 1973.
 
-#ifndef __LIQUID_FIRDESPM_AUTOTEST_H__
-#define __LIQUID_FIRDESPM_AUTOTEST_H__
-
 #include "autotest/autotest.h"
 #include "liquid.h"
 
@@ -146,6 +143,4 @@ void autotest_firdespm_bandpass_n32()
     for (i=0; i<n; i++)
         CONTEND_DELTA( h[i], h0[i], tol );
 }
-
-#endif // __LIQUID_FIRDESPM_AUTOTEST_H__
 

@@ -18,9 +18,6 @@
  * along with liquid.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef __LIQUID_COMPAND_AUTOTEST_H__
-#define __LIQUID_COMPAND_AUTOTEST_H__
-
 #include "autotest/autotest.h"
 #include "liquid.internal.h"
 
@@ -78,7 +75,4 @@ void autotest_compand_cfloat() {
         //x = (x > 1.0f) ? 1.0f : x;
     }
 }
-
-
-#endif // __LIQUID_COMPAND_AUTOTEST_H__
 

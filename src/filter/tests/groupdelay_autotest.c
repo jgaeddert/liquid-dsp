@@ -19,9 +19,6 @@
  * along with liquid.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef __LIQUID_GROUPDELAY_AUTOTEST_H__
-#define __LIQUID_GROUPDELAY_AUTOTEST_H__
-
 #include "autotest/autotest.h"
 #include "liquid.h"
 
@@ -239,6 +236,4 @@ void autotest_iir_groupdelay_sos_n8()
     // destroy filter
     iirfilt_rrrf_destroy(filter);
 }
-
-#endif // __LIQUID_GROUPDELAY_AUTOTEST_H__
 
