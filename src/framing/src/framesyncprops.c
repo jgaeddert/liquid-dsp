@@ -36,8 +36,8 @@
 
 framesyncprops_s framesyncprops_default = {
     // automatic gain control
-    1e-3f,      // agc_bw0
-    1e-5f,      // agc_bw1
+    1e-1f,      // agc_bw0
+    1e-2f,      // agc_bw1
     1e-3f,      // agc_gmin
     1e4f,       // agc_gmax
     // symbol timing recovery

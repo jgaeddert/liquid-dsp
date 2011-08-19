@@ -82,11 +82,9 @@ void print_benchmark_results(benchmark_t* _benchmark);
 void print_package_results(package_t* _package);
 double calculate_execution_time(struct rusage, struct rusage);
 
-unsigned long int num_trials = 1<<12;
+unsigned long int num_base_trials = 1<<12;
 float cpu_clock = 1.0f; // cpu clock speed (Hz)
-#if 0
-float runtime=50e-3f;
-#endif
+float runtime=0.100f;   // minimum run time (s)
 
 FILE * fid; // output file id
 void output_benchmark_to_file(FILE * _fid, benchmark_t * _benchmark);
@@ -101,12 +99,10 @@ void usage()
     printf("  -q    : quiet\n");
     printf("  -e    : estimate cpu clock frequency and exit\n");
     printf("  -c    : set cpu clock frequency (Hz)\n");
-    printf("  -n<num_trials>\n");
+    printf("  -n<num_base_trials>\n");
     printf("  -p<package_index>\n");
     printf("  -b<benchmark_index>\n");
-#if 0
-    printf("  -t<time> minimum execution time (ms)\n");
-#endif
+    printf("  -t<time> minimum execution time (s)\n");
     printf("  -l    : lists available packages\n");
     printf("  -L    : lists all available scripts\n");
     printf("  -s<string>: run all scripts matching search string\n");
@@ -154,7 +150,7 @@ int main(int argc, char *argv[])
             cpu_clock_detect = false;
             break;
         case 'n':
-            num_trials = atoi(optarg);
+            num_base_trials = atoi(optarg);
             autoscale = false;
             break;
         case 'b':
@@ -175,14 +171,12 @@ int main(int argc, char *argv[])
                 mode = RUN_SINGLE_PACKAGE;
             }
             break;
-#if 0
         case 't':
-            runtime = atof(optarg)*1e-3;
+            runtime = atof(optarg);
             if (runtime < 1e-3f)    runtime = 1e-3f;
             else if (runtime > 2.f) runtime = 2.0f;
             printf("minimum runtime: %d ms\n", (int) roundf(runtime*1e3));
             break;
-#endif
         case 'l':
             // list only packages and exit
             for (i=0; i<NUM_PACKAGES; i++)
@@ -235,7 +229,7 @@ int main(int argc, char *argv[])
     case RUN_SINGLE_BENCH:
         execute_benchmark( &scripts[benchmark_id], verbose );
         //print_benchmark_results( &scripts[benchmark_id] );
-        return 0;
+        break;
     case RUN_SINGLE_PACKAGE:
         execute_package( &packages[package_id], verbose );
         //print_package_results( &packages[package_id] );
@@ -276,11 +270,9 @@ int main(int argc, char *argv[])
         fprintf(fid,"#  autoscale           :   %s\n", autoscale ? "true" : "false");
         fprintf(fid,"#  cpu_clock_detect    :   %s\n", cpu_clock_detect ? "true" : "false");
         fprintf(fid,"#  search string       :   '%s'\n", mode == RUN_SEARCH ? search_string : "");
-#if 0
-        fprintf(fid,"#  runtime             :   %e s\n", runtime);
-#endif
+        fprintf(fid,"#  runtime             :   %12.8f s\n", runtime);
         fprintf(fid,"#  cpu_clock           :   %e Hz\n", cpu_clock);
-        fprintf(fid,"#  num_trials          :   %lu\n", num_trials);
+        fprintf(fid,"#  num_trials          :   %lu\n", num_base_trials);
         fprintf(fid,"#\n");
         fprintf(fid,"# %-5s %-30s %12s %12s %12s %12s\n",
                 "id", "name", "num trials", "ex.time [s]", "rate [t/s]", "[cycles/t]");
@@ -335,23 +327,44 @@ void estimate_cpu_clock(void)
 void set_num_trials_from_cpu_speed(void)
 {
     unsigned long int min_trials = 256;
-    num_trials = (unsigned long int) ( cpu_clock / 10e3 );
-    num_trials = (num_trials < min_trials) ? min_trials : num_trials;
+    num_base_trials = (unsigned long int) ( cpu_clock / 10e3 );
+    num_base_trials = (num_base_trials < min_trials) ? min_trials : num_base_trials;
 
-    printf("  setting number of trials to %ld\n", num_trials);
+    printf("  setting number of base trials to %ld\n", num_base_trials);
 }
 
 void execute_benchmark(benchmark_t* _benchmark, bool _verbose)
 {
-    unsigned long int n=num_trials;
+    unsigned long int n = num_base_trials;
     struct rusage start, finish;
 
-    _benchmark->api(&start, &finish, &n);
-    _benchmark->extime = calculate_execution_time(start, finish);
+    unsigned int num_attempts = 0;
+    unsigned long int num_trials;
+    do {
+        // increment number of attempts
+        num_attempts++;
 
-    _benchmark->num_trials = n;
+        // set number of trials and run benchmark
+        num_trials = n;
+        _benchmark->api(&start, &finish, &num_trials);
+        _benchmark->extime = calculate_execution_time(start, finish);
+
+        // check exit criteria
+        if (_benchmark->extime >= runtime) {
+            break;
+        } else if (num_attempts == 30) {
+            fprintf(stderr,"warning: benchmark could not execute over minimum run time\n");
+            break;
+        } else {
+            // increase number of trials
+            n *= 4;
+        }
+    } while (1);
+
+    _benchmark->num_trials = num_trials;
     _benchmark->rate = (float)(_benchmark->num_trials) / _benchmark->extime;
     _benchmark->cycles_per_trial = cpu_clock / (_benchmark->rate);
+
     if (_verbose)
         print_benchmark_results(_benchmark);
 }

@@ -35,8 +35,6 @@
 
 #define DEBUG_RKAISER 0
 
-// design_rkaiser_filter()
-//
 // Design frequency-shifted root-Nyquist filter based on
 // the Kaiser-windowed sinc.
 //
@@ -68,7 +66,8 @@ void design_rkaiser_filter(unsigned int _k,
 
     // simply call internal method and ignore output rho value
     float rho;
-    design_rkaiser_filter_internal(_k,_m,_beta,_dt,_h,&rho);
+    //design_rkaiser_filter_bisection(_k,_m,_beta,_dt,_h,&rho);
+    design_rkaiser_filter_quadratic(_k,_m,_beta,_dt,_h,&rho);
 }
 
 // design_arkaiser_filter()
@@ -181,8 +180,6 @@ float rkaiser_approximate_rho(unsigned int _m,
     return rho_hat;
 }
 
-// design_rkaiser_filter_internal()
-//
 // Design frequency-shifted root-Nyquist filter based on
 // the Kaiser-windowed sinc.
 //
@@ -192,21 +189,21 @@ float rkaiser_approximate_rho(unsigned int _m,
 //  _dt     :   filter fractional sample delay
 //  _h      :   resulting filter [size: 2*_k*_m+1]
 //  _rho    :   transition bandwidth adjustment, 0 < _rho < 1
-void design_rkaiser_filter_internal(unsigned int _k,
-                                    unsigned int _m,
-                                    float _beta,
-                                    float _dt,
-                                    float * _h,
-                                    float * _rho)
+void design_rkaiser_filter_bisection(unsigned int _k,
+                                     unsigned int _m,
+                                     float _beta,
+                                     float _dt,
+                                     float * _h,
+                                     float * _rho)
 {
     if ( _k < 1 ) {
-        fprintf(stderr,"error: design_rkaiser_filter_internal(): k must be greater than 0\n");
+        fprintf(stderr,"error: design_rkaiser_filter_bisection(): k must be greater than 0\n");
         exit(1);
     } else if ( _m < 1 ) {
-        fprintf(stderr,"error: design_rkaiser_filter_internal(): m must be greater than 0\n");
+        fprintf(stderr,"error: design_rkaiser_filter_bisection(): m must be greater than 0\n");
         exit(1);
     } else if ( (_beta < 0.0f) || (_beta > 1.0f) ) {
-        fprintf(stderr,"error: design_rkaiser_filter_internal(): beta must be in [0,1]\n");
+        fprintf(stderr,"error: design_rkaiser_filter_bisection(): beta must be in [0,1]\n");
         exit(1);
     } else;
 
@@ -291,6 +288,137 @@ void design_rkaiser_filter_internal(unsigned int _k,
 
     // re-design filter with optimal value for rho
     y_hat = design_rkaiser_filter_internal_isi(_k,_m,_beta,_dt,x_hat,_h);
+
+    // normalize filter magnitude
+    float e2 = 0.0f;
+    for (i=0; i<n; i++) e2 += _h[i]*_h[i];
+    for (i=0; i<n; i++) _h[i] *= sqrtf(_k/e2);
+
+    // save trasition bandwidth adjustment
+    *_rho = x_hat;
+}
+
+// design_rkaiser_filter_quadratic()
+//
+// Design frequency-shifted root-Nyquist filter based on
+// the Kaiser-windowed sinc using the quadratic search method.
+//
+//  _k      :   filter over-sampling rate (samples/symbol)
+//  _m      :   filter delay (symbols)
+//  _beta   :   filter excess bandwidth factor (0,1)
+//  _dt     :   filter fractional sample delay
+//  _h      :   resulting filter [size: 2*_k*_m+1]
+//  _rho    :   transition bandwidth adjustment, 0 < _rho < 1
+void design_rkaiser_filter_quadratic(unsigned int _k,
+                                     unsigned int _m,
+                                     float _beta,
+                                     float _dt,
+                                     float * _h,
+                                     float * _rho)
+{
+    if ( _k < 1 ) {
+        fprintf(stderr,"error: design_rkaiser_filter_quadratic(): k must be greater than 0\n");
+        exit(1);
+    } else if ( _m < 1 ) {
+        fprintf(stderr,"error: design_rkaiser_filter_quadratic(): m must be greater than 0\n");
+        exit(1);
+    } else if ( (_beta < 0.0f) || (_beta > 1.0f) ) {
+        fprintf(stderr,"error: design_rkaiser_filter_quadratic(): beta must be in [0,1]\n");
+        exit(1);
+    } else;
+
+    // algorithm:
+    //  1. choose initial bounding points [x0,x2] where x0 < x2
+    //  2. choose x1 as bisection of [x0,x2]: x1 = 0.5*(x0+x2)
+    //  3. choose x_hat as solution to quadratic equation (x0,y0), (x1,y1), (x2,y2)
+    //  4. re-select boundary: (x0,y0) <- (x1,y1)   if x_hat > x1
+    //                         (x2,y2) <- (x1,y1)   otherwise
+    //  5. go to step 2
+
+    unsigned int i;
+
+    unsigned int n=2*_k*_m+1;   // filter length
+
+    // compute bandwidth adjustment estimate
+    float rho_hat = rkaiser_approximate_rho(_m,_beta);
+
+    // bandwidth adjustment
+    float x0 = 0.5f * rho_hat;  // lower bound
+    float x1;
+    float x2 = 1.0f;            // upper bound
+
+    // evaluate performance (ISI) of each bandwidth adjustment
+    float y0 = design_rkaiser_filter_internal_isi(_k,_m,_beta,_dt,x0,_h);
+    float y1;
+    float y2 = design_rkaiser_filter_internal_isi(_k,_m,_beta,_dt,x2,_h);
+
+    // run parabolic search to find bandwidth adjustment x_hat which
+    // minimizes the inter-symbol interference of the filter
+    unsigned int p, pmax=14;
+    float x_hat = rho_hat;
+    float del = 0.0f;       // computed step size
+    float tol = 2e-4f;      // tolerance
+#if DEBUG_RKAISER
+    FILE * fid = fopen("rkaiser_debug.m", "w");
+    fprintf(fid,"clear all;\n");
+    fprintf(fid,"close all;\n");
+    fprintf(fid,"x = [%12.4e]\n", x0);
+    fprintf(fid,"y = [%12.4e];\n", y0);
+#endif
+    for (p=0; p<pmax; p++) {
+        // choose center point between [x0,x2]
+        x1 = 0.5f*(x0 + x2);
+
+        // evaluate center point
+        y1 = design_rkaiser_filter_internal_isi(_k,_m,_beta,_dt,x1,_h);
+
+#if DEBUG_RKAISER
+        fprintf(fid,"x = [x %12.4e];\n", x1);
+        fprintf(fid,"y = [y %12.4e];\n", y1);
+        //printf("  %4u : [%8.4f %8.4f %8.4f] rho=%12.8f, isi=%12.6f dB\n", p+1, x0, x1, x2, x1, 20*log10f(y1));
+        printf("  %4u : [%8.4f,%8.2f] [%8.4f,%8.2f] [%8.4f,%8.2f]\n",
+                p+1,
+                x0, 20*log10f(y0),
+                x1, 20*log10f(y1),
+                x2, 20*log10f(y2));
+#endif
+        // compute minimum of quadratic function
+        double ta = y0*(x1*x1 - x2*x2) +
+                    y1*(x2*x2 - x0*x0) +
+                    y2*(x0*x0 - x1*x1);
+
+        double tb = y0*(x1 - x2) +
+                    y1*(x2 - x0) +
+                    y2*(x0 - x1);
+
+        // update estimate
+        x_hat = 0.5f * ta / tb;
+
+        // break if step size is sufficiently small
+        del = x_hat - x1;
+        if (p > 3 && fabsf(del) < tol)
+            break;
+
+        // update bounds
+        if (x_hat > x1) {
+            // new minimum
+            x0 = x1;
+            y0 = y1;
+        } else {
+            // new maximum
+            x2 = x1;
+            y2 = y1;
+        }
+    };
+#if DEBUG_RKAISER
+    fprintf(fid,"figure;\n");
+    fprintf(fid,"plot(x,20*log10(y),'x');\n");
+    fclose(fid);
+    printf("results written to rkaiser_debug.m\n");
+#endif
+
+    // re-design filter with optimal value for rho
+    design_rkaiser_filter_internal_isi(_k,_m,_beta,_dt,x_hat,_h);
 
     // normalize filter magnitude
     float e2 = 0.0f;

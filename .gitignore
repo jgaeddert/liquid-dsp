@@ -35,6 +35,10 @@ octave-core
 src/fec/gentab/*_gentab
 src/utility/gentab/*_gentab
 
+# gentab output sources
+src/fec/gentab/reverse_byte.c
+src/utility/gentab/count_ones.c
+
 # sandbox
 sandbox/*_test
 sandbox/*_example

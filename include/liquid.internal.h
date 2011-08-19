@@ -61,10 +61,6 @@
 #define LIQUID_AGC_DEFINE_INTERNAL_API(AGC,T,TC)                \
                                                                 \
 void AGC(_estimate_input_energy)(AGC() _q, TC _x);              \
-void AGC(_estimate_gain_default)(AGC() _q, TC _x);              \
-void AGC(_estimate_gain_log)(AGC() _q, TC _x);                  \
-void AGC(_estimate_gain_exp)(AGC() _q, TC _x);                  \
-void AGC(_estimate_gain_true)(AGC() _q, TC _x);                 \
 void AGC(_limit_gain)(AGC() _q);                                \
                                                                 \
 /* squelch */                                                   \
@@ -853,10 +849,8 @@ LIQUID_SYMSYNC_DEFINE_INTERNAL_API(SYMSYNC_MANGLE_CRCF, liquid_float_complex, fl
 float rkaiser_approximate_rho(unsigned int _m,
                               float _beta);
 
-// design_rkaiser_filter_internal()
-//
 // Design frequency-shifted root-Nyquist filter based on
-// the Kaiser-windowed sinc.
+// the Kaiser-windowed sinc using the bisection method
 //
 //  _k      :   filter over-sampling rate (samples/symbol)
 //  _m      :   filter delay (symbols)
@@ -864,12 +858,28 @@ float rkaiser_approximate_rho(unsigned int _m,
 //  _dt     :   filter fractional sample delay
 //  _h      :   resulting filter [size: 2*_k*_m+1]
 //  _rho    :   transition bandwidth adjustment, 0 < _rho < 1
-void design_rkaiser_filter_internal(unsigned int _k,
-                                    unsigned int _m,
-                                    float _beta,
-                                    float _dt,
-                                    float * _h,
-                                    float * _rho);
+void design_rkaiser_filter_bisection(unsigned int _k,
+                                     unsigned int _m,
+                                     float _beta,
+                                     float _dt,
+                                     float * _h,
+                                     float * _rho);
+
+// Design frequency-shifted root-Nyquist filter based on
+// the Kaiser-windowed sinc using the quadratic method.
+//
+//  _k      :   filter over-sampling rate (samples/symbol)
+//  _m      :   filter delay (symbols)
+//  _beta   :   filter excess bandwidth factor (0,1)
+//  _dt     :   filter fractional sample delay
+//  _h      :   resulting filter [size: 2*_k*_m+1]
+//  _rho    :   transition bandwidth adjustment, 0 < _rho < 1
+void design_rkaiser_filter_quadratic(unsigned int _k,
+                                     unsigned int _m,
+                                     float _beta,
+                                     float _dt,
+                                     float * _h,
+                                     float * _rho);
 
 // compute filter coefficients and determine resulting ISI
 //  

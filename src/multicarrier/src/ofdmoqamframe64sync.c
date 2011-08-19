@@ -205,7 +205,6 @@ ofdmoqamframe64sync ofdmoqamframe64sync_create(unsigned int _m,
 
     // create agc | signal detection object
     q->sigdet = agc_crcf_create();
-    agc_crcf_set_target(q->sigdet,1.0f);
     agc_crcf_set_bandwidth(q->sigdet,0.1f);
 
     // create NCO for CFO compensation

@@ -204,6 +204,9 @@ int main(int argc, char*argv[])
     printf("results written to '%s'\n", OUTPUT_FILENAME);
     printf("done.\n");
 
+    // free allocated memory
+    free(link);
+
     return 0;
 }
 

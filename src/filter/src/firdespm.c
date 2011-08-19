@@ -55,7 +55,7 @@
 
 #include "liquid.internal.h"
 
-#define LIQUID_FIRDESPM_DEBUG       1
+#define LIQUID_FIRDESPM_DEBUG       0
 #define LIQUID_FIRDESPM_DEBUG_PRINT 0
 
 #define LIQUID_FIRDESPM_DEBUG_FILENAME "firdespm_internal_debug.m"

@@ -80,16 +80,16 @@ AC_ARG_ENABLE(experimental,
             src/experimental/src/channel.o \
             src/experimental/src/pamodel.o \
             src/experimental/src/ricek_channel.o"
-        EXPERIMENTAL_AUTOTESTS="src/experimental/tests/ann_autotest.h \
-            src/experimental/tests/gport_autotest.h \
-            src/experimental/tests/channel_autotest.h"
-        EXPERIMENTAL_BENCHMARKS="src/experimental/bench/fbasc_benchmark.h \
-            src/experimental/bench/gport_dma_benchmark.h \
-            src/experimental/bench/gport_dma_threaded_benchmark.h \
-            src/experimental/bench/gport_ima_benchmark.h \
-            src/experimental/bench/gport_ima_threaded_benchmark.h \
-            src/experimental/bench/dds_benchmark.h \
-            src/experimental/bench/qmfb_benchmark.h"
+        EXPERIMENTAL_AUTOTESTS="src/experimental/tests/ann_autotest.c \
+            src/experimental/tests/gport_autotest.c \
+            src/experimental/tests/channel_autotest.c"
+        EXPERIMENTAL_BENCHMARKS="src/experimental/bench/fbasc_benchmark.c \
+            src/experimental/bench/gport_dma_benchmark.c \
+            src/experimental/bench/gport_dma_threaded_benchmark.c \
+            src/experimental/bench/gport_ima_benchmark.c \
+            src/experimental/bench/gport_ima_threaded_benchmark.c \
+            src/experimental/bench/dds_benchmark.c \
+            src/experimental/bench/qmfb_benchmark.c"
         EXPERIMENTAL_EXAMPLES="examples/ann_bitpattern_example.o \
             examples/ann_example.o \
             examples/ann_layer_example.o \

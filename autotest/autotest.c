@@ -29,7 +29,6 @@
 // default include headers
 #include <stdio.h>
 #include <stdlib.h>
-#include <stdbool.h>
 #include <string.h>
 #include <getopt.h>
 #include "autotest/autotest.h"
@@ -47,8 +46,8 @@ typedef struct {
     long unsigned int num_failed;   // number of checks that failed
     long unsigned int num_warnings; // number of warnings 
     float percent_passed;           // percent of checks that passed
-    bool executed;                  // was the test executed?
-    bool pass;                      // did the test pass? (i.e. no failures)
+    int executed;                   // was the test executed?
+    int pass;                       // did the test pass? (i.e. no failures)
 } autotest_t;
 
 // define package_t
@@ -57,7 +56,7 @@ typedef struct {
     unsigned int autotest_index;    // index of first autotest
     unsigned int num_scripts;       // number of tests in package
     const char* name;               // package name
-    bool executed;                  // were any tests executed?
+    int executed;                   // were any tests executed?
 } package_t;
 
 // include auto-generated autotest header
@@ -78,13 +77,13 @@ typedef struct {
 void print_help();
 
 // execute a specific test
-void execute_autotest(autotest_t * _test, bool _verbose);
+void execute_autotest(autotest_t * _test, int _verbose);
 
 // execute a specific package
-void execute_package(package_t * _p, bool _verbose);
+void execute_package(package_t * _p, int _verbose);
 
 // execute a specific package if string matches
-void execute_package_search(package_t * _p, char * _str, bool _verbose);
+void execute_package_search(package_t * _p, char * _str, int _verbose);
 
 // print all autotest results
 void print_autotest_results(autotest_t * _test);
@@ -107,8 +106,8 @@ int main(int argc, char *argv[])
 
     unsigned int autotest_id = 0;
     unsigned int package_id = 0;
-    bool verbose = true;
-    bool stop_on_fail = false;
+    int verbose = 1;
+    int stop_on_fail = 0;
     char search_string[128];
 
     unsigned int i, j;
@@ -153,7 +152,7 @@ int main(int argc, char *argv[])
                 printf("%u: %s\n", packages[i].id, packages[i].name);
             return 0;
         case 'x':
-            stop_on_fail = true;
+            stop_on_fail = 1;
             break;
         case 's':
             mode = RUN_SEARCH;
@@ -161,12 +160,12 @@ int main(int argc, char *argv[])
             search_string[127] = '\0';
             break;
         case 'v':
-            verbose = true;
-            liquid_autotest_verbose = true;
+            verbose = 1;
+            liquid_autotest_verbose = 1;
             break;
         case 'q':
-            verbose = false;
-            liquid_autotest_verbose = false;
+            verbose = 0;
+            liquid_autotest_verbose = 0;
             break;
         default:
             print_help();
@@ -241,7 +240,7 @@ void print_help()
 //  _test       :   pointer to autotest object
 //  _verbose    :   verbose output flag
 void execute_autotest(autotest_t * _test,
-                      bool _verbose)
+                      int _verbose)
 {
     unsigned long int autotest_num_passed_init = liquid_autotest_num_passed;
     unsigned long int autotest_num_failed_init = liquid_autotest_num_failed;
@@ -254,13 +253,13 @@ void execute_autotest(autotest_t * _test,
     _test->num_failed = liquid_autotest_num_failed - autotest_num_failed_init;
     _test->num_warnings = liquid_autotest_num_warnings - autotest_num_warnings_init;
     _test->num_checks = _test->num_passed + _test->num_failed;
-    _test->pass = (_test->num_failed==0) ? true : false;
+    _test->pass = (_test->num_failed==0) ? 1 : 0;
     if (_test->num_checks > 0)
         _test->percent_passed = 100.0f * (float) (_test->num_passed) / (float) (_test->num_checks);
     else
         _test->percent_passed = 0.0f;
 
-    _test->executed = true;
+    _test->executed = 1;
 
     //if (_verbose)
     //    print_autotest_results(_test);
@@ -270,7 +269,7 @@ void execute_autotest(autotest_t * _test,
 //  _p          :   pointer to package object
 //  _verbose    :   verbose output flag
 void execute_package(package_t * _p,
-                     bool _verbose)
+                     int _verbose)
 {
     if (_verbose)
         printf("%u: %s\n", _p->id, _p->name);
@@ -280,11 +279,11 @@ void execute_package(package_t * _p,
         execute_autotest( &scripts[ i + _p->autotest_index ], _verbose );
     }
     
-    _p->executed = true;
+    _p->executed = 1;
 }
 
 // execute a specific package if string matches
-void execute_package_search(package_t * _p, char * _str, bool _verbose)
+void execute_package_search(package_t * _p, char * _str, int _verbose)
 {
     // see if search string matches autotest name
     if (strstr(_p->name, _str) != NULL) {
