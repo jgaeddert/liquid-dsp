@@ -19,14 +19,13 @@ void usage()
     printf("  v|q   : verbose|quiet, default: verbose\n");
     printf("  B|P   : simulate for BER|PER, default: PER\n");
     printf("  s|e   : estimate SNR|Eb/N0, default: SNR\n");
-    printf("  S|H   :   soft/hard decoding, default: hard\n");
+    printf("  S|H   : soft/hard decoding, default: hard\n");
     printf("  E     : target error rate, default: 0.05\n");
     printf("  n     : frame length [bytes], default: 1024\n");
     //printf("  m         : minimum number of errors\n");
     //printf("  t         : minimum number of trials\n");
     printf("  x     : maximum number of trials, default: 10,000 (BER) or 100 (PER)\n");
-    printf("  c     : coding scheme (inner): h74 default\n");
-    printf("  k     : coding scheme (outer): none default\n");
+    printf("  c     : coding scheme: h74 default\n");
     liquid_print_fec_schemes();
     printf("  m     : modulation scheme (qpsk default)\n");
     liquid_print_modulation_schemes();
@@ -63,7 +62,7 @@ int main(int argc, char*argv[])
     int soft_decoding = 0;
 
     int dopt;
-    while ((dopt = getopt(argc,argv,"uhvqBPseSHE:n:x:c:k:m:")) != EOF) {
+    while ((dopt = getopt(argc,argv,"uhvqBPseSHE:n:x:c:m:")) != EOF) {
         switch (dopt) {
         case 'u':
         case 'h': usage();                          return 0;
