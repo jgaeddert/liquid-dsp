@@ -1,0 +1,96 @@
+% 
+% figures.pgf/ofdmflexframe_spectrum.tex
+%
+% Author: Joseph D. Gaeddert
+%
+%               spectral null    ^    pilot subcarrier
+%                    /           |     /
+%       *----*----*    *----*----+----*----*----*----*----*
+%       |         |    |         |                        |
+%       |         |    |         |      ...               |
+%    ___/         \____/         |                        \___
+%    +-++---------++--++---------+------------------------++--+ freq
+%-Fs/2 ||         ||  ||         0                        || +Fs/2
+%    | |tb        |td |tf                                 |th |
+%    | ta         tc  te                                  tg  |
+%   -trange                                                   +trange
+
+
+\documentclass[a4paper,landscape]{article}
+
+\usepackage{pgf,tikz}
+\usepackage{verbatim}
+\usepackage[active,tightpage]{preview}
+\PreviewEnvironment{tikzpicture}
+\setlength\PreviewBorder{5pt}%
+
+\usetikzlibrary{calc,arrows,positioning}
+\usetikzlibrary{decorations.pathmorphing} % random steps (noise floor)
+
+\usepackage{amsmath}
+\usepackage[left=1cm,right=1cm]{geometry}
+\pagestyle{empty}
+
+\begin{document}
+
+\begin{tikzpicture}[scale=6,>=latex];
+    \def\dt{0.2}        % default time step between sections
+    \def\dr{0.06}       % default time step between ramping transitions
+    \def\ds{0.05}       % default signal level vertical line extensions
+    \def\height{0.6}    % peak height of signal
+
+    \def\trange{2}      % span
+
+    \def\ta{-\trange+\dt}    % beginning of ramp up
+    \def\tb{\ta+\dr}    % end of ramp up
+    \def\tc{\tb+3*\dt}
+    \def\td{\tc+\dr}
+
+    \def\te{\td+\dt}
+    \def\tf{\te+\dr}
+    \def\tg{\trange-\dt-\dr}
+    \def\th{\tg+\dr}
+
+    %\draw[step=2.5mm,help lines] (0,0) grid (3,1);
+
+    % derived constants: control points for curve
+    \def\cta{\ta + 0.5*\dr}
+    \def\ctb{\tb - 0.5*\dr}
+
+    \def\ctc{\tc + 0.5*\dr}
+    \def\ctd{\td - 0.5*\dr}
+
+    \def\cte{\te + 0.5*\dr}
+    \def\ctf{\tf - 0.5*\dr}
+
+    \def\ctg{\tg + 0.5*\dr}
+    \def\cth{\th - 0.5*\dr}
+
+    % draw x-axis 
+    \draw[very thick, black,->] (-\trange-\ds, 0.0 ) -- (\trange+\ds,0)
+        node[anchor=south] {{\it frequency}};
+
+    % draw y-axis
+    \draw[very thick, black,->] ( 0.0, -2*\ds) -- (0,\height+4*\ds);
+
+    % draw curve
+    \draw[very thick, black]
+        (-\trange,  0) --
+        (\ta,       0) .. controls (\cta,0) and (\ctb,\height) ..
+        (\tb,       \height) --
+        (\tc,       \height) .. controls (\ctc,\height) and (\ctd,0) ..
+        (\td,       0) --
+        (\te,       0) .. controls (\cte,0) and (\ctf,\height) ..
+        (\tf,       \height) --
+        (\tg,       \height) .. controls (\ctg,\height) and (\cth,0) ..
+        (\th,       0) --
+        (\trange,   0);
+
+    % intersection lines
+    \draw[thin,gray] (-\trange,  -\ds)   --  (-\trange,   \height+\ds);
+    \draw[thin,gray] (\trange,   -\ds)   --  (\trange,    \height+\ds);
+
+\end{tikzpicture}
+
+\end{document}
+

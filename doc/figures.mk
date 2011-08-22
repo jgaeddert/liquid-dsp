@@ -16,6 +16,7 @@ local_pgffiles :=					\
 	figures.pgf/window.pdf				\
 	figures.pgf/framing_structure.pdf		\
 	figures.pgf/nco_pll_diagram.pdf			\
+	figures.pgf/ofdmflexframe_spectrum.pdf		\
 	figures.pgf/ofdmflexframe_structure.pdf		\
 
 $(local_pgffiles) : %.pdf : %.tex
