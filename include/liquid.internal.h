@@ -1487,14 +1487,14 @@ void modem_demodulate_soft_qpsk(modem _demod, float complex _x, unsigned int * _
 void modem_demodulate_soft_arb(modem _demod, float complex _x, unsigned int * _s, unsigned char * _bits_out);
 
 // specific modem definitions
-extern const liquid_float_complex modem_arb_sqam32[8];   // 'square' 32-qam (first quadrant)
-extern const liquid_float_complex modem_arb_sqam128[32]; // 'square' 128-qam (first quadrant)
+extern const liquid_float_complex modem_arb_sqam32[8];  // 'square' 32-qam (first quadrant)
+extern const liquid_float_complex modem_arb_sqam128[32];// 'square' 128-qam (first quadrant)
 extern const liquid_float_complex modem_arb_V29[16];    // V.29
-extern const liquid_float_complex modem_arb_opt16[16];  // optimal 16-QAM
-extern const liquid_float_complex modem_arb_opt32[32];  // optimal 32-QAM
-extern const liquid_float_complex modem_arb_opt64[64];  // optimal 64-QAM
-extern const liquid_float_complex modem_arb_opt128[128];// optimal 128-QAM
-extern const liquid_float_complex modem_arb_opt256[256];// optimal 256-QAM
+extern const liquid_float_complex modem_arb16opt[16];   // optimal 16-QAM
+extern const liquid_float_complex modem_arb32opt[32];   // optimal 32-QAM
+extern const liquid_float_complex modem_arb64opt[64];   // optimal 64-QAM
+extern const liquid_float_complex modem_arb128opt[128]; // optimal 128-QAM
+extern const liquid_float_complex modem_arb256opt[256]; // optimal 256-QAM
 extern const liquid_float_complex modem_arb_vt64[64];   // Virginia Tech logo
 
 extern const unsigned int apsk4_num_levels;

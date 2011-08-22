@@ -589,7 +589,11 @@ modem_objects :=						\
 	src/modem/src/modem_demodulate.o			\
 	src/modem/src/modem_demodulate_soft.o			\
 	src/modem/src/modem_modulate.o				\
-	src/modem/src/modem_optqam_const.o			\
+	src/modem/src/modem_arb16opt_const.o			\
+	src/modem/src/modem_arb32opt_const.o			\
+	src/modem/src/modem_arb64opt_const.o			\
+	src/modem/src/modem_arb128opt_const.o			\
+	src/modem/src/modem_arb256opt_const.o			\
 
 
 src/modem/src/gmskmod.o: %.o : %.c $(headers)

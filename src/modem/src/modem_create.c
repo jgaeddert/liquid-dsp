@@ -712,7 +712,7 @@ modem modem_create_V29()
 modem modem_create_arb16opt()
 {
     modem mod = modem_create_arb(4);
-    modem_arb_init(mod,(float complex*)modem_arb_opt16,16);
+    modem_arb_init(mod,(float complex*)modem_arb16opt,16);
     return mod;
 }
 
@@ -720,7 +720,7 @@ modem modem_create_arb16opt()
 modem modem_create_arb32opt()
 {
     modem mod = modem_create_arb(5);
-    modem_arb_init(mod,(float complex*)modem_arb_opt32,32);
+    modem_arb_init(mod,(float complex*)modem_arb32opt,32);
     return mod;
 }
 
@@ -728,7 +728,7 @@ modem modem_create_arb32opt()
 modem modem_create_arb64opt()
 {
     modem mod = modem_create_arb(6);
-    modem_arb_init(mod,(float complex*)modem_arb_opt64,64);
+    modem_arb_init(mod,(float complex*)modem_arb64opt,64);
     return mod;
 }
 
@@ -736,7 +736,7 @@ modem modem_create_arb64opt()
 modem modem_create_arb128opt()
 {
     modem mod = modem_create_arb(7);
-    modem_arb_init(mod,(float complex*)modem_arb_opt128,128);
+    modem_arb_init(mod,(float complex*)modem_arb128opt,128);
     return mod;
 }
 
@@ -744,7 +744,7 @@ modem modem_create_arb128opt()
 modem modem_create_arb256opt()
 {
     modem mod = modem_create_arb(8);
-    modem_arb_init(mod,(float complex*)modem_arb_opt256,256);
+    modem_arb_init(mod,(float complex*)modem_arb256opt,256);
     return mod;
 }
 
