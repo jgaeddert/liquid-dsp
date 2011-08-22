@@ -56,7 +56,7 @@ PYGMENTS_VERB_OPTS = -P verboptions='fontsize=\small' -P commandprefix='PY'
 PYGMENTS_OPTS = -O linenos=True $(PYGMENTS_VERB_OPTS)
 PYGMENTS_STYLE = default
 
-include_dirs	:= . include ../include
+include_dirs	:= . .. include ../include
 INCLUDE_CFLAGS	= $(addprefix -I ,$(include_dirs))
 CFLAGS		+= $(INCLUDE_CFLAGS) -g -O2 -Wall
 
