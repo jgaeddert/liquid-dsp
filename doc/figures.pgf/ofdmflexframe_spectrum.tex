@@ -43,7 +43,7 @@
 
     \def\ta{-\trange+\dt}    % beginning of ramp up
     \def\tb{\ta+\dr}    % end of ramp up
-    \def\tc{\tb+3*\dt}
+    \def\tc{\tb+5*\dt}
     \def\td{\tc+\dr}
 
     \def\te{\td+\dt}
@@ -66,15 +66,8 @@
     \def\ctg{\tg + 0.5*\dr}
     \def\cth{\th - 0.5*\dr}
 
-    % draw x-axis 
-    \draw[very thick, black,->] (-\trange-\ds, 0.0 ) -- (\trange+\ds,0)
-        node[anchor=south] {{\it frequency}};
-
-    % draw y-axis
-    \draw[very thick, black,->] ( 0.0, -\ds) -- (0,\height+2*\ds);
-
-    % draw curve
-    \draw[very thick, black]
+    % draw filled curve
+    \filldraw[very thick, black, fill=gray!20]
         (-\trange,  0) --
         (\ta,       0) .. controls (\cta,0) and (\ctb,\height) ..
         (\tb,       \height) --
@@ -86,13 +79,28 @@
         (\th,       0) --
         (\trange,   0);
 
+    % draw x-axis
+    \draw[very thick, black,->] (-\trange-\ds, 0.0 ) -- (\trange+\ds,0)
+        node[anchor=south] {{\it frequency}};
+
+    % draw y-axis
+    \draw[very thick, black,->] ( 0.0, -\ds) -- (0,\height+2*\ds);
+
     % intersection lines
     \draw[thin,gray] (-\trange,  0   )   --  (-\trange,   \height+\ds);
-    \draw[thin,gray] ( \trange,  0   )   --  (\trange,    \height+\ds);
+    \draw[thin,gray] ( \trange,  0   )   --  ( \trange,   \height+\ds);
+    \draw[thin,gray] ( \tc,      \height) -- ( \tc,    \height+1.4*\ds);
+    \draw[thin,gray] ( \tf,      \height) -- ( \tf,    \height+1.4*\ds);
 
     % add text labels
     \draw (-\trange, -\ds) node {$-F_s$};
     \draw ( \trange, -\ds) node {$ F_s$};
+
+    % range lines (arrows):     |<---- spectral null ---->|
+    \draw[thick,black,<->] (\tc, \height+0.7*\ds) -- (\tf, \height+0.7*\ds);
+
+    \draw (\td, \height+1.5*\ds) node[anchor=west] {\footnotesize\em spectral null};
+
 
 \end{tikzpicture}
 
