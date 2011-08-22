@@ -86,15 +86,12 @@ with the transfer function defined as
         \frac{
             \alpha
         }{
-            1 + -(1-\alpha) z^{-1}
+            1 - (1-\alpha) z^{-1}
         }
 \end{equation}
 %
-where $\alpha \triangleq \sqrt{\omega}$
+where $\alpha \triangleq \sqrt{\omega}$.
 %
-%Notice the similarity of $\alpha$ in estimating the gain to $\zeta$ in
-%(\ref{eq:module:agc:ehat}) to estimating the signal energy.
-
 In order to achieve a unity target energy, the instantaneous ideal gain is
 therefore the inverse of the estimated signal level,
 %
@@ -114,9 +111,7 @@ filtered as
 where again $\alpha \triangleq \sqrt{\omega}$ is the smoothing factor of
 the gain estimate and controls the attack and release time the {\tt agc}
 object has on an input signal.
-Notice the similarity the above equation has to
-(\ref{eq:module:agc:ehat});
-because $\alpha$ is typically small, the updated internal gain $g_{k}$
+Because $\alpha$ is typically small, the updated internal gain $g_{k}$
 retains most of its previous gain value $g_{k-1}$ but adds a small
 portion of its new estimate $\hat{g}_{k}$.
 
