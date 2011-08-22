@@ -9,6 +9,7 @@
 #include <getopt.h>
 #include <time.h>
 
+#include "liquid.internal.h"
 #include "liquid.doc.h"
 
 // print usage/help message
@@ -30,43 +31,6 @@ typedef struct {
     float SNRdB;
     float EbN0dB;
 } modset;
-
-// all schemes but 'unknown'
-#define NUM_MODEMS (LIQUID_MODEM_NUM_FULL_SCHEMES-1)
-
-const char * modems[NUM_MODEMS] = {
-    // phase-shift keying
-    "psk2",     "psk4",     "psk8",     "psk16",
-    "psk32",    "psk64",    "psk128",   "psk256",
-
-    // differential phase-shift keying
-    "dpsk2",    "dpsk4",    "dpsk8",    "dpsk16",
-    "dpsk32",   "dpsk64",   "dpsk128",  "dpsk256",
-
-    // amplitude-shift keying
-    "ask2",     "ask4",     "ask8",     "ask16",
-    "ask32",    "ask64",    "ask128",   "ask256",
-
-    // quadrature amplitude-shift keying
-    "qam4",     "qam8",     "qam16",    "qam32",
-    "qam64",    "qam128",   "qam256",
-
-    // amplitude/phase-shift keying
-    "apsk4",    "apsk8",    "apsk16",   "apsk32",
-    "apsk64",   "apsk128",  "apsk256",
-
-    // arbitrary modem (unavailble)
-
-    // specific modem types
-    "bpsk",
-    "qpsk",
-    "ook",
-    "sqam32",
-    "sqam128",
-    "V29",
-    "arb16opt",
-    "arb32opt",
-    "arb64vt"};
 
 int main(int argc, char*argv[])
 {
@@ -179,15 +143,10 @@ int main(int argc, char*argv[])
     fprintf(fid,"#\n");
     fprintf(fid,"# %-12s %4s %4s %12s %12s %12s\n", "modem", "id", "b/s", "rate [b/s]", "SNR [dB]", "Eb/N0 [dB]");
 
-    for (i=0; i<NUM_MODEMS; i++) {
-        // get modulation scheme and depth from string
-        modulation_scheme ms = LIQUID_MODEM_UNKNOWN;
-        unsigned int bps = 0;
-        liquid_getopt_str2modbps(modems[i], &ms, &bps);
-
-        // set up options
-        opts.ms     = ms;
-        opts.bps    = bps;
+    for (i=1; i<LIQUID_MODEM_NUM_FULL_SCHEMES; i++) {
+        // set up options from internal structure in modem_common.c
+        opts.ms     = modulation_types[i].ms;
+        opts.bps    = modulation_types[i].bps;
 
         // estimate SNR for a specific PER
         printf("%u-%s // %s // %s (%s: %e)\n", 1<<opts.bps,
@@ -223,9 +182,9 @@ int main(int argc, char*argv[])
         }
 
         // save to output file
-        fprintf(fid," \"%s\"", modems[i]);
+        fprintf(fid," \"%s\"", modulation_types[i].name);
         unsigned int k;
-        for (k=strlen(modems[i])+1; k<12; k++)
+        for (k=strlen(modulation_types[i].name)+1; k<12; k++)
             fprintf(fid," ");
 
         // save to output file
