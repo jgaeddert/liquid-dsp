@@ -31,8 +31,8 @@ void usage()
     printf("  n     :   min trials, 100000\n");
     printf("  e     :   min errors, 1000\n");
     printf("  f     :   frame bytes, 256\n");
-    printf("  m     :   mod scheme, [psk], dpsk, pam, qam\n");
-    printf("  p     :   bits per symbol, 1\n");
+    printf("  m     :   mod scheme\n");
+    liquid_print_modulation_schemes();
     printf("  c     :   fec coding scheme (inner)\n");
     printf("  k     :   fec coding scheme (outer)\n");
     // print all available FEC schemes
@@ -64,7 +64,7 @@ int main(int argc, char *argv[]) {
 
     // get command-line options
     int dopt;
-    while((dopt = getopt(argc,argv,"uhvqo:s:d:x:b:t:n:e:f:m:p:c:k:SH")) != EOF){
+    while((dopt = getopt(argc,argv,"uhvqo:s:d:x:b:t:n:e:f:m:c:k:SH")) != EOF){
         switch (dopt) {
         case 'u':
         case 'h': usage();      return 0;
@@ -82,13 +82,12 @@ int main(int argc, char *argv[]) {
         case 'e': min_errors = atol(optarg); break;
         case 'f': frame_len = atol(optarg); break;
         case 'm':
-            ms = liquid_getopt_str2mod(optarg);
+            liquid_getopt_str2modbps(optarg, &ms, &bps);
             if (ms == LIQUID_MODEM_UNKNOWN) {
                 printf("error: unknown mod. scheme: %s\n", optarg);
                 exit(-1);
             }
             break;
-        case 'p': bps = atoi(optarg); break;
         case 'c': fec0 = liquid_getopt_str2fec(optarg); break;
         case 'k': fec1 = liquid_getopt_str2fec(optarg); break;
         case 'S': soft_decoding = 1;                    break;
