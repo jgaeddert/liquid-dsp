@@ -71,7 +71,7 @@
         node[anchor=south] {{\it frequency}};
 
     % draw y-axis
-    \draw[very thick, black,->] ( 0.0, -2*\ds) -- (0,\height+4*\ds);
+    \draw[very thick, black,->] ( 0.0, -\ds) -- (0,\height+2*\ds);
 
     % draw curve
     \draw[very thick, black]
@@ -87,8 +87,12 @@
         (\trange,   0);
 
     % intersection lines
-    \draw[thin,gray] (-\trange,  -\ds)   --  (-\trange,   \height+\ds);
-    \draw[thin,gray] (\trange,   -\ds)   --  (\trange,    \height+\ds);
+    \draw[thin,gray] (-\trange,  0   )   --  (-\trange,   \height+\ds);
+    \draw[thin,gray] ( \trange,  0   )   --  (\trange,    \height+\ds);
+
+    % add text labels
+    \draw (-\trange, -\ds) node {$-F_s$};
+    \draw ( \trange, -\ds) node {$ F_s$};
 
 \end{tikzpicture}
 
