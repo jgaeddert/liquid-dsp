@@ -52,13 +52,7 @@ const char* modulation_scheme_str[LIQUID_MODEM_NUM_SCHEMES][2] = {
     {"arb64vt",     "arb64vt (64-qam vt logo)"}
 };
 
-// structure for holding full modulation type descriptor
-struct modulation_type_s {
-    const char * name;
-    modulation_scheme ms;
-    unsigned int bps;
-};
-
+// full modulation type descriptor
 const struct modulation_type_s modulation_types[LIQUID_MODEM_NUM_FULL_SCHEMES] = {
     // unknown
     {"unknown", LIQUID_MODEM_UNKNOWN, 0},
