@@ -25,13 +25,28 @@
 // autotest_gen.py) to produce an executable for automatically testing the
 // various signal processing algorithms in liquid.
 
-
 // default include headers
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <getopt.h>
 #include "autotest/autotest.h"
+
+void usage()
+{
+    // help
+    printf("Usage: xautotest [OPTION]\n");
+    printf("Execute autotest scripts for liquid-dsp library.\n");
+    printf("  -h,-u         display this help and exit\n");
+    printf("  -t[ID]        run specific test\n");
+    printf("  -p[ID]        run specific package\n");
+    printf("  -L            lists all scripts\n");
+    printf("  -l            lists all packages\n");
+    printf("  -x            stop on fail\n");
+    printf("  -s[STRING]    run all tests matching search string\n");
+    printf("  -v            verbose\n");
+    printf("  -q            quiet\n");
+}
 
 // define autotest function pointer
 typedef void(autotest_function_t) (void);
@@ -72,9 +87,6 @@ typedef struct {
 // 
 // helper functions:
 //
-
-// print help/usage and exit
-void print_help();
 
 // execute a specific test
 void execute_autotest(autotest_t * _test, int _verbose);
@@ -118,7 +130,7 @@ int main(int argc, char *argv[])
         switch (d) {
         case 'h':
         case 'u':
-            print_help();
+            usage();
             return 0;
         case 't':
             autotest_id = atoi(optarg);
@@ -168,8 +180,7 @@ int main(int argc, char *argv[])
             liquid_autotest_verbose = 0;
             break;
         default:
-            print_help();
-            return 0;
+            return 1;
         }
     }
 
@@ -219,21 +230,6 @@ int main(int argc, char *argv[])
 
     autotest_print_results();
     return 0;
-}
-
-void print_help()
-{
-    // help
-    printf("autotest options:\n");
-    printf("  -h,-u : prints this help file\n");
-    printf("  -t<n> : run specific test\n");
-    printf("  -p<n> : run specific package\n");
-    printf("  -L    : lists all scripts\n");
-    printf("  -l    : lists all packages\n");
-    printf("  -x    : stop on fail\n");
-    printf("  -s<string>: run all tests matching search string\n");
-    printf("  -v    : verbose\n");
-    printf("  -q    : quiet\n");
 }
 
 // execute a specific autotest
