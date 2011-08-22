@@ -761,21 +761,58 @@ errors between adjacent symbols.
 designating the number of bits per symbol, and the full signal constellation.
 Several pre-loaded arbitrary signal constellations are available.
 %
-%-------------------- FIGURE: ARB MODEM --------------------
+%-------------------- FIGURE: OPTIMAL QAM --------------------
 \begin{figure}
 \centering
 \mbox{
   \subfigure[optimal 16-QAM]
     {
       \includegraphics[trim = 15mm 0mm 15mm 0mm, clip, height=6cm]{figures.gen/modem_arb16opt}
-      \label{fig:modem:arb:16opt}
+      \label{fig:modem:optqam:16opt}
     } \quad
   \subfigure[optimal 32-QAM]
     {
       \includegraphics[trim = 15mm 0mm 15mm 0mm, clip, height=6cm]{figures.gen/modem_arb32opt}
-      \label{fig:modem:arb:32opt}
+      \label{fig:modem:optqam:32opt}
     } \quad
 }
+\mbox{
+  \subfigure[optimal 64-QAM]
+    {
+      \includegraphics[trim = 15mm 0mm 15mm 0mm, clip, height=6cm]{figures.gen/modem_arb64opt}
+      \label{fig:modem:optqam:64opt}
+    } \quad
+  \subfigure[optimal 128-QAM]
+    {
+      \includegraphics[trim = 15mm 0mm 15mm 0mm, clip, height=6cm]{figures.gen/modem_arb128opt}
+      \label{fig:modem:optqam:128opt}
+    } \quad
+}
+  \subfigure[optimal 256-QAM]
+    {
+      \includegraphics[trim = 15mm 0mm 15mm 0mm, clip, height=6cm]{figures.gen/modem_arb256opt}
+      \label{fig:modem:optqam:256opt}
+    } \quad
+% trim = left bottom right top
+\caption{Optimal $M$-QAM constellation maps.}
+\label{fig:modem:optqam}
+\end{figure}
+%
+Figure~\ref{fig:modem:optqam} shows the constellation maps for the
+optimal QAM schemes.
+Notice that the constellations approximate a circle with each point
+falling on the lattice of equalateral triangles.
+Furthermore, adjacent constellation points differ by typically only a
+single bit to reduce the resulting bit error rate at the output of the
+demodulator.
+These constellation marginally out-perform regular square QAM
+(see Table~\ref{tab:modem:performance}) at the expense of a significaly
+increased computational complexity.
+
+%
+%-------------------- FIGURE: ARB MODEM --------------------
+\begin{figure}
+\centering
 \mbox{
   \subfigure[``square'' 32-QAM]
     {
