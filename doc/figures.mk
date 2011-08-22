@@ -137,6 +137,7 @@ local_pdffiles :=					\
 	figures.gen/modem_ber_ebn0_apsk.pdf		\
 	figures.gen/modem_ber_ebn0_ask.pdf		\
 	figures.gen/modem_ber_ebn0_qam.pdf		\
+	figures.gen/modem_ber_ebn0_optqam.pdf		\
 	figures.gen/modem_ber_ebn0_arb.pdf		\
 							\
 	figures.gen/modem_ber_ebn0_M8.pdf		\
@@ -672,6 +673,7 @@ modem_ber_gnufiles :=				\
 	figures.gen/modem_ber_ebn0_apsk.gnu	\
 	figures.gen/modem_ber_ebn0_ask.gnu	\
 	figures.gen/modem_ber_ebn0_qam.gnu	\
+	figures.gen/modem_ber_ebn0_optqam.gnu	\
 	figures.gen/modem_ber_ebn0_arb.gnu	\
 	figures.gen/modem_ber_ebn0_M8.gnu	\
 	figures.gen/modem_ber_ebn0_M16.gnu	\
