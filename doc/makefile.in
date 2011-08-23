@@ -102,6 +102,7 @@ LISTINGS_C = 					\
 	listings/nco.c				\
 	listings/nco.example.c			\
 	listings/nco_pll.example.c		\
+	listings/ofdmflexframegen.example.c	\
 	listings/pack_array.example.c		\
 	listings/packetizer.example.c		\
 	listings/quasinewton_search.example.c	\

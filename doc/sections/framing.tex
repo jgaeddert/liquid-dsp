@@ -738,6 +738,7 @@ user-defined header which can be used for source/destination
 address, packet identifier, etc.
 
 \subsubsection{Operational description}
+\label{module:framing:ofdmflexframe:operation}
 Like the {\tt frame64} and {\tt flexframe} structures,
 the {\tt ofdmflexframe} structure consists of three main components:
 the preamble, the header, and the payload.
@@ -768,8 +769,6 @@ the preamble, the header, and the payload.
     the exact number of OFDM symbols depends on the number of
     subcarriers allocated and the assignment of these subcarriers.
 
-The full packet is assembled according to
-Figure~\ref{fig:module:framing:ofdmflexframe_structure}.
 % 
 % FIGURE: ofdmflexframe structure
 %
@@ -782,7 +781,9 @@ Figure~\ref{fig:module:framing:ofdmflexframe_structure}.
     The cyclic prefix is highlighted.}
 \label{fig:module:framing:ofdmflexframe_structure}
 \end{figure}
-
+%
+The full packet is assembled according to
+Figure~\ref{fig:module:framing:ofdmflexframe_structure}.
 % 
 % FIGURE: ofdmflexframe spectrum
 %
@@ -795,4 +796,105 @@ Figure~\ref{fig:module:framing:ofdmflexframe_structure}.
     {\tt ofdmflexframesync} objects.}
 \label{fig:module:framing:ofdmflexframe_spectrum}
 \end{figure}
+%
+Figure~\ref{fig:module:framing:ofdmflexframe_spectrum} depicts the
+spectral response of the {\tt ofdmflexframe} structure.
+%Pilot subcarriers may be ...
+
+\subsubsection{{\tt ofdmflexframegen}}
+\label{module:framing:ofdmflexframe:gen}
+%
+The {\tt ofdmflexframegen} is responsible for assembling raw data bytes
+into continguous OFDM time-domain symbols which the
+{\tt ofdmflexframesync} object can receive.
+The life cycle of the generator is as follows:
+%
+\begin{enumerate}
+\item create the frame generator, passing the number of subcarriers,
+      cyclic prefix length, subcarrier allocation, and framing
+      properties (modulation scheme, forward error-correction
+      coding, payload length, etc);
+\item assemble a frame consisting of raw header and payload bytes;
+\item write the OFDM symbols (time series) to a buffer until the entire
+      frame has been generated;
+\item repeat the ``assemble'' and ``write symbol'' steps for as many
+      frames as is desired;
+\item destroy the frame generator object.
+\end{enumerate}
+%
+The subcarrier allocation vector consists of three possible values:
+% FIXME: finish description
+\begin{itemize}
+\item[{\em null}] ...
+    ({\tt OFDMFRAME\_SCTYPE\_NULL})
+\item[{\em pilot}]...
+    ({\tt OFDMFRAME\_SCTYPE\_PILOT})
+\item[{\em data}]...
+    ({\tt OFDMFRAME\_SCTYPE\_DATA})
+\end{itemize}
+%
+Listed below is the full interface to the {\tt ofdmflexframegen}
+object.
+%
+% FIXME: complete description
+%
+\begin{description}
+%
+\item[{\tt ofdmflexframegen\_create(M,c,*p,*fgprops)}]
+    creates and returns an {\tt ofdmflexframegen} object
+    with $M$ subcarriers,
+    a cyclic prefix length of $c$ samples,
+    a subcarrier allocation determined by $\vec{p}$,
+    and a set of properties determined by {\tt fgprops}.
+%
+\item[{\tt ofdmflexframegen\_destroy(q)}]
+    destroys an {\tt ofdmflexframegen} object, freeing all
+    internally-allocated memory.
+%
+\item[{\tt ofdmflexframegen\_reset(q)}]
+    resets the {\tt ofdmflexframegen} object, including all internal
+    buffers.
+%
+\item[{\tt ofdmflexframegen\_print(q)}]
+    prints the internal state of the {\tt ofdmflexframegen} object.
+%
+\item[{\tt ofdmflexframegen\_is\_assembled(q)}]
+    returns a flag indicating if the frame has been assembled yet
+    ({\tt 1} if yes, {\tt 0} if no).
+%
+\item[{\tt ofdmflexframegen\_setprops(q,props)}]
+    sets the configurable properties of the frame generator, including
+    the number of \Ss\ symbols,
+    the length of the payload (in bytes),
+    the error-detection scheme (e.g. {\tt LIQUID\_CRC\_24}),
+    the error-correction scheme(s) (e.g. {\tt LIQUID\_FEC\_HAMMING128}),
+    and the modulation scheme/depth (e.g. {\tt LIQUID\_MODEM\_QPSK}).
+%
+\item[{\tt ofdmflexframegen\_getframelen(q)}]
+    returns the number of OFDM symbols (not samples) in the frame,
+    including the preamble, header, and payload.
+%
+\item[{\tt ofdmflexframegen\_assemble(q,*header,*payload)}]
+    assembles the OFDM frame, internal to the {\tt ofdmflexframegen}
+    object.
+    Unlike the {\tt flexframegen} object, samples are not written to a
+    buffer at this point, but are generated with the
+    {\tt writesymbol()} method, below.
+%
+\item[{\tt ofdmflexframegen\_writesymbol(q,*buffer,*num\_written)}]
+    writes OFDM symbols (time series) to the buffer, specifies the
+    number of samples that have been written, and returns a flag
+    indicating if this symbol is the last in the frame.
+    All symbols are $M+c$ samples long except the \Ss\ symbols which are
+    just $M$ samples long.
+    Therefore the buffer only needs to hold at most $M+c$ samples.
+%
+\end{description}
+%
+This listing gives a basic demonstration to the interface to the
+{\tt ofdmflexframegen} object:
+%
+\input{listings/ofdmflexframegen.example.c.tex}
+%
+
 
