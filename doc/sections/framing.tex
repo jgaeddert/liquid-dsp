@@ -825,14 +825,38 @@ The life cycle of the generator is as follows:
 The subcarrier allocation vector consists of three possible values:
 % FIXME: finish description
 \begin{itemize}
-\item[{\em null}] ...
-    ({\tt OFDMFRAME\_SCTYPE\_NULL})
-\item[{\em pilot}]...
-    ({\tt OFDMFRAME\_SCTYPE\_PILOT})
-\item[{\em data}]...
-    ({\tt OFDMFRAME\_SCTYPE\_DATA})
+\item {\tt OFDMFRAME\_SCTYPE\_NULL}:
+      The {\em null} option disables this subcarrier from transmission.
+      This is useful for
+      spectral notching and
+      guard bands
+      (see Figure~\ref{fig:module:framing:ofdmflexframe_spectrum}).
+      Guard bands are necessary for interpolation of the signal before
+      transmission.
+\item {\tt OFDMFRAME\_SCTYPE\_PILOT}:
+      Pilot subcarriers are used to estimate channel impairments
+      including carrier phase/frequency offsets as well as timing
+      offsets.
+      Pilot subcarriers are necessary for coherent demodulation in OFDM
+      systems.
+      The {\tt ofdmflexframe} structure requires that at least two
+      subcarriers be designated as pilots.
+      Performance improves if the pilots are evenly spaced and separated
+      as much as possible
+      (see Figure~\ref{fig:module:framing:ofdmflexframe_spectrum}).
+\item {\tt OFDMFRAME\_SCTYPE\_DATA}:
+      Data subcarriers are reserved for carrying the payload of the
+      frame, modulated with the desired scheme.
+      The spectral efficiency of the transmission improves with more
+      data subcarriers.
 \end{itemize}
 %
+The {\tt ofdmflexframegenprops\_init\_default(M,*p)} interface initializes
+the subcarrier allocation for a system with $M$ channels
+that is expected to perform relatively well under a variety of channel
+conditions.
+
+
 Listed below is the full interface to the {\tt ofdmflexframegen}
 object.
 %
@@ -842,7 +866,7 @@ object.
 %
 \item[{\tt ofdmflexframegen\_create(M,c,*p,*fgprops)}]
     creates and returns an {\tt ofdmflexframegen} object
-    with $M$ subcarriers,
+    with $M$ subcarriers ($M$ must be an even integer),
     a cyclic prefix length of $c$ samples,
     a subcarrier allocation determined by $\vec{p}$,
     and a set of properties determined by {\tt fgprops}.
