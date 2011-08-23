@@ -34,22 +34,22 @@
 \begin{document}
 
 \begin{tikzpicture}[scale=6,>=latex];
-    \def\dt{0.2}        % default time step between sections
-    \def\dr{0.06}       % default time step between ramping transitions
+    \def\dt{0.1}        % default time step between sections
+    \def\dr{0.03}       % default time step between ramping transitions
     \def\ds{0.05}       % default signal level vertical line extensions
     \def\height{0.6}    % peak height of signal
 
-    \def\trange{2}      % span
+    \def\trange{16*\dt}
 
-    \def\ta{-\trange+\dt}    % beginning of ramp up
+    \def\ta{-14*\dt}    % beginning of ramp up
     \def\tb{\ta+\dr}    % end of ramp up
-    \def\tc{\tb+5*\dt}
-    \def\td{\tc+\dr}
+    \def\tc{-8*\dt-\dr} % beginning of ramp down
+    \def\td{\tc+\dr}    % end of ramp down
 
-    \def\te{\td+\dt}
-    \def\tf{\te+\dr}
-    \def\tg{\trange-\dt-\dr}
-    \def\th{\tg+\dr}
+    \def\te{-4*\dt}     % beginning of ramp up
+    \def\tf{\te+\dr}    % end of ramp up
+    \def\tg{14*\dt-\dr} % beginning of ramp down
+    \def\th{\tg+\dr}    % end of ramp down
 
     %\draw[step=2.5mm,help lines] (0,0) grid (3,1);
 
@@ -89,18 +89,40 @@
     % intersection lines
     \draw[thin,gray] (-\trange,  0   )   --  (-\trange,   \height+\ds);
     \draw[thin,gray] ( \trange,  0   )   --  ( \trange,   \height+\ds);
-    \draw[thin,gray] ( \tc,      \height) -- ( \tc,    \height+1.4*\ds);
-    \draw[thin,gray] ( \tf,      \height) -- ( \tf,    \height+1.4*\ds);
 
-    % add text labels
+    % add axis labels
     \draw (-\trange, -\ds) node {$-F_s$};
+    \draw (       0, -\ds) node[anchor=west] {$0$};
     \draw ( \trange, -\ds) node {$ F_s$};
 
-    % range lines (arrows):     |<---- spectral null ---->|
+    % draw pilots
+    \draw[black,->] ( -13*\dt, -0) -- (-13*\dt,\height+0.7*\ds);
+    \draw[black,->] ( -11*\dt, -0) -- (-11*\dt,\height+0.7*\ds);
+    \draw[black,->] (  -9*\dt, -0) -- ( -9*\dt,\height+0.7*\ds);
+
+    \draw[black,->] (  -3*\dt, -0) -- ( -3*\dt,\height+0.7*\ds);
+    \draw[black,->] (  -1*\dt, -0) -- ( -1*\dt,\height+0.7*\ds);
+    \draw[black,->] (   1*\dt, -0) -- (  1*\dt,\height+0.7*\ds);
+    \draw[black,->] (   3*\dt, -0) -- (  3*\dt,\height+0.7*\ds);
+    \draw[black,->] (   5*\dt, -0) -- (  5*\dt,\height+0.7*\ds);
+    \draw[black,->] (   7*\dt, -0) -- (  7*\dt,\height+0.7*\ds);
+    \draw[black,->] (   9*\dt, -0) -- (  9*\dt,\height+0.7*\ds);
+    \draw[black,->] (  11*\dt, -0) -- ( 11*\dt,\height+0.7*\ds);
+    \draw[black,->] (  13*\dt, -0) -- ( 13*\dt,\height+0.7*\ds);
+
+    \draw[thin,gray] (5*\dt, \height+0.7*\ds) -- ( 8*\dt, \height+1.5*\ds);
+    \draw (8*\dt, \height+1.5*\ds) node[anchor=west] {\footnotesize\em pilot subcarrier};
+
+    % |<---- spectral null ---->|
+    \draw[thin,gray] ( \tc,      \height) -- ( \tc,    \height+1.4*\ds);
+    \draw[thin,gray] ( \tf,      \height) -- ( \tf,    \height+1.4*\ds);
     \draw[thick,black,<->] (\tc, \height+0.7*\ds) -- (\tf, \height+0.7*\ds);
+    \draw (\tc, \height+1.5*\ds) node[anchor=west] {\footnotesize\em spectral null};
 
-    \draw (\td, \height+1.5*\ds) node[anchor=west] {\footnotesize\em spectral null};
-
+    % |<---- spectral null ---->|
+    \draw[thin,gray] ( \tb,      \height) -- ( \tb,    \height+1.4*\ds);
+    \draw[thick,black,<->] (-\trange, \height+0.7*\ds) -- (\tb, \height+0.7*\ds);
+    \draw (-\trange, \height+1.5*\ds) node[anchor=west] {\footnotesize\em guard band};
 
 \end{tikzpicture}
 
