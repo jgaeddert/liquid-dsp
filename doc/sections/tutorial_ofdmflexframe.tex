@@ -136,13 +136,90 @@ a payload of 120 bytes (but otherwise default properties) as
     ofdmflexframegenprops_init_default(&fgprops);   // initialize to default
     fgprops.payload_len = 120;                      // set payload length
 
-    // create frame generator
+    // create frame generator and print
     ofdmflexframegen fg = ofdmflexframegen_create(64, 16, NULL, &fgprops);
+    ofdmflexframegen_print(fg);
 \end{Verbatim}
 %
 As with all structures in \liquid\ you will need to invoke the
 corresponding {\tt destroy()} method when you are finished with the
 object.
+
+Now allocate memory for the header (8 bytes) and payload (120 bytes)
+data arrays.
+Raw ``message'' data are stored as arrays of type {\tt unsigned char} in
+\liquid.
+%
+\begin{Verbatim}[fontsize=\small]
+    unsigned char header[12];
+    unsigned char payload[120];
+\end{Verbatim}
+%
+Initialize the header and payload arrays with whatever values you wish.
+%
+Finally you will need to create a buffer for storing the frame samples.
+Unlike the {\tt framegen64} object in the previous tutorial which
+generates the entire frame at once,
+the {\tt ofdmflexframegen} object generates each symbol independently.
+%This reduces the amount of memory required and...
+For this framing structure you will need to allocate $M+c$ samples of
+type {\tt float complex} (for this example $M+c = 64+16 = 80$), viz.
+%
+\begin{Verbatim}[fontsize=\small]
+    float complex buffer[80];
+\end{Verbatim}
+
+Generating the frame consists of two steps: assemble and write.
+The {\tt ofdmflexframegen\_assemble(fg,header,payload)} method accepts
+the frame generator object as well as the header and payload arrays we
+initialized earlier.
+Internally, the object encodes and modulates the frame, but does not
+write the OFDM symbols yet.
+To write the OFDM time-series symbols, invoke the
+{\tt ofdmflexframegen\_writesymbol(fg,buffer,*num\_written)} method.
+This method accepts three arguments:
+  the frame generator object,
+  the output buffer we created earlier,
+  and the pointer to an integer to indicate the number of samples that
+  have been written to the buffer.
+The last argument is necessary because not all of the symbols in the
+frame are the same size (the first several symbols in the preamble do
+not have a cycic prefix).
+Invoking the {\tt ofdmflexframegen\_writesymbol()} method repeatedly
+generates each symbol of the frame
+and returns a flag indicating if the last symbol in the frame has been
+written.
+
+Add the instructions to assemble and write a frame one symbol at a time
+to your source code:
+%
+\begin{Verbatim}[fontsize=\small]
+    // assemble the frame
+    ofdmflexframegen_assemble(fg, header, payload);
+
+    // generate the frame one OFDM symbol at a time
+    int last_symbol=0;          // flag indicating if this is the last symbol
+    unsigned int num_written;   // number of samples written to the buffer
+    while (!last_symbol) {
+        // write samples to the buffer
+        last_symbol = ofdmflexframegen_writesymbol(fg, buffer, &num_written);
+    }
+\end{Verbatim}
+%
+That's it!
+This completely assembles the frame complete with error-correction
+coding, pilot subcarriers, and the preamble necessary for
+synchronization.
+You may generate another frame simply by
+  initializing the data in your {\tt header} and {\tt payload} arrays,
+  assembling the frame,
+  and then writing the symbols to the buffer.
+Keep in mind, however, that the buffer is overwritten each time you
+invoke {\tt ofdmflexframegen\_writesymbol()},
+so you will need to do something with the data with each iteration of
+the loop.
+%
+Your program should now look similar to this:
 %
 \input{tutorials/ofdmflexframe_basic_tutorial.c.tex}
 %
