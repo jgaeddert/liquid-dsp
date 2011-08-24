@@ -15,7 +15,7 @@ int main() {
     unsigned char payload[64];      // data payload
     float complex y[1280];          // frame samples
 
-    // create frame generator
+    // CREATE frame generator
     framegen64 fg = framegen64_create(m,beta);
     framegen64_print(fg);
 

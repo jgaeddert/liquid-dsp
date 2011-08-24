@@ -126,6 +126,7 @@ LISTINGS_C = 					\
 	tutorials/framing_tutorial.c		\
 						\
 	tutorials/ofdmflexframe_init_tutorial.c	\
+	tutorials/ofdmflexframe_basic_tutorial.c	\
 	tutorials/ofdmflexframe_tutorial.c	\
 
 # Listings used in this document
@@ -331,6 +332,7 @@ tutorial_progs :=					\
 	tutorials/framing_tutorial			\
 							\
 	tutorials/ofdmflexframe_init_tutorial		\
+	tutorials/ofdmflexframe_basic_tutorial		\
 	tutorials/ofdmflexframe_tutorial		\
 
 $(tutorial_progs) : % : %.c $(lib_objects) libliquid.a

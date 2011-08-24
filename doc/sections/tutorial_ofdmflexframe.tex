@@ -3,7 +3,7 @@
 %
 
 \newpage
-\section{Tutorial: OFDM}
+\section{Tutorial: OFDM Framing}
 \label{tutorial:ofdmflexframe}
 
 In the previous tutorials we have created only the basic building blocks
@@ -18,6 +18,10 @@ This tutorial extends...
 %
 \subsection{Problem Statement}
 \label{tutorial:ofdmflexframe:problem}
+% talking points:
+%   * what is OFDM (briefly)
+%   * the benefits of OFDM (briefly)
+%   * current standards using OFDM
 
 
 
@@ -69,16 +73,119 @@ You are now ready to add functionality to your program.
 
 
 %
+% SUBSECTION : framing structure
+%
+\subsection{OFDM Framing Structure}
+\label{tutorial:ofdmflexframe:structure}
+%
+The OFDM framing stucture is described briefly here
+(for a more detailed description, see
+Section~\ref{module:framing:ofdmflexframe}).
+The {\tt ofdmflexframe} generator and synchronizer objects
+together realize a simple framing structure
+for loading data onto a reconfigurable OFDM physical layer.
+The generator encapsulates a xxx-byte user-defined header
+and a variable-length buffer of uncoded payload data
+and fully encodes a frame of OFDM symbols ready for transmission.
+The user may define many physical-layer parameters of the transmission,
+including
+  the number of subcarriers and their allocation (null/pilot/data),
+  cyclic prefix length,
+  forward error-correction coding,
+  modulation scheme,
+  and others.
+The synchronizer...
+
+%
 % SUBSECTION : frame generator
 %
 \subsection{Creating the Frame Generator}
 \label{tutorial:ofdmflexframe:framegen}
+%
+The {\tt ofdmflexframegen} object can be generated with the
+{\tt ofdmflexframegen\_create(M,c,p,props)} method which accepts four arguments:
+%
+\begin{itemize}
+\item[$M$] is an {\tt unsigned int} representing the total number of
+    subcarriers
+\item[$c$] is an {\tt unsigned int} representing the length of the
+    cyclic prefix
+\item[$\vec{p}$] is an $M$-element array of {\tt unsigned char} which
+    gives the subcarrier allocation (e.g. which subcarriers
+    are nulled/disabled, which are pilots, and which carry data).
+    Setting to {\tt NULL} tells the {\tt ofdmflexframegen} object to use
+    the default subcarrier allocation
+\item[{\tt props}] is a special structure called
+    {\tt ofdmflexframegenprops\_s}
+    which gives some basic properties including
+    the length of the payload ({\tt payload\_len}),
+    the forward error-correction scheme(s) to use ({\tt fec0},
+    {\tt fec1}),
+    and the modulation scheme ({\tt mod\_scheme}) and depth
+    ({\tt mod\_depth}).
+    The properties object can be initialized to its default by using
+    {\tt ofdmflexframegenprops\_init\_default()}.
+\end{itemize}
+%
+To begin, create a frame generator having 64 subcarriers with cyclic
+prefix of 16 samples, the default subcarrier allocation, and
+a payload of 120 bytes (but otherwise default properties) as
+%
+\begin{Verbatim}[fontsize=\small]
+    ofdmflexframegenprops_s fgprops;                // create properties object
+    ofdmflexframegenprops_init_default(&fgprops);   // initialize to default
+    fgprops.payload_len = 120;                      // set payload length
+
+    // create frame generator
+    ofdmflexframegen fg = ofdmflexframegen_create(64, 16, NULL, &fgprops);
+\end{Verbatim}
+%
+As with all structures in \liquid\ you will need to invoke the
+corresponding {\tt destroy()} method when you are finished with the
+object.
+%
+\input{tutorials/ofdmflexframe_basic_tutorial.c.tex}
+%
+Running the program should produce an output similar to this:
+%
+\begin{Verbatim}[fontsize=\small]
+ofdmflexframegen:
+    num subcarriers     :   64
+      * NULL            :   12
+      * pilot           :   6
+      * data            :   46
+    cyclic prefix len   :   16
+    properties:
+      * mod scheme      :   quaternary phase-shift keying (2 b/s)
+      * fec (inner)     :   none
+      * fec (outer)     :   none
+      * CRC scheme      :   CRC (16-bit)
+    payload:
+      * decoded bytes   :   120
+      * encoded bytes   :   122
+      * modulated syms  :   488
+    total OFDM symbols  :   18
+      * S0 symbols      :   3 @ 64
+      * S1 symbols      :   1 @ 80
+      * header symbols  :   3 @ 80
+      * payload symbols :   11 @ 80
+    spectral efficiency :   0.6897 b/s/Hz
+done.
+\end{Verbatim}
+%
+Notice that the {\tt ofdmflexframegen\_print()} method gives a lot of
+information, including
+the number of null, pilot, and data subcarriers,
+the number of modulated symbols,
+the number of OFDM symbols,
+and the resulting spectral efficiency.
 
 %
 % SUBSECTION : frame synchronizer
 %
 \subsection{Creating the Frame Synchronizer}
 \label{tutorial:ofdmflexframe:framesync}
+The OFDM frame synchronizer...
 
 %
 % SUBSECTION : 
@@ -94,4 +201,34 @@ You are now ready to add functionality to your program.
 
 %
 \input{tutorials/ofdmflexframe_tutorial.c.tex}
+%
+Running the program should produce an output similar to this:
+%
+\begin{Verbatim}[fontsize=\small]
+ofdmflexframegen:
+    num subcarriers     :   64
+      * NULL            :   12
+      * pilot           :   6
+      * data            :   46
+    cyclic prefix len   :   16
+    properties:
+      * mod scheme      :   quaternary phase-shift keying (2 b/s)
+      * fec (inner)     :   none
+      * fec (outer)     :   Hamming(12,8)
+      * CRC scheme      :   CRC (32-bit)
+    payload:
+      * decoded bytes   :   120
+      * encoded bytes   :   186
+      * modulated syms  :   744
+    total OFDM symbols  :   24
+      * S0 symbols      :   3 @ 64
+      * S1 symbols      :   1 @ 80
+      * header symbols  :   3 @ 80
+      * payload symbols :   17 @ 80
+    spectral efficiency :   0.5128 b/s/Hz
+***** callback invoked!
+  header (valid)
+  payload (valid)
+done.
+\end{Verbatim}
 %
