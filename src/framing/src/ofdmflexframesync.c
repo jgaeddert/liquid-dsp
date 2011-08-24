@@ -86,6 +86,7 @@ struct ofdmflexframesync_s {
     ofdmflexframesync_callback callback;// user-defined callback function
     void * userdata;                    // user-defined data structure
     framesyncstats_s framestats;        // frame statistic object
+    float evm_hat;                      // average error vector magnitude
 
     // internal synchronizer objects
     ofdmframesync fs;                   // internal OFDM frame synchronizer
@@ -214,6 +215,9 @@ void ofdmflexframesync_reset(ofdmflexframesync _q)
     _q->header_symbol_index=0;
     _q->payload_symbol_index=0;
     _q->payload_buffer_index=0;
+    
+    // reset error vector magnitude estimate
+    _q->evm_hat = 1e-12f;   // slight offset to ensure no log(0)
 
     // reset internal OFDM frame synchronizer object
     ofdmframesync_reset(_q->fs);
@@ -300,10 +304,17 @@ void ofdmflexframesync_rxheader(ofdmflexframesync _q,
             _q->header_symbol_index++;
             //printf("  extracting symbol %3u / %3u (x = %8.5f + j%8.5f)\n", _q->header_symbol_index, OFDMFLEXFRAME_H_SYM, crealf(_X[i]), cimagf(_X[i]));
 
+            // get demodulator error vector magnitude
+            float evm = modem_get_demodulator_evm(_q->mod_header);
+            _q->evm_hat += evm*evm;
+
             // header extracted
             if (_q->header_symbol_index == OFDMFLEXFRAME_H_SYM) {
                 // decode header
                 ofdmflexframesync_decode_header(_q);
+            
+                // compute error vector magnitude estimate
+                _q->framestats.evm = 10*log10f( sqrtf(_q->evm_hat/OFDMFLEXFRAME_H_SYM) );
 
                 // TODO : invoke callback if header is invalid
                 if (_q->header_valid)
@@ -311,7 +322,6 @@ void ofdmflexframesync_rxheader(ofdmflexframesync _q,
                 else {
                     //printf("**** header invalid!\n");
                     // set framestats internals
-                    _q->framestats.evm              = 0.0f;
                     _q->framestats.rssi             = ofdmframesync_get_rssi(_q->fs);
                     _q->framestats.framesyms        = NULL;
                     _q->framestats.num_framesyms    = 0;
@@ -535,7 +545,6 @@ void ofdmflexframesync_rxpayload(ofdmflexframesync _q,
                 }
 
                 // set framestats internals
-                _q->framestats.evm              = 0.0f;
                 _q->framestats.rssi             = ofdmframesync_get_rssi(_q->fs);
                 _q->framestats.framesyms        = NULL;
                 _q->framestats.num_framesyms    = 0;
