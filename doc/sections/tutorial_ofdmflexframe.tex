@@ -262,13 +262,155 @@ and the resulting spectral efficiency.
 %
 \subsection{Creating the Frame Synchronizer}
 \label{tutorial:ofdmflexframe:framesync}
-The OFDM frame synchronizer...
+The OFDM frame synchronizer's purpose is to detect the presence of a
+frame, correct for channel impairments (such as a carrier frequency
+offset), decode the data, and pass it back to the user.
+In our program we will pass to the frame synchronizer samples in the
+buffer created by the generator.
+
+The {\tt ofdmflexframesync} object can be generated with the
+{\tt ofdmflexframesync\_create(M,c,p,callback,userdata)} method which
+accepts five arguments:
+%
+\begin{itemize}
+\item $M$ is an {\tt unsigned int} representing the total number of
+    subcarriers
+\item $c$ is an {\tt unsigned int} representing the length of the
+    cyclic prefix
+\item $\vec{p}$ is an $M$-element array of {\tt unsigned char} which
+    gives the subcarrier allocation
+    (see Section~\ref{tutorial:ofdmflexframe:framegen})
+\item {\tt callback}
+    is a pointer to your callback function which will be invoked each
+    time a frame is found and decoded.
+\item {\tt userdata}
+    is a {\tt void} pointer that is passed to the callback function each
+    time it is invoked.
+    This allows you to easily pass data from the callback function.
+    Set to {\tt NULL} if you don't wish to use this.
+\end{itemize}
+%
+When the synchronizer finds a frame, it attempts to decode the header
+and payload and invoke a user-defined callback function.
+For a basic description of how callback functions work, refer to the
+basic framing tutorial in Section~\ref{tutorial:framing:framesync}.
+The callback function for the {\tt ofdmflexframesync} object has seven
+arguments and looks like this:
+%
+\begin{Verbatim}[fontsize=\small]
+    int ofdmflexframesync_callback(unsigned char *  _header,
+                                   int              _header_valid,
+                                   unsigned char *  _payload,
+                                   unsigned int     _payload_len,
+                                   int              _payload_valid,
+                                   framesyncstats_s _stats,
+                                   void *           _userdata);
+\end{Verbatim}
+%
+The callback is typically defined to be {\tt static} and is passed to
+the instance of {\tt ofdmflexframesync} object when it is created.
+%
+\begin{description}
+\item[{\tt \_header}]
+    is a pointer to the 8 bytes of decoded header data.
+    This pointer is not static and cannot be used after returning from
+    the callback function.
+    This means that it needs to be copied locally for you to retain the
+    data.
+\item[{\tt \_header\_valid}]
+    is simply a flag to indicate if the header passed its cyclic
+    redundancy check
+    (``{\tt 0}'' means invalid, ``{\tt 1}'' means valid).
+    If the check fails then the header data most likely has been
+    corrupted beyond the point that the internal error-correction code
+    can recover; proceed with caution!
+\item[{\tt \_payload}]
+    is a pointer to the decoded payload data.
+    Like the header,
+    this pointer is not static and cannot be used after returning from
+    the callback function.
+    Again, this means that it needs to be copied locally for you to retain the
+    data.
+\item[{\tt \_payload\_len}]
+    is the length (number of bytes) of the payload arra.
+\item[{\tt \_payload\_valid}]
+    is simply a flag to indicate if the payload passed its cyclic
+    redundancy check
+    (``{\tt 0}'' means invalid, ``{\tt 1}'' means valid).
+    As with the header,
+    if this flag is zero then the payload most likely has errors in it.
+\item[{\tt \_stats}]
+    is a synchronizer statistics construct that indicates some useful
+    PHY information to the user.
+    We will ignore this information in our program, but it can be quite
+    useful for certain applications.
+    For more information on the {\tt framesyncstats\_s} structure, see
+    Section~\ref{module:framing:framesyncstats_s}.
+\item[{\tt \_userdata}]
+    is a {\tt void} pointer given to the
+    {\tt ofdmflexframesync\_create()} method
+    that is passed to this callback function and can represent just
+    about anything.
+\end{description}
+%
+This can seem a bit overwhelming at first, but relax!
+The next version of our program will only add about 20 lines of code.
 
 %
 % SUBSECTION : 
 %
 \subsection{Putting it All Together}
 \label{tutorial:ofdmflexframe:xxx}
+First create your callback function at the beginning of the file, just
+before the {\tt int main()} definition;
+you may give it whatever name you like (e.g. {\tt mycallback()}).
+For now ignore all the function inputs and just print a message to the
+screen that indicates that the callback has been invoked,
+and return the integer zero ({\tt 0}).
+This return value for the callback function should always be zero
+and is reserved for future development.
+Within your {\tt main()} definition, create an instance of
+{\tt ofdmflexframesync} using the {\tt ofdmflexframesync\_create()}
+method, passing it
+  64 for the number of subcarriers,
+  16 for the cyclic prefix length,
+  {\tt NULL} for the subcarrier allocation (default),
+  {\tt mycallback}, and
+  {\tt NULL} for the userdata.
+Print the newly created synchronizer object to the screen if you like:
+%
+\begin{Verbatim}[fontsize=\small]
+    ofdmflexframesync fs = 
+        ofdmflexframesync_create(64, 16, NULL, mycallback, NULL);
+    ofdmflexframesync_print(fs);
+\end{Verbatim}
+%
+Within the {\tt while} loop that writes the frame symbols to the buffer,
+invoke the synchronizer's {\tt execute()} method,
+passing to it the frame synchronizer object you just created ({\tt fs}),
+the buffer of frame symbols,
+and the number of samples written to the buffer ({\tt num\_written}):
+%
+\begin{Verbatim}[fontsize=\small]
+    ofdmflexframesync_execute(fs, buffer, num_written);
+\end{Verbatim}
+%
+Finally, destroy the frame synchronizer object along with the frame
+generator at the end of the file.
+That's it!
+Your program should look something like this:
+%
+\input{tutorials/ofdmflexframe_intermediate_tutorial.c.tex}
+%
+Compile and run your program as before and verify that your callback
+function was indeed invoked.
+Your output should look something like this:
+%
+\begin{Verbatim}[fontsize=\small]
+      ...
+done.
+\end{Verbatim}
+%
 
 %
 % SUBSECTION : 
@@ -276,36 +418,3 @@ The OFDM frame synchronizer...
 \subsection{Final Program}
 \label{tutorial:ofdmflexframe:completed}
 
-%
-\input{tutorials/ofdmflexframe_tutorial.c.tex}
-%
-Running the program should produce an output similar to this:
-%
-\begin{Verbatim}[fontsize=\small]
-ofdmflexframegen:
-    num subcarriers     :   64
-      * NULL            :   12
-      * pilot           :   6
-      * data            :   46
-    cyclic prefix len   :   16
-    properties:
-      * mod scheme      :   quaternary phase-shift keying (2 b/s)
-      * fec (inner)     :   none
-      * fec (outer)     :   Hamming(12,8)
-      * CRC scheme      :   CRC (32-bit)
-    payload:
-      * decoded bytes   :   120
-      * encoded bytes   :   186
-      * modulated syms  :   744
-    total OFDM symbols  :   24
-      * S0 symbols      :   3 @ 64
-      * S1 symbols      :   1 @ 80
-      * header symbols  :   3 @ 80
-      * payload symbols :   17 @ 80
-    spectral efficiency :   0.5128 b/s/Hz
-***** callback invoked!
-  header (valid)
-  payload (valid)
-done.
-\end{Verbatim}
-%

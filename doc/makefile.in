@@ -61,73 +61,74 @@ INCLUDE_CFLAGS	= $(addprefix -I ,$(include_dirs))
 CFLAGS		+= $(INCLUDE_CFLAGS) -g -O2 -Wall
 
 # Graphics (nothing to build)
-GRAPHICS = 					\
-	graphics/liquid_splatter_00.png		\
-	graphics/liquid_splatter_01.png		\
-	graphics/liquid_splatter_02.png		\
-	graphics/liquid_splatter_03.png		\
-	graphics/liquid_splatter_04.png		\
+GRAPHICS = 						\
+	graphics/liquid_splatter_00.png			\
+	graphics/liquid_splatter_01.png			\
+	graphics/liquid_splatter_02.png			\
+	graphics/liquid_splatter_03.png			\
+	graphics/liquid_splatter_04.png			\
 
 # Listings used in this document
-LISTINGS_C = 					\
-	listings/agc.example.c			\
-	listings/ampmodem.example.c		\
-	listings/autocorr.example.c		\
-	listings/bpacket.example.c		\
-	listings/crc.example.c			\
-	listings/cvsd.example.c			\
-	listings/decim.example.c		\
-	listings/dotprod_rrrf.example.c		\
-	listings/eqlms_cccf.example.c		\
-	listings/fec.example.c			\
-	listings/fft.example.c			\
-	listings/firdes_kaiser.example.c	\
-	listings/firdespm.example.c		\
-	listings/firfarrow_crcf.example.c	\
-	listings/firfilt.example.c		\
-	listings/firhilb.example.c		\
-	listings/freqmodem.example.c		\
-	listings/gasearch.example.c		\
-	listings/gmskmodem.example.c		\
-	listings/gradsearch.example.c		\
-	listings/gport.direct.example.c		\
-	listings/gport.indirect.example.c	\
-	listings/iirdes.example.c		\
-	listings/iirfilt.example.c		\
-	listings/interp.example.c		\
-	listings/interleaver.example.c		\
-	listings/lifecycle.example.c		\
-	listings/matrix.example.c		\
-	listings/modem.example.c		\
-	listings/nco.c				\
-	listings/nco.example.c			\
-	listings/nco_pll.example.c		\
-	listings/ofdmflexframegen.example.c	\
-	listings/pack_array.example.c		\
-	listings/packetizer.example.c		\
-	listings/quasinewton_search.example.c	\
-	listings/resamp_crcf.example.c		\
-	listings/resamp2_crcf.example.c		\
-	listings/symsync_crcf.example.c		\
-	listings/window.example.c		\
-						\
-	tutorials/pll_init_tutorial.c		\
-	tutorials/pll_basic_tutorial.c		\
-	tutorials/pll_tutorial.c		\
-						\
-	tutorials/fec_tutorial.c		\
-	tutorials/fec_init_tutorial.c		\
-	tutorials/fec_basic_tutorial.c		\
-	tutorials/fec_extra_tutorial.c		\
-						\
-	tutorials/framing_init_tutorial.c	\
-	tutorials/framing_basic_tutorial.c	\
+LISTINGS_C = 						\
+	listings/agc.example.c				\
+	listings/ampmodem.example.c			\
+	listings/autocorr.example.c			\
+	listings/bpacket.example.c			\
+	listings/crc.example.c				\
+	listings/cvsd.example.c				\
+	listings/decim.example.c			\
+	listings/dotprod_rrrf.example.c			\
+	listings/eqlms_cccf.example.c			\
+	listings/fec.example.c				\
+	listings/fft.example.c				\
+	listings/firdes_kaiser.example.c		\
+	listings/firdespm.example.c			\
+	listings/firfarrow_crcf.example.c		\
+	listings/firfilt.example.c			\
+	listings/firhilb.example.c			\
+	listings/freqmodem.example.c			\
+	listings/gasearch.example.c			\
+	listings/gmskmodem.example.c			\
+	listings/gradsearch.example.c			\
+	listings/gport.direct.example.c			\
+	listings/gport.indirect.example.c		\
+	listings/iirdes.example.c			\
+	listings/iirfilt.example.c			\
+	listings/interp.example.c			\
+	listings/interleaver.example.c			\
+	listings/lifecycle.example.c			\
+	listings/matrix.example.c			\
+	listings/modem.example.c			\
+	listings/nco.c					\
+	listings/nco.example.c				\
+	listings/nco_pll.example.c			\
+	listings/ofdmflexframegen.example.c		\
+	listings/pack_array.example.c			\
+	listings/packetizer.example.c			\
+	listings/quasinewton_search.example.c		\
+	listings/resamp_crcf.example.c			\
+	listings/resamp2_crcf.example.c			\
+	listings/symsync_crcf.example.c			\
+	listings/window.example.c			\
+							\
+	tutorials/pll_init_tutorial.c			\
+	tutorials/pll_basic_tutorial.c			\
+	tutorials/pll_tutorial.c			\
+							\
+	tutorials/fec_tutorial.c			\
+	tutorials/fec_init_tutorial.c			\
+	tutorials/fec_basic_tutorial.c			\
+	tutorials/fec_extra_tutorial.c			\
+							\
+	tutorials/framing_init_tutorial.c		\
+	tutorials/framing_basic_tutorial.c		\
 	tutorials/framing_intermediate_tutorial.c	\
-	tutorials/framing_tutorial.c		\
-						\
-	tutorials/ofdmflexframe_init_tutorial.c	\
+	tutorials/framing_tutorial.c			\
+							\
+	tutorials/ofdmflexframe_init_tutorial.c		\
 	tutorials/ofdmflexframe_basic_tutorial.c	\
-	tutorials/ofdmflexframe_tutorial.c	\
+	tutorials/ofdmflexframe_intermediate_tutorial.c	\
+	tutorials/ofdmflexframe_advanced_tutorial.c	\
 
 # Listings used in this document
 LISTINGS_CC = 					\
@@ -333,7 +334,8 @@ tutorial_progs :=					\
 							\
 	tutorials/ofdmflexframe_init_tutorial		\
 	tutorials/ofdmflexframe_basic_tutorial		\
-	tutorials/ofdmflexframe_tutorial		\
+	tutorials/ofdmflexframe_intermediate_tutorial	\
+	tutorials/ofdmflexframe_advanced_tutorial	\
 
 $(tutorial_progs) : % : %.c $(lib_objects) libliquid.a
 

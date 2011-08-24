@@ -1,4 +1,4 @@
-// file: doc/tutorials/ofdmflexframe_tutorial.c
+// file: doc/tutorials/ofdmflexframe_advanced_tutorial.c
 #include <stdio.h>
 #include <stdlib.h>
 #include <math.h>
