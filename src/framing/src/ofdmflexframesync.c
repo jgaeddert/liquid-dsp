@@ -311,6 +311,7 @@ void ofdmflexframesync_rxheader(ofdmflexframesync _q,
                 else {
                     //printf("**** header invalid!\n");
                     // set framestats internals
+                    _q->framestats.evm              = 0.0f;
                     _q->framestats.rssi             = ofdmframesync_get_rssi(_q->fs);
                     _q->framestats.framesyms        = NULL;
                     _q->framestats.num_framesyms    = 0;
@@ -534,6 +535,7 @@ void ofdmflexframesync_rxpayload(ofdmflexframesync _q,
                 }
 
                 // set framestats internals
+                _q->framestats.evm              = 0.0f;
                 _q->framestats.rssi             = ofdmframesync_get_rssi(_q->fs);
                 _q->framestats.framesyms        = NULL;
                 _q->framestats.num_framesyms    = 0;

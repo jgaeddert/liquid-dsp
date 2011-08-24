@@ -337,12 +337,19 @@ tutorial_progs :=					\
 	tutorials/ofdmflexframe_intermediate_tutorial	\
 	tutorials/ofdmflexframe_advanced_tutorial	\
 
+# build tutorial programs
 $(tutorial_progs) : % : %.c $(lib_objects) libliquid.a
 
-tutorials : $(tutorial_progs)
+# run tutorials, storing output
+tutorial_output = $(patsubst %,%.out,$(tutorial_progs))
+$(tutorial_output) : %.out : %
+	./$< > $@
+
+tutorials : $(tutorial_progs) $(tutorial_output)
 
 clean-tutorials :
 	$(RM) $(tutorial_progs)
+	$(RM) tutorials/*.out
 
 
 ##
