@@ -30,6 +30,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
+#include <unistd.h>     // usleep()
 #include "liquid.doc.html.h"
 
 #define HTMLGEN_NUM_TOKENS  (18)

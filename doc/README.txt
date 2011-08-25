@@ -17,12 +17,12 @@ convenience at http://ganymede.ece.vt.edu/.
 
 
 Documentation dependencies:
-    pdflatex    : texlive-base, texlive-latex-extra, (texlive-full)
-    epstopdf    : (?)
-    gnuplot     : v4.2 (?)
-    pygments    : (sudo apt-get install python-pygments)
-    pgf 2.0     : (sudo apt-get install pgf)
-    liquid      : build and install the base DSP libraries
+    pdflatex    : LaTeX distribution
+    epstopdf    : postscript to .pdf converter
+    gnuplot     : plotting package (version 4.2 or greater)
+    pygments    : syntax highlighting
+    pgf         : LaTeX graphics package (version 2.0 or greater)
+    liquid      : the base DSP libraries
 
     (experimental html dependencies)
     dvipng      : dvi to png converter (sudo apt-get install dvipng)
@@ -35,7 +35,9 @@ Documentation targets:
     listings-check  :   validate that code listings compile properly
     clean-figures   :   clean all auto-generated figures
     clean-listings  :   clean all auto-generated listings
-    html            :   html documentation (under construction)
+    mostlyclean     :   full clean of all documentation (figures, listintgs, etc.)
+    distclean       :   removing everything but the originally distributed files
+    html            :   html documentation [EXPERIMENTAL]
 
 Directory listings and their contents
     figures.gen/    :   automatically-generated figures (gnuplot)
@@ -46,6 +48,21 @@ Directory listings and their contents
     sandbox/        :   playground for testing
     sections/       :   documentation .tex files
     src/            :   auto-generated figures source files
+
+Installing on Mac OS X
+    $ sudo port install texlive-basic texlive-bin texlive-bin-extra texlive-common \
+        texlive-fontutils texlive-latex-extra texlive-latex-recommended texlive-science \
+        pgf py-pygments
+
+Installing on Ubuntu Linux
+    $ sudo apt-get install texlive-full pgf python-pygments
+
+Additional notes:
+    Splatter graphics were created using GIMP with two splatter brush
+    plug-ins.
+      * http://www.gimp.org/
+      * http://corelila.deviantart.com/art/Splatter-Brushes-60718934
+      * http://hawksmont.com/blog/gimp-brushes-splatters/
 
 References
     [ctan:web] The Comprehensive TeX Archive Network, Online:
@@ -58,19 +75,8 @@ References
         http://sourceforge.net/projects/dvipng/
     [imagemagick:web] ImageMagick command-line image converter, Online:
         http://www.imagemagick.org/script/convert.php
-
-Installing on Mac OS X
-    $ sudo port install texlive
-
-Installing on Ubuntu Linux
-    $ sudo apt-get install texlive-full
-
-Additional notes:
-    Splatter graphics were created using GIMP with two splatter brush
-    plug-ins.
-      * http://www.gimp.org/
-      * http://corelila.deviantart.com/art/Splatter-Brushes-60718934
-      * http://hawksmont.com/blog/gimp-brushes-splatters/
+    [macports:web] MacPorts homepage: open-source package manager, Online:
+        http://www.macports.org/
 
 
 

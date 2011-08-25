@@ -181,5 +181,9 @@ void htmlgen_env_parse_equation_help(htmlgen _q,
                                      char * _end,
                                      int _inline);
 
+// unknown environment
+void htmlgen_env_parse_unknown(htmlgen _q,
+                               char * _envarg);
+
 #endif // __LIQUID_DOC_HTML_H__
 

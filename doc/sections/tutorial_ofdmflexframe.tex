@@ -78,13 +78,16 @@ You are now ready to add functionality to your program.
 \subsection{OFDM Framing Structure}
 \label{tutorial:ofdmflexframe:structure}
 %
-The OFDM framing stucture is described briefly here
+In this tutorial we will be using the {\tt ofdmflexframegen} and
+{\tt ofdmflexframesync} objects in \liquid\ which realize the
+framing generator (transmitter) and synchronizer (receiver).
+The OFDM framing stucture is briefly described here
 (for a more detailed description, see
 Section~\ref{module:framing:ofdmflexframe}).
 The {\tt ofdmflexframe} generator and synchronizer objects
 together realize a simple framing structure
 for loading data onto a reconfigurable OFDM physical layer.
-The generator encapsulates a xxx-byte user-defined header
+The generator encapsulates an 8-byte user-defined header
 and a variable-length buffer of uncoded payload data
 and fully encodes a frame of OFDM symbols ready for transmission.
 The user may define many physical-layer parameters of the transmission,
@@ -94,7 +97,27 @@ including
   forward error-correction coding,
   modulation scheme,
   and others.
-The synchronizer...
+The synchronizer requires the same number of subcarriers, cyclic prefix,
+and subcarrier allocation as the transmitter, but can automatically
+determine the payload length, modulation scheme, and forward
+error-correction of the receiver.
+Furthermore, the reciever can compensate for carrier phase/frequency and
+timing offsets as well as multi-path fading and noisy channels.
+The received data are returned via a callback function which includes
+receiver statistics such as received signal strength, error vector
+magnitude (see Section~\ref{module:modem:digital:interface}),
+as well as the modulation and error-correction schemes.
+
+Unlike traditional narrowband systems which transmit data symbols
+quickly in serial,
+OFDM systems transmit many slower data streams in parallel, each called
+a ``subcarrer.''
+This yields many advantages over traditional systems;
+to begin with, equalization consists of a single coefficient per
+subcarrier and can be determined much easier than those for narrowband
+systems.
+% TODO : expand on this...
+
 
 %
 % SUBSECTION : frame generator
@@ -256,6 +279,7 @@ the number of null, pilot, and data subcarriers,
 the number of modulated symbols,
 the number of OFDM symbols,
 and the resulting spectral efficiency.
+%Furthermore, because we aren't using any forward error correction...
 
 %
 % SUBSECTION : frame synchronizer
@@ -380,8 +404,7 @@ method, passing it
 Print the newly created synchronizer object to the screen if you like:
 %
 \begin{Verbatim}[fontsize=\small]
-    ofdmflexframesync fs = 
-        ofdmflexframesync_create(64, 16, NULL, mycallback, NULL);
+    ofdmflexframesync fs = ofdmflexframesync_create(64, 16, NULL, mycallback, NULL);
     ofdmflexframesync_print(fs);
 \end{Verbatim}
 %
