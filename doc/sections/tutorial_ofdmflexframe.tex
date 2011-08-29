@@ -164,6 +164,8 @@ a payload of 120 bytes (but otherwise default properties) as
     ofdmflexframegen_print(fg);
 \end{Verbatim}
 %
+%For now we will only set the payload length as a framing property,
+%however the structure allows...
 As with all structures in \liquid\ you will need to invoke the
 corresponding {\tt destroy()} method when you are finished with the
 object.
@@ -430,14 +432,42 @@ function was indeed invoked.
 Your output should look something like this:
 %
 \begin{Verbatim}[fontsize=\small]
-      ...
+ofdmflexframegen:
+    ...
+ofdmflexframesync:
+    num subcarriers     :   64
+      * NULL            :   12
+      * pilot           :   6
+      * data            :   46
+    cyclic prefix len   :   16
+***** callback invoked!
+  header (valid)
+  payload (valid)
 done.
 \end{Verbatim}
+%
+Your program has demonstrated the basic functionality of the OFDM frame
+generator and synchronizer.
+The previous tutorial on framing (Section~\ref{tutorial:framing}) added
+a carrier offset and noise to the signal before synchronizing.
+I will leave adding these channel impairments as an exercise to the
+reader, as well as introducing a multi-path environment.
+%
+For a more detailed program, see {\tt examples/ofdmflexframesync\_example.c}
+in the main \liquid\ directory;
+this example demonstrates setting different properties of the frame,
+including the forward error-correction, error detection, and modulation
+schemes,
+as well as noise applied to the channel.
+%
+% The {\tt examples/ofdmflexframesync\_advanced\_example.c} includes a
+% more sophisticated channel model including multi-path fading as well
+% as carrier frequency offset.
 %
 
 %
 % SUBSECTION : 
 %
-\subsection{Final Program}
-\label{tutorial:ofdmflexframe:completed}
+%\subsection{Final Program}
+%\label{tutorial:ofdmflexframe:completed}
 
