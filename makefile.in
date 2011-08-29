@@ -654,6 +654,7 @@ multicarrier_objects :=						\
 multicarrier_autotests :=					\
 	src/multicarrier/tests/firpfbch_synthesizer_autotest.c	\
 	src/multicarrier/tests/firpfbch_analyzer_autotest.c	\
+	src/multicarrier/tests/ofdmframesync_autotest.c		\
 
 #	ofdmoqam_autotest.c
 
