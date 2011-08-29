@@ -87,6 +87,7 @@ struct ofdmframesync_s {
     // synchronizer objects
     nco_crcf nco_rx;        // numerically-controlled oscillator
     msequence ms_pilot;     // pilot sequence generator
+    float phi_prime;        // ...
 
     // coarse signal detection
     float squelch_threshold;
@@ -297,6 +298,7 @@ void ofdmframesync_reset(ofdmframesync _q)
     _q->num_symbols = 0;
     _q->s_hat_0 = 0.0f;
     _q->s_hat_1 = 0.0f;
+    _q->phi_prime = 0.0f;
 
     // reset state
     _q->state = OFDMFRAMESYNC_STATE_SEEKPLCP;
@@ -610,6 +612,7 @@ void ofdmframesync_execute_plcplong(ofdmframesync _q)
         _q->state = OFDMFRAMESYNC_STATE_RXSYMBOLS;
         // reset timer
         _q->timer = _q->M + _q->cp_len + _q->backoff;
+        _q->num_symbols = 0;
 
         // normalize gain by...
         float phi = (float)(_q->backoff)*2.0f*M_PI/(float)(_q->M);
@@ -989,7 +992,22 @@ void ofdmframesync_rxsymbol(ofdmframesync _q)
         }
     }
 
-    // TODO : adjust NCO frequency based on differential phase
+    // adjust NCO frequency based on differential phase
+    if (_q->num_symbols > 0) {
+        // compute phase error (unwrapped)
+        float dphi_prime = p_phase[0] - _q->phi_prime;
+        while (dphi_prime >  M_PI) dphi_prime -= M_2_PI;
+        while (dphi_prime < -M_PI) dphi_prime += M_2_PI;
+
+        // adjust NCO proportionally to phase error
+        nco_crcf_adjust_frequency(_q->nco_rx, 1e-3f*dphi_prime);
+    }
+    // set internal phase state
+    _q->phi_prime = p_phase[0];
+    //printf("%3u : theta : %12.8f, nco freq: %12.8f\n", _q->num_symbols, p_phase[0], nco_crcf_get_frequency(_q->nco_rx));
+    
+    // increment symbol counter
+    _q->num_symbols++;
 
 #if 0
     for (i=0; i<_q->M_pilot; i++)
