@@ -543,8 +543,20 @@ void ofdmframesync_execute_plcpshort1(ofdmframesync _q)
     for (i=0; i<_q->M; i++)
         g_hat += _q->G1[i] * conjf(_q->G0[i]);
 
-    // carrier frequency offset estimate
+#if 0
+    // compute carrier frequency offset estimate using freq. domain method
     float nu_hat = 2.0f * cargf(g_hat) / (float)(_q->M);
+#else
+    // compute carrier frequency offset estimate using ML method
+    float complex t0 = 0.0f;
+    unsigned int M2 = _q->M / 2;
+    for (i=0; i<M2; i++) {
+        t0 += conjf(rc[i])   *       _q->s0[i] * 
+                    rc[i+M2] * conjf(_q->s0[i+M2]);
+    }
+    float nu_hat = cargf(t0) / (float)(M2);
+#endif
+
 #if DEBUG_OFDMFRAMESYNC_PRINT
     printf("   nu_hat   :   %12.8f\n", nu_hat);
 #endif
