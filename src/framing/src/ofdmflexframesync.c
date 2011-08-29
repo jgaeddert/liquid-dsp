@@ -203,6 +203,11 @@ void ofdmflexframesync_destroy(ofdmflexframesync _q)
 void ofdmflexframesync_print(ofdmflexframesync _q)
 {
     printf("ofdmflexframesync:\n");
+    printf("    num subcarriers     :   %-u\n", _q->M);
+    printf("      * NULL            :   %-u\n", _q->M_null);
+    printf("      * pilot           :   %-u\n", _q->M_pilot);
+    printf("      * data            :   %-u\n", _q->M_data);
+    printf("    cyclic prefix len   :   %-u\n", _q->cp_len);
 }
 
 void ofdmflexframesync_reset(ofdmflexframesync _q)
