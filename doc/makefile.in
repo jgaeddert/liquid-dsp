@@ -213,7 +213,7 @@ $(listings_ctests) : %.c.o : %.c scripts/listings_check
 	$(RM) $*.prog.c
 
 # specific C++ programs
-$(listings_cctests) : %.cc.o : %.cc
+$(listings_cctests) : %.cc.o : %.cc scripts/listings_check
 	./scripts/listings_check $< $*.prog.cc
 	$(CXX) -I . -I../include/ -c -o $@ $*.prog.cc
 	$(RM) $*.prog.cc
