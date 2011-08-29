@@ -6,18 +6,30 @@
 #include <stdlib.h>
 #include <math.h>
 #include <string.h>
+#include <getopt.h>
 #include <time.h>
 
 #include "liquid.h"
 
 #define OUTPUT_FILENAME "ofdmframesync_example.m"
 
+void usage()
+{
+    printf("Usage: ofdmframesync_example [OPTION]\n");
+    printf("  u/h   : print usage\n");
+    printf("  M     : number of subcarriers (must be even), default: 64\n");
+    printf("  C     : cyclic prefix length, default: 16\n");
+    printf("  s     : signal-to-noise ratio [dB], default: 30\n");
+    printf("  F     : carrier frequency offset, default: 0.002\n");
+}
+
 static int callback(float complex * _X,
                     unsigned char * _p,
                     unsigned int _M,
                     void * _userdata);
 
-int main(int argc, char*argv[]) {
+int main(int argc, char*argv[])
+{
     srand(time(NULL));
 
     // options
@@ -28,12 +40,28 @@ int main(int argc, char*argv[]) {
     unsigned int num_symbols_data = 8;  // number of data symbols
     unsigned int hc_len = 1;            // channel filter length
     float hc_std = 0.10f;               // channel filter standard deviation
-    modulation_scheme ms = LIQUID_MODEM_QAM;
-    unsigned int bps = 4;
+    modulation_scheme ms = LIQUID_MODEM_QPSK;
+    unsigned int bps = 2;
     float noise_floor = -30.0f;         // noise floor [dB]
     float SNRdB = 20.0f;                // signal-to-noise ratio [dB]
     float phi   = 0.0f;                 // carrier phase offset
     float dphi  = 0.002f;               // carrier frequency offset
+
+    // get options
+    int dopt;
+    while((dopt = getopt(argc,argv,"uhM:C:s:F:")) != EOF){
+        switch (dopt) {
+        case 'u':
+        case 'h': usage();                      return 0;
+        case 'M': M = atoi(optarg);             break;
+        case 'C': cp_len = atoi(optarg);        break;
+        case 's': SNRdB = atof(optarg);         break;
+        case 'F': dphi = atof(optarg);          break;
+        default:
+            fprintf(stderr,"error: %s, unknown option '%s'\n", argv[0], optarg);
+            exit(-1);
+        }
+    }
 
     // validate input
     if (hc_len < 1) {
