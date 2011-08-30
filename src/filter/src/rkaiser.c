@@ -341,40 +341,56 @@ void design_rkaiser_filter_quadratic(unsigned int _k,
 
     // compute bandwidth adjustment estimate
     float rho_hat = rkaiser_approximate_rho(_m,_beta);
+    float rho_opt = rho_hat;
 
     // bandwidth adjustment
-    float x0 = 0.5f * rho_hat;  // lower bound
-    float x1;
-    float x2 = 1.0f;            // upper bound
+    float x0;           // lower bound
+    float x1 = rho_hat; // initial estimate
+    float x2;           // upper bound
 
     // evaluate performance (ISI) of each bandwidth adjustment
-    float y0 = design_rkaiser_filter_internal_isi(_k,_m,_beta,_dt,x0,_h);
+    float y0;
     float y1;
-    float y2 = design_rkaiser_filter_internal_isi(_k,_m,_beta,_dt,x2,_h);
+    float y2;
+    float y_opt = 0.0f;
 
     // run parabolic search to find bandwidth adjustment x_hat which
     // minimizes the inter-symbol interference of the filter
     unsigned int p, pmax=14;
     float x_hat = rho_hat;
+    float dx  = 0.2f;       // bounding size
     float del = 0.0f;       // computed step size
-    float tol = 2e-4f;      // tolerance
+    float tol = 1e-6f;      // tolerance
 #if DEBUG_RKAISER
     FILE * fid = fopen("rkaiser_debug.m", "w");
     fprintf(fid,"clear all;\n");
     fprintf(fid,"close all;\n");
-    fprintf(fid,"x = [%12.4e]\n", x0);
-    fprintf(fid,"y = [%12.4e];\n", y0);
+    fprintf(fid,"x = [];\n");
+    fprintf(fid,"y = [];\n");
 #endif
     for (p=0; p<pmax; p++) {
-        // choose center point between [x0,x2]
-        x1 = 0.5f*(x0 + x2);
+        // choose boundary points
+        x0 = x1 - dx;
+        x2 = x1 + dx;
 
-        // evaluate center point
+        // ensure boundary points are valid
+        if (x0 <= 0.0f) x0 = 0.01f;
+        if (x2 >= 1.0f) x2 = 0.99f;
+
+        // evaluate all points
+        y0 = design_rkaiser_filter_internal_isi(_k,_m,_beta,_dt,x0,_h);
         y1 = design_rkaiser_filter_internal_isi(_k,_m,_beta,_dt,x1,_h);
+        y2 = design_rkaiser_filter_internal_isi(_k,_m,_beta,_dt,x2,_h);
+
+        // save optimum
+        if (p==0 || y1 < y_opt) {
+            rho_opt = x1;
+            y_opt   = y1;
+        }
 
 #if DEBUG_RKAISER
-        fprintf(fid,"x = [x %12.4e];\n", x1);
-        fprintf(fid,"y = [y %12.4e];\n", y1);
+        fprintf(fid,"x = [x %12.4e %12.4e %12.4e];\n", x0, x1, x2);
+        fprintf(fid,"y = [y %12.4e %12.4e %12.4e];\n", y0, y1, y2);
         //printf("  %4u : [%8.4f %8.4f %8.4f] rho=%12.8f, isi=%12.6f dB\n", p+1, x0, x1, x2, x1, 20*log10f(y1));
         printf("  %4u : [%8.4f,%8.2f] [%8.4f,%8.2f] [%8.4f,%8.2f]\n",
                 p+1,
@@ -394,21 +410,20 @@ void design_rkaiser_filter_quadratic(unsigned int _k,
         // update estimate
         x_hat = 0.5f * ta / tb;
 
+        // ensure x_hat is within boundary (this will fail if y1 > y0 || y1 > y2)
+        if (x_hat < x0 || x_hat > x2) {
+            //fprintf(stderr,"warning: design_rkaiser_filter_quadratic(), quadratic minimum outside boundary\n");
+            break;
+        }
+
         // break if step size is sufficiently small
         del = x_hat - x1;
         if (p > 3 && fabsf(del) < tol)
             break;
 
-        // update bounds
-        if (x_hat > x1) {
-            // new minimum
-            x0 = x1;
-            y0 = y1;
-        } else {
-            // new maximum
-            x2 = x1;
-            y2 = y1;
-        }
+        // update estimate, reduce bound
+        x1 = x_hat;
+        dx *= 0.5f;
     };
 #if DEBUG_RKAISER
     fprintf(fid,"figure;\n");
@@ -418,7 +433,7 @@ void design_rkaiser_filter_quadratic(unsigned int _k,
 #endif
 
     // re-design filter with optimal value for rho
-    design_rkaiser_filter_internal_isi(_k,_m,_beta,_dt,x_hat,_h);
+    design_rkaiser_filter_internal_isi(_k,_m,_beta,_dt,rho_opt,_h);
 
     // normalize filter magnitude
     float e2 = 0.0f;
@@ -426,7 +441,7 @@ void design_rkaiser_filter_quadratic(unsigned int _k,
     for (i=0; i<n; i++) _h[i] *= sqrtf(_k/e2);
 
     // save trasition bandwidth adjustment
-    *_rho = x_hat;
+    *_rho = rho_opt;
 }
 
 // compute filter coefficients and determine resulting ISI
