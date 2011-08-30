@@ -24,15 +24,15 @@
 #include <math.h>
 #include "liquid.internal.h"
 
-#define LIQUID_QUASINEWTON_SEARCH_GAMMA_MIN 0.000001
+#define LIQUID_qnsearch_GAMMA_MIN 0.000001
 
-quasinewton_search quasinewton_search_create(void * _userdata,
-                                             float * _v,
-                                             unsigned int _num_parameters,
-                                             utility_function _u,
-                                             int _minmax)
+qnsearch qnsearch_create(void * _userdata,
+                         float * _v,
+                         unsigned int _num_parameters,
+                         utility_function _u,
+                         int _minmax)
 {
-    quasinewton_search q = (quasinewton_search) malloc( sizeof(struct quasinewton_search_s) );
+    qnsearch q = (qnsearch) malloc( sizeof(struct qnsearch_s) );
 
     // initialize public values
     q->delta = 1e-6f;   //_delta;
@@ -56,12 +56,12 @@ quasinewton_search quasinewton_search_create(void * _userdata,
     q->dv       = (float*) calloc( q->num_parameters, sizeof(float) );
     q->utility = q->get_utility(q->userdata, q->v, q->num_parameters);
 
-    quasinewton_search_reset(q);
+    qnsearch_reset(q);
 
     return q;
 }
 
-void quasinewton_search_destroy(quasinewton_search _q)
+void qnsearch_destroy(qnsearch _q)
 {
     free(_q->B);
     free(_q->H);
@@ -74,7 +74,7 @@ void quasinewton_search_destroy(quasinewton_search _q)
     free(_q);
 }
 
-void quasinewton_search_print(quasinewton_search _q)
+void qnsearch_print(qnsearch _q)
 {
     printf("[%.3f] ", _q->utility);
     unsigned int i;
@@ -83,7 +83,7 @@ void quasinewton_search_print(quasinewton_search _q)
     printf("\n");
 }
 
-void quasinewton_search_reset(quasinewton_search _q)
+void qnsearch_reset(qnsearch _q)
 {
     _q->gamma_hat = _q->gamma;
 
@@ -98,14 +98,14 @@ void quasinewton_search_reset(quasinewton_search _q)
     _q->utility = _q->get_utility(_q->userdata, _q->v, _q->num_parameters);
 }
 
-void quasinewton_search_step(quasinewton_search _q)
+void qnsearch_step(qnsearch _q)
 {
     unsigned int i;
     unsigned int n = _q->num_parameters;
 
     // compute normalized gradient vector
-    quasinewton_search_compute_gradient(_q);
-    //quasinewton_search_normalize_gradient(_q);
+    qnsearch_compute_gradient(_q);
+    //qnsearch_normalize_gradient(_q);
 
     // TODO : perform line search to find optimal gamma
 
@@ -117,7 +117,7 @@ void quasinewton_search_step(quasinewton_search _q)
     for (i=0; i<_q->num_parameters; i++)
         _q->p[i] = -_q->p[i];
 #else
-    quasinewton_search_compute_Hessian(_q);
+    qnsearch_compute_Hessian(_q);
     matrixf_inv(_q->H, n, n);
     matrixf_mul(_q->H, n, n,
                 _q->gradient, n, 1,
@@ -150,14 +150,14 @@ void quasinewton_search_step(quasinewton_search _q)
     _q->utility = u_prime;
 }
 
-float quasinewton_search_run(quasinewton_search _q,
-                             unsigned int _max_iterations,
-                             float _target_utility)
+float qnsearch_run(qnsearch _q,
+                   unsigned int _max_iterations,
+                   float _target_utility)
 {
     unsigned int i=0;
     do {
         i++;
-        quasinewton_search_step(_q);
+        qnsearch_step(_q);
         _q->utility = _q->get_utility(_q->userdata, _q->v, _q->num_parameters);
 
     } while (
@@ -172,7 +172,7 @@ float quasinewton_search_run(quasinewton_search _q,
 //
 
 // compute gradient
-void quasinewton_search_compute_gradient(quasinewton_search _q)
+void qnsearch_compute_gradient(qnsearch _q)
 {
     unsigned int i;
     float f_prime;
@@ -189,7 +189,7 @@ void quasinewton_search_compute_gradient(quasinewton_search _q)
 }
 
 // normalize gradient vector to unity
-void quasinewton_search_normalize_gradient(quasinewton_search _q)
+void qnsearch_normalize_gradient(qnsearch _q)
 {
     // normalize gradient
     float sig = 0.0f;
@@ -204,7 +204,7 @@ void quasinewton_search_normalize_gradient(quasinewton_search _q)
 }
 
 // compute Hessian
-void quasinewton_search_compute_Hessian(quasinewton_search _q)
+void qnsearch_compute_Hessian(qnsearch _q)
 {
     unsigned int i, j;
     unsigned int n = _q->num_parameters;

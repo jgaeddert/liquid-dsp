@@ -497,8 +497,8 @@ polyfit_lagrange_example.c
 prqmfb_crcf_example.c [EXPERIMENTAL]
 qmfb_crcf_analysis_example.c [EXPERIMENTAL]
 qmfb_crcf_synthesis_example.c [EXPERIMENTAL]
+qnsearch_example.c
 quantize_example.c
-quasinewton_search_example.c
 
 random_example.c
     This example tests the random number generators for different

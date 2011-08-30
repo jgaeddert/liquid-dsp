@@ -105,7 +105,7 @@ LISTINGS_C = 						\
 	listings/ofdmflexframegen.example.c		\
 	listings/pack_array.example.c			\
 	listings/packetizer.example.c			\
-	listings/quasinewton_search.example.c		\
+	listings/qnsearch.example.c			\
 	listings/resamp_crcf.example.c			\
 	listings/resamp2_crcf.example.c			\
 	listings/symsync_crcf.example.c			\

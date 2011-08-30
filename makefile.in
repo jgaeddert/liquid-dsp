@@ -701,7 +701,7 @@ optim_objects :=						\
 	src/optim/src/gasearch.o				\
 	src/optim/src/gradsearch.o				\
 	src/optim/src/optim.common.o				\
-	src/optim/src/quasinewton_search.o			\
+	src/optim/src/qnsearch.o				\
 	src/optim/src/rosenbrock.o				\
 
 
@@ -713,7 +713,7 @@ src/optim/src/gradsearch.o : %.o : %.c $(headers)
 
 src/optim/src/optim.common.o : %.o : %.c $(headers)
 
-src/optim/src/quasinewton_search.o : %.o : %.c $(headers)
+src/optim/src/qnsearch.o : %.o : %.c $(headers)
 
 src/optim/src/rosenbrock.o : %.o : %.c $(headers)
 
@@ -1213,7 +1213,7 @@ example_obj :=							\
 	examples/polyfit_lagrange_example.o			\
 	examples/poly_findroots_example.o			\
 	examples/quantize_example.o				\
-	examples/quasinewton_search_example.o			\
+	examples/qnsearch_example.o				\
 	examples/random_example.o				\
 	examples/random_histogram_example.o			\
 	examples/repack_bytes_example.o				\
