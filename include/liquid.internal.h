@@ -1116,7 +1116,7 @@ void bpacketsync_reconfig(bpacketsync _q);
 // ofdmflexframe
 //
 
-#define OFDMFLEXFRAME_VERSION   (101)
+#define OFDMFLEXFRAME_VERSION   (102)
 
 // header description
 #define OFDMFLEXFRAME_H_USER    (8)                         // user-defined array
@@ -1124,9 +1124,9 @@ void bpacketsync_reconfig(bpacketsync _q);
 #define OFDMFLEXFRAME_H_CRC     (LIQUID_CRC_16)             // header CRC
 #define OFDMFLEXFRAME_H_FEC     (LIQUID_FEC_HAMMING128)     // header FEC
 #define OFDMFLEXFRAME_H_ENC     (24)                        // encoded length
-#define OFDMFLEXFRAME_H_MOD     (LIQUID_MODEM_QPSK)         // modulation scheme
-#define OFDMFLEXFRAME_H_BPS     (2)                         // modulation depth
-#define OFDMFLEXFRAME_H_SYM     (96)                        // number of symbols
+#define OFDMFLEXFRAME_H_MOD     (LIQUID_MODEM_BPSK)         // modulation scheme
+#define OFDMFLEXFRAME_H_BPS     (1)                         // modulation depth
+#define OFDMFLEXFRAME_H_SYM     (192)                       // number of symbols
 
 // 
 // ofdmflexframegen
@@ -1798,7 +1798,7 @@ void gradsearch_normalize_gradient(gradsearch _g);
 
 
 // quasi-Newton search object
-struct quasinewton_search_s {
+struct qnsearch_s {
     float* v;           // vector to optimize (externally allocated)
     unsigned int num_parameters;    // number of parameters to optimize [n]
 
@@ -1824,17 +1824,17 @@ struct quasinewton_search_s {
 };
 
 // compute gradient(x_k)
-void quasinewton_search_compute_gradient(quasinewton_search _q);
+void qnsearch_compute_gradient(qnsearch _q);
 
 // compute the norm of the gradient(x_k)
-void quasinewton_search_normalize_gradient(quasinewton_search _q);
+void qnsearch_normalize_gradient(qnsearch _q);
 
 // compute Hessian (estimate)
-void quasinewton_search_compute_Hessian(quasinewton_search _q);
+void qnsearch_compute_Hessian(qnsearch _q);
 
 // compute the updated inverse hessian matrix using the Broyden, Fletcher,
 // Goldfarb & Shanno method (BFGS)
-void quasinewton_search_update_hessian_bfgs(quasinewton_search _q);
+void qnsearch_update_hessian_bfgs(qnsearch _q);
 
 
 // Chromosome structure used in genetic algorithm searches

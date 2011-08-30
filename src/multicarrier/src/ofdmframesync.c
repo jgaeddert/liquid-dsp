@@ -40,6 +40,7 @@
 
 struct ofdmframesync_s {
     unsigned int M;         // number of subcarriers
+    unsigned int M2;        // number of subcarriers (divided by 2)
     unsigned int cp_len;    // cyclic prefix length
     unsigned char * p;      // subcarrier allocation (null, pilot, data)
 
@@ -87,6 +88,7 @@ struct ofdmframesync_s {
     // synchronizer objects
     nco_crcf nco_rx;        // numerically-controlled oscillator
     msequence ms_pilot;     // pilot sequence generator
+    float phi_prime;        // ...
 
     // coarse signal detection
     float squelch_threshold;
@@ -135,6 +137,9 @@ ofdmframesync ofdmframesync_create(unsigned int _M,
     q->M = _M;
     q->cp_len = _cp_len;
 
+    // derived values
+    q->M2 = _M/2;
+
     // subcarrier allocation
     q->p = (unsigned char*) malloc((q->M)*sizeof(unsigned char));
     if (_p == NULL) {
@@ -147,6 +152,9 @@ ofdmframesync ofdmframesync_create(unsigned int _M,
     ofdmframe_validate_sctype(q->p, q->M, &q->M_null, &q->M_pilot, &q->M_data);
     if ( (q->M_pilot + q->M_data) == 0) {
         fprintf(stderr,"error: ofdmframesync_create(), must have at least one enabled subcarrier\n");
+        exit(1);
+    } else if (q->M_pilot < 2) {
+        fprintf(stderr,"error: ofdmframesync_create(), must have at least two pilot subcarriers\n");
         exit(1);
     }
 
@@ -297,6 +305,7 @@ void ofdmframesync_reset(ofdmframesync _q)
     _q->num_symbols = 0;
     _q->s_hat_0 = 0.0f;
     _q->s_hat_1 = 0.0f;
+    _q->phi_prime = 0.0f;
 
     // reset state
     _q->state = OFDMFRAMESYNC_STATE_SEEKPLCP;
@@ -400,7 +409,7 @@ void ofdmframesync_execute_seekplcp(ofdmframesync _q)
     //float g = agc_crcf_get_gain(_q->agc_rx);
     s_hat *= g;
 
-    float tau_hat  = cargf(s_hat) * (float)(_q->M) / (2*2*M_PI);
+    float tau_hat  = cargf(s_hat) * (float)(_q->M2) / (2*M_PI);
 #if DEBUG_OFDMFRAMESYNC_PRINT
     printf(" - gain=%12.3f, rssi=%12.8f, s_hat=%12.4f <%12.8f>, tau_hat=%8.3f\n",
             sqrt(g),
@@ -417,7 +426,7 @@ void ofdmframesync_execute_seekplcp(ofdmframesync _q)
 
         int dt = (int)roundf(tau_hat);
         // set timer appropriately...
-        _q->timer = (_q->M + dt) % (_q->M / 2);
+        _q->timer = (_q->M + dt) % (_q->M2);
         _q->timer += _q->M; // add delay to help ensure good S0 estimate
         _q->state = OFDMFRAMESYNC_STATE_PLCPSHORT0;
 
@@ -441,7 +450,7 @@ void ofdmframesync_execute_plcpshort0(ofdmframesync _q)
     //printf("t : %u\n", _q->timer);
     _q->timer++;
 
-    if (_q->timer < _q->M/2)
+    if (_q->timer < _q->M2)
         return;
 
     // reset timer
@@ -464,7 +473,7 @@ void ofdmframesync_execute_plcpshort0(ofdmframesync _q)
     _q->s_hat_0 = s_hat;
 
 #if DEBUG_OFDMFRAMESYNC_PRINT
-    float tau_hat  = cargf(s_hat) * (float)(_q->M) / (2*2*M_PI);
+    float tau_hat  = cargf(s_hat) * (float)(_q->M2) / (2*M_PI);
     printf("********** S0[0] received ************\n");
     printf("    s_hat   :   %12.8f <%12.8f>\n", cabsf(s_hat), cargf(s_hat));
     printf("  tau_hat   :   %12.8f\n", tau_hat);
@@ -490,7 +499,7 @@ void ofdmframesync_execute_plcpshort1(ofdmframesync _q)
     //printf("t = %u\n", _q->timer);
     _q->timer++;
 
-    if (_q->timer < _q->M/2)
+    if (_q->timer < _q->M2)
         return;
 
     // reset timer
@@ -511,20 +520,20 @@ void ofdmframesync_execute_plcpshort1(ofdmframesync _q)
     _q->s_hat_1 = s_hat;
 
 #if DEBUG_OFDMFRAMESYNC_PRINT
-    float tau_hat  = cargf(s_hat) * (float)(_q->M) / (2*2*M_PI);
+    float tau_hat  = cargf(s_hat) * (float)(_q->M2) / (2*M_PI);
     printf("********** S0[1] received ************\n");
     printf("    s_hat   :   %12.8f <%12.8f>\n", cabsf(s_hat), cargf(s_hat));
     printf("  tau_hat   :   %12.8f\n", tau_hat);
 
     // new timing offset estimate
-    tau_hat  = cargf(_q->s_hat_0 + _q->s_hat_1) * (float)(_q->M) / (2*2*M_PI);
+    tau_hat  = cargf(_q->s_hat_0 + _q->s_hat_1) * (float)(_q->M2) / (2*M_PI);
     printf("  tau_hat * :   %12.8f\n", tau_hat);
 
     printf("**********\n");
 #endif
 
     // re-adjust timer accordingly
-    float tau_prime = cargf(_q->s_hat_0 + _q->s_hat_1) * (float)(_q->M) / (2*2*M_PI);
+    float tau_prime = cargf(_q->s_hat_0 + _q->s_hat_1) * (float)(_q->M2) / (2*M_PI);
     _q->timer -= (int)roundf(tau_prime);
 
 #if 0
@@ -543,8 +552,19 @@ void ofdmframesync_execute_plcpshort1(ofdmframesync _q)
     for (i=0; i<_q->M; i++)
         g_hat += _q->G1[i] * conjf(_q->G0[i]);
 
-    // carrier frequency offset estimate
+#if 0
+    // compute carrier frequency offset estimate using freq. domain method
     float nu_hat = 2.0f * cargf(g_hat) / (float)(_q->M);
+#else
+    // compute carrier frequency offset estimate using ML method
+    float complex t0 = 0.0f;
+    for (i=0; i<_q->M2; i++) {
+        t0 += conjf(rc[i])       *       _q->s0[i] * 
+                    rc[i+_q->M2] * conjf(_q->s0[i+_q->M2]);
+    }
+    float nu_hat = cargf(t0) / (float)(_q->M2);
+#endif
+
 #if DEBUG_OFDMFRAMESYNC_PRINT
     printf("   nu_hat   :   %12.8f\n", nu_hat);
 #endif
@@ -598,6 +618,7 @@ void ofdmframesync_execute_plcplong(ofdmframesync _q)
         _q->state = OFDMFRAMESYNC_STATE_RXSYMBOLS;
         // reset timer
         _q->timer = _q->M + _q->cp_len + _q->backoff;
+        _q->num_symbols = 0;
 
         // normalize gain by...
         float phi = (float)(_q->backoff)*2.0f*M_PI/(float)(_q->M);
@@ -643,7 +664,7 @@ void ofdmframesync_execute_plcplong(ofdmframesync _q)
     }
 
     // 'reset' timer (wait another half symbol)
-    _q->timer = _q->M/2;
+    _q->timer = _q->M2;
 }
 
 void ofdmframesync_execute_rxsymbols(ofdmframesync _q)
@@ -846,7 +867,7 @@ void ofdmframesync_estimate_eqgain_poly(ofdmframesync _q,
     for (i=0; i<_q->M; i++) {
 
         // start at mid-point (effective fftshift)
-        k = (i + _q->M/2) % _q->M;
+        k = (i + _q->M2) % _q->M;
 
         if (_q->p[k] != OFDMFRAME_SCTYPE_NULL) {
             if (n == N) {
@@ -854,7 +875,7 @@ void ofdmframesync_estimate_eqgain_poly(ofdmframesync _q,
                 exit(1);
             }
             // store resulting...
-            x_freq[n] = (k > _q->M/2) ? (float)k - (float)(_q->M) : (float)k;
+            x_freq[n] = (k > _q->M2) ? (float)k - (float)(_q->M) : (float)k;
             x_freq[n] = x_freq[n] / (float)(_q->M);
             y_abs[n] = cabsf(_q->G[k]);
             y_arg[n] = cargf(_q->G[k]);
@@ -883,7 +904,7 @@ void ofdmframesync_estimate_eqgain_poly(ofdmframesync _q,
 
     // compute subcarrier gain
     for (i=0; i<_q->M; i++) {
-        float freq = (i > _q->M/2) ? (float)i - (float)(_q->M) : (float)i;
+        float freq = (i > _q->M2) ? (float)i - (float)(_q->M) : (float)i;
         freq = freq / (float)(_q->M);
         float A     = polyf_val(p_abs, _order+1, freq);
         float theta = polyf_val(p_arg, _order+1, freq);
@@ -925,7 +946,7 @@ void ofdmframesync_rxsymbol(ofdmframesync _q)
     for (i=0; i<_q->M; i++) {
 
         // start at mid-point (effective fftshift)
-        k = (i + _q->M/2) % _q->M;
+        k = (i + _q->M2) % _q->M;
 
         if (_q->p[k]==OFDMFRAME_SCTYPE_PILOT) {
             if (n == _q->M_pilot) {
@@ -940,7 +961,7 @@ void ofdmframesync_rxsymbol(ofdmframesync _q)
                     pilot_phase ? 1.0f : -1.0f, 0.0f);
 #endif
             // store resulting...
-            x_phase[n] = (k > _q->M/2) ? (float)k - (float)(_q->M) : (float)k;
+            x_phase[n] = (k > _q->M2) ? (float)k - (float)(_q->M) : (float)k;
             y_phase[n] = cargf(_q->X[k]*conjf(pilot));
 
             // update counter
@@ -977,7 +998,22 @@ void ofdmframesync_rxsymbol(ofdmframesync _q)
         }
     }
 
-    // TODO : adjust NCO frequency based on differential phase
+    // adjust NCO frequency based on differential phase
+    if (_q->num_symbols > 0) {
+        // compute phase error (unwrapped)
+        float dphi_prime = p_phase[0] - _q->phi_prime;
+        while (dphi_prime >  M_PI) dphi_prime -= M_2_PI;
+        while (dphi_prime < -M_PI) dphi_prime += M_2_PI;
+
+        // adjust NCO proportionally to phase error
+        nco_crcf_adjust_frequency(_q->nco_rx, 1e-3f*dphi_prime);
+    }
+    // set internal phase state
+    _q->phi_prime = p_phase[0];
+    //printf("%3u : theta : %12.8f, nco freq: %12.8f\n", _q->num_symbols, p_phase[0], nco_crcf_get_frequency(_q->nco_rx));
+    
+    // increment symbol counter
+    _q->num_symbols++;
 
 #if 0
     for (i=0; i<_q->M_pilot; i++)

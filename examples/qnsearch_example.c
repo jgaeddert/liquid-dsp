@@ -1,5 +1,5 @@
 //
-// quasinewton_search_example.c
+// qnsearch_example.c
 //
 
 #include <stdio.h>
@@ -8,7 +8,7 @@
 
 #include "liquid.h"
 
-#define OUTPUT_FILENAME "quasinewton_search_example.m"
+#define OUTPUT_FILENAME "qnsearch_example.m"
 
 int main() {
     unsigned int num_parameters = 8;    // dimensionality of search (minimum 2)
@@ -27,12 +27,12 @@ int main() {
     fprintf(fid,"clear all;\n");
     fprintf(fid,"close all;\n");
 
-    // create quasinewton_search object
-    quasinewton_search gs = quasinewton_search_create(
+    // create qnsearch object
+    qnsearch gs = qnsearch_create(
         NULL, optimum_vect, num_parameters, &rosenbrock, LIQUID_OPTIM_MINIMIZE);
 
     // execute search
-    //optimum_utility = quasinewton_search_run(gs, num_iterations, -1e-6f);
+    //optimum_utility = qnsearch_run(gs, num_iterations, -1e-6f);
 
     // execute search one iteration at a time
     fprintf(fid,"u = zeros(1,%u);\n", num_iterations);
@@ -40,15 +40,15 @@ int main() {
         optimum_utility = rosenbrock(NULL,optimum_vect,num_parameters);
         fprintf(fid,"u(%3u) = %12.4e;\n", i+1, optimum_utility);
 
-        quasinewton_search_step(gs);
+        qnsearch_step(gs);
 
         if (((i+1)%100)==0)
-            quasinewton_search_print(gs);
+            qnsearch_print(gs);
     }
 
     // print results
     printf("\n");
-    quasinewton_search_print(gs);
+    qnsearch_print(gs);
 
     fprintf(fid,"figure;\n");
     fprintf(fid,"semilogy(u);\n");
@@ -61,7 +61,7 @@ int main() {
 
     // test results, optimum at [1, 1, 1, ... 1];
 
-    quasinewton_search_destroy(gs);
+    qnsearch_destroy(gs);
 
     return 0;
 }

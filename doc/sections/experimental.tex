@@ -355,13 +355,13 @@ during lock is limited by the size of the port.
 % SUBMODULE : optim
 %
 
-\subsection{{\tt quasinewton\_search} }
-\label{module:experimental:quasinewton_search}
+\subsection{{\tt qnsearch} }
+\label{module:experimental:qnsearch}
 % talking points
 %   * second-order gradient search
 %   * improved speed
 %   * higher complexity
-The {\tt quasinewton\_search} object in \liquid\ implements the
+The {\tt qnsearch} object in \liquid\ implements the
 Quasi-Newton search algorithm which uses the first- and second-order
 derivates (gradient vector and Hessian matrix) in its update equation.
 Newtonian-based search algorithms approximate the function to be nearly
@@ -423,9 +423,9 @@ otherwise the algorithm can result in instability.
 %\end{equation}
 %%
 
-An example of the {\tt quasinewton\_search} interface is listed below.
+An example of the {\tt qnsearch} interface is listed below.
 Notice that its interface is virtually identical to that of
 {\tt gradient\_search}.
-% quasinewton_search example
-\input{listings/quasinewton_search.example.c.tex}
+% qnsearch example
+\input{listings/qnsearch.example.c.tex}
 
