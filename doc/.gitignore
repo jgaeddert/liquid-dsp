@@ -59,6 +59,7 @@ scripts/listings_check
 # tutorials
 tutorials/*_tutorial
 tutorials/*.tex
+tutorials/*.out
 
 # ignore all html files
 html/*
