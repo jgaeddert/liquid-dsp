@@ -381,3 +381,64 @@ void packetizer_realloc_buffers(packetizer _p, unsigned int _len)
     _p->buffer_1 = (unsigned char*) realloc(_p->buffer_1, _p->buffer_len);
 }
 
+// Execute the packetizer to decode an input message, return validity
+// check of resulting data; persistent attempts to find error(s)
+//
+//  _p      :   packetizer object
+//  _pkt    :   input message (coded bytes)
+//  _msg    :   decoded output message
+int packetizer_decode_persistent(packetizer _p,
+                                 unsigned char * _pkt,
+                                 unsigned char * _msg)
+{
+    // try regular decoding
+    int crc_pass = packetizer_decode(_p, _pkt, _msg);
+
+    // return if decoding was successful
+    if (crc_pass)
+        return crc_pass;
+
+    unsigned int i;
+    unsigned int key=0;
+
+    // result is stored in _p->buffer_0; flip bits to try to get
+    // CRC to pass
+    for (i=0; i<_p->msg_len + _p->crc_length; i++) {
+        unsigned int j;
+        for (j=0; j<8; j++) {
+            // flip bit
+            unsigned char mask = 1 << (8-j-1);
+            _p->buffer_0[i] ^= mask;
+
+            // strip crc, validate message
+            key = 0;
+            unsigned int k;
+            for (k=0; k<_p->crc_length; k++) {
+                key <<= 8;
+
+                key |= _p->buffer_0[_p->msg_len+k];
+            }
+
+            // compute crc validity
+            crc_pass = crc_validate_message(_p->check,
+                                            _p->buffer_0,
+                                            _p->msg_len,
+                                            key);
+
+            // check validity
+            if (crc_pass) {
+                // copy result to output and return
+                memmove(_msg, _p->buffer_0, _p->msg_len);
+                return crc_pass;
+            } else {
+                // flip bit back
+                _p->buffer_0[i] ^= mask;
+            }
+        }
+    }
+
+    // copy result to output and return
+    memmove(_msg, _p->buffer_0, _p->msg_len);
+    return crc_pass;
+}
+
