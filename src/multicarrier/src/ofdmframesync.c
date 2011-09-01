@@ -108,8 +108,6 @@ struct ofdmframesync_s {
 #if DEBUG_OFDMFRAMESYNC
     agc_crcf agc_rx;        // automatic gain control (rssi)
     windowcf debug_x;
-    windowcf debug_rxx;
-    windowcf debug_rxy;
     windowf  debug_rssi;
     windowcf debug_framesyms;
 #endif
@@ -229,8 +227,6 @@ ofdmframesync ofdmframesync_create(unsigned int _M,
     agc_crcf_set_gain_limits(q->agc_rx, 1e-5f, 1e5f);
 
     q->debug_x =        windowcf_create(DEBUG_OFDMFRAMESYNC_BUFFER_LEN);
-    q->debug_rxx =      windowcf_create(DEBUG_OFDMFRAMESYNC_BUFFER_LEN);
-    q->debug_rxy =      windowcf_create(DEBUG_OFDMFRAMESYNC_BUFFER_LEN);
     q->debug_rssi =     windowf_create(DEBUG_OFDMFRAMESYNC_BUFFER_LEN);
     q->debug_framesyms =windowcf_create(DEBUG_OFDMFRAMESYNC_BUFFER_LEN);
 #endif
@@ -247,8 +243,6 @@ void ofdmframesync_destroy(ofdmframesync _q)
     agc_crcf_destroy(_q->agc_rx);
 
     windowcf_destroy(_q->debug_x);
-    windowcf_destroy(_q->debug_rxx);
-    windowcf_destroy(_q->debug_rxy);
     windowf_destroy(_q->debug_rssi);
     windowcf_destroy(_q->debug_framesyms);
 #endif
@@ -1067,34 +1061,6 @@ void ofdmframesync_debug_print(ofdmframesync _q,
     fprintf(fid,"xlabel('sample index');\n");
     fprintf(fid,"ylabel('received signal, x');\n");
 
-
-    fprintf(fid,"rxx = zeros(1,n);\n");
-    windowcf_read(_q->debug_rxx, &rc);
-    for (i=0; i<DEBUG_OFDMFRAMESYNC_BUFFER_LEN; i++)
-        fprintf(fid,"rxx(%4u) = %12.4e + j*%12.4e;\n", i+1, crealf(rc[i]), cimagf(rc[i]));
-    fprintf(fid,"figure;\n");
-    fprintf(fid,"subplot(2,1,1);\n");
-    fprintf(fid,"   plot(0:(n-1),abs(rxx));\n");
-    fprintf(fid,"   xlabel('sample index');\n");
-    fprintf(fid,"   ylabel('auto-correlation, |rxx|');\n");
-    fprintf(fid,"subplot(2,1,2);\n");
-    fprintf(fid,"   plot(0:(n-1),arg(rxx));\n");
-    fprintf(fid,"   xlabel('sample index');\n");
-    fprintf(fid,"   ylabel('auto-correlation, arg[rxx]');\n");
-
-    fprintf(fid,"rxy = zeros(1,n);\n");
-    windowcf_read(_q->debug_rxy, &rc);
-    for (i=0; i<DEBUG_OFDMFRAMESYNC_BUFFER_LEN; i++)
-        fprintf(fid,"rxy(%4u) = %12.4e + j*%12.4e;\n", i+1, crealf(rc[i]), cimagf(rc[i]));
-    fprintf(fid,"figure;\n");
-    fprintf(fid,"subplot(2,1,1);\n");
-    fprintf(fid,"   plot(0:(n-1),abs(rxy));\n");
-    fprintf(fid,"   xlabel('sample index');\n");
-    fprintf(fid,"   ylabel('cross-correlation, |rxy|');\n");
-    fprintf(fid,"subplot(2,1,2);\n");
-    fprintf(fid,"   plot(0:(n-1),arg(rxy));\n");
-    fprintf(fid,"   xlabel('sample index');\n");
-    fprintf(fid,"   ylabel('cross-correlation, arg[rxy]');\n");
 
     fprintf(fid,"s1 = [];\n");
     for (i=0; i<_q->M; i++)
