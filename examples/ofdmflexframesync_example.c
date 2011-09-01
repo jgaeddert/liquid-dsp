@@ -108,8 +108,8 @@ int main(int argc, char*argv[])
     // derived values
     unsigned int frame_len = M + cp_len;
     float complex buffer[frame_len]; // time-domain buffer
-    float nstd = powf(10.0f, noise_floor/10.0f);
-    float gamma = powf(10.0f, (SNRdB + noise_floor)/10.0f);
+    float nstd = powf(10.0f, noise_floor/20.0f);
+    float gamma = powf(10.0f, (SNRdB + noise_floor)/20.0f);
 
     // allocate memory for header, payload
     unsigned char header[8];

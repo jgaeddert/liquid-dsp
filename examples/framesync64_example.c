@@ -61,8 +61,8 @@ int main() {
     framesync64_print(fs);
 
     // channel
-    float nstd  = powf(10.0f, noise_floor/10.0f);         // noise std. dev.
-    float gamma = powf(10.0f, (SNRdB+noise_floor)/10.0f); // channel gain
+    float nstd  = powf(10.0f, noise_floor/20.0f);         // noise std. dev.
+    float gamma = powf(10.0f, (SNRdB+noise_floor)/20.0f); // channel gain
     nco_crcf nco_channel = nco_crcf_create(LIQUID_VCO);
     nco_crcf_set_phase(nco_channel, phi);
     nco_crcf_set_frequency(nco_channel, dphi);

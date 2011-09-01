@@ -121,16 +121,13 @@ int main(int argc, char*argv[])
                (rand() % 2 ? 1.0f : -1.0f)*_Complex_I;
 
     // filter data signal through channel
-    float complex noise;
-    float gamma = powf(10.0f, -SNRdB/10.0f); // * sqrtf(2.0f);
-    //gamma = 0.0f;
+    float nstd = powf(10.0f, -SNRdB/20.0f);
     for (i=0; i<n; i++) {
         firfilt_cccf_push(f,d[i]);
         firfilt_cccf_execute(f,&y[i]);
 
         // add noise
-        crandnf(&noise);
-        y[i] += noise*gamma;
+        y[i] += nstd * (randnf() + randnf()*_Complex_I) * M_SQRT1_2;
     }
 
     // intialize equalizer coefficients

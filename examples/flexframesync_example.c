@@ -47,8 +47,8 @@ int main(int argc, char *argv[]) {
 
     // derived values
     unsigned int i;
-    float nstd  = powf(10.0f, noise_floor/10.0f);         // noise std. dev.
-    float gamma = powf(10.0f, (SNRdB+noise_floor)/10.0f); // channel gain
+    float nstd  = powf(10.0f, noise_floor/20.0f);         // noise std. dev.
+    float gamma = powf(10.0f, (SNRdB+noise_floor)/20.0f); // channel gain
 
     // create flexframegen object
     flexframegenprops_s fgprops;

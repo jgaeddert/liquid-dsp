@@ -74,8 +74,8 @@ int main(int argc, char*argv[])
     unsigned int num_samples = num_symbols_S0*M +           // short PLCP sequence
                                num_symbols_S1*M + cp_len +  // long PLCP sequence
                                num_symbols_data*frame_len;  // data symbols
-    float nstd = powf(10.0f, noise_floor/10.0f);
-    float gamma = powf(10.0f, (SNRdB + noise_floor)/10.0f);
+    float nstd = powf(10.0f, noise_floor/20.0f);
+    float gamma = powf(10.0f, (SNRdB + noise_floor)/20.0f);
     printf("gamma : %f\n", gamma);
 
     // initialize subcarrier allocation

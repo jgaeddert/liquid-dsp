@@ -333,7 +333,7 @@ void ofdmframesync_execute(ofdmframesync _q,
         agc_crcf_execute(_q->agc_rx, x, &y);
 
         windowcf_push(_q->debug_x, x);
-        windowf_push(_q->debug_rssi, agc_crcf_get_signal_level(_q->agc_rx));
+        windowf_push(_q->debug_rssi, agc_crcf_get_rssi(_q->agc_rx));
 #endif
 
         switch (_q->state) {
@@ -1108,7 +1108,7 @@ void ofdmframesync_debug_print(ofdmframesync _q,
     for (i=0; i<DEBUG_OFDMFRAMESYNC_BUFFER_LEN; i++)
         fprintf(fid,"agc_rssi(%4u) = %12.4e;\n", i+1, r[i]);
     fprintf(fid,"figure;\n");
-    fprintf(fid,"plot(10*log10(agc_rssi))\n");
+    fprintf(fid,"plot(agc_rssi)\n");
     fprintf(fid,"ylabel('RSSI [dB]');\n");
 
     // write short, long symbols

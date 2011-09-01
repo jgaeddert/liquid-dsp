@@ -115,7 +115,7 @@ int main(int argc, char *argv[]) {
     for (s=0; s<num_snr; s++) {
         // compute SNR for this level
         float SNRdB = SNRdB_min + s*SNRdB_step;
-        float nstd = powf(10.0f, -SNRdB/10.0f);
+        float nstd = powf(10.0f, -SNRdB/20.0f);
 
         // reset results
         bit_errors_soft[s] = 0;

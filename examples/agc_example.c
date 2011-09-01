@@ -99,9 +99,9 @@ int main(int argc, char*argv[])
     while (n < num_samples) x[n++] *= 0.0f;
 
     // add noise
-    float noise_std = powf(10.0f, noise_floor / 20.0f);
+    float nstd = powf(10.0f, noise_floor / 20.0f);
     for (i=0; i<num_samples; i++)
-        x[i] += noise_std*(randnf() + _Complex_I*randnf()) * M_SQRT1_2;
+        x[i] += nstd*(randnf() + _Complex_I*randnf()) * M_SQRT1_2;
 
     // run agc
     float complex y;

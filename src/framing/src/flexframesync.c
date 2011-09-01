@@ -437,7 +437,7 @@ void flexframesync_execute(flexframesync _fs, float complex *_x, unsigned int _n
 
 #ifdef DEBUG_FLEXFRAMESYNC
         windowcf_push(_fs->debug_x, _x[i]);
-        windowf_push(_fs->debug_agc_rssi, agc_crcf_get_signal_level(_fs->agc_rx));
+        windowf_push(_fs->debug_agc_rssi, agc_crcf_get_rssi(_fs->agc_rx));
         windowcf_push(_fs->debug_agc_out, agc_rx_out);
 #endif
 
@@ -1067,7 +1067,7 @@ void flexframesync_output_debug_file(flexframesync _fs)
         fprintf(fid,"agc_rssi(%4u) = %12.4e;\n", i+1, r[i]);
     fprintf(fid,"\n\n");
     fprintf(fid,"figure;\n");
-    fprintf(fid,"plot(10*log10(agc_rssi))\n");
+    fprintf(fid,"plot(agc_rssi)\n");
     fprintf(fid,"ylabel('RSSI [dB]');\n");
 
     // write agc out

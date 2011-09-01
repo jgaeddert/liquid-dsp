@@ -195,7 +195,7 @@ int main(int argc, char *argv[])
     ofdmoqamframesync_print(fs);
 
     // channel impairments
-    float nstd = powf(10.0f, -SNRdB/10.0f);
+    float nstd = powf(10.0f, -SNRdB/20.0f);
     float complex hc[hc_len+1];
     for (i=0; i<hc_len+1; i++) {
         hc[i] = (i==0) ? 1.0f : (randnf() + _Complex_I*randnf())*0.707f*fstd;
