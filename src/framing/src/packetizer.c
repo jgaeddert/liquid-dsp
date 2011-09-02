@@ -123,6 +123,11 @@ packetizer packetizer_create(unsigned int _n,
         p->plan[i].f = fec_create(p->plan[i].fs, NULL);
         p->plan[i].q = interleaver_create(p->plan[i].enc_msg_len);
 
+        // set interleaver depth to zero if no error correction scheme
+        // is applied to this plan
+        if (p->plan[i].fs == LIQUID_FEC_NONE)
+            interleaver_set_depth(p->plan[i].q, 0);
+
         // update length
         n0 = p->plan[i].enc_msg_len;
     }
