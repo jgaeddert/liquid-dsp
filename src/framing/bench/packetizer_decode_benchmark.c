@@ -42,8 +42,9 @@ void packetizer_decode_bench(struct rusage * _start,
                              fec_scheme _fec1)
 {
     // adjust number of iterations
-    //  cycles/trial ~ exp{ -0.16636 + 0.73345*log(_n) }
-    *_num_iterations /= expf( -0.16636 + 0.73345*log(_n) );
+    //  k-cycles/trial ~ 221 + 1.6125*_n
+    *_num_iterations *= 1000;
+    *_num_iterations /= 221 + 1.6125*_n;
 
     // create packet generator
     packetizer p = packetizer_create(_n, _crc, _fec0, _fec1);
