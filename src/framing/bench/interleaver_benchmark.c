@@ -67,6 +67,10 @@ void interleaver_bench(struct rusage *_start,
 
 void benchmark_interleaver_8    INTERLEAVER_BENCH_API(8     )
 void benchmark_interleaver_16   INTERLEAVER_BENCH_API(16    )
+void benchmark_interleaver_32   INTERLEAVER_BENCH_API(32    )
 void benchmark_interleaver_64   INTERLEAVER_BENCH_API(64    )
+void benchmark_interleaver_128  INTERLEAVER_BENCH_API(128   )
 void benchmark_interleaver_256  INTERLEAVER_BENCH_API(256   )
+void benchmark_interleaver_512  INTERLEAVER_BENCH_API(512   )
+void benchmark_interleaver_1024 INTERLEAVER_BENCH_API(1024  )
 
