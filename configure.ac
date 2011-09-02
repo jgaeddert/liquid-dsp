@@ -74,6 +74,7 @@ AC_ARG_ENABLE(experimental,
             src/experimental/src/filter_cccf.o \
             src/experimental/src/gmskframegen.o \
             src/experimental/src/gmskframesync.o \
+            src/experimental/src/packetizer.o \
             src/experimental/src/patternset.o \
             src/experimental/src/awgn_channel.o \
             src/experimental/src/lognorm_channel.o \
