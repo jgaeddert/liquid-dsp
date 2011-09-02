@@ -1100,6 +1100,15 @@ int  packetizer_decode_persistent(packetizer _p,
                                   unsigned char * _pkt,
                                   unsigned char * _msg);
 
+// Persistent decoding; try flipping bits on output to find resulting error(s)
+//
+//  _p      :   packetizer object
+//  _pkt    :   input message (coded bytes)
+//  _msg    :   decoded output message
+int  packetizer_decode_persistent2(packetizer _p,
+                                   unsigned char * _pkt,
+                                   unsigned char * _msg);
+
 
 //
 // bpacket
