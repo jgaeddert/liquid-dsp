@@ -21,6 +21,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <math.h>
 #include <sys/resource.h>
 
 #include "liquid.internal.h"
@@ -41,7 +42,8 @@ void packetizer_decode_bench(struct rusage * _start,
                              fec_scheme _fec1)
 {
     // adjust number of iterations
-    *_num_iterations /= 10;
+    //  cycles/trial ~ exp{ -0.16636 + 0.73345*log(_n) }
+    *_num_iterations /= expf( -0.16636 + 0.73345*log(_n) );
 
     // create packet generator
     packetizer p = packetizer_create(_n, _crc, _fec0, _fec1);
@@ -60,6 +62,9 @@ void packetizer_decode_bench(struct rusage * _start,
 
     // encode packet
     packetizer_encode(p, msg_org, msg_rec);
+
+    // corrupt data
+    msg_rec[0] ^= 0x0f;
 
     // initialize original data message
     for (i=0; i<_n; i++)
@@ -87,5 +92,11 @@ void packetizer_decode_bench(struct rusage * _start,
 //
 // BENCHMARKS
 //
-void benchmark_packetizer_n64_0_0   PACKETIZER_DECODE_BENCH_API(64, LIQUID_CRC_32, LIQUID_FEC_NONE, LIQUID_FEC_NONE)
+void benchmark_packetizer_n16   PACKETIZER_DECODE_BENCH_API(16,   LIQUID_CRC_32, LIQUID_FEC_NONE, LIQUID_FEC_NONE)
+void benchmark_packetizer_n32   PACKETIZER_DECODE_BENCH_API(32,   LIQUID_CRC_32, LIQUID_FEC_NONE, LIQUID_FEC_NONE)
+void benchmark_packetizer_n64   PACKETIZER_DECODE_BENCH_API(64,   LIQUID_CRC_32, LIQUID_FEC_NONE, LIQUID_FEC_NONE)
+void benchmark_packetizer_n128  PACKETIZER_DECODE_BENCH_API(128,  LIQUID_CRC_32, LIQUID_FEC_NONE, LIQUID_FEC_NONE)
+void benchmark_packetizer_n256  PACKETIZER_DECODE_BENCH_API(256,  LIQUID_CRC_32, LIQUID_FEC_NONE, LIQUID_FEC_NONE)
+void benchmark_packetizer_n512  PACKETIZER_DECODE_BENCH_API(512,  LIQUID_CRC_32, LIQUID_FEC_NONE, LIQUID_FEC_NONE)
+void benchmark_packetizer_n1024 PACKETIZER_DECODE_BENCH_API(1024, LIQUID_CRC_32, LIQUID_FEC_NONE, LIQUID_FEC_NONE)
 
