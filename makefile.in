@@ -478,6 +478,7 @@ framing_benchmarks :=						\
 	src/framing/bench/bpacketsync_benchmark.c		\
 	src/framing/bench/flexframesync_benchmark.c		\
 	src/framing/bench/interleaver_benchmark.c		\
+	src/framing/bench/packetizer_benchmark.c		\
 
 
 # 
