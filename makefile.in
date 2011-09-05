@@ -1151,6 +1151,7 @@ example_programs :=						\
 	examples/decim_rrrf_example				\
 	examples/dotprod_rrrf_example				\
 	examples/dotprod_cccf_example				\
+	examples/eqlms_cccf_blind_example			\
 	examples/eqlms_cccf_example				\
 	examples/eqrls_cccf_example				\
 	examples/fec_example					\
