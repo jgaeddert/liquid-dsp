@@ -41,6 +41,7 @@ src/math_window
 src/modem_demodsoft
 src/modem.gendata
 src/modem.genplot
+src/modem_phase_error
 src/nco_pll
 src/optim_gradsearch
 src/quantization_adc

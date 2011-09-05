@@ -206,6 +206,7 @@ local_progs :=						\
 	src/modem_demodsoft				\
 	src/modem.genplot				\
 	src/modem.gendata				\
+	src/modem_phase_error				\
 	src/nco_pll					\
 	src/optim_gradsearch				\
 	src/quantization_adc				\
