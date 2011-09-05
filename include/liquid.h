@@ -2717,14 +2717,39 @@ unsigned int modem_get_bps(modem _mod);
 
 // generic modulate function; simply queries modem scheme and calls
 // appropriate subroutine
-void modem_modulate(modem _mod, unsigned int _s, liquid_float_complex *_y);
+//  _mod    :   modem object
+//  _s      :   input symbol
+//  _x      :   output sample
+void modem_modulate(modem _mod,
+                    unsigned int _s,
+                    liquid_float_complex *_y);
 
-void modem_demodulate(modem _demod, liquid_float_complex _x, unsigned int *_s);
+// generic hard-decision demodulation function
+//  _demod  :   modem object
+//  _x      :   input sample
+//  _s      :   output symbol
+void modem_demodulate(modem _demod,
+                      liquid_float_complex _x,
+                      unsigned int * _s);
+
+// generic soft-decision demodulation function
+//  _demod      :   modem object
+//  _x          :   input sample
+//  _s          :   output hard symbol
+//  _soft_bits  :   output soft bits
 void modem_demodulate_soft(modem _demod,
                            liquid_float_complex _x,
                            unsigned int  * _s,
                            unsigned char * _soft_bits);
+
+// get demodulator's estimated transmit sample
+void modem_get_demodulator_sample(modem _demod,
+                                  liquid_float_complex * _x_hat);
+
+// get demodulator phase error
 float modem_get_demodulator_phase_error(modem _demod);
+
+// get demodulator error vector magnitude
 float modem_get_demodulator_evm(modem _demod);
 
 

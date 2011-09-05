@@ -387,6 +387,13 @@ void modem_demodulate_apsk(modem _mod,
     _mod->r = _x;
 }
 
+// get demodulator's estimated transmit sample
+void modem_get_demodulator_sample(modem _demod,
+                                  float complex * _x_hat)
+{
+    *_x_hat = _demod->x_hat;
+}
+
 // get demodulator phase error
 float modem_get_demodulator_phase_error(modem _demod)
 {
