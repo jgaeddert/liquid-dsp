@@ -1261,75 +1261,75 @@ clean-examples:
 
 # NOTE: sandbox _requires_ fftw3 to build
 .PHONY: sandbox
-sandbox_obj =							\
-	sandbox/crc_gentab.o					\
-	sandbox/ellip_func_test.o				\
-	sandbox/ellip_test.o					\
-	sandbox/eqlms_cccf_test.o				\
-	sandbox/fecsoft_ber_test.o				\
-	sandbox/fec_hamming3126_example.o			\
-	sandbox/fec_hamming128_gentab.o				\
-	sandbox/fec_hamming128_example.o			\
-	sandbox/fec_hamming74_gentab.o				\
-	sandbox/fec_hamming84_gentab.o				\
-	sandbox/fec_hamming_test.o				\
-	sandbox/fec_rep3_test.o					\
-	sandbox/fec_rep5_test.o					\
-	sandbox/fecsoft_conv_test.o				\
-	sandbox/fecsoft_golay_test.o				\
-	sandbox/fecsoft_hamming128_gentab.o			\
-	sandbox/fec_sumproduct_test.o				\
-	sandbox/fft_r2r_test.o					\
-	sandbox/firdes_energy_test.o				\
-	sandbox/firdes_length_test.o				\
-	sandbox/firpfbch_analysis_alignment_test.o		\
-	sandbox/firpfbch_analysis_equivalence_test.o		\
-	sandbox/firpfbch_synthesis_equivalence_test.o		\
-	sandbox/householder_test.o				\
-	sandbox/iirdes_example.o				\
-	sandbox/ldpc_genmatrix_test.o				\
-	sandbox/ldpc_test.o					\
-	sandbox/levinson_test.o					\
-	sandbox/matched_filter_test.o				\
-	sandbox/matched_filter_cfo_test.o			\
-	sandbox/math_lngamma_test.o				\
-	sandbox/math_cacosf_test.o				\
-	sandbox/math_casinf_test.o				\
-	sandbox/math_catanf_test.o				\
-	sandbox/math_cexpf_test.o				\
-	sandbox/math_clogf_test.o				\
-	sandbox/math_csqrtf_test.o				\
-	sandbox/minsearch_test.o				\
-	sandbox/minsearch2_test.o				\
-	sandbox/matrix_eig_test.o				\
-	sandbox/modem_demodulate_arb_gentab.o			\
-	sandbox/modem_demodulate_soft_test.o			\
-	sandbox/modem_demodulate_soft_gentab.o			\
-	sandbox/ofdmoqam_firpfbch_test.o			\
-	sandbox/ofdmoqam_firpfbch_cfo_test.o			\
-	sandbox/packetizer_persistent_ber_test.o		\
-	sandbox/quasinewton_test.o				\
-	sandbox/rkaiser2_test.o					\
-	sandbox/simplex_test.o					\
-	sandbox/svd_test.o					\
-	sandbox/thiran_allpass_iir_test.o			\
-#	firpfbch_analysis_test.o
+sandbox_programs =						\
+	sandbox/crc_gentab					\
+	sandbox/ellip_func_test					\
+	sandbox/ellip_test					\
+	sandbox/eqlms_cccf_test					\
+	sandbox/fecsoft_ber_test				\
+	sandbox/fec_hamming3126_example				\
+	sandbox/fec_hamming128_gentab				\
+	sandbox/fec_hamming128_example				\
+	sandbox/fec_hamming74_gentab				\
+	sandbox/fec_hamming84_gentab				\
+	sandbox/fec_hamming_test				\
+	sandbox/fec_rep3_test					\
+	sandbox/fec_rep5_test					\
+	sandbox/fecsoft_conv_test				\
+	sandbox/fecsoft_golay_test				\
+	sandbox/fecsoft_hamming128_gentab			\
+	sandbox/fec_sumproduct_test				\
+	sandbox/fft_r2r_test					\
+	sandbox/firdes_energy_test				\
+	sandbox/firdes_length_test				\
+	sandbox/firpfbch_analysis_alignment_test		\
+	sandbox/firpfbch_analysis_equivalence_test		\
+	sandbox/firpfbch_synthesis_equivalence_test		\
+	sandbox/householder_test				\
+	sandbox/iirdes_example					\
+	sandbox/ldpc_genmatrix_test				\
+	sandbox/ldpc_test					\
+	sandbox/levinson_test					\
+	sandbox/matched_filter_test				\
+	sandbox/matched_filter_cfo_test				\
+	sandbox/math_lngamma_test				\
+	sandbox/math_cacosf_test				\
+	sandbox/math_casinf_test				\
+	sandbox/math_catanf_test				\
+	sandbox/math_cexpf_test					\
+	sandbox/math_clogf_test					\
+	sandbox/math_csqrtf_test				\
+	sandbox/minsearch_test					\
+	sandbox/minsearch2_test					\
+	sandbox/matrix_eig_test					\
+	sandbox/modem_demodulate_arb_gentab			\
+	sandbox/modem_demodulate_soft_test			\
+	sandbox/modem_demodulate_soft_gentab			\
+	sandbox/ofdmoqam_firpfbch_test				\
+	sandbox/ofdmoqam_firpfbch_cfo_test			\
+	sandbox/packetizer_persistent_ber_test			\
+	sandbox/quasinewton_test				\
+	sandbox/rkaiser2_test					\
+	sandbox/simplex_test					\
+	sandbox/svd_test					\
+	sandbox/thiran_allpass_iir_test				\
+#	firpfbch_analysis_test
 
 
-sandbox_progs	= $(patsubst %.o,%, $(sandbox_obj))
-sandbox: $(sandbox_progs)
+sandbox_objects	= $(patsubst %,%.o,$(sandbox_programs))
+sandbox: $(sandbox_programs)
 SANDBOX_LDFLAGS = $(LDFLAGS) -lfftw3f
 
 # NOTE: linked libraries must come _after_ the target program
-$(sandbox_obj): %.o : %.c
+$(sandbox_objects): %.o : %.c
 
-$(sandbox_progs): % : %.o libliquid.a
+$(sandbox_programs): % : %.o libliquid.a
 	$(CC) $(SANDBOX_LDFLAGS) $^ -o $@
 
 # clean sandbox
 clean-sandbox:
 	$(RM) sandbox/*.o
-	$(RM) $(sandbox_progs)
+	$(RM) $(sandbox_programs)
 
 
 ## 
