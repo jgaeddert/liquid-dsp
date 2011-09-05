@@ -1129,130 +1129,131 @@ clean-bench:
 ## TARGET : examples - build all examples binaries
 ##
 .PHONY: examples
-example_obj :=							\
-	examples/agc_example.o					\
-	examples/agc_qpsk_example.o				\
-	examples/agc_squelch_example.o				\
-	examples/smatrix_example.o				\
-	examples/ampmodem_example.o				\
-	examples/asgram_example.o				\
-	examples/autocorr_cccf_example.o			\
-	examples/bpacketsync_example.o				\
-	examples/bsequence_example.o				\
-	examples/bufferf_example.o				\
-	examples/chromosome_example.o				\
-	examples/compand_example.o				\
-	examples/compand_cf_example.o				\
-	examples/complementary_codes_example.o			\
-	examples/crc_example.o					\
-	examples/cgsolve_example.o				\
-	examples/cvsd_example.o					\
-	examples/decim_crcf_example.o				\
-	examples/decim_rrrf_example.o				\
-	examples/dotprod_rrrf_example.o				\
-	examples/dotprod_cccf_example.o				\
-	examples/eqlms_cccf_example.o				\
-	examples/eqrls_cccf_example.o				\
-	examples/fec_example.o					\
-	examples/fec_soft_example.o				\
-	examples/fct_example.o					\
-	examples/fft_example.o					\
-	examples/firfarrow_rrrf_example.o			\
-	examples/firfarrow_rrrf_sine_example.o			\
-	examples/firfilt_rrrf_example.o				\
-	examples/firfilt_rrrf_recreate_example.o		\
-	examples/firdes_kaiser_example.o			\
-	examples/firdespm_example.o				\
-	examples/firhilb_example.o				\
-	examples/firhilb_decim_example.o			\
-	examples/firhilb_interp_example.o			\
-	examples/firpfb_rrrf_example.o				\
-	examples/firpfbch_example.o				\
-	examples/firpfbch_analysis_example.o			\
-	examples/firpfbch_synthesis_example.o			\
-	examples/flexframesync_example.o			\
-	examples/flexframesync_advanced_example.o		\
-	examples/flexframesync_reconfig_example.o		\
-	examples/framesync64_example.o				\
-	examples/freqmodem_example.o				\
-	examples/gasearch_example.o				\
-	examples/gasearch_knapsack_example.o			\
-	examples/gmskmodem_example.o				\
-	examples/gradsearch_datafit_example.o			\
-	examples/gradsearch_example.o				\
-	examples/interleaver_example.o				\
-	examples/interleaver_soft_example.o			\
-	examples/interleaver_scatterplot_example.o		\
-	examples/iirdes_example.o				\
-	examples/iirdes_analog_example.o			\
-	examples/iirdes_pll_example.o				\
-	examples/iirfilt_crcf_example.o				\
-	examples/interp_crcf_example.o				\
-	examples/kbd_window_example.o				\
-	examples/lpc_example.o					\
-	examples/matched_filter_example.o			\
-	examples/matrix_example.o				\
-	examples/math_lngamma_example.o				\
-	examples/mdct_example.o					\
-	examples/modem_arb_example.o				\
-	examples/modem_example.o				\
-	examples/modem_soft_example.o				\
-	examples/msequence_example.o				\
-	examples/nco_example.o					\
-	examples/nco_pll_example.o				\
-	examples/nco_pll_modem_example.o			\
-	examples/nyquist_filter_example.o			\
-	examples/ofdmflexframesync_example.o			\
-	examples/ofdmframesync_example.o			\
-	examples/ofdmoqam_example.o				\
-	examples/ofdmoqam_firpfbch_example.o			\
-	examples/ofdmoqamframesync_example.o			\
-	examples/packetizer_example.o				\
-	examples/packetizer_soft_example.o			\
-	examples/pll_example.o					\
-	examples/polyfit_example.o				\
-	examples/polyfit_lagrange_example.o			\
-	examples/poly_findroots_example.o			\
-	examples/quantize_example.o				\
-	examples/qnsearch_example.o				\
-	examples/random_example.o				\
-	examples/random_histogram_example.o			\
-	examples/repack_bytes_example.o				\
-	examples/resamp_crcf_example.o				\
-	examples/resamp2_crcf_example.o				\
-	examples/resamp2_crcf_decim_example.o			\
-	examples/resamp2_crcf_filter_example.o			\
-	examples/resamp2_crcf_filterbank_example.o		\
-	examples/resamp2_crcf_interp_example.o			\
-	examples/resamp2_crcf_interp_recreate_example.o		\
-	examples/scramble_example.o				\
-	examples/symsync_crcf_example.o				\
-	examples/symsync_rrrf_example.o				\
-	examples/wdelayf_example.o				\
-	examples/windowf_example.o				\
+example_programs :=						\
+	examples/agc_example					\
+	examples/agc_qpsk_example				\
+	examples/agc_squelch_example				\
+	examples/smatrix_example				\
+	examples/ampmodem_example				\
+	examples/asgram_example					\
+	examples/autocorr_cccf_example				\
+	examples/bpacketsync_example				\
+	examples/bsequence_example				\
+	examples/bufferf_example				\
+	examples/chromosome_example				\
+	examples/compand_example				\
+	examples/compand_cf_example				\
+	examples/complementary_codes_example			\
+	examples/crc_example					\
+	examples/cgsolve_example				\
+	examples/cvsd_example					\
+	examples/decim_crcf_example				\
+	examples/decim_rrrf_example				\
+	examples/dotprod_rrrf_example				\
+	examples/dotprod_cccf_example				\
+	examples/eqlms_cccf_example				\
+	examples/eqrls_cccf_example				\
+	examples/fec_example					\
+	examples/fec_soft_example				\
+	examples/fct_example					\
+	examples/fft_example					\
+	examples/firfarrow_rrrf_example				\
+	examples/firfarrow_rrrf_sine_example			\
+	examples/firfilt_rrrf_example				\
+	examples/firfilt_rrrf_recreate_example			\
+	examples/firdes_kaiser_example				\
+	examples/firdespm_example				\
+	examples/firhilb_example				\
+	examples/firhilb_decim_example				\
+	examples/firhilb_interp_example				\
+	examples/firpfb_rrrf_example				\
+	examples/firpfbch_example				\
+	examples/firpfbch_analysis_example			\
+	examples/firpfbch_synthesis_example			\
+	examples/flexframesync_example				\
+	examples/flexframesync_advanced_example			\
+	examples/flexframesync_reconfig_example			\
+	examples/framesync64_example				\
+	examples/freqmodem_example				\
+	examples/gasearch_example				\
+	examples/gasearch_knapsack_example			\
+	examples/gmskmodem_example				\
+	examples/gradsearch_datafit_example			\
+	examples/gradsearch_example				\
+	examples/interleaver_example				\
+	examples/interleaver_soft_example			\
+	examples/interleaver_scatterplot_example		\
+	examples/iirdes_example					\
+	examples/iirdes_analog_example				\
+	examples/iirdes_pll_example				\
+	examples/iirfilt_crcf_example				\
+	examples/interp_crcf_example				\
+	examples/kbd_window_example				\
+	examples/lpc_example					\
+	examples/matched_filter_example				\
+	examples/matrix_example					\
+	examples/math_lngamma_example				\
+	examples/mdct_example					\
+	examples/modem_arb_example				\
+	examples/modem_example					\
+	examples/modem_soft_example				\
+	examples/msequence_example				\
+	examples/nco_example					\
+	examples/nco_pll_example				\
+	examples/nco_pll_modem_example				\
+	examples/nyquist_filter_example				\
+	examples/ofdmflexframesync_example			\
+	examples/ofdmframesync_example				\
+	examples/ofdmoqam_example				\
+	examples/ofdmoqam_firpfbch_example			\
+	examples/ofdmoqamframesync_example			\
+	examples/packetizer_example				\
+	examples/packetizer_soft_example			\
+	examples/pll_example					\
+	examples/polyfit_example				\
+	examples/polyfit_lagrange_example			\
+	examples/poly_findroots_example				\
+	examples/quantize_example				\
+	examples/qnsearch_example				\
+	examples/random_example					\
+	examples/random_histogram_example			\
+	examples/repack_bytes_example				\
+	examples/resamp_crcf_example				\
+	examples/resamp2_crcf_example				\
+	examples/resamp2_crcf_decim_example			\
+	examples/resamp2_crcf_filter_example			\
+	examples/resamp2_crcf_filterbank_example		\
+	examples/resamp2_crcf_interp_example			\
+	examples/resamp2_crcf_interp_recreate_example		\
+	examples/scramble_example				\
+	examples/symsync_crcf_example				\
+	examples/symsync_rrrf_example				\
+	examples/wdelayf_example				\
+	examples/windowf_example				\
 	@EXPERIMENTAL_EXAMPLES@
 
-#	examples/metadata_example.o
-#	examples/ofdmframegen_example.o
-#	examples/ofdmoqamframe64gen_example.o
-#	examples/ofdmoqamframe64sync_example.o
-#	examples/gmskframe_example.o
-#	examples/fading_generator_example.o
-#	examples/ricek_channel_example.o
+#	examples/metadata_example
+#	examples/ofdmframegen_example
+#	examples/ofdmoqamframe64gen_example
+#	examples/ofdmoqamframe64sync_example
+#	examples/gmskframe_example
+#	examples/fading_generator_example
+#	examples/ricek_channel_example
 
-example_progs	= $(patsubst %.o,%,  $(example_obj))
-examples: $(example_progs)
+example_objects	= $(patsubst %,%.o,$(example_programs))
+examples: $(example_programs)
+
 EXAMPLES_LDFLAGS = $(LDFLAGS)
 
 # NOTE: linked libraries must come _after_ the target program
-$(example_objs): %.o : %.c
+$(example_objects): %.o : %.c
 
-$(example_progs): % : %.o libliquid.a
+$(example_programs): % : %.o libliquid.a
 
 # clean examples
 clean-examples:
 	$(RM) examples/*.o
-	$(RM) $(example_progs)
+	$(RM) $(example_programs)
 
 ## 
 ## TARGET : sandbox - build all sandbox binaries

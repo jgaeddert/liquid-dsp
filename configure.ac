@@ -91,29 +91,29 @@ AC_ARG_ENABLE(experimental,
             src/experimental/bench/gport_ima_threaded_benchmark.c \
             src/experimental/bench/dds_benchmark.c \
             src/experimental/bench/qmfb_benchmark.c"
-        EXPERIMENTAL_EXAMPLES="examples/ann_bitpattern_example.o \
-            examples/ann_example.o \
-            examples/ann_layer_example.o \
-            examples/ann_maxnet_example.o \
-            examples/ann_node_example.o \
-            examples/ann_xor_example.o \
-            examples/dds_cccf_example.o \
-            examples/fbasc_example.o \
-            examples/gport_dma_example.o \
-            examples/gport_dma_threaded_example.o \
-            examples/gport_ima_example.o \
-            examples/gport_ima_threaded_example.o \
-            examples/gport_mma_threaded_example.o \
-            examples/iirqmfb_crcf_example.o \
-            examples/itqmfb_crcf_example.o \
-            examples/itqmfb_rrrf_example.o \
-            examples/kmeans_example.o \
-            examples/patternset_example.o \
-            examples/prqmfb_crcf_example.o \
-            examples/qmfb_crcf_analysis_example.o \
-            examples/qmfb_crcf_synthesis_example.o \
-            examples/symsync2_crcf_example.o \
-            examples/symsynclp_crcf_example.o"
+        EXPERIMENTAL_EXAMPLES="examples/ann_bitpattern_example \
+            examples/ann_example \
+            examples/ann_layer_example \
+            examples/ann_maxnet_example \
+            examples/ann_node_example \
+            examples/ann_xor_example \
+            examples/dds_cccf_example \
+            examples/fbasc_example \
+            examples/gport_dma_example \
+            examples/gport_dma_threaded_example \
+            examples/gport_ima_example \
+            examples/gport_ima_threaded_example \
+            examples/gport_mma_threaded_example \
+            examples/iirqmfb_crcf_example \
+            examples/itqmfb_crcf_example \
+            examples/itqmfb_rrrf_example \
+            examples/kmeans_example \
+            examples/patternset_example \
+            examples/prqmfb_crcf_example \
+            examples/qmfb_crcf_analysis_example \
+            examples/qmfb_crcf_synthesis_example \
+            examples/symsync2_crcf_example \
+            examples/symsynclp_crcf_example"
         AC_DEFINE(LIQUID_EXPERIMENTAL)
         AC_CHECK_HEADERS(pthread.h)
         AC_CHECK_LIB([pthread], [pthread_mutex_init], [],
