@@ -35,8 +35,8 @@ const char * fec_scheme_str[LIQUID_FEC_NUM_SCHEMES][2] = {
     // short name,  long name
     {"unknown",     "unknown"},
     {"none",        "none"},
-    {"r3",          "repeat(3)"},
-    {"r5",          "repeat(5)"},
+    {"rep3",        "repeat(3)"},
+    {"rep5",        "repeat(5)"},
     {"h74",         "Hamming(7,4)"},
     {"h84",         "Hamming(8,4)"},
     {"h128",        "Hamming(12,8)"},
