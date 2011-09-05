@@ -951,7 +951,7 @@ sources += $(extra_sources)
 
 
 ##
-## TARGET : all - build shared library (default)
+## TARGET : all       - build shared library (default)
 ##
 .PHONY: all
 
@@ -976,7 +976,7 @@ libliquid.so: libliquid.a
 all: libliquid.a $(SHARED_LIB)
 
 ##
-## TARGET : help - print list of targets (see documentation for more)
+## TARGET : help      - print list of targets (see documentation for more)
 ##
 
 # look for all occurences of '## TARGET : ' and print rest of line to screen
@@ -985,7 +985,7 @@ help:
 	@$(GREP) -E "^## TARGET : " [Mm]akefile | $(SED) 's/## TARGET : /  /'
 
 ## 
-## TARGET : install - installs the libraries and header files in the host system
+## TARGET : install   - installs the libraries and header files in the host system
 ##
 
 install:
@@ -1035,7 +1035,7 @@ clean-autoscript :
 
 
 ##
-## TARGET : check - build and run autotest scripts
+## TARGET : check     - build and run autotest scripts
 ##
 
 # Autotests are used to check the validity and accuracy of the
@@ -1080,7 +1080,7 @@ clean-check:
 
 
 ##
-## TARGET : bench - build and run all benchmarks
+## TARGET : bench     - build and run all benchmarks
 ##
 
 # Benchmarks measure the relative speed of the DSP algorithms running
@@ -1126,7 +1126,7 @@ clean-bench:
 
 
 ## 
-## TARGET : examples - build all examples binaries
+## TARGET : examples  - build all examples binaries
 ##
 .PHONY: examples
 example_programs :=						\
@@ -1256,7 +1256,7 @@ clean-examples:
 	$(RM) $(example_programs)
 
 ## 
-## TARGET : sandbox - build all sandbox binaries
+## TARGET : sandbox   - build all sandbox binaries
 ##
 
 # NOTE: sandbox _requires_ fftw3 to build
@@ -1333,7 +1333,7 @@ clean-sandbox:
 
 
 ## 
-## TARGET : doc - build documentation (doc/liquid.pdf)
+## TARGET : doc       - build documentation (doc/liquid.pdf)
 ##
 
 doc : doc/liquid.pdf
@@ -1352,12 +1352,12 @@ distclean-doc :
 .PHONY: clean
 
 ##
-## TARGET : world - build absolutely everything
+## TARGET : world     - build absolutely everything
 ##
 world : all check bench examples sandbox doc
 
 ##
-## TARGET : clean - clean build (objects, dependencies, libraries, etc.)
+## TARGET : clean     - clean build (objects, dependencies, libraries, etc.)
 ##
 
 clean-modules:
