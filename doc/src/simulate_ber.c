@@ -20,26 +20,23 @@
 void usage()
 {
     printf("simulate_ber options:\n");
-    printf("  u/h   :   print usage\n");
-    printf("  v/q   :   verbose/quiet\n");
-    printf("  o     :   output filename, default: %s\n", OUTPUT_FILENAME);
-    printf("  s     :   SNR start [dB], -5\n");
-    printf("  d     :   SNR step [dB], 0.2\n");
-    printf("  x     :   SNR max [dB], 25\n");
-    printf("  b     :   BER min, 1e-4\n");
-    printf("  t     :   max trials, 20000000\n");
-    printf("  n     :   min trials, 100000\n");
-    printf("  e     :   min errors, 1000\n");
-    printf("  f     :   frame bytes, 256\n");
-    printf("  m     :   mod scheme\n");
+    printf("  u/h   : print usage\n");
+    printf("  v/q   : verbose/quiet\n");
+    printf("  o     : output filename, default: %s\n", OUTPUT_FILENAME);
+    printf("  s     : SNR start [dB], -5\n");
+    printf("  d     : SNR step [dB], 0.2\n");
+    printf("  x     : SNR max [dB], 25\n");
+    printf("  b     : BER min, 1e-4\n");
+    printf("  t     : max trials, 20000000\n");
+    printf("  n     : min trials, 100000\n");
+    printf("  e     : min errors, 1000\n");
+    printf("  f     : frame bytes, 256\n");
+    printf("  m     : mod scheme\n");
     liquid_print_modulation_schemes();
-    printf("  c     :   fec coding scheme (inner)\n");
-    printf("  k     :   fec coding scheme (outer)\n");
-    // print all available FEC schemes
-    unsigned int i;
-    for (i=0; i<LIQUID_FEC_NUM_SCHEMES; i++)
-        printf("          [%s] %s\n", fec_scheme_str[i][0], fec_scheme_str[i][1]);
-    printf("  S/H   :   soft/hard decoding, default: hard\n");
+    printf("  c     : fec coding scheme (inner)\n");
+    printf("  k     : fec coding scheme (outer)\n");
+    liquid_print_fec_schemes();
+    printf("  S/H   : soft/hard decoding, default: hard\n");
 }
 
 int main(int argc, char *argv[]) {

@@ -25,17 +25,10 @@ void usage()
     printf("  n     : number of decoded bytes, default: 1024\n");
     printf("  p     : modulation depth, default: 2 [bits/symbol]\n");
     printf("  m     : modulation scheme, default: psk\n");
-
-    // print all available MOD schemes
-    unsigned int i;
-    for (i=0; i<LIQUID_MODEM_NUM_SCHEMES; i++)
-        printf("          %s\n", modulation_scheme_str[i][0]);
-
+    liquid_print_modulation_schemes();
     printf("  c     : coding scheme (inner), default: h74\n");
     printf("  k     : coding scheme (outer), default: none\n");
-    // print all available FEC schemes
-    for (i=0; i<LIQUID_FEC_NUM_SCHEMES; i++)
-        printf("          [%s] %s\n", fec_scheme_str[i][0], fec_scheme_str[i][1]);
+    liquid_print_fec_schemes();
     printf("  S/H   : soft/hard decoding: default: hard\n");
 }
 
