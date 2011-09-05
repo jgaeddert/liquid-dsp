@@ -1,7 +1,7 @@
 // 
 // eqlms_cccf_blind_example.c
 //
-// Tests least mean-squares (LMS) equalizer (EQ) on a QPSK
+// Tests least mean-squares (LMS) equalizer (EQ) on a
 // signal at the symbol level.
 //
 
@@ -10,12 +10,26 @@
 #include <string.h>
 #include <math.h>
 #include <complex.h>
+#include <getopt.h>
 #include <time.h>
 #include "liquid.h"
 
 #define OUTPUT_FILENAME "eqlms_cccf_blind_example.m"
 
-int main() {
+// print usage/help message
+void usage()
+{
+    printf("Usage: eqlms_cccf_blind_example [OPTION]\n");
+    printf("  u/h   : print usage\n");
+    printf("  n     : number of symbols, default: 500\n");
+    printf("  s     : SNR [dB], default: 30\n");
+    printf("  c     : number of channel filter taps (minimum: 1), default: 5\n");
+    printf("  m     : modulation scheme (qpsk default)\n");
+    liquid_print_modulation_schemes();
+}
+
+int main(int argc, char*argv[])
+{
     srand(time(NULL));
 
     // options
@@ -25,9 +39,40 @@ int main() {
     float mu = 0.08f;               // learning rate
     float SNRdB = 30.0f;            // signal-to-noise ratio [dB]
 
+    // modulation type
+    unsigned int bps=2;
+    modulation_scheme ms = LIQUID_MODEM_QPSK;
+
     unsigned int k=2;               // matched filter samples/symbol
     unsigned int m=5;               // matched filter delay (symbols)
     float beta=0.3f;                // matched filter excess bandwidth factor
+
+    int dopt;
+    while ((dopt = getopt(argc,argv,"uhn:s:c:m:")) != EOF) {
+        switch (dopt) {
+        case 'u':
+        case 'h':   usage();                    return 0;
+        case 'n':   num_symbols = atoi(optarg); break;
+        case 's':   SNRdB = atof(optarg);       break;
+        case 'c':   hc_len = atoi(optarg);      break;
+        case 'm':
+            liquid_getopt_str2modbps(optarg, &ms, &bps);
+            if (ms == LIQUID_MODEM_UNKNOWN) {
+                fprintf(stderr,"error: %s, unknown/unsupported modulation scheme '%s'\n", argv[0], optarg);
+                return 1;
+            }
+            break;
+        default:
+            fprintf(stderr,"error: %s, unknown option\n", argv[0]);
+            return 1;
+        }
+    }
+
+    // validate input
+    if (hc_len == 0) {
+        fprintf(stderr,"error: %s, channel must have at least 1 tap\n", argv[0]);
+        exit(1);
+    }
 
     // derived values
     unsigned int hm_len = 2*k*m+1;   // matched filter length
@@ -49,6 +94,11 @@ int main() {
     design_rnyquist_filter(LIQUID_RNYQUIST_RRC, k, m, beta, 0.0f, hm);
     interp_crcf interp = interp_crcf_create(k, hm, hm_len);
 
+    // create the modem objects
+    modem mod   = modem_create(ms, bps);
+    modem demod = modem_create(ms, bps);
+    unsigned int M = 1 << modem_get_bps(mod);
+
     // generate channel impulse response, filter
     hc[0] = 1.0f;
     for (i=1; i<hc_len; i++)
@@ -56,10 +106,8 @@ int main() {
     firfilt_cccf fchannel = firfilt_cccf_create(hc, hc_len);
 
     // generate random symbols
-    for (i=0; i<num_symbols; i++) {
-        sym_tx[i] = (rand() % 2 ? M_SQRT1_2 : -M_SQRT1_2) +
-                    (rand() % 2 ? M_SQRT1_2 : -M_SQRT1_2) * _Complex_I;
-    }
+    for (i=0; i<num_symbols; i++)
+        modem_modulate(mod, rand()%M, &sym_tx[i]);
 
     // interpolate
     for (i=0; i<num_symbols; i++)
@@ -100,8 +148,10 @@ int main() {
         if ( (i%k) != 0 ) continue;
 
         // estimate transmitted signal
-        float complex d_prime = ( crealf(d_hat) > 0.0f ? M_SQRT1_2 : -M_SQRT1_2) +
-                                ( cimagf(d_hat) > 0.0f ? M_SQRT1_2 : -M_SQRT1_2) * _Complex_I;
+        unsigned int sym_out;   // output symbol
+        float complex d_prime;  // estimated input sample
+        modem_demodulate(demod, d_hat, &sym_out);
+        modem_get_demodulator_sample(demod, &d_prime);
 
         // update equalizer
         eqlms_cccf_step(eq, d_prime, d_hat);
@@ -109,11 +159,13 @@ int main() {
 
     // get equalizer weights
     eqlms_cccf_get_weights(eq, hp);
-    eqlms_cccf_destroy(eq);
 
     // destroy objects
+    eqlms_cccf_destroy(eq);
     interp_crcf_destroy(interp);
     firfilt_cccf_destroy(fchannel);
+    modem_destroy(mod);
+    modem_destroy(demod);
 
     // 
     // export output
@@ -171,7 +223,7 @@ int main() {
     fprintf(fid,"     real(z(tsym1)),imag(z(tsym1)),'x','Color',[1 1 1]*0.0);\n");
     fprintf(fid,"xlabel('In-Phase');\n");
     fprintf(fid,"ylabel('Quadrature');\n");
-    fprintf(fid,"axis([-1 1 -1 1]*1.2);\n");
+    fprintf(fid,"axis([-1 1 -1 1]*1.5);\n");
     fprintf(fid,"axis square;\n");
     fprintf(fid,"grid on;\n");
 
