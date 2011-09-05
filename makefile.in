@@ -1306,6 +1306,7 @@ sandbox_obj =							\
 	sandbox/modem_demodulate_soft_gentab.o			\
 	sandbox/ofdmoqam_firpfbch_test.o			\
 	sandbox/ofdmoqam_firpfbch_cfo_test.o			\
+	sandbox/packetizer_persistent_ber_test.o		\
 	sandbox/quasinewton_test.o				\
 	sandbox/rkaiser2_test.o					\
 	sandbox/simplex_test.o					\
