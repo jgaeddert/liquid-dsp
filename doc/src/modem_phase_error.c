@@ -17,13 +17,13 @@
 // print usage/help message
 void usage()
 {
-    printf("modem_phase_error [options]\n");
-    printf("  output files:\n");
-    printf("    gnuplot: figures.gen/modem_phase_error_[modscheme][M].gnu\n");
+    printf("Usage: modem_phase_error [OPTION]\n");
     printf("\n");
     printf("  u/h   : print usage\n");
     printf("  v/q   : verbose/quiet, default: verbose\n");
     printf("  n     : number of phase steps, default: 21\n");
+    printf("  t     : number of trials, default: 1000\n");
+    printf("  s     : SNR [dB], default: 12\n");
     printf("  P     : absolute phase offset [radians], default: pi/4\n");
     printf("  m     : modulation scheme, default: psk\n");
     liquid_print_modulation_schemes();
@@ -37,18 +37,22 @@ int main(int argc, char*argv[]) {
     int verbose = 1;                // verbose output flag
     float phi_max_abs = M_PI/4.0f;  // absolute maximum phase offset
     unsigned int num_phi = 21;      // number of phase steps
+    unsigned int num_trials = 1000; // number of trials
+    float SNRdB = 12.0f;            // signal-to-noise ratio [dB]
     modulation_scheme ms = LIQUID_MODEM_QPSK;
     unsigned int bps = 2;
     char filename[256] = "";    // output filename
 
     int dopt;
-    while ((dopt = getopt(argc,argv,"uhvqn:P:m:o:")) != EOF) {
+    while ((dopt = getopt(argc,argv,"uhvqn:t:s:P:m:o:")) != EOF) {
         switch (dopt) {
         case 'u':
         case 'h':   usage();    return 0;
         case 'v':   verbose = 1;                    break;
         case 'q':   verbose = 0;                    break;
         case 'n':   num_phi = atoi(optarg);         break;
+        case 't':   num_trials = atoi(optarg);      break;
+        case 's':   SNRdB = atof(optarg);           break;
         case 'P':   phi_max_abs = atof(optarg);     break;
         case 'm':
             liquid_getopt_str2modbps(optarg, &ms, &bps);
@@ -89,6 +93,7 @@ int main(int argc, char*argv[]) {
     float phi_min = 0.0f; //phi_max_abs;
     float phi_max = phi_max_abs;
     float phi_step = (phi_max - phi_min) / (float)(num_phi-1);
+    float nstd = powf(10.0f, -SNRdB/20.0f);
 
     // arrays
     float phi_hat_mean[num_phi];    // phase error estimate
@@ -103,6 +108,7 @@ int main(int argc, char*argv[]) {
     unsigned int i;
     unsigned int sym_in;
     unsigned int sym_out;
+    unsigned int n=0;       // trials counter
     float complex x;
     float phi_hat;
     float phi=0.0f;
@@ -111,28 +117,36 @@ int main(int argc, char*argv[]) {
 
         phi_hat_mean[i] = 0.0f;
 
-        for (sym_in=0; sym_in<M; sym_in++) {
-            // modulate
-            modem_modulate(mod, sym_in, &x);
+        // reset number of trials
+        n = 0;
 
-            // channel (phase offset)
-            x *= cexpf(_Complex_I*phi);
+        do {
+            for (sym_in=0; sym_in<M; sym_in++) {
+                // modulate
+                modem_modulate(mod, sym_in, &x);
 
-            // demodulate
-            modem_demodulate(demod, x, &sym_out);
+                // channel (phase offset)
+                x *= cexpf(_Complex_I*phi);
+                x += nstd * (randnf() + _Complex_I*randnf()) * M_SQRT1_2;
 
-            // get error
-            phi_hat = modem_get_demodulator_phase_error(demod);
+                // demodulate
+                modem_demodulate(demod, x, &sym_out);
 
-            // accumulate average
-            phi_hat_mean[i] += phi_hat;
-        }
+                // get error
+                phi_hat = modem_get_demodulator_phase_error(demod);
+
+                // accumulate average
+                phi_hat_mean[i] += phi_hat;
+            }
+
+            n += M;
+        } while (n < num_trials);
 
         // scale by bps^2
         //phi_hat_mean[i] *= bps*bps;
 
         // normalize mean by number of trials
-        phi_hat_mean[i] /= (float) M;
+        phi_hat_mean[i] /= (float) (n);
 
         // print results
         if (verbose)
