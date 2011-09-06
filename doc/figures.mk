@@ -94,32 +94,32 @@ local_pdffiles :=					\
 	figures.gen/modem_ook.pdf			\
 	figures.gen/modem_sqam32.pdf			\
 	figures.gen/modem_sqam128.pdf			\
-	figures.gen/modem_2psk.pdf			\
-	figures.gen/modem_4psk.pdf			\
-	figures.gen/modem_8psk.pdf			\
-	figures.gen/modem_16psk.pdf			\
-	figures.gen/modem_32psk.pdf			\
-	figures.gen/modem_64psk.pdf			\
+	figures.gen/modem_psk2.pdf			\
+	figures.gen/modem_psk4.pdf			\
+	figures.gen/modem_psk8.pdf			\
+	figures.gen/modem_psk16.pdf			\
+	figures.gen/modem_psk32.pdf			\
+	figures.gen/modem_psk64.pdf			\
 							\
-	figures.gen/modem_4apsk.pdf			\
-	figures.gen/modem_8apsk.pdf			\
-	figures.gen/modem_16apsk.pdf			\
-	figures.gen/modem_32apsk.pdf			\
-	figures.gen/modem_64apsk.pdf			\
-	figures.gen/modem_128apsk.pdf			\
-	figures.gen/modem_256apsk.pdf			\
+	figures.gen/modem_apsk4.pdf			\
+	figures.gen/modem_apsk8.pdf			\
+	figures.gen/modem_apsk16.pdf			\
+	figures.gen/modem_apsk32.pdf			\
+	figures.gen/modem_apsk64.pdf			\
+	figures.gen/modem_apsk128.pdf			\
+	figures.gen/modem_apsk256.pdf			\
 							\
-	figures.gen/modem_2ask.pdf			\
-	figures.gen/modem_4ask.pdf			\
-	figures.gen/modem_8ask.pdf			\
-	figures.gen/modem_16ask.pdf			\
+	figures.gen/modem_ask2.pdf			\
+	figures.gen/modem_ask4.pdf			\
+	figures.gen/modem_ask8.pdf			\
+	figures.gen/modem_ask16.pdf			\
 							\
-	figures.gen/modem_8qam.pdf			\
-	figures.gen/modem_16qam.pdf			\
-	figures.gen/modem_32qam.pdf			\
-	figures.gen/modem_64qam.pdf			\
-	figures.gen/modem_128qam.pdf			\
-	figures.gen/modem_256qam.pdf			\
+	figures.gen/modem_qam8.pdf			\
+	figures.gen/modem_qam16.pdf			\
+	figures.gen/modem_qam32.pdf			\
+	figures.gen/modem_qam64.pdf			\
+	figures.gen/modem_qam128.pdf			\
+	figures.gen/modem_qam256.pdf			\
 							\
 	figures.gen/modem_V29.pdf			\
 	figures.gen/modem_arb16opt.pdf			\
@@ -528,126 +528,62 @@ figures.gen/math_window.gnu : src/math_window
 ## MODULE : modem
 ##
 
+# constellation plots: .eps files
+modem_constellation_pdffiles :=		\
+	figures.gen/modem_psk2.pdf	\
+	figures.gen/modem_psk4.pdf	\
+	figures.gen/modem_psk8.pdf	\
+	figures.gen/modem_psk16.pdf	\
+	figures.gen/modem_psk32.pdf	\
+	figures.gen/modem_psk64.pdf	\
+					\
+	figures.gen/modem_apsk4.pdf	\
+	figures.gen/modem_apsk8.pdf	\
+	figures.gen/modem_apsk16.pdf	\
+	figures.gen/modem_apsk32.pdf	\
+	figures.gen/modem_apsk64.pdf	\
+	figures.gen/modem_apsk128.pdf	\
+	figures.gen/modem_apsk256.pdf	\
+					\
+	figures.gen/modem_ask2.pdf	\
+	figures.gen/modem_ask4.pdf	\
+	figures.gen/modem_ask8.pdf	\
+	figures.gen/modem_ask16.pdf	\
+					\
+	figures.gen/modem_qam8.pdf	\
+	figures.gen/modem_qam16.pdf	\
+	figures.gen/modem_qam32.pdf	\
+	figures.gen/modem_qam64.pdf	\
+	figures.gen/modem_qam128.pdf	\
+	figures.gen/modem_qam256.pdf	\
+					\
+	figures.gen/modem_bpsk.pdf	\
+	figures.gen/modem_qpsk.pdf	\
+	figures.gen/modem_ook.pdf	\
+	figures.gen/modem_sqam32.pdf	\
+	figures.gen/modem_sqam128.pdf	\
+	figures.gen/modem_V29.pdf	\
+	figures.gen/modem_arb16opt.pdf	\
+	figures.gen/modem_arb32opt.pdf	\
+	figures.gen/modem_arb64opt.pdf	\
+	figures.gen/modem_arb128opt.pdf	\
+	figures.gen/modem_arb256opt.pdf	\
+	figures.gen/modem_arb64vt.pdf	\
 
-# 
-# psk
-#
-figures.gen/modem_2psk.dat   : %.dat : src/modem.gendata ; ./$< -f $@ -m psk -p 1
-figures.gen/modem_2psk.gnu   : %.gnu : src/modem.genplot %.dat ; ./$< -f $@ -m psk -p 1 -t eps -d $*.dat -g $(GNUPLOT_VERSION)
+modem_constellation_epsfiles := $(patsubst %.pdf,%.eps,$(modem_constellation_pdffiles))
+modem_constellation_gnufiles := $(patsubst %.pdf,%.gnu,$(modem_constellation_pdffiles))
+modem_constellation_datfiles := $(patsubst %.pdf,%.dat,$(modem_constellation_pdffiles))
 
-figures.gen/modem_4psk.dat   : %.dat : src/modem.gendata ; ./$< -f $@ -m psk -p 2
-figures.gen/modem_4psk.gnu   : %.gnu : src/modem.genplot %.dat ; ./$< -f $@ -m psk -p 2 -t eps -d $*.dat -g $(GNUPLOT_VERSION)
+# .dat file targets
+$(modem_constellation_datfiles) : figures.gen/modem_%.dat : src/modem.gendata
+	./$< -f $@ -m$*
 
-figures.gen/modem_8psk.dat   : %.dat : src/modem.gendata ; ./$< -f $@ -m psk -p 3
-figures.gen/modem_8psk.gnu   : %.gnu : src/modem.genplot %.dat ; ./$< -f $@ -m psk -p 3 -t eps -d $*.dat -g $(GNUPLOT_VERSION)
+# .gnu file targets
+$(modem_constellation_gnufiles) : figures.gen/modem_%.gnu : src/modem.genplot
+	./$< -f $@ -m$* -t eps -d figures.gen/modem_$*.dat -g $(GNUPLOT_VERSION)
 
-figures.gen/modem_16psk.dat  : %.dat : src/modem.gendata ; ./$< -f $@ -m psk -p 4
-figures.gen/modem_16psk.gnu  : %.gnu : src/modem.genplot %.dat;  ./$< -f $@ -m psk -p 4 -t eps -d $*.dat -g $(GNUPLOT_VERSION)
-
-figures.gen/modem_32psk.dat  : %.dat : src/modem.gendata ; ./$< -f $@ -m psk -p 5
-figures.gen/modem_32psk.gnu  : %.gnu : src/modem.genplot %.dat;  ./$< -f $@ -m psk -p 5 -t eps -d $*.dat -g $(GNUPLOT_VERSION)
-
-figures.gen/modem_64psk.dat  : %.dat : src/modem.gendata ; ./$< -f $@ -m psk -p 6
-figures.gen/modem_64psk.gnu  : %.gnu : src/modem.genplot %.dat;  ./$< -f $@ -m psk -p 6 -t eps -d $*.dat -g $(GNUPLOT_VERSION)
-
-# 
-# apsk
-#
-figures.gen/modem_4apsk.dat  : %.dat : src/modem.gendata ; ./$< -f $@ -m apsk -p 2
-figures.gen/modem_4apsk.gnu  : %.gnu : src/modem.genplot %.dat;  ./$< -f $@ -m apsk -p 2 -t eps -d $*.dat -g $(GNUPLOT_VERSION)
-
-figures.gen/modem_8apsk.dat  : %.dat : src/modem.gendata ; ./$< -f $@ -m apsk -p 3
-figures.gen/modem_8apsk.gnu  : %.gnu : src/modem.genplot %.dat;  ./$< -f $@ -m apsk -p 3 -t eps -d $*.dat -g $(GNUPLOT_VERSION)
-
-figures.gen/modem_16apsk.dat : %.dat : src/modem.gendata ; ./$< -f $@ -m apsk -p 4
-figures.gen/modem_16apsk.gnu : %.gnu : src/modem.genplot %.dat;  ./$< -f $@ -m apsk -p 4 -t eps -d $*.dat -g $(GNUPLOT_VERSION)
-
-figures.gen/modem_32apsk.dat : %.dat : src/modem.gendata ; ./$< -f $@ -m apsk -p 5
-figures.gen/modem_32apsk.gnu : %.gnu : src/modem.genplot %.dat;  ./$< -f $@ -m apsk -p 5 -t eps -d $*.dat -g $(GNUPLOT_VERSION)
-
-figures.gen/modem_64apsk.dat : %.dat : src/modem.gendata ; ./$< -f $@ -m apsk -p 6
-figures.gen/modem_64apsk.gnu : %.gnu : src/modem.genplot %.dat;  ./$< -f $@ -m apsk -p 6 -t eps -d $*.dat -g $(GNUPLOT_VERSION)
-
-figures.gen/modem_128apsk.dat: %.dat : src/modem.gendata ; ./$< -f $@ -m apsk -p 7
-figures.gen/modem_128apsk.gnu: %.gnu : src/modem.genplot %.dat;  ./$< -f $@ -m apsk -p 7 -t eps -d $*.dat -g $(GNUPLOT_VERSION)
-
-figures.gen/modem_256apsk.dat: %.dat : src/modem.gendata ; ./$< -f $@ -m apsk -p 8
-figures.gen/modem_256apsk.gnu: %.gnu : src/modem.genplot %.dat;  ./$< -f $@ -m apsk -p 8 -t eps -d $*.dat -g $(GNUPLOT_VERSION)
-
-# 
-# ask
-#
-figures.gen/modem_2ask.dat   : %.dat : src/modem.gendata ; ./$< -f $@ -m ask -p 1
-figures.gen/modem_2ask.gnu   : %.gnu : src/modem.genplot %.dat;  ./$< -f $@ -m ask -p 1 -t eps -d $*.dat -g $(GNUPLOT_VERSION)
-
-figures.gen/modem_4ask.dat   : %.dat : src/modem.gendata ; ./$< -f $@ -m ask -p 2
-figures.gen/modem_4ask.gnu   : %.gnu : src/modem.genplot %.dat;  ./$< -f $@ -m ask -p 2 -t eps -d $*.dat -g $(GNUPLOT_VERSION)
-
-figures.gen/modem_8ask.dat   : %.dat : src/modem.gendata ; ./$< -f $@ -m ask -p 3
-figures.gen/modem_8ask.gnu   : %.gnu : src/modem.genplot %.dat;  ./$< -f $@ -m ask -p 3 -t eps -d $*.dat -g $(GNUPLOT_VERSION)
-
-figures.gen/modem_16ask.dat  : %.dat : src/modem.gendata ; ./$< -f $@ -m ask -p 4
-figures.gen/modem_16ask.gnu  : %.gnu : src/modem.genplot %.dat;  ./$< -f $@ -m ask -p 4 -t eps -d $*.dat -g $(GNUPLOT_VERSION)
-
-# 
-# qam
-#
-figures.gen/modem_8qam.dat   : %.dat : src/modem.gendata ; ./$< -f $@ -m qam -p 3
-figures.gen/modem_8qam.gnu   : %.gnu : src/modem.genplot %.dat;  ./$< -f $@ -m qam -p 3 -t eps -d $*.dat -g $(GNUPLOT_VERSION)
-
-figures.gen/modem_16qam.dat  : %.dat : src/modem.gendata ; ./$< -f $@ -m qam -p 4
-figures.gen/modem_16qam.gnu  : %.gnu : src/modem.genplot %.dat;  ./$< -f $@ -m qam -p 4 -t eps -d $*.dat -g $(GNUPLOT_VERSION)
-
-figures.gen/modem_32qam.dat  : %.dat : src/modem.gendata ; ./$< -f $@ -m qam -p 5
-figures.gen/modem_32qam.gnu  : %.gnu : src/modem.genplot %.dat;  ./$< -f $@ -m qam -p 5 -t eps -d $*.dat -g $(GNUPLOT_VERSION)
-
-figures.gen/modem_64qam.dat  : %.dat : src/modem.gendata ; ./$< -f $@ -m qam -p 6
-figures.gen/modem_64qam.gnu  : %.gnu : src/modem.genplot %.dat;  ./$< -f $@ -m qam -p 6 -t eps -d $*.dat -g $(GNUPLOT_VERSION)
-
-figures.gen/modem_128qam.dat : %.dat : src/modem.gendata ; ./$< -f $@ -m qam -p 7
-figures.gen/modem_128qam.gnu : %.gnu : src/modem.genplot %.dat;  ./$< -f $@ -m qam -p 7 -t eps -d $*.dat -g $(GNUPLOT_VERSION)
-
-figures.gen/modem_256qam.dat : %.dat : src/modem.gendata ; ./$< -f $@ -m qam -p 8
-figures.gen/modem_256qam.gnu : %.gnu : src/modem.genplot %.dat;  ./$< -f $@ -m qam -p 8 -t eps -d $*.dat -g $(GNUPLOT_VERSION)
-
-# 
-# arb/specific
-#
-figures.gen/modem_bpsk.dat   : %.dat : src/modem.gendata ; ./$< -f $@ -m bpsk -p 1
-figures.gen/modem_bpsk.gnu   : %.gnu : src/modem.genplot %.dat ; ./$< -f $@ -m bpsk -p 1 -t eps -d $*.dat -g $(GNUPLOT_VERSION)
-
-figures.gen/modem_qpsk.dat   : %.dat : src/modem.gendata ; ./$< -f $@ -m qpsk -p 2
-figures.gen/modem_qpsk.gnu   : %.gnu : src/modem.genplot %.dat ; ./$< -f $@ -m qpsk -p 2 -t eps -d $*.dat -g $(GNUPLOT_VERSION)
-
-figures.gen/modem_ook.dat   : %.dat : src/modem.gendata ; ./$< -f $@ -m ook -p 1
-figures.gen/modem_ook.gnu   : %.gnu : src/modem.genplot %.dat ; ./$< -f $@ -m ook -p 1 -t eps -d $*.dat -g $(GNUPLOT_VERSION)
-
-figures.gen/modem_sqam32.dat   : %.dat : src/modem.gendata ; ./$< -f $@ -m sqam32 -p 5
-figures.gen/modem_sqam32.gnu   : %.gnu : src/modem.genplot %.dat ; ./$< -f $@ -m sqam32 -p 5 -t eps -d $*.dat -g $(GNUPLOT_VERSION)
-
-figures.gen/modem_sqam128.dat   : %.dat : src/modem.gendata ; ./$< -f $@ -m sqam128 -p 7
-figures.gen/modem_sqam128.gnu   : %.gnu : src/modem.genplot %.dat ; ./$< -f $@ -m sqam128 -p 7 -t eps -d $*.dat -g $(GNUPLOT_VERSION)
-
-figures.gen/modem_V29.dat : %.dat : src/modem.gendata ; ./$< -f $@ -m V29 -p 4
-figures.gen/modem_V29.gnu : %.gnu : src/modem.genplot %.dat;  ./$< -f $@ -m V29 -p 4 -t eps -d $*.dat -g $(GNUPLOT_VERSION)
-
-figures.gen/modem_arb16opt.dat : %.dat : src/modem.gendata ; ./$< -f $@ -m arb16opt -p 4
-figures.gen/modem_arb16opt.gnu : %.gnu : src/modem.genplot %.dat;  ./$< -f $@ -m arb16opt -p 4 -t eps -d $*.dat -g $(GNUPLOT_VERSION)
-
-figures.gen/modem_arb32opt.dat : %.dat : src/modem.gendata ; ./$< -f $@ -m arb32opt -p 5
-figures.gen/modem_arb32opt.gnu : %.gnu : src/modem.genplot %.dat;  ./$< -f $@ -m arb32opt -p 5 -t eps -d $*.dat -g $(GNUPLOT_VERSION)
-
-figures.gen/modem_arb64opt.dat : %.dat : src/modem.gendata ; ./$< -f $@ -m arb64opt -p 6
-figures.gen/modem_arb64opt.gnu : %.gnu : src/modem.genplot %.dat;  ./$< -f $@ -m arb64opt -p 6 -t eps -d $*.dat -g $(GNUPLOT_VERSION)
-
-figures.gen/modem_arb128opt.dat : %.dat : src/modem.gendata ; ./$< -f $@ -m arb128opt -p 7
-figures.gen/modem_arb128opt.gnu : %.gnu : src/modem.genplot %.dat;  ./$< -f $@ -m arb128opt -p 7 -t eps -d $*.dat -g $(GNUPLOT_VERSION)
-
-figures.gen/modem_arb256opt.dat : %.dat : src/modem.gendata ; ./$< -f $@ -m arb256opt -p 8
-figures.gen/modem_arb256opt.gnu : %.gnu : src/modem.genplot %.dat;  ./$< -f $@ -m arb256opt -p 8 -t eps -d $*.dat -g $(GNUPLOT_VERSION)
-
-figures.gen/modem_arb64vt.dat : %.dat : src/modem.gendata ; ./$< -f $@ -m arb64vt -p 6
-figures.gen/modem_arb64vt.gnu : %.gnu : src/modem.genplot %.dat;  ./$< -f $@ -m arb64vt -p 6 -t eps -d $*.dat -g $(GNUPLOT_VERSION)
+# .eps file targets
+$(modem_constellation_epsfiles) : %.eps : %.gnu %.dat
 
 # 
 # soft demodulation example

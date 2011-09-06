@@ -17,12 +17,8 @@ void usage()
     printf("  u/h   : print usage\n");
     printf("  g     : specify gnuplot version\n");
     printf("  f     : specify output filename\n");
-    printf("  p     : modulation depth (default 2 bits/symbol)\n");
     printf("  m     : modulation scheme (psk default)\n");
-    // print all available MOD schemes
-    unsigned int i;
-    for (i=0; i<LIQUID_MODEM_NUM_SCHEMES; i++)
-        printf("          %s\n", modulation_scheme_str[i][0]);
+    liquid_print_modulation_schemes();
 }
 
 int main(int argc, char*argv[]) {
@@ -34,7 +30,7 @@ int main(int argc, char*argv[]) {
     strcpy(filename,"");
 
     int dopt;
-    while ((dopt = getopt(argc,argv,"uhg:f:m:p:")) != EOF) {
+    while ((dopt = getopt(argc,argv,"uhg:f:m:")) != EOF) {
         switch (dopt) {
         case 'u':
         case 'h':
@@ -47,14 +43,11 @@ int main(int argc, char*argv[]) {
             strncpy(filename,optarg,256);
             break;
         case 'm':
-            ms = liquid_getopt_str2mod(optarg);
+            liquid_getopt_str2modbps(optarg, &ms, &bps);
             if (ms == LIQUID_MODEM_UNKNOWN) {
                 fprintf(stderr,"error: %s, unknown/unsupported modulation scheme \"%s\"\n", argv[0], optarg);
                 return 1;
             }
-            break;
-        case 'p':
-            bps = atoi(optarg);
             break;
         default:
             fprintf(stderr,"error: %s, unknown option\n", argv[0]);
