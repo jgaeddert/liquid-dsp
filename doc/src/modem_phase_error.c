@@ -96,7 +96,8 @@ int main(int argc, char*argv[]) {
     float nstd = powf(10.0f, -SNRdB/20.0f);
 
     // arrays
-    float phi_hat_mean[num_phi];    // phase error estimate
+    float phi_hat_mean[num_phi];        // phase error estimate
+    float phi_hat_mean_smooth[num_phi]; // phase error estimate (smoothed)
 
     // create modulator/demodulator
     modem mod = modem_create(ms,bps);
@@ -154,6 +155,24 @@ int main(int argc, char*argv[]) {
                     i+1, num_phi, phi, phi_hat_mean[i]);
     }
 
+    // compute smoothed curve
+    float phi_hat_tmp[num_phi];
+    memmove(phi_hat_mean_smooth, phi_hat_mean, num_phi*sizeof(float));
+    unsigned int j;
+    for (j=0; j<5; j++) {
+        memmove(phi_hat_tmp, phi_hat_mean_smooth, num_phi*sizeof(float));
+
+        for (i=0; i<num_phi; i++) {
+            if (i==0 || i == num_phi-1) {
+                phi_hat_mean_smooth[i] = phi_hat_tmp[i];
+            } else {
+                phi_hat_mean_smooth[i] = 0.20f*phi_hat_tmp[i-1] +
+                                         0.60f*phi_hat_tmp[i  ] +
+                                         0.20f*phi_hat_tmp[i+1];
+            }
+        }
+    }
+
     // destroy objects
     modem_destroy(mod);
     modem_destroy(demod);
@@ -171,11 +190,11 @@ int main(int argc, char*argv[]) {
     fprintf(fid, "# \n");
 
     // low SNR
-    fprintf(fid, "# %12s %12s\n", "phi", "phi-hat-lo");
+    fprintf(fid, "# %12s %12s %12s\n", "phi", "phi-hat", "phi-hat-smooth");
     for (i=0; i<num_phi; i++) {
         phi = phi_min + i*phi_step;
         
-        fprintf(fid,"  %12.8f %12.8f\n", phi, phi_hat_mean[i]);
+        fprintf(fid,"  %12.8f %12.8f %12.8f\n", phi, phi_hat_mean[i], phi_hat_mean_smooth[i]);
     }
 
     fclose(fid);
