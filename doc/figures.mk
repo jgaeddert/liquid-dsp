@@ -148,6 +148,8 @@ local_pdffiles :=					\
 	figures.gen/modem_ber_ebn0_M128.pdf		\
 	figures.gen/modem_ber_ebn0_M256.pdf		\
 							\
+	figures.gen/modem_phase_error_qam.pdf		\
+							\
 	figures.gen/nco_pll_sincos.pdf			\
 	figures.gen/nco_pll_error.pdf			\
 							\
@@ -716,6 +718,10 @@ data/ber-modem/modem_snr_req.dat : src/estimate_snr_modem
 # modem phase error plots
 #
 
+# phase error figures
+modem_phase_error_gnufiles :=			\
+	figures.gen/modem_phase_error_qam.gnu	\
+
 modem_phase_error_data :=			\
 	data/modem-phase-error/bpsk.dat		\
 	data/modem-phase-error/qpsk.dat		\
@@ -756,10 +762,18 @@ modem_phase_error_data :=			\
 # re-simulate phase error data
 modem-phase-error-opts      := -n50 -t100000 -q -s18
 
-$(modem_phase_error_data) : data/modem-phase-error/%.dat : ./src/modem_phase_error
-	./$< $(modem-phase-error-opts) -m$* -o $@
+#$(modem_phase_error_data) : data/modem-phase-error/%.dat : ./src/modem_phase_error
+#	./$< $(modem-phase-error-opts) -m$* -o $@
 
 resimulate-modem-phase-error : $(modem_phase_error_data)
+
+modem_phase_error_epsfiles := $(patsubst %.gnu,%.eps,$(modem_phase_error_gnufiles))
+
+# copy .gnu files to figures.gen directory
+$(modem_phase_error_gnufiles) : figures.gen/% : data/% ; cp $< $@
+
+# add simulation data files as dependencies
+$(modem_phase_error_epsfiles) : %.eps : %.gnu $(modem_phase_error_data)
 
 
 ##
