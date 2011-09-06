@@ -712,6 +712,55 @@ $(modem_ber_epsfiles) : %.eps : %.gnu $(modem_ber_data)
 data/ber-modem/modem_snr_req.dat : src/estimate_snr_modem
 	./$< -o$@ -B -E1e-5 -n1024 -x8000000
 
+#
+# modem phase error plots
+#
+
+modem_phase_error_data :=			\
+	data/modem-phase-error/bpsk.dat		\
+	data/modem-phase-error/qpsk.dat		\
+	data/modem-phase-error/psk8.dat		\
+	data/modem-phase-error/psk16.dat	\
+	data/modem-phase-error/psk32.dat	\
+	data/modem-phase-error/psk64.dat	\
+	data/modem-phase-error/apsk4.dat	\
+	data/modem-phase-error/apsk8.dat	\
+	data/modem-phase-error/apsk16.dat	\
+	data/modem-phase-error/apsk32.dat	\
+	data/modem-phase-error/apsk64.dat	\
+	data/modem-phase-error/apsk128.dat	\
+	data/modem-phase-error/apsk256.dat	\
+	data/modem-phase-error/ask2.dat		\
+	data/modem-phase-error/ask4.dat		\
+	data/modem-phase-error/ask8.dat		\
+	data/modem-phase-error/ask16.dat	\
+	data/modem-phase-error/qam4.dat		\
+	data/modem-phase-error/qam8.dat		\
+	data/modem-phase-error/qam16.dat	\
+	data/modem-phase-error/qam32.dat	\
+	data/modem-phase-error/qam64.dat	\
+	data/modem-phase-error/qam128.dat	\
+	data/modem-phase-error/qam256.dat	\
+	data/modem-phase-error/ook.dat		\
+	data/modem-phase-error/V29.dat		\
+	data/modem-phase-error/sqam32.dat	\
+	data/modem-phase-error/sqam128.dat	\
+	data/modem-phase-error/arb16opt.dat	\
+	data/modem-phase-error/arb32opt.dat	\
+	data/modem-phase-error/arb64opt.dat	\
+	data/modem-phase-error/arb128opt.dat	\
+	data/modem-phase-error/arb256opt.dat	\
+	data/modem-phase-error/arb64vt.dat	\
+
+
+# re-simulate phase error data
+modem-phase-error-opts      := -n50 -t100000 -q -s18
+
+$(modem_phase_error_data) : data/modem-phase-error/%.dat : ./src/modem_phase_error
+	./$< $(modem-phase-error-opts) -m$* -o $@
+
+resimulate-modem-phase-error : $(modem_phase_error_data)
+
 
 ##
 ## MODULE : nco
