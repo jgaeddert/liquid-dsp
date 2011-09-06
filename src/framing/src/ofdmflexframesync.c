@@ -319,7 +319,7 @@ void ofdmflexframesync_rxheader(ofdmflexframesync _q,
                 ofdmflexframesync_decode_header(_q);
             
                 // compute error vector magnitude estimate
-                _q->framestats.evm = 10*log10f( sqrtf(_q->evm_hat/OFDMFLEXFRAME_H_SYM) );
+                _q->framestats.evm = 10*log10f( _q->evm_hat/OFDMFLEXFRAME_H_SYM );
 
                 // TODO : invoke callback if header is invalid
                 if (_q->header_valid)

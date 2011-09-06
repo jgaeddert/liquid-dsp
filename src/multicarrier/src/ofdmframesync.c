@@ -355,7 +355,7 @@ void ofdmframesync_execute(ofdmframesync _q,
 // get receiver RSSI
 float ofdmframesync_get_rssi(ofdmframesync _q)
 {
-    return -10.0f*log10(sqrt(_q->g0));
+    return -10.0f*log10(_q->g0);
 }
 
 
@@ -407,7 +407,7 @@ void ofdmframesync_execute_seekplcp(ofdmframesync _q)
 #if DEBUG_OFDMFRAMESYNC_PRINT
     printf(" - gain=%12.3f, rssi=%12.8f, s_hat=%12.4f <%12.8f>, tau_hat=%8.3f\n",
             sqrt(g),
-            -10*log10(sqrt(g)),
+            -10*log10(g),
             cabsf(s_hat), cargf(s_hat),
             tau_hat);
 #endif
