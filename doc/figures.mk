@@ -149,6 +149,13 @@ local_pdffiles :=					\
 	figures.gen/modem_ber_ebn0_M256.pdf		\
 							\
 	figures.gen/modem_phase_error_qam.pdf		\
+	figures.gen/modem_phase_error_M4.pdf		\
+	figures.gen/modem_phase_error_M8.pdf		\
+	figures.gen/modem_phase_error_M16.pdf		\
+	figures.gen/modem_phase_error_M32.pdf		\
+	figures.gen/modem_phase_error_M64.pdf		\
+	figures.gen/modem_phase_error_M128.pdf		\
+	figures.gen/modem_phase_error_M256.pdf		\
 							\
 	figures.gen/nco_pll_sincos.pdf			\
 	figures.gen/nco_pll_error.pdf			\
@@ -721,6 +728,13 @@ data/ber-modem/modem_snr_req.dat : src/estimate_snr_modem
 # phase error figures
 modem_phase_error_gnufiles :=			\
 	figures.gen/modem_phase_error_qam.gnu	\
+	figures.gen/modem_phase_error_M4.gnu	\
+	figures.gen/modem_phase_error_M8.gnu	\
+	figures.gen/modem_phase_error_M16.gnu	\
+	figures.gen/modem_phase_error_M32.gnu	\
+	figures.gen/modem_phase_error_M64.gnu	\
+	figures.gen/modem_phase_error_M128.gnu	\
+	figures.gen/modem_phase_error_M256.gnu	\
 
 modem_phase_error_data :=			\
 	data/modem-phase-error/bpsk.dat		\
