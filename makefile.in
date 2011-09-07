@@ -387,6 +387,7 @@ src/filter/src/rrcos.o : %.o : %.c $(headers)
 
 filter_autotests :=						\
 	src/filter/tests/decim_autotest.c			\
+	src/filter/tests/filter_crosscorr_autotest.c		\
 	src/filter/tests/firdes_autotest.c			\
 	src/filter/tests/firdespm_autotest.c			\
 	src/filter/tests/firfilt_rrrf_autotest.c		\

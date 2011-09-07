@@ -33,6 +33,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <math.h>
+#include <assert.h>
 
 #include "liquid.internal.h"
 
@@ -426,10 +427,50 @@ float liquid_filter_autocorr(float * _h,
     return rxx;
 }
 
+// liquid_filter_crosscorr()
+//
+// Compute cross-correlation of two filters at a specific lag.
+//
+//  _h      :   filter coefficients [size: _h_len]
+//  _h_len  :   filter length
+//  _g      :   filter coefficients [size: _g_len]
+//  _g_len  :   filter length
+//  _lag    :   cross-correlation lag (samples)
+float liquid_filter_crosscorr(float * _h,
+                              unsigned int _h_len,
+                              float * _g,
+                              unsigned int _g_len,
+                              int _lag)
+{
+    if (_lag <= -(int)_g_len) return 0.0f;
+    if (_lag >=  (int)_h_len) return 0.0f;
+
+    int ig = _lag < 0 ? -_lag : 0;  // starting index for _g
+    int ih = _lag > 0 ?  _lag : 0;  // starting index for _h
+
+    // length of overlap
+    int n = (_h_len < _g_len) ? _h_len : _g_len;
+
+    if (_lag < 0)
+        n = (int)_g_len + _lag;
+    else if (_lag < (_h_len-_g_len))
+        n = _g_len;
+    else
+        n = _h_len - _lag;
+
+    // compute cross-correlation
+    float rxy=0.0f; // initialize auto-correlation to zero
+    int i;
+    for (i=0; i< n; i++)
+        rxy += _h[ih+i] * _g[ig+i];
+
+    return rxy;
+}
+
 // liquid_filter_isi()
 //
 // Compute inter-symbol interference (ISI)--both RMS and
-// maximum--for the filter _h.
+// maximum--for the square-root Nyquist filter _h.
 //
 //  _h      :   filter coefficients [size: 2*_k*_m+1]
 //  _k      :   filter over-sampling rate (samples/symbol)

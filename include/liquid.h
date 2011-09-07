@@ -878,6 +878,21 @@ float liquid_filter_autocorr(float * _h,
                              unsigned int _h_len,
                              int _lag);
 
+// liquid_filter_crosscorr()
+//
+// Compute cross-correlation of two filters at a specific lag.
+//
+//  _h      :   filter coefficients [size: _h_len]
+//  _h_len  :   filter length
+//  _g      :   filter coefficients [size: _g_len]
+//  _g_len  :   filter length
+//  _lag    :   cross-correlation lag (samples)
+float liquid_filter_crosscorr(float * _h,
+                              unsigned int _h_len,
+                              float * _g,
+                              unsigned int _g_len,
+                              int _lag);
+
 // liquid_filter_isi()
 //
 // Compute inter-symbol interference (ISI)--both RMS and
