@@ -33,7 +33,6 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <math.h>
-#include <assert.h>
 
 #include "liquid.internal.h"
 
@@ -442,15 +441,29 @@ float liquid_filter_crosscorr(float * _h,
                               unsigned int _g_len,
                               int _lag)
 {
+    // cross-correlation is odd symmetric
+    if (_h_len < _g_len) {
+        return liquid_filter_crosscorr(_g, _g_len,
+                                       _h, _h_len,
+                                       -_lag);
+    }
+
+    // at this point _h_len > _g_len
+    // assert(_h_len > _g_len);
+
     if (_lag <= -(int)_g_len) return 0.0f;
     if (_lag >=  (int)_h_len) return 0.0f;
 
     int ig = _lag < 0 ? -_lag : 0;  // starting index for _g
     int ih = _lag > 0 ?  _lag : 0;  // starting index for _h
 
-    // length of overlap
-    int n = (_h_len < _g_len) ? _h_len : _g_len;
-
+    // compute length of overlap
+    //     condition 1:             condition 2:          condition 3:
+    //    [------ h ------]     [------ h ------]     [------ h ------]
+    //  [-- g --]                    [-- g --]                  [-- g --]
+    //   >|  n  |<                  >|   n   |<                >|  n  |<
+    //
+    int n;
     if (_lag < 0)
         n = (int)_g_len + _lag;
     else if (_lag < (_h_len-_g_len))

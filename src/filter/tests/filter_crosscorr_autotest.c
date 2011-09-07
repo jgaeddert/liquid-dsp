@@ -39,9 +39,10 @@ void autotest_filter_crosscorr_rrrf()
          -1.15920000,  -1.57390000,   0.65239000,  -0.54542000, 
          -0.97277000,   0.99115000,  -0.76247000,  -1.08210000 };
 
+
     // derived values
     unsigned int rxy_len = x_len + y_len - 1;
-
+    float rxy[23];
     float rxy_test[23] = {
          -0.28013000,  -0.32455000,  -0.56685000,   0.45660000, 
          -0.39008000,  -1.95950000,   1.25850000,  -3.35780000, 
@@ -51,18 +52,47 @@ void autotest_filter_crosscorr_rrrf()
           1.96850000,  -2.13700000,  -1.83370000};
 
 
-    float rxy[23];
+    if (liquid_autotest_verbose)
+        printf("testing corr(x,y):\n");
 
-    // 
+    // corr(x,y)
     int i;
     for (i=0; i<rxy_len; i++) {
         int lag = i - y_len + 1;
         rxy[i] = liquid_filter_crosscorr(x,x_len, y,y_len, lag);
 
         // print results
-        printf(" rxy(%3d) = %12.8f (expected %12.8f, e=%12.4e)\n", lag, rxy[i], rxy_test[i], rxy[i]-rxy_test[i]);
+        if (liquid_autotest_verbose)
+            printf("  rxy(%3d) = %12.8f (expected %12.8f, e=%12.4e)\n", lag, rxy[i], rxy_test[i], rxy[i]-rxy_test[i]);
     }
     for (i=0; i<rxy_len; i++)
         CONTEND_DELTA( rxy[i], rxy_test[i], tol );
+
+
+    // derived values
+    unsigned int ryx_len = x_len + y_len - 1;
+    float ryx[23];
+    float ryx_test[23] = {
+         -1.83370000,  -2.13700000,   1.96850000,  -1.76270000, 
+         -5.13670000,  -1.09920000,  -4.17770000,  -4.55350000, 
+         -0.90010000,  -3.52450000,  -2.05850000,  -2.18630000, 
+         -5.31760000,   1.07920000,  -1.85760000,  -3.35780000, 
+          1.25850000,  -1.95950000,  -0.39008000,   0.45660000, 
+         -0.56685000,  -0.32455000,  -0.28013000};
+        
+    if (liquid_autotest_verbose)
+        printf("testing corr(y,x):\n");
+
+    // corr(y,x)
+    for (i=0; i<ryx_len; i++) {
+        int lag = i - x_len + 1;
+        ryx[i] = liquid_filter_crosscorr(y,y_len, x,x_len, lag);
+
+        // print results
+        if (liquid_autotest_verbose)
+            printf("  ryx(%3d) = %12.8f (expected %12.8f, e=%12.4e)\n", lag, ryx[i], ryx_test[i], ryx[i]-ryx_test[i]);
+    }
+    for (i=0; i<ryx_len; i++)
+        CONTEND_DELTA( ryx[i], ryx_test[i], tol );
 }
 
