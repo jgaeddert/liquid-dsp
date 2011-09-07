@@ -226,6 +226,9 @@ void gmskdem_demodulate(gmskdem _q,
                         float complex * _x,
                         unsigned int * _s)
 {
+    // increment symbol counter
+    _q->num_symbols_demod++;
+
     // run filter as interpolator
     unsigned int i;
     float phi;
@@ -244,26 +247,23 @@ void gmskdem_demodulate(gmskdem _q,
         windowf_push(_q->debug_eqout, d_tmp);
 #endif
 
-        // compute filter output (decimate)
-        if (i == _q->k-1) {
-            // compute filter output
-            eqlms_rrrf_execute(_q->eq, &d_hat);
-            //printf("d_hat : %12.8f\n", d_hat);
+        // decimate by k
+        if ( i != _q->k-1 ) continue;
 
-            // train equalizer, but wait until internal
-            // buffer is full
-            if (_q->enable_equalizer &&
-                _q->num_symbols_demod >= _q->m)
-            {
-                // decision
-                float d = d_hat > 0 ? _q->g : -_q->g;
-                
-                // train equalizer
-                eqlms_rrrf_step(_q->eq, d, d_hat);
-            }
-            // increment symbol counter
-            _q->num_symbols_demod++;
-        }
+        // compute filter output
+        eqlms_rrrf_execute(_q->eq, &d_hat);
+
+        // check to see if equalizer is enabled
+        if (!_q->enable_equalizer) continue;
+
+        // check to see if buffer is full
+        if ( _q->num_symbols_demod < 2*_q->m ) continue;
+
+        // make decision
+        float d_prime = d_hat > 0 ? _q->g : -_q->g;
+
+        // train equalizer
+        eqlms_rrrf_step(_q->eq, d_prime, d_hat);
     }
 
     // make decision
