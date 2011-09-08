@@ -1289,6 +1289,7 @@ sandbox_programs =						\
 	sandbox/firpfbch_analysis_alignment_test		\
 	sandbox/firpfbch_analysis_equivalence_test		\
 	sandbox/firpfbch_synthesis_equivalence_test		\
+	sandbox/gmskmodem_test					\
 	sandbox/householder_test				\
 	sandbox/iirdes_example					\
 	sandbox/ldpc_genmatrix_test				\
