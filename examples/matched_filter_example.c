@@ -17,7 +17,7 @@ void usage()
 {
     printf("matched_filter_example options:\n");
     printf("  u/h   : print usage/help\n");
-    printf("  t     : filter type: [rrcos], rkaiser, arkaiser, hM3\n");
+    printf("  t     : filter type: [rrcos], rkaiser, arkaiser, hM3, gmsktx, gmskrx\n");
     printf("  k     : filter samples/symbol, k >= 2, default: 2\n");
     printf("  m     : filter delay (symbols), m >= 1, default: 3\n");
     printf("  b     : filter excess bandwidth factor, 0 < b < 1, default: 0.5\n");
@@ -47,6 +47,10 @@ int main(int argc, char*argv[]) {
                 ftype = LIQUID_RNYQUIST_ARKAISER;
             } else if (strcmp(optarg,"hM3")==0) {
                 ftype = LIQUID_RNYQUIST_hM3;
+            } else if (strcmp(optarg,"gmsktx")==0) {
+                ftype = LIQUID_RNYQUIST_GMSKTX;
+            } else if (strcmp(optarg,"gmskrx")==0) {
+                ftype = LIQUID_RNYQUIST_GMSKRX;
             } else {
                 fprintf(stderr,"error: %s, unknown filter type '%s'\n", argv[0], optarg);
                 exit(1);

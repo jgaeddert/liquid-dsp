@@ -323,6 +323,7 @@ filter_objects :=						\
 	src/filter/src/filter_cccf.o				\
 	src/filter/src/firdes.o					\
 	src/filter/src/firdespm.o				\
+	src/filter/src/gmsk.o					\
 	src/filter/src/group_delay.o				\
 	src/filter/src/hM3.o					\
 	src/filter/src/iirdes.pll.o				\

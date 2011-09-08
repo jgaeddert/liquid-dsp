@@ -353,8 +353,14 @@ void design_rnyquist_filter(liquid_rnyquist_type _type,
     case LIQUID_RNYQUIST_hM3:
         design_hM3_filter(_k, _m, _beta, _dt, _h);
         break;
+    case LIQUID_RNYQUIST_GMSKTX:
+        liquid_firdes_gmsktx(_k, _m, _beta, _dt, _h);
+        break;
+    case LIQUID_RNYQUIST_GMSKRX:
+        liquid_firdes_gmskrx(_k, _m, _beta, _dt, _h);
+        break;
     default:
-        fprintf(stderr,"error: design_rnyquist_filter(), invalid filter type '%d'\n", _type);
+        fprintf(stderr,"error: design_rnyquist_filter(), invalid/unsupported filter type '%d'\n", _type);
         exit(1);
     }
 }
