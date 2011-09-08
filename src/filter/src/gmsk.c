@@ -24,6 +24,7 @@
 
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 #include <math.h>
 
 #include "liquid.internal.h"
@@ -87,8 +88,103 @@ void liquid_firdes_gmskrx(unsigned int _k,
                           float _dt,
                           float * _h)
 {
-    // TODO : compute ideal equalized filter response
-    // for now, simply use same as transmit filter
-    liquid_firdes_gmsktx(_k, _m, _beta, _dt, _h);
+    // validate input
+    if ( _k < 1 ) {
+        fprintf(stderr,"error: liquid_firdes_gmskrx(): k must be greater than 0\n");
+        exit(1);
+    } else if ( _m < 1 ) {
+        fprintf(stderr,"error: liquid_firdes_gmskrx(): m must be greater than 0\n");
+        exit(1);
+    } else if ( (_beta < 0.0f) || (_beta > 1.0f) ) {
+        fprintf(stderr,"error: liquid_firdes_gmskrx(): beta must be in [0,1]\n");
+        exit(1);
+    } else;
+
+    unsigned int k = _k;
+    unsigned int m = _m;
+    float BT = _beta;
+
+    // internal options
+    float beta = BT;                // prototype filter cut-off
+    float delta = 1e-2f;            // filter design correction factor
+    liquid_nyquist_type prototype = LIQUID_NYQUIST_RCOS;    // Nyquist prototype
+
+    unsigned int i;
+
+    // derived values
+    unsigned int h_len = 2*k*m+1;   // filter length
+
+    // arrays
+    float ht[h_len];         // transmit filter coefficients
+    float hr[h_len];         // recieve filter coefficients
+
+    // design transmit filter
+    liquid_firdes_gmsktx(k,m,BT,0.0f,ht);
+
+    //
+    // start of filter design procedure
+    //
+
+    // 'internal' arrays
+    float h_primef[h_len];          // temporary buffer for real 'prototype' coefficients
+    float g_primef[h_len];          // temporary buffer for real 'gain' coefficient
+
+    float complex h_tx[h_len];      // impulse response of transmit filter
+    float complex h_prime[h_len];   // impulse response of 'prototype' filter
+    float complex g_prime[h_len];   // impulse response of 'gain' filter
+    float complex h_hat[h_len];     // impulse response of receive filter
+    
+    float complex H_tx[h_len];      // frequency response of transmit filter
+    float complex H_prime[h_len];   // frequency response of 'prototype' filter
+    float complex G_prime[h_len];   // frequency response of 'gain' filter
+    float complex H_hat[h_len];     // frequency response of receive filter
+
+    // create 'prototype' matched filter
+    design_nyquist_filter(prototype,k,m,beta,0.0f,h_primef);
+
+    // create 'gain' filter to improve stop-band rejection
+    float fc = (0.7f + 0.1*beta) / (float)k;
+    float As = 40.0f;
+    firdes_kaiser_window(h_len, fc, As, 0.0f, g_primef);
+
+    // copy to fft input buffer, shifting appropriately
+    for (i=0; i<h_len; i++) {
+        h_prime[i] = h_primef[ (i+k*m)%h_len ];
+        g_prime[i] = g_primef[ (i+k*m)%h_len ];
+        h_tx[i]    = ht[       (i+k*m)%h_len ];
+    }
+
+    // run ffts
+    fft_run(h_len, h_prime, H_prime, FFT_FORWARD, 0);
+    fft_run(h_len, g_prime, G_prime, FFT_FORWARD, 0);
+    fft_run(h_len, h_tx,    H_tx,    FFT_FORWARD, 0);
+
+    // find minimum of reponses
+    float H_tx_min = 0.0f;
+    float H_prime_min = 0.0f;
+    float G_prime_min = 0.0f;
+    for (i=0; i<h_len; i++) {
+        if (i==0 || crealf(H_tx[i])    < H_tx_min)    H_tx_min    = crealf(H_tx[i]);
+        if (i==0 || crealf(H_prime[i]) < H_prime_min) H_prime_min = crealf(H_prime[i]);
+        if (i==0 || crealf(G_prime[i]) < G_prime_min) G_prime_min = crealf(G_prime[i]);
+    }
+
+    // compute 'prototype' response, removing minima, and add correction factor
+    for (i=0; i<h_len; i++) {
+        // compute response necessary to yeild prototype response (not exact, but close)
+        H_hat[i] = crealf(H_prime[i] - H_prime_min + delta) / crealf(H_tx[i] - H_tx_min + delta);
+
+        // include additional term to add stop-band suppression
+        H_hat[i] *= crealf(G_prime[i] - G_prime_min) / crealf(G_prime[0]);
+    }
+
+    // compute ifft and copy response
+    fft_run(h_len, H_hat, h_hat, FFT_REVERSE, 0);
+    for (i=0; i<h_len; i++)
+        hr[i] = crealf( h_hat[(i+k*m+1)%h_len] ) / (float)(k*h_len);
+
+    // copy result
+    memmove(_h, hr, h_len*sizeof(float));
+
 }
 
