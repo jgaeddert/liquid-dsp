@@ -37,18 +37,16 @@ void gmskdem_debug_print(gmskdem _q,
                          const char * _filename);
 
 struct gmskdem_s {
-    unsigned int k;     // samples/symbol
-    unsigned int m;     // symbol delay
-    float BT;           // bandwidth/time product
-    unsigned int h_len; // filter length
-    float * h;          // pulse shaping filter
+    unsigned int k;         // samples/symbol
+    unsigned int m;         // symbol delay
+    float BT;               // bandwidth/time product
+    unsigned int h_len;     // filter length
+    float * h;              // pulse shaping filter
 
     // filter object
-    firfilt_rrrf filter;// transmit filter pulse shape
-    float g;            // matched-filter scaling factor
+    firfilt_rrrf filter;    // transmit filter pulse shape
 
-    float theta;        // phase state
-    float complex x_prime;
+    float complex x_prime;  // received signal state
 
     // demodulated symbols counter
     unsigned int num_symbols_demod;
@@ -77,6 +75,7 @@ gmskdem gmskdem_create(unsigned int _k,
         exit(1);
     }
 
+    // allocate memory for main object
     gmskdem q = (gmskdem)malloc(sizeof(struct gmskdem_s));
 
     // set properties
@@ -90,9 +89,6 @@ gmskdem gmskdem_create(unsigned int _k,
 
     // compute filter coefficients
     liquid_firdes_gmskrx(q->k, q->m, q->BT, 0.0f, q->h);
-
-    // compute scaling factor
-    q->g = q->h[(q->k)*(q->m)];
 
     // create filter object
     q->filter = firfilt_rrrf_create(q->h, q->h_len);
@@ -121,24 +117,24 @@ void gmskdem_destroy(gmskdem _q)
     // destroy filter object
     firfilt_rrrf_destroy(_q->filter);
 
+    // free filter array
     free(_q->h);
+
+    // free main object memory
     free(_q);
 }
 
 void gmskdem_print(gmskdem _q)
 {
-    printf("gmskdem:\n");
+    printf("gmskdem [k=%u, m=%u, BT=%8.3f]\n", _q->k, _q->m, _q->BT);
     unsigned int i;
     for (i=0; i<_q->h_len; i++)
         printf("  hr(%4u) = %12.8f;\n", i+1, _q->h[i]);
-
 }
 
 void gmskdem_reset(gmskdem _q)
 {
     // reset phase state
-    _q->theta = 0.0f;
-
     _q->x_prime = 0.0f;
 
     // set demod. counter to zero
@@ -155,7 +151,7 @@ void gmskdem_demodulate(gmskdem _q,
     // increment symbol counter
     _q->num_symbols_demod++;
 
-    // run filter as interpolator
+    // run matched filter
     unsigned int i;
     float phi;
     float d_hat;

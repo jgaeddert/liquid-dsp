@@ -30,17 +30,16 @@
 #include "liquid.internal.h"
 
 struct gmskmod_s {
-    unsigned int k;     // samples/symbol
-    unsigned int m;     // symbol delay
-    float BT;           // bandwidth/time product
-    unsigned int h_len; // filter length
-    float * h;          // pulse shaping filter
+    unsigned int k;         // samples/symbol
+    unsigned int m;         // symbol delay
+    float BT;               // bandwidth/time product
+    unsigned int h_len;     // filter length
+    float * h;              // pulse shaping filter
 
-    // filter object
-    firfilt_rrrf filter;// transmit filter pulse shape
+    // interpolator
+    interp_rrrf interp_tx;
 
-    float theta;        // phase state
-    float complex x_prime;
+    float theta;            // phase state
 };
 
 // create gmskmod object
@@ -76,8 +75,8 @@ gmskmod gmskmod_create(unsigned int _k,
     // compute filter coefficients
     liquid_firdes_gmsktx(q->k, q->m, q->BT, 0.0f, q->h);
 
-    // create filter object
-    q->filter = firfilt_rrrf_create(q->h, q->h_len);
+    // create interpolator object
+    q->interp_tx = interp_rrrf_create_rnyquist(LIQUID_RNYQUIST_GMSKTX, q->k, q->m, q->BT, 0);
 
     // reset modem state
     gmskmod_reset(q);
@@ -88,17 +87,19 @@ gmskmod gmskmod_create(unsigned int _k,
 
 void gmskmod_destroy(gmskmod _q)
 {
-    // destroy filter object
-    firfilt_rrrf_destroy(_q->filter);
+    // destroy interpolator
+    interp_rrrf_destroy(_q->interp_tx);
 
-    // set demod. counter to zero
+    // free transmit filter array
     free(_q->h);
+
+    // free main object memory
     free(_q);
 }
 
 void gmskmod_print(gmskmod _q)
 {
-    printf("gmskmod:\n");
+    printf("gmskmod [k=%u, m=%u, BT=%8.3f]\n", _q->k, _q->m, _q->BT);
     unsigned int i;
     for (i=0; i<_q->h_len; i++)
         printf("  ht(%4u) = %12.8f;\n", i+1, _q->h[i]);
@@ -110,10 +111,8 @@ void gmskmod_reset(gmskmod _q)
     // reset phase state
     _q->theta = 0.0f;
 
-    _q->x_prime = 0.0f;
-
-    // clear filter buffer
-    firfilt_rrrf_clear(_q->filter);
+    // clear interpolator buffer
+    interp_rrrf_clear(_q->interp_tx);
 }
 
 void gmskmod_modulate(gmskmod _q,
@@ -123,20 +122,15 @@ void gmskmod_modulate(gmskmod _q,
     // generate sample from symbol
     float x = _s==0 ? -1.0f : 1.0f;
 
-    // run filter as interpolator
+    // run interpolator
+    float phi[_q->k];
+    interp_rrrf_execute(_q->interp_tx, x, phi);
+
+    // integrate phase state
     unsigned int i;
-    float phi;          // filtered phase
     for (i=0; i<_q->k; i++) {
-        if (i==0)
-            firfilt_rrrf_push(_q->filter, x);
-        else
-            firfilt_rrrf_push(_q->filter, 0.0f);
-
-        // compute filter output
-        firfilt_rrrf_execute(_q->filter, &phi);
-
         // integrate phase state
-        _q->theta += phi;
+        _q->theta += phi[i];
 
         // compute output
         _y[i] = liquid_cexpjf(_q->theta);
