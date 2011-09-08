@@ -50,16 +50,11 @@ struct gmskdem_s {
     float theta;        // phase state
     float complex x_prime;
 
-    // demodulator
-    eqlms_rrrf eq;      // equalizer
-    float mu;           // equalizer update rate
-    int enable_equalizer;   // update equalizer flag
-
     // demodulated symbols counter
     unsigned int num_symbols_demod;
 
 #if DEBUG_GMSKDEM
-    windowf  debug_eqout;
+    windowf  debug_mfout;
 #endif
 };
 
@@ -94,28 +89,7 @@ gmskdem gmskdem_create(unsigned int _k,
     q->h = (float*) malloc(q->h_len * sizeof(float));
 
     // compute filter coefficients
-    // TODO : compute this properly
-    unsigned int i;
-#if 0
-    design_rrc_filter(q->k, q->m, 0.99f, 0.0f, q->h);
-#else
-    float t;
-    float c0 = 1.0f / sqrtf(logf(2.0f));
-    for (i=0; i<q->h_len; i++) {
-        t = (float)i/(float)(q->k)-(float)(q->m);
-
-        q->h[i] = liquid_Qf(2*M_PI*q->BT*(t-0.5f)*c0) -
-                  liquid_Qf(2*M_PI*q->BT*(t+0.5f)*c0);
-    }
-#endif
-
-    // normalize filter coefficients such that the filter's
-    // integral is pi/2
-    float e = 0.0f;
-    for (i=0; i<q->h_len; i++)
-        e += q->h[i];
-    for (i=0; i<q->h_len; i++)
-        q->h[i] *= M_PI / (2.0f * e);
+    liquid_firdes_gmskrx(q->k, q->m, q->BT, 0.0f, q->h);
 
     // compute scaling factor
     q->g = q->h[(q->k)*(q->m)];
@@ -123,27 +97,11 @@ gmskdem gmskdem_create(unsigned int _k,
     // create filter object
     q->filter = firfilt_rrrf_create(q->h, q->h_len);
 
-    // create equalizer
-    float htmp[q->h_len];
-#if 0
-    for (i=0; i<q->h_len; i++)
-        htmp[i] = ( i==(q->k)*(q->m) ) ? 1.0 : 0.0;
-#else
-    for (i=0; i<q->h_len; i++) {
-        t = (float)i/(float)(q->k)-(float)(q->m);
-        float sig = 0.02f;
-        htmp[i] = expf(-t*t/(2*sig*sig));
-    }
-#endif
-    q->eq = eqlms_rrrf_create(htmp, q->h_len);
-    gmskdem_set_bw(q, 0.2f);
-    gmskdem_enable_eq(q);
-
     // reset modem state
     gmskdem_reset(q);
 
 #if DEBUG_GMSKDEM
-    q->debug_eqout  = windowf_create(DEBUG_BUFFER_LEN);
+    q->debug_mfout  = windowf_create(DEBUG_BUFFER_LEN);
 #endif
 
     // return modem object
@@ -157,15 +115,11 @@ void gmskdem_destroy(gmskdem _q)
     gmskdem_debug_print(_q, DEBUG_GMSKDEM_FILENAME);
 
     // destroy debugging objects
-    windowf_destroy(_q->debug_eqout);
+    windowf_destroy(_q->debug_mfout);
 #endif
 
     // destroy filter object
     firfilt_rrrf_destroy(_q->filter);
-
-    // destroy equalizer object
-    //eqlms_rrrf_print(_q->eq);
-    eqlms_rrrf_destroy(_q->eq);
 
     free(_q->h);
     free(_q);
@@ -176,7 +130,7 @@ void gmskdem_print(gmskdem _q)
     printf("gmskdem:\n");
     unsigned int i;
     for (i=0; i<_q->h_len; i++)
-        printf("  h(%4u) = %12.8f;\n", i+1, _q->h[i]);
+        printf("  hr(%4u) = %12.8f;\n", i+1, _q->h[i]);
 
 }
 
@@ -192,34 +146,6 @@ void gmskdem_reset(gmskdem _q)
 
     // clear filter buffer
     firfilt_rrrf_clear(_q->filter);
-
-    // reset equalizer
-    eqlms_rrrf_reset(_q->eq);
-}
-
-// set the bandwidth of the equalizer
-void gmskdem_set_bw(gmskdem _q, float _mu)
-{
-    // validate input
-    if (_mu < 0.0f) {
-        fprintf(stderr,"error: gmskdem_set_bw(), equalizer bandwidth must be greater than zero\n");
-        exit(1);
-    }
-
-    _q->mu = _mu;
-    eqlms_rrrf_set_bw(_q->eq, _q->mu);
-}
-
-// enable updating equalizer
-void gmskdem_enable_eq(gmskdem _q)
-{
-    _q->enable_equalizer = 1;
-}
-
-// disable updating equalizer
-void gmskdem_disable_eq(gmskdem _q)
-{
-    _q->enable_equalizer = 0;
 }
 
 void gmskdem_demodulate(gmskdem _q,
@@ -238,32 +164,20 @@ void gmskdem_demodulate(gmskdem _q,
         phi = cargf( conjf(_q->x_prime)*_x[i] );
         _q->x_prime = _x[i];
 
-        // run through equalizer
-        eqlms_rrrf_push(_q->eq, phi);
+        // run through matched filter
+        firfilt_rrrf_push(_q->filter, phi);
 #if DEBUG_GMSKDEM
         // compute output
         float d_tmp;
-        eqlms_rrrf_execute(_q->eq, &d_tmp);
-        windowf_push(_q->debug_eqout, d_tmp);
+        firfilt_rrrf_execute(_q->filter, &d_tmp);
+        windowf_push(_q->debug_mfout, d_tmp);
 #endif
 
         // decimate by k
-        if ( i != _q->k-1 ) continue;
+        if ( i != 0 ) continue;
 
         // compute filter output
-        eqlms_rrrf_execute(_q->eq, &d_hat);
-
-        // check to see if equalizer is enabled
-        if (!_q->enable_equalizer) continue;
-
-        // check to see if buffer is full
-        if ( _q->num_symbols_demod < 2*_q->m ) continue;
-
-        // make decision
-        float d_prime = d_hat > 0 ? _q->g : -_q->g;
-
-        // train equalizer
-        eqlms_rrrf_step(_q->eq, d_prime, d_hat);
+        firfilt_rrrf_execute(_q->filter, &d_hat);
     }
 
     // make decision
@@ -295,35 +209,37 @@ void gmskdem_debug_print(gmskdem _q,
     fprintf(fid,"m = %u;\n", _q->m);
     fprintf(fid,"t = [0:(n-1)]/k;\n");
 
-    // plot equalizer response
-    fprintf(fid,"h = zeros(1,2*k*m+1);\n");
+    // plot receive filter response
+    fprintf(fid,"ht = zeros(1,2*k*m+1);\n");
     unsigned int h_len =2*_q->k*_q->m+1;
+    float ht[h_len];
+    liquid_firdes_gmsktx(_q->k, _q->m, _q->BT, 0.0f, ht);
     for (i=0; i<h_len; i++)
-        fprintf(fid,"h(%4u) = %12.4e;\n", i+1, _q->h[i]);
-    float w[h_len];
-    eqlms_rrrf_get_weights(_q->eq, w);
+        fprintf(fid,"ht(%4u) = %12.4e;\n", i+1, ht[i]);
     for (i=0; i<h_len; i++)
-        fprintf(fid,"w(%4u) = %12.4e;\n", i+1, w[i]);
+        fprintf(fid,"hr(%4u) = %12.4e;\n", i+1, _q->h[i]);
+    fprintf(fid,"hc = conv(ht,hr);\n");
     fprintf(fid,"nfft = 1024;\n");
     fprintf(fid,"f = [0:(nfft-1)]/nfft - 0.5;\n");
-    fprintf(fid,"H = 20*log10(abs(fftshift(fft(h,nfft))));\n");
-    fprintf(fid,"W = 20*log10(abs(fftshift(fft(w,nfft))));\n");
+    fprintf(fid,"Ht = 20*log10(abs(fftshift(fft(ht,nfft))));\n");
+    fprintf(fid,"Hr = 20*log10(abs(fftshift(fft(hr,nfft))));\n");
+    fprintf(fid,"Hc = 20*log10(abs(fftshift(fft(hc,nfft))));\n");
     fprintf(fid,"figure;\n");
-    fprintf(fid,"plot(f,H, f,W, f,H+W,'-k','LineWidth',2);\n");
+    fprintf(fid,"plot(f,Ht, f,Hr, f,Hc,'-k','LineWidth',2);\n");
     fprintf(fid,"axis([-0.5 0.5 -50 10]);\n");
     fprintf(fid,"xlabel('Normalized Frequency');\n");
     fprintf(fid,"ylabel('Power Spectral Density [dB]');\n");
-    fprintf(fid,"legend('transmit','equalizer','composite',1);\n");
+    fprintf(fid,"legend('transmit','receive','composite',1);\n");
     fprintf(fid,"grid on;\n");
 
-    fprintf(fid,"eqout = zeros(1,n);\n");
-    windowf_read(_q->debug_eqout, &r);
+    fprintf(fid,"mfout = zeros(1,n);\n");
+    windowf_read(_q->debug_mfout, &r);
     for (i=0; i<DEBUG_BUFFER_LEN; i++)
-        fprintf(fid,"eqout(%5u) = %12.4e;\n", i+1, r[i]);
-    fprintf(fid,"i0 = mod(k+n,k)+k;\n");
+        fprintf(fid,"mfout(%5u) = %12.4e;\n", i+1, r[i]);
+    fprintf(fid,"i0 = 1; %%mod(k+n,k)+k;\n");
     fprintf(fid,"isym = i0:k:n;\n");
     fprintf(fid,"figure;\n");
-    fprintf(fid,"plot(t,eqout,'-', t(isym),eqout(isym),'o','MarkerSize',4);\n");
+    fprintf(fid,"plot(t,mfout,'-', t(isym),mfout(isym),'o','MarkerSize',4);\n");
 #endif
 
     fclose(fid);

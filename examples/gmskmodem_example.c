@@ -56,7 +56,7 @@ int main(int argc, char*argv[]) {
     }
 
     // derived values
-    unsigned int num_symbols = num_data_symbols + 2*m - 1;
+    unsigned int num_symbols = num_data_symbols + 2*m;
     unsigned int num_samples = k*num_symbols;
 
     // create mod/demod objects
@@ -81,7 +81,7 @@ int main(int argc, char*argv[]) {
 
     // add channel impairments
     // TODO : compensate for over-sampling rate?
-    float nstd = powf(10.0f,-SNRdB*0.1f);
+    float nstd = powf(10.0f,-SNRdB/20.0f);
     for (i=0; i<num_samples; i++)
         y[i] = x[i]*cexpf(_Complex_I*(phi + i*dphi)) + nstd*(randnf() + _Complex_I*randnf())*M_SQRT1_2;
 
@@ -94,7 +94,7 @@ int main(int argc, char*argv[]) {
     gmskdem_destroy(demod);
 
     // print results to screen
-    unsigned int delay = 2*m-1;
+    unsigned int delay = 2*m;
     unsigned int num_errors=0;
     for (i=delay; i<num_symbols; i++) {
         //printf("  %4u : %2u (%2u)\n", i, s[i-delay], sym_out[i]);
@@ -124,13 +124,14 @@ int main(int argc, char*argv[]) {
     fprintf(fid,"plot(t,real(y),t,imag(y));\n");
 
     // artificially demodulate
-    fprintf(fid,"sig = exp(1.453*BT - 6.883) + 1.58; %% approximation\n");
-    fprintf(fid,"h = exp(-([-k*m:k*m].^2)/(2*sig^2));\n");
-    fprintf(fid,"h = h/sum(h) * pi / 2;\n");
-    fprintf(fid,"h = 1; %% disable 'matched filter'\n");
+    float hr[2*k*m+1];
+    liquid_firdes_gmskrx(k,m,BT,0,hr);
+    for (i=0; i<2*k*m+1; i++)
+        fprintf(fid,"h(%3u) = %12.8f;\n", i+1, hr[i]);
     fprintf(fid,"z = filter(h,1,arg( ([y(2:end) 0]).*conj(y) )) / (h*h');\n");
     fprintf(fid,"figure;\n");
-    fprintf(fid,"plot(t,z,t(k:k:end),z(k:k:end),'x');\n");
+    fprintf(fid,"plot(t,z,t(k:k:end),z(k:k:end),'or');\n");
+    fprintf(fid,"grid on;\n");
 
     fclose(fid);
     printf("results written to '%s'\n", OUTPUT_FILENAME);

@@ -38,7 +38,6 @@ struct gmskmod_s {
 
     // filter object
     firfilt_rrrf filter;// transmit filter pulse shape
-    float g;            // matched-filter scaling factor
 
     float theta;        // phase state
     float complex x_prime;
@@ -75,31 +74,7 @@ gmskmod gmskmod_create(unsigned int _k,
     q->h = (float*) malloc(q->h_len * sizeof(float));
 
     // compute filter coefficients
-    // TODO : compute this properly
-    unsigned int i;
-#if 0
-    design_rrc_filter(q->k, q->m, 0.99f, 0.0f, q->h);
-#else
-    float t;
-    float c0 = 1.0f / sqrtf(logf(2.0f));
-    for (i=0; i<q->h_len; i++) {
-        t = (float)i/(float)(q->k)-(float)(q->m);
-
-        q->h[i] = liquid_Qf(2*M_PI*q->BT*(t-0.5f)*c0) -
-                  liquid_Qf(2*M_PI*q->BT*(t+0.5f)*c0);
-    }
-#endif
-
-    // normalize filter coefficients such that the filter's
-    // integral is pi/2
-    float e = 0.0f;
-    for (i=0; i<q->h_len; i++)
-        e += q->h[i];
-    for (i=0; i<q->h_len; i++)
-        q->h[i] *= M_PI / (2.0f * e);
-
-    // compute scaling factor
-    q->g = q->h[(q->k)*(q->m)];
+    liquid_firdes_gmsktx(q->k, q->m, q->BT, 0.0f, q->h);
 
     // create filter object
     q->filter = firfilt_rrrf_create(q->h, q->h_len);
@@ -126,7 +101,7 @@ void gmskmod_print(gmskmod _q)
     printf("gmskmod:\n");
     unsigned int i;
     for (i=0; i<_q->h_len; i++)
-        printf("  h(%4u) = %12.8f;\n", i+1, _q->h[i]);
+        printf("  ht(%4u) = %12.8f;\n", i+1, _q->h[i]);
 
 }
 
