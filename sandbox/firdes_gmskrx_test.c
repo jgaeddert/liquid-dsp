@@ -89,16 +89,16 @@ int main(int argc, char*argv[]) {
     float g_primef[h_len];          // 
 
     float complex h_tx[h_len];      // impulse response of transmit filter
-    float complex h_prime[h_len];   // impulse response of 'ideal' filter
+    float complex h_prime[h_len];   // impulse response of 'prototype' filter
     float complex g_prime[h_len];   // impulse response of 'gain' filter
     float complex h_hat[h_len];     // impulse response of receive filter
     
     float complex H_tx[h_len];      // frequency response of transmit filter
-    float complex H_prime[h_len];   // frequency response of 'ideal' filter
+    float complex H_prime[h_len];   // frequency response of 'prototype' filter
     float complex G_prime[h_len];   // frequency response of 'gain' filter
     float complex H_hat[h_len];     // frequency response of receive filter
 
-    // create 'ideal' matched filter
+    // create 'prototype' matched filter
     // for now use raised-cosine
     design_nyquist_filter(LIQUID_NYQUIST_RCOS,k,m,beta,0.0f,h_primef);
 
@@ -108,7 +108,6 @@ int main(int argc, char*argv[]) {
     firdes_kaiser_window(h_len, fc, As, 0.0f, g_primef);
 
     // copy to fft input buffer, shifting appropriately
-    // TODO : check if this fft shift is really necesary
     for (i=0; i<h_len; i++) {
         h_prime[i] = h_primef[ (i+k*m)%h_len ];
         g_prime[i] = g_primef[ (i+k*m)%h_len ];
@@ -135,20 +134,17 @@ int main(int argc, char*argv[]) {
     float H_prime_min = 0.0f;
     float G_prime_min = 0.0f;
     for (i=0; i<h_len; i++) {
-        if (i==0 || crealf(H_tx[i]) < H_tx_min)
-            H_tx_min = crealf(H_tx[i]);
-
-        if (i==0 || crealf(H_prime[i]) < H_prime_min)
-            H_prime_min = crealf(H_prime[i]);
-
-        if (i==0 || crealf(G_prime[i]) < G_prime_min)
-            G_prime_min = crealf(G_prime[i]);
+        if (i==0 || crealf(H_tx[i])    < H_tx_min)    H_tx_min    = crealf(H_tx[i]);
+        if (i==0 || crealf(H_prime[i]) < H_prime_min) H_prime_min = crealf(H_prime[i]);
+        if (i==0 || crealf(G_prime[i]) < G_prime_min) G_prime_min = crealf(G_prime[i]);
     }
 
-    // compute 'ideal' response, removing minima, and add correction factor
-    // TODO : include additional term to add stop-band suppression
+    // compute 'prototype' response, removing minima, and add correction factor
     for (i=0; i<h_len; i++) {
+        // compute response necessary to yeild prototype response (not exact, but close)
         H_hat[i] = crealf(H_prime[i] - H_prime_min + delta) / crealf(H_tx[i] - H_tx_min + delta);
+
+        // include additional term to add stop-band suppression
         H_hat[i] *= crealf(G_prime[i] - G_prime_min) / crealf(G_prime[0]);
     }
 
@@ -165,6 +161,18 @@ int main(int argc, char*argv[]) {
     printf("gmsk receive filter:\n");
     for (i=0; i<h_len; i++)
         printf("  hr(%3u) = %12.8f;\n", i+1, hr[i]);
+
+    // compute isi
+    float rxy0 = liquid_filter_crosscorr(ht,h_len, hr,h_len, 0);
+    float isi_rms = 0.0f;
+    for (i=1; i<2*m; i++) {
+        float e = liquid_filter_crosscorr(ht,h_len, hr,h_len, i*k) / rxy0;
+        isi_rms += e*e;
+    }
+    isi_rms = sqrtf(isi_rms / (float)(2*m-1));
+    printf("\n");
+    printf("ISI (RMS) = %12.8f dB\n", 20*log10f(isi_rms));
+    
 
     // 
     // export output file
@@ -203,7 +211,7 @@ int main(int argc, char*argv[]) {
     fprintf(fid,"     f,Hr,'LineWidth',1,'Color',[0.00 0.50 0.25],...\n");
     fprintf(fid,"     f,Hc,'LineWidth',2,'Color',[0.50 0.00 0.00],...\n");
     fprintf(fid,"     [-0.5/k 0.5/k], [1 1]*20*log10(0.5),'or');\n");
-    fprintf(fid,"legend('transmit','ideal','receive','composite','alias points',1);\n");
+    fprintf(fid,"legend('transmit','prototype','receive','composite','alias points',1);\n");
     fprintf(fid,"xlabel('Normalized Frequency');\n");
     fprintf(fid,"ylabel('PSD');\n");
     fprintf(fid,"grid on;\n");
@@ -220,13 +228,14 @@ int main(int argc, char*argv[]) {
     fprintf(fid,"  xlabel('Time');\n");
     fprintf(fid,"  ylabel('GMSK Tx/Rx Filters');\n");
     fprintf(fid,"  grid on;\n");
-    fprintf(fid,"  axis([-2*m 2*m -0.3 1.2*max([hr ht])]);\n");
+    fprintf(fid,"  axis([-2*m 2*m floor(5*min([hr ht]))/5 ceil(5*max([hr ht]))/5]);\n");
     fprintf(fid,"subplot(2,1,2);\n");
     fprintf(fid,"  plot(tc,hc,'-x', tc(ic),hc(ic),'or');\n");
     fprintf(fid,"  xlabel('Time');\n");
     fprintf(fid,"  ylabel('GMSK Composite Response');\n");
     fprintf(fid,"  grid on;\n");
     fprintf(fid,"  axis([-2*m 2*m -0.2 1.2]);\n");
+    fprintf(fid,"  axis([-2*m 2*m floor(5*min(hc))/5 ceil(5*max(hc))/5]);\n");
 
     fclose(fid);
     printf("results written to %s.\n", OUTPUT_FILENAME);
