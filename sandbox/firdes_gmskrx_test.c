@@ -5,22 +5,60 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <assert.h>
 #include <math.h>
+#include <getopt.h>
 
 #include "liquid.h"
 
 #define OUTPUT_FILENAME "firdes_gmskrx_test.m"
 
-int main() {
+// print usage/help message
+void usage()
+{
+    printf("Usage: sandbox/firdes_gmskrx_test [OPTION]\n");
+    printf("Run example GMSK receive filter design\n");
+    printf("\n");
+    printf("  u/h   : print usage/help\n");
+    printf("  k     : filter samples/symbol, k >= 2, default: 4\n");
+    printf("  m     : filter delay (symbols), m >= 1, default: 3\n");
+    printf("  b     : filter excess bandwidth factor, 0 < b < 1, default: 0.3\n");
+}
+
+int main(int argc, char*argv[]) {
     // options
     unsigned int k=4;       // samples/symbol
     unsigned int m=3;       // filter delay [symbols]
     float BT = 0.3f;        // bandwidth-time product
 
-    // TODO : read properties from command line
+    // read properties from command line
+    int dopt;
+    while ((dopt = getopt(argc,argv,"uhk:m:b:")) != EOF) {
+        switch (dopt) {
+        case 'u':
+        case 'h':   usage();            return 0;
+        case 'k':   k  = atoi(optarg);  break;
+        case 'm':   m  = atoi(optarg);  break;
+        case 'b':   BT = atof(optarg);  break;
+        default:
+            fprintf(stderr,"error: %s, unknown option\n", argv[0]);
+            usage();
+            return 1;
+        }
+    }
 
-    // TODO : validate input
+
+    // validate input
+    if (k < 2) {
+        fprintf(stderr,"error: %s, k must be at least 2\n", argv[0]);
+        exit(1);
+    } else if (m < 1) {
+        fprintf(stderr,"error: %s, m must be at least 1\n", argv[0]);
+        exit(1);
+    } else if (BT <= 0.0f || BT >= 1.0f) {
+        fprintf(stderr,"error: %s, BT must be in (0,1)\n", argv[0]);
+        exit(1);
+    }
+
 
     unsigned int i;
 
