@@ -43,7 +43,7 @@ int main(int argc, char*argv[]) {
     liquid_rnyquist_type ftype = LIQUID_RNYQUIST_ARKAISER;
 
     float bt=0.02f;     // loop filter bandwidth
-    float tau=0.2f;     // fractional symbol offset
+    float tau=-0.1f;     // fractional symbol offset
     float r = 1.00f;    // resampled rate
     
     // use random data or 101010 phasing pattern
@@ -166,7 +166,7 @@ int main(int argc, char*argv[]) {
     // 
     // add noise
     //
-    float nstd = powf(10.0f, -SNRdB/20.0f) / sqrtf(2.0f);
+    float nstd = powf(10.0f, -SNRdB/20.0f);
     for (i=0; i<num_samples_resampled; i++)
         y[i] += nstd*(randnf() + _Complex_I*randnf());
 
