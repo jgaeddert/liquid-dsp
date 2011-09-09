@@ -833,7 +833,9 @@ void SYMSYNC(_step)(SYMSYNC() _q,                               \
                     unsigned int *_ny);                         \
 void SYMSYNC(_advance_internal_loop)(SYMSYNC() _q,              \
                                      TO _mf,                    \
-                                     TO _dmf);
+                                     TO _dmf);                  \
+void SYMSYNC(_output_debug_file)(SYMSYNC() _q,                  \
+                                 const char * _filename);
 
 LIQUID_SYMSYNC_DEFINE_INTERNAL_API(SYMSYNC_MANGLE_RRRF, float, float, float)
 LIQUID_SYMSYNC_DEFINE_INTERNAL_API(SYMSYNC_MANGLE_CRCF, liquid_float_complex, float, liquid_float_complex)
