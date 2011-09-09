@@ -4,7 +4,6 @@
 
 #include <stdio.h>
 #include <stdlib.h>
-#include <stdbool.h>
 #include <math.h>
 #include <getopt.h>
 #include <time.h>
@@ -35,12 +34,12 @@ int main(int argc, char*argv[]) {
     srand(time(NULL));
 
     // options
-    unsigned int k=2;   // samples/symbol
-    unsigned int m=3;   // filter delay (symbols)
-    float beta=0.3f;    // filter excess bandwidth factor
-    unsigned int num_filters=32;
-    unsigned int num_symbols=1024;
-    float SNRdB = 30.0f;
+    unsigned int k=2;               // samples/symbol
+    unsigned int m=3;               // filter delay (symbols)
+    float beta=0.3f;                // filter excess bandwidth factor
+    unsigned int num_filters=32;    // number of filters in the bank
+    unsigned int num_symbols=1024;  // number of data symbols
+    float SNRdB = 30.0f;            // signal-to-noise ratio
     liquid_rnyquist_type ftype = LIQUID_RNYQUIST_ARKAISER;
 
     float bt=0.02f;     // loop filter bandwidth
@@ -48,54 +47,53 @@ int main(int argc, char*argv[]) {
     float r = 1.00f;    // resampled rate
     
     // use random data or 101010 phasing pattern
-    bool random_data=true;
+    int random_data=1;
 
     int dopt;
     while ((dopt = getopt(argc,argv,"uhk:m:b:B:s:w:n:t:r:")) != EOF) {
         switch (dopt) {
         case 'u':
-        case 'h':   usage();    return 0;
-        case 'k':   k = atoi(optarg);               break;
-        case 'm':   m = atoi(optarg);               break;
-        case 'b':   beta = atof(optarg);            break;
+        case 'h':   usage();                        return 0;
+        case 'k':   k           = atoi(optarg);     break;
+        case 'm':   m           = atoi(optarg);     break;
+        case 'b':   beta        = atof(optarg);     break;
         case 'B':   num_filters = atoi(optarg);     break;
-        case 's':   SNRdB = atof(optarg);           break;
-        case 'w':   bt = atof(optarg);              break;
+        case 's':   SNRdB       = atof(optarg);     break;
+        case 'w':   bt          = atof(optarg);     break;
         case 'n':   num_symbols = atoi(optarg);     break;
-        case 't':   tau = atof(optarg);             break;
-        case 'r':   r = atof(optarg);               break;
+        case 't':   tau         = atof(optarg);     break;
+        case 'r':   r           = atof(optarg);     break;
         default:
             fprintf(stderr,"error: %s, unknown option\n", argv[0]);
-            usage();
-            return 1;
+            exit(1);
         }
     }
 
     // validate input
     if (k < 2) {
         fprintf(stderr,"error: k (samples/symbol) must be at least 2\n");
-        return 1;
+        exit(1);
     } else if (m < 1) {
         fprintf(stderr,"error: m (filter delay) must be greater than 0\n");
-        return 1;
+        exit(1);
     } else if (beta <= 0.0f || beta > 1.0f) {
         fprintf(stderr,"error: beta (excess bandwidth factor) must be in (0,1]\n");
-        return 1;
+        exit(1);
     } else if (num_filters == 0) {
         fprintf(stderr,"error: number of polyphase filters must be greater than 0\n");
-        return 1;
+        exit(1);
     } else if (bt <= 0.0f) {
         fprintf(stderr,"error: timing PLL bandwidth must be greater than 0\n");
-        return 1;
+        exit(1);
     } else if (num_symbols == 0) {
         fprintf(stderr,"error: number of symbols must be greater than 0\n");
-        return 1;
+        exit(1);
     } else if (tau < -1.0f || tau > 1.0f) {
         fprintf(stderr,"error: timing phase offset must be in [-1,1]\n");
-        return 1;
+        exit(1);
     } else if (r < 0.5f || r > 2.0f) {
         fprintf(stderr,"error: timing frequency offset must be in [0.5,2]\n");
-        return 1;
+        exit(1);
     }
 
     // compute delay
@@ -115,7 +113,7 @@ int main(int argc, char*argv[]) {
     float complex s[num_symbols];           // data symbols
     float complex x[num_samples];           // interpolated samples
     float complex y[num_samples_resamp];    // resampled data (resamp_crcf)
-    float complex z[num_symbols + 64];      // synchronized symbols
+    float complex z[2*num_symbols + 64];    // synchronized symbols
 
     for (i=0; i<num_symbols; i++) {
         if (random_data) {
@@ -232,10 +230,10 @@ int main(int argc, char*argv[]) {
     fprintf(fid,"\n\n");
     fprintf(fid,"zp = filter(h,1,y);\n");
     fprintf(fid,"figure;\nhold on;\n");
-    fprintf(fid,"plot([0:length(s)-1],          real(s),    'ob', 'MarkerSize',3);\n");
-    fprintf(fid,"plot([0:length(y)-1]/2  -m,    real(y),    '-',  'MarkerSize',3, 'Color',[0.8 0.8 0.8]);\n");
-    fprintf(fid,"plot([0:length(zp)-1]/2 -2*m,  real(zp/k), '-b', 'MarkerSize',3);\n");
-    fprintf(fid,"plot([0:length(z)-1]    -2*m+1,real(z),    'xr', 'MarkerSize',3);\n");
+    fprintf(fid,"plot([0:length(s)-1],          real(s),    'ob', 'MarkerSize',4);\n");
+    fprintf(fid,"plot([0:length(y)-1]/2  -m,    real(y),    '-',  'MarkerSize',4, 'Color',[0.8 0.8 0.8]);\n");
+    fprintf(fid,"plot([0:length(zp)-1]/2 -2*m,  real(zp/k), '-b', 'MarkerSize',4);\n");
+    fprintf(fid,"plot([0:length(z)-1]    -2*m+1,real(z),    'or', 'MarkerSize',4);\n");
     fprintf(fid,"hold off;\n");
     fprintf(fid,"xlabel('Symbol Index');\n");
     fprintf(fid,"ylabel('Output Signal');\n");
@@ -246,10 +244,11 @@ int main(int argc, char*argv[]) {
     fprintf(fid,"t1=ceil(0.25*length(z)):length(z);\n");
     fprintf(fid,"figure;\n");
     fprintf(fid,"hold on;\n");
-    fprintf(fid,"plot(real(z(t0)),imag(z(t0)),'x','MarkerSize',3,'Color',[0.6 0.6 0.6]);\n");
-    fprintf(fid,"plot(real(z(t1)),imag(z(t1)),'x','MarkerSize',3,'Color',[0 0.25 0.5]);\n");
+    fprintf(fid,"plot(real(z(t0)),imag(z(t0)),'x','MarkerSize',4,'Color',[0.6 0.6 0.6]);\n");
+    fprintf(fid,"plot(real(z(t1)),imag(z(t1)),'x','MarkerSize',4,'Color',[0 0.25 0.5]);\n");
     fprintf(fid,"hold off;\n");
-    fprintf(fid,"axis square; grid on;\n");
+    fprintf(fid,"axis square;\n");
+    fprintf(fid,"grid on;\n");
     fprintf(fid,"axis([-1 1 -1 1]*1.2);\n");
     fprintf(fid,"xlabel('In-phase');\n");
     fprintf(fid,"ylabel('Quadrature');\n");
