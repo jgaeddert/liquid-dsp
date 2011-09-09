@@ -38,7 +38,10 @@
 #include <string.h>
 #include <math.h>
 
-#define DEBUG_SYMSYNC_PRINT  0
+// use theoretical 2nd-order integrating PLL filter?
+#define SYMSYNC_USE_PLL         1
+
+#define DEBUG_SYMSYNC_PRINT     0
 
 // defined:
 //  TO          output data type
@@ -69,6 +72,13 @@ struct SYMSYNC(_s) {
     float q;                    // instantaneous timing error estimate
     float q_hat;                // filtered timing error estimate
     float q_prime;              // buffered timing error estimate
+#if SYMSYNC_USE_PLL
+    // phase-locked loop
+    float B[3];
+    float A[3];
+    iirfiltsos_rrrf pll;
+#endif
+
 
     unsigned int npfb;
     FIRPFB()  mf;   // matched filter
@@ -132,6 +142,12 @@ SYMSYNC() SYMSYNC(_create)(unsigned int _k,
     q->dmf = FIRPFB(_create)(q->npfb, dh, _h_len);
 
     // reset state and initialize loop filter
+#if SYMSYNC_USE_PLL
+    q->A[0] = 1.0f;     q->B[0] = 0.0f;
+    q->A[1] = 0.0f;     q->B[1] = 0.0f;
+    q->A[2] = 0.0f;     q->B[2] = 0.0f;
+    q->pll = iirfiltsos_rrrf_create(q->B, q->A);
+#endif
     SYMSYNC(_clear)(q);
     SYMSYNC(_set_lf_bw)(q, 0.01f);
 
@@ -200,6 +216,10 @@ void SYMSYNC(_destroy)(SYMSYNC() _q)
     FIRPFB(_destroy)(_q->mf);
     FIRPFB(_destroy)(_q->dmf);
 
+#if SYMSYNC_USE_PLL
+    iirfiltsos_rrrf_destroy(_q->pll);
+#endif
+
     // free main object memory
     free(_q);
 }
@@ -221,6 +241,9 @@ void SYMSYNC(_reset)(SYMSYNC() _q)
     _q->q_hat   = 0.0f;
     _q->q_prime = 0.0f;
     _q->decim_counter = 0;
+#if SYMSYNC_USE_PLL
+    iirfiltsos_rrrf_clear(_q->pll);
+#endif
 }
 
 void SYMSYNC(_clear)(SYMSYNC() _q) {
@@ -260,9 +283,16 @@ void SYMSYNC(_set_lf_bw)(SYMSYNC() _q,
         exit(1);
     }
 
+#if SYMSYNC_USE_PLL
+    float zeta = 1.1f;
+    float K = 1000.0f;
+    iirdes_pll_active_lag(0.5f*_bt, zeta, K, _q->B, _q->A);
+    iirfiltsos_rrrf_set_coefficients(_q->pll, _q->B, _q->A);
+#else
     // set loop filter bandwidth
     _q->alpha = 1.00f - _bt;    // percent of old sample to retain
     _q->beta  = 0.22f * _bt;    // percent of new sample to retain
+#endif
 }
 
 // set synchronizer output rate (samples/symbol)
@@ -330,12 +360,18 @@ void SYMSYNC(_advance_internal_loop)(SYMSYNC() _q,
 
     //  2.  filter error signal: retain large percent (alpha) of
     //      old estimate and small percent (beta) of new estimate
+#if SYMSYNC_USE_PLL
+    iirfiltsos_rrrf_execute(_q->pll, _q->q, &_q->q_hat);
+    _q->del = (float)(_q->k)/(float)(_q->k_out) + _q->q_hat;
+    //_q->del = (float)(_q->k) * (1 + _q->q_hat);
+#else
     _q->q_hat   = (_q->q)*(_q->beta) + (_q->q_prime)*(_q->alpha);
     _q->q_prime = _q->q_hat;
 
     // TODO : check the output step size, relative to input
     //_q->del     = (float)(_q->k) + _q->q_hat;
     _q->del     = (float)(_q->k)/(float)(_q->k_out) + _q->q_hat;
+#endif
 
 #if DEBUG_SYMSYNC_PRINT
     printf("q : %12.8f, del : %12.8f, q_hat : %12.8f\n", _q->q, _q->del, _q->q_hat);
@@ -385,7 +421,11 @@ void SYMSYNC(_step)(SYMSYNC() _q,
         }
         _q->decim_counter++;
 
+#if SYMSYNC_USE_PLL
+        _q->tau     = _q->del;
+#else
         _q->tau += _q->del;
+#endif
         _q->bf = _q->tau * (float)(_q->npfb);
         _q->b  = (int)roundf(_q->bf);
         n++;
