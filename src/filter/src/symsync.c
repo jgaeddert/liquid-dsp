@@ -359,7 +359,6 @@ void SYMSYNC(_step)(SYMSYNC() _q,
 
         // check output count and determine if this is 'ideal' timing output
         // ...
-        _q->decim_counter++;
         if (_q->decim_counter == _q->k_out) {
             // reset counter
             _q->decim_counter = 0;
@@ -372,6 +371,7 @@ void SYMSYNC(_step)(SYMSYNC() _q,
             // update internal state
             SYMSYNC(_advance_internal_loop)(_q, mf, dmf);
         }
+        _q->decim_counter++;
 
         _q->tau += _q->del;
         _q->bf = _q->tau * (float)(_q->npfb);

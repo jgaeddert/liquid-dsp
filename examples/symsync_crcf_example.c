@@ -19,12 +19,13 @@ void usage()
     printf("symsync_crcf_example [options]\n");
     printf("  u/h   : print usage\n");
     printf("  k     : filter samples/symbol, default: 2\n");
+    printf("  K     : output samples/symbol, default: 2\n");
     printf("  m     : filter delay (symbols), default: 3\n");
-    printf("  b     : filter excess bandwidth, default: 0.3\n");
+    printf("  b     : filter excess bandwidth, default: 0.5\n");
     printf("  B     : filter polyphase banks, default: 32\n");
     printf("  s     : signal-to-noise ratio, default: 30dB\n");
     printf("  w     : timing pll bandwidth, default: 0.02\n");
-    printf("  n     : number of symbols, default: 1024\n");
+    printf("  n     : number of symbols, default: 200\n");
     printf("  t     : timing phase offset [%% symbol], -0.5 < t <= 0.5, default: 0\n");
     printf("  r     : timing freq. offset [%% symbol], default: 1.000\n");
 }
@@ -34,11 +35,12 @@ int main(int argc, char*argv[]) {
     srand(time(NULL));
 
     // options
-    unsigned int k=2;               // samples/symbol
+    unsigned int k=2;               // samples/symbol (input)
+    unsigned int k_out=2;           // samples/symbol (output)
     unsigned int m=3;               // filter delay (symbols)
-    float beta=0.3f;                // filter excess bandwidth factor
+    float beta=0.5f;                // filter excess bandwidth factor
     unsigned int num_filters=32;    // number of filters in the bank
-    unsigned int num_symbols=1024;  // number of data symbols
+    unsigned int num_symbols=200;   // number of data symbols
     float SNRdB = 30.0f;            // signal-to-noise ratio
     liquid_rnyquist_type ftype = LIQUID_RNYQUIST_ARKAISER;
 
@@ -50,11 +52,12 @@ int main(int argc, char*argv[]) {
     int random_data=1;
 
     int dopt;
-    while ((dopt = getopt(argc,argv,"uhk:m:b:B:s:w:n:t:r:")) != EOF) {
+    while ((dopt = getopt(argc,argv,"uhk:K:m:b:B:s:w:n:t:r:")) != EOF) {
         switch (dopt) {
         case 'u':
         case 'h':   usage();                        return 0;
         case 'k':   k           = atoi(optarg);     break;
+        case 'K':   k_out       = atoi(optarg);     break;
         case 'm':   m           = atoi(optarg);     break;
         case 'b':   beta        = atof(optarg);     break;
         case 'B':   num_filters = atoi(optarg);     break;
@@ -113,7 +116,8 @@ int main(int argc, char*argv[]) {
     float complex s[num_symbols];           // data symbols
     float complex x[num_samples];           // interpolated samples
     float complex y[num_samples_resamp];    // resampled data (resamp_crcf)
-    float complex z[2*num_symbols + 64];    // synchronized symbols
+    float complex z[k_out*num_symbols + 64];// synchronized samples
+    float complex sym_out[num_symbols + 64];// synchronized symbols
 
     for (i=0; i<num_symbols; i++) {
         if (random_data) {
@@ -177,22 +181,30 @@ int main(int argc, char*argv[]) {
 
     symsync_crcf d = symsync_crcf_create_rnyquist(ftype, k, m, beta, num_filters);
     symsync_crcf_set_lf_bw(d,bt);
+    symsync_crcf_set_output_rate(d,k_out);
 
-    unsigned int num_symbols_sync=0;
+    unsigned int num_samples_sync=0;
     unsigned int nn;
+    unsigned int num_symbols_sync = 0;
     float tau_hat[num_samples];
     for (i=ds; i<num_samples_resampled; i++) {
-        tau_hat[num_symbols_sync] = symsync_crcf_get_tau(d);
-        symsync_crcf_execute(d, &y[i], 1, &z[num_symbols_sync], &nn);
-        num_symbols_sync += nn;
+        tau_hat[num_samples_sync] = symsync_crcf_get_tau(d);
+        symsync_crcf_execute(d, &y[i], 1, &z[num_samples_sync], &nn);
+
+        // decimate
+        unsigned int j;
+        for (j=0; j<nn; j++) {
+            if ( (num_samples_sync%k_out)==0 )
+                sym_out[num_symbols_sync++] = z[num_samples_sync];
+            num_samples_sync++;
+        }
     }
     symsync_crcf_destroy(d);
 
-
     // print last several symbols to screen
-    printf("z(t) :\n");
+    printf("output symbols:\n");
     for (i=num_symbols_sync-10; i<num_symbols_sync; i++)
-        printf("  z(%2u) = %8.4f + j*%8.4f;\n", i+1, crealf(z[i]), cimagf(z[i]));
+        printf("  sym_out(%2u) = %8.4f + j*%8.4f;\n", i+1, crealf(sym_out[i]), cimagf(sym_out[i]));
 
     //
     // export output file
@@ -205,6 +217,7 @@ int main(int argc, char*argv[]) {
     fprintf(fid,"k=%u;\n",k);
     fprintf(fid,"m=%u;\n",m);
     fprintf(fid,"beta=%12.8f;\n",beta);
+    fprintf(fid,"k_out=%u;\n",k_out);
     fprintf(fid,"num_filters=%u;\n",num_filters);
     fprintf(fid,"num_symbols=%u;\n",num_symbols);
 
@@ -220,40 +233,45 @@ int main(int argc, char*argv[]) {
     for (i=0; i<num_samples_resampled; i++)
         fprintf(fid,"y(%3u) = %12.8f + j*%12.8f;\n", i+1, crealf(y[i]), cimagf(y[i]));
         
-    for (i=0; i<num_symbols_sync; i++)
+    for (i=0; i<num_samples_sync; i++)
         fprintf(fid,"z(%3u) = %12.8f + j*%12.8f;\n", i+1, crealf(z[i]), cimagf(z[i]));
         
     for (i=0; i<num_symbols_sync; i++)
+        fprintf(fid,"sym_out(%3u) = %12.8f + j*%12.8f;\n", i+1, crealf(sym_out[i]), cimagf(sym_out[i]));
+        
+    for (i=0; i<num_samples_sync; i++)
         fprintf(fid,"tau_hat(%3u) = %12.8f;\n", i+1, tau_hat[i]);
 
 
     fprintf(fid,"\n\n");
-    fprintf(fid,"zp = filter(h,1,y);\n");
-    fprintf(fid,"figure;\nhold on;\n");
-    fprintf(fid,"plot([0:length(s)-1],          real(s),    'ob', 'MarkerSize',4);\n");
-    fprintf(fid,"plot([0:length(y)-1]/2  -m,    real(y),    '-',  'MarkerSize',4, 'Color',[0.8 0.8 0.8]);\n");
-    fprintf(fid,"plot([0:length(zp)-1]/2 -2*m,  real(zp/k), '-b', 'MarkerSize',4);\n");
-    fprintf(fid,"plot([0:length(z)-1]    -2*m+1,real(z),    'or', 'MarkerSize',4);\n");
-    fprintf(fid,"hold off;\n");
-    fprintf(fid,"xlabel('Symbol Index');\n");
-    fprintf(fid,"ylabel('Output Signal');\n");
+    fprintf(fid,"%% scale QPSK in-phase by sqrt(2)\n");
+    fprintf(fid,"z = z*sqrt(2);\n");
+    fprintf(fid,"\n\n");
+    fprintf(fid,"tz = [0:length(z)-1]/k_out;\n");
+    fprintf(fid,"iz = 1:k_out:length(z);\n");
+    fprintf(fid,"figure;\n");
+    fprintf(fid,"plot(tz,     real(z),    '-',...\n");
+    fprintf(fid,"     tz(iz), real(z(iz)),'or');\n");
+    fprintf(fid,"xlabel('Time');\n");
+    fprintf(fid,"ylabel('Output Signal (real)');\n");
     fprintf(fid,"grid on;\n");
-    fprintf(fid,"legend('sym in','interp','mf','sym out',0);\n");
+    fprintf(fid,"legend('output time series','optimim timing',1);\n");
 
-    fprintf(fid,"t0=1:floor(0.25*length(z));\n");
-    fprintf(fid,"t1=ceil(0.25*length(z)):length(z);\n");
+    fprintf(fid,"iz0 = iz( 1:round(length(iz)*0.5) );\n");
+    fprintf(fid,"iz1 = iz( round(length(iz)*0.5):length(iz) );\n");
     fprintf(fid,"figure;\n");
     fprintf(fid,"hold on;\n");
-    fprintf(fid,"plot(real(z(t0)),imag(z(t0)),'x','MarkerSize',4,'Color',[0.6 0.6 0.6]);\n");
-    fprintf(fid,"plot(real(z(t1)),imag(z(t1)),'x','MarkerSize',4,'Color',[0 0.25 0.5]);\n");
+    fprintf(fid,"plot(real(z(iz0)),imag(z(iz0)),'x','MarkerSize',4,'Color',[0.6 0.6 0.6]);\n");
+    fprintf(fid,"plot(real(z(iz1)),imag(z(iz1)),'o','MarkerSize',4,'Color',[0 0.25 0.5]);\n");
     fprintf(fid,"hold off;\n");
     fprintf(fid,"axis square;\n");
     fprintf(fid,"grid on;\n");
-    fprintf(fid,"axis([-1 1 -1 1]*1.2);\n");
+    fprintf(fid,"axis([-1 1 -1 1]*1.6);\n");
     fprintf(fid,"xlabel('In-phase');\n");
     fprintf(fid,"ylabel('Quadrature');\n");
-    fprintf(fid,"legend(['first 25%%'],['last 75%%'],1);\n");
+    fprintf(fid,"legend(['first 50%%'],['last 50%%'],1);\n");
 
+#if 0
     fprintf(fid,"figure;\n");
     fprintf(fid,"tt = 0:(length(tau_hat)-1);\n");
     fprintf(fid,"b = floor(num_filters*tau_hat + 0.5);\n");
@@ -266,6 +284,7 @@ int main(int argc, char*argv[]) {
     fprintf(fid,"grid on;\n");
     fprintf(fid,"axis([0 length(tau_hat) -1 num_filters]);\n");
     fclose(fid);
+#endif
 
     printf("results written to %s.\n", OUTPUT_FILENAME);
 
