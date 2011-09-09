@@ -53,6 +53,7 @@ struct SYMSYNC(_s) {
     unsigned int k_out;         // samples/symbol (output)
 
     unsigned int decim_counter; // decimation counter
+    int is_locked;              // synchronizer locked flag
 
     float r;                    // rate
     int b;                      // filterbank index
@@ -136,6 +137,9 @@ SYMSYNC() SYMSYNC(_create)(unsigned int _k,
 
     // set output rate nominally at 1 sample/symbol (full decimation)
     SYMSYNC(_set_output_rate)(q, 1);
+
+    // unlock loop control
+    SYMSYNC(_unlock)(q);
 
 #if DEBUG_SYMSYNC
     q->debug_del   = windowf_create(DEBUG_BUFFER_LEN);
@@ -223,14 +227,19 @@ void SYMSYNC(_clear)(SYMSYNC() _q) {
     SYMSYNC(_reset)(_q);
 }
 
-// TODO : set lock state
-void SYMSYNC(_lock)(SYMSYNC() _q) {
+// lock synchronizer object
+void SYMSYNC(_lock)(SYMSYNC() _q)
+{
+    _q->is_locked = 1;
 }
 
-// TODO : set unlock state
-void SYMSYNC(_unlock)(SYMSYNC() _q) {
+// unlock synchronizer object
+void SYMSYNC(_unlock)(SYMSYNC() _q)
+{
+    _q->is_locked = 0;
 }
 
+// set rate
 void SYMSYNC(_setrate)(SYMSYNC() _q, float _rate)
 {
     // TODO : validate rate, validate this method
@@ -245,11 +254,15 @@ void SYMSYNC(_setrate)(SYMSYNC() _q, float _rate)
 void SYMSYNC(_set_lf_bw)(SYMSYNC() _q,
                          float _bt)
 {
-    // TODO : validate input
+    // validate input
+    if (_bt < 0.0f || _bt > 1.0f) {
+        fprintf(stderr,"error: symsync_xxxt_set_lf_bt(), bandwidth must be in [0,1]\n");
+        exit(1);
+    }
 
     // set loop filter bandwidth
-    _q->alpha = 1.00f - (_bt);   // percent of old sample to retain
-    _q->beta  = 0.22f * (_bt);   // percent of new sample to retain
+    _q->alpha = 1.00f - _bt;    // percent of old sample to retain
+    _q->beta  = 0.22f * _bt;    // percent of new sample to retain
 }
 
 // set synchronizer output rate (samples/symbol)
@@ -358,12 +371,11 @@ void SYMSYNC(_step)(SYMSYNC() _q,
         _y[n] = mf / (float)(_q->k);
 
         // check output count and determine if this is 'ideal' timing output
-        // ...
         if (_q->decim_counter == _q->k_out) {
             // reset counter
             _q->decim_counter = 0;
 
-            // if (locked) continue;
+            if (_q->is_locked) continue;
 
             // compute dMF output
             FIRPFB(_execute)(_q->dmf, _q->b, &dmf);
