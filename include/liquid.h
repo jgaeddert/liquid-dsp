@@ -668,7 +668,7 @@ typedef enum {
 //  _beta   : excess bandwidth factor, _beta in [0,1]
 //  _dt     : fractional sample delay
 //  _h      : output coefficient buffer (length: 2*k*m+1)
-void design_nyquist_filter(liquid_nyquist_type _type,
+void liquid_firdes_nyquist(liquid_nyquist_type _type,
                            unsigned int _k,
                            unsigned int _m,
                            float _beta,
@@ -757,11 +757,11 @@ void firdes_kaiser_window(unsigned int _n,
 //  _K      : Rice fading factor (K >= 0)
 //  _theta  : LoS component angle of arrival
 //  _h      : output coefficient buffer
-void fir_design_doppler(unsigned int _n,
-                        float _fd,
-                        float _K,
-                        float _theta,
-                        float *_h);
+void liquid_firdes_doppler(unsigned int _n,
+                           float _fd,
+                           float _K,
+                           float _theta,
+                           float *_h);
 
 
 // Design Nyquist raised-cosine filter
@@ -770,7 +770,7 @@ void fir_design_doppler(unsigned int _n,
 //  _beta   : rolloff factor (0 < beta <= 1)
 //  _dt     : fractional sample delay
 //  _h      : output coefficient buffer (length: 2*k*m+1)
-void design_rcos_filter(unsigned int _k,
+void liquid_firdes_rcos(unsigned int _k,
                         unsigned int _m,
                         float _beta,
                         float _dt,
@@ -793,7 +793,7 @@ typedef enum {
 //  _beta   : excess bandwidth factor, _beta in [0,1]
 //  _dt     : fractional sample delay
 //  _h      : output coefficient buffer (length: 2*k*m+1)
-void design_rnyquist_filter(liquid_rnyquist_type _type,
+void liquid_firdes_rnyquist(liquid_rnyquist_type _type,
                             unsigned int _k,
                             unsigned int _m,
                             float _beta,
@@ -806,11 +806,11 @@ void design_rnyquist_filter(liquid_rnyquist_type _type,
 //  _beta   : rolloff factor (0 < beta <= 1)
 //  _dt     : fractional sample delay
 //  _h      : output coefficient buffer (length: 2*k*m+1)
-void design_rrc_filter(unsigned int _k,
-                       unsigned int _m,
-                       float _beta,
-                       float _dt,
-                       float * _h);
+void liquid_firdes_rrcos(unsigned int _k,
+                         unsigned int _m,
+                         float _beta,
+                         float _dt,
+                         float * _h);
 
 // Design root-Nyquist Kaiser filter
 //  _k      : samples/symbol
@@ -818,7 +818,7 @@ void design_rrc_filter(unsigned int _k,
 //  _beta   : rolloff factor (0 < beta <= 1)
 //  _dt     : fractional sample delay
 //  _h      : output coefficient buffer (length: 2*k*m+1)
-void design_rkaiser_filter(unsigned int _k,
+void liquid_firdes_rkaiser(unsigned int _k,
                            unsigned int _m,
                            float _beta,
                            float _dt,
@@ -830,7 +830,7 @@ void design_rkaiser_filter(unsigned int _k,
 //  _beta   : rolloff factor (0 < beta <= 1)
 //  _dt     : fractional sample delay
 //  _h      : output coefficient buffer (length: 2*k*m+1)
-void design_arkaiser_filter(unsigned int _k,
+void liquid_firdes_arkaiser(unsigned int _k,
                             unsigned int _m,
                             float _beta,
                             float _dt,
@@ -842,7 +842,7 @@ void design_arkaiser_filter(unsigned int _k,
 //  _beta   : rolloff factor (0 < beta <= 1)
 //  _dt     : fractional sample delay
 //  _h      : output coefficient buffer (length: 2*k*m+1)
-void design_hM3_filter(unsigned int _k,
+void liquid_firdes_hM3(unsigned int _k,
                        unsigned int _m,
                        float _beta,
                        float _dt,
@@ -1589,6 +1589,8 @@ void SYMSYNC(_execute)(SYMSYNC() _q,                            \
                        unsigned int _nx,                        \
                        TO * _y,                                 \
                        unsigned int *_ny);                      \
+void SYMSYNC(_set_output_rate)(SYMSYNC() _q,                    \
+                               unsigned int _k_out);            \
 void SYMSYNC(_set_lf_bw)(SYMSYNC() _q, float _bt);              \
 /* lock/unlock loop control */                                  \
 void SYMSYNC(_lock)(SYMSYNC() _q);                              \

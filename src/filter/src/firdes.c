@@ -285,7 +285,7 @@ void firdes_kaiser_window(unsigned int _n,
 //  _beta   : excess bandwidth factor, _beta in [0,1]
 //  _dt     : fractional sample delay
 //  _h      : output coefficient buffer (length: 2*k*m+1)
-void design_nyquist_filter(liquid_nyquist_type _type,
+void liquid_firdes_nyquist(liquid_nyquist_type _type,
                            unsigned int _k,
                            unsigned int _m,
                            float _beta,
@@ -317,10 +317,10 @@ void design_nyquist_filter(liquid_nyquist_type _type,
         firdespm_run(h_len, 3, bands, des, weights, wtype, LIQUID_FIRDESPM_BANDPASS, _h);
         break;
     case LIQUID_NYQUIST_RCOS:
-        design_rcos_filter(_k, _m, _beta, _dt, _h);
+        liquid_firdes_rcos(_k, _m, _beta, _dt, _h);
         break;
     default:
-        fprintf(stderr,"error: design_nyquist_filter(), invalid filter type '%d'\n", _type);
+        fprintf(stderr,"error: liquid_firdes_nyquist(), invalid filter type '%d'\n", _type);
         exit(1);
     }
 }
@@ -333,7 +333,7 @@ void design_nyquist_filter(liquid_nyquist_type _type,
 //  _beta   : excess bandwidth factor, _beta in [0,1]
 //  _dt     : fractional sample delay
 //  _h      : output coefficient buffer (length: 2*k*m+1)
-void design_rnyquist_filter(liquid_rnyquist_type _type,
+void liquid_firdes_rnyquist(liquid_rnyquist_type _type,
                             unsigned int _k,
                             unsigned int _m,
                             float _beta,
@@ -342,16 +342,16 @@ void design_rnyquist_filter(liquid_rnyquist_type _type,
 {
     switch (_type) {
     case LIQUID_RNYQUIST_ARKAISER:
-        design_arkaiser_filter(_k, _m, _beta, _dt, _h);
+        liquid_firdes_arkaiser(_k, _m, _beta, _dt, _h);
         break;
     case LIQUID_RNYQUIST_RKAISER:
-        design_rkaiser_filter(_k, _m, _beta, _dt, _h);
+        liquid_firdes_rkaiser(_k, _m, _beta, _dt, _h);
         break;
     case LIQUID_RNYQUIST_RRC:
-        design_rrc_filter(_k, _m, _beta, _dt, _h);
+        liquid_firdes_rrcos(_k, _m, _beta, _dt, _h);
         break;
     case LIQUID_RNYQUIST_hM3:
-        design_hM3_filter(_k, _m, _beta, _dt, _h);
+        liquid_firdes_hM3(_k, _m, _beta, _dt, _h);
         break;
     case LIQUID_RNYQUIST_GMSKTX:
         liquid_firdes_gmsktx(_k, _m, _beta, _dt, _h);
@@ -360,7 +360,7 @@ void design_rnyquist_filter(liquid_rnyquist_type _type,
         liquid_firdes_gmskrx(_k, _m, _beta, _dt, _h);
         break;
     default:
-        fprintf(stderr,"error: design_rnyquist_filter(), invalid/unsupported filter type '%d'\n", _type);
+        fprintf(stderr,"error: liquid_firdes_rnyquist(), invalid filter type '%d'\n", _type);
         exit(1);
     }
 }
@@ -372,11 +372,11 @@ void design_rnyquist_filter(liquid_rnyquist_type _type,
 //  _K      : Rice fading factor (K >= 0)
 //  _theta  : LoS component angle of arrival
 //  _h      : output coefficient buffer
-void fir_design_doppler(unsigned int _n,
-                        float _fd,
-                        float _K,
-                        float _theta,
-                        float *_h)
+void liquid_firdes_doppler(unsigned int _n,
+                          float _fd,
+                          float _K,
+                          float _theta,
+                          float *_h)
 {
     float t, J, r, w;
     float beta = 4; // kaiser window parameter

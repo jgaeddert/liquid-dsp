@@ -152,7 +152,7 @@ INTERP() INTERP(_create_rnyquist)(int _type,
     // generate square-root Nyquist filter
     unsigned int h_len = 2*_k*_m + 1;
     float h[h_len];
-    design_rnyquist_filter(_type,_k,_m,_beta,_dt,h);
+    liquid_firdes_rnyquist(_type,_k,_m,_beta,_dt,h);
 
     // copy coefficients to type-specific array (e.g. float complex)
     unsigned int i;

@@ -140,7 +140,7 @@ void liquid_firdes_gmskrx(unsigned int _k,
     float complex H_hat[h_len];     // frequency response of receive filter
 
     // create 'prototype' matched filter
-    design_nyquist_filter(prototype,k,m,beta,0.0f,h_primef);
+    liquid_firdes_nyquist(prototype,k,m,beta,0.0f,h_primef);
 
     // create 'gain' filter to improve stop-band rejection
     float fc = (0.7f + 0.1*beta) / (float)k;

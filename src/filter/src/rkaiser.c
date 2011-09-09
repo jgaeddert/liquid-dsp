@@ -43,7 +43,7 @@
 //  _beta   :   filter excess bandwidth factor (0,1)
 //  _dt     :   filter fractional sample delay
 //  _h      :   resulting filter [size: 2*_k*_m+1]
-void design_rkaiser_filter(unsigned int _k,
+void liquid_firdes_rkaiser(unsigned int _k,
                            unsigned int _m,
                            float _beta,
                            float _dt,
@@ -51,27 +51,25 @@ void design_rkaiser_filter(unsigned int _k,
 {
     // validate input
     if (_k < 2) {
-        fprintf(stderr,"error: design_rkaiser_filter(), k must be at least 2\n");
+        fprintf(stderr,"error: liquid_firdes_rkaiser(), k must be at least 2\n");
         exit(1);
     } else if (_m < 1) {
-        fprintf(stderr,"error: design_rkaiser_filter(), m must be at least 1\n");
+        fprintf(stderr,"error: liquid_firdes_rkaiser(), m must be at least 1\n");
         exit(1);
     } else if (_beta <= 0.0f || _beta >= 1.0f) {
-        fprintf(stderr,"error: design_rkaiser_filter(), beta must be in (0,1)\n");
+        fprintf(stderr,"error: liquid_firdes_rkaiser(), beta must be in (0,1)\n");
         exit(1);
     } else if (_dt < -1.0f || _dt > 1.0f) {
-        fprintf(stderr,"error: design_rkaiser_filter(), dt must be in [-1,1]\n");
+        fprintf(stderr,"error: liquid_firdes_rkaiser(), dt must be in [-1,1]\n");
         exit(1);
     }
 
     // simply call internal method and ignore output rho value
     float rho;
-    //design_rkaiser_filter_bisection(_k,_m,_beta,_dt,_h,&rho);
-    design_rkaiser_filter_quadratic(_k,_m,_beta,_dt,_h,&rho);
+    //liquid_firdes_rkaiser_bisection(_k,_m,_beta,_dt,_h,&rho);
+    liquid_firdes_rkaiser_quadratic(_k,_m,_beta,_dt,_h,&rho);
 }
 
-// design_arkaiser_filter()
-//
 // Design frequency-shifted root-Nyquist filter based on
 // the Kaiser-windowed sinc using approximation for rho.
 //
@@ -80,7 +78,7 @@ void design_rkaiser_filter(unsigned int _k,
 //  _beta   :   filter excess bandwidth factor (0,1)
 //  _dt     :   filter fractional sample delay
 //  _h      :   resulting filter [size: 2*_k*_m+1]
-void design_arkaiser_filter(unsigned int _k,
+void liquid_firdes_arkaiser(unsigned int _k,
                             unsigned int _m,
                             float _beta,
                             float _dt,
@@ -88,16 +86,16 @@ void design_arkaiser_filter(unsigned int _k,
 {
     // validate input
     if (_k < 2) {
-        fprintf(stderr,"error: design_arkaiser_filter(), k must be at least 2\n");
+        fprintf(stderr,"error: liquid_firdes_arkaiser(), k must be at least 2\n");
         exit(1);
     } else if (_m < 1) {
-        fprintf(stderr,"error: design_arkaiser_filter(), m must be at least 1\n");
+        fprintf(stderr,"error: liquid_firdes_arkaiser(), m must be at least 1\n");
         exit(1);
     } else if (_beta <= 0.0f || _beta >= 1.0f) {
-        fprintf(stderr,"error: design_arkaiser_filter(), beta must be in (0,1)\n");
+        fprintf(stderr,"error: liquid_firdes_arkaiser(), beta must be in (0,1)\n");
         exit(1);
     } else if (_dt < -1.0f || _dt > 1.0f) {
-        fprintf(stderr,"error: design_arkaiser_filter(), dt must be in [-1,1]\n");
+        fprintf(stderr,"error: liquid_firdes_arkaiser(), dt must be in [-1,1]\n");
         exit(1);
     }
 
@@ -189,7 +187,7 @@ float rkaiser_approximate_rho(unsigned int _m,
 //  _dt     :   filter fractional sample delay
 //  _h      :   resulting filter [size: 2*_k*_m+1]
 //  _rho    :   transition bandwidth adjustment, 0 < _rho < 1
-void design_rkaiser_filter_bisection(unsigned int _k,
+void liquid_firdes_rkaiser_bisection(unsigned int _k,
                                      unsigned int _m,
                                      float _beta,
                                      float _dt,
@@ -197,13 +195,13 @@ void design_rkaiser_filter_bisection(unsigned int _k,
                                      float * _rho)
 {
     if ( _k < 1 ) {
-        fprintf(stderr,"error: design_rkaiser_filter_bisection(): k must be greater than 0\n");
+        fprintf(stderr,"error: liquid_firdes_rkaiser_bisection(): k must be greater than 0\n");
         exit(1);
     } else if ( _m < 1 ) {
-        fprintf(stderr,"error: design_rkaiser_filter_bisection(): m must be greater than 0\n");
+        fprintf(stderr,"error: liquid_firdes_rkaiser_bisection(): m must be greater than 0\n");
         exit(1);
     } else if ( (_beta < 0.0f) || (_beta > 1.0f) ) {
-        fprintf(stderr,"error: design_rkaiser_filter_bisection(): beta must be in [0,1]\n");
+        fprintf(stderr,"error: liquid_firdes_rkaiser_bisection(): beta must be in [0,1]\n");
         exit(1);
     } else;
 
@@ -230,9 +228,9 @@ void design_rkaiser_filter_bisection(unsigned int _k,
     //x1 = 0.5f*(x0 + x2);      // bisect [x0,x1]
 
     // evaluate performance (ISI) of each bandwidth adjustment
-    float y0 = design_rkaiser_filter_internal_isi(_k,_m,_beta,_dt,x0,_h);
-    float y1 = design_rkaiser_filter_internal_isi(_k,_m,_beta,_dt,x1,_h);
-    float y2 = design_rkaiser_filter_internal_isi(_k,_m,_beta,_dt,x2,_h);
+    float y0 = liquid_firdes_rkaiser_internal_isi(_k,_m,_beta,_dt,x0,_h);
+    float y1 = liquid_firdes_rkaiser_internal_isi(_k,_m,_beta,_dt,x1,_h);
+    float y2 = liquid_firdes_rkaiser_internal_isi(_k,_m,_beta,_dt,x2,_h);
 
     // run parabolic search to find bandwidth adjustment x_hat which
     // minimizes the inter-symbol interference of the filter
@@ -252,8 +250,8 @@ void design_rkaiser_filter_bisection(unsigned int _k,
         // choose midway points xa, xb and compute ISI
         xa = 0.5f*(x0 + x1);    // bisect [x0,x1]
         xb = 0.5f*(x1 + x2);    // bisect [x1,x2]
-        ya = design_rkaiser_filter_internal_isi(_k,_m,_beta,_dt,xa,_h);
-        yb = design_rkaiser_filter_internal_isi(_k,_m,_beta,_dt,xb,_h);
+        ya = liquid_firdes_rkaiser_internal_isi(_k,_m,_beta,_dt,xa,_h);
+        yb = liquid_firdes_rkaiser_internal_isi(_k,_m,_beta,_dt,xb,_h);
 
 #if DEBUG_RKAISER
         fprintf(fid,"x = [x %12.4e %12.4e];\n", xa, xb);
@@ -275,7 +273,7 @@ void design_rkaiser_filter_bisection(unsigned int _k,
         x_hat = x1;
         y_hat = y1;
 #if DEBUG_RKAISER
-        y_hat = design_rkaiser_filter_internal_isi(_k,_m,_beta,_dt,x_hat,_h);
+        y_hat = liquid_firdes_rkaiser_internal_isi(_k,_m,_beta,_dt,x_hat,_h);
         printf("  %4u : rho=%12.8f, isi=%12.6f dB\n", p+1, x_hat, 20*log10f(y_hat));
 #endif
     };
@@ -287,7 +285,7 @@ void design_rkaiser_filter_bisection(unsigned int _k,
 #endif
 
     // re-design filter with optimal value for rho
-    y_hat = design_rkaiser_filter_internal_isi(_k,_m,_beta,_dt,x_hat,_h);
+    y_hat = liquid_firdes_rkaiser_internal_isi(_k,_m,_beta,_dt,x_hat,_h);
 
     // normalize filter magnitude
     float e2 = 0.0f;
@@ -298,8 +296,6 @@ void design_rkaiser_filter_bisection(unsigned int _k,
     *_rho = x_hat;
 }
 
-// design_rkaiser_filter_quadratic()
-//
 // Design frequency-shifted root-Nyquist filter based on
 // the Kaiser-windowed sinc using the quadratic search method.
 //
@@ -309,7 +305,7 @@ void design_rkaiser_filter_bisection(unsigned int _k,
 //  _dt     :   filter fractional sample delay
 //  _h      :   resulting filter [size: 2*_k*_m+1]
 //  _rho    :   transition bandwidth adjustment, 0 < _rho < 1
-void design_rkaiser_filter_quadratic(unsigned int _k,
+void liquid_firdes_rkaiser_quadratic(unsigned int _k,
                                      unsigned int _m,
                                      float _beta,
                                      float _dt,
@@ -317,13 +313,13 @@ void design_rkaiser_filter_quadratic(unsigned int _k,
                                      float * _rho)
 {
     if ( _k < 1 ) {
-        fprintf(stderr,"error: design_rkaiser_filter_quadratic(): k must be greater than 0\n");
+        fprintf(stderr,"error: liquid_firdes_rkaiser_quadratic(): k must be greater than 0\n");
         exit(1);
     } else if ( _m < 1 ) {
-        fprintf(stderr,"error: design_rkaiser_filter_quadratic(): m must be greater than 0\n");
+        fprintf(stderr,"error: liquid_firdes_rkaiser_quadratic(): m must be greater than 0\n");
         exit(1);
     } else if ( (_beta < 0.0f) || (_beta > 1.0f) ) {
-        fprintf(stderr,"error: design_rkaiser_filter_quadratic(): beta must be in [0,1]\n");
+        fprintf(stderr,"error: liquid_firdes_rkaiser_quadratic(): beta must be in [0,1]\n");
         exit(1);
     } else;
 
@@ -378,9 +374,9 @@ void design_rkaiser_filter_quadratic(unsigned int _k,
         if (x2 >= 1.0f) x2 = 0.99f;
 
         // evaluate all points
-        y0 = design_rkaiser_filter_internal_isi(_k,_m,_beta,_dt,x0,_h);
-        y1 = design_rkaiser_filter_internal_isi(_k,_m,_beta,_dt,x1,_h);
-        y2 = design_rkaiser_filter_internal_isi(_k,_m,_beta,_dt,x2,_h);
+        y0 = liquid_firdes_rkaiser_internal_isi(_k,_m,_beta,_dt,x0,_h);
+        y1 = liquid_firdes_rkaiser_internal_isi(_k,_m,_beta,_dt,x1,_h);
+        y2 = liquid_firdes_rkaiser_internal_isi(_k,_m,_beta,_dt,x2,_h);
 
         // save optimum
         if (p==0 || y1 < y_opt) {
@@ -412,7 +408,7 @@ void design_rkaiser_filter_quadratic(unsigned int _k,
 
         // ensure x_hat is within boundary (this will fail if y1 > y0 || y1 > y2)
         if (x_hat < x0 || x_hat > x2) {
-            //fprintf(stderr,"warning: design_rkaiser_filter_quadratic(), quadratic minimum outside boundary\n");
+            //fprintf(stderr,"warning: liquid_firdes_rkaiser_quadratic(), quadratic minimum outside boundary\n");
             break;
         }
 
@@ -433,7 +429,7 @@ void design_rkaiser_filter_quadratic(unsigned int _k,
 #endif
 
     // re-design filter with optimal value for rho
-    design_rkaiser_filter_internal_isi(_k,_m,_beta,_dt,rho_opt,_h);
+    liquid_firdes_rkaiser_internal_isi(_k,_m,_beta,_dt,rho_opt,_h);
 
     // normalize filter magnitude
     float e2 = 0.0f;
@@ -452,7 +448,7 @@ void design_rkaiser_filter_quadratic(unsigned int _k,
 //  _dt     :   filter fractional sample delay
 //  _rho    :   transition bandwidth adjustment, 0 < _rho < 1
 //  _h      :   filter buffer [size: 2*_k*_m+1]
-float design_rkaiser_filter_internal_isi(unsigned int _k,
+float liquid_firdes_rkaiser_internal_isi(unsigned int _k,
                                          unsigned int _m,
                                          float _beta,
                                          float _dt,
@@ -461,9 +457,9 @@ float design_rkaiser_filter_internal_isi(unsigned int _k,
 {
     // validate input
     if (_rho < 0.0f) {
-        fprintf(stderr,"warning: design_rkaiser_filter_internal_isi(), rho < 0\n");
+        fprintf(stderr,"warning: liquid_firdes_rkaiser_internal_isi(), rho < 0\n");
     } else if (_rho > 1.0f) {
-        fprintf(stderr,"warning: design_rkaiser_filter_internal_isi(), rho > 1\n");
+        fprintf(stderr,"warning: liquid_firdes_rkaiser_internal_isi(), rho > 1\n");
     }
 
     unsigned int n=2*_k*_m+1;                   // filter length
