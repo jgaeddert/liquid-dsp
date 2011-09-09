@@ -185,6 +185,5 @@ void liquid_firdes_gmskrx(unsigned int _k,
 
     // copy result
     memmove(_h, hr, h_len*sizeof(float));
-
 }
 

@@ -44,7 +44,7 @@ struct gmskdem_s {
     float * h;              // pulse shaping filter
 
     // filter object
-    firfilt_rrrf filter;    // transmit filter pulse shape
+    firfilt_rrrf filter;    // receiver matched filter
 
     float complex x_prime;  // received signal state
 
@@ -166,7 +166,7 @@ void gmskdem_demodulate(gmskdem _q,
         // compute output
         float d_tmp;
         firfilt_rrrf_execute(_q->filter, &d_tmp);
-        windowf_push(_q->debug_mfout, d_tmp);
+        windowf_push(_q->debug_mfout, _q->k*d_tmp);
 #endif
 
         // decimate by k
@@ -174,6 +174,9 @@ void gmskdem_demodulate(gmskdem _q,
 
         // compute filter output
         firfilt_rrrf_execute(_q->filter, &d_hat);
+
+        // scale result by k
+        d_hat *= _q->k;
     }
 
     // make decision
@@ -236,6 +239,7 @@ void gmskdem_debug_print(gmskdem _q,
     fprintf(fid,"isym = i0:k:n;\n");
     fprintf(fid,"figure;\n");
     fprintf(fid,"plot(t,mfout,'-', t(isym),mfout(isym),'o','MarkerSize',4);\n");
+    fprintf(fid,"grid on;\n");
 #endif
 
     fclose(fid);

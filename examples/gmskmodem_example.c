@@ -16,11 +16,11 @@ void usage()
     printf("gmskmodem_example -- Gaussian minimum-shift keying modem example\n");
     printf("options (default values in <>):\n");
     printf("  u/h   : print usage/help\n");
-    printf("  k     : samples/symbol <4>\n");
-    printf("  m     : filter delay [symbols], <3>\n");
-    printf("  n     : number of data symbols <32>\n");
-    printf("  b     : bandwidth-time product, 0 <= b <= 1, <0.3>\n");
-    printf("  s     : SNR [dB] <30>\n");
+    printf("  k     : samples/symbol, default: 4\n");
+    printf("  m     : filter delay [symbols], default: 3\n");
+    printf("  n     : number of data symbols, default: 200\n");
+    printf("  b     : bandwidth-time product, 0 <= b <= 1, default: 0.3\n");
+    printf("  s     : SNR [dB], default: 30\n");
 }
 
 int main(int argc, char*argv[]) {
@@ -28,7 +28,7 @@ int main(int argc, char*argv[]) {
     unsigned int k=4;                   // filter samples/symbol
     unsigned int m=3;                   // filter delay (symbols)
     float BT=0.3f;                      // bandwidth-time product
-    unsigned int num_data_symbols = 32; // number of data symbols
+    unsigned int num_data_symbols=200;  // number of data symbols
     float SNRdB = 30.0f;                // signal-to-noise ratio [dB]
     float phi = 0.0f;                   // carrier phase offset
     float dphi = 0.0f;                  // carrier frequency offset
@@ -58,6 +58,7 @@ int main(int argc, char*argv[]) {
     // derived values
     unsigned int num_symbols = num_data_symbols + 2*m;
     unsigned int num_samples = k*num_symbols;
+    float nstd = powf(10.0f,-SNRdB/20.0f);  // noise standard deviation
 
     // create mod/demod objects
     gmskmod mod   = gmskmod_create(k, m, BT);
@@ -80,10 +81,10 @@ int main(int argc, char*argv[]) {
         gmskmod_modulate(mod, s[i], &x[k*i]);
 
     // add channel impairments
-    // TODO : compensate for over-sampling rate?
-    float nstd = powf(10.0f,-SNRdB/20.0f);
-    for (i=0; i<num_samples; i++)
-        y[i] = x[i]*cexpf(_Complex_I*(phi + i*dphi)) + nstd*(randnf() + _Complex_I*randnf())*M_SQRT1_2;
+    for (i=0; i<num_samples; i++) {
+        y[i]  = x[i]*cexpf(_Complex_I*(phi + i*dphi));
+        y[i] += nstd*(randnf() + _Complex_I*randnf())*M_SQRT1_2;
+    }
 
     // demodulate signal
     for (i=0; i<num_symbols; i++)
@@ -123,12 +124,12 @@ int main(int argc, char*argv[]) {
     fprintf(fid,"figure;\n");
     fprintf(fid,"plot(t,real(y),t,imag(y));\n");
 
-    // artificially demodulate
+    // artificially demodulate (generate receive filter, etc.)
     float hr[2*k*m+1];
     liquid_firdes_gmskrx(k,m,BT,0,hr);
     for (i=0; i<2*k*m+1; i++)
-        fprintf(fid,"h(%3u) = %12.8f;\n", i+1, hr[i]);
-    fprintf(fid,"z = filter(h,1,arg( ([y(2:end) 0]).*conj(y) )) / (h*h');\n");
+        fprintf(fid,"hr(%3u) = %12.8f;\n", i+1, hr[i]);
+    fprintf(fid,"z = k*filter(hr,1,arg( ([y(2:end) 0]).*conj(y) ));\n");
     fprintf(fid,"figure;\n");
     fprintf(fid,"plot(t,z,t(k:k:end),z(k:k:end),'or');\n");
     fprintf(fid,"grid on;\n");
