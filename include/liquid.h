@@ -1589,6 +1589,8 @@ void SYMSYNC(_execute)(SYMSYNC() _q,                            \
                        unsigned int _nx,                        \
                        TO * _y,                                 \
                        unsigned int *_ny);                      \
+void SYMSYNC(_set_output_rate)(SYMSYNC() _q,                    \
+                               unsigned int _k_out);            \
 void SYMSYNC(_set_lf_bw)(SYMSYNC() _q, float _bt);              \
 /* lock/unlock loop control */                                  \
 void SYMSYNC(_lock)(SYMSYNC() _q);                              \

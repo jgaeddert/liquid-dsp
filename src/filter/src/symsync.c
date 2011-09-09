@@ -65,7 +65,8 @@ struct SYMSYNC(_s) {
     TC * h;                     // matched filter
     TC * dh;                    // derivative matched filter
     unsigned int h_len;         // matched filter length
-    unsigned int k;             // samples/symbol
+    unsigned int k;             // samples/symbol (input)
+    unsigned int k_out;         // samples/symbol (output)
     unsigned int num_filters;   // number of filters in the bank
 
     FIRPFB() mf;                // matched filter bank
@@ -157,6 +158,9 @@ SYMSYNC() SYMSYNC(_create)(unsigned int _k,
 #endif
     SYMSYNC(_clear)(q);
     SYMSYNC(_set_lf_bw)(q, 0.01f);
+
+    // set output rate nominally at 1 sample/symbol (full decimation)
+    SYMSYNC(_set_output_rate)(q, 1);
 
     // unlock loop control
     q->is_locked = 0;
@@ -277,6 +281,24 @@ void SYMSYNC(_set_lf_bw)(SYMSYNC() _q,
     _q->alpha = 1.00f - (_q->bt);   // percent of old sample to retain
     _q->beta  = 0.22f * (_q->bt);   // percent of new sample to retain
 #endif
+}
+
+// set synchronizer output rate (samples/symbol)
+//  _q      :   synchronizer object
+//  _k_out  :   output samples/symbol
+void SYMSYNC(_set_output_rate)(SYMSYNC() _q,
+                               unsigned int _k_out)
+{
+    // validate input
+    if (_k_out == 0) {
+        fprintf(stderr,"error: symsync_xxxt_output_rate(), output rate must be greater than 0\n");
+        exit(1);
+    }
+
+    // set output rate
+    _q->k_out = _k_out;
+
+    // TODO : update...
 }
 
 // lock synchronizer object
