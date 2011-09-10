@@ -134,7 +134,7 @@ void benchlist_print(benchlist _q)
     unsigned int i;
     printf("benchlist [%u]:\n", _q->num_benchmarks);
     for (i=0; i<_q->num_benchmarks; i++) {
-        printf("  - %-24s : %12.3f", _q->benchmarks[i].name,
+        printf("  - %-32s : %14.2f", _q->benchmarks[i].name,
                                      _q->benchmarks[i].cycles_per_trial);
         if (_q->benchmarks[i].link == NULL) {
             printf("\n");
