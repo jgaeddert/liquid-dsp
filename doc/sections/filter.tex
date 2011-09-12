@@ -580,6 +580,36 @@ In the figure the responses of the $r$-Kaiser and approximate $r$-Kaiser
 filters are indistinguishable.
 
 
+\subsubsection{GMSK Filter Design}
+\label{module:filter:firdes_gmsk}
+
+%
+Transmit filter:
+\[
+    h_t(t) = Q\left( \frac{2 \pi BT}{\sqrt{\ln(2)}} \left(t-\frac{1}{2}\right) \right) -
+             Q\left( \frac{2 \pi BT}{\sqrt{\ln(2)}} \left(t+\frac{1}{2}\right) \right)
+\]
+%
+where $Q(z)=\frac{1}{2}\left(1 - \erf(z/\sqrt{2})\right)$
+is the ... (see Section~\ref{module:math:transcendentals}).
+%
+Receive filter: ...
+%
+\begin{figure}
+\centering
+\subfigure[time] {
+  \includegraphics[trim = 0mm 0mm 0mm 0mm, clip, width=13cm]{figures.gen/filter_firdes_gmskrx_time}
+}
+\subfigure[PSD] {
+  \includegraphics[trim = 0mm 0mm 0mm 0mm, clip, width=13cm]{figures.gen/filter_firdes_gmskrx_freq}
+}
+\caption{{\tt liquid\_firdes\_gmskrx()} demonstration,
+         $k=4$ samples/symbol, $m=5$ symbols, BT$=0.3$}
+\label{fig:module:filter:firdes_gmskrx}
+\end{figure}
+%
+...Figure~\ref{fig:module:filter:firdes_gmskrx}
+
 \subsubsection{{\tt firdespm} (Parks-McClellan algorithm)}
 \label{module:filter:firdespm}
 FIR filter desing using the Parks-McClellan algorithm is implemented in
