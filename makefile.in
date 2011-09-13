@@ -647,9 +647,6 @@ multicarrier_objects :=						\
 	src/multicarrier/src/ofdmframegen.o			\
 	src/multicarrier/src/ofdmframesync.o			\
 	src/multicarrier/src/ofdmoqam.o				\
-	src/multicarrier/src/ofdmoqamframe.common.o		\
-	src/multicarrier/src/ofdmoqamframegen.o			\
-	src/multicarrier/src/ofdmoqamframesync.o		\
 
 # list explicit targets and dependencies here
 
@@ -1209,7 +1206,6 @@ example_programs :=						\
 	examples/ofdmframesync_example				\
 	examples/ofdmoqam_example				\
 	examples/ofdmoqam_firpfbch_example			\
-	examples/ofdmoqamframesync_example			\
 	examples/packetizer_example				\
 	examples/packetizer_soft_example			\
 	examples/pll_example					\
