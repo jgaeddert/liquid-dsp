@@ -1,7 +1,7 @@
 //
 // decim_crcf_example.c
 //
-// This example demonstrates the decim object (interpolator) interface.
+// This example demonstrates the decim object (decimator) interface.
 // Data symbols are generated and then interpolated according to a
 // finite impulse response square-root Nyquist filter.  The resulting
 // sequence is then decimated with the same filter, matched to the
