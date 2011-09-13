@@ -985,16 +985,16 @@ typedef enum {
 //  _As         :   stop-band ripple in dB
 //  _B          :   numerator
 //  _A          :   denominator
-void iirdes(liquid_iirdes_filtertype _ftype,
-            liquid_iirdes_bandtype   _btype,
-            liquid_iirdes_format     _format,
-            unsigned int _n,
-            float _fc,
-            float _f0,
-            float _Ap,
-            float _As,
-            float * _B,
-            float * _A);
+void liquid_iirdes(liquid_iirdes_filtertype _ftype,
+                   liquid_iirdes_bandtype   _btype,
+                   liquid_iirdes_format     _format,
+                   unsigned int _n,
+                   float _fc,
+                   float _f0,
+                   float _Ap,
+                   float _As,
+                   float * _B,
+                   float * _A);
 
 // compute analog zeros, poles, gain for specific filter types
 void butter_azpkf(unsigned int _n,

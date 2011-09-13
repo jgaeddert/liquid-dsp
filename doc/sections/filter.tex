@@ -1158,16 +1158,16 @@ first computing their analog low-pass prototypes, performing a bilinear
 $z$-transform to convert to the digital domain, then transforming to the
 appropriate band type (e.g. high pass) if necessary.
 Externally, the user may abstract the entire process by using the
-{\tt iirdes()} method.
+{\tt liquid\_iirdes()} method.
 Furthermore, if the end result is to create a filter {\em object} as
 opposed to computing the coefficients themselves, the
 {\tt iirfilt\_crcf\_create\_prototype()} method can be used to generate
 the object directly
 (see Section~\ref{module:filter:iirfilt}).
 
-\subsubsection{{\tt iirdes()}, the simplified method}
+\subsubsection{{\tt liquid\_iirdes()}, the simplified method}
 \label{module:filter:iirdes:iirdes}
-The {\tt iirdes()} method designs an IIR filter's coefficients
+The {\tt liquid\_iirdes()} method designs an IIR filter's coefficients
 from one of the four major types
 (Butterworth, Chebyshev, elliptic/Cauer, and Bessel)
 with as minimal an interface as possible.
@@ -1179,7 +1179,7 @@ that design.
 Specifically, the interface is
 %
 \begin{Verbatim}[fontsize=\small]
-    iirdes(_ftype, _btype, _format, _n, _fc, _f0, _Ap, _As, *_B, *_A);
+    liquid_iirdes(_ftype, _btype, _format, _n, _fc, _f0, _Ap, _As, *_B, *_A);
 \end{Verbatim}
 %
 \begin{itemize}

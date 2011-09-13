@@ -460,32 +460,32 @@ void iirdes_dzpk_lp2bp(liquid_float_complex * _zd,
 //  _As         :   stop-band ripple in dB
 //  _B          :   numerator
 //  _A          :   denominator
-void iirdes(liquid_iirdes_filtertype _ftype,
-            liquid_iirdes_bandtype   _btype,
-            liquid_iirdes_format     _format,
-            unsigned int _n,
-            float _fc,
-            float _f0,
-            float _Ap,
-            float _As,
-            float * _B,
-            float * _A)
+void liquid_iirdes(liquid_iirdes_filtertype _ftype,
+                   liquid_iirdes_bandtype   _btype,
+                   liquid_iirdes_format     _format,
+                   unsigned int _n,
+                   float _fc,
+                   float _f0,
+                   float _Ap,
+                   float _As,
+                   float * _B,
+                   float * _A)
 {
     // validate input
     if (_fc <= 0 || _fc >= 0.5) {
-        fprintf(stderr,"error: iirdes(), cutoff frequency out of range\n");
+        fprintf(stderr,"error: liquid_iirdes(), cutoff frequency out of range\n");
         exit(1);
     } else if (_f0 < 0 || _f0 > 0.5) {
-        fprintf(stderr,"error: iirdes(), center frequency out of range\n");
+        fprintf(stderr,"error: liquid_iirdes(), center frequency out of range\n");
         exit(1);
     } else if (_Ap <= 0) {
-        fprintf(stderr,"error: iirdes(), pass-band ripple out of range\n");
+        fprintf(stderr,"error: liquid_iirdes(), pass-band ripple out of range\n");
         exit(1);
     } else if (_As <= 0) {
-        fprintf(stderr,"error: iirdes(), stop-band ripple out of range\n");
+        fprintf(stderr,"error: liquid_iirdes(), stop-band ripple out of range\n");
         exit(1);
     } else if (_n == 0) {
-        fprintf(stderr,"error: iirdes(), filter order must be > 0\n");
+        fprintf(stderr,"error: liquid_iirdes(), filter order must be > 0\n");
         exit(1);
     }
 
@@ -545,7 +545,7 @@ void iirdes(liquid_iirdes_filtertype _ftype,
         bessel_azpkf(_n,za,pa,&ka);
         break;
     default:
-        fprintf(stderr,"error: iirdes(), unknown filter type\n");
+        fprintf(stderr,"error: liquid_iirdes(), unknown filter type\n");
         exit(1);
     }
 
