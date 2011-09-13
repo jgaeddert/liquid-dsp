@@ -91,7 +91,7 @@ int main(int argc, char*argv[])
     unsigned int i;
 
     // generate matched filter response
-    design_rnyquist_filter(LIQUID_RNYQUIST_RRC, k, m, beta, 0.0f, hm);
+    liquid_firdes_rnyquist(LIQUID_RNYQUIST_RRC, k, m, beta, 0.0f, hm);
     interp_crcf interp = interp_crcf_create(k, hm, hm_len);
 
     // create the modem objects

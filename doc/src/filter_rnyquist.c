@@ -29,10 +29,10 @@ int main() {
     float h_hM3[h_len];
 
     // design filters
-    design_rnyquist_filter(LIQUID_RNYQUIST_ARKAISER,k, m, beta, 0, h_arkaiser);
-    design_rnyquist_filter(LIQUID_RNYQUIST_RKAISER, k, m, beta, 0, h_rkaiser);
-    design_rnyquist_filter(LIQUID_RNYQUIST_RRC,     k, m, beta, 0, h_rrc);
-    design_rnyquist_filter(LIQUID_RNYQUIST_hM3,     k, m, beta, 0, h_hM3);
+    liquid_firdes_rnyquist(LIQUID_RNYQUIST_ARKAISER,k, m, beta, 0, h_arkaiser);
+    liquid_firdes_rnyquist(LIQUID_RNYQUIST_RKAISER, k, m, beta, 0, h_rkaiser);
+    liquid_firdes_rnyquist(LIQUID_RNYQUIST_RRC,     k, m, beta, 0, h_rrc);
+    liquid_firdes_rnyquist(LIQUID_RNYQUIST_hM3,     k, m, beta, 0, h_hM3);
 
     // compute filter power spectral density
     float complex H_arkaiser[nfft];

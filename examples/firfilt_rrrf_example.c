@@ -19,7 +19,7 @@ int main() {
 
     unsigned int i;
     float h[h_len];
-    firdes_kaiser_window(h_len,fc,As,mu,h);
+    liquid_firdes_kaiser(h_len,fc,As,mu,h);
     firfilt_rrrf f = firfilt_rrrf_create(h,h_len);
     firfilt_rrrf_print(f);
 

@@ -34,8 +34,6 @@
 
 #include "liquid.internal.h"
 
-// design_hM3_filter()
-//
 // Design root-Nyquist harris-Moerder filter using Parks-McClellan
 // algorithm
 //
@@ -44,20 +42,20 @@
 //  _beta   :   filter excess bandwidth factor (0,1)
 //  _dt     :   filter fractional sample delay
 //  _h      :   resulting filter [size: 2*_k*_m+1]
-void design_hM3_filter(unsigned int _k,
+void liquid_firdes_hM3(unsigned int _k,
                        unsigned int _m,
                        float _beta,
                        float _dt,
                        float * _h)
 {
     if ( _k < 2 ) {
-        fprintf(stderr,"error: design_hM3_filter(): k must be greater than 1\n");
+        fprintf(stderr,"error: liquid_firdes_hM3(): k must be greater than 1\n");
         exit(1);
     } else if ( _m < 1 ) {
-        fprintf(stderr,"error: design_hM3_filter(): m must be greater than 0\n");
+        fprintf(stderr,"error: liquid_firdes_hM3(): m must be greater than 0\n");
         exit(1);
     } else if ( (_beta < 0.0f) || (_beta > 1.0f) ) {
-        fprintf(stderr,"error: design_hM3_filter(): beta must be in [0,1]\n");
+        fprintf(stderr,"error: liquid_firdes_hM3(): beta must be in [0,1]\n");
         exit(1);
     } else;
 

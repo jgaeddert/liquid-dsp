@@ -25,8 +25,8 @@ int main() {
     unsigned int h1_len = 2*k*m1 + 1;
     float h0[h0_len];
     float h1[h1_len];
-    design_rcos_filter(k,m0,beta0,0,h0);
-    design_rcos_filter(k,m1,beta1,0,h1);
+    liquid_firdes_rcos(k,m0,beta0,0,h0);
+    liquid_firdes_rcos(k,m1,beta1,0,h1);
     firfilt_rrrf f = firfilt_rrrf_create(h0,h0_len);
     //firfilt_rrrf_print(f);
 

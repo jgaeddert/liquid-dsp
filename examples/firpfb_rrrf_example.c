@@ -16,7 +16,7 @@ int main() {
     // up-sampled filter prototype
     unsigned int h_len = 2*k*m*n + 1;
     float h[h_len];
-    design_rrc_filter(k*n,m,beta,0,h);
+    liquid_firdes_rrcos(k*n,m,beta,0,h);
 
     // polyphase matched filter
     firpfb_rrrf mf = firpfb_rrrf_create(n,h,h_len);

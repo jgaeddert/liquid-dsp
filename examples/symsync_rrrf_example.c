@@ -25,7 +25,7 @@ int main() {
     // design interpolating filter
     unsigned int h_len = 2*k*m+1;
     float h[h_len];
-    design_rrc_filter(k,m,beta,dt,h);
+    liquid_firdes_rrcos(k,m,beta,dt,h);
 
     // create interpolator
     interp_rrrf q = interp_rrrf_create(k,h,h_len);

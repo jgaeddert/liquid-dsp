@@ -25,7 +25,7 @@ int main() {
 
     // design filter and create interpolator
     float h[h_len];
-    design_rcos_filter(D,m,beta,0.0f,h);
+    liquid_firdes_rcos(D,m,beta,0.0f,h);
     decim_crcf q = decim_crcf_create(D,h,h_len);
 
     // generate input signal and interpolate

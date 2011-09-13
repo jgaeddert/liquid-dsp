@@ -80,6 +80,8 @@ local_pdffiles :=					\
 	figures.gen/filter_interp_crcf.pdf		\
 	figures.gen/filter_kaiser_time.pdf		\
 	figures.gen/filter_kaiser_freq.pdf		\
+	figures.gen/filter_firdes_gmskrx_time.pdf	\
+	figures.gen/filter_firdes_gmskrx_freq.pdf	\
 	figures.gen/filter_resamp_crcf_time.pdf		\
 	figures.gen/filter_resamp_crcf_freq.pdf		\
 	figures.gen/interleaver_scatterplot_i0.pdf	\
@@ -199,6 +201,8 @@ local_progs :=						\
 	src/estimate_snr_modem				\
 	src/estimate_snr_test				\
 	src/filter_iirdes				\
+	src/filter_firdes_gmskrx_time			\
+	src/filter_firdes_gmskrx_freq			\
 	src/filter_firdespm				\
 	src/filter_firfarrow_crcf			\
 	src/filter_firfilt_crcf				\
@@ -478,6 +482,12 @@ figures.gen/filter_interp_crcf.gnu : src/filter_interp_crcf
 figures.gen/filter_kaiser_time.gnu \
 figures.gen/filter_kaiser_freq.gnu : src/filter_kaiser
 	./$<
+
+# 
+# GMSK receive filter
+#
+figures.gen/filter_firdes_gmskrx_time.gnu : src/filter_firdes_gmskrx_time ; ./$<
+figures.gen/filter_firdes_gmskrx_freq.gnu : src/filter_firdes_gmskrx_freq ; ./$<
 
 # 
 # resamp_crcf

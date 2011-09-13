@@ -860,7 +860,7 @@ float rkaiser_approximate_rho(unsigned int _m,
 //  _dt     :   filter fractional sample delay
 //  _h      :   resulting filter [size: 2*_k*_m+1]
 //  _rho    :   transition bandwidth adjustment, 0 < _rho < 1
-void design_rkaiser_filter_bisection(unsigned int _k,
+void liquid_firdes_rkaiser_bisection(unsigned int _k,
                                      unsigned int _m,
                                      float _beta,
                                      float _dt,
@@ -876,7 +876,7 @@ void design_rkaiser_filter_bisection(unsigned int _k,
 //  _dt     :   filter fractional sample delay
 //  _h      :   resulting filter [size: 2*_k*_m+1]
 //  _rho    :   transition bandwidth adjustment, 0 < _rho < 1
-void design_rkaiser_filter_quadratic(unsigned int _k,
+void liquid_firdes_rkaiser_quadratic(unsigned int _k,
                                      unsigned int _m,
                                      float _beta,
                                      float _dt,
@@ -891,7 +891,7 @@ void design_rkaiser_filter_quadratic(unsigned int _k,
 //  _dt     :   filter fractional sample delay
 //  _rho    :   transition bandwidth adjustment, 0 < _rho < 1
 //  _h      :   filter buffer [size: 2*_k*_m+1]
-float design_rkaiser_filter_internal_isi(unsigned int _k,
+float liquid_firdes_rkaiser_internal_isi(unsigned int _k,
                                          unsigned int _m,
                                          float _beta,
                                          float _dt,

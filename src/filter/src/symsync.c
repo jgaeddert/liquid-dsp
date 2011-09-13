@@ -209,7 +209,7 @@ SYMSYNC() SYMSYNC(_create_rnyquist)(int _type,
     float Hf[H_len];
 
     // design square-root Nyquist pulse-shaping filter
-    design_rnyquist_filter(_type, _k*_npfb, _m, _beta, 0, Hf);
+    liquid_firdes_rnyquist(_type, _k*_npfb, _m, _beta, 0, Hf);
 
     // copy coefficients to type-specific array
     TC H[H_len];

@@ -153,7 +153,7 @@ FIRPFBCH() FIRPFBCH(_create_kaiser)(int _type,
     unsigned int h_len = 2*_num_channels*_m + 1;
     float h[h_len];
     float fc = 0.5f / (float)_num_channels; // TODO : check this value
-    firdes_kaiser_window(h_len, fc, _As, 0.0f, h);
+    liquid_firdes_kaiser(h_len, fc, _As, 0.0f, h);
 
     // copy coefficients to type-specfic array
     TC hc[h_len];
@@ -201,19 +201,19 @@ FIRPFBCH() FIRPFBCH(_create_rnyquist)(int _type,
     switch (_ftype) {
     case LIQUID_RNYQUIST_ARKAISER:
         // root-Nyquist Kaiser (approximate optimum)
-        design_arkaiser_filter(_num_channels, _m, _beta, 0.0f, h);
+        liquid_firdes_arkaiser(_num_channels, _m, _beta, 0.0f, h);
         break;
     case LIQUID_RNYQUIST_RKAISER:
         // root-Nyquist Kaiser (true optimum)
-        design_rkaiser_filter(_num_channels, _m, _beta, 0.0f, h);
+        liquid_firdes_rkaiser(_num_channels, _m, _beta, 0.0f, h);
         break;
     case LIQUID_RNYQUIST_RRC:
         // root raised-cosine
-        design_rrc_filter(_num_channels, _m, _beta, 0.0f, h);
+        liquid_firdes_rrcos(_num_channels, _m, _beta, 0.0f, h);
         break;
     case LIQUID_RNYQUIST_hM3:
         // harris-Moerder-3 filter
-        design_hM3_filter(_num_channels, _m, _beta, 0.0f, h);
+        liquid_firdes_hM3(_num_channels, _m, _beta, 0.0f, h);
         break;
     default:
         fprintf(stderr,"error: firpfbch_xxxt_create_rnyquist(), unknown/invalid prototype (%d)\n", _ftype);

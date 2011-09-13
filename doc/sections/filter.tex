@@ -384,7 +384,7 @@ The entire design process is provided in \liquid\ with the
 {\tt firdes\_kaiser\_window()} method which can be invoked as follows:
 %
 \begin{Verbatim}[fontsize=\small]
-    firdes_kaiser_window(_n, _fc, _As, _mu, *_h)
+    liquid_firdes_kaiser(_n, _fc, _As, _mu, *_h)
 \end{Verbatim}
 %
 where
@@ -416,7 +416,7 @@ An example of a low-pass filter design using the Kaiser window can be
 found in Figure~\ref{fig:module:filter:firdes_kaiser}.
 
 
-\subsubsection{{\tt nyquist} (Nyquist filter design)}
+\subsubsection{{\tt liquid\_firdes\_nyquist()} (Nyquist filter design)}
 \label{module:filter:firdes:nyquist}
 Nyquist's criteria for designing a band-limited filter without
 inter-symbol interference is for the spectral response of a linear phase
@@ -447,7 +447,7 @@ listed in Table~\ref{tab:filter:nyquist}.
 The interface for designing Nyquist filters is simply
 %
 \begin{Verbatim}[fontsize=\small]
-    design_nyquist_filter(_ftype, _k, _m, _beta, _dt, *h);
+    liquid_firdes_nyquist(_ftype, _k, _m, _beta, _dt, *h);
 \end{Verbatim}
 %
 where {\tt \_ftype} is one of the filter types in
@@ -461,7 +461,7 @@ $\Delta t$ is the fractional sample delay (usually set to zero for
 and $h$ is the output coefficients array of length $2km+1$.
 %
 
-\subsubsection{{\tt rnyquist} (square-root Nyquist filter design)}
+\subsubsection{{\tt liquid\_firdes\_rnyquist()} (square-root Nyquist filter design)}
 \label{module:filter:firdes:rnyquist}
 Square-root Nyquist filters are commonly used in digital communcations
 systems with linear modulation as a pulse shape for matched filtering.
@@ -492,8 +492,10 @@ prototypes listed in Table~\ref{tab:filter:rnyquist}.
 %
 {\tt LIQUID\_RNYQUIST\_ARKAISER}    & approximate r-Kaiser\\
 {\tt LIQUID\_RNYQUIST\_RKAISER}     & r-Kaiser\\
-{\tt LIQUID\_RNYQUIST\_RRC}         & square-root raised cosine\\
-{\tt LIQUID\_RNYQUIST\_hM3}         & harris-Moerder type 3 \cite{harris-Moerder:2005}\\\bottomrule
+{\tt LIQUID\_RNYQUIST\_RRCOS}       & square-root raised cosine\\
+{\tt LIQUID\_RNYQUIST\_hM3}         & harris-Moerder type 3 \cite{harris-Moerder:2005}\\
+{\tt LIQUID\_RNYQUIST\_GMSTX}       & GMSK transmit filter\\
+{\tt LIQUID\_RNYQUIST\_GMSRX}       & GMSK receive filter\\\bottomrule
 \end{tabular*}
 }
 \end{table*}%
@@ -502,7 +504,7 @@ prototypes listed in Table~\ref{tab:filter:rnyquist}.
 The interface for designing square-root Nyquist filters is simply
 %
 \begin{Verbatim}[fontsize=\small]
-    design_rnyquist_filter(_ftype, _k, _m, _beta, _dt, *h);
+    liquid_firdes_rnyquist(_ftype, _k, _m, _beta, _dt, *h);
 \end{Verbatim}
 %
 where {\tt \_ftype} is one of the filter types in
@@ -579,6 +581,36 @@ bandwidth as well as side-lobe suppression.
 In the figure the responses of the $r$-Kaiser and approximate $r$-Kaiser
 filters are indistinguishable.
 
+
+\subsubsection{GMSK Filter Design}
+\label{module:filter:firdes_gmsk}
+
+%
+Transmit filter:
+\[
+    h_t(t) = Q\left( \frac{2 \pi BT}{\sqrt{\ln(2)}} \left(t-\frac{1}{2}\right) \right) -
+             Q\left( \frac{2 \pi BT}{\sqrt{\ln(2)}} \left(t+\frac{1}{2}\right) \right)
+\]
+%
+where $Q(z)=\frac{1}{2}\left(1 - \erf(z/\sqrt{2})\right)$
+is the ... (see Section~\ref{module:math:transcendentals}).
+%
+Receive filter: ...
+%
+\begin{figure}
+\centering
+\subfigure[time] {
+  \includegraphics[trim = 0mm 0mm 0mm 0mm, clip, width=13cm]{figures.gen/filter_firdes_gmskrx_time}
+}
+\subfigure[PSD] {
+  \includegraphics[trim = 0mm 0mm 0mm 0mm, clip, width=13cm]{figures.gen/filter_firdes_gmskrx_freq}
+}
+\caption{{\tt liquid\_firdes\_gmskrx()} demonstration,
+         $k=4$ samples/symbol, $m=5$ symbols, BT$=0.3$}
+\label{fig:module:filter:firdes_gmskrx}
+\end{figure}
+%
+...Figure~\ref{fig:module:filter:firdes_gmskrx}
 
 \subsubsection{{\tt firdespm} (Parks-McClellan algorithm)}
 \label{module:filter:firdespm}

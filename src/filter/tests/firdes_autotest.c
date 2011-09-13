@@ -22,7 +22,7 @@
 #include "autotest/autotest.h"
 #include "liquid.h"
 
-void autotest_design_rcos_filter() {
+void autotest_liquid_firdes_rcos() {
 
     // Initialize variables
     unsigned int k=2, m=3;
@@ -47,7 +47,7 @@ void autotest_design_rcos_filter() {
 
     // Create filter
     float h[13];
-    design_rcos_filter(k,m,beta,offset,h);
+    liquid_firdes_rcos(k,m,beta,offset,h);
 
     // Ensure data are equal
     unsigned int i;
@@ -55,7 +55,7 @@ void autotest_design_rcos_filter() {
         CONTEND_DELTA( h[i], h0[i], 0.00001f );
 }
 
-void autotest_design_rrcos_filter() {
+void autotest_liquid_firdes_rrcos() {
 
     // Initialize variables
     unsigned int k=2, m=3;
@@ -80,7 +80,7 @@ void autotest_design_rrcos_filter() {
 
     // Create filter
     float h[13];
-    design_rrc_filter(k,m,beta,offset,h);
+    liquid_firdes_rrcos(k,m,beta,offset,h);
 
     // Ensure data are equal
     unsigned int i;
@@ -89,7 +89,7 @@ void autotest_design_rrcos_filter() {
 }
 
 
-void autotest_design_rkaiser_filter()
+void autotest_liquid_firdes_rkaiser()
 {
     // Initialize variables
     unsigned int k=2, m=3;
@@ -100,7 +100,7 @@ void autotest_design_rkaiser_filter()
     // Create filter
     unsigned int h_len = 2*k*m+1;
     float h[h_len];
-    design_rkaiser_filter(k,m,beta,offset,h);
+    liquid_firdes_rkaiser(k,m,beta,offset,h);
 
     // compute filter ISI
     float isi_max;

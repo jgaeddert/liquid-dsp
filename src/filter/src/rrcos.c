@@ -28,7 +28,7 @@
 
 /** \brief Calculate square-root raised-cosine filter coefficients
 
-  design_rrc_filter calculates the coefficients for a square-root raised-cosine
+  liquid_firdes_rrcos calculates the coefficients for a square-root raised-cosine
   (RRC) finite impulse response (FIR) filter commonly used in digital
   communications.  The input parameters are as follows
 
@@ -79,7 +79,7 @@
 
  */
 
-void design_rrc_filter(
+void liquid_firdes_rrcos(
   unsigned int _k,
   unsigned int _m,
   float _beta,
@@ -90,13 +90,13 @@ void design_rrc_filter(
     unsigned int h_len;
 
     if ( _k < 1 ) {
-        fprintf(stderr,"error: design_rrc_filter(): k must be greater than 0\n");
+        fprintf(stderr,"error: liquid_firdes_rrcos(): k must be greater than 0\n");
         exit(1);
     } else if ( _m < 1 ) {
-        fprintf(stderr,"error: design_rrc_filter(): m must be greater than 0\n");
+        fprintf(stderr,"error: liquid_firdes_rrcos(): m must be greater than 0\n");
         exit(1);
     } else if ( (_beta < 0.0f) || (_beta > 1.0f) ) {
-        fprintf(stderr,"error: design_rrc_filter(): beta must be in [0,1]\n");
+        fprintf(stderr,"error: liquid_firdes_rrcos(): beta must be in [0,1]\n");
         exit(1);
     } else;
 

@@ -11,6 +11,6 @@ int main() {
     // estimate required filter length and generate filter
     unsigned int h_len = estimate_req_filter_len(ft,As);
     float h[h_len];
-    firdes_kaiser_window(h_len,fc,As,mu,h);
+    liquid_firdes_kaiser(h_len,fc,As,mu,h);
 }
 

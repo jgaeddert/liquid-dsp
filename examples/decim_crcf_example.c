@@ -77,7 +77,7 @@ int main(int argc, char*argv[]) {
     // design filter and create interpolator and decimator objects
     float h[h_len];     // transmit filter
     float g[h_len];     // receive filter (reverse of h)
-    design_rrc_filter(k,m,beta,0.3f,h);
+    liquid_firdes_rrcos(k,m,beta,0.3f,h);
     unsigned int i;
     for (i=0; i<h_len; i++)
         g[i] = h[h_len-i-1];

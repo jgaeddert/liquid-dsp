@@ -83,7 +83,7 @@ int main(int argc, char*argv[]) {
     float h[h_len];
 
     // design the filter
-    design_rnyquist_filter(ftype,k,m,beta,0,h);
+    liquid_firdes_rnyquist(ftype,k,m,beta,0,h);
 
     // derived values
     unsigned int num_samples = num_symbols*k;

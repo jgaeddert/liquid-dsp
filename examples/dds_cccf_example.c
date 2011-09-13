@@ -53,7 +53,7 @@ int main() {
     unsigned int h_len = num_samples/2;
     h_len += num_samples % 2 ? 0 : 1;
     float h[h_len];
-    firdes_kaiser_window(h_len,bw,60.0f,0.0f,h);
+    liquid_firdes_kaiser(h_len,bw,60.0f,0.0f,h);
     for (i=0; i<num_samples; i++)
         x[i] = i < h_len ? h[i]*bw : 0.0f;
 
