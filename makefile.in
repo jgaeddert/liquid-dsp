@@ -1316,6 +1316,7 @@ sandbox_programs =						\
 	sandbox/quasinewton_test				\
 	sandbox/rkaiser2_test					\
 	sandbox/simplex_test					\
+	sandbox/symsync_eqlms_test				\
 	sandbox/svd_test					\
 	sandbox/thiran_allpass_iir_test				\
 #	firpfbch_analysis_test
