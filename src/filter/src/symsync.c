@@ -87,6 +87,8 @@ struct SYMSYNC(_s) {
     FIRPFB()  mf;   // matched filter
     FIRPFB() dmf;   // derivative matched filter
 
+    float tau_decim;            // timing phase, retained for get_tau() method
+
 #if DEBUG_SYMSYNC
     windowf debug_del;
     windowf debug_tau;
@@ -264,6 +266,7 @@ void SYMSYNC(_reset)(SYMSYNC() _q)
     _q->q_hat   = 0.0f;
     _q->q_prime = 0.0f;
     _q->decim_counter = 0;
+    _q->tau_decim     = 0.0f;
 #if SYMSYNC_USE_PLL
     iirfiltsos_rrrf_clear(_q->pll);
 #endif
@@ -339,7 +342,7 @@ void SYMSYNC(_set_output_rate)(SYMSYNC() _q,
 
 float SYMSYNC(_get_tau)(SYMSYNC() _q)
 {
-    return _q->tau;
+    return _q->tau_decim;
 }
 
 // execute synchronizer on input data array
@@ -450,6 +453,7 @@ void SYMSYNC(_step)(SYMSYNC() _q,
             
             // update internal state
             SYMSYNC(_advance_internal_loop)(_q, mf, dmf);
+            _q->tau_decim = _q->tau;
         }
         _q->decim_counter++;
 

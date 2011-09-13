@@ -271,7 +271,6 @@ int main(int argc, char*argv[]) {
     fprintf(fid,"ylabel('Quadrature');\n");
     fprintf(fid,"legend(['first 50%%'],['last 50%%'],1);\n");
 
-#if 0
     fprintf(fid,"figure;\n");
     fprintf(fid,"tt = 0:(length(tau_hat)-1);\n");
     fprintf(fid,"b = floor(num_filters*tau_hat + 0.5);\n");
@@ -283,7 +282,6 @@ int main(int argc, char*argv[]) {
     fprintf(fid,"ylabel('filterbank index');\n");
     fprintf(fid,"grid on;\n");
     fprintf(fid,"axis([0 length(tau_hat) -1 num_filters]);\n");
-#endif
 
     fclose(fid);
     printf("results written to %s.\n", OUTPUT_FILENAME);
