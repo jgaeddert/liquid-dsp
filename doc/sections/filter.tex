@@ -416,7 +416,7 @@ An example of a low-pass filter design using the Kaiser window can be
 found in Figure~\ref{fig:module:filter:firdes_kaiser}.
 
 
-\subsubsection{{\tt nyquist} (Nyquist filter design)}
+\subsubsection{{\tt liquid\_firdes\_nyquist()} (Nyquist filter design)}
 \label{module:filter:firdes:nyquist}
 Nyquist's criteria for designing a band-limited filter without
 inter-symbol interference is for the spectral response of a linear phase
@@ -447,7 +447,7 @@ listed in Table~\ref{tab:filter:nyquist}.
 The interface for designing Nyquist filters is simply
 %
 \begin{Verbatim}[fontsize=\small]
-    design_nyquist_filter(_ftype, _k, _m, _beta, _dt, *h);
+    liquid_firdes_nyquist(_ftype, _k, _m, _beta, _dt, *h);
 \end{Verbatim}
 %
 where {\tt \_ftype} is one of the filter types in
@@ -461,7 +461,7 @@ $\Delta t$ is the fractional sample delay (usually set to zero for
 and $h$ is the output coefficients array of length $2km+1$.
 %
 
-\subsubsection{{\tt rnyquist} (square-root Nyquist filter design)}
+\subsubsection{{\tt liquid\_firdes\_rnyquist()} (square-root Nyquist filter design)}
 \label{module:filter:firdes:rnyquist}
 Square-root Nyquist filters are commonly used in digital communcations
 systems with linear modulation as a pulse shape for matched filtering.
@@ -492,8 +492,10 @@ prototypes listed in Table~\ref{tab:filter:rnyquist}.
 %
 {\tt LIQUID\_RNYQUIST\_ARKAISER}    & approximate r-Kaiser\\
 {\tt LIQUID\_RNYQUIST\_RKAISER}     & r-Kaiser\\
-{\tt LIQUID\_RNYQUIST\_RRC}         & square-root raised cosine\\
-{\tt LIQUID\_RNYQUIST\_hM3}         & harris-Moerder type 3 \cite{harris-Moerder:2005}\\\bottomrule
+{\tt LIQUID\_RNYQUIST\_RRCOS}       & square-root raised cosine\\
+{\tt LIQUID\_RNYQUIST\_hM3}         & harris-Moerder type 3 \cite{harris-Moerder:2005}\\
+{\tt LIQUID\_RNYQUIST\_GMSTX}       & GMSK transmit filter\\
+{\tt LIQUID\_RNYQUIST\_GMSRX}       & GMSK receive filter\\\bottomrule
 \end{tabular*}
 }
 \end{table*}%
@@ -502,7 +504,7 @@ prototypes listed in Table~\ref{tab:filter:rnyquist}.
 The interface for designing square-root Nyquist filters is simply
 %
 \begin{Verbatim}[fontsize=\small]
-    design_rnyquist_filter(_ftype, _k, _m, _beta, _dt, *h);
+    liquid_firdes_rnyquist(_ftype, _k, _m, _beta, _dt, *h);
 \end{Verbatim}
 %
 where {\tt \_ftype} is one of the filter types in
