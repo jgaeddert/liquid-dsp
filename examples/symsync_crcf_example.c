@@ -283,9 +283,9 @@ int main(int argc, char*argv[]) {
     fprintf(fid,"ylabel('filterbank index');\n");
     fprintf(fid,"grid on;\n");
     fprintf(fid,"axis([0 length(tau_hat) -1 num_filters]);\n");
-    fclose(fid);
 #endif
 
+    fclose(fid);
     printf("results written to %s.\n", OUTPUT_FILENAME);
 
     // clean it up
