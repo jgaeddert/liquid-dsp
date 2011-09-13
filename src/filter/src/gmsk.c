@@ -145,7 +145,7 @@ void liquid_firdes_gmskrx(unsigned int _k,
     // create 'gain' filter to improve stop-band rejection
     float fc = (0.7f + 0.1*beta) / (float)k;
     float As = 40.0f;
-    firdes_kaiser_window(h_len, fc, As, 0.0f, g_primef);
+    liquid_firdes_kaiser(h_len, fc, As, 0.0f, g_primef);
 
     // copy to fft input buffer, shifting appropriately
     for (i=0; i<h_len; i++) {

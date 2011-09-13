@@ -239,7 +239,7 @@ float kaiser_beta_As(float _As)
 //  _As     : stop-band attenuation [dB], _As > 0
 //  _mu     : fractional sample offset, -0.5 < _mu < 0.5
 //  _h      : output coefficient buffer, [size: _n x 1]
-void firdes_kaiser_window(unsigned int _n,
+void liquid_firdes_kaiser(unsigned int _n,
                           float _fc,
                           float _As,
                           float _mu,
@@ -247,13 +247,13 @@ void firdes_kaiser_window(unsigned int _n,
 {
     // validate inputs
     if (_mu < -0.5f || _mu > 0.5f) {
-        fprintf(stderr,"error: firdes_kaiser_window(), _mu (%12.4e) out of range [-0.5,0.5]\n", _mu);
+        fprintf(stderr,"error: liquid_firdes_kaiser(), _mu (%12.4e) out of range [-0.5,0.5]\n", _mu);
         exit(1);
     } else if (_fc < 0.0f || _fc > 0.5f) {
-        fprintf(stderr,"error: firdes_kaiser_window(), cutoff frequency (%12.4e) out of range (0, 0.5)\n", _fc);
+        fprintf(stderr,"error: liquid_firdes_kaiser(), cutoff frequency (%12.4e) out of range (0, 0.5)\n", _fc);
         exit(1);
     } else if (_n == 0) {
-        fprintf(stderr,"error: firdes_kaiser_window(), filter length must be greater than zero\n");
+        fprintf(stderr,"error: liquid_firdes_kaiser(), filter length must be greater than zero\n");
         exit(1);
     }
 
@@ -310,7 +310,7 @@ void liquid_firdes_nyquist(liquid_nyquist_type _type,
 
     switch (_type) {
     case LIQUID_NYQUIST_KAISER:
-        firdes_kaiser_window(h_len, fc, As, _dt, _h);
+        liquid_firdes_kaiser(h_len, fc, As, _dt, _h);
         break;
     case LIQUID_NYQUIST_PM:
         // WARNING: input timing offset is ignored here

@@ -109,7 +109,7 @@ void liquid_firdes_arkaiser(unsigned int _k,
     float fc  = 0.5f*(1 + _beta*(1.0f-rho_hat))/kf; // filter cutoff
 
     // compute filter coefficients
-    firdes_kaiser_window(n,fc,As,_dt,_h);
+    liquid_firdes_kaiser(n,fc,As,_dt,_h);
 
     // normalize coefficients
     float e2 = 0.0f;
@@ -473,7 +473,7 @@ float liquid_firdes_rkaiser_internal_isi(unsigned int _k,
     float isi_rms;
 
     // compute filter
-    firdes_kaiser_window(n,fc,As,_dt,_h);
+    liquid_firdes_kaiser(n,fc,As,_dt,_h);
 
     // compute filter ISI
     liquid_filter_isi(_h,_k,_m,&isi_rms,&isi_max);

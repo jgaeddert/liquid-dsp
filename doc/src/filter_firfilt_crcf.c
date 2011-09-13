@@ -27,7 +27,7 @@ int main() {
 
     // design filter
     float h[h_len];
-    firdes_kaiser_window(h_len, fc, As, 0.0f, h);
+    liquid_firdes_kaiser(h_len, fc, As, 0.0f, h);
 
     // normalize filter by DC gain
     unsigned int i;

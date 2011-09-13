@@ -207,7 +207,7 @@ void liquid_firdes_rkaiser_filter2(unsigned int _k,
     // re-design filter and return
     fc = v[0];
     As = v[1]*1000;
-    firdes_kaiser_window(h_len,fc,As,_dt,_h);
+    liquid_firdes_kaiser(h_len,fc,As,_dt,_h);
 
     // normalize coefficients
     float e2 = 0.0f;
@@ -243,7 +243,7 @@ float gs_utility(void * _userdata,
 
     // compute filter
     float h[h_len];
-    firdes_kaiser_window(h_len,fc,As,dt,h);
+    liquid_firdes_kaiser(h_len,fc,As,dt,h);
 
     // normalize coefficients
     float e2 = 0.0f;
