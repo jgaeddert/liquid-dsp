@@ -183,7 +183,8 @@ void liquid_firdes_gmskrx(unsigned int _k,
     for (i=0; i<h_len; i++)
         hr[i] = crealf( h_hat[(i+k*m+1)%h_len] ) / (float)(k*h_len);
 
-    // copy result
-    memmove(_h, hr, h_len*sizeof(float));
+    // copy result, scaling by (samples/symbol)^2
+    for (i=0; i<h_len; i++)
+        _h[i] = hr[i]*_k*_k;
 }
 

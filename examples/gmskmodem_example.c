@@ -129,7 +129,7 @@ int main(int argc, char*argv[]) {
     liquid_firdes_gmskrx(k,m,BT,0,hr);
     for (i=0; i<2*k*m+1; i++)
         fprintf(fid,"hr(%3u) = %12.8f;\n", i+1, hr[i]);
-    fprintf(fid,"z = k*filter(hr,1,arg( ([y(2:end) 0]).*conj(y) ));\n");
+    fprintf(fid,"z = filter(hr,1,arg( ([y(2:end) 0]).*conj(y) ))/k;\n");
     fprintf(fid,"figure;\n");
     fprintf(fid,"plot(t,z,t(k:k:end),z(k:k:end),'or');\n");
     fprintf(fid,"grid on;\n");

@@ -109,8 +109,11 @@ int main(int argc, char*argv[]) {
         x_prime = y[i];
 
         // push through filter
-        firfilt_rrrf_push(decim_rx, k*phi_hat[i]);
+        firfilt_rrrf_push(decim_rx, phi_hat[i]);
         firfilt_rrrf_execute(decim_rx, &phi_prime[i]);
+
+        // scale by samples/symbols
+        phi_prime[i] /= k;
 
         // decimate output
         if ( (i%k)==0 ) {
