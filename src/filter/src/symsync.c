@@ -76,6 +76,7 @@ struct SYMSYNC(_s) {
     float q;                    // instantaneous timing error estimate
     float q_hat;                // filtered timing error estimate
     float q_prime;              // buffered timing error estimate
+    float q_tmp;                // buffered timing error estimate (level 2)
 #if SYMSYNC_USE_PLL
     // phase-locked loop
     float B[3];
@@ -265,6 +266,7 @@ void SYMSYNC(_reset)(SYMSYNC() _q)
     _q->q       = 0.0f;
     _q->q_hat   = 0.0f;
     _q->q_prime = 0.0f;
+    _q->q_tmp   = 0.0f;
     _q->decim_counter = 0;
     _q->tau_decim     = 0.0f;
 #if SYMSYNC_USE_PLL
@@ -392,7 +394,8 @@ void SYMSYNC(_advance_internal_loop)(SYMSYNC() _q,
     //_q->del = (float)(_q->k) * (1 + _q->q_hat);
 #else
     _q->q_hat   = (_q->q)*(_q->beta) + (_q->q_prime)*(_q->alpha);
-    _q->q_prime = _q->q_hat;
+    _q->q_prime = _q->q_hat * 0.50f + _q->q_tmp * 0.49f;
+    _q->q_tmp   = _q->q_prime;
 
     // TODO : check the output step size, relative to input
     //_q->del     = (float)(_q->k) + _q->q_hat;
