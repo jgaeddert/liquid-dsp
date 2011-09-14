@@ -35,7 +35,7 @@ int main(int argc, char*argv[])
     // options
     unsigned int num_symbols=500;   // number of symbols to observe
     unsigned int hc_len=5;          // channel filter length
-    unsigned int hp_len=17;         // equalizer order (better if odd)
+    unsigned int p=3;               // equalizer length (symbols, hp_len = 2*k*p+1)
     float mu = 0.08f;               // learning rate
     float SNRdB = 30.0f;            // signal-to-noise ratio [dB]
 
@@ -76,6 +76,7 @@ int main(int argc, char*argv[])
 
     // derived values
     unsigned int hm_len = 2*k*m+1;   // matched filter length
+    unsigned int hp_len = 2*k*p+1;   // equalizer filter length
     unsigned int num_samples = k*num_symbols;
 
     // bookkeeping variables
@@ -124,11 +125,10 @@ int main(int argc, char*argv[])
     }
 
     // push through equalizer
-    for (i=0; i<hp_len; i++) {
-        float t = ((float)i - 0.5f*(float)(hp_len) + 0.5f) / (float)k;
-        float sigma = 0.4f;
-        hp[i] = 1.4f*expf( -t*t / (2.0f*sigma*sigma) ) / (float)k;
-    }
+    float hpf[hp_len];
+    liquid_firdes_rnyquist(LIQUID_RNYQUIST_RRC, k, p, beta, 0.0f, hpf);
+    for (i=0; i<hp_len; i++)
+        hp[i] = hpf[i] / (float)k;
 
     eqlms_cccf eq = eqlms_cccf_create(hp, hp_len);
     eqlms_cccf_set_bw(eq, mu);
