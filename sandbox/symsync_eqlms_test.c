@@ -224,10 +224,12 @@ int main(int argc, char*argv[]) {
         // update equalizer
         eqlms_cccf_step(eq, d_prime, d_hat);
     }
-    eqlms_cccf_destroy(eq);
 
     // get equalizer weights
     eqlms_cccf_get_weights(eq, hp);
+
+    // destroy equalizer object
+    eqlms_cccf_destroy(eq);
 
     // print last several symbols to screen
     printf("output symbols:\n");
