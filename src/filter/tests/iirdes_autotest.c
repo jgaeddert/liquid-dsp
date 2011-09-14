@@ -59,13 +59,13 @@ void autotest_iirdes_butter_2()
     float b[3];
 
     // design butterworth filter
-    iirdes(LIQUID_IIRDES_BUTTER,
-           LIQUID_IIRDES_LOWPASS,
-           LIQUID_IIRDES_TF,
-           order,
-           fc, f0,
-           Ap, As,
-           b, a);
+    liquid_iirdes(LIQUID_IIRDES_BUTTER,
+                  LIQUID_IIRDES_LOWPASS,
+                  LIQUID_IIRDES_TF,
+                  order,
+                  fc, f0,
+                  Ap, As,
+                  b, a);
 
     // Ensure data are equal to within tolerance
     unsigned int i;

@@ -19,12 +19,12 @@ int main() {
     float A[3*(L+r)];
 
     // design filter
-    iirdes(LIQUID_IIRDES_ELLIP,
-           LIQUID_IIRDES_BANDPASS,
-           LIQUID_IIRDES_SOS,
-           order,
-           fc, f0, Ap, As,
-           B,  A);
+    liquid_iirdes(LIQUID_IIRDES_ELLIP,
+                  LIQUID_IIRDES_BANDPASS,
+                  LIQUID_IIRDES_SOS,
+                  order,
+                  fc, f0, Ap, As,
+                  B,  A);
 
     // print results
     unsigned int i;

@@ -152,7 +152,7 @@ int main(int argc, char*argv[]) {
     float a[h_len];
 
     // design filter
-    iirdes(ftype, btype, format, order, fc, f0, Ap, As, b, a);
+    liquid_iirdes(ftype, btype, format, order, fc, f0, Ap, As, b, a);
 
     // open output file
     FILE*fid = fopen(OUTPUT_FILENAME,"w");
