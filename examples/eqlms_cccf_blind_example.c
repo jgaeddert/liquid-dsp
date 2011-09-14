@@ -20,11 +20,16 @@
 void usage()
 {
     printf("Usage: eqlms_cccf_blind_example [OPTION]\n");
-    printf("  u/h   : print usage\n");
+    printf("  h     : print help\n");
     printf("  n     : number of symbols, default: 500\n");
     printf("  s     : SNR [dB], default: 30\n");
     printf("  c     : number of channel filter taps (minimum: 1), default: 5\n");
-    printf("  m     : modulation scheme (qpsk default)\n");
+    printf("  k     : samples/symbol, default: 2\n");
+    printf("  m     : filter semi-length (symbols), default: 4\n");
+    printf("  b     : filter excess bandwidth factor, default: 0.3\n");
+    printf("  p     : equalizer semi-length (symbols), default: 3\n");
+    printf("  u     : equalizer learning rate, default; 0.05\n");
+    printf("  M     : modulation scheme (qpsk default)\n");
     liquid_print_modulation_schemes();
 }
 
@@ -34,28 +39,31 @@ int main(int argc, char*argv[])
 
     // options
     unsigned int num_symbols=500;   // number of symbols to observe
+    float SNRdB = 30.0f;            // signal-to-noise ratio [dB]
     unsigned int hc_len=5;          // channel filter length
+    unsigned int k=2;               // matched filter samples/symbol
+    unsigned int m=3;               // matched filter delay (symbols)
+    float beta=0.3f;                // matched filter excess bandwidth factor
     unsigned int p=3;               // equalizer length (symbols, hp_len = 2*k*p+1)
     float mu = 0.08f;               // learning rate
-    float SNRdB = 30.0f;            // signal-to-noise ratio [dB]
 
-    // modulation type
-    unsigned int bps=2;
+    // modulation type/depth
     modulation_scheme ms = LIQUID_MODEM_QPSK;
-
-    unsigned int k=2;               // matched filter samples/symbol
-    unsigned int m=5;               // matched filter delay (symbols)
-    float beta=0.3f;                // matched filter excess bandwidth factor
+    unsigned int bps=2;
 
     int dopt;
-    while ((dopt = getopt(argc,argv,"uhn:s:c:m:")) != EOF) {
+    while ((dopt = getopt(argc,argv,"hn:s:c:k:m:b:p:u:M:")) != EOF) {
         switch (dopt) {
-        case 'u':
-        case 'h':   usage();                    return 0;
-        case 'n':   num_symbols = atoi(optarg); break;
-        case 's':   SNRdB = atof(optarg);       break;
-        case 'c':   hc_len = atoi(optarg);      break;
-        case 'm':
+        case 'h': usage();                      return 0;
+        case 'n': num_symbols   = atoi(optarg); break;
+        case 's': SNRdB         = atof(optarg); break;
+        case 'c': hc_len        = atoi(optarg); break;
+        case 'k': k             = atoi(optarg); break;
+        case 'm': m             = atoi(optarg); break;
+        case 'b': beta          = atof(optarg); break;
+        case 'p': p             = atoi(optarg); break;
+        case 'u': mu            = atof(optarg); break;
+        case 'M':
             liquid_getopt_str2modbps(optarg, &ms, &bps);
             if (ms == LIQUID_MODEM_UNKNOWN) {
                 fprintf(stderr,"error: %s, unknown/unsupported modulation scheme '%s'\n", argv[0], optarg);
@@ -69,8 +77,26 @@ int main(int argc, char*argv[])
     }
 
     // validate input
-    if (hc_len == 0) {
+    if (num_symbols == 0) {
+        fprintf(stderr,"error: %s, number of symbols must be greater than zero\n", argv[0]);
+        exit(1);
+    } else if (hc_len == 0) {
         fprintf(stderr,"error: %s, channel must have at least 1 tap\n", argv[0]);
+        exit(1);
+    } else if (k < 2) {
+        fprintf(stderr,"error: %s, samples/symbol must be at least 2\n", argv[0]);
+        exit(1);
+    } else if (m == 0) {
+        fprintf(stderr,"error: %s, filter semi-length must be at least 1 symbol\n", argv[0]);
+        exit(1);
+    } else if (beta < 0.0f || beta > 1.0f) {
+        fprintf(stderr,"error: %s, filter excess bandwidth must be in [0,1]\n", argv[0]);
+        exit(1);
+    } else if (p == 0) {
+        fprintf(stderr,"error: %s, equalizer semi-length must be at least 1 symbol\n", argv[0]);
+        exit(1);
+    } else if (mu < 0.0f || mu > 1.0f) {
+        fprintf(stderr,"error: %s, equalizer learning rate must be in [0,1]\n", argv[0]);
         exit(1);
     }
 
