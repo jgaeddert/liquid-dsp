@@ -135,6 +135,7 @@ SYMSYNC() SYMSYNC(_create)(unsigned int _k,
     
     // compute derivative filter
     TC dh[_h_len];
+    float hdh_max = 0.0f;
     unsigned int i;
     for (i=0; i<_h_len; i++) {
         if (i==0) {
@@ -145,10 +146,15 @@ SYMSYNC() SYMSYNC(_create)(unsigned int _k,
             dh[i] = _h[i+1] - _h[i-1];
         }
 
-        // apply scaling factor (derivative approximation is
-        // scaled by the number of filters in the bank)
-        dh[i] *= (float)_npfb / 16.0f;
+        // find maximum of h*dh
+        if ( fabsf(_h[i]*dh[i]) > hdh_max || i==0 )
+            hdh_max = fabsf(_h[i]*dh[i]);
     }
+
+    // apply scaling factor for normalized response
+    for (i=0; i<_h_len; i++)
+        dh[i] *= 0.06f / hdh_max;
+    
     q->mf  = FIRPFB(_create)(q->npfb, _h, _h_len);
     q->dmf = FIRPFB(_create)(q->npfb, dh, _h_len);
 
