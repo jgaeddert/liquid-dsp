@@ -159,8 +159,15 @@ int main(int argc, char*argv[])
     eqlms_cccf eq = eqlms_cccf_create(hp, hp_len);
     eqlms_cccf_set_bw(eq, mu);
 
+    // filtered error vector magnitude (emperical RMS error)
+    float evm_hat = 0.03f;
+
     float complex d_hat = 0.0f;
     for (i=0; i<num_samples; i++) {
+        // print filtered evm (emperical rms error)
+        if ( ((i+1)%50)==0 )
+            printf("%4u : rms error = %12.8f dB\n", i+1, 10*log10(evm_hat));
+
         eqlms_cccf_push(eq, y[i]);
         eqlms_cccf_execute(eq, &d_hat);
 
@@ -181,6 +188,10 @@ int main(int argc, char*argv[])
 
         // update equalizer
         eqlms_cccf_step(eq, d_prime, d_hat);
+
+        // update filtered evm estimate
+        float evm = crealf( (d_prime-d_hat)*conjf(d_prime-d_hat) );
+        evm_hat = 0.98f*evm_hat + 0.02f*evm;
     }
 
     // get equalizer weights
