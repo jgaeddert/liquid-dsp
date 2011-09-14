@@ -651,7 +651,7 @@ void flexframesync_execute_seekpn(flexframesync _fs,
         nco_crcf_adjust_phase(_fs->nco_rx, cargf(rxy));
 
         // lock symbol synchronizer timing phase
-        symsync_crcf_lock(_fs->mfdecim);
+        //symsync_crcf_lock(_fs->mfdecim);
 
         // deactivate squelch as not to suppress signal in the
         // middle of the frame
