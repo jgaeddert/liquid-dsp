@@ -480,6 +480,9 @@ void SYMSYNC(_output_debug_file)(SYMSYNC() _q,
         return;
     }
     fprintf(fid,"%% %s, auto-generated file\n\n", DEBUG_SYMSYNC_FILENAME);
+    fprintf(fid,"\n");
+    fprintf(fid,"clear all;\n");
+    fprintf(fid,"close all;\n");
 
     fprintf(fid,"npfb = %u;\n",_q->npfb);
     fprintf(fid,"k = %u;\n",_q->k);
@@ -493,6 +496,52 @@ void SYMSYNC(_output_debug_file)(SYMSYNC() _q,
     fprintf(fid,"n = %u;\n", DEBUG_BUFFER_LEN);
     float * r;
     unsigned int i;
+
+    // save filter responses
+    FIRPFB(_clear)(_q->mf);
+    FIRPFB(_clear)(_q->dmf);
+    fprintf(fid,"h = [];\n");
+    fprintf(fid,"dh = [];\n");
+    fprintf(fid,"h_len = %u;\n", _q->h_len);
+    for (i=0; i<_q->h_len; i++) {
+        // push impulse
+        if (i==0) {
+            FIRPFB(_push)(_q->mf,  1.0f);
+            FIRPFB(_push)(_q->dmf, 1.0f);
+        } else {
+            FIRPFB(_push)(_q->mf,  0.0f);
+            FIRPFB(_push)(_q->dmf, 0.0f);
+        }
+
+        // compute output for all filters
+        TO  mf;     // matched filter output
+        TO dmf;     // derivative matched filter output
+
+        unsigned int n;
+        for (n=0; n<_q->npfb; n++) {
+            FIRPFB(_execute)(_q->mf,  n, &mf);
+            FIRPFB(_execute)(_q->dmf, n, &dmf);
+
+            fprintf(fid,"h(%4u) = %12.8f; dh(%4u) = %12.8f;\n", i*_q->npfb+n+1, crealf(mf), i*_q->npfb+n+1, crealf(dmf));
+        }
+    }
+    // plot response
+    fprintf(fid,"\n");
+    fprintf(fid,"figure;\n");
+    fprintf(fid,"th = [0:(h_len*npfb-1)]/(k*npfb) - h_len/(2*k);\n");
+    //fprintf(fid,"plot(t,h,t,dh);\n");
+    fprintf(fid,"subplot(3,1,1),\n");
+    fprintf(fid,"  plot(th, h);\n");
+    fprintf(fid,"  ylabel('MF');\n");
+    fprintf(fid,"  grid on;\n");
+    fprintf(fid,"subplot(3,1,2),\n");
+    fprintf(fid,"  plot(th,dh);\n");
+    fprintf(fid,"  ylabel('dMF');\n");
+    fprintf(fid,"  grid on;\n");
+    fprintf(fid,"subplot(3,1,3),\n");
+    fprintf(fid,"  plot(th,-h.*dh);\n");
+    fprintf(fid,"  ylabel('-MF*dMF');\n");
+    fprintf(fid,"  grid on;\n");
 
     // print del buffer
     fprintf(fid,"del = zeros(1,n);\n");
