@@ -129,7 +129,7 @@ int main(int argc, char*argv[])
     // generate channel impulse response, filter
     hc[0] = 1.0f;
     for (i=1; i<hc_len; i++)
-        hc[i] = 0.07f*(randnf() + randnf()*_Complex_I);
+        hc[i] = 0.09f*(randnf() + randnf()*_Complex_I);
     firfilt_cccf fchannel = firfilt_cccf_create(hc, hc_len);
 
     // generate random symbols
@@ -253,20 +253,16 @@ int main(int argc, char*argv[])
     fprintf(fid,"axis square;\n");
     fprintf(fid,"grid on;\n");
 
+    // compute composite response
+    fprintf(fid,"g  = real(conv(conv(hm,hc),hp));\n");
+
     // plot responses
     fprintf(fid,"nfft = 1024;\n");
     fprintf(fid,"f = [0:(nfft-1)]/nfft - 0.5;\n");
     fprintf(fid,"Hm = 20*log10(abs(fftshift(fft(hm/k,nfft))));\n");
-    fprintf(fid,"Hc = 20*log10(abs(fftshift(fft(hc,nfft))));\n");
-    fprintf(fid,"Hp = 20*log10(abs(fftshift(fft(hp,nfft))));\n");
-    fprintf(fid,"G  = Hm + Hc + Hp;\n");
-
-#if 0
-    // compute aliased spectrum
-    fprintf(fid,"g  = real(conv(conv(hm,hc),hp));\n");
-    fprintf(fid,"G2 = 20*log10(abs(fftshift(fft(g(1:2:end),nfft))));\n");
-    fprintf(fid,"plot(f/2,G2);\n");
-#endif
+    fprintf(fid,"Hc = 20*log10(abs(fftshift(fft(hc,  nfft))));\n");
+    fprintf(fid,"Hp = 20*log10(abs(fftshift(fft(hp,  nfft))));\n");
+    fprintf(fid,"G  = 20*log10(abs(fftshift(fft(g/k, nfft))));\n");
 
     fprintf(fid,"figure;\n");
     fprintf(fid,"plot(f,Hm, f,Hc, f,Hp, f,G,'-k','LineWidth',2, [-0.5/k 0.5/k],[-6.026 -6.026],'or');\n");
