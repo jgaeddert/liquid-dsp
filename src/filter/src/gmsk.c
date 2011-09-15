@@ -74,6 +74,8 @@ void liquid_firdes_gmsktx(unsigned int _k,
         e += _h[i];
     for (i=0; i<h_len; i++)
         _h[i] *= M_PI / (2.0f * e);
+    for (i=0; i<h_len; i++)
+        _h[i] *= (float)_k;
 }
 
 // Design GMSK receive filter

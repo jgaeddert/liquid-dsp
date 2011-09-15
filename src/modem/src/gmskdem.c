@@ -219,9 +219,9 @@ void gmskdem_debug_print(gmskdem _q,
     fprintf(fid,"hc = conv(ht,hr)/k;\n");
     fprintf(fid,"nfft = 1024;\n");
     fprintf(fid,"f = [0:(nfft-1)]/nfft - 0.5;\n");
-    fprintf(fid,"Ht = 20*log10(abs(fftshift(fft(ht,     nfft))));\n");
-    fprintf(fid,"Hr = 20*log10(abs(fftshift(fft(hr/k^2, nfft))));\n");
-    fprintf(fid,"Hc = 20*log10(abs(fftshift(fft(hc/k,   nfft))));\n");
+    fprintf(fid,"Ht = 20*log10(abs(fftshift(fft(ht/k, nfft))));\n");
+    fprintf(fid,"Hr = 20*log10(abs(fftshift(fft(hr/k, nfft))));\n");
+    fprintf(fid,"Hc = 20*log10(abs(fftshift(fft(hc/k, nfft))));\n");
     fprintf(fid,"figure;\n");
     fprintf(fid,"plot(f,Ht, f,Hr, f,Hc,'-k','LineWidth',2);\n");
     fprintf(fid,"axis([-0.5 0.5 -50 10]);\n");

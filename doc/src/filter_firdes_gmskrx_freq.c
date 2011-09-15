@@ -84,7 +84,7 @@ int main(int argc, char*argv[]) {
     float hc[4*k*m+1];
     for (i=0; i<4*k*m+1; i++) {
         int lag = (int)i - (int)(2*k*m);
-        hc[i] = liquid_filter_crosscorr(ht,h_len, hr,h_len, lag);
+        hc[i] = liquid_filter_crosscorr(ht,h_len, hr,h_len, lag) / k;
     }
 
     // compute isi
@@ -97,6 +97,10 @@ int main(int argc, char*argv[]) {
     isi_rms = sqrtf(isi_rms / (float)(2*m-1));
     printf("ISI (RMS) = %12.8f dB\n", 20*log10f(isi_rms));
 
+    // scale impulse responses by samples/symbol
+    for (i=0; i<h_len; i++)   ht[i] /= (float)k;    // transmit
+    for (i=0; i<h_len; i++)   hr[i] /= (float)k;    // receive
+    for (i=0; i<4*k*m+1; i++) hc[i] /= (float)k;    // composite
 
     // compute filter power spectral density
     float complex Ht[nfft];

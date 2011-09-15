@@ -78,7 +78,7 @@ int main(int argc, char*argv[]) {
     float hc[4*k*m+1];
     for (i=0; i<4*k*m+1; i++) {
         int lag = (int)i - (int)(2*k*m);
-        hc[i] = k * liquid_filter_crosscorr(ht,h_len, hr,h_len, lag);
+        hc[i] = liquid_filter_crosscorr(ht,h_len, hr,h_len, lag) / k;
     }
 
     // compute isi
