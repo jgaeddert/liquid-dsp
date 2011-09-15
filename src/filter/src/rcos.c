@@ -28,15 +28,18 @@
 
 #include "liquid.internal.h"
 
+// Design Nyquist raised-cosine filter
+//  _k      : samples/symbol
+//  _m      : symbol delay
+//  _beta   : rolloff factor (0 < beta <= 1)
+//  _dt     : fractional sample delay
+//  _h      : output coefficient buffer (length: 2*k*m+1)
 void liquid_firdes_rcos(unsigned int _k,
                         unsigned int _m,
                         float _beta,
                         float _dt,
-                        float * _h
-)
+                        float * _h)
 {
-    unsigned int h_len;
-
     if ( _k < 1 ) {
         fprintf(stderr,"error: liquid_firdes_rcos(): k must be greater than 0\n");
         exit(1);
@@ -53,7 +56,7 @@ void liquid_firdes_rcos(unsigned int _k,
 
     float nf, kf, mf;
 
-    h_len = 2*_k*_m + 1;
+    unsigned int h_len = 2*_k*_m + 1;
 
     // Calculate filter coefficients
     for (n=0; n<h_len; n++) {
