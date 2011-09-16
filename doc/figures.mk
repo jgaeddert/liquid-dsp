@@ -49,6 +49,9 @@ local_pdffiles :=					\
 	figures.gen/fec_ber_esn0_convpunc.pdf		\
 	figures.gen/fec_ber_ebn0_convpunc.pdf		\
 							\
+	figures.gen/fft_example_time.pdf		\
+	figures.gen/fft_example_freq.pdf		\
+							\
 	figures.gen/filter_rnyquist.pdf			\
 	figures.gen/filter_butter_psd.pdf		\
 	figures.gen/filter_butter_zpk.pdf		\
@@ -201,6 +204,7 @@ local_progs :=						\
 	src/estimate_snr_fec				\
 	src/estimate_snr_modem				\
 	src/estimate_snr_test				\
+	src/fft_example					\
 	src/filter_iirdes				\
 	src/filter_firdes_gmskrx_time			\
 	src/filter_firdes_gmskrx_freq			\
@@ -501,6 +505,17 @@ figures.gen/filter_resamp_crcf_freq.gnu: src/filter_resamp_crcf
 # rnyquist
 #
 figures.gen/filter_rnyquist.gnu : src/filter_rnyquist
+	./$<
+
+
+##
+## MODULE : fft
+##
+
+# 
+# fft_example
+#
+figures.gen/fft_example_time.gnu figures.gen/fft_example_freq : src/fft_example
 	./$<
 
 
