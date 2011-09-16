@@ -57,7 +57,7 @@ ricek_channel ricek_channel_create(unsigned int _h_len, float _K, float _fd, flo
 
     // create filter
     float h[q->h_len];
-    fir_design_doppler(q->h_len, q->fd, q->K, q->theta, h);
+    liquid_firdes_doppler(q->h_len, q->fd, q->K, q->theta, h);
 
     // normalize filter
     unsigned int i;
