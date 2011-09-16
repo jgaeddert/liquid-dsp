@@ -95,6 +95,9 @@ int main(int argc, char*argv[])
     // push through frame synchronizer
     printf("pushing frame (%u samples) through synchronizer...\n", num_samples);
     gmskframesync_execute(fs, frame, num_samples);
+    frame[0] = 0.0f;
+    for (i=0; i<100; i++)
+        gmskframesync_execute(fs, frame, 1);
 
     // destroy objects
     gmskframegen_destroy(fg);

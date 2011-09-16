@@ -876,6 +876,12 @@ void gmskframesync_execute(gmskframesync _fg,
                            liquid_float_complex * _x,
                            unsigned int _n);
 
+// internal callback
+int gmskframesync_internal_callback(unsigned char * _payload,
+                                    int             _payload_valid,
+                                    unsigned int    _payload_len,
+                                    void *          _userdata);
+
 //
 // packetizer (experimental improvements)
 //

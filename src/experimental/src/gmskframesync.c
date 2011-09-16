@@ -35,36 +35,21 @@
 
 // gmskframesync object structure
 struct gmskframesync_s {
-    gmskdem demod;              // gmsk demodulator
-    unsigned int k;             // filter samples/symbol
-    unsigned int m;             // filter semi-length (symbols)
-    float BT;                   // filter bandwidth-time product
+    gmskdem demod;                      // gmsk demodulator
+    unsigned int k;                     // filter samples/symbol
+    unsigned int m;                     // filter semi-length (symbols)
+    float BT;                           // filter bandwidth-time product
 
-    // status variables
-    enum {
-        GMSKFRAMESYNC_STATE_SEEKPN=0,     // seek p/n sequence
-        GMSKFRAMESYNC_STATE_RXHEADER,     // receive header data
-        GMSKFRAMESYNC_STATE_RXPAYLOAD,    // receive payload data
-        GMSKFRAMESYNC_STATE_RESET         // reset synchronizer
-    } state;
-    unsigned int num_symbols_collected; // symbols collected counter
+    // packet synchronizer
+    bpacketsync psync;                  // packet synchronizer
+
     bool header_valid;                  // header valid?
     bool payload_valid;                 // payload valid?
 
     // callback
-    gmskframesync_callback callback;      // user-defined callback function
+    gmskframesync_callback callback;    // user-defined callback function
     void * userdata;                    // user-defined data structure
-
-    // header
-    unsigned char header_sym[84];       // header symbols (modem output)
-    unsigned char header_enc[21];       // header data (encoded)
-    unsigned char header[12];           // header data (decoded)
-
-    // payload
-    unsigned char payload_sym[396];     // payload symbols (modem output)
-    unsigned char payload_enc[99];      // payload data (encoded)
-    unsigned char payload[64];          // payload data (decoded)
-
+    framesyncstats_s framestats;        //
 };
 
 // create gmskframesync object
@@ -89,6 +74,9 @@ gmskframesync gmskframesync_create(unsigned int _k,
     // create gmsk demodulator object
     q->demod = gmskdem_create(q->k, q->m, q->BT);
 
+    // create packet synchronizer
+    q->psync = bpacketsync_create(0, gmskframesync_internal_callback, (void*)q);
+
     return q;
 }
 
@@ -98,6 +86,9 @@ void gmskframesync_destroy(gmskframesync _q)
 {
     // destroy gmsk demodulator
     gmskdem_destroy(_q->demod);
+
+    // destroy packet synchronizer
+    bpacketsync_destroy(_q->psync);
 
     // free main object memory
     free(_q);
@@ -124,15 +115,35 @@ void gmskframesync_execute(gmskframesync _q,
                            float complex *_x,
                            unsigned int _n)
 {
-    printf("gmskframesync_execute() invoked with %u samples\n", _n);
     unsigned int i;
 
     unsigned int s;
     for (i=0; i<_n; i+=_q->k) {
-        printf(" demod : %u\n", i);
         gmskdem_demodulate(_q->demod, &_x[i], &s);
 
         // TODO : push sample through packet synchronizer...
+        bpacketsync_execute_bit(_q->psync, (unsigned char)s);
     }
+}
+
+// 
+// internal methods
+//
+
+// internal callback
+int gmskframesync_internal_callback(unsigned char * _payload,
+                                    int             _payload_valid,
+                                    unsigned int    _payload_len,
+                                    void *          _userdata)
+{
+    // type-cast internal object
+    gmskframesync _q = (gmskframesync) _userdata;
+
+    // invoke user-defined callback
+    framesyncstats_init_default(&_q->framestats);
+    _q->callback(_payload, _payload_len, _payload_valid, _q->framestats, _q->userdata);
+
+    //
+    return 0;
 }
 
