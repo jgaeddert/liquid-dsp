@@ -290,6 +290,7 @@ int main(int argc, char*argv[])
     fprintf(fid,"e\n");
 
     fclose(fid);
+    printf("results written to '%s'\n", filename);
 
     // 
     // mse : mean-squared error
@@ -320,6 +321,7 @@ int main(int argc, char*argv[])
     fprintf(fid,"e\n");
 
     fclose(fid);
+    printf("results written to '%s'\n", filename);
 
 
     // 
@@ -391,6 +393,7 @@ int main(int argc, char*argv[])
     fprintf(fid,"e\n");
 
     fclose(fid);
+    printf("results written to '%s'\n", filename);
 
     //
     // time...
@@ -449,106 +452,7 @@ int main(int argc, char*argv[])
 
     // close output file
     fclose(fid);
-
-
-
-#if 0
-    //
-    // OLD
-    //
-
-    FILE * fid = fopen(OUTPUT_FILENAME,"w");
-    fprintf(fid,"%% %s : auto-generated file\n\n", OUTPUT_FILENAME);
-    fprintf(fid,"clear all\n");
-    fprintf(fid,"close all\n");
-
-    fprintf(fid,"k = %u;\n", k);
-    fprintf(fid,"m = %u;\n", m);
-    fprintf(fid,"num_symbols = %u;\n", num_symbols);
-    fprintf(fid,"num_samples = num_symbols*k;\n");
-
-    // save transmit matched-filter response
-    fprintf(fid,"hm_len = 2*k*m+1;\n");
-    fprintf(fid,"hm = zeros(1,hm_len);\n");
-    for (i=0; i<hm_len; i++)
-        fprintf(fid,"hm(%4u) = %12.4e;\n", i+1, hm[i]);
-
-    // save channel impulse response
-    fprintf(fid,"hc_len = %u;\n", hc_len);
-    fprintf(fid,"hc = zeros(1,hc_len);\n");
-    for (i=0; i<hc_len; i++)
-        fprintf(fid,"hc(%4u) = %12.4e + j*%12.4e;\n", i+1, crealf(hc[i]), cimagf(hc[i]));
-
-    // save equalizer response
-    fprintf(fid,"hp_len = %u;\n", hp_len);
-    fprintf(fid,"hp = zeros(1,hp_len);\n");
-    for (i=0; i<hp_len; i++)
-        fprintf(fid,"hp(%4u) = %12.4e + j*%12.4e;\n", i+1, crealf(hp[i]), cimagf(hp[i]));
-
-    // save error response
-    fprintf(fid,"num_symbols_rx = %u;\n", num_symbols_rx);
-    fprintf(fid,"mse = zeros(1,num_symbols_rx);\n");
-    for (i=0; i<num_symbols_rx; i++)
-        fprintf(fid,"mse(%4u) = %12.4e;\n", i+1, mse[i]);
-
-    // save sample sets
-    fprintf(fid,"x = zeros(1,num_samples);\n");
-    fprintf(fid,"y = zeros(1,num_samples);\n");
-    fprintf(fid,"z = zeros(1,num_samples);\n");
-    for (i=0; i<num_samples; i++) {
-        fprintf(fid,"x(%4u) = %12.4e + j*%12.4e;\n", i+1, crealf(x[i]), cimagf(x[i]));
-        fprintf(fid,"y(%4u) = %12.4e + j*%12.4e;\n", i+1, crealf(y[i]), cimagf(y[i]));
-        fprintf(fid,"z(%4u) = %12.4e + j*%12.4e;\n", i+1, crealf(z[i]), cimagf(z[i]));
-    }
-
-    // plot time response
-    fprintf(fid,"t = 0:(num_samples-1);\n");
-    fprintf(fid,"tsym = 1:k:num_samples;\n");
-    fprintf(fid,"figure;\n");
-    fprintf(fid,"plot(t,real(z),...\n");
-    fprintf(fid,"     t(tsym),real(z(tsym)),'x');\n");
-
-    // plot MSE over time
-    fprintf(fid,"figure;\n");
-    fprintf(fid,"plot(1:num_symbols_rx, 10*log10(mse));\n");
-    fprintf(fid,"xlabel('output symbol');\n");
-    fprintf(fid,"ylabel('MSE [dB]');\n");
-    fprintf(fid,"grid on;\n");
-
-    // plot constellation
-    fprintf(fid,"tsym0 = tsym(1:(length(tsym)/2));\n");
-    fprintf(fid,"tsym1 = tsym((length(tsym)/2):end);\n");
-    fprintf(fid,"figure;\n");
-    fprintf(fid,"plot(real(z(tsym0)),imag(z(tsym0)),'x','Color',[1 1 1]*0.7,...\n");
-    fprintf(fid,"     real(z(tsym1)),imag(z(tsym1)),'x','Color',[1 1 1]*0.0);\n");
-    fprintf(fid,"xlabel('In-Phase');\n");
-    fprintf(fid,"ylabel('Quadrature');\n");
-    fprintf(fid,"axis([-1 1 -1 1]*1.5);\n");
-    fprintf(fid,"axis square;\n");
-    fprintf(fid,"grid on;\n");
-
-    // compute composite response
-    fprintf(fid,"g  = real(conv(conv(hm,hc),hp));\n");
-
-    // plot responses
-    fprintf(fid,"nfft = 1024;\n");
-    fprintf(fid,"f = [0:(nfft-1)]/nfft - 0.5;\n");
-    fprintf(fid,"Hm = 20*log10(abs(fftshift(fft(hm/k,nfft))));\n");
-    fprintf(fid,"Hc = 20*log10(abs(fftshift(fft(hc,  nfft))));\n");
-    fprintf(fid,"Hp = 20*log10(abs(fftshift(fft(hp,  nfft))));\n");
-    fprintf(fid,"G  = 20*log10(abs(fftshift(fft(g/k, nfft))));\n");
-
-    fprintf(fid,"figure;\n");
-    fprintf(fid,"plot(f,Hm, f,Hc, f,Hp, f,G,'-k','LineWidth',2, [-0.5/k 0.5/k],[-6.026 -6.026],'or');\n");
-    fprintf(fid,"xlabel('Normalized Frequency');\n");
-    fprintf(fid,"ylabel('Power Spectral Density');\n");
-    fprintf(fid,"legend('transmit','channel','equalizer','composite','half-power points',1);\n");
-    fprintf(fid,"axis([-0.5 0.5 -12 8]);\n");
-    fprintf(fid,"grid on;\n");
-    
-    fclose(fid);
-    printf("results written to '%s'\n", OUTPUT_FILENAME);
-#endif
+    printf("results written to '%s'\n", filename);
 
     return 0;
 }
