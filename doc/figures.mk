@@ -42,6 +42,11 @@ local_pdffiles :=					\
 	figures.gen/equalizer_example2_psd.pdf		\
 	figures.gen/equalizer_example2_taps.pdf		\
 							\
+	figures.gen/eqlms_cccf_blind_const.pdf		\
+	figures.gen/eqlms_cccf_blind_mse.pdf		\
+	figures.gen/eqlms_cccf_blind_freq.pdf		\
+	figures.gen/eqlms_cccf_blind_time.pdf		\
+							\
 	figures.gen/fec_ber_esn0_hamming.pdf		\
 	figures.gen/fec_ber_ebn0_hamming.pdf		\
 	figures.gen/fec_ber_esn0_conv.pdf		\
@@ -197,6 +202,7 @@ local_progs :=						\
 	src/agc_transient				\
 	src/audio_cvsd					\
 	src/equalizer_cccf				\
+	src/eqlms_cccf_blind				\
 	src/estimate_snr_fec				\
 	src/estimate_snr_modem				\
 	src/estimate_snr_test				\
@@ -274,6 +280,13 @@ figures.gen/equalizer_example2_mse.gnu		\
 figures.gen/equalizer_example2_psd.gnu		\
 figures.gen/equalizer_example2_taps.gnu	: src/equalizer_cccf
 	./$< -f figures.gen/equalizer_example2 -n512 -c8 -p18 -s14
+
+# eqlms_cccf_blind
+figures.gen/eqlms_cccf_blind_const.gnu		\
+figures.gen/eqlms_cccf_blind_mse.gnu		\
+figures.gen/eqlms_cccf_blind_freq.gnu		\
+figures.gen/eqlms_cccf_blind_time.gnu : src/eqlms_cccf_blind
+	./$< -n1000 -c8 -p8
 
 ##
 ## MODULE : fec

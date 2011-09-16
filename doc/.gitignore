@@ -21,6 +21,7 @@ src/agc_transient
 src/audio_cvsd
 src/doc-html-gen
 src/equalizer_cccf
+src/eqlms_cccf_blind
 src/estimate_snr_fec
 src/estimate_snr_modem
 src/estimate_snr_test
