@@ -151,13 +151,12 @@ int main(int argc, char*argv[])
     }
 
     // push through equalizer
-    float hpf[hp_len];
-    liquid_firdes_rnyquist(LIQUID_RNYQUIST_RRC, k, p, beta, 0.0f, hpf);
-    for (i=0; i<hp_len; i++)
-        hp[i] = hpf[i] / (float)k;
-
-    eqlms_cccf eq = eqlms_cccf_create(hp, hp_len);
+    // create equalizer, intialized with square-root Nyquist filter
+    eqlms_cccf eq = eqlms_cccf_create_rnyquist(LIQUID_RNYQUIST_RRC, k, p, beta, 0.0f);
     eqlms_cccf_set_bw(eq, mu);
+
+    // get initialized weights
+    eqlms_cccf_get_weights(eq, hp);
 
     // filtered error vector magnitude (emperical RMS error)
     float evm_hat = 0.03f;

@@ -329,6 +329,17 @@ LIQUID_DOTPROD_DEFINE_API(DOTPROD_MANGLE_CRCF,
 typedef struct EQLMS(_s) * EQLMS();                             \
 EQLMS() EQLMS(_create)(T * _h,                                  \
                        unsigned int _p);                        \
+/* create LMS EQ initialized with square-root Nyquist   */      \
+/*  _type   : filter type (e.g. LIQUID_RNYQUIST_RRC)    */      \
+/*  _k      : samples/symbol                            */      \
+/*  _m      : filter delay (symbols)                    */      \
+/*  _beta   : rolloff factor (0 < beta <= 1)            */      \
+/*  _dt     : fractional sample delay                   */      \
+EQLMS() EQLMS(_create_rnyquist)(int _type,                      \
+                                unsigned int _k,                \
+                                unsigned int _m,                \
+                                float _beta,                    \
+                                float _dt);                     \
 EQLMS() EQLMS(_recreate)(EQLMS() _eq,                           \
                          T * _h,                                \
                          unsigned int _p);                      \
