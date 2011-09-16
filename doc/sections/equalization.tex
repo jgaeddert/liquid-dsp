@@ -265,3 +265,29 @@ The RLS equalizer, however, has a much higher computational complexity.
 \end{figure}
 
 
+%-------------------- FIGURE: EQLMS BLIND --------------------
+\begin{figure}
+\centering
+\subfigure[Equalizer output (time series)] {
+    \includegraphics[trim = 2mm 0mm 0mm 0mm, clip, width=15cm]{figures.gen/eqlms_cccf_blind_time}
+    \label{fig:module:equalization:eqlms_blind:time}
+}
+%\subfigure[mean-squared error] {
+%    \includegraphics[trim = 0mm 23mm 0mm 23mm, clip, width=13cm]{figures.gen/eqlms_cccf_blind_mse}
+%    \label{fig:module:equalization:eqlms_blind:mse}
+%}
+\subfigure[Power Spectral Density] {
+    \includegraphics[trim = 2mm 6mm 0mm 6mm, clip, width=15cm]{figures.gen/eqlms_cccf_blind_freq}
+    \label{fig:module:equalization:eqlms_blind:psd}
+}
+%\subfigure[constellation] {
+%    \includegraphics[trim = 16mm 0mm 18mm 0mm, clip, width=7cm]{figures.gen/eqlms_cccf_blind_const}
+%    \label{fig:module:equalization:eqlms_blind:constellation}
+%}
+
+% trim = left bottom right top
+\caption{Blind {\tt eqlms\_cccf} example, $k=2$ samples/symbol}
+\label{fig:module:equalization:eqlms_blind}
+\end{figure}
+
+

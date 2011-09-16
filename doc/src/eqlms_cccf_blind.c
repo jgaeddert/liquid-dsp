@@ -304,15 +304,16 @@ int main(int argc, char*argv[])
     fprintf(fid,"# %s: auto-generated file\n\n", filename);
     fprintf(fid,"reset\n");
     fprintf(fid,"set terminal postscript eps enhanced color solid rounded\n");
-    fprintf(fid,"set size ratio 1\n");
-    fprintf(fid,"set xrange [0:%u];\n", num_symbols_rx);
-    fprintf(fid,"set yrange [1e-4:1e-1];\n");
+    fprintf(fid,"set size ratio 0.3\n");
+    fprintf(fid,"set xrange [0:%u];\n", num_symbols);
+    fprintf(fid,"set yrange [1e-3:1e-1];\n");
+    fprintf(fid,"set format y '10^{%%L}'\n");
     fprintf(fid,"set log y\n");
     fprintf(fid,"set xlabel 'symbol index'\n");
     fprintf(fid,"set ylabel 'mean-squared error'\n");
     fprintf(fid,"set grid xtics ytics\n");
     fprintf(fid,"set grid linetype 1 linecolor rgb '%s' linewidth 1\n",LIQUID_DOC_COLOR_GRID);
-    fprintf(fid,"plot '-' using 1:2 with lines linewidth 2 linetype 1 linecolor rgb '%s' title 'LMS MSE'\n", LIQUID_DOC_COLOR_RED);
+    fprintf(fid,"plot '-' using 1:2 with lines linewidth 4 linetype 1 linecolor rgb '%s' title 'LMS MSE'\n", LIQUID_DOC_COLOR_RED);
     // LMS
     for (i=0; i<num_symbols_rx; i++)
         fprintf(fid,"  %4u %16.8e\n", i, mse[i]);
@@ -351,9 +352,9 @@ int main(int argc, char*argv[])
     fprintf(fid,"# %s: auto-generated file\n\n", filename);
     fprintf(fid,"reset\n");
     fprintf(fid,"set terminal postscript eps enhanced color solid rounded\n");
-    fprintf(fid,"set size ratio 1\n");
+    fprintf(fid,"set size ratio 0.6\n");
     fprintf(fid,"set xrange [-0.5:0.5];\n");
-    fprintf(fid,"set yrange [-10:5]\n");
+    fprintf(fid,"set yrange [-10:6]\n");
     fprintf(fid,"set xlabel 'Normalized Frequency'\n");
     fprintf(fid,"set ylabel 'Power Spectral Density [dB]'\n");
     fprintf(fid,"set key top right nobox\n");
