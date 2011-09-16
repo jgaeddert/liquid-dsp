@@ -1,10 +1,10 @@
 // 
-// equalizer_cccf.c
+// eqlms_vs_eqrls.c
 //  
 // Generates four files:
 //  * filename_const.gnu    : signal constellation
 //  * filename_mse.gnu      : mean-square error
-//  * filename_psd.gnu      : power spectral density
+//  * filename_freq.gnu     : power spectral density
 //  * filename_taps.gnu     : equalizer taps
 
 #include <stdio.h>
@@ -48,8 +48,7 @@ int main(int argc, char*argv[])
     // plotting options
     unsigned int nfft = 512;    // fft size
     float gnuplot_version = 4.2;
-    char filename_base[256];
-    strcpy(filename_base,"");
+    char filename_base[256] = "figures.gen/eqlms_vs_eqrls";
 
     int dopt;
     while ((dopt = getopt(argc,argv,"uhf:g:n:c:p:m:l:s:t:")) != EOF) {
@@ -202,8 +201,8 @@ int main(int argc, char*argv[])
     fprintf(fid,"set size ratio 1\n");
     fprintf(fid,"set xrange [-2:2];\n");
     fprintf(fid,"set yrange [-2:2];\n");
-    fprintf(fid,"set xlabel 'I'\n");
-    fprintf(fid,"set ylabel 'Q'\n");
+    fprintf(fid,"set xlabel 'In-phase'\n");
+    fprintf(fid,"set ylabel 'Quadrature phase'\n");
     fprintf(fid,"set grid xtics ytics\n");
     fprintf(fid,"set grid linetype 1 linecolor rgb '%s' linewidth 1\n",LIQUID_DOC_COLOR_GRID);
     fprintf(fid,"set pointsize 0.5\n");
@@ -245,12 +244,13 @@ int main(int argc, char*argv[])
     fprintf(fid,"set xrange [0:%u];\n", n);
     fprintf(fid,"set yrange [1e-3:10];\n");
     fprintf(fid,"set log y\n");
-    fprintf(fid,"set xlabel 'sample index'\n");
-    fprintf(fid,"set ylabel 'mean-squared error'\n");
+    fprintf(fid,"set format y '10^{%%L}'\n");
+    fprintf(fid,"set xlabel 'Sample index'\n");
+    fprintf(fid,"set ylabel 'Mean-squared error'\n");
     fprintf(fid,"set grid xtics ytics\n");
     fprintf(fid,"set grid linetype 1 linecolor rgb '%s' linewidth 1\n",LIQUID_DOC_COLOR_GRID);
-    fprintf(fid,"plot '-' using 1:2 with lines linewidth 2 linetype 1 linecolor rgb '%s' title 'LMS',\\\n", LIQUID_DOC_COLOR_RED);
-    fprintf(fid,"     '-' using 1:2 with lines linewidth 2 linetype 1 linecolor rgb '%s' title 'RLS'\n",    LIQUID_DOC_COLOR_BLUE);
+    fprintf(fid,"plot '-' using 1:2 with lines linewidth 4 linetype 1 linecolor rgb '%s' title 'LMS',\\\n", LIQUID_DOC_COLOR_RED);
+    fprintf(fid,"     '-' using 1:2 with lines linewidth 4 linetype 1 linecolor rgb '%s' title 'RLS'\n",    LIQUID_DOC_COLOR_BLUE);
     // LMS
     for (i=0; i<n; i++)
         fprintf(fid,"  %4u %16.8e\n", i, mse_lms[i]);
@@ -282,7 +282,7 @@ int main(int argc, char*argv[])
         freq[i] = (float)(i) / (float)nfft - 0.5f;
 
     strncpy(filename, filename_base, 256);
-    strcat(filename, "_psd.gnu");
+    strcat(filename, "_freq.gnu");
     fid = fopen(filename,"w");
     if (!fid) {
         fprintf(stderr,"error: %s, could not open file '%s' for writing\n", argv[0], filename);
@@ -336,7 +336,7 @@ int main(int argc, char*argv[])
     fprintf(fid,"set size ratio 0.5\n");
     fprintf(fid,"set xrange [-1:%u];\n", h_len > p ? h_len : p);
     fprintf(fid,"set yrange [-1.2:1.2]\n");
-    fprintf(fid,"set xlabel 'filter index'\n");
+    fprintf(fid,"set xlabel 'Filter index'\n");
     fprintf(fid,"set key top right nobox\n");
     fprintf(fid,"set grid xtics ytics\n");
     fprintf(fid,"set multiplot layout 2,1 scale 1.0,1.0\n");
@@ -344,7 +344,7 @@ int main(int argc, char*argv[])
     fprintf(fid,"set pointsize 0.8\n");
 
     // real
-    fprintf(fid,"set ylabel 'real'\n");
+    fprintf(fid,"set ylabel 'Real'\n");
     fprintf(fid,"plot '-' using 1:2 with points pointtype 12 linecolor rgb '%s' title 'channel',\\\n", LIQUID_DOC_COLOR_GRAY);
     fprintf(fid,"     '-' using 1:2 with points pointtype 12 linecolor rgb '%s' title 'LMS',\\\n",     LIQUID_DOC_COLOR_RED);
     fprintf(fid,"     '-' using 1:2 with points pointtype 12 linecolor rgb '%s' title 'RLS'\n",        LIQUID_DOC_COLOR_BLUE);
@@ -362,7 +362,7 @@ int main(int argc, char*argv[])
     fprintf(fid,"e\n");
 
     // imag
-    fprintf(fid,"set ylabel 'imag'\n");
+    fprintf(fid,"set ylabel 'Imag'\n");
     fprintf(fid,"plot '-' using 1:2 with points pointtype 12 linecolor rgb '%s' title 'channel',\\\n", LIQUID_DOC_COLOR_GRAY);
     fprintf(fid,"     '-' using 1:2 with points pointtype 12 linecolor rgb '%s' title 'LMS',\\\n",     LIQUID_DOC_COLOR_RED);
     fprintf(fid,"     '-' using 1:2 with points pointtype 12 linecolor rgb '%s' title 'RLS'\n",        LIQUID_DOC_COLOR_BLUE);
