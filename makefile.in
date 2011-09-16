@@ -1191,7 +1191,6 @@ example_programs :=						\
 	examples/kbd_window_example				\
 	examples/lpc_example					\
 	examples/matched_filter_example				\
-	examples/matrix_example					\
 	examples/math_lngamma_example				\
 	examples/mdct_example					\
 	examples/modem_arb_example				\
@@ -1300,6 +1299,7 @@ sandbox_programs =						\
 	sandbox/math_cexpf_test					\
 	sandbox/math_clogf_test					\
 	sandbox/math_csqrtf_test				\
+	sandbox/matrix_test					\
 	sandbox/minsearch_test					\
 	sandbox/minsearch2_test					\
 	sandbox/matrix_eig_test					\

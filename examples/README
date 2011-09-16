@@ -391,9 +391,6 @@ matched_filter_example.c
 math_lngamma_example.c
     Demonstrates accuracy of lngamma function.
 
-matrix_example.c
-    This example demonstrates basic matrix operations.
-
 mdct_example.c
 
 modem_arb_example.c
