@@ -79,6 +79,7 @@ LISTINGS_C = 						\
 	listings/decim.example.c			\
 	listings/dotprod_rrrf.example.c			\
 	listings/eqlms_cccf.example.c			\
+	listings/eqlms_cccf_blind.example.c		\
 	listings/fec.example.c				\
 	listings/fft.example.c				\
 	listings/firdes_kaiser.example.c		\
