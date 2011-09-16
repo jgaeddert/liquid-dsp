@@ -35,7 +35,10 @@
 
 // gmskframesync object structure
 struct gmskframesync_s {
-    gmskdem demod;          // gmsk demodulator
+    gmskdem demod;              // gmsk demodulator
+    unsigned int k;             // filter samples/symbol
+    unsigned int m;             // filter semi-length (symbols)
+    float BT;                   // filter bandwidth-time product
 
     // status variables
     enum {
@@ -74,48 +77,62 @@ gmskframesync gmskframesync_create(unsigned int _k,
                                    gmskframesync_callback _callback,
                                    void * _userdata)
 {
-    gmskframesync fs = (gmskframesync) malloc(sizeof(struct gmskframesync_s));
-    fs->callback = _callback;
-    fs->userdata = _userdata;
+    // TODO : validate input
+
+    gmskframesync q = (gmskframesync) malloc(sizeof(struct gmskframesync_s));
+    q->k  = _k;
+    q->m  = _m;
+    q->BT = _BT;
+    q->callback = _callback;
+    q->userdata = _userdata;
 
     // create gmsk demodulator object
-    fs->demod = gmskdem_create(_k, _m, _BT);
+    q->demod = gmskdem_create(q->k, q->m, q->BT);
 
-    return fs;
+    return q;
 }
 
 
 // destroy frame synchronizer object, freeing all internal memory
-void gmskframesync_destroy(gmskframesync _fs)
+void gmskframesync_destroy(gmskframesync _q)
 {
     // destroy gmsk demodulator
-    gmskdem_destroy(_fs->demod);
+    gmskdem_destroy(_q->demod);
 
     // free main object memory
-    free(_fs);
+    free(_q);
 }
 
 // print frame synchronizer object internals
-void gmskframesync_print(gmskframesync _fs)
+void gmskframesync_print(gmskframesync _q)
 {
     printf("gmskframesync:\n");
 }
 
 // reset frame synchronizer object
-void gmskframesync_reset(gmskframesync _fs)
+void gmskframesync_reset(gmskframesync _q)
 {
     // reset demodulator
-    gmskdem_reset(_fs->demod);
+    gmskdem_reset(_q->demod);
 }
 
 // execute frame synchronizer
-//  _fs     :   frame synchronizer object
+//  _q      :   frame synchronizer object
 //  _x      :   input sample array [size: _n x 1]
 //  _n      :   number of input samples
-void gmskframesync_execute(gmskframesync _fs,
+void gmskframesync_execute(gmskframesync _q,
                            float complex *_x,
                            unsigned int _n)
 {
-    // ...
+    printf("gmskframesync_execute() invoked with %u samples\n", _n);
+    unsigned int i;
+
+    unsigned int s;
+    for (i=0; i<_n; i+=_q->k) {
+        printf(" demod : %u\n", i);
+        gmskdem_demodulate(_q->demod, &_x[i], &s);
+
+        // TODO : push sample through packet synchronizer...
+    }
 }
 

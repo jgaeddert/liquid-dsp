@@ -845,19 +845,23 @@ gmskframegen gmskframegen_create(unsigned int _k,
                                  float _BT);
 void gmskframegen_destroy(gmskframegen _fg);
 void gmskframegen_print(gmskframegen _fg);
-void gmskframegen_execute(gmskframegen _fg,
-                          unsigned char * _header,
-                          unsigned char * _payload,
-                          liquid_float_complex * _y);
+void gmskframegen_reset(gmskframegen _fg);
+void gmskframegen_assemble(gmskframegen _fg,
+                           unsigned char * _payload,
+                           unsigned int    _payload_len);
+unsigned int gmskframegen_get_frame_len(gmskframegen _fg);
+int gmskframegen_write_samples(gmskframegen _fg,
+                               liquid_float_complex * _y,
+                               unsigned int   _num_available,
+                               unsigned int * _num_written);
 
 
 // GMSK frame synchronizer callback
-typedef int (*gmskframesync_callback)(unsigned char * _header,
-                                      int _header_valid,
-                                      unsigned char * _payload,
-                                      int _payload_valid,
+typedef int (*gmskframesync_callback)(unsigned char *  _payload,
+                                      unsigned int     _payload_len,
+                                      int              _payload_valid,
                                       framesyncstats_s _stats,
-                                      void * _userdata);
+                                      void *           _userdata);
 
 typedef struct gmskframesync_s * gmskframesync;
 gmskframesync gmskframesync_create(unsigned int _k,

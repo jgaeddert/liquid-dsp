@@ -102,6 +102,7 @@ AC_ARG_ENABLE(experimental,
             examples/ann_xor_example \
             examples/dds_cccf_example \
             examples/fbasc_example \
+            examples/gmskframesync_example \
             examples/gport_dma_example \
             examples/gport_dma_threaded_example \
             examples/gport_ima_example \
