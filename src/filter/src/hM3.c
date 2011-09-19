@@ -34,6 +34,8 @@
 
 #include "liquid.internal.h"
 
+#define DEBUG_hM3   0
+
 // Design root-Nyquist harris-Moerder filter using Parks-McClellan
 // algorithm
 //
@@ -101,7 +103,9 @@ void liquid_firdes_hM3(unsigned int _k,
         // compute inter-symbol interference (MSE, max)
         liquid_filter_isi(h,_k,_m,&isi_rms,&isi_max);
 
+#if DEBUG_hM3
         printf("  isi mse : %20.8e (min: %20.8e)\n", isi_rms, isi_rms_min);
+#endif
         if (isi_rms > isi_rms_min) {
             // search complete
             break;
