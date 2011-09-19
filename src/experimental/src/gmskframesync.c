@@ -35,12 +35,14 @@
 
 // gmskframesync object structure
 struct gmskframesync_s {
-    gmskdem demod;                      // gmsk demodulator
     unsigned int k;                     // filter samples/symbol
     unsigned int m;                     // filter semi-length (symbols)
     float BT;                           // filter bandwidth-time product
 
-    // packet synchronizer
+    // synchronizer parameters, objects
+    float complex x_prime;              // received signal state
+    unsigned int npfb;                  // number of filterbanks
+    symsync_rrrf symsync;               // symbol synchronizer, matched filter
     bpacketsync psync;                  // packet synchronizer
 
     bool header_valid;                  // header valid?
@@ -71,8 +73,17 @@ gmskframesync gmskframesync_create(unsigned int _k,
     q->callback = _callback;
     q->userdata = _userdata;
 
-    // create gmsk demodulator object
-    q->demod = gmskdem_create(q->k, q->m, q->BT);
+    // internal parameters
+    q->npfb = 32;
+
+    // create symbol synchronizer
+    q->symsync = symsync_rrrf_create_rnyquist(LIQUID_RNYQUIST_GMSKRX,
+                                              q->k,
+                                              q->m,
+                                              q->BT,
+                                              q->npfb);
+    symsync_rrrf_set_lf_bw(q->symsync, 0.02f);
+    symsync_rrrf_set_output_rate(q->symsync, 1);
 
     // create packet synchronizer
     q->psync = bpacketsync_create(0, gmskframesync_internal_callback, (void*)q);
@@ -84,11 +95,9 @@ gmskframesync gmskframesync_create(unsigned int _k,
 // destroy frame synchronizer object, freeing all internal memory
 void gmskframesync_destroy(gmskframesync _q)
 {
-    // destroy gmsk demodulator
-    gmskdem_destroy(_q->demod);
-
-    // destroy packet synchronizer
-    bpacketsync_destroy(_q->psync);
+    // destroy synchronizer objects
+    symsync_rrrf_destroy(_q->symsync);  // symbol synchronizer, matched filter
+    bpacketsync_destroy(_q->psync);     // packet synchronizer
 
     // free main object memory
     free(_q);
@@ -103,8 +112,11 @@ void gmskframesync_print(gmskframesync _q)
 // reset frame synchronizer object
 void gmskframesync_reset(gmskframesync _q)
 {
-    // reset demodulator
-    gmskdem_reset(_q->demod);
+    // reset state
+    _q->x_prime = 0.0f;
+
+    // reset synchronizer objects
+    symsync_rrrf_clear(_q->symsync);
 }
 
 // execute frame synchronizer
@@ -115,14 +127,28 @@ void gmskframesync_execute(gmskframesync _q,
                            float complex *_x,
                            unsigned int _n)
 {
+    // synchronized sample buffer
+    float buffer[16];
+    unsigned int num_written=0;
+
+    // push through synchronizer
     unsigned int i;
+    for (i=0; i<_n; i++) {
+        // compute phase difference
+        float phi = cargf( conjf(_q->x_prime)*_x[i] );
+        _q->x_prime = _x[i];
 
-    unsigned int s;
-    for (i=0; i<_n; i+=_q->k) {
-        gmskdem_demodulate(_q->demod, &_x[i], &s);
+        // push through matched filter/symbol timing recovery
+        symsync_rrrf_execute(_q->symsync, &phi, 1, buffer, &num_written);
 
-        // TODO : push sample through packet synchronizer...
-        bpacketsync_execute_bit(_q->psync, (unsigned char)s);
+        // demodulate
+        unsigned int j;
+        for (j=0; j<num_written; j++) {
+            unsigned char s = buffer[j] > 0.0f ? 1 : 0;
+
+            // push sample through packet synchronizer...
+            bpacketsync_execute_bit(_q->psync, s);
+        }
     }
 }
 
