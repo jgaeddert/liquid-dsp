@@ -49,11 +49,22 @@ struct gmskframegen_s {
     unsigned int enc_msg_len;   // 
     unsigned char * packet;     // encoded packet
 
+    //
+    unsigned int rampup_len;    //
+    unsigned int preamble_len;  //
+    unsigned int payload_len;   //
+    unsigned int rampdn_len;    //
+    enum {
+        GMSKFRAMEGEN_STATE_RAMPUP,      // ramp up
+        GMSKFRAMEGEN_STATE_PREAMBLE,    // preamble
+        GMSKFRAMEGEN_STATE_PAYLOAD,     // payload (frame)
+        GMSKFRAMEGEN_STATE_RAMPDN,      // ramp down
+    } state;
+    int frame_complete;         //
+    unsigned int symbol_counter;//
+
     // buffering
     unsigned int num_samples;   // total number of samples in the frame
-    unsigned int num_remaining; // number of remaining samples to write
-    unsigned int byte_index;    // 
-    unsigned int bit_index;     // 
 };
 
 // create gmskframegen object
@@ -67,6 +78,12 @@ gmskframegen gmskframegen_create(unsigned int _k,
     q->m  = _m;
     q->BT = _BT;
 
+    // internal/derived values
+    q->rampup_len = 4;      // number of ramp/up symbols
+    q->preamble_len = 16;   // number of preamble symbols
+    q->payload_len = 0;     // number of payload symbols
+    q->rampdn_len = 4;      // number of ramp\dn symbols
+
     // create modulator
     q->mod = gmskmod_create(q->k, q->m, q->BT);
 
@@ -78,9 +95,13 @@ gmskframegen gmskframegen_create(unsigned int _k,
     q->pgen  = bpacketgen_create(0, q->dec_msg_len, q->check, q->fec0, q->fec1);
 
     q->enc_msg_len = bpacketgen_get_packet_len(q->pgen);
+    q->payload_len = 8*q->enc_msg_len;
 
     // allocate memory for encoded packet
     q->packet = (unsigned char*) malloc(q->enc_msg_len*sizeof(unsigned char));
+
+    // reset framing object
+    gmskframegen_reset(q);
 
     return q;
 }
@@ -94,8 +115,8 @@ void gmskframegen_destroy(gmskframegen _q)
     // destroy packet generator
     bpacketgen_destroy(_q->pgen);
 
-    // free encoded packet array
-    free(_q->packet);
+    // free arrays
+    free(_q->packet);   // encoded packet array
 
     // free main object memory
     free(_q);
@@ -106,6 +127,11 @@ void gmskframegen_reset(gmskframegen _q)
 {
     // reset GMSK modulator
     gmskmod_reset(_q->mod);
+
+    // reset state
+    _q->state = GMSKFRAMEGEN_STATE_RAMPUP;
+    _q->frame_complete = 0;
+    _q->symbol_counter = 0;
 }
 
 // print gmskframegen object internals
@@ -131,6 +157,7 @@ void gmskframegen_assemble(gmskframegen _q,
         
         // get packet length
         _q->enc_msg_len = bpacketgen_get_packet_len(_q->pgen);
+        _q->payload_len = 8*_q->enc_msg_len;
 
         // re-allocate memory
         _q->packet = (unsigned char*) realloc(_q->packet, _q->enc_msg_len*sizeof(unsigned char));
@@ -140,10 +167,8 @@ void gmskframegen_assemble(gmskframegen _q,
     bpacketgen_encode(_q->pgen, _payload, _q->packet);
 
     // reset counters
-    _q->num_samples   = (8*_q->enc_msg_len + 2*_q->m) * _q->k;
-    _q->num_remaining = _q->num_samples;
-    _q->byte_index    = 0;
-    _q->bit_index     = 0;
+    //_q->num_samples   = _q->rampup_len + _q->preamble_len + _q->payload_len + _q->rampdn_len;
+    _q->num_samples   = (_q->payload_len + 2*_q->m)*_q->k;
 }
 
 // get length of frame (samples)
@@ -154,47 +179,125 @@ unsigned int gmskframegen_get_frame_len(gmskframegen _q)
 
 // write sample to output buffer
 int gmskframegen_write_samples(gmskframegen _q,
-                               liquid_float_complex * _y,
-                               unsigned int   _num_available,
-                               unsigned int * _num_written)
+                               float complex * _y)
 {
-    // TODO : write output in blocks of size 'k'
+    switch (_q->state) {
+    case GMSKFRAMEGEN_STATE_RAMPUP:
+        printf("ramp up\n");
+        // write ramp-up symbols
+        gmskframegen_write_rampup(_q, _y);
+        break;
 
-    // validate input
-    if (_num_available < _q->num_samples) {
-        fprintf(stderr,"error: gmskframegen_write_samples(), too few samples available\n");
+    case GMSKFRAMEGEN_STATE_PREAMBLE:
+        printf("preamble\n");
+        // write preamble
+        gmskframegen_write_preamble(_q, _y);
+        break;
+
+    case GMSKFRAMEGEN_STATE_PAYLOAD:
+        printf("payload\n");
+        // write ramp-up symbols
+        gmskframegen_write_payload(_q, _y);
+        break;
+
+    case GMSKFRAMEGEN_STATE_RAMPDN:
+        printf("ramp down\n");
+        // write ramp-down symbols
+        gmskframegen_write_rampdn(_q, _y);
+        break;
+
+    default:
+        fprintf(stderr,"error: gmskframegen_writesymbol(), unknown/unsupported internal state\n");
         exit(1);
     }
 
-    // modulate entire frame and write output
-    unsigned int i;
-    unsigned int j;
-    unsigned int n=0;
-
-    // 
-    for (i=0; i<_q->m; i++) {
-        unsigned char bit = rand() % 2;
-        gmskmod_modulate(_q->mod, bit, &_y[n]);
-        n += _q->k;
+    if (_q->frame_complete) {
+        // reset framing object
+#if DEBUG_GMSKFRAMEGEN
+        printf(" ...resetting...\n");
+#endif
+        gmskframegen_reset(_q);
+        return 1;
     }
 
-    for (i=0; i<_q->enc_msg_len; i++) {
-        unsigned char byte = _q->packet[i];
-        for (j=0; j<8; j++) {
-            unsigned char bit = (byte >> (8-j-1)) & 0x01;
-            gmskmod_modulate(_q->mod, bit, &_y[n]);
-            n += _q->k;
-        }
-    }
-
-    // 
-    for (i=0; i<_q->m; i++) {
-        unsigned char bit = rand() % 2;
-        gmskmod_modulate(_q->mod, bit, &_y[n]);
-        n += _q->k;
-    }
-
-    return 1;
+    return 0;
 }
 
+
+// 
+// internal methods
+//
+
+void gmskframegen_write_rampup(gmskframegen _q,
+                               float complex * _y)
+{
+    unsigned char bit = rand() % 2;
+    gmskmod_modulate(_q->mod, bit, _y);
+
+    // TODO : check window...
+    unsigned int i;
+    for (i=0; i<_q->k; i++) {
+        _y[i] *= hamming(_q->symbol_counter*_q->k + i, 2*_q->rampup_len*_q->k);
+    }
+
+    _q->symbol_counter++;
+
+    if (_q->symbol_counter == _q->rampup_len) {
+        _q->symbol_counter = 0;
+        _q->state = GMSKFRAMEGEN_STATE_PREAMBLE;
+    }
+}
+
+void gmskframegen_write_preamble(gmskframegen _q,
+                                 float complex * _y)
+{
+    unsigned char bit = rand() % 2;
+    gmskmod_modulate(_q->mod, bit, _y);
+
+    _q->symbol_counter++;
+
+    if (_q->symbol_counter == _q->preamble_len) {
+        _q->symbol_counter = 0;
+        _q->state = GMSKFRAMEGEN_STATE_PAYLOAD;
+    }
+}
+
+void gmskframegen_write_payload(gmskframegen _q,
+                                float complex * _y)
+{
+    div_t d = div(_q->symbol_counter, 8);
+    unsigned int byte_index = d.quot;
+    unsigned int bit_index  = d.rem;
+    unsigned char byte = _q->packet[byte_index];
+    unsigned char bit  = (byte >> (8-bit_index-1)) & 0x01;
+
+    gmskmod_modulate(_q->mod, bit, _y);
+
+    _q->symbol_counter++;
+    
+    if (_q->symbol_counter == _q->payload_len) {
+        _q->symbol_counter = 0;
+        _q->state = GMSKFRAMEGEN_STATE_RAMPDN;
+    }
+}
+
+void gmskframegen_write_rampdn(gmskframegen _q,
+                               float complex * _y)
+{
+    unsigned char bit = rand() % 2;
+    gmskmod_modulate(_q->mod, bit, _y);
+
+    // TODO : check window...
+    unsigned int i;
+    for (i=0; i<_q->k; i++) {
+        _y[i] *= hamming(_q->rampdn_len*_q->k + _q->symbol_counter*_q->k + i, 2*_q->rampdn_len*_q->k);
+    }
+
+    _q->symbol_counter++;
+
+    if (_q->symbol_counter == _q->rampup_len) {
+        _q->symbol_counter = 0;
+        _q->frame_complete = 1;
+    }
+}
 

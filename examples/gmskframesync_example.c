@@ -18,7 +18,7 @@ void usage()
 {
     printf("gmskframesync_example [options]\n");
     printf("  u/h   : print usage\n");
-    printf("  n     : frame length [bytes], default: 120\n");
+    printf("  n     : frame length [bytes], default: 64\n");
     printf("  s     : signal-to-noise ratio [dB], default: 30\n");
 }
 
@@ -37,7 +37,7 @@ int main(int argc, char*argv[])
     unsigned int k = 2;
     unsigned int m = 4;
     float BT = 0.5f;
-    unsigned int payload_len = 120;     // length of payload (bytes)
+    unsigned int payload_len = 64;      // length of payload (bytes)
     float noise_floor = -60.0f;         // noise floor
     float SNRdB = 30.0f;                // signal-to-noise ratio [dB]
 
@@ -86,6 +86,7 @@ int main(int argc, char*argv[])
     }
 #endif
 
+#if 0
     // generate frame
     unsigned int num_samples = gmskframegen_get_frame_len(fg);
     float complex frame[num_samples];
@@ -98,6 +99,23 @@ int main(int argc, char*argv[])
     frame[0] = 0.0f;
     for (i=0; i<100; i++)
         gmskframesync_execute(fs, frame, 1);
+#else
+    float complex buffer[k];
+    int frame_complete = 0;
+    FILE * fid = fopen("gmskframesync_example.m","w");
+    fprintf(fid,"clear all;\n");
+    fprintf(fid,"close all;\n");
+    fprintf(fid,"x = [];\n");
+    while (!frame_complete) {
+        frame_complete = gmskframegen_write_samples(fg, buffer);
+
+        for (i=0; i<k; i++)
+            fprintf(fid,"x(end+1) = %12.8f + j*%12.8f;\n", crealf(buffer[i]), cimagf(buffer[i]));
+
+        //gmskframesync_execute(fg, buffer, k);
+    }
+    fclose(fid);
+#endif
 
     // destroy objects
     gmskframegen_destroy(fg);

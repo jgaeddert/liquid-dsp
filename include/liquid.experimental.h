@@ -851,9 +851,13 @@ void gmskframegen_assemble(gmskframegen _fg,
                            unsigned int    _payload_len);
 unsigned int gmskframegen_get_frame_len(gmskframegen _fg);
 int gmskframegen_write_samples(gmskframegen _fg,
-                               liquid_float_complex * _y,
-                               unsigned int   _num_available,
-                               unsigned int * _num_written);
+                               liquid_float_complex * _y);
+
+// gmskframegen internals
+void gmskframegen_write_rampup(  gmskframegen _q, float complex * _y);
+void gmskframegen_write_preamble(gmskframegen _q, float complex * _y);
+void gmskframegen_write_payload( gmskframegen _q, float complex * _y);
+void gmskframegen_write_rampdn(  gmskframegen _q, float complex * _y);
 
 
 // GMSK frame synchronizer callback
