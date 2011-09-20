@@ -77,10 +77,10 @@ gmskframegen gmskframegen_create(unsigned int _k,
     q->BT = _BT;
 
     // internal/derived values
-    q->rampup_len = 4;      // number of ramp/up symbols
-    q->preamble_len = 16;   // number of preamble symbols
-    q->payload_len = 0;     // number of payload symbols
-    q->rampdn_len = 4;      // number of ramp\dn symbols
+    q->rampup_len   =  8;   // number of ramp/up symbols
+    q->preamble_len = 24;   // number of preamble symbols
+    q->payload_len  =  0;   // number of payload symbols
+    q->rampdn_len   =  8;   // number of ramp\dn symbols
 
     // create modulator
     q->mod = gmskmod_create(q->k, q->m, q->BT);
@@ -276,7 +276,7 @@ void gmskframegen_write_rampup(gmskframegen _q,
 void gmskframegen_write_preamble(gmskframegen _q,
                                  float complex * _y)
 {
-    unsigned char bit = rand() % 2;
+    unsigned char bit = _q->symbol_counter % 2;
     gmskmod_modulate(_q->mod, bit, _y);
 
     _q->symbol_counter++;
