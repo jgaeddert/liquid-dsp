@@ -1,7 +1,7 @@
 //
 // gmskframesync_example.c [EXPERIMENTAL]
 //
-// Example demonstrating the OFDM flexible frame synchronizer.
+// Example demonstrating the GMSK flexible frame synchronizer.
 //
 
 #include <stdio.h>
@@ -23,6 +23,11 @@ void usage()
     printf("  s     : signal-to-noise ratio [dB], default: 30\n");
 }
 
+struct framedata_s {
+    unsigned char * payload;
+    unsigned int payload_len;
+};
+
 // callback function
 int callback(unsigned char *  _payload,
              unsigned int     _payload_len,
@@ -38,9 +43,10 @@ int main(int argc, char*argv[])
     unsigned int k = 2;
     unsigned int m = 4;
     float BT = 0.5f;
-    unsigned int payload_len = 40;      // length of payload (bytes)
-    float noise_floor = -60.0f;         // noise floor
-    float SNRdB = 30.0f;                // signal-to-noise ratio [dB]
+    unsigned int payload_len = 40;  // length of payload (bytes)
+    float noise_floor = -60.0f;     // noise floor
+    float SNRdB = 30.0f;            // signal-to-noise ratio [dB]
+    float dphi  = 0.05f;            // carrier offset
 
     // get options
     int dopt;
@@ -58,47 +64,61 @@ int main(int argc, char*argv[])
 
     unsigned int i;
 
-    // TODO : validate options
+    // validate options
+    if (k < 2) {
+        fprintf(stderr,"error: %s, samples per symbol must be at least 2\n", argv[0]);
+        exit(1);
+    } else if (m == 0) {
+        fprintf(stderr,"error: %s, filter semi-length must be at least 1\n", argv[0]);
+        exit(1);
+    } else if (BT < 0.0f || BT > 1.0f) {
+        fprintf(stderr,"error: %s, filter excess bandwidth must be in [0,1]\n", argv[0]);
+        exit(1);
+    }
 
     // derived values
     float nstd = powf(10.0f, noise_floor/20.0f);
     float gamma = powf(10.0f, (SNRdB + noise_floor)/20.0f);
 
-    // allocate memory for payload
+    // allocate memory for payload and initialize
     unsigned char payload[payload_len];
+    for (i=0; i<payload_len; i++)
+        payload[i] = rand() & 0xff;
+    struct framedata_s fd = {payload, payload_len};
 
     // create frame generator
     gmskframegen fg = gmskframegen_create(k, m, BT);
     gmskframegen_print(fg);
 
     // create frame synchronizer
-    gmskframesync fs = gmskframesync_create(k, m, BT, callback, NULL);
+    gmskframesync fs = gmskframesync_create(k, m, BT, callback, (void*)&fd);
     gmskframesync_print(fs);
 
-    // initialize payload and assemble frame
-    for (i=0; i<payload_len; i++) payload[i] = rand() & 0xff;
+    // assemble frame
     gmskframegen_assemble(fg, payload, payload_len);
 
     // allocate memory for full frame
     unsigned int frame_len = gmskframegen_get_frame_len(fg);
-    unsigned int num_samples = frame_len + 1080;
+    unsigned int num_samples = frame_len + 800;
     float complex x[num_samples];
     float complex y[num_samples];
 
     // generate frame
     unsigned int n=0;
-    for (i=0; i<1000; i++) x[n++] = 0.0f;
+    for (i=0; i<600; i++) x[n++] = 0.0f;
     int frame_complete = 0;
     while (!frame_complete) {
         frame_complete = gmskframegen_write_samples(fg, &x[n]);
         n += k;
     }
-    for (i=0; i<80; i++) x[n++] = 0.0f;
+    for (i=0; i<200; i++) x[n++] = 0.0f;
     assert(n==num_samples);
 
     // add channel impairments
-    for (i=0; i<num_samples; i++)
-        y[i] = x[i] + nstd*(randnf() + randnf()*_Complex_I)*M_SQRT1_2;
+    for (i=0; i<num_samples; i++) {
+        y[i]  = gamma * x[i] * cexpf(_Complex_I*dphi*i);
+        y[i] += nstd*(randnf() + randnf()*_Complex_I)*M_SQRT1_2;
+    }
 
     // push samples through synchronizer
     gmskframesync_execute(fs, y, num_samples);
@@ -118,8 +138,12 @@ int callback(unsigned char *  _payload,
              framesyncstats_s _stats,
              void *           _userdata)
 {
-    //printf("**** callback invoked : rssi = %8.3f dB, evm = %8.3f dB\n", _stats.rssi, _stats.evm);
-    printf("**** callback invoked\n");
+    printf("**** callback invoked : rssi = %8.3f dB, evm = %8.3f dB\n", _stats.rssi, _stats.evm);
+
+    // count errors
+    struct framedata_s * fd = (struct framedata_s *) _userdata;
+    unsigned int bit_errors = count_bit_errors_array(fd->payload, _payload, _payload_len);
+    printf("    bit errors : %4u / %4u\n", bit_errors, 8*_payload_len);
 
     return 0;
 }
