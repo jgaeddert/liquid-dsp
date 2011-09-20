@@ -58,9 +58,9 @@ struct gmskframesync_s {
 
     // debugging macros
 #if DEBUG_GMSKFRAMESYNC
-    agc_crcf agc_rx;                    // rssi
-    windowf  debug_agc_rssi;
-    windowcf debug_x;
+    agc_crcf agc_rx;                    // automatic gain control (for rssi)
+    windowf  debug_agc_rssi;            // rssi buffer
+    windowcf debug_x;                   // received samples buffer
 #endif
 };
 
@@ -166,6 +166,7 @@ void gmskframesync_execute(gmskframesync _q,
         float complex agc_rx_out;
         agc_crcf_execute(_q->agc_rx, _x[i], &agc_rx_out);
         windowf_push(_q->debug_agc_rssi, agc_crcf_get_rssi(_q->agc_rx));
+        windowf_push(_q->debug_x,        _x[i]);
 #endif
         // compute phase difference
         float phi = cargf( conjf(_q->x_prime)*_x[i] );
@@ -212,7 +213,7 @@ void gmskframesync_output_debug_file(gmskframesync _q,
 {
     unsigned int i;
     float * r;
-    //float complex * rc;
+    float complex * rc;
     FILE* fid = fopen(_filename,"w");
     if (!fid) {
         fprintf(stderr, "error: flexframesync_output_debug_file(), could not open '%s' for writing\n", _filename);
@@ -232,8 +233,20 @@ void gmskframesync_output_debug_file(gmskframesync _q,
     fprintf(fid,"figure;\n");
     fprintf(fid,"plot(agc_rssi)\n");
     fprintf(fid,"ylabel('RSSI [dB]');\n");
-
     fprintf(fid,"\n\n");
+
+    // write x
+    fprintf(fid,"x = zeros(1,%u);\n", DEBUG_GMSKFRAMESYNC_BUFFER_LEN);
+    windowcf_read(_q->debug_x, &rc);
+    for (i=0; i<DEBUG_GMSKFRAMESYNC_BUFFER_LEN; i++)
+        fprintf(fid,"x(%4u) = %12.4e + j*%12.4e;\n", i+1, crealf(rc[i]), cimagf(rc[i]));
+    fprintf(fid,"\n\n");
+    fprintf(fid,"figure;\n");
+    fprintf(fid,"plot(1:length(x),real(x), 1:length(x),imag(x));\n");
+    fprintf(fid,"ylabel('received signal, x');\n");
+    fprintf(fid,"\n\n");
+
+
     fclose(fid);
 
     printf("gmskframesync/debug: results written to '%s'\n", _filename);
