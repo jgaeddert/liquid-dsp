@@ -182,25 +182,21 @@ int gmskframegen_write_samples(gmskframegen _q,
 {
     switch (_q->state) {
     case GMSKFRAMEGEN_STATE_RAMPUP:
-        printf("ramp up\n");
         // write ramp-up symbols
         gmskframegen_write_rampup(_q, _y);
         break;
 
     case GMSKFRAMEGEN_STATE_PREAMBLE:
-        printf("preamble\n");
         // write preamble
         gmskframegen_write_preamble(_q, _y);
         break;
 
     case GMSKFRAMEGEN_STATE_PAYLOAD:
-        printf("payload\n");
         // write ramp-up symbols
         gmskframegen_write_payload(_q, _y);
         break;
 
     case GMSKFRAMEGEN_STATE_RAMPDN:
-        printf("ramp down\n");
         // write ramp-down symbols
         gmskframegen_write_rampdn(_q, _y);
         break;
