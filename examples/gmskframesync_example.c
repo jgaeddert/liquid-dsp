@@ -15,6 +15,8 @@
 #include "liquid.h"
 #include "liquid.experimental.h"
 
+#define OUTPUT_FILENAME "gmskframesync_example.m"
+
 void usage()
 {
     printf("gmskframesync_example [options]\n");
@@ -126,6 +128,37 @@ int main(int argc, char*argv[])
     // destroy objects
     gmskframegen_destroy(fg);
     gmskframesync_destroy(fs);
+
+
+    // 
+    // export output
+    //
+    FILE * fid = fopen(OUTPUT_FILENAME,"w");
+    if (fid == NULL) {
+        fprintf(stderr,"error: %s, could not open '%s' for writing\n", argv[0], OUTPUT_FILENAME);
+        exit(1);
+    }
+    fprintf(fid,"%% %s : auto-generated file\n", OUTPUT_FILENAME);
+    fprintf(fid,"\n");
+    fprintf(fid,"clear all\n");
+    fprintf(fid,"close all\n");
+    fprintf(fid,"\n");
+    fprintf(fid,"num_samples = %u;\n", num_samples);
+    fprintf(fid,"y = zeros(1,num_samples);\n");
+    fprintf(fid,"\n");
+
+    for (i=0; i<num_samples; i++)
+        fprintf(fid,"y(%6u) = %12.4e + j*%12.4e;\n", i+1, crealf(y[i]), cimagf(y[i]));
+
+    fprintf(fid,"\n");
+    fprintf(fid,"t = 0:(num_samples-1);\n");
+    fprintf(fid,"figure;\n");
+    fprintf(fid,"plot(t, real(y), t,imag(y));\n");
+    fprintf(fid,"xlabel('time');\n");
+    fprintf(fid,"ylabel('received signal');\n");
+    fprintf(fid,"legend('real','imag',0);\n");
+    fclose(fid);
+    printf("results written to '%s'\n", OUTPUT_FILENAME);
 
     printf("done.\n");
     return 0;
