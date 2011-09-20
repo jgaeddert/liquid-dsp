@@ -886,6 +886,8 @@ int gmskframesync_internal_callback(unsigned char * _payload,
                                     unsigned int    _payload_len,
                                     void *          _userdata);
 
+void gmskframesync_output_debug_file(gmskframesync _q, const char * _filename);
+
 //
 // packetizer (experimental improvements)
 //

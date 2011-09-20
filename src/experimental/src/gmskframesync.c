@@ -31,7 +31,10 @@
 
 #include "liquid.experimental.h"
 
-#define DEBUG_GMSKFRAMESYNC           1
+#define DEBUG_GMSKFRAMESYNC             1
+#define DEBUG_GMSKFRAMESYNC_PRINT       0
+#define DEBUG_GMSKFRAMESYNC_FILENAME    "gmskframesync_internal_debug.m"
+#define DEBUG_GMSKFRAMESYNC_BUFFER_LEN  (4096)
 
 // gmskframesync object structure
 struct gmskframesync_s {
@@ -52,6 +55,13 @@ struct gmskframesync_s {
     gmskframesync_callback callback;    // user-defined callback function
     void * userdata;                    // user-defined data structure
     framesyncstats_s framestats;        //
+
+    // debugging macros
+#if DEBUG_GMSKFRAMESYNC
+    agc_crcf agc_rx;                    // rssi
+    windowf  debug_agc_rssi;
+    windowcf debug_x;
+#endif
 };
 
 // create gmskframesync object
@@ -88,6 +98,14 @@ gmskframesync gmskframesync_create(unsigned int _k,
     // create packet synchronizer
     q->psync = bpacketsync_create(0, gmskframesync_internal_callback, (void*)q);
 
+#if DEBUG_GMSKFRAMESYNC
+    // debugging
+    q->agc_rx = agc_crcf_create();
+    agc_crcf_set_bandwidth(q->agc_rx, 0.02f);
+    q->debug_agc_rssi  =  windowf_create(DEBUG_GMSKFRAMESYNC_BUFFER_LEN);
+    q->debug_x         =  windowcf_create(DEBUG_GMSKFRAMESYNC_BUFFER_LEN);
+#endif
+
     return q;
 }
 
@@ -95,6 +113,16 @@ gmskframesync gmskframesync_create(unsigned int _k,
 // destroy frame synchronizer object, freeing all internal memory
 void gmskframesync_destroy(gmskframesync _q)
 {
+#if DEBUG_GMSKFRAMESYNC
+    // output debugging file
+    gmskframesync_output_debug_file(_q, DEBUG_GMSKFRAMESYNC_FILENAME);
+
+    // destroy debugging objects
+    agc_crcf_destroy(_q->agc_rx);
+    windowf_destroy(_q->debug_agc_rssi);
+    windowcf_destroy(_q->debug_x);
+#endif
+
     // destroy synchronizer objects
     symsync_rrrf_destroy(_q->symsync);  // symbol synchronizer, matched filter
     bpacketsync_destroy(_q->psync);     // packet synchronizer
@@ -173,3 +201,35 @@ int gmskframesync_internal_callback(unsigned char * _payload,
     return 0;
 }
 
+void gmskframesync_output_debug_file(gmskframesync _q,
+                                     const char * _filename)
+{
+    unsigned int i;
+    float * r;
+    float complex * rc;
+    FILE* fid = fopen(_filename,"w");
+    if (!fid) {
+        fprintf(stderr, "error: flexframesync_output_debug_file(), could not open '%s' for writing\n", _filename);
+        return;
+    }
+    fprintf(fid,"%% %s: auto-generated file", _filename);
+    fprintf(fid,"\n\n");
+    fprintf(fid,"clear all;\n");
+    fprintf(fid,"close all;\n\n");
+
+    // write agc_rssi
+    fprintf(fid,"agc_rssi = zeros(1,%u);\n", DEBUG_GMSKFRAMESYNC_BUFFER_LEN);
+    windowf_read(_q->debug_agc_rssi, &r);
+    for (i=0; i<DEBUG_GMSKFRAMESYNC_BUFFER_LEN; i++)
+        fprintf(fid,"agc_rssi(%4u) = %12.4e;\n", i+1, r[i]);
+    fprintf(fid,"\n\n");
+    fprintf(fid,"figure;\n");
+    fprintf(fid,"plot(agc_rssi)\n");
+    fprintf(fid,"ylabel('RSSI [dB]');\n");
+
+    fprintf(fid,"\n\n");
+    fclose(fid);
+
+    printf("gmskframesync/debug: results written to '%s'\n", _filename);
+
+}
