@@ -112,7 +112,7 @@ int main(int argc, char*argv[])
         for (i=0; i<k; i++)
             fprintf(fid,"x(end+1) = %12.8f + j*%12.8f;\n", crealf(buffer[i]), cimagf(buffer[i]));
 
-        //gmskframesync_execute(fg, buffer, k);
+        gmskframesync_execute(fs, buffer, k);
     }
     fclose(fid);
 #endif
