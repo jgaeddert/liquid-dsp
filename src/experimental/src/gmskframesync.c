@@ -61,6 +61,7 @@ struct gmskframesync_s {
 #if DEBUG_GMSKFRAMESYNC
     windowf  debug_agc_rssi;            // rssi buffer
     windowcf debug_x;                   // received samples buffer
+    windowf  debug_framesyms;           // GMSK output symbols
 #endif
 };
 
@@ -105,6 +106,7 @@ gmskframesync gmskframesync_create(unsigned int _k,
     // debugging
     q->debug_agc_rssi   = windowf_create(DEBUG_GMSKFRAMESYNC_BUFFER_LEN);
     q->debug_x          = windowcf_create(DEBUG_GMSKFRAMESYNC_BUFFER_LEN);
+    q->debug_framesyms  = windowf_create(DEBUG_GMSKFRAMESYNC_BUFFER_LEN);
 #endif
 
     return q;
@@ -121,6 +123,7 @@ void gmskframesync_destroy(gmskframesync _q)
     // destroy debugging windows
     windowf_destroy(_q->debug_agc_rssi);
     windowcf_destroy(_q->debug_x);
+    windowf_destroy(_q->debug_framesyms);
 #endif
 
     // destroy synchronizer objects
@@ -182,6 +185,9 @@ void gmskframesync_execute(gmskframesync _q,
         // demodulate
         unsigned int j;
         for (j=0; j<num_written; j++) {
+#if DEBUG_GMSKFRAMESYNC
+            windowf_push(_q->debug_framesyms, buffer[j]);
+#endif
             unsigned char s = buffer[j] > 0.0f ? 1 : 0;
 
             // push sample through packet synchronizer...
@@ -234,20 +240,22 @@ void gmskframesync_output_debug_file(gmskframesync _q,
     fprintf(fid,"\n\n");
     fprintf(fid,"clear all;\n");
     fprintf(fid,"close all;\n\n");
+    fprintf(fid,"num_samples = %u;\n", DEBUG_GMSKFRAMESYNC_BUFFER_LEN);
+    fprintf(fid,"t = 0:(num_samples-1);\n");
 
     // write agc_rssi
-    fprintf(fid,"agc_rssi = zeros(1,%u);\n", DEBUG_GMSKFRAMESYNC_BUFFER_LEN);
+    fprintf(fid,"agc_rssi = zeros(1,num_samples);\n");
     windowf_read(_q->debug_agc_rssi, &r);
     for (i=0; i<DEBUG_GMSKFRAMESYNC_BUFFER_LEN; i++)
         fprintf(fid,"agc_rssi(%4u) = %12.4e;\n", i+1, r[i]);
     fprintf(fid,"\n\n");
     fprintf(fid,"figure;\n");
-    fprintf(fid,"plot(agc_rssi)\n");
+    fprintf(fid,"plot(t, agc_rssi)\n");
     fprintf(fid,"ylabel('RSSI [dB]');\n");
     fprintf(fid,"\n\n");
 
     // write x
-    fprintf(fid,"x = zeros(1,%u);\n", DEBUG_GMSKFRAMESYNC_BUFFER_LEN);
+    fprintf(fid,"x = zeros(1,num_samples);\n");
     windowcf_read(_q->debug_x, &rc);
     for (i=0; i<DEBUG_GMSKFRAMESYNC_BUFFER_LEN; i++)
         fprintf(fid,"x(%4u) = %12.4e + j*%12.4e;\n", i+1, crealf(rc[i]), cimagf(rc[i]));
@@ -257,6 +265,18 @@ void gmskframesync_output_debug_file(gmskframesync _q,
     fprintf(fid,"ylabel('received signal, x');\n");
     fprintf(fid,"\n\n");
 
+    // write framesyms
+    fprintf(fid,"framesyms = zeros(1,num_samples);\n");
+    windowf_read(_q->debug_framesyms, &r);
+    for (i=0; i<DEBUG_GMSKFRAMESYNC_BUFFER_LEN; i++)
+        fprintf(fid,"framesyms(%4u) = %12.4e;\n", i+1, r[i]);
+    fprintf(fid,"\n\n");
+    fprintf(fid,"figure;\n");
+    fprintf(fid,"plot(t,framesyms,'x','MarkerSize',2)\n");
+    fprintf(fid,"xlabel('time (symbol index)');\n");
+    fprintf(fid,"ylabel('GMSK demodulator output');\n");
+    fprintf(fid,"grid on;\n");
+    fprintf(fid,"\n\n");
 
     fclose(fid);
 
