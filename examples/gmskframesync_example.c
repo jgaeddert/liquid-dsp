@@ -46,6 +46,9 @@ int main(int argc, char*argv[])
     unsigned int m = 4;
     float BT = 0.5f;
     unsigned int payload_len = 40;  // length of payload (bytes)
+    crc_scheme check = LIQUID_CRC_32;
+    fec_scheme fec0  = LIQUID_FEC_HAMMING128;
+    fec_scheme fec1  = LIQUID_FEC_NONE;
     float noise_floor = -60.0f;     // noise floor
     float SNRdB = 30.0f;            // signal-to-noise ratio [dB]
     float dphi  = 0.05f;            // carrier offset
@@ -79,7 +82,7 @@ int main(int argc, char*argv[])
     }
 
     // derived values
-    float nstd = powf(10.0f, noise_floor/20.0f);
+    float nstd  = powf(10.0f, noise_floor/20.0f);
     float gamma = powf(10.0f, (SNRdB + noise_floor)/20.0f);
 
     // allocate memory for payload and initialize
@@ -90,14 +93,14 @@ int main(int argc, char*argv[])
 
     // create frame generator
     gmskframegen fg = gmskframegen_create(k, m, BT);
-    gmskframegen_print(fg);
 
     // create frame synchronizer
     gmskframesync fs = gmskframesync_create(k, m, BT, callback, (void*)&fd);
     gmskframesync_print(fs);
 
     // assemble frame
-    gmskframegen_assemble(fg, payload, payload_len);
+    gmskframegen_assemble(fg, payload, payload_len, check, fec0, fec1);
+    gmskframegen_print(fg);
 
     // allocate memory for full frame
     unsigned int frame_len = gmskframegen_get_frame_len(fg);

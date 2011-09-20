@@ -846,9 +846,12 @@ gmskframegen gmskframegen_create(unsigned int _k,
 void gmskframegen_destroy(gmskframegen _fg);
 void gmskframegen_print(gmskframegen _fg);
 void gmskframegen_reset(gmskframegen _fg);
-void gmskframegen_assemble(gmskframegen _fg,
+void gmskframegen_assemble(gmskframegen    _fg,
                            unsigned char * _payload,
-                           unsigned int    _payload_len);
+                           unsigned int    _payload_len,
+                           crc_scheme      _check,
+                           fec_scheme      _fec0,
+                           fec_scheme      _fec1);
 unsigned int gmskframegen_get_frame_len(gmskframegen _fg);
 int gmskframegen_write_samples(gmskframegen _fg,
                                liquid_float_complex * _y);

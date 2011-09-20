@@ -54,6 +54,7 @@ struct gmskframegen_s {
     unsigned int preamble_len;  //
     unsigned int payload_len;   //
     unsigned int rampdn_len;    //
+    unsigned int frame_len;     // total number of symbols in the frame
     enum {
         GMSKFRAMEGEN_STATE_RAMPUP,      // ramp up
         GMSKFRAMEGEN_STATE_PREAMBLE,    // preamble
@@ -62,9 +63,6 @@ struct gmskframegen_s {
     } state;
     int frame_complete;         //
     unsigned int symbol_counter;//
-
-    // buffering
-    unsigned int num_samples;   // total number of samples in the frame
 };
 
 // create gmskframegen object
@@ -90,7 +88,7 @@ gmskframegen gmskframegen_create(unsigned int _k,
     // create packet generator
     q->dec_msg_len = 0;
     q->check = LIQUID_CRC_32;
-    q->fec0  = LIQUID_FEC_HAMMING128;
+    q->fec0  = LIQUID_FEC_NONE;
     q->fec1  = LIQUID_FEC_NONE;
     q->pgen  = bpacketgen_create(0, q->dec_msg_len, q->check, q->fec0, q->fec1);
 
@@ -100,9 +98,13 @@ gmskframegen gmskframegen_create(unsigned int _k,
     // allocate memory for encoded packet
     q->packet = (unsigned char*) malloc(q->enc_msg_len*sizeof(unsigned char));
 
+    // compute frame length (symbols)
+    q->frame_len = q->rampup_len + q->preamble_len + q->payload_len + q->rampdn_len;
+
     // reset framing object
     gmskframegen_reset(q);
 
+    // return object
     return q;
 }
 
@@ -138,26 +140,53 @@ void gmskframegen_reset(gmskframegen _q)
 void gmskframegen_print(gmskframegen _q)
 {
     printf("gmskframegen:\n");
+    printf("    ramp/up         :   %-4u symbols\n", _q->rampup_len);
+    printf("    preamble        :   %-4u symbols\n", _q->preamble_len);
+    printf("    payload         :   %-4u symbols\n", _q->payload_len);
+    printf("    ramp\\dn         :   %-4u symbols\n", _q->rampdn_len);
+    printf("    total           :   %-4u symbols\n", _q->frame_len);
     //printf("    samples/symbol  :   %u\n", _q->k);
+    printf("  packet properties\n");
+    printf("    crc             :   %s\n", crc_scheme_str[_q->check][1]);
+    printf("    fec (inner)     :   %s\n", fec_scheme_str[_q->fec0][1]);
+    printf("    fec (outer)     :   %s\n", fec_scheme_str[_q->fec1][1]);
 }
 
 // assemble frame
 //  _q              :   frame generator object
 //  _payload        :   raw payload [size: _payload_len x 1]
 //  _payload_len    :   raw payload length (bytes)
-void gmskframegen_assemble(gmskframegen _q,
+//  _check          :   data validity check
+//  _fec0           :   inner forward error correction
+//  _fec1           :   outer forward error correction
+void gmskframegen_assemble(gmskframegen    _q,
                            unsigned char * _payload,
-                           unsigned int    _payload_len)
+                           unsigned int    _payload_len,
+                           crc_scheme      _check,
+                           fec_scheme      _fec0,
+                           fec_scheme      _fec1)
 {
-    // re-create frame generator if lengths don't match
-    // TODO : also check FEC, CRC, etc.
-    if (_q->dec_msg_len != _payload_len) {
+    // re-create frame generator if properties don't match
+    if (_q->dec_msg_len != _payload_len ||
+        _q->check       != _check       ||
+        _q->fec0        != _fec0        ||
+        _q->fec1        != _fec1)
+    {
+        // set properties
         _q->dec_msg_len = _payload_len;
+        _q->check       = _check;
+        _q->fec0        = _fec0;
+        _q->fec1        = _fec1;
+
+        // re-create packet generator
         _q->pgen = bpacketgen_recreate(_q->pgen, 0, _q->dec_msg_len, _q->check, _q->fec0, _q->fec1);
         
         // get packet length
         _q->enc_msg_len = bpacketgen_get_packet_len(_q->pgen);
         _q->payload_len = 8*_q->enc_msg_len;
+
+        // compute frame length (symbols)
+        _q->frame_len = _q->rampup_len + _q->preamble_len + _q->payload_len + _q->rampdn_len;
 
         // re-allocate memory
         _q->packet = (unsigned char*) realloc(_q->packet, _q->enc_msg_len*sizeof(unsigned char));
@@ -165,15 +194,12 @@ void gmskframegen_assemble(gmskframegen _q,
 
     // generate packet
     bpacketgen_encode(_q->pgen, _payload, _q->packet);
-
-    // reset counters
-    _q->num_samples = (_q->rampup_len + _q->preamble_len + _q->payload_len + _q->rampdn_len)*_q->k;
 }
 
 // get length of frame (samples)
 unsigned int gmskframegen_get_frame_len(gmskframegen _q)
 {
-    return _q->num_samples;
+    return _q->frame_len * _q->k;
 }
 
 // write sample to output buffer
