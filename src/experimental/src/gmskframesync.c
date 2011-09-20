@@ -44,6 +44,7 @@ struct gmskframesync_s {
 
     // synchronizer parameters, objects
     float complex x_prime;              // received signal state
+    float rssi_hat;                     // rssi estimate
     unsigned int npfb;                  // number of filterbanks
     symsync_rrrf symsync;               // symbol synchronizer, matched filter
     bpacketsync psync;                  // packet synchronizer
@@ -58,7 +59,6 @@ struct gmskframesync_s {
 
     // debugging macros
 #if DEBUG_GMSKFRAMESYNC
-    agc_crcf agc_rx;                    // automatic gain control (for rssi)
     windowf  debug_agc_rssi;            // rssi buffer
     windowcf debug_x;                   // received samples buffer
 #endif
@@ -98,12 +98,13 @@ gmskframesync gmskframesync_create(unsigned int _k,
     // create packet synchronizer
     q->psync = bpacketsync_create(0, gmskframesync_internal_callback, (void*)q);
 
+    //
+    q->rssi_hat = 1.0f;
+
 #if DEBUG_GMSKFRAMESYNC
     // debugging
-    q->agc_rx = agc_crcf_create();
-    agc_crcf_set_bandwidth(q->agc_rx, 0.02f);
-    q->debug_agc_rssi   =  windowf_create(DEBUG_GMSKFRAMESYNC_BUFFER_LEN);
-    q->debug_x          =  windowcf_create(DEBUG_GMSKFRAMESYNC_BUFFER_LEN);
+    q->debug_agc_rssi   = windowf_create(DEBUG_GMSKFRAMESYNC_BUFFER_LEN);
+    q->debug_x          = windowcf_create(DEBUG_GMSKFRAMESYNC_BUFFER_LEN);
 #endif
 
     return q;
@@ -117,8 +118,7 @@ void gmskframesync_destroy(gmskframesync _q)
     // output debugging file
     gmskframesync_output_debug_file(_q, DEBUG_GMSKFRAMESYNC_FILENAME);
 
-    // destroy debugging objects
-    agc_crcf_destroy(_q->agc_rx);
+    // destroy debugging windows
     windowf_destroy(_q->debug_agc_rssi);
     windowcf_destroy(_q->debug_x);
 #endif
@@ -162,16 +162,19 @@ void gmskframesync_execute(gmskframesync _q,
     // push through synchronizer
     unsigned int i;
     for (i=0; i<_n; i++) {
+        // compute differential
+        float complex s = conjf(_q->x_prime)*_x[i];
+        _q->x_prime = _x[i];
+
+        // update rssi estimate
+        float alpha = 0.2f;
+        _q->rssi_hat = (1.0f-alpha)*_q->rssi_hat + alpha*cabsf(s);
 #if DEBUG_GMSKFRAMESYNC
-        float complex agc_rx_out;
-        agc_crcf_execute(_q->agc_rx, _x[i], &agc_rx_out);
-        windowf_push(_q->debug_agc_rssi, agc_crcf_get_rssi(_q->agc_rx));
+        windowf_push(_q->debug_agc_rssi, 10*log10f(_q->rssi_hat));
         windowcf_push(_q->debug_x, _x[i]);
 #endif
         // compute phase difference
-        float phi = cargf( conjf(_q->x_prime)*_x[i] );
-        _q->x_prime = _x[i];
-        //printf("phi = %12.8f\n", phi);
+        float phi = cargf(s);
 
         // push through matched filter/symbol timing recovery
         symsync_rrrf_execute(_q->symsync, &phi, 1, buffer, &num_written);
@@ -202,6 +205,7 @@ int gmskframesync_internal_callback(unsigned char * _payload,
 
     // invoke user-defined callback
     framesyncstats_init_default(&_q->framestats);
+    //_q->framestats.rssi = 10*log10f(_q->rssi_hat); // returns wrong value...
     _q->callback(_payload, _payload_len, _payload_valid, _q->framestats, _q->userdata);
 
     //
