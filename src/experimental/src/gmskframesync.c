@@ -62,6 +62,10 @@ struct gmskframesync_s {
     windowf  debug_agc_rssi;            // rssi buffer
     windowcf debug_x;                   // received samples buffer
     windowf  debug_framesyms;           // GMSK output symbols
+    
+    // test cross-correlator
+    firfilt_rrrf rxy;                   //
+    windowf  debug_rxy;                 //
 #endif
 };
 
@@ -107,6 +111,19 @@ gmskframesync gmskframesync_create(unsigned int _k,
     q->debug_agc_rssi   = windowf_create(DEBUG_GMSKFRAMESYNC_BUFFER_LEN);
     q->debug_x          = windowcf_create(DEBUG_GMSKFRAMESYNC_BUFFER_LEN);
     q->debug_framesyms  = windowf_create(DEBUG_GMSKFRAMESYNC_BUFFER_LEN);
+
+    // generate sequence
+    msequence ms = msequence_create_default(6);
+    float hxy[128];
+    unsigned int i;
+    for (i=0; i<64; i++) {
+        unsigned int bit = msequence_advance(ms);
+        hxy[128 - (2*i+0) - 1] = bit ? 1.0f : -1.0f;
+        hxy[128 - (2*i+1) - 1] = bit ? 1.0f : -1.0f;
+    }
+    msequence_destroy(ms);
+    q->rxy = firfilt_rrrf_create(hxy, 128);
+    q->debug_rxy = windowf_create(DEBUG_GMSKFRAMESYNC_BUFFER_LEN);
 #endif
 
     return q;
@@ -124,6 +141,8 @@ void gmskframesync_destroy(gmskframesync _q)
     windowf_destroy(_q->debug_agc_rssi);
     windowcf_destroy(_q->debug_x);
     windowf_destroy(_q->debug_framesyms);
+    windowf_destroy(_q->debug_rxy);
+    firfilt_rrrf_destroy(_q->rxy);
 #endif
 
     // destroy synchronizer objects
@@ -178,6 +197,13 @@ void gmskframesync_execute(gmskframesync _q,
 #endif
         // compute phase difference
         float phi = cargf(s);
+#if DEBUG_GMSKFRAMESYNC
+        float rxy_out;
+        firfilt_rrrf_push(_q->rxy, phi);
+        firfilt_rrrf_execute(_q->rxy, &rxy_out);
+        rxy_out /= 128;
+        windowf_push(_q->debug_rxy, rxy_out);
+#endif
 
         // push through matched filter/symbol timing recovery
         symsync_rrrf_execute(_q->symsync, &phi, 1, buffer, &num_written);
@@ -275,6 +301,19 @@ void gmskframesync_output_debug_file(gmskframesync _q,
     fprintf(fid,"plot(t,framesyms,'x','MarkerSize',2)\n");
     fprintf(fid,"xlabel('time (symbol index)');\n");
     fprintf(fid,"ylabel('GMSK demodulator output');\n");
+    fprintf(fid,"grid on;\n");
+    fprintf(fid,"\n\n");
+
+    // write rxy
+    fprintf(fid,"rxy = zeros(1,num_samples);\n");
+    windowf_read(_q->debug_rxy, &r);
+    for (i=0; i<DEBUG_GMSKFRAMESYNC_BUFFER_LEN; i++)
+        fprintf(fid,"rxy(%4u) = %12.4e;\n", i+1, r[i]);
+    fprintf(fid,"\n\n");
+    fprintf(fid,"figure;\n");
+    fprintf(fid,"plot(t,rxy);\n");
+    fprintf(fid,"xlabel('time (symbol index)');\n");
+    fprintf(fid,"ylabel('cross-correlator output');\n");
     fprintf(fid,"grid on;\n");
     fprintf(fid,"\n\n");
 
