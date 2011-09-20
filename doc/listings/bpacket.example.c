@@ -1,10 +1,11 @@
 // file: doc/listings/bpacket.example.c
 #include <liquid/liquid.h>
 
-int callback(unsigned char * _payload,
-             int _payload_valid,
-             unsigned int _payload_len,
-             void * _userdata)
+int callback(unsigned char *  _payload,
+             int              _payload_valid,
+             unsigned int     _payload_len,
+             framesyncstats_s _stats,
+             void *           _userdata)
 {
     printf("callback invoked\n");
     return 0;

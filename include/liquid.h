@@ -1915,10 +1915,11 @@ void bpacketgen_encode(bpacketgen _q,
 // bpacket synchronizer/decoder
 //
 typedef struct bpacketsync_s * bpacketsync;
-typedef int (*bpacketsync_callback)(unsigned char * _payload,
-                                    int _payload_valid,
-                                    unsigned int _payload_len,
-                                    void * _userdata);
+typedef int (*bpacketsync_callback)(unsigned char *  _payload,
+                                    int              _payload_valid,
+                                    unsigned int     _payload_len,
+                                    framesyncstats_s _stats,
+                                    void *           _userdata);
 bpacketsync bpacketsync_create(unsigned int _m,
                                bpacketsync_callback _callback,
                                void * _userdata);

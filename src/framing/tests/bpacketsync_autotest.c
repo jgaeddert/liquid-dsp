@@ -23,10 +23,11 @@
 #include "autotest/autotest.h"
 #include "liquid.h"
 
-static int bpacketsync_autotest_callback(unsigned char * _payload,
-                                         int _payload_valid,
-                                         unsigned int _payload_len,
-                                         void * _userdata)
+static int bpacketsync_autotest_callback(unsigned char *  _payload,
+                                         int              _payload_valid,
+                                         unsigned int     _payload_len,
+                                         framesyncstats_s _stats,
+                                         void *           _userdata)
 {
     if (!_payload_valid)
         return 0;

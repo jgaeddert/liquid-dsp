@@ -881,10 +881,11 @@ void gmskframesync_execute(gmskframesync _fg,
                            unsigned int _n);
 
 // internal callback
-int gmskframesync_internal_callback(unsigned char * _payload,
-                                    int             _payload_valid,
-                                    unsigned int    _payload_len,
-                                    void *          _userdata);
+int gmskframesync_internal_callback(unsigned char *  _payload,
+                                    int              _payload_valid,
+                                    unsigned int     _payload_len,
+                                    framesyncstats_s _stats,
+                                    void *           _userdata);
 
 void gmskframesync_output_debug_file(gmskframesync _q, const char * _filename);
 

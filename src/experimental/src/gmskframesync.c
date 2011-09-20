@@ -195,10 +195,11 @@ void gmskframesync_execute(gmskframesync _q,
 //
 
 // internal callback
-int gmskframesync_internal_callback(unsigned char * _payload,
-                                    int             _payload_valid,
-                                    unsigned int    _payload_len,
-                                    void *          _userdata)
+int gmskframesync_internal_callback(unsigned char *  _payload,
+                                    int              _payload_valid,
+                                    unsigned int     _payload_len,
+                                    framesyncstats_s _stats,
+                                    void *           _userdata)
 {
     // type-cast internal object
     gmskframesync _q = (gmskframesync) _userdata;
@@ -206,6 +207,9 @@ int gmskframesync_internal_callback(unsigned char * _payload,
     // invoke user-defined callback
     framesyncstats_init_default(&_q->framestats);
     //_q->framestats.rssi = 10*log10f(_q->rssi_hat); // returns wrong value...
+    _q->framestats.check = _stats.check;
+    _q->framestats.fec0  = _stats.fec0;
+    _q->framestats.fec1  = _stats.fec1;
     _q->callback(_payload, _payload_len, _payload_valid, _q->framestats, _q->userdata);
 
     //
