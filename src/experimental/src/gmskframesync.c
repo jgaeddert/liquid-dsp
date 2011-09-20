@@ -166,7 +166,7 @@ void gmskframesync_execute(gmskframesync _q,
         float complex agc_rx_out;
         agc_crcf_execute(_q->agc_rx, _x[i], &agc_rx_out);
         windowf_push(_q->debug_agc_rssi, agc_crcf_get_rssi(_q->agc_rx));
-        windowf_push(_q->debug_x,        _x[i]);
+        windowcf_push(_q->debug_x, _x[i]);
 #endif
         // compute phase difference
         float phi = cargf( conjf(_q->x_prime)*_x[i] );
