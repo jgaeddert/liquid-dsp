@@ -20,9 +20,18 @@
 void usage()
 {
     printf("gmskframesync_example [options]\n");
-    printf("  u/h   : print usage\n");
+    printf("  h     : print help\n");
     printf("  n     : frame length [bytes], default: 40\n");
+    printf("  k     : filter samples/symbol, default: 2\n");
+    printf("  m     : filter semi-length, default: 4\n");
+    printf("  b     : filter excess bandwidth factor, default: 0.5\n");
+    printf("  V     : data integrity check: crc32 default\n");
+    liquid_print_crc_schemes();
+    printf("  C     : coding scheme (inner): h74 default\n");
+    printf("  K     : coding scheme (outer): none default\n");
+    liquid_print_fec_schemes();
     printf("  s     : signal-to-noise ratio [dB], default: 30\n");
+    printf("  F     : carrier frequency offset, default: 0.05\n");
 }
 
 struct framedata_s {
@@ -42,9 +51,9 @@ int main(int argc, char*argv[])
     srand(time(NULL));
 
     // options
-    unsigned int k = 2;
-    unsigned int m = 4;
-    float BT = 0.5f;
+    unsigned int k = 2;             // filter samples/symbol
+    unsigned int m = 4;             // filter semi-length (symbols)
+    float BT = 0.5f;                // filter excess bandwidth factor
     unsigned int payload_len = 40;  // length of payload (bytes)
     crc_scheme check = LIQUID_CRC_32;
     fec_scheme fec0  = LIQUID_FEC_HAMMING128;
@@ -55,12 +64,40 @@ int main(int argc, char*argv[])
 
     // get options
     int dopt;
-    while((dopt = getopt(argc,argv,"uhn:s:")) != EOF){
+    while((dopt = getopt(argc,argv,"hn:k:m:b:V:C:K:s:F:")) != EOF){
         switch (dopt) {
         case 'u':
         case 'h': usage();                      return 0;
-        case 'n': payload_len = atol(optarg);   break;
-        case 's': SNRdB = atof(optarg);         break;
+        case 'n': payload_len   = atoi(optarg); break;
+        case 'k': k             = atoi(optarg); break;
+        case 'm': m             = atoi(optarg); break;
+        case 'b': BT            = atof(optarg); break;
+        case 'V':
+            // data integrity check
+            check = liquid_getopt_str2crc(optarg);
+            if (check == LIQUID_CRC_UNKNOWN) {
+                fprintf(stderr,"error: unknown/unsupported CRC scheme \"%s\"\n\n",optarg);
+                exit(1);
+            }
+            break;
+        case 'C':
+            // inner FEC scheme
+            fec0 = liquid_getopt_str2fec(optarg);
+            if (fec0 == LIQUID_FEC_UNKNOWN) {
+                fprintf(stderr,"error: unknown/unsupported inner FEC scheme \"%s\"\n\n",optarg);
+                exit(1);
+            }
+            break;
+        case 'K':
+            // outer FEC scheme
+            fec1 = liquid_getopt_str2fec(optarg);
+            if (fec1 == LIQUID_FEC_UNKNOWN) {
+                fprintf(stderr,"error: unknown/unsupported outer FEC scheme \"%s\"\n\n",optarg);
+                exit(1);
+            }
+            break;
+        case 's': SNRdB         = atof(optarg); break;
+        case 'F': dphi          = atof(optarg); break;
         default:
             fprintf(stderr,"error: %s, unknown option '%s'\n", argv[0], optarg);
             exit(-1);
@@ -121,7 +158,7 @@ int main(int argc, char*argv[])
 
     // add channel impairments
     for (i=0; i<num_samples; i++) {
-        y[i]  = gamma * x[i] * cexpf(_Complex_I*dphi*i);
+        y[i]  = gamma * x[i] * cexpf(_Complex_I*M_2_PI*dphi*i);
         y[i] += nstd*(randnf() + randnf()*_Complex_I)*M_SQRT1_2;
     }
 
