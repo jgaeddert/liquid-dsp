@@ -167,8 +167,7 @@ void gmskframegen_assemble(gmskframegen _q,
     bpacketgen_encode(_q->pgen, _payload, _q->packet);
 
     // reset counters
-    //_q->num_samples   = _q->rampup_len + _q->preamble_len + _q->payload_len + _q->rampdn_len;
-    _q->num_samples   = (_q->payload_len + 2*_q->m)*_q->k;
+    _q->num_samples = (_q->rampup_len + _q->preamble_len + _q->payload_len + _q->rampdn_len)*_q->k;
 }
 
 // get length of frame (samples)
