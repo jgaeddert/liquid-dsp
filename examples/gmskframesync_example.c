@@ -10,7 +10,6 @@
 #include <string.h>
 #include <getopt.h>
 #include <time.h>
-#include <assert.h>
 
 #include "liquid.h"
 #include "liquid.experimental.h"
@@ -133,28 +132,30 @@ int main(int argc, char*argv[])
 
     // create frame synchronizer
     gmskframesync fs = gmskframesync_create(k, m, BT, callback, (void*)&fd);
-    gmskframesync_print(fs);
 
-    // assemble frame
+    // assemble frame and print
     gmskframegen_assemble(fg, payload, payload_len, check, fec0, fec1);
     gmskframegen_print(fg);
 
-    // allocate memory for full frame
+    // allocate memory for full frame (with noise)
     unsigned int frame_len = gmskframegen_get_frame_len(fg);
-    unsigned int num_samples = frame_len + 800;
+    unsigned int num_samples = (frame_len * k) + 800;
     float complex x[num_samples];
     float complex y[num_samples];
 
+    // 
     // generate frame
+    //
     unsigned int n=0;
-    for (i=0; i<600; i++) x[n++] = 0.0f;
+    for (n=0; n<600; n++)
+        x[n] = 0.0f;
     int frame_complete = 0;
     while (!frame_complete) {
         frame_complete = gmskframegen_write_samples(fg, &x[n]);
         n += k;
     }
-    for (i=0; i<200; i++) x[n++] = 0.0f;
-    assert(n==num_samples);
+    for ( ; n<num_samples; n++)
+        x[n] = 0.0f;
 
     // add channel impairments
     for (i=0; i<num_samples; i++) {
@@ -214,6 +215,7 @@ int callback(unsigned char *  _payload,
     printf("***** callback invoked *****\n");
     printf("  rssi          :   %-8.3f dB\n", _stats.rssi);
     printf("  evm           :   %-8.3f dB\n", _stats.evm);
+    printf("  payload       :   %u bytes (crc %s)\n", _payload_len, _payload_valid ? "pass" : "FAIL");
     printf("  check         :   %s\n", crc_scheme_str[_stats.check][1]);
     printf("  fec (inner)   :   %s\n", fec_scheme_str[_stats.fec0][1]);
     printf("  fec (outer)   :   %s\n", fec_scheme_str[_stats.fec1][1]);

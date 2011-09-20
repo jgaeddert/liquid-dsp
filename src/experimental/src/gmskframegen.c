@@ -140,12 +140,16 @@ void gmskframegen_reset(gmskframegen _q)
 void gmskframegen_print(gmskframegen _q)
 {
     printf("gmskframegen:\n");
+    printf("  physical properties\n");
+    printf("    samples/symbol  :   %u\n", _q->k);
+    printf("    filter delay    :   %u symbols\n", _q->m);
+    printf("    bandwidth-time  :   %-8.3f\n", _q->BT);
+    printf("  framing properties\n");
     printf("    ramp/up         :   %-4u symbols\n", _q->rampup_len);
     printf("    preamble        :   %-4u symbols\n", _q->preamble_len);
     printf("    payload         :   %-4u symbols\n", _q->payload_len);
     printf("    ramp\\dn         :   %-4u symbols\n", _q->rampdn_len);
     printf("    total           :   %-4u symbols\n", _q->frame_len);
-    //printf("    samples/symbol  :   %u\n", _q->k);
     printf("  packet properties\n");
     printf("    crc             :   %s\n", crc_scheme_str[_q->check][1]);
     printf("    fec (inner)     :   %s\n", fec_scheme_str[_q->fec0][1]);
@@ -196,10 +200,10 @@ void gmskframegen_assemble(gmskframegen    _q,
     bpacketgen_encode(_q->pgen, _payload, _q->packet);
 }
 
-// get length of frame (samples)
+// get length of frame (symbols)
 unsigned int gmskframegen_get_frame_len(gmskframegen _q)
 {
-    return _q->frame_len * _q->k;
+    return _q->frame_len;
 }
 
 // write sample to output buffer

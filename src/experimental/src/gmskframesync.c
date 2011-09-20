@@ -93,7 +93,7 @@ gmskframesync gmskframesync_create(unsigned int _k,
                                               q->m,
                                               q->BT,
                                               q->npfb);
-    symsync_rrrf_set_lf_bw(q->symsync, 0.02f);
+    symsync_rrrf_set_lf_bw(q->symsync, 0.05f);
     symsync_rrrf_set_output_rate(q->symsync, 1);
 
     // create packet synchronizer
