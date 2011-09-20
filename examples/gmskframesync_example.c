@@ -10,6 +10,7 @@
 #include <string.h>
 #include <getopt.h>
 #include <time.h>
+#include <assert.h>
 
 #include "liquid.h"
 #include "liquid.experimental.h"
@@ -18,7 +19,7 @@ void usage()
 {
     printf("gmskframesync_example [options]\n");
     printf("  u/h   : print usage\n");
-    printf("  n     : frame length [bytes], default: 64\n");
+    printf("  n     : frame length [bytes], default: 40\n");
     printf("  s     : signal-to-noise ratio [dB], default: 30\n");
 }
 
@@ -37,7 +38,7 @@ int main(int argc, char*argv[])
     unsigned int k = 2;
     unsigned int m = 4;
     float BT = 0.5f;
-    unsigned int payload_len = 64;      // length of payload (bytes)
+    unsigned int payload_len = 40;      // length of payload (bytes)
     float noise_floor = -60.0f;         // noise floor
     float SNRdB = 30.0f;                // signal-to-noise ratio [dB]
 
@@ -78,44 +79,29 @@ int main(int argc, char*argv[])
     for (i=0; i<payload_len; i++) payload[i] = rand() & 0xff;
     gmskframegen_assemble(fg, payload, payload_len);
 
-#if 0
-    // initialize frame synchronizer with noise
-    for (i=0; i<1000; i++) {
-        float complex noise = nstd*( randnf() + _Complex_I*randnf())*M_SQRT1_2;
-        gmskframesync_execute(fs, &noise, 1);
-    }
-#endif
+    // allocate memory for full frame
+    unsigned int frame_len = gmskframegen_get_frame_len(fg);
+    unsigned int num_samples = frame_len + 1080;
+    float complex x[num_samples];
+    float complex y[num_samples];
 
-#if 0
     // generate frame
-    unsigned int num_samples = gmskframegen_get_frame_len(fg);
-    float complex frame[num_samples];
-    unsigned int num_written;
-    gmskframegen_write_samples(fg, frame, num_samples, &num_written);
-
-    // push through frame synchronizer
-    printf("pushing frame (%u samples) through synchronizer...\n", num_samples);
-    gmskframesync_execute(fs, frame, num_samples);
-    frame[0] = 0.0f;
-    for (i=0; i<100; i++)
-        gmskframesync_execute(fs, frame, 1);
-#else
-    float complex buffer[k];
+    unsigned int n=0;
+    for (i=0; i<1000; i++) x[n++] = 0.0f;
     int frame_complete = 0;
-    FILE * fid = fopen("gmskframesync_example.m","w");
-    fprintf(fid,"clear all;\n");
-    fprintf(fid,"close all;\n");
-    fprintf(fid,"x = [];\n");
     while (!frame_complete) {
-        frame_complete = gmskframegen_write_samples(fg, buffer);
-
-        for (i=0; i<k; i++)
-            fprintf(fid,"x(end+1) = %12.8f + j*%12.8f;\n", crealf(buffer[i]), cimagf(buffer[i]));
-
-        gmskframesync_execute(fs, buffer, k);
+        frame_complete = gmskframegen_write_samples(fg, &x[n]);
+        n += k;
     }
-    fclose(fid);
-#endif
+    for (i=0; i<80; i++) x[n++] = 0.0f;
+    assert(n==num_samples);
+
+    // add channel impairments
+    for (i=0; i<num_samples; i++)
+        y[i] = x[i] + nstd*(randnf() + randnf()*_Complex_I)*M_SQRT1_2;
+
+    // push samples through synchronizer
+    gmskframesync_execute(fs, y, num_samples);
 
     // destroy objects
     gmskframegen_destroy(fg);

@@ -34,7 +34,7 @@
 #define DEBUG_GMSKFRAMESYNC             1
 #define DEBUG_GMSKFRAMESYNC_PRINT       0
 #define DEBUG_GMSKFRAMESYNC_FILENAME    "gmskframesync_internal_debug.m"
-#define DEBUG_GMSKFRAMESYNC_BUFFER_LEN  (4096)
+#define DEBUG_GMSKFRAMESYNC_BUFFER_LEN  (2000)
 
 // gmskframesync object structure
 struct gmskframesync_s {
@@ -102,8 +102,8 @@ gmskframesync gmskframesync_create(unsigned int _k,
     // debugging
     q->agc_rx = agc_crcf_create();
     agc_crcf_set_bandwidth(q->agc_rx, 0.02f);
-    q->debug_agc_rssi  =  windowf_create(DEBUG_GMSKFRAMESYNC_BUFFER_LEN);
-    q->debug_x         =  windowcf_create(DEBUG_GMSKFRAMESYNC_BUFFER_LEN);
+    q->debug_agc_rssi   =  windowf_create(DEBUG_GMSKFRAMESYNC_BUFFER_LEN);
+    q->debug_x          =  windowcf_create(DEBUG_GMSKFRAMESYNC_BUFFER_LEN);
 #endif
 
     return q;
@@ -152,19 +152,25 @@ void gmskframesync_reset(gmskframesync _q)
 //  _x      :   input sample array [size: _n x 1]
 //  _n      :   number of input samples
 void gmskframesync_execute(gmskframesync _q,
-                           float complex *_x,
+                           float complex * _x,
                            unsigned int _n)
 {
     // synchronized sample buffer
-    float buffer[16];
+    float buffer[4];
     unsigned int num_written=0;
 
     // push through synchronizer
     unsigned int i;
     for (i=0; i<_n; i++) {
+#if DEBUG_GMSKFRAMESYNC
+        float complex agc_rx_out;
+        agc_crcf_execute(_q->agc_rx, _x[i], &agc_rx_out);
+        windowf_push(_q->debug_agc_rssi, agc_crcf_get_rssi(_q->agc_rx));
+#endif
         // compute phase difference
         float phi = cargf( conjf(_q->x_prime)*_x[i] );
         _q->x_prime = _x[i];
+        //printf("phi = %12.8f\n", phi);
 
         // push through matched filter/symbol timing recovery
         symsync_rrrf_execute(_q->symsync, &phi, 1, buffer, &num_written);
@@ -206,7 +212,7 @@ void gmskframesync_output_debug_file(gmskframesync _q,
 {
     unsigned int i;
     float * r;
-    float complex * rc;
+    //float complex * rc;
     FILE* fid = fopen(_filename,"w");
     if (!fid) {
         fprintf(stderr, "error: flexframesync_output_debug_file(), could not open '%s' for writing\n", _filename);
