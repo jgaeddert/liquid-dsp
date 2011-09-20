@@ -290,7 +290,7 @@ void gmskframegen_write_rampdn(gmskframegen _q,
 
     _q->symbol_counter++;
 
-    if (_q->symbol_counter == _q->rampup_len) {
+    if (_q->symbol_counter == _q->rampdn_len) {
         _q->symbol_counter = 0;
         _q->frame_complete = 1;
     }
