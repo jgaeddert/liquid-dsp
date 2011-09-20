@@ -204,12 +204,15 @@ int gmskframesync_internal_callback(unsigned char *  _payload,
     // type-cast internal object
     gmskframesync _q = (gmskframesync) _userdata;
 
-    // invoke user-defined callback
+    // initialize frame statistics object
     framesyncstats_init_default(&_q->framestats);
     //_q->framestats.rssi = 10*log10f(_q->rssi_hat); // returns wrong value...
-    _q->framestats.check = _stats.check;
-    _q->framestats.fec0  = _stats.fec0;
-    _q->framestats.fec1  = _stats.fec1;
+    _q->framestats.mod_bps  = 1;
+    _q->framestats.check    = _stats.check;
+    _q->framestats.fec0     = _stats.fec0;
+    _q->framestats.fec1     = _stats.fec1;
+    
+    // invoke user-defined callback
     _q->callback(_payload, _payload_len, _payload_valid, _q->framestats, _q->userdata);
 
     //

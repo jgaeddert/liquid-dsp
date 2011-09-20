@@ -171,12 +171,17 @@ int callback(unsigned char *  _payload,
              framesyncstats_s _stats,
              void *           _userdata)
 {
-    printf("**** callback invoked : rssi = %8.3f dB, evm = %8.3f dB\n", _stats.rssi, _stats.evm);
+    printf("***** callback invoked *****\n");
+    printf("  rssi          :   %-8.3f dB\n", _stats.rssi);
+    printf("  evm           :   %-8.3f dB\n", _stats.evm);
+    printf("  check         :   %s\n", crc_scheme_str[_stats.check][1]);
+    printf("  fec (inner)   :   %s\n", fec_scheme_str[_stats.fec0][1]);
+    printf("  fec (outer)   :   %s\n", fec_scheme_str[_stats.fec1][1]);
 
     // count errors
     struct framedata_s * fd = (struct framedata_s *) _userdata;
     unsigned int bit_errors = count_bit_errors_array(fd->payload, _payload, _payload_len);
-    printf("    bit errors : %4u / %4u\n", bit_errors, 8*_payload_len);
+    printf("  bit errors    :   %-4u / %-4u\n", bit_errors, 8*_payload_len);
 
     return 0;
 }
