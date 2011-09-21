@@ -429,6 +429,8 @@ framing_objects :=						\
 	src/framing/src/framesync64.o				\
 	src/framing/src/flexframegen.o				\
 	src/framing/src/flexframesync.o				\
+	src/framing/src/gmskframegen.o				\
+	src/framing/src/gmskframesync.o				\
 	src/framing/src/ofdmflexframegen.o			\
 	src/framing/src/ofdmflexframesync.o			\
 	src/framing/src/packetizer.o				\
@@ -479,6 +481,7 @@ framing_autotests :=						\
 framing_benchmarks :=						\
 	src/framing/bench/bpacketsync_benchmark.c		\
 	src/framing/bench/flexframesync_benchmark.c		\
+	src/framing/bench/gmskframesync_benchmark.c		\
 	src/framing/bench/interleaver_benchmark.c		\
 	src/framing/bench/packetizer_decode_benchmark.c		\
 
@@ -1177,6 +1180,7 @@ example_programs :=						\
 	examples/freqmodem_example				\
 	examples/gasearch_example				\
 	examples/gasearch_knapsack_example			\
+	examples/gmskframesync_example				\
 	examples/gmskmodem_example				\
 	examples/gradsearch_datafit_example			\
 	examples/gradsearch_example				\

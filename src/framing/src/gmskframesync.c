@@ -29,7 +29,7 @@
 #include <math.h>
 #include <complex.h>
 
-#include "liquid.experimental.h"
+#include "liquid.internal.h"
 
 #define DEBUG_GMSKFRAMESYNC             1
 #define DEBUG_GMSKFRAMESYNC_PRINT       0

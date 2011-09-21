@@ -1,5 +1,5 @@
 //
-// gmskframesync_example.c [EXPERIMENTAL]
+// gmskframesync_example.c
 //
 // Example demonstrating the GMSK flexible frame synchronizer.
 //
@@ -12,7 +12,6 @@
 #include <time.h>
 
 #include "liquid.h"
-#include "liquid.experimental.h"
 
 #define OUTPUT_FILENAME "gmskframesync_example.m"
 

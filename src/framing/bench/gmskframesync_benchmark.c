@@ -24,7 +24,6 @@
 #include <math.h>
 
 #include "liquid.h"
-#include "liquid.experimental.h"
 
 static int callback(unsigned char *  _payload,
                     unsigned int     _payload_len,

@@ -72,8 +72,6 @@ AC_ARG_ENABLE(experimental,
             src/experimental/src/filter_rrrf.o \
             src/experimental/src/filter_crcf.o \
             src/experimental/src/filter_cccf.o \
-            src/experimental/src/gmskframegen.o \
-            src/experimental/src/gmskframesync.o \
             src/experimental/src/packetizer.o \
             src/experimental/src/patternset.o \
             src/experimental/src/awgn_channel.o \
@@ -88,7 +86,6 @@ AC_ARG_ENABLE(experimental,
             src/experimental/tests/gport_autotest.c \
             src/experimental/tests/channel_autotest.c"
         EXPERIMENTAL_BENCHMARKS="src/experimental/bench/fbasc_benchmark.c \
-            src/experimental/bench/gmskframesync_benchmark.c \
             src/experimental/bench/gport_dma_benchmark.c \
             src/experimental/bench/gport_dma_threaded_benchmark.c \
             src/experimental/bench/gport_ima_benchmark.c \
@@ -103,7 +100,6 @@ AC_ARG_ENABLE(experimental,
             examples/ann_xor_example \
             examples/dds_cccf_example \
             examples/fbasc_example \
-            examples/gmskframesync_example \
             examples/gport_dma_example \
             examples/gport_dma_threaded_example \
             examples/gport_ima_example \

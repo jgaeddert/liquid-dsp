@@ -1953,6 +1953,52 @@ void bpacketsync_execute_sym(bpacketsync _q,
 void bpacketsync_execute_bit(bpacketsync _q,
                              unsigned char _bit);
 
+//
+// GMSK frame generator
+//
+
+typedef struct gmskframegen_s * gmskframegen;
+gmskframegen gmskframegen_create(unsigned int _k,
+                                 unsigned int _m,
+                                 float _BT);
+void gmskframegen_destroy(gmskframegen _fg);
+void gmskframegen_print(gmskframegen _fg);
+void gmskframegen_reset(gmskframegen _fg);
+void gmskframegen_assemble(gmskframegen    _fg,
+                           unsigned char * _payload,
+                           unsigned int    _payload_len,
+                           crc_scheme      _check,
+                           fec_scheme      _fec0,
+                           fec_scheme      _fec1);
+unsigned int gmskframegen_get_frame_len(gmskframegen _fg);
+int gmskframegen_write_samples(gmskframegen _fg,
+                               liquid_float_complex * _y);
+
+
+//
+// GMSK frame synchronizer
+//
+
+// GMSK frame synchronizer callback
+typedef int (*gmskframesync_callback)(unsigned char *  _payload,
+                                      unsigned int     _payload_len,
+                                      int              _payload_valid,
+                                      framesyncstats_s _stats,
+                                      void *           _userdata);
+
+typedef struct gmskframesync_s * gmskframesync;
+gmskframesync gmskframesync_create(unsigned int _k,
+                                   unsigned int _m,
+                                   float _BT,
+                                   gmskframesync_callback _callback,
+                                   void * _userdata);
+void gmskframesync_destroy(gmskframesync _q);
+void gmskframesync_print(gmskframesync _q);
+void gmskframesync_reset(gmskframesync _q);
+void gmskframesync_execute(gmskframesync _q,
+                           liquid_float_complex * _x,
+                           unsigned int _n);
+
 
 // 
 // OFDM flexframe generator
