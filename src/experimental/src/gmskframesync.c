@@ -117,23 +117,23 @@ gmskframesync gmskframesync_create(unsigned int _k,
 
     // generate sequence
     msequence ms = msequence_create_default(6);
-    q->bx = bsequence_create(128);
-    q->by = bsequence_create(128);
-    float hxy[128];
+    q->bx = bsequence_create(q->k*64);
+    q->by = bsequence_create(q->k*64);
+    float hxy[q->k*64];
     unsigned int i;
+    unsigned int j;
     for (i=0; i<64; i++) {
         unsigned int bit = msequence_advance(ms);
-        hxy[128 - (2*i+0) - 1] = bit ? 1.0f : -1.0f;
-        hxy[128 - (2*i+1) - 1] = bit ? 1.0f : -1.0f;
+        for (j=0; j<q->k; j++) {
+            hxy[q->k*64 - (q->k*i+j) - 1] = bit ? 1.0f : -1.0f;
 
-        bsequence_push(q->bx, bit);
-        bsequence_push(q->bx, bit);
+            bsequence_push(q->bx, bit);
 
-        bsequence_push(q->by, 0);
-        bsequence_push(q->by, 0);
+            bsequence_push(q->by, 0);
+        }
     }
     msequence_destroy(ms);
-    q->rxy = firfilt_rrrf_create(hxy, 128);
+    q->rxy = firfilt_rrrf_create(hxy, q->k*64);
     q->debug_rxy = windowf_create(DEBUG_GMSKFRAMESYNC_BUFFER_LEN);
     q->debug_bxy = windowf_create(DEBUG_GMSKFRAMESYNC_BUFFER_LEN);
 #endif
@@ -216,7 +216,7 @@ void gmskframesync_execute(gmskframesync _q,
         float rxy_out;
         firfilt_rrrf_push(_q->rxy, phi);
         firfilt_rrrf_execute(_q->rxy, &rxy_out);
-        rxy_out /= 128;
+        rxy_out /= _q->k*64;
         windowf_push(_q->debug_rxy, rxy_out);
 
         // push through binary sequence correlator
