@@ -330,6 +330,13 @@ void gmskframegen_encode_header( gmskframegen _q)
 
     // scramble header
     scramble_data(_q->header_enc, GMSKFRAME_H_ENC);
+#if 0
+    printf("    header_enc      :");
+    unsigned int i;
+    for (i=0; i<GMSKFRAME_H_ENC; i++)
+        printf(" %.2X", _q->header_enc[i]);
+    printf("\n");
+#endif
 }
 
 void gmskframegen_write_rampup(gmskframegen _q,
@@ -363,7 +370,7 @@ void gmskframegen_write_preamble(gmskframegen _q,
     if (_q->symbol_counter == _q->preamble_len) {
         msequence_reset(_q->ms_header);
         _q->symbol_counter = 0;
-        _q->state = GMSKFRAMEGEN_STATE_PAYLOAD;
+        _q->state = GMSKFRAMEGEN_STATE_HEADER;
     }
 }
 

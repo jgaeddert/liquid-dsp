@@ -122,14 +122,12 @@ gmskframesync gmskframesync_create(unsigned int _k,
 
     // create/allocate preamble objects/arrays
     msequence ms = msequence_create_default(6);
-    q->bx = bsequence_create(q->k*64);
-    q->by = bsequence_create(q->k*64);
+    q->bx = bsequence_create(64);
+    q->by = bsequence_create(64);
     unsigned int i;
-    unsigned int j;
     for (i=0; i<64; i++) {
         unsigned int bit = msequence_advance(ms);
-        for (j=0; j<q->k; j++)
-            bsequence_push(q->bx, bit);
+        bsequence_push(q->bx, bit);
     }
     bsequence_clear(q->by);
     msequence_destroy(ms);
@@ -236,6 +234,10 @@ void gmskframesync_execute(gmskframesync _q,
                            float complex * _x,
                            unsigned int _n)
 {
+    // synchronized sample buffer
+    float buffer[4];
+    unsigned int num_written=0;
+
     // push through synchronizer
     unsigned int i;
     for (i=0; i<_n; i++) {
@@ -253,21 +255,31 @@ void gmskframesync_execute(gmskframesync _q,
         // compute phase difference
         float phi = cargf(s);
 
-        switch (_q->state) {
-        case GMSKFRAMESYNC_STATE_SEEKPN:
-            // look for p/n sequence
-            gmskframesync_execute_seekpn(_q, phi);
-            break;
+        // push through matched filter/symbol timing recovery
+        symsync_rrrf_execute(_q->symsync, &phi, 1, buffer, &num_written);
 
-        case GMSKFRAMESYNC_STATE_RXHEADER:
-            // receive header
-            gmskframesync_execute_rxheader(_q, phi);
-            break;
+        // demodulate
+        unsigned int j;
+        for (j=0; j<num_written; j++) {
+#if DEBUG_GMSKFRAMESYNC
+            windowf_push(_q->debug_framesyms, buffer[j]);
+#endif
+            switch (_q->state) {
+            case GMSKFRAMESYNC_STATE_SEEKPN:
+                // look for p/n sequence
+                gmskframesync_execute_seekpn(_q, phi);
+                break;
 
-        case GMSKFRAMESYNC_STATE_RXPAYLOAD:
-            // receive payload
-            gmskframesync_execute_rxpayload(_q, phi);
-            break;
+            case GMSKFRAMESYNC_STATE_RXHEADER:
+                // receive header
+                gmskframesync_execute_rxheader(_q, phi);
+                break;
+
+            case GMSKFRAMESYNC_STATE_RXPAYLOAD:
+                // receive payload
+                gmskframesync_execute_rxpayload(_q, phi);
+                break;
+            }
         }
     }
 }
@@ -281,74 +293,201 @@ void gmskframesync_execute_seekpn(gmskframesync _q,
 {
     // push through binary sequence correlator
     bsequence_push(_q->by, _x > 0.0f ? 1 : 0);
-    float bxy_out = (float)(bsequence_correlate(_q->bx, _q->by) - 64) / 64.0f;
+    float bxy_out = (float)(bsequence_correlate(_q->bx, _q->by) - 32) / 32.0f;
 #if DEBUG_GMSKFRAMESYNC
     windowf_push(_q->debug_bxy, bxy_out);
 #endif
 
     // check threshold...
     if (bxy_out > 0.55f) {
+#if DEBUG_GMSKFRAMESYNC_PRINT
         printf("***** gmskframesync: frame detected! *****\n");
+#endif
+        _q->state = GMSKFRAMESYNC_STATE_RXHEADER;
+        _q->num_symbols_received = 0;
+        memset(_q->header_enc, 0x00, GMSKFRAME_H_ENC);
     }
 }
 
 void gmskframesync_execute_rxheader(gmskframesync _q,
                                     float _x)
 {
-#if 0
-    // synchronized sample buffer
-    float buffer[4];
-    unsigned int num_written=0;
-
-    // push through matched filter/symbol timing recovery
-    symsync_rrrf_execute(_q->symsync, &phi, 1, buffer, &num_written);
-
     // demodulate
-    unsigned int j;
-    for (j=0; j<num_written; j++) {
-#if DEBUG_GMSKFRAMESYNC
-        windowf_push(_q->debug_framesyms, buffer[j]);
-#endif
-        unsigned char s = buffer[j] > 0.0f ? 1 : 0;
+    unsigned char s = _x > 0.0f ? 1 : 0;
 
-        // push sample through packet synchronizer...
-        bpacketsync_execute_bit(_q->psync, s);
-    }
+    // TODO : update evm
+
+    // save bit in buffer
+    div_t d = div(_q->num_symbols_received, 8);
+    _q->header_enc[d.quot] |= s << (8-d.rem-1);
+
+    // increment symbol counter
+    _q->num_symbols_received++;
+    if (_q->num_symbols_received == 8*GMSKFRAME_H_ENC) {
+#if DEBUG_GMSKFRAMESYNC_PRINT
+        printf("***** gmskframesync: header received\n");
+        printf("    header_enc      :");
+        unsigned int i;
+        for (i=0; i<GMSKFRAME_H_ENC; i++)
+            printf(" %.2X", _q->header_enc[i]);
+        printf("\n");
 #endif
+
+        // decode header
+        gmskframesync_decode_header(_q);
+
+        // invoke callback if header is invalid
+        if (_q->header_valid) {
+            _q->state = GMSKFRAMESYNC_STATE_RXPAYLOAD;
+            _q->num_symbols_received = 0;
+        } else {
+            //printf("**** header invalid!\n");
+            // set framestats internals
+            _q->framestats.rssi             = 10*log10f(_q->rssi_hat);
+            _q->framestats.framesyms        = NULL;
+            _q->framestats.num_framesyms    = 0;
+            _q->framestats.mod_scheme       = LIQUID_MODEM_UNKNOWN;
+            _q->framestats.mod_bps          = 1;
+            _q->framestats.check            = LIQUID_CRC_UNKNOWN;
+            _q->framestats.fec0             = LIQUID_FEC_UNKNOWN;
+            _q->framestats.fec1             = LIQUID_FEC_UNKNOWN;
+
+            // invoke callback method
+            _q->callback(NULL, 0, 0, _q->framestats, _q->userdata);
+
+            gmskframesync_reset(_q);
+        }
+    }
 }
 
 void gmskframesync_execute_rxpayload(gmskframesync _q,
                                      float _x)
 {
-}
+    // demodulate
+    unsigned char s = _x > 0.0f ? 1 : 0;
 
+    // TODO : update evm
 
-#if 0
-// internal callback
-int gmskframesync_internal_callback(unsigned char *  _payload,
-                                    int              _payload_valid,
-                                    unsigned int     _payload_len,
-                                    framesyncstats_s _stats,
-                                    void *           _userdata)
-{
-    // type-cast internal object
-    gmskframesync _q = (gmskframesync) _userdata;
+    // save bit in buffer
+    div_t d = div(_q->num_symbols_received, 8);
+    _q->payload_enc[d.quot] |= s << (8-d.rem-1);
 
-    // initialize frame statistics object
-    framesyncstats_init_default(&_q->framestats);
-    //_q->framestats.rssi = 10*log10f(_q->rssi_hat); // returns wrong value...
-    _q->framestats.mod_bps  = 1;
-    _q->framestats.check    = _stats.check;
-    _q->framestats.fec0     = _stats.fec0;
-    _q->framestats.fec1     = _stats.fec1;
-    
-    // invoke user-defined callback
-    _q->callback(_payload, _payload_len, _payload_valid, _q->framestats, _q->userdata);
-
-    //
-    return 0;
-}
+    // increment symbol counter
+    _q->num_symbols_received++;
+    if (_q->num_symbols_received == 8*_q->enc_msg_len) {
+#if DEBUG_GMSKFRAMESYNC_PRINT
+        printf("***** gmskframesync: payload received\n");
 #endif
+
+        // decode payload
+        _q->payload_valid = packetizer_decode(_q->p_payload, _q->payload_enc, _q->payload_dec);
+
+        // invoke callback
+        // set framestats internals
+        _q->framestats.rssi             = 10*log10f(_q->rssi_hat);
+        _q->framestats.framesyms        = NULL;
+        _q->framestats.num_framesyms    = 0;
+        _q->framestats.mod_scheme       = LIQUID_MODEM_UNKNOWN;
+        _q->framestats.mod_bps          = 1;
+        _q->framestats.check            = _q->check;
+        _q->framestats.fec0             = _q->fec0;
+        _q->framestats.fec1             = _q->fec1;
+
+        // invoke callback method
+        _q->callback(_q->payload_dec, _q->dec_msg_len, _q->payload_valid, _q->framestats, _q->userdata);
+
+        // reset frame synchronizer
+        gmskframesync_reset(_q);
+    }
+}
+
+// decode header and re-configure payload decoder
+void gmskframesync_decode_header(gmskframesync _q)
+{
+    // unscramble data
+    unscramble_data(_q->header_enc, GMSKFRAME_H_ENC);
+
+    // run packet decoder
+    _q->header_valid = packetizer_decode(_q->p_header, _q->header_enc, _q->header_dec);
+
+#if DEBUG_GMSKFRAMESYNC_PRINT
+    printf("****** header extracted [%s]\n", _q->header_valid ? "valid" : "INVALID!");
+#endif
+    if (!_q->header_valid)
+        return;
+
+    unsigned int n = GMSKFRAME_H_USER;
+
+    // first byte is for expansion/version validation
+    if (_q->header_dec[n+0] != GMSKFRAME_VERSION) {
+        fprintf(stderr,"warning: gmskframesync_decode_header(), invalid framing version\n");
+        _q->header_valid = 0;
+    }
+
+    // strip off payload length
+    unsigned int dec_msg_len = (_q->header_dec[n+1] << 8) | (_q->header_dec[n+2]);
+
+    // strip off CRC, forward error-correction schemes
+    //  CRC     : most-significant 3 bits of [n+3]
+    //  fec0    : least-significant 5 bits of [n+3]
+    //  fec1    : least-significant 5 bits of [n+4]
+    unsigned int check = (_q->header_dec[n+3] >> 5 ) & 0x07;
+    unsigned int fec0  = (_q->header_dec[n+3]      ) & 0x1f;
+    unsigned int fec1  = (_q->header_dec[n+4]      ) & 0x1f;
+
+    // validate properties
+    if (check >= LIQUID_CRC_NUM_SCHEMES) {
+        fprintf(stderr,"warning: gmskframesync_decode_header(), decoded CRC exceeds available\n");
+        check = LIQUID_CRC_UNKNOWN;
+        _q->header_valid = 0;
+    }
+    if (fec0 >= LIQUID_FEC_NUM_SCHEMES) {
+        fprintf(stderr,"warning: gmskframesync_decode_header(), decoded FEC (inner) exceeds available\n");
+        fec0 = LIQUID_FEC_UNKNOWN;
+        _q->header_valid = 0;
+    }
+    if (fec1 >= LIQUID_FEC_NUM_SCHEMES) {
+        fprintf(stderr,"warning: gmskframesync_decode_header(), decoded FEC (outer) exceeds available\n");
+        fec1 = LIQUID_FEC_UNKNOWN;
+        _q->header_valid = 0;
+    }
+
+    // print results
+#if DEBUG_GMSKFRAMESYNC_PRINT
+    printf("    properties:\n");
+    printf("      * fec (inner)     :   %s\n", fec_scheme_str[fec0][1]);
+    printf("      * fec (outer)     :   %s\n", fec_scheme_str[fec1][1]);
+    printf("      * CRC scheme      :   %s\n", crc_scheme_str[check][1]);
+    printf("      * payload length  :   %u bytes\n", dec_msg_len);
+#endif
+
+    // configure payload receiver
+    if (_q->header_valid) {
+        // set new packetizer properties
+        _q->dec_msg_len = dec_msg_len;
+        _q->check       = check;
+        _q->fec0        = fec0;
+        _q->fec1        = fec1;
+        
+        // recreate packetizer object
+        _q->p_payload = packetizer_recreate(_q->p_payload,
+                                            _q->dec_msg_len,
+                                            _q->check,
+                                            _q->fec0,
+                                            _q->fec1);
+
+        // re-compute payload encoded message length
+        _q->enc_msg_len = packetizer_get_enc_msg_len(_q->p_payload);
+#if DEBUG_GMSKFRAMESYNC_PRINT
+        printf("      * payload encoded :   %u bytes\n", _q->enc_msg_len);
+#endif
+
+        // re-allocate buffers accordingly
+        _q->payload_enc = (unsigned char*) realloc(_q->payload_enc, _q->enc_msg_len*sizeof(unsigned char));
+        _q->payload_dec = (unsigned char*) realloc(_q->payload_dec, _q->dec_msg_len*sizeof(unsigned char));
+    }
+    //
+}
 
 void gmskframesync_output_debug_file(gmskframesync _q,
                                      const char * _filename)
