@@ -336,6 +336,9 @@ void gmskframesync_execute_rxheader(gmskframesync _q,
         // decode header
         gmskframesync_decode_header(_q);
 
+        // clear encoded payload array
+        memset(_q->payload_enc, 0x00, _q->enc_msg_len);
+
         // invoke callback if header is invalid
         if (_q->header_valid) {
             _q->state = GMSKFRAMESYNC_STATE_RXPAYLOAD;
