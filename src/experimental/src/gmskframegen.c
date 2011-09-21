@@ -40,24 +40,37 @@ struct gmskframegen_s {
     unsigned int m;             // filter semi-length (symbols)
     float BT;                   // filter bandwidth-time product
 
-    // framing generator
-    bpacketgen pgen;            // packet generator
+    // framing lengths (symbols)
+    unsigned int rampup_len;    //
+    unsigned int preamble_len;  //
+    unsigned int header_len;    // length of header (encoded)
+    unsigned int payload_len;   //
+    unsigned int rampdn_len;    //
+    unsigned int frame_len;     // total number of symbols in the frame
+
+    // preamble
+    //unsigned int genpoly_header;// generator polynomial
+    msequence ms_header;        // header sequence
+
+    // header
+    unsigned char * header_dec; // uncoded header [GMSKFRAME_H_DEC]
+    unsigned char * header_enc; // encoded header [GMSKFRAME_H_ENC]
+    packetizer p_header;        // header packetizer
+
+    // payload
+    packetizer p_payload;       // payload packetizer
     crc_scheme check;           // CRC
     fec_scheme fec0;            // inner forward error correction
     fec_scheme fec1;            // outer forward error correction
     unsigned int dec_msg_len;   // 
     unsigned int enc_msg_len;   // 
-    unsigned char * packet;     // encoded packet
+    unsigned char * payload_enc;// encoded payload
 
-    //
-    unsigned int rampup_len;    //
-    unsigned int preamble_len;  //
-    unsigned int payload_len;   //
-    unsigned int rampdn_len;    //
-    unsigned int frame_len;     // total number of symbols in the frame
+    // framing state
     enum {
         GMSKFRAMEGEN_STATE_RAMPUP,      // ramp up
         GMSKFRAMEGEN_STATE_PREAMBLE,    // preamble
+        GMSKFRAMEGEN_STATE_HEADER,      // header
         GMSKFRAMEGEN_STATE_PAYLOAD,     // payload (frame)
         GMSKFRAMEGEN_STATE_RAMPDN,      // ramp down
     } state;
@@ -78,28 +91,48 @@ gmskframegen gmskframegen_create(unsigned int _k,
 
     // internal/derived values
     q->rampup_len   =  8;   // number of ramp/up symbols
-    q->preamble_len = 24;   // number of preamble symbols
+    q->preamble_len = 64;   // number of preamble symbols
     q->payload_len  =  0;   // number of payload symbols
     q->rampdn_len   =  8;   // number of ramp\dn symbols
 
     // create modulator
     q->mod = gmskmod_create(q->k, q->m, q->BT);
 
-    // create packet generator
+    // preamble objects/arrays
+    //q->genpoly_header = 0x00;
+    q->ms_header = msequence_create_default(6);
+
+    // header objects/arrays
+    q->header_dec = (unsigned char*)malloc(GMSKFRAME_H_DEC*sizeof(unsigned char));
+    q->header_enc = (unsigned char*)malloc(GMSKFRAME_H_ENC*sizeof(unsigned char));
+    q->header_len = GMSKFRAME_H_ENC * 8;
+    q->p_header   = packetizer_create(GMSKFRAME_H_DEC,
+                                      GMSKFRAME_H_CRC,
+                                      GMSKFRAME_H_FEC,
+                                      LIQUID_FEC_NONE);
+
+    // payload objects/arrays
     q->dec_msg_len = 0;
     q->check = LIQUID_CRC_32;
     q->fec0  = LIQUID_FEC_NONE;
     q->fec1  = LIQUID_FEC_NONE;
-    q->pgen  = bpacketgen_create(0, q->dec_msg_len, q->check, q->fec0, q->fec1);
 
-    q->enc_msg_len = bpacketgen_get_packet_len(q->pgen);
+    q->p_payload = packetizer_create(q->dec_msg_len,
+                                     q->check,
+                                     q->fec0,
+                                     q->fec1);
+    q->enc_msg_len = packetizer_get_enc_msg_len(q->p_payload);
     q->payload_len = 8*q->enc_msg_len;
 
     // allocate memory for encoded packet
-    q->packet = (unsigned char*) malloc(q->enc_msg_len*sizeof(unsigned char));
+    q->payload_enc = (unsigned char*) malloc(q->enc_msg_len*sizeof(unsigned char));
 
     // compute frame length (symbols)
-    q->frame_len = q->rampup_len + q->preamble_len + q->payload_len + q->rampdn_len;
+    q->frame_len = q->rampup_len +
+                   q->preamble_len +
+                   q->header_len +
+                   q->payload_len +
+                   q->rampdn_len;
 
     // reset framing object
     gmskframegen_reset(q);
@@ -114,11 +147,17 @@ void gmskframegen_destroy(gmskframegen _q)
     // destroy gmsk modulator
     gmskmod_destroy(_q->mod);
 
-    // destroy packet generator
-    bpacketgen_destroy(_q->pgen);
+    // destroy/free preamble objects/arrays
+    msequence_destroy(_q->ms_header);
 
-    // free arrays
-    free(_q->packet);   // encoded packet array
+    // destroy/free header objects/arrays
+    free(_q->header_dec);
+    free(_q->header_enc);
+    packetizer_destroy(_q->p_header);
+
+    // destroy/free payload objects/arrays
+    free(_q->payload_enc);
+    packetizer_destroy(_q->p_payload);
 
     // free main object memory
     free(_q);
@@ -130,8 +169,9 @@ void gmskframegen_reset(gmskframegen _q)
     // reset GMSK modulator
     gmskmod_reset(_q->mod);
 
-    // reset state
+    // reset states
     _q->state = GMSKFRAMEGEN_STATE_RAMPUP;
+    msequence_reset(_q->ms_header);
     _q->frame_complete = 0;
     _q->symbol_counter = 0;
 }
@@ -182,22 +222,29 @@ void gmskframegen_assemble(gmskframegen    _q,
         _q->fec0        = _fec0;
         _q->fec1        = _fec1;
 
-        // re-create packet generator
-        _q->pgen = bpacketgen_recreate(_q->pgen, 0, _q->dec_msg_len, _q->check, _q->fec0, _q->fec1);
+        // re-create payload packetizer
+        _q->p_payload = packetizer_recreate(_q->p_payload, _q->dec_msg_len, _q->check, _q->fec0, _q->fec1);
         
         // get packet length
-        _q->enc_msg_len = bpacketgen_get_packet_len(_q->pgen);
+        _q->enc_msg_len = packetizer_get_enc_msg_len(_q->p_payload);
         _q->payload_len = 8*_q->enc_msg_len;
 
         // compute frame length (symbols)
-        _q->frame_len = _q->rampup_len + _q->preamble_len + _q->payload_len + _q->rampdn_len;
+        _q->frame_len = _q->rampup_len +
+                        _q->preamble_len +
+                        _q->header_len +
+                        _q->payload_len +
+                        _q->rampdn_len;
 
         // re-allocate memory
-        _q->packet = (unsigned char*) realloc(_q->packet, _q->enc_msg_len*sizeof(unsigned char));
+        _q->payload_enc = (unsigned char*) realloc(_q->payload_enc, _q->enc_msg_len*sizeof(unsigned char));
     }
 
-    // generate packet
-    bpacketgen_encode(_q->pgen, _payload, _q->packet);
+    // encode header
+    gmskframegen_encode_header(_q);
+
+    // encode payload
+    packetizer_encode(_q->p_payload, _payload, _q->payload_enc);
 }
 
 // get length of frame (symbols)
@@ -219,6 +266,11 @@ int gmskframegen_write_samples(gmskframegen _q,
     case GMSKFRAMEGEN_STATE_PREAMBLE:
         // write preamble
         gmskframegen_write_preamble(_q, _y);
+        break;
+
+    case GMSKFRAMEGEN_STATE_HEADER:
+        // write header
+        gmskframegen_write_header(_q, _y);
         break;
 
     case GMSKFRAMEGEN_STATE_PAYLOAD:
@@ -253,6 +305,33 @@ int gmskframegen_write_samples(gmskframegen _q,
 // internal methods
 //
 
+void gmskframegen_encode_header( gmskframegen _q)
+{
+    // first 'n' bytes user data
+    unsigned int n = GMSKFRAME_H_USER;
+
+    // first byte is for expansion/version validation
+    _q->header_dec[n+0] = GMSKFRAME_VERSION;
+
+    // add payload length
+    _q->header_dec[n+1] = (_q->dec_msg_len >> 8) & 0xff;
+    _q->header_dec[n+2] = (_q->dec_msg_len     ) & 0xff;
+
+    // add CRC, forward error-correction schemes
+    //  CRC     : most-significant 3 bits of [n+4]
+    //  fec0    : least-significant 5 bits of [n+4]
+    //  fec1    : least-significant 5 bits of [n+5]
+    _q->header_dec[n+3]  = (_q->check & 0x07) << 5;
+    _q->header_dec[n+3] |= (_q->fec0) & 0x1f;
+    _q->header_dec[n+4]  = (_q->fec1) & 0x1f;
+
+    // run packet encoder
+    packetizer_encode(_q->p_header, _q->header_dec, _q->header_enc);
+
+    // scramble header
+    scramble_data(_q->header_enc, GMSKFRAME_H_ENC);
+}
+
 void gmskframegen_write_rampup(gmskframegen _q,
                                float complex * _y)
 {
@@ -276,12 +355,32 @@ void gmskframegen_write_rampup(gmskframegen _q,
 void gmskframegen_write_preamble(gmskframegen _q,
                                  float complex * _y)
 {
-    unsigned char bit = _q->symbol_counter % 2;
+    unsigned char bit = msequence_advance(_q->ms_header);
     gmskmod_modulate(_q->mod, bit, _y);
 
     _q->symbol_counter++;
 
     if (_q->symbol_counter == _q->preamble_len) {
+        msequence_reset(_q->ms_header);
+        _q->symbol_counter = 0;
+        _q->state = GMSKFRAMEGEN_STATE_PAYLOAD;
+    }
+}
+
+void gmskframegen_write_header(gmskframegen _q,
+                               float complex * _y)
+{
+    div_t d = div(_q->symbol_counter, 8);
+    unsigned int byte_index = d.quot;
+    unsigned int bit_index  = d.rem;
+    unsigned char byte = _q->header_enc[byte_index];
+    unsigned char bit  = (byte >> (8-bit_index-1)) & 0x01;
+
+    gmskmod_modulate(_q->mod, bit, _y);
+
+    _q->symbol_counter++;
+    
+    if (_q->symbol_counter == _q->header_len) {
         _q->symbol_counter = 0;
         _q->state = GMSKFRAMEGEN_STATE_PAYLOAD;
     }
@@ -293,7 +392,7 @@ void gmskframegen_write_payload(gmskframegen _q,
     div_t d = div(_q->symbol_counter, 8);
     unsigned int byte_index = d.quot;
     unsigned int bit_index  = d.rem;
-    unsigned char byte = _q->packet[byte_index];
+    unsigned char byte = _q->payload_enc[byte_index];
     unsigned char bit  = (byte >> (8-bit_index-1)) & 0x01;
 
     gmskmod_modulate(_q->mod, bit, _y);

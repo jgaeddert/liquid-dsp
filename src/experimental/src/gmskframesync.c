@@ -47,28 +47,47 @@ struct gmskframesync_s {
     float rssi_hat;                     // rssi estimate
     unsigned int npfb;                  // number of filterbanks
     symsync_rrrf symsync;               // symbol synchronizer, matched filter
-    bpacketsync psync;                  // packet synchronizer
 
-    bool header_valid;                  // header valid?
-    bool payload_valid;                 // payload valid?
+    // preamble
+    bsequence bx;                       // binary sequence correlator (ms-equence)
+    bsequence by;                       // binary sequence correlator (received sequence)
+    
+    // header
+    unsigned char * header_enc;         // encoded header [GMSKFRAME_H_ENC]
+    unsigned char * header_dec;         // uncoded header [GMSKFRAME_H_DEC]
+    packetizer p_header;                // header packetizer
+    bool header_valid;                  // header valid flag
+
+    // payload
+    packetizer p_payload;               // payload packetizer
+    crc_scheme check;                   // data validity check (e.g. CRC)
+    fec_scheme fec0;                    // inner forward error correction
+    fec_scheme fec1;                    // outer forward error correction
+    unsigned int dec_msg_len;           // 
+    unsigned int enc_msg_len;           // 
+    unsigned char * payload_enc;        // encoded payload
+    unsigned char * payload_dec;        // decoded payload
+    bool payload_valid;                 // payload valid flag
 
     // callback
     gmskframesync_callback callback;    // user-defined callback function
     void * userdata;                    // user-defined data structure
     framesyncstats_s framestats;        //
 
+    // framing state
+    enum {
+        GMSKFRAMESYNC_STATE_SEEKPN,     // preamble
+        GMSKFRAMESYNC_STATE_RXHEADER,   // header
+        GMSKFRAMESYNC_STATE_RXPAYLOAD,  // payload
+    } state;
+    unsigned int num_symbols_received;
+
     // debugging macros
 #if DEBUG_GMSKFRAMESYNC
     windowf  debug_agc_rssi;            // rssi buffer
     windowcf debug_x;                   // received samples buffer
     windowf  debug_framesyms;           // GMSK output symbols
-    
-    // test cross-correlator
-    firfilt_rrrf rxy;                   //
-    windowf  debug_rxy;                 //
-    bsequence bx;                       // binary sequence correlator
-    bsequence by;                       // binary sequence correlator
-    windowf  debug_bxy;                 // correlator output
+    windowf  debug_bxy;                 // cross-correlator output
 #endif
 };
 
@@ -91,10 +110,8 @@ gmskframesync gmskframesync_create(unsigned int _k,
     q->callback = _callback;
     q->userdata = _userdata;
 
-    // internal parameters
+    // create synchronizer objects
     q->npfb = 32;
-
-    // create symbol synchronizer
     q->symsync = symsync_rrrf_create_rnyquist(LIQUID_RNYQUIST_GMSKRX,
                                               q->k,
                                               q->m,
@@ -103,10 +120,44 @@ gmskframesync gmskframesync_create(unsigned int _k,
     symsync_rrrf_set_lf_bw(q->symsync, 0.05f);
     symsync_rrrf_set_output_rate(q->symsync, 1);
 
-    // create packet synchronizer
-    q->psync = bpacketsync_create(0, gmskframesync_internal_callback, (void*)q);
+    // create/allocate preamble objects/arrays
+    msequence ms = msequence_create_default(6);
+    q->bx = bsequence_create(q->k*64);
+    q->by = bsequence_create(q->k*64);
+    unsigned int i;
+    unsigned int j;
+    for (i=0; i<64; i++) {
+        unsigned int bit = msequence_advance(ms);
+        for (j=0; j<q->k; j++)
+            bsequence_push(q->bx, bit);
+    }
+    bsequence_clear(q->by);
+    msequence_destroy(ms);
 
-    //
+    // create/allocate header objects/arrays
+    q->header_enc = (unsigned char*)malloc(GMSKFRAME_H_ENC*sizeof(unsigned char));
+    q->header_dec = (unsigned char*)malloc(GMSKFRAME_H_DEC*sizeof(unsigned char));
+    q->p_header   = packetizer_create(GMSKFRAME_H_DEC,
+                                      GMSKFRAME_H_CRC,
+                                      GMSKFRAME_H_FEC,
+                                      LIQUID_FEC_NONE);
+
+    // create/allocate payload objects/arrays
+    q->dec_msg_len  = 0;
+    q->check        = LIQUID_CRC_32;
+    q->fec0         = LIQUID_FEC_NONE;
+    q->fec1         = LIQUID_FEC_NONE;
+    q->p_payload = packetizer_create(q->dec_msg_len,
+                                     q->check,
+                                     q->fec0,
+                                     q->fec1);
+    q->enc_msg_len = packetizer_get_enc_msg_len(q->p_payload);
+    q->payload_enc = (unsigned char*) malloc(q->enc_msg_len*sizeof(unsigned char));
+    q->payload_dec = (unsigned char*) malloc(q->dec_msg_len*sizeof(unsigned char));
+    //q->payload_len = 8*q->enc_msg_len;
+
+    
+    // initialize...
     q->rssi_hat = 1.0f;
 
 #if DEBUG_GMSKFRAMESYNC
@@ -114,27 +165,6 @@ gmskframesync gmskframesync_create(unsigned int _k,
     q->debug_agc_rssi   = windowf_create(DEBUG_GMSKFRAMESYNC_BUFFER_LEN);
     q->debug_x          = windowcf_create(DEBUG_GMSKFRAMESYNC_BUFFER_LEN);
     q->debug_framesyms  = windowf_create(DEBUG_GMSKFRAMESYNC_BUFFER_LEN);
-
-    // generate sequence
-    msequence ms = msequence_create_default(6);
-    q->bx = bsequence_create(q->k*64);
-    q->by = bsequence_create(q->k*64);
-    float hxy[q->k*64];
-    unsigned int i;
-    unsigned int j;
-    for (i=0; i<64; i++) {
-        unsigned int bit = msequence_advance(ms);
-        for (j=0; j<q->k; j++) {
-            hxy[q->k*64 - (q->k*i+j) - 1] = bit ? 1.0f : -1.0f;
-
-            bsequence_push(q->bx, bit);
-
-            bsequence_push(q->by, 0);
-        }
-    }
-    msequence_destroy(ms);
-    q->rxy = firfilt_rrrf_create(hxy, q->k*64);
-    q->debug_rxy = windowf_create(DEBUG_GMSKFRAMESYNC_BUFFER_LEN);
     q->debug_bxy = windowf_create(DEBUG_GMSKFRAMESYNC_BUFFER_LEN);
 #endif
 
@@ -153,16 +183,25 @@ void gmskframesync_destroy(gmskframesync _q)
     windowf_destroy(_q->debug_agc_rssi);
     windowcf_destroy(_q->debug_x);
     windowf_destroy(_q->debug_framesyms);
-    windowf_destroy(_q->debug_rxy);
     windowf_destroy(_q->debug_bxy);
-    firfilt_rrrf_destroy(_q->rxy);
-    bsequence_destroy(_q->bx);
-    bsequence_destroy(_q->by);
 #endif
 
     // destroy synchronizer objects
     symsync_rrrf_destroy(_q->symsync);  // symbol synchronizer, matched filter
-    bpacketsync_destroy(_q->psync);     // packet synchronizer
+
+    // destroy/free preamble objects/arrays
+    bsequence_destroy(_q->bx);
+    bsequence_destroy(_q->by);
+    
+    // destroy/free header objects/arrays
+    free(_q->header_enc);
+    free(_q->header_dec);
+    packetizer_destroy(_q->p_header);
+
+    // destroy/free payload objects/arrays
+    free(_q->payload_enc);
+    free(_q->payload_dec);
+    packetizer_destroy(_q->p_payload);
 
     // free main object memory
     free(_q);
@@ -177,11 +216,16 @@ void gmskframesync_print(gmskframesync _q)
 // reset frame synchronizer object
 void gmskframesync_reset(gmskframesync _q)
 {
-    // reset state
+    // reset sample state
     _q->x_prime = 0.0f;
 
     // reset synchronizer objects
     symsync_rrrf_clear(_q->symsync);
+    bsequence_clear(_q->by);
+
+    // reset state
+    _q->state = GMSKFRAMESYNC_STATE_SEEKPN;
+    _q->num_symbols_received = 0;
 }
 
 // execute frame synchronizer
@@ -192,10 +236,6 @@ void gmskframesync_execute(gmskframesync _q,
                            float complex * _x,
                            unsigned int _n)
 {
-    // synchronized sample buffer
-    float buffer[4];
-    unsigned int num_written=0;
-
     // push through synchronizer
     unsigned int i;
     for (i=0; i<_n; i++) {
@@ -212,32 +252,22 @@ void gmskframesync_execute(gmskframesync _q,
 #endif
         // compute phase difference
         float phi = cargf(s);
-#if DEBUG_GMSKFRAMESYNC
-        float rxy_out;
-        firfilt_rrrf_push(_q->rxy, phi);
-        firfilt_rrrf_execute(_q->rxy, &rxy_out);
-        rxy_out /= _q->k*64;
-        windowf_push(_q->debug_rxy, rxy_out);
 
-        // push through binary sequence correlator
-        bsequence_push(_q->by, phi > 0.0f ? 1 : 0);
-        int bxy_out = bsequence_correlate(_q->bx, _q->by);
-        windowf_push(_q->debug_bxy, (float)(bxy_out - 64) / 64.0f);
-#endif
+        switch (_q->state) {
+        case GMSKFRAMESYNC_STATE_SEEKPN:
+            // look for p/n sequence
+            gmskframesync_execute_seekpn(_q, phi);
+            break;
 
-        // push through matched filter/symbol timing recovery
-        symsync_rrrf_execute(_q->symsync, &phi, 1, buffer, &num_written);
+        case GMSKFRAMESYNC_STATE_RXHEADER:
+            // receive header
+            gmskframesync_execute_rxheader(_q, phi);
+            break;
 
-        // demodulate
-        unsigned int j;
-        for (j=0; j<num_written; j++) {
-#if DEBUG_GMSKFRAMESYNC
-            windowf_push(_q->debug_framesyms, buffer[j]);
-#endif
-            unsigned char s = buffer[j] > 0.0f ? 1 : 0;
-
-            // push sample through packet synchronizer...
-            bpacketsync_execute_bit(_q->psync, s);
+        case GMSKFRAMESYNC_STATE_RXPAYLOAD:
+            // receive payload
+            gmskframesync_execute_rxpayload(_q, phi);
+            break;
         }
     }
 }
@@ -246,6 +276,54 @@ void gmskframesync_execute(gmskframesync _q,
 // internal methods
 //
 
+void gmskframesync_execute_seekpn(gmskframesync _q,
+                                  float _x)
+{
+    // push through binary sequence correlator
+    bsequence_push(_q->by, _x > 0.0f ? 1 : 0);
+    float bxy_out = (float)(bsequence_correlate(_q->bx, _q->by) - 64) / 64.0f;
+#if DEBUG_GMSKFRAMESYNC
+    windowf_push(_q->debug_bxy, bxy_out);
+#endif
+
+    // check threshold...
+    if (bxy_out > 0.55f) {
+        printf("***** gmskframesync: frame detected! *****\n");
+    }
+}
+
+void gmskframesync_execute_rxheader(gmskframesync _q,
+                                    float _x)
+{
+#if 0
+    // synchronized sample buffer
+    float buffer[4];
+    unsigned int num_written=0;
+
+    // push through matched filter/symbol timing recovery
+    symsync_rrrf_execute(_q->symsync, &phi, 1, buffer, &num_written);
+
+    // demodulate
+    unsigned int j;
+    for (j=0; j<num_written; j++) {
+#if DEBUG_GMSKFRAMESYNC
+        windowf_push(_q->debug_framesyms, buffer[j]);
+#endif
+        unsigned char s = buffer[j] > 0.0f ? 1 : 0;
+
+        // push sample through packet synchronizer...
+        bpacketsync_execute_bit(_q->psync, s);
+    }
+#endif
+}
+
+void gmskframesync_execute_rxpayload(gmskframesync _q,
+                                     float _x)
+{
+}
+
+
+#if 0
 // internal callback
 int gmskframesync_internal_callback(unsigned char *  _payload,
                                     int              _payload_valid,
@@ -270,6 +348,7 @@ int gmskframesync_internal_callback(unsigned char *  _payload,
     //
     return 0;
 }
+#endif
 
 void gmskframesync_output_debug_file(gmskframesync _q,
                                      const char * _filename)
@@ -323,19 +402,6 @@ void gmskframesync_output_debug_file(gmskframesync _q,
     fprintf(fid,"plot(t,framesyms,'x')\n");
     fprintf(fid,"xlabel('time (symbol index)');\n");
     fprintf(fid,"ylabel('GMSK demodulator output');\n");
-    fprintf(fid,"grid on;\n");
-    fprintf(fid,"\n\n");
-
-    // write rxy
-    fprintf(fid,"rxy = zeros(1,num_samples);\n");
-    windowf_read(_q->debug_rxy, &r);
-    for (i=0; i<DEBUG_GMSKFRAMESYNC_BUFFER_LEN; i++)
-        fprintf(fid,"rxy(%4u) = %12.4e;\n", i+1, r[i]);
-    fprintf(fid,"\n\n");
-    fprintf(fid,"figure;\n");
-    fprintf(fid,"plot(t,rxy);\n");
-    fprintf(fid,"xlabel('time (symbol index)');\n");
-    fprintf(fid,"ylabel('cross-correlator output');\n");
     fprintf(fid,"grid on;\n");
     fprintf(fid,"\n\n");
 

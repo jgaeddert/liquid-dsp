@@ -839,6 +839,15 @@ LIQUID_SYMSYNCLP_DEFINE_INTERNAL_API(SYMSYNCLP_MANGLE_CRCF,
 // gmskframe
 //
 
+#define GMSKFRAME_VERSION   (1)
+
+// header description
+#define GMSKFRAME_H_USER    (8)                     // user-defined array
+#define GMSKFRAME_H_DEC     (GMSKFRAME_H_USER+5)    // decoded length
+#define GMSKFRAME_H_CRC     (LIQUID_CRC_32)         // header CRC
+#define GMSKFRAME_H_FEC     (LIQUID_FEC_HAMMING128) // header FEC
+#define GMSKFRAME_H_ENC     (26)                    // encoded length (bytes)
+
 typedef struct gmskframegen_s * gmskframegen;
 gmskframegen gmskframegen_create(unsigned int _k,
                                  unsigned int _m,
@@ -857,8 +866,10 @@ int gmskframegen_write_samples(gmskframegen _fg,
                                liquid_float_complex * _y);
 
 // gmskframegen internals
+void gmskframegen_encode_header( gmskframegen _q);
 void gmskframegen_write_rampup(  gmskframegen _q, float complex * _y);
 void gmskframegen_write_preamble(gmskframegen _q, float complex * _y);
+void gmskframegen_write_header(  gmskframegen _q, float complex * _y);
 void gmskframegen_write_payload( gmskframegen _q, float complex * _y);
 void gmskframegen_write_rampdn(  gmskframegen _q, float complex * _y);
 
@@ -876,20 +887,19 @@ gmskframesync gmskframesync_create(unsigned int _k,
                                    float _BT,
                                    gmskframesync_callback _callback,
                                    void * _userdata);
-void gmskframesync_destroy(gmskframesync _fg);
-void gmskframesync_print(gmskframesync _fg);
-void gmskframesync_reset(gmskframesync _fg);
-void gmskframesync_execute(gmskframesync _fg,
+void gmskframesync_destroy(gmskframesync _q);
+void gmskframesync_print(gmskframesync _q);
+void gmskframesync_reset(gmskframesync _q);
+void gmskframesync_execute(gmskframesync _q,
                            liquid_float_complex * _x,
                            unsigned int _n);
 
-// internal callback
-int gmskframesync_internal_callback(unsigned char *  _payload,
-                                    int              _payload_valid,
-                                    unsigned int     _payload_len,
-                                    framesyncstats_s _stats,
-                                    void *           _userdata);
+// internal methods
+void gmskframesync_execute_seekpn(gmskframesync _q, float _x);
+void gmskframesync_execute_rxheader(gmskframesync _q, float _x);
+void gmskframesync_execute_rxpayload(gmskframesync _q, float _x);
 
+void gmskframesync_decode_header(gmskframesync _q);
 void gmskframesync_output_debug_file(gmskframesync _q, const char * _filename);
 
 //
