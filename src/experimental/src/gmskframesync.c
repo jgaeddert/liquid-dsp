@@ -31,16 +31,22 @@
 
 #include "liquid.experimental.h"
 
-#define DEBUG_GMSKFRAMESYNC           1
+#define DEBUG_GMSKFRAMESYNC             1
+#define DEBUG_GMSKFRAMESYNC_PRINT       0
+#define DEBUG_GMSKFRAMESYNC_FILENAME    "gmskframesync_internal_debug.m"
+#define DEBUG_GMSKFRAMESYNC_BUFFER_LEN  (2000)
 
 // gmskframesync object structure
 struct gmskframesync_s {
-    gmskdem demod;                      // gmsk demodulator
     unsigned int k;                     // filter samples/symbol
     unsigned int m;                     // filter semi-length (symbols)
     float BT;                           // filter bandwidth-time product
 
-    // packet synchronizer
+    // synchronizer parameters, objects
+    float complex x_prime;              // received signal state
+    float rssi_hat;                     // rssi estimate
+    unsigned int npfb;                  // number of filterbanks
+    symsync_rrrf symsync;               // symbol synchronizer, matched filter
     bpacketsync psync;                  // packet synchronizer
 
     bool header_valid;                  // header valid?
@@ -50,6 +56,17 @@ struct gmskframesync_s {
     gmskframesync_callback callback;    // user-defined callback function
     void * userdata;                    // user-defined data structure
     framesyncstats_s framestats;        //
+
+    // debugging macros
+#if DEBUG_GMSKFRAMESYNC
+    windowf  debug_agc_rssi;            // rssi buffer
+    windowcf debug_x;                   // received samples buffer
+    windowf  debug_framesyms;           // GMSK output symbols
+    
+    // test cross-correlator
+    firfilt_rrrf rxy;                   //
+    windowf  debug_rxy;                 //
+#endif
 };
 
 // create gmskframesync object
@@ -71,11 +88,43 @@ gmskframesync gmskframesync_create(unsigned int _k,
     q->callback = _callback;
     q->userdata = _userdata;
 
-    // create gmsk demodulator object
-    q->demod = gmskdem_create(q->k, q->m, q->BT);
+    // internal parameters
+    q->npfb = 32;
+
+    // create symbol synchronizer
+    q->symsync = symsync_rrrf_create_rnyquist(LIQUID_RNYQUIST_GMSKRX,
+                                              q->k,
+                                              q->m,
+                                              q->BT,
+                                              q->npfb);
+    symsync_rrrf_set_lf_bw(q->symsync, 0.05f);
+    symsync_rrrf_set_output_rate(q->symsync, 1);
 
     // create packet synchronizer
     q->psync = bpacketsync_create(0, gmskframesync_internal_callback, (void*)q);
+
+    //
+    q->rssi_hat = 1.0f;
+
+#if DEBUG_GMSKFRAMESYNC
+    // debugging
+    q->debug_agc_rssi   = windowf_create(DEBUG_GMSKFRAMESYNC_BUFFER_LEN);
+    q->debug_x          = windowcf_create(DEBUG_GMSKFRAMESYNC_BUFFER_LEN);
+    q->debug_framesyms  = windowf_create(DEBUG_GMSKFRAMESYNC_BUFFER_LEN);
+
+    // generate sequence
+    msequence ms = msequence_create_default(6);
+    float hxy[128];
+    unsigned int i;
+    for (i=0; i<64; i++) {
+        unsigned int bit = msequence_advance(ms);
+        hxy[128 - (2*i+0) - 1] = bit ? 1.0f : -1.0f;
+        hxy[128 - (2*i+1) - 1] = bit ? 1.0f : -1.0f;
+    }
+    msequence_destroy(ms);
+    q->rxy = firfilt_rrrf_create(hxy, 128);
+    q->debug_rxy = windowf_create(DEBUG_GMSKFRAMESYNC_BUFFER_LEN);
+#endif
 
     return q;
 }
@@ -84,11 +133,21 @@ gmskframesync gmskframesync_create(unsigned int _k,
 // destroy frame synchronizer object, freeing all internal memory
 void gmskframesync_destroy(gmskframesync _q)
 {
-    // destroy gmsk demodulator
-    gmskdem_destroy(_q->demod);
+#if DEBUG_GMSKFRAMESYNC
+    // output debugging file
+    gmskframesync_output_debug_file(_q, DEBUG_GMSKFRAMESYNC_FILENAME);
 
-    // destroy packet synchronizer
-    bpacketsync_destroy(_q->psync);
+    // destroy debugging windows
+    windowf_destroy(_q->debug_agc_rssi);
+    windowcf_destroy(_q->debug_x);
+    windowf_destroy(_q->debug_framesyms);
+    windowf_destroy(_q->debug_rxy);
+    firfilt_rrrf_destroy(_q->rxy);
+#endif
+
+    // destroy synchronizer objects
+    symsync_rrrf_destroy(_q->symsync);  // symbol synchronizer, matched filter
+    bpacketsync_destroy(_q->psync);     // packet synchronizer
 
     // free main object memory
     free(_q);
@@ -103,8 +162,11 @@ void gmskframesync_print(gmskframesync _q)
 // reset frame synchronizer object
 void gmskframesync_reset(gmskframesync _q)
 {
-    // reset demodulator
-    gmskdem_reset(_q->demod);
+    // reset state
+    _q->x_prime = 0.0f;
+
+    // reset synchronizer objects
+    symsync_rrrf_clear(_q->symsync);
 }
 
 // execute frame synchronizer
@@ -112,17 +174,51 @@ void gmskframesync_reset(gmskframesync _q)
 //  _x      :   input sample array [size: _n x 1]
 //  _n      :   number of input samples
 void gmskframesync_execute(gmskframesync _q,
-                           float complex *_x,
+                           float complex * _x,
                            unsigned int _n)
 {
+    // synchronized sample buffer
+    float buffer[4];
+    unsigned int num_written=0;
+
+    // push through synchronizer
     unsigned int i;
+    for (i=0; i<_n; i++) {
+        // compute differential
+        float complex s = conjf(_q->x_prime)*_x[i];
+        _q->x_prime = _x[i];
 
-    unsigned int s;
-    for (i=0; i<_n; i+=_q->k) {
-        gmskdem_demodulate(_q->demod, &_x[i], &s);
+        // update rssi estimate
+        float alpha = 0.2f;
+        _q->rssi_hat = (1.0f-alpha)*_q->rssi_hat + alpha*cabsf(s);
+#if DEBUG_GMSKFRAMESYNC
+        windowf_push(_q->debug_agc_rssi, 10*log10f(_q->rssi_hat));
+        windowcf_push(_q->debug_x, _x[i]);
+#endif
+        // compute phase difference
+        float phi = cargf(s);
+#if DEBUG_GMSKFRAMESYNC
+        float rxy_out;
+        firfilt_rrrf_push(_q->rxy, phi);
+        firfilt_rrrf_execute(_q->rxy, &rxy_out);
+        rxy_out /= 128;
+        windowf_push(_q->debug_rxy, rxy_out);
+#endif
 
-        // TODO : push sample through packet synchronizer...
-        bpacketsync_execute_bit(_q->psync, (unsigned char)s);
+        // push through matched filter/symbol timing recovery
+        symsync_rrrf_execute(_q->symsync, &phi, 1, buffer, &num_written);
+
+        // demodulate
+        unsigned int j;
+        for (j=0; j<num_written; j++) {
+#if DEBUG_GMSKFRAMESYNC
+            windowf_push(_q->debug_framesyms, buffer[j]);
+#endif
+            unsigned char s = buffer[j] > 0.0f ? 1 : 0;
+
+            // push sample through packet synchronizer...
+            bpacketsync_execute_bit(_q->psync, s);
+        }
     }
 }
 
@@ -131,19 +227,98 @@ void gmskframesync_execute(gmskframesync _q,
 //
 
 // internal callback
-int gmskframesync_internal_callback(unsigned char * _payload,
-                                    int             _payload_valid,
-                                    unsigned int    _payload_len,
-                                    void *          _userdata)
+int gmskframesync_internal_callback(unsigned char *  _payload,
+                                    int              _payload_valid,
+                                    unsigned int     _payload_len,
+                                    framesyncstats_s _stats,
+                                    void *           _userdata)
 {
     // type-cast internal object
     gmskframesync _q = (gmskframesync) _userdata;
 
-    // invoke user-defined callback
+    // initialize frame statistics object
     framesyncstats_init_default(&_q->framestats);
+    //_q->framestats.rssi = 10*log10f(_q->rssi_hat); // returns wrong value...
+    _q->framestats.mod_bps  = 1;
+    _q->framestats.check    = _stats.check;
+    _q->framestats.fec0     = _stats.fec0;
+    _q->framestats.fec1     = _stats.fec1;
+    
+    // invoke user-defined callback
     _q->callback(_payload, _payload_len, _payload_valid, _q->framestats, _q->userdata);
 
     //
     return 0;
 }
 
+void gmskframesync_output_debug_file(gmskframesync _q,
+                                     const char * _filename)
+{
+    unsigned int i;
+    float * r;
+    float complex * rc;
+    FILE* fid = fopen(_filename,"w");
+    if (!fid) {
+        fprintf(stderr, "error: flexframesync_output_debug_file(), could not open '%s' for writing\n", _filename);
+        return;
+    }
+    fprintf(fid,"%% %s: auto-generated file", _filename);
+    fprintf(fid,"\n\n");
+    fprintf(fid,"clear all;\n");
+    fprintf(fid,"close all;\n\n");
+    fprintf(fid,"num_samples = %u;\n", DEBUG_GMSKFRAMESYNC_BUFFER_LEN);
+    fprintf(fid,"t = 0:(num_samples-1);\n");
+
+    // write agc_rssi
+    fprintf(fid,"agc_rssi = zeros(1,num_samples);\n");
+    windowf_read(_q->debug_agc_rssi, &r);
+    for (i=0; i<DEBUG_GMSKFRAMESYNC_BUFFER_LEN; i++)
+        fprintf(fid,"agc_rssi(%4u) = %12.4e;\n", i+1, r[i]);
+    fprintf(fid,"\n\n");
+    fprintf(fid,"figure;\n");
+    fprintf(fid,"plot(t, agc_rssi)\n");
+    fprintf(fid,"ylabel('RSSI [dB]');\n");
+    fprintf(fid,"\n\n");
+
+    // write x
+    fprintf(fid,"x = zeros(1,num_samples);\n");
+    windowcf_read(_q->debug_x, &rc);
+    for (i=0; i<DEBUG_GMSKFRAMESYNC_BUFFER_LEN; i++)
+        fprintf(fid,"x(%4u) = %12.4e + j*%12.4e;\n", i+1, crealf(rc[i]), cimagf(rc[i]));
+    fprintf(fid,"\n\n");
+    fprintf(fid,"figure;\n");
+    fprintf(fid,"plot(1:length(x),real(x), 1:length(x),imag(x));\n");
+    fprintf(fid,"ylabel('received signal, x');\n");
+    fprintf(fid,"\n\n");
+
+    // write framesyms
+    fprintf(fid,"framesyms = zeros(1,num_samples);\n");
+    windowf_read(_q->debug_framesyms, &r);
+    for (i=0; i<DEBUG_GMSKFRAMESYNC_BUFFER_LEN; i++)
+        fprintf(fid,"framesyms(%4u) = %12.4e;\n", i+1, r[i]);
+    fprintf(fid,"\n\n");
+    fprintf(fid,"figure;\n");
+    fprintf(fid,"plot(t,framesyms,'x','MarkerSize',2)\n");
+    fprintf(fid,"xlabel('time (symbol index)');\n");
+    fprintf(fid,"ylabel('GMSK demodulator output');\n");
+    fprintf(fid,"grid on;\n");
+    fprintf(fid,"\n\n");
+
+    // write rxy
+    fprintf(fid,"rxy = zeros(1,num_samples);\n");
+    windowf_read(_q->debug_rxy, &r);
+    for (i=0; i<DEBUG_GMSKFRAMESYNC_BUFFER_LEN; i++)
+        fprintf(fid,"rxy(%4u) = %12.4e;\n", i+1, r[i]);
+    fprintf(fid,"\n\n");
+    fprintf(fid,"figure;\n");
+    fprintf(fid,"plot(t,rxy);\n");
+    fprintf(fid,"xlabel('time (symbol index)');\n");
+    fprintf(fid,"ylabel('cross-correlator output');\n");
+    fprintf(fid,"grid on;\n");
+    fprintf(fid,"\n\n");
+
+    fclose(fid);
+
+    printf("gmskframesync/debug: results written to '%s'\n", _filename);
+
+}

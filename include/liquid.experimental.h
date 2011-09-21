@@ -846,14 +846,21 @@ gmskframegen gmskframegen_create(unsigned int _k,
 void gmskframegen_destroy(gmskframegen _fg);
 void gmskframegen_print(gmskframegen _fg);
 void gmskframegen_reset(gmskframegen _fg);
-void gmskframegen_assemble(gmskframegen _fg,
+void gmskframegen_assemble(gmskframegen    _fg,
                            unsigned char * _payload,
-                           unsigned int    _payload_len);
+                           unsigned int    _payload_len,
+                           crc_scheme      _check,
+                           fec_scheme      _fec0,
+                           fec_scheme      _fec1);
 unsigned int gmskframegen_get_frame_len(gmskframegen _fg);
 int gmskframegen_write_samples(gmskframegen _fg,
-                               liquid_float_complex * _y,
-                               unsigned int   _num_available,
-                               unsigned int * _num_written);
+                               liquid_float_complex * _y);
+
+// gmskframegen internals
+void gmskframegen_write_rampup(  gmskframegen _q, float complex * _y);
+void gmskframegen_write_preamble(gmskframegen _q, float complex * _y);
+void gmskframegen_write_payload( gmskframegen _q, float complex * _y);
+void gmskframegen_write_rampdn(  gmskframegen _q, float complex * _y);
 
 
 // GMSK frame synchronizer callback
@@ -877,10 +884,13 @@ void gmskframesync_execute(gmskframesync _fg,
                            unsigned int _n);
 
 // internal callback
-int gmskframesync_internal_callback(unsigned char * _payload,
-                                    int             _payload_valid,
-                                    unsigned int    _payload_len,
-                                    void *          _userdata);
+int gmskframesync_internal_callback(unsigned char *  _payload,
+                                    int              _payload_valid,
+                                    unsigned int     _payload_len,
+                                    framesyncstats_s _stats,
+                                    void *           _userdata);
+
+void gmskframesync_output_debug_file(gmskframesync _q, const char * _filename);
 
 //
 // packetizer (experimental improvements)

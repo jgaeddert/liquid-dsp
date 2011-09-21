@@ -90,6 +90,7 @@ struct bpacketsync_s {
     // user-defined parameters
     bpacketsync_callback callback;
     void * userdata;
+    framesyncstats_s framestats;
 };
 
 bpacketsync bpacketsync_create(unsigned int _m,
@@ -331,8 +332,10 @@ void bpacketsync_execute_rxheader(bpacketsync _q,
             _q->num_bits_received  = 0;
             _q->num_bytes_received = 0;
 
-            // TODO : decode header
+            // decode header
             bpacketsync_decode_header(_q);
+
+            // TODO : invoke header callback now
 
             if (_q->header_valid) {
                 // re-allocate memory for arrays
@@ -373,9 +376,16 @@ void bpacketsync_execute_rxpayload(bpacketsync _q,
 
             // invoke callback
             if (_q->callback != NULL) {
+                // set frame stats
+                framesyncstats_init_default(&_q->framestats);
+                _q->framestats.check = _q->crc;
+                _q->framestats.fec0  = _q->fec0;
+                _q->framestats.fec1  = _q->fec1;
+
                 _q->callback(_q->payload_dec,
                              _q->payload_valid,
                              _q->dec_msg_len,
+                             _q->framestats,
                              _q->userdata);
             }
 
