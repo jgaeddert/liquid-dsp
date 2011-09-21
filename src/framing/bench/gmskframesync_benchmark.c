@@ -25,7 +25,9 @@
 
 #include "liquid.h"
 
-static int callback(unsigned char *  _payload,
+static int callback(unsigned char *  _header,
+                    int              _header_valid,
+                    unsigned char *  _payload,
                     unsigned int     _payload_len,
                     int              _payload_valid,
                     framesyncstats_s _stats,
@@ -62,9 +64,10 @@ void benchmark_gmskframesync(struct rusage *_start,
     float nstd  = powf(10.0f, -SNRdB/20.0f);
 
     // allocate memory for payload and initialize
+    unsigned char header[8];
     unsigned char payload[payload_len];
-    for (i=0; i<payload_len; i++)
-        payload[i] = rand() & 0xff;
+    for (i=0; i<8; i++)           header[i]  = rand() & 0xff;
+    for (i=0; i<payload_len; i++) payload[i] = rand() & 0xff;
     
     // frames received counter
     unsigned int num_frames_rx = 0;
@@ -76,7 +79,7 @@ void benchmark_gmskframesync(struct rusage *_start,
     gmskframesync fs = gmskframesync_create(k, m, BT, callback, (void*)&num_frames_rx);
 
     // assemble frame and print
-    gmskframegen_assemble(fg, payload, payload_len, check, fec0, fec1);
+    gmskframegen_assemble(fg, header, payload, payload_len, check, fec0, fec1);
     gmskframegen_print(fg);
 
     // allocate memory for full frame (with noise)

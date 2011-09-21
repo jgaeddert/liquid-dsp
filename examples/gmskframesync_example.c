@@ -38,7 +38,9 @@ struct framedata_s {
 };
 
 // callback function
-int callback(unsigned char *  _payload,
+int callback(unsigned char *  _header,
+             int              _header_valid,
+             unsigned char *  _payload,
              unsigned int     _payload_len,
              int              _payload_valid,
              framesyncstats_s _stats,
@@ -121,9 +123,10 @@ int main(int argc, char*argv[])
     float gamma = powf(10.0f, (SNRdB + noise_floor)/20.0f);
 
     // allocate memory for payload and initialize
+    unsigned char header[8];
     unsigned char payload[payload_len];
-    for (i=0; i<payload_len; i++)
-        payload[i] = rand() & 0xff;
+    for (i=0; i<8; i++)           header[i]  = i;
+    for (i=0; i<payload_len; i++) payload[i] = rand() & 0xff;
     struct framedata_s fd = {payload, payload_len};
 
     // create frame generator
@@ -133,7 +136,7 @@ int main(int argc, char*argv[])
     gmskframesync fs = gmskframesync_create(k, m, BT, callback, (void*)&fd);
 
     // assemble frame and print
-    gmskframegen_assemble(fg, payload, payload_len, check, fec0, fec1);
+    gmskframegen_assemble(fg, header, payload, payload_len, check, fec0, fec1);
     gmskframegen_print(fg);
 
     // allocate memory for full frame (with noise)
@@ -168,6 +171,7 @@ int main(int argc, char*argv[])
         y[i] *= cexpf(_Complex_I*M_2_PI*dphi*i);
         y[i] += nstd*(randnf() + randnf()*_Complex_I)*M_SQRT1_2;
     }
+    firfilt_crcf_destroy(fchannel);
 
     // push samples through synchronizer
     gmskframesync_execute(fs, y, num_samples);
@@ -212,13 +216,21 @@ int main(int argc, char*argv[])
 }
 
 // callback function
-int callback(unsigned char *  _payload,
+int callback(unsigned char *  _header,
+             int              _header_valid,
+             unsigned char *  _payload,
              unsigned int     _payload_len,
              int              _payload_valid,
              framesyncstats_s _stats,
              void *           _userdata)
 {
     printf("***** callback invoked *****\n");
+    printf("  header crc    :   %s\n", _header_valid ? "pass" : "FAIL");
+    printf("  header data   :  ");
+    unsigned int i;
+    for (i=0; i<8; i++)
+        printf(" %.2X", _header[i]);
+    printf("\n");
     printf("  rssi          :   %-8.3f dB\n", _stats.rssi);
     printf("  evm           :   %-8.3f dB\n", _stats.evm);
     printf("  payload       :   %u bytes (crc %s)\n", _payload_len, _payload_valid ? "pass" : "FAIL");

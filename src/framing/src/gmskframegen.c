@@ -208,12 +208,14 @@ void gmskframegen_print(gmskframegen _q)
 
 // assemble frame
 //  _q              :   frame generator object
+//  _header         :   raw header
 //  _payload        :   raw payload [size: _payload_len x 1]
 //  _payload_len    :   raw payload length (bytes)
 //  _check          :   data validity check
 //  _fec0           :   inner forward error correction
 //  _fec1           :   outer forward error correction
 void gmskframegen_assemble(gmskframegen    _q,
+                           unsigned char * _header,
                            unsigned char * _payload,
                            unsigned int    _payload_len,
                            crc_scheme      _check,
@@ -252,7 +254,7 @@ void gmskframegen_assemble(gmskframegen    _q,
     }
 
     // encode header
-    gmskframegen_encode_header(_q);
+    gmskframegen_encode_header(_q, _header);
 
     // encode payload
     packetizer_encode(_q->p_payload, _payload, _q->payload_enc);
@@ -321,9 +323,11 @@ int gmskframegen_write_samples(gmskframegen _q,
 // internal methods
 //
 
-void gmskframegen_encode_header( gmskframegen _q)
+void gmskframegen_encode_header(gmskframegen _q,
+                                unsigned char * _header)
 {
     // first 'n' bytes user data
+    memmove(_q->header_dec, _header, GMSKFRAME_H_USER);
     unsigned int n = GMSKFRAME_H_USER;
 
     // first byte is for expansion/version validation

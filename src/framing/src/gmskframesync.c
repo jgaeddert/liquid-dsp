@@ -53,6 +53,7 @@ struct gmskframesync_s {
     bsequence by;                       // binary sequence correlator (received sequence)
     
     // header
+    unsigned char * header_user;        // user-defined header [GMSKFRAME_H_USER]
     unsigned char * header_enc;         // encoded header [GMSKFRAME_H_ENC]
     unsigned char * header_dec;         // uncoded header [GMSKFRAME_H_DEC]
     packetizer p_header;                // header packetizer
@@ -133,6 +134,7 @@ gmskframesync gmskframesync_create(unsigned int _k,
     msequence_destroy(ms);
 
     // create/allocate header objects/arrays
+    q->header_user= (unsigned char*)malloc(GMSKFRAME_H_USER*sizeof(unsigned char));
     q->header_enc = (unsigned char*)malloc(GMSKFRAME_H_ENC*sizeof(unsigned char));
     q->header_dec = (unsigned char*)malloc(GMSKFRAME_H_DEC*sizeof(unsigned char));
     q->p_header   = packetizer_create(GMSKFRAME_H_DEC,
@@ -192,6 +194,7 @@ void gmskframesync_destroy(gmskframesync _q)
     bsequence_destroy(_q->by);
     
     // destroy/free header objects/arrays
+    free(_q->header_user);
     free(_q->header_enc);
     free(_q->header_dec);
     packetizer_destroy(_q->p_header);
@@ -356,7 +359,7 @@ void gmskframesync_execute_rxheader(gmskframesync _q,
             _q->framestats.fec1             = LIQUID_FEC_UNKNOWN;
 
             // invoke callback method
-            _q->callback(NULL, 0, 0, _q->framestats, _q->userdata);
+            _q->callback(_q->header_user, _q->header_valid, NULL, 0, 0, _q->framestats, _q->userdata);
 
             gmskframesync_reset(_q);
         }
@@ -397,7 +400,13 @@ void gmskframesync_execute_rxpayload(gmskframesync _q,
         _q->framestats.fec1             = _q->fec1;
 
         // invoke callback method
-        _q->callback(_q->payload_dec, _q->dec_msg_len, _q->payload_valid, _q->framestats, _q->userdata);
+        _q->callback(_q->header_user,
+                     _q->header_valid,
+                     _q->payload_dec,
+                     _q->dec_msg_len,
+                     _q->payload_valid,
+                     _q->framestats,
+                     _q->userdata);
 
         // reset frame synchronizer
         gmskframesync_reset(_q);
@@ -416,6 +425,10 @@ void gmskframesync_decode_header(gmskframesync _q)
 #if DEBUG_GMSKFRAMESYNC_PRINT
     printf("****** header extracted [%s]\n", _q->header_valid ? "valid" : "INVALID!");
 #endif
+
+    // copy user-defined header
+    memmove(_q->header_user, _q->header_dec, GMSKFRAME_H_USER);
+    
     if (!_q->header_valid)
         return;
 

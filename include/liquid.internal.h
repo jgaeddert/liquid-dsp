@@ -1129,7 +1129,7 @@ void bpacketsync_reconfig(bpacketsync _q);
 #define GMSKFRAME_H_ENC     (26)                    // encoded length (bytes)
 
 // gmskframegen
-void gmskframegen_encode_header( gmskframegen _q);
+void gmskframegen_encode_header( gmskframegen _q, unsigned char * _header);
 void gmskframegen_write_rampup(  gmskframegen _q, float complex * _y);
 void gmskframegen_write_phasing( gmskframegen _q, float complex * _y);
 void gmskframegen_write_preamble(gmskframegen _q, float complex * _y);

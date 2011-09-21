@@ -1965,6 +1965,7 @@ void gmskframegen_destroy(gmskframegen _fg);
 void gmskframegen_print(gmskframegen _fg);
 void gmskframegen_reset(gmskframegen _fg);
 void gmskframegen_assemble(gmskframegen    _fg,
+                           unsigned char * _header,
                            unsigned char * _payload,
                            unsigned int    _payload_len,
                            crc_scheme      _check,
@@ -1980,7 +1981,9 @@ int gmskframegen_write_samples(gmskframegen _fg,
 //
 
 // GMSK frame synchronizer callback
-typedef int (*gmskframesync_callback)(unsigned char *  _payload,
+typedef int (*gmskframesync_callback)(unsigned char *  _header,
+                                      int              _header_valid,
+                                      unsigned char *  _payload,
                                       unsigned int     _payload_len,
                                       int              _payload_valid,
                                       framesyncstats_s _stats,
