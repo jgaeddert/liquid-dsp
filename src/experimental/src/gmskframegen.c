@@ -42,6 +42,7 @@ struct gmskframegen_s {
 
     // framing lengths (symbols)
     unsigned int rampup_len;    //
+    unsigned int phasing_len;   //
     unsigned int preamble_len;  //
     unsigned int header_len;    // length of header (encoded)
     unsigned int payload_len;   //
@@ -69,6 +70,7 @@ struct gmskframegen_s {
     // framing state
     enum {
         GMSKFRAMEGEN_STATE_RAMPUP,      // ramp up
+        GMSKFRAMEGEN_STATE_PHASING,     // phasing
         GMSKFRAMEGEN_STATE_PREAMBLE,    // preamble
         GMSKFRAMEGEN_STATE_HEADER,      // header
         GMSKFRAMEGEN_STATE_PAYLOAD,     // payload (frame)
@@ -91,6 +93,7 @@ gmskframegen gmskframegen_create(unsigned int _k,
 
     // internal/derived values
     q->rampup_len   =  8;   // number of ramp/up symbols
+    q->phasing_len  = 20;   // number of phasing symbols
     q->preamble_len = 64;   // number of preamble symbols
     q->payload_len  =  0;   // number of payload symbols
     q->rampdn_len   =  8;   // number of ramp\dn symbols
@@ -129,6 +132,7 @@ gmskframegen gmskframegen_create(unsigned int _k,
 
     // compute frame length (symbols)
     q->frame_len = q->rampup_len +
+                   q->phasing_len +
                    q->preamble_len +
                    q->header_len +
                    q->payload_len +
@@ -186,6 +190,7 @@ void gmskframegen_print(gmskframegen _q)
     printf("    bandwidth-time  :   %-8.3f\n", _q->BT);
     printf("  framing properties\n");
     printf("    ramp/up         :   %-4u symbols\n", _q->rampup_len);
+    printf("    phasing         :   %-4u symbols\n", _q->phasing_len);
     printf("    preamble        :   %-4u symbols\n", _q->preamble_len);
     printf("    payload         :   %-4u symbols\n", _q->payload_len);
     printf("    ramp\\dn         :   %-4u symbols\n", _q->rampdn_len);
@@ -231,6 +236,7 @@ void gmskframegen_assemble(gmskframegen    _q,
 
         // compute frame length (symbols)
         _q->frame_len = _q->rampup_len +
+                        _q->phasing_len +
                         _q->preamble_len +
                         _q->header_len +
                         _q->payload_len +
@@ -261,6 +267,11 @@ int gmskframegen_write_samples(gmskframegen _q,
     case GMSKFRAMEGEN_STATE_RAMPUP:
         // write ramp-up symbols
         gmskframegen_write_rampup(_q, _y);
+        break;
+
+    case GMSKFRAMEGEN_STATE_PHASING:
+        // write phasing pattern
+        gmskframegen_write_phasing(_q, _y);
         break;
 
     case GMSKFRAMEGEN_STATE_PREAMBLE:
@@ -354,6 +365,20 @@ void gmskframegen_write_rampup(gmskframegen _q,
     _q->symbol_counter++;
 
     if (_q->symbol_counter == _q->rampup_len) {
+        _q->symbol_counter = 0;
+        _q->state = GMSKFRAMEGEN_STATE_PHASING;
+    }
+}
+
+void gmskframegen_write_phasing(gmskframegen _q,
+                                float complex * _y)
+{
+    unsigned char bit = rand() % 2;
+    gmskmod_modulate(_q->mod, bit, _y);
+
+    _q->symbol_counter++;
+
+    if (_q->symbol_counter == _q->phasing_len) {
         _q->symbol_counter = 0;
         _q->state = GMSKFRAMEGEN_STATE_PREAMBLE;
     }

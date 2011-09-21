@@ -868,6 +868,7 @@ int gmskframegen_write_samples(gmskframegen _fg,
 // gmskframegen internals
 void gmskframegen_encode_header( gmskframegen _q);
 void gmskframegen_write_rampup(  gmskframegen _q, float complex * _y);
+void gmskframegen_write_phasing( gmskframegen _q, float complex * _y);
 void gmskframegen_write_preamble(gmskframegen _q, float complex * _y);
 void gmskframegen_write_header(  gmskframegen _q, float complex * _y);
 void gmskframegen_write_payload( gmskframegen _q, float complex * _y);
