@@ -125,3 +125,47 @@ void benchmark_gmskframesync(struct rusage *_start,
             *_num_iterations);
 }
 
+// benchmark regular frame synchronizer with noise; essentially test
+// complexity when no signal is present
+void benchmark_gmskframesync_noise(struct rusage *_start,
+                                   struct rusage *_finish,
+                                   unsigned long int *_num_iterations)
+{
+    *_num_iterations /= 400;
+    unsigned long int i;
+
+    // options
+    unsigned int k = 2;                 // filter samples/symbol
+    unsigned int m = 4;                 // filter semi-length (symbols)
+    float BT = 0.4f;                    // filter excess bandwidth
+    float SNRdB = 20.0f;                // SNR
+
+    // derived values
+    float nstd  = powf(10.0f, -SNRdB/20.0f);
+
+    // create frame synchronizer
+    gmskframesync fs = gmskframesync_create(k, m, BT, NULL, NULL);
+
+    // allocate memory for noise buffer and initialize
+    unsigned int num_samples = 1024;
+    float complex y[num_samples];
+    for (i=0; i<num_samples; i++)
+        y[i] = nstd*(randnf() + randnf()*_Complex_I)*M_SQRT1_2;
+
+    // 
+    // start trials
+    //
+    getrusage(RUSAGE_SELF, _start);
+    for (i=0; i<(*_num_iterations); i++) {
+        // push samples through synchronizer
+        gmskframesync_execute(fs, y, num_samples);
+    }
+    getrusage(RUSAGE_SELF, _finish);
+
+    // scale result by number of samples in buffer
+    *_num_iterations *= num_samples;
+
+    // destroy framing objects
+    gmskframesync_destroy(fs);
+}
+
