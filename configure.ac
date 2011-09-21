@@ -88,6 +88,7 @@ AC_ARG_ENABLE(experimental,
             src/experimental/tests/gport_autotest.c \
             src/experimental/tests/channel_autotest.c"
         EXPERIMENTAL_BENCHMARKS="src/experimental/bench/fbasc_benchmark.c \
+            src/experimental/bench/gmskframesync_benchmark.c \
             src/experimental/bench/gport_dma_benchmark.c \
             src/experimental/bench/gport_dma_threaded_benchmark.c \
             src/experimental/bench/gport_ima_benchmark.c \
