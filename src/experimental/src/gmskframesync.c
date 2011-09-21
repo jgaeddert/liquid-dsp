@@ -274,9 +274,6 @@ int gmskframesync_internal_callback(unsigned char *  _payload,
 void gmskframesync_output_debug_file(gmskframesync _q,
                                      const char * _filename)
 {
-    unsigned int i;
-    float * r;
-    float complex * rc;
     FILE* fid = fopen(_filename,"w");
     if (!fid) {
         fprintf(stderr, "error: flexframesync_output_debug_file(), could not open '%s' for writing\n", _filename);
@@ -286,8 +283,13 @@ void gmskframesync_output_debug_file(gmskframesync _q,
     fprintf(fid,"\n\n");
     fprintf(fid,"clear all;\n");
     fprintf(fid,"close all;\n\n");
+
+#if DEBUG_GMSKFRAMESYNC
     fprintf(fid,"num_samples = %u;\n", DEBUG_GMSKFRAMESYNC_BUFFER_LEN);
     fprintf(fid,"t = 0:(num_samples-1);\n");
+    unsigned int i;
+    float * r;
+    float complex * rc;
 
     // write agc_rssi
     fprintf(fid,"agc_rssi = zeros(1,num_samples);\n");
@@ -349,6 +351,7 @@ void gmskframesync_output_debug_file(gmskframesync _q,
     fprintf(fid,"ylabel('binary cross-correlator output');\n");
     fprintf(fid,"grid on;\n");
     fprintf(fid,"\n\n");
+#endif
 
     fclose(fid);
 
