@@ -183,6 +183,10 @@ void gmskframegen_reset(gmskframegen _q)
 // print gmskframegen object internals
 void gmskframegen_print(gmskframegen _q)
 {
+    // compute spectral efficiency
+    float eta = (float)(8*_q->dec_msg_len) / (float)(_q->frame_len);
+
+    // plot
     printf("gmskframegen:\n");
     printf("  physical properties\n");
     printf("    samples/symbol  :   %u\n", _q->k);
@@ -199,6 +203,7 @@ void gmskframegen_print(gmskframegen _q)
     printf("    crc             :   %s\n", crc_scheme_str[_q->check][1]);
     printf("    fec (inner)     :   %s\n", fec_scheme_str[_q->fec0][1]);
     printf("    fec (outer)     :   %s\n", fec_scheme_str[_q->fec1][1]);
+    printf("  efficiency        :   %-8.3f b/s/Hz\n", eta);
 }
 
 // assemble frame
