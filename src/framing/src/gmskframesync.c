@@ -265,7 +265,14 @@ void gmskframesync_execute(gmskframesync _q,
         unsigned int j;
         for (j=0; j<num_written; j++) {
 #if DEBUG_GMSKFRAMESYNC
-            windowf_push(_q->debug_framesyms, buffer[j]);
+            switch (_q->state) {
+            case GMSKFRAMESYNC_STATE_SEEKPN:
+                break;
+            case GMSKFRAMESYNC_STATE_RXHEADER:
+            case GMSKFRAMESYNC_STATE_RXPAYLOAD:
+                windowf_push(_q->debug_framesyms, buffer[j]);
+                break;
+            }
 #endif
             switch (_q->state) {
             case GMSKFRAMESYNC_STATE_SEEKPN:
