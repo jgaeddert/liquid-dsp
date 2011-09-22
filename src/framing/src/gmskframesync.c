@@ -118,7 +118,6 @@ gmskframesync gmskframesync_create(unsigned int _k,
                                               q->m,
                                               q->BT,
                                               q->npfb);
-    symsync_rrrf_set_lf_bw(q->symsync, 0.05f);
     symsync_rrrf_set_output_rate(q->symsync, 1);
 
     // create/allocate preamble objects/arrays
@@ -222,6 +221,7 @@ void gmskframesync_reset(gmskframesync _q)
 
     // reset synchronizer objects
     symsync_rrrf_clear(_q->symsync);
+    symsync_rrrf_set_lf_bw(_q->symsync, 0.05f);
     bsequence_clear(_q->by);
 
     // reset state
@@ -307,6 +307,7 @@ void gmskframesync_execute_seekpn(gmskframesync _q,
         printf("***** gmskframesync: frame detected! *****\n");
 #endif
         _q->state = GMSKFRAMESYNC_STATE_RXHEADER;
+        symsync_rrrf_set_lf_bw(_q->symsync, 0.005f);
         _q->num_symbols_received = 0;
         memset(_q->header_enc, 0x00, GMSKFRAME_H_ENC);
     }
