@@ -93,7 +93,7 @@ gmskframegen gmskframegen_create(unsigned int _k,
 
     // internal/derived values
     q->rampup_len   =  8;   // number of ramp/up symbols
-    q->phasing_len  = 20;   // number of phasing symbols
+    q->phasing_len  = 40;   // number of phasing symbols
     q->preamble_len = 64;   // number of preamble symbols
     q->payload_len  =  0;   // number of payload symbols
     q->rampdn_len   =  8;   // number of ramp\dn symbols

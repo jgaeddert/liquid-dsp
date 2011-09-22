@@ -277,17 +277,17 @@ void gmskframesync_execute(gmskframesync _q,
             switch (_q->state) {
             case GMSKFRAMESYNC_STATE_SEEKPN:
                 // look for p/n sequence
-                gmskframesync_execute_seekpn(_q, phi);
+                gmskframesync_execute_seekpn(_q, buffer[j]);
                 break;
 
             case GMSKFRAMESYNC_STATE_RXHEADER:
                 // receive header
-                gmskframesync_execute_rxheader(_q, phi);
+                gmskframesync_execute_rxheader(_q, buffer[j]);
                 break;
 
             case GMSKFRAMESYNC_STATE_RXPAYLOAD:
                 // receive payload
-                gmskframesync_execute_rxpayload(_q, phi);
+                gmskframesync_execute_rxpayload(_q, buffer[j]);
                 break;
             }
         }
