@@ -221,7 +221,7 @@ void gmskframesync_reset(gmskframesync _q)
 
     // reset synchronizer objects
     symsync_rrrf_clear(_q->symsync);
-    symsync_rrrf_set_lf_bw(_q->symsync, 0.05f);
+    symsync_rrrf_set_lf_bw(_q->symsync, 0.1f);
     bsequence_clear(_q->by);
 
     // reset state
@@ -309,7 +309,7 @@ void gmskframesync_execute_seekpn(gmskframesync _q,
 #endif
 
     // check threshold...
-    if (bxy_out > 0.55f) {
+    if (bxy_out > 0.60f) {
 #if DEBUG_GMSKFRAMESYNC_PRINT
         printf("***** gmskframesync: frame detected! *****\n");
 #endif
