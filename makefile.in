@@ -1283,6 +1283,7 @@ sandbox_programs =						\
 	sandbox/fec_sumproduct_test				\
 	sandbox/fft_r2r_test					\
 	sandbox/firdes_energy_test				\
+	sandbox/firdes_fexp_test				\
 	sandbox/firdes_gmskrx_test				\
 	sandbox/firdes_length_test				\
 	sandbox/firpfbch_analysis_alignment_test		\
