@@ -669,7 +669,8 @@ float kaiser_beta_As(float _As);
 typedef enum {
     LIQUID_NYQUIST_KAISER=0,    // Nyquist Kaiser filter
     LIQUID_NYQUIST_PM,          // Parks-McClellan filter
-    LIQUID_NYQUIST_RCOS         // raised-cosine filter
+    LIQUID_NYQUIST_RCOS,        // raised-cosine filter
+    LIQUID_NYQUIST_FEXP,        // flipped exponential
 } liquid_nyquist_type;
 
 // Design Nyquist filter
@@ -795,6 +796,7 @@ typedef enum {
     LIQUID_RNYQUIST_hM3,        // harris-Moerder-3 filter
     LIQUID_RNYQUIST_GMSKTX,     // GMSK transmit filter
     LIQUID_RNYQUIST_GMSKRX,     // GMSK receive filter
+    LIQUID_RNYQUIST_FEXP,       // flipped exponential
 } liquid_rnyquist_type;
 
 // Design root-Nyquist filter
@@ -882,6 +884,10 @@ void liquid_firdes_gmskrx(unsigned int _k,
                           float _beta,
                           float _dt,
                           float * _h);
+
+// Design flipped exponential Nyquist/root-Nyquist filters
+void liquid_firdes_fexp( unsigned int _k, unsigned int _m, float _beta, float _dt, float * _h);
+void liquid_firdes_rfexp(unsigned int _k, unsigned int _m, float _beta, float _dt, float * _h);
 
 // Compute group delay for an FIR filter
 //  _h      : filter coefficients array

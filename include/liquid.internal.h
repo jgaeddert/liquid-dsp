@@ -898,6 +898,11 @@ float liquid_firdes_rkaiser_internal_isi(unsigned int _k,
                                          float _rho,
                                          float * _h);
 
+// flipped exponential frequency response
+float liquid_firdes_fexp_freqresponse(float _f, unsigned int _k, float _beta);
+
+
+
 // initialize the frequency grid on the disjoint bounded set
 void firdespm_init_grid(firdespm _q);
 
