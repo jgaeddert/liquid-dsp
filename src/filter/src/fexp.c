@@ -62,29 +62,23 @@ void liquid_firdes_fexp(unsigned int _k,
     // derived values
     unsigned int h_len = 2*_k*_m+1;   // filter length
 
-    //
-    // start of filter design procedure
-    //
+    float H_prime[h_len];   // frequency response of Nyquist filter (real)
+    float complex H[h_len]; // frequency response of Nyquist filter
+    float complex h[h_len]; // impulse response of Nyquist filter
 
-    float complex h_tx[h_len];      // impulse response of Nyquist filter
-    float complex H_tx[h_len];      // frequency response of Nyquist filter
+    // compute Nyquist filter frequency response
+    liquid_firdes_fexp_freqresponse(_k, _m, _beta, H_prime);
 
-    // compute frequency response of Nyquist filter
-    for (i=0; i<h_len; i++) {
-        float f = (float)i / (float)h_len;
-        if (f > 0.5f) f = f - 1.0f;
-
-        H_tx[i] = liquid_firdes_fexp_freqresponse(f,_k,_beta);
-    }
-
-    // compute ifft and copy shifted, scaled response
-    fft_run(h_len, H_tx, h_tx, FFT_REVERSE, 0);
+    // copy result to fft input buffer
     for (i=0; i<h_len; i++)
-        _h[i] = crealf( h_tx[(i+_k*_m+1)%h_len] ) * (float)_k / (float)(h_len);
+        H[i] = H_prime[i];
 
-    //
-    // end of filter design procedure
-    //
+    // compute ifft
+    fft_run(h_len, H, h, FFT_REVERSE, 0);
+    
+    // copy shifted, scaled response
+    for (i=0; i<h_len; i++)
+        _h[i] = crealf( h[(i+_k*_m+1)%h_len] ) * (float)_k / (float)(h_len);
 }
 
 // Design fexp square-root Nyquist filter
@@ -116,65 +110,66 @@ void liquid_firdes_rfexp(unsigned int _k,
     // derived values
     unsigned int h_len = 2*_k*_m+1;   // filter length
 
-    //
-    // start of filter design procedure
-    //
+    float H_prime[h_len];   // frequency response of Nyquist filter (real)
+    float complex H[h_len]; // frequency response of Nyquist filter
+    float complex h[h_len]; // impulse response of Nyquist filter
 
-    float H_prime[h_len];           // frequency response of Nyquist filter
-    float complex h_tx[h_len];      // impulse response of square-root Nyquist filter
-    float complex H_tx[h_len];      // frequency response of square-root Nyquist filter
+    // compute Nyquist filter frequency response
+    liquid_firdes_fexp_freqresponse(_k, _m, _beta, H_prime);
+
+    // compute square root of result and copy to fft input buffer
+    for (i=0; i<h_len; i++)
+        H[i] = sqrtf( H_prime[i] );
+
+    // compute ifft
+    fft_run(h_len, H, h, FFT_REVERSE, 0);
+    
+    // copy shifted, scaled response
+    for (i=0; i<h_len; i++)
+        _h[i] = crealf( h[(i+_k*_m+1)%h_len] ) * (float)_k / (float)(h_len);
+}
+
+// flipped exponential frequency response
+void liquid_firdes_fexp_freqresponse(unsigned int _k,
+                                     unsigned int _m,
+                                     float        _beta,
+                                     float *      _H)
+{
+    // TODO : validate input
+
+    unsigned int i;
+
+    unsigned int h_len = 2*_k*_m + 1;
+
+    float f0 = 0.5f*(1.0f - _beta) / (float)_k;
+    float f1 = 0.5f*(1.0f        ) / (float)_k;
+    float f2 = 0.5f*(1.0f + _beta) / (float)_k;
+
+    float B     = 0.5f/(float)_k;
+    float gamma = logf(2.0f)/(_beta*B);
 
     // compute frequency response of Nyquist filter
     for (i=0; i<h_len; i++) {
         float f = (float)i / (float)h_len;
         if (f > 0.5f) f = f - 1.0f;
 
-        H_prime[i] = liquid_firdes_fexp_freqresponse(f,_k,_beta);
-    }
+        // enforce even symmetry
+        f = fabsf(f);
 
-    // compute square-root response, copy to fft input
-    for (i=0; i<h_len; i++)
-        H_tx[i] = sqrtf(H_prime[i]);
-
-    // compute ifft and copy response
-    fft_run(h_len, H_tx, h_tx, FFT_REVERSE, 0);
-    for (i=0; i<h_len; i++)
-        _h[i] = crealf( h_tx[(i+_k*_m+1)%h_len] ) * (float)_k / (float)(h_len);
-
-    //
-    // end of filter design procedure
-    //
-}
-
-// flipped exponential frequency response
-float liquid_firdes_fexp_freqresponse(float _f,
-                                      unsigned int _k,
-                                      float _beta)
-{
-    // TODO : validate input
-
-    // enforce even symmetry
-    float f = fabsf(_f);
-
-    float f0 = 0.5f*(1.0f - _beta) / (float)_k;
-    float f1 = 0.5f*(1.0f        ) / (float)_k;
-    float f2 = 0.5f*(1.0f + _beta) / (float)_k;
-
-    if ( f < f0 ) {
-        return 1.0f;
-    } else if (f > f0 && f < f2) {
-        // transition band
-        float B     = 0.5f/(float)_k;
-        float gamma = logf(2.0f)/(_beta*B);
-        if ( f < f1) {
-            return expf(gamma*(B*(1-_beta) - f));
+        if ( f < f0 ) {
+            // pass band
+            _H[i] = 1.0f;
+        } else if (f > f0 && f < f2) {
+            // transition band
+            if ( f < f1) {
+                _H[i] = expf(gamma*(B*(1-_beta) - f));
+            } else {
+                _H[i] = 1.0f - expf(gamma*(f - (1+_beta)*B));
+            }
         } else {
-            return 1.0f - expf(gamma*(f - (1+_beta)*B));
+            // stop band
+            _H[i] = 0.0f;
         }
-    } else {
-        return 0.0f;
     }
-
-    return 0.0f;
 }
 

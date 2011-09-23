@@ -899,7 +899,10 @@ float liquid_firdes_rkaiser_internal_isi(unsigned int _k,
                                          float * _h);
 
 // flipped exponential frequency response
-float liquid_firdes_fexp_freqresponse(float _f, unsigned int _k, float _beta);
+void liquid_firdes_fexp_freqresponse(unsigned int _k,
+                                     unsigned int _m,
+                                     float        _beta,
+                                     float *      _H);
 
 
 
