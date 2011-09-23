@@ -192,8 +192,8 @@ int main(int argc, char*argv[]) {
     fprintf(fid,"hr = zeros(1,h_len);\n");
 
     // print results
-    for (i=0; i<h_len; i++)   fprintf(fid,"ht(%3u) = %12.4e;\n", i+1, ht[i]);
-    for (i=0; i<h_len; i++)   fprintf(fid,"hr(%3u) = %12.4e;\n", i+1, hr[i]);
+    for (i=0; i<h_len; i++)   fprintf(fid,"ht(%3u) = %12.4e;\n", i+1, ht[i] / k);
+    for (i=0; i<h_len; i++)   fprintf(fid,"hr(%3u) = %12.4e;\n", i+1, hr[i] * k);
     for (i=0; i<h_len; i++)   fprintf(fid,"hp(%3u) = %12.4e;\n", i+1, h_primef[i]);
     
     fprintf(fid,"hc = k*conv(ht,hr);\n");

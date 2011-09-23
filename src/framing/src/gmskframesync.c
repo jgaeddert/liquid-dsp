@@ -256,7 +256,7 @@ void gmskframesync_execute(gmskframesync _q,
         windowcf_push(_q->debug_x, _x[i]);
 #endif
         // compute phase difference
-        float phi = cargf(s);
+        float phi = cargf(s) * _q->k;
 
         // push through matched filter/symbol timing recovery
         symsync_rrrf_execute(_q->symsync, &phi, 1, buffer, &num_written);

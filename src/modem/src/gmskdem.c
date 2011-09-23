@@ -166,7 +166,7 @@ void gmskdem_demodulate(gmskdem _q,
         // compute output
         float d_tmp;
         firfilt_rrrf_execute(_q->filter, &d_tmp);
-        windowf_push(_q->debug_mfout, d_tmp / _q->k);
+        windowf_push(_q->debug_mfout, d_tmp);
 #endif
 
         // decimate by k
@@ -174,9 +174,6 @@ void gmskdem_demodulate(gmskdem _q,
 
         // compute filter output
         firfilt_rrrf_execute(_q->filter, &d_hat);
-
-        // scale result by k
-        d_hat /= _q->k;
     }
 
     // make decision
