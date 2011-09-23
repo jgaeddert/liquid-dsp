@@ -19,7 +19,7 @@
  */
 
 //
-// Flipped Nyquist filter designs
+// Flipped Nyquist/root-Nyquist filter designs
 //
 // References:
 //   [Beaulieu:2001]
@@ -33,27 +33,31 @@
 
 #include "liquid.internal.h"
 
-// Design fexp Nyquist filter
+// Design flipped Nyquist/root-Nyquist filter
+//  _type   : filter type (e.g. LIQUID_NYQUIST_FEXP)
+//  _root   : square-root Nyquist filter?
 //  _k      : samples/symbol
 //  _m      : symbol delay
 //  _beta   : rolloff factor (0 < beta <= 1)
 //  _dt     : fractional sample delay
 //  _h      : output coefficient buffer (length: 2*k*m+1)
-void liquid_firdes_fexp(unsigned int _k,
-                        unsigned int _m,
-                        float _beta,
-                        float _dt,
-                        float * _h)
+void liquid_firdes_fnyquist(liquid_nyquist_type _type,
+                            int                 _root,
+                            unsigned int        _k,
+                            unsigned int        _m,
+                            float               _beta,
+                            float               _dt,
+                            float *             _h)
 {
     // validate input
     if ( _k < 1 ) {
-        fprintf(stderr,"error: liquid_firdes_fexp(): k must be greater than 0\n");
+        fprintf(stderr,"error: liquid_firdes_fnyquist(): k must be greater than 0\n");
         exit(1);
     } else if ( _m < 1 ) {
-        fprintf(stderr,"error: liquid_firdes_fexp(): m must be greater than 0\n");
+        fprintf(stderr,"error: liquid_firdes_fnyquist(): m must be greater than 0\n");
         exit(1);
     } else if ( (_beta < 0.0f) || (_beta > 1.0f) ) {
-        fprintf(stderr,"error: liquid_firdes_fexp(): beta must be in [0,1]\n");
+        fprintf(stderr,"error: liquid_firdes_fnyquist(): beta must be in [0,1]\n");
         exit(1);
     } else;
 
@@ -67,11 +71,22 @@ void liquid_firdes_fexp(unsigned int _k,
     float complex h[h_len]; // impulse response of Nyquist filter
 
     // compute Nyquist filter frequency response
-    liquid_firdes_fexp_freqresponse(_k, _m, _beta, H_prime);
+    switch (_type) {
+    case LIQUID_NYQUIST_FEXP:
+        liquid_firdes_fexp_freqresponse(_k, _m, _beta, H_prime);
+        break;
+    case LIQUID_NYQUIST_FSECH:
+        liquid_firdes_fsech_freqresponse(_k, _m, _beta, H_prime);
+        break;
+    default:
+        fprintf(stderr,"error: liquid_firdes_fnyquist(), unknown/unsupported filter type\n");
+        exit(1);
+    }
 
-    // copy result to fft input buffer
+    // copy result to fft input buffer, computing square root
+    // if required
     for (i=0; i<h_len; i++)
-        H[i] = H_prime[i];
+        H[i] = _root ? sqrtf(H_prime[i]) : H_prime[i];
 
     // compute ifft
     fft_run(h_len, H, h, FFT_REVERSE, 0);
@@ -79,6 +94,22 @@ void liquid_firdes_fexp(unsigned int _k,
     // copy shifted, scaled response
     for (i=0; i<h_len; i++)
         _h[i] = crealf( h[(i+_k*_m+1)%h_len] ) * (float)_k / (float)(h_len);
+}
+
+// Design fexp Nyquist filter
+//  _k      : samples/symbol
+//  _m      : symbol delay
+//  _beta   : rolloff factor (0 < beta <= 1)
+//  _dt     : fractional sample delay
+//  _h      : output coefficient buffer (length: 2*k*m+1)
+void liquid_firdes_fexp(unsigned int _k,
+                        unsigned int _m,
+                        float _beta,
+                        float _dt,
+                        float * _h)
+{
+    // compute resonse using generic function
+    liquid_firdes_fnyquist(LIQUID_NYQUIST_FEXP, 0, _k, _m, _beta, _dt, _h);
 }
 
 // Design fexp square-root Nyquist filter
@@ -93,40 +124,8 @@ void liquid_firdes_rfexp(unsigned int _k,
                          float _dt,
                          float * _h)
 {
-    // validate input
-    if ( _k < 1 ) {
-        fprintf(stderr,"error: liquid_firdes_rfexp(): k must be greater than 0\n");
-        exit(1);
-    } else if ( _m < 1 ) {
-        fprintf(stderr,"error: liquid_firdes_rfexp(): m must be greater than 0\n");
-        exit(1);
-    } else if ( (_beta < 0.0f) || (_beta > 1.0f) ) {
-        fprintf(stderr,"error: liquid_firdes_rfexp(): beta must be in [0,1]\n");
-        exit(1);
-    } else;
-    
-    unsigned int i;
-
-    // derived values
-    unsigned int h_len = 2*_k*_m+1;   // filter length
-
-    float H_prime[h_len];   // frequency response of Nyquist filter (real)
-    float complex H[h_len]; // frequency response of Nyquist filter
-    float complex h[h_len]; // impulse response of Nyquist filter
-
-    // compute Nyquist filter frequency response
-    liquid_firdes_fexp_freqresponse(_k, _m, _beta, H_prime);
-
-    // compute square root of result and copy to fft input buffer
-    for (i=0; i<h_len; i++)
-        H[i] = sqrtf( H_prime[i] );
-
-    // compute ifft
-    fft_run(h_len, H, h, FFT_REVERSE, 0);
-    
-    // copy shifted, scaled response
-    for (i=0; i<h_len; i++)
-        _h[i] = crealf( h[(i+_k*_m+1)%h_len] ) * (float)_k / (float)(h_len);
+    // compute resonse using generic function
+    liquid_firdes_fnyquist(LIQUID_NYQUIST_FEXP, 1, _k, _m, _beta, _dt, _h);
 }
 
 // flipped exponential frequency response
@@ -165,6 +164,82 @@ void liquid_firdes_fexp_freqresponse(unsigned int _k,
                 _H[i] = expf(gamma*(B*(1-_beta) - f));
             } else {
                 _H[i] = 1.0f - expf(gamma*(f - (1+_beta)*B));
+            }
+        } else {
+            // stop band
+            _H[i] = 0.0f;
+        }
+    }
+}
+
+// Design fsech Nyquist filter
+//  _k      : samples/symbol
+//  _m      : symbol delay
+//  _beta   : rolloff factor (0 < beta <= 1)
+//  _dt     : fractional sample delay
+//  _h      : output coefficient buffer (length: 2*k*m+1)
+void liquid_firdes_fsech(unsigned int _k,
+                         unsigned int _m,
+                         float _beta,
+                         float _dt,
+                         float * _h)
+{
+    // compute resonse using generic function
+    liquid_firdes_fnyquist(LIQUID_NYQUIST_FSECH, 0, _k, _m, _beta, _dt, _h);
+}
+
+// Design fsech square-root Nyquist filter
+//  _k      : samples/symbol
+//  _m      : symbol delay
+//  _beta   : rolloff factor (0 < beta <= 1)
+//  _dt     : fractional sample delay
+//  _h      : output coefficient buffer (length: 2*k*m+1)
+void liquid_firdes_rfsech(unsigned int _k,
+                          unsigned int _m,
+                          float _beta,
+                          float _dt,
+                          float * _h)
+{
+    // compute resonse using generic function
+    liquid_firdes_fnyquist(LIQUID_NYQUIST_FSECH, 1, _k, _m, _beta, _dt, _h);
+}
+
+// flipped exponential frequency response
+void liquid_firdes_fsech_freqresponse(unsigned int _k,
+                                     unsigned int _m,
+                                     float        _beta,
+                                     float *      _H)
+{
+    // TODO : validate input
+
+    unsigned int i;
+
+    unsigned int h_len = 2*_k*_m + 1;
+
+    float f0 = 0.5f*(1.0f - _beta) / (float)_k;
+    float f1 = 0.5f*(1.0f        ) / (float)_k;
+    float f2 = 0.5f*(1.0f + _beta) / (float)_k;
+
+    float B     = 0.5f/(float)_k;
+    float gamma = logf(sqrtf(3.0f) + 2.0f) / (_beta*B);
+
+    // compute frequency response of Nyquist filter
+    for (i=0; i<h_len; i++) {
+        float f = (float)i / (float)h_len;
+        if (f > 0.5f) f = f - 1.0f;
+
+        // enforce even symmetry
+        f = fabsf(f);
+
+        if ( f < f0 ) {
+            // pass band
+            _H[i] = 1.0f;
+        } else if (f > f0 && f < f2) {
+            // transition band
+            if ( f < f1) {
+                _H[i] = 1.0f / coshf(gamma*(f - B*(1-_beta)));
+            } else {
+                _H[i] = 1.0f - 1.0f / coshf(gamma*(B*(1+_beta) - f));
             }
         } else {
             // stop band

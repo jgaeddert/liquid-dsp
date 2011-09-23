@@ -898,11 +898,26 @@ float liquid_firdes_rkaiser_internal_isi(unsigned int _k,
                                          float _rho,
                                          float * _h);
 
+// Design flipped Nyquist/root-Nyquist filters
+void liquid_firdes_fnyquist(liquid_nyquist_type _type,
+                            int                 _root,
+                            unsigned int        _k,
+                            unsigned int        _m,
+                            float               _beta,
+                            float               _dt,
+                            float *             _h);
+
 // flipped exponential frequency response
 void liquid_firdes_fexp_freqresponse(unsigned int _k,
                                      unsigned int _m,
                                      float        _beta,
                                      float *      _H);
+
+// flipped hyperbolic secant frequency response
+void liquid_firdes_fsech_freqresponse(unsigned int _k,
+                                      unsigned int _m,
+                                      float        _beta,
+                                      float *      _H);
 
 
 
