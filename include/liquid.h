@@ -2330,6 +2330,9 @@ liquid_float_complex liquid_casinf(liquid_float_complex _z);
 liquid_float_complex liquid_cacosf(liquid_float_complex _z);
 liquid_float_complex liquid_catanf(liquid_float_complex _z);
 
+// faster approximation to arg{*}
+float liquid_cargf_approx(liquid_float_complex _z);
+
 
 // ln( Gamma(z) )
 float liquid_lngammaf(float _z);

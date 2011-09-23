@@ -90,4 +90,25 @@ float complex liquid_catanf(float complex _z)
     return 0.5f*_Complex_I*liquid_clogf( t0 / t1 );
 }
 
+// approximation to cargf() but faster
+float liquid_cargf_approx(float complex _x)
+{
+    float theta;
+    float xi = crealf(_x);
+    float xq = cimagf(_x);
+
+    if (xi == 0.0f) {
+        if (xq == 0.0f)
+            return 0.0f;
+        return xq > 0.0f ? M_PI_2 : -M_PI_2;
+    } else {
+        theta = xq / fabsf(xi);
+    }
+
+    if (theta >  M_PI_2)
+        theta =  M_PI_2;
+    else if (theta < -M_PI_2)
+        theta = -M_PI_2;
+    return theta;
+}
 

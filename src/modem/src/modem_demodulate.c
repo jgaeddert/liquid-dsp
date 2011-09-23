@@ -31,28 +31,6 @@
 #include <assert.h>
 #include "liquid.internal.h"
 
-// approximation to cargf() but faster
-float cargf_demod_approx(float complex _x)
-{
-    float theta;
-    float xi = crealf(_x);
-    float xq = cimagf(_x);
-
-    if (xi == 0.0f) {
-        if (xq == 0.0f)
-            return 0.0f;
-        return xq > 0.0f ? M_PI_2 : -M_PI_2;
-    } else {
-        theta = xq / fabsf(xi);
-    }
-
-    if (theta >  M_PI_2)
-        theta =  M_PI_2;
-    else if (theta < -M_PI_2)
-        theta = -M_PI_2;
-    return theta;
-}
-
 // generic demodulation
 void modem_demodulate(modem _demod,
                       float complex x,

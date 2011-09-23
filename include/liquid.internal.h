@@ -1500,9 +1500,6 @@ void modem_modulate_ook(modem _mod, unsigned int symbol_in, float complex *y);
 void modem_modulate_sqam32(modem _mod, unsigned int symbol_in, float complex *y);
 void modem_modulate_sqam128(modem _mod, unsigned int symbol_in, float complex *y);
 
-// modem demodualte phase error approximation (for faster demodulation)
-float cargf_demod_approx(float complex _x);
-
 // generic modem demodulate routines
 void modem_demodulate_ask(modem _demod, float complex x, unsigned int *symbol_out);
 void modem_demodulate_qam(modem _demod, float complex x, unsigned int *symbol_out);
