@@ -325,6 +325,9 @@ void liquid_firdes_nyquist(liquid_nyquist_type _type,
     case LIQUID_NYQUIST_FSECH:
         liquid_firdes_fsech(_k, _m, _beta, _dt, _h);
         break;
+    case LIQUID_NYQUIST_FARCSECH:
+        liquid_firdes_farcsech(_k, _m, _beta, _dt, _h);
+        break;
     default:
         fprintf(stderr,"error: liquid_firdes_nyquist(), invalid filter type '%d'\n", _type);
         exit(1);
@@ -370,6 +373,9 @@ void liquid_firdes_rnyquist(liquid_rnyquist_type _type,
         break;
     case LIQUID_RNYQUIST_FSECH:
         liquid_firdes_rfsech(_k, _m, _beta, _dt, _h);
+        break;
+    case LIQUID_RNYQUIST_FARCSECH:
+        liquid_firdes_rfarcsech(_k, _m, _beta, _dt, _h);
         break;
     default:
         fprintf(stderr,"error: liquid_firdes_rnyquist(), invalid filter type '%d'\n", _type);

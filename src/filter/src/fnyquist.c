@@ -78,6 +78,9 @@ void liquid_firdes_fnyquist(liquid_nyquist_type _type,
     case LIQUID_NYQUIST_FSECH:
         liquid_firdes_fsech_freqresponse(_k, _m, _beta, H_prime);
         break;
+    case LIQUID_NYQUIST_FARCSECH:
+        liquid_firdes_farcsech_freqresponse(_k, _m, _beta, H_prime);
+        break;
     default:
         fprintf(stderr,"error: liquid_firdes_fnyquist(), unknown/unsupported filter type\n");
         exit(1);
@@ -240,6 +243,96 @@ void liquid_firdes_fsech_freqresponse(unsigned int _k,
                 _H[i] = 1.0f / coshf(gamma*(f - B*(1-_beta)));
             } else {
                 _H[i] = 1.0f - 1.0f / coshf(gamma*(B*(1+_beta) - f));
+            }
+        } else {
+            // stop band
+            _H[i] = 0.0f;
+        }
+    }
+}
+
+// Design farcsech Nyquist filter
+//  _k      : samples/symbol
+//  _m      : symbol delay
+//  _beta   : rolloff factor (0 < beta <= 1)
+//  _dt     : fractional sample delay
+//  _h      : output coefficient buffer (length: 2*k*m+1)
+void liquid_firdes_farcsech(unsigned int _k,
+                            unsigned int _m,
+                            float _beta,
+                            float _dt,
+                            float * _h)
+{
+    // compute resonse using generic function
+    liquid_firdes_fnyquist(LIQUID_NYQUIST_FARCSECH, 0, _k, _m, _beta, _dt, _h);
+}
+
+// Design farcsech square-root Nyquist filter
+//  _k      : samples/symbol
+//  _m      : symbol delay
+//  _beta   : rolloff factor (0 < beta <= 1)
+//  _dt     : fractional sample delay
+//  _h      : output coefficient buffer (length: 2*k*m+1)
+void liquid_firdes_rfarcsech(unsigned int _k,
+                             unsigned int _m,
+                             float _beta,
+                             float _dt,
+                             float * _h)
+{
+    // compute resonse using generic function
+    liquid_firdes_fnyquist(LIQUID_NYQUIST_FARCSECH, 1, _k, _m, _beta, _dt, _h);
+}
+
+// hyperbolic arc-secant
+float liquid_asechf(float _z)
+{
+    if (_z <= 0.0f || _z > 1.0f) {
+        fprintf(stderr,"warning: liquid_asechf(), input out of range\n");
+        return 0.0f;
+    }
+
+    float z_inv = 1.0f / _z;
+
+    return logf( sqrtf(z_inv - 1.0f)*sqrtf(z_inv + 1.0f) + z_inv );
+}
+
+// flipped exponential frequency response
+void liquid_firdes_farcsech_freqresponse(unsigned int _k,
+                                         unsigned int _m,
+                                         float        _beta,
+                                         float *      _H)
+{
+    // TODO : validate input
+
+    unsigned int i;
+
+    unsigned int h_len = 2*_k*_m + 1;
+
+    float f0 = 0.5f*(1.0f - _beta) / (float)_k;
+    float f1 = 0.5f*(1.0f        ) / (float)_k;
+    float f2 = 0.5f*(1.0f + _beta) / (float)_k;
+
+    float B     = 0.5f/(float)_k;
+    float gamma = logf(sqrtf(3.0f) + 2.0f) / (_beta*B);
+    float zeta  = 1.0f / (2.0f * _beta * B);
+
+    // compute frequency response of Nyquist filter
+    for (i=0; i<h_len; i++) {
+        float f = (float)i / (float)h_len;
+        if (f > 0.5f) f = f - 1.0f;
+
+        // enforce even symmetry
+        f = fabsf(f);
+
+        if ( f < f0 ) {
+            // pass band
+            _H[i] = 1.0f;
+        } else if (f > f0 && f < f2) {
+            // transition band
+            if ( f < f1) {
+                _H[i] = 1.0f - (zeta/gamma)*liquid_asechf(zeta*(B*(1+_beta) - f));
+            } else {
+                _H[i] = (zeta/gamma)*liquid_asechf(zeta*(f - B*(1-_beta)));
             }
         } else {
             // stop band

@@ -919,6 +919,12 @@ void liquid_firdes_fsech_freqresponse(unsigned int _k,
                                       float        _beta,
                                       float *      _H);
 
+// flipped hyperbolic secant frequency response
+void liquid_firdes_farcsech_freqresponse(unsigned int _k,
+                                         unsigned int _m,
+                                         float        _beta,
+                                         float *      _H);
+
 
 
 // initialize the frequency grid on the disjoint bounded set
