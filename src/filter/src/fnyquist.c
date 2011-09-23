@@ -19,7 +19,7 @@
  */
 
 //
-// Flipped exponential filter
+// Flipped Nyquist filter designs
 //
 // References:
 //   [Beaulieu:2001]
