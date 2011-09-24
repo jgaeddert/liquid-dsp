@@ -72,14 +72,15 @@ AC_ARG_ENABLE(experimental,
             src/experimental/src/filter_rrrf.o \
             src/experimental/src/filter_crcf.o \
             src/experimental/src/filter_cccf.o \
-            src/experimental/src/gmskframegen.o \
-            src/experimental/src/gmskframesync.o \
             src/experimental/src/packetizer.o \
             src/experimental/src/patternset.o \
             src/experimental/src/awgn_channel.o \
             src/experimental/src/lognorm_channel.o \
             src/experimental/src/channel.o \
             src/experimental/src/pamodel.o \
+            src/experimental/src/ofdmoqamframe.common.o \
+            src/experimental/src/ofdmoqamframegen.o \
+            src/experimental/src/ofdmoqamframesync.o \
             src/experimental/src/ricek_channel.o"
         EXPERIMENTAL_AUTOTESTS="src/experimental/tests/ann_autotest.c \
             src/experimental/tests/gport_autotest.c \
@@ -108,6 +109,7 @@ AC_ARG_ENABLE(experimental,
             examples/itqmfb_crcf_example \
             examples/itqmfb_rrrf_example \
             examples/kmeans_example \
+            examples/ofdmoqamframesync_example \
             examples/patternset_example \
             examples/prqmfb_crcf_example \
             examples/qmfb_crcf_analysis_example \

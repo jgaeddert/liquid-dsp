@@ -41,8 +41,8 @@ framesyncprops_s framesyncprops_default = {
     1e-3f,      // agc_gmin
     1e4f,       // agc_gmax
     // symbol timing recovery
-    0.08f,      // sym_bw0
-    0.05f,      // sym_bw1
+    0.01f,      // sym_bw0
+    0.001f,     // sym_bw1
     // phase-locked loop
     0.020f,     // pll_bw0
     0.005f,     // pll_bw1

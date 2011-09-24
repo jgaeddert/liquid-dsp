@@ -95,16 +95,16 @@ int main(int argc, char*argv[]) {
 
     switch (ftype) {
     case FILTER_RRCOS:
-        design_rrc_filter(k,m,beta,0,h);
+        liquid_firdes_rrcos(k,m,beta,0,h);
         break;
     case FILTER_RKAISER:
-        design_rkaiser_filter(k,m,beta,0,h);
+        liquid_firdes_rkaiser(k,m,beta,0,h);
         break;
     case FILTER_ARKAISER:
-        design_arkaiser_filter(k,m,beta,0,h);
+        liquid_firdes_arkaiser(k,m,beta,0,h);
         break;
     case FILTER_hM3:
-        design_hM3_filter(k,m,beta,0,h);
+        liquid_firdes_hM3(k,m,beta,0,h);
         break;
     default:
         // should never get to this point

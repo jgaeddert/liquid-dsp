@@ -4,6 +4,7 @@
 
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 #include <math.h>
 #include <getopt.h>
 #include <time.h>
@@ -18,6 +19,7 @@ void usage()
 {
     printf("symsync_crcf_example [options]\n");
     printf("  u/h   : print usage\n");
+    printf("  T     : filter type: [rrcos], rkaiser, arkaiser, hM3, gmsk\n");
     printf("  k     : filter samples/symbol, default: 2\n");
     printf("  K     : output samples/symbol, default: 2\n");
     printf("  m     : filter delay (symbols), default: 3\n");
@@ -42,7 +44,8 @@ int main(int argc, char*argv[]) {
     unsigned int num_filters=32;    // number of filters in the bank
     unsigned int num_symbols=200;   // number of data symbols
     float SNRdB = 30.0f;            // signal-to-noise ratio
-    liquid_rnyquist_type ftype = LIQUID_RNYQUIST_ARKAISER;
+    liquid_rnyquist_type ftype_tx = LIQUID_RNYQUIST_RRC;
+    liquid_rnyquist_type ftype_rx = LIQUID_RNYQUIST_RRC;
 
     float bt=0.02f;     // loop filter bandwidth
     float tau=-0.1f;     // fractional symbol offset
@@ -52,10 +55,31 @@ int main(int argc, char*argv[]) {
     int random_data=1;
 
     int dopt;
-    while ((dopt = getopt(argc,argv,"uhk:K:m:b:B:s:w:n:t:r:")) != EOF) {
+    while ((dopt = getopt(argc,argv,"uhT:k:K:m:b:B:s:w:n:t:r:")) != EOF) {
         switch (dopt) {
         case 'u':
         case 'h':   usage();                        return 0;
+        case 'T':
+            if (strcmp(optarg,"rrcos")==0) {
+                ftype_tx = LIQUID_RNYQUIST_RRC;
+                ftype_rx = LIQUID_RNYQUIST_RRC;
+            } else if (strcmp(optarg,"rkaiser")==0) {
+                ftype_tx = LIQUID_RNYQUIST_RKAISER;
+                ftype_rx = LIQUID_RNYQUIST_RKAISER;
+            } else if (strcmp(optarg,"arkaiser")==0) {
+                ftype_tx = LIQUID_RNYQUIST_ARKAISER;
+                ftype_rx = LIQUID_RNYQUIST_ARKAISER;
+            } else if (strcmp(optarg,"hM3")==0) {
+                ftype_tx = LIQUID_RNYQUIST_hM3;
+                ftype_rx = LIQUID_RNYQUIST_hM3;
+            } else if (strcmp(optarg,"gmsk")==0) {
+                ftype_tx = LIQUID_RNYQUIST_GMSKTX;
+                ftype_rx = LIQUID_RNYQUIST_GMSKRX;
+            } else {
+                fprintf(stderr,"error: %s, unknown filter type '%s'\n", argv[0], optarg);
+                exit(1);
+            }
+            break;
         case 'k':   k           = atoi(optarg);     break;
         case 'K':   k_out       = atoi(optarg);     break;
         case 'm':   m           = atoi(optarg);     break;
@@ -135,7 +159,7 @@ int main(int argc, char*argv[]) {
     // design interpolating filter
     unsigned int h_len = 2*k*m+1;
     float h[h_len];
-    design_rnyquist_filter(ftype,k,m,beta,dt,h);
+    liquid_firdes_rnyquist(ftype_tx,k,m,beta,dt,h);
     interp_crcf q = interp_crcf_create(k,h,h_len);
     for (i=0; i<num_symbols; i++) {
         interp_crcf_execute(q, s[i], &x[n]);
@@ -179,7 +203,7 @@ int main(int argc, char*argv[]) {
     // create and run symbol synchronizer
     //
 
-    symsync_crcf d = symsync_crcf_create_rnyquist(ftype, k, m, beta, num_filters);
+    symsync_crcf d = symsync_crcf_create_rnyquist(ftype_rx, k, m, beta, num_filters);
     symsync_crcf_set_lf_bw(d,bt);
     symsync_crcf_set_output_rate(d,k_out);
 
@@ -271,7 +295,6 @@ int main(int argc, char*argv[]) {
     fprintf(fid,"ylabel('Quadrature');\n");
     fprintf(fid,"legend(['first 50%%'],['last 50%%'],1);\n");
 
-#if 0
     fprintf(fid,"figure;\n");
     fprintf(fid,"tt = 0:(length(tau_hat)-1);\n");
     fprintf(fid,"b = floor(num_filters*tau_hat + 0.5);\n");
@@ -283,9 +306,8 @@ int main(int argc, char*argv[]) {
     fprintf(fid,"ylabel('filterbank index');\n");
     fprintf(fid,"grid on;\n");
     fprintf(fid,"axis([0 length(tau_hat) -1 num_filters]);\n");
-    fclose(fid);
-#endif
 
+    fclose(fid);
     printf("results written to %s.\n", OUTPUT_FILENAME);
 
     // clean it up

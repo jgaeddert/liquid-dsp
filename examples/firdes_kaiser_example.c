@@ -62,7 +62,7 @@ int main(int argc, char*argv[]) {
     // generate the filter
     unsigned int i;
     float h[h_len];
-    firdes_kaiser_window(h_len,fc,As,mu,h);
+    liquid_firdes_kaiser(h_len,fc,As,mu,h);
 
     // print coefficients
     for (i=0; i<h_len; i++)

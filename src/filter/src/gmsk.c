@@ -74,6 +74,8 @@ void liquid_firdes_gmsktx(unsigned int _k,
         e += _h[i];
     for (i=0; i<h_len; i++)
         _h[i] *= M_PI / (2.0f * e);
+    for (i=0; i<h_len; i++)
+        _h[i] *= (float)_k;
 }
 
 // Design GMSK receive filter
@@ -140,12 +142,12 @@ void liquid_firdes_gmskrx(unsigned int _k,
     float complex H_hat[h_len];     // frequency response of receive filter
 
     // create 'prototype' matched filter
-    design_nyquist_filter(prototype,k,m,beta,0.0f,h_primef);
+    liquid_firdes_nyquist(prototype,k,m,beta,0.0f,h_primef);
 
     // create 'gain' filter to improve stop-band rejection
     float fc = (0.7f + 0.1*beta) / (float)k;
-    float As = 40.0f;
-    firdes_kaiser_window(h_len, fc, As, 0.0f, g_primef);
+    float As = 60.0f;
+    liquid_firdes_kaiser(h_len, fc, As, 0.0f, g_primef);
 
     // copy to fft input buffer, shifting appropriately
     for (i=0; i<h_len; i++) {
@@ -183,7 +185,8 @@ void liquid_firdes_gmskrx(unsigned int _k,
     for (i=0; i<h_len; i++)
         hr[i] = crealf( h_hat[(i+k*m+1)%h_len] ) / (float)(k*h_len);
 
-    // copy result
-    memmove(_h, hr, h_len*sizeof(float));
+    // copy result, scaling by (samples/symbol)^2
+    for (i=0; i<h_len; i++)
+        _h[i] = hr[i]*_k*_k;
 }
 

@@ -32,15 +32,15 @@ $(local_pgffiles) : %.pdf : %.tex
 local_pdffiles :=					\
 	figures.gen/agc_transient.pdf			\
 	figures.gen/audio_cvsd.pdf			\
-	figures.gen/equalizer_example1_const.pdf	\
-	figures.gen/equalizer_example1_mse.pdf		\
-	figures.gen/equalizer_example1_psd.pdf		\
-	figures.gen/equalizer_example1_taps.pdf		\
+	figures.gen/eqlms_vs_eqrls_const.pdf		\
+	figures.gen/eqlms_vs_eqrls_mse.pdf		\
+	figures.gen/eqlms_vs_eqrls_freq.pdf		\
+	figures.gen/eqlms_vs_eqrls_taps.pdf		\
 							\
-	figures.gen/equalizer_example2_const.pdf	\
-	figures.gen/equalizer_example2_mse.pdf		\
-	figures.gen/equalizer_example2_psd.pdf		\
-	figures.gen/equalizer_example2_taps.pdf		\
+	figures.gen/eqlms_cccf_blind_const.pdf		\
+	figures.gen/eqlms_cccf_blind_mse.pdf		\
+	figures.gen/eqlms_cccf_blind_freq.pdf		\
+	figures.gen/eqlms_cccf_blind_time.pdf		\
 							\
 	figures.gen/fec_ber_esn0_hamming.pdf		\
 	figures.gen/fec_ber_ebn0_hamming.pdf		\
@@ -48,6 +48,9 @@ local_pdffiles :=					\
 	figures.gen/fec_ber_ebn0_conv.pdf		\
 	figures.gen/fec_ber_esn0_convpunc.pdf		\
 	figures.gen/fec_ber_ebn0_convpunc.pdf		\
+							\
+	figures.gen/fft_example_time.pdf		\
+	figures.gen/fft_example_freq.pdf		\
 							\
 	figures.gen/filter_rnyquist.pdf			\
 	figures.gen/filter_butter_psd.pdf		\
@@ -80,6 +83,8 @@ local_pdffiles :=					\
 	figures.gen/filter_interp_crcf.pdf		\
 	figures.gen/filter_kaiser_time.pdf		\
 	figures.gen/filter_kaiser_freq.pdf		\
+	figures.gen/filter_firdes_gmskrx_time.pdf	\
+	figures.gen/filter_firdes_gmskrx_freq.pdf	\
 	figures.gen/filter_resamp_crcf_time.pdf		\
 	figures.gen/filter_resamp_crcf_freq.pdf		\
 	figures.gen/interleaver_scatterplot_i0.pdf	\
@@ -194,11 +199,15 @@ $(local_pdffiles) : %.pdf : %.eps
 local_progs :=						\
 	src/agc_transient				\
 	src/audio_cvsd					\
-	src/equalizer_cccf				\
+	src/eqlms_vs_eqrls				\
+	src/eqlms_cccf_blind				\
 	src/estimate_snr_fec				\
 	src/estimate_snr_modem				\
 	src/estimate_snr_test				\
+	src/fft_example					\
 	src/filter_iirdes				\
+	src/filter_firdes_gmskrx_time			\
+	src/filter_firdes_gmskrx_freq			\
 	src/filter_firdespm				\
 	src/filter_firfarrow_crcf			\
 	src/filter_firfilt_crcf				\
@@ -257,19 +266,19 @@ figures.gen/audio_cvsd.gnu : src/audio_cvsd ; ./$<
 ##
 
 
-# equalizer_example1
-figures.gen/equalizer_example1_const.gnu	\
-figures.gen/equalizer_example1_mse.gnu		\
-figures.gen/equalizer_example1_psd.gnu		\
-figures.gen/equalizer_example1_taps.gnu	: src/equalizer_cccf
-	./$< -f figures.gen/equalizer_example1 -n512 -c6 -p12 -s40
+# eqlms_vs_eqrls
+figures.gen/eqlms_vs_eqrls_const.gnu	\
+figures.gen/eqlms_vs_eqrls_mse.gnu	\
+figures.gen/eqlms_vs_eqrls_freq.gnu	\
+figures.gen/eqlms_vs_eqrls_taps.gnu	: src/eqlms_vs_eqrls
+	./$< -n512 -c6 -p12 -s40
 
-# equalizer_example2
-figures.gen/equalizer_example2_const.gnu	\
-figures.gen/equalizer_example2_mse.gnu		\
-figures.gen/equalizer_example2_psd.gnu		\
-figures.gen/equalizer_example2_taps.gnu	: src/equalizer_cccf
-	./$< -f figures.gen/equalizer_example2 -n512 -c8 -p18 -s14
+# eqlms_cccf_blind
+figures.gen/eqlms_cccf_blind_const.gnu		\
+figures.gen/eqlms_cccf_blind_mse.gnu		\
+figures.gen/eqlms_cccf_blind_freq.gnu		\
+figures.gen/eqlms_cccf_blind_time.gnu : src/eqlms_cccf_blind
+	./$< -n1000 -c8 -p8
 
 ##
 ## MODULE : fec
@@ -480,6 +489,12 @@ figures.gen/filter_kaiser_freq.gnu : src/filter_kaiser
 	./$<
 
 # 
+# GMSK receive filter
+#
+figures.gen/filter_firdes_gmskrx_time.gnu : src/filter_firdes_gmskrx_time ; ./$<
+figures.gen/filter_firdes_gmskrx_freq.gnu : src/filter_firdes_gmskrx_freq ; ./$<
+
+# 
 # resamp_crcf
 #
 figures.gen/filter_resamp_crcf_time.gnu \
@@ -490,6 +505,17 @@ figures.gen/filter_resamp_crcf_freq.gnu: src/filter_resamp_crcf
 # rnyquist
 #
 figures.gen/filter_rnyquist.gnu : src/filter_rnyquist
+	./$<
+
+
+##
+## MODULE : fft
+##
+
+# 
+# fft_example
+#
+figures.gen/fft_example_time.gnu figures.gen/fft_example_freq : src/fft_example
 	./$<
 
 

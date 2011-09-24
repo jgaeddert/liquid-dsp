@@ -20,11 +20,16 @@
 void usage()
 {
     printf("Usage: eqlms_cccf_blind_example [OPTION]\n");
-    printf("  u/h   : print usage\n");
+    printf("  h     : print help\n");
     printf("  n     : number of symbols, default: 500\n");
     printf("  s     : SNR [dB], default: 30\n");
     printf("  c     : number of channel filter taps (minimum: 1), default: 5\n");
-    printf("  m     : modulation scheme (qpsk default)\n");
+    printf("  k     : samples/symbol, default: 2\n");
+    printf("  m     : filter semi-length (symbols), default: 4\n");
+    printf("  b     : filter excess bandwidth factor, default: 0.3\n");
+    printf("  p     : equalizer semi-length (symbols), default: 3\n");
+    printf("  u     : equalizer learning rate, default; 0.05\n");
+    printf("  M     : modulation scheme (qpsk default)\n");
     liquid_print_modulation_schemes();
 }
 
@@ -34,28 +39,31 @@ int main(int argc, char*argv[])
 
     // options
     unsigned int num_symbols=500;   // number of symbols to observe
-    unsigned int hc_len=5;          // channel filter length
-    unsigned int hp_len=17;         // equalizer order (better if odd)
-    float mu = 0.08f;               // learning rate
     float SNRdB = 30.0f;            // signal-to-noise ratio [dB]
-
-    // modulation type
-    unsigned int bps=2;
-    modulation_scheme ms = LIQUID_MODEM_QPSK;
-
+    unsigned int hc_len=5;          // channel filter length
     unsigned int k=2;               // matched filter samples/symbol
-    unsigned int m=5;               // matched filter delay (symbols)
+    unsigned int m=3;               // matched filter delay (symbols)
     float beta=0.3f;                // matched filter excess bandwidth factor
+    unsigned int p=3;               // equalizer length (symbols, hp_len = 2*k*p+1)
+    float mu = 0.08f;               // learning rate
+
+    // modulation type/depth
+    modulation_scheme ms = LIQUID_MODEM_QPSK;
+    unsigned int bps=2;
 
     int dopt;
-    while ((dopt = getopt(argc,argv,"uhn:s:c:m:")) != EOF) {
+    while ((dopt = getopt(argc,argv,"hn:s:c:k:m:b:p:u:M:")) != EOF) {
         switch (dopt) {
-        case 'u':
-        case 'h':   usage();                    return 0;
-        case 'n':   num_symbols = atoi(optarg); break;
-        case 's':   SNRdB = atof(optarg);       break;
-        case 'c':   hc_len = atoi(optarg);      break;
-        case 'm':
+        case 'h': usage();                      return 0;
+        case 'n': num_symbols   = atoi(optarg); break;
+        case 's': SNRdB         = atof(optarg); break;
+        case 'c': hc_len        = atoi(optarg); break;
+        case 'k': k             = atoi(optarg); break;
+        case 'm': m             = atoi(optarg); break;
+        case 'b': beta          = atof(optarg); break;
+        case 'p': p             = atoi(optarg); break;
+        case 'u': mu            = atof(optarg); break;
+        case 'M':
             liquid_getopt_str2modbps(optarg, &ms, &bps);
             if (ms == LIQUID_MODEM_UNKNOWN) {
                 fprintf(stderr,"error: %s, unknown/unsupported modulation scheme '%s'\n", argv[0], optarg);
@@ -69,13 +77,32 @@ int main(int argc, char*argv[])
     }
 
     // validate input
-    if (hc_len == 0) {
+    if (num_symbols == 0) {
+        fprintf(stderr,"error: %s, number of symbols must be greater than zero\n", argv[0]);
+        exit(1);
+    } else if (hc_len == 0) {
         fprintf(stderr,"error: %s, channel must have at least 1 tap\n", argv[0]);
+        exit(1);
+    } else if (k < 2) {
+        fprintf(stderr,"error: %s, samples/symbol must be at least 2\n", argv[0]);
+        exit(1);
+    } else if (m == 0) {
+        fprintf(stderr,"error: %s, filter semi-length must be at least 1 symbol\n", argv[0]);
+        exit(1);
+    } else if (beta < 0.0f || beta > 1.0f) {
+        fprintf(stderr,"error: %s, filter excess bandwidth must be in [0,1]\n", argv[0]);
+        exit(1);
+    } else if (p == 0) {
+        fprintf(stderr,"error: %s, equalizer semi-length must be at least 1 symbol\n", argv[0]);
+        exit(1);
+    } else if (mu < 0.0f || mu > 1.0f) {
+        fprintf(stderr,"error: %s, equalizer learning rate must be in [0,1]\n", argv[0]);
         exit(1);
     }
 
     // derived values
     unsigned int hm_len = 2*k*m+1;   // matched filter length
+    unsigned int hp_len = 2*k*p+1;   // equalizer filter length
     unsigned int num_samples = k*num_symbols;
 
     // bookkeeping variables
@@ -91,7 +118,7 @@ int main(int argc, char*argv[])
     unsigned int i;
 
     // generate matched filter response
-    design_rnyquist_filter(LIQUID_RNYQUIST_RRC, k, m, beta, 0.0f, hm);
+    liquid_firdes_rnyquist(LIQUID_RNYQUIST_RRC, k, m, beta, 0.0f, hm);
     interp_crcf interp = interp_crcf_create(k, hm, hm_len);
 
     // create the modem objects
@@ -102,7 +129,7 @@ int main(int argc, char*argv[])
     // generate channel impulse response, filter
     hc[0] = 1.0f;
     for (i=1; i<hc_len; i++)
-        hc[i] = 0.07f*(randnf() + randnf()*_Complex_I);
+        hc[i] = 0.09f*(randnf() + randnf()*_Complex_I);
     firfilt_cccf fchannel = firfilt_cccf_create(hc, hc_len);
 
     // generate random symbols
@@ -124,17 +151,22 @@ int main(int argc, char*argv[])
     }
 
     // push through equalizer
-    for (i=0; i<hp_len; i++) {
-        float t = ((float)i - 0.5f*(float)(hp_len) + 0.5f) / (float)k;
-        float sigma = 0.4f;
-        hp[i] = 1.4f*expf( -t*t / (2.0f*sigma*sigma) ) / (float)k;
-    }
-
-    eqlms_cccf eq = eqlms_cccf_create(hp, hp_len);
+    // create equalizer, intialized with square-root Nyquist filter
+    eqlms_cccf eq = eqlms_cccf_create_rnyquist(LIQUID_RNYQUIST_RRC, k, p, beta, 0.0f);
     eqlms_cccf_set_bw(eq, mu);
+
+    // get initialized weights
+    eqlms_cccf_get_weights(eq, hp);
+
+    // filtered error vector magnitude (emperical RMS error)
+    float evm_hat = 0.03f;
 
     float complex d_hat = 0.0f;
     for (i=0; i<num_samples; i++) {
+        // print filtered evm (emperical rms error)
+        if ( ((i+1)%50)==0 )
+            printf("%4u : rms error = %12.8f dB\n", i+1, 10*log10(evm_hat));
+
         eqlms_cccf_push(eq, y[i]);
         eqlms_cccf_execute(eq, &d_hat);
 
@@ -155,6 +187,10 @@ int main(int argc, char*argv[])
 
         // update equalizer
         eqlms_cccf_step(eq, d_prime, d_hat);
+
+        // update filtered evm estimate
+        float evm = crealf( (d_prime-d_hat)*conjf(d_prime-d_hat) );
+        evm_hat = 0.98f*evm_hat + 0.02f*evm;
     }
 
     // get equalizer weights
@@ -227,20 +263,16 @@ int main(int argc, char*argv[])
     fprintf(fid,"axis square;\n");
     fprintf(fid,"grid on;\n");
 
+    // compute composite response
+    fprintf(fid,"g  = real(conv(conv(hm,hc),hp));\n");
+
     // plot responses
     fprintf(fid,"nfft = 1024;\n");
     fprintf(fid,"f = [0:(nfft-1)]/nfft - 0.5;\n");
     fprintf(fid,"Hm = 20*log10(abs(fftshift(fft(hm/k,nfft))));\n");
-    fprintf(fid,"Hc = 20*log10(abs(fftshift(fft(hc,nfft))));\n");
-    fprintf(fid,"Hp = 20*log10(abs(fftshift(fft(hp,nfft))));\n");
-    fprintf(fid,"G  = Hm + Hc + Hp;\n");
-
-#if 0
-    // compute aliased spectrum
-    fprintf(fid,"g  = real(conv(conv(hm,hc),hp));\n");
-    fprintf(fid,"G2 = 20*log10(abs(fftshift(fft(g(1:2:end),nfft))));\n");
-    fprintf(fid,"plot(f/2,G2);\n");
-#endif
+    fprintf(fid,"Hc = 20*log10(abs(fftshift(fft(hc,  nfft))));\n");
+    fprintf(fid,"Hp = 20*log10(abs(fftshift(fft(hp,  nfft))));\n");
+    fprintf(fid,"G  = 20*log10(abs(fftshift(fft(g/k, nfft))));\n");
 
     fprintf(fid,"figure;\n");
     fprintf(fid,"plot(f,Hm, f,Hc, f,Hp, f,G,'-k','LineWidth',2, [-0.5/k 0.5/k],[-6.026 -6.026],'or');\n");

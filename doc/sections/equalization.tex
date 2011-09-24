@@ -159,8 +159,9 @@ For more detailed examples, see
 {\tt examples/eqlms\_cccf\_example.c} and
 {\tt examples/eqrls\_cccf\_example.c}.
 
-\subsection{Demonstration}
-\label{module:equalization:demo}
+
+\subsection{Comparison of {\tt eqlms} and {\tt eqrls} Object Families}
+\label{module:equalization:eqlms_vs_eqrls}
 The performance of the {\tt eqlms} and {\tt eqrls} equalizers are compared by
 generating a channel with an impulse response representing a strong
 line-of-sight (LoS) component followed by random echoes.
@@ -170,21 +171,19 @@ RLS algorithms, respectively.
 A small amount of noise was injected after the channel filter to demonstrate
 the robustness of the algorithms.
 The results of two simulations are shown in
-figures~\ref{fig:module:equalization:example1} and
-\ref{fig:module:equalization:example2};
-the first demonstrating a 10-tap equalizer applied to the response of a 6-tap
-channel with an SNR of 40~dB, while the second demonstrates a 18-tap equalizer
-for a 8-tap channel with an SNR of just 14~dB.
+Figure~\ref{fig:module:equalization:eqlms_vs_eqrls}
+demonstrating a 10-tap equalizer applied to the response of a 6-tap
+channel with an SNR of 40~dB.
 
 The passband power spectral densities (PSD) of the channel and the equalizer
-outputs are depicted in figures~\ref{fig:module:equalization:example1:psd} and
-\ref{fig:module:equalization:example2:psd}.
+outputs are depicted in
+Figure~\ref{fig:module:equalization:eqlms_vs_eqrls:psd}.
 Notice that the inter-symbol interference of the channel causes its PSD to
 have a non-flat response.
 Theoretically, if the inter-symbol interference is completely removed, the
 response of both the channel and the equalizer will be completely flat
 (neglecting any noise present).
-While the PSD of the equalized output is nearly flat in the figures,
+While the PSD of the equalized output is nearly flat in the figure,
 it is important to realize that these algorithms minimize a cost function
 defined as the square of the {\it a priori} filter output error, and do not
 necessarily force the PSD to zero.
@@ -202,66 +201,73 @@ The classic zero-forcing equalizer has several drawbacks:
 \end{enumerate}
 It is interesting to note that both the LMS and RLS equalizers converge to
 nearly the same solution.
-In both scenarios, however, the RLS equalizer has a slightly lower error after
+The RLS equalizer, however, has a slightly lower error after
 training while converging to its error minimum much faster.
 The RLS equalizer, however, has a much higher computational complexity.
 
-%-------------------- FIGURE: EQUALIZER EXAMPLE 1 --------------------
+%-------------------- FIGURE: eqlms vs. eqrls --------------------
 \begin{figure}
 \centering
 \mbox{
   \subfigure[PSD] {
-      \includegraphics[trim = 16mm 0mm 18mm 0mm, clip, width=6cm]{figures.gen/equalizer_example1_psd}
-      \label{fig:module:equalization:example1:psd}
+      \includegraphics[trim = 16mm 0mm 16mm 0mm, clip, width=7.5cm]{figures.gen/eqlms_vs_eqrls_psd}
+      \label{fig:module:equalization:eqlms_vs_eqrls:psd}
     } \quad
   \subfigure[constellation] {
-      \includegraphics[trim = 16mm 0mm 18mm 0mm, clip, width=6cm]{figures.gen/equalizer_example1_const}
-      \label{fig:module:equalization:example1:constellation}
+      \includegraphics[trim = 16mm 0mm 16mm 0mm, clip, width=7.5cm]{figures.gen/eqlms_vs_eqrls_const}
+      \label{fig:module:equalization:eqlms_vs_eqrls:constellation}
     } \quad
 }
 \mbox{
   \subfigure[taps] {
-      \includegraphics[trim = 23mm 0mm 23mm 0mm, clip, width=6cm]{figures.gen/equalizer_example1_taps}
-      \label{fig:module:equalization:example1:taps}
+      \includegraphics[trim = 23mm 0mm 23mm 0mm, clip, width=7.5cm]{figures.gen/eqlms_vs_eqrls_taps}
+      \label{fig:module:equalization:eqlms_vs_eqrls:taps}
     } \quad
   \subfigure[mean-squared error] {
-      \includegraphics[trim = 16mm 0mm 16mm 0mm, clip, width=6cm]{figures.gen/equalizer_example1_mse}
-      \label{fig:module:equalization:example1:mse}
+      \includegraphics[trim = 16mm 0mm 16mm 0mm, clip, width=7.5cm]{figures.gen/eqlms_vs_eqrls_mse}
+      \label{fig:module:equalization:eqlms_vs_eqrls:mse}
     } \quad
 }
 % trim = left bottom right top
-\caption{Scenario 1: 10-tap equalizer for a 6-tap channel with 40~dB SNR}
-\label{fig:module:equalization:example1}
+\caption{Comparison of 10-tap {\tt eqlms\_cccf} and {\tt eqrls\_cccf}
+         equalizer objects for a 6-tap channel with 40~dB SNR}
+\label{fig:module:equalization:eqlms_vs_eqrls}
 \end{figure}
 
 
 
-%-------------------- FIGURE: EQUALIZER EXAMPLE 2 --------------------
+\subsection{Blind Equalization}
+\label{module:equalization:blind}
+(actually decision-directed)
+%
+\input{listings/eqlms_cccf_blind.example.c.tex}
+%
+
+%-------------------- FIGURE: EQLMS BLIND --------------------
 \begin{figure}
 \centering
-\mbox{
-  \subfigure[PSD] {
-      \includegraphics[trim = 16mm 0mm 18mm 0mm, clip, width=6cm]{figures.gen/equalizer_example2_psd}
-      \label{fig:module:equalization:example2:psd}
-    } \quad
-  \subfigure[constellation] {
-      \includegraphics[trim = 16mm 0mm 18mm 0mm, clip, width=6cm]{figures.gen/equalizer_example2_const}
-      \label{fig:module:equalization:example2:constellation}
-    } \quad
+\subfigure[Equalizer output (time series)] {
+    \includegraphics[trim = 2mm 0mm 0mm 0mm, clip, width=15cm]{figures.gen/eqlms_cccf_blind_time}
+    \label{fig:module:equalization:eqlms_blind:time}
 }
-\mbox{
-  \subfigure[taps] {
-      \includegraphics[trim = 23mm 0mm 23mm 0mm, clip, width=6cm]{figures.gen/equalizer_example2_taps}
-      \label{fig:module:equalization:example2:taps}
-    } \quad
-  \subfigure[mean-squared error] {
-      \includegraphics[trim = 16mm 0mm 16mm 0mm, clip, width=6cm]{figures.gen/equalizer_example2_mse}
-      \label{fig:module:equalization:example2:mse}
-    } \quad
+%\subfigure[mean-squared error] {
+%    \includegraphics[trim = 0mm 23mm 0mm 23mm, clip, width=13cm]{figures.gen/eqlms_cccf_blind_mse}
+%    \label{fig:module:equalization:eqlms_blind:mse}
+%}
+\subfigure[Power Spectral Density] {
+    \includegraphics[trim = 2mm 6mm 0mm 6mm, clip, width=15cm]{figures.gen/eqlms_cccf_blind_freq}
+    \label{fig:module:equalization:eqlms_blind:psd}
 }
+%\subfigure[constellation] {
+%    \includegraphics[trim = 16mm 0mm 18mm 0mm, clip, width=7cm]{figures.gen/eqlms_cccf_blind_const}
+%    \label{fig:module:equalization:eqlms_blind:constellation}
+%}
+
 % trim = left bottom right top
-\caption{Scenario 2: 18-tap equalizer for a 8-tap channel with 14~dB SNR}
-\label{fig:module:equalization:example2}
+\caption{Blind {\tt eqlms\_cccf} example, $k=2$ samples/symbol}
+\label{fig:module:equalization:eqlms_blind}
 \end{figure}
-
-
+%
+For a more detailed example, see
+{\tt examples/eqlms\_cccf\_blind\_example.c}
+located under the main project directory.

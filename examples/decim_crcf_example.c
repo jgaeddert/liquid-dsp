@@ -1,7 +1,7 @@
 //
 // decim_crcf_example.c
 //
-// This example demonstrates the decim object (interpolator) interface.
+// This example demonstrates the decim object (decimator) interface.
 // Data symbols are generated and then interpolated according to a
 // finite impulse response square-root Nyquist filter.  The resulting
 // sequence is then decimated with the same filter, matched to the
@@ -77,7 +77,7 @@ int main(int argc, char*argv[]) {
     // design filter and create interpolator and decimator objects
     float h[h_len];     // transmit filter
     float g[h_len];     // receive filter (reverse of h)
-    design_rrc_filter(k,m,beta,0.3f,h);
+    liquid_firdes_rrcos(k,m,beta,0.3f,h);
     unsigned int i;
     for (i=0; i<h_len; i++)
         g[i] = h[h_len-i-1];

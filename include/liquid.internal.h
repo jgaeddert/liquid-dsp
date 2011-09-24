@@ -860,7 +860,7 @@ float rkaiser_approximate_rho(unsigned int _m,
 //  _dt     :   filter fractional sample delay
 //  _h      :   resulting filter [size: 2*_k*_m+1]
 //  _rho    :   transition bandwidth adjustment, 0 < _rho < 1
-void design_rkaiser_filter_bisection(unsigned int _k,
+void liquid_firdes_rkaiser_bisection(unsigned int _k,
                                      unsigned int _m,
                                      float _beta,
                                      float _dt,
@@ -876,7 +876,7 @@ void design_rkaiser_filter_bisection(unsigned int _k,
 //  _dt     :   filter fractional sample delay
 //  _h      :   resulting filter [size: 2*_k*_m+1]
 //  _rho    :   transition bandwidth adjustment, 0 < _rho < 1
-void design_rkaiser_filter_quadratic(unsigned int _k,
+void liquid_firdes_rkaiser_quadratic(unsigned int _k,
                                      unsigned int _m,
                                      float _beta,
                                      float _dt,
@@ -891,7 +891,7 @@ void design_rkaiser_filter_quadratic(unsigned int _k,
 //  _dt     :   filter fractional sample delay
 //  _rho    :   transition bandwidth adjustment, 0 < _rho < 1
 //  _h      :   filter buffer [size: 2*_k*_m+1]
-float design_rkaiser_filter_internal_isi(unsigned int _k,
+float liquid_firdes_rkaiser_internal_isi(unsigned int _k,
                                          unsigned int _m,
                                          float _beta,
                                          float _dt,
@@ -1113,6 +1113,37 @@ void bpacketsync_execute_rxpayload(bpacketsync _q, unsigned char _bit);
 void bpacketsync_decode_header(bpacketsync _q);
 void bpacketsync_decode_payload(bpacketsync _q);
 void bpacketsync_reconfig(bpacketsync _q);
+
+
+// 
+// gmskframe
+//
+
+#define GMSKFRAME_VERSION   (1)
+
+// header description
+#define GMSKFRAME_H_USER    (8)                     // user-defined array
+#define GMSKFRAME_H_DEC     (GMSKFRAME_H_USER+5)    // decoded length
+#define GMSKFRAME_H_CRC     (LIQUID_CRC_32)         // header CRC
+#define GMSKFRAME_H_FEC     (LIQUID_FEC_HAMMING128) // header FEC
+#define GMSKFRAME_H_ENC     (26)                    // encoded length (bytes)
+
+// gmskframegen
+void gmskframegen_encode_header( gmskframegen _q, unsigned char * _header);
+void gmskframegen_write_rampup(  gmskframegen _q, float complex * _y);
+void gmskframegen_write_phasing( gmskframegen _q, float complex * _y);
+void gmskframegen_write_preamble(gmskframegen _q, float complex * _y);
+void gmskframegen_write_header(  gmskframegen _q, float complex * _y);
+void gmskframegen_write_payload( gmskframegen _q, float complex * _y);
+void gmskframegen_write_rampdn(  gmskframegen _q, float complex * _y);
+
+// gmskframesync
+void gmskframesync_execute_seekpn(gmskframesync _q, float _x);
+void gmskframesync_execute_rxheader(gmskframesync _q, float _x);
+void gmskframesync_execute_rxpayload(gmskframesync _q, float _x);
+void gmskframesync_decode_header(gmskframesync _q);
+void gmskframesync_output_debug_file(gmskframesync _q, const char * _filename);
+
 
 // 
 // ofdmflexframe

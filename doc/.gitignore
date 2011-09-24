@@ -21,10 +21,13 @@ src/agc_transient
 src/audio_cvsd
 src/doc-html-gen
 src/equalizer_cccf
+src/eqlms_cccf_blind
 src/estimate_snr_fec
 src/estimate_snr_modem
 src/estimate_snr_test
 src/filter_decim_crcf
+src/filter_firdes_gmskrx_freq
+src/filter_firdes_gmskrx_time
 src/filter_firdespm
 src/filter_firfarrow_crcf
 src/filter_firfilt_crcf

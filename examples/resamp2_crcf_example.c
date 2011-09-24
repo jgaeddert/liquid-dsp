@@ -30,7 +30,7 @@ int main() {
 
     // generate the baseband signal (filter pulse)
     float h[num_samples];
-    firdes_kaiser_window(num_samples,bw,60.0f,0.0f,h);
+    liquid_firdes_kaiser(num_samples,bw,60.0f,0.0f,h);
     for (i=0; i<n; i++)
         x[i] = i < num_samples ? h[i]*bw : 0.0f;
 

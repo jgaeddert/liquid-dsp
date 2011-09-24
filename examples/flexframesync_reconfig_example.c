@@ -82,10 +82,7 @@ int main(int argc, char *argv[]) {
     framedata fd = {NULL, NULL, 0, 0};
 
     // create interpolator
-    unsigned int h_len = 2*2*m + 1;
-    float h[h_len];
-    design_rrc_filter(2,m,beta,0,h);
-    interp_crcf interp = interp_crcf_create(2,h,h_len);
+    interp_crcf interp = interp_crcf_create_rnyquist(LIQUID_RNYQUIST_RRC,2,m,beta,0);
 
     // create flexframesync object with default properties
     framesyncprops_s fsprops;

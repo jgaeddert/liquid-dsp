@@ -329,6 +329,17 @@ LIQUID_DOTPROD_DEFINE_API(DOTPROD_MANGLE_CRCF,
 typedef struct EQLMS(_s) * EQLMS();                             \
 EQLMS() EQLMS(_create)(T * _h,                                  \
                        unsigned int _p);                        \
+/* create LMS EQ initialized with square-root Nyquist   */      \
+/*  _type   : filter type (e.g. LIQUID_RNYQUIST_RRC)    */      \
+/*  _k      : samples/symbol                            */      \
+/*  _m      : filter delay (symbols)                    */      \
+/*  _beta   : rolloff factor (0 < beta <= 1)            */      \
+/*  _dt     : fractional sample delay                   */      \
+EQLMS() EQLMS(_create_rnyquist)(int _type,                      \
+                                unsigned int _k,                \
+                                unsigned int _m,                \
+                                float _beta,                    \
+                                float _dt);                     \
 EQLMS() EQLMS(_recreate)(EQLMS() _eq,                           \
                          T * _h,                                \
                          unsigned int _p);                      \
@@ -668,7 +679,7 @@ typedef enum {
 //  _beta   : excess bandwidth factor, _beta in [0,1]
 //  _dt     : fractional sample delay
 //  _h      : output coefficient buffer (length: 2*k*m+1)
-void design_nyquist_filter(liquid_nyquist_type _type,
+void liquid_firdes_nyquist(liquid_nyquist_type _type,
                            unsigned int _k,
                            unsigned int _m,
                            float _beta,
@@ -745,7 +756,7 @@ void firdespm_execute(firdespm _q, float * _h);
 //  _As     : stop-band attenuation [dB], _As > 0
 //  _mu     : fractional sample offset, -0.5 < _mu < 0.5
 //  _h      : output coefficient buffer, [size: _n x 1]
-void firdes_kaiser_window(unsigned int _n,
+void liquid_firdes_kaiser(unsigned int _n,
                           float _fc,
                           float _As,
                           float _mu,
@@ -757,11 +768,11 @@ void firdes_kaiser_window(unsigned int _n,
 //  _K      : Rice fading factor (K >= 0)
 //  _theta  : LoS component angle of arrival
 //  _h      : output coefficient buffer
-void fir_design_doppler(unsigned int _n,
-                        float _fd,
-                        float _K,
-                        float _theta,
-                        float *_h);
+void liquid_firdes_doppler(unsigned int _n,
+                           float _fd,
+                           float _K,
+                           float _theta,
+                           float *_h);
 
 
 // Design Nyquist raised-cosine filter
@@ -770,7 +781,7 @@ void fir_design_doppler(unsigned int _n,
 //  _beta   : rolloff factor (0 < beta <= 1)
 //  _dt     : fractional sample delay
 //  _h      : output coefficient buffer (length: 2*k*m+1)
-void design_rcos_filter(unsigned int _k,
+void liquid_firdes_rcos(unsigned int _k,
                         unsigned int _m,
                         float _beta,
                         float _dt,
@@ -793,7 +804,7 @@ typedef enum {
 //  _beta   : excess bandwidth factor, _beta in [0,1]
 //  _dt     : fractional sample delay
 //  _h      : output coefficient buffer (length: 2*k*m+1)
-void design_rnyquist_filter(liquid_rnyquist_type _type,
+void liquid_firdes_rnyquist(liquid_rnyquist_type _type,
                             unsigned int _k,
                             unsigned int _m,
                             float _beta,
@@ -806,11 +817,11 @@ void design_rnyquist_filter(liquid_rnyquist_type _type,
 //  _beta   : rolloff factor (0 < beta <= 1)
 //  _dt     : fractional sample delay
 //  _h      : output coefficient buffer (length: 2*k*m+1)
-void design_rrc_filter(unsigned int _k,
-                       unsigned int _m,
-                       float _beta,
-                       float _dt,
-                       float * _h);
+void liquid_firdes_rrcos(unsigned int _k,
+                         unsigned int _m,
+                         float _beta,
+                         float _dt,
+                         float * _h);
 
 // Design root-Nyquist Kaiser filter
 //  _k      : samples/symbol
@@ -818,7 +829,7 @@ void design_rrc_filter(unsigned int _k,
 //  _beta   : rolloff factor (0 < beta <= 1)
 //  _dt     : fractional sample delay
 //  _h      : output coefficient buffer (length: 2*k*m+1)
-void design_rkaiser_filter(unsigned int _k,
+void liquid_firdes_rkaiser(unsigned int _k,
                            unsigned int _m,
                            float _beta,
                            float _dt,
@@ -830,7 +841,7 @@ void design_rkaiser_filter(unsigned int _k,
 //  _beta   : rolloff factor (0 < beta <= 1)
 //  _dt     : fractional sample delay
 //  _h      : output coefficient buffer (length: 2*k*m+1)
-void design_arkaiser_filter(unsigned int _k,
+void liquid_firdes_arkaiser(unsigned int _k,
                             unsigned int _m,
                             float _beta,
                             float _dt,
@@ -842,7 +853,7 @@ void design_arkaiser_filter(unsigned int _k,
 //  _beta   : rolloff factor (0 < beta <= 1)
 //  _dt     : fractional sample delay
 //  _h      : output coefficient buffer (length: 2*k*m+1)
-void design_hM3_filter(unsigned int _k,
+void liquid_firdes_hM3(unsigned int _k,
                        unsigned int _m,
                        float _beta,
                        float _dt,
@@ -985,16 +996,16 @@ typedef enum {
 //  _As         :   stop-band ripple in dB
 //  _B          :   numerator
 //  _A          :   denominator
-void iirdes(liquid_iirdes_filtertype _ftype,
-            liquid_iirdes_bandtype   _btype,
-            liquid_iirdes_format     _format,
-            unsigned int _n,
-            float _fc,
-            float _f0,
-            float _Ap,
-            float _As,
-            float * _B,
-            float * _A);
+void liquid_iirdes(liquid_iirdes_filtertype _ftype,
+                   liquid_iirdes_bandtype   _btype,
+                   liquid_iirdes_format     _format,
+                   unsigned int _n,
+                   float _fc,
+                   float _f0,
+                   float _Ap,
+                   float _As,
+                   float * _B,
+                   float * _A);
 
 // compute analog zeros, poles, gain for specific filter types
 void butter_azpkf(unsigned int _n,
@@ -1444,6 +1455,13 @@ typedef struct DECIM(_s) * DECIM();                             \
 DECIM() DECIM(_create)(unsigned int _D,                         \
                        TC *_h,                                  \
                        unsigned int _h_len);                    \
+/* create decimator from prototype                      */      \
+/*  _M      : decimation factor                         */      \
+/*  _m      : filter delay (symbols)                    */      \
+/*  _As     : stop-band attenuation [dB]                */      \
+DECIM() DECIM(_create_prototype)(unsigned int _M,               \
+                                 unsigned int _m,               \
+                                 float As);                     \
 void DECIM(_destroy)(DECIM() _q);                               \
 void DECIM(_print)(DECIM() _q);                                 \
 void DECIM(_clear)(DECIM() _q);                                 \
@@ -1897,10 +1915,11 @@ void bpacketgen_encode(bpacketgen _q,
 // bpacket synchronizer/decoder
 //
 typedef struct bpacketsync_s * bpacketsync;
-typedef int (*bpacketsync_callback)(unsigned char * _payload,
-                                    int _payload_valid,
-                                    unsigned int _payload_len,
-                                    void * _userdata);
+typedef int (*bpacketsync_callback)(unsigned char *  _payload,
+                                    int              _payload_valid,
+                                    unsigned int     _payload_len,
+                                    framesyncstats_s _stats,
+                                    void *           _userdata);
 bpacketsync bpacketsync_create(unsigned int _m,
                                bpacketsync_callback _callback,
                                void * _userdata);
@@ -1933,6 +1952,55 @@ void bpacketsync_execute_sym(bpacketsync _q,
 // execute one bit at a time
 void bpacketsync_execute_bit(bpacketsync _q,
                              unsigned char _bit);
+
+//
+// GMSK frame generator
+//
+
+typedef struct gmskframegen_s * gmskframegen;
+gmskframegen gmskframegen_create(unsigned int _k,
+                                 unsigned int _m,
+                                 float _BT);
+void gmskframegen_destroy(gmskframegen _fg);
+void gmskframegen_print(gmskframegen _fg);
+void gmskframegen_reset(gmskframegen _fg);
+void gmskframegen_assemble(gmskframegen    _fg,
+                           unsigned char * _header,
+                           unsigned char * _payload,
+                           unsigned int    _payload_len,
+                           crc_scheme      _check,
+                           fec_scheme      _fec0,
+                           fec_scheme      _fec1);
+unsigned int gmskframegen_get_frame_len(gmskframegen _fg);
+int gmskframegen_write_samples(gmskframegen _fg,
+                               liquid_float_complex * _y);
+
+
+//
+// GMSK frame synchronizer
+//
+
+// GMSK frame synchronizer callback
+typedef int (*gmskframesync_callback)(unsigned char *  _header,
+                                      int              _header_valid,
+                                      unsigned char *  _payload,
+                                      unsigned int     _payload_len,
+                                      int              _payload_valid,
+                                      framesyncstats_s _stats,
+                                      void *           _userdata);
+
+typedef struct gmskframesync_s * gmskframesync;
+gmskframesync gmskframesync_create(unsigned int _k,
+                                   unsigned int _m,
+                                   float _BT,
+                                   gmskframesync_callback _callback,
+                                   void * _userdata);
+void gmskframesync_destroy(gmskframesync _q);
+void gmskframesync_print(gmskframesync _q);
+void gmskframesync_reset(gmskframesync _q);
+void gmskframesync_execute(gmskframesync _q,
+                           liquid_float_complex * _x,
+                           unsigned int _n);
 
 
 // 

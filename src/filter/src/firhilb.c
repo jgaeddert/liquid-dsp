@@ -82,7 +82,7 @@ FIRHILB() FIRHILB(_create)(unsigned int _m,
     q->hq = (T *) malloc((q->hq_len)*sizeof(T));
 
     // compute filter coefficients for half-band filter
-    firdes_kaiser_window(q->h_len, 0.25f, q->As, 0.0f, q->h);
+    liquid_firdes_kaiser(q->h_len, 0.25f, q->As, 0.0f, q->h);
 
     // alternate sign of non-zero elements
     unsigned int i;

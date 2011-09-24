@@ -58,7 +58,7 @@ int main(int argc, char*argv[]) {
     // design filter
     unsigned int h_len = 2*k*m+1;
     float h[h_len];
-    design_rrc_filter(k,m,beta,0,h);
+    liquid_firdes_rrcos(k,m,beta,0,h);
 
     // truncate filter to be of length 2*k*m
     unsigned int g_len = 2*k*m;

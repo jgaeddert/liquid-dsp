@@ -53,7 +53,7 @@ struct gsuserdata_s {
 //  _beta   :   filter excess bandwidth factor (0,1)
 //  _dt     :   filter fractional sample delay
 //  _h      :   resulting filter [size: 2*_k*_m+1]
-void design_rkaiser_filter2(unsigned int _k,
+void liquid_firdes_rkaiser_filter2(unsigned int _k,
                             unsigned int _m,
                             float _beta,
                             float _dt,
@@ -76,8 +76,8 @@ int main() {
     float h1[h_len];
     float h2[h_len];
 
-    design_rkaiser_filter(k,m,beta,dt,h1);
-    design_rkaiser_filter2(k,m,beta,dt,h2);
+    liquid_firdes_rkaiser(k,m,beta,dt,h1);
+    liquid_firdes_rkaiser_filter2(k,m,beta,dt,h2);
 
     // print filters
 
@@ -117,7 +117,7 @@ int main() {
     return 0;
 }
 
-// design_rkaiser_filter()
+// liquid_firdes_rkaiser()
 //
 // Design frequency-shifted root-Nyquist filter based on
 // the Kaiser-windowed sinc.
@@ -127,7 +127,7 @@ int main() {
 //  _beta   :   filter excess bandwidth factor (0,1)
 //  _dt     :   filter fractional sample delay
 //  _h      :   resulting filter [size: 2*_k*_m+1]
-void design_rkaiser_filter2(unsigned int _k,
+void liquid_firdes_rkaiser_filter2(unsigned int _k,
                             unsigned int _m,
                             float _beta,
                             float _dt,
@@ -135,16 +135,16 @@ void design_rkaiser_filter2(unsigned int _k,
 {
     // validate input
     if (_k < 2) {
-        fprintf(stderr,"error: design_rkaiser_filter(), k must be at least 2\n");
+        fprintf(stderr,"error: liquid_firdes_rkaiser(), k must be at least 2\n");
         exit(1);
     } else if (_m < 1) {
-        fprintf(stderr,"error: design_rkaiser_filter(), m must be at least 1\n");
+        fprintf(stderr,"error: liquid_firdes_rkaiser(), m must be at least 1\n");
         exit(1);
     } else if (_beta <= 0.0f || _beta >= 1.0f) {
-        fprintf(stderr,"error: design_rkaiser_filter(), beta must be in (0,1)\n");
+        fprintf(stderr,"error: liquid_firdes_rkaiser(), beta must be in (0,1)\n");
         exit(1);
     } else if (_dt < -1.0f || _dt > 1.0f) {
-        fprintf(stderr,"error: design_rkaiser_filter(), dt must be in [-1,1]\n");
+        fprintf(stderr,"error: liquid_firdes_rkaiser(), dt must be in [-1,1]\n");
         exit(1);
     }
 
@@ -207,7 +207,7 @@ void design_rkaiser_filter2(unsigned int _k,
     // re-design filter and return
     fc = v[0];
     As = v[1]*1000;
-    firdes_kaiser_window(h_len,fc,As,_dt,_h);
+    liquid_firdes_kaiser(h_len,fc,As,_dt,_h);
 
     // normalize coefficients
     float e2 = 0.0f;
@@ -243,7 +243,7 @@ float gs_utility(void * _userdata,
 
     // compute filter
     float h[h_len];
-    firdes_kaiser_window(h_len,fc,As,dt,h);
+    liquid_firdes_kaiser(h_len,fc,As,dt,h);
 
     // normalize coefficients
     float e2 = 0.0f;

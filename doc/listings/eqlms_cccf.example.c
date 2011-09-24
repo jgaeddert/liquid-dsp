@@ -12,7 +12,7 @@ int main() {
     float complex d_hat[n];     // output symbols
     float complex d[n];         // traning symbols
 
-    // ...initialize y, d, w...
+    // ...initialize x, d_hat, d...
 
     // create LMS equalizer and set learning rate
     eqlms_cccf q = eqlms_cccf_create(NULL,p);

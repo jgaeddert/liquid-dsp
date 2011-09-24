@@ -90,6 +90,42 @@ DECIM() DECIM(_create)(unsigned int _D,
     return q;
 }
 
+// create decimator from prototype
+//  _M      :   decimolation factor
+//  _m      :   symbol delay
+//  _As     :   stop-band attenuation [dB]
+DECIM() DECIM(_create_prototype)(unsigned int _M,
+                                 unsigned int _m,
+                                 float _As)
+{
+    // validate input
+    if (_M < 2) {
+        fprintf(stderr,"error: decim_xxxt_create_prototype(), decim factor must be greater than 1\n");
+        exit(1);
+    } else if (_m == 0) {
+        fprintf(stderr,"error: decim_xxxt_create_prototype(), filter delay must be greater than 0\n");
+        exit(1);
+    } else if (_As < 0.0f) {
+        fprintf(stderr,"error: decim_xxxt_create_prototype(), stop-band attenuation must be positive\n");
+        exit(1);
+    }
+
+    // compute filter coefficients (floating point precision)
+    unsigned int h_len = 2*_M*_m + 1;
+    float hf[h_len];
+    float fc = 0.5f / (float) (_M);
+    liquid_firdes_kaiser(h_len, fc, _As, 0.0f, hf);
+
+    // copy coefficients to type-specific array (e.g. float complex)
+    TC hc[h_len];
+    unsigned int i;
+    for (i=0; i<h_len; i++)
+        hc[i] = hf[i];
+    
+    // return decimator object
+    return DECIM(_create)(_M, hc, 2*_M*_m);
+}
+
 // destroy decimator object
 void DECIM(_destroy)(DECIM() _q)
 {

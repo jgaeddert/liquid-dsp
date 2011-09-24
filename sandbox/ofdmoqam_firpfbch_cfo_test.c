@@ -38,7 +38,7 @@ int main() {
     float h[h_len];
     float complex hc[h_len];
     float complex gc[h_len];
-    design_rkaiser_filter(num_channels, m, beta, 0.0f, h);
+    liquid_firdes_rkaiser(num_channels, m, beta, 0.0f, h);
     unsigned int g_len = 2*num_channels*m;
     for (i=0; i<g_len; i++) {
         hc[i] = h[i];

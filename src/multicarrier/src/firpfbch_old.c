@@ -94,7 +94,7 @@ firpfbch firpfbch_create(unsigned int _num_channels,
 
     if (c->nyquist == FIRPFBCH_NYQUIST) {
         float fc = 0.5f/(float)(c->num_channels);  // cutoff frequency
-        firdes_kaiser_window(c->h_len+1, fc, c->beta, 0.0f, c->h);
+        liquid_firdes_kaiser(c->h_len+1, fc, c->beta, 0.0f, c->h);
     } else if (c->nyquist == FIRPFBCH_ROOTNYQUIST) {
         design_rkaiser_filter(c->num_channels, c->m, c->beta, c->dt, c->h);
     } else {

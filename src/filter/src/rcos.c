@@ -28,24 +28,26 @@
 
 #include "liquid.internal.h"
 
-void design_rcos_filter(
-  unsigned int _k,
-  unsigned int _m,
-  float _beta,
-  float _dt,
-  float * _h
-)
+// Design Nyquist raised-cosine filter
+//  _k      : samples/symbol
+//  _m      : symbol delay
+//  _beta   : rolloff factor (0 < beta <= 1)
+//  _dt     : fractional sample delay
+//  _h      : output coefficient buffer (length: 2*k*m+1)
+void liquid_firdes_rcos(unsigned int _k,
+                        unsigned int _m,
+                        float _beta,
+                        float _dt,
+                        float * _h)
 {
-    unsigned int h_len;
-
     if ( _k < 1 ) {
-        fprintf(stderr,"error: design_rcos_filter(): k must be greater than 0\n");
+        fprintf(stderr,"error: liquid_firdes_rcos(): k must be greater than 0\n");
         exit(1);
     } else if ( _m < 1 ) {
-        fprintf(stderr,"error: design_rcos_filter(): m must be greater than 0\n");
+        fprintf(stderr,"error: liquid_firdes_rcos(): m must be greater than 0\n");
         exit(1);
     } else if ( (_beta < 0.0f) || (_beta > 1.0f) ) {
-        fprintf(stderr,"error: design_rcos_filter(): beta must be in [0,1]\n");
+        fprintf(stderr,"error: liquid_firdes_rcos(): beta must be in [0,1]\n");
         exit(1);
     } else;
 
@@ -54,7 +56,7 @@ void design_rcos_filter(
 
     float nf, kf, mf;
 
-    h_len = 2*_k*_m + 1;
+    unsigned int h_len = 2*_k*_m + 1;
 
     // Calculate filter coefficients
     for (n=0; n<h_len; n++) {

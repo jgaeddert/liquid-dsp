@@ -37,7 +37,7 @@ int main() {
     // filtered noise signal
     unsigned int h_len = 55;
     float h[h_len];
-    firdes_kaiser_window(h_len,0.1f,60.0f,0.0f,h);
+    liquid_firdes_kaiser(h_len,0.1f,60.0f,0.0f,h);
     firfilt_rrrf q = firfilt_rrrf_create(h,h_len);
     for (i=0; i<num_samples; i++) {
         float noise = 0.1f*randnf();

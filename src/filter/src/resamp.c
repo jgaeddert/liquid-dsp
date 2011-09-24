@@ -124,7 +124,7 @@ RESAMP() RESAMP(_create)(float _r,
     unsigned int n = 2*_h_len*q->npfb+1;
     float hf[n];
     TC h[n];
-    firdes_kaiser_window(n,q->fc/((float)(q->npfb)),q->As,0.0f,hf);
+    liquid_firdes_kaiser(n,q->fc/((float)(q->npfb)),q->As,0.0f,hf);
 
     // normalize filter coefficients by DC gain
     unsigned int i;

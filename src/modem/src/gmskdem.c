@@ -166,7 +166,7 @@ void gmskdem_demodulate(gmskdem _q,
         // compute output
         float d_tmp;
         firfilt_rrrf_execute(_q->filter, &d_tmp);
-        windowf_push(_q->debug_mfout, _q->k*d_tmp);
+        windowf_push(_q->debug_mfout, d_tmp / _q->k);
 #endif
 
         // decimate by k
@@ -176,7 +176,7 @@ void gmskdem_demodulate(gmskdem _q,
         firfilt_rrrf_execute(_q->filter, &d_hat);
 
         // scale result by k
-        d_hat *= _q->k;
+        d_hat /= _q->k;
     }
 
     // make decision
@@ -210,19 +210,18 @@ void gmskdem_debug_print(gmskdem _q,
 
     // plot receive filter response
     fprintf(fid,"ht = zeros(1,2*k*m+1);\n");
-    unsigned int h_len =2*_q->k*_q->m+1;
-    float ht[h_len];
+    float ht[_q->h_len];
     liquid_firdes_gmsktx(_q->k, _q->m, _q->BT, 0.0f, ht);
-    for (i=0; i<h_len; i++)
+    for (i=0; i<_q->h_len; i++)
         fprintf(fid,"ht(%4u) = %12.4e;\n", i+1, ht[i]);
-    for (i=0; i<h_len; i++)
+    for (i=0; i<_q->h_len; i++)
         fprintf(fid,"hr(%4u) = %12.4e;\n", i+1, _q->h[i]);
-    fprintf(fid,"hc = conv(ht,hr);\n");
+    fprintf(fid,"hc = conv(ht,hr)/k;\n");
     fprintf(fid,"nfft = 1024;\n");
     fprintf(fid,"f = [0:(nfft-1)]/nfft - 0.5;\n");
-    fprintf(fid,"Ht = 20*log10(abs(fftshift(fft(ht,nfft))));\n");
-    fprintf(fid,"Hr = 20*log10(abs(fftshift(fft(hr,nfft))));\n");
-    fprintf(fid,"Hc = 20*log10(abs(fftshift(fft(hc,nfft))));\n");
+    fprintf(fid,"Ht = 20*log10(abs(fftshift(fft(ht/k, nfft))));\n");
+    fprintf(fid,"Hr = 20*log10(abs(fftshift(fft(hr/k, nfft))));\n");
+    fprintf(fid,"Hc = 20*log10(abs(fftshift(fft(hc/k, nfft))));\n");
     fprintf(fid,"figure;\n");
     fprintf(fid,"plot(f,Ht, f,Hr, f,Hc,'-k','LineWidth',2);\n");
     fprintf(fid,"axis([-0.5 0.5 -50 10]);\n");

@@ -26,10 +26,11 @@
 #include "liquid.internal.h"
 
 // callback function
-static int bpacketsync_benchmark_callback(unsigned char * _payload,
-                                          int _payload_valid,
-                                          unsigned int _payload_len,
-                                          void * _userdata)
+static int bpacketsync_benchmark_callback(unsigned char *  _payload,
+                                          int              _payload_valid,
+                                          unsigned int     _payload_len,
+                                          framesyncstats_s _stats,
+                                          void *           _userdata)
 {
     if (!_payload_valid)
         return 0;

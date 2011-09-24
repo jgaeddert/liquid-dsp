@@ -110,7 +110,7 @@ INTERP() INTERP(_create_prototype)(unsigned int _M,
     unsigned int h_len = 2*_M*_m + 1;
     float hf[h_len];
     float fc = 0.5f / (float) (_M);
-    firdes_kaiser_window(h_len, fc, _As, 0.0f, hf);
+    liquid_firdes_kaiser(h_len, fc, _As, 0.0f, hf);
 
     // copy coefficients to type-specific array (e.g. float complex)
     TC hc[h_len];
@@ -152,7 +152,7 @@ INTERP() INTERP(_create_rnyquist)(int _type,
     // generate square-root Nyquist filter
     unsigned int h_len = 2*_k*_m + 1;
     float h[h_len];
-    design_rnyquist_filter(_type,_k,_m,_beta,_dt,h);
+    liquid_firdes_rnyquist(_type,_k,_m,_beta,_dt,h);
 
     // copy coefficients to type-specific array (e.g. float complex)
     unsigned int i;

@@ -99,9 +99,9 @@ bsequence_example.c
 bufferf_example.c
 
 cgsolve_example.c
-// Solve linear system of equations A*x = b using the conjugate-
-// gradient method where A is a symmetric positive-definite matrix.
-// Compare speed to matrixf_linsolve() for same system.
+    Solve linear system of equations A*x = b using the conjugate-
+    gradient method where A is a symmetric positive-definite matrix.
+    Compare speed to matrixf_linsolve() for same system.
 
 chromosome_example.c
 
@@ -154,7 +154,7 @@ dds_cccf_example.c [EXPERIMENTAL]
               nco_example.c
 
 decim_crcf_example.c
-    This example demonstrates the decim object (interpolator) interface.
+    This example demonstrates the decim object (decimator) interface.
     Data symbols are generated and then interpolated according to a
     finite impulse response square-root Nyquist filter.  The resulting
     sequence is then decimated with the same filter, matched to the
@@ -172,6 +172,7 @@ dotprod_rrrf_example.c
     This example demonstrates the interface to the floating-point dot
     product object (dotprod_rrrf).
 
+eqlms_cccf_blind_example.c
 eqlms_cccf_example.c
 eqrls_cccf_example.c
 fading_generator_example.c [EXPERIMENTAL]
@@ -206,11 +207,6 @@ fft_example.c
     SEE ALSO: mdct_example.c
               fct_example.c
 
-firfarrow_rrrf_example.c
-firfarrow_rrrf_sine_example.c
-firfilt_rrrf_example.c
-firfilt_rrrf_recreate_example.c
-
 firdes_kaiser_example.c *
     This example demonstrates finite impulse response filter design using a
     Kaiser window.
@@ -223,6 +219,11 @@ firdespm_example.c *
 
     SEE ALSO: firdes_kaiser_example.c
 
+firfarrow_rrrf_example.c
+firfarrow_rrrf_sine_example.c
+firfilt_rrrf_example.c
+firfilt_rrrf_recreate_example.c
+
 firhilb_decim_example.c
     Hilbert transform: 2:1 real-to-complex decimator.  This example
     demonstrates the functionality of firhilb (finite impulse response Hilbert
@@ -231,6 +232,8 @@ firhilb_decim_example.c
     samples. The output is a complex-valued sinusoid of N/2 samples.
 
     SEE ALSO: firhilb_interp_example.c
+
+firhilb_example.c
 
 firhilb_interp_example.c
     Hilbert transform: 1:2 complex-to-real interpolator.  This example
@@ -241,8 +244,6 @@ firhilb_interp_example.c
     samples.
 
     SEE ALSO: firhilb_decim_example.c
-
-firpfb_rrrf_example.c
 
 firpfbch_analysis_example.c
     Example of the analysis channelizer filterbank. The input signal is
@@ -264,6 +265,8 @@ firpfbch_synthesis_example.c
     edges are disabled as well as those near 0.25 to demonstrate the
     synthesizer's ability to efficiently notch the spectrum. The results
     are printed to a file for plotting.
+
+firpfb_rrrf_example.c
 
 flexframesync_example.c
     This example demonstrates the basic interface to the flexframegen and
@@ -318,20 +321,12 @@ gport_dma_threaded_example.c [EXPERIMENTAL]
 gport_ima_example.c [EXPERIMENTAL]
 gport_ima_threaded_example.c [EXPERIMENTAL]
 gport_mma_threaded_example.c [EXPERIMENTAL]
+
 gradsearch_example.c
 
 gradsearch_datafit_example.c
     Fit 3-parameter curve to sampled data set in the minimum
     mean-squared error sense.
-
-iirfilt_crcf_example.c
-    Complex infinite impulse response filter example. Demonstrates the
-    functionality of iirfilt by designing a low-order prototype (e.g.
-    Butterworth) and using it to filter a noisy signal.  The filter
-    coefficients are real, but the input and output arrays are complex.  The
-    filter order and cutoff frequency are specified at the beginning.
-
-iirqmfb_... [EXPERIMENTAL]
 
 iirdes_analog_example.c *
     Tests infinite impulse reponse (IIR) analog filter design. While this
@@ -357,6 +352,13 @@ iirdes_pll_example.c *
     SEE ALSO: nco_pll_example.c
               nco_pll_modem_example.c
 
+iirfilt_crcf_example.c
+    Complex infinite impulse response filter example. Demonstrates the
+    functionality of iirfilt by designing a low-order prototype (e.g.
+    Butterworth) and using it to filter a noisy signal.  The filter
+    coefficients are real, but the input and output arrays are complex.  The
+    filter order and cutoff frequency are specified at the beginning.
+
 iirqmfb_crcf_example.c [EXPERIMENTAL]
 
 interleaver_example.c
@@ -371,6 +373,8 @@ interleaver_example.c
 
 interleaver_scatterplot_example.c
 
+interleaver_soft_example.c
+
 interp_crcf_example.c *
     This example demonstrates the interp object (interpolator)
     interface. Data symbols are generated and then interpolated
@@ -380,13 +384,12 @@ itqmfb_crcf_example.c [EXPERIMENTAL]
 itqmfb_rrrf_example.c [EXPERIMENTAL]
 kbd_window_example.c
 kmeans_example.c [EXPERIMENTAL]
+lpc_example.c
+
 matched_filter_example.c
 
 math_lngamma_example.c
     Demonstrates accuracy of lngamma function.
-
-matrix_example.c
-    This example demonstrates basic matrix operations.
 
 mdct_example.c
 
@@ -407,8 +410,8 @@ modem_example.c *
     SEE ALSO: modem_arb_example.c
 
 modem_soft_example.c *
-// This example demonstates soft demodulation of linear
-// modulation schemes.
+    This example demonstates soft demodulation of linear
+    modulation schemes.
 
 msequence_example.c
     This example demonstrates the auto-correlation properties of a
