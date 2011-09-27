@@ -99,14 +99,38 @@ void liquid_firdes_arkaiser(unsigned int _k,
         exit(1);
     }
 
+#if 0
     // compute bandwidth adjustment estimate
     float rho_hat = rkaiser_approximate_rho(_m,_beta);  // bandwidth correction factor
+#else
+    // rho ~ c0 + c1*log(_beta) + c2*log^2(_beta)
+
+    // c0 ~ 0.762886 + 0.067663*log(m)
+    // c1 ~ 0.065515
+    // c2 ~ log( 1 - 0.088*m^-1.6 )
+
+    float c0 = 0.762886 + 0.067663*logf(_m);
+    float c1 = 0.065515;
+    float c2 = logf( 1 - 0.088*powf(_m,-1.6 ) );
+
+    float log_beta = logf(_beta);
+
+    float rho_hat = c0 + c1*log_beta + c2*log_beta*log_beta;
+#endif
 
     unsigned int n=2*_k*_m+1;                       // filter length
     float kf = (float)_k;                           // samples/symbol (float)
     float del = _beta*rho_hat / kf;                 // transition bandwidth
     float As = estimate_req_filter_As(del, n);      // stop-band suppression
     float fc  = 0.5f*(1 + _beta*(1.0f-rho_hat))/kf; // filter cutoff
+    
+#if DEBUG_RKAISER
+    printf("rho-hat : %12.8f (compare to %12.8f)\n", rho_hat, rkaiser_approximate_rho(_m,_beta));
+    printf("fc      : %12.8f\n", fc);
+    printf("delta-f : %12.8f\n", del);
+    printf("As      : %12.8f dB\n", As);
+    printf("alpha   : %12.8f\n", kaiser_beta_As(As));
+#endif
 
     // compute filter coefficients
     liquid_firdes_kaiser(n,fc,As,_dt,_h);
