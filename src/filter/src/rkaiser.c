@@ -116,6 +116,10 @@ void liquid_firdes_arkaiser(unsigned int _k,
     float log_beta = logf(_beta);
 
     float rho_hat = c0 + c1*log_beta + c2*log_beta*log_beta;
+
+    // ensure range is valid
+    if (rho_hat <= 0.0f || rho_hat >= 1.0f)
+        rho_hat = rkaiser_approximate_rho(_m,_beta);
 #endif
 
     unsigned int n=2*_k*_m+1;                       // filter length
