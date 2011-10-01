@@ -650,7 +650,6 @@ multicarrier_objects :=						\
 	src/multicarrier/src/ofdmframe.common.o			\
 	src/multicarrier/src/ofdmframegen.o			\
 	src/multicarrier/src/ofdmframesync.o			\
-	src/multicarrier/src/ofdmoqam.o				\
 
 # list explicit targets and dependencies here
 
@@ -660,14 +659,11 @@ multicarrier_autotests :=					\
 	src/multicarrier/tests/firpfbch_analyzer_autotest.c	\
 	src/multicarrier/tests/ofdmframesync_autotest.c		\
 
-#	ofdmoqam_autotest.c
-
 # benchmarks
 multicarrier_benchmarks :=					\
 	src/multicarrier/bench/firpfbch_benchmark.c		\
 	src/multicarrier/bench/ofdmframesync_acquire_benchmark.c	\
 	src/multicarrier/bench/ofdmframesync_rxsymbol_benchmark.c	\
-	src/multicarrier/bench/ofdmoqam_benchmark.c		\
 
 # 
 # MODULE : nco - numerically-controlled oscillator
@@ -1208,8 +1204,6 @@ example_programs :=						\
 	examples/nyquist_filter_example				\
 	examples/ofdmflexframesync_example			\
 	examples/ofdmframesync_example				\
-	examples/ofdmoqam_example				\
-	examples/ofdmoqam_firpfbch_example			\
 	examples/packetizer_example				\
 	examples/packetizer_soft_example			\
 	examples/pll_example					\
@@ -1237,8 +1231,6 @@ example_programs :=						\
 
 #	examples/metadata_example
 #	examples/ofdmframegen_example
-#	examples/ofdmoqamframe64gen_example
-#	examples/ofdmoqamframe64sync_example
 #	examples/gmskframe_example
 #	examples/fading_generator_example
 #	examples/ricek_channel_example
@@ -1313,7 +1305,6 @@ sandbox_programs =						\
 	sandbox/modem_demodulate_soft_test			\
 	sandbox/modem_demodulate_soft_gentab			\
 	sandbox/ofdmoqam_firpfbch_test				\
-	sandbox/ofdmoqam_firpfbch_cfo_test			\
 	sandbox/packetizer_persistent_ber_test			\
 	sandbox/quasinewton_test				\
 	sandbox/rkaiser2_test					\
@@ -1322,6 +1313,7 @@ sandbox_programs =						\
 	sandbox/svd_test					\
 	sandbox/thiran_allpass_iir_test				\
 #	firpfbch_analysis_test
+#	sandbox/ofdmoqam_firpfbch_cfo_test
 
 
 sandbox_objects	= $(patsubst %,%.o,$(sandbox_programs))

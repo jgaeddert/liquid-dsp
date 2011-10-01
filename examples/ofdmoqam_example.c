@@ -1,5 +1,5 @@
 //
-//
+// ofdmoqam_example.c [EXPERIMENTAL]
 //
 
 #include <stdio.h>

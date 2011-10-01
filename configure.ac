@@ -78,6 +78,7 @@ AC_ARG_ENABLE(experimental,
             src/experimental/src/lognorm_channel.o \
             src/experimental/src/channel.o \
             src/experimental/src/pamodel.o \
+            src/experimental/src/ofdmoqam.o \
             src/experimental/src/ofdmoqamframe.common.o \
             src/experimental/src/ofdmoqamframegen.o \
             src/experimental/src/ofdmoqamframesync.o \
@@ -85,12 +86,14 @@ AC_ARG_ENABLE(experimental,
         EXPERIMENTAL_AUTOTESTS="src/experimental/tests/ann_autotest.c \
             src/experimental/tests/gport_autotest.c \
             src/experimental/tests/channel_autotest.c"
+#           src/experimental/tests/ofdmoqam_autotest.c
         EXPERIMENTAL_BENCHMARKS="src/experimental/bench/fbasc_benchmark.c \
             src/experimental/bench/gport_dma_benchmark.c \
             src/experimental/bench/gport_dma_threaded_benchmark.c \
             src/experimental/bench/gport_ima_benchmark.c \
             src/experimental/bench/gport_ima_threaded_benchmark.c \
             src/experimental/bench/dds_benchmark.c \
+            src/experimental/bench/ofdmoqam_benchmark.c \
             src/experimental/bench/qmfb_benchmark.c"
         EXPERIMENTAL_EXAMPLES="examples/ann_bitpattern_example \
             examples/ann_example \
@@ -110,12 +113,16 @@ AC_ARG_ENABLE(experimental,
             examples/itqmfb_rrrf_example \
             examples/kmeans_example \
             examples/ofdmoqamframesync_example \
+            examples/ofdmoqam_example \
+            examples/ofdmoqam_firpfbch_example \
             examples/patternset_example \
             examples/prqmfb_crcf_example \
             examples/qmfb_crcf_analysis_example \
             examples/qmfb_crcf_synthesis_example \
             examples/symsync2_crcf_example \
             examples/symsynclp_crcf_example"
+#           examples/ofdmoqamframe64gen_example
+#           examples/ofdmoqamframe64sync_example
         AC_DEFINE(LIQUID_EXPERIMENTAL)
         AC_CHECK_HEADERS(pthread.h)
         AC_CHECK_LIB([pthread], [pthread_mutex_init], [],
