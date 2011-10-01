@@ -4,7 +4,6 @@
 
 #include <stdio.h>
 #include <stdlib.h>
-#include <stdbool.h>
 #include <math.h>
 #include <getopt.h>
 #include <time.h>
@@ -47,7 +46,7 @@ int main(int argc, char*argv[]) {
     float r = 1.00f;    // resampled rate
     
     // use random data or 101010 phasing pattern
-    bool random_data=true;
+    int random_data=1;
 
     int dopt;
     while ((dopt = getopt(argc,argv,"uhk:m:b:o:s:w:n:t:r:")) != EOF) {

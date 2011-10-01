@@ -157,7 +157,7 @@ AC_CHECK_LIB([m], [sinf, cosf, expf, cargf, cexpf, crealf, cimagf, sqrtf], [],
              [])
 
 # Check for necessary header files
-AC_CHECK_HEADERS([stdio.h stdlib.h stdbool.h complex.h string.h getopt.h sys/resource.h float.h inttypes.h limits.h stdlib.h string.h unistd.h])
+AC_CHECK_HEADERS([stdio.h stdlib.h complex.h string.h getopt.h sys/resource.h float.h inttypes.h limits.h stdlib.h string.h unistd.h])
 if test -z "$HAVE_stdio.h"
 then
     AC_MSG_ERROR([Need stdio.h!])
@@ -199,7 +199,6 @@ fi
 
 
 # Checks for typedefs, structures, and compiler characteristics.
-AC_HEADER_STDBOOL
 AC_C_INLINE
 AC_TYPE_SIZE_T
 AC_TYPE_UINT32_T

@@ -24,7 +24,6 @@
 
 #include <stdio.h>
 #include <complex.h>
-#include <stdbool.h>
 #include "liquid.h"
 
 // default gnuplot colors
@@ -48,7 +47,7 @@ void liquid_doc_compute_psdcf(float complex * _x,
                               float complex * _X,
                               unsigned int _nfft,
                               liquid_doc_psdwindow _wtype,
-                              bool _normalize);
+                              int _normalize);
 
 // compute power spectral density (float input)
 void liquid_doc_compute_psdf(float * _x,
@@ -56,7 +55,7 @@ void liquid_doc_compute_psdf(float * _x,
                              float complex * _X,
                              unsigned int _nfft,
                              liquid_doc_psdwindow _wtype,
-                             bool _normalize);
+                             int _normalize);
 
 
 // Compute spectral response

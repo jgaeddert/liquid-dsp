@@ -30,7 +30,6 @@
 
 #include <stdio.h>
 #include <stdlib.h>
-#include <stdbool.h>
 #include <string.h>
 #include <math.h>
 #include <assert.h>
@@ -69,7 +68,7 @@ void liquid_cplxpair(float complex * _z,
     }
 
     // keep track of which elements have been paired
-    bool paired[_n];
+    unsigned char paired[_n];
     memset(paired,0,sizeof(paired));
     unsigned int num_pairs=0;
 
@@ -92,8 +91,8 @@ void liquid_cplxpair(float complex * _z,
                 // found complex conjugate pair
                 _p[k++] = _z[i];
                 _p[k++] = _z[j];
-                paired[i] = true;
-                paired[j] = true;
+                paired[i] = 1;
+                paired[j] = 1;
                 num_pairs++;
                 break;
             }
@@ -111,7 +110,7 @@ void liquid_cplxpair(float complex * _z,
             fprintf(stderr,"warning, liquid_cplxpair(), complex numbers cannot be paired\n");
         } else {
             _p[k++] = _z[i];
-            paired[i] = true;
+            paired[i] = 1;
         }
     }
 

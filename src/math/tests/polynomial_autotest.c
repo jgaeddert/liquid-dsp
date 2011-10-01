@@ -20,7 +20,6 @@
  */
 
 #include <string.h>
-#include <stdbool.h>
 
 #include "autotest/autotest.h"
 #include "liquid.h"
@@ -335,7 +334,7 @@ void autotest_polyf_findroots()
             printf("  r[%3u] = %12.8f + j*%12.8f\n", i, crealf(roots[i]), cimagf(roots[i]));
     }
 
-    bool rtest_used[5];
+    int rtest_used[5];
     memset(rtest_used, 0, sizeof(rtest_used));
 
     unsigned int j,k=0;
@@ -346,7 +345,7 @@ void autotest_polyf_findroots()
 
             // check to see if roots match within relative tolerance
             if (cabsf(roots[i]-rtest[j]) < tol) {
-                rtest_used[j] = true;
+                rtest_used[j] = 1;
                 CONTEND_DELTA(crealf(roots[i]), crealf(rtest[j]), tol);
                 CONTEND_DELTA(cimagf(roots[i]), cimagf(rtest[j]), tol);
                 k++;

@@ -4,7 +4,6 @@
 
 #include <stdio.h>
 #include <stdlib.h>
-#include <stdbool.h>
 
 #include "liquid.experimental.h"
 
@@ -22,7 +21,7 @@ int main() {
     unsigned int ds=1;  // additional symbol delay
     
     // use random data or 101010 phasing pattern
-    bool random_data=true;
+    int random_data=1;
 
 
     unsigned int k=2;

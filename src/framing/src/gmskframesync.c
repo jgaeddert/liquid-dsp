@@ -24,7 +24,6 @@
 
 #include <stdlib.h>
 #include <stdio.h>
-#include <stdbool.h>
 #include <string.h>
 #include <math.h>
 #include <complex.h>
@@ -57,7 +56,7 @@ struct gmskframesync_s {
     unsigned char * header_enc;         // encoded header [GMSKFRAME_H_ENC]
     unsigned char * header_dec;         // uncoded header [GMSKFRAME_H_DEC]
     packetizer p_header;                // header packetizer
-    bool header_valid;                  // header valid flag
+    int header_valid;                   // header valid flag
 
     // payload
     packetizer p_payload;               // payload packetizer
@@ -68,7 +67,7 @@ struct gmskframesync_s {
     unsigned int enc_msg_len;           // 
     unsigned char * payload_enc;        // encoded payload
     unsigned char * payload_dec;        // decoded payload
-    bool payload_valid;                 // payload valid flag
+    int payload_valid;                  // payload valid flag
 
     // callback
     gmskframesync_callback callback;    // user-defined callback function

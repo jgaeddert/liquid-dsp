@@ -4,7 +4,6 @@
 
 #include <stdio.h>
 #include <stdlib.h>
-#include <stdbool.h>
 #include <math.h>
 #include <liquid/liquid.h>
 
@@ -17,7 +16,7 @@ int main() {
     unsigned int num_filters=3;
     float fc = 0.4f;        // cutoff
     float ripple = 1.0f;    // passband ripple [dB]
-    bool color_output = true;
+    int color_output = 1;
 
     // epsilon
     float epsilon = sqrtf( powf(10.0f, ripple / 10.0f) - 1.0f );
