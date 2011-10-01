@@ -31,7 +31,7 @@ int main() {
     // design interpolating filter
     unsigned int h_len = 2*k*m+1;
     float h[h_len];
-    design_rrc_filter(k,m,beta,dt,h);
+    liquid_firdes_rrcos(k,m,beta,dt,h);
 
     // create interpolator
     interp_crcf q = interp_crcf_create(k,h,h_len);
@@ -39,7 +39,7 @@ int main() {
     // design polyphase filter
     unsigned int H_len = 2*num_filters*k*m + 1;
     float H[H_len];
-    design_rrc_filter(k*num_filters,m,beta,0,H);
+    liquid_firdes_rrcos(k*num_filters,m,beta,0,H);
     // create symbol synchronizer
     symsync2_crcf d = symsync2_crcf_create(num_filters, H, H_len);
     symsync2_crcf_set_lf_bw(d,bt);

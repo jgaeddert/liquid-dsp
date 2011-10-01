@@ -128,7 +128,7 @@ int main(int argc, char*argv[]) {
     // design interpolating filter
     unsigned int h_len = 2*k*m + 1;
     float h[h_len];
-    design_rcos_filter(k,m,beta,dt,h);
+    liquid_firdes_rcos(k,m,beta,dt,h);
     interp_crcf q = interp_crcf_create(k,h,h_len);
     for (i=0; i<num_symbols; i++) {
         interp_crcf_execute(q, s[i], &x[n]);
