@@ -17,7 +17,7 @@ void usage()
 {
     printf("nyquist_filter_example options:\n");
     printf("  u/h   : print usage/help\n");
-    printf("  t     : filter type: [kaiser], pm, rcos\n");
+    printf("  t     : filter type: [kaiser], pm, rcos, fexp, fsech, farcsech\n");
     printf("  k     : filter samples/symbol, k >= 2, default: 2\n");
     printf("  m     : filter delay (symbols), m >= 1, default: 4\n");
     printf("  b     : filter excess bandwidth factor, 0 < b < 1, default: 0.33\n");
@@ -45,6 +45,12 @@ int main(int argc, char*argv[]) {
                 ftype = LIQUID_NYQUIST_PM;
             } else if (strcmp(optarg,"rcos")==0) {
                 ftype = LIQUID_NYQUIST_RCOS;
+            } else if (strcmp(optarg,"fexp")==0) {
+                ftype = LIQUID_NYQUIST_FEXP;
+            } else if (strcmp(optarg,"fsech")==0) {
+                ftype = LIQUID_NYQUIST_FSECH;
+            } else if (strcmp(optarg,"farcsech")==0) {
+                ftype = LIQUID_NYQUIST_FARCSECH;
             } else {
                 fprintf(stderr,"error: %s, unknown filter type '%s'\n", argv[0], optarg);
                 exit(1);
@@ -103,7 +109,7 @@ int main(int argc, char*argv[]) {
     fprintf(fid,"H = 20*log10(abs(fftshift(fft(h/k,nfft))));\n");
     fprintf(fid,"figure;\n");
     fprintf(fid,"plot(f,H,'-','LineWidth',2,...\n");
-    fprintf(fid,"     [0.5/k],[-6],'or',...\n");
+    fprintf(fid,"     [0.5/k],[-20*log10(2)],'or',...\n");
     fprintf(fid,"     [0.5/k*(1-beta) 0.5/k*(1-beta)],[-100 10],'-r',...\n");
     fprintf(fid,"     [0.5/k*(1+beta) 0.5/k*(1+beta)],[-100 10],'-r');\n");
     fprintf(fid,"xlabel('normalized frequency');\n");

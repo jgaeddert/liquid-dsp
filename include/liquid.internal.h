@@ -898,6 +898,35 @@ float liquid_firdes_rkaiser_internal_isi(unsigned int _k,
                                          float _rho,
                                          float * _h);
 
+// Design flipped Nyquist/root-Nyquist filters
+void liquid_firdes_fnyquist(liquid_nyquist_type _type,
+                            int                 _root,
+                            unsigned int        _k,
+                            unsigned int        _m,
+                            float               _beta,
+                            float               _dt,
+                            float *             _h);
+
+// flipped exponential frequency response
+void liquid_firdes_fexp_freqresponse(unsigned int _k,
+                                     unsigned int _m,
+                                     float        _beta,
+                                     float *      _H);
+
+// flipped hyperbolic secant frequency response
+void liquid_firdes_fsech_freqresponse(unsigned int _k,
+                                      unsigned int _m,
+                                      float        _beta,
+                                      float *      _H);
+
+// flipped hyperbolic secant frequency response
+void liquid_firdes_farcsech_freqresponse(unsigned int _k,
+                                         unsigned int _m,
+                                         float        _beta,
+                                         float *      _H);
+
+
+
 // initialize the frequency grid on the disjoint bounded set
 void firdespm_init_grid(firdespm _q);
 
@@ -1499,9 +1528,6 @@ void modem_modulate_qpsk(modem _mod, unsigned int symbol_in, float complex *y);
 void modem_modulate_ook(modem _mod, unsigned int symbol_in, float complex *y);
 void modem_modulate_sqam32(modem _mod, unsigned int symbol_in, float complex *y);
 void modem_modulate_sqam128(modem _mod, unsigned int symbol_in, float complex *y);
-
-// modem demodualte phase error approximation (for faster demodulation)
-float cargf_demod_approx(float complex _x);
 
 // generic modem demodulate routines
 void modem_demodulate_ask(modem _demod, float complex x, unsigned int *symbol_out);

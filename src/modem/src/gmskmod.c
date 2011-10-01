@@ -40,6 +40,7 @@ struct gmskmod_s {
     interp_rrrf interp_tx;
 
     float theta;            // phase state
+    float k_inv;            // 1/k
 };
 
 // create gmskmod object
@@ -67,6 +68,9 @@ gmskmod gmskmod_create(unsigned int _k,
     q->k  = _k;
     q->m  = _m;
     q->BT = _BT;
+
+    // derived values
+    q->k_inv = 1.0f / (float)(q->k);
 
     // allocate memory for filter taps
     q->h_len = 2*(q->k)*(q->m)+1;
@@ -120,7 +124,7 @@ void gmskmod_modulate(gmskmod _q,
                       float complex * _y)
 {
     // generate sample from symbol
-    float x = _s==0 ? -1.0f : 1.0f;
+    float x = _s==0 ? -_q->k_inv : _q->k_inv;
 
     // run interpolator
     float phi[_q->k];

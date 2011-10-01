@@ -47,6 +47,7 @@ void benchmark_gmskframesync(struct rusage *_start,
                              struct rusage *_finish,
                              unsigned long int *_num_iterations)
 {
+    srand(time(NULL));
     *_num_iterations /= 128;
     unsigned long int i;
 
