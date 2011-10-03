@@ -32,11 +32,12 @@
 #    examples            :   build all examples
 #    world               :   build absolutely everything (but don't install)
 #
-#    clean-[modulename]  :   clean module [modulename]
 #    clean-modules       :   clean all modules
-#    clean-examples      :   clean examples
+#    clean-examples      :   clean examples programs
+#    clean-sandbox       :   clean sandbox programs
 #    clean-check         :   clean autotest program
 #    clean-bench         :   clean benchmark program
+#    clean-doc           :   clean documentation
 #
 
 # paths
