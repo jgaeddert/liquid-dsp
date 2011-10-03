@@ -1382,6 +1382,17 @@ typedef struct FIRPFB(_s) * FIRPFB();                           \
 FIRPFB() FIRPFB(_create)(unsigned int _num_filters,             \
                          TC * _h,                               \
                          unsigned int _h_len);                  \
+/* create from square-root Nyquist prototype            */      \
+/*  _type   : filter type (e.g. LIQUID_RNYQUIST_RRC)    */      \
+/*  _npfb   : number of filters in the bank             */      \
+/*  _k      : nominal samples/symbol                    */      \
+/*  _m      : filter delay (symbols)                    */      \
+/*  _beta   : rolloff factor (0 < beta <= 1)            */      \
+FIRPFB() FIRPFB(_create_rnyquist)(int _type,                    \
+                                  unsigned int _npfb,           \
+                                  unsigned int _k,              \
+                                  unsigned int _m,              \
+                                  float _beta);                 \
 FIRPFB() FIRPFB(_recreate)(FIRPFB() _q,                         \
                            unsigned int _num_filters,           \
                            TC * _h,                             \
@@ -1480,6 +1491,17 @@ DECIM() DECIM(_create)(unsigned int _D,                         \
 DECIM() DECIM(_create_prototype)(unsigned int _M,               \
                                  unsigned int _m,               \
                                  float As);                     \
+/* create square-root Nyquist decimator                 */      \
+/*  _type   : filter type (e.g. LIQUID_RNYQUIST_RRC)    */      \
+/*  _k      : samples/symbol (decimation factor)        */      \
+/*  _m      : filter delay (symbols)                    */      \
+/*  _beta   : rolloff factor (0 < beta <= 1)            */      \
+/*  _dt     : fractional sample delay                   */      \
+DECIM() DECIM(_create_rnyquist)(int _type,                      \
+                                unsigned int _k,                \
+                                unsigned int _m,                \
+                                float _beta,                    \
+                                float _dt);                     \
 void DECIM(_destroy)(DECIM() _q);                               \
 void DECIM(_print)(DECIM() _q);                                 \
 void DECIM(_clear)(DECIM() _q);                                 \

@@ -166,6 +166,10 @@ gmskframesync gmskframesync_create(unsigned int _k,
     q->debug_bxy = windowf_create(DEBUG_GMSKFRAMESYNC_BUFFER_LEN);
 #endif
 
+    // reset synchronizer
+    gmskframesync_reset(q);
+
+    // return synchronizer object
     return q;
 }
 
