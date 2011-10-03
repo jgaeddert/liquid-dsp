@@ -103,6 +103,18 @@ functionality applies to {\tt decim\_rrrf} and {\tt decim\_cccf}.
 \item[{\tt decim\_crcf\_create(D,*h,N)}]
     creates a {\tt decim} object with a decimation factor $D$ using $N$
     filter coefficients $\vec{h}$.
+\item[{\tt decim\_crcf\_create\_prototype(D,m,As)}]
+    creates a {\tt decim} object from a prototype filter with a
+    decimation factor $D$,
+    a delay of $Dm$ samples, and
+    a stop-band attenuation $A_s$~dB.
+\item[{\tt decim\_crcf\_create\_rnyquist(type,D,m,beta,dt)}]
+    creates a {\tt decim} object from a square-root Nyquist prototype filter with a
+    decimation factor $D$,
+    a delay of $Dm$ samples,
+    an excess bandwidth factor $\beta$, and
+    a fractional sample delay $\Delta t$
+    (see Section~\ref{module:filter:firdes:rnyquist} for details).
 \item[{\tt decim\_crcf\_destroy(q)}]
     destroys a {\tt decim} object, freeing all internally-allocated
     memory.
