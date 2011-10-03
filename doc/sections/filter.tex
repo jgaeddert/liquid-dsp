@@ -436,9 +436,12 @@ listed in Table~\ref{tab:filter:nyquist}.
 {\it scheme} &
 {\it description}\\\otoprule
 %
-{\tt LIQUID\_NYQUIST\_KAISER}   & Kaiser filter\\
-{\tt LIQUID\_NYQUIST\_PM}       & Parks-McClellan algorithm\\
-{\tt LIQUID\_NYQUIST\_RCOS}     & raised cosine\\\bottomrule
+{\tt LIQUID\_NYQUIST\_KAISER}       & Kaiser filter\\
+{\tt LIQUID\_NYQUIST\_PM}           & Parks-McClellan algorithm\\
+{\tt LIQUID\_NYQUIST\_RCOS}         & raised cosine\\
+{\tt LIQUID\_NYQUIST\_FEXP}         & flipped exponential \cite{Beaulieu:2001}\\
+{\tt LIQUID\_NYQUIST\_FSECH}        & flipped hyperbolic secant \cite{Assalini:2004}\\
+{\tt LIQUID\_NYQUIST\_FARCSECH}     & flipped hyperbolic arc-secant \cite{Assalini:2004}\\\bottomrule
 \end{tabular*}
 }
 \end{table*}%
@@ -494,8 +497,11 @@ prototypes listed in Table~\ref{tab:filter:rnyquist}.
 {\tt LIQUID\_RNYQUIST\_RKAISER}     & r-Kaiser\\
 {\tt LIQUID\_RNYQUIST\_RRCOS}       & square-root raised cosine\\
 {\tt LIQUID\_RNYQUIST\_hM3}         & harris-Moerder type 3 \cite{harris-Moerder:2005}\\
-{\tt LIQUID\_RNYQUIST\_GMSTX}       & GMSK transmit filter\\
-{\tt LIQUID\_RNYQUIST\_GMSRX}       & GMSK receive filter\\\bottomrule
+{\tt LIQUID\_RNYQUIST\_GMSTX}       & GMSK transmit filter \cite{Proakis:2001}\\
+{\tt LIQUID\_RNYQUIST\_GMSRX}       & GMSK receive filter\\
+{\tt LIQUID\_RNYQUIST\_FEXP}        & flipped exponential \cite{Beaulieu:2001}\\
+{\tt LIQUID\_RNYQUIST\_FSECH}       & flipped hyperbolic secant \cite{Assalini:2004}\\
+{\tt LIQUID\_RNYQUIST\_FARCSECH}    & flipped hyperbolic arc-secant \cite{Assalini:2004}\\\bottomrule
 \end{tabular*}
 }
 \end{table*}%
