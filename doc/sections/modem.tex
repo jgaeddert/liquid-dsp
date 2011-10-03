@@ -1189,6 +1189,28 @@ soft bit value:  [0 1 2 3      ...   64 65   ...  127  ...  192 193   ...  253 2
 interpretation:  very likely '0'   likely '0'   erasure   likely '1'    very likely '1'
 \end{Verbatim}
 
+\subsubsection{Error Vector Magnitude}
+\label{module:modem:digital:evm}
+The error vector magnitude (EVM) of a demodulated symbol is simply the
+average maginitude of the error vector between the received sample
+before demodulation and the expected transmitted symbol, viz.
+%
+\begin{equation}
+\label{eqn:modem:evm}
+    \textup{EVM} = E\left\{ \left| s - \hat{s} \right|^2 \right\}
+\end{equation}
+%
+EVM is returned by many of the framing objects
+(see Section~\ref{module:framing})
+because it gives a good indication of signal distortion as a result of
+noise, inter-symbol interference, etc.
+If the only channel impairment is noise (e.g. perfect symbol timing)
+then the SNR can be approximated as
+\[
+    \hat{\gamma} \approx 1 / \textup{EVM}
+\]
+
+
 %
 % CONTINUOUS PHASE MODEMS
 %
