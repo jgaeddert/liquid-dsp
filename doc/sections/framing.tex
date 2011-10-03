@@ -676,15 +676,10 @@ Listed below is a description of the {\tt framesyncstats\_} object
 members.
 %
 \begin{description}
-\item[{\tt SNR}]
-    is an estimate of the received signal-to-noise ratio in dB.
-    This estimate is in fact the error vector magnitude of the
-    demodulated header.
-    Depending upon the amount of distortion in the signal
-    (due to timing mismatch, inter-symbol interference, etc.)
-    this estimate will not be particularly accurate.
-    In fact a more accurate estimate of the frame SNR is by using the
-    {\tt rssi} property (see below) and subtracting the noise floor.
+\item[{\tt evm}]
+    is an estimate of the received error vector magnitude in decibels of
+    the demodulated header
+    (see Section~\ref{module:modem:digital}).
 \item[{\tt rssi}]
     is an estimate of the received signal strength in dB.
     This is derived from the synchronizer's internal automatic gain
