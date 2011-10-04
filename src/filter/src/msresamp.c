@@ -116,6 +116,9 @@ MSRESAMP() MSRESAMP(_create)(float _r,
     // create arbitrary resampler object
     q->arbitrary_resamp = RESAMP(_create)(q->rate_arbitrary, 7, 0.4f, q->As, 64);
 
+    // set scaling factor
+    q->zeta = q->rate_halfband;
+
     // reset object
     MSRESAMP(_reset)(q);
 
@@ -223,5 +226,51 @@ void MSRESAMP(_decim_execute)(MSRESAMP() _q,
 {
     // set output size to zero
     *_ny = 0;
+    
+    unsigned int k;     // number of inputs for this stage
+    unsigned int s;     // half-band decimator stage counter
+    unsigned int n;     // input counter
+    unsigned int g;     // half-band resampler stage index (reversed)
+    T * b0 = NULL;      // input buffer pointer
+    T * b1 = NULL;      // output buffer pointer
+    
+    unsigned int nw;    // 
+    unsigned int nw_total=0;
+
+    // write samples to buffer until full
+    unsigned int i;
+    for (i=0; i<_nx; i++) {
+        // push sample into buffer
+        _q->buffer0[_q->buffer_index++] = _x[i];
+
+        // check if buffer is full
+        if (_q->buffer_index == _q->buffer_len) {
+            // reset counter and run half-band decimators
+            _q->buffer_index = 0;
+    
+            // number of inputs for this stage
+            k = 1 << _q->num_halfband_stages;
+
+            // run half-band decimation stage
+            for (s=0; s<_q->num_halfband_stages; s++) {
+                // length halves with each iteration
+                k >>= 1;
+
+                // set buffer pointers
+                b0 = (s%2) == 0 ? _q->buffer0 : _q->buffer1;    // input buffer
+                b1 = (s%2) == 1 ? _q->buffer0 : _q->buffer1;    // output buffer
+
+                // execute half-band decimator
+                g = _q->num_halfband_stages - s - 1;
+                for (n=0; n<k; n++)
+                    RESAMP2(_decim_execute)(_q->halfband_resamp[g], &b0[2*n], &b1[n]);
+            }
+            // execute arbitrary resampler
+            RESAMP(_execute)(_q->arbitrary_resamp, b1[0]*_q->zeta, &_y[nw_total], &nw);
+            nw_total += nw;
+        }
+    }
+
+    *_ny = nw_total;
 }
 
