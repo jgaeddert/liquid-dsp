@@ -29,7 +29,7 @@ int main(int argc, char*argv[])
     // options
     float r=0.117f;         // resampling rate (output/input)
     float As=60.0f;         // resampling filter stop-band attenuation [dB]
-    unsigned int nx=500;    // number of input samples
+    unsigned int nx=400;    // number of input samples
     float fc=0.1379f;       // complex sinusoid frequency
 
     int dopt;
@@ -68,8 +68,9 @@ int main(int argc, char*argv[])
     float complex y[ny_alloc];
 
     // generate input
+    unsigned int window_len = (3*nx)/4;
     for (i=0; i<nx; i++)
-        x[i] = cexpf(_Complex_I*fc*i) * hamming(i,nx);
+        x[i] = i < window_len ? cexpf(_Complex_I*fc*i) * hamming(i,window_len) : 0.0f;
 
     // create multi-stage arbitrary resampler object
     msresamp_crcf q = msresamp_crcf_create(r,As);
@@ -127,7 +128,7 @@ int main(int argc, char*argv[])
     fprintf(fid,"plot(fx,X,'Color',[0.5 0.5 0.5],fy,Y,'LineWidth',2);\n");
     fprintf(fid,"grid on;\nxlabel('normalized frequency');\nylabel('PSD [dB]');\n");
     fprintf(fid,"legend('original','resampled',1);");
-    fprintf(fid,"axis([-0.5 0.5 -80 10]);\n");
+    fprintf(fid,"axis([-0.5 0.5 -120 10]);\n");
 
     fprintf(fid,"\n\n");
     fprintf(fid,"%% plot time-domain result\n");
