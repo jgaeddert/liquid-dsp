@@ -1636,8 +1636,9 @@ void MSRESAMP(_print)(MSRESAMP() _q);                               \
 void MSRESAMP(_reset)(MSRESAMP() _q);                               \
 void MSRESAMP(_execute)(MSRESAMP() _q,                              \
                         TI * _x,                                    \
+                        unsigned int _nx,                           \
                         TO * _y,                                    \
-                        unsigned int *_num_written);
+                        unsigned int *_ny);
 
 LIQUID_MSRESAMP_DEFINE_API(MSRESAMP_MANGLE_RRRF,
                            float,

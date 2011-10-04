@@ -830,12 +830,14 @@ LIQUID_IIRFILTSOS_DEFINE_INTERNAL_API(IIRFILTSOS_MANGLE_CCCF,
 /* execute multi-stage interpolation                    */      \
 void MSRESAMP(_interp_execute)(MSRESAMP() _q,                   \
                               TI * _x,                          \
+                              unsigned int _nx,                 \
                               TO * _y,                          \
                               unsigned int * _num_written);     \
                                                                 \
 /* execute multi-stage decimation                       */      \
 void MSRESAMP(_decim_execute)(MSRESAMP() _q,                    \
                               TI * _x,                          \
+                              unsigned int _nx,                 \
                               TO * _y,                          \
                               unsigned int * _num_written);     \
 
