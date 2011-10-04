@@ -194,6 +194,27 @@ void MSRESAMP(_execute)(MSRESAMP() _q,
     }
 }
 
+// get filter delay (output samples)
+unsigned int MSRESAMP(_get_delay)(MSRESAMP() _q)
+{
+    // initialize delay
+    unsigned int delay = 0;
+
+    // add half-band resampling delay
+    unsigned int i;
+    for (i=0; i<_q->num_halfband_stages; i++) {
+        // TODO : update when length changes for filter design requirements
+        unsigned int m = 3; // filter semi-length
+        delay += 2*m;
+        delay *= 2;
+    }
+
+    // add arbitrary resampler delay
+    delay += 7;
+
+    return delay;
+}
+
 // 
 // internal methods
 //

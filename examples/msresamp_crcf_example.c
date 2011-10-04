@@ -37,6 +37,7 @@ int main() {
     // create multi-stage arbitrary resampler object
     msresamp_crcf q = msresamp_crcf_create(r,As);
     msresamp_crcf_print(q);
+    unsigned int delay = msresamp_crcf_get_delay(q);
 
     // run resampler
     unsigned int ny;
@@ -45,6 +46,7 @@ int main() {
     // print basic results
     printf("input samples   : %u\n", nx);
     printf("output samples  : %u\n", ny);
+    printf("delay           : %u samples\n", delay);
 
     // clean up allocated objects
     msresamp_crcf_destroy(q);
@@ -59,7 +61,7 @@ int main() {
     fprintf(fid,"close all;\n");
     fprintf(fid,"\n");
     fprintf(fid,"r=%12.8f;\n", r);
-    fprintf(fid,"delay = 90;\n");
+    fprintf(fid,"delay = %u;\n", delay);
 
     for (i=0; i<nx; i++)
         fprintf(fid,"x(%6u) = %12.4e + j*%12.4e;\n", i+1, crealf(x[i]), cimagf(x[i]));

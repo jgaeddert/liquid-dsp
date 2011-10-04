@@ -1638,7 +1638,8 @@ void MSRESAMP(_execute)(MSRESAMP() _q,                              \
                         TI * _x,                                    \
                         unsigned int _nx,                           \
                         TO * _y,                                    \
-                        unsigned int *_ny);
+                        unsigned int *_ny);                         \
+unsigned int MSRESAMP(_get_delay)(MSRESAMP() _q);                   \
 
 LIQUID_MSRESAMP_DEFINE_API(MSRESAMP_MANGLE_RRRF,
                            float,
