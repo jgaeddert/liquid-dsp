@@ -1,0 +1,104 @@
+/*
+ * Copyright (c) 2011 Joseph Gaeddert
+ * Copyright (c) 2011 Virginia Polytechnic Institute & State University
+ *
+ * This file is part of liquid.
+ *
+ * liquid is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * liquid is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with liquid.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
+//
+// multi-stage arbitrary resampler
+//
+
+#include <stdlib.h>
+#include <stdio.h>
+#include <string.h>
+#include <math.h>
+
+#include "liquid.internal.h"
+
+struct MSRESAMP(_s) {
+    // user-defined parameters
+    unsigned int rate;                  // re-sampling rate (2^num_stages)
+    float As;                           // filter stop-band attenuation [dB]
+
+    // derived values
+    unsigned int num_halfband_stages;   // number of halfband stages
+
+    RESAMP2() * halfband_resamp;        // halfband decimation/interpolation stages
+    RESAMP() arbitrary_resamp;          // arbitrary resampling stage
+
+    // internal buffers
+    unsigned int buffer_len;
+    T * buffer0;
+    T * buffer1;
+
+    // scaling factor
+    float zeta;
+};
+
+// create msresamp object
+//  _r              :   resampling rate [output/input]
+//  _As             :   stop-band attenuation
+MSRESAMP() MSRESAMP(_create)(float _r,
+                             float _As)
+{
+    // validate input
+    if (_r <= 0.0f) {
+        fprintf(stderr,"error: msresamp_xxxf_create(), resampling rate must be greater than zero\n");
+        exit(1);
+    }
+
+    // create object
+    MSRESAMP() q = (MSRESAMP()) malloc(sizeof(struct MSRESAMP(_s)));
+    q->rate = _r;
+    q->As   = _As;
+
+    // reset object
+    MSRESAMP(_reset)(q);
+
+    // return main object
+    return q;
+}
+
+// destroy msresamp object, freeing all internally-allocated memory
+void MSRESAMP(_destroy)(MSRESAMP() _q)
+{
+    // destroy main object
+    free(_q);
+}
+
+// print msresamp object internals
+void MSRESAMP(_print)(MSRESAMP() _q)
+{
+    printf("multi-stage resampler, rate : %u\n", _q->rate);
+}
+
+// reset msresamp object internals, clear filters and nco phase
+void MSRESAMP(_reset)(MSRESAMP() _q)
+{
+}
+
+// execute multi-stage resampler
+//  _q      :   msresamp object
+//  _x      :   input sample array [size: 2^num_stages x 1]
+//  _y      :   output sample
+void MSRESAMP(_execute)(MSRESAMP() _q,
+                        T * _x,
+                        T * _y,
+                        unsigned int * _num_written)
+{
+}
+

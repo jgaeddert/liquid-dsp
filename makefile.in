@@ -344,6 +344,7 @@ filter_includes :=						\
 	src/filter/src/iirfiltsos.c				\
 	src/filter/src/interp.c					\
 	src/filter/src/decim.c					\
+	src/filter/src/msresamp.c				\
 	src/filter/src/resamp.c					\
 	src/filter/src/resamp2.c				\
 	src/filter/src/symsync.c				\
