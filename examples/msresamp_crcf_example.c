@@ -5,22 +5,59 @@
 //
 
 #include <stdio.h>
+#include <stdlib.h>
 #include <complex.h>
 #include <math.h>
+#include <getopt.h>
 
 #include "liquid.h"
 
 #define OUTPUT_FILENAME "msresamp_crcf_example.m"
 
-int main() {
+// print usage/help message
+void usage()
+{
+    printf("Usage: msresamp_crcf_example [OPTION]\n");
+    printf("  h     : print help\n");
+    printf("  r     : resampling rate (output/input), default: 0.117\n");
+    printf("  s     : stop-band attenuation [dB], default: 60\n");
+    printf("  n     : number of input samples, default: 500\n");
+}
+
+int main(int argc, char*argv[])
+{
     // options
     float r=0.117f;         // resampling rate (output/input)
     float As=60.0f;         // resampling filter stop-band attenuation [dB]
     unsigned int nx=500;    // number of input samples
     float fc=0.0179f;       // complex sinusoid frequency
 
+    int dopt;
+    while ((dopt = getopt(argc,argv,"hr:s:n:")) != EOF) {
+        switch (dopt) {
+        case 'h':   usage();            return 0;
+        case 'r':   r   = atof(optarg); break;
+        case 's':   As  = atof(optarg); break;
+        case 'n':   nx  = atoi(optarg); break;
+        default:
+            fprintf(stderr,"error: %s, unknown option\n", argv[0]);
+            usage();
+            return 1;
+        }
+    }
+
     // validate input
-    
+    if (nx == 0) {
+        fprintf(stderr,"error: %s, number of input samples must be greater than zero\n", argv[0]);
+        exit(1);
+    } else if (r <= 0.0f) {
+        fprintf(stderr,"error: %s, resampling rate must be greater than zero\n", argv[0]);
+        exit(1);
+    } else if ( fabsf(log2f(r)) > 10 ) {
+        fprintf(stderr,"error: %s, resampling rate unreasonable\n", argv[0]);
+        exit(1);
+    }
+
     unsigned int i;
 
     // derived values
@@ -63,9 +100,15 @@ int main() {
     fprintf(fid,"r=%12.8f;\n", r);
     fprintf(fid,"delay = %u;\n", delay);
 
+    // save input series
+    fprintf(fid,"nx = %u;\n", nx);
+    fprintf(fid,"x = zeros(1,nx);\n");
     for (i=0; i<nx; i++)
         fprintf(fid,"x(%6u) = %12.4e + j*%12.4e;\n", i+1, crealf(x[i]), cimagf(x[i]));
 
+    // save output series
+    fprintf(fid,"ny = %u;\n", ny);
+    fprintf(fid,"y = zeros(1,ny);\n");
     for (i=0; i<ny; i++)
         fprintf(fid,"y(%6u) = %12.4e + j*%12.4e;\n", i+1, crealf(y[i]), cimagf(y[i]));
 
