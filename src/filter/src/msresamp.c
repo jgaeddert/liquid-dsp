@@ -155,6 +155,7 @@ void MSRESAMP(_print)(MSRESAMP() _q)
     printf("    halfband rate       :   %s%u\n", _q->halfband_type == MSRESAMP_HALFBAND_INTERP ? "" : "1/",
                                                  1<<_q->num_halfband_stages);
     printf("    arbitrary rate      :   %12.10f\n", _q->rate_arbitrary);
+    //printf("    buffer len          :   %u\n", _q->buffer_len);
 }
 
 // reset msresamp object internals, clear filters and nco phase
@@ -251,8 +252,10 @@ void MSRESAMP(_interp_execute)(MSRESAMP() _q,
     unsigned int s;     // half-band decimator stage counter
     unsigned int n;     // input counter
     unsigned int g;     // half-band resampler stage index (reversed)
-    T * b0 = NULL;      // input buffer pointer
-    T * b1 = NULL;      // output buffer pointer
+
+    // buffer pointers (initialize BOTH to _q->buffer0);
+    T * b0 = _q->buffer0;   // input buffer pointer
+    T * b1 = _q->buffer0;   // output buffer pointer
     
     unsigned int nw;
     unsigned int nw_total=0;
@@ -317,8 +320,10 @@ void MSRESAMP(_decim_execute)(MSRESAMP() _q,
     unsigned int s;     // half-band decimator stage counter
     unsigned int n;     // input counter
     unsigned int g;     // half-band resampler stage index (reversed)
-    T * b0 = NULL;      // input buffer pointer
-    T * b1 = NULL;      // output buffer pointer
+
+    // buffer pointers (initialize BOTH to _q->buffer0);
+    T * b0 = _q->buffer0;   // input buffer pointer
+    T * b1 = _q->buffer0;   // output buffer pointer
     
     unsigned int nw;    // 
     unsigned int nw_total=0;
@@ -351,6 +356,7 @@ void MSRESAMP(_decim_execute)(MSRESAMP() _q,
                 for (n=0; n<k; n++)
                     RESAMP2(_decim_execute)(_q->halfband_resamp[g], &b0[2*n], &b1[n]);
             }
+
             // execute arbitrary resampler
             RESAMP(_execute)(_q->arbitrary_resamp, b1[0]*_q->zeta, &_y[nw_total], &nw);
             nw_total += nw;
