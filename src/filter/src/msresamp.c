@@ -31,7 +31,7 @@
 
 struct MSRESAMP(_s) {
     // user-defined parameters
-    unsigned int rate;                  // re-sampling rate (2^num_stages)
+    float rate;                         // re-sampling rate
     float As;                           // filter stop-band attenuation [dB]
 
     // half-band resampler parameters
@@ -41,6 +41,7 @@ struct MSRESAMP(_s) {
         MSRESAMP_HALFBAND_DECIM
     } halfband_type;                    // run half-band resamplers as interp or decim
     RESAMP2() * halfband_resamp;        // halfband decimation/interpolation objects
+    float rate_halfband;                // halfband rate
 
     // arbitrary resampler parameters
     RESAMP() arbitrary_resamp;          // arbitrary resampling object
@@ -77,20 +78,29 @@ MSRESAMP() MSRESAMP(_create)(float _r,
 
     // compute derived values
     q->rate_arbitrary = q->rate;
+    q->rate_halfband  = 1.0f;
     q->num_halfband_stages = 0;
     switch(q->halfband_type) {
         case MSRESAMP_HALFBAND_INTERP:
-            while (q->rate_arbitrary < 0.5f) {
+            while (q->rate_arbitrary > 2.0f) {
                 q->num_halfband_stages++;
-                q->rate_arbitrary *= 2.0f;
-            }
-        case MSRESAMP_HALFBAND_DECIM:
-            while (q->rate_arbitrary < 2.0f) {
-                q->num_halfband_stages++;
+                q->rate_halfband  *= 2.0f;
                 q->rate_arbitrary *= 0.5f;
             }
+            break;
+        case MSRESAMP_HALFBAND_DECIM:
+            while (q->rate_arbitrary < 0.5f) {
+                q->num_halfband_stages++;
+                q->rate_halfband  *= 0.5f;
+                q->rate_arbitrary *= 2.0f;
+            }
+            break;
         default:;
-    };
+    }
+
+    // create half-band resampler objects
+
+    // create arbitrary resampler object
 
     // reset object
     MSRESAMP(_reset)(q);
@@ -109,10 +119,11 @@ void MSRESAMP(_destroy)(MSRESAMP() _q)
 // print msresamp object internals
 void MSRESAMP(_print)(MSRESAMP() _q)
 {
-    printf("multi-stage resampler, rate : %u\n", _q->rate);
+    printf("multi-stage resampler, rate : %f\n", _q->rate);
     printf("    type                :   %s\n", _q->halfband_type == MSRESAMP_HALFBAND_INTERP ? "interp" : "decim");
     printf("    num halfband stages :   %u\n", _q->num_halfband_stages);
-    printf("    arbitrary rate      :   %12.8f\n", _q->rate_arbitrary);
+    printf("    halfband rate       :   %s%u\n", _q->halfband_type == MSRESAMP_HALFBAND_INTERP ? "" : "1/", 1<<_q->num_halfband_stages);
+    printf("    arbitrary rate      :   %12.10f\n", _q->rate_arbitrary);
 }
 
 // reset msresamp object internals, clear filters and nco phase
