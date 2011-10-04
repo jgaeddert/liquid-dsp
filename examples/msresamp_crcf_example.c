@@ -30,7 +30,7 @@ int main(int argc, char*argv[])
     float r=0.117f;         // resampling rate (output/input)
     float As=60.0f;         // resampling filter stop-band attenuation [dB]
     unsigned int nx=500;    // number of input samples
-    float fc=0.0179f;       // complex sinusoid frequency
+    float fc=0.1379f;       // complex sinusoid frequency
 
     int dopt;
     while ((dopt = getopt(argc,argv,"hr:s:n:")) != EOF) {
@@ -61,7 +61,7 @@ int main(int argc, char*argv[])
     unsigned int i;
 
     // derived values
-    unsigned int ny_alloc = (unsigned int) (4*(float)nx / r);  // allocation for output
+    unsigned int ny_alloc = (unsigned int) (2*(float)nx * r);  // allocation for output
 
     // allocate memory for arrays
     float complex x[nx];
@@ -74,7 +74,7 @@ int main(int argc, char*argv[])
     // create multi-stage arbitrary resampler object
     msresamp_crcf q = msresamp_crcf_create(r,As);
     msresamp_crcf_print(q);
-    unsigned int delay = msresamp_crcf_get_delay(q);
+    float delay = msresamp_crcf_get_delay(q);
 
     // run resampler
     unsigned int ny;
@@ -83,7 +83,7 @@ int main(int argc, char*argv[])
     // print basic results
     printf("input samples   : %u\n", nx);
     printf("output samples  : %u\n", ny);
-    printf("delay           : %u samples\n", delay);
+    printf("delay           : %f samples\n", delay);
 
     // clean up allocated objects
     msresamp_crcf_destroy(q);
@@ -98,7 +98,7 @@ int main(int argc, char*argv[])
     fprintf(fid,"close all;\n");
     fprintf(fid,"\n");
     fprintf(fid,"r=%12.8f;\n", r);
-    fprintf(fid,"delay = %u;\n", delay);
+    fprintf(fid,"delay = %f;\n", delay);
 
     // save input series
     fprintf(fid,"nx = %u;\n", nx);
