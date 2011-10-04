@@ -99,8 +99,16 @@ MSRESAMP() MSRESAMP(_create)(float _r,
     }
 
     // create half-band resampler objects
+    q->halfband_resamp = (RESAMP2()*) malloc(q->num_halfband_stages*sizeof(RESAMP()));
+    unsigned int i;
+    for (i=0; i<q->num_halfband_stages; i++) {
+        // TODO : compute length based on filter requirements
+        unsigned int m = 3;
+        q->halfband_resamp[i] = RESAMP2(_create)(m, 0, q->As);
+    }
 
     // create arbitrary resampler object
+    q->arbitrary_resamp = RESAMP(_create)(q->rate_arbitrary, 7, 0.4f, q->As, 64);
 
     // reset object
     MSRESAMP(_reset)(q);
@@ -112,6 +120,15 @@ MSRESAMP() MSRESAMP(_create)(float _r,
 // destroy msresamp object, freeing all internally-allocated memory
 void MSRESAMP(_destroy)(MSRESAMP() _q)
 {
+    // destroy/free half-band resampler objects
+    unsigned int i;
+    for (i=0; i<_q->num_halfband_stages; i++)
+        RESAMP2(_destroy)(_q->halfband_resamp[i]);
+    free(_q->halfband_resamp);
+
+    // destroy arbitrary resampler
+    RESAMP(_destroy)(_q->arbitrary_resamp);
+
     // destroy main object
     free(_q);
 }
@@ -129,6 +146,13 @@ void MSRESAMP(_print)(MSRESAMP() _q)
 // reset msresamp object internals, clear filters and nco phase
 void MSRESAMP(_reset)(MSRESAMP() _q)
 {
+    // reset half-band resampler objects
+    unsigned int i;
+    for (i=0; i<_q->num_halfband_stages; i++)
+        RESAMP2(_clear)(_q->halfband_resamp[i]);
+
+    // reset arbitrary resampler
+    RESAMP(_reset)(_q->arbitrary_resamp);
 }
 
 // execute multi-stage resampler
