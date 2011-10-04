@@ -824,6 +824,36 @@ LIQUID_IIRFILTSOS_DEFINE_INTERNAL_API(IIRFILTSOS_MANGLE_CCCF,
                                       liquid_float_complex,
                                       liquid_float_complex)
 
+// msresamp
+#define LIQUID_MSRESAMP_DEFINE_INTERNAL_API(MSRESAMP,TO,TC,TI)  \
+                                                                \
+/* execute multi-stage interpolation                    */      \
+void MSRESAMP(_interp_execute)(MSRESAMP() _q,                   \
+                              TI * _x,                          \
+                              TO * _y,                          \
+                              unsigned int * _num_written);     \
+                                                                \
+/* execute multi-stage decimation                       */      \
+void MSRESAMP(_decim_execute)(MSRESAMP() _q,                    \
+                              TI * _x,                          \
+                              TO * _y,                          \
+                              unsigned int * _num_written);     \
+
+LIQUID_MSRESAMP_DEFINE_INTERNAL_API(MSRESAMP_MANGLE_RRRF,
+                                    float,
+                                    float,
+                                    float)
+
+LIQUID_MSRESAMP_DEFINE_INTERNAL_API(MSRESAMP_MANGLE_CRCF,
+                                    liquid_float_complex,
+                                    float,
+                                    liquid_float_complex)
+
+LIQUID_MSRESAMP_DEFINE_INTERNAL_API(MSRESAMP_MANGLE_CCCF,
+                                    liquid_float_complex,
+                                    liquid_float_complex,
+                                    liquid_float_complex)
+
 
 // symsync
 #define LIQUID_SYMSYNC_DEFINE_INTERNAL_API(SYMSYNC,TO,TC,TI)    \

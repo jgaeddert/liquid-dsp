@@ -157,12 +157,41 @@ void MSRESAMP(_reset)(MSRESAMP() _q)
 
 // execute multi-stage resampler
 //  _q      :   msresamp object
-//  _x      :   input sample array [size: 2^num_stages x 1]
-//  _y      :   output sample
+//  _x      :   input sample array
+//  _y      :   output sample array
+//  _nw     :   number of samples written to _y
 void MSRESAMP(_execute)(MSRESAMP() _q,
                         T * _x,
                         T * _y,
                         unsigned int * _num_written)
+{
+}
+
+// 
+// internal methods
+//
+
+// execute multi-stage resampler as interpolator
+//  _q      :   msresamp object
+//  _x      :   input sample array
+//  _y      :   output sample array
+//  _nw     :   number of samples written to _y
+void MSRESAMP(_interp_execute)(MSRESAMP() _q,
+                               T * _x,
+                               T * _y,
+                               unsigned int * _num_written)
+{
+}
+
+// execute multi-stage resampler as decimator
+//  _q      :   msresamp object
+//  _x      :   input sample array
+//  _y      :   output sample array
+//  _nw     :   number of samples written to _y
+void MSRESAMP(_decim_execute)(MSRESAMP() _q,
+                              T * _x,
+                              T * _y,
+                              unsigned int * _num_written)
 {
 }
 
