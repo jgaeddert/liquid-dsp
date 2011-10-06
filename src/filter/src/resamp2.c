@@ -131,11 +131,39 @@ RESAMP2() RESAMP2(_recreate)(RESAMP2() _q,
                              float _fc,
                              float _As)
 {
-    // TODO : only re-design filter if necessary
+    // only re-design filter if necessary
+    if (_m != _q->m) {
+        // destroy resampler and re-create from scratch
+        RESAMP2(_destroy)(_q);
+        _q = RESAMP2(_create)(_m, _fc, _As);
 
-    // destroy resampler and re-create
-    RESAMP2(_destroy)(_q);
-    return RESAMP2(_create)(_m, _fc, _As);
+    } else {
+        // re-design filter prototype
+        unsigned int i;
+        float t, h1, h2;
+        TC h3;
+        float beta = kaiser_beta_As(_q->As);
+        for (i=0; i<_q->h_len; i++) {
+            t = (float)i - (float)(_q->h_len-1)/2.0f;
+            h1 = sincf(t/2.0f);
+            h2 = kaiser(i,_q->h_len,beta,0);
+#if TC_COMPLEX == 1
+            h3 = cosf(2.0f*M_PI*t*_q->fc) + _Complex_I*sinf(2.0f*M_PI*t*_q->fc);
+#else
+            h3 = cosf(2.0f*M_PI*t*_q->fc);
+#endif
+            _q->h[i] = h1*h2*h3;
+        }
+
+        // resample, alternate sign, [reverse direction]
+        unsigned int j=0;
+        for (i=1; i<_q->h_len; i+=2)
+            _q->h1[j++] = _q->h[_q->h_len - i - 1];
+
+        // create dotprod object
+        _q->dp = DOTPROD(_recreate)(_q->dp, _q->h1, 2*_q->m);
+    }
+    return _q;
 }
 
 // destroy a resamp2 object, clearing up all allocated memory
