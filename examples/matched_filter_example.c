@@ -133,6 +133,11 @@ int main(int argc, char*argv[]) {
     isi_rms = sqrtf( isi_rms / (float)(2*m-1) );
     printf("  isi (rms) : %12.8f dB\n", 20*log10f(isi_rms));
 
+    // compute relative stop-band energy
+    unsigned int nfft = 2048;
+    float As = liquid_filter_energy(ht, h_len, 0.5f*(1.0f + beta)/(float)k, nfft);
+    printf("  As        : %12.8f dB\n", 20*log10f(As));
+
     // generate signal
     float sym_in[num_symbols];
     float y[num_samples];

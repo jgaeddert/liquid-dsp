@@ -32,7 +32,7 @@ void liquid_doc_compute_psdcf(float complex * _x,
                               float complex * _X,
                               unsigned int _nfft,
                               liquid_doc_psdwindow _wtype,
-                              bool _normalize)
+                              int _normalize)
 {
     unsigned int i;
 
@@ -76,7 +76,7 @@ void liquid_doc_compute_psdf(float * _x,
                              float complex * _X,
                              unsigned int _nfft,
                              liquid_doc_psdwindow _wtype,
-                             bool _normalize)
+                             int _normalize)
 {
     float complex xcf[_n];
     unsigned int i;

@@ -5,7 +5,6 @@
 
 #include <stdlib.h>
 #include <stdio.h>
-#include <stdbool.h>
 #include <string.h>
 #include <getopt.h>
 #include <math.h>
@@ -68,8 +67,8 @@ int main(int argc, char*argv[]) {
     // TODO : validate input
 
     // derived options
-    bool plot_labels = (gnuplot_version > 4.1) && (bps < 8);
-    bool plot_long_labels = false;
+    int plot_labels = (gnuplot_version > 4.1) && (bps < 8);
+    int plot_long_labels = 0;
 
     unsigned int i;
 
@@ -104,7 +103,7 @@ int main(int argc, char*argv[]) {
                 dmin = d;
         }
     }
-    plot_long_labels = dmin < 0.34 ? false : true;
+    plot_long_labels = dmin < 0.34 ? 0 : 1;
 
     // write output file
     FILE * fid = fopen(output_filename,"w");

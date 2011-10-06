@@ -45,14 +45,12 @@ void packetizer_test_codec(unsigned int _n,
         msg_rx[i] = 0;
     }
 
-    bool crc_pass;
-
     // encode/decode packet
     packetizer_encode(p, msg_tx, packet);
-    crc_pass = packetizer_decode(p, packet, msg_rx);
+    int crc_pass = packetizer_decode(p, packet, msg_rx);
 
     CONTEND_SAME_DATA(msg_tx, msg_rx, _n);
-    CONTEND_EQUALITY(crc_pass, true);
+    CONTEND_EQUALITY(crc_pass, 1);
 
     // clean up objects
     packetizer_destroy(p);

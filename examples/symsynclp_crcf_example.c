@@ -4,7 +4,6 @@
 
 #include <stdio.h>
 #include <stdlib.h>
-#include <stdbool.h>
 #include <math.h>
 #include <getopt.h>
 #include <time.h>
@@ -47,7 +46,7 @@ int main(int argc, char*argv[]) {
     float r = 1.00f;    // resampled rate
     
     // use random data or 101010 phasing pattern
-    bool random_data=true;
+    int random_data=1;
 
     int dopt;
     while ((dopt = getopt(argc,argv,"uhk:m:b:o:s:w:n:t:r:")) != EOF) {
@@ -128,7 +127,7 @@ int main(int argc, char*argv[]) {
     // design interpolating filter
     unsigned int h_len = 2*k*m + 1;
     float h[h_len];
-    design_rcos_filter(k,m,beta,dt,h);
+    liquid_firdes_rcos(k,m,beta,dt,h);
     interp_crcf q = interp_crcf_create(k,h,h_len);
     for (i=0; i<num_symbols; i++) {
         interp_crcf_execute(q, s[i], &x[n]);

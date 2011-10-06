@@ -478,7 +478,7 @@ void flexframesync_execute(flexframesync _fs, float complex *_x, unsigned int _n
             // mix down, demodulate, run PLL
             nco_crcf_mix_down(_fs->nco_rx, mfdecim_out[j], &nco_rx_out);
             if (_fs->state == FLEXFRAMESYNC_STATE_SEEKPN) {
-            //if (false) {
+            //if (0) {
                 modem_demodulate(_fs->mod_preamble, nco_rx_out, &demod_sym);
                 phase_error = modem_get_demodulator_phase_error(_fs->mod_preamble);
             } else if (_fs->state == FLEXFRAMESYNC_STATE_RXHEADER) {

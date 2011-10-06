@@ -29,7 +29,6 @@
 // default include headers
 #include <stdio.h>
 #include <stdlib.h>
-#include <stdbool.h>
 #include <getopt.h>
 #include <string.h>
 #include <math.h>
@@ -74,8 +73,8 @@ typedef struct {
 // helper functions:
 void estimate_cpu_clock(void);
 void set_num_trials_from_cpu_speed(void);
-void execute_benchmark(benchmark_t* _benchmark, bool _verbose);
-void execute_package(package_t* _package, bool _verbose);
+void execute_benchmark(benchmark_t* _benchmark, int _verbose);
+void execute_package(package_t* _package, int _verbose);
 
 char convert_units(float * _s);
 void print_benchmark_results(benchmark_t* _benchmark);
@@ -123,10 +122,10 @@ int main(int argc, char *argv[])
     } mode = RUN_ALL;
     unsigned int benchmark_id = 0;
     unsigned int package_id = 0;
-    bool verbose = true;
-    bool autoscale = true;
-    bool cpu_clock_detect = true;
-    bool output_to_file = false;
+    int verbose = 1;
+    int autoscale = 1;
+    int cpu_clock_detect = 1;
+    int output_to_file = 0;
     char filename[128];
     char search_string[128];
 
@@ -135,9 +134,9 @@ int main(int argc, char *argv[])
     while((d = getopt(argc,argv,"uhvqec:n:b:p:t:lLs:o:")) != EOF){
         switch (d) {
         case 'u':
-        case 'h':   usage();            return 0;
-        case 'v':   verbose = true;     break;
-        case 'q':   verbose = false;    break;
+        case 'h':   usage();        return 0;
+        case 'v':   verbose = 1;    break;
+        case 'q':   verbose = 0;    break;
         case 'e':
             estimate_cpu_clock();
             return 0;
@@ -147,11 +146,11 @@ int main(int argc, char *argv[])
                 printf("error: cpu clock speed is negative (%f)\n", cpu_clock);
                 return -1;
             }
-            cpu_clock_detect = false;
+            cpu_clock_detect = 0;
             break;
         case 'n':
             num_base_trials = atoi(optarg);
-            autoscale = false;
+            autoscale = 0;
             break;
         case 'b':
             benchmark_id = atoi(optarg);
@@ -196,7 +195,7 @@ int main(int argc, char *argv[])
             search_string[127] = '\0';
             break;
         case 'o':
-            output_to_file = true;
+            output_to_file = 1;
             strcpy(filename, optarg);
             break;
         default:
@@ -333,7 +332,7 @@ void set_num_trials_from_cpu_speed(void)
     printf("  setting number of base trials to %ld\n", num_base_trials);
 }
 
-void execute_benchmark(benchmark_t* _benchmark, bool _verbose)
+void execute_benchmark(benchmark_t* _benchmark, int _verbose)
 {
     unsigned long int n = num_base_trials;
     struct rusage start, finish;
@@ -369,7 +368,7 @@ void execute_benchmark(benchmark_t* _benchmark, bool _verbose)
         print_benchmark_results(_benchmark);
 }
 
-void execute_package(package_t* _package, bool _verbose)
+void execute_package(package_t* _package, int _verbose)
 {
     if (_verbose)
         printf("%u: %s\n", _package->id, _package->name);

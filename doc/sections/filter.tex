@@ -103,6 +103,18 @@ functionality applies to {\tt decim\_rrrf} and {\tt decim\_cccf}.
 \item[{\tt decim\_crcf\_create(D,*h,N)}]
     creates a {\tt decim} object with a decimation factor $D$ using $N$
     filter coefficients $\vec{h}$.
+\item[{\tt decim\_crcf\_create\_prototype(D,m,As)}]
+    creates a {\tt decim} object from a prototype filter with a
+    decimation factor $D$,
+    a delay of $Dm$ samples, and
+    a stop-band attenuation $A_s$~dB.
+\item[{\tt decim\_crcf\_create\_rnyquist(type,D,m,beta,dt)}]
+    creates a {\tt decim} object from a square-root Nyquist prototype filter with a
+    decimation factor $D$,
+    a delay of $Dm$ samples,
+    an excess bandwidth factor $\beta$, and
+    a fractional sample delay $\Delta t$
+    (see Section~\ref{module:filter:firdes:rnyquist} for details).
 \item[{\tt decim\_crcf\_destroy(q)}]
     destroys a {\tt decim} object, freeing all internally-allocated
     memory.
@@ -436,9 +448,12 @@ listed in Table~\ref{tab:filter:nyquist}.
 {\it scheme} &
 {\it description}\\\otoprule
 %
-{\tt LIQUID\_NYQUIST\_KAISER}   & Kaiser filter\\
-{\tt LIQUID\_NYQUIST\_PM}       & Parks-McClellan algorithm\\
-{\tt LIQUID\_NYQUIST\_RCOS}     & raised cosine\\\bottomrule
+{\tt LIQUID\_NYQUIST\_KAISER}       & Kaiser filter\\
+{\tt LIQUID\_NYQUIST\_PM}           & Parks-McClellan algorithm\\
+{\tt LIQUID\_NYQUIST\_RCOS}         & raised cosine\\
+{\tt LIQUID\_NYQUIST\_FEXP}         & flipped exponential \cite{Beaulieu:2001}\\
+{\tt LIQUID\_NYQUIST\_FSECH}        & flipped hyperbolic secant \cite{Assalini:2004}\\
+{\tt LIQUID\_NYQUIST\_FARCSECH}     & flipped hyperbolic arc-secant \cite{Assalini:2004}\\\bottomrule
 \end{tabular*}
 }
 \end{table*}%
@@ -494,8 +509,11 @@ prototypes listed in Table~\ref{tab:filter:rnyquist}.
 {\tt LIQUID\_RNYQUIST\_RKAISER}     & r-Kaiser\\
 {\tt LIQUID\_RNYQUIST\_RRCOS}       & square-root raised cosine\\
 {\tt LIQUID\_RNYQUIST\_hM3}         & harris-Moerder type 3 \cite{harris-Moerder:2005}\\
-{\tt LIQUID\_RNYQUIST\_GMSTX}       & GMSK transmit filter\\
-{\tt LIQUID\_RNYQUIST\_GMSRX}       & GMSK receive filter\\\bottomrule
+{\tt LIQUID\_RNYQUIST\_GMSTX}       & GMSK transmit filter \cite{Proakis:2001}\\
+{\tt LIQUID\_RNYQUIST\_GMSRX}       & GMSK receive filter\\
+{\tt LIQUID\_RNYQUIST\_FEXP}        & flipped exponential \cite{Beaulieu:2001}\\
+{\tt LIQUID\_RNYQUIST\_FSECH}       & flipped hyperbolic secant \cite{Assalini:2004}\\
+{\tt LIQUID\_RNYQUIST\_FARCSECH}    & flipped hyperbolic arc-secant \cite{Assalini:2004}\\\bottomrule
 \end{tabular*}
 }
 \end{table*}%

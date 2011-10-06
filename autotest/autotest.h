@@ -30,7 +30,6 @@
 
 #include <stdio.h>
 #include <math.h>
-#include <stdbool.h>
 #include <inttypes.h>
 
 // total number of checks invoked

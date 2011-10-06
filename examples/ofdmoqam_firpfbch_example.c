@@ -1,5 +1,5 @@
 //
-// ofdmoqam_firpfbch_test.c
+// ofdmoqam_firpfbch_example.c [EXPERIMENTAL]
 //
 // Tests the validity of OFDM/OQAM using firpfbch_crcf channelizer
 // objects.

@@ -34,6 +34,7 @@
 #define INTERP(name)        LIQUID_CONCAT(interp_cccf,name)
 #define DECIM(name)         LIQUID_CONCAT(decim_cccf,name)
 #define NCO(name)           LIQUID_CONCAT(nco_crcf,name)
+#define MSRESAMP(name)      LIQUID_CONCAT(msresamp_cccf,name)
 #define RESAMP(name)        LIQUID_CONCAT(resamp_cccf,name)
 #define RESAMP2(name)       LIQUID_CONCAT(resamp2_cccf,name)
 //#define SYMSYNC(name)       LIQUID_CONCAT(symsync_cccf,name)
@@ -63,6 +64,7 @@
 #include "interp.c"
 #include "decim.c"
 //#include "qmfb.c"
+#include "msresamp.c"
 #include "resamp.c"
 #include "resamp2.c"
 //#include "symsync.c"

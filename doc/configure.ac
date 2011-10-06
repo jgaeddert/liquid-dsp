@@ -83,7 +83,7 @@ fi
 ##
 
 # AC_CHECK_HEADERS (header-files, [action-if-found], [action-if-not-found], [includes])
-AC_CHECK_HEADERS([stdio.h stdlib.h stdbool.h complex.h string.h getopt.h],
+AC_CHECK_HEADERS([stdio.h stdlib.h complex.h string.h getopt.h],
                  [],
                  [AC_MSG_ERROR(missing header files)],
                  [])
@@ -121,7 +121,6 @@ AC_CHECK_LIB([fec], [create_viterbi27], [],
 ##
 ## Checks for typedefs, structures, and compiler characteristics.
 ##
-AC_HEADER_STDBOOL
 AC_C_INLINE
 AC_TYPE_SIZE_T
 AC_TYPE_UINT32_T

@@ -60,6 +60,28 @@
 \usepackage{fancyvrb}
 \usepackage{acronym}
 
+% define colors here
+\definecolor{liquid-color-blue}{rgb}{  0.00, 0.25, 0.50}
+\definecolor{liquid-color-green}{rgb}{ 0.00, 0.50, 0.25}
+\definecolor{liquid-color-red}{rgb}{   0.50, 0.00, 0.00}
+\definecolor{liquid-color-purple}{rgb}{0.25, 0.00, 0.25}
+\definecolor{liquid-color-grid}{rgb}{  0.90, 0.90, 0.90}
+\definecolor{liquid-color-gray}{rgb}{  0.50, 0.50, 0.50}
+
+% http://en.wikibooks.org/wiki/LaTeX/Hyperlinks
+\usepackage{hyperref}
+\hypersetup{
+    bookmarks=true,                     % show bookmarks bar?
+    pdfborder={0 0 0},                  % set border around each link
+    pdftitle={liquid-dsp},              % title
+    pdfauthor={Joseph D. Gaeddert},     % author
+    colorlinks=true,                    % false: boxed links; true: colored links
+    linkcolor=liquid-color-blue,        % color of internal links
+    citecolor=liquid-color-green,       % color of links to bibliography
+    filecolor=liquid-color-red,         % color of file links
+    urlcolor=liquid-color-purple        % color of external links
+}
+
 % defines compact itemize*, enumerate*, and description* environments
 % http://www.ctan.org/tex-archive/help/Catalogue/entries/mdwtools.html
 %\usepackage{mdwlist}

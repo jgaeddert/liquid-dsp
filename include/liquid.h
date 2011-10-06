@@ -1491,6 +1491,17 @@ DECIM() DECIM(_create)(unsigned int _D,                         \
 DECIM() DECIM(_create_prototype)(unsigned int _M,               \
                                  unsigned int _m,               \
                                  float As);                     \
+/* create square-root Nyquist decimator                 */      \
+/*  _type   : filter type (e.g. LIQUID_RNYQUIST_RRC)    */      \
+/*  _k      : samples/symbol (decimation factor)        */      \
+/*  _m      : filter delay (symbols)                    */      \
+/*  _beta   : rolloff factor (0 < beta <= 1)            */      \
+/*  _dt     : fractional sample delay                   */      \
+DECIM() DECIM(_create_rnyquist)(int _type,                      \
+                                unsigned int _k,                \
+                                unsigned int _m,                \
+                                float _beta,                    \
+                                float _dt);                     \
 void DECIM(_destroy)(DECIM() _q);                               \
 void DECIM(_print)(DECIM() _q);                                 \
 void DECIM(_clear)(DECIM() _q);                                 \
@@ -1604,6 +1615,46 @@ LIQUID_RESAMP_DEFINE_API(RESAMP_MANGLE_CCCF,
                          liquid_float_complex,
                          liquid_float_complex,
                          liquid_float_complex)
+
+
+// 
+// Multi-stage arbitrary resampler
+//
+#define MSRESAMP_MANGLE_RRRF(name)    LIQUID_CONCAT(msresamp_rrrf,name)
+#define MSRESAMP_MANGLE_CRCF(name)    LIQUID_CONCAT(msresamp_crcf,name)
+#define MSRESAMP_MANGLE_CCCF(name)    LIQUID_CONCAT(msresamp_cccf,name)
+
+#define LIQUID_MSRESAMP_DEFINE_API(MSRESAMP,TO,TC,TI)               \
+typedef struct MSRESAMP(_s) * MSRESAMP();                           \
+/* create multi-stage arbitrary resampler               */          \
+/*  _r      :   resampling rate [output/input]          */          \
+/*  _As     :   stop-band attenuation [dB]              */          \
+MSRESAMP() MSRESAMP(_create)(float _r,                              \
+                             float _As);                            \
+void MSRESAMP(_destroy)(MSRESAMP() _q);                             \
+void MSRESAMP(_print)(MSRESAMP() _q);                               \
+void MSRESAMP(_reset)(MSRESAMP() _q);                               \
+void MSRESAMP(_execute)(MSRESAMP() _q,                              \
+                        TI * _x,                                    \
+                        unsigned int _nx,                           \
+                        TO * _y,                                    \
+                        unsigned int *_ny);                         \
+float MSRESAMP(_get_delay)(MSRESAMP() _q);                          \
+
+LIQUID_MSRESAMP_DEFINE_API(MSRESAMP_MANGLE_RRRF,
+                           float,
+                           float,
+                           float)
+
+LIQUID_MSRESAMP_DEFINE_API(MSRESAMP_MANGLE_CRCF,
+                           liquid_float_complex,
+                           float,
+                           liquid_float_complex)
+
+LIQUID_MSRESAMP_DEFINE_API(MSRESAMP_MANGLE_CCCF,
+                           liquid_float_complex,
+                           liquid_float_complex,
+                           liquid_float_complex)
 
 // 
 // Symbol timing recovery (symbol synchronizer)

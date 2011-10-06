@@ -27,7 +27,6 @@
 
 #include <stdlib.h>
 #include <stdio.h>
-#include <stdbool.h>
 #include <string.h>
 #include <math.h>
 #include <complex.h>
@@ -74,8 +73,8 @@ struct framesync64_s {
     unsigned int num_symbols_collected; // symbols collected counter
     unsigned int header_key;            // header cyclic redundancy check
     unsigned int payload_key;           // payload cyclic redundancy check
-    bool header_valid;                  // header valid?
-    bool payload_valid;                 // payload valid?
+    int header_valid;                   // header valid?
+    int payload_valid;                  // payload valid?
 
     // callback
     framesync64_callback callback;      // user-defined callback function

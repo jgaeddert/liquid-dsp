@@ -24,7 +24,6 @@
 //
 
 #include <stdlib.h>
-#include <stdbool.h>
 #include <stdio.h>
 #include <pthread.h>
 #include <string.h>
@@ -43,14 +42,14 @@ struct gport_s {
     pthread_mutex_t producer_mutex;
     unsigned int num_write_elements_available;
     pthread_cond_t producer_data_ready;
-    bool producer_waiting;
+    int producer_waiting;
 
     // consumer
     unsigned int read_index;
     pthread_mutex_t consumer_mutex;
     unsigned int num_read_elements_available;
     pthread_cond_t consumer_data_ready;
-    bool consumer_waiting;
+    int consumer_waiting;
 
     // other
     pthread_mutex_t internal_mutex;
@@ -190,7 +189,7 @@ int gport_produce_available(gport _p,
     // wait until at least one element is available
     while (_p->num_write_elements_available == 0 && !_p->eom) {
         // set flag signaling that the producer is waiting for data
-        _p->producer_waiting = true;
+        _p->producer_waiting = 1;
 
         // Block on condition that space is availble in the buffer
         // for writing (producing). Invoking pthread_cond_wait()
@@ -201,7 +200,7 @@ int gport_produce_available(gport _p,
     }
 
     // clear producer waiting flag
-    _p->producer_waiting = false;
+    _p->producer_waiting = 0;
 
     if (_p->eom) {
         pthread_mutex_unlock(&(_p->internal_mutex));
@@ -282,11 +281,11 @@ void * gport_producer_lock(gport _p,
     while (_n > _p->num_write_elements_available) {
         //printf("warning/todo: gport_producer_lock(), wait for _n elements to become available\n");
         //usleep(100000);
-        _p->producer_waiting = true;
+        _p->producer_waiting = 1;
         pthread_cond_wait(&(_p->producer_data_ready),&(_p->internal_mutex));
         //printf("gport: producer received signal: data ready\n");
     }
-    _p->producer_waiting = false;
+    _p->producer_waiting = 0;
 
     pthread_mutex_unlock(&_p->internal_mutex);
 
@@ -378,7 +377,7 @@ int gport_consume_available(gport _p,
     // wait until at least one element is available
     while (_p->num_read_elements_available == 0 && !_p->eom) {
         // set flag signaling that consumer is waiting for data
-        _p->consumer_waiting = true;
+        _p->consumer_waiting = 1;
 
         // Block on condition that space is availble in the buffer
         // for reading (consuming). Invoking pthread_cond_wait()
@@ -389,7 +388,7 @@ int gport_consume_available(gport _p,
     }
 
     // clear consumer waiting flag
-    _p->consumer_waiting = false;
+    _p->consumer_waiting = 0;
 
     if (_p->eom) {
         pthread_mutex_unlock(&(_p->internal_mutex));
@@ -472,11 +471,11 @@ void * gport_consumer_lock(gport _p,
     while (_n > _p->num_read_elements_available) {
         //printf("warning/todo: gport_consumer_lock(), wait for _n elements to become available\n");
         //usleep(100000);
-        _p->consumer_waiting = true;
+        _p->consumer_waiting = 1;
         pthread_cond_wait(&(_p->consumer_data_ready),&(_p->internal_mutex));
         //printf("gport: consumer received signal: data ready\n");
     }
-    _p->consumer_waiting = false;
+    _p->consumer_waiting = 0;
 
     // copy underflow to residual memory
     if (_n > (_p->n - _p->read_index)) {
