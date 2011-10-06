@@ -1,5 +1,5 @@
 //
-// resamp2_crcf_filterbank_example.c
+// resamp2_crcf_filterbank_test.c
 //
 // Halfband (two-channel) filterbank example. This example demonstrates
 // the analyzer/synthesizer execute() methods for the resamp2_xxxt

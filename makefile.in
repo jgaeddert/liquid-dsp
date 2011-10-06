@@ -1223,7 +1223,6 @@ example_programs :=						\
 	examples/resamp2_crcf_example				\
 	examples/resamp2_crcf_decim_example			\
 	examples/resamp2_crcf_filter_example			\
-	examples/resamp2_crcf_filterbank_example		\
 	examples/resamp2_crcf_interp_example			\
 	examples/resamp2_crcf_interp_recreate_example		\
 	examples/scramble_example				\
@@ -1311,6 +1310,7 @@ sandbox_programs =						\
 	sandbox/ofdmoqam_firpfbch_test				\
 	sandbox/packetizer_persistent_ber_test			\
 	sandbox/quasinewton_test				\
+	sandbox/resamp2_crcf_filterbank_test			\
 	sandbox/rkaiser2_test					\
 	sandbox/simplex_test					\
 	sandbox/symsync_eqlms_test				\
