@@ -27,16 +27,21 @@ typedef enum {
 } resamp2_type;
 
 // Helper function to keep code base small
-void resamp2_crcf_bench(
-    struct rusage *_start,
-    struct rusage *_finish,
-    unsigned long int *_num_iterations,
-    unsigned int _h_len,
-    resamp2_type _type)
+void resamp2_crcf_bench(struct rusage *_start,
+                        struct rusage *_finish,
+                        unsigned long int * _num_iterations,
+                        unsigned int _m,
+                        resamp2_type _type)
 {
+    // scale number of iterations by filter length
+    // NOTE: n = 4*m+1
+    // cycles/trial ~ 70.5 + 7.74*_m
+    *_num_iterations *= 200;
+    *_num_iterations /= 70.5 + 7.74*_m;
+
     unsigned long int i;
 
-    resamp2_crcf q = resamp2_crcf_create(_h_len,0.0f,60.0f);
+    resamp2_crcf q = resamp2_crcf_create(_m,0.0f,60.0f);
 
     float complex x[] = {1.0f, -1.0f};
     float complex y[] = {1.0f, -1.0f};
@@ -68,25 +73,25 @@ void resamp2_crcf_bench(
     resamp2_crcf_destroy(q);
 }
 
-#define RESAMP2_CRCF_BENCHMARK_API(H_LEN,T) \
-(   struct rusage *_start,                  \
-    struct rusage *_finish,                 \
-    unsigned long int *_num_iterations)     \
-{ resamp2_crcf_bench(_start, _finish, _num_iterations, H_LEN, T); }
+#define RESAMP2_CRCF_BENCHMARK_API(M,T) \
+(   struct rusage *_start,              \
+    struct rusage *_finish,             \
+    unsigned long int *_num_iterations) \
+{ resamp2_crcf_bench(_start, _finish, _num_iterations, M, T); }
 
 //
 // Decimators
 //
-void benchmark_resamp2_crcf_decim_h13   RESAMP2_CRCF_BENCHMARK_API(13,RESAMP2_DECIM)    // m=3
-void benchmark_resamp2_crcf_decim_h21   RESAMP2_CRCF_BENCHMARK_API(21,RESAMP2_DECIM)    // m=5
-void benchmark_resamp2_crcf_decim_h37   RESAMP2_CRCF_BENCHMARK_API(37,RESAMP2_DECIM)    // m=9
-void benchmark_resamp2_crcf_decim_h53   RESAMP2_CRCF_BENCHMARK_API(53,RESAMP2_DECIM)    // m=13
+void benchmark_resamp2_crcf_decim_m2    RESAMP2_CRCF_BENCHMARK_API( 2,RESAMP2_DECIM)  // n=9
+void benchmark_resamp2_crcf_decim_m4    RESAMP2_CRCF_BENCHMARK_API( 4,RESAMP2_DECIM)  // n=17
+void benchmark_resamp2_crcf_decim_m8    RESAMP2_CRCF_BENCHMARK_API( 8,RESAMP2_DECIM)  // n=33
+void benchmark_resamp2_crcf_decim_m16   RESAMP2_CRCF_BENCHMARK_API(16,RESAMP2_DECIM)  // n=65
 
 // 
 // Interpolators
 //
-void benchmark_resamp2_crcf_interp_h13  RESAMP2_CRCF_BENCHMARK_API(13,RESAMP2_INTERP)   // m=3
-void benchmark_resamp2_crcf_interp_h21  RESAMP2_CRCF_BENCHMARK_API(21,RESAMP2_INTERP)   // m=5
-void benchmark_resamp2_crcf_interp_h37  RESAMP2_CRCF_BENCHMARK_API(37,RESAMP2_INTERP)   // m=9
-void benchmark_resamp2_crcf_interp_h53  RESAMP2_CRCF_BENCHMARK_API(53,RESAMP2_INTERP)   // m=13
+void benchmark_resamp2_crcf_interp_m2   RESAMP2_CRCF_BENCHMARK_API( 2,RESAMP2_INTERP) // n=9
+void benchmark_resamp2_crcf_interp_m4   RESAMP2_CRCF_BENCHMARK_API( 4,RESAMP2_INTERP) // n=17
+void benchmark_resamp2_crcf_interp_m8   RESAMP2_CRCF_BENCHMARK_API( 8,RESAMP2_INTERP) // n=33
+void benchmark_resamp2_crcf_interp_m16  RESAMP2_CRCF_BENCHMARK_API(16,RESAMP2_INTERP) // n=65
 
