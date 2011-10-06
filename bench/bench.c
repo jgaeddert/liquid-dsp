@@ -356,7 +356,7 @@ void execute_benchmark(benchmark_t* _benchmark, int _verbose)
             break;
         } else {
             // increase number of trials
-            n *= 4;
+            n *= 2;
         }
     } while (1);
 
