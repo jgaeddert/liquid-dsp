@@ -100,6 +100,7 @@ LISTINGS_C = 						\
 	listings/lifecycle.example.c			\
 	listings/matrix.example.c			\
 	listings/modem.example.c			\
+	listings/msresamp_crcf.example.c		\
 	listings/nco.c					\
 	listings/nco.example.c				\
 	listings/nco_pll.example.c			\
