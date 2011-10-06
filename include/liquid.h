@@ -1616,6 +1616,46 @@ LIQUID_RESAMP_DEFINE_API(RESAMP_MANGLE_CCCF,
                          liquid_float_complex,
                          liquid_float_complex)
 
+
+// 
+// Multi-stage arbitrary resampler
+//
+#define MSRESAMP_MANGLE_RRRF(name)    LIQUID_CONCAT(msresamp_rrrf,name)
+#define MSRESAMP_MANGLE_CRCF(name)    LIQUID_CONCAT(msresamp_crcf,name)
+#define MSRESAMP_MANGLE_CCCF(name)    LIQUID_CONCAT(msresamp_cccf,name)
+
+#define LIQUID_MSRESAMP_DEFINE_API(MSRESAMP,TO,TC,TI)               \
+typedef struct MSRESAMP(_s) * MSRESAMP();                           \
+/* create multi-stage arbitrary resampler               */          \
+/*  _r      :   resampling rate [output/input]          */          \
+/*  _As     :   stop-band attenuation [dB]              */          \
+MSRESAMP() MSRESAMP(_create)(float _r,                              \
+                             float _As);                            \
+void MSRESAMP(_destroy)(MSRESAMP() _q);                             \
+void MSRESAMP(_print)(MSRESAMP() _q);                               \
+void MSRESAMP(_reset)(MSRESAMP() _q);                               \
+void MSRESAMP(_execute)(MSRESAMP() _q,                              \
+                        TI * _x,                                    \
+                        unsigned int _nx,                           \
+                        TO * _y,                                    \
+                        unsigned int *_ny);                         \
+float MSRESAMP(_get_delay)(MSRESAMP() _q);                          \
+
+LIQUID_MSRESAMP_DEFINE_API(MSRESAMP_MANGLE_RRRF,
+                           float,
+                           float,
+                           float)
+
+LIQUID_MSRESAMP_DEFINE_API(MSRESAMP_MANGLE_CRCF,
+                           liquid_float_complex,
+                           float,
+                           liquid_float_complex)
+
+LIQUID_MSRESAMP_DEFINE_API(MSRESAMP_MANGLE_CCCF,
+                           liquid_float_complex,
+                           liquid_float_complex,
+                           liquid_float_complex)
+
 // 
 // Symbol timing recovery (symbol synchronizer)
 //
