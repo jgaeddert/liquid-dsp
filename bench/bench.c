@@ -172,8 +172,8 @@ int main(int argc, char *argv[])
             break;
         case 't':
             runtime = atof(optarg);
-            if (runtime < 1e-3f)    runtime = 1e-3f;
-            else if (runtime > 2.f) runtime = 2.0f;
+            if (runtime < 1e-3f)     runtime = 1e-3f;
+            else if (runtime > 10.f) runtime = 10.0f;
             printf("minimum runtime: %d ms\n", (int) roundf(runtime*1e3));
             break;
         case 'l':
