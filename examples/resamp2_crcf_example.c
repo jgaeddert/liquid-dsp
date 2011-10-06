@@ -1,7 +1,11 @@
 //
 // resamp2_crcf_example.c
 //
-// Halfband interpolator|decimator.
+// This example demonstrates the halfband resampler running as both an
+// interpolator and a decimator. A narrow-band signal is first
+// interpolated by a factor of 2, and then decimated. The resulting RMS
+// error between the final signal and original is computed and printed
+// to the screen.
 //
 
 #include <stdio.h>
@@ -14,7 +18,8 @@
 
 int main() {
     unsigned int m=5;               // filter semi-length (actual length: 4*m+1)
-    float bw=0.25f;                 // input signal bandwidth
+    float bw=0.13f;                 // input signal bandwidth
+    float fc=-0.597f;               // input signal carrier frequency (radians/sample)
     unsigned int num_samples=37;    // number of input samples
     float As=60.0f;                 // stop-band attenuation [dB]
 
@@ -32,7 +37,7 @@ int main() {
     float h[num_samples];
     liquid_firdes_kaiser(num_samples,bw,60.0f,0.0f,h);
     for (i=0; i<n; i++)
-        x[i] = i < num_samples ? h[i]*bw : 0.0f;
+        x[i] = i < num_samples ? h[i] * cexpf(_Complex_I*fc*i) : 0.0f;
 
     // create/print the half-band resampler, with a specified
     // stopband attenuation level
@@ -53,6 +58,15 @@ int main() {
     // clean up allocated objects
     resamp2_crcf_destroy(q);
 
+    // compute RMS error
+    float rmse = 0.0f;
+    for (i=2*m; i<n; i++) {
+        float e = cabsf(x[i-2*m] - z[i]);
+        rmse += e*e;
+    }
+    rmse = sqrtf( rmse / (float)(n-2*m) );
+    printf("rms error : %12.4e\n", rmse);
+
     // 
     // print results to file
     //
@@ -60,6 +74,7 @@ int main() {
     fprintf(fid,"%% %s: auto-generated file\n",OUTPUT_FILENAME);
     fprintf(fid,"clear all;\n");
     fprintf(fid,"close all;\n\n");
+    fprintf(fid,"bw=%12.8f;\n", bw);
     fprintf(fid,"n=%u;\n", n);
 
     // output results
@@ -76,9 +91,9 @@ int main() {
     fprintf(fid,"\n\n");
     fprintf(fid,"nfft=1024;\n");
     fprintf(fid,"f = [0:(nfft-1)]/nfft - 0.5;\n");
-    fprintf(fid,"X = 20*log10(abs(fftshift(fft(x,  nfft))));\n");
-    fprintf(fid,"Y = 20*log10(abs(fftshift(fft(y/2,nfft))));\n");
-    fprintf(fid,"Z = 20*log10(abs(fftshift(fft(z,  nfft))));\n");
+    fprintf(fid,"X = 20*log10(abs(fftshift(fft(x*bw*2,nfft))));\n");
+    fprintf(fid,"Y = 20*log10(abs(fftshift(fft(y*bw,  nfft))));\n");
+    fprintf(fid,"Z = 20*log10(abs(fftshift(fft(z*bw*2,nfft))));\n");
     fprintf(fid,"plot(f,X,f,Y,f,Z);\n");
     fprintf(fid,"legend('original','up-converted','down-converted',1);\n");
     fprintf(fid,"grid on;\n");
@@ -89,17 +104,17 @@ int main() {
     fprintf(fid,"t1 = 0:[n*2-1];\n");
     fprintf(fid,"figure;\n");
     fprintf(fid,"subplot(3,1,1);\n");
-    fprintf(fid,"  plot(t0,real(x),'-s','MarkerSize',3,t0,imag(x),'-s','MarkerSize',3);\n");
+    fprintf(fid,"  plot(t0,real(x),t0,imag(x));\n");
     fprintf(fid,"  legend('I','Q',0);\n");
-    fprintf(fid,"  axis([0 n -0.25 0.55]);\n");
+    fprintf(fid,"  axis([0 n -1 1]);\n");
     fprintf(fid,"  ylabel('original');\n");
     fprintf(fid,"subplot(3,1,2);\n");
     fprintf(fid,"  plot(t1,real(y),t1,imag(y));\n");
-    fprintf(fid,"  axis([0 n*2 -0.25 0.55]);\n");
+    fprintf(fid,"  axis([0 n*2 -1 1]);\n");
     fprintf(fid,"  ylabel('interpolated');\n");
     fprintf(fid,"subplot(3,1,3);\n");
-    fprintf(fid,"  plot(t0,real(z),'-s','MarkerSize',3,t0,imag(z),'-s','MarkerSize',3);\n");
-    fprintf(fid,"  axis([0 n -0.25 0.55]);\n");
+    fprintf(fid,"  plot(t0,real(z),t0,imag(z));\n");
+    fprintf(fid,"  axis([0 n -1 1]);\n");
     fprintf(fid,"  ylabel('interp/decim');\n");
 
 
