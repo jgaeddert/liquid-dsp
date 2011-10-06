@@ -251,8 +251,8 @@ void RESAMP2(_analyzer_execute)(RESAMP2() _q,
     WINDOW(_index)(_q->w0, _q->m-1, &y0);
 
     // set return value
-    _y[0] = y0 + y1;
-    _y[1] = y0 - y1;
+    _y[0] = y1 + y0;
+    _y[1] = y1 - y0;
 }
 
 // execute synthesis half-band filterbank
