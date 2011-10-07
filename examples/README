@@ -532,8 +532,6 @@ resamp2_crcf_example.c
      error between the final signal and original is computed and printed
     to the screen.
 
-resamp2_crcf_filterbank_example.c
-
 resamp2_crcf_filter_example.c
     Halfband (two-channel) filterbank example. This example demonstrates
     the analyzer/synthesizer execute() methods for the resamp2_xxxt
@@ -553,7 +551,6 @@ resamp2_crcf_interp_example.c
     SEE ALSO: resamp2_crcf_decim_example.c
               interp_crcf_example.c
 
-resamp2_crcf_interp_recreate_example.c
 resamp_crcf_example.c
 ricek_channel_example.c [EXPERIMENTAL]
 

@@ -1,4 +1,6 @@
 //
+// resamp2_crcf_interp_recreate_test.c
+//
 // Halfband interpolator (complex), recreate() example
 //
 
@@ -8,7 +10,7 @@
 
 #include "liquid.h"
 
-#define OUTPUT_FILENAME "resamp2_crcf_interp_recreate_example.m"
+#define OUTPUT_FILENAME "resamp2_crcf_interp_recreate_test.m"
 
 int main() {
     unsigned int m0=5;
