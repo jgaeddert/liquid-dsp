@@ -124,18 +124,23 @@ int main() {
     unsigned int nfft = 512;
     float complex X[nfft];
     float complex Y[nfft];
+    float complex H[nfft];
+    float h[4*m+1];
+    liquid_firdes_kaiser(4*m+1, 0.25f, As, 0.0f, h);
     liquid_doc_compute_psdcf(x,nx,X,nfft,LIQUID_DOC_PSDWINDOW_HANN,0);
     liquid_doc_compute_psdcf(y,ny,Y,nfft,LIQUID_DOC_PSDWINDOW_HANN,0);
+    liquid_doc_compute_psdf( h,4*m+1,H,nfft,LIQUID_DOC_PSDWINDOW_NONE,0);
     fft_shift(X,nfft);
     fft_shift(Y,nfft);
-    float scaling_factor = 20*log10f(nfft);
+    fft_shift(H,nfft);
+    float scaling_factor = 10*log10f(nfft);
 
     fprintf(fid,"# %s: auto-generated file\n\n", OUTPUT_FILENAME_FREQ);
     fprintf(fid,"reset\n");
     // TODO : switch terminal types here
     fprintf(fid,"set terminal postscript eps enhanced color solid rounded\n");
     fprintf(fid,"set xrange [-0.5:0.5];\n");
-    fprintf(fid,"set yrange [-140:0]\n");
+    fprintf(fid,"set yrange [-120:20]\n");
     fprintf(fid,"set size ratio 0.6\n");
     fprintf(fid,"set xlabel 'Normalized Output Frequency'\n");
     fprintf(fid,"set ylabel 'Power Spectral Density [dB]'\n");
@@ -146,7 +151,8 @@ int main() {
 
     fprintf(fid,"# real\n");
     fprintf(fid,"plot '-' using 1:2 with lines linetype 1 linewidth 4 linecolor rgb '#999999' title 'original',\\\n");
-    fprintf(fid,"     '-' using 1:2 with lines linetype 1 linewidth 4 linecolor rgb '#004080' title 'interpolated'\n");
+    fprintf(fid,"     '-' using 1:2 with lines linetype 1 linewidth 4 linecolor rgb '#004080' title 'interpolated',\\\n");
+    fprintf(fid,"     '-' using 1:2 with lines linetype 1 linewidth 1 linecolor rgb '#999999' title 'filter'\n");
     // export output
     for (i=0; i<nfft; i++) {
         float fx = ((float)(i) / (float)nfft - 0.5f)*0.5f;
@@ -156,6 +162,11 @@ int main() {
     for (i=0; i<nfft; i++) {
         float fy = ((float)(i) / (float)nfft - 0.5f);
         fprintf(fid,"%12.8f %12.4e\n", fy, 20*log10f(cabsf(Y[i])) - scaling_factor - 20*log10(2.0f));
+    }
+    fprintf(fid,"e\n");
+    for (i=0; i<nfft; i++) {
+        float fh = ((float)(i) / (float)nfft - 0.5f);
+        fprintf(fid,"%12.8f %12.4e\n", fh, 20*log10f(cabsf(H[i])/2.0f));
     }
     fprintf(fid,"e\n");
 
