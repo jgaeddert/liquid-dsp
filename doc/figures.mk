@@ -87,6 +87,8 @@ local_pdffiles :=					\
 	figures.gen/filter_firdes_gmskrx_freq.pdf	\
 	figures.gen/filter_resamp_crcf_time.pdf		\
 	figures.gen/filter_resamp_crcf_freq.pdf		\
+	figures.gen/filter_resamp2_crcf_interp_time.pdf	\
+	figures.gen/filter_resamp2_crcf_interp_freq.pdf	\
 	figures.gen/interleaver_scatterplot_i0.pdf	\
 	figures.gen/interleaver_scatterplot_i1.pdf	\
 	figures.gen/interleaver_scatterplot_i2.pdf	\
@@ -216,6 +218,7 @@ local_progs :=						\
 	src/filter_decim_crcf				\
 	src/filter_interp_crcf				\
 	src/filter_resamp_crcf				\
+	src/filter_resamp2_crcf_interp			\
 	src/filter_kaiser				\
 	src/filter_rnyquist				\
 	src/interleaver_scatterplot			\
@@ -499,6 +502,13 @@ figures.gen/filter_firdes_gmskrx_freq.gnu : src/filter_firdes_gmskrx_freq ; ./$<
 #
 figures.gen/filter_resamp_crcf_time.gnu \
 figures.gen/filter_resamp_crcf_freq.gnu: src/filter_resamp_crcf
+	./$<
+
+# 
+# resamp2_crcf_interp
+#
+figures.gen/filter_resamp2_crcf_interp_time.gnu \
+figures.gen/filter_resamp2_crcf_interp_freq.gnu: src/filter_resamp2_crcf_interp
 	./$<
 
 # 

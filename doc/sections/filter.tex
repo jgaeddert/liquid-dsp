@@ -1757,6 +1757,24 @@ Below is a code example demonstrating the {\tt resamp2} interface.
 %
 \input{listings/resamp2_crcf.example.c.tex}
 %
+\begin{figure}
+\centering
+\subfigure[time] {
+  \includegraphics[trim = 0mm 0mm 0mm 0mm, clip, width=13cm]{figures.gen/filter_resamp2_crcf_interp_time}
+}
+\subfigure[PSD] {
+  \includegraphics[trim = 0mm 0mm 0mm 0mm, clip, width=13cm]{figures.gen/filter_resamp2_crcf_interp_freq}
+}
+\caption{{\tt resamp2\_crcf} (half-band resampler) interpolator demonstration}
+\label{fig:module:filter:resamp2_crcf}
+\end{figure}
+%
+Figure~\ref{fig:module:filter:resamp2_crcf} gives a graphical depiction
+in both the time and frequency domains
+of the half-band resampler acting as an interpolator.
+The time series has been aligned (shifted by the filter delay and scaled by
+the resampling rate) to show equivalence.
+%
 For more detailed and extensive examples, refer to
 {\tt examples/resamp2\_crcf\_decim\_example.c} and
 {\tt examples/resamp2\_crcf\_interp\_example.c}
