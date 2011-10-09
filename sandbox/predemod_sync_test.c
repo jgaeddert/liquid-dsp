@@ -73,9 +73,9 @@ int main(int argc, char*argv[]) {
 
     // create m-sequence generator
     unsigned int M = liquid_msb_index(g) - 1;   // m-sequence shift register length
-    unsigned int N = (1 << m) - 1;              // m-sequence length
+    unsigned int N = (1 << M) - 1;              // m-sequence length
     unsigned int A = 1;                         // m-sequence initial state
-    msequence ms = msequence_create(M,N,A);
+    msequence ms = msequence_create(M,g,A);
 
     // create cross-correlator
     bsync_crcf sync = bsync_crcf_create_msequence(g,k);
