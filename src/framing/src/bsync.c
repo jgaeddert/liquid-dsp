@@ -85,16 +85,16 @@ BSYNC() BSYNC(_create_msequence)(unsigned int _g,
     msequence ms = msequence_create(m, _g, 1);
 
     BSYNC() fs = (BSYNC()) malloc(sizeof(struct BSYNC(_s)));
-    fs->n = msequence_get_length(ms);
+    unsigned int n = msequence_get_length(ms);
 
-    fs->sync_i  = bsequence_create(fs->n * _k);
+    fs->sync_i  = bsequence_create(n * _k);
 #ifdef TC_COMPLEX
-    fs->sync_q  = bsequence_create(fs->n * _k);
+    fs->sync_q  = bsequence_create(n * _k);
 #endif
 
-    fs->sym_i   = bsequence_create(fs->n * _k);
+    fs->sym_i   = bsequence_create(n * _k);
 #ifdef TI_COMPLEX
-    fs->sym_q   = bsequence_create(fs->n * _k);
+    fs->sym_q   = bsequence_create(n * _k);
 #endif
 
     msequence_reset(ms);
@@ -108,7 +108,7 @@ BSYNC() BSYNC(_create_msequence)(unsigned int _g,
 #else
     unsigned int i;
     unsigned int j;
-    for (i=0; i<fs->n; i++) {
+    for (i=0; i<n; i++) {
         unsigned int bit = msequence_advance(ms);
 
         for (j=0; j<_k; j++) {
@@ -121,6 +121,8 @@ BSYNC() BSYNC(_create_msequence)(unsigned int _g,
 #endif
 
     msequence_destroy(ms);
+
+    fs->n = _k*n;
 
     return fs;
 }
@@ -147,9 +149,9 @@ void BSYNC(_print)(BSYNC() _fs)
 void BSYNC(_correlate)(BSYNC() _fs, TI _sym, TO *_y)
 {
     // push symbol into buffers
-    bsequence_push(_fs->sym_i, crealf(_sym)>0);
+    bsequence_push(_fs->sym_i, crealf(_sym)>0.0 ? 1 : 0);
 #ifdef TI_COMPLEX
-    bsequence_push(_fs->sym_q, cimagf(_sym)>0);
+    bsequence_push(_fs->sym_q, cimagf(_sym)>0.0 ? 1 : 0);
 #endif
 
     // compute dotprod
