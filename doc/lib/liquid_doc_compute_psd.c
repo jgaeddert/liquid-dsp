@@ -36,14 +36,6 @@ void liquid_doc_compute_psdcf(float complex * _x,
 {
     unsigned int i;
 
-    float complex sum=1.0f;
-    if (_normalize) {
-        // compute and remove any DC bias
-        sum=0.0f;
-        for (i=0; i<_n; i++)
-            sum += _x[i];
-    }
-
     // compute window and norm
     float w[_n];
     float wnorm=0.0f;
@@ -64,11 +56,21 @@ void liquid_doc_compute_psdcf(float complex * _x,
     float complex x[_nfft];
     fftplan fft = fft_create_plan(_nfft,x,_X,FFT_FORWARD,0);
     for (i=0; i<_nfft; i++) {
-        x[i] = i < _n ? _x[i] * w[i] / (sum * wnorm) : 0.0f;
+        x[i] = i < _n ? _x[i] * w[i] / wnorm : 0.0f;
 
     }
     fft_execute(fft);
     fft_destroy_plan(fft);
+
+    // normalize spectrum by maximum
+    if (_normalize) {
+        float X_max = 0.0f;
+        for (i=0; i<_nfft; i++)
+            X_max = cabsf(_X[i]) > X_max ? cabsf(_X[i]) : X_max;
+
+        for (i=0; i<_nfft; i++)
+            _X[i] /= X_max;
+    }
 }
 
 void liquid_doc_compute_psdf(float * _x,
