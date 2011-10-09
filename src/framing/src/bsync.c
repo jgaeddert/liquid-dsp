@@ -71,8 +71,14 @@ BSYNC() BSYNC(_create)(unsigned int _n, TC * _v)
 }
 
 // TODO : test this method
-BSYNC() BSYNC(_create_msequence)(unsigned int _g)
+BSYNC() BSYNC(_create_msequence)(unsigned int _g,
+                                 unsigned int _k)
 {
+    // validate input
+    if (_k == 0) {
+        fprintf(stderr,"bsync_xxxt_create_msequence(), samples/symbol must be greater than zero\n");
+        exit(1);
+    }
     unsigned int m = liquid_msb_index(_g) - 1;
 
     // create/initialize msequence
@@ -81,21 +87,37 @@ BSYNC() BSYNC(_create_msequence)(unsigned int _g)
     BSYNC() fs = (BSYNC()) malloc(sizeof(struct BSYNC(_s)));
     fs->n = msequence_get_length(ms);
 
-    fs->sync_i  = bsequence_create(fs->n);
+    fs->sync_i  = bsequence_create(fs->n * _k);
 #ifdef TC_COMPLEX
-    fs->sync_q  = bsequence_create(fs->n);
+    fs->sync_q  = bsequence_create(fs->n * _k);
 #endif
 
-    fs->sym_i   = bsequence_create(fs->n);
+    fs->sym_i   = bsequence_create(fs->n * _k);
 #ifdef TI_COMPLEX
-    fs->sym_q   = bsequence_create(fs->n);
+    fs->sym_q   = bsequence_create(fs->n * _k);
 #endif
 
     msequence_reset(ms);
+
+#if 0
     bsequence_init_msequence(fs->sync_i,ms);
 #ifdef TC_COMPLEX
     msequence_reset(ms);
     bsequence_init_msequence(fs->sync_q,ms);
+#endif
+#else
+    unsigned int i;
+    unsigned int j;
+    for (i=0; i<fs->n; i++) {
+        unsigned int bit = msequence_advance(ms);
+
+        for (j=0; j<_k; j++) {
+            bsequence_push(fs->sync_i, bit);
+#ifdef TC_COMPLEX
+            bsequence_push(fs->sync_q, bit);
+#endif
+        }
+    }
 #endif
 
     msequence_destroy(ms);
