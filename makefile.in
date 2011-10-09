@@ -1308,6 +1308,7 @@ sandbox_programs =						\
 	sandbox/modem_demodulate_soft_gentab			\
 	sandbox/ofdmoqam_firpfbch_test				\
 	sandbox/packetizer_persistent_ber_test			\
+	sandbox/predemod_sync_test				\
 	sandbox/quasinewton_test				\
 	sandbox/resamp2_crcf_filterbank_test			\
 	sandbox/resamp2_crcf_interp_recreate_test		\

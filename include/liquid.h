@@ -2207,7 +2207,12 @@ void ofdmflexframesync_execute(ofdmflexframesync _q,
 typedef struct BSYNC(_s) * BSYNC();                             \
                                                                 \
 BSYNC() BSYNC(_create)(unsigned int _n, TC * _v);               \
-BSYNC() BSYNC(_create_msequence)(unsigned int _g);              \
+                                                                \
+/* create binary synchronizer from m-sequence               */  \
+/*  _g      :   m-sequence generator polynomial             */  \
+/*  _k      :   samples/symbol (over-sampling factor)       */  \
+BSYNC() BSYNC(_create_msequence)(unsigned int _g,               \
+                                 unsigned int _k);              \
 void BSYNC(_destroy)(BSYNC() _fs);                              \
 void BSYNC(_print)(BSYNC() _fs);                                \
 void BSYNC(_correlate)(BSYNC() _fs, TI _sym, TO * _y);
