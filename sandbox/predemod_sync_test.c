@@ -66,19 +66,18 @@ int main(int argc, char*argv[]) {
     // arrays
     float complex x[num_samples];           // transmitted signal
     float complex y[num_samples];           // received signal
-    float complex rxy[num_samples];         // pre-demod output
+    float complex z[num_symbols];           // decimated output
+    float complex rxy[num_symbols];         // pre-demod output
 
     // create transmit/receive interpolator/decimator
     interp_crcf interp_tx = interp_crcf_create_rnyquist(LIQUID_RNYQUIST_ARKAISER,k,m,beta,dt);
+    decim_crcf  decim_rx  = decim_crcf_create_rnyquist(LIQUID_RNYQUIST_ARKAISER,k,m,beta,0);
 
     // create m-sequence generator
     unsigned int M = liquid_msb_index(g) - 1;   // m-sequence shift register length
     unsigned int N = (1 << M) - 1;              // m-sequence length
     unsigned int A = 1;                         // m-sequence initial state
     msequence ms = msequence_create(M,g,A);
-
-    // create cross-correlator
-    bsync_crcf sync = bsync_crcf_create_msequence(g,k);
 
     // generate symbols and interpolate
     for (i=0; i<num_symbols; i++) {
@@ -91,11 +90,23 @@ int main(int argc, char*argv[]) {
     // push through channel
     for (i=0; i<num_samples; i++)
         y[i] = x[i]*cexpf(_Complex_I*(dphi*i + phi)) + nstd*(randnf() + _Complex_I*randnf())*M_SQRT1_2;
+
+    // decimate
+#if 0
+    for (i=0; i<num_symbols; i++)
+        z[i] = y[k*i];
+#else
+    for (i=0; i<num_symbols; i++)
+        decim_crcf_execute(decim_rx, &y[k*i], &z[i], k-1);
+#endif
     
+    // create cross-correlator
+    bsync_crcf sync = bsync_crcf_create_msequence(g,1);
+
     // push through synchronizer
     float rxy_max = 0.0f;
-    for (i=0; i<num_samples; i++) {
-        bsync_crcf_correlate(sync, y[i], &rxy[i]);
+    for (i=0; i<num_symbols; i++) {
+        bsync_crcf_correlate(sync, z[i], &rxy[i]);
 
         // retain maximum
         if (cabsf(rxy[i]) > rxy_max)
@@ -104,6 +115,7 @@ int main(int argc, char*argv[]) {
 
     // destroy objects
     interp_crcf_destroy(interp_tx);
+    decim_crcf_destroy(decim_rx);
     msequence_destroy(ms);
     bsync_crcf_destroy(sync);
     
@@ -125,10 +137,15 @@ int main(int argc, char*argv[]) {
 
     fprintf(fid,"x   = zeros(1,num_samples);\n");
     fprintf(fid,"y   = zeros(1,num_samples);\n");
-    fprintf(fid,"rxy = zeros(1,num_samples);\n");
     for (i=0; i<num_samples; i++) {
         fprintf(fid,"x(%4u)     = %12.8f + j*%12.8f;\n", i+1, crealf(x[i]),   cimagf(x[i]));
         fprintf(fid,"y(%4u)     = %12.8f + j*%12.8f;\n", i+1, crealf(y[i]),   cimagf(y[i]));
+        fprintf(fid,"rxy(%4u)   = %12.8f + j*%12.8f;\n", i+1, crealf(rxy[i]), cimagf(rxy[i]));
+    }
+    fprintf(fid,"z   = zeros(1,num_symbols);\n");
+    fprintf(fid,"rxy = zeros(1,num_symbols);\n");
+    for (i=0; i<num_symbols; i++) {
+        fprintf(fid,"z(%4u)     = %12.8f + j*%12.8f;\n", i+1, crealf(z[i]),   cimagf(z[i]));
         fprintf(fid,"rxy(%4u)   = %12.8f + j*%12.8f;\n", i+1, crealf(rxy[i]), cimagf(rxy[i]));
     }
 
@@ -140,12 +157,14 @@ int main(int argc, char*argv[]) {
         fprintf(fid,"s(%4u:%4u) = %3d;\n", k*i+1, k*(i+1), 2*(int)(msequence_advance(ms))-1);
     msequence_destroy(ms);
 
-    fprintf(fid,"t=[0:(num_samples-1)]/k;\n");
+    fprintf(fid,"t=[0:(num_symbols-1)]/k;\n");
     fprintf(fid,"figure;\n");
     fprintf(fid,"plot(t,abs(rxy));\n");
     fprintf(fid,"xlabel('time');\n");
     fprintf(fid,"ylabel('correlator output');\n");
     fprintf(fid,"grid on;\n");
+
+    fprintf(fid,"return;\n");
 
     // save...
     fprintf(fid,"[v i] = max(abs(rxy));\n");
