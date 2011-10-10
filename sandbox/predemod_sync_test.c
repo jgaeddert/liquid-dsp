@@ -93,14 +93,22 @@ int main(int argc, char*argv[]) {
         y[i] = x[i]*cexpf(_Complex_I*(dphi*i + phi)) + nstd*(randnf() + _Complex_I*randnf())*M_SQRT1_2;
     
     // push through synchronizer
+    float rxy_max = 0.0f;
     for (i=0; i<num_samples; i++) {
         bsync_crcf_correlate(sync, y[i], &rxy[i]);
+
+        // retain maximum
+        if (cabsf(rxy[i]) > rxy_max)
+            rxy_max = cabsf(rxy[i]);
     }
 
     // destroy objects
     interp_crcf_destroy(interp_tx);
     msequence_destroy(ms);
     bsync_crcf_destroy(sync);
+    
+    // print results
+    printf("rxy (max) : %12.8f\n", rxy_max);
 
     // 
     // export results
@@ -123,12 +131,38 @@ int main(int argc, char*argv[]) {
         fprintf(fid,"y(%4u)     = %12.8f + j*%12.8f;\n", i+1, crealf(y[i]),   cimagf(y[i]));
         fprintf(fid,"rxy(%4u)   = %12.8f + j*%12.8f;\n", i+1, crealf(rxy[i]), cimagf(rxy[i]));
     }
+
+    // save m-sequence
+    ms = msequence_create(M,g,A);
+    fprintf(fid,"N = %u;\n", N);
+    fprintf(fid,"s = zeros(1,k*N);\n");
+    for (i=0; i<N; i++)
+        fprintf(fid,"s(%4u:%4u) = %3d;\n", k*i+1, k*(i+1), 2*(int)(msequence_advance(ms))-1);
+    msequence_destroy(ms);
+
     fprintf(fid,"t=[0:(num_samples-1)]/k;\n");
     fprintf(fid,"figure;\n");
     fprintf(fid,"plot(t,abs(rxy));\n");
     fprintf(fid,"xlabel('time');\n");
     fprintf(fid,"ylabel('correlator output');\n");
     fprintf(fid,"grid on;\n");
+
+    // save...
+    fprintf(fid,"[v i] = max(abs(rxy));\n");
+    fprintf(fid,"i0=i-(k*N)+1;\n");
+    fprintf(fid,"i1=i;\n");
+    fprintf(fid,"y_hat = y(i0:i1);\n");
+    fprintf(fid,"figure;\n");
+    fprintf(fid,"t_hat=0:(k*N-1);\n");
+    fprintf(fid,"plot(t_hat,real(y_hat),...\n");
+    fprintf(fid,"     t_hat,imag(y_hat),...\n");
+    fprintf(fid,"     t_hat,s,'-k');\n");
+
+    // run fft for timing recovery
+    fprintf(fid,"Y_hat = fft(y_hat);\n");
+    fprintf(fid,"S     = fft(s);\n");
+    fprintf(fid,"figure;\n");
+    fprintf(fid,"plot(fftshift(arg(Y_hat./S)));\n");
 
     fclose(fid);
     printf("results written to '%s'\n", OUTPUT_FILENAME);
