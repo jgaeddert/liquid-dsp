@@ -30,6 +30,7 @@ int main(int argc, char*argv[]) {
     float beta=0.5f;                    // bandwidth-time product
     float dt = 0.2f;                    // fractional sample timing offset
     unsigned int num_data_symbols = 64; // number of data symbols
+    unsigned int npfb=16;               // number of filters in bank
     float SNRdB = 30.0f;                // signal-to-noise ratio [dB]
     unsigned int g = 0x0067;            // m-sequence generator polynomial
     float dphi = 0.0f;                  // carrier frequency offset
@@ -71,7 +72,7 @@ int main(int argc, char*argv[]) {
 
     // create transmit/receive interpolator/decimator
     interp_crcf interp_tx = interp_crcf_create_rnyquist(LIQUID_RNYQUIST_ARKAISER,k,m,beta,dt);
-    decim_crcf  decim_rx  = decim_crcf_create_rnyquist(LIQUID_RNYQUIST_ARKAISER,k,m,beta,0);
+    firpfb_crcf decim_rx  = firpfb_crcf_create_rnyquist(LIQUID_RNYQUIST_ARKAISER,npfb,k,m,beta);
 
     // create m-sequence generator
     unsigned int M = liquid_msb_index(g) - 1;   // m-sequence shift register length
@@ -92,13 +93,17 @@ int main(int argc, char*argv[]) {
         y[i] = x[i]*cexpf(_Complex_I*(dphi*i + phi)) + nstd*(randnf() + _Complex_I*randnf())*M_SQRT1_2;
 
     // decimate
-#if 0
-    for (i=0; i<num_symbols; i++)
-        z[i] = y[k*i];
-#else
-    for (i=0; i<num_symbols; i++)
-        decim_crcf_execute(decim_rx, &y[k*i], &z[i], k-1);
-#endif
+    unsigned int j;
+    for (i=0; i<num_symbols; i++) {
+        for (j=0; j<k; j++) {
+            // push samples into filterbank
+            firpfb_crcf_push(decim_rx, y[k*i+j]);
+
+            // compute output
+            if (j==k-1)
+                firpfb_crcf_execute(decim_rx, 0, &z[i]);
+        }
+    }
     
     // create cross-correlator
     bsync_crcf sync = bsync_crcf_create_msequence(g,1);
@@ -115,7 +120,7 @@ int main(int argc, char*argv[]) {
 
     // destroy objects
     interp_crcf_destroy(interp_tx);
-    decim_crcf_destroy(decim_rx);
+    firpfb_crcf_destroy(decim_rx);
     msequence_destroy(ms);
     bsync_crcf_destroy(sync);
     
