@@ -54,5 +54,9 @@ void autotest_cvsd_rmse_sine() {
     if (liquid_autotest_verbose)
         printf("cvsd rmse : %8.2f dB\n", rmse);
     CONTEND_LESS_THAN(rmse, -20.0f);
+
+    // destroy cvsd codecs
+    cvsd_destroy(cvsd_encoder);
+    cvsd_destroy(cvsd_decoder);
 }
 
