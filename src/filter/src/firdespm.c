@@ -249,6 +249,12 @@ void firdespm_destroy(firdespm _q)
     firdespm_output_debug_file(_q);
 #endif
 
+    // free memory for extremal frequency set, interpolating polynomial
+    free(_q->iext);
+    free(_q->x);
+    free(_q->alpha);
+    free(_q->c);
+
     // free dense grid elements
     free(_q->F);
     free(_q->D);
