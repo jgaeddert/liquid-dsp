@@ -247,6 +247,9 @@ void ofdmframesync_destroy(ofdmframesync _q)
     windowcf_destroy(_q->debug_framesyms);
 #endif
 
+    // free subcarrier type array memory
+    free(_q->p);
+
     // free transform object
     windowcf_destroy(_q->input_buffer);
     free(_q->X);
