@@ -2016,6 +2016,30 @@ functionality applies to {\tt symsync\_rrrf} and {\tt symsync\_cccf}.
     of the object.
 \end{description}
 %
+\begin{figure}
+\centering
+\subfigure[Equalizer output (time series)] {
+    \includegraphics[trim = 0mm 0mm 0mm 0mm, clip, width=13cm]{figures.gen/filter_symsync_crcf_time}
+    \label{fig:module:filter:symsync:time}
+}
+\subfigure[Constellation] {
+    \includegraphics[trim = 15mm 0mm 15mm 0mm, clip, width=9cm]{figures.gen/filter_symsync_crcf_const}
+    \label{fig:module:filter:symsync:psd}
+}
+% trim = left bottom right top
+\caption{{\tt symysnc} (symbol synchronizer) demonstration for a
+         QPSK signal with a
+         square-root raised-cosine pulse
+         with $k=2$ samples/symbol,
+         a delay of $m=4$ symbols, and
+         an excess bandwidth factor $\beta=0.3$}
+\label{fig:module:filter:symsync}
+\end{figure}
+%
+Figure~\ref{fig:module:filter:symsync} demonstrates the
+{\tt symsync\_crcf} object recovering the sample timing phase for a QPSK
+signal.
+%
 For a more detailed example, refer to
 {\tt examples/symsync\_crcf\_example.c}
 located under the main \liquid\ project source directory.

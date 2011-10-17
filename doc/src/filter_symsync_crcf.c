@@ -40,8 +40,8 @@ int main(int argc, char*argv[]) {
     // options
     unsigned int k=2;               // samples/symbol (input)
     unsigned int k_out=2;           // samples/symbol (output)
-    unsigned int m=5;               // filter delay (symbols)
-    float beta=0.5f;                // filter excess bandwidth factor
+    unsigned int m=4;               // filter delay (symbols)
+    float beta=0.3f;                // filter excess bandwidth factor
     unsigned int num_filters=64;    // number of filters in the bank
     unsigned int num_symbols=500;   // number of data symbols
     float SNRdB = 30.0f;            // signal-to-noise ratio
@@ -235,8 +235,8 @@ int main(int argc, char*argv[]) {
     fprintf(fid,"set ylabel 'Quadrature phase'\n");
     fprintf(fid,"set grid xtics ytics\n");
     fprintf(fid,"set grid linetype 1 linecolor rgb '%s' linewidth 1\n",LIQUID_DOC_COLOR_GRID);
-    fprintf(fid,"plot '-' using 1:2 with points pointtype 7 pointsize 0.5 linecolor rgb '%s' title 'first 50%%',\\\n", LIQUID_DOC_COLOR_GRAY);
-    fprintf(fid,"     '-' using 1:2 with points pointtype 7 pointsize 0.7 linecolor rgb '%s' title 'last 50%%'\n",     LIQUID_DOC_COLOR_RED);
+    fprintf(fid,"plot '-' using 1:2 with points pointtype 7 pointsize 0.5 linecolor rgb '%s' title 'first %u symbols',\\\n", LIQUID_DOC_COLOR_GRAY, num_symbols/2);
+    fprintf(fid,"     '-' using 1:2 with points pointtype 7 pointsize 0.7 linecolor rgb '%s' title 'last %u symbols'\n",     LIQUID_DOC_COLOR_RED,  num_symbols/2);
 
     // first half of symbols
     for (i=2*m; i<num_symbols_sync/2; i++)
