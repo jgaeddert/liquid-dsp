@@ -1678,7 +1678,25 @@ Below is a code example demonstrating the {\tt msresamp} interface.
 %
 \input{listings/msresamp_crcf.example.c.tex}
 %
-For more detailed and extensive examples, refer to
+\begin{figure}
+\centering
+\subfigure[time] {
+  \includegraphics[trim = 0mm 0mm 0mm 0mm, clip, width=13cm]{figures.gen/filter_msresamp_crcf_time}
+}
+\subfigure[PSD] {
+  \includegraphics[trim = 0mm 0mm 0mm 0mm, clip, width=13cm]{figures.gen/filter_msresamp_crcf_freq}
+}
+\caption{{\tt msresamp\_crcf} (multi-stage resampler) interpolator demonstration}
+\label{fig:module:filter:msresamp_crcf}
+\end{figure}
+%
+Figure~\ref{fig:module:filter:msresamp_crcf} gives a graphical depiction
+in both the time and frequency domains
+of the multi-stage resampler acting as an interpolator.
+The time series has been aligned (shifted by the filter delay and scaled by
+the resampling rate) to show equivalence.
+%
+For a more detailed example, refer to
 {\tt examples/msresamp\_crcf\_example.c}
 located in the main \liquid\ project source directory.
 
