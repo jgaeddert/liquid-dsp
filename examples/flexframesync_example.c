@@ -130,7 +130,7 @@ static int callback(unsigned char * _rx_header,
     printf("    header crc          : %s\n", _rx_header_valid ?  "pass" : "FAIL");
     printf("    payload length      : %u\n", _rx_payload_len);
     printf("    payload crc         : %s\n", _rx_payload_valid ?  "pass" : "FAIL");
-    //framesyncstats_print(&_stats);
+    framesyncstats_print(&_stats);
 
     return 0;
 }

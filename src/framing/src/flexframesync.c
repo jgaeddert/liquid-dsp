@@ -711,6 +711,7 @@ void flexframesync_execute_rxheader(flexframesync _fs,
                 // invoke callback method
                 // cannot decode frame: invoke callback anyway, but ignore rest of payload
                 // payload length is 0 : ignore payload
+                _fs->framestats.cfo             =  nco_crcf_get_frequency(_fs->nco_rx);
                 _fs->framestats.framesyms       = NULL;
                 _fs->framestats.num_framesyms   = 0;
                 _fs->framestats.mod_scheme      = LIQUID_MODEM_UNKNOWN;
@@ -770,6 +771,7 @@ void flexframesync_execute_rxpayload(flexframesync _fs,
 
         if (_fs->callback != NULL) {
             // set framestats internals
+            _fs->framestats.cfo             =  nco_crcf_get_frequency(_fs->nco_rx);
             _fs->framestats.framesyms       = _fs->payload_samples;
             _fs->framestats.num_framesyms   = _fs->num_payload_symbols;
             _fs->framestats.mod_scheme      = _fs->ms_payload;
