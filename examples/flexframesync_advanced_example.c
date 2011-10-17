@@ -75,7 +75,7 @@ int main(int argc, char *argv[]) {
     float noise_floor = -30.0f;
     modulation_scheme mod_scheme = LIQUID_MODEM_QPSK;
     unsigned int bps = 2;
-    unsigned int packet_len = 64;
+    unsigned int payload_len = 64;
     unsigned int num_frames = 3;
     unsigned int hc_len = 1;        // multi-path channel taps
     unsigned int eq_len = 0;        // equalizer taps
@@ -91,7 +91,7 @@ int main(int argc, char *argv[]) {
         case 's': SNRdB = atof(optarg);         break;
         case 'c': hc_len = atoi(optarg)+1;      break;
         case 'e': eq_len = atoi(optarg);        break;
-        case 'f': packet_len = atol(optarg);    break;
+        case 'f': payload_len = atol(optarg);   break;
         case 'n': num_frames = atoi(optarg);    break;
         case 'm':
             liquid_getopt_str2modbps(optarg, &mod_scheme, &bps);
@@ -112,7 +112,7 @@ int main(int argc, char *argv[]) {
     flexframegenprops_init_default(&fgprops);
     fgprops.rampup_len  = 64;
     fgprops.phasing_len = 64;
-    fgprops.payload_len = packet_len;
+    fgprops.payload_len = payload_len;
     fgprops.check       = LIQUID_CRC_NONE;
     fgprops.fec0        = LIQUID_FEC_NONE;
     fgprops.fec1        = LIQUID_FEC_NONE;
