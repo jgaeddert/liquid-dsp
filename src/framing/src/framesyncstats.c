@@ -36,6 +36,7 @@ framesyncstats_s framesyncstats_default = {
     // signal quality
     0.0f,                   // error vector magnitude
     0.0f,                   // rssi
+    0.0f,                   // carrier frequency offset
 
     // demodulated frame symbols
     NULL,                   // framesyms
@@ -74,6 +75,7 @@ void framesyncstats_print(framesyncstats_s * _stats)
 
     printf("    EVM                 :   %12.8f dB\n", _stats->evm);
     printf("    rssi                :   %12.8f dB\n", _stats->rssi);
+    printf("    carrier offset      :   %12.8f Fs\n", _stats->cfo);
     printf("    num symbols         :   %u\n", _stats->num_framesyms);
     printf("    mod scheme          :   %s (%u bits/symbol)\n",
             modulation_scheme_str[_stats->mod_scheme][0],

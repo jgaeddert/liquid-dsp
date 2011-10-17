@@ -1786,6 +1786,7 @@ typedef struct {
     // signal quality
     float evm;      // error vector magnitude [dB]
     float rssi;     // received signal strength indicator [dB]
+    float cfo;      // carrier frequency offset (f/Fs)
 
     // demodulated frame symbols
     liquid_float_complex * framesyms;   // pointer to array [size: framesyms x 1]
