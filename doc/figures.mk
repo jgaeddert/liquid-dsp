@@ -85,6 +85,8 @@ local_pdffiles :=					\
 	figures.gen/filter_kaiser_freq.pdf		\
 	figures.gen/filter_firdes_gmskrx_time.pdf	\
 	figures.gen/filter_firdes_gmskrx_freq.pdf	\
+	figures.gen/filter_msresamp_crcf_time.pdf	\
+	figures.gen/filter_msresamp_crcf_freq.pdf	\
 	figures.gen/filter_resamp_crcf_time.pdf		\
 	figures.gen/filter_resamp_crcf_freq.pdf		\
 	figures.gen/filter_resamp2_crcf_interp_time.pdf	\
@@ -217,6 +219,7 @@ local_progs :=						\
 	src/filter_iirfilt_crcf				\
 	src/filter_decim_crcf				\
 	src/filter_interp_crcf				\
+	src/filter_msresamp_crcf			\
 	src/filter_resamp_crcf				\
 	src/filter_resamp2_crcf_interp			\
 	src/filter_kaiser				\
@@ -496,6 +499,13 @@ figures.gen/filter_kaiser_freq.gnu : src/filter_kaiser
 #
 figures.gen/filter_firdes_gmskrx_time.gnu : src/filter_firdes_gmskrx_time ; ./$<
 figures.gen/filter_firdes_gmskrx_freq.gnu : src/filter_firdes_gmskrx_freq ; ./$<
+
+# 
+# msresamp_crcf
+#
+figures.gen/filter_msresamp_crcf_time.gnu \
+figures.gen/filter_msresamp_crcf_freq.gnu: src/filter_msresamp_crcf
+	./$<
 
 # 
 # resamp_crcf
