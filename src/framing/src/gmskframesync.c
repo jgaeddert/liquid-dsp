@@ -44,6 +44,7 @@ struct gmskframesync_s {
     // synchronizer parameters, objects
     float complex x_prime;              // received signal state
     float rssi_hat;                     // rssi estimate
+    float evm_hat;                      // evm estimate
     unsigned int npfb;                  // number of filterbanks
     symsync_rrrf symsync;               // symbol synchronizer, matched filter
 
@@ -221,6 +222,7 @@ void gmskframesync_reset(gmskframesync _q)
 {
     // reset sample state
     _q->x_prime = 0.0f;
+    _q->evm_hat = 0.0f;
 
     // reset synchronizer objects
     symsync_rrrf_clear(_q->symsync);
@@ -329,7 +331,9 @@ void gmskframesync_execute_rxheader(gmskframesync _q,
     // demodulate
     unsigned char s = _x > 0.0f ? 1 : 0;
 
-    // TODO : update evm
+    // update evm
+    float evm = _x - (s ? 1.0f : -1.0f);
+    _q->evm_hat += evm*evm;
 
     // save bit in buffer
     div_t d = div(_q->num_symbols_received, 8);
@@ -361,6 +365,7 @@ void gmskframesync_execute_rxheader(gmskframesync _q,
             //printf("**** header invalid!\n");
             // set framestats internals
             _q->framestats.rssi             = 10*log10f(_q->rssi_hat);
+            _q->framestats.evm              = 10*log10f(_q->evm_hat / (8*GMSKFRAME_H_ENC) );
             _q->framestats.framesyms        = NULL;
             _q->framestats.num_framesyms    = 0;
             _q->framestats.mod_scheme       = LIQUID_MODEM_UNKNOWN;
@@ -402,6 +407,7 @@ void gmskframesync_execute_rxpayload(gmskframesync _q,
         // invoke callback
         // set framestats internals
         _q->framestats.rssi             = 10*log10f(_q->rssi_hat);
+        _q->framestats.evm              = 10*log10f(_q->evm_hat / (8*GMSKFRAME_H_ENC) );
         _q->framestats.framesyms        = NULL;
         _q->framestats.num_framesyms    = 0;
         _q->framestats.mod_scheme       = LIQUID_MODEM_UNKNOWN;
