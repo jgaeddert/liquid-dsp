@@ -1642,12 +1642,13 @@ reasons.
 %
 \subsection{{\tt msresamp} (multi-stage arbitrary resampler)}
 \label{module:filter:msresamp}
-{\tt msresamp} is a multi-stage arbitrary resampler use for efficient
-interpolation and decimation.
-The {\tt msresamp} object uses a combination of half-band
-interpolators/decimators (Section~\ref{module:filter:resamp2})
+The {\tt msresamp} object implements a multi-stage arbitrary resampler
+use for efficient interpolation and decimation.
+By using a combination of half-band interpolators/decimators
+(Section~\ref{module:filter:resamp2})
 and an arbitrary resampler (Section~\ref{module:filter:resamp})
-to efficiently realize any arbitrary resampling rate desired.
+the {\tt msresamp} object can
+efficiently realize any arbitrary resampling rate desired.
 
 Listed below is the full interface to the {\tt msresamp} family of
 objects.
@@ -1657,7 +1658,7 @@ functionality applies to {\tt msresamp\_rrrf} and {\tt msresamp\_cccf}.
 \begin{description}
 \item[{\tt msresamp\_crcf\_create(r,As)}]
     creates a {\tt msresamp} object with a resampling rate $r$
-    and a stop-band suppression of $A_s$~dB.
+    and a target stop-band suppression of $A_s$~dB.
 \item[{\tt msresamp\_crcf\_destroy(q)}]
     destroys the resampler, freeing all internally-allocated memory.
 \item[{\tt msresamp\_crcf\_print(q)}]
@@ -1686,7 +1687,9 @@ Below is a code example demonstrating the {\tt msresamp} interface.
 \subfigure[PSD] {
   \includegraphics[trim = 0mm 0mm 0mm 0mm, clip, width=13cm]{figures.gen/filter_msresamp_crcf_freq}
 }
-\caption{{\tt msresamp\_crcf} (multi-stage resampler) interpolator demonstration}
+\caption{{\tt msresamp\_crcf} (multi-stage resampler) interpolator
+         demonstration with a stop-band suppression $A_s=60$~dB
+         at the irrational rate $r = \sqrt{19} \approx 4.359$}
 \label{fig:module:filter:msresamp_crcf}
 \end{figure}
 %

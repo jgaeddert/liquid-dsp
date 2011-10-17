@@ -14,7 +14,7 @@
 #define OUTPUT_FILENAME_FREQ "figures.gen/filter_msresamp_crcf_freq.gnu"
 
 int main() {
-    float r=4.547f;     // resampling rate (output/input)
+    float r=sqrtf(19);  // resampling rate (output/input)
     unsigned int n=37;  // number of input samples
     float As=60.0f;     // stop-band attenuation [dB]
 
