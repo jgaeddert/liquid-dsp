@@ -3329,8 +3329,9 @@ void ofdmframesync_execute(ofdmframesync _q,
                            liquid_float_complex * _x,
                            unsigned int _n);
 
-// get receiver RSSI
-float ofdmframesync_get_rssi(ofdmframesync _q);
+// query methods
+float ofdmframesync_get_rssi(ofdmframesync _q); // received signal strength indication
+float ofdmframesync_get_cfo(ofdmframesync _q);  // carrier offset estimate
 
 
 

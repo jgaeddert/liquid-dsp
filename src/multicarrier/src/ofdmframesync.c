@@ -361,6 +361,12 @@ float ofdmframesync_get_rssi(ofdmframesync _q)
     return -10.0f*log10(_q->g0);
 }
 
+// get receiver carrier frequency offset estimate
+float ofdmframesync_get_cfo(ofdmframesync _q)
+{
+    return nco_crcf_get_frequency(_q->nco_rx);
+}
+
 
 //
 // internal methods
