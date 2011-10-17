@@ -224,6 +224,9 @@ void ofdmflexframesync_reset(ofdmflexframesync _q)
     // reset error vector magnitude estimate
     _q->evm_hat = 1e-12f;   // slight offset to ensure no log(0)
 
+    // reset framestats object
+    framesyncstats_init_default(&_q->framestats);
+
     // reset internal OFDM frame synchronizer object
     ofdmframesync_reset(_q->fs);
 }

@@ -248,12 +248,6 @@ flexframesync flexframesync_create(framesyncprops_s * _props,
     flexframesync_reset(fs);
     flexframesync_open_bandwidth(fs);
 
-    // clear stats object
-    fs->framestats.evm = 0;
-    fs->framestats.rssi = 0;
-    fs->framestats.framesyms = NULL;
-    fs->framestats.num_framesyms = 0;
-
     // advanced mode : csma
     fs->csma_enabled = 0;
     fs->csma_lock = NULL;
@@ -414,6 +408,9 @@ void flexframesync_reset(flexframesync _fs)
         agc_crcf_squelch_enable_auto(_fs->agc_rx);
     else
         agc_crcf_squelch_disable_auto(_fs->agc_rx);
+
+    // clear stats object
+    framesyncstats_init_default(&_fs->framestats);
 
     // TODO open bandwidth?
 }
