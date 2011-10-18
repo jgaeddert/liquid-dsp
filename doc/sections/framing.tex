@@ -227,9 +227,9 @@ Listed below is the full interface to the {\tt packetizer} object.
 \item[{\tt packetizer\_encode(q,*msg,*pkt)}]
     encodes the $n$-byte input message storing the result in the
     $k$-byte encoded output message.
-\item[{\tt packetizer\_encode(q,*pkt,*msg)}]
+\item[{\tt packetizer\_decode(q,*pkt,*msg)}]
     decodes the $k$-byte encoded input message storing the result in the
-    $k$-byte output.
+    $n$-byte output.
     The function returns a {\tt 1} if the internal CRC passed
     and a {\tt 0} if it failed.
     If no CRC was specified (e.g. {\tt LIQUID\_CRC\_NONE}) then a {\tt 1} is
