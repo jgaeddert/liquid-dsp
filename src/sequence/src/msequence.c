@@ -97,6 +97,25 @@ msequence msequence_create(unsigned int _m,
 }
 
 
+// create a maximal-length sequence (m-sequence) object from a generator polynomial
+msequence msequence_create_genpoly(unsigned int _g)
+{
+    unsigned int t = liquid_msb_index(_g);
+    
+    // validate input
+    if (t < 2) {
+        fprintf(stderr,"error: msequence_create_genpoly(), invalid generator polynomial: 0x%x\n", _g);
+        exit(1);
+    }
+
+    // compute derived values
+    unsigned int m = t - 1; // m-sequence shift register length
+    unsigned int a = 1;     // m-sequence initial state
+
+    // generate object and return
+    return msequence_create(m,_g,a);
+}
+
 // creates a default maximal-length sequence
 msequence msequence_create_default(unsigned int _m)
 {

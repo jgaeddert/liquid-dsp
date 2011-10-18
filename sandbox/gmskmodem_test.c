@@ -149,7 +149,7 @@ int main(int argc, char*argv[]) {
     fprintf(fid,"num_symbols = %u;\n", num_symbols);
     fprintf(fid,"num_samples = %u;\n", num_samples);
 
-    // save fitlers
+    // save filters
     for (i=0; i<h_len; i++)
         fprintf(fid,"hr(%3u) = %12.8f;\n", i+1, hr[i]);
 

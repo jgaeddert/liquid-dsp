@@ -227,13 +227,23 @@ Listed below is the full interface to the {\tt packetizer} object.
 \item[{\tt packetizer\_encode(q,*msg,*pkt)}]
     encodes the $n$-byte input message storing the result in the
     $k$-byte encoded output message.
-\item[{\tt packetizer\_encode(q,*pkt,*msg)}]
+\item[{\tt packetizer\_decode(q,*pkt,*msg)}]
     decodes the $k$-byte encoded input message storing the result in the
-    $k$-byte output.
+    $n$-byte output.
     The function returns a {\tt 1} if the internal CRC passed
     and a {\tt 0} if it failed.
     If no CRC was specified (e.g. {\tt LIQUID\_CRC\_NONE}) then a {\tt 1} is
     always returned.
+\item[{\tt packetizer\_decode\_soft(q,*pkt,*msg)}]
+    decodes the encoded input message just like
+    {\tt packetizer\_decode()}
+    but with soft bits instead of hard bytes.
+    The input is an array of type {\tt unsigned char} with $8 \times k$
+    elements representing soft bits.
+    As before, the function returns a {\tt 1} if the internal CRC passed
+    and a {\tt 0} if it failed.
+    See Section~\ref{module:fec:soft} for more information on
+    soft-decision decoding.
 \end{description}
 %
 Here is a minimal example demonstrating the packetizer's most basic

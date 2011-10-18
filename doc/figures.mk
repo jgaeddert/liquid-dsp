@@ -85,15 +85,23 @@ local_pdffiles :=					\
 	figures.gen/filter_kaiser_freq.pdf		\
 	figures.gen/filter_firdes_gmskrx_time.pdf	\
 	figures.gen/filter_firdes_gmskrx_freq.pdf	\
+	figures.gen/filter_msresamp_crcf_time.pdf	\
+	figures.gen/filter_msresamp_crcf_freq.pdf	\
 	figures.gen/filter_resamp_crcf_time.pdf		\
 	figures.gen/filter_resamp_crcf_freq.pdf		\
 	figures.gen/filter_resamp2_crcf_interp_time.pdf	\
 	figures.gen/filter_resamp2_crcf_interp_freq.pdf	\
+							\
+	figures.gen/filter_symsync_crcf_const.pdf	\
+	figures.gen/filter_symsync_crcf_time.pdf	\
+							\
 	figures.gen/interleaver_scatterplot_i0.pdf	\
 	figures.gen/interleaver_scatterplot_i1.pdf	\
 	figures.gen/interleaver_scatterplot_i2.pdf	\
 	figures.gen/interleaver_scatterplot_i3.pdf	\
 	figures.gen/interleaver_scatterplot_i4.pdf	\
+							\
+	figures.gen/math_polyfit_lagrange.pdf		\
 	figures.gen/math_window.pdf			\
 							\
 	figures.gen/modem_bpsk.pdf			\
@@ -217,11 +225,14 @@ local_progs :=						\
 	src/filter_iirfilt_crcf				\
 	src/filter_decim_crcf				\
 	src/filter_interp_crcf				\
+	src/filter_msresamp_crcf			\
 	src/filter_resamp_crcf				\
 	src/filter_resamp2_crcf_interp			\
 	src/filter_kaiser				\
 	src/filter_rnyquist				\
+	src/filter_symsync_crcf				\
 	src/interleaver_scatterplot			\
+	src/math_polyfit_lagrange			\
 	src/math_poly_examples				\
 	src/math_window					\
 	src/modem_demodsoft				\
@@ -498,6 +509,13 @@ figures.gen/filter_firdes_gmskrx_time.gnu : src/filter_firdes_gmskrx_time ; ./$<
 figures.gen/filter_firdes_gmskrx_freq.gnu : src/filter_firdes_gmskrx_freq ; ./$<
 
 # 
+# msresamp_crcf
+#
+figures.gen/filter_msresamp_crcf_time.gnu \
+figures.gen/filter_msresamp_crcf_freq.gnu: src/filter_msresamp_crcf
+	./$<
+
+# 
 # resamp_crcf
 #
 figures.gen/filter_resamp_crcf_time.gnu \
@@ -515,6 +533,13 @@ figures.gen/filter_resamp2_crcf_interp_freq.gnu: src/filter_resamp2_crcf_interp
 # rnyquist
 #
 figures.gen/filter_rnyquist.gnu : src/filter_rnyquist
+	./$<
+
+# 
+# filter_symsync_crcf
+#
+figures.gen/filter_symsync_crcf_const.gnu \
+figures.gen/filter_symsync_crcf_time.gnu : src/filter_symsync_crcf
 	./$<
 
 
@@ -565,6 +590,13 @@ figures.gen/interleaver_scatterplot_i4.gnu : src/interleaver_scatterplot
 # window
 # 
 figures.gen/math_window.gnu : src/math_window
+	./$<
+
+
+#
+# math_polyfit_lagrange
+# 
+figures.gen/math_polyfit_lagrange.gnu latex.gen/math_polyfit_lagrange.tex : src/math_polyfit_lagrange
 	./$<
 
 

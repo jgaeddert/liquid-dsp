@@ -203,35 +203,42 @@ Because of the many ways a chromosome can represent information \liquid\
 provides a number of methods for creating and initializing chromosomes.
 %
 \begin{description}
-\item[{\tt chromosome\_create()}]
-    creates a chromosome where the number of bits per each trait are
-    specified.
-\item[{\tt chromosome\_create\_basic()}]
-    creates a chromosome where the number of bits per trait is the same
-    for all traits.
-\item[{\tt chromosome\_create\_clone()}]
+\item[{\tt chromosome\_create(*b,n)}]
+    creates a chromosome with $n$ traits.
+    The number of bits per trait are specified in the array $\vec{b}$.
+\item[{\tt chromosome\_create\_basic(n,b)}]
+    creates a chromosome with $n$ traits and a constant $b$ bits for
+    each trait.
+\item[{\tt chromosome\_create\_clone(p)}]
     clones a chromosome from another one, including its representation
     of traits, the number of bits per trait, as well as the values of
     the traits themselves.
+\item[{\tt chromosome\_destroy(q)}]
+    destroys a chromosome object, freeing all internally-allocated
+    memory.
 \end{description}
 %
 Furthermore, the value of all the chromosome's traits may be set with
 the appropriate {\tt init()} method:
 %
 \begin{description}
-\item[{\tt chromosome\_init()}]
-    initializes a chromosome's discrete trait values to the input array.
+\item[{\tt chromosome\_copy(q)}]
+    copies an existing chromosomes' internal traits; all other internal
+    parameters must be equal.
+\item[{\tt chromosome\_init(q,*v)}]
+    initializes a chromosome's discrete trait values to the input array
+    of {\tt unsigned int} values $\vec{v}$.
     The trait values are in the range $[0,2^{n_k}-1]$ where $n$
     represents the number of bits in the $k^{th}$ trait.
-\item[{\tt chromosome\_initf()}]
+\item[{\tt chromosome\_initf(q,*v)}]
     initializes a chromosome's continuous trait values to the input
-    array.
+    array of {\tt float} values $\vec{v}$.
     The trait values are in the range $[0,1]$ and are represented by
     floating-point values.
     Because each trait has a discrete number of values (limited bit
     resolution), the value of the trait is quantized to its nearest
     representation.
-\item[{\tt chromosome\_init\_random()}]
+\item[{\tt chromosome\_init\_random(q)}]
     initializes a chromosome's trait values to a random number.
 \end{description}
 %
@@ -241,9 +248,9 @@ They are useful for evaluating the fitness of the chromosome in the
 search algorithm's callback function.
 %
 \begin{description}
-\item[{\tt chromosome\_value()}]
+\item[{\tt chromosome\_value(q,k)}]
     returns the value of the $k^{th}$ trait (integer representation).
-\item[{\tt chromosome\_valuef()}]
+\item[{\tt chromosome\_valuef(q,k)}]
     returns the value of the $k^{th}$ trait (floating-point representation).
 \end{description}
 %
@@ -251,11 +258,12 @@ Finally the methods for use in the {\tt gasearch} algorithm are
 described:
 %
 \begin{description}
-\item[{\tt chromosome\_mutate()}]
+\item[{\tt chromosome\_mutate(q,k)}]
     flips the $k^{th}$ bit of the chromosome.
-\item[{\tt chromosome\_crossover()}]
-    copies the first $k$ bits of the first parent and the remaining bits
-    of the second parent to the child chromosome.
+\item[{\tt chromosome\_crossover(p1,p2,c,k)}]
+    copies the first $k$ bits of the first parent $p_1$
+    and the remaining bits of the second parent $p_2$
+    to the child chromosome $c_2$.
 \end{description}
 %
 

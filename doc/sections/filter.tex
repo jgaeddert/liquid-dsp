@@ -255,6 +255,11 @@ functionality applies to {\tt firfilt\_rrrf} and {\tt firfilt\_cccf}.
 \item[{\tt firfilt\_crcf\_create(*h,N)}]
     creates a {\tt firfilt} object with $N$ filter coefficients
     $\vec{h}$.
+\item[{\tt firfilt\_crcf\_recreate(q,*h,N)}]
+    re-creates a {\tt firfilt} object $q$ with $N$ filter coefficients
+    $\vec{h}$;
+    if the length of the filter doesn't change, the internal state is
+    preserved.
 \item[{\tt firfilt\_crcf\_destroy(q)}]
     destroys a {\tt firfilt} object, freeing all internally-allocated
     memory.
@@ -270,6 +275,13 @@ functionality applies to {\tt firfilt\_rrrf} and {\tt firfilt\_cccf}.
     generates the output sample $y$ by computing the vector dot product
     (see Section~\ref{module:dotprod})
     between the internal filter coefficients and the internal buffer.
+\item[{\tt firfilt\_crcf\_get\_length(q)}]
+    returns the length of the filter.
+\item[{\tt firfilt\_crcf\_freqresponse(q,fc,*H)}]
+    returns the response of the filter at the frequency $f_c$, stored in
+    the pointer $H$.
+\item[{\tt firfilt\_crcf\_groupdelay(q,fc)}]
+    returns the group delay of the filter at the frequency $f_c$.
 \end{description}
 %
 
@@ -964,69 +976,6 @@ located within the main \liquid\ project directory.
 FIR filter design (Section~\ref{module:filter:firdes}).
 
 
-% 
-% interp
-%
-\subsection{{\tt interp} (interpolator)}
-\label{module:filter:interp}
-The {\tt interp} object implements a basic interpolator with an integer
-output-to-input resampling ratio.
-An example of the {\tt interp} interface is listed below.
-%
-\input{listings/interp.example.c.tex}
-%
-Listed below is the full interface to the {\tt interp} family of
-objects.
-While each method is listed for {\tt interp\_crcf}, the same
-functionality applies to {\tt interp\_rrrf} and {\tt interp\_cccf}.
-%
-\begin{description}
-\item[{\tt interp\_crcf\_create(M,*h,N)}]
-    creates an {\tt interp} object with an interpolation factor $M$
-    using $N$ filter coefficients $\vec{h}$.
-\item[{\tt interp\_crcf\_create\_prototype(M,m,As)}]
-    create an {\tt interp} object using a filter prototype designed
-    using the {\tt firdes\_kaiser\_window()} method
-    (see Section~\ref{module:filter:firdes})
-    with a normalized cut-off frequency $1/2M$,
-    a filter length of $2Mm$ coefficients,
-    and a stop-band attenuation of $A_s$~dB.
-\item[{\tt interp\_crcf\_create\_rnyquist(type,k,m,beta,dt)}]
-    creates an {\tt interp} object
-    from a square-root Nyquist filter prototype with
-    $k$ samples per symbol (interpolation factor),
-    $m$ symbols of delay,
-    $\beta$ excess bandwidth,
-    and a fractional sampling interval $\Delta t$.
-    Section~\ref{module:filter:firdes:rnyquist}
-    provides a detailed description of the available square-root Nyquist
-    filter prototypes available in \liquid.
-\item[{\tt interp\_crcf\_destroy(q)}]
-    destroys the interpolator, freeing all internally-allocated memory.
-\item[{\tt interp\_crcf\_print(q)}]
-    prints the internal properties of the interpolator to the standard
-    output.
-\item[{\tt interp\_crcf\_clear(q)}]
-    clears the internal interpolator buffers.
-\item[{\tt interp\_crcf\_execute(q,x,*y)}]
-    executes the interpolator for an input $x$, storing the result in
-    the output array $y$ (which has a length of $M$ samples).
-\end{description}
-%
-\begin{figure}
-\centering
-  \includegraphics[trim = 0mm 0mm 0mm 0mm, clip, width=13cm]{figures.gen/filter_interp_crcf}
-\caption{{\tt interp\_crcf} (interpolator) example with $M=4$,
-         compensating for filter delay.}
-\label{fig:module:filter:interp_crcf}
-\end{figure}
-%
-A graphical example of the interpolator can be seen in
-Figure~\ref{fig:module:filter:interp_crcf}.
-A detailed example program is given in
-{\tt examples/interp\_crcf\_example.c},
-located under the main \liquid\ project directory.
-
 
 % 
 % iirfilt
@@ -1162,6 +1111,7 @@ An example of the {\tt iirfilt} can be seen in
 Figure~\ref{fig:module:filter:iirfilt_crcf}
 in which a low-pass filter is applied to a signal to remove a
 high-frequency component.
+
 
 % 
 % iirdes
@@ -1575,7 +1525,7 @@ reasons.
 \begin{figure}
 \centering
 \subfigure[spectrum] {
-  \includegraphics[trim = 2mm 5mm 0mm 5mm, clip, width=0.55\textwidth]{figures.gen/filter_butter_psd}
+  \includegraphics[trim = 0mm 5mm 0mm 5mm, clip, width=0.55\textwidth]{figures.gen/filter_butter_psd}
 }
 \subfigure[zeros, poles] {
   \includegraphics[trim = 15mm 0mm 15mm 0mm, clip, width=0.37\textwidth]{figures.gen/filter_butter_zpk}
@@ -1588,7 +1538,7 @@ reasons.
 \begin{figure}
 \centering
 \subfigure[spectrum] {
-  \includegraphics[trim = 2mm 5mm 0mm 5mm, clip, width=0.55\textwidth]{figures.gen/filter_cheby1_psd}
+  \includegraphics[trim = 0mm 5mm 0mm 5mm, clip, width=0.55\textwidth]{figures.gen/filter_cheby1_psd}
 }
 \subfigure[zeros, poles] {
   \includegraphics[trim = 15mm 0mm 15mm 0mm, clip, width=0.37\textwidth]{figures.gen/filter_cheby1_zpk}
@@ -1601,7 +1551,7 @@ reasons.
 \begin{figure}
 \centering
 \subfigure[spectrum] {
-  \includegraphics[trim = 2mm 5mm 0mm 5mm, clip, width=0.55\textwidth]{figures.gen/filter_cheby2_psd}
+  \includegraphics[trim = 0mm 5mm 0mm 5mm, clip, width=0.55\textwidth]{figures.gen/filter_cheby2_psd}
 }
 \subfigure[zeros, poles] {
   \includegraphics[trim = 15mm 0mm 15mm 0mm, clip, width=0.37\textwidth]{figures.gen/filter_cheby2_zpk}
@@ -1614,7 +1564,7 @@ reasons.
 \begin{figure}
 \centering
 \subfigure[spectrum] {
-  \includegraphics[trim = 2mm 5mm 0mm 5mm, clip, width=0.55\textwidth]{figures.gen/filter_ellip_psd}
+  \includegraphics[trim = 0mm 5mm 0mm 5mm, clip, width=0.55\textwidth]{figures.gen/filter_ellip_psd}
 }
 \subfigure[zeros, poles] {
   \includegraphics[trim = 15mm 0mm 15mm 0mm, clip, width=0.37\textwidth]{figures.gen/filter_ellip_zpk}
@@ -1627,7 +1577,7 @@ reasons.
 \begin{figure}
 \centering
 \subfigure[spectrum] {
-  \includegraphics[trim = 2mm 5mm 0mm 5mm, clip, width=0.55\textwidth]{figures.gen/filter_bessel_psd}
+  \includegraphics[trim = 0mm 5mm 0mm 5mm, clip, width=0.55\textwidth]{figures.gen/filter_bessel_psd}
 }
 \subfigure[zeros, poles] {
   \includegraphics[trim = 15mm 0mm 15mm 0mm, clip, width=0.37\textwidth]{figures.gen/filter_bessel_zpk}
@@ -1636,18 +1586,82 @@ reasons.
 \label{fig:module:filter:bessel}
 \end{figure}
 
+% 
+% interp
+%
+\subsection{{\tt interp} (interpolator)}
+\label{module:filter:interp}
+The {\tt interp} object implements a basic interpolator with an integer
+output-to-input resampling ratio.
+An example of the {\tt interp} interface is listed below.
+%
+\input{listings/interp.example.c.tex}
+%
+Listed below is the full interface to the {\tt interp} family of
+objects.
+While each method is listed for {\tt interp\_crcf}, the same
+functionality applies to {\tt interp\_rrrf} and {\tt interp\_cccf}.
+%
+\begin{description}
+\item[{\tt interp\_crcf\_create(M,*h,N)}]
+    creates an {\tt interp} object with an interpolation factor $M$
+    using $N$ filter coefficients $\vec{h}$.
+\item[{\tt interp\_crcf\_create\_prototype(M,m,As)}]
+    create an {\tt interp} object using a filter prototype designed
+    using the {\tt firdes\_kaiser\_window()} method
+    (see Section~\ref{module:filter:firdes})
+    with a normalized cut-off frequency $1/2M$,
+    a filter length of $2Mm$ coefficients,
+    and a stop-band attenuation of $A_s$~dB.
+\item[{\tt interp\_crcf\_create\_rnyquist(type,k,m,beta,dt)}]
+    creates an {\tt interp} object
+    from a square-root Nyquist filter prototype with
+    $k$ samples per symbol (interpolation factor),
+    $m$ symbols of delay,
+    $\beta$ excess bandwidth,
+    and a fractional sampling interval $\Delta t$.
+    Section~\ref{module:filter:firdes:rnyquist}
+    provides a detailed description of the available square-root Nyquist
+    filter prototypes available in \liquid.
+\item[{\tt interp\_crcf\_destroy(q)}]
+    destroys the interpolator, freeing all internally-allocated memory.
+\item[{\tt interp\_crcf\_print(q)}]
+    prints the internal properties of the interpolator to the standard
+    output.
+\item[{\tt interp\_crcf\_clear(q)}]
+    clears the internal interpolator buffers.
+\item[{\tt interp\_crcf\_execute(q,x,*y)}]
+    executes the interpolator for an input $x$, storing the result in
+    the output array $y$ (which has a length of $M$ samples).
+\end{description}
+%
+\begin{figure}
+\centering
+  \includegraphics[trim = 0mm 0mm 0mm 0mm, clip, width=13cm]{figures.gen/filter_interp_crcf}
+\caption{{\tt interp\_crcf} (interpolator) example with $M=4$,
+         compensating for filter delay.}
+\label{fig:module:filter:interp_crcf}
+\end{figure}
+%
+A graphical example of the interpolator can be seen in
+Figure~\ref{fig:module:filter:interp_crcf}.
+A detailed example program is given in
+{\tt examples/interp\_crcf\_example.c},
+located under the main \liquid\ project directory.
+
 
 % 
 % msresamp : multi-stage arbitrary resampler
 %
 \subsection{{\tt msresamp} (multi-stage arbitrary resampler)}
 \label{module:filter:msresamp}
-{\tt msresamp} is a multi-stage arbitrary resampler use for efficient
-interpolation and decimation.
-The {\tt msresamp} object uses a combination of half-band
-interpolators/decimators (Section~\ref{module:filter:resamp2})
+The {\tt msresamp} object implements a multi-stage arbitrary resampler
+use for efficient interpolation and decimation.
+By using a combination of half-band interpolators/decimators
+(Section~\ref{module:filter:resamp2})
 and an arbitrary resampler (Section~\ref{module:filter:resamp})
-to efficiently realize any arbitrary resampling rate desired.
+the {\tt msresamp} object can
+efficiently realize any arbitrary resampling rate desired.
 
 Listed below is the full interface to the {\tt msresamp} family of
 objects.
@@ -1657,7 +1671,7 @@ functionality applies to {\tt msresamp\_rrrf} and {\tt msresamp\_cccf}.
 \begin{description}
 \item[{\tt msresamp\_crcf\_create(r,As)}]
     creates a {\tt msresamp} object with a resampling rate $r$
-    and a stop-band suppression of $A_s$~dB.
+    and a target stop-band suppression of $A_s$~dB.
 \item[{\tt msresamp\_crcf\_destroy(q)}]
     destroys the resampler, freeing all internally-allocated memory.
 \item[{\tt msresamp\_crcf\_print(q)}]
@@ -1678,7 +1692,27 @@ Below is a code example demonstrating the {\tt msresamp} interface.
 %
 \input{listings/msresamp_crcf.example.c.tex}
 %
-For more detailed and extensive examples, refer to
+\begin{figure}
+\centering
+\subfigure[time] {
+  \includegraphics[trim = 0mm 0mm 0mm 0mm, clip, width=13cm]{figures.gen/filter_msresamp_crcf_time}
+}
+\subfigure[PSD] {
+  \includegraphics[trim = 0mm 0mm 0mm 0mm, clip, width=13cm]{figures.gen/filter_msresamp_crcf_freq}
+}
+\caption{{\tt msresamp\_crcf} (multi-stage resampler) interpolator
+         demonstration with a stop-band suppression $A_s=60$~dB
+         at the irrational rate $r = \sqrt{19} \approx 4.359$}
+\label{fig:module:filter:msresamp_crcf}
+\end{figure}
+%
+Figure~\ref{fig:module:filter:msresamp_crcf} gives a graphical depiction
+in both the time and frequency domains
+of the multi-stage resampler acting as an interpolator.
+The time series has been aligned (shifted by the filter delay and scaled by
+the resampling rate) to show equivalence.
+%
+For a more detailed example, refer to
 {\tt examples/msresamp\_crcf\_example.c}
 located in the main \liquid\ project source directory.
 
@@ -1994,6 +2028,30 @@ functionality applies to {\tt symsync\_rrrf} and {\tt symsync\_cccf}.
     returns the current timing estimate (fractional sampling interval)
     of the object.
 \end{description}
+%
+\begin{figure}
+\centering
+\subfigure[Equalizer output (time series)] {
+    \includegraphics[trim = 0mm 0mm 0mm 0mm, clip, width=13cm]{figures.gen/filter_symsync_crcf_time}
+    \label{fig:module:filter:symsync:time}
+}
+\subfigure[Constellation] {
+    \includegraphics[trim = 15mm 0mm 15mm 0mm, clip, width=9cm]{figures.gen/filter_symsync_crcf_const}
+    \label{fig:module:filter:symsync:psd}
+}
+% trim = left bottom right top
+\caption{{\tt symysnc} (symbol synchronizer) demonstration for a
+         QPSK signal with a
+         square-root raised-cosine pulse
+         with $k=2$ samples/symbol,
+         a delay of $m=4$ symbols, and
+         an excess bandwidth factor $\beta=0.3$}
+\label{fig:module:filter:symsync}
+\end{figure}
+%
+Figure~\ref{fig:module:filter:symsync} demonstrates the
+{\tt symsync\_crcf} object recovering the sample timing phase for a QPSK
+signal.
 %
 For a more detailed example, refer to
 {\tt examples/symsync\_crcf\_example.c}

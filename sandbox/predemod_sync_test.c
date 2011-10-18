@@ -26,10 +26,11 @@ void usage()
 int main(int argc, char*argv[]) {
     // options
     unsigned int k=4;                   // filter samples/symbol
-    unsigned int m=3;                   // filter delay (symbols)
+    unsigned int m=5;                   // filter delay (symbols)
     float beta=0.5f;                    // bandwidth-time product
-    float dt = 0.2f;                    // fractional sample timing offset
+    float dt = 0.0f;                    // fractional sample timing offset
     unsigned int num_data_symbols = 64; // number of data symbols
+    unsigned int npfb=16;               // number of filters in bank
     float SNRdB = 30.0f;                // signal-to-noise ratio [dB]
     unsigned int g = 0x0067;            // m-sequence generator polynomial
     float dphi = 0.0f;                  // carrier frequency offset
@@ -66,12 +67,12 @@ int main(int argc, char*argv[]) {
     // arrays
     float complex x[num_samples];           // transmitted signal
     float complex y[num_samples];           // received signal
-    float complex z[num_symbols];           // decimated output
-    float complex rxy[num_symbols];         // pre-demod output
+    float complex z[num_samples];           // matched filter output
+    float complex rxy[num_samples];         // pre-demod output
 
     // create transmit/receive interpolator/decimator
-    interp_crcf interp_tx = interp_crcf_create_rnyquist(LIQUID_RNYQUIST_ARKAISER,k,m,beta,dt);
-    decim_crcf  decim_rx  = decim_crcf_create_rnyquist(LIQUID_RNYQUIST_ARKAISER,k,m,beta,0);
+    interp_crcf interp_tx = interp_crcf_create_rnyquist(LIQUID_RNYQUIST_RRC,k,m,beta,dt);
+    firpfb_crcf decim_rx  = firpfb_crcf_create_rnyquist(LIQUID_RNYQUIST_RRC,npfb,k,m,beta);
 
     // create m-sequence generator
     unsigned int M = liquid_msb_index(g) - 1;   // m-sequence shift register length
@@ -91,23 +92,28 @@ int main(int argc, char*argv[]) {
     for (i=0; i<num_samples; i++)
         y[i] = x[i]*cexpf(_Complex_I*(dphi*i + phi)) + nstd*(randnf() + _Complex_I*randnf())*M_SQRT1_2;
 
-    // decimate
-#if 0
-    for (i=0; i<num_symbols; i++)
-        z[i] = y[k*i];
-#else
-    for (i=0; i<num_symbols; i++)
-        decim_crcf_execute(decim_rx, &y[k*i], &z[i], k-1);
-#endif
-    
     // create cross-correlator
-    bsync_crcf sync = bsync_crcf_create_msequence(g,1);
+    bsync_crcf sync = bsync_crcf_create_msequence(g,k);
 
-    // push through synchronizer
+    // decimate and push through synchronizer
+    unsigned int j;
     float rxy_max = 0.0f;
-    for (i=0; i<num_symbols; i++) {
+    for (i=0; i<num_samples; i++) {
+        // push samples into filterbank
+        firpfb_crcf_push(decim_rx, y[i]);
+
+        // compute output
+        firpfb_crcf_execute(decim_rx, 0, &z[i]);
+        z[i] /= (float)k;
+        
+        // correlate
         bsync_crcf_correlate(sync, z[i], &rxy[i]);
 
+        // detect...
+        if (cabsf(rxy[i]) > 0.6f) {
+            printf("****** preamble found, rxy = %12.8f, i=%3u ******\n", cabsf(rxy[i]), i);
+        }
+        
         // retain maximum
         if (cabsf(rxy[i]) > rxy_max)
             rxy_max = cabsf(rxy[i]);
@@ -115,7 +121,7 @@ int main(int argc, char*argv[]) {
 
     // destroy objects
     interp_crcf_destroy(interp_tx);
-    decim_crcf_destroy(decim_rx);
+    firpfb_crcf_destroy(decim_rx);
     msequence_destroy(ms);
     bsync_crcf_destroy(sync);
     
@@ -142,9 +148,9 @@ int main(int argc, char*argv[]) {
         fprintf(fid,"y(%4u)     = %12.8f + j*%12.8f;\n", i+1, crealf(y[i]),   cimagf(y[i]));
         fprintf(fid,"rxy(%4u)   = %12.8f + j*%12.8f;\n", i+1, crealf(rxy[i]), cimagf(rxy[i]));
     }
-    fprintf(fid,"z   = zeros(1,num_symbols);\n");
-    fprintf(fid,"rxy = zeros(1,num_symbols);\n");
-    for (i=0; i<num_symbols; i++) {
+    fprintf(fid,"z   = zeros(1,num_samples);\n");
+    fprintf(fid,"rxy = zeros(1,num_samples);\n");
+    for (i=0; i<num_samples; i++) {
         fprintf(fid,"z(%4u)     = %12.8f + j*%12.8f;\n", i+1, crealf(z[i]),   cimagf(z[i]));
         fprintf(fid,"rxy(%4u)   = %12.8f + j*%12.8f;\n", i+1, crealf(rxy[i]), cimagf(rxy[i]));
     }
@@ -157,31 +163,30 @@ int main(int argc, char*argv[]) {
         fprintf(fid,"s(%4u:%4u) = %3d;\n", k*i+1, k*(i+1), 2*(int)(msequence_advance(ms))-1);
     msequence_destroy(ms);
 
-    fprintf(fid,"t=[0:(num_symbols-1)]/k;\n");
+    fprintf(fid,"t=[0:(num_samples-1)]/k;\n");
     fprintf(fid,"figure;\n");
     fprintf(fid,"plot(t,abs(rxy));\n");
     fprintf(fid,"xlabel('time');\n");
     fprintf(fid,"ylabel('correlator output');\n");
     fprintf(fid,"grid on;\n");
 
-    fprintf(fid,"return;\n");
-
     // save...
     fprintf(fid,"[v i] = max(abs(rxy));\n");
     fprintf(fid,"i0=i-(k*N)+1;\n");
     fprintf(fid,"i1=i;\n");
-    fprintf(fid,"y_hat = y(i0:i1);\n");
+    fprintf(fid,"z_hat = z(i0:i1);\n");
     fprintf(fid,"figure;\n");
     fprintf(fid,"t_hat=0:(k*N-1);\n");
-    fprintf(fid,"plot(t_hat,real(y_hat),...\n");
-    fprintf(fid,"     t_hat,imag(y_hat),...\n");
+    fprintf(fid,"plot(t_hat,real(z_hat),...\n");
+    fprintf(fid,"     t_hat,imag(z_hat),...\n");
+    fprintf(fid,"     t_hat(1:k:end),real(z_hat(1:k:end)),'x','MarkerSize',2,...\n");
     fprintf(fid,"     t_hat,s,'-k');\n");
 
     // run fft for timing recovery
-    fprintf(fid,"Y_hat = fft(y_hat);\n");
+    fprintf(fid,"Z_hat = fft(z_hat);\n");
     fprintf(fid,"S     = fft(s);\n");
     fprintf(fid,"figure;\n");
-    fprintf(fid,"plot(fftshift(arg(Y_hat./S)));\n");
+    fprintf(fid,"plot(fftshift(arg(Z_hat./S)));\n");
 
     fclose(fid);
     printf("results written to '%s'\n", OUTPUT_FILENAME);
