@@ -596,7 +596,7 @@ figures.gen/math_window.gnu : src/math_window
 #
 # math_polyfit_lagrange
 # 
-figures.gen/math_polyfit_lagrange.gnu : src/math_polyfit_lagrange
+figures.gen/math_polyfit_lagrange.gnu latex.gen/math_polyfit_lagrange.tex : src/math_polyfit_lagrange
 	./$<
 
 
