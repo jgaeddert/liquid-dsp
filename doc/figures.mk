@@ -100,6 +100,8 @@ local_pdffiles :=					\
 	figures.gen/interleaver_scatterplot_i2.pdf	\
 	figures.gen/interleaver_scatterplot_i3.pdf	\
 	figures.gen/interleaver_scatterplot_i4.pdf	\
+							\
+	figures.gen/math_polyfit_lagrange.pdf		\
 	figures.gen/math_window.pdf			\
 							\
 	figures.gen/modem_bpsk.pdf			\
@@ -230,6 +232,7 @@ local_progs :=						\
 	src/filter_rnyquist				\
 	src/filter_symsync_crcf				\
 	src/interleaver_scatterplot			\
+	src/math_polyfit_lagrange			\
 	src/math_poly_examples				\
 	src/math_window					\
 	src/modem_demodsoft				\
@@ -587,6 +590,13 @@ figures.gen/interleaver_scatterplot_i4.gnu : src/interleaver_scatterplot
 # window
 # 
 figures.gen/math_window.gnu : src/math_window
+	./$<
+
+
+#
+# math_polyfit_lagrange
+# 
+figures.gen/math_polyfit_lagrange.gnu : src/math_polyfit_lagrange
 	./$<
 
 
