@@ -15,7 +15,7 @@ int main() {
     // ... initialize input ...
     {
         // execute half-band resampler as interpolator
-        resamp_crcf_interp_execute(q, x, y);
+        resamp2_crcf_interp_execute(q, x, y);
     }
 
     // ... repeat as necessary ...
