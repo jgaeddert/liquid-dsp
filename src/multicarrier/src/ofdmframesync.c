@@ -111,6 +111,9 @@ struct ofdmframesync_s {
     windowf  debug_rssi;
     windowcf debug_framesyms;
     float complex * G_hat;  // complex subcarrier gain estimate, S1
+    float * px;             // pilot x-value
+    float * py;             // pilot y-value
+    float p_phase[2];       // pilot polyfit
 #endif
 };
 
@@ -232,6 +235,8 @@ ofdmframesync ofdmframesync_create(unsigned int _M,
     q->debug_framesyms =windowcf_create(DEBUG_OFDMFRAMESYNC_BUFFER_LEN);
     
     q->G_hat = (float complex*) malloc((q->M)*sizeof(float complex));
+    q->px    = (float*)         malloc((q->M_pilot)*sizeof(float));
+    q->py    = (float*)         malloc((q->M_pilot)*sizeof(float));
 #endif
 
     // return object
@@ -249,6 +254,8 @@ void ofdmframesync_destroy(ofdmframesync _q)
     windowf_destroy(_q->debug_rssi);
     windowcf_destroy(_q->debug_framesyms);
     free(_q->G_hat);
+    free(_q->px);
+    free(_q->py);
 #endif
 
     // free subcarrier type array memory
@@ -998,6 +1005,16 @@ void ofdmframesync_rxsymbol(ofdmframesync _q)
     // fit phase to 1st-order polynomial (2 coefficients)
     polyf_fit(x_phase, y_phase, _q->M_pilot, p_phase, 2);
 
+#if DEBUG_OFDMFRAMESYNC
+    // save pilots
+    memmove(_q->px, x_phase, _q->M_pilot*sizeof(float));
+    memmove(_q->py, y_phase, _q->M_pilot*sizeof(float));
+
+    // NOTE : swapping values for octave
+    _q->p_phase[0] = p_phase[1];
+    _q->p_phase[1] = p_phase[0];
+#endif
+
     // compensate for phase offset
     // TODO : find more computationally efficient way to do this
     for (i=0; i<_q->M; i++) {
@@ -1131,6 +1148,26 @@ void ofdmframesync_debug_print(ofdmframesync _q,
     fprintf(fid,"  grid on;\n");
     fprintf(fid,"  xlabel('subcarrier index');\n");
     fprintf(fid,"  ylabel('gain estimate (phase)');\n");
+
+    // write pilot response
+    fprintf(fid,"\n\n");
+    fprintf(fid,"px = zeros(1,M_pilot);\n");
+    fprintf(fid,"py = zeros(1,M_pilot);\n");
+    for (i=0; i<_q->M_pilot; i++) {
+        fprintf(fid,"px(%3u) = %12.8f;\n", i+1, _q->px[i]);
+        fprintf(fid,"py(%3u) = %12.8f;\n", i+1, _q->py[i]);
+    }
+    fprintf(fid,"p_phase(1) = %12.8f;\n", _q->p_phase[0]);
+    fprintf(fid,"p_phase(2) = %12.8f;\n", _q->p_phase[1]);
+
+    fprintf(fid,"figure;\n");
+    fprintf(fid,"fp = (-M/2):(M/2);\n");
+    fprintf(fid,"  plot(px, py, 'sb',...\n");
+    fprintf(fid,"       fp, polyval(p_phase, fp), '-k');\n");
+    fprintf(fid,"  grid on;\n");
+    fprintf(fid,"  legend('pilots','polyfit',0);\n");
+    fprintf(fid,"  xlabel('subcarrier');\n");
+    fprintf(fid,"  ylabel('phase');\n");
 
     // write frame symbols
     fprintf(fid,"framesyms = zeros(1,n);\n");
