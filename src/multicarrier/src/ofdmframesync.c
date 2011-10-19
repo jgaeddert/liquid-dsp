@@ -114,6 +114,8 @@ struct ofdmframesync_s {
     float * px;             // pilot x-value
     float * py;             // pilot y-value
     float p_phase[2];       // pilot polyfit
+    windowf debug_pilot_0;  // pilot polyfit history, p[0]
+    windowf debug_pilot_1;  // pilot polyfit history, p[1]
 #endif
 };
 
@@ -237,6 +239,9 @@ ofdmframesync ofdmframesync_create(unsigned int _M,
     q->G_hat = (float complex*) malloc((q->M)*sizeof(float complex));
     q->px    = (float*)         malloc((q->M_pilot)*sizeof(float));
     q->py    = (float*)         malloc((q->M_pilot)*sizeof(float));
+    
+    q->debug_pilot_0 =  windowf_create(DEBUG_OFDMFRAMESYNC_BUFFER_LEN);
+    q->debug_pilot_1 =  windowf_create(DEBUG_OFDMFRAMESYNC_BUFFER_LEN);
 #endif
 
     // return object
@@ -256,6 +261,8 @@ void ofdmframesync_destroy(ofdmframesync _q)
     free(_q->G_hat);
     free(_q->px);
     free(_q->py);
+    windowf_destroy(_q->debug_pilot_0);
+    windowf_destroy(_q->debug_pilot_1);
 #endif
 
     // free subcarrier type array memory
@@ -1013,6 +1020,9 @@ void ofdmframesync_rxsymbol(ofdmframesync _q)
     // NOTE : swapping values for octave
     _q->p_phase[0] = p_phase[1];
     _q->p_phase[1] = p_phase[0];
+
+    windowf_push(_q->debug_pilot_0, p_phase[0]);
+    windowf_push(_q->debug_pilot_1, p_phase[1]);
 #endif
 
     // compensate for phase offset
@@ -1160,14 +1170,34 @@ void ofdmframesync_debug_print(ofdmframesync _q,
     fprintf(fid,"p_phase(1) = %12.8f;\n", _q->p_phase[0]);
     fprintf(fid,"p_phase(2) = %12.8f;\n", _q->p_phase[1]);
 
+    // save pilot history
+    fprintf(fid,"p0 = zeros(1,M);\n");
+    windowf_read(_q->debug_pilot_0, &r);
+    for (i=0; i<DEBUG_OFDMFRAMESYNC_BUFFER_LEN; i++)
+        fprintf(fid,"p0(%4u) = %12.4e;\n", i+1, r[i]);
+
+    fprintf(fid,"p1 = zeros(1,M);\n");
+    windowf_read(_q->debug_pilot_1, &r);
+    for (i=0; i<DEBUG_OFDMFRAMESYNC_BUFFER_LEN; i++)
+        fprintf(fid,"p1(%4u) = %12.4e;\n", i+1, r[i]);
+
     fprintf(fid,"figure;\n");
     fprintf(fid,"fp = (-M/2):(M/2);\n");
+    fprintf(fid,"subplot(3,1,1);\n");
     fprintf(fid,"  plot(px, py, 'sb',...\n");
     fprintf(fid,"       fp, polyval(p_phase, fp), '-k');\n");
     fprintf(fid,"  grid on;\n");
     fprintf(fid,"  legend('pilots','polyfit',0);\n");
     fprintf(fid,"  xlabel('subcarrier');\n");
     fprintf(fid,"  ylabel('phase');\n");
+    fprintf(fid,"subplot(3,1,2);\n");
+    fprintf(fid,"  plot(1:length(p0), p0);\n");
+    fprintf(fid,"  grid on;\n");
+    fprintf(fid,"  ylabel('p0 (phase offset)');\n");
+    fprintf(fid,"subplot(3,1,3);\n");
+    fprintf(fid,"  plot(1:length(p1), p1);\n");
+    fprintf(fid,"  grid on;\n");
+    fprintf(fid,"  ylabel('p1 (phase slope)');\n");
 
     // write frame symbols
     fprintf(fid,"framesyms = zeros(1,n);\n");
