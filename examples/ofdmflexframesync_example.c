@@ -18,9 +18,10 @@ void usage()
     printf("ofdmflexframesync_example [options]\n");
     printf("  u/h   : print usage\n");
     printf("  s     : signal-to-noise ratio [dB], default: 30\n");
+    printf("  F     : carrier frequency offset, default: 0.002\n");
     printf("  M     : number of subcarriers (must be even), default: 64\n");
     printf("  C     : cyclic prefix length, default: 16\n");
-    printf("  f     : frame length [bytes], default: 120\n");
+    printf("  n     : payload length [bytes], default: 120\n");
     printf("  m     : modulation scheme (qpsk default)\n");
     liquid_print_modulation_schemes();
     printf("  v     : data integrity check: crc32 default\n");
@@ -55,17 +56,19 @@ int main(int argc, char*argv[])
     crc_scheme check = LIQUID_CRC_32;
     float noise_floor = -30.0f;         // noise floor [dB]
     float SNRdB = 20.0f;                // signal-to-noise ratio [dB]
+    float dphi = 0.02f;                 // carrier frequency offset
 
     // get options
     int dopt;
-    while((dopt = getopt(argc,argv,"uhs:M:C:f:m:v:c:k:")) != EOF){
+    while((dopt = getopt(argc,argv,"uhs:F:M:C:n:m:v:c:k:")) != EOF){
         switch (dopt) {
         case 'u':
         case 'h': usage();                      return 0;
-        case 's': SNRdB = atof(optarg);         break;
-        case 'M': M = atoi(optarg);             break;
-        case 'C': cp_len = atoi(optarg);        break;
-        case 'f': payload_len = atol(optarg);   break;
+        case 's': SNRdB         = atof(optarg); break;
+        case 'F': dphi          = atof(optarg); break;
+        case 'M': M             = atoi(optarg); break;
+        case 'C': cp_len        = atoi(optarg); break;
+        case 'n': payload_len   = atol(optarg); break;
         case 'm':
             liquid_getopt_str2modbps(optarg, &ms, &bps);
             if (ms == LIQUID_MODEM_UNKNOWN) {
@@ -103,6 +106,8 @@ int main(int argc, char*argv[])
         }
     }
 
+    unsigned int i;
+
     // TODO : validate options
 
     // derived values
@@ -117,7 +122,22 @@ int main(int argc, char*argv[])
 
     // initialize subcarrier allocation
     unsigned char p[M];
+#if 0
     ofdmframe_init_default_sctype(M, p);
+#else
+    unsigned int guard = M / 6;
+    unsigned int pilot_spacing = 8;
+    unsigned int i0 = (M/2) - guard;
+    unsigned int i1 = (M/2) + guard;
+    for (i=0; i<M; i++) {
+        if ( i == 0 || (i > i0 && i < i1) )
+            p[i] = OFDMFRAME_SCTYPE_NULL;
+        else if ( (i%pilot_spacing)==0 )
+            p[i] = OFDMFRAME_SCTYPE_PILOT;
+        else
+            p[i] = OFDMFRAME_SCTYPE_DATA;
+    }
+#endif
 
     // create frame generator
     ofdmflexframegenprops_s fgprops;
@@ -136,7 +156,6 @@ int main(int argc, char*argv[])
     ofdmflexframesync fs = ofdmflexframesync_create(M, cp_len, p, callback, (void*)payload);
     ofdmflexframesync_print(fs);
 
-    unsigned int i;
 
     // initialize header/payload and assemble frame
     for (i=0; i<8; i++)
@@ -151,9 +170,11 @@ int main(int argc, char*argv[])
         ofdmflexframesync_execute(fs, &noise, 1);
     }
 
-    // generate frame
+    // generate frame, push through channel
     int last_symbol=0;
     unsigned int num_written;
+    nco_crcf nco = nco_crcf_create(LIQUID_VCO);
+    nco_crcf_set_frequency(nco, dphi);
     while (!last_symbol) {
         // generate symbol
         last_symbol = ofdmflexframegen_writesymbol(fg, buffer, &num_written);
@@ -163,11 +184,15 @@ int main(int argc, char*argv[])
             float complex noise = nstd*( randnf() + _Complex_I*randnf())*M_SQRT1_2;
             buffer[i] *= gamma;
             buffer[i] += noise;
+            
+            nco_crcf_mix_up(nco, buffer[i], &buffer[i]);
+            nco_crcf_step(nco);
         }
 
         // receive symbol
         ofdmflexframesync_execute(fs, buffer, num_written);
     }
+    nco_crcf_destroy(nco);
 
     // destroy objects
     ofdmflexframegen_destroy(fg);
@@ -186,7 +211,7 @@ int callback(unsigned char *  _header,
              framesyncstats_s _stats,
              void *           _userdata)
 {
-    printf("**** callback invoked : rssi = %8.3f dB, evm = %8.3f dB\n", _stats.rssi, _stats.evm);
+    printf("**** callback invoked : rssi = %8.3f dB, evm = %8.3f dB, cfo = %8.5f\n", _stats.rssi, _stats.evm, _stats.cfo);
 
     unsigned int i;
 
