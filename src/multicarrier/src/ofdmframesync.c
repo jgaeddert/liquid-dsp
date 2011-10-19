@@ -33,7 +33,7 @@
 
 #include "liquid.internal.h"
 
-#define DEBUG_OFDMFRAMESYNC             0
+#define DEBUG_OFDMFRAMESYNC             1
 #define DEBUG_OFDMFRAMESYNC_PRINT       0
 #define DEBUG_OFDMFRAMESYNC_FILENAME    "ofdmframesync_internal_debug.m"
 #define DEBUG_OFDMFRAMESYNC_BUFFER_LEN  (2048)
@@ -1013,7 +1013,7 @@ void ofdmframesync_rxsymbol(ofdmframesync _q)
     polyf_fit(x_phase, y_phase, _q->M_pilot, p_phase, 2);
 
     // filter slope estimate (timing offset)
-    float alpha = 0.02f;
+    float alpha = 0.3f;
     p_phase[1] = alpha*p_phase[1] + (1-alpha)*_q->p1_prime;
     _q->p1_prime = p_phase[1];
 
