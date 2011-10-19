@@ -1037,7 +1037,8 @@ void ofdmframesync_rxsymbol(ofdmframesync _q)
         if (_q->p[i] == OFDMFRAME_SCTYPE_NULL) {
             _q->X[i] = 0.0f;
         } else {
-            float theta = polyf_val(p_phase, 2, (float)(i)-0.5f*(float)(_q->M));
+            float fx    = (i > _q->M2) ? (float)i - (float)(_q->M) : (float)i;
+            float theta = polyf_val(p_phase, 2, fx);
             _q->X[i] *= liquid_cexpjf(-theta);
         }
     }
