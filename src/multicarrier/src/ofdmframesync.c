@@ -89,6 +89,7 @@ struct ofdmframesync_s {
     nco_crcf nco_rx;        // numerically-controlled oscillator
     msequence ms_pilot;     // pilot sequence generator
     float phi_prime;        // ...
+    float p1_prime;         // filtered pilot phase slope
 
     // coarse signal detection
     float squelch_threshold;
@@ -321,6 +322,7 @@ void ofdmframesync_reset(ofdmframesync _q)
     _q->s_hat_0 = 0.0f;
     _q->s_hat_1 = 0.0f;
     _q->phi_prime = 0.0f;
+    _q->p1_prime = 0.0f;
 
     // reset state
     _q->state = OFDMFRAMESYNC_STATE_SEEKPLCP;
@@ -1011,6 +1013,11 @@ void ofdmframesync_rxsymbol(ofdmframesync _q)
 
     // fit phase to 1st-order polynomial (2 coefficients)
     polyf_fit(x_phase, y_phase, _q->M_pilot, p_phase, 2);
+
+    // filter slope estimate (timing offset)
+    float alpha = 0.02f;
+    p_phase[1] = alpha*p_phase[1] + (1-alpha)*_q->p1_prime;
+    _q->p1_prime = p_phase[1];
 
 #if DEBUG_OFDMFRAMESYNC
     // save pilots
