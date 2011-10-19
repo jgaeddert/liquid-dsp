@@ -819,6 +819,11 @@ void ofdmframesync_estimate_gain_S1(ofdmframesync _q,
 void ofdmframesync_estimate_eqgain(ofdmframesync _q,
                                    unsigned int _ntaps)
 {
+#if DEBUG_OFDMFRAMESYNC
+    // copy pre-smoothed gain
+    memmove(_q->G_hat, _q->G, _q->M*sizeof(float complex));
+#endif
+
     // validate input
     if (_ntaps == 0 || _ntaps > _q->M) {
         fprintf(stderr, "error: ofdmframesync_estimate_eqgain(), ntaps must be in [1,M]\n");
