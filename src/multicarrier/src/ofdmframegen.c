@@ -193,23 +193,24 @@ void ofdmframegen_writesymbol(ofdmframegen _q,
                               float complex * _x,
                               float complex * _y)
 {
-    // TODO : rotate pilot phase for each use
-    unsigned int pilot_phase = msequence_advance(_q->ms_pilot);
-
     // move frequency data to internal buffer
     unsigned int i;
+    unsigned int k;
     int sctype;
     for (i=0; i<_q->M; i++) {
-        sctype = _q->p[i];
+        // start at mid-point (effective fftshift)
+        k = (i + _q->M/2) % _q->M;
+
+        sctype = _q->p[k];
         if (sctype==OFDMFRAME_SCTYPE_NULL) {
             // disabled subcarrier
-            _q->X[i] = 0.0f;
+            _q->X[k] = 0.0f;
         } else if (sctype==OFDMFRAME_SCTYPE_PILOT) {
             // pilot subcarrier
-            _q->X[i] = (pilot_phase ? 1.0f : -1.0f) * _q->g_data;
+            _q->X[k] = (msequence_advance(_q->ms_pilot) ? 1.0f : -1.0f) * _q->g_data;
         } else {
             // data subcarrier
-            _q->X[i] = _x[i] * _q->g_data;
+            _q->X[k] = _x[k] * _q->g_data;
         }
 
         //printf("X[%3u] = %12.8f + j*%12.8f;\n",i+1,crealf(_q->X[i]),cimagf(_q->X[i]));

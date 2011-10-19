@@ -966,8 +966,6 @@ void ofdmframesync_rxsymbol(ofdmframesync _q)
     float y_phase[_q->M_pilot];
     float p_phase[2];
 
-    // TODO : rotate pilot phase for every pilot, not just every symbol
-    unsigned int pilot_phase = msequence_advance(_q->ms_pilot);
     unsigned int n=0;
     unsigned int k;
     float complex pilot = 1.0f;
@@ -981,12 +979,12 @@ void ofdmframesync_rxsymbol(ofdmframesync _q)
                 fprintf(stderr,"warning: ofdmframesync_rxsymbol(), pilot subcarrier mismatch\n");
                 return;
             }
-            pilot = (pilot_phase ? 1.0f : -1.0f);
+            pilot = (msequence_advance(_q->ms_pilot) ? 1.0f : -1.0f);
 #if 0
             printf("pilot[%3u] = %12.4e + j*%12.4e (expected %12.4e + j*%12.4e)\n",
-                    i,
-                    crealf(_q->X[i]), cimagf(_q->X[i]),
-                    pilot_phase ? 1.0f : -1.0f, 0.0f);
+                    k,
+                    crealf(_q->X[k]), cimagf(_q->X[k]),
+                    crealf(pilot),    cimagf(pilot));
 #endif
             // store resulting...
             x_phase[n] = (k > _q->M2) ? (float)k - (float)(_q->M) : (float)k;
