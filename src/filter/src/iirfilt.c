@@ -236,6 +236,41 @@ IIRFILT() IIRFILT(_create_prototype)(liquid_iirdes_filtertype _ftype,
     return q;
 }
 
+// create phase-locked loop iirfilt object
+//  _w      :   filter bandwidth
+//  _zeta   :   damping factor (1/sqrt(2) suggested)
+//  _K      :   loop gain (1000 suggested)
+IIRFILT() IIRFILT(_create_pll)(float _w,
+                               float _zeta,
+                               float _K)
+{
+    // validate input
+    if (_w <= 0.0f || _w >= 1.0f) {
+        fprintf(stderr,"error: iirfilt_xxt_create_pll(), bandwidth must be in (0,1)\n");
+        exit(1);
+    } else if (_zeta <= 0.0f || _zeta >= 1.0f) {
+        fprintf(stderr,"error: iirfilt_xxt_create_pll(), damping factor must be in (0,1)\n");
+        exit(1);
+    } else if (_K <= 0.0f) {
+        fprintf(stderr,"error: iirfilt_xxt_create_pll(), loop gain must be greater than zero\n");
+        exit(1);
+    }
+
+    // compute loop filter coefficients
+    float bf[3];
+    float af[3];
+    iirdes_pll_active_lag(_w, _zeta, _K, bf, af);
+
+    // copy to type-specific array
+    TC b[3];
+    TC a[3];
+    b[0] = bf[0];   b[1] = bf[1];   b[2] = bf[2];
+    a[0] = af[0];   a[1] = af[1];   a[2] = af[2];
+
+    // create and return filter object
+    return IIRFILT(_create_sos)(b,a,1);
+}
+
 // destroy iirfilt object
 void IIRFILT(_destroy)(IIRFILT() _q)
 {

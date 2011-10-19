@@ -18,12 +18,13 @@
 
 int main() {
     // parameters
-    float phase_offset = 0.8f;
-    float frequency_offset = 0.01f;
-    float pll_bandwidth = 0.05f;
-    float pll_damping_factor = 0.707f;
-    unsigned int n=256;     // number of iterations
-    unsigned int d=n/32;    // print every "d" lines
+    float phase_offset      = 0.8f;     // carrier phase offset
+    float frequency_offset  = 0.01f;    // carrier frequency offset
+    float wn                = 0.05f;    // pll bandwidth
+    float zeta              = 0.707f;   // pll damping factor
+    float K                 = 1000;     // pll loop gain
+    unsigned int n          = 256;      // number of samples
+    unsigned int d          = n/32;     // print every "d" lines
 
     //
     float theta[n];         // input phase
@@ -31,39 +32,8 @@ int main() {
     float phi[n];           // output phase
     float complex y[n];     // output sinusoid
 
-    // generate iir loop filter(s)
-    float a[3];
-    float b[3];
-    float wn = pll_bandwidth;
-    float zeta = pll_damping_factor;
-    float K = 10; // loop gain
-
-#if 0
-    // loop filter (active lag)
-    float t1 = K/(wn*wn);
-    float t2 = 2*zeta/wn - 1/K;
-
-    b[0] = 2*K*(1.+t2/2.0f);
-    b[1] = 2*K*2.;
-    b[2] = 2*K*(1.-t2/2.0f);
-
-    a[0] =  1 + t1/2.0f;
-    a[1] = -t1;
-    a[2] = -1 + t1/2.0f;
-#else
-    // loop filter (active PI)
-    float t1 = K/(wn*wn);
-    float t2 = 2*zeta/wn;
-
-    b[0] = 2*K*(1.+t2/2.0f);
-    b[1] = 2*K*2.;
-    b[2] = 2*K*(1.-t2/2.0f);
-
-    a[0] =  t1/2.0f;
-    a[1] = -t1;
-    a[2] =  t1/2.0f;
-#endif
-    iirfilt_rrrf H = iirfilt_rrrf_create(b,3,a,3);
+    // generate iir loop filter object
+    iirfilt_rrrf H = iirfilt_rrrf_create_pll(wn, zeta, K);
     iirfilt_rrrf_print(H);
 
     unsigned int i;
@@ -102,17 +72,6 @@ int main() {
     FILE * fid = fopen(OUTPUT_FILENAME,"w");
     fprintf(fid,"clear all;\n");
     fprintf(fid,"n=%u;\n",n);
-
-    fprintf(fid,"a(1) = %16.8e;\n", a[0]);
-    fprintf(fid,"a(2) = %16.8e;\n", a[1]);
-    fprintf(fid,"a(3) = %16.8e;\n", a[2]);
-
-    fprintf(fid,"b(1) = %16.8e;\n", b[0]);
-    fprintf(fid,"b(2) = %16.8e;\n", b[1]);
-    fprintf(fid,"b(3) = %16.8e;\n", b[2]);
-
-    //fprintf(fid,"figure;\n");
-    //fprintf(fid,"freqz(b,a);\n");
 
     for (i=0; i<n; i++) {
         fprintf(fid,"theta(%3u) = %16.8e;\n", i+1, theta[i]);

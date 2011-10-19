@@ -1339,6 +1339,15 @@ IIRFILT() IIRFILT(_create_prototype)(                           \
             float _f0,                                          \
             float _Ap,                                          \
             float _As);                                         \
+                                                                \
+/* create phase-locked loop iirfilt object              */      \
+/*  _w      : filter bandwidth                          */      \
+/*  _zeta   : damping factor (1/sqrt(2) suggested)      */      \
+/*  _K      : loop gain (1000 suggested)                */      \
+IIRFILT() IIRFILT(_create_pll)(float _w,                        \
+                               float _zeta,                     \
+                               float _K);                       \
+                                                                \
 void IIRFILT(_destroy)(IIRFILT() _f);                           \
 void IIRFILT(_print)(IIRFILT() _f);                             \
 void IIRFILT(_clear)(IIRFILT() _f);                             \
