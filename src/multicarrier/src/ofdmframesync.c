@@ -70,8 +70,8 @@ struct ofdmframesync_s {
 
     // gain
     float g0;               // nominal gain (coarse initial estimate)
-    float complex * G0;     // complex subcarrier gain estimate, S1[0]
-    float complex * G1;     // complex subcarrier gain estimate, S1[1]
+    float complex * G0;     // complex subcarrier gain estimate, S0[0]
+    float complex * G1;     // complex subcarrier gain estimate, S0[1]
     float complex * G;      // complex subcarrier gain estimate
     float complex * B;      // subcarrier phase rotation due to backoff
     float complex * R;      // 
