@@ -164,6 +164,8 @@ void ofdmframegen_print(ofdmframegen _q)
     printf("      - pilot           :   %-u\n", _q->M_pilot);
     printf("      - data            :   %-u\n", _q->M_data);
     printf("    cyclic prefix len   :   %-u\n", _q->cp_len);
+    printf("    ");
+    ofdmframe_print_sctype(_q->p, _q->M);
 }
 
 void ofdmframegen_reset(ofdmframegen _q)

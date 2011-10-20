@@ -243,3 +243,30 @@ void ofdmframe_validate_sctype(unsigned char * _p,
     *_M_data  = M_data;
 }
 
+// print subcarrier allocation to screen
+//
+// key: '.' (null), 'P' (pilot), '+' (data)
+// .+++P+++++++P.........P+++++++P+++
+//
+void ofdmframe_print_sctype(unsigned char * _p,
+                            unsigned int    _M)
+{
+    unsigned int i;
+
+    printf("[");
+    for (i=0; i<_M; i++) {
+        unsigned int k = (i + _M/2) % _M;
+
+        switch (_p[k]) {
+        case OFDMFRAME_SCTYPE_NULL:     printf(".");    break;
+        case OFDMFRAME_SCTYPE_PILOT:    printf("|");    break;
+        case OFDMFRAME_SCTYPE_DATA:     printf("+");    break;
+        default:
+            fprintf(stderr,"error: ofdmframe_print_default_sctype(), invalid subcarrier type\n");
+            exit(1);
+        }
+    }
+
+    printf("]\n");
+}
+
