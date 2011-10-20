@@ -747,9 +747,9 @@ void ofdmframesync_S0_metrics(ofdmframesync _q,
     float complex s_hat = 0.0f;
 
     // compute timing estimate, accumulate phase difference across
-    // gains on subsequent pilot subcarriers
-    // FIXME : need to assemble appropriate subcarriers
-    for (i=0; i<_q->M; i++) {
+    // gains on subsequent pilot subcarriers (note that all the odd
+    // subcarriers are NULL)
+    for (i=0; i<_q->M; i+=2) {
         s_hat += _G[(i+2)%_q->M]*conjf(_G[i]);
     }
     s_hat /= _q->M_S0; // normalize output
