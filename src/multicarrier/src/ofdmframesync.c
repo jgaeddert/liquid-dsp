@@ -38,6 +38,8 @@
 #define DEBUG_OFDMFRAMESYNC_FILENAME    "ofdmframesync_internal_debug.m"
 #define DEBUG_OFDMFRAMESYNC_BUFFER_LEN  (2048)
 
+#define OFDMFRAMESYNC_ENABLE_SQUELCH    0
+
 struct ofdmframesync_s {
     unsigned int M;         // number of subcarriers
     unsigned int M2;        // number of subcarriers (divided by 2)
@@ -91,9 +93,11 @@ struct ofdmframesync_s {
     float phi_prime;        // ...
     float p1_prime;         // filtered pilot phase slope
 
+#if OFDMFRAMESYNC_ENABLE_SQUELCH
     // coarse signal detection
     float squelch_threshold;
     int squelch_enabled;
+#endif
 
     // timing
     unsigned int timer;         // input sample timer
@@ -220,15 +224,17 @@ ofdmframesync ofdmframesync_create(unsigned int _M,
     // set pilot sequence
     q->ms_pilot = msequence_create_default(8);
 
+#if OFDMFRAMESYNC_ENABLE_SQUELCH
     // coarse detection
     q->squelch_threshold = -25.0f;
     q->squelch_enabled = 0;
+#endif
 
     // reset object
     ofdmframesync_reset(q);
 
 #if DEBUG_OFDMFRAMESYNC
-    // agc, rssi, squelch
+    // agc, rssi
     q->agc_rx = agc_crcf_create();
     agc_crcf_set_bandwidth(q->agc_rx,  1e-2f);
     agc_crcf_set_gain_limits(q->agc_rx, 1e-5f, 1e5f);
@@ -418,6 +424,7 @@ void ofdmframesync_execute_seekplcp(ofdmframesync _q)
     }
     g = (float)(_q->M) / g;
 
+#if OFDMFRAMESYNC_ENABLE_SQUELCH
     // TODO : squelch here
     if ( -10*log10f( sqrtf(g) ) < _q->squelch_threshold &&
          _q->squelch_enabled)
@@ -425,6 +432,7 @@ void ofdmframesync_execute_seekplcp(ofdmframesync _q)
         printf("squelch\n");
         return;
     }
+#endif
 
     // estimate S0 gain
     ofdmframesync_estimate_gain_S0(_q, &rc[_q->cp_len], _q->G0);
