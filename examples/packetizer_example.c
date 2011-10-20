@@ -78,7 +78,6 @@ int main(int argc, char*argv[]) {
             }
             break;
         default:
-            fprintf(stderr,"error: unknown/invalid option\n");
             exit(1);
         }
     }

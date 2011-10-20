@@ -64,9 +64,7 @@ int main(int argc, char*argv[]) {
             }
             break;
         default:
-            fprintf(stderr,"error: %s, unknown option\n", argv[0]);
-            usage();
-            return 1;
+            exit(1);
         }
     }
     unsigned int d=n/32;      // print every "d" lines

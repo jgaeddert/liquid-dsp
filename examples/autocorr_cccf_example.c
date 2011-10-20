@@ -54,7 +54,6 @@ int main(int argc, char*argv[]) {
         case 'd': delay = atof(optarg);         break;
         case 'e': normalize_by_energy = 1;      break;
         case 's': SNRdB = atoi(optarg);         break;
-            fprintf(stderr,"error: %s, unknown option\n", argv[0]);
             usage();
             return 1;
         }

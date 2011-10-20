@@ -62,7 +62,6 @@ int main(int argc, char*argv[])
         case 'p': population_size = atoi(optarg);   break;
         case 'm': mutation_rate = atof(optarg);     break;
         default:
-            fprintf(stderr,"error: %s, unknown option\n", argv[0]);
             exit(1);
         }
     }

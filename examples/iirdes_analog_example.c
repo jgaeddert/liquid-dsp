@@ -80,9 +80,8 @@ int main(int argc, char*argv[]) {
         case 'r': Ap = atof(optarg);    break;
         case 's': As = atof(optarg);    break;
         case 'f': wc = atof(optarg);    break;
-            fprintf(stderr,"error: %s, unknown option\n", argv[0]);
-            usage();
-            return 1;
+        default:
+            exit(1);
         }
     }
 

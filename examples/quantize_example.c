@@ -36,9 +36,7 @@ int main(int argc, char*argv[]) {
         case 'b': num_bits = atoi(optarg);  break;
         case 'm': mu = atof(optarg);        break;
         default:
-            fprintf(stderr,"error: modem_example, unknown option\n");
-            usage();
-            return 1;
+            exit(1);
         }
     }
 

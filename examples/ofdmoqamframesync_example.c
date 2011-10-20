@@ -118,8 +118,7 @@ int main(int argc, char *argv[])
         case 'F': dphi = atof(optarg);          break;
         case 'd': d = atoi(optarg);             break;
         default:
-            fprintf(stderr,"error: %s, unknown option\n", argv[0]);
-            exit(-1);
+            exit(1);
         }
     }
 
