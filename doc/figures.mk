@@ -550,7 +550,7 @@ figures.gen/filter_symsync_crcf_time.gnu : src/filter_symsync_crcf
 # 
 # fft_example
 #
-figures.gen/fft_example_time.gnu figures.gen/fft_example_freq : src/fft_example
+figures.gen/fft_example_time.gnu figures.gen/fft_example_freq.gnu : src/fft_example
 	./$<
 
 
