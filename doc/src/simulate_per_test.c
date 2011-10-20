@@ -87,8 +87,7 @@ int main(int argc, char*argv[]) {
         case 'S': opts.soft_decoding = 1;   break;
         case 'H': opts.soft_decoding = 0;   break;
         default:
-            fprintf(stderr,"error: unknown/invalid option\n");
-            exit(-1);
+            exit(1);
         }
     }
 

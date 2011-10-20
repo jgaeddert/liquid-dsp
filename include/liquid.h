@@ -3203,6 +3203,12 @@ void ofdmoqamframe_validate_sctype(unsigned char * _p,
                                    unsigned int * _M_pilot,
                                    unsigned int * _M_data);
 
+// print subcarrier allocation to screen
+//  _p      :   output subcarrier allocation array, [size: _M x 1]
+//  _M      :   number of subcarriers
+void ofdmoqamframe_print_sctype(unsigned int _M,
+                                unsigned char * _p);
+
 
 typedef struct ofdmoqamframegen_s * ofdmoqamframegen;
 
@@ -3368,42 +3374,56 @@ typedef struct NCO(_s) * NCO();                                 \
 NCO() NCO(_create)(liquid_ncotype _type);                       \
 void NCO(_destroy)(NCO() _q);                                   \
 void NCO(_print)(NCO() _q);                                     \
+                                                                \
+/* set phase/frequency to zero, reset pll filter        */      \
 void NCO(_reset)(NCO() _q);                                     \
-void NCO(_set_frequency)(NCO() _q, T _f);                       \
+                                                                \
+/* get/set/adjust internal frequency/phase              */      \
+T    NCO(_get_frequency)(   NCO() _q);                          \
+void NCO(_set_frequency)(   NCO() _q, T _f);                    \
 void NCO(_adjust_frequency)(NCO() _q, T _df);                   \
-void NCO(_set_phase)(NCO() _q, T _phi);                         \
-void NCO(_adjust_phase)(NCO() _q, T _dphi);                     \
+T    NCO(_get_phase)(       NCO() _q);                          \
+void NCO(_set_phase)(       NCO() _q, T _phi);                  \
+void NCO(_adjust_phase)(    NCO() _q, T _dphi);                 \
+                                                                \
+/* increment phase by internal phase step (frequency)   */      \
 void NCO(_step)(NCO() _q);                                      \
                                                                 \
-T NCO(_get_phase)(NCO() _q);                                    \
-T NCO(_get_frequency)(NCO() _q);                                \
-                                                                \
+/* compute trigonometric functions                      */      \
 T NCO(_sin)(NCO() _q);                                          \
 T NCO(_cos)(NCO() _q);                                          \
 void NCO(_sincos)(NCO() _q, T* _s, T* _c);                      \
 void NCO(_cexpf)(NCO() _q, TC * _y);                            \
                                                                 \
-/* pll : phase-locked loop */                                   \
+/* pll : phase-locked loop                              */      \
 void NCO(_pll_set_bandwidth)(NCO() _q, T _b);                   \
 void NCO(_pll_step)(NCO() _q, T _dphi);                         \
                                                                 \
-/* mixing functions */                                          \
-/* Rotate input vector up by NCO angle: */                      \
-/*      \f$\vec{y} = \vec{x}e^{j\theta}\f$ */                   \
+/* Rotate input sample up by NCO angle (no stepping)    */      \
 void NCO(_mix_up)(NCO() _q, TC _x, TC *_y);                     \
                                                                 \
-/* Rotate input vector down by NCO angle: */                    \
-/*      \f$\vec{y} = \vec{x}e^{-j\theta}\f$ */                  \
+/* Rotate input sample down by NCO angle (no stepping)  */      \
 void NCO(_mix_down)(NCO() _q, TC _x, TC *_y);                   \
                                                                 \
+/* Rotate input vector up by NCO angle (stepping)       */      \
+/*  _q      :   nco object                              */      \
+/*  _x      :   input vector [size: _N x 1]             */      \
+/*  _y      :   output vector [size: _N x 1]            */      \
+/*  _N      :   vector size                             */      \
 void NCO(_mix_block_up)(NCO() _q,                               \
                         TC *_x,                                 \
                         TC *_y,                                 \
                         unsigned int _N);                       \
+                                                                \
+/* Rotate input vector down by NCO angle (stepping)     */      \
+/*  _q      :   nco object                              */      \
+/*  _x      :   input vector [size: _N x 1]             */      \
+/*  _y      :   output vector [size: _N x 1]            */      \
+/*  _N      :   vector size                             */      \
 void NCO(_mix_block_down)(NCO() _q,                             \
                           TC *_x,                               \
                           TC *_y,                               \
-                          unsigned int _N);
+                          unsigned int _N);                     \
 
 // Define nco APIs
 LIQUID_NCO_DEFINE_API(NCO_MANGLE_FLOAT, float, liquid_float_complex)

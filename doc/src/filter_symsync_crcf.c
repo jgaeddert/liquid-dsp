@@ -70,7 +70,6 @@ int main(int argc, char*argv[]) {
         case 't':   tau         = atof(optarg);     break;
         case 'r':   r           = atof(optarg);     break;
         default:
-            fprintf(stderr,"error: %s, unknown option\n", argv[0]);
             exit(1);
         }
     }

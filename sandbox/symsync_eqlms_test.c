@@ -75,7 +75,6 @@ int main(int argc, char*argv[]) {
         case 'c':   hc_len      = atoi(optarg);     break;
         case 't':   tau         = atof(optarg);     break;
         default:
-            fprintf(stderr,"error: %s, unknown option\n", argv[0]);
             exit(1);
         }
     }

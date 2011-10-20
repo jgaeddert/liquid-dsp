@@ -90,8 +90,7 @@ int main(int argc, char *argv[]) {
         case 'S': soft_decoding = 1;                    break;
         case 'H': soft_decoding = 0;                    break;
         default:
-            printf("error: unknown option\n");
-            exit(-1);
+            exit(1);
         }
     }
 

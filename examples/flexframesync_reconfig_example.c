@@ -65,9 +65,7 @@ int main(int argc, char *argv[]) {
         case 's': SNRdB = atof(optarg);         break;
         case 'n': num_frames = atoi(optarg);    break;
         default:
-            printf("error: unknown option\n");
-            usage();
-            exit(-1);
+            exit(1);
         }
     }
 

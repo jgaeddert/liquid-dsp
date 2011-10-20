@@ -1851,14 +1851,16 @@ struct NCO(_s) {                                                \
     T pll_dtheta_base;  /* NCO base frequency           */      \
 };                                                              \
                                                                 \
+/* constrain phase/frequency to be in [-pi,pi)          */      \
 void NCO(_constrain_phase)(NCO() _q);                           \
 void NCO(_constrain_frequency)(NCO() _q);                       \
                                                                 \
+/* compute trigonometric functions for nco/vco type     */      \
 void NCO(_compute_sincos_nco)(NCO() _q);                        \
 void NCO(_compute_sincos_vco)(NCO() _q);                        \
                                                                 \
-/* phase-locked loop methods */                                 \
-void NCO(_pll_reset)(NCO() _q);
+/* reset internal phase-locked loop filter              */      \
+void NCO(_pll_reset)(NCO() _q);                                 \
 
 // Define nco internal APIs
 LIQUID_NCO_DEFINE_INTERNAL_API(NCO_MANGLE_FLOAT,

@@ -19,9 +19,6 @@
  * along with liquid.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef __DOTPROD_AUTOTEST_H__
-#define __DOTPROD_AUTOTEST_H__
-
 #include <string.h>
 
 #include "autotest/autotest.h"
@@ -254,6 +251,4 @@ void autotest_dotprod_rrrf_rand02()
     dotprod_rrrf_run(h,x,16,&y);
     CONTEND_DELTA(y,test,tol);
 }
-
-#endif 
 

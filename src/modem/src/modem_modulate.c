@@ -131,23 +131,21 @@ void modem_modulate_sqam32(modem _q,
 {
     // strip off most-significant two bits (quadrant)
     unsigned int quad = (_symbol_in >> 3) & 0x03;
-    float complex r = 1.0f;
+    
+    // strip off least-significant 3 bits
+    unsigned int s = _symbol_in & 0x07;
+    float complex p = _q->symbol_map[s];
+    
     switch (quad) {
-    case 0: r =  1.0f;          break;  // rotate by  0
-    case 1: r = -_Complex_I;    break;  // rotate by -pi/2
-    case 2: r =  _Complex_I;    break;  // rotate by +pi/2
-    case 3: r = -1.0f;          break;  // rotate by  pi
+    case 0: *_y =  p;           return;
+    case 1: *_y =  conjf(p);    return;
+    case 2: *_y = -conjf(p);    return;
+    case 3: *_y = -p;           return;
     default:
         // should never get to this point
         fprintf(stderr,"error: modem_modulate_sqam32(), logic error\n");
         exit(1);
     }
-
-    // strip off least-significant 3 bits
-    unsigned int s = _symbol_in & 0x07;
-    
-    // return symbol appropriately rotated
-    *_y = _q->symbol_map[s] * r;
 }
 
 // modulate symbol with 'square' 128-QAM
@@ -157,23 +155,21 @@ void modem_modulate_sqam128(modem _q,
 {
     // strip off most-significant two bits (quadrant)
     unsigned int quad = (_symbol_in >> 5) & 0x03;
-    float complex r = 1.0f;
+    
+    // strip off least-significant 5 bits
+    unsigned int s = _symbol_in & 0x1f;
+    float complex p = _q->symbol_map[s];
+    
     switch (quad) {
-    case 0: r =  1.0f;          break;  // rotate by  0
-    case 1: r = -_Complex_I;    break;  // rotate by -pi/2
-    case 2: r =  _Complex_I;    break;  // rotate by +pi/2
-    case 3: r = -1.0f;          break;  // rotate by  pi
+    case 0: *_y =  p;           return;
+    case 1: *_y =  conjf(p);    return;
+    case 2: *_y = -conjf(p);    return;
+    case 3: *_y = -p;           return;
     default:
         // should never get to this point
         fprintf(stderr,"error: modem_modulate_sqam128(), logic error\n");
         exit(1);
     }
-
-    // strip off least-significant 5 bits
-    unsigned int s = _symbol_in & 0x1f;
-    
-    // return symbol appropriately rotated
-    *_y = _q->symbol_map[s] * r;
 }
 
 // modulate DPSK

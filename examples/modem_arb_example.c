@@ -44,9 +44,7 @@ int main(int argc, char*argv[])
         case 'p': bps = atoi(optarg); break;
         case 'f': strncpy(filename,optarg,255); break;
         default:
-            fprintf(stderr,"error: modem_example, unknown option\n");
-            usage();
-            return 1;
+            exit(1);
         }
     }
 

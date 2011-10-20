@@ -99,7 +99,6 @@ int main(int argc, char*argv[])
         case 'K': K         = atof(optarg); break;
         case 'O': omegarice = atof(optarg); break;
         default:
-            fprintf(stderr,"error: %s, unknown/unsupported option\n", argv[0]);
             exit(1);
         }
     }

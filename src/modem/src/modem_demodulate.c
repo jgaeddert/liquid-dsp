@@ -157,12 +157,13 @@ void modem_demodulate_sqam32(modem _q,
     // ---+---
     // 11 | 01
     unsigned int quad = 2*(crealf(_x) < 0.0f) + (cimagf(_x) < 0.0f);
-    float complex r = 1.0f;
+    
+    float complex x_prime = _x;
     switch (quad) {
-    case 0: r =  1.0f;          break;  // rotate by  0
-    case 1: r =  _Complex_I;    break;  // rotate by +pi/2
-    case 2: r = -_Complex_I;    break;  // rotate by -pi/2
-    case 3: r = -1.0f;          break;  // rotate by  pi
+    case 0: x_prime = _x;           break;
+    case 1: x_prime =  conjf(_x);   break;
+    case 2: x_prime = -conjf(_x);   break;
+    case 3: x_prime = -_x;          break;
     default:
         // should never get to this point
         fprintf(stderr,"error: modem_demodulate_sqam32(), logic error\n");
@@ -170,7 +171,6 @@ void modem_demodulate_sqam32(modem _q,
     }
     //printf(" x = %12.8f +j*%12.8f, quad = %1u, r = %12.8f + j*%12.8f\n",
     //        crealf(_x), cimagf(_x), quad, crealf(r), cimagf(r));
-    float complex x_prime = _x * r; // de-rotate symbol to first quadrant
     assert(crealf(x_prime) >= 0.0f);
     assert(cimagf(x_prime) >= 0.0f);
 
@@ -206,12 +206,13 @@ void modem_demodulate_sqam128(modem _q,
     // ---+---
     // 11 | 01
     unsigned int quad = 2*(crealf(_x) < 0.0f) + (cimagf(_x) < 0.0f);
-    float complex r = 1.0f;
+    
+    float complex x_prime = _x;
     switch (quad) {
-    case 0: r =  1.0f;          break;  // rotate by  0
-    case 1: r =  _Complex_I;    break;  // rotate by +pi/2
-    case 2: r = -_Complex_I;    break;  // rotate by -pi/2
-    case 3: r = -1.0f;          break;  // rotate by  pi
+    case 0: x_prime = _x;           break;
+    case 1: x_prime =  conjf(_x);   break;
+    case 2: x_prime = -conjf(_x);   break;
+    case 3: x_prime = -_x;          break;
     default:
         // should never get to this point
         fprintf(stderr,"error: modem_demodulate_sqam128(), logic error\n");
@@ -219,7 +220,6 @@ void modem_demodulate_sqam128(modem _q,
     }
     //printf(" x = %12.8f +j*%12.8f, quad = %1u, r = %12.8f + j*%12.8f\n",
     //        crealf(_x), cimagf(_x), quad, crealf(r), cimagf(r));
-    float complex x_prime = _x * r; // de-rotate symbol to first quadrant
     assert(crealf(x_prime) >= 0.0f);
     assert(cimagf(x_prime) >= 0.0f);
 

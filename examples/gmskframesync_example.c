@@ -99,8 +99,7 @@ int main(int argc, char*argv[])
         case 's': SNRdB         = atof(optarg); break;
         case 'F': dphi          = atof(optarg); break;
         default:
-            fprintf(stderr,"error: %s, unknown option '%s'\n", argv[0], optarg);
-            exit(-1);
+            exit(1);
         }
     }
 

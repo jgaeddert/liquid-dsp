@@ -42,7 +42,6 @@ int main(int argc, char*argv[]) {
         case 'b': BT = atof(optarg); break;
         case 's': SNRdB = atof(optarg); break;
         default:
-            fprintf(stderr,"error: %s, unknown option\n", argv[0]);
             exit(1);
         }
     }

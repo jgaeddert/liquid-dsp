@@ -72,9 +72,7 @@ int main(int argc, char*argv[]) {
         case 'F':   dphi = atof(optarg);        break;
         case 'c':   cfo_compensation=1;         break;
         default:
-            fprintf(stderr,"error: %s, unknown option\n", argv[0]);
-            usage();
-            return 1;
+            exit(1);
         }
     }
 

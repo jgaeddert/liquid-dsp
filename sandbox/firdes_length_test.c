@@ -38,9 +38,7 @@ int main(int argc, char*argv[]) {
         case 'A': As_max = atof(optarg);    break;
         case 'n': num_As = atoi(optarg);    break;
         default:
-            fprintf(stderr,"error: %s, unknown option\n", argv[0]);
-            usage();
-            return 1;
+            exit(1);
         }
     }
 

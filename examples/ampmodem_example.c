@@ -67,7 +67,6 @@ int main(int argc, char*argv[]) {
             break;
         case 's':   suppressed_carrier = 1; break;
         default:
-            fprintf(stderr,"error: ampmodem_example, unknown option\n");
             usage();
             return 1;
         }

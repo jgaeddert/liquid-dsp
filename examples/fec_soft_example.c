@@ -54,7 +54,6 @@ int main(int argc, char*argv[])
             }
             break;
         default:
-            fprintf(stderr,"error: unknown option\n");
             exit(1);
         }
     }

@@ -18,9 +18,6 @@
  * along with liquid.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef __RANDOM_AUTOTEST_H__
-#define __RANDOM_AUTOTEST_H__
-
 #include "autotest/autotest.h"
 #include "liquid.h"
 
@@ -135,6 +132,4 @@ void autotest_randricekf()
     CONTEND_DELTA(m1, 0.92749f, tol);
     CONTEND_DELTA(m2, omega, tol);
 }
-
-#endif 
 

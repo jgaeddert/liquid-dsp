@@ -40,9 +40,7 @@ int main(int argc, char*argv[]) {
         case 'n': n = atoi(optarg);     break;
         case 'd': depth = atoi(optarg); break;
         default:
-            fprintf(stderr,"error: %s, unknown/unsupported option '%c'\n", argv[0], dopt);
-            usage();
-            return 1;
+            exit(1);
         }
     }
 

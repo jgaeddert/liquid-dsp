@@ -38,7 +38,6 @@ int main(int argc, char*argv[])
         case 'h':   usage();                return 0;
         case 'n':   n = atoi(optarg);       break;
         default:
-            fprintf(stderr,"error: %s, unknown option '%s'\n", argv[0], optarg);
             exit(1);
         }
     }

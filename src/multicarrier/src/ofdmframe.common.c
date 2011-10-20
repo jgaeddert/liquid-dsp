@@ -181,26 +181,35 @@ void ofdmframe_init_default_sctype(unsigned int _M,
     }
 
     unsigned int i;
+    unsigned int M2 = _M/2;
 
     // compute guard band
-    unsigned int g = _M / 10;
-    if (g < 2) g = 2;
+    unsigned int G = _M / 10;
+    if (G < 2) G = 2;
 
-    // compute upper|lower band-edge
-    unsigned int i0 = (_M/2) - g;
-    unsigned int i1 = (_M/2) + g;
-    unsigned int pilot_spacing = 8;
+    // designate pilot spacing
+    unsigned int P = (_M > 34) ? 8 : 4;
+    unsigned int P2 = P/2;
 
-    for (i=0; i<_M; i++) {
+    // initialize as NULL
+    for (i=0; i<_M; i++)
+        _p[i] = OFDMFRAME_SCTYPE_NULL;
 
-        if (i==0 || (i>i0 && i<i1))
-            _p[i] = OFDMFRAME_SCTYPE_NULL;
-        //else if (i==i0 || i==i1)
-        //    _p[i] = OFDMFRAME_SCTYPE_PILOT;
-        else if ( (i%pilot_spacing)==0 )
+    // upper band
+    for (i=1; i<M2-G; i++) {
+        if ( ((i+P2)%P) == 0 )
             _p[i] = OFDMFRAME_SCTYPE_PILOT;
         else
             _p[i] = OFDMFRAME_SCTYPE_DATA;
+    }
+
+    // lower band
+    for (i=1; i<M2-G; i++) {
+        unsigned int k = _M - i;
+        if ( ((i+P2)%P) == 0 )
+            _p[k] = OFDMFRAME_SCTYPE_PILOT;
+        else
+            _p[k] = OFDMFRAME_SCTYPE_DATA;
     }
 }
 
@@ -241,5 +250,32 @@ void ofdmframe_validate_sctype(unsigned char * _p,
     *_M_null  = M_null;
     *_M_pilot = M_pilot;
     *_M_data  = M_data;
+}
+
+// print subcarrier allocation to screen
+//
+// key: '.' (null), 'P' (pilot), '+' (data)
+// .+++P+++++++P.........P+++++++P+++
+//
+void ofdmframe_print_sctype(unsigned char * _p,
+                            unsigned int    _M)
+{
+    unsigned int i;
+
+    printf("[");
+    for (i=0; i<_M; i++) {
+        unsigned int k = (i + _M/2) % _M;
+
+        switch (_p[k]) {
+        case OFDMFRAME_SCTYPE_NULL:     printf(".");    break;
+        case OFDMFRAME_SCTYPE_PILOT:    printf("|");    break;
+        case OFDMFRAME_SCTYPE_DATA:     printf("+");    break;
+        default:
+            fprintf(stderr,"error: ofdmframe_print_default_sctype(), invalid subcarrier type\n");
+            exit(1);
+        }
+    }
+
+    printf("]\n");
 }
 

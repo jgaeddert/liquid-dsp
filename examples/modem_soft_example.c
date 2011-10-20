@@ -62,9 +62,7 @@ int main(int argc, char*argv[])
             bps = atoi(optarg);
             break;
         default:
-            fprintf(stderr,"error: modem_example, unknown option\n");
-            usage();
-            return 1;
+            exit(1);
         }
     }
 

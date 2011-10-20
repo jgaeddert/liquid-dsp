@@ -19,9 +19,6 @@
  * along with liquid.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef __FFT_AUTOTEST_H__
-#define __FFT_AUTOTEST_H__
-
 #include "autotest/autotest.h"
 #include "liquid.h"
 
@@ -84,6 +81,4 @@ void autotest_fft_16()      { fft_test(x16,     test16,     16);    }
 void autotest_fft_20()      { fft_test(x20,     test20,     20);    }
 void autotest_fft_32()      { fft_test(x32,     test32,     32);    }
 void autotest_fft_64()      { fft_test(x64,     test64,     64);    }
-
-#endif 
 

@@ -49,7 +49,6 @@ int main(int argc, char*argv[])
         case 'b': bt = atof(optarg);            break;
         case 'D': D = atoi(optarg);             break;
         default:
-            fprintf(stderr,"error: %s, unknown option: %c\n", argv[0], dopt);
             exit(1);
         }
     }

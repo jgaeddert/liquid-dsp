@@ -36,9 +36,7 @@ int main(int argc, char*argv[]) {
         case 'm': mu = atof(optarg);            break;
         case 'o': strncpy(filename,optarg,255); break;
         default:
-            fprintf(stderr,"error: %s, unknown option\n", argv[0]);
-            usage();
-            return 1;
+            exit(1);
         }
     }
 

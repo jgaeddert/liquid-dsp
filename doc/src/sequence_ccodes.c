@@ -39,7 +39,6 @@ int main(int argc, char*argv[])
             filename[63] = '\0';
             break;
         default:
-            fprintf(stderr,"error: %s, unknown option '%s'\n", argv[0], optarg);
             exit(1);
         }
     }

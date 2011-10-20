@@ -108,9 +108,7 @@ int main(int argc, char*argv[]) {
             }
             break;
         default:
-            fprintf(stderr,"error: iirdes_example, unknown option\n");
-            usage();
-            return 1;
+            exit(1);
         }
     }
 
