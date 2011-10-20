@@ -338,8 +338,10 @@ void ofdmframesync_execute(ofdmframesync _q,
         x = _x[i];
 
         // correct for carrier frequency offset
-        nco_crcf_mix_down(_q->nco_rx, x, &x);
-        nco_crcf_step(_q->nco_rx);
+        if (_q->state != OFDMFRAMESYNC_STATE_SEEKPLCP) {
+            nco_crcf_mix_down(_q->nco_rx, x, &x);
+            nco_crcf_step(_q->nco_rx);
+        }
 
         // save input sample to buffer
         windowcf_push(_q->input_buffer,x);
@@ -409,12 +411,12 @@ void ofdmframesync_execute_seekplcp(ofdmframesync _q)
 
     // estimate gain
     unsigned int i;
-    // TODO : decimate input ?
     float g = 0.0f;
-    for (i=_q->cp_len; i<_q->M + _q->cp_len; i++)
-        g += crealf( rc[i]*conjf(rc[i]) );
-    g = 1.0f / sqrtf(g / (float)(_q->M) );
-    g = g*g;
+    for (i=_q->cp_len; i<_q->M + _q->cp_len; i++) {
+        // compute |rc[i]|^2 efficiently
+        g += crealf(rc[i])*crealf(rc[i]) + cimagf(rc[i])*cimagf(rc[i]);
+    }
+    g = (float)(_q->M) / g;
 
     // TODO : squelch here
     if ( -10*log10f( sqrtf(g) ) < _q->squelch_threshold &&
