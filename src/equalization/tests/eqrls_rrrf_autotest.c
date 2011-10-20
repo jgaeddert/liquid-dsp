@@ -19,9 +19,6 @@
  * along with liquid.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef __EQRLS_RRRF_AUTOTEST_H__
-#define __EQRLS_RRRF_AUTOTEST_H__
-
 #include "autotest/autotest.h"
 #include "liquid.h"
 
@@ -88,7 +85,4 @@ void autotest_eqrls_rrrf_01()
     firfilt_rrrf_destroy(f);
     eqrls_rrrf_destroy(eq);
 }
-
-
-#endif // __EQRLS_RRRF_AUTOTEST_H__
 

@@ -18,9 +18,6 @@
  * along with liquid.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef __COUNT_BITS_AUTOTEST_H__
-#define __COUNT_BITS_AUTOTEST_H__
-
 #include "autotest/autotest.h"
 #include "liquid.internal.h"
 
@@ -183,7 +180,4 @@ void autotest_msb_index() {
     CONTEND_EQUALITY( liquid_msb_index(0x40000000), 31 );
     CONTEND_EQUALITY( liquid_msb_index(0x80000000), 32 );
 }
-
-
-#endif // __COUNT_BITS_AUTOTEST_H__
 

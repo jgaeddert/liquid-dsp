@@ -19,9 +19,6 @@
  * along with liquid.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef __FIRFILT_CRCF_AUTOTEST_H__
-#define __FIRFILT_CRCF_AUTOTEST_H__
-
 #include "autotest/autotest.h"
 #include "liquid.h"
 
@@ -110,7 +107,4 @@ void autotest_firfilt_crcf_noise_01()
 
     firfilt_crcf_destroy(f);
 }
-
-
-#endif // __FIRFILT_CRCF_AUTOTEST_H__
 

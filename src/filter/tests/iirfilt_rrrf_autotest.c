@@ -18,9 +18,6 @@
  * along with liquid.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef __IIRFILT_RRRF_AUTOTEST_H__
-#define __IIRFILT_RRRF_AUTOTEST_H__
-
 #include "autotest/autotest.h"
 #include "liquid.h"
 
@@ -119,6 +116,4 @@ void autotest_step_response_order3()
 
     iirfilt_rrrf_destroy(f);
 }
-
-#endif // __IIRFILT_RRRF_AUTOTEST_H__
 

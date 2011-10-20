@@ -18,9 +18,6 @@
  * along with liquid.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef __IIRFILT_CRCF_AUTOTEST_H__
-#define __IIRFILT_CRCF_AUTOTEST_H__
-
 #include "autotest/autotest.h"
 #include "liquid.h"
 
@@ -93,6 +90,4 @@ void autotest_iirfilt_crcf_noise_01()
 
     iirfilt_crcf_destroy(f);
 }
-
-#endif // __IIRFILT_CRCF_AUTOTEST_H__
 

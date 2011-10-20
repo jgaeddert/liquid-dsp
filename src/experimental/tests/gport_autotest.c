@@ -19,9 +19,6 @@
  * along with liquid.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef __GPORT_AUTOTEST_H__
-#define __GPORT_AUTOTEST_H__
-
 #include "autotest/autotest.h"
 #include "liquid.experimental.h"
 
@@ -180,6 +177,4 @@ void autotest_gport_produce_available()
 
     gport_destroy(p);
 }
-
-#endif // __GPORT_AUTOTEST_H__
 
