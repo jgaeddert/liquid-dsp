@@ -653,11 +653,11 @@ void ofdmframesync_execute_plcplong(ofdmframesync _q)
         _q->timer = _q->M + _q->cp_len + _q->backoff;
         _q->num_symbols = 0;
 
-        // normalize gain by...
-        float phi = (float)(_q->backoff)*2.0f*M_PI/(float)(_q->M);
+        // normalize gain by subcarriers, apply timing backoff correction
+        float g = (float)(_q->M) / sqrtf(_q->M_pilot + _q->M_data);
         for (i=0; i<_q->M; i++) {
-            _q->G[i] /= sqrtf(_q->M_pilot + _q->M_data) / (float)(_q->M);
-            _q->G[i] *= liquid_cexpjf(i*phi);
+            _q->G[i] *= g;          // gain due to relative subcarrier allocation
+            _q->G[i] *= _q->B[i];   // timing backoff correction
         }
 
 #if 0
