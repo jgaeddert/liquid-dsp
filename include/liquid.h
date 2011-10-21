@@ -3289,8 +3289,8 @@ void ofdmframe_validate_sctype(unsigned char * _p,
 // print subcarrier allocation to screen
 //  _p      :   output subcarrier allocation array, [size: _M x 1]
 //  _M      :   number of subcarriers
-void ofdmframe_print_sctype(unsigned int _M,
-                            unsigned char * _p);
+void ofdmframe_print_sctype(unsigned char * _p,
+                            unsigned int    _M);
 
 
 // 
