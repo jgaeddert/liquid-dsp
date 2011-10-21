@@ -30,11 +30,21 @@
 
 #define DEBUG_FEC_GOLAY 1
 
-unsigned char golay_p0[12] = {1, 0, 0, 0, 1, 1, 1, 0, 1, 1, 0, 1};
-
 // P matrix [12 x 12]
-unsigned char P[144];
-void golay_init_P();
+unsigned char P[144] = {
+    1, 0, 0, 0, 1, 1, 1, 0, 1, 1, 0,  1,
+    0, 0, 0, 1, 1, 1, 0, 1, 1, 0, 1,  1,
+    0, 0, 1, 1, 1, 0, 1, 1, 0, 1, 0,  1,
+    0, 1, 1, 1, 0, 1, 1, 0, 1, 0, 0,  1,
+    1, 1, 1, 0, 1, 1, 0, 1, 0, 0, 0,  1,
+    1, 1, 0, 1, 1, 0, 1, 0, 0, 0, 1,  1,
+    1, 0, 1, 1, 0, 1, 0, 0, 0, 1, 1,  1,
+    0, 1, 1, 0, 1, 0, 0, 0, 1, 1, 1,  1,
+    1, 1, 0, 1, 0, 0, 0, 1, 1, 1, 0,  1,
+    1, 0, 1, 0, 0, 0, 1, 1, 1, 0, 1,  1,
+    0, 1, 0, 0, 0, 1, 1, 1, 0, 1, 1,  1,
+
+    1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,  0};
 
 // generator matrix [12 x 24]
 unsigned char G[288];
@@ -124,7 +134,6 @@ unsigned int vector_weight(unsigned char * _x,
 int main(int argc, char*argv[])
 {
     // initialize matrices
-    golay_init_P();
     golay_init_G();
     golay_init_H();
 
@@ -216,7 +225,7 @@ int main(int argc, char*argv[])
         unsigned int p3_index = 0;
         for (j=0; j<12; j++) {
             for (i=0; i<12; i++)
-                spj[i] = (s[i] + golay_p0[(i+j)%12]) % 2;
+                spj[i] = (s[i] + P[12*j+i]) % 2;
             unsigned int wj = vector_weight(spj,12);
             printf("    w(s + p[%2u]) = %2u%s\n", j, wj, wj <= 2 ? " *" : "");
             if (wj <= 2) {
@@ -230,7 +239,7 @@ int main(int argc, char*argv[])
             // vector found!
             printf("    w(s + p[%2u]) <= 2: estimating error vector as [s+p[%2u],u[%2u]]\n", p3_index, p3_index, p3_index);
             for (i=0; i<12; i++)
-                e_hat[i] = (s[i] + golay_p0[(i+p3_index)%12]) % 2;
+                e_hat[i] = (s[i] + P[12*p3_index + i]) % 2;
             for (i=0; i<12; i++)
                 e_hat[i+12] = (i == p3_index) ? 1 : 0;
 
@@ -259,7 +268,7 @@ int main(int argc, char*argv[])
                 unsigned int p6_index = 0;
                 for (j=0; j<12; j++) {
                     for (i=0; i<12; i++)
-                        sPpj[i] = (sP[i] + golay_p0[(i+j)%12]) % 2;
+                        sPpj[i] = (sP[i] + P[12*j + i]) % 2;
                     unsigned int wj = vector_weight(sPpj,12);
                     printf("    w(s*P + p[%2u]) = %2u%s\n", j, wj, wj == 2 ? " *" : "");
                     if (wj == 2) {
@@ -275,7 +284,7 @@ int main(int argc, char*argv[])
                     for (i=0; i<12; i++)
                         e_hat[i] = (i == p6_index) ? 1 : 0;
                     for (i=0; i<12; i++)
-                        e_hat[i+12] = (sP[i] + golay_p0[(i+p6_index)%12]) % 2;
+                        e_hat[i+12] = (sP[i] + P[12*p6_index+i]) % 2;
                 } else {
                     // step 7: decoding error
                     printf("  **** decoding error\n");
@@ -302,17 +311,6 @@ int main(int argc, char*argv[])
     return 0;
 }
 
-// initialize P matrix [12 x 12]
-void golay_init_P()
-{
-    unsigned int i;
-    unsigned int j;
-    for (i=0; i<12; i++) {
-        for (j=0; j<12; j++)
-            P[i*24 + j] = golay_p0[(j+i)%12];
-    }
-}
-
 // initialize generator matrix as G = [P I_12]
 void golay_init_G()
 {
@@ -320,7 +318,7 @@ void golay_init_G()
     unsigned int j;
     for (i=0; i<12; i++) {
         for (j=0; j<12; j++)
-            G[i*24 + j] = golay_p0[(j+i)%12];
+            G[i*24 + j] = P[i*12 + j];
 
         for (j=0; j<12; j++)
             G[i*24 + j + 12] = (i==j) ? 1 : 0;
@@ -337,7 +335,7 @@ void golay_init_H()
             H[i*24+j] = (i==j) ? 1 : 0;
 
         for (j=0; j<12; j++)
-            H[i*24 + j + 12] = golay_p0[(j+i)%12];
+            H[i*24 + j + 12] = P[i*12 + j];
     }
 }
 
