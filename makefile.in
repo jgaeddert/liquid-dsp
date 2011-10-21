@@ -244,6 +244,7 @@ fec_autotests :=						\
 	src/fec/tests/crc_autotest.c				\
 	src/fec/tests/fec_autotest.c				\
 	src/fec/tests/fec_soft_autotest.c			\
+	src/fec/tests/fec_golay2412_autotest.c			\
 	src/fec/tests/fec_hamming74_autotest.c			\
 	src/fec/tests/fec_hamming84_autotest.c			\
 	src/fec/tests/fec_hamming128_autotest.c			\
