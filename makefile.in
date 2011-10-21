@@ -208,6 +208,7 @@ fec_objects :=							\
 	src/fec/src/fec_conv_poly.o				\
 	src/fec/src/fec_conv_pmatrix.o				\
 	src/fec/src/fec_conv_punctured.o			\
+	src/fec/src/fec_golay2412.o				\
 	src/fec/src/fec_hamming74.o				\
 	src/fec/src/fec_hamming84.o				\
 	src/fec/src/fec_hamming128.o				\
@@ -243,6 +244,7 @@ fec_autotests :=						\
 	src/fec/tests/crc_autotest.c				\
 	src/fec/tests/fec_autotest.c				\
 	src/fec/tests/fec_soft_autotest.c			\
+	src/fec/tests/fec_golay2412_autotest.c			\
 	src/fec/tests/fec_hamming74_autotest.c			\
 	src/fec/tests/fec_hamming84_autotest.c			\
 	src/fec/tests/fec_hamming128_autotest.c			\
@@ -1264,6 +1266,8 @@ sandbox_programs =						\
 	sandbox/ellip_test					\
 	sandbox/eqlms_cccf_test					\
 	sandbox/fecsoft_ber_test				\
+	sandbox/fec_golay2412_test				\
+	sandbox/fec_golay_test					\
 	sandbox/fec_hamming3126_example				\
 	sandbox/fec_hamming128_gentab				\
 	sandbox/fec_hamming128_example				\
