@@ -208,6 +208,7 @@ fec_objects :=							\
 	src/fec/src/fec_conv_poly.o				\
 	src/fec/src/fec_conv_pmatrix.o				\
 	src/fec/src/fec_conv_punctured.o			\
+	src/fec/src/fec_golay2412.o				\
 	src/fec/src/fec_hamming74.o				\
 	src/fec/src/fec_hamming84.o				\
 	src/fec/src/fec_hamming128.o				\
