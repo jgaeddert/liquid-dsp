@@ -56,6 +56,20 @@ unsigned int golay2412_H[12] = {
     0x00080ed1, 0x00040da3, 0x00020b47, 0x0001068f,
     0x00008d1d, 0x00004a3b, 0x00002477, 0x00001ffe};
 
+// multiply input vector with parity check matrix, H
+unsigned int golay2412_matrix_mul(unsigned int   _v,
+                                  unsigned int * _A,
+                                  unsigned int   _n)
+{
+    unsigned int x = 0;
+    unsigned int i;
+    for (i=0; i<_n; i++) {
+        x <<= 1;
+        x |= liquid_count_ones_mod2( _A[i] & _v );
+    }
+    return x;
+}
+
 unsigned int fec_golay2412_encode_symbol(unsigned int _sym_dec)
 {
     // validate input
@@ -65,13 +79,23 @@ unsigned int fec_golay2412_encode_symbol(unsigned int _sym_dec)
     }
 
     // compute encoded/transmitted message: v = m*G
-    unsigned int sym_enc = 0;
+    return golay2412_matrix_mul(_sym_dec, golay2412_Gt, 24);
+}
+
+// search for p[i] such that w(v+p[i]) <= 2, return -1 on fail
+int golay2412_parity_search(unsigned int _v)
+{
+    //assert( _v < (1<<12) );
+
     unsigned int i;
-    for (i=0; i<24; i++) {
-        sym_enc <<= 1;
-        sym_enc |= liquid_count_ones_mod2(golay2412_Gt[i] & _sym_dec);
+    for (i=0; i<12; i++) {
+        unsigned int wj = liquid_count_ones(_v ^ golay2412_P[i]);
+        if (wj <= 2)
+            return i;
     }
-    return sym_enc;
+
+    // could not find p[i] to satisfy criteria
+    return -1;
 }
 
 unsigned int fec_golay2412_decode_symbol(unsigned int _sym_enc)
@@ -82,9 +106,6 @@ unsigned int fec_golay2412_decode_symbol(unsigned int _sym_enc)
         exit(1);
     }
 
-    unsigned int i;
-
-#if 0
     // state variables
     unsigned int s=0;       // syndrome vector
     unsigned int e_hat=0;   // estimated error vector
@@ -92,19 +113,95 @@ unsigned int fec_golay2412_decode_symbol(unsigned int _sym_enc)
     unsigned int m_hat=0;   // estimated original message
     
     // compute syndrome vector, s = r*H^T = ( H*r^T )^T
-    for (i=0; i<12; i++) {
-        s <<= 1;
-        s |= liquid_count_ones_mod2( golay2412_H[i] & _sym_enc );
+    s = golay2412_matrix_mul(_sym_enc, golay2412_H, 12);
+#if DEBUG_FEC_GOLAY2412
+    printf("s (syndrome vector): "); liquid_print_bitstring(s,12); printf("\n");
+#endif
+
+    // compute weight of s
+    unsigned int ws = liquid_count_ones(s);
+#if DEBUG_FEC_GOLAY2412
+    printf("w(s) = %u\n", ws);
+#endif
+
+    // step 2:
+    e_hat = 0;
+    if (ws <= 3) {
+#if DEBUG_FEC_GOLAY2412
+        printf("    w(s) <= 3: estimating error vector as [s, 0(12)]\n");
+#endif
+        // set e_hat = [s 0(12)]
+        e_hat = (s << 12) & 0xfff000;
+    } else {
+        // step 3: search for p[i] s.t. w(s+p[i]) <= 2
+#if DEBUG_FEC_GOLAY2412
+        printf("    searching for w(s + p_i) <= 2...\n");
+#endif
+        int s_index = golay2412_parity_search(s);
+
+        if (s_index >= 0) {
+            // vector found!
+#if DEBUG_FEC_GOLAY2412
+            printf("    w(s + p[%2u]) <= 2: estimating error vector as [s+p[%2u],u[%2u]]\n", s_index, s_index, s_index);
+#endif
+            // NOTE : uj = 1 << (12-j-1)
+            e_hat = ((s ^ golay2412_P[s_index]) << 12) | (1 << (11-s_index));
+        } else {
+            // step 4: compute s*P
+            unsigned int sP = golay2412_matrix_mul(s, golay2412_P, 12);
+#if DEBUG_FEC_GOLAY2412
+            printf("s*P: "); liquid_print_bitstring(sP,12); printf("\n");
+#endif
+
+            unsigned int wsP = liquid_count_ones(sP);
+#if DEBUG_FEC_GOLAY2412
+            printf("w(s*P) = %u\n", wsP);
+#endif
+
+            if (wsP == 2 || wsP == 3) {
+                // step 5: set e = [0, s*P]
+#if DEBUG_FEC_GOLAY2412
+                printf("    w(s*P) in [2,3]: estimating error vector as [0(12), s*P]\n");
+#endif
+                e_hat = sP;
+            } else {
+                // step 6: search for p[i] s.t. w(s*P + p[i]) == 2...
+
+#if DEBUG_FEC_GOLAY2412
+                printf("    searching for w(s*P + p_i) == 2...\n");
+#endif
+                int sP_index = golay2412_parity_search(sP);
+
+                if (sP_index >= 0) {
+                    // vector found!
+#if DEBUG_FEC_GOLAY2412
+                    printf("    w(s*P + p[%2u]) == 2: estimating error vector as [u[%2u],s*P+p[%2u]]\n", sP_index, sP_index, sP_index);
+#endif
+                    // NOTE : uj = 1 << (12-j-1)
+                    //      [      uj << 1 2    ] [    sP + p[j]    ]
+                    e_hat = (1 << (23-sP_index)) | (sP ^ golay2412_P[sP_index]);
+                } else {
+                    // step 7: decoding error
+#if DEBUG_FEC_GOLAY2412
+                    printf("  **** decoding error\n");
+#endif
+                }
+            }
+        }
     }
-    printf("s (syndrome vector)     :\n");
-    liquid_print_bitstring(s,12);
+
+    // step 8: compute estimated transmitted message: v_hat = r + e_hat
+    v_hat = _sym_enc ^ e_hat;
+#if DEBUG_FEC_GOLAY2412
+    printf("r (recevied vector):            "); liquid_print_bitstring(_sym_enc,24); printf("\n");
+    printf("e-hat (estimated error vector): "); liquid_print_bitstring(e_hat,24);    printf("\n");
+    printf("v-hat (estimated tx vector):    "); liquid_print_bitstring(v_hat,24);    printf("\n");
+#endif
+    
+    // compute estimated original message: (last 12 bits of encoded message)
+    m_hat = v_hat & ((1<<12)-1);
 
     return m_hat;
-#else
-    // no correction (strip off last 12 bits)
-    unsigned int sym_dec = _sym_enc & ((1<<12)-1);
-    return _sym_enc & ((1<<12)-1);
-#endif
 }
 
 // create Golay(24,12) codec object

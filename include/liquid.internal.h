@@ -378,6 +378,14 @@ extern unsigned int golay2412_P[12];
 extern unsigned int golay2412_Gt[24];
 extern unsigned int golay2412_H[12];
 
+// multiply input vector with matrix
+unsigned int golay2412_matrix_mul(unsigned int   _v,
+                                  unsigned int * _A,
+                                  unsigned int   _n);
+
+// search for p[i] such that w(v+p[i]) <= 2, return -1 on fail
+int golay2412_parity_search(unsigned int _v);
+
 fec fec_golay2412_create(void *_opts);
 void fec_golay2412_destroy(fec _q);
 void fec_golay2412_print(fec _q);
