@@ -370,6 +370,34 @@ unsigned int fec_hamming3126_encode_symbol(unsigned int _sym_dec);
 unsigned int fec_hamming3126_decode_symbol(unsigned int _sym_enc);
 
 
+// Golay(24,12)
+
+unsigned int fec_golay2412_encode_symbol(unsigned int _sym_dec);
+unsigned int fec_golay2412_decode_symbol(unsigned int _sym_enc);
+extern unsigned int golay2412_P[12];
+extern unsigned int golay2412_Gt[24];
+extern unsigned int golay2412_H[12];
+
+// multiply input vector with matrix
+unsigned int golay2412_matrix_mul(unsigned int   _v,
+                                  unsigned int * _A,
+                                  unsigned int   _n);
+
+// search for p[i] such that w(v+p[i]) <= 2, return -1 on fail
+int golay2412_parity_search(unsigned int _v);
+
+fec fec_golay2412_create(void *_opts);
+void fec_golay2412_destroy(fec _q);
+void fec_golay2412_print(fec _q);
+void fec_golay2412_encode(fec _q,
+                          unsigned int _dec_msg_len,
+                          unsigned char * _msg_dec,
+                          unsigned char * _msg_enc);
+void fec_golay2412_decode(fec _q,
+                          unsigned int _dec_msg_len,
+                          unsigned char * _msg_enc,
+                          unsigned char * _msg_dec);
+
 // Convolutional: r1/2 K=7
 //                r1/2 K=9
 //                r1/3 K=9
