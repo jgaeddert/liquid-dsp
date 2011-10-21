@@ -161,7 +161,7 @@ int main(int argc, char*argv[])
     unsigned char s[12];    // syndrome vector
     unsigned char e_hat[24];// estimated error vector
     unsigned char v_hat[24];// estimated transmitted message
-    //unsigned char m_hat[24];// estimated original message
+    unsigned char m_hat[24];// estimated original message
 
     // compute (random) original message
     for (i=0; i<12; i++)
@@ -302,11 +302,21 @@ int main(int argc, char*argv[])
     matrix2_print(v,    1,24);
 
     // compute errors between v, v_hat
-    unsigned int num_errors = 0;
+    unsigned int num_errors_v = 0;
     for (i=0; i<24; i++)
-        num_errors += v[i] == v_hat[i] ? 0 : 1;
+        num_errors_v += v[i] == v_hat[i] ? 0 : 1;
     printf("\n");
-    printf("decoding errors : %2u / 24\n", num_errors);
+    printf("decoding errors (encoded)  : %2u / 24\n", num_errors_v);
+
+    // compute estimated original message: (last 12 bits of encoded message)
+    for (i=0; i<12; i++)
+        m_hat[i] = v_hat[i+12];
+
+    // compute errors between m, m_hat
+    unsigned int num_errors_m = 0;
+    for (i=0; i<12; i++)
+        num_errors_m += m[i] == m_hat[i] ? 0 : 1;
+    printf("decoding errors (original) : %2u / 12\n", num_errors_m);
 
     return 0;
 }
