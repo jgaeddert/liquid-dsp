@@ -1264,6 +1264,7 @@ sandbox_programs =						\
 	sandbox/ellip_test					\
 	sandbox/eqlms_cccf_test					\
 	sandbox/fecsoft_ber_test				\
+	sandbox/fec_golay2412_test				\
 	sandbox/fec_hamming3126_example				\
 	sandbox/fec_hamming128_gentab				\
 	sandbox/fec_hamming128_example				\
