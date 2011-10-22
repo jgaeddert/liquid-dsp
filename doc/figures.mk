@@ -95,6 +95,8 @@ local_pdffiles :=					\
 	figures.gen/filter_symsync_crcf_const.pdf	\
 	figures.gen/filter_symsync_crcf_time.pdf	\
 							\
+	figures.gen/ofdmflexframesync_performance.pdf	\
+							\
 	figures.gen/interleaver_scatterplot_i0.pdf	\
 	figures.gen/interleaver_scatterplot_i1.pdf	\
 	figures.gen/interleaver_scatterplot_i2.pdf	\
@@ -557,6 +559,14 @@ figures.gen/fft_example_time.gnu figures.gen/fft_example_freq.gnu : src/fft_exam
 ##
 ## MODULE : framing
 ##
+
+# 
+# ofdmflexframesync_performance
+#
+
+figures.gen/ofdmflexframesync_performance.dat \
+figures.gen/ofdmflexframesync_performance.gnu : figures.gen/% : data/ofdmflexframe/%
+	cp $< $@
 
 ##
 ## MODULE : interleaver
