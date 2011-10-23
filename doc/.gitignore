@@ -46,6 +46,7 @@ src/filter_rnyquist
 src/filter_symsync_crcf
 src/interleaver_scatterplot
 src/math_poly_examples
+src/math_polyfit_lagrange
 src/math_window
 src/modem_demodsoft
 src/modem.gendata
