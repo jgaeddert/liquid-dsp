@@ -65,7 +65,21 @@ unsigned int golay2412_matrix_mul(unsigned int   _v,
     unsigned int i;
     for (i=0; i<_n; i++) {
         x <<= 1;
+#if 0
+        // compute dot product mod 2
         x |= liquid_count_ones_mod2( _A[i] & _v );
+#else
+        // same as above, but exploit the fact that vectors are at
+        // most 24 bits long; liquid_count_ones_mo2() assumes full
+        // 32- or 64-bit integer
+        unsigned int c = 0;
+        unsigned int p = _A[i] & _v;
+        c += liquid_c_ones[ p & 0xff ]; p >>= 8;
+        c += liquid_c_ones[ p & 0xff ]; p >>= 8;
+        c += liquid_c_ones[ p & 0xff ];
+
+        x |= c & 0x0001;    // mod 2
+#endif
     }
     return x;
 }
