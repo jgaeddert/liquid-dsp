@@ -72,8 +72,8 @@ struct ofdmframesync_s {
 
     // gain
     float g0;               // nominal gain (coarse initial estimate)
-    float complex * G0;     // complex subcarrier gain estimate, S1[0]
-    float complex * G1;     // complex subcarrier gain estimate, S1[1]
+    float complex * G0;     // complex subcarrier gain estimate, S0[0]
+    float complex * G1;     // complex subcarrier gain estimate, S0[1]
     float complex * G;      // complex subcarrier gain estimate
     float complex * B;      // subcarrier phase rotation due to backoff
     float complex * R;      // 
@@ -829,6 +829,11 @@ void ofdmframesync_estimate_gain_S1(ofdmframesync _q,
 void ofdmframesync_estimate_eqgain(ofdmframesync _q,
                                    unsigned int _ntaps)
 {
+#if DEBUG_OFDMFRAMESYNC
+    // copy pre-smoothed gain
+    memmove(_q->G_hat, _q->G, _q->M*sizeof(float complex));
+#endif
+
     // validate input
     if (_ntaps == 0 || _ntaps > _q->M) {
         fprintf(stderr, "error: ofdmframesync_estimate_eqgain(), ntaps must be in [1,M]\n");
