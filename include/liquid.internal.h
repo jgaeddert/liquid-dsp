@@ -2096,6 +2096,11 @@ extern const unsigned char liquid_c_ones[256];
     liquid_c_ones[  (x)      & 0xff ] +         \
     liquid_c_ones[ ((x)>>8)  & 0xff ])
 
+#define liquid_count_ones_uint24(x) (           \
+    liquid_c_ones[  (x)      & 0xff ] +         \
+    liquid_c_ones[ ((x)>> 8) & 0xff ] +         \
+    liquid_c_ones[ ((x)>>16) & 0xff ])
+
 #define liquid_count_ones_uint32(x) (           \
     liquid_c_ones[  (x)      & 0xff ] +         \
     liquid_c_ones[ ((x)>> 8) & 0xff ] +         \
