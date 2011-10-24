@@ -156,7 +156,7 @@ unsigned char smatrix_get(smatrix _q,
                           unsigned int _n)
 {
     // validate input
-    if (_m > _q->M || _n > _q->N) {
+    if (_m >= _q->M || _n >= _q->N) {
         fprintf(stderr,"error: smatrix_get(), index exceeds matrix dimension\n");
         exit(1);
     }
@@ -175,7 +175,7 @@ void smatrix_set(smatrix _q,
                  unsigned int _n)
 {
     // validate input
-    if (_m > _q->M || _n > _q->N) {
+    if (_m >= _q->M || _n >= _q->N) {
         fprintf(stderr,"error: smatrix_set(), index exceeds matrix dimension\n");
         exit(1);
     }
