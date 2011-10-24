@@ -266,6 +266,52 @@ void smatrix_eye(smatrix _q)
         smatrix_set(_q, i, i);
 }
 
+// multiply two sparse binary matrices
+void smatrix_mul(smatrix _a,
+                 smatrix _b,
+                 smatrix _c)
+{
+    // validate input
+    if (_c->M != _a->M || _c->N != _b->N || _a->N != _b->M) {
+        fprintf(stderr,"error: smatrix_mul(), invalid dimensions\n");
+        exit(1);
+    }
+
+    // clear output matrix
+    smatrix_zero(_c);
+
+    unsigned int r; // output row
+    unsigned int c; // output column
+    
+    unsigned int i;
+    unsigned int j;
+
+    unsigned int p; // running binary sum
+
+    for (r=0; r<_c->M; r++) {
+        for (c=0; c<_c->N; c++) {
+
+            p = 0;
+            // find common elements between non-zero elements in
+            // row 'r' of matrix '_a' and col 'c' of matrix '_b'
+#if 0
+            // 'get' value for each index (slow method)
+            for (i=0; i<_a->N; i++)
+                p += smatrix_get(_a,r,i) & smatrix_get(_b,i,c);
+#else
+            // parse lists looking for commonality
+            for (i=0; i<_a->num_mlist[r]; i++) {
+                for (j=0; j<_b->num_nlist[c]; j++)
+                    p += (_a->mlist[r][i] == _b->nlist[c][j]) ? 1 : 0;
+            }
+#endif
+            // set output (modulo 2)
+            if ( p & 0x001 )
+                smatrix_set(_c, r, c);
+        }
+    }
+}
+
 // multiply by vector (modulo 2)
 //  _q  :   sparse matrix
 //  _x  :   input vector [size: _N x 1]

@@ -604,6 +604,11 @@ void smatrix_clear(smatrix _q, unsigned int _m, unsigned int _n);
 // initialize to identity matrix
 void smatrix_eye(smatrix _q);
 
+// multiply two sparse binary matrices
+void smatrix_mul(smatrix _x,
+                 smatrix _y,
+                 smatrix _z);
+
 // multiply by vector (modulo 2)
 //  _q  :   sparse matrix
 //  _x  :   input vector [size: _N x 1]
