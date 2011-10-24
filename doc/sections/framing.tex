@@ -927,3 +927,30 @@ This listing gives a basic demonstration to the interface to the
 %
 
 
+\subsubsection{{\tt ofdmflexframesync}}
+\label{module:framing:ofdmflexframe:sync}
+
+\subsubsection{Performance}
+\label{module:framing:ofdmflexframe:performance}
+%
+
+% 
+% FIGURE: ofdmflexframe spectrum
+%
+\begin{figure}
+\centering
+  \includegraphics[trim = 0mm 0mm 0mm 0mm, clip, width=13cm]{figures.gen/ofdmflexframesync_performance}
+\caption{Performance of the {\tt ofdmflexframe} structure with
+         $M=64$ subcarriers.}
+\label{fig:module:framing:ofdmflexframe_performance}
+\end{figure}
+%
+Figure~\ref{fig:module:framing:ofdmflexframe_performance} shows the
+performance characterisitics of the {\tt ofdmflexframe} structure.
+The frame can be detected with a 90\% probability with an SNR level of
+just -0.5~dB.
+Furthermore, the probability of detecting the frame and decoding the
+header reaches 90\% at just 2.6~dB SNR.
+Decoding the remainder of the frame depends on many factors such as the
+modulation scheme and forward error-correction schemes applied.
+
