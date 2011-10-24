@@ -103,7 +103,16 @@ int golay2412_parity_search(unsigned int _v)
 
     unsigned int i;
     for (i=0; i<12; i++) {
+#if 0
         unsigned int wj = liquid_count_ones(_v ^ golay2412_P[i]);
+#else
+        // same as above but faster, exploiting fact that P has
+        // only 12 bits of resolution
+        unsigned int wj = 0;
+        unsigned int p  = _v ^ golay2412_P[i];
+        wj += liquid_c_ones[ (p     ) & 0xff ];
+        wj += liquid_c_ones[ (p >> 8) & 0xff ];
+#endif
         if (wj <= 2)
             return i;
     }
@@ -132,8 +141,8 @@ unsigned int fec_golay2412_decode_symbol(unsigned int _sym_enc)
     printf("s (syndrome vector): "); liquid_print_bitstring(s,12); printf("\n");
 #endif
 
-    // compute weight of s
-    unsigned int ws = liquid_count_ones(s);
+    // compute weight of s (12 bits)
+    unsigned int ws = liquid_count_ones_uint16(s);
 #if DEBUG_FEC_GOLAY2412
     printf("w(s) = %u\n", ws);
 #endif
@@ -167,7 +176,8 @@ unsigned int fec_golay2412_decode_symbol(unsigned int _sym_enc)
             printf("s*P: "); liquid_print_bitstring(sP,12); printf("\n");
 #endif
 
-            unsigned int wsP = liquid_count_ones(sP);
+            // compute weight of sP (12 bits)
+            unsigned int wsP = liquid_count_ones_uint16(sP);
 #if DEBUG_FEC_GOLAY2412
             printf("w(s*P) = %u\n", wsP);
 #endif
@@ -213,7 +223,7 @@ unsigned int fec_golay2412_decode_symbol(unsigned int _sym_enc)
 #endif
     
     // compute estimated original message: (last 12 bits of encoded message)
-    m_hat = v_hat & ((1<<12)-1);
+    m_hat = v_hat & 0x0fff;
 
     return m_hat;
 }
