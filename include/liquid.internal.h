@@ -584,6 +584,11 @@ struct smatrix_s {
 smatrix smatrix_create(unsigned int _M,
                        unsigned int _N);
 
+// create _M x _N matrix, initialized on array
+smatrix smatrix_create_array(unsigned char * _x,
+                             unsigned int    _m,
+                             unsigned int    _n);
+
 // destroy object
 void smatrix_destroy(smatrix _q);
 

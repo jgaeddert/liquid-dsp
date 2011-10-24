@@ -113,66 +113,33 @@ void autotest_fec_smatrix()
 // test sparse binary matrix multiplication
 void autotest_fec_smatrix_mul()
 {
-    smatrix a = smatrix_create( 8,12);
-    smatrix b = smatrix_create(12, 5);
-    smatrix c = smatrix_create( 8, 5);
+    // a: [8 x 12]
+    unsigned char a_test[96] = {
+        0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0,
+        0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+        0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 0,
+        0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0,
+        0, 0, 0, 1, 0, 0, 1, 1, 0, 0, 0, 0,
+        0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+        0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+        0, 0, 0, 0, 0, 0, 0, 1, 1, 0, 0, 0};
 
-    // initialize 'a'
-    // 0 0 0 0 1 0 0 0 0 0 0 0
-    // 0 0 0 0 0 0 0 0 0 0 0 0
-    // 0 0 0 1 0 0 0 1 0 0 0 0
-    // 0 0 0 0 1 0 0 0 0 0 0 0
-    // 0 0 0 1 0 0 1 1 0 0 0 0
-    // 0 0 0 0 0 0 0 0 0 0 0 0
-    // 0 1 0 0 0 0 0 0 0 0 0 0
-    // 0 0 0 0 0 0 0 1 1 0 0 0
-    smatrix_set(a,0,4);
-    smatrix_set(a,2,3);
-    smatrix_set(a,2,7);
-    smatrix_set(a,3,4);
-    smatrix_set(a,4,3);
-    smatrix_set(a,4,6);
-    smatrix_set(a,4,7);
-    smatrix_set(a,6,1);
-    smatrix_set(a,7,7);
-    smatrix_set(a,7,8);
+    // b: [12 x 5]
+    unsigned char b_test[60] = {
+        1, 1, 0, 0, 0,
+        0, 0, 0, 0, 1,
+        0, 0, 0, 0, 0,
+        0, 0, 0, 0, 0,
+        0, 0, 0, 0, 0,
+        0, 0, 0, 0, 1,
+        0, 0, 0, 1, 0,
+        0, 0, 0, 1, 0,
+        0, 0, 0, 0, 0,
+        0, 1, 0, 0, 1,
+        1, 0, 0, 1, 0,
+        0, 1, 0, 0, 0};
 
-    // initialize 'b'
-    // 1 1 0 0 0
-    // 0 0 0 0 1
-    // 0 0 0 0 0
-    // 0 0 0 0 0
-    // 0 0 0 0 0
-    // 0 0 0 0 1
-    // 0 0 0 1 0
-    // 0 0 0 1 0
-    // 0 0 0 0 0
-    // 0 1 0 0 1
-    // 1 0 0 1 0
-    // 0 1 0 0 0
-    smatrix_set(b,0,0);
-    smatrix_set(b,0,1);
-    smatrix_set(b,1,4);
-    smatrix_set(b,5,4);
-    smatrix_set(b,6,3);
-    smatrix_set(b,7,3);
-    smatrix_set(b,9,1);
-    smatrix_set(b,9,4);
-    smatrix_set(b,10,0);
-    smatrix_set(b,11,1);
-
-    // compute 'c'
-    // 0 0 0 0 0
-    // 0 0 0 0 0
-    // 0 0 0 1 0
-    // 0 0 0 0 0
-    // 0 0 0(0)0
-    // 0 0 0 0 0
-    // 0 0 0 0 1
-    // 0 0 0 1 0
-    smatrix_mul(a,b,c);
-
-    // valid output
+    // output: [8 x 5]
     unsigned char c_test[40] = {
         0, 0, 0, 0, 0,
         0, 0, 0, 0, 0,
@@ -182,6 +149,13 @@ void autotest_fec_smatrix_mul()
         0, 0, 0, 0, 0,
         0, 0, 0, 0, 1,
         0, 0, 0, 1, 0};
+
+    smatrix a = smatrix_create_array(a_test,  8,12);
+    smatrix b = smatrix_create_array(b_test, 12, 5);
+    smatrix c = smatrix_create(8, 5);
+
+    // compute output
+    smatrix_mul(a,b,c);
 
     // print results (verbose)
     if (liquid_autotest_verbose) {

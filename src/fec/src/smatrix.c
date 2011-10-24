@@ -62,6 +62,28 @@ smatrix smatrix_create(unsigned int _M,
     return q;
 }
 
+// create _M x _N matrix, initialized on array
+smatrix smatrix_create_array(unsigned char * _v,
+                             unsigned int    _m,
+                             unsigned int    _n)
+{
+    // create object and allocate memory
+    smatrix q = smatrix_create(_m,_n);
+
+    // initialize elements
+    unsigned int i;
+    unsigned int j;
+    for (i=0; i<_m; i++) {
+        for (j=0; j<_n; j++) {
+            if (_v[i*_n + j])
+                smatrix_set(q,i,j);
+        }
+    }
+
+    // return main object
+    return q;
+}
+
 // destroy object
 void smatrix_destroy(smatrix _q)
 {
