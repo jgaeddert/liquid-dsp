@@ -156,8 +156,8 @@ LIQUID_AGC_DEFINE_API(AGC_MANGLE_RRRF, float, float)
 typedef struct cvsd_s * cvsd;
 
 // create cvsd object
-//  _num_bits   :   number of adjacent bits to observe
-//  _zeta       :   slope adjustment multiplier
+//  _num_bits   :   number of adjacent bits to observe (4 recommended)
+//  _zeta       :   slope adjustment multiplier (1.5 recommended)
 //  _alpha      :   pre-/post-emphasis filter coefficient (0.9 recommended)
 // NOTE: _alpha must be in [0,1]
 cvsd cvsd_create(unsigned int _num_bits,
