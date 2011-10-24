@@ -121,7 +121,8 @@ src/cvsd/src/cvsd.o : %.o : %.c $(headers)
 audio_autotests :=						\
 	src/audio/tests/cvsd_autotest.c				\
 
-audio_benchmarks :=
+audio_benchmarks :=						\
+	src/audio/bench/cvsd_benchmark.c			\
 
 
 # 
