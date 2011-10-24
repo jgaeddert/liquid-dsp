@@ -21,6 +21,10 @@
 //
 // Golay(24,12) half-rate forward error-correction code
 //
+// References:
+//  [Lin:2004] Lin, Shu and Costello, Daniel L. Jr., "Error Control
+//      Coding," Prentice Hall, New Jersey, 2nd edition, 2004.
+//
 
 #include <stdio.h>
 #include <stdlib.h>
