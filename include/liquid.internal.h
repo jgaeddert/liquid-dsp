@@ -407,6 +407,19 @@ void fec_secded7264_decode_symbol(unsigned int * _sym_enc,
 extern unsigned int secded7264_P[32];
 extern unsigned int secded7264_H[48];
 
+fec fec_secded7264_create(void *_opts);
+void fec_secded7264_destroy(fec _q);
+void fec_secded7264_print(fec _q);
+void fec_secded7264_encode(fec _q,
+                           unsigned int _dec_msg_len,
+                           unsigned char * _msg_dec,
+                           unsigned char * _msg_enc);
+void fec_secded7264_decode(fec _q,
+                           unsigned int _dec_msg_len,
+                           unsigned char * _msg_enc,
+                           unsigned char * _msg_dec);
+
+
 // Convolutional: r1/2 K=7
 //                r1/2 K=9
 //                r1/3 K=9
