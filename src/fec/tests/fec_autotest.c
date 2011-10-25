@@ -99,6 +99,9 @@ void autotest_fec_h128()    { fec_test_codec(LIQUID_FEC_HAMMING128,    64, NULL)
 // Golay block codes
 void autotest_fec_g2412()   { fec_test_codec(LIQUID_FEC_GOLAY2412,     64, NULL); }
 
+// SEC-DED block codecs
+void autotest_fec_secded()  { fec_test_codec(LIQUID_FEC_SECDED7264,    64, NULL); }
+
 // convolutional codes
 void autotest_fec_v27()     { fec_test_codec(LIQUID_FEC_CONV_V27,      64, NULL); }
 void autotest_fec_v29()     { fec_test_codec(LIQUID_FEC_CONV_V29,      64, NULL); }
