@@ -311,6 +311,7 @@ data_ber_fec_hard :=				\
 	data/ber-fec-hard/ber_h128.dat		\
 	data/ber-fec-hard/ber_h74.dat		\
 	data/ber-fec-hard/ber_h84.dat		\
+	data/ber-fec-hard/ber_secded7264.dat	\
 	data/ber-fec-hard/ber_g2412.dat		\
 	data/ber-fec-hard/ber_v27.dat		\
 	data/ber-fec-hard/ber_v29.dat		\
@@ -334,6 +335,7 @@ resimulate-data-fec-ber-hard : src/simulate_ber
 	./src/simulate_ber -H -c h128   $(ber-fec-hard-opts) -o data/ber-fec-hard/ber_h128.dat
 	./src/simulate_ber -H -c h84    $(ber-fec-hard-opts) -o data/ber-fec-hard/ber_h84.dat
 	./src/simulate_ber -H -c h74    $(ber-fec-hard-opts) -o data/ber-fec-hard/ber_h74.dat
+	./src/simulate_ber -H -c secded7264 $(ber-fec-hard-opts) -o data/ber-fec-hard/ber_secded7264.dat
 	./src/simulate_ber -H -c g2412  $(ber-fec-hard-opts) -o data/ber-fec-hard/ber_g2412.dat
 	./src/simulate_ber -H -c v27    $(ber-fec-hard-opts) -o data/ber-fec-hard/ber_v27.dat
 	./src/simulate_ber -H -c v29    $(ber-fec-hard-opts) -o data/ber-fec-hard/ber_v29.dat

@@ -398,6 +398,29 @@ void fec_golay2412_decode(fec _q,
                           unsigned char * _msg_enc,
                           unsigned char * _msg_dec);
 
+// SEC-DED (72,64)
+
+void fec_secded7264_encode_symbol(unsigned int * _sym_dec,
+                                  unsigned int * _sym_enc);
+void fec_secded7264_decode_symbol(unsigned int * _sym_enc,
+                                  unsigned int * _sym_dec);
+extern unsigned int  secded7264_P[32];
+extern unsigned int  secded7264_H[48];
+extern unsigned char secded7264_syndrome_w1[72];
+
+fec fec_secded7264_create(void *_opts);
+void fec_secded7264_destroy(fec _q);
+void fec_secded7264_print(fec _q);
+void fec_secded7264_encode(fec _q,
+                           unsigned int _dec_msg_len,
+                           unsigned char * _msg_dec,
+                           unsigned char * _msg_enc);
+void fec_secded7264_decode(fec _q,
+                           unsigned int _dec_msg_len,
+                           unsigned char * _msg_enc,
+                           unsigned char * _msg_dec);
+
+
 // Convolutional: r1/2 K=7
 //                r1/2 K=9
 //                r1/3 K=9
@@ -584,6 +607,11 @@ struct smatrix_s {
 smatrix smatrix_create(unsigned int _M,
                        unsigned int _N);
 
+// create _M x _N matrix, initialized on array
+smatrix smatrix_create_array(unsigned char * _x,
+                             unsigned int    _m,
+                             unsigned int    _n);
+
 // destroy object
 void smatrix_destroy(smatrix _q);
 
@@ -603,6 +631,11 @@ void smatrix_clear(smatrix _q, unsigned int _m, unsigned int _n);
 
 // initialize to identity matrix
 void smatrix_eye(smatrix _q);
+
+// multiply two sparse binary matrices
+void smatrix_mul(smatrix _x,
+                 smatrix _y,
+                 smatrix _z);
 
 // multiply by vector (modulo 2)
 //  _q  :   sparse matrix
