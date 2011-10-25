@@ -124,9 +124,7 @@ void fec_secded7264_decode_symbol(unsigned int * _sym_enc,
     unsigned int ws = liquid_count_ones(s);
 
     if (ws == 0) {
-        printf("no errors detected\n");
-
-        // copy and return
+        // no errors detected; copy input and return
         _sym_dec[0] = _sym_enc[1];
         _sym_dec[1] = _sym_enc[2];
         return;
