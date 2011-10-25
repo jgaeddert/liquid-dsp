@@ -398,6 +398,15 @@ void fec_golay2412_decode(fec _q,
                           unsigned char * _msg_enc,
                           unsigned char * _msg_dec);
 
+// SEC-DED (72,64)
+
+void fec_secded7264_encode_symbol(unsigned int * _sym_dec,
+                                  unsigned int * _sym_enc);
+void fec_secded7264_decode_symbol(unsigned int * _sym_enc,
+                                  unsigned int * _sym_dec);
+extern unsigned int secded7264_P[32];
+extern unsigned int secded7264_H[48];
+
 // Convolutional: r1/2 K=7
 //                r1/2 K=9
 //                r1/3 K=9

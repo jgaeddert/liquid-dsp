@@ -224,7 +224,7 @@ int main(int argc, char*argv[])
         }
     }
 
-    // step 8: compute estimated transmitted message: v_hat = r + e_hat
+    // compute estimated transmitted message: v_hat = r + e_hat
     printf("e-hat (estimated error vector):\n");
     print_bitstring(e_hat,72);
 

@@ -219,6 +219,7 @@ fec_objects :=							\
 	src/fec/src/fec_rep3.o					\
 	src/fec/src/fec_rep5.o					\
 	src/fec/src/fec_rs.o					\
+	src/fec/src/fec_secded.o				\
 	src/fec/gentab/reverse_byte.o				\
 	src/fec/src/smatrix.o					\
 	src/fec/src/sumproduct.o				\
