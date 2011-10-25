@@ -166,20 +166,11 @@ void fec_secded7264_decode_symbol(unsigned int * _sym_enc,
 #endif
     }
 
-    // TODO : clean up next portion for simplicity
-
-    // compute estimated transmit vector
-    v_hat[0] = _sym_enc[0] ^ e_hat[0];
-    v_hat[1] = _sym_enc[1] ^ e_hat[1];
-    v_hat[2] = _sym_enc[2] ^ e_hat[2];
-
-    // compute estimated original message: (last 64 bits of encoded message)
-    m_hat[0] = v_hat[1];
-    m_hat[1] = v_hat[2];
-
-    // copy and return
-    _sym_dec[0] = m_hat[0];
-    _sym_dec[1] = m_hat[1];
+    // compute estimated transmit vector (last 64 bits of encoded message)
+    // NOTE: indices take into account first element in _sym_enc and e_hat
+    //       arrays holds the parity bits
+    _sym_dec[0] = _sym_enc[1] ^ e_hat[1];
+    _sym_dec[1] = _sym_enc[2] ^ e_hat[2];
 }
 
 // create SEC-DED (72,64) codec object
