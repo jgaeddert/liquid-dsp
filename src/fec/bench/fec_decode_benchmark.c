@@ -78,6 +78,7 @@ void fec_decode_bench(
     case LIQUID_FEC_HAMMING84:     *_num_iterations *= 10;     break;
     case LIQUID_FEC_HAMMING128:    *_num_iterations *= 10;     break;
     case LIQUID_FEC_SECDED7264:    *_num_iterations *= 10;     break;
+    case LIQUID_FEC_GOLAY2412:     *_num_iterations *= 2;      break;
     case LIQUID_FEC_CONV_V27:      *_num_iterations /= 5;      break;
     case LIQUID_FEC_CONV_V29:      *_num_iterations /= 10;     break;
     case LIQUID_FEC_CONV_V39:      *_num_iterations /= 100;    break;
@@ -149,6 +150,7 @@ void benchmark_fec_dec_hamming84_n64    FEC_DECODE_BENCH_API(LIQUID_FEC_HAMMING8
 void benchmark_fec_dec_hamming128_n64   FEC_DECODE_BENCH_API(LIQUID_FEC_HAMMING128,64,  NULL)
 
 void benchmark_fec_dec_secded7264_n64   FEC_DECODE_BENCH_API(LIQUID_FEC_SECDED7264,64,  NULL)
+void benchmark_fec_dec_golay2412_n64    FEC_DECODE_BENCH_API(LIQUID_FEC_GOLAY2412, 64,  NULL)
 
 void benchmark_fec_dec_conv27_n64       FEC_DECODE_BENCH_API(LIQUID_FEC_CONV_V27,  64,  NULL)
 void benchmark_fec_dec_conv29_n64       FEC_DECODE_BENCH_API(LIQUID_FEC_CONV_V29,  64,  NULL)

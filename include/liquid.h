@@ -3206,13 +3206,6 @@ void ofdmoqamframe_validate_sctype(unsigned char * _p,
                                    unsigned int * _M_pilot,
                                    unsigned int * _M_data);
 
-// print subcarrier allocation to screen
-//  _p      :   output subcarrier allocation array, [size: _M x 1]
-//  _M      :   number of subcarriers
-void ofdmoqamframe_print_sctype(unsigned int _M,
-                                unsigned char * _p);
-
-
 typedef struct ofdmoqamframegen_s * ofdmoqamframegen;
 
 // create OFDM/OQAM framing generator object
@@ -3293,6 +3286,12 @@ void ofdmframe_validate_sctype(unsigned char * _p,
                                unsigned int * _M_null,
                                unsigned int * _M_pilot,
                                unsigned int * _M_data);
+
+// print subcarrier allocation to screen
+//  _p      :   output subcarrier allocation array, [size: _M x 1]
+//  _M      :   number of subcarriers
+void ofdmframe_print_sctype(unsigned char * _p,
+                            unsigned int    _M);
 
 
 // 
