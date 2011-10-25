@@ -213,7 +213,7 @@ unsigned int fec_get_enc_msg_length(fec_scheme _scheme,
     case LIQUID_FEC_HAMMING84:      return fec_block_get_enc_msg_len(_msg_len,4,8);
     case LIQUID_FEC_HAMMING128:     return fec_block_get_enc_msg_len(_msg_len,8,12);
     case LIQUID_FEC_GOLAY2412:      return fec_block_get_enc_msg_len(_msg_len,12,24);
-    case LIQUID_FEC_SECDED7264:     return fec_block_get_enc_msg_len(_msg_len,64,72);
+    case LIQUID_FEC_SECDED7264:     return _msg_len + _msg_len/8 + ((_msg_len%8) ? 1 : 0);
 
 #if HAVE_FEC_H
     // convolutional codes
