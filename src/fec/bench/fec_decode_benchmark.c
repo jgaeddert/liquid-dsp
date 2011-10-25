@@ -77,7 +77,7 @@ void fec_decode_bench(
     case LIQUID_FEC_HAMMING74:     *_num_iterations *= 10;     break;
     case LIQUID_FEC_HAMMING84:     *_num_iterations *= 10;     break;
     case LIQUID_FEC_HAMMING128:    *_num_iterations *= 10;     break;
-    case LIQUID_FEC_SECDED7264:    *_num_iterations /= 2;      break;
+    case LIQUID_FEC_SECDED7264:    *_num_iterations *= 10;     break;
     case LIQUID_FEC_CONV_V27:      *_num_iterations /= 5;      break;
     case LIQUID_FEC_CONV_V29:      *_num_iterations /= 10;     break;
     case LIQUID_FEC_CONV_V39:      *_num_iterations /= 100;    break;
