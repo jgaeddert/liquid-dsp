@@ -25,9 +25,32 @@
 #include "liquid.internal.h"
 
 //
+// AUTOTEST: SEC-DEC (72,64) codec (no errors)
+//
+void autotest_secded7264_codec_e0()
+{
+    // generate symbol
+    unsigned int sym_org[2];
+    sym_org[0] = rand() & 0xffffffff;
+    sym_org[1] = rand() & 0xffffffff;
+
+    // encoded symbol
+    unsigned int sym_enc[3];
+    fec_secded7264_encode_symbol(sym_org, sym_enc);
+
+    // decoded symbol
+    unsigned int sym_dec[2];
+    fec_secded7264_decode_symbol(sym_enc, sym_dec);
+
+    // validate data are the same
+    CONTEND_EQUALITY(sym_org[0], sym_dec[0]);
+    CONTEND_EQUALITY(sym_org[1], sym_dec[1]);
+}
+
+//
 // AUTOTEST: SEC-DEC (72,64) codec (single error)
 //
-void autotest_secded7264_codec()
+void autotest_secded7264_codec_e1()
 {
     unsigned int k; // error location
 
