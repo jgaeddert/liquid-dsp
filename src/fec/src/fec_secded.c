@@ -65,6 +65,18 @@ unsigned int secded7264_H[48] = {
     0x02, 0x02222226, 0xCF00FF0F,
     0x01, 0x01111116, 0x30F0F0FF};
 
+// syndrome vectors for errors of weight 1
+unsigned char secded7264_syndrome_w1[72] = {
+    0x0b, 0x3b, 0x37, 0x07, 0x19, 0x29, 0x49, 0x89,
+    0x16, 0x26, 0x46, 0x86, 0x13, 0x23, 0x43, 0x83,
+    0x1c, 0x2c, 0x4c, 0x8c, 0x15, 0x25, 0x45, 0x85,
+    0x1a, 0x2a, 0x4a, 0x8a, 0x0d, 0xcd, 0xce, 0x0e,
+    0x70, 0x73, 0xb3, 0xb0, 0x51, 0x52, 0x54, 0x58,
+    0xa1, 0xa2, 0xa4, 0xa8, 0x31, 0x32, 0x34, 0x38,
+    0xc1, 0xc2, 0xc4, 0xc8, 0x61, 0x62, 0x64, 0x68,
+    0x91, 0x92, 0x94, 0x98, 0xe0, 0xec, 0xdc, 0xd0,
+    0x01, 0x02, 0x04, 0x08, 0x10, 0x20, 0x40, 0x80};
+
 
 void fec_secded7264_encode_symbol(unsigned int * _sym_dec,
                                   unsigned int * _sym_enc)
@@ -129,35 +141,21 @@ void fec_secded7264_decode_symbol(unsigned int * _sym_enc,
         _sym_dec[1] = _sym_enc[2];
         return;
     } else {
-        // estimate error location
-        unsigned int e_test[3]  = {0x00, 0x00000000, 0x00000001};
+        // estimate error location; search for syndrome with error
+        // vector of weight one
         int syndrome_match = 0;
 
-        // TODO : these can be pre-computed
         unsigned int n;
         for (n=0; n<72; n++) {
-            // compute syndrome
-            unsigned int s_hat = 0;
+            if (s == secded7264_syndrome_w1[n]) {
+                // set estimated error vector (set bit at appropriate index)
+                div_t d = div(n,32);
+                e_hat[2-d.quot] = 1 << d.rem;
 
-            for (i=0; i<8; i++) {
-                s_hat <<= 1;
-                unsigned int p =
-                    liquid_count_ones(secded7264_H[3*i+0] & e_test[0]) +
-                    liquid_count_ones(secded7264_H[3*i+1] & e_test[1]) +
-                    liquid_count_ones(secded7264_H[3*i+2] & e_test[2]);
-
-                s_hat |= p & 0x01;
-            }
-
-            if (s == s_hat) {
-                memmove(e_hat, e_test, sizeof(e_test));
+                // set flag and break from loop
                 syndrome_match = 1;
+                break;
             }
-
-            // shift e_test
-            e_test[0] = (e_test[0] << 1) | ((e_test[1] & 0x80000000) ? 1 : 0);
-            e_test[1] = (e_test[1] << 1) | ((e_test[2] & 0x80000000) ? 1 : 0);
-            e_test[2] <<= 1;
         }
 
 #if DEBUG_FEC_SECDED7264
