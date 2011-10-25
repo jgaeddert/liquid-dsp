@@ -111,8 +111,6 @@ void fec_secded7264_decode_symbol(unsigned int * _sym_enc,
     // state variables
     unsigned int s;                     // syndrome vector
     unsigned int e_hat[3] = {0,0,0};    // estimated error vector
-    unsigned int v_hat[3];              // estimated transmitted message
-    unsigned int m_hat[2];              // estimated original message
 
     // compute syndrome vector, s = r*H^T = ( H*r^T )^T
     s = 0;
