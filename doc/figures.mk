@@ -95,6 +95,8 @@ local_pdffiles :=					\
 	figures.gen/filter_symsync_crcf_const.pdf	\
 	figures.gen/filter_symsync_crcf_time.pdf	\
 							\
+	figures.gen/ofdmflexframesync_performance.pdf	\
+							\
 	figures.gen/interleaver_scatterplot_i0.pdf	\
 	figures.gen/interleaver_scatterplot_i1.pdf	\
 	figures.gen/interleaver_scatterplot_i2.pdf	\
@@ -309,6 +311,7 @@ data_ber_fec_hard :=				\
 	data/ber-fec-hard/ber_h128.dat		\
 	data/ber-fec-hard/ber_h74.dat		\
 	data/ber-fec-hard/ber_h84.dat		\
+	data/ber-fec-hard/ber_g2412.dat		\
 	data/ber-fec-hard/ber_v27.dat		\
 	data/ber-fec-hard/ber_v29.dat		\
 	data/ber-fec-hard/ber_v39.dat		\
@@ -331,6 +334,7 @@ resimulate-data-fec-ber-hard : src/simulate_ber
 	./src/simulate_ber -H -c h128   $(ber-fec-hard-opts) -o data/ber-fec-hard/ber_h128.dat
 	./src/simulate_ber -H -c h84    $(ber-fec-hard-opts) -o data/ber-fec-hard/ber_h84.dat
 	./src/simulate_ber -H -c h74    $(ber-fec-hard-opts) -o data/ber-fec-hard/ber_h74.dat
+	./src/simulate_ber -H -c g2412  $(ber-fec-hard-opts) -o data/ber-fec-hard/ber_g2412.dat
 	./src/simulate_ber -H -c v27    $(ber-fec-hard-opts) -o data/ber-fec-hard/ber_v27.dat
 	./src/simulate_ber -H -c v29    $(ber-fec-hard-opts) -o data/ber-fec-hard/ber_v29.dat
 	./src/simulate_ber -H -c v39    $(ber-fec-hard-opts) -o data/ber-fec-hard/ber_v39.dat
@@ -557,6 +561,14 @@ figures.gen/fft_example_time.gnu figures.gen/fft_example_freq.gnu : src/fft_exam
 ##
 ## MODULE : framing
 ##
+
+# 
+# ofdmflexframesync_performance
+#
+
+figures.gen/ofdmflexframesync_performance.dat \
+figures.gen/ofdmflexframesync_performance.gnu : figures.gen/% : data/ofdmflexframe/%
+	cp $< $@
 
 ##
 ## MODULE : interleaver

@@ -1248,17 +1248,17 @@ void gmskframesync_output_debug_file(gmskframesync _q, const char * _filename);
 // ofdmflexframe
 //
 
-#define OFDMFLEXFRAME_VERSION   (102)
+#define OFDMFLEXFRAME_VERSION   (103)
 
 // header description
 #define OFDMFLEXFRAME_H_USER    (8)                         // user-defined array
 #define OFDMFLEXFRAME_H_DEC     (OFDMFLEXFRAME_H_USER+6)    // decoded length
 #define OFDMFLEXFRAME_H_CRC     (LIQUID_CRC_32)             // header CRC
-#define OFDMFLEXFRAME_H_FEC     (LIQUID_FEC_HAMMING128)     // header FEC
-#define OFDMFLEXFRAME_H_ENC     (27)                        // encoded length
+#define OFDMFLEXFRAME_H_FEC     (LIQUID_FEC_GOLAY2412)      // header FEC
+#define OFDMFLEXFRAME_H_ENC     (36)                        // encoded length
 #define OFDMFLEXFRAME_H_MOD     (LIQUID_MODEM_BPSK)         // modulation scheme
 #define OFDMFLEXFRAME_H_BPS     (1)                         // modulation depth
-#define OFDMFLEXFRAME_H_SYM     (216)                       // number of symbols
+#define OFDMFLEXFRAME_H_SYM     (288)                       // number of symbols
 
 // 
 // ofdmflexframegen
@@ -2105,6 +2105,11 @@ extern const unsigned char liquid_c_ones[256];
 #define liquid_count_ones_uint16(x) (           \
     liquid_c_ones[  (x)      & 0xff ] +         \
     liquid_c_ones[ ((x)>>8)  & 0xff ])
+
+#define liquid_count_ones_uint24(x) (           \
+    liquid_c_ones[  (x)      & 0xff ] +         \
+    liquid_c_ones[ ((x)>> 8) & 0xff ] +         \
+    liquid_c_ones[ ((x)>>16) & 0xff ])
 
 #define liquid_count_ones_uint32(x) (           \
     liquid_c_ones[  (x)      & 0xff ] +         \
