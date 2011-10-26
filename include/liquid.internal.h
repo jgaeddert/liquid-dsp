@@ -1220,7 +1220,7 @@ void packetizer_realloc_buffers(packetizer _p, unsigned int _len);
 // bpacket
 //
 
-#define BPACKET_VERSION 100
+#define BPACKET_VERSION 101
 
 // generator
 void bpacketgen_compute_packet_len(bpacketgen _q);
@@ -1241,7 +1241,7 @@ void bpacketsync_reconfig(bpacketsync _q);
 // gmskframe
 //
 
-#define GMSKFRAME_VERSION   (1)
+#define GMSKFRAME_VERSION   (2)
 
 // header description
 #define GMSKFRAME_H_USER    (8)                     // user-defined array
@@ -1271,7 +1271,7 @@ void gmskframesync_output_debug_file(gmskframesync _q, const char * _filename);
 // ofdmflexframe
 //
 
-#define OFDMFLEXFRAME_VERSION   (103)
+#define OFDMFLEXFRAME_VERSION   (104)
 
 // header description
 #define OFDMFLEXFRAME_H_USER    (8)                         // user-defined array
