@@ -1,7 +1,7 @@
 //
-// golay_test.c
+// fecsoft_codec_test.c
 //
-// Test soft decoding of the Golay(24,12) code using the sum-product
+// Test soft decoding using the sum-product
 // algorithm (see sandbox/ldpc_test.c)
 //
 // NOTE : performance might suffer due to restructured H matrix not
@@ -15,7 +15,7 @@
 
 #include "liquid.internal.h"
 
-#define OUTPUT_FILENAME "fecsoft_golay_test.m"
+#define OUTPUT_FILENAME "fecsoft_codec_test.m"
 
 int main(int argc, char*argv[])
 {
@@ -181,10 +181,10 @@ int main(int argc, char*argv[])
     fprintf(fid,"semilogy(EbN0dB_bpsk, 0.5*erfc(sqrt(10.^[EbN0dB_bpsk/10]))+1e-12,'-x',\n");
     fprintf(fid,"         EbN0dB,      num_bit_errors / num_bit_trials + 1e-12,  '-x');\n");
     fprintf(fid,"axis([%f (%f-10*log10(r)) 1e-6 1]);\n", SNRdB_min, SNRdB_max);
-    fprintf(fid,"legend('uncoded','Golay(24,12)',1);\n");
+    fprintf(fid,"legend('uncoded','coded',1);\n");
     fprintf(fid,"xlabel('E_b/N_0 [dB]');\n");
     fprintf(fid,"ylabel('Bit Error Rate');\n");
-    fprintf(fid,"title('BER vs. E_b/N_0 for Golay(24,12)');\n");
+    fprintf(fid,"title('BER vs. E_b/N_0 for (24,12) code');\n");
     fprintf(fid,"grid on;\n");
 
     fclose(fid);

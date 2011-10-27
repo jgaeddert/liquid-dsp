@@ -1281,7 +1281,7 @@ sandbox_programs =						\
 	sandbox/fec_rep5_test					\
 	sandbox/fec_secded_test					\
 	sandbox/fecsoft_conv_test				\
-	sandbox/fecsoft_golay_test				\
+	sandbox/fecsoft_codec_test				\
 	sandbox/fecsoft_hamming128_gentab			\
 	sandbox/fec_sumproduct_test				\
 	sandbox/fft_r2r_test					\
