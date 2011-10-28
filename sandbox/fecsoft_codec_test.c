@@ -35,6 +35,7 @@ int main(int argc, char*argv[])
     unsigned int n = 32;    // cols in H
 
     // initial generator polynomial
+    // TODO : find 'optimal' generator polynomial
     unsigned char p[] = {1,0,0,0, 0,1,0,0, 0,0,0,1, 0,0,0,0};
 
     // generator matrix [m x n]
@@ -53,6 +54,7 @@ int main(int argc, char*argv[])
             G[i*n + j]     = (i==j) ? 1 : 0;
             G[i*n + j + m] = p[(i+j)%m];
 
+            // H = [P^T I(m)]
             H[i*n + j + m] = (i==j) ? 1 : 0;
             H[i*n + j]     = p[(i+j)%m];
         }
