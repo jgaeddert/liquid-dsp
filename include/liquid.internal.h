@@ -404,8 +404,8 @@ void fec_secded7264_encode_symbol(unsigned int * _sym_dec,
                                   unsigned int * _sym_enc);
 void fec_secded7264_decode_symbol(unsigned int * _sym_enc,
                                   unsigned int * _sym_dec);
-extern unsigned int  secded7264_P[32];
-extern unsigned int  secded7264_H[48];
+extern unsigned int  secded7264_P[16];
+extern unsigned int  secded7264_H[24];
 extern unsigned char secded7264_syndrome_w1[72];
 
 fec fec_secded7264_create(void *_opts);
