@@ -400,12 +400,22 @@ void fec_golay2412_decode(fec _q,
 
 // SEC-DED (72,64)
 
-void fec_secded7264_encode_symbol(unsigned int * _sym_dec,
-                                  unsigned int * _sym_enc);
-void fec_secded7264_decode_symbol(unsigned int * _sym_enc,
-                                  unsigned int * _sym_dec);
-extern unsigned int  secded7264_P[16];
-extern unsigned int  secded7264_H[24];
+// compute parity byte on 64-byte input
+unsigned char fec_secded7264_compute_parity(unsigned char * _v);
+
+// encode symbol
+//  _sym_dec    :   input symbol [size: 64 x 1]
+//  _sym_enc    :   input symbol [size: 72 x 1]
+void fec_secded7264_encode_symbol(unsigned char * _sym_dec,
+                                  unsigned char * _sym_enc);
+
+// decode symbol
+//  _sym_enc    :   input symbol [size: 72 x 1]
+//  _sym_dec    :   input symbol [size: 64 x 1]
+void fec_secded7264_decode_symbol(unsigned char * _sym_enc,
+                                  unsigned char * _sym_dec);
+
+extern unsigned char secded7264_P[64];
 extern unsigned char secded7264_syndrome_w1[72];
 
 fec fec_secded7264_create(void *_opts);
