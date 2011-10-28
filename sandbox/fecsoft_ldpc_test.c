@@ -1,5 +1,5 @@
 //
-// fecsoft_codec_test.c
+// fecsoft_ldpc_test.c
 //
 // Test soft decoding using the sum-product
 // algorithm (see sandbox/ldpc_test.c)
@@ -18,7 +18,7 @@
 
 #include "liquid.internal.h"
 
-#define OUTPUT_FILENAME "fecsoft_codec_test.m"
+#define OUTPUT_FILENAME "fecsoft_ldpc_test.m"
 
 int main(int argc, char*argv[])
 {
@@ -28,7 +28,7 @@ int main(int argc, char*argv[])
     float SNRdB_min = -2.0f;
     float SNRdB_max =  6.0f;
     unsigned int num_steps = 19;
-    unsigned int num_trials = 20000;
+    unsigned int num_trials = 2000;
     unsigned int max_iterations = 5;
 
     unsigned int m = 16;    // rows in H
