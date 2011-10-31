@@ -10,7 +10,9 @@ In the previous tutorials we have created only the basic building blocks
 for wireless communication.
 We have also used the basic {\tt framegen64} and {\tt framesync64}
 objects to transmit and receive simple framing data.
-This tutorial extends...
+This tutorial extends the work on the previous tutorials by introducing
+a flexible framing structure that uses a parallel data transmission
+scheme that permits...
 
 
 %
@@ -22,7 +24,64 @@ This tutorial extends...
 %   * what is OFDM (briefly)
 %   * the benefits of OFDM (briefly)
 %   * current standards using OFDM
+The framing tutorial (\S\ref{tutorial:framing}) loaded data serially
+onto a single carrier.
+Another option is to load data onto many carriers in parallel;
+however it is desireable to do so such that bandwidth isn't wasted.
+By allowing the ``subcarriers'' to overlap in frequency,
+the system approaches the theoretical maximum capacity of the channel.
+Several multiplexing schemes are possible,
+but by far the most common is generically known as
+orthogonal frequency divisional multiplexing (OFDM)
+which uses a square temporal pulse shaping filter for each subcarrier,
+separated in frequency by the inverse of the symbol rate.
+This conveniently allows data to be loaded into the input of an inverse
+discrete Fourier transform (DFT) at the transmitter and
+(once time and carrier synchronized)
+de-multiplexed with a regular DFT at the receiver.
+For computational efficiency the DFT may be implemented with a fast
+Fourier transform (FFT) which is mathematically equivalent
+but considerably faster.
+Furthermore, because of the cyclic nature of the DFT a certain portion
+(usually on the order of 10\%)
+of the tail of the generated symbol may be copied to its head before
+transmitting;
+this is known as the {\em cyclic prefix} which can eliminate
+inter-symbol interference in the presence of multi-path channel
+environments.
+Carrier frequency and symbol timing offsets can be tracked and corrected
+by inserting known {\em pilot subcarriers} in the signal at the
+transmitter;
+because the receiver knows the pilot symbols it can make an accurate
+estimate of the channel conditions for each OFDM symbol.
+%
+% TODO : insert figures
+%
+As an example, the well-known Wi-Fi 802.11a standard uses OFDM with
+64 subcarriers
+(52 for data, 4 pilots, and 8 disabled for guard bands)
+and a 16-sample cyclic prefix.
+%
+%For more details of OFDM I refer the interested reader to the following
+%excellent publications...
 
+In this tutorial we will create a simple pair of OFDM framing objects;
+the generator ({\tt ofdmflexframegne}),
+like the {\tt framegen64} object,
+has a simple interface that accepts raw data in, frame samples out.
+The synchronizer ({\tt ofdmflexframesync}),
+like the {\tt framesync64} object,
+accepts samples and invokes a callback function for each frame that it
+detects,
+compensating for sample timing and carrier offests and multi-path
+channels.
+The framing objects can be created with nearly any even-length transform
+(number of subcarriers),
+cyclic prefix, and arbitrary data/pilot/null subcarrier allocation.
+Furthermore, the OFDM frame generator permits many different parameters
+(e.g. modulation/coding schemes, payload length)
+which are detected automatically at the receiver without any work on
+your part.
 
 
 %
