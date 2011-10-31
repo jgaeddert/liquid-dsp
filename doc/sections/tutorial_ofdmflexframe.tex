@@ -77,7 +77,12 @@ compensating for sample timing and carrier offests and multi-path
 channels.
 The framing objects can be created with nearly any even-length transform
 (number of subcarriers),
-cyclic prefix, and arbitrary data/pilot/null subcarrier allocation.
+cyclic prefix, and arbitrary null/pilot/data subcarrier allocation.%
+\footnote{While nearly any arbitrary configuration is supported, the
+          performance of synchronization is greatly dependent upon the
+          choice of the number, type, and allocation of subcarriers.
+          % See \S\ref{xxx} for a recommendation...
+          }
 Furthermore, the OFDM frame generator permits many different parameters
 (e.g. modulation/coding schemes, payload length)
 which are detected automatically at the receiver without any work on
@@ -163,19 +168,12 @@ error-correction of the receiver.
 Furthermore, the reciever can compensate for carrier phase/frequency and
 timing offsets as well as multi-path fading and noisy channels.
 The received data are returned via a callback function which includes
-receiver statistics such as received signal strength, error vector
-magnitude (see \S\ref{module:modem:digital:interface}),
-as well as the modulation and error-correction schemes.
+the modulation and error-correction schemes used
+as well as certain receiver statistics such as the
+received signal strength (\S\ref{module:agc}),
+and error vector magnitude (\S\ref{module:modem:digital:evm}).
 
-Unlike traditional narrowband systems which transmit data symbols
-quickly in serial,
-OFDM systems transmit many slower data streams in parallel, each called
-a ``subcarrer.''
-This yields many advantages over traditional systems;
-to begin with, equalization consists of a single coefficient per
-subcarrier and can be determined much easier than those for narrowband
-systems.
-% TODO : expand on this...
+% TODO : include figures/diagrams here (?)
 
 
 %
@@ -252,7 +250,7 @@ type {\tt float complex} (for this example $M+c = 64+16 = 80$), viz.
 \begin{Verbatim}[fontsize=\small]
     float complex buffer[80];
 \end{Verbatim}
-
+%
 Generating the frame consists of two steps: assemble and write.
 The {\tt ofdmflexframegen\_assemble(fg,header,payload)} method accepts
 the frame generator object as well as the header and payload arrays we
@@ -311,10 +309,11 @@ Running the program should produce an output similar to this:
 %
 \begin{Verbatim}[fontsize=\small]
 ofdmflexframegen:
+ofdmflexframegen:
     num subcarriers     :   64
-      * NULL            :   12
+      * NULL            :   14
       * pilot           :   6
-      * data            :   46
+      * data            :   44
     cyclic prefix len   :   16
     properties:
       * mod scheme      :   quaternary phase-shift keying (2 b/s)
@@ -325,12 +324,20 @@ ofdmflexframegen:
       * decoded bytes   :   120
       * encoded bytes   :   122
       * modulated syms  :   488
-    total OFDM symbols  :   18
+    total OFDM symbols  :   23
       * S0 symbols      :   3 @ 64
       * S1 symbols      :   1 @ 80
-      * header symbols  :   3 @ 80
-      * payload symbols :   11 @ 80
-    spectral efficiency :   0.6897 b/s/Hz
+      * header symbols  :   7 @ 80
+      * payload symbols :   12 @ 80
+    spectral efficiency :   0.5357 b/s/Hz
+ofdmflexframegen wrote  64 samples 
+ofdmflexframegen wrote  64 samples 
+ofdmflexframegen wrote  64 samples 
+ofdmflexframegen wrote  80 samples 
+ofdmflexframegen wrote  80 samples 
+  ...
+ofdmflexframegen wrote  80 samples 
+ofdmflexframegen wrote  80 samples (last symbol)
 done.
 \end{Verbatim}
 %
@@ -340,6 +347,13 @@ the number of null, pilot, and data subcarriers,
 the number of modulated symbols,
 the number of OFDM symbols,
 and the resulting spectral efficiency.
+%\footnote{The spectral efficiency is computed as the number of raw input
+%          bytes to resulting generated samples...}
+Furthermore, notice that the first three symbols have only 64 samples
+while the remaining have 80;
+these first three symbols are actually part of the preamble to help the
+synchronizer detect the presence of a frame and estimate symbol timing
+and carrier frequency offsets.
 %Furthermore, because we aren't using any forward error correction...
 
 %
@@ -495,9 +509,9 @@ ofdmflexframegen:
     ...
 ofdmflexframesync:
     num subcarriers     :   64
-      * NULL            :   12
+      * NULL            :   14
       * pilot           :   6
-      * data            :   46
+      * data            :   44
     cyclic prefix len   :   16
 ***** callback invoked!
   header (valid)
