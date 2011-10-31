@@ -200,9 +200,8 @@ The {\tt ofdmflexframegen} object can be generated with the
 \item[{\tt props}] is a special structure called
     {\tt ofdmflexframegenprops\_s}
     which gives some basic properties including
-    the length of the payload ({\tt payload\_len}),
-    the forward error-correction scheme(s) to use ({\tt fec0},
-    {\tt fec1}),
+    the inner/outer forward error-correction scheme(s) to use
+    ({\tt fec0}, {\tt fec1}),
     and the modulation scheme ({\tt mod\_scheme}) and depth
     ({\tt mod\_depth}).
     The properties object can be initialized to its default by using
@@ -214,9 +213,8 @@ prefix of 16 samples, the default subcarrier allocation, and
 default properties as
 %
 \begin{Verbatim}[fontsize=\small]
-    // create frame generator and print
+    // create frame generator with default parameters
     ofdmflexframegen fg = ofdmflexframegen_create(64, 16, NULL, NULL);
-    ofdmflexframegen_print(fg);
 \end{Verbatim}
 %
 %For now we will only set the payload length as a framing property,
@@ -250,10 +248,10 @@ type {\tt float complex} (for this example $M+c = 64+16 = 80$), viz.
 \end{Verbatim}
 %
 Generating the frame consists of two steps: assemble and write.
-The {\tt ofdmflexframegen\_assemble(fg,header,payload,payload\_len)}
-method accepts
-the frame generator object as well as the header and payload arrays we
-initialized earlier.
+Assembling the frame simply involves invoking
+the {\tt ofdmflexframegen\_assemble(fg,header,payload,payload\_len)}
+method which accepts the frame generator object as well as the header
+and payload arrays we initialized earlier.
 Internally, the object encodes and modulates the frame, but does not
 write the OFDM symbols yet.
 To write the OFDM time-series symbols, invoke the
@@ -284,6 +282,11 @@ to your source code:
     while (!last_symbol) {
         // write samples to the buffer
         last_symbol = ofdmflexframegen_writesymbol(fg, buffer, &num_written);
+
+        // print status
+        printf("ofdmflexframegen wrote %3u samples %s\n",
+            num_written,
+            last_symbol ? "(last symbol)" : "");
     }
 \end{Verbatim}
 %
@@ -367,7 +370,7 @@ and pass the resulting data back to the user.
 In our program we will pass to the frame synchronizer samples in the
 buffer created by the generator, without adding noise, carrier frequency
 offsets, or other channel impairments.
-
+%
 The {\tt ofdmflexframesync} object can be generated with the
 {\tt ofdmflexframesync\_create(M,c,p,callback,userdata)} method which
 accepts five arguments:
@@ -392,8 +395,8 @@ accepts five arguments:
 %
 Notice that the first three arguments are the same as in the
 {\tt ofdmflexframegen\_create()} method;
-the precise values of these parameters need to be the same in order for
-the synchronizer to operate.
+the values of these parameters at the synchronizer need to match those
+at the transmitter in order for the synchronizer to operate properly.
 %
 When the synchronizer does find a frame, it attempts to decode the header
 and payload and invoke a user-defined callback function.%
@@ -421,18 +424,18 @@ Here is a brief description of the callback function's arguments:
 \item[{\tt \_header}]
     is a pointer to the 8 bytes of decoded header data
     (remember that {\tt header[8]} array you created with the
-    {\tt ofdmflexframegen} object?)
+    {\tt ofdmflexframegen} object?).
     This pointer is not static and cannot be used after returning from
     the callback function.
-    This means that it needs to be copied locally for you to retain the
-    data.
+    This means that it needs to be copied locally before returning
+    in order for you to retain the data.
 \item[{\tt \_header\_valid}]
     is simply a flag to indicate if the header passed its cyclic
     redundancy check
     (``{\tt 0}'' means invalid, ``{\tt 1}'' means valid).
-    If the check fails then the header data most likely has been
-    corrupted beyond the point that the internal error-correction code
-    can recover; proceed with caution!
+    If the check fails then the header data have been corrupted beyond
+    the point that internal error correction can recover;
+    in this situation the payload cannot be recovered.
 \item[{\tt \_payload}]
     is a pointer to the decoded payload data.
     Like the header,
@@ -440,8 +443,12 @@ Here is a brief description of the callback function's arguments:
     the callback function.
     Again, this means that it needs to be copied locally for you to retain the
     data.
+    When the header cannot be decoded ({\tt \_header\_valid == 0})
+    this value is set to {\tt NULL}.
 \item[{\tt \_payload\_len}]
-    is the length (number of bytes) of the payload arra.
+    is the length (number of bytes) of the payload array.
+    When the header cannot be decoded ({\tt \_header\_valid == 0})
+    this value is set to {\tt 0}.
 \item[{\tt \_payload\_valid}]
     is simply a flag to indicate if the payload passed its cyclic
     redundancy check
@@ -451,7 +458,7 @@ Here is a brief description of the callback function's arguments:
     errors.
 \item[{\tt \_stats}]
     is a synchronizer statistics construct that indicates some useful
-    PHY information to the user.
+    PHY information to the user (such as RSSI and EVM).
     We will ignore this information in our program, but it can be quite
     useful for certain applications.
     For more information on the {\tt framesyncstats\_s} structure, see
@@ -459,8 +466,8 @@ Here is a brief description of the callback function's arguments:
 \item[{\tt \_userdata}]
     is a {\tt void} pointer given to the
     {\tt ofdmflexframesync\_create()} method
-    that is passed to this callback function and can represent just
-    about anything.
+    that is passed to this callback function and can represent anything
+    you want it to.
     Typically this pointer is a vehicle for getting the header and
     payload data (as well as any other pertinent information)
     back to your main program.
@@ -495,7 +502,6 @@ Print the newly created synchronizer object to the screen if you like:
 %
 \begin{Verbatim}[fontsize=\small]
     ofdmflexframesync fs = ofdmflexframesync_create(64, 16, NULL, mycallback, NULL);
-    ofdmflexframesync_print(fs);
 \end{Verbatim}
 %
 Within the {\tt while} loop that writes the frame symbols to the buffer,
@@ -559,3 +565,31 @@ as well as noise applied to the channel.
 %\subsection{Final Program}
 %\label{tutorial:ofdmflexframe:completed}
 
+%
+% SUBSECTION : QUESTIONS
+%
+\subsection{Questions}
+\label{tutorial:ofdmflexframe:questions}
+
+\begin{enumerate}
+\item What happens to the spectral efficiency of the frame when you
+      increase the payload from 120 bytes to 400?
+      % answer: efficiency increases from 0.5357 to 0.8439
+      % reason: preamble accounts for less of frame (less overhead)
+      when you decrease the cyclic prefix from 16 samples to 4?
+      % answer: efficiency increases from 0.5357 to 0.6186
+      % reason: fewer overhead samples sent for each OFDM symbol
+      when you increase the number of subcarriers from 64 to 256
+      % answer: efficiency decreases from 0.5357 to 0.400
+      % reason: preamble accounts for MORE of frame (more overhead)
+\item What happens when the frame generator is created with 64
+      subcarriers and the synchronizer is created with only 62?
+      % answer: synchronizer cannot detect frame
+      % reason: different pilots, etc.
+      when the cyclic prefix lengths don't match?
+      % answer: synchronizer cannot decode header
+      % reason: timing mis-alignment
+%\item What happens when you decrease the SNR from 30~dB to 20~dB?
+%      when you decrease the SNR to 10~dB?
+%      when you decrease the SNR to 0~dB?
+\end{enumerate}
