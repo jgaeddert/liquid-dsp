@@ -68,7 +68,7 @@ and a 16-sample cyclic prefix.
 %excellent publications...
 
 In this tutorial we will create a simple pair of OFDM framing objects;
-the generator ({\tt ofdmflexframegne}),
+the generator ({\tt ofdmflexframegen}),
 like the {\tt framegen64} object,
 has a simple interface that accepts raw data in, frame samples out.
 The synchronizer ({\tt ofdmflexframesync}),
@@ -188,16 +188,16 @@ The {\tt ofdmflexframegen} object can be generated with the
 {\tt ofdmflexframegen\_create(M,c,p,props)} method which accepts four arguments:
 %
 \begin{itemize}
-\item[$M$] is an {\tt unsigned int} representing the total number of
+\item $M$ is an {\tt unsigned int} representing the total number of
     subcarriers
-\item[$c$] is an {\tt unsigned int} representing the length of the
+\item $c$ is an {\tt unsigned int} representing the length of the
     cyclic prefix
-\item[$\vec{p}$] is an $M$-element array of {\tt unsigned char} which
+\item $\vec{p}$ is an $M$-element array of {\tt unsigned char} which
     gives the subcarrier allocation (e.g. which subcarriers
     are nulled/disabled, which are pilots, and which carry data).
     Setting to {\tt NULL} tells the {\tt ofdmflexframegen} object to use
     the default subcarrier allocation
-\item[{\tt props}] is a special structure called
+\item {\tt props} is a special structure called
     {\tt ofdmflexframegenprops\_s}
     which gives some basic properties including
     the inner/outer forward error-correction scheme(s) to use
@@ -255,7 +255,9 @@ and payload arrays we initialized earlier.
 Internally, the object encodes and modulates the frame, but does not
 write the OFDM symbols yet.
 To write the OFDM time-series symbols, invoke the
-{\tt ofdmflexframegen\_writesymbol(fg,buffer,*num\_written)} method.
+%{\tt ofdmflexframegen\_writesymbol(fg,buffer,*num\_written)}
+{\tt ofdmflexframegen\_writesymbol()}
+method.
 This method accepts three arguments:
   the frame generator object,
   the output buffer we created earlier,
@@ -273,8 +275,9 @@ Add the instructions to assemble and write a frame one symbol at a time
 to your source code:
 %
 \begin{Verbatim}[fontsize=\small]
-    // assemble the frame
+    // assemble the frame and print
     ofdmflexframegen_assemble(fg, header, payload, payload_len);
+    ofdmflexframegen_print(fg);
 
     // generate the frame one OFDM symbol at a time
     int last_symbol=0;          // flag indicating if this is the last symbol
@@ -310,37 +313,35 @@ Your program should now look similar to this:
 Running the program should produce an output similar to this:
 %
 \begin{Verbatim}[fontsize=\small]
-ofdmflexframegen:
-ofdmflexframegen:
-    num subcarriers     :   64
-      * NULL            :   14
-      * pilot           :   6
-      * data            :   44
-    cyclic prefix len   :   16
-    properties:
-      * mod scheme      :   quaternary phase-shift keying (2 b/s)
-      * fec (inner)     :   none
-      * fec (outer)     :   none
-      * CRC scheme      :   CRC (16-bit)
-    payload:
-      * decoded bytes   :   120
-      * encoded bytes   :   122
-      * modulated syms  :   488
-    total OFDM symbols  :   23
-      * S0 symbols      :   3 @ 64
-      * S1 symbols      :   1 @ 80
-      * header symbols  :   7 @ 80
-      * payload symbols :   12 @ 80
-    spectral efficiency :   0.5357 b/s/Hz
-ofdmflexframegen wrote  64 samples 
-ofdmflexframegen wrote  64 samples 
-ofdmflexframegen wrote  64 samples 
-ofdmflexframegen wrote  80 samples 
-ofdmflexframegen wrote  80 samples 
-  ...
-ofdmflexframegen wrote  80 samples 
-ofdmflexframegen wrote  80 samples (last symbol)
-done.
+    ofdmflexframegen:
+        num subcarriers     :   64
+          * NULL            :   14
+          * pilot           :   6
+          * data            :   44
+        cyclic prefix len   :   16
+        properties:
+          * mod scheme      :   quaternary phase-shift keying (2 b/s)
+          * fec (inner)     :   none
+          * fec (outer)     :   none
+          * CRC scheme      :   CRC (16-bit)
+        payload:
+          * decoded bytes   :   120
+          * encoded bytes   :   122
+          * modulated syms  :   488
+        total OFDM symbols  :   23
+          * S0 symbols      :   3 @ 64
+          * S1 symbols      :   1 @ 80
+          * header symbols  :   7 @ 80
+          * payload symbols :   12 @ 80
+        spectral efficiency :   0.5357 b/s/Hz
+    ofdmflexframegen wrote  64 samples 
+    ofdmflexframegen wrote  64 samples 
+    ofdmflexframegen wrote  64 samples 
+    ofdmflexframegen wrote  80 samples 
+    ofdmflexframegen wrote  80 samples 
+      ...
+    ofdmflexframegen wrote  80 samples (last symbol)
+    done.
 \end{Verbatim}
 %
 Notice that the {\tt ofdmflexframegen\_print()} method gives a lot of
@@ -526,33 +527,25 @@ function was indeed invoked.
 Your output should look something like this:
 %
 \begin{Verbatim}[fontsize=\small]
-ofdmflexframegen:
-    ...
-ofdmflexframesync:
-    num subcarriers     :   64
-      * NULL            :   14
-      * pilot           :   6
-      * data            :   44
-    cyclic prefix len   :   16
-***** callback invoked!
-  header (valid)
-  payload (valid)
-done.
+    ofdmflexframegen:
+        ...
+    ofdmflexframesync:
+        num subcarriers     :   64
+          * NULL            :   14
+          * pilot           :   6
+          * data            :   44
+        cyclic prefix len   :   16
+    ***** callback invoked!
+      header (valid)
+      payload (valid)
+    done.
 \end{Verbatim}
 %
 Your program has demonstrated the basic functionality of the OFDM frame
 generator and synchronizer.
 The previous tutorial on framing (\S\ref{tutorial:framing}) added
-a carrier offset and noise to the signal before synchronizing.
-I will leave adding these channel impairments as an exercise to the
-reader, as well as introducing a multi-path environment.
-%
-For a more detailed program, see {\tt examples/ofdmflexframesync\_example.c}
-in the main \liquid\ directory;
-this example demonstrates setting different properties of the frame,
-including the forward error-correction, error detection, and modulation
-schemes,
-as well as noise applied to the channel.
+a carrier offset and noise to the signal before synchronizing;
+these channel impairments are addressed in the next section.
 %
 % The {\tt examples/ofdmflexframesync\_advanced\_example.c} includes a
 % more sophisticated channel model including multi-path fading as well
@@ -660,6 +653,15 @@ synchronizer:
 Your program should look something like this:
 %
 \input{tutorials/ofdmflexframe_advanced_tutorial.c.tex}
+%
+Run this program to verify that the frame is indeed detected
+and the payload is received free of errors.
+For a more detailed program, see
+{\tt examples/ofdmflexframesync\_example.c}
+in the main \liquid\ directory;
+this example also demonstrates setting different properties of the
+frame, but permits options to be passed to the program from the command
+line, rather than requiring the program to be re-compiled.
 %
 
 %
