@@ -1272,6 +1272,7 @@ sandbox_programs =						\
 	sandbox/fec_golay2412_test				\
 	sandbox/fec_golay_test					\
 	sandbox/fec_hamming3126_example				\
+	sandbox/fec_hamming128_test				\
 	sandbox/fec_hamming128_gentab				\
 	sandbox/fec_hamming128_example				\
 	sandbox/fec_hamming74_gentab				\

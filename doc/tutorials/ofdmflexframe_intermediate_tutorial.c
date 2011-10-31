@@ -22,34 +22,30 @@ int mycallback(unsigned char *  _header,
 
 int main() {
     // options
-    unsigned int M = 64;                            // number of subcarriers
-    unsigned int cp_len = 16;                       // cyclic prefix length
-    unsigned int payload_len = 120;                 // length of payload (bytes)
+    unsigned int M = 64;                    // number of subcarriers
+    unsigned int cp_len = 16;               // cyclic prefix length
+    unsigned int payload_len = 120;         // length of payload (bytes)
 
     // allocate memory for header, payload, sample buffer
-    float complex buffer[M + cp_len];               // time-domain buffer
-    unsigned char header[8];                        // header
-    unsigned char payload[payload_len];             // payload
+    float complex buffer[M + cp_len];       // time-domain buffer
+    unsigned char header[8];                // header
+    unsigned char payload[payload_len];     // payload
 
-    // create frame generator properties oject and initialize to default
-    ofdmflexframegenprops_s fgprops;                // create properties object
-    ofdmflexframegenprops_init_default(&fgprops);   // initialize to default
-    fgprops.payload_len = payload_len;              // set payload length
+    // create frame generator object with default properties
+    ofdmflexframegen fg = ofdmflexframegen_create(M, cp_len, NULL, NULL);
 
-    // create frame generator object and print
-    ofdmflexframegen fg = ofdmflexframegen_create(M, cp_len, NULL, &fgprops);
-    ofdmflexframegen_print(fg);
-
-    // create frame synchronizer object and print
+    // create frame synchronizer object
     ofdmflexframesync fs = ofdmflexframesync_create(M, cp_len, NULL, mycallback, NULL);
-    ofdmflexframesync_print(fs);
 
     unsigned int i;
 
     // initialize header/payload and assemble frame
     for (i=0; i<8; i++)           header[i]  = i      & 0xff;
     for (i=0; i<payload_len; i++) payload[i] = rand() & 0xff;
-    ofdmflexframegen_assemble(fg, header, payload);
+    ofdmflexframegen_assemble(fg, header, payload, payload_len);
+
+    ofdmflexframegen_print(fg);
+    ofdmflexframesync_print(fs);
 
     // generate frame and synchronize
     int last_symbol=0;
