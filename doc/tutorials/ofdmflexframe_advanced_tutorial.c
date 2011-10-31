@@ -30,6 +30,8 @@ int main() {
     fec_scheme fec0  = LIQUID_FEC_NONE;         // inner FEC scheme
     fec_scheme fec1  = LIQUID_FEC_HAMMING128;   // outer FEC scheme
     crc_scheme check = LIQUID_CRC_32;           // data validity check
+    float dphi  = 0.001f;                       // carrier frequency offset
+    float SNRdB = 30.0f;                        // signal-to-noise ratio [dB]
 
     // allocate memory for header, payload, sample buffer
     float complex buffer[M + cp_len];           // time-domain buffer
@@ -57,12 +59,23 @@ int main() {
     for (i=0; i<payload_len; i++) payload[i] = rand() & 0xff;
     ofdmflexframegen_assemble(fg, header, payload, payload_len);
 
+    // channel parameters
+    float nstd = powf(10.0f, -SNRdB/20.0f); // noise standard deviation
+    float phi = 0.0f;                       // channel phase
+
     // generate frame and synchronize
     int last_symbol=0;
     unsigned int num_written;
     while (!last_symbol) {
         // generate symbol (write samples to buffer)
         last_symbol = ofdmflexframegen_writesymbol(fg, buffer, &num_written);
+
+        // channel impairments
+        for (i=0; i<num_written; i++) {
+            buffer[i] *= cexpf(_Complex_I*phi); // carrier offset
+            phi += dphi;                        // update carrier phase
+            cawgn(&buffer[i], nstd);            // add noise
+        }
 
         // receive symbol (read samples from buffer)
         ofdmflexframesync_execute(fs, buffer, num_written);
