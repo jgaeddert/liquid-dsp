@@ -12,7 +12,9 @@ We have also used the basic {\tt framegen64} and {\tt framesync64}
 objects to transmit and receive simple framing data.
 This tutorial extends the work on the previous tutorials by introducing
 a flexible framing structure that uses a parallel data transmission
-scheme that permits...
+scheme that permits arbitrary parameterization
+(modulation, forward error-correction, payload length, etc.)
+with minimal reconfiguration at the receiver.
 
 
 %
@@ -233,7 +235,7 @@ Raw ``message'' data are stored as arrays of type {\tt unsigned char} in
 \liquid.
 %
 \begin{Verbatim}[fontsize=\small]
-    unsigned char header[12];
+    unsigned char header[8];
     unsigned char payload[120];
 \end{Verbatim}
 %
@@ -363,9 +365,11 @@ and carrier frequency offsets.
 \label{tutorial:ofdmflexframe:framesync}
 The OFDM frame synchronizer's purpose is to detect the presence of a
 frame, correct for channel impairments (such as a carrier frequency
-offset), decode the data, and pass it back to the user.
+offset), decode the data (correct for errors in the presence of noise),
+and pass the resulting data back to the user.
 In our program we will pass to the frame synchronizer samples in the
-buffer created by the generator.
+buffer created by the generator, without adding noise, carrier frequency
+offsets, or other channel impairments.
 
 The {\tt ofdmflexframesync} object can be generated with the
 {\tt ofdmflexframesync\_create(M,c,p,callback,userdata)} method which
@@ -389,10 +393,16 @@ accepts five arguments:
     Set to {\tt NULL} if you don't wish to use this.
 \end{itemize}
 %
-When the synchronizer finds a frame, it attempts to decode the header
-and payload and invoke a user-defined callback function.
-For a basic description of how callback functions work, refer to the
-basic framing tutorial in \S\ref{tutorial:framing:framesync}.
+Notice that the first three arguments are the same as in the
+{\tt ofdmflexframegen\_create()} method;
+the precise values of these parameters need to be the same in order for
+the synchronizer to operate.
+%
+When the synchronizer does find a frame, it attempts to decode the header
+and payload and invoke a user-defined callback function.%
+\footnote{a basic description of how callback functions work is given in
+          the basic framing tutorial in
+          \S\ref{tutorial:framing:framesync}.}
 The callback function for the {\tt ofdmflexframesync} object has seven
 arguments and looks like this:
 %
@@ -408,10 +418,13 @@ arguments and looks like this:
 %
 The callback is typically defined to be {\tt static} and is passed to
 the instance of {\tt ofdmflexframesync} object when it is created.
+Here is a brief description of the callback function's arguments:
 %
 \begin{description}
 \item[{\tt \_header}]
-    is a pointer to the 8 bytes of decoded header data.
+    is a pointer to the 8 bytes of decoded header data
+    (remember that {\tt header[8]} array you created with the
+    {\tt ofdmflexframegen} object?)
     This pointer is not static and cannot be used after returning from
     the callback function.
     This means that it needs to be copied locally for you to retain the
@@ -437,7 +450,8 @@ the instance of {\tt ofdmflexframesync} object when it is created.
     redundancy check
     (``{\tt 0}'' means invalid, ``{\tt 1}'' means valid).
     As with the header,
-    if this flag is zero then the payload most likely has errors in it.
+    if this flag is zero then the payload almost certainly contains
+    errors.
 \item[{\tt \_stats}]
     is a synchronizer statistics construct that indicates some useful
     PHY information to the user.
@@ -450,10 +464,14 @@ the instance of {\tt ofdmflexframesync} object when it is created.
     {\tt ofdmflexframesync\_create()} method
     that is passed to this callback function and can represent just
     about anything.
+    Typically this pointer is a vehicle for getting the header and
+    payload data (as well as any other pertinent information)
+    back to your main program.
 \end{description}
 %
 This can seem a bit overwhelming at first, but relax!
-The next version of our program will only add about 20 lines of code.
+The next version of our program will only add about 20 lines of code to
+our previous program.
 
 %
 % SUBSECTION : 
