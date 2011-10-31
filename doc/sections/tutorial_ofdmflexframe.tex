@@ -211,15 +211,11 @@ The {\tt ofdmflexframegen} object can be generated with the
 %
 To begin, create a frame generator having 64 subcarriers with cyclic
 prefix of 16 samples, the default subcarrier allocation, and
-a payload of 120 bytes (but otherwise default properties) as
+default properties as
 %
 \begin{Verbatim}[fontsize=\small]
-    ofdmflexframegenprops_s fgprops;                // create properties object
-    ofdmflexframegenprops_init_default(&fgprops);   // initialize to default
-    fgprops.payload_len = 120;                      // set payload length
-
     // create frame generator and print
-    ofdmflexframegen fg = ofdmflexframegen_create(64, 16, NULL, &fgprops);
+    ofdmflexframegen fg = ofdmflexframegen_create(64, 16, NULL, NULL);
     ofdmflexframegen_print(fg);
 \end{Verbatim}
 %
@@ -254,7 +250,8 @@ type {\tt float complex} (for this example $M+c = 64+16 = 80$), viz.
 \end{Verbatim}
 %
 Generating the frame consists of two steps: assemble and write.
-The {\tt ofdmflexframegen\_assemble(fg,header,payload)} method accepts
+The {\tt ofdmflexframegen\_assemble(fg,header,payload,payload\_len)}
+method accepts
 the frame generator object as well as the header and payload arrays we
 initialized earlier.
 Internally, the object encodes and modulates the frame, but does not
@@ -279,7 +276,7 @@ to your source code:
 %
 \begin{Verbatim}[fontsize=\small]
     // assemble the frame
-    ofdmflexframegen_assemble(fg, header, payload);
+    ofdmflexframegen_assemble(fg, header, payload, payload_len);
 
     // generate the frame one OFDM symbol at a time
     int last_symbol=0;          // flag indicating if this is the last symbol

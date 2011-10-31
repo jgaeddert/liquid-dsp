@@ -16,13 +16,8 @@ int main() {
     unsigned char header[8];                        // header
     unsigned char payload[payload_len];             // payload
 
-    // create frame generator properties oject and initialize to default
-    ofdmflexframegenprops_s fgprops;                // create properties object
-    ofdmflexframegenprops_init_default(&fgprops);   // initialize to default
-    fgprops.payload_len = payload_len;              // set payload length
-
-    // create frame generator object
-    ofdmflexframegen fg = ofdmflexframegen_create(M, cp_len, NULL, &fgprops);
+    // create frame generator object with default properties
+    ofdmflexframegen fg = ofdmflexframegen_create(M, cp_len, NULL, NULL);
     ofdmflexframegen_print(fg);
 
     unsigned int i;
@@ -30,7 +25,7 @@ int main() {
     // initialize header/payload and assemble frame
     for (i=0; i<8; i++)           header[i]  = i      & 0xff;
     for (i=0; i<payload_len; i++) payload[i] = rand() & 0xff;
-    ofdmflexframegen_assemble(fg, header, payload);
+    ofdmflexframegen_assemble(fg, header, payload, payload_len);
 
     // generate frame one OFDM symbol at a time
     int last_symbol=0;

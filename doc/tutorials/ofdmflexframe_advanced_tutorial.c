@@ -39,7 +39,6 @@ int main() {
     // create frame generator
     ofdmflexframegenprops_s fgprops;
     ofdmflexframegenprops_init_default(&fgprops);
-    fgprops.payload_len     = payload_len;
     fgprops.check           = check;
     fgprops.fec0            = fec0;
     fgprops.fec1            = fec1;
@@ -56,7 +55,7 @@ int main() {
     // initialize header/payload and assemble frame
     for (i=0; i<8; i++)           header[i]  = i      & 0xff;
     for (i=0; i<payload_len; i++) payload[i] = rand() & 0xff;
-    ofdmflexframegen_assemble(fg, header, payload);
+    ofdmflexframegen_assemble(fg, header, payload, payload_len);
 
     // generate frame and synchronize
     int last_symbol=0;
