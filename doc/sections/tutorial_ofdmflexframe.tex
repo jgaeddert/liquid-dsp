@@ -142,7 +142,7 @@ In this tutorial we will be using the {\tt ofdmflexframegen} and
 framing generator (transmitter) and synchronizer (receiver).
 The OFDM framing stucture is briefly described here
 (for a more detailed description, see
-Section~\ref{module:framing:ofdmflexframe}).
+\S\ref{module:framing:ofdmflexframe}).
 The {\tt ofdmflexframe} generator and synchronizer objects
 together realize a simple framing structure
 for loading data onto a reconfigurable OFDM physical layer.
@@ -164,7 +164,7 @@ Furthermore, the reciever can compensate for carrier phase/frequency and
 timing offsets as well as multi-path fading and noisy channels.
 The received data are returned via a callback function which includes
 receiver statistics such as received signal strength, error vector
-magnitude (see Section~\ref{module:modem:digital:interface}),
+magnitude (see \S\ref{module:modem:digital:interface}),
 as well as the modulation and error-correction schemes.
 
 Unlike traditional narrowband systems which transmit data symbols
@@ -364,7 +364,7 @@ accepts five arguments:
     cyclic prefix
 \item $\vec{p}$ is an $M$-element array of {\tt unsigned char} which
     gives the subcarrier allocation
-    (see Section~\ref{tutorial:ofdmflexframe:framegen})
+    (see \S\ref{tutorial:ofdmflexframe:framegen})
 \item {\tt callback}
     is a pointer to your callback function which will be invoked each
     time a frame is found and decoded.
@@ -378,7 +378,7 @@ accepts five arguments:
 When the synchronizer finds a frame, it attempts to decode the header
 and payload and invoke a user-defined callback function.
 For a basic description of how callback functions work, refer to the
-basic framing tutorial in Section~\ref{tutorial:framing:framesync}.
+basic framing tutorial in \S\ref{tutorial:framing:framesync}.
 The callback function for the {\tt ofdmflexframesync} object has seven
 arguments and looks like this:
 %
@@ -430,7 +430,7 @@ the instance of {\tt ofdmflexframesync} object when it is created.
     We will ignore this information in our program, but it can be quite
     useful for certain applications.
     For more information on the {\tt framesyncstats\_s} structure, see
-    Section~\ref{module:framing:framesyncstats_s}.
+    \S\ref{module:framing:framesyncstats_s}.
 \item[{\tt \_userdata}]
     is a {\tt void} pointer given to the
     {\tt ofdmflexframesync\_create()} method
@@ -507,7 +507,7 @@ done.
 %
 Your program has demonstrated the basic functionality of the OFDM frame
 generator and synchronizer.
-The previous tutorial on framing (Section~\ref{tutorial:framing}) added
+The previous tutorial on framing (\S\ref{tutorial:framing}) added
 a carrier offset and noise to the signal before synchronizing.
 I will leave adding these channel impairments as an exercise to the
 reader, as well as introducing a multi-path environment.
