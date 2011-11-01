@@ -207,18 +207,18 @@ void spc2216_decode(unsigned char * _msg_rec,
 #else
     // iterate...
     unsigned int i;
+    unsigned char sym_enc[3];   // encoded 22-bit message
+    unsigned char e_hat[3];     // estimated error vector
     
     // transpose...
     spc2216_transpose_row(m_hat, parity_row, w);
 
     // compute syndromes on columns and decode
-    unsigned char sym_enc[3];
-    unsigned char sym_dec[2];
     for (i=0; i<22; i++) {
         sym_enc[0] = parity_col[i];
         sym_enc[1] = w[2*i+0];
         sym_enc[2] = w[2*i+1];
-        int syndrome_flag = fec_secded2216_decode_symbol(sym_enc, sym_dec);
+        int syndrome_flag = fec_secded2216_estimate_ehat(sym_enc, e_hat);
 
         if (syndrome_flag == 0) {
             printf("%3u : no errors detected\n", i);
@@ -228,15 +228,48 @@ void spc2216_decode(unsigned char * _msg_rec,
             printf("%3u : multiple errors detected\n", i);
         }
 
-        // TODO : also copy corrected parity bits!!!
-        // copy decoded result
-        w[2*i+0] = sym_dec[0];
-        w[2*i+1] = sym_dec[1];
+        // apply error vector estimate to appropriate arrays
+        parity_col[i] ^= e_hat[0];
+        w[2*i+0]      ^= e_hat[1];
+        w[2*i+1]      ^= e_hat[2];
     }
+#if 1
+    printf("******** transposed: **********\n");
+    for (i=0; i<22; i++) {
+        printf("    ");
+        print_bitstring(w[2*i+0], 8);
+        print_bitstring(w[2*i+1], 8);
+        printf("\n");
+        if (i==15)
+            printf("    ---------------------------------\n");
+    }
+#endif
 
     // transpose back
+    spc2216_transpose_col(w, m_hat, parity_row);
 
-    // compute syndromes on rows and decode...
+    // compute syndromes on rows and decode
+    for (i=0; i<16; i++) {
+        sym_enc[0] = parity_row[i];
+        sym_enc[1] = m_hat[2*i+0];
+        sym_enc[2] = m_hat[2*i+1];
+        int syndrome_flag = fec_secded2216_estimate_ehat(sym_enc, e_hat);
+
+        if (syndrome_flag == 0) {
+            printf("%3u : no errors detected\n", i);
+        } else if (syndrome_flag == 1) {
+            printf("%3u : one error detected and corrected!\n", i);
+        } else {
+            printf("%3u : multiple errors detected\n", i);
+        }
+
+#if 0
+        // apply error vector estimate to appropriate arrays
+        parity_col[i] ^= e_hat[0];
+        m_hat[2*i+0]  ^= e_hat[1];
+        m_hat[2*i+1]  ^= e_hat[2];
+#endif
+    }
 #endif
 }
 
@@ -352,24 +385,22 @@ void spc2216_transpose_col(unsigned char * _w,
     spc2216_transpose_block(_w, 16, _m);
 
     // transpose row parities
-    unsigned int i;
-#if 0
-    unsigned int j;
+    unsigned int i; // input row
+    unsigned int j; // input column (rem 8)
+
+    // initialize to zero
+    for (i=0; i<16; i++)
+        _pr[i] = 0;
+
     for (i=0; i<6; i++) {
         unsigned char mask = 1 << (6-i-1);
-        unsigned char w0 = 0;
-        unsigned char w1 = 0;
         for (j=0; j<8; j++) {
-            w0 |= (_pr[j  ] & mask) ? 1 << (8-j-1) : 0;
-            w1 |= (_pr[j+8] & mask) ? 1 << (8-j-1) : 0;
+            _pr[j  ] |= (_w[32 + 2*i + 0] & (1 << (8-j-1)) ) ? mask : 0;
+            _pr[j+8] |= (_w[32 + 2*i + 1] & (1 << (8-j-1)) ) ? mask : 0;
         }
-
-        _w[32 + 2*i + 0] = w0;
-        _w[32 + 2*i + 1] = w1;
     }
-#endif
 
-#if 1
+#if 0
     printf("transposed (reverse):\n");
     for (i=0; i<16; i++) {
         printf("    ");
