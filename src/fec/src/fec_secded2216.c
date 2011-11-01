@@ -142,23 +142,12 @@ void fec_secded2216_decode_symbol(unsigned char * _sym_enc,
         int syndrome_match = 0;
 
         unsigned int n;
-#if 0
-        for (n=0; n<22; n++) {
-            if (s == secded2216_syndrome_w1[n]) {
-                // set estimated error vector (set bit at appropriate index)
-                // TODO : check this...
-                div_t d = div(n,8);
-                e_hat[2-d.quot] = 1 << d.rem;
-
-                // set flag and break from loop
-                syndrome_match = 1;
-                break;
-            }
-        }
-#else
         // estimate error location
-        unsigned char e_test[3]  = {0x00, 0x0000, 0x0001};
         for (n=0; n<22; n++) {
+            unsigned char e_test[3] = {0,0,0};
+            div_t d = div(n,8);
+            e_test[3-d.quot-1] = 1 << d.rem;
+
             if (s == fec_secded2216_compute_syndrome(e_test)) {
                 // single error detected
                 e_hat[0] = e_test[0];
@@ -169,13 +158,7 @@ void fec_secded2216_decode_symbol(unsigned char * _sym_enc,
                 syndrome_match = 1;
                 break;
             }
-            
-            // shift e_test
-            e_test[0] = (e_test[0] << 1) | ((e_test[1] & 0x80) ? 1 : 0);
-            e_test[1] = (e_test[1] << 1) | ((e_test[2] & 0x80) ? 1 : 0);
-            e_test[2] <<= 1;
         }
-#endif
 
 #if DEBUG_FEC_SECDED2216
         if (syndrome_match)
