@@ -72,8 +72,13 @@ void spc2216_unpack(unsigned char * _v,
                     unsigned char * _pc,
                     unsigned char * _m);
 
-// transpose raw message block
-//void spc2216_transpose_row(unsigned char * _m...);
+// transpose message block and row parities
+//  _m  :   input message block [size: 16 x 16 bits, 32 bytes]
+//  _pr :   row parities        [size: 16 x  6 bits, 16 bytes]
+//  _w  :   transposed array    [size: 22 x 16 bits, 44 bytes]
+void spc2216_transpose_row(unsigned char * _m,
+                           unsigned char * _pr,
+                           unsigned char * _w);
 
 // print decoded block
 void spc2216_print_decoded(unsigned char * _m);
@@ -91,7 +96,7 @@ void print_bitstring(unsigned char _x,
 {
     unsigned int i;
     for (i=0; i<_n; i++)
-        printf("%2u", (_x >> (_n-i-1)) & 1);
+        printf("%2s", ((_x >> (_n-i-1)) & 1) ? "1" : ".");
 }
 
 int main(int argc, char*argv[])
@@ -112,12 +117,13 @@ int main(int argc, char*argv[])
     unsigned char m_hat[32];// estimated original message
 
     // generate random transmitted message
-#if 0
     for (i=0; i<32; i++)
         m[i] = rand() & 0xff;
-#else
+#if 0
     for (i=0; i<32; i++)
         m[i] = (i % 2) == 0 ? 0x80 >> (i/2) : 0;
+    for (i=0; i<32; i++)
+        m[i] = i == 0 ? 0x80 : 0x00;
 #endif
     printf("m (original message):\n");
     spc2216_print_decoded(m);
@@ -155,11 +161,13 @@ void spc2216_encode(unsigned char * _msg_org,
 
     // compute row parities
     for (i=0; i<16; i++)
-        parity_row[i] = i;
+        parity_row[i] = fec_secded2216_compute_parity(&_msg_org[2*i]);
 
     // compute column parities
+    unsigned char w[44];
+    spc2216_transpose_row(_msg_org, parity_row, w);
     for (i=0; i<22; i++)
-        parity_col[i] = i;
+        parity_col[i] = fec_secded2216_compute_parity(&w[2*i]);
 
     // pack encoded message
     spc2216_pack(_msg_org, parity_row, parity_col, _msg_enc);
@@ -237,6 +245,66 @@ void spc2216_unpack(unsigned char * _v,
     }
 }
 
+// transpose message block and row parities
+//  _m  :   input message block [size: 16 x 16 bits, 32 bytes]
+//  _pr :   row parities        [size: 16 x  6 bits, 16 bytes]
+//  _w  :   transposed array    [size: 22 x 16 bits, 44 bytes]
+void spc2216_transpose_row(unsigned char * _m,
+                           unsigned char * _pr,
+                           unsigned char * _w)
+{
+    unsigned int i;
+    unsigned int j;
+    unsigned int k;
+    
+    // transpose main input message
+    for (i=0; i<44; i++)
+        _w[i] = 0x00;
+
+    unsigned char w0;
+    unsigned char w1;
+    for (i=0; k<2; k++) {
+        for (i=0; i<8; i++) {
+            unsigned char mask = 1 << (8-i-1);
+            w0 = 0;
+            w1 = 0;
+            for (j=0; j<8; j++) {
+                w0 |= (_m[2*j + 16*k + 0] & mask) ? 1 << (8-j-1) : 0;
+                w1 |= (_m[2*j + 16*k + 1] & mask) ? 1 << (8-j-1) : 0;
+            }
+
+            _w[2*i      + k] = w0;
+            _w[2*i + 16 + k] = w1;
+        }
+    }
+
+    // transpose row parities
+    for (i=0; i<6; i++) {
+        unsigned char mask = 1 << (6-i-1);
+        w0 = 0;
+        w1 = 0;
+        for (j=0; j<8; j++) {
+            w0 |= (_pr[j  ] & mask) ? 1 << (8-j-1) : 0;
+            w1 |= (_pr[j+8] & mask) ? 1 << (8-j-1) : 0;
+        }
+
+        _w[32 + 2*i + 0] = w0;
+        _w[32 + 2*i + 1] = w1;
+    }
+
+#if 0
+    printf("transposed:\n");
+    for (i=0; i<22; i++) {
+        printf("    ");
+        print_bitstring(_w[2*i+0], 8);
+        print_bitstring(_w[2*i+1], 8);
+        printf("\n");
+        if (i==15)
+            printf("    ---------------------------------\n");
+    }
+#endif
+}
+
 // print decoded block
 void spc2216_print_decoded(unsigned char * _m)
 {
@@ -283,10 +351,10 @@ void spc2216_print_unpacked(unsigned char * _m,
 
     // print column parities
     unsigned int j;
-    for (j=0; j<8; j++) {
+    for (j=0; j<6; j++) {
         printf("    ");
         for (i=0; i<22; i++) {
-            printf("%2u", ((_pc[i] >> j) & 0x01) ? 1 : 0);
+            printf("%2s", ((_pc[i] >> j) & 0x01) ? "1" : ".");
 
             if (i==15) printf(" ");
         }
