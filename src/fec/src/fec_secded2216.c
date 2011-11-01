@@ -99,7 +99,9 @@ unsigned char fec_secded2216_compute_syndrome(unsigned char * _v)
     return syndrome;
 }
 
-// compute encoded/transmitted message: v = m*G
+// encode symbol
+//  _sym_dec    :   decoded symbol [size: 2 x 1]
+//  _sym_enc    :   encoded symbol [size: 3 x 1], _sym_enc[0] has only 6 bits
 void fec_secded2216_encode_symbol(unsigned char * _sym_dec,
                                   unsigned char * _sym_enc)
 {
@@ -111,9 +113,15 @@ void fec_secded2216_encode_symbol(unsigned char * _sym_dec,
     _sym_enc[2] = _sym_dec[1];
 }
 
-// TODO : return '1' if multiple errors detected, '0' otherwise
-void fec_secded2216_decode_symbol(unsigned char * _sym_enc,
-                                  unsigned char * _sym_dec)
+// decode symbol, returning
+//  0 : no errors detected
+//  1 : one error detected and corrected
+//  2 : multiple errors detected (none corrected)
+// inputs:
+//  _sym_enc    :   encoded symbol [size: 3 x 1], _sym_enc[0] has only 6 bits
+//  _sym_dec    :   decoded symbol [size: 2 x 1]
+int fec_secded2216_decode_symbol(unsigned char * _sym_enc,
+                                 unsigned char * _sym_dec)
 {
 #if 0
     // validate input
@@ -130,16 +138,18 @@ void fec_secded2216_decode_symbol(unsigned char * _sym_enc,
 
     // compute weight of s
     unsigned int ws = liquid_c_ones[s];
+    
+    // syndrome match flag
+    int syndrome_match = 0;
 
     if (ws == 0) {
         // no errors detected; copy input and return
         _sym_dec[0] = _sym_enc[1];
         _sym_dec[1] = _sym_enc[2];
-        return;
+        return 0;
     } else {
         // estimate error location; search for syndrome with error
         // vector of weight one
-        int syndrome_match = 0;
 
         unsigned int n;
         // estimate error location
@@ -155,12 +165,6 @@ void fec_secded2216_decode_symbol(unsigned char * _sym_enc,
             }
         }
 
-#if DEBUG_FEC_SECDED2216
-        if (syndrome_match)
-            printf("secded2216_decode_symbol(): match found!\n");
-        else
-            printf("secded2216_decode_symbol(): no match found (multiple errors detected)\n");
-#endif
     }
 
     // compute estimated transmit vector (last 64 bits of encoded message)
@@ -168,6 +172,18 @@ void fec_secded2216_decode_symbol(unsigned char * _sym_enc,
     //       arrays holds the parity bits
     _sym_dec[0] = _sym_enc[1] ^ e_hat[1];
     _sym_dec[1] = _sym_enc[2] ^ e_hat[2];
+
+    if (syndrome_match) {
+#if DEBUG_FEC_SECDED2216
+        printf("secded2216_decode_symbol(): match found!\n");
+#endif
+        return 1;
+    }
+
+#if DEBUG_FEC_SECDED2216
+    printf("secded2216_decode_symbol(): no match found (multiple errors detected)\n");
+#endif
+    return 2;
 }
 
 // create SEC-DED (72,64) codec object
