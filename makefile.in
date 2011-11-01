@@ -1278,7 +1278,7 @@ sandbox_programs =						\
 	sandbox/fec_hamming_test				\
 	sandbox/fec_rep3_test					\
 	sandbox/fec_rep5_test					\
-	sandbox/fec_secded_test					\
+	sandbox/fec_secded7264_test				\
 	sandbox/fecsoft_conv_test				\
 	sandbox/fecsoft_golay_test				\
 	sandbox/fecsoft_hamming128_gentab			\
