@@ -52,12 +52,12 @@ unsigned char secded2216_P[12] = {
 
 // syndrome vectors for errors of weight 1
 unsigned char secded2216_syndrome_w1[22] = {
-    0,0,0,0,
-    0,0,0,0,
-    0,0,0,0,
-    0,0,0,0,
-    0,0,0,0,
-    0,0};
+    0x07, 0x13, 0x23, 0x31, 
+    0x25, 0x29, 0x0e, 0x16, 
+    0x26, 0x1a, 0x19, 0x38, 
+    0x32, 0x1c, 0x0d, 0x2c, 
+    0x01, 0x02, 0x04, 0x08, 
+    0x10, 0x20};
 
 // compute parity on 16-bit input
 unsigned char fec_secded2216_compute_parity(unsigned char * _m)
@@ -142,15 +142,10 @@ void fec_secded2216_decode_symbol(unsigned char * _sym_enc,
         unsigned int n;
         // estimate error location
         for (n=0; n<22; n++) {
-            unsigned char e_test[3] = {0,0,0};
-            div_t d = div(n,8);
-            e_test[3-d.quot-1] = 1 << d.rem;
-
-            if (s == fec_secded2216_compute_syndrome(e_test)) {
-                // single error detected
-                e_hat[0] = e_test[0];
-                e_hat[1] = e_test[1];
-                e_hat[2] = e_test[2];
+            if (s == secded2216_syndrome_w1[n]) {
+                // single error detected at location 'n'
+                div_t d = div(n,8);
+                e_hat[3-d.quot-1] = 1 << d.rem;
 
                 // set flag and break from loop
                 syndrome_match = 1;
@@ -162,7 +157,7 @@ void fec_secded2216_decode_symbol(unsigned char * _sym_enc,
         if (syndrome_match)
             printf("secded2216_decode_symbol(): match found!\n");
         else
-            printf("secded2216_decode_symbol(): match found!\n");
+            printf("secded2216_decode_symbol(): no match found (multiple errors detected)\n");
 #endif
     }
 

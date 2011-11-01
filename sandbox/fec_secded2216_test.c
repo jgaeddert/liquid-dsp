@@ -177,18 +177,19 @@ int main(int argc, char*argv[])
         unsigned int n;
         for (n=0; n<22; n++) {
             // compute syndrome
-            unsigned int s_hat = 0;
+            unsigned int s_test = 0;
 
             for (i=0; i<6; i++) {
-                s_hat <<= 1;
+                s_test <<= 1;
                 unsigned int p =
                     ( (e_test[0] & (1<<(6-i-1))) ? 1 : 0 )+
                     liquid_count_ones(P[2*i+0] & e_test[1]) +
                     liquid_count_ones(P[2*i+1] & e_test[2]);
 
-                s_hat |= p & 0x01;
+                s_test |= p & 0x01;
             }
 
+#if 1
             // print results
             //printf("e_test:"); print_bitstring(e_test, 72);
             printf("%3u : e = ", n);
@@ -196,11 +197,15 @@ int main(int argc, char*argv[])
             print_bitstring_short(e_test[1],8); printf(" ");
             print_bitstring_short(e_test[2],8); printf(" ");
             printf(", s = ");
-            print_bitstring_short(s_hat,6);
-            if (s == s_hat) printf(" *");
+            print_bitstring_short(s_test,6);
+            if (s == s_test) printf(" *");
             printf("\n");
+#else
+            // print output array (secded2216_syndrome_w1[])
+            printf("0x%.2x\n", s_test);
+#endif
 
-            if (s == s_hat) {
+            if (s == s_test) {
                 memmove(e_hat, e_test, sizeof(e_test));
                 syndrome_match = 1;
             }
