@@ -398,6 +398,33 @@ void fec_golay2412_decode(fec _q,
                           unsigned char * _msg_enc,
                           unsigned char * _msg_dec);
 
+// SEC-DED (22,16)
+
+// compute parity on 16-bit input
+unsigned char fec_secded2216_compute_parity(unsigned char * _m);
+
+// compute syndrome on 22-bit input
+unsigned char fec_secded2216_compute_syndrome(unsigned char * _v);
+
+void fec_secded2216_encode_symbol(unsigned char * _sym_dec,
+                                  unsigned char * _sym_enc);
+void fec_secded2216_decode_symbol(unsigned char * _sym_enc,
+                                  unsigned char * _sym_dec);
+extern unsigned char secded2216_P[12];
+extern unsigned char secded2216_syndrome_w1[22];
+
+fec fec_secded2216_create(void *_opts);
+void fec_secded2216_destroy(fec _q);
+void fec_secded2216_print(fec _q);
+void fec_secded2216_encode(fec _q,
+                           unsigned int _dec_msg_len,
+                           unsigned char * _msg_dec,
+                           unsigned char * _msg_enc);
+void fec_secded2216_decode(fec _q,
+                           unsigned int _dec_msg_len,
+                           unsigned char * _msg_enc,
+                           unsigned char * _msg_dec);
+
 // SEC-DED (72,64)
 
 void fec_secded7264_encode_symbol(unsigned int * _sym_dec,
