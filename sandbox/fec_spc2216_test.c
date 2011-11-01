@@ -72,6 +72,13 @@ void spc2216_unpack(unsigned char * _v,
                     unsigned char * _pc,
                     unsigned char * _m);
 
+// transpose square message block (generic)
+//  _m  :   input message block [size: _n x _n bits, _n*_n/8 bytes]
+//  _n  :   matrix dimension (must be divisble by 8)
+void spc2216_transpose_block(unsigned char * _m,
+                             unsigned int    _n,
+                             unsigned char * _mT);
+
 // transpose message block and row parities
 //  _m  :   input message block [size: 16 x 16 bits, 32 bytes]
 //  _pr :   row parities        [size: 16 x  6 bits, 16 bytes]
@@ -253,36 +260,17 @@ void spc2216_transpose_row(unsigned char * _m,
                            unsigned char * _pr,
                            unsigned char * _w)
 {
-    unsigned int i;
-    unsigned int j;
-    unsigned int k;
-    
-    // transpose main input message
-    for (i=0; i<44; i++)
-        _w[i] = 0x00;
-
-    unsigned char w0;
-    unsigned char w1;
-    for (i=0; k<2; k++) {
-        for (i=0; i<8; i++) {
-            unsigned char mask = 1 << (8-i-1);
-            w0 = 0;
-            w1 = 0;
-            for (j=0; j<8; j++) {
-                w0 |= (_m[2*j + 16*k + 0] & mask) ? 1 << (8-j-1) : 0;
-                w1 |= (_m[2*j + 16*k + 1] & mask) ? 1 << (8-j-1) : 0;
-            }
-
-            _w[2*i      + k] = w0;
-            _w[2*i + 16 + k] = w1;
-        }
-    }
+    // transpose main input message, store in first 32
+    // bytes of _w array
+    spc2216_transpose_block(_m, 16, _w);
 
     // transpose row parities
+    unsigned int i;
+    unsigned int j;
     for (i=0; i<6; i++) {
         unsigned char mask = 1 << (6-i-1);
-        w0 = 0;
-        w1 = 0;
+        unsigned char w0 = 0;
+        unsigned char w1 = 0;
         for (j=0; j<8; j++) {
             w0 |= (_pr[j  ] & mask) ? 1 << (8-j-1) : 0;
             w1 |= (_pr[j+8] & mask) ? 1 << (8-j-1) : 0;
@@ -303,6 +291,42 @@ void spc2216_transpose_row(unsigned char * _m,
             printf("    ---------------------------------\n");
     }
 #endif
+}
+
+// transpose square message block (generic)
+//  _m  :   input message block [size: _n x _n bits, _n*_n/8 bytes]
+//  _n  :   matrix dimension (must be divisble by 8)
+void spc2216_transpose_block(unsigned char * _m,
+                             unsigned int    _n,
+                             unsigned char * _mT)
+{
+    unsigned int i;
+    unsigned int j;
+    unsigned int k;
+
+    // ensure that _n is divisible by 8
+    if (_n % 8) {
+        fprintf(stderr,"error: spc2216_transpose_block(), number of rows must be divisible by 8\n");
+        exit(1);
+    }
+    unsigned int c = _n / 8;    // number of byte columns
+    
+    unsigned char w0;
+    unsigned char w1;
+    for (k=0; k<c; k++) {
+        for (i=0; i<8; i++) {
+            unsigned char mask = 1 << (8-i-1);
+            w0 = 0;
+            w1 = 0;
+            for (j=0; j<8; j++) {
+                w0 |= (_m[2*j + c*8*k + 0] & mask) ? 1 << (8-j-1) : 0;
+                w1 |= (_m[2*j + c*8*k + 1] & mask) ? 1 << (8-j-1) : 0;
+            }
+
+            _mT[2*i       + k] = w0;
+            _mT[2*i + c*8 + k] = w1;
+        }
+    }
 }
 
 // print decoded block
