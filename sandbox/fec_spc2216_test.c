@@ -80,12 +80,20 @@ void spc2216_transpose_block(unsigned char * _m,
                              unsigned char * _mT);
 
 // transpose message block and row parities
-//  _m  :   input message block [size: 16 x 16 bits, 32 bytes]
+//  _m  :   message block       [size: 16 x 16 bits, 32 bytes]
 //  _pr :   row parities        [size: 16 x  6 bits, 16 bytes]
 //  _w  :   transposed array    [size: 22 x 16 bits, 44 bytes]
 void spc2216_transpose_row(unsigned char * _m,
                            unsigned char * _pr,
                            unsigned char * _w);
+
+// transpose message block and row parities (reverse)
+//  _w  :   transposed array    [size: 22 x 16 bits, 44 bytes]
+//  _m  :   message block       [size: 16 x 16 bits, 32 bytes]
+//  _pr :   row parities        [size: 16 x  6 bits, 16 bytes]
+void spc2216_transpose_col(unsigned char * _w,
+                           unsigned char * _m,
+                           unsigned char * _pr);
 
 // print decoded block
 void spc2216_print_decoded(unsigned char * _m);
@@ -146,9 +154,11 @@ int main(int argc, char*argv[])
     // add errors
     for (i=0; i<61; i++)
         r[i] = v[i] ^ e[i];
+    printf("r (received message):\n");
+    spc2216_print_encoded(r);
 
     // decode
-    spc2216_decode(v, m_hat);
+    spc2216_decode(r, m_hat);
 
     // compute errors between m, m_hat
     unsigned int num_errors_decoded = count_bit_errors_array(m, m_hat, 32);
@@ -178,7 +188,6 @@ void spc2216_encode(unsigned char * _msg_org,
 
     // pack encoded message
     spc2216_pack(_msg_org, parity_row, parity_col, _msg_enc);
-
 }
 
 void spc2216_decode(unsigned char * _msg_rec,
@@ -187,11 +196,48 @@ void spc2216_decode(unsigned char * _msg_rec,
     unsigned char parity_row[16];
     unsigned char parity_col[22];
     unsigned char m_hat[32];
+    unsigned char w[44];
 
     // unpack encoded message
     spc2216_unpack(_msg_rec, parity_row, parity_col, m_hat);
 
+#if 0
+    // simply copy encoded message to output
+    memmove(_msg_dec, m_hat, 32*sizeof(unsigned char));
+#else
     // iterate...
+    unsigned int i;
+    
+    // transpose...
+    spc2216_transpose_row(m_hat, parity_row, w);
+
+    // compute syndromes on columns and decode
+    unsigned char sym_enc[3];
+    unsigned char sym_dec[2];
+    for (i=0; i<22; i++) {
+        sym_enc[0] = parity_col[i];
+        sym_enc[1] = w[2*i+0];
+        sym_enc[2] = w[2*i+1];
+        int syndrome_flag = fec_secded2216_decode_symbol(sym_enc, sym_dec);
+
+        if (syndrome_flag == 0) {
+            printf("%3u : no errors detected\n", i);
+        } else if (syndrome_flag == 1) {
+            printf("%3u : one error detected and corrected!\n", i);
+        } else {
+            printf("%3u : multiple errors detected\n", i);
+        }
+
+        // TODO : also copy corrected parity bits!!!
+        // copy decoded result
+        w[2*i+0] = sym_dec[0];
+        w[2*i+1] = sym_dec[1];
+    }
+
+    // transpose back
+
+    // compute syndromes on rows and decode...
+#endif
 }
 
 // pack message
@@ -253,7 +299,7 @@ void spc2216_unpack(unsigned char * _v,
 }
 
 // transpose message block and row parities
-//  _m  :   input message block [size: 16 x 16 bits, 32 bytes]
+//  _m  :   message block       [size: 16 x 16 bits, 32 bytes]
 //  _pr :   row parities        [size: 16 x  6 bits, 16 bytes]
 //  _w  :   transposed array    [size: 22 x 16 bits, 44 bytes]
 void spc2216_transpose_row(unsigned char * _m,
@@ -292,6 +338,50 @@ void spc2216_transpose_row(unsigned char * _m,
     }
 #endif
 }
+
+// transpose message block and row parities (reverse)
+//  _w  :   transposed array    [size: 22 x 16 bits, 44 bytes]
+//  _m  :   message block       [size: 16 x 16 bits, 32 bytes]
+//  _pr :   row parities        [size: 16 x  6 bits, 16 bytes]
+void spc2216_transpose_col(unsigned char * _w,
+                           unsigned char * _m,
+                           unsigned char * _pr)
+{
+    // transpose main message block from first 32
+    // bytes of _w array
+    spc2216_transpose_block(_w, 16, _m);
+
+    // transpose row parities
+    unsigned int i;
+#if 0
+    unsigned int j;
+    for (i=0; i<6; i++) {
+        unsigned char mask = 1 << (6-i-1);
+        unsigned char w0 = 0;
+        unsigned char w1 = 0;
+        for (j=0; j<8; j++) {
+            w0 |= (_pr[j  ] & mask) ? 1 << (8-j-1) : 0;
+            w1 |= (_pr[j+8] & mask) ? 1 << (8-j-1) : 0;
+        }
+
+        _w[32 + 2*i + 0] = w0;
+        _w[32 + 2*i + 1] = w1;
+    }
+#endif
+
+#if 1
+    printf("transposed (reverse):\n");
+    for (i=0; i<16; i++) {
+        printf("    ");
+        print_bitstring(_m[2*i+0], 8);
+        print_bitstring(_m[2*i+1], 8);
+        printf(" ");
+        print_bitstring(_pr[i], 6);
+        printf("\n");
+    }
+#endif
+}
+
 
 // transpose square message block (generic)
 //  _m  :   input message block [size: _n x _n bits, _n*_n/8 bytes]
