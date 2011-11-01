@@ -127,7 +127,6 @@ int main(int argc, char*argv[])
     ofdmflexframegenprops_s fgprops;
     ofdmflexframegenprops_init_default(&fgprops);
     fgprops.num_symbols_S0  = num_symbols_S0;
-    fgprops.payload_len     = payload_len;
     fgprops.check           = check;
     fgprops.fec0            = fec0;
     fgprops.fec1            = fec1;
@@ -146,7 +145,7 @@ int main(int argc, char*argv[])
         header[i] = i & 0xff;
     for (i=0; i<payload_len; i++)
         payload[i] = rand() & 0xff;
-    ofdmflexframegen_assemble(fg, header, payload);
+    ofdmflexframegen_assemble(fg, header, payload, payload_len);
 
     // initialize frame synchronizer with noise
     for (i=0; i<1000; i++) {

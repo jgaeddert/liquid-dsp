@@ -1287,6 +1287,9 @@ void gmskframesync_output_debug_file(gmskframesync _q, const char * _filename);
 // ofdmflexframegen
 //
 
+// reconfigure internal buffers, objects, etc.
+void ofdmflexframegen_reconfigure(ofdmflexframegen _q);
+
 // encode header
 void ofdmflexframegen_encode_header(ofdmflexframegen _q);
 

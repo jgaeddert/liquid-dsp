@@ -145,6 +145,79 @@ However, their simplicity in implementation and low computational complexity
 gains them a place in digital communications, particularly in software radios
 where spectral efficiency goals might be secondary to processing contraints.
 
+\subsection{{\tt g2412}, (Golay(24,12) block code)}
+\label{module:fec:golay}
+The Golay(24,12) code is a $1/2$-rate block code which is capable of
+correcting up to three errors and detecting up to four.
+In truth, the Golay(24,12) code is an extension of the Golay(23,12)
+``perfect'' code by adding an extra parity bit \cite[\S4.6]{Lin:2004}.
+Specifically, the generator and parity check matrices are constructed
+systematically from a $12 \times 12$ matrix $\vec{P}$ as
+%
+% NOTE : when dealing with relatively large matrices, one might get an
+%        error like 'Extra alignment tab has been changed to \cr' which
+%        indicates that you have more '&'s in a row than is allowed.
+%        For the bmatrix environment, you can increase the default by
+%        setting the counter 'MaxMatrixCols' to the desired value.
+\begin{equation}
+    \vec{P} = 
+    \begin{bmatrix}
+        1 & 0 & 0 & 0 & 1 & 1 & 1 & 0 & 1 & 1 & 0 &  1 \\
+        0 & 0 & 0 & 1 & 1 & 1 & 0 & 1 & 1 & 0 & 1 &  1 \\
+        0 & 0 & 1 & 1 & 1 & 0 & 1 & 1 & 0 & 1 & 0 &  1 \\
+        0 & 1 & 1 & 1 & 0 & 1 & 1 & 0 & 1 & 0 & 0 &  1 \\
+        1 & 1 & 1 & 0 & 1 & 1 & 0 & 1 & 0 & 0 & 0 &  1 \\
+        1 & 1 & 0 & 1 & 1 & 0 & 1 & 0 & 0 & 0 & 1 &  1 \\
+        1 & 0 & 1 & 1 & 0 & 1 & 0 & 0 & 0 & 1 & 1 &  1 \\
+        0 & 1 & 1 & 0 & 1 & 0 & 0 & 0 & 1 & 1 & 1 &  1 \\
+        1 & 1 & 0 & 1 & 0 & 0 & 0 & 1 & 1 & 1 & 0 &  1 \\
+        1 & 0 & 1 & 0 & 0 & 0 & 1 & 1 & 1 & 0 & 1 &  1 \\
+        0 & 1 & 0 & 0 & 0 & 1 & 1 & 1 & 0 & 1 & 1 &  1 \\
+        1 & 1 & 1 & 1 & 1 & 1 & 1 & 1 & 1 & 1 & 1 &  0 \\
+    \end{bmatrix}
+\end{equation}
+%
+The generator matrix is simply
+$\vec{G} = \left[ \vec{P}^T \,\,\, \vec{I}_{12} \right]$
+and the parity check matrix is
+$\vec{H} = \left[ \vec{I}_{12} \,\,\, \vec{P} \right]$.
+Notice that $\vec{P}^T = \vec{P}$; this plays an important role in
+systematic decoding \cite{Berlekamp:1972}.
+
+\subsection{{\tt secded7264}, (SEC-DECD(72,64) block code)}
+\label{module:fec:secded}
+The SEC-DED(72,64) code is a $8/9$-rate code within the class of
+``single error correction, double error detection''
+block codes.
+Encoding and decoding begins with the $8 \times 64$ matrix $\vec{P}$ as
+% \cite[p.~104]{Lin:2004} TODO : give other ref
+%
+\begin{equation*}
+    \vec{P} = 
+    \begin{bmatrix}
+        {\tt 11111111} & {\tt 00001111} & {\tt 00001111} & {\tt 00001100} & {\tt 01101000} & {\tt 10001000} & {\tt 10001000} & {\tt 10000000} \\
+        {\tt 11110000} & {\tt 11111111} & {\tt 00000000} & {\tt 11110011} & {\tt 01100100} & {\tt 01000100} & {\tt 01000100} & {\tt 01000000} \\
+        {\tt 00110000} & {\tt 11110000} & {\tt 11111111} & {\tt 00001111} & {\tt 00000010} & {\tt 00100010} & {\tt 00100010} & {\tt 00100110} \\
+        {\tt 11001111} & {\tt 00000000} & {\tt 11110000} & {\tt 11111111} & {\tt 00000001} & {\tt 00010001} & {\tt 00010001} & {\tt 00010110} \\
+        {\tt 01101000} & {\tt 10001000} & {\tt 10001000} & {\tt 10000000} & {\tt 11111111} & {\tt 00001111} & {\tt 00000000} & {\tt 11110011} \\
+        {\tt 01100100} & {\tt 01000100} & {\tt 01000100} & {\tt 01000000} & {\tt 11110000} & {\tt 11111111} & {\tt 00001111} & {\tt 00001100} \\
+        {\tt 00000010} & {\tt 00100010} & {\tt 00100010} & {\tt 00100110} & {\tt 11001111} & {\tt 00000000} & {\tt 11111111} & {\tt 00001111} \\
+        {\tt 00000001} & {\tt 00010001} & {\tt 00010001} & {\tt 00010110} & {\tt 00110000} & {\tt 11110000} & {\tt 11110000} & {\tt 11111111} \\
+    \end{bmatrix}
+\end{equation*}
+%
+The generator matrix is simply
+$\vec{G} = \left[ \vec{I}_{64 \,\,\, }\vec{P}^T \right]$
+and the parity check matrix is
+$\vec{H} = \left[ \vec{P} \,\,\, \vec{I}_{8} \right]$.
+%
+Decoding can be achieved by computing the syndrome vector and then using
+a look-up table to determine the location of the error.
+If the computed syndrome cannot be associated with any particular error
+location then multiple errors must have occurred for which the code
+cannot correct.
+
+
 \subsection{{\tt libfec} (convolutional and  Reed-Solomon codes)}
 \label{module:fec:libfecv}
 \liquid\ takes advantage of convolutional and Reed-Solomon codes defined in

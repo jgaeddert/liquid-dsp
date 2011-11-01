@@ -1,12 +1,15 @@
 //
-// golay_test.c
+// fecsoft_codec_test.c
 //
-// Test soft decoding of the Golay(24,12) code using the sum-product
+// Test soft decoding using the sum-product
 // algorithm (see sandbox/ldpc_test.c)
 //
-// NOTE : performance might suffer due to restructured H matrix not
-//        being sparse.
-//
+// The generator and parity check matrices can be generated from
+// the 16 x 16 matrix P. Each row of P is a circular shift of the
+// generator polynomial p = [ 1 0 0 0 0 1 0 0 0 0 0 1 0 0 0 0]
+// such that P^T = P and
+//  G = [I(16) P    ]
+//  H = [P^T   I(16)]
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -15,7 +18,7 @@
 
 #include "liquid.internal.h"
 
-#define OUTPUT_FILENAME "fecsoft_golay_test.m"
+#define OUTPUT_FILENAME "fecsoft_codec_test.m"
 
 int main(int argc, char*argv[])
 {
@@ -23,47 +26,37 @@ int main(int argc, char*argv[])
     srand(time(NULL));
 
     float SNRdB_min = -2.0f;
-    float SNRdB_max =  8.0f;
-    unsigned int num_steps = 21;
-    unsigned int num_trials = 1000;
+    float SNRdB_max =  6.0f;
+    unsigned int num_steps = 19;
+    unsigned int num_trials = 20000;
     unsigned int max_iterations = 5;
 
-    unsigned int m = 12;    // rows in H
-    unsigned int n = 24;    // cols in H
+    unsigned int m = 16;    // rows in H
+    unsigned int n = 32;    // cols in H
 
-    // generator matrix [12 x 24]
-    unsigned char G[288] = {
-        1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,  1, 1, 0, 1, 1, 1, 0, 0, 0, 1, 0,   1,
-        0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,  0, 1, 1, 0, 1, 1, 1, 0, 0, 0, 1,   1,
-        0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0,  1, 0, 1, 1, 0, 1, 1, 1, 0, 0, 0,   1,
-        0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0,  0, 1, 0, 1, 1, 0, 1, 1, 1, 0, 0,   1,
-        0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0,  0, 0, 1, 0, 1, 1, 0, 1, 1, 1, 0,   1,
-        0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0,  0, 0, 0, 1, 0, 1, 1, 0, 1, 1, 1,   1,
-        0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0,  1, 0, 0, 0, 1, 0, 1, 1, 0, 1, 1,   1,
-        0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0,  1, 1, 0, 0, 0, 1, 0, 1, 1, 0, 1,   1,
-        0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0,  1, 1, 1, 0, 0, 0, 1, 0, 1, 1, 0,   1,
-        0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0,  0, 1, 1, 1, 0, 0, 0, 1, 0, 1, 1,   1,
-        0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0,  1, 0, 1, 1, 1, 0, 0, 0, 1, 0, 1,   1,
-        0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1,  
-                                             1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,   0};
+    // initial generator polynomial
+    unsigned char p[] = {1,0,0,0, 0,1,0,0, 0,0,0,1, 0,0,0,0};
 
-    // parity check matrix [12 x 24]
-    unsigned char H[288] = {
-        1, 0, 1, 0, 0, 0, 1, 1, 1, 0, 1, 1,  1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-        1, 1, 0, 1, 0, 0, 0, 1, 1, 1, 0, 1,  0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-        0, 1, 1, 0, 1, 0, 0, 0, 1, 1, 1, 1,  0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-        1, 0, 1, 1, 0, 1, 0, 0, 0, 1, 1, 1,  0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0,
-        1, 1, 0, 1, 1, 0, 1, 0, 0, 0, 1, 1,  0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0,
-        1, 1, 1, 0, 1, 1, 0, 1, 0, 0, 0, 1,  0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0,
-        0, 1, 1, 1, 0, 1, 1, 0, 1, 0, 0, 1,  0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0,
-        0, 0, 1, 1, 1, 0, 1, 1, 0, 1, 0, 1,  0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0,
-        0, 0, 0, 1, 1, 1, 0, 1, 1, 0, 1, 1,  0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0,
-        1, 0, 0, 0, 1, 1, 1, 0, 1, 1, 0, 1,  0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0,
-        0, 1, 0, 0, 0, 1, 1, 1, 0, 1, 1, 1,  0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0,
-        1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0,  0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1};
+    // generator matrix [m x n]
+    unsigned char G[m*n];
+
+    // parity check matrix [m x n]
+    unsigned char H[m*n];
 
     unsigned int i;
     unsigned int j;
+
+    // init generator and parity check matrices
+    for (i=0; i<m; i++) {
+        for (j=0; j<m; j++) {
+            // G = [I(m) P]
+            G[i*n + j]     = (i==j) ? 1 : 0;
+            G[i*n + j + m] = p[(i+j)%m];
+
+            H[i*n + j + m] = (i==j) ? 1 : 0;
+            H[i*n + j]     = p[(i+j)%m];
+        }
+    }
 
     // derived values
     float SNRdB_step = (SNRdB_max - SNRdB_min) / (num_steps-1);
@@ -182,10 +175,10 @@ int main(int argc, char*argv[])
     fprintf(fid,"semilogy(EbN0dB_bpsk, 0.5*erfc(sqrt(10.^[EbN0dB_bpsk/10]))+1e-12,'-x',\n");
     fprintf(fid,"         EbN0dB,      num_bit_errors / num_bit_trials + 1e-12,  '-x');\n");
     fprintf(fid,"axis([%f (%f-10*log10(r)) 1e-6 1]);\n", SNRdB_min, SNRdB_max);
-    fprintf(fid,"legend('uncoded','Golay(24,12)',1);\n");
+    fprintf(fid,"legend('uncoded','coded',1);\n");
     fprintf(fid,"xlabel('E_b/N_0 [dB]');\n");
     fprintf(fid,"ylabel('Bit Error Rate');\n");
-    fprintf(fid,"title('BER vs. E_b/N_0 for Golay(24,12)');\n");
+    fprintf(fid,"title('BER vs. E_b/N_0 for (24,12) code');\n");
     fprintf(fid,"grid on;\n");
 
     fclose(fid);
