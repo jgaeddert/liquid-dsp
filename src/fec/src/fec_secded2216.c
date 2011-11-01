@@ -115,10 +115,12 @@ void fec_secded2216_encode_symbol(unsigned char * _sym_dec,
 void fec_secded2216_decode_symbol(unsigned char * _sym_enc,
                                   unsigned char * _sym_dec)
 {
+#if 0
     // validate input
     if (_sym_enc[0] >= (1<<6)) {
         fprintf(stderr,"warning, fec_secded2216_decode_symbol(), input symbol too large\n");
     }
+#endif
 
     // state variables
     unsigned char e_hat[3] = {0,0,0};    // estimated error vector
