@@ -111,16 +111,14 @@ void fec_secded2216_encode_symbol(unsigned char * _sym_dec,
     _sym_enc[2] = _sym_dec[1];
 }
 
+// TODO : return '1' if multiple errors detected, '0' otherwise
 void fec_secded2216_decode_symbol(unsigned char * _sym_enc,
                                   unsigned char * _sym_dec)
 {
     // validate input
     if (_sym_enc[0] >= (1<<6)) {
-        fprintf(stderr,"error, fec_secded2216_decode_symbol(), input symbol too large\n");
-        exit(1);
+        fprintf(stderr,"warning, fec_secded2216_decode_symbol(), input symbol too large\n");
     }
-
-    unsigned int i;
 
     // state variables
     unsigned char e_hat[3] = {0,0,0};    // estimated error vector
@@ -211,77 +209,42 @@ void fec_secded2216_encode(fec _q,
 {
     unsigned int i=0;       // decoded byte counter
     unsigned int j=0;       // encoded byte counter
-    unsigned char m[2];     // one 16-bit symbol (decoded)
-    unsigned char v[3];     // one 22-bit symbol (encoded)
 
     // determine remainder of input length / 8
     unsigned int r = _dec_msg_len % 2;
 
-#if 0
-    // TODO : devise more efficient way of doing this
-    for (i=0; i<_dec_msg_len-r; i+=8) {
-        // strip eight input bytes
-        m[0] = 0;
-        m[0] |= (_msg_dec[i+0] << 24);
-        m[0] |= (_msg_dec[i+1] << 16);
-        m[0] |= (_msg_dec[i+2] <<  8);
-        m[0] |= (_msg_dec[i+3]);
+    // for now simply encode as 2/3-rate codec (eat
+    // 2 bits of parity)
+    // TODO : make more efficient
 
-        m[1] = 0;
-        m[1] |= (_msg_dec[i+4] << 24);
-        m[1] |= (_msg_dec[i+5] << 16);
-        m[1] |= (_msg_dec[i+6] <<  8);
-        m[1] |= (_msg_dec[i+7]);
+    for (i=0; i<_dec_msg_len-r; i+=2) {
+        // compute parity (6 bits) on two input bytes (16 bits)
+        _msg_enc[j+0] = fec_secded2216_compute_parity(&_msg_dec[i]);
 
-        // encode 64-bit symbol into a 72-bit symbol
-        fec_secded2216_encode_symbol(m,v);
+        // copy remaining two input bytes (16 bits)
+        _msg_enc[j+1] = _msg_dec[i+0];
+        _msg_enc[j+2] = _msg_dec[i+1];
 
-        // unpack 72-bit symbol into nine 8-bit bytes
-        _msg_enc[j+0] = (v[0]      ) & 0xff;
-        _msg_enc[j+1] = (v[1] >> 24) & 0xff;
-        _msg_enc[j+2] = (v[1] >> 16) & 0xff;
-        _msg_enc[j+3] = (v[1] >>  8) & 0xff;
-        _msg_enc[j+4] = (v[1]      ) & 0xff;
-        _msg_enc[j+5] = (v[2] >> 24) & 0xff;
-        _msg_enc[j+6] = (v[2] >> 16) & 0xff;
-        _msg_enc[j+7] = (v[2] >>  8) & 0xff;
-        _msg_enc[j+8] = (v[2]      ) & 0xff;
-
-        j += 9;
+        // increment output counter
+        j += 3;
     }
 
-    // if input length isn't divisible by 8, encode last few bytes
+    // if input length isn't divisible by 2, encode last few bytes
     if (r) {
-        unsigned int n;
-        m[0] = 0;   // clear input message
-        m[1] = 0;
-        for (n=0; n<r; n++) {
-            div_t d = div(n,4); // unsigned int has four 8-bit bytes
-            //printf("n = %2u, n/4 = %2u rem %2u\n", n, d.quot, d.rem);
-            // strip remaining bytes...
-            m[d.quot] |= (_msg_dec[i+n] << (8*(4-d.rem-1)));
-        }
-        
-        // encode 64-bit symbol into a 72-bit symbol
-        fec_secded2216_encode_symbol(m,v);
-        
-#if DEBUG_FEC_SECDED2216
-        printf("encoder input:\n");
-        printf("  m[0] = %.8x\n", m[0]);
-        printf("  m[1] = %.8x\n", m[1]);
-        
-        printf("encoder output:\n");
-        printf("  v[0] =       %.2x\n", v[0]);
-        printf("  v[1] = %.8x\n", v[1]);
-        printf("  v[2] = %.8x\n", v[2]);
-#endif
+        // one 16-bit symbol (decoded)
+        unsigned char m[2] = {_msg_dec[i], 0x00};
 
-        // there is no need to actually send all the bytes; the
-        // last 8-r bytes are zeros and can be added at the
-        // decoder
-        _msg_enc[j+0] = v[0] & 0xff;
-        for (n=0; n<r; n++)
-            _msg_enc[j+n+1] = _msg_dec[i+n];
+        // one 22-bit symbol (encoded)
+        unsigned char v[3];
+
+        // encode
+        fec_secded2216_encode_symbol(m, v);
+
+        // there is no need to actually send all three bytes;
+        // the last byte is zero and can be artificially
+        // inserted at the decoder
+        _msg_enc[j+0] = v[0];
+        _msg_enc[j+1] = v[1];
 
         i += r;
         j += r+1;
@@ -289,7 +252,6 @@ void fec_secded2216_encode(fec _q,
 
     assert( j == fec_get_enc_msg_length(LIQUID_FEC_SECDED2216,_dec_msg_len) );
     assert( i == _dec_msg_len);
-#endif
 }
 
 // decode block of data using SEC-DEC (72,64) decoder
@@ -307,79 +269,35 @@ void fec_secded2216_decode(fec _q,
 {
     unsigned int i=0;       // decoded byte counter
     unsigned int j=0;       // encoded byte counter
-    unsigned char v[3];     // one 22-bit encoded symbol
-    unsigned char m_hat[2]; // one 16-bit decoded symbol
     
     // determine remainder of input length / 8
     unsigned int r = _dec_msg_len % 2;
 
-#if 0
-    for (i=0; i<_dec_msg_len-r; i+=8) {
-        // strip nine input bytes and pack into 72-bit symbol
-        v[0] = _msg_enc[j];
+    for (i=0; i<_dec_msg_len-r; i+=2) {
+        // for now, simply copy output without decoding
+        _msg_dec[i+0] = _msg_enc[j+1];
+        _msg_dec[i+1] = _msg_enc[j+2];
 
-        v[1] = 0;
-        v[1] |= (_msg_enc[j+1] << 24);
-        v[1] |= (_msg_enc[j+2] << 16);
-        v[1] |= (_msg_enc[j+3] <<  8);
-        v[1] |= (_msg_enc[j+4]);
+        // decode straight to output
+        fec_secded2216_decode_symbol(&_msg_enc[j], &_msg_dec[i]);
 
-        v[2] = 0;
-        v[2] |= (_msg_enc[j+5] << 24);
-        v[2] |= (_msg_enc[j+6] << 16);
-        v[2] |= (_msg_enc[j+7] <<  8);
-        v[2] |= (_msg_enc[j+8]);
-
-        // decode 72-bit symbol into a 64-bit symbol
-        fec_secded2216_decode_symbol(v,m_hat);
-
-        // unpack 64-bit symbol into eight 8-bit bytes
-        _msg_dec[i+0] = ((m_hat[0] >> 24) & 0xff);
-        _msg_dec[i+1] = ((m_hat[0] >> 16) & 0xff);
-        _msg_dec[i+2] = ((m_hat[0] >>  8) & 0xff);
-        _msg_dec[i+3] = ((m_hat[0]      ) & 0xff);
-        _msg_dec[i+4] = ((m_hat[1] >> 24) & 0xff);
-        _msg_dec[i+5] = ((m_hat[1] >> 16) & 0xff);
-        _msg_dec[i+6] = ((m_hat[1] >>  8) & 0xff);
-        _msg_dec[i+7] = ((m_hat[1]      ) & 0xff);
-
-        j += 9;
+        j += 3;
     }
 
-    // if input length isn't divisible by 8, decode last several bytes
+    // if input length isn't divisible by 2, decode last several bytes
     if (r) {
-        unsigned int n;
-        v[0] = 0;
-        v[1] = 0;
-        v[2] = 0;
-        // output length is input + 1 (parity byte)
-        for (n=0; n<r+1; n++) {
-            div_t d = div(n+3,4); // unsigned int has four 8-bit bytes
-            v[d.quot] |= (_msg_enc[j+n] << (8*(4-d.rem-1)));
-            //printf("n = %2u, n+3 = %2u, n/4 = %2u rem %2u\n", n, n+3, d.quot, d.rem);
-        }
+        // one 22-bit symbol (encoded), with last byte artifically
+        // set to '00000000'
+        unsigned char v[3] = {_msg_enc[j+0], _msg_enc[j+1], 0x00};
 
-        // decode 72-bit symbol into a 64-bit symbol
-        fec_secded2216_decode_symbol(v,m_hat);
+        // one 16-bit symbol (decoded)
+        unsigned char m_hat[2];
 
-#if DEBUG_FEC_SECDED2216
-        printf("decoder input:\n");
-        printf("  v[0] =       %.2x\n", v[0]);
-        printf("  v[1] = %.8x\n", v[1]);
-        printf("  v[2] = %.8x\n", v[2]);
-        
-        printf("decoder output:\n");
-        printf("  m[0] = %.8x\n", m_hat[0]);
-        printf("  m[1] = %.8x\n", m_hat[1]);
-#endif
-        
-        // pack only relevant bytes
-        for (n=0; n<r; n++) {
-            div_t d = div(n,4); // unsigned int has four 8-bit bytes
-            //printf("n = %2u, n/4 = %2u rem %2u\n", n, d.quot, d.rem);
-            // strip remaining bytes...
-            _msg_dec[i+n] = (m_hat[d.quot] >> (8*(4-d.rem-1))) & 0xff;
-        }
+        // decode symbol
+        fec_secded2216_decode_symbol(v, m_hat);
+
+        // copy just first byte to output
+        _msg_dec[i] = m_hat[0];
 
         i += r;
         j += r+1;
@@ -387,6 +305,6 @@ void fec_secded2216_decode(fec _q,
 
     assert( j == fec_get_enc_msg_length(LIQUID_FEC_SECDED2216,_dec_msg_len) );
     assert( i == _dec_msg_len);
-#endif
+
     //return num_errors;
 }

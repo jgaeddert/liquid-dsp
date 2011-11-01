@@ -41,6 +41,7 @@ const char * fec_scheme_str[LIQUID_FEC_NUM_SCHEMES][2] = {
     {"h84",         "Hamming(8,4)"},
     {"h128",        "Hamming(12,8)"},
     {"g2412",       "Golay(24,12)"},
+    {"secded2216",  "SEC-DEC(22,16)"},
     {"secded7264",  "SEC-DEC(72,64)"},
     {"v27",         "convolutional r1/2 K=7"},
     {"v29",         "convolutional r1/2 K=9"},
@@ -213,6 +214,7 @@ unsigned int fec_get_enc_msg_length(fec_scheme _scheme,
     case LIQUID_FEC_HAMMING84:      return fec_block_get_enc_msg_len(_msg_len,4,8);
     case LIQUID_FEC_HAMMING128:     return fec_block_get_enc_msg_len(_msg_len,8,12);
     case LIQUID_FEC_GOLAY2412:      return fec_block_get_enc_msg_len(_msg_len,12,24);
+    case LIQUID_FEC_SECDED2216:     return _msg_len + _msg_len/2 + ((_msg_len%2) ? 1 : 0);
     case LIQUID_FEC_SECDED7264:     return _msg_len + _msg_len/8 + ((_msg_len%8) ? 1 : 0);
 
 #if HAVE_FEC_H
@@ -405,6 +407,7 @@ float fec_get_rate(fec_scheme _scheme)
     case LIQUID_FEC_HAMMING84:      return 4./8.;
     case LIQUID_FEC_HAMMING128:     return 8./12.;
     case LIQUID_FEC_GOLAY2412:      return 1./2.;
+    case LIQUID_FEC_SECDED2216:     return 2./3.;   // ultimately 16/22 = 8/11
     case LIQUID_FEC_SECDED7264:     return 8./9.;
 
     // convolutional codes
@@ -487,6 +490,8 @@ fec fec_create(fec_scheme _scheme, void *_opts)
     case LIQUID_FEC_GOLAY2412:
         return fec_golay2412_create(_opts);
 
+    case LIQUID_FEC_SECDED2216:
+        return fec_secded2216_create(_opts);
     case LIQUID_FEC_SECDED7264:
         return fec_secded7264_create(_opts);
 
