@@ -412,15 +412,17 @@ unsigned char fec_secded2216_compute_syndrome(unsigned char * _v);
 void fec_secded2216_encode_symbol(unsigned char * _sym_dec,
                                   unsigned char * _sym_enc);
 
-// decode symbol, returning
-//  0 : no errors detected
-//  1 : one error detected and corrected
-//  2 : multiple errors detected (none corrected)
-// inputs:
+// decode symbol, returning 0/1/2 for zero/one/multiple errors detected
 //  _sym_enc    :   encoded symbol [size: 3 x 1], _sym_enc[0] has only 6 bits
 //  _sym_dec    :   decoded symbol [size: 2 x 1]
 int  fec_secded2216_decode_symbol(unsigned char * _sym_enc,
                                   unsigned char * _sym_dec);
+
+// estimate error vector, returning 0/1/2 for zero/one/multiple errors detected
+//  _sym_enc    :   encoded symbol [size: 3 x 1], _sym_enc[0] has only 6 bits
+//  _e_hat      :   estiamted error vector [size: 3 x 1]
+int  fec_secded2216_estimate_ehat(unsigned char * _sym_enc,
+                                  unsigned char * _e_hat);
 
 // parity matrix [6 x 16 bits], [6 x 2 bytes]
 extern unsigned char secded2216_P[12];
