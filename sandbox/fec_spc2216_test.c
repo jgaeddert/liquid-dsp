@@ -40,6 +40,8 @@
 
 #include "liquid.internal.h"
 
+#define DEBUG_SPC2216 0
+
 // encode message
 //  _msg_org    :   original message [size: 32 bytes]
 //  _msg_enc    :   encoded message  [size: 61 bytes]
@@ -121,7 +123,7 @@ int main(int argc, char*argv[])
     // error vector
     unsigned char e[61];
     for (i=0; i<61; i++)
-        e[i] = (i==0) ? 0x80 : 0x00;
+        e[i] = (rand() % 4) == 0 ? 1 << rand() % 7 : 0;
 
     // original message [16 x 16 bits], 32 bytes
     unsigned char m[32];
@@ -148,8 +150,8 @@ int main(int argc, char*argv[])
     printf("v (encoded message):\n");
     spc2216_print_encoded(v);
 
-    //printf("e (error message):\n");
-    //spc2216_print_encoded(e);
+    printf("e (error message):\n");
+    spc2216_print_encoded(e);
 
     // add errors
     for (i=0; i<61; i++)
@@ -201,16 +203,12 @@ void spc2216_decode(unsigned char * _msg_rec,
     // unpack encoded message
     spc2216_unpack(_msg_rec, parity_row, parity_col, m_hat);
 
-#if 0
-    // simply copy encoded message to output
-    memmove(_msg_dec, m_hat, 32*sizeof(unsigned char));
-#else
-    // iterate...
+    // decode
     unsigned int i;
     unsigned char sym_enc[3];   // encoded 22-bit message
     unsigned char e_hat[3];     // estimated error vector
     
-    // transpose...
+    // transpose
     spc2216_transpose_row(m_hat, parity_row, w);
 
     // compute syndromes on columns and decode
@@ -220,6 +218,7 @@ void spc2216_decode(unsigned char * _msg_rec,
         sym_enc[2] = w[2*i+1];
         int syndrome_flag = fec_secded2216_estimate_ehat(sym_enc, e_hat);
 
+#if DEBUG_SPC2216
         if (syndrome_flag == 0) {
             printf("%3u : no errors detected\n", i);
         } else if (syndrome_flag == 1) {
@@ -227,13 +226,14 @@ void spc2216_decode(unsigned char * _msg_rec,
         } else {
             printf("%3u : multiple errors detected\n", i);
         }
+#endif
 
         // apply error vector estimate to appropriate arrays
         parity_col[i] ^= e_hat[0];
         w[2*i+0]      ^= e_hat[1];
         w[2*i+1]      ^= e_hat[2];
     }
-#if 1
+#if DEBUG_SPC2216
     printf("******** transposed: **********\n");
     for (i=0; i<22; i++) {
         printf("    ");
@@ -249,12 +249,14 @@ void spc2216_decode(unsigned char * _msg_rec,
     spc2216_transpose_col(w, m_hat, parity_row);
 
     // compute syndromes on rows and decode
+    unsigned int num_uncorrected_errors = 0;
     for (i=0; i<16; i++) {
         sym_enc[0] = parity_row[i];
         sym_enc[1] = m_hat[2*i+0];
         sym_enc[2] = m_hat[2*i+1];
         int syndrome_flag = fec_secded2216_estimate_ehat(sym_enc, e_hat);
 
+#if DEBUG_SPC2216
         if (syndrome_flag == 0) {
             printf("%3u : no errors detected\n", i);
         } else if (syndrome_flag == 1) {
@@ -262,15 +264,21 @@ void spc2216_decode(unsigned char * _msg_rec,
         } else {
             printf("%3u : multiple errors detected\n", i);
         }
+#endif
 
-#if 0
+        if (syndrome_flag == 2)
+            num_uncorrected_errors++;
+
         // apply error vector estimate to appropriate arrays
         parity_col[i] ^= e_hat[0];
         m_hat[2*i+0]  ^= e_hat[1];
         m_hat[2*i+1]  ^= e_hat[2];
-#endif
     }
-#endif
+
+    printf("number of uncorrected errors: %u\n", num_uncorrected_errors);
+    
+    // copy decoded message to output
+    memmove(_msg_dec, m_hat, 32*sizeof(unsigned char));
 }
 
 // pack message
