@@ -77,9 +77,9 @@ void fec_encode_bench(
     case LIQUID_FEC_HAMMING74:     *_num_iterations *=  30;    break;
     case LIQUID_FEC_HAMMING84:     *_num_iterations *= 100;    break;
     case LIQUID_FEC_HAMMING128:    *_num_iterations *= 100;    break;
-    case LIQUID_FEC_SECDED2216:    *_num_iterations *=  30;    break;
-    case LIQUID_FEC_SECDED3932:    *_num_iterations *=  30;    break;
-    case LIQUID_FEC_SECDED7264:    *_num_iterations *=  30;    break;
+    case LIQUID_FEC_SECDED2216:    *_num_iterations *=  10;    break;
+    case LIQUID_FEC_SECDED3932:    *_num_iterations *=  10;    break;
+    case LIQUID_FEC_SECDED7264:    *_num_iterations *=  10;    break;
     case LIQUID_FEC_GOLAY2412:     *_num_iterations *= 2;      break;
     case LIQUID_FEC_CONV_V27:
     case LIQUID_FEC_CONV_V29:
