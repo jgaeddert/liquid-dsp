@@ -186,7 +186,7 @@ int fec_secded2216_decode_symbol(unsigned char * _sym_enc,
     return 2;
 }
 
-// create SEC-DED (72,64) codec object
+// create SEC-DED (22,16) codec object
 fec fec_secded2216_create(void * _opts)
 {
     fec q = (fec) malloc(sizeof(struct fec_s));
@@ -203,13 +203,13 @@ fec fec_secded2216_create(void * _opts)
     return q;
 }
 
-// destroy SEC-DEC (72,64) object
+// destroy SEC-DEC (22,16) object
 void fec_secded2216_destroy(fec _q)
 {
     free(_q);
 }
 
-// encode block of data using SEC-DEC (72,64) encoder
+// encode block of data using SEC-DEC (22,16) encoder
 //
 //  _q              :   encoder/decoder object
 //  _dec_msg_len    :   decoded message length (number of bytes)
@@ -267,7 +267,7 @@ void fec_secded2216_encode(fec _q,
     assert( i == _dec_msg_len);
 }
 
-// decode block of data using SEC-DEC (72,64) decoder
+// decode block of data using SEC-DEC (22,16) decoder
 //
 //  _q              :   encoder/decoder object
 //  _dec_msg_len    :   decoded message length (number of bytes)
