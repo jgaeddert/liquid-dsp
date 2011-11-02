@@ -234,45 +234,50 @@ void fec_secded3932_encode(fec _q,
                            unsigned char *_msg_dec,
                            unsigned char *_msg_enc)
 {
-#if 0
     unsigned int i=0;       // decoded byte counter
     unsigned int j=0;       // encoded byte counter
 
-    // determine remainder of input length / 8
-    unsigned int r = _dec_msg_len % 2;
+    // determine remainder of input length / 4
+    unsigned int r = _dec_msg_len % 4;
 
-    // for now simply encode as 2/3-rate codec (eat
-    // 2 bits of parity)
+    // for now simply encode as 4/5-rate codec (eat
+    // last parity bit)
     // TODO : make more efficient
 
-    for (i=0; i<_dec_msg_len-r; i+=2) {
-        // compute parity (6 bits) on two input bytes (16 bits)
+    for (i=0; i<_dec_msg_len-r; i+=4) {
+        // compute parity (7 bits) on two input bytes (32 bits)
         _msg_enc[j+0] = fec_secded3932_compute_parity(&_msg_dec[i]);
 
-        // copy remaining two input bytes (16 bits)
+        // copy remaining two input bytes (32 bits)
         _msg_enc[j+1] = _msg_dec[i+0];
         _msg_enc[j+2] = _msg_dec[i+1];
+        _msg_enc[j+3] = _msg_dec[i+2];
+        _msg_enc[j+4] = _msg_dec[i+3];
 
         // increment output counter
-        j += 3;
+        j += 5;
     }
 
-    // if input length isn't divisible by 2, encode last few bytes
+    // if input length isn't divisible by 4, encode last few bytes
     if (r) {
-        // one 16-bit symbol (decoded)
-        unsigned char m[2] = {_msg_dec[i], 0x00};
+        // one 32-bit symbol (decoded)
+        unsigned char m[4] = {0,0,0,0};
+        unsigned int n;
+        for (n=0; n<r; n++)
+            m[n] = _msg_dec[i+n];
 
-        // one 22-bit symbol (encoded)
-        unsigned char v[3];
+        // one 39-bit symbol (encoded)
+        unsigned char v[5];
 
         // encode
         fec_secded3932_encode_symbol(m, v);
 
-        // there is no need to actually send all three bytes;
-        // the last byte is zero and can be artificially
+        // there is no need to actually send all five bytes;
+        // the last few bytes are zero and can be artificially
         // inserted at the decoder
         _msg_enc[j+0] = v[0];
-        _msg_enc[j+1] = v[1];
+        for (n=0; n<r; n++)
+            _msg_enc[j+n+1] = v[n+1];
 
         i += r;
         j += r+1;
@@ -280,7 +285,6 @@ void fec_secded3932_encode(fec _q,
 
     assert( j == fec_get_enc_msg_length(LIQUID_FEC_SECDED3932,_dec_msg_len) );
     assert( i == _dec_msg_len);
-#endif
 }
 
 // decode block of data using SEC-DEC (39,32) decoder
@@ -296,38 +300,37 @@ void fec_secded3932_decode(fec _q,
                            unsigned char *_msg_enc,
                            unsigned char *_msg_dec)
 {
-#if 0
     unsigned int i=0;       // decoded byte counter
     unsigned int j=0;       // encoded byte counter
     
-    // determine remainder of input length / 8
-    unsigned int r = _dec_msg_len % 2;
+    // determine remainder of input length / 4
+    unsigned int r = _dec_msg_len % 4;
 
-    for (i=0; i<_dec_msg_len-r; i+=2) {
-        // for now, simply copy output without decoding
-        _msg_dec[i+0] = _msg_enc[j+1];
-        _msg_dec[i+1] = _msg_enc[j+2];
-
+    for (i=0; i<_dec_msg_len-r; i+=4) {
         // decode straight to output
         fec_secded3932_decode_symbol(&_msg_enc[j], &_msg_dec[i]);
 
-        j += 3;
+        j += 5;
     }
 
-    // if input length isn't divisible by 2, decode last several bytes
+    // if input length isn't divisible by 4, decode last several bytes
     if (r) {
-        // one 22-bit symbol (encoded), with last byte artifically
-        // set to '00000000'
-        unsigned char v[3] = {_msg_enc[j+0], _msg_enc[j+1], 0x00};
+        // one 39-bit symbol
+        unsigned char v[5] = {_msg_enc[j+0], 0, 0, 0, 0};
+        unsigned int n;
+        for (n=0; n<r; n++)
+            v[n+1] = _msg_enc[j+n+1];
 
-        // one 16-bit symbol (decoded)
-        unsigned char m_hat[2];
+        // one 32-bit symbol (decoded)
+        unsigned char m_hat[4];
 
         // decode symbol
         fec_secded3932_decode_symbol(v, m_hat);
 
-        // copy just first byte to output
-        _msg_dec[i] = m_hat[0];
+        // copy non-zero bytes to output (ignore zeros artifically
+        // inserted at receiver)
+        for (n=0; n<r; n++)
+            _msg_dec[i+n] = m_hat[n];
 
         i += r;
         j += r+1;
@@ -337,5 +340,4 @@ void fec_secded3932_decode(fec _q,
     assert( i == _dec_msg_len);
 
     //return num_errors;
-#endif
 }
