@@ -257,6 +257,7 @@ fec_autotests :=						\
 	src/fec/tests/fec_rep3_autotest.c			\
 	src/fec/tests/fec_rep5_autotest.c			\
 	src/fec/tests/fec_secded2216_autotest.c			\
+	src/fec/tests/fec_secded3932_autotest.c			\
 	src/fec/tests/fec_secded7264_autotest.c			\
 	src/fec/tests/smatrix_autotest.c			\
 
