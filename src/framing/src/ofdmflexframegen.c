@@ -37,7 +37,7 @@
 // default ofdmflexframegen properties
 static ofdmflexframegenprops_s ofdmflexframegenprops_default = {
     3,                  // num_symbols_S0
-    LIQUID_CRC_16,      // check
+    LIQUID_CRC_32,      // check
     LIQUID_FEC_NONE,    // fec0
     LIQUID_FEC_NONE,    // fec1
     LIQUID_MODEM_QPSK,  // mod_scheme
