@@ -287,10 +287,6 @@ void fec_secded2216_decode(fec _q,
     unsigned int r = _dec_msg_len % 2;
 
     for (i=0; i<_dec_msg_len-r; i+=2) {
-        // for now, simply copy output without decoding
-        _msg_dec[i+0] = _msg_enc[j+1];
-        _msg_dec[i+1] = _msg_enc[j+2];
-
         // decode straight to output
         fec_secded2216_decode_symbol(&_msg_enc[j], &_msg_dec[i]);
 
