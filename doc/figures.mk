@@ -574,6 +574,8 @@ figures.gen/ofdmflexframesync_performance.dat \
 figures.gen/ofdmflexframesync_performance.gnu : figures.gen/% : data/ofdmflexframe/%
 	cp $< $@
 
+figures.gen/ofdmflexframesync_performance.eps : %.eps : %.gnu %.dat
+
 ##
 ## MODULE : interleaver
 ##
