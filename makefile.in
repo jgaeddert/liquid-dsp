@@ -1281,6 +1281,7 @@ sandbox_programs =						\
 	sandbox/fec_rep3_test					\
 	sandbox/fec_rep5_test					\
 	sandbox/fec_secded2216_test				\
+	sandbox/fec_secded3932_test				\
 	sandbox/fec_secded7264_test				\
 	sandbox/fecsoft_conv_test				\
 	sandbox/fecsoft_golay_test				\
