@@ -220,7 +220,8 @@ fec_objects :=							\
 	src/fec/src/fec_rep3.o					\
 	src/fec/src/fec_rep5.o					\
 	src/fec/src/fec_rs.o					\
-	src/fec/src/fec_secded.o				\
+	src/fec/src/fec_secded2216.o				\
+	src/fec/src/fec_secded7264.o				\
 	src/fec/gentab/reverse_byte.o				\
 	src/fec/src/smatrix.o					\
 	src/fec/src/sumproduct.o				\
@@ -255,6 +256,7 @@ fec_autotests :=						\
 	src/fec/tests/fec_reedsolomon_autotest.c		\
 	src/fec/tests/fec_rep3_autotest.c			\
 	src/fec/tests/fec_rep5_autotest.c			\
+	src/fec/tests/fec_secded2216_autotest.c			\
 	src/fec/tests/fec_secded7264_autotest.c			\
 	src/fec/tests/smatrix_autotest.c			\
 
@@ -1281,7 +1283,8 @@ sandbox_programs =						\
 	sandbox/fec_ldpc_test					\
 	sandbox/fec_rep3_test					\
 	sandbox/fec_rep5_test					\
-	sandbox/fec_secded_test					\
+	sandbox/fec_secded2216_test				\
+	sandbox/fec_secded7264_test				\
 	sandbox/fecsoft_conv_test				\
 	sandbox/fecsoft_hamming128_gentab			\
 	sandbox/fecsoft_ldpc_test				\

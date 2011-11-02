@@ -28,6 +28,7 @@ plot \
     'data/ber-fec-hard/ber_h74.dat'      using 2:3 with linespoints linewidth 1.2 pointtype 6 linecolor rgb '#008040' title 'Hamming(7,4)',\
     'data/ber-fec-hard/ber_r3.dat'       using 2:3 with linespoints linewidth 1.2 pointtype 6 linecolor rgb '#403000' title 'Repeat(3)',\
     'data/ber-fec-hard/ber_r5.dat'       using 2:3 with linespoints linewidth 1.2 pointtype 6 linecolor rgb '#806000' title 'Repeat(5)',\
+    'data/ber-fec-hard/ber_secded2216.dat' using 2:3 with linespoints linewidth 1.2 pointtype 6 linecolor rgb '#c000a0' title 'SEC-DED(22,16)',\
     'data/ber-fec-hard/ber_secded7264.dat' using 2:3 with linespoints linewidth 1.2 pointtype 6 linecolor rgb '#c00060' title 'SEC-DED(72,64)',\
     'data/ber-fec-hard/ber_g2412.dat'    using 2:3 with linespoints linewidth 1.2 pointtype 6 linecolor rgb '#400080' title 'Golay(24,12)'
 
