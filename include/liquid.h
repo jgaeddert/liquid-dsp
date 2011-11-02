@@ -450,7 +450,7 @@ int crc_validate_message(crc_scheme _scheme,
 
 
 // available FEC schemes
-#define LIQUID_FEC_NUM_SCHEMES  27
+#define LIQUID_FEC_NUM_SCHEMES  28
 typedef enum {
     LIQUID_FEC_UNKNOWN=0,       // unknown/unsupported scheme
     LIQUID_FEC_NONE,            // no error-correction
@@ -462,6 +462,7 @@ typedef enum {
     
     LIQUID_FEC_GOLAY2412,       // Golay (24,12) block code, r1/2
     LIQUID_FEC_SECDED2216,      // SEC-DED (22,16) block code, r8/11
+    LIQUID_FEC_SECDED3932,      // SEC-DED (39,32) block code
     LIQUID_FEC_SECDED7264,      // SEC-DED (72,64) block code, r8/9
 
     // codecs not defined internally (see http://www.ka9q.net/code/fec/)

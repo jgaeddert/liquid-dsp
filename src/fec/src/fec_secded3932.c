@@ -205,7 +205,6 @@ fec fec_secded3932_create(void * _opts)
 {
     fec q = (fec) malloc(sizeof(struct fec_s));
 
-#if 0
     // set scheme
     q->scheme = LIQUID_FEC_SECDED3932;
     q->rate = fec_get_rate(q->scheme);
@@ -214,7 +213,6 @@ fec fec_secded3932_create(void * _opts)
     q->encode_func      = &fec_secded3932_encode;
     q->decode_func      = &fec_secded3932_decode;
     q->decode_soft_func = NULL;
-#endif
 
     return q;
 }
