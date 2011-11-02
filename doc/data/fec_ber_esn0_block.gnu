@@ -24,9 +24,10 @@ ber_bpsk(x) = 0.5*erfc(10**(x/20))
 set grid linetype 1 linecolor rgb '#cccccc' lw 1
 plot \
     ber_bpsk(x) with lines linetype 1 linewidth 2.0 linecolor rgb '#000000' title 'Uncoded',\
-    'data/ber-fec-hard/ber_secded7264.dat'  using 1:3 with linespoints linewidth 1.2 pointtype 6 linecolor rgb '#8040c0' title 'SEC-DED(72,64)',\
-    'data/ber-fec-hard/ber_secded2216.dat'  using 1:3 with linespoints linewidth 1.2 pointtype 6 linecolor rgb '#e040c0' title 'SEC-DED(22,16)',\
-    'data/ber-fec-hard/ber_h128.dat'        using 1:3 with linespoints linewidth 1.2 pointtype 6 linecolor rgb '#004080' title 'Hamming(12,8)',\
+    'data/ber-fec-hard/ber_secded7264.dat'  using 1:3 with linespoints linewidth 1.2 pointtype 6 linecolor rgb '#2020c0' title 'SEC-DED(72,64)',\
+    'data/ber-fec-hard/ber_secded3932.dat'  using 1:3 with linespoints linewidth 1.2 pointtype 6 linecolor rgb '#5050c0' title 'SEC-DED(39,32)',\
+    'data/ber-fec-hard/ber_secded2216.dat'  using 1:3 with linespoints linewidth 1.2 pointtype 6 linecolor rgb '#8080c0' title 'SEC-DED(22,16)',\
+    'data/ber-fec-hard/ber_h128.dat'        using 1:3 with linespoints linewidth 1.2 pointtype 6 linecolor rgb '#004040' title 'Hamming(12,8)',\
     'data/ber-fec-hard/ber_h74.dat'         using 1:3 with linespoints linewidth 1.2 pointtype 6 linecolor rgb '#008040' title 'Hamming(7,4)',\
     'data/ber-fec-hard/ber_g2412.dat'       using 1:3 with linespoints linewidth 1.2 pointtype 6 linecolor rgb '#ad9120' title 'Golay(24,12)'
 
