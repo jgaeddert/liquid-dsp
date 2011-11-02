@@ -121,7 +121,8 @@ src/cvsd/src/cvsd.o : %.o : %.c $(headers)
 audio_autotests :=						\
 	src/audio/tests/cvsd_autotest.c				\
 
-audio_benchmarks :=
+audio_benchmarks :=						\
+	src/audio/bench/cvsd_benchmark.c			\
 
 
 # 
@@ -1275,19 +1276,21 @@ sandbox_programs =						\
 	sandbox/fec_golay2412_test				\
 	sandbox/fec_golay_test					\
 	sandbox/fec_hamming3126_example				\
+	sandbox/fec_hamming128_test				\
 	sandbox/fec_hamming128_gentab				\
 	sandbox/fec_hamming128_example				\
 	sandbox/fec_hamming74_gentab				\
 	sandbox/fec_hamming84_gentab				\
 	sandbox/fec_hamming_test				\
+	sandbox/fec_ldpc_test					\
 	sandbox/fec_rep3_test					\
 	sandbox/fec_rep5_test					\
 	sandbox/fec_secded2216_test				\
 	sandbox/fec_secded3932_test				\
 	sandbox/fec_secded7264_test				\
 	sandbox/fecsoft_conv_test				\
-	sandbox/fecsoft_golay_test				\
 	sandbox/fecsoft_hamming128_gentab			\
+	sandbox/fecsoft_ldpc_test				\
 	sandbox/fec_sumproduct_test				\
 	sandbox/fft_r2r_test					\
 	sandbox/firdes_energy_test				\
@@ -1300,8 +1303,6 @@ sandbox_programs =						\
 	sandbox/gmskmodem_test					\
 	sandbox/householder_test				\
 	sandbox/iirdes_example					\
-	sandbox/ldpc_genmatrix_test				\
-	sandbox/ldpc_test					\
 	sandbox/levinson_test					\
 	sandbox/matched_filter_test				\
 	sandbox/matched_filter_cfo_test				\

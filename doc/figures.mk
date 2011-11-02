@@ -42,8 +42,8 @@ local_pdffiles :=					\
 	figures.gen/eqlms_cccf_blind_freq.pdf		\
 	figures.gen/eqlms_cccf_blind_time.pdf		\
 							\
-	figures.gen/fec_ber_esn0_hamming.pdf		\
-	figures.gen/fec_ber_ebn0_hamming.pdf		\
+	figures.gen/fec_ber_esn0_block.pdf		\
+	figures.gen/fec_ber_ebn0_block.pdf		\
 	figures.gen/fec_ber_esn0_conv.pdf		\
 	figures.gen/fec_ber_ebn0_conv.pdf		\
 	figures.gen/fec_ber_esn0_convpunc.pdf		\
@@ -396,8 +396,8 @@ resimulate-data-fec-ber-soft : src/simulate_ber
 	./src/simulate_ber -S -c rs8    $(ber-fec-soft-opts) -o data/ber-fec-soft/ber_rs8.dat
 
 # copy gnuplot file
-figures.gen/fec_ber_esn0_hamming.gnu \
-figures.gen/fec_ber_ebn0_hamming.gnu \
+figures.gen/fec_ber_esn0_block.gnu \
+figures.gen/fec_ber_ebn0_block.gnu \
 figures.gen/fec_ber_esn0_conv.gnu \
 figures.gen/fec_ber_ebn0_conv.gnu \
 figures.gen/fec_ber_esn0_convpunc.gnu \
@@ -405,8 +405,8 @@ figures.gen/fec_ber_ebn0_convpunc.gnu : figures.gen/%.gnu : data/%.gnu
 	cp $< $@
 
 # add ber simulation data files as dependencies
-figures.gen/fec_ber_esn0_hamming.eps \
-figures.gen/fec_ber_ebn0_hamming.eps \
+figures.gen/fec_ber_esn0_block.eps \
+figures.gen/fec_ber_ebn0_block.eps \
 figures.gen/fec_ber_esn0_conv.eps \
 figures.gen/fec_ber_ebn0_conv.eps \
 figures.gen/fec_ber_esn0_convpunc.eps \
@@ -573,6 +573,8 @@ figures.gen/fft_example_time.gnu figures.gen/fft_example_freq.gnu : src/fft_exam
 figures.gen/ofdmflexframesync_performance.dat \
 figures.gen/ofdmflexframesync_performance.gnu : figures.gen/% : data/ofdmflexframe/%
 	cp $< $@
+
+figures.gen/ofdmflexframesync_performance.eps : %.eps : %.gnu %.dat
 
 ##
 ## MODULE : interleaver

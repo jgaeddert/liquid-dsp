@@ -552,8 +552,8 @@ The noise standard deviation and channel gain may be derived from these
 values as follows:
 %
 \begin{Verbatim}[fontsize=\small]
-    float nstd  = powf(10.0f, noise_floor*0.1f);
-    float gamma = powf(10.0f, (SNRdB+noise_floor)*0.1f);
+    float nstd  = powf(10.0f, noise_floor/20.0f);
+    float gamma = powf(10.0f, (SNRdB+noise_floor)/20.0f);
 \end{Verbatim}
 %
 Add to your program

@@ -742,6 +742,24 @@ Furthermore, the framing structure includes a provision for a brief
 user-defined header which can be used for source/destination
 address, packet identifier, etc.
 
+Sending data in parallel channels has some distinct advantages over
+serial transmission:
+equalization in the presence of multi-path channel environments is much
+simpler,
+inter-symbol interference can be eliminated with a properly-chosen
+cyclic prefix length,
+and capacity can be increased by modulating data appropriately on
+subcarriers relative to their signal-to-noise ratio.
+Multi-carrier systems, however, are significantly more sensitive to
+carrier frequency offsets and doppler shifts, leading to inter-carrier
+interference.
+OFDM can therefore be more difficult to synchronize and maintain data
+fidelity in mobile environments.
+To assist in synchronization, special preambles at the beginning of each
+frame are inserted at the transmitter...
+% TODO : finish this description, also including PAPR description (power
+%        amplifier non-linearities)
+
 \subsubsection{Operational description}
 \label{module:framing:ofdmflexframe:operation}
 Like the {\tt frame64} and {\tt flexframe} structures,
@@ -926,4 +944,31 @@ This listing gives a basic demonstration to the interface to the
 \input{listings/ofdmflexframegen.example.c.tex}
 %
 
+
+\subsubsection{{\tt ofdmflexframesync}}
+\label{module:framing:ofdmflexframe:sync}
+
+\subsubsection{Performance}
+\label{module:framing:ofdmflexframe:performance}
+%
+
+% 
+% FIGURE: ofdmflexframe spectrum
+%
+\begin{figure}
+\centering
+  \includegraphics[trim = 0mm 0mm 0mm 0mm, clip, width=13cm]{figures.gen/ofdmflexframesync_performance}
+\caption{Performance of the {\tt ofdmflexframe} structure with
+         $M=64$ subcarriers.}
+\label{fig:module:framing:ofdmflexframe_performance}
+\end{figure}
+%
+Figure~\ref{fig:module:framing:ofdmflexframe_performance} shows the
+performance characterisitics of the {\tt ofdmflexframe} structure.
+The frame can be detected with a 90\% probability with an SNR level of
+just -0.5~dB.
+Furthermore, the probability of detecting the frame and decoding the
+header reaches 90\% at just 2.6~dB SNR.
+Decoding the remainder of the frame depends on many factors such as the
+modulation scheme and forward error-correction schemes applied.
 

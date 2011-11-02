@@ -17,7 +17,6 @@ int main() {
     ofdmflexframegenprops_s fgprops;
     ofdmflexframegenprops_init_default(&fgprops);
     fgprops.num_symbols_S0  = 3;
-    fgprops.payload_len     = payload_len;
     fgprops.check           = LIQUID_CRC_32;
     fgprops.fec0            = LIQUID_FEC_NONE;
     fgprops.fec1            = LIQUID_FEC_HAMMING128;
@@ -33,7 +32,7 @@ int main() {
     // ... initialize header/payload ...
 
     // assemble frame
-    ofdmflexframegen_assemble(fg, header, payload);
+    ofdmflexframegen_assemble(fg, header, payload, payload_len);
 
     // generate frame
     int last_symbol=0;
