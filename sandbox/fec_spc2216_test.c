@@ -37,10 +37,13 @@
 #include <stdlib.h>
 #include <string.h>
 #include <assert.h>
+#include <math.h>
 
 #include "liquid.internal.h"
 
 #define DEBUG_SPC2216 0
+
+#define OUTPUT_FILENAME "spc2216_ber_test.m"
 
 // encode message
 //  _msg_org    :   original message [size: 32 bytes]
@@ -118,6 +121,7 @@ void print_bitstring(unsigned char _x,
 
 int main(int argc, char*argv[])
 {
+    srand(time(NULL));
     unsigned int i;
     
     // error vector
@@ -136,12 +140,6 @@ int main(int argc, char*argv[])
     // generate random transmitted message
     for (i=0; i<32; i++)
         m[i] = rand() & 0xff;
-#if 0
-    for (i=0; i<32; i++)
-        m[i] = (i % 2) == 0 ? 0x80 >> (i/2) : 0;
-    for (i=0; i<32; i++)
-        m[i] = i == 0 ? 0x80 : 0x00;
-#endif
     printf("m (original message):\n");
     spc2216_print_decoded(m);
 
@@ -165,6 +163,130 @@ int main(int argc, char*argv[])
     // compute errors between m, m_hat
     unsigned int num_errors_decoded = count_bit_errors_array(m, m_hat, 32);
     printf("decoding errors (original) : %2u / 256\n", num_errors_decoded);
+
+
+
+    // 
+    // run SNR trials
+    //
+    float SNRdB_min = -1.0f;                // signal-to-noise ratio (minimum)
+    float SNRdB_max =  7.0f;                // signal-to-noise ratio (maximum)
+    unsigned int num_snr = 33;              // number of SNR steps
+    unsigned int num_trials=10000;          // number of trials
+
+    // arrays
+    float complex sym_rec[8*61];            // received BPSK symbols
+    unsigned int bit_errors[num_snr];
+
+    unsigned int n_enc = 61;
+    unsigned char msg_org[32];
+    unsigned char msg_enc[61];
+    unsigned char msg_cor[61];
+    unsigned char msg_dec[32];
+
+    // set up parameters
+    float SNRdB_step = (SNRdB_max - SNRdB_min) / (num_snr-1);
+
+    printf("  %8s %8s [%8s] %8s %12s %8s %12s %12s\n",
+            "SNR [dB]", "Eb/N0", "trials", "soft", "(BER)", "hard", "(BER)", "uncoded");
+    unsigned int s;
+    for (s=0; s<num_snr; s++) {
+        // compute SNR for this level
+        float SNRdB = SNRdB_min + s*SNRdB_step; // SNR in dB for this round
+        float nstd = powf(10.0f, -SNRdB/20.0f); // noise standard deviation
+
+        // reset results
+        bit_errors[s] = 0;
+
+        unsigned int t;
+        for (t=0; t<num_trials; t++) {
+            // generate data
+            for (i=0; i<32; i++)
+                msg_org[i] = rand() & 0xff;
+
+            // encode message
+            spc2216_encode(msg_org, msg_enc);
+
+            // modulate with BPSK
+            for (i=0; i<n_enc; i++) {
+                sym_rec[8*i+0] = (msg_enc[i] & 0x80) ? 1.0f : -1.0f;
+                sym_rec[8*i+1] = (msg_enc[i] & 0x40) ? 1.0f : -1.0f;
+                sym_rec[8*i+2] = (msg_enc[i] & 0x20) ? 1.0f : -1.0f;
+                sym_rec[8*i+3] = (msg_enc[i] & 0x10) ? 1.0f : -1.0f;
+                sym_rec[8*i+4] = (msg_enc[i] & 0x08) ? 1.0f : -1.0f;
+                sym_rec[8*i+5] = (msg_enc[i] & 0x04) ? 1.0f : -1.0f;
+                sym_rec[8*i+6] = (msg_enc[i] & 0x02) ? 1.0f : -1.0f;
+                sym_rec[8*i+7] = (msg_enc[i] & 0x01) ? 1.0f : -1.0f;
+            }
+
+            // add noise
+            for (i=0; i<8*n_enc; i++)
+                sym_rec[i] += nstd*(randnf() + _Complex_I*randf())*M_SQRT1_2;
+
+            // convert to hard bits (hard decoding)
+            for (i=0; i<n_enc; i++) {
+                msg_cor[i] = 0x00;
+
+                msg_cor[i] |= crealf(sym_rec[8*i+0]) > 0.0f ? 0x80 : 0x00;
+                msg_cor[i] |= crealf(sym_rec[8*i+1]) > 0.0f ? 0x40 : 0x00;
+                msg_cor[i] |= crealf(sym_rec[8*i+2]) > 0.0f ? 0x20 : 0x00;
+                msg_cor[i] |= crealf(sym_rec[8*i+3]) > 0.0f ? 0x10 : 0x00;
+                msg_cor[i] |= crealf(sym_rec[8*i+4]) > 0.0f ? 0x08 : 0x00;
+                msg_cor[i] |= crealf(sym_rec[8*i+5]) > 0.0f ? 0x04 : 0x00;
+                msg_cor[i] |= crealf(sym_rec[8*i+6]) > 0.0f ? 0x02 : 0x00;
+                msg_cor[i] |= crealf(sym_rec[8*i+7]) > 0.0f ? 0x01 : 0x00;
+            }
+
+            // decode
+            spc2216_decode(msg_cor, msg_dec);
+            
+            // tabulate results
+            bit_errors[s] += count_bit_errors_array(msg_org, msg_dec, 32);
+        }
+
+        // print results for this SNR step
+        float rate = 32. / 61.; // true rate
+        printf("  %8.3f %8.3f [%8u] %8u %12.4e %12.4e\n",
+                SNRdB,
+                SNRdB - 10*log10f(rate),
+                8*32*num_trials,
+                bit_errors[s], (float)(bit_errors[s]) / (float)(num_trials*32*8),
+                0.5f*erfcf(1.0f/nstd));
+    }
+    // 
+    // export output file
+    //
+    FILE * fid = fopen(OUTPUT_FILENAME, "w");
+    fprintf(fid,"%% %s : auto-generated file\n", OUTPUT_FILENAME);
+    fprintf(fid,"\n\n");
+    fprintf(fid,"clear all\n");
+    fprintf(fid,"close all\n");
+    fprintf(fid,"n = %u;    %% frame size [bytes]\n", 32);
+    fprintf(fid,"k = %u;    %% encoded frame size [bytes]\n", 61);
+    fprintf(fid,"r = n / k; %% true rate\n");
+    fprintf(fid,"num_snr = %u;\n", num_snr);
+    fprintf(fid,"num_trials = %u;\n", num_trials);
+    fprintf(fid,"num_bit_trials = num_trials*n*8;\n");
+    for (i=0; i<num_snr; i++) {
+        fprintf(fid,"SNRdB(%4u) = %12.8f;\n",i+1, SNRdB_min + i*SNRdB_step);
+        fprintf(fid,"bit_errors(%6u) = %u;\n", i+1, bit_errors[i]);
+    }
+    fprintf(fid,"EbN0dB = SNRdB - 10*log10(r);\n");
+    fprintf(fid,"EbN0dB_bpsk = -15:0.5:40;\n");
+    fprintf(fid,"\n\n");
+    fprintf(fid,"figure;\n");
+    fprintf(fid,"semilogy(EbN0dB_bpsk, 0.5*erfc(sqrt(10.^[EbN0dB_bpsk/10]))+1e-12,'-x',\n");
+    fprintf(fid,"         EbN0dB,      bit_errors / num_bit_trials + 1e-12,  '-x');\n");
+    fprintf(fid,"axis([%f (%f-10*log10(r)) 1e-6 1]);\n", SNRdB_min, SNRdB_max);
+    fprintf(fid,"legend('uncoded','coded',1);\n");
+    fprintf(fid,"xlabel('E_b/N_0 [dB]');\n");
+    fprintf(fid,"ylabel('Bit Error Rate');\n");
+    fprintf(fid,"title('BER vs. E_b/N_0 for SPC(22,16)');\n");
+    fprintf(fid,"grid on;\n");
+
+    fclose(fid);
+    printf("results written to %s\n", OUTPUT_FILENAME);
+
 
     printf("done.\n");
     return 0;
@@ -275,7 +397,7 @@ void spc2216_decode(unsigned char * _msg_rec,
         m_hat[2*i+1]  ^= e_hat[2];
     }
 
-    printf("number of uncorrected errors: %u\n", num_uncorrected_errors);
+    //printf("number of uncorrected errors: %u\n", num_uncorrected_errors);
     
     // copy decoded message to output
     memmove(_msg_dec, m_hat, 32*sizeof(unsigned char));
