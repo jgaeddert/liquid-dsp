@@ -29,6 +29,9 @@
 
 #include "liquid.internal.h"
 
+// squash output signal if squelch is activate
+#define AGC_SQUELCH_GAIN 0
+
 // agc structure object
 struct AGC(_s) {
     // gain variables
@@ -36,7 +39,9 @@ struct AGC(_s) {
     T g;            // current gain value
     T g_min;        // minimum gain value
     T g_max;        // maximum gain value
+#if AGC_SQUELCH_GAIN
     T g_squelch;    // squelch gain
+#endif
 
     // gain control loop filter parameters
     T BT;           // bandwidth-time constant
@@ -133,8 +138,10 @@ void AGC(_reset)(AGC() _q)
     for (i=0; i<_q->buffer_len; i++)
         _q->buffer[i] = 1.0f;
 
+#if AGC_SQUELCH_GAIN
     // set 'squelch' gain
     _q->g_squelch   = 1.0f;
+#endif
 
     AGC(_unlock)(_q);
 }
@@ -232,8 +239,10 @@ void AGC(_apply_gain)(AGC() _q,
     // apply internal gain to input
     *_y *= _q->g;
 
+#if AGC_SQUELCH_GAIN
     // apply squelch gain
     *_y *= _q->g_squelch;
+#endif
 }
 
 // execute automatic gain control loop
@@ -249,7 +258,9 @@ void AGC(_execute)(AGC() _q,
 
     // apply gain to input
     *_y = _x * _q->g;
+#if AGC_SQUELCH_GAIN
     *_y *= _q->g_squelch;
+#endif
 }
 
 // get estimated signal level (linear)
@@ -274,7 +285,9 @@ T AGC(_get_gain)(AGC() _q)
 void AGC(_squelch_activate)(AGC() _q)
 {
     _q->squelch_activated = 1;
+#if AGC_SQUELCH_GAIN
     _q->g_squelch = 1.0f;
+#endif
 }
 
 // deactivate squelch
@@ -410,12 +423,16 @@ void AGC(_execute_squelch)(AGC() _q)
 
             if (!signal_low) _q->squelch_status = LIQUID_AGC_SQUELCH_RISE;
 
+#if AGC_SQUELCH_GAIN
             // actually squelch the input signal
             _q->g_squelch *= 0.92f;
+#endif
 
             break;
         case LIQUID_AGC_SQUELCH_RISE:
+#if AGC_SQUELCH_GAIN
             _q->g_squelch = 1.0f;
+#endif
             _q->squelch_status = LIQUID_AGC_SQUELCH_SIGNALHI;
             break;
         case LIQUID_AGC_SQUELCH_SIGNALHI:
