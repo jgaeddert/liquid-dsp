@@ -27,13 +27,9 @@
 void agc_crcf_unlocked_bench(struct rusage *_start,
                              struct rusage *_finish,
                              unsigned long int *_num_iterations,
-                             unsigned int _D,
                              int _squelch,
                              int _locked)
 {
-    // scale by decimation rate
-    *_num_iterations *= _D;
-
     // scale if locked
     if (_locked) *_num_iterations *= 8;
 
@@ -41,7 +37,6 @@ void agc_crcf_unlocked_bench(struct rusage *_start,
 
     // initialize AGC object
     agc_crcf q = agc_crcf_create();
-    agc_crcf_set_decim(q,_D);
     agc_crcf_set_bandwidth(q,0.05f);
 
     // squelch?
@@ -74,14 +69,13 @@ void agc_crcf_unlocked_bench(struct rusage *_start,
     agc_crcf_destroy(q);
 }
 
-#define AGC_CRCF_BENCHMARK_API(D,SQUELCH,LOCKED)    \
-(   struct rusage *_start,                          \
-    struct rusage *_finish,                         \
-    unsigned long int *_num_iterations)             \
-{ agc_crcf_unlocked_bench(_start, _finish, _num_iterations, D, SQUELCH, LOCKED); }
+#define AGC_CRCF_BENCHMARK_API(SQUELCH,LOCKED)  \
+(   struct rusage *_start,                      \
+    struct rusage *_finish,                     \
+    unsigned long int *_num_iterations)         \
+{ agc_crcf_unlocked_bench(_start, _finish, _num_iterations, SQUELCH, LOCKED); }
 
-// undecimated benchmarks (D=1)
-void benchmark_agc_crcf                 AGC_CRCF_BENCHMARK_API(1, 0, 0)
-void benchmark_agc_crcf_squelch         AGC_CRCF_BENCHMARK_API(1, 1, 0)
-void benchmark_agc_crcf_locked          AGC_CRCF_BENCHMARK_API(1, 0, 1)
+void benchmark_agc_crcf                 AGC_CRCF_BENCHMARK_API(0, 0)
+void benchmark_agc_crcf_squelch         AGC_CRCF_BENCHMARK_API(1, 0)
+void benchmark_agc_crcf_locked          AGC_CRCF_BENCHMARK_API(0, 1)
 

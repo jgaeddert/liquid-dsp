@@ -49,8 +49,6 @@ struct AGC(_s) {
 
     // is agc locked?
     int is_locked;
-    unsigned int decim_timer;
-    unsigned int decim_timeout;
 
     // 'true' agc method
     float * buffer;                 // buffered |input values|^2
@@ -86,8 +84,6 @@ AGC() AGC(_create)(void)
     // initialize internals
     AGC(_set_bandwidth)(_q, 0.0);
     _q->is_locked = 0;
-    _q->decim_timer = 0;
-    AGC(_set_decim)(_q, 1);
 
     // create input buffer, initialize with zeros
     _q->buffer_len = 16;
@@ -127,8 +123,6 @@ void AGC(_print)(AGC() _q)
 // reset agc object
 void AGC(_reset)(AGC() _q)
 {
-    _q->decim_timer = 0;
-
     _q->gamma_hat   = 1.0f;
     _q->g_hat       = 1.0f;
     _q->g           = 1.0f;
@@ -181,34 +175,13 @@ void AGC(_set_bandwidth)(AGC() _q,
     // set internal bandwidth
     _q->BT = _BT;
 
-    // normalize bandwidth by decimation factor
-    float bt = _q->BT * _q->decim_timeout;
-
     // ensure normalized bandwidth is less than one
+    float bt = _q->BT;
     if (bt >= 1.0f) bt = 0.99f;
 
     // compute coefficients
     _q->alpha = sqrtf(bt);
     _q->beta = 1 - _q->alpha;
-}
-
-// Set internal decimation level
-//  _q      :   agc object
-//  _D      :   decimation level, D > 0, D=4 typical
-void AGC(_set_decim)(AGC() _q,
-                     unsigned int _D)
-{
-    // validate input
-    if ( _D == 0 ) {
-        fprintf(stderr,"error: agc_xxxt_set_decim(), decimation factor must be greater than zero\n");
-        exit(1);
-    }
-
-    // set decimation factor
-    _q->decim_timeout = _D;
-
-    // re-compute filter bandwidth
-    AGC(_set_bandwidth)(_q, _q->BT);
 }
 
 // lock agc
@@ -271,13 +244,8 @@ void AGC(_execute)(AGC() _q,
                    TC    _x,
                    TC *  _y)
 {
-    // decimation: only execute gain control loop every D samples
-    _q->decim_timer++;
-    if (_q->decim_timer == _q->decim_timeout) {
-        _q->decim_timer = 0;
-
-        AGC(_push)(_q, _x);
-    }
+    // push input sample, update internal tracking loop
+    AGC(_push)(_q, _x);
 
     // apply gain to input
     *_y = _x * _q->g;

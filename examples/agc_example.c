@@ -72,7 +72,6 @@ int main(int argc, char*argv[])
 
     // create objects
     agc_crcf p = agc_crcf_create();
-    agc_crcf_set_decim(p, D);
     agc_crcf_set_bandwidth(p, bt);
 
     // squelch
