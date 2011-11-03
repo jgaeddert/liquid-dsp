@@ -76,6 +76,8 @@ int main(int argc, char*argv[])
     agc_crcf_set_bandwidth(p, bt);
 
     // squelch
+    //agc_crcf_squelch_activate(p);
+    //agc_crcf_squelch_set_threshold(p, noise_floor + 3);
     agc_crcf_squelch_deactivate(p);
 
     float complex x[num_samples];   // input
