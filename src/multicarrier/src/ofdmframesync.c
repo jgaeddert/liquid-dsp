@@ -451,11 +451,11 @@ void ofdmframesync_execute_seekplcp(ofdmframesync _q)
             tau_hat);
 #endif
 
+    // save gain (permits dynamic invocation of get_rssi() method)
+    _q->g0 = g;
+
     // TODO : allow variable threshold
     if (cabsf(s_hat) > 0.35f) {
-
-        // save gain
-        _q->g0 = g;
 
         int dt = (int)roundf(tau_hat);
         // set timer appropriately...

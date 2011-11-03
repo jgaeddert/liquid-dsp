@@ -2204,6 +2204,9 @@ void ofdmflexframesync_execute(ofdmflexframesync _q,
                                liquid_float_complex * _x,
                                unsigned int _n);
 
+// query the received signal strength indication
+float ofdmflexframesync_get_rssi(ofdmflexframesync _q);
+
 
 
 
