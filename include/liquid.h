@@ -120,7 +120,13 @@ void AGC(_set_decim)(AGC() _q, unsigned int _D);                \
 void AGC(_lock)(AGC() _q);                                      \
 void AGC(_unlock)(AGC() _q);                                    \
                                                                 \
-/* Apply gain to input, update tracking loop */                 \
+/* push input sample, update internal tracking loop */          \
+void AGC(_push)(AGC() _q, TC _x);                               \
+                                                                \
+/* apply gain to input sample */                                \
+void AGC(_apply_gain)(AGC() _q, TC * _y);                       \
+                                                                \
+/* same as running push(), apply_gain() */                      \
 void AGC(_execute)(AGC() _q, TC _x, TC *_y);                    \
                                                                 \
 /* Return signal level (linear) relative to unity energy */     \

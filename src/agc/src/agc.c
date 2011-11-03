@@ -219,29 +219,15 @@ void AGC(_unlock)(AGC() _q)
     _q->is_locked = 0;
 }
 
-// execute automatic gain control loop
+// push input sample, update internal tracking loop
 //  _q      :   agc object
 //  _x      :   input sample
-//  _y      :   output sample
-void AGC(_execute)(AGC() _q,
-                   TC _x,
-                   TC *_y)
+void AGC(_push)(AGC() _q,
+                TC    _x)
 {
-    // if agc is locked, apply current gain and return
-    if (_q->is_locked) {
-        *_y = _x * (_q->g);
+    // if agc is locked, just return (do nothing)
+    if (_q->is_locked)
         return;
-    }
-
-    // decimation: only execute gain control loop every D samples
-    _q->decim_timer++;
-    if (_q->decim_timer == _q->decim_timeout) {
-        _q->decim_timer = 0;
-    } else {
-        // apply gain to input and return
-        *_y = _x * _q->g;
-        return;
-    }
 
     // compute input energy estimate
     AGC(_estimate_input_energy)(_q, _x);
@@ -255,12 +241,39 @@ void AGC(_execute)(AGC() _q,
     // limit gain
     AGC(_limit_gain)(_q);
 
-    // apply gain to input
-    *_y = _x * _q->g;
-
     // update squelch control, if activated
     if (_q->squelch_activated)
         AGC(_execute_squelch)(_q);
+}
+
+// apply gain to input sample
+//  _q      :   agc object
+//  _x      :   input/output sample
+void AGC(_apply_gain)(AGC() _q,
+                      TC *  _y)
+{
+    // apply internal gain to input
+    *_y *= _q->g;
+}
+
+// execute automatic gain control loop
+//  _q      :   agc object
+//  _x      :   input sample
+//  _y      :   output sample
+void AGC(_execute)(AGC() _q,
+                   TC    _x,
+                   TC *  _y)
+{
+    // decimation: only execute gain control loop every D samples
+    _q->decim_timer++;
+    if (_q->decim_timer == _q->decim_timeout) {
+        _q->decim_timer = 0;
+
+        AGC(_push)(_q, _x);
+    }
+
+    // apply gain to input
+    *_y = _x * _q->g;
 }
 
 // get estimated signal level (linear)
