@@ -113,14 +113,17 @@ void AGC(_set_gain_limits)(AGC() _q, T _gmin, T _gmax);         \
 /* Set loop filter bandwidth; attack/release time */            \
 void AGC(_set_bandwidth)(AGC() _q, T _bt);                      \
                                                                 \
-/* Set internal decimation level, D > 0, D=4 typical */         \
-void AGC(_set_decim)(AGC() _q, unsigned int _D);                \
-                                                                \
 /* lock/unlock gain control */                                  \
 void AGC(_lock)(AGC() _q);                                      \
 void AGC(_unlock)(AGC() _q);                                    \
                                                                 \
-/* Apply gain to input, update tracking loop */                 \
+/* push input sample, update internal tracking loop */          \
+void AGC(_push)(AGC() _q, TC _x);                               \
+                                                                \
+/* apply gain to input sample */                                \
+void AGC(_apply_gain)(AGC() _q, TC * _y);                       \
+                                                                \
+/* same as running push(), apply_gain() */                      \
 void AGC(_execute)(AGC() _q, TC _x, TC *_y);                    \
                                                                 \
 /* Return signal level (linear) relative to unity energy */     \
@@ -2202,6 +2205,9 @@ void ofdmflexframesync_reset(ofdmflexframesync _q);
 void ofdmflexframesync_execute(ofdmflexframesync _q,
                                liquid_float_complex * _x,
                                unsigned int _n);
+
+// query the received signal strength indication
+float ofdmflexframesync_get_rssi(ofdmflexframesync _q);
 
 
 

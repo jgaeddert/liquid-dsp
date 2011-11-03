@@ -29,6 +29,9 @@
 
 #include "liquid.internal.h"
 
+// squash output signal if squelch is activate
+#define AGC_SQUELCH_GAIN 0
+
 // agc structure object
 struct AGC(_s) {
     // gain variables
@@ -36,6 +39,9 @@ struct AGC(_s) {
     T g;            // current gain value
     T g_min;        // minimum gain value
     T g_max;        // maximum gain value
+#if AGC_SQUELCH_GAIN
+    T g_squelch;    // squelch gain
+#endif
 
     // gain control loop filter parameters
     T BT;           // bandwidth-time constant
@@ -48,8 +54,6 @@ struct AGC(_s) {
 
     // is agc locked?
     int is_locked;
-    unsigned int decim_timer;
-    unsigned int decim_timeout;
 
     // 'true' agc method
     float * buffer;                 // buffered |input values|^2
@@ -85,8 +89,6 @@ AGC() AGC(_create)(void)
     // initialize internals
     AGC(_set_bandwidth)(_q, 0.0);
     _q->is_locked = 0;
-    _q->decim_timer = 0;
-    AGC(_set_decim)(_q, 1);
 
     // create input buffer, initialize with zeros
     _q->buffer_len = 16;
@@ -126,8 +128,6 @@ void AGC(_print)(AGC() _q)
 // reset agc object
 void AGC(_reset)(AGC() _q)
 {
-    _q->decim_timer = 0;
-
     _q->gamma_hat   = 1.0f;
     _q->g_hat       = 1.0f;
     _q->g           = 1.0f;
@@ -137,6 +137,11 @@ void AGC(_reset)(AGC() _q)
     unsigned int i;
     for (i=0; i<_q->buffer_len; i++)
         _q->buffer[i] = 1.0f;
+
+#if AGC_SQUELCH_GAIN
+    // set 'squelch' gain
+    _q->g_squelch   = 1.0f;
+#endif
 
     AGC(_unlock)(_q);
 }
@@ -177,34 +182,13 @@ void AGC(_set_bandwidth)(AGC() _q,
     // set internal bandwidth
     _q->BT = _BT;
 
-    // normalize bandwidth by decimation factor
-    float bt = _q->BT * _q->decim_timeout;
-
     // ensure normalized bandwidth is less than one
+    float bt = _q->BT;
     if (bt >= 1.0f) bt = 0.99f;
 
     // compute coefficients
     _q->alpha = sqrtf(bt);
     _q->beta = 1 - _q->alpha;
-}
-
-// Set internal decimation level
-//  _q      :   agc object
-//  _D      :   decimation level, D > 0, D=4 typical
-void AGC(_set_decim)(AGC() _q,
-                     unsigned int _D)
-{
-    // validate input
-    if ( _D == 0 ) {
-        fprintf(stderr,"error: agc_xxxt_set_decim(), decimation factor must be greater than zero\n");
-        exit(1);
-    }
-
-    // set decimation factor
-    _q->decim_timeout = _D;
-
-    // re-compute filter bandwidth
-    AGC(_set_bandwidth)(_q, _q->BT);
 }
 
 // lock agc
@@ -219,29 +203,15 @@ void AGC(_unlock)(AGC() _q)
     _q->is_locked = 0;
 }
 
-// execute automatic gain control loop
+// push input sample, update internal tracking loop
 //  _q      :   agc object
 //  _x      :   input sample
-//  _y      :   output sample
-void AGC(_execute)(AGC() _q,
-                   TC _x,
-                   TC *_y)
+void AGC(_push)(AGC() _q,
+                TC    _x)
 {
-    // if agc is locked, apply current gain and return
-    if (_q->is_locked) {
-        *_y = _x * (_q->g);
+    // if agc is locked, just return (do nothing)
+    if (_q->is_locked)
         return;
-    }
-
-    // decimation: only execute gain control loop every D samples
-    _q->decim_timer++;
-    if (_q->decim_timer == _q->decim_timeout) {
-        _q->decim_timer = 0;
-    } else {
-        // apply gain to input and return
-        *_y = _x * _q->g;
-        return;
-    }
 
     // compute input energy estimate
     AGC(_estimate_input_energy)(_q, _x);
@@ -255,12 +225,42 @@ void AGC(_execute)(AGC() _q,
     // limit gain
     AGC(_limit_gain)(_q);
 
-    // apply gain to input
-    *_y = _x * _q->g;
-
     // update squelch control, if activated
     if (_q->squelch_activated)
         AGC(_execute_squelch)(_q);
+}
+
+// apply gain to input sample
+//  _q      :   agc object
+//  _x      :   input/output sample
+void AGC(_apply_gain)(AGC() _q,
+                      TC *  _y)
+{
+    // apply internal gain to input
+    *_y *= _q->g;
+
+#if AGC_SQUELCH_GAIN
+    // apply squelch gain
+    *_y *= _q->g_squelch;
+#endif
+}
+
+// execute automatic gain control loop
+//  _q      :   agc object
+//  _x      :   input sample
+//  _y      :   output sample
+void AGC(_execute)(AGC() _q,
+                   TC    _x,
+                   TC *  _y)
+{
+    // push input sample, update internal tracking loop
+    AGC(_push)(_q, _x);
+
+    // apply gain to input
+    *_y = _x * _q->g;
+#if AGC_SQUELCH_GAIN
+    *_y *= _q->g_squelch;
+#endif
 }
 
 // get estimated signal level (linear)
@@ -285,6 +285,9 @@ T AGC(_get_gain)(AGC() _q)
 void AGC(_squelch_activate)(AGC() _q)
 {
     _q->squelch_activated = 1;
+#if AGC_SQUELCH_GAIN
+    _q->g_squelch = 1.0f;
+#endif
 }
 
 // deactivate squelch
@@ -313,14 +316,14 @@ void AGC(_squelch_disable_auto)(AGC() _q)
 void AGC(_squelch_set_threshold)(AGC() _q,
                                  T _threshold)
 {
-    _q->squelch_threshold      = powf(10.0f,_threshold / 10.0f);
+    _q->squelch_threshold      = powf(10.0f,_threshold / 20.0f);
     _q->squelch_threshold_auto = _q->squelch_threshold;
 }
 
 // get squelch threshold [dB]
 T AGC(_squelch_get_threshold)(AGC() _q)
 {
-    return 10.0f*log10f(_q->squelch_threshold);
+    return 20.0f*log10f(_q->squelch_threshold);
 }
 
 // set squelch timeout (time before squelch is deactivated)
@@ -397,7 +400,7 @@ void AGC(_update_auto_squelch)(AGC() _q,
     if (_rssi < _q->squelch_threshold * _q->squelch_headroom) {
         _q->squelch_threshold *= 0.95f;
 #if 0
-        printf("agc auto-squelch threshold : %12.8f dB\n", 10*log10f(_q->squelch_threshold));
+        printf("agc auto-squelch threshold : %12.8f dB\n", 20*log10f(_q->squelch_threshold));
 #endif
     } else {
         // continuously increase threshold
@@ -408,19 +411,28 @@ void AGC(_update_auto_squelch)(AGC() _q,
 // execute squelch cycle
 void AGC(_execute_squelch)(AGC() _q)
 {
-    // get rssi
-    T rssi = AGC(_get_signal_level)(_q);
+    // get signal level (linear rssi)
+    T signal_level = AGC(_get_signal_level)(_q);
 
-    int signal_low = (rssi < _q->squelch_threshold) ? 1 : 0;
+    int signal_low = (signal_level < _q->squelch_threshold) ? 1 : 0;
 
     switch (_q->squelch_status) {
         case LIQUID_AGC_SQUELCH_ENABLED:
             // update auto-squelch threshold
-            if (_q->squelch_auto) AGC(_update_auto_squelch)(_q, rssi);
+            if (_q->squelch_auto) AGC(_update_auto_squelch)(_q, signal_level);
 
             if (!signal_low) _q->squelch_status = LIQUID_AGC_SQUELCH_RISE;
+
+#if AGC_SQUELCH_GAIN
+            // actually squelch the input signal
+            _q->g_squelch *= 0.92f;
+#endif
+
             break;
         case LIQUID_AGC_SQUELCH_RISE:
+#if AGC_SQUELCH_GAIN
+            _q->g_squelch = 1.0f;
+#endif
             _q->squelch_status = LIQUID_AGC_SQUELCH_SIGNALHI;
             break;
         case LIQUID_AGC_SQUELCH_SIGNALHI:
