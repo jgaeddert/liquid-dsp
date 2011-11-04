@@ -55,11 +55,16 @@ unsigned char secded3932_P[28] = {
 
 // syndrome vectors for errors of weight 1
 unsigned char secded3932_syndrome_w1[39] = {
-    0,0,0,0,0,0,0,0,
-    0,0,0,0,0,0,0,0,
-    0,0,0,0,0,0,0,0,
-    0,0,0,0,0,0,0,0,
-    0,0,0,0,0,0,0};
+    0x61, 0x51, 0x19, 0x45, 
+    0x43, 0x31, 0x29, 0x13, 
+    0x62, 0x52, 0x4a, 0x46, 
+    0x32, 0x2a, 0x23, 0x1a, 
+    0x2c, 0x64, 0x26, 0x25, 
+    0x34, 0x16, 0x15, 0x54, 
+    0x0b, 0x58, 0x1c, 0x4c, 
+    0x38, 0x0e, 0x0d, 0x49, 
+    0x01, 0x02, 0x04, 0x08, 
+    0x10, 0x20, 0x40};
 
 // compute parity on 32-bit input
 unsigned char fec_secded3932_compute_parity(unsigned char * _m)
@@ -156,21 +161,15 @@ int fec_secded3932_decode_symbol(unsigned char * _sym_enc,
     } else {
         // estimate error location; search for syndrome with error
         // vector of weight one
+        int syndrome_match = 0;
 
         unsigned int n;
-        // estimate error location
         for (n=0; n<39; n++) {
-            // compute syndrome
-            //unsigned int s_test = 0;
-            unsigned char e_test[5] = {0,0,0,0,0};
-
-            div_t d = div(n,8);
-            e_test[5-d.quot-1] = 1 << d.rem;
-
-            if (s == fec_secded3932_compute_syndrome(e_test)) {
-                // single error detected at location 'n'
-                memmove(e_hat, e_test, 5*sizeof(unsigned char));
-
+            if (s == secded3932_syndrome_w1[n]) {
+                // set estimated error vector (set bit at appropriate index)
+                div_t d = div(n,8);
+                e_hat[5-d.quot-1] ^= 1 << d.rem;
+        
                 // set flag and break from loop
                 syndrome_match = 1;
                 break;
