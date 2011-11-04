@@ -398,6 +398,86 @@ void fec_golay2412_decode(fec _q,
                           unsigned char * _msg_enc,
                           unsigned char * _msg_dec);
 
+// SEC-DED (22,16)
+
+// compute parity on 16-bit input
+unsigned char fec_secded2216_compute_parity(unsigned char * _m);
+
+// compute syndrome on 22-bit input
+unsigned char fec_secded2216_compute_syndrome(unsigned char * _v);
+
+// encode symbol
+//  _sym_dec    :   decoded symbol [size: 2 x 1]
+//  _sym_enc    :   encoded symbol [size: 3 x 1], _sym_enc[0] has only 6 bits
+void fec_secded2216_encode_symbol(unsigned char * _sym_dec,
+                                  unsigned char * _sym_enc);
+
+// decode symbol, returning
+//  0 : no errors detected
+//  1 : one error detected and corrected
+//  2 : multiple errors detected (none corrected)
+// inputs:
+//  _sym_enc    :   encoded symbol [size: 3 x 1], _sym_enc[0] has only 6 bits
+//  _sym_dec    :   decoded symbol [size: 2 x 1]
+int  fec_secded2216_decode_symbol(unsigned char * _sym_enc,
+                                  unsigned char * _sym_dec);
+
+// parity matrix [6 x 16 bits], [6 x 2 bytes]
+extern unsigned char secded2216_P[12];
+
+// syndrome vectors of errors with weight exactly equal to 1
+extern unsigned char secded2216_syndrome_w1[22];
+
+fec fec_secded2216_create(void *_opts);
+void fec_secded2216_destroy(fec _q);
+void fec_secded2216_print(fec _q);
+void fec_secded2216_encode(fec _q,
+                           unsigned int _dec_msg_len,
+                           unsigned char * _msg_dec,
+                           unsigned char * _msg_enc);
+void fec_secded2216_decode(fec _q,
+                           unsigned int _dec_msg_len,
+                           unsigned char * _msg_enc,
+                           unsigned char * _msg_dec);
+
+// SEC-DED (39,32)
+
+// compute parity on 32-bit input
+unsigned char fec_secded3932_compute_parity(unsigned char * _m);
+
+// compute syndrome on 39-bit input
+unsigned char fec_secded3932_compute_syndrome(unsigned char * _v);
+
+// encode symbol
+//  _sym_dec    :   decoded symbol [size: 4 x 1]
+//  _sym_enc    :   encoded symbol [size: 5 x 1], _sym_enc[0] has only 7 bits
+void fec_secded3932_encode_symbol(unsigned char * _sym_dec,
+                                  unsigned char * _sym_enc);
+
+// decode symbol, returning 0/1/2 for zero/one/multiple errors detected
+//  _sym_enc    :   encoded symbol [size: 5 x 1], _sym_enc[0] has only 7 bits
+//  _sym_dec    :   decoded symbol [size: 4 x 1]
+int  fec_secded3932_decode_symbol(unsigned char * _sym_enc,
+                                  unsigned char * _sym_dec);
+
+// parity matrix [7 x 32 bits], [7 x 4 bytes]
+extern unsigned char secded3932_P[28];
+
+// syndrome vectors of errors with weight exactly equal to 1
+extern unsigned char secded3932_syndrome_w1[39];
+
+fec fec_secded3932_create(void *_opts);
+void fec_secded3932_destroy(fec _q);
+void fec_secded3932_print(fec _q);
+void fec_secded3932_encode(fec _q,
+                           unsigned int _dec_msg_len,
+                           unsigned char * _msg_dec,
+                           unsigned char * _msg_enc);
+void fec_secded3932_decode(fec _q,
+                           unsigned int _dec_msg_len,
+                           unsigned char * _msg_enc,
+                           unsigned char * _msg_dec);
+
 // SEC-DED (72,64)
 
 // compute parity byte on 64-byte input
@@ -1230,7 +1310,7 @@ void packetizer_realloc_buffers(packetizer _p, unsigned int _len);
 // bpacket
 //
 
-#define BPACKET_VERSION 100
+#define BPACKET_VERSION 101
 
 // generator
 void bpacketgen_compute_packet_len(bpacketgen _q);
@@ -1251,7 +1331,7 @@ void bpacketsync_reconfig(bpacketsync _q);
 // gmskframe
 //
 
-#define GMSKFRAME_VERSION   (1)
+#define GMSKFRAME_VERSION   (2)
 
 // header description
 #define GMSKFRAME_H_USER    (8)                     // user-defined array
@@ -1281,7 +1361,7 @@ void gmskframesync_output_debug_file(gmskframesync _q, const char * _filename);
 // ofdmflexframe
 //
 
-#define OFDMFLEXFRAME_VERSION   (103)
+#define OFDMFLEXFRAME_VERSION   (104)
 
 // header description
 #define OFDMFLEXFRAME_H_USER    (8)                         // user-defined array
@@ -1296,6 +1376,9 @@ void gmskframesync_output_debug_file(gmskframesync _q, const char * _filename);
 // 
 // ofdmflexframegen
 //
+
+// reconfigure internal buffers, objects, etc.
+void ofdmflexframegen_reconfigure(ofdmflexframegen _q);
 
 // encode header
 void ofdmflexframegen_encode_header(ofdmflexframegen _q);

@@ -113,14 +113,17 @@ void AGC(_set_gain_limits)(AGC() _q, T _gmin, T _gmax);         \
 /* Set loop filter bandwidth; attack/release time */            \
 void AGC(_set_bandwidth)(AGC() _q, T _bt);                      \
                                                                 \
-/* Set internal decimation level, D > 0, D=4 typical */         \
-void AGC(_set_decim)(AGC() _q, unsigned int _D);                \
-                                                                \
 /* lock/unlock gain control */                                  \
 void AGC(_lock)(AGC() _q);                                      \
 void AGC(_unlock)(AGC() _q);                                    \
                                                                 \
-/* Apply gain to input, update tracking loop */                 \
+/* push input sample, update internal tracking loop */          \
+void AGC(_push)(AGC() _q, TC _x);                               \
+                                                                \
+/* apply gain to input sample */                                \
+void AGC(_apply_gain)(AGC() _q, TC * _y);                       \
+                                                                \
+/* same as running push(), apply_gain() */                      \
 void AGC(_execute)(AGC() _q, TC _x, TC *_y);                    \
                                                                 \
 /* Return signal level (linear) relative to unity energy */     \
@@ -450,7 +453,7 @@ int crc_validate_message(crc_scheme _scheme,
 
 
 // available FEC schemes
-#define LIQUID_FEC_NUM_SCHEMES  26
+#define LIQUID_FEC_NUM_SCHEMES  28
 typedef enum {
     LIQUID_FEC_UNKNOWN=0,       // unknown/unsupported scheme
     LIQUID_FEC_NONE,            // no error-correction
@@ -461,6 +464,8 @@ typedef enum {
     LIQUID_FEC_HAMMING128,      // Hamming (12,8) block code, r2/3
     
     LIQUID_FEC_GOLAY2412,       // Golay (24,12) block code, r1/2
+    LIQUID_FEC_SECDED2216,      // SEC-DED (22,16) block code, r8/11
+    LIQUID_FEC_SECDED3932,      // SEC-DED (39,32) block code
     LIQUID_FEC_SECDED7264,      // SEC-DED (72,64) block code, r8/9
 
     // codecs not defined internally (see http://www.ka9q.net/code/fec/)
@@ -2103,7 +2108,6 @@ void gmskframesync_execute(gmskframesync _q,
 // ofdm frame generator properties
 typedef struct {
     unsigned int num_symbols_S0;// number of S0 training symbols
-    unsigned int payload_len;   // length of payload
     unsigned int check;         // data validity check
     unsigned int fec0;          // forward error-correction scheme (inner)
     unsigned int fec1;          // forward error-correction scheme (outer)
@@ -2156,7 +2160,8 @@ unsigned int ofdmflexframegen_getframelen(ofdmflexframegen _q);
 //  _payload        :   payload data
 void ofdmflexframegen_assemble(ofdmflexframegen _q,
                                unsigned char * _header,
-                               unsigned char * _payload);
+                               unsigned char * _payload,
+                               unsigned int    _payload_len);
 
 // write symbols of assembled frame
 //  _q              :   OFDM frame generator object
@@ -2200,6 +2205,9 @@ void ofdmflexframesync_reset(ofdmflexframesync _q);
 void ofdmflexframesync_execute(ofdmflexframesync _q,
                                liquid_float_complex * _x,
                                unsigned int _n);
+
+// query the received signal strength indication
+float ofdmflexframesync_get_rssi(ofdmflexframesync _q);
 
 
 

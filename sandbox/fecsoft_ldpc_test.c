@@ -1,5 +1,5 @@
 //
-// fecsoft_codec_test.c
+// fecsoft_ldpc_test.c
 //
 // Test soft decoding using the sum-product
 // algorithm (see sandbox/ldpc_test.c)
@@ -18,7 +18,7 @@
 
 #include "liquid.internal.h"
 
-#define OUTPUT_FILENAME "fecsoft_codec_test.m"
+#define OUTPUT_FILENAME "fecsoft_ldpc_test.m"
 
 int main(int argc, char*argv[])
 {
@@ -28,13 +28,14 @@ int main(int argc, char*argv[])
     float SNRdB_min = -2.0f;
     float SNRdB_max =  6.0f;
     unsigned int num_steps = 19;
-    unsigned int num_trials = 20000;
+    unsigned int num_trials = 2000;
     unsigned int max_iterations = 5;
 
     unsigned int m = 16;    // rows in H
     unsigned int n = 32;    // cols in H
 
     // initial generator polynomial
+    // TODO : find 'optimal' generator polynomial
     unsigned char p[] = {1,0,0,0, 0,1,0,0, 0,0,0,1, 0,0,0,0};
 
     // generator matrix [m x n]
@@ -53,6 +54,7 @@ int main(int argc, char*argv[])
             G[i*n + j]     = (i==j) ? 1 : 0;
             G[i*n + j + m] = p[(i+j)%m];
 
+            // H = [P^T I(m)]
             H[i*n + j + m] = (i==j) ? 1 : 0;
             H[i*n + j]     = p[(i+j)%m];
         }

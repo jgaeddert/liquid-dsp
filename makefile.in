@@ -220,7 +220,9 @@ fec_objects :=							\
 	src/fec/src/fec_rep3.o					\
 	src/fec/src/fec_rep5.o					\
 	src/fec/src/fec_rs.o					\
-	src/fec/src/fec_secded.o				\
+	src/fec/src/fec_secded2216.o				\
+	src/fec/src/fec_secded3932.o				\
+	src/fec/src/fec_secded7264.o				\
 	src/fec/gentab/reverse_byte.o				\
 	src/fec/src/smatrix.o					\
 	src/fec/src/sumproduct.o				\
@@ -255,6 +257,8 @@ fec_autotests :=						\
 	src/fec/tests/fec_reedsolomon_autotest.c		\
 	src/fec/tests/fec_rep3_autotest.c			\
 	src/fec/tests/fec_rep5_autotest.c			\
+	src/fec/tests/fec_secded2216_autotest.c			\
+	src/fec/tests/fec_secded3932_autotest.c			\
 	src/fec/tests/fec_secded7264_autotest.c			\
 	src/fec/tests/smatrix_autotest.c			\
 
@@ -1272,17 +1276,21 @@ sandbox_programs =						\
 	sandbox/fec_golay2412_test				\
 	sandbox/fec_golay_test					\
 	sandbox/fec_hamming3126_example				\
+	sandbox/fec_hamming128_test				\
 	sandbox/fec_hamming128_gentab				\
 	sandbox/fec_hamming128_example				\
 	sandbox/fec_hamming74_gentab				\
 	sandbox/fec_hamming84_gentab				\
 	sandbox/fec_hamming_test				\
+	sandbox/fec_ldpc_test					\
 	sandbox/fec_rep3_test					\
 	sandbox/fec_rep5_test					\
-	sandbox/fec_secded_test					\
+	sandbox/fec_secded2216_test				\
+	sandbox/fec_secded3932_test				\
+	sandbox/fec_secded7264_test				\
 	sandbox/fecsoft_conv_test				\
-	sandbox/fecsoft_codec_test				\
 	sandbox/fecsoft_hamming128_gentab			\
+	sandbox/fecsoft_ldpc_test				\
 	sandbox/fec_sumproduct_test				\
 	sandbox/fft_r2r_test					\
 	sandbox/firdes_energy_test				\
@@ -1295,8 +1303,6 @@ sandbox_programs =						\
 	sandbox/gmskmodem_test					\
 	sandbox/householder_test				\
 	sandbox/iirdes_example					\
-	sandbox/ldpc_genmatrix_test				\
-	sandbox/ldpc_test					\
 	sandbox/levinson_test					\
 	sandbox/matched_filter_test				\
 	sandbox/matched_filter_cfo_test				\

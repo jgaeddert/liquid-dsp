@@ -332,7 +332,10 @@ libfec} is installed \cite{libfec:web}.
 {\tt LIQUID\_FEC\_HAMMING74}    & 4/7     &  9.15 &  7.79 & Hamming (7,4) block code\\
 {\tt LIQUID\_FEC\_HAMMING84}    & 1/2     &  9.63 &  7.38 & Hamming (7,4) with extra parity bit\\
 {\tt LIQUID\_FEC\_HAMMING128}   & 2/3     &  8.82 &  8.13 & Hamming (12,8) block code\\
-{\tt LIQUID\_FEC\_GOLAY2412}    & 1/2     &  7.46 &     - & Golay (24,12) block code\\\midrule
+{\tt LIQUID\_FEC\_GOLAY2412}    & 1/2     &  7.46 &     - & Golay (24,12) block code\\
+{\tt LIQUID\_FEC\_SECDED2216}   & 2/3     &  8.84 &     - & SEC-DED (22,16) block code\\
+{\tt LIQUID\_FEC\_SECDED3932}   & 4/5     &  8.29 &     - & SEC-DED (39,32) block code\\
+{\tt LIQUID\_FEC\_SECDED7264}   & 8/9     &  8.05 &     - & SEC-DED (72,64) block code\\\midrule
 %
 % codecs not defined internally (see http://www.ka9q.net/code/fec/)
 {\tt LIQUID\_FEC\_CONV\_V27}    & 1/2     &  6.44 & 4.29 & $K=7$, $d_{free}=10$\\
@@ -356,7 +359,7 @@ libfec} is installed \cite{libfec:web}.
 {\tt LIQUID\_FEC\_CONV\_V29P78} & 7/8     &  7.87 & 6.03 & $K=9$, $d_{free}=4$\\\midrule
 % 
 % Reed-Solomon codes
-{\tt LIQUID\_FEC\_RS\_M8}       & 223/255 &  6.14 & 5.96 & Reed-Solomon block code, $m=8$\\\bottomrule
+{\tt LIQUID\_FEC\_RS\_M8}       & 223/255 &  6.04 &    - & Reed-Solomon block code, $m=8$\\\bottomrule
 
 
 \end{tabular*}
@@ -401,7 +404,7 @@ $N_0$ is the noise energy,
 and
 $r$ is the rate of the modulation and coding scheme pair,
 measured in bits/s/Hz.
-Figures~\ref{fig:fec:hamming_ber}, \ref{fig:fec:conv_ber}, and
+Figures~\ref{fig:fec:block_ber}, \ref{fig:fec:conv_ber}, and
 \ref{fig:fec:convpunc_ber}
 plot the bit error-rate performance of the forward
 error-correction schemes available in \liquid\ for a BPSK signal
@@ -423,49 +426,52 @@ The raw data can be found in the {\tt doc/data/ber/} subdirectory.
 \mbox{
   \subfigure[BER vs. $E_s/N_0$]
   {
-    \includegraphics[trim = 3mm 2mm 0mm 2mm, clip, width=14cm]{figures.gen/fec_ber_esn0_hamming}
-    \label{fig:fec:hamming_ber:esn0}
+    \includegraphics[trim = 3mm 2mm 0mm 2mm, clip, width=14cm]{figures.gen/fec_ber_esn0_block}
+    \label{fig:fec:block_ber:esn0}
   }
 } \quad
 \mbox{
   \subfigure[BER vs. $E_b/N_0$]
   {
-    \includegraphics[trim = 3mm 2mm 0mm 2mm, clip, width=14cm]{figures.gen/fec_ber_ebn0_hamming}
-    \label{fig:fec:hamming_ber:ebn0}
+    \includegraphics[trim = 3mm 2mm 0mm 2mm, clip, width=14cm]{figures.gen/fec_ber_ebn0_block}
+    \label{fig:fec:block_ber:ebn0}
   } \quad
 }
 % trim = left bottom right top
 \caption{Forward error-correction codec bit error rates (simulated)
-         for built-in \liquid\ codecs
+         for built-in \liquid\ block codecs
          using BPSK modulation and hard-decision decoding.}
-\label{fig:fec:hamming_ber}
+\label{fig:fec:block_ber}
 \end{figure}
 %
-Figure~\ref{fig:fec:hamming_ber} depicts the performance of the
+Figure~\ref{fig:fec:block_ber} depicts the performance of the
 available built-in \liquid\ FEC codecs, including
-{\tt LIQUID\_FEC\_HAMMING74},
-{\tt LIQUID\_FEC\_HAMMING128},
-{\tt LIQUID\_FEC\_REP3}, and
-{\tt LIQUID\_FEC\_REP5}.
-As stated previously, the repeat codes are typically inferior to any
-other encoding scheme.
-Notice that in terms of $E_b/N_0$ none of these schemes performs very
-well;
-only the Hamming codes give a slight advantage over uncoded BPSK for
-high values of $E_b/N_0$,
-and the repeat codes actually perform worse.%
-\footnote{This is a known phenomenon as simply transmitting repetitions
-          of the uncoded message will always perform worse than uncoded
-          in terms of $E_b/N_0$.
-          This is effectively equivalent to reducing the original
-          transmit power by a factor of $r$ and then transmitting the
-          same message $r$ times.
-          With reference to conserving the amount of energy per uncoded
-          bit, this type of ``encoding'' is always best when $r=1$
-          (no retransmissions).}
-Still, if the goal is not to conserve the energy per bit but improve
-data reliability through a noisy channel then these simple codecs prove
-useful.
+the Hamming, SEC-DED, and Golay codes.
+%{\tt LIQUID\_FEC\_HAMMING74},
+%{\tt LIQUID\_FEC\_HAMMING128},
+%{\tt LIQUID\_FEC\_REP3}, and
+%{\tt LIQUID\_FEC\_REP5}.
+%As stated previously, the repeat codes are typically inferior to any
+%other encoding scheme.
+Notice that in terms of $E_b/N_0$ none of these schemes performs
+extremely well,
+perhaps with the exception of the Golay(24,12) code which achieves a BER
+of $10^{-5}$ with an $E_b/N_0$ value of 7.46~dB.
+%only the Hamming codes give a slight advantage over uncoded BPSK for
+%high values of $E_b/N_0$,
+%and the repeat codes actually perform worse.%
+%\footnote{This is a known phenomenon as simply transmitting repetitions
+%          of the uncoded message will always perform worse than uncoded
+%          in terms of $E_b/N_0$.
+%          This is effectively equivalent to reducing the original
+%          transmit power by a factor of $r$ and then transmitting the
+%          same message $r$ times.
+%          With reference to conserving the amount of energy per uncoded
+%          bit, this type of ``encoding'' is always best when $r=1$
+%          (no retransmissions).}
+%Still, if the goal is not to conserve the energy per bit but improve
+%data reliability through a noisy channel then these simple codecs prove
+%useful.
 
 
 %-------------------- FIGURE: FEC BER (CONVOLUTIONAL) --------------------

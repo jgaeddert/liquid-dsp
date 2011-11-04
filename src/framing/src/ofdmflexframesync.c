@@ -240,6 +240,16 @@ void ofdmflexframesync_execute(ofdmflexframesync _q,
     ofdmframesync_execute(_q->fs, _x, _n);
 }
 
+// 
+// query methods
+//
+
+// received signal strength indication
+float ofdmflexframesync_get_rssi(ofdmflexframesync _q)
+{
+    return ofdmframesync_get_rssi(_q->fs);
+}
+
 //
 // internal methods
 //

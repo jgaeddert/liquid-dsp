@@ -263,6 +263,29 @@ historical outline.
 To get you started with using \liquid\ signal processing library
 this manual begins with tutorials rather than diving into the details of
 each signal processing module.
+%
+The tutorials begin with simple building blocks for signal processing by
+introducing a simple analog {\bf phase-locked loop} which tracks to the
+phase of an input complex sinusoid.
+%
+% TODO: insert modem tutorial
+%
+The {\bf forward error-correction tutorial}
+introduces you to simple error correction and detection
+capabilities.
+%
+The {\bf framing tutorial}
+puts together data encapsulation with digital modulation;
+with just a few lines of code you can convert a block of raw, unencoded
+data bytes to frame samples ready to transmit over the air.
+%
+Last but not least is the {\bf OFDM framing tutorial}
+which builds on the previous tutorial to use an orthonal parallel
+multiplexing communications scheme.
+%Furthermore, certain aspects of the transmission can be changed on a
+%per-frame basis without requiring you to re-configure the synchronizer;
+%this happens automatically.
+
 
 \vfill
 

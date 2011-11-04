@@ -792,10 +792,11 @@ useful to filtering and filter design.
 \item[{\tt iir\_group\_delay(*b,nb,*a,na,f)}]
     computes the group delay for an infinite impulse-response filter
     with $n_a$ feed-back coefficients $\vec{a}$,
-    and $n_a$ feed-forward coefficients $\vec{b}$
+    and $n_b$ feed-forward coefficients $\vec{b}$
     at a frequency $f$.
     The group delay $\tau_g$ at frequency $f$ for an infinite impulse
     response filter of order $N$ is computed as
+    % N = n_a-1 = n_b-1 ?
     %
     \begin{equation}
     \label{eqn:filter:firdes:misc:iir_group_delay}
@@ -809,7 +810,7 @@ useful to filtering and filter design.
             - N
     \end{equation}
     %
-    where $c(n) = \sum_{m=0}^{N-1}{a(m)^*b(m-n)}$
+    where $c(n) = \sum_{m=0}^{N-1}{a^*(m) b(m-n)}$
     for $n \in \{0,1,\ldots,2(N+1)\}$
     which can be described as the flipped convolution of $\vec{a}$ and
     $\vec{b}$.

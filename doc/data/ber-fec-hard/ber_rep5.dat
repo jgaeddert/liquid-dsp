@@ -1,5 +1,5 @@
-# data/ber/ber_r5.dat : auto-generated file
-# invoked as: ./src/simulate_ber -c r5 -b1e-5 -e 500 -n80000 -t200000000 -s-9 -d0.5 -x40 -o data/ber/ber_r5.dat 
+# data/ber/ber_rep5.dat : auto-generated file
+# invoked as: ./src/simulate_ber -c rep5 -b1e-5 -e 500 -n80000 -t200000000 -s-9 -d0.5 -x40 -o data/ber/ber_rep5.dat 
 #
 #  modulation scheme   :   bpsk
 #  modulation depth    :   1 bits/symbol
