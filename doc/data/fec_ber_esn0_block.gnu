@@ -32,5 +32,5 @@ plot \
     'data/ber-fec-hard/ber_g2412.dat'       using 1:3 with linespoints linewidth 1.2 pointtype 6 linecolor rgb '#ad9120' title 'Golay(24,12)'
 
 #    'data/ber-fec-hard/ber_h84.dat'      using 1:3 with linespoints linewidth 1.2 pointtype 6 linecolor rgb '#008040' title 'Hamming(8,4)'
-#    'data/ber-fec-hard/ber_r3.dat'       using 1:3 with linespoints linewidth 1.2 pointtype 6 linecolor rgb '#403000' title 'Repeat(3)',\
-#    'data/ber-fec-hard/ber_r5.dat'       using 1:3 with linespoints linewidth 1.2 pointtype 6 linecolor rgb '#806000' title 'Repeat(5)',\
+#    'data/ber-fec-hard/ber_rep3.dat'     using 1:3 with linespoints linewidth 1.2 pointtype 6 linecolor rgb '#403000' title 'Repeat(3)',\
+#    'data/ber-fec-hard/ber_rep5.dat'     using 1:3 with linespoints linewidth 1.2 pointtype 6 linecolor rgb '#806000' title 'Repeat(5)',\

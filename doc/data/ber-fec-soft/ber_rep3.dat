@@ -1,5 +1,5 @@
-# data/ber-fec-soft/ber_r3.dat : auto-generated file
-# invoked as: ./src/simulate_ber -S -c r3 -b1e-5 -e 500 -n80000 -t200000000 -s-9 -d0.5 -x40 -o data/ber-fec-soft/ber_r3.dat 
+# data/ber-fec-soft/ber_rep3.dat : auto-generated file
+# invoked as: ./src/simulate_ber -S -c rep3 -b1e-5 -e 500 -n80000 -t200000000 -s-9 -d0.5 -x40 -o data/ber-fec-soft/ber_rep3.dat 
 #
 #  modulation scheme   :   binary phase-shift keying
 #  modulation depth    :   1 bits/symbol
