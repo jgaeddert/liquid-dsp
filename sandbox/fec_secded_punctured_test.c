@@ -26,10 +26,22 @@
 #include <stdlib.h>
 #include <math.h>
 #include <time.h>
+#include <getopt.h>
 
 #include "liquid.internal.h"
 
 #define OUTPUT_FILENAME "fec_secded_punctured_test.m"
+
+void usage()
+{
+    printf("Usage: fec_secded_punctured_test\n");
+    printf("  h     : print usage/help\n");
+    printf("  p     : input rate, [1:8], default: 4\n");
+    printf("  s     : SNR start [dB], default: -5\n");
+    printf("  x     : SNR max [dB], default: 5\n");
+    printf("  n     : number of SNR steps, default: 21\n");
+    printf("  t     : number of trials, default: 1000\n");
+}
 
 // encode symbol
 void secded7264_encode_symbol_punctured(unsigned char * _sym_dec,
@@ -52,9 +64,31 @@ int main(int argc, char*argv[])
     unsigned int num_steps = 21;    // number of steps
     unsigned int num_trials = 80000;
 
+    // get command-line options
+    int dopt;
+    while((dopt = getopt(argc,argv,"hp:s:x:n:t:")) != EOF){
+        switch (dopt) {
+        case 'h': usage(); return 0;
+        case 'p': p          = atoi(optarg);    break;
+        case 's': SNRdB_min  = atof(optarg);    break;
+        case 'x': SNRdB_max  = atof(optarg);    break;
+        case 'n': num_steps  = atoi(optarg);    break;
+        case 't': num_trials = atoi(optarg);    break;
+        default:
+            printf("error: %s, unknown option\n", argv[0]);
+            exit(-1);
+        }
+    }
+
     // validate input
     if (p < 1 || p >8) {
         fprintf(stderr,"error: %s, p must be in [1,8]\n", argv[0]);
+        exit(1);
+    } else if (SNRdB_max <= SNRdB_min) {
+        fprintf(stderr,"error: %s, invalid SNR range\n", argv[0]);
+        exit(1);
+    } else if (num_steps < 1) {
+        fprintf(stderr,"error: %s, must have at least 1 SNR step\n", argv[0]);
         exit(1);
     }
 
@@ -100,11 +134,10 @@ int main(int argc, char*argv[])
 #else
     // data arrays
     unsigned int num_bit_errors[num_steps];
-    unsigned int num_sym_errors[num_steps];
 
     unsigned int t;
     unsigned int s;
-    printf("  %8s [%8s] %8s %12s %12s\n", "SNR [dB]", "trials", "# errs", "(BER)", "uncoded");
+    printf("  %8s %8s [%8s] %8s %12s %12s\n", "SNR [dB]", "Eb/N0", "trials", "# errs", "(BER)", "uncoded");
     for (s=0; s<num_steps; s++) {
         // compute SNR
         float SNRdB = SNRdB_min + s*SNRdB_step;
@@ -114,7 +147,6 @@ int main(int argc, char*argv[])
 
         // reset error counter
         num_bit_errors[s] = 0;
-        num_sym_errors[s] = 0;
 
         for (t=0; t<num_trials; t++) {
             // generate original message signal
@@ -159,14 +191,12 @@ int main(int argc, char*argv[])
 
             // compute errors in decoded message signal
             num_bit_errors[s] += count_bit_errors_array(m,m_hat,p);
-
-            // compute number of symbol errors
-            //num_sym_errors[s] += parity_pass ? 0 : 1;
         }
 
         // print results for this SNR step
-        printf("  %8.3f [%8u] %8u %12.4e %12.4e\n",
+        printf("  %8.3f %8.3f [%8u] %8u %12.4e %12.4e\n",
                 SNRdB,
+                SNRdB - 10*log10f(rate),
                 n*num_trials,
                 num_bit_errors[s], (float)(num_bit_errors[s]) / (float)(num_trials*n),
                 0.5f*erfcf(1.0f/sigma));
@@ -189,7 +219,6 @@ int main(int argc, char*argv[])
     for (i=0; i<num_steps; i++) {
         fprintf(fid,"SNRdB(%4u) = %12.8f;\n",i+1, SNRdB_min + i*SNRdB_step);
         fprintf(fid,"num_bit_errors(%6u) = %u;\n", i+1, num_bit_errors[i]);
-        fprintf(fid,"num_sym_errors(%6u) = %u;\n", i+1, num_sym_errors[i]);
     }
     fprintf(fid,"EbN0dB = SNRdB - 10*log10(r);\n");
     fprintf(fid,"EbN0dB_bpsk = -15:0.5:40;\n");
