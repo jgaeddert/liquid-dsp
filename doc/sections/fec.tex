@@ -19,7 +19,7 @@ Certain FEC schemes are only available to \liquid\ by installing the external
 {\tt libfec} library \cite{libfec:web}, available as a free download.
 A few low-rate (and fairly low efficiency) codes are availble internally.
 
-%The {\tt packetizer} object (Section~\ref{module:framing:packetizer})
+%The {\tt packetizer} object (\S\ref{module:framing:packetizer})
 %relies on the {\tt fec} objects and {\tt crc32} functions.
 
 \subsection{Cyclic Redundancy Check (Error Detection)}
@@ -294,7 +294,7 @@ symbols to form a 255-symbol encoded block.
 %
 {\tt libfec} is an external library that \liquid\ will leverage if
 installed, but will still compile otherwise
-(see Section~\ref{section:installation:building} for details).
+(see \S\ref{section:installation:building} for details).
 
 \subsection{Interface}
 \label{module:fec:interface}
@@ -341,7 +341,7 @@ encodes them into an output block of coded data bytes.
     Depending upon the error-correction capabilities of the scheme, the
     resulting data might have been corrupted,
     and therefore it is recommended to use either a checksum or a
-    cyclic redundancy check (section~\ref{module:fec:crc})
+    cyclic redundancy check (\S\ref{module:fec:crc})
     to validate data integrity.
 \item[{\tt fec\_get\_enc\_msg\_length(scheme,n)}]
     returns the length $k$ of the encoded message in bytes
@@ -429,7 +429,7 @@ libfec} is installed \cite{libfec:web}.
 Soft decoding for all codes requires the log-likelihood ratio (LLR)
 output of the demodulator which can be achieved with the appropriate
 call: {\tt modem\_demodulate\_soft()}
-(see Section~\ref{module:modem:digital:soft} for details).
+(see \S\ref{module:modem:digital:soft} for details).
 The performance improvement for soft decoding varies for both the
 modulation and FEC scheme used;
 however in general one can expect to see an improvement of approximately
@@ -469,7 +469,7 @@ the latter compensating for the coding rate.
 The error rates were computed by generating packets of 1024 bits,
 encoding using the appropriate FEC scheme,
 modulating the resulting bits with BPSK
-(see Section~\ref{module:modem:digital:PSK}),
+(see \S\ref{module:modem:digital:PSK}),
 adding noise, demodulating, and decoding.
 Each point was simulated with a minimum of 80,000 trials and a minimum
 of 500 bit errors.

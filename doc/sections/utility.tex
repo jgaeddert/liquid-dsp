@@ -15,8 +15,8 @@ computing a binary dot-product, and others.
             {\tt liquid\_repack\_bytes()}}
 \label{module:utility:pack_bytes}
 Byte packing is used extensively in the
-{\tt fec} (Section~\ref{module:fec}) and
-{\tt framing} (Section~\ref{module:framing}) modules.
+{\tt fec} (\S\ref{module:fec}) and
+{\tt framing} (\S\ref{module:framing}) modules.
 These methods resize symbols represented by various numbers of bits.
 This is necessary to move between raw data arrays which use full bytes (eight
 bits per symbol) to methods expecting symbols of different sizes.
@@ -36,7 +36,7 @@ is padded with zeros.
 The {\tt liquid\_pack\_array()} and {\tt liquid\_unpack\_array()}
 methods pack an array with symbols of arbitrary length.
 These methods are similar to those in
-Section~\ref{module:utility:pack_bytes}
+\S\ref{module:utility:pack_bytes}
 but are capable of packing symbols of any arbitrary length.
 These are convenient for digital modulation and demodulation of a block
 of symbols with different modulation schemes.
@@ -187,8 +187,8 @@ Byte-wise circular shifting.
 \label{module:utility:misc}
 This section describes the bit-counting methods which are used extensively
 throughout \liquid, particularly the
-{\tt fec} (Section~\ref{module:fec}) and
-{\tt sequence} (Section~\ref{module:sequence}) modules.
+{\tt fec} (\S\ref{module:fec}) and
+{\tt sequence} (\S\ref{module:sequence}) modules.
 Integer sizes vary for different machines;
 when \liquid\ is initially configured (see Chapter~\ref{section:installation}), the
 size of the integer is computed such that the fastest method can be computed
@@ -209,9 +209,9 @@ without performing unnecessary loop iterations or comparisons.
     of ones in $x \land y$, modulo 2 (where $\land$ is the logical `and'
     operation).
     This is useful in linear feedback shift registers
-    (see Section~\ref{module:sequence:msequence} on $m$-sequences)
+    (see \S\ref{module:sequence:msequence} on $m$-sequences)
     as well as certain forward error-correction codes
-    (see Section~\ref{module:fec:hamming} on Hamming codes).
+    (see \S\ref{module:fec:hamming} on Hamming codes).
     For example, the binary dot product between
     {\tt 10110011} and
     {\tt 11101110} is

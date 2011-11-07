@@ -30,7 +30,7 @@ result of multi-path fading, demodulator symbol errors, and synchronizer
 instability.
 Interleavers serve to distribute grouped bit errors evenly throughout a block
 of data which aids certain forward error-correction (FEC) codes in their
-decoding process (see section~\ref{module:fec} on error-correcting codes).
+decoding process (see \S\ref{module:fec} on error-correcting codes).
 On the transmit side of the wireless link, the interleaver re-orders the bits
 after FEC encoding and before modulation.
 On the receiving side, the de-interleaver re-shuffles the bits to their
@@ -171,9 +171,9 @@ grouped into 8-bit blocks.
 Further iterations, however, result in sufficiently dispersed bits, and
 patterns between input and output indices become less evident.
 %
-The {\tt packetizer} object (Section~\ref{module:framing:packetizer}) uses the
+The {\tt packetizer} object (\S\ref{module:framing:packetizer}) uses the
 {\tt interleaver} object in conjunction to forward error-correction coding
-(Section~\ref{module:fec}) to provide a simple interface for generating
+(\S\ref{module:fec}) to provide a simple interface for generating
 protected data packets.
 A full example can be found in {\tt examples/interleaver\_example.c}.
 
@@ -197,9 +197,9 @@ the FEC schemes provided.
 The packet decoder returns the validity of the resulting CRC as well as its
 best effort of decoding the message.
 
-%The {\tt packetizer} object (Section~\ref{module:framing:packetizer})
+%The {\tt packetizer} object (\S\ref{module:framing:packetizer})
 %uses two {\tt fec} objects (an inner and outer code) in conjunction with an
-%{\tt interleaver} object (Section~\ref{module:framing:interleaver})
+%{\tt interleaver} object (\S\ref{module:framing:interleaver})
 %and a 32-bit cyclic redundancy check.
 
 The packetizer also allows for re-structuring if the user wishes to change
@@ -242,7 +242,7 @@ Listed below is the full interface to the {\tt packetizer} object.
     elements representing soft bits.
     As before, the function returns a {\tt 1} if the internal CRC passed
     and a {\tt 0} if it failed.
-    See Section~\ref{module:fec:soft} for more information on
+    See \S\ref{module:fec:soft} for more information on
     soft-decision decoding.
 \end{description}
 %
@@ -460,7 +460,7 @@ Hamming(12,8) block code, 16-bit cyclic redundancy check, and modulates the
 result with a QPSK modem.
 The header and payload are encapsulated with special phasing sequences, and
 finally the resulting symbols are interpolated using a half-rate root-raised
-cosine filter (see section~\ref{module:filter:firdes:rnyquist}).
+cosine filter (see \S\ref{module:filter:firdes:rnyquist}).
 
 The true spectral efficiency of the frame is exactly $4/5$; 64 bytes of data
 (512 bits) encoded into 640 symbols.
@@ -507,7 +507,7 @@ both frames consist of six basic parts:
     [This works] because the phasing pattern maximizes the number of symbol
     transitions [reword].
 \item[{\sf p/n sequence}]
-    is an $m$-sequence (see section~\ref{module:sequence}) exhibiting good
+    is an $m$-sequence (see \S\ref{module:sequence}) exhibiting good
     auto- and cross-correlation properties.
     %The binary sequence is modulated using BPSK so that 
     This sequence aligns the frame synchronizers to the remainder of the
@@ -528,7 +528,7 @@ both frames consist of six basic parts:
     the link.
     For the {\tt frame64} structure, the payload is fixed at 64 bytes (hence
     its moniker), encoded using the Hamming(12,8) code
-    (section~\ref{module:fec}), and modulated using QPSK.
+    (\S\ref{module:fec}), and modulated using QPSK.
     The {\tt flexframe} structure has a variable length payload and can be
     modulated using whatever schemes the user desires, however forward
     error-correction is executed externally.
@@ -621,7 +621,7 @@ members.
 \item[{\tt npfb}]
     represents the number of filters in the internal symbol timing
     recovery object's polyphase filter bank
-    (see Section~\ref{module:filter:symsync});
+    (see \S\ref{module:filter:symsync});
     however this parameter is reserved for future development and should
     not be changed.
     The default value is 32.
@@ -637,7 +637,7 @@ members.
     the default value is 0.7.
 \item[{\tt squelch\_enabled}]
     is a flag that specifies if the automatic gain control's squelch is
-    enabled (see Section~\ref{module:agc:squelch}).
+    enabled (see \S\ref{module:agc:squelch}).
     Enabling the squelch
     (setting {\tt squelch\_enabled} equal to {\tt 1})
     will ignore received signals below the {\tt squelch\_threshold}
@@ -651,24 +651,24 @@ members.
 \item[{\tt autosquelch\_enabled}]
     is a flag that specifies if the automatic gain control's
     {\em auto-squelch} is enabled (see
-    Section~\ref{module:agc:squelch:auto}).
+    \S\ref{module:agc:squelch:auto}).
     In brief, the auto-squelch attempts to track the signal's power to
     automatically squelch signals 4~dB above the noise floor.
     By default the auto-squelch is disabled.
 \item[{\tt squelch\_threshold}]
     is the squelch threshold value in dB
-    (see Section~\ref{module:agc:squelch}).
+    (see \S\ref{module:agc:squelch}).
     The default value is -35.0, but the ideal value is about 4~dB above
     the noise floor.
 \item[{\tt eq\_len}]
     specifies the length of the internal equalizer
-    (see Section~\ref{module:equalization}).
+    (see \S\ref{module:equalization}).
     By default the length is set to zero which disables equalization of
     the receiver.
 \item[{\tt eqrls\_lambda}]
     is the recursive least-squares equalizer forgetting factor
     $\lambda$
-    (see Section~\ref{module:equalization:eqrls}).
+    (see \S\ref{module:equalization:eqrls}).
     The default value is $\lambda=0.999$.
 \end{description}
 
@@ -689,11 +689,11 @@ members.
 \item[{\tt evm}]
     is an estimate of the received error vector magnitude in decibels of
     the demodulated header
-    (see Section~\ref{module:modem:digital}).
+    (see \S\ref{module:modem:digital}).
 \item[{\tt rssi}]
     is an estimate of the received signal strength in dB.
     This is derived from the synchronizer's internal automatic gain
-    control object (see Section~\ref{module:agc}).
+    control object (see \S\ref{module:agc}).
 \item[{\tt framesyms}]
     a pointer to an array of the frame symbols (e.g. QPSK) at complex
     baseband before demodulation.
@@ -705,19 +705,19 @@ members.
 \item[{\tt num\_framesyms}]
     the length of the {\tt framesyms} pointer array.
 \item[{\tt mod\_scheme}]
-    the modulation scheme of the frame (see Section~\ref{module:modem}).
+    the modulation scheme of the frame (see \S\ref{module:modem}).
 \item[{\tt mod\_bps}]
     the modulation depth (bits per symbol) of the modulation scheme used
     in the frame.
 \item[{\tt check}]
     the error-detection scheme (e.g. cyclic redundancy check)
-    used in the payload of the frame (see Section~\ref{module:fec}).
+    used in the payload of the frame (see \S\ref{module:fec}).
 \item[{\tt fec0}]
     the inner forward error-correction code used in the payload
-    (see Section~\ref{module:fec}).
+    (see \S\ref{module:fec}).
 \item[{\tt fec1}]
     the outer forward error-correction code used in the payload
-    (see Section~\ref{module:fec}).
+    (see \S\ref{module:fec}).
 \end{description}
 %
 A simple way to display the information in an instance of

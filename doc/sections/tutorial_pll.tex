@@ -11,7 +11,7 @@ loop and introduces the {\tt iirfilt} object.
 You will need on your local machine:
 \begin{itemize}
 \item the \liquid\ DSP libraries built and installed (see
-      Section~\ref{section:installation})
+      \S\ref{section:installation})
 \item a text editor such as {\tt vim} \cite{vim:web}
 \item a C compiler such as {\tt gcc} \cite{gcc:web}
 \item a terminal
@@ -43,7 +43,7 @@ transmitter's carrier.
 One of the key advantages to performing signal processing in software is
 that the radio can operate at complex baseband.
 % TODO : expand on this
-% (see Section~\ref{section:complex_baseband}).
+% (see \S\ref{section:complex_baseband}).
 
 In this simulation, the received signal is simply a complex sinusoid
 with an unknown initial carrier phase and frequency.
@@ -119,7 +119,7 @@ typically set to a value near $1/\sqrt{2} \approx 0.707$.
 The loop gain $K$ is typically very large
 (on the order of $1000$ or so).
 For more detailed information on loop filter design the interested
-reader is referred to Section~\ref{module:nco:pll}.
+reader is referred to \S\ref{module:nco:pll}.
 % TODO : reference iirdes_pll_...() as well?
 
 The estimated phase error $\Delta\phi_k$ is filtered using $H(z)$
@@ -222,7 +222,7 @@ contains both real and imaginary components of type {\tt float}.
 %\footnote{
 %    If, for some reason, you prefer C++ over C you could use the type
 %    {\tt std::complex<float>} instead.
-%    See Section~\ref{xxx} for details.}
+%    See \S\ref{xxx} for details.}
 The function {\tt cexpf()} computes the complex exponential of its
 argument which for a purely imaginary input $j\alpha$ is simply
 $e^{j\alpha} = \cos\alpha + j\sin\alpha$.
@@ -267,7 +267,7 @@ specifically an ``active lag'' design.
 While the explanation in this section is fairly long, relax!
 We will only need to add about 15 lines of code to our program.
 If you are eager to edit your program you may skip to
-Section~\ref{tutorial:pll:completed}.
+\S\ref{tutorial:pll:completed}.
 
 Digital representations of infinite impulse response (IIR) filters have
 two sets of coefficients: feedback and feedforward.
@@ -317,7 +317,7 @@ Typically the number of feedback and feedforward coefficients are equal
 
 \liquid\ implements IIR filters with the {\tt iirfilt\_xxxt} family of
 objects where ``{\tt xxxt}'' denotes the type definition
-(see Section~\ref{section:data_structures} for details).
+(see \S\ref{section:data_structures} for details).
 In our example we will be using the {\tt iirfilt\_rrrf} object which
 indicates that this is an IIR filter with real inputs, outputs, and
 coefficients with precision of type {\tt float}.

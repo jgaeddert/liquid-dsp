@@ -76,7 +76,7 @@ communications at the physical layer.
 \section{Quick Start Guide}
 \label{section:quickstart}
 A full description of installation procedures can be found in
-Section~\ref{section:installation}.
+\S\ref{section:installation}.
 The library can easily be built from source and is available from
 several places.
 The two most typical means of distribution are a compressed archive
@@ -135,12 +135,12 @@ with the archive, but with the additional bootstrapping step:
 \end{verbatim}
 %
 You might also want to build and run the optional validation program
-(see Section~\ref{section:installation:targets:autotests}) via
+(see \S\ref{section:installation:targets:autotests}) via
 \begin{verbatim}
     $ make check
 \end{verbatim}
 and the benchmarking tool
-(see Section~\ref{section:installation:targets:benchmarks})
+(see \S\ref{section:installation:targets:benchmarks})
 \begin{verbatim}
     $ make bench
 \end{verbatim}
@@ -196,12 +196,12 @@ A few points to note:
 \item The object is only used to maintain the state of the signal processing
       algorithm.
       For example, a finite impulse response filter
-      (Section~\ref{module:filter:firfilt}) needs to retain the filter
+      (\S\ref{module:filter:firfilt}) needs to retain the filter
       coefficients and a buffer of input samples.
       Certain algorithms which do not retain information (those which are
       memoryless) do not use objects.
       For example, {\tt design\_rnyquist\_filter()}
-      (Section~\ref{module:filter:firdes:rnyquist})
+      (\S\ref{module:filter:firdes:rnyquist})
       calculates the coefficients of a square-root raised-cosine filter,
       a processing algorithm which does not need to maintain a state
       after its completion.
@@ -316,7 +316,7 @@ based on the compiler,
 While technically this code does define of a new type specification,
 its purpose is for compatability between compilers and programming
 language
-(see Section~\ref{section:data_structures:c++} on C++ portability),
+(see \S\ref{section:data_structures:c++} on C++ portability),
 and is binary compatible with the standard C99 specification.
 In fact, these data types are only used in the header file and should
 not be used when programming.

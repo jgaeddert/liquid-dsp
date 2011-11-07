@@ -179,7 +179,7 @@ This allows seamless integration of different codecs with one simple
 interface.
 %
 As with the {\tt iirfilt\_rrrf} object in the phase-locked loop tutorial
-(Section~\ref{tutorial:pll})
+(\S\ref{tutorial:pll})
 the {\tt fec} object has methods
 {\tt create()},
 {\tt print()}, and
@@ -202,7 +202,7 @@ which creates a Hamming(7,4) code:
 \end{Verbatim}
 %
 Details of the available codes in \liquid\ can be found in
-Section~\ref{module:fec}.
+\S\ref{module:fec}.
 This codec nominally accepts 4 bits, appends 3 parity bits, and can
 detect and correct up to one of these seven transmitted bits.
 The Hamming(7,4) code is not particularly strong for its rate;
@@ -280,12 +280,12 @@ the encoding scheme, and the number of errors introduced.
 
 For a more detailed program, see {\tt examples/fec\_example.c} in the
 main \liquid\ directory.
-Section~\ref{module:fec} describes \liquid's FEC module in detail.
+\S\ref{module:fec} describes \liquid's FEC module in detail.
 Additionally, the {\tt packetizer} object extends the simplicity of the
 {\tt fec} object by adding a cyclic redundancy check and two layers of
 forward error-correction and interleaving, all of which can be
 reconfigured as desired.
-See Section~\ref{module:framing:packetizer} and
+See \S\ref{module:framing:packetizer} and
 {\tt examples/packetizer\_example.c} for a detailed example program
 on how to use the {\tt packetizer} object.
 
