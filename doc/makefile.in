@@ -105,6 +105,7 @@ LISTINGS_C = 						\
 	listings/nco.example.c				\
 	listings/nco_pll.example.c			\
 	listings/ofdmflexframegen.example.c		\
+	listings/ofdmflexframesync.example.c		\
 	listings/pack_array.example.c			\
 	listings/packetizer.example.c			\
 	listings/qnsearch.example.c			\
