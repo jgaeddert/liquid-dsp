@@ -658,7 +658,6 @@ modem_benchmarks :=						\
 multicarrier_objects :=						\
 	src/multicarrier/src/firpfbch_crcf.o			\
 	src/multicarrier/src/firpfbch_cccf.o			\
-	src/multicarrier/src/mdctch.o				\
 	src/multicarrier/src/ofdmframe.common.o			\
 	src/multicarrier/src/ofdmframegen.o			\
 	src/multicarrier/src/ofdmframesync.o			\
