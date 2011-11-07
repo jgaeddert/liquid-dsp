@@ -184,16 +184,80 @@ $\vec{H} = \left[ \vec{I}_{12} \,\,\, \vec{P} \right]$.
 Notice that $\vec{P}^T = \vec{P}$; this plays an important role in
 systematic decoding \cite{Berlekamp:1972}.
 
-\subsection{{\tt secded7264}, (SEC-DECD(72,64) block code)}
+\subsection{SEC-DED block codes}
 \label{module:fec:secded}
-The SEC-DED(72,64) code is a $8/9$-rate code within the class of
-``single error correction, double error detection''
-block codes.
+The SEC-DED$(n,k)$ codes implement a certain class of ``single error
+correction, double error detection'' block codes.
+%
+For the SEC-DED codes implemented in \liquid\, $n$ can be represented
+by an integer $m$ such that $n=2^m$ and $k = n + m + 2$.
+%
+Encoding and decoding begins with the $(n-k) \times n$ matrix $\vec{P}$
+such that
+the generator matrix is simply
+$\vec{G} = \left[ \vec{I}_{n} \,\,\, \vec{P}^T \right]$
+and the parity check matrix is
+$\vec{H} = \left[ \vec{P} \,\,\, \vec{I}_{n-k} \right]$.
+%
+Decoding can be achieved by computing the syndrome vector and then using
+a look-up table to determine the location of the error.
+If the computed syndrome cannot be associated with any particular error
+location then multiple errors must have occurred for which the code
+cannot correct.
+%
+There is currently no soft decoding implemented in \liquid\ for the
+SEC-DED codes.
+
+\subsubsection{{\tt secded2216}, SEC-DED(22,16) block code}
+\label{module:fec:secded:2216}
+%
+Encoding and decoding begins with the $6 \times 16$ matrix $\vec{P}$ as
+%
+\begin{equation*}
+    \vec{P}_{(22,16)} = 
+    \footnotesize{
+    \begin{bmatrix}
+        {\tt 1001} & {\tt 1001} & {\tt 0011} & {\tt 1100} \\
+        {\tt 0011} & {\tt 1110} & {\tt 1000} & {\tt 1010} \\
+        {\tt 1110} & {\tt 1110} & {\tt 0110} & {\tt 0000} \\
+        {\tt 1110} & {\tt 0001} & {\tt 1101} & {\tt 0001} \\
+        {\tt 0001} & {\tt 0011} & {\tt 1100} & {\tt 0111} \\
+        {\tt 0100} & {\tt 0100} & {\tt 0011} & {\tt 1111} \\
+    \end{bmatrix}
+    }
+\end{equation*}
+%
+
+\subsubsection{{\tt secded3932}, SEC-DED(39,32) block code}
+\label{module:fec:secded:3932}
+%
+Encoding and decoding begins with the $7 \times 32$ matrix $\vec{P}$ as
+%
+\begin{equation*}
+    \vec{P}_{(39,32)} = 
+    \footnotesize{
+    \begin{bmatrix}
+        {\tt 10001010} & {\tt 10000010} & {\tt 00001111} & {\tt 00011011} \\
+        {\tt 00010000} & {\tt 00011111} & {\tt 01110001} & {\tt 01100001} \\
+        {\tt 00010110} & {\tt 11110000} & {\tt 10010010} & {\tt 10100110} \\
+        {\tt 11111111} & {\tt 00000001} & {\tt 10100100} & {\tt 01000100} \\
+        {\tt 01101100} & {\tt 11111111} & {\tt 00001000} & {\tt 00001000} \\
+        {\tt 00100001} & {\tt 00100100} & {\tt 11111111} & {\tt 10010000} \\
+        {\tt 11000001} & {\tt 01001000} & {\tt 01000000} & {\tt 11111111} \\
+    \end{bmatrix}
+    }
+\end{equation*}
+%
+
+\subsubsection{{\tt secded7264}, SEC-DEC(72,64) block code}
+\label{module:fec:secded:7264}
+The SEC-DED(72,64) code is a $8/9$-rate block code.
 Encoding and decoding begins with the $8 \times 64$ matrix $\vec{P}$ as
 % \cite[p.~104]{Lin:2004} TODO : give other ref
 %
 \begin{equation*}
-    \vec{P} = 
+    \vec{P}_{(72,64)} = 
+    \footnotesize{
     \begin{bmatrix}
         {\tt 11111111} & {\tt 00001111} & {\tt 00001111} & {\tt 00001100} & {\tt 01101000} & {\tt 10001000} & {\tt 10001000} & {\tt 10000000} \\
         {\tt 11110000} & {\tt 11111111} & {\tt 00000000} & {\tt 11110011} & {\tt 01100100} & {\tt 01000100} & {\tt 01000100} & {\tt 01000000} \\
@@ -204,18 +268,9 @@ Encoding and decoding begins with the $8 \times 64$ matrix $\vec{P}$ as
         {\tt 00000010} & {\tt 00100010} & {\tt 00100010} & {\tt 00100110} & {\tt 11001111} & {\tt 00000000} & {\tt 11111111} & {\tt 00001111} \\
         {\tt 00000001} & {\tt 00010001} & {\tt 00010001} & {\tt 00010110} & {\tt 00110000} & {\tt 11110000} & {\tt 11110000} & {\tt 11111111} \\
     \end{bmatrix}
+    }
 \end{equation*}
 %
-The generator matrix is simply
-$\vec{G} = \left[ \vec{I}_{64 \,\,\, }\vec{P}^T \right]$
-and the parity check matrix is
-$\vec{H} = \left[ \vec{P} \,\,\, \vec{I}_{8} \right]$.
-%
-Decoding can be achieved by computing the syndrome vector and then using
-a look-up table to determine the location of the error.
-If the computed syndrome cannot be associated with any particular error
-location then multiple errors must have occurred for which the code
-cannot correct.
 
 
 \subsection{{\tt libfec} (convolutional and  Reed-Solomon codes)}
