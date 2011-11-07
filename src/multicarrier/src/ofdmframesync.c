@@ -162,6 +162,9 @@ ofdmframesync ofdmframesync_create(unsigned int _M,
     if ( (q->M_pilot + q->M_data) == 0) {
         fprintf(stderr,"error: ofdmframesync_create(), must have at least one enabled subcarrier\n");
         exit(1);
+    } else if (q->M_data == 0) {
+        fprintf(stderr,"error: ofdmframesync_create(), must have at least one data subcarriers\n");
+        exit(1);
     } else if (q->M_pilot < 2) {
         fprintf(stderr,"error: ofdmframesync_create(), must have at least two pilot subcarriers\n");
         exit(1);
