@@ -206,7 +206,7 @@ int main(int argc, char*argv[])
                 print_bitstring_short(e_test[i],8);
                 printf(" ");
             }
-            printf("s=", n);
+            printf("s=");
             print_bitstring_short(s_hat,8);
             if (s == s_hat) printf("*");
             printf("\n");
