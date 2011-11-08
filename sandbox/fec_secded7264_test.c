@@ -40,47 +40,36 @@
 //  01100100 01000100 01000100 01000000 11110000 11111111 00001111 00001100 : 
 //  00000010 00100010 00100010 00100110 11001111 00000000 11111111 00001111 : 
 //  00000001 00010001 00010001 00010110 00110000 11110000 11110000 11111111 : 
-unsigned int P[32] = {
-    0xFF0F0F0C, 0x68888880,
-    0xF0FF00F3, 0x64444440,
-    0x30F0FF0F, 0x02222226,
-    0xCF00F0FF, 0x01111116,
-    0x68888880, 0xFF0F00F3,
-    0x64444440, 0xF0FF0F0C,
-    0x02222226, 0xCF00FF0F,
-    0x01111116, 0x30F0F0FF};
+unsigned char P[64] = {
+    0xFF, 0x0F, 0x0F, 0x0C, 0x68, 0x88, 0x88, 0x80,
+    0xF0, 0xFF, 0x00, 0xF3, 0x64, 0x44, 0x44, 0x40,
+    0x30, 0xF0, 0xFF, 0x0F, 0x02, 0x22, 0x22, 0x26,
+    0xCF, 0x00, 0xF0, 0xFF, 0x01, 0x11, 0x11, 0x16,
+    0x68, 0x88, 0x88, 0x80, 0xFF, 0x0F, 0x00, 0xF3,
+    0x64, 0x44, 0x44, 0x40, 0xF0, 0xFF, 0x0F, 0x0C,
+    0x02, 0x22, 0x22, 0x26, 0xCF, 0x00, 0xFF, 0x0F,
+    0x01, 0x11, 0x11, 0x16, 0x30, 0xF0, 0xF0, 0xFF};
 
-// parity check matrix: H = [I(8) P]
-unsigned int H[48] = {
-    0x80, 0xFF0F0F0C, 0x68888880,
-    0x40, 0xF0FF00F3, 0x64444440,
-    0x20, 0x30F0FF0F, 0x02222226,
-    0x10, 0xCF00F0FF, 0x01111116,
-    0x08, 0x68888880, 0xFF0F00F3,
-    0x04, 0x64444440, 0xF0FF0F0C,
-    0x02, 0x02222226, 0xCF00FF0F,
-    0x01, 0x01111116, 0x30F0F0FF};
-
-void print_bitstring_short(unsigned int _x,
-                           unsigned int _n)
+void print_bitstring_short(unsigned char _x,
+                           unsigned char _n)
 {
     unsigned int i;
     for (i=0; i<_n; i++)
         printf("%1u", (_x >> (_n-i-1)) & 1);
 }
 
-void print_bitstring(unsigned int * _x,
-                     unsigned int   _n)
+void print_bitstring(unsigned char * _x,
+                     unsigned char   _n)
 {
     unsigned int i;
     // compute number of elements in _x
-    div_t d = div(_n, 32);
+    div_t d = div(_n, 8);
     unsigned int N = d.quot + (d.rem ? 1 : 0);
 
     // print leader
     printf("    ");
     if (d.rem == 0) printf(" ");
-    for (i=0; i<32-d.rem-1; i++)
+    for (i=0; i<8-d.rem-1; i++)
         printf(" ");
 
     // print bitstring
@@ -88,7 +77,7 @@ void print_bitstring(unsigned int * _x,
         if (i==0 && d.rem)
             print_bitstring_short(_x[i], d.rem);
         else
-            print_bitstring_short(_x[i], 32);
+            print_bitstring_short(_x[i], 8);
 
         printf(" ");
 
@@ -96,29 +85,26 @@ void print_bitstring(unsigned int * _x,
     printf("\n");
 }
 
+
 int main(int argc, char*argv[])
 {
     unsigned int i;
     
     // error vector [72 x 1]
-    unsigned int err[3] = {0x00, 0x00000000, 0x00000001};
+    unsigned char e[9] = {0,0,0,0,0,0,0,0,2};
 
     // original message [64 x 1]
-    unsigned int m[2] = {0x00000000, 0x00000001};
-    m[0] = rand() & 0xffffffff;
-    m[1] = rand() & 0xffffffff;
+    unsigned char m[8] = {0,0,0,0,0,0,0,1};
 
     // derived values
-    unsigned int v[3];      // encoded/transmitted message
-    unsigned int e[3];      // error vector
-    unsigned int r[3];      // received vector
-    unsigned int s;         // syndrome vector
-    unsigned int e_hat[3] = {0,0,0};  // estimated error vector
-    unsigned int v_hat[3];  // estimated transmitted message
-    unsigned int m_hat[2];  // estimated original message
+    unsigned char v[9];     // encoded/transmitted message
+    unsigned char r[9];     // received vector
+    unsigned char s;        // syndrome vector
+    unsigned char v_hat[9]; // estimated transmitted message
+    unsigned char m_hat[8]; // estimated original message
 
     // original message
-    printf("m (original message):\n");
+    printf("m (original message):\n         ");
     print_bitstring(m,64);
 
     // compute encoded/transmitted message: v = m*G
@@ -126,27 +112,29 @@ int main(int argc, char*argv[])
     for (i=0; i<8; i++) {
         v[0] <<= 1;
 
-        unsigned int p = liquid_count_ones(P[2*i+0] & m[0]) +
-                         liquid_count_ones(P[2*i+1] & m[1]);
-        printf("p = %u\n", p);
+        unsigned int p = liquid_c_ones[ P[8*i+0] & m[0] ] +
+                         liquid_c_ones[ P[8*i+1] & m[1] ] +
+                         liquid_c_ones[ P[8*i+2] & m[2] ] +
+                         liquid_c_ones[ P[8*i+3] & m[3] ] +
+                         liquid_c_ones[ P[8*i+4] & m[4] ] +
+                         liquid_c_ones[ P[8*i+5] & m[5] ] +
+                         liquid_c_ones[ P[8*i+6] & m[6] ] +
+                         liquid_c_ones[ P[8*i+7] & m[7] ];
+        //printf("p = %u\n", p);
         v[0] |= p & 0x01;
     }
-    v[1] = m[0];
-    v[2] = m[1];
+    for (i=0; i<8; i++)
+        v[i+1] = m[i];
     printf("v (encoded/transmitted message):\n");
     print_bitstring(v,72);
 
     // use pre-determined error vector
-    e[0] = err[0];
-    e[1] = err[1];
-    e[2] = err[2];
     printf("e (error vector):\n");
     print_bitstring(e,72);
 
     // compute received vector: r = v + e
-    r[0] = v[0] ^ e[0];
-    r[1] = v[1] ^ e[1];
-    r[2] = v[2] ^ e[2];
+    for (i=0; i<9; i++)
+        r[i] = v[i] ^ e[i];
     printf("r (received vector):\n");
     print_bitstring(r,72);
 
@@ -154,17 +142,17 @@ int main(int argc, char*argv[])
     s = 0;
     for (i=0; i<8; i++) {
         s <<= 1;
-#if 0
         unsigned int p =
             ( (r[0] & (1<<(8-i-1))) ? 1 : 0 )+
-            liquid_count_ones(P[2*i+0] & r[1]) +
-            liquid_count_ones(P[2*i+1] & r[2]);
-#else
-        unsigned int p =
-            liquid_count_ones(H[3*i+0] & r[0]) +
-            liquid_count_ones(H[3*i+1] & r[1]) +
-            liquid_count_ones(H[3*i+2] & r[2]);
-#endif
+            liquid_c_ones[ P[8*i+0] & r[1] ] +
+            liquid_c_ones[ P[8*i+1] & r[2] ] +
+            liquid_c_ones[ P[8*i+2] & r[3] ] +
+            liquid_c_ones[ P[8*i+3] & r[4] ] +
+            liquid_c_ones[ P[8*i+4] & r[5] ] +
+            liquid_c_ones[ P[8*i+5] & r[6] ] +
+            liquid_c_ones[ P[8*i+6] & r[7] ] +
+            liquid_c_ones[ P[8*i+7] & r[8] ];
+
         printf("p = %u\n", p);
 
         s |= p & 0x01;
@@ -176,46 +164,57 @@ int main(int argc, char*argv[])
     unsigned int ws = liquid_count_ones(s);
     printf("w(s) = %u\n", ws);
 
+    // estimated error vector
+    unsigned char e_hat[9] = {0,0,0,0,0,0,0,0,0}; 
+
     if (ws == 0) {
         printf("no errors detected\n");
     } else {
         // estimate error location
-        unsigned int e_test[3]  = {0x00, 0x00000000, 0x00000001};
         int syndrome_match = 0;
 
         // TODO : these can be pre-computed
         unsigned int n;
         for (n=0; n<72; n++) {
             // compute syndrome
-            unsigned int s_hat = 0;
+            unsigned char e_test[9]  = {0,0,0,0,0,0,0,0,0};
+            unsigned char s_hat = 0;
+
+            div_t d = div(n,8);
+            e_test[9-d.quot-1] = 1 << d.rem;
 
             for (i=0; i<8; i++) {
                 s_hat <<= 1;
                 unsigned int p =
-                    liquid_count_ones(H[3*i+0] & e_test[0]) +
-                    liquid_count_ones(H[3*i+1] & e_test[1]) +
-                    liquid_count_ones(H[3*i+2] & e_test[2]);
+                    ( (e_test[0] & (1<<(8-i-1))) ? 1 : 0 )+
+                    liquid_c_ones[ P[8*i+0] & e_test[1] ] +
+                    liquid_c_ones[ P[8*i+1] & e_test[2] ] +
+                    liquid_c_ones[ P[8*i+2] & e_test[3] ] +
+                    liquid_c_ones[ P[8*i+3] & e_test[4] ] +
+                    liquid_c_ones[ P[8*i+4] & e_test[5] ] +
+                    liquid_c_ones[ P[8*i+5] & e_test[6] ] +
+                    liquid_c_ones[ P[8*i+6] & e_test[7] ] +
+                    liquid_c_ones[ P[8*i+7] & e_test[8] ];
 
                 s_hat |= p & 0x01;
             }
 
             // print results
             //printf("e_test:"); print_bitstring(e_test, 72);
-            printf("%3u : s = ", n);
+            printf("%2u e=", n);
+            for (i=0; i<9; i++) {
+                print_bitstring_short(e_test[i],8);
+                printf(" ");
+            }
+            printf("s=");
             print_bitstring_short(s_hat,8);
-            if (s == s_hat) printf(" *");
+            if (s == s_hat) printf("*");
             printf("\n");
 
             if (s == s_hat) {
-                memmove(e_hat, e_test, sizeof(e_test));
+                memmove(e_hat, e_test, 9*sizeof(unsigned char));
                 syndrome_match = 1;
             }
-
-            // shift e_test
-            e_test[0] = (e_test[0] << 1) | ((e_test[1] & 0x80000000) ? 1 : 0);
-            e_test[1] = (e_test[1] << 1) | ((e_test[2] & 0x80000000) ? 1 : 0);
-            e_test[2] <<= 1;
-
         }
 
         if (syndrome_match) {
@@ -230,27 +229,24 @@ int main(int argc, char*argv[])
     print_bitstring(e_hat,72);
 
     printf("v-hat (estimated transmitted vector):\n");
-    v_hat[0] = r[0] ^ e_hat[0];
-    v_hat[1] = r[1] ^ e_hat[1];
-    v_hat[2] = r[2] ^ e_hat[2];
+    for (i=0; i<9; i++)
+        v_hat[i] = r[i] ^ e_hat[i];
     print_bitstring(v_hat,72);
-    print_bitstring(v,    72);
+    //print_bitstring(v,    72);
 
     // compute errors between v, v_hat
-    unsigned int num_errors_encoded = count_bit_errors(v[0], v_hat[0]) +
-                                      count_bit_errors(v[1], v_hat[1]) +
-                                      count_bit_errors(v[2], v_hat[2]);
+    unsigned int num_errors_encoded = count_bit_errors_array(v, v_hat, 9);
     printf("decoding errors (encoded)  : %2u / 72\n", num_errors_encoded);
 
     // compute estimated original message: (last 64 bits of encoded message)
-    m_hat[0] = v_hat[1];
-    m_hat[1] = v_hat[2];
+    for (i=0; i<9; i++)
+        m_hat[i] = v_hat[i+1];
+    printf("m-hat (estimated original vector):\n         ");
     print_bitstring(m_hat,64);
-    print_bitstring(m,    64);
+    //print_bitstring(m,    64);
 
     // compute errors between m, m_hat
-    unsigned int num_errors_decoded = count_bit_errors(m[0], m_hat[0]) +
-                                      count_bit_errors(m[1], m_hat[1]);
+    unsigned int num_errors_decoded = count_bit_errors_array(m, m_hat, 8);
     printf("decoding errors (original) : %2u / 64\n", num_errors_decoded);
 
     return 0;

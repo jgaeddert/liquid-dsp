@@ -658,7 +658,6 @@ modem_benchmarks :=						\
 multicarrier_objects :=						\
 	src/multicarrier/src/firpfbch_crcf.o			\
 	src/multicarrier/src/firpfbch_cccf.o			\
-	src/multicarrier/src/mdctch.o				\
 	src/multicarrier/src/ofdmframe.common.o			\
 	src/multicarrier/src/ofdmframegen.o			\
 	src/multicarrier/src/ofdmframesync.o			\
@@ -1288,6 +1287,7 @@ sandbox_programs =						\
 	sandbox/fec_secded2216_test				\
 	sandbox/fec_secded3932_test				\
 	sandbox/fec_secded7264_test				\
+	sandbox/fec_secded_punctured_test			\
 	sandbox/fecsoft_conv_test				\
 	sandbox/fecsoft_hamming128_gentab			\
 	sandbox/fecsoft_ldpc_test				\

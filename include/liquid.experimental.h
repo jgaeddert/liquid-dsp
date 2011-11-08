@@ -862,6 +862,19 @@ int  packetizer_decode_persistent2(packetizer _p,
 // SUBMODULE : multicarrier
 //
 
+// modified discrete cosine transform channelizer
+
+typedef struct mdctch_s * mdctch;
+mdctch mdctch_create(unsigned int _num_channels,
+                     int _type,
+                     int _wtype,
+                     float _beta);
+void mdctch_destroy(mdctch _q);
+void mdctch_clear(mdctch _q);
+void mdctch_execute(mdctch _q, float * _x, float * _y);
+void mdctch_execute_synthesizer(mdctch _q, float * _x, float * _y);
+void mdctch_execute_analyzer(mdctch _q, float * _x, float * _y);
+
 
 
 //

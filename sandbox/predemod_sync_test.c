@@ -95,7 +95,6 @@ int main(int argc, char*argv[]) {
     bsync_crcf sync = bsync_crcf_create_msequence(g,k);
 
     // decimate and push through synchronizer
-    unsigned int j;
     float rxy_max = 0.0f;
     for (i=0; i<num_samples; i++) {
         // push samples into filterbank
