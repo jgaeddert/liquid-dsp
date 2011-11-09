@@ -30,6 +30,7 @@ xautotest
 octave-core
 *.tar
 *.gz
+.DS_Store
 
 # gentab programs
 src/fec/gentab/*_gentab
