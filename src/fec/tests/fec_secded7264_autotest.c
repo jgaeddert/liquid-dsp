@@ -103,3 +103,75 @@ void autotest_secded7264_codec_e1()
     }
 }
 
+//
+// AUTOTEST: SEC-DEC (72,64) codec (double error detection)
+//
+void autotest_secded7264_codec_e2()
+{
+    // total combinations of double errors: nchoosek(72,2) = 2556
+
+    // arrays
+    unsigned char sym_org[8];   // original symbol
+    unsigned char sym_enc[9];   // encoded symbol
+    unsigned char e[9];         // error vector
+    unsigned char sym_rec[9];   // received symbol
+    unsigned char sym_dec[8];   // decoded symbol
+
+    unsigned int i;
+    unsigned int j;
+    unsigned int k;
+
+    for (j=0; j<72-1; j++) {
+#if 0
+        if (liquid_autotest_verbose)
+            printf("***** %2u *****\n", j);
+#endif
+        
+        for (k=0; k<72-1-j; k++) {
+            // generate symbol
+            for (i=0; i<8; i++)
+                sym_org[i] = rand() & 0xff;
+
+            // encoded symbol
+            fec_secded7264_encode_symbol(sym_org, sym_enc);
+
+            // generate error vector (single error)
+            for (i=0; i<9; i++)
+                e[i] = 0;
+
+            div_t dj = div(j,8);
+            e[9-dj.quot-1] |= 1 << dj.rem;
+
+            div_t dk = div(k+j+1,8);
+            e[9-dk.quot-1] |= 1 << dk.rem;
+
+            // received symbol
+            for (i=0; i<9; i++)
+                sym_rec[i] = sym_enc[i] ^ e[i];
+
+            // decoded symbol
+            int syndrome_flag = fec_secded7264_decode_symbol(sym_rec, sym_dec);
+
+#if 0
+            if (liquid_autotest_verbose) {
+                // print error vector
+                printf("%3u, e = ", k);
+                liquid_print_bitstring(e[0], 8);
+                liquid_print_bitstring(e[1], 8);
+                liquid_print_bitstring(e[2], 8);
+                liquid_print_bitstring(e[3], 8);
+                liquid_print_bitstring(e[4], 8);
+                liquid_print_bitstring(e[5], 8);
+                liquid_print_bitstring(e[6], 8);
+                liquid_print_bitstring(e[7], 8);
+                liquid_print_bitstring(e[8], 8);
+                printf(" flag=%2d\n", syndrome_flag);
+            }
+#endif
+
+            // validate syndrome flag is '2'
+            CONTEND_EQUALITY(syndrome_flag, 2);
+        }
+    }
+}
+
