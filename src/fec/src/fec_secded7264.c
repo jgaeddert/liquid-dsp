@@ -142,59 +142,72 @@ void fec_secded7264_encode_symbol(unsigned char * _sym_dec,
 int fec_secded7264_decode_symbol(unsigned char * _sym_enc,
                                  unsigned char * _sym_dec)
 {
-    unsigned int i;
-
-    // error vector
+    // estimate error vector
     unsigned char e_hat[9] = {0,0,0,0,0,0,0,0,0};
+    int syndrome_flag = fec_secded7264_estimate_ehat(_sym_enc, e_hat);
+
+    // compute estimated transmit vector (last 64 bits of encoded message)
+    // NOTE: indices take into account first element in _sym_enc and e_hat
+    //       arrays holds the parity bits
+    _sym_dec[0] = _sym_enc[1] ^ e_hat[1];
+    _sym_dec[1] = _sym_enc[2] ^ e_hat[2];
+    _sym_dec[2] = _sym_enc[3] ^ e_hat[3];
+    _sym_dec[3] = _sym_enc[4] ^ e_hat[4];
+    _sym_dec[4] = _sym_enc[5] ^ e_hat[5];
+    _sym_dec[5] = _sym_enc[6] ^ e_hat[6];
+    _sym_dec[6] = _sym_enc[7] ^ e_hat[7];
+    _sym_dec[7] = _sym_enc[8] ^ e_hat[8];
+
+#if DEBUG_FEC_SECDED7264
+    if (syndrome_flag == 1) {
+        printf("secded7264_decode_symbol(): single error detected!\n");
+    } else if (syndrome_flag == 2) {
+        printf("secded7264_decode_symbol(): no match found (multiple errors detected)\n");
+    }
+#endif
+
+    // return syndrome flag
+    return syndrome_flag;
+}
+
+// estimate error vector, returning 0/1/2 for zero/one/multiple errors
+// detected, respectively
+//  _sym_enc    :   encoded symbol [size: 9 x 1],
+//  _e_hat      :   estimated error vector [size: 9 x 1]
+int fec_secded7264_estimate_ehat(unsigned char * _sym_enc,
+                                 unsigned char * _e_hat)
+{
+    // clear output array
+    memset(_e_hat, 0x00, 9*sizeof(unsigned char));
 
     // compute syndrome vector, s = r*H^T = ( H*r^T )^T
     unsigned char s = fec_secded7264_compute_syndrome(_sym_enc);
 
     // compute weight of s
     unsigned int ws = liquid_c_ones[s];
-
-    // syndrome match flag
-    int syndrome_match = 0;
-
+    
     if (ws == 0) {
-        // no errors detected; copy input and return
-        for (i=0; i<8; i++)
-            _sym_dec[i] = _sym_enc[i+1];
+        // no errors detected
         return 0;
     } else {
         // estimate error location; search for syndrome with error
         // vector of weight one
 
         unsigned int n;
+        // estimate error location
         for (n=0; n<72; n++) {
             if (s == secded7264_syndrome_w1[n]) {
-                // set estimated error vector (set bit at appropriate index)
+                // single error detected at location 'n'
                 div_t d = div(n,8);
-                e_hat[9-d.quot-1] ^= 1 << d.rem;
-        
-                // set flag and break from loop
-                syndrome_match = 1;
-                break;
+                _e_hat[9-d.quot-1] = 1 << d.rem;
+
+                return 1;
             }
         }
+
     }
 
-    // compute estimated transmit vector (last 64 bits of encoded message)
-    // NOTE: indices take into account first element in _sym_enc and e_hat
-    //       arrays holds the parity bits
-    for (i=0; i<8; i++)
-        _sym_dec[i] = _sym_enc[i+1] ^ e_hat[i+1];
-
-    if (syndrome_match) {
-#if DEBUG_FEC_SECDED7264
-        printf("secded7264_decode_symbol(): match found!\n");
-#endif
-        return 1;
-    }
-
-#if DEBUG_FEC_SECDED7264
-    printf("secded7264_decode_symbol(): no match found (multiple errors detected)\n");
-#endif
+    // no syndrome match; multiple errors detected
     return 2;
 }
 

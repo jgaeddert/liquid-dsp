@@ -420,7 +420,7 @@ int  fec_secded2216_decode_symbol(unsigned char * _sym_enc,
 
 // estimate error vector, returning 0/1/2 for zero/one/multiple errors detected
 //  _sym_enc    :   encoded symbol [size: 3 x 1], _sym_enc[0] has only 6 bits
-//  _e_hat      :   estiamted error vector [size: 3 x 1]
+//  _e_hat      :   estimated error vector [size: 3 x 1]
 int  fec_secded2216_estimate_ehat(unsigned char * _sym_enc,
                                   unsigned char * _e_hat);
 
@@ -456,11 +456,17 @@ unsigned char fec_secded3932_compute_syndrome(unsigned char * _v);
 void fec_secded3932_encode_symbol(unsigned char * _sym_dec,
                                   unsigned char * _sym_enc);
 
+// estimate error vector, returning 0/1/2 for zero/one/multiple errors detected
+//  _sym_enc    :   encoded symbol [size: 5 x 1], _sym_enc[0] has only 7 bits
+//  _e_hat      :   estimated error vector [size: 5 x 1]
+int  fec_secded3932_estimate_ehat(unsigned char * _sym_enc,
+                                  unsigned char * _e_hat);
+
 // decode symbol, returning 0/1/2 for zero/one/multiple errors detected
 //  _sym_enc    :   encoded symbol [size: 5 x 1], _sym_enc[0] has only 7 bits
 //  _sym_dec    :   decoded symbol [size: 4 x 1]
-int  fec_secded3932_decode_symbol(unsigned char * _sym_enc,
-                                  unsigned char * _sym_dec);
+int fec_secded3932_decode_symbol(unsigned char * _sym_enc,
+                                 unsigned char * _sym_dec);
 
 // parity matrix [7 x 32 bits], [7 x 4 bytes]
 extern unsigned char secded3932_P[28];
@@ -489,14 +495,20 @@ unsigned char fec_secded7264_compute_parity(unsigned char * _v);
 unsigned char fec_secded7264_compute_syndrome(unsigned char * _v);
 
 // encode symbol
-//  _sym_dec    :   input symbol [size: 64 x 1]
-//  _sym_enc    :   input symbol [size: 72 x 1]
+//  _sym_dec    :   input symbol [size: 8 x 1]
+//  _sym_enc    :   input symbol [size: 9 x 1]
 void fec_secded7264_encode_symbol(unsigned char * _sym_dec,
                                   unsigned char * _sym_enc);
 
+// estimate error vector, returning 0/1/2 for zero/one/multiple errors detected
+//  _sym_enc    :   encoded symbol [size: 9 x 1]
+//  _e_hat      :   estimated error vector [size: 9 x 1]
+int fec_secded7264_estimate_ehat(unsigned char * _sym_enc,
+                                 unsigned char * _e_hat);
+
 // decode symbol, returning 0/1/2 for zero/one/multiple errors detected
-//  _sym_enc    :   input symbol [size: 72 x 1]
-//  _sym_dec    :   input symbol [size: 64 x 1]
+//  _sym_enc    :   input symbol [size: 8 x 1]
+//  _sym_dec    :   input symbol [size: 9 x 1]
 int fec_secded7264_decode_symbol(unsigned char * _sym_enc,
                                  unsigned char * _sym_dec);
 

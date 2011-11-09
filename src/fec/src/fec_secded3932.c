@@ -139,44 +139,9 @@ int fec_secded3932_decode_symbol(unsigned char * _sym_enc,
     }
 #endif
 
-    // state variables
+    // estimate error vector
     unsigned char e_hat[5] = {0,0,0,0,0};    // estimated error vector
-
-    // compute syndrome vector, s = r*H^T = ( H*r^T )^T
-    unsigned char s = fec_secded3932_compute_syndrome(_sym_enc);
-
-    // compute weight of s
-    unsigned int ws = liquid_c_ones[s];
-    
-    // syndrome match flag
-    int syndrome_match = 0;
-
-    if (ws == 0) {
-        // no errors detected; copy input and return
-        _sym_dec[0] = _sym_enc[1];
-        _sym_dec[1] = _sym_enc[2];
-        _sym_dec[2] = _sym_enc[3];
-        _sym_dec[3] = _sym_enc[4];
-        return 0;
-    } else {
-        // estimate error location; search for syndrome with error
-        // vector of weight one
-        int syndrome_match = 0;
-
-        unsigned int n;
-        for (n=0; n<39; n++) {
-            if (s == secded3932_syndrome_w1[n]) {
-                // set estimated error vector (set bit at appropriate index)
-                div_t d = div(n,8);
-                e_hat[5-d.quot-1] ^= 1 << d.rem;
-        
-                // set flag and break from loop
-                syndrome_match = 1;
-                break;
-            }
-        }
-
-    }
+    int syndrome_flag = fec_secded3932_estimate_ehat(_sym_enc, e_hat);
 
     // compute estimated transmit vector (last 64 bits of encoded message)
     // NOTE: indices take into account first element in _sym_enc and e_hat
@@ -186,16 +151,60 @@ int fec_secded3932_decode_symbol(unsigned char * _sym_enc,
     _sym_dec[2] = _sym_enc[3] ^ e_hat[3];
     _sym_dec[3] = _sym_enc[4] ^ e_hat[4];
 
-    if (syndrome_match) {
 #if DEBUG_FEC_SECDED3932
-        printf("secded3932_decode_symbol(): match found!\n");
+    if (syndrome_flag == 1) {
+        printf("secded3932_decode_symbol(): single error detected!\n");
+    } else if (syndrome_flag == 2) {
+        printf("secded3932_decode_symbol(): no match found (multiple errors detected)\n");
+    }
 #endif
-        return 1;
+
+    // return syndrome flag
+    return syndrome_flag;
+}
+
+// estimate error vector, returning 0/1/2 for zero/one/multiple errors
+// detected, respectively
+//  _sym_enc    :   encoded symbol [size: 5 x 1], _sym_enc[0] has only 6 bits
+//  _e_hat      :   estimated error vector [size: 5 x 1]
+int fec_secded3932_estimate_ehat(unsigned char * _sym_enc,
+                                 unsigned char * _e_hat)
+{
+    // clear output array
+    _e_hat[0] = 0x00;
+    _e_hat[1] = 0x00;
+    _e_hat[2] = 0x00;
+    _e_hat[3] = 0x00;
+    _e_hat[4] = 0x00;
+
+    // compute syndrome vector, s = r*H^T = ( H*r^T )^T
+    unsigned char s = fec_secded3932_compute_syndrome(_sym_enc);
+
+    // compute weight of s
+    unsigned int ws = liquid_c_ones[s];
+    
+    if (ws == 0) {
+        // no errors detected
+        return 0;
+    } else {
+        // estimate error location; search for syndrome with error
+        // vector of weight one
+
+        unsigned int n;
+        // estimate error location
+        for (n=0; n<39; n++) {
+            if (s == secded3932_syndrome_w1[n]) {
+                // single error detected at location 'n'
+                div_t d = div(n,8);
+                _e_hat[5-d.quot-1] = 1 << d.rem;
+
+                return 1;
+            }
+        }
+
     }
 
-#if DEBUG_FEC_SECDED3932
-    printf("secded3932_decode_symbol(): no match found (multiple errors detected)\n");
-#endif
+    // no syndrome match; multiple errors detected
     return 2;
 }
 

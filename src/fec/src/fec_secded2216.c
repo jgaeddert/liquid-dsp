@@ -127,7 +127,7 @@ int fec_secded2216_decode_symbol(unsigned char * _sym_enc,
     }
 #endif
 
-    // estiamte error vector
+    // estimate error vector
     unsigned char e_hat[3] = {0,0,0};
     int syndrome_flag = fec_secded2216_estimate_ehat(_sym_enc, e_hat);
 
