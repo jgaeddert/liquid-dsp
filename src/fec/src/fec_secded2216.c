@@ -167,7 +167,7 @@ int fec_secded2216_decode_symbol(unsigned char * _sym_enc,
 
     }
 
-    // compute estimated transmit vector (last 64 bits of encoded message)
+    // compute estimated transmit vector (last 16 bits of encoded message)
     // NOTE: indices take into account first element in _sym_enc and e_hat
     //       arrays holds the parity bits
     _sym_dec[0] = _sym_enc[1] ^ e_hat[1];

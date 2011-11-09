@@ -136,8 +136,11 @@ void fec_secded7264_encode_symbol(unsigned char * _sym_dec,
     _sym_enc[8] = _sym_dec[7];
 }
 
-void fec_secded7264_decode_symbol(unsigned char * _sym_enc,
-                                  unsigned char * _sym_dec)
+// decode symbol, returning 0/1/2 for zero/one/multiple errors detected
+//  _sym_enc    :   encoded symbol [size: 9 x 1]
+//  _sym_dec    :   decoded symbol [size: 8 x 1]
+int fec_secded7264_decode_symbol(unsigned char * _sym_enc,
+                                 unsigned char * _sym_dec)
 {
     unsigned int i;
 
@@ -150,15 +153,17 @@ void fec_secded7264_decode_symbol(unsigned char * _sym_enc,
     // compute weight of s
     unsigned int ws = liquid_c_ones[s];
 
+    // syndrome match flag
+    int syndrome_match = 0;
+
     if (ws == 0) {
         // no errors detected; copy input and return
         for (i=0; i<8; i++)
             _sym_dec[i] = _sym_enc[i+1];
-        return;
+        return 0;
     } else {
         // estimate error location; search for syndrome with error
         // vector of weight one
-        int syndrome_match = 0;
 
         unsigned int n;
         for (n=0; n<72; n++) {
@@ -172,19 +177,25 @@ void fec_secded7264_decode_symbol(unsigned char * _sym_enc,
                 break;
             }
         }
-
-#if DEBUG_FEC_SECDED7264
-        if (syndrome_match)
-            printf("secded7264_decode_symbol(): match found!\n");
-        else
-            printf("secded7264_decode_symbol(): match found!\n");
-#endif
     }
 
-    // copy output, applying error correction
+    // compute estimated transmit vector (last 64 bits of encoded message)
+    // NOTE: indices take into account first element in _sym_enc and e_hat
+    //       arrays holds the parity bits
     for (i=0; i<8; i++)
         _sym_dec[i] = _sym_enc[i+1] ^ e_hat[i+1];
 
+    if (syndrome_match) {
+#if DEBUG_FEC_SECDED7264
+        printf("secded7264_decode_symbol(): match found!\n");
+#endif
+        return 1;
+    }
+
+#if DEBUG_FEC_SECDED7264
+    printf("secded7264_decode_symbol(): no match found (multiple errors detected)\n");
+#endif
+    return 2;
 }
 
 // create SEC-DED (72,64) codec object

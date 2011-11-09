@@ -412,11 +412,7 @@ unsigned char fec_secded2216_compute_syndrome(unsigned char * _v);
 void fec_secded2216_encode_symbol(unsigned char * _sym_dec,
                                   unsigned char * _sym_enc);
 
-// decode symbol, returning
-//  0 : no errors detected
-//  1 : one error detected and corrected
-//  2 : multiple errors detected (none corrected)
-// inputs:
+// decode symbol, returning 0/1/2 for zero/one/multiple errors detected
 //  _sym_enc    :   encoded symbol [size: 3 x 1], _sym_enc[0] has only 6 bits
 //  _sym_dec    :   decoded symbol [size: 2 x 1]
 int  fec_secded2216_decode_symbol(unsigned char * _sym_enc,
@@ -492,11 +488,11 @@ unsigned char fec_secded7264_compute_syndrome(unsigned char * _v);
 void fec_secded7264_encode_symbol(unsigned char * _sym_dec,
                                   unsigned char * _sym_enc);
 
-// decode symbol
+// decode symbol, returning 0/1/2 for zero/one/multiple errors detected
 //  _sym_enc    :   input symbol [size: 72 x 1]
 //  _sym_dec    :   input symbol [size: 64 x 1]
-void fec_secded7264_decode_symbol(unsigned char * _sym_enc,
-                                  unsigned char * _sym_dec);
+int fec_secded7264_decode_symbol(unsigned char * _sym_enc,
+                                 unsigned char * _sym_dec);
 
 extern unsigned char secded7264_P[64];
 extern unsigned char secded7264_syndrome_w1[72];
