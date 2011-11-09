@@ -1,5 +1,5 @@
 //
-// ldpc_test.c
+// fec_ldpc_test.c
 //
 // Test soft demodulation of LDPC code
 //

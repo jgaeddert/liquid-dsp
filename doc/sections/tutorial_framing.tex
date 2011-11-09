@@ -149,7 +149,7 @@ structure.%
     Alternatively, the {\tt flexframegen} and {\tt flexframesync}
     objects implement a dynamic framing structure which has many more
     options than the {\tt framegen64} and {\tt framesync64} objects.
-    See Section~\ref{module:framing} for details.}
+    See \S\ref{module:framing} for details.}
 The purpose of the header is to conveniently allow the user a separate
 control channel to be packaged with the payload.
 For example, if your application is to send a file using multiple
@@ -160,7 +160,7 @@ identifier for use in packet routing for ad hoc networks.
 Both the header and payload are assembled with a 16-bit cyclic
 redundancy check (CRC) to validate the integrity of the received data
 and encoded using the Hamming(12,8) code for error correction.
-(see Section~\ref{module:fec} for more information on error detection
+(see \S\ref{module:fec} for more information on error detection
 and correction capabilities in \liquid).
 The encoded header and payload are modulated with QPSK and encapsulated
 with a BPSK preamble.
@@ -392,7 +392,7 @@ the instance of {\tt framesync64} object when it is created.
     We will ignore this information in our program, but it can be quite
     useful for certain applications.
     For more information on the {\tt framesyncstats\_s} structure, see
-    Section~\ref{module:framing:framesyncstats_s}.
+    \S\ref{module:framing:framesyncstats_s}.
 \item[{\tt \_userdata}]
     Remember that {\tt void} pointer you passed to the {\tt create()}
     method?
@@ -552,8 +552,8 @@ The noise standard deviation and channel gain may be derived from these
 values as follows:
 %
 \begin{Verbatim}[fontsize=\small]
-    float nstd  = powf(10.0f, noise_floor*0.1f);
-    float gamma = powf(10.0f, (SNRdB+noise_floor)*0.1f);
+    float nstd  = powf(10.0f, noise_floor/20.0f);
+    float gamma = powf(10.0f, (SNRdB+noise_floor)/20.0f);
 \end{Verbatim}
 %
 Add to your program
@@ -660,7 +660,7 @@ This will ensure a unique simulation is run each time the program is
 executed.
 For a more detailed program, see {\tt examples/framesync64\_example.c}
 in the main \liquid\ directory.
-Section~\ref{module:framing} describes \liquid's framing module in
+\S\ref{module:framing} describes \liquid's framing module in
 detail.
 
 
@@ -681,7 +681,7 @@ The frame generator and synchronizer objects are denoted
 {\tt flexframegen} and
 {\tt flexframesync},
 respectively,
-and are described in Section~\ref{module:framing}.
+and are described in \S\ref{module:framing}.
 A detailed example program {\tt examples/flexframesync\_example.c}
 is available in the main \liquid\ directory.
 

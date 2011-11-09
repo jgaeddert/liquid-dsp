@@ -78,7 +78,6 @@ float randricekf_pdf(float _x,
 }
 
 // Rice-K random number cumulative distribution function
-// TODO : check this computation
 float randricekf_cdf(float _x,
                      float _K,
                      float _omega)

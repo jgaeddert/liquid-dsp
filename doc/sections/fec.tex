@@ -19,7 +19,7 @@ Certain FEC schemes are only available to \liquid\ by installing the external
 {\tt libfec} library \cite{libfec:web}, available as a free download.
 A few low-rate (and fairly low efficiency) codes are availble internally.
 
-%The {\tt packetizer} object (Section~\ref{module:framing:packetizer})
+%The {\tt packetizer} object (\S\ref{module:framing:packetizer})
 %relies on the {\tt fec} objects and {\tt crc32} functions.
 
 \subsection{Cyclic Redundancy Check (Error Detection)}
@@ -145,6 +145,134 @@ However, their simplicity in implementation and low computational complexity
 gains them a place in digital communications, particularly in software radios
 where spectral efficiency goals might be secondary to processing contraints.
 
+\subsection{{\tt g2412}, Golay(24,12) block code}
+\label{module:fec:golay}
+The Golay(24,12) code is a $1/2$-rate block code which is capable of
+correcting up to three errors and detecting up to four.
+In truth, the Golay(24,12) code is an extension of the Golay(23,12)
+``perfect'' code by adding an extra parity bit \cite[\S4.6]{Lin:2004}.
+Specifically, the generator and parity check matrices are constructed
+systematically from a $12 \times 12$ matrix $\vec{P}$ as
+%
+% NOTE : when dealing with relatively large matrices, one might get an
+%        error like 'Extra alignment tab has been changed to \cr' which
+%        indicates that you have more '&'s in a row than is allowed.
+%        For the bmatrix environment, you can increase the default by
+%        setting the counter 'MaxMatrixCols' to the desired value.
+\begin{equation}
+    \vec{P} = 
+    \begin{bmatrix}
+        1 & 0 & 0 & 0 & 1 & 1 & 1 & 0 & 1 & 1 & 0 &  1 \\
+        0 & 0 & 0 & 1 & 1 & 1 & 0 & 1 & 1 & 0 & 1 &  1 \\
+        0 & 0 & 1 & 1 & 1 & 0 & 1 & 1 & 0 & 1 & 0 &  1 \\
+        0 & 1 & 1 & 1 & 0 & 1 & 1 & 0 & 1 & 0 & 0 &  1 \\
+        1 & 1 & 1 & 0 & 1 & 1 & 0 & 1 & 0 & 0 & 0 &  1 \\
+        1 & 1 & 0 & 1 & 1 & 0 & 1 & 0 & 0 & 0 & 1 &  1 \\
+        1 & 0 & 1 & 1 & 0 & 1 & 0 & 0 & 0 & 1 & 1 &  1 \\
+        0 & 1 & 1 & 0 & 1 & 0 & 0 & 0 & 1 & 1 & 1 &  1 \\
+        1 & 1 & 0 & 1 & 0 & 0 & 0 & 1 & 1 & 1 & 0 &  1 \\
+        1 & 0 & 1 & 0 & 0 & 0 & 1 & 1 & 1 & 0 & 1 &  1 \\
+        0 & 1 & 0 & 0 & 0 & 1 & 1 & 1 & 0 & 1 & 1 &  1 \\
+        1 & 1 & 1 & 1 & 1 & 1 & 1 & 1 & 1 & 1 & 1 &  0 \\
+    \end{bmatrix}
+\end{equation}
+%
+The generator matrix is simply
+$\vec{G} = \left[ \vec{P}^T \,\,\, \vec{I}_{12} \right]$
+and the parity check matrix is
+$\vec{H} = \left[ \vec{I}_{12} \,\,\, \vec{P} \right]$.
+Notice that $\vec{P}^T = \vec{P}$; this plays an important role in
+systematic decoding \cite{Berlekamp:1972}.
+
+\subsection{SEC-DED block codes}
+\label{module:fec:secded}
+The SEC-DED$(n,k)$ codes implement a certain class of ``single error
+correction, double error detection'' block codes.
+%
+For the SEC-DED codes implemented in \liquid\, $n$ can be represented
+by an integer $m$ such that $n=2^m$ and $k = n + m + 2$.
+%
+Encoding and decoding begins with the $(n-k) \times n$ matrix $\vec{P}$
+such that
+the generator matrix is simply
+$\vec{G} = \left[ \vec{I}_{n} \,\,\, \vec{P}^T \right]$
+and the parity check matrix is
+$\vec{H} = \left[ \vec{P} \,\,\, \vec{I}_{n-k} \right]$.
+%
+Decoding can be achieved by computing the syndrome vector and then using
+a look-up table to determine the location of the error.
+If the computed syndrome cannot be associated with any particular error
+location then multiple errors must have occurred for which the code
+cannot correct.
+%
+There is currently no soft decoding implemented in \liquid\ for the
+SEC-DED codes.
+
+\subsubsection{{\tt secded2216}, SEC-DED(22,16) block code}
+\label{module:fec:secded:2216}
+%
+Encoding and decoding begins with the $6 \times 16$ matrix $\vec{P}$ as
+%
+\begin{equation*}
+    \vec{P}_{(22,16)} = 
+    \footnotesize{
+    \begin{bmatrix}
+        {\tt 1001} & {\tt 1001} & {\tt 0011} & {\tt 1100} \\
+        {\tt 0011} & {\tt 1110} & {\tt 1000} & {\tt 1010} \\
+        {\tt 1110} & {\tt 1110} & {\tt 0110} & {\tt 0000} \\
+        {\tt 1110} & {\tt 0001} & {\tt 1101} & {\tt 0001} \\
+        {\tt 0001} & {\tt 0011} & {\tt 1100} & {\tt 0111} \\
+        {\tt 0100} & {\tt 0100} & {\tt 0011} & {\tt 1111} \\
+    \end{bmatrix}
+    }
+\end{equation*}
+%
+
+\subsubsection{{\tt secded3932}, SEC-DED(39,32) block code}
+\label{module:fec:secded:3932}
+%
+Encoding and decoding begins with the $7 \times 32$ matrix $\vec{P}$ as
+%
+\begin{equation*}
+    \vec{P}_{(39,32)} = 
+    \footnotesize{
+    \begin{bmatrix}
+        {\tt 10001010} & {\tt 10000010} & {\tt 00001111} & {\tt 00011011} \\
+        {\tt 00010000} & {\tt 00011111} & {\tt 01110001} & {\tt 01100001} \\
+        {\tt 00010110} & {\tt 11110000} & {\tt 10010010} & {\tt 10100110} \\
+        {\tt 11111111} & {\tt 00000001} & {\tt 10100100} & {\tt 01000100} \\
+        {\tt 01101100} & {\tt 11111111} & {\tt 00001000} & {\tt 00001000} \\
+        {\tt 00100001} & {\tt 00100100} & {\tt 11111111} & {\tt 10010000} \\
+        {\tt 11000001} & {\tt 01001000} & {\tt 01000000} & {\tt 11111111} \\
+    \end{bmatrix}
+    }
+\end{equation*}
+%
+
+\subsubsection{{\tt secded7264}, SEC-DEC(72,64) block code}
+\label{module:fec:secded:7264}
+The SEC-DED(72,64) code is a $8/9$-rate block code.
+Encoding and decoding begins with the $8 \times 64$ matrix $\vec{P}$ as
+% \cite[p.~104]{Lin:2004} TODO : give other ref
+%
+\begin{equation*}
+    \vec{P}_{(72,64)} = 
+    \footnotesize{
+    \begin{bmatrix}
+        {\tt 11111111} & {\tt 00001111} & {\tt 00001111} & {\tt 00001100} & {\tt 01101000} & {\tt 10001000} & {\tt 10001000} & {\tt 10000000} \\
+        {\tt 11110000} & {\tt 11111111} & {\tt 00000000} & {\tt 11110011} & {\tt 01100100} & {\tt 01000100} & {\tt 01000100} & {\tt 01000000} \\
+        {\tt 00110000} & {\tt 11110000} & {\tt 11111111} & {\tt 00001111} & {\tt 00000010} & {\tt 00100010} & {\tt 00100010} & {\tt 00100110} \\
+        {\tt 11001111} & {\tt 00000000} & {\tt 11110000} & {\tt 11111111} & {\tt 00000001} & {\tt 00010001} & {\tt 00010001} & {\tt 00010110} \\
+        {\tt 01101000} & {\tt 10001000} & {\tt 10001000} & {\tt 10000000} & {\tt 11111111} & {\tt 00001111} & {\tt 00000000} & {\tt 11110011} \\
+        {\tt 01100100} & {\tt 01000100} & {\tt 01000100} & {\tt 01000000} & {\tt 11110000} & {\tt 11111111} & {\tt 00001111} & {\tt 00001100} \\
+        {\tt 00000010} & {\tt 00100010} & {\tt 00100010} & {\tt 00100110} & {\tt 11001111} & {\tt 00000000} & {\tt 11111111} & {\tt 00001111} \\
+        {\tt 00000001} & {\tt 00010001} & {\tt 00010001} & {\tt 00010110} & {\tt 00110000} & {\tt 11110000} & {\tt 11110000} & {\tt 11111111} \\
+    \end{bmatrix}
+    }
+\end{equation*}
+%
+
+
 \subsection{{\tt libfec} (convolutional and  Reed-Solomon codes)}
 \label{module:fec:libfecv}
 \liquid\ takes advantage of convolutional and Reed-Solomon codes defined in
@@ -166,7 +294,7 @@ symbols to form a 255-symbol encoded block.
 %
 {\tt libfec} is an external library that \liquid\ will leverage if
 installed, but will still compile otherwise
-(see Section~\ref{section:installation:building} for details).
+(see \S\ref{section:installation:building} for details).
 
 \subsection{Interface}
 \label{module:fec:interface}
@@ -213,7 +341,7 @@ encodes them into an output block of coded data bytes.
     Depending upon the error-correction capabilities of the scheme, the
     resulting data might have been corrupted,
     and therefore it is recommended to use either a checksum or a
-    cyclic redundancy check (section~\ref{module:fec:crc})
+    cyclic redundancy check (\S\ref{module:fec:crc})
     to validate data integrity.
 \item[{\tt fec\_get\_enc\_msg\_length(scheme,n)}]
     returns the length $k$ of the encoded message in bytes
@@ -261,13 +389,14 @@ libfec} is installed \cite{libfec:web}.
 {\tt LIQUID\_FEC\_HAMMING128}   & 2/3     &  8.82 &  8.13 & Hamming (12,8) block code\\
 {\tt LIQUID\_FEC\_GOLAY2412}    & 1/2     &  7.46 &     - & Golay (24,12) block code\\
 {\tt LIQUID\_FEC\_SECDED2216}   & 2/3     &  8.84 &     - & SEC-DED (22,16) block code\\
+{\tt LIQUID\_FEC\_SECDED3932}   & 4/5     &  8.29 &     - & SEC-DED (39,32) block code\\
 {\tt LIQUID\_FEC\_SECDED7264}   & 8/9     &  8.05 &     - & SEC-DED (72,64) block code\\\midrule
 %
 % codecs not defined internally (see http://www.ka9q.net/code/fec/)
 {\tt LIQUID\_FEC\_CONV\_V27}    & 1/2     &  6.44 & 4.29 & $K=7$, $d_{free}=10$\\
 {\tt LIQUID\_FEC\_CONV\_V29}    & 1/2     &  5.79 & 3.78 & $K=9$, $d_{free}=12$\\
 {\tt LIQUID\_FEC\_CONV\_V39}    & 1/3     &  5.41 & 3.59 & $K=9$, $d_{free}=18$\\
-{\tt LIQUID\_FEC\_CONV\_V615}   & 1/6     &  3.81 & 2.00 & $K=15$, $d_{free}<=57$ (Heller 1968)\\\midrule
+{\tt LIQUID\_FEC\_CONV\_V615}   & 1/6     &  3.81 & 2.00 & $K=15$, $d_{free}\leq57$ (Heller 1968)\\\midrule
 %
 % punctured (perforated) codes
 {\tt LIQUID\_FEC\_CONV\_V27P23} & 2/3     &  6.86 & 4.65 & $K=7$, $d_{free}=6$\\
@@ -285,7 +414,7 @@ libfec} is installed \cite{libfec:web}.
 {\tt LIQUID\_FEC\_CONV\_V29P78} & 7/8     &  7.87 & 6.03 & $K=9$, $d_{free}=4$\\\midrule
 % 
 % Reed-Solomon codes
-{\tt LIQUID\_FEC\_RS\_M8}       & 223/255 &  6.14 & 5.96 & Reed-Solomon block code, $m=8$\\\bottomrule
+{\tt LIQUID\_FEC\_RS\_M8}       & 223/255 &  6.04 &    - & Reed-Solomon block code, $m=8$\\\bottomrule
 
 
 \end{tabular*}
@@ -300,7 +429,7 @@ libfec} is installed \cite{libfec:web}.
 Soft decoding for all codes requires the log-likelihood ratio (LLR)
 output of the demodulator which can be achieved with the appropriate
 call: {\tt modem\_demodulate\_soft()}
-(see Section~\ref{module:modem:digital:soft} for details).
+(see \S\ref{module:modem:digital:soft} for details).
 The performance improvement for soft decoding varies for both the
 modulation and FEC scheme used;
 however in general one can expect to see an improvement of approximately
@@ -330,7 +459,7 @@ $N_0$ is the noise energy,
 and
 $r$ is the rate of the modulation and coding scheme pair,
 measured in bits/s/Hz.
-Figures~\ref{fig:fec:hamming_ber}, \ref{fig:fec:conv_ber}, and
+Figures~\ref{fig:fec:block_ber}, \ref{fig:fec:conv_ber}, and
 \ref{fig:fec:convpunc_ber}
 plot the bit error-rate performance of the forward
 error-correction schemes available in \liquid\ for a BPSK signal
@@ -340,7 +469,7 @@ the latter compensating for the coding rate.
 The error rates were computed by generating packets of 1024 bits,
 encoding using the appropriate FEC scheme,
 modulating the resulting bits with BPSK
-(see Section~\ref{module:modem:digital:PSK}),
+(see \S\ref{module:modem:digital:PSK}),
 adding noise, demodulating, and decoding.
 Each point was simulated with a minimum of 80,000 trials and a minimum
 of 500 bit errors.
@@ -352,49 +481,52 @@ The raw data can be found in the {\tt doc/data/ber/} subdirectory.
 \mbox{
   \subfigure[BER vs. $E_s/N_0$]
   {
-    \includegraphics[trim = 3mm 2mm 0mm 2mm, clip, width=14cm]{figures.gen/fec_ber_esn0_hamming}
-    \label{fig:fec:hamming_ber:esn0}
+    \includegraphics[trim = 3mm 2mm 0mm 2mm, clip, width=14cm]{figures.gen/fec_ber_esn0_block}
+    \label{fig:fec:block_ber:esn0}
   }
 } \quad
 \mbox{
   \subfigure[BER vs. $E_b/N_0$]
   {
-    \includegraphics[trim = 3mm 2mm 0mm 2mm, clip, width=14cm]{figures.gen/fec_ber_ebn0_hamming}
-    \label{fig:fec:hamming_ber:ebn0}
+    \includegraphics[trim = 3mm 2mm 0mm 2mm, clip, width=14cm]{figures.gen/fec_ber_ebn0_block}
+    \label{fig:fec:block_ber:ebn0}
   } \quad
 }
 % trim = left bottom right top
 \caption{Forward error-correction codec bit error rates (simulated)
-         for built-in \liquid\ codecs
+         for built-in \liquid\ block codecs
          using BPSK modulation and hard-decision decoding.}
-\label{fig:fec:hamming_ber}
+\label{fig:fec:block_ber}
 \end{figure}
 %
-Figure~\ref{fig:fec:hamming_ber} depicts the performance of the
+Figure~\ref{fig:fec:block_ber} depicts the performance of the
 available built-in \liquid\ FEC codecs, including
-{\tt LIQUID\_FEC\_HAMMING74},
-{\tt LIQUID\_FEC\_HAMMING128},
-{\tt LIQUID\_FEC\_REP3}, and
-{\tt LIQUID\_FEC\_REP5}.
-As stated previously, the repeat codes are typically inferior to any
-other encoding scheme.
-Notice that in terms of $E_b/N_0$ none of these schemes performs very
-well;
-only the Hamming codes give a slight advantage over uncoded BPSK for
-high values of $E_b/N_0$,
-and the repeat codes actually perform worse.%
-\footnote{This is a known phenomenon as simply transmitting repetitions
-          of the uncoded message will always perform worse than uncoded
-          in terms of $E_b/N_0$.
-          This is effectively equivalent to reducing the original
-          transmit power by a factor of $r$ and then transmitting the
-          same message $r$ times.
-          With reference to conserving the amount of energy per uncoded
-          bit, this type of ``encoding'' is always best when $r=1$
-          (no retransmissions).}
-Still, if the goal is not to conserve the energy per bit but improve
-data reliability through a noisy channel then these simple codecs prove
-useful.
+the Hamming, SEC-DED, and Golay codes.
+%{\tt LIQUID\_FEC\_HAMMING74},
+%{\tt LIQUID\_FEC\_HAMMING128},
+%{\tt LIQUID\_FEC\_REP3}, and
+%{\tt LIQUID\_FEC\_REP5}.
+%As stated previously, the repeat codes are typically inferior to any
+%other encoding scheme.
+Notice that in terms of $E_b/N_0$ none of these schemes performs
+extremely well,
+perhaps with the exception of the Golay(24,12) code which achieves a BER
+of $10^{-5}$ with an $E_b/N_0$ value of 7.46~dB.
+%only the Hamming codes give a slight advantage over uncoded BPSK for
+%high values of $E_b/N_0$,
+%and the repeat codes actually perform worse.%
+%\footnote{This is a known phenomenon as simply transmitting repetitions
+%          of the uncoded message will always perform worse than uncoded
+%          in terms of $E_b/N_0$.
+%          This is effectively equivalent to reducing the original
+%          transmit power by a factor of $r$ and then transmitting the
+%          same message $r$ times.
+%          With reference to conserving the amount of energy per uncoded
+%          bit, this type of ``encoding'' is always best when $r=1$
+%          (no retransmissions).}
+%Still, if the goal is not to conserve the energy per bit but improve
+%data reliability through a noisy channel then these simple codecs prove
+%useful.
 
 
 %-------------------- FIGURE: FEC BER (CONVOLUTIONAL) --------------------

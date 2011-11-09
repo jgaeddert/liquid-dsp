@@ -10,7 +10,7 @@ functionality.
 Filter design and implementation is a significant portion of radio
 engineering, and consumes a considerable portion of the baseband receiver's
 energy.
-%For linear digital modulation techniques (see section~\ref{module:modem}),
+%For linear digital modulation techniques (see \S\ref{module:modem}),
 %the matched filter is responsible for limiting the occupied bandwidth of the
 %transmitted signal while eliminating inter-symbol interference.
 %
@@ -114,7 +114,7 @@ functionality applies to {\tt decim\_rrrf} and {\tt decim\_cccf}.
     a delay of $Dm$ samples,
     an excess bandwidth factor $\beta$, and
     a fractional sample delay $\Delta t$
-    (see Section~\ref{module:filter:firdes:rnyquist} for details).
+    (see \S\ref{module:filter:firdes:rnyquist} for details).
 \item[{\tt decim\_crcf\_destroy(q)}]
     destroys a {\tt decim} object, freeing all internally-allocated
     memory.
@@ -226,7 +226,7 @@ the input $\vec{x}$ with the filter coefficients $\vec{h}$ as
 where $\vec{h} = [h(0),h(1),\ldots,h(N-1)]$
 is the filter impulse response.
 Notice that the output sample in (\ref{eqn:filter:firfilt})
-is simply the vector dot product (see Section~\ref{module:dotprod})
+is simply the vector dot product (see \S\ref{module:dotprod})
 of the filter coefficients $\vec{h}$ with the time-reversed sequence
 $\vec{x}$.
 %
@@ -273,7 +273,7 @@ functionality applies to {\tt firfilt\_rrrf} and {\tt firfilt\_cccf}.
     object.
 \item[{\tt firfilt\_crcf\_execute(q,*y)}]
     generates the output sample $y$ by computing the vector dot product
-    (see Section~\ref{module:dotprod})
+    (see \S\ref{module:dotprod})
     between the internal filter coefficients and the internal buffer.
 \item[{\tt firfilt\_crcf\_get\_length(q)}]
     returns the length of the filter.
@@ -381,7 +381,7 @@ The sum (\ref{eqn:filter:firdes:besseli_infinite_sum}) converges quickly
 due to the denominator increasing rapidly, thus only a few terms are
 necessary for sufficient approximation.
 For more approximations to $I_0(z)$ and $I_\nu(z)$,
-see Section~\ref{module:math} in the math module.
+see \S\ref{module:math} in the math module.
 %
 Kaiser gives an approximation for the value of $\alpha$ to give a
 particular sidelobe level for the window as
@@ -402,7 +402,7 @@ This approximation is provided in \liquid\ by the
 {\tt kaiser\_beta\_As()} method,
 and the length of the filter can be approximated with
 {\tt estimate\_req\_filter\_len()}
-(see section~\ref{module:filter:misc} for more detail on these methods).
+(see \S\ref{module:filter:misc} for more detail on these methods).
 
 The entire design process is provided in \liquid\ with the
 {\tt firdes\_kaiser\_window()} method which can be invoked as follows:
@@ -623,7 +623,7 @@ Transmit filter:
 \]
 %
 where $Q(z)=\frac{1}{2}\left(1 - \erf(z/\sqrt{2})\right)$
-is the ... (see Section~\ref{module:math:transcendentals}).
+is the ... (see \S\ref{module:math:transcendentals}).
 %
 Receive filter: ...
 %
@@ -792,10 +792,11 @@ useful to filtering and filter design.
 \item[{\tt iir\_group\_delay(*b,nb,*a,na,f)}]
     computes the group delay for an infinite impulse-response filter
     with $n_a$ feed-back coefficients $\vec{a}$,
-    and $n_a$ feed-forward coefficients $\vec{b}$
+    and $n_b$ feed-forward coefficients $\vec{b}$
     at a frequency $f$.
     The group delay $\tau_g$ at frequency $f$ for an infinite impulse
     response filter of order $N$ is computed as
+    % N = n_a-1 = n_b-1 ?
     %
     \begin{equation}
     \label{eqn:filter:firdes:misc:iir_group_delay}
@@ -809,7 +810,7 @@ useful to filtering and filter design.
             - N
     \end{equation}
     %
-    where $c(n) = \sum_{m=0}^{N-1}{a(m)^*b(m-n)}$
+    where $c(n) = \sum_{m=0}^{N-1}{a^*(m) b(m-n)}$
     for $n \in \{0,1,\ldots,2(N+1)\}$
     which can be described as the flipped convolution of $\vec{a}$ and
     $\vec{b}$.
@@ -939,7 +940,7 @@ objects.
     The value of $m$ must be at least 2.
     The internal filter has a length $4m+1$ coefficients and is designed
     using the {\tt firdes\_kaiser\_window()} method
-    (see Section~\ref{module:filter:firdes:window} on FIR filter design
+    (see \S\ref{module:filter:firdes:window} on FIR filter design
     using windowing functions).
 \item[{\tt firhilbf\_destroy(q)}]
     destroys the Hilbert transform object, freeing all
@@ -972,8 +973,8 @@ refer to the files
 {\tt examples/firhilb\_interp\_example.c}
 located within the main \liquid\ project directory.
 %
-{\it See also:} {\tt resamp2} (Section~\ref{module:filter:resamp2}),
-FIR filter design (Section~\ref{module:filter:firdes}).
+{\it See also:} {\tt resamp2} (\S\ref{module:filter:resamp2}),
+FIR filter design (\S\ref{module:filter:firdes}).
 
 
 
@@ -1044,7 +1045,7 @@ For a cascaded second-order section IIR filter, use
 {\tt iirfilt\_crcf\_create\_sos(B,A,n)}.
 %
 {\em See also}: {\tt iirdes} (IIR filter design) in
-Section~\ref{module:filter:iirdes}.
+\S\ref{module:filter:iirdes}.
 
 Listed below is the full interface to the {\tt iirfilt} family of
 objects.
@@ -1067,7 +1068,7 @@ functionality applies to {\tt iirfilt\_rrrf} and {\tt iirfilt\_cccf}.
     specified by $\vec{A}$.
 \item[{\tt iirfilt\_crcf\_create\_prototype(ftype,btype,format,order,fc,f0,Ap,As)}]
     creates a new IIR filter object using the prototype interface
-    described in Section~\ref{module:filter:iirdes:iirdes}.
+    described in \S\ref{module:filter:iirdes:iirdes}.
     This is the simplest method for designing an IIR filter with
     Butterworth, Chebyshev-I, Chebyshev-II, elliptic/Cauer, or Bessel
     coefficients.
@@ -1131,7 +1132,7 @@ Furthermore, if the end result is to create a filter {\em object} as
 opposed to computing the coefficients themselves, the
 {\tt iirfilt\_crcf\_create\_prototype()} method can be used to generate
 the object directly
-(see Section~\ref{module:filter:iirfilt}).
+(see \S\ref{module:filter:iirfilt}).
 
 \subsubsection{{\tt liquid\_iirdes()}, the simplified method}
 \label{module:filter:iirdes:iirdes}
@@ -1609,7 +1610,7 @@ functionality applies to {\tt interp\_rrrf} and {\tt interp\_cccf}.
 \item[{\tt interp\_crcf\_create\_prototype(M,m,As)}]
     create an {\tt interp} object using a filter prototype designed
     using the {\tt firdes\_kaiser\_window()} method
-    (see Section~\ref{module:filter:firdes})
+    (see \S\ref{module:filter:firdes})
     with a normalized cut-off frequency $1/2M$,
     a filter length of $2Mm$ coefficients,
     and a stop-band attenuation of $A_s$~dB.
@@ -1620,7 +1621,7 @@ functionality applies to {\tt interp\_rrrf} and {\tt interp\_cccf}.
     $m$ symbols of delay,
     $\beta$ excess bandwidth,
     and a fractional sampling interval $\Delta t$.
-    Section~\ref{module:filter:firdes:rnyquist}
+    \S\ref{module:filter:firdes:rnyquist}
     provides a detailed description of the available square-root Nyquist
     filter prototypes available in \liquid.
 \item[{\tt interp\_crcf\_destroy(q)}]
@@ -1658,8 +1659,8 @@ located under the main \liquid\ project directory.
 The {\tt msresamp} object implements a multi-stage arbitrary resampler
 use for efficient interpolation and decimation.
 By using a combination of half-band interpolators/decimators
-(Section~\ref{module:filter:resamp2})
-and an arbitrary resampler (Section~\ref{module:filter:resamp})
+(\S\ref{module:filter:resamp2})
+and an arbitrary resampler (\S\ref{module:filter:resamp})
 the {\tt msresamp} object can
 efficiently realize any arbitrary resampling rate desired.
 
@@ -1722,7 +1723,7 @@ located in the main \liquid\ project source directory.
 {\tt resamp2} is a half-band resampler used for efficient interpolation
 and decimation.
 The internal filter of the {\tt resamp2} object is a Kaiser-windowed $\sinc$
-(see {\tt firdes\_kaiser\_window}, section~\ref{module:filter:firdes}) with
+(see {\tt firdes\_kaiser\_window}, \S\ref{module:filter:firdes}) with
 $f_c = 1/2$.
 This makes the filter half-band, and puts the half-power (6 dB) cutoff point
 $\omega_c$ at $\pi/2$ (one quarter of the sampling frequency).
@@ -1969,7 +1970,7 @@ instability with traditional phase-locked loop filter designs.
 %
 Internally the {\tt symsync} object uses the principles of the
 {\tt resamp} object
-(arbitrary resampler, see Section~\ref{module:filter:resamp})
+(arbitrary resampler, see \S\ref{module:filter:resamp})
 for resampling the signal|actually decimating to one sample per symbol.
 Its internal control loop dynamically adjusts the rate $r$ such that
 the timing phase of the receiver is aligned with the incoming signal's
@@ -1994,7 +1995,7 @@ functionality applies to {\tt symsync\_rrrf} and {\tt symsync\_cccf}.
     prototype having $N$ filters.
 \item[{\tt symsync\_crcf\_create\_rnyquist(ftype,k,m,beta,N)}]
     creates a {\tt symsync} object from a square-root Nyquist protoype
-    of type {\tt ftype} (see Section~\ref{module:filter:firdes:rnyquist}
+    of type {\tt ftype} (see \S\ref{module:filter:firdes:rnyquist}
     for a description of available square-root Nyquist filters in
     \liquid).
     The generated filter has $k$ samples per symbol,

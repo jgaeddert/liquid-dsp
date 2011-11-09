@@ -137,6 +137,14 @@ int fec_secded2216_decode_symbol(unsigned char * _sym_enc,
     _sym_dec[0] = _sym_enc[1] ^ e_hat[1];
     _sym_dec[1] = _sym_enc[2] ^ e_hat[2];
 
+#if DEBUG_FEC_SECDED2216
+    if (syndrome_flag == 1) {
+        printf("secded2216_decode_symbol(): single error detected!\n");
+    } else if (syndrome_flag == 2) {
+        printf("secded2216_decode_symbol(): no match found (multiple errors detected)\n");
+    }
+#endif
+
     // return syndrome flag
     return syndrome_flag;
 }
@@ -184,7 +192,7 @@ int fec_secded2216_estimate_ehat(unsigned char * _sym_enc,
     return 2;
 }
 
-// create SEC-DED (72,64) codec object
+// create SEC-DED (22,16) codec object
 fec fec_secded2216_create(void * _opts)
 {
     fec q = (fec) malloc(sizeof(struct fec_s));
@@ -201,13 +209,13 @@ fec fec_secded2216_create(void * _opts)
     return q;
 }
 
-// destroy SEC-DEC (72,64) object
+// destroy SEC-DEC (22,16) object
 void fec_secded2216_destroy(fec _q)
 {
     free(_q);
 }
 
-// encode block of data using SEC-DEC (72,64) encoder
+// encode block of data using SEC-DEC (22,16) encoder
 //
 //  _q              :   encoder/decoder object
 //  _dec_msg_len    :   decoded message length (number of bytes)
@@ -265,7 +273,7 @@ void fec_secded2216_encode(fec _q,
     assert( i == _dec_msg_len);
 }
 
-// decode block of data using SEC-DEC (72,64) decoder
+// decode block of data using SEC-DEC (22,16) decoder
 //
 //  _q              :   encoder/decoder object
 //  _dec_msg_len    :   decoded message length (number of bytes)
@@ -285,10 +293,6 @@ void fec_secded2216_decode(fec _q,
     unsigned int r = _dec_msg_len % 2;
 
     for (i=0; i<_dec_msg_len-r; i+=2) {
-        // for now, simply copy output without decoding
-        _msg_dec[i+0] = _msg_enc[j+1];
-        _msg_dec[i+1] = _msg_enc[j+2];
-
         // decode straight to output
         fec_secded2216_decode_symbol(&_msg_enc[j], &_msg_dec[i]);
 

@@ -30,7 +30,7 @@ result of multi-path fading, demodulator symbol errors, and synchronizer
 instability.
 Interleavers serve to distribute grouped bit errors evenly throughout a block
 of data which aids certain forward error-correction (FEC) codes in their
-decoding process (see section~\ref{module:fec} on error-correcting codes).
+decoding process (see \S\ref{module:fec} on error-correcting codes).
 On the transmit side of the wireless link, the interleaver re-orders the bits
 after FEC encoding and before modulation.
 On the receiving side, the de-interleaver re-shuffles the bits to their
@@ -171,9 +171,9 @@ grouped into 8-bit blocks.
 Further iterations, however, result in sufficiently dispersed bits, and
 patterns between input and output indices become less evident.
 %
-The {\tt packetizer} object (Section~\ref{module:framing:packetizer}) uses the
+The {\tt packetizer} object (\S\ref{module:framing:packetizer}) uses the
 {\tt interleaver} object in conjunction to forward error-correction coding
-(Section~\ref{module:fec}) to provide a simple interface for generating
+(\S\ref{module:fec}) to provide a simple interface for generating
 protected data packets.
 A full example can be found in {\tt examples/interleaver\_example.c}.
 
@@ -197,9 +197,9 @@ the FEC schemes provided.
 The packet decoder returns the validity of the resulting CRC as well as its
 best effort of decoding the message.
 
-%The {\tt packetizer} object (Section~\ref{module:framing:packetizer})
+%The {\tt packetizer} object (\S\ref{module:framing:packetizer})
 %uses two {\tt fec} objects (an inner and outer code) in conjunction with an
-%{\tt interleaver} object (Section~\ref{module:framing:interleaver})
+%{\tt interleaver} object (\S\ref{module:framing:interleaver})
 %and a 32-bit cyclic redundancy check.
 
 The packetizer also allows for re-structuring if the user wishes to change
@@ -242,7 +242,7 @@ Listed below is the full interface to the {\tt packetizer} object.
     elements representing soft bits.
     As before, the function returns a {\tt 1} if the internal CRC passed
     and a {\tt 0} if it failed.
-    See Section~\ref{module:fec:soft} for more information on
+    See \S\ref{module:fec:soft} for more information on
     soft-decision decoding.
 \end{description}
 %
@@ -460,7 +460,7 @@ Hamming(12,8) block code, 16-bit cyclic redundancy check, and modulates the
 result with a QPSK modem.
 The header and payload are encapsulated with special phasing sequences, and
 finally the resulting symbols are interpolated using a half-rate root-raised
-cosine filter (see section~\ref{module:filter:firdes:rnyquist}).
+cosine filter (see \S\ref{module:filter:firdes:rnyquist}).
 
 The true spectral efficiency of the frame is exactly $4/5$; 64 bytes of data
 (512 bits) encoded into 640 symbols.
@@ -507,7 +507,7 @@ both frames consist of six basic parts:
     [This works] because the phasing pattern maximizes the number of symbol
     transitions [reword].
 \item[{\sf p/n sequence}]
-    is an $m$-sequence (see section~\ref{module:sequence}) exhibiting good
+    is an $m$-sequence (see \S\ref{module:sequence}) exhibiting good
     auto- and cross-correlation properties.
     %The binary sequence is modulated using BPSK so that 
     This sequence aligns the frame synchronizers to the remainder of the
@@ -528,7 +528,7 @@ both frames consist of six basic parts:
     the link.
     For the {\tt frame64} structure, the payload is fixed at 64 bytes (hence
     its moniker), encoded using the Hamming(12,8) code
-    (section~\ref{module:fec}), and modulated using QPSK.
+    (\S\ref{module:fec}), and modulated using QPSK.
     The {\tt flexframe} structure has a variable length payload and can be
     modulated using whatever schemes the user desires, however forward
     error-correction is executed externally.
@@ -621,7 +621,7 @@ members.
 \item[{\tt npfb}]
     represents the number of filters in the internal symbol timing
     recovery object's polyphase filter bank
-    (see Section~\ref{module:filter:symsync});
+    (see \S\ref{module:filter:symsync});
     however this parameter is reserved for future development and should
     not be changed.
     The default value is 32.
@@ -637,7 +637,7 @@ members.
     the default value is 0.7.
 \item[{\tt squelch\_enabled}]
     is a flag that specifies if the automatic gain control's squelch is
-    enabled (see Section~\ref{module:agc:squelch}).
+    enabled (see \S\ref{module:agc:squelch}).
     Enabling the squelch
     (setting {\tt squelch\_enabled} equal to {\tt 1})
     will ignore received signals below the {\tt squelch\_threshold}
@@ -651,24 +651,24 @@ members.
 \item[{\tt autosquelch\_enabled}]
     is a flag that specifies if the automatic gain control's
     {\em auto-squelch} is enabled (see
-    Section~\ref{module:agc:squelch:auto}).
+    \S\ref{module:agc:squelch:auto}).
     In brief, the auto-squelch attempts to track the signal's power to
     automatically squelch signals 4~dB above the noise floor.
     By default the auto-squelch is disabled.
 \item[{\tt squelch\_threshold}]
     is the squelch threshold value in dB
-    (see Section~\ref{module:agc:squelch}).
+    (see \S\ref{module:agc:squelch}).
     The default value is -35.0, but the ideal value is about 4~dB above
     the noise floor.
 \item[{\tt eq\_len}]
     specifies the length of the internal equalizer
-    (see Section~\ref{module:equalization}).
+    (see \S\ref{module:equalization}).
     By default the length is set to zero which disables equalization of
     the receiver.
 \item[{\tt eqrls\_lambda}]
     is the recursive least-squares equalizer forgetting factor
     $\lambda$
-    (see Section~\ref{module:equalization:eqrls}).
+    (see \S\ref{module:equalization:eqrls}).
     The default value is $\lambda=0.999$.
 \end{description}
 
@@ -689,11 +689,11 @@ members.
 \item[{\tt evm}]
     is an estimate of the received error vector magnitude in decibels of
     the demodulated header
-    (see Section~\ref{module:modem:digital}).
+    (see \S\ref{module:modem:digital}).
 \item[{\tt rssi}]
     is an estimate of the received signal strength in dB.
     This is derived from the synchronizer's internal automatic gain
-    control object (see Section~\ref{module:agc}).
+    control object (see \S\ref{module:agc}).
 \item[{\tt framesyms}]
     a pointer to an array of the frame symbols (e.g. QPSK) at complex
     baseband before demodulation.
@@ -705,19 +705,19 @@ members.
 \item[{\tt num\_framesyms}]
     the length of the {\tt framesyms} pointer array.
 \item[{\tt mod\_scheme}]
-    the modulation scheme of the frame (see Section~\ref{module:modem}).
+    the modulation scheme of the frame (see \S\ref{module:modem}).
 \item[{\tt mod\_bps}]
     the modulation depth (bits per symbol) of the modulation scheme used
     in the frame.
 \item[{\tt check}]
     the error-detection scheme (e.g. cyclic redundancy check)
-    used in the payload of the frame (see Section~\ref{module:fec}).
+    used in the payload of the frame (see \S\ref{module:fec}).
 \item[{\tt fec0}]
     the inner forward error-correction code used in the payload
-    (see Section~\ref{module:fec}).
+    (see \S\ref{module:fec}).
 \item[{\tt fec1}]
     the outer forward error-correction code used in the payload
-    (see Section~\ref{module:fec}).
+    (see \S\ref{module:fec}).
 \end{description}
 %
 A simple way to display the information in an instance of
@@ -733,8 +733,9 @@ method.
 
 The {\tt ofdmflexframe} family of objects (generator and synchronizer)
 realize a simple way to load data onto an OFDM physical layer
-system. OFDM has several benefits over traditional 'narrowband'
-communications systems.
+system. OFDM has several benefits over traditional ``narrowband''
+communications systems such as the {\tt flexframe} objects
+(\S\ref{module:framing:frames}).
 These objects allow the user to abstractly specify the number of
 subcarriers, their assignment (null/pilot/data), forward
 error-correction and modulation scheme.
@@ -742,13 +743,39 @@ Furthermore, the framing structure includes a provision for a brief
 user-defined header which can be used for source/destination
 address, packet identifier, etc.
 
+Sending data in parallel channels has some distinct advantages over
+serial transmission:
+equalization in the presence of multi-path channel environments is much
+simpler,
+inter-symbol interference can be eliminated with a properly-chosen
+cyclic prefix length,
+and capacity can be increased by modulating data appropriately on
+subcarriers relative to their signal-to-noise ratio.
+Multi-carrier systems, however, are significantly more sensitive to
+carrier frequency offsets and doppler shifts, leading to inter-carrier
+interference.
+OFDM can therefore be more difficult to synchronize and maintain data
+fidelity in mobile environments.
+To assist in synchronization, the transmitter inserts special preamble
+symbols at the beginning of each frame which assist the syncrhonizer in
+estimating the carrier frequency offset,
+recovering the symbol timing, and
+compensating for effects of the channel.
+
+This section gives specifics for the OFDM flexible framing strucutre and
+is really intended only as a reference;
+for a tutorial on how to use the generator/synchronizer objects without
+getting into detail, please refer to the {\em OFDM Framing} tutorial
+(\S\ref{tutorial:ofdmflexframe}).
+
 \subsubsection{Operational description}
 \label{module:framing:ofdmflexframe:operation}
 Like the {\tt frame64} and {\tt flexframe} structures,
 the {\tt ofdmflexframe} structure consists of three main components:
 the preamble, the header, and the payload.
-    
-\paragraph{Preamble}
+%    
+\begin{description}
+\item[Preamble]
     The preamble consists of two types of phasing symbols: the \Ss\ and
     \Sl\ sequences.
     The \Ss\ symbols are necessary for coarse carrier frequency
@@ -757,23 +784,24 @@ the preamble, the header, and the payload.
     generates multiple \Ss\ symbols (minimally 2, but usually 3 or more)
     and just a single \Sl\ symbol. This aligns the receiver's timing to
     that of the transmitter, signalling the start of the header.
-
-\paragraph{Header}
+\item[Header]
     The header consists of one or more OFDM symbols; the exact number of
     OFDM symbols depends on the number of subcarriers allocated and the
     assignment of these subcarriers (null/pilot/data). The header
     carries exactly 14 bytes of information, 6 of which are used
-    internally and the remaining 8 are user-defined. The internal data
-    signal the receiver of the modulation, forward error-correction, and
+    internally and the remaining 8 are user-defined.
+    The internal header data provide framing information to the receiver
+    including the modulation, forward error-correction, and
     data validation schemes of the payload as well as its length in
     bytes. These data are encoded with a forward error-correction scheme
     and modulated onto the first several OFDM symbols.
-
-\paragraph{Payload}
+    % currently BPSK with half-rate Golay(24,12) code
+\item[Payload]
     The payload consists of zero or more OFDM symbols. Like the header,
     the exact number of OFDM symbols depends on the number of
     subcarriers allocated and the assignment of these subcarriers.
-
+\end{description}
+%
 % 
 % FIGURE: ofdmflexframe structure
 %
@@ -787,8 +815,68 @@ the preamble, the header, and the payload.
 \label{fig:module:framing:ofdmflexframe_structure}
 \end{figure}
 %
-The full packet is assembled according to
+The full frame is assembled according to
 Figure~\ref{fig:module:framing:ofdmflexframe_structure}.
+Notice that the \Ss\ symbols do not contain a cyclic prefix;
+this is to ensure continuity between contiguous \Ss\ symbols and is
+necessary to eliminate inter-symbol interference.
+The single \Sl\ symbol at the end of the preamble is necessary for
+timing alignment and an initial equalizer estimate.
+Once the frame has been detected, the header is received and decoded.
+The number of symbols in the header depends on the number of data
+subcarriers allocated to each OFDM symbol.
+The header includes the modulation, coding schemes, and length of the
+remainder of the frame.
+If the synchronizer successfully decodes the header, it will
+automatically reconfigure itself to decode the payload.
+
+\subsubsection{Subcarrier Allocation}
+\label{module:framing:ofdmflexframe:subcarrier_allocation}
+
+Subcarriers may be arbitrarily allocated into three types:
+% FIXME: finish description
+\begin{itemize}
+\item {\tt OFDMFRAME\_SCTYPE\_NULL}:
+      The {\em null} option disables this subcarrier from transmission.
+      This is useful for
+      spectral notching and
+      guard bands
+      (see Figure~\ref{fig:module:framing:ofdmflexframe_spectrum}).
+      Guard bands are necessary for interpolation of the signal before
+      transmission;
+\item {\tt OFDMFRAME\_SCTYPE\_PILOT}:
+      Pilot subcarriers are used to estimate channel impairments
+      including carrier phase/frequency offsets as well as timing
+      offsets.
+      Pilot subcarriers are necessary for coherent demodulation in OFDM
+      systems.
+      The {\tt ofdmflexframe} structure requires that at least two
+      subcarriers be designated as pilots.
+      Performance improves if the pilots are evenly spaced and separated
+      as much as possible
+      (see Figure~\ref{fig:module:framing:ofdmflexframe_spectrum}),
+      but the exact location of pilots is not restricted;
+\item {\tt OFDMFRAME\_SCTYPE\_DATA}:
+      Data subcarriers are reserved for carrying the payload of the
+      frame, modulated with the desired scheme.
+      The spectral efficiency of the transmission improves with more
+      data subcarriers.
+      The {\tt ofdmflexframe} structure requires that at least one
+      subcarrier be designated for data.
+\end{itemize}
+%
+Typically the subcarriers at the band edges are disabled to avoid
+aliasing during upconversion/interpolation.
+%
+The elements of $\vec{p}$ are given in the same order as the FFT input
+(that is, $p_0$ holds the DC subcarrier and $p_{M/2}$ holds the
+subcarrier at half the sampling frequency).
+%
+%The {\tt ofdmflexframegenprops\_init\_default(*props)} interface
+The {\tt ofdmframe\_init\_default\_sctype(M,*p)} interface
+initializes the subcarrier allocation array $\vec{p}$
+for a system with $M$ channels that is expected to perform relatively
+well under a variety of channel conditions.
 % 
 % FIGURE: ofdmflexframe spectrum
 %
@@ -802,15 +890,47 @@ Figure~\ref{fig:module:framing:ofdmflexframe_structure}.
 \label{fig:module:framing:ofdmflexframe_spectrum}
 \end{figure}
 %
-Figure~\ref{fig:module:framing:ofdmflexframe_spectrum} depicts the
-spectral response of the {\tt ofdmflexframe} structure.
+Figure~\ref{fig:module:framing:ofdmflexframe_spectrum} depicts an
+example spectral response of the {\tt ofdmflexframe} structure
+with evenly-spaced pilot subcarriers, guard bands, and a spectral notch
+in the lower band.
 %Pilot subcarriers may be ...
+%As an example, the following subcarrier allocation for an OFDM frame
+%with $M=64$ subcarriers would give the spectrum shown in
+%Figure~\ref{fig:module:framing:ofdmflexframe_spectrum} where
+%``{\tt .}'' denotes a {\tt NULL}  subcarrier,
+%``{\tt |}'' denotes a {\tt PILOT} subcarrier, and
+%``{\tt +}'' denotes a {\tt DATA}  subcarrier:
+%\begin{Verbatim}[fontsize=\small]
+%    .+|+++|+++|+++|+++|+++|+++|+.........+|+++|+++|+.........+|+++|+
+%\end{Verbatim}
+%%
+%The spectrum after the FFT shift:
+%%
+%\begin{Verbatim}[fontsize=\small]
+%    .....+|+++|+++|+.........+|+++|+.+|+++|+++|+++|+++|+++|+++|+....
+%\end{Verbatim}
+
+
+\subsubsection{Pilot Subcarriers}
+\label{module:framing:ofdmflexframe:pilots}
+Pilot subcarriers are used to assist the synchronizer in tracking to
+slowly-varying channel impairments such as
+moderate to low carrier frequency/phase offsets
+and slowly-varying timing frequency offsets
+(residual error from initial estimation).
+The pilots themselves are BPSK symbols with a pseudo-random phase
+generated by a linear feedback shift register. % generator poly?
+To improve the peak-to-average power ratio, the pilots are different not
+only from one symbol to another, but within each OFDM symbol.
+
+
 
 \subsubsection{{\tt ofdmflexframegen}}
 \label{module:framing:ofdmflexframe:gen}
 %
-The {\tt ofdmflexframegen} is responsible for assembling raw data bytes
-into continguous OFDM time-domain symbols which the
+The {\tt ofdmflexframegen} object is responsible for assembling raw data
+bytes into continguous OFDM time-domain symbols which the
 {\tt ofdmflexframesync} object can receive.
 The life cycle of the generator is as follows:
 %
@@ -827,41 +947,11 @@ The life cycle of the generator is as follows:
 \item destroy the frame generator object.
 \end{enumerate}
 %
-The subcarrier allocation vector consists of three possible values:
-% FIXME: finish description
-\begin{itemize}
-\item {\tt OFDMFRAME\_SCTYPE\_NULL}:
-      The {\em null} option disables this subcarrier from transmission.
-      This is useful for
-      spectral notching and
-      guard bands
-      (see Figure~\ref{fig:module:framing:ofdmflexframe_spectrum}).
-      Guard bands are necessary for interpolation of the signal before
-      transmission.
-\item {\tt OFDMFRAME\_SCTYPE\_PILOT}:
-      Pilot subcarriers are used to estimate channel impairments
-      including carrier phase/frequency offsets as well as timing
-      offsets.
-      Pilot subcarriers are necessary for coherent demodulation in OFDM
-      systems.
-      The {\tt ofdmflexframe} structure requires that at least two
-      subcarriers be designated as pilots.
-      Performance improves if the pilots are evenly spaced and separated
-      as much as possible
-      (see Figure~\ref{fig:module:framing:ofdmflexframe_spectrum}).
-\item {\tt OFDMFRAME\_SCTYPE\_DATA}:
-      Data subcarriers are reserved for carrying the payload of the
-      frame, modulated with the desired scheme.
-      The spectral efficiency of the transmission improves with more
-      data subcarriers.
-\end{itemize}
+This listing gives a basic demonstration to the interface to the
+{\tt ofdmflexframegen} object:
 %
-The {\tt ofdmflexframegenprops\_init\_default(M,*p)} interface initializes
-the subcarrier allocation for a system with $M$ channels
-that is expected to perform relatively well under a variety of channel
-conditions.
-
-
+\input{listings/ofdmflexframegen.example.c.tex}
+%
 Listed below is the full interface to the {\tt ofdmflexframegen}
 object.
 %
@@ -903,9 +993,9 @@ object.
     returns the number of OFDM symbols (not samples) in the frame,
     including the preamble, header, and payload.
 %
-\item[{\tt ofdmflexframegen\_assemble(q,*header,*payload)}]
+\item[{\tt ofdmflexframegen\_assemble(q,*header,*payload,n)}]
     assembles the OFDM frame, internal to the {\tt ofdmflexframegen}
-    object.
+    object; with an 8-byte header, and an $n$-byte payload.
     Unlike the {\tt flexframegen} object, samples are not written to a
     buffer at this point, but are generated with the
     {\tt writesymbol()} method, below.
@@ -919,11 +1009,164 @@ object.
     Therefore the buffer only needs to hold at most $M+c$ samples.
 %
 \end{description}
+
+
+\subsubsection{{\tt ofdmflexframesync}}
+\label{module:framing:ofdmflexframe:sync}
+%
+The {\tt ofdmflexframesync} object is responsible for detecting frames
+generated by the {\tt ofdmflexframesync} object, decoding the header and
+payloads, and passing the results back to the user by way of a callback
+function.
 %
 This listing gives a basic demonstration to the interface to the
 {\tt ofdmflexframegen} object:
 %
-\input{listings/ofdmflexframegen.example.c.tex}
+\input{listings/ofdmflexframesync.example.c.tex}
+%
+Notice that the input buffer can be any length, regardless of the
+synchronizer object's properties.
+Listed below is the full interface to the {\tt ofdmflexframesync}
+object.
+%
+\begin{description}
+%
+\item[{\tt ofdmflexframesync\_create(M,c,*p,*callback,*userdata)}]
+    creates and returns an {\tt ofdmflexframegen} object
+    with $M$ subcarriers ($M$ must be an even integer),
+    a cyclic prefix length of $c$ samples,
+    a subcarrier allocation determined by $\vec{p}$,
+    a user-defined callback function (see description, below)
+    and user-defined data pointer.
+%
+\item[{\tt ofdmflexframesync\_destroy(q)}]
+    destroys an {\tt ofdmflexframesync} object, freeing all
+    internally-allocated memory.
+%
+\item[{\tt ofdmflexframesync\_print(q)}]
+    prints the internal properties of the {\tt ofdmflexframesync}
+    object to the standard output.
+%
+\item[{\tt ofdmflexframesync\_reset(q)}]
+    resets the internal state of the {\tt ofdmflexframesync} object.
+%
+\item[{\tt ofdmflexframesync\_execute(q,*buffer,n)}]
+    runs the synchronizer on an input buffer with $n$ samples of type
+    {\tt float complex}.
+    Whenever a frame is found and decoded, the synchronizer will invoke
+    the callback function given when created.
+    The input buffer can be any length, irrespective of any of the
+    properites of the frame.
+%
+\item[{\tt ofdmflexframesync\_get\_rssi(q)}]
+    queries the frame synchronizer for the received signal strength of
+    the input (given in decibels).
+%
+\end{description}
+%
+%
+%
+The callback function for the {\tt ofdmflexframesync} object has seven
+arguments and looks like this:
+%
+\begin{Verbatim}[fontsize=\small]
+    int ofdmflexframesync_callback(unsigned char *  _header,
+                                   int              _header_valid,
+                                   unsigned char *  _payload,
+                                   unsigned int     _payload_len,
+                                   int              _payload_valid,
+                                   framesyncstats_s _stats,
+                                   void *           _userdata);
+\end{Verbatim}
+%
+The callback is typically defined to be {\tt static} and is passed to
+the instance of {\tt ofdmflexframesync} object when it is created.
+The return value can be ignored for now and is reserved for future
+development.
+Here is a brief description of the callback function's arguments:
+%
+\begin{description}
+\item[{\tt \_header}]
+    is a volatile pointer to the 8 bytes of decoded user-defined header
+    data from the frame generator.
+\item[{\tt \_header\_valid}]
+    is simply a flag to indicate if the header passed its cyclic
+    redundancy check.
+    If the check fails then the header data have been corrupted beyond
+    the point that internal error correction can recover;
+    in this situation the payload cannot be recovered.
+\item[{\tt \_payload}]
+    is a volatile pointer to the decoded payload data.
+    When the header cannot be decoded ({\tt \_header\_valid == 0})
+    this value is set to {\tt NULL}.
+\item[{\tt \_payload\_len}]
+    is the length (number of bytes) of the payload array.
+    When the header cannot be decoded ({\tt \_header\_valid == 0})
+    this value is set to {\tt 0}.
+\item[{\tt \_payload\_valid}]
+    is simply a flag to indicate if the payload passed its cyclic
+    redundancy check
+    (``{\tt 0}'' means invalid, ``{\tt 1}'' means valid).
+    As with the header,
+    if this flag is zero then the payload almost certainly contains
+    errors.
+\item[{\tt \_stats}]
+    is a synchronizer statistics construct
+    ({\tt framesyncstats\_s})
+    that indicates some useful PHY information to the user
+    (see \S\ref{module:framing:framesyncstats_s}).
+\item[{\tt \_userdata}]
+    is the {\tt void} pointer given to the
+    {\tt ofdmflexframesync\_create()} method.
+    Typically this pointer is a vehicle for getting the header and
+    payload data (as well as any other pertinent information)
+    back to your main program.
+\end{description}
 %
 
+\subsubsection{Performance}
+\label{module:framing:ofdmflexframe:performance}
+%
 
+% 
+% FIGURE: ofdmflexframe performance
+%
+\begin{figure}
+\centering
+  \includegraphics[trim = 0mm 6mm 0mm 8mm, clip, width=13cm]{figures.gen/ofdmflexframesync_performance}
+\caption{Performance of the {\tt ofdmflexframe} structure with
+         $M=64$ subcarriers (default allocation).}
+\label{fig:module:framing:ofdmflexframe_performance}
+\end{figure}
+%
+Figure~\ref{fig:module:framing:ofdmflexframe_performance} shows the
+performance characterisitics of the {\tt ofdmflexframe} structure for
+$M=64$ subcarriers with default subcarrier allocation.
+The frame can be detected with a 90\% probability with an SNR level of
+just -0.4~dB.
+Furthermore, the probability of detecting the frame and decoding the
+header reaches 90\% at just 2.6~dB SNR.
+Decoding the remainder of the frame depends on many factors such as the
+modulation scheme and forward error-correction schemes applied.
+%
+Here are a few general guidelines for good performance:
+\begin{enumerate}
+\item Equalization improves with more subcarriers, but the carrier
+      frequency offset requirements have tigher restrictions;
+\item While the interface supports nearly any number of subcarriers
+      desired, synchronization greatly improves with at least $M=32$
+      active (pilot/data) subcarriers;
+\item More pilot subcarriers can improve performance in low SNR 
+      environments at the penalty of reduced throughput
+      (fewer subcarriers are allocated for data);
+\item Increasing the cyclic prefix is really only necessary for high
+      multi-path environment with a large delay spread.
+      Capacity can be increased for most short-range applications by
+      reducing the cyclic prefix to 4 samples, regardless of the number
+      of subcarriers;
+\item Most hardware have highly non-linear RF front ends (mixers,
+      amplifiers, etc.) which require a transmit power backoff by a few
+      dB to ensure linearity, particularly when many subcarriers are
+      used.
+\end{enumerate}
+%

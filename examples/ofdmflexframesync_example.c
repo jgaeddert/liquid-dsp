@@ -127,26 +127,24 @@ int main(int argc, char*argv[])
     ofdmflexframegenprops_s fgprops;
     ofdmflexframegenprops_init_default(&fgprops);
     fgprops.num_symbols_S0  = num_symbols_S0;
-    fgprops.payload_len     = payload_len;
     fgprops.check           = check;
     fgprops.fec0            = fec0;
     fgprops.fec1            = fec1;
     fgprops.mod_scheme      = ms;
     fgprops.mod_bps         = bps;
     ofdmflexframegen fg = ofdmflexframegen_create(M, cp_len, p, &fgprops);
-    ofdmflexframegen_print(fg);
 
     // create frame synchronizer
     ofdmflexframesync fs = ofdmflexframesync_create(M, cp_len, p, callback, (void*)payload);
-    ofdmflexframesync_print(fs);
-
 
     // initialize header/payload and assemble frame
     for (i=0; i<8; i++)
         header[i] = i & 0xff;
     for (i=0; i<payload_len; i++)
         payload[i] = rand() & 0xff;
-    ofdmflexframegen_assemble(fg, header, payload);
+    ofdmflexframegen_assemble(fg, header, payload, payload_len);
+    ofdmflexframegen_print(fg);
+    ofdmflexframesync_print(fs);
 
     // initialize frame synchronizer with noise
     for (i=0; i<1000; i++) {

@@ -60,8 +60,8 @@ int main() {
     framegen64_execute(fg, header, payload, y);
 
     // add channel impairments (attenuation, carrier offset, noise)
-    float nstd  = powf(10.0f, noise_floor*0.1f);        // noise std. dev.
-    float gamma = powf(10.0f, (SNRdB+noise_floor)*0.1f);// channel gain
+    float nstd  = powf(10.0f, noise_floor/20.0f);        // noise std. dev.
+    float gamma = powf(10.0f, (SNRdB+noise_floor)/20.0f);// channel gain
     for (i=0; i<1280; i++) {
         y[i] *= gamma;
         y[i] *= cexpf(_Complex_I*(phase_offset + i*frequency_offset));

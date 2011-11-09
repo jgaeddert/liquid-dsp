@@ -121,7 +121,8 @@ src/cvsd/src/cvsd.o : %.o : %.c $(headers)
 audio_autotests :=						\
 	src/audio/tests/cvsd_autotest.c				\
 
-audio_benchmarks :=
+audio_benchmarks :=						\
+	src/audio/bench/cvsd_benchmark.c			\
 
 
 # 
@@ -220,6 +221,7 @@ fec_objects :=							\
 	src/fec/src/fec_rep5.o					\
 	src/fec/src/fec_rs.o					\
 	src/fec/src/fec_secded2216.o				\
+	src/fec/src/fec_secded3932.o				\
 	src/fec/src/fec_secded7264.o				\
 	src/fec/gentab/reverse_byte.o				\
 	src/fec/src/smatrix.o					\
@@ -256,6 +258,7 @@ fec_autotests :=						\
 	src/fec/tests/fec_rep3_autotest.c			\
 	src/fec/tests/fec_rep5_autotest.c			\
 	src/fec/tests/fec_secded2216_autotest.c			\
+	src/fec/tests/fec_secded3932_autotest.c			\
 	src/fec/tests/fec_secded7264_autotest.c			\
 	src/fec/tests/smatrix_autotest.c			\
 
@@ -655,7 +658,6 @@ modem_benchmarks :=						\
 multicarrier_objects :=						\
 	src/multicarrier/src/firpfbch_crcf.o			\
 	src/multicarrier/src/firpfbch_cccf.o			\
-	src/multicarrier/src/mdctch.o				\
 	src/multicarrier/src/ofdmframe.common.o			\
 	src/multicarrier/src/ofdmframegen.o			\
 	src/multicarrier/src/ofdmframesync.o			\
@@ -1273,19 +1275,23 @@ sandbox_programs =						\
 	sandbox/fec_golay2412_test				\
 	sandbox/fec_golay_test					\
 	sandbox/fec_hamming3126_example				\
+	sandbox/fec_hamming128_test				\
 	sandbox/fec_hamming128_gentab				\
 	sandbox/fec_hamming128_example				\
 	sandbox/fec_hamming74_gentab				\
 	sandbox/fec_hamming84_gentab				\
 	sandbox/fec_hamming_test				\
+	sandbox/fec_ldpc_test					\
 	sandbox/fec_rep3_test					\
 	sandbox/fec_rep5_test					\
 	sandbox/fec_secded2216_test				\
+	sandbox/fec_secded3932_test				\
 	sandbox/fec_secded7264_test				\
 	sandbox/fec_spc2216_test				\
+	sandbox/fec_secded_punctured_test			\
 	sandbox/fecsoft_conv_test				\
-	sandbox/fecsoft_golay_test				\
 	sandbox/fecsoft_hamming128_gentab			\
+	sandbox/fecsoft_ldpc_test				\
 	sandbox/fec_sumproduct_test				\
 	sandbox/fft_r2r_test					\
 	sandbox/firdes_energy_test				\
@@ -1298,8 +1304,6 @@ sandbox_programs =						\
 	sandbox/gmskmodem_test					\
 	sandbox/householder_test				\
 	sandbox/iirdes_example					\
-	sandbox/ldpc_genmatrix_test				\
-	sandbox/ldpc_test					\
 	sandbox/levinson_test					\
 	sandbox/matched_filter_test				\
 	sandbox/matched_filter_cfo_test				\

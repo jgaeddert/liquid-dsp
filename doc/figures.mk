@@ -42,8 +42,8 @@ local_pdffiles :=					\
 	figures.gen/eqlms_cccf_blind_freq.pdf		\
 	figures.gen/eqlms_cccf_blind_time.pdf		\
 							\
-	figures.gen/fec_ber_esn0_hamming.pdf		\
-	figures.gen/fec_ber_ebn0_hamming.pdf		\
+	figures.gen/fec_ber_esn0_block.pdf		\
+	figures.gen/fec_ber_ebn0_block.pdf		\
 	figures.gen/fec_ber_esn0_conv.pdf		\
 	figures.gen/fec_ber_ebn0_conv.pdf		\
 	figures.gen/fec_ber_esn0_convpunc.pdf		\
@@ -306,12 +306,13 @@ figures.gen/eqlms_cccf_blind_time.gnu : src/eqlms_cccf_blind
 #
 data_ber_fec_hard :=				\
 	data/ber-fec-hard/ber_none.dat		\
-	data/ber-fec-hard/ber_r3.dat		\
-	data/ber-fec-hard/ber_r5.dat		\
+	data/ber-fec-hard/ber_rep3.dat		\
+	data/ber-fec-hard/ber_rep5.dat		\
 	data/ber-fec-hard/ber_h128.dat		\
 	data/ber-fec-hard/ber_h74.dat		\
 	data/ber-fec-hard/ber_h84.dat		\
 	data/ber-fec-hard/ber_secded2216.dat	\
+	data/ber-fec-hard/ber_secded3932.dat	\
 	data/ber-fec-hard/ber_secded7264.dat	\
 	data/ber-fec-hard/ber_g2412.dat		\
 	data/ber-fec-hard/ber_v27.dat		\
@@ -327,16 +328,17 @@ data_ber_fec_hard :=				\
 	data/ber-fec-hard/ber_rs8.dat		\
 
 # re-simulate BER data
-ber-fec-hard-opts      := -b1e-5 -e 500 -n80000 -t200000000 -s-9 -d0.5 -x40
+ber-fec-hard-opts      := -b1e-5 -e 800 -n500000 -t200000000 -s-9 -d0.5 -x40
 resimulate-data-fec-ber-hard : src/simulate_ber
-	@echo "re-simulating ber data..."
+	@echo "re-simulating ber data (hard decision decoding)..."
 	./src/simulate_ber -H -c none   $(ber-fec-hard-opts) -o data/ber-fec-hard/ber_none.dat
-	./src/simulate_ber -H -c r3     $(ber-fec-hard-opts) -o data/ber-fec-hard/ber_r3.dat
-	./src/simulate_ber -H -c r5     $(ber-fec-hard-opts) -o data/ber-fec-hard/ber_r5.dat
+	./src/simulate_ber -H -c rep3   $(ber-fec-hard-opts) -o data/ber-fec-hard/ber_rep3.dat
+	./src/simulate_ber -H -c rep5   $(ber-fec-hard-opts) -o data/ber-fec-hard/ber_rep5.dat
 	./src/simulate_ber -H -c h128   $(ber-fec-hard-opts) -o data/ber-fec-hard/ber_h128.dat
 	./src/simulate_ber -H -c h84    $(ber-fec-hard-opts) -o data/ber-fec-hard/ber_h84.dat
 	./src/simulate_ber -H -c h74    $(ber-fec-hard-opts) -o data/ber-fec-hard/ber_h74.dat
 	./src/simulate_ber -H -c secded2216 $(ber-fec-hard-opts) -o data/ber-fec-hard/ber_secded2216.dat
+	./src/simulate_ber -H -c secded3932 $(ber-fec-hard-opts) -o data/ber-fec-hard/ber_secded3932.dat
 	./src/simulate_ber -H -c secded7264 $(ber-fec-hard-opts) -o data/ber-fec-hard/ber_secded7264.dat
 	./src/simulate_ber -H -c g2412  $(ber-fec-hard-opts) -o data/ber-fec-hard/ber_g2412.dat
 	./src/simulate_ber -H -c v27    $(ber-fec-hard-opts) -o data/ber-fec-hard/ber_v27.dat
@@ -357,11 +359,15 @@ resimulate-data-fec-ber-hard : src/simulate_ber
 #
 data_ber_fec_soft :=				\
 	data/ber-fec-soft/ber_none.dat		\
-	data/ber-fec-soft/ber_r3.dat		\
-	data/ber-fec-soft/ber_r5.dat		\
+	data/ber-fec-soft/ber_rep3.dat		\
+	data/ber-fec-soft/ber_rep5.dat		\
 	data/ber-fec-soft/ber_h128.dat		\
 	data/ber-fec-soft/ber_h74.dat		\
 	data/ber-fec-soft/ber_h84.dat		\
+	data/ber-fec-soft/ber_secded2216.dat	\
+	data/ber-fec-soft/ber_secded3932.dat	\
+	data/ber-fec-soft/ber_secded7264.dat	\
+	data/ber-fec-soft/ber_g2412.dat		\
 	data/ber-fec-soft/ber_v27.dat		\
 	data/ber-fec-soft/ber_v29.dat		\
 	data/ber-fec-soft/ber_v39.dat		\
@@ -375,14 +381,19 @@ data_ber_fec_soft :=				\
 	data/ber-fec-soft/ber_rs8.dat		\
 
 # re-simulate BER data
-ber-fec-soft-opts      := -b1e-5 -e 500 -n80000 -t200000000 -s-9 -d0.5 -x40
+ber-fec-soft-opts      := -b1e-8 -e 800 -n500000 -t200000000 -s-9 -d0.5 -x40
 resimulate-data-fec-ber-soft : src/simulate_ber
+	@echo "re-simulating ber data (soft decision decoding)..."
 	./src/simulate_ber -S -c none   $(ber-fec-soft-opts) -o data/ber-fec-soft/ber_none.dat
-	./src/simulate_ber -S -c r3     $(ber-fec-soft-opts) -o data/ber-fec-soft/ber_r3.dat
-	./src/simulate_ber -S -c r5     $(ber-fec-soft-opts) -o data/ber-fec-soft/ber_r5.dat
+	./src/simulate_ber -S -c rep3   $(ber-fec-soft-opts) -o data/ber-fec-soft/ber_rep3.dat
+	./src/simulate_ber -S -c rep5   $(ber-fec-soft-opts) -o data/ber-fec-soft/ber_rep5.dat
 	./src/simulate_ber -S -c h128   $(ber-fec-soft-opts) -o data/ber-fec-soft/ber_h128.dat
 	./src/simulate_ber -S -c h84    $(ber-fec-soft-opts) -o data/ber-fec-soft/ber_h84.dat
 	./src/simulate_ber -S -c h74    $(ber-fec-soft-opts) -o data/ber-fec-soft/ber_h74.dat
+	./src/simulate_ber -H -c secded2216 $(ber-fec-soft-opts) -o data/ber-fec-soft/ber_secded2216.dat
+	./src/simulate_ber -H -c secded3932 $(ber-fec-soft-opts) -o data/ber-fec-soft/ber_secded3932.dat
+	./src/simulate_ber -H -c secded7264 $(ber-fec-soft-opts) -o data/ber-fec-soft/ber_secded7264.dat
+	./src/simulate_ber -H -c g2412  $(ber-fec-soft-opts) -o data/ber-fec-soft/ber_g2412.dat
 	./src/simulate_ber -S -c v27    $(ber-fec-soft-opts) -o data/ber-fec-soft/ber_v27.dat
 	./src/simulate_ber -S -c v29    $(ber-fec-soft-opts) -o data/ber-fec-soft/ber_v29.dat
 	./src/simulate_ber -S -c v39    $(ber-fec-soft-opts) -o data/ber-fec-soft/ber_v39.dat
@@ -396,8 +407,8 @@ resimulate-data-fec-ber-soft : src/simulate_ber
 	./src/simulate_ber -S -c rs8    $(ber-fec-soft-opts) -o data/ber-fec-soft/ber_rs8.dat
 
 # copy gnuplot file
-figures.gen/fec_ber_esn0_hamming.gnu \
-figures.gen/fec_ber_ebn0_hamming.gnu \
+figures.gen/fec_ber_esn0_block.gnu \
+figures.gen/fec_ber_ebn0_block.gnu \
 figures.gen/fec_ber_esn0_conv.gnu \
 figures.gen/fec_ber_ebn0_conv.gnu \
 figures.gen/fec_ber_esn0_convpunc.gnu \
@@ -405,8 +416,8 @@ figures.gen/fec_ber_ebn0_convpunc.gnu : figures.gen/%.gnu : data/%.gnu
 	cp $< $@
 
 # add ber simulation data files as dependencies
-figures.gen/fec_ber_esn0_hamming.eps \
-figures.gen/fec_ber_ebn0_hamming.eps \
+figures.gen/fec_ber_esn0_block.eps \
+figures.gen/fec_ber_ebn0_block.eps \
 figures.gen/fec_ber_esn0_conv.eps \
 figures.gen/fec_ber_ebn0_conv.eps \
 figures.gen/fec_ber_esn0_convpunc.eps \
@@ -573,6 +584,8 @@ figures.gen/fft_example_time.gnu figures.gen/fft_example_freq.gnu : src/fft_exam
 figures.gen/ofdmflexframesync_performance.dat \
 figures.gen/ofdmflexframesync_performance.gnu : figures.gen/% : data/ofdmflexframe/%
 	cp $< $@
+
+figures.gen/ofdmflexframesync_performance.eps : %.eps : %.gnu %.dat
 
 ##
 ## MODULE : interleaver

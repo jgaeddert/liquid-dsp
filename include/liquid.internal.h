@@ -442,14 +442,65 @@ void fec_secded2216_decode(fec _q,
                            unsigned char * _msg_enc,
                            unsigned char * _msg_dec);
 
+// SEC-DED (39,32)
+
+// compute parity on 32-bit input
+unsigned char fec_secded3932_compute_parity(unsigned char * _m);
+
+// compute syndrome on 39-bit input
+unsigned char fec_secded3932_compute_syndrome(unsigned char * _v);
+
+// encode symbol
+//  _sym_dec    :   decoded symbol [size: 4 x 1]
+//  _sym_enc    :   encoded symbol [size: 5 x 1], _sym_enc[0] has only 7 bits
+void fec_secded3932_encode_symbol(unsigned char * _sym_dec,
+                                  unsigned char * _sym_enc);
+
+// decode symbol, returning 0/1/2 for zero/one/multiple errors detected
+//  _sym_enc    :   encoded symbol [size: 5 x 1], _sym_enc[0] has only 7 bits
+//  _sym_dec    :   decoded symbol [size: 4 x 1]
+int  fec_secded3932_decode_symbol(unsigned char * _sym_enc,
+                                  unsigned char * _sym_dec);
+
+// parity matrix [7 x 32 bits], [7 x 4 bytes]
+extern unsigned char secded3932_P[28];
+
+// syndrome vectors of errors with weight exactly equal to 1
+extern unsigned char secded3932_syndrome_w1[39];
+
+fec fec_secded3932_create(void *_opts);
+void fec_secded3932_destroy(fec _q);
+void fec_secded3932_print(fec _q);
+void fec_secded3932_encode(fec _q,
+                           unsigned int _dec_msg_len,
+                           unsigned char * _msg_dec,
+                           unsigned char * _msg_enc);
+void fec_secded3932_decode(fec _q,
+                           unsigned int _dec_msg_len,
+                           unsigned char * _msg_enc,
+                           unsigned char * _msg_dec);
+
 // SEC-DED (72,64)
 
-void fec_secded7264_encode_symbol(unsigned int * _sym_dec,
-                                  unsigned int * _sym_enc);
-void fec_secded7264_decode_symbol(unsigned int * _sym_enc,
-                                  unsigned int * _sym_dec);
-extern unsigned int  secded7264_P[32];
-extern unsigned int  secded7264_H[48];
+// compute parity byte on 64-byte input
+unsigned char fec_secded7264_compute_parity(unsigned char * _v);
+
+// compute syndrome on 72-bit input
+unsigned char fec_secded7264_compute_syndrome(unsigned char * _v);
+
+// encode symbol
+//  _sym_dec    :   input symbol [size: 64 x 1]
+//  _sym_enc    :   input symbol [size: 72 x 1]
+void fec_secded7264_encode_symbol(unsigned char * _sym_dec,
+                                  unsigned char * _sym_enc);
+
+// decode symbol, returning 0/1/2 for zero/one/multiple errors detected
+//  _sym_enc    :   input symbol [size: 72 x 1]
+//  _sym_dec    :   input symbol [size: 64 x 1]
+int fec_secded7264_decode_symbol(unsigned char * _sym_enc,
+                                 unsigned char * _sym_dec);
+
+extern unsigned char secded7264_P[64];
 extern unsigned char secded7264_syndrome_w1[72];
 
 fec fec_secded7264_create(void *_opts);
@@ -1330,6 +1381,9 @@ void gmskframesync_output_debug_file(gmskframesync _q, const char * _filename);
 // 
 // ofdmflexframegen
 //
+
+// reconfigure internal buffers, objects, etc.
+void ofdmflexframegen_reconfigure(ofdmflexframegen _q);
 
 // encode header
 void ofdmflexframegen_encode_header(ofdmflexframegen _q);

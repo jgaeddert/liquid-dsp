@@ -8,6 +8,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <time.h>
 #include <math.h>
 #include <getopt.h>
 #include "liquid.h"
@@ -39,8 +40,9 @@ void usage()
 
 int main(int argc, char*argv[])
 {
+    srand(time(NULL));
     unsigned long int num_trials = 100000; // number of trials
-    unsigned int num_bins = 20;
+    unsigned int num_bins = 30;
     enum {
         UNIFORM=0,
         NORMAL,
@@ -49,7 +51,7 @@ int main(int argc, char*argv[])
         GAMMA,
         NAKAGAMIM,
         RICEK
-    } distribution=0;
+    } distribution=NORMAL;
 
     // distribution parameters
     float eta = 0.0f;       // NORMAL: mean
@@ -66,7 +68,7 @@ int main(int argc, char*argv[])
     float omegarice = 1.0f; // RICE-K: spread factor
 
     int dopt;
-    while ((dopt = getopt(argc,argv,"uhn:d:e:s:l:a:b:g:A:B:m:o:K:O:")) != EOF) {
+    while ((dopt = getopt(argc,argv,"uhN:n:d:e:s:l:a:b:g:A:B:m:o:K:O:")) != EOF) {
         switch (dopt) {
         case 'u':
         case 'h':
@@ -103,6 +105,15 @@ int main(int argc, char*argv[])
         }
     }
 
+    // validate input
+    if (num_bins == 0) {
+        fprintf(stderr,"error: %s, number of bins must be greater than zero\n", argv[0]);
+        exit(1);
+    } else if (num_trials == 0) {
+        fprintf(stderr,"error: %s, number of trials must be greater than zero\n", argv[0]);
+        exit(1);
+    }
+
     float xmin = 0.0f;
     float xmax = 1.0f;
 
@@ -127,10 +138,10 @@ int main(int argc, char*argv[])
         xmax = 6.5 * betag + 2.0*alphag;
     } else if (distribution == NAKAGAMIM) {
         xmin = 0.0f;
-        xmax = 2.0f * sqrtf(omeganak);
+        xmax = 1.5f*( powf(omeganak, 0.8f) + 1.0f/m );
     } else if (distribution == RICEK) {
         xmin = 0.0f;
-        xmax = 2.3f * sqrtf(omegarice);
+        xmax = 3.0f*logf(omegarice+1.0f) + 1.5f/(K+1.0f);
     } else {
         fprintf(stderr, "error: %s, unknown/unsupported distribution\n", argv[0]);
         exit(1);
@@ -147,15 +158,17 @@ int main(int argc, char*argv[])
 
     // generate random variables
     float x = 0.0f;
+    float m1 = 0.0f;    // first moment
+    float m2 = 0.0f;    // second moment
     for (i=0; i<num_trials; i++) {
         switch (distribution) {
-        case UNIFORM:     x = randf(); break;
-        case NORMAL:      x = sigma*randnf() + eta; break;
-        case EXPONENTIAL: x = randexpf(lambda); break;
-        case WEIBULL:     x = randweibf(alphaw,betaw,gammaw); break;
-        case GAMMA:       x = randgammaf(alphag,betag); break;
-        case NAKAGAMIM:   x = randnakmf(m,omeganak); break;
-        case RICEK:       x = randricekf(K,omegarice); break;
+        case UNIFORM:     x = randf();                          break;
+        case NORMAL:      x = sigma*randnf() + eta;             break;
+        case EXPONENTIAL: x = randexpf(lambda);                 break;
+        case WEIBULL:     x = randweibf(alphaw,betaw,gammaw);   break;
+        case GAMMA:       x = randgammaf(alphag,betag);         break;
+        case NAKAGAMIM:   x = randnakmf(m,omeganak);            break;
+        case RICEK:       x = randricekf(K,omegarice);          break;
         default:
             fprintf(stderr,"error: %s, unknown/unsupported distribution\n", argv[0]);
             exit(1);
@@ -173,7 +186,15 @@ int main(int argc, char*argv[])
             index = num_bins-1;
 
         hist[index]++;
+
+        // update statistics
+        m1 += x;    // first moment
+        m2 += x*x;  // second moment
     }
+
+    //
+    m1 /= (float)num_trials;
+    m2 /= (float)num_trials;
 
     // compute expected distribution
     unsigned int num_steps = 100;
@@ -217,7 +238,73 @@ int main(int argc, char*argv[])
         }
     }
 
-    // open output file
+    // print results to screen
+    // find max(hist)
+    unsigned int hist_max = 0;
+    for (i=0; i<num_bins; i++)
+        hist_max = hist[i] > hist_max ? hist[i] : hist_max;
+
+    printf("%8s : %6s [%6s]\n", "x", "count", "prob.");
+    for (i=0; i<num_bins; i++) {
+        printf("%8.2f : %6u [%6.4f]", xmin + i*bin_width, hist[i], (float)hist[i] / (float)num_trials);
+
+        unsigned int k;
+        unsigned int n = round(60 * (float)hist[i] / (float)hist_max);
+        for (k=0; k<n; k++)
+            printf("#");
+        printf("\n");
+    }
+
+    // print distribution info, statistics
+    printf("statistics:\n");
+    switch (distribution) {
+    case UNIFORM:
+        printf("    distribution            :   %s\n", "uniform");
+        break;
+    case NORMAL:
+        printf("    distribution            :   %s\n", "normal (Gauss)");
+        printf("    eta                     :   %f\n", eta);
+        printf("    sigma                   :   %f\n", sigma);
+        break;
+    case EXPONENTIAL:
+        printf("    distribution            :   %s\n", "exponential");
+        printf("    lambda                  :   %f\n", lambda);
+        break;
+    case WEIBULL:
+        printf("    distribution            :   %s\n", "Weibull");
+        printf("    alpha                   :   %f\n", alphaw);
+        printf("    beta                    :   %f\n", betaw);
+        printf("    gamma                   :   %f\n", gammaw);
+        break;
+    case GAMMA:
+        printf("    distribution            :   %s\n", "gamma");
+        printf("    alpha                   :   %f\n", alphag);
+        printf("    beta                    :   %f\n", betag);
+        break;
+    case NAKAGAMIM:
+        printf("    distribution            :   %s\n", "Nakagami-m");
+        printf("    m                       :   %f\n", m);
+        printf("    omega                   :   %f\n", omeganak);
+        break;
+    case RICEK:
+        printf("    distribution            :   %s\n", "Rice-K");
+        printf("    K                       :   %f\n", K);
+        printf("    omega                   :   %f\n", omegarice);
+        break;
+    default:
+        fprintf(stderr,"error: %s, unknown/unsupported distribution\n", argv[0]);
+        exit(1);
+    }
+    printf("\n");
+    printf("    samples                 :   %8lu\n", num_trials);
+    printf("    first moment,  E( x }   :   %8.3f\n", m1);
+    printf("    second moment, E{x^2}   :   %8.3f\n", m2);
+    printf("    variance                :   %8.3f\n", m2 - m1*m1);
+    printf("    standard deviation      :   %8.3f\n", sqrtf(m2 - m1*m1));
+
+    // 
+    // export results
+    //
     FILE * fid = fopen(OUTPUT_FILENAME,"w");
     fprintf(fid,"%% %s : auto-generated file\n\n", OUTPUT_FILENAME);
     fprintf(fid,"clear all;\n");

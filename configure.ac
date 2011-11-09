@@ -82,6 +82,7 @@ AC_ARG_ENABLE(experimental,
             src/experimental/src/ofdmoqamframe.common.o \
             src/experimental/src/ofdmoqamframegen.o \
             src/experimental/src/ofdmoqamframesync.o \
+            src/experimental/src/mdctch.o \
             src/experimental/src/ricek_channel.o"
         EXPERIMENTAL_AUTOTESTS="src/experimental/tests/ann_autotest.c \
             src/experimental/tests/gport_autotest.c \

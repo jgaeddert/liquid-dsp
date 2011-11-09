@@ -3,7 +3,12 @@ Major improvements since 1.0.0
     - simplifying build environment by explicitly defining object
       dependencies (no longer auto-generated; much faster now)
   * documentation
-    - new tutorials
+    - new tutorials (ofdmflexframe)
+    - sections on new objects/methods (msresamp, gmsk filter design,
+      soft-decision demodulation)
+    - adding useful figures (polyfit-lagrange, symsync)
+    - adding BER performance plots for new FEC schemes
+    - adding BER performance plots for sqam32 and sqam128
   * agc
     - fixing scaling issues
     - improving computation speed
@@ -13,8 +18,11 @@ Major improvements since 1.0.0
   * fec
     - adding soft decoding (when available) for forward error-correction
       schemes; generally improves performance by about 2 dB Eb/N0
+    - adding half-rate Golay(24,12) code
+    - adding SEC-DED codes: (22,16), (39,32), (72,64)
   * filter
     - firdes: adding Nyquist prototyping design method
+    - firdes: adding new GMSK receive filter design method
     - interp: porting to efficient polyphase filterbank implementation,
       adding prototype create() method
     - adding multi-stage resampler for efficient decimation and

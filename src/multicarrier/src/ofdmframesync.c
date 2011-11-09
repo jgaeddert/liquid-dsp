@@ -106,6 +106,10 @@ struct ofdmframesync_s {
     float complex s_hat_0;      // first S0 symbol metrics estimate
     float complex s_hat_1;      // second S0 symbol metrics estimate
 
+    // detection thresholds
+    float plcp_detect_thresh;   // plcp detection threshold, nominally 0.35
+    float plcp_sync_thresh;     // long symbol threshold, nominally 0.30
+
     // callback
     ofdmframesync_callback callback;
     void * userdata;
@@ -161,6 +165,9 @@ ofdmframesync ofdmframesync_create(unsigned int _M,
     ofdmframe_validate_sctype(q->p, q->M, &q->M_null, &q->M_pilot, &q->M_data);
     if ( (q->M_pilot + q->M_data) == 0) {
         fprintf(stderr,"error: ofdmframesync_create(), must have at least one enabled subcarrier\n");
+        exit(1);
+    } else if (q->M_data == 0) {
+        fprintf(stderr,"error: ofdmframesync_create(), must have at least one data subcarriers\n");
         exit(1);
     } else if (q->M_pilot < 2) {
         fprintf(stderr,"error: ofdmframesync_create(), must have at least two pilot subcarriers\n");
@@ -330,6 +337,10 @@ void ofdmframesync_reset(ofdmframesync _q)
     _q->phi_prime = 0.0f;
     _q->p1_prime = 0.0f;
 
+    // set thresholds (increase for small number of subcarriers)
+    _q->plcp_detect_thresh = (_q->M > 44) ? 0.35f : 0.35f + 0.01f*(44 - _q->M);
+    _q->plcp_sync_thresh   = (_q->M > 44) ? 0.30f : 0.30f + 0.01f*(44 - _q->M);
+
     // reset state
     _q->state = OFDMFRAMESYNC_STATE_SEEKPLCP;
 }
@@ -451,11 +462,11 @@ void ofdmframesync_execute_seekplcp(ofdmframesync _q)
             tau_hat);
 #endif
 
-    // TODO : allow variable threshold
-    if (cabsf(s_hat) > 0.35f) {
+    // save gain (permits dynamic invocation of get_rssi() method)
+    _q->g0 = g;
 
-        // save gain
-        _q->g0 = g;
+    // 
+    if (cabsf(s_hat) > _q->plcp_detect_thresh) {
 
         int dt = (int)roundf(tau_hat);
         // set timer appropriately...
@@ -646,7 +657,7 @@ void ofdmframesync_execute_plcplong(ofdmframesync _q)
     // check conditions for g_hat:
     //  1. magnitude should be large (near unity) when aligned
     //  2. phase should be very near zero (time aligned)
-    if (cabsf(g_hat) > 0.3f && fabsf(cargf(g_hat)) < 0.1f*M_PI ) {
+    if (cabsf(g_hat) > _q->plcp_sync_thresh && fabsf(cargf(g_hat)) < 0.1f*M_PI ) {
         //printf("    acquisition\n");
         _q->state = OFDMFRAMESYNC_STATE_RXSYMBOLS;
         // reset timer

@@ -119,7 +119,7 @@ where $f_c$ is the carrier frequency, and $k$ is the modulation index.
 For single side-band, only the upper (USB) or lower half (LSB)
 of the spectrum is transmitted.
 The opposing half of the spectrum is rejected using a Hilbert transform
-(see Section~\ref{module:filter:firhilb}).
+(see \S\ref{module:filter:firhilb}).
 Let $\dot{s}(t)$ represent the Hilbert transform of the message signal
 $s(t)$ such that its Fourier transform is non-zero only for positive
 frequency components, viz
@@ -323,7 +323,7 @@ take advantage of symmetries in certain constellations to reduce this.
 \item[{\tt modem\_get\_demodulator\_phase\_error(q)}]
     returns an angle proportional to the phase error after demodulation.
     This value can be used in a phase-locked loop
-    (see Section~\ref{module:nco:pll})
+    (see \S\ref{module:nco:pll})
     to correct for carrier phase recovery.
 \item[{\tt modem\_get\_demodulator\_evm(q)}]
     returns a value equal to the error vector magnitude after demodulation.
@@ -847,7 +847,7 @@ constellation maps;
 however the user can create any arbitrary constellation map so long as
 no two points overlap
 (see {\tt modem\_arb\_init()} and {\tt modem\_arb\_init\_file()} in
-Section~\ref{module:modem:digital:interface}).
+\S\ref{module:modem:digital:interface}).
 
 \subsubsection{Performance}
 \label{module:modem:digital:performance}
@@ -1206,7 +1206,7 @@ before demodulation and the expected transmitted symbol, viz.
 \end{equation}
 %
 EVM is returned by many of the framing objects
-(see Section~\ref{module:framing})
+(see \S\ref{module:framing})
 because it gives a good indication of signal distortion as a result of
 noise, inter-symbol interference, etc.
 If the only channel impairment is noise (e.g. perfect symbol timing)
