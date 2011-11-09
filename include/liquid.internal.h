@@ -483,6 +483,9 @@ void fec_secded3932_decode(fec _q,
 // compute parity byte on 64-byte input
 unsigned char fec_secded7264_compute_parity(unsigned char * _v);
 
+// compute syndrome on 72-bit input
+unsigned char fec_secded7264_compute_syndrome(unsigned char * _v);
+
 // encode symbol
 //  _sym_dec    :   input symbol [size: 64 x 1]
 //  _sym_enc    :   input symbol [size: 72 x 1]

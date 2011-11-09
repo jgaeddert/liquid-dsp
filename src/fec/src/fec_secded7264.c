@@ -92,6 +92,33 @@ unsigned char fec_secded7264_compute_parity(unsigned char * _v)
     return parity;
 }
 
+// compute syndrome on 72-bit input
+unsigned char fec_secded7264_compute_syndrome(unsigned char * _v)
+{
+    // TODO : unwrap this loop
+    unsigned int i;
+    unsigned char syndrome = 0x00;
+    for (i=0; i<8; i++) {
+        syndrome <<= 1;
+
+        // compute parity bit
+        unsigned int p =
+            ( (_v[0] & (1<<(8-i-1))) ? 1 : 0 ) +
+            liquid_c_ones[ secded7264_P[8*i+0] & _v[1] ] +
+            liquid_c_ones[ secded7264_P[8*i+1] & _v[2] ] +
+            liquid_c_ones[ secded7264_P[8*i+2] & _v[3] ] +
+            liquid_c_ones[ secded7264_P[8*i+3] & _v[4] ] +
+            liquid_c_ones[ secded7264_P[8*i+4] & _v[5] ] +
+            liquid_c_ones[ secded7264_P[8*i+5] & _v[6] ] +
+            liquid_c_ones[ secded7264_P[8*i+6] & _v[7] ] +
+            liquid_c_ones[ secded7264_P[8*i+7] & _v[8] ];
+
+        syndrome |= p & 0x01;
+    }
+
+    return syndrome;
+}
+
 void fec_secded7264_encode_symbol(unsigned char * _sym_dec,
                                   unsigned char * _sym_enc)
 {
@@ -114,32 +141,11 @@ void fec_secded7264_decode_symbol(unsigned char * _sym_enc,
 {
     unsigned int i;
 
-    // syndrome vector
-    unsigned char s;
-
     // error vector
     unsigned char e_hat[9] = {0,0,0,0,0,0,0,0,0};
 
     // compute syndrome vector, s = r*H^T = ( H*r^T )^T
-    s = 0;
-    for (i=0; i<8; i++) {
-        s <<= 1;
-
-        // compute parity bit
-        unsigned int p =
-            ( (_sym_enc[0] & (1<<(8-i-1))) ? 1 : 0 )+
-            liquid_c_ones[ secded7264_P[8*i+0] & _sym_enc[1] ] +
-            liquid_c_ones[ secded7264_P[8*i+1] & _sym_enc[2] ] +
-            liquid_c_ones[ secded7264_P[8*i+2] & _sym_enc[3] ] +
-            liquid_c_ones[ secded7264_P[8*i+3] & _sym_enc[4] ] +
-            liquid_c_ones[ secded7264_P[8*i+4] & _sym_enc[5] ] +
-            liquid_c_ones[ secded7264_P[8*i+5] & _sym_enc[6] ] +
-            liquid_c_ones[ secded7264_P[8*i+6] & _sym_enc[7] ] +
-            liquid_c_ones[ secded7264_P[8*i+7] & _sym_enc[8] ];
-
-        // shift parity bit (modulo 2) into syndrome
-        s |= p & 0x01;
-    }
+    unsigned char s = fec_secded7264_compute_syndrome(_sym_enc);
 
     // compute weight of s
     unsigned int ws = liquid_c_ones[s];
