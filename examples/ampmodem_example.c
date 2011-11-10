@@ -123,13 +123,28 @@ int main(int argc, char*argv[]) {
     for (i=0; i<num_samples; i++)
         ampmodem_demodulate(demod, y[i], &z[i]);
 
-    // write results to output file
+    // destroy objects
+    ampmodem_destroy(mod);
+    ampmodem_destroy(demod);
+
+    // compute demodulation error
+    unsigned int delay = (type == LIQUID_MODEM_AM_DSB) ? 0 : 18; // fixed delay
+    float rmse = 0.0f;
+    for (i=delay; i<num_samples; i++)
+        rmse += (x[i-delay] - z[i]) * (x[i-delay] - z[i]);
+    rmse = sqrtf( rmse / (float)(num_samples-delay) );
+    printf("rms error : %12.8f dB\n", 10*log10f(rmse));
+
+
+    // 
+    // export results
+    //
     FILE * fid = fopen(OUTPUT_FILENAME,"w");
     fprintf(fid,"%% %s : auto-generated file\n", OUTPUT_FILENAME);
     fprintf(fid,"clear all\n");
     fprintf(fid,"close all\n");
     fprintf(fid,"n=%u;\n",num_samples);
-    fprintf(fid,"delay=%u;\n", type == LIQUID_MODEM_AM_DSB ? 0 : 18);
+    fprintf(fid,"delay=%u;\n", delay);
     for (i=0; i<num_samples; i++) {
         fprintf(fid,"x(%3u) = %12.4e;\n", i+1, x[i]);
         fprintf(fid,"y(%3u) = %12.4e + j*%12.4e;\n", i+1, crealf(y[i]), cimagf(y[i]));
@@ -156,7 +171,5 @@ int main(int argc, char*argv[]) {
     fclose(fid);
     printf("results written to %s\n", OUTPUT_FILENAME);
 
-    ampmodem_destroy(mod);
-    ampmodem_destroy(demod);
     return 0;
 }
