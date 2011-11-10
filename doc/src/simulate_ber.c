@@ -117,6 +117,7 @@ int main(int argc, char *argv[]) {
     opts.fec1 = fec1;
     opts.dec_msg_len = frame_len;
     opts.soft_decoding = soft_decoding;
+    opts.verbose = verbose;
 
     // minimum number of errors to simulate
     opts.min_packet_errors  = 0;

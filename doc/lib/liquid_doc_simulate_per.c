@@ -71,7 +71,7 @@ void simulate_per(simulate_per_opts _opts,
     unsigned long int num_packet_errors = 0;
     unsigned int num_written;           // for byte packing
     int continue_trials = 1;    // inner loop flag
-    int success = 1;
+    int success = 0;
 
     // data arrays
     unsigned char msg_org[dec_msg_len];         // original message
@@ -155,6 +155,21 @@ void simulate_per(simulate_per_opts _opts,
 
         num_packet_errors += crc_pass ? 0 : 1;
         num_packet_trials++;
+
+        // peridically print results
+        if ( (num_packet_trials % 50)==0 && _opts.verbose) {
+            float BER = (float)num_bit_errors/(float)num_bit_trials;
+            float PER = (float)num_packet_errors/(float)num_packet_trials;
+            float rate = _opts.bps * fec_get_rate(_opts.fec0) * fec_get_rate(_opts.fec1);
+
+            printf(" %c SNR: %6.2f, EbN0: %6.2f, bits: %7lu/%9lu (%8.4e), packets: %6lu/%6lu (%6.2f%%)\r",
+                    success ? '*' : ' ',
+                    _SNRdB,
+                    _SNRdB - 10.0f*log10f(rate),
+                    num_bit_errors,     num_bit_trials,     BER,
+                    num_packet_errors,  num_packet_trials,  PER*100.0f);
+            fflush(stdout);
+        }
 
         //
         // check stopping criteria
