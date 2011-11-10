@@ -41,7 +41,7 @@ int main() {
     srand( time(NULL) );
 
     // options
-    float SNRdB = 10.0f;        // signal-to-noise ratio
+    float SNRdB = 20.0f;        // signal-to-noise ratio
     float noise_floor = -40.0f; // noise floor
     float phi = 0.3f;           // carrier phase offset
     float dphi = 0.05f;         // carrier frequency offset
@@ -107,7 +107,9 @@ int main() {
     framesync64_destroy(fs);
     nco_crcf_destroy(nco_channel);
 
-    // write frame to output file
+    // 
+    // export results
+    //
     FILE* fid = fopen(OUTPUT_FILENAME, "w");
     fprintf(fid,"%% %s: auto-generated file\n", OUTPUT_FILENAME);
     fprintf(fid,"\n\n");
@@ -117,7 +119,7 @@ int main() {
     for (i=0; i<1280; i++)
         fprintf(fid, "frame_rx(%4u) = %12.4e + j*%12.4e;\n", i+1, crealf(frame_rx[i]), cimagf(frame_rx[i]));
 
-    fprintf(fid,"t=0:2047;\n");
+    fprintf(fid,"t=0:(length(frame_rx)-1);\n");
     fprintf(fid,"plot(t,real(frame_rx),t,imag(frame_rx));\n");
     fclose(fid);
     printf("results written to %s\n", OUTPUT_FILENAME);
