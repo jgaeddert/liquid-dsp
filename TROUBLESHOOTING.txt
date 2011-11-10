@@ -43,7 +43,7 @@ Here is a list of common problems and potential solutions.
         Open "config.h" and change the line (approx. 13) from
           #define HAVE_FEC_H 1
         to
-          /* #undev HAVE_FEC_H */
+          /* #undef HAVE_FEC_H */
         This will disable building the additional FEC codecs (such as
         convolutional) but will still build the internal codes (such as
         the Hamming codes). Now run "make" as normal.
