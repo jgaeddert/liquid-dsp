@@ -220,7 +220,7 @@ int main(int argc, char*argv[])
     fprintf(fid,"Y  = 10*log10(abs(fftshift(Y/k)));\n");
     fprintf(fid,"figure;\n");
     fprintf(fid,"plot(f,Y,f,Hc);\n");
-    fprintf(fid,"axis([-0.5 0.5 (noise_floor-5) (noise_floor+SNRdB+5)]);\n");
+    fprintf(fid,"axis([-0.5 0.5 -20 0]);\n");
     fprintf(fid,"xlabel('Normalized Frequency');\n");
     fprintf(fid,"ylabel('Power Spectral Density [dB]');\n");
     fprintf(fid,"title('Multipath channel response');\n");

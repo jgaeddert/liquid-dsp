@@ -224,7 +224,6 @@ fec_objects :=							\
 	src/fec/src/fec_secded3932.o				\
 	src/fec/src/fec_secded7264.o				\
 	src/fec/gentab/reverse_byte.o				\
-	src/fec/src/smatrix.o					\
 	src/fec/src/sumproduct.o				\
 
 
@@ -260,7 +259,6 @@ fec_autotests :=						\
 	src/fec/tests/fec_secded2216_autotest.c			\
 	src/fec/tests/fec_secded3932_autotest.c			\
 	src/fec/tests/fec_secded7264_autotest.c			\
-	src/fec/tests/smatrix_autotest.c			\
 
 
 # benchmarks
@@ -1143,7 +1141,6 @@ example_programs :=						\
 	examples/agc_example					\
 	examples/agc_qpsk_example				\
 	examples/agc_squelch_example				\
-	examples/smatrix_example				\
 	examples/ampmodem_example				\
 	examples/asgram_example					\
 	examples/autocorr_cccf_example				\
@@ -1158,7 +1155,6 @@ example_programs :=						\
 	examples/cgsolve_example				\
 	examples/cvsd_example					\
 	examples/decim_crcf_example				\
-	examples/decim_rrrf_example				\
 	examples/dotprod_rrrf_example				\
 	examples/dotprod_cccf_example				\
 	examples/eqlms_cccf_blind_example			\
@@ -1171,13 +1167,11 @@ example_programs :=						\
 	examples/firfarrow_rrrf_example				\
 	examples/firfarrow_rrrf_sine_example			\
 	examples/firfilt_rrrf_example				\
-	examples/firfilt_rrrf_recreate_example			\
 	examples/firdes_kaiser_example				\
 	examples/firdespm_example				\
 	examples/firhilb_example				\
 	examples/firhilb_decim_example				\
 	examples/firhilb_interp_example				\
-	examples/firpfb_rrrf_example				\
 	examples/firpfbch_example				\
 	examples/firpfbch_analysis_example			\
 	examples/firpfbch_synthesis_example			\
@@ -1224,7 +1218,6 @@ example_programs :=						\
 	examples/poly_findroots_example				\
 	examples/quantize_example				\
 	examples/qnsearch_example				\
-	examples/random_example					\
 	examples/random_histogram_example			\
 	examples/repack_bytes_example				\
 	examples/resamp_crcf_example				\
@@ -1234,7 +1227,6 @@ example_programs :=						\
 	examples/resamp2_crcf_interp_example			\
 	examples/scramble_example				\
 	examples/symsync_crcf_example				\
-	examples/symsync_rrrf_example				\
 	examples/wdelayf_example				\
 	examples/windowf_example				\
 	@EXPERIMENTAL_EXAMPLES@

@@ -16,9 +16,8 @@
 void usage()
 {
     printf("modem_soft_example [options]\n");
-    printf("  u/h   : print usage\n");
-    printf("  p     : modulation depth (default 2 bits/symbol)\n");
-    printf("  m     : modulation scheme (psk default)\n");
+    printf("  h     : print help\n");
+    printf("  m     : modulation scheme (qpsk default)\n");
     liquid_print_modulation_schemes();
 }
 
@@ -45,21 +44,17 @@ int main(int argc, char*argv[])
     modulation_scheme ms = LIQUID_MODEM_PSK;
 
     int dopt;
-    while ((dopt = getopt(argc,argv,"uhm:p:")) != EOF) {
+    while ((dopt = getopt(argc,argv,"uhm:")) != EOF) {
         switch (dopt) {
-        case 'u':
         case 'h':
             usage();
             return 0;
         case 'm':
-            ms = liquid_getopt_str2mod(optarg);
+            liquid_getopt_str2modbps(optarg, &ms, &bps);
             if (ms == LIQUID_MODEM_UNKNOWN) {
-                fprintf(stderr,"error: modem_example, unknown/unsupported modulation scheme \"%s\"\n", optarg);
+                fprintf(stderr,"error: %s, unknown/unsupported modulation scheme '%s'\n", argv[0], optarg);
                 return 1;
             }
-            break;
-        case 'p':
-            bps = atoi(optarg);
             break;
         default:
             exit(1);

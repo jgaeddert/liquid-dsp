@@ -20,7 +20,7 @@
 void usage()
 {
     printf("modem_example [options]\n");
-    printf("  u/h   : print usage\n");
+    printf("  h     : print help\n");
     printf("  m     : modulation scheme (qpsk default)\n");
     liquid_print_modulation_schemes();
 }
@@ -35,7 +35,6 @@ int main(int argc, char*argv[])
     int dopt;
     while ((dopt = getopt(argc,argv,"uhm:")) != EOF) {
         switch (dopt) {
-        case 'u':
         case 'h':
             usage();
             return 0;

@@ -8,13 +8,18 @@
 //
 
 #include <stdio.h>
+#include <stdlib.h>
+#include <math.h>
+
 #include "liquid.h"
 
 #define OUTPUT_FILENAME "agc_qpsk_example.m"
 
-int main() {
+int main(int argc, char*argv[])
+{
     // options
-    float gamma=0.01f;      // channel gain
+    float noise_floor = -40.0f;         // noise floor [dB]
+    float SNRdB = 20.0f;                // signal-to-noise ratio [dB]
     float bt=1e-2f;         // loop bandwidth
     unsigned int num_symbols=100;     // number of iterations
     unsigned int d=5;       // print every d iterations
@@ -23,6 +28,16 @@ int main() {
     unsigned int m=3;       // filter delay (symbols)
     float beta=0.3f;        // filter excess bandwidth factor
     float dt = 0.0f;        // filter fractional sample delay
+
+    // derived values
+    unsigned int num_samples=num_symbols*k;
+    float gamma = powf(10.0f, (SNRdB+noise_floor)/20.0f);   // channel gain
+    float nstd = powf(10.0f, noise_floor / 20.0f);
+
+    // arrays
+    float complex x[num_samples];
+    float complex y[num_samples];
+    float rssi[num_samples];
 
     // create objects
     modem mod = modem_create(LIQUID_MODEM_QPSK,2);
@@ -35,33 +50,58 @@ int main() {
     // print info
     printf("automatic gain control // loop bandwidth: %4.2e\n",bt);
 
-    FILE* fid = fopen(OUTPUT_FILENAME,"w");
-    fprintf(fid,"%% %s: auto-generated file\n\n",OUTPUT_FILENAME);
-    fprintf(fid,"clear all;\nclose all;\n\n");
-
-    unsigned int sym, n=0, num_samples=num_symbols*k;
-    float complex s, x[num_samples];
+    unsigned int sym;
+    float complex s;
     for (i=0; i<num_symbols; i++) {
         // generate random symbol
         sym = modem_gen_rand_sym(mod);
         modem_modulate(mod, sym, &s);
         s *= gamma;
 
-        interp_crcf_execute(interp, s, &x[n]);
-        
-        n+=k;
+        interp_crcf_execute(interp, s, &x[i*k]);
     }
 
+    // add noise
+    for (i=0; i<num_samples; i++)
+        x[i] += nstd*(randnf() + _Complex_I*randnf()) * M_SQRT1_2;
+
     // run agc
-    float complex y[num_samples];
     for (i=0; i<num_samples; i++) {
         agc_crcf_execute(p, x[i], &y[i]);
-        if ( ((i+1)%d) == 0 )
-            printf("%4u: %8.3f\n", i+1, agc_crcf_get_rssi(p));
 
+        rssi[i] = agc_crcf_get_rssi(p);
+    }
+
+    // destroy objects
+    modem_destroy(mod);
+    agc_crcf_destroy(p);
+    interp_crcf_destroy(interp);
+
+    // print results to screen
+    printf("received signal strength indication (rssi):\n");
+    for (i=0; i<num_samples; i+=d) {
+        printf("%4u : %8.2f\n", i, rssi[i]);
+    }
+
+
+    // 
+    // export results
+    //
+    FILE* fid = fopen(OUTPUT_FILENAME,"w");
+    if (!fid) {
+        fprintf(stderr,"error: %s, could not open '%s' for writing\n", argv[0], OUTPUT_FILENAME);
+        exit(1);
+    }
+    fprintf(fid,"%% %s: auto-generated file\n\n",OUTPUT_FILENAME);
+    fprintf(fid,"n = %u;\n", num_samples);
+    fprintf(fid,"clear all;\n");
+    fprintf(fid,"close all;\n\n");
+
+    // print results
+    for (i=0; i<num_samples; i++) {
         fprintf(fid,"   x(%4u) = %12.4e + j*%12.4e;\n", i+1, crealf(x[i]), cimagf(x[i]));
         fprintf(fid,"   y(%4u) = %12.4e + j*%12.4e;\n", i+1, crealf(y[i]), cimagf(y[i]));
-        fprintf(fid,"rssi(%4u) = %12.4e;\n", i+1, agc_crcf_get_signal_level(p));
+        fprintf(fid,"rssi(%4u) = %12.4e;\n", i+1, rssi[i]);
     }
 
 
@@ -69,7 +109,7 @@ int main() {
     fprintf(fid,"n = length(x);\n");
     fprintf(fid,"t = 0:(n-1);\n");
     fprintf(fid,"figure;\n");
-    fprintf(fid,"plot(t,10*log10(rssi),'-k','LineWidth',2);\n");
+    fprintf(fid,"plot(t,rssi,'-k','LineWidth',2);\n");
     fprintf(fid,"xlabel('sample index');\n");
     fprintf(fid,"ylabel('rssi [dB]');\n");
     fprintf(fid,"\n\n");
@@ -79,10 +119,6 @@ int main() {
     fprintf(fid,"ylabel('agc output');\n");
     fclose(fid);
     printf("results written to %s\n", OUTPUT_FILENAME);
-
-    modem_destroy(mod);
-    agc_crcf_destroy(p);
-    interp_crcf_destroy(interp);
 
     printf("done.\n");
     return 0;

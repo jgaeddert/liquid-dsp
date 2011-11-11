@@ -24,7 +24,6 @@ void usage()
     printf("  N     : noise floor [dB], default: -25.0\n");
     printf("  s     : SNR [dB], default: 25.0\n");
     printf("  b     : AGC bandwidth, b >= 0, default: 0.01\n");
-    printf("  D     : AGC internal decimation factor, D>0, default: 4\n");
 }
 
 
@@ -34,12 +33,11 @@ int main(int argc, char*argv[])
     float noise_floor = -40.0f;         // noise floor [dB]
     float SNRdB = 20.0f;                // signal-to-noise ratio [dB]
     float bt=0.01f;                     // agc loop bandwidth
-    unsigned int D = 1;                 // AGC internal decimation factor
     unsigned int num_samples = 2048;    // number of samples
     unsigned int d=num_samples/32;      // print every d iterations
 
     int dopt;
-    while((dopt = getopt(argc,argv,"uhn:N:s:b:D:")) != EOF){
+    while((dopt = getopt(argc,argv,"uhn:N:s:b:")) != EOF){
         switch (dopt) {
         case 'h':
         case 'u': usage(); return 0;
@@ -47,7 +45,6 @@ int main(int argc, char*argv[])
         case 'N': noise_floor = atof(optarg);   break;
         case 's': SNRdB = atof(optarg);         break;
         case 'b': bt = atof(optarg);            break;
-        case 'D': D = atoi(optarg);             break;
         default:
             exit(1);
         }
@@ -56,9 +53,6 @@ int main(int argc, char*argv[])
     // validate input
     if (bt < 0.0f) {
         fprintf(stderr,"error: %s, bandwidth must be positive\n", argv[0]);
-        exit(1);
-    } else if (D == 0) {
-        fprintf(stderr,"error: %s, decimation factor must be greater than zero\n", argv[0]);
         exit(1);
     } else if (num_samples < 100) {
         fprintf(stderr,"error: %s, must have at least 100 samples\n", argv[0]);
@@ -116,9 +110,22 @@ int main(int argc, char*argv[])
     agc_crcf_destroy(p);
 
     // print results to screen
+    float rssi_min = noise_floor - 3.0f;
+    float rssi_max = noise_floor + SNRdB + 3.0f;
+
     printf("received signal strength indication (rssi):\n");
-    for (i=0; i<num_samples; i+=d)
-        printf("%4u : %8.2f\n", i, rssi[i]);
+    for (i=0; i<num_samples; i+=d) {
+        printf("%4u : %8.2f ", i, rssi[i]);
+
+        float t = (rssi[i] - rssi_min)/(rssi_max-rssi_min);
+        if (t < 0.0f) t = 0.0f;
+        if (t > 1.0f) t = 1.0f;
+        unsigned int n = round( 60*t );
+        unsigned int k;
+        for (k=0; k<n; k++)
+            printf("#");
+        printf("\n");
+    }
 
     // 
     // export results

@@ -28,7 +28,7 @@ void usage()
     printf("  s     : signal-to-noise ratio, default: 30dB\n");
     printf("  w     : timing pll bandwidth, default: 0.02\n");
     printf("  n     : number of symbols, default: 200\n");
-    printf("  t     : timing phase offset [%% symbol], -0.5 < t <= 0.5, default: 0\n");
+    printf("  t     : timing phase offset [%% symbol], t in [-0.5,0.5], default: -0.2\n");
     printf("  r     : timing freq. offset [%% symbol], default: 1.000\n");
 }
 
@@ -48,7 +48,7 @@ int main(int argc, char*argv[]) {
     liquid_rnyquist_type ftype_rx = LIQUID_RNYQUIST_RRC;
 
     float bt=0.02f;     // loop filter bandwidth
-    float tau=-0.1f;     // fractional symbol offset
+    float tau=-0.2f;    // fractional symbol offset
     float r = 1.00f;    // resampled rate
     
     // use random data or 101010 phasing pattern
