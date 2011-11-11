@@ -49,6 +49,9 @@ local_pdffiles :=					\
 	figures.gen/fec_ber_esn0_convpunc.pdf		\
 	figures.gen/fec_ber_ebn0_convpunc.pdf		\
 							\
+	figures.gen/fec_ber_ebn0_hard.pdf		\
+	figures.gen/fec_ber_ebn0_soft.pdf		\
+							\
 	figures.gen/fft_example_time.pdf		\
 	figures.gen/fft_example_freq.pdf		\
 							\
@@ -407,6 +410,8 @@ resimulate-data-fec-ber-soft : src/simulate_ber
 	./src/simulate_ber -S -c rs8    $(ber-fec-soft-opts) -o data/ber-fec-soft/ber_rs8.dat
 
 # copy gnuplot file
+figures.gen/fec_ber_ebn0_hard.gnu \
+figures.gen/fec_ber_ebn0_soft.gnu \
 figures.gen/fec_ber_esn0_block.gnu \
 figures.gen/fec_ber_ebn0_block.gnu \
 figures.gen/fec_ber_esn0_conv.gnu \
@@ -416,6 +421,8 @@ figures.gen/fec_ber_ebn0_convpunc.gnu : figures.gen/%.gnu : data/%.gnu
 	cp $< $@
 
 # add ber simulation data files as dependencies
+figures.gen/fec_ber_ebn0_hard.eps \
+figures.gen/fec_ber_ebn0_soft.eps \
 figures.gen/fec_ber_esn0_block.eps \
 figures.gen/fec_ber_ebn0_block.eps \
 figures.gen/fec_ber_esn0_conv.eps \
