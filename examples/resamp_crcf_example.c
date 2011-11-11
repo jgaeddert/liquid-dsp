@@ -1,7 +1,8 @@
 //
 // resamp_crcf_example.c
 //
-// Demonstration of arbitrary resampler object.
+// Demonstration of arbitrary resampler object whereby an input signal
+// is resampled at an arbitrary rate.
 //
 
 #include <stdio.h>
@@ -15,7 +16,7 @@
 int main() {
     // options
     unsigned int h_len = 13;    // filter semi-length (filter delay)
-    float r=0.9f;               // resampling rate (output/input)
+    float r=1/sqrtf(2.0f);      // resampling rate (output/input)
     float bw=0.25f;             // resampling filter bandwidth
     float As=60.0f;             // resampling filter stop-band attenuation [dB]
     unsigned int npfb=32;       // number of filters in bank (timing resolution)
@@ -54,6 +55,11 @@ int main() {
 
     // clean up allocated objects
     resamp_crcf_destroy(q);
+
+    // print results
+    printf("desired resampling rate :   %12.8f\n", r);
+    printf("measured resampling rate:   %12.8f (%u/%u)\n", (float)ny/(float)nx, ny, nx);
+
 
     // 
     // export results
