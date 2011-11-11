@@ -21,7 +21,7 @@ int main() {
     unsigned int m=4;               // filter delay
     float As=-60;                   // stop-band attenuation
     unsigned int num_symbols=1;     // number of symbols per channel
-    unsigned int num_channels=16;   // number of channels
+    unsigned int num_channels=32;   // number of channels
 
     unsigned int i;
     unsigned int num_frames = num_symbols + 2*m;
@@ -30,13 +30,18 @@ int main() {
     // compute channel gain, nominally 1, but 0 at band edges and
     // notched at 0.25
     float gain[num_channels]; // channel gain vector
+    unsigned int M2 = num_channels / 2;     // channel center
+    unsigned int G  = num_channels / 6;     // guard band
+    unsigned int N  = num_channels / 5;     // null center
     for (i=0; i<num_channels; i++) {
-        if (i > 0.4*num_channels && i < 0.6*num_channels)
+        if (i > M2 - G && i < M2 + G)
             gain[i] = 0;
-        else if (i > 0.2*num_channels && i < 0.3*num_channels)
+        else if (i > N && i < N+3)
             gain[i] = 0;
         else
             gain[i] = 1;
+
+        printf("gain[%3u] = %12.8f\n", i, gain[i]);
     }
 
     // create synthesizer object
