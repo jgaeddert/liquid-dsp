@@ -224,7 +224,6 @@ fec_objects :=							\
 	src/fec/src/fec_secded3932.o				\
 	src/fec/src/fec_secded7264.o				\
 	src/fec/gentab/reverse_byte.o				\
-	src/fec/src/smatrix.o					\
 	src/fec/src/sumproduct.o				\
 
 
@@ -260,7 +259,6 @@ fec_autotests :=						\
 	src/fec/tests/fec_secded2216_autotest.c			\
 	src/fec/tests/fec_secded3932_autotest.c			\
 	src/fec/tests/fec_secded7264_autotest.c			\
-	src/fec/tests/smatrix_autotest.c			\
 
 
 # benchmarks
@@ -1143,7 +1141,6 @@ example_programs :=						\
 	examples/agc_example					\
 	examples/agc_qpsk_example				\
 	examples/agc_squelch_example				\
-	examples/smatrix_example				\
 	examples/ampmodem_example				\
 	examples/asgram_example					\
 	examples/autocorr_cccf_example				\

@@ -82,10 +82,12 @@ AC_ARG_ENABLE(experimental,
             src/experimental/src/ofdmoqamframe.common.o \
             src/experimental/src/ofdmoqamframegen.o \
             src/experimental/src/ofdmoqamframesync.o \
+            src/experimental/src/smatrix.o \
             src/experimental/src/mdctch.o \
             src/experimental/src/ricek_channel.o"
         EXPERIMENTAL_AUTOTESTS="src/experimental/tests/ann_autotest.c \
             src/experimental/tests/gport_autotest.c \
+            src/experimental/tests/smatrix_autotest.c \
             src/experimental/tests/channel_autotest.c"
 #           src/experimental/tests/ofdmoqam_autotest.c
         EXPERIMENTAL_BENCHMARKS="src/experimental/bench/fbasc_benchmark.c \
@@ -120,6 +122,7 @@ AC_ARG_ENABLE(experimental,
             examples/prqmfb_crcf_example \
             examples/qmfb_crcf_analysis_example \
             examples/qmfb_crcf_synthesis_example \
+            examples/smatrix_example \
             examples/symsync2_crcf_example \
             examples/symsynclp_crcf_example"
 #           examples/ofdmoqamframe64gen_example
