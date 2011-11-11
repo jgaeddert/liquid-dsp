@@ -1158,7 +1158,6 @@ example_programs :=						\
 	examples/cgsolve_example				\
 	examples/cvsd_example					\
 	examples/decim_crcf_example				\
-	examples/decim_rrrf_example				\
 	examples/dotprod_rrrf_example				\
 	examples/dotprod_cccf_example				\
 	examples/eqlms_cccf_blind_example			\
@@ -1171,13 +1170,11 @@ example_programs :=						\
 	examples/firfarrow_rrrf_example				\
 	examples/firfarrow_rrrf_sine_example			\
 	examples/firfilt_rrrf_example				\
-	examples/firfilt_rrrf_recreate_example			\
 	examples/firdes_kaiser_example				\
 	examples/firdespm_example				\
 	examples/firhilb_example				\
 	examples/firhilb_decim_example				\
 	examples/firhilb_interp_example				\
-	examples/firpfb_rrrf_example				\
 	examples/firpfbch_example				\
 	examples/firpfbch_analysis_example			\
 	examples/firpfbch_synthesis_example			\
@@ -1224,7 +1221,6 @@ example_programs :=						\
 	examples/poly_findroots_example				\
 	examples/quantize_example				\
 	examples/qnsearch_example				\
-	examples/random_example					\
 	examples/random_histogram_example			\
 	examples/repack_bytes_example				\
 	examples/resamp_crcf_example				\
@@ -1234,7 +1230,6 @@ example_programs :=						\
 	examples/resamp2_crcf_interp_example			\
 	examples/scramble_example				\
 	examples/symsync_crcf_example				\
-	examples/symsync_rrrf_example				\
 	examples/wdelayf_example				\
 	examples/windowf_example				\
 	@EXPERIMENTAL_EXAMPLES@
