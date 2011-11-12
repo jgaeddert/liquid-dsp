@@ -183,16 +183,6 @@ int main(int argc, char *argv[]) {
         // break if unsuccessful
         if (!results.success) break;
 
-        if (verbose) {
-            //printf("  %12.8f : %12.4e\n", SNRdB, PER);
-            printf(" %c SNR: %6.2f, EbN0: %6.2f, bits: %7lu/%9lu (%8.4e), packets: %6lu/%6lu (%6.2f%%)\n",
-                    results.success ? '*' : ' ',
-                    SNRdB,
-                    EbN0dB,
-                    results.num_bit_errors,     results.num_bit_trials,     results.BER,
-                    results.num_packet_errors,  results.num_packet_trials,  results.PER*100.0f);
-        }
-
         // save data to file
         fprintf(fid,"  %12.8f %12.4e %12.4e %12.4e %12lu %12lu %12lu %12lu\n",
                 SNRdB,

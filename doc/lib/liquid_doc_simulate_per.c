@@ -63,6 +63,8 @@ void simulate_per(simulate_per_opts _opts,
     float nstd = powf(10.0f, -_SNRdB / 20.0f);
     //printf("   nstd : %12.8f\n", nstd);
 
+    float rate = _opts.bps * fec_get_rate(_opts.fec0) * fec_get_rate(_opts.fec1);
+
     // bookkeeping variables
     unsigned long int i;
     unsigned long int num_bit_trials;
@@ -160,7 +162,6 @@ void simulate_per(simulate_per_opts _opts,
         if ( (num_packet_trials % 50)==0 && _opts.verbose) {
             float BER = (float)num_bit_errors/(float)num_bit_trials;
             float PER = (float)num_packet_errors/(float)num_packet_trials;
-            float rate = _opts.bps * fec_get_rate(_opts.fec0) * fec_get_rate(_opts.fec1);
 
             printf(" %c SNR: %6.2f, EbN0: %6.2f, bits: %7lu/%9lu (%8.4e), packets: %6lu/%6lu (%6.2f%%)\r",
                     success ? '*' : ' ',
@@ -214,12 +215,13 @@ void simulate_per(simulate_per_opts _opts,
     _results->BER = BER;
     _results->PER = PER;
 
-#if 0
-    printf(" %c SNR: %6.2f, bits: %8lu / %8lu (%12.4e), packets: %6lu / %6lu (%6.2f%%)\n",
-            success ? '*' : ' ',
-            _SNRdB,
-            num_bit_errors,     num_bit_trials,     BER,
-            num_packet_errors,  num_packet_trials,  PER*100.0f);
-#endif
+    if ( _opts.verbose) {
+        printf(" %c SNR: %6.2f, EbN0: %6.2f, bits: %7lu/%9lu (%8.4e), packets: %6lu/%6lu (%6.2f%%)\n",
+                success ? '*' : ' ',
+                _SNRdB,
+                _SNRdB - 10.0f*log10f(rate),
+                num_bit_errors,     num_bit_trials,     BER,
+                num_packet_errors,  num_packet_trials,  PER*100.0f);
+    }
 }
 
