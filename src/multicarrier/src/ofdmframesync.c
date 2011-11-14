@@ -226,7 +226,7 @@ ofdmframesync ofdmframesync_create(unsigned int _M,
     //
 
     // numerically-controlled oscillator
-    q->nco_rx = nco_crcf_create(LIQUID_VCO);
+    q->nco_rx = nco_crcf_create(LIQUID_NCO);
 
     // set pilot sequence
     q->ms_pilot = msequence_create_default(8);
