@@ -30,6 +30,7 @@
 #    check               :   build and run autotest program
 #    bench               :   build and run benchmarking program
 #    examples            :   build all examples
+#    sandbox             :   build all sandbox examples
 #    world               :   build absolutely everything (but don't install)
 #
 #    clean-modules       :   clean all modules

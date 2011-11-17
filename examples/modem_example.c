@@ -21,6 +21,7 @@ void usage()
 {
     printf("modem_example [options]\n");
     printf("  h     : print help\n");
+    printf("  v/q   : verbose/quiet\n");
     printf("  m     : modulation scheme (qpsk default)\n");
     liquid_print_modulation_schemes();
 }
@@ -31,13 +32,14 @@ int main(int argc, char*argv[])
     // create mod/demod objects
     unsigned int bps=2;
     modulation_scheme ms = LIQUID_MODEM_QPSK;
+    int verbose = 1;
 
     int dopt;
-    while ((dopt = getopt(argc,argv,"uhm:")) != EOF) {
+    while ((dopt = getopt(argc,argv,"hvqm:")) != EOF) {
         switch (dopt) {
-        case 'h':
-            usage();
-            return 0;
+        case 'h':   usage();        return 0;
+        case 'v':   verbose = 1;    break;
+        case 'q':   verbose = 0;    break;
         case 'm':
             liquid_getopt_str2modbps(optarg, &ms, &bps);
             if (ms == LIQUID_MODEM_UNKNOWN) {
@@ -80,6 +82,9 @@ int main(int argc, char*argv[])
     for (i=0; i<num_symbols; i++) {
         modem_modulate(mod, i, &x);
         modem_demodulate(demod, x, &s);
+
+        if (verbose)
+            printf("%4u : %12.8f + j*%12.8f\n", i, crealf(x), cimagf(x));
 
         num_sym_errors += i == s ? 0 : 1;
         num_bit_errors += count_bit_errors(i,s);
