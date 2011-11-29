@@ -54,6 +54,7 @@ spgram spgram_create(unsigned int _nfft)
 
     q->nfft    = _nfft;
     q->overlap = q->nfft / 4;
+    q->alpha   = 0.02f;
 
     q->w = windowcf_create(q->nfft);
     q->x = (float complex*) malloc((q->nfft)*sizeof(float complex));
