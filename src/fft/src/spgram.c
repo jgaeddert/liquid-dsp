@@ -109,11 +109,11 @@ void spgram_push(spgram _q,
             if (_q->num_windows == 0) {
                 // first window; copy internally
                 for (j=0; j<_q->nfft; j++)
-                    _q->psd[i] = cabsf(_q->X[i]);
+                    _q->psd[j] = cabsf(_q->X[j]);
             } else {
                 // 
                 for (j=0; j<_q->nfft; j++)
-                    _q->psd[i] = (1.0f - _q->alpha) + _q->alpha*cabsf(_q->X[i]);
+                    _q->psd[j] = (1.0f - _q->alpha)*_q->psd[j] + _q->alpha*cabsf(_q->X[j]);
             }
 
             _q->num_windows++;
