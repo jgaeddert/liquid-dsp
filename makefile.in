@@ -275,6 +275,7 @@ fec_benchmarks :=						\
 
 fft_objects :=							\
 	src/fft/src/asgram.o					\
+	src/fft/src/spgram.o					\
 	src/fft/src/dct.o					\
 	src/fft/src/fftf.o					\
 	src/fft/src/fft_common.o				\
