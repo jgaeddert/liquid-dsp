@@ -52,6 +52,7 @@ spgram spgram_create(unsigned int _nfft)
 
     spgram q = (spgram) malloc(sizeof(struct spgram_s));
 
+    // input parameters
     q->nfft    = _nfft;
     q->overlap = q->nfft / 4;
     q->alpha   = 0.02f;
@@ -128,13 +129,23 @@ void spgram_push(spgram _q,
 void spgram_execute(spgram _q,
                     float * _X)
 {
+    // check to see if any transforms have been taken
+    if (_q->num_windows == 0) {
+        // copy zeros to output
+        unsigned int i;
+        for (i=0; i<_q->nfft; i++)
+            _X[i] = 0.0f;
+
+        return;
+    }
+
     // copy shifted PSD contents to output
     unsigned int i;
     unsigned int k;
     unsigned int nfft_2 = _q->nfft / 2;
     for (i=0; i<_q->nfft; i++) {
         k = (i + nfft_2) % _q->nfft;
-        _X[i] = 20*log10f(cabsf(_q->psd[k]));
+        _X[i] = 20*log10f(fabsf(_q->psd[k]));
     }
 }
 
