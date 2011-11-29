@@ -26,7 +26,7 @@ int main() {
     float psd[n];           // power spectral density
 
     // create spectral periodogram
-    spgram q = spgram_create(nfft);
+    spgram q = spgram_create(n);
 
     // guard bands
     unsigned int g0 = (nfft/2) - (nfft/10);
