@@ -80,7 +80,7 @@ struct ofdmframesync_s {
 
     // receiver state
     enum {
-        OFDMFRAMESYNC_STATE_SEEKPLCP=0,   // seek initial PLSCP
+        OFDMFRAMESYNC_STATE_SEEKPLCP=0,   // seek initial PLCP
         OFDMFRAMESYNC_STATE_PLCPSHORT0,   // seek first PLCP short sequence
         OFDMFRAMESYNC_STATE_PLCPSHORT1,   // seek second PLCP short sequence
         OFDMFRAMESYNC_STATE_PLCPLONG,     // seek PLCP long sequence
