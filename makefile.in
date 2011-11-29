@@ -1228,6 +1228,7 @@ example_programs :=						\
 	examples/resamp2_crcf_filter_example			\
 	examples/resamp2_crcf_interp_example			\
 	examples/scramble_example				\
+	examples/spgram_example					\
 	examples/symsync_crcf_example				\
 	examples/wdelayf_example				\
 	examples/windowf_example				\
