@@ -36,9 +36,10 @@ struct spgram_s {
     unsigned int overlap;   //
     float alpha;            // filter
 
-    windowcf w;             // input window
+    windowcf buffer;        // input buffer
     float complex * x;      // pointer to input array (allocated)
     float complex * X;      // output fft (allocated)
+    float complex * w;      // tapering window
     float * psd;            // psd (allocated)
     fftplan p;              // fft plan
 
@@ -57,12 +58,18 @@ spgram spgram_create(unsigned int _nfft)
     q->overlap = q->nfft / 4;
     q->alpha   = 0.02f;
 
-    q->w = windowcf_create(q->nfft);
+    q->buffer = windowcf_create(q->nfft);
     q->x = (float complex*) malloc((q->nfft)*sizeof(float complex));
     q->X = (float complex*) malloc((q->nfft)*sizeof(float complex));
+    q->w = (float complex*) malloc((q->nfft)*sizeof(float complex));
     q->psd = (float*) malloc((q->nfft)*sizeof(float));
 
     q->p = fft_create_plan(q->nfft, q->x, q->X, FFT_FORWARD, 0);
+
+    // initialize tapering window, scaled by FFT size
+    unsigned int i;
+    for (i=0; i<q->nfft; i++)
+        q->w[i] = hamming(i,q->nfft) / (float)(q->nfft);
 
     q->num_windows = 0;
     q->index = 0;
@@ -72,10 +79,11 @@ spgram spgram_create(unsigned int _nfft)
 
 void spgram_destroy(spgram _q)
 {
-    windowcf_destroy(_q->w);
+    windowcf_destroy(_q->buffer);
 
     free(_q->x);
     free(_q->X);
+    free(_q->w);
     free(_q->psd);
     fft_destroy_plan(_q->p);
     free(_q);
@@ -86,28 +94,30 @@ void spgram_push(spgram _q,
                  unsigned int _n)
 {
     // push/write samples
-    //windowcf_write(_q->w, _x, _n);
+    //windowcf_write(_q->buffer, _x, _n);
 
     unsigned int i;
     for (i=0; i<_n; i++) {
-        windowcf_push(_q->w, _x[i]);
+        windowcf_push(_q->buffer, _x[i]);
 
         _q->index++;
 
         if (_q->index == _q->overlap) {
+            unsigned int j;
+
             // reset counter
             _q->index = 0;
 
-            // read buffer, copy to fft input
+            // read buffer, copy to fft input (applying window)
             float complex * rc;
-            windowcf_read(_q->w, &rc);
-            memmove(_q->x, rc, _q->nfft*sizeof(float complex));
+            windowcf_read(_q->buffer, &rc);
+            for (i=0; i<_q->nfft; i++)
+                _q->x[i] = rc[i] * _q->w[i];
 
             // execute fft
             fft_execute(_q->p);
             
             // accumulate output
-            unsigned int j;
             if (_q->num_windows == 0) {
                 // first window; copy internally
                 for (j=0; j<_q->nfft; j++)
