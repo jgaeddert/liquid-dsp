@@ -635,7 +635,7 @@ figures.gen/interleaver_scatterplot_i4.gnu : src/interleaver_scatterplot
 
 figures.gen/math_window_kaiser_time.gnu \
 figures.gen/math_window_kaiser_freq.gnu : src/math_window
-	./$< -w kaiser -b3.0
+	./$< -w kaiser -b12.0
 
 figures.gen/math_window_hamming_time.gnu \
 figures.gen/math_window_hamming_freq.gnu : src/math_window
