@@ -275,6 +275,7 @@ fec_benchmarks :=						\
 
 fft_objects :=							\
 	src/fft/src/asgram.o					\
+	src/fft/src/spgram.o					\
 	src/fft/src/dct.o					\
 	src/fft/src/fftf.o					\
 	src/fft/src/fft_common.o				\
@@ -1227,6 +1228,7 @@ example_programs :=						\
 	examples/resamp2_crcf_filter_example			\
 	examples/resamp2_crcf_interp_example			\
 	examples/scramble_example				\
+	examples/spgram_example					\
 	examples/symsync_crcf_example				\
 	examples/wdelayf_example				\
 	examples/windowf_example				\

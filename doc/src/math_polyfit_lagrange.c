@@ -59,10 +59,10 @@ int main(int argc, char * argv[]) {
     fprintf(fid,"set xtics -5,1,5\n");
     fprintf(fid,"set ytics -5,1,5\n");
     fprintf(fid,"set grid xtics ytics\n");
-    fprintf(fid,"set pointsize 0.7\n");
+    fprintf(fid,"set pointsize 1.0\n");
     fprintf(fid,"set grid linetype 1 linewidth 0.5 linecolor rgb '%s'\n", LIQUID_DOC_COLOR_GRID);
 
-    fprintf(fid,"plot '-' using 1:2 with lines linecolor rgb '#444444' linewidth 1 notitle,\\\n");
+    fprintf(fid,"plot '-' using 1:2 with lines linecolor rgb '%s' linewidth 4 notitle,\\\n",LIQUID_DOC_COLOR_PURPLE);
     fprintf(fid,"     '-' using 1:2 with points pointtype 7 linecolor rgb '%s' notitle\n",LIQUID_DOC_COLOR_PURPLE);
 
     // evaluate polynomial

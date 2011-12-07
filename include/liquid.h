@@ -624,6 +624,16 @@ void FFT(_shift)(TC*_x, unsigned int _n);
 
 LIQUID_FFT_DEFINE_API(LIQUID_FFT_MANGLE_FLOAT,float,liquid_float_complex)
 
+// spectral periodogram
+typedef struct spgram_s * spgram;
+spgram spgram_create(unsigned int _nfft);
+void spgram_destroy(spgram _q);
+void spgram_push(spgram _q,
+                 liquid_float_complex * _x,
+                 unsigned int _n);
+void spgram_execute(spgram _q,
+                    float * _X);
+
 // ascii spectrogram
 typedef struct asgram_s * asgram;
 asgram asgram_create(liquid_float_complex *_x, unsigned int _n);
