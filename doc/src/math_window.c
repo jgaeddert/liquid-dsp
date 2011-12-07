@@ -134,7 +134,7 @@ int main(int argc, char*argv[])
     fprintf(fid,"set pointsize 0.6\n");
     fprintf(fid,"set grid linetype 1 linecolor rgb '%s' lw 1\n", LIQUID_DOC_COLOR_GRID);
     fprintf(fid,"set border 0\n");
-    fprintf(fid,"set zeroaxis linewidth 4 linetype 1 linecolor rgb '#000000'\n");
+    //fprintf(fid,"set zeroaxis linewidth 4 linetype 1 linecolor rgb '#000000'\n");
     fprintf(fid,"plot '-' using 1:2 with impulses linetype 1 linewidth 4 linecolor rgb '#000000' notitle\n");
 
     // print window
