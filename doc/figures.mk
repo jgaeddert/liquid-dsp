@@ -115,6 +115,8 @@ local_pdffiles :=					\
 	figures.gen/math_window_hann_freq.pdf		\
 	figures.gen/math_window_blackmanharris_time.pdf	\
 	figures.gen/math_window_blackmanharris_freq.pdf	\
+	figures.gen/math_window_kbd_time.pdf		\
+	figures.gen/math_window_kbd_freq.pdf		\
 							\
 	figures.gen/modem_bpsk.pdf			\
 	figures.gen/modem_qpsk.pdf			\
@@ -648,6 +650,10 @@ figures.gen/math_window_hann_freq.gnu : src/math_window
 figures.gen/math_window_blackmanharris_time.gnu \
 figures.gen/math_window_blackmanharris_freq.gnu : src/math_window
 	./$< -w blackmanharris
+
+figures.gen/math_window_kbd_time.gnu \
+figures.gen/math_window_kbd_freq.gnu : src/math_window
+	./$< -w kbd -b12.0 -n 50
 
 #
 # math_polyfit_lagrange

@@ -19,7 +19,7 @@ void usage()
     printf("  n     : window size, default: 51\n");
     printf("  N     : fft size, default: 1024\n");
     printf("  b     : Kaiser-Bessel beta factor\n");
-    printf("  w     : window type {kaiser, hamming, hann, blackmanharris}\n");
+    printf("  w     : window type {kaiser, hamming, hann, blackmanharris, kbd}\n");
     //printf("  o     : output filename\n");
 }
 
@@ -33,7 +33,8 @@ int main(int argc, char*argv[])
         KAISER=0,
         HAMMING,
         HANN,
-        BLACKMANHARRIS
+        BLACKMANHARRIS,
+        KBD
     } wtype;
 
     int dopt;
@@ -49,6 +50,7 @@ int main(int argc, char*argv[])
             else if (strcmp(optarg,"hamming")==0)        wtype = HAMMING;
             else if (strcmp(optarg,"hann")==0)           wtype = HANN;
             else if (strcmp(optarg,"blackmanharris")==0) wtype = BLACKMANHARRIS;
+            else if (strcmp(optarg,"kbd")==0)            wtype = KBD;
             else {
                 fprintf(stderr,"error: %s, unknown/unsupported window '%s'\n", argv[0], optarg);
                 exit(1);
@@ -74,10 +76,11 @@ int main(int argc, char*argv[])
     unsigned int i;
     for (i=0; i<n; i++) {
         switch (wtype) {
-        case KAISER:         w[i] = kaiser(i,n,beta,0);  break;
-        case HAMMING:        w[i] = hamming(i,n);        break;
-        case HANN:           w[i] = hann(i,n);           break;
-        case BLACKMANHARRIS: w[i] = blackmanharris(i,n); break;
+        case KAISER:         w[i] = kaiser(i,n,beta,0);   break;
+        case HAMMING:        w[i] = hamming(i,n);         break;
+        case HANN:           w[i] = hann(i,n);            break;
+        case BLACKMANHARRIS: w[i] = blackmanharris(i,n);  break;
+        case KBD:            w[i] = liquid_kbd(i,n,beta); break;
         default:
             fprintf(stderr,"error: %s, invalid window\n", argv[0]);
             exit(1);
@@ -94,6 +97,7 @@ int main(int argc, char*argv[])
     case HAMMING:        sprintf(wname,"hamming");         break;
     case HANN:           sprintf(wname,"hann");            break;
     case BLACKMANHARRIS: sprintf(wname,"blackmanharris");  break;
+    case KBD:            sprintf(wname,"kbd");             break;
     default:
         fprintf(stderr,"error: %s, invalid window\n", argv[0]);
         exit(1);
