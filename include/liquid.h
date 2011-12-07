@@ -2833,19 +2833,39 @@ LIQUID_MATRIX_DEFINE_API(MATRIX_MANGLE_CDOUBLE, liquid_double_complex)
 
 // Modulation schemes available
 #define LIQUID_MODEM_NUM_SCHEMES      (19)  // generic schemes (e.g. 'qam')
-#define LIQUID_MODEM_NUM_FULL_SCHEMES (51)  // specific schemes (e.g. 'qam256')
+#define LIQUID_MODEM_NUM_FULL_SCHEMES (52)  // specific schemes (e.g. 'qam256')
 typedef enum {
     LIQUID_MODEM_UNKNOWN=0, // Unknown modulation scheme
 
-    // generic modem types
-    LIQUID_MODEM_PSK,       // Phase-shift keying (PSK)
-    LIQUID_MODEM_DPSK,      // differential PSK
-    LIQUID_MODEM_ASK,       // amplitude-shift keying
-    LIQUID_MODEM_QAM,       // quadrature amplitude-shift keying (QAM)
-    LIQUID_MODEM_APSK,      // amplitude phase-shift keying (APSK)
+    // Phase-shift keying (PSK)
+    LIQUID_MODEM_PSK2,      LIQUID_MODEM_PSK4,
+    LIQUID_MODEM_PSK8,      LIQUID_MODEM_PSK16,
+    LIQUID_MODEM_PSK32,     LIQUID_MODEM_PSK64,
+    LIQUID_MODEM_PSK128,    LIQUID_MODEM_PSK256,
 
-    // arbitrary modem types
-    LIQUID_MODEM_ARB,       // arbitrary QAM
+    // Differential phase-shift keying (DPSK)
+    LIQUID_MODEM_DPSK2,     LIQUID_MODEM_DPSK4,
+    LIQUID_MODEM_DPSK8,     LIQUID_MODEM_DPSK16,
+    LIQUID_MODEM_DPSK32,    LIQUID_MODEM_DPSK64,
+    LIQUID_MODEM_DPSK128,   LIQUID_MODEM_DPSK256,
+
+    // amplitude-shift keying
+    LIQUID_MODEM_ASK2,      LIQUID_MODEM_ASK4,
+    LIQUID_MODEM_ASK8,      LIQUID_MODEM_ASK16,
+    LIQUID_MODEM_ASK32,     LIQUID_MODEM_ASK64,
+    LIQUID_MODEM_ASK128,    LIQUID_MODEM_ASK256,
+
+    // rectangular quadrature amplitude-shift keying (QAM)
+    LIQUID_MODEM_QAM4,
+    LIQUID_MODEM_QAM8,      LIQUID_MODEM_QAM16,
+    LIQUID_MODEM_QAM32,     LIQUID_MODEM_QAM64,
+    LIQUID_MODEM_QAM128,    LIQUID_MODEM_QAM256,
+
+    // amplitude phase-shift keying (APSK)
+    LIQUID_MODEM_APSK4,
+    LIQUID_MODEM_APSK8,     LIQUID_MODEM_APSK16,
+    LIQUID_MODEM_APSK32,    LIQUID_MODEM_APSK64,
+    LIQUID_MODEM_APSK128,   LIQUID_MODEM_APSK256,
 
     // specific modem types
     LIQUID_MODEM_BPSK,      // Specific: binary PSK
@@ -2859,7 +2879,10 @@ typedef enum {
     LIQUID_MODEM_ARB64OPT,  // optimal 64-QAM
     LIQUID_MODEM_ARB128OPT, // optimal 128-QAM
     LIQUID_MODEM_ARB256OPT, // optimal 256-QAM
-    LIQUID_MODEM_ARB64VT    // Virginia Tech logo
+    LIQUID_MODEM_ARB64VT,   // Virginia Tech logo
+
+    // arbitrary modem type
+    LIQUID_MODEM_ARB        // arbitrary QAM
 } modulation_scheme;
 
 // Modulation scheme string for printing purposes
