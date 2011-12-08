@@ -36,8 +36,7 @@ void autotest_flexframe_decode_header()
     fgprops.check       = LIQUID_CRC_NONE;
     fgprops.fec0        = LIQUID_FEC_NONE;
     fgprops.fec1        = LIQUID_FEC_NONE;
-    fgprops.mod_scheme  = LIQUID_MODEM_PSK;
-    fgprops.mod_bps     = 3;
+    fgprops.mod_scheme  = LIQUID_MODEM_PSK8;
     fgprops.rampdn_len  = 16;
     flexframegen fg = flexframegen_create(&fgprops);
     if (liquid_autotest_verbose)
