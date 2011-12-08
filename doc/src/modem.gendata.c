@@ -23,8 +23,7 @@ void usage()
 
 int main(int argc, char*argv[]) {
     // create mod/demod objects
-    unsigned int bps=2;
-    modulation_scheme ms = LIQUID_MODEM_PSK;
+    modulation_scheme ms = LIQUID_MODEM_QPSK;
     unsigned int gnuplot_version=0;
     char filename[256];
     strcpy(filename,"");
@@ -43,7 +42,7 @@ int main(int argc, char*argv[]) {
             strncpy(filename,optarg,256);
             break;
         case 'm':
-            liquid_getopt_str2modbps(optarg, &ms, &bps);
+            ms = liquid_getopt_str2mod(optarg);
             if (ms == LIQUID_MODEM_UNKNOWN) {
                 fprintf(stderr,"error: %s, unknown/unsupported modulation scheme \"%s\"\n", argv[0], optarg);
                 return 1;
@@ -54,14 +53,15 @@ int main(int argc, char*argv[]) {
         }
     }
 
+    // create the modem and generate constellation
+    modem mod = modem_create(ms);
+    unsigned int bps = modem_get_bps(mod);
+
     unsigned int i; // modulated symbol
     unsigned int num_symbols = 1<<bps;
     float complex x;
     unsigned int s;
     char symbol_str[bps+1];
-
-    // create the modem and generate constellation
-    modem mod = modem_create(ms, bps);
 
     FILE * fid = fopen(filename,"w");
     if (fid == NULL) {

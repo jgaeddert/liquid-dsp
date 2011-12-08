@@ -26,7 +26,6 @@ void simulate_per(simulate_per_opts _opts,
     }
 
     modulation_scheme ms            = _opts.ms;
-    unsigned int bps                = _opts.bps;
     fec_scheme fec0                 = _opts.fec0;
     fec_scheme fec1                 = _opts.fec1;
     unsigned int dec_msg_len        = _opts.dec_msg_len;
@@ -50,8 +49,9 @@ void simulate_per(simulate_per_opts _opts,
     fec p = fec_create(fec0, NULL);
 
     // create modem
-    modem mod   = modem_create(ms, bps);
-    modem demod = modem_create(ms, bps);
+    modem mod   = modem_create(ms);
+    modem demod = modem_create(ms);
+    unsigned int bps = modem_get_bps(mod);
 
     // derived values
     unsigned int enc_msg_len = fec_get_enc_msg_length(fec0,dec_msg_len);
@@ -160,7 +160,7 @@ void simulate_per(simulate_per_opts _opts,
         if ( (num_packet_trials % 50)==0 && _opts.verbose) {
             float BER = (float)num_bit_errors/(float)num_bit_trials;
             float PER = (float)num_packet_errors/(float)num_packet_trials;
-            float rate = _opts.bps * fec_get_rate(_opts.fec0) * fec_get_rate(_opts.fec1);
+            float rate = bps * fec_get_rate(_opts.fec0) * fec_get_rate(_opts.fec1);
 
             printf(" %c SNR: %6.2f, EbN0: %6.2f, bits: %7lu/%9lu (%8.4e), packets: %6lu/%6lu (%6.2f%%)\r",
                     success ? '*' : ' ',

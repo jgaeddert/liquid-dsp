@@ -20,8 +20,7 @@ int main() {
     fgprops.check           = LIQUID_CRC_32;
     fgprops.fec0            = LIQUID_FEC_NONE;
     fgprops.fec1            = LIQUID_FEC_HAMMING128;
-    fgprops.mod_scheme      = LIQUID_MODEM_QAM;
-    fgprops.mod_bps         = 4;
+    fgprops.mod_scheme      = LIQUID_MODEM_QAM16;
 
     // initialize subcarrier allocation to default
     ofdmframe_init_default_sctype(M, p);

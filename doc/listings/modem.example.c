@@ -3,12 +3,11 @@
 
 int main() {
     // create mod/demod objects
-    unsigned int bps=2;
-    modulation_scheme ms = LIQUID_MODEM_PSK;
+    modulation_scheme ms = LIQUID_MODEM_QPSK;
 
     // create the modem objects
-    modem mod   = modem_create(ms, bps);    // modulator
-    modem demod = modem_create(ms, bps);    // demodulator
+    modem mod   = modem_create(ms); // modulator
+    modem demod = modem_create(ms); // demodulator
     modem_print(mod);
 
     unsigned int sym_in;    // input symbol

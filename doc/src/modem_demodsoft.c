@@ -14,23 +14,29 @@
 int main(int argc, char*argv[])
 {
     // create mod/demod objects
-    modulation_scheme ms = LIQUID_MODEM_QAM;    // modulation scheme
-    unsigned int bps=4;                         // bits/symbol
+    modulation_scheme ms = LIQUID_MODEM_QAM16;  // modulation scheme
     //float complex r = -0.22 + 0.05*_Complex_I;  // received sample
     float complex r = -0.65 - 0.47*_Complex_I;  // received sample
     float gnuplot_version = 4.2;                // gnuplot version
     float sig = 0.20f;                          // noise standard deviation
     char label_filename[] = "figures.gen/modem_demodsoft_labels.dat";
 
+    // validate input
+    if (ms == LIQUID_MODEM_UNKNOWN || ms >= LIQUID_MODEM_NUM_SCHEMES) {
+        fprintf(stderr,"error: %s, invalid modulation scheme\n", argv[0]);
+        exit(1);
+    }
+
     unsigned int i;
     unsigned int k;
 
     // 
+    unsigned int bps = modulation_types[ms].bps;
     unsigned int M = 1<<bps;    // constellation size
     float complex c[M];         // constellation map
 
     // generate symbol table
-    modem q = modem_create(ms, bps);
+    modem q = modem_create(ms);
     for (i=0; i<M; i++)
         modem_modulate(q, i, &c[i]);
     modem_destroy(q);

@@ -36,8 +36,7 @@ int main(int argc, char*argv[]) {
     char input_filename[256] = "datafile.dat";
     char output_filename[256] = "modem.gnu";
     //char figure_title[256] = "constellation";
-    unsigned int bps=2;
-    modulation_scheme ms = LIQUID_MODEM_PSK;
+    modulation_scheme ms = LIQUID_MODEM_QPSK;
 
     int dopt;
     while ((dopt = getopt(argc,argv,"uhg:t:d:f:m:")) != EOF) {
@@ -51,7 +50,7 @@ int main(int argc, char*argv[]) {
         case 'd':   strncpy(input_filename,optarg,256);     break;
         case 'f':   strncpy(output_filename,optarg,256);    break;
         case 'm':
-            liquid_getopt_str2modbps(optarg, &ms, &bps);
+            ms = liquid_getopt_str2mod(optarg);
             if (ms == LIQUID_MODEM_UNKNOWN) {
                 fprintf(stderr,"error: %s, unknown/unsupported modulation scheme \"%s\"\n", argv[0], optarg);
                 return 1;
@@ -63,32 +62,38 @@ int main(int argc, char*argv[]) {
     }
 
     // TODO : validate input
+    if (ms == LIQUID_MODEM_UNKNOWN || ms >= LIQUID_MODEM_NUM_SCHEMES) {
+        fprintf(stderr,"error: %s, invalid modulation scheme \n", argv[0]);
+        return 1;
+    }
 
-    // derived options
+    // derived options/values
+    unsigned int bps = modulation_types[ms].bps;
     int plot_labels = (gnuplot_version > 4.1) && (bps < 8);
     int plot_long_labels = 0;
 
     unsigned int i;
 
-    // determine appropriate range
-    float range = 1.5f;
-    if ( (ms == LIQUID_MODEM_QAM && bps > 4 && bps%2) ||
-         (ms == LIQUID_MODEM_ASK && bps > 2) )
-    {
-        range = 1.75f;
-    } else if (ms == LIQUID_MODEM_ARB64VT) {
-        range = 2.0f;
-    } else if (ms == LIQUID_MODEM_PSK) {
-        range = 1.2f;
-    }
-
     // generate modem, compute constellation, derive plot style accordingly
     unsigned int M = 1<<bps;
     float complex constellation[M];
-    modem q = modem_create(ms, bps);
+    modem q = modem_create(ms);
     for (i=0; i<M; i++)
         modem_modulate(q, i, &constellation[i]);
     modem_destroy(q);
+
+    // determine maximum real/imag absolute value
+    float max_abs = 0.0f;
+    for (i=0; i<M; i++) {
+        if ( cabsf(crealf(constellation[i])) > max_abs )
+            max_abs = cabsf(crealf(constellation[i]));
+        if ( cabsf(cimagf(constellation[i])) > max_abs )
+            max_abs = cabsf(cimagf(constellation[i]));
+    }
+    // determine appropriate range
+    float range = 1.5f;
+    while (range < max_abs)
+        range += 0.25f;
 
     // determine minimum distance between any two points
     float dmin = 0.0f;
@@ -128,14 +133,44 @@ int main(int argc, char*argv[]) {
     fprintf(fid,"set ylabel \"Q\"\n");
     fprintf(fid,"set nokey # disable legned\n");
     // TODO : set grid type (e.g. polar) according to scheme
-    if (ms == LIQUID_MODEM_BPSK ||
-        ms == LIQUID_MODEM_QPSK ||
-        ms == LIQUID_MODEM_PSK  ||
-        ms == LIQUID_MODEM_DPSK ||
-        ms == LIQUID_MODEM_APSK)
-    {
+    switch (ms) {
+    // Phase-shift keying (PSK)
+    case LIQUID_MODEM_PSK2:
+    case LIQUID_MODEM_PSK4:
+    case LIQUID_MODEM_PSK8:
+    case LIQUID_MODEM_PSK16:
+    case LIQUID_MODEM_PSK32:
+    case LIQUID_MODEM_PSK64:
+    case LIQUID_MODEM_PSK128:
+    case LIQUID_MODEM_PSK256:
+
+    // Differential phase-shift keying (DPSK)
+    case LIQUID_MODEM_DPSK2:
+    case LIQUID_MODEM_DPSK4:
+    case LIQUID_MODEM_DPSK8:
+    case LIQUID_MODEM_DPSK16:
+    case LIQUID_MODEM_DPSK32:
+    case LIQUID_MODEM_DPSK64:
+    case LIQUID_MODEM_DPSK128:
+    case LIQUID_MODEM_DPSK256:
+
+    // amplitude phase-shift keying (APSK)
+    case LIQUID_MODEM_APSK4:
+    case LIQUID_MODEM_APSK8:
+    case LIQUID_MODEM_APSK16:
+    case LIQUID_MODEM_APSK32:
+    case LIQUID_MODEM_APSK64:
+    case LIQUID_MODEM_APSK128:
+    case LIQUID_MODEM_APSK256:
+
+    // specific modems
+    case LIQUID_MODEM_BPSK:
+    case LIQUID_MODEM_QPSK:
+        
         fprintf(fid,"set grid polar\n");
-    } else {
+        break;
+    
+    default:
         fprintf(fid,"set grid xtics ytics\n");
     }
     fprintf(fid,"set grid linetype 1 linecolor rgb '%s' linewidth 1\n",LIQUID_DOC_COLOR_GRID);
