@@ -2832,8 +2832,8 @@ LIQUID_MATRIX_DEFINE_API(MATRIX_MANGLE_CDOUBLE, liquid_double_complex)
 #define MAX_MOD_BITS_PER_SYMBOL 8
 
 // Modulation schemes available
-#define LIQUID_MODEM_NUM_SCHEMES      (19)  // generic schemes (e.g. 'qam')
-#define LIQUID_MODEM_NUM_FULL_SCHEMES (52)  // specific schemes (e.g. 'qam256')
+#define LIQUID_MODEM_NUM_SCHEMES      (52)
+
 typedef enum {
     LIQUID_MODEM_UNKNOWN=0, // Unknown modulation scheme
 
@@ -2885,8 +2885,16 @@ typedef enum {
     LIQUID_MODEM_ARB        // arbitrary QAM
 } modulation_scheme;
 
-// Modulation scheme string for printing purposes
-extern const char* modulation_scheme_str[LIQUID_MODEM_NUM_SCHEMES][2];
+// structure for holding full modulation type descriptor
+struct modulation_type_s {
+    const char * name;          // short name (e.g. 'bpsk')
+    const char * fullname;      // full name (e.g. 'binary phase-shift keying')
+    modulation_scheme scheme;   // modulation scheme (e.g. LIQUID_MODEM_BPSK)
+    unsigned int bps;           // modulation depth (e.g. 1)
+};
+
+// full modulation type descriptor
+extern const struct modulation_type_s modulation_types[LIQUID_MODEM_NUM_SCHEMES];
 
 // Print compact list of existing and available modulation schemes
 void liquid_print_modulation_schemes();
@@ -2894,10 +2902,6 @@ void liquid_print_modulation_schemes();
 // returns modulation_scheme based on input string
 modulation_scheme liquid_getopt_str2mod(const char * _str);
 
-// returns modulation_scheme and depth based on input string
-void liquid_getopt_str2modbps(const char * _str,
-                              modulation_scheme * _ms,
-                              unsigned int * _bps);
 
 // useful functions
 
@@ -2944,13 +2948,11 @@ void liquid_unpack_soft_bits(unsigned int _sym_in,
 typedef struct modem_s * modem;
 
 // create digital modem object, allocating memory as necessary
-modem modem_create(modulation_scheme _scheme,
-                   unsigned int _bits_per_symbol);
+modem modem_create(modulation_scheme _scheme);
 
 // recreate modulation scheme, re-allocating memory as necessary
 modem modem_recreate(modem _q,
-                     modulation_scheme _scheme,
-                     unsigned int _bits_per_symbol);
+                     modulation_scheme _scheme);
 
 void modem_destroy(modem _mod);
 void modem_print(modem _mod);
