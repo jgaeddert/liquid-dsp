@@ -2121,7 +2121,6 @@ typedef struct {
     unsigned int fec0;          // forward error-correction scheme (inner)
     unsigned int fec1;          // forward error-correction scheme (outer)
     unsigned int mod_scheme;    // modulation scheme
-    unsigned int mod_bps;       // modulation depth (bits/symbol)
     //unsigned int block_size;  // framing block size
 } ofdmflexframegenprops_s;
 void ofdmflexframegenprops_init_default(ofdmflexframegenprops_s * _props);
