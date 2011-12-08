@@ -40,7 +40,7 @@ int main(int argc, char*argv[])
     float rssi[num_samples];
 
     // create objects
-    modem mod = modem_create(LIQUID_MODEM_QPSK,2);
+    modem mod = modem_create(LIQUID_MODEM_QPSK);
     interp_crcf interp = interp_crcf_create_rnyquist(LIQUID_RNYQUIST_RRC,k,m,beta,dt);
     agc_crcf p = agc_crcf_create();
     agc_crcf_set_bandwidth(p, bt);

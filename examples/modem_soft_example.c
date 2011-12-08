@@ -40,8 +40,7 @@ void print_bitstring(unsigned int _x,
 int main(int argc, char*argv[])
 {
     // create mod/demod objects
-    unsigned int bps=2;
-    modulation_scheme ms = LIQUID_MODEM_PSK;
+    modulation_scheme ms = LIQUID_MODEM_QPSK;
 
     int dopt;
     while ((dopt = getopt(argc,argv,"uhm:")) != EOF) {
@@ -50,7 +49,7 @@ int main(int argc, char*argv[])
             usage();
             return 0;
         case 'm':
-            liquid_getopt_str2modbps(optarg, &ms, &bps);
+            ms = liquid_getopt_str2mod(optarg);
             if (ms == LIQUID_MODEM_UNKNOWN) {
                 fprintf(stderr,"error: %s, unknown/unsupported modulation scheme '%s'\n", argv[0], optarg);
                 return 1;
@@ -62,12 +61,12 @@ int main(int argc, char*argv[])
     }
 
     // create the modem objects
-    modem mod   = modem_create(ms, bps);
-    modem demod = modem_create(ms, bps);
+    modem mod   = modem_create(ms);
+    modem demod = modem_create(ms);
 
     // ensure bits/symbol matches modem description (only
     // applicable to certain specific modems)
-    bps = modem_get_bps(mod);
+    unsigned int bps = modem_get_bps(mod);
 
     modem_print(mod);
 

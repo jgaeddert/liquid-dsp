@@ -41,8 +41,7 @@ int main(int argc, char *argv[]) {
     float noise_floor = -30.0f;     // noise floor
     unsigned int m = 3;             // filter delay
     float beta = 0.7f;              // filter excess bandwidth
-    modulation_scheme mod_scheme = LIQUID_MODEM_PSK;
-    unsigned int bps = 2;           // modulation depth (bits/symbol)
+    modulation_scheme mod_scheme = LIQUID_MODEM_QPSK;
     unsigned int payload_len = 64;  // payload length
 
     // derived values
@@ -60,7 +59,6 @@ int main(int argc, char *argv[]) {
     fgprops.fec0        = LIQUID_FEC_NONE;
     fgprops.fec1        = LIQUID_FEC_NONE;
     fgprops.mod_scheme  = mod_scheme;
-    fgprops.mod_bps     = bps;
     fgprops.rampdn_len  = 64;
     flexframegen fg = flexframegen_create(&fgprops);
     flexframegen_print(fg);

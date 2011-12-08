@@ -50,7 +50,6 @@ int main(int argc, char*argv[])
     unsigned int payload_len = 120;     // length of payload (bytes)
     unsigned int num_symbols_S0 = 3;    // number of S0 training symbols
     modulation_scheme ms = LIQUID_MODEM_QPSK;
-    unsigned int bps = 2;
     fec_scheme fec0  = LIQUID_FEC_NONE;
     fec_scheme fec1  = LIQUID_FEC_HAMMING128;
     crc_scheme check = LIQUID_CRC_32;
@@ -70,7 +69,7 @@ int main(int argc, char*argv[])
         case 'C': cp_len        = atoi(optarg); break;
         case 'n': payload_len   = atol(optarg); break;
         case 'm':
-            liquid_getopt_str2modbps(optarg, &ms, &bps);
+            ms = liquid_getopt_str2mod(optarg);
             if (ms == LIQUID_MODEM_UNKNOWN) {
                 fprintf(stderr,"error: %s, unknown/unsupported mod. scheme: %s\n", argv[0], optarg);
                 exit(-1);
@@ -131,7 +130,6 @@ int main(int argc, char*argv[])
     fgprops.fec0            = fec0;
     fgprops.fec1            = fec1;
     fgprops.mod_scheme      = ms;
-    fgprops.mod_bps         = bps;
     ofdmflexframegen fg = ofdmflexframegen_create(M, cp_len, p, &fgprops);
 
     // create frame synchronizer

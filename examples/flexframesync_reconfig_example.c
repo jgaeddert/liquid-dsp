@@ -139,8 +139,7 @@ int main(int argc, char *argv[]) {
         fgprops.check       = LIQUID_CRC_NONE;      // data validity check
         fgprops.fec0        = LIQUID_FEC_NONE;      // inner FEC scheme
         fgprops.fec1        = LIQUID_FEC_NONE;      // outer FEC scheme
-        fgprops.mod_scheme  = LIQUID_MODEM_PSK;     // PSK
-        fgprops.mod_bps     = (rand() % 4) + 1;     // random bits/symbol
+        fgprops.mod_scheme  = (rand() % 2) ? LIQUID_MODEM_QPSK : LIQUID_MODEM_QAM16;
         fgprops.rampdn_len  = 64;
 
         // set properties
