@@ -46,7 +46,6 @@ static flexframegenprops_s flexframegenprops_default = {
     LIQUID_FEC_NONE,    // fec0
     LIQUID_FEC_NONE,    // fec1
     LIQUID_MODEM_BPSK,  // mod_scheme
-    1,                  // mod_bps
     16                  // rampdn_len
 };
 
@@ -103,7 +102,7 @@ flexframegen flexframegen_create(flexframegenprops_s * _props)
     msequence_destroy(ms);
 
     // create header objects
-    fg->mod_header = modem_create(LIQUID_MODEM_BPSK, 1);
+    fg->mod_header = modem_create(LIQUID_MODEM_BPSK);
     fg->p_header   = packetizer_create(19, LIQUID_CRC_16, LIQUID_FEC_HAMMING128, LIQUID_FEC_NONE);
     assert(packetizer_get_enc_msg_len(fg->p_header)==32);
 
@@ -117,7 +116,7 @@ flexframegen flexframegen_create(flexframegenprops_s * _props)
     fg->payload_samples_numalloc = 1;
 
     // create payload modem (initially bpsk, overridden by properties)
-    fg->mod_payload = modem_create(LIQUID_MODEM_BPSK, 1);
+    fg->mod_payload = modem_create(LIQUID_MODEM_BPSK);
 
     // initialize properties
     if (_props != NULL)
@@ -166,10 +165,7 @@ void flexframegen_setprops(flexframegen _fg,
                            flexframegenprops_s * _props)
 {
     // validate input
-    if (_props->mod_bps == 0) {
-        fprintf(stderr, "error: flexframegen_setprops(), modulation depth must be greater than 0\n");
-        exit(1);
-    } else if (_props->check == LIQUID_CRC_UNKNOWN || _props->check >= LIQUID_CRC_NUM_SCHEMES) {
+    if (_props->check == LIQUID_CRC_UNKNOWN || _props->check >= LIQUID_CRC_NUM_SCHEMES) {
         fprintf(stderr, "error: flexframegen_setprops(), invalid/unsupported CRC scheme\n");
         exit(1);
     } else if (_props->fec0 == LIQUID_FEC_UNKNOWN || _props->fec1 == LIQUID_FEC_UNKNOWN) {
@@ -193,7 +189,7 @@ void flexframegen_setprops(flexframegen _fg,
 
     // re-create modem
     modem_destroy(_fg->mod_payload);
-    _fg->mod_payload = modem_create(_fg->props.mod_scheme, _fg->props.mod_bps);
+    _fg->mod_payload = modem_create(_fg->props.mod_scheme);
 
     // re-compute payload and frame lengths
     flexframegen_compute_payload_len(_fg);
@@ -215,9 +211,7 @@ void flexframegen_print(flexframegen _fg)
     printf("    fec (inner)         :   %s\n", fec_scheme_str[_fg->props.fec0][1]);
     printf("    fec (outer)         :   %s\n", fec_scheme_str[_fg->props.fec1][1]);
     printf("    payload len, coded  :   %u bytes\n", _fg->payload_enc_msg_len);
-    printf("    modulation scheme   :   %u-%s\n",
-        1<<_fg->props.mod_bps,
-        modulation_types[_fg->props.mod_scheme].name);
+    printf("    modulation scheme   :   %s\n", modulation_types[_fg->props.mod_scheme].name);
     printf("    num payload symbols :   %u\n", _fg->num_payload_symbols);
     printf("    ramp dn len         :   %u\n", _fg->props.rampdn_len);
 }
@@ -289,10 +283,11 @@ void flexframegen_execute(flexframegen _fg,
 // compute length of payload (number of symbols)
 void flexframegen_compute_payload_len(flexframegen _fg)
 {
-    // num_payload_symbols = ceil( payload_len / mod_bps )
+    // num_payload_symbols = ceil( payload_len / bps )
 
     // compute integer division, keeping track of remainder
-    div_t d = div(8*_fg->payload_enc_msg_len, _fg->props.mod_bps);
+    unsigned int bps = modulation_types[_fg->props.mod_scheme].bps;
+    div_t d = div(8*_fg->payload_enc_msg_len, bps);
 
     // extend number of payload symbols if remainder is present
     _fg->num_payload_symbols = d.quot + (d.rem ? 1 : 0);
@@ -354,10 +349,7 @@ void flexframegen_encode_header(flexframegen _fg)
     _fg->header[15] = (_fg->props.payload_len     ) & 0xff;
 
     // add modulation scheme/depth (pack into single byte)
-    //  mod. scheme : most-significant five bits
-    //  mod. depth  : least-significant three bits (-1)
-    _fg->header[16]  = ( _fg->props.mod_scheme & 0x1f) << 3;
-    _fg->header[16] |= ((_fg->props.mod_bps-1) & 0x07);
+    _fg->header[16]  = (unsigned int)(_fg->props.mod_scheme);
 
     // add CRC, forward error-correction schemes
     //  CRC     : most-significant 3 bits of [17]
@@ -376,8 +368,7 @@ void flexframegen_encode_header(flexframegen _fg)
 #if DEBUG_FLEXFRAMEGEN_PRINT
     // print results
     printf("flexframegen_encode_header():\n");
-    printf("    mod scheme  : %u\n", _fg->props.mod_scheme);
-    printf("    mod depth   : %u\n", _fg->props.mod_bps);
+    printf("    mod scheme  : %s\n", modulation_types[_fg->props.mod_scheme].fullname);
     printf("    payload len : %u\n", _fg->props.payload_len);
     printf("    header key  : 0x%.8x\n", header_key);
 
@@ -416,10 +407,11 @@ void flexframegen_modulate_payload(flexframegen _fg)
     // clear payload
     memset(_fg->payload_sym, 0x00, _fg->payload_enc_msg_len);
 
-    // repack 8-bit payload bytes into 'mod_bps'-bit payload symbols
+    // repack 8-bit payload bytes into 'bps'-bit payload symbols
+    unsigned int bps = modulation_types[_fg->props.mod_scheme].bps;
     unsigned int num_written;
-    liquid_repack_bytes(_fg->payload,     8, _fg->payload_enc_msg_len,
-                        _fg->payload_sym,  _fg->props.mod_bps,   _fg->num_payload_symbols,
+    liquid_repack_bytes(_fg->payload,     8,   _fg->payload_enc_msg_len,
+                        _fg->payload_sym, bps, _fg->num_payload_symbols,
                         &num_written);
 
     // modulate symbols

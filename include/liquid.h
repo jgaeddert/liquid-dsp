@@ -1907,7 +1907,6 @@ typedef struct {
     unsigned int fec0;          // forward error-correction scheme (inner)
     unsigned int fec1;          // forward error-correction scheme (outer)
     unsigned int mod_scheme;    // modulation scheme
-    unsigned int mod_bps;       // modulation depth (bits/symbol)
     unsigned int rampdn_len;    // number of ramp\down symbols
 } flexframegenprops_s;
 void flexframegenprops_init_default(flexframegenprops_s * _props);
