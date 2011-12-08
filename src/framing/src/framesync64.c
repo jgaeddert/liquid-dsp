@@ -176,8 +176,8 @@ framesync64 framesync64_create(framesyncprops_s * _props,
     fs->p_payload = packetizer_create(64, LIQUID_CRC_16, LIQUID_FEC_NONE, LIQUID_FEC_HAMMING128);
 
     // create demod
-    fs->demod_payload = modem_create(LIQUID_MODEM_QPSK, 2);
-    fs->demod_header  = modem_create(LIQUID_MODEM_BPSK, 1);
+    fs->demod_payload = modem_create(LIQUID_MODEM_QPSK);
+    fs->demod_header  = modem_create(LIQUID_MODEM_BPSK);
 
     // set status flags
     fs->state = FRAMESYNC64_STATE_SEEKPN;
