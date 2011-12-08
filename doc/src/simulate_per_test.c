@@ -149,7 +149,7 @@ int main(int argc, char*argv[]) {
     fprintf(fid,"xlabel('SNR [dB]');\n");
     fprintf(fid,"ylabel('Bit Error Rate');\n");
     fprintf(fid,"legend('uncoded BPSK','modem: %s (M=%u) // fec: %s',1);\n",
-            modulation_scheme_str[opts.ms][0], 1<<opts.bps, fec_scheme_str[opts.fec0][0]);
+            modulation_types[opts.ms].name, 1<<opts.bps, fec_scheme_str[opts.fec0][0]);
     fprintf(fid,"grid on;\n");
 
     fclose(fid);

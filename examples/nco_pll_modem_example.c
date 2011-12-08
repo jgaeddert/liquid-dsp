@@ -91,7 +91,7 @@ int main(int argc, char*argv[]) {
 
     // print parameters
     printf("PLL example :\n");
-    printf("modem : %u-%s\n", 1<<bps, modulation_scheme_str[0][ms]);
+    printf("modem : %u-%s\n", 1<<bps, modulation_types[ms].name);
     printf("frequency offset: %6.3f, phase offset: %6.3f, SNR: %6.2fdB, pll b/w: %6.3f\n",
             frequency_offset, phase_offset, SNRdB, pll_bandwidth);
 

@@ -122,7 +122,7 @@ void modem_destroy(modem _mod)
 void modem_print(modem _mod)
 {
     printf("linear modem:\n");
-    printf("    scheme:         %s\n", modulation_scheme_str[_mod->scheme][0]);
+    printf("    scheme:         %s\n", modulation_types[_mod->scheme].name);
     printf("    bits/symbol:    %u\n", _mod->m);
 }
 

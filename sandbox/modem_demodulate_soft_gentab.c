@@ -152,8 +152,8 @@ int main() {
 
     // print c-type array
     printf("\n");
-    printf("// %s%u soft demodulation nearest neighbors (p=%u)\n", modulation_scheme_str[ms][0], M, p);
-    printf("const unsigned char %s%u_demod_soft_neighbors[%u] = {\n", modulation_scheme_str[ms][0], M, p*M);
+    printf("// %s%u soft demodulation nearest neighbors (p=%u)\n", modulation_types[ms].name, M, p);
+    printf("const unsigned char %s%u_demod_soft_neighbors[%u] = {\n", modulation_types[ms].name, M, p*M);
     printf("    ");
     for (i=0; i<M; i++) {
         for (k=0; k<p; k++) {

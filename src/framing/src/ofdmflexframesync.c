@@ -466,7 +466,7 @@ void ofdmflexframesync_decode_header(ofdmflexframesync _q)
     // print results
 #if DEBUG_OFDMFLEXFRAMESYNC
     printf("    properties:\n");
-    printf("      * mod scheme      :   %s (%u b/s)\n", modulation_scheme_str[mod_scheme][1], mod_depth);
+    printf("      * mod scheme      :   %s\n", modulation_types[mod_scheme].fullname);
     printf("      * fec (inner)     :   %s\n", fec_scheme_str[fec0][1]);
     printf("      * fec (outer)     :   %s\n", fec_scheme_str[fec1][1]);
     printf("      * CRC scheme      :   %s\n", crc_scheme_str[check][1]);

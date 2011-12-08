@@ -146,7 +146,7 @@ int main(int argc, char *argv[]) {
     for (i=0; i<argc; i++) fprintf(fid,"%s ", argv[i]);
     fprintf(fid,"\n");
     fprintf(fid,"#\n");
-    fprintf(fid,"#  modulation scheme   :   %s\n", modulation_scheme_str[opts.ms][1]);
+    fprintf(fid,"#  modulation scheme   :   %s\n", modulation_types[opts.ms].fullname);
     fprintf(fid,"#  modulation depth    :   %u bits/symbol\n", opts.bps);
     fprintf(fid,"#  fec (inner)         :   %s\n", fec_scheme_str[opts.fec0][1]);
     fprintf(fid,"#  fec (outer)         :   %s\n", fec_scheme_str[opts.fec1][1]);

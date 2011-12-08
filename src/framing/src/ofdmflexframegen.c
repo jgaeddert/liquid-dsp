@@ -232,7 +232,7 @@ void ofdmflexframegen_print(ofdmflexframegen _q)
     printf("      * data            :   %-u\n", _q->M_data);
     printf("    cyclic prefix len   :   %-u\n", _q->cp_len);
     printf("    properties:\n");
-    printf("      * mod scheme      :   %s (%u b/s)\n", modulation_scheme_str[_q->props.mod_scheme][1], _q->props.mod_bps);
+    printf("      * mod scheme      :   %s\n", modulation_types[_q->props.mod_scheme].fullname);
     printf("      * fec (inner)     :   %s\n", fec_scheme_str[_q->props.fec0][1]);
     printf("      * fec (outer)     :   %s\n", fec_scheme_str[_q->props.fec1][1]);
     printf("      * CRC scheme      :   %s\n", crc_scheme_str[_q->props.check][1]);
