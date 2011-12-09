@@ -1673,6 +1673,12 @@ modem modem_create_dpsk(unsigned int _bits_per_symbol);
 modem modem_create_apsk(unsigned int _bits_per_symbol);
 modem modem_create_arb(unsigned int _bits_per_symbol);
 
+// Initialize arbitrary modem constellation
+void modem_arb_init(modem _mod, liquid_float_complex *_symbol_map, unsigned int _len);
+
+// Initialize arbitrary modem constellation on data from external file
+void modem_arb_init_file(modem _mod, char* filename);
+
 // specific modem create routines
 modem modem_create_bpsk(void);
 modem modem_create_qpsk(void);

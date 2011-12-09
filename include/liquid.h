@@ -2965,12 +2965,6 @@ void modem_destroy(modem _mod);
 void modem_print(modem _mod);
 void modem_reset(modem _mod);
 
-// Initialize arbitrary modem constellation
-void modem_arb_init(modem _mod, liquid_float_complex *_symbol_map, unsigned int _len);
-
-// Initialize arbitrary modem constellation on data from external file
-void modem_arb_init_file(modem _mod, char* filename);
-
 // Generate random symbol
 unsigned int modem_gen_rand_sym(modem _mod);
 
