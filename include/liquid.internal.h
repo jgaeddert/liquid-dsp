@@ -1682,8 +1682,6 @@ modem modem_create_psk(unsigned int _bits_per_symbol);
 modem modem_create_dpsk(unsigned int _bits_per_symbol);
 modem modem_create_apsk(unsigned int _bits_per_symbol);
 modem modem_create_arb(unsigned int _bits_per_symbol);
-modem modem_create_arb_mirrored(unsigned int _bits_per_symbol);
-modem modem_create_arb_rotated(unsigned int _bits_per_symbol);
 
 // specific modem create routines
 modem modem_create_bpsk(void);
