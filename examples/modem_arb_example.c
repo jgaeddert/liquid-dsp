@@ -25,7 +25,6 @@ void usage()
     printf("modem_arb_example [options]\n");
     printf("  u/h   : print usage\n");
     printf("  p     : modulation depth (default 4 bits/symbol)\n");
-    printf("  f     : input constellation file name\n");
 }
 
 int main(int argc, char*argv[])
@@ -33,16 +32,13 @@ int main(int argc, char*argv[])
     // options
     unsigned int bps=6;         // bits per symbol
     unsigned int n=1024;        // number of data points to evaluate
-    char filename[256] = "";
-    filename[255] = '\0';
 
     int dopt;
-    while ((dopt = getopt(argc,argv,"uhp:f:")) != EOF) {
+    while ((dopt = getopt(argc,argv,"uhp:")) != EOF) {
         switch (dopt) {
         case 'u':
         case 'h': usage(); return 0;
         case 'p': bps = atoi(optarg); break;
-        case 'f': strncpy(filename,optarg,255); break;
         default:
             exit(1);
         }
@@ -58,35 +54,18 @@ int main(int argc, char*argv[])
     unsigned int i;
     unsigned int M = 1<<bps;    // constellation size
 
-    // create mod/demod objects
-    // TODO : use special create_arb() method
-    modem mod   = modem_create(LIQUID_MODEM_ARB);
-    modem demod = modem_create(LIQUID_MODEM_ARB);
-
-    // initialize mod/demod objects (NOTE: arbitrary modem
-    // objects MUST be initialized before use)
-    if ( strncmp(filename,"",256)==0 ) {
-        float complex constellation[M];
-#if 0
-        // initialize constellation (random)
-        for (i=0; i<M; i++)
-            constellation[i] = randnf() * cexpf(_Complex_I*M_PI*randf());
-#else
-        // initialize constellation (spiral)
-        for (i=0; i<M; i++) {
-            float r   = (float)i / logf((float)M) + 4.0f;
-            float phi = (float)i / logf((float)M);
-            constellation[i] = r * cexpf(_Complex_I*phi);
-        }
-#endif
-        modem_arb_init(mod,  constellation,M);
-        modem_arb_init(demod,constellation,M);
-    } else {
-        printf("%s, initializing modem on input file '%s'\n", argv[0], filename);
-        // initialize on file
-        modem_arb_init_file(mod,   filename);
-        modem_arb_init_file(demod, filename);
+    // initialize constellation table
+    float complex constellation[M];
+    // initialize constellation (spiral)
+    for (i=0; i<M; i++) {
+        float r   = (float)i / logf((float)M) + 4.0f;
+        float phi = (float)i / logf((float)M);
+        constellation[i] = r * cexpf(_Complex_I*phi);
     }
+    
+    // create mod/demod objects
+    modem mod   = modem_create_arbitrary(constellation, M);
+    modem demod = modem_create_arbitrary(constellation, M);
 
     modem_print(mod);
 
