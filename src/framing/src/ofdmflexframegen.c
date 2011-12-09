@@ -236,21 +236,24 @@ void ofdmflexframegen_print(ofdmflexframegen _q)
     printf("      * fec (inner)     :   %s\n", fec_scheme_str[_q->props.fec0][1]);
     printf("      * fec (outer)     :   %s\n", fec_scheme_str[_q->props.fec1][1]);
     printf("      * CRC scheme      :   %s\n", crc_scheme_str[_q->props.check][1]);
-    printf("    payload:\n");
-    printf("      * decoded bytes   :   %-u\n", _q->payload_dec_len);
-    printf("      * encoded bytes   :   %-u\n", _q->payload_enc_len);
-    printf("      * modulated syms  :   %-u\n", _q->payload_mod_len);
-    printf("    total OFDM symbols  :   %-u\n", ofdmflexframegen_getframelen(_q));
-    printf("      * S0 symbols      :   %-u @ %u\n", _q->props.num_symbols_S0, _q->M);
-    printf("      * S1 symbols      :   %-u @ %u\n", 1, _q->M+_q->cp_len);
-    printf("      * header symbols  :   %-u @ %u\n", _q->num_symbols_header,  _q->M+_q->cp_len);
-    printf("      * payload symbols :   %-u @ %u\n", _q->num_symbols_payload, _q->M+_q->cp_len);
+    printf("    frame assembled     :   %s\n", _q->frame_assembled ? "yes" : "no");
+    if (_q->frame_assembled) {
+        printf("    payload:\n");
+        printf("      * decoded bytes   :   %-u\n", _q->payload_dec_len);
+        printf("      * encoded bytes   :   %-u\n", _q->payload_enc_len);
+        printf("      * modulated syms  :   %-u\n", _q->payload_mod_len);
+        printf("    total OFDM symbols  :   %-u\n", ofdmflexframegen_getframelen(_q));
+        printf("      * S0 symbols      :   %-u @ %u\n", _q->props.num_symbols_S0, _q->M);
+        printf("      * S1 symbols      :   %-u @ %u\n", 1, _q->M+_q->cp_len);
+        printf("      * header symbols  :   %-u @ %u\n", _q->num_symbols_header,  _q->M+_q->cp_len);
+        printf("      * payload symbols :   %-u @ %u\n", _q->num_symbols_payload, _q->M+_q->cp_len);
 
-    // compute asymptotic spectral efficiency
-    unsigned int num_bits = 8*_q->payload_dec_len;
-    unsigned int num_samples = _q->M*_q->props.num_symbols_S0 +
-                               (_q->M+_q->cp_len)*(1 + _q->num_symbols_header + _q->num_symbols_payload);
-    printf("    spectral efficiency :   %-6.4f b/s/Hz\n", (float)num_bits / (float)num_samples);
+        // compute asymptotic spectral efficiency
+        unsigned int num_bits = 8*_q->payload_dec_len;
+        unsigned int num_samples = _q->M*_q->props.num_symbols_S0 +
+                                   (_q->M+_q->cp_len)*(1 + _q->num_symbols_header + _q->num_symbols_payload);
+        printf("    spectral efficiency :   %-6.4f b/s/Hz\n", (float)num_bits / (float)num_samples);
+    }
 }
 
 // get ofdmflexframegen properties
