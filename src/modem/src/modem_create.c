@@ -116,6 +116,28 @@ modem modem_create(modulation_scheme _scheme)
     return NULL;
 }
 
+// create arbitrary digital modem object
+modem modem_create_arbitrary(liquid_float_complex * _table,
+                             unsigned int _M)
+{
+    // strip out bits/symbol
+    unsigned int m = liquid_nextpow2(_M);
+    if ( (1<<m) != _M ) {
+        // TODO : eventually support non radix-2 constellation sizes
+        fprintf(stderr,"error: modem_create_arbitrary(), input constellation size must be power of 2\n");
+        exit(1);
+    }
+
+    // create arbitrary modem object, not initialized
+    modem q = modem_create_arb(m);
+
+    // initialize object from table
+    modem_arb_init(q, _table, _M);
+
+    // return object
+    return q;
+}
+
 // recreate modulation scheme, re-allocating memory as necessary
 modem modem_recreate(modem _q,
                      modulation_scheme _scheme)

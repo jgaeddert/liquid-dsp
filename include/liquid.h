@@ -2954,6 +2954,9 @@ typedef struct modem_s * modem;
 // create digital modem object, allocating memory as necessary
 modem modem_create(modulation_scheme _scheme);
 
+// create arbitrary digital modem object
+modem modem_create_arbitrary(liquid_float_complex * _table, unsigned int _M);
+
 // recreate modulation scheme, re-allocating memory as necessary
 modem modem_recreate(modem _q,
                      modulation_scheme _scheme);
