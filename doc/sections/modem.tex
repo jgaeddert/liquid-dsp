@@ -237,16 +237,15 @@ take advantage of symmetries in certain constellations to reduce this.
 \begin{tabular*}{0.95\textwidth}{l@{\extracolsep{\fill}}ll}
 \toprule
 {\it scheme} &
-{\it depth range (bits/symbol)} &
+{\it bits/symbol} &
 {\it description}\\\otoprule
 %
-{\tt LIQUID\_MODEM\_UNKNOWN}    & -     & unknown/unsupported scheme\\
-{\tt LIQUID\_MODEM\_PSK}        & 1|8   & phase-shift keying\\
-{\tt LIQUID\_MODEM\_DPSK}       & 1|8   & differential phase-shift keying\\
-{\tt LIQUID\_MODEM\_ASK}        & 1|8   & amplitude-shift keying\\
-{\tt LIQUID\_MODEM\_QAM}        & 2|8   & quadrature amplitude-shift keying\\
-{\tt LIQUID\_MODEM\_APSK}       & 2|8   & amplitude/phase-shift keying\\
-{\tt LIQUID\_MODEM\_ARB}        & 1|8   & arbitrary signal constellation\\\midrule
+{\tt LIQUID\_MODEM\_UNKNOWN}                        & -     & unknown/unsupported scheme\\
+{\tt LIQUID\_MODEM\_PSK\{2,4,8,16,32,64,128,256\}}  & 1|8   & phase-shift keying\\
+{\tt LIQUID\_MODEM\_DPSK\{2,4,8,16,32,64,128,256\}} & 1|8   & differential phase-shift keying\\
+{\tt LIQUID\_MODEM\_ASK\{2,4,8,16,32,64,128,256\}}  & 1|8   & amplitude-shift keying\\
+{\tt LIQUID\_MODEM\_QAM\{4,8,16,32,64,128,256\}}    & 2|8   & quadrature amplitude-shift keying\\
+{\tt LIQUID\_MODEM\_APSK\{4,8,16,32,64,128,256\}}   & 2|8   & amplitude/phase-shift keying\\\midrule
 %
 {\tt LIQUID\_MODEM\_BPSK}       & 1     & binary phase-shift keying\\
 {\tt LIQUID\_MODEM\_QPSK}       & 2     & quaternary phase-shift keying\\
@@ -259,7 +258,9 @@ take advantage of symmetries in certain constellations to reduce this.
 {\tt LIQUID\_MODEM\_ARB64OPT}   & 6     & optimal 64-QAM\\
 {\tt LIQUID\_MODEM\_ARB128OPT}  & 7     & optimal 128-QAM\\
 {\tt LIQUID\_MODEM\_ARB256OPT}  & 8     & optimal 256-QAM\\
-{\tt LIQUID\_MODEM\_ARB64VT}    & 6     & Virginia Tech logo\\\bottomrule
+{\tt LIQUID\_MODEM\_ARB64VT}    & 6     & Virginia Tech logo\\\midrule
+% 
+{\tt LIQUID\_MODEM\_ARB}        & 1|8   & arbitrary signal constellation\\\bottomrule
 % 
 \end{tabular*}
 }
