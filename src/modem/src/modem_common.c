@@ -139,6 +139,105 @@ void liquid_print_modulation_schemes()
     printf("\n");
 }
 
+// query basic modulation types
+int liquid_modem_is_psk(modulation_scheme _ms)
+{
+    switch (_ms) {
+    // Phase-shift keying (PSK)
+    case LIQUID_MODEM_PSK2:
+    case LIQUID_MODEM_PSK4:
+    case LIQUID_MODEM_PSK8:
+    case LIQUID_MODEM_PSK16:
+    case LIQUID_MODEM_PSK32:
+    case LIQUID_MODEM_PSK64:
+    case LIQUID_MODEM_PSK128:
+    case LIQUID_MODEM_PSK256:
+        return 1;
+    default:
+        return 0;
+    }
+
+    return 0;
+}
+
+int liquid_modem_is_dpsk(modulation_scheme _ms)
+{
+    switch (_ms) {
+    // Differential phase-shift keying (DPSK)
+    case LIQUID_MODEM_DPSK2:
+    case LIQUID_MODEM_DPSK4:
+    case LIQUID_MODEM_DPSK8:
+    case LIQUID_MODEM_DPSK16:
+    case LIQUID_MODEM_DPSK32:
+    case LIQUID_MODEM_DPSK64:
+    case LIQUID_MODEM_DPSK128:
+    case LIQUID_MODEM_DPSK256:
+        return 1;
+    default:
+        return 0;
+    }
+
+    return 0;
+}
+
+int liquid_modem_is_ask(modulation_scheme _ms)
+{
+    switch (_ms) {
+    // amplitude-shift keying (ASK)
+    case LIQUID_MODEM_ASK2:
+    case LIQUID_MODEM_ASK4:
+    case LIQUID_MODEM_ASK8:
+    case LIQUID_MODEM_ASK16:
+    case LIQUID_MODEM_ASK32:
+    case LIQUID_MODEM_ASK64:
+    case LIQUID_MODEM_ASK128:
+    case LIQUID_MODEM_ASK256:
+        return 1;
+    default:
+        return 0;
+    }
+
+    return 0;
+}
+
+int liquid_modem_is_qam(modulation_scheme _ms)
+{
+    switch (_ms) {
+    // rectangular quadrature amplitude-shift keying (QAM)
+    case LIQUID_MODEM_QAM4:
+    case LIQUID_MODEM_QAM8:
+    case LIQUID_MODEM_QAM16:
+    case LIQUID_MODEM_QAM32:
+    case LIQUID_MODEM_QAM64:
+    case LIQUID_MODEM_QAM128:
+    case LIQUID_MODEM_QAM256:
+        return 1;
+    default:
+        return 0;
+    }
+
+    return 0;
+}
+
+int liquid_modem_is_apsk(modulation_scheme _ms)
+{
+    switch (_ms) {
+    // amplitude phase-shift keying (APSK)
+    case LIQUID_MODEM_APSK4:
+    case LIQUID_MODEM_APSK8:
+    case LIQUID_MODEM_APSK16:
+    case LIQUID_MODEM_APSK32:
+    case LIQUID_MODEM_APSK64:
+    case LIQUID_MODEM_APSK128:
+    case LIQUID_MODEM_APSK256:
+        return 1;
+    default:
+        return 0;
+    }
+
+    return 0;
+}
+
 
 // Generate random symbol
 unsigned int modem_gen_rand_sym(modem _mod)

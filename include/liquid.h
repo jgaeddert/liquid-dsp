@@ -2900,6 +2900,12 @@ void liquid_print_modulation_schemes();
 // returns modulation_scheme based on input string
 modulation_scheme liquid_getopt_str2mod(const char * _str);
 
+// query basic modulation types
+int liquid_modem_is_psk(modulation_scheme _ms);
+int liquid_modem_is_dpsk(modulation_scheme _ms);
+int liquid_modem_is_ask(modulation_scheme _ms);
+int liquid_modem_is_qam(modulation_scheme _ms);
+int liquid_modem_is_apsk(modulation_scheme _ms);
 
 // useful functions
 
