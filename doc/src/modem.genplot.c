@@ -82,18 +82,79 @@ int main(int argc, char*argv[]) {
         modem_modulate(q, i, &constellation[i]);
     modem_destroy(q);
 
-    // determine maximum real/imag absolute value
-    float max_abs = 0.0f;
-    for (i=0; i<M; i++) {
-        if ( cabsf(crealf(constellation[i])) > max_abs )
-            max_abs = cabsf(crealf(constellation[i]));
-        if ( cabsf(cimagf(constellation[i])) > max_abs )
-            max_abs = cabsf(cimagf(constellation[i]));
-    }
-    // determine appropriate range
     float range = 1.5f;
-    while (range < max_abs)
-        range += 0.25f;
+    enum {AXES_POLAR, AXES_CART} axes = AXES_POLAR;
+
+    switch (ms) {
+    // Phase-shift keying (PSK)
+    case LIQUID_MODEM_PSK2:     
+    case LIQUID_MODEM_PSK4:     
+    case LIQUID_MODEM_PSK8:     
+    case LIQUID_MODEM_PSK16:    
+    case LIQUID_MODEM_PSK32:    
+    case LIQUID_MODEM_PSK64:    
+    case LIQUID_MODEM_PSK128:   
+    case LIQUID_MODEM_PSK256:   
+
+    // Differential phase-shift keying (DPSK)
+    case LIQUID_MODEM_DPSK2:    
+    case LIQUID_MODEM_DPSK4:    
+    case LIQUID_MODEM_DPSK8:    
+    case LIQUID_MODEM_DPSK16:   
+    case LIQUID_MODEM_DPSK32:   
+    case LIQUID_MODEM_DPSK64:   
+    case LIQUID_MODEM_DPSK128:  
+    case LIQUID_MODEM_DPSK256:  
+        range = 1.2f;
+        axes = AXES_POLAR;
+        break;
+
+    // amplitude-shift keying (ASK)
+    case LIQUID_MODEM_ASK2:     range = 1.2f;   axes = AXES_CART;   break;
+    case LIQUID_MODEM_ASK4:     range = 1.5f;   axes = AXES_CART;   break;
+    case LIQUID_MODEM_ASK8:     range = 1.75f;  axes = AXES_CART;   break;
+    case LIQUID_MODEM_ASK16:    range = 2.00f;  axes = AXES_CART;   break;
+    case LIQUID_MODEM_ASK32:    range = 1.5f;   axes = AXES_CART;   break;
+    case LIQUID_MODEM_ASK64:    range = 1.5f;   axes = AXES_CART;   break;
+    case LIQUID_MODEM_ASK128:   range = 1.5f;   axes = AXES_CART;   break;
+    case LIQUID_MODEM_ASK256:   range = 1.5f;   axes = AXES_CART;   break;
+
+    // rectangular quadrature amplitude-shift keying (QAM)
+    case LIQUID_MODEM_QAM4:     range = 1.75f;  axes = AXES_CART;   break;
+    case LIQUID_MODEM_QAM8:     range = 1.75f;  axes = AXES_CART;   break;
+    case LIQUID_MODEM_QAM16:    range = 1.75f;  axes = AXES_CART;   break;
+    case LIQUID_MODEM_QAM32:    range = 1.75f;  axes = AXES_CART;   break;
+    case LIQUID_MODEM_QAM64:    range = 1.75f;  axes = AXES_CART;   break;
+    case LIQUID_MODEM_QAM128:   range = 1.75f;  axes = AXES_CART;   break;
+    case LIQUID_MODEM_QAM256:   range = 1.75f;  axes = AXES_CART;   break;
+
+    // amplitude phase-shift keying (APSK)
+    case LIQUID_MODEM_APSK4:    range = 1.5f; axes = AXES_POLAR;    break;
+    case LIQUID_MODEM_APSK8:    range = 1.5f; axes = AXES_POLAR;    break;
+    case LIQUID_MODEM_APSK16:   range = 1.5f; axes = AXES_POLAR;    break;
+    case LIQUID_MODEM_APSK32:   range = 1.5f; axes = AXES_POLAR;    break;
+    case LIQUID_MODEM_APSK64:   range = 1.5f; axes = AXES_POLAR;    break;
+    case LIQUID_MODEM_APSK128:  range = 1.5f; axes = AXES_POLAR;    break;
+    case LIQUID_MODEM_APSK256:  range = 1.5f; axes = AXES_POLAR;    break;
+
+    // specific modems
+    case LIQUID_MODEM_BPSK:      range = 1.5f; axes = AXES_POLAR;   break;
+    case LIQUID_MODEM_QPSK:      range = 1.5f; axes = AXES_POLAR;   break;
+    case LIQUID_MODEM_OOK:       range = 1.5f; axes = AXES_CART;    break;
+    case LIQUID_MODEM_SQAM32:    range = 1.5f; axes = AXES_CART;    break;
+    case LIQUID_MODEM_SQAM128:   range = 1.5f; axes = AXES_CART;    break;
+    case LIQUID_MODEM_V29:       range = 1.5f; axes = AXES_CART;    break;
+    case LIQUID_MODEM_ARB16OPT:  range = 1.5f; axes = AXES_CART;    break;
+    case LIQUID_MODEM_ARB32OPT:  range = 1.5f; axes = AXES_CART;    break;
+    case LIQUID_MODEM_ARB64OPT:  range = 1.5f; axes = AXES_CART;    break;
+    case LIQUID_MODEM_ARB128OPT: range = 1.5f; axes = AXES_CART;    break;
+    case LIQUID_MODEM_ARB256OPT: range = 1.5f; axes = AXES_CART;    break;
+    case LIQUID_MODEM_ARB64VT:   range = 2.0f; axes = AXES_CART;    break;
+    default:
+        fprintf(stderr,"error: %s, invalid modulation scheme\n", argv[0]);
+        exit(1);
+    }
+    
 
     // determine minimum distance between any two points
     float dmin = 0.0f;
@@ -133,46 +194,12 @@ int main(int argc, char*argv[]) {
     fprintf(fid,"set ylabel \"Q\"\n");
     fprintf(fid,"set nokey # disable legned\n");
     // TODO : set grid type (e.g. polar) according to scheme
-    switch (ms) {
-    // Phase-shift keying (PSK)
-    case LIQUID_MODEM_PSK2:
-    case LIQUID_MODEM_PSK4:
-    case LIQUID_MODEM_PSK8:
-    case LIQUID_MODEM_PSK16:
-    case LIQUID_MODEM_PSK32:
-    case LIQUID_MODEM_PSK64:
-    case LIQUID_MODEM_PSK128:
-    case LIQUID_MODEM_PSK256:
-
-    // Differential phase-shift keying (DPSK)
-    case LIQUID_MODEM_DPSK2:
-    case LIQUID_MODEM_DPSK4:
-    case LIQUID_MODEM_DPSK8:
-    case LIQUID_MODEM_DPSK16:
-    case LIQUID_MODEM_DPSK32:
-    case LIQUID_MODEM_DPSK64:
-    case LIQUID_MODEM_DPSK128:
-    case LIQUID_MODEM_DPSK256:
-
-    // amplitude phase-shift keying (APSK)
-    case LIQUID_MODEM_APSK4:
-    case LIQUID_MODEM_APSK8:
-    case LIQUID_MODEM_APSK16:
-    case LIQUID_MODEM_APSK32:
-    case LIQUID_MODEM_APSK64:
-    case LIQUID_MODEM_APSK128:
-    case LIQUID_MODEM_APSK256:
-
-    // specific modems
-    case LIQUID_MODEM_BPSK:
-    case LIQUID_MODEM_QPSK:
-        
+    //
+    if (axes == AXES_POLAR)
         fprintf(fid,"set grid polar\n");
-        break;
-    
-    default:
+    else
         fprintf(fid,"set grid xtics ytics\n");
-    }
+    
     fprintf(fid,"set grid linetype 1 linecolor rgb '%s' linewidth 1\n",LIQUID_DOC_COLOR_GRID);
     fprintf(fid,"set pointsize 1.0\n");
     if (!plot_labels) {
