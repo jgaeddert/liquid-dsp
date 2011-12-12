@@ -848,85 +848,258 @@ no two points overlap
 \subsubsection{Performance}
 \label{module:modem:digital:performance}
 
-% ------------ TABLE: LINEAR MODULATION SCHEMES ------------
-\begin{table*}
-\caption{Performance of linear modulation schemes, $\hat{P}_b=10^{-5}$}
-\label{tab:modem:performance}
+%-------------------- FIGURE: BER, M=2 --------------------
+\begin{figure}
 \centering
-{\footnotesize
-\begin{tabular*}{0.65\textwidth}{l@{\extracolsep{\fill}}lr}
-\toprule
-{\it schemes} &
-{\it $E_s/N_0$} &
-{\it $E_b/N_0$}\\\otoprule
+\begin{minipage}{0.55\textwidth}
+    \includegraphics[trim = 3.5mm 4.5mm 1mm 2mm, clip, width=0.95\textwidth]{figures.gen/modem_ber_ebn0_M2}
+\end{minipage}
+\begin{minipage}{0.35\textwidth}
+    \centering
+    {\footnotesize
+    BER performance, $\hat{P}=10^{-5}$\\[2pt]
+
+    \begin{tabular*}{\textwidth}{l@{\extracolsep{\fill}}lr}
+    \toprule
+    {\it schemes} &
+    {\it $E_s/N_0$} &
+    {\it $E_b/N_0$}\\\otoprule
+    %
+    BPSK, 2-ASK         &  9.59 &  9.59 \\
+    DBPSK               & 10.46 & 10.46 \\
+    OOK                 & 12.61 & 12.61 \\\bottomrule
+    %
+    \end{tabular*}
+    } % font size
+\end{minipage}
+% trim = left bottom right top
+\caption{Bit error rates vs. $E_b/N_0$ for $M=2$.}
+\label{fig:modem:M2}
+\end{figure}
+
+%-------------------- FIGURE: BER, M=4 --------------------
+\begin{figure}
+\centering
+\begin{minipage}{0.55\textwidth}
+    \includegraphics[trim = 3.5mm 4.5mm 1mm 2mm, clip, width=0.95\textwidth]{figures.gen/modem_ber_ebn0_M4}
+\end{minipage}
+\begin{minipage}{0.35\textwidth}
+    \centering
+    {\footnotesize
+    BER performance, $\hat{P}=10^{-5}$\\[2pt]
+
+    \begin{tabular*}{\textwidth}{l@{\extracolsep{\fill}}lr}
+    \toprule
+    {\it schemes} &
+    {\it $E_s/N_0$} &
+    {\it $E_b/N_0$}\\\otoprule
+    %
+    QPSK, 4-QAM         & 12.59 &  9.59 \\
+    4-APSK              & 14.76 & 11.75 \\
+    DQPSK               & 14.93 & 11.92 \\
+    4-ASK               & 16.59 & 13.58 \\\bottomrule
+    %
+    \end{tabular*}
+    } % font size
+\end{minipage}
+% trim = left bottom right top
+\caption{Bit error rates vs. $E_b/N_0$ for $M=4$.}
+\label{fig:modem:M4}
+\end{figure}
 %
-\multicolumn{3}{c}{$M=2$}\\
-\midrule
-BPSK, 2-ASK         &  9.59 &  9.59 \\
-DBPSK               & 10.46 & 10.46 \\
-OOK                 & 12.61 & 12.61 \\
+
+%-------------------- FIGURE: BER, M=8 --------------------
+\begin{figure}
+\centering
+\begin{minipage}{0.55\textwidth}
+    \includegraphics[trim = 3.5mm 4.5mm 1mm 2mm, clip, width=0.95\textwidth]{figures.gen/modem_ber_ebn0_M8}
+\end{minipage}
+\begin{minipage}{0.35\textwidth}
+    \centering
+    {\footnotesize
+    BER performance, $\hat{P}=10^{-5}$\\[2pt]
+
+    \begin{tabular*}{\textwidth}{l@{\extracolsep{\fill}}lr}
+    \toprule
+    {\it schemes} &
+    {\it $E_s/N_0$} &
+    {\it $E_b/N_0$}\\\otoprule
+    %
+    8-APSK              & 16.12 & 11.35 \\
+    8-QAM               & 17.28 & 12.51 \\
+    8-PSK               & 17.84 & 13.07 \\
+    8-DPSK              & 20.62 & 15.85 \\
+    8-ASK               & 22.61 & 17.84 \\\bottomrule
+    %
+    \end{tabular*}
+    } % font size
+\end{minipage}
+% trim = left bottom right top
+\caption{Bit error rates vs. $E_b/N_0$ for $M=8$.}
+\label{fig:modem:M8}
+\end{figure}
 %
-\midrule
-\multicolumn{3}{c}{$M=4$} \\
-\midrule
-QPSK, 4-QAM         & 12.59 &  9.59 \\
-4-APSK              & 14.76 & 11.75 \\
-DQPSK               & 14.93 & 11.92 \\
-4-ASK               & 16.59 & 13.58 \\
+
+%-------------------- FIGURE: BER, M=16 --------------------
+\begin{figure}
+\centering
+\begin{minipage}{0.55\textwidth}
+    \includegraphics[trim = 3.5mm 4.5mm 1mm 2mm, clip, width=0.95\textwidth]{figures.gen/modem_ber_ebn0_M16}
+\end{minipage}
+\begin{minipage}{0.35\textwidth}
+    \centering
+    {\footnotesize
+    BER performance, $\hat{P}=10^{-5}$\\[2pt]
+
+    \begin{tabular*}{\textwidth}{l@{\extracolsep{\fill}}lr}
+    \toprule
+    {\it schemes} &
+    {\it $E_s/N_0$} &
+    {\it $E_b/N_0$}\\\otoprule
+    %
+    ARB-16-OPT          & 19.15 & 13.13 \\
+    16-QAM              & 19.57 & 13.55 \\
+    16-APSK             & 19.92 & 13.90 \\
+    V.29                & 20.48 & 14.45 \\
+    16-PSK              & 23.43 & 17.41 \\
+    16-DPSK             & 26.43 & 20.41 \\
+    16-ASK              & 28.54 & 22.52 \\\bottomrule
+    %
+    \end{tabular*}
+    } % font size
+\end{minipage}
+% trim = left bottom right top
+\caption{Bit error rates vs. $E_b/N_0$ for $M=16$.}
+\label{fig:modem:M16}
+\end{figure}
 %
-\midrule
-\multicolumn{3}{c}{$M=8$} \\\midrule
-8-APSK              & 16.12 & 11.35 \\
-8-QAM               & 17.28 & 12.51 \\
-8-PSK               & 17.84 & 13.07 \\
-8-DPSK              & 20.62 & 15.85 \\
-8-ASK               & 22.61 & 17.84 \\
+
+%-------------------- FIGURE: BER, M=32 --------------------
+\begin{figure}
+\centering
+\begin{minipage}{0.55\textwidth}
+    \includegraphics[trim = 3.5mm 4.5mm 1mm 2mm, clip, width=0.95\textwidth]{figures.gen/modem_ber_ebn0_M32}
+\end{minipage}
+\begin{minipage}{0.35\textwidth}
+    \centering
+    {\footnotesize
+    BER performance, $\hat{P}=10^{-5}$\\[2pt]
+
+    \begin{tabular*}{\textwidth}{l@{\extracolsep{\fill}}lr}
+    \toprule
+    {\it schemes} &
+    {\it $E_s/N_0$} &
+    {\it $E_b/N_0$}\\\otoprule
+    %
+    ARB-32-OPT          & 22.11 & 15.12 \\
+    32-SQAM             & 22.56 & 15.57 \\
+    32-APSK             & 23.43 & 16.44 \\
+    32-QAM              & 23.59 & 16.60 \\
+    32-PSK              & 29.38 & 22.38 \\
+    32-DPSK             & 32.38 & 25.39 \\\bottomrule
+    %
+    \end{tabular*}
+    } % font size
+\end{minipage}
+% trim = left bottom right top
+\caption{Bit error rates vs. $E_b/N_0$ for $M=32$.}
+\label{fig:modem:M32}
+\end{figure}
 %
-\midrule
-\multicolumn{3}{c}{$M=16$} \\\midrule
-ARB-16-OPT          & 19.15 & 13.13 \\
-16-QAM              & 19.57 & 13.55 \\
-16-APSK             & 19.92 & 13.90 \\
-V.29                & 20.48 & 14.45 \\
-16-PSK              & 23.43 & 17.41 \\
-16-DPSK             & 26.43 & 20.41 \\
-16-ASK              & 28.54 & 22.52 \\
+
+%-------------------- FIGURE: BER, M=64 --------------------
+\begin{figure}
+\centering
+\begin{minipage}{0.55\textwidth}
+    \includegraphics[trim = 3.5mm 4.5mm 1mm 2mm, clip, width=0.95\textwidth]{figures.gen/modem_ber_ebn0_M64}
+\end{minipage}
+\begin{minipage}{0.35\textwidth}
+    \centering
+    {\footnotesize
+    BER performance, $\hat{P}=10^{-5}$\\[2pt]
+
+    \begin{tabular*}{\textwidth}{l@{\extracolsep{\fill}}lr}
+    \toprule
+    {\it schemes} &
+    {\it $E_s/N_0$} &
+    {\it $E_b/N_0$}\\\otoprule
+    %
+    ARB-64-OPT          & 25.22 & 17.44 \\
+    64-QAM              & 25.50 & 17.71 \\
+    64-APSK             & 27.06 & 19.28 \\
+    ARB-64-VT           & 31.67 & 23.89 \\
+    64-PSK              & 35.32 & 27.38 \\
+    64-DPSK             & 38.28 & 30.50 \\\bottomrule
+    %
+    \end{tabular*}
+    } % font size
+\end{minipage}
+% trim = left bottom right top
+\caption{Bit error rates vs. $E_b/N_0$ for $M=64$.}
+\label{fig:modem:M64}
+\end{figure}
 %
-\midrule
-\multicolumn{3}{c}{$M=32$} \\\midrule
-ARB-32-OPT          & 22.11 & 15.12 \\
-32-SQAM             & 22.56 & 15.57 \\
-32-APSK             & 23.43 & 16.44 \\
-32-QAM              & 23.59 & 16.60 \\
-32-PSK              & 29.38 & 22.38 \\
-32-DPSK             & 32.38 & 25.39 \\
+
+%-------------------- FIGURE: BER, M=128 --------------------
+\begin{figure}
+\centering
+\begin{minipage}{0.55\textwidth}
+    \includegraphics[trim = 3.5mm 4.5mm 1mm 2mm, clip, width=0.95\textwidth]{figures.gen/modem_ber_ebn0_M128}
+\end{minipage}
+\begin{minipage}{0.35\textwidth}
+    \centering
+    {\footnotesize
+    BER performance, $\hat{P}=10^{-5}$\\[2pt]
+
+    \begin{tabular*}{\textwidth}{l@{\extracolsep{\fill}}lr}
+    \toprule
+    {\it schemes} &
+    {\it $E_s/N_0$} &
+    {\it $E_b/N_0$}\\\otoprule
+    %
+    ARB-128-OPT         & 28.19 & 19.74 \\
+    128-SQAM            & 28.42 & 19.97 \\
+    128-QAM             & 29.60 & 21.15 \\
+    128-APSK            & 30.55 & 22.10 \\\bottomrule
+    %
+    \end{tabular*}
+    } % font size
+\end{minipage}
+% trim = left bottom right top
+\caption{Bit error rates vs. $E_b/N_0$ for $M=128$.}
+\label{fig:modem:M128}
+\end{figure}
 %
-\midrule
-\multicolumn{3}{c}{$M=64$} \\\midrule
-ARB-64-OPT          & 25.22 & 17.44 \\
-64-QAM              & 25.50 & 17.71 \\
-64-APSK             & 27.06 & 19.28 \\
-ARB-64-VT           & 31.67 & 23.89 \\
-64-PSK              & 35.32 & 27.38 \\
-64-DPSK             & 38.28 & 30.50 \\
+
+%-------------------- FIGURE: BER, M=256 --------------------
+\begin{figure}
+\centering
+\begin{minipage}{0.55\textwidth}
+    \includegraphics[trim = 3.5mm 4.5mm 1mm 2mm, clip, width=0.95\textwidth]{figures.gen/modem_ber_ebn0_M256}
+\end{minipage}
+\begin{minipage}{0.35\textwidth}
+    \centering
+    {\footnotesize
+    BER performance, $\hat{P}=10^{-5}$\\[2pt]
+
+    \begin{tabular*}{\textwidth}{l@{\extracolsep{\fill}}lr}
+    \toprule
+    {\it schemes} &
+    {\it $E_s/N_0$} &
+    {\it $E_b/N_0$}\\\otoprule
+    %
+    ARB-256-OPT         & 31.09 & 22.06 \\
+    256-QAM             & 31.56 & 22.53 \\
+    256-APSK            & 33.10 & 24.06 \\\bottomrule
+    %
+    \end{tabular*}
+    } % font size
+\end{minipage}
+% trim = left bottom right top
+\caption{Bit error rates vs. $E_b/N_0$ for $M=256$.}
+\label{fig:modem:M256}
+\end{figure}
 %
-\midrule
-\multicolumn{3}{c}{$M=128$} \\\midrule
-ARB-128-OPT         & 28.19 & 19.74 \\
-128-SQAM            & 28.42 & 19.97 \\
-128-QAM             & 29.60 & 21.15 \\
-128-APSK            & 30.55 & 22.10 \\
-%
-\midrule
-\multicolumn{3}{c}{$M=256$} \\\midrule
-ARB-256-OPT         & 31.09 & 22.06 \\
-256-QAM             & 31.56 & 22.53 \\
-256-APSK            & 33.10 & 24.06 \\\bottomrule
-%
-\end{tabular*}
-}
-\end{table*}%
-% ------------------------
 
 
 \subsubsection{Soft Demodulation}

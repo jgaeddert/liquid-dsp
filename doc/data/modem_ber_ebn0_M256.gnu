@@ -7,14 +7,13 @@ set xrange [0:30]
 set yrange [1e-5:1]
 set logscale y
 set format y '10^{%L}'
-set size ratio 0.65
-set size 1.0
+set size ratio 0.6
+set size 0.8
 set xlabel 'E_b/N_0 [dB]'
 set ylabel 'BER'
-set key bottom right nobox
 set grid xtics ytics
 set pointsize 0.6
-set key bottom left nobox
+set key top right nobox
 
 set pointsize 0.5
 
