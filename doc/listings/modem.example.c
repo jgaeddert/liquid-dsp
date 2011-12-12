@@ -1,4 +1,4 @@
-// file: doc/listings/agc.example.c
+// file: doc/listings/modem.example.c
 #include <liquid/liquid.h>
 
 int main() {
