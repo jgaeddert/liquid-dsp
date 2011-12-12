@@ -1259,6 +1259,9 @@ The GMSK demodulator has a similar interface, but adds the
     demodulates the $k$-element array $\vec{y}$, storing the output
     symbol ({\tt 0} or {\tt 1}) in the de-referenced pointer $s$.
 \end{description}
+%
+Internally, the GMSK demodulator takes care of timing recovery using an
+LMS equalizer (see \S\ref{module:equalization:eqlms}).
 
 Listed below is an example to interfacing with the {\tt gmskmod} and
 {\tt gmskdem} modulator/demodulator objects.
