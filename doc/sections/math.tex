@@ -447,6 +447,14 @@ the Hamming window:
     w(n) = 0.53836 - 0.46164 \cos\left( 2 \pi n / (N-1) \right)
 \end{equation}
 %
+% FIGURE: Hamming window
+% 
+\mbox{
+  \centering
+  \includegraphics[trim = 14mm 0mm 14mm 0mm, clip, width=8cm]{figures.gen/math_window_hamming_time}
+  \quad
+  \includegraphics[trim = 14mm 0mm 14mm 0mm, clip, width=8cm]{figures.gen/math_window_hamming_freq}
+}
 
 \subsubsection{{\tt hann()}, (Hann window)}
 \label{module:math:window:hann}
@@ -458,6 +466,16 @@ the Hann window:
     w(n) = 0.5 - 0.5 \cos\left( 2 \pi n / (N-1) \right)
 \end{equation}
 %
+% FIGURE: Hann window
+% 
+\mbox{
+  \centering
+  \includegraphics[trim = 14mm 0mm 14mm 0mm, clip, width=8cm]{figures.gen/math_window_hann_time}
+  \quad
+  \includegraphics[trim = 14mm 0mm 14mm 0mm, clip, width=8cm]{figures.gen/math_window_hann_freq}
+}
+%
+
 
 \subsubsection{{\tt blackmanharris()}, (Blackman-harris window)}
 \label{module:math:window:blackmanharris}
@@ -474,6 +492,17 @@ $a_0 =  0.35875$,
 $a_1 = -0.48829$,
 $a_2 =  0.14128$, and
 $a_3 = -0.01168$.
+
+%
+% FIGURE: Blackman-harris window
+% 
+\mbox{
+  \centering
+  \includegraphics[trim = 14mm 0mm 14mm 0mm, clip, width=8cm]{figures.gen/math_window_blackmanharris_time}
+  \quad
+  \includegraphics[trim = 14mm 0mm 14mm 0mm, clip, width=8cm]{figures.gen/math_window_blackmanharris_freq}
+}
+%
 
 \subsubsection{{\tt kaiser()}, (Kaiser-Bessel window)}
 \label{module:math:window:kaiser}
@@ -498,6 +527,17 @@ A fractional sample offset $\Delta t$ can be introduced by substituting
 $\frac{n}{N/2}$ with
 $\frac{n}{N/2} + \Delta t$ in (\ref{eqn:math:window:kaiser}).
 
+%
+% FIGURE: Kaiser window
+% 
+\mbox{
+  \centering
+  \includegraphics[trim = 14mm 0mm 14mm 0mm, clip, width=8cm]{figures.gen/math_window_kaiser_time}
+  \quad
+  \includegraphics[trim = 14mm 0mm 14mm 0mm, clip, width=8cm]{figures.gen/math_window_kaiser_freq}
+}
+%
+
 \subsubsection{{\tt liquid\_kbd\_window()}, (Kaiser-Bessel derived window)}
 \label{module:math:window:kbd}
 The function {\tt liquid\_kbd\_window(n,beta,*w)}
@@ -505,23 +545,16 @@ computes the $n$-point Kaiser-Bessel derived window with a shape
 parameter $\beta$ storing the result in the $n$-point array {\tt w}.
 The length of the window {\em must} be even.
 
-
-\subsubsection{Examples}
-\label{module:math:window:examples}
-Temporal and spectral examples of all these windows can be seen in
-Figure~\ref{fig:module:math:window}.
-Notice that as the power spectral density main lobe increases in width, its
-stop-band attenuation decreases.
-Furthermore, windows with wider temporal widths exhibit more narrow spectral
-main lobes, but have less stop-band attenuation.
-
-\begin{figure}
-\centering
-  \includegraphics[trim = 0mm 0mm 0mm 0mm, clip, width=13cm]{figures.gen/math_window}
-\caption{windowing functions, power spectral density}
-\label{fig:module:math:window}
-\end{figure}
-
+%
+% FIGURE: KBD window
+% 
+\mbox{
+  \centering
+  \includegraphics[trim = 14mm 0mm 14mm 0mm, clip, width=8cm]{figures.gen/math_window_kbd_time}
+  \quad
+  \includegraphics[trim = 14mm 0mm 14mm 0mm, clip, width=8cm]{figures.gen/math_window_kbd_freq}
+}
+%
 
 
 % 
@@ -910,7 +943,7 @@ algorithm will not converge.
 \label{module:math:poly:polyf_mul}
 The {\tt polyf\_mul(*P,n,*Q,m,*S)} method
 multiplies two polynomials $P_n(x)$ and $Q_m(x)$ to produce the
-resulting polynomial $S_{n+m-1}(x)$
+resulting polynomial $S_{n+m-1}(x)$.
 
 %\subsubsection{{\tt polyf\_diff()} {\it not yet implemented}}
 %Computes the derivative $\frac{\partial}{\partial x}P_n(x)$ of polynomial

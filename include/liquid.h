@@ -624,6 +624,16 @@ void FFT(_shift)(TC*_x, unsigned int _n);
 
 LIQUID_FFT_DEFINE_API(LIQUID_FFT_MANGLE_FLOAT,float,liquid_float_complex)
 
+// spectral periodogram
+typedef struct spgram_s * spgram;
+spgram spgram_create(unsigned int _nfft);
+void spgram_destroy(spgram _q);
+void spgram_push(spgram _q,
+                 liquid_float_complex * _x,
+                 unsigned int _n);
+void spgram_execute(spgram _q,
+                    float * _X);
+
 // ascii spectrogram
 typedef struct asgram_s * asgram;
 asgram asgram_create(liquid_float_complex *_x, unsigned int _n);
@@ -2973,6 +2983,10 @@ float modem_get_demodulator_phase_error(modem _demod);
 float modem_get_demodulator_evm(modem _demod);
 
 
+//
+// continuous-phase modulation
+//
+
 // gmskmod : GMSK modulator
 typedef struct gmskmod_s * gmskmod;
 
@@ -2982,7 +2996,7 @@ typedef struct gmskmod_s * gmskmod;
 //  _BT     :   excess bandwidth factor
 gmskmod gmskmod_create(unsigned int _k,
                        unsigned int _m,
-                       float _BT);
+                       float        _BT);
 void gmskmod_destroy(gmskmod _q);
 void gmskmod_print(gmskmod _q);
 void gmskmod_reset(gmskmod _q);
@@ -2999,8 +3013,8 @@ typedef struct gmskdem_s * gmskdem;
 //  _m      :   filter delay (symbols)
 //  _BT     :   excess bandwidth factor
 gmskdem gmskdem_create(unsigned int _k,
-                           unsigned int _m,
-                           float _BT);
+                       unsigned int _m,
+                       float        _BT);
 void gmskdem_destroy(gmskdem _q);
 void gmskdem_print(gmskdem _q);
 void gmskdem_reset(gmskdem _q);

@@ -104,7 +104,16 @@ local_pdffiles :=					\
 	figures.gen/interleaver_scatterplot_i4.pdf	\
 							\
 	figures.gen/math_polyfit_lagrange.pdf		\
-	figures.gen/math_window.pdf			\
+	figures.gen/math_window_kaiser_time.pdf		\
+	figures.gen/math_window_kaiser_freq.pdf		\
+	figures.gen/math_window_hamming_time.pdf	\
+	figures.gen/math_window_hamming_freq.pdf	\
+	figures.gen/math_window_hann_time.pdf		\
+	figures.gen/math_window_hann_freq.pdf		\
+	figures.gen/math_window_blackmanharris_time.pdf	\
+	figures.gen/math_window_blackmanharris_freq.pdf	\
+	figures.gen/math_window_kbd_time.pdf		\
+	figures.gen/math_window_kbd_freq.pdf		\
 							\
 	figures.gen/modem_bpsk.pdf			\
 	figures.gen/modem_qpsk.pdf			\
@@ -625,9 +634,26 @@ figures.gen/interleaver_scatterplot_i4.gnu : src/interleaver_scatterplot
 #
 # window
 # 
-figures.gen/math_window.gnu : src/math_window
-	./$<
 
+figures.gen/math_window_kaiser_time.gnu \
+figures.gen/math_window_kaiser_freq.gnu : src/math_window
+	./$< -w kaiser -b12.0
+
+figures.gen/math_window_hamming_time.gnu \
+figures.gen/math_window_hamming_freq.gnu : src/math_window
+	./$< -w hamming
+
+figures.gen/math_window_hann_time.gnu \
+figures.gen/math_window_hann_freq.gnu : src/math_window
+	./$< -w hann
+
+figures.gen/math_window_blackmanharris_time.gnu \
+figures.gen/math_window_blackmanharris_freq.gnu : src/math_window
+	./$< -w blackmanharris
+
+figures.gen/math_window_kbd_time.gnu \
+figures.gen/math_window_kbd_freq.gnu : src/math_window
+	./$< -w kbd -b12.0 -n 50
 
 #
 # math_polyfit_lagrange

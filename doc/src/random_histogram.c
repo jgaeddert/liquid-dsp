@@ -85,6 +85,7 @@ int main(int argc, char*argv[])
                 fprintf(stderr,"error: %s, unknown/unsupported distribution '%s'\n", argv[0], optarg);
                 exit(1);
             }
+            break;
         case 'e': eta       = atof(optarg); break;
         case 's': sigma     = atof(optarg); break;
         case 'l': lambda    = atof(optarg); break;

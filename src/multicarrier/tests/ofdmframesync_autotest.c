@@ -136,7 +136,7 @@ void ofdmframesync_acquire_test(unsigned int _num_subcarriers,
     // check output
     for (i=0; i<M; i++) {
         if (p[i] == OFDMFRAME_SCTYPE_DATA) {
-            float complex e = X[i] - X_test[i];
+            float e = crealf( (X[i] - X_test[i])*conjf(X[i] - X_test[i]) );
             CONTEND_DELTA( cabsf(e), 0.0f, tol );
         }
     }
