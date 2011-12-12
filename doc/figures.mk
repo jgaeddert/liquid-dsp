@@ -167,6 +167,8 @@ local_pdffiles :=					\
 	figures.gen/modem_ber_ebn0_optqam.pdf		\
 	figures.gen/modem_ber_ebn0_arb.pdf		\
 							\
+	figures.gen/modem_ber_ebn0_M2.pdf		\
+	figures.gen/modem_ber_ebn0_M4.pdf		\
 	figures.gen/modem_ber_ebn0_M8.pdf		\
 	figures.gen/modem_ber_ebn0_M16.pdf		\
 	figures.gen/modem_ber_ebn0_M32.pdf		\
@@ -752,6 +754,8 @@ modem_ber_gnufiles :=				\
 	figures.gen/modem_ber_ebn0_qam.gnu	\
 	figures.gen/modem_ber_ebn0_optqam.gnu	\
 	figures.gen/modem_ber_ebn0_arb.gnu	\
+	figures.gen/modem_ber_ebn0_M2.gnu	\
+	figures.gen/modem_ber_ebn0_M4.gnu	\
 	figures.gen/modem_ber_ebn0_M8.gnu	\
 	figures.gen/modem_ber_ebn0_M16.gnu	\
 	figures.gen/modem_ber_ebn0_M32.gnu	\
@@ -786,6 +790,7 @@ modem_ber_data :=			\
 	data/ber-modem/ber_qam64.dat	\
 	data/ber-modem/ber_qam128.dat	\
 	data/ber-modem/ber_qam256.dat	\
+	data/ber-modem/ber_dpsk4.dat	\
 	data/ber-modem/ber_ook.dat	\
 	data/ber-modem/ber_V29.dat	\
 	data/ber-modem/ber_sqam32.dat	\
@@ -825,6 +830,7 @@ resimulate-modem-ber-data : src/simulate_ber
 	./src/simulate_ber -m qam64  $(modem_ber_opts) -o data/ber-modem/ber_qam64.dat
 	./src/simulate_ber -m qam128 $(modem_ber_opts) -o data/ber-modem/ber_qam128.dat
 	./src/simulate_ber -m qam256 $(modem_ber_opts) -o data/ber-modem/ber_qam256.dat
+	./src/simulate_ber -m dpsk4  $(modem_ber_opts) -o data/ber-modem/ber_dpsk4.dat
 	./src/simulate_ber -m ook       $(modem_ber_opts) -o data/ber-modem/ber_ook.dat
 	./src/simulate_ber -m sqam32    $(modem_ber_opts) -o data/ber-modem/ber_sqam32.dat
 	./src/simulate_ber -m sqam128   $(modem_ber_opts) -o data/ber-modem/ber_sqam128.dat
