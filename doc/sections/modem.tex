@@ -187,10 +187,6 @@ analog frequency modulation/demodulation.
 \end{description}
 
 
-%\subsection{Continuous phase digital modulation schemes}
-%fsk, msk, etc. [NOTE: not yet implemented]
-
-
 
 %
 % LINEAR DIGITAL MODEMS
@@ -1218,16 +1214,54 @@ then the SNR can be approximated as
 
 %
 % CONTINUOUS PHASE MODEMS
+% generic fsk, msk, etc. [NOTE: not yet implemented]
 %
 
 \subsection{Continuous phase digital modulation schemes}
 \label{module:modem:cpm}
 
-\subsubsection{{\tt gmskmod} (Gauss minimum-shift keying)}
-\label{module:modem:cpm:gmskmod}
+Unlike the linear modems of \S\ref{module:modem:digital},
+continuous-phase modems do not have a one-to-one input-to-output
+relationship.
+That is, the filtering operation is part of the modulation itself.
 
-Two objects: {\tt gmksmod} (GMSK modulator), {\tt gmskdem} (GMSK
-demodulator).
+
+\subsubsection{{\tt gmskmod}, {\tt gmskdem} (Gauss minimum-shift keying)}
+\label{module:modem:cpm:gmskmodem}
+
+The two objects {\tt gmksmod} and {\tt gmskdem} implement the Gauss
+minimum-shift keying (GMSK) modem in \liquid.
+
+%
+\begin{description}
+\item[{\tt gmskmod\_create(k,m,BT)}]
+    creates and returns an {\tt gmskmod} object with
+    $k$ samples/symbol,
+    a delay of $m$ symbols,
+    and a bandwidth-time product (excess bandwidth factor) $BT$.
+\item[{\tt gmskmod\_destroy(q)}]
+    destroys an {\tt gmskmod} object, freeing all internally-allocated
+    memory.
+\item[{\tt gmskmod\_reset(q)}]
+    clears the internal state of the {\tt gmskmod} object.
+\item[{\tt gmskmod\_print(q)}]
+    prints the internal state of the {\tt gmskmod} object.
+\item[{\tt gmskmod\_modulate(q,s,*y)}]
+    modulates a symbol $s$, storing the output in $k$-element array
+    $\vec{y}$.
+\end{description}
+%
+The GMSK demodulator has a similar interface, but adds the
+{\em demodulate} method:
+%
+\begin{description}
+\item[{\tt gmskdem\_demodulate(q,*y,*s)}]
+    demodulates the $k$-element array $\vec{y}$, storing the output
+    symbol ({\tt 0} or {\tt 1}) in the de-referenced pointer $s$.
+\end{description}
+
+Listed below is an example to interfacing with the {\tt gmskmod} and
+{\tt gmskdem} modulator/demodulator objects.
 %
 \input{listings/gmskmodem.example.c.tex}
 %
