@@ -23,4 +23,5 @@ plot \
     'figures.gen/ber_qam64.dat'       using 2:3 with linespoints linewidth 2.0 pointtype 6 linecolor rgb '#333333' title '64-QAM',\
     'figures.gen/ber_apsk64.dat'      using 2:3 with linespoints linewidth 2.0 pointtype 6 linecolor rgb '#666666' title '64-APSK',\
     'figures.gen/ber_arb64vt.dat'     using 2:3 with linespoints linewidth 2.0 pointtype 6 linecolor rgb '#999999' title '64-VT',\
-    'figures.gen/ber_psk64.dat'       using 2:3 with linespoints linewidth 2.0 pointtype 6 linecolor rgb '#bbbbbb' title '64-PSK'
+    'figures.gen/ber_psk64.dat'       using 2:3 with linespoints linewidth 2.0 pointtype 6 linecolor rgb '#bbbbbb' title '64-PSK',\
+    'figures.gen/ber_dpsk64.dat'      using 2:3 with linespoints linewidth 2.0 pointtype 6 linecolor rgb '#bbbbbb' title '64-DPSK'

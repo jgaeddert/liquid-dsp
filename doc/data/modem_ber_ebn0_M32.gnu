@@ -23,4 +23,5 @@ plot \
     'figures.gen/ber_sqam32.dat'     using 2:3 with linespoints linewidth 2.0 pointtype 6 linecolor rgb '#333333' title '32-SQAM',\
     'figures.gen/ber_apsk32.dat'     using 2:3 with linespoints linewidth 2.0 pointtype 6 linecolor rgb '#666666' title '32-APSK',\
     'figures.gen/ber_qam32.dat'      using 2:3 with linespoints linewidth 2.0 pointtype 6 linecolor rgb '#999999' title '32-QAM',\
-    'figures.gen/ber_psk32.dat'      using 2:3 with linespoints linewidth 2.0 pointtype 6 linecolor rgb '#cccccc' title '32-PSK'
+    'figures.gen/ber_psk32.dat'      using 2:3 with linespoints linewidth 2.0 pointtype 6 linecolor rgb '#cccccc' title '32-PSK',\
+    'figures.gen/ber_dpsk32.dat'     using 2:3 with linespoints linewidth 2.0 pointtype 6 linecolor rgb '#cccccc' title '32-DPSK'

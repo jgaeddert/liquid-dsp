@@ -22,4 +22,5 @@ plot \
     'figures.gen/ber_apsk8.dat'      using 2:3 with linespoints linewidth 2.0 pointtype 6 linecolor rgb '#000000' title '8-APSK',\
     'figures.gen/ber_qam8.dat'       using 2:3 with linespoints linewidth 2.0 pointtype 6 linecolor rgb '#444444' title '8-QAM',\
     'figures.gen/ber_psk8.dat'       using 2:3 with linespoints linewidth 2.0 pointtype 6 linecolor rgb '#888888' title '8-PSK',\
+    'figures.gen/ber_dpsk8.dat'      using 2:3 with linespoints linewidth 2.0 pointtype 6 linecolor rgb '#888888' title '8-DPSK',\
     'figures.gen/ber_ask8.dat'       using 2:3 with linespoints linewidth 2.0 pointtype 6 linecolor rgb '#cccccc' title '8-ASK'

@@ -24,4 +24,5 @@ plot \
     'figures.gen/ber_apsk16.dat'     using 2:3 with linespoints linewidth 2.0 pointtype 6 linecolor rgb '#666666' title '16-APSK',\
     'figures.gen/ber_V29.dat'        using 2:3 with linespoints linewidth 2.0 pointtype 6 linecolor rgb '#999999' title 'V.29',\
     'figures.gen/ber_psk16.dat'      using 2:3 with linespoints linewidth 2.0 pointtype 6 linecolor rgb '#aaaaaa' title '16-PSK',\
+    'figures.gen/ber_dpsk16.dat'     using 2:3 with linespoints linewidth 2.0 pointtype 6 linecolor rgb '#aaaaaa' title '16-DPSK',\
     'figures.gen/ber_ask16.dat'      using 2:3 with linespoints linewidth 2.0 pointtype 6 linecolor rgb '#cccccc' title '16-ASK'
