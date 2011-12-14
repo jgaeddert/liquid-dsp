@@ -305,6 +305,66 @@ Doppler filter design.
         }
 \end{equation}
 
+%
+% Bessel-J
+%
+\subsubsection{{\tt liquid\_Qf()},
+               {\tt liquid\_MarcumQf()},
+               {\tt liquid\_MarcumQ1f()}}
+\label{module:math:transcendentals:Q}
+The $Q$-function is commonly used in signal processing and is defined as
+%
+\begin{eqnarray*}
+    Q(z) &=& \frac{1}{2}\left(1 - \erf(z/\sqrt{2})\right) \\
+         &=& \frac{1}{\sqrt{2\pi}} \int_{z}^{\infty} { \exp\left\{-u^2/2 \right\} du }
+\end{eqnarray*}
+%
+Similarly Marcum's $Q$-function is defined as the following, with an
+appropriate expansion:
+%
+\begin{eqnarray*}
+    Q_M(\alpha,\beta) & = &
+        \int_{\beta}^{\infty}{
+            u\left(\frac{u}{\alpha}\right)^{M-1}
+            \exp\left\{ -\frac{u^2 + \alpha^2}{2}\right\}
+            I_{M-1}(\alpha u)
+            du
+        }\\
+        & = &
+        \exp\left\{-\frac{\alpha^2 + \beta^2}{2}\right\}
+        \sum_{k=1-M}^{\infty}{
+            \left(\frac{\alpha}{\beta}\right)^k
+            I_k(\alpha\beta)
+        }
+\end{eqnarray*}
+%
+where $I_\nu$ is the modified Bessel function of the first kind
+(see \S\ref{module:math:transcendentals:besseli}).
+\liquid\ implements $Q_M(\alpha,\beta)$ with the function
+{\tt liquid\_MarcumQf(M,a,b)} using the approximation
+\cite[(25)]{Helstrom:1992}
+\[
+    Q_M(\alpha,\beta) \approx \textup{erfc}(u),
+        \,\,\, u=\frac{\beta-\alpha-M}{\sigma^2},
+        \,\,\, \sigma = M + 2\alpha
+\]
+%
+which works over a reasonable range of $M$, $\alpha$, and $\beta$.
+%
+The special case for $M=1$ is implemented in \liquid\ using the function
+{\tt liquid\_MarcumQ1f(M,a,b)} using the expansion \cite{Helstrom:1960},
+%
+\[
+    Q_1(\alpha,\beta) =
+        \exp\left\{-\frac{\alpha^2 + \beta^2}{2}\right\}
+        \sum_{k=0}^{\infty}{
+            \left(\frac{\alpha}{\beta}\right)^k
+            I_k(\alpha\beta)
+        }
+\]
+%
+which converges quickly with a few iterations.
+
 
 %
 % Complex Trig
