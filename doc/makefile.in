@@ -86,6 +86,7 @@ LISTINGS_C = 						\
 	listings/eqlms_cccf_blind.example.c		\
 	listings/fec.example.c				\
 	listings/fft.example.c				\
+	listings/fft_dct.example.c			\
 	listings/firdes_kaiser.example.c		\
 	listings/firdespm.example.c			\
 	listings/firfarrow_crcf.example.c		\
