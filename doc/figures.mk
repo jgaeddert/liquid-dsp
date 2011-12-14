@@ -161,6 +161,7 @@ local_pdffiles :=					\
 	figures.gen/modem_demodsoft_b3.pdf		\
 							\
 	figures.gen/modem_ber_ebn0_psk.pdf		\
+	figures.gen/modem_ber_ebn0_dpsk.pdf		\
 	figures.gen/modem_ber_ebn0_apsk.pdf		\
 	figures.gen/modem_ber_ebn0_ask.pdf		\
 	figures.gen/modem_ber_ebn0_qam.pdf		\
@@ -749,6 +750,7 @@ $(modem_demodsoft_epsfiles) : %.eps : %.gnu figures.gen/modem_demodsoft_labels.d
 
 modem_ber_gnufiles :=				\
 	figures.gen/modem_ber_ebn0_psk.gnu	\
+	figures.gen/modem_ber_ebn0_dpsk.gnu	\
 	figures.gen/modem_ber_ebn0_apsk.gnu	\
 	figures.gen/modem_ber_ebn0_ask.gnu	\
 	figures.gen/modem_ber_ebn0_qam.gnu	\
@@ -772,6 +774,12 @@ modem_ber_data :=			\
 	data/ber-modem/ber_psk16.dat	\
 	data/ber-modem/ber_psk32.dat	\
 	data/ber-modem/ber_psk64.dat	\
+	data/ber-modem/ber_dpsk2.dat	\
+	data/ber-modem/ber_dpsk4.dat	\
+	data/ber-modem/ber_dpsk8.dat	\
+	data/ber-modem/ber_dpsk16.dat	\
+	data/ber-modem/ber_dpsk32.dat	\
+	data/ber-modem/ber_dpsk64.dat	\
 	data/ber-modem/ber_apsk4.dat	\
 	data/ber-modem/ber_apsk8.dat	\
 	data/ber-modem/ber_apsk16.dat	\
@@ -790,7 +798,6 @@ modem_ber_data :=			\
 	data/ber-modem/ber_qam64.dat	\
 	data/ber-modem/ber_qam128.dat	\
 	data/ber-modem/ber_qam256.dat	\
-	data/ber-modem/ber_dpsk4.dat	\
 	data/ber-modem/ber_ook.dat	\
 	data/ber-modem/ber_V29.dat	\
 	data/ber-modem/ber_sqam32.dat	\
@@ -807,6 +814,9 @@ modem_ber_opts      := -cnone -knone -b1e-5 -e 700 -n320000 -t640000000 -s-9 -d1
 
 $(modem_ber_data) : data/ber-modem/ber_%.dat : src/simulate_ber
 	./src/simulate_ber -m $* $(modem_ber_opts) -o $@
+
+# re-generate all data targets
+resimulate-modem-ber-data : $(modem_ber_data)
 
 # copy data files
 modem_ber_datfiles = $(patsubst data/ber-modem/%,figures.gen/%,$(modem_ber_data))
