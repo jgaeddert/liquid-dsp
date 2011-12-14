@@ -20,10 +20,10 @@ set pointsize 0.5
 
 set grid linetype 1 linecolor rgb '#cccccc' lw 1
 plot \
-    'data/ber-modem/ber_apsk4.dat'   using 2:3 with linespoints linewidth 2.0 pointtype 6 linecolor rgb '#000000' title '4-APSK',\
-    'data/ber-modem/ber_apsk8.dat'   using 2:3 with linespoints linewidth 2.0 pointtype 6 linecolor rgb '#000000' title '8-APSK',\
-    'data/ber-modem/ber_apsk16.dat'  using 2:3 with linespoints linewidth 2.0 pointtype 6 linecolor rgb '#000000' title '16-APSK',\
-    'data/ber-modem/ber_apsk32.dat'  using 2:3 with linespoints linewidth 2.0 pointtype 6 linecolor rgb '#000000' title '32-APSK',\
-    'data/ber-modem/ber_apsk64.dat'  using 2:3 with linespoints linewidth 2.0 pointtype 6 linecolor rgb '#000000' title '64-APSK',\
-    'data/ber-modem/ber_apsk128.dat' using 2:3 with linespoints linewidth 2.0 pointtype 6 linecolor rgb '#000000' title '128-APSK',\
-    'data/ber-modem/ber_apsk256.dat' using 2:3 with linespoints linewidth 2.0 pointtype 6 linecolor rgb '#000000' title '256-APSK'
+    'figures.gen/ber_apsk4.dat'   using 2:3 with linespoints linewidth 2.0 pointtype 6 linecolor rgb '#000000' title '4-APSK',\
+    'figures.gen/ber_apsk8.dat'   using 2:3 with linespoints linewidth 2.0 pointtype 6 linecolor rgb '#000000' title '8-APSK',\
+    'figures.gen/ber_apsk16.dat'  using 2:3 with linespoints linewidth 2.0 pointtype 6 linecolor rgb '#000000' title '16-APSK',\
+    'figures.gen/ber_apsk32.dat'  using 2:3 with linespoints linewidth 2.0 pointtype 6 linecolor rgb '#000000' title '32-APSK',\
+    'figures.gen/ber_apsk64.dat'  using 2:3 with linespoints linewidth 2.0 pointtype 6 linecolor rgb '#000000' title '64-APSK',\
+    'figures.gen/ber_apsk128.dat' using 2:3 with linespoints linewidth 2.0 pointtype 6 linecolor rgb '#000000' title '128-APSK',\
+    'figures.gen/ber_apsk256.dat' using 2:3 with linespoints linewidth 2.0 pointtype 6 linecolor rgb '#000000' title '256-APSK'

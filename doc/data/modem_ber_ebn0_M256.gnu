@@ -19,6 +19,6 @@ set pointsize 0.5
 
 set grid linetype 1 linecolor rgb '#cccccc' lw 1
 plot \
-    'data/ber-modem/ber_arb256opt.dat'  using 2:3 with linespoints linewidth 2.0 pointtype 6 linecolor rgb '#000000' title '256-QAM (opt)',\
-    'data/ber-modem/ber_qam256.dat'     using 2:3 with linespoints linewidth 2.0 pointtype 6 linecolor rgb '#666666' title '256-QAM',\
-    'data/ber-modem/ber_apsk256.dat'    using 2:3 with linespoints linewidth 2.0 pointtype 6 linecolor rgb '#bbbbbb' title '256-APSK'
+    'figures.gen/ber_arb256opt.dat'  using 2:3 with linespoints linewidth 2.0 pointtype 6 linecolor rgb '#000000' title '256-QAM (opt)',\
+    'figures.gen/ber_qam256.dat'     using 2:3 with linespoints linewidth 2.0 pointtype 6 linecolor rgb '#666666' title '256-QAM',\
+    'figures.gen/ber_apsk256.dat'    using 2:3 with linespoints linewidth 2.0 pointtype 6 linecolor rgb '#bbbbbb' title '256-APSK'

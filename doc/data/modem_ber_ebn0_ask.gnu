@@ -20,7 +20,7 @@ set pointsize 0.5
 
 set grid linetype 1 linecolor rgb '#cccccc' lw 1
 plot \
-    'data/ber-modem/ber_ask2.dat'   using 2:3 with linespoints linewidth 2.0 pointtype 6 linecolor rgb '#000000' title '2-ASK',\
-    'data/ber-modem/ber_ask4.dat'   using 2:3 with linespoints linewidth 2.0 pointtype 6 linecolor rgb '#000000' title '4-ASK',\
-    'data/ber-modem/ber_ask8.dat'   using 2:3 with linespoints linewidth 2.0 pointtype 6 linecolor rgb '#000000' title '8-ASK',\
-    'data/ber-modem/ber_ask16.dat'  using 2:3 with linespoints linewidth 2.0 pointtype 6 linecolor rgb '#000000' title '16-ASK'
+    'figures.gen/ber_ask2.dat'   using 2:3 with linespoints linewidth 2.0 pointtype 6 linecolor rgb '#000000' title '2-ASK',\
+    'figures.gen/ber_ask4.dat'   using 2:3 with linespoints linewidth 2.0 pointtype 6 linecolor rgb '#000000' title '4-ASK',\
+    'figures.gen/ber_ask8.dat'   using 2:3 with linespoints linewidth 2.0 pointtype 6 linecolor rgb '#000000' title '8-ASK',\
+    'figures.gen/ber_ask16.dat'  using 2:3 with linespoints linewidth 2.0 pointtype 6 linecolor rgb '#000000' title '16-ASK'

@@ -20,9 +20,9 @@ set pointsize 0.5
 
 set grid linetype 1 linecolor rgb '#cccccc' lw 1
 plot \
-    'data/ber-modem/ber_bpsk.dat'   using 2:3 with linespoints linewidth 2.0 pointtype 6 linecolor rgb '#000000' title 'BPSK',\
-    'data/ber-modem/ber_qpsk.dat'   using 2:3 with linespoints linewidth 2.0 pointtype 6 linecolor rgb '#000000' title 'QPSK',\
-    'data/ber-modem/ber_psk8.dat'   using 2:3 with linespoints linewidth 2.0 pointtype 6 linecolor rgb '#000000' title '8-PSK',\
-    'data/ber-modem/ber_psk16.dat'  using 2:3 with linespoints linewidth 2.0 pointtype 6 linecolor rgb '#000000' title '16-PSK',\
-    'data/ber-modem/ber_psk32.dat'  using 2:3 with linespoints linewidth 2.0 pointtype 6 linecolor rgb '#000000' title '32-PSK',\
-    'data/ber-modem/ber_psk64.dat'  using 2:3 with linespoints linewidth 2.0 pointtype 6 linecolor rgb '#000000' title '64-PSK'
+    'figures.gen/ber_bpsk.dat'   using 2:3 with linespoints linewidth 2.0 pointtype 6 linecolor rgb '#000000' title 'BPSK',\
+    'figures.gen/ber_qpsk.dat'   using 2:3 with linespoints linewidth 2.0 pointtype 6 linecolor rgb '#000000' title 'QPSK',\
+    'figures.gen/ber_psk8.dat'   using 2:3 with linespoints linewidth 2.0 pointtype 6 linecolor rgb '#000000' title '8-PSK',\
+    'figures.gen/ber_psk16.dat'  using 2:3 with linespoints linewidth 2.0 pointtype 6 linecolor rgb '#000000' title '16-PSK',\
+    'figures.gen/ber_psk32.dat'  using 2:3 with linespoints linewidth 2.0 pointtype 6 linecolor rgb '#000000' title '32-PSK',\
+    'figures.gen/ber_psk64.dat'  using 2:3 with linespoints linewidth 2.0 pointtype 6 linecolor rgb '#000000' title '64-PSK'

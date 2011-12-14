@@ -804,50 +804,23 @@ modem_ber_data :=			\
 
 # re-simulate modem BER data
 modem_ber_opts      := -cnone -knone -b1e-5 -e 700 -n320000 -t640000000 -s-9 -d1.0 -x60
-resimulate-modem-ber-data : src/simulate_ber
-	@echo "re-simulating modem ber data..."
-	./src/simulate_ber -m bpsk  $(modem_ber_opts) -o data/ber-modem/ber_bpsk.dat
-	./src/simulate_ber -m qpsk  $(modem_ber_opts) -o data/ber-modem/ber_qpsk.dat
-	./src/simulate_ber -m psk8  $(modem_ber_opts) -o data/ber-modem/ber_psk8.dat
-	./src/simulate_ber -m psk16 $(modem_ber_opts) -o data/ber-modem/ber_psk16.dat
-	./src/simulate_ber -m psk32 $(modem_ber_opts) -o data/ber-modem/ber_psk32.dat
-	./src/simulate_ber -m psk64 $(modem_ber_opts) -o data/ber-modem/ber_psk64.dat
-	./src/simulate_ber -m apsk4    $(modem_ber_opts) -o data/ber-modem/ber_apsk4.dat
-	./src/simulate_ber -m apsk8    $(modem_ber_opts) -o data/ber-modem/ber_apsk8.dat
-	./src/simulate_ber -m apsk16   $(modem_ber_opts) -o data/ber-modem/ber_apsk16.dat
-	./src/simulate_ber -m apsk32   $(modem_ber_opts) -o data/ber-modem/ber_apsk32.dat
-	./src/simulate_ber -m apsk64   $(modem_ber_opts) -o data/ber-modem/ber_apsk64.dat
-	./src/simulate_ber -m apsk128  $(modem_ber_opts) -o data/ber-modem/ber_apsk128.dat
-	./src/simulate_ber -m apsk256  $(modem_ber_opts) -o data/ber-modem/ber_apsk256.dat
-	./src/simulate_ber -m ask2   $(modem_ber_opts) -o data/ber-modem/ber_ask2.dat
-	./src/simulate_ber -m ask4   $(modem_ber_opts) -o data/ber-modem/ber_ask4.dat
-	./src/simulate_ber -m ask8   $(modem_ber_opts) -o data/ber-modem/ber_ask8.dat
-	./src/simulate_ber -m ask16  $(modem_ber_opts) -o data/ber-modem/ber_ask16.dat
-	./src/simulate_ber -m qam4   $(modem_ber_opts) -o data/ber-modem/ber_qam4.dat
-	./src/simulate_ber -m qam8   $(modem_ber_opts) -o data/ber-modem/ber_qam8.dat
-	./src/simulate_ber -m qam16  $(modem_ber_opts) -o data/ber-modem/ber_qam16.dat
-	./src/simulate_ber -m qam32  $(modem_ber_opts) -o data/ber-modem/ber_qam32.dat
-	./src/simulate_ber -m qam64  $(modem_ber_opts) -o data/ber-modem/ber_qam64.dat
-	./src/simulate_ber -m qam128 $(modem_ber_opts) -o data/ber-modem/ber_qam128.dat
-	./src/simulate_ber -m qam256 $(modem_ber_opts) -o data/ber-modem/ber_qam256.dat
-	./src/simulate_ber -m dpsk4  $(modem_ber_opts) -o data/ber-modem/ber_dpsk4.dat
-	./src/simulate_ber -m ook       $(modem_ber_opts) -o data/ber-modem/ber_ook.dat
-	./src/simulate_ber -m sqam32    $(modem_ber_opts) -o data/ber-modem/ber_sqam32.dat
-	./src/simulate_ber -m sqam128   $(modem_ber_opts) -o data/ber-modem/ber_sqam128.dat
-	./src/simulate_ber -m V29       $(modem_ber_opts) -o data/ber-modem/ber_V29.dat
-	./src/simulate_ber -m arb16opt  $(modem_ber_opts) -o data/ber-modem/ber_arb16opt.dat
-	./src/simulate_ber -m arb32opt  $(modem_ber_opts) -o data/ber-modem/ber_arb32opt.dat
-	./src/simulate_ber -m arb64opt  $(modem_ber_opts) -o data/ber-modem/ber_arb64opt.dat
-	./src/simulate_ber -m arb128opt $(modem_ber_opts) -o data/ber-modem/ber_arb128opt.dat
-	./src/simulate_ber -m arb256opt $(modem_ber_opts) -o data/ber-modem/ber_arb256opt.dat
-	./src/simulate_ber -m arb64vt   $(modem_ber_opts) -o data/ber-modem/ber_arb64vt.dat
+
+$(modem_ber_data) : data/ber-modem/ber_%.dat : src/simulate_ber
+	./src/simulate_ber -m $* $(modem_ber_opts) -o $@
+
+# copy data files
+modem_ber_datfiles = $(patsubst data/ber-modem/%,figures.gen/%,$(modem_ber_data))
+
+# copy data, do not give dependencies
+$(modem_ber_datfiles) :
+	cp data/ber-modem/*.dat figures.gen/
 
 # copy gnuplot file
 $(modem_ber_gnufiles) : figures.gen/%.gnu : data/%.gnu
 	cp $< $@
 
 # add ber simulation data files as dependencies
-$(modem_ber_epsfiles) : %.eps : %.gnu $(modem_ber_data)
+$(modem_ber_epsfiles) : %.eps : %.gnu $(modem_ber_datfiles)
 
 
 # 

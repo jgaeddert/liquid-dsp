@@ -19,7 +19,7 @@ set pointsize 0.5
 
 set grid linetype 1 linecolor rgb '#cccccc' lw 1
 plot \
-    'data/ber-modem/ber_arb128opt.dat'  using 2:3 with linespoints linewidth 2.0 pointtype 6 linecolor rgb '#000000' title '128-QAM (opt)',\
-    'data/ber-modem/ber_sqam128.dat'    using 2:3 with linespoints linewidth 2.0 pointtype 6 linecolor rgb '#444444' title '128-SQAM',\
-    'data/ber-modem/ber_qam128.dat'     using 2:3 with linespoints linewidth 2.0 pointtype 6 linecolor rgb '#888888' title '128-QAM',\
-    'data/ber-modem/ber_apsk128.dat'    using 2:3 with linespoints linewidth 2.0 pointtype 6 linecolor rgb '#bbbbbb' title '128-APSK'
+    'figures.gen/ber_arb128opt.dat'  using 2:3 with linespoints linewidth 2.0 pointtype 6 linecolor rgb '#000000' title '128-QAM (opt)',\
+    'figures.gen/ber_sqam128.dat'    using 2:3 with linespoints linewidth 2.0 pointtype 6 linecolor rgb '#444444' title '128-SQAM',\
+    'figures.gen/ber_qam128.dat'     using 2:3 with linespoints linewidth 2.0 pointtype 6 linecolor rgb '#888888' title '128-QAM',\
+    'figures.gen/ber_apsk128.dat'    using 2:3 with linespoints linewidth 2.0 pointtype 6 linecolor rgb '#bbbbbb' title '128-APSK'

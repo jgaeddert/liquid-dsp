@@ -20,10 +20,10 @@ set pointsize 0.5
 
 set grid linetype 1 linecolor rgb '#cccccc' lw 1
 plot \
-    'data/ber-modem/ber_qam4.dat'   using 2:3 with linespoints linewidth 2.0 pointtype 6 linecolor rgb '#000000' title '4-QAM',\
-    'data/ber-modem/ber_qam8.dat'   using 2:3 with linespoints linewidth 2.0 pointtype 6 linecolor rgb '#000000' title '8-QAM',\
-    'data/ber-modem/ber_qam16.dat'  using 2:3 with linespoints linewidth 2.0 pointtype 6 linecolor rgb '#000000' title '16-QAM',\
-    'data/ber-modem/ber_qam32.dat'  using 2:3 with linespoints linewidth 2.0 pointtype 6 linecolor rgb '#000000' title '32-QAM',\
-    'data/ber-modem/ber_qam64.dat'  using 2:3 with linespoints linewidth 2.0 pointtype 6 linecolor rgb '#000000' title '64-QAM',\
-    'data/ber-modem/ber_qam128.dat' using 2:3 with linespoints linewidth 2.0 pointtype 6 linecolor rgb '#000000' title '128-QAM',\
-    'data/ber-modem/ber_qam256.dat' using 2:3 with linespoints linewidth 2.0 pointtype 6 linecolor rgb '#000000' title '256-QAM'
+    'figures.gen/ber_qam4.dat'   using 2:3 with linespoints linewidth 2.0 pointtype 6 linecolor rgb '#000000' title '4-QAM',\
+    'figures.gen/ber_qam8.dat'   using 2:3 with linespoints linewidth 2.0 pointtype 6 linecolor rgb '#000000' title '8-QAM',\
+    'figures.gen/ber_qam16.dat'  using 2:3 with linespoints linewidth 2.0 pointtype 6 linecolor rgb '#000000' title '16-QAM',\
+    'figures.gen/ber_qam32.dat'  using 2:3 with linespoints linewidth 2.0 pointtype 6 linecolor rgb '#000000' title '32-QAM',\
+    'figures.gen/ber_qam64.dat'  using 2:3 with linespoints linewidth 2.0 pointtype 6 linecolor rgb '#000000' title '64-QAM',\
+    'figures.gen/ber_qam128.dat' using 2:3 with linespoints linewidth 2.0 pointtype 6 linecolor rgb '#000000' title '128-QAM',\
+    'figures.gen/ber_qam256.dat' using 2:3 with linespoints linewidth 2.0 pointtype 6 linecolor rgb '#000000' title '256-QAM'

@@ -19,7 +19,7 @@ set pointsize 0.5
 
 set grid linetype 1 linecolor rgb '#cccccc' lw 1
 plot \
-    'data/ber-modem/ber_qpsk.dat'   using 2:3 with linespoints linewidth 2.0 pointtype 6 linecolor rgb '#000000' title 'QPSK/4-QAM',\
-    'data/ber-modem/ber_apsk4.dat'  using 2:3 with linespoints linewidth 2.0 pointtype 6 linecolor rgb '#444444' title '4-APSK',\
-    'data/ber-modem/ber_dpsk4.dat'  using 2:3 with linespoints linewidth 2.0 pointtype 6 linecolor rgb '#888888' title '4-DPSK',\
-    'data/ber-modem/ber_ask4.dat'   using 2:3 with linespoints linewidth 2.0 pointtype 6 linecolor rgb '#bbbbbb' title '4-ASK'
+    'figures.gen/ber_qpsk.dat'   using 2:3 with linespoints linewidth 2.0 pointtype 6 linecolor rgb '#000000' title 'QPSK/4-QAM',\
+    'figures.gen/ber_apsk4.dat'  using 2:3 with linespoints linewidth 2.0 pointtype 6 linecolor rgb '#444444' title '4-APSK',\
+    'figures.gen/ber_dpsk4.dat'  using 2:3 with linespoints linewidth 2.0 pointtype 6 linecolor rgb '#888888' title '4-DPSK',\
+    'figures.gen/ber_ask4.dat'   using 2:3 with linespoints linewidth 2.0 pointtype 6 linecolor rgb '#bbbbbb' title '4-ASK'

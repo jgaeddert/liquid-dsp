@@ -19,6 +19,6 @@ set pointsize 0.5
 
 set grid linetype 1 linecolor rgb '#cccccc' lw 1
 plot \
-    'data/ber-modem/ber_bpsk.dat'   using 2:3 with linespoints linewidth 2.0 pointtype 6 linecolor rgb '#000000' title 'BPSK/2-ASK',\
-    'data/ber-modem/ber_dpsk2.dat'  using 2:3 with linespoints linewidth 2.0 pointtype 6 linecolor rgb '#444444' title 'DPSK-2',\
-    'data/ber-modem/ber_ook.dat'    using 2:3 with linespoints linewidth 2.0 pointtype 6 linecolor rgb '#888888' title 'OOK'
+    'figures.gen/ber_bpsk.dat'   using 2:3 with linespoints linewidth 2.0 pointtype 6 linecolor rgb '#000000' title 'BPSK/2-ASK',\
+    'figures.gen/ber_dpsk2.dat'  using 2:3 with linespoints linewidth 2.0 pointtype 6 linecolor rgb '#444444' title 'DPSK-2',\
+    'figures.gen/ber_ook.dat'    using 2:3 with linespoints linewidth 2.0 pointtype 6 linecolor rgb '#888888' title 'OOK'

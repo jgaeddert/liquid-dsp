@@ -19,7 +19,7 @@ set pointsize 0.5
 
 set grid linetype 1 linecolor rgb '#cccccc' lw 1
 plot \
-    'data/ber-modem/ber_apsk8.dat'      using 2:3 with linespoints linewidth 2.0 pointtype 6 linecolor rgb '#000000' title '8-APSK',\
-    'data/ber-modem/ber_qam8.dat'       using 2:3 with linespoints linewidth 2.0 pointtype 6 linecolor rgb '#444444' title '8-QAM',\
-    'data/ber-modem/ber_psk8.dat'       using 2:3 with linespoints linewidth 2.0 pointtype 6 linecolor rgb '#888888' title '8-PSK',\
-    'data/ber-modem/ber_ask8.dat'       using 2:3 with linespoints linewidth 2.0 pointtype 6 linecolor rgb '#cccccc' title '8-ASK'
+    'figures.gen/ber_apsk8.dat'      using 2:3 with linespoints linewidth 2.0 pointtype 6 linecolor rgb '#000000' title '8-APSK',\
+    'figures.gen/ber_qam8.dat'       using 2:3 with linespoints linewidth 2.0 pointtype 6 linecolor rgb '#444444' title '8-QAM',\
+    'figures.gen/ber_psk8.dat'       using 2:3 with linespoints linewidth 2.0 pointtype 6 linecolor rgb '#888888' title '8-PSK',\
+    'figures.gen/ber_ask8.dat'       using 2:3 with linespoints linewidth 2.0 pointtype 6 linecolor rgb '#cccccc' title '8-ASK'
