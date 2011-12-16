@@ -1447,18 +1447,41 @@ minimum-shift keying (GMSK) modem in \liquid.
     modulates a symbol $s$, storing the output in $k$-element array
     $\vec{y}$.
 \end{description}
-%
-The GMSK demodulator has a similar interface, but adds the
-{\em demodulate} method:
+
+Demodulation is performed by differentiating the instantaneous received
+frequency and running the resulting time-varying phase through a matched
+filter.
+By design, the GMSK transmit filter imparts inter-symbol interference
+(by nature of the pulse shape).
+To mitigate symbol errors, the receive filter is initially designed to
+remove as much ISI as possible
+(see \S\ref{module:filter:firdes_gmsk} for a discussion on GMSK transmit
+and receive filter designs in \liquid).
+Internally, the GMSK demodulator takes care of timing recovery using an
+LMS equalizer (see \S\ref{module:equalization:eqlms}).
+The GMSK demodulator has a similar interface to the modulator:
 %
 \begin{description}
+\item[{\tt gmskdem\_create(k,m,BT)}]
+    creates and returns an {\tt gmskdem} object with
+    $k$ samples/symbol,
+    a delay of $m$ symbols,
+    and a bandwidth-time product (excess bandwidth factor) $BT$.
+\item[{\tt gmskdem\_destroy(q)}]
+    destroys an {\tt gmskdem} object, freeing all internally-allocated
+    memory.
+\item[{\tt gmskdem\_reset(q)}]
+    clears the internal state of the {\tt gmskdem} object.
+\item[{\tt gmskdem\_print(q)}]
+    prints the internal state of the {\tt gmskdem} object.
 \item[{\tt gmskdem\_demodulate(q,*y,*s)}]
     demodulates the $k$-element array $\vec{y}$, storing the output
     symbol ({\tt 0} or {\tt 1}) in the de-referenced pointer $s$.
+\item[{\tt gmskdem\_set\_eq\_bw(q,w)}]
+    sets the bandwidth (learning rate) of the internal LMS equalizer to
+    $w$.
 \end{description}
-%
-Internally, the GMSK demodulator takes care of timing recovery using an
-LMS equalizer (see \S\ref{module:equalization:eqlms}).
+
 
 Listed below is an example to interfacing with the {\tt gmskmod} and
 {\tt gmskdem} modulator/demodulator objects.
