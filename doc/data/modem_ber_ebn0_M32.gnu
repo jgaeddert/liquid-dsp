@@ -20,8 +20,8 @@ set pointsize 0.5
 set grid linetype 1 linecolor rgb '#cccccc' lw 1
 plot \
     'figures.gen/ber_arb32opt.dat'   using 2:3 with linespoints linewidth 2.0 pointtype 6 linecolor rgb '#000000' title '32-QAM (opt)',\
-    'figures.gen/ber_sqam32.dat'     using 2:3 with linespoints linewidth 2.0 pointtype 6 linecolor rgb '#333333' title '32-SQAM',\
-    'figures.gen/ber_apsk32.dat'     using 2:3 with linespoints linewidth 2.0 pointtype 6 linecolor rgb '#666666' title '32-APSK',\
-    'figures.gen/ber_qam32.dat'      using 2:3 with linespoints linewidth 2.0 pointtype 6 linecolor rgb '#999999' title '32-QAM',\
-    'figures.gen/ber_psk32.dat'      using 2:3 with linespoints linewidth 2.0 pointtype 6 linecolor rgb '#cccccc' title '32-PSK',\
-    'figures.gen/ber_dpsk32.dat'     using 2:3 with linespoints linewidth 2.0 pointtype 6 linecolor rgb '#cccccc' title '32-DPSK'
+    'figures.gen/ber_sqam32.dat'     using 2:3 with linespoints linewidth 2.0 pointtype 6 linecolor rgb '#222222' title '32-SQAM',\
+    'figures.gen/ber_apsk32.dat'     using 2:3 with linespoints linewidth 2.0 pointtype 6 linecolor rgb '#444444' title '32-APSK',\
+    'figures.gen/ber_qam32.dat'      using 2:3 with linespoints linewidth 2.0 pointtype 6 linecolor rgb '#666666' title '32-QAM',\
+    'figures.gen/ber_psk32.dat'      using 2:3 with linespoints linewidth 2.0 pointtype 6 linecolor rgb '#888888' title '32-PSK',\
+    'figures.gen/ber_dpsk32.dat'     using 2:3 with linespoints linewidth 2.0 pointtype 6 linecolor rgb '#aaaaaa' title '32-DPSK'
