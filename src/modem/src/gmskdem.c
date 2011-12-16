@@ -170,6 +170,24 @@ void gmskdem_reset(gmskdem _q)
 #endif
 }
 
+// set equalizer bandwidth
+void gmskdem_set_eq_bw(gmskdem _q,
+                       float _bw)
+{
+    // validate input
+    if (_bw < 0.0f || _bw > 0.5f) {
+        fprintf(stderr,"error: gmskdem_set_eq_bw(), bandwith must be in [0,0.5]\n");
+        exit(1);
+    }
+
+#if GMSKDEM_USE_EQUALIZER
+    // set internal equalizer bandwidth
+    eqlms_rrrf_set_bw(_q->eq, _bw);
+#else
+    fprintf(stderr,"warning: gmskdem_set_eq_bw(), equalizer is disabled\n");
+#endif
+}
+
 void gmskdem_demodulate(gmskdem _q,
                         float complex * _x,
                         unsigned int * _s)

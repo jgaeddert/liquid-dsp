@@ -59,10 +59,13 @@ int main(int argc, char*argv[]) {
     unsigned int num_samples = k*num_symbols;
     float nstd = powf(10.0f,-SNRdB/20.0f);  // noise standard deviation
 
-    // create mod/demod objects
+    // create modulator
     gmskmod mod   = gmskmod_create(k, m, BT);
-    gmskdem demod = gmskdem_create(k, m, BT);
     gmskmod_print(mod);
+
+    // create demodulator
+    gmskdem demod = gmskdem_create(k, m, BT);
+    gmskdem_set_eq_bw(demod, 0.01f);
     gmskdem_print(demod);
 
     unsigned int i;

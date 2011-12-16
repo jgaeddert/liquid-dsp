@@ -3018,6 +3018,7 @@ gmskdem gmskdem_create(unsigned int _k,
 void gmskdem_destroy(gmskdem _q);
 void gmskdem_print(gmskdem _q);
 void gmskdem_reset(gmskdem _q);
+void gmskdem_set_eq_bw(gmskdem _q, float _bw);
 void gmskdem_demodulate(gmskdem _q,
                         liquid_float_complex * _y,
                         unsigned int * _sym);
