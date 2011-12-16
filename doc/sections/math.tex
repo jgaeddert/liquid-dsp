@@ -182,12 +182,24 @@ Specifically, $n! = \Gamma(n+1)$.
 %
 \subsubsection{{\tt liquid\_nchoosek()}}
 \label{module:math:transcendentals:nchoosek}
-computes the binomial coefficient
+\liquid\ computes binomial coefficients using the
+{\tt liquid\_nchoosek()} method:
 %
 \begin{equation}
 \label{eqn:math:nchoosek}
     {n \choose k} = \frac{n!}{(n-k)!k!}
 \end{equation}
+%
+Because the arguments can explode for relatively large values of $n$ and
+$k$, \liquid\ uses the following approximation under certain conditions:
+\[
+    {n \choose k} \approx 
+        \exp\Bigl\{
+            \ln\Gamma(n+1) -
+            \ln\Gamma(n-k+1) -
+            \ln\Gamma(k+1)
+        \Bigr\}
+\]
 
 \subsubsection{{\tt liquid\_nextpow2()}}
 \label{module:math:transcendentals:nextpow2}
