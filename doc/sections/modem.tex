@@ -1428,6 +1428,8 @@ That is, the filtering operation is part of the modulation itself.
 
 The two objects {\tt gmksmod} and {\tt gmskdem} implement the Gauss
 minimum-shift keying (GMSK) modem in \liquid.
+Notice that unlike the linear {\tt modem} objects, the GMSK
+modulator and demodulator are split into separate objects.
 
 %
 \begin{description}
@@ -1444,8 +1446,8 @@ minimum-shift keying (GMSK) modem in \liquid.
 \item[{\tt gmskmod\_print(q)}]
     prints the internal state of the {\tt gmskmod} object.
 \item[{\tt gmskmod\_modulate(q,s,*y)}]
-    modulates a symbol $s$, storing the output in $k$-element array
-    $\vec{y}$.
+    modulates a symbol $s \in \{0,1\}$,
+    storing the output in $k$-element array $\vec{y}$.
 \end{description}
 
 Demodulation is performed by differentiating the instantaneous received
@@ -1479,7 +1481,7 @@ The GMSK demodulator has a similar interface to the modulator:
     symbol ({\tt 0} or {\tt 1}) in the de-referenced pointer $s$.
 \item[{\tt gmskdem\_set\_eq\_bw(q,w)}]
     sets the bandwidth (learning rate) of the internal LMS equalizer to
-    $w$.
+    $w$ where $w \in [0,0.5]$.
 \end{description}
 
 
