@@ -382,6 +382,7 @@ EQRLS() EQRLS(_recreate)(EQRLS() _eq,                           \
 void EQRLS(_destroy)(EQRLS() _eq);                              \
 void EQRLS(_print)(EQRLS() _eq);                                \
 void EQRLS(_set_bw)(EQRLS() _eq, float _mu);                    \
+float EQRLS(_get_bw)(EQRLS() _eq);                              \
 void EQRLS(_reset)(EQRLS() _eq);                                \
 void EQRLS(_push)(EQRLS() _eq, T _x);                           \
 void EQRLS(_execute)(EQRLS() _eq, T * _y);                      \

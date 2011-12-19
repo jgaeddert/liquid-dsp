@@ -187,6 +187,12 @@ void EQRLS(_set_bw)(EQRLS() _eq,
     _eq->lambda = _lambda;
 }
 
+// get learning rate of equalizer
+float EQRLS(_get_bw)(EQRLS() _eq)
+{
+    return _eq->lambda;
+}
+
 // reset equalizer
 void EQRLS(_reset)(EQRLS() _eq)
 {
