@@ -361,11 +361,58 @@ For a more detailed example demonstrating the full capabilities of the
 %
 %\subsection{encoder/decoder options}
 %\label{module:fec:codecs}
-Table~\ref{tab:fec:codecs} lists the available codecs and gives a brief
-description for each.
-All convolutional and Reed-Solomon codes are available only if {\tt
-libfec} is installed \cite{libfec:web}.
 
+\subsubsection{Soft Decoding}
+\label{module:fec:soft}
+\liquid\ supports soft decoding of most error-correcting schemes
+(with the exception of the Golay, SEC-DED, and Reed-Solomon codes).
+Soft decoding for all codes requires the log-likelihood ratio (LLR)
+output of the demodulator which can be achieved with the appropriate
+call: {\tt modem\_demodulate\_soft()}
+(see \S\ref{module:modem:digital:soft} for details).
+The performance improvement for soft decoding varies for both the
+modulation and FEC scheme used;
+however in general one can expect to see an improvement of approximately
+1.5~dB $E_b/N_0$ over hard-decision decoding.
+%
+%-------------------- FIGURE: FEC BER HARD/SOFT --------------------
+\begin{figure}[h]
+\centering
+  \includegraphics[trim = 3mm 2mm 0mm 2mm, clip, width=13cm]{figures.gen/fec_ber_ebn0_hardsoft}
+  \label{fig:fec:block_ber:esn0}
+% trim = left bottom right top
+\caption{Bit error-rate performance for the Hamming(8,4) codec comparing
+         hard-decision to soft-decision decoding.}
+\label{fig:fec:hardsoft_ber}
+\end{figure}
+%
+Figure~\ref{fig:fec:hardsoft_ber} shows the performance improvement of
+using soft-decision vs. hard-decision decodign for the Hamming(8,4)
+block code.
+
+\subsection{Performance}
+\label{module:fec:performance}
+The performance of an error-correction scheme is typically measured in
+the bit error rate (BER) for a anipotally modulated signal in the
+presence of additive white Gauss noise (AWGN).
+Certain applications prefer measuring performance in terms of the
+{\em signal} energy while others require {\em bit} energy,
+all relative to the noise variance.
+The two are related by
+%
+\begin{equation}
+\label{eqn:fec:esn0_ebn0}
+    \frac{E_b}{N_0} = \frac{E_s}{r N_0}
+\end{equation}
+%
+where
+$E_s$ is the signal energy,
+$E_b$ is the bit energy,
+$N_0$ is the noise energy,
+and
+$r$ is the rate of the modulation and coding scheme pair,
+measured in bits/s/Hz.
+%
 % ------------ TABLE: FEC CODING SCHEMES ------------
 % TODO : add (approximate) performance improvement (hard/soft) over
 %        uncoded BPSK in terms of Eb/N0
@@ -419,70 +466,24 @@ libfec} is installed \cite{libfec:web}.
 % Reed-Solomon codes
 \multicolumn{5}{c}{{\em Reed-Solomon Codes}}\\\midrule
 {\tt LIQUID\_FEC\_RS\_M8}       & 223/255 &  6.04 &    - & Reed-Solomon block code, $m=8$\\\bottomrule
-
-
 \end{tabular*}
 }
 \end{table*}%
 % ------------------------
+%
+Table~\ref{tab:fec:codecs} lists the available codecs and gives a brief
+description for each.
+All convolutional and Reed-Solomon codes are available only if {\tt
+libfec} is installed \cite{libfec:web}.
 
-\subsubsection{Soft Decoding}
-\label{module:fec:soft}
-\liquid\ supports soft decoding of most error-correcting schemes
-(with the exception of the Golay, SEC-DED, and Reed-Solomon codes).
-Soft decoding for all codes requires the log-likelihood ratio (LLR)
-output of the demodulator which can be achieved with the appropriate
-call: {\tt modem\_demodulate\_soft()}
-(see \S\ref{module:modem:digital:soft} for details).
-The performance improvement for soft decoding varies for both the
-modulation and FEC scheme used;
-however in general one can expect to see an improvement of approximately
-1.5~dB $E_b/N_0$ over hard-decision decoding.
-%
-%-------------------- FIGURE: FEC BER HARD/SOFT --------------------
-\begin{figure}
-\centering
-  \includegraphics[trim = 3mm 2mm 0mm 2mm, clip, width=13cm]{figures.gen/fec_ber_ebn0_hardsoft}
-  \label{fig:fec:block_ber:esn0}
-% trim = left bottom right top
-\caption{Bit error-rate performance for the Hamming(8,4) codec comparing
-         hard-decision to soft-decision decoding.}
-\label{fig:fec:hardsoft_ber}
-\end{figure}
-%
-Figure~\ref{fig:fec:hardsoft_ber} shows the performance improvement of
-using soft-decision vs. hard-decision decodign for the Hamming(8,4)
-block code.
-
-\subsection{Performance}
-\label{module:fec:performance}
-The performance of an error-correction scheme is typically measured in
-the bit error rate (BER) for a anipotally modulated signal in the
-presence of additive white Gauss noise (AWGN).
-Certain applications prefer measuring performance in terms of the
-{\em signal} energy while others require {\em bit} energy,
-all relative to the noise variance.
-The two are related by
-%
-\begin{equation}
-\label{eqn:fec:esn0_ebn0}
-    \frac{E_b}{N_0} = \frac{E_s}{r N_0}
-\end{equation}
-%
-where
-$E_s$ is the signal energy,
-$E_b$ is the bit energy,
-$N_0$ is the noise energy,
-and
-$r$ is the rate of the modulation and coding scheme pair,
-measured in bits/s/Hz.
 Figures~\ref{fig:fec:block_ber}, \ref{fig:fec:conv_ber}, and
 \ref{fig:fec:convpunc_ber}
 plot the bit error-rate performance of the forward
 error-correction schemes available in \liquid\ for a BPSK signal
 in an AWGN channel.
-Each figure depicts the BER versus both $E_s/N_0$ (SNR) and $E_b/N_0$,
-the latter compensating for the coding rate.
+%
+Each figure depicts the BER versus $E_b/N_0$
+($E_s/N_0$ compensated for coding rate).
 The error rates were computed by generating packets of 1024 bits,
 encoding using the appropriate FEC scheme,
 modulating the resulting bits with BPSK
@@ -496,20 +497,7 @@ subdirectory.
 %-------------------- FIGURE: FEC BER (BUILT-IN) --------------------
 \begin{figure}
 \centering
-\mbox{
-  \subfigure[BER vs. $E_s/N_0$]
-  {
-    \includegraphics[trim = 3mm 2mm 0mm 2mm, clip, width=14cm]{figures.gen/fec_ber_esn0_block}
-    \label{fig:fec:block_ber:esn0}
-  }
-} \quad
-\mbox{
-  \subfigure[BER vs. $E_b/N_0$]
-  {
-    \includegraphics[trim = 3mm 2mm 0mm 2mm, clip, width=14cm]{figures.gen/fec_ber_ebn0_block}
-    \label{fig:fec:block_ber:ebn0}
-  } \quad
-}
+\includegraphics[trim = 3mm 2mm 0mm 2mm, clip, width=13cm]{figures.gen/fec_ber_ebn0_block}
 % trim = left bottom right top
 \caption{Forward error-correction codec bit error rates (simulated)
          for built-in \liquid\ block codecs
@@ -550,20 +538,7 @@ of $10^{-5}$ with an $E_b/N_0$ value of 7.46~dB.
 %-------------------- FIGURE: FEC BER (CONVOLUTIONAL) --------------------
 \begin{figure}
 \centering
-\mbox{
-  \subfigure[BER vs. $E_s/N_0$]
-  {
-    \includegraphics[trim = 3mm 2mm 0mm 2mm, clip, width=14cm]{figures.gen/fec_ber_esn0_conv}
-    \label{fig:fec:conv_ber:esn0}
-  }
-} \quad
-\mbox{
-  \subfigure[BER vs. $E_b/N_0$]
-  {
-    \includegraphics[trim = 3mm 2mm 0mm 2mm, clip, width=14cm]{figures.gen/fec_ber_ebn0_conv}
-    \label{fig:fec:conv_ber:ebn0}
-  } \quad
-}
+\includegraphics[trim = 3mm 2mm 0mm 2mm, clip, width=13cm]{figures.gen/fec_ber_ebn0_conv}
 % trim = left bottom right top
 \caption{Forward error-correction codec bit error rates (simulated)
          for convolutional codes
@@ -589,20 +564,7 @@ correlating the output samples more than the short-length Hamming codes.
 %-------------------- FIGURE: FEC BER (CONVOLUTIONAL, PUNCTURED) --------------------
 \begin{figure}
 \centering
-\mbox{
-  \subfigure[BER vs. $E_s/N_0$]
-  {
-    \includegraphics[trim = 3mm 2mm 0mm 2mm, clip, width=14cm]{figures.gen/fec_ber_esn0_convpunc}
-    \label{fig:fec:convpunc_ber:esn0}
-  }
-} \quad
-\mbox{
-  \subfigure[BER vs. $E_b/N_0$]
-  {
-    \includegraphics[trim = 3mm 2mm 0mm 2mm, clip, width=14cm]{figures.gen/fec_ber_ebn0_convpunc}
-    \label{fig:fec:convpunc_ber:ebn0}
-  } \quad
-}
+\includegraphics[trim = 3mm 2mm 0mm 2mm, clip, width=13cm]{figures.gen/fec_ber_ebn0_convpunc}
 % trim = left bottom right top
 \caption{Forward error-correction codec bit error rates (simulated)
          for punctured convolutional codes

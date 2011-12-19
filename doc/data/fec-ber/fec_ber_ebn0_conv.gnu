@@ -11,7 +11,6 @@ set size ratio 0.65
 set size 1.0
 set xlabel 'E_b/N_0 [dB]'
 set ylabel 'BER'
-set key bottom right nobox
 set grid xtics ytics
 set pointsize 0.6
 set key bottom left nobox
