@@ -380,6 +380,7 @@ libfec} is installed \cite{libfec:web}.
              & {\it asymptotic} & {\it $\gamma_b$} [dB] & {\it $\gamma_b$} [dB] & \\
 {\it scheme} & {\it rate}       & (hard)                & (soft)                & {\it description}\\\otoprule
 %
+\multicolumn{5}{c}{{\em Built-in Block Codes}}\\\midrule
 {\tt LIQUID\_FEC\_UNKNOWN}      & -       &     - &     - & unknown/unsupported scheme\\
 {\tt LIQUID\_FEC\_NONE}         & 1       &  9.59 &  9.59 & no error-correction\\
 {\tt LIQUID\_FEC\_REP3}         & 1/3     & 11.08 &  9.56 & simple repeat code\\
@@ -393,12 +394,14 @@ libfec} is installed \cite{libfec:web}.
 {\tt LIQUID\_FEC\_SECDED7264}   & 8/9     &  8.05 &     - & SEC-DED (72,64) block code\\\midrule
 %
 % codecs not defined internally (see http://www.ka9q.net/code/fec/)
+\multicolumn{5}{c}{{\em Convolutional Codes (Unpunctured)}}\\\midrule
 {\tt LIQUID\_FEC\_CONV\_V27}    & 1/2     &  6.44 & 4.29 & $K=7$, $d_{free}=10$\\
 {\tt LIQUID\_FEC\_CONV\_V29}    & 1/2     &  5.79 & 3.78 & $K=9$, $d_{free}=12$\\
 {\tt LIQUID\_FEC\_CONV\_V39}    & 1/3     &  5.41 & 3.59 & $K=9$, $d_{free}=18$\\
 {\tt LIQUID\_FEC\_CONV\_V615}   & 1/6     &  3.81 & 2.00 & $K=15$, $d_{free}\leq57$ (Heller 1968)\\\midrule
 %
 % punctured (perforated) codes
+\multicolumn{5}{c}{{\em Convolutional Codes (Punctured)}}\\\midrule
 {\tt LIQUID\_FEC\_CONV\_V27P23} & 2/3     &  6.86 & 4.65 & $K=7$, $d_{free}=6$\\
 {\tt LIQUID\_FEC\_CONV\_V27P34} & 3/4     &  7.33 & 5.29 & $K=7$, $d_{free}=5$\\
 {\tt LIQUID\_FEC\_CONV\_V27P45} & 4/5     &  7.73 & 5.50 & $K=7$, $d_{free}=4$\\
@@ -414,6 +417,7 @@ libfec} is installed \cite{libfec:web}.
 {\tt LIQUID\_FEC\_CONV\_V29P78} & 7/8     &  7.87 & 6.03 & $K=9$, $d_{free}=4$\\\midrule
 % 
 % Reed-Solomon codes
+\multicolumn{5}{c}{{\em Reed-Solomon Codes}}\\\midrule
 {\tt LIQUID\_FEC\_RS\_M8}       & 223/255 &  6.04 &    - & Reed-Solomon block code, $m=8$\\\bottomrule
 
 
