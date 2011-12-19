@@ -31,8 +31,8 @@
 //  [harris:1978] frederic j. harris, "On the Use of Windows for Harmonic
 //      Analysis with the Discrete Fourier Transform," Proceedings of the
 //      IEEE, vol. 66, no. 1, January, 1978.
-//  [Helstrom:1960] Helstrom, C. W. Statistical Theory of Signal
-//      Detection. New York: Pergamon, 1960
+//  [Helstrom:1960] Helstrom, C. W., Statistical Theory of Signal
+//      Detection. New York: Pergamon Press, 1960
 //  [Helstrom:1992] Helstrom, C. W. "Computing the Generalized Marcum Q-
 //      Function," IEEE Transactions on Information Theory, vol. 38, no. 4,
 //      July, 1992.

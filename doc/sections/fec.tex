@@ -361,71 +361,11 @@ For a more detailed example demonstrating the full capabilities of the
 %
 %\subsection{encoder/decoder options}
 %\label{module:fec:codecs}
-Table~\ref{tab:fec:codecs} lists the available codecs and gives a brief
-description for each.
-All convolutional and Reed-Solomon codes are available only if {\tt
-libfec} is installed \cite{libfec:web}.
-
-% ------------ TABLE: FEC CODING SCHEMES ------------
-% TODO : add (approximate) performance improvement (hard/soft) over
-%        uncoded BPSK in terms of Eb/N0
-\begin{table*}
-\caption{Forward error-correction codecs available in \liquid\
-         with $E_b/N_0$ required for a BER of $10^{-5}$}
-\label{tab:fec:codecs}
-\centering
-{\small
-\begin{tabular*}{0.95\textwidth}{l@{\extracolsep{\fill}}rrrl}
-\toprule
-             & {\it asymptotic} & {\it $\gamma_b$} [dB] & {\it $\gamma_b$} [dB] & \\
-{\it scheme} & {\it rate}       & (hard)                & (soft)                & {\it description}\\\otoprule
-%
-{\tt LIQUID\_FEC\_UNKNOWN}      & -       &     - &     - & unknown/unsupported scheme\\
-{\tt LIQUID\_FEC\_NONE}         & 1       &  9.59 &  9.59 & no error-correction\\
-{\tt LIQUID\_FEC\_REP3}         & 1/3     & 11.08 &  9.56 & simple repeat code\\
-{\tt LIQUID\_FEC\_REP5}         & 1/5     & 11.39 &  9.64 & simple repeat code\\
-{\tt LIQUID\_FEC\_HAMMING74}    & 4/7     &  9.15 &  7.79 & Hamming (7,4) block code\\
-{\tt LIQUID\_FEC\_HAMMING84}    & 1/2     &  9.63 &  7.38 & Hamming (7,4) with extra parity bit\\
-{\tt LIQUID\_FEC\_HAMMING128}   & 2/3     &  8.82 &  8.13 & Hamming (12,8) block code\\
-{\tt LIQUID\_FEC\_GOLAY2412}    & 1/2     &  7.46 &     - & Golay (24,12) block code\\
-{\tt LIQUID\_FEC\_SECDED2216}   & 2/3     &  8.84 &     - & SEC-DED (22,16) block code\\
-{\tt LIQUID\_FEC\_SECDED3932}   & 4/5     &  8.29 &     - & SEC-DED (39,32) block code\\
-{\tt LIQUID\_FEC\_SECDED7264}   & 8/9     &  8.05 &     - & SEC-DED (72,64) block code\\\midrule
-%
-% codecs not defined internally (see http://www.ka9q.net/code/fec/)
-{\tt LIQUID\_FEC\_CONV\_V27}    & 1/2     &  6.44 & 4.29 & $K=7$, $d_{free}=10$\\
-{\tt LIQUID\_FEC\_CONV\_V29}    & 1/2     &  5.79 & 3.78 & $K=9$, $d_{free}=12$\\
-{\tt LIQUID\_FEC\_CONV\_V39}    & 1/3     &  5.41 & 3.59 & $K=9$, $d_{free}=18$\\
-{\tt LIQUID\_FEC\_CONV\_V615}   & 1/6     &  3.81 & 2.00 & $K=15$, $d_{free}\leq57$ (Heller 1968)\\\midrule
-%
-% punctured (perforated) codes
-{\tt LIQUID\_FEC\_CONV\_V27P23} & 2/3     &  6.86 & 4.65 & $K=7$, $d_{free}=6$\\
-{\tt LIQUID\_FEC\_CONV\_V27P34} & 3/4     &  7.33 & 5.29 & $K=7$, $d_{free}=5$\\
-{\tt LIQUID\_FEC\_CONV\_V27P45} & 4/5     &  7.73 & 5.50 & $K=7$, $d_{free}=4$\\
-{\tt LIQUID\_FEC\_CONV\_V27P56} & 5/6     &  8.35 & 5.72 & $K=7$, $d_{free}=4$\\
-{\tt LIQUID\_FEC\_CONV\_V27P67} & 6/7     &  8.21 & 5.91 & $K=7$, $d_{free}=3$\\
-{\tt LIQUID\_FEC\_CONV\_V27P78} & 7/8     &  8.38 & 5.97 & $K=7$, $d_{free}=3$\\\midrule
-%
-{\tt LIQUID\_FEC\_CONV\_V29P23} & 2/3     &  6.38 & 4.36 & $K=9$, $d_{free}=7$\\
-{\tt LIQUID\_FEC\_CONV\_V29P34} & 3/4     &  6.72 & 4.78 & $K=9$, $d_{free}=6$\\
-{\tt LIQUID\_FEC\_CONV\_V29P45} & 4/5     &  7.60 & 4.95 & $K=9$, $d_{free}=5$\\
-{\tt LIQUID\_FEC\_CONV\_V29P56} & 5/6     &  7.69 & 5.72 & $K=9$, $d_{free}=5$\\
-{\tt LIQUID\_FEC\_CONV\_V29P67} & 6/7     &  8.93 & 6.92 & $K=9$, $d_{free}=4$\\
-{\tt LIQUID\_FEC\_CONV\_V29P78} & 7/8     &  7.87 & 6.03 & $K=9$, $d_{free}=4$\\\midrule
-% 
-% Reed-Solomon codes
-{\tt LIQUID\_FEC\_RS\_M8}       & 223/255 &  6.04 &    - & Reed-Solomon block code, $m=8$\\\bottomrule
-
-
-\end{tabular*}
-}
-\end{table*}%
-% ------------------------
 
 \subsubsection{Soft Decoding}
 \label{module:fec:soft}
 \liquid\ supports soft decoding of most error-correcting schemes
-(with the exception of the Reed-Solomon codes).
+(with the exception of the Golay, SEC-DED, and Reed-Solomon codes).
 Soft decoding for all codes requires the log-likelihood ratio (LLR)
 output of the demodulator which can be achieved with the appropriate
 call: {\tt modem\_demodulate\_soft()}
@@ -434,14 +374,27 @@ The performance improvement for soft decoding varies for both the
 modulation and FEC scheme used;
 however in general one can expect to see an improvement of approximately
 1.5~dB $E_b/N_0$ over hard-decision decoding.
-
-% TODO : describe in more detail
+%
+%-------------------- FIGURE: FEC BER HARD/SOFT --------------------
+\begin{figure}[h]
+\centering
+  \includegraphics[trim = 3mm 2mm 0mm 2mm, clip, width=13cm]{figures.gen/fec_ber_ebn0_hardsoft}
+  \label{fig:fec:block_ber:esn0}
+% trim = left bottom right top
+\caption{Bit error-rate performance for the Hamming(8,4) codec comparing
+         hard-decision to soft-decision decoding.}
+\label{fig:fec:hardsoft_ber}
+\end{figure}
+%
+Figure~\ref{fig:fec:hardsoft_ber} shows the performance improvement of
+using soft-decision vs. hard-decision decodign for the Hamming(8,4)
+block code.
 
 \subsection{Performance}
 \label{module:fec:performance}
 The performance of an error-correction scheme is typically measured in
-the bit error rate for a anipotally modulated signal in the presence of
-additive white Gauss noise (AWGN).
+the bit error rate (BER) for a anipotally modulated signal in the
+presence of additive white Gauss noise (AWGN).
 Certain applications prefer measuring performance in terms of the
 {\em signal} energy while others require {\em bit} energy,
 all relative to the noise variance.
@@ -459,39 +412,92 @@ $N_0$ is the noise energy,
 and
 $r$ is the rate of the modulation and coding scheme pair,
 measured in bits/s/Hz.
+%
+% ------------ TABLE: FEC CODING SCHEMES ------------
+% TODO : add (approximate) performance improvement (hard/soft) over
+%        uncoded BPSK in terms of Eb/N0
+\begin{table*}
+\caption{Forward error-correction codecs available in \liquid\
+         with $E_b/N_0$ required for a BER of $10^{-5}$}
+\label{tab:fec:codecs}
+\centering
+{\small
+\begin{tabular*}{0.95\textwidth}{l@{\extracolsep{\fill}}rrrl}
+\toprule
+             & {\it asymptotic} & {\it $\gamma_b$} [dB] & {\it $\gamma_b$} [dB] & \\
+{\it scheme} & {\it rate}       & (hard)                & (soft)                & {\it description}\\\otoprule
+%
+\multicolumn{5}{c}{{\em Built-in Block Codes}}\\\midrule
+{\tt LIQUID\_FEC\_UNKNOWN}      & -       &     - &     - & unknown/unsupported scheme\\
+{\tt LIQUID\_FEC\_NONE}         & 1       &  9.59 &  9.59 & no error-correction\\
+{\tt LIQUID\_FEC\_REP3}         & 1/3     & 11.08 &  9.56 & simple repeat code\\
+{\tt LIQUID\_FEC\_REP5}         & 1/5     & 11.39 &  9.64 & simple repeat code\\
+{\tt LIQUID\_FEC\_HAMMING74}    & 4/7     &  9.15 &  7.79 & Hamming (7,4) block code\\
+{\tt LIQUID\_FEC\_HAMMING84}    & 1/2     &  9.63 &  7.38 & Hamming (7,4) with extra parity bit\\
+{\tt LIQUID\_FEC\_HAMMING128}   & 2/3     &  8.82 &  8.13 & Hamming (12,8) block code\\
+{\tt LIQUID\_FEC\_GOLAY2412}    & 1/2     &  7.46 &     - & Golay (24,12) block code\\
+{\tt LIQUID\_FEC\_SECDED2216}   & 2/3     &  8.84 &     - & SEC-DED (22,16) block code\\
+{\tt LIQUID\_FEC\_SECDED3932}   & 4/5     &  8.29 &     - & SEC-DED (39,32) block code\\
+{\tt LIQUID\_FEC\_SECDED7264}   & 8/9     &  8.05 &     - & SEC-DED (72,64) block code\\\midrule
+%
+% codecs not defined internally (see http://www.ka9q.net/code/fec/)
+\multicolumn{5}{c}{{\em Convolutional Codes (Unpunctured)}}\\\midrule
+{\tt LIQUID\_FEC\_CONV\_V27}    & 1/2     &  6.44 & 4.29 & $K=7$, $d_{free}=10$\\
+{\tt LIQUID\_FEC\_CONV\_V29}    & 1/2     &  5.79 & 3.78 & $K=9$, $d_{free}=12$\\
+{\tt LIQUID\_FEC\_CONV\_V39}    & 1/3     &  5.41 & 3.59 & $K=9$, $d_{free}=18$\\
+{\tt LIQUID\_FEC\_CONV\_V615}   & 1/6     &  3.81 & 2.00 & $K=15$, $d_{free}\leq57$ (Heller 1968)\\\midrule
+%
+% punctured (perforated) codes
+\multicolumn{5}{c}{{\em Convolutional Codes (Punctured)}}\\\midrule
+{\tt LIQUID\_FEC\_CONV\_V27P23} & 2/3     &  6.86 & 4.65 & $K=7$, $d_{free}=6$\\
+{\tt LIQUID\_FEC\_CONV\_V27P34} & 3/4     &  7.33 & 5.29 & $K=7$, $d_{free}=5$\\
+{\tt LIQUID\_FEC\_CONV\_V27P45} & 4/5     &  7.73 & 5.50 & $K=7$, $d_{free}=4$\\
+{\tt LIQUID\_FEC\_CONV\_V27P56} & 5/6     &  8.35 & 5.72 & $K=7$, $d_{free}=4$\\
+{\tt LIQUID\_FEC\_CONV\_V27P67} & 6/7     &  8.21 & 5.91 & $K=7$, $d_{free}=3$\\
+{\tt LIQUID\_FEC\_CONV\_V27P78} & 7/8     &  8.38 & 5.97 & $K=7$, $d_{free}=3$\\\midrule
+%
+{\tt LIQUID\_FEC\_CONV\_V29P23} & 2/3     &  6.38 & 4.36 & $K=9$, $d_{free}=7$\\
+{\tt LIQUID\_FEC\_CONV\_V29P34} & 3/4     &  6.72 & 4.78 & $K=9$, $d_{free}=6$\\
+{\tt LIQUID\_FEC\_CONV\_V29P45} & 4/5     &  7.60 & 4.95 & $K=9$, $d_{free}=5$\\
+{\tt LIQUID\_FEC\_CONV\_V29P56} & 5/6     &  7.69 & 5.72 & $K=9$, $d_{free}=5$\\
+{\tt LIQUID\_FEC\_CONV\_V29P67} & 6/7     &  8.93 & 6.92 & $K=9$, $d_{free}=4$\\
+{\tt LIQUID\_FEC\_CONV\_V29P78} & 7/8     &  7.87 & 6.03 & $K=9$, $d_{free}=4$\\\midrule
+% 
+% Reed-Solomon codes
+\multicolumn{5}{c}{{\em Reed-Solomon Codes}}\\\midrule
+{\tt LIQUID\_FEC\_RS\_M8}       & 223/255 &  6.04 &    - & Reed-Solomon block code, $m=8$\\\bottomrule
+\end{tabular*}
+}
+\end{table*}%
+% ------------------------
+%
+Table~\ref{tab:fec:codecs} lists the available codecs and gives a brief
+description for each.
+All convolutional and Reed-Solomon codes are available only if {\tt
+libfec} is installed \cite{libfec:web}.
+
 Figures~\ref{fig:fec:block_ber}, \ref{fig:fec:conv_ber}, and
 \ref{fig:fec:convpunc_ber}
 plot the bit error-rate performance of the forward
 error-correction schemes available in \liquid\ for a BPSK signal
 in an AWGN channel.
-Each figure depicts the BER versus both $E_s/N_0$ (SNR) and $E_b/N_0$,
-the latter compensating for the coding rate.
+%
+Each figure depicts the BER versus $E_b/N_0$
+($E_s/N_0$ compensated for coding rate).
 The error rates were computed by generating packets of 1024 bits,
 encoding using the appropriate FEC scheme,
 modulating the resulting bits with BPSK
 (see \S\ref{module:modem:digital:PSK}),
 adding noise, demodulating, and decoding.
-Each point was simulated with a minimum of 80,000 trials and a minimum
-of 500 bit errors.
-The raw data can be found in the {\tt doc/data/ber/} subdirectory.
+Each point was simulated with a minimum of 4,000,000 trials
+and a minimum of 1,000 bit errors.
+The raw data can be found in the {\tt doc/data/ber/fec-ber/}
+subdirectory.
 
 %-------------------- FIGURE: FEC BER (BUILT-IN) --------------------
 \begin{figure}
 \centering
-\mbox{
-  \subfigure[BER vs. $E_s/N_0$]
-  {
-    \includegraphics[trim = 3mm 2mm 0mm 2mm, clip, width=14cm]{figures.gen/fec_ber_esn0_block}
-    \label{fig:fec:block_ber:esn0}
-  }
-} \quad
-\mbox{
-  \subfigure[BER vs. $E_b/N_0$]
-  {
-    \includegraphics[trim = 3mm 2mm 0mm 2mm, clip, width=14cm]{figures.gen/fec_ber_ebn0_block}
-    \label{fig:fec:block_ber:ebn0}
-  } \quad
-}
+\includegraphics[trim = 3mm 2mm 0mm 2mm, clip, width=13cm]{figures.gen/fec_ber_ebn0_block}
 % trim = left bottom right top
 \caption{Forward error-correction codec bit error rates (simulated)
          for built-in \liquid\ block codecs
@@ -532,20 +538,7 @@ of $10^{-5}$ with an $E_b/N_0$ value of 7.46~dB.
 %-------------------- FIGURE: FEC BER (CONVOLUTIONAL) --------------------
 \begin{figure}
 \centering
-\mbox{
-  \subfigure[BER vs. $E_s/N_0$]
-  {
-    \includegraphics[trim = 3mm 2mm 0mm 2mm, clip, width=14cm]{figures.gen/fec_ber_esn0_conv}
-    \label{fig:fec:conv_ber:esn0}
-  }
-} \quad
-\mbox{
-  \subfigure[BER vs. $E_b/N_0$]
-  {
-    \includegraphics[trim = 3mm 2mm 0mm 2mm, clip, width=14cm]{figures.gen/fec_ber_ebn0_conv}
-    \label{fig:fec:conv_ber:ebn0}
-  } \quad
-}
+\includegraphics[trim = 3mm 2mm 0mm 2mm, clip, width=13cm]{figures.gen/fec_ber_ebn0_conv}
 % trim = left bottom right top
 \caption{Forward error-correction codec bit error rates (simulated)
          for convolutional codes
@@ -571,20 +564,7 @@ correlating the output samples more than the short-length Hamming codes.
 %-------------------- FIGURE: FEC BER (CONVOLUTIONAL, PUNCTURED) --------------------
 \begin{figure}
 \centering
-\mbox{
-  \subfigure[BER vs. $E_s/N_0$]
-  {
-    \includegraphics[trim = 3mm 2mm 0mm 2mm, clip, width=14cm]{figures.gen/fec_ber_esn0_convpunc}
-    \label{fig:fec:convpunc_ber:esn0}
-  }
-} \quad
-\mbox{
-  \subfigure[BER vs. $E_b/N_0$]
-  {
-    \includegraphics[trim = 3mm 2mm 0mm 2mm, clip, width=14cm]{figures.gen/fec_ber_ebn0_convpunc}
-    \label{fig:fec:convpunc_ber:ebn0}
-  } \quad
-}
+\includegraphics[trim = 3mm 2mm 0mm 2mm, clip, width=13cm]{figures.gen/fec_ber_ebn0_convpunc}
 % trim = left bottom right top
 \caption{Forward error-correction codec bit error rates (simulated)
          for punctured convolutional codes

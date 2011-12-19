@@ -52,7 +52,6 @@ int main(int argc, char *argv[]) {
     unsigned long int max_trials = 20000000;
     unsigned int frame_len = 256;
     modulation_scheme ms = LIQUID_MODEM_BPSK;
-    unsigned int bps = 1;
     fec_scheme fec0 = LIQUID_FEC_NONE;
     fec_scheme fec1 = LIQUID_FEC_NONE;
     int soft_decoding = 0;
@@ -79,7 +78,7 @@ int main(int argc, char *argv[]) {
         case 'e': min_errors = atol(optarg); break;
         case 'f': frame_len = atol(optarg); break;
         case 'm':
-            liquid_getopt_str2modbps(optarg, &ms, &bps);
+            ms = liquid_getopt_str2mod(optarg);
             if (ms == LIQUID_MODEM_UNKNOWN) {
                 printf("error: unknown mod. scheme: %s\n", optarg);
                 exit(-1);
@@ -112,7 +111,6 @@ int main(int argc, char *argv[]) {
     unsigned int i;
     simulate_per_opts opts;
     opts.ms = ms;
-    opts.bps = bps;
     opts.fec0 = fec0;
     opts.fec1 = fec1;
     opts.dec_msg_len = frame_len;
@@ -133,7 +131,8 @@ int main(int argc, char *argv[]) {
     opts.max_bit_trials     =  max_trials;
 
     // derived values
-    float rate = opts.bps * fec_get_rate(opts.fec0) * fec_get_rate(opts.fec1);
+    unsigned int bps = modulation_types[ms].bps;    // get modulation depth
+    float rate = bps * fec_get_rate(opts.fec0) * fec_get_rate(opts.fec1);
 
     // open output file
     FILE * fid = fopen(filename,"w");
@@ -147,7 +146,7 @@ int main(int argc, char *argv[]) {
     fprintf(fid,"\n");
     fprintf(fid,"#\n");
     fprintf(fid,"#  modulation scheme   :   %s\n", modulation_types[opts.ms].fullname);
-    fprintf(fid,"#  modulation depth    :   %u bits/symbol\n", opts.bps);
+    fprintf(fid,"#  modulation depth    :   %u bits/symbol\n", bps);
     fprintf(fid,"#  fec (inner)         :   %s\n", fec_scheme_str[opts.fec0][1]);
     fprintf(fid,"#  fec (outer)         :   %s\n", fec_scheme_str[opts.fec1][1]);
     fprintf(fid,"#  frame length        :   %u bytes\n", opts.dec_msg_len);
@@ -182,16 +181,6 @@ int main(int argc, char *argv[]) {
 
         // break if unsuccessful
         if (!results.success) break;
-
-        if (verbose) {
-            //printf("  %12.8f : %12.4e\n", SNRdB, PER);
-            printf(" %c SNR: %6.2f, EbN0: %6.2f, bits: %7lu/%9lu (%8.4e), packets: %6lu/%6lu (%6.2f%%)\n",
-                    results.success ? '*' : ' ',
-                    SNRdB,
-                    EbN0dB,
-                    results.num_bit_errors,     results.num_bit_trials,     results.BER,
-                    results.num_packet_errors,  results.num_packet_trials,  results.PER*100.0f);
-        }
 
         // save data to file
         fprintf(fid,"  %12.8f %12.4e %12.4e %12.4e %12lu %12lu %12lu %12lu\n",

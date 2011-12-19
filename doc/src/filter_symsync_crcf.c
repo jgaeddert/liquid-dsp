@@ -13,8 +13,6 @@
 #include "liquid.h"
 #include "liquid.doc.h"
 
-#define OUTPUT_FILENAME "filter_symsync_crcf.m"
-
 // print usage/help message
 void usage()
 {

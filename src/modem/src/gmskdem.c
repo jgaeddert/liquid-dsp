@@ -33,6 +33,8 @@
 #define DEBUG_GMSKDEM_FILENAME  "gmskdem_internal_debug.m"
 #define DEBUG_BUFFER_LEN        (1000)
 
+#define GMSKDEM_USE_EQUALIZER   1
+
 void gmskdem_debug_print(gmskdem _q,
                          const char * _filename);
 
@@ -44,7 +46,12 @@ struct gmskdem_s {
     float * h;              // pulse shaping filter
 
     // filter object
+#if GMSKDEM_USE_EQUALIZER
+    eqlms_rrrf eq;          // receiver matched filter/equalizer
+    float k_inv;            // 1 / k
+#else
     firfilt_rrrf filter;    // receiver matched filter
+#endif
 
     float complex x_prime;  // received signal state
 
@@ -90,8 +97,19 @@ gmskdem gmskdem_create(unsigned int _k,
     // compute filter coefficients
     liquid_firdes_gmskrx(q->k, q->m, q->BT, 0.0f, q->h);
 
+#if GMSKDEM_USE_EQUALIZER
+    // receiver matched filter/equalizer
+    q->eq = eqlms_rrrf_create_rnyquist(LIQUID_RNYQUIST_GMSKRX,
+                                       q->k,
+                                       q->m,
+                                       q->BT,
+                                       0.0f);
+    eqlms_rrrf_set_bw(q->eq, 0.01f);
+    q->k_inv = 1.0f / (float)(q->k);
+#else
     // create filter object
     q->filter = firfilt_rrrf_create(q->h, q->h_len);
+#endif
 
     // reset modem state
     gmskdem_reset(q);
@@ -115,7 +133,11 @@ void gmskdem_destroy(gmskdem _q)
 #endif
 
     // destroy filter object
+#if GMSKDEM_USE_EQUALIZER
+    eqlms_rrrf_destroy(_q->eq);
+#else
     firfilt_rrrf_destroy(_q->filter);
+#endif
 
     // free filter array
     free(_q->h);
@@ -141,7 +163,29 @@ void gmskdem_reset(gmskdem _q)
     _q->num_symbols_demod = 0;
 
     // clear filter buffer
+#if GMSKDEM_USE_EQUALIZER
+    eqlms_rrrf_reset(_q->eq);
+#else
     firfilt_rrrf_clear(_q->filter);
+#endif
+}
+
+// set equalizer bandwidth
+void gmskdem_set_eq_bw(gmskdem _q,
+                       float _bw)
+{
+    // validate input
+    if (_bw < 0.0f || _bw > 0.5f) {
+        fprintf(stderr,"error: gmskdem_set_eq_bw(), bandwith must be in [0,0.5]\n");
+        exit(1);
+    }
+
+#if GMSKDEM_USE_EQUALIZER
+    // set internal equalizer bandwidth
+    eqlms_rrrf_set_bw(_q->eq, _bw);
+#else
+    fprintf(stderr,"warning: gmskdem_set_eq_bw(), equalizer is disabled\n");
+#endif
 }
 
 void gmskdem_demodulate(gmskdem _q,
@@ -161,23 +205,46 @@ void gmskdem_demodulate(gmskdem _q,
         _q->x_prime = _x[i];
 
         // run through matched filter
+#if GMSKDEM_USE_EQUALIZER
+        eqlms_rrrf_push(_q->eq, phi);
+#else
         firfilt_rrrf_push(_q->filter, phi);
+#endif
+
 #if DEBUG_GMSKDEM
         // compute output
         float d_tmp;
+#  if GMSKDEM_USE_EQUALIZER
+        eqlms_rrrf_execute(_q->eq, &d_tmp);
+#  else
         firfilt_rrrf_execute(_q->filter, &d_tmp);
+#  endif
         windowf_push(_q->debug_mfout, d_tmp);
 #endif
 
         // decimate by k
         if ( i != 0 ) continue;
 
+#if GMSKDEM_USE_EQUALIZER
+        // compute filter/equalizer output
+        eqlms_rrrf_execute(_q->eq, &d_hat);
+#else
         // compute filter output
         firfilt_rrrf_execute(_q->filter, &d_hat);
+#endif
     }
 
     // make decision
     *_s = d_hat > 0.0f ? 1 : 0;
+
+#if GMSKDEM_USE_EQUALIZER
+    // update equalizer, after appropriate delay
+    if (_q->num_symbols_demod >= 2*_q->m) {
+        // compute expected output, scaling by samples/symbol
+        float d_prime = d_hat > 0 ? _q->k_inv : -_q->k_inv;
+        eqlms_rrrf_step(_q->eq, d_prime, d_hat);
+    }
+#endif
 }
 
 //
@@ -211,8 +278,15 @@ void gmskdem_debug_print(gmskdem _q,
     liquid_firdes_gmsktx(_q->k, _q->m, _q->BT, 0.0f, ht);
     for (i=0; i<_q->h_len; i++)
         fprintf(fid,"ht(%4u) = %12.4e;\n", i+1, ht[i]);
+#if GMSKDEM_USE_EQUALIZER
+    float hr[_q->h_len];
+    eqlms_rrrf_get_weights(_q->eq, hr);
+    for (i=0; i<_q->h_len; i++)
+        fprintf(fid,"hr(%4u) = %12.4e * %u;\n", i+1, hr[i], _q->k);
+#else
     for (i=0; i<_q->h_len; i++)
         fprintf(fid,"hr(%4u) = %12.4e;\n", i+1, _q->h[i]);
+#endif
     fprintf(fid,"hc = conv(ht,hr)/k;\n");
     fprintf(fid,"nfft = 1024;\n");
     fprintf(fid,"f = [0:(nfft-1)]/nfft - 0.5;\n");

@@ -3009,6 +3009,10 @@ float modem_get_demodulator_phase_error(modem _demod);
 float modem_get_demodulator_evm(modem _demod);
 
 
+//
+// continuous-phase modulation
+//
+
 // gmskmod : GMSK modulator
 typedef struct gmskmod_s * gmskmod;
 
@@ -3018,7 +3022,7 @@ typedef struct gmskmod_s * gmskmod;
 //  _BT     :   excess bandwidth factor
 gmskmod gmskmod_create(unsigned int _k,
                        unsigned int _m,
-                       float _BT);
+                       float        _BT);
 void gmskmod_destroy(gmskmod _q);
 void gmskmod_print(gmskmod _q);
 void gmskmod_reset(gmskmod _q);
@@ -3035,11 +3039,12 @@ typedef struct gmskdem_s * gmskdem;
 //  _m      :   filter delay (symbols)
 //  _BT     :   excess bandwidth factor
 gmskdem gmskdem_create(unsigned int _k,
-                           unsigned int _m,
-                           float _BT);
+                       unsigned int _m,
+                       float        _BT);
 void gmskdem_destroy(gmskdem _q);
 void gmskdem_print(gmskdem _q);
 void gmskdem_reset(gmskdem _q);
+void gmskdem_set_eq_bw(gmskdem _q, float _bw);
 void gmskdem_demodulate(gmskdem _q,
                         liquid_float_complex * _y,
                         unsigned int * _sym);

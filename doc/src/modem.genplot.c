@@ -207,8 +207,8 @@ int main(int argc, char*argv[]) {
         fprintf(fid,"plot '%s' using 1:2 with points pointtype 7 linecolor rgb '#004080'\n",input_filename);
     } else {
         // print labels
-        fprintf(fid,"xoffset = %8.6f\n", plot_long_labels ? 0.0 : 0.06f);
-        fprintf(fid,"yoffset = %8.6f\n", 0.06f);
+        fprintf(fid,"xoffset = %8.6f\n", plot_long_labels ? 0.0   : 0.045f);
+        fprintf(fid,"yoffset = %8.6f\n", plot_long_labels ? 0.06f : 0.045f);
         unsigned int label_line = plot_long_labels ? 3 : 4;
         fprintf(fid,"plot '%s' using 1:2 with points pointtype 7 linecolor rgb '#004080',\\\n",input_filename);
         fprintf(fid,"     '%s' using ($1+xoffset):($2+yoffset):%u with labels font 'arial,10'\n", input_filename,label_line);
