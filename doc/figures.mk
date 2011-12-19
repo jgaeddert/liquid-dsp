@@ -326,104 +326,104 @@ ber-fec-opts      := -b 1e-5 -e 1000 -n4000000 -t400000000 -s-9 -d0.5 -x40
 # hard-decision decoding
 #
 data_ber_fec_hard :=				\
-	data/ber-fec-hard/ber_none.dat		\
-	data/ber-fec-hard/ber_rep3.dat		\
-	data/ber-fec-hard/ber_rep5.dat		\
-	data/ber-fec-hard/ber_h128.dat		\
-	data/ber-fec-hard/ber_h74.dat		\
-	data/ber-fec-hard/ber_h84.dat		\
-	data/ber-fec-hard/ber_secded2216.dat	\
-	data/ber-fec-hard/ber_secded3932.dat	\
-	data/ber-fec-hard/ber_secded7264.dat	\
-	data/ber-fec-hard/ber_g2412.dat		\
-	data/ber-fec-hard/ber_v27.dat		\
-	data/ber-fec-hard/ber_v29.dat		\
-	data/ber-fec-hard/ber_v39.dat		\
-	data/ber-fec-hard/ber_v615.dat		\
-	data/ber-fec-hard/ber_v27p23.dat	\
-	data/ber-fec-hard/ber_v27p34.dat	\
-	data/ber-fec-hard/ber_v27p45.dat	\
-	data/ber-fec-hard/ber_v27p56.dat	\
-	data/ber-fec-hard/ber_v27p67.dat	\
-	data/ber-fec-hard/ber_v27p78.dat	\
-	data/ber-fec-hard/ber_rs8.dat		\
+	data/fec-ber/hard/ber_none.dat		\
+	data/fec-ber/hard/ber_rep3.dat		\
+	data/fec-ber/hard/ber_rep5.dat		\
+	data/fec-ber/hard/ber_h128.dat		\
+	data/fec-ber/hard/ber_h74.dat		\
+	data/fec-ber/hard/ber_h84.dat		\
+	data/fec-ber/hard/ber_secded2216.dat	\
+	data/fec-ber/hard/ber_secded3932.dat	\
+	data/fec-ber/hard/ber_secded7264.dat	\
+	data/fec-ber/hard/ber_g2412.dat		\
+	data/fec-ber/hard/ber_v27.dat		\
+	data/fec-ber/hard/ber_v29.dat		\
+	data/fec-ber/hard/ber_v39.dat		\
+	data/fec-ber/hard/ber_v615.dat		\
+	data/fec-ber/hard/ber_v27p23.dat	\
+	data/fec-ber/hard/ber_v27p34.dat	\
+	data/fec-ber/hard/ber_v27p45.dat	\
+	data/fec-ber/hard/ber_v27p56.dat	\
+	data/fec-ber/hard/ber_v27p67.dat	\
+	data/fec-ber/hard/ber_v27p78.dat	\
+	data/fec-ber/hard/ber_rs8.dat		\
 
 # re-simulate BER data
 resimulate-data-fec-ber-hard : src/simulate_ber
 	@echo "re-simulating ber data (hard decision decoding)..."
-	./src/simulate_ber -H -c none   $(ber-fec-opts) -o data/ber-fec-hard/ber_none.dat
-	./src/simulate_ber -H -c rep3   $(ber-fec-opts) -o data/ber-fec-hard/ber_rep3.dat
-	./src/simulate_ber -H -c rep5   $(ber-fec-opts) -o data/ber-fec-hard/ber_rep5.dat
-	./src/simulate_ber -H -c h128   $(ber-fec-opts) -o data/ber-fec-hard/ber_h128.dat
-	./src/simulate_ber -H -c h84    $(ber-fec-opts) -o data/ber-fec-hard/ber_h84.dat
-	./src/simulate_ber -H -c h74    $(ber-fec-opts) -o data/ber-fec-hard/ber_h74.dat
-	./src/simulate_ber -H -c secded2216 $(ber-fec-opts) -o data/ber-fec-hard/ber_secded2216.dat
-	./src/simulate_ber -H -c secded3932 $(ber-fec-opts) -o data/ber-fec-hard/ber_secded3932.dat
-	./src/simulate_ber -H -c secded7264 $(ber-fec-opts) -o data/ber-fec-hard/ber_secded7264.dat
-	./src/simulate_ber -H -c g2412  $(ber-fec-opts) -o data/ber-fec-hard/ber_g2412.dat
-	./src/simulate_ber -H -c v27    $(ber-fec-opts) -o data/ber-fec-hard/ber_v27.dat
-	./src/simulate_ber -H -c v29    $(ber-fec-opts) -o data/ber-fec-hard/ber_v29.dat
-	./src/simulate_ber -H -c v39    $(ber-fec-opts) -o data/ber-fec-hard/ber_v39.dat
-	./src/simulate_ber -H -c v27p23 $(ber-fec-opts) -o data/ber-fec-hard/ber_v27p23.dat
-	./src/simulate_ber -H -c v27p34 $(ber-fec-opts) -o data/ber-fec-hard/ber_v27p34.dat
-	./src/simulate_ber -H -c v27p45 $(ber-fec-opts) -o data/ber-fec-hard/ber_v27p45.dat
-	./src/simulate_ber -H -c v27p56 $(ber-fec-opts) -o data/ber-fec-hard/ber_v27p56.dat
-	./src/simulate_ber -H -c v27p67 $(ber-fec-opts) -o data/ber-fec-hard/ber_v27p67.dat
-	./src/simulate_ber -H -c v27p78 $(ber-fec-opts) -o data/ber-fec-hard/ber_v27p78.dat
-	./src/simulate_ber -H -c v615 -s-9.75 -d0.25 -e200 -n200000 -t4000000 -o data/ber-fec-hard/ber_v615.dat
-	./src/simulate_ber -H -c rs8    $(ber-fec-opts) -o data/ber-fec-hard/ber_rs8.dat
+	./src/simulate_ber -H -c none   $(ber-fec-opts) -o data/fec-ber/hard/ber_none.dat
+	./src/simulate_ber -H -c rep3   $(ber-fec-opts) -o data/fec-ber/hard/ber_rep3.dat
+	./src/simulate_ber -H -c rep5   $(ber-fec-opts) -o data/fec-ber/hard/ber_rep5.dat
+	./src/simulate_ber -H -c h128   $(ber-fec-opts) -o data/fec-ber/hard/ber_h128.dat
+	./src/simulate_ber -H -c h84    $(ber-fec-opts) -o data/fec-ber/hard/ber_h84.dat
+	./src/simulate_ber -H -c h74    $(ber-fec-opts) -o data/fec-ber/hard/ber_h74.dat
+	./src/simulate_ber -H -c secded2216 $(ber-fec-opts) -o data/fec-ber/hard/ber_secded2216.dat
+	./src/simulate_ber -H -c secded3932 $(ber-fec-opts) -o data/fec-ber/hard/ber_secded3932.dat
+	./src/simulate_ber -H -c secded7264 $(ber-fec-opts) -o data/fec-ber/hard/ber_secded7264.dat
+	./src/simulate_ber -H -c g2412  $(ber-fec-opts) -o data/fec-ber/hard/ber_g2412.dat
+	./src/simulate_ber -H -c v27    $(ber-fec-opts) -o data/fec-ber/hard/ber_v27.dat
+	./src/simulate_ber -H -c v29    $(ber-fec-opts) -o data/fec-ber/hard/ber_v29.dat
+	./src/simulate_ber -H -c v39    $(ber-fec-opts) -o data/fec-ber/hard/ber_v39.dat
+	./src/simulate_ber -H -c v27p23 $(ber-fec-opts) -o data/fec-ber/hard/ber_v27p23.dat
+	./src/simulate_ber -H -c v27p34 $(ber-fec-opts) -o data/fec-ber/hard/ber_v27p34.dat
+	./src/simulate_ber -H -c v27p45 $(ber-fec-opts) -o data/fec-ber/hard/ber_v27p45.dat
+	./src/simulate_ber -H -c v27p56 $(ber-fec-opts) -o data/fec-ber/hard/ber_v27p56.dat
+	./src/simulate_ber -H -c v27p67 $(ber-fec-opts) -o data/fec-ber/hard/ber_v27p67.dat
+	./src/simulate_ber -H -c v27p78 $(ber-fec-opts) -o data/fec-ber/hard/ber_v27p78.dat
+	./src/simulate_ber -H -c v615 -s-9.75 -d0.25 -e200 -n200000 -t4000000 -o data/fec-ber/hard/ber_v615.dat
+	./src/simulate_ber -H -c rs8    $(ber-fec-opts) -o data/fec-ber/hard/ber_rs8.dat
 
 
 # 
 # soft-decision decoding
 #
 data_ber_fec_soft :=				\
-	data/ber-fec-soft/ber_none.dat		\
-	data/ber-fec-soft/ber_rep3.dat		\
-	data/ber-fec-soft/ber_rep5.dat		\
-	data/ber-fec-soft/ber_h128.dat		\
-	data/ber-fec-soft/ber_h74.dat		\
-	data/ber-fec-soft/ber_h84.dat		\
-	data/ber-fec-soft/ber_secded2216.dat	\
-	data/ber-fec-soft/ber_secded3932.dat	\
-	data/ber-fec-soft/ber_secded7264.dat	\
-	data/ber-fec-soft/ber_g2412.dat		\
-	data/ber-fec-soft/ber_v27.dat		\
-	data/ber-fec-soft/ber_v29.dat		\
-	data/ber-fec-soft/ber_v39.dat		\
-	data/ber-fec-soft/ber_v615.dat		\
-	data/ber-fec-soft/ber_v27p23.dat	\
-	data/ber-fec-soft/ber_v27p34.dat	\
-	data/ber-fec-soft/ber_v27p45.dat	\
-	data/ber-fec-soft/ber_v27p56.dat	\
-	data/ber-fec-soft/ber_v27p67.dat	\
-	data/ber-fec-soft/ber_v27p78.dat	\
-	data/ber-fec-soft/ber_rs8.dat		\
+	data/fec-ber/soft/ber_none.dat		\
+	data/fec-ber/soft/ber_rep3.dat		\
+	data/fec-ber/soft/ber_rep5.dat		\
+	data/fec-ber/soft/ber_h128.dat		\
+	data/fec-ber/soft/ber_h74.dat		\
+	data/fec-ber/soft/ber_h84.dat		\
+	data/fec-ber/soft/ber_secded2216.dat	\
+	data/fec-ber/soft/ber_secded3932.dat	\
+	data/fec-ber/soft/ber_secded7264.dat	\
+	data/fec-ber/soft/ber_g2412.dat		\
+	data/fec-ber/soft/ber_v27.dat		\
+	data/fec-ber/soft/ber_v29.dat		\
+	data/fec-ber/soft/ber_v39.dat		\
+	data/fec-ber/soft/ber_v615.dat		\
+	data/fec-ber/soft/ber_v27p23.dat	\
+	data/fec-ber/soft/ber_v27p34.dat	\
+	data/fec-ber/soft/ber_v27p45.dat	\
+	data/fec-ber/soft/ber_v27p56.dat	\
+	data/fec-ber/soft/ber_v27p67.dat	\
+	data/fec-ber/soft/ber_v27p78.dat	\
+	data/fec-ber/soft/ber_rs8.dat		\
 
 # re-simulate BER data
 resimulate-data-fec-ber-soft : src/simulate_ber
 	@echo "re-simulating ber data (soft decision decoding)..."
-	./src/simulate_ber -S -c none   $(ber-fec-opts) -o data/ber-fec-soft/ber_none.dat
-	./src/simulate_ber -S -c rep3   $(ber-fec-opts) -o data/ber-fec-soft/ber_rep3.dat
-	./src/simulate_ber -S -c rep5   $(ber-fec-opts) -o data/ber-fec-soft/ber_rep5.dat
-	./src/simulate_ber -S -c h128   $(ber-fec-opts) -o data/ber-fec-soft/ber_h128.dat
-	./src/simulate_ber -S -c h84    $(ber-fec-opts) -o data/ber-fec-soft/ber_h84.dat
-	./src/simulate_ber -S -c h74    $(ber-fec-opts) -o data/ber-fec-soft/ber_h74.dat
-	./src/simulate_ber -H -c secded2216 $(ber-fec-opts) -o data/ber-fec-soft/ber_secded2216.dat
-	./src/simulate_ber -H -c secded3932 $(ber-fec-opts) -o data/ber-fec-soft/ber_secded3932.dat
-	./src/simulate_ber -H -c secded7264 $(ber-fec-opts) -o data/ber-fec-soft/ber_secded7264.dat
-	./src/simulate_ber -H -c g2412  $(ber-fec-opts) -o data/ber-fec-soft/ber_g2412.dat
-	./src/simulate_ber -S -c v27    $(ber-fec-opts) -o data/ber-fec-soft/ber_v27.dat
-	./src/simulate_ber -S -c v29    $(ber-fec-opts) -o data/ber-fec-soft/ber_v29.dat
-	./src/simulate_ber -S -c v39    $(ber-fec-opts) -o data/ber-fec-soft/ber_v39.dat
-	./src/simulate_ber -S -c v27p23 $(ber-fec-opts) -o data/ber-fec-soft/ber_v27p23.dat
-	./src/simulate_ber -S -c v27p34 $(ber-fec-opts) -o data/ber-fec-soft/ber_v27p34.dat
-	./src/simulate_ber -S -c v27p45 $(ber-fec-opts) -o data/ber-fec-soft/ber_v27p45.dat
-	./src/simulate_ber -S -c v27p56 $(ber-fec-opts) -o data/ber-fec-soft/ber_v27p56.dat
-	./src/simulate_ber -S -c v27p67 $(ber-fec-opts) -o data/ber-fec-soft/ber_v27p67.dat
-	./src/simulate_ber -S -c v27p78 $(ber-fec-opts) -o data/ber-fec-soft/ber_v27p78.dat
-	./src/simulate_ber -S -c v615 -s-9.75 -d0.25 -e200 -n200000 -t4000000 -o data/ber-fec-soft/ber_v615.dat
-	./src/simulate_ber -S -c rs8    $(ber-fec-opts) -o data/ber-fec-soft/ber_rs8.dat
+	./src/simulate_ber -S -c none   $(ber-fec-opts) -o data/fec-ber/soft/ber_none.dat
+	./src/simulate_ber -S -c rep3   $(ber-fec-opts) -o data/fec-ber/soft/ber_rep3.dat
+	./src/simulate_ber -S -c rep5   $(ber-fec-opts) -o data/fec-ber/soft/ber_rep5.dat
+	./src/simulate_ber -S -c h128   $(ber-fec-opts) -o data/fec-ber/soft/ber_h128.dat
+	./src/simulate_ber -S -c h84    $(ber-fec-opts) -o data/fec-ber/soft/ber_h84.dat
+	./src/simulate_ber -S -c h74    $(ber-fec-opts) -o data/fec-ber/soft/ber_h74.dat
+	./src/simulate_ber -H -c secded2216 $(ber-fec-opts) -o data/fec-ber/soft/ber_secded2216.dat
+	./src/simulate_ber -H -c secded3932 $(ber-fec-opts) -o data/fec-ber/soft/ber_secded3932.dat
+	./src/simulate_ber -H -c secded7264 $(ber-fec-opts) -o data/fec-ber/soft/ber_secded7264.dat
+	./src/simulate_ber -H -c g2412  $(ber-fec-opts) -o data/fec-ber/soft/ber_g2412.dat
+	./src/simulate_ber -S -c v27    $(ber-fec-opts) -o data/fec-ber/soft/ber_v27.dat
+	./src/simulate_ber -S -c v29    $(ber-fec-opts) -o data/fec-ber/soft/ber_v29.dat
+	./src/simulate_ber -S -c v39    $(ber-fec-opts) -o data/fec-ber/soft/ber_v39.dat
+	./src/simulate_ber -S -c v27p23 $(ber-fec-opts) -o data/fec-ber/soft/ber_v27p23.dat
+	./src/simulate_ber -S -c v27p34 $(ber-fec-opts) -o data/fec-ber/soft/ber_v27p34.dat
+	./src/simulate_ber -S -c v27p45 $(ber-fec-opts) -o data/fec-ber/soft/ber_v27p45.dat
+	./src/simulate_ber -S -c v27p56 $(ber-fec-opts) -o data/fec-ber/soft/ber_v27p56.dat
+	./src/simulate_ber -S -c v27p67 $(ber-fec-opts) -o data/fec-ber/soft/ber_v27p67.dat
+	./src/simulate_ber -S -c v27p78 $(ber-fec-opts) -o data/fec-ber/soft/ber_v27p78.dat
+	./src/simulate_ber -S -c v615 -s-9.75 -d0.25 -e200 -n200000 -t4000000 -o data/fec-ber/soft/ber_v615.dat
+	./src/simulate_ber -S -c rs8    $(ber-fec-opts) -o data/fec-ber/soft/ber_rs8.dat
 
 # copy gnuplot file
 figures.gen/fec_ber_esn0_block.gnu \
@@ -431,7 +431,7 @@ figures.gen/fec_ber_ebn0_block.gnu \
 figures.gen/fec_ber_esn0_conv.gnu \
 figures.gen/fec_ber_ebn0_conv.gnu \
 figures.gen/fec_ber_esn0_convpunc.gnu \
-figures.gen/fec_ber_ebn0_convpunc.gnu : figures.gen/%.gnu : data/%.gnu
+figures.gen/fec_ber_ebn0_convpunc.gnu : figures.gen/%.gnu : data/fec-ber/%.gnu
 	cp $< $@
 
 # add ber simulation data files as dependencies
@@ -446,10 +446,10 @@ figures.gen/fec_ber_ebn0_convpunc.eps : %.eps : %.gnu $(data_ber_fec_hard)
 # Required Eb/N0, SNR for 10^-5
 #
 
-data/ber-fec-hard/fec_snr_req.dat : src/estimate_snr_fec
+data/fec-ber/hard/fec_snr_req.dat : src/estimate_snr_fec
 	./$< -o$@ -B -H -E1e-5 -n1024 -x4000000
 
-data/ber-fec-soft/fec_snr_req.dat : src/estimate_snr_fec
+data/fec-ber/soft/fec_snr_req.dat : src/estimate_snr_fec
 	./$< -o$@ -B -S -E1e-5 -n1024 -x4000000
 
 
