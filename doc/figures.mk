@@ -48,6 +48,7 @@ local_pdffiles :=					\
 	figures.gen/fec_ber_ebn0_conv.pdf		\
 	figures.gen/fec_ber_esn0_convpunc.pdf		\
 	figures.gen/fec_ber_ebn0_convpunc.pdf		\
+	figures.gen/fec_ber_ebn0_hardsoft.pdf			\
 							\
 	figures.gen/fft_example_time.pdf		\
 	figures.gen/fft_example_freq.pdf		\
@@ -431,7 +432,8 @@ figures.gen/fec_ber_ebn0_block.gnu \
 figures.gen/fec_ber_esn0_conv.gnu \
 figures.gen/fec_ber_ebn0_conv.gnu \
 figures.gen/fec_ber_esn0_convpunc.gnu \
-figures.gen/fec_ber_ebn0_convpunc.gnu : figures.gen/%.gnu : data/fec-ber/%.gnu
+figures.gen/fec_ber_ebn0_convpunc.gnu \
+figures.gen/fec_ber_ebn0_hardsoft.gnu : figures.gen/%.gnu : data/fec-ber/%.gnu
 	cp $< $@
 
 # add ber simulation data files as dependencies
@@ -440,7 +442,8 @@ figures.gen/fec_ber_ebn0_block.eps \
 figures.gen/fec_ber_esn0_conv.eps \
 figures.gen/fec_ber_ebn0_conv.eps \
 figures.gen/fec_ber_esn0_convpunc.eps \
-figures.gen/fec_ber_ebn0_convpunc.eps : %.eps : %.gnu $(data_ber_fec_hard)
+figures.gen/fec_ber_ebn0_convpunc.eps \
+figures.gen/fec_ber_ebn0_hardsoft.eps : %.eps : %.gnu $(data_ber_fec_hard)
 
 # 
 # Required Eb/N0, SNR for 10^-5
