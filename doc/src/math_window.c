@@ -35,7 +35,7 @@ int main(int argc, char*argv[])
         HANN,
         BLACKMANHARRIS,
         KBD
-    } wtype;
+    } wtype = KAISER;
 
     int dopt;
     while((dopt = getopt(argc,argv,"uhn:N:b:w:")) != EOF){
