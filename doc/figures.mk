@@ -903,7 +903,7 @@ resimulate-modem-phase-error : $(modem_phase_error_data)
 modem_phase_error_epsfiles := $(patsubst %.gnu,%.eps,$(modem_phase_error_gnufiles))
 
 # copy .gnu files to figures.gen directory
-$(modem_phase_error_gnufiles) : figures.gen/% : data/% ; cp $< $@
+$(modem_phase_error_gnufiles) : figures.gen/% : data/modem-phase-error/% ; cp $< $@
 
 # add simulation data files as dependencies
 $(modem_phase_error_epsfiles) : %.eps : %.gnu $(modem_phase_error_data)
