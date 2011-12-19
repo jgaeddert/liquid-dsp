@@ -768,65 +768,65 @@ modem_ber_gnufiles :=				\
 modem_ber_epsfiles := $(patsubst %.gnu,%.eps,$(modem_ber_gnufiles))
 
 modem_ber_data :=			\
-	data/ber-modem/ber_bpsk.dat	\
-	data/ber-modem/ber_qpsk.dat	\
-	data/ber-modem/ber_psk8.dat	\
-	data/ber-modem/ber_psk16.dat	\
-	data/ber-modem/ber_psk32.dat	\
-	data/ber-modem/ber_psk64.dat	\
-	data/ber-modem/ber_dpsk2.dat	\
-	data/ber-modem/ber_dpsk4.dat	\
-	data/ber-modem/ber_dpsk8.dat	\
-	data/ber-modem/ber_dpsk16.dat	\
-	data/ber-modem/ber_dpsk32.dat	\
-	data/ber-modem/ber_dpsk64.dat	\
-	data/ber-modem/ber_apsk4.dat	\
-	data/ber-modem/ber_apsk8.dat	\
-	data/ber-modem/ber_apsk16.dat	\
-	data/ber-modem/ber_apsk32.dat	\
-	data/ber-modem/ber_apsk64.dat	\
-	data/ber-modem/ber_apsk128.dat	\
-	data/ber-modem/ber_apsk256.dat	\
-	data/ber-modem/ber_ask2.dat	\
-	data/ber-modem/ber_ask4.dat	\
-	data/ber-modem/ber_ask8.dat	\
-	data/ber-modem/ber_ask16.dat	\
-	data/ber-modem/ber_qam4.dat	\
-	data/ber-modem/ber_qam8.dat	\
-	data/ber-modem/ber_qam16.dat	\
-	data/ber-modem/ber_qam32.dat	\
-	data/ber-modem/ber_qam64.dat	\
-	data/ber-modem/ber_qam128.dat	\
-	data/ber-modem/ber_qam256.dat	\
-	data/ber-modem/ber_ook.dat	\
-	data/ber-modem/ber_V29.dat	\
-	data/ber-modem/ber_sqam32.dat	\
-	data/ber-modem/ber_sqam128.dat	\
-	data/ber-modem/ber_arb16opt.dat	\
-	data/ber-modem/ber_arb32opt.dat	\
-	data/ber-modem/ber_arb64opt.dat	\
-	data/ber-modem/ber_arb128opt.dat	\
-	data/ber-modem/ber_arb256opt.dat	\
-	data/ber-modem/ber_arb64vt.dat	\
+	data/modem-ber/ber_bpsk.dat	\
+	data/modem-ber/ber_qpsk.dat	\
+	data/modem-ber/ber_psk8.dat	\
+	data/modem-ber/ber_psk16.dat	\
+	data/modem-ber/ber_psk32.dat	\
+	data/modem-ber/ber_psk64.dat	\
+	data/modem-ber/ber_dpsk2.dat	\
+	data/modem-ber/ber_dpsk4.dat	\
+	data/modem-ber/ber_dpsk8.dat	\
+	data/modem-ber/ber_dpsk16.dat	\
+	data/modem-ber/ber_dpsk32.dat	\
+	data/modem-ber/ber_dpsk64.dat	\
+	data/modem-ber/ber_apsk4.dat	\
+	data/modem-ber/ber_apsk8.dat	\
+	data/modem-ber/ber_apsk16.dat	\
+	data/modem-ber/ber_apsk32.dat	\
+	data/modem-ber/ber_apsk64.dat	\
+	data/modem-ber/ber_apsk128.dat	\
+	data/modem-ber/ber_apsk256.dat	\
+	data/modem-ber/ber_ask2.dat	\
+	data/modem-ber/ber_ask4.dat	\
+	data/modem-ber/ber_ask8.dat	\
+	data/modem-ber/ber_ask16.dat	\
+	data/modem-ber/ber_qam4.dat	\
+	data/modem-ber/ber_qam8.dat	\
+	data/modem-ber/ber_qam16.dat	\
+	data/modem-ber/ber_qam32.dat	\
+	data/modem-ber/ber_qam64.dat	\
+	data/modem-ber/ber_qam128.dat	\
+	data/modem-ber/ber_qam256.dat	\
+	data/modem-ber/ber_ook.dat	\
+	data/modem-ber/ber_V29.dat	\
+	data/modem-ber/ber_sqam32.dat	\
+	data/modem-ber/ber_sqam128.dat	\
+	data/modem-ber/ber_arb16opt.dat	\
+	data/modem-ber/ber_arb32opt.dat	\
+	data/modem-ber/ber_arb64opt.dat	\
+	data/modem-ber/ber_arb128opt.dat	\
+	data/modem-ber/ber_arb256opt.dat	\
+	data/modem-ber/ber_arb64vt.dat	\
 
 # re-simulate modem BER data
 modem_ber_opts      := -cnone -knone -b1e-5 -e 700 -n320000 -t640000000 -s-9 -d1.0 -x60
 
-$(modem_ber_data) : data/ber-modem/ber_%.dat : src/simulate_ber
+$(modem_ber_data) : data/modem-ber/ber_%.dat : src/simulate_ber
 	./src/simulate_ber -m $* $(modem_ber_opts) -o $@
 
 # re-generate all data targets
 resimulate-modem-ber-data : $(modem_ber_data)
 
 # copy data files
-modem_ber_datfiles = $(patsubst data/ber-modem/%,figures.gen/%,$(modem_ber_data))
+modem_ber_datfiles = $(patsubst data/modem-ber/%,figures.gen/%,$(modem_ber_data))
 
 # copy data, do not give dependencies
 $(modem_ber_datfiles) :
-	cp data/ber-modem/*.dat figures.gen/
+	cp data/modem-ber/*.dat figures.gen/
 
 # copy gnuplot file
-$(modem_ber_gnufiles) : figures.gen/%.gnu : data/%.gnu
+$(modem_ber_gnufiles) : figures.gen/%.gnu : data/modem-ber/%.gnu
 	cp $< $@
 
 # add ber simulation data files as dependencies
@@ -837,7 +837,7 @@ $(modem_ber_epsfiles) : %.eps : %.gnu $(modem_ber_datfiles)
 # Required Eb/N0, SNR for 10^-5
 #
 
-data/ber-modem/modem_snr_req.dat : src/estimate_snr_modem
+data/modem-ber/modem_snr_req.dat : src/estimate_snr_modem
 	./$< -o$@ -B -E1e-5 -n1024 -x8000000
 
 #
