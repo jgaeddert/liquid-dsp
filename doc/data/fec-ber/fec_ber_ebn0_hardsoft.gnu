@@ -20,5 +20,5 @@ set pointsize 0.5
 
 set grid linetype 1 linecolor rgb '#cccccc' lw 1
 plot \
-    'data/fec-ber/hard/ber_h74.dat' using 2:3 with linespoints linewidth 1.2 pointtype 6 linecolor rgb '#087848' title 'hard',\
-    'data/fec-ber/soft/ber_h74.dat' using 2:3 with linespoints linewidth 1.2 pointtype 6 linecolor rgb '#e59710' title 'soft'
+    'data/fec-ber/hard/ber_h84.dat' using 2:3 with linespoints linewidth 1.2 pointtype 6 linecolor rgb '#087848' title 'hard',\
+    'data/fec-ber/soft/ber_h84.dat' using 2:3 with linespoints linewidth 1.2 pointtype 6 linecolor rgb '#e59710' title 'soft'

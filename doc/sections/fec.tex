@@ -429,7 +429,7 @@ libfec} is installed \cite{libfec:web}.
 \subsubsection{Soft Decoding}
 \label{module:fec:soft}
 \liquid\ supports soft decoding of most error-correcting schemes
-(with the exception of the Reed-Solomon codes).
+(with the exception of the Golay, SEC-DED, and Reed-Solomon codes).
 Soft decoding for all codes requires the log-likelihood ratio (LLR)
 output of the demodulator which can be achieved with the appropriate
 call: {\tt modem\_demodulate\_soft()}
@@ -438,8 +438,21 @@ The performance improvement for soft decoding varies for both the
 modulation and FEC scheme used;
 however in general one can expect to see an improvement of approximately
 1.5~dB $E_b/N_0$ over hard-decision decoding.
-
-% TODO : describe in more detail
+%
+%-------------------- FIGURE: FEC BER HARD/SOFT --------------------
+\begin{figure}
+\centering
+  \includegraphics[trim = 3mm 2mm 0mm 2mm, clip, width=13cm]{figures.gen/fec_ber_ebn0_hardsoft}
+  \label{fig:fec:block_ber:esn0}
+% trim = left bottom right top
+\caption{Bit error-rate performance for the Hamming(8,4) codec comparing
+         hard-decision to soft-decision decoding.}
+\label{fig:fec:hardsoft_ber}
+\end{figure}
+%
+Figure~\ref{fig:fec:hardsoft_ber} shows the performance improvement of
+using soft-decision vs. hard-decision decodign for the Hamming(8,4)
+block code.
 
 \subsection{Performance}
 \label{module:fec:performance}
