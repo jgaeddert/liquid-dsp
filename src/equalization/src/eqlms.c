@@ -181,6 +181,12 @@ void EQLMS(_set_bw)(EQLMS() _eq,
     _eq->mu = _mu;
 }
 
+// get learning rate of equalizer
+float EQLMS(_get_bw)(EQLMS() _eq)
+{
+    return _eq->mu;
+}
+
 // reset equalizer
 void EQLMS(_reset)(EQLMS() _eq)
 {

@@ -349,6 +349,7 @@ EQLMS() EQLMS(_recreate)(EQLMS() _eq,                           \
 void EQLMS(_destroy)(EQLMS() _eq);                              \
 void EQLMS(_print)(EQLMS() _eq);                                \
 void EQLMS(_set_bw)(EQLMS() _eq, float _lambda);                \
+float EQLMS(_get_bw)(EQLMS() _eq);                              \
 void EQLMS(_reset)(EQLMS() _eq);                                \
 void EQLMS(_push)(EQLMS() _eq, T _x);                           \
 void EQLMS(_execute)(EQLMS() _eq, T * _y);                      \
