@@ -38,6 +38,7 @@
 #include <string.h>
 #include <assert.h>
 #include <math.h>
+#include <time.h>
 
 #include "liquid.internal.h"
 
@@ -338,9 +339,10 @@ void spc2216_decode(unsigned char * _msg_rec,
         sym_enc[0] = parity_col[i];
         sym_enc[1] = w[2*i+0];
         sym_enc[2] = w[2*i+1];
-        int syndrome_flag = fec_secded2216_estimate_ehat(sym_enc, e_hat);
 
 #if DEBUG_SPC2216
+        int syndrome_flag = fec_secded2216_estimate_ehat(sym_enc, e_hat);
+
         if (syndrome_flag == 0) {
             printf("%3u : no errors detected\n", i);
         } else if (syndrome_flag == 1) {
