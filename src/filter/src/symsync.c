@@ -38,7 +38,7 @@
 #include <string.h>
 #include <math.h>
 
-#define DEBUG_SYMSYNC           1
+#define DEBUG_SYMSYNC           0
 #define DEBUG_SYMSYNC_PRINT     0
 #define DEBUG_SYMSYNC_FILENAME  "symsync_internal_debug.m"
 #define DEBUG_BUFFER_LEN        (1024)

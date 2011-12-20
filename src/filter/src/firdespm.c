@@ -324,12 +324,6 @@ void firdespm_execute(firdespm _q, float * _h)
         // search for new extremal frequencies
         firdespm_iext_search(_q);
 
-        if (p<0) {
-            fprintf(stderr,"exiting prematurely\n");
-            firdespm_destroy(_q);
-            exit(1);
-        }
-
         // check exit criteria
         if (firdespm_is_search_complete(_q))
             break;
@@ -571,9 +565,8 @@ void firdespm_iext_search(firdespm _q)
         // guarantees at least r+1 extrema, however due to finite
         // machine precision, interpolation can be imprecise
 
-        fprintf(stderr,"warning: firdespm_iext_search(), too few extrema found (expected %u, found %u)\n",
+        fprintf(stderr,"warning: firdespm_iext_search(), too few extrema found (expected %u, found %u); exiting prematurely\n",
                 _q->r+1, num_found);
-        fprintf(stderr,"exiting prematurely\n");
         _q->num_exchanges = 0;
         return;
     }

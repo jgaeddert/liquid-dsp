@@ -38,7 +38,7 @@
 
 #define FLEXFRAMESYNC_EQRLS_LAMBDA      (0.999f)
 
-#define DEBUG_FLEXFRAMESYNC             1
+#define DEBUG_FLEXFRAMESYNC             0
 #define DEBUG_FLEXFRAMESYNC_PRINT       0
 #define DEBUG_FLEXFRAMESYNC_FILENAME    "flexframesync_internal_debug.m"
 #define DEBUG_FLEXFRAMESYNC_BUFFER_LEN  (4096)

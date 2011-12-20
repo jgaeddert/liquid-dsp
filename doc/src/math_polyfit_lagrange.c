@@ -48,7 +48,6 @@ int main(int argc, char * argv[]) {
     }
     fprintf(fid,"# %s: auto-generated file\n\n", OUTPUT_FILENAME_GNU);
     fprintf(fid,"reset\n");
-    // TODO : switch terminal types here
     fprintf(fid,"set terminal postscript eps enhanced color solid rounded\n");
     fprintf(fid,"set xrange [-1.2:1.2]\n");
     fprintf(fid,"set yrange [-1.2:1.2]\n");

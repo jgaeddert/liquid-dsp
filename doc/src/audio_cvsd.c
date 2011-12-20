@@ -63,7 +63,6 @@ int main() {
     fid = fopen(OUTPUT_FILENAME_TIME,"w");
     fprintf(fid,"# %s: auto-generated file\n\n", OUTPUT_FILENAME_TIME);
     fprintf(fid,"reset\n");
-    // TODO : switch terminal types here
     fprintf(fid,"set terminal postscript eps enhanced color solid rounded\n");
     fprintf(fid,"set xrange [0:%u];\n",num_samples);
     fprintf(fid,"set yrange [-1.5:1.5]\n");

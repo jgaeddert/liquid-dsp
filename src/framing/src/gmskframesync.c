@@ -30,7 +30,7 @@
 
 #include "liquid.internal.h"
 
-#define DEBUG_GMSKFRAMESYNC             1
+#define DEBUG_GMSKFRAMESYNC             0
 #define DEBUG_GMSKFRAMESYNC_PRINT       0
 #define DEBUG_GMSKFRAMESYNC_FILENAME    "gmskframesync_internal_debug.m"
 #define DEBUG_GMSKFRAMESYNC_BUFFER_LEN  (2000)

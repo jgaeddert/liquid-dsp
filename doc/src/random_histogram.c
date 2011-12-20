@@ -243,7 +243,6 @@ int main(int argc, char*argv[])
     FILE * fid = fopen(filename,"w");
     fprintf(fid,"# %s: auto-generated file\n\n", filename);
     fprintf(fid,"reset\n");
-    // TODO : switch terminal types here
     fprintf(fid,"set terminal postscript eps enhanced color solid rounded\n");
     fprintf(fid,"set xrange [%f:%f];\n", xmin-0.1f*xspan, xmax+0.1f*xspan);
     fprintf(fid,"set yrange [0:%f]\n", 1.2*fmax);

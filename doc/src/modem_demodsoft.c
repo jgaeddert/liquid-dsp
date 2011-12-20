@@ -145,7 +145,6 @@ int main(int argc, char*argv[])
             fprintf(fid," %s",argv[i]);
         fprintf(fid,"\n");
         fprintf(fid,"reset\n");
-        // TODO : switch terminal types here
         fprintf(fid,"set terminal postscript eps enhanced color solid rounded\n");
         // TODO : set range according to scheme
         fprintf(fid,"set xrange [-1.2:1.2]\n");

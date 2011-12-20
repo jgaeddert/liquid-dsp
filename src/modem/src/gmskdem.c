@@ -29,7 +29,7 @@
 
 #include "liquid.internal.h"
 
-#define DEBUG_GMSKDEM           1
+#define DEBUG_GMSKDEM           0
 #define DEBUG_GMSKDEM_FILENAME  "gmskdem_internal_debug.m"
 #define DEBUG_BUFFER_LEN        (1000)
 
@@ -149,6 +149,9 @@ void gmskdem_destroy(gmskdem _q)
 void gmskdem_print(gmskdem _q)
 {
     printf("gmskdem [k=%u, m=%u, BT=%8.3f]\n", _q->k, _q->m, _q->BT);
+#if GMSKDEM_USE_EQUALIZER
+    printf("    equalizer bandwidth :   %12.8f\n", eqlms_rrrf_get_bw(_q->eq));
+#endif
     unsigned int i;
     for (i=0; i<_q->h_len; i++)
         printf("  hr(%4u) = %12.8f;\n", i+1, _q->h[i]);
