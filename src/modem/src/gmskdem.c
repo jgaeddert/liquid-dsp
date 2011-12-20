@@ -29,7 +29,7 @@
 
 #include "liquid.internal.h"
 
-#define DEBUG_GMSKDEM           1
+#define DEBUG_GMSKDEM           0
 #define DEBUG_GMSKDEM_FILENAME  "gmskdem_internal_debug.m"
 #define DEBUG_BUFFER_LEN        (1000)
 
