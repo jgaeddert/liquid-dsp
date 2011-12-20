@@ -93,7 +93,6 @@ int main(int argc, char*argv[])
     for (i=0; i<argc; i++)
         fprintf(fid," %s",argv[i]);
     fprintf(fid,"reset\n");
-    // TODO : switch terminal types here
     fprintf(fid,"set terminal postscript eps enhanced color solid rounded\n");
     fprintf(fid,"set xrange [-1:%u];\n", n+1);
     fprintf(fid,"set size ratio 0.17\n");

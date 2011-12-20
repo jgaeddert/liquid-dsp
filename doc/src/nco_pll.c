@@ -100,7 +100,6 @@ int main(int argc, char*argv[]) {
     fid = fopen(OUTPUT_FILENAME_SINCOS,"w");
     fprintf(fid,"# %s: auto-generated file\n\n", OUTPUT_FILENAME_SINCOS);
     fprintf(fid,"reset\n");
-    // TODO : switch terminal types here
     fprintf(fid,"set terminal postscript eps enhanced color solid rounded\n");
     fprintf(fid,"set xrange [0:%u];\n",n);
     fprintf(fid,"set yrange [-1.2:1.2]\n");
@@ -146,7 +145,6 @@ int main(int argc, char*argv[]) {
 
     fprintf(fid,"# %s: auto-generated file\n\n", OUTPUT_FILENAME_ERROR);
     fprintf(fid,"reset\n");
-    // TODO : switch terminal types here
     fprintf(fid,"set terminal postscript eps enhanced color solid rounded\n");
     fprintf(fid,"set xrange [0:%u];\n",n);
     fprintf(fid,"set yrange [-3.2:3.2]\n");

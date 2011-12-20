@@ -224,7 +224,6 @@ int main(int argc, char*argv[]) {
     for (i=0; i<argc; i++)
         fprintf(fid," %s",argv[i]);
     fprintf(fid,"reset\n");
-    // TODO : switch terminal types here
     fprintf(fid,"set terminal postscript eps enhanced color solid rounded\n");
     fprintf(fid,"set xrange [0:0.5];\n");
     fprintf(fid,"set yrange [-80:5]\n");
@@ -261,7 +260,6 @@ int main(int argc, char*argv[]) {
         fprintf(fid," %s",argv[i]);
     fprintf(fid,"\n");
     fprintf(fid,"reset\n");
-    // TODO : switch terminal types here
     fprintf(fid,"set terminal postscript eps enhanced color solid rounded\n");
     fprintf(fid,"set xrange [-1.05:1.05]\n");
     fprintf(fid,"set yrange [-1.05:1.05]\n");

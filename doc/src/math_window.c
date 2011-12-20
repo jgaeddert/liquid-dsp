@@ -121,7 +121,6 @@ int main(int argc, char*argv[])
     }
     fprintf(fid,"# %s: auto-generated file\n\n", filename_time);
     fprintf(fid,"reset\n");
-    // TODO : switch terminal types here
     fprintf(fid,"set terminal postscript eps enhanced color solid rounded\n");
     fprintf(fid,"set xrange [%12.8f:%12.8f];\n", -0.5f*(float)(n-1), 0.5f*(float)(n-1));
     fprintf(fid,"set yrange [-0.1:1.1]\n");
@@ -155,7 +154,6 @@ int main(int argc, char*argv[])
     }
     fprintf(fid,"# %s: auto-generated file\n\n", filename_time);
     fprintf(fid,"reset\n");
-    // TODO : switch terminal types here
     fprintf(fid,"set terminal postscript eps enhanced color solid rounded\n");
     //fprintf(fid,"set xrange [0:%u];\n",n);
     fprintf(fid,"set yrange [-0.1:1.1]\n");

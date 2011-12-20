@@ -78,7 +78,6 @@ int main() {
     fprintf(fid,"# %s: auto-generated file\n\n", OUTPUT_FILENAME_GNU);
 
     fprintf(fid,"reset\n");
-    // TODO : switch terminal types here
     fprintf(fid,"set terminal postscript eps enhanced color solid rounded\n");
     fprintf(fid,"set logscale z 10\n");
     fprintf(fid,"set view 40, 340, 1, 1\n");
@@ -114,7 +113,6 @@ int main() {
     fprintf(fid,"# %s: auto-generated file\n\n", OUTPUT_FILENAME_UTILITY_GNU);
 
     fprintf(fid,"reset\n");
-    // TODO : switch terminal types here
     fprintf(fid,"set terminal postscript eps enhanced color solid rounded\n");
     fprintf(fid,"set logscale y 10\n");
     fprintf(fid,"set format y '10^{%%L}'\n");
