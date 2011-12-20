@@ -184,7 +184,7 @@ int main(int argc, char *argv[]) {
         if (!results.success) break;
 
         // save data to file
-        fprintf(fid,"  %12.8f %12.4e %12.4e %12.4e %12lu %12lu %12lu %12lu\n",
+        fprintf(fid,"  %12.8f %12.8f %12.4e %12.4e %12lu %12lu %12lu %12lu\n",
                 SNRdB,
                 EbN0dB,
                 results.BER,
