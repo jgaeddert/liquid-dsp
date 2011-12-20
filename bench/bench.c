@@ -91,21 +91,21 @@ void output_benchmark_to_file(FILE * _fid, benchmark_t * _benchmark);
 void usage()
 {
     // help
-    printf("liquid autoscript version %s\n\n", AUTOSCRIPT_VERSION);
-    printf("bench options:\n");
-    printf("  -u/h  : print this help file\n");
-    printf("  -v    : verbose\n");
-    printf("  -q    : quiet\n");
-    printf("  -e    : estimate cpu clock frequency and exit\n");
-    printf("  -c    : set cpu clock frequency (Hz)\n");
-    printf("  -n<num_base_trials>\n");
-    printf("  -p<package_index>\n");
-    printf("  -b<benchmark_index>\n");
-    printf("  -t<time> minimum execution time (s)\n");
-    printf("  -l    : lists available packages\n");
-    printf("  -L    : lists all available scripts\n");
-    printf("  -s<string>: run all scripts matching search string\n");
-    printf("  -o<output filename>\n");
+    printf("Usage: benchmark [OPTION]\n");
+    printf("Execute benchmark scripts for liquid-dsp library.\n");
+    printf("  -h,-u         display this help and exit\n");
+    printf("  -v            verbose\n");
+    printf("  -q            quiet\n");
+    printf("  -e            estimate cpu clock frequency and exit\n");
+    printf("  -c            set cpu clock frequency (Hz)\n");
+    printf("  -n[COUNT]     set number of base trials\n");
+    printf("  -p[ID]        run specific package\n");
+    printf("  -b[ID]        run specific benchmark\n");
+    printf("  -t[SECONDS]   set minimum execution time (s)\n");
+    printf("  -l            list available packages\n");
+    printf("  -L            list all available scripts\n");
+    printf("  -s[STRING]    run all scripts matching search string\n");
+    printf("  -o[FILENAME]  export output\n");
 }
 
 // main function
