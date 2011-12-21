@@ -44,24 +44,29 @@
     %\draw[step=5mm,help lines] (0,0) grid (6,3);
     
     % draw major blocks
-    \node[block,fill=gray!20] (halfband-a)                             {$\downarrow 2$};
-    \node[block,fill=gray!20] (halfband-b)       [right=of halfband-a] {$\downarrow 2$};
-    \node[textbox]            (dotdotdot)        [right=of halfband-b] {...};
-    \node[block,fill=gray!20] (halfband-n)       [right=of dotdotdot]  {$\downarrow 2$};
-    \node[block]              (arbitrary-resamp) [right=of halfband-n] {$\frac{1}{2} \leq r \leq 1$};
+    \node[textbox]            (input)                                        {$x$};
+    \node[block,fill=gray!20] (halfband-a)       [right=of input]            {$\downarrow 2$};
+    \node[block,fill=gray!20] (halfband-b)       [right=of halfband-a]       {$\downarrow 2$};
+    \node[textbox]            (dotdotdot)        [right=of halfband-b]       {...};
+    \node[block,fill=gray!20] (halfband-n)       [right=of dotdotdot]        {$\downarrow 2$};
+    \node[block]              (arbitrary-resamp) [right=of halfband-n]       {$\frac{1}{2} \leq r \leq 1$};
+    \node[textbox]            (output)           [right=of arbitrary-resamp] {$y$};
 
     % edges
-    \path   (halfband-a)    edge    (halfband-b)
-            (halfband-b)    edge    (dotdotdot)
-            (dotdotdot)     edge    (halfband-n)
-            (halfband-n)    edge    (arbitrary-resamp);
+    \path   
+        (input)            edge (halfband-a)
+        (halfband-a)       edge (halfband-b)
+        (halfband-b)       edge (dotdotdot)
+        (dotdotdot)        edge (halfband-n)
+        (halfband-n)       edge (arbitrary-resamp)
+        (arbitrary-resamp) edge (output);
     
     % labels
-    \draw[decorate,decoration={brace,mirror,raise=1pt},-]
+    \draw[decorate,decoration={brace,mirror,raise=3pt},-]
             (halfband-a.south west) --
                 node[anchor=north,yshift=-2mm] {{\sf\it\footnotesize multi-stage halfband decimation}}
             (halfband-n.south east);
-    \node[anchor=north] (resamp-label)[below=of arbitrary-resamp,yshift=24] {{\sf\it\footnotesize arbitrary resampler}};
+    \node[anchor=north] (resamp-label)[below=of arbitrary-resamp,yshift=23] {{\sf\it\footnotesize arbitrary resampler}};
 
 
 \end{tikzpicture}
