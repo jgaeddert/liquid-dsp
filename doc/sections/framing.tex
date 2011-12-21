@@ -10,12 +10,15 @@ manageable frames and packets.
 For convention, \liquid\ refers to a ``packet'' as a group of binary
 data bytes (often with forward error-correction applied)
 that need to be communicated over a wireless link.
+Objects that operate on packets in \liquid\ are the
+{\tt bpacketgen}, {\tt bpacketsync} and {\tt packetizer} structures.
 By contrast, a ``frame'' is a representation of the data once it has been
 properly partitioned, encapsulated, and modulated before transmitting over the
 air.
-Included in this module are the {\tt packetizer}, 
-{\tt frame64}, and {\tt flexframe} structures which
-greatly simplify over-the-air digital communication of raw data.
+Framing objects included in \liquid\ are the
+{\tt frame64}, {\tt flexframe}, {\tt gmskframe}, and
+{\tt ofdmflexframe} structures
+which greatly simplify over-the-air digital communication of raw data.
 
 
 % 
