@@ -1,0 +1,70 @@
+% 
+% figures.pgf/msresamp_interp_diagram.tex
+%
+% Author: Joseph D. Gaeddert
+\documentclass[a4paper,landscape]{article}
+
+\usepackage{pgf,tikz}
+\usepackage{verbatim}
+\usepackage[active,tightpage]{preview}
+\PreviewEnvironment{tikzpicture}
+\setlength\PreviewBorder{5pt}%
+
+\usetikzlibrary{calc} % for manipulation of co-ordinates
+\usetikzlibrary{arrows}
+\usetikzlibrary{positioning}
+\usetikzlibrary{decorations.pathreplacing}
+
+\usepackage{amsmath}
+\usepackage[left=1cm,right=1cm]{geometry}
+\pagestyle{empty}
+
+% define new style "block" with special parameters
+\tikzstyle{block}=[rectangle,draw=black,very thick,minimum size=20mm]
+\tikzstyle{textbox}=[rectangle]
+\tikzstyle{connector}=[->,thick]
+
+\begin{document}
+
+% options
+%   scale   set the relative scale of the figure
+%   auto    automatic anchor placement
+%   >=      right arrow tip (stealth, stealth', etc.)
+\begin{tikzpicture}[
+    % define styles here
+    scale=1,
+    % arrow styles
+    ->,
+    >=latex,
+    >=stealth',
+    % node distance = 7mm,
+    auto
+]
+    % help lines
+    %\draw[step=5mm,help lines] (0,0) grid (6,3);
+    
+    % draw major blocks
+    \node[block,fill=gray!20] (halfband-a)                             {$\uparrow 2$};
+    \node[block,fill=gray!20] (halfband-b)       [right=of halfband-a] {$\uparrow 2$};
+    \node[textbox]            (dotdotdot)        [right=of halfband-b] {...};
+    \node[block,fill=gray!20] (halfband-n)       [right=of dotdotdot]  {$\uparrow 2$};
+    \node[block]              (arbitrary-resamp) [right=of halfband-n] {$1 \leq r \leq 2$};
+
+    % edges
+    \path   (halfband-a)    edge    (halfband-b)
+            (halfband-b)    edge    (dotdotdot)
+            (dotdotdot)     edge    (halfband-n)
+            (halfband-n)    edge    (arbitrary-resamp);
+    
+    % labels
+    \draw[decorate,decoration={brace,mirror,raise=1pt},-]
+            (halfband-a.south west) --
+                node[anchor=north,yshift=-2mm] {{\sf\it\footnotesize multi-stage halfband interpolation}}
+            (halfband-n.south east);
+    \node[anchor=north] (resamp-label)[below=of arbitrary-resamp,yshift=24] {{\sf\it\footnotesize arbitrary resampler}};
+
+
+\end{tikzpicture}
+
+\end{document}
+
