@@ -1674,12 +1674,17 @@ efficiently realize any arbitrary resampling rate desired.
 \subfigure[interpolation] {
   \includegraphics[trim = 0mm 0mm 0mm 0mm, clip, width=14cm]{figures.pgf/msresamp_interp_diagram}
 }
-\caption{Multi-stage resampler block diagram}
+\caption{{\tt msresamp} (multi-stage resampler) block diagram showing
+         both interpolation and decimation modes}
 \label{fig:module:filter:msresamp_diagram}
 \end{figure}
 %
 Figure~\ref{fig:module:filter:msresamp_diagram} depicts how the
-multi-stage resamper operates for both interpolation and decimation.
+multi-stage resamper operates for both interpolation and decimation
+modes.
+The half-band resmplers efficiently handle the majority of the work,
+leaving the arbitrary resampler to operate at the lowest sample rate
+possible.
 
 Listed below is the full interface to the {\tt msresamp} family of
 objects.
