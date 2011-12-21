@@ -46,7 +46,7 @@ int main(int argc, char*argv[])
     unsigned int m=3;               // matched filter delay (symbols)
     float beta=0.3f;                // matched filter excess bandwidth factor
     unsigned int p=3;               // equalizer length (symbols, hp_len = 2*k*p+1)
-    float mu = 0.05f;               // LMS learning rate
+    float mu = 0.09f;               // LMS learning rate
 
     // modulation type/depth
     modulation_scheme ms = LIQUID_MODEM_QPSK;
@@ -231,7 +231,7 @@ int main(int argc, char*argv[])
         }
 
         // print filtered evm (emperical rms error)
-        if ( ((num_symbols_rx+1)%10) == 0 )
+        if ( ((num_symbols_rx+1)%100) == 0 )
             printf("%4u : mse = %12.8f dB\n",
                     num_symbols_rx+1,
                     10*log10f(mse[num_symbols_rx]));

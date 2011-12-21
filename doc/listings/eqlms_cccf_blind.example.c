@@ -9,7 +9,7 @@ int main() {
     float mu=0.100f;            // LMS equalizer learning rate
 
     // allocate memory for arrays
-    float complex * x;          // received sample buffer
+    float complex * x;          // equalizer input sample buffer
     float complex * y;          // equalizer output sample buffer
 
     // ...initialize x, y...
