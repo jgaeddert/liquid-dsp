@@ -316,6 +316,12 @@ take advantage of symmetries in certain constellations to reduce this.
     {\tt LIQUID\_MODEM\_PSK} ($M=4$)
     are effectively equivalent (four points on the unit circle)
     they are demodulated differently.
+\item[{\tt modem\_demodulate\_soft(q,x,*symbol,*soft\_bits)}]
+    operates as {\tt modem\_demodulate()} (see above) but includes the
+    ``soft'' bits as an approximate log-likelihood ratio.
+    See \S\ref{module:modem:digital:soft} for more information.
+\item[{\tt modem\_get\_demodulator\_sample(q,*s)}]
+    returns an estimate of the transmitted complex sample $s$.
 \item[{\tt modem\_get\_demodulator\_phase\_error(q)}]
     returns an angle proportional to the phase error after demodulation.
     This value can be used in a phase-locked loop
@@ -337,7 +343,7 @@ It is usually good practice to keep separate instances of modulators and
 demodulators.
 This holds true for most any encoder/decoder pair in \liquid.
 %
-An example of the {\tt qmodem} interface is listed below.
+An example of the {\tt modem} interface is listed below.
 %
 \input{listings/modem.example.c.tex}
 %
@@ -871,6 +877,8 @@ The bit error rate (BER) performance of the different available
 modulation schemes can be seen in
 Figures~\ref{fig:modem:M2}|\ref{fig:modem:M256}, relative to the ratio
 of energy per bit to noise power ($E_b/N_0$).
+The raw data can be found in the {\tt doc/data/modem-ber/}
+subdirectory.
 
 %-------------------- FIGURE: BER, M=2 --------------------
 \begin{figure}
@@ -1372,6 +1380,11 @@ $\mathcal{S}_{b_j=1}$.
 % 
 % soft bit representation
 %
+\liquid\ performs soft demodulation with the
+{\tt modem\_demodulate\_soft(q,x,*symbol,*soft\_bits)} method.
+This is the same as the regular demodulate method,
+but also returns the ``soft'' bits in addition to an estimate of the
+original symbol.
 Soft bit information is stored in \liquid\ as type {\tt unsigned char}
 with a value of {\tt 255} representing a {\em very likely {\tt 1}},
 and a value of {\tt 0} representing a {\em very likely {\tt 0}}.

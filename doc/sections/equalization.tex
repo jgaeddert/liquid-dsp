@@ -160,6 +160,80 @@ For more detailed examples, see
 {\tt examples/eqrls\_cccf\_example.c}.
 
 
+
+\subsection{Blind Equalization}
+\label{module:equalization:blind}
+%
+The equalizer interface above permits decision-directed equalization.
+This is a form of blind equalization where the data are not known,
+but the modulation scheme is.
+This type of equalization is useful for adapting to channel conditions,
+matched-filter ISI imperfections,
+and small timing offsets.
+Listed below is a basic program to equalize to a BPSK signal with
+unknown data.
+%
+\input{listings/eqlms_cccf_blind.example.c.tex}
+%
+The equalizerfilter is initialized with square-root raised-cosine
+coefficients
+(see \S\ref{module:filter:firdes:rnyquist} for details of square-root
+Nyquist filter designs).
+After computing each output symbol,
+the transmitted symbol is estimated and
+the equalizer adjusts its coefficients internally using the
+{\tt step()} method.
+This can be easily combined with the linear {\tt modem} object's
+{\tt modem\_get\_demodulator\_sample()}
+interface to return the estimated symbol after demodulation
+(see \S\ref{module:modem:digital}).
+
+%-------------------- FIGURE: EQLMS BLIND --------------------
+\begin{figure}
+\centering
+\subfigure[Equalizer output (time series)] {
+    \includegraphics[trim = 2mm 0mm 0mm 0mm, clip, width=15cm]{figures.gen/eqlms_cccf_blind_time}
+    \label{fig:module:equalization:eqlms_blind:time}
+}
+%\subfigure[mean-squared error] {
+%    \includegraphics[trim = 0mm 23mm 0mm 23mm, clip, width=13cm]{figures.gen/eqlms_cccf_blind_mse}
+%    \label{fig:module:equalization:eqlms_blind:mse}
+%}
+\subfigure[Power Spectral Density] {
+    \includegraphics[trim = 2mm 6mm 0mm 6mm, clip, width=13cm]{figures.gen/eqlms_cccf_blind_freq}
+    \label{fig:module:equalization:eqlms_blind:freq}
+}
+%\subfigure[constellation] {
+%    \includegraphics[trim = 16mm 0mm 18mm 0mm, clip, width=7cm]{figures.gen/eqlms_cccf_blind_const}
+%    \label{fig:module:equalization:eqlms_blind:constellation}
+%}
+
+% trim = left bottom right top
+\caption{Blind {\tt eqlms\_cccf} example, $k=2$ samples/symbol}
+\label{fig:module:equalization:eqlms_blind}
+\end{figure}
+%
+An example of the decision-directed equalizer for a QPSK signal with
+unknown data is depicted in
+Figure~\ref{fig:module:equalization:eqlms_blind}.
+A QPSK signal filtered with a square-root raised-cosine filter is
+transmitted through a noisy channel with several multi-path components,
+contributing to inter-symbol interference.
+The receiver uses an equalizer initialized with a matched filter.
+The output time series in
+Figure~\ref{fig:module:equalization:eqlms_blind:time}
+shows that the first 200 symbols are particularly noisy with a
+significant amount of inter-symbol interference due to the effects of
+the channel.
+The equalizer, however, quickly adapts and removes most of the
+interference as can be seen in
+Figure~\ref{fig:module:equalization:eqlms_blind:freq}
+(the {\em composite} spectrum is nearly flat in the pass-band).
+%
+For a more detailed example, see
+{\tt examples/eqlms\_cccf\_blind\_example.c}
+located under the main project directory.
+
 \subsection{Comparison of {\tt eqlms} and {\tt eqrls} Object Families}
 \label{module:equalization:eqlms_vs_eqrls}
 The performance of the {\tt eqlms} and {\tt eqrls} equalizers are compared by
@@ -236,38 +310,3 @@ The RLS equalizer, however, has a much higher computational complexity.
 
 
 
-\subsection{Blind Equalization}
-\label{module:equalization:blind}
-(actually decision-directed)
-%
-\input{listings/eqlms_cccf_blind.example.c.tex}
-%
-
-%-------------------- FIGURE: EQLMS BLIND --------------------
-\begin{figure}
-\centering
-\subfigure[Equalizer output (time series)] {
-    \includegraphics[trim = 2mm 0mm 0mm 0mm, clip, width=15cm]{figures.gen/eqlms_cccf_blind_time}
-    \label{fig:module:equalization:eqlms_blind:time}
-}
-%\subfigure[mean-squared error] {
-%    \includegraphics[trim = 0mm 23mm 0mm 23mm, clip, width=13cm]{figures.gen/eqlms_cccf_blind_mse}
-%    \label{fig:module:equalization:eqlms_blind:mse}
-%}
-\subfigure[Power Spectral Density] {
-    \includegraphics[trim = 2mm 6mm 0mm 6mm, clip, width=13cm]{figures.gen/eqlms_cccf_blind_freq}
-    \label{fig:module:equalization:eqlms_blind:psd}
-}
-%\subfigure[constellation] {
-%    \includegraphics[trim = 16mm 0mm 18mm 0mm, clip, width=7cm]{figures.gen/eqlms_cccf_blind_const}
-%    \label{fig:module:equalization:eqlms_blind:constellation}
-%}
-
-% trim = left bottom right top
-\caption{Blind {\tt eqlms\_cccf} example, $k=2$ samples/symbol}
-\label{fig:module:equalization:eqlms_blind}
-\end{figure}
-%
-For a more detailed example, see
-{\tt examples/eqlms\_cccf\_blind\_example.c}
-located under the main project directory.
