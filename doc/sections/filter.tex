@@ -1663,6 +1663,21 @@ By using a combination of half-band interpolators/decimators
 and an arbitrary resampler (\S\ref{module:filter:resamp})
 the {\tt msresamp} object can
 efficiently realize any arbitrary resampling rate desired.
+%
+% FIGURE : MSRESAMP DIAGRAMS
+%
+\begin{figure}
+\centering
+\subfigure[decimation] {
+  \includegraphics[trim = 0mm 0mm 0mm 0mm, clip, width=13cm]{figures.pgf/msresamp_decim_diagram}
+}
+\subfigure[interpolation] {
+  \includegraphics[trim = 0mm 0mm 0mm 0mm, clip, width=13cm]{figures.pgf/msresamp_interp_diagram}
+}
+\caption{Multi-stage resampler}
+\label{fig:module:filter:msresamp_diagram}
+\end{figure}
+%
 
 Listed below is the full interface to the {\tt msresamp} family of
 objects.
