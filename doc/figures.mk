@@ -106,6 +106,8 @@ local_pdffiles :=					\
 	figures.gen/interleaver_scatterplot_i3.pdf	\
 	figures.gen/interleaver_scatterplot_i4.pdf	\
 							\
+	figures.gen/interleaver_ber_ebn0.pdf		\
+							\
 	figures.gen/math_polyfit_lagrange.pdf		\
 	figures.gen/math_window_kaiser_time.pdf		\
 	figures.gen/math_window_kaiser_freq.pdf		\
@@ -633,6 +635,26 @@ figures.gen/interleaver_scatterplot_i3.gnu : src/interleaver_scatterplot
 
 figures.gen/interleaver_scatterplot_i4.gnu : src/interleaver_scatterplot
 	./$< -f figures.gen/interleaver_scatterplot_i4.gnu -n64 -d4
+
+
+#
+# interleaver ber
+# 
+
+# simulation options
+interleaver_ber_opts := -f1024 -ch84 -knone -mqam64 -b1e-5 -e 200 -n320000 -t64000000 -s-9 -d1.0 -x60 -S
+
+# simulation data
+resimulate-interleaver-ber-data : src/simulate_ber
+	./$<    $(interleaver_ber_opts) -o data/interleaver-ber/interleaver_ber_ebn0_i0.dat
+	./$< -i $(interleaver_ber_opts) -o data/interleaver-ber/interleaver_ber_ebn0_i4.dat
+
+# copy gnuplot file
+figures.gen/interleaver_ber_ebn0.gnu : figures.gen/% : data/interleaver-ber/%
+	cp $< $@
+
+# add .dat files as dependencies
+figures.gen/interleaver_ber_ebn0.eps : %.eps : %.gnu data/interleaver-ber/interleaver_ber_ebn0_i0.dat data/interleaver-ber/interleaver_ber_ebn0_i4.dat
 
 ##
 ## MODULE : math
