@@ -25,11 +25,6 @@ void simulate_per(simulate_per_opts _opts,
         exit(1);
     }
 
-    if (_opts.fec1 != LIQUID_FEC_NONE) {
-        fprintf(stderr,"warning: simulate_per(), only outer FEC supported; setting to 'none'\n");
-        _opts.fec1 = LIQUID_FEC_NONE;
-    }
-
     modulation_scheme ms            = _opts.ms;
     unsigned int bps                = _opts.bps;
     fec_scheme fec0                 = _opts.fec0;
