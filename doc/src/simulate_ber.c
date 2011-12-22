@@ -36,6 +36,7 @@ void usage()
     printf("  c     : fec coding scheme (inner)\n");
     printf("  k     : fec coding scheme (outer)\n");
     liquid_print_fec_schemes();
+    printf("  i     : interleaving? default: off\n");
     printf("  S/H   : soft/hard decoding, default: hard\n");
 }
 
@@ -55,13 +56,14 @@ int main(int argc, char *argv[]) {
     unsigned int bps = 1;
     fec_scheme fec0 = LIQUID_FEC_NONE;
     fec_scheme fec1 = LIQUID_FEC_NONE;
+    int interleaving  = 0;
     int soft_decoding = 0;
     const char * filename = OUTPUT_FILENAME;
     int verbose = 1;
 
     // get command-line options
     int dopt;
-    while((dopt = getopt(argc,argv,"uhvqo:s:d:x:b:t:n:e:f:m:c:k:SH")) != EOF){
+    while((dopt = getopt(argc,argv,"uhvqo:s:d:x:b:t:n:e:f:m:c:k:iSH")) != EOF){
         switch (dopt) {
         case 'u':
         case 'h': usage();      return 0;
@@ -87,6 +89,7 @@ int main(int argc, char *argv[]) {
             break;
         case 'c': fec0 = liquid_getopt_str2fec(optarg); break;
         case 'k': fec1 = liquid_getopt_str2fec(optarg); break;
+        case 'i': interleaving  = 1;                    break;
         case 'S': soft_decoding = 1;                    break;
         case 'H': soft_decoding = 0;                    break;
         default:
@@ -117,6 +120,7 @@ int main(int argc, char *argv[]) {
     opts.fec1 = fec1;
     opts.dec_msg_len = frame_len;
     opts.soft_decoding = soft_decoding;
+    opts.interleaving  = interleaving;
     opts.verbose = verbose;
 
     // minimum number of errors to simulate

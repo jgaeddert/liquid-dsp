@@ -72,6 +72,7 @@ typedef struct {
     unsigned int bps;               // modulation depth (bits/symbol)
     fec_scheme fec0;                // FEC codec (inner)
     fec_scheme fec1;                // FEC codec (outer)
+    int interleaving;               // apply interleaving?
     unsigned int dec_msg_len;       // (decoded) message length (bytes)
     int soft_decoding;              // soft bit decoding?
     

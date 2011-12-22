@@ -49,6 +49,11 @@ void simulate_per(simulate_per_opts _opts,
     //crc_scheme crc = LIQUID_CRC_32;
     fec p = fec_create(fec0, NULL);
 
+    // create interleaver
+    interleaver intlv = interleaver_create(fec_get_enc_msg_length(fec0,dec_msg_len));
+    if (_opts.interleaving) interleaver_set_depth(intlv,4);
+    else                    interleaver_set_depth(intlv,0);
+
     // create modem
     modem mod   = modem_create(ms, bps);
     modem demod = modem_create(ms, bps);
@@ -78,9 +83,12 @@ void simulate_per(simulate_per_opts _opts,
     // data arrays
     unsigned char msg_org[dec_msg_len];         // original message
     unsigned char msg_enc[enc_msg_len];         // encoded message
+    unsigned char msg_int[enc_msg_len];         // interleaved message
     unsigned char msg_mod[num_symbols];         // modulated message (symbols)
     unsigned char msg_dem[num_symbols];         // demodulated message (symbols)
     unsigned char msg_dem_soft[8*num_symbols];  // demodulated message (soft bits)
+    unsigned char msg_din_soft[8*num_symbols];  // de-interleaved message (soft bits)
+    unsigned char msg_din[enc_msg_len+8];       // de-interleaved message (with padding)
     unsigned char msg_rec[enc_msg_len+8];       // received message (with padding)
     unsigned char msg_dec[dec_msg_len];         // decoded message
 
@@ -103,9 +111,12 @@ void simulate_per(simulate_per_opts _opts,
         // 2. encode data
         fec_encode(p, dec_msg_len, msg_org, msg_enc);
 
+        // interleave
+        interleaver_encode(intlv, msg_enc, msg_int);
+
         // 3. format encoded data into symbols
         //memset(msg, 0, msg_len*sizeof(unsigned char));
-        liquid_repack_bytes(msg_enc,    8,      enc_msg_len,
+        liquid_repack_bytes(msg_int,    8,     enc_msg_len,
                             msg_mod,    bps,   num_symbols,
                             &num_written);
 
@@ -133,8 +144,15 @@ void simulate_per(simulate_per_opts _opts,
         // 7. unpack demodulated symbols (hard decoding)
         if (!soft_decoding) {
             liquid_repack_bytes(msg_dem,   bps,    num_symbols,
-                                msg_rec,   8,      enc_msg_len+8, // with padding
+                                msg_din,   8,      enc_msg_len+8, // with padding
                                 &num_written);
+        }
+
+        // de-interleave
+        if (soft_decoding) {
+            interleaver_decode_soft(intlv, msg_dem_soft, msg_din_soft);
+        } else {
+            interleaver_decode(intlv, msg_din, msg_rec);
         }
         
         // 8. decode
