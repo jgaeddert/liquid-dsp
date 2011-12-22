@@ -158,7 +158,7 @@ void simulate_per(simulate_per_opts _opts,
         // 8. decode
         if (soft_decoding) {
             //fec_decode(codec, framebytes, rx_enc_data, dec_data);
-            fec_decode_soft(p, dec_msg_len, msg_dem_soft, msg_dec);
+            fec_decode_soft(p, dec_msg_len, msg_din_soft, msg_dec);
         } else {
             //fec_decode(codec, framebytes, rx_enc_data, dec_data);
             fec_decode(p, dec_msg_len, msg_rec, msg_dec);
