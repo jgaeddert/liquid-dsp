@@ -364,8 +364,13 @@ clean-tutorials :
 ## PDF DOCUMENT
 ##
 
+# version file
+src/liquid_version : % : %.c
+latex.gen/liquid_version.tex : src/liquid_version ; ./$< > $@
+extra_clean += liquid.gen/liquid_version.tex
+
 # auxillary
-liquid.aux liquid.bib.aux : liquid.tex highlight.sty $(GRAPHICS) $(SECTIONS) $(listings_texfiles) highlight.sty $(figures_generated)
+liquid.aux liquid.bib.aux : liquid.tex highlight.sty $(GRAPHICS) $(SECTIONS) $(listings_texfiles) highlight.sty $(figures_generated) latex.gen/liquid_version.tex
 	$(TEX) $(TEX_FLAGS) liquid
 	touch liquid.bib.aux
 
