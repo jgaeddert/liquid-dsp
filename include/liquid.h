@@ -21,10 +21,17 @@
 #ifndef __LIQUID_H__
 #define __LIQUID_H__
 
-/*
- * Make sure the version and version number macros weren't defined by
- * some prevoiusly included header file.
- */
+#ifdef __cplusplus
+extern "C" {
+#   define LIQUID_USE_COMPLEX_H 0
+#else
+#   define LIQUID_USE_COMPLEX_H 1
+#endif // __cplusplus
+
+//
+// Make sure the version and version number macros weren't defined by
+// some prevoiusly included header file.
+//
 #ifdef LIQUID_VERSION
 #  undef LIQUID_VERSION
 #endif
@@ -32,28 +39,21 @@
 #  undef LIQUID_VERSION_NUMBER
 #endif
 
-/*
- * Compile-time version numbers
- * 
- * LIQUID_VERSION = "X.Y.Z"
- * LIQUID_VERSION_NUMBER = (X*1000000 + Y*1000 + Z)
- */
-#define LIQUID_VERSION          "1.0.0"
-#define LIQUID_VERSION_NUMBER   1000000
+//
+// Compile-time version numbers
+// 
+// LIQUID_VERSION = "X.Y.Z"
+// LIQUID_VERSION_NUMBER = (X*1000000 + Y*1000 + Z)
+//
+#define LIQUID_VERSION          "1.1.0"
+#define LIQUID_VERSION_NUMBER   1001000
 
-/*
- * Run-time library version numbers
- */
+//
+// Run-time library version numbers
+//
 extern const char liquid_version[];
 const char * liquid_libversion(void);
 int liquid_libversion_number(void);
-
-#ifdef __cplusplus
-extern "C" {
-#   define LIQUID_USE_COMPLEX_H 0
-#else
-#   define LIQUID_USE_COMPLEX_H 1
-#endif /* __cplusplus */
 
 #define LIQUID_CONCAT(prefix, name) prefix ## name
 #define LIQUID_VALIDATE_INPUT
@@ -3776,7 +3776,7 @@ float randweibf_pdf(float _x, float _a, float _b, float _g);
 float randweibf_cdf(float _x, float _a, float _b, float _g);
 
 // Gamma
-//          x^(a-1) exp{-x/b)
+//          x^(a-1) exp(-x/b)
 //  f(x) = -------------------
 //            Gamma(a) b^a
 //  where
@@ -4101,8 +4101,8 @@ void liquid_print_bitstring(unsigned int _x,
                             unsigned int _n);
 
 #ifdef __cplusplus
-} /* extern "C" */
-#endif /* __cplusplus */
+} //extern "C"
+#endif // __cplusplus
 
 #endif // __LIQUID_H__
 
