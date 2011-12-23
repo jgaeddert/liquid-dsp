@@ -95,7 +95,7 @@ memory requirements.
 The {\tt eqlms} and {\tt eqrls} have nearly identical interfaces so we will
 leave the discussion to the {\tt eqlms} object here.
 Like most objects in \liquid, {\tt eqlms} follows the typical
-{\tt create()}, {\tt execute()}, {\tt destroy()} lifecycle.
+{\tt create()}, {\tt execute()}, {\tt destroy()} life cycle.
 Training is accomplished either one sample at a time, or in a batch cycle.
 If trained one sample at a time, the symbols must be trained in the proper
 order, otherwise the algorithm won't converge.
@@ -175,7 +175,7 @@ unknown data.
 %
 \input{listings/eqlms_cccf_blind.example.c.tex}
 %
-The equalizerfilter is initialized with square-root raised-cosine
+The equalizer filter is initialized with square-root raised-cosine
 coefficients
 (see \S\ref{module:filter:firdes:rnyquist} for details of square-root
 Nyquist filter designs).
@@ -249,7 +249,7 @@ Figure~\ref{fig:module:equalization:eqlms_vs_eqrls}
 demonstrating a 10-tap equalizer applied to the response of a 6-tap
 channel with an SNR of 40~dB.
 
-The passband power spectral densities (PSD) of the channel and the equalizer
+The pass-band power spectral densities (PSD) of the channel and the equalizer
 outputs are depicted in
 Figure~\ref{fig:module:equalization:eqlms_vs_eqrls:psd}.
 Notice that the inter-symbol interference of the channel causes its PSD to

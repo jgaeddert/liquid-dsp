@@ -72,7 +72,7 @@ a short period of time.
 This is accomplished by computing the average of only the previous $M$
 samples of $|x|^2$; \liquid\ uses an internal buffer size of $M=16$
 samples.
-Now that the short-timesignal energy has been estimated, all that remains is to
+Now that the short-time signal energy has been estimated, all that remains is to
 adjust the gain of the receiver accordingly.
 \liquid\ implements an open-loop gain control by adjusting the
 instantaneous gain value to match the estimated signal energy to drive
@@ -121,9 +121,9 @@ portion of its new estimate $\hat{g}_{k}$.
 The {\tt agc} object permits the gain to be locked when, for example,
 the header of a frame has been received.
 This is useful for effectively switching the AGC on and off during short,
-burt-mode frame transmissions, particularly when the signal has a high-order
+burst-mode frame transmissions, particularly when the signal has a high-order
 digital amplitude-modulation (e.g. 64-QAM) and fluctuations in the AGC
-could potentiallty result in symbol errors.
+could potentially result in symbol errors.
 %
 When the {\tt agc} object is locked, the internal gain control is not
 updated,
@@ -214,7 +214,7 @@ For example if the AGC squelch control is in ``signal low'' mode
 (state {\tt 4}) and the signal increases above the threshold before timeout,
 the AGC will move back to the ``signal high'' mode (state {\tt 2}).
 This is particularly useful for weak signals whose received signal strength is
-hovering around the squelch threshold; it would be undesireable for the AGC to
+hovering around the squelch threshold; it would be undesirable for the AGC to
 enable the squelch in the middle of receiving a frame!
 
 \subsubsection{auto-squelch}
@@ -256,10 +256,10 @@ functionality applies to the {\tt agc\_rrrf} object.
 \item[{\tt agc\_crcf\_lock(q)}]
     prevents the AGC from updating its gain estimate.
     The internal gain is stored at the time of lock and used for all
-    subsequence occurrances of {\tt \_execute()}.
+    subsequent occurrences of {\tt \_execute()}.
     This is primarily used when the beginning of a frame has been detected,
     and perhaps the payload contains amplitude-modulated data which can be
-    corrupted with the AGC agressivly attacking the signal's high
+    corrupted with the AGC aggressively attacking the signal's high
     dynamics.
     Also, locking the AGC conserves clock cycles as the gain update is
     not computed.

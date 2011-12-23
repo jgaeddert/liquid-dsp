@@ -25,7 +25,7 @@ This was a critical step in his PhD thesis to adapt DSP algorithms in
 cognitive dynamic-spectrum radios to optimally manage finite radio resources.
 The project is not intended to compete with many other well-known and
 excellent software radio packages freely available
-(such as {\em gnuradio} \cite{gnuradio:web} and {\em OSSIE}
+(such as {\em GNU radio} \cite{gnuradio:web} and {\em OSSIE}
 \cite{ossie:web})
 but was created as a lightweight library which can be used to augment
 these projects' capabilities
@@ -114,7 +114,7 @@ library.
     # make install
 \end{verbatim}
 %
-You may also build the lastest version of the code by cloning the
+You may also build the latest version of the code by cloning the
 Git repository.
 The main repository for \liquid\ is hosted online by {\em github}
 \cite{github:web} and can be cloned on your local machine via
@@ -223,10 +223,10 @@ A few points to note:
 \end{enumerate}
 
 
-\subsection{Basic Lifecycle}
+\subsection{Basic Life Cycle}
 \label{section:data_structures:lifecycle}
 
-Listed below is an example of the basic lifecycle of a
+Listed below is an example of the basic life cycle of a
 {\tt iirfilt\_crcf} object (infinite impulse response filter with
 complex float inputs/outputs, and real float coefficients).
 The design parameters of the filter are specified in the {\em options}
@@ -288,7 +288,7 @@ equivalent to the second-order macros used in \liquid.
 
 The C programming language has a rich history in system
 programming|specifically targeting embedded applications|and is the
-basis behind many well-known projects including the linux
+basis behind many well-known projects including the Linux
 kernel~\cite{linux-kernel:web}
 and the python programming language \cite{python:web}.
 Having said this, high-level frameworks and graphical interfaces are
@@ -315,7 +315,7 @@ header file {\tt include/liquid.h} which creates new complex data types
 based on the compiler, 
 (e.g. {\tt liquid\_complex\_float}).
 While technically this code does define of a new type specification,
-its purpose is for compatability between compilers and programming
+its purpose is for compatibility between compilers and programming
 language
 (see \S\ref{section:data_structures:c++} on C++ portability),
 and is binary compatible with the standard C99 specification.

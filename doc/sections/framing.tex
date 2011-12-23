@@ -166,7 +166,7 @@ with increasing number of iterations (interleaving depth)}
 A visualization of the interleaver can be seen in
 Figure~\ref{fig:module:framing:interleaver:scatterplot}
 where the input index is plotted against the output index for varying number
-of interations.
+of iterations.
 Notice that with zero iterations, the output and input are identical (no
 interleaving).
 With one iteration only the bytes are interleaved, and so the output is
@@ -207,7 +207,7 @@ best effort of decoding the message.
 
 The packetizer also allows for re-structuring if the user wishes to change
 error-correction schemes or data lengths.  This is accomplished with the
-{\tt packetier\_recreate()} method.
+{\tt packetizer\_recreate()} method.
 Listed below is the full interface to the {\tt packetizer} object.
 %
 \begin{description}
@@ -598,7 +598,7 @@ In general the frame synchronizer open the bandwidths of their control
 loops until a certain sequence has been detected;
 this helps reduce acquisition time of the received signal.
 After the frame has been detected the control loop bandwidths are
-reduced to improve stability and reduce the possiblity of losing a lock
+reduced to improve stability and reduce the possibility of losing a lock
 on the signal.
 Listed below is a description of the {\tt framesyncprops\_} object
 members.
@@ -644,7 +644,7 @@ members.
     Enabling the squelch
     (setting {\tt squelch\_enabled} equal to {\tt 1})
     will ignore received signals below the {\tt squelch\_threshold}
-    value (see below) to help prevent the reciever's control loops from
+    value (see below) to help prevent the receiver's control loops from
     drifting.
     Enabling the squelch is usually desirable;
     however care must be taken to properly set the threshold|ideally
@@ -755,17 +755,17 @@ cyclic prefix length,
 and capacity can be increased by modulating data appropriately on
 subcarriers relative to their signal-to-noise ratio.
 Multi-carrier systems, however, are significantly more sensitive to
-carrier frequency offsets and doppler shifts, leading to inter-carrier
+carrier frequency offsets and Doppler shifts, leading to inter-carrier
 interference.
 OFDM can therefore be more difficult to synchronize and maintain data
 fidelity in mobile environments.
 To assist in synchronization, the transmitter inserts special preamble
-symbols at the beginning of each frame which assist the syncrhonizer in
+symbols at the beginning of each frame which assist the synchronizer in
 estimating the carrier frequency offset,
 recovering the symbol timing, and
 compensating for effects of the channel.
 
-This section gives specifics for the OFDM flexible framing strucutre and
+This section gives specifics for the OFDM flexible framing structure and
 is really intended only as a reference;
 for a tutorial on how to use the generator/synchronizer objects without
 getting into detail, please refer to the {\em OFDM Framing} tutorial
@@ -786,7 +786,7 @@ the preamble, the header, and the payload.
     acquisition and equalizer gain estimation.  The transmitter
     generates multiple \Ss\ symbols (minimally 2, but usually 3 or more)
     and just a single \Sl\ symbol. This aligns the receiver's timing to
-    that of the transmitter, signalling the start of the header.
+    that of the transmitter, signaling the start of the header.
 \item[Header]
     The header consists of one or more OFDM symbols; the exact number of
     OFDM symbols depends on the number of subcarriers allocated and the
@@ -869,7 +869,7 @@ Subcarriers may be arbitrarily allocated into three types:
 \end{itemize}
 %
 Typically the subcarriers at the band edges are disabled to avoid
-aliasing during upconversion/interpolation.
+aliasing during up-conversion/interpolation.
 %
 The elements of $\vec{p}$ are given in the same order as the FFT input
 (that is, $p_0$ holds the DC subcarrier and $p_{M/2}$ holds the
@@ -933,7 +933,7 @@ only from one symbol to another, but within each OFDM symbol.
 \label{module:framing:ofdmflexframe:gen}
 %
 The {\tt ofdmflexframegen} object is responsible for assembling raw data
-bytes into continguous OFDM time-domain symbols which the
+bytes into contiguous OFDM time-domain symbols which the
 {\tt ofdmflexframesync} object can receive.
 The life cycle of the generator is as follows:
 %
@@ -1059,7 +1059,7 @@ object.
     Whenever a frame is found and decoded, the synchronizer will invoke
     the callback function given when created.
     The input buffer can be any length, irrespective of any of the
-    properites of the frame.
+    properties of the frame.
 %
 \item[{\tt ofdmflexframesync\_get\_rssi(q)}]
     queries the frame synchronizer for the received signal strength of
@@ -1143,7 +1143,7 @@ Here is a brief description of the callback function's arguments:
 \end{figure}
 %
 Figure~\ref{fig:module:framing:ofdmflexframe_performance} shows the
-performance characterisitics of the {\tt ofdmflexframe} structure for
+performance characteristics of the {\tt ofdmflexframe} structure for
 $M=64$ subcarriers with default subcarrier allocation.
 The frame can be detected with a 90\% probability with an SNR level of
 just -0.4~dB.
@@ -1155,7 +1155,7 @@ modulation scheme and forward error-correction schemes applied.
 Here are a few general guidelines for good performance:
 \begin{enumerate}
 \item Equalization improves with more subcarriers, but the carrier
-      frequency offset requirements have tigher restrictions;
+      frequency offset requirements have tighter restrictions;
 \item While the interface supports nearly any number of subcarriers
       desired, synchronization greatly improves with at least $M=32$
       active (pilot/data) subcarriers;
@@ -1168,7 +1168,7 @@ Here are a few general guidelines for good performance:
       reducing the cyclic prefix to 4 samples, regardless of the number
       of subcarriers;
 \item Most hardware have highly non-linear RF front ends (mixers,
-      amplifiers, etc.) which require a transmit power backoff by a few
+      amplifiers, etc.) which require a transmit power back-off by a few
       dB to ensure linearity, particularly when many subcarriers are
       used.
 \end{enumerate}

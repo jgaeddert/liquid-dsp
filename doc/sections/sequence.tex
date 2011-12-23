@@ -16,7 +16,7 @@ complementary codes.
 
 \subsection{{\tt bsequence}, generic binary sequence}
 \label{module:sequence:bsequence}
-The {\tt bsequence} object implmements a generic binary shift register
+The {\tt bsequence} object implements a generic binary shift register
 and is particularly useful in wireless communications for correlating long
 bit sequences in seeking frame preambles and packet headers.
 %This is also useful in the physical layer description 
@@ -153,7 +153,7 @@ Table~\ref{tab:sequence:genpoly}, however many more exist.%
 Notice that both the first and last bit of each generator polynomial is a
 {\tt 1}.
 This holds true for all $m$-sequence generator polynomials.
-All generator polymomials of length $m=2$ $(n=3)$ through $m=15$ $(n=32767)$
+All generator polynomials of length $m=2$ $(n=3)$ through $m=15$ $(n=32767)$
 are given in the {\tt data/msequence/} subdirectory of this documentation
 directory.
 
@@ -202,7 +202,7 @@ Here is a brief description of the {\tt msequence} object's interface in
 \begin{figure}
 \centering
   \includegraphics[trim = 0mm 0mm 0mm 0mm, clip, width=13cm]{figures.gen/sequence_msequence}
-\caption{{\tt msequence} autocorrelation, $m=6$ ($n=63$), $g=${\tt 1000011}}
+\caption{{\tt msequence} auto-correlation, $m=6$ ($n=63$), $g=${\tt 1000011}}
 \label{fig:module:sequence:msequence}
 \end{figure}
 %
@@ -214,7 +214,7 @@ $g=${\tt 1000011}
 can be seen in Figure~\ref{fig:module:sequence:msequence}.
 The shift register has six bits ($m=6$) and therefore the output sequence is
 of length $n=2^m-1=63$.
-Notice that the autocorrelation is equal to unity with no delay, and nearly
+Notice that the auto-correlation is equal to unity with no delay, and nearly
 zero ($-1/63$) for all other delays.
 
 
@@ -281,7 +281,7 @@ $64$    & $\vec{a}_{6}$ = {\tt 10111000 10110111 10111000 01001000 10111000 1011
 \begin{figure}
 \centering
   \includegraphics[trim = 0mm 0mm 0mm 0mm, clip, width=13cm]{figures.gen/sequence_ccodes}
-\caption{Complementary codes autocorrelation, $n=64$}
+\caption{Complementary codes auto-correlation, $n=64$}
 \label{fig:module:sequence:ccodes}
 \end{figure}
 

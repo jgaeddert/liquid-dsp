@@ -12,7 +12,7 @@ We have also used the basic {\tt framegen64} and {\tt framesync64}
 objects to transmit and receive simple framing data.
 This tutorial extends the work on the previous tutorials by introducing
 a flexible framing structure that uses a parallel data transmission
-scheme that permits arbitrary parameterization
+scheme that permits arbitrary parametrization
 (modulation, forward error-correction, payload length, etc.)
 with minimal reconfiguration at the receiver.
 
@@ -29,7 +29,7 @@ with minimal reconfiguration at the receiver.
 The framing tutorial (\S\ref{tutorial:framing}) loaded data serially
 onto a single carrier.
 Another option is to load data onto many carriers in parallel;
-however it is desireable to do so such that bandwidth isn't wasted.
+however it is desirable to do so such that bandwidth isn't wasted.
 By allowing the ``subcarriers'' to overlap in frequency,
 the system approaches the theoretical maximum capacity of the channel.
 Several multiplexing schemes are possible,
@@ -75,7 +75,7 @@ The synchronizer ({\tt ofdmflexframesync}),
 like the {\tt framesync64} object,
 accepts samples and invokes a callback function for each frame that it
 detects,
-compensating for sample timing and carrier offests and multi-path
+compensating for sample timing and carrier offsets and multi-path
 channels.
 The framing objects can be created with nearly any even-length transform
 (number of subcarriers),
@@ -98,7 +98,7 @@ your part.
 \label{tutorial:ofdmflexframe:environment}
 
 As with the other tutorials I assume that you are using {\tt gcc} to
-compile your programs and link to appripriate libraries.
+compile your programs and link to appropriate libraries.
 Create a new file {\tt ofdmflexframe.c} and include the headers
 {\tt stdio.h},
 {\tt stdlib.h},
@@ -147,7 +147,7 @@ You are now ready to add functionality to your program.
 In this tutorial we will be using the {\tt ofdmflexframegen} and
 {\tt ofdmflexframesync} objects in \liquid\ which realize the
 framing generator (transmitter) and synchronizer (receiver).
-The OFDM framing stucture is briefly described here
+The OFDM framing structure is briefly described here
 (for a more detailed description, see
 \S\ref{module:framing:ofdmflexframe}).
 The {\tt ofdmflexframe} generator and synchronizer objects
@@ -167,7 +167,7 @@ The synchronizer requires the same number of subcarriers, cyclic prefix,
 and subcarrier allocation as the transmitter, but can automatically
 determine the payload length, modulation scheme, and forward
 error-correction of the receiver.
-Furthermore, the reciever can compensate for carrier phase/frequency and
+Furthermore, the receiver can compensate for carrier phase/frequency and
 timing offsets as well as multi-path fading and noisy channels.
 The received data are returned via a callback function which includes
 the modulation and error-correction schemes used
@@ -267,7 +267,7 @@ This method accepts three arguments:
   have been written to the buffer.
 The last argument is necessary because not all of the symbols in the
 frame are the same size (the first several symbols in the preamble do
-not have a cycic prefix).
+not have a cyclic prefix).
 Invoking the {\tt ofdmflexframegen\_writesymbol()} method repeatedly
 generates each symbol of the frame
 and returns a flag indicating if the last symbol in the frame has been
@@ -693,7 +693,7 @@ and applying different forward error-correction schemes.
                 locations, etc.}
       %
       when the cyclic prefix lengths don't match?%
-      \footnote{{\em A:} the synchronizer cannot decode header becase of
+      \footnote{{\em A:} the synchronizer cannot decode header because of
                 symbol timing  mis-alignment.}
 \item What happens when you decrease the SNR from 20~dB to 10~dB?%
       \footnote{{\em A:} the payload will probably be invalid because of

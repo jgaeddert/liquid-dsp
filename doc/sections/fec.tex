@@ -17,7 +17,7 @@ The {\tt fec} object realizes forward error-correction capabilities in
 implement error detection.
 Certain FEC schemes are only available to \liquid\ by installing the external
 {\tt libfec} library \cite{libfec:web}, available as a free download.
-A few low-rate (and fairly low efficiency) codes are availble internally.
+A few low-rate (and fairly low efficiency) codes are available internally.
 
 %The {\tt packetizer} object (\S\ref{module:framing:packetizer})
 %relies on the {\tt fec} objects and {\tt crc32} functions.
@@ -34,7 +34,7 @@ Here is a simple example:
 %
 \input{listings/crc.example.c.tex}
 %
-Also available for error detection in \liquid\ is a checkssum.
+Also available for error detection in \liquid\ is a checksum.
 A checksum is a simple way to validate data received through un-reliable means
 (e.g. a noisy channel).
 A checksum is, in essence, a weak error detection code that simply counts the
@@ -42,7 +42,7 @@ number of ones in a block of data (modulo 256).
 The limitation, however, is that multiple bit errors might result in a false
 positive validation of the corrupted data.
 The checksum is not a strong an error detection scheme as the cyclic
-redundany check.
+redundancy check.
 %
 Table~\ref{tab:crc:codecs} lists the available codecs and gives a brief
 description for each.
@@ -143,7 +143,7 @@ They are exceptionally weak relative to convolutional Viterbi and Reed-Solomon
 codes.
 However, their simplicity in implementation and low computational complexity
 gains them a place in digital communications, particularly in software radios
-where spectral efficiency goals might be secondary to processing contraints.
+where spectral efficiency goals might be secondary to processing constraints.
 
 \subsection{{\tt g2412}, Golay(24,12) block code}
 \label{module:fec:golay}
@@ -387,13 +387,13 @@ however in general one can expect to see an improvement of approximately
 \end{figure}
 %
 Figure~\ref{fig:fec:hardsoft_ber} shows the performance improvement of
-using soft-decision vs. hard-decision decodign for the Hamming(8,4)
+using soft-decision vs. hard-decision decoding for the Hamming(8,4)
 block code.
 
 \subsection{Performance}
 \label{module:fec:performance}
 The performance of an error-correction scheme is typically measured in
-the bit error rate (BER) for a anipotally modulated signal in the
+the bit error rate (BER) for a antipodally modulated signal in the
 presence of additive white Gauss noise (AWGN).
 Certain applications prefer measuring performance in terms of the
 {\em signal} energy while others require {\em bit} energy,

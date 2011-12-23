@@ -156,8 +156,8 @@ requires the pthread library, it is likely to be removed from \liquid\ in the
 near future and likely put into another library, e.g. {\em liquid-threads}.
 
 There are two ways to access the data in the {\tt gport} object: direct memory
-access and indirect (copied) memory acess, each with distinct advantages and
-distadvantages.
+access and indirect (copied) memory access, each with distinct advantages and
+disadvantages.
 Regardless of which interface you use, the model is equivalent:
 a buffer of data (initially empty) is created.
 The {\it producer} is the method in charge of writing to the buffer (or
@@ -241,7 +241,7 @@ It is important to stay consistent with the memory access mode used within a
 thread, however mixed memory access modes can be used between threads on the
 same port.
 For example, the producer thread may use the direct memory access mode while
-the consumer uses the indrect memory acess mode.
+the consumer uses the indirect memory access mode.
 
 \subsubsection{Interface}
 \label{module:buffer:gport:interface}
@@ -363,7 +363,7 @@ during lock is limited by the size of the port.
 %   * higher complexity
 The {\tt qnsearch} object in \liquid\ implements the
 Quasi-Newton search algorithm which uses the first- and second-order
-derivates (gradient vector and Hessian matrix) in its update equation.
+derivatives (gradient vector and Hessian matrix) in its update equation.
 Newtonian-based search algorithms approximate the function to be nearly
 quadratic near its optimum which requires the second partial derivative
 (Hessian matrix) to be computed or estimated at each iteration.

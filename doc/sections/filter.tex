@@ -16,7 +16,7 @@ energy.
 %
 This section includes interface descriptions for all of the signal
 processing elements in \liquid\ regarding filter design and
-implemenation.
+implementation.
 This includes both infinite and finite (recursive and non-recursive)
 filters, decimators, interpolators, and performance characterization.
 
@@ -26,9 +26,9 @@ filters, decimators, interpolators, and performance characterization.
 %
 \subsection{{\tt autocorr} (auto-correlator)}
 \label{module:filter:autocorr}
-The {\tt autocorr} family of objects implement autocorrelation of
+The {\tt autocorr} family of objects implement auto-correlation of
 signals.
-The discrete autocorrelation of a signal $\vec{x}$
+The discrete auto-correlation of a signal $\vec{x}$
 is a delay, conjugate multiply, and accumulate operation defined as
 %
 % TODO check this equation
@@ -490,7 +490,7 @@ and $h$ is the output coefficients array of length $2km+1$.
 
 \subsubsection{{\tt liquid\_firdes\_rnyquist()} (square-root Nyquist filter design)}
 \label{module:filter:firdes:rnyquist}
-Square-root Nyquist filters are commonly used in digital communcations
+Square-root Nyquist filters are commonly used in digital communications
 systems with linear modulation as a pulse shape for matched filtering.
 Applying a pulse shape to the transmitted symbol sequence limits its
 occupied spectral bandwidth by smoothing the transitions between
@@ -502,7 +502,7 @@ and (theoretically) zero inter-symbol interference.
 %
 While the design of Nyquist filters is trivial and can be accomplished
 by applying any desired window to a $\sinc$ function,
-designing a square-root Nyquist filter is not as straighforward.
+designing a square-root Nyquist filter is not as straightforward.
 \liquid\ conveniently provides several square-root Nyquist filter
 prototypes listed in Table~\ref{tab:filter:rnyquist}.
 %
@@ -658,7 +658,7 @@ and transition through $20\log_{10}\left(\frac{1}{2}\right)$.
 
 \subsubsection{{\tt firdespm} (Parks-McClellan algorithm)}
 \label{module:filter:firdespm}
-FIR filter desing using the Parks-McClellan algorithm is implemented in
+FIR filter design using the Parks-McClellan algorithm is implemented in
 \liquid\ with the {\tt firdespm} interface.
 The Parks-McClellan algorithm uses the Remez exchange algorithm to solve
 the minimax problem (minimize the maximum error) for filter design.
@@ -710,7 +710,7 @@ Listed below is an example of the {\tt firdespm} interface.
 \begin{figure}
 \centering
   \includegraphics[trim = 0mm 0mm 0mm 0mm, clip, width=13cm]{figures.gen/filter_firdespm}
-\caption{{\tt firdespm} multi-passband filter design demonstration}
+\caption{{\tt firdespm} multiple pass-band filter design demonstration}
 \label{fig:module:filter:firdespm}
 \end{figure}
 
@@ -722,7 +722,7 @@ useful to filtering and filter design.
 \begin{description}
 \item[{\tt estimate\_req\_filter\_len(df,As)}]
     returns an estimate of the required filter length, given a transition
-    bandwidth $\Delta f$ and stopband attenuation $A_s$.
+    bandwidth $\Delta f$ and stop-band attenuation $A_s$.
 %    The estimate uses Hermann's formula \cite{Herrmann:1973}
 %    %
 %    \begin{equation}
@@ -761,13 +761,13 @@ useful to filtering and filter design.
     returns an estimate of the filter's stop-band attenuation $A_s$
     given the filter's length $N$ and transition bandwidth $\Delta f$.
     The estimate uses an iterative binary search to find $A_s$ from
-    {\tt extimate\_req\_filter\_As()}.
+    {\tt estimate\_req\_filter\_As()}.
 
 \item[{\tt estimate\_req\_filter\_df(As,N)}]
     returns an estimate of the filter's transition bandwidth $\Delta f$
     given the filter's length $N$ and stop-band attenuation $A_s$.
     The estimate uses an iterative binary search to find $\Delta f$ from
-    {\tt extimate\_req\_filter\_As()}.
+    {\tt estimate\_req\_filter\_As()}.
 
 \item[{\tt kaiser\_beta\_As(As)}]
     % TODO : Kaiser window parameter previously defined as alpha!
@@ -911,7 +911,7 @@ transform as efficiently as possible.
 While any filter length can be accepted, the {\tt firhilbf} object
 internally forces the length to be of the form $n=4m+1$
 to reduce the computational load.
-A halfband filter of this length has $2m$ zeros and $2m+1$ non-zero
+A half-band filter of this length has $2m$ zeros and $2m+1$ non-zero
 coefficients.
 Of these non-zero coefficients, the center is exactly $1$ while the other $2m$
 are even symmetric, and therefore only $m$ computations are needed.
@@ -939,7 +939,7 @@ An example code listing is given below.
 Although {\tt firhilbf} is a placeholder for both
 decimation (real to complex) and
 interpolation (complex to real),
-separate objects shoudl be used for each task.
+separate objects should be used for each task.
 %
 \input{listings/firhilb.example.c.tex}
 %
@@ -1064,7 +1064,7 @@ For a cascaded second-order section IIR filter, use
 Listed below is the full interface to the {\tt iirfilt} family of
 objects.
 The interface to the {\tt iirfilt} object follows the convention of
-otherr \liquid\ signal processing objects;
+other \liquid\ signal processing objects;
 while each method is listed for {\tt iirfilt\_crcf}, the same
 functionality applies to {\tt iirfilt\_rrrf} and {\tt iirfilt\_cccf}.
 %
@@ -1133,9 +1133,9 @@ high-frequency component.
 %
 \subsection{{\tt iirdes} (infinite impulse response filter design)}
 \label{module:filter:iirdes}
-\liquid\ implements infinite impulse respone (IIR) filter design for the
+\liquid\ implements infinite impulse response (IIR) filter design for the
 five major classes of filters
-(Butterworth, Chebyshev type-I, Chebyshef type-II, elliptic, and Bessel)
+(Butterworth, Chebyshev type-I, Chebyshev type-II, elliptic, and Bessel)
 by
 first computing their analog low-pass prototypes, performing a bilinear
 $z$-transform to convert to the digital domain, then transforming to the
@@ -1178,14 +1178,14 @@ Specifically, the interface is
     is the normalized cutoff frequency of the analog prototype
 \item[{\tt \_f0}]
     is the normalized center frequency of the analog prototype (only
-    applicable to bandpass and bandstop filter designs, ignored for lowpass
-    and highpass filter designs)
+    applicable to bandpass and band-stop filter designs, ignored for low-pass
+    and high-pass filter designs)
 \item[{\tt \_Ap}]
-    is the passband ripple (only applicable to Chebyshev Type-I and elliptic
+    is the pass-band ripple (only applicable to Chebyshev Type-I and elliptic
     filter designs, ignored for Butterworth, Chebyshev Type-II, and Bessel
     designs)
 \item[{\tt \_As}]
-    is the stopband ripple (only applicable to Chebyshev Type-II and elliptic
+    is the stop-band ripple (only applicable to Chebyshev Type-II and elliptic
     filter designs, ignored for Butterworth, Chebyshev Type-I, and Bessel
     designs)
 \item[{\tt \_B}, {\tt \_A}]
@@ -1229,11 +1229,11 @@ procedure.
       (floating-point).''
 
     \begin{description}
-    \item[{\tt butter\_azpkf()}] Butterworth (maximally flat in the passband)
-    \item[{\tt cheby1\_azpkf()}] Chebyshev Type-I (equiripple in the passband)
-    \item[{\tt cheby2\_azpkf()}] Chebyshev Type-II (equiripple in the stopband)
+    \item[{\tt butter\_azpkf()}] Butterworth (maximally flat in the pass-band)
+    \item[{\tt cheby1\_azpkf()}] Chebyshev Type-I (equiripple in the pass-band)
+    \item[{\tt cheby2\_azpkf()}] Chebyshev Type-II (equiripple in the stop-band)
     \item[{\tt ellip\_azpkf() }] elliptic filter (equiripple in the pass- and
-        stopbands)
+        stop-bands)
     \item[{\tt bessel\_azpkf()}] Bessel (maximally flat group delay)
     \end{description}
 
@@ -1281,14 +1281,14 @@ A simplified example for this procedure is given in
 
 \subsubsection{Available Filter Types}
 \label{module:filter:iirdes:types}
-There are currently five low-pass prototypes available for inifinite impulse
+There are currently five low-pass prototypes available for infinite impulse
 response filter design in \liquid, as described below:
 %
 \begin{description}
 \item[{\tt LIQUID\_IIRDES\_BUTTER}]
     is a Butterworth filter.
     This is an all-pole analog design that has a maximally flat magnitude
-    response in the passband.
+    response in the pass-band.
     The analog prototype interface is {\tt butter\_azpkf()} which
     computes the $n$ complex roots $p_{a0},p_{a1},\ldots,p_{an-1}$
     of the $n^{th}$-order Butterworth polynomial,
@@ -1310,7 +1310,7 @@ response filter design in \liquid, as described below:
     is a Chebyshev Type-I filter.
     This design uses Chebyshev polynomials to create a filter with a sharper
     transition band than the Butterworth design by allowing ripples in the
-    passband.
+    pass-band.
     The analog prototype interface is {\tt cheby1\_azpkf()} which
     computes the $n$ complex roots $p_{ak}$ of the $n^{th}$-order
     Chebyshev polynomial.
@@ -1321,13 +1321,13 @@ response filter design in \liquid, as described below:
     This design is similar to that of Chebyshev Type-I, except that the
     Chebyshev polynomial is inverted.
     This inverts the magnitude response of the filter and exhibits an
-    equiripple behavior in the stopband, rather than the passband.
+    equiripple behavior in the stop-band, rather than the pass-band.
     The analog prototype interface is {\tt cheby2\_azpkf()}.
     An example of a digital filter response can be found in
     Figure~\ref{fig:module:filter:cheby2}
 \item[{\tt LIQUID\_IIRDES\_ELLIP}]
     is an elliptic (Cauer) filter.
-    This design allows ripples in both the passband and stopbands to create a
+    This design allows ripples in both the pass-band and stop-bands to create a
     filter with a very sharp transition band.
     The design process is somewhat more involved than the Butterworth and
     Chebyshev prototypes and requires solving the elliptic integral of
@@ -1378,7 +1378,7 @@ form (``zpk'') with $n_z$ zeros and $n_p$ poles
             }
 \end{equation}
 %
-the bilinear $z$-transform converts $H_a(s)$ into the discretized transfer
+the bilinear $z$-transform converts $H_a(s)$ into the discrete transfer
 function $H_d(z)$ by mapping the $s$-plane onto the $z$-plane with the
 approximation
 %
@@ -1476,7 +1476,7 @@ the digital gain can be computed as
 \label{module:filter:iirdes:transformations}
 %
 The prototype low-pass digital filter can be converted into a
-high-pass, band-pass, or band-stop filter using a combinatio of the
+high-pass, band-pass, or band-stop filter using a combination of the
 following filter transformations in \liquid:
 %
 \begin{description}
@@ -1694,9 +1694,9 @@ efficiently realize any arbitrary resampling rate desired.
 \end{figure}
 %
 Figure~\ref{fig:module:filter:msresamp_diagram} depicts how the
-multi-stage resamper operates for both interpolation and decimation
+multi-stage resampler operates for both interpolation and decimation
 modes.
-The half-band resmplers efficiently handle the majority of the work,
+The half-band resamplers efficiently handle the majority of the work,
 leaving the arbitrary resampler to operate at the lowest sample rate
 possible.
 
@@ -1754,7 +1754,7 @@ For a more detailed example, refer to
 located in the main \liquid\ project source directory.
 
 
-\subsection{{\tt resamp2} (halfband filter/resampler)}
+\subsection{{\tt resamp2} (half-band filter/resampler)}
 \label{module:filter:resamp2}
 {\tt resamp2} is a half-band resampler used for efficient interpolation
 and decimation.
@@ -1785,7 +1785,7 @@ the coefficients of the filter are zero, and the remaining half are symmetric
 (so long as $w(n)$ is also symmetric).
 In theory, this means that for a filter length of $4m+1$ taps, only $m$
 computations are necessary \cite{harris:2004}.
-The {\tt resamp2} object in \liquid\ uses a Kaser window for $w(n)$ for
+The {\tt resamp2} object in \liquid\ uses a Kaiser window for $w(n)$ for
 several reasons, but in particular because it is nearly optimum, and it is
 easy to trade side-lobe attenuation for transition bandwidth.
 %
@@ -1908,7 +1908,7 @@ additional computational complexity;
 additionally the number of filters in the bank can be increased to
 improve timing resolution between samples.
 For synchronization of digital receivers, it is always good practice to
-preceed the resampler with an anti-aliasing filter to remove out-of-band
+precede the resampler with an anti-aliasing filter to remove out-of-band
 interference.
 
 Listed below is the full interface to the {\tt resamp} family of
@@ -2030,7 +2030,7 @@ functionality applies to {\tt symsync\_rrrf} and {\tt symsync\_cccf}.
     The internal object restructures the input filter into a polyphase
     prototype having $N$ filters.
 \item[{\tt symsync\_crcf\_create\_rnyquist(ftype,k,m,beta,N)}]
-    creates a {\tt symsync} object from a square-root Nyquist protoype
+    creates a {\tt symsync} object from a square-root Nyquist prototype
     of type {\tt ftype} (see \S\ref{module:filter:firdes:rnyquist}
     for a description of available square-root Nyquist filters in
     \liquid).
@@ -2042,7 +2042,7 @@ functionality applies to {\tt symsync\_rrrf} and {\tt symsync\_cccf}.
     destroys the symbol synchronizer, freeing all internally-allocated
     memory.
 \item[{\tt symsync\_crcf\_print(q)}]
-    prints the internal properties of the symbol syncrhonizer object to
+    prints the internal properties of the symbol synchronizer object to
     the standard output.
 \item[{\tt symsync\_crcf\_clear(q)}]
     resets the symbol synchronizer, clearing the internal buffers and
@@ -2077,7 +2077,7 @@ functionality applies to {\tt symsync\_rrrf} and {\tt symsync\_cccf}.
     \label{fig:module:filter:symsync:psd}
 }
 % trim = left bottom right top
-\caption{{\tt symysnc} (symbol synchronizer) demonstration for a
+\caption{{\tt symsync} (symbol synchronizer) demonstration for a
          QPSK signal with a
          square-root raised-cosine pulse
          with $k=2$ samples/symbol,

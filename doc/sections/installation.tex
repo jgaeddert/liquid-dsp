@@ -195,11 +195,11 @@ The script generates the header file {\tt autotest\_include.h} which
 includes all the modules' test headers as well as several organizing
 structures for keeping track of which tests have passed or failed.
 The result is an executable file, {\tt xautotest}, which can be run to
-validate the functional correctess of \liquid\ on your target platform.
+validate the functional correctness of \liquid\ on your target platform.
 
 \subsubsection{Macros}
 Each module contains a number of autotest scripts which use pre-processor
-macros for asserting the functional correctness of the souce code.
+macros for asserting the functional correctness of the source code.
 
 \begin{description}
 \item[{\tt CONTEND\_EQUALITY}$(x,y)$] asserts that $x==y$ and fails if
@@ -215,7 +215,7 @@ true.
 byte values in the arrays referenced by $ptrA$ and $ptrB$ are equal.
 \item[{\tt AUTOTEST\_PASS}$()$] passes unconditionally.
 \item[{\tt AUTOTEST\_FAIL}$(string)$] prints $string$ and fails
-unconditionaly.
+unconditionally.
 \item[{\tt AUTOTEST\_WARN}$(string)$] simply prints a warning.
 The autotest program will keep track of which tests elicit warnings and add
 them to the list of unstable tests.
@@ -343,7 +343,7 @@ scratch:
 %
 \begin{itemize}
 \item {\tt pdflatex}, the \LaTeX engine responsible for making this
-      document with all those pretty equtions
+      document with all those pretty equations
 \item {\tt bibtex}, the package for creating the bibliography
 %\item {\tt tikz}, the professional...
 \item {\tt gnuplot}, a program for plotting graphics

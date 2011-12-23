@@ -667,12 +667,12 @@ Also known as quadrature amplitude-shift keying, QAM modems encode data using
 both the in-phase and quadrature components of a signal amplitude.
 In fact, the symbol is split into independent in-phase and quadrature symbols
 which are encoded separately as {\tt LIQUID\_MODEM\_ASK} symbols.
-Gray encoding is applited to both the I and Q symbols separately to help
+Gray encoding is applied to both the I and Q symbols separately to help
 ensure minimal bit changes between adjacent samples across both in-phase and
 quadrature-phase dimensions.
 This is made evident in Figure~\ref{fig:modem:qam:64} where one can see that
 the first three bits of the symbol encode the in-phase component of the
-sample, and the last thre bits encode the quadrature component of the sample.
+sample, and the last three bits encode the quadrature component of the sample.
 %
 We may formally describe the encoded sample is
 %
@@ -767,7 +767,7 @@ All of the previous modulation schemes have the benefit of being very
 fast to decode, and do not necessitate searching over the entire
 constellation space to find the nearest symbol.
 %
-An example interface for generating a pair of arbitary modems is listed
+An example interface for generating a pair of arbitrary modems is listed
 below.
 %
 \input{listings/modem_arb.example.c.tex}
@@ -816,13 +816,13 @@ including optimal QAM constellations, and some other fun
 Figure~\ref{fig:modem:optqam} shows the constellation maps for the
 optimal QAM schemes.
 Notice that the constellations approximate a circle with each point
-falling on the lattice of equalateral triangles.
+falling on the lattice of equilateral triangles.
 Furthermore, adjacent constellation points differ by typically only a
 single bit to reduce the resulting bit error rate at the output of the
 demodulator.
 These constellations marginally out-perform regular square QAM
 (see Figures~\ref{fig:modem:M32} and \ref{fig:modem:M128})
-at the expense of a significaly increased computational complexity.
+at the expense of a significantly increased computational complexity.
 
 %
 %-------------------- FIGURE: ARB MODEM --------------------
@@ -1140,7 +1140,7 @@ Unlike hard demodulation which seeks the most likely transmitted
 {\em symbol} for a given received sample,
 the goal of soft demodulation is to derive a probability metric for each
 {\em bit} for the received sample.
-When using the output of the demodulator in conjuction with forward
+When using the output of the demodulator in conjunction with forward
 error-correction coding, the soft bit information can improve the error
 detection and correction capabilities of most decoders,
 usually by about 1.5~dB.
@@ -1403,7 +1403,7 @@ information to improve the probability of decoding a packet
 \subsubsection{Error Vector Magnitude}
 \label{module:modem:digital:evm}
 The error vector magnitude (EVM) of a demodulated symbol is simply the
-average maginitude of the error vector between the received sample
+average magnitude of the error vector between the received sample
 before demodulation and the expected transmitted symbol, viz.
 %
 \begin{equation}
