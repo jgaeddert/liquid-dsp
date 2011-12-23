@@ -23,7 +23,7 @@
 # Process with autoconf to generate configure script
 #
 
-AC_INIT([liquid-dsp],[1.0.0],[liquid@vt.edu])
+AC_INIT([liquid-dsp],[1.1.0],[liquid@vt.edu])
 AC_CONFIG_SRCDIR([libliquid.c])
 
 # Specify 'C' language
