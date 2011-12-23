@@ -8,7 +8,7 @@
 
 int main()
 {
-    printf("%s\n", LIQUID_VERSION);
+    printf("\\newcommand{\\liquidversion}{%s}\n", LIQUID_VERSION);
     return 0;
 }
 
