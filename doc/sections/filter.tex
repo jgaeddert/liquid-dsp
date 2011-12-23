@@ -1165,7 +1165,7 @@ Specifically, the interface is
     liquid_iirdes(_ftype, _btype, _format, _n, _fc, _f0, _Ap, _As, *_B, *_A);
 \end{Verbatim}
 %
-\begin{itemize}
+\begin{description}
 \item[{\tt \_ftype}]
     is the analog filter prototype, e.g. {\tt LIQUID\_IIRDES\_BUTTER}
 \item[{\tt \_btype}]
@@ -1206,7 +1206,7 @@ Specifically, the interface is
     define $L$ as $(N-r)/2$.
     The sizes of {\tt \_B} and {\tt \_A} for the second-order sections
     case are each $3(L+r)$.
-\end{itemize}
+\end{description}
 %
 As an example, the following example designs a $5^{th}$-order elliptic
 band-pass filter with a bandwidth
