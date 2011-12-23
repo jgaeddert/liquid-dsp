@@ -42,7 +42,11 @@ doc/highlight.sty
 doc/listings/*.tex
 doc/html/*
 doc/figures.gen/*
-doc/figures.pgf/*
+doc/figures.pgf/*.aux
+doc/figures.pgf/*.dat
+doc/figures.pgf/*.log
+doc/figures.pgf/*.pdf
+doc/figures.pgf/*.png
 doc/autom4te.cache
 doc/config.status
 doc/config.log
