@@ -108,8 +108,8 @@ void liquid_firdes_gmskrx(unsigned int _k,
 
     // internal options
     float beta = BT;                // prototype filter cut-off
-    float delta = 1e-2f;            // filter design correction factor
-    liquid_nyquist_type prototype = LIQUID_NYQUIST_RCOS;    // Nyquist prototype
+    float delta = 1e-3f;            // filter design correction factor
+    liquid_nyquist_type prototype = LIQUID_NYQUIST_KAISER;    // Nyquist prototype
 
     unsigned int i;
 

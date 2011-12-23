@@ -616,17 +616,24 @@ filters are indistinguishable.
 \label{module:filter:firdes_gmsk}
 
 %
-Transmit filter:
-\[
+The transmit filter for a GMSK modem with a bandwidth-time product $BT$
+(equivalent to the excess bandwidth factor $\beta$) is defined as
+\begin{equation}
+\label{eqn:filter:gmsktx}
     h_t(t) = Q\left( \frac{2 \pi BT}{\sqrt{\ln(2)}} \left(t-\frac{1}{2}\right) \right) -
              Q\left( \frac{2 \pi BT}{\sqrt{\ln(2)}} \left(t+\frac{1}{2}\right) \right)
-\]
+\end{equation}
 %
 where $Q(z)=\frac{1}{2}\left(1 - \erf(z/\sqrt{2})\right)$
-is the ... (see \S\ref{module:math:transcendentals:Q}).
+(see \S\ref{module:math:transcendentals:Q}).
 %
-Receive filter: ...
+The transmit filter imparts inter-symbol interference, leaving the
+receiver to compensate.
+\liquid\ implements a GMSK receive filter by minimizing the inter-symbol
+interference of the composite, and as such
+there is no closed-form solution for the GMSK receive filter.
 %
+% FIGURE : GMSK FILTERS
 \begin{figure}
 \centering
 \subfigure[time] {
@@ -640,7 +647,14 @@ Receive filter: ...
 \label{fig:module:filter:firdes_gmskrx}
 \end{figure}
 %
-...Figure~\ref{fig:module:filter:firdes_gmskrx}
+Figure~\ref{fig:module:filter:firdes_gmskrx} depicts the transmit,
+receive, and composite filters in both the time and frequency domains.
+Notice that the frequency response of the receive filter has a gain in
+the pass-band (around $f=0.13$) to compensate for the ISI imparted by
+the transmit filter.
+Consequently the composite filter has nearly zero ISI,
+as can be seen by its flat pass-band response
+and transition through $20\log_{10}\left(\frac{1}{2}\right)$.
 
 \subsubsection{{\tt firdespm} (Parks-McClellan algorithm)}
 \label{module:filter:firdespm}
@@ -1151,7 +1165,7 @@ Specifically, the interface is
     liquid_iirdes(_ftype, _btype, _format, _n, _fc, _f0, _Ap, _As, *_B, *_A);
 \end{Verbatim}
 %
-\begin{itemize}
+\begin{description}
 \item[{\tt \_ftype}]
     is the analog filter prototype, e.g. {\tt LIQUID\_IIRDES\_BUTTER}
 \item[{\tt \_btype}]
@@ -1192,7 +1206,7 @@ Specifically, the interface is
     define $L$ as $(N-r)/2$.
     The sizes of {\tt \_B} and {\tt \_A} for the second-order sections
     case are each $3(L+r)$.
-\end{itemize}
+\end{description}
 %
 As an example, the following example designs a $5^{th}$-order elliptic
 band-pass filter with a bandwidth
@@ -1526,10 +1540,10 @@ reasons.
 \begin{figure}
 \centering
 \subfigure[spectrum] {
-  \includegraphics[trim = 0mm 5mm 0mm 5mm, clip, width=0.55\textwidth]{figures.gen/filter_butter_psd}
-}
+  \includegraphics[trim = 0mm 9mm 0mm 10mm, clip, width=0.545\textwidth]{figures.gen/filter_butter_psd}
+  }
 \subfigure[zeros, poles] {
-  \includegraphics[trim = 15mm 0mm 15mm 0mm, clip, width=0.37\textwidth]{figures.gen/filter_butter_zpk}
+  \includegraphics[trim = 15mm 0mm 15mm 0mm, clip, width=0.290\textwidth]{figures.gen/filter_butter_zpk}
 }
 \caption{{\tt butterf} (Butterworth filter design)}
 \label{fig:module:filter:butter}
@@ -1539,10 +1553,10 @@ reasons.
 \begin{figure}
 \centering
 \subfigure[spectrum] {
-  \includegraphics[trim = 0mm 5mm 0mm 5mm, clip, width=0.55\textwidth]{figures.gen/filter_cheby1_psd}
+  \includegraphics[trim = 0mm 9mm 0mm 10mm, clip, width=0.545\textwidth]{figures.gen/filter_cheby1_psd}
 }
 \subfigure[zeros, poles] {
-  \includegraphics[trim = 15mm 0mm 15mm 0mm, clip, width=0.37\textwidth]{figures.gen/filter_cheby1_zpk}
+  \includegraphics[trim = 15mm 0mm 15mm 0mm, clip, width=0.290\textwidth]{figures.gen/filter_cheby1_zpk}
 }
 \caption{{\tt cheby1f} (Chebyshev type-I filter design)}
 \label{fig:module:filter:cheby1}
@@ -1552,10 +1566,10 @@ reasons.
 \begin{figure}
 \centering
 \subfigure[spectrum] {
-  \includegraphics[trim = 0mm 5mm 0mm 5mm, clip, width=0.55\textwidth]{figures.gen/filter_cheby2_psd}
+  \includegraphics[trim = 0mm 9mm 0mm 10mm, clip, width=0.545\textwidth]{figures.gen/filter_cheby2_psd}
 }
 \subfigure[zeros, poles] {
-  \includegraphics[trim = 15mm 0mm 15mm 0mm, clip, width=0.37\textwidth]{figures.gen/filter_cheby2_zpk}
+  \includegraphics[trim = 15mm 0mm 15mm 0mm, clip, width=0.290\textwidth]{figures.gen/filter_cheby2_zpk}
 }
 \caption{{\tt cheby2f} (Chebyshev type-II filter design)}
 \label{fig:module:filter:cheby2}
@@ -1565,10 +1579,10 @@ reasons.
 \begin{figure}
 \centering
 \subfigure[spectrum] {
-  \includegraphics[trim = 0mm 5mm 0mm 5mm, clip, width=0.55\textwidth]{figures.gen/filter_ellip_psd}
+  \includegraphics[trim = 0mm 9mm 0mm 10mm, clip, width=0.545\textwidth]{figures.gen/filter_ellip_psd}
 }
 \subfigure[zeros, poles] {
-  \includegraphics[trim = 15mm 0mm 15mm 0mm, clip, width=0.37\textwidth]{figures.gen/filter_ellip_zpk}
+  \includegraphics[trim = 15mm 0mm 15mm 0mm, clip, width=0.290\textwidth]{figures.gen/filter_ellip_zpk}
 }
 \caption{{\tt ellipf} (Elliptic filter design)}
 \label{fig:module:filter:ellip}
@@ -1578,10 +1592,10 @@ reasons.
 \begin{figure}
 \centering
 \subfigure[spectrum] {
-  \includegraphics[trim = 0mm 5mm 0mm 5mm, clip, width=0.55\textwidth]{figures.gen/filter_bessel_psd}
+  \includegraphics[trim = 0mm 9mm 0mm 10mm, clip, width=0.545\textwidth]{figures.gen/filter_bessel_psd}
 }
 \subfigure[zeros, poles] {
-  \includegraphics[trim = 15mm 0mm 15mm 0mm, clip, width=0.37\textwidth]{figures.gen/filter_bessel_zpk}
+  \includegraphics[trim = 15mm 0mm 15mm 0mm, clip, width=0.290\textwidth]{figures.gen/filter_bessel_zpk}
 }
 \caption{{\tt besself} (Bessel filter design)}
 \label{fig:module:filter:bessel}
@@ -1674,12 +1688,17 @@ efficiently realize any arbitrary resampling rate desired.
 \subfigure[interpolation] {
   \includegraphics[trim = 0mm 0mm 0mm 0mm, clip, width=14cm]{figures.pgf/msresamp_interp_diagram}
 }
-\caption{Multi-stage resampler block diagram}
+\caption{{\tt msresamp} (multi-stage resampler) block diagram showing
+         both interpolation and decimation modes}
 \label{fig:module:filter:msresamp_diagram}
 \end{figure}
 %
 Figure~\ref{fig:module:filter:msresamp_diagram} depicts how the
-multi-stage resamper operates for both interpolation and decimation.
+multi-stage resamper operates for both interpolation and decimation
+modes.
+The half-band resmplers efficiently handle the majority of the work,
+leaving the arbitrary resampler to operate at the lowest sample rate
+possible.
 
 Listed below is the full interface to the {\tt msresamp} family of
 objects.

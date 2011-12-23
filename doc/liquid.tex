@@ -129,6 +129,9 @@
 \newcommand{\Sl}{\ensuremath{\mathcal{S}_1}}     % ofdmframe: long sequence
 \newcommand{\liquid}{{\it liquid}}
 \newcommand{\liquidfpm}{{\it liquid-fpm}}
+% include auto-generated version (LIQUID_VERSION from include/liquid.h),
+% defines: \newcommand{\liquidversion}{X.Y.Z}
+\input{latex.gen/liquid_version.tex}
 
 %--------- COUNTERS -------------------
 \setcounter{MaxMatrixCols}{20}  % maximum matrix columns
@@ -168,7 +171,7 @@ software-defined radio digital signal processing library
 \vfill
 
 \noindent
-User's Manual for Version 1.0.0
+User's Manual for Version \liquidversion
 
 \vfill
 
