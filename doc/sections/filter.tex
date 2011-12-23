@@ -616,17 +616,24 @@ filters are indistinguishable.
 \label{module:filter:firdes_gmsk}
 
 %
-Transmit filter:
-\[
+The transmit filter for a GMSK modem with a bandwidth-time product $BT$
+(equivalent to the excess bandwidth factor $\beta$) is defined as
+\begin{equation}
+\label{eqn:filter:gmsktx}
     h_t(t) = Q\left( \frac{2 \pi BT}{\sqrt{\ln(2)}} \left(t-\frac{1}{2}\right) \right) -
              Q\left( \frac{2 \pi BT}{\sqrt{\ln(2)}} \left(t+\frac{1}{2}\right) \right)
-\]
+\end{equation}
 %
 where $Q(z)=\frac{1}{2}\left(1 - \erf(z/\sqrt{2})\right)$
-is the ... (see \S\ref{module:math:transcendentals:Q}).
+(see \S\ref{module:math:transcendentals:Q}).
 %
-Receive filter: ...
+The transmit filter imparts inter-symbol interference, leaving the
+receiver to compensate.
+\liquid\ implements a GMSK receive filter by minimizing the inter-symbol
+interference of the composite, and as such
+there is no closed-form solution for the GMSK receive filter.
 %
+% FIGURE : GMSK FILTERS
 \begin{figure}
 \centering
 \subfigure[time] {
@@ -640,7 +647,14 @@ Receive filter: ...
 \label{fig:module:filter:firdes_gmskrx}
 \end{figure}
 %
-...Figure~\ref{fig:module:filter:firdes_gmskrx}
+Figure~\ref{fig:module:filter:firdes_gmskrx} depicts the transmit,
+receive, and composite filters in both the time and frequency domains.
+Notice that the frequency response of the receive filter has a gain in
+the pass-band (around $f=0.13$) to compensate for the ISI imparted by
+the transmit filter.
+Consequently the composite filter has nearly zero ISI,
+as can be seen by its flat pass-band response
+and transition through $20\log_{10}\left(\frac{1}{2}\right)$.
 
 \subsubsection{{\tt firdespm} (Parks-McClellan algorithm)}
 \label{module:filter:firdespm}
