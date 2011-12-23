@@ -227,7 +227,8 @@ int main(int argc, char*argv[]) {
     fprintf(fid,"set terminal postscript eps enhanced color solid rounded\n");
     fprintf(fid,"set xrange [0:0.5];\n");
     fprintf(fid,"set yrange [-80:5]\n");
-    fprintf(fid,"set size ratio 0.6\n");
+    fprintf(fid,"set size ratio 0.5\n");
+    fprintf(fid,"set size 0.8\n");
     //fprintf(fid,"set title 'filter design'\n");
     fprintf(fid,"set xlabel 'Normalized Frequency'\n");
     fprintf(fid,"set ylabel 'Power Spectral Density [dB]'\n");
@@ -263,10 +264,11 @@ int main(int argc, char*argv[]) {
     fprintf(fid,"set terminal postscript eps enhanced color solid rounded\n");
     fprintf(fid,"set xrange [-1.05:1.05]\n");
     fprintf(fid,"set yrange [-1.05:1.05]\n");
-    fprintf(fid,"set size square\n");
+    fprintf(fid,"set size ratio 1\n");
+    fprintf(fid,"set size 0.8\n");
     //fprintf(fid,"set title \"%s\"\n", figure_title);
-    fprintf(fid,"set xlabel 'in-phase'\n");
-    fprintf(fid,"set ylabel 'quadrature-phase'\n");
+    //fprintf(fid,"set xlabel 'in-phase'\n");
+    //fprintf(fid,"set ylabel 'quadrature-phase'\n");
     //fprintf(fid,"set nokey # disable legned\n");
     fprintf(fid,"set grid polar\n");
     fprintf(fid,"set grid linetype 1 linecolor rgb '%s' linewidth 1\n",LIQUID_DOC_COLOR_GRAY);
