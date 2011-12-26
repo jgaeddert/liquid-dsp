@@ -78,7 +78,7 @@ void framesyncstats_print(framesyncstats_s * _stats)
     printf("    carrier offset      :   %12.8f Fs\n", _stats->cfo);
     printf("    num symbols         :   %u\n", _stats->num_framesyms);
     printf("    mod scheme          :   %s (%u bits/symbol)\n",
-            modulation_scheme_str[_stats->mod_scheme][0],
+            modulation_types[_stats->mod_scheme].name,
             _stats->mod_bps);
     printf("    validity check      :   %s\n", crc_scheme_str[_stats->check][0]);
     printf("    fec (inner)         :   %s\n", fec_scheme_str[_stats->fec0][0]);

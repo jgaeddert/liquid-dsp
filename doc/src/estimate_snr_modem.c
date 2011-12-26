@@ -149,7 +149,7 @@ int main(int argc, char*argv[])
 
         // estimate SNR for a specific PER
         printf("%u-%s // %s // %s (%s: %e)\n", 1<<opts.bps,
-                                               modulation_scheme_str[opts.ms][0],
+                                               modulation_types[opts.ms].name,
                                                fec_scheme_str[opts.fec0][0],
                                                fec_scheme_str[opts.fec1][0],
                                                which_ber_per == ESTIMATE_SNR_BER ? "BER" : "PER",

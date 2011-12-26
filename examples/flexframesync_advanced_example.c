@@ -74,7 +74,6 @@ int main(int argc, char *argv[]) {
     float beta = 0.7f;      // filter excess bandwidth
     float noise_floor = -30.0f;
     modulation_scheme mod_scheme = LIQUID_MODEM_QPSK;
-    unsigned int bps = 2;
     unsigned int payload_len = 64;
     unsigned int num_frames = 3;
     unsigned int hc_len = 1;        // multi-path channel taps
@@ -94,7 +93,7 @@ int main(int argc, char *argv[]) {
         case 'f': payload_len = atol(optarg);   break;
         case 'n': num_frames = atoi(optarg);    break;
         case 'm':
-            liquid_getopt_str2modbps(optarg, &mod_scheme, &bps);
+            mod_scheme = liquid_getopt_str2mod(optarg);
             if (mod_scheme == LIQUID_MODEM_UNKNOWN) {
                 fprintf(stderr,"error: %s, unknown/unsupported mod. scheme: %s\n", argv[0], optarg);
                 exit(-1);
@@ -115,7 +114,6 @@ int main(int argc, char *argv[]) {
     fgprops.fec0        = LIQUID_FEC_NONE;
     fgprops.fec1        = LIQUID_FEC_NONE;
     fgprops.mod_scheme  = mod_scheme;
-    fgprops.mod_bps     = bps;
     fgprops.rampdn_len  = 64;
     flexframegen fg = flexframegen_create(&fgprops);
     if (verbose)

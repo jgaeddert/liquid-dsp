@@ -69,7 +69,6 @@ void liquid_doc_freqz(float * _b,
 // simulate packet error rate options
 typedef struct {
     modulation_scheme ms;           // modulation scheme
-    unsigned int bps;               // modulation depth (bits/symbol)
     fec_scheme fec0;                // FEC codec (inner)
     fec_scheme fec1;                // FEC codec (outer)
     int interleaving;               // apply interleaving?

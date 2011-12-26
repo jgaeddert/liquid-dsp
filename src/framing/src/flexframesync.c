@@ -164,7 +164,7 @@ flexframesync flexframesync_create(framesyncprops_s * _props,
         flexframesync_setprops(fs, &framesyncprops_default);
 
     // header objects
-    fs->mod_header = modem_create(LIQUID_MODEM_BPSK, 1);
+    fs->mod_header = modem_create(LIQUID_MODEM_BPSK);
     fs->p_header = packetizer_create(19, LIQUID_CRC_16, LIQUID_FEC_HAMMING128, LIQUID_FEC_NONE);
     assert(packetizer_get_enc_msg_len(fs->p_header)==32);
 
@@ -203,7 +203,7 @@ flexframesync flexframesync_create(framesyncprops_s * _props,
     fs->mfdecim = symsync_crcf_create_rnyquist(LIQUID_RNYQUIST_RRC, 2, m, beta, npfb);
 
     // 
-    fs->mod_preamble = modem_create(LIQUID_MODEM_BPSK, 1);
+    fs->mod_preamble = modem_create(LIQUID_MODEM_BPSK);
 
     // equalizer
     fs->eq_len = 1 + fs->props.eq_len;
@@ -219,8 +219,7 @@ flexframesync flexframesync_create(framesyncprops_s * _props,
 
     // flexible frame properties (default values to be over-written
     // when frame header is received and decoded)
-    fs->ms_payload  = LIQUID_MODEM_PSK;
-    fs->bps_payload = 1;
+    fs->ms_payload  = LIQUID_MODEM_BPSK;
     fs->payload_len = 0;
     fs->check       = LIQUID_CRC_NONE;
     fs->fec0        = LIQUID_FEC_NONE;
@@ -233,7 +232,7 @@ flexframesync flexframesync_create(framesyncprops_s * _props,
     fs->num_symbols_collected = 0;
 
     // payload buffers, objects
-    fs->mod_payload = modem_create(fs->ms_payload, fs->bps_payload);
+    fs->mod_payload = modem_create(fs->ms_payload);
     fs->p_payload = packetizer_create(0, LIQUID_CRC_NONE, LIQUID_FEC_NONE, LIQUID_FEC_NONE);
     fs->payload_samples = NULL;
     fs->payload_sym = NULL;
@@ -376,7 +375,7 @@ void flexframesync_print(flexframesync _fs)
     printf("    payload len, coded  :   %u bytes\n", _fs->payload_enc_msg_len);
     printf("    modulation scheme   :   %u-%s\n",
         1<<(_fs->bps_payload),
-        modulation_scheme_str[_fs->ms_payload][0]);
+        modulation_types[_fs->ms_payload].name);
     printf("    num payload symbols :   %u\n", _fs->num_payload_symbols);
 }
 
@@ -960,10 +959,12 @@ void flexframesync_decode_header(flexframesync _fs)
     }
 
     // strip off modulation scheme/depth
-    //  mod. scheme : most-significant five bits
-    //  mod. depth  : least-significant three bits (+1)
-    unsigned int mod_scheme = ( _fs->header[16] >> 3) & 0x1f;
-    unsigned int mod_depth  = ((_fs->header[16]     ) & 0x07)+1;
+    unsigned int mod_scheme = _fs->header[16];
+    if (mod_scheme == 0 || mod_scheme >= LIQUID_MODEM_NUM_SCHEMES) {
+        fprintf(stderr,"warning: flexframesync_decode_header(), invalid modulation scheme\n");
+        _fs->header_valid = 0;
+        return;
+    }
 
     // strip off payload length
     unsigned int payload_len = (_fs->header[14] << 8) | (_fs->header[15]);
@@ -972,19 +973,18 @@ void flexframesync_decode_header(flexframesync _fs)
     // configure payload receiver
     if (_fs->header_valid) {
         // configure modem
-        if (mod_scheme != _fs->ms_payload || mod_depth != _fs->bps_payload) {
+        if (mod_scheme != _fs->ms_payload) {
 #if DEBUG_FLEXFRAMESYNC_PRINT
             printf("flexframesync : configuring payload modem : %u-%s\n",
                     1<<mod_depth,
-                    modulation_scheme_str[mod_scheme][0]);
+                    modulation_types[mod_scheme].name);
 #endif
             // set new modem properties
             _fs->ms_payload = mod_scheme;
-            _fs->bps_payload = mod_depth;
+            _fs->bps_payload = modulation_types[mod_scheme].bps;
 
-            // recreate modem (destroy/create)
-            modem_destroy(_fs->mod_payload);
-            _fs->mod_payload = modem_create(_fs->ms_payload, _fs->bps_payload);
+            // recreate modem
+            _fs->mod_payload = modem_recreate(_fs->mod_payload, _fs->ms_payload);
         }
 
 #if DEBUG_FLEXFRAMESYNC_PRINT
@@ -1019,7 +1019,7 @@ void flexframesync_decode_header(flexframesync _fs)
     printf("    check       : %s\n", crc_scheme_str[check][1]);
     printf("    fec (inner) : %s\n", fec_scheme_str[fec0][1]);
     printf("    fec (outer) : %s\n", fec_scheme_str[fec1][1]);
-    printf("    mod scheme  : %u-%s\n", 1<<mod_depth, modulation_scheme_str[mod_scheme][0]);
+    printf("    mod scheme  : %u-%s\n", 1<<mod_depth, modulation_types[mod_scheme].name);
     printf("    payload len : %u\n", payload_len);
     printf("    num symbols : %u\n", _fs->num_payload_symbols);
 

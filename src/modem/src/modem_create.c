@@ -34,47 +34,81 @@
 #include "liquid.internal.h"
 
 // create digital modem of a specific scheme and bits/symbol
-modem modem_create(modulation_scheme _scheme,
-                   unsigned int _bits_per_symbol)
+modem modem_create(modulation_scheme _scheme)
 {
-    if (_bits_per_symbol < 1 ) {
-        fprintf(stderr,"error: modem_create(), modem must have at least 1 bit/symbol\n");
-        exit(1);
-    } else if (_bits_per_symbol > MAX_MOD_BITS_PER_SYMBOL) {
-        fprintf(stderr,"error: modem_create(), maximum number of bits/symbol (%u) exceeded\n",
-                MAX_MOD_BITS_PER_SYMBOL);
-        exit(1);
-    }
-
     switch (_scheme) {
-    case LIQUID_MODEM_PSK:      return modem_create_psk(_bits_per_symbol);
-    case LIQUID_MODEM_DPSK:     return modem_create_dpsk(_bits_per_symbol);
-    case LIQUID_MODEM_ASK:      return modem_create_ask(_bits_per_symbol);
-    case LIQUID_MODEM_QAM:      return modem_create_qam(_bits_per_symbol);
-    case LIQUID_MODEM_APSK:     return modem_create_apsk(_bits_per_symbol);
+    
+    // Phase-shift keying (PSK)
+    case LIQUID_MODEM_PSK2:     return modem_create_psk(1);
+    case LIQUID_MODEM_PSK4:     return modem_create_psk(2);
+    case LIQUID_MODEM_PSK8:     return modem_create_psk(3);
+    case LIQUID_MODEM_PSK16:    return modem_create_psk(4);
+    case LIQUID_MODEM_PSK32:    return modem_create_psk(5);
+    case LIQUID_MODEM_PSK64:    return modem_create_psk(6);
+    case LIQUID_MODEM_PSK128:   return modem_create_psk(7);
+    case LIQUID_MODEM_PSK256:   return modem_create_psk(8);
 
-    // arbitrary modem definitions
-    case LIQUID_MODEM_ARB:      return modem_create_arb(_bits_per_symbol);
+    // Differential phase-shift keying (DPSK)
+    case LIQUID_MODEM_DPSK2:    return modem_create_dpsk(1);
+    case LIQUID_MODEM_DPSK4:    return modem_create_dpsk(2);
+    case LIQUID_MODEM_DPSK8:    return modem_create_dpsk(3);
+    case LIQUID_MODEM_DPSK16:   return modem_create_dpsk(4);
+    case LIQUID_MODEM_DPSK32:   return modem_create_dpsk(5);
+    case LIQUID_MODEM_DPSK64:   return modem_create_dpsk(6);
+    case LIQUID_MODEM_DPSK128:  return modem_create_dpsk(7);
+    case LIQUID_MODEM_DPSK256:  return modem_create_dpsk(8);
+
+    // amplitude-shift keying (ASK)
+    case LIQUID_MODEM_ASK2:     return modem_create_ask(1);
+    case LIQUID_MODEM_ASK4:     return modem_create_ask(2);
+    case LIQUID_MODEM_ASK8:     return modem_create_ask(3);
+    case LIQUID_MODEM_ASK16:    return modem_create_ask(4);
+    case LIQUID_MODEM_ASK32:    return modem_create_ask(5);
+    case LIQUID_MODEM_ASK64:    return modem_create_ask(6);
+    case LIQUID_MODEM_ASK128:   return modem_create_ask(7);
+    case LIQUID_MODEM_ASK256:   return modem_create_ask(8);
+
+    // rectangular quadrature amplitude-shift keying (QAM)
+    case LIQUID_MODEM_QAM4:     return modem_create_qam(2);
+    case LIQUID_MODEM_QAM8:     return modem_create_qam(3);
+    case LIQUID_MODEM_QAM16:    return modem_create_qam(4);
+    case LIQUID_MODEM_QAM32:    return modem_create_qam(5);
+    case LIQUID_MODEM_QAM64:    return modem_create_qam(6);
+    case LIQUID_MODEM_QAM128:   return modem_create_qam(7);
+    case LIQUID_MODEM_QAM256:   return modem_create_qam(8);
+
+    // amplitude phase-shift keying (APSK)
+    case LIQUID_MODEM_APSK4:    return modem_create_apsk(2);
+    case LIQUID_MODEM_APSK8:    return modem_create_apsk(3);
+    case LIQUID_MODEM_APSK16:   return modem_create_apsk(4);
+    case LIQUID_MODEM_APSK32:   return modem_create_apsk(5);
+    case LIQUID_MODEM_APSK64:   return modem_create_apsk(6);
+    case LIQUID_MODEM_APSK128:  return modem_create_apsk(7);
+    case LIQUID_MODEM_APSK256:  return modem_create_apsk(8);
 
     // specific modems
-    case LIQUID_MODEM_BPSK:     return modem_create_bpsk();
-    case LIQUID_MODEM_QPSK:     return modem_create_qpsk();
-    case LIQUID_MODEM_OOK:      return modem_create_ook();
-    case LIQUID_MODEM_SQAM32:   return modem_create_sqam32();
-    case LIQUID_MODEM_SQAM128:  return modem_create_sqam128();
-
-    // arbitrary modems
-    case LIQUID_MODEM_V29:      return modem_create_V29();
-    case LIQUID_MODEM_ARB16OPT: return modem_create_arb16opt();
-    case LIQUID_MODEM_ARB32OPT: return modem_create_arb32opt();
-    case LIQUID_MODEM_ARB64OPT: return modem_create_arb64opt();
+    case LIQUID_MODEM_BPSK:      return modem_create_bpsk();
+    case LIQUID_MODEM_QPSK:      return modem_create_qpsk();
+    case LIQUID_MODEM_OOK:       return modem_create_ook();
+    case LIQUID_MODEM_SQAM32:    return modem_create_sqam32();
+    case LIQUID_MODEM_SQAM128:   return modem_create_sqam128();
+    case LIQUID_MODEM_V29:       return modem_create_V29();
+    case LIQUID_MODEM_ARB16OPT:  return modem_create_arb16opt();
+    case LIQUID_MODEM_ARB32OPT:  return modem_create_arb32opt();
+    case LIQUID_MODEM_ARB64OPT:  return modem_create_arb64opt();
     case LIQUID_MODEM_ARB128OPT: return modem_create_arb128opt();
     case LIQUID_MODEM_ARB256OPT: return modem_create_arb256opt();
-    case LIQUID_MODEM_ARB64VT:  return modem_create_arb64vt();
+    case LIQUID_MODEM_ARB64VT:   return modem_create_arb64vt();
+    
+    // arbitrary modem
+    case LIQUID_MODEM_ARB:
+        fprintf(stderr,"error: modem_create(), cannot create arbitrary modem (LIQUID_MODEM_ARB) without specifying constellation\n");
+        exit(1);
+
+    // unknown modulation scheme
     default:
-        fprintf(stderr,"error: modem_create(), unknown/unsupported modulation scheme : %u (%u b/s)\n",
-                _scheme, _bits_per_symbol);
-        exit(-1);
+        fprintf(stderr,"error: modem_create(), unknown/unsupported modulation scheme : %u\n", _scheme);
+        exit(1);
     }
 
     // should never get to this point, but adding return statment
@@ -82,25 +116,37 @@ modem modem_create(modulation_scheme _scheme,
     return NULL;
 }
 
-// recreate modulation scheme, re-allocating memory as necessary
-modem modem_recreate(modem _q,
-                     modulation_scheme _scheme,
-                     unsigned int _bits_per_symbol)
+// create arbitrary digital modem object
+modem modem_create_arbitrary(liquid_float_complex * _table,
+                             unsigned int _M)
 {
-    if (_bits_per_symbol < 1 ) {
-        fprintf(stderr,"error: modem_recreate(), modem must have at least 1 bit/symbol\n");
-        exit(1);
-    } else if (_bits_per_symbol > MAX_MOD_BITS_PER_SYMBOL) {
-        fprintf(stderr,"error: modem_recreate(), maximum number of bits/symbol (%u) exceeded\n",
-                MAX_MOD_BITS_PER_SYMBOL);
+    // strip out bits/symbol
+    unsigned int m = liquid_nextpow2(_M);
+    if ( (1<<m) != _M ) {
+        // TODO : eventually support non radix-2 constellation sizes
+        fprintf(stderr,"error: modem_create_arbitrary(), input constellation size must be power of 2\n");
         exit(1);
     }
 
+    // create arbitrary modem object, not initialized
+    modem q = modem_create_arb(m);
+
+    // initialize object from table
+    modem_arb_init(q, _table, _M);
+
+    // return object
+    return q;
+}
+
+// recreate modulation scheme, re-allocating memory as necessary
+modem modem_recreate(modem _q,
+                     modulation_scheme _scheme)
+{
     // TODO : regenerate modem only when truly necessary
-    if (_q->scheme != _scheme || _q->m != _bits_per_symbol) {
+    if (_q->scheme != _scheme) {
         // destroy and re-create modem
         modem_destroy(_q);
-        _q = modem_create(_scheme, _bits_per_symbol);
+        _q = modem_create(_scheme);
     }
 
     // return object
@@ -122,7 +168,7 @@ void modem_destroy(modem _mod)
 void modem_print(modem _mod)
 {
     printf("linear modem:\n");
-    printf("    scheme:         %s\n", modulation_scheme_str[_mod->scheme][0]);
+    printf("    scheme:         %s\n", modulation_types[_mod->scheme].name);
     printf("    bits/symbol:    %u\n", _mod->m);
 }
 
@@ -207,7 +253,6 @@ void modem_init_map(modem _q)
 modem modem_create_ask(unsigned int _bits_per_symbol)
 {
     modem mod = (modem) malloc( sizeof(struct modem_s) );
-    mod->scheme = LIQUID_MODEM_ASK;
 
     modem_init(mod, _bits_per_symbol);
 
@@ -215,17 +260,22 @@ modem modem_create_ask(unsigned int _bits_per_symbol)
     mod->M_i = mod->M;
 
     switch (mod->M) {
-    case 2:     mod->alpha = ASK2_ALPHA;     break;
-    case 4:     mod->alpha = ASK4_ALPHA;     break;
-    case 8:     mod->alpha = ASK8_ALPHA;     break;
-    case 16:    mod->alpha = ASK16_ALPHA;    break;
-    case 32:    mod->alpha = ASK32_ALPHA;    break;
-    case 64:    mod->alpha = ASK64_ALPHA;    break;
-    case 128:   mod->alpha = ASK128_ALPHA;   break;
-    case 256:   mod->alpha = ASK256_ALPHA;   break;
+    case 2:     mod->alpha = ASK2_ALPHA;   mod->scheme = LIQUID_MODEM_ASK2;   break;
+    case 4:     mod->alpha = ASK4_ALPHA;   mod->scheme = LIQUID_MODEM_ASK4;   break;
+    case 8:     mod->alpha = ASK8_ALPHA;   mod->scheme = LIQUID_MODEM_ASK8;   break;
+    case 16:    mod->alpha = ASK16_ALPHA;  mod->scheme = LIQUID_MODEM_ASK16;  break;
+    case 32:    mod->alpha = ASK32_ALPHA;  mod->scheme = LIQUID_MODEM_ASK32;  break;
+    case 64:    mod->alpha = ASK64_ALPHA;  mod->scheme = LIQUID_MODEM_ASK64;  break;
+    case 128:   mod->alpha = ASK128_ALPHA; mod->scheme = LIQUID_MODEM_ASK128; break;
+    case 256:   mod->alpha = ASK256_ALPHA; mod->scheme = LIQUID_MODEM_ASK256; break;
     default:
+#if 0
         // calculate alpha dynamically
         mod->alpha = expf(-0.70735 + 0.63653*mod->m);
+#else
+        fprintf(stderr,"error: modem_create_ask(), cannot support ASK with m > 8\n");
+        exit(1);
+#endif
     }
 
     unsigned int k;
@@ -259,7 +309,6 @@ modem modem_create_qam(unsigned int _bits_per_symbol)
     }
 
     modem mod = (modem) malloc( sizeof(struct modem_s) );
-    mod->scheme = LIQUID_MODEM_QAM;
 
     modem_init(mod, _bits_per_symbol);
 
@@ -280,13 +329,14 @@ modem modem_create_qam(unsigned int _bits_per_symbol)
     assert(mod->M_i * mod->M_q == mod->M);
 
     switch (mod->M) {
-    case 4:     mod->alpha = RQAM4_ALPHA;       break;
-    case 8:     mod->alpha = RQAM8_ALPHA;       break;
-    case 16:    mod->alpha = RQAM16_ALPHA;      break;
-    case 32:    mod->alpha = RQAM32_ALPHA;      break;
-    case 64:    mod->alpha = RQAM64_ALPHA;      break;
-    case 128:   mod->alpha = RQAM128_ALPHA;     break;
-    case 256:   mod->alpha = RQAM256_ALPHA;     break;
+    case 4:     mod->alpha = RQAM4_ALPHA;    mod->scheme = LIQUID_MODEM_QAM4;   break;
+    case 8:     mod->alpha = RQAM8_ALPHA;    mod->scheme = LIQUID_MODEM_QAM8;   break;
+    case 16:    mod->alpha = RQAM16_ALPHA;   mod->scheme = LIQUID_MODEM_QAM16;  break;
+    case 32:    mod->alpha = RQAM32_ALPHA;   mod->scheme = LIQUID_MODEM_QAM32;  break;
+    case 64:    mod->alpha = RQAM64_ALPHA;   mod->scheme = LIQUID_MODEM_QAM64;  break;
+    case 128:   mod->alpha = RQAM128_ALPHA;  mod->scheme = LIQUID_MODEM_QAM128; break;
+    case 256:   mod->alpha = RQAM256_ALPHA;  mod->scheme = LIQUID_MODEM_QAM256; break;
+#if 0
     case 512:   mod->alpha = RQAM512_ALPHA;     break;
     case 1024:  mod->alpha = RQAM1024_ALPHA;    break;
     case 2048:  mod->alpha = RQAM2048_ALPHA;    break;
@@ -295,6 +345,11 @@ modem modem_create_qam(unsigned int _bits_per_symbol)
         // calculate alpha dynamically
         // NOTE: this is only an approximation
         mod->alpha = sqrtf(2.0f / (float)(mod->M) );
+#else
+    default:
+        fprintf(stderr,"error: modem_create_qam(), cannot support QAM with m > 8\n");
+        exit(1);
+#endif
     }
 
     unsigned int k;
@@ -337,7 +392,20 @@ modem modem_create_qam(unsigned int _bits_per_symbol)
 modem modem_create_psk(unsigned int _bits_per_symbol)
 {
     modem mod = (modem) malloc( sizeof(struct modem_s) );
-    mod->scheme = LIQUID_MODEM_PSK;
+
+    switch (_bits_per_symbol) {
+    case 1: mod->scheme = LIQUID_MODEM_PSK2;   break;
+    case 2: mod->scheme = LIQUID_MODEM_PSK4;   break;
+    case 3: mod->scheme = LIQUID_MODEM_PSK8;   break;
+    case 4: mod->scheme = LIQUID_MODEM_PSK16;  break;
+    case 5: mod->scheme = LIQUID_MODEM_PSK32;  break;
+    case 6: mod->scheme = LIQUID_MODEM_PSK64;  break;
+    case 7: mod->scheme = LIQUID_MODEM_PSK128; break;
+    case 8: mod->scheme = LIQUID_MODEM_PSK256; break;
+    default:
+        fprintf(stderr,"error: modem_create_psk(), cannot support PSK with m > 8\n");
+        exit(1);
+    }
 
     // initialize basic modem structure
     modem_init(mod, _bits_per_symbol);
@@ -461,7 +529,20 @@ modem modem_create_sqam128()
 modem modem_create_dpsk(unsigned int _bits_per_symbol)
 {
     modem mod = (modem) malloc( sizeof(struct modem_s) );
-    mod->scheme = LIQUID_MODEM_DPSK;
+    
+    switch (_bits_per_symbol) {
+    case 1: mod->scheme = LIQUID_MODEM_DPSK2;   break;
+    case 2: mod->scheme = LIQUID_MODEM_DPSK4;   break;
+    case 3: mod->scheme = LIQUID_MODEM_DPSK8;   break;
+    case 4: mod->scheme = LIQUID_MODEM_DPSK16;  break;
+    case 5: mod->scheme = LIQUID_MODEM_DPSK32;  break;
+    case 6: mod->scheme = LIQUID_MODEM_DPSK64;  break;
+    case 7: mod->scheme = LIQUID_MODEM_DPSK128; break;
+    case 8: mod->scheme = LIQUID_MODEM_DPSK256; break;
+    default:
+        fprintf(stderr,"error: modem_create_dpsk(), cannot support DPSK with m > 8\n");
+        exit(1);
+    }
 
     modem_init(mod, _bits_per_symbol);
 
@@ -512,7 +593,7 @@ modem modem_create_apsk(unsigned int _bits_per_symbol)
 modem modem_create_apsk4()
 {
     modem mod = (modem) malloc( sizeof(struct modem_s) );
-    mod->scheme = LIQUID_MODEM_APSK;
+    mod->scheme = LIQUID_MODEM_APSK4;
 
     modem_init(mod, 2);
     
@@ -537,7 +618,7 @@ modem modem_create_apsk4()
 modem modem_create_apsk8()
 {
     modem mod = (modem) malloc( sizeof(struct modem_s) );
-    mod->scheme = LIQUID_MODEM_APSK;
+    mod->scheme = LIQUID_MODEM_APSK8;
 
     modem_init(mod, 3);
     
@@ -562,7 +643,7 @@ modem modem_create_apsk8()
 modem modem_create_apsk16()
 {
     modem mod = (modem) malloc( sizeof(struct modem_s) );
-    mod->scheme = LIQUID_MODEM_APSK;
+    mod->scheme = LIQUID_MODEM_APSK16;
 
     modem_init(mod, 4);
     
@@ -587,7 +668,7 @@ modem modem_create_apsk16()
 modem modem_create_apsk32()
 {
     modem mod = (modem) malloc( sizeof(struct modem_s) );
-    mod->scheme = LIQUID_MODEM_APSK;
+    mod->scheme = LIQUID_MODEM_APSK32;
 
     modem_init(mod, 5);
     
@@ -612,7 +693,7 @@ modem modem_create_apsk32()
 modem modem_create_apsk64()
 {
     modem mod = (modem) malloc( sizeof(struct modem_s) );
-    mod->scheme = LIQUID_MODEM_APSK;
+    mod->scheme = LIQUID_MODEM_APSK64;
 
     modem_init(mod, 6);
     
@@ -637,7 +718,7 @@ modem modem_create_apsk64()
 modem modem_create_apsk128()
 {
     modem mod = (modem) malloc( sizeof(struct modem_s) );
-    mod->scheme = LIQUID_MODEM_APSK;
+    mod->scheme = LIQUID_MODEM_APSK128;
 
     modem_init(mod, 7);
     
@@ -662,7 +743,7 @@ modem modem_create_apsk128()
 modem modem_create_apsk256()
 {
     modem mod = (modem) malloc( sizeof(struct modem_s) );
-    mod->scheme = LIQUID_MODEM_APSK;
+    mod->scheme = LIQUID_MODEM_APSK256;
 
     modem_init(mod, 8);
     

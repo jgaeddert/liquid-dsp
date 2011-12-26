@@ -574,8 +574,7 @@ To begin, add the following parameters to the beginning of your
 {\tt main()} definition with the other options:
 %
 \begin{Verbatim}[fontsize=\small]
-    modulation_scheme ms = LIQUID_MODEM_PSK;    // payload modulation scheme
-    unsigned int bps = 3;                       // payload modulation depth
+    modulation_scheme ms = LIQUID_MODEM_PSK8;   // payload modulation scheme
     fec_scheme fec0  = LIQUID_FEC_NONE;         // inner FEC scheme
     fec_scheme fec1  = LIQUID_FEC_HAMMING128;   // outer FEC scheme
     crc_scheme check = LIQUID_CRC_32;           // data validity check
@@ -604,7 +603,6 @@ and then reconfigure the frame generator with
     fgprops.fec0            = fec0;
     fgprops.fec1            = fec1;
     fgprops.mod_scheme      = ms;
-    fgprops.mod_bps         = bps;
     ofdmflexframegen_setprops(fg, &fgprops);
 \end{Verbatim}
 %

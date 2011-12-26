@@ -151,7 +151,7 @@ ofdmflexframesync ofdmflexframesync_create(unsigned int _M,
     q->fs = ofdmframesync_create(_M, _cp_len, _p, ofdmflexframesync_internal_callback, (void*)q);
 
     // create header objects
-    q->mod_header = modem_create(OFDMFLEXFRAME_H_MOD, OFDMFLEXFRAME_H_BPS);
+    q->mod_header = modem_create(OFDMFLEXFRAME_H_MOD);
     q->p_header   = packetizer_create(OFDMFLEXFRAME_H_DEC,
                                       OFDMFLEXFRAME_H_CRC,
                                       OFDMFLEXFRAME_H_FEC,
@@ -168,7 +168,7 @@ ofdmflexframesync ofdmflexframesync_create(unsigned int _M,
     q->fec1         = LIQUID_FEC_NONE;
 
     // create payload objects (initally QPSK, etc but overridden by received properties)
-    q->mod_payload = modem_create(q->ms_payload, q->bps_payload);
+    q->mod_payload = modem_create(q->ms_payload);
     q->p_payload   = packetizer_create(q->payload_len, q->check, q->fec0, q->fec1);
     q->payload_enc_len = packetizer_get_enc_msg_len(q->p_payload);
     q->payload_enc = (unsigned char*) malloc(q->payload_enc_len*sizeof(unsigned char));
@@ -433,10 +433,12 @@ void ofdmflexframesync_decode_header(ofdmflexframesync _q)
     unsigned int payload_len = (_q->header[n+1] << 8) | (_q->header[n+2]);
 
     // strip off modulation scheme/depth
-    //  mod. scheme : most-significant five bits
-    //  mod. depth  : least-significant three bits (+1)
-    unsigned int mod_scheme = ( _q->header[n+3] >> 3) & 0x1f;
-    unsigned int mod_depth  = ((_q->header[n+3]     ) & 0x07)+1;
+    unsigned int mod_scheme = _q->header[n+3];
+    if (mod_scheme == 0 || mod_scheme >= LIQUID_MODEM_NUM_SCHEMES) {
+        fprintf(stderr,"warning: ofdmflexframesync_decode_header(), invalid modulation scheme\n");
+        _q->header_valid = 0;
+        return;
+    }
 
     // strip off CRC, forward error-correction schemes
     //  CRC     : most-significant 3 bits of [n+4]
@@ -466,7 +468,7 @@ void ofdmflexframesync_decode_header(ofdmflexframesync _q)
     // print results
 #if DEBUG_OFDMFLEXFRAMESYNC
     printf("    properties:\n");
-    printf("      * mod scheme      :   %s (%u b/s)\n", modulation_scheme_str[mod_scheme][1], mod_depth);
+    printf("      * mod scheme      :   %s\n", modulation_types[mod_scheme].fullname);
     printf("      * fec (inner)     :   %s\n", fec_scheme_str[fec0][1]);
     printf("      * fec (outer)     :   %s\n", fec_scheme_str[fec1][1]);
     printf("      * CRC scheme      :   %s\n", crc_scheme_str[check][1]);
@@ -476,14 +478,13 @@ void ofdmflexframesync_decode_header(ofdmflexframesync _q)
     // configure payload receiver
     if (_q->header_valid) {
         // configure modem
-        if (mod_scheme != _q->ms_payload || mod_depth != _q->bps_payload) {
+        if (mod_scheme != _q->ms_payload) {
             // set new properties
             _q->ms_payload  = mod_scheme;
-            _q->bps_payload = mod_depth;
+            _q->bps_payload = modulation_types[mod_scheme].bps;
 
             // recreate modem (destroy/create)
-            modem_destroy(_q->mod_payload);
-            _q->mod_payload = modem_create(_q->ms_payload, _q->bps_payload);
+            _q->mod_payload = modem_recreate(_q->mod_payload, _q->ms_payload);
         }
 
         // set new packetizer properties

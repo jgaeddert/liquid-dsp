@@ -139,7 +139,7 @@ static int callback(unsigned char * _rx_header,
     printf("*** callback invoked ***\n");
     printf("    error vector mag.   : %12.8f dB\n", _stats.evm);
     printf("    rssi                : %12.8f dB\n", _stats.rssi);
-    printf("    mod. scheme         : %s\n", modulation_scheme_str[_stats.mod_scheme][1]);
+    printf("    mod. scheme         : %s\n", modulation_types[_stats.mod_scheme].fullname);
     printf("    mod. depth          : %u\n", _stats.mod_bps);
     printf("    payload CRC         : %s\n", crc_scheme_str[_stats.check][1]);
     printf("    payload fec (inner) : %s\n", fec_scheme_str[_stats.fec0][1]);

@@ -40,20 +40,27 @@ void modem_demodulate_soft_tab(modem _q,
                                unsigned int * _s,
                                float * _soft_bits);
 
-int main() {
+int main(int argc, char*argv[])
+{
     srand(time(NULL));
 
     // options
-    modulation_scheme ms = LIQUID_MODEM_QAM;    // modulation scheme
-    unsigned int bps = 4;                       // bits/symbol
+    modulation_scheme ms = LIQUID_MODEM_QAM16;  // modulation scheme
     unsigned int p = 4;                         // number of 'nearest symbols'
     float complex e = 0.1f + _Complex_I*0.15f;  // error
+
+    // validate input
+    if (ms == LIQUID_MODEM_UNKNOWN || ms >= LIQUID_MODEM_NUM_SCHEMES) {
+        fprintf(stderr,"error: %s, invalid modulation scheme\n", argv[0]);
+        exit(1);
+    }
 
     unsigned int i;
     unsigned int j;
     unsigned int k;
 
     // derived values
+    unsigned int bps = modulation_types[ms].bps;
     unsigned int M = 1 << bps;  // constellation size
     // ensure number of nearest symbols is not too large
     if (p > (M-1)) {
@@ -63,7 +70,7 @@ int main() {
     float sig = 0.2f;           // noise standard deviation
 
     // generate constellation
-    modem q = modem_create(ms, bps);
+    modem q = modem_create(ms);
     float complex c[M];         // constellation
     for (i=0; i<M; i++)
         modem_modulate(q, i, &c[i]);
@@ -152,8 +159,8 @@ int main() {
 
     // print c-type array
     printf("\n");
-    printf("// %s%u soft demodulation nearest neighbors (p=%u)\n", modulation_scheme_str[ms][0], M, p);
-    printf("const unsigned char %s%u_demod_soft_neighbors[%u] = {\n", modulation_scheme_str[ms][0], M, p*M);
+    printf("// %s%u soft demodulation nearest neighbors (p=%u)\n", modulation_types[ms].name, M, p);
+    printf("const unsigned char %s%u_demod_soft_neighbors[%u] = {\n", modulation_types[ms].name, M, p*M);
     printf("    ");
     for (i=0; i<M; i++) {
         for (k=0; k<p; k++) {
@@ -173,7 +180,7 @@ int main() {
 
     // select input symbol and compute received symbol
     unsigned int sym_in = rand() % M;
-    if (ms == LIQUID_MODEM_QAM && bps == 4)
+    if (ms == LIQUID_MODEM_QAM16)
         sym_in = 13;
     float complex r = c[sym_in] + e;
 
@@ -219,7 +226,7 @@ int main() {
     // 
     // demodulate using internal method
     //
-    q = modem_create(ms, bps);
+    q = modem_create(ms);
     unsigned int sym_out_tab;
     float soft_bits_tab[bps];
     modem_demodulate_soft_tab(q,c,cp,p,r,&sym_out_tab,soft_bits_tab);

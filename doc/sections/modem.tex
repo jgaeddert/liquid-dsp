@@ -233,16 +233,15 @@ take advantage of symmetries in certain constellations to reduce this.
 \begin{tabular*}{0.95\textwidth}{l@{\extracolsep{\fill}}ll}
 \toprule
 {\it scheme} &
-{\it depth range (bits/symbol)} &
+{\it bits/symbol} &
 {\it description}\\\otoprule
 %
-{\tt LIQUID\_MODEM\_UNKNOWN}    & -     & unknown/unsupported scheme\\
-{\tt LIQUID\_MODEM\_PSK}        & 1|8   & phase-shift keying\\
-{\tt LIQUID\_MODEM\_DPSK}       & 1|8   & differential phase-shift keying\\
-{\tt LIQUID\_MODEM\_ASK}        & 1|8   & amplitude-shift keying\\
-{\tt LIQUID\_MODEM\_QAM}        & 2|8   & quadrature amplitude-shift keying\\
-{\tt LIQUID\_MODEM\_APSK}       & 2|8   & amplitude/phase-shift keying\\
-{\tt LIQUID\_MODEM\_ARB}        & 1|8   & arbitrary signal constellation\\\midrule
+{\tt LIQUID\_MODEM\_UNKNOWN}                        & -     & unknown/unsupported scheme\\
+{\tt LIQUID\_MODEM\_PSK\{2,4,8,16,32,64,128,256\}}  & 1|8   & phase-shift keying\\
+{\tt LIQUID\_MODEM\_DPSK\{2,4,8,16,32,64,128,256\}} & 1|8   & differential phase-shift keying\\
+{\tt LIQUID\_MODEM\_ASK\{2,4,8,16,32,64,128,256\}}  & 1|8   & amplitude-shift keying\\
+{\tt LIQUID\_MODEM\_QAM\{4,8,16,32,64,128,256\}}    & 2|8   & quadrature amplitude-shift keying\\
+{\tt LIQUID\_MODEM\_APSK\{4,8,16,32,64,128,256\}}   & 2|8   & amplitude/phase-shift keying\\\midrule
 %
 {\tt LIQUID\_MODEM\_BPSK}       & 1     & binary phase-shift keying\\
 {\tt LIQUID\_MODEM\_QPSK}       & 2     & quaternary phase-shift keying\\
@@ -255,7 +254,9 @@ take advantage of symmetries in certain constellations to reduce this.
 {\tt LIQUID\_MODEM\_ARB64OPT}   & 6     & optimal 64-QAM\\
 {\tt LIQUID\_MODEM\_ARB128OPT}  & 7     & optimal 128-QAM\\
 {\tt LIQUID\_MODEM\_ARB256OPT}  & 8     & optimal 256-QAM\\
-{\tt LIQUID\_MODEM\_ARB64VT}    & 6     & Virginia Tech logo\\\bottomrule
+{\tt LIQUID\_MODEM\_ARB64VT}    & 6     & Virginia Tech logo\\\midrule
+% 
+{\tt LIQUID\_MODEM\_ARB}        & 1|8   & arbitrary signal constellation\\\bottomrule
 % 
 \end{tabular*}
 }
@@ -266,10 +267,20 @@ take advantage of symmetries in certain constellations to reduce this.
 \subsubsection{Interface}
 \label{module:modem:digital:interface}
 \begin{description}
-\item[{\tt modem\_create(scheme,bps)}]
+\item[{\tt modem\_create(scheme)}]
     creates a linear modulator/demodulator {\tt modem} object with one
-    of the schemes defined in Table~\ref{tab:modem:schemes}
-    with {\tt bps} bits per symbol.
+    of the schemes defined in Table~\ref{tab:modem:schemes}.
+\item[{\tt modem\_recreate(q,scheme)}]
+    recreates a linear modulator/demodulator {\tt modem} object {\tt q}
+    with one of the schemes defined in Table~\ref{tab:modem:schemes}.
+\item[{\tt modem\_create\_arbitrary(*table,M)}]
+    creates a generic arbitrary modem ({\tt LIQUID\_MODEM\_ARB}) with
+    the $M$-point constellation map defined by the {\tt float complex}
+    array {\em table}.
+    The resulting constellation is normalized such that it is centered
+    at zero and has unity energy.
+    Note that $M$ must be equal to $2^m$ where $m$ is an integer greater
+    than zero.
 \item[{\tt modem\_destroy(q)}]
     destroys a {\tt modem} object, freeing all internally-allocated
     memory.
@@ -281,28 +292,32 @@ take advantage of symmetries in certain constellations to reduce this.
     (differential phase-shift keying) which retains the phase of the
     previous symbol in memory.
     All other modulation schemes are memoryless.
-\item[{\tt modem\_arb\_init(q,*map,n)}]
-    initializes an arbitrary modem ({\tt LIQUID\_MODEM\_ARB}) with the $n$-point
-    constellation map.
-    The resulting constellation is normalized such that it is centered
-    at zero and has unity energy.
-\item[{\tt modem\_arb\_init\_file(q,*filename)}]
-    initializes an arbitrary modem ({\tt LIQUID\_MODEM\_ARB}) with a constellation
-    map defined in an external file.
-    The file includes one line per symbol with the in-phase and
-    quadrature components separated by white space, e.g.
-    %
-    \begin{Verbatim}[fontsize=\small]
-       1.46968   0.13529
-       1.69067   0.71802
-      -0.85603   0.43542
-      -0.56563   1.50369
-       0.45232   0.42128
-          ...
-    \end{Verbatim}
-    %
-    The resulting constellation is normalized such that it is centered
-    at zero and has unity energy.
+%\item[{\tt modem\_arb\_init(q,*map,n)}]
+%    initializes an arbitrary modem ({\tt LIQUID\_MODEM\_ARB}) with the $n$-point
+%    constellation map.
+%    The resulting constellation is normalized such that it is centered
+%    at zero and has unity energy.
+%\item[{\tt modem\_arb\_init\_file(q,*filename)}]
+%    initializes an arbitrary modem ({\tt LIQUID\_MODEM\_ARB}) with a constellation
+%    map defined in an external file.
+%    The file includes one line per symbol with the in-phase and
+%    quadrature components separated by white space, e.g.
+%    %
+%    \begin{Verbatim}[fontsize=\small]
+%       1.46968   0.13529
+%       1.69067   0.71802
+%      -0.85603   0.43542
+%      -0.56563   1.50369
+%       0.45232   0.42128
+%          ...
+%    \end{Verbatim}
+%    %
+%    The resulting constellation is normalized such that it is centered
+%    at zero and has unity energy.
+\item[{\tt modem\_gen\_rand\_sym(q)}]
+    generates a random integer symbol in $\{0,M-1\}$.
+\item[{\tt modem\_get\_bps(q)}]
+    returns the modem's modulation depth (bits/symbol).
 \item[{\tt modem\_modulate(q,symbol,*x)}]
     modulates the integer symbol storing the result in the output value
     of $x$.
@@ -312,8 +327,8 @@ take advantage of symmetries in certain constellations to reduce this.
     The exact method by which \liquid\ performs this computation is
     dependent upon the modulation scheme.
     For example, while
-    {\tt LIQUID\_MODEM\_QAM} ($M=4$), and
-    {\tt LIQUID\_MODEM\_PSK} ($M=4$)
+    {\tt LIQUID\_MODEM\_QAM4}, and
+    {\tt LIQUID\_MODEM\_PSK4}
     are effectively equivalent (four points on the unit circle)
     they are demodulated differently.
 \item[{\tt modem\_demodulate\_soft(q,x,*symbol,*soft\_bits)}]

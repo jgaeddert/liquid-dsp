@@ -1599,16 +1599,6 @@ struct modem_s {
     unsigned int demod_soft_p;              // number of neighbors in array
 };
 
-// structure for holding full modulation type descriptor
-struct modulation_type_s {
-    const char * name;
-    modulation_scheme ms;
-    unsigned int bps;
-};
-
-// full modulation type descriptor
-extern const struct modulation_type_s modulation_types[LIQUID_MODEM_NUM_FULL_SCHEMES];
-
 // initialize a generic modem object
 void modem_init(modem _q, unsigned int _bits_per_symbol);
 
@@ -1622,6 +1612,12 @@ modem modem_create_psk(unsigned int _bits_per_symbol);
 modem modem_create_dpsk(unsigned int _bits_per_symbol);
 modem modem_create_apsk(unsigned int _bits_per_symbol);
 modem modem_create_arb(unsigned int _bits_per_symbol);
+
+// Initialize arbitrary modem constellation
+void modem_arb_init(modem _mod, liquid_float_complex *_symbol_map, unsigned int _len);
+
+// Initialize arbitrary modem constellation on data from external file
+void modem_arb_init_file(modem _mod, char* filename);
 
 // specific modem create routines
 modem modem_create_bpsk(void);
