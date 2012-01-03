@@ -25,8 +25,7 @@ int main() {
     unsigned int M = 64;                        // number of subcarriers
     unsigned int cp_len = 16;                   // cyclic prefix length
     unsigned int payload_len = 120;             // length of payload (bytes)
-    modulation_scheme ms = LIQUID_MODEM_PSK;    // payload modulation scheme
-    unsigned int bps = 3;                       // payload modulation depth
+    modulation_scheme ms = LIQUID_MODEM_PSK8;   // payload modulation scheme
     fec_scheme fec0  = LIQUID_FEC_NONE;         // inner FEC scheme
     fec_scheme fec1  = LIQUID_FEC_HAMMING128;   // outer FEC scheme
     crc_scheme check = LIQUID_CRC_32;           // data validity check
@@ -53,7 +52,6 @@ int main() {
     fgprops.fec0            = fec0;         // set the inner FEC scheme
     fgprops.fec1            = fec1;         // set the outer FEC scheme
     fgprops.mod_scheme      = ms;           // set the modulation scheme
-    fgprops.mod_bps         = bps;          // set the modulation depth
     ofdmflexframegen_setprops(fg,&fgprops); // reconfigure the frame generator
 
     // initialize header/payload and assemble frame

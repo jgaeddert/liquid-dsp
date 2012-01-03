@@ -129,7 +129,7 @@ framegen64 framegen64_create(unsigned int _m,
     fg->p_payload = packetizer_create(64, LIQUID_CRC_16, LIQUID_FEC_NONE, LIQUID_FEC_HAMMING128);
 
     // create modulator
-    fg->mod = modem_create(LIQUID_MODEM_QPSK, 2);
+    fg->mod = modem_create(LIQUID_MODEM_QPSK);
 
     return fg;
 }

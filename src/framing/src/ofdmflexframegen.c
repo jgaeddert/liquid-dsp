@@ -41,7 +41,6 @@ static ofdmflexframegenprops_s ofdmflexframegenprops_default = {
     LIQUID_FEC_NONE,    // fec0
     LIQUID_FEC_NONE,    // fec1
     LIQUID_MODEM_QPSK,  // mod_scheme
-    2                   // mod_bps
     //64                // block_size
 };
 
@@ -147,7 +146,7 @@ ofdmflexframegen ofdmflexframegen_create(unsigned int _M,
     q->fg = ofdmframegen_create(q->M, q->cp_len, q->p);
 
     // create header objects
-    q->mod_header = modem_create(OFDMFLEXFRAME_H_MOD, OFDMFLEXFRAME_H_BPS);
+    q->mod_header = modem_create(OFDMFLEXFRAME_H_MOD);
     q->p_header   = packetizer_create(OFDMFLEXFRAME_H_DEC,
                                       OFDMFLEXFRAME_H_CRC,
                                       OFDMFLEXFRAME_H_FEC,
@@ -171,7 +170,7 @@ ofdmflexframegen ofdmflexframegen_create(unsigned int _M,
     q->payload_mod = (unsigned char*) malloc(q->payload_mod_len*sizeof(unsigned char));
 
     // create payload modem (initially QPSK, overridden by properties)
-    q->mod_payload = modem_create(LIQUID_MODEM_QPSK, 2);
+    q->mod_payload = modem_create(LIQUID_MODEM_QPSK);
 
     // initialize properties
     ofdmflexframegen_setprops(q, _props);
@@ -232,7 +231,7 @@ void ofdmflexframegen_print(ofdmflexframegen _q)
     printf("      * data            :   %-u\n", _q->M_data);
     printf("    cyclic prefix len   :   %-u\n", _q->cp_len);
     printf("    properties:\n");
-    printf("      * mod scheme      :   %s (%u b/s)\n", modulation_scheme_str[_q->props.mod_scheme][1], _q->props.mod_bps);
+    printf("      * mod scheme      :   %s\n", modulation_types[_q->props.mod_scheme].fullname);
     printf("      * fec (inner)     :   %s\n", fec_scheme_str[_q->props.fec0][1]);
     printf("      * fec (outer)     :   %s\n", fec_scheme_str[_q->props.fec1][1]);
     printf("      * CRC scheme      :   %s\n", crc_scheme_str[_q->props.check][1]);
@@ -276,10 +275,7 @@ void ofdmflexframegen_setprops(ofdmflexframegen _q,
     }
 
     // validate input
-    if (_props->mod_bps == 0) {
-        fprintf(stderr, "error: ofdmflexframegen_setprops(), modulation depth must be greater than 0\n");
-        exit(1);
-    } else if (_props->check == LIQUID_CRC_UNKNOWN || _props->check >= LIQUID_CRC_NUM_SCHEMES) {
+    if (_props->check == LIQUID_CRC_UNKNOWN || _props->check >= LIQUID_CRC_NUM_SCHEMES) {
         fprintf(stderr, "error: ofdmflexframegen_setprops(), invalid/unsupported CRC scheme\n");
         exit(1);
     } else if (_props->fec0 == LIQUID_FEC_UNKNOWN || _props->fec1 == LIQUID_FEC_UNKNOWN) {
@@ -351,10 +347,11 @@ void ofdmflexframegen_assemble(ofdmflexframegen _q,
     // clear payload
     memset(_q->payload_mod, 0x00, _q->payload_mod_len);
 
-    // repack 8-bit payload bytes into 'mod_bps'-bit payload symbols
+    // repack 8-bit payload bytes into 'bps'-bit payload symbols
+    unsigned int bps = modulation_types[_q->props.mod_scheme].bps;
     unsigned int num_written;
-    liquid_repack_bytes(_q->payload_enc,  8,                _q->payload_enc_len,
-                        _q->payload_mod, _q->props.mod_bps, _q->payload_mod_len,
+    liquid_repack_bytes(_q->payload_enc,  8,  _q->payload_enc_len,
+                        _q->payload_mod, bps, _q->payload_mod_len,
                         &num_written);
 #if DEBUG_OFDMFLEXFRAMEGEN
     printf("wrote %u symbols (expected %u)\n", num_written, _q->payload_mod_len);
@@ -442,11 +439,11 @@ void ofdmflexframegen_reconfigure(ofdmflexframegen _q)
 
     // re-create modem
     // TODO : only do this if necessary
-    modem_destroy(_q->mod_payload);
-    _q->mod_payload = modem_create(_q->props.mod_scheme, _q->props.mod_bps);
+    _q->mod_payload = modem_recreate(_q->mod_payload, _q->props.mod_scheme);
 
     // re-allocate memory for payload modem symbols
-    div_t d = div(8*_q->payload_enc_len, _q->props.mod_bps);
+    unsigned int bps = modulation_types[_q->props.mod_scheme].bps;
+    div_t d = div(8*_q->payload_enc_len, bps);
     _q->payload_mod_len = d.quot + (d.rem ? 1 : 0);
     _q->payload_mod = (unsigned char*)realloc(_q->payload_mod,
                                               _q->payload_mod_len*sizeof(unsigned char));
@@ -470,10 +467,7 @@ void ofdmflexframegen_encode_header(ofdmflexframegen _q)
     _q->header[n+2] = (_q->payload_dec_len     ) & 0xff;
 
     // add modulation scheme/depth (pack into single byte)
-    //  mod. scheme : most-significant five bits
-    //  mod. depth  : least-significant three bits (minus one)
-    _q->header[n+3]  = ( _q->props.mod_scheme & 0x1f) << 3;
-    _q->header[n+3] |= ((_q->props.mod_bps-1) & 0x07);
+    _q->header[n+3]  = _q->props.mod_scheme;
 
     // add CRC, forward error-correction schemes
     //  CRC     : most-significant 3 bits of [n+4]
@@ -508,10 +502,11 @@ void ofdmflexframegen_encode_header(ofdmflexframegen _q)
 // modulate header
 void ofdmflexframegen_modulate_header(ofdmflexframegen _q)
 {
-    // repack 8-bit header bytes into 'mod_bps'-bit payload symbols
+    // repack 8-bit header bytes into 'bps'-bit payload symbols
+    unsigned int bps = modulation_types[OFDMFLEXFRAME_H_MOD].bps;
     unsigned int num_written;
-    liquid_repack_bytes(_q->header_enc, 8,                   OFDMFLEXFRAME_H_ENC,
-                        _q->header_mod, OFDMFLEXFRAME_H_BPS, OFDMFLEXFRAME_H_SYM,
+    liquid_repack_bytes(_q->header_enc, 8,   OFDMFLEXFRAME_H_ENC,
+                        _q->header_mod, bps, OFDMFLEXFRAME_H_SYM,
                         &num_written);
 }
 

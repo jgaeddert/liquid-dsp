@@ -49,7 +49,6 @@ int main(int argc, char*argv[])
 
     // modulation type/depth
     modulation_scheme ms = LIQUID_MODEM_QPSK;
-    unsigned int bps=2;
 
     int dopt;
     while ((dopt = getopt(argc,argv,"hn:s:c:k:m:b:p:u:M:")) != EOF) {
@@ -64,7 +63,7 @@ int main(int argc, char*argv[])
         case 'p': p             = atoi(optarg); break;
         case 'u': mu            = atof(optarg); break;
         case 'M':
-            liquid_getopt_str2modbps(optarg, &ms, &bps);
+            ms = liquid_getopt_str2mod(optarg);
             if (ms == LIQUID_MODEM_UNKNOWN) {
                 fprintf(stderr,"error: %s, unknown/unsupported modulation scheme '%s'\n", argv[0], optarg);
                 return 1;
@@ -121,8 +120,8 @@ int main(int argc, char*argv[])
     interp_crcf interp = interp_crcf_create(k, hm, hm_len);
 
     // create the modem objects
-    modem mod   = modem_create(ms, bps);
-    modem demod = modem_create(ms, bps);
+    modem mod   = modem_create(ms);
+    modem demod = modem_create(ms);
     unsigned int M = 1 << modem_get_bps(mod);
 
     // generate channel impulse response, filter

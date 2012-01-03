@@ -58,9 +58,7 @@ int main(int argc, char*argv[])
 {
     // create mod/demod objects
     modulation_scheme ms = LIQUID_MODEM_ARB64VT;
-    unsigned int bps=6;
-    modulation_scheme mref = LIQUID_MODEM_QAM;
-    unsigned int kref=4;
+    modulation_scheme mref = LIQUID_MODEM_QAM64;
     float alpha = 1.0f;
 
     int dopt;
@@ -69,14 +67,14 @@ int main(int argc, char*argv[])
         case 'u':
         case 'h': usage(); return 0;
         case 'm':
-            liquid_getopt_str2modbps(optarg, &ms, &bps);
+            ms = liquid_getopt_str2mod(optarg);
             if (ms == LIQUID_MODEM_UNKNOWN) {
                 fprintf(stderr,"error: %s, unknown/unsupported modulation scheme '%s'\n", argv[0], optarg);
                 return 1;
             }
             break;
         case 'r':
-            liquid_getopt_str2modbps(optarg, &mref, &kref);
+            mref = liquid_getopt_str2mod(optarg);
             if (mref == LIQUID_MODEM_UNKNOWN) {
                 fprintf(stderr,"error: %s, unknown/unsupported modulation scheme '%s'\n", argv[0], optarg);
                 return 1;
@@ -94,8 +92,8 @@ int main(int argc, char*argv[])
     unsigned int j;
 
     // initialize reference points
-    modem qref = modem_create(mref, kref);
-    kref = modem_get_bps(qref);
+    modem qref = modem_create(mref);
+    unsigned int kref = modem_get_bps(qref);
     unsigned int p = 1 << kref;
     float complex cref[p];
     for (i=0; i<p; i++) {
@@ -105,8 +103,8 @@ int main(int argc, char*argv[])
     modem_destroy(qref);
 
     // generate the constellation
-    modem q = modem_create(ms, bps);
-    bps = modem_get_bps(q);
+    modem q = modem_create(ms);
+    unsigned int bps = modem_get_bps(q);
     unsigned int M = 1 << bps;
     float complex constellation[M];
     for (i=0; i<M; i++)

@@ -37,7 +37,7 @@ float estimate_snr(simulate_per_opts _opts,
     }
 
     // compute asymptotic rate
-    modem q = modem_create(_opts.ms, _opts.bps);
+    modem q = modem_create(_opts.ms);
     float rate = modem_get_bps(q) * fec_get_rate(_opts.fec0) * fec_get_rate(_opts.fec1);
     modem_destroy(q);
 

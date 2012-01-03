@@ -41,7 +41,6 @@ int main(int argc, char*argv[])
     unsigned int hc_len = 1;            // channel filter length
     float hc_std = 0.10f;               // channel filter standard deviation
     modulation_scheme ms = LIQUID_MODEM_QPSK;
-    unsigned int bps = 2;
     float noise_floor = -30.0f;         // noise floor [dB]
     float SNRdB = 20.0f;                // signal-to-noise ratio [dB]
     float phi   = 0.0f;                 // carrier phase offset
@@ -92,7 +91,7 @@ int main(int argc, char*argv[])
     ofdmframesync fs = ofdmframesync_create(M, cp_len, p, callback, (void*)wsyms);
     ofdmframesync_print(fs);
 
-    modem mod = modem_create(ms,bps);
+    modem mod = modem_create(ms);
 
     unsigned int i;
     float complex X[M];             // channelized symbols

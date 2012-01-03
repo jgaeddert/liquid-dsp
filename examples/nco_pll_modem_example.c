@@ -42,7 +42,6 @@ int main(int argc, char*argv[]) {
     float SNRdB = 30.0f;
     float pll_bandwidth = 0.02f;
     modulation_scheme ms = LIQUID_MODEM_QPSK;
-    unsigned int bps = 2;
     unsigned int n=256;     // number of iterations
 
     int dopt;
@@ -55,9 +54,8 @@ int main(int argc, char*argv[]) {
         case 'n':   n = atoi(optarg);               break;
         case 'P':   phase_offset = atof(optarg);    break;
         case 'F':   frequency_offset= atof(optarg); break;
-        case 'p':   bps = atoi(optarg);             break;
         case 'm':
-            liquid_getopt_str2modbps(optarg, &ms, &bps);
+            ms = liquid_getopt_str2mod(optarg);
             if (ms == LIQUID_MODEM_UNKNOWN) {
                 fprintf(stderr,"error: %s, unknown/unsupported modulation scheme \"%s\"\n", argv[0], optarg);
                 return 1;
@@ -79,8 +77,10 @@ int main(int argc, char*argv[]) {
     nco_crcf nco_tx = nco_crcf_create(LIQUID_VCO);
     nco_crcf nco_rx = nco_crcf_create(LIQUID_VCO);
 
-    modem mod = modem_create(ms,bps);
-    modem demod = modem_create(ms,bps);
+    modem mod   = modem_create(ms);
+    modem demod = modem_create(ms);
+
+    unsigned int bps = modem_get_bps(mod);
 
     // initialize objects
     nco_crcf_set_phase(nco_tx, phase_offset);
@@ -91,7 +91,7 @@ int main(int argc, char*argv[]) {
 
     // print parameters
     printf("PLL example :\n");
-    printf("modem : %u-%s\n", 1<<bps, modulation_scheme_str[0][ms]);
+    printf("modem : %u-%s\n", 1<<bps, modulation_types[ms].name);
     printf("frequency offset: %6.3f, phase offset: %6.3f, SNR: %6.2fdB, pll b/w: %6.3f\n",
             frequency_offset, phase_offset, SNRdB, pll_bandwidth);
 

@@ -4,15 +4,13 @@
 int main() {
     // set modulation depth (bits/symbol)
     unsigned int bps=4;
+    float complex constellation[1<<bps];
+
+    // ... (initialize constellation) ...
 
     // create the arbitrary modem objects
-    modem mod   = modem_create(LIQUID_MODEM_ARB, bps);  // modulator
-    modem demod = modem_create(LIQUID_MODEM_ARB, bps);  // demodulator
-
-    float complex constellation[1<<bps];
-    // ... (initialize constellation) ...
-    modem_arb_init(mod,   constellation, 1<<bps);
-    modem_arb_init(demod, constellation, 1<<bps);
+    modem mod   = modem_create_arbitrary(constellation, 1<<bps);
+    modem demod = modem_create_arbitrary(constellation, 1<<bps);
 
     // ... (modulate and demodulate as before) ...
 

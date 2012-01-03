@@ -74,7 +74,7 @@ int main(int argc, char*argv[]) {
     unsigned int i;
 
     // generate random training sequence using QPSK symbols
-    modem mod = modem_create(LIQUID_MODEM_QPSK,2);
+    modem mod = modem_create(LIQUID_MODEM_QPSK);
     for (i=0; i<sequence_len; i++)
         modem_modulate(mod, rand()%4, &sequence[i]);
     modem_destroy(mod);

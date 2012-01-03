@@ -86,7 +86,7 @@ int main(int argc, char*argv[]) {
 
     // generate filenames
     if ( strcmp(filename,"")==0 )
-        sprintf(filename,"figures.gen/modem_phase_error_%s%u.dat", modulation_scheme_str[ms][0], 1<<bps);
+        sprintf(filename,"figures.gen/modem_phase_error_%s%u.dat", modulation_types[ms].name, 1<<bps);
 
     // derived values
     float phi_min = 0.0f; //phi_max_abs;

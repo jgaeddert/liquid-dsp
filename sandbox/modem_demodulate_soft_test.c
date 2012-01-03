@@ -18,18 +18,18 @@ int main() {
     srand(time(NULL));
 
     // options
-    modulation_scheme ms = LIQUID_MODEM_QAM;    // modulation scheme
-    unsigned int bps = 4;                       // bits/symbol
+    modulation_scheme ms = LIQUID_MODEM_QAM16;  // modulation scheme
     float complex e = 0.1f + _Complex_I*0.2f;   // error
 
     unsigned int i;
 
     // derived values
-    unsigned int M = 1 << bps;  // constellation size
     float sig = 0.2f;           // noise standard deviation
 
     // generate constellation
-    modem q = modem_create(ms, bps);
+    modem q = modem_create(ms);
+    unsigned int bps = modem_get_bps(q);
+    unsigned int M = 1 << bps;  // constellation size
     float complex c[M];         // constellation
     for (i=0; i<M; i++)
         modem_modulate(q, i, &c[i]);

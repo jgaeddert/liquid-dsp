@@ -42,7 +42,6 @@ void ofdmframesync_rxsymbol_bench(struct rusage *_start,
 {
     // options
     modulation_scheme ms = LIQUID_MODEM_QPSK;
-    unsigned int bps     = 2;
     unsigned int M       = _num_subcarriers;
     unsigned int cp_len  = _cp_len;
 
@@ -54,7 +53,7 @@ void ofdmframesync_rxsymbol_bench(struct rusage *_start,
     ofdmframegen fg = ofdmframegen_create(M, cp_len, NULL);
     //ofdmframegen_print(fg);
 
-    modem mod = modem_create(ms,bps);
+    modem mod = modem_create(ms);
 
     ofdmframesync fs = ofdmframesync_create(M,cp_len,NULL,NULL,NULL);
 
