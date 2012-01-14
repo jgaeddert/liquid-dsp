@@ -26,6 +26,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <xmmintrin.h>
+#include <assert.h>
 
 #include "liquid.internal.h"
 
@@ -101,6 +102,8 @@ dotprod_rrrf dotprod_rrrf_create(float * _h,
     }
 
     // assert( h is 16-byte aligned )
+    int align = ((long int)(q->h) & 15)/sizeof(float);
+    assert(align == 0);
 
     // set coefficients
     memmove(q->h, _h, _n*sizeof(float));
@@ -138,9 +141,11 @@ void dotprod_rrrf_execute(dotprod_rrrf _q,
                           float * _x,
                           float * _y)
 {
-    // alignment
-    int al = ((long int)_x & 15)/sizeof(float);
-    //printf("align : %d\n", al);
+#if DEBUG_DOTPROD_RRRF_MMX
+    // check alignment
+    int align = ((long int)_x & 15)/sizeof(float);
+    printf("align : %d\n", align);
+#endif
 
     // first cut: ...
     __m128 v;
@@ -148,9 +153,12 @@ void dotprod_rrrf_execute(dotprod_rrrf _q,
     union { __m128 v; float w[4];} sum;
     float total = 0.0f;
 
+    // t = 4*(floor(_n/4))
+    unsigned int t=(_q->n>>2)<<2; 
+
     //
     unsigned int i;
-    for (i=0; i<_q->n; i+=4) {
+    for (i=0; i<t; i+=4) {
         // load inputs into register (unaligned)
         v = _mm_loadu_ps(&_x[i]);
 
