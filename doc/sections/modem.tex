@@ -331,12 +331,15 @@ take advantage of symmetries in certain constellations to reduce this.
     {\tt LIQUID\_MODEM\_PSK4}
     are effectively equivalent (four points on the unit circle)
     they are demodulated differently.
-\item[{\tt modem\_demodulate\_soft(q,x,*symbol,*soft\_bits)}]
-    operates as {\tt modem\_demodulate()} (see above) but includes the
-    ``soft'' bits as an approximate log-likelihood ratio.
-    See \S\ref{module:modem:digital:soft} for more information.
-\item[{\tt modem\_get\_demodulator\_sample(q,*s)}]
-    returns an estimate of the transmitted complex sample $s$.
+\item[{\tt modem\_demodulate\_soft(q,x,*symbol,*softbits)}]
+    demodulates as with {\tt modem\_demodulate()} (see above)
+    but also populates the
+    $m$-element array of {\tt unsigned char} as an approximate
+    log-likelihood ratio of the soft-decision
+    demodulated bits (see \S~\ref{module:modem:digital:soft}).
+\item[{\tt modem\_get\_demodulator\_sample(q,*xhat)}]
+    returns the estimated transmitted symbol, $\hat{x}$, after
+    demodulation.
 \item[{\tt modem\_get\_demodulator\_phase\_error(q)}]
     returns an angle proportional to the phase error after demodulation.
     This value can be used in a phase-locked loop
