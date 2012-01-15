@@ -32,6 +32,10 @@
 
 #define DEBUG_DOTPROD_RRRF_MMX   0
 
+// internal methods
+void dotprod_rrrf_execute_mmx(dotprod_rrrf _q, float * _x, float * _y);
+void dotprod_rrrf_execute_mmx4(dotprod_rrrf _q, float * _x, float * _y);
+
 // basic dot product (ordinal calculation)
 void dotprod_rrrf_run(float *_h,
                       float *_x,
@@ -137,9 +141,23 @@ void dotprod_rrrf_print(dotprod_rrrf _q)
         printf("%3u : %12.9f\n", i, _q->h[i]);
 }
 
+// 
 void dotprod_rrrf_execute(dotprod_rrrf _q,
                           float * _x,
                           float * _y)
+{
+    // switch based on size
+    if (_q->n < 16) {
+        dotprod_rrrf_execute_mmx(_q, _x, _y);
+    } else {
+        dotprod_rrrf_execute_mmx4(_q, _x, _y);
+    }
+}
+
+// use MMX/SSE extensions
+void dotprod_rrrf_execute_mmx(dotprod_rrrf _q,
+                              float * _x,
+                              float * _y)
 {
 #if DEBUG_DOTPROD_RRRF_MMX
     // check alignment
@@ -150,11 +168,11 @@ void dotprod_rrrf_execute(dotprod_rrrf _q,
     // first cut: ...
     __m128 v;
     __m128 h;
-    union { __m128 v; float w[4];} sum;
+    union { __m128 v; float w[4] __attribute__((aligned(16)));} s;
     float total = 0.0f;
 
     // t = 4*(floor(_n/4))
-    unsigned int t=(_q->n>>2)<<2; 
+    unsigned int t = (_q->n >> 2) << 2;
 
     //
     unsigned int i;
@@ -162,20 +180,87 @@ void dotprod_rrrf_execute(dotprod_rrrf _q,
         // load inputs into register (unaligned)
         v = _mm_loadu_ps(&_x[i]);
 
-        // load coefficients into register (aligned)
-        h = _mm_load_ps(&_q->h[i]);
+        // load coefficients into register (unaligned)
+        // TODO : ensure proper alignment
+        h = _mm_loadu_ps(&_q->h[i]);
 
         // compute multiplication
-        sum.v = _mm_mul_ps(v, h);
+        s.v = _mm_mul_ps(v, h);
 
         // add into total (not necessarily efficient...)
-        total += sum.w[0] + sum.w[1] + sum.w[2] + sum.w[3];
+        // TODO : fold into single element
+        total += s.w[0] + s.w[1] + s.w[2] + s.w[3];
     }
 
-    // clean up remaining elements
+    // cleanup
     for (; i<_q->n; i++)
         total += _x[i] * _q->h[i];
 
     // set return value
     *_y = total;
 }
+
+// use MMX/SSE extensions, unrolled loop
+void dotprod_rrrf_execute_mmx4(dotprod_rrrf _q,
+                               float * _x,
+                               float * _y)
+{
+#if DEBUG_DOTPROD_RRRF_MMX
+    // check alignment
+    int align = ((long int)_x & 15)/sizeof(float);
+    printf("align : %d\n", align);
+#endif
+
+    // first cut: ...
+    __m128 v0, v1, v2, v3;
+    __m128 h0, h1, h2, h3;
+    union { __m128 v; float w[4] __attribute__((aligned(16)));} s0;
+    union { __m128 v; float w[4] __attribute__((aligned(16)));} s1;
+    union { __m128 v; float w[4] __attribute__((aligned(16)));} s2;
+    union { __m128 v; float w[4] __attribute__((aligned(16)));} s3;
+    float total = 0.0f;
+
+    // r = floor(n/4)
+    unsigned int r = (_q->n >> 2);
+
+    // t = 4*r = 4*(floor(_n/4))
+    unsigned int t = r << 2;
+
+    //
+    unsigned int i;
+    for (i=0; i<r; i+=4) {
+        // load inputs into register (unaligned)
+        v0 = _mm_loadu_ps(&_x[4*i+0]);
+        v1 = _mm_loadu_ps(&_x[4*i+4]);
+        v2 = _mm_loadu_ps(&_x[4*i+8]);
+        v3 = _mm_loadu_ps(&_x[4*i+12]);
+
+        // load coefficients into register (unaligned)
+        // TODO : ensure proper alignment
+        h0 = _mm_loadu_ps(&_q->h[4*i+0]);
+        h1 = _mm_loadu_ps(&_q->h[4*i+4]);
+        h2 = _mm_loadu_ps(&_q->h[4*i+8]);
+        h3 = _mm_loadu_ps(&_q->h[4*i+12]);
+
+        // compute multiplication
+        s0.v = _mm_mul_ps(v0, h0);
+        s1.v = _mm_mul_ps(v1, h1);
+        s2.v = _mm_mul_ps(v2, h2);
+        s3.v = _mm_mul_ps(v3, h3);
+
+        // add into total (not necessarily efficient...)
+        // TODO : fold into single element
+        total += s0.w[0] + s0.w[1] + s0.w[2] + s0.w[3];
+        total += s1.w[0] + s1.w[1] + s1.w[2] + s1.w[3];
+        total += s2.w[0] + s2.w[1] + s2.w[2] + s2.w[3];
+        total += s3.w[0] + s3.w[1] + s3.w[2] + s3.w[3];
+    }
+
+    // cleanup
+    for (i=t; i<_q->n; i++)
+        total += _x[i] * _q->h[i];
+
+    // set return value
+    *_y = total;
+}
+
