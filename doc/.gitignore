@@ -45,6 +45,7 @@ src/filter_resamp2_crcf_interp
 src/filter_rnyquist
 src/filter_symsync_crcf
 src/interleaver_scatterplot
+src/liquid_version
 src/math_poly_examples
 src/math_polyfit_lagrange
 src/math_window
