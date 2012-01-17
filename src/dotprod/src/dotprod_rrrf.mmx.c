@@ -222,14 +222,19 @@ void dotprod_rrrf_execute_mmx4(dotprod_rrrf _q,
     printf("align : %d\n", align);
 #endif
 
+    // initialize zeros constant array
+    float zeros[4] __attribute__((aligned(16))) = {0.0f, 0.0f, 0.0f, 0.0f};
+
     // first cut: ...
     __m128 v0, v1, v2, v3;
     __m128 h0, h1, h2, h3;
-    union { __m128 v; float w[4] __attribute__((aligned(16)));} s0;
-    union { __m128 v; float w[4] __attribute__((aligned(16)));} s1;
-    union { __m128 v; float w[4] __attribute__((aligned(16)));} s2;
-    union { __m128 v; float w[4] __attribute__((aligned(16)));} s3;
-    float total = 0.0f;
+    __m128 s0, s1, s2, s3;
+
+    // load zeros into sum registers
+    __m128 sum0 = _mm_load_ps(zeros);
+    __m128 sum1 = _mm_load_ps(zeros);
+    __m128 sum2 = _mm_load_ps(zeros);
+    __m128 sum3 = _mm_load_ps(zeros);
 
     // r = floor(n/4)
     unsigned int r = (_q->n >> 2);
@@ -254,24 +259,32 @@ void dotprod_rrrf_execute_mmx4(dotprod_rrrf _q,
         h3 = _mm_loadu_ps(&_q->h[4*i+12]);
 
         // compute multiplication
-        s0.v = _mm_mul_ps(v0, h0);
-        s1.v = _mm_mul_ps(v1, h1);
-        s2.v = _mm_mul_ps(v2, h2);
-        s3.v = _mm_mul_ps(v3, h3);
-
-        // add into total (not necessarily efficient...)
-        // TODO : fold into single element
-        total += s0.w[0] + s0.w[1] + s0.w[2] + s0.w[3];
-        total += s1.w[0] + s1.w[1] + s1.w[2] + s1.w[3];
-        total += s2.w[0] + s2.w[1] + s2.w[2] + s2.w[3];
-        total += s3.w[0] + s3.w[1] + s3.w[2] + s3.w[3];
+        s0 = _mm_mul_ps(v0, h0);
+        s1 = _mm_mul_ps(v1, h1);
+        s2 = _mm_mul_ps(v2, h2);
+        s3 = _mm_mul_ps(v3, h3);
+        
+        // horizontal addition
+        sum0 = _mm_hadd_ps( sum0, s0 );
+        sum1 = _mm_hadd_ps( sum1, s1 );
+        sum2 = _mm_hadd_ps( sum2, s2 );
+        sum3 = _mm_hadd_ps( sum3, s3 );
     }
 
+    // fold down into single value
+    union { __m128 v; float w[4] __attribute__((aligned(16)));} total;
+    total.v = _mm_hadd_ps( sum0, sum1);
+    total.v = _mm_hadd_ps( total.v, sum2 );
+    total.v = _mm_hadd_ps( total.v, sum3 );
+    total.v = _mm_hadd_ps( total.v, total.v );
+    total.v = _mm_hadd_ps( total.v, total.v );
+
     // cleanup
+    // TODO : use intrinsics here as well
     for (i=t; i<_q->n; i++)
-        total += _x[i] * _q->h[i];
+        total.w[0] += _x[i] * _q->h[i];
 
     // set return value
-    *_y = total;
+    *_y = total.w[0];
 }
 
