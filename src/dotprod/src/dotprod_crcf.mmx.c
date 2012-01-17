@@ -36,6 +36,9 @@
 void dotprod_crcf_execute_mmx(dotprod_crcf _q,
                               float complex * _x,
                               float complex * _y);
+void dotprod_crcf_execute_mmx4(dotprod_crcf _q,
+                               float complex * _x,
+                               float complex * _y);
 
 // basic dot product (ordinal calculation)
 void dotprod_crcf_run(float *         _h,
@@ -158,7 +161,12 @@ void dotprod_crcf_execute(dotprod_crcf _q,
                           float complex * _x,
                           float complex * _y)
 {
-    dotprod_crcf_execute_mmx(_q, _x, _y);
+    // switch based on size
+    if (_q->n < 32) {
+        dotprod_crcf_execute_mmx(_q, _x, _y);
+    } else {
+        dotprod_crcf_execute_mmx4(_q, _x, _y);
+    }
 }
 
 // use MMX/SSE extensions
@@ -220,5 +228,84 @@ void dotprod_crcf_execute_mmx(dotprod_crcf _q,
 
     // set return value
     *_y = sum.w[0] + _Complex_I*sum.w[1];
+}
+
+// use MMX/SSE extensions
+// FIXME : something wrong with this method
+void dotprod_crcf_execute_mmx4(dotprod_crcf _q,
+                               float complex * _x,
+                               float complex * _y)
+{
+    // type cast input as floating point array
+    float * x = (float*) _x;
+
+    // double effective length
+    unsigned int n = 2*_q->n;
+
+    // initialize zeros constant array
+    float zeros[4] __attribute__((aligned(16))) = {0.0f, 0.0f, 0.0f, 0.0f};
+
+    // first cut: ...
+    __m128 v0, v1, v2, v3;  // input vectors
+    __m128 h0, h1, h2, h3;  // coefficients vectors
+    __m128 s0, s1, s2, s3;  // dot products [re, im, re, im]
+
+    // load zeros into sum registers
+    __m128 sum0 = _mm_load_ps(zeros);
+    __m128 sum1 = _mm_load_ps(zeros);
+    __m128 sum2 = _mm_load_ps(zeros);
+    __m128 sum3 = _mm_load_ps(zeros);
+
+    // r = floor(n/4)
+    unsigned int r = (n >> 2);
+
+    // t = 4*r = 4*(floor(n/4))
+    unsigned int t = r << 2;
+
+    //
+    unsigned int i;
+    for (i=0; i<r; i+=4) {
+        // load inputs into register (unaligned)
+        v0 = _mm_loadu_ps(&x[4*i+0]);
+        v1 = _mm_loadu_ps(&x[4*i+4]);
+        v2 = _mm_loadu_ps(&x[4*i+8]);
+        v3 = _mm_loadu_ps(&x[4*i+12]);
+
+        // load coefficients into register (unaligned)
+        // TODO : ensure proper alignment
+        h0 = _mm_loadu_ps(&_q->h[4*i+0]);
+        h1 = _mm_loadu_ps(&_q->h[4*i+4]);
+        h2 = _mm_loadu_ps(&_q->h[4*i+8]);
+        h3 = _mm_loadu_ps(&_q->h[4*i+12]);
+
+        // compute multiplication
+        s0 = _mm_mul_ps(v0, h0);
+        s1 = _mm_mul_ps(v1, h1);
+        s2 = _mm_mul_ps(v2, h2);
+        s3 = _mm_mul_ps(v3, h3);
+        
+        // parallel addition
+        sum0 = _mm_add_ps( sum0, s0 );
+        sum1 = _mm_add_ps( sum1, s1 );
+        sum2 = _mm_add_ps( sum2, s2 );
+        sum3 = _mm_add_ps( sum3, s3 );
+    }
+
+    // fold down
+    sum0 = _mm_add_ps( sum0, sum1 );
+    sum2 = _mm_add_ps( sum2, sum3 );
+    union { __m128 v; float w[4] __attribute__((aligned(16)));} total;
+    total.v = _mm_add_ps( sum0, sum2 );
+    total.w[0] += total.w[2];
+    total.w[1] += total.w[3];
+
+    // cleanup (note: n _must_ be even)
+    for (i=t; i<n; i+=2) {
+        total.w[0] += x[i  ] * _q->h[i  ];
+        total.w[1] += x[i+1] * _q->h[i+1];
+    }
+
+    // set return value
+    *_y = total.w[0] + total.w[1]*_Complex_I;
 }
 
