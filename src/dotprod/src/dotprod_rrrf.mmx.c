@@ -192,8 +192,8 @@ void dotprod_rrrf_execute_mmx(dotprod_rrrf _q,
         // compute multiplication
         s = _mm_mul_ps(v, h);
        
-        // horizontal addition
-        sum.v = _mm_hadd_ps( sum.v, s );
+        // parallel addition
+        sum.v = _mm_add_ps( sum.v, s );
     }
 
     // fold down into single value
@@ -264,18 +264,18 @@ void dotprod_rrrf_execute_mmx4(dotprod_rrrf _q,
         s2 = _mm_mul_ps(v2, h2);
         s3 = _mm_mul_ps(v3, h3);
         
-        // horizontal addition
-        sum0 = _mm_hadd_ps( sum0, s0 );
-        sum1 = _mm_hadd_ps( sum1, s1 );
-        sum2 = _mm_hadd_ps( sum2, s2 );
-        sum3 = _mm_hadd_ps( sum3, s3 );
+        // parallel addition
+        sum0 = _mm_add_ps( sum0, s0 );
+        sum1 = _mm_add_ps( sum1, s1 );
+        sum2 = _mm_add_ps( sum2, s2 );
+        sum3 = _mm_add_ps( sum3, s3 );
     }
 
     // fold down into single value
     union { __m128 v; float w[4] __attribute__((aligned(16)));} total;
-    total.v = _mm_hadd_ps( sum0, sum1);
-    total.v = _mm_hadd_ps( total.v, sum2 );
-    total.v = _mm_hadd_ps( total.v, sum3 );
+    sum0 = _mm_add_ps( sum0, sum1 );
+    sum2 = _mm_add_ps( sum2, sum3 );
+    total.v = _mm_add_ps( sum0, sum2);
     total.v = _mm_hadd_ps( total.v, total.v );
     total.v = _mm_hadd_ps( total.v, total.v );
 
