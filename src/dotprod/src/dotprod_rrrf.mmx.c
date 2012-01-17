@@ -26,8 +26,13 @@
 #include <stdlib.h>
 #include <string.h>
 #include <xmmintrin.h>  // MMX
-#include <pmmintrin.h>  // SSE3: _mm_hadd_ps
 #include <assert.h>
+
+#define SSE3 0
+
+#if SSE3
+#include <pmmintrin.h>  // SSE3: _mm_hadd_ps
+#endif
 
 #include "liquid.internal.h"
 
@@ -196,12 +201,16 @@ void dotprod_rrrf_execute_mmx(dotprod_rrrf _q,
         sum.v = _mm_add_ps( sum.v, s );
     }
 
+#if SSE3
     // fold down into single value
     __m128 z = _mm_load_ps(zeros);
     sum.v = _mm_hadd_ps(sum.v, z);
     sum.v = _mm_hadd_ps(sum.v, z);
     
     float total = sum.w[0];
+#else
+    float total = sum.w[0] + sum.w[1] + sum.w[2] + sum.w[3];
+#endif
 
     // cleanup
     for (; i<_q->n; i++)
@@ -276,8 +285,12 @@ void dotprod_rrrf_execute_mmx4(dotprod_rrrf _q,
     sum0 = _mm_add_ps( sum0, sum1 );
     sum2 = _mm_add_ps( sum2, sum3 );
     total.v = _mm_add_ps( sum0, sum2);
+#if SSE3
     total.v = _mm_hadd_ps( total.v, total.v );
     total.v = _mm_hadd_ps( total.v, total.v );
+#else
+    total.w[0] += total.w[1] + total.w[2] + total.w[3];
+#endif
 
     // cleanup
     // TODO : use intrinsics here as well
