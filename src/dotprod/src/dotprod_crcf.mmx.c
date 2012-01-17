@@ -209,16 +209,16 @@ void dotprod_crcf_execute_mmx(dotprod_crcf _q,
     }
 
     // add in-phase and quadrature components
-    float sum_i = sum.w[0] + sum.w[2];
-    float sum_q = sum.w[1] + sum.w[3];
+    sum.w[0] += sum.w[2];
+    sum.w[1] += sum.w[3];
 
     // cleanup (note: n _must_ be even)
     for (; i<n; i+=2) {
-        sum_i += x[i  ] * _q->h[i  ];
-        sum_q += x[i+1] * _q->h[i+1];
+        sum.w[0] += x[i  ] * _q->h[i  ];
+        sum.w[1] += x[i+1] * _q->h[i+1];
     }
 
     // set return value
-    *_y = sum_i + _Complex_I*sum_q;
+    *_y = sum.w[0] + _Complex_I*sum.w[1];
 }
 
