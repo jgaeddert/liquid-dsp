@@ -25,7 +25,8 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <xmmintrin.h>
+#include <xmmintrin.h>  // MMX
+#include <pmmintrin.h>  // SSE3: _mm_hadd_ps
 #include <assert.h>
 
 #include "liquid.internal.h"
@@ -165,11 +166,15 @@ void dotprod_rrrf_execute_mmx(dotprod_rrrf _q,
     printf("align : %d\n", align);
 #endif
 
+    // initialize zeros constant array
+    float zeros[4] __attribute__((aligned(16))) = {0.0f, 0.0f, 0.0f, 0.0f};
+
     // first cut: ...
-    __m128 v;
-    __m128 h;
-    union { __m128 v; float w[4] __attribute__((aligned(16)));} s;
-    float total = 0.0f;
+    __m128 v;   // input vector
+    __m128 h;   // coefficients vector
+    __m128 s;   // dot product
+    union { __m128 v; float w[4] __attribute__((aligned(16)));} sum;
+    sum.v = _mm_load_ps(zeros); // load zeros into sum register
 
     // t = 4*(floor(_n/4))
     unsigned int t = (_q->n >> 2) << 2;
@@ -185,12 +190,18 @@ void dotprod_rrrf_execute_mmx(dotprod_rrrf _q,
         h = _mm_loadu_ps(&_q->h[i]);
 
         // compute multiplication
-        s.v = _mm_mul_ps(v, h);
-
-        // add into total (not necessarily efficient...)
-        // TODO : fold into single element
-        total += s.w[0] + s.w[1] + s.w[2] + s.w[3];
+        s = _mm_mul_ps(v, h);
+       
+        // horizontal addition
+        sum.v = _mm_hadd_ps( sum.v, s );
     }
+
+    // fold down into single value
+    __m128 z = _mm_load_ps(zeros);
+    sum.v = _mm_hadd_ps(sum.v, z);
+    sum.v = _mm_hadd_ps(sum.v, z);
+    
+    float total = sum.w[0];
 
     // cleanup
     for (; i<_q->n; i++)
