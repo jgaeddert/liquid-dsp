@@ -178,12 +178,15 @@ void dotprod_crcf_execute_mmx(dotprod_crcf _q,
     printf("align : %d\n", align);
 #endif
 
+    // initialize zeros constant array
+    float zeros[4] __attribute__((aligned(16))) = {0.0f, 0.0f, 0.0f, 0.0f};
+
     // first cut: ...
-    __m128 v;
-    __m128 h;
-    union { __m128 v; float w[4] __attribute__((aligned(16)));} s;
-    float sum_i = 0.0f;
-    float sum_q = 0.0f;
+    __m128 v;   // input vector
+    __m128 h;   // coefficients vector
+    __m128 s;   // dot product
+    union { __m128 v; float w[4] __attribute__((aligned(16)));} sum;
+    sum.v = _mm_load_ps(zeros);
 
     // t = 4*(floor(_n/4))
     unsigned int t = (n >> 2) << 2;
@@ -199,13 +202,15 @@ void dotprod_crcf_execute_mmx(dotprod_crcf _q,
         h = _mm_loadu_ps(&_q->h[i]);
 
         // compute multiplication
-        s.v = _mm_mul_ps(v, h);
+        s = _mm_mul_ps(v, h);
 
-        // add into total (not necessarily efficient...)
-        // TODO : fold into single element
-        sum_i += s.w[0] + s.w[2];
-        sum_q += s.w[1] + s.w[3];
+        // accumulate
+        sum.v = _mm_add_ps(sum.v, s);
     }
+
+    // add in-phase and quadrature components
+    float sum_i = sum.w[0] + sum.w[2];
+    float sum_q = sum.w[1] + sum.w[3];
 
     // cleanup (note: n _must_ be even)
     for (; i<n; i+=2) {
