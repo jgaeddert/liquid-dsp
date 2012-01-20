@@ -222,6 +222,7 @@ void dotprod_cccf_execute_mmx(dotprod_cccf _q,
         c1 = _mm_shuffle_ps( c1, c1, _MM_SHUFFLE(2,3,0,1) );
         
         // combine
+        // TODO : add SSE2 version
         s = _mm_addsub_ps( c0, c1 );
 
         // accumulate
