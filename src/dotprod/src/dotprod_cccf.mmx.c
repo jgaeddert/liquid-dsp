@@ -155,7 +155,7 @@ void dotprod_cccf_execute(dotprod_cccf _q,
         dotprod_cccf_execute_mmx4(_q, _x, _y);
     }
 #else
-    dotprod_cccf_execute_mmx(_q, _x, _y);
+    dotprod_cccf_execute_mmx4(_q, _x, _y);
 #endif
 }
 
@@ -193,8 +193,8 @@ void dotprod_cccf_execute_mmx(dotprod_cccf _q,
     __m128 v;   // input vector
     __m128 hi;  // coefficients vector (real)
     __m128 hq;  // coefficients vector (imag)
-    __m128 c0;  // output multiplication (v * hi)
-    __m128 c1;  // output multiplication (v * hq)
+    __m128 ci;  // output multiplication (v * hi)
+    __m128 cq;  // output multiplication (v * hq)
     __m128 s;   // dot product
     union { __m128 v; float w[4] __attribute__((aligned(16)));} sum;
     sum.v = _mm_set1_ps(0.0f);
@@ -215,15 +215,15 @@ void dotprod_cccf_execute_mmx(dotprod_cccf _q,
         hq = _mm_loadu_ps(&_q->hq[i]);
 
         // compute parallel multiplications
-        c0 = _mm_mul_ps(v, hi);
-        c1 = _mm_mul_ps(v, hq);
+        ci = _mm_mul_ps(v, hi);
+        cq = _mm_mul_ps(v, hq);
 
         // shuffle values
-        c1 = _mm_shuffle_ps( c1, c1, _MM_SHUFFLE(2,3,0,1) );
+        cq = _mm_shuffle_ps( cq, cq, _MM_SHUFFLE(2,3,0,1) );
         
         // combine
         // TODO : add SSE2 version
-        s = _mm_addsub_ps( c0, c1 );
+        s = _mm_addsub_ps( ci, cq );
 
         // accumulate
         sum.v = _mm_add_ps(sum.v, s);
@@ -248,7 +248,96 @@ void dotprod_cccf_execute_mmx4(dotprod_cccf _q,
                                float complex * _x,
                                float complex * _y)
 {
+    // type cast input as floating point array
+    float * x = (float*) _x;
+
+    // double effective length
+    unsigned int n = 2*_q->n;
+
+    // first cut: ...
+    __m128 v0,  v1,  v2,  v3;   // input vectors
+    __m128 hi0, hi1, hi2, hi3;  // coefficients vectors (real)
+    __m128 hq0, hq1, hq2, hq3;  // coefficients vectors (imag)
+    __m128 ci0, ci1, ci2, ci3;  // output multiplications (v * hi)
+    __m128 cq0, cq1, cq2, cq3;  // output multiplications (v * hq)
+    __m128 s0,  s1,  s2,  s3;   // dot product results
+
+    // load zeros into sum registers
+    __m128 sum = _mm_set1_ps(0.0f);
+
+    // r = 4*floor(n/16)
+    unsigned int r = (n >> 4) << 2;
+
+    //
+    unsigned int i;
+    for (i=0; i<r; i+=4) {
+        // load inputs into register (unaligned)
+        v0 = _mm_loadu_ps(&x[4*i+0]);
+        v1 = _mm_loadu_ps(&x[4*i+4]);
+        v2 = _mm_loadu_ps(&x[4*i+8]);
+        v3 = _mm_loadu_ps(&x[4*i+12]);
+
+        // load real coefficients into registers (unaligned)
+        hi0 = _mm_loadu_ps(&_q->hi[4*i+0]);
+        hi1 = _mm_loadu_ps(&_q->hi[4*i+4]);
+        hi2 = _mm_loadu_ps(&_q->hi[4*i+8]);
+        hi3 = _mm_loadu_ps(&_q->hi[4*i+12]);
+
+        // load real coefficients into registers (unaligned)
+        hq0 = _mm_loadu_ps(&_q->hq[4*i+0]);
+        hq1 = _mm_loadu_ps(&_q->hq[4*i+4]);
+        hq2 = _mm_loadu_ps(&_q->hq[4*i+8]);
+        hq3 = _mm_loadu_ps(&_q->hq[4*i+12]);
+        
+        // compute parallel multiplications (real)
+        ci0 = _mm_mul_ps(v0, hi0);
+        ci1 = _mm_mul_ps(v1, hi1);
+        ci2 = _mm_mul_ps(v2, hi2);
+        ci3 = _mm_mul_ps(v3, hi3);
+
+        // compute parallel multiplications (imag)
+        cq0 = _mm_mul_ps(v0, hq0);
+        cq1 = _mm_mul_ps(v1, hq1);
+        cq2 = _mm_mul_ps(v2, hq2);
+        cq3 = _mm_mul_ps(v3, hq3);
+
+        // shuffle values
+        cq0 = _mm_shuffle_ps( cq0, cq0, _MM_SHUFFLE(2,3,0,1) );
+        cq1 = _mm_shuffle_ps( cq1, cq1, _MM_SHUFFLE(2,3,0,1) );
+        cq2 = _mm_shuffle_ps( cq2, cq2, _MM_SHUFFLE(2,3,0,1) );
+        cq3 = _mm_shuffle_ps( cq3, cq3, _MM_SHUFFLE(2,3,0,1) );
+        
+        // combine
+        // TODO : add SSE2 version
+        s0 = _mm_addsub_ps(ci0, cq0);
+        s1 = _mm_addsub_ps(ci1, cq1);
+        s2 = _mm_addsub_ps(ci2, cq2);
+        s3 = _mm_addsub_ps(ci3, cq3);
+
+        // accumulate
+        sum = _mm_add_ps(sum, s0);
+        sum = _mm_add_ps(sum, s1);
+        sum = _mm_add_ps(sum, s2);
+        sum = _mm_add_ps(sum, s3);
+    }
+
+    // unload
+    float w[4] __attribute__((aligned(16)));
+    _mm_store_ps(w, sum);
+
+    // fold down
+    w[0] += w[2];
+    w[1] += w[3];
+
+    float complex total = w[0] + w[1] * _Complex_I;
+
+    // cleanup (note: n _must_ be even)
+    // TODO : clean this method up
+    for (i=2*r; i<_q->n; i++) {
+        total += _x[i] * ( _q->hi[2*i] + _q->hq[2*i]*_Complex_I );
+    }
+
     // set return value
-    *_y = 0.0f;
+    *_y = total;
 }
 
