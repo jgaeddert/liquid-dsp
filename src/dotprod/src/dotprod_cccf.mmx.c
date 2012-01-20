@@ -147,16 +147,12 @@ void dotprod_cccf_execute(dotprod_cccf _q,
                           float complex * _x,
                           float complex * _y)
 {
-#if 0
     // switch based on size
     if (_q->n < 32) {
         dotprod_cccf_execute_mmx(_q, _x, _y);
     } else {
         dotprod_cccf_execute_mmx4(_q, _x, _y);
     }
-#else
-    dotprod_cccf_execute_mmx4(_q, _x, _y);
-#endif
 }
 
 // use MMX/SSE extensions
