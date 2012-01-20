@@ -89,8 +89,7 @@ void dotprod_rrrf_run4(float *_h,
 
 struct dotprod_rrrf_s {
     unsigned int n;     // length
-    float * h_mem;      // allocated memory
-    float * h;          // aligned coefficients array
+    float * h;          // coefficients array
 };
 
 dotprod_rrrf dotprod_rrrf_create(float * _h,
@@ -100,24 +99,13 @@ dotprod_rrrf dotprod_rrrf_create(float * _h,
     q->n = _n;
 
     // allocate memory for coefficients
-    q->h_mem = (float*) malloc( (q->n + 4)*sizeof(float) );
-
-    // find alignment and set internal pointer
-    unsigned int i;
-    for (i=0; i<4; i++) {
-        int align = ((long int)(&q->h_mem[i]) & 15)/sizeof(float);
-
-        if (align == 0)
-            q->h = &q->h_mem[i];
-    }
-
-    // assert( h is 16-byte aligned )
-    int align = ((long int)(q->h) & 15)/sizeof(float);
-    assert(align == 0);
+    // TODO : check memory alignment?
+    q->h = (float*) malloc( q->n*sizeof(float) );
 
     // set coefficients
     memmove(q->h, _h, _n*sizeof(float));
 
+    // return object
     return q;
 }
 
@@ -135,7 +123,7 @@ dotprod_rrrf dotprod_rrrf_recreate(dotprod_rrrf _dp,
 
 void dotprod_rrrf_destroy(dotprod_rrrf _q)
 {
-    free(_q->h_mem);
+    free(_q->h);
     free(_q);
 }
 

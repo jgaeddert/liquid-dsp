@@ -87,8 +87,7 @@ void dotprod_crcf_run4(float *         _h,
 
 struct dotprod_crcf_s {
     unsigned int n;     // length
-    float * h_mem;      // allocated memory
-    float * h;          // aligned coefficients array
+    float * h;          // coefficients array
 };
 
 dotprod_crcf dotprod_crcf_create(float * _h,
@@ -98,33 +97,18 @@ dotprod_crcf dotprod_crcf_create(float * _h,
     q->n = _n;
 
     // allocate memory for coefficients
-    q->h_mem = (float*) malloc( (2*q->n + 4)*sizeof(float) );
+    // TODO : check memory alignment?
+    q->h = (float*) malloc( 2*q->n*sizeof(float) );
 
-    // find alignment and set internal pointer
-    unsigned int i;
-    for (i=0; i<4; i++) {
-        int align = ((long int)(&q->h_mem[i]) & 15)/sizeof(float);
-
-        if (align == 0)
-            q->h = &q->h_mem[i];
-    }
-
-    // assert( h is 16-byte aligned )
-    int align = ((long int)(q->h) & 15)/sizeof(float);
-    assert(align == 0);
-
-    // set coefficients
-#if 0
-    memmove(q->h, _h, _n*sizeof(float));
-#else
     // set coefficients, repeated
     //  h = { _h[0], _h[0], _h[1], _h[1], ... _h[n-1], _h[n-1]}
+    unsigned int i;
     for (i=0; i<q->n; i++) {
         q->h[2*i+0] = _h[i];
         q->h[2*i+1] = _h[i];
     }
-#endif
 
+    // return object
     return q;
 }
 
@@ -142,7 +126,7 @@ dotprod_crcf dotprod_crcf_recreate(dotprod_crcf _dp,
 
 void dotprod_crcf_destroy(dotprod_crcf _q)
 {
-    free(_q->h_mem);
+    free(_q->h);
     free(_q);
 }
 
@@ -150,8 +134,8 @@ void dotprod_crcf_print(dotprod_crcf _q)
 {
     printf("dotprod_crcf:\n");
     unsigned int i;
-    // print coefficients to screen, skipping odd entries (repeated
-    // coefficients)
+    // print coefficients to screen, skipping odd entries (due
+    // to repeated coefficients)
     for (i=0; i<_q->n; i++)
         printf("%3u : %12.9f\n", i, _q->h[2*i]);
 }
