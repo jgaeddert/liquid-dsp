@@ -128,8 +128,8 @@ void runtest_dotprod_crcf(unsigned int _n)
     // generate random coefficients
     unsigned int i;
     for (i=0; i<_n; i++) {
-        h[i] = randnf() + randnf() * _Complex_I;
-        x[i] = randnf();
+        h[i] = randnf();
+        x[i] = randnf() + randnf() * _Complex_I;
     }
     
     // compute expected value (ordinal computation)
