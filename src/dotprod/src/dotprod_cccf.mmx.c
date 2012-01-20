@@ -133,6 +133,8 @@ dotprod_cccf dotprod_cccf_recreate(dotprod_cccf _dp,
 
 void dotprod_cccf_destroy(dotprod_cccf _q)
 {
+    free(_q->hi);
+    free(_q->hq);
     free(_q);
 }
 
