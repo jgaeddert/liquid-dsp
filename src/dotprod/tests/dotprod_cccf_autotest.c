@@ -73,6 +73,105 @@ void autotest_dotprod_cccf_rand16()
     dotprod_cccf_destroy(q);
 }
 
+// 
+// AUTOTEST: structured dot product, odd lengths
+//
+void autotest_dotprod_cccf_struct_lengths()
+{
+    float tol = 2e-6;
+    float complex y;
+
+    float complex h[35] = {
+      1.11555653 +   2.30658043*_Complex_I, -0.36133676 +  -0.10917327*_Complex_I,
+      0.17714505 +  -2.14631440*_Complex_I,  2.20424609 +   0.59063608*_Complex_I,
+     -0.44699194 +   0.23369318*_Complex_I,  0.60613931 +   0.21868288*_Complex_I,
+     -1.18746289 +  -0.52159563*_Complex_I, -0.46277775 +   0.75010157*_Complex_I,
+      0.93796307 +   0.28608151*_Complex_I, -2.18699829 +   0.38029319*_Complex_I,
+      0.16145611 +   0.18343353*_Complex_I, -0.62653631 +  -1.79037656*_Complex_I,
+     -0.67042462 +   0.11044084*_Complex_I,  0.70333438 +   1.78729174*_Complex_I,
+     -0.32923580 +   0.78514690*_Complex_I,  0.27534332 +  -0.56377431*_Complex_I,
+      0.41492559 +   1.37176526*_Complex_I,  3.25368958 +   2.70495218*_Complex_I,
+      1.63002035 +  -0.14193750*_Complex_I,  2.22057186 +   0.55056461*_Complex_I,
+      1.40896777 +   0.80722903*_Complex_I, -0.22334033 +  -0.14227395*_Complex_I,
+     -1.48631186 +   0.53610531*_Complex_I, -1.91632185 +   0.88755083*_Complex_I,
+     -0.52054895 +  -0.35572001*_Complex_I, -1.56515607 +  -0.41448794*_Complex_I,
+     -0.91107117 +   0.17059659*_Complex_I, -0.77007659 +   2.73381816*_Complex_I,
+     -0.46645585 +   0.38994666*_Complex_I,  0.80317663 +  -0.41756968*_Complex_I,
+      0.26992512 +   0.41828145*_Complex_I, -0.72456446 +   1.25002030*_Complex_I,
+      1.19573306 +   0.98449546*_Complex_I,  1.42491943 +  -0.55426305*_Complex_I,
+      1.08243614 +   0.35774368*_Complex_I, };
+
+    float complex x[35] = {
+     -0.82466736 +  -1.39329228*_Complex_I, -1.46176052 +  -1.96218827*_Complex_I,
+     -1.28388174 +  -0.07152934*_Complex_I, -0.51910014 +  -0.37915971*_Complex_I,
+     -0.65964708 +  -0.98417534*_Complex_I, -1.40213479 +  -0.82198463*_Complex_I,
+      0.86051446 +   0.97926463*_Complex_I,  0.26257342 +   0.76586696*_Complex_I,
+      0.72174183 +  -1.89884636*_Complex_I, -0.26018863 +   1.06920599*_Complex_I,
+      0.57949117 +  -0.77431546*_Complex_I,  0.84635184 +  -0.81123009*_Complex_I,
+     -1.12637629 +  -0.42027412*_Complex_I, -1.04214881 +   0.90519721*_Complex_I,
+      0.54458433 +  -1.03487314*_Complex_I, -0.17847893 +   2.20358978*_Complex_I,
+      0.19642532 +  -0.07449796*_Complex_I, -1.84958229 +   0.13218920*_Complex_I,
+     -1.49042886 +   0.81610408*_Complex_I, -0.27466940 +  -1.48438409*_Complex_I,
+      0.29239375 +   0.72443343*_Complex_I, -1.20243456 +  -2.77032750*_Complex_I,
+     -0.41784260 +   0.77455254*_Complex_I,  0.37737465 +  -0.52426993*_Complex_I,
+     -1.25500377 +   1.76270122*_Complex_I,  1.55976056 +  -1.18189171*_Complex_I,
+     -0.05111343 +  -1.18849396*_Complex_I, -1.92966664 +   0.66504899*_Complex_I,
+     -2.82387897 +   1.41128242*_Complex_I, -1.48171326 +  -0.03347470*_Complex_I,
+      0.38047273 +  -1.40969799*_Complex_I,  1.71995272 +   0.00298203*_Complex_I,
+      0.56040910 +  -0.12713027*_Complex_I, -0.46653022 +  -0.65450499*_Complex_I,
+      0.15515755 +   1.58944030*_Complex_I, };
+
+    float complex v32 = -11.5100903519506 - 15.3575526884014*_Complex_I;
+    float complex v33 = -10.7148314918614 - 14.9578463360225*_Complex_I;
+    float complex v34 = -11.7423673921916 - 15.6318827515320*_Complex_I;
+    float complex v35 = -12.1430314741466 - 13.8559085000689*_Complex_I;
+
+    // 
+    dotprod_cccf dp;
+
+    // n = 32
+    dp = dotprod_cccf_create(h,32);
+    dotprod_cccf_execute(dp, x, &y);
+    CONTEND_DELTA(y, v32, tol);
+    dotprod_cccf_destroy(dp);
+    if (liquid_autotest_verbose) {
+        printf("  dotprod-cccf-32 : %12.8f + j%12.8f (expected %12.8f + j%12.8f)\n",
+                crealf(y), cimagf(y), crealf(v32), cimagf(v32));
+    }
+
+    // n = 33
+    dp = dotprod_cccf_create(h,33);
+    dotprod_cccf_execute(dp, x, &y);
+    CONTEND_DELTA(y, v33, tol);
+    dotprod_cccf_destroy(dp);
+    if (liquid_autotest_verbose) {
+        printf("  dotprod-cccf-33 : %12.8f + j%12.8f (expected %12.8f + j%12.8f)\n",
+                crealf(y), cimagf(y), crealf(v33), cimagf(v33));
+    }
+
+    // n = 34
+    dp = dotprod_cccf_create(h,34);
+    dotprod_cccf_execute(dp, x, &y);
+    CONTEND_DELTA(y, v34, tol);
+    dotprod_cccf_destroy(dp);
+    if (liquid_autotest_verbose) {
+        printf("  dotprod-cccf-34 : %12.8f + j%12.8f (expected %12.8f + j%12.8f)\n",
+                crealf(y), cimagf(y), crealf(v34), cimagf(v34));
+    }
+
+    // n = 35
+    dp = dotprod_cccf_create(h,35);
+    dotprod_cccf_execute(dp, x, &y);
+    CONTEND_DELTA(y, v35, tol);
+    dotprod_cccf_destroy(dp);
+    if (liquid_autotest_verbose) {
+        printf("  dotprod-cccf-35 : %12.8f + j%12.8f (expected %12.8f + j%12.8f)\n",
+                crealf(y), cimagf(y), crealf(v35), cimagf(v35));
+    }
+}
+
+
+
 // helper function (compare structured object to ordinal computation)
 void runtest_dotprod_cccf(unsigned int _n)
 {
