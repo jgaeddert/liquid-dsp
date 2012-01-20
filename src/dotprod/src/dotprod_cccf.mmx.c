@@ -245,10 +245,8 @@ void dotprod_cccf_execute_mmx(dotprod_cccf _q,
     float complex total = sum.w[0] + sum.w[1] * _Complex_I;
 
     // cleanup
-    // TODO : clean this up
-    for (i=t/2; i<_q->n; i++) {
-        total += x[i] * ( crealf(_q->hi[2*i]) + cimagf(_q->hq[2*i])*_Complex_I );
-    }
+    for (i=t/2; i<_q->n; i++)
+        total += _x[i] * ( _q->hi[2*i] + _q->hq[2*i]*_Complex_I );
 
     // set return value
     *_y = total;
