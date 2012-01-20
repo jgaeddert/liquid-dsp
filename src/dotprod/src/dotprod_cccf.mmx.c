@@ -196,9 +196,6 @@ void dotprod_cccf_execute_mmx(dotprod_cccf _q,
     printf("align : %d\n", align);
 #endif
 
-    // initialize zeros constant array
-    float zeros[4] __attribute__((aligned(16))) = {0.0f, 0.0f, 0.0f, 0.0f};
-
     // first cut: ...
     __m128 v;   // input vector
     __m128 hi;  // coefficients vector (real)
@@ -207,7 +204,7 @@ void dotprod_cccf_execute_mmx(dotprod_cccf _q,
     __m128 c1;  // 
     __m128 s;   // dot product
     union { __m128 v; float w[4] __attribute__((aligned(16)));} sum;
-    sum.v = _mm_load_ps(zeros);
+    sum.v = _mm_set1_ps(0.0f);
 
     // t = 4*(floor(_n/4))
     unsigned int t = (n >> 2) << 2;
