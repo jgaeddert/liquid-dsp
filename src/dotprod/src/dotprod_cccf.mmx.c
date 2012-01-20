@@ -25,9 +25,8 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <xmmintrin.h>
-#include <pmmintrin.h>  // SSE3: _mm_hadd_ps, _mm_addsub...
-#include <assert.h>
+#include <xmmintrin.h>  // SSE
+#include <pmmintrin.h>  // SSE3: _mm_addsub_ps
 
 #include "liquid.internal.h"
 
@@ -190,18 +189,12 @@ void dotprod_cccf_execute_mmx(dotprod_cccf _q,
     // double effective length
     unsigned int n = 2*_q->n;
 
-#if DEBUG_DOTPROD_CRCF_MMX
-    // check alignment
-    int align = ((long int)x & 15)/sizeof(float);
-    printf("align : %d\n", align);
-#endif
-
-    // first cut: ...
+    // temporary buffers
     __m128 v;   // input vector
     __m128 hi;  // coefficients vector (real)
     __m128 hq;  // coefficients vector (imag)
-    __m128 c0;  // 
-    __m128 c1;  // 
+    __m128 c0;  // output multiplication (v * hi)
+    __m128 c1;  // output multiplication (v * hq)
     __m128 s;   // dot product
     union { __m128 v; float w[4] __attribute__((aligned(16)));} sum;
     sum.v = _mm_set1_ps(0.0f);

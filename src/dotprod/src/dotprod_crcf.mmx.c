@@ -164,12 +164,6 @@ void dotprod_crcf_execute_mmx(dotprod_crcf _q,
     // double effective length
     unsigned int n = 2*_q->n;
 
-#if DEBUG_DOTPROD_CRCF_MMX
-    // check alignment
-    int align = ((long int)x & 15)/sizeof(float);
-    printf("align : %d\n", align);
-#endif
-
     // first cut: ...
     __m128 v;   // input vector
     __m128 h;   // coefficients vector
@@ -212,7 +206,6 @@ void dotprod_crcf_execute_mmx(dotprod_crcf _q,
 }
 
 // use MMX/SSE extensions
-// FIXME : something wrong with this method
 void dotprod_crcf_execute_mmx4(dotprod_crcf _q,
                                float complex * _x,
                                float complex * _y)

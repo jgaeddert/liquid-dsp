@@ -153,12 +153,6 @@ void dotprod_rrrf_execute_mmx(dotprod_rrrf _q,
                               float * _x,
                               float * _y)
 {
-#if DEBUG_DOTPROD_RRRF_MMX
-    // check alignment
-    int align = ((long int)_x & 15)/sizeof(float);
-    printf("align : %d\n", align);
-#endif
-
     // first cut: ...
     __m128 v;   // input vector
     __m128 h;   // coefficients vector
@@ -210,12 +204,6 @@ void dotprod_rrrf_execute_mmx4(dotprod_rrrf _q,
                                float * _x,
                                float * _y)
 {
-#if DEBUG_DOTPROD_RRRF_MMX
-    // check alignment
-    int align = ((long int)_x & 15)/sizeof(float);
-    printf("align : %d\n", align);
-#endif
-
     // first cut: ...
     __m128 v0, v1, v2, v3;
     __m128 h0, h1, h2, h3;
