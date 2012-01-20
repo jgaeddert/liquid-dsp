@@ -29,32 +29,39 @@ void dotprod_cccf_bench(struct rusage *_start,
                         unsigned int _n)
 {
     // normalize number of iterations
-    *_num_iterations *= 4;
+    *_num_iterations *= 100;
     *_num_iterations /= _n;
     if (*_num_iterations < 1) *_num_iterations = 1;
 
-    float complex x[_n], h[_n], y[8];
+    float complex x[_n];
+    float complex h[_n];
+    float complex y[8];
     unsigned int i;
     for (i=0; i<_n; i++) {
         x[i] = randnf() + _Complex_I*randnf();
         h[i] = randnf() + _Complex_I*randnf();
     }
 
+    // create dotprod structure;
+    dotprod_cccf dp = dotprod_cccf_create(h,_n);
+
     // start trials
     getrusage(RUSAGE_SELF, _start);
     for (i=0; i<(*_num_iterations); i++) {
-        dotprod_cccf_run(h, x, _n, &y[0]);
-        dotprod_cccf_run(h, x, _n, &y[1]);
-        dotprod_cccf_run(h, x, _n, &y[2]);
-        dotprod_cccf_run(h, x, _n, &y[3]);
-        dotprod_cccf_run(h, x, _n, &y[4]);
-        dotprod_cccf_run(h, x, _n, &y[5]);
-        dotprod_cccf_run(h, x, _n, &y[6]);
-        dotprod_cccf_run(h, x, _n, &y[7]);
+        dotprod_cccf_execute(dp, x, &y[0]);
+        dotprod_cccf_execute(dp, x, &y[1]);
+        dotprod_cccf_execute(dp, x, &y[2]);
+        dotprod_cccf_execute(dp, x, &y[3]);
+        dotprod_cccf_execute(dp, x, &y[4]);
+        dotprod_cccf_execute(dp, x, &y[5]);
+        dotprod_cccf_execute(dp, x, &y[6]);
+        dotprod_cccf_execute(dp, x, &y[7]);
     }
     getrusage(RUSAGE_SELF, _finish);
     *_num_iterations *= 8;
 
+    // clean up objects
+    dotprod_cccf_destroy(dp);
 }
 
 #define DOTPROD_CCCF_BENCHMARK_API(N)   \
