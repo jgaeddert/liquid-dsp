@@ -322,3 +322,49 @@ void autotest_dotprod_rrrf_struct_lengths()
         printf("  dotprod-rrrf-35 : %12.8f (expected %12.8f)\n", y, v35);
 }
 
+// 
+// AUTOTEST: compare structured result to oridinal computation
+//
+
+// helper function (compare structured object to ordinal computation)
+void runtest_dotprod_rrrf(unsigned int _n)
+{
+    float tol = 2e-6;
+    float h[_n];
+    float x[_n];
+
+    // generate random coefficients
+    unsigned int i;
+    for (i=0; i<_n; i++) {
+        h[i] = randnf();
+        x[i] = randnf();
+    }
+    
+    // compute expected value (ordinal computation)
+    float y_test;
+    dotprod_rrrf_run(h, x, _n, &y_test);
+
+    // create and run dot product object
+    float y;
+    dotprod_rrrf dp;
+    dp = dotprod_rrrf_create(h,_n);
+    dotprod_rrrf_execute(dp, x, &y);
+    dotprod_rrrf_destroy(dp);
+
+    // print results
+    if (liquid_autotest_verbose)
+        printf("  dotprod-rrrf-%-4u : %12.8f (expected %12.8f)\n", _n, y, y_test);
+
+    // validate result
+    CONTEND_DELTA(y, y_test, tol);
+}
+
+// compare structured object to ordinal computation
+void autotest_dotprod_rrrf_struct_vs_ordinal()
+{
+    // run many, many tests
+    unsigned int i;
+    for (i=1; i<=1024; i++)
+        runtest_dotprod_rrrf(i);
+}
+
