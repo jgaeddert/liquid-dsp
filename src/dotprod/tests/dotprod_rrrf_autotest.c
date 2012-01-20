@@ -364,7 +364,7 @@ void autotest_dotprod_rrrf_struct_vs_ordinal()
 {
     // run many, many tests
     unsigned int i;
-    for (i=1; i<=1024; i++)
+    for (i=1; i<=512; i++)
         runtest_dotprod_rrrf(i);
 }
 
