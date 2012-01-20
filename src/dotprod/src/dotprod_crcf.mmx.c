@@ -240,11 +240,8 @@ void dotprod_crcf_execute_mmx4(dotprod_crcf _q,
     __m128 sum2 = _mm_load_ps(zeros);
     __m128 sum3 = _mm_load_ps(zeros);
 
-    // r = floor(n/4)
-    unsigned int r = (n >> 2);
-
-    // t = 4*r = 4*(floor(n/4))
-    unsigned int t = r << 2;
+    // r = 4*floor(n/16)
+    unsigned int r = (n >> 4) << 2;
 
     //
     unsigned int i;
@@ -284,7 +281,7 @@ void dotprod_crcf_execute_mmx4(dotprod_crcf _q,
     total.w[1] += total.w[3];
 
     // cleanup (note: n _must_ be even)
-    for (i=t; i<n; i+=2) {
+    for (i=4*r; i<n; i+=2) {
         total.w[0] += x[i  ] * _q->h[i  ];
         total.w[1] += x[i+1] * _q->h[i+1];
     }

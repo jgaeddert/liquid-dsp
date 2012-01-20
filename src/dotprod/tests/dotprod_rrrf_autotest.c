@@ -329,7 +329,7 @@ void autotest_dotprod_rrrf_struct_lengths()
 // helper function (compare structured object to ordinal computation)
 void runtest_dotprod_rrrf(unsigned int _n)
 {
-    float tol = 2e-6;
+    float tol = 1e-4;
     float h[_n];
     float x[_n];
 

@@ -233,11 +233,8 @@ void dotprod_rrrf_execute_mmx4(dotprod_rrrf _q,
     __m128 sum2 = _mm_load_ps(zeros);
     __m128 sum3 = _mm_load_ps(zeros);
 
-    // r = floor(n/4)
-    unsigned int r = (_q->n >> 2);
-
-    // t = 4*r = 4*(floor(_n/4))
-    unsigned int t = r << 2;
+    // r = 4*floor(n/16)
+    unsigned int r = (_q->n >> 4) << 2;
 
     //
     unsigned int i;
@@ -282,7 +279,7 @@ void dotprod_rrrf_execute_mmx4(dotprod_rrrf _q,
 
     // cleanup
     // TODO : use intrinsics here as well
-    for (i=t; i<_q->n; i++)
+    for (i=4*r; i<_q->n; i++)
         total.w[0] += _x[i] * _q->h[i];
 
     // set return value

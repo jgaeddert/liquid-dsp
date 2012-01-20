@@ -121,7 +121,7 @@ void autotest_dotprod_crcf_rand02()
 // helper function (compare structured object to ordinal computation)
 void runtest_dotprod_crcf(unsigned int _n)
 {
-    float tol = 2e-6;
+    float tol = 1e-4;
     float h[_n];
     float complex x[_n];
 
