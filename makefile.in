@@ -175,6 +175,7 @@ src/dotprod/src/dotprod_cccf.mmx.o : %.o : %.c $(headers)
 dotprod_autotests :=						\
 	src/dotprod/tests/dotprod_rrrf_autotest.c		\
 	src/dotprod/tests/dotprod_crcf_autotest.c		\
+	src/dotprod/tests/dotprod_cccf_autotest.c		\
 
 dotprod_benchmarks :=						\
 	src/dotprod/bench/dotprod_cccf_benchmark.c		\
