@@ -151,6 +151,7 @@ buffer_autotests :=						\
 
 buffer_benchmarks :=						\
 	src/buffer/bench/window_benchmark.c			\
+	src/buffer/bench/window_read_benchmark.c		\
 
 # 
 # MODULE : dotprod
