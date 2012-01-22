@@ -1,6 +1,6 @@
 /*
- * Copyright (c) 2007, 2008, 2009, 2010 Joseph Gaeddert
- * Copyright (c) 2007, 2008, 2009, 2010 Virginia Polytechnic
+ * Copyright (c) 2007, 2008, 2009, 2010, 2012 Joseph Gaeddert
+ * Copyright (c) 2007, 2008, 2009, 2010, 2012 Virginia Polytechnic
  *                                      Institute & State University
  *
  * This file is part of liquid.
@@ -22,20 +22,20 @@
 #include <sys/resource.h>
 #include "liquid.h"
 
-#define WINDOW_BENCH_API(N)             \
+#define WINDOW_PUSH_BENCH_API(N)        \
 (   struct rusage *_start,              \
     struct rusage *_finish,             \
     unsigned long int *_num_iterations) \
-{ window_bench(_start, _finish, _num_iterations, N); }
+{ window_push_bench(_start, _finish, _num_iterations, N); }
 
 // Helper function to keep code base small
-void window_bench(struct rusage *_start,
-                  struct rusage *_finish,
-                  unsigned long int *_num_iterations,
-                  unsigned int _n)
+void window_push_bench(struct rusage *_start,
+                       struct rusage *_finish,
+                       unsigned long int *_num_iterations,
+                       unsigned int _n)
 {
     // normalize number of iterations
-    *_num_iterations /= 4;
+    *_num_iterations *= 8;
     if (*_num_iterations < 1) *_num_iterations = 1;
 
     // initialize port
@@ -45,7 +45,6 @@ void window_bench(struct rusage *_start,
 
     // start trials:
     //   write to port, read from port
-    *_num_iterations *= 32;
     getrusage(RUSAGE_SELF, _start);
     for (i=0; i<(*_num_iterations); i++) {
         windowcf_push(w, 1.0f);
@@ -60,9 +59,9 @@ void window_bench(struct rusage *_start,
 }
 
 // 
-void benchmark_windowcf_n16     WINDOW_BENCH_API(16)
-void benchmark_windowcf_n32     WINDOW_BENCH_API(32)
-void benchmark_windowcf_n64     WINDOW_BENCH_API(64)
-void benchmark_windowcf_n128    WINDOW_BENCH_API(128)
-void benchmark_windowcf_n256    WINDOW_BENCH_API(256)
+void benchmark_windowcf_push_n16     WINDOW_PUSH_BENCH_API(16)
+void benchmark_windowcf_push_n32     WINDOW_PUSH_BENCH_API(32)
+void benchmark_windowcf_push_n64     WINDOW_PUSH_BENCH_API(64)
+void benchmark_windowcf_push_n128    WINDOW_PUSH_BENCH_API(128)
+void benchmark_windowcf_push_n256    WINDOW_PUSH_BENCH_API(256)
 

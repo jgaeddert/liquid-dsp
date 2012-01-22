@@ -150,7 +150,7 @@ buffer_autotests :=						\
 	src/buffer/tests/window_autotest.c			\
 
 buffer_benchmarks :=						\
-	src/buffer/bench/window_benchmark.c			\
+	src/buffer/bench/window_push_benchmark.c		\
 	src/buffer/bench/window_read_benchmark.c		\
 
 # 
