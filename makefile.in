@@ -549,7 +549,9 @@ math_autotests :=						\
 	src/math/tests/polynomial_autotest.c			\
 
 
-math_benchmarks :=
+math_benchmarks :=						\
+	src/math/bench/polyfit_benchmark.c			\
+
 
 #
 # MODULE : matrix
