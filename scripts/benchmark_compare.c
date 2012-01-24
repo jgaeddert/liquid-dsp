@@ -102,6 +102,10 @@ int main(int argc, char*argv[])
     benchlist_link(benchmarks_old, benchmarks_new);
     benchlist_print(benchmarks_old);
 
+    // destroy benchmark lists
+    benchlist_destroy(benchmarks_old);
+    benchlist_destroy(benchmarks_new);
+
     printf("done.\n");
     return 0;
 }
