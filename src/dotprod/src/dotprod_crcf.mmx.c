@@ -168,7 +168,7 @@ void dotprod_crcf_execute_mmx(dotprod_crcf _q,
     __m128 h;   // coefficients vector
     __m128 s;   // dot product
     union { __m128 v; float w[4] __attribute__((aligned(16)));} sum;
-    sum.v = _mm_set1_ps(0.0f);
+    sum.v = _mm_setzero_ps();
 
     // t = 4*(floor(_n/4))
     unsigned int t = (n >> 2) << 2;
@@ -220,10 +220,10 @@ void dotprod_crcf_execute_mmx4(dotprod_crcf _q,
     __m128 s0, s1, s2, s3;  // dot products [re, im, re, im]
 
     // load zeros into sum registers
-    __m128 sum0 = _mm_set1_ps(0.0f);
-    __m128 sum1 = _mm_set1_ps(0.0f);
-    __m128 sum2 = _mm_set1_ps(0.0f);
-    __m128 sum3 = _mm_set1_ps(0.0f);
+    __m128 sum0 = _mm_setzero_ps();
+    __m128 sum1 = _mm_setzero_ps();
+    __m128 sum2 = _mm_setzero_ps();
+    __m128 sum3 = _mm_setzero_ps();
 
     // r = 4*floor(n/16)
     unsigned int r = (n >> 4) << 2;

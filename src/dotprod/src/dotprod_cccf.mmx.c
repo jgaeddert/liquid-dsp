@@ -192,7 +192,7 @@ void dotprod_cccf_execute_mmx(dotprod_cccf _q,
     __m128 cq;  // output multiplication (v * hq)
     __m128 s;   // dot product
     union { __m128 v; float w[4] __attribute__((aligned(16)));} sum;
-    sum.v = _mm_set1_ps(0.0f);
+    sum.v = _mm_setzero_ps();
 
     // t = 4*(floor(_n/4))
     unsigned int t = (n >> 2) << 2;
@@ -257,7 +257,7 @@ void dotprod_cccf_execute_mmx4(dotprod_cccf _q,
     __m128 s0,  s1,  s2,  s3;   // dot product results
 
     // load zeros into sum registers
-    __m128 sum = _mm_set1_ps(0.0f);
+    __m128 sum = _mm_setzero_ps();
 
     // r = 4*floor(n/16)
     unsigned int r = (n >> 4) << 2;

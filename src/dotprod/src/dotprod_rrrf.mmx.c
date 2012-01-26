@@ -157,7 +157,7 @@ void dotprod_rrrf_execute_mmx(dotprod_rrrf _q,
     __m128 h;   // coefficients vector
     __m128 s;   // dot product
     union { __m128 v; float w[4] __attribute__((aligned(16)));} sum;
-    sum.v = _mm_set1_ps(0.0f); // load zeros into sum register
+    sum.v = _mm_setzero_ps(); // load zeros into sum register
 
     // t = 4*(floor(_n/4))
     unsigned int t = (_q->n >> 2) << 2;
@@ -180,7 +180,7 @@ void dotprod_rrrf_execute_mmx(dotprod_rrrf _q,
 
 #if SSE3
     // fold down into single value
-    __m128 z = _mm_set1_ps(0.0f);
+    __m128 z = _mm_setzero_ps();
     sum.v = _mm_hadd_ps(sum.v, z);
     sum.v = _mm_hadd_ps(sum.v, z);
     
@@ -208,10 +208,10 @@ void dotprod_rrrf_execute_mmx4(dotprod_rrrf _q,
     __m128 s0, s1, s2, s3;
 
     // load zeros into sum registers
-    __m128 sum0 = _mm_set1_ps(0.0f);
-    __m128 sum1 = _mm_set1_ps(0.0f);
-    __m128 sum2 = _mm_set1_ps(0.0f);
-    __m128 sum3 = _mm_set1_ps(0.0f);
+    __m128 sum0 = _mm_setzero_ps();
+    __m128 sum1 = _mm_setzero_ps();
+    __m128 sum2 = _mm_setzero_ps();
+    __m128 sum3 = _mm_setzero_ps();
 
     // r = 4*floor(n/16)
     unsigned int r = (_q->n >> 4) << 2;
