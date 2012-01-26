@@ -156,8 +156,7 @@ void dotprod_rrrf_execute_mmx(dotprod_rrrf _q,
     __m128 v;   // input vector
     __m128 h;   // coefficients vector
     __m128 s;   // dot product
-    union { __m128 v; float w[4] __attribute__((aligned(16)));} sum;
-    sum.v = _mm_setzero_ps(); // load zeros into sum register
+    __m128 sum = _mm_setzero_ps(); // load zeros into sum register
 
     // t = 4*(floor(_n/4))
     unsigned int t = (_q->n >> 2) << 2;
@@ -175,18 +174,24 @@ void dotprod_rrrf_execute_mmx(dotprod_rrrf _q,
         s = _mm_mul_ps(v, h);
        
         // parallel addition
-        sum.v = _mm_add_ps( sum.v, s );
+        sum = _mm_add_ps( sum, s );
     }
 
+    // aligned output array
+    float w[4] __attribute__((aligned(16)));
 #if SSE3
     // fold down into single value
     __m128 z = _mm_setzero_ps();
-    sum.v = _mm_hadd_ps(sum.v, z);
-    sum.v = _mm_hadd_ps(sum.v, z);
-    
-    float total = sum.w[0];
+    sum = _mm_hadd_ps(sum, z);
+    sum = _mm_hadd_ps(sum, z);
+   
+    // unload single (lower value)
+    _mm_store_ss(w, sum);
+    float total = w[0];
 #else
-    float total = sum.w[0] + sum.w[1] + sum.w[2] + sum.w[3];
+    // unload packed array
+    _mm_store_ps(w, sum);
+    float total = w[0] + w[1] + w[2] + w[3];
 #endif
 
     // cleanup
@@ -244,24 +249,35 @@ void dotprod_rrrf_execute_mmx4(dotprod_rrrf _q,
         sum3 = _mm_add_ps( sum3, s3 );
     }
 
-    // fold down into single value
-    union { __m128 v; float w[4] __attribute__((aligned(16)));} total;
+    // fold down into single 4-element register
     sum0 = _mm_add_ps( sum0, sum1 );
     sum2 = _mm_add_ps( sum2, sum3 );
-    total.v = _mm_add_ps( sum0, sum2);
+    sum0 = _mm_add_ps( sum0, sum2);
+    
+    // aligned output array
+    float w[4] __attribute__((aligned(16)));
+
 #if SSE3
-    total.v = _mm_hadd_ps( total.v, total.v );
-    total.v = _mm_hadd_ps( total.v, total.v );
+    // SSE3: fold down to single value using _mm_hadd_ps()
+    __m128 z = _mm_setzero_ps();
+    sum0 = _mm_hadd_ps(sum0, z);
+    sum0 = _mm_hadd_ps(sum0, z);
+   
+    // unload single (lower value)
+    _mm_store_ss(w, sum0);
+    float total = w[0];
 #else
-    total.w[0] += total.w[1] + total.w[2] + total.w[3];
+    // SSE2 and below: unload packed array and perform manual sum
+    _mm_store_ps(w, sum0);
+    float total = w[0] + w[1] + w[2] + w[3];
 #endif
 
     // cleanup
     // TODO : use intrinsics here as well
     for (i=4*r; i<_q->n; i++)
-        total.w[0] += _x[i] * _q->h[i];
+        total += _x[i] * _q->h[i];
 
     // set return value
-    *_y = total.w[0];
+    *_y = total;
 }
 
