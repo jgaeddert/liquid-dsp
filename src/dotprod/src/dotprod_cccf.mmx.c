@@ -164,12 +164,16 @@ void dotprod_cccf_execute(dotprod_cccf _q,
                           float complex * _x,
                           float complex * _y)
 {
+#if 0
     // switch based on size
     if (_q->n < 32) {
         dotprod_cccf_execute_mmx(_q, _x, _y);
     } else {
         dotprod_cccf_execute_mmx4(_q, _x, _y);
     }
+#else
+    dotprod_cccf_execute_mmx(_q, _x, _y);
+#endif
 }
 
 // use MMX/SSE extensions
@@ -208,9 +212,17 @@ void dotprod_cccf_execute_mmx(dotprod_cccf _q,
     __m128 hq;  // coefficients vector (imag)
     __m128 ci;  // output multiplication (v * hi)
     __m128 cq;  // output multiplication (v * hq)
-    __m128 s;   // dot product
     union { __m128 v; float w[4] __attribute__((aligned(16)));} sum;
     sum.v = _mm_set1_ps(0.0f);
+
+#if HAVE_PMMINTRIN_H
+    // SSE3
+    __m128 s;   // dot product
+#else
+    // no SSE3
+    float wi[4] __attribute__((aligned(16)));
+    float wq[4] __attribute__((aligned(16)));
+#endif
 
     // t = 4*(floor(_n/4))
     unsigned int t = (n >> 2) << 2;
@@ -235,15 +247,24 @@ void dotprod_cccf_execute_mmx(dotprod_cccf _q,
         cq = _mm_shuffle_ps( cq, cq, _MM_SHUFFLE(2,3,0,1) );
         
 #if HAVE_PMMINTRIN_H
-        // SSE3: combine using 
+        // SSE3: combine using addsub_ps()
         s = _mm_addsub_ps( ci, cq );
-#else
-        // no SSE3: combine using slow method
-        // FIXME: implement slow method
-#endif
 
         // accumulate
         sum.v = _mm_add_ps(sum.v, s);
+#else
+        // no SSE3: combine using slow method
+        // FIXME: implement slow method
+        // unload values
+        _mm_store_ps(wi, ci);
+        _mm_store_ps(wq, cq);
+
+        // accumulate
+        sum.w[0] += wi[0] - wq[0];
+        sum.w[1] += wi[1] + wq[1];
+        sum.w[2] += wi[2] - wq[2];
+        sum.w[3] += wi[3] + wq[3];
+#endif
     }
 
     // add in-phase and quadrature components
