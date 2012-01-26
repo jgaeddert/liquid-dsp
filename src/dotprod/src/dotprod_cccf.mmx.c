@@ -97,10 +97,9 @@ dotprod_cccf dotprod_cccf_create(float complex * _h,
     dotprod_cccf q = (dotprod_cccf)malloc(sizeof(struct dotprod_cccf_s));
     q->n = _n;
 
-    // allocate memory for coefficients
-    // TODO : check memory alignment?
-    q->hi = (float*) malloc( 2*q->n*sizeof(float) );
-    q->hq = (float*) malloc( 2*q->n*sizeof(float) );
+    // allocate memory for coefficients, 16-byte aligned
+    q->hi = (float*) _mm_malloc( 2*q->n*sizeof(float), 16 );
+    q->hq = (float*) _mm_malloc( 2*q->n*sizeof(float), 16 );
 
     // set coefficients, repeated
     //  hi = { crealf(_h[0]), crealf(_h[0]), ... crealf(_h[n-1]), crealf(_h[n-1])}
@@ -132,8 +131,8 @@ dotprod_cccf dotprod_cccf_recreate(dotprod_cccf _dp,
 
 void dotprod_cccf_destroy(dotprod_cccf _q)
 {
-    free(_q->hi);
-    free(_q->hq);
+    _mm_free(_q->hi);
+    _mm_free(_q->hq);
     free(_q);
 }
 
@@ -205,10 +204,9 @@ void dotprod_cccf_execute_mmx(dotprod_cccf _q,
         // {x[0].real, x[0].imag, x[1].real, x[1].imag}
         v = _mm_loadu_ps(&x[i]);
 
-        // load coefficients into register (unaligned)
-        // TODO : ensure proper alignment
-        hi = _mm_loadu_ps(&_q->hi[i]);
-        hq = _mm_loadu_ps(&_q->hq[i]);
+        // load coefficients into register (aligned)
+        hi = _mm_load_ps(&_q->hi[i]);
+        hq = _mm_load_ps(&_q->hq[i]);
 
         // compute parallel multiplications
         ci = _mm_mul_ps(v, hi);
@@ -273,17 +271,17 @@ void dotprod_cccf_execute_mmx4(dotprod_cccf _q,
         v2 = _mm_loadu_ps(&x[4*i+8]);
         v3 = _mm_loadu_ps(&x[4*i+12]);
 
-        // load real coefficients into registers (unaligned)
-        hi0 = _mm_loadu_ps(&_q->hi[4*i+0]);
-        hi1 = _mm_loadu_ps(&_q->hi[4*i+4]);
-        hi2 = _mm_loadu_ps(&_q->hi[4*i+8]);
-        hi3 = _mm_loadu_ps(&_q->hi[4*i+12]);
+        // load real coefficients into registers (aligned)
+        hi0 = _mm_load_ps(&_q->hi[4*i+0]);
+        hi1 = _mm_load_ps(&_q->hi[4*i+4]);
+        hi2 = _mm_load_ps(&_q->hi[4*i+8]);
+        hi3 = _mm_load_ps(&_q->hi[4*i+12]);
 
-        // load real coefficients into registers (unaligned)
-        hq0 = _mm_loadu_ps(&_q->hq[4*i+0]);
-        hq1 = _mm_loadu_ps(&_q->hq[4*i+4]);
-        hq2 = _mm_loadu_ps(&_q->hq[4*i+8]);
-        hq3 = _mm_loadu_ps(&_q->hq[4*i+12]);
+        // load real coefficients into registers (aligned)
+        hq0 = _mm_load_ps(&_q->hq[4*i+0]);
+        hq1 = _mm_load_ps(&_q->hq[4*i+4]);
+        hq2 = _mm_load_ps(&_q->hq[4*i+8]);
+        hq3 = _mm_load_ps(&_q->hq[4*i+12]);
         
         // compute parallel multiplications (real)
         ci0 = _mm_mul_ps(v0, hi0);

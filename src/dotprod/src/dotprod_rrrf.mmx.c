@@ -98,9 +98,8 @@ dotprod_rrrf dotprod_rrrf_create(float * _h,
     dotprod_rrrf q = (dotprod_rrrf)malloc(sizeof(struct dotprod_rrrf_s));
     q->n = _n;
 
-    // allocate memory for coefficients
-    // TODO : check memory alignment?
-    q->h = (float*) malloc( q->n*sizeof(float) );
+    // allocate memory for coefficients, 16-byte aligned
+    q->h = (float*) _mm_malloc( q->n*sizeof(float), 16);
 
     // set coefficients
     memmove(q->h, _h, _n*sizeof(float));
@@ -123,7 +122,7 @@ dotprod_rrrf dotprod_rrrf_recreate(dotprod_rrrf _dp,
 
 void dotprod_rrrf_destroy(dotprod_rrrf _q)
 {
-    free(_q->h);
+    _mm_free(_q->h);
     free(_q);
 }
 
@@ -169,9 +168,8 @@ void dotprod_rrrf_execute_mmx(dotprod_rrrf _q,
         // load inputs into register (unaligned)
         v = _mm_loadu_ps(&_x[i]);
 
-        // load coefficients into register (unaligned)
-        // TODO : ensure proper alignment
-        h = _mm_loadu_ps(&_q->h[i]);
+        // load coefficients into register (aligned)
+        h = _mm_load_ps(&_q->h[i]);
 
         // compute multiplication
         s = _mm_mul_ps(v, h);
@@ -227,12 +225,11 @@ void dotprod_rrrf_execute_mmx4(dotprod_rrrf _q,
         v2 = _mm_loadu_ps(&_x[4*i+8]);
         v3 = _mm_loadu_ps(&_x[4*i+12]);
 
-        // load coefficients into register (unaligned)
-        // TODO : ensure proper alignment
-        h0 = _mm_loadu_ps(&_q->h[4*i+0]);
-        h1 = _mm_loadu_ps(&_q->h[4*i+4]);
-        h2 = _mm_loadu_ps(&_q->h[4*i+8]);
-        h3 = _mm_loadu_ps(&_q->h[4*i+12]);
+        // load coefficients into register (aligned)
+        h0 = _mm_load_ps(&_q->h[4*i+0]);
+        h1 = _mm_load_ps(&_q->h[4*i+4]);
+        h2 = _mm_load_ps(&_q->h[4*i+8]);
+        h3 = _mm_load_ps(&_q->h[4*i+12]);
 
         // compute multiplication
         s0 = _mm_mul_ps(v0, h0);
