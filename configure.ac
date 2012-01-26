@@ -216,6 +216,15 @@ AC_CHECK_SIZEOF(unsigned int)
 AC_CANONICAL_TARGET
 case $target_cpu in
 i386|i486|i586|i686|x86|x86_64)
+    # check compile-time MMX/SSE/SIMD flags
+    #   MMX     :   mmintrin.h
+    #   SSE     :   xmmintrin.h
+    #   SSE2    :   emmintrin.h
+    #   SSE3    :   pmmintrin.h
+    #   SSSE3   :   tmmintrin.h
+    #   SSE4..  :   smmintrin.h
+    AC_CHECK_HEADERS(mmintrin.h xmmintrin.h emmintrin.h pmmintrin.h tmmintrin.h smmintrin.h)
+
     MLIBS_DOTPROD="src/dotprod/src/dotprod_cccf.mmx.o \
                    src/dotprod/src/dotprod_crcf.mmx.o \
                    src/dotprod/src/dotprod_rrrf.mmx.o"

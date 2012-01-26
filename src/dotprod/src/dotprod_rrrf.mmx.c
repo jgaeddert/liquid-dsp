@@ -25,16 +25,28 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <xmmintrin.h>  // MMX
 #include <assert.h>
 
-#define SSE3 0
+#include "liquid.internal.h"
 
-#if SSE3
-#include <pmmintrin.h>  // SSE3: _mm_hadd_ps
+// include proper SIMD extensions for x86 platforms
+// NOTE: these pre-processor macros are defined in config.h
+
+#if HAVE_MMINTRIN_H
+#include <mmintrin.h>   // MMX
 #endif
 
-#include "liquid.internal.h"
+#if HAVE_XMMINTRIN_H
+#include <xmmintrin.h>  // SSE
+#endif
+
+#if HAVE_EMMINTRIN_H
+#include <emmintrin.h>  // SSE2
+#endif
+
+#if HAVE_PMMINTRIN_H
+#include <pmmintrin.h>  // SSE3
+#endif
 
 #define DEBUG_DOTPROD_RRRF_MMX   0
 
@@ -180,14 +192,15 @@ void dotprod_rrrf_execute_mmx(dotprod_rrrf _q,
         sum.v = _mm_add_ps( sum.v, s );
     }
 
-#if SSE3
-    // fold down into single value
+#if HAVE_PMMINTRIN_H
+    // SSE3: fold down into single value using parallel hadd_ps()
     __m128 z = _mm_set1_ps(0.0f);
     sum.v = _mm_hadd_ps(sum.v, z);
     sum.v = _mm_hadd_ps(sum.v, z);
     
     float total = sum.w[0];
 #else
+    // no SSE3 extensions: fold down using slow method
     float total = sum.w[0] + sum.w[1] + sum.w[2] + sum.w[3];
 #endif
 
@@ -252,7 +265,8 @@ void dotprod_rrrf_execute_mmx4(dotprod_rrrf _q,
     sum0 = _mm_add_ps( sum0, sum1 );
     sum2 = _mm_add_ps( sum2, sum3 );
     total.v = _mm_add_ps( sum0, sum2);
-#if SSE3
+#if HAVE_PMMINTRIN_H
+    // SSE3
     total.v = _mm_hadd_ps( total.v, total.v );
     total.v = _mm_hadd_ps( total.v, total.v );
 #else

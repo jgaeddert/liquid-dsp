@@ -25,10 +25,27 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <xmmintrin.h>  // SSE
-#include <pmmintrin.h>  // SSE3: _mm_addsub_ps
 
 #include "liquid.internal.h"
+
+// include proper SIMD extensions for x86 platforms
+// NOTE: these pre-processor macros are defined in config.h
+
+#if HAVE_MMINTRIN_H
+#include <mmintrin.h>   // MMX
+#endif
+
+#if HAVE_XMMINTRIN_H
+#include <xmmintrin.h>  // SSE
+#endif
+
+#if HAVE_EMMINTRIN_H
+#include <emmintrin.h>  // SSE2
+#endif
+
+#if HAVE_PMMINTRIN_H
+#include <pmmintrin.h>  // SSE3
+#endif
 
 #define DEBUG_DOTPROD_CCCF_MMX   0
 
@@ -217,9 +234,13 @@ void dotprod_cccf_execute_mmx(dotprod_cccf _q,
         // shuffle values
         cq = _mm_shuffle_ps( cq, cq, _MM_SHUFFLE(2,3,0,1) );
         
-        // combine
-        // TODO : add SSE2 version
+#if HAVE_PMMINTRIN_H
+        // SSE3: combine using 
         s = _mm_addsub_ps( ci, cq );
+#else
+        // no SSE3: combine using slow method
+        // FIXME: implement slow method
+#endif
 
         // accumulate
         sum.v = _mm_add_ps(sum.v, s);
@@ -303,12 +324,16 @@ void dotprod_cccf_execute_mmx4(dotprod_cccf _q,
         cq2 = _mm_shuffle_ps( cq2, cq2, _MM_SHUFFLE(2,3,0,1) );
         cq3 = _mm_shuffle_ps( cq3, cq3, _MM_SHUFFLE(2,3,0,1) );
         
-        // combine
-        // TODO : add SSE2 version
+#if HAVE_PMMINTRIN_H
+        // SSE3: combine using addsub_ps()
         s0 = _mm_addsub_ps(ci0, cq0);
         s1 = _mm_addsub_ps(ci1, cq1);
         s2 = _mm_addsub_ps(ci2, cq2);
         s3 = _mm_addsub_ps(ci3, cq3);
+#else
+        // no SSE3: combine using slow method
+        // FIXME: add non-SSE3 version
+#endif
 
         // accumulate
         sum = _mm_add_ps(sum, s0);
