@@ -167,8 +167,7 @@ void dotprod_crcf_execute_mmx(dotprod_crcf _q,
     __m128 v;   // input vector
     __m128 h;   // coefficients vector
     __m128 s;   // dot product
-    union { __m128 v; float w[4] __attribute__((aligned(16)));} sum;
-    sum.v = _mm_setzero_ps();
+    __m128 sum = _mm_setzero_ps();  // load zeros into sum register
 
     // t = 4*(floor(_n/4))
     unsigned int t = (n >> 2) << 2;
@@ -186,21 +185,27 @@ void dotprod_crcf_execute_mmx(dotprod_crcf _q,
         s = _mm_mul_ps(v, h);
 
         // accumulate
-        sum.v = _mm_add_ps(sum.v, s);
+        sum = _mm_add_ps(sum, s);
     }
 
+    // aligned output array
+    float w[4] __attribute__((aligned(16)));
+
+    // unload packed array
+    _mm_store_ps(w, sum);
+
     // add in-phase and quadrature components
-    sum.w[0] += sum.w[2];
-    sum.w[1] += sum.w[3];
+    w[0] += w[2];
+    w[1] += w[3];
 
     // cleanup (note: n _must_ be even)
     for (; i<n; i+=2) {
-        sum.w[0] += x[i  ] * _q->h[i  ];
-        sum.w[1] += x[i+1] * _q->h[i+1];
+        w[0] += x[i  ] * _q->h[i  ];
+        w[1] += x[i+1] * _q->h[i+1];
     }
 
     // set return value
-    *_y = sum.w[0] + _Complex_I*sum.w[1];
+    *_y = w[0] + _Complex_I*w[1];
 }
 
 // use MMX/SSE extensions
@@ -259,18 +264,23 @@ void dotprod_crcf_execute_mmx4(dotprod_crcf _q,
     // fold down
     sum0 = _mm_add_ps( sum0, sum1 );
     sum2 = _mm_add_ps( sum2, sum3 );
-    union { __m128 v; float w[4] __attribute__((aligned(16)));} total;
-    total.v = _mm_add_ps( sum0, sum2 );
-    total.w[0] += total.w[2];
-    total.w[1] += total.w[3];
+    sum0 = _mm_add_ps( sum0, sum2 );
+
+    // aligned output array
+    float w[4] __attribute__((aligned(16)));
+
+    // unload packed array and perform manual sum
+    _mm_store_ps(w, sum0);
+    w[0] += w[2];
+    w[1] += w[3];
 
     // cleanup (note: n _must_ be even)
     for (i=4*r; i<n; i+=2) {
-        total.w[0] += x[i  ] * _q->h[i  ];
-        total.w[1] += x[i+1] * _q->h[i+1];
+        w[0] += x[i  ] * _q->h[i  ];
+        w[1] += x[i+1] * _q->h[i+1];
     }
 
     // set return value
-    *_y = total.w[0] + total.w[1]*_Complex_I;
+    *_y = w[0] + w[1]*_Complex_I;
 }
 
