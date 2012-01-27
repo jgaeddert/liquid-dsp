@@ -169,17 +169,17 @@ void benchlist_print(benchlist _q)
             // print delta
             float cycles_old = _q->benchmarks[i].cycles_per_trial;
             float cycles_new = _q->benchmarks[i].link->cycles_per_trial;
-            float delta = (cycles_new - cycles_old)/cycles_old;
+            float speedup    = (cycles_old + 1e-6f) / (cycles_new + 1e-6f);
 
             // print bar graph style response
             unsigned int num_spaces = 20;
-            unsigned int num_hashes = (unsigned int) (fabsf(delta) * num_spaces);
+            unsigned int num_hashes = (unsigned int) (0.4*fabsf(log2f(speedup)) * num_spaces);
             if (num_hashes > num_spaces) num_hashes = num_spaces;
             unsigned int j;
-            if (delta < 0) {
+            if (speedup > 1.0) {
                 // newer is better
                 for (j=0; j<num_spaces; j++) printf(".");
-                printf("[%8.2f%%]", 100*delta);
+                printf("[%7.3f]", speedup);
                 for (j=0; j<num_hashes; j++) printf("#");
                 for (   ; j<num_spaces; j++) printf(".");
                 printf("\n");
@@ -187,7 +187,7 @@ void benchlist_print(benchlist _q)
                 // older is better
                 for (j=0; j<num_spaces-num_hashes; j++) printf(".");
                 for (   ; j<num_spaces; j++) printf("#");
-                printf("[%8.2f%%]", 100*delta);
+                printf("[%7.3f]", speedup);
                 for (j=0; j<num_spaces; j++) printf(".");
                 printf("\n");
             }
