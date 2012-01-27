@@ -114,10 +114,9 @@ dotprod_cccf dotprod_cccf_create(float complex * _h,
     dotprod_cccf q = (dotprod_cccf)malloc(sizeof(struct dotprod_cccf_s));
     q->n = _n;
 
-    // allocate memory for coefficients
-    // TODO : check memory alignment?
-    q->hi = (float*) malloc( 2*q->n*sizeof(float) );
-    q->hq = (float*) malloc( 2*q->n*sizeof(float) );
+    // allocate memory for coefficients, 16-byte aligned
+    q->hi = (float*) _mm_malloc( 2*q->n*sizeof(float), 16 );
+    q->hq = (float*) _mm_malloc( 2*q->n*sizeof(float), 16 );
 
     // set coefficients, repeated
     //  hi = { crealf(_h[0]), crealf(_h[0]), ... crealf(_h[n-1]), crealf(_h[n-1])}
@@ -149,8 +148,8 @@ dotprod_cccf dotprod_cccf_recreate(dotprod_cccf _dp,
 
 void dotprod_cccf_destroy(dotprod_cccf _q)
 {
-    free(_q->hi);
-    free(_q->hq);
+    _mm_free(_q->hi);
+    _mm_free(_q->hq);
     free(_q);
 }
 
@@ -164,16 +163,12 @@ void dotprod_cccf_execute(dotprod_cccf _q,
                           float complex * _x,
                           float complex * _y)
 {
-#if 0
     // switch based on size
     if (_q->n < 32) {
         dotprod_cccf_execute_mmx(_q, _x, _y);
     } else {
         dotprod_cccf_execute_mmx4(_q, _x, _y);
     }
-#else
-    dotprod_cccf_execute_mmx(_q, _x, _y);
-#endif
 }
 
 // use MMX/SSE extensions
@@ -212,12 +207,14 @@ void dotprod_cccf_execute_mmx(dotprod_cccf _q,
     __m128 hq;  // coefficients vector (imag)
     __m128 ci;  // output multiplication (v * hi)
     __m128 cq;  // output multiplication (v * hq)
-    union { __m128 v; float w[4] __attribute__((aligned(16)));} sum;
-    sum.v = _mm_set1_ps(0.0f);
+
+    // aligned output array
+    float w[4] __attribute__((aligned(16))) = {0,0,0,0};
 
 #if HAVE_PMMINTRIN_H
     // SSE3
     __m128 s;   // dot product
+    __m128 sum = _mm_setzero_ps(); // load zeros into sum register
 #else
     // no SSE3
     float wi[4] __attribute__((aligned(16)));
@@ -234,10 +231,9 @@ void dotprod_cccf_execute_mmx(dotprod_cccf _q,
         // {x[0].real, x[0].imag, x[1].real, x[1].imag}
         v = _mm_loadu_ps(&x[i]);
 
-        // load coefficients into register (unaligned)
-        // TODO : ensure proper alignment
-        hi = _mm_loadu_ps(&_q->hi[i]);
-        hq = _mm_loadu_ps(&_q->hq[i]);
+        // load coefficients into register (aligned)
+        hi = _mm_load_ps(&_q->hi[i]);
+        hq = _mm_load_ps(&_q->hq[i]);
 
         // compute parallel multiplications
         ci = _mm_mul_ps(v, hi);
@@ -251,7 +247,7 @@ void dotprod_cccf_execute_mmx(dotprod_cccf _q,
         s = _mm_addsub_ps( ci, cq );
 
         // accumulate
-        sum.v = _mm_add_ps(sum.v, s);
+        sum = _mm_add_ps(sum, s);
 #else
         // no SSE3: combine using slow method
         // FIXME: implement slow method
@@ -260,18 +256,24 @@ void dotprod_cccf_execute_mmx(dotprod_cccf _q,
         _mm_store_ps(wq, cq);
 
         // accumulate
-        sum.w[0] += wi[0] - wq[0];
-        sum.w[1] += wi[1] + wq[1];
-        sum.w[2] += wi[2] - wq[2];
-        sum.w[3] += wi[3] + wq[3];
+        w[0] += wi[0] - wq[0];
+        w[1] += wi[1] + wq[1];
+        w[2] += wi[2] - wq[2];
+        w[3] += wi[3] + wq[3];
 #endif
     }
 
-    // add in-phase and quadrature components
-    sum.w[0] += sum.w[2];
-    sum.w[1] += sum.w[3];
+#if HAVE_PMMINTRIN_H
+    // unload packed array
+    _mm_store_ps(w, sum);
+#endif
 
-    float complex total = sum.w[0] + sum.w[1] * _Complex_I;
+    // add in-phase and quadrature components
+    w[0] += w[2];   // I
+    w[1] += w[3];   // Q
+
+    //float complex total = *((float complex*)w);
+    float complex total = w[0] + w[1] * _Complex_I;
 
     // cleanup
     for (i=t/2; i<_q->n; i++)
@@ -298,10 +300,10 @@ void dotprod_cccf_execute_mmx4(dotprod_cccf _q,
     __m128 hq0, hq1, hq2, hq3;  // coefficients vectors (imag)
     __m128 ci0, ci1, ci2, ci3;  // output multiplications (v * hi)
     __m128 cq0, cq1, cq2, cq3;  // output multiplications (v * hq)
-    __m128 s0,  s1,  s2,  s3;   // dot product results
 
     // load zeros into sum registers
-    __m128 sum = _mm_set1_ps(0.0f);
+    __m128 sumi = _mm_setzero_ps();
+    __m128 sumq = _mm_setzero_ps();
 
     // r = 4*floor(n/16)
     unsigned int r = (n >> 4) << 2;
@@ -315,17 +317,17 @@ void dotprod_cccf_execute_mmx4(dotprod_cccf _q,
         v2 = _mm_loadu_ps(&x[4*i+8]);
         v3 = _mm_loadu_ps(&x[4*i+12]);
 
-        // load real coefficients into registers (unaligned)
-        hi0 = _mm_loadu_ps(&_q->hi[4*i+0]);
-        hi1 = _mm_loadu_ps(&_q->hi[4*i+4]);
-        hi2 = _mm_loadu_ps(&_q->hi[4*i+8]);
-        hi3 = _mm_loadu_ps(&_q->hi[4*i+12]);
+        // load real coefficients into registers (aligned)
+        hi0 = _mm_load_ps(&_q->hi[4*i+0]);
+        hi1 = _mm_load_ps(&_q->hi[4*i+4]);
+        hi2 = _mm_load_ps(&_q->hi[4*i+8]);
+        hi3 = _mm_load_ps(&_q->hi[4*i+12]);
 
-        // load real coefficients into registers (unaligned)
-        hq0 = _mm_loadu_ps(&_q->hq[4*i+0]);
-        hq1 = _mm_loadu_ps(&_q->hq[4*i+4]);
-        hq2 = _mm_loadu_ps(&_q->hq[4*i+8]);
-        hq3 = _mm_loadu_ps(&_q->hq[4*i+12]);
+        // load real coefficients into registers (aligned)
+        hq0 = _mm_load_ps(&_q->hq[4*i+0]);
+        hq1 = _mm_load_ps(&_q->hq[4*i+4]);
+        hq2 = _mm_load_ps(&_q->hq[4*i+8]);
+        hq3 = _mm_load_ps(&_q->hq[4*i+12]);
         
         // compute parallel multiplications (real)
         ci0 = _mm_mul_ps(v0, hi0);
@@ -339,39 +341,26 @@ void dotprod_cccf_execute_mmx4(dotprod_cccf _q,
         cq2 = _mm_mul_ps(v2, hq2);
         cq3 = _mm_mul_ps(v3, hq3);
 
-        // shuffle values
-        cq0 = _mm_shuffle_ps( cq0, cq0, _MM_SHUFFLE(2,3,0,1) );
-        cq1 = _mm_shuffle_ps( cq1, cq1, _MM_SHUFFLE(2,3,0,1) );
-        cq2 = _mm_shuffle_ps( cq2, cq2, _MM_SHUFFLE(2,3,0,1) );
-        cq3 = _mm_shuffle_ps( cq3, cq3, _MM_SHUFFLE(2,3,0,1) );
-        
-#if HAVE_PMMINTRIN_H
-        // SSE3: combine using addsub_ps()
-        s0 = _mm_addsub_ps(ci0, cq0);
-        s1 = _mm_addsub_ps(ci1, cq1);
-        s2 = _mm_addsub_ps(ci2, cq2);
-        s3 = _mm_addsub_ps(ci3, cq3);
-#else
-        // no SSE3: combine using slow method
-        // FIXME: add non-SSE3 version
-#endif
-
         // accumulate
-        sum = _mm_add_ps(sum, s0);
-        sum = _mm_add_ps(sum, s1);
-        sum = _mm_add_ps(sum, s2);
-        sum = _mm_add_ps(sum, s3);
+        sumi = _mm_add_ps(sumi, ci0);   sumq = _mm_add_ps(sumq, cq0);
+        sumi = _mm_add_ps(sumi, ci1);   sumq = _mm_add_ps(sumq, cq1);
+        sumi = _mm_add_ps(sumi, ci2);   sumq = _mm_add_ps(sumq, cq2);
+        sumi = _mm_add_ps(sumi, ci3);   sumq = _mm_add_ps(sumq, cq3);
     }
 
+    // shuffle values
+    sumq = _mm_shuffle_ps( sumq, sumq, _MM_SHUFFLE(2,3,0,1) );
+
     // unload
-    float w[4] __attribute__((aligned(16)));
-    _mm_store_ps(w, sum);
+    float wi[4] __attribute__((aligned(16)));
+    float wq[4] __attribute__((aligned(16)));
+    _mm_store_ps(wi, sumi);
+    _mm_store_ps(wq, sumq);
 
-    // fold down
-    w[0] += w[2];
-    w[1] += w[3];
-
-    float complex total = w[0] + w[1] * _Complex_I;
+    // fold down (add/sub)
+    float complex total = 
+        ((wi[0] - wq[0]) + (wi[2] - wq[2])) +
+        ((wi[1] + wq[1]) + (wi[3] + wq[3])) * _Complex_I;
 
     // cleanup (note: n _must_ be even)
     // TODO : clean this method up
