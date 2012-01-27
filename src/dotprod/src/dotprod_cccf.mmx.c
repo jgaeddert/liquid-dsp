@@ -191,8 +191,7 @@ void dotprod_cccf_execute_mmx(dotprod_cccf _q,
     __m128 ci;  // output multiplication (v * hi)
     __m128 cq;  // output multiplication (v * hq)
     __m128 s;   // dot product
-    union { __m128 v; float w[4] __attribute__((aligned(16)));} sum;
-    sum.v = _mm_setzero_ps();
+    __m128 sum = _mm_setzero_ps(); // load zeros into sum register
 
     // t = 4*(floor(_n/4))
     unsigned int t = (n >> 2) << 2;
@@ -220,14 +219,21 @@ void dotprod_cccf_execute_mmx(dotprod_cccf _q,
         s = _mm_addsub_ps( ci, cq );
 
         // accumulate
-        sum.v = _mm_add_ps(sum.v, s);
+        sum = _mm_add_ps(sum, s);
     }
 
-    // add in-phase and quadrature components
-    sum.w[0] += sum.w[2];
-    sum.w[1] += sum.w[3];
+    // aligned output array
+    float w[4] __attribute__((aligned(16)));
 
-    float complex total = sum.w[0] + sum.w[1] * _Complex_I;
+    // unload packed array
+    _mm_store_ps(w, sum);
+
+    // add in-phase and quadrature components
+    w[0] += w[2];   // I
+    w[1] += w[3];   // Q
+
+    //float complex total = *((float complex*)w);
+    float complex total = w[0] + w[1] * _Complex_I;
 
     // cleanup
     for (i=t/2; i<_q->n; i++)
@@ -323,6 +329,7 @@ void dotprod_cccf_execute_mmx4(dotprod_cccf _q,
     w[0] += w[2];
     w[1] += w[3];
 
+    //float complex total = *((float complex*)w);
     float complex total = w[0] + w[1] * _Complex_I;
 
     // cleanup (note: n _must_ be even)
