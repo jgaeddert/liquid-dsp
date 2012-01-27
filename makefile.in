@@ -141,11 +141,16 @@ buffer_objects :=						\
 
 #	src/buffer/src/bufferui.c				\
 
-src/buffer/src/bufferf.o : %.o : %.c $(headers)
+buffer_includes :=						\
+	src/buffer/src/buffer.c					\
+	src/buffer/src/wdelay.c					\
+	src/buffer/src/window.c					\
 
-src/buffer/src/buffercf.o : %.o : %.c $(headers)
+src/buffer/src/bufferf.o : %.o : %.c $(headers) $(buffer_includes)
 
-src/buffer/src/bufferui.o : %.o : %.c $(headers)
+src/buffer/src/buffercf.o : %.o : %.c $(headers) $(buffer_includes)
+
+src/buffer/src/bufferui.o : %.o : %.c $(headers) $(buffer_includes)
 
 
 buffer_autotests :=						\
