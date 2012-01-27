@@ -431,7 +431,7 @@ filter_benchmarks :=						\
 	src/filter/bench/firhilb_benchmark.c			\
 	src/filter/bench/firfilt_crcf_benchmark.c		\
 	src/filter/bench/iirfilt_crcf_benchmark.c		\
-	src/filter/bench/interp_benchmark.c			\
+	src/filter/bench/interp_crcf_benchmark.c		\
 	src/filter/bench/resamp_benchmark.c			\
 	src/filter/bench/resamp2_benchmark.c			\
 	src/filter/bench/symsync_benchmark.c			\
