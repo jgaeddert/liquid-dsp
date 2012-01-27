@@ -252,3 +252,119 @@ void autotest_dotprod_rrrf_rand02()
     CONTEND_DELTA(y,test,tol);
 }
 
+// 
+// AUTOTEST: structured dot product, odd lengths
+//
+void autotest_dotprod_rrrf_struct_lengths()
+{
+    float tol = 2e-6;
+    float y;
+
+    float x[35] = {
+         0.03117498,  -1.54311769,  -0.58759073,  -0.73882202, 
+         0.86592259,  -0.26669417,  -0.70153724,  -1.24555787, 
+        -1.09272288,  -1.41984975,  -1.40299260,   0.95861481, 
+        -0.67361246,   2.05305710,   1.26576873,  -0.77474848, 
+        -0.93143252,  -1.05724660,   0.21455006,   1.07554168, 
+        -0.46703810,   0.68878404,  -1.11900266,  -0.52016966, 
+         0.61400744,  -0.46506142,  -0.16801031,   0.48237303, 
+         0.51286055,  -0.57239385,  -0.64462740,  -0.75596668, 
+         1.95612355,  -0.47917908,   0.52384983, };
+    float h[35] = {
+        -0.12380948,   0.88417134,   2.27373797,  -2.61506417, 
+         0.35022002,   0.07481393,   0.52984228,  -0.65542307, 
+        -2.14893606,   0.62466395,   0.07330391,  -1.28014856, 
+         0.16347776,   0.21238151,   0.05462232,  -0.60290942, 
+        -1.27658956,   3.05114996,   1.34789601,  -1.22098592, 
+         1.70899633,  -0.41002037,   3.08009931,  -1.39895771, 
+        -0.50875066,   0.25817865,   1.08668549,   0.05494174, 
+        -1.05337166,   1.26772604,   1.00369204,  -0.55129338, 
+         1.01828299,   0.76014664,  -0.15605569, };
+
+    float v32 = -7.99577847f;
+    float v33 = -6.00389114f;
+    float v34 = -6.36813751f;
+    float v35 = -6.44988725f;
+
+    // 
+    dotprod_rrrf dp;
+
+    // n = 32
+    dp = dotprod_rrrf_create(h,32);
+    dotprod_rrrf_execute(dp, x, &y);
+    CONTEND_DELTA(y, v32, tol);
+    dotprod_rrrf_destroy(dp);
+    if (liquid_autotest_verbose)
+        printf("  dotprod-rrrf-32 : %12.8f (expected %12.8f)\n", y, v32);
+
+    // n = 33
+    dp = dotprod_rrrf_create(h,33);
+    dotprod_rrrf_execute(dp, x, &y);
+    CONTEND_DELTA(y, v33, tol);
+    dotprod_rrrf_destroy(dp);
+    if (liquid_autotest_verbose)
+        printf("  dotprod-rrrf-33 : %12.8f (expected %12.8f)\n", y, v33);
+
+    // n = 34
+    dp = dotprod_rrrf_create(h,34);
+    dotprod_rrrf_execute(dp, x, &y);
+    CONTEND_DELTA(y, v34, tol);
+    dotprod_rrrf_destroy(dp);
+    if (liquid_autotest_verbose)
+        printf("  dotprod-rrrf-34 : %12.8f (expected %12.8f)\n", y, v34);
+
+    // n = 35
+    dp = dotprod_rrrf_create(h,35);
+    dotprod_rrrf_execute(dp, x, &y);
+    CONTEND_DELTA(y, v35, tol);
+    dotprod_rrrf_destroy(dp);
+    if (liquid_autotest_verbose)
+        printf("  dotprod-rrrf-35 : %12.8f (expected %12.8f)\n", y, v35);
+}
+
+// 
+// AUTOTEST: compare structured result to oridinal computation
+//
+
+// helper function (compare structured object to ordinal computation)
+void runtest_dotprod_rrrf(unsigned int _n)
+{
+    float tol = 1e-4;
+    float h[_n];
+    float x[_n];
+
+    // generate random coefficients
+    unsigned int i;
+    for (i=0; i<_n; i++) {
+        h[i] = randnf();
+        x[i] = randnf();
+    }
+    
+    // compute expected value (ordinal computation)
+    float y_test;
+    dotprod_rrrf_run(h, x, _n, &y_test);
+
+    // create and run dot product object
+    float y;
+    dotprod_rrrf dp;
+    dp = dotprod_rrrf_create(h,_n);
+    dotprod_rrrf_execute(dp, x, &y);
+    dotprod_rrrf_destroy(dp);
+
+    // print results
+    if (liquid_autotest_verbose)
+        printf("  dotprod-rrrf-%-4u : %12.8f (expected %12.8f)\n", _n, y, y_test);
+
+    // validate result
+    CONTEND_DELTA(y, y_test, tol);
+}
+
+// compare structured object to ordinal computation
+void autotest_dotprod_rrrf_struct_vs_ordinal()
+{
+    // run many, many tests
+    unsigned int i;
+    for (i=1; i<=512; i++)
+        runtest_dotprod_rrrf(i);
+}
+

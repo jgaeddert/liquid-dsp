@@ -105,8 +105,61 @@ void autotest_dotprod_crcf_rand02()
     // test object
     dotprod_crcf q = dotprod_crcf_create(h,16);
     dotprod_crcf_execute(q,x,&y);
+    if (liquid_autotest_verbose) {
+        printf("  dotprod : %12.8f + j%12.8f (expected: %12.8f + j%12.8f)\n",
+                crealf(y), cimagf(y), crealf(test), cimagf(test));
+    }
     CONTEND_DELTA( crealf(y), crealf(test), tol);
     CONTEND_DELTA( cimagf(y), cimagf(test), tol);
     dotprod_crcf_destroy(q);
+}
+
+// 
+// AUTOTEST: compare structured result to oridinal computation
+//
+
+// helper function (compare structured object to ordinal computation)
+void runtest_dotprod_crcf(unsigned int _n)
+{
+    float tol = 1e-4;
+    float h[_n];
+    float complex x[_n];
+
+    // generate random coefficients
+    unsigned int i;
+    for (i=0; i<_n; i++) {
+        h[i] = randnf();
+        x[i] = randnf() + randnf() * _Complex_I;
+    }
+    
+    // compute expected value (ordinal computation)
+    float complex y_test;
+    dotprod_crcf_run(h, x, _n, &y_test);
+
+    // create and run dot product object
+    float complex y;
+    dotprod_crcf dp;
+    dp = dotprod_crcf_create(h,_n);
+    dotprod_crcf_execute(dp, x, &y);
+    dotprod_crcf_destroy(dp);
+
+    // print results
+    if (liquid_autotest_verbose) {
+        printf("  dotprod-crcf-%-4u : %12.8f + j%12.8f (expected %12.8f + j%12.8f)\n",
+                _n, crealf(y), cimagf(y), crealf(y_test), cimagf(y_test));
+    }
+
+    // validate result
+    CONTEND_DELTA(crealf(y), crealf(y_test), tol);
+    CONTEND_DELTA(cimagf(y), cimagf(y_test), tol);
+}
+
+// compare structured object to ordinal computation
+void autotest_dotprod_crcf_struct_vs_ordinal()
+{
+    // run many, many tests
+    unsigned int i;
+    for (i=1; i<=512; i++)
+        runtest_dotprod_crcf(i);
 }
 

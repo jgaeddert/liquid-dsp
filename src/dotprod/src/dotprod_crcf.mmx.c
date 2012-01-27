@@ -1,6 +1,6 @@
 /*
- * Copyright (c) 2007, 2009 Joseph Gaeddert
- * Copyright (c) 2007, 2009 Virginia Polytechnic Institute & State University
+ * Copyright (c) 2012 Joseph Gaeddert
+ * Copyright (c) 2012 Virginia Polytechnic Institute & State University
  *
  * This file is part of liquid.
  *
@@ -25,42 +25,28 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <xmmintrin.h>
 #include <assert.h>
 
 #include "liquid.internal.h"
 
-// include proper SIMD extensions for x86 platforms
-// NOTE: these pre-processor macros are defined in config.h
+#define DEBUG_DOTPROD_CRCF_MMX   0
 
-#if HAVE_MMINTRIN_H
-#include <mmintrin.h>   // MMX
-#endif
-
-#if HAVE_XMMINTRIN_H
-#include <xmmintrin.h>  // SSE
-#endif
-
-#if HAVE_EMMINTRIN_H
-#include <emmintrin.h>  // SSE2
-#endif
-
-#if HAVE_PMMINTRIN_H
-#include <pmmintrin.h>  // SSE3
-#endif
-
-#define DEBUG_DOTPROD_RRRF_MMX   0
-
-// internal methods
-void dotprod_rrrf_execute_mmx(dotprod_rrrf _q, float * _x, float * _y);
-void dotprod_rrrf_execute_mmx4(dotprod_rrrf _q, float * _x, float * _y);
+// forward declaration of internal methods
+void dotprod_crcf_execute_mmx(dotprod_crcf _q,
+                              float complex * _x,
+                              float complex * _y);
+void dotprod_crcf_execute_mmx4(dotprod_crcf _q,
+                               float complex * _x,
+                               float complex * _y);
 
 // basic dot product (ordinal calculation)
-void dotprod_rrrf_run(float *_h,
-                      float *_x,
-                      unsigned int _n,
-                      float * _y)
+void dotprod_crcf_run(float *         _h,
+                      float complex * _x,
+                      unsigned int    _n,
+                      float complex * _y)
 {
-    float r=0;
+    float complex r = 0;
     unsigned int i;
     for (i=0; i<_n; i++)
         r += _h[i] * _x[i];
@@ -68,12 +54,12 @@ void dotprod_rrrf_run(float *_h,
 }
 
 // basic dot product (ordinal calculation) with loop unrolled
-void dotprod_rrrf_run4(float *_h,
-                       float *_x,
-                       unsigned int _n,
-                       float * _y)
+void dotprod_crcf_run4(float *         _h,
+                       float complex * _x,
+                       unsigned int    _n,
+                       float complex * _y)
 {
-    float r=0;
+    float complex r = 0;
 
     // t = 4*(floor(_n/4))
     unsigned int t=(_n>>2)<<2; 
@@ -99,131 +85,144 @@ void dotprod_rrrf_run4(float *_h,
 // structured MMX dot product
 //
 
-struct dotprod_rrrf_s {
+struct dotprod_crcf_s {
     unsigned int n;     // length
     float * h;          // coefficients array
 };
 
-dotprod_rrrf dotprod_rrrf_create(float * _h,
+dotprod_crcf dotprod_crcf_create(float * _h,
                                  unsigned int _n)
 {
-    dotprod_rrrf q = (dotprod_rrrf)malloc(sizeof(struct dotprod_rrrf_s));
+    dotprod_crcf q = (dotprod_crcf)malloc(sizeof(struct dotprod_crcf_s));
     q->n = _n;
 
     // allocate memory for coefficients, 16-byte aligned
-    q->h = (float*) _mm_malloc( q->n*sizeof(float), 16);
+    q->h = (float*) _mm_malloc( 2*q->n*sizeof(float), 16 );
 
-    // set coefficients
-    memmove(q->h, _h, _n*sizeof(float));
+    // set coefficients, repeated
+    //  h = { _h[0], _h[0], _h[1], _h[1], ... _h[n-1], _h[n-1]}
+    unsigned int i;
+    for (i=0; i<q->n; i++) {
+        q->h[2*i+0] = _h[i];
+        q->h[2*i+1] = _h[i];
+    }
 
     // return object
     return q;
 }
 
 // re-create the structured dotprod object
-dotprod_rrrf dotprod_rrrf_recreate(dotprod_rrrf _dp,
+dotprod_crcf dotprod_crcf_recreate(dotprod_crcf _dp,
                                    float * _h,
                                    unsigned int _n)
 {
     // completely destroy and re-create dotprod object
-    dotprod_rrrf_destroy(_dp);
-    _dp = dotprod_rrrf_create(_h,_n);
+    dotprod_crcf_destroy(_dp);
+    _dp = dotprod_crcf_create(_h,_n);
     return _dp;
 }
 
 
-void dotprod_rrrf_destroy(dotprod_rrrf _q)
+void dotprod_crcf_destroy(dotprod_crcf _q)
 {
     _mm_free(_q->h);
     free(_q);
 }
 
-void dotprod_rrrf_print(dotprod_rrrf _q)
+void dotprod_crcf_print(dotprod_crcf _q)
 {
-    printf("dotprod_rrrf:\n");
+    printf("dotprod_crcf:\n");
     unsigned int i;
+    // print coefficients to screen, skipping odd entries (due
+    // to repeated coefficients)
     for (i=0; i<_q->n; i++)
-        printf("%3u : %12.9f\n", i, _q->h[i]);
+        printf("%3u : %12.9f\n", i, _q->h[2*i]);
 }
 
 // 
-void dotprod_rrrf_execute(dotprod_rrrf _q,
-                          float * _x,
-                          float * _y)
+void dotprod_crcf_execute(dotprod_crcf _q,
+                          float complex * _x,
+                          float complex * _y)
 {
     // switch based on size
-    if (_q->n < 16) {
-        dotprod_rrrf_execute_mmx(_q, _x, _y);
+    if (_q->n < 32) {
+        dotprod_crcf_execute_mmx(_q, _x, _y);
     } else {
-        dotprod_rrrf_execute_mmx4(_q, _x, _y);
+        dotprod_crcf_execute_mmx4(_q, _x, _y);
     }
 }
 
 // use MMX/SSE extensions
-void dotprod_rrrf_execute_mmx(dotprod_rrrf _q,
-                              float * _x,
-                              float * _y)
+void dotprod_crcf_execute_mmx(dotprod_crcf _q,
+                              float complex * _x,
+                              float complex * _y)
 {
+    // type cast input as floating point array
+    float * x = (float*) _x;
+
+    // double effective length
+    unsigned int n = 2*_q->n;
+
     // first cut: ...
     __m128 v;   // input vector
     __m128 h;   // coefficients vector
     __m128 s;   // dot product
-    __m128 sum = _mm_setzero_ps(); // load zeros into sum register
+    __m128 sum = _mm_setzero_ps();  // load zeros into sum register
 
     // t = 4*(floor(_n/4))
-    unsigned int t = (_q->n >> 2) << 2;
+    unsigned int t = (n >> 2) << 2;
 
     //
     unsigned int i;
     for (i=0; i<t; i+=4) {
         // load inputs into register (unaligned)
-        v = _mm_loadu_ps(&_x[i]);
+        v = _mm_loadu_ps(&x[i]);
 
         // load coefficients into register (aligned)
         h = _mm_load_ps(&_q->h[i]);
 
         // compute multiplication
         s = _mm_mul_ps(v, h);
-       
-        // parallel addition
-        sum = _mm_add_ps( sum, s );
+
+        // accumulate
+        sum = _mm_add_ps(sum, s);
     }
 
     // aligned output array
     float w[4] __attribute__((aligned(16)));
 
-#if HAVE_PMMINTRIN_H
-    // fold down into single value
-    __m128 z = _mm_setzero_ps();
-    sum = _mm_hadd_ps(sum, z);
-    sum = _mm_hadd_ps(sum, z);
-   
-    // unload single (lower value)
-    _mm_store_ss(w, sum);
-    float total = w[0];
-#else
     // unload packed array
     _mm_store_ps(w, sum);
-    float total = w[0] + w[1] + w[2] + w[3];
-#endif
 
-    // cleanup
-    for (; i<_q->n; i++)
-        total += _x[i] * _q->h[i];
+    // add in-phase and quadrature components
+    w[0] += w[2];
+    w[1] += w[3];
+
+    // cleanup (note: n _must_ be even)
+    for (; i<n; i+=2) {
+        w[0] += x[i  ] * _q->h[i  ];
+        w[1] += x[i+1] * _q->h[i+1];
+    }
 
     // set return value
-    *_y = total;
+    *_y = w[0] + _Complex_I*w[1];
 }
 
-// use MMX/SSE extensions, unrolled loop
-void dotprod_rrrf_execute_mmx4(dotprod_rrrf _q,
-                               float * _x,
-                               float * _y)
+// use MMX/SSE extensions
+void dotprod_crcf_execute_mmx4(dotprod_crcf _q,
+                               float complex * _x,
+                               float complex * _y)
 {
+    // type cast input as floating point array
+    float * x = (float*) _x;
+
+    // double effective length
+    unsigned int n = 2*_q->n;
+
     // first cut: ...
-    __m128 v0, v1, v2, v3;
-    __m128 h0, h1, h2, h3;
-    __m128 s0, s1, s2, s3;
+    __m128 v0, v1, v2, v3;  // input vectors
+    __m128 h0, h1, h2, h3;  // coefficients vectors
+    __m128 s0, s1, s2, s3;  // dot products [re, im, re, im]
 
     // load zeros into sum registers
     __m128 sum0 = _mm_setzero_ps();
@@ -232,16 +231,16 @@ void dotprod_rrrf_execute_mmx4(dotprod_rrrf _q,
     __m128 sum3 = _mm_setzero_ps();
 
     // r = 4*floor(n/16)
-    unsigned int r = (_q->n >> 4) << 2;
+    unsigned int r = (n >> 4) << 2;
 
     //
     unsigned int i;
     for (i=0; i<r; i+=4) {
         // load inputs into register (unaligned)
-        v0 = _mm_loadu_ps(&_x[4*i+0]);
-        v1 = _mm_loadu_ps(&_x[4*i+4]);
-        v2 = _mm_loadu_ps(&_x[4*i+8]);
-        v3 = _mm_loadu_ps(&_x[4*i+12]);
+        v0 = _mm_loadu_ps(&x[4*i+0]);
+        v1 = _mm_loadu_ps(&x[4*i+4]);
+        v2 = _mm_loadu_ps(&x[4*i+8]);
+        v3 = _mm_loadu_ps(&x[4*i+12]);
 
         // load coefficients into register (aligned)
         h0 = _mm_load_ps(&_q->h[4*i+0]);
@@ -262,35 +261,26 @@ void dotprod_rrrf_execute_mmx4(dotprod_rrrf _q,
         sum3 = _mm_add_ps( sum3, s3 );
     }
 
-    // fold down into single 4-element register
+    // fold down
     sum0 = _mm_add_ps( sum0, sum1 );
     sum2 = _mm_add_ps( sum2, sum3 );
-    sum0 = _mm_add_ps( sum0, sum2);
+    sum0 = _mm_add_ps( sum0, sum2 );
 
     // aligned output array
     float w[4] __attribute__((aligned(16)));
 
-#if HAVE_PMMINTRIN_H
-    // SSE3: fold down to single value using _mm_hadd_ps()
-    __m128 z = _mm_setzero_ps();
-    sum0 = _mm_hadd_ps(sum0, z);
-    sum0 = _mm_hadd_ps(sum0, z);
-   
-    // unload single (lower value)
-    _mm_store_ss(w, sum0);
-    float total = w[0];
-#else
-    // SSE2 and below: unload packed array and perform manual sum
+    // unload packed array and perform manual sum
     _mm_store_ps(w, sum0);
-    float total = w[0] + w[1] + w[2] + w[3];
-#endif
+    w[0] += w[2];
+    w[1] += w[3];
 
-    // cleanup
-    // TODO : use intrinsics here as well
-    for (i=4*r; i<_q->n; i++)
-        total += _x[i] * _q->h[i];
+    // cleanup (note: n _must_ be even)
+    for (i=4*r; i<n; i+=2) {
+        w[0] += x[i  ] * _q->h[i  ];
+        w[1] += x[i+1] * _q->h[i+1];
+    }
 
     // set return value
-    *_y = total;
+    *_y = w[0] + w[1]*_Complex_I;
 }
 

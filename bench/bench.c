@@ -415,7 +415,7 @@ void print_benchmark_results(benchmark_t* _b)
     float cycles_format = _b->cycles_per_trial;
     char cycles_units = convert_units(&cycles_format);
 
-    printf("    %-3u: %-22s: %6.2f %c trials in %6.2f %cs (%7.3f %c t/s, %6.2f %c cycles/t)\n",
+    printf("  %-3u: %-20s: %6.2f %c trials / %6.2f %cs (%6.2f %c t/s, %6.2f %c c/t)\n",
         _b->id, _b->name,
         trials_format, trials_units,
         extime_format, extime_units,
