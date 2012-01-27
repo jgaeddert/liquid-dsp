@@ -350,6 +350,7 @@ filter_objects :=						\
 filter_includes :=						\
 	src/filter/src/firfarrow.c				\
 	src/filter/src/firfilt.c				\
+	src/filter/src/firhilb.c				\
 	src/filter/src/firpfb.c					\
 	src/filter/src/iirfilt.c				\
 	src/filter/src/iirfiltsos.c				\
