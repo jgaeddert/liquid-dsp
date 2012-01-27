@@ -367,7 +367,7 @@ clean-tutorials :
 # version file
 src/liquid_version : % : %.c
 latex.gen/liquid_version.tex : src/liquid_version ; ./$< > $@
-extra_clean += liquid.gen/liquid_version.tex
+extra_clean += liquid.gen/liquid_version.tex src/liquid_version
 
 # auxillary
 liquid.aux liquid.bib.aux : liquid.tex highlight.sty $(GRAPHICS) $(SECTIONS) $(listings_texfiles) highlight.sty $(figures_generated) latex.gen/liquid_version.tex

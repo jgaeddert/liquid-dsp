@@ -150,7 +150,8 @@ buffer_autotests :=						\
 	src/buffer/tests/window_autotest.c			\
 
 buffer_benchmarks :=						\
-	src/buffer/bench/window_benchmark.c			\
+	src/buffer/bench/window_push_benchmark.c		\
+	src/buffer/bench/window_read_benchmark.c		\
 
 # 
 # MODULE : dotprod
@@ -549,7 +550,9 @@ math_autotests :=						\
 	src/math/tests/polynomial_autotest.c			\
 
 
-math_benchmarks :=
+math_benchmarks :=						\
+	src/math/bench/polyfit_benchmark.c			\
+
 
 #
 # MODULE : matrix
@@ -588,7 +591,8 @@ matrix_autotests :=						\
 	src/matrix/tests/matrixf_autotest.c			\
 
 
-matrix_benchmarks :=
+matrix_benchmarks :=						\
+	src/matrix/bench/matrixf_inv_benchmark.c		\
 
 
 # 
