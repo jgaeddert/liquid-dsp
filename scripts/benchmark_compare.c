@@ -27,6 +27,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <math.h>
 
 // print usage/help message
 void usage()
@@ -102,6 +103,10 @@ int main(int argc, char*argv[])
     benchlist_link(benchmarks_old, benchmarks_new);
     benchlist_print(benchmarks_old);
 
+    // destroy benchmark lists
+    benchlist_destroy(benchmarks_old);
+    benchlist_destroy(benchmarks_new);
+
     printf("done.\n");
     return 0;
 }
@@ -129,6 +134,7 @@ void benchlist_destroy(benchlist _q)
     free(_q);
 }
 
+#if 0
 void benchlist_print(benchlist _q)
 {
     unsigned int i;
@@ -144,11 +150,50 @@ void benchlist_print(benchlist _q)
             float cycles_new = _q->benchmarks[i].link->cycles_per_trial;
             float delta = (cycles_new - cycles_old)/cycles_old;
 
+            // print static value
             printf(" : %12.3f   %8.2f %%\n", cycles_new, 100*delta);
         }
 
     }
 }
+#else
+void benchlist_print(benchlist _q)
+{
+    unsigned int i;
+    printf("benchlist [%u]:\n", _q->num_benchmarks);
+    for (i=0; i<_q->num_benchmarks; i++) {
+        if (_q->benchmarks[i].link == NULL)
+            continue;
+
+        printf("  - %-28s ", _q->benchmarks[i].name);
+            // print delta
+            float cycles_old = _q->benchmarks[i].cycles_per_trial;
+            float cycles_new = _q->benchmarks[i].link->cycles_per_trial;
+            float delta = (cycles_new - cycles_old)/cycles_old;
+
+            // print bar graph style response
+            unsigned int num_spaces = 20;
+            unsigned int num_hashes = (unsigned int) (fabsf(delta) * num_spaces);
+            if (num_hashes > num_spaces) num_hashes = num_spaces;
+            unsigned int j;
+            if (delta < 0) {
+                // newer is better
+                for (j=0; j<num_spaces; j++) printf(".");
+                printf("[%8.2f%%]", 100*delta);
+                for (j=0; j<num_hashes; j++) printf("#");
+                for (   ; j<num_spaces; j++) printf(".");
+                printf("\n");
+            } else {
+                // older is better
+                for (j=0; j<num_spaces-num_hashes; j++) printf(".");
+                for (   ; j<num_spaces; j++) printf("#");
+                printf("[%8.2f%%]", 100*delta);
+                for (j=0; j<num_spaces; j++) printf(".");
+                printf("\n");
+            }
+        }
+}
+#endif
 
 void benchlist_append(benchlist _q,
                       char * _name,

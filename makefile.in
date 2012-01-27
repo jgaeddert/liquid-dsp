@@ -41,6 +41,11 @@
 #    clean-doc           :   clean documentation
 #
 
+# autoconf initialization macros
+NAME      := @PACKAGE_NAME@
+VERSION   := @PACKAGE_VERSION@
+BUGREPORT := @PACKAGE_BUGREPORT@
+
 # paths
 srcdir = @srcdir@
 prefix = @prefix@
@@ -1019,6 +1024,8 @@ install:
 	@echo "  object available.  You might also need to modify your"
 	@echo "  LD_LIBRARY_PATH environment variable to include the"
 	@echo "  directory $(exec_prefix)"
+	@echo ""
+	@echo "  Please report bugs to $(BUGREPORT)"
 	@echo "---------------------------------------------------------"
 	@echo ""
 
