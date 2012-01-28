@@ -91,16 +91,16 @@ EQLMS() EQLMS(_create_rnyquist)(int _type,
 {
     // validate input
     if (_k < 2) {
-        fprintf(stderr,"error: eqlms_xxxt_create_rnyquist(), samples/symbol must be greater than 1\n");
+        fprintf(stderr,"error: eqlms_%s_create_rnyquist(), samples/symbol must be greater than 1\n", EXTENSION_FULL);
         exit(1);
     } else if (_m == 0) {
-        fprintf(stderr,"error: eqlms_xxxt_create_rnyquist(), filter delay must be greater than 0\n");
+        fprintf(stderr,"error: eqlms_%s_create_rnyquist(), filter delay must be greater than 0\n", EXTENSION_FULL);
         exit(1);
     } else if (_beta < 0.0f || _beta > 1.0f) {
-        fprintf(stderr,"error: eqlms_xxxt_create_rnyquist(), filter excess bandwidth factor must be in [0,1]\n");
+        fprintf(stderr,"error: eqlms_%s_create_rnyquist(), filter excess bandwidth factor must be in [0,1]\n", EXTENSION_FULL);
         exit(1);
     } else if (_dt < -1.0f || _dt > 1.0f) {
-        fprintf(stderr,"error: eqlms_xxxt_create_rnyquist(), filter fractional sample delay must be in [-1,1]\n");
+        fprintf(stderr,"error: eqlms_%s_create_rnyquist(), filter fractional sample delay must be in [-1,1]\n", EXTENSION_FULL);
         exit(1);
     }
 
@@ -174,7 +174,7 @@ void EQLMS(_set_bw)(EQLMS() _eq,
                     float _mu)
 {
     if (_mu < 0.0f) {
-        fprintf(stderr,"error: eqlms_xxxt_set_bw(), learning rate cannot be less than zero\n");
+        fprintf(stderr,"error: eqlms_%s_set_bw(), learning rate cannot be less than zero\n", EXTENSION_FULL);
         exit(1);
     }
 
@@ -301,7 +301,7 @@ void EQLMS(_train)(EQLMS() _eq,
 {
     unsigned int p=_eq->p;
     if (_n < _eq->p) {
-        fprintf(stderr,"warning: eqlms_xxxt_train(), traning sequence less than filter order\n");
+        fprintf(stderr,"warning: eqlms_%s_train(), traning sequence less than filter order\n", EXTENSION_FULL);
     }
 
     unsigned int i;

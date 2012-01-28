@@ -25,6 +25,10 @@
 
 #include "liquid.internal.h"
 
+// naming extensions (useful for print statements)
+#define EXTENSION_SHORT "f"
+#define EXTENSION_FULL  "cccf"
+
 #define EQLMS(name)     LIQUID_CONCAT(eqlms_cccf,name)
 #define EQRLS(name)     LIQUID_CONCAT(eqrls_cccf,name)
 

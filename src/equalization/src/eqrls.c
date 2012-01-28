@@ -180,7 +180,7 @@ void EQRLS(_set_bw)(EQRLS() _eq,
                     float _lambda)
 {
     if (_lambda < 0.0f || _lambda > 1.0f) {
-        printf("error: eqrls_xxxt_set_bw(), learning rate must be in (0,1)\n");
+        printf("error: eqrls_%s_set_bw(), learning rate must be in (0,1)\n", EXTENSION_FULL);
         exit(1);
     }
 
@@ -365,7 +365,7 @@ void EQRLS(_train)(EQRLS() _eq,
 {
     unsigned int i, p=_eq->p;
     if (_n < p) {
-        printf("warning: eqrls_xxxt_train(), traning sequence less than filter order\n");
+        printf("warning: eqrls_%s_train(), traning sequence less than filter order\n", EXTENSION_FULL);
         return;
     }
 
