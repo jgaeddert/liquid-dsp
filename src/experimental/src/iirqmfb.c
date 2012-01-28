@@ -88,7 +88,7 @@ IIRQMFB() IIRQMFB(_create)(unsigned int _order,
     q->L = (q->order - q->r)/2; // floor(order/2)
 
     if (q->r==0) {
-        fprintf(stderr,"error: iirqmfb_xxxt_create(), filter order is even (odd filter order will be supported later)\n");
+        fprintf(stderr,"error: iirqmfb_%s_create(), filter order is even (odd filter order will be supported later)\n", EXTENSION_FULL);
         exit(1);
     }
 
@@ -139,7 +139,7 @@ IIRQMFB() IIRQMFB(_recreate)(IIRQMFB() _q,
                              unsigned int _h_len)
 {
     // TODO implement this method
-    printf("error: iirqmfb_xxxt_recreate(), method not supported yet\n");
+    printf("error: iirqmfb_%s_recreate(), method not supported yet\n", EXTENSION_FULL);
     exit(1);
     return NULL;
 }
@@ -247,12 +247,12 @@ void IIRQMFB(_allpass_dzpk2sosf)(unsigned int _order,
     unsigned int L = (_order-r)/2;  // total number of second-order sections
 
     unsigned int i;
-    printf("iirqmfb_xxxt_allpass_dzpk2sosf() :\n");
+    printf("iirqmfb_%s_allpass_dzpk2sosf() :\n", EXTENSION_FULL);
     for (i=0; i<_order; i++) {
         printf("  pd[%3u] = %12.8f + j*%12.8f\n", i, crealf(pdcc[i]), cimagf(pdcc[i]));
 
         if (fabsf(crealf(pdcc[i])) > tol) {
-            fprintf(stderr,"warning: iirqmfb_xxxt_allpass_zpk(), not all poles lie on imaginary axis\n");
+            fprintf(stderr,"warning: iirqmfb_%s_allpass_zpk(), not all poles lie on imaginary axis\n", EXTENSION_FULL);
         }
     }
 

@@ -117,7 +117,7 @@ QMFB() QMFB(_create)(unsigned int _h_len, float _beta, int _type)
             q->h0[n] = conj(h_prim[n]);
             q->h1[n] = conj(h_prim[i]) * ((n%2)==0 ? 1.0f : -1.0f);
         } else {
-            fprintf(stderr,"error: qmfb_xxxt_create(), unknown type %d\n", q->type);
+            fprintf(stderr,"error: qmfb_%s_create(), unknown type %d\n", EXTENSION_FULL, q->type);
             exit(1);
         }
     }
@@ -132,7 +132,7 @@ QMFB() QMFB(_create)(unsigned int _h_len, float _beta, int _type)
 QMFB() QMFB(_recreate)(QMFB() _q, unsigned int _h_len)
 {
     // TODO implement this method
-    printf("error: qmfb_xxxt_recreate(), method not supported yet\n");
+    printf("error: qmfb_%s_recreate(), method not supported yet\n", EXTENSION_FULL);
     exit(1);
     return NULL;
 }
