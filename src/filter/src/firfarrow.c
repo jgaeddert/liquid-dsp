@@ -72,13 +72,13 @@ FIRFARROW() FIRFARROW(_create)(unsigned int _h_len,
 {
     // validate input
     if (_h_len < 2) {
-        fprintf(stderr,"error: firfarrow_xxxt_create(), filter length must be > 2\n");
+        fprintf(stderr,"error: firfarrow_%s_create(), filter length must be > 2\n", EXTENSION_FULL);
         exit(1);
     } else if (_p < 1) {
-        fprintf(stderr,"error: firfarrow_xxxt_create(), polynomial order must be at least 1\n");
+        fprintf(stderr,"error: firfarrow_%s_create(), polynomial order must be at least 1\n", EXTENSION_FULL);
         exit(1);
     } else if (_fc < 0.0f || _fc > 0.5f) {
-        fprintf(stderr,"error: firfarrow_xxxt_create(), filter cutoff must be in [0,0.5]\n");
+        fprintf(stderr,"error: firfarrow_%s_create(), filter cutoff must be in [0,0.5]\n", EXTENSION_FULL);
         exit(1);
     }
 
@@ -185,7 +185,7 @@ void FIRFARROW(_set_delay)(FIRFARROW() _f,
 {
     // validate input
     if (_mu < -1.0f || _mu > 1.0f) {
-        fprintf(stderr,"warning: firfarrow_xxxt_set_delay(), delay out of range\n");
+        fprintf(stderr,"warning: firfarrow_%s_set_delay(), delay out of range\n", EXTENSION_FULL);
     }
 
     unsigned int i, n=0;

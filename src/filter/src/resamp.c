@@ -81,19 +81,19 @@ RESAMP() RESAMP(_create)(float _r,
 {
     // validate input
     if (_r <= 0) {
-        fprintf(stderr,"error: resamp_xxxt_create(), resampling rate must be greater than zero\n");
+        fprintf(stderr,"error: resamp_%s_create(), resampling rate must be greater than zero\n", EXTENSION_FULL);
         exit(1);
     } else if (_h_len == 0) {
-        fprintf(stderr,"error: resamp_xxxt_create(), filter length must be greater than zero\n");
+        fprintf(stderr,"error: resamp_%s_create(), filter length must be greater than zero\n", EXTENSION_FULL);
         exit(1);
     } else if (_npfb == 0) {
-        fprintf(stderr,"error: resamp_xxxt_create(), number of filter banks must be greater than zero\n");
+        fprintf(stderr,"error: resamp_%s_create(), number of filter banks must be greater than zero\n", EXTENSION_FULL);
         exit(1);
     } else if (_fc <= 0.0f || _fc >= 0.5f) {
-        fprintf(stderr,"error: resamp_xxxt_create(), filter cutoff must be in (0,0.5)\n");
+        fprintf(stderr,"error: resamp_%s_create(), filter cutoff must be in (0,0.5)\n", EXTENSION_FULL);
         exit(1);
     } else if (_As <= 0.0f) {
-        fprintf(stderr,"error: resamp_xxxt_create(), filter stop-band suppression must be greater than zero\n");
+        fprintf(stderr,"error: resamp_%s_create(), filter stop-band suppression must be greater than zero\n", EXTENSION_FULL);
         exit(1);
     }
 

@@ -53,10 +53,10 @@ INTERP() INTERP(_create)(unsigned int _M,
 {
     // validate input
     if (_M < 2) {
-        fprintf(stderr,"error: interp_xxxt_create(), interp factor must be greater than 1\n");
+        fprintf(stderr,"error: interp_%s_create(), interp factor must be greater than 1\n", EXTENSION_FULL);
         exit(1);
     } else if (_h_len < _M) {
-        fprintf(stderr,"error: interp_xxxt_create(), filter length cannot be less than interp factor\n");
+        fprintf(stderr,"error: interp_%s_create(), filter length cannot be less than interp factor\n", EXTENSION_FULL);
         exit(1);
     }
 
@@ -96,13 +96,13 @@ INTERP() INTERP(_create_prototype)(unsigned int _M,
 {
     // validate input
     if (_M < 2) {
-        fprintf(stderr,"error: interp_xxxt_create_prototype(), interp factor must be greater than 1\n");
+        fprintf(stderr,"error: interp_%s_create_prototype(), interp factor must be greater than 1\n", EXTENSION_FULL);
         exit(1);
     } else if (_m == 0) {
-        fprintf(stderr,"error: interp_xxxt_create_prototype(), filter delay must be greater than 0\n");
+        fprintf(stderr,"error: interp_%s_create_prototype(), filter delay must be greater than 0\n", EXTENSION_FULL);
         exit(1);
     } else if (_As < 0.0f) {
-        fprintf(stderr,"error: interp_xxxt_create_prototype(), stop-band attenuation must be positive\n");
+        fprintf(stderr,"error: interp_%s_create_prototype(), stop-band attenuation must be positive\n", EXTENSION_FULL);
         exit(1);
     }
 
@@ -136,16 +136,16 @@ INTERP() INTERP(_create_rnyquist)(int _type,
 {
     // validate input
     if (_k < 2) {
-        fprintf(stderr,"error: interp_xxxt_create_rnyquist(), interp factor must be greater than 1\n");
+        fprintf(stderr,"error: interp_%s_create_rnyquist(), interp factor must be greater than 1\n", EXTENSION_FULL);
         exit(1);
     } else if (_m == 0) {
-        fprintf(stderr,"error: interp_xxxt_create_rnyquist(), filter delay must be greater than 0\n");
+        fprintf(stderr,"error: interp_%s_create_rnyquist(), filter delay must be greater than 0\n", EXTENSION_FULL);
         exit(1);
     } else if (_beta < 0.0f || _beta > 1.0f) {
-        fprintf(stderr,"error: interp_xxxt_create_rnyquist(), filter excess bandwidth factor must be in [0,1]\n");
+        fprintf(stderr,"error: interp_%s_create_rnyquist(), filter excess bandwidth factor must be in [0,1]\n", EXTENSION_FULL);
         exit(1);
     } else if (_dt < -1.0f || _dt > 1.0f) {
-        fprintf(stderr,"error: interp_xxxt_create_rnyquist(), filter fractional sample delay must be in [-1,1]\n");
+        fprintf(stderr,"error: interp_%s_create_rnyquist(), filter fractional sample delay must be in [-1,1]\n", EXTENSION_FULL);
         exit(1);
     }
 

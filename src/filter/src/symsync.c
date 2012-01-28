@@ -100,13 +100,13 @@ SYMSYNC() SYMSYNC(_create)(unsigned int _k,
 {
     // validate input
     if (_k < 2) {
-        fprintf(stderr,"error: symsync_xxxt_create(), input sample rate must be at least 2\n");
+        fprintf(stderr,"error: symsync_%s_create(), input sample rate must be at least 2\n", EXTENSION_FULL);
         exit(1);
     } else if (_h_len == 0) {
-        fprintf(stderr,"error: symsync_xxxt_create(), filter length must be greater than zero\n");
+        fprintf(stderr,"error: symsync_%s_create(), filter length must be greater than zero\n", EXTENSION_FULL);
         exit(1);
     } else if (_npfb == 0) {
-        fprintf(stderr,"error: symsync_xxxt_create(), number of filter banks must be greater than zero\n");
+        fprintf(stderr,"error: symsync_%s_create(), number of filter banks must be greater than zero\n", EXTENSION_FULL);
         exit(1);
     }
 
@@ -189,13 +189,13 @@ SYMSYNC() SYMSYNC(_create_rnyquist)(int _type,
 {
     // validate input
     if (_k < 2) {
-        fprintf(stderr,"error: symsync_xxxt_create_rnyquist(), samples/symbol must be at least 2\n");
+        fprintf(stderr,"error: symsync_%s_create_rnyquist(), samples/symbol must be at least 2\n", EXTENSION_FULL);
         exit(1);
     } else if (_m == 0) {
-        fprintf(stderr,"error: symsync_xxxt_create_rnyquist(), filter delay (m) must be greater than zero\n");
+        fprintf(stderr,"error: symsync_%s_create_rnyquist(), filter delay (m) must be greater than zero\n", EXTENSION_FULL);
         exit(1);
     } else if (_beta < 0.0f || _beta > 1.0f) {
-        fprintf(stderr,"error: symsync_xxxt_create_rnyquist(), filter excess bandwidth must be in [0,1]\n");
+        fprintf(stderr,"error: symsync_%s_create_rnyquist(), filter excess bandwidth must be in [0,1]\n", EXTENSION_FULL);
         exit(1);
     }
 
@@ -293,7 +293,7 @@ void SYMSYNC(_set_lf_bw)(SYMSYNC() _q,
 {
     // validate input
     if (_bt < 0.0f || _bt > 1.0f) {
-        fprintf(stderr,"error: symsync_xxxt_set_lf_bt(), bandwidth must be in [0,1]\n");
+        fprintf(stderr,"error: symsync_%s_set_lf_bt(), bandwidth must be in [0,1]\n", EXTENSION_FULL);
         exit(1);
     }
 
@@ -321,7 +321,7 @@ void SYMSYNC(_set_output_rate)(SYMSYNC() _q,
 {
     // validate input
     if (_k_out == 0) {
-        fprintf(stderr,"error: symsync_xxxt_output_rate(), output rate must be greater than 0\n");
+        fprintf(stderr,"error: symsync_%s_output_rate(), output rate must be greater than 0\n", EXTENSION_FULL);
         exit(1);
     }
 
@@ -459,7 +459,7 @@ void SYMSYNC(_output_debug_file)(SYMSYNC() _q,
 {
     FILE * fid = fopen(_filename, "w");
     if (!fid) {
-        fprintf(stderr,"error: symsync_xxxt_output_debug_file(), could not open '%s' for writing\n", _filename);
+        fprintf(stderr,"error: symsync_%s_output_debug_file(), could not open '%s' for writing\n", EXTENSION_FULL, _filename);
         return;
     }
     fprintf(fid,"%% %s, auto-generated file\n\n", DEBUG_SYMSYNC_FILENAME);

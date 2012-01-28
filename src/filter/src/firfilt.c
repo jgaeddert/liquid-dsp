@@ -62,7 +62,7 @@ FIRFILT() FIRFILT(_create)(TC * _h,
 {
     // validate input
     if (_n == 0) {
-        fprintf(stderr,"error: firfilt_xxxt_create(), filter length must be greater than zero\n");
+        fprintf(stderr,"error: firfilt_%s_create(), filter length must be greater than zero\n", EXTENSION_FULL);
         exit(1);
     }
 
@@ -99,7 +99,7 @@ FIRFILT() FIRFILT(_create)(TC * _h,
 // create firfilt object from prototype
 FIRFILT() FIRFILT(_create_prototype)(unsigned int _n)
 {
-    fprintf(stderr,"error: firfilt_xxxt_create_prototype(), not yet implemented\n");
+    fprintf(stderr,"error: firfilt_%s_create_prototype(), not yet implemented\n", EXTENSION_FULL);
     exit(1);
 
     FIRFILT() q = (FIRFILT()) malloc(sizeof(struct FIRFILT(_s)));

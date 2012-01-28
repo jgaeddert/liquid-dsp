@@ -67,7 +67,7 @@ RESAMP2() RESAMP2(_create)(unsigned int _m,
 {
     // validate input
     if (_m < 2) {
-        fprintf(stderr,"error: resamp2_xxxt_create(), filter semi-length must be at least 2\n");
+        fprintf(stderr,"error: resamp2_%s_create(), filter semi-length must be at least 2\n", EXTENSION_FULL);
         exit(1);
     }
 
@@ -76,7 +76,7 @@ RESAMP2() RESAMP2(_create)(unsigned int _m,
     q->fc = _fc;
     q->As = _As;
     if ( q->fc < -0.5f || q->fc > 0.5f ) {
-        fprintf(stderr,"error: resamp2_xxxt_create(), fc (%12.4e) must be in (-1,1)\n", q->fc);
+        fprintf(stderr,"error: resamp2_%s_create(), fc (%12.4e) must be in (-1,1)\n", EXTENSION_FULL, q->fc);
         exit(1);
     }
 
