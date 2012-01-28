@@ -681,6 +681,8 @@ multicarrier_objects :=						\
 	src/multicarrier/src/ofdmframesync.o			\
 
 # list explicit targets and dependencies here
+src/multicarrier/src/firpfbch_crcf.o : %_crcf.o : %.c
+src/multicarrier/src/firpfbch_cccf.o : %_cccf.o : %.c
 
 # autotests
 multicarrier_autotests :=					\
