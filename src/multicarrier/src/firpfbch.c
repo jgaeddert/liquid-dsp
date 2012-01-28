@@ -65,13 +65,13 @@ FIRPFBCH() FIRPFBCH(_create)(int _type,
 {
     // validate input
     if (_type != LIQUID_ANALYZER && _type != LIQUID_SYNTHESIZER) {
-        fprintf(stderr,"error: firpfbch_xxxt_create(), invalid type %d\n", _type);
+        fprintf(stderr,"error: firpfbch_%s_create(), invalid type %d\n", EXTENSION_FULL, _type);
         exit(1);
     } else if (_num_channels == 0) {
-        fprintf(stderr,"error: firpfbch_xxxt_create(), number of channels must be greater than 0\n");
+        fprintf(stderr,"error: firpfbch_%s_create(), number of channels must be greater than 0\n", EXTENSION_FULL);
         exit(1);
     } else if (_p == 0) {
-        fprintf(stderr,"error: firpfbch_xxxt_create(), invalid filter size (must be greater than 0)\n");
+        fprintf(stderr,"error: firpfbch_%s_create(), invalid filter size (must be greater than 0)\n", EXTENSION_FULL);
         exit(1);
     }
 
@@ -140,10 +140,10 @@ FIRPFBCH() FIRPFBCH(_create_kaiser)(int _type,
 {
     // validate input
     if (_num_channels == 0) {
-        fprintf(stderr,"error: firpfbch_xxxt_create_kaiser(), number of channels must be greater than 0\n");
+        fprintf(stderr,"error: firpfbch_%s_create_kaiser(), number of channels must be greater than 0\n", EXTENSION_FULL);
         exit(1);
     } else if (_m == 0) {
-        fprintf(stderr,"error: firpfbch_xxxt_create_kaiser(), invalid filter size (must be greater than 0)\n");
+        fprintf(stderr,"error: firpfbch_%s_create_kaiser(), invalid filter size (must be greater than 0)\n", EXTENSION_FULL);
         exit(1);
     }
     
@@ -184,13 +184,13 @@ FIRPFBCH() FIRPFBCH(_create_rnyquist)(int _type,
 {
     // validate input
     if (_type != LIQUID_ANALYZER && _type != LIQUID_SYNTHESIZER) {
-        fprintf(stderr,"error: firpfbch_xxxt_create_rnyquist(), invalid type %d\n", _type);
+        fprintf(stderr,"error: firpfbch_%s_create_rnyquist(), invalid type %d\n", EXTENSION_FULL, _type);
         exit(1);
     } else if (_num_channels == 0) {
-        fprintf(stderr,"error: firpfbch_xxxt_create_rnyquist(), number of channels must be greater than 0\n");
+        fprintf(stderr,"error: firpfbch_%s_create_rnyquist(), number of channels must be greater than 0\n", EXTENSION_FULL);
         exit(1);
     } else if (_m == 0) {
-        fprintf(stderr,"error: firpfbch_xxxt_create_rnyquist(), invalid filter size (must be greater than 0)\n");
+        fprintf(stderr,"error: firpfbch_%s_create_rnyquist(), invalid filter size (must be greater than 0)\n", EXTENSION_FULL);
         exit(1);
     }
     
@@ -216,7 +216,7 @@ FIRPFBCH() FIRPFBCH(_create_rnyquist)(int _type,
         liquid_firdes_hM3(_num_channels, _m, _beta, 0.0f, h);
         break;
     default:
-        fprintf(stderr,"error: firpfbch_xxxt_create_rnyquist(), unknown/invalid prototype (%d)\n", _ftype);
+        fprintf(stderr,"error: firpfbch_%s_create_rnyquist(), unknown/invalid prototype (%d)\n", EXTENSION_FULL, _ftype);
         exit(1);
     }
 
