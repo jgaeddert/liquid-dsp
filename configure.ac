@@ -242,6 +242,12 @@ powerpc*)
                    src/dotprod/src/dotprod_rrrf.av.o \
                    src/dotprod/src/dotprod_crcf.av.o"
     ARCH_OPTION="-fno-common -faltivec";;
+arm*)
+    # ARM architecture : use portable C version
+    MLIBS_DOTPROD="src/dotprod/src/dotprod_cccf.o \
+                   src/dotprod/src/dotprod_crcf.o \
+                   src/dotprod/src/dotprod_rrrf.o"
+    ARCH_OPTION="-marm -mfloat-abi=softfp";;
 *)
     # unknown architecture : use portable C version
     MLIBS_DOTPROD="src/dotprod/src/dotprod_cccf.o \
