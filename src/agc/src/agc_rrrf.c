@@ -25,6 +25,10 @@
 
 #include "liquid.internal.h"
 
+// naming extensions (useful for print statements)
+#define EXTENSION_SHORT     "f"
+#define EXTENSION_FULL      "rrrf"
+
 // macros
 #define AGC(name)           LIQUID_CONCAT(agc_rrrf,name)
 
