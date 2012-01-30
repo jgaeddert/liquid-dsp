@@ -64,6 +64,7 @@ BENCHMARK:
   * filter: finite/infinite impulse response, polyphase, hilbert,
     interpolation, decimation, filter design, resampling, symbol timing
     recovery
+  * fpm: fixed-point math
   * framing: packet framing, encoding, synchronization, interleaving
   * math: transcendental functions not in the C standard library (gamma,
     besseli, etc.), polynomial operations (curve-fitting, root-finding,

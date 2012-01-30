@@ -442,6 +442,26 @@ filter_benchmarks :=						\
 	src/filter/bench/symsync_benchmark.c			\
 
 # 
+# MODULE : fpm
+#
+
+fpm_objects :=							\
+	src/fpm/src/q32.o					\
+
+fpm_includes :=							\
+	src/fpm/src/qtype_mul.port.c				\
+
+src/fpm/src/q32.o : %.o : %.c $(headers) $(fpm_includes)
+
+
+fpm_autotests :=						\
+	src/fpm/tests/q32_mul_autotest.c			\
+
+fpm_benchmarks :=						\
+	src/fpm/bench/q32_mul_benchmark.c			\
+
+
+# 
 # MODULE : framing
 #
 
@@ -910,6 +930,7 @@ objects :=							\
 	$(fec_objects)						\
 	$(fft_objects)						\
 	$(filter_objects)					\
+	$(fpm_objects)						\
 	$(framing_objects)					\
 	$(math_objects)						\
 	$(matrix_objects)					\
@@ -935,6 +956,7 @@ autotest_sources :=						\
 	$(fec_autotests)					\
 	$(fft_autotests)					\
 	$(filter_autotests)					\
+	$(fpm_autotests)					\
 	$(framing_autotests)					\
 	$(math_autotests)					\
 	$(matrix_autotests)					\
@@ -959,6 +981,7 @@ benchmark_sources :=						\
 	$(fec_benchmarks)					\
 	$(fft_benchmarks)					\
 	$(filter_benchmarks)					\
+	$(fpm_benchmarks)					\
 	$(framing_benchmarks)					\
 	$(math_benchmarks)					\
 	$(matrix_benchmarks)					\
@@ -1408,6 +1431,7 @@ clean-modules:
 	$(RM) src/fec/src/*.o          src/fec/bench/*.o          src/fec/tests/*.o
 	$(RM) src/fft/src/*.o          src/fft/bench/*.o          src/fft/tests/*.o
 	$(RM) src/filter/src/*.o       src/filter/bench/*.o       src/filter/tests/*.o
+	$(RM) src/fpm/src/*.o          src/fpm/bench/*.o          src/fpm/tests/*.o
 	$(RM) src/framing/src/*.o      src/framing/bench/*.o      src/framing/tests/*.o
 	$(RM) src/math/src/*.o         src/math/bench/*.o         src/math/tests/*.o
 	$(RM) src/matrix/src/*.o       src/matrix/bench/*.o       src/matrix/tests/*.o
