@@ -26,20 +26,20 @@
 #include "liquidfpm.internal.h"
 
 // helper function to keep code base small
-void q32_test_mul(float _xf,
+void q16_test_mul(float _xf,
                   float _yf,
                   float _tol)
 {
     // convert to fixed-point
-    q32_t x = q32_float_to_fixed(_xf);
-    q32_t y = q32_float_to_fixed(_yf);
+    q16_t x = q16_float_to_fixed(_xf);
+    q16_t y = q16_float_to_fixed(_yf);
 
     // execute operation
-    q32_t z = q32_mul(x,y);
+    q16_t z = q16_mul(x,y);
     float zf = _xf * _yf;
 
     // convert to floating-point
-    float ztest = q32_fixed_to_float(z);
+    float ztest = q16_fixed_to_float(z);
 
     // run comparison
     CONTEND_DELTA(zf,ztest,_tol);
@@ -50,25 +50,25 @@ void q32_test_mul(float _xf,
     }
 }
 
-void autotest_q32_mul()
+void autotest_q16_mul()
 {
-    float tol = q32_fixed_to_float(1<<q32_intbits);
+    float tol = q16_fixed_to_float(1<<q16_intbits);
 
     // basic tests
-    q32_test_mul( 0.25f, 2.25f, tol);
-    q32_test_mul( 0.25f,-2.25f, tol);
+    q16_test_mul( 0.25f, 2.25f, tol);
+    q16_test_mul( 0.25f,-2.25f, tol);
 
-    float a = q32_fixed_to_float(q32_max)*0.7f;
-    float b = q32_fixed_to_float(q32_one)/3.0f;
-    q32_test_mul(a, b, tol);
+    float a = q16_fixed_to_float(q16_max)*0.7f;
+    float b = q16_fixed_to_float(q16_one)/3.0f;
+    q16_test_mul(a, b, tol);
 
     // extremes
-    q32_t x = q32_max;          // max
-    q32_t y = q32_one>>1;       // 1/2
-    q32_t z = q32_mul(x,y);     // 
-    q32_t z_test = q32_max>>1;
+    q16_t x = q16_max;          // max
+    q16_t y = q16_one>>1;       // 1/2
+    q16_t z = q16_mul(x,y);     // 
+    q16_t z_test = q16_max>>1;
 
-    q32_t qtol = 1<<q32_intbits;      // fixed-point tolerance
+    q16_t qtol = 1<<q16_intbits;      // fixed-point tolerance
     CONTEND_DELTA(z, z_test, qtol);
 }
 

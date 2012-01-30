@@ -446,18 +446,23 @@ filter_benchmarks :=						\
 #
 
 fpm_objects :=							\
+	src/fpm/src/q16.o					\
 	src/fpm/src/q32.o					\
 
 fpm_includes :=							\
 	src/fpm/src/qtype_mul.port.c				\
 
+src/fpm/src/q16.o : %.o : %.c $(headers) $(fpm_includes)
+
 src/fpm/src/q32.o : %.o : %.c $(headers) $(fpm_includes)
 
 
 fpm_autotests :=						\
+	src/fpm/tests/q16_mul_autotest.c			\
 	src/fpm/tests/q32_mul_autotest.c			\
 
 fpm_benchmarks :=						\
+	src/fpm/bench/q16_mul_benchmark.c			\
 	src/fpm/bench/q32_mul_benchmark.c			\
 
 

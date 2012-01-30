@@ -27,8 +27,6 @@
 
 #include "liquidfpm.internal.h"
 
-#define Q(name)     LIQUIDFPM_CONCAT(q32,name)
-
 Q(_t) Q(_mul)(Q(_t) _x, Q(_t) _y)
 {
 #if 0

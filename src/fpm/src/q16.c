@@ -19,12 +19,12 @@
  */
 
 //
-// Fixed-point math API: 32-bit q32 type
+// Fixed-point math API: 16-bit q16 type
 //
 
 #include "liquidfpm.internal.h"
 
-#define Q(name)     LIQUIDFPM_CONCAT(q32,name)
+#define Q(name)     LIQUIDFPM_CONCAT(q16,name)
 
 // source files
 #include "qtype_mul.port.c"

@@ -60,6 +60,9 @@ LIQUIDFPM_DEFINE_COMPLEX(float, liquidfpm_float_complex);
 #define LIQUIDFPM_MANGLE_Q32(name)  LIQUIDFPM_CONCAT(q32, name)
 #define LIQUIDFPM_MANGLE_CQ32(name) LIQUIDFPM_CONCAT(cq32,name)
 
+#define LIQUIDFPM_MANGLE_Q16(name)  LIQUIDFPM_CONCAT(q16, name)
+#define LIQUIDFPM_MANGLE_CQ16(name) LIQUIDFPM_CONCAT(cq16,name)
+
 /* API definition macro
  *
  * Q        :   name-mangling macro
@@ -177,6 +180,7 @@ extern const Q(_t) Q(_SQRT1_2);     /* 1/sqrt(2)        */
 
 
 LIQUIDFPM_DEFINE_API(LIQUIDFPM_MANGLE_Q32, int32_t, int64_t, 7, 25)
+LIQUIDFPM_DEFINE_API(LIQUIDFPM_MANGLE_Q16, int16_t, int32_t, 6, 10)
 
 /* API definition macro (complex types)
  *
@@ -233,6 +237,7 @@ CQ(_t) CQ(_catanh)(CQ(_t) _x);                                      \
 /* liquid-fpm specific functions */                                 \
 
 LIQUIDFPM_DEFINE_COMPLEX_API(LIQUIDFPM_MANGLE_CQ32, LIQUIDFPM_MANGLE_Q32)
+LIQUIDFPM_DEFINE_COMPLEX_API(LIQUIDFPM_MANGLE_CQ16, LIQUIDFPM_MANGLE_Q16)
 
 #ifdef __cplusplus
 }   /* extern "C" */
