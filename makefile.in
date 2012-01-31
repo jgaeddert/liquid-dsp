@@ -458,8 +458,7 @@ src/fpm/src/q32.o : %.o : %.c $(headers) $(fpm_includes)
 
 
 fpm_autotests :=						\
-	src/fpm/tests/q16_mul_autotest.c			\
-	src/fpm/tests/q32_mul_autotest.c			\
+	src/fpm/tests/qtype_mul_autotest.c			\
 
 fpm_benchmarks :=						\
 	src/fpm/bench/qtype_mul_benchmark.c			\
