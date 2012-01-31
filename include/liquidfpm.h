@@ -57,11 +57,15 @@ LIQUIDFPM_DEFINE_COMPLEX(float, liquidfpm_float_complex);
 
 
 /* name-mangling macros */
-#define LIQUIDFPM_MANGLE_Q32(name)  LIQUIDFPM_CONCAT(q32, name)
-#define LIQUIDFPM_MANGLE_CQ32(name) LIQUIDFPM_CONCAT(cq32,name)
-
 #define LIQUIDFPM_MANGLE_Q16(name)  LIQUIDFPM_CONCAT(q16, name)
 #define LIQUIDFPM_MANGLE_CQ16(name) LIQUIDFPM_CONCAT(cq16,name)
+#define LIQUIDFPM_Q16_INTBITS       (6)
+#define LIQUIDFPM_Q16_FRACBITS      (10)
+
+#define LIQUIDFPM_MANGLE_Q32(name)  LIQUIDFPM_CONCAT(q32, name)
+#define LIQUIDFPM_MANGLE_CQ32(name) LIQUIDFPM_CONCAT(cq32,name)
+#define LIQUIDFPM_Q32_INTBITS       (7)
+#define LIQUIDFPM_Q32_FRACBITS      (25)
 
 /* API definition macro
  *
@@ -179,8 +183,8 @@ extern const Q(_t) Q(_SQRT2);       /* sqrt(2)          */          \
 extern const Q(_t) Q(_SQRT1_2);     /* 1/sqrt(2)        */
 
 
-LIQUIDFPM_DEFINE_API(LIQUIDFPM_MANGLE_Q32, int32_t, int64_t, 7, 25)
-LIQUIDFPM_DEFINE_API(LIQUIDFPM_MANGLE_Q16, int16_t, int32_t, 6, 10)
+LIQUIDFPM_DEFINE_API(LIQUIDFPM_MANGLE_Q16, int16_t, int32_t, LIQUIDFPM_Q16_INTBITS, LIQUIDFPM_Q16_FRACBITS)
+LIQUIDFPM_DEFINE_API(LIQUIDFPM_MANGLE_Q32, int32_t, int64_t, LIQUIDFPM_Q32_INTBITS, LIQUIDFPM_Q32_FRACBITS)
 
 /* API definition macro (complex types)
  *
