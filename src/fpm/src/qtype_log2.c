@@ -29,7 +29,7 @@
 #include "liquid.internal.h"
 #include "liquidfpm.internal.h"
 
-#define LIQUIDFPM_DEBUG_LOG2_FRAC 1
+#define LIQUIDFPM_DEBUG_LOG2_FRAC 0
 
 // log2 using fractional table look-up; fast but not especially accurate
 Q(_t) Q(_log2_frac)(Q(_t) _x)

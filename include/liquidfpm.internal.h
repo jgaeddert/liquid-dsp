@@ -84,6 +84,17 @@ unsigned int liquidfpm_msb_index(unsigned int _x);
                                                                     \
 /* auto-generated look-up tables */                                 \
 extern const Q(_t) Q(_log2_frac_gentab)[256];                       \
+                                                                    \
+/* trig */                                                          \
+                                                                    \
+/* hyperbolic */                                                    \
+                                                                    \
+/* exponential and logarithmic */                                   \
+Q(_t) Q(_log2_frac) (Q(_t) _x);                                     \
+                                                                    \
+/* power */                                                         \
+                                                                    \
+/* error and gamma functions */                                     \
 
 LIQUIDFPM_DEFINE_INTERNAL_API(LIQUIDFPM_MANGLE_Q16, int16_t, int32_t, LIQUIDFPM_Q16_INTBITS, LIQUIDFPM_Q16_FRACBITS)
 LIQUIDFPM_DEFINE_INTERNAL_API(LIQUIDFPM_MANGLE_Q32, int32_t, int64_t, LIQUIDFPM_Q32_INTBITS, LIQUIDFPM_Q32_FRACBITS)
