@@ -462,8 +462,7 @@ fpm_autotests :=						\
 	src/fpm/tests/q32_mul_autotest.c			\
 
 fpm_benchmarks :=						\
-	src/fpm/bench/q16_mul_benchmark.c			\
-	src/fpm/bench/q32_mul_benchmark.c			\
+	src/fpm/bench/qtype_mul_benchmark.c			\
 
 
 # 
