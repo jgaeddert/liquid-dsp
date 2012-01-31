@@ -67,6 +67,10 @@ LIQUIDFPM_DEFINE_COMPLEX(float, liquidfpm_float_complex);
 #define LIQUIDFPM_Q32_INTBITS       (7)
 #define LIQUIDFPM_Q32_FRACBITS      (25)
 
+// inline multiplication
+#define q16_mul_inline(X,Y) ( ((X)*(Y))>>(LIQUIDFPM_Q16_FRACBITS) )
+#define q32_mul_inline(X,Y) ( ((X)*(Y))>>(LIQUIDFPM_Q32_FRACBITS) )
+
 /* API definition macro
  *
  * Q        :   name-mangling macro
