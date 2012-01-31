@@ -450,6 +450,7 @@ fpm_objects :=							\
 	src/fpm/src/q32.o					\
 
 fpm_includes :=							\
+	src/fpm/src/qtype_div.port.c				\
 	src/fpm/src/qtype_mul.port.c				\
 
 src/fpm/src/q16.o : %.o : %.c $(headers) $(fpm_includes)
@@ -458,9 +459,11 @@ src/fpm/src/q32.o : %.o : %.c $(headers) $(fpm_includes)
 
 
 fpm_autotests :=						\
+	src/fpm/tests/qtype_div_autotest.c			\
 	src/fpm/tests/qtype_mul_autotest.c			\
 
 fpm_benchmarks :=						\
+	src/fpm/bench/qtype_div_benchmark.c			\
 	src/fpm/bench/qtype_mul_benchmark.c			\
 
 

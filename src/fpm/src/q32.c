@@ -27,5 +27,6 @@
 #define Q(name)     LIQUIDFPM_CONCAT(q32,name)
 
 // source files
+#include "qtype_div.port.c"
 #include "qtype_mul.port.c"
 
