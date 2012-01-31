@@ -76,88 +76,16 @@ unsigned int liquidfpm_msb_index(unsigned int _x);
  *
  * Q        :   name-mangling macro
  * T        :   primitive data type
+ * TA       :   primitive data type (accumulator)
  * INTBITS  :   number of integer bits
  * FRACBITS :   number of fractional bits
  */
-#define LIQUIDFPM_DEFINE_INTERNAL_API(Q,T,INTBITS,FRACBITS)         \
+#define LIQUIDFPM_DEFINE_INTERNAL_API(Q,T,TA,INTBITS,FRACBITS)      \
                                                                     \
 /* auto-generated look-up tables */                                 \
-extern const Q(_t) Q(_sin_table)[256];                              \
-                                                                    \
-/* arithmetic */                                                    \
-Q(_t) Q(_div_inv_newton)(Q(_t) _x, Q(_t) _y, unsigned int _n);      \
-Q(_t) Q(_inv_newton)(Q(_t), unsigned int _n);                       \
-Q(_t) Q(_inv_logexp)(Q(_t), unsigned int _n);                       \
-Q(_t) Q(_sqrt_newton)(Q(_t), unsigned int _n);                      \
-Q(_t) Q(_sqrt_logexp)(Q(_t), unsigned int _n);                      \
-                                                                    \
-/* trig */                                                          \
-extern const Q(_t) Q(_cordic_Ak_tab)[32];                           \
-extern const Q(_t) Q(_cordic_k_inv);                                \
-extern const Q(_t) Q(_atan2_pwpoly_tab)[16][3];                     \
-Q(_t) Q(_sin_cordic)(Q(_t) _theta, unsigned int _n);                \
-Q(_t) Q(_cos_cordic)(Q(_t) _theta, unsigned int _n);                \
-void Q(_sincos_cordic)(Q(_t) _theta,                                \
-                       Q(_t) * _sin,                                \
-                       Q(_t) * _cos,                                \
-                       unsigned int _n);                            \
-void Q(_sincos_cordic_base)(Q(_t) _theta,                           \
-                            Q(_t) * _sin,                           \
-                            Q(_t) * _cos,                           \
-                            unsigned int _n);                       \
-void Q(_atan2_cordic)(Q(_t) _y,                                     \
-                      Q(_t) _x,                                     \
-                      Q(_t) * _r,                                   \
-                      Q(_t) * _theta,                               \
-                      unsigned int _n);                             \
-void Q(_atan2_cordic_base)(Q(_t) _y,                                \
-                           Q(_t) _x,                                \
-                           Q(_t) * _r,                              \
-                           Q(_t) * _theta,                          \
-                           unsigned int _n);                        \
-                                                                    \
-/* log (old) */                                                     \
-extern const Q(_t) Q(_log2_fraction_table)[256];                    \
-                                                                    \
-/* */                                                               \
-extern const Q(_t) Q(_log2_shiftadd_Ak_tab)[32];                    \
-extern const unsigned int Q(_log2_shiftadd_nmax);                   \
-extern const Q(_t) Q(_ln2);     /* log(2)   */                      \
-extern const Q(_t) Q(_log10_2); /* log10(2) */                      \
-extern const Q(_t) Q(_log2_e);  /* log2(e) */                       \
-extern const Q(_t) Q(_log2_10); /* log2(10) */                      \
-                                                                    \
-/* log2 shift|add */                                                \
-Q(_t) Q(_log2_shiftadd)(Q(_t) _x, unsigned int _n);                 \
-Q(_t) Q(_log2_shiftadd_base)(Q(_t) _x, unsigned int _n);            \
-Q(_t) Q(_log_shiftadd)(Q(_t) _x, unsigned int _n);                  \
-Q(_t) Q(_log10_shiftadd)(Q(_t) _x, unsigned int _n);                \
-                                                                    \
-/* exp2 shift|add */                                                \
-Q(_t) Q(_exp2_shiftadd)(Q(_t) _x, unsigned int _n);                 \
-Q(_t) Q(_exp2_shiftadd_base)(Q(_t) _x, unsigned int _n);            \
-Q(_t) Q(_exp_shiftadd)(Q(_t) _x, unsigned int _n);                  \
-Q(_t) Q(_exp10_shiftadd)(Q(_t) _x, unsigned int _n);                \
-                                                                    \
-Q(_t) Q(_pow_shiftadd)(Q(_t) _b, Q(_t) _x, unsigned int _n);        \
-                                                                    \
-/* hyperbolic trig */                                               \
-extern const Q(_t) Q(_sinhcosh_cordic_Ak_tab)[32];                  \
-extern const Q(_t) Q(_sinhcosh_cordic_kp_inv);                      \
-void Q(_sinhcosh_cordic)(Q(_t) _x,                                  \
-                         Q(_t) *_sinh,                              \
-                         Q(_t) *_cosh,                              \
-                         unsigned int _n);                          \
-                                                                    \
-/* math: transcendentals */                                         \
-/* external constants (gentab/math.transcendentals.c) */            \
-extern const Q(_t) Q(_log2pi);  /* log(2*pi)    */                  \
-extern const Q(_t) Q(_inv_12);  /* 1/12         */                  \
-extern const Q(_t) Q(_inv_pi);  /* 1/pi         */                  \
-extern const Q(_t) Q(_pi2_6);   /* pi^2/6       */                  \
-extern const Q(_t) Q(_pi4_120); /* pi^4/120     */                  \
-Q(_t) Q(_loglogbesseli0)(Q(_t) _z);
+extern const Q(_t) Q(_log2_frac_gentab)[256];                       \
 
-LIQUIDFPM_DEFINE_INTERNAL_API(LIQUIDFPM_MANGLE_Q32, int32_t, 4, 28)
+LIQUIDFPM_DEFINE_INTERNAL_API(LIQUIDFPM_MANGLE_Q16, int16_t, int32_t, LIQUIDFPM_Q16_INTBITS, LIQUIDFPM_Q16_FRACBITS)
+LIQUIDFPM_DEFINE_INTERNAL_API(LIQUIDFPM_MANGLE_Q32, int32_t, int64_t, LIQUIDFPM_Q32_INTBITS, LIQUIDFPM_Q32_FRACBITS)
 
 #endif // __LIQUID_FPM_INTERNAL_H__

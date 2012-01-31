@@ -448,6 +448,8 @@ filter_benchmarks :=						\
 fpm_objects :=							\
 	src/fpm/src/q16.o					\
 	src/fpm/src/q32.o					\
+	src/fpm/gentab/q16_log2_frac.o				\
+	src/fpm/gentab/q32_log2_frac.o				\
 
 fpm_includes :=							\
 	src/fpm/src/qtype_div.port.c				\
@@ -456,6 +458,22 @@ fpm_includes :=							\
 src/fpm/src/q16.o : %.o : %.c $(headers) $(fpm_includes)
 
 src/fpm/src/q32.o : %.o : %.c $(headers) $(fpm_includes)
+
+#
+# auto-generated tables
+#
+
+#
+src/fpm/gentab/gentab.qtype_log2_frac : % : %.c
+src/fpm/gentab/q16_log2_frac.c : src/fpm/gentab/gentab.qtype_log2_frac ; ./$< -n16 > $@
+src/fpm/gentab/q32_log2_frac.c : src/fpm/gentab/gentab.qtype_log2_frac ; ./$< -n32 > $@
+
+# add auto-generated files to extra_clean list
+extra_clean +=							\
+	src/fpm/gentab/gentab.qtype_log2_frac			\
+	src/fpm/gentab/*.o					\
+	src/fpm/gentab/q16_log2_frac.c				\
+	src/fpm/gentab/q32_log2_frac.c				\
 
 
 fpm_autotests :=						\

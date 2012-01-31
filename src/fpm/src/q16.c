@@ -29,4 +29,5 @@
 // source files
 #include "qtype_div.port.c"
 #include "qtype_mul.port.c"
+#include "qtype_log2.c"
 
