@@ -73,7 +73,7 @@ LIQUIDFPM_DEFINE_COMPLEX(float, liquidfpm_float_complex);
 
 // inline division
 #define q16_div_inline(X,Y) ( ((X)<<(LIQUIDFPM_Q16_FRACBITS)) / (Y) )
-#define q32_div_inline(X,Y) ( ((X)<<(LIQUIDFPM_Q16_FRACBITS)) / (Y) )
+#define q32_div_inline(X,Y) ( (((int64_t)X)<<(LIQUIDFPM_Q32_FRACBITS)) / (Y) )
 
 /* API definition macro
  *
