@@ -59,8 +59,8 @@ LIQUIDFPM_DEFINE_COMPLEX(float, liquidfpm_float_complex);
 /* name-mangling macros */
 #define LIQUIDFPM_MANGLE_Q16(name)  LIQUIDFPM_CONCAT(q16, name)
 #define LIQUIDFPM_MANGLE_CQ16(name) LIQUIDFPM_CONCAT(cq16,name)
-#define LIQUIDFPM_Q16_INTBITS       (6)
-#define LIQUIDFPM_Q16_FRACBITS      (10)
+#define LIQUIDFPM_Q16_INTBITS       (7)
+#define LIQUIDFPM_Q16_FRACBITS      (9)
 
 #define LIQUIDFPM_MANGLE_Q32(name)  LIQUIDFPM_CONCAT(q32, name)
 #define LIQUIDFPM_MANGLE_CQ32(name) LIQUIDFPM_CONCAT(cq32,name)
