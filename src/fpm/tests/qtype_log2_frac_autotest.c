@@ -40,13 +40,13 @@ void Q(_test_log2_frac)(float _xf,                                  \
     /* convert to floating-point */                                 \
     float ytest = Q(_fixed_to_float)(y);                            \
                                                                     \
+    if (liquid_autotest_verbose) {                                  \
+        printf("log2(%12.8f) = %12.8f (%12.8f), e = %12.8f\n",      \
+                     _xf,      ytest,  yf,          ytest-yf);      \
+    }                                                               \
+                                                                    \
     /* run comparison */                                            \
     CONTEND_DELTA(yf,ytest,_tol);                                   \
-                                                                    \
-    if (liquid_autotest_verbose) {                                  \
-        printf("log2(%12.8f) = %12.8f (%12.8f)\n",                  \
-                     _xf,      ytest,  yf);                         \
-    }                                                               \
 }
 
 // define autotest API
@@ -55,7 +55,6 @@ LIQUIDFPM_AUTOTEST_LOG2_FRAC_API(LIQUIDFPM_MANGLE_Q32)
 
 void autotest_q16_log2_frac()
 {
-    unsigned int n=32;  // precision
     unsigned int num_steps = 37;
     float xmin = q16_fixed_to_float( 1 << 8  ); // min input
     float xmax = q16_fixed_to_float( q16_max ); // max input
@@ -91,7 +90,6 @@ void autotest_q16_log2_frac()
 
 void autotest_q32_log2_frac()
 {
-    unsigned int n=32;  // precision
     unsigned int num_steps = 37;
     float xmin = q32_fixed_to_float( 1 << 8  ); // min input
     float xmax = q32_fixed_to_float( q32_max ); // max input
