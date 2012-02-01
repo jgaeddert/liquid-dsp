@@ -35,9 +35,6 @@
  */
 #define LIQUIDFPM_DEFINE_INTERNAL_API(Q,T,TA,INTBITS,FRACBITS)      \
                                                                     \
-/* auto-generated look-up tables */                                 \
-extern const Q(_t) Q(_log2_frac_gentab)[256];                       \
-                                                                    \
 /* trig */                                                          \
 extern const Q(_t) Q(_cordic_Ak_tab)[];                             \
 extern const Q(_t) Q(_cordic_k_inv);                                \
@@ -62,10 +59,17 @@ void Q(_atan2_cordic_base)(Q(_t) _y,                                \
                            Q(_t) * _r,                              \
                            Q(_t) * _theta,                          \
                            unsigned int _n);                        \
+extern const Q(_t) Q(_sintab)[256];                                 \
+Q(_t) Q(_sin_tab)(Q(_t) _theta);                                    \
+Q(_t) Q(_cos_tab)(Q(_t) _theta);                                    \
+void Q(_sincos_tab)(Q(_t) _theta,                                   \
+                    Q(_t) * _sin,                                   \
+                    Q(_t) * _cos);                                  \
                                                                     \
 /* hyperbolic */                                                    \
                                                                     \
 /* exponential and logarithmic */                                   \
+extern const Q(_t) Q(_log2_frac_gentab)[256];                       \
 Q(_t) Q(_log2_frac) (Q(_t) _x);                                     \
                                                                     \
 /* power */                                                         \
