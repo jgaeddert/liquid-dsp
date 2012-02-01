@@ -465,7 +465,7 @@ src/fpm/src/q32.o : %.o : %.c $(headers) $(fpm_includes)
 #
 
 #
-src/fpm/gentab/gentab.qtype_log2_frac : % : %.c
+src/fpm/gentab/gentab.qtype_log2_frac : % : %.c $(headers)
 src/fpm/gentab/q16_log2_frac.c : src/fpm/gentab/gentab.qtype_log2_frac ; ./$< -n16 > $@
 src/fpm/gentab/q32_log2_frac.c : src/fpm/gentab/gentab.qtype_log2_frac ; ./$< -n32 > $@
 
