@@ -21,6 +21,7 @@
 #include <sys/resource.h>
 #include <stdlib.h>
 
+#include "liquid.h"
 #include "liquidfpm.h"
 
 // 
