@@ -498,6 +498,7 @@ fpm_benchmarks :=						\
 	src/fpm/bench/qtype_div_benchmark.c			\
 	src/fpm/bench/qtype_mul_benchmark.c			\
 	src/fpm/bench/qtype_log2_benchmark.c			\
+	src/fpm/bench/qtype_sincos_cordic_benchmark.c		\
 
 
 # 
