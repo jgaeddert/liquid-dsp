@@ -29,7 +29,7 @@
 // source files
 #include "qtype_div.port.c"
 #include "qtype_mul.port.c"
-#include "qtype_log2.c"
+#include "qtype_log2_frac.c"
 #include "qtype_atan_cordic.c"
 #include "qtype_sincos_cordic.c"
 #include "qtype_sincos_tab.c"

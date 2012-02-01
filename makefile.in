@@ -458,7 +458,7 @@ fpm_objects :=							\
 fpm_includes :=							\
 	src/fpm/src/qtype_div.port.c				\
 	src/fpm/src/qtype_mul.port.c				\
-	src/fpm/src/qtype_log2.c				\
+	src/fpm/src/qtype_log2_frac.c				\
 	src/fpm/src/qtype_atan_cordic.c				\
 	src/fpm/src/qtype_sincos_cordic.c			\
 	src/fpm/src/qtype_sincos_tab.c				\
