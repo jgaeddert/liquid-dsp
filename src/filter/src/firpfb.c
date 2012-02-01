@@ -97,16 +97,16 @@ FIRPFB() FIRPFB(_create_rnyquist)(int _type,
 {
     // validate input
     if (_npfb == 0) {
-        fprintf(stderr,"error: firpfb_xxxt_create_rnyquist(), number of filters must be greater than zero\n");
+        fprintf(stderr,"error: firpfb_%s_create_rnyquist(), number of filters must be greater than zero\n", EXTENSION_FULL);
         exit(1);
     } else if (_k < 2) {
-        fprintf(stderr,"error: firpfb_xxxt_create_rnyquist(), filter samples/symbol must be greater than 1\n");
+        fprintf(stderr,"error: firpfb_%s_create_rnyquist(), filter samples/symbol must be greater than 1\n", EXTENSION_FULL);
         exit(1);
     } else if (_m == 0) {
-        fprintf(stderr,"error: firpfb_xxxt_create_rnyquist(), filter delay must be greater than 0\n");
+        fprintf(stderr,"error: firpfb_%s_create_rnyquist(), filter delay must be greater than 0\n", EXTENSION_FULL);
         exit(1);
     } else if (_beta < 0.0f || _beta > 1.0f) {
-        fprintf(stderr,"error: firpfb_xxxt_create_rnyquist(), filter excess bandwidth factor must be in [0,1]\n");
+        fprintf(stderr,"error: firpfb_%s_create_rnyquist(), filter excess bandwidth factor must be in [0,1]\n", EXTENSION_FULL);
         exit(1);
     }
 

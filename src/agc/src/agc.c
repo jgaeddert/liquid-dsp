@@ -156,7 +156,7 @@ void AGC(_set_gain_limits)(AGC() _q,
 {
     // validate input
     if (_g_min > _g_max) {
-        fprintf(stderr,"error: agc_xxxt_set_gain_limits(), _g_min < _g_max\n");
+        fprintf(stderr,"error: agc_%s_set_gain_limits(), _g_min < _g_max\n", EXTENSION_FULL);
         exit(-1);
     }
 
@@ -172,10 +172,10 @@ void AGC(_set_bandwidth)(AGC() _q,
 {
     // check to ensure _BT is reasonable
     if ( _BT < 0 ) {
-        fprintf(stderr,"error: agc_xxxt_set_bandwidth(), bandwidth must be positive\n");
+        fprintf(stderr,"error: agc_%s_set_bandwidth(), bandwidth must be positive\n", EXTENSION_FULL);
         exit(-1);
     } else if ( _BT > 1.0f ) {
-        fprintf(stderr,"error: agc_xxxt_set_bandwidth(), bandwidth must less than 1.0\n");
+        fprintf(stderr,"error: agc_%s_set_bandwidth(), bandwidth must less than 1.0\n", EXTENSION_FULL);
         exit(-1);
     }
 
@@ -456,7 +456,7 @@ void AGC(_execute_squelch)(AGC() _q)
             //printf("squelch enabled\n");
             break;
         default:
-            fprintf(stderr, "error: agc_xxxt_execute_squelch(), invalid squelch code: %d\n", _q->squelch_status);
+            fprintf(stderr, "error: agc_%s_execute_squelch(), invalid squelch code: %d\n", EXTENSION_FULL, _q->squelch_status);
             exit(1);
     }
 }

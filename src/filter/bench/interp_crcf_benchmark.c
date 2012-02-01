@@ -23,7 +23,7 @@
 #include "liquid.h"
 
 // Helper function to keep code base small
-void interp_rrrf_bench(struct rusage *_start,
+void interp_crcf_bench(struct rusage *_start,
                        struct rusage *_finish,
                        unsigned long int *_num_iterations,
                        unsigned int _M,
@@ -39,32 +39,32 @@ void interp_rrrf_bench(struct rusage *_start,
     for (i=0; i<_h_len; i++)
         h[i] = 1.0f;
 
-    interp_rrrf q = interp_rrrf_create(_M,h,_h_len);
+    interp_crcf q = interp_crcf_create(_M,h,_h_len);
 
-    float y[_M];
+    float complex y[_M];
     // start trials
     getrusage(RUSAGE_SELF, _start);
     for (i=0; i<(*_num_iterations); i++) {
-        interp_rrrf_execute(q,1.0f,y);
-        interp_rrrf_execute(q,1.0f,y);
-        interp_rrrf_execute(q,1.0f,y);
-        interp_rrrf_execute(q,1.0f,y);
+        interp_crcf_execute(q,1.0f,y);
+        interp_crcf_execute(q,1.0f,y);
+        interp_crcf_execute(q,1.0f,y);
+        interp_crcf_execute(q,1.0f,y);
     }
     getrusage(RUSAGE_SELF, _finish);
     *_num_iterations *= 4;
 
-    interp_rrrf_destroy(q);
+    interp_crcf_destroy(q);
 }
 
-#define INTERP_RRRF_BENCHMARK_API(M,H_LEN)  \
+#define INTERP_CRCF_BENCHMARK_API(M,H_LEN)  \
 (   struct rusage *_start,                  \
     struct rusage *_finish,                 \
     unsigned long int *_num_iterations)     \
-{ interp_rrrf_bench(_start, _finish, _num_iterations, M, H_LEN); }
+{ interp_crcf_bench(_start, _finish, _num_iterations, M, H_LEN); }
 
-void benchmark_interp_rrrf_m2_h8    INTERP_RRRF_BENCHMARK_API(2, 8)
-void benchmark_interp_rrrf_m4_h16   INTERP_RRRF_BENCHMARK_API(4, 16)
-void benchmark_interp_rrrf_m8_h32   INTERP_RRRF_BENCHMARK_API(8, 32)
-void benchmark_interp_rrrf_m16_h64  INTERP_RRRF_BENCHMARK_API(16,64)
-void benchmark_interp_rrrf_m32_h128 INTERP_RRRF_BENCHMARK_API(32,128)
+void benchmark_interp_crcf_m2_h8    INTERP_CRCF_BENCHMARK_API(2, 8)
+void benchmark_interp_crcf_m4_h16   INTERP_CRCF_BENCHMARK_API(4, 16)
+void benchmark_interp_crcf_m8_h32   INTERP_CRCF_BENCHMARK_API(8, 32)
+void benchmark_interp_crcf_m16_h64  INTERP_CRCF_BENCHMARK_API(16,64)
+void benchmark_interp_crcf_m32_h128 INTERP_CRCF_BENCHMARK_API(32,128)
 

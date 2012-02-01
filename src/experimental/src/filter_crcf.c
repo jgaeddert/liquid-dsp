@@ -25,6 +25,10 @@
 
 #include "liquid.internal.h"
 
+// naming extensions (useful for print statements)
+#define EXTENSION_SHORT     "f"
+#define EXTENSION_FULL      "crcf"
+
 // 
 #define AUTOCORR(name)      LIQUID_CONCAT(autocorr_crcf,name)
 #define FIRFARROW(name)     LIQUID_CONCAT(firfarrow_crcf,name)

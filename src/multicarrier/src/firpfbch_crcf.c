@@ -24,6 +24,10 @@
 
 #include "liquid.internal.h"
 
+// naming extensions (useful for print statements)
+#define EXTENSION_SHORT     "f"
+#define EXTENSION_FULL      "crcf"
+
 // 
 #define FIRPFBCH(name)      LIQUID_CONCAT(firpfbch_crcf,name)
 

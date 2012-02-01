@@ -54,6 +54,9 @@ struct FIRHILB(_s) {
     WINDOW() w0;            // input buffer (even samples)
     WINDOW() w1;            // input buffer (odd samples)
 
+    // vector dot product
+    DOTPROD() dpq;
+
     // regular r2c|c2r operation
     unsigned int toggle;
 };
@@ -104,6 +107,9 @@ FIRHILB() FIRHILB(_create)(unsigned int _m,
     q->w0 = WINDOW(_create)(2*(q->m));
     WINDOW(_clear)(q->w0);
 
+    // create internal dot product object
+    q->dpq = DOTPROD(_create)(q->hq, q->hq_len);
+
     return q;
 }
 
@@ -113,6 +119,9 @@ void FIRHILB(_destroy)(FIRHILB() _q)
     // destroy window buffers
     WINDOW(_destroy)(_q->w0);
     WINDOW(_destroy)(_q->w1);
+    
+    // destroy internal dot product object
+    DOTPROD(_destroy)(_q->dpq);
 
     free(_q->h);
     free(_q->hc);
@@ -170,7 +179,9 @@ void FIRHILB(_r2c_execute)(FIRHILB() _q,
 
         // lower branch (filter)
         WINDOW(_read)(_q->w1, &r);
-        DOTPROD(_run)(_q->hq, r, _q->hq_len, &yq);
+        
+        // execute dotprod
+        DOTPROD(_execute)(_q->dpq, r, &yq);
     } else {
         // push sample into lower branch
         WINDOW(_push)(_q->w1, _x);
@@ -180,7 +191,9 @@ void FIRHILB(_r2c_execute)(FIRHILB() _q,
 
         // lower branch (filter)
         WINDOW(_read)(_q->w0, &r);
-        DOTPROD(_run)(_q->hq, r, _q->hq_len, &yq);
+
+        // execute dotprod
+        DOTPROD(_execute)(_q->dpq, r, &yq);
     }
 
     // toggle flag
@@ -216,8 +229,7 @@ void FIRHILB(_decim_execute)(FIRHILB() _q,
     // compute quadrature component (filter branch)
     WINDOW(_push)(_q->w1, _x[0]);
     WINDOW(_read)(_q->w1, &r);
-    // TODO yq = DOTPROD(_execute)(_q->dpq, r);
-    DOTPROD(_run)(_q->hq, r, _q->hq_len, &yq);
+    DOTPROD(_execute)(_q->dpq, r, &yq);
 
     WINDOW(_push)(_q->w0, _x[1]);
     WINDOW(_index)(_q->w0, _q->m-1, &yi);
@@ -244,7 +256,6 @@ void FIRHILB(_interp_execute)(FIRHILB() _q,
     // compute second branch (filter)
     WINDOW(_push)(_q->w1, crealf(_x));
     WINDOW(_read)(_q->w1, &r);
-    //yq = DOTPROD(_execute)(_q->dpq, r);
-    DOTPROD(_run)(_q->hq, r, _q->hq_len, &_y[1]);
+    DOTPROD(_execute)(_q->dpq, r, &_y[1]);
 }
 

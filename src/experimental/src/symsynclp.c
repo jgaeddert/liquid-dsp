@@ -111,7 +111,7 @@ SYMSYNCLP() SYMSYNCLP(_create)(unsigned int _k,
     // TODO : do not restrict order
 #if 0
     if (q->order != 1) {
-        fprintf(stderr,"error: symsynclp_xxxt_create(), order must be 1 (for now)\n");
+        fprintf(stderr,"error: symsynclp_%s_create(), order must be 1 (for now)\n", EXTENSION_FULL);
         exit(1);
     }
 #endif
@@ -282,7 +282,7 @@ void SYMSYNCLP(_compute_coefficients)(SYMSYNCLP() _q,
         _c[0] = -mu3/6   + mu2/2 - _mu/3;
         break;
     default:
-        fprintf(stderr,"error: symsynclp_xxxt_compute_coefficients(), invalid order %u\n", _order);
+        fprintf(stderr,"error: symsynclp_%s_compute_coefficients(), invalid order %u\n", EXTENSION_FULL, _order);
         exit(1);
     break;
     }
@@ -398,7 +398,7 @@ void SYMSYNCLP(_output_debug_file)(SYMSYNCLP() _q)
 {
     FILE * fid = fopen(DEBUG_SYMSYNCLP_FILENAME, "w");
     if (!fid) {
-        fprintf(stderr,"error: symsync_xxxt_output_debug_file(), could not open file for writing\n");
+        fprintf(stderr,"error: symsync_%s_output_debug_file(), could not open file for writing\n", EXTENSION_FULL);
         return;
     }
     fprintf(fid,"%% %s, auto-generated file\n\n", DEBUG_SYMSYNCLP_FILENAME);

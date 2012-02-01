@@ -1,5 +1,7 @@
 
 Major improvements since 1.1.0
+  * dotprod
+    - leveraging SIMD extensions for vector operations (SSE2, SSE3)
   * modem
     - new API creates linear modem objects with one argument, e.g.
       LIQUID_MODEM_QAM16

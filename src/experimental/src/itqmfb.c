@@ -88,7 +88,7 @@ ITQMFB() ITQMFB(_create)(unsigned int _n, unsigned int _m, float _As, int _type)
 ITQMFB() ITQMFB(_recreate)(ITQMFB() _f, unsigned int _h_len)
 {
     // TODO implement this method
-    printf("error: itqmfb_xxxt_recreate(), method not supported yet\n");
+    printf("error: itqmfb_%s_recreate(), method not supported yet\n", EXTENSION_FULL);
     exit(1);
     return NULL;
 }

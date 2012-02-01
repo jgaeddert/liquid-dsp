@@ -26,6 +26,9 @@
 AC_INIT([liquid-dsp],[1.1.0],[liquid@vt.edu])
 AC_CONFIG_SRCDIR([libliquid.c])
 
+# permit auxiliary scripts directory (e.g. config.sub, config.guess, install-sh)
+AC_CONFIG_AUX_DIR(scripts/)
+
 # Specify 'C' language
 AC_LANG(C)
 
@@ -216,8 +219,17 @@ AC_CHECK_SIZEOF(unsigned int)
 AC_CANONICAL_TARGET
 case $target_cpu in
 i386|i486|i586|i686|x86|x86_64)
-    MLIBS_DOTPROD="src/dotprod/src/dotprod_cccf.o \
-                   src/dotprod/src/dotprod_crcf.o \
+    # check compile-time MMX/SSE/SIMD flags
+    #   MMX     :   mmintrin.h
+    #   SSE     :   xmmintrin.h
+    #   SSE2    :   emmintrin.h
+    #   SSE3    :   pmmintrin.h
+    #   SSSE3   :   tmmintrin.h
+    #   SSE4..  :   smmintrin.h
+    AC_CHECK_HEADERS(mmintrin.h xmmintrin.h emmintrin.h pmmintrin.h tmmintrin.h smmintrin.h)
+
+    MLIBS_DOTPROD="src/dotprod/src/dotprod_cccf.mmx.o \
+                   src/dotprod/src/dotprod_crcf.mmx.o \
                    src/dotprod/src/dotprod_rrrf.mmx.o"
     case $target_os in
     darwin*)
@@ -230,6 +242,12 @@ powerpc*)
                    src/dotprod/src/dotprod_rrrf.av.o \
                    src/dotprod/src/dotprod_crcf.av.o"
     ARCH_OPTION="-fno-common -faltivec";;
+arm*)
+    # ARM architecture : use portable C version
+    MLIBS_DOTPROD="src/dotprod/src/dotprod_cccf.o \
+                   src/dotprod/src/dotprod_crcf.o \
+                   src/dotprod/src/dotprod_rrrf.o"
+    ARCH_OPTION="-marm -mfloat-abi=softfp";;
 *)
     # unknown architecture : use portable C version
     MLIBS_DOTPROD="src/dotprod/src/dotprod_cccf.o \

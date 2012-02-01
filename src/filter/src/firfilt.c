@@ -34,17 +34,24 @@
 //  DOTPROD()       dotprod macro
 //  PRINTVAL()      print macro
 
+#define LIQUID_FIRFILT_USE_WINDOW   (0)
+
 // firfilt object structure
 struct FIRFILT(_s) {
     TC * h;             // filter coefficients array [size; h_len x 1]
     unsigned int h_len; // filter length
 
-    WINDOW() w;         // window object (internal buffer)
-    DOTPROD() dp;       // dot product object
-
-#if 0
-    fir_prototype p;    // prototype object
+#if LIQUID_FIRFILT_USE_WINDOW
+    // use window object for internal buffer
+    WINDOW() w;
+#else
+    // use array as internal buffer (faster)
+    TI * w;                 // internal buffer object
+    unsigned int w_len;     // window length
+    unsigned int w_mask;    // window index mask
+    unsigned int w_index;   // window read index
 #endif
+    DOTPROD() dp;       // dot product object
 };
 
 // create firfilt object
@@ -55,7 +62,7 @@ FIRFILT() FIRFILT(_create)(TC * _h,
 {
     // validate input
     if (_n == 0) {
-        fprintf(stderr,"error: firfilt_xxxt_create(), filter length must be greater than zero\n");
+        fprintf(stderr,"error: firfilt_%s_create(), filter length must be greater than zero\n", EXTENSION_FULL);
         exit(1);
     }
 
@@ -64,8 +71,16 @@ FIRFILT() FIRFILT(_create)(TC * _h,
     q->h_len = _n;
     q->h = (TC *) malloc((q->h_len)*sizeof(TC));
 
+#if LIQUID_FIRFILT_USE_WINDOW
     // create window (internal buffer)
     q->w = WINDOW(_create)(q->h_len);
+#else
+    // initialize array for buffering
+    q->w_len   = 1<<liquid_msb_index(q->h_len); // effectively 2^{floor(log2(len))+1}
+    q->w_mask  = q->w_len - 1;
+    q->w       = (TI *) malloc((q->w_len + q->h_len + 1)*sizeof(TI));
+    q->w_index = 0;
+#endif
 
     // load filter in reverse order
     unsigned int i;
@@ -84,7 +99,7 @@ FIRFILT() FIRFILT(_create)(TC * _h,
 // create firfilt object from prototype
 FIRFILT() FIRFILT(_create_prototype)(unsigned int _n)
 {
-    fprintf(stderr,"error: firfilt_xxxt_create_prototype(), not yet implemented\n");
+    fprintf(stderr,"error: firfilt_%s_create_prototype(), not yet implemented\n", EXTENSION_FULL);
     exit(1);
 
     FIRFILT() q = (FIRFILT()) malloc(sizeof(struct FIRFILT(_s)));
@@ -112,8 +127,19 @@ FIRFILT() FIRFILT(_recreate)(FIRFILT() _q,
         _q->h_len = _n;
         _q->h = (TC*) realloc(_q->h, (_q->h_len)*sizeof(TC));
 
+#if LIQUID_FIRFILT_USE_WINDOW
         // recreate window object, preserving internal state
         _q->w = WINDOW(_recreate)(_q->w, _q->h_len);
+#else
+        // free old array
+        free(_q->w);
+
+        // initialize array for buffering
+        _q->w_len   = 1<<liquid_msb_index(_q->h_len);   // effectively 2^{floor(log2(len))+1}
+        _q->w_mask  = _q->w_len - 1;
+        _q->w       = (TI *) malloc((_q->w_len + _q->h_len + 1)*sizeof(TI));
+        _q->w_index = 0;
+#endif
     }
 
     // load filter in reverse order
@@ -130,7 +156,11 @@ FIRFILT() FIRFILT(_recreate)(FIRFILT() _q,
 // destroy firfilt object
 void FIRFILT(_destroy)(FIRFILT() _q)
 {
+#if LIQUID_FIRFILT_USE_WINDOW
     WINDOW(_destroy)(_q->w);
+#else
+    free(_q->w);
+#endif
     DOTPROD(_destroy)(_q->dp);
     free(_q->h);
     free(_q);
@@ -139,7 +169,14 @@ void FIRFILT(_destroy)(FIRFILT() _q)
 // reset internal state of filter object
 void FIRFILT(_clear)(FIRFILT() _q)
 {
+#if LIQUID_FIRFILT_USE_WINDOW
     WINDOW(_clear)(_q->w);
+#else
+    unsigned int i;
+    for (i=0; i<_q->w_len; i++)
+        _q->w[i] = 0.0;
+    _q->w_index = 0;
+#endif
 }
 
 // print filter object internals (taps, buffer)
@@ -153,7 +190,9 @@ void FIRFILT(_print)(FIRFILT() _q)
         printf("\n");
     }
 
+#if LIQUID_FIRFILT_USE_WINDOW
     WINDOW(_print)(_q->w);
+#endif
 }
 
 // push sample into filter object's internal buffer
@@ -162,7 +201,22 @@ void FIRFILT(_print)(FIRFILT() _q)
 void FIRFILT(_push)(FIRFILT() _q,
                     TI _x)
 {
+#if LIQUID_FIRFILT_USE_WINDOW
     WINDOW(_push)(_q->w, _x);
+#else
+    // increment index
+    _q->w_index++;
+
+    // wrap around pointer
+    _q->w_index &= _q->w_mask;
+
+    // if pointer wraps around, copy excess memory
+    if (_q->w_index == 0)
+        memmove(_q->w, _q->w + _q->w_len, (_q->h_len)*sizeof(TI));
+
+    // append value to end of buffer
+    _q->w[_q->w_index + _q->h_len - 1] = _x;
+#endif
 }
 
 // compute output sample (dot product between internal
@@ -173,8 +227,12 @@ void FIRFILT(_execute)(FIRFILT() _q,
                        TO *_y)
 {
     // read buffer (retrieve pointer to aligned memory array)
+#if LIQUID_FIRFILT_USE_WINDOW
     TI *r;
     WINDOW(_read)(_q->w, &r);
+#else
+    TI *r = _q->w + _q->w_index;
+#endif
 
     // execute dot product
     DOTPROD(_execute)(_q->dp, r, _y);

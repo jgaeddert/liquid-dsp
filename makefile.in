@@ -41,6 +41,11 @@
 #    clean-doc           :   clean documentation
 #
 
+# autoconf initialization macros
+NAME      := @PACKAGE_NAME@
+VERSION   := @PACKAGE_VERSION@
+BUGREPORT := @PACKAGE_BUGREPORT@
+
 # paths
 srcdir = @srcdir@
 prefix = @prefix@
@@ -136,11 +141,16 @@ buffer_objects :=						\
 
 #	src/buffer/src/bufferui.c				\
 
-src/buffer/src/bufferf.o : %.o : %.c $(headers)
+buffer_includes :=						\
+	src/buffer/src/buffer.c					\
+	src/buffer/src/wdelay.c					\
+	src/buffer/src/window.c					\
 
-src/buffer/src/buffercf.o : %.o : %.c $(headers)
+src/buffer/src/bufferf.o : %.o : %.c $(headers) $(buffer_includes)
 
-src/buffer/src/bufferui.o : %.o : %.c $(headers)
+src/buffer/src/buffercf.o : %.o : %.c $(headers) $(buffer_includes)
+
+src/buffer/src/bufferui.o : %.o : %.c $(headers) $(buffer_includes)
 
 
 buffer_autotests :=						\
@@ -170,10 +180,13 @@ src/dotprod/src/dotprod_rrrf.o : %.o : %.c $(headers) src/dotprod/src/dotprod.c
 src/dotprod/src/dotprod_rrrf.av.o : %.o : %.c $(headers)
 
 src/dotprod/src/dotprod_rrrf.mmx.o : %.o : %.c $(headers)
+src/dotprod/src/dotprod_crcf.mmx.o : %.o : %.c $(headers)
+src/dotprod/src/dotprod_cccf.mmx.o : %.o : %.c $(headers)
 
 dotprod_autotests :=						\
 	src/dotprod/tests/dotprod_rrrf_autotest.c		\
 	src/dotprod/tests/dotprod_crcf_autotest.c		\
+	src/dotprod/tests/dotprod_cccf_autotest.c		\
 
 dotprod_benchmarks :=						\
 	src/dotprod/bench/dotprod_cccf_benchmark.c		\
@@ -350,6 +363,7 @@ filter_objects :=						\
 filter_includes :=						\
 	src/filter/src/firfarrow.c				\
 	src/filter/src/firfilt.c				\
+	src/filter/src/firhilb.c				\
 	src/filter/src/firpfb.c					\
 	src/filter/src/iirfilt.c				\
 	src/filter/src/iirfiltsos.c				\
@@ -422,7 +436,7 @@ filter_benchmarks :=						\
 	src/filter/bench/firhilb_benchmark.c			\
 	src/filter/bench/firfilt_crcf_benchmark.c		\
 	src/filter/bench/iirfilt_crcf_benchmark.c		\
-	src/filter/bench/interp_benchmark.c			\
+	src/filter/bench/interp_crcf_benchmark.c		\
 	src/filter/bench/resamp_benchmark.c			\
 	src/filter/bench/resamp2_benchmark.c			\
 	src/filter/bench/symsync_benchmark.c			\
@@ -667,6 +681,8 @@ multicarrier_objects :=						\
 	src/multicarrier/src/ofdmframesync.o			\
 
 # list explicit targets and dependencies here
+src/multicarrier/src/firpfbch_crcf.o : %_crcf.o : %.c
+src/multicarrier/src/firpfbch_cccf.o : %_cccf.o : %.c
 
 # autotests
 multicarrier_autotests :=					\
@@ -1018,6 +1034,8 @@ install:
 	@echo "  object available.  You might also need to modify your"
 	@echo "  LD_LIBRARY_PATH environment variable to include the"
 	@echo "  directory $(exec_prefix)"
+	@echo ""
+	@echo "  Please report bugs to $(BUGREPORT)"
 	@echo "---------------------------------------------------------"
 	@echo ""
 

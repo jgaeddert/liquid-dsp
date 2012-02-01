@@ -76,10 +76,10 @@ IIRFILT() IIRFILT(_create)(TC * _b,
 {
     // validate input
     if (_nb == 0) {
-        fprintf(stderr,"error: iirfilt_xxxt_create(), numerator length cannot be zero\n");
+        fprintf(stderr,"error: iirfilt_%s_create(), numerator length cannot be zero\n", EXTENSION_FULL);
         exit(1);
     } else if (_na == 0) {
-        fprintf(stderr,"error: iirfilt_xxxt_create(), denominator length cannot be zero\n");
+        fprintf(stderr,"error: iirfilt_%s_create(), denominator length cannot be zero\n", EXTENSION_FULL);
         exit(1);
     }
 
@@ -145,7 +145,7 @@ IIRFILT() IIRFILT(_create_sos)(TC * _B,
 {
     // validate input
     if (_nsos == 0) {
-        fprintf(stderr,"error: iirfilt_xxxt_create_sos(), filter must have at least one 2nd-order section\n");
+        fprintf(stderr,"error: iirfilt_%s_create_sos(), filter must have at least one 2nd-order section\n", EXTENSION_FULL);
         exit(1);
     }
 
