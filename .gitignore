@@ -35,10 +35,13 @@ octave-core
 # gentab programs
 src/fec/gentab/*_gentab
 src/utility/gentab/*_gentab
+src/fpm/gentab/gentab.qtype_log2_frac
 
 # gentab output sources
 src/fec/gentab/reverse_byte.c
 src/utility/gentab/count_ones.c
+src/fpm/gentab/q32_log2_frac.c
+src/fpm/gentab/q16_log2_frac.c
 
 # sandbox
 sandbox/*_test
