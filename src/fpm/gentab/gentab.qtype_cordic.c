@@ -20,7 +20,7 @@
  */
 
 //
-// Table generation for sin|cos CORDIC
+// Table generation for CORDIC (sin, cos, atan)
 //
 
 #include <stdlib.h>

@@ -450,13 +450,14 @@ fpm_objects :=							\
 	src/fpm/src/q32.o					\
 	src/fpm/gentab/q16_log2_frac.o				\
 	src/fpm/gentab/q32_log2_frac.o				\
-	src/fpm/gentab/q16_sincos_cordic.o			\
-	src/fpm/gentab/q32_sincos_cordic.o			\
+	src/fpm/gentab/q16_cordic.o				\
+	src/fpm/gentab/q32_cordic.o				\
 
 fpm_includes :=							\
 	src/fpm/src/qtype_div.port.c				\
 	src/fpm/src/qtype_mul.port.c				\
 	src/fpm/src/qtype_log2.c				\
+	src/fpm/src/qtype_atan_cordic.c				\
 	src/fpm/src/qtype_sincos_cordic.c			\
 
 src/fpm/src/q16.o : %.o : %.c $(headers) $(fpm_includes)
@@ -473,18 +474,18 @@ src/fpm/gentab/q16_log2_frac.c : src/fpm/gentab/gentab.qtype_log2_frac ; ./$< -n
 src/fpm/gentab/q32_log2_frac.c : src/fpm/gentab/gentab.qtype_log2_frac ; ./$< -n32 > $@
 
 # sincos CORDIC look-up table
-src/fpm/gentab/gentab.qtype_sincos_cordic : % : %.c $(headers)
-src/fpm/gentab/q16_sincos_cordic.c : src/fpm/gentab/gentab.qtype_sincos_cordic ; ./$< -n16 > $@
-src/fpm/gentab/q32_sincos_cordic.c : src/fpm/gentab/gentab.qtype_sincos_cordic ; ./$< -n32 > $@
+src/fpm/gentab/gentab.qtype_cordic : % : %.c $(headers)
+src/fpm/gentab/q16_cordic.c : src/fpm/gentab/gentab.qtype_cordic ; ./$< -n16 > $@
+src/fpm/gentab/q32_cordic.c : src/fpm/gentab/gentab.qtype_cordic ; ./$< -n32 > $@
 
 # add auto-generated files to extra_clean list
 extra_clean +=							\
 	src/fpm/gentab/gentab.qtype_log2_frac			\
 	src/fpm/gentab/q16_log2_frac.c				\
 	src/fpm/gentab/q32_log2_frac.c				\
-	src/fpm/gentab/gentab.qtype_sincos_cordic		\
-	src/fpm/gentab/q16_sincos_cordic.c			\
-	src/fpm/gentab/q32_sincos_cordic.c			\
+	src/fpm/gentab/gentab.qtype_cordic			\
+	src/fpm/gentab/q16_cordic.c				\
+	src/fpm/gentab/q32_cordic.c				\
 	src/fpm/gentab/*.o					\
 
 
@@ -492,6 +493,7 @@ fpm_autotests :=						\
 	src/fpm/tests/qtype_div_autotest.c			\
 	src/fpm/tests/qtype_mul_autotest.c			\
 	src/fpm/tests/qtype_log2_frac_autotest.c		\
+	src/fpm/tests/qtype_atan_cordic_autotest.c		\
 	src/fpm/tests/qtype_sincos_cordic_autotest.c		\
 
 fpm_benchmarks :=						\

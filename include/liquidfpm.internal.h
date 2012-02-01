@@ -52,6 +52,16 @@ void Q(_sincos_cordic_base)(Q(_t) _theta,                           \
                             Q(_t) * _sin,                           \
                             Q(_t) * _cos,                           \
                             unsigned int _n);                       \
+void Q(_atan2_cordic)(Q(_t) _y,                                     \
+                      Q(_t) _x,                                     \
+                      Q(_t) * _r,                                   \
+                      Q(_t) * _theta,                               \
+                      unsigned int _n);                             \
+void Q(_atan2_cordic_base)(Q(_t) _y,                                \
+                           Q(_t) _x,                                \
+                           Q(_t) * _r,                              \
+                           Q(_t) * _theta,                          \
+                           unsigned int _n);                        \
                                                                     \
 /* hyperbolic */                                                    \
                                                                     \
