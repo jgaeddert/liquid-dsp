@@ -54,6 +54,34 @@ void benchmark_q16_sincos_cordic(struct rusage *_start,
     *_num_iterations *= 4;
 }
 
+// 
+// BENCHMARK: q16 sin|cos (look-up table)
+//
+void benchmark_q16_sincos_tab(struct rusage *_start,
+                              struct rusage *_finish,
+                              unsigned long int *_num_iterations,
+                              unsigned int _n)
+{
+    // initialize input
+    q16_t x0 = rand() & 0xffff;
+    q16_t x1 = rand() & 0xffff;
+    q16_t x2 = rand() & 0xffff;
+    q16_t x3 = rand() & 0xffff;
+    q16_t s, c;
+
+    // start trials
+    unsigned long int i;
+    getrusage(RUSAGE_SELF, _start);
+    for (i=0; i<(*_num_iterations); i++) {
+        q16_sincos_tab(x0, &s, &c);
+        q16_sincos_tab(x1, &s, &c);
+        q16_sincos_tab(x2, &s, &c);
+        q16_sincos_tab(x3, &s, &c);
+    }
+    getrusage(RUSAGE_SELF, _finish);
+    *_num_iterations *= 4;
+}
+
 
 // 
 // BENCHMARK: q32 sin|cos (cordic)
@@ -84,6 +112,34 @@ void benchmark_q32_sincos_cordic(struct rusage *_start,
     *_num_iterations *= 4;
 }
 
+
+// 
+// BENCHMARK: q32 sin|cos (look-up table)
+//
+void benchmark_q32_sincos_tab(struct rusage *_start,
+                              struct rusage *_finish,
+                              unsigned long int *_num_iterations,
+                              unsigned int _n)
+{
+    // initialize input
+    q32_t x0 = rand() & 0xffff;
+    q32_t x1 = rand() & 0xffff;
+    q32_t x2 = rand() & 0xffff;
+    q32_t x3 = rand() & 0xffff;
+    q32_t s, c;
+
+    // start trials
+    unsigned long int i;
+    getrusage(RUSAGE_SELF, _start);
+    for (i=0; i<(*_num_iterations); i++) {
+        q32_sincos_tab(x0, &s, &c);
+        q32_sincos_tab(x1, &s, &c);
+        q32_sincos_tab(x2, &s, &c);
+        q32_sincos_tab(x3, &s, &c);
+    }
+    getrusage(RUSAGE_SELF, _finish);
+    *_num_iterations *= 4;
+}
 
 // 
 // BENCHMARK: floating-point sin|cos
