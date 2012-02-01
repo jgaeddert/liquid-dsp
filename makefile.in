@@ -450,6 +450,8 @@ fpm_objects :=							\
 	src/fpm/src/q32.o					\
 	src/fpm/gentab/q16_log2_frac.o				\
 	src/fpm/gentab/q32_log2_frac.o				\
+	src/fpm/gentab/q16_log2_shiftadd.o			\
+	src/fpm/gentab/q32_log2_shiftadd.o			\
 	src/fpm/gentab/q16_cordic.o				\
 	src/fpm/gentab/q32_cordic.o				\
 	src/fpm/gentab/q16_sintab.o				\
@@ -459,6 +461,7 @@ fpm_includes :=							\
 	src/fpm/src/qtype_div.port.c				\
 	src/fpm/src/qtype_mul.port.c				\
 	src/fpm/src/qtype_log2_frac.c				\
+	src/fpm/src/qtype_log2_shiftadd.c			\
 	src/fpm/src/qtype_atan_cordic.c				\
 	src/fpm/src/qtype_sincos_cordic.c			\
 	src/fpm/src/qtype_sincos_tab.c				\
@@ -470,6 +473,11 @@ src/fpm/src/q32.o : %.o : %.c $(headers) $(fpm_includes)
 #
 # auto-generated tables
 #
+
+# log2 shift/add look-up table
+src/fpm/gentab/gentab.qtype_log2_shiftadd : % : %.c $(headers)
+src/fpm/gentab/q16_log2_shiftadd.c : src/fpm/gentab/gentab.qtype_log2_shiftadd ; ./$< -n16 > $@
+src/fpm/gentab/q32_log2_shiftadd.c : src/fpm/gentab/gentab.qtype_log2_shiftadd ; ./$< -n32 > $@
 
 # log2 fractional look-up table
 src/fpm/gentab/gentab.qtype_log2_frac : % : %.c $(headers)
@@ -501,6 +509,7 @@ fpm_autotests :=						\
 	src/fpm/tests/qtype_div_autotest.c			\
 	src/fpm/tests/qtype_mul_autotest.c			\
 	src/fpm/tests/qtype_log2_frac_autotest.c		\
+	src/fpm/tests/qtype_log2_shiftadd_autotest.c		\
 	src/fpm/tests/qtype_atan_cordic_autotest.c		\
 	src/fpm/tests/qtype_sincos_cordic_autotest.c		\
 	src/fpm/tests/qtype_sincos_tab_autotest.c		\

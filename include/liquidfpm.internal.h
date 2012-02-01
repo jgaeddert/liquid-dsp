@@ -72,6 +72,17 @@ void Q(_sincos_tab)(Q(_t) _theta,                                   \
 extern const Q(_t) Q(_log2_frac_gentab)[256];                       \
 Q(_t) Q(_log2_frac) (Q(_t) _x);                                     \
                                                                     \
+extern const Q(_t) Q(_ln2);     /* log(2)   */                      \
+extern const Q(_t) Q(_log10_2); /* log10(2) */                      \
+extern const Q(_t) Q(_log2_e);  /* log2(e) */                       \
+extern const Q(_t) Q(_log2_10); /* log2(10) */                      \
+extern const Q(_t) Q(_log2_shiftadd_Ak_tab)[];                      \
+extern const unsigned int Q(_log2_shiftadd_nmax);                   \
+Q(_t) Q(_log2_shiftadd)     (Q(_t) _x, unsigned int _n);            \
+Q(_t) Q(_log2_shiftadd_base)(Q(_t) _x, unsigned int _n);            \
+Q(_t) Q(_log_shiftadd)      (Q(_t) _x, unsigned int _n);            \
+Q(_t) Q(_log10_shiftadd)    (Q(_t) _x, unsigned int _n);            \
+                                                                    \
 /* power */                                                         \
                                                                     \
 /* error and gamma functions */                                     \
