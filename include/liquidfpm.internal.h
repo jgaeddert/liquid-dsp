@@ -25,53 +25,6 @@
 #include "liquidfpm.h"
 #include "config.h"
 
-#ifndef M_PI
-#  define M_PI 3.14159265358979
-#endif
-
-// generic conversion
-static inline float qtype_fixed_to_float(int _x,
-                                         unsigned int _intbits,
-                                         unsigned int _fracbits)
-{
-    return (float) (_x) / (float)(1 << _fracbits);
-};
-
-static inline int qtype_float_to_fixed(float _x,
-                                       unsigned int _intbits,
-                                       unsigned int _fracbits)
-{
-    return (int) (_x * (float)(1 << _fracbits) + 0.5f);
-};
-
-static inline float qtype_angle_fixed_to_float(int _x,
-                                               unsigned int _intbits,
-                                               unsigned int _fracbits)
-{
-    return qtype_fixed_to_float(_x,_intbits,_fracbits) * (M_PI / (float)(1<<(_intbits-2)));
-};
-
-static inline int qtype64_angle_float_to_fixed(float _x,
-                                               unsigned int _intbits,
-                                               unsigned int _fracbits)
-{
-    return qtype_float_to_fixed(_x,_intbits,_fracbits) / (M_PI / (float)(1<<(_intbits-2)));
-};
-
-//
-// bit-wise utilities
-//
-
-// leading zeros (8-bit)
-extern const unsigned char liquidfpm_lz8[256];
-
-// count leading zeros
-#define clz8(_byte) (lz8[_byte])
-unsigned int liquidfpm_clz(unsigned int _x);
-
-// index of most significant bit
-unsigned int liquidfpm_msb_index(unsigned int _x);
-
 /* Internal API definition macro
  *
  * Q        :   name-mangling macro
