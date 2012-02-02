@@ -79,8 +79,13 @@ extern const Q(_t) Q(_log2_10); /* log2(10) */                      \
                                                                     \
 extern const Q(_t) Q(_log2_frac_gentab)[256];                       \
 Q(_t) Q(_log2_frac) (Q(_t) _x);                                     \
-Q(_t) Q(_log_frac) (Q(_t) _x);                                      \
-Q(_t) Q(_log10_frac) (Q(_t) _x);                                    \
+Q(_t) Q(_log_frac)  (Q(_t) _x);                                     \
+Q(_t) Q(_log10_frac)(Q(_t) _x);                                     \
+                                                                    \
+extern const Q(_t) Q(_exp2_frac_gentab)[256];                       \
+Q(_t) Q(_exp2_frac) (Q(_t) _x);                                     \
+Q(_t) Q(_exp_frac)  (Q(_t) _x);                                     \
+Q(_t) Q(_exp10_frac)(Q(_t) _x);                                     \
                                                                     \
 extern const Q(_t) Q(_log2_shiftadd_Ak_tab)[];                      \
 extern const unsigned int Q(_log2_shiftadd_nmax);                   \

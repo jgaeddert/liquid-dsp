@@ -502,6 +502,7 @@ fpm_includes :=							\
 	src/fpm/src/qtype_inv_newton.c				\
 	src/fpm/src/qtype_mul.port.c				\
 	src/fpm/src/qtype_log2_frac.c				\
+	src/fpm/src/qtype_exp2_frac.c				\
 	src/fpm/src/qtype_log2_shiftadd.c			\
 	src/fpm/src/qtype_exp2_shiftadd.c			\
 	src/fpm/src/qtype_atan_cordic.c				\

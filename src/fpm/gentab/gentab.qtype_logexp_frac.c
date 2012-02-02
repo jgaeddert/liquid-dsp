@@ -71,12 +71,20 @@ int main(int argc, char * argv[])
 
     unsigned int i;
 
-    // generate floating-point table
-    double log2tab[tabsize];
-    for (i=0; i<tabsize; i++)
+    // generate floating-point tables
+    double log2tab[tabsize];    // y = log2(x) for x in [1,2), y in [0,1)
+    double exp2tab[tabsize];    // x = 2^y
+    for (i=0; i<tabsize; i++) {
+        // y = log(x)
         log2tab[i] = log2( 1.0 + ((double)i)/((double)tabsize) );
 
+        // x = 2^y
+        exp2tab[i] = exp2( ((double)i)/((double)tabsize) );
+    }
+
+    // 
     // generate header
+    //
     unsigned int values_per_line = 128 / n;
 
     printf("// auto-generated file (do not edit)\n");
@@ -87,12 +95,32 @@ int main(int argc, char * argv[])
 
     printf("#include \"liquidfpm.internal.h\"\n\n");
 
+    // export log2 table
     printf("// log2 fraction table\n");
     printf("const %s_t %s_log2_frac_gentab[%u] = {\n    ", qtype,qtype,tabsize);
     for (i=0; i<tabsize; i++) {
         switch (n) {
         case 16:  printf("0x%.4x", q16_float_to_fixed(log2tab[i]));  break;
         case 32:  printf("0x%.8x", q32_float_to_fixed(log2tab[i]));  break;
+        default:;
+        }
+
+        if ( i == (tabsize-1) )
+            printf("\n};\n");
+        else if ( ((i+1)%values_per_line) == 0 )
+            printf(",\n    ");
+        else
+            printf(", ");
+    }
+    printf("\n\n");
+
+    // export exp2 table
+    printf("// exp2 fraction table\n");
+    printf("const %s_t %s_exp2_frac_gentab[%u] = {\n    ", qtype,qtype,tabsize);
+    for (i=0; i<tabsize; i++) {
+        switch (n) {
+        case 16:  printf("0x%.4x", q16_float_to_fixed(exp2tab[i]));  break;
+        case 32:  printf("0x%.8x", q32_float_to_fixed(exp2tab[i]));  break;
         default:;
         }
 
