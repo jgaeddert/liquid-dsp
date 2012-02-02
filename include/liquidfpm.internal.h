@@ -89,6 +89,12 @@ Q(_t) Q(_log2_shiftadd_base)(Q(_t) _x, unsigned int _n);            \
 Q(_t) Q(_log_shiftadd)      (Q(_t) _x, unsigned int _n);            \
 Q(_t) Q(_log10_shiftadd)    (Q(_t) _x, unsigned int _n);            \
                                                                     \
+Q(_t) Q(_exp2_shiftadd)     (Q(_t) _x, unsigned int _n);            \
+Q(_t) Q(_exp2_shiftadd_base)(Q(_t) _x, unsigned int _n);            \
+Q(_t) Q(_exp_shiftadd)      (Q(_t) _x, unsigned int _n);            \
+Q(_t) Q(_exp10_shiftadd)    (Q(_t) _x, unsigned int _n);            \
+                                                                    \
+                                                                    \
 /* power */                                                         \
 Q(_t) Q(_sqrt_newton) (Q(_t) _x, unsigned int _precision);          \
                                                                     \

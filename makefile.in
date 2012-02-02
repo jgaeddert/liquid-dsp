@@ -465,6 +465,7 @@ fpm_includes :=							\
 	src/fpm/src/qtype_mul.port.c				\
 	src/fpm/src/qtype_log2_frac.c				\
 	src/fpm/src/qtype_log2_shiftadd.c			\
+	src/fpm/src/qtype_exp2_shiftadd.c			\
 	src/fpm/src/qtype_atan_cordic.c				\
 	src/fpm/src/qtype_sincos_cordic.c			\
 	src/fpm/src/qtype_sincos_tab.c				\
@@ -515,6 +516,7 @@ fpm_autotests :=						\
 	src/fpm/tests/qtype_mul_autotest.c			\
 	src/fpm/tests/qtype_log2_frac_autotest.c		\
 	src/fpm/tests/qtype_log2_shiftadd_autotest.c		\
+	src/fpm/tests/qtype_exp2_shiftadd_autotest.c		\
 	src/fpm/tests/qtype_atan_cordic_autotest.c		\
 	src/fpm/tests/qtype_sincos_cordic_autotest.c		\
 	src/fpm/tests/qtype_sincos_tab_autotest.c		\
