@@ -20,9 +20,9 @@
  */
 
 //
-// gentab.qtype_log2_frac.c
+// gentab.qtype_logexp_frac.c
 //
-// Table/constant look-up table for log2
+// Constans and look-up tables for log2|exp2 methods
 //
 
 #include <math.h>
