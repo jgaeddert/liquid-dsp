@@ -514,9 +514,8 @@ fpm_autotests :=						\
 	src/fpm/tests/qtype_div_autotest.c			\
 	src/fpm/tests/qtype_inv_newton_autotest.c		\
 	src/fpm/tests/qtype_mul_autotest.c			\
-	src/fpm/tests/qtype_log2_frac_autotest.c		\
-	src/fpm/tests/qtype_log2_shiftadd_autotest.c		\
-	src/fpm/tests/qtype_exp2_shiftadd_autotest.c		\
+	src/fpm/tests/qtype_exp_autotest.c			\
+	src/fpm/tests/qtype_log_autotest.c			\
 	src/fpm/tests/qtype_atan_cordic_autotest.c		\
 	src/fpm/tests/qtype_sincos_cordic_autotest.c		\
 	src/fpm/tests/qtype_sincos_tab_autotest.c		\
