@@ -35,6 +35,9 @@
  */
 #define LIQUIDFPM_DEFINE_INTERNAL_API(Q,T,TA,INTBITS,FRACBITS)      \
                                                                     \
+/* arithmetic */                                                    \
+Q(_t) Q(_inv_newton)(Q(_t) _x, unsigned int _precision);            \
+                                                                    \
 /* trig */                                                          \
 extern const Q(_t) Q(_cordic_Ak_tab)[];                             \
 extern const Q(_t) Q(_cordic_k_inv);                                \

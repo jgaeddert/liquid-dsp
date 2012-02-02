@@ -459,6 +459,7 @@ fpm_objects :=							\
 
 fpm_includes :=							\
 	src/fpm/src/qtype_div.port.c				\
+	src/fpm/src/qtype_inv_newton.c				\
 	src/fpm/src/qtype_mul.port.c				\
 	src/fpm/src/qtype_log2_frac.c				\
 	src/fpm/src/qtype_log2_shiftadd.c			\
@@ -507,6 +508,7 @@ extra_clean +=							\
 
 fpm_autotests :=						\
 	src/fpm/tests/qtype_div_autotest.c			\
+	src/fpm/tests/qtype_inv_newton_autotest.c		\
 	src/fpm/tests/qtype_mul_autotest.c			\
 	src/fpm/tests/qtype_log2_frac_autotest.c		\
 	src/fpm/tests/qtype_log2_shiftadd_autotest.c		\
