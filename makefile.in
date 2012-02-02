@@ -76,8 +76,8 @@ PATHSEP		= /
 # 
 # liquid headers
 #
-headers_install	:= liquid.h liquidfpm.h @EXPERIMENTAL_HEADER@
-headers		:= $(headers_install) liquid.internal.h liquidfpm.internal.h
+headers_install	:= liquid.h @EXPERIMENTAL_HEADER@
+headers		:= $(headers_install) liquid.internal.h
 include_headers	:= $(addprefix include/,$(headers))
 
 
@@ -445,6 +445,9 @@ filter_benchmarks :=						\
 # MODULE : fpm
 #
 
+# define specific headers for building fixed-point math objects
+fpm_headers	:= $(headers) liquidfpm.h liquidfpm.internal.h
+
 fpm_objects :=							\
 	src/fpm/src/q16.o					\
 	src/fpm/src/q32.o					\
@@ -471,31 +474,31 @@ fpm_includes :=							\
 	src/fpm/src/qtype_sincos_tab.c				\
 	src/fpm/src/qtype_sqrt.c				\
 
-src/fpm/src/q16.o : %.o : %.c $(headers) $(fpm_includes)
+src/fpm/src/q16.o : %.o : %.c $(fpm_headers) $(fpm_includes)
 
-src/fpm/src/q32.o : %.o : %.c $(headers) $(fpm_includes)
+src/fpm/src/q32.o : %.o : %.c $(fpm_headers) $(fpm_includes)
 
 #
 # auto-generated tables
 #
 
 # log2 shift/add look-up table
-src/fpm/gentab/gentab.qtype_logexp_shiftadd : % : %.c $(headers)
+src/fpm/gentab/gentab.qtype_logexp_shiftadd : % : %.c $(fpm_headers)
 src/fpm/gentab/q16_logexp_shiftadd.c : src/fpm/gentab/gentab.qtype_logexp_shiftadd ; ./$< -n16 > $@
 src/fpm/gentab/q32_logexp_shiftadd.c : src/fpm/gentab/gentab.qtype_logexp_shiftadd ; ./$< -n32 > $@
 
 # log2 fractional look-up table
-src/fpm/gentab/gentab.qtype_logexp_frac : % : %.c $(headers)
+src/fpm/gentab/gentab.qtype_logexp_frac : % : %.c $(fpm_headers)
 src/fpm/gentab/q16_logexp_frac.c : src/fpm/gentab/gentab.qtype_logexp_frac ; ./$< -n16 > $@
 src/fpm/gentab/q32_logexp_frac.c : src/fpm/gentab/gentab.qtype_logexp_frac ; ./$< -n32 > $@
 
 # sincos CORDIC look-up table
-src/fpm/gentab/gentab.qtype_cordic : % : %.c $(headers)
+src/fpm/gentab/gentab.qtype_cordic : % : %.c $(fpm_headers)
 src/fpm/gentab/q16_cordic.c : src/fpm/gentab/gentab.qtype_cordic ; ./$< -n16 > $@
 src/fpm/gentab/q32_cordic.c : src/fpm/gentab/gentab.qtype_cordic ; ./$< -n32 > $@
 
 # quarter sine look-up table
-src/fpm/gentab/gentab.qtype_sintab : % : %.c $(headers)
+src/fpm/gentab/gentab.qtype_sintab : % : %.c $(fpm_headers)
 src/fpm/gentab/q16_sintab.c : src/fpm/gentab/gentab.qtype_sintab ; ./$< -n16 > $@
 src/fpm/gentab/q32_sintab.c : src/fpm/gentab/gentab.qtype_sintab ; ./$< -n32 > $@
 
