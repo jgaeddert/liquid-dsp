@@ -31,6 +31,22 @@
 
 #define LIQUIDFPM_DEBUG_LOG2_FRAC 0
 
+// natural logarithm
+//    ln(x) = log2(x) / log2(e)
+//          = log2(x) * log(2)
+Q(_t) Q(_log_frac)(Q(_t) _x)
+{
+    return Q(_mul)(Q(_log2_frac)(_x), Q(_ln2));
+}
+
+// base-10 logarithm
+//    log10(x) = log2(x) / log2(10)
+//             = log2(x) * log10(2)
+Q(_t) Q(_log10_frac)(Q(_t) _x)
+{
+    return Q(_mul)(Q(_log2_frac)(_x), Q(_log10_2));
+}
+
 // log2 using fractional table look-up; fast but not especially accurate
 Q(_t) Q(_log2_frac)(Q(_t) _x)
 {

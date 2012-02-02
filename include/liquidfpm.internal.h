@@ -35,6 +35,9 @@
  */
 #define LIQUIDFPM_DEFINE_INTERNAL_API(Q,T,TA,INTBITS,FRACBITS)      \
                                                                     \
+/* arithmetic */                                                    \
+Q(_t) Q(_inv_newton)(Q(_t) _x, unsigned int _precision);            \
+                                                                    \
 /* trig */                                                          \
 extern const Q(_t) Q(_cordic_Ak_tab)[];                             \
 extern const Q(_t) Q(_cordic_k_inv);                                \
@@ -69,13 +72,16 @@ void Q(_sincos_tab)(Q(_t) _theta,                                   \
 /* hyperbolic */                                                    \
                                                                     \
 /* exponential and logarithmic */                                   \
-extern const Q(_t) Q(_log2_frac_gentab)[256];                       \
-Q(_t) Q(_log2_frac) (Q(_t) _x);                                     \
-                                                                    \
 extern const Q(_t) Q(_ln2);     /* log(2)   */                      \
 extern const Q(_t) Q(_log10_2); /* log10(2) */                      \
 extern const Q(_t) Q(_log2_e);  /* log2(e) */                       \
 extern const Q(_t) Q(_log2_10); /* log2(10) */                      \
+                                                                    \
+extern const Q(_t) Q(_log2_frac_gentab)[256];                       \
+Q(_t) Q(_log2_frac) (Q(_t) _x);                                     \
+Q(_t) Q(_log_frac) (Q(_t) _x);                                      \
+Q(_t) Q(_log10_frac) (Q(_t) _x);                                    \
+                                                                    \
 extern const Q(_t) Q(_log2_shiftadd_Ak_tab)[];                      \
 extern const unsigned int Q(_log2_shiftadd_nmax);                   \
 Q(_t) Q(_log2_shiftadd)     (Q(_t) _x, unsigned int _n);            \
@@ -83,7 +89,15 @@ Q(_t) Q(_log2_shiftadd_base)(Q(_t) _x, unsigned int _n);            \
 Q(_t) Q(_log_shiftadd)      (Q(_t) _x, unsigned int _n);            \
 Q(_t) Q(_log10_shiftadd)    (Q(_t) _x, unsigned int _n);            \
                                                                     \
+Q(_t) Q(_exp2_shiftadd)     (Q(_t) _x, unsigned int _n);            \
+Q(_t) Q(_exp2_shiftadd_base)(Q(_t) _x, unsigned int _n);            \
+Q(_t) Q(_exp_shiftadd)      (Q(_t) _x, unsigned int _n);            \
+Q(_t) Q(_exp10_shiftadd)    (Q(_t) _x, unsigned int _n);            \
+                                                                    \
+                                                                    \
 /* power */                                                         \
+Q(_t) Q(_sqrt_newton) (Q(_t) _x, unsigned int _precision);          \
+Q(_t) Q(_sqrt_logexp_shiftadd) (Q(_t) _x, unsigned int _precision); \
                                                                     \
 /* error and gamma functions */                                     \
 

@@ -22,6 +22,13 @@
 #ifndef __LIQUIDFPM_H__
 #define __LIQUIDFPM_H__
 
+#ifdef __cplusplus
+extern "C" {
+#   define LIQUIDFPM_USE_COMPLEX_H 0
+#else
+#   define LIQUIDFPM_USE_COMPLEX_H 1
+#endif // __cplusplus
+
 /*
  * Make sure the version and version number macros weren't defined by
  * some prevoiusly included header file.
