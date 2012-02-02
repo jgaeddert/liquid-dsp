@@ -36,6 +36,7 @@
 #include "qtype_atan_cordic.c"
 #include "qtype_sincos_cordic.c"
 #include "qtype_sincos_tab.c"
+#include "qtype_sqrt.c"
 
 // complex
 #include "cqtype_arithmetic.c"

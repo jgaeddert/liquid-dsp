@@ -468,6 +468,7 @@ fpm_includes :=							\
 	src/fpm/src/qtype_atan_cordic.c				\
 	src/fpm/src/qtype_sincos_cordic.c			\
 	src/fpm/src/qtype_sincos_tab.c				\
+	src/fpm/src/qtype_sqrt.c				\
 
 src/fpm/src/q16.o : %.o : %.c $(headers) $(fpm_includes)
 
@@ -517,6 +518,7 @@ fpm_autotests :=						\
 	src/fpm/tests/qtype_atan_cordic_autotest.c		\
 	src/fpm/tests/qtype_sincos_cordic_autotest.c		\
 	src/fpm/tests/qtype_sincos_tab_autotest.c		\
+	src/fpm/tests/qtype_sqrt_autotest.c			\
 	src/fpm/tests/cqtype_arithmetic_autotest.c		\
 
 fpm_benchmarks :=						\

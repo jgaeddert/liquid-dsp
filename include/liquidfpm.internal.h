@@ -87,6 +87,7 @@ Q(_t) Q(_log_shiftadd)      (Q(_t) _x, unsigned int _n);            \
 Q(_t) Q(_log10_shiftadd)    (Q(_t) _x, unsigned int _n);            \
                                                                     \
 /* power */                                                         \
+Q(_t) Q(_sqrt_newton) (Q(_t) _x, unsigned int _precision);          \
                                                                     \
 /* error and gamma functions */                                     \
 
