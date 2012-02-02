@@ -25,6 +25,7 @@
 #include "liquidfpm.internal.h"
 
 #define Q(name)     LIQUIDFPM_CONCAT(q32,name)
+#define CQ(name)    LIQUIDFPM_CONCAT(cq32,name)
 
 // source files
 #include "qtype_div.port.c"
@@ -36,3 +37,6 @@
 #include "qtype_sincos_cordic.c"
 #include "qtype_sincos_tab.c"
 
+// complex
+#include "cqtype_arithmetic.c"
+#include "cqtype_conversion.c"

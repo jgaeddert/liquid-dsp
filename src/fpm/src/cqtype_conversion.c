@@ -1,6 +1,7 @@
 /*
- * Copyright (c) 2012 Joseph Gaeddert
- * Copyright (c) 2012 Virginia Polytechnic Institute & State University
+ * Copyright (c) 2008, 2009, 2010, 2011, 2012 Joseph Gaeddert
+ * Copyright (c) 2008, 2009, 2010, 2011, 2012 Virginia Polytechnic
+ *                                Institute & State University
  *
  * This file is part of liquid.
  *
@@ -19,24 +20,25 @@
  */
 
 //
-// Fixed-point math API: 16-bit q16 type
+// Complex fixed-point / floating-point conversion
 //
 
 #include "liquidfpm.internal.h"
 
-#define Q(name)     LIQUIDFPM_CONCAT(q16,name)
-#define CQ(name)    LIQUIDFPM_CONCAT(cq16,name)
+// convert to floating-point precision
+float complex CQ(_fixed_to_float)(CQ(_t) _x)
+{
+    return Q(_fixed_to_float)(_x.real) + 
+           Q(_fixed_to_float)(_x.imag) * _Complex_I;
+}
 
-// source files
-#include "qtype_div.port.c"
-#include "qtype_inv_newton.c"
-#include "qtype_mul.port.c"
-#include "qtype_log2_frac.c"
-#include "qtype_log2_shiftadd.c"
-#include "qtype_atan_cordic.c"
-#include "qtype_sincos_cordic.c"
-#include "qtype_sincos_tab.c"
+// convert to fixed-point precision
+CQ(_t) CQ(_float_to_fixed)(float complex _x)
+{
+    CQ(_t) y;
+    y.real = Q(_float_to_fixed)(crealf(_x));
+    y.imag = Q(_float_to_fixed)(cimagf(_x));
+    return y;
+}
 
-// complex
-#include "cqtype_arithmetic.c"
-#include "cqtype_conversion.c"
+
