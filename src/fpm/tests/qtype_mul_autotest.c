@@ -46,8 +46,8 @@ void Q(_test_mul)(float _xf,                                        \
     CONTEND_DELTA(zf,ztest,_tol);                                   \
                                                                     \
     if (liquid_autotest_verbose) {                                  \
-        printf("%12.8f * %12.8f = %12.8f (%12.8f)\n",               \
-                _xf,     _yf,     ztest,  zf);                      \
+        printf("%12.8f * %12.8f = %12.8f (%12.8f), e=%12.8f\n",     \
+                _xf,     _yf,     ztest,  zf,        ztest-zf);     \
     }                                                               \
 }
 
