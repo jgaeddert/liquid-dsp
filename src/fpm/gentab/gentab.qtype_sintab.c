@@ -73,8 +73,15 @@ int main(int argc, char * argv[])
 
     // generate floating-point table
     double sintab[tabsize];
-    for (i=0; i<tabsize; i++)
+    double atan2tab[tabsize];
+    double log2r_max = log2((double)tabsize);
+    for (i=0; i<tabsize; i++) {
         sintab[i] = sin( M_PI_2 * ((double)i)/((double)tabsize) );
+        
+        double log2r = log2r_max * ((double)i) / ((double)tabsize);
+        double r     = exp2(log2r);
+        atan2tab[i]  = atan(r);
+    }
 
     // generate header
     unsigned int values_per_line = 128 / n;
@@ -93,6 +100,26 @@ int main(int argc, char * argv[])
         switch (n) {
         case 16:  printf("0x%.4x", q16_float_to_fixed(sintab[i]));  break;
         case 32:  printf("0x%.8x", q32_float_to_fixed(sintab[i]));  break;
+        default:;
+        }
+
+        if ( i == (tabsize-1) )
+            printf("\n};\n");
+        else if ( ((i+1)%values_per_line) == 0 )
+            printf(",\n    ");
+        else
+            printf(", ");
+    }
+
+    printf("\n\n");
+
+
+    printf("// atan2 look-up table\n");
+    printf("const %s_t %s_atan2tab[%u] = {\n    ", qtype,qtype,tabsize);
+    for (i=0; i<tabsize; i++) {
+        switch (n) {
+        case 16:  printf("0x%.4x", q16_angle_float_to_fixed(atan2tab[i]));  break;
+        case 32:  printf("0x%.8x", q32_angle_float_to_fixed(atan2tab[i]));  break;
         default:;
         }
 

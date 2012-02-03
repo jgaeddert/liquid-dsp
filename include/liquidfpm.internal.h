@@ -68,6 +68,8 @@ Q(_t) Q(_cos_tab)(Q(_t) _theta);                                    \
 void Q(_sincos_tab)(Q(_t) _theta,                                   \
                     Q(_t) * _sin,                                   \
                     Q(_t) * _cos);                                  \
+extern const Q(_t) Q(_atan2tab)[256];                               \
+Q(_t) Q(_atan2_frac)(Q(_t) _y, Q(_t) _x);                           \
                                                                     \
 /* hyperbolic */                                                    \
                                                                     \
