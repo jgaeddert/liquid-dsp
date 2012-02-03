@@ -56,6 +56,35 @@ void benchmark_q16_atan2_cordic(struct rusage *_start,
 
 
 // 
+// BENCHMARK: q16 atan2 (look-up table)
+//
+void benchmark_q16_atan2_frac(struct rusage *_start,
+                              struct rusage *_finish,
+                              unsigned long int *_num_iterations,
+                              unsigned int _n)
+{
+    // initialize input
+    q16_t x0 = rand() & 0xffff, y0 = rand() & 0xffff;
+    q16_t x1 = rand() & 0xffff, y1 = rand() & 0xffff;
+    q16_t x2 = rand() & 0xffff, y2 = rand() & 0xffff;
+    q16_t x3 = rand() & 0xffff, y3 = rand() & 0xffff;
+    q16_t theta;
+
+    // start trials
+    unsigned long int i;
+    getrusage(RUSAGE_SELF, _start);
+    for (i=0; i<(*_num_iterations); i++) {
+        theta = q16_atan2_frac(x0, y0);
+        theta = q16_atan2_frac(x1, y1);
+        theta = q16_atan2_frac(x2, y2);
+        theta = q16_atan2_frac(x3, y3);
+    }
+    getrusage(RUSAGE_SELF, _finish);
+    *_num_iterations *= 4;
+}
+
+
+// 
 // BENCHMARK: q32 atan2 (cordic)
 //
 void benchmark_q32_atan2_cordic(struct rusage *_start,
@@ -79,6 +108,35 @@ void benchmark_q32_atan2_cordic(struct rusage *_start,
         q32_atan2_cordic(x1, y1, &r, &theta, precision);
         q32_atan2_cordic(x2, y2, &r, &theta, precision);
         q32_atan2_cordic(x3, y3, &r, &theta, precision);
+    }
+    getrusage(RUSAGE_SELF, _finish);
+    *_num_iterations *= 4;
+}
+
+
+// 
+// BENCHMARK: q32 atan2 (look-up table)
+//
+void benchmark_q32_atan2_frac(struct rusage *_start,
+                              struct rusage *_finish,
+                              unsigned long int *_num_iterations,
+                              unsigned int _n)
+{
+    // initialize input
+    q32_t x0 = rand() & 0xffff, y0 = rand() & 0xffff;
+    q32_t x1 = rand() & 0xffff, y1 = rand() & 0xffff;
+    q32_t x2 = rand() & 0xffff, y2 = rand() & 0xffff;
+    q32_t x3 = rand() & 0xffff, y3 = rand() & 0xffff;
+    q32_t theta;
+
+    // start trials
+    unsigned long int i;
+    getrusage(RUSAGE_SELF, _start);
+    for (i=0; i<(*_num_iterations); i++) {
+        theta = q32_atan2_frac(x0, y0);
+        theta = q32_atan2_frac(x1, y1);
+        theta = q32_atan2_frac(x2, y2);
+        theta = q32_atan2_frac(x3, y3);
     }
     getrusage(RUSAGE_SELF, _finish);
     *_num_iterations *= 4;
