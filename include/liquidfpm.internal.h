@@ -104,6 +104,8 @@ Q(_t) Q(_exp10_shiftadd)    (Q(_t) _x, unsigned int _n);            \
 Q(_t) Q(_sqrt_newton) (Q(_t) _x, unsigned int _precision);          \
 Q(_t) Q(_sqrt_logexp_frac)     (Q(_t) _x);                          \
 Q(_t) Q(_sqrt_logexp_shiftadd) (Q(_t) _x, unsigned int _precision); \
+Q(_t) Q(_pow_frac)    (Q(_t) _b, Q(_t) _x);                         \
+Q(_t) Q(_pow_shiftadd)(Q(_t) _b, Q(_t) _x, unsigned int _prec);     \
                                                                     \
 /* error and gamma functions */                                     \
 
