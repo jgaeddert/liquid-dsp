@@ -230,3 +230,63 @@ void autotest_q32_sqrt_logexp_shiftadd()
     }
 }
 
+//
+// cube root tests (very basic)
+//
+
+void autotest_q16_cbrt_newton()
+{
+    unsigned int precision = 16;    // precision
+    float tol  = expf(-sqrtf(q16_fracbits));
+
+    float xf;
+    q16_t x, cbrt_x;
+
+    // sanity check
+    xf     = 1.0f;
+    x      = q16_float_to_fixed(xf);
+    cbrt_x = q16_cbrt_newton(x, precision);
+    CONTEND_DELTA( q16_fixed_to_float(cbrt_x), cbrtf(xf), tol );
+
+    // basic test
+    xf     = 0.5f;
+    x      = q16_float_to_fixed(xf);
+    cbrt_x = q16_cbrt_newton(x, precision);
+    CONTEND_DELTA( q16_fixed_to_float(cbrt_x), cbrtf(xf), tol );
+
+    // negative test
+    xf     = -0.5f;
+    x      = q16_float_to_fixed(xf);
+    cbrt_x = q16_cbrt_newton(x, precision);
+    CONTEND_DELTA( q16_fixed_to_float(cbrt_x), cbrtf(xf), tol );
+
+}
+
+void autotest_q32_cbrt_newton()
+{
+    unsigned int precision = 16;    // precision
+    float tol  = expf(-sqrtf(q32_fracbits));
+
+    float xf;
+    q32_t x, cbrt_x;
+
+    // sanity check
+    xf     = 1.0f;
+    x      = q32_float_to_fixed(xf);
+    cbrt_x = q32_cbrt_newton(x, precision);
+    CONTEND_DELTA( q32_fixed_to_float(cbrt_x), cbrtf(xf), tol );
+
+    // basic test
+    xf     = 0.5f;
+    x      = q32_float_to_fixed(xf);
+    cbrt_x = q32_cbrt_newton(x, precision);
+    CONTEND_DELTA( q32_fixed_to_float(cbrt_x), cbrtf(xf), tol );
+
+    // negative test
+    xf     = -0.5f;
+    x      = q32_float_to_fixed(xf);
+    cbrt_x = q32_cbrt_newton(x, precision);
+    CONTEND_DELTA( q32_fixed_to_float(cbrt_x), cbrtf(xf), tol );
+
+}
+
