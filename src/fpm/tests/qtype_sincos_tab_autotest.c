@@ -65,7 +65,7 @@ void autotest_q16_sincos_tab()
     float xmin = -2*M_PI;
     float xmax =  2*M_PI;
     float dx = (xmax - xmin)/((float)(num_steps-1));
-    float tol = expf(-sqrtf(q16_fracbits));
+    float tol = 1.5f / 256.0f;
 
     // run tests
     float x = xmin;
@@ -85,7 +85,7 @@ void autotest_q32_sincos_tab()
     float xmin = -2*M_PI;
     float xmax =  2*M_PI;
     float dx = (xmax - xmin)/((float)(num_steps-1));
-    float tol = expf(-sqrtf(q32_fracbits));
+    float tol = 1.5f / 256.0f;
 
     // run tests
     float x = xmin;

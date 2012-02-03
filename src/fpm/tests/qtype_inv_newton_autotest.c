@@ -62,7 +62,7 @@ void autotest_q16_inv_newton()
     float xmin  = 1.01f / q16_fixed_to_float(q16_max);
     float xmax  = q16_fixed_to_float(q16_max)*0.99f;
     float sigma = powf(xmin/xmax,-1.0f/(float)(num_steps-1));
-    float tol   = q16_fixed_to_float(1<<q16_intbits);
+    float tol   = 256.0f * exp2f(-q16_bits);
 
     unsigned int i;
     float x = xmin;
@@ -82,7 +82,7 @@ void autotest_q32_inv_newton()
     float xmin  = 1.01f / q32_fixed_to_float(q32_max);
     float xmax  = q32_fixed_to_float(q32_max)*0.99f;
     float sigma = powf(xmin/xmax,-1.0f/(float)(num_steps-1));
-    float tol   = q32_fixed_to_float(1<<q32_intbits);
+    float tol   = 256.0f * exp2f(-q32_bits);
 
     unsigned int i;
     float x = xmin;
