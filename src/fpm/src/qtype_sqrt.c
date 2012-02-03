@@ -70,7 +70,40 @@ Q(_t) Q(_sqrt_newton)( Q(_t) _x, unsigned int _n)
 }
 
 //
-// use log2 and exp2 functions to approximate square root
+// use log2 and exp2 (look-up table) functions to approximate square root
+//
+Q(_t) Q(_sqrt_logexp_frac)(Q(_t) _x)
+{
+    if (_x < 0) {
+        fprintf(stderr,"error: qxx_sqrt(), x must be > 0");
+        exit(1);
+    } else if (_x == 0) {
+        return 0;
+    }
+
+    // TODO : ensure precision is maintained by splitting log2
+    //        output into base and fractional components
+
+    // compute logarithm
+    Q(_t) log2x = Q(_log2_frac)(_x);
+
+    // divide by 2 (logical bit shift)
+    Q(_t) log2x_by_2 = log2x >> 1;
+
+    // compute exponential
+    Q(_t) qsqrt = Q(_exp2_frac)(log2x_by_2);
+
+#if DEBUG_SQRT_LOGEXP
+    printf("    x           = %12.10f\n", Q(_fixed_to_float)(_x));
+    printf("    log2(x)     = %12.10f\n", Q(_fixed_to_float)(log2x));
+    printf("    log2(x)/2   = %12.10f\n", Q(_fixed_to_float)(log2x_by_2));
+    printf("    sqrt(x)     = %12.10f\n", Q(_fixed_to_float)(qsqrt));
+#endif
+    return qsqrt;
+}
+
+//
+// use log2 and exp2 (shift|add) functions to approximate square root
 //
 Q(_t) Q(_sqrt_logexp_shiftadd)(Q(_t) _x,
                                unsigned int _precision)
