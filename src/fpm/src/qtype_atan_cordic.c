@@ -100,3 +100,18 @@ void Q(_atan2_cordic_base)(Q(_t) _y,
     *_theta = z;
 }
 
+// compute hypotenuse of right triangle
+Q(_t) Q(_hypot_cordic)(Q(_t) _y,
+                       Q(_t) _x,
+                       unsigned int _precision)
+{
+    // create temporary variables
+    Q(_t) r;        // hypotenuse
+    Q(_t) theta;    // angle
+
+    // compute hypotenuse using atan2 method (above)
+    Q(_atan2_cordic)(_y, _x, &r, &theta, _precision);
+
+    // return hypotenuse
+    return r;
+}
