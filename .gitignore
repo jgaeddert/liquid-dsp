@@ -38,7 +38,7 @@ src/utility/gentab/*_gentab
 src/fpm/gentab/gentab.qtype_logexp_frac
 src/fpm/gentab/gentab.qtype_logexp_shiftadd
 src/fpm/gentab/gentab.qtype_cordic
-src/fpm/gentab/gentab.qtype_sintab
+src/fpm/gentab/gentab.qtype_trigtab
 
 # gentab output sources
 src/fec/gentab/reverse_byte.c
@@ -49,8 +49,8 @@ src/fpm/gentab/q16_logexp_shiftadd.c
 src/fpm/gentab/q32_logexp_shiftadd.c
 src/fpm/gentab/q16_cordic.c
 src/fpm/gentab/q32_cordic.c
-src/fpm/gentab/q16_sintab.c
-src/fpm/gentab/q32_sintab.c
+src/fpm/gentab/q16_trigtab.c
+src/fpm/gentab/q32_trigtab.c
 
 # sandbox
 sandbox/*_test

@@ -461,7 +461,7 @@ fpm_gentab_programs :=						\
 	src/fpm/gentab/gentab.qtype_logexp_shiftadd		\
 	src/fpm/gentab/gentab.qtype_logexp_frac			\
 	src/fpm/gentab/gentab.qtype_cordic			\
-	src/fpm/gentab/gentab.qtype_sintab			\
+	src/fpm/gentab/gentab.qtype_trigtab			\
 
 # declare target source files from above "target generator programs"
 fpm_gentab_src_q16 = $(patsubst src/fpm/gentab/gentab.qtype%,src/fpm/gentab/q16%.c,$(fpm_gentab_programs))
