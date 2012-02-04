@@ -48,7 +48,7 @@ void CQ(_test_add)(float complex _xf,                               \
     float complex ztest = CQ(_fixed_to_float)(z);                   \
                                                                     \
     if (liquid_autotest_verbose) {                                  \
-        printf("(%8.4f,%8.4f) + (%8.4f,%8.4f) = (%8.4f,%8.4f), expected: (%8.4f,%8.4f)\n", \
+        printf("(%7.3f,%7.3f) + (%7.3f,%7.3f) = (%7.3f,%7.3f), expected: (%7.3f,%7.3f)\n", \
                 crealf(_xf), cimagf(_xf),                           \
                 crealf(_yf), cimagf(_yf),                           \
                 crealf(ztest), cimagf(ztest),                       \
@@ -77,7 +77,7 @@ void CQ(_test_sub)(float complex _xf,                               \
     float complex ztest = CQ(_fixed_to_float)(z);                   \
                                                                     \
     if (liquid_autotest_verbose) {                                  \
-        printf("(%8.4f,%8.4f) - (%8.4f,%8.4f) = (%8.4f,%8.4f), expected: (%8.4f,%8.4f)\n", \
+        printf("(%7.3f,%7.3f) - (%7.3f,%7.3f) = (%7.3f,%7.3f), expected: (%7.3f,%7.3f)\n", \
                 crealf(_xf), cimagf(_xf),                           \
                 crealf(_yf), cimagf(_yf),                           \
                 crealf(ztest), cimagf(ztest),                       \
@@ -106,7 +106,7 @@ void CQ(_test_mul)(float complex _xf,                               \
     float complex ztest = CQ(_fixed_to_float)(z);                   \
                                                                     \
     if (liquid_autotest_verbose) {                                  \
-        printf("(%8.4f,%8.4f) * (%8.4f,%8.4f) = (%8.4f,%8.4f), expected: (%8.4f,%8.4f)\n", \
+        printf("(%7.3f,%7.3f) * (%7.3f,%7.3f) = (%7.3f,%7.3f), expected: (%7.3f,%7.3f)\n", \
                 crealf(_xf), cimagf(_xf),                           \
                 crealf(_yf), cimagf(_yf),                           \
                 crealf(ztest), cimagf(ztest),                       \
@@ -135,7 +135,7 @@ void CQ(_test_div)(float complex _xf,                               \
     float complex ztest = CQ(_fixed_to_float)(z);                   \
                                                                     \
     if (liquid_autotest_verbose) {                                  \
-        printf("(%8.4f,%8.4f) / (%8.4f,%8.4f) = (%8.4f,%8.4f), expected: (%8.4f,%8.4f)\n", \
+        printf("(%7.3f,%7.3f) / (%7.3f,%7.3f) = (%7.3f,%7.3f), expected: (%7.3f,%7.3f)\n", \
                 crealf(_xf), cimagf(_xf),                           \
                 crealf(_yf), cimagf(_yf),                           \
                 crealf(ztest), cimagf(ztest),                       \
