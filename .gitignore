@@ -35,6 +35,7 @@ octave-core
 # gentab programs
 src/fec/gentab/*_gentab
 src/utility/gentab/*_gentab
+src/fpm/gentab/gentab.qtype_constants
 src/fpm/gentab/gentab.qtype_logexp_frac
 src/fpm/gentab/gentab.qtype_logexp_shiftadd
 src/fpm/gentab/gentab.qtype_cordic
@@ -43,14 +44,8 @@ src/fpm/gentab/gentab.qtype_trigtab
 # gentab output sources
 src/fec/gentab/reverse_byte.c
 src/utility/gentab/count_ones.c
-src/fpm/gentab/q32_logexp_frac.c
-src/fpm/gentab/q16_logexp_frac.c
-src/fpm/gentab/q16_logexp_shiftadd.c
-src/fpm/gentab/q32_logexp_shiftadd.c
-src/fpm/gentab/q16_cordic.c
-src/fpm/gentab/q32_cordic.c
-src/fpm/gentab/q16_trigtab.c
-src/fpm/gentab/q32_trigtab.c
+src/fpm/gentab/q16_*
+src/fpm/gentab/q32_*
 
 # sandbox
 sandbox/*_test

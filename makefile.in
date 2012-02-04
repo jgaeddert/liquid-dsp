@@ -458,6 +458,7 @@ fpm_headers	:= $(headers) liquidfpm.h liquidfpm.internal.h
 
 # target generator programs
 fpm_gentab_programs :=						\
+	src/fpm/gentab/gentab.qtype_constants			\
 	src/fpm/gentab/gentab.qtype_logexp_shiftadd		\
 	src/fpm/gentab/gentab.qtype_logexp_frac			\
 	src/fpm/gentab/gentab.qtype_cordic			\
