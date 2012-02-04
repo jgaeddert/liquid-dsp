@@ -50,14 +50,14 @@ CQ(_t) CQ(_sub)(CQ(_t) _a, CQ(_t) _b)
 CQ(_t) CQ(_mul)(CQ(_t) _a, CQ(_t) _b)
 {
 #if 0
-    CQ(_t) prod = { Q(_mul)(_a.real,_b.real) - Q(_mul)(_a.imag,_b.imag),
-                    Q(_mul)(_a.real,_b.imag) + Q(_mul)(_a.imag,_b.real) };
+    CQ(_t) prod = { Q(_mul_inline)(_a.real,_b.real) - Q(_mul_inline)(_a.imag,_b.imag),
+                    Q(_mul_inline)(_a.real,_b.imag) + Q(_mul_inline)(_a.imag,_b.real) };
     return prod;
 #else
     // faster method? only requires three multiplications
-    Q(_t) k1 = Q(_mul)(_a.real, _b.real + _b.imag);
-    Q(_t) k2 = Q(_mul)(_b.imag, _a.real + _a.imag);
-    Q(_t) k3 = Q(_mul)(_b.real, _a.imag - _a.real);
+    Q(_t) k1 = Q(_mul_inline)(_a.real, _b.real + _b.imag);
+    Q(_t) k2 = Q(_mul_inline)(_b.imag, _a.real + _a.imag);
+    Q(_t) k3 = Q(_mul_inline)(_b.real, _a.imag - _a.real);
 
     CQ(_t) prod = {k1-k2,k1+k3};
     return prod;
@@ -67,8 +67,8 @@ CQ(_t) CQ(_mul)(CQ(_t) _a, CQ(_t) _b)
 // multiply a complex number by a scalar
 CQ(_t) CQ(_mul_scalar)(CQ(_t) _a, Q(_t) _b)
 {
-    CQ(_t) prod = { Q(_mul)(_a.real,_b),
-                    Q(_mul)(_a.imag,_b) };
+    CQ(_t) prod = { Q(_mul_inline)(_a.real,_b),
+                    Q(_mul_inline)(_a.imag,_b) };
     return prod;
 }
 
@@ -81,12 +81,12 @@ CQ(_t) CQ(_div)(CQ(_t) _a, CQ(_t) _b)
     CQ(_t) quot = CQ(_mul)(_a, CQ(_conj)(_b));
 
     // compute scaling factor (and its inverse)
-    Q(_t) scale = Q(_mul)(_b.real,_b.real) + Q(_mul)(_b.imag,_b.imag);
+    Q(_t) scale = Q(_mul_inline)(_b.real,_b.real) + Q(_mul_inline)(_b.imag,_b.imag);
     Q(_t) scale_inv = Q(_inv_newton)(scale,_n);
 
     // multiply the raw quotient by the inverse of the scaling factor
-    quot.real = Q(_mul)(quot.real,scale_inv);
-    quot.imag = Q(_mul)(quot.imag,scale_inv);
+    quot.real = Q(_mul_inline)(quot.real,scale_inv);
+    quot.imag = Q(_mul_inline)(quot.imag,scale_inv);
 
     return quot;
 }
@@ -100,8 +100,8 @@ CQ(_t) CQ(_div_scalar)(CQ(_t) _a, Q(_t) _b)
     Q(_t) scale_inv = Q(_inv_newton)(_b,_n);
 
     // compute the raw quotient
-    CQ(_t) quot = { Q(_mul)(_a.real,scale_inv),
-                    Q(_mul)(_a.imag,scale_inv)  };
+    CQ(_t) quot = { Q(_mul_inline)(_a.real,scale_inv),
+                    Q(_mul_inline)(_a.imag,scale_inv)  };
 
     return quot;
 }
@@ -118,12 +118,12 @@ CQ(_t) CQ(_inv)(CQ(_t) _x)
     CQ(_t) inverse = CQ(_conj)(_x);
 
     // compute scaling factor (and its inverse)
-    Q(_t) scale = Q(_mul)(_x.real,_x.real) + Q(_mul)(_x.imag,_x.imag);
+    Q(_t) scale = Q(_mul_inline)(_x.real,_x.real) + Q(_mul_inline)(_x.imag,_x.imag);
     Q(_t) scale_inv = Q(_inv_newton)(scale,_n);
 
     // multiply the raw inverse by the inverse of the scaling factor
-    inverse.real = Q(_mul)(inverse.real,scale_inv);
-    inverse.imag = Q(_mul)(inverse.imag,scale_inv);
+    inverse.real = Q(_mul_inline)(inverse.real,scale_inv);
+    inverse.imag = Q(_mul_inline)(inverse.imag,scale_inv);
 
     return inverse;
 }
