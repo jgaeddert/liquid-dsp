@@ -52,8 +52,7 @@ int main(int argc, char*argv[])
         case 'n':   n = atoi(optarg);   break;
         default:
             fprintf(stderr,"error: %s, unknown option\n", argv[0]);
-            usage();
-            return 1;
+            exit(1);
         }
     }
 

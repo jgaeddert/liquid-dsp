@@ -499,6 +499,8 @@ fpm_objects :=							\
 fpm_includes :=							\
 	src/fpm/src/cqtype_arithmetic.c				\
 	src/fpm/src/cqtype_conversion.c				\
+	src/fpm/src/cqtype_trig_cordic.c			\
+	src/fpm/src/cqtype_logexp_cordic.c			\
 	src/fpm/src/qtype_div.port.c				\
 	src/fpm/src/qtype_inv_newton.c				\
 	src/fpm/src/qtype_mul.port.c				\

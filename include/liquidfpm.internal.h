@@ -28,12 +28,13 @@
 /* Internal API definition macro
  *
  * Q        :   name-mangling macro
+ * CQ       :   name-mangling macro (complex)
  * T        :   primitive data type
  * TA       :   primitive data type (accumulator)
  * INTBITS  :   number of integer bits
  * FRACBITS :   number of fractional bits
  */
-#define LIQUIDFPM_DEFINE_INTERNAL_API(Q,T,TA,INTBITS,FRACBITS)      \
+#define LIQUIDFPM_DEFINE_INTERNAL_API(Q,CQ,T,TA,INTBITS,FRACBITS)   \
                                                                     \
 /* arithmetic */                                                    \
 Q(_t) Q(_inv_newton)(Q(_t) _x, unsigned int _precision);            \
@@ -113,7 +114,25 @@ Q(_t) Q(_pow_shiftadd)(Q(_t) _b, Q(_t) _x, unsigned int _prec);     \
                                                                     \
 /* error and gamma functions */                                     \
 
-LIQUIDFPM_DEFINE_INTERNAL_API(LIQUIDFPM_MANGLE_Q16, int16_t, int32_t, LIQUIDFPM_Q16_INTBITS, LIQUIDFPM_Q16_FRACBITS)
-LIQUIDFPM_DEFINE_INTERNAL_API(LIQUIDFPM_MANGLE_Q32, int32_t, int64_t, LIQUIDFPM_Q32_INTBITS, LIQUIDFPM_Q32_FRACBITS)
+//
+// q16
+//
+LIQUIDFPM_DEFINE_INTERNAL_API(LIQUIDFPM_MANGLE_Q16,
+                              LIQUIDFPM_MANGLE_CQ16,
+                              int16_t,
+                              int32_t,
+                              LIQUIDFPM_Q16_INTBITS,
+                              LIQUIDFPM_Q16_FRACBITS)
+
+//
+// q32
+//
+LIQUIDFPM_DEFINE_INTERNAL_API(LIQUIDFPM_MANGLE_Q32,
+                              LIQUIDFPM_MANGLE_CQ32,
+                              int32_t,
+                              int64_t,
+                              LIQUIDFPM_Q32_INTBITS,
+                              LIQUIDFPM_Q32_FRACBITS)
+
 
 #endif // __LIQUID_FPM_INTERNAL_H__

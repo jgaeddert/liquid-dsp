@@ -45,3 +45,5 @@
 // complex
 #include "cqtype_arithmetic.c"
 #include "cqtype_conversion.c"
+#include "cqtype_logexp_cordic.c"
+#include "cqtype_trig_cordic.c"
