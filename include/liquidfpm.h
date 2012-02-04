@@ -84,13 +84,14 @@ LIQUIDFPM_DEFINE_COMPLEX(float, liquidfpm_float_complex);
 
 /* API definition macro
  *
- * Q        :   name-mangling macro
+ * Q        :   name-mangling macro (real)
+ * CQ       :   name-mangling macro (complex)
  * T        :   primitive data type
  * TA       :   primitive data type (accumulator)
  * INTBITS  :   number of integer bits
  * FRACBITS :   number of fractional bits
  */
-#define LIQUIDFPM_DEFINE_API(Q,T,TA,INTBITS,FRACBITS)               \
+#define LIQUIDFPM_DEFINE_API(Q,CQ,T,TA,INTBITS,FRACBITS)            \
 typedef T  Q(_t);                                                   \
 typedef TA Q(_at);                                                  \
 const static unsigned int Q(_bits) = INTBITS + FRACBITS;            \
@@ -195,18 +196,11 @@ extern const Q(_t) Q(_1_PI);        /* 1/pi             */          \
 extern const Q(_t) Q(_2_PI);        /* 2/pi             */          \
 extern const Q(_t) Q(_2_SQRTPI);    /* 2/sqrt(pi)       */          \
 extern const Q(_t) Q(_SQRT2);       /* sqrt(2)          */          \
-extern const Q(_t) Q(_SQRT1_2);     /* 1/sqrt(2)        */
-
-
-LIQUIDFPM_DEFINE_API(LIQUIDFPM_MANGLE_Q16, int16_t, int32_t, LIQUIDFPM_Q16_INTBITS, LIQUIDFPM_Q16_FRACBITS)
-LIQUIDFPM_DEFINE_API(LIQUIDFPM_MANGLE_Q32, int32_t, int64_t, LIQUIDFPM_Q32_INTBITS, LIQUIDFPM_Q32_FRACBITS)
-
-/* API definition macro (complex types)
- *
- * CQ       :   name-mangling macro (complex)
- * Q        :   name-mangling macro (real)
- */
-#define LIQUIDFPM_DEFINE_COMPLEX_API(CQ,Q)                          \
+extern const Q(_t) Q(_SQRT1_2);     /* 1/sqrt(2)        */          \
+                                                                    \
+                                                                    \
+                                                                    \
+/* API definition macro (complex types) */                          \
 typedef struct {Q(_t) real; Q(_t) imag;} CQ(_t);                    \
                                                                     \
 /* conversion */                                                    \
@@ -214,13 +208,13 @@ liquidfpm_float_complex CQ(_fixed_to_float)(CQ(_t) _x);             \
 CQ(_t) CQ(_float_to_fixed)(liquidfpm_float_complex _x);             \
                                                                     \
 /* arithmetic */                                                    \
-CQ(_t) CQ(_add)(CQ(_t) _a, CQ(_t) _b);                              \
-CQ(_t) CQ(_sub)(CQ(_t) _a, CQ(_t) _b);                              \
-CQ(_t) CQ(_mul)(CQ(_t) _a, CQ(_t) _b);                              \
+CQ(_t) CQ(_add)       (CQ(_t) _a, CQ(_t) _b);                       \
+CQ(_t) CQ(_sub)       (CQ(_t) _a, CQ(_t) _b);                       \
+CQ(_t) CQ(_mul)       (CQ(_t) _a, CQ(_t) _b);                       \
 CQ(_t) CQ(_mul_scalar)(CQ(_t) _a, Q(_t) _b);                        \
-CQ(_t) CQ(_div)(CQ(_t) _a, CQ(_t) _b);                              \
+CQ(_t) CQ(_div)       (CQ(_t) _a, CQ(_t) _b);                       \
 CQ(_t) CQ(_div_scalar)(CQ(_t) _a, Q(_t) _b);                        \
-CQ(_t) CQ(_inv)(CQ(_t) _x); /* compute 1/_x */                      \
+CQ(_t) CQ(_inv)       (CQ(_t) _x); /* compute 1/_x */               \
                                                                     \
 /* basic operations */                                              \
 CQ(_t) CQ(_cabs)(CQ(_t) _x);                                        \
@@ -228,7 +222,7 @@ static inline Q(_t) CQ(_carg)(CQ(_t) _x)                            \
     { return Q(_atan2)(_x.imag, _x.real); };                        \
 static inline Q(_t) CQ(_real)(CQ(_t) _a) {return _a.real;};         \
 static inline Q(_t) CQ(_imag)(CQ(_t) _a) {return _a.imag;};         \
-CQ(_t) CQ(_conj)(CQ(_t) _a);                                        \
+CQ(_t) CQ(_conj) (CQ(_t) _a);                                       \
 CQ(_t) CQ(_cproj)(CQ(_t) _a);                                       \
                                                                     \
 /* exponential operations */                                        \
@@ -255,8 +249,27 @@ CQ(_t) CQ(_catanh)(CQ(_t) _x);                                      \
                                                                     \
 /* liquid-fpm specific functions */                                 \
 
-LIQUIDFPM_DEFINE_COMPLEX_API(LIQUIDFPM_MANGLE_CQ32, LIQUIDFPM_MANGLE_Q32)
-LIQUIDFPM_DEFINE_COMPLEX_API(LIQUIDFPM_MANGLE_CQ16, LIQUIDFPM_MANGLE_Q16)
+
+//
+// define q16 interfaces
+//
+LIQUIDFPM_DEFINE_API(LIQUIDFPM_MANGLE_Q16,
+                     LIQUIDFPM_MANGLE_CQ16,
+                     int16_t,
+                     int32_t,
+                     LIQUIDFPM_Q16_INTBITS,
+                     LIQUIDFPM_Q16_FRACBITS)
+
+//
+// define q32 interfaces
+//
+LIQUIDFPM_DEFINE_API(LIQUIDFPM_MANGLE_Q32,
+                     LIQUIDFPM_MANGLE_CQ32,
+                     int32_t,
+                     int64_t,
+                     LIQUIDFPM_Q32_INTBITS,
+                     LIQUIDFPM_Q32_FRACBITS)
+
 
 #ifdef __cplusplus
 }   /* extern "C" */
