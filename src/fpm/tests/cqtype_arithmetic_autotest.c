@@ -210,7 +210,7 @@ void autotest_cq16_mul()
     cq16_test_mul( 0.39123 + -0.48306*_Complex_I, -0.36542 +  0.84223*_Complex_I, tol);
 }
 
-void xautotest_cq16_div()
+void autotest_cq16_div()
 {
     // determine appropriate tolerance
     unsigned int shift = q16_intbits < 6 ? 6 : q16_intbits;
@@ -218,16 +218,16 @@ void xautotest_cq16_div()
     if (tol > 0.1) tol = 0.1f;
 
     // run specific tests
-    cq16_test_div( 0.87150 + -0.06730*_Complex_I,  0.15782 +  0.05430*_Complex_I, tol);
-    cq16_test_div(-0.60502 +  0.01311*_Complex_I,  0.53842 + -0.61376*_Complex_I, tol);
-    cq16_test_div(-0.26474 +  0.73489*_Complex_I, -0.95264 + -0.16071*_Complex_I, tol);
-    cq16_test_div(-0.44974 +  0.72104*_Complex_I,  0.29478 + -0.77298*_Complex_I, tol);
-    cq16_test_div( 0.45020 +  0.85349*_Complex_I,  0.26976 +  0.27977*_Complex_I, tol);
-    cq16_test_div( 0.95825 + -0.13834*_Complex_I, -0.14617 + -0.97090*_Complex_I, tol);
-    cq16_test_div(-0.49364 +  0.89255*_Complex_I, -0.27900 + -0.65937*_Complex_I, tol);
-    cq16_test_div( 0.64944 + -0.98983*_Complex_I,  0.50582 + -0.34903*_Complex_I, tol);
-    cq16_test_div(-0.03591 +  0.29294*_Complex_I,  0.08893 +  0.11133*_Complex_I, tol);
-    cq16_test_div( 0.06105 + -0.67645*_Complex_I,  0.06658 + -0.42715*_Complex_I, tol);
+    cq16_test_div( 0.10851 + -0.13978*_Complex_I,  0.16811 +  0.68214*_Complex_I, tol);
+    cq16_test_div(-0.70594 +  0.53183*_Complex_I, -0.92573 +  0.71159*_Complex_I, tol);
+    cq16_test_div( 0.11517 +  0.07453*_Complex_I,  0.28529 +  0.25191*_Complex_I, tol);
+    cq16_test_div( 0.45126 +  0.11577*_Complex_I, -0.05151 +  0.98181*_Complex_I, tol);
+    cq16_test_div(-0.77249 +  0.03425*_Complex_I, -0.17600 + -0.94509*_Complex_I, tol);
+    cq16_test_div(-0.20988 +  0.40998*_Complex_I, -0.53038 +  0.47055*_Complex_I, tol);
+    cq16_test_div( 0.36404 +  0.04727*_Complex_I,  0.04576 +  0.57257*_Complex_I, tol);
+    cq16_test_div(-0.02758 +  0.33975*_Complex_I, -0.40432 + -0.11819*_Complex_I, tol);
+    cq16_test_div( 0.15848 +  0.64769*_Complex_I,  0.44643 +  0.89393*_Complex_I, tol);
+    cq16_test_div( 0.12968 +  0.71151*_Complex_I, -0.82973 + -0.16768*_Complex_I, tol);
 }
 
 
@@ -288,7 +288,7 @@ void autotest_cq32_mul()
     cq32_test_mul( 0.39123 + -0.48306*_Complex_I, -0.36542 +  0.84223*_Complex_I, tol);
 }
 
-void xautotest_cq32_div()
+void autotest_cq32_div()
 {
     // determine appropriate tolerance
     unsigned int shift = q32_intbits < 6 ? 6 : q32_intbits;
@@ -296,16 +296,16 @@ void xautotest_cq32_div()
     if (tol > 0.1) tol = 0.1f;
 
     // run specific tests
-    cq32_test_div( 0.87150 + -0.06730*_Complex_I,  0.15782 +  0.05430*_Complex_I, tol);
-    cq32_test_div(-0.60502 +  0.01311*_Complex_I,  0.53842 + -0.61376*_Complex_I, tol);
-    cq32_test_div(-0.26474 +  0.73489*_Complex_I, -0.95264 + -0.16071*_Complex_I, tol);
-    cq32_test_div(-0.44974 +  0.72104*_Complex_I,  0.29478 + -0.77298*_Complex_I, tol);
-    cq32_test_div( 0.45020 +  0.85349*_Complex_I,  0.26976 +  0.27977*_Complex_I, tol);
-    cq32_test_div( 0.95825 + -0.13834*_Complex_I, -0.14617 + -0.97090*_Complex_I, tol);
-    cq32_test_div(-0.49364 +  0.89255*_Complex_I, -0.27900 + -0.65937*_Complex_I, tol);
-    cq32_test_div( 0.64944 + -0.98983*_Complex_I,  0.50582 + -0.34903*_Complex_I, tol);
-    cq32_test_div(-0.03591 +  0.29294*_Complex_I,  0.08893 +  0.11133*_Complex_I, tol);
-    cq32_test_div( 0.06105 + -0.67645*_Complex_I,  0.06658 + -0.42715*_Complex_I, tol);
+    cq32_test_div( 0.10851 + -0.13978*_Complex_I,  0.16811 +  0.68214*_Complex_I, tol);
+    cq32_test_div(-0.70594 +  0.53183*_Complex_I, -0.92573 +  0.71159*_Complex_I, tol);
+    cq32_test_div( 0.11517 +  0.07453*_Complex_I,  0.28529 +  0.25191*_Complex_I, tol);
+    cq32_test_div( 0.45126 +  0.11577*_Complex_I, -0.05151 +  0.98181*_Complex_I, tol);
+    cq32_test_div(-0.77249 +  0.03425*_Complex_I, -0.17600 + -0.94509*_Complex_I, tol);
+    cq32_test_div(-0.20988 +  0.40998*_Complex_I, -0.53038 +  0.47055*_Complex_I, tol);
+    cq32_test_div( 0.36404 +  0.04727*_Complex_I,  0.04576 +  0.57257*_Complex_I, tol);
+    cq32_test_div(-0.02758 +  0.33975*_Complex_I, -0.40432 + -0.11819*_Complex_I, tol);
+    cq32_test_div( 0.15848 +  0.64769*_Complex_I,  0.44643 +  0.89393*_Complex_I, tol);
+    cq32_test_div( 0.12968 +  0.71151*_Complex_I, -0.82973 + -0.16768*_Complex_I, tol);
 }
 
 
