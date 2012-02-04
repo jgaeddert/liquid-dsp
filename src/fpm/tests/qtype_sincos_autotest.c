@@ -25,7 +25,40 @@
 #include "autotest/autotest.h"
 
 // API definition macro; helper function to keep code base small
-#define LIQUIDFPM_AUTOTEST_SINCOS_TAB_API(Q)                        \
+#define LIQUIDFPM_AUTOTEST_SINCOS_API(Q)                            \
+                                                                    \
+/* test sin|cos using CORDIC method */                              \
+void Q(_test_sincos_cordic)(float        _thetaf,                   \
+                            unsigned int _precision,                \
+                            float        _tol)                      \
+{                                                                   \
+    /* convert to fixed-point */                                    \
+    Q(_t) theta = Q(_angle_float_to_fixed)(_thetaf);                \
+    Q(_t) qsin;                                                     \
+    Q(_t) qcos;                                                     \
+                                                                    \
+    /* execute operation */                                         \
+    Q(_sincos_cordic)(theta, &qsin, &qcos, _precision);             \
+    float fsin = sinf(_thetaf);                                     \
+    float fcos = cosf(_thetaf);                                     \
+                                                                    \
+    /* convert to floating-point */                                 \
+    float qsin_test = Q(_fixed_to_float)(qsin);                     \
+    float qcos_test = Q(_fixed_to_float)(qcos);                     \
+                                                                    \
+    if (liquid_autotest_verbose) {                                  \
+        printf("sin,cos(%11.8f) = %11.8f(%11.8f), %11.8f(%11.8f)\n",\
+                _thetaf,                                            \
+                qsin_test, fsin,                                    \
+                qcos_test, fcos);                                   \
+    }                                                               \
+                                                                    \
+    /* run comparison */                                            \
+    CONTEND_DELTA(qsin_test, fsin, _tol);                           \
+    CONTEND_DELTA(qcos_test, fcos, _tol);                           \
+}                                                                   \
+                                                                    \
+/* test sin|cos using look-up table method */                       \
 void Q(_test_sincos_tab)(float _thetaf,                             \
                          float _tol)                                \
 {                                                                   \
@@ -56,8 +89,34 @@ void Q(_test_sincos_tab)(float _thetaf,                             \
 }
 
 // define autotest API
-LIQUIDFPM_AUTOTEST_SINCOS_TAB_API(LIQUIDFPM_MANGLE_Q32)
-LIQUIDFPM_AUTOTEST_SINCOS_TAB_API(LIQUIDFPM_MANGLE_Q16)
+LIQUIDFPM_AUTOTEST_SINCOS_API(LIQUIDFPM_MANGLE_Q32)
+LIQUIDFPM_AUTOTEST_SINCOS_API(LIQUIDFPM_MANGLE_Q16)
+
+// 
+// q16
+//
+
+void autotest_q16_sincos_cordic()
+{
+    unsigned int precision = 16;
+    unsigned int num_steps = 57;
+    float xmin = -2*M_PI;
+    float xmax =  2*M_PI;
+    float dx = (xmax - xmin)/((float)(num_steps-1));
+    float tol = expf(-sqrtf(q16_fracbits));
+
+    // run tests
+    float x = xmin;
+    unsigned int i;
+    for (i=0; i<num_steps; i++) {
+        // run test
+        q16_test_sincos_cordic(x, precision, tol);
+
+        // increment input
+        x += dx;
+    }
+
+}
 
 void autotest_q16_sincos_tab()
 {
@@ -77,6 +136,32 @@ void autotest_q16_sincos_tab()
         // increment input
         x += dx;
     }
+}
+
+// 
+// q32
+//
+
+void autotest_q32_sincos_cordic()
+{
+    unsigned int precision = 32;
+    unsigned int num_steps = 57;
+    float xmin = -2*M_PI;
+    float xmax =  2*M_PI;
+    float dx = (xmax - xmin)/((float)(num_steps-1));
+    float tol = expf(-sqrtf(q32_fracbits));
+
+    // run tests
+    float x = xmin;
+    unsigned int i;
+    for (i=0; i<num_steps; i++) {
+        // run test
+        q32_test_sincos_cordic(x, precision, tol);
+
+        // increment input
+        x += dx;
+    }
+
 }
 
 void autotest_q32_sincos_tab()
