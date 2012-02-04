@@ -57,14 +57,25 @@ int main(int argc, char*argv[])
     }
 
     // validate length
-    char qtype[64];
+    char qtype[10];
+    unsigned int intbits;
+    unsigned int fracbits;
     switch (n) {
-    case 16:  strcpy(qtype,"q16");  break;
-    case 32:  strcpy(qtype,"q32");  break;
+    case 16:
+        strcpy(qtype,"q16");
+        intbits = q16_intbits;
+        fracbits = q16_fracbits;
+        break;
+    case 32:
+        strcpy(qtype,"q32");
+        intbits = q32_intbits;
+        fracbits = q32_fracbits;
+        break;
     default:
         fprintf(stderr,"error: %s, invalid size (%u), must be 16,32\n", argv[0], n);
         exit(1);
     }
+
 
     printf("// auto-generated file : do not edit\n");
     printf("// invoked as : ");
@@ -80,11 +91,11 @@ int main(int argc, char*argv[])
     float k_inv = 0.60725293500888125616;
 
     printf("// scaling factor 1/K:  K = prod(k=0,infty){ sqrt(1 + 2^(-2k)) }\n");
-    switch (n) {
-    case 16:  printf("const %s_t %s_cordic_k_inv = 0x%.4x;\n\n", qtype,qtype,q16_float_to_fixed(k_inv)); break;
-    case 32:  printf("const %s_t %s_cordic_k_inv = 0x%.8x;\n\n", qtype,qtype,q32_float_to_fixed(k_inv)); break;
-    default:;
-    }
+    printf("const %s_t %s_cordic_k_inv = 0x%.*x;\n\n",
+            qtype,
+            qtype,
+            n/4,
+            qtype_float_to_fixed(k_inv,intbits,fracbits));
 
     // generate table
     double inv_2_n   = 1.0;
@@ -106,12 +117,7 @@ int main(int argc, char*argv[])
         //   -2*pi  :   0xffffffff (the largest negative number)
         Ak = atanf(inv_2_n) / qtype_angle_scalarf;
 
-        // write output
-        switch (n) {
-        case 16:  printf("    0x%.4x,\n", q16_float_to_fixed(Ak));  break;
-        case 32:  printf("    0x%.8x,\n", q32_float_to_fixed(Ak));  break;
-        default:;
-        }
+        printf("    0x%.*x,\n", n/4, qtype_float_to_fixed(Ak,intbits,fracbits));
 
         // update 1 / 2^n
         inv_2_n *= 0.5;

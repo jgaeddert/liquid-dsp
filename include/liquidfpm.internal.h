@@ -156,9 +156,9 @@ static inline float qtype_angle_fixed_to_float(int _x,
     return qtype_fixed_to_float(_x,_intbits,_fracbits) * (3.14159265358979 / (float)(1<<(_intbits-2)));
 };
 
-static inline int qtype64_angle_float_to_fixed(float _x,
-                                               unsigned int _intbits,
-                                               unsigned int _fracbits)
+static inline int qtype_angle_float_to_fixed(float _x,
+                                             unsigned int _intbits,
+                                             unsigned int _fracbits)
 {
     return qtype_float_to_fixed(_x,_intbits,_fracbits) / (3.14159265358979 / (float)(1<<(_intbits-2)));
 };

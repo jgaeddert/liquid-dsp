@@ -59,15 +59,26 @@ int main(int argc, char * argv[])
         }
     }
 
-    char qtype[64];
-    
+    // validate length
+    char qtype[10];
+    unsigned int intbits;
+    unsigned int fracbits;
     switch (n) {
-    case 16:    strcpy(qtype,"q16");    break;
-    case 32:    strcpy(qtype,"q32");    break;
+    case 16:
+        strcpy(qtype,"q16");
+        intbits = q16_intbits;
+        fracbits = q16_fracbits;
+        break;
+    case 32:
+        strcpy(qtype,"q32");
+        intbits = q32_intbits;
+        fracbits = q32_fracbits;
+        break;
     default:
         fprintf(stderr,"error: %s, invalid size (%u), must be 16,32\n", argv[0], n);
         exit(1);
     }
+
 
     unsigned int i;
 
@@ -97,11 +108,8 @@ int main(int argc, char * argv[])
     printf("// sine look-up table\n");
     printf("const %s_t %s_sintab[%u] = {\n    ", qtype,qtype,tabsize);
     for (i=0; i<tabsize; i++) {
-        switch (n) {
-        case 16:  printf("0x%.4x", q16_float_to_fixed(sintab[i]));  break;
-        case 32:  printf("0x%.8x", q32_float_to_fixed(sintab[i]));  break;
-        default:;
-        }
+        // print tab line
+        printf("0x%.*x", n/4, qtype_float_to_fixed(sintab[i],intbits,fracbits));
 
         if ( i == (tabsize-1) )
             printf("\n};\n");
@@ -117,11 +125,8 @@ int main(int argc, char * argv[])
     printf("// atan2 look-up table\n");
     printf("const %s_t %s_atan2tab[%u] = {\n    ", qtype,qtype,tabsize);
     for (i=0; i<tabsize; i++) {
-        switch (n) {
-        case 16:  printf("0x%.4x", q16_angle_float_to_fixed(atan2tab[i]));  break;
-        case 32:  printf("0x%.8x", q32_angle_float_to_fixed(atan2tab[i]));  break;
-        default:;
-        }
+        // print tab line
+        printf("0x%.*x", n/4, qtype_angle_float_to_fixed(atan2tab[i],intbits,fracbits));
 
         if ( i == (tabsize-1) )
             printf("\n};\n");

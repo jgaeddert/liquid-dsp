@@ -58,20 +58,31 @@ int main(int argc, char * argv[])
         }
     }
 
-    // validate input
-    char qtype[64];
-    
+    // validate length
+    char qtype[10];
+    unsigned int intbits;
+    unsigned int fracbits;
     switch (n) {
-    case 16:    strcpy(qtype,"q16");    break;
-    case 32:    strcpy(qtype,"q32");    break;
+    case 16:
+        strcpy(qtype,"q16");
+        intbits = q16_intbits;
+        fracbits = q16_fracbits;
+        break;
+    case 32:
+        strcpy(qtype,"q32");
+        intbits = q32_intbits;
+        fracbits = q32_fracbits;
+        break;
     default:
         fprintf(stderr,"error: %s, invalid size (%u), must be 16,32\n", argv[0], n);
         exit(1);
     }
 
+
     unsigned int i;
 
-    float b=2.0f;       // base of logarithm
+    // base of logarithm
+    float b=2.0f;
 
     // generate table: Ak = log_b( 1 + 2^-k )
     int logtab[n];
@@ -79,12 +90,13 @@ int main(int argc, char * argv[])
     double inv_2_n   = 1.0;
     double tabval;
     for (i=0; i<n; i++) {
+        // compute floating-point value
         tabval = log(1.0 + inv_2_n) * inv_log_b;
-        switch (n) {
-        case 16:  logtab[i] = q16_float_to_fixed(tabval);  break;
-        case 32:  logtab[i] = q32_float_to_fixed(tabval);  break;
-        default:;
-        }
+
+        // convert to fixed-point
+        logtab[i] = qtype_float_to_fixed(tabval,intbits,fracbits);
+
+        // update argument
         inv_2_n *= 0.5;
     }
 
@@ -105,13 +117,8 @@ int main(int argc, char * argv[])
 
     printf("// Pre-computed look-up table: A[k] = log2( 1 + 2^-k )\n");
     printf("const %s_t %s_log2_shiftadd_Ak_tab[%u] = {\n", qtype,qtype,n);
-    for (i=0; i<n; i++) {
-        switch (n) {
-        case 16:  printf("    0x%.4x,\n",logtab[i]);  break;
-        case 32:  printf("    0x%.8x,\n",logtab[i]);  break;
-        default:;
-        }
-    }
+    for (i=0; i<n; i++)
+        printf("    0x%.*x,\n", n/4, logtab[i]);
     printf("};\n\n");
 
 
@@ -128,22 +135,12 @@ int main(int argc, char * argv[])
     float log2_e  = log2f(expf(1));
     float log2_10 = log2f(10.0f);
     printf("// constants for logarithm base conversions\n");
-    switch (n) {
-    case 16:
-        printf("const %s_t %s_ln2     = 0x%.4x; // log(2)\n",   qtype,qtype, q16_float_to_fixed(    ln2));
-        printf("const %s_t %s_log10_2 = 0x%.4x; // log(10)\n",  qtype,qtype, q16_float_to_fixed(log10_2));
-        printf("const %s_t %s_log2_e  = 0x%.4x; // log2(e)\n",  qtype,qtype, q16_float_to_fixed( log2_e));
-        printf("const %s_t %s_log2_10 = 0x%.4x; // log2(10)\n", qtype,qtype, q16_float_to_fixed(log2_10));
-        break;
-    case 32:
-        printf("const %s_t %s_ln2     = 0x%.8x; // log(2)\n",   qtype,qtype, q32_float_to_fixed(    ln2));
-        printf("const %s_t %s_log10_2 = 0x%.8x; // log(10)\n",  qtype,qtype, q32_float_to_fixed(log10_2));
-        printf("const %s_t %s_log2_e  = 0x%.8x; // log2(e)\n",  qtype,qtype, q32_float_to_fixed( log2_e));
-        printf("const %s_t %s_log2_10 = 0x%.8x; // log2(10)\n", qtype,qtype, q32_float_to_fixed(log2_10));
-        break;
-    default:;
-    }
+    printf("const %s_t %s_ln2     = 0x%.*x; // log(2)\n",   qtype, qtype, n/4, qtype_float_to_fixed(    ln2,intbits,fracbits));
+    printf("const %s_t %s_log10_2 = 0x%.*x; // log(10)\n",  qtype, qtype, n/4, qtype_float_to_fixed(log10_2,intbits,fracbits));
+    printf("const %s_t %s_log2_e  = 0x%.*x; // log2(e)\n",  qtype, qtype, n/4, qtype_float_to_fixed( log2_e,intbits,fracbits));
+    printf("const %s_t %s_log2_10 = 0x%.*x; // log2(10)\n", qtype, qtype, n/4, qtype_float_to_fixed(log2_10,intbits,fracbits));
     printf("\n");
+
     return 0;
 }
 
