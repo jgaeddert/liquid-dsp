@@ -34,7 +34,7 @@
 /* test addition */                                                 \
 void CQ(_test_add)(float complex _xf,                               \
                    float complex _yf,                               \
-                   float        _tol)                               \
+                   float         _tol)                              \
 {                                                                   \
     /* convert to fixed-point */                                    \
     CQ(_t) x = CQ(_float_to_fixed)(_xf);                            \
@@ -60,10 +60,39 @@ void CQ(_test_add)(float complex _xf,                               \
     CONTEND_DELTA(cimagf(zf),cimagf(ztest),_tol);                   \
 }                                                                   \
                                                                     \
+/* test subtraction */                                              \
+void CQ(_test_sub)(float complex _xf,                               \
+                   float complex _yf,                               \
+                   float         _tol)                              \
+{                                                                   \
+    /* convert to fixed-point */                                    \
+    CQ(_t) x = CQ(_float_to_fixed)(_xf);                            \
+    CQ(_t) y = CQ(_float_to_fixed)(_yf);                            \
+                                                                    \
+    /* execute operation */                                         \
+    CQ(_t) z = CQ(_sub)(x, y);                                      \
+    float complex zf = _xf - _yf;                                   \
+                                                                    \
+    /* convert to floating-point */                                 \
+    float complex ztest = CQ(_fixed_to_float)(z);                   \
+                                                                    \
+    if (liquid_autotest_verbose) {                                  \
+        printf("(%8.4f,%8.4f) - (%8.4f,%8.4f) = (%8.4f,%8.4f), expected: (%8.4f,%8.4f)\n", \
+                crealf(_xf), cimagf(_xf),                           \
+                crealf(_yf), cimagf(_yf),                           \
+                crealf(ztest), cimagf(ztest),                       \
+                crealf(zf), cimagf(zf));                            \
+    }                                                               \
+                                                                    \
+    /* run comparison */                                            \
+    CONTEND_DELTA(crealf(zf),crealf(ztest),_tol);                   \
+    CONTEND_DELTA(cimagf(zf),cimagf(ztest),_tol);                   \
+}                                                                   \
+                                                                    \
 /* test multiplication */                                           \
 void CQ(_test_mul)(float complex _xf,                               \
                    float complex _yf,                               \
-                   float        _tol)                               \
+                   float         _tol)                              \
 {                                                                   \
     /* convert to fixed-point */                                    \
     CQ(_t) x = CQ(_float_to_fixed)(_xf);                            \
@@ -78,6 +107,35 @@ void CQ(_test_mul)(float complex _xf,                               \
                                                                     \
     if (liquid_autotest_verbose) {                                  \
         printf("(%8.4f,%8.4f) * (%8.4f,%8.4f) = (%8.4f,%8.4f), expected: (%8.4f,%8.4f)\n", \
+                crealf(_xf), cimagf(_xf),                           \
+                crealf(_yf), cimagf(_yf),                           \
+                crealf(ztest), cimagf(ztest),                       \
+                crealf(zf), cimagf(zf));                            \
+    }                                                               \
+                                                                    \
+    /* run comparison */                                            \
+    CONTEND_DELTA(crealf(zf),crealf(ztest),_tol);                   \
+    CONTEND_DELTA(cimagf(zf),cimagf(ztest),_tol);                   \
+}                                                                   \
+                                                                    \
+/* test division */                                                 \
+void CQ(_test_div)(float complex _xf,                               \
+                   float complex _yf,                               \
+                   float         _tol)                              \
+{                                                                   \
+    /* convert to fixed-point */                                    \
+    CQ(_t) x = CQ(_float_to_fixed)(_xf);                            \
+    CQ(_t) y = CQ(_float_to_fixed)(_yf);                            \
+                                                                    \
+    /* execute operation */                                         \
+    CQ(_t) z = CQ(_div)(x, y);                                      \
+    float complex zf = _xf / _yf;                                   \
+                                                                    \
+    /* convert to floating-point */                                 \
+    float complex ztest = CQ(_fixed_to_float)(z);                   \
+                                                                    \
+    if (liquid_autotest_verbose) {                                  \
+        printf("(%8.4f,%8.4f) / (%8.4f,%8.4f) = (%8.4f,%8.4f), expected: (%8.4f,%8.4f)\n", \
                 crealf(_xf), cimagf(_xf),                           \
                 crealf(_yf), cimagf(_yf),                           \
                 crealf(ztest), cimagf(ztest),                       \
@@ -103,7 +161,33 @@ void autotest_cq16_add()
     float tol = expf(-sqrtf(q16_fracbits));
 
     // run specific tests
-    cq16_test_add(1.0f + _Complex_I*0.5f, 0.5f - _Complex_I*0.9f, tol);
+    cq16_test_add( 0.81911 +  0.83629*_Complex_I, -0.28676 +  0.94995*_Complex_I, tol);
+    cq16_test_add( 0.60038 +  0.21438*_Complex_I,  0.75947 + -0.58910*_Complex_I, tol);
+    cq16_test_add( 0.69875 + -0.51095*_Complex_I,  0.99962 +  0.89917*_Complex_I, tol);
+    cq16_test_add( 0.39740 + -0.03323*_Complex_I,  0.45830 +  0.86018*_Complex_I, tol);
+    cq16_test_add(-0.43622 +  0.95747*_Complex_I, -0.28784 + -0.95700*_Complex_I, tol);
+    cq16_test_add( 0.65335 + -0.98661*_Complex_I, -0.56604 +  0.65523*_Complex_I, tol);
+    cq16_test_add(-0.43161 +  0.10766*_Complex_I, -0.02236 + -0.57604*_Complex_I, tol);
+    cq16_test_add( 0.31323 + -0.03695*_Complex_I, -0.81640 +  0.17809*_Complex_I, tol);
+    cq16_test_add(-0.19660 + -0.06582*_Complex_I,  0.02889 +  0.71771*_Complex_I, tol);
+    cq16_test_add(-0.95410 + -0.57502*_Complex_I,  0.86389 +  0.91886*_Complex_I, tol);
+}
+
+void autotest_cq16_sub()
+{
+    float tol = expf(-sqrtf(q16_fracbits));
+
+    // run specific tests
+    cq16_test_sub(-0.03088 +  0.18292*_Complex_I,  0.52888 + -0.11447*_Complex_I, tol);
+    cq16_test_sub( 0.94725 +  0.96198*_Complex_I, -0.46320 +  0.50263*_Complex_I, tol);
+    cq16_test_sub( 0.95797 + -0.04013*_Complex_I,  0.29476 + -0.87833*_Complex_I, tol);
+    cq16_test_sub( 0.26583 + -0.08018*_Complex_I, -0.71007 +  0.23766*_Complex_I, tol);
+    cq16_test_sub( 0.67738 +  0.65268*_Complex_I,  0.12252 + -0.93337*_Complex_I, tol);
+    cq16_test_sub( 0.39551 +  0.46059*_Complex_I,  0.72501 + -0.55978*_Complex_I, tol);
+    cq16_test_sub( 0.97282 + -0.52345*_Complex_I, -0.37437 + -0.79523*_Complex_I, tol);
+    cq16_test_sub(-0.84438 + -0.43361*_Complex_I,  0.73363 + -0.42197*_Complex_I, tol);
+    cq16_test_sub(-0.58692 +  0.64871*_Complex_I, -0.37983 + -0.63185*_Complex_I, tol);
+    cq16_test_sub(-0.64057 +  0.20079*_Complex_I, -0.06919 + -0.05721*_Complex_I, tol);
 }
 
 void autotest_cq16_mul()
@@ -113,8 +197,37 @@ void autotest_cq16_mul()
     float tol = q16_fixed_to_float(1<<shift);
     if (tol > 0.1) tol = 0.1f;
 
-    // floating-point tests
-    cq16_test_mul(1.0f + _Complex_I*0.5f, 0.3f - _Complex_I*0.9f, tol);
+    // run specific tests
+    cq16_test_mul( 0.39407 +  0.47544*_Complex_I, -0.54994 + -0.77925*_Complex_I, tol);
+    cq16_test_mul( 0.36185 +  0.93651*_Complex_I, -0.93322 + -0.21109*_Complex_I, tol);
+    cq16_test_mul( 0.16584 + -0.42133*_Complex_I, -0.10204 +  0.40487*_Complex_I, tol);
+    cq16_test_mul(-0.06406 +  0.19082*_Complex_I, -0.17120 +  0.19229*_Complex_I, tol);
+    cq16_test_mul( 0.20096 + -0.38047*_Complex_I, -0.30371 + -0.75139*_Complex_I, tol);
+    cq16_test_mul(-0.31106 + -0.31922*_Complex_I,  0.21878 +  0.46536*_Complex_I, tol);
+    cq16_test_mul( 0.71149 +  0.12000*_Complex_I, -0.70060 + -0.76876*_Complex_I, tol);
+    cq16_test_mul( 0.80862 + -0.74223*_Complex_I,  0.69114 + -0.43045*_Complex_I, tol);
+    cq16_test_mul(-0.20470 + -0.78997*_Complex_I, -0.50803 + -0.25716*_Complex_I, tol);
+    cq16_test_mul( 0.39123 + -0.48306*_Complex_I, -0.36542 +  0.84223*_Complex_I, tol);
+}
+
+void xautotest_cq16_div()
+{
+    // determine appropriate tolerance
+    unsigned int shift = q16_intbits < 6 ? 6 : q16_intbits;
+    float tol = q16_fixed_to_float(1<<shift);
+    if (tol > 0.1) tol = 0.1f;
+
+    // run specific tests
+    cq16_test_div( 0.87150 + -0.06730*_Complex_I,  0.15782 +  0.05430*_Complex_I, tol);
+    cq16_test_div(-0.60502 +  0.01311*_Complex_I,  0.53842 + -0.61376*_Complex_I, tol);
+    cq16_test_div(-0.26474 +  0.73489*_Complex_I, -0.95264 + -0.16071*_Complex_I, tol);
+    cq16_test_div(-0.44974 +  0.72104*_Complex_I,  0.29478 + -0.77298*_Complex_I, tol);
+    cq16_test_div( 0.45020 +  0.85349*_Complex_I,  0.26976 +  0.27977*_Complex_I, tol);
+    cq16_test_div( 0.95825 + -0.13834*_Complex_I, -0.14617 + -0.97090*_Complex_I, tol);
+    cq16_test_div(-0.49364 +  0.89255*_Complex_I, -0.27900 + -0.65937*_Complex_I, tol);
+    cq16_test_div( 0.64944 + -0.98983*_Complex_I,  0.50582 + -0.34903*_Complex_I, tol);
+    cq16_test_div(-0.03591 +  0.29294*_Complex_I,  0.08893 +  0.11133*_Complex_I, tol);
+    cq16_test_div( 0.06105 + -0.67645*_Complex_I,  0.06658 + -0.42715*_Complex_I, tol);
 }
 
 
@@ -126,7 +239,33 @@ void autotest_cq32_add()
     float tol = expf(-sqrtf(q32_fracbits));
 
     // run specific tests
-    cq32_test_add(1.0f + _Complex_I*0.5f, 0.5f - _Complex_I*0.9f, tol);
+    cq32_test_add( 0.81911 +  0.83629*_Complex_I, -0.28676 +  0.94995*_Complex_I, tol);
+    cq32_test_add( 0.60038 +  0.21438*_Complex_I,  0.75947 + -0.58910*_Complex_I, tol);
+    cq32_test_add( 0.69875 + -0.51095*_Complex_I,  0.99962 +  0.89917*_Complex_I, tol);
+    cq32_test_add( 0.39740 + -0.03323*_Complex_I,  0.45830 +  0.86018*_Complex_I, tol);
+    cq32_test_add(-0.43622 +  0.95747*_Complex_I, -0.28784 + -0.95700*_Complex_I, tol);
+    cq32_test_add( 0.65335 + -0.98661*_Complex_I, -0.56604 +  0.65523*_Complex_I, tol);
+    cq32_test_add(-0.43161 +  0.10766*_Complex_I, -0.02236 + -0.57604*_Complex_I, tol);
+    cq32_test_add( 0.31323 + -0.03695*_Complex_I, -0.81640 +  0.17809*_Complex_I, tol);
+    cq32_test_add(-0.19660 + -0.06582*_Complex_I,  0.02889 +  0.71771*_Complex_I, tol);
+    cq32_test_add(-0.95410 + -0.57502*_Complex_I,  0.86389 +  0.91886*_Complex_I, tol);
+}
+
+void autotest_cq32_sub()
+{
+    float tol = expf(-sqrtf(q32_fracbits));
+
+    // run specific tests
+    cq32_test_sub(-0.03088 +  0.18292*_Complex_I,  0.52888 + -0.11447*_Complex_I, tol);
+    cq32_test_sub( 0.94725 +  0.96198*_Complex_I, -0.46320 +  0.50263*_Complex_I, tol);
+    cq32_test_sub( 0.95797 + -0.04013*_Complex_I,  0.29476 + -0.87833*_Complex_I, tol);
+    cq32_test_sub( 0.26583 + -0.08018*_Complex_I, -0.71007 +  0.23766*_Complex_I, tol);
+    cq32_test_sub( 0.67738 +  0.65268*_Complex_I,  0.12252 + -0.93337*_Complex_I, tol);
+    cq32_test_sub( 0.39551 +  0.46059*_Complex_I,  0.72501 + -0.55978*_Complex_I, tol);
+    cq32_test_sub( 0.97282 + -0.52345*_Complex_I, -0.37437 + -0.79523*_Complex_I, tol);
+    cq32_test_sub(-0.84438 + -0.43361*_Complex_I,  0.73363 + -0.42197*_Complex_I, tol);
+    cq32_test_sub(-0.58692 +  0.64871*_Complex_I, -0.37983 + -0.63185*_Complex_I, tol);
+    cq32_test_sub(-0.64057 +  0.20079*_Complex_I, -0.06919 + -0.05721*_Complex_I, tol);
 }
 
 void autotest_cq32_mul()
@@ -136,8 +275,37 @@ void autotest_cq32_mul()
     float tol = q32_fixed_to_float(1<<shift);
     if (tol > 0.1) tol = 0.1f;
 
-    // floating-point tests
-    cq32_test_mul(1.0f + _Complex_I*0.5f, 0.3f - _Complex_I*0.9f, tol);
+    // run specific tests
+    cq32_test_mul( 0.39407 +  0.47544*_Complex_I, -0.54994 + -0.77925*_Complex_I, tol);
+    cq32_test_mul( 0.36185 +  0.93651*_Complex_I, -0.93322 + -0.21109*_Complex_I, tol);
+    cq32_test_mul( 0.16584 + -0.42133*_Complex_I, -0.10204 +  0.40487*_Complex_I, tol);
+    cq32_test_mul(-0.06406 +  0.19082*_Complex_I, -0.17120 +  0.19229*_Complex_I, tol);
+    cq32_test_mul( 0.20096 + -0.38047*_Complex_I, -0.30371 + -0.75139*_Complex_I, tol);
+    cq32_test_mul(-0.31106 + -0.31922*_Complex_I,  0.21878 +  0.46536*_Complex_I, tol);
+    cq32_test_mul( 0.71149 +  0.12000*_Complex_I, -0.70060 + -0.76876*_Complex_I, tol);
+    cq32_test_mul( 0.80862 + -0.74223*_Complex_I,  0.69114 + -0.43045*_Complex_I, tol);
+    cq32_test_mul(-0.20470 + -0.78997*_Complex_I, -0.50803 + -0.25716*_Complex_I, tol);
+    cq32_test_mul( 0.39123 + -0.48306*_Complex_I, -0.36542 +  0.84223*_Complex_I, tol);
+}
+
+void xautotest_cq32_div()
+{
+    // determine appropriate tolerance
+    unsigned int shift = q32_intbits < 6 ? 6 : q32_intbits;
+    float tol = q32_fixed_to_float(1<<shift);
+    if (tol > 0.1) tol = 0.1f;
+
+    // run specific tests
+    cq32_test_div( 0.87150 + -0.06730*_Complex_I,  0.15782 +  0.05430*_Complex_I, tol);
+    cq32_test_div(-0.60502 +  0.01311*_Complex_I,  0.53842 + -0.61376*_Complex_I, tol);
+    cq32_test_div(-0.26474 +  0.73489*_Complex_I, -0.95264 + -0.16071*_Complex_I, tol);
+    cq32_test_div(-0.44974 +  0.72104*_Complex_I,  0.29478 + -0.77298*_Complex_I, tol);
+    cq32_test_div( 0.45020 +  0.85349*_Complex_I,  0.26976 +  0.27977*_Complex_I, tol);
+    cq32_test_div( 0.95825 + -0.13834*_Complex_I, -0.14617 + -0.97090*_Complex_I, tol);
+    cq32_test_div(-0.49364 +  0.89255*_Complex_I, -0.27900 + -0.65937*_Complex_I, tol);
+    cq32_test_div( 0.64944 + -0.98983*_Complex_I,  0.50582 + -0.34903*_Complex_I, tol);
+    cq32_test_div(-0.03591 +  0.29294*_Complex_I,  0.08893 +  0.11133*_Complex_I, tol);
+    cq32_test_div( 0.06105 + -0.67645*_Complex_I,  0.06658 + -0.42715*_Complex_I, tol);
 }
 
 
