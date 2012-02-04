@@ -134,5 +134,34 @@ LIQUIDFPM_DEFINE_INTERNAL_API(LIQUIDFPM_MANGLE_Q32,
                               LIQUIDFPM_Q32_INTBITS,
                               LIQUIDFPM_Q32_FRACBITS)
 
+// generic conversion
+static inline float qtype_fixed_to_float(int _x,
+                                         unsigned int _intbits,
+                                         unsigned int _fracbits)
+{
+    return (float) (_x) / (float)(1 << _fracbits);
+};
+
+static inline int qtype_float_to_fixed(float _x,
+                                       unsigned int _intbits,
+                                       unsigned int _fracbits)
+{
+    return (int) (_x * (float)(1 << _fracbits) + 0.5f);
+};
+
+static inline float qtype_angle_fixed_to_float(int _x,
+                                               unsigned int _intbits,
+                                               unsigned int _fracbits)
+{
+    return qtype_fixed_to_float(_x,_intbits,_fracbits) * (3.14159265358979 / (float)(1<<(_intbits-2)));
+};
+
+static inline int qtype64_angle_float_to_fixed(float _x,
+                                               unsigned int _intbits,
+                                               unsigned int _fracbits)
+{
+    return qtype_float_to_fixed(_x,_intbits,_fracbits) / (3.14159265358979 / (float)(1<<(_intbits-2)));
+};
+
 
 #endif // __LIQUID_FPM_INTERNAL_H__

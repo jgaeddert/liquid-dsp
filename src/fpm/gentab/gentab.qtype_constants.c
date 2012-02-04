@@ -55,13 +55,6 @@ void usage(void)
     printf("    n   :   length (e.g. 32)\n");
 }
 
-static inline int qtype_float_to_fixed(float _x,
-                                       unsigned int _intbits,
-                                       unsigned int _fracbits)
-{
-    return (int) (_x * (float)(1 << _fracbits) + 0.5f);
-};
-
 int main(int argc, char*argv[])
 {
     // options
