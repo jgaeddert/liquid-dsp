@@ -74,6 +74,45 @@ LIQUIDFPM_DEFINE_COMPLEX(float, liquidfpm_float_complex);
 #define LIQUIDFPM_Q32_INTBITS       (7)
 #define LIQUIDFPM_Q32_FRACBITS      (25)
 
+// constants
+#define q16_bits    (16)
+#define q32_bits    (32)
+
+#define q16_intbits (LIQUIDFPM_Q16_INTBITS)
+#define q32_intbits (LIQUIDFPM_Q32_INTBITS)
+
+#define q16_fracbits (LIQUIDFPM_Q16_FRACBITS)
+#define q32_fracbits (LIQUIDFPM_Q32_FRACBITS)
+
+#define q16_min     (1)
+#define q32_min     (1)
+
+#define q16_max     (0x7fff)
+#define q32_max     (0x7fffffff)
+
+#define q16_one     ((1<<(LIQUIDFPM_Q16_FRACBITS))-1)
+#define q32_one     ((1<<(LIQUIDFPM_Q32_FRACBITS))-1)
+
+#define q16_pi_by_4 (0x0fff)
+#define q32_pi_by_4 (0x0fffffff)
+
+#define q16_pi_by_2 (0x1fff)
+#define q32_pi_by_2 (0x1fffffff)
+
+#define q16_pi      (0x3fff)
+#define q32_pi      (0x3fffffff)
+
+#define q16_2pi     (0x7fff)
+#define q32_2pi     (0x7fffffff)
+
+// inline integer component
+#define q16_intpart(X)  ((X)>>LIQUIDFPM_Q16_FRACBITS)
+#define q32_intpart(X)  ((X)>>LIQUIDFPM_Q32_FRACBITS)
+
+// inline fractional component
+#define q16_fracpart(X) ((X) & ((1<<LIQUIDFPM_Q16_FRACBITS)-1))
+#define q32_fracpart(X) ((X) & ((1<<LIQUIDFPM_Q32_FRACBITS)-1))
+
 // inline multiplication
 #define q16_mul_inline(X,Y) ( ((int32_t)(X)*(int32_t)(Y))>>(LIQUIDFPM_Q16_FRACBITS) )
 #define q32_mul_inline(X,Y) ( ((int64_t)(X)*(int64_t)(Y))>>(LIQUIDFPM_Q32_FRACBITS) )
@@ -81,6 +120,7 @@ LIQUIDFPM_DEFINE_COMPLEX(float, liquidfpm_float_complex);
 // inline division
 #define q16_div_inline(X,Y) ( (((int32_t)X)<<(LIQUIDFPM_Q16_FRACBITS)) / (Y) )
 #define q32_div_inline(X,Y) ( (((int64_t)X)<<(LIQUIDFPM_Q32_FRACBITS)) / (Y) )
+
 
 /* API definition macro
  *
@@ -94,22 +134,8 @@ LIQUIDFPM_DEFINE_COMPLEX(float, liquidfpm_float_complex);
 #define LIQUIDFPM_DEFINE_API(Q,CQ,T,TA,INTBITS,FRACBITS)            \
 typedef T  Q(_t);                                                   \
 typedef TA Q(_at);                                                  \
-const static unsigned int Q(_bits) = INTBITS + FRACBITS;            \
-const static unsigned int Q(_intbits) = INTBITS;                    \
-const static unsigned int Q(_fracbits) = FRACBITS;                  \
-static inline int Q(_intpart) (Q(_t) _x)                            \
-    { return (_x >> FRACBITS); } ;                                  \
-static inline int Q(_fracpart) (Q(_t) _x)                           \
-    { return _x & ((1<<FRACBITS)-1); };                             \
                                                                     \
 /* constants */                                                     \
-const static Q(_t) Q(_min) = (1);                                   \
-const static Q(_t) Q(_max) = (((1<<(FRACBITS+INTBITS-2))-1)<<1)+1;  \
-const static Q(_t) Q(_one) = (1<<(FRACBITS))-1;                     \
-const static Q(_t) Q(_pi)  = (1<<(FRACBITS+INTBITS-2))-1;           \
-const static Q(_t) Q(_2pi) = (((1<<(FRACBITS+INTBITS-2))-1)<<1)+1;  \
-const static Q(_t) Q(_pi_by_2)  =                                   \
-    (((1<<(FRACBITS+INTBITS-2))-1)>>1);                             \
 const static float Q(_angle_scalarf) =                              \
     (3.14159265358979/(float)(1<<(INTBITS-2)));                     \
                                                                     \
@@ -171,15 +197,6 @@ Q(_t) Q(_erf)   (Q(_t) _z);                                         \
 Q(_t) Q(_erfc)  (Q(_t) _z);                                         \
 Q(_t) Q(_lgamma)(Q(_t) _z);                                         \
 Q(_t) Q(_tgamma)(Q(_t) _z);                                         \
-                                                                    \
-/* liquid-fpm specific functions */                                 \
-Q(_t) Q(_besseli0)(Q(_t) _z);                                       \
-Q(_t) Q(_besselj0)(Q(_t) _z);                                       \
-Q(_t) Q(_sinc)(Q(_t) _z);                                           \
-Q(_t) Q(_kaiser)(unsigned int _n, unsigned int _N, Q(_t) _beta);    \
-                                                                    \
-/* vector operations */                                             \
-Q(_t) Q(_dotprod)(Q(_t) * _x, Q(_t) * _v, unsigned int _n);         \
                                                                     \
 /* mathematical constants */                                        \
 extern const Q(_t) Q(_angle_scalar);                                \
