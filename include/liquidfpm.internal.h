@@ -88,6 +88,7 @@ Q(_t) Q(_log10_frac)(Q(_t) _x);                                     \
 extern const Q(_t) Q(_exp2_frac_gentab)[256];                       \
 Q(_t) Q(_exp2_frac) (Q(_t) _x);                                     \
 Q(_t) Q(_exp_frac)  (Q(_t) _x);                                     \
+Q(_t) Q(_expm1_frac)(Q(_t) _x);                                     \
 Q(_t) Q(_exp10_frac)(Q(_t) _x);                                     \
                                                                     \
 extern const Q(_t) Q(_log2_shiftadd_Ak_tab)[];                      \
@@ -100,6 +101,7 @@ Q(_t) Q(_log10_shiftadd)    (Q(_t) _x, unsigned int _n);            \
 Q(_t) Q(_exp2_shiftadd)     (Q(_t) _x, unsigned int _n);            \
 Q(_t) Q(_exp2_shiftadd_base)(Q(_t) _x, unsigned int _n);            \
 Q(_t) Q(_exp_shiftadd)      (Q(_t) _x, unsigned int _n);            \
+Q(_t) Q(_expm1_shiftadd)    (Q(_t) _x, unsigned int _n);            \
 Q(_t) Q(_exp10_shiftadd)    (Q(_t) _x, unsigned int _n);            \
                                                                     \
                                                                     \

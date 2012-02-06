@@ -38,6 +38,12 @@ Q(_t) Q(_exp_frac)(Q(_t) _x)
     return Q(_exp2_frac)( Q(_mul)(_x,Q(_log2_e)) );
 }
 
+// natural logarithm (minus one)
+Q(_t) Q(_expm1_frac)(Q(_t) _x)
+{
+    return Q(_exp_frac)(_x) - Q(_one);
+}
+
 // base-10 logarithm
 //    10^(x) = 2^(x * log2(10))
 Q(_t) Q(_exp10_frac)(Q(_t) _x)

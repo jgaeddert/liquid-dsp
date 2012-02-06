@@ -39,6 +39,12 @@ Q(_t) Q(_exp_shiftadd)(Q(_t) _x, unsigned int _n)
     return Q(_exp2_shiftadd)( Q(_mul)(_x,Q(_log2_e)), _n );
 }
 
+// natural logarithm (minus one)
+Q(_t) Q(_expm1_shiftadd)(Q(_t) _x, unsigned int _n)
+{
+    return Q(_exp_shiftadd)(_x,_n) - Q(_one);
+}
+
 // base-10 logarithm
 //    10^(x) = 2^(x * log2(10))
 Q(_t) Q(_exp10_shiftadd)(Q(_t) _x, unsigned int _n)
