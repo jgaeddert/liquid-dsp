@@ -80,6 +80,14 @@ void Q(_sinhcosh_cordic)(Q(_t)        _x,                           \
                          Q(_t) *      _cosh,                        \
                          unsigned int _precision);                  \
                                                                     \
+void Q(_sinhcosh_shiftadd)(Q(_t)        _x,                         \
+                           Q(_t) *      _sinh,                      \
+                           Q(_t) *      _cosh,                      \
+                           unsigned int _precision);                \
+Q(_t) Q(_sinh_shiftadd)(Q(_t) _x, unsigned int _precision);         \
+Q(_t) Q(_cosh_shiftadd)(Q(_t) _x, unsigned int _precision);         \
+Q(_t) Q(_tanh_shiftadd)(Q(_t) _x, unsigned int _precision);         \
+                                                                    \
 /* exponential and logarithmic */                                   \
 extern const Q(_t) Q(_ln2);     /* log(2)   */                      \
 extern const Q(_t) Q(_log10_2); /* log10(2) */                      \

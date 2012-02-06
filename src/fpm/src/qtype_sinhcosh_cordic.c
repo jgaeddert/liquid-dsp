@@ -20,7 +20,7 @@
  */
 
 // 
-// sin/cos CORDIC
+// hyperbolic sin/cos CORDIC
 // 
 
 #include <stdio.h>

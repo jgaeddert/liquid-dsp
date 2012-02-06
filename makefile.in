@@ -514,6 +514,7 @@ fpm_includes :=							\
 	src/fpm/src/qtype_sincos_cordic.c			\
 	src/fpm/src/qtype_sincos_tab.c				\
 	src/fpm/src/qtype_sinhcosh_cordic.c			\
+	src/fpm/src/qtype_hyperbolic_shiftadd.c			\
 	src/fpm/src/qtype_sqrt.c				\
 	src/fpm/src/qtype_cbrt.c				\
 	src/fpm/src/qtype_gamma.c				\
