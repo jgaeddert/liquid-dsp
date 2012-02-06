@@ -28,14 +28,14 @@
 
 #include "liquidfpm.internal.h"
 
-#define DEBUG_SINHCOSH_CORDIC   1
+#define DEBUG_SINHCOSH_CORDIC   0
 
 // compute hyperbolic trig functions
 // NOTE: the CORDIC algorithm is only valid for a limited range:
 //   |_theta| < 1.118173015526...
-void Q(_sinhcosh_cordic)(Q(_t) _theta,
-                         Q(_t) * _sinh,
-                         Q(_t) * _cosh,
+void Q(_sinhcosh_cordic)(Q(_t)        _theta,
+                         Q(_t) *      _sinh,
+                         Q(_t) *      _cosh,
                          unsigned int _n)
 {
 #if DEBUG_SINHCOSH_CORDIC

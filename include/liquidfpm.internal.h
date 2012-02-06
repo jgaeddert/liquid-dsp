@@ -75,7 +75,7 @@ Q(_t) Q(_atan2_frac)(Q(_t) _y, Q(_t) _x);                           \
 /* hyperbolic */                                                    \
 extern const Q(_t) Q(_sinhcosh_cordic_Ak_tab)[];                    \
 extern const Q(_t) Q(_sinhcosh_cordic_kp_inv);                      \
-void Q(_sinhcosh_cordic)(Q(_t)        _theta,                       \
+void Q(_sinhcosh_cordic)(Q(_t)        _x,                           \
                          Q(_t) *      _sinh,                        \
                          Q(_t) *      _cosh,                        \
                          unsigned int _precision);                  \
