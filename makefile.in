@@ -530,6 +530,7 @@ fpm_autotests :=						\
 	src/fpm/tests/qtype_atan_autotest.c			\
 	src/fpm/tests/qtype_sincos_autotest.c			\
 	src/fpm/tests/qtype_sqrt_autotest.c			\
+	src/fpm/tests/qtype_gamma_autotest.c			\
 	src/fpm/tests/cqtype_arithmetic_autotest.c		\
 
 fpm_benchmarks :=						\
