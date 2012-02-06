@@ -43,6 +43,7 @@
 #include "qtype_sqrt.c"
 #include "qtype_cbrt.c"
 #include "qtype_gamma.c"
+#include "qtype_erf.c"
 
 // complex
 #include "cqtype_arithmetic.c"

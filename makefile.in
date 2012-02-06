@@ -517,6 +517,7 @@ fpm_includes :=							\
 	src/fpm/src/qtype_sqrt.c				\
 	src/fpm/src/qtype_cbrt.c				\
 	src/fpm/src/qtype_gamma.c				\
+	src/fpm/src/qtype_erf.c					\
 
 src/fpm/src/q16.o : %.o : %.c $(fpm_headers) $(fpm_includes)
 
@@ -534,6 +535,7 @@ fpm_autotests :=						\
 	src/fpm/tests/qtype_sinhcosh_autotest.c			\
 	src/fpm/tests/qtype_sqrt_autotest.c			\
 	src/fpm/tests/qtype_gamma_autotest.c			\
+	src/fpm/tests/qtype_erf_autotest.c			\
 	src/fpm/tests/cqtype_arithmetic_autotest.c		\
 
 fpm_benchmarks :=						\
