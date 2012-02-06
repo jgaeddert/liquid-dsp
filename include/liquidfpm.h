@@ -173,7 +173,6 @@ Q(_t) Q(_lgamma)(Q(_t) _z);                                         \
 Q(_t) Q(_tgamma)(Q(_t) _z);                                         \
                                                                     \
 /* liquid-fpm specific functions */                                 \
-Q(_t) Q(_lngamma)(Q(_t) _z);                                        \
 Q(_t) Q(_besseli0)(Q(_t) _z);                                       \
 Q(_t) Q(_besselj0)(Q(_t) _z);                                       \
 Q(_t) Q(_sinc)(Q(_t) _z);                                           \

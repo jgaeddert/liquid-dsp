@@ -514,6 +514,7 @@ fpm_includes :=							\
 	src/fpm/src/qtype_sincos_tab.c				\
 	src/fpm/src/qtype_sqrt.c				\
 	src/fpm/src/qtype_cbrt.c				\
+	src/fpm/src/qtype_gamma.c				\
 
 src/fpm/src/q16.o : %.o : %.c $(fpm_headers) $(fpm_includes)
 

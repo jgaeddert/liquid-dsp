@@ -113,6 +113,8 @@ Q(_t) Q(_pow_frac)    (Q(_t) _b, Q(_t) _x);                         \
 Q(_t) Q(_pow_shiftadd)(Q(_t) _b, Q(_t) _x, unsigned int _prec);     \
                                                                     \
 /* error and gamma functions */                                     \
+extern const Q(_t) Q(_ln2pi);   /* log(2*pi)    */                  \
+extern const Q(_t) Q(_inv_12);  /* 1/12         */                  \
 
 //
 // q16

@@ -41,6 +41,7 @@
 #include "qtype_sincos_tab.c"
 #include "qtype_sqrt.c"
 #include "qtype_cbrt.c"
+#include "qtype_gamma.c"
 
 // complex
 #include "cqtype_arithmetic.c"
