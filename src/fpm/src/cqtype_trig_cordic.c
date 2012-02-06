@@ -36,15 +36,17 @@ Q(_t) CQ(_abs2)(CQ(_t) _x)
 // compute magnitude
 Q(_t) CQ(_abs)(CQ(_t) _x)
 {
-    unsigned int _n=20; // number of iterations (precision)
+    // number of iterations (precision)
+    unsigned int _precision = Q(_bits);
 
-    return Q(_sqrt_newton)(CQ(_abs2)(_x), _n);
+    return Q(_sqrt_newton)(CQ(_abs2)(_x), _precision);
 }
 
 // compute complex sin(x) = (exp(j*x) - exp(-j*x))/(j*2)
 CQ(_t) CQ(_csin)(CQ(_t) _x)
 {
-    unsigned int _n=20; // number of iterations (precision)
+    // number of iterations (precision)
+    unsigned int _precision = Q(_bits);
 
     // compute exp(j*_x.real) = cos(_x.real) + j*sin(_x.real)
     // convert angle to qtype format (multiply by scaling factor)
@@ -52,11 +54,11 @@ CQ(_t) CQ(_csin)(CQ(_t) _x)
     Q(_t) theta = Q(_mul)(_x.real, Q(_angle_scalar));
     Q(_t) qsin;
     Q(_t) qcos;
-    Q(_sincos_cordic)(theta, &qsin, &qcos, _n);
+    Q(_sincos_cordic)(theta, &qsin, &qcos, _precision);
 
     // compute exp(imag(_x)), exp(-imag(_x))
-    Q(_t) qexp      = Q(_exp_shiftadd)(_x.imag, _n);
-    Q(_t) qexp_inv  = Q(_inv_newton)(qexp, _n);
+    Q(_t) qexp      = Q(_exp_shiftadd)(_x.imag, _precision);
+    Q(_t) qexp_inv  = Q(_inv_newton)(qexp, _precision);
 
     // y = sin(_x) = (exp(j*x) - exp(-j*x))/(j*2)
     //         
@@ -76,7 +78,8 @@ CQ(_t) CQ(_csin)(CQ(_t) _x)
 // compute complex cos(x) = (exp(j*x) + exp(-j*x))/2
 CQ(_t) CQ(_ccos)(CQ(_t) _x)
 {
-    unsigned int _n=20; // number of iterations (precision)
+    // number of iterations (precision)
+    unsigned int _precision = Q(_bits);
 
     // compute exp(j*_x.real) = cos(_x.real) + j*sin(_x.real)
     // convert angle to qtype format (multiply by scaling factor)
@@ -84,11 +87,11 @@ CQ(_t) CQ(_ccos)(CQ(_t) _x)
     Q(_t) theta = Q(_mul)(_x.real, Q(_angle_scalar));
     Q(_t) qsin;
     Q(_t) qcos;
-    Q(_sincos_cordic)(theta, &qsin, &qcos, _n);
+    Q(_sincos_cordic)(theta, &qsin, &qcos, _precision);
 
     // compute exp(imag(_x)), exp(-imag(_x))
-    Q(_t) qexp      = Q(_exp_shiftadd)(_x.imag, _n);
-    Q(_t) qexp_inv  = Q(_inv_newton)(qexp, _n);
+    Q(_t) qexp      = Q(_exp_shiftadd)(_x.imag, _precision);
+    Q(_t) qexp_inv  = Q(_inv_newton)(qexp, _precision);
 
     // y = cos(_x) = (exp(j*x) + exp(-j*x))/2
     //
@@ -105,8 +108,6 @@ CQ(_t) CQ(_ccos)(CQ(_t) _x)
 // compute complex tan(x) = (exp(j*2*x) - 1) / j*(exp(j*2*x + 1 )
 CQ(_t) CQ(_ctan)(CQ(_t) _x)
 {
-    //unsigned int _n=20; // number of iterations (precision)
-
     // Check for overflow condition: when imag(_x) < 0, exp(j*2*x) can
     // explode.  To compensate, take advantage of the fact that
     //      tan(conj(x)) = conj(tan(x))
