@@ -53,6 +53,12 @@ Q(_t) Q(_log10_shiftadd)(Q(_t) _x, unsigned int _n)
     return Q(_mul)(Q(_log2_shiftadd)(_x,_n), Q(_log10_2));
 }
 
+// log(1+x)
+Q(_t) Q(_log1p_shiftadd)(Q(_t) _x, unsigned int _n)
+{
+    return Q(_log_shiftadd)(_x + Q(_one), _n);
+}
+
 // Computes y = log2(x) by pre-shifting the input _x such
 // that _x is in [1,2), and then performing the iterative
 // shift|add operation on the result.

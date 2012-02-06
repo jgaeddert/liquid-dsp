@@ -47,6 +47,12 @@ Q(_t) Q(_log10_frac)(Q(_t) _x)
     return Q(_mul)(Q(_log2_frac)(_x), Q(_log10_2));
 }
 
+// log(1+x)
+Q(_t) Q(_log1p_frac)(Q(_t) _x)
+{
+    return Q(_log_frac)(_x + Q(_one));
+}
+
 // log2 using fractional table look-up; fast but not especially accurate
 Q(_t) Q(_log2_frac)(Q(_t) _x)
 {
