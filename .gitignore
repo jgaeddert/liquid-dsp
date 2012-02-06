@@ -39,6 +39,7 @@ src/fpm/gentab/gentab.qtype_constants
 src/fpm/gentab/gentab.qtype_logexp_frac
 src/fpm/gentab/gentab.qtype_logexp_shiftadd
 src/fpm/gentab/gentab.qtype_cordic
+src/fpm/gentab/gentab.qtype_hyperbolic_cordic
 src/fpm/gentab/gentab.qtype_trigtab
 
 # gentab output sources

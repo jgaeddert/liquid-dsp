@@ -462,6 +462,7 @@ fpm_gentab_programs :=						\
 	src/fpm/gentab/gentab.qtype_logexp_shiftadd		\
 	src/fpm/gentab/gentab.qtype_logexp_frac			\
 	src/fpm/gentab/gentab.qtype_cordic			\
+	src/fpm/gentab/gentab.qtype_hyperbolic_cordic	 	\
 	src/fpm/gentab/gentab.qtype_trigtab			\
 
 # declare target source files from above "target generator programs"
@@ -512,6 +513,7 @@ fpm_includes :=							\
 	src/fpm/src/qtype_atan_cordic.c				\
 	src/fpm/src/qtype_sincos_cordic.c			\
 	src/fpm/src/qtype_sincos_tab.c				\
+	src/fpm/src/qtype_sinhcosh_cordic.c			\
 	src/fpm/src/qtype_sqrt.c				\
 	src/fpm/src/qtype_cbrt.c				\
 	src/fpm/src/qtype_gamma.c				\
