@@ -67,7 +67,7 @@ void Q(_atan2_cordic_base)(Q(_t) _y,
     Q(_t) z = 0;
     Q(_t) d,tx,ty,tz;
     unsigned int i;
-    unsigned int n=_n;
+    unsigned int n = _n > Q(_bits) ? Q(_bits) : _n;
 
 #if DEBUG_ATAN_CORDIC
     printf("   n            x            y            z        -d*An\n");

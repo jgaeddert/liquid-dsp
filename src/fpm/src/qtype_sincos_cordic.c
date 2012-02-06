@@ -107,7 +107,7 @@ void Q(_sincos_cordic)(Q(_t) _theta,
     Q(_t) z = _theta;
     Q(_t) d,tx,ty,tz;
     unsigned int i;
-    unsigned int n=_n;
+    unsigned int n = _n > Q(_bits) ? Q(_bits) : _n;
 
 #if DEBUG_SINCOS_CORDIC
     printf("   n           x            y            z         -d*An\n");

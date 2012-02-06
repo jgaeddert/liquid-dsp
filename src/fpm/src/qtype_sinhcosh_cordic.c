@@ -42,13 +42,15 @@ void Q(_sinhcosh_cordic)(Q(_t)        _theta,
     printf("  theta : %12.8f\n", Q(_fixed_to_float)(_theta));
 #endif
 
+    // TODO : validate that |_theta| < 1.118173015526...
+
     Q(_t) x = Q(_sinhcosh_cordic_kp_inv); // TODO : initialize with cordic_Kpinv_tab[_n-1];
     Q(_t) y = 0;
     Q(_t) z = _theta;
     Q(_t) d,tx,ty,tz;
     unsigned int k;
-    unsigned int n=_n;
-    unsigned int i=4;
+    unsigned int n = _n > Q(_bits) ? Q(_bits) : _n;
+    unsigned int i = 4;
 
 #if DEBUG_SINHCOSH_CORDIC
     printf("   n           x            y            z         -d*An\n");
