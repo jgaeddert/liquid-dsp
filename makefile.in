@@ -521,6 +521,7 @@ src/fpm/src/q16.o : %.o : %.c $(fpm_headers) $(fpm_includes)
 src/fpm/src/q32.o : %.o : %.c $(fpm_headers) $(fpm_includes)
 
 fpm_autotests :=						\
+	src/fpm/tests/qtype_constants_autotest.c		\
 	src/fpm/tests/qtype_div_autotest.c			\
 	src/fpm/tests/qtype_inv_newton_autotest.c		\
 	src/fpm/tests/qtype_mul_autotest.c			\

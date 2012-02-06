@@ -40,7 +40,7 @@
 // conversion:
 //      qtype_angle_scalar                  : (1 << (intbits-2)) / pi
 //
-// qtype_lngamma:
+// qtype_lgamma:
 //      qtype_ln2pi     = 1.83787706640935  : ln(2*pi)
 //      qtype_inv_12    = 0.08333333333333  : 1/12
 
