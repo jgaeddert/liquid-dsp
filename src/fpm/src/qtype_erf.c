@@ -44,17 +44,17 @@ Q(_t) Q(_erf)(Q(_t) _x)
     unsigned int _precision = Q(_bits);
 
     // approximation:
-    //                     /        /      4/pi + ax^2 \  \(1/2)
-    //   erf(x) ~ sgn(x) * | 1 - exp| -x^2 ----------- |  |
-    //                     \        \       1   + ax^2 /  /
+    //                     [        {      4/pi + ax^2 }  ](1/2)
+    //   erf(x) ~ sgn(x) * [ 1 - exp{ -x^2 ----------- }  ]
+    //                     [        {       1   + ax^2 }  ]
     // where
     //   a = 8*(pi-3) / 3*pi(4-pi) ~ 0.140012288686666
     //
     //
     // small value approximation:
-    //                                    /                                  \
-    //  erf(x) ~ 2/sqrt(pi) * exp(-x^2) * | x + (2/3)*x^3 + (4/15)*x^5 + ... |
-    //                                    \                                  /
+    //                                    [                                 ]
+    //  erf(x) ~ 2/sqrt(pi) * exp(-x^2) * [ x + (2/3)*x^3 + (4/15)*x^5 + ...]
+    //                                    [                                 ]
     //
 
     if (_x < 0)
