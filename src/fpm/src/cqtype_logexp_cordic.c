@@ -115,13 +115,20 @@ CQ(_t) CQ(_csqrt)(CQ(_t) _x)
     return y;
 }
 
-// compute square root
-CQ(_t) CQ(_cpow)(CQ(_t) _x)
+// compute complex power
+//    b^(x) = 2^(x * log2(b))
+//          = exp{x * ln(b)}
+CQ(_t) CQ(_cpow)(CQ(_t) _b, CQ(_t) _x)
 {
     // number of iterations (precision)
     //unsigned int _precision = Q(_bits);
 
-    // TODO : implement this method
-    CQ(_t) y = {0, 0};
-    return y;
+    // compute ln(b)
+    CQ(_t) lnb = CQ(_clog)(_b);
+
+    // compute x*ln(b)
+    CQ(_t) xlnb = CQ(_mul)(_x, lnb);
+
+    // compute exp{x * ln(b)} and return
+    return CQ(_cexp)(xlnb);
 }

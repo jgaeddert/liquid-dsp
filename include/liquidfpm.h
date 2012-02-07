@@ -255,7 +255,7 @@ CQ(_t) CQ(_cproj)(CQ(_t) _a);                                       \
 CQ(_t) CQ(_cexp) (CQ(_t) _x);                                       \
 CQ(_t) CQ(_clog) (CQ(_t) _x);                                       \
 CQ(_t) CQ(_csqrt)(CQ(_t) _x);                                       \
-CQ(_t) CQ(_cpow) (CQ(_t) _x);                                       \
+CQ(_t) CQ(_cpow) (CQ(_t) _b, CQ(_t) _x);                            \
                                                                     \
 /* trigonometric operations */                                      \
 CQ(_t) CQ(_csin) (CQ(_t) _x);                                       \

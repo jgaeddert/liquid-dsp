@@ -114,6 +114,37 @@ void CQ(_test_csqrt)(float complex _xf,                             \
     CONTEND_DELTA(crealf(yf), crealf(ytest), _tol);                 \
     CONTEND_DELTA(cimagf(yf), cimagf(ytest), _tol);                 \
 }                                                                   \
+                                                                    \
+/* test complex power */                                            \
+void CQ(_test_cpow)(float complex _bf,                              \
+                    float complex _xf,                              \
+                    float         _tol)                             \
+{                                                                   \
+    /* convert to fixed-point and back to float */                  \
+    CQ(_t) b = CQ(_float_to_fixed)(_bf);                            \
+    CQ(_t) x = CQ(_float_to_fixed)(_xf);                            \
+    _bf = CQ(_fixed_to_float)(b);                                   \
+    _xf = CQ(_fixed_to_float)(x);                                   \
+                                                                    \
+    /* execute operation */                                         \
+    CQ(_t) y = CQ(_cpow)(b,x);                                      \
+    float complex yf = cpowf(_bf,_xf);                              \
+                                                                    \
+    /* convert to floating-point */                                 \
+    float complex ytest = CQ(_fixed_to_float)(y);                   \
+                                                                    \
+    if (liquid_autotest_verbose) {                                  \
+        printf("  (%7.3f,%7.3f)^(%7.3f,%7.3f) = (%7.3f,%7.3f), expected: (%7.3f,%7.3f)\n",\
+                crealf(_bf),   cimagf(_bf),                         \
+                crealf(_xf),   cimagf(_xf),                         \
+                crealf(ytest), cimagf(ytest),                       \
+                crealf(yf),    cimagf(yf));                         \
+    }                                                               \
+                                                                    \
+    /* run comparison */                                            \
+    CONTEND_DELTA(crealf(yf), crealf(ytest), _tol);                 \
+    CONTEND_DELTA(cimagf(yf), cimagf(ytest), _tol);                 \
+}                                                                   \
 
 
 // define autotest API
@@ -176,6 +207,13 @@ void autotest_cq16_csqrt()
     cq16_test_csqrt( -2.66633145 +   1.36561687*_Complex_I, tol);
 }
 
+void autotest_cq16_cpow()
+{
+    float tol = 2*expf(-sqrtf(q16_fracbits));
+
+    cq16_test_cpow(1.78956 - 0.71851*_Complex_I, 0.018851 - 0.600130*_Complex_I, tol);
+}
+
 // 
 // q32
 //
@@ -229,5 +267,12 @@ void autotest_cq32_csqrt()
     cq32_test_csqrt( -2.54883930 +   0.30446988*_Complex_I, tol);
     cq32_test_csqrt( -0.59142340 +  -1.71715213*_Complex_I, tol);
     cq32_test_csqrt(  1.46846010 +   0.51498951*_Complex_I, tol);
+}
+
+void autotest_cq32_cpow()
+{
+    float tol = 2*expf(-sqrtf(q32_fracbits));
+
+    cq32_test_cpow(1.78956 - 0.71851*_Complex_I, 0.018851 - 0.600130*_Complex_I, tol);
 }
 
