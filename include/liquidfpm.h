@@ -274,6 +274,7 @@ CQ(_t) CQ(_cacosh)(CQ(_t) _x);                                      \
 CQ(_t) CQ(_catanh)(CQ(_t) _x);                                      \
                                                                     \
 /* liquid-fpm specific functions */                                 \
+CQ(_t) CQ(_cexpj)(Q(_t) _theta);    /* exp(j*theta) */              \
 
 
 //

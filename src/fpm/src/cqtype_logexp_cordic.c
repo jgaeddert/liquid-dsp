@@ -52,6 +52,20 @@ CQ(_t) CQ(_cexp)(CQ(_t) _x)
     return cexp;
 }
 
+// compute complex exponent (purely imaginary exponent, phase
+// representation)
+//      exp(j*theta) = cos(theta) + j*sin(theta)
+CQ(_t) CQ(_cexpj)(Q(_t) _theta)
+{
+    // number of iterations (precision)
+    unsigned int _precision = Q(_bits);
+
+    // run CORDIC to compute sin|cos from angle
+    CQ(_t) y;
+    Q(_sincos_cordic)(_theta, &y.imag, &y.real, _precision);
+    return y;
+}
+
 // compute complex logarithm:
 //      log(x) = log(|x|) + j*arg(x)
 CQ(_t) CQ(_clog)(CQ(_t) _x)
