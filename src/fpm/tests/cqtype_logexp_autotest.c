@@ -47,7 +47,7 @@ void CQ(_test_cexp)(float complex _xf,                              \
     float complex ytest = CQ(_fixed_to_float)(y);                   \
                                                                     \
     if (liquid_autotest_verbose) {                                  \
-        printf("cexp(%7.3f,%7.3f) = (%7.3f,%7.3f), expected: (%7.3f,%7.3f), e=(%7.3f,%7.3f)\n",\
+        printf("  cexp(%7.3f,%7.3f) = (%7.3f,%7.3f), expected: (%7.3f,%7.3f), e=(%7.3f,%7.3f)\n",\
                 crealf(_xf),   cimagf(_xf),                         \
                 crealf(ytest), cimagf(ytest),                       \
                 crealf(yf),    cimagf(yf),                          \
@@ -75,7 +75,35 @@ void CQ(_test_clog)(float complex _xf,                              \
     float complex ytest = CQ(_fixed_to_float)(y);                   \
                                                                     \
     if (liquid_autotest_verbose) {                                  \
-        printf("clog(%7.3f,%7.3f) = (%7.3f,%7.3f), expected: (%7.3f,%7.3f), e=(%7.3f,%7.3f)\n",\
+        printf("  clog(%7.3f,%7.3f) = (%7.3f,%7.3f), expected: (%7.3f,%7.3f), e=(%7.3f,%7.3f)\n",\
+                crealf(_xf),   cimagf(_xf),                         \
+                crealf(ytest), cimagf(ytest),                       \
+                crealf(yf),    cimagf(yf),                          \
+                crealf(ytest-yf), cimagf(ytest-yf));                \
+    }                                                               \
+                                                                    \
+    /* run comparison */                                            \
+    CONTEND_DELTA(crealf(yf), crealf(ytest), _tol);                 \
+    CONTEND_DELTA(cimagf(yf), cimagf(ytest), _tol);                 \
+}                                                                   \
+                                                                    \
+/* test complex square root */                                      \
+void CQ(_test_csqrt)(float complex _xf,                             \
+                     float         _tol)                            \
+{                                                                   \
+    /* convert to fixed-point and back to float */                  \
+    CQ(_t) x = CQ(_float_to_fixed)(_xf);                            \
+    _xf = CQ(_fixed_to_float)(x);                                   \
+                                                                    \
+    /* execute operation */                                         \
+    CQ(_t) y = CQ(_csqrt)(x);                                       \
+    float complex yf = csqrtf(_xf);                                 \
+                                                                    \
+    /* convert to floating-point */                                 \
+    float complex ytest = CQ(_fixed_to_float)(y);                   \
+                                                                    \
+    if (liquid_autotest_verbose) {                                  \
+        printf("  csqrt(%7.3f,%7.3f) = (%7.3f,%7.3f), expected: (%7.3f,%7.3f), e=(%7.3f,%7.3f)\n",\
                 crealf(_xf),   cimagf(_xf),                         \
                 crealf(ytest), cimagf(ytest),                       \
                 crealf(yf),    cimagf(yf),                          \
@@ -131,6 +159,23 @@ void autotest_cq16_clog()
     cq16_test_clog(  1.04258573 +  -1.65468131*_Complex_I, tol);
 }
 
+void autotest_cq16_csqrt()
+{
+    float tol = 2*expf(-sqrtf(q16_fracbits));
+
+    // run specific tests
+    cq16_test_csqrt( -1.28098412 +  -1.80656227*_Complex_I, tol);
+    cq16_test_csqrt(  0.91872879 +   1.14261631*_Complex_I, tol);
+    cq16_test_csqrt( -0.13766866 +  -0.37784869*_Complex_I, tol);
+    cq16_test_csqrt(  1.14854474 +   0.87876995*_Complex_I, tol);
+    cq16_test_csqrt( -0.87127563 +  -0.50623497*_Complex_I, tol);
+    cq16_test_csqrt(  0.44670889 +  -1.62791862*_Complex_I, tol);
+    cq16_test_csqrt(  1.18029888 +  -0.44260494*_Complex_I, tol);
+    cq16_test_csqrt( -0.25998100 +  -0.60995185*_Complex_I, tol);
+    cq16_test_csqrt(  0.50496817 +   1.41354078*_Complex_I, tol);
+    cq16_test_csqrt( -2.66633145 +   1.36561687*_Complex_I, tol);
+}
+
 // 
 // q32
 //
@@ -167,5 +212,22 @@ void autotest_cq32_clog()
     cq32_test_clog(  0.07439212 +  -0.25619313*_Complex_I, tol);
     cq32_test_clog( -0.72062350 +  -0.26901069*_Complex_I, tol);
     cq32_test_clog( -1.19676390 +   0.40063869*_Complex_I, tol);
+}
+
+void autotest_cq32_csqrt()
+{
+    float tol = 2*expf(-sqrtf(q16_fracbits));
+
+    // run specific tests
+    cq32_test_csqrt(  0.60950268 +  -0.42404044*_Complex_I, tol);
+    cq32_test_csqrt(  0.00564905 +  -0.96695794*_Complex_I, tol);
+    cq32_test_csqrt(  0.59334197 +  -0.40095087*_Complex_I, tol);
+    cq32_test_csqrt( -1.13387719 +  -0.61877128*_Complex_I, tol);
+    cq32_test_csqrt(  0.98557413 +   1.13588929*_Complex_I, tol);
+    cq32_test_csqrt(  0.03583994 +  -0.59577043*_Complex_I, tol);
+    cq32_test_csqrt( -0.99163632 +   0.58450462*_Complex_I, tol);
+    cq32_test_csqrt( -2.54883930 +   0.30446988*_Complex_I, tol);
+    cq32_test_csqrt( -0.59142340 +  -1.71715213*_Complex_I, tol);
+    cq32_test_csqrt(  1.46846010 +   0.51498951*_Complex_I, tol);
 }
 
