@@ -31,8 +31,9 @@ void Q(_test_inv_newton)(float        _xf,                          \
                          unsigned int _precision,                   \
                          float        _tol)                         \
 {                                                                   \
-    /* convert to fixed-point */                                    \
+    /* convert to fixed-point and back to float */                  \
     Q(_t) x = Q(_float_to_fixed)(_xf);                              \
+    _xf = Q(_fixed_to_float)(x);                                    \
                                                                     \
     /* execute operation */                                         \
     Q(_t) y = Q(_inv_newton)(x, _precision);                        \
@@ -43,11 +44,11 @@ void Q(_test_inv_newton)(float        _xf,                          \
                                                                     \
     if (liquid_autotest_verbose) {                                  \
         printf("  inv(%12.8f) = %12.8f (%12.8f), e=%12.8f\n",       \
-                      _xf,      ytest,  yf,      1.0-_xf*ytest);    \
+                      _xf,      ytest,  yf,      yf-ytest);         \
     }                                                               \
                                                                     \
     /* run comparison */                                            \
-    CONTEND_DELTA(ytest*_xf, 1.0f, _tol);                           \
+    CONTEND_DELTA(ytest, yf, _tol);                                 \
 }
 
 // define autotest API
@@ -59,10 +60,28 @@ void autotest_q16_inv_newton()
 {
     unsigned int precision = 16;    // precision
     unsigned int num_steps = 77;    // number of steps in test
-    float xmin  = 1.01f / q16_fixed_to_float(q16_max);
-    float xmax  = q16_fixed_to_float(q16_max)*0.99f;
+    float tol = 0.09f;              // error tolerance
+
+    // determine qtype bounds
+    float qmin = q16_fixed_to_float(q16_min);
+    float qmax = q16_fixed_to_float(q16_max);
+
+    // reduce lower bound until output is within qtype range
+    float xmin = qmin;
+    while ( 1.0f/xmin > qmax )
+        xmin *= 1.01f;
+
+    // reduce upper bound until output is within qtype range
+    float xmax = qmax;
+    while ( 1.0f/xmax < qmin )
+        xmax *= 0.99f;
+
+    if (liquid_autotest_verbose) {
+        printf("  q16 bounds:  [%12.8f, %12.8f]\n", qmin, qmax);
+        printf("  test bounds: [%12.8f, %12.8f] > [%12.8f,%12.8f]\n", xmin, xmax, 1.0f/xmin, 1.0f/xmax);
+    }
+
     float sigma = powf(xmin/xmax,-1.0f/(float)(num_steps-1));
-    float tol   = 256.0f * exp2f(-q16_bits);
 
     unsigned int i;
     float x = xmin;
@@ -79,10 +98,28 @@ void autotest_q32_inv_newton()
 {
     unsigned int precision = 16;    // precision
     unsigned int num_steps = 77;    // number of steps in test
-    float xmin  = 1.01f / q32_fixed_to_float(q32_max);
-    float xmax  = q32_fixed_to_float(q32_max)*0.99f;
+    float tol = 0.001f;             // error tolerance
+    
+    // determine qtype bounds
+    float qmin = q16_fixed_to_float(q16_min);
+    float qmax = q16_fixed_to_float(q16_max);
+
+    // reduce lower bound until output is within qtype range
+    float xmin = qmin;
+    while ( 1.0f/xmin > qmax )
+        xmin *= 1.01f;
+
+    // reduce upper bound until output is within qtype range
+    float xmax = qmax;
+    while ( 1.0f/xmax < qmin )
+        xmax *= 0.99f;
+
+    if (liquid_autotest_verbose) {
+        printf("  q16 bounds:  [%12.8f, %12.8f]\n", qmin, qmax);
+        printf("  test bounds: [%12.8f, %12.8f] > [%12.8f,%12.8f]\n", xmin, xmax, 1.0f/xmin, 1.0f/xmax);
+    }
+
     float sigma = powf(xmin/xmax,-1.0f/(float)(num_steps-1));
-    float tol   = 256.0f * exp2f(-q32_bits);
 
     unsigned int i;
     float x = xmin;
