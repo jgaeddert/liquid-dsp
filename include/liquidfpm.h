@@ -209,7 +209,7 @@ Q(_t) Q(_lgamma)(Q(_t) _z);                                         \
 Q(_t) Q(_tgamma)(Q(_t) _z);                                         \
                                                                     \
 /* mathematical constants */                                        \
-extern const Q(_t) Q(_angle_scalar);                                \
+extern const Q(_t) Q(_angle_scalar);/* qtype_pi/3.14159 */          \
 extern const Q(_t) Q(_E);           /* e                */          \
 extern const Q(_t) Q(_LOG2E);       /* log2(e)          */          \
 extern const Q(_t) Q(_LOG10E);      /* log10(e)         */          \

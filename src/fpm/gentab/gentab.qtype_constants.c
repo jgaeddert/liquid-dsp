@@ -130,7 +130,7 @@ int main(int argc, char*argv[])
     //
     printf("// conversion\n");
     float angle_scalar = (1<<(intbits-2)) / M_PI;
-    printf("const %s_t %s_angle_scalar = 0x%.*x; // (1<<(intbits-2))/pi\n",
+    printf("const %s_t %s_angle_scalar = 0x%.*x; // qtype_pi / M_PI = 2^(intbits-2)/3.14159\n",
             qtype, qtype, n/4, qtype_float_to_fixed(angle_scalar,intbits,fracbits));
     printf("\n");
 
