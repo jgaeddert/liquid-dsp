@@ -538,6 +538,7 @@ fpm_autotests :=						\
 	src/fpm/tests/qtype_gamma_autotest.c			\
 	src/fpm/tests/qtype_erf_autotest.c			\
 	src/fpm/tests/cqtype_arithmetic_autotest.c		\
+	src/fpm/tests/cqtype_logexp_autotest.c			\
 
 fpm_benchmarks :=						\
 	src/fpm/bench/qtype_div_benchmark.c			\
