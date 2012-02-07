@@ -70,10 +70,10 @@ void autotest_q16_lgamma()
     float qmin = q16_fixed_to_float(q16_min);
     float qmax = q16_fixed_to_float(q16_max);
 
-    // reduce lower bound until output is within qtype range
+    // adjust lower bound until output is within qtype range
     float xmin = qmin;
     while ( lgammaf(xmin) > qmax )
-        xmin *= 0.99f;
+        xmin *= 1.01f;
 
     // reduce upper bound until output is within qtype range
     float xmax = qmax;
