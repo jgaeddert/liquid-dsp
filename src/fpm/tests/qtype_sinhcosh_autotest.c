@@ -49,10 +49,10 @@ void Q(_test_sinhcosh_cordic)(float        _xf,                     \
     float qcosh_test = Q(_fixed_to_float)(qcosh);                   \
                                                                     \
     if (liquid_autotest_verbose) {                                  \
-        printf("  sinh,cosh(%11.8f) = %11.8f(%11.8f), %11.8f(%11.8f)\n",\
+        printf("  sinh,cosh(%9.5f) = %9.5f(%9.5f)e=%9.5f, %9.5f(%9.5f)e=%9.5f\n",\
                 _xf,                                                \
-                qsinh_test, fsinh,                                  \
-                qcosh_test, fcosh);                                 \
+                qsinh_test, fsinh, qsinh_test-fsinh,                \
+                qcosh_test, fcosh, qcosh_test-fcosh);               \
     }                                                               \
                                                                     \
     /* run comparison */                                            \
@@ -81,10 +81,10 @@ void Q(_test_sinhcosh_shiftadd)(float        _xf,                   \
     float qcosh_test = Q(_fixed_to_float)(qcosh);                   \
                                                                     \
     if (liquid_autotest_verbose) {                                  \
-        printf("  sinh,cosh(%11.8f) = %11.8f(%11.8f), %11.8f(%11.8f)\n",\
+        printf("  sinh,cosh(%9.5f) = %9.5f(%9.5f)e=%9.5f, %9.5f(%9.5f)e=%9.5f\n",\
                 _xf,                                                \
-                qsinh_test, fsinh,                                  \
-                qcosh_test, fcosh);                                 \
+                qsinh_test, fsinh, qsinh_test-fsinh,                \
+                qcosh_test, fcosh, qcosh_test-fcosh);               \
     }                                                               \
                                                                     \
     /* run comparison */                                            \
@@ -143,27 +143,21 @@ void autotest_q16_sinhcosh_shiftadd()
     // options
     unsigned int precision = q16_bits;
     unsigned int num_steps = 57;
-    float tol = 0.02f;
+    float tol = 0.3f;
     
     // determine qtype bounds
     float qmin = q16_fixed_to_float(q16_min);
     float qmax = q16_fixed_to_float(q16_max);
 
-#if 0
     // reduce lower bound until output is within qtype range
     float xmin = -qmax;
-    while ( fabsf(sinh(xmin)) > qmax || fabsf(cosh(xmin)) > qmax )
+    while ( expf(fabsf(xmin)) > qmax*0.95f )
         xmin *= 0.99f;
 
     // reduce upper bound until output is within qtype range
     float xmax = qmax;
-    while ( sinh(xmax) > qmax || cosh(xmax) > qmax )
+    while ( expf(fabsf(xmax)) > qmax*0.95f )
         xmax *= 0.99f;
-#else
-    float xmin = -1.5f;
-    float xmax =  1.5f;
-    AUTOTEST_WARN("hard-coding range");
-#endif
 
     if (liquid_autotest_verbose) {
         printf("  q16 bounds:  [%12.8f, %12.8f]\n", qmin, qmax);
@@ -235,21 +229,15 @@ void autotest_q32_sinhcosh_shiftadd()
     float qmin = q32_fixed_to_float(q32_min);
     float qmax = q32_fixed_to_float(q32_max);
 
-#if 0
     // reduce lower bound until output is within qtype range
     float xmin = -qmax;
-    while ( fabsf(sinh(xmin)) > qmax || fabsf(cosh(xmin)) > qmax )
+    while ( expf(fabsf(xmin)) > qmax*0.95f )
         xmin *= 0.99f;
 
     // reduce upper bound until output is within qtype range
     float xmax = qmax;
-    while ( sinh(xmax) > qmax || cosh(xmax) > qmax )
+    while ( expf(fabsf(xmax)) > qmax*0.95f )
         xmax *= 0.99f;
-#else
-    float xmin = -1.5f;
-    float xmax =  1.5f;
-    AUTOTEST_WARN("hard-coding range");
-#endif
 
     if (liquid_autotest_verbose) {
         printf("  q32 bounds:  [%12.8f, %12.8f]\n", qmin, qmax);
