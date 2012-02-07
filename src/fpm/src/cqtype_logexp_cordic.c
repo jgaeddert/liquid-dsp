@@ -81,7 +81,8 @@ CQ(_t) CQ(_clog)(CQ(_t) _x)
     Q(_atan2_cordic)(_x.imag, _x.real, &r, &theta, _precision);
 
     // complex logarithm
-    CQ(_t) clog = { Q(_log_shiftadd)(Q(_abs)(r),_precision), theta };
+    CQ(_t) clog = { Q(_log_shiftadd)(Q(_abs)(r),_precision),
+                    Q(_div)(theta, Q(_angle_scalar)) };
     return clog;
 }
 
