@@ -62,63 +62,73 @@ extern "C" {
 
 LIQUIDFPM_DEFINE_COMPLEX(float, liquidfpm_float_complex);
 
+//
+// q16 type
+//
 
-/* name-mangling macros */
+// name-mangling macros
 #define LIQUIDFPM_MANGLE_Q16(name)  LIQUIDFPM_CONCAT(q16, name)
 #define LIQUIDFPM_MANGLE_CQ16(name) LIQUIDFPM_CONCAT(cq16,name)
-#define LIQUIDFPM_Q16_INTBITS       (7)
-#define LIQUIDFPM_Q16_FRACBITS      (9)
 
-#define LIQUIDFPM_MANGLE_Q32(name)  LIQUIDFPM_CONCAT(q32, name)
-#define LIQUIDFPM_MANGLE_CQ32(name) LIQUIDFPM_CONCAT(cq32,name)
-#define LIQUIDFPM_Q32_INTBITS       (7)
-#define LIQUIDFPM_Q32_FRACBITS      (25)
+// type definition
+#define LIQUIDFPM_Q16_BITS          (16)        // number of bits
+#define LIQUIDFPM_Q16_INTBITS       (7)         // number of integer bits
+#define LIQUIDFPM_Q16_FRACBITS      (9)         // number of fraction bits
+#if (LIQUIDFPM_Q16_INTBITS + LIQUIDFPM_Q16_FRACBITS) != LIQUIDFPM_Q16_BITS
+#  error "invalid q16 bit allocation"
+#endif
 
 // constants
-#define q16_bits    (16)
-#define q32_bits    (32)
+#define q16_bits        (LIQUIDFPM_Q16_BITS)    // number of bits
+#define q16_intbits     (LIQUIDFPM_Q16_INTBITS) // number of integer bits
+#define q16_fracbits    (LIQUIDFPM_Q16_FRACBITS)// number of fraction bits
+#define q16_min         (1)                     // minimum value
+#define q16_max         (0x7fff)                // maximum value (positive)
+#define q16_one         ((1<<(q16_fracbits))-1) // 'one' representation
+#define q16_pi_by_4     (0x0fff)                // phase: pi/4
+#define q16_pi_by_2     (0x1fff)                // phase: pi/2
+#define q16_pi          (0x3fff)                // phase: pi
+#define q16_2pi         (0x7fff)                // phase: 2*pi
 
-#define q16_intbits (LIQUIDFPM_Q16_INTBITS)
-#define q32_intbits (LIQUIDFPM_Q32_INTBITS)
-
-#define q16_fracbits (LIQUIDFPM_Q16_FRACBITS)
-#define q32_fracbits (LIQUIDFPM_Q32_FRACBITS)
-
-#define q16_min     (1)
-#define q32_min     (1)
-
-#define q16_max     (0x7fff)
-#define q32_max     (0x7fffffff)
-
-#define q16_one     ((1<<(LIQUIDFPM_Q16_FRACBITS))-1)
-#define q32_one     ((1<<(LIQUIDFPM_Q32_FRACBITS))-1)
-
-#define q16_pi_by_4 (0x0fff)
-#define q32_pi_by_4 (0x0fffffff)
-
-#define q16_pi_by_2 (0x1fff)
-#define q32_pi_by_2 (0x1fffffff)
-
-#define q16_pi      (0x3fff)
-#define q32_pi      (0x3fffffff)
-
-#define q16_2pi     (0x7fff)
-#define q32_2pi     (0x7fffffff)
-
-// inline integer component
-#define q16_intpart(X)  ((X)>>LIQUIDFPM_Q16_FRACBITS)
-#define q32_intpart(X)  ((X)>>LIQUIDFPM_Q32_FRACBITS)
-
-// inline fractional component
-#define q16_fracpart(X) ((X) & ((1<<LIQUIDFPM_Q16_FRACBITS)-1))
-#define q32_fracpart(X) ((X) & ((1<<LIQUIDFPM_Q32_FRACBITS)-1))
-
-// inline multiplication
+// inline methods
+#define q16_intpart(X)      ((X)>>LIQUIDFPM_Q16_FRACBITS)
+#define q16_fracpart(X)     ((X) & ((1<<LIQUIDFPM_Q16_FRACBITS)-1))
 #define q16_mul_inline(X,Y) ( ((int32_t)(X)*(int32_t)(Y))>>(LIQUIDFPM_Q16_FRACBITS) )
-#define q32_mul_inline(X,Y) ( ((int64_t)(X)*(int64_t)(Y))>>(LIQUIDFPM_Q32_FRACBITS) )
-
-// inline division
 #define q16_div_inline(X,Y) ( (((int32_t)X)<<(LIQUIDFPM_Q16_FRACBITS)) / (Y) )
+
+
+//
+// q32 type
+//
+
+// name-mangling macros
+#define LIQUIDFPM_MANGLE_Q32(name)  LIQUIDFPM_CONCAT(q32, name)
+#define LIQUIDFPM_MANGLE_CQ32(name) LIQUIDFPM_CONCAT(cq32,name)
+
+// type definition
+#define LIQUIDFPM_Q32_BITS          (32)        // number of bits
+#define LIQUIDFPM_Q32_INTBITS       (7)         // number of integer bits
+#define LIQUIDFPM_Q32_FRACBITS      (25)        // number of fraction bits
+#if (LIQUIDFPM_Q32_INTBITS + LIQUIDFPM_Q32_FRACBITS) != LIQUIDFPM_Q32_BITS
+#  error "invalid q32 bit allocation"
+#endif
+
+// constants
+#define q32_bits        (LIQUIDFPM_Q32_BITS)    // number of bits
+#define q32_intbits     (LIQUIDFPM_Q32_INTBITS) // number of integer bits
+#define q32_fracbits    (LIQUIDFPM_Q32_FRACBITS)// number of fraction bits
+#define q32_min         (1)                     // minimum value
+#define q32_max         (0x7fffffff)            // maximum value (positive)
+#define q32_one         ((1<<(q32_fracbits))-1) // 'one' representation
+#define q32_pi_by_4     (0x0fffffff)            // phase: pi/4
+#define q32_pi_by_2     (0x1fffffff)            // phase: pi/2
+#define q32_pi          (0x3fffffff)            // phase: pi
+#define q32_2pi         (0x7fffffff)            // phase: 2*pi
+
+// inline methods
+#define q32_intpart(X)      ((X)>>LIQUIDFPM_Q32_FRACBITS)
+#define q32_fracpart(X)     ((X) & ((1<<LIQUIDFPM_Q32_FRACBITS)-1))
+#define q32_mul_inline(X,Y) ( ((int64_t)(X)*(int64_t)(Y))>>(LIQUIDFPM_Q32_FRACBITS) )
 #define q32_div_inline(X,Y) ( (((int64_t)X)<<(LIQUIDFPM_Q32_FRACBITS)) / (Y) )
 
 
@@ -151,9 +161,9 @@ static inline Q(_t) Q(_angle_float_to_fixed)(float _x)              \
                                                                     \
 /* arithmetic */                                                    \
 static inline Q(_t) Q(_sign)(Q(_t) _x) {return (_x<0) ? -1 : 1;};   \
-static inline Q(_t) Q(_abs)(Q(_t) _x) {return (_x<0) ? -_x : _x;};  \
-static inline Q(_t) Q(_add)(Q(_t) _a, Q(_t) _b) {return _a + _b;};  \
-static inline Q(_t) Q(_sub)(Q(_t) _a, Q(_t) _b) {return _a - _b;};  \
+static inline Q(_t) Q(_abs) (Q(_t) _x) {return (_x<0) ? -_x : _x;}; \
+static inline Q(_t) Q(_add) (Q(_t) _a, Q(_t) _b) {return _a + _b;}; \
+static inline Q(_t) Q(_sub) (Q(_t) _a, Q(_t) _b) {return _a - _b;}; \
 Q(_t) Q(_mul)(Q(_t) _a, Q(_t) _b);                                  \
 Q(_t) Q(_div)(Q(_t) _a, Q(_t) _b);                                  \
 Q(_t) Q(_inv)(Q(_t) _x, unsigned int _n); /* compute 1/_x */        \
@@ -227,9 +237,9 @@ CQ(_t) CQ(_float_to_fixed)(liquidfpm_float_complex _x);             \
 CQ(_t) CQ(_add)       (CQ(_t) _a, CQ(_t) _b);                       \
 CQ(_t) CQ(_sub)       (CQ(_t) _a, CQ(_t) _b);                       \
 CQ(_t) CQ(_mul)       (CQ(_t) _a, CQ(_t) _b);                       \
-CQ(_t) CQ(_mul_scalar)(CQ(_t) _a, Q(_t) _b);                        \
+CQ(_t) CQ(_mul_scalar)(CQ(_t) _a,  Q(_t) _b);                       \
 CQ(_t) CQ(_div)       (CQ(_t) _a, CQ(_t) _b);                       \
-CQ(_t) CQ(_div_scalar)(CQ(_t) _a, Q(_t) _b);                        \
+CQ(_t) CQ(_div_scalar)(CQ(_t) _a,  Q(_t) _b);                       \
 CQ(_t) CQ(_inv)       (CQ(_t) _x); /* compute 1/_x */               \
                                                                     \
 /* basic operations */                                              \
