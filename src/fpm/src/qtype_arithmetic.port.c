@@ -20,13 +20,14 @@
  */
 
 //
-// qtype_mul.port.c
+// qtype_arithmetic.port.c
 //
-// Portable qtype_t fixed-point multiplication implementation
+// Portable qtype_t fixed-point arithmetic implementations
 //
 
 #include "liquidfpm.internal.h"
 
+// multiplication
 Q(_t) Q(_mul)(Q(_t) _x, Q(_t) _y)
 {
 #if 0
@@ -44,6 +45,29 @@ Q(_t) Q(_mul)(Q(_t) _x, Q(_t) _y)
     Q(_at) z = (Q(_at))(_x) * (Q(_at))(_y);
 
     return (Q(_t)) (z >> Q(_fracbits));
+#endif
+}
+
+// division
+Q(_t) Q(_div)(Q(_t) _x, Q(_t) _y)
+{
+#if 0
+    // define data types of double precision
+    // (e.g. int64_t for 32-bit fixed-point)
+    Q(_at) a = _x;
+    Q(_at) b = _y;
+
+    // pre-shift numerator by qtype_fracbits
+    a <<= Q(_fracbits);
+
+    return (Q(_t))(a / b);
+#else
+    // compute division by pre-shifting numerator using
+    // high-order accumulator, then dividing by denominator
+
+    Q(_at) z = ((Q(_at))(_x)<<Q(_fracbits)) / _y;
+
+    return (Q(_t)) (z);
 #endif
 }
 

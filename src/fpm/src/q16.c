@@ -28,9 +28,8 @@
 #define CQ(name)    LIQUIDFPM_CONCAT(cq16,name)
 
 // source files
-#include "qtype_div.port.c"
+#include "qtype_arithmetic.port.c"
 #include "qtype_inv_newton.c"
-#include "qtype_mul.port.c"
 #include "qtype_log2_frac.c"
 #include "qtype_exp2_frac.c"
 #include "qtype_log2_shiftadd.c"
