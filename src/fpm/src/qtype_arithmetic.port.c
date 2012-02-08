@@ -71,3 +71,15 @@ Q(_t) Q(_div)(Q(_t) _x, Q(_t) _y)
 #endif
 }
 
+// ceiling
+Q(_t) Q(_ceil)(Q(_t) _x)
+{
+    return (_x == 0) ? 0 : Q(_floor)(_x) + Q(_one);
+}
+
+// floor
+Q(_t) Q(_floor)(Q(_t) _x)
+{
+    return Q(_intpart)(_x) << Q(_fracbits);
+}
+
