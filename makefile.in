@@ -171,6 +171,8 @@ dotprod_objects :=						\
 	src/dotprod/src/dotprod_rrrq32.o			\
 	src/dotprod/src/dotprod_crcq16.o			\
 	src/dotprod/src/dotprod_crcq32.o			\
+	src/dotprod/src/dotprod_cccq16.o			\
+	src/dotprod/src/dotprod_cccq32.o			\
 	@MLIBS_DOTPROD@						\
 
 src/dotprod/src/dotprod_cccf.o : %.o : %.c $(headers) src/dotprod/src/dotprod.c
@@ -186,6 +188,9 @@ src/dotprod/src/dotprod_rrrq32.o : %.o : %.c $(headers)
 
 src/dotprod/src/dotprod_crcq16.o : %.o : %.c $(headers)
 src/dotprod/src/dotprod_crcq32.o : %.o : %.c $(headers)
+
+src/dotprod/src/dotprod_cccq16.o : %.o : %.c $(headers)
+src/dotprod/src/dotprod_cccq32.o : %.o : %.c $(headers)
 
 # specific machine architectures
 

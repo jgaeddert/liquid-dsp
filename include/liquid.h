@@ -292,6 +292,9 @@ LIQUID_WDELAY_DEFINE_API(WDELAY_MANGLE_CFLOAT, liquid_float_complex)
 #define DOTPROD_MANGLE_CRCQ16(name) LIQUID_CONCAT(dotprod_crcq16,name)
 #define DOTPROD_MANGLE_CRCQ32(name) LIQUID_CONCAT(dotprod_crcq32,name)
 
+#define DOTPROD_MANGLE_CCCQ16(name) LIQUID_CONCAT(dotprod_cccq16,name)
+#define DOTPROD_MANGLE_CCCQ32(name) LIQUID_CONCAT(dotprod_cccq32,name)
+
 // large macro
 //   DOTPROD    : name-mangling macro
 //   TO         : output data type
@@ -333,6 +336,9 @@ LIQUID_DOTPROD_DEFINE_API(DOTPROD_MANGLE_RRRQ32, q32_t, q32_t, q32_t)
 
 LIQUID_DOTPROD_DEFINE_API(DOTPROD_MANGLE_CRCQ16, cq16_t, q16_t, cq16_t)
 LIQUID_DOTPROD_DEFINE_API(DOTPROD_MANGLE_CRCQ32, cq32_t, q32_t, cq32_t)
+
+LIQUID_DOTPROD_DEFINE_API(DOTPROD_MANGLE_CCCQ16, cq16_t, cq16_t, cq16_t)
+LIQUID_DOTPROD_DEFINE_API(DOTPROD_MANGLE_CCCQ32, cq32_t, cq32_t, cq32_t)
 
 //
 // MODULE : equalization
