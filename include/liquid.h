@@ -58,6 +58,8 @@ int liquid_libversion_number(void);
 #define LIQUID_CONCAT(prefix, name) prefix ## name
 #define LIQUID_VALIDATE_INPUT
 
+#include <liquidfpm.h>
+
 /* 
  * Compile-time complex data type definitions
  *
@@ -283,6 +285,9 @@ LIQUID_WDELAY_DEFINE_API(WDELAY_MANGLE_CFLOAT, liquid_float_complex)
 #define DOTPROD_MANGLE_CCCF(name)   LIQUID_CONCAT(dotprod_cccf,name)
 #define DOTPROD_MANGLE_CRCF(name)   LIQUID_CONCAT(dotprod_crcf,name)
 
+// fixed-point
+#define DOTPROD_MANGLE_RRRQ16(name) LIQUID_CONCAT(dotprod_rrrq16,name)
+
 // large macro
 //   DOTPROD    : name-mangling macro
 //   TO         : output data type
@@ -316,6 +321,10 @@ LIQUID_DOTPROD_DEFINE_API(DOTPROD_MANGLE_CRCF,
                           liquid_float_complex,
                           float,
                           liquid_float_complex)
+
+// fixed-point
+
+LIQUID_DOTPROD_DEFINE_API(DOTPROD_MANGLE_RRRQ16, q16_t, q16_t, q16_t)
 
 //
 // MODULE : equalization
