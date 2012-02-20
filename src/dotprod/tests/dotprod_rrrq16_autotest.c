@@ -24,6 +24,40 @@
 #include "autotest/autotest.h"
 #include "liquid.internal.h"
 
+// helper function to keep code base small
+void dotprod_rrrq16_test(float *      _hf,
+                         float *      _xf,
+                         unsigned int _n,
+                         float        _tol)
+{
+    unsigned int i;
+
+    // compute floating point result
+    float yf_test;
+    dotprod_rrrf_run(_hf, _xf, _n, &yf_test);
+
+    // convert to fixed-point arrays
+    q16_t h[_n];
+    q16_t x[_n];
+    for (i=0; i<_n; i++) {
+        h[i] = q16_float_to_fixed(_hf[i]);
+        x[i] = q16_float_to_fixed(_xf[i]);
+    }
+
+    // compute fixed-point result
+    q16_t y;
+    dotprod_rrrq16_run(h, x, _n, &y);
+    float yf = q16_fixed_to_float(y);
+
+    if (liquid_autotest_verbose) {
+        printf("  dotprod_rrrq16 : %12.8f (expected %12.8f), e=%12.8f, tol=%12.8f\n",
+                yf, yf_test, yf-yf_test, _tol);
+    }
+
+    // run check
+    CONTEND_DELTA(yf, yf_test, _tol);
+}
+
 // 
 // AUTOTEST: basic dot product
 //
@@ -45,28 +79,7 @@ void autotest_dotprod_rrrq16_basic()
      0.463640,  0.592100,  1.150000, -1.225400
     };
 
-    float yf_test = 3.66411513609863;
-
-    // convert to fixed-point arrays
-    q16_t h[16];
-    q16_t x[16];
-    q16_t y;
-    unsigned int i;
-    for (i=0; i<16; i++) {
-        h[i] = q16_float_to_fixed(hf[i]);
-        x[i] = q16_float_to_fixed(xf[i]);
-    }
-
-    // compoute dot product
-    dotprod_rrrq16_run(h,x,16,&y);
-
-    // convert result
-    float yf = q16_fixed_to_float(y);
-    if (liquid_autotest_verbose) {
-        printf("  dotprod_rrrq16 : %12.8f (expected %12.8f), e=%12.8f, tol=%12.8f\n",
-                yf, yf_test, yf-yf_test, tol);
-    }
-
-    CONTEND_DELTA(yf, yf_test, tol);
+    // run check
+    dotprod_rrrq16_test(hf, xf, 16, tol);
 }
 
