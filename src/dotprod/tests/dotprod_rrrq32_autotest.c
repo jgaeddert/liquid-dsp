@@ -44,18 +44,33 @@ void dotprod_rrrq32_test(float *      _hf,
         x[i] = q32_float_to_fixed(_xf[i]);
     }
 
-    // compute fixed-point result
-    q32_t y;
-    dotprod_rrrq32_run(h, x, _n, &y);
-    float yf = q32_fixed_to_float(y);
+    // compute fixed-point result using dotprod_rrrq32_run()
+    q32_t y0;
+    dotprod_rrrq32_run(h, x, _n, &y0);
+    float y0f = q32_fixed_to_float(y0);
+
+    // compute fixed-point result using dotprod_rrrq32_run4()
+    q32_t y1;
+    dotprod_rrrq32_run(h, x, _n, &y1);
+    float y1f = q32_fixed_to_float(y1);
+
+    // compute fixed-point result using dotprod_rrrq32 object
+    q32_t y2;
+    dotprod_rrrq32 q = dotprod_rrrq32_create(h,_n);
+    dotprod_rrrq32_execute(q, x, &y2);
+    dotprod_rrrq32_destroy(q);
+    float y2f = q32_fixed_to_float(y2);
 
     if (liquid_autotest_verbose) {
-        printf("  dotprod_rrrq32 : %12.8f (expected %12.8f), e=%12.8f, tol=%12.8f\n",
-                yf, yf_test, yf-yf_test, _tol);
+        printf("  dotprod_rrrq32_run    : %12.8f (expected %12.8f), e=%12.8f, tol=%12.8f\n", y0f, yf_test, y0f-yf_test, _tol);
+        printf("  dotprod_rrrq32_run4   : %12.8f (expected %12.8f), e=%12.8f, tol=%12.8f\n", y1f, yf_test, y1f-yf_test, _tol);
+        printf("  dotprod_rrrq32 object : %12.8f (expected %12.8f), e=%12.8f, tol=%12.8f\n", y2f, yf_test, y2f-yf_test, _tol);
     }
 
-    // run check
-    CONTEND_DELTA(yf, yf_test, _tol);
+    // run checks
+    CONTEND_DELTA(y0f, yf_test, _tol);
+    CONTEND_DELTA(y1f, yf_test, _tol);
+    CONTEND_DELTA(y2f, yf_test, _tol);
 }
 
 // 
