@@ -91,7 +91,7 @@ void autotest_q16_floor()
 
     // TODO : check bounds
     float qmax = q16_fixed_to_float(q16_max);
-    float qmin = q16_fixed_to_float(q16_min);
+    //float qmin = q16_fixed_to_float(q16_min);
     float xmax = qmax*0.95f;
     float xmin = -xmax;
     float dx   = (xmax - xmin) / (float)(num_steps-1);
@@ -113,7 +113,7 @@ void autotest_q16_ceil()
 
     // TODO : check bounds
     float qmax = q16_fixed_to_float(q16_max);
-    float qmin = q16_fixed_to_float(q16_min);
+    //float qmin = q16_fixed_to_float(q16_min);
     float xmax = (qmax-1.0f)*0.95f;
     float xmin = -xmax;
     float dx   = (xmax - xmin) / (float)(num_steps-1);
@@ -139,7 +139,7 @@ void autotest_q32_floor()
 
     // TODO : check bounds
     float qmax = q32_fixed_to_float(q32_max);
-    float qmin = q32_fixed_to_float(q32_min);
+    //float qmin = q32_fixed_to_float(q32_min);
     float xmax = qmax*0.95f;
     float xmin = -xmax;
     float dx   = (xmax - xmin) / (float)(num_steps-1);
@@ -161,7 +161,7 @@ void autotest_q32_ceil()
 
     // TODO : check bounds
     float qmax = q32_fixed_to_float(q32_max);
-    float qmin = q32_fixed_to_float(q32_min);
+    //float qmin = q32_fixed_to_float(q32_min);
     float xmax = (qmax-1.0f)*0.95f;
     float xmin = -xmax;
     float dx   = (xmax - xmin) / (float)(num_steps-1);
