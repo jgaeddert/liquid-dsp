@@ -287,6 +287,7 @@ LIQUID_WDELAY_DEFINE_API(WDELAY_MANGLE_CFLOAT, liquid_float_complex)
 
 // fixed-point
 #define DOTPROD_MANGLE_RRRQ16(name) LIQUID_CONCAT(dotprod_rrrq16,name)
+#define DOTPROD_MANGLE_RRRQ32(name) LIQUID_CONCAT(dotprod_rrrq32,name)
 
 // large macro
 //   DOTPROD    : name-mangling macro
@@ -325,6 +326,7 @@ LIQUID_DOTPROD_DEFINE_API(DOTPROD_MANGLE_CRCF,
 // fixed-point
 
 LIQUID_DOTPROD_DEFINE_API(DOTPROD_MANGLE_RRRQ16, q16_t, q16_t, q16_t)
+LIQUID_DOTPROD_DEFINE_API(DOTPROD_MANGLE_RRRQ32, q32_t, q32_t, q32_t)
 
 //
 // MODULE : equalization

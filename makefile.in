@@ -168,6 +168,7 @@ buffer_benchmarks :=						\
 #
 dotprod_objects :=						\
 	src/dotprod/src/dotprod_rrrq16.o			\
+	src/dotprod/src/dotprod_rrrq32.o			\
 	@MLIBS_DOTPROD@						\
 
 src/dotprod/src/dotprod_cccf.o : %.o : %.c $(headers) src/dotprod/src/dotprod.c
@@ -179,6 +180,7 @@ src/dotprod/src/dotprod_rrrf.o : %.o : %.c $(headers) src/dotprod/src/dotprod.c
 # fixed-point
 
 src/dotprod/src/dotprod_rrrq16.o : %.o : %.c $(headers)
+src/dotprod/src/dotprod_rrrq32.o : %.o : %.c $(headers)
 
 # specific machine architectures
 
@@ -193,6 +195,7 @@ dotprod_autotests :=						\
 	src/dotprod/tests/dotprod_crcf_autotest.c		\
 	src/dotprod/tests/dotprod_cccf_autotest.c		\
 	src/dotprod/tests/dotprod_rrrq16_autotest.c		\
+	src/dotprod/tests/dotprod_rrrq32_autotest.c		\
 
 dotprod_benchmarks :=						\
 	src/dotprod/bench/dotprod_cccf_benchmark.c		\
