@@ -199,6 +199,8 @@ src/dotprod/src/dotprod_rrrf.mmx.o : %.o : %.c $(headers)
 src/dotprod/src/dotprod_crcf.mmx.o : %.o : %.c $(headers)
 src/dotprod/src/dotprod_cccf.mmx.o : %.o : %.c $(headers)
 
+src/dotprod/src/dotprod_rrrq16.mmx.o : %.o : %.c $(headers)
+
 dotprod_autotests :=						\
 	src/dotprod/tests/dotprod_rrrf_autotest.c		\
 	src/dotprod/tests/dotprod_crcf_autotest.c		\
