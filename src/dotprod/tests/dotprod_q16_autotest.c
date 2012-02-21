@@ -129,6 +129,108 @@ void autotest_dotprod_cccq16_basic()
 
 
 
+// 
+// AUTOTEST: compare structured object to ordinal computation (rrr)
+//
+void autotest_dotprod_rrrq16_varying_size()
+{
+    float tol = expf(-sqrtf(q16_fracbits));
+
+    // run many, many tests
+    unsigned int i;
+    unsigned int n;
+    for (n=1; n<=128; n++) {
+        // create arrays for random values
+        float h[n];
+        float x[n];
+
+        // initialize values, ensuring result is within range of
+        // fixed-point type
+        float sigma = 10.0f;
+        float result = 0.0f;
+        do {
+            for (i=0; i<n; i++) {
+                h[i] = (2*randf() - 1)*sigma;
+                x[i] = (2*randf() - 1)*sigma;
+            }
+            dotprod_rrrf_run(h,x,n,&result);
+            sigma *= 0.9f;
+        } while (fabsf(result) > 0.9*q16_fixed_to_float(q16_max));
+
+        // run test
+        dotprod_rrrq16_test(h, x, n, tol);
+    }
+}
+
+// 
+// AUTOTEST: compare structured object to ordinal computation (crc)
+//
+void autotest_dotprod_crcq16_varying_size()
+{
+    float tol = expf(-sqrtf(q16_fracbits));
+
+    // run many, many tests
+    unsigned int i;
+    unsigned int n;
+    for (n=1; n<=128; n++) {
+        // create arrays for random values
+        float h[n];
+        float complex x[n];
+
+        // initialize values, ensuring result is within range of
+        // fixed-point type
+        float sigma = 10.0f;
+        float complex result = 0.0f;
+        do {
+            for (i=0; i<n; i++) {
+                h[i] = (2*randf() - 1)*sigma;
+                x[i] = (2*randf() - 1)*sigma + _Complex_I*(2*randf()-1)*sigma;
+            }
+            dotprod_crcf_run(h,x,n,&result);
+            sigma *= 0.9f;
+        } while (fabsf(crealf(result)) > 0.9*q16_fixed_to_float(q16_max) ||
+                 fabsf(cimagf(result)) > 0.9*q16_fixed_to_float(q16_max));
+
+        // run test
+        dotprod_crcq16_test(h, x, n, tol);
+    }
+}
+
+
+// 
+// AUTOTEST: compare structured object to ordinal computation (ccc)
+//
+void autotest_dotprod_cccq16_varying_size()
+{
+    float tol = expf(-sqrtf(q16_fracbits));
+
+    // run many, many tests
+    unsigned int i;
+    unsigned int n;
+    for (n=1; n<=128; n++) {
+        // create arrays for random values
+        float complex h[n];
+        float complex x[n];
+
+        // initialize values, ensuring result is within range of
+        // fixed-point type
+        float sigma = 10.0f;
+        float complex result = 0.0f;
+        do {
+            for (i=0; i<n; i++) {
+                h[i] = (2*randf() - 1)*sigma + _Complex_I*(2*randf()-1)*sigma;
+                x[i] = (2*randf() - 1)*sigma + _Complex_I*(2*randf()-1)*sigma;
+            }
+            dotprod_cccf_run(h,x,n,&result);
+            sigma *= 0.9f;
+        } while (fabsf(crealf(result)) > 0.9*q16_fixed_to_float(q16_max) ||
+                 fabsf(cimagf(result)) > 0.9*q16_fixed_to_float(q16_max));
+
+        // run test
+        dotprod_cccq16_test(h, x, n, tol);
+    }
+}
+
 
 
 
