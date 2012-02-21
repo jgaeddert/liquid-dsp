@@ -59,10 +59,10 @@ void dotprod_rrrq16_execute_mmx4(dotprod_rrrq16 _q, q16_t * _x, q16_t * _y);
 //  _x      :   input array [size: 1 x _n]
 //  _n      :   input lengths
 //  _y      :   output dot product
-void dotprod_rrrq16_run(q16_t * _h,
-                        q16_t * _x,
+void dotprod_rrrq16_run(q16_t *      _h,
+                        q16_t *      _x,
                         unsigned int _n,
-                        q16_t * _y)
+                        q16_t *      _y)
 {
     // initialize accumulator
     q16_at r=0;
@@ -80,10 +80,10 @@ void dotprod_rrrq16_run(q16_t * _h,
 //  _x      :   input array [size: 1 x _n]
 //  _n      :   input lengths
 //  _y      :   output dot product
-void dotprod_rrrq16_run4(q16_t * _h,
-                         q16_t * _x,
+void dotprod_rrrq16_run4(q16_t *      _h,
+                         q16_t *      _x,
                          unsigned int _n,
-                         q16_t * _y)
+                         q16_t *      _y)
 {
     // initialize accumulator
     q16_at r=0;
@@ -178,7 +178,7 @@ void dotprod_rrrq16_execute_mmx(dotprod_rrrq16 _q,
                                 q16_t *        _x,
                                 q16_t *        _y)
 {
-    // first cut: ...
+    // input, coefficients, multiply/accumulate vectors
     __m128i v;   // input vector
     __m128i h;   // coefficients vector
     __m128i s;   // dot product
@@ -209,7 +209,7 @@ void dotprod_rrrq16_execute_mmx(dotprod_rrrq16 _q,
 
 #if HAVE_PMMINTRIN_H
     // TODO : check this
-    // SSE3: fold down to single value using _mm_hadd_ps()
+    // SSE3: fold down to single value using _mm_hadd_epi32()
     __m128i z = _mm_setzero_si128(); // set to zero
     sum = _mm_hadd_epi32(sum, z);
     sum = _mm_hadd_epi32(sum, z);
@@ -312,7 +312,7 @@ void dotprod_rrrq16_execute_mmx4(dotprod_rrrq16 _q,
 
 #if HAVE_PMMINTRIN_H
     // TODO : check this
-    // SSE3: fold down to single value using _mm_hadd_ps()
+    // SSE3: fold down to single value using _mm_hadd_epi32()
     __m128i z = _mm_setzero_si128(); // set to zero
     sum0 = _mm_hadd_epi32(sum0, z);
     sum0 = _mm_hadd_epi32(sum0, z);
