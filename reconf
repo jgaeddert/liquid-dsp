@@ -18,8 +18,8 @@
 # along with liquid.  If not, see <http://www.gnu.org/licenses/>.
 
 
-rm -f config.cache
-aclocal
+rm -f config.cache aclocal.m4
+aclocal -I./scripts
 autoconf
 autoheader
 #automake --foreign --add-missing
