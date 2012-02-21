@@ -165,16 +165,12 @@ void dotprod_rrrq16_execute(dotprod_rrrq16 _q,
                             q16_t *        _x,
                             q16_t *        _y)
 {
-#if 0
     // switch based on size
     if (_q->n < 16) {
         dotprod_rrrq16_execute_mmx(_q, _x, _y);
     } else {
         dotprod_rrrq16_execute_mmx4(_q, _x, _y);
     }
-#else
-    dotprod_rrrq16_execute_mmx4(_q, _x, _y);
-#endif
 }
 
 // use MMX/SSE extensions
