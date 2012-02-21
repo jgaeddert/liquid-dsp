@@ -167,7 +167,6 @@ buffer_benchmarks :=						\
 # MODULE : dotprod
 #
 dotprod_objects :=						\
-	src/dotprod/src/dotprod_rrrq16.o			\
 	src/dotprod/src/dotprod_rrrq32.o			\
 	src/dotprod/src/dotprod_crcq16.o			\
 	src/dotprod/src/dotprod_crcq32.o			\

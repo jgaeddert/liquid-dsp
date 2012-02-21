@@ -230,7 +230,8 @@ i386|i486|i586|i686|x86|x86_64)
 
     MLIBS_DOTPROD="src/dotprod/src/dotprod_cccf.mmx.o \
                    src/dotprod/src/dotprod_crcf.mmx.o \
-                   src/dotprod/src/dotprod_rrrf.mmx.o"
+                   src/dotprod/src/dotprod_rrrf.mmx.o \
+                   src/dotprod/src/dotprod_rrrq16.mmx.o"
     case $target_os in
     darwin*)
         ARCH_OPTION="-march=core2";;
@@ -240,19 +241,22 @@ i386|i486|i586|i686|x86|x86_64)
 powerpc*)
     MLIBS_DOTPROD="src/dotprod/src/dotprod_cccf.o \
                    src/dotprod/src/dotprod_rrrf.av.o \
-                   src/dotprod/src/dotprod_crcf.av.o"
+                   src/dotprod/src/dotprod_crcf.av.o \
+                   src/dotprod/src/dotprod_rrrq16.o"
     ARCH_OPTION="-fno-common -faltivec";;
 arm*)
     # ARM architecture : use portable C version
     MLIBS_DOTPROD="src/dotprod/src/dotprod_cccf.o \
                    src/dotprod/src/dotprod_crcf.o \
-                   src/dotprod/src/dotprod_rrrf.o"
+                   src/dotprod/src/dotprod_rrrf.o \
+                   src/dotprod/src/dotprod_rrrq16.o"
     ARCH_OPTION="-marm -mfloat-abi=softfp";;
 *)
     # unknown architecture : use portable C version
     MLIBS_DOTPROD="src/dotprod/src/dotprod_cccf.o \
                    src/dotprod/src/dotprod_crcf.o \
-                   src/dotprod/src/dotprod_rrrf.mmx.o"
+                   src/dotprod/src/dotprod_rrrf.o \
+                   src/dotprod/src/dotprod_rrrq16.o"
     ARCH_OPTION="";;
 esac
 
