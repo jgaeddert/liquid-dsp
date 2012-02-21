@@ -142,17 +142,21 @@ void dotprod_rrrq32_test(float *      _hf,
 {
     unsigned int i;
 
-    // compute floating point result
-    float yf_test;
-    dotprod_rrrf_run(_hf, _xf, _n, &yf_test);
-
-    // convert to fixed-point arrays
-    q32_t h[_n];
-    q32_t x[_n];
+    // convert to fixed-point arrays, back to float (compensate for
+    // roundoff error)
+    q32_t  h[_n],  x[_n];
+    float hf[_n], xf[_n];
     for (i=0; i<_n; i++) {
         h[i] = q32_float_to_fixed(_hf[i]);
         x[i] = q32_float_to_fixed(_xf[i]);
+
+        hf[i] = q32_fixed_to_float(h[i]);
+        xf[i] = q32_fixed_to_float(x[i]);
     }
+
+    // compute floating point result
+    float yf_test;
+    dotprod_rrrf_run(hf, xf, _n, &yf_test);
 
     // compute fixed-point result using dotprod_rrrq32_run()
     q32_t y0;
@@ -191,17 +195,23 @@ void dotprod_crcq32_test(float *         _hf,
 {
     unsigned int i;
 
-    // compute floating point result
-    float complex yf_test;
-    dotprod_crcf_run(_hf, _xf, _n, &yf_test);
-
-    // convert to fixed-point arrays
+    // convert to fixed-point arrays, back to float (compensate for
+    // roundoff error)
     q32_t h[_n];
     cq32_t x[_n];
+    float hf[_n];
+    float complex xf[_n];
     for (i=0; i<_n; i++) {
         h[i] =  q32_float_to_fixed(_hf[i]);
         x[i] = cq32_float_to_fixed(_xf[i]);
+
+        hf[i] =  q32_fixed_to_float(h[i]);
+        xf[i] = cq32_fixed_to_float(x[i]);
     }
+
+    // compute floating point result
+    float complex yf_test;
+    dotprod_crcf_run(hf, xf, _n, &yf_test);
 
     // compute fixed-point result using dotprod_rrrq32_run()
     cq32_t y0;
@@ -245,17 +255,23 @@ void dotprod_cccq32_test(float complex * _hf,
 {
     unsigned int i;
 
-    // compute floating point result
-    float complex yf_test;
-    dotprod_cccf_run(_hf, _xf, _n, &yf_test);
-
-    // convert to fixed-point arrays
+    // convert to fixed-point arrays, back to float (compensate for
+    // roundoff error)
     cq32_t h[_n];
     cq32_t x[_n];
+    float complex hf[_n];
+    float complex xf[_n];
     for (i=0; i<_n; i++) {
         h[i] = cq32_float_to_fixed(_hf[i]);
         x[i] = cq32_float_to_fixed(_xf[i]);
+
+        hf[i] = cq32_fixed_to_float(h[i]);
+        xf[i] = cq32_fixed_to_float(x[i]);
     }
+
+    // compute floating point result
+    float complex yf_test;
+    dotprod_cccf_run(hf, xf, _n, &yf_test);
 
     // compute fixed-point result using dotprod_rrrq32_run()
     cq32_t y0;
