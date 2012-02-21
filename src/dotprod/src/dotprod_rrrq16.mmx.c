@@ -182,8 +182,7 @@ void dotprod_rrrq16_execute_mmx(dotprod_rrrq16 _q,
     __m128i v;   // input vector
     __m128i h;   // coefficients vector
     __m128i s;   // dot product
-    __m128i sum;
-    sum = _mm_xor_si128(sum, sum); // load zeros into sum register
+    __m128i sum = _mm_setzero_si128();
     
     // t = 8*(floor(_n/8))
     unsigned int t = (_q->n >> 3) << 3;
@@ -211,8 +210,7 @@ void dotprod_rrrq16_execute_mmx(dotprod_rrrq16 _q,
 #if HAVE_PMMINTRIN_H
     // TODO : check this
     // SSE3: fold down to single value using _mm_hadd_ps()
-    __m128i z;
-    z   = _mm_xor_si128(z, z);      // set to zero
+    __m128i z = _mm_setzero_si128(); // set to zero
     sum = _mm_hadd_epi32(sum, z);
     sum = _mm_hadd_epi32(sum, z);
     sum = _mm_hadd_epi32(sum, z);
@@ -245,10 +243,10 @@ void dotprod_rrrq16_execute_mmx4(dotprod_rrrq16 _q,
     __m128i s0, s1, s2, s3;
 
     // load zeros into sum registers
-    __m128i sum0;   sum0 = _mm_xor_si128(sum0, sum0);
-    __m128i sum1;   sum1 = _mm_xor_si128(sum1, sum1);
-    __m128i sum2;   sum2 = _mm_xor_si128(sum2, sum2);
-    __m128i sum3;   sum3 = _mm_xor_si128(sum3, sum3);
+    __m128i sum0 = _mm_setzero_si128();
+    __m128i sum1 = _mm_setzero_si128();
+    __m128i sum2 = _mm_setzero_si128();
+    __m128i sum3 = _mm_setzero_si128();
 
     // r = 8*floor(n/32) : vector size is 8 samples, unrolled by 4
     unsigned int r = (_q->n >> 5) << 3;
@@ -294,8 +292,7 @@ void dotprod_rrrq16_execute_mmx4(dotprod_rrrq16 _q,
 #if HAVE_PMMINTRIN_H
     // TODO : check this
     // SSE3: fold down to single value using _mm_hadd_ps()
-    __m128i z;
-    z    = _mm_xor_si128(z, z);
+    __m128i z = _mm_setzero_si128(); // set to zero
     sum0 = _mm_hadd_epi32(sum0, z);
     sum0 = _mm_hadd_epi32(sum0, z);
     sum0 = _mm_hadd_epi32(sum0, z);
