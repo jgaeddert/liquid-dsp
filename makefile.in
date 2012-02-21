@@ -167,6 +167,11 @@ buffer_benchmarks :=						\
 # MODULE : dotprod
 #
 dotprod_objects :=						\
+	src/dotprod/src/dotprod_rrrq32.o			\
+	src/dotprod/src/dotprod_crcq16.o			\
+	src/dotprod/src/dotprod_crcq32.o			\
+	src/dotprod/src/dotprod_cccq16.o			\
+	src/dotprod/src/dotprod_cccq32.o			\
 	@MLIBS_DOTPROD@						\
 
 src/dotprod/src/dotprod_cccf.o : %.o : %.c $(headers) src/dotprod/src/dotprod.c
@@ -174,6 +179,17 @@ src/dotprod/src/dotprod_cccf.o : %.o : %.c $(headers) src/dotprod/src/dotprod.c
 src/dotprod/src/dotprod_crcf.o : %.o : %.c $(headers) src/dotprod/src/dotprod.c
 
 src/dotprod/src/dotprod_rrrf.o : %.o : %.c $(headers) src/dotprod/src/dotprod.c
+
+# fixed-point
+
+src/dotprod/src/dotprod_rrrq16.o : %.o : %.c $(headers)
+src/dotprod/src/dotprod_rrrq32.o : %.o : %.c $(headers)
+
+src/dotprod/src/dotprod_crcq16.o : %.o : %.c $(headers)
+src/dotprod/src/dotprod_crcq32.o : %.o : %.c $(headers)
+
+src/dotprod/src/dotprod_cccq16.o : %.o : %.c $(headers)
+src/dotprod/src/dotprod_cccq32.o : %.o : %.c $(headers)
 
 # specific machine architectures
 
@@ -183,15 +199,25 @@ src/dotprod/src/dotprod_rrrf.mmx.o : %.o : %.c $(headers)
 src/dotprod/src/dotprod_crcf.mmx.o : %.o : %.c $(headers)
 src/dotprod/src/dotprod_cccf.mmx.o : %.o : %.c $(headers)
 
+src/dotprod/src/dotprod_rrrq16.mmx.o : %.o : %.c $(headers)
+
 dotprod_autotests :=						\
 	src/dotprod/tests/dotprod_rrrf_autotest.c		\
 	src/dotprod/tests/dotprod_crcf_autotest.c		\
 	src/dotprod/tests/dotprod_cccf_autotest.c		\
+	src/dotprod/tests/dotprod_q16_autotest.c		\
+	src/dotprod/tests/dotprod_q32_autotest.c		\
 
 dotprod_benchmarks :=						\
 	src/dotprod/bench/dotprod_cccf_benchmark.c		\
 	src/dotprod/bench/dotprod_crcf_benchmark.c		\
 	src/dotprod/bench/dotprod_rrrf_benchmark.c		\
+	src/dotprod/bench/dotprod_cccq16_benchmark.c		\
+	src/dotprod/bench/dotprod_crcq16_benchmark.c		\
+	src/dotprod/bench/dotprod_rrrq16_benchmark.c		\
+	src/dotprod/bench/dotprod_cccq32_benchmark.c		\
+	src/dotprod/bench/dotprod_crcq32_benchmark.c		\
+	src/dotprod/bench/dotprod_rrrq32_benchmark.c		\
 
 # 
 # MODULE : equalization
