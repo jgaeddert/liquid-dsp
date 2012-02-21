@@ -48,6 +48,10 @@
 #include <pmmintrin.h>  // SSE3
 #endif
 
+#if HAVE_TMMINTRIN_H
+#include <tmmintrin.h>  // SSSE3
+#endif
+
 #define DEBUG_DOTPROD_RRRQ16_MMX   0
 
 // internal methods
@@ -207,7 +211,7 @@ void dotprod_rrrq16_execute_mmx(dotprod_rrrq16 _q,
     // aligned output array: one 4x32-bit register
     q16_at w[4] __attribute__((aligned(16)));
 
-#if HAVE_PMMINTRIN_H
+#if 0 //HAVE_TMMINTRIN_H
     // TODO : check this
     // SSE3: fold down to single value using _mm_hadd_ps()
     __m128i z = _mm_setzero_si128(); // set to zero
@@ -289,7 +293,7 @@ void dotprod_rrrq16_execute_mmx4(dotprod_rrrq16 _q,
     // aligned output array: one 4x32-bit register
     q16_at w[4] __attribute__((aligned(16)));
 
-#if HAVE_PMMINTRIN_H
+#if 0 //HAVE_TMMINTRIN_H
     // TODO : check this
     // SSE3: fold down to single value using _mm_hadd_ps()
     __m128i z = _mm_setzero_si128(); // set to zero
