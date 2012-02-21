@@ -191,10 +191,10 @@ void dotprod_rrrq16_execute_mmx(dotprod_rrrq16 _q,
     unsigned int i;
     for (i=0; i<t; i+=8) {
         // load inputs into register (unaligned)
-        v = _mm_loadu_si128(&_x[i]);
+        v = _mm_loadu_si128( (__m128i*) (&_x[i]) );
 
         // load coefficients into register (aligned)
-        h = _mm_loadu_si128(&_q->h[i]);
+        h = _mm_load_si128( (__m128i*) (&_q->h[i]) );
 
         // multiply and accumulate two 8x16-bit registers
         // into one 4x32-bit register
@@ -216,11 +216,11 @@ void dotprod_rrrq16_execute_mmx(dotprod_rrrq16 _q,
     sum = _mm_hadd_epi32(sum, z);
    
     // unload single (lower value)
-    _mm_store_si128(w, sum);
+    _mm_store_si128((__m128i*)w, sum);
     q16_at total = w[0];
 #else
     // SSE2 and below: unload packed array and perform manual sum
-    _mm_store_si128(w, sum);
+    _mm_store_si128((__m128i*)w, sum);
     q16_at total = w[0] + w[1] + w[2] + w[3];
 #endif
 
@@ -257,16 +257,16 @@ void dotprod_rrrq16_execute_mmx4(dotprod_rrrq16 _q,
     unsigned int i;
     for (i=0; i<r; i+=8) {
         // load inputs into register (unaligned)
-        v0 = _mm_loadu_si128(&_x[4*i+ 0]);
-        v1 = _mm_loadu_si128(&_x[4*i+ 8]);
-        v2 = _mm_loadu_si128(&_x[4*i+16]);
-        v3 = _mm_loadu_si128(&_x[4*i+24]);
+        v0 = _mm_loadu_si128((__m128i*) (&_x[4*i+ 0]));
+        v1 = _mm_loadu_si128((__m128i*) (&_x[4*i+ 8]));
+        v2 = _mm_loadu_si128((__m128i*) (&_x[4*i+16]));
+        v3 = _mm_loadu_si128((__m128i*) (&_x[4*i+24]));
 
         // load coefficients into register (aligned)
-        h0 = _mm_load_si128(&_q->h[4*i+ 0]);
-        h1 = _mm_load_si128(&_q->h[4*i+ 8]);
-        h2 = _mm_load_si128(&_q->h[4*i+16]);
-        h3 = _mm_load_si128(&_q->h[4*i+24]);
+        h0 = _mm_load_si128((__m128i*) (&_q->h[4*i+ 0]));
+        h1 = _mm_load_si128((__m128i*) (&_q->h[4*i+ 8]));
+        h2 = _mm_load_si128((__m128i*) (&_q->h[4*i+16]));
+        h3 = _mm_load_si128((__m128i*) (&_q->h[4*i+24]));
 
         // compute multiplication/accumulation
         s0 = _mm_madd_epi16(v0, h0);
@@ -298,11 +298,11 @@ void dotprod_rrrq16_execute_mmx4(dotprod_rrrq16 _q,
     sum0 = _mm_hadd_epi32(sum0, z);
    
     // unload single (lower value)
-    _mm_store_si128(w, sum0);
+    _mm_store_si128((__m128i*)w, sum0);
     q16_at total = w[0];
 #else
     // SSE2 and below: unload packed array and perform manual sum
-    _mm_store_si128(w, sum0);
+    _mm_store_si128((__m128i*)w, sum0);
     q16_at total = w[0] + w[1] + w[2] + w[3];
 #endif
 
