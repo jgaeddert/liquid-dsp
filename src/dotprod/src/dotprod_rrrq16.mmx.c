@@ -48,7 +48,7 @@
 #include <pmmintrin.h>  // SSE3
 #endif
 
-#define DEBUG_DOTPROD_RRRQ16_MMX   1
+#define DEBUG_DOTPROD_RRRQ16_MMX   0
 
 // internal methods
 void dotprod_rrrq16_execute_mmx(dotprod_rrrq16 _q, q16_t * _x, q16_t * _y);
@@ -173,7 +173,7 @@ void dotprod_rrrq16_execute(dotprod_rrrq16 _q,
         dotprod_rrrq16_execute_mmx4(_q, _x, _y);
     }
 #else
-    dotprod_rrrq16_execute_mmx(_q, _x, _y);
+    dotprod_rrrq16_execute_mmx4(_q, _x, _y);
 #endif
 }
 
@@ -214,7 +214,7 @@ void dotprod_rrrq16_execute_mmx(dotprod_rrrq16 _q,
 
 #if HAVE_PMMINTRIN_H
     // TODO : check this
-    // fold down into single value
+    // SSE3: fold down to single value using _mm_hadd_ps()
     __m128i z;
     z   = _mm_xor_si128(z, z);      // set to zero
     sum = _mm_hadd_epi32(sum, z);
@@ -225,7 +225,7 @@ void dotprod_rrrq16_execute_mmx(dotprod_rrrq16 _q,
     _mm_store_si128(w, sum);
     q16_at total = w[0];
 #else
-    // unload packed array
+    // SSE2 and below: unload packed array and perform manual sum
     _mm_store_si128(w, sum);
     q16_at total = w[0] + w[1] + w[2] + w[3];
 #endif
@@ -243,5 +243,82 @@ void dotprod_rrrq16_execute_mmx4(dotprod_rrrq16 _q,
                                  q16_t *        _x,
                                  q16_t *        _y)
 {
+    // input, coefficients, multiply/accumulate vectors (four 8x16-bit)
+    __m128i v0, v1, v2, v3;
+    __m128i h0, h1, h2, h3;
+    __m128i s0, s1, s2, s3;
+
+    // load zeros into sum registers
+    __m128i sum0;   sum0 = _mm_xor_si128(sum0, sum0);
+    __m128i sum1;   sum1 = _mm_xor_si128(sum1, sum1);
+    __m128i sum2;   sum2 = _mm_xor_si128(sum2, sum2);
+    __m128i sum3;   sum3 = _mm_xor_si128(sum3, sum3);
+
+    // r = 8*floor(n/32) : vector size is 8 samples, unrolled by 4
+    unsigned int r = (_q->n >> 5) << 3;
+
+    // each iteration of this loop computes multiply/accumulate
+    // operation on 32 inputs: loop unrolled by 4, each vector contains
+    // eight 16-bit coefficients.
+    unsigned int i;
+    for (i=0; i<r; i+=8) {
+        // load inputs into register (unaligned)
+        v0 = _mm_loadu_si128(&_x[4*i+ 0]);
+        v1 = _mm_loadu_si128(&_x[4*i+ 8]);
+        v2 = _mm_loadu_si128(&_x[4*i+16]);
+        v3 = _mm_loadu_si128(&_x[4*i+24]);
+
+        // load coefficients into register (aligned)
+        h0 = _mm_load_si128(&_q->h[4*i+ 0]);
+        h1 = _mm_load_si128(&_q->h[4*i+ 8]);
+        h2 = _mm_load_si128(&_q->h[4*i+16]);
+        h3 = _mm_load_si128(&_q->h[4*i+24]);
+
+        // compute multiplication/accumulation
+        s0 = _mm_madd_epi16(v0, h0);
+        s1 = _mm_madd_epi16(v1, h1);
+        s2 = _mm_madd_epi16(v2, h2);
+        s3 = _mm_madd_epi16(v3, h3);
+        
+        // parallel addition
+        sum0 = _mm_add_epi32(sum0, s0);
+        sum1 = _mm_add_epi32(sum1, s1);
+        sum2 = _mm_add_epi32(sum2, s2);
+        sum3 = _mm_add_epi32(sum3, s3);
+    }
+
+    // fold down into single 4-element register
+    sum0 = _mm_add_epi32(sum0, sum1);
+    sum2 = _mm_add_epi32(sum2, sum3);
+    sum0 = _mm_add_epi32(sum0, sum2);
+
+    // aligned output array: one 4x32-bit register
+    q16_at w[4] __attribute__((aligned(16)));
+
+#if HAVE_PMMINTRIN_H
+    // TODO : check this
+    // SSE3: fold down to single value using _mm_hadd_ps()
+    __m128i z;
+    z    = _mm_xor_si128(z, z);
+    sum0 = _mm_hadd_epi32(sum0, z);
+    sum0 = _mm_hadd_epi32(sum0, z);
+    sum0 = _mm_hadd_epi32(sum0, z);
+   
+    // unload single (lower value)
+    _mm_store_si128(w, sum0);
+    q16_at total = w[0];
+#else
+    // SSE2 and below: unload packed array and perform manual sum
+    _mm_store_si128(w, sum0);
+    q16_at total = w[0] + w[1] + w[2] + w[3];
+#endif
+
+    // cleanup
+    // TODO : use intrinsics here as well
+    for (i=4*r; i<_q->n; i++)
+        total += (q16_at)_x[i] * (q16_at)(_q->h[i]);
+
+    // set return value, shifting appropriately
+    *_y = (q16_t)(total >> q16_fracbits);
 }
 
