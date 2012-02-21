@@ -166,7 +166,7 @@ void dotprod_rrrq16_execute(dotprod_rrrq16 _q,
                             q16_t *        _y)
 {
     // switch based on size
-    if (_q->n < 16) {
+    if (_q->n < 64) {
         dotprod_rrrq16_execute_mmx(_q, _x, _y);
     } else {
         dotprod_rrrq16_execute_mmx4(_q, _x, _y);
@@ -286,6 +286,27 @@ void dotprod_rrrq16_execute_mmx4(dotprod_rrrq16 _q,
     sum2 = _mm_add_epi32(sum2, sum3);
     sum0 = _mm_add_epi32(sum0, sum2);
 
+    // ...
+    unsigned int t = ((4*r) >> 3) << 3;
+
+    // each iteration of this loop computes multiply/accumulate
+    // operation on 8 inputs: each vector contains eight 16-bit
+    // coefficients.
+    for (i=4*r; i<t; i+=8) {
+        // load inputs into register (unaligned)
+        v0 = _mm_loadu_si128( (__m128i*) (&_x[i]) );
+
+        // load coefficients into register (aligned)
+        h0 = _mm_load_si128( (__m128i*) (&_q->h[i]) );
+
+        // multiply and accumulate two 8x16-bit registers
+        // into one 4x32-bit register
+        s0 = _mm_madd_epi16(v0, h0);
+       
+        // parallel addition
+        sum0 = _mm_add_epi32(sum0, s0);
+    }
+
     // aligned output array: one 4x32-bit register
     q16_at w[4] __attribute__((aligned(16)));
 
@@ -307,8 +328,7 @@ void dotprod_rrrq16_execute_mmx4(dotprod_rrrq16 _q,
 #endif
 
     // cleanup
-    // TODO : use intrinsics here as well
-    for (i=4*r; i<_q->n; i++)
+    for ( ; i<_q->n; i++)
         total += (q16_at)_x[i] * (q16_at)(_q->h[i]);
 
     // set return value, shifting appropriately
