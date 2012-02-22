@@ -376,6 +376,7 @@ filter_objects :=						\
 	src/filter/src/filter_crcf.o				\
 	src/filter/src/filter_cccf.o				\
 	src/filter/src/filter_rrrq16.o				\
+	src/filter/src/filter_crcq16.o				\
 	src/filter/src/firdes.o					\
 	src/filter/src/firdespm.o				\
 	src/filter/src/fnyquist.o				\

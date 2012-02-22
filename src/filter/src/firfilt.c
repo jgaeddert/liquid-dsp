@@ -173,9 +173,8 @@ void FIRFILT(_clear)(FIRFILT() _q)
 #if LIQUID_FIRFILT_USE_WINDOW
     WINDOW(_clear)(_q->w);
 #else
-    unsigned int i;
-    for (i=0; i<_q->w_len; i++)
-        _q->w[i] = 0.0;
+    // clear buffer (set elements to zero)
+    memset(_q->w, 0x0, _q->w_len*sizeof(TI));
     _q->w_index = 0;
 #endif
 }

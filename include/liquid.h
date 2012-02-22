@@ -1302,6 +1302,7 @@ LIQUID_AUTOCORR_DEFINE_API(AUTOCORR_MANGLE_RRRF,
 
 // fixed-point
 #define FIRFILT_MANGLE_RRRQ16(name) LIQUID_CONCAT(firfilt_rrrq16,name)
+#define FIRFILT_MANGLE_CRCQ16(name) LIQUID_CONCAT(firfilt_crcq16,name)
 
 // Macro:
 //   FIRFILT : name-mangling macro
@@ -1341,7 +1342,8 @@ LIQUID_FIRFILT_DEFINE_API(FIRFILT_MANGLE_CCCF,
                           liquid_float_complex)
 
 // fixed-point
-LIQUID_FIRFILT_DEFINE_API(FIRFILT_MANGLE_RRRQ16, q16_t, q16_t, q16_t)
+LIQUID_FIRFILT_DEFINE_API(FIRFILT_MANGLE_RRRQ16,  q16_t,  q16_t,  q16_t)
+LIQUID_FIRFILT_DEFINE_API(FIRFILT_MANGLE_CRCQ16, cq16_t,  q16_t, cq16_t)
 
 
 //
