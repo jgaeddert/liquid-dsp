@@ -232,6 +232,7 @@ i386|i486|i586|i686|x86|x86_64)
     MLIBS_DOTPROD="src/dotprod/src/dotprod_cccf.mmx.o \
                    src/dotprod/src/dotprod_crcf.mmx.o \
                    src/dotprod/src/dotprod_rrrf.mmx.o \
+                   src/dotprod/src/dotprod_crcq16.mmx.o \
                    src/dotprod/src/dotprod_rrrq16.mmx.o"
     case $target_os in
     darwin*)
