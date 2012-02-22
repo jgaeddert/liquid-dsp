@@ -55,32 +55,8 @@
 #define DEBUG_DOTPROD_CRCQ16_MMX   0
 
 #if DEBUG_DOTPROD_CRCQ16_MMX
-void _mm_printq16_epi16(__m128i _v) {
-    q16_t v[8] __attribute__((aligned(16)));
-    _mm_store_si128((__m128i*)v, _v);
-    printf("{");
-    unsigned int i;
-#if 1
-    for (i=0; i<8; i++) printf(" %8.4f", q16_fixed_to_float(v[i]));
-#else
-    for (i=0; i<8; i++) printf(" %8d", v[i]);
-#endif
-    printf("}");
-}
-
-void _mm_printq16_epi32(__m128i _v) {
-    int32_t v[4] __attribute__((aligned(16)));
-    _mm_store_si128((__m128i*)v, _v);
-
-    printf("{");
-    unsigned int i;
-#if 1
-    for (i=0; i<4; i++) printf(" %17.8f", q16_fixed_to_float(v[i] >> q16_fracbits));
-#else
-    for (i=0; i<4; i++) printf(" %17d", v[i]);
-#endif
-    printf("}");
-}
+void _mm_printq16_epi16(__m128i _v);
+void _mm_printq16_epi32(__m128i _v);
 #endif
 
 // internal methods
@@ -494,4 +470,35 @@ void dotprod_crcq16_execute_mmx_packed(dotprod_crcq16 _q,
     (*_y).imag = (q16_t)(w[1] >> q16_fracbits);
 }
 
+// 
+// debugging functions
+//
+#if DEBUG_DOTPROD_CRCQ16_MMX
+void _mm_printq16_epi16(__m128i _v) {
+    q16_t v[8] __attribute__((aligned(16)));
+    _mm_store_si128((__m128i*)v, _v);
+    printf("{");
+    unsigned int i;
+#if 1
+    for (i=0; i<8; i++) printf(" %8.4f", q16_fixed_to_float(v[i]));
+#else
+    for (i=0; i<8; i++) printf(" %8d", v[i]);
+#endif
+    printf("}");
+}
+
+void _mm_printq16_epi32(__m128i _v) {
+    int32_t v[4] __attribute__((aligned(16)));
+    _mm_store_si128((__m128i*)v, _v);
+
+    printf("{");
+    unsigned int i;
+#if 1
+    for (i=0; i<4; i++) printf(" %17.8f", q16_fixed_to_float(v[i] >> q16_fracbits));
+#else
+    for (i=0; i<4; i++) printf(" %17d", v[i]);
+#endif
+    printf("}");
+}
+#endif
 
