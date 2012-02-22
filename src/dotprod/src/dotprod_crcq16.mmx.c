@@ -389,13 +389,17 @@ void dotprod_crcq16_execute_mmx4(dotprod_crcq16 _q,
         s3 = _mm_madd_epi16(v3, h3);
        
         // parallel addition
-        // fold down into single 4-element register
         // NOTE: this addition contributes significantly to processing complexity
         sum0 = _mm_add_epi32(sum0, s0);
         sum1 = _mm_add_epi32(sum1, s1);
         sum2 = _mm_add_epi32(sum2, s2);
         sum3 = _mm_add_epi32(sum3, s3);
     }
+
+    // fold down into single 4-element register
+    sum0 = _mm_add_epi32(sum0, sum1);
+    sum2 = _mm_add_epi32(sum2, sum3);
+    sum0 = _mm_add_epi32(sum0, sum2);
 
     // aligned output array: one 4x32-bit register
     q16_at w[4] __attribute__((aligned(16)));
