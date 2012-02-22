@@ -61,7 +61,7 @@ void _mm_printq16_epi32(__m128i _v);
 
 // internal methods
 void dotprod_cccq16_execute_mmx(dotprod_cccq16 _q, cq16_t * _x, cq16_t * _y);
-void dotprod_cccq16_execute_mmx4(dotprod_cccq16 _q, cq16_t * _x, cq16_t * _y);
+//void dotprod_cccq16_execute_mmx4(dotprod_cccq16 _q, cq16_t * _x, cq16_t * _y);
 
 // basic dot product
 //  _h      :   coefficients array [size: 1 x _n]
@@ -232,17 +232,10 @@ void dotprod_cccq16_execute(dotprod_cccq16 _q,
                             cq16_t *       _y)
 {
     dotprod_cccq16_execute_mmx(_q, _x, _y);
-    return;
-
-    // switch based on size
-    if (_q->n < 64) {
-        dotprod_cccq16_execute_mmx(_q, _x, _y);
-    } else {
-        dotprod_cccq16_execute_mmx4(_q, _x, _y);
-    }
 }
 
-// use MMX/SSE extensions
+// use MMX/SSE extensions to compute eight samples with each loop
+//
 //  0 : (A + jB) * (I + jJ) = (AI - BJ) + j(AJ + BI)
 //  1 : (C + jD) * (K + jL) = (CK - DL) + j(CL + DK)
 //  2 : (E + jF) * (M + jN) = (EM - FN) + j(EN + FM)
@@ -252,15 +245,13 @@ void dotprod_cccq16_execute(dotprod_cccq16 _q,
 //  hi      :   [   I   I   K   K   M   M   O   O   ]   size: 8x16
 //  hq      :   [   J   J   L   L   N   N   P   P   ]   size: 8x16
 //
-//  ti_lo   :   [   AI      BI      CK      DK      ]   size: 4x32
-//  ti_hi   :   [   EM      FM      GO      HO      ]   size: 4x32
-//  tq_lo   :   [   AJ      BJ      CL      DL      ]   size: 4x32
-//  tq_hi   :   [   EN      FN      GP      HP      ]   size: 4x32
+//  t0_lo   :   [   AI      BI      CK      DK      ]   size: 4x32
+//  t0_hi   :   [   EM      FM      GO      HO      ]   size: 4x32
+//  t1_lo   :   [   AJ      BJ      CL      DL      ]   size: 4x32
+//  t1_hi   :   [   EN      FN      GP      HP      ]   size: 4x32
 //
-//  sum0 = ti_lo + ti_hi
-//  sum1 = tq_lo + tq_hi
-//  sum0    :   [   AI+EM   BI+FM   CK+GO   DK+HO   ]   size: 4x32
-//  sum1    :   [   AJ+EN   BJ+FN   CL+GP   DL+HP   ]   size: 4x32
+//  s0      :   [   AI+EM   BI+FM   CK+GO   DK+HO   ]   size: 4x32
+//  s1      :   [   AJ+EN   BJ+FN   CL+GP   DL+HP   ]   size: 4x32
 void dotprod_cccq16_execute_mmx(dotprod_cccq16 _q,
                                 cq16_t *       _x,
                                 cq16_t *       _y)
@@ -272,19 +263,19 @@ void dotprod_cccq16_execute_mmx(dotprod_cccq16 _q,
     unsigned int n = 2*_q->n;
 
     // input, coefficients, multiply/accumulate vectors
-    __m128i v;   // input vector
-    __m128i hi;  // coefficients vector
-    __m128i hq;  // coefficients vector
+    __m128i v;              // input vector
+    __m128i hi;             // coefficients vector
+    __m128i hq;             // coefficients vector
     __m128i ci_lo, ci_hi;   // output multiplication lo/hi (v * hi)
     __m128i cq_lo, cq_hi;   // output multiplication lo/hi (v * hq)
-    __m128i ti_lo, ti_hi;   // unpacked lo/hi
-    __m128i tq_lo, tq_hi;   // unpacked lo/hi
+    __m128i t0_lo, t0_hi;   // unpacked lo/hi
+    __m128i t1_lo, t1_hi;   // unpacked lo/hi
+    __m128i s0;             // unpacked sum
+    __m128i s1;             // unpacked sum
+
+    // initialize sum vectors with zeros
     __m128i sum0 = _mm_setzero_si128();
     __m128i sum1 = _mm_setzero_si128();
-
-    __m128i acc0 = _mm_setzero_si128();
-    __m128i acc1 = _mm_setzero_si128();
-
 
     // t = 8*(floor(_n/8))
     unsigned int t = (n >> 3) << 3;
@@ -309,45 +300,40 @@ void dotprod_cccq16_execute_mmx(dotprod_cccq16 _q,
         cq_lo = _mm_mullo_epi16(v, hq);
         cq_hi = _mm_mulhi_epi16(v, hq);
 
-        // unpack bytes (re-align)
-        ti_lo = _mm_unpacklo_epi16(ci_lo, ci_hi);
-        ti_hi = _mm_unpackhi_epi16(ci_lo, ci_hi);
+        // unpack bytes (re-align hi/lo values)
+        t0_lo = _mm_unpacklo_epi16(ci_lo, ci_hi);
+        t0_hi = _mm_unpackhi_epi16(ci_lo, ci_hi);
        
-        tq_lo = _mm_unpacklo_epi16(cq_lo, cq_hi);
-        tq_hi = _mm_unpackhi_epi16(cq_lo, cq_hi);
+        t1_lo = _mm_unpacklo_epi16(cq_lo, cq_hi);
+        t1_hi = _mm_unpackhi_epi16(cq_lo, cq_hi);
 
         // parallel addition
-        sum0 = _mm_add_epi32(ti_lo, ti_hi);
-        sum1 = _mm_add_epi32(tq_lo, tq_hi);
+        s0 = _mm_add_epi32(t0_lo, t0_hi);
+        s1 = _mm_add_epi32(t1_lo, t1_hi);
 
-        acc0 = _mm_add_epi32(acc0, sum0);
-        acc1 = _mm_add_epi32(acc1, sum1);
+        // accumulate sums
+        sum0 = _mm_add_epi32(sum0, s0);
+        sum1 = _mm_add_epi32(sum1, s1);
 #if DEBUG_DOTPROD_CCCQ16_MMX
         printf("**i=%3u, t=%3u\n", i, t);
         printf("  v     :   "); _mm_printq16_epi16(v);      printf("\n");
         printf("  hi    :   "); _mm_printq16_epi16(hi);     printf("\n");
         printf("  hq    :   "); _mm_printq16_epi16(hq);     printf("\n");
 
-        //printf("  ci_lo :   "); _mm_printq16_epi16(ci_lo);  printf("\n");
-        //printf("  ci_hi :   "); _mm_printq16_epi16(ci_hi);  printf("\n");
-        //printf("  cq_lo :   "); _mm_printq16_epi16(cq_lo);  printf("\n");
-        //printf("  cq_hi :   "); _mm_printq16_epi16(cq_hi);  printf("\n");
-
-        printf("  ti_lo :   "); _mm_printq16_epi32(ti_lo);  printf("\n");
-        printf("  ti_hi :   "); _mm_printq16_epi32(ti_hi);  printf("\n");
-        printf("  tq_lo :   "); _mm_printq16_epi32(tq_lo);  printf("\n");
-        printf("  tq_hi :   "); _mm_printq16_epi32(tq_hi);  printf("\n");
+        printf("  t0_lo :   "); _mm_printq16_epi32(t0_lo);  printf("\n");
+        printf("  t0_hi :   "); _mm_printq16_epi32(t0_hi);  printf("\n");
+        printf("  t1_lo :   "); _mm_printq16_epi32(t1_lo);  printf("\n");
+        printf("  t1_hi :   "); _mm_printq16_epi32(t1_hi);  printf("\n");
 #endif
     }
 
     // aligned output arrays: each a 4x32-bit register
-    //q16_at w[4]  __attribute__((aligned(16)));
     q16_at w0[4] __attribute__((aligned(16)));
     q16_at w1[4] __attribute__((aligned(16)));
     
-    // unpack...
-    _mm_store_si128((__m128i*)w0, acc0);
-    _mm_store_si128((__m128i*)w1, acc1);
+    // unpack 4x32-bit vectors into arrays
+    _mm_store_si128((__m128i*)w0, sum0);
+    _mm_store_si128((__m128i*)w1, sum1);
 
     // in-phase   (AI+EM) + (CK+GO) - (BJ+FN) - (DL+HP)
     q16_at sum_i = w0[0]  +  w0[2]  -  w1[1]  -  w1[3];
@@ -361,7 +347,6 @@ void dotprod_cccq16_execute_mmx(dotprod_cccq16 _q,
     //  hi  :   [   C   C   ]
     //  hq  :   [   D   D   ]
     for (i=t; i<n; i+=2) {
-        //printf("cleanup: i=%3u, t=%3u, q->n=%3u, n=%3u\n", i, t, _q->n, n);
         sum_i += (q16_at)(_q->hi[i]) * (q16_at)(x[i+0]) -
                  (q16_at)(_q->hq[i]) * (q16_at)(x[i+1]);
 
@@ -374,6 +359,7 @@ void dotprod_cccq16_execute_mmx(dotprod_cccq16 _q,
     (*_y).imag = (sum_q >> q16_fracbits);
 }
 
+#if 0
 // use MMX/SSE extensions, unrolled loop
 void dotprod_cccq16_execute_mmx4(dotprod_cccq16 _q,
                                  cq16_t *       _x,
@@ -381,10 +367,13 @@ void dotprod_cccq16_execute_mmx4(dotprod_cccq16 _q,
 {
     dotprod_cccq16_execute_mmx(_q, _x, _y);
 }
+#endif
+
 
 // 
 // debugging functions
 //
+
 #if DEBUG_DOTPROD_CCCQ16_MMX
 void _mm_printq16_epi16(__m128i _v) {
     q16_t v[8] __attribute__((aligned(16)));
