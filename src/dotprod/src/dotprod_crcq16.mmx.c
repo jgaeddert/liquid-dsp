@@ -223,9 +223,6 @@ void dotprod_crcq16_execute(dotprod_crcq16 _q,
                             cq16_t *       _x,
                             cq16_t *       _y)
 {
-    dotprod_crcq16_execute_mmx(_q, _x, _y);
-    return;
-
     // switch based on size
     if (_q->n < 64) {
         dotprod_crcq16_execute_mmx(_q, _x, _y);
@@ -327,8 +324,98 @@ void dotprod_crcq16_execute_mmx4(dotprod_crcq16 _q,
                                  cq16_t *       _x,
                                  cq16_t *       _y)
 {
-    // use ordinal calculation temporarily
-    dotprod_crcq16_run4(_q->h, _x, _q->n, _y);
+    // type cast input as real array
+    q16_t * x = (q16_t*) _x;
+
+    // double effective length
+    unsigned int n = 2*_q->n;
+    
+    // input, coefficients, multiply/accumulate vectors
+    __m128i v0, v1, v2, v3; // input vector
+    __m128i h0, h1, h2, h3; // coefficients vector
+    __m128i s0, s1, s2, s3; // dot product
+
+    // load zeros into sum registers
+    __m128i sum0 = _mm_setzero_si128();
+    __m128i sum1 = _mm_setzero_si128();
+    __m128i sum2 = _mm_setzero_si128();
+    __m128i sum3 = _mm_setzero_si128();
+
+    // r = 8*floor(n/32) : vector size is 8 samples, unrolled by 4
+    unsigned int r = (n >> 5) << 3;
+
+    //
+    unsigned int i;
+    for (i=0; i<r; i+=8) {
+        // load inputs into register (unaligned)
+        // v: { x0.real, x0.imag, x1.real, x1.imag, x2.real, x2.imag, x3.real, x3.imag }
+        v0 = _mm_loadu_si128( (__m128i*) (&x[4*i+ 0]) );
+        v1 = _mm_loadu_si128( (__m128i*) (&x[4*i+ 8]) );
+        v2 = _mm_loadu_si128( (__m128i*) (&x[4*i+16]) );
+        v3 = _mm_loadu_si128( (__m128i*) (&x[4*i+24]) );
+        // shuffle values in v:
+        // v: { x0.real, x1.real, x0.imag, x1.imag, x2.real, x3.real, x2.imag, x3.imag }
+        v0 = _mm_shufflehi_epi16(v0, _MM_SHUFFLE(3,1,2,0));
+        v0 = _mm_shufflelo_epi16(v0, _MM_SHUFFLE(3,1,2,0));
+        v1 = _mm_shufflehi_epi16(v1, _MM_SHUFFLE(3,1,2,0));
+        v1 = _mm_shufflelo_epi16(v1, _MM_SHUFFLE(3,1,2,0));
+        v2 = _mm_shufflehi_epi16(v2, _MM_SHUFFLE(3,1,2,0));
+        v2 = _mm_shufflelo_epi16(v2, _MM_SHUFFLE(3,1,2,0));
+        v3 = _mm_shufflehi_epi16(v3, _MM_SHUFFLE(3,1,2,0));
+        v3 = _mm_shufflelo_epi16(v3, _MM_SHUFFLE(3,1,2,0));
+
+        // load coefficients into register (aligned)
+        h0 = _mm_load_si128( (__m128i*) (&_q->h[4*i+ 0]) );
+        h1 = _mm_load_si128( (__m128i*) (&_q->h[4*i+ 8]) );
+        h2 = _mm_load_si128( (__m128i*) (&_q->h[4*i+16]) );
+        h3 = _mm_load_si128( (__m128i*) (&_q->h[4*i+24]) );
+
+        // shuffle values in h:
+        // h: { h0.real, h1.real, h0.imag, h1.imag, h2.real, h3.real, h2.imag, h3.imag }
+        h0 = _mm_shufflehi_epi16(h0, _MM_SHUFFLE(3,1,2,0));
+        h0 = _mm_shufflelo_epi16(h0, _MM_SHUFFLE(3,1,2,0));
+        h1 = _mm_shufflehi_epi16(h1, _MM_SHUFFLE(3,1,2,0));
+        h1 = _mm_shufflelo_epi16(h1, _MM_SHUFFLE(3,1,2,0));
+        h2 = _mm_shufflehi_epi16(h2, _MM_SHUFFLE(3,1,2,0));
+        h2 = _mm_shufflelo_epi16(h2, _MM_SHUFFLE(3,1,2,0));
+        h3 = _mm_shufflehi_epi16(h3, _MM_SHUFFLE(3,1,2,0));
+        h3 = _mm_shufflelo_epi16(h3, _MM_SHUFFLE(3,1,2,0));
+
+        // multiply and accumulate two 8x16-bit registers
+        // into one 4x32-bit register
+        s0 = _mm_madd_epi16(v0, h0);
+        s1 = _mm_madd_epi16(v1, h1);
+        s2 = _mm_madd_epi16(v2, h2);
+        s3 = _mm_madd_epi16(v3, h3);
+       
+        // parallel addition
+        // fold down into single 4-element register
+        // NOTE: this addition contributes significantly to processing complexity
+        sum0 = _mm_add_epi32(sum0, s0);
+        sum1 = _mm_add_epi32(sum1, s1);
+        sum2 = _mm_add_epi32(sum2, s2);
+        sum3 = _mm_add_epi32(sum3, s3);
+    }
+
+    // aligned output array: one 4x32-bit register
+    q16_at w[4] __attribute__((aligned(16)));
+
+    // SSE2 and below: unload packed array and perform manual sum
+    _mm_store_si128((__m128i*)w, sum0);
+    
+    // add in-phae and quadrature components
+    w[0] += w[2];   // real
+    w[1] += w[3];   // imag
+
+    // cleanup (note: n is even)
+    for (i=4*r; i<n; i+=2) {
+        w[0] += (q16_at)x[i  ] * (q16_at)(_q->h[i  ]);
+        w[1] += (q16_at)x[i+1] * (q16_at)(_q->h[i+1]);
+    }
+
+    // set return value, shifting appropriately
+    (*_y).real = (q16_t)(w[0] >> q16_fracbits);
+    (*_y).imag = (q16_t)(w[1] >> q16_fracbits);
 }
 
 
