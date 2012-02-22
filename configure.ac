@@ -232,6 +232,7 @@ i386|i486|i586|i686|x86|x86_64)
     MLIBS_DOTPROD="src/dotprod/src/dotprod_cccf.mmx.o \
                    src/dotprod/src/dotprod_crcf.mmx.o \
                    src/dotprod/src/dotprod_rrrf.mmx.o \
+                   src/dotprod/src/dotprod_cccq16.mmx.o \
                    src/dotprod/src/dotprod_crcq16.mmx.o \
                    src/dotprod/src/dotprod_rrrq16.mmx.o"
     case $target_os in
@@ -244,6 +245,8 @@ powerpc*)
     MLIBS_DOTPROD="src/dotprod/src/dotprod_cccf.o \
                    src/dotprod/src/dotprod_rrrf.av.o \
                    src/dotprod/src/dotprod_crcf.av.o \
+                   src/dotprod/src/dotprod_cccq16.o \
+                   src/dotprod/src/dotprod_crcq16.o \
                    src/dotprod/src/dotprod_rrrq16.o"
     ARCH_OPTION="-fno-common -faltivec";;
 arm*)
@@ -251,6 +254,8 @@ arm*)
     MLIBS_DOTPROD="src/dotprod/src/dotprod_cccf.o \
                    src/dotprod/src/dotprod_crcf.o \
                    src/dotprod/src/dotprod_rrrf.o \
+                   src/dotprod/src/dotprod_cccq16.o \
+                   src/dotprod/src/dotprod_crcq16.o \
                    src/dotprod/src/dotprod_rrrq16.o"
     ARCH_OPTION="-marm -mfloat-abi=softfp";;
 *)
@@ -258,6 +263,8 @@ arm*)
     MLIBS_DOTPROD="src/dotprod/src/dotprod_cccf.o \
                    src/dotprod/src/dotprod_crcf.o \
                    src/dotprod/src/dotprod_rrrf.o \
+                   src/dotprod/src/dotprod_cccq16.o \
+                   src/dotprod/src/dotprod_crcq16.o \
                    src/dotprod/src/dotprod_rrrq16.o"
     ARCH_OPTION="";;
 esac
