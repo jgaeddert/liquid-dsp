@@ -53,6 +53,9 @@
 #define PRINTVAL_FLOAT(X,F)     printf(#F,crealf(X));
 #define PRINTVAL_CFLOAT(X,F)    printf(#F "+j*" #F, crealf(X), cimagf(X));
 
+#define PRINTVAL_Q16(X,F)       printf(#F,q16_fixed_to_float(X))
+#define PRINTVAL_CQ16(X,F)      printf(#F "+j*" #F, q16_fixed_to_float(X.real), q16_fixed_to_float(X.imag))
+
 //
 // MODULE : agc
 //

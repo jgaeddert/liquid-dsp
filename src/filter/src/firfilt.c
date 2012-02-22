@@ -26,6 +26,7 @@
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
+#include <math.h>
 
 // defined:
 //  FIRFILT()       name-mangling macro
@@ -256,7 +257,21 @@ void FIRFILT(_freqresponse)(FIRFILT() _q,
     float complex H = 0.0f;
 
     for (i=0; i<_q->h_len; i++)
+    {
+#ifdef LIQUID_FIXED
+        // fixed-point math
+#if TC_COMPLEX==0
+        // fixed-point real coefficients
+        H += qtype_fixed_to_float(_q->h[i]) * cexpf(_Complex_I*2*M_PI*_fc*i);
+#else
+        // fixed-point complex coefficients
+        H += cqtype_fixed_to_float(_q->h[i]) * cexpf(_Complex_I*2*M_PI*_fc*i);
+#endif
+#else
+        // floating-point math
         H += _q->h[i] * cexpf(_Complex_I*2*M_PI*_fc*i);
+#endif
+    }
 
     // set return value
     *_H = H;
