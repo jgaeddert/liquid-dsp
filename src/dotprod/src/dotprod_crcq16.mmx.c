@@ -87,6 +87,9 @@ void _mm_printq16_epi32(__m128i _v) {
 void dotprod_crcq16_execute_mmx(dotprod_crcq16 _q, cq16_t * _x, cq16_t * _y);
 void dotprod_crcq16_execute_mmx4(dotprod_crcq16 _q, cq16_t * _x, cq16_t * _y);
 
+// alternate methods
+void dotprod_crcq16_execute_mmx_packed(dotprod_crcq16 _q, cq16_t * _x, cq16_t * _y);
+
 // basic dot product
 //  _h      :   coefficients array [size: 1 x _n]
 //  _x      :   input array [size: 1 x _n]
@@ -326,4 +329,78 @@ void dotprod_crcq16_execute_mmx4(dotprod_crcq16 _q,
     // use ordinal calculation temporarily
     dotprod_crcq16_run4(_q->h, _x, _q->n, _y);
 }
+
+
+//
+// alternate methods
+//
+
+// use MMX/SSE extensions
+void dotprod_crcq16_execute_mmx_packed(dotprod_crcq16 _q,
+                                       cq16_t *       _x,
+                                       cq16_t *       _y)
+{
+    // type cast input as real array
+    q16_t * x = (q16_t*) _x;
+
+    // input, coefficients, multiply/accumulate vectors
+    __m128i v;   // input vector
+    __m128i h;   // coefficients vector
+    __m128i sl;  // dot product (lo)
+    __m128i sh;  // dot product (hi)
+    __m128i tl;  // unpacked (lo)
+    __m128i th;  // unpacked (hi)
+    __m128i sum = _mm_setzero_si128();
+
+    // double effective length
+    unsigned int n = 2*_q->n;
+    
+    // t = 8*(floor(_n/8))
+    unsigned int t = (n >> 3) << 3;
+
+    //
+    unsigned int i;
+    for (i=0; i<t; i+=8) {
+        // load inputs into register (unaligned)
+        // v: { x0.real, x0.imag, x1.real, x1.imag, x2.real, x2.imag, x3.real, x3.imag }
+        v = _mm_loadu_si128( (__m128i*) (&x[i]) );
+
+        // load coefficients into register (aligned)
+        h = _mm_load_si128( (__m128i*) (&_q->h[i]) );
+
+        // multiply and accumulate two 8x16-bit registers
+        // into one 4x32-bit register
+        sl = _mm_mullo_epi16(v, h); // multiply, packing lower 16 bits of 32-bit result
+        sh = _mm_mulhi_epi16(v, h); // multiply, packing upper 16 bits of 32-bit result
+
+        // unpack bytes
+        tl = _mm_unpacklo_epi16(sl, sh);
+        th = _mm_unpackhi_epi16(sl, sh);
+       
+        // parallel addition
+        sum = _mm_add_epi32(sum, tl);
+        sum = _mm_add_epi32(sum, th);
+    }
+
+    // aligned output array: one 4x32-bit register
+    q16_at w[4] __attribute__((aligned(16)));
+
+    // unload packed array and perform manual sum
+    _mm_store_si128((__m128i*)w, sum);
+    
+    // add in-phae and quadrature components
+    w[0] += w[2];   // real
+    w[1] += w[3];   // imag
+
+    // cleanup (note: n is even)
+    for (; i<n; i+=2) {
+        w[0] += (q16_at)x[i  ] * (q16_at)(_q->h[i  ]);
+        w[1] += (q16_at)x[i+1] * (q16_at)(_q->h[i+1]);
+    }
+
+    // set return value, shifting appropriately
+    (*_y).real = (q16_t)(w[0] >> q16_fracbits);
+    (*_y).imag = (q16_t)(w[1] >> q16_fracbits);
+}
+
 
