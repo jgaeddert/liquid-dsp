@@ -287,8 +287,20 @@ float FIRFILT(_groupdelay)(FIRFILT() _q,
     float h[_q->h_len];
     unsigned int i;
     unsigned int n = _q->h_len;
-    for (i=0; i<n; i++)
+    for (i=0; i<n; i++) {
+#ifdef LIQUID_FIXED
+#  if TC_COMPLEX==0
+        // fixed-point real coefficients
+        h[i] = qtype_fixed_to_float(_q->h[n-i-1]);
+#  else
+        // fixed-point complex coefficients
+        h[i] = qtype_fixed_to_float(_q->h[n-i-1].real);
+#  endif
+#else
+        // floating-point coefficients
         h[i] = crealf(_q->h[n-i-1]);
+#endif
+    }
 
     return fir_group_delay(h, n, _fc);
 }
