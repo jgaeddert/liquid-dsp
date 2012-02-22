@@ -277,6 +277,7 @@ void dotprod_crcq16_execute_mmx(dotprod_crcq16 _q,
         s = _mm_madd_epi16(v, h);
        
         // parallel addition
+        // NOTE: this addition contributes significantly to processing complexity
         sum = _mm_add_epi32(sum, s);
 #if DEBUG_DOTPROD_CRCQ16_MMX
         printf("**i=%3u, t=%3u\n", i, t);
@@ -368,14 +369,13 @@ void dotprod_crcq16_execute_mmx_packed(dotprod_crcq16 _q,
         // load coefficients into register (aligned)
         h = _mm_load_si128( (__m128i*) (&_q->h[i]) );
 
-        // multiply and accumulate two 8x16-bit registers
-        // into one 4x32-bit register
+        // multiply two 8x16-bit registers into two 4x32-bit registers
         sl = _mm_mullo_epi16(v, h); // multiply, packing lower 16 bits of 32-bit result
         sh = _mm_mulhi_epi16(v, h); // multiply, packing upper 16 bits of 32-bit result
 
-        // unpack bytes
-        tl = _mm_unpacklo_epi16(sl, sh);
-        th = _mm_unpackhi_epi16(sl, sh);
+        // unpack bytes (re-align 
+        tl = _mm_unpacklo_epi16(sl, sh); // [x0.real*h0, x0.imag*h0, x1.real*h1, x1.imag*h1]
+        th = _mm_unpackhi_epi16(sl, sh); // [x2.real*h2, x2.imag*h2, x3.real*h3, x3.imag*h3]
        
         // parallel addition
         sum = _mm_add_epi32(sum, tl);
