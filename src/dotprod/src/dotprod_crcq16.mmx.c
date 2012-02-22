@@ -479,7 +479,7 @@ void dotprod_crcq16_execute_mmx_packed(dotprod_crcq16 _q,
     // unload packed array and perform manual sum
     _mm_store_si128((__m128i*)w, sum);
     
-    // add in-phae and quadrature components
+    // add in-phase and quadrature components
     w[0] += w[2];   // real
     w[1] += w[3];   // imag
 
