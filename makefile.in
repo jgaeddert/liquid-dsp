@@ -169,7 +169,6 @@ buffer_benchmarks :=						\
 dotprod_objects :=						\
 	src/dotprod/src/dotprod_rrrq32.o			\
 	src/dotprod/src/dotprod_crcq32.o			\
-	src/dotprod/src/dotprod_cccq16.o			\
 	src/dotprod/src/dotprod_cccq32.o			\
 	@MLIBS_DOTPROD@						\
 
@@ -200,6 +199,7 @@ src/dotprod/src/dotprod_cccf.mmx.o : %.o : %.c $(headers)
 
 src/dotprod/src/dotprod_rrrq16.mmx.o : %.o : %.c $(headers)
 src/dotprod/src/dotprod_crcq16.mmx.o : %.o : %.c $(headers)
+src/dotprod/src/dotprod_cccq16.mmx.o : %.o : %.c $(headers)
 
 dotprod_autotests :=						\
 	src/dotprod/tests/dotprod_rrrf_autotest.c		\
