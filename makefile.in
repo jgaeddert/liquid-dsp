@@ -138,6 +138,10 @@ audio_benchmarks :=						\
 buffer_objects :=						\
 	src/buffer/src/bufferf.o				\
 	src/buffer/src/buffercf.o				\
+	src/buffer/src/bufferq16.o				\
+	src/buffer/src/bufferq32.o				\
+	src/buffer/src/buffercq16.o				\
+	src/buffer/src/buffercq32.o				\
 
 #	src/buffer/src/bufferui.c				\
 

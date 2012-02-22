@@ -77,9 +77,15 @@ WINDOW() WINDOW(_recreate)(WINDOW() _w, unsigned int _n)
     //memmove(w->v, ...);
     unsigned int i;
     if (_n > _w->len) {
+        // initialize zero sample
+        // NOTE: cannot simply state 'T zero = 0;' because of
+        //       fixed-point structures
+        T zero;
+        memset(&zero, 0x00, sizeof(T));
+
         // new buffer is larger; push zeros, then old values
         for (i=0; i<(_n-_w->len); i++)
-            WINDOW(_push)(w, 0);
+            WINDOW(_push)(w, zero);
         for (i=0; i<_w->len; i++)
             WINDOW(_push)(w, r[i]);
     } else {

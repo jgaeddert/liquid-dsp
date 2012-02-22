@@ -139,3 +139,121 @@ void autotest_windowf()
     printf("done.\n");
 }
 
+//
+// AUTOTEST: windowq16
+//
+void autotest_windowq16()
+{
+    q16_t v[] = {9, 8, 7, 6, 5, 4, 3, 2, 1, 0};
+    q16_t *r;   // reader pointer
+    q16_t x;    // temporary value holder
+    unsigned int i;
+
+    q16_t test0[10] = {0,0,0,0,0,0,0,0,0,0};
+    q16_t test1[10] = {0,0,0,0,0,0,1,1,1,1};
+    q16_t test2[10] = {0,0,1,1,1,1,9,8,7,6};
+    q16_t test3[10] = {1,1,9,8,7,6,3,3,3,3};
+    q16_t test4[10] = {7,6,3,3,3,3,5,5,5,5};
+    q16_t test5[6]  = {3,3,5,5,5,5};
+    q16_t test6[6]  = {5,5,5,5,6,7};
+    q16_t test7[10] = {0,0,0,0,5,5,5,5,6,7};
+    q16_t test8[10] = {0,0,0,0,0,0,0,0,0,0};
+
+    // create window
+    // 0 0 0 0 0 0 0 0 0 0
+    windowq16 w = windowq16_create(10);
+
+    windowq16_read(w, &r);
+    CONTEND_SAME_DATA(r,test0,10*sizeof(q16_t));
+
+    // push 4 elements
+    // 0 0 0 0 0 0 1 1 1 1
+    windowq16_push(w, 1);
+    windowq16_push(w, 1);
+    windowq16_push(w, 1);
+    windowq16_push(w, 1);
+
+    windowq16_read(w, &r);
+    CONTEND_SAME_DATA(r,test1,10*sizeof(q16_t));
+
+    // push 4 more elements
+    // 0 0 1 1 1 1 9 8 7 6
+    windowq16_write(w, v, 4);
+
+    windowq16_read(w, &r);
+    CONTEND_SAME_DATA(r,test2,10*sizeof(q16_t));
+
+    // push 4 more elements
+    // 1 1 9 8 7 6 3 3 3 3
+    windowq16_push(w, 3);
+    windowq16_push(w, 3);
+    windowq16_push(w, 3);
+    windowq16_push(w, 3);
+
+    windowq16_read(w, &r);
+    CONTEND_SAME_DATA(r,test3,10*sizeof(q16_t));
+
+    // test indexing operation
+    windowq16_index(w, 0, &x);    CONTEND_EQUALITY(x, 1);
+    windowq16_index(w, 1, &x);    CONTEND_EQUALITY(x, 1);
+    windowq16_index(w, 2, &x);    CONTEND_EQUALITY(x, 9);
+    windowq16_index(w, 3, &x);    CONTEND_EQUALITY(x, 8);
+    windowq16_index(w, 4, &x);    CONTEND_EQUALITY(x, 7);
+    windowq16_index(w, 5, &x);    CONTEND_EQUALITY(x, 6);
+    windowq16_index(w, 6, &x);    CONTEND_EQUALITY(x, 3);
+    windowq16_index(w, 7, &x);    CONTEND_EQUALITY(x, 3);
+    windowq16_index(w, 8, &x);    CONTEND_EQUALITY(x, 3);
+    windowq16_index(w, 9, &x);    CONTEND_EQUALITY(x, 3);
+
+    // push 4 more elements
+    // 7 6 3 3 3 3 5 5 5 5
+    windowq16_push(w, 5);
+    windowq16_push(w, 5);
+    windowq16_push(w, 5);
+    windowq16_push(w, 5);
+
+    windowq16_read(w, &r);
+    CONTEND_SAME_DATA(r,test4,10*sizeof(q16_t));
+    if (liquid_autotest_verbose)
+        windowq16_debug_print(w);
+
+    // recreate window (truncate to last 6 elements)
+    // 3 3 5 5 5 5
+    w = windowq16_recreate(w,6);
+    windowq16_read(w, &r);
+    CONTEND_SAME_DATA(r,test5,6*sizeof(q16_t));
+
+    // push 2 more elements
+    // 5 5 5 5 6 7
+    windowq16_push(w, 6);
+    windowq16_push(w, 7);
+    windowq16_read(w, &r);
+    CONTEND_SAME_DATA(r,test6,6*sizeof(q16_t));
+
+    // recreate window (extend to 10 elements)
+    // 0 0 0 0 5 5 5 5 6 7
+    w = windowq16_recreate(w,10);
+    windowq16_read(w,&r);
+    CONTEND_SAME_DATA(r,test7,10*sizeof(q16_t));
+
+    // clear
+    // 0 0 0 0 0 0 0 0 0 0
+    windowq16_clear(w);
+
+    windowq16_read(w, &r);
+    CONTEND_SAME_DATA(r,test8,10*sizeof(q16_t));
+
+    if (liquid_autotest_verbose) {
+        // manual print
+        printf("manual output:\n");
+        for (i=0; i<10; i++)
+            printf("%6u : %f\n", i, r[i]);
+
+        windowq16_debug_print(w);
+    }
+
+    windowq16_destroy(w);
+
+    printf("done.\n");
+}
+

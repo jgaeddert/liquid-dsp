@@ -227,6 +227,14 @@ LIQUID_BUFFER_DEFINE_API(BUFFER_MANGLE_CFLOAT, liquid_float_complex)
 #define WINDOW_MANGLE_CFLOAT(name) LIQUID_CONCAT(windowcf, name)
 //#define WINDOW_MANGLE_UINT(name)   LIQUID_CONCAT(windowui, name)
 
+// fixed point
+#define WINDOW_MANGLE_Q16(name)     LIQUID_CONCAT(windowq16, name)
+#define WINDOW_MANGLE_Q32(name)     LIQUID_CONCAT(windowq32, name)
+
+#define WINDOW_MANGLE_CQ16(name)    LIQUID_CONCAT(windowcq16, name)
+#define WINDOW_MANGLE_CQ32(name)    LIQUID_CONCAT(windowcq32, name)
+
+
 // large macro
 //   WINDOW : name-mangling macro
 //   T      : data type
@@ -248,6 +256,12 @@ void WINDOW(_write)(WINDOW() _b, T * _v, unsigned int _n);
 LIQUID_WINDOW_DEFINE_API(WINDOW_MANGLE_FLOAT,  float)
 LIQUID_WINDOW_DEFINE_API(WINDOW_MANGLE_CFLOAT, liquid_float_complex)
 //LIQUID_WINDOW_DEFINE_API(WINDOW_MANGLE_UINT,   unsigned int)
+
+LIQUID_WINDOW_DEFINE_API(WINDOW_MANGLE_Q16,  q16_t)
+LIQUID_WINDOW_DEFINE_API(WINDOW_MANGLE_Q32,  q32_t)
+
+LIQUID_WINDOW_DEFINE_API(WINDOW_MANGLE_CQ16, cq16_t)
+LIQUID_WINDOW_DEFINE_API(WINDOW_MANGLE_CQ32, cq32_t)
 
 
 // wdelay functions : windowed-delay
@@ -274,7 +288,6 @@ void WDELAY(_push)(WDELAY() _b, T _v);
 LIQUID_WDELAY_DEFINE_API(WDELAY_MANGLE_FLOAT,  float)
 LIQUID_WDELAY_DEFINE_API(WDELAY_MANGLE_CFLOAT, liquid_float_complex)
 //LIQUID_WDELAY_DEFINE_API(WDELAY_MANGLE_UINT,   unsigned int)
-
 
 
 //
