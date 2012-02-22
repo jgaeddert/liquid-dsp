@@ -207,8 +207,7 @@ void autotest_dotprod_cccq16_varying_size()
     // run many, many tests
     unsigned int i;
     unsigned int n;
-    //for (n=1; n<=128; n++) {
-    for (n=8; n<=8; n++) {
+    for (n=1; n<=128; n++) {
         // create arrays for random values
         float complex h[n];
         float complex x[n];

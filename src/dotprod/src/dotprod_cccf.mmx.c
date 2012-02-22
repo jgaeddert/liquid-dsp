@@ -191,6 +191,16 @@ void dotprod_cccf_execute(dotprod_cccf _q,
 //           x[1].real * h[1].imag,
 //           x[1].imag * h[1].imag };
 //
+// use MMX/SSE extensions
+//  0 : (A + jB) * (I + jJ) = (AI - BJ) + j(AJ + BI)
+//  1 : (C + jD) * (K + jL) = (CK - DL) + j(CL + DK)
+//
+//  v   :   [   A   B   C   D   ]   size: 4x32
+//  hi  :   [   I   I   K   K   ]   size: 4x32
+//  hq  :   [   J   J   L   L   ]   size: 4x32
+//
+//  ci  :   [   AI  BI  CK  DK  ]   size: 4x32
+//  tq  :   [   AJ  BJ  CL  DL  ]   size: 4x32
 void dotprod_cccf_execute_mmx(dotprod_cccf _q,
                               float complex * _x,
                               float complex * _y)
