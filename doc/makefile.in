@@ -159,6 +159,7 @@ SECTIONS :=					\
 	sections/fec.tex			\
 	sections/fft.tex			\
 	sections/filter.tex			\
+	sections/fpm.tex			\
 	sections/framing.tex			\
 	sections/math.tex			\
 	sections/matrix.tex			\
