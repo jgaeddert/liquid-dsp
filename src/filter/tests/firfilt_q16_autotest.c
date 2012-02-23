@@ -22,7 +22,7 @@
 #include "autotest/autotest.h"
 #include "liquid.h"
 
-
+// helper function declarations
 void firfilt_rrrq16_test(float *      _hf,
                          unsigned int _h_len,
                          float *      _xf,
@@ -30,6 +30,12 @@ void firfilt_rrrq16_test(float *      _hf,
                          float        _tol);
 
 void firfilt_crcq16_test(float *         _hf,
+                         unsigned int    _h_len,
+                         float complex * _xf,
+                         unsigned int    _n,
+                         float           _tol);
+
+void firfilt_cccq16_test(float complex * _hf,
                          unsigned int    _h_len,
                          float complex * _xf,
                          unsigned int    _n,
@@ -89,14 +95,67 @@ void autotest_firfilt_crcq16_noise()
       1.4363e-01+ -2.3562e-01*_Complex_I,  -4.1195e-01+  7.1421e-01*_Complex_I, 
      -1.5922e+00+  4.1696e-01*_Complex_I,   6.3603e-01+  1.4861e+00*_Complex_I, 
       1.1724e+00+ -1.8459e+00*_Complex_I,   1.7073e+00+ -1.6641e-01*_Complex_I, 
-      2.8442e-01+ -6.1188e-01*_Complex_I,  -8.4867e-02+  1.0387e+00*_Complex_I, 
+      2.8442e-01+ -6.1188e-01*_Complex_I,  -12.8867e-02+  1.0387e+00*_Complex_I, 
      -5.5189e-02+ -3.7222e-01*_Complex_I,   1.1913e+00+ -4.8040e-01*_Complex_I, 
-     -1.0573e+00+ -2.1809e-01*_Complex_I,  -1.8163e-01+ -8.4464e-01*_Complex_I
+     -1.0573e+00+ -2.1809e-01*_Complex_I,  -1.8163e-01+ -12.8464e-01*_Complex_I
     };
     
     // run test
     firfilt_crcq16_test(h, 10, x, 32, tol);
 }
+
+//
+// AUTOTEST : random input
+//
+void autotest_firfilt_cccq16_noise()
+{
+    // error tolerance
+    float tol = expf(-sqrtf(q16_fracbits));
+
+    // Initialize variables
+    float complex h[10] = {
+      -1.08179 + 0.96940*_Complex_I,
+       1.37437 + 0.31749*_Complex_I,
+       1.59210 + 0.12188*_Complex_I,
+      -0.73262 + 1.12267*_Complex_I,
+      -0.30314 - 1.63771*_Complex_I,
+       0.23328 - 1.84218*_Complex_I,
+       0.70105 + 0.54233*_Complex_I,
+       1.27135 - 0.16481*_Complex_I,
+      -0.71071 - 1.06231*_Complex_I,
+       1.37794 + 0.29133*_Complex_I};
+
+    // noise signal
+    float complex x[32] = {
+     -8.5985e-01+  1.9859e+00*_Complex_I,  -1.0981e+00+  7.3435e-01*_Complex_I, 
+      1.9738e-02+  1.6488e-01*_Complex_I,   4.0861e-01+  9.8558e-01*_Complex_I, 
+      8.8505e-01+  3.8529e-01*_Complex_I,  -7.3709e-01+ -1.2608e+00*_Complex_I, 
+     -7.6302e-01+  1.4282e-01*_Complex_I,  -1.5708e+00+ -1.0774e+00*_Complex_I, 
+     -4.7569e-02+ -1.0912e+00*_Complex_I,   1.3833e+00+  3.0085e-01*_Complex_I, 
+      1.2652e+00+  1.7522e+00*_Complex_I,  -1.9119e-01+ -6.9241e-02*_Complex_I, 
+      1.5155e+00+  1.2681e+00*_Complex_I,   1.1473e+00+ -1.1756e-02*_Complex_I, 
+      1.0033e+00+ -1.2385e+00*_Complex_I,  -9.7532e-01+  4.4694e-02*_Complex_I, 
+      1.4272e+00+  1.3811e+00*_Complex_I,  -5.2102e-02+ -1.4823e+00*_Complex_I, 
+      6.5172e-01+  4.2771e-01*_Complex_I,  -2.9732e-01+  3.8132e-01*_Complex_I, 
+      1.4363e-01+ -2.3562e-01*_Complex_I,  -4.1195e-01+  7.1421e-01*_Complex_I, 
+     -1.5922e+00+  4.1696e-01*_Complex_I,   6.3603e-01+  1.4861e+00*_Complex_I, 
+      1.1724e+00+ -1.8459e+00*_Complex_I,   1.7073e+00+ -1.6641e-01*_Complex_I, 
+      2.8442e-01+ -6.1188e-01*_Complex_I,  -12.8867e-02+  1.0387e+00*_Complex_I, 
+     -5.5189e-02+ -3.7222e-01*_Complex_I,   1.1913e+00+ -4.8040e-01*_Complex_I, 
+     -1.0573e+00+ -2.1809e-01*_Complex_I,  -1.8163e-01+ -12.8464e-01*_Complex_I
+    };
+    
+    // run test
+    firfilt_cccq16_test(h, 10, x, 32, tol);
+}
+
+
+
+
+//
+// helper function definitions
+//
+
 
 void firfilt_rrrq16_test(float *      _hf,
                          unsigned int _h_len,
@@ -209,7 +268,72 @@ void firfilt_crcq16_test(float *         _hf,
     if (liquid_autotest_verbose) {
         printf("testing dotprod_crcq16(%u)...\n", _n);
         for (i=0; i<_n; i++) {
-            printf("  %3u : %8.4f+j%8.4f (expected %8.4f+j%8.4f)\n",
+            printf("  %3u : %12.8f+j%12.8f (expected %12.8f+j%12.8f)\n",
+                    i,
+                    crealf(yf[i]),      cimagf(yf[i]),
+                    crealf(yf_test[i]), cimagf(yf_test[i]));
+        }
+    }
+
+    // run checks
+    for (i=0; i<_n; i++) {
+        CONTEND_DELTA( crealf(yf[i]), crealf(yf_test[i]), _tol);
+        CONTEND_DELTA( cimagf(yf[i]), cimagf(yf_test[i]), _tol);
+    }
+
+}
+
+void firfilt_cccq16_test(float complex * _hf,
+                         unsigned int    _h_len,
+                         float complex * _xf,
+                         unsigned int    _n,
+                         float           _tol)
+{
+    unsigned int i;
+
+    // convert to fixed-point arrays, back to float (compensate for
+    // roundoff error)
+    cq16_t h[_h_len];
+    float complex hf[_h_len];
+    for (i=0; i<_h_len; i++) {
+        h[i]  = cq16_float_to_fixed(_hf[i]);
+        hf[i] = cq16_fixed_to_float(h[i]);
+    }
+
+    // convert input
+    cq16_t x[_n];
+    float complex xf[_n];
+    for (i=0; i<_n; i++) {
+        x[i]  = cq16_float_to_fixed(_xf[i]);
+        xf[i] = cq16_fixed_to_float(x[i]);
+    }
+
+    // compute floating-point result
+    float complex yf_test[_n];
+    firfilt_cccf qf = firfilt_cccf_create(hf, _h_len);
+    for (i=0; i<_n; i++) {
+        firfilt_cccf_push(qf, xf[i]);
+        firfilt_cccf_execute(qf, &yf_test[i]);
+    }
+    firfilt_cccf_destroy(qf);
+
+    // compute fixed-point result
+    cq16_t y[_n];
+    float complex yf[_n];
+    firfilt_cccq16 q = firfilt_cccq16_create(h, _h_len);
+    for (i=0; i<_n; i++) {
+        firfilt_cccq16_push(q, x[i]);
+        firfilt_cccq16_execute(q, &y[i]);
+
+        // convert to float
+        yf[i] = cq16_fixed_to_float(y[i]);
+    }
+    firfilt_cccq16_destroy(q);
+
+    if (liquid_autotest_verbose) {
+        printf("testing dotprod_cccq16(%u)...\n", _n);
+        for (i=0; i<_n; i++) {
+            printf("  %3u : %12.8f+j%12.8f (expected %12.8f+j%12.8f)\n",
                     i,
                     crealf(yf[i]),      cimagf(yf[i]),
                     crealf(yf_test[i]), cimagf(yf_test[i]));
