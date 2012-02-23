@@ -279,7 +279,8 @@ void dotprod_crcq16_execute_mmx(dotprod_crcq16 _q,
     // SSE2 and below: unload packed array and perform manual sum
     _mm_store_si128((__m128i*)w, sum);
     
-    // add in-phae and quadrature components
+    // add in-phase and quadrature components
+    // NOTE: this addition contributes significantly to processing complexity
     w[0] += w[2];   // real
     w[1] += w[3];   // imag
 #endif
@@ -329,6 +330,7 @@ void dotprod_crcq16_execute_mmx4(dotprod_crcq16 _q,
         v1 = _mm_loadu_si128( (__m128i*) (&x[4*i+ 8]) );
         v2 = _mm_loadu_si128( (__m128i*) (&x[4*i+16]) );
         v3 = _mm_loadu_si128( (__m128i*) (&x[4*i+24]) );
+
         // shuffle values in v:
         // v: { x0.real, x1.real, x0.imag, x1.imag, x2.real, x3.real, x2.imag, x3.imag }
         v0 = _mm_shufflehi_epi16(v0, _MM_SHUFFLE(3,1,2,0));
@@ -383,7 +385,7 @@ void dotprod_crcq16_execute_mmx4(dotprod_crcq16 _q,
     // SSE2 and below: unload packed array and perform manual sum
     _mm_store_si128((__m128i*)w, sum0);
     
-    // add in-phae and quadrature components
+    // add in-phase and quadrature components
     w[0] += w[2];   // real
     w[1] += w[3];   // imag
 
