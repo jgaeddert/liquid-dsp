@@ -247,7 +247,7 @@ void autotest_windowq16()
         // manual print
         printf("manual output:\n");
         for (i=0; i<10; i++)
-            printf("%6u : %f\n", i, r[i]);
+            printf("%6u : %12d\n", i, r[i]);
 
         windowq16_debug_print(w);
     }
