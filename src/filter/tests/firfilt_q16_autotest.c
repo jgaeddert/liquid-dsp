@@ -23,11 +23,45 @@
 #include "liquid.h"
 
 
+void firfilt_rrrq16_test(float *      _hf,
+                         unsigned int _h_len,
+                         float *      _xf,
+                         unsigned int _n,
+                         float        _tol);
+
 void firfilt_crcq16_test(float *         _hf,
                          unsigned int    _h_len,
                          float complex * _xf,
                          unsigned int    _n,
                          float           _tol);
+
+//
+// AUTOTEST : random input
+//
+void autotest_firfilt_rrrq16_noise()
+{
+    // error tolerance
+    float tol = expf(-sqrtf(q16_fracbits));
+
+    // Initialize variables
+    float h[10] = {0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0};
+
+    // noise signal
+    float x[32] = {
+        0.704280,     0.093701,    -0.812560,    -1.062200, 
+       -0.163140,    -0.358630,     1.343000,    -0.929300, 
+        0.912920,    -0.286200,    -2.225000,     0.500690, 
+        1.113100,     0.460800,     0.138420,     0.574660, 
+       -1.561200,    -0.343980,    -0.337980,    -0.090664, 
+        0.410950,     0.215070,     0.497200,    -0.927120, 
+        1.653200,    -0.156370,    -1.092900,     0.443410, 
+       -0.377020,    -0.646710,    -0.190430,    -0.697070
+    };
+    
+    
+    // run test
+    firfilt_rrrq16_test(h, 10, x, 32, tol);
+}
 
 //
 // AUTOTEST : random input
@@ -62,6 +96,67 @@ void autotest_firfilt_crcq16_noise()
     
     // run test
     firfilt_crcq16_test(h, 10, x, 32, tol);
+}
+
+void firfilt_rrrq16_test(float *      _hf,
+                         unsigned int _h_len,
+                         float *      _xf,
+                         unsigned int _n,
+                         float        _tol)
+{
+    unsigned int i;
+
+    // convert to fixed-point arrays, back to float (compensate for
+    // roundoff error)
+    q16_t  h[_h_len];
+    float hf[_h_len];
+    for (i=0; i<_h_len; i++) {
+        h[i]  = q16_float_to_fixed(_hf[i]);
+        hf[i] = q16_fixed_to_float(h[i]);
+    }
+
+    // convert input
+    q16_t x[_n];
+    float xf[_n];
+    for (i=0; i<_n; i++) {
+        x[i]  = q16_float_to_fixed(_xf[i]);
+        xf[i] = q16_fixed_to_float(x[i]);
+    }
+
+    // compute floating-point result
+    float yf_test[_n];
+    firfilt_rrrf qf = firfilt_rrrf_create(hf, _h_len);
+    for (i=0; i<_n; i++) {
+        firfilt_rrrf_push(qf, xf[i]);
+        firfilt_rrrf_execute(qf, &yf_test[i]);
+    }
+    firfilt_rrrf_destroy(qf);
+
+    // compute fixed-point result
+    q16_t y[_n];
+    float yf[_n];
+    firfilt_rrrq16 q = firfilt_rrrq16_create(h, _h_len);
+    for (i=0; i<_n; i++) {
+        firfilt_rrrq16_push(q, x[i]);
+        firfilt_rrrq16_execute(q, &y[i]);
+
+        // convert to float
+        yf[i] = q16_fixed_to_float(y[i]);
+    }
+    firfilt_rrrq16_destroy(q);
+
+    if (liquid_autotest_verbose) {
+        printf("testing dotprod_rrrq16(%u)...\n", _n);
+        for (i=0; i<_n; i++) {
+            printf("  %3u : %12.8f (expected %12.8f)\n",
+                    i, yf[i], yf_test[i]);
+        }
+    }
+
+    // run checks
+    for (i=0; i<_n; i++)
+        CONTEND_DELTA( yf[i], yf_test[i], _tol);
+
 }
 
 void firfilt_crcq16_test(float *         _hf,

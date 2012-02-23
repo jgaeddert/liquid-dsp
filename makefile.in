@@ -453,7 +453,7 @@ filter_autotests :=						\
 	src/filter/tests/firdespm_autotest.c			\
 	src/filter/tests/firfilt_rrrf_autotest.c		\
 	src/filter/tests/firfilt_crcf_autotest.c		\
-	src/filter/tests/firfilt_crcq16_autotest.c		\
+	src/filter/tests/firfilt_q16_autotest.c			\
 	src/filter/tests/firhilb_autotest.c			\
 	src/filter/tests/firpfb_autotest.c			\
 	src/filter/tests/groupdelay_autotest.c			\
