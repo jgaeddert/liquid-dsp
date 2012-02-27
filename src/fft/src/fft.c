@@ -28,17 +28,17 @@
 #include <math.h>
 #include "liquid.internal.h"
 
-// create FFT plan
+// create FFT plan for regular DFT
 //  _nfft   :   FFT size
 //  _x      :   input array [size: _nfft x 1]
 //  _y      :   output array [size: _nfft x 1]
 //  _dir    :   fft direction: {FFT_FORWARD, FFT_REVERSE}
 //  _method :   fft method
-FFT(plan) FFT(_create_plan)(unsigned int _nfft,
-                            TC *         _x,
-                            TC *         _y,
-                            int          _dir,
-                            int          _flags)
+FFT(plan) FFT(_create_plan_dft)(unsigned int _nfft,
+                                TC *         _x,
+                                TC *         _y,
+                                int          _dir,
+                                int          _flags)
 {
     // allocate plan and initialize all internal arrays to NULL
     FFT(plan) q = (FFT(plan)) malloc(sizeof(struct FFT(plan_s)));
@@ -49,51 +49,18 @@ FFT(plan) FFT(_create_plan)(unsigned int _nfft,
     q->flags     = _flags;
     q->kind      = LIQUID_FFT_DFT_1D;
     q->direction = (_dir == FFT_FORWARD) ? FFT_FORWARD : FFT_REVERSE;
+    q->method    = LIQUID_FFT_METHOD_DFT;
 
-    // determine best method for execution
-    // TODO : check flags and allow user override
-    q->method = liquid_fft_estimate_method(q->nfft);
-
-    // initialize fft based on method (just DFT for now)
-    switch (q->method) {
-    case LIQUID_FFT_METHOD_UNKNOWN:
-        fprintf(stderr,"error: fft_create_plan(), unknown/invalid fft method\n");
-        exit(1);
-    case LIQUID_FFT_METHOD_DFT:
-    default:
-        q->execute = FFT(_execute_dft);
-    }
+    q->execute   = FFT(_execute_dft);
 
     return q;
 }
 
 // destroy FFT plan
-void FFT(_destroy_plan)(FFT(plan) _p)
+void FFT(_destroy_plan_dft)(FFT(plan) _q)
 {
     // free main object memory
-    free(_p);
-}
-
-// perform n-point FFT allocating plan internally
-//  _nfft   :   fft size
-//  _x      :   input array [size: _nfft x 1]
-//  _y      :   output array [size: _nfft x 1]
-//  _dir    :   fft direction: {FFT_FORWARD, FFT_REVERSE}
-//  _method :   fft method
-void FFT(_run)(unsigned int _nfft,
-               TC *         _x,
-               TC *         _y,
-               int          _dir,
-               int          _method)
-{
-    // create plan
-    FFT(plan) plan = FFT(_create_plan)(_nfft, _x, _y, _dir, _method);
-
-    // execute fft
-    FFT(_execute)(plan);
-
-    // destroy plan
-    FFT(_destroy_plan)(plan);
+    free(_q);
 }
 
 // execute DFT (slow but accurate)
@@ -112,51 +79,5 @@ void FFT(_execute_dft)(FFT(plan) _q)
             _q->y[i] += _q->x[k] * cexpf(_Complex_I*phi);
         }
     }
-}
-
-
-// 
-// real-to-real methods
-//
-
-
-// create DCT/DST plan
-//  _nfft   :   FFT size
-//  _x      :   input array [size: _nfft x 1]
-//  _y      :   output array [size: _nfft x 1]
-//  _kind   :   type (e.g. FFT_REDFT00)
-//  _method :   fft method
-FFT(plan) FFT(_create_plan_r2r_1d)(unsigned int _nfft,
-                                   T *          _x,
-                                   T *          _y,
-                                   int          _kind,
-                                   int          _flags)
-{
-    // allocate plan and initialize all internal arrays to NULL
-    FFT(plan) q = (FFT(plan)) malloc(sizeof(struct FFT(plan_s)));
-
-    q->nfft   = _nfft;
-    q->xr     = _x;
-    q->yr     = _y;
-    q->kind   = _kind;
-    q->flags  = _flags;
-    //q->method = LIQUID_FFT_METHOD_DFT;
-
-    switch (q->kind) {
-    case FFT_REDFT00:  q->execute = &FFT(_execute_REDFT00);  break;  // DCT-I
-    case FFT_REDFT10:  q->execute = &FFT(_execute_REDFT10);  break;  // DCT-II
-    case FFT_REDFT01:  q->execute = &FFT(_execute_REDFT01);  break;  // DCT-III
-    case FFT_REDFT11:  q->execute = &FFT(_execute_REDFT11);  break;  // DCT-IV
-
-    case FFT_RODFT00:  q->execute = &FFT(_execute_RODFT00);  break;  // DST-I
-    case FFT_RODFT10:  q->execute = &FFT(_execute_RODFT10);  break;  // DST-II
-    case FFT_RODFT01:  q->execute = &FFT(_execute_RODFT01);  break;  // DST-III
-    case FFT_RODFT11:  q->execute = &FFT(_execute_RODFT11);  break;  // DST-IV
-    default:
-        fprintf(stderr,"error: fft_create_plan_r2r_1d(), invalid kind, %d\n", q->kind);
-        exit(1);
-    }
-
-    return q;
 }
 

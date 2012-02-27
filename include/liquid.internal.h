@@ -728,7 +728,6 @@ typedef enum {
 
 typedef enum {
     LIQUID_FFT_METHOD_UNKNOWN=0,// unknown method
-    LIQUID_FFT_METHOD_LUT,      // look-up table
     LIQUID_FFT_METHOD_RADIX2,   // Radix-2 (decimation in time)
     LIQUID_FFT_METHOD_DFT       // slow discrete Fourier transform
 } liquid_fft_method;
@@ -739,8 +738,14 @@ typedef enum {
 //  TC      :   primitive data type (complex)
 #define LIQUID_FFT_DEFINE_INTERNAL_API(FFT,T,TC)                \
                                                                 \
-/* execute basic dft (slow, but guarantees correct output) */   \
+/* basic dft (slow, but guarantees correct output) */           \
+FFT(plan) FFT(_create_plan_dft)(unsigned int _nfft,             \
+                                TC *         _x,                \
+                                TC *         _y,                \
+                                int          _dir,              \
+                                int          _flags);           \
 void FFT(_execute_dft)(FFT(plan) _q);                           \
+void FFT(_destroy_plan_dft)(FFT(plan) _q);                      \
                                                                 \
 /* discrete cosine transform (DCT) prototypes */                \
 void FFT(_execute_REDFT00)(FFT(plan) _q);   /* DCT-I   */       \

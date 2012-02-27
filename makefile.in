@@ -300,8 +300,7 @@ fft_objects :=							\
 fft_includes :=							\
 	src/fft/src/fft_common.c				\
 	src/fft/src/fft.c					\
-	src/fft/src/dct_execute.c				\
-	src/fft/src/dst_execute.c				\
+	src/fft/src/fft_r2r_1d.c				\
 
 #	src/fft/src/fft_create_plan.c				
 #	src/fft/src/dst_execute.c				

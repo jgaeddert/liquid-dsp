@@ -23,6 +23,8 @@
 // fft.common.c
 //
 
+#include <stdio.h>
+#include <stdlib.h>
 #include "liquid.internal.h"
 
 struct FFT(plan_s) {
@@ -35,17 +37,85 @@ struct FFT(plan_s) {
     liquid_fft_kind kind;
     liquid_fft_method method;
 
-    void (*execute)(FFT(plan)); // function pointer
+    // 'execute' function pointer
+    void (*execute)(FFT(plan));
 
     // real even/odd DFT parameters (DCT/DST)
     T * xr; // input array (real)
     T * yr; // output array (real)
 };
 
-// execute fft : simply calls internal function pointer
+// create FFT plan
+//  _nfft   :   FFT size
+//  _x      :   input array [size: _nfft x 1]
+//  _y      :   output array [size: _nfft x 1]
+//  _dir    :   fft direction: {FFT_FORWARD, FFT_REVERSE}
+//  _method :   fft method
+FFT(plan) FFT(_create_plan)(unsigned int _nfft,
+                            TC *         _x,
+                            TC *         _y,
+                            int          _dir,
+                            int          _flags)
+{
+    // determine best method for execution
+    // TODO : check flags and allow user override
+    liquid_fft_method method = liquid_fft_estimate_method(_nfft);
+
+    // initialize fft based on method
+    switch (method) {
+    case LIQUID_FFT_METHOD_DFT:
+        // create regular, slow DFT
+        return FFT(_create_plan_dft)(_nfft, _x, _y, _dir, _flags);
+    case LIQUID_FFT_METHOD_UNKNOWN:
+    default:
+        fprintf(stderr,"error: fft_create_plan(), unknown/invalid fft method\n");
+        exit(1);
+    }
+
+    return NULL;
+}
+
+// destroy FFT plan
+void FFT(_destroy_plan)(FFT(plan) _q)
+{
+    switch (_q->method) {
+    case LIQUID_FFT_METHOD_DFT:
+        FFT(_destroy_plan_dft)(_q);
+        break;
+    case LIQUID_FFT_METHOD_UNKNOWN:
+    default:
+        fprintf(stderr,"error: fft_destroy_plan(), unknown/invalid fft method\n");
+        exit(1);
+    }
+}
+
+// execute fft
 void FFT(_execute)(FFT(plan) _q)
 {
+    // invoke internal function pointer
     _q->execute(_q);
+}
+
+// perform n-point FFT allocating plan internally
+//  _nfft   :   fft size
+//  _x      :   input array [size: _nfft x 1]
+//  _y      :   output array [size: _nfft x 1]
+//  _dir    :   fft direction: {FFT_FORWARD, FFT_REVERSE}
+//  _method :   fft method
+void FFT(_run)(unsigned int _nfft,
+               TC *         _x,
+               TC *         _y,
+               int          _dir,
+               int          _method)
+{
+    // create plan
+    FFT(plan) plan = FFT(_create_plan)(_nfft, _x, _y, _dir, _method);
+
+    // execute fft
+    FFT(_execute)(plan);
+
+    // destroy plan
+    FFT(_destroy_plan)(plan);
 }
 
 // perform _n-point fft shift

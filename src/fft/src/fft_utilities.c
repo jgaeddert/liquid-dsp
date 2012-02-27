@@ -31,7 +31,13 @@
 // determine best FFT method based on size
 liquid_fft_method liquid_fft_estimate_method(unsigned int _nfft)
 {
-    // TODO : determine best method based on size, for now return DFT
+    if (_nfft == 0) {
+        // invalid length
+        fprintf(stderr,"error: liquid_fft_estimate_method(), fft size must be > 0\n");
+        return LIQUID_FFT_METHOD_UNKNOWN;
+    }
+
+    // last resort: use slow DFT method
     return LIQUID_FFT_METHOD_DFT;
 }
 

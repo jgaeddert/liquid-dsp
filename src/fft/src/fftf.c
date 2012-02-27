@@ -37,9 +37,8 @@
 
 // include main files
 #include "fft_common.c"     // common source must come first (object definition)
-#include "fft.c"
-#include "dct_execute.c"
-#include "dst_execute.c"
+#include "fft.c"            // fft definitions
+#include "fft_r2r_1d.c"     // real-to-real definitions (DCT/DST)
 
 #if 0
 #include "fft_create_plan.c"
