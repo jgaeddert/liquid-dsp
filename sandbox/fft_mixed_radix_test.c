@@ -29,9 +29,10 @@
 #include <math.h>
 #include <getopt.h>
 #include <complex.h>
-#include "liquid.h"
 
 #define DEBUG 0
+#define DFT_FORWARD (-1)
+#define DFT_REVERSE ( 1)
 
 // print usage/help message
 void usage()
@@ -42,6 +43,13 @@ void usage()
     printf("  p     : stride (freq)\n");
     printf("  q     : stride (time)\n");
 }
+
+// super slow DFT, but functionally correct
+void dft_run(unsigned int    _nfft,
+             float complex * _x,
+             float complex * _y,
+             int             _dir,
+             int             _flags);
 
 int main(int argc, char*argv[]) {
     // transform size: p*q
@@ -70,7 +78,6 @@ int main(int argc, char*argv[]) {
     }
 
     unsigned int i;
-    unsigned int j;
     unsigned int k;
 
     // create and initialize data arrays
@@ -83,7 +90,7 @@ int main(int argc, char*argv[]) {
     }
 
     // compute output for testing
-    fft_run(n, x, y_test, FFT_FORWARD, 0);
+    dft_run(n, x, y_test, DFT_FORWARD, 0);
 
     //
     // run Cooley-Tukey FFT
@@ -117,7 +124,7 @@ int main(int argc, char*argv[]) {
         float complex t0[p];
         float complex t1[p];
         for (k=0; k<p; k++) t0[k] = y[p*i+k];
-        fft_run(p, t0, t1, FFT_FORWARD, 0);
+        dft_run(p, t0, t1, DFT_FORWARD, 0);
         for (k=0; k<p; k++) y[p*i+k] = t1[k];
 
 #if DEBUG
@@ -137,7 +144,7 @@ int main(int argc, char*argv[]) {
         float complex t0[q];
         float complex t1[q];
         for (k=0; k<q; k++) t0[k] = y[p*k+i] * twiddle[i*k];
-        fft_run(q, t0, t1, FFT_FORWARD, 0);
+        dft_run(q, t0, t1, DFT_FORWARD, 0);
         for (k=0; k<q; k++) y[p*k+i] = t1[k];
 
 #if DEBUG
@@ -166,5 +173,26 @@ int main(int argc, char*argv[]) {
     printf("RMS error : %12.4e (%s)\n", rmse, rmse < 1e-3 ? "pass" : "FAIL");
 
     return 0;
+}
+
+// super slow DFT, but functionally correct
+void dft_run(unsigned int    _nfft,
+             float complex * _x,
+             float complex * _y,
+             int             _dir,
+             int             _flags)
+{
+    unsigned int i;
+    unsigned int k;
+
+    int d = (_dir == DFT_FORWARD) ? -1 : 1;
+
+    for (i=0; i<_nfft; i++) {
+        _y[i] = 0.0f;
+        for (k=0; k<_nfft; k++) {
+            float phi = 2*M_PI*d*i*k / (float)_nfft;
+            _y[i] += _x[k] * cexpf(_Complex_I*phi);
+        }
+    }
 }
 
