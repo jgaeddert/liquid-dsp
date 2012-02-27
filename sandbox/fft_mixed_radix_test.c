@@ -31,6 +31,8 @@
 #include <complex.h>
 #include "liquid.h"
 
+#define DEBUG 0
+
 // print usage/help message
 void usage()
 {
@@ -43,8 +45,8 @@ void usage()
 
 int main(int argc, char*argv[]) {
     // transform size: p*q
-    unsigned int p = 3;
-    unsigned int q = 5;
+    unsigned int p = 5;
+    unsigned int q = 3;
 
     int dopt;
     while ((dopt = getopt(argc,argv,"uhp:q:")) != EOF) {
@@ -86,48 +88,69 @@ int main(int argc, char*argv[]) {
     //
     // run Cooley-Tukey FFT
     //
-    for (i=0; i<n; i++)
-        y[i] = x[i];
 
     // compute twiddle factors (roots of unity)
     float complex twiddle[n];
     for (i=0; i<n; i++)
         twiddle[i] = cexpf(-_Complex_I*2*M_PI*(float)i / (float)n);
 
-    // compute 'q' DFTs of size 'p' and multiply by twiddle factors
-    printf("computing %u DFTs of size %u and applying twiddle factors...\n", q, p);
+    // decimate in time
     for (i=0; i<q; i++) {
-        //printf("  i=%3u/%3u\n", i, q);
+        for (k=0; k<p; k++)
+            y[p*i+k] = x[k*q+i];
+    }
+#if DEBUG
+    for (i=0; i<n; i++) {
+        printf("  y[%3u] = %12.6f + j*%12.6f\n",
+            i, crealf(y[i]), cimagf(y[i]));
+    }
+#endif
+
+    // compute 'q' DFTs of size 'p' and multiply by twiddle factors
+    printf("computing %u DFTs of size %u...\n", q, p);
+    for (i=0; i<q; i++) {
+#if DEBUG
+        printf("  i=%3u/%3u\n", i, q);
+#endif
 
         // for now, copy to temp buffer, compute FFT, and store result
         float complex t0[p];
         float complex t1[p];
-        for (k=0; k<p; k++) t0[k] = y[q*k + i];
+        for (k=0; k<p; k++) t0[k] = y[p*i+k];
         fft_run(p, t0, t1, FFT_FORWARD, 0);
-        for (k=0; k<p; k++) y[q*k+i] = t1[k] * twiddle[i*k];
+        for (k=0; k<p; k++) y[p*i+k] = t1[k];
+
+#if DEBUG
+        for (k=0; k<p; k++)
+            printf("  %12.6f + j%12.6f > %12.6f + j%12.6f\n", crealf(t0[k]), cimagf(t0[k]), crealf(t1[k]), cimagf(t1[k]));
+#endif
     }
 
     // compute 'p' DFTs of size 'q' and transpose
-    // for now, copy input to temporary buffer
-    float complex yp[n];
-    memmove(yp, y, n*sizeof(float complex));
-    printf("computing %u DFTs of size %u and transposing...\n", p, q);
+    printf("computing %u DFTs of size %u...\n", p, q);
     for (i=0; i<p; i++) {
-        //printf("  i=%3u/%3u\n", i, p);
+#if DEBUG
+        printf("  i=%3u/%3u\n", i, p);
+#endif
         
         // for now, copy to temp buffer, compute FFT, and store result
         float complex t0[q];
         float complex t1[q];
-        for (k=0; k<q; k++) t0[k] = yp[i*q+k];
+        for (k=0; k<q; k++) t0[k] = y[p*k+i] * twiddle[i*k];
         fft_run(q, t0, t1, FFT_FORWARD, 0);
         for (k=0; k<q; k++) y[p*k+i] = t1[k];
+
+#if DEBUG
+        for (k=0; k<q; k++)
+            printf("  %12.6f + j%12.6f > %12.6f + j%12.6f\n", crealf(t0[k]), cimagf(t0[k]), crealf(t1[k]), cimagf(t1[k]));
+#endif
     }
 
     // 
     // print results
     //
     for (i=0; i<n; i++) {
-        printf("  y[%3u] = %12.8f + j*%12.8f (expected %12.8f + j%12.8f)\n",
+        printf("  y[%3u] = %12.6f + j*%12.6f (expected %12.6f + j%12.6f)\n",
             i,
             crealf(y[i]),      cimagf(y[i]),
             crealf(y_test[i]), cimagf(y_test[i]));
