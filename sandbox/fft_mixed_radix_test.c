@@ -86,18 +86,42 @@ int main(int argc, char*argv[]) {
     //
     // run Cooley-Tukey FFT
     //
+    for (i=0; i<n; i++)
+        y[i] = x[i];
 
     // compute twiddle factors (roots of unity)
     float complex twiddle[n];
     for (i=0; i<n; i++)
-        twiddle[i] = cexpf(_Complex_I*2*M_PI*(float)i / (float)n);
+        twiddle[i] = cexpf(-_Complex_I*2*M_PI*(float)i / (float)n);
 
     // compute 'q' DFTs of size 'p' and multiply by twiddle factors
-    for (i=0; i<n; i++)
-        y[i] = 0.0f;
+    printf("computing %u DFTs of size %u and applying twiddle factors...\n", q, p);
+    for (i=0; i<q; i++) {
+        //printf("  i=%3u/%3u\n", i, q);
+
+        // for now, copy to temp buffer, compute FFT, and store result
+        float complex t0[p];
+        float complex t1[p];
+        for (k=0; k<p; k++) t0[k] = y[q*k + i];
+        fft_run(p, t0, t1, FFT_FORWARD, 0);
+        for (k=0; k<p; k++) y[q*k+i] = t1[k] * twiddle[i*k];
+    }
 
     // compute 'p' DFTs of size 'q' and transpose
-
+    // for now, copy input to temporary buffer
+    float complex yp[n];
+    memmove(yp, y, n*sizeof(float complex));
+    printf("computing %u DFTs of size %u and transposing...\n", p, q);
+    for (i=0; i<p; i++) {
+        //printf("  i=%3u/%3u\n", i, p);
+        
+        // for now, copy to temp buffer, compute FFT, and store result
+        float complex t0[q];
+        float complex t1[q];
+        for (k=0; k<q; k++) t0[k] = yp[i*q+k];
+        fft_run(q, t0, t1, FFT_FORWARD, 0);
+        for (k=0; k<q; k++) y[p*k+i] = t1[k];
+    }
 
     // 
     // print results
@@ -116,7 +140,7 @@ int main(int argc, char*argv[]) {
         rmse += e*conjf(e);
     }
     rmse = sqrtf(rmse / (float)n);
-    printf("RMS error : %12.4e\n", rmse);
+    printf("RMS error : %12.4e (%s)\n", rmse, rmse < 1e-3 ? "pass" : "FAIL");
 
     return 0;
 }
