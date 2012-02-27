@@ -298,19 +298,16 @@ fft_objects :=							\
 
 # explicit targets and dependencies
 fft_includes :=							\
-	src/fft/src/fft.common.c				\
+	src/fft/src/fft_common.c				\
 	src/fft/src/fft.c					\
 	src/fft/src/dct_execute.c				\
 	src/fft/src/dst_execute.c				\
 
 #	src/fft/src/fft_create_plan.c				
-#	src/fft/src/fct_execute.c				
-#	src/fft/src/dct_execute.c				
 #	src/fft/src/dst_execute.c				
 #	src/fft/src/mdct_execute.c				
 #	src/fft/src/imdct_execute.c				
 #	src/fft/src/fft_execute.c				
-#	src/fft/src/fft.common.c				
 
 
 src/fft/src/fftf.o : %.o : %.c $(headers) $(fft_includes)
@@ -321,7 +318,7 @@ src/fft/src/dct.o : %.o : %.c $(headers)
 
 src/fft/src/fftf.o : %.o : %.c $(headers)
 
-src/fft/src/fft_common.o : %.o : %.c $(headers)
+src/fft/src/fft_utilities.o : %.o : %.c $(headers)
 
 src/fft/src/mdct.o : %.o : %.c $(headers)
 

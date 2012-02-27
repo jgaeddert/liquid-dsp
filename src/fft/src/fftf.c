@@ -36,7 +36,7 @@
 #define PRINTVAL_TC(X,F)    PRINTVAL_CFLOAT(X,F)
 
 // include main files
-#include "fft.common.c"     // common source must come first
+#include "fft_common.c"     // common source must come first (object definition)
 #include "fft.c"
 #include "dct_execute.c"
 #include "dst_execute.c"
