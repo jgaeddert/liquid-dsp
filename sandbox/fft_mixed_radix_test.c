@@ -20,7 +20,7 @@
  */
 
 //
-// 
+// Test mixed-radix FFT algorithm
 //
 
 #include <stdio.h>
@@ -36,7 +36,7 @@
 // print usage/help message
 void usage()
 {
-    printf("fft_r2r_test -- test real ffts, compare to fftw3\n");
+    printf("fft_mixed_radix_test -- test mixed-radix DFTs, compare to slow DFT method\n");
     printf("options (default values in []):\n");
     printf("  u/h   : print usage/help\n");
     printf("  p     : stride (freq)\n");
