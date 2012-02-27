@@ -36,11 +36,15 @@
 #define PRINTVAL_TC(X,F)    PRINTVAL_CFLOAT(X,F)
 
 // include main files
-#include "fft_create_plan.c"
-#include "fct_execute.c"
+#include "fft.c"
 #include "dct_execute.c"
 #include "dst_execute.c"
+
+#if 0
+#include "fft_create_plan.c"
+#include "fct_execute.c"
 #include "mdct_execute.c"
 #include "imdct_execute.c"
 #include "fft_execute.c"
 #include "fft.common.c"
+#endif

@@ -738,51 +738,9 @@ typedef enum {
 //  T       :   primitive data type
 //  TC      :   primitive data type (complex)
 #define LIQUID_FFT_DEFINE_INTERNAL_API(FFT,T,TC)                \
-struct FFT(plan_s) {                                            \
-    unsigned int n;             /* fft size */                  \
-    TC * twiddle;               /* twiddle factors */           \
-    TC * x;                     /* input array */               \
-    TC * y;                     /* output array */              \
-    int direction;              /* forward/reverse */           \
-    int flags;                                                  \
-    liquid_fft_kind kind;                                       \
-    liquid_fft_method method;                                   \
-                                                                \
-    /* radix-2 implementation data */                           \
-    int is_radix2;              /* radix-2 flag */              \
-    unsigned int * index_rev;   /* input indices (reversed) */  \
-    unsigned int m;             /* log2(n) */                   \
-    void (*execute)(FFT(plan)); /* function pointer */          \
-                                                                \
-    /* real even/odd DFTs parameters */                         \
-    T * xr;                     /* input array (real) */        \
-    T * yr;                     /* output array (real) */       \
-    TC * xc;                    /* allocated input array */     \
-    TC * yc;                    /* allocated output array */    \
-                                                                \
-    /* modified discrete cosine transform parameters */         \
-    T * xrm;                    /* allocated input array */     \
-    T * yrm;                    /* allocated output array */    \
-    T * w;                      /* window */                    \
-                                                                \
-    /* internal FFT plan for real DFTs */                       \
-    FFT(plan) internal_plan;                                    \
-};                                                              \
-                                                                \
-/* initialization */                                            \
-void FFT(_init_null)(FFT(plan) _p);                             \
-void FFT(_init_lut)(FFT(plan) _p);                              \
-void FFT(_init_radix2)(FFT(plan) _p);                           \
                                                                 \
 /* execute basic dft (slow, but guarantees correct output) */   \
 void FFT(_execute_dft)(FFT(plan) _p);                           \
-                                                                \
-/* execute basic dft using look-up table for twiddle factors */ \
-/* (fast for small fft sizes) */                                \
-void FFT(_execute_lut)(FFT(plan) _p);                           \
-                                                                \
-/* execute radix-2 fft */                                       \
-void FFT(_execute_radix2)(FFT(plan) _p);                        \
                                                                 \
 /* discrete cosine transform (DCT) prototypes */                \
 void FFT(_execute_REDFT00)(FFT(plan) _p);   /* DCT-I   */       \
@@ -795,17 +753,6 @@ void FFT(_execute_RODFT00)(FFT(plan) _p);   /* DST-I   */       \
 void FFT(_execute_RODFT10)(FFT(plan) _p);   /* DST-II  */       \
 void FFT(_execute_RODFT01)(FFT(plan) _p);   /* DST-III */       \
 void FFT(_execute_RODFT11)(FFT(plan) _p);   /* DST-IV  */       \
-                                                                \
-/* modified discrete cosine transforms */                       \
-void FFT(_execute_MDCT)(FFT(plan) _p);      /* MDCT    */       \
-void FFT(_execute_IMDCT)(FFT(plan) _p);     /* IMDCT   */       \
-                                                                \
-/* fast real transform (DST/DCT/MDCT) prototypes */             \
-void FFT(_execute_REDFT10_fftn)(FFT(plan) _p);                  \
-void FFT(_execute_REDFT01_fftn)(FFT(plan) _p);                  \
-void FFT(_execute_REDFT11_fft4n)(FFT(plan) _p);                 \
-void FFT(_execute_MDCT_REDFT11)(FFT(plan) _p);                  \
-void FFT(_execute_IMDCT_REDFT11)(FFT(plan) _p);                 \
 
 // is input radix-2?
 int fft_is_radix2(unsigned int _n);
