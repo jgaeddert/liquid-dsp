@@ -11,6 +11,7 @@
 
 # build objects 
 autom4te.cache
+aclocal.m4
 
 # ignore all auto-generated targets
 autotest_include.h
