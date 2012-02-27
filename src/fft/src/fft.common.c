@@ -1,6 +1,6 @@
 /*
- * Copyright (c) 2007, 2008, 2009, 2010, 2011 Joseph Gaeddert
- * Copyright (c) 2007, 2008, 2009, 2010, 2011 Virginia Polytechnic
+ * Copyright (c) 2007, 2008, 2009, 2010, 2011, 2012 Joseph Gaeddert
+ * Copyright (c) 2007, 2008, 2009, 2010, 2011, 2012 Virginia Polytechnic
  *                                      Institute & State University
  *
  * This file is part of liquid.
@@ -25,26 +25,27 @@
 
 #include "liquid.internal.h"
 
-// perform n-point FFT allocating plan internally
-//  _n      :   fft size
-//  _x      :   input array [size: _n x 1]
-//  _y      :   output array [size: _n x 1]
-//  _dir    :   fft direction: {FFT_FORWARD, FFT_REVERSE}
-//  _method :   fft method
-void FFT(_run)(unsigned int _n,
-               TC * _x,
-               TC * _y,
-               int _dir,
-               int _method)
+struct FFT(plan_s) {
+    unsigned int nfft;  // fft size
+    TC * twiddle;       // twiddle factors
+    TC * x;             // input array pointer (not allocated)
+    TC * y;             // output array pointer (not allocated)
+    int direction;      // forward/reverse
+    int flags;
+    liquid_fft_kind kind;
+    liquid_fft_method method;
+
+    void (*execute)(FFT(plan)); // function pointer
+
+    // real even/odd DFT parameters (DCT/DST)
+    T * xr; // input array (real)
+    T * yr; // output array (real)
+};
+
+// execute fft : simply calls internal function pointer
+void FFT(_execute)(FFT(plan) _q)
 {
-    // create plan
-    FFT(plan) plan = FFT(_create_plan)(_n, _x, _y, _dir, _method);
-
-    // execute fft
-    FFT(_execute)(plan);
-
-    // destroy plan
-    FFT(_destroy_plan)(plan);
+    _q->execute(_q);
 }
 
 // perform _n-point fft shift

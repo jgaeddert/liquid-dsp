@@ -292,12 +292,13 @@ fft_objects :=							\
 	src/fft/src/asgram.o					\
 	src/fft/src/spgram.o					\
 	src/fft/src/dct.o					\
-	src/fft/src/fft_common.o				\
+	src/fft/src/fft_utilities.o				\
 	src/fft/src/mdct.o					\
 
 
 # explicit targets and dependencies
 fft_includes :=							\
+	src/fft/src/fft.common.c				\
 	src/fft/src/fft.c					\
 	src/fft/src/dct_execute.c				\
 	src/fft/src/dst_execute.c				\

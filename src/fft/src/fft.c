@@ -28,23 +28,6 @@
 #include <math.h>
 #include "liquid.internal.h"
 
-struct FFT(plan_s) {
-    unsigned int nfft;  // fft size
-    TC * twiddle;       // twiddle factors
-    TC * x;             // input array pointer (not allocated)
-    TC * y;             // output array pointer (not allocated)
-    int direction;      // forward/reverse
-    int flags;
-    liquid_fft_kind kind;
-    liquid_fft_method method;
-
-    void (*execute)(FFT(plan)); // function pointer
-
-    // real even/odd DFT parameters (DCT/DST)
-    T * xr; // input array (real)
-    T * yr; // output array (real)
-};
-
 // create FFT plan
 //  _nfft   :   FFT size
 //  _x      :   input array [size: _nfft x 1]
@@ -100,31 +83,6 @@ void FFT(_run)(unsigned int _nfft,
     // destroy plan
     FFT(_destroy_plan)(plan);
 }
-
-// perform _n-point fft shift
-void FFT(_shift)(TC *         _x,
-                 unsigned int _nfft)
-{
-    unsigned int i, n2;
-    if (_nfft%2)
-        n2 = (_nfft-1)/2;
-    else
-        n2 = _nfft/2;
-
-    TC tmp;
-    for (i=0; i<n2; i++) {
-        tmp = _x[i];
-        _x[i] = _x[i+n2];
-        _x[i+n2] = tmp;
-    }
-}
-
-// execute fft : simply calls internal function pointer
-void FFT(_execute)(FFT(plan) _q)
-{
-    _q->execute(_q);
-}
-
 
 // execute DFT (slow but accurate)
 void FFT(_execute_dft)(FFT(plan) _q)
