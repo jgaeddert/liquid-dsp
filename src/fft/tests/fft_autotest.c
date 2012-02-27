@@ -34,7 +34,7 @@ void fft_test(float complex *_x,
               unsigned int _n)
 {
     int _method = 0;
-    float tol=1e-4f;
+    float tol=2e-4f;
 
     unsigned int i;
 

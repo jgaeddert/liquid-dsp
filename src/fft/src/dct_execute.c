@@ -29,79 +29,79 @@
 #include "liquid.internal.h"
 
 // DCT-I
-void FFT(_execute_REDFT00)(FFT(plan) _p)
+void FFT(_execute_REDFT00)(FFT(plan) _q)
 {
     // ugly, slow method
     unsigned int i,k;
-    float n_inv = 1.0f / (float)(_p->n-1);
+    float n_inv = 1.0f / (float)(_q->nfft-1);
     float phi;
-    for (i=0; i<_p->n; i++) {
-        T x0 = _p->xr[0];       // first element
-        T xn = _p->xr[_p->n-1]; // last element
-        _p->yr[i] = 0.5f*( x0 + (i%2 ? -xn : xn));
-        for (k=1; k<_p->n-1; k++) {
+    for (i=0; i<_q->nfft; i++) {
+        T x0 = _q->xr[0];       // first element
+        T xn = _q->xr[_q->nfft-1]; // last element
+        _q->yr[i] = 0.5f*( x0 + (i%2 ? -xn : xn));
+        for (k=1; k<_q->nfft-1; k++) {
             phi = M_PI*n_inv*((float)k)*((float)i);
-            _p->yr[i] += _p->xr[k]*cosf(phi);
+            _q->yr[i] += _q->xr[k]*cosf(phi);
         }
 
         // compensate for discrepancy
-        _p->yr[i] *= 2.0f;
+        _q->yr[i] *= 2.0f;
     }
 }
 
 // DCT-II (regular 'dct')
-void FFT(_execute_REDFT10)(FFT(plan) _p)
+void FFT(_execute_REDFT10)(FFT(plan) _q)
 {
     // ugly, slow method
     unsigned int i,k;
-    float n_inv = 1.0f / (float)_p->n;
+    float n_inv = 1.0f / (float)_q->nfft;
     float phi;
-    for (i=0; i<_p->n; i++) {
-        _p->yr[i] = 0.0f;
-        for (k=0; k<_p->n; k++) {
+    for (i=0; i<_q->nfft; i++) {
+        _q->yr[i] = 0.0f;
+        for (k=0; k<_q->nfft; k++) {
             phi = M_PI*n_inv*((float)k + 0.5f)*i;
-            _p->yr[i] += _p->xr[k]*cosf(phi);
+            _q->yr[i] += _q->xr[k]*cosf(phi);
         }
 
         // compensate for discrepancy
-        _p->yr[i] *= 2.0f;
+        _q->yr[i] *= 2.0f;
     }
 }
 
 // DCT-III (regular 'idct')
-void FFT(_execute_REDFT01)(FFT(plan) _p)
+void FFT(_execute_REDFT01)(FFT(plan) _q)
 {
     // ugly, slow method
     unsigned int i,k;
-    float n_inv = 1.0f / (float)_p->n;
+    float n_inv = 1.0f / (float)_q->nfft;
     float phi;
-    for (i=0; i<_p->n; i++) {
-        _p->yr[i] = _p->xr[0]*0.5f;
-        for (k=1; k<_p->n; k++) {
+    for (i=0; i<_q->nfft; i++) {
+        _q->yr[i] = _q->xr[0]*0.5f;
+        for (k=1; k<_q->nfft; k++) {
             phi = M_PI*n_inv*((float)i + 0.5f)*k;
-            _p->yr[i] += _p->xr[k]*cosf(phi);
+            _q->yr[i] += _q->xr[k]*cosf(phi);
         }
 
         // compensate for discrepancy
-        _p->yr[i] *= 2.0f;
+        _q->yr[i] *= 2.0f;
     }
 }
 
 // DCT-IV
-void FFT(_execute_REDFT11)(FFT(plan) _p)
+void FFT(_execute_REDFT11)(FFT(plan) _q)
 {
     // ugly, slow method
     unsigned int i,k;
-    float n_inv = 1.0f / (float)(_p->n);
+    float n_inv = 1.0f / (float)(_q->nfft);
     float phi;
-    for (i=0; i<_p->n; i++) {
-        _p->yr[i] = 0.0f;
-        for (k=0; k<_p->n; k++) {
+    for (i=0; i<_q->nfft; i++) {
+        _q->yr[i] = 0.0f;
+        for (k=0; k<_q->nfft; k++) {
             phi = M_PI*n_inv*((float)k+0.5f)*((float)i+0.5f);
-            _p->yr[i] += _p->xr[k]*cosf(phi);
+            _q->yr[i] += _q->xr[k]*cosf(phi);
         }
 
         // compensate for discrepancy
-        _p->yr[i] *= 2.0f;
+        _q->yr[i] *= 2.0f;
     }
 }
