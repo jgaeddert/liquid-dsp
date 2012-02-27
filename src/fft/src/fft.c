@@ -43,14 +43,26 @@ FFT(plan) FFT(_create_plan)(unsigned int _nfft,
     // allocate plan and initialize all internal arrays to NULL
     FFT(plan) q = (FFT(plan)) malloc(sizeof(struct FFT(plan_s)));
 
-    q->nfft = _nfft;
-    q->x    = _x;
-    q->y    = _y;
-    q->flags = _flags;
-    q->kind = LIQUID_FFT_DFT_1D;
+    q->nfft      = _nfft;
+    q->x         = _x;
+    q->y         = _y;
+    q->flags     = _flags;
+    q->kind      = LIQUID_FFT_DFT_1D;
     q->direction = (_dir == FFT_FORWARD) ? FFT_FORWARD : FFT_REVERSE;
 
-    q->execute = FFT(_execute_dft);
+    // determine best method for execution
+    // TODO : check flags and allow user override
+    q->method = liquid_fft_estimate_method(q->nfft);
+
+    // initialize fft based on method (just DFT for now)
+    switch (q->method) {
+    case LIQUID_FFT_METHOD_UNKNOWN:
+        fprintf(stderr,"error: fft_create_plan(), unknown/invalid fft method\n");
+        exit(1);
+    case LIQUID_FFT_METHOD_DFT:
+    default:
+        q->execute = FFT(_execute_dft);
+    }
 
     return q;
 }
@@ -128,7 +140,7 @@ FFT(plan) FFT(_create_plan_r2r_1d)(unsigned int _nfft,
     q->yr     = _y;
     q->kind   = _kind;
     q->flags  = _flags;
-    q->method = LIQUID_FFT_METHOD_DFT;
+    //q->method = LIQUID_FFT_METHOD_DFT;
 
     switch (q->kind) {
     case FFT_REDFT00:  q->execute = &FFT(_execute_REDFT00);  break;  // DCT-I

@@ -740,19 +740,22 @@ typedef enum {
 #define LIQUID_FFT_DEFINE_INTERNAL_API(FFT,T,TC)                \
                                                                 \
 /* execute basic dft (slow, but guarantees correct output) */   \
-void FFT(_execute_dft)(FFT(plan) _p);                           \
+void FFT(_execute_dft)(FFT(plan) _q);                           \
                                                                 \
 /* discrete cosine transform (DCT) prototypes */                \
-void FFT(_execute_REDFT00)(FFT(plan) _p);   /* DCT-I   */       \
-void FFT(_execute_REDFT10)(FFT(plan) _p);   /* DCT-II  */       \
-void FFT(_execute_REDFT01)(FFT(plan) _p);   /* DCT-III */       \
-void FFT(_execute_REDFT11)(FFT(plan) _p);   /* DCT-IV  */       \
+void FFT(_execute_REDFT00)(FFT(plan) _q);   /* DCT-I   */       \
+void FFT(_execute_REDFT10)(FFT(plan) _q);   /* DCT-II  */       \
+void FFT(_execute_REDFT01)(FFT(plan) _q);   /* DCT-III */       \
+void FFT(_execute_REDFT11)(FFT(plan) _q);   /* DCT-IV  */       \
                                                                 \
 /* discrete sine transform (DST) prototypes */                  \
-void FFT(_execute_RODFT00)(FFT(plan) _p);   /* DST-I   */       \
-void FFT(_execute_RODFT10)(FFT(plan) _p);   /* DST-II  */       \
-void FFT(_execute_RODFT01)(FFT(plan) _p);   /* DST-III */       \
-void FFT(_execute_RODFT11)(FFT(plan) _p);   /* DST-IV  */       \
+void FFT(_execute_RODFT00)(FFT(plan) _q);   /* DST-I   */       \
+void FFT(_execute_RODFT10)(FFT(plan) _q);   /* DST-II  */       \
+void FFT(_execute_RODFT01)(FFT(plan) _q);   /* DST-III */       \
+void FFT(_execute_RODFT11)(FFT(plan) _q);   /* DST-IV  */       \
+
+// determine best FFT method based on size
+liquid_fft_method liquid_fft_estimate_method(unsigned int _nfft);
 
 // is input radix-2?
 int fft_is_radix2(unsigned int _n);

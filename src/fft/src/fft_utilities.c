@@ -28,6 +28,13 @@
 
 #include "liquid.internal.h"
 
+// determine best FFT method based on size
+liquid_fft_method liquid_fft_estimate_method(unsigned int _nfft)
+{
+    // TODO : determine best method based on size, for now return DFT
+    return LIQUID_FFT_METHOD_DFT;
+}
+
 // is input radix-2?
 int fft_is_radix2(unsigned int _n)
 {
