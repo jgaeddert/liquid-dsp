@@ -87,8 +87,9 @@ FFT(plan) FFT(_create_plan_mixed_radix)(unsigned int _nfft,
     // initialize twiddle factors, indices for mixed-radix transforms
     q->twiddle = (float complex *) malloc(q->nfft * sizeof(float complex));
     
+    float d = (q->direction == FFT_FORWARD) ? -1.0 : 1.0;
     for (i=0; i<q->nfft; i++)
-        q->twiddle[i] = cexpf(-_Complex_I*2*M_PI*(float)i / (float)(q->nfft));
+        q->twiddle[i] = cexpf(_Complex_I*d*2*M_PI*(float)i / (float)(q->nfft));
 
     return q;
 }
