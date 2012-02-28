@@ -70,7 +70,8 @@ void fftmr_bfly_generic(float complex * _x,
                         unsigned int    _m,
                         unsigned int    _p)
 {
-    printf("  bfly_generic: offset=%3u, step=%3u, m=%3u, p=%3u\n", _offset, _q, _m, _p);
+    printf("  bfly_generic: offset=%3u, stride=%3u, m=%3u, p=%3u\n", _offset, _q, _m, _p);
+    return;
 
     // create temporary buffer the size of the FFT
     //float complex x[_p];
@@ -91,14 +92,16 @@ void fftmr_bfly_generic(float complex * _x,
 //  _y          :   output pointer [size: _nfft x 1]
 //  _twiddle    :   pre-computed twiddle factors [size: _nfft x 1]
 //  _nfft       :   original FFT size
-//  _q          :   stride
+//  _xoffset    :   input buffer offset
+//  _xstride    :   input buffer stride
 //  _m          :   
 //  _p          :   
 void fftmr_cycle(float complex * _x,
                  float complex * _y,
                  float complex * _twiddle,
                  unsigned int    _nfft,
-                 unsigned int    _q,
+                 unsigned int    _xoffset,
+                 unsigned int    _xstride,
                  unsigned int  * _m,
                  unsigned int  * _p)
 {
@@ -110,22 +113,26 @@ void fftmr_cycle(float complex * _x,
     _m++;
     _p++;
     
-    printf("fftmr_cycle(), stride=%3d, p=%3d, m=%3d\n", _q, p, m);
+    printf("fftmr_cycle:    offset=%3u, stride=%3u, p=%3u, m=%3u\n", _xoffset, _xstride, p, m);
 
+    unsigned int i;
     if ( m == 1 ) {
-        // 
+        // copy data to output buffer
+        for (i=0; i<p; i++) {
+            printf("    copying sample: y[%3u] = x[%3u]\n", i, _xoffset + _xstride*i);
+            _y[i] = _x[_xoffset + _xstride*i];
+        }
     } else {
         // call fftmr_cycle() recursively
-        unsigned int i;
-        for (i=0; i<p; i++)
-            fftmr_cycle(_x, _y, _twiddle, _nfft, _q*p, _m, _p);
+        // TODO : check offset, stride
+        for (i=0; i<p; i++) {
+            //unsigned int offset_new = _xoffset + _xstride*i;
+            fftmr_cycle(_x, _y+i*m, _twiddle, _nfft, _xoffset + _xstride*i, _xstride*p, _m, _p);
+        }
     }
 
     // run m-point FFT
-    // TODO : compute offset and stride appropriately
-    unsigned int offset = 0;
-    unsigned int stride = _q;
-    fftmr_bfly_generic(_x, _twiddle, _nfft, offset, stride, m, p);
+    fftmr_bfly_generic(_x, _twiddle, _nfft, _xoffset, _xstride, m, p);
 }
                       
 
@@ -193,7 +200,7 @@ int main(int argc, char*argv[]) {
         twiddle[i] = cexpf(-_Complex_I*2*M_PI*(float)i / (float)n);
 
     // call mixed-radix function
-    fftmr_cycle(x, y, twiddle, nfft, 1, m, p);
+    fftmr_cycle(x, y, twiddle, nfft, 0, 1, m, p);
 
     return 0;
 
