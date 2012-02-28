@@ -33,7 +33,7 @@
 #define DEBUG 0
 #define DFT_FORWARD (-1)
 #define DFT_REVERSE ( 1)
-#define MAX_FACTORS (32)
+#define MAX_FACTORS (40)
 
 // print usage/help message
 void usage()
@@ -200,6 +200,14 @@ int main(int argc, char*argv[]) {
             }
         }
     } while (n > 1 && num_factors < MAX_FACTORS);
+
+    // NOTE: this is extremely unlikely as the worst case is
+    //       nfft=2^MAX_FACTORS in which case we will probably run out
+    //       of memory first
+    if (num_factors == MAX_FACTORS) {
+        fprintf(stderr,"error: could not factor %u with %u factors\n", nfft, MAX_FACTORS);
+        exit(1);
+    }
 
     printf("factors of %u:\n", nfft);
     for (i=0; i<num_factors; i++)
