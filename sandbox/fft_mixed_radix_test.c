@@ -73,7 +73,7 @@ void fftmr_bfly_generic(float complex * _x,
     printf("  bfly_generic: offset=%3u, stride=%3u, m=%3u, p=%3u\n", _offset, _q, _m, _p);
 
     // create temporary buffer the size of the FFT
-    float complex x_tmp[_p];
+    float complex * x_tmp = (float complex *) malloc(_p*sizeof(float complex));
 
     unsigned int i;
     unsigned int k;
@@ -108,7 +108,8 @@ void fftmr_bfly_generic(float complex * _x,
         }
     }
 
-    // ...
+    // free temporary buffer
+    free(x_tmp);
 }
 
 // FFT mixed-radix recursive function...
@@ -214,9 +215,13 @@ int main(int argc, char*argv[]) {
         printf("  p=%3u, m=%3u\n", p[i], m[i]);
 
     // create and initialize data arrays
-    float complex x[nfft];
-    float complex y[nfft];
-    float complex y_test[nfft];
+    float complex * x      = (float complex *) malloc(nfft * sizeof(float complex));
+    float complex * y      = (float complex *) malloc(nfft * sizeof(float complex));
+    float complex * y_test = (float complex *) malloc(nfft * sizeof(float complex));
+    if (x == NULL || y == NULL || y_test == NULL) {
+        fprintf(stderr,"error: %s, not enough memory for allocation\n", argv[0]);
+        exit(1);
+    }
     for (i=0; i<nfft; i++) {
         //x[i] = randnf() + _Complex_I*randnf();
         x[i] = (float)i + _Complex_I*(3 - (float)i);
@@ -227,7 +232,11 @@ int main(int argc, char*argv[]) {
     dft_run(nfft, x, y_test, DFT_FORWARD, 0);
 
     // compute twiddle factors (roots of unity)
-    float complex twiddle[nfft];
+    float complex * twiddle = (float complex *) malloc(nfft * sizeof(float complex));
+    if (x == NULL || y == NULL || y_test == NULL) {
+        fprintf(stderr,"error: %s, not enough memory for twiddle factors\n", argv[0]);
+        exit(1);
+    }
     for (i=0; i<nfft; i++)
         twiddle[i] = cexpf(-_Complex_I*2*M_PI*(float)i / (float)nfft);
 
@@ -252,6 +261,12 @@ int main(int argc, char*argv[]) {
     }
     rmse = sqrtf(rmse / (float)nfft);
     printf("RMS error : %12.4e (%s)\n", rmse, rmse < 1e-3 ? "pass" : "FAIL");
+
+    // free allocated memory
+    free(x);
+    free(y);
+    free(y_test);
+    free(twiddle);
 
     return 0;
 }
