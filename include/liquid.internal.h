@@ -765,6 +765,11 @@ FFT(plan) FFT(_create_plan_mixed_radix)(unsigned int _nfft,     \
                                         int          _flags);   \
 void FFT(_destroy_plan_mixed_radix)(FFT(plan) _q);              \
 void FFT(_execute_mixed_radix)(FFT(plan) _q);                   \
+void FFT(_mixed_radix_bfly2)(TC *         _x,                   \
+                             TC *         _twiddle,             \
+                             unsigned int _nfft,                \
+                             unsigned int _stride,              \
+                             unsigned int _m);                  \
 void FFT(_mixed_radix_bfly)(TC *         _x,                    \
                             TC *         _twiddle,              \
                             unsigned int _nfft,                 \

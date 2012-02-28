@@ -120,6 +120,43 @@ void FFT(_execute_mixed_radix)(FFT(plan) _q)
 
 }
 
+// FFT mixed-radix butterfly for 2-point DFT
+//  _x          :   input/output buffer pointer [size: _nfft x 1]
+//  _twiddle    :   pre-computed twiddle factors [size: _nfft x 1]
+//  _nfft       :   original FFT size
+//  _stride     :   output stride
+//  _m          :   number of FFTs to compute
+//
+// NOTES : the butterfly decimates in time, storing the output as
+//         contiguous samples in the same buffer.
+void FFT(_mixed_radix_bfly2)(TC *         _x,
+                             TC *         _twiddle,
+                             unsigned int _nfft,
+                             unsigned int _stride,
+                             unsigned int _m)
+{
+    unsigned int n;
+    unsigned int twiddle_index = 0;
+    for (n=0; n<_m; n++) {
+        // strip input values
+        TC x0 = _x[n];
+        TC x1 = _x[n+_m];
+
+        // compute 2-point DFT, using appropriate twiddles
+        // x0 ---- y0
+        //    \ /
+        //     X
+        //    / \
+        // x1 ---- y1
+        TC t = x1*_twiddle[twiddle_index];
+        _x[n+_m] = _x[n] - t;
+        _x[n]    = _x[n] + t;
+
+        // update twiddle index
+        twiddle_index += _stride;
+    }
+}
+
 // FFT mixed-radix butterfly
 //  _x          :   input/output buffer pointer [size: _nfft x 1]
 //  _twiddle    :   pre-computed twiddle factors [size: _nfft x 1]
@@ -241,6 +278,9 @@ void FFT(_mixed_radix_cycle)(TC *            _x,
     }
 
     // run m-point DFT
-    FFT(_mixed_radix_bfly)(_y, _twiddle, _nfft, _xstride, m, p);
+    switch (p) {
+    case 2:  FFT(_mixed_radix_bfly2)(_y, _twiddle, _nfft, _xstride, m); break;
+    default: FFT(_mixed_radix_bfly)(_y, _twiddle, _nfft, _xstride, m, p);
+    }
 }
                       
