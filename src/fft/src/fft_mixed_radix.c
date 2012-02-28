@@ -65,6 +65,10 @@ FFT(plan) FFT(_create_plan_mixed_radix)(unsigned int _nfft,
     do {
         for (k=2; k<=n; k++) {
             if ( (n%k)==0 ) {
+                // prefer radix 4 over 2 if possible
+                if ( (k==2) && (n%4)==0 )
+                    k = 4;
+
                 n /= k;
                 q->p_vect[num_factors] = k;
                 q->m_vect[num_factors] = n;
