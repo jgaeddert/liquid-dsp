@@ -29,6 +29,8 @@
 #include <math.h>
 #include "liquid.internal.h"
 
+#define FFT_DEBUG_MIXED_RADIX 0
+
 // create FFT plan for regular DFT
 //  _nfft   :   FFT size
 //  _x      :   input array [size: _nfft x 1]
@@ -80,9 +82,11 @@ FFT(plan) FFT(_create_plan_mixed_radix)(unsigned int _nfft,
         exit(1);
     }
 
+#if FFT_DEBUG_MIXED_RADIX
     printf("factors of %u:\n", q->nfft);
     for (i=0; i<num_factors; i++)
         printf("  p=%3u, m=%3u\n", q->p_vect[i], q->m_vect[i]);
+#endif
 
     // initialize twiddle factors, indices for mixed-radix transforms
     q->twiddle = (float complex *) malloc(q->nfft * sizeof(float complex));
@@ -129,7 +133,7 @@ void FFT(_mixed_radix_bfly)(float complex * _x,
                             unsigned int    _m,
                             unsigned int    _p)
 {
-#if DEBUG
+#if FFT_DEBUG_MIXED_RADIX
     printf("  bfly: stride=%3u, m=%3u, p=%3u\n", _stride, _m, _p);
 #endif
 
@@ -141,7 +145,7 @@ void FFT(_mixed_radix_bfly)(float complex * _x,
 
     unsigned int n;
     for (n=0; n<_m; n++) {
-#if DEBUG
+#if FFT_DEBUG_MIXED_RADIX
         printf("    u=%u\n", n);
 #endif
 
@@ -152,14 +156,14 @@ void FFT(_mixed_radix_bfly)(float complex * _x,
         // compute DFT, applying appropriate twiddle factors
         unsigned int twiddle_base = n;
         for (i=0; i<_p; i++) {
-#if DEBUG
+#if FFT_DEBUG_MIXED_RADIX
             printf("      ----\n");
 #endif
             float complex y = x_tmp[0];
             unsigned int twiddle_index = 0;
             for (k=1; k<_p; k++) {
                 twiddle_index = (twiddle_index + _stride*twiddle_base) % _nfft;
-#if DEBUG
+#if FFT_DEBUG_MIXED_RADIX
                 printf("      twiddle_index = %3u > %12.8f + j%12.8f, %12.8f + j%12.8f\n", twiddle_index, crealf(_twiddle[twiddle_index]), cimagf(_twiddle[twiddle_index]), crealf(x_tmp[k]), cimagf(x_tmp[k]));
 #endif
 
@@ -170,7 +174,7 @@ void FFT(_mixed_radix_bfly)(float complex * _x,
 
             // store output
             _x[n + i*_m] = y;
-#if DEBUG
+#if FFT_DEBUG_MIXED_RADIX
             printf("      y = %12.6f + j%12.6f\n", crealf(y), cimagf(y));
 #endif
         }
@@ -206,7 +210,7 @@ void FFT(_mixed_radix_cycle)(float complex * _x,
     _m_vect++;
     _p_vect++;
     
-#if DEBUG
+#if FFT_DEBUG_MIXED_RADIX
     printf("fftmr_cycle:    offset=%3u, stride=%3u, p=%3u, m=%3u\n", _xoffset, _xstride, p, m);
 #endif
 
