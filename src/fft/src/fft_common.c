@@ -27,6 +27,8 @@
 #include <stdlib.h>
 #include "liquid.internal.h"
 
+#define FFT_MAX_FACTORS (32)
+
 struct FFT(plan_s) {
     unsigned int nfft;  // fft size
     TC * twiddle;       // twiddle factors
@@ -43,6 +45,10 @@ struct FFT(plan_s) {
     // radix-2 transform data
     unsigned int m;             // log2(nfft)
     unsigned int * index_rev;   // reversed indices
+
+    // mixed-radix transform data
+    unsigned int m_vect[FFT_MAX_FACTORS];
+    unsigned int p_vect[FFT_MAX_FACTORS];
 
     // real even/odd DFT parameters (DCT/DST)
     T * xr; // input array (real)
@@ -67,8 +73,9 @@ FFT(plan) FFT(_create_plan)(unsigned int _nfft,
 
     // initialize fft based on method
     switch (method) {
-    case LIQUID_FFT_METHOD_DFT:    return FFT(_create_plan_dft)(   _nfft, _x, _y, _dir, _flags);
-    case LIQUID_FFT_METHOD_RADIX2: return FFT(_create_plan_radix2)(_nfft, _x, _y, _dir, _flags);
+    case LIQUID_FFT_METHOD_DFT:         return FFT(_create_plan_dft)(        _nfft, _x, _y, _dir, _flags);
+    case LIQUID_FFT_METHOD_MIXED_RADIX: return FFT(_create_plan_mixed_radix)(_nfft, _x, _y, _dir, _flags);
+    case LIQUID_FFT_METHOD_RADIX2:      return FFT(_create_plan_radix2)(     _nfft, _x, _y, _dir, _flags);
     case LIQUID_FFT_METHOD_UNKNOWN:
     default:
         fprintf(stderr,"error: fft_create_plan(), unknown/invalid fft method\n");
@@ -82,8 +89,9 @@ FFT(plan) FFT(_create_plan)(unsigned int _nfft,
 void FFT(_destroy_plan)(FFT(plan) _q)
 {
     switch (_q->method) {
-    case LIQUID_FFT_METHOD_DFT:    FFT(_destroy_plan_dft)(_q);    break;
-    case LIQUID_FFT_METHOD_RADIX2: FFT(_destroy_plan_radix2)(_q); break;
+    case LIQUID_FFT_METHOD_DFT:         FFT(_destroy_plan_dft)(_q); break;
+    case LIQUID_FFT_METHOD_MIXED_RADIX: FFT(_destroy_plan_mixed_radix)(_q); break;
+    case LIQUID_FFT_METHOD_RADIX2:      FFT(_destroy_plan_radix2)(_q); break;
     case LIQUID_FFT_METHOD_UNKNOWN:
     default:
         fprintf(stderr,"error: fft_destroy_plan(), unknown/invalid fft method\n");

@@ -727,9 +727,10 @@ typedef enum {
 } liquid_fft_kind;
 
 typedef enum {
-    LIQUID_FFT_METHOD_UNKNOWN=0,// unknown method
-    LIQUID_FFT_METHOD_RADIX2,   // Radix-2 (decimation in time)
-    LIQUID_FFT_METHOD_DFT       // slow discrete Fourier transform
+    LIQUID_FFT_METHOD_UNKNOWN=0,    // unknown method
+    LIQUID_FFT_METHOD_MIXED_RADIX,  // mixed-radix (decimation in time)
+    LIQUID_FFT_METHOD_RADIX2,       // Radix-2 (decimation in time)
+    LIQUID_FFT_METHOD_DFT           // slow discrete Fourier transform
 } liquid_fft_method;
 
 // Macro    :   FFT (internal)
@@ -744,8 +745,8 @@ FFT(plan) FFT(_create_plan_dft)(unsigned int _nfft,             \
                                 TC *         _y,                \
                                 int          _dir,              \
                                 int          _flags);           \
-void FFT(_execute_dft)(FFT(plan) _q);                           \
 void FFT(_destroy_plan_dft)(FFT(plan) _q);                      \
+void FFT(_execute_dft)(FFT(plan) _q);                           \
                                                                 \
 /* basic radix-2 fft (fast, but only for transforms of 2^m */   \
 FFT(plan) FFT(_create_plan_radix2)(unsigned int _nfft,          \
@@ -753,8 +754,31 @@ FFT(plan) FFT(_create_plan_radix2)(unsigned int _nfft,          \
                                    TC *         _y,             \
                                    int          _dir,           \
                                    int          _flags);        \
-void FFT(_execute_radix2)(FFT(plan) _q);                        \
 void FFT(_destroy_plan_radix2)(FFT(plan) _q);                   \
+void FFT(_execute_radix2)(FFT(plan) _q);                        \
+                                                                \
+/* Cooley-Tukey mixed-radix fft (fast when highly composite) */ \
+FFT(plan) FFT(_create_plan_mixed_radix)(unsigned int _nfft,     \
+                                        TC *         _x,        \
+                                        TC *         _y,        \
+                                        int          _dir,      \
+                                        int          _flags);   \
+void FFT(_destroy_plan_mixed_radix)(FFT(plan) _q);              \
+void FFT(_execute_mixed_radix)(FFT(plan) _q);                   \
+void FFT(_mixed_radix_bfly)(TC *         _x,                    \
+                            TC *         _twiddle,              \
+                            unsigned int _nfft,                 \
+                            unsigned int _stride,               \
+                            unsigned int _m,                    \
+                            unsigned int _p);                   \
+void FFT(_mixed_radix_cycle)(TC *         _x,                   \
+                             TC *         _y,                   \
+                             TC *         _twiddle,             \
+                             unsigned int _nfft,                \
+                             unsigned int _xoffset,             \
+                             unsigned int _xstride,             \
+                             unsigned int * _m_vect,            \
+                             unsigned int * _p_vect);           \
                                                                 \
 /* discrete cosine transform (DCT) prototypes */                \
 void FFT(_execute_REDFT00)(FFT(plan) _q);   /* DCT-I   */       \

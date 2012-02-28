@@ -42,6 +42,7 @@ liquid_fft_method liquid_fft_estimate_method(unsigned int _nfft)
 
     // last resort: use slow DFT method
     return LIQUID_FFT_METHOD_DFT;
+    //return LIQUID_FFT_METHOD_MIXED_RADIX;
 }
 
 // is input radix-2?
