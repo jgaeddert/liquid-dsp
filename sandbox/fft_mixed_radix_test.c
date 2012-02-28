@@ -71,17 +71,41 @@ void fftmr_bfly_generic(float complex * _x,
                         unsigned int    _p)
 {
     printf("  bfly_generic: offset=%3u, stride=%3u, m=%3u, p=%3u\n", _offset, _q, _m, _p);
-    return;
 
     // create temporary buffer the size of the FFT
-    //float complex x[_p];
+    float complex x_tmp[_p];
 
-    //unsigned int i;
-    //unsigned int k;
+    unsigned int i;
+    unsigned int k;
 
     unsigned int n;
     for (n=0; n<_m; n++) {
         printf("    u=%u\n", n);
+
+        // copy input to temporary buffer
+        for (i=0; i<_p; i++)
+            x_tmp[i] = _x[n + i*_m];
+        
+        // compute transform...
+        unsigned int f = n;
+        for (i=0; i<_p; i++) {
+            printf("      ----\n");
+            float complex y = x_tmp[0];
+            unsigned int twidx = 0;
+            for (k=1; k<_p; k++) {
+                //unsigned int twidx = (n + _q*_m*k) % _nfft;
+                //unsigned int twidx = (_q*(n+i*_m)) % _nfft;
+                twidx = (twidx + _q*f) % _nfft;
+                printf("      twidx = %3u > %12.8f + j%12.8f, %12.8f + j%12.8f\n", twidx, crealf(_twiddle[twidx]), cimagf(_twiddle[twidx]), crealf(x_tmp[k]), cimagf(x_tmp[k]));
+
+                y += x_tmp[k] * _twiddle[twidx];
+            }
+            f += _m;
+
+            // store output
+            printf("      y = %12.6f + j%12.6f\n", crealf(y), cimagf(y));
+            _x[n + i*_m] = y;
+        }
     }
 
     // ...
@@ -119,8 +143,8 @@ void fftmr_cycle(float complex * _x,
     if ( m == 1 ) {
         // copy data to output buffer
         for (i=0; i<p; i++) {
-            printf("    copying sample: y[%3u] = x[%3u]\n", i, _xoffset + _xstride*i);
             _y[i] = _x[_xoffset + _xstride*i];
+            printf("    copying sample: y[%3u] = x[%3u] = %12.6f + j%12.6f\n", i, _xoffset + _xstride*i, crealf(_y[i]), cimagf(_y[i]));
         }
     } else {
         // call fftmr_cycle() recursively
@@ -132,7 +156,7 @@ void fftmr_cycle(float complex * _x,
     }
 
     // run m-point FFT
-    fftmr_bfly_generic(_x, _twiddle, _nfft, _xoffset, _xstride, m, p);
+    fftmr_bfly_generic(_y, _twiddle, _nfft, _xoffset, _xstride, m, p);
 }
                       
 
@@ -197,12 +221,10 @@ int main(int argc, char*argv[]) {
     // compute twiddle factors (roots of unity)
     float complex twiddle[nfft];
     for (i=0; i<nfft; i++)
-        twiddle[i] = cexpf(-_Complex_I*2*M_PI*(float)i / (float)n);
+        twiddle[i] = cexpf(-_Complex_I*2*M_PI*(float)i / (float)nfft);
 
     // call mixed-radix function
     fftmr_cycle(x, y, twiddle, nfft, 0, 1, m, p);
-
-    return 0;
 
     // 
     // print results
