@@ -97,7 +97,7 @@ FFT(plan) FFT(_create_plan_mixed_radix)(unsigned int _nfft,
 void FFT(_destroy_plan_mixed_radix)(FFT(plan) _q)
 {
     // free data specific to mixed-radix transforms
-    free(_q->index_rev);
+    free(_q->twiddle);
 
     // free main object memory
     free(_q);
