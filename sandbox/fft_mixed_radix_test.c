@@ -55,8 +55,7 @@ void dft_run(unsigned int    _nfft,
 //  _x          :   input/output buffer pointer [size: _nfft x 1]
 //  _twiddle    :   pre-computed twiddle factors [size: _nfft x 1]
 //  _nfft       :   original fft size
-//  _offset     :   input buffer offset
-//  _q          :   input buffer stride
+//  _stride     :   input buffer stride
 //  _m          :   number of FFTs to compute
 //  _p          :   generic (small) FFT size
 //
@@ -65,13 +64,12 @@ void dft_run(unsigned int    _nfft,
 void fftmr_bfly_generic(float complex * _x,
                         float complex * _twiddle,
                         unsigned int    _nfft,
-                        unsigned int    _offset,
-                        unsigned int    _q,
+                        unsigned int    _stride,
                         unsigned int    _m,
                         unsigned int    _p)
 {
 #if DEBUG
-    printf("  bfly_generic: offset=%3u, stride=%3u, m=%3u, p=%3u\n", _offset, _q, _m, _p);
+    printf("  bfly_generic: stride=%3u, m=%3u, p=%3u\n", _stride, _m, _p);
 #endif
 
     // create temporary buffer the size of the FFT
@@ -99,9 +97,9 @@ void fftmr_bfly_generic(float complex * _x,
             float complex y = x_tmp[0];
             unsigned int twidx = 0;
             for (k=1; k<_p; k++) {
-                //unsigned int twidx = (n + _q*_m*k) % _nfft;
-                //unsigned int twidx = (_q*(n+i*_m)) % _nfft;
-                twidx = (twidx + _q*f) % _nfft;
+                //unsigned int twidx = (n + _stride*_m*k) % _nfft;
+                //unsigned int twidx = (_stride*(n+i*_m)) % _nfft;
+                twidx = (twidx + _stride*f) % _nfft;
 #if DEBUG
                 printf("      twidx = %3u > %12.8f + j%12.8f, %12.8f + j%12.8f\n", twidx, crealf(_twiddle[twidx]), cimagf(_twiddle[twidx]), crealf(x_tmp[k]), cimagf(x_tmp[k]));
 #endif
@@ -171,7 +169,7 @@ void fftmr_cycle(float complex * _x,
     }
 
     // run m-point FFT
-    fftmr_bfly_generic(_y, _twiddle, _nfft, _xoffset, _xstride, m, p);
+    fftmr_bfly_generic(_y, _twiddle, _nfft, _xstride, m, p);
 }
                       
 
