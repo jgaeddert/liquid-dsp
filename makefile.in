@@ -1313,6 +1313,7 @@ sandbox_programs =						\
 	sandbox/fecsoft_ldpc_test				\
 	sandbox/fec_sumproduct_test				\
 	sandbox/fft_dual_radix_test				\
+	sandbox/fft_mixed_radix_test				\
 	sandbox/fft_r2r_test					\
 	sandbox/firdes_energy_test				\
 	sandbox/firdes_fexp_test				\
