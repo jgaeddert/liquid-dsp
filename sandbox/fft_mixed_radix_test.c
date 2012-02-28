@@ -70,7 +70,9 @@ void fftmr_bfly_generic(float complex * _x,
                         unsigned int    _m,
                         unsigned int    _p)
 {
+#if DEBUG
     printf("  bfly_generic: offset=%3u, stride=%3u, m=%3u, p=%3u\n", _offset, _q, _m, _p);
+#endif
 
     // create temporary buffer the size of the FFT
     float complex * x_tmp = (float complex *) malloc(_p*sizeof(float complex));
@@ -80,7 +82,9 @@ void fftmr_bfly_generic(float complex * _x,
 
     unsigned int n;
     for (n=0; n<_m; n++) {
+#if DEBUG
         printf("    u=%u\n", n);
+#endif
 
         // copy input to temporary buffer
         for (i=0; i<_p; i++)
@@ -89,21 +93,27 @@ void fftmr_bfly_generic(float complex * _x,
         // compute transform...
         unsigned int f = n;
         for (i=0; i<_p; i++) {
+#if DEBUG
             printf("      ----\n");
+#endif
             float complex y = x_tmp[0];
             unsigned int twidx = 0;
             for (k=1; k<_p; k++) {
                 //unsigned int twidx = (n + _q*_m*k) % _nfft;
                 //unsigned int twidx = (_q*(n+i*_m)) % _nfft;
                 twidx = (twidx + _q*f) % _nfft;
+#if DEBUG
                 printf("      twidx = %3u > %12.8f + j%12.8f, %12.8f + j%12.8f\n", twidx, crealf(_twiddle[twidx]), cimagf(_twiddle[twidx]), crealf(x_tmp[k]), cimagf(x_tmp[k]));
+#endif
 
                 y += x_tmp[k] * _twiddle[twidx];
             }
             f += _m;
 
             // store output
+#if DEBUG
             printf("      y = %12.6f + j%12.6f\n", crealf(y), cimagf(y));
+#endif
             _x[n + i*_m] = y;
         }
     }
@@ -138,14 +148,18 @@ void fftmr_cycle(float complex * _x,
     _m++;
     _p++;
     
+#if DEBUG
     printf("fftmr_cycle:    offset=%3u, stride=%3u, p=%3u, m=%3u\n", _xoffset, _xstride, p, m);
+#endif
 
     unsigned int i;
     if ( m == 1 ) {
         // copy data to output buffer
         for (i=0; i<p; i++) {
             _y[i] = _x[_xoffset + _xstride*i];
+#if DEBUG
             printf("    copying sample: y[%3u] = x[%3u] = %12.6f + j%12.6f\n", i, _xoffset + _xstride*i, crealf(_y[i]), cimagf(_y[i]));
+#endif
         }
     } else {
         // call fftmr_cycle() recursively
