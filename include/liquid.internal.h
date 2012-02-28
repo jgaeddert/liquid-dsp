@@ -747,6 +747,15 @@ FFT(plan) FFT(_create_plan_dft)(unsigned int _nfft,             \
 void FFT(_execute_dft)(FFT(plan) _q);                           \
 void FFT(_destroy_plan_dft)(FFT(plan) _q);                      \
                                                                 \
+/* basic radix-2 fft (fast, but only for transforms of 2^m */   \
+FFT(plan) FFT(_create_plan_radix2)(unsigned int _nfft,          \
+                                   TC *         _x,             \
+                                   TC *         _y,             \
+                                   int          _dir,           \
+                                   int          _flags);        \
+void FFT(_execute_radix2)(FFT(plan) _q);                        \
+void FFT(_destroy_plan_radix2)(FFT(plan) _q);                   \
+                                                                \
 /* discrete cosine transform (DCT) prototypes */                \
 void FFT(_execute_REDFT00)(FFT(plan) _q);   /* DCT-I   */       \
 void FFT(_execute_REDFT10)(FFT(plan) _q);   /* DCT-II  */       \

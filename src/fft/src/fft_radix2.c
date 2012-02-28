@@ -20,7 +20,7 @@
  */
 
 //
-// fft_dft.c : definitions for regular, slow DFTs
+// fft_radix2.c : definitions for transforms of the form 2^m
 //
 
 #include <stdio.h>
@@ -34,11 +34,11 @@
 //  _y      :   output array [size: _nfft x 1]
 //  _dir    :   fft direction: {FFT_FORWARD, FFT_REVERSE}
 //  _method :   fft method
-FFT(plan) FFT(_create_plan_dft)(unsigned int _nfft,
-                                TC *         _x,
-                                TC *         _y,
-                                int          _dir,
-                                int          _flags)
+FFT(plan) FFT(_create_plan_radix2)(unsigned int _nfft,
+                                   TC *         _x,
+                                   TC *         _y,
+                                   int          _dir,
+                                   int          _flags)
 {
     // allocate plan and initialize all internal arrays to NULL
     FFT(plan) q = (FFT(plan)) malloc(sizeof(struct FFT(plan_s)));
@@ -49,34 +49,59 @@ FFT(plan) FFT(_create_plan_dft)(unsigned int _nfft,
     q->flags     = _flags;
     q->kind      = LIQUID_FFT_DFT_1D;
     q->direction = (_dir == FFT_FORWARD) ? FFT_FORWARD : FFT_REVERSE;
-    q->method    = LIQUID_FFT_METHOD_DFT;
+    q->method    = LIQUID_FFT_METHOD_RADIX2;
 
-    q->execute   = FFT(_execute_dft);
+    q->execute   = FFT(_execute_radix2);
+
+    // initialize twiddle factors, indices for radix-2 transforms
+    q->m = liquid_msb_index(q->nfft) - 1;  // m = log2(nfft)
+    
+    q->index_rev = (unsigned int *) malloc((q->nfft)*sizeof(unsigned int));
+    unsigned int i;
+    for (i=0; i<q->nfft; i++)
+        q->index_rev[i] = fft_reverse_index(i,q->m);
 
     return q;
 }
 
 // destroy FFT plan
-void FFT(_destroy_plan_dft)(FFT(plan) _q)
+void FFT(_destroy_plan_radix2)(FFT(plan) _q)
 {
+    // free data specific to radix-2 transforms
+    free(_q->index_rev);
+
     // free main object memory
     free(_q);
 }
 
-// execute DFT (slow but accurate)
-void FFT(_execute_dft)(FFT(plan) _q)
+// execute radix-2 FFT
+void FFT(_execute_radix2)(FFT(plan) _q)
 {
-    unsigned int i;
-    unsigned int k;
-    unsigned int nfft = _q->nfft;
-    
-    T d = (_q->direction==FFT_FORWARD) ? -1 : 1;
+    // swap values
+    unsigned int i,j,k;
+    for (i=0; i<_q->nfft; i++)
+        _q->y[i] = _q->x[ _q->index_rev[i] ];
 
-    for (i=0; i<nfft; i++) {
-        _q->y[i] = 0.0f;
-        for (k=0; k<nfft; k++) {
-            T phi = 2*M_PI*d*i*k / (float)nfft;
-            _q->y[i] += _q->x[k] * cexpf(_Complex_I*phi);
+    TC t, yp, *y=_q->y;
+    T phi, d_phi;
+    unsigned int n1=0, n2=1;
+    // TODO : store twiddle factors internallly
+    for (i=0; i<_q->m; i++) {
+        n1 = n2;
+        n2 *= 2;
+
+        d_phi = (_q->direction == FFT_FORWARD) ? -2*M_PI/n2 : 2*M_PI/n2;
+        phi = 0;
+
+        for (j=0; j<n1; j++) {
+            t = cexpf(_Complex_I*phi);
+            phi += d_phi;
+
+            for (k=j; k<_q->nfft; k+=n2) {
+                yp = y[k+n1]*t;
+                y[k+n1] = y[k] - yp;
+                y[k] += yp;
+            }
         }
     }
 }

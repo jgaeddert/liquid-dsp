@@ -38,6 +38,7 @@
 // include main files
 #include "fft_common.c"     // common source must come first (object definition)
 #include "fft_dft.c"        // FFT definitions for DFT
+#include "fft_radix2.c"     // FFT definitions for radix-2 transforms
 #include "fft_r2r_1d.c"     // real-to-real definitions (DCT/DST)
 
 #if 0
