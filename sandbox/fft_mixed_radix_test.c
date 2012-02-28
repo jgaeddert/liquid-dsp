@@ -51,25 +51,25 @@ void dft_run(unsigned int    _nfft,
              int             _dir,
              int             _flags);
 
-// FFT mixed-radix generic butterfly
+// FFT mixed-radix butterfly
 //  _x          :   input/output buffer pointer [size: _nfft x 1]
 //  _twiddle    :   pre-computed twiddle factors [size: _nfft x 1]
-//  _nfft       :   original fft size
-//  _stride     :   input buffer stride
+//  _nfft       :   original FFT size
+//  _stride     :   output stride
 //  _m          :   number of FFTs to compute
 //  _p          :   generic (small) FFT size
 //
 // NOTES : the butterfly decimates in time, storing the output as
 //         contiguous samples in the same buffer.
-void fftmr_bfly_generic(float complex * _x,
-                        float complex * _twiddle,
-                        unsigned int    _nfft,
-                        unsigned int    _stride,
-                        unsigned int    _m,
-                        unsigned int    _p)
+void fftmr_bfly(float complex * _x,
+                float complex * _twiddle,
+                unsigned int    _nfft,
+                unsigned int    _stride,
+                unsigned int    _m,
+                unsigned int    _p)
 {
 #if DEBUG
-    printf("  bfly_generic: stride=%3u, m=%3u, p=%3u\n", _stride, _m, _p);
+    printf("  bfly: stride=%3u, m=%3u, p=%3u\n", _stride, _m, _p);
 #endif
 
     // create temporary buffer the size of the FFT
@@ -88,31 +88,30 @@ void fftmr_bfly_generic(float complex * _x,
         for (i=0; i<_p; i++)
             x_tmp[i] = _x[n + i*_m];
         
-        // compute transform...
-        unsigned int f = n;
+        // compute DFT, applying appropriate twiddle factors
+        unsigned int twiddle_base = n;
         for (i=0; i<_p; i++) {
 #if DEBUG
             printf("      ----\n");
 #endif
             float complex y = x_tmp[0];
-            unsigned int twidx = 0;
+            unsigned int twiddle_index = 0;
             for (k=1; k<_p; k++) {
-                //unsigned int twidx = (n + _stride*_m*k) % _nfft;
-                //unsigned int twidx = (_stride*(n+i*_m)) % _nfft;
-                twidx = (twidx + _stride*f) % _nfft;
+                twiddle_index = (twiddle_index + _stride*twiddle_base) % _nfft;
 #if DEBUG
-                printf("      twidx = %3u > %12.8f + j%12.8f, %12.8f + j%12.8f\n", twidx, crealf(_twiddle[twidx]), cimagf(_twiddle[twidx]), crealf(x_tmp[k]), cimagf(x_tmp[k]));
+                printf("      twiddle_index = %3u > %12.8f + j%12.8f, %12.8f + j%12.8f\n", twiddle_index, crealf(_twiddle[twiddle_index]), cimagf(_twiddle[twiddle_index]), crealf(x_tmp[k]), cimagf(x_tmp[k]));
 #endif
 
-                y += x_tmp[k] * _twiddle[twidx];
+                y += x_tmp[k] * _twiddle[twiddle_index];
             }
-            f += _m;
+            // increment twiddle twiddle base
+            twiddle_base += _m;
 
             // store output
+            _x[n + i*_m] = y;
 #if DEBUG
             printf("      y = %12.6f + j%12.6f\n", crealf(y), cimagf(y));
 #endif
-            _x[n + i*_m] = y;
         }
     }
 
@@ -121,30 +120,30 @@ void fftmr_bfly_generic(float complex * _x,
 }
 
 // FFT mixed-radix recursive function...
-//  _x          :   input pointer [size: _nfft x 1]
-//  _y          :   output pointer [size: _nfft x 1]
+//  _x          :   constant input pointer [size: _nfft x 1]
+//  _y          :   output pointer
 //  _twiddle    :   pre-computed twiddle factors [size: _nfft x 1]
 //  _nfft       :   original FFT size
 //  _xoffset    :   input buffer offset
 //  _xstride    :   input buffer stride
-//  _m          :   
-//  _p          :   
+//  _m_vect     :   array of radix values [size: num_factors x 1]
+//  _p_vect     :   array of DFT values [size: num_factors x 1]
 void fftmr_cycle(float complex * _x,
                  float complex * _y,
                  float complex * _twiddle,
                  unsigned int    _nfft,
                  unsigned int    _xoffset,
                  unsigned int    _xstride,
-                 unsigned int  * _m,
-                 unsigned int  * _p)
+                 unsigned int *  _m_vect,
+                 unsigned int *  _p_vect)
 {
-    // de-reference factors
-    unsigned int m = _m[0]; // radix
-    unsigned int p = _p[0]; // FFT size
+    // de-reference factors and pop values off the top
+    unsigned int m = _m_vect[0];    // radix
+    unsigned int p = _p_vect[0];    // DFT size
 
-    // increment...
-    _m++;
-    _p++;
+    // increment factor pointers
+    _m_vect++;
+    _p_vect++;
     
 #if DEBUG
     printf("fftmr_cycle:    offset=%3u, stride=%3u, p=%3u, m=%3u\n", _xoffset, _xstride, p, m);
@@ -153,23 +152,27 @@ void fftmr_cycle(float complex * _x,
     unsigned int i;
     if ( m == 1 ) {
         // copy data to output buffer
-        for (i=0; i<p; i++) {
+        for (i=0; i<p; i++)
             _y[i] = _x[_xoffset + _xstride*i];
-#if DEBUG
-            printf("    copying sample: y[%3u] = x[%3u] = %12.6f + j%12.6f\n", i, _xoffset + _xstride*i, crealf(_y[i]), cimagf(_y[i]));
-#endif
-        }
+
     } else {
-        // call fftmr_cycle() recursively
-        // TODO : check offset, stride
+        // call fftmr_cycle() recursively, effectively computing
+        // p DFTs each of size m samples, decimating the time
+        // input by _xstride
         for (i=0; i<p; i++) {
-            //unsigned int offset_new = _xoffset + _xstride*i;
-            fftmr_cycle(_x, _y+i*m, _twiddle, _nfft, _xoffset + _xstride*i, _xstride*p, _m, _p);
+            fftmr_cycle(_x,                     // input buffer (does not change)
+                        _y + i*m,               // increment output buffer by block size
+                        _twiddle,               // twiddle factors (no change)
+                        _nfft,                  // original FFT size (no change)
+                        _xoffset + _xstride*i,  // input offset (increased by _xstride)
+                        _xstride*p,             // input stride (scaled by radix)
+                        _m_vect,                // array of radix values (length reduced by one)
+                        _p_vect);               // array of DFT values (length reduced by one)
         }
     }
 
-    // run m-point FFT
-    fftmr_bfly_generic(_y, _twiddle, _nfft, _xstride, m, p);
+    // run m-point DFT
+    fftmr_bfly(_y, _twiddle, _nfft, _xstride, m, p);
 }
                       
 
