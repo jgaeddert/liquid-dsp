@@ -93,11 +93,11 @@ FFT(plan) FFT(_create_plan_mixed_radix)(unsigned int _nfft,
 #endif
 
     // initialize twiddle factors, indices for mixed-radix transforms
-    q->twiddle = (float complex *) malloc(q->nfft * sizeof(float complex));
+    q->twiddle = (TC *) malloc(q->nfft * sizeof(TC));
     
-    float d = (q->direction == FFT_FORWARD) ? -1.0 : 1.0;
+    T d = (q->direction == FFT_FORWARD) ? -1.0 : 1.0;
     for (i=0; i<q->nfft; i++)
-        q->twiddle[i] = cexpf(_Complex_I*d*2*M_PI*(float)i / (float)(q->nfft));
+        q->twiddle[i] = cexpf(_Complex_I*d*2*M_PI*(T)i / (T)(q->nfft));
 
     return q;
 }
@@ -130,19 +130,19 @@ void FFT(_execute_mixed_radix)(FFT(plan) _q)
 //
 // NOTES : the butterfly decimates in time, storing the output as
 //         contiguous samples in the same buffer.
-void FFT(_mixed_radix_bfly)(float complex * _x,
-                            float complex * _twiddle,
-                            unsigned int    _nfft,
-                            unsigned int    _stride,
-                            unsigned int    _m,
-                            unsigned int    _p)
+void FFT(_mixed_radix_bfly)(TC *         _x,
+                            TC *         _twiddle,
+                            unsigned int _nfft,
+                            unsigned int _stride,
+                            unsigned int _m,
+                            unsigned int _p)
 {
 #if FFT_DEBUG_MIXED_RADIX
     printf("  bfly: stride=%3u, m=%3u, p=%3u\n", _stride, _m, _p);
 #endif
 
     // create temporary buffer the size of the FFT
-    float complex * x_tmp = (float complex *) malloc(_p*sizeof(float complex));
+    TC * x_tmp = (TC *) malloc(_p*sizeof(TC));
 
     unsigned int i;
     unsigned int k;
@@ -163,7 +163,7 @@ void FFT(_mixed_radix_bfly)(float complex * _x,
 #if FFT_DEBUG_MIXED_RADIX
             printf("      ----\n");
 #endif
-            float complex y = x_tmp[0];
+            TC y = x_tmp[0];
             unsigned int twiddle_index = 0;
             for (k=1; k<_p; k++) {
                 twiddle_index = (twiddle_index + _stride*twiddle_base) % _nfft;
@@ -197,9 +197,9 @@ void FFT(_mixed_radix_bfly)(float complex * _x,
 //  _xstride    :   input buffer stride
 //  _m_vect     :   array of radix values [size: num_factors x 1]
 //  _p_vect     :   array of DFT values [size: num_factors x 1]
-void FFT(_mixed_radix_cycle)(float complex * _x,
-                             float complex * _y,
-                             float complex * _twiddle,
+void FFT(_mixed_radix_cycle)(TC *            _x,
+                             TC *            _y,
+                             TC *            _twiddle,
                              unsigned int    _nfft,
                              unsigned int    _xoffset,
                              unsigned int    _xstride,
