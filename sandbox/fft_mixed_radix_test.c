@@ -68,20 +68,65 @@ void fftmr_bfly_generic(float complex * _x,
                         unsigned int    _offset,
                         unsigned int    _q,
                         unsigned int    _m,
-                        unsigned int    _p);
+                        unsigned int    _p)
+{
+    printf("  bfly_generic: offset=%3u, step=%3u, m=%3u, p=%3u\n", _offset, _q, _m, _p);
+
+    // create temporary buffer the size of the FFT
+    //float complex x[_p];
+
+    //unsigned int i;
+    //unsigned int k;
+
+    unsigned int n;
+    for (n=0; n<_m; n++) {
+        printf("    u=%u\n", n);
+    }
+
+    // ...
+}
 
 // FFT mixed-radix recursive function...
 //  _x          :   input pointer [size: _nfft x 1]
 //  _y          :   output pointer [size: _nfft x 1]
 //  _twiddle    :   pre-computed twiddle factors [size: _nfft x 1]
 //  _nfft       :   original FFT size
-//  _M          :   
-//  _P          :   
+//  _q          :   stride
+//  _m          :   
+//  _p          :   
 void fftmr_cycle(float complex * _x,
                  float complex * _y,
                  float complex * _twiddle,
                  unsigned int    _nfft,
-                 unsigned int  * _P);
+                 unsigned int    _q,
+                 unsigned int  * _m,
+                 unsigned int  * _p)
+{
+    // de-reference factors
+    unsigned int m = _m[0]; // radix
+    unsigned int p = _p[0]; // FFT size
+
+    // increment...
+    _m++;
+    _p++;
+    
+    printf("fftmr_cycle(), stride=%3d, p=%3d, m=%3d\n", _q, p, m);
+
+    if ( m == 1 ) {
+        // 
+    } else {
+        // call fftmr_cycle() recursively
+        unsigned int i;
+        for (i=0; i<p; i++)
+            fftmr_cycle(_x, _y, _twiddle, _nfft, _q*p, _m, _p);
+    }
+
+    // run m-point FFT
+    // TODO : compute offset and stride appropriately
+    unsigned int offset = 0;
+    unsigned int stride = _q;
+    fftmr_bfly_generic(_x, _twiddle, _nfft, offset, stride, m, p);
+}
                       
 
 int main(int argc, char*argv[]) {
@@ -116,10 +161,10 @@ int main(int argc, char*argv[]) {
     do {
         for (k=2; k<=n; k++) {
             if ( (n%k)==0 ) {
-                p[num_factors] = k;
-                m[num_factors] = n/k;
-                num_factors++;
                 n /= k;
+                p[num_factors] = k;
+                m[num_factors] = n;
+                num_factors++;
                 break;
             }
         }
@@ -129,11 +174,69 @@ int main(int argc, char*argv[]) {
     for (i=0; i<num_factors; i++)
         printf("  p=%3u, m=%3u\n", p[i], m[i]);
 
+    // create and initialize data arrays
+    float complex x[nfft];
+    float complex y[nfft];
+    float complex y_test[nfft];
+    for (i=0; i<nfft; i++) {
+        //x[i] = randnf() + _Complex_I*randnf();
+        x[i] = (float)i + _Complex_I*(3 - (float)i);
+        y[i] = 0.0f;
+    }
+
+    // compute output for testing
+    dft_run(nfft, x, y_test, DFT_FORWARD, 0);
+
     // compute twiddle factors (roots of unity)
-    float complex twiddle[n];
-    for (i=0; i<n; i++)
+    float complex twiddle[nfft];
+    for (i=0; i<nfft; i++)
         twiddle[i] = cexpf(-_Complex_I*2*M_PI*(float)i / (float)n);
 
+    // call mixed-radix function
+    fftmr_cycle(x, y, twiddle, nfft, 1, m, p);
+
     return 0;
+
+    // 
+    // print results
+    //
+    for (i=0; i<nfft; i++) {
+        printf("  y[%3u] = %12.6f + j*%12.6f (expected %12.6f + j%12.6f)\n",
+            i,
+            crealf(y[i]),      cimagf(y[i]),
+            crealf(y_test[i]), cimagf(y_test[i]));
+    }
+
+    // compute error
+    float rmse = 0.0f;
+    for (i=0; i<nfft; i++) {
+        float e = y[i] - y_test[i];
+        rmse += e*conjf(e);
+    }
+    rmse = sqrtf(rmse / (float)nfft);
+    printf("RMS error : %12.4e (%s)\n", rmse, rmse < 1e-3 ? "pass" : "FAIL");
+
+    return 0;
+}
+
+// super slow DFT, but functionally correct
+void dft_run(unsigned int    _nfft,
+             float complex * _x,
+             float complex * _y,
+             int             _dir,
+             int             _flags)
+{
+    unsigned int i;
+    unsigned int k;
+
+    int d = (_dir == DFT_FORWARD) ? -1 : 1;
+
+    for (i=0; i<_nfft; i++) {
+        _y[i] = 0.0f;
+        for (k=0; k<_nfft; k++) {
+            float phi = 2*M_PI*d*i*k / (float)_nfft;
+            _y[i] += _x[k] * cexpf(_Complex_I*phi);
+        }
+    }
 }
 
