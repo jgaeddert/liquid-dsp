@@ -51,6 +51,39 @@ void dft_run(unsigned int    _nfft,
              int             _dir,
              int             _flags);
 
+// FFT mixed-radix generic butterfly
+//  _x          :   input/output buffer pointer [size: _nfft x 1]
+//  _twiddle    :   pre-computed twiddle factors [size: _nfft x 1]
+//  _nfft       :   original fft size
+//  _offset     :   input buffer offset
+//  _q          :   input buffer stride
+//  _m          :   number of FFTs to compute
+//  _p          :   generic (small) FFT size
+//
+// NOTES : the butterfly decimates in time, storing the output as
+//         contiguous samples in the same buffer.
+void fftmr_bfly_generic(float complex * _x,
+                        float complex * _twiddle,
+                        unsigned int    _nfft,
+                        unsigned int    _offset,
+                        unsigned int    _q,
+                        unsigned int    _m,
+                        unsigned int    _p);
+
+// FFT mixed-radix recursive function...
+//  _x          :   input pointer [size: _nfft x 1]
+//  _y          :   output pointer [size: _nfft x 1]
+//  _twiddle    :   pre-computed twiddle factors [size: _nfft x 1]
+//  _nfft       :   original FFT size
+//  _M          :   
+//  _P          :   
+void fftmr_cycle(float complex * _x,
+                 float complex * _y,
+                 float complex * _twiddle,
+                 unsigned int    _nfft,
+                 unsigned int  * _P);
+                      
+
 int main(int argc, char*argv[]) {
     // transform size
     unsigned int nfft = 30;
@@ -76,15 +109,15 @@ int main(int argc, char*argv[]) {
     
     // find 'prime' factors
     unsigned int n = nfft;
-    unsigned int q[MAX_FACTORS];
     unsigned int p[MAX_FACTORS];
+    unsigned int m[MAX_FACTORS];
     unsigned int num_factors = 0;
 
     do {
         for (k=2; k<=n; k++) {
             if ( (n%k)==0 ) {
-                q[num_factors] = k;
-                p[num_factors] = n/k;
+                p[num_factors] = k;
+                m[num_factors] = n/k;
                 num_factors++;
                 n /= k;
                 break;
@@ -92,10 +125,14 @@ int main(int argc, char*argv[]) {
         }
     } while (n > 1 && num_factors < MAX_FACTORS);
 
-    printf("factors of %u:", nfft);
+    printf("factors of %u:\n", nfft);
     for (i=0; i<num_factors; i++)
-        printf("  %u(%u)", q[i], p[i]);
-    printf("\n");
+        printf("  p=%3u, m=%3u\n", p[i], m[i]);
+
+    // compute twiddle factors (roots of unity)
+    float complex twiddle[n];
+    for (i=0; i<n; i++)
+        twiddle[i] = cexpf(-_Complex_I*2*M_PI*(float)i / (float)n);
 
     return 0;
 }
