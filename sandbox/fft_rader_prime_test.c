@@ -112,13 +112,15 @@ int main(int argc, char*argv[]) {
 
     // compute primitive root of nfft
     unsigned int g = primitive_root(nfft);
-    printf("computed primitive root of %u as %u\n", nfft, g);
 
+#if DEBUG
+    printf("computed primitive root of %u as %u\n", nfft, g);
     // generate sequence (sanity check)
     printf("s = [");
     for (i=1; i<nfft; i++)
         printf("%4u", modpow(g,i,nfft));
     printf("]\n");
+#endif
 
     // compute DFT of sequence { exp(-j*2*pi*g^i/nfft }, size: nfft-1
     // NOTE: R[0] = -1, |R[k]| = sqrt(nfft) for k != 0
@@ -128,49 +130,21 @@ int main(int argc, char*argv[]) {
     for (i=0; i<nfft-1; i++)
         r[i] = cexpf(-_Complex_I*2*M_PI*modpow(g,i+1,nfft)/(float)(nfft));
     dft_run(nfft-1, r, R, DFT_FORWARD, 0);
-#if DEBUG
-    for (i=0; i<nfft-1; i++) {
-        printf("  %3u : r = %12.6f + j*%12.6f > R = %12.6f + j%12.6f\n",
-            i,
-            crealf(r[i]), cimagf(r[i]),
-            crealf(R[i]), cimagf(R[i]));
-
-    }
-#endif
-#if DEBUG
-    for (i=0; i<nfft-1; i++)
-        printf("  R[%3u] = %12.6f + j*%12.6f\n", i, crealf(R[i]), cimagf(R[i]));
-#endif
 
     // compute DFT of permuted sequence, size: nfft-1
     float complex * xp = (float complex*)malloc((nfft-1)*sizeof(float complex));
     float complex * Xp = (float complex*)malloc((nfft-1)*sizeof(float complex));
-    printf("s = [");
     for (i=0; i<nfft-1; i++) {
         // reverse
         unsigned int k = modpow(g,nfft-1-i,nfft); // sequence
         xp[i] = x[k];
-        printf(" %3u", k);
     }
-    printf("]\n");
     dft_run(nfft-1, xp, Xp, DFT_FORWARD, 0);
-#if DEBUG
-    for (i=0; i<nfft-1; i++)
-        printf("  xp[%3u] = %12.6f + j*%12.6f\n", i, crealf(xp[i]), cimagf(xp[i]));
-    for (i=0; i<nfft-1; i++)
-        printf("  Xp[%3u] = %12.6f + j*%12.6f\n", i, crealf(Xp[i]), cimagf(Xp[i]));
-#endif
 
     // compute inverse FFT of product
     for (i=0; i<nfft-1; i++)
         Xp[i] *= R[i];
     dft_run(nfft-1, Xp, xp, DFT_REVERSE, 0);
-#if DEBUG
-    for (i=0; i<nfft-1; i++)
-        printf("  Xp[%3u] = %12.6f + j*%12.6f\n", i, crealf(Xp[i]), cimagf(Xp[i]));
-    for (i=0; i<nfft-1; i++)
-        printf("  yp[%3u] = %12.6f + j*%12.6f\n", i, crealf(xp[i]), cimagf(xp[i]));
-#endif
 
     // set DC value
     y[0] = 0.0f;
@@ -178,14 +152,11 @@ int main(int argc, char*argv[]) {
         y[0] += x[i];
 
     // reverse permute result, scale, and add offset x[0]
-    printf("sk= [");
     for (i=1; i<nfft; i++) {
         unsigned int k = modpow(g,i,nfft);
-        printf(" %3u", k);
 
         y[k] = xp[i-1] / (float)(nfft-1) + x[0];
     }
-    printf("]\n");
 
     // free internal memory
     free(r);
