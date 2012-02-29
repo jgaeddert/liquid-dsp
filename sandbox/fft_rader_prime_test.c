@@ -46,7 +46,7 @@ void usage()
     printf("fft_rader_prime_test -- test Rader's prime FFT algorithm, compare to slow DFT method\n");
     printf("options (default values in []):\n");
     printf("  h     : print usage/help\n");
-    printf("  n     : fft size (must be prime)\n");
+    printf("  n     : fft size (must be prime and greater than 2)\n");
 }
 
 // super slow DFT, but functionally correct
@@ -58,6 +58,9 @@ void dft_run(unsigned int    _nfft,
 
 // determine if number is prime (slow, simple method)
 int is_prime(unsigned int _n);
+
+// find smallest primitive root of _n (assuming _n is prime)
+unsigned int primitive_root(unsigned int _n);
 
 int main(int argc, char*argv[]) {
     // transform size (must be prime)
@@ -74,10 +77,15 @@ int main(int argc, char*argv[]) {
     }
 
     // validate input
-    if ( nfft == 0 || !is_prime(nfft)) {
-        fprintf(stderr,"error: input transform size must be greater than zero and prime\n");
+    if ( nfft <= 2 || !is_prime(nfft)) {
+        fprintf(stderr,"error: %s, input transform size must be prime and greater than two\n", argv[0]);
         exit(1);
     }
+
+    // compute primitive root of nfft
+    unsigned int g = primitive_root(nfft);
+    printf("computed primitive root of %u as %u\n", nfft, g);
+    return 0;
 
     unsigned int i;
 
@@ -101,8 +109,6 @@ int main(int argc, char*argv[]) {
     // 
     // run Rader's algorithm
     //
-
-    // ...
 
     // 
     // print results
@@ -164,5 +170,42 @@ int is_prime(unsigned int _n)
     }
 
     return 1;
+}
+
+// find smallest primitive root of _n (assuming _n is prime)
+unsigned int primitive_root(unsigned int _n)
+{
+    // find unique factors of _n-1
+    unsigned int unique_factors[MAX_FACTORS];
+    unsigned int num_unique_factors = 0;
+    unsigned int n = _n-1;
+    unsigned int k;
+    do {
+        for (k=2; k<=n; k++) {
+            if ( (n%k)==0 ) {
+                // k is a factor of (_n-1)
+                n /= k;
+
+                // add element to end of table
+                unique_factors[num_unique_factors] = k;
+
+                // increment counter only if element is unique
+                if (num_unique_factors == 0)
+                    num_unique_factors++;
+                else if (unique_factors[num_unique_factors-1] != k)
+                    num_unique_factors++;
+                break;
+            }
+        }
+    } while (n > 1 && num_unique_factors < MAX_FACTORS);
+
+    // print unique factors
+    printf("found %u unique factors of n-1 = %u\n", num_unique_factors, _n-1);
+    for (k=0; k<num_unique_factors; k++)
+        printf("  %3u\n", unique_factors[k]);
+
+    // search for minimum integer...
+
+    return 0;
 }
 
