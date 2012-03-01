@@ -42,6 +42,9 @@ liquid_fft_method liquid_fft_estimate_method(unsigned int _nfft)
     } else if (liquid_is_prime(_nfft)) {
         // use Rader's algorithm
         return LIQUID_FFT_METHOD_RADER;
+
+        // use Rader's alternate algorithm
+        //return LIQUID_FFT_METHOD_RADER_RADIX2;
     }
 
     // last resort: use slow DFT method

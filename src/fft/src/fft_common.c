@@ -54,6 +54,10 @@ struct FFT(plan_s) {
     unsigned int * seq; // transformation sequence, size: nfft-1
     TC * R;             // DFT of sequence { exp(-j*2*pi*g^i/nfft }, size: nfft-1
 
+    // Rader data for transforms of prime length, alternate method
+    // using larger FFT of length 2^nextpow2(2*nfft-4)
+    unsigned int nfft_prime;
+
     // real even/odd DFT parameters (DCT/DST)
     T * xr; // input array (real)
     T * yr; // output array (real)
@@ -89,6 +93,10 @@ FFT(plan) FFT(_create_plan)(unsigned int _nfft,
         // use Rader's algorithm for FFTs of prime length
         return FFT(_create_plan_rader)(_nfft, _x, _y, _dir, _flags);
 
+    case LIQUID_FFT_METHOD_RADER_RADIX2:
+        // use Rader's algorithm for FFTs of prime length
+        return FFT(_create_plan_rader_radix2)(_nfft, _x, _y, _dir, _flags);
+
     case LIQUID_FFT_METHOD_DFT:
         // use slow DFT
         return FFT(_create_plan_dft)(_nfft, _x, _y, _dir, _flags);
@@ -114,6 +122,7 @@ void FFT(_destroy_plan)(FFT(plan) _q)
     case LIQUID_FFT_METHOD_MIXED_RADIX: FFT(_destroy_plan_mixed_radix)(_q); break;
     case LIQUID_FFT_METHOD_DFT:         FFT(_destroy_plan_dft)(_q); break;
     case LIQUID_FFT_METHOD_RADER:       FFT(_destroy_plan_rader)(_q); break;
+    case LIQUID_FFT_METHOD_RADER_RADIX2: FFT(_destroy_plan_rader_radix2)(_q); break;
     case LIQUID_FFT_METHOD_NONE:        break;
     case LIQUID_FFT_METHOD_UNKNOWN:
     default:

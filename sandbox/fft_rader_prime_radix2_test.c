@@ -142,7 +142,7 @@ int main(int argc, char*argv[]) {
     nfft_prime = 1 << m;
     printf("nfft_prime = %u\n", nfft_prime);
 
-    // compute DFT of sequence { exp(-j*2*pi*g^i/nfft }, size: nfft_prime-1
+    // compute DFT of sequence { exp(-j*2*pi*g^i/nfft }, size: nfft_prime
     // NOTE: R[0] = -1, |R[k]| = sqrt(nfft) for k != 0
     // NOTE: R can be pre-computed
     float complex * r = (float complex*)malloc((nfft_prime)*sizeof(float complex));

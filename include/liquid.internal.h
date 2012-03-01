@@ -732,6 +732,7 @@ typedef enum {
     LIQUID_FFT_METHOD_RADIX2,       // Radix-2 (decimation in time)
     LIQUID_FFT_METHOD_MIXED_RADIX,  // Cooley-Tukey mixed-radix FFT (decimation in time)
     LIQUID_FFT_METHOD_RADER,        // Rader's method for FFTs of prime length
+    LIQUID_FFT_METHOD_RADER_RADIX2, // Rader's method for FFTs of prime length (alternate)
     LIQUID_FFT_METHOD_DFT           // slow discrete Fourier transform
 } liquid_fft_method;
 
@@ -797,6 +798,15 @@ FFT(plan) FFT(_create_plan_rader)(unsigned int _nfft,           \
                                   int          _flags);         \
 void FFT(_destroy_plan_rader)(FFT(plan) _q);                    \
 void FFT(_execute_rader)(FFT(plan) _q);                         \
+                                                                \
+/* Rader's alternate algorithm for FFTs of prime length */      \
+FFT(plan) FFT(_create_plan_rader_radix2)(unsigned int _nfft,    \
+                                         TC *         _x,       \
+                                         TC *         _y,       \
+                                         int          _dir,     \
+                                         int          _flags);  \
+void FFT(_destroy_plan_rader_radix2)(FFT(plan) _q);             \
+void FFT(_execute_rader_radix2)(FFT(plan) _q);                  \
                                                                 \
 /* discrete cosine transform (DCT) prototypes */                \
 void FFT(_execute_REDFT00)(FFT(plan) _q);   /* DCT-I   */       \
