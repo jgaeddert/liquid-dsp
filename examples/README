@@ -342,6 +342,9 @@ modem_soft_example.c *
     This example demonstates soft demodulation of linear
     modulation schemes.
 
+modular_arithmetic_example.c
+    This example demonstates some modular arithmetic functions.
+
 msequence_example.c
     This example demonstrates the auto-correlation properties of a
     maximal-length sequence (m-sequence).  An m-sequence of a certain length
