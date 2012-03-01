@@ -102,12 +102,21 @@ void FFT(_execute_rader)(FFT(plan) _q)
     // compute primitive root of nfft
     unsigned int g = liquid_primitive_root_prime(_q->nfft);
 
+    // create and initialize sequence
+    unsigned int * s = (unsigned int *)malloc((_q->nfft-1)*sizeof(unsigned int));
+    // this is equivalent to but much faster than liquid_modpow(g, i+1, _q->nfft)
+    unsigned int c = g;
+    for (i=0; i<_q->nfft-1; i++) {
+        s[i] = c;
+        c = (c * g) % (_q->nfft);
+    }
+
 #if FFT_DEBUG_RADER
     printf("computed primitive root of %u as %u\n", _q->nfft, g);
     // generate sequence (sanity check)
     printf("s = [");
-    for (i=1; i<_q->nfft; i++)
-        printf("%4u", liquid_modpow(g,i,_q->nfft));
+    for (i=0; i<_q->nfft-1; i++)
+        printf("%4u", s[i]);
     printf("]\n");
 #endif
 
@@ -130,8 +139,8 @@ void FFT(_execute_rader)(FFT(plan) _q)
     TC * xp = (TC*)malloc((_q->nfft-1)*sizeof(TC));
     TC * Xp = (TC*)malloc((_q->nfft-1)*sizeof(TC));
     for (i=0; i<_q->nfft-1; i++) {
-        // reverse
-        unsigned int k = liquid_modpow(g,_q->nfft-1-i,_q->nfft); // sequence
+        // reverse sequence
+        unsigned int k = s[_q->nfft-1-i-1];
         xp[i] = _q->x[k];
     }
 #if 0
@@ -160,12 +169,13 @@ void FFT(_execute_rader)(FFT(plan) _q)
 
     // reverse permute result, scale, and add offset x[0]
     for (i=1; i<_q->nfft; i++) {
-        unsigned int k = liquid_modpow(g,i,_q->nfft);
+        unsigned int k = s[i-1];
 
         _q->y[k] = xp[i-1] / (T)(_q->nfft-1) + _q->x[0];
     }
 
     // free internal memory
+    free(s);
     free(r);
     free(R);
     free(xp);
