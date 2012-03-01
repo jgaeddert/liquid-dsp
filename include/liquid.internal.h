@@ -728,6 +728,7 @@ typedef enum {
 
 typedef enum {
     LIQUID_FFT_METHOD_UNKNOWN=0,    // unknown method
+    LIQUID_FFT_METHOD_NONE,         // unspecified method (e.g. real-to-real)
     LIQUID_FFT_METHOD_RADIX2,       // Radix-2 (decimation in time)
     LIQUID_FFT_METHOD_MIXED_RADIX,  // Cooley-Tukey mixed-radix FFT (decimation in time)
     LIQUID_FFT_METHOD_RADER,        // Rader's method for FFTs of prime length

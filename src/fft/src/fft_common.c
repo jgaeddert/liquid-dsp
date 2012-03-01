@@ -89,6 +89,10 @@ FFT(plan) FFT(_create_plan)(unsigned int _nfft,
         // use slow DFT
         return FFT(_create_plan_dft)(_nfft, _x, _y, _dir, _flags);
 
+    case LIQUID_FFT_METHOD_NONE:
+        // no method specified (e.g. real-to-real method)
+        break;
+
     case LIQUID_FFT_METHOD_UNKNOWN:
     default:
         fprintf(stderr,"error: fft_create_plan(), unknown/invalid fft method\n");
@@ -106,6 +110,7 @@ void FFT(_destroy_plan)(FFT(plan) _q)
     case LIQUID_FFT_METHOD_MIXED_RADIX: FFT(_destroy_plan_mixed_radix)(_q); break;
     case LIQUID_FFT_METHOD_DFT:         FFT(_destroy_plan_dft)(_q); break;
     case LIQUID_FFT_METHOD_RADER:       FFT(_destroy_plan_rader)(_q); break;
+    case LIQUID_FFT_METHOD_NONE:        break;
     case LIQUID_FFT_METHOD_UNKNOWN:
     default:
         fprintf(stderr,"error: fft_destroy_plan(), unknown/invalid fft method\n");

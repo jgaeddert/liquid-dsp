@@ -50,7 +50,7 @@ FFT(plan) FFT(_create_plan_r2r_1d)(unsigned int _nfft,
     q->flags  = _flags;
 
     // TODO : use separate 'method' for real-to-real types
-    q->method = LIQUID_FFT_METHOD_DFT;
+    q->method = LIQUID_FFT_METHOD_NONE;
 
     switch (q->kind) {
     case FFT_REDFT00:  q->execute = &FFT(_execute_REDFT00);  break;  // DCT-I
