@@ -53,30 +53,38 @@ FFT(plan) FFT(_create_plan_dft)(unsigned int _nfft,
 
     q->execute   = FFT(_execute_dft);
 
+    // initialize twiddle factors
+    q->twiddle = (TC *) malloc(q->nfft * sizeof(TC));
+    
+    unsigned int i;
+    T d = (q->direction == FFT_FORWARD) ? -1.0 : 1.0;
+    for (i=0; i<q->nfft; i++)
+        q->twiddle[i] = cexpf(_Complex_I*d*2*M_PI*(T)i / (T)(q->nfft));
+
     return q;
 }
 
 // destroy FFT plan
 void FFT(_destroy_plan_dft)(FFT(plan) _q)
 {
+    // free twiddle factors
+    free(_q->twiddle);
+
     // free main object memory
     free(_q);
 }
 
-// execute DFT (slow but accurate)
+// execute DFT (slow but functionally correct)
 void FFT(_execute_dft)(FFT(plan) _q)
 {
     unsigned int i;
     unsigned int k;
     unsigned int nfft = _q->nfft;
     
-    T d = (_q->direction==FFT_FORWARD) ? -1 : 1;
-
     for (i=0; i<nfft; i++) {
         _q->y[i] = 0.0f;
         for (k=0; k<nfft; k++) {
-            T phi = 2*M_PI*d*i*k / (float)nfft;
-            _q->y[i] += _q->x[k] * cexpf(_Complex_I*phi);
+            _q->y[i] += _q->x[k] * _q->twiddle[(i*k)%_q->nfft];
         }
     }
 }
