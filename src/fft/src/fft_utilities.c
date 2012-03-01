@@ -45,11 +45,18 @@ liquid_fft_method liquid_fft_estimate_method(unsigned int _nfft)
         return LIQUID_FFT_METHOD_RADIX2;
 
     } else if (liquid_is_prime(_nfft)) {
-        // use Rader's algorithm
-        return LIQUID_FFT_METHOD_RADER;
-
-        // use Rader's alternate algorithm
-        //return LIQUID_FFT_METHOD_RADER_RADIX2;
+        // compute prime factors of _nfft-1
+        unsigned int factors[LIQUID_MAX_FACTORS];
+        unsigned int num_factors=0;
+        liquid_factor(_nfft-1,factors,&num_factors);
+        
+        if (num_factors > 2) {
+            // use Rader's algorithm
+            return LIQUID_FFT_METHOD_RADER;
+        } else {
+            // use Rader's alternate algorithm
+            return LIQUID_FFT_METHOD_RADER_RADIX2;
+        }
     }
 
     // last resort: use slow DFT method
