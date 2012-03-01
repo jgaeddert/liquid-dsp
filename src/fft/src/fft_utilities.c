@@ -35,6 +35,11 @@ liquid_fft_method liquid_fft_estimate_method(unsigned int _nfft)
         // invalid length
         fprintf(stderr,"error: liquid_fft_estimate_method(), fft size must be > 0\n");
         return LIQUID_FFT_METHOD_UNKNOWN;
+
+    } else if (_nfft < 8) {
+        // use simple DFT
+        return LIQUID_FFT_METHOD_DFT;
+
     } else if (fft_is_radix2(_nfft)) {
         // transform is of the form 2^m
         return LIQUID_FFT_METHOD_RADIX2;
