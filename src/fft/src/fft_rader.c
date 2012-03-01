@@ -66,12 +66,17 @@ FFT(plan) FFT(_create_plan_rader)(unsigned int _nfft,
     FFT(_mixed_radix_init_factors)(q, q->nfft-1);
 
     // initialize twiddle factors, indices for mixed-radix transforms
-    q->twiddle = (TC *) malloc((q->nfft-1) * sizeof(TC));
+    // NOTE: double the number of twiddle factors and compute both
+    //       forward and reverse permutations
+    q->twiddle = (TC *) malloc(2 * (q->nfft-1) * sizeof(TC));
     
     unsigned int i;
-    T d = (q->direction == FFT_FORWARD) ? -1.0 : 1.0;
     for (i=0; i<q->nfft-1; i++)
-        q->twiddle[i] = cexpf(_Complex_I*d*2*M_PI*(T)i / (T)(q->nfft));
+        q->twiddle[i] = cexpf(-_Complex_I*2*M_PI*(T)i / (T)(q->nfft-1));
+
+    // compute reverse twiddle factors
+    for (i=0; i<q->nfft-1; i++)
+        q->twiddle[q->nfft-1+i] = cexpf(_Complex_I*2*M_PI*(T)i / (T)(q->nfft-1));
 
     return q;
 }
@@ -114,7 +119,12 @@ void FFT(_execute_rader)(FFT(plan) _q)
     T d = (_q->direction == FFT_FORWARD) ? -1.0 : 1.0;
     for (i=0; i<_q->nfft-1; i++)
         r[i] = cexpf(_Complex_I*d*2*M_PI*liquid_modpow(g,i+1,_q->nfft)/(T)(_q->nfft));
+#if 0
     FFT(_run)(_q->nfft-1, r, R, FFT_FORWARD, 0);
+#else
+    // call mixed-radix function (FFT)
+    FFT(_mixed_radix_cycle)(r, R, _q->twiddle, _q->nfft-1, 0, 1, _q->m_vect, _q->p_vect);
+#endif
 
     // compute DFT of permuted sequence, size: nfft-1
     TC * xp = (TC*)malloc((_q->nfft-1)*sizeof(TC));
@@ -124,12 +134,24 @@ void FFT(_execute_rader)(FFT(plan) _q)
         unsigned int k = liquid_modpow(g,_q->nfft-1-i,_q->nfft); // sequence
         xp[i] = _q->x[k];
     }
+#if 0
     FFT(_run)(_q->nfft-1, xp, Xp, FFT_FORWARD, 0);
+#else
+    // call mixed-radix function (FFT)
+    FFT(_mixed_radix_cycle)(xp, Xp, _q->twiddle, _q->nfft-1, 0, 1, _q->m_vect, _q->p_vect);
+#endif
 
     // compute inverse FFT of product
     for (i=0; i<_q->nfft-1; i++)
         Xp[i] *= R[i];
+#if 0
     FFT(_run)(_q->nfft-1, Xp, xp, FFT_REVERSE, 0);
+#else
+    // call mixed-radix function (IFFT)
+    // NOTE: inverse FFT is facilitated by passing second set of
+    //       conjugated twiddle factors
+    FFT(_mixed_radix_cycle)(Xp, xp, _q->twiddle+_q->nfft-1, _q->nfft-1, 0, 1, _q->m_vect, _q->p_vect);
+#endif
 
     // set DC value
     _q->y[0] = 0.0f;
@@ -148,10 +170,5 @@ void FFT(_execute_rader)(FFT(plan) _q)
     free(R);
     free(xp);
     free(Xp);
-
-#if 0
-    // call mixed-radix function
-    FFT(_mixed_radix_cycle)(_q->x, _q->y, _q->twiddle, _q->nfft, 0, 1, _q->m_vect, _q->p_vect);
-#endif
 }
 
