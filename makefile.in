@@ -528,6 +528,7 @@ math_objects :=							\
 	src/math/src/math.gamma.o				\
 	src/math/src/math.complex.o				\
 	src/math/src/math.trig.o				\
+	src/math/src/modular_arithmetic.o			\
 
 
 poly_includes :=						\
@@ -553,6 +554,8 @@ src/math/src/math.gamma.o : %.o : %.c $(headers)
 src/math/src/math.complex.o : %.o : %.c $(headers)
 
 src/math/src/math.trig.o : %.o : %.c $(headers)
+
+src/math/src/modular_arithmetic.o : %.o : %.c $(headers)
 
 
 math_autotests :=						\
