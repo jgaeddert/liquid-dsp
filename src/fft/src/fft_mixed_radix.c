@@ -115,8 +115,8 @@ void FFT(_mixed_radix_init_factors)(FFT(plan) _q,
 
 #if FFT_DEBUG_MIXED_RADIX
     printf("factors of %u:\n", _n);
-    for (i=0; i<num_factors; i++)
-        printf("  p=%3u, m=%3u\n", _q->p_vect[i], _q->m_vect[i]);
+    for (k=0; k<num_factors; k++)
+        printf("  p=%3u, m=%3u\n", _q->p_vect[k], _q->m_vect[k]);
 #endif
 
 }
