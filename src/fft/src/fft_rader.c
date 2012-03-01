@@ -109,16 +109,16 @@ void FFT(_execute_rader)(FFT(plan) _q)
     // compute DFT of sequence { exp(-j*2*pi*g^i/nfft }, size: nfft-1
     // NOTE: R[0] = -1, |R[k]| = sqrt(nfft) for k != 0
     // NOTE: R can be pre-computed
-    float complex * r = (float complex*)malloc((_q->nfft-1)*sizeof(float complex));
-    float complex * R = (float complex*)malloc((_q->nfft-1)*sizeof(float complex));
+    TC * r = (TC*)malloc((_q->nfft-1)*sizeof(TC));
+    TC * R = (TC*)malloc((_q->nfft-1)*sizeof(TC));
     T d = (_q->direction == FFT_FORWARD) ? -1.0 : 1.0;
     for (i=0; i<_q->nfft-1; i++)
-        r[i] = cexpf(_Complex_I*d*2*M_PI*liquid_modpow(g,i+1,_q->nfft)/(float)(_q->nfft));
+        r[i] = cexpf(_Complex_I*d*2*M_PI*liquid_modpow(g,i+1,_q->nfft)/(T)(_q->nfft));
     FFT(_run)(_q->nfft-1, r, R, FFT_FORWARD, 0);
 
     // compute DFT of permuted sequence, size: nfft-1
-    float complex * xp = (float complex*)malloc((_q->nfft-1)*sizeof(float complex));
-    float complex * Xp = (float complex*)malloc((_q->nfft-1)*sizeof(float complex));
+    TC * xp = (TC*)malloc((_q->nfft-1)*sizeof(TC));
+    TC * Xp = (TC*)malloc((_q->nfft-1)*sizeof(TC));
     for (i=0; i<_q->nfft-1; i++) {
         // reverse
         unsigned int k = liquid_modpow(g,_q->nfft-1-i,_q->nfft); // sequence
@@ -140,7 +140,7 @@ void FFT(_execute_rader)(FFT(plan) _q)
     for (i=1; i<_q->nfft; i++) {
         unsigned int k = liquid_modpow(g,i,_q->nfft);
 
-        _q->y[k] = xp[i-1] / (float)(_q->nfft-1) + _q->x[0];
+        _q->y[k] = xp[i-1] / (T)(_q->nfft-1) + _q->x[0];
     }
 
     // free internal memory
