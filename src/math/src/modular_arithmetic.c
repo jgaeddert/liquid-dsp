@@ -41,6 +41,36 @@ int liquid_is_prime(unsigned int _n)
     return 1;
 }
 
+// compute number's prime factors
+//  _n          :   number to factor
+//  _factors    :   pre-allocated array of factors [size: LIQUID_MAX_FACTORS x 1]
+//  _num_factors:   number of factors found, sorted ascending
+void liquid_factor(unsigned int   _n,
+                   unsigned int * _factors,
+                   unsigned int * _num_factors)
+{
+    unsigned int k;
+    unsigned int n = _n;
+    unsigned int num_factors = 0;
+    do {
+        for (k=2; k<=n; k++) {
+            if ( (n % k) == 0) {
+                // k factors _n; append to list
+                _factors[num_factors++] = k;
+                n /= k;
+                break;
+            }
+        }
+    } while (n > 1 && num_factors < LIQUID_MAX_FACTORS);
+
+    if (n > 1 && num_factors == LIQUID_MAX_FACTORS) {
+        fprintf(stderr,"error, liquid_factor(), could not factor %u in %u numbers\n", _n, LIQUID_MAX_FACTORS);
+        exit(1);
+    }
+
+    *_num_factors = num_factors;
+}
+
 // find smallest primitive root of _n
 unsigned int liquid_primitive_root(unsigned int _n)
 {

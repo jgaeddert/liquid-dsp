@@ -2690,6 +2690,14 @@ void poly_binomial_expand_pm(unsigned int _n,
 // is number prime?
 int liquid_is_prime(unsigned int _n);
 
+// compute number's prime factors
+//  _n          :   number to factor
+//  _factors    :   pre-allocated array of factors [size: LIQUID_MAX_FACTORS x 1]
+//  _num_factors:   number of factors found, sorted ascending
+void liquid_factor(unsigned int   _n,
+                   unsigned int * _factors,
+                   unsigned int * _num_factors);
+
 // compute c = base^exp (mod n)
 unsigned int liquid_modpow(unsigned int _base,
                            unsigned int _exp,

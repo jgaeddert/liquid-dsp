@@ -1229,6 +1229,7 @@ example_programs :=						\
 	examples/modem_arb_example				\
 	examples/modem_example					\
 	examples/modem_soft_example				\
+	examples/modular_arithmetic_example			\
 	examples/msequence_example				\
 	examples/msresamp_crcf_example				\
 	examples/nco_example					\
