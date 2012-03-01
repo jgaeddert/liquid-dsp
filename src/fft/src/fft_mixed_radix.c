@@ -56,45 +56,13 @@ FFT(plan) FFT(_create_plan_mixed_radix)(unsigned int _nfft,
 
     q->execute   = FFT(_execute_mixed_radix);
 
-    // find 'prime' factors
-    unsigned int i;
-    unsigned int k;
-    unsigned int n = q->nfft;
-    unsigned int num_factors = 0;
-
-    do {
-        for (k=2; k<=n; k++) {
-            if ( (n%k)==0 ) {
-                // prefer radix 4 over 2 if possible
-                if ( (k==2) && (n%4)==0 )
-                    k = 4;
-
-                n /= k;
-                q->p_vect[num_factors] = k;
-                q->m_vect[num_factors] = n;
-                num_factors++;
-                break;
-            }
-        }
-    } while (n > 1 && num_factors < FFT_MAX_FACTORS);
-
-    // NOTE: this is extremely unlikely as the worst case is
-    //       nfft=2^MAX_FACTORS in which case we will probably run out
-    //       of memory first
-    if (num_factors == FFT_MAX_FACTORS) {
-        fprintf(stderr,"error: could not factor %u with %u factors\n", q->nfft, FFT_MAX_FACTORS);
-        exit(1);
-    }
-
-#if FFT_DEBUG_MIXED_RADIX
-    printf("factors of %u:\n", q->nfft);
-    for (i=0; i<num_factors; i++)
-        printf("  p=%3u, m=%3u\n", q->p_vect[i], q->m_vect[i]);
-#endif
+    // initialize 'prime' factors
+    FFT(_mixed_radix_init_factors)(q, q->nfft);
 
     // initialize twiddle factors, indices for mixed-radix transforms
     q->twiddle = (TC *) malloc(q->nfft * sizeof(TC));
     
+    unsigned int i;
     T d = (q->direction == FFT_FORWARD) ? -1.0 : 1.0;
     for (i=0; i<q->nfft; i++)
         q->twiddle[i] = cexpf(_Complex_I*d*2*M_PI*(T)i / (T)(q->nfft));
@@ -110,6 +78,47 @@ void FFT(_destroy_plan_mixed_radix)(FFT(plan) _q)
 
     // free main object memory
     free(_q);
+}
+
+// initialize mixed-radix 'prime' factors
+void FFT(_mixed_radix_init_factors)(FFT(plan) _q,
+                                    unsigned int _n)
+{
+    // find 'prime' factors
+    unsigned int k;
+    unsigned int n = _n;
+    unsigned int num_factors = 0;
+
+    do {
+        for (k=2; k<=n; k++) {
+            if ( (n%k)==0 ) {
+                // prefer radix 4 over 2 if possible
+                if ( (k==2) && (n%4)==0 )
+                    k = 4;
+
+                n /= k;
+                _q->p_vect[num_factors] = k;
+                _q->m_vect[num_factors] = n;
+                num_factors++;
+                break;
+            }
+        }
+    } while (n > 1 && num_factors < FFT_MAX_FACTORS);
+
+    // NOTE: this is extremely unlikely as the worst case is
+    //       nfft=2^MAX_FACTORS in which case we will probably run out
+    //       of memory first
+    if (num_factors == FFT_MAX_FACTORS) {
+        fprintf(stderr,"error: could not factor %u with %u factors\n", _n, FFT_MAX_FACTORS);
+        exit(1);
+    }
+
+#if FFT_DEBUG_MIXED_RADIX
+    printf("factors of %u:\n", _n);
+    for (i=0; i<num_factors; i++)
+        printf("  p=%3u, m=%3u\n", _q->p_vect[i], _q->m_vect[i]);
+#endif
+
 }
 
 // execute mixed-radix FFT

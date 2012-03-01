@@ -38,6 +38,10 @@ liquid_fft_method liquid_fft_estimate_method(unsigned int _nfft)
     } else if (fft_is_radix2(_nfft)) {
         // transform is of the form 2^m
         return LIQUID_FFT_METHOD_RADIX2;
+
+    } else if (liquid_is_prime(_nfft)) {
+        // use Rader's algorithm
+        return LIQUID_FFT_METHOD_RADER;
     }
 
     // last resort: use slow DFT method

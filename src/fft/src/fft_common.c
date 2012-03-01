@@ -73,9 +73,22 @@ FFT(plan) FFT(_create_plan)(unsigned int _nfft,
 
     // initialize fft based on method
     switch (method) {
-    case LIQUID_FFT_METHOD_DFT:         return FFT(_create_plan_dft)(        _nfft, _x, _y, _dir, _flags);
-    case LIQUID_FFT_METHOD_MIXED_RADIX: return FFT(_create_plan_mixed_radix)(_nfft, _x, _y, _dir, _flags);
-    case LIQUID_FFT_METHOD_RADIX2:      return FFT(_create_plan_radix2)(     _nfft, _x, _y, _dir, _flags);
+    case LIQUID_FFT_METHOD_RADIX2:
+        // use radix-2 decimation-in-time method
+        return FFT(_create_plan_radix2)(_nfft, _x, _y, _dir, _flags);
+
+    case LIQUID_FFT_METHOD_MIXED_RADIX:
+        // use Cooley-Tukey mixed-radix algorithm
+        return FFT(_create_plan_mixed_radix)(_nfft, _x, _y, _dir, _flags);
+
+    case LIQUID_FFT_METHOD_RADER:
+        // use Rader's algorithm for FFTs of prime length
+        return FFT(_create_plan_rader)(_nfft, _x, _y, _dir, _flags);
+
+    case LIQUID_FFT_METHOD_DFT:
+        // use slow DFT
+        return FFT(_create_plan_dft)(_nfft, _x, _y, _dir, _flags);
+
     case LIQUID_FFT_METHOD_UNKNOWN:
     default:
         fprintf(stderr,"error: fft_create_plan(), unknown/invalid fft method\n");
@@ -89,9 +102,10 @@ FFT(plan) FFT(_create_plan)(unsigned int _nfft,
 void FFT(_destroy_plan)(FFT(plan) _q)
 {
     switch (_q->method) {
-    case LIQUID_FFT_METHOD_DFT:         FFT(_destroy_plan_dft)(_q); break;
-    case LIQUID_FFT_METHOD_MIXED_RADIX: FFT(_destroy_plan_mixed_radix)(_q); break;
     case LIQUID_FFT_METHOD_RADIX2:      FFT(_destroy_plan_radix2)(_q); break;
+    case LIQUID_FFT_METHOD_MIXED_RADIX: FFT(_destroy_plan_mixed_radix)(_q); break;
+    case LIQUID_FFT_METHOD_DFT:         FFT(_destroy_plan_dft)(_q); break;
+    case LIQUID_FFT_METHOD_RADER:       FFT(_destroy_plan_rader)(_q); break;
     case LIQUID_FFT_METHOD_UNKNOWN:
     default:
         fprintf(stderr,"error: fft_destroy_plan(), unknown/invalid fft method\n");

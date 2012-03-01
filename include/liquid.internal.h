@@ -728,8 +728,9 @@ typedef enum {
 
 typedef enum {
     LIQUID_FFT_METHOD_UNKNOWN=0,    // unknown method
-    LIQUID_FFT_METHOD_MIXED_RADIX,  // mixed-radix (decimation in time)
     LIQUID_FFT_METHOD_RADIX2,       // Radix-2 (decimation in time)
+    LIQUID_FFT_METHOD_MIXED_RADIX,  // Cooley-Tukey mixed-radix FFT (decimation in time)
+    LIQUID_FFT_METHOD_RADER,        // Rader's method for FFTs of prime length
     LIQUID_FFT_METHOD_DFT           // slow discrete Fourier transform
 } liquid_fft_method;
 
@@ -757,13 +758,15 @@ FFT(plan) FFT(_create_plan_radix2)(unsigned int _nfft,          \
 void FFT(_destroy_plan_radix2)(FFT(plan) _q);                   \
 void FFT(_execute_radix2)(FFT(plan) _q);                        \
                                                                 \
-/* Cooley-Tukey mixed-radix fft (fast when highly composite) */ \
+/* Cooley-Tukey mixed-radix FFT (fast when highly composite) */ \
 FFT(plan) FFT(_create_plan_mixed_radix)(unsigned int _nfft,     \
                                         TC *         _x,        \
                                         TC *         _y,        \
                                         int          _dir,      \
                                         int          _flags);   \
 void FFT(_destroy_plan_mixed_radix)(FFT(plan) _q);              \
+void FFT(_mixed_radix_init_factors)(FFT(plan) _q,               \
+                                    unsigned int _n);           \
 void FFT(_execute_mixed_radix)(FFT(plan) _q);                   \
 void FFT(_mixed_radix_bfly2)(TC *         _x,                   \
                              TC *         _twiddle,             \
@@ -784,6 +787,15 @@ void FFT(_mixed_radix_cycle)(TC *         _x,                   \
                              unsigned int _xstride,             \
                              unsigned int * _m_vect,            \
                              unsigned int * _p_vect);           \
+                                                                \
+/* Rader's algorithm for FFTs of prime length */                \
+FFT(plan) FFT(_create_plan_rader)(unsigned int _nfft,           \
+                                  TC *         _x,              \
+                                  TC *         _y,              \
+                                  int          _dir,            \
+                                  int          _flags);         \
+void FFT(_destroy_plan_rader)(FFT(plan) _q);                    \
+void FFT(_execute_rader)(FFT(plan) _q);                         \
                                                                 \
 /* discrete cosine transform (DCT) prototypes */                \
 void FFT(_execute_REDFT00)(FFT(plan) _q);   /* DCT-I   */       \
