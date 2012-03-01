@@ -113,12 +113,17 @@ int main(int argc, char*argv[]) {
     // compute primitive root of nfft
     unsigned int g = primitive_root(nfft);
 
+    // create and initialize sequence
+    unsigned int * s = (unsigned int *)malloc((nfft-1)*sizeof(unsigned int));
+    for (i=0; i<nfft-1; i++)
+        s[i] = modpow(g, i+1, nfft);
+
 #if DEBUG
     printf("computed primitive root of %u as %u\n", nfft, g);
     // generate sequence (sanity check)
     printf("s = [");
-    for (i=1; i<nfft; i++)
-        printf("%4u", modpow(g,i,nfft));
+    for (i=0; i<nfft-1; i++)
+        printf("%4u", s[i]);
     printf("]\n");
 #endif
 
@@ -128,15 +133,15 @@ int main(int argc, char*argv[]) {
     float complex * r = (float complex*)malloc((nfft-1)*sizeof(float complex));
     float complex * R = (float complex*)malloc((nfft-1)*sizeof(float complex));
     for (i=0; i<nfft-1; i++)
-        r[i] = cexpf(-_Complex_I*2*M_PI*modpow(g,i+1,nfft)/(float)(nfft));
+        r[i] = cexpf(-_Complex_I*2*M_PI*s[i]/(float)(nfft));
     dft_run(nfft-1, r, R, DFT_FORWARD, 0);
 
     // compute DFT of permuted sequence, size: nfft-1
     float complex * xp = (float complex*)malloc((nfft-1)*sizeof(float complex));
     float complex * Xp = (float complex*)malloc((nfft-1)*sizeof(float complex));
     for (i=0; i<nfft-1; i++) {
-        // reverse
-        unsigned int k = modpow(g,nfft-1-i,nfft); // sequence
+        // reverse sequence
+        unsigned int k = s[nfft-1-i-1];
         xp[i] = x[k];
     }
     dft_run(nfft-1, xp, Xp, DFT_FORWARD, 0);
@@ -152,10 +157,10 @@ int main(int argc, char*argv[]) {
         y[0] += x[i];
 
     // reverse permute result, scale, and add offset x[0]
-    for (i=1; i<nfft; i++) {
-        unsigned int k = modpow(g,i,nfft);
+    for (i=0; i<nfft-1; i++) {
+        unsigned int k = s[i];
 
-        y[k] = xp[i-1] / (float)(nfft-1) + x[0];
+        y[k] = xp[i] / (float)(nfft-1) + x[0];
     }
 
     // free internal memory
@@ -163,6 +168,7 @@ int main(int argc, char*argv[]) {
     free(R);
     free(xp);
     free(Xp);
+    free(s);
 
     // 
     // print results
