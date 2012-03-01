@@ -2680,6 +2680,26 @@ void poly_binomial_expand_pm(unsigned int _n,
                              int * _c);
 #endif
 
+// 
+// modular arithmetic, etc.
+//
+
+// maximum number of factors
+#define LIQUID_MAX_FACTORS (40)
+
+// is number prime?
+int liquid_is_prime(unsigned int _n);
+
+// compute c = base^exp (mod n)
+unsigned int liquid_modpow(unsigned int _base,
+                           unsigned int _exp,
+                           unsigned int _n);
+
+// find smallest primitive root of _n
+unsigned int liquid_primitive_root(unsigned int _n);
+
+// find smallest primitive root of _n, assuming _n is prime
+unsigned int liquid_primitive_root_prime(unsigned int _n);
 
 //
 // MODULE : matrix
