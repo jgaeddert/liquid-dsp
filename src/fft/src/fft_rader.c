@@ -65,19 +65,39 @@ FFT(plan) FFT(_create_plan_rader)(unsigned int _nfft,
     // size nfft-1
     FFT(_mixed_radix_init_factors)(q, q->nfft-1);
 
-    // initialize twiddle factors, indices for mixed-radix transforms
+    // allocate and initialize twiddle factors for mixed-radix
+    // transforms of size nfft-1
     // NOTE: double the number of twiddle factors and compute both
     //       forward and reverse permutations
     q->twiddle = (TC *) malloc(2 * (q->nfft-1) * sizeof(TC));
     
     unsigned int i;
-    for (i=0; i<q->nfft-1; i++)
-        q->twiddle[i] = cexpf(-_Complex_I*2*M_PI*(T)i / (T)(q->nfft-1));
+    for (i=0; i<q->nfft-1; i++) {
+        T phi = 2*M_PI*i / (T)(q->nfft-1);
 
-    // compute reverse twiddle factors
-    for (i=0; i<q->nfft-1; i++)
-        q->twiddle[q->nfft-1+i] = cexpf(_Complex_I*2*M_PI*(T)i / (T)(q->nfft-1));
+        q->twiddle[i]           = cexpf(-_Complex_I*phi);   // FFT
+        q->twiddle[i+q->nfft-1] = cexpf( _Complex_I*phi);   // IFFT
+    }
 
+    // compute primitive root of nfft
+    unsigned int g = liquid_primitive_root_prime(q->nfft);
+
+    // create and initialize sequence
+    q->seq = (unsigned int *)malloc((q->nfft-1)*sizeof(unsigned int));
+    for (i=0; i<q->nfft-1; i++)
+        q->seq[i] = liquid_modpow(g, i+1, q->nfft);
+    
+    // compute DFT of sequence { exp(-j*2*pi*g^i/nfft }, size: nfft-1
+    // NOTE: R[0] = -1, |R[k]| = sqrt(nfft) for k != 0
+    TC * r = (TC*)malloc((q->nfft-1)*sizeof(TC));  // temporary buffer
+    q->R   = (TC*)malloc((q->nfft-1)*sizeof(TC));
+    T d = (q->direction == FFT_FORWARD) ? -1.0 : 1.0;
+    for (i=0; i<q->nfft-1; i++)
+        r[i] = cexpf(_Complex_I*d*2*M_PI*q->seq[i]/(T)(q->nfft));
+    FFT(_run)(q->nfft-1, r, q->R, FFT_FORWARD, 0);
+    free(r);    // free temporary buffer
+
+    // return main object
     return q;
 }
 
@@ -85,7 +105,8 @@ FFT(plan) FFT(_create_plan_rader)(unsigned int _nfft,
 void FFT(_destroy_plan_rader)(FFT(plan) _q)
 {
     // free data specific to Rader's algorithm
-    //free(_q->...);
+    free(_q->seq);  // sequence
+    free(_q->R);    // pre-computed transform of exp(j*2*pi*seq)
 
     // free data specific to mixed-radix transforms
     free(_q->twiddle);
@@ -99,68 +120,26 @@ void FFT(_execute_rader)(FFT(plan) _q)
 {
     unsigned int i;
 
-    // compute primitive root of nfft
-    unsigned int g = liquid_primitive_root_prime(_q->nfft);
-
-    // create and initialize sequence
-    unsigned int * s = (unsigned int *)malloc((_q->nfft-1)*sizeof(unsigned int));
-    // this is equivalent to but much faster than liquid_modpow(g, i+1, _q->nfft)
-    unsigned int c = g;
-    for (i=0; i<_q->nfft-1; i++) {
-        s[i] = c;
-        c = (c * g) % (_q->nfft);
-    }
-
-#if FFT_DEBUG_RADER
-    printf("computed primitive root of %u as %u\n", _q->nfft, g);
-    // generate sequence (sanity check)
-    printf("s = [");
-    for (i=0; i<_q->nfft-1; i++)
-        printf("%4u", s[i]);
-    printf("]\n");
-#endif
-
-    // compute DFT of sequence { exp(-j*2*pi*g^i/nfft }, size: nfft-1
-    // NOTE: R[0] = -1, |R[k]| = sqrt(nfft) for k != 0
-    // NOTE: R can be pre-computed
-    TC * r = (TC*)malloc((_q->nfft-1)*sizeof(TC));
-    TC * R = (TC*)malloc((_q->nfft-1)*sizeof(TC));
-    T d = (_q->direction == FFT_FORWARD) ? -1.0 : 1.0;
-    for (i=0; i<_q->nfft-1; i++)
-        r[i] = cexpf(_Complex_I*d*2*M_PI*liquid_modpow(g,i+1,_q->nfft)/(T)(_q->nfft));
-#if 0
-    FFT(_run)(_q->nfft-1, r, R, FFT_FORWARD, 0);
-#else
-    // call mixed-radix function (FFT)
-    FFT(_mixed_radix_cycle)(r, R, _q->twiddle, _q->nfft-1, 0, 1, _q->m_vect, _q->p_vect);
-#endif
-
     // compute DFT of permuted sequence, size: nfft-1
     TC * xp = (TC*)malloc((_q->nfft-1)*sizeof(TC));
     TC * Xp = (TC*)malloc((_q->nfft-1)*sizeof(TC));
     for (i=0; i<_q->nfft-1; i++) {
         // reverse sequence
-        unsigned int k = s[_q->nfft-1-i-1];
+        unsigned int k = _q->seq[_q->nfft-1-i-1];
         xp[i] = _q->x[k];
     }
-#if 0
-    FFT(_run)(_q->nfft-1, xp, Xp, FFT_FORWARD, 0);
-#else
     // call mixed-radix function (FFT)
+    // equivalent to: FFT(_run)(_q->nfft-1, xp, Xp, FFT_FORWARD, 0);
     FFT(_mixed_radix_cycle)(xp, Xp, _q->twiddle, _q->nfft-1, 0, 1, _q->m_vect, _q->p_vect);
-#endif
 
     // compute inverse FFT of product
     for (i=0; i<_q->nfft-1; i++)
-        Xp[i] *= R[i];
-#if 0
-    FFT(_run)(_q->nfft-1, Xp, xp, FFT_REVERSE, 0);
-#else
+        Xp[i] *= _q->R[i];
     // call mixed-radix function (IFFT)
+    // equivalent to: FFT(_run)(_q->nfft-1, Xp, xp, FFT_REVERSE, 0);
     // NOTE: inverse FFT is facilitated by passing second set of
     //       conjugated twiddle factors
     FFT(_mixed_radix_cycle)(Xp, xp, _q->twiddle+_q->nfft-1, _q->nfft-1, 0, 1, _q->m_vect, _q->p_vect);
-#endif
 
     // set DC value
     _q->y[0] = 0.0f;
@@ -168,16 +147,13 @@ void FFT(_execute_rader)(FFT(plan) _q)
         _q->y[0] += _q->x[i];
 
     // reverse permute result, scale, and add offset x[0]
-    for (i=1; i<_q->nfft; i++) {
-        unsigned int k = s[i-1];
+    for (i=0; i<_q->nfft-1; i++) {
+        unsigned int k = _q->seq[i];
 
-        _q->y[k] = xp[i-1] / (T)(_q->nfft-1) + _q->x[0];
+        _q->y[k] = xp[i] / (T)(_q->nfft-1) + _q->x[0];
     }
 
     // free internal memory
-    free(s);
-    free(r);
-    free(R);
     free(xp);
     free(Xp);
 }

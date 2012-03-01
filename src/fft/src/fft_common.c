@@ -46,9 +46,13 @@ struct FFT(plan_s) {
     unsigned int m;             // log2(nfft)
     unsigned int * index_rev;   // reversed indices
 
-    // mixed-radix transform data
+    // Cooley-Tukey mixed-radix transform data
     unsigned int m_vect[FFT_MAX_FACTORS];
     unsigned int p_vect[FFT_MAX_FACTORS];
+
+    // Rader data for transforms of prime length
+    unsigned int * seq; // transformation sequence, size: nfft-1
+    TC * R;             // DFT of sequence { exp(-j*2*pi*g^i/nfft }, size: nfft-1
 
     // real even/odd DFT parameters (DCT/DST)
     T * xr; // input array (real)
