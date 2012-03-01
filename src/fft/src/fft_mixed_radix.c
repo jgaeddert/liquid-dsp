@@ -139,15 +139,10 @@ void FFT(_mixed_radix_bfly2)(TC *         _x,
     unsigned int twiddle_index = 0;
     for (n=0; n<_m; n++) {
         // strip input values
-        TC x0 = _x[n];
+        //TC x0 = _x[n];
         TC x1 = _x[n+_m];
 
         // compute 2-point DFT, using appropriate twiddles
-        // x0 ---- y0
-        //    \ /
-        //     X
-        //    / \
-        // x1 ---- y1
         TC t = x1*_twiddle[twiddle_index];
         _x[n+_m] = _x[n] - t;
         _x[n]    = _x[n] + t;
