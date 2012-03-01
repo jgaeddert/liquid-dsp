@@ -2698,6 +2698,14 @@ void liquid_factor(unsigned int   _n,
                    unsigned int * _factors,
                    unsigned int * _num_factors);
 
+// compute number's unique prime factors
+//  _n          :   number to factor
+//  _factors    :   pre-allocated array of factors [size: LIQUID_MAX_FACTORS x 1]
+//  _num_factors:   number of unique factors found, sorted ascending
+void liquid_unique_factor(unsigned int   _n,
+                          unsigned int * _factors,
+                          unsigned int * _num_factors);
+
 // compute c = base^exp (mod n)
 unsigned int liquid_modpow(unsigned int _base,
                            unsigned int _exp,
