@@ -71,6 +71,47 @@ FFT(plan) FFT(_create_plan_rader_radix2)(unsigned int _nfft,
     for (i=0; i<q->nfft-1; i++)
         q->seq[i] = liquid_modpow(g, i+1, q->nfft);
 
+#if 0
+    // compute larger FFT length greater than 2*nfft-4
+    // NOTE: while any length greater than 2*nfft-4 will work, use
+    //       nfft_prime as smallest 'simple' FFT (mostly small factors)
+    //
+    // TODO: devise better score (fewer factors is better)
+    //       score(n) = n / sum(factors(n).^2)
+    float gamma_max = 0.0f; // score
+    unsigned int nfft_prime_opt = 0;
+    unsigned int num_steps = 10;// + q->nfft;
+    for (i=1; i<=num_steps; i++) {
+        unsigned int n_hat = 2*q->nfft - 4 + i;
+
+        // compute factors
+        unsigned int k;
+        unsigned int num_factors = 0;
+        unsigned int m = n_hat;
+        float gamma = 0.0f;
+        do {
+            for (k=2; k<=m; k++) {
+                if ( (m % k) == 0) {
+                    m /= k;
+                    num_factors++;
+                    gamma += k*k;
+                    break;
+                }
+            }
+        } while (m > 1);
+
+        // compute score:
+        //float gamma = (float)n_hat / (float)num_factors;
+        //float gamma = 1e3f * (float)num_factors / (float)n_hat;
+        gamma = (float)n_hat / gamma;
+
+        if (gamma > gamma_max) {
+            gamma_max = gamma;
+            nfft_prime_opt = n_hat;
+        }
+    }
+    q->nfft_prime = nfft_prime_opt;
+#else
     // compute larger FFT length greater than 2*nfft-4
     // NOTE: while any length greater than 2*nfft-4 will work, use
     //       nfft_prime = 2 ^ nextpow2( 2*nfft - 4 ) to enable
@@ -82,6 +123,7 @@ FFT(plan) FFT(_create_plan_rader_radix2)(unsigned int _nfft,
         m++;
     }
     q->nfft_prime = 1 << m;
+#endif
     //printf("nfft_prime = %u\n", q->nfft_prime);
     // assert(nfft_prime > 2*nfft-4)
     
