@@ -129,6 +129,7 @@ int main(int argc, char*argv[]) {
     printf("]\n");
 #endif
 
+#if 0
     // compute larger FFT length greater than 2*nfft-4
     // NOTE: while any length greater than 2*nfft-4 will work, use
     //       nfft_prime = 2 ^ nextpow2( 2*nfft - 4 ) to enable
@@ -141,6 +142,52 @@ int main(int argc, char*argv[]) {
     }
     nfft_prime = 1 << m;
     printf("nfft_prime = %u\n", nfft_prime);
+#else
+    // compute larger FFT length greater than 2*nfft-4
+    // NOTE: while any length greater than 2*nfft-4 will work, use
+    //       nfft_prime as smallest 'simple' FFT (mostly small factors)
+    //
+    //       score(n) = n / sum(factors(n).^2)
+    float gamma_max = 0.0f; // score
+    unsigned int nfft_prime_opt = 0;
+    for (i=1; i<=10 + nfft/4; i++) {
+        unsigned int n_hat = 2*nfft - 4 + i;
+
+        // compute factors
+        printf("%3u : ", n_hat);
+        unsigned int k;
+        unsigned int num_factors = 0;
+        unsigned int m = n_hat;
+        float gamma = 0.0f;
+        do {
+            for (k=2; k<=m; k++) {
+                if ( (m % k) == 0) {
+                    printf("%-4u", k);
+                    m /= k;
+                    num_factors++;
+                    gamma += k*k;
+                    break;
+                }
+            }
+        } while (m > 1);
+
+        for (k=12; k>num_factors; k--)
+            printf("    ");
+
+        // compute score:
+        //float gamma = (float)n_hat / (float)num_factors;
+        //float gamma = 1e3f * (float)num_factors / (float)n_hat;
+        gamma = (float)n_hat / gamma;
+        printf("  score : %12.8f%s\n", gamma, gamma > gamma_max ? " *" : "");
+
+        if (gamma > gamma_max) {
+            gamma_max = gamma;
+            nfft_prime_opt = n_hat;
+        }
+    }
+    printf("best nfft_prime : %u\n", nfft_prime_opt);
+    unsigned int nfft_prime = nfft_prime_opt;
+#endif
 
     // compute DFT of sequence { exp(-j*2*pi*g^i/nfft }, size: nfft_prime
     // NOTE: R[0] = -1, |R[k]| = sqrt(nfft) for k != 0
