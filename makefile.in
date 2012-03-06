@@ -334,7 +334,9 @@ fft_autotests :=						\
 
 fft_benchmarks :=						\
 	src/fft/bench/mdct_benchmark.c				\
-	src/fft/bench/fft_benchmark.c				\
+	src/fft/bench/fft_composite_benchmark.c			\
+	src/fft/bench/fft_prime_benchmark.c			\
+	src/fft/bench/fft_radix2_benchmark.c			\
 	src/fft/bench/fft_r2r_benchmark.c			\
 
 #
