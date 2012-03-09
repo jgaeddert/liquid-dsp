@@ -7,9 +7,9 @@
 #include <math.h>
 #include <complex.h>
 
-#include "liquid.h"
+#include "liquid.experimental.h"
 
-#define OUTPUT_FILENAME "debug_ricek_channel_example.m"
+#define OUTPUT_FILENAME "ricek_channel_example.m"
 
 int main() {
     // options

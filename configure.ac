@@ -125,6 +125,7 @@ AC_ARG_ENABLE(experimental,
             examples/prqmfb_crcf_example \
             examples/qmfb_crcf_analysis_example \
             examples/qmfb_crcf_synthesis_example \
+            examples/ricek_channel_example \
             examples/smatrix_example \
             examples/symsync2_crcf_example \
             examples/symsynclp_crcf_example"
