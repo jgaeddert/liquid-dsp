@@ -31,7 +31,7 @@
 #include "autoscript.h"
 
 #define NAME_LEN            (256)
-#define AUTOSCRIPT_VERSION  "0.3.0"
+#define AUTOSCRIPT_VERSION  "0.3.1"
 #define DEBUG_AUTOSCRIPT    0
 
 struct script_s {
@@ -120,16 +120,16 @@ void autoscript_print(autoscript _q)
     printf("// the following types need to be defined externally:\n");
     printf("//      typedef ...(%s_function_t)(...);\n", _q->type);
     printf("//      typedef struct {\n");
-    printf("//          unsigned int id;\n");
-    printf("//          %s_function_t * api;\n", _q->type);
-    printf("//          const char * name;\n");
+    printf("//          unsigned int id;        // script identification number\n");
+    printf("//          %s_function_t * api;    // pointer to function API\n", _q->type);
+    printf("//          const char * name;      // script name\n");
     printf("//          ...\n");
     printf("//      } %s_t;\n", _q->type);
     printf("//      typedef struct {\n");
-    printf("//          unsigned int id;\n");
-    printf("//          unsigned int index;\n");
-    printf("//          unsigned int n;\n");
-    printf("//          const char * name;\n");
+    printf("//          unsigned int id;        // package identification number\n");
+    printf("//          unsigned int index;     // index of first script\n");
+    printf("//          unsigned int n;         // number of scripts in package\n");
+    printf("//          const char * name;      // name of package\n");
     printf("//      } package_t;\n");
     printf("\n");
     
@@ -160,6 +160,18 @@ void autoscript_print(autoscript _q)
     }
     printf("\n");
 
+    // find longest name
+    unsigned int max_len = 0;
+    for (i=0; i<_q->num_packages; i++) {
+        //struct package_s * p = &_q->packages[i];
+        for (j=0; j<_q->packages[i].num_scripts; j++) {
+            unsigned int str_len = strlen(_q->packages[i].scripts[j].name);
+            max_len = str_len > max_len ? str_len : max_len;
+        }
+    }
+    char space[max_len+1];
+    memset(space, ' ', max_len);
+    space[max_len] = '\0';
 
     printf("// array of scripts\n");
     printf("%s_t scripts[NUM_AUTOSCRIPTS] = {\n", _q->type);
@@ -167,10 +179,12 @@ void autoscript_print(autoscript _q)
     for (i=0; i<_q->num_packages; i++) {
         struct package_s * p = &_q->packages[i];
         for (j=0; j<p->num_scripts; j++) {
-            printf("    {%4u, &%s_%s,\"%s\"}",
+            // print formatting line, adding appropriate space to align columns
+            printf("    {.id = %4u, .api = &%s_%s,%s .name = \"%s\"}",
                 n,
                 _q->type,
                 p->scripts[j].name,
+                &space[strlen(p->scripts[j].name)],
                 p->scripts[j].name);
             if ( n < num_scripts-1 )
                 printf(",");
@@ -184,7 +198,7 @@ void autoscript_print(autoscript _q)
     printf("// array of packages\n");
     printf("package_t packages[NUM_PACKAGES] = {\n");
     for (i=0; i<_q->num_packages; i++) {
-        printf("    {%4u, %4u, %4u, \"%s\"}",
+        printf("    {.id = %4u, .index = %4u, .num_scripts = %4u, .name = \"%s\"}",
             i,
             n,
             _q->packages[i].num_scripts,
