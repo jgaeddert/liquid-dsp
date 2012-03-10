@@ -6,12 +6,25 @@
 #include <stdlib.h>
 #include <math.h>
 #include <complex.h>
+#include <getopt.h>
 
-#include "liquid.h"
+#include "liquid.experimental.h"
 
-#define OUTPUT_FILENAME "debug_ricek_channel_example.m"
+#define OUTPUT_FILENAME "ricek_channel_example.m"
 
-int main() {
+// print usage/help message
+void usage()
+{
+    printf("modem_example [options]\n");
+    printf("  h     : print help\n");
+    printf("  n     : number of samples\n");
+    printf("  f     : maximum doppler frequency (0,0.5)\n");
+    printf("  K     : Rice K factor, linear, greater than zero\n");
+    printf("  O     : mean power, linear(Rice-K distribution 'omega')\n");
+}
+
+int main(int argc, char*argv[])
+{
     // options
     unsigned int h_len=51;  // doppler filter length
     float fd=0.1f;          // maximum doppler frequency
@@ -19,6 +32,19 @@ int main() {
     float omega=1.0f;       // mean power
     float theta=0.0f;       // angle of arrival
     unsigned int n=100;     // number of samples
+
+    int dopt;
+    while ((dopt = getopt(argc,argv,"hn:f:K:O:")) != EOF) {
+        switch (dopt) {
+        case 'h':   usage();               return 0;
+        case 'n':   n     = atoi(optarg);  break;
+        case 'f':   fd    = atof(optarg);  break;
+        case 'K':   K     = atof(optarg);  break;
+        case 'O':   omega = atof(optarg);  break;
+        default:
+            exit(1);
+        }
+    }
 
     // generate objects
     ricek_channel q = ricek_channel_create(h_len, K, fd, theta);
