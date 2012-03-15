@@ -32,8 +32,9 @@
 
 struct spgram_s {
     // options
-    unsigned int nfft;      // fft length
-    unsigned int overlap;   //
+    unsigned int nfft;      // FFT length
+    unsigned int M;         // number of input samples in FFT
+    unsigned int overlap;   // number of samples before FFT taken
     float alpha;            // filter
 
     windowcf buffer;        // input buffer
@@ -55,21 +56,26 @@ spgram spgram_create(unsigned int _nfft)
 
     // input parameters
     q->nfft    = _nfft;
-    q->overlap = q->nfft / 4;
+    q->M       = q->nfft / 4;
+    q->overlap = q->nfft / 8;
     q->alpha   = 0.02f;
 
-    q->buffer = windowcf_create(q->nfft);
+    q->buffer = windowcf_create(q->M);
     q->x = (float complex*) malloc((q->nfft)*sizeof(float complex));
     q->X = (float complex*) malloc((q->nfft)*sizeof(float complex));
-    q->w = (float complex*) malloc((q->nfft)*sizeof(float complex));
+    q->w = (float complex*) malloc((q->M)*sizeof(float complex));
     q->psd = (float*) malloc((q->nfft)*sizeof(float));
 
     q->p = fft_create_plan(q->nfft, q->x, q->X, FFT_FORWARD, 0);
 
-    // initialize tapering window, scaled by FFT size
+    // initialize tapering window, scaled by window length size
     unsigned int i;
+    for (i=0; i<q->M; i++)
+        q->w[i] = hamming(i,q->M) / (float)(q->M);
+
+    // clear FFT input
     for (i=0; i<q->nfft; i++)
-        q->w[i] = hamming(i,q->nfft) / (float)(q->nfft);
+        q->x[i] = 0.0f;
 
     q->num_windows = 0;
     q->index = 0;
@@ -96,6 +102,7 @@ void spgram_push(spgram _q,
     // push/write samples
     //windowcf_write(_q->buffer, _x, _n);
 
+
     unsigned int i;
     for (i=0; i<_n; i++) {
         windowcf_push(_q->buffer, _x[i]);
@@ -108,11 +115,11 @@ void spgram_push(spgram _q,
             // reset counter
             _q->index = 0;
 
-            // read buffer, copy to fft input (applying window)
+            // read buffer, copy to FFT input (applying window)
             float complex * rc;
             windowcf_read(_q->buffer, &rc);
             unsigned int k;
-            for (k=0; k<_q->nfft; k++)
+            for (k=0; k<_q->M; k++)
                 _q->x[k] = rc[k] * _q->w[k];
 
             // execute fft
