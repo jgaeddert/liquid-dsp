@@ -1225,10 +1225,12 @@ example_programs :=						\
 	examples/lpc_example					\
 	examples/matched_filter_example				\
 	examples/math_lngamma_example				\
+	examples/math_primitive_root_example			\
 	examples/mdct_example					\
 	examples/modem_arb_example				\
 	examples/modem_example					\
 	examples/modem_soft_example				\
+	examples/modular_arithmetic_example			\
 	examples/msequence_example				\
 	examples/msresamp_crcf_example				\
 	examples/nco_example					\
