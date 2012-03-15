@@ -48,17 +48,22 @@ struct spgram_s {
     unsigned int index;     //
 };
 
-spgram spgram_create(unsigned int _nfft)
+spgram spgram_create(unsigned int _nfft,
+                     float _alpha)
 {
-    // TODO : validate input
+    // validate input
+    if (_alpha <= 0.0f || _alpha > 1.0f) {
+        fprintf(stderr,"error: spgram_create(), alpha must be in (0,1]\n");
+        exit(1);
+    }
 
     spgram q = (spgram) malloc(sizeof(struct spgram_s));
 
     // input parameters
     q->nfft    = _nfft;
+    q->alpha   = _alpha;
     q->M       = q->nfft / 4;
     q->overlap = q->nfft / 8;
-    q->alpha   = 0.02f;
 
     q->buffer = windowcf_create(q->M);
     q->x = (float complex*) malloc((q->nfft)*sizeof(float complex));

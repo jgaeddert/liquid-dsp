@@ -628,7 +628,8 @@ LIQUID_FFT_DEFINE_API(LIQUID_FFT_MANGLE_FLOAT,float,liquid_float_complex)
 
 // spectral periodogram
 typedef struct spgram_s * spgram;
-spgram spgram_create(unsigned int _nfft);
+spgram spgram_create(unsigned int _nfft,
+                     float _alpha);
 void spgram_destroy(spgram _q);
 void spgram_push(spgram _q,
                  liquid_float_complex * _x,
