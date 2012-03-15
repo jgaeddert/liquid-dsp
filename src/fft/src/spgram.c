@@ -111,8 +111,9 @@ void spgram_push(spgram _q,
             // read buffer, copy to fft input (applying window)
             float complex * rc;
             windowcf_read(_q->buffer, &rc);
-            for (i=0; i<_q->nfft; i++)
-                _q->x[i] = rc[i] * _q->w[i];
+            unsigned int k;
+            for (k=0; k<_q->nfft; k++)
+                _q->x[k] = rc[k] * _q->w[k];
 
             // execute fft
             fft_execute(_q->p);
