@@ -220,19 +220,26 @@ AC_CHECK_SIZEOF(unsigned int)
 AC_CANONICAL_TARGET
 case $target_cpu in
 i386|i486|i586|i686|x86|x86_64)
-    # check compile-time MMX/SSE/SIMD flags
+    # check for MMX/SSE/AVX CPU extensions and intrinsics headers
     #   MMX     :   mmintrin.h
     #   SSE     :   xmmintrin.h
     #   SSE2    :   emmintrin.h
     #   SSE3    :   pmmintrin.h
     #   SSSE3   :   tmmintrin.h
-    #   SSE4..  :   smmintrin.h
+    #   SSE4.1/2:   smmintrin.h
+    #   AVX     :   immintrin.h
     AX_EXT
-    AC_CHECK_HEADERS(mmintrin.h xmmintrin.h emmintrin.h pmmintrin.h tmmintrin.h smmintrin.h)
 
-    MLIBS_DOTPROD="src/dotprod/src/dotprod_cccf.mmx.o \
-                   src/dotprod/src/dotprod_crcf.mmx.o \
-                   src/dotprod/src/dotprod_rrrf.mmx.o"
+    # need at least SSE2
+    if [ test "$ax_cv_have_sse2_ext" = yes && test "$ac_cv_header_emmintrin_h" = yes ]; then
+        MLIBS_DOTPROD="src/dotprod/src/dotprod_cccf.mmx.o \
+                       src/dotprod/src/dotprod_crcf.mmx.o \
+                       src/dotprod/src/dotprod_rrrf.mmx.o"
+    else
+        MLIBS_DOTPROD="src/dotprod/src/dotprod_cccf.o \
+                       src/dotprod/src/dotprod_crcf.o \
+                       src/dotprod/src/dotprod_rrrf.o"
+    fi
     case $target_os in
     darwin*)
         ARCH_OPTION="-march=core2";;
