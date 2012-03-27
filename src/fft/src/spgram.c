@@ -34,7 +34,7 @@ struct spgram_s {
     // options
     unsigned int nfft;      // FFT length
     unsigned int M;         // number of input samples in FFT
-    unsigned int overlap;   // number of samples before FFT taken
+    unsigned int delay;     // number of samples before FFT taken
     float alpha;            // filter
 
     windowcf buffer;        // input buffer
@@ -54,19 +54,45 @@ struct spgram_s {
 spgram spgram_create(unsigned int _nfft,
                      float _alpha)
 {
+    unsigned int _m     = _nfft / 4;
+    unsigned int _delay = _nfft / 8;
+
+    return spgram_create_advanced(_nfft, _m, _delay, _alpha);
+}
+
+
+// create spgram object (advanced method)
+//  _nfft   :   fft size
+//  _m      :   window size
+//  _delay  :   number of samples between transforms
+//  _alpha  :   averaging factor
+spgram spgram_create_advanced(unsigned int _nfft,
+                              unsigned int _m,
+                              unsigned int _delay,
+                              float        _alpha)
+{
     // validate input
-    if (_alpha <= 0.0f || _alpha > 1.0f) {
-        fprintf(stderr,"error: spgram_create(), alpha must be in (0,1]\n");
+    if (_nfft < 2) {
+        fprintf(stderr,"error: spgram_create_advanced(), fft size must be at least 2\n");
+        exit(1);
+    } else if (_m > _nfft) {
+        fprintf(stderr,"error: spgram_create_advanced(), window size cannot exceed fft size\n");
+        exit(1);
+    } else if (_delay == 0) {
+        fprintf(stderr,"error: spgram_create_advanced(), delay must be greater than zero\n");
+        exit(1);
+    } else if (_alpha <= 0.0f || _alpha > 1.0f) {
+        fprintf(stderr,"error: spgram_create_advanced(), alpha must be in (0,1]\n");
         exit(1);
     }
 
     spgram q = (spgram) malloc(sizeof(struct spgram_s));
 
     // input parameters
-    q->nfft    = _nfft;
-    q->alpha   = _alpha;
-    q->M       = q->nfft / 4;
-    q->overlap = q->nfft / 8;
+    q->nfft  = _nfft;
+    q->alpha = _alpha;
+    q->M     = _m;
+    q->delay = _delay;
 
     q->buffer = windowcf_create(q->M);
     q->x = (float complex*) malloc((q->nfft)*sizeof(float complex));
@@ -122,7 +148,7 @@ void spgram_push(spgram _q,
 
         _q->index++;
 
-        if (_q->index == _q->overlap) {
+        if (_q->index == _q->delay) {
             unsigned int j;
 
             // reset counter

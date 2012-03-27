@@ -638,6 +638,16 @@ typedef struct spgram_s * spgram;
 spgram spgram_create(unsigned int _nfft,
                      float _alpha);
 
+// create spgram object (advanced method)
+//  _nfft   :   fft size
+//  _m      :   window size
+//  _delay  :   number of samples between transforms
+//  _alpha  :   averaging factor
+spgram spgram_create_advanced(unsigned int _nfft,
+                              unsigned int _m,
+                              unsigned int _delay,
+                              float        _alpha);
+
 // destroy spgram object
 void spgram_destroy(spgram _q);
 
