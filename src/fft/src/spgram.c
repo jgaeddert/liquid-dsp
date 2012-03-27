@@ -48,6 +48,9 @@ struct spgram_s {
     unsigned int index;     //
 };
 
+// create spgram object
+//  _nfft   :   fft size
+//  _alpha  :   averaging factor
 spgram spgram_create(unsigned int _nfft,
                      float _alpha)
 {
@@ -88,6 +91,7 @@ spgram spgram_create(unsigned int _nfft,
     return q;
 }
 
+// destroy spgram object
 void spgram_destroy(spgram _q)
 {
     windowcf_destroy(_q->buffer);
@@ -100,6 +104,10 @@ void spgram_destroy(spgram _q)
     free(_q);
 }
 
+// push samples into spgram object
+//  _q      :   spgram object
+//  _x      :   input buffer [size: _n x 1]
+//  _n      :   input buffer length
 void spgram_push(spgram _q,
                  float complex * _x,
                  unsigned int _n)
@@ -146,9 +154,9 @@ void spgram_push(spgram _q,
     }
 }
 
-// execute spectral periodogram
-//  _q      :   spectral periodogram object
-//  _X      :   
+// compute spectral periodogram output
+//  _q      :   spgram object
+//  _X      :   output spectrum [dB]
 void spgram_execute(spgram _q,
                     float * _X)
 {
