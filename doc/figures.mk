@@ -13,6 +13,7 @@ local_pgffiles :=					\
 	figures.pgf/agc_squelch.pdf			\
 	figures.pgf/agc_transfer_function.pdf		\
 	figures.pgf/bpacket_structure.pdf		\
+	figures.pgf/fft_spgram_diagram.pdf		\
 	figures.pgf/framing_structure.pdf		\
 	figures.pgf/msresamp_decim_diagram.pdf		\
 	figures.pgf/msresamp_interp_diagram.pdf		\
@@ -22,8 +23,8 @@ local_pgffiles :=					\
 	figures.pgf/window.pdf				\
 
 $(local_pgffiles) : %.pdf : %.tex
-	$(TEX) -interaction=batchmode -output-directory=figures.pgf $<
-	#$(TEX) -output-directory=figures.pgf $<
+	#$(TEX) -interaction=batchmode -output-directory=figures.pgf $<
+	$(TEX) -output-directory=figures.pgf $<
 
 
 ##
