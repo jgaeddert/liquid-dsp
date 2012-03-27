@@ -42,7 +42,7 @@ struct spgram_s {
     float complex * X;      // output fft (allocated)
     float complex * w;      // tapering window
     float * psd;            // psd (allocated)
-    fftplan p;              // fft plan
+    FFT_PLAN p;             // fft plan
 
     unsigned int num_windows; // number of fft windows accumulated
     unsigned int index;     //
@@ -71,7 +71,7 @@ spgram spgram_create(unsigned int _nfft,
     q->w = (float complex*) malloc((q->M)*sizeof(float complex));
     q->psd = (float*) malloc((q->nfft)*sizeof(float));
 
-    q->p = fft_create_plan(q->nfft, q->x, q->X, FFT_FORWARD, 0);
+    q->p = FFT_CREATE_PLAN(q->nfft, q->x, q->X, FFT_DIR_FORWARD, FFT_METHOD);
 
     // initialize tapering window, scaled by window length size
     unsigned int i;
@@ -96,7 +96,7 @@ void spgram_destroy(spgram _q)
     free(_q->X);
     free(_q->w);
     free(_q->psd);
-    fft_destroy_plan(_q->p);
+    FFT_DESTROY_PLAN(_q->p);
     free(_q);
 }
 
@@ -128,7 +128,7 @@ void spgram_push(spgram _q,
                 _q->x[k] = rc[k] * _q->w[k];
 
             // execute fft
-            fft_execute(_q->p);
+            FFT_EXECUTE(_q->p);
             
             // accumulate output
             if (_q->num_windows == 0) {
