@@ -25,6 +25,10 @@ int main() {
     for (i=0; i<num_factors; i++)
         printf("%3u\n", factors[i]);
 
+    // compute Euler's totient function
+    unsigned int t = liquid_totient(n);
+    printf("totient(%u) = %u\n", n, t);
+
     printf("done.\n");
     return 0;
 }
