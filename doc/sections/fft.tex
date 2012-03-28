@@ -165,3 +165,25 @@ of type-III ({\tt FFT\_REDFT01}) is listed below.
 %\subsection{{\tt mdct} (modified discrete cosine transform)}
 %\label{module:fft:mdct}
 
+%
+% SPECTRAL PERIODOGRAM
+%
+\subsection{{\tt spgram} (spectral periodogram)}
+\label{module:fft:spgram}
+
+In harmonic analysis, the spectral periodogram is an estimate of the
+spectral density of a signal over time.
+For a signal $x(t)$, the spectral content at time $t_0$ may be estimated
+over a time duration of $T$ seconds as
+\[
+    \hat{X}_{t_0}(\omega) =
+        \frac{1}{T} \int_{0}^{T} { x(t-t_0)w(t)e^{-j\omega t} dt }
+\]
+where $w(t) = 0,\forall t \notin (0,T)$
+is a temporal windowing function to smooth transitions
+between transforms.
+Typical windowing functions are the Hamming, Hann, and Kaiser windows
+(see \S\ref{module:math:window} for a description and spectral
+representation of available windowing functions in \liquid).
+
+
