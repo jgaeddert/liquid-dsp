@@ -2746,6 +2746,10 @@ unsigned int liquid_primitive_root(unsigned int _n);
 // find smallest primitive root of _n, assuming _n is prime
 unsigned int liquid_primitive_root_prime(unsigned int _n);
 
+// Euler's totient function
+unsigned int liquid_totient(unsigned int _n);
+
+
 //
 // MODULE : matrix
 //
