@@ -651,6 +651,9 @@ spgram spgram_create_advanced(unsigned int _nfft,
 // destroy spgram object
 void spgram_destroy(spgram _q);
 
+// resets the internal state of the spgram object
+void spgram_reset(spgram _q);
+
 // push samples into spgram object
 //  _q      :   spgram object
 //  _x      :   input buffer [size: _n x 1]

@@ -54,8 +54,8 @@ struct spgram_s {
 spgram spgram_create(unsigned int _nfft,
                      float _alpha)
 {
-    unsigned int _m     = _nfft / 4;
-    unsigned int _delay = _nfft / 8;
+    unsigned int _m     = _nfft / 4;    // window size
+    unsigned int _delay = _nfft / 8;    // delay between transforms
 
     return spgram_create_advanced(_nfft, _m, _delay, _alpha);
 }
@@ -103,6 +103,7 @@ spgram spgram_create_advanced(unsigned int _nfft,
     q->p = fft_create_plan(q->nfft, q->x, q->X, FFT_FORWARD, 0);
 
     // initialize tapering window, scaled by window length size
+    // TODO : scale by window magnitude, FFT size as well
     unsigned int i;
     for (i=0; i<q->M; i++)
         q->w[i] = hamming(i,q->M) / (float)(q->M);
@@ -111,8 +112,8 @@ spgram spgram_create_advanced(unsigned int _nfft,
     for (i=0; i<q->nfft; i++)
         q->x[i] = 0.0f;
 
-    q->num_windows = 0;
-    q->index = 0;
+    // reset the spgram object
+    spgram_reset(q);
 
     return q;
 }
@@ -128,6 +129,17 @@ void spgram_destroy(spgram _q)
     free(_q->psd);
     fft_destroy_plan(_q->p);
     free(_q);
+}
+
+// resets the internal state of the spgram object
+void spgram_reset(spgram _q)
+{
+    // clear the window buffer
+    windowcf_clear(_q->buffer);
+
+    // reset counters
+    _q->num_windows = 0;
+    _q->index = 0;
 }
 
 // push samples into spgram object

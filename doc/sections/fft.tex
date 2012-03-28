@@ -210,6 +210,8 @@ Listed below is the full interface to the {\tt spgram} object.
 \item[{\tt spgram\_destroy(q)}]
     destroys an {\tt spgram} object, freeing all internally-allocated
     memory.
+\item[{\tt spgram\_reset(q)}]
+    clears the internal {\tt spgram} buffers.
 \item[{\tt spgram\_push(q,*x,n)}]
     pushes $n$ samples of the array $\vec{x}$ into the internal buffer
     of an {\tt spgram} object.
