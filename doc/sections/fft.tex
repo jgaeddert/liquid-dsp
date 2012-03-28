@@ -186,4 +186,39 @@ Typical windowing functions are the Hamming, Hann, and Kaiser windows
 (see \S\ref{module:math:window} for a description and spectral
 representation of available windowing functions in \liquid).
 
+\liquid\ implements a discrete spectral periodogram with the
+{\tt spgram} object.
+%
+Listed below is the full interface to the {\tt spgram} object.
+%
+\begin{description}
+\item[{\tt spgram\_create(nfft,alpha)}]
+    creates and returns an {\tt spgram} object with a transform size of
+    {\tt nfft} samples and an averaging factor $\alpha$.
+    Internally,
+    a Hamming window (see \S\ref{module:math:window:hamming})
+    with {\tt nfft}$/2$ samples is used,
+    and the delay between transforms is {\tt nfft}$/4$ samples.
+    To specify these values manually, use the
+    {\tt spgram\_create\_advanced()} method, below.
+\item[{\tt spgram\_create\_advanced(nfft,m,d,alpha)}]
+    creates and returns an {\tt spgram} object with
+    a transform size of {\tt nfft} samples,
+    a window of {\tt m} samples,
+    a delay between transforms of {\tt d} samples,
+    and an averaging factor $\alpha$.
+\item[{\tt spgram\_destroy(q)}]
+    destroys an {\tt spgram} object, freeing all internally-allocated
+    memory.
+\item[{\tt spgram\_push(q,*x,n)}]
+    pushes $n$ samples of the array $\vec{x}$ into the internal buffer
+    of an {\tt spgram} object.
+\item[{\tt spgram\_execute(q,*X)}]
+    computes the spectral periodogram output storing the result in the
+    output array $\vec{X}$.
+    The output array is of type {\tt float} and should be the
+    same length as the number of FFT points provided during the
+    {\tt create()} method.
+    The values in $\vec{X}$ represent the magnitude in dB.
+\end{description}
 
