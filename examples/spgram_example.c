@@ -14,8 +14,8 @@
 
 int main() {
     // spectral periodogram options
-    unsigned int n=140;             // spectral periodogram FFT size
-    float alpha = 0.1f;             // spectral periodogram averaging factor
+    unsigned int n=256;             // spectral periodogram FFT size
+    float alpha = 0.01f;            // spectral periodogram averaging factor
 
     // OFDM options
     unsigned int nfft=64;           // OFDM FFT size
@@ -27,7 +27,13 @@ int main() {
     float psd[n];                   // power spectral density
 
     // create spectral periodogram
+#if 0
     spgram q = spgram_create(n,alpha);
+#else
+    unsigned int window_size = n/2; // spgram window size
+    unsigned int delay       = n/4; // samples between transforms
+    spgram q = spgram_create_advanced(n, window_size, delay, alpha);
+#endif
 
     // guard bands
     unsigned int g0 = (nfft/2) - (nfft/10);

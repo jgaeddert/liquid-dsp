@@ -626,14 +626,45 @@ void FFT(_shift)(TC*_x, unsigned int _n);
 
 LIQUID_FFT_DEFINE_API(LIQUID_FFT_MANGLE_FLOAT,float,liquid_float_complex)
 
+// 
 // spectral periodogram
+//
+
 typedef struct spgram_s * spgram;
+
+// create spgram object
+//  _nfft   :   fft size
+//  _alpha  :   averaging factor
 spgram spgram_create(unsigned int _nfft,
                      float _alpha);
+
+// create spgram object (advanced method)
+//  _nfft   :   fft size
+//  _m      :   window size
+//  _delay  :   number of samples between transforms
+//  _alpha  :   averaging factor
+spgram spgram_create_advanced(unsigned int _nfft,
+                              unsigned int _m,
+                              unsigned int _delay,
+                              float        _alpha);
+
+// destroy spgram object
 void spgram_destroy(spgram _q);
+
+// resets the internal state of the spgram object
+void spgram_reset(spgram _q);
+
+// push samples into spgram object
+//  _q      :   spgram object
+//  _x      :   input buffer [size: _n x 1]
+//  _n      :   input buffer length
 void spgram_push(spgram _q,
                  liquid_float_complex * _x,
                  unsigned int _n);
+
+// compute spectral periodogram output
+//  _q      :   spgram object
+//  _X      :   output spectrum [dB]
 void spgram_execute(spgram _q,
                     float * _X);
 
@@ -2717,6 +2748,10 @@ unsigned int liquid_primitive_root(unsigned int _n);
 
 // find smallest primitive root of _n, assuming _n is prime
 unsigned int liquid_primitive_root_prime(unsigned int _n);
+
+// Euler's totient function
+unsigned int liquid_totient(unsigned int _n);
+
 
 //
 // MODULE : matrix

@@ -597,7 +597,7 @@ In \liquid, $I_0(z)$ is computed using {\tt liquid\_besseli0f()}
 (see \S\ref{module:math:transcendentals}).
 A fractional sample offset $\Delta t$ can be introduced by substituting
 $\frac{n}{N/2}$ with
-$\frac{n}{N/2} + \Delta t$ in (\ref{eqn:math:window:kaiser}).
+$\frac{n+\Delta t}{N/2}$ in (\ref{eqn:math:window:kaiser}).
 
 %
 % FIGURE: Kaiser window
@@ -1024,3 +1024,66 @@ resulting polynomial $S_{n+m-1}(x)$.
 %    \frac{\partial}{\partial x}P_n(x) = \sum_{k=1}^{n}{c_{k}x^{k-1}}
 %\]
 
+
+% 
+% MODULAR ARITHMETIC
+%
+
+% NOTES:
+% * two operators for modulo
+%   a \bmod b   >>   a mod b
+%   a \pmod b   >>   a (mod b)
+% * equivalency operator (triple equals): \equiv
+\subsection{Modular Arithmetic}
+\label{module:math:mod}
+
+\subsubsection{{\tt liquid\_is\_prime(n)}}
+\label{module:math:mod:liquid_is_prime}
+Returns {\tt 1} if $n$ is prime, {\tt 0} otherwise.
+
+\subsubsection{{\tt liquid\_factor(n,*factors,*num\_factors)}}
+\label{module:math:mod:liquid_factor}
+Computes all the prime factors of a number $n$ in ascending order.
+Example:
+\begin{Verbatim}[fontsize=\small]
+    unsigned int factors[LIQUID_MAX_FACTORS];
+    unsigned int num_factors;
+    liquid_factor(280, factors, &num_factors);
+    // produces five factors: 2 2 2 5 7
+\end{Verbatim}
+
+\subsubsection{{\tt liquid\_unique\_factor(n,*factors,*num\_factors)}}
+\label{module:math:mod:liquid_unique_factor}
+Computes all the unique prime factors of a number $n$ in ascending order.
+Example:
+\begin{Verbatim}[fontsize=\small]
+    unsigned int factors[LIQUID_MAX_FACTORS];
+    unsigned int num_factors;
+    liquid_unique_factor(280, factors, &num_factors);
+    // produces three unique factors: 2 5 7
+\end{Verbatim}
+
+\subsubsection{{\tt liquid\_modpow(base,exp,n)}}
+\label{module:math:mod:liquid_modpow}
+Computes $c = b^x \pmod n$
+
+\subsubsection{{\tt liquid\_primitive\_root(n)}}
+\label{module:math:mod:liquid_primitive_root}
+Finds and returns smallest primitive root of a number $n$.
+
+\subsubsection{{\tt liquid\_primitive\_root\_prime(n)}}
+\label{module:math:mod:liquid_primitive_root_prime}
+Finds and returns smallest primitive root of a prime number $n$.
+
+\subsubsection{{\tt liquid\_totient(n)}}
+\label{module:math:mod:liquid_totient}
+Euler's totient function $\varphi(n)$ computes the number of positive
+integers less than or equal to $n$ that are relatively prime to $n$.
+The totient function is computed as
+\[
+    \varphi(n) = n \prod_{p|n} {\left(1 - \frac{1}{p}\right)}
+\]
+where the product is computed over the unique factors of $n$.
+For example, if $n=24 = 2^3 \cdot 3$, then
+$\varphi(24) =
+24\left(1-\frac{1}{2}\right)\left(1-\frac{1}{3}\right)=8$.

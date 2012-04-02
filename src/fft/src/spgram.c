@@ -34,7 +34,7 @@ struct spgram_s {
     // options
     unsigned int nfft;      // FFT length
     unsigned int M;         // number of input samples in FFT
-    unsigned int overlap;   // number of samples before FFT taken
+    unsigned int delay;     // number of samples before FFT taken
     float alpha;            // filter
 
     windowcf buffer;        // input buffer
@@ -48,22 +48,51 @@ struct spgram_s {
     unsigned int index;     //
 };
 
+// create spgram object
+//  _nfft   :   fft size
+//  _alpha  :   averaging factor
 spgram spgram_create(unsigned int _nfft,
                      float _alpha)
 {
+    unsigned int _m     = _nfft / 4;    // window size
+    unsigned int _delay = _nfft / 8;    // delay between transforms
+
+    return spgram_create_advanced(_nfft, _m, _delay, _alpha);
+}
+
+
+// create spgram object (advanced method)
+//  _nfft   :   fft size
+//  _m      :   window size
+//  _delay  :   number of samples between transforms
+//  _alpha  :   averaging factor
+spgram spgram_create_advanced(unsigned int _nfft,
+                              unsigned int _m,
+                              unsigned int _delay,
+                              float        _alpha)
+{
     // validate input
-    if (_alpha <= 0.0f || _alpha > 1.0f) {
-        fprintf(stderr,"error: spgram_create(), alpha must be in (0,1]\n");
+    if (_nfft < 2) {
+        fprintf(stderr,"error: spgram_create_advanced(), fft size must be at least 2\n");
+        exit(1);
+    } else if (_m > _nfft) {
+        fprintf(stderr,"error: spgram_create_advanced(), window size cannot exceed fft size\n");
+        exit(1);
+    } else if (_delay == 0) {
+        fprintf(stderr,"error: spgram_create_advanced(), delay must be greater than zero\n");
+        exit(1);
+    } else if (_alpha <= 0.0f || _alpha > 1.0f) {
+        fprintf(stderr,"error: spgram_create_advanced(), alpha must be in (0,1]\n");
         exit(1);
     }
 
     spgram q = (spgram) malloc(sizeof(struct spgram_s));
 
     // input parameters
-    q->nfft    = _nfft;
-    q->alpha   = _alpha;
-    q->M       = q->nfft / 4;
-    q->overlap = q->nfft / 8;
+    q->nfft  = _nfft;
+    q->alpha = _alpha;
+    q->M     = _m;
+    q->delay = _delay;
 
     q->buffer = windowcf_create(q->M);
     q->x = (float complex*) malloc((q->nfft)*sizeof(float complex));
@@ -74,6 +103,7 @@ spgram spgram_create(unsigned int _nfft,
     q->p = FFT_CREATE_PLAN(q->nfft, q->x, q->X, FFT_DIR_FORWARD, FFT_METHOD);
 
     // initialize tapering window, scaled by window length size
+    // TODO : scale by window magnitude, FFT size as well
     unsigned int i;
     for (i=0; i<q->M; i++)
         q->w[i] = hamming(i,q->M) / (float)(q->M);
@@ -82,12 +112,13 @@ spgram spgram_create(unsigned int _nfft,
     for (i=0; i<q->nfft; i++)
         q->x[i] = 0.0f;
 
-    q->num_windows = 0;
-    q->index = 0;
+    // reset the spgram object
+    spgram_reset(q);
 
     return q;
 }
 
+// destroy spgram object
 void spgram_destroy(spgram _q)
 {
     windowcf_destroy(_q->buffer);
@@ -100,6 +131,21 @@ void spgram_destroy(spgram _q)
     free(_q);
 }
 
+// resets the internal state of the spgram object
+void spgram_reset(spgram _q)
+{
+    // clear the window buffer
+    windowcf_clear(_q->buffer);
+
+    // reset counters
+    _q->num_windows = 0;
+    _q->index = 0;
+}
+
+// push samples into spgram object
+//  _q      :   spgram object
+//  _x      :   input buffer [size: _n x 1]
+//  _n      :   input buffer length
 void spgram_push(spgram _q,
                  float complex * _x,
                  unsigned int _n)
@@ -114,7 +160,7 @@ void spgram_push(spgram _q,
 
         _q->index++;
 
-        if (_q->index == _q->overlap) {
+        if (_q->index == _q->delay) {
             unsigned int j;
 
             // reset counter
@@ -146,9 +192,9 @@ void spgram_push(spgram _q,
     }
 }
 
-// execute spectral periodogram
-//  _q      :   spectral periodogram object
-//  _X      :   
+// compute spectral periodogram output
+//  _q      :   spgram object
+//  _X      :   output spectrum [dB]
 void spgram_execute(spgram _q,
                     float * _X)
 {
