@@ -12,4 +12,4 @@ set grid xtics ytics
 set pointsize 0.6
 set grid linetype 1 linecolor rgb '#cccccc' lw 1
 plot 'figures.gen/fft_spgram_time.dat' using 1:2 with lines linetype 1 linewidth 3 linecolor rgb '#004080' title 'real',\
-     'figures.gen/fft_spgram_time.dat' using 1:3 with lines linetype 1 linewidth 3 linecolor rgb '#008040' title 'imag'
+     'figures.gen/fft_spgram_time.dat' using 1:3 with lines linetype 1 linewidth 3 linecolor rgb '#cccccc' title 'imag'
