@@ -1218,7 +1218,7 @@ Let us represent the received signal at a sampling instant $n$ as
 %
 where $s$ is the transmitted symbol
 and $w$ is a zero-mean complex Gauss random variable with
-a variance $\sigma_n^2 = E\{n n^*\}$.
+a variance $\sigma_n^2 = E\{w w^*\}$.
 Let the transmitted symbols be {\em i.i.d.} and drawn from a $M$-point
 constellation, each with $m$ bits of information
 such that the symbols belong to a set of constellation points
@@ -1234,9 +1234,9 @@ each bit having been transmitted, viz.
 \label{eqn:modem:digital:soft:LLR_true}
     \Lambda(b_j) =
         \ln \frac{
-            P\left(b_j=1 | {observation} \right)
+            P\left(b_j=1 | \text{observation} \right)
         }{
-            P\left(b_j=0 | {observation} \right)
+            P\left(b_j=0 | \text{observation} \right)
         }
 \end{equation}
 %
@@ -1244,7 +1244,7 @@ Assuming that the channel is memoryless the ``observation'' is simply
 the received sample $r$ in
 (\ref{eqn:modem:digital:soft:received_signal})
 and does not depend on previous symbols; therefore
-$P\left(b_j=t|{observation}\right) = P\left(b_j=t|r(n)\right)$
+$P\left(b_j=t|\text{observation}\right) = P\left(b_j=t|r(n)\right)$
 and $t \in \{0,1\}$.
 Furthermore, by assuming that the transmitted symbols are equally
 probable and that the noise follows a Gauss distribution
@@ -1426,7 +1426,7 @@ before demodulation and the expected transmitted symbol, viz.
 %
 \begin{equation}
 \label{eqn:modem:evm}
-    \textup{EVM} = E\left\{ \left| s - \hat{s} \right|^2 \right\}
+    \textup{EVM} \triangleq \left| s - \hat{s} \right|
 \end{equation}
 %
 EVM is returned by many of the framing objects
@@ -1434,9 +1434,9 @@ EVM is returned by many of the framing objects
 because it gives a good indication of signal distortion as a result of
 noise, inter-symbol interference, etc.
 If the only channel impairment is noise (e.g. perfect symbol timing)
-then the SNR can be approximated as
+then the SNR can be estimated as
 \[
-    \hat{\gamma} \approx 1 / \textup{EVM}
+    \hat{\gamma} = E\left\{ \left| s - \hat{s} \right|^2 \right\}^{-1/2}
 \]
 
 
