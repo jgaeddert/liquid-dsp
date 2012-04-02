@@ -28,6 +28,7 @@ src/estimate_snr_fec
 src/estimate_snr_modem
 src/estimate_snr_test
 src/fft_example
+src/fft_spgram
 src/filter_decim_crcf
 src/filter_firdes_gmskrx_freq
 src/filter_firdes_gmskrx_time

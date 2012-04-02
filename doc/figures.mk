@@ -56,6 +56,9 @@ local_pdffiles :=					\
 	figures.gen/fft_example_time.pdf		\
 	figures.gen/fft_example_freq.pdf		\
 							\
+	figures.gen/fft_spgram_time.pdf			\
+	figures.gen/fft_spgram_freq.pdf			\
+							\
 	figures.gen/filter_rnyquist.pdf			\
 	figures.gen/filter_butter_psd.pdf		\
 	figures.gen/filter_butter_zpk.pdf		\
@@ -235,6 +238,7 @@ local_progs :=						\
 	src/estimate_snr_modem				\
 	src/estimate_snr_test				\
 	src/fft_example					\
+	src/fft_spgram					\
 	src/filter_iirdes				\
 	src/filter_firdes_gmskrx_time			\
 	src/filter_firdes_gmskrx_freq			\
@@ -599,6 +603,17 @@ figures.gen/filter_symsync_crcf_time.gnu : src/filter_symsync_crcf
 figures.gen/fft_example_time.gnu figures.gen/fft_example_freq.gnu : src/fft_example
 	./$<
 
+# 
+# fft_spgram
+#
+figures.gen/fft_spgram_time.dat figures.gen/fft_spgram_freq.dat: src/fft_spgram
+	./$<
+
+figures.gen/fft_spgram_time.gnu : figures.gen/% : data/% ; cp $< $@
+figures.gen/fft_spgram_freq.gnu : figures.gen/% : data/% ; cp $< $@
+
+figures.gen/fft_spgram_time.eps : %.eps : %.gnu %.dat
+figures.gen/fft_spgram_freq.eps : %.eps : %.gnu %.dat
 
 ##
 ## MODULE : framing

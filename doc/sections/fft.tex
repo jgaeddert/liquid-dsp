@@ -189,6 +189,22 @@ representation of available windowing functions in \liquid).
 \liquid\ implements a discrete spectral periodogram with the
 {\tt spgram} object.
 %
+\begin{figure}
+\centering
+\subfigure[{\tt spgram} input (time series)] {
+  \includegraphics[trim = 0mm 0mm 0mm 0mm, clip, width=13cm]{figures.gen/fft_spgram_time}
+}
+\subfigure[{\tt spgram} output (time-frequency response)] {
+  \includegraphics[trim = 10mm 10mm 4mm 10mm, clip, width=13cm]{figures.gen/fft_spgram_freq}
+}
+\caption{Spectral periodogram {\tt spgram} demonstration for a frequency-modulated sinuosoid.}
+\label{fig:module:fft:spgram}
+\end{figure}
+%
+An example of the {\tt spgram} object can be
+found in Figure~\ref{fig:module:fft:spgram}.
+
+%
 Listed below is the full interface to the {\tt spgram} object.
 %
 \begin{description}
