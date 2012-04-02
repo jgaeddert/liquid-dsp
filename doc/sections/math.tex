@@ -1049,8 +1049,10 @@ Example:
     unsigned int factors[LIQUID_MAX_FACTORS];
     unsigned int num_factors;
     liquid_factor(280, factors, &num_factors);
-    // produces five factors: 2 2 2 5 7
+    >>> num_factors = 5
+    >>> factors = {  2,  2,  2,  5,  7  }
 \end{Verbatim}
+%
 
 \subsubsection{{\tt liquid\_unique\_factor(n,*factors,*num\_factors)}}
 \label{module:math:mod:liquid_unique_factor}
@@ -1060,7 +1062,8 @@ Example:
     unsigned int factors[LIQUID_MAX_FACTORS];
     unsigned int num_factors;
     liquid_unique_factor(280, factors, &num_factors);
-    // produces three unique factors: 2 5 7
+    >>> num_factors = 3
+    >>> factors = {  2,  5,  7  }
 \end{Verbatim}
 
 \subsubsection{{\tt liquid\_modpow(base,exp,n)}}
