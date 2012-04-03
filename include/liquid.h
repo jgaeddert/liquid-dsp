@@ -3173,9 +3173,11 @@ typedef struct ampmodem_s * ampmodem;
 
 // create ampmodem object
 //  _m                  :   modulation index
+//  _fc                 :   carrier frequency
 //  _type               :   AM type (e.g. LIQUID_AMPMODEM_DSB)
 //  _suppressed_carrier :   carrier suppression flag
 ampmodem ampmodem_create(float _m,
+                         float _fc,
                          liquid_ampmodem_type _type,
                          int _suppressed_carrier);
 

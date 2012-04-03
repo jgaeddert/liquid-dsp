@@ -181,9 +181,10 @@ Listed below is the full interface to the {\tt ampmodem} object for
 analog frequency modulation/demodulation.
 %
 \begin{description}
-\item[{\tt ampmodem\_create(k,type,suppressed\_carrier)}]
-    creates and returns an {\tt ampmodem} object with a modulation
-    index $k$,
+\item[{\tt ampmodem\_create(k,fc,type,suppressed\_carrier)}]
+    creates and returns an {\tt ampmodem} object with
+    a modulation index $k$,
+    a carrier $f_c$,
     a modulation scheme defined by {\tt type},
     and a binary flag specifying whether the carrier should be
     suppressed.

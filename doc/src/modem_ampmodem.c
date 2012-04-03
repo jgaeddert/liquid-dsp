@@ -27,8 +27,8 @@ int main(int argc, char*argv[])
     unsigned int nfft = 1024;
 
     // create mod/demod objects
-    ampmodem mod   = ampmodem_create(mod_index, type, suppressed_carrier);
-    ampmodem demod = ampmodem_create(mod_index, type, suppressed_carrier);
+    ampmodem mod   = ampmodem_create(mod_index, fc, type, suppressed_carrier);
+    ampmodem demod = ampmodem_create(mod_index, fc, type, suppressed_carrier);
     ampmodem_print(mod);
 
     unsigned int i;
@@ -63,12 +63,8 @@ int main(int argc, char*argv[])
 #endif
 
     // modulate signal
-    for (i=0; i<num_samples; i++) {
+    for (i=0; i<num_samples; i++)
         ampmodem_modulate(mod, x[i], &y[i]);
-
-        // mix up...
-        y[i] *= cexpf(_Complex_I*i*fc);
-    }
 
     // add noise
     float nstd = powf(10.0f,-SNRdB/20.0f);
