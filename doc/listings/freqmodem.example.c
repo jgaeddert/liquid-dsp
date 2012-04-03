@@ -4,7 +4,7 @@
 int main() {
     float mod_index = 0.1f; // modulation index (bandwidth)
     float fc = 0.0f;        // FM carrier
-    liquid_fmtype type = LIQUID_MODEM_FM_DELAY_CONJ;
+    liquid_freqmodem_type type = LIQUID_FREQMODEM_DELAYCONJ;
 
     // create mod/demod objects
     freqmodem mod   = freqmodem_create(mod_index,fc,type);

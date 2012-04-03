@@ -38,7 +38,7 @@ int main(int argc, char*argv[]) {
     float cpo = M_PI / 4.0f;        // carrier phase offset
     unsigned int num_samples = 256; // number of samples
     float SNRdB = 20.0f;            // signal-to-noise ratio [dB]
-    liquid_modem_amtype type = LIQUID_MODEM_AM_USB;
+    liquid_ampmodem_type type = LIQUID_AMPMODEM_USB;
     int suppressed_carrier = 0;
 
     int dopt;
@@ -54,11 +54,11 @@ int main(int argc, char*argv[]) {
         case 'S':   SNRdB = atof(optarg);       break;
         case 't':
             if (strcmp(optarg,"dsb")==0) {
-                type = LIQUID_MODEM_AM_DSB;
+                type = LIQUID_AMPMODEM_DSB;
             } else if (strcmp(optarg,"usb")==0) {
-                type = LIQUID_MODEM_AM_USB;
+                type = LIQUID_AMPMODEM_USB;
             } else if (strcmp(optarg,"lsb")==0) {
-                type = LIQUID_MODEM_AM_LSB;
+                type = LIQUID_AMPMODEM_LSB;
             } else {
                 fprintf(stderr,"error: ampmodem_example, invalid AM type: %s\n", optarg);
                 usage();
@@ -128,7 +128,7 @@ int main(int argc, char*argv[]) {
     ampmodem_destroy(demod);
 
     // compute demodulation error
-    unsigned int delay = (type == LIQUID_MODEM_AM_DSB) ? 0 : 18; // fixed delay
+    unsigned int delay = (type == LIQUID_AMPMODEM_DSB) ? 0 : 18; // fixed delay
     float rmse = 0.0f;
     for (i=delay; i<num_samples; i++)
         rmse += (x[i-delay] - z[i]) * (x[i-delay] - z[i]);

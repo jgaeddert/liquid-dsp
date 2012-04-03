@@ -96,8 +96,8 @@ analog frequency modulation/demodulation.
     index $k$, a carrier frequency $-0.5 < f_c < 0.5$, and a
     demodulation type defined by {\tt type}.
     The demodulation type can either be
-    {\tt LIQUID\_MODEM\_FM\_PLL} which uses a phased-locked loop or
-    {\tt LIQUID\_MODEM\_FM\_DELAY\_CONJ} which uses the delay conjugate
+    {\tt LIQUID\_FREQMODEM\_PLL} which uses a phased-locked loop or
+    {\tt LIQUID\_FREQMODEM\_DELAYCONJ} which uses the delay conjugate
     method.
 \item[{\tt freqmodem\_destroy(q)}]
     destroys an {\tt freqmodem} object, freeing all internally-allocated
@@ -188,9 +188,9 @@ analog frequency modulation/demodulation.
     and a binary flag specifying whether the carrier should be
     suppressed.
     The modulation type can either be
-    {\tt LIQUID\_MODEM\_AM\_DSB} (double side-band),
-    {\tt LIQUID\_MODEM\_FM\_USB} (single upper side-band), or
-    {\tt LIQUID\_MODEM\_FM\_LSB} (single lower side-band).
+    {\tt LIQUID\_AMPMODEM\_DSB} (double side-band),
+    {\tt LIQUID\_AMPMODEM\_USB} (single upper side-band), or
+    {\tt LIQUID\_AMPMODEM\_LSB} (single lower side-band).
     method.
 \item[{\tt ampmodem\_destroy(q)}]
     destroys an {\tt ampmodem} object, freeing all internally-allocated

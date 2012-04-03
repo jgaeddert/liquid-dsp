@@ -31,11 +31,11 @@
 
 // freqmodem
 struct freqmodem_s {
-    liquid_fmtype type;     // demodulator type (PLL, DELAY_CONJ)
-    nco_crcf oscillator;    // nco
-    float fc;               // carrier frequency
-    float m;                // modulation index
-    float m_inv;            // 1/m
+    liquid_freqmodem_type type; // demodulator type (PLL, DELAYCONJ)
+    nco_crcf oscillator;        // nco
+    float fc;                   // carrier frequency
+    float m;                    // modulation index
+    float m_inv;                // 1/m
 
     // phase difference
     float complex q;
@@ -44,10 +44,10 @@ struct freqmodem_s {
 // create freqmodem object
 //  _m      :   modulation index
 //  _fc     :   carrier frequency, -0.5 <= _fc < 0.5
-//  _type   :   demodulation type (e.g. LIQUID_MODEM_FM_DELAY_CONJ)
+//  _type   :   demodulation type (e.g. LIQUID_FREQMODEM_DELAYCONJ)
 freqmodem freqmodem_create(float _m,
                            float _fc,
-                           liquid_fmtype _type)
+                           liquid_freqmodem_type _type)
 {
     freqmodem fm = (freqmodem) malloc(sizeof(struct freqmodem_s));
     fm->type = _type;
@@ -66,7 +66,7 @@ freqmodem freqmodem_create(float _m,
     // create oscillator
     fm->oscillator = nco_crcf_create(LIQUID_VCO);
 
-    if (fm->type == LIQUID_MODEM_FM_PLL) {
+    if (fm->type == LIQUID_FREQMODEM_PLL) {
         // TODO : set initial NCO frequency ?
         // create phase-locked loop
         nco_crcf_pll_set_bandwidth(fm->oscillator, 0.05f);
@@ -114,7 +114,7 @@ void freqmodem_demodulate(freqmodem _fm,
                           float complex _y,
                           float *_x)
 {
-    if (_fm->type == LIQUID_MODEM_FM_PLL) {
+    if (_fm->type == LIQUID_FREQMODEM_PLL) {
         // 
         // push through phase-locked loop
         //

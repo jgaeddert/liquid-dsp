@@ -3,7 +3,7 @@
 
 int main() {
     float mod_index = 0.1f;         // modulation index (bandwidth)
-    liquid_modem_amtype type = LIQUID_MODEM_AM_USB;
+    liquid_ampmodem_type type = LIQUID_AMPMODEM_USB;
     int suppressed_carrier = 0;     // suppress the carrier?
 
     // create mod/demod objects

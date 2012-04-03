@@ -31,7 +31,7 @@
 
 struct ampmodem_s {
     float m;                    // modulation index
-    liquid_modem_amtype type;   // modulation type
+    liquid_ampmodem_type type;  // modulation type
     int suppressed_carrier;     // suppressed carrier flag
 
     // demod objects
@@ -50,10 +50,10 @@ struct ampmodem_s {
 
 // create ampmodem object
 //  _m                  :   modulation index
-//  _type               :   AM type (e.g. LIQUID_MODEM_AM_DSB)
+//  _type               :   AM type (e.g. LIQUID_AMPMODEM_DSB)
 //  _suppressed_carrier :   carrier suppression flag
 ampmodem ampmodem_create(float _m,
-                         liquid_modem_amtype _type,
+                         liquid_ampmodem_type _type,
                          int _suppressed_carrier)
 {
     ampmodem q = (ampmodem) malloc(sizeof(struct ampmodem_s));
@@ -95,9 +95,9 @@ void ampmodem_print(ampmodem _q)
     printf("ampmodem:\n");
     printf("    type            :   ");
     switch (_q->type) {
-    case LIQUID_MODEM_AM_DSB: printf("double side-band\n");         break;
-    case LIQUID_MODEM_AM_USB: printf("single side-band (upper)\n"); break;
-    case LIQUID_MODEM_AM_LSB: printf("single side-band (lower)\n"); break;
+    case LIQUID_AMPMODEM_DSB: printf("double side-band\n");         break;
+    case LIQUID_AMPMODEM_USB: printf("single side-band (upper)\n"); break;
+    case LIQUID_AMPMODEM_LSB: printf("single side-band (lower)\n"); break;
     default:                  printf("unknown\n");
     }
     printf("    supp. carrier   :   %s\n", _q->suppressed_carrier ? "yes" : "no");
@@ -116,15 +116,15 @@ void ampmodem_modulate(ampmodem _q,
 {
     float complex x_hat = 0.0f;
 
-    if (_q->type == LIQUID_MODEM_AM_DSB) {
+    if (_q->type == LIQUID_AMPMODEM_DSB) {
         x_hat = _x;
     } else {
         // push through Hilbert transform
-        // LIQUID_MODEM_AM_USB:
-        // LIQUID_MODEM_AM_LSB: conjugate Hilbert transform output
+        // LIQUID_AMPMODEM_USB:
+        // LIQUID_AMPMODEM_LSB: conjugate Hilbert transform output
         firhilbf_r2c_execute(_q->hilbert, _x, &x_hat);
 
-        if (_q->type == LIQUID_MODEM_AM_LSB)
+        if (_q->type == LIQUID_AMPMODEM_LSB)
             x_hat = conjf(x_hat);
     }
 
@@ -143,9 +143,9 @@ void ampmodem_demodulate(ampmodem _q,
 
 #if 0
     switch (_q->type) {
-    case LIQUID_MODEM_AM_DSB:
-    case LIQUID_MODEM_AM_USB:
-    case LIQUID_MODEM_AM_LSB:
+    case LIQUID_AMPMODEM_DSB:
+    case LIQUID_AMPMODEM_USB:
+    case LIQUID_AMPMODEM_LSB:
     default:
         fprintf(stderr,"error: ampmodem_demodulate(), invalid type\n");
         exit(1);
