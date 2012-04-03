@@ -52,6 +52,7 @@ src/math_polyfit_lagrange
 src/math_window
 src/modem_demodsoft
 src/modem_freqmodem
+src/modem_ampmodem
 src/modem.gendata
 src/modem.genplot
 src/modem_phase_error

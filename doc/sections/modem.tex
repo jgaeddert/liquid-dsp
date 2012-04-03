@@ -204,6 +204,24 @@ analog frequency modulation/demodulation.
 \item[{\tt ampmodem\_demodulate(q,y,*x)}]
     demodulates the input sample $y$ storing the output to $x$.
 \end{description}
+%
+\begin{figure}
+\centering
+\subfigure[Time Series] {
+  \includegraphics[trim = 0mm 0mm 0mm 0mm, clip, width=13cm]{figures.gen/modem_ampmodem_time}
+}
+\subfigure[Power Spectral Density] {
+  \includegraphics[trim = 0mm 0mm 0mm 0mm, clip, width=13cm]{figures.gen/modem_ampmodem_freq}
+}
+\caption{{\tt ampmodem} demonstration modulating a windowed sum of sine
+         functions using double side-band, non-suppressed carrier AM
+         with a modulation index of $k=0.1$
+         and a relative carrier frequency $f_c/F_s = 0.2$.}
+\label{fig:modem:ampmodem}
+\end{figure}
+%
+An example of the {\tt ampmodem} can be found in
+Figure~\ref{fig:modem:ampmodem}
 
 
 
