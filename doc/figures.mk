@@ -124,6 +124,9 @@ local_pdffiles :=					\
 	figures.gen/math_window_kbd_time.pdf		\
 	figures.gen/math_window_kbd_freq.pdf		\
 							\
+	figures.gen/modem_freqmodem_time.pdf		\
+	figures.gen/modem_freqmodem_freq.pdf		\
+							\
 	figures.gen/modem_bpsk.pdf			\
 	figures.gen/modem_qpsk.pdf			\
 	figures.gen/modem_ook.pdf			\
@@ -260,6 +263,7 @@ local_progs :=						\
 	src/math_poly_examples				\
 	src/math_window					\
 	src/modem_demodsoft				\
+	src/modem_freqmodem				\
 	src/modem.genplot				\
 	src/modem.gendata				\
 	src/modem_phase_error				\
@@ -712,6 +716,11 @@ figures.gen/math_polyfit_lagrange.gnu latex.gen/math_polyfit_lagrange.tex : src/
 ##
 ## MODULE : modem
 ##
+
+# frequency modem
+figures.gen/modem_freqmodem_time.eps : %.eps : %.gnu
+figures.gen/modem_freqmodem_freq.eps : %.eps : %.gnu
+figures.gen/modem_freqmodem_time.gnu figures.gen/modem_freqmodem_freq : src/modem_freqmodem ; ./$<
 
 # constellation plots: .eps files
 modem_constellation_pdffiles :=		\

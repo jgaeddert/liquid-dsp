@@ -61,6 +61,25 @@ method.
 %                \right\}
 %\]
 %
+%
+\begin{figure}
+\centering
+\subfigure[Time Series] {
+  \includegraphics[trim = 0mm 0mm 0mm 0mm, clip, width=13cm]{figures.gen/modem_freqmodem_time}
+}
+\subfigure[Power Spectral Density] {
+  \includegraphics[trim = 0mm 0mm 0mm 0mm, clip, width=13cm]{figures.gen/modem_freqmodem_freq}
+}
+\caption{{\tt freqmodem} demonstration modulating a windowed sum of sine
+         functions with 
+         a modulation index of $k=0.1$
+         and a relative carrier frequency $f_c/F_s = 0.05$.}
+\label{fig:modem:freqmodem}
+\end{figure}
+%
+An example of the {\tt freqmodem} can be found in
+Figure~\ref{fig:modem:freqmodem}
+
 An example of the {\tt freqmodem} interface is listed below.
 %
 \input{listings/freqmodem.example.c.tex}
