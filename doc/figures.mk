@@ -722,14 +722,12 @@ figures.gen/math_polyfit_lagrange.gnu latex.gen/math_polyfit_lagrange.tex : src/
 ##
 
 # freqmodem
-figures.gen/modem_freqmodem_time.eps : %.eps : %.gnu
-figures.gen/modem_freqmodem_freq.eps : %.eps : %.gnu
 figures.gen/modem_freqmodem_time.gnu figures.gen/modem_freqmodem_freq : src/modem_freqmodem ; ./$<
+figures.gen/modem_freqmodem_time.eps figures.gen/modem_freqmodem_freq : %.eps : %.gnu
 
 # ampmodem
-figures.gen/modem_ampmodem_time.eps : %.eps : %.gnu
-figures.gen/modem_ampmodem_freq.eps : %.eps : %.gnu
-figures.gen/modem_ampmodem_time.gnu figures.gen/modem_ampmodem_freq : src/modem_ampmodem ; ./$<
+figures.gen/modem_ampmodem_time.gnu figures.gen/modem_ampmodem_freq.gnu : src/modem_ampmodem ; ./$<
+figures.gen/modem_ampmodem_time.eps figures.gen/modem_ampmodem_freq.eps : %.eps : %.gnu
 
 # constellation plots: .eps files
 modem_constellation_pdffiles :=		\
