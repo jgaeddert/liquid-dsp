@@ -182,9 +182,6 @@ void ampmodem_demodulate(ampmodem _q,
                          float complex _y,
                          float *_x)
 {
-    float t;
-    float complex s;
-
 #if DEBUG_AMPMODEM
     windowcf_push(_q->debug_x, _y);
 #endif
@@ -218,7 +215,7 @@ void ampmodem_demodulate(ampmodem _q,
         *_x = crealf(y_hat);
     } else {
         // non-coherent demodulation (peak detector)
-        t = cabsf(_y);
+        float t = cabsf(_y);
 
         // remove DC bias
         _q->ssb_q_hat = (    _q->ssb_alpha)*t +
