@@ -124,12 +124,22 @@ int main(int argc, char*argv[])
     fprintf(fid,"# demodulated signals\n");
     fprintf(fid,"set ylabel 'modulated signal'\n");
     fprintf(fid,"plot '-' using 1:2 with lines linetype 1 linewidth 1 linecolor rgb '%s' title 'real',\\\n",LIQUID_DOC_COLOR_BLUE);
-    fprintf(fid,"     '-' using 1:2 with lines linetype 1 linewidth 1 linecolor rgb '%s' title 'imag'\n",LIQUID_DOC_COLOR_GREEN);
+    fprintf(fid,"     '-' using 1:2 with lines linetype 1 linewidth 1 linecolor rgb '%s' title 'imag',\\\n",LIQUID_DOC_COLOR_GREEN);
+    fprintf(fid,"     '-' using 1:2 with lines linetype 0 linewidth 2 linecolor rgb '#222222' notitle,\\\n");
+    fprintf(fid,"     '-' using 1:2 with lines linetype 0 linewidth 2 linecolor rgb '#222222' notitle\n");
     for (i=0; i<num_samples; i++)
         fprintf(fid,"%12u %12.4e\n", i, crealf(y[i]));
     fprintf(fid,"e\n");
     for (i=0; i<num_samples; i++)
         fprintf(fid,"%12u %12.4e\n", i, cimagf(y[i]));
+    fprintf(fid,"e\n");
+
+    for (i=0; i<num_samples; i++)
+        fprintf(fid,"%12u %12.4e\n", i, cabsf(y[i]));
+    fprintf(fid,"e\n");
+
+    for (i=0; i<num_samples; i++)
+        fprintf(fid,"%12u %12.4e\n", i, -cabsf(y[i]));
     fprintf(fid,"e\n");
 
     fclose(fid);
@@ -157,7 +167,8 @@ int main(int argc, char*argv[])
     fprintf(fid,"set grid linetype 1 linecolor rgb '%s' lw 1\n", LIQUID_DOC_COLOR_GRID);
 
     fprintf(fid,"# spectrum\n");
-    fprintf(fid,"plot '-' using 1:2 with lines linetype 1 linewidth 3 linecolor rgb '%s' title 'input'\n",LIQUID_DOC_COLOR_PURPLE);
+    fprintf(fid,"set style fill solid 0.1\n");
+    fprintf(fid,"plot '-' using 1:2 with filledcurves above y1=-200 linetype 1 linewidth 3 linecolor rgb '%s' title 'input'\n",LIQUID_DOC_COLOR_PURPLE);
     for (i=0; i<nfft; i++)
         fprintf(fid,"%12.8f %12.4e\n", (float)i/(float)nfft - 0.5f, 20*log10f(cabsf(Y[(i+nfft/2)%nfft])));
     fprintf(fid,"e\n");
