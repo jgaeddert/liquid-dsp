@@ -30,7 +30,8 @@ void usage()
     printf("  s     : suppress the carrier, default: off\n");
 }
 
-int main(int argc, char*argv[]) {
+int main(int argc, char*argv[])
+{
     // options
     float mod_index = 0.1f;         // modulation index (bandwidth)
     float fc = 0.0f;                // AM carrier
@@ -60,8 +61,7 @@ int main(int argc, char*argv[]) {
             } else if (strcmp(optarg,"lsb")==0) {
                 type = LIQUID_AMPMODEM_LSB;
             } else {
-                fprintf(stderr,"error: ampmodem_example, invalid AM type: %s\n", optarg);
-                usage();
+                fprintf(stderr,"error: %s, invalid AM type: %s\n", argv[0], optarg);
                 return 1;
             }
             break;

@@ -17,7 +17,7 @@ int main(int argc, char*argv[])
 {
     // options
     float mod_index = 0.1f;         // modulation index (bandwidth)
-    float fc = 0.05f*2*M_PI;        // FM carrier
+    float fc = 0.05f;               // FM carrier
     liquid_freqmodem_type type = LIQUID_FREQMODEM_DELAYCONJ;
     unsigned int num_samples = 201; // number of samples
     float SNRdB = 60.0f;            // signal-to-noise ratio [dB]

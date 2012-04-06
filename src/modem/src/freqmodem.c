@@ -32,13 +32,15 @@
 // freqmodem
 struct freqmodem_s {
     liquid_freqmodem_type type; // demodulator type (PLL, DELAYCONJ)
-    nco_crcf oscillator;        // nco
-    float fc;                   // carrier frequency
+    float fc;                   // carrier frequency, range: [-0.5,0.5]
     float m;                    // modulation index
-    float m_inv;                // 1/m
 
-    // phase difference
-    float complex q;
+    // derived values
+    float m_inv;                // 1/m
+    float dphi;                 // carrier frequency [radians]
+
+    nco_crcf oscillator;        // nco
+    float complex q;            // phase difference
 };
 
 // create freqmodem object
@@ -56,12 +58,14 @@ freqmodem freqmodem_create(float _m,
     if (fm->m <= 0.0f || fm->m > 2.0f*M_PI) {
         fprintf(stderr,"error: freqmodem_create(), modulation index %12.4e out of range (0,2*pi)\n", fm->m);
         exit(1);
-    } else if (fm->fc <= -M_PI || fm->fc >= M_PI) {
-        fprintf(stderr,"error: freqmodem_create(), carrier frequency %12.4e out of range (-pi,pi)\n", fm->fc);
+    } else if (fm->fc <= -0.5f || fm->fc >= 0.5f) {
+        fprintf(stderr,"error: freqmodem_create(), carrier frequency %12.4e out of range (-0.5,0.5)\n", fm->fc);
         exit(1);
     }
 
+    // compute derived values
     fm->m_inv = 1.0f / fm->m;
+    fm->dphi  = fm->fc * 2 * M_PI;
 
     // create oscillator
     fm->oscillator = nco_crcf_create(LIQUID_VCO);
@@ -104,7 +108,7 @@ void freqmodem_modulate(freqmodem _fm,
                         float complex *_y)
 {
     nco_crcf_set_frequency(_fm->oscillator,
-                      (_fm->m)*_x + _fm->fc);
+                      (_fm->m)*_x + _fm->dphi);
 
     nco_crcf_cexpf(_fm->oscillator, _y);
     nco_crcf_step(_fm->oscillator);
@@ -129,10 +133,10 @@ void freqmodem_demodulate(freqmodem _fm,
         nco_crcf_step(_fm->oscillator);
 
         // demodulated signal is (weighted) nco frequency
-        *_x = (nco_crcf_get_frequency(_fm->oscillator) -_fm->fc) * _fm->m_inv;
+        *_x = (nco_crcf_get_frequency(_fm->oscillator) -_fm->dphi) * _fm->m_inv;
     } else {
         // compute phase difference and normalize by modulation index
-        *_x = (cargf(conjf(_fm->q)*(_y)) - _fm->fc) * _fm->m_inv;
+        *_x = (cargf(conjf(_fm->q)*(_y)) - _fm->dphi) * _fm->m_inv;
 
         _fm->q = _y;
     }

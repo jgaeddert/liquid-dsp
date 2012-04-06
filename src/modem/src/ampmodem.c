@@ -82,7 +82,7 @@ ampmodem ampmodem_create(float _m,
 
     // create nco, pll objects
     q->oscillator = nco_crcf_create(LIQUID_NCO);
-    nco_crcf_set_frequency(q->oscillator, q->fc);
+    nco_crcf_set_frequency(q->oscillator, 2*M_PI*q->fc);
     
     nco_crcf_pll_set_bandwidth(q->oscillator,0.05f);
 

@@ -17,7 +17,7 @@ int main(int argc, char*argv[])
 {
     // options
     float mod_index = 0.1f;         // modulation index (bandwidth)
-    float fc = 0.2f*2*M_PI;         // AM carrier
+    float fc = 0.2f;                // AM carrier
     liquid_ampmodem_type type = LIQUID_AMPMODEM_DSB;
     int suppressed_carrier = 0;     // suppress the carrier?
     unsigned int num_samples = 201; // number of samples
