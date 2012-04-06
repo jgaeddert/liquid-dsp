@@ -86,6 +86,8 @@ local_pdffiles :=					\
 							\
 	figures.gen/filter_iirfilt_crcf_time.pdf	\
 							\
+	figures.gen/filter_iirdes_example.pdf		\
+							\
 	figures.gen/filter_decim_crcf.pdf		\
 	figures.gen/filter_interp_crcf.pdf		\
 	figures.gen/filter_kaiser_time.pdf		\
@@ -246,6 +248,7 @@ local_progs :=						\
 	src/fft_example					\
 	src/fft_spgram					\
 	src/filter_iirdes				\
+	src/filter_iirdes_example			\
 	src/filter_firdes_gmskrx_time			\
 	src/filter_firdes_gmskrx_freq			\
 	src/filter_firdespm				\
@@ -508,6 +511,9 @@ figures.gen/filter_ellip_zpk.gnu	: src/filter_iirdes
 figures.gen/filter_bessel_psd.gnu	\
 figures.gen/filter_bessel_zpk.gnu	: src/filter_iirdes
 	./$< $(filter_iirdes_opts) -t bessel
+
+# iirdes example
+figures.gen/filter_iirdes_example.gnu : src/filter_iirdes_example ; ./$<
 
 #
 # firdespm

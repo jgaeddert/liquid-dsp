@@ -1209,9 +1209,29 @@ Specifically, the interface is
 \end{description}
 %
 As an example, the following example designs a $5^{th}$-order elliptic
-band-pass filter with a bandwidth
+band-pass filter with
+1~dB ripple in the passband,
+60~dB ripple in the stop-band,
+a cut-off frequency of $f_c/F_s=0.2$
+and a center frequency $f_0/F_s=0.25$;
+the frequency response of the resulting filter can be found in
+Figure~\ref{fig:module:filter:iirdes_example}.
 %
 \input{listings/iirdes.example.c.tex}
+%
+% Example IIRDES filter
+%
+\begin{figure}
+\centering
+  \includegraphics[trim = 0mm 0mm 0mm 0mm, clip, width=13cm]{figures.gen/filter_iirdes_example}
+\caption{Example of the {\tt iirdes} interface, designing a
+         5$^{th}$-order elliptic band-pass filter with
+         1~dB ripple in the passband,
+         60~dB ripple in the stop-band,
+         a cut-off frequency of $f_c/F_s=0.2$
+         and a center frequency $f_0/F_s=0.25$}
+\label{fig:module:filter:iirdes_example}
+\end{figure}
 
 \subsubsection{internal description}
 \label{module:filter:iirdes:internal}
