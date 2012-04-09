@@ -37,6 +37,7 @@ src/filter_firfarrow_crcf
 src/filter_firfilt_crcf
 src/filter_firhilb_decim_crcf
 src/filter_iirdes
+src/filter_iirdes_example
 src/filter_iirfilt_crcf
 src/filter_interp_crcf
 src/filter_kaiser

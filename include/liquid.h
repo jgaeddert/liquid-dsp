@@ -3136,7 +3136,7 @@ typedef struct freqmodem_s * freqmodem;
 
 // create freqmodem object
 //  _m      :   modulation index
-//  _fc     :   carrier frequency, -0.5 <= _fc < 0.5
+//  _fc     :   carrier frequency, range: [-0.5,0.5]
 //  _type   :   demodulation type (e.g. LIQUID_FREQMODEM_DELAYCONJ)
 freqmodem freqmodem_create(float _m,
                            float _fc,
@@ -3173,7 +3173,7 @@ typedef struct ampmodem_s * ampmodem;
 
 // create ampmodem object
 //  _m                  :   modulation index
-//  _fc                 :   carrier frequency
+//  _fc                 :   carrier frequency, range: [-0.5,0.5]
 //  _type               :   AM type (e.g. LIQUID_AMPMODEM_DSB)
 //  _suppressed_carrier :   carrier suppression flag
 ampmodem ampmodem_create(float _m,

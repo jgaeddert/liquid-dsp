@@ -5,18 +5,57 @@
 //
 
 #include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
 #include <math.h>
+#include <getopt.h>
 #include "liquid.h"
 
 #define OUTPUT_FILENAME "freqmodem_example.m"
 
-int main() {
+// print usage/help message
+void usage()
+{
+    printf("freqmodem_example [options]\n");
+    printf("  h     : print usage\n");
+    printf("  n     : number of samples, default: 256\n");
+    printf("  S     : SNR [dB], default: 30\n");
+    printf("  f     : FM carrier frequency [-0.5,0.5], default: 0\n");
+    printf("  m     : FM modulation index, default: 0.5\n");
+    printf("  t     : FM demod. type (delayconj/pll), default: delayconj\n");
+}
+
+int main(int argc, char*argv[])
+{
     // options
-    float mod_index = 0.1f;         // modulation index (bandwidth)
-    float fc = 0.1371f*2.0f*M_PI;   // FM carrier
+    float mod_index = 0.5f;         // modulation index (bandwidth)
+    float fc = 0.0f;                // FM carrier
     liquid_freqmodem_type type = LIQUID_FREQMODEM_DELAYCONJ;
     unsigned int num_samples = 256; // number of samples
     float SNRdB = 30.0f;            // signal-to-noise ratio [dB]
+
+    int dopt;
+    while ((dopt = getopt(argc,argv,"hn:S:f:m:t:")) != EOF) {
+        switch (dopt) {
+        case 'h':   usage();                    return 0;
+        case 'n':   num_samples = atoi(optarg); break;
+        case 'S':   SNRdB = atof(optarg);       break;
+        case 'f':   fc = atof(optarg);          break;
+        case 'm':   mod_index = atof(optarg);   break;
+        case 't':
+            if (strcmp(optarg,"delayconj")==0) {
+                type = LIQUID_FREQMODEM_DELAYCONJ;
+            } else if (strcmp(optarg,"pll")==0) {
+                type = LIQUID_FREQMODEM_PLL;
+            } else {
+                fprintf(stderr,"error: %s, invalid FM type: %s\n", argv[0], optarg);
+                exit(1);
+            }
+            break;
+        default:
+            exit(1);
+        }
+    }
 
     // create mod/demod objects
     freqmodem mod   = freqmodem_create(mod_index,fc,type);
@@ -35,10 +74,10 @@ int main() {
     for (i=0; i<num_samples; i++)
         freqmodem_modulate(mod, x[i], &y[i]);
 
-    // add noise
-    float nstd = powf(10.0f,-SNRdB*0.1f);
+    // add channel impairments
+    float nstd = powf(10.0f,-SNRdB/20.0f);
     for (i=0; i<num_samples; i++)
-        cawgn(&y[i], nstd);
+        y[i] += nstd*( randnf() + _Complex_I*randnf() ) * M_SQRT1_2;
 
     // demodulate signal
     for (i=0; i<num_samples; i++)

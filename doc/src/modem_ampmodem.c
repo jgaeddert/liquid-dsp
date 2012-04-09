@@ -17,7 +17,7 @@ int main(int argc, char*argv[])
 {
     // options
     float mod_index = 0.1f;         // modulation index (bandwidth)
-    float fc = 0.2f*2*M_PI;         // AM carrier
+    float fc = 0.10f;               // AM carrier
     liquid_ampmodem_type type = LIQUID_AMPMODEM_DSB;
     int suppressed_carrier = 0;     // suppress the carrier?
     unsigned int num_samples = 201; // number of samples
@@ -37,29 +37,31 @@ int main(int argc, char*argv[])
     float z[num_samples];
 
 #if 0
-    // generate un-modulated input signal (filtered noise)
-    unsigned int h_len = 31;
-    float h[h_len];
-    liquid_firdes_kaiser(h_len, 0.07f, 40.0f, 0.0f, h);
-    firfilt_rrrf f = firfilt_rrrf_create(h,h_len);
-    // push noise through filter
-    for (i=0; i<h_len; i++)
-        firfilt_rrrf_push(f, 0.3f*randnf());
-    // generate filtered/windowed output
-    for (i=0; i<num_samples; i++) {
-        firfilt_rrrf_push(f, 0.3f*randnf());
-        firfilt_rrrf_execute(f, &x[i]);
-
-        x[i] *= hamming(i,num_samples);
-    }
-    firfilt_rrrf_destroy(f);
-#else
     // generate input data: windowed sinusoid
     float f_audio = 0.04179f;   // input sine frequency
     for (i=0; i<num_samples; i++) {
         x[i] = sinf(2*M_PI*i*f_audio) + 0.5f*sinf(2*M_PI*i*f_audio*1.8f);
         x[i] *= 0.7f*hamming(i,num_samples);
     }
+#else
+    // generate un-modulated input signal (filtered noise)
+    float fc_audio = 0.07f;
+    float f0_audio = 0.10f;
+    iirfilt_rrrf f = iirfilt_rrrf_create_prototype(LIQUID_IIRDES_BUTTER,
+                                                   LIQUID_IIRDES_BANDPASS,
+                                                   LIQUID_IIRDES_SOS,
+                                                   6, fc_audio, f0_audio, 1.0f, 1.0f);
+
+    // push noise through filter
+    for (i=0; i<100; i++)
+        iirfilt_rrrf_execute(f, 1.5f*randnf(), &x[0]);
+    // generate filtered/windowed output
+    for (i=0; i<num_samples; i++) {
+        iirfilt_rrrf_execute(f, 1.5f*randnf(), &x[i]);
+
+        x[i] *= hamming(i,num_samples);
+    }
+    iirfilt_rrrf_destroy(f);
 #endif
 
     // modulate signal
