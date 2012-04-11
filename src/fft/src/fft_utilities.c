@@ -19,7 +19,7 @@
  */
 
 //
-// fft_common.c
+// fft_utilities.c : common utilities not specific to precision
 //
 
 #include <stdio.h>
@@ -59,9 +59,9 @@ liquid_fft_method liquid_fft_estimate_method(unsigned int _nfft)
         }
     }
 
-    // last resort: use slow DFT method
-    //return LIQUID_FFT_METHOD_DFT;
-    return LIQUID_FFT_METHOD_MIXED_RADIX;
+    // last resort
+    //return LIQUID_FFT_METHOD_DFT;         // use slow DFT method
+    return LIQUID_FFT_METHOD_MIXED_RADIX;   // use mixed radix method
 }
 
 // is input radix-2?

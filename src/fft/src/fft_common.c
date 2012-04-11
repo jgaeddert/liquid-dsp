@@ -20,7 +20,7 @@
  */
 
 //
-// fft.common.c
+// fft_common.c : common utilities specific to precision
 //
 
 #include <stdio.h>
