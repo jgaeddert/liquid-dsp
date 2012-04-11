@@ -306,13 +306,6 @@ fft_includes :=							\
 	src/fft/src/fft_rader_radix2.c				\
 	src/fft/src/fft_r2r_1d.c				\
 
-#	src/fft/src/fft_create_plan.c				
-#	src/fft/src/dst_execute.c				
-#	src/fft/src/mdct_execute.c				
-#	src/fft/src/imdct_execute.c				
-#	src/fft/src/fft_execute.c				
-
-
 src/fft/src/fftf.o : %.o : %.c $(headers) $(fft_includes)
 
 src/fft/src/asgram.o : %.o : %.c $(headers)
