@@ -631,7 +631,7 @@ void spc2216_print_unpacked(unsigned char * _m,
     for (j=0; j<6; j++) {
         printf("    ");
         for (i=0; i<22; i++) {
-            printf("%2s", ((_pc[i] >> j) & 0x01) ? "1" : ".");
+            printf("%2s", ((_pc[i] >> (6-j-1)) & 0x01) ? "1" : ".");
 
             if (i==15) printf(" ");
         }
