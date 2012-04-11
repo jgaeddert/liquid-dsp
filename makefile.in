@@ -291,10 +291,7 @@ fft_objects :=							\
 	src/fft/src/fftf.o					\
 	src/fft/src/asgram.o					\
 	src/fft/src/spgram.o					\
-	src/fft/src/dct.o					\
 	src/fft/src/fft_utilities.o				\
-	src/fft/src/mdct.o					\
-
 
 # explicit targets and dependencies
 fft_includes :=							\
@@ -882,6 +879,11 @@ utility_benchmarks :=
 # MODULE : experimental
 #
 
+# legacy sources (not built, but keep around just in case)
+#	src/experimental/legacy/dct.o
+#	src/experimental/legacy/mdct.o
+
+
 # explicit targets and dependencies
 
 experimental_filter_includes :=					\
@@ -1189,7 +1191,6 @@ example_programs :=						\
 	examples/eqrls_cccf_example				\
 	examples/fec_example					\
 	examples/fec_soft_example				\
-	examples/fct_example					\
 	examples/fft_example					\
 	examples/firfarrow_rrrf_example				\
 	examples/firfarrow_rrrf_sine_example			\
@@ -1226,7 +1227,6 @@ example_programs :=						\
 	examples/matched_filter_example				\
 	examples/math_lngamma_example				\
 	examples/math_primitive_root_example			\
-	examples/mdct_example					\
 	examples/modem_arb_example				\
 	examples/modem_example					\
 	examples/modem_soft_example				\
@@ -1360,8 +1360,11 @@ sandbox_programs =						\
 	sandbox/symsync_eqlms_test				\
 	sandbox/svd_test					\
 	sandbox/thiran_allpass_iir_test				\
+
 #	firpfbch_analysis_test
 #	sandbox/ofdmoqam_firpfbch_cfo_test
+#	sandbox/mdct_test
+#	sandbox/fct_test
 
 
 sandbox_objects	= $(patsubst %,%.o,$(sandbox_programs))

@@ -608,11 +608,6 @@ FFT(plan) FFT(_create_plan_r2r_1d)(unsigned int _n,             \
                                    T * _y,                      \
                                    int _kind,                   \
                                    int _flags);                 \
-FFT(plan) FFT(_create_plan_mdct)(unsigned int _n,               \
-                                 T * _x,                        \
-                                 T * _y,                        \
-                                 int _kind,                     \
-                                 int _flags);                   \
 void FFT(_destroy_plan)(FFT(plan) _p);                          \
 void FFT(_execute)(FFT(plan) _p);                               \
                                                                 \
@@ -624,7 +619,16 @@ void FFT(_run)(unsigned int _n,                                 \
                int _method);                                    \
 void FFT(_shift)(TC*_x, unsigned int _n);
 
+
 LIQUID_FFT_DEFINE_API(LIQUID_FFT_MANGLE_FLOAT,float,liquid_float_complex)
+
+// antiquated fft methods
+// FFT(plan) FFT(_create_plan_mdct)(unsigned int _n,
+//                                  T * _x,
+//                                  T * _y,
+//                                  int _kind,
+//                                  int _flags);
+
 
 // 
 // spectral periodogram
@@ -678,15 +682,6 @@ void asgram_execute(asgram _q,
                     char * _ascii,
                     float * _peakval,
                     float * _peakfreq);
-
-// real, even DFT: DCT-II
-void  dct(float *_x, float * _y, unsigned int _n);
-void idct(float *_x, float * _y, unsigned int _n);
-void dct_typeIV(float *_x, float * _y, unsigned int _n);
-
-// modified discrete cosine transform
-void  mdct(float *_x, float * _X, float * _w, unsigned int _N);
-void imdct(float *_X, float * _x, float * _w, unsigned int _N);
 
 //
 // MODULE : filter
