@@ -127,8 +127,13 @@ int main(int argc, char*argv[])
     
     // error vector
     unsigned char e[61];
+#if 0
     for (i=0; i<61; i++)
-        e[i] = (rand() % 4) == 0 ? 1 << rand() % 7 : 0;
+        e[i] = (rand() % 8) == 0 ? 1 << rand() % 7 : 0;
+#else
+    memset(e, 0x00, 61);
+    e[3] = 0x08;
+#endif
 
     // original message [16 x 16 bits], 32 bytes
     unsigned char m[32];
@@ -139,8 +144,19 @@ int main(int argc, char*argv[])
     unsigned char m_hat[32];// estimated original message
 
     // generate random transmitted message
+#if 0
     for (i=0; i<32; i++)
         m[i] = rand() & 0xff;
+#else
+    for (i=0; i<32; i++) {
+        if (i < 16 && (i%2)==0)
+            m[i] = 0xff >> (i/2); //1 << 7-(i/2);
+        else if (i >= 16 && (i%2)==1)
+            m[i] = 1 << 7-((i-16-1)/2);
+        else
+            m[i] = 0x00;
+    }
+#endif
     printf("m (original message):\n");
     spc2216_print_decoded(m);
 
@@ -164,7 +180,6 @@ int main(int argc, char*argv[])
     // compute errors between m, m_hat
     unsigned int num_errors_decoded = count_bit_errors_array(m, m_hat, 32);
     printf("decoding errors (original) : %2u / 256\n", num_errors_decoded);
-
 
 
     // 
@@ -288,7 +303,6 @@ int main(int argc, char*argv[])
     fclose(fid);
     printf("results written to %s\n", OUTPUT_FILENAME);
 
-
     printf("done.\n");
     return 0;
 }
@@ -340,22 +354,28 @@ void spc2216_decode(unsigned char * _msg_rec,
         sym_enc[1] = w[2*i+0];
         sym_enc[2] = w[2*i+1];
 
-#if DEBUG_SPC2216
         int syndrome_flag = fec_secded2216_estimate_ehat(sym_enc, e_hat);
-
-        if (syndrome_flag == 0) {
-            printf("%3u : no errors detected\n", i);
-        } else if (syndrome_flag == 1) {
-            printf("%3u : one error detected and corrected!\n", i);
-        } else {
-            printf("%3u : multiple errors detected\n", i);
-        }
-#endif
 
         // apply error vector estimate to appropriate arrays
         parity_col[i] ^= e_hat[0];
         w[2*i+0]      ^= e_hat[1];
         w[2*i+1]      ^= e_hat[2];
+
+#if DEBUG_SPC2216
+        // print encoded symbol
+        printf("%3u:", i);
+        print_bitstring(w[2*i+0], 8);
+        print_bitstring(w[2*i+1], 8);
+        printf(" |");
+        print_bitstring(parity_col[i], 6);
+        if (syndrome_flag == 0) {
+            printf(" (no errors detected)\n");
+        } else if (syndrome_flag == 1) {
+            printf(" (one error detected and corrected!)\n");
+        } else {
+            printf(" (multiple errors detected)\n");
+        }
+#endif
     }
 #if DEBUG_SPC2216
     printf("******** transposed: **********\n");
@@ -606,7 +626,25 @@ void spc2216_print_encoded(unsigned char * _v)
     spc2216_unpack(_v, parity_row, parity_col, m);
 
     // print unpacked version
+#if 0
+    spc2216_print_decoded(m);
+    
+    unsigned int i;
+    printf("rows:\n");
+    for (i=0; i<16; i++) {
+        printf("  %3u : ", i);
+        print_bitstring(parity_row[i], 6);
+        printf("\n");
+    }
+    printf("cols:\n");
+    for (i=0; i<22; i++) {
+        printf("  %3u : ", i);
+        print_bitstring(parity_col[i], 6);
+        printf("\n");
+    }
+#else
     spc2216_print_unpacked(m, parity_row, parity_col);
+#endif
 }
 
 // print unpacked block
@@ -620,11 +658,11 @@ void spc2216_print_unpacked(unsigned char * _m,
         printf("    ");
         print_bitstring(_m[2*i+0],8);
         print_bitstring(_m[2*i+1],8);
-        printf(" ");
+        printf(" |");
         print_bitstring(_pr[i], 6);
         printf("\n");
     }
-    printf("\n");
+    printf("    ---------------------------------+-------------\n");
 
     // print column parities
     unsigned int j;
@@ -633,7 +671,7 @@ void spc2216_print_unpacked(unsigned char * _m,
         for (i=0; i<22; i++) {
             printf("%2s", ((_pc[i] >> (6-j-1)) & 0x01) ? "1" : ".");
 
-            if (i==15) printf(" ");
+            if (i==15) printf("  ");
         }
         printf("\n");
     }
