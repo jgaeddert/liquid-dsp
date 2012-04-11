@@ -187,3 +187,31 @@ unsigned int liquid_modpow(unsigned int _base,
     return c;
 }
 
+// Euler's totient function
+unsigned int liquid_totient(unsigned int _n)
+{
+    // find unique prime factors
+    unsigned int t = _n;    // totient
+    unsigned int n = _n;
+    unsigned int p = 0;     // last unique prime factor
+    unsigned int k;
+    do {
+        for (k=2; k<=n; k++) {
+            if ( (n%k)==0 ) {
+                n /= k;
+
+                if (p != k) {
+                    // factor is unique
+                    t *= k-1;
+                    t /= k;
+                }
+
+                p = k;
+                break;
+            }
+        }
+    } while (n > 1);
+
+    return t;
+}
+

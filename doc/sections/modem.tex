@@ -61,6 +61,24 @@ method.
 %                \right\}
 %\]
 %
+%
+\begin{figure}
+\centering
+\subfigure[Time Series] {
+  \includegraphics[trim = 0mm 0mm 0mm 0mm, clip, width=13cm]{figures.gen/modem_freqmodem_time}
+}
+\subfigure[Power Spectral Density] {
+  \includegraphics[trim = 0mm 0mm 0mm 0mm, clip, width=13cm]{figures.gen/modem_freqmodem_freq}
+}
+\caption{{\tt freqmodem} demonstration modulating an audio signal with
+         a modulation index of $k=0.1$
+         and a relative carrier frequency $f_c/F_s = 0.1$.}
+\label{fig:modem:freqmodem}
+\end{figure}
+%
+An example of the {\tt freqmodem} can be found in
+Figure~\ref{fig:modem:freqmodem}
+
 An example of the {\tt freqmodem} interface is listed below.
 %
 \input{listings/freqmodem.example.c.tex}
@@ -77,8 +95,8 @@ analog frequency modulation/demodulation.
     index $k$, a carrier frequency $-0.5 < f_c < 0.5$, and a
     demodulation type defined by {\tt type}.
     The demodulation type can either be
-    {\tt LIQUID\_MODEM\_FM\_PLL} which uses a phased-locked loop or
-    {\tt LIQUID\_MODEM\_FM\_DELAY\_CONJ} which uses the delay conjugate
+    {\tt LIQUID\_FREQMODEM\_PLL} which uses a phased-locked loop or
+    {\tt LIQUID\_FREQMODEM\_DELAYCONJ} which uses the delay conjugate
     method.
 \item[{\tt freqmodem\_destroy(q)}]
     destroys an {\tt freqmodem} object, freeing all internally-allocated
@@ -162,16 +180,17 @@ Listed below is the full interface to the {\tt ampmodem} object for
 analog frequency modulation/demodulation.
 %
 \begin{description}
-\item[{\tt ampmodem\_create(k,type,suppressed\_carrier)}]
-    creates and returns an {\tt ampmodem} object with a modulation
-    index $k$,
+\item[{\tt ampmodem\_create(k,fc,type,suppressed\_carrier)}]
+    creates and returns an {\tt ampmodem} object with
+    a modulation index $k$,
+    a carrier $f_c$,
     a modulation scheme defined by {\tt type},
     and a binary flag specifying whether the carrier should be
     suppressed.
     The modulation type can either be
-    {\tt LIQUID\_MODEM\_AM\_DSB} (double side-band),
-    {\tt LIQUID\_MODEM\_FM\_USB} (single upper side-band), or
-    {\tt LIQUID\_MODEM\_FM\_LSB} (single lower side-band).
+    {\tt LIQUID\_AMPMODEM\_DSB} (double side-band),
+    {\tt LIQUID\_AMPMODEM\_USB} (single upper side-band), or
+    {\tt LIQUID\_AMPMODEM\_LSB} (single lower side-band).
     method.
 \item[{\tt ampmodem\_destroy(q)}]
     destroys an {\tt ampmodem} object, freeing all internally-allocated
@@ -185,6 +204,24 @@ analog frequency modulation/demodulation.
 \item[{\tt ampmodem\_demodulate(q,y,*x)}]
     demodulates the input sample $y$ storing the output to $x$.
 \end{description}
+%
+\begin{figure}
+\centering
+\subfigure[Time Series] {
+  \includegraphics[trim = 0mm 0mm 0mm 0mm, clip, width=13cm]{figures.gen/modem_ampmodem_time}
+}
+\subfigure[Power Spectral Density] {
+  \includegraphics[trim = 0mm 0mm 0mm 0mm, clip, width=13cm]{figures.gen/modem_ampmodem_freq}
+}
+\caption{{\tt ampmodem} demonstration modulating an audio signal
+         using double side-band, non-suppressed carrier AM
+         with a modulation index of $k=0.1$
+         and a relative carrier frequency $f_c/F_s = 0.1$.}
+\label{fig:modem:ampmodem}
+\end{figure}
+%
+An example of the {\tt ampmodem} can be found in
+Figure~\ref{fig:modem:ampmodem}
 
 
 
@@ -1218,7 +1255,7 @@ Let us represent the received signal at a sampling instant $n$ as
 %
 where $s$ is the transmitted symbol
 and $w$ is a zero-mean complex Gauss random variable with
-a variance $\sigma_n^2 = E\{n n^*\}$.
+a variance $\sigma_n^2 = E\{w w^*\}$.
 Let the transmitted symbols be {\em i.i.d.} and drawn from a $M$-point
 constellation, each with $m$ bits of information
 such that the symbols belong to a set of constellation points
@@ -1234,9 +1271,9 @@ each bit having been transmitted, viz.
 \label{eqn:modem:digital:soft:LLR_true}
     \Lambda(b_j) =
         \ln \frac{
-            P\left(b_j=1 | {observation} \right)
+            P\left(b_j=1 | \text{observation} \right)
         }{
-            P\left(b_j=0 | {observation} \right)
+            P\left(b_j=0 | \text{observation} \right)
         }
 \end{equation}
 %
@@ -1244,7 +1281,7 @@ Assuming that the channel is memoryless the ``observation'' is simply
 the received sample $r$ in
 (\ref{eqn:modem:digital:soft:received_signal})
 and does not depend on previous symbols; therefore
-$P\left(b_j=t|{observation}\right) = P\left(b_j=t|r(n)\right)$
+$P\left(b_j=t|\text{observation}\right) = P\left(b_j=t|r(n)\right)$
 and $t \in \{0,1\}$.
 Furthermore, by assuming that the transmitted symbols are equally
 probable and that the noise follows a Gauss distribution
@@ -1426,7 +1463,7 @@ before demodulation and the expected transmitted symbol, viz.
 %
 \begin{equation}
 \label{eqn:modem:evm}
-    \textup{EVM} = E\left\{ \left| s - \hat{s} \right|^2 \right\}
+    \textup{EVM} \triangleq \left| s - \hat{s} \right|
 \end{equation}
 %
 EVM is returned by many of the framing objects
@@ -1434,9 +1471,9 @@ EVM is returned by many of the framing objects
 because it gives a good indication of signal distortion as a result of
 noise, inter-symbol interference, etc.
 If the only channel impairment is noise (e.g. perfect symbol timing)
-then the SNR can be approximated as
+then the SNR can be estimated as
 \[
-    \hat{\gamma} \approx 1 / \textup{EVM}
+    \hat{\gamma} = E\left\{ \left| s - \hat{s} \right|^2 \right\}^{-1/2}
 \]
 
 

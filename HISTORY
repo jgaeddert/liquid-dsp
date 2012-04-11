@@ -2,9 +2,12 @@
 Major improvements for v1.1.1
   * dotprod
     - leveraging SIMD extensions for vector operations (SSE2, SSE3)
+  * math
+    - new modular arithmetic methods (prime factor, totient, etc.)
   * modem
     - new API creates linear modem objects with one argument, e.g.
       LIQUID_MODEM_QAM16
+    - new type definitions for analog modems
 
 Major improvements for v1.1.0
   * build

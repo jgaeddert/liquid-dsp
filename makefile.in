@@ -66,7 +66,7 @@ RANLIB	:= ranlib
 
 # flags
 INCLUDE_CFLAGS	= $(addprefix -I ,$(include_dirs))
-CONFIG_CFLAGS	= @ARCH_OPTION@ @PROFILE_OPTION@ @DEBUG_OPTION@ # @SIMD_FLAGS@
+CONFIG_CFLAGS	= @ARCH_OPTION@ @PROFILE_OPTION@ @DEBUG_OPTION@ @SIMD_FLAGS@
 # -g : debugging info
 CFLAGS		+= $(INCLUDE_CFLAGS) -g -O2 -Wall -fPIC $(CONFIG_CFLAGS)
 LDFLAGS		+= @LIBS@
@@ -1232,6 +1232,7 @@ example_programs :=						\
 	examples/lpc_example					\
 	examples/matched_filter_example				\
 	examples/math_lngamma_example				\
+	examples/math_primitive_root_example			\
 	examples/mdct_example					\
 	examples/modem_arb_example				\
 	examples/modem_example					\
@@ -1354,6 +1355,7 @@ sandbox_programs =						\
 	sandbox/modem_demodulate_soft_test			\
 	sandbox/modem_demodulate_soft_gentab			\
 	sandbox/ofdmoqam_firpfbch_test				\
+	sandbox/ofdm_ber_test					\
 	sandbox/packetizer_persistent_ber_test			\
 	sandbox/pll_design_test					\
 	sandbox/predemod_sync_test				\

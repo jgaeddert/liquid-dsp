@@ -13,6 +13,7 @@ local_pgffiles :=					\
 	figures.pgf/agc_squelch.pdf			\
 	figures.pgf/agc_transfer_function.pdf		\
 	figures.pgf/bpacket_structure.pdf		\
+	figures.pgf/fft_spgram_diagram.pdf		\
 	figures.pgf/framing_structure.pdf		\
 	figures.pgf/msresamp_decim_diagram.pdf		\
 	figures.pgf/msresamp_interp_diagram.pdf		\
@@ -22,8 +23,8 @@ local_pgffiles :=					\
 	figures.pgf/window.pdf				\
 
 $(local_pgffiles) : %.pdf : %.tex
-	$(TEX) -interaction=batchmode -output-directory=figures.pgf $<
-	#$(TEX) -output-directory=figures.pgf $<
+	#$(TEX) -interaction=batchmode -output-directory=figures.pgf $<
+	$(TEX) -output-directory=figures.pgf $<
 
 
 ##
@@ -55,6 +56,9 @@ local_pdffiles :=					\
 	figures.gen/fft_example_time.pdf		\
 	figures.gen/fft_example_freq.pdf		\
 							\
+	figures.gen/fft_spgram_time.pdf			\
+	figures.gen/fft_spgram_freq.pdf			\
+							\
 	figures.gen/filter_rnyquist.pdf			\
 	figures.gen/filter_butter_psd.pdf		\
 	figures.gen/filter_butter_zpk.pdf		\
@@ -81,6 +85,8 @@ local_pdffiles :=					\
 	figures.gen/filter_firhilb_decim_crcf_freq.pdf	\
 							\
 	figures.gen/filter_iirfilt_crcf_time.pdf	\
+							\
+	figures.gen/filter_iirdes_example.pdf		\
 							\
 	figures.gen/filter_decim_crcf.pdf		\
 	figures.gen/filter_interp_crcf.pdf		\
@@ -119,6 +125,12 @@ local_pdffiles :=					\
 	figures.gen/math_window_blackmanharris_freq.pdf	\
 	figures.gen/math_window_kbd_time.pdf		\
 	figures.gen/math_window_kbd_freq.pdf		\
+							\
+	figures.gen/modem_freqmodem_time.pdf		\
+	figures.gen/modem_freqmodem_freq.pdf		\
+							\
+	figures.gen/modem_ampmodem_time.pdf		\
+	figures.gen/modem_ampmodem_freq.pdf		\
 							\
 	figures.gen/modem_bpsk.pdf			\
 	figures.gen/modem_qpsk.pdf			\
@@ -234,7 +246,9 @@ local_progs :=						\
 	src/estimate_snr_modem				\
 	src/estimate_snr_test				\
 	src/fft_example					\
+	src/fft_spgram					\
 	src/filter_iirdes				\
+	src/filter_iirdes_example			\
 	src/filter_firdes_gmskrx_time			\
 	src/filter_firdes_gmskrx_freq			\
 	src/filter_firdespm				\
@@ -255,6 +269,8 @@ local_progs :=						\
 	src/math_poly_examples				\
 	src/math_window					\
 	src/modem_demodsoft				\
+	src/modem_freqmodem				\
+	src/modem_ampmodem				\
 	src/modem.genplot				\
 	src/modem.gendata				\
 	src/modem_phase_error				\
@@ -496,6 +512,9 @@ figures.gen/filter_bessel_psd.gnu	\
 figures.gen/filter_bessel_zpk.gnu	: src/filter_iirdes
 	./$< $(filter_iirdes_opts) -t bessel
 
+# iirdes example
+figures.gen/filter_iirdes_example.gnu : src/filter_iirdes_example ; ./$<
+
 #
 # firdespm
 # 
@@ -598,6 +617,17 @@ figures.gen/filter_symsync_crcf_time.gnu : src/filter_symsync_crcf
 figures.gen/fft_example_time.gnu figures.gen/fft_example_freq.gnu : src/fft_example
 	./$<
 
+# 
+# fft_spgram
+#
+figures.gen/fft_spgram_time.dat figures.gen/fft_spgram_freq.dat: src/fft_spgram
+	./$<
+
+figures.gen/fft_spgram_time.gnu : figures.gen/% : data/% ; cp $< $@
+figures.gen/fft_spgram_freq.gnu : figures.gen/% : data/% ; cp $< $@
+
+figures.gen/fft_spgram_time.eps : %.eps : %.gnu %.dat
+figures.gen/fft_spgram_freq.eps : %.eps : %.gnu %.dat
 
 ##
 ## MODULE : framing
@@ -696,6 +726,14 @@ figures.gen/math_polyfit_lagrange.gnu latex.gen/math_polyfit_lagrange.tex : src/
 ##
 ## MODULE : modem
 ##
+
+# freqmodem
+figures.gen/modem_freqmodem_time.gnu figures.gen/modem_freqmodem_freq : src/modem_freqmodem ; ./$<
+figures.gen/modem_freqmodem_time.eps figures.gen/modem_freqmodem_freq : %.eps : %.gnu
+
+# ampmodem
+figures.gen/modem_ampmodem_time.gnu figures.gen/modem_ampmodem_freq.gnu : src/modem_ampmodem ; ./$<
+figures.gen/modem_ampmodem_time.eps figures.gen/modem_ampmodem_freq.eps : %.eps : %.gnu
 
 # constellation plots: .eps files
 modem_constellation_pdffiles :=		\

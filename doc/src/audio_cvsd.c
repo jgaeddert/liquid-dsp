@@ -20,7 +20,6 @@
 int main() {
     // options
     unsigned int num_samples=256;   // number of samples
-    float fc = 0.04179f;            // input sine frequency
     unsigned int nbits=2;           // 
     float zeta=1.5f;                //
     float alpha=0.95f;              //
@@ -38,11 +37,33 @@ int main() {
     float y[num_samples];
     unsigned char data_enc[num_samples];
 
+#if 1
     // generate input data: windowed sinusoid
+    float f_audio = 0.04179f;   // input sine frequency
     for (i=0; i<num_samples; i++) {
-        x[i] = sinf(2*M_PI*i*fc) + 0.5f*sinf(2*M_PI*i*fc*1.8f);
-        x[i] *= 0.8f*hamming(i,num_samples);
+        x[i] = sinf(2*M_PI*i*f_audio) + 0.5f*sinf(2*M_PI*i*f_audio*1.8f);
+        x[i] *= 0.7f*hamming(i,num_samples);
     }
+#else
+    // generate un-modulated input signal (filtered noise)
+    float fc_audio = 0.07f;
+    float f0_audio = 0.10f;
+    iirfilt_rrrf f = iirfilt_rrrf_create_prototype(LIQUID_IIRDES_BUTTER,
+                                                   LIQUID_IIRDES_BANDPASS,
+                                                   LIQUID_IIRDES_SOS,
+                                                   6, fc_audio, f0_audio, 1.0f, 1.0f);
+
+    // push noise through filter
+    for (i=0; i<100; i++)
+        iirfilt_rrrf_execute(f, 1.5f*randnf(), &x[0]);
+    // generate filtered/windowed output
+    for (i=0; i<num_samples; i++) {
+        iirfilt_rrrf_execute(f, 1.5f*randnf(), &x[i]);
+
+        x[i] *= hamming(i,num_samples);
+    }
+    iirfilt_rrrf_destroy(f);
+#endif
 
     // run encoder
     for (i=0; i<num_samples; i++)

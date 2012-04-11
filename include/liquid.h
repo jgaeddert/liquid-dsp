@@ -626,13 +626,45 @@ void FFT(_shift)(TC*_x, unsigned int _n);
 
 LIQUID_FFT_DEFINE_API(LIQUID_FFT_MANGLE_FLOAT,float,liquid_float_complex)
 
+// 
 // spectral periodogram
+//
+
 typedef struct spgram_s * spgram;
-spgram spgram_create(unsigned int _nfft);
+
+// create spgram object
+//  _nfft   :   fft size
+//  _alpha  :   averaging factor
+spgram spgram_create(unsigned int _nfft,
+                     float _alpha);
+
+// create spgram object (advanced method)
+//  _nfft   :   fft size
+//  _m      :   window size
+//  _delay  :   number of samples between transforms
+//  _alpha  :   averaging factor
+spgram spgram_create_advanced(unsigned int _nfft,
+                              unsigned int _m,
+                              unsigned int _delay,
+                              float        _alpha);
+
+// destroy spgram object
 void spgram_destroy(spgram _q);
+
+// resets the internal state of the spgram object
+void spgram_reset(spgram _q);
+
+// push samples into spgram object
+//  _q      :   spgram object
+//  _x      :   input buffer [size: _n x 1]
+//  _n      :   input buffer length
 void spgram_push(spgram _q,
                  liquid_float_complex * _x,
                  unsigned int _n);
+
+// compute spectral periodogram output
+//  _q      :   spgram object
+//  _X      :   output spectrum [dB]
 void spgram_execute(spgram _q,
                     float * _X);
 
@@ -2717,6 +2749,10 @@ unsigned int liquid_primitive_root(unsigned int _n);
 // find smallest primitive root of _n, assuming _n is prime
 unsigned int liquid_primitive_root_prime(unsigned int _n);
 
+// Euler's totient function
+unsigned int liquid_totient(unsigned int _n);
+
+
 //
 // MODULE : matrix
 //
@@ -3092,19 +3128,19 @@ void gmskdem_demodulate(gmskdem _q,
 //
 
 typedef enum {
-    LIQUID_MODEM_FM_PLL=0,
-    LIQUID_MODEM_FM_DELAY_CONJ
-} liquid_fmtype;
+    LIQUID_FREQMODEM_PLL=0,
+    LIQUID_FREQMODEM_DELAYCONJ
+} liquid_freqmodem_type;
 
 typedef struct freqmodem_s * freqmodem;
 
 // create freqmodem object
 //  _m      :   modulation index
-//  _fc     :   carrier frequency, -0.5 <= _fc < 0.5
-//  _type   :   demodulation type (e.g. LIQUID_MODEM_FM_DELAY_CONJ)
+//  _fc     :   carrier frequency, range: [-0.5,0.5]
+//  _type   :   demodulation type (e.g. LIQUID_FREQMODEM_DELAYCONJ)
 freqmodem freqmodem_create(float _m,
                            float _fc,
-                           liquid_fmtype _type);
+                           liquid_freqmodem_type _type);
 
 // destroy freqmodem object
 void freqmodem_destroy(freqmodem _fm);
@@ -3128,19 +3164,21 @@ void freqmodem_demodulate(freqmodem _fm,
 
 // amplitude modulation types
 typedef enum {
-    LIQUID_MODEM_AM_DSB=0,  // double side-band
-    LIQUID_MODEM_AM_USB,    // single side-band (upper)
-    LIQUID_MODEM_AM_LSB     // single side-band (lower)
-} liquid_modem_amtype;
+    LIQUID_AMPMODEM_DSB=0,  // double side-band
+    LIQUID_AMPMODEM_USB,    // single side-band (upper)
+    LIQUID_AMPMODEM_LSB     // single side-band (lower)
+} liquid_ampmodem_type;
 
 typedef struct ampmodem_s * ampmodem;
 
 // create ampmodem object
 //  _m                  :   modulation index
-//  _type               :   AM type (e.g. LIQUID_MODEM_AM_DSB)
+//  _fc                 :   carrier frequency, range: [-0.5,0.5]
+//  _type               :   AM type (e.g. LIQUID_AMPMODEM_DSB)
 //  _suppressed_carrier :   carrier suppression flag
 ampmodem ampmodem_create(float _m,
-                         liquid_modem_amtype _type,
+                         float _fc,
+                         liquid_ampmodem_type _type,
                          int _suppressed_carrier);
 
 // destroy ampmodem object
