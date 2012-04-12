@@ -217,7 +217,8 @@ int main(int argc, char*argv[])
     }
 
     // add 'noise'...
-    //msg_rec_soft[29] = 256 - msg_rec_soft[29];
+    for (i=0; i<6*61; i++)
+        msg_rec_soft[i] += 20*randnf();
 
     // test soft-decision decoding
     memset(m_hat, 0x00, 32);
@@ -786,50 +787,58 @@ void spc2216_decode_soft(unsigned char * _msg_rec,
     int syndrome_flag;
 
     // TODO : run multiple iterations...
+    unsigned int n;
+    for (n=0; n<8; n++) {
+        // compute syndromes on columns and run soft decoder
+        //printf("columns (w):\n");
+        for (i=0; i<16; i++) {
+            // extract encoded symbol
+            for (j=0; j<6; j++)  sym_rec[j  ] = parity_col[j + 6*i];
+            for (j=0; j<16; j++) sym_rec[j+6] = w[16*j + i];
 
-    // compute syndromes on columns and run soft decoder
-    //printf("columns (w):\n");
-    for (i=0; i<16; i++) {
-        // extract encoded symbol
-        for (j=0; j<6; j++)  sym_rec[j  ] = parity_col[j + 6*i];
-        for (j=0; j<16; j++) sym_rec[j+6] = w[16*j + i];
+            // run soft decoder
+            syndrome_flag = spc2216_decode_sym_soft(sym_rec, sym_dec);
 
-        // run soft decoder
-        syndrome_flag = spc2216_decode_sym_soft(sym_rec, sym_dec);
+            // replace decoded symbol
+            for (j=0; j<6; j++)  parity_col[j + 6*i] = sym_dec[j];
+            for (j=0; j<16; j++) w[16*j + i]         = sym_dec[j+6];
+        }
 
-        // replace decoded symbol
-        for (j=0; j<6; j++)  parity_col[j + 6*i] = sym_dec[j];
-        for (j=0; j<16; j++) w[16*j + i]         = sym_dec[j+6];
-    }
+        // compute syndromes on row parities and run soft decoder
+        //printf("row parities:\n");
+        for (i=0; i<6; i++) {
+            // extract encoded symbol
+            for (j=0; j<6; j++)  sym_rec[j  ] = parity_col[j + 6*(i+16)];
+            for (j=0; j<16; j++) sym_rec[j+6] = parity_row[6*j + i];
 
-    // compute syndromes on row parities and run soft decoder
-    //printf("row parities:\n");
-    for (i=0; i<6; i++) {
-        // extract encoded symbol
-        for (j=0; j<6; j++)  sym_rec[j  ] = parity_col[j + 6*(i+16)];
-        for (j=0; j<16; j++) sym_rec[j+6] = parity_row[6*j + i];
+            // run soft decoder
+            syndrome_flag = spc2216_decode_sym_soft(sym_rec, sym_dec);
 
-        // run soft decoder
-        syndrome_flag = spc2216_decode_sym_soft(sym_rec, sym_dec);
+            // replace decoded symbol
+            for (j=0; j<6; j++)  parity_col[j + 6*(i+16)] = sym_rec[j];
+            for (j=0; j<16; j++) parity_row[6*j + i]      = sym_rec[j+6];
+        }
 
-        // replace decoded symbol
-        for (j=0; j<6; j++)  parity_col[j + 6*(i+16)] = sym_rec[j];
-        for (j=0; j<16; j++) parity_row[6*j + i]      = sym_rec[j+6];
-    }
+        // compute syndromes on rows and run soft decoder
+        //printf("rows:\n");
+        unsigned int num_errors = 0;
+        for (i=0; i<16; i++) {
+            // extract encoded symbol
+            for (j=0; j<6; j++)  sym_rec[j  ] = parity_row[6*i + j];
+            for (j=0; j<16; j++) sym_rec[j+6] = w[16*i + j];
 
-    // compute syndromes on rows and run soft decoder
-    //printf("rows:\n");
-    for (i=0; i<16; i++) {
-        // extract encoded symbol
-        for (j=0; j<6; j++)  sym_rec[j  ] = parity_row[6*i + j];
-        for (j=0; j<16; j++) sym_rec[j+6] = w[16*i + j];
+            // run soft decoder
+            syndrome_flag = spc2216_decode_sym_soft(sym_rec, sym_dec);
+            num_errors += syndrome_flag == 0 ? 0 : 1;
 
-        // run soft decoder
-        syndrome_flag = spc2216_decode_sym_soft(sym_rec, sym_dec);
+            // replace decoded symbol
+            for (j=0; j<6; j++)  parity_row[6*i + j] = sym_rec[j];
+            for (j=0; j<16; j++) w[16*i + j]         = sym_rec[j+6];
+        }
 
-        // replace decoded symbol
-        for (j=0; j<6; j++)  parity_row[6*i + j] = sym_rec[j];
-        for (j=0; j<16; j++) w[16*i + j]         = sym_rec[j+6];
+        //printf("%3u, detected %u soft decoding errors\n", n, num_errors);
+        if (num_errors == 0)
+            break;
     }
 
     // hard-decision decoding
