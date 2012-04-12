@@ -215,8 +215,12 @@ int main(int argc, char*argv[])
     }
 
     // add 'noise'...
-    for (i=0; i<6*61; i++)
-        msg_rec_soft[i] += 20*randnf();
+    for (i=0; i<6*61; i++) {
+        int LLR = msg_rec_soft[i] + 30*randnf();
+        if (LLR <   0) LLR =   0;
+        if (LLR > 255) LLR = 255;
+        msg_rec_soft[i] = LLR;
+    }
 
     // test soft-decision decoding
     memset(m_hat, 0x00, 32);
@@ -226,7 +230,7 @@ int main(int argc, char*argv[])
     num_errors_decoded = count_bit_errors_array(m, m_hat, 32);
     printf("soft decoding errors (original) : %2u / 256\n", num_errors_decoded);
 #else
-    // . . 1 1 1 1 1 1 . . . . . . . . | 1 1 . . 1 1
+    // 1 1 . . 1 1 |. . 1 1 1 1 1 1 . . . . . . . .
     unsigned char msg_rec_soft[22] = {
         255, 255, 0,   0,   255, 255,
         0,   0,   255, 255, 255, 255, 255, 255,
@@ -241,8 +245,7 @@ int main(int argc, char*argv[])
         if (bit > 255) bit = 255;
         msg_rec_soft[i] = (unsigned char)bit;
     }
-    unsigned char msg_dec_soft[22];
-    int rc = spc2216_decode_sym_soft(msg_rec_soft, msg_dec_soft);
+    int rc = spc2216_decode_sym_soft(msg_rec_soft, m_hat);
 #endif
 
     // 
@@ -801,7 +804,16 @@ void spc2216_decode_soft(unsigned char * _msg_rec,
 
     // TODO : run multiple iterations...
     unsigned int n;
-    for (n=0; n<8; n++) {
+    for (n=0; n<6; n++) {
+#if DEBUG_SPC2216
+        printf("\n");
+        // print soft values
+        for (i=0; i<16; i++) {
+            for (j=0; j<16; j++)
+                printf("%3u ", w[16*i+j]);
+            printf("\n");
+        }
+#endif
         // compute syndromes on columns and run soft decoder
         //printf("columns (w):\n");
         for (i=0; i<16; i++) {
@@ -832,6 +844,15 @@ void spc2216_decode_soft(unsigned char * _msg_rec,
             for (j=0; j<16; j++) parity_row[6*j + i]      = sym_rec[j+6];
         }
 
+#if DEBUG_SPC2216
+        printf("...\n");
+        // print soft values
+        for (i=0; i<16; i++) {
+            for (j=0; j<16; j++)
+                printf("%3u ", w[16*i+j]);
+            printf("\n");
+        }
+#endif
         // compute syndromes on rows and run soft decoder
         //printf("rows:\n");
         unsigned int num_errors = 0;
@@ -850,8 +871,8 @@ void spc2216_decode_soft(unsigned char * _msg_rec,
         }
 
         //printf("%3u, detected %u soft decoding errors\n", n, num_errors);
-        //if (num_errors == 0)
-        //    break;
+        if (num_errors == 0)
+            break;
     }
 
     // hard-decision decoding
@@ -956,9 +977,15 @@ int spc2216_decode_sym_soft(unsigned char * _msg_rec,
     }
 
     // combine...
-    for (i=0; i<22; i++)
-        //_msg_dec[i] = (_msg_rec[i] + sym_dec_soft[i]) / 2;
-        _msg_dec[i] = 0.1*_msg_rec[i] + 0.9*sym_dec_soft[i];
+    for (i=0; i<22; i++) {
+        int delta = (int)sym_dec_soft[i] - 128;
+        //_msg_dec[i] = 0.5*_msg_rec[i] + 0.5*sym_dec_soft[i];
+
+        int bit = _msg_rec[i] + 0.2*delta;
+        if (bit <   0) bit =   0;
+        if (bit > 255) bit = 255;
+        _msg_dec[i] = (unsigned char) bit;
+    }
 
 #if DEBUG_SPC2216
     printf(" msg_dec:");
