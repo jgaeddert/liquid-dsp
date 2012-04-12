@@ -1,6 +1,6 @@
 /*
- * Copyright (c) 2011 Joseph Gaeddert
- * Copyright (c) 2011 Virginia Polytechnic Institute & State University
+ * Copyright (c) 2012 Joseph Gaeddert
+ * Copyright (c) 2012 Virginia Polytechnic Institute & State University
  *
  * This file is part of liquid.
  *
@@ -19,7 +19,7 @@
  */
 
 //
-// SEC-DED(22,16) product code test
+// SEC-DED(22,16) product code test (soft decoding)
 //  ________________ 
 // [            |   ]
 // [            |   ]
@@ -42,7 +42,7 @@
 
 #include "liquid.internal.h"
 
-#define DEBUG_SPC2216 1
+#define DEBUG_SPC2216 0
 
 #define OUTPUT_FILENAME "spc2216_ber_test.m"
 
@@ -116,11 +116,13 @@ void spc2216_print_unpacked(unsigned char * _m,
 //  _msg_rec    :   received message [size: 488 soft bits]
 //  _msg_dec    :   decoded message  [size: 32 bytes]
 void spc2216_decode_soft(unsigned char * _msg_rec,
-                         unsigned char * _msg_dec);
+                         unsigned char * _msg_dec,
+                         unsigned char * _msg_dec_hard);
 
 // decode soft symbol
-//  _msg_rec    :   received soft bits [size: 22 soft bits]
-//  _msg_dec    :   decoded soft bits [size: 22 soft bits]
+//  _msg_rec        :   received soft bits [size: 22 soft bits]
+//  _msg_dec        :   decoded soft bits [size: 22 soft bits]
+//  _msg_dec_hard   :   decoded hard bits [size: 32 bytes]
 int spc2216_decode_sym_soft(unsigned char * _msg_rec,
                             unsigned char * _msg_dec);
 
@@ -196,35 +198,35 @@ int main(int argc, char*argv[])
     //
     // test soft decoding
     //
-#if 0
+#if 1
     unsigned char msg_rec_soft[8*61];
+    unsigned char msg_dec_soft[8*61];
     unsigned char soft0 =  64;
     unsigned char soft1 = 192;
 
     // modulate with BPSK
     for (i=0; i<61; i++) {
-        msg_rec_soft[8*i+0] = (v[i] & 0x80) ? soft1 : soft0;
-        msg_rec_soft[8*i+1] = (v[i] & 0x40) ? soft1 : soft0;
-        msg_rec_soft[8*i+2] = (v[i] & 0x20) ? soft1 : soft0;
-        msg_rec_soft[8*i+3] = (v[i] & 0x10) ? soft1 : soft0;
-        msg_rec_soft[8*i+4] = (v[i] & 0x08) ? soft1 : soft0;
-        msg_rec_soft[8*i+5] = (v[i] & 0x04) ? soft1 : soft0;
-        msg_rec_soft[8*i+6] = (v[i] & 0x02) ? soft1 : soft0;
-        msg_rec_soft[8*i+7] = (v[i] & 0x01) ? soft1 : soft0;
+        msg_rec_soft[8*i+0] = (r[i] & 0x80) ? soft1 : soft0;
+        msg_rec_soft[8*i+1] = (r[i] & 0x40) ? soft1 : soft0;
+        msg_rec_soft[8*i+2] = (r[i] & 0x20) ? soft1 : soft0;
+        msg_rec_soft[8*i+3] = (r[i] & 0x10) ? soft1 : soft0;
+        msg_rec_soft[8*i+4] = (r[i] & 0x08) ? soft1 : soft0;
+        msg_rec_soft[8*i+5] = (r[i] & 0x04) ? soft1 : soft0;
+        msg_rec_soft[8*i+6] = (r[i] & 0x02) ? soft1 : soft0;
+        msg_rec_soft[8*i+7] = (r[i] & 0x01) ? soft1 : soft0;
     }
 
     // add 'noise'...
-    msg_rec_soft[29] = 256 - msg_rec_soft[29];
+    //msg_rec_soft[29] = 256 - msg_rec_soft[29];
 
     // test soft-decision decoding
     memset(m_hat, 0x00, 32);
-    spc2216_decode_soft(msg_rec_soft, m_hat);
+    spc2216_decode_soft(msg_rec_soft, msg_dec_soft, m_hat);
 
     // compute errors between m, m_hat
     num_errors_decoded = count_bit_errors_array(m, m_hat, 32);
     printf("soft decoding errors (original) : %2u / 256\n", num_errors_decoded);
-#endif
-
+#else
     // . . 1 1 1 1 1 1 . . . . . . . . | 1 1 . . 1 1
     unsigned char msg_rec_soft[22] = {
         255, 255, 0,   0,   255, 255,
@@ -242,6 +244,7 @@ int main(int argc, char*argv[])
     }
     unsigned char msg_dec_soft[22];
     int rc = spc2216_decode_sym_soft(msg_rec_soft, msg_dec_soft);
+#endif
 
     return 0;
     // 
@@ -743,7 +746,8 @@ void spc2216_print_unpacked(unsigned char * _m,
 //  _msg_rec    :   received message [size: 488 soft bits]
 //  _msg_dec    :   decoded message  [size: 32 bytes]
 void spc2216_decode_soft(unsigned char * _msg_rec,
-                         unsigned char * _msg_dec)
+                         unsigned char * _msg_dec,
+                         unsigned char * _msg_dec_hard)
 {
     unsigned char w[256];           // 256 = 16 x 16 bits
     unsigned char parity_row[96];   //  96 = 16 rows @ 6 bits
@@ -754,9 +758,10 @@ void spc2216_decode_soft(unsigned char * _msg_rec,
     memmove(parity_row, &_msg_rec[256],     96);
     memmove(parity_col, &_msg_rec[256+96], 132);
 
-    // print...
     unsigned int i;
     unsigned int j;
+#if 0
+    // print...
     for (i=0; i<16; i++) {
         printf("    ");
         for (j=0; j<16; j++)
@@ -773,70 +778,85 @@ void spc2216_decode_soft(unsigned char * _msg_rec,
             printf("%2s", parity_col[6*j + i] > 128 ? "1" : ".");
         printf("\n");
     }
+#endif
 
     // 
-    unsigned char sym_enc[3];   // encoded 22-bit message
-    unsigned char e_hat[3];     // estimated error vector
+    unsigned char sym_rec[22];  // encoded 22-bit message
+    unsigned char sym_dec[22];  // decoded 22-bit message
+    int syndrome_flag;
 
     // TODO : run multiple iterations...
 
     // compute syndromes on columns and run soft decoder
-    printf("columns (w):\n");
+    //printf("columns (w):\n");
     for (i=0; i<16; i++) {
-        // pack encoded symbols (hard-decision)
-        sym_enc[0] = 0x00;
-        for (j=0; j<6; j++) {
-            sym_enc[0] <<= 1;
-            sym_enc[0] |= parity_col[j + 6*i] > 128 ? 1 : 0;
-        }
+        // extract encoded symbol
+        for (j=0; j<6; j++)  sym_rec[j  ] = parity_col[j + 6*i];
+        for (j=0; j<16; j++) sym_rec[j+6] = w[16*j + i];
 
-        sym_enc[1] = 0x00;
-        sym_enc[2] = 0x00;
-        for (j=0; j<8; j++) {
-            sym_enc[1] <<= 1;
-            sym_enc[2] <<= 1;
-            sym_enc[1] |= w[16*j + i +   0] > 128 ? 1 : 0;
-            sym_enc[2] |= w[16*j + i + 128] > 128 ? 1 : 0;
-        }
+        // run soft decoder
+        syndrome_flag = spc2216_decode_sym_soft(sym_rec, sym_dec);
 
-        //printf("%3u : 0x%.2x%.2x : 0x%.2x\n", i, sym_enc[1], sym_enc[2], sym_enc[0]);
-        int syndrome_flag = fec_secded2216_estimate_ehat(sym_enc, e_hat);
-
-        // run decoder...
-#if 1//DEBUG_SPC2216
-        // print encoded symbol
-        printf("%3u:", i);
-        print_bitstring(sym_enc[1], 8);
-        print_bitstring(sym_enc[2], 8);
-        printf(" |");
-        print_bitstring(sym_enc[0], 6);
-        if (syndrome_flag == 0) {
-            printf(" (no errors detected)\n");
-        } else if (syndrome_flag == 1) {
-            printf(" (one error detected and corrected!)\n");
-        } else {
-            printf(" (multiple errors detected)\n");
-        }
-#endif
-
-#if 0
-        // re-inforce result
-        sym_enc[0] = 0x00;
-        for (j=0; j<6; j++) {
-            sym_enc[0] <<= 1;
-            sym_enc[0] |= parity_col[j + 6*i] > 128 ? 1 : 0;
-        }
-
-        sym_enc[1] = 0x00;
-        sym_enc[2] = 0x00;
-        for (j=0; j<8; j++) {
-            sym_enc[1] <<= 1;
-            sym_enc[2] <<= 1;
-            sym_enc[1] |= w[16*j + i +   0] > 128 ? 1 : 0;
-            sym_enc[2] |= w[16*j + i + 128] > 128 ? 1 : 0;
-        }
-#endif
+        // replace decoded symbol
+        for (j=0; j<6; j++)  parity_col[j + 6*i] = sym_dec[j];
+        for (j=0; j<16; j++) w[16*j + i]         = sym_dec[j+6];
     }
+
+    // compute syndromes on row parities and run soft decoder
+    //printf("row parities:\n");
+    for (i=0; i<6; i++) {
+        // extract encoded symbol
+        for (j=0; j<6; j++)  sym_rec[j  ] = parity_col[j + 6*(i+16)];
+        for (j=0; j<16; j++) sym_rec[j+6] = parity_row[6*j + i];
+
+        // run soft decoder
+        syndrome_flag = spc2216_decode_sym_soft(sym_rec, sym_dec);
+
+        // replace decoded symbol
+        for (j=0; j<6; j++)  parity_col[j + 6*(i+16)] = sym_rec[j];
+        for (j=0; j<16; j++) parity_row[6*j + i]      = sym_rec[j+6];
+    }
+
+    // compute syndromes on rows and run soft decoder
+    //printf("rows:\n");
+    for (i=0; i<16; i++) {
+        // extract encoded symbol
+        for (j=0; j<6; j++)  sym_rec[j  ] = parity_row[6*i + j];
+        for (j=0; j<16; j++) sym_rec[j+6] = w[16*i + j];
+
+        // run soft decoder
+        syndrome_flag = spc2216_decode_sym_soft(sym_rec, sym_dec);
+
+        // replace decoded symbol
+        for (j=0; j<6; j++)  parity_row[6*i + j] = sym_rec[j];
+        for (j=0; j<16; j++) w[16*i + j]         = sym_rec[j+6];
+    }
+
+    // hard-decision decoding
+    for (i=0; i<16; i++) {
+        _msg_dec_hard[2*i+0] = 0;
+        _msg_dec_hard[2*i+0] |= w[16*i+ 0] > 128 ? 0x80 : 0;
+        _msg_dec_hard[2*i+0] |= w[16*i+ 1] > 128 ? 0x40 : 0;
+        _msg_dec_hard[2*i+0] |= w[16*i+ 2] > 128 ? 0x20 : 0;
+        _msg_dec_hard[2*i+0] |= w[16*i+ 3] > 128 ? 0x10 : 0;
+        _msg_dec_hard[2*i+0] |= w[16*i+ 4] > 128 ? 0x08 : 0;
+        _msg_dec_hard[2*i+0] |= w[16*i+ 5] > 128 ? 0x04 : 0;
+        _msg_dec_hard[2*i+0] |= w[16*i+ 6] > 128 ? 0x02 : 0;
+        _msg_dec_hard[2*i+0] |= w[16*i+ 7] > 128 ? 0x01 : 0;
+
+        _msg_dec_hard[2*i+1] = 0;
+        _msg_dec_hard[2*i+1] |= w[16*i+ 8] > 128 ? 0x80 : 0;
+        _msg_dec_hard[2*i+1] |= w[16*i+ 9] > 128 ? 0x40 : 0;
+        _msg_dec_hard[2*i+1] |= w[16*i+10] > 128 ? 0x20 : 0;
+        _msg_dec_hard[2*i+1] |= w[16*i+11] > 128 ? 0x10 : 0;
+        _msg_dec_hard[2*i+1] |= w[16*i+12] > 128 ? 0x08 : 0;
+        _msg_dec_hard[2*i+1] |= w[16*i+13] > 128 ? 0x04 : 0;
+        _msg_dec_hard[2*i+1] |= w[16*i+14] > 128 ? 0x02 : 0;
+        _msg_dec_hard[2*i+1] |= w[16*i+15] > 128 ? 0x01 : 0;
+    }
+
+    // print decoded block
+    //spc2216_print_decoded(_msg_dec_hard);
 }
 
 // decode soft symbol
@@ -883,6 +903,7 @@ int spc2216_decode_sym_soft(unsigned char * _msg_rec,
 
     printf(" input  : ");
     print_bitstring(sym_enc[0], 6);
+    printf("|");
     print_bitstring(sym_enc[1], 8);
     print_bitstring(sym_enc[2], 8);
     printf("\n");
@@ -896,6 +917,7 @@ int spc2216_decode_sym_soft(unsigned char * _msg_rec,
 #if DEBUG_SPC2216
     printf(" output : ");
     print_bitstring(sym_enc[0], 6);
+    printf("|");
     print_bitstring(sym_enc[1], 8);
     print_bitstring(sym_enc[2], 8);
     printf("\n");
