@@ -34,6 +34,10 @@ int main() {
     fftplan pf = fft_create_plan(n, x, y, FFT_FORWARD, method);
     fftplan pr = fft_create_plan(n, y, z, FFT_REVERSE, method);
 
+    // print fft plans
+    fft_print_plan(pf);
+    fft_print_plan(pr);
+
     // execute fft plans
     fft_execute(pf);
     fft_execute(pr);

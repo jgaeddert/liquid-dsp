@@ -129,6 +129,25 @@ void FFT(_destroy_plan)(FFT(plan) _q)
     }
 }
 
+// print FFT plan
+void FFT(_print_plan)(FFT(plan) _q)
+{
+    printf("fft plan [%s], n=%u, ",
+            _q->direction == FFT_FORWARD ? "forward" : "reverse",
+            _q->nfft);
+
+    switch (_q->method) {
+    case LIQUID_FFT_METHOD_RADIX2:      printf("Radix-2\n");        break;
+    case LIQUID_FFT_METHOD_MIXED_RADIX: printf("Cooley-Tukey\n");   break;
+    case LIQUID_FFT_METHOD_DFT:         printf("DFT\n");            break;
+    case LIQUID_FFT_METHOD_RADER:       printf("Rader (Type-I)\n"); break;
+    case LIQUID_FFT_METHOD_RADER_RADIX2: printf("Rader (Type-II)\n"); break;
+    case LIQUID_FFT_METHOD_NONE:        printf("(none)\n");         break;
+    //case LIQUID_FFT_METHOD_UNKNOWN:     printf("(unknown)\n");      break;
+    default:                            printf("(unknown)\n");      break;
+    }
+}
+
 // execute fft
 void FFT(_execute)(FFT(plan) _q)
 {
