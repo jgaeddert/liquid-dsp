@@ -38,16 +38,11 @@
 // include main files
 #include "fft_common.c"         // common source must come first (object definition)
 #include "fft_dft.c"            // FFT definitions for DFT
+#if 0
 #include "fft_radix2.c"         // FFT definitions for radix-2 transforms
 #include "fft_mixed_radix.c"    // FFT definitions for mixed-radix transforms (Cooley-Tukey)
 #include "fft_rader.c"          // FFT definitions for transforms of prime length (Rader's algorithm)
 #include "fft_rader_radix2.c"       // FFT definitions for transforms of prime length (Rader's alternate algorithm)
+#endif
 #include "fft_r2r_1d.c"         // real-to-real definitions (DCT/DST)
 
-#if 0
-#include "fft_create_plan.c"
-#include "fct_execute.c"
-#include "mdct_execute.c"
-#include "imdct_execute.c"
-#include "fft_execute.c"
-#endif

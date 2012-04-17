@@ -27,7 +27,9 @@
 #include <stdlib.h>
 #include "liquid.internal.h"
 
-struct FFT(plan_s) {
+struct FFT(plan_s)
+{
+    // common data
     unsigned int nfft;  // fft size
     TC * twiddle;       // twiddle factors
     TC * x;             // input array pointer (not allocated)
@@ -39,22 +41,6 @@ struct FFT(plan_s) {
 
     // 'execute' function pointer
     void (*execute)(FFT(plan));
-
-    // radix-2 transform data
-    unsigned int m;             // log2(nfft)
-    unsigned int * index_rev;   // reversed indices
-
-    // Cooley-Tukey mixed-radix transform data
-    unsigned int m_vect[LIQUID_MAX_FACTORS];
-    unsigned int p_vect[LIQUID_MAX_FACTORS];
-
-    // Rader data for transforms of prime length
-    unsigned int * seq; // transformation sequence, size: nfft-1
-    TC * R;             // DFT of sequence { exp(-j*2*pi*g^i/nfft }, size: nfft-1
-
-    // Rader data for transforms of prime length, alternate method
-    // using larger FFT of length 2^nextpow2(2*nfft-4)
-    unsigned int nfft_prime;
 
     // real even/odd DFT parameters (DCT/DST)
     T * xr; // input array (real)
@@ -73,6 +59,7 @@ FFT(plan) FFT(_create_plan)(unsigned int _nfft,
                             int          _dir,
                             int          _flags)
 {
+#if 0
     // determine best method for execution
     // TODO : check flags and allow user override
     liquid_fft_method method = liquid_fft_estimate_method(_nfft);
@@ -108,6 +95,9 @@ FFT(plan) FFT(_create_plan)(unsigned int _nfft,
         fprintf(stderr,"error: fft_create_plan(), unknown/invalid fft method\n");
         exit(1);
     }
+#else
+    return FFT(_create_plan_dft)(_nfft, _x, _y, _dir, _flags);
+#endif
 
     return NULL;
 }
@@ -116,11 +106,13 @@ FFT(plan) FFT(_create_plan)(unsigned int _nfft,
 void FFT(_destroy_plan)(FFT(plan) _q)
 {
     switch (_q->method) {
+    case LIQUID_FFT_METHOD_DFT:         FFT(_destroy_plan_dft)(_q); break;
+#if 0
     case LIQUID_FFT_METHOD_RADIX2:      FFT(_destroy_plan_radix2)(_q); break;
     case LIQUID_FFT_METHOD_MIXED_RADIX: FFT(_destroy_plan_mixed_radix)(_q); break;
-    case LIQUID_FFT_METHOD_DFT:         FFT(_destroy_plan_dft)(_q); break;
     case LIQUID_FFT_METHOD_RADER:       FFT(_destroy_plan_rader)(_q); break;
     case LIQUID_FFT_METHOD_RADER_RADIX2: FFT(_destroy_plan_rader_radix2)(_q); break;
+#endif
     case LIQUID_FFT_METHOD_NONE:        break;
     case LIQUID_FFT_METHOD_UNKNOWN:
     default:
@@ -137,11 +129,13 @@ void FFT(_print_plan)(FFT(plan) _q)
             _q->nfft);
 
     switch (_q->method) {
+    case LIQUID_FFT_METHOD_DFT:         printf("DFT\n");            break;
+#if 0
     case LIQUID_FFT_METHOD_RADIX2:      printf("Radix-2\n");        break;
     case LIQUID_FFT_METHOD_MIXED_RADIX: printf("Cooley-Tukey\n");   break;
-    case LIQUID_FFT_METHOD_DFT:         printf("DFT\n");            break;
     case LIQUID_FFT_METHOD_RADER:       printf("Rader (Type-I)\n"); break;
     case LIQUID_FFT_METHOD_RADER_RADIX2: printf("Rader (Type-II)\n"); break;
+#endif
     case LIQUID_FFT_METHOD_NONE:        printf("(none)\n");         break;
     //case LIQUID_FFT_METHOD_UNKNOWN:     printf("(unknown)\n");      break;
     default:                            printf("(unknown)\n");      break;
