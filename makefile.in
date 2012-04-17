@@ -1318,6 +1318,7 @@ sandbox_programs =						\
 	sandbox/fft_dual_radix_test				\
 	sandbox/fft_mixed_radix_test				\
 	sandbox/fft_recursive_plan_test				\
+	sandbox/fft_recursive_test				\
 	sandbox/fft_rader_prime_test				\
 	sandbox/fft_rader_prime_radix2_test			\
 	sandbox/fft_r2r_test					\
