@@ -84,23 +84,19 @@ FFT(plan) FFT(_create_plan_mixed_radix)(unsigned int _nfft,
     // allocate memory for input buffers
     q->data.mixedradix.x = (TC *) malloc(q->nfft * sizeof(TC));
 
-    // create sub-transforms
-    q->num_subplans = 2;
-    q->subplans = (FFT(plan)*) malloc(q->num_subplans*sizeof(FFT(plan)));
+    // create P-point FFT plan
+    q->data.mixedradix.fft_P = FFT(_create_plan)(q->data.mixedradix.P,
+                                                 q->data.mixedradix.t0,
+                                                 q->data.mixedradix.t1,
+                                                 q->direction,
+                                                 q->flags);
 
-    // P-point FFT
-    q->subplans[0] = FFT(_create_plan)(q->data.mixedradix.P,
-                                       q->data.mixedradix.t0,
-                                       q->data.mixedradix.t1,
-                                       q->direction,
-                                       q->flags);
-
-    // Q-point FFT
-    q->subplans[1] = FFT(_create_plan)(q->data.mixedradix.Q,
-                                       q->data.mixedradix.t0,
-                                       q->data.mixedradix.t1,
-                                       q->direction,
-                                       q->flags);
+    // create Q-point FFT plan
+    q->data.mixedradix.fft_Q = FFT(_create_plan)(q->data.mixedradix.Q,
+                                                 q->data.mixedradix.t0,
+                                                 q->data.mixedradix.t1,
+                                                 q->direction,
+                                                 q->flags);
 
     // initialize twiddle factors, indices for mixed-radix transforms
     // TODO : only allocate necessary twiddle factors
@@ -117,9 +113,8 @@ FFT(plan) FFT(_create_plan_mixed_radix)(unsigned int _nfft,
 void FFT(_destroy_plan_mixed_radix)(FFT(plan) _q)
 {
     // destroy sub-plans
-    FFT(_destroy_plan)(_q->subplans[0]);
-    FFT(_destroy_plan)(_q->subplans[1]);
-    free(_q->subplans);
+    FFT(_destroy_plan)(_q->data.mixedradix.fft_P);
+    FFT(_destroy_plan)(_q->data.mixedradix.fft_Q);
 
     // free data specific to mixed-radix transforms
     free(_q->data.mixedradix.t0);
@@ -141,10 +136,10 @@ void FFT(_execute_mixed_radix)(FFT(plan) _q)
     unsigned int Q = _q->data.mixedradix.Q; // second FFT size
 
     // set pointers
-    TC * t0      = _q->data.mixedradix.t0;
-    TC * t1      = _q->data.mixedradix.t1;
-    TC * x       = _q->data.mixedradix.x;
-    TC * twiddle = _q->twiddle;
+    TC * t0      = _q->data.mixedradix.t0;  // small FFT input buffer
+    TC * t1      = _q->data.mixedradix.t1;  // small FFT output buffer
+    TC * x       = _q->data.mixedradix.x;   // full input buffer (data copied)
+    TC * twiddle = _q->twiddle;             // twiddle factors
 
     // copy input to internal buffer
     memmove(x, _q->x, _q->nfft*sizeof(TC));
@@ -162,7 +157,7 @@ void FFT(_execute_mixed_radix)(FFT(plan) _q)
             t0[k] = x[Q*k+i];
 
         // run internal P-point DFT
-        FFT(_execute)(_q->subplans[0]);
+        FFT(_execute)(_q->data.mixedradix.fft_P);
 
         // copy back to input, applying twiddle factors
         for (k=0; k<P; k++)
@@ -185,7 +180,7 @@ void FFT(_execute_mixed_radix)(FFT(plan) _q)
             t0[k] = x[Q*i+k];
 
         // run internal Q-point DFT
-        FFT(_execute)(_q->subplans[1]);
+        FFT(_execute)(_q->data.mixedradix.fft_Q);
 
         // copy and transpose
         for (k=0; k<Q; k++)

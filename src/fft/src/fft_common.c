@@ -46,10 +46,6 @@ struct FFT(plan_s)
     T * xr; // input array (real)
     T * yr; // output array (real)
 
-    // sub-transforms
-    FFT(plan) * subplans;
-    unsigned int num_subplans;
-
     // common data structure shared between specific FFT algorithms
     union {
         // radix-2 transform data
@@ -64,11 +60,13 @@ struct FFT(plan_s)
         //  - compute 'P' FFTs of size 'Q'
         //  - transpose result
         struct {
-            unsigned int P; // first FFT size
-            unsigned int Q; // second FFT size
-            TC * x;         // input buffer (copied)
-            TC * t0;        // temporary buffer (small FFT input)
-            TC * t1;        // temporary buffer (small FFT output)
+            unsigned int P;     // first FFT size
+            unsigned int Q;     // second FFT size
+            TC * x;             // input buffer (copied)
+            TC * t0;            // temporary buffer (small FFT input)
+            TC * t1;            // temporary buffer (small FFT output)
+            FFT(plan) fft_P;    // sub-transform of size P
+            FFT(plan) fft_Q;    // sub-transform of size Q
         } mixedradix;
 
     } data;
