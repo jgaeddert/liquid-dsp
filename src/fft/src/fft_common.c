@@ -1,6 +1,7 @@
 /*
- * Copyright (c) 2011 Joseph Gaeddert
- * Copyright (c) 2011 Virginia Polytechnic Institute & State University
+ * Copyright (c) 2007, 2008, 2009, 2010, 2011, 2012 Joseph Gaeddert
+ * Copyright (c) 2007, 2008, 2009, 2010, 2011, 2012 Virginia Polytechnic
+ *                                      Institute & State University
  *
  * This file is part of liquid.
  *
@@ -19,44 +20,160 @@
  */
 
 //
-// fft_common.c
+// fft_common.c : common utilities specific to precision
 //
 
 #include <stdio.h>
 #include <stdlib.h>
-#include <math.h>
-
 #include "liquid.internal.h"
 
-// is input radix-2?
-int fft_is_radix2(unsigned int _n)
+#define FFT_MAX_FACTORS (32)
+
+struct FFT(plan_s) {
+    unsigned int nfft;  // fft size
+    TC * twiddle;       // twiddle factors
+    TC * x;             // input array pointer (not allocated)
+    TC * y;             // output array pointer (not allocated)
+    int direction;      // forward/reverse
+    int flags;
+    liquid_fft_kind kind;
+    liquid_fft_method method;
+
+    // 'execute' function pointer
+    void (*execute)(FFT(plan));
+
+    // radix-2 transform data
+    unsigned int m;             // log2(nfft)
+    unsigned int * index_rev;   // reversed indices
+
+    // Cooley-Tukey mixed-radix transform data
+    unsigned int m_vect[FFT_MAX_FACTORS];
+    unsigned int p_vect[FFT_MAX_FACTORS];
+
+    // Rader data for transforms of prime length
+    unsigned int * seq; // transformation sequence, size: nfft-1
+    TC * R;             // DFT of sequence { exp(-j*2*pi*g^i/nfft }, size: nfft-1
+
+    // Rader data for transforms of prime length, alternate method
+    // using larger FFT of length 2^nextpow2(2*nfft-4)
+    unsigned int nfft_prime;
+
+    // real even/odd DFT parameters (DCT/DST)
+    T * xr; // input array (real)
+    T * yr; // output array (real)
+};
+
+// create FFT plan
+//  _nfft   :   FFT size
+//  _x      :   input array [size: _nfft x 1]
+//  _y      :   output array [size: _nfft x 1]
+//  _dir    :   fft direction: {FFT_FORWARD, FFT_REVERSE}
+//  _method :   fft method
+FFT(plan) FFT(_create_plan)(unsigned int _nfft,
+                            TC *         _x,
+                            TC *         _y,
+                            int          _dir,
+                            int          _flags)
 {
-    // check to see if _n is radix 2
-    unsigned int i;
-    unsigned int d=0;
-    unsigned int m=0;
-    unsigned int t=_n;
-    for (i=0; i<8*sizeof(unsigned int); i++) {
-        d += (t & 1);           // count bits, radix-2 if d==1
-        if (!m && (t&1)) m = i; // count lagging zeros, effectively log2(n)
-        t >>= 1;
+    // determine best method for execution
+    // TODO : check flags and allow user override
+    liquid_fft_method method = liquid_fft_estimate_method(_nfft);
+
+    // initialize fft based on method
+    switch (method) {
+    case LIQUID_FFT_METHOD_RADIX2:
+        // use radix-2 decimation-in-time method
+        return FFT(_create_plan_radix2)(_nfft, _x, _y, _dir, _flags);
+
+    case LIQUID_FFT_METHOD_MIXED_RADIX:
+        // use Cooley-Tukey mixed-radix algorithm
+        return FFT(_create_plan_mixed_radix)(_nfft, _x, _y, _dir, _flags);
+
+    case LIQUID_FFT_METHOD_RADER:
+        // use Rader's algorithm for FFTs of prime length
+        return FFT(_create_plan_rader)(_nfft, _x, _y, _dir, _flags);
+
+    case LIQUID_FFT_METHOD_RADER_RADIX2:
+        // use Rader's algorithm for FFTs of prime length
+        return FFT(_create_plan_rader_radix2)(_nfft, _x, _y, _dir, _flags);
+
+    case LIQUID_FFT_METHOD_DFT:
+        // use slow DFT
+        return FFT(_create_plan_dft)(_nfft, _x, _y, _dir, _flags);
+
+    case LIQUID_FFT_METHOD_NONE:
+        // no method specified (e.g. real-to-real method)
+        break;
+
+    case LIQUID_FFT_METHOD_UNKNOWN:
+    default:
+        fprintf(stderr,"error: fft_create_plan(), unknown/invalid fft method\n");
+        exit(1);
     }
 
-    return (d == 1) ? 1 : 0;
+    return NULL;
 }
 
-
-// reverse _n-bit index _i
-unsigned int fft_reverse_index(unsigned int _i, unsigned int _n)
+// destroy FFT plan
+void FFT(_destroy_plan)(FFT(plan) _q)
 {
-    unsigned int j=0, k;
-    for (k=0; k<_n; k++) {
-        j <<= 1;
-        j |= ( _i & 1 );
-        _i >>= 1;
+    switch (_q->method) {
+    case LIQUID_FFT_METHOD_RADIX2:      FFT(_destroy_plan_radix2)(_q); break;
+    case LIQUID_FFT_METHOD_MIXED_RADIX: FFT(_destroy_plan_mixed_radix)(_q); break;
+    case LIQUID_FFT_METHOD_DFT:         FFT(_destroy_plan_dft)(_q); break;
+    case LIQUID_FFT_METHOD_RADER:       FFT(_destroy_plan_rader)(_q); break;
+    case LIQUID_FFT_METHOD_RADER_RADIX2: FFT(_destroy_plan_rader_radix2)(_q); break;
+    case LIQUID_FFT_METHOD_NONE:        break;
+    case LIQUID_FFT_METHOD_UNKNOWN:
+    default:
+        fprintf(stderr,"error: fft_destroy_plan(), unknown/invalid fft method\n");
+        exit(1);
     }
-
-    return j;
 }
 
+// execute fft
+void FFT(_execute)(FFT(plan) _q)
+{
+    // invoke internal function pointer
+    _q->execute(_q);
+}
+
+// perform n-point FFT allocating plan internally
+//  _nfft   :   fft size
+//  _x      :   input array [size: _nfft x 1]
+//  _y      :   output array [size: _nfft x 1]
+//  _dir    :   fft direction: {FFT_FORWARD, FFT_REVERSE}
+//  _method :   fft method
+void FFT(_run)(unsigned int _nfft,
+               TC *         _x,
+               TC *         _y,
+               int          _dir,
+               int          _method)
+{
+    // create plan
+    FFT(plan) plan = FFT(_create_plan)(_nfft, _x, _y, _dir, _method);
+
+    // execute fft
+    FFT(_execute)(plan);
+
+    // destroy plan
+    FFT(_destroy_plan)(plan);
+}
+
+// perform _n-point fft shift
+void FFT(_shift)(TC *_x, unsigned int _n)
+{
+    unsigned int i, n2;
+    if (_n%2)
+        n2 = (_n-1)/2;
+    else
+        n2 = _n/2;
+
+    TC tmp;
+    for (i=0; i<n2; i++) {
+        tmp = _x[i];
+        _x[i] = _x[i+n2];
+        _x[i+n2] = tmp;
+    }
+}
 

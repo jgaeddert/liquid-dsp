@@ -727,10 +727,13 @@ typedef enum {
 } liquid_fft_kind;
 
 typedef enum {
-    LIQUID_FFT_METHOD_UNKNOWN=0,// unknown method
-    LIQUID_FFT_METHOD_LUT,      // look-up table
-    LIQUID_FFT_METHOD_RADIX2,   // Radix-2 (decimation in time)
-    LIQUID_FFT_METHOD_DFT       // slow discrete Fourier transform
+    LIQUID_FFT_METHOD_UNKNOWN=0,    // unknown method
+    LIQUID_FFT_METHOD_NONE,         // unspecified method (e.g. real-to-real)
+    LIQUID_FFT_METHOD_RADIX2,       // Radix-2 (decimation in time)
+    LIQUID_FFT_METHOD_MIXED_RADIX,  // Cooley-Tukey mixed-radix FFT (decimation in time)
+    LIQUID_FFT_METHOD_RADER,        // Rader's method for FFTs of prime length
+    LIQUID_FFT_METHOD_RADER_RADIX2, // Rader's method for FFTs of prime length (alternate)
+    LIQUID_FFT_METHOD_DFT           // slow discrete Fourier transform
 } liquid_fft_method;
 
 // Macro    :   FFT (internal)
@@ -738,74 +741,87 @@ typedef enum {
 //  T       :   primitive data type
 //  TC      :   primitive data type (complex)
 #define LIQUID_FFT_DEFINE_INTERNAL_API(FFT,T,TC)                \
-struct FFT(plan_s) {                                            \
-    unsigned int n;             /* fft size */                  \
-    TC * twiddle;               /* twiddle factors */           \
-    TC * x;                     /* input array */               \
-    TC * y;                     /* output array */              \
-    int direction;              /* forward/reverse */           \
-    int flags;                                                  \
-    liquid_fft_kind kind;                                       \
-    liquid_fft_method method;                                   \
                                                                 \
-    /* radix-2 implementation data */                           \
-    int is_radix2;              /* radix-2 flag */              \
-    unsigned int * index_rev;   /* input indices (reversed) */  \
-    unsigned int m;             /* log2(n) */                   \
-    void (*execute)(FFT(plan)); /* function pointer */          \
+/* basic dft (slow, but guarantees correct output) */           \
+FFT(plan) FFT(_create_plan_dft)(unsigned int _nfft,             \
+                                TC *         _x,                \
+                                TC *         _y,                \
+                                int          _dir,              \
+                                int          _flags);           \
+void FFT(_destroy_plan_dft)(FFT(plan) _q);                      \
+void FFT(_execute_dft)(FFT(plan) _q);                           \
                                                                 \
-    /* real even/odd DFTs parameters */                         \
-    T * xr;                     /* input array (real) */        \
-    T * yr;                     /* output array (real) */       \
-    TC * xc;                    /* allocated input array */     \
-    TC * yc;                    /* allocated output array */    \
+/* basic radix-2 fft (fast, but only for transforms of 2^m */   \
+FFT(plan) FFT(_create_plan_radix2)(unsigned int _nfft,          \
+                                   TC *         _x,             \
+                                   TC *         _y,             \
+                                   int          _dir,           \
+                                   int          _flags);        \
+void FFT(_destroy_plan_radix2)(FFT(plan) _q);                   \
+void FFT(_execute_radix2)(FFT(plan) _q);                        \
                                                                 \
-    /* modified discrete cosine transform parameters */         \
-    T * xrm;                    /* allocated input array */     \
-    T * yrm;                    /* allocated output array */    \
-    T * w;                      /* window */                    \
+/* Cooley-Tukey mixed-radix FFT (fast when highly composite) */ \
+FFT(plan) FFT(_create_plan_mixed_radix)(unsigned int _nfft,     \
+                                        TC *         _x,        \
+                                        TC *         _y,        \
+                                        int          _dir,      \
+                                        int          _flags);   \
+void FFT(_destroy_plan_mixed_radix)(FFT(plan) _q);              \
+void FFT(_mixed_radix_init_factors)(FFT(plan) _q,               \
+                                    unsigned int _n);           \
+void FFT(_execute_mixed_radix)(FFT(plan) _q);                   \
+void FFT(_mixed_radix_bfly2)(TC *         _x,                   \
+                             TC *         _twiddle,             \
+                             unsigned int _nfft,                \
+                             unsigned int _stride,              \
+                             unsigned int _m);                  \
+void FFT(_mixed_radix_bfly)(TC *         _x,                    \
+                            TC *         _twiddle,              \
+                            unsigned int _nfft,                 \
+                            unsigned int _stride,               \
+                            unsigned int _m,                    \
+                            unsigned int _p);                   \
+void FFT(_mixed_radix_cycle)(TC *         _x,                   \
+                             TC *         _y,                   \
+                             TC *         _twiddle,             \
+                             unsigned int _nfft,                \
+                             unsigned int _xoffset,             \
+                             unsigned int _xstride,             \
+                             unsigned int * _m_vect,            \
+                             unsigned int * _p_vect);           \
                                                                 \
-    /* internal FFT plan for real DFTs */                       \
-    FFT(plan) internal_plan;                                    \
-};                                                              \
+/* Rader's algorithm for FFTs of prime length */                \
+FFT(plan) FFT(_create_plan_rader)(unsigned int _nfft,           \
+                                  TC *         _x,              \
+                                  TC *         _y,              \
+                                  int          _dir,            \
+                                  int          _flags);         \
+void FFT(_destroy_plan_rader)(FFT(plan) _q);                    \
+void FFT(_execute_rader)(FFT(plan) _q);                         \
                                                                 \
-/* initialization */                                            \
-void FFT(_init_null)(FFT(plan) _p);                             \
-void FFT(_init_lut)(FFT(plan) _p);                              \
-void FFT(_init_radix2)(FFT(plan) _p);                           \
-                                                                \
-/* execute basic dft (slow, but guarantees correct output) */   \
-void FFT(_execute_dft)(FFT(plan) _p);                           \
-                                                                \
-/* execute basic dft using look-up table for twiddle factors */ \
-/* (fast for small fft sizes) */                                \
-void FFT(_execute_lut)(FFT(plan) _p);                           \
-                                                                \
-/* execute radix-2 fft */                                       \
-void FFT(_execute_radix2)(FFT(plan) _p);                        \
+/* Rader's alternate algorithm for FFTs of prime length */      \
+FFT(plan) FFT(_create_plan_rader_radix2)(unsigned int _nfft,    \
+                                         TC *         _x,       \
+                                         TC *         _y,       \
+                                         int          _dir,     \
+                                         int          _flags);  \
+void FFT(_destroy_plan_rader_radix2)(FFT(plan) _q);             \
+void FFT(_execute_rader_radix2)(FFT(plan) _q);                  \
                                                                 \
 /* discrete cosine transform (DCT) prototypes */                \
-void FFT(_execute_REDFT00)(FFT(plan) _p);   /* DCT-I   */       \
-void FFT(_execute_REDFT10)(FFT(plan) _p);   /* DCT-II  */       \
-void FFT(_execute_REDFT01)(FFT(plan) _p);   /* DCT-III */       \
-void FFT(_execute_REDFT11)(FFT(plan) _p);   /* DCT-IV  */       \
+void FFT(_execute_REDFT00)(FFT(plan) _q);   /* DCT-I   */       \
+void FFT(_execute_REDFT10)(FFT(plan) _q);   /* DCT-II  */       \
+void FFT(_execute_REDFT01)(FFT(plan) _q);   /* DCT-III */       \
+void FFT(_execute_REDFT11)(FFT(plan) _q);   /* DCT-IV  */       \
                                                                 \
 /* discrete sine transform (DST) prototypes */                  \
-void FFT(_execute_RODFT00)(FFT(plan) _p);   /* DST-I   */       \
-void FFT(_execute_RODFT10)(FFT(plan) _p);   /* DST-II  */       \
-void FFT(_execute_RODFT01)(FFT(plan) _p);   /* DST-III */       \
-void FFT(_execute_RODFT11)(FFT(plan) _p);   /* DST-IV  */       \
-                                                                \
-/* modified discrete cosine transforms */                       \
-void FFT(_execute_MDCT)(FFT(plan) _p);      /* MDCT    */       \
-void FFT(_execute_IMDCT)(FFT(plan) _p);     /* IMDCT   */       \
-                                                                \
-/* fast real transform (DST/DCT/MDCT) prototypes */             \
-void FFT(_execute_REDFT10_fftn)(FFT(plan) _p);                  \
-void FFT(_execute_REDFT01_fftn)(FFT(plan) _p);                  \
-void FFT(_execute_REDFT11_fft4n)(FFT(plan) _p);                 \
-void FFT(_execute_MDCT_REDFT11)(FFT(plan) _p);                  \
-void FFT(_execute_IMDCT_REDFT11)(FFT(plan) _p);                 \
+void FFT(_execute_RODFT00)(FFT(plan) _q);   /* DST-I   */       \
+void FFT(_execute_RODFT10)(FFT(plan) _q);   /* DST-II  */       \
+void FFT(_execute_RODFT01)(FFT(plan) _q);   /* DST-III */       \
+void FFT(_execute_RODFT11)(FFT(plan) _q);   /* DST-IV  */       \
+
+// determine best FFT method based on size
+liquid_fft_method liquid_fft_estimate_method(unsigned int _nfft);
 
 // is input radix-2?
 int fft_is_radix2(unsigned int _n);

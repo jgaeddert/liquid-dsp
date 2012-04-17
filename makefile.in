@@ -288,25 +288,20 @@ fec_benchmarks :=						\
 #
 
 fft_objects :=							\
+	src/fft/src/fftf.o					\
 	src/fft/src/asgram.o					\
 	src/fft/src/spgram.o					\
-	src/fft/src/dct.o					\
-	src/fft/src/fftf.o					\
-	src/fft/src/fft_common.o				\
-	src/fft/src/mdct.o					\
-
+	src/fft/src/fft_utilities.o				\
 
 # explicit targets and dependencies
 fft_includes :=							\
-	src/fft/src/fft_create_plan.c				\
-	src/fft/src/fct_execute.c				\
-	src/fft/src/dct_execute.c				\
-	src/fft/src/dst_execute.c				\
-	src/fft/src/mdct_execute.c				\
-	src/fft/src/imdct_execute.c				\
-	src/fft/src/fft_execute.c				\
-	src/fft/src/fft.common.c				\
-
+	src/fft/src/fft_common.c				\
+	src/fft/src/fft_dft.c					\
+	src/fft/src/fft_radix2.c				\
+	src/fft/src/fft_mixed_radix.c				\
+	src/fft/src/fft_rader.c					\
+	src/fft/src/fft_rader_radix2.c				\
+	src/fft/src/fft_r2r_1d.c				\
 
 src/fft/src/fftf.o : %.o : %.c $(headers) $(fft_includes)
 
@@ -316,7 +311,7 @@ src/fft/src/dct.o : %.o : %.c $(headers)
 
 src/fft/src/fftf.o : %.o : %.c $(headers)
 
-src/fft/src/fft_common.o : %.o : %.c $(headers)
+src/fft/src/fft_utilities.o : %.o : %.c $(headers)
 
 src/fft/src/mdct.o : %.o : %.c $(headers)
 
@@ -328,8 +323,9 @@ fft_autotests :=						\
 
 
 fft_benchmarks :=						\
-	src/fft/bench/mdct_benchmark.c				\
-	src/fft/bench/fft_benchmark.c				\
+	src/fft/bench/fft_composite_benchmark.c			\
+	src/fft/bench/fft_prime_benchmark.c			\
+	src/fft/bench/fft_radix2_benchmark.c			\
 	src/fft/bench/fft_r2r_benchmark.c			\
 
 #
@@ -882,6 +878,12 @@ utility_benchmarks :=
 # MODULE : experimental
 #
 
+# legacy sources (not built, but keep around just in case)
+#	src/experimental/legacy/dct.o
+#	src/experimental/legacy/mdct.o
+#	src/experimental/legacy/mdct_benchmark.c
+
+
 # explicit targets and dependencies
 
 experimental_filter_includes :=					\
@@ -1189,7 +1191,6 @@ example_programs :=						\
 	examples/eqrls_cccf_example				\
 	examples/fec_example					\
 	examples/fec_soft_example				\
-	examples/fct_example					\
 	examples/fft_example					\
 	examples/firfarrow_rrrf_example				\
 	examples/firfarrow_rrrf_sine_example			\
@@ -1226,7 +1227,6 @@ example_programs :=						\
 	examples/matched_filter_example				\
 	examples/math_lngamma_example				\
 	examples/math_primitive_root_example			\
-	examples/mdct_example					\
 	examples/modem_arb_example				\
 	examples/modem_example					\
 	examples/modem_soft_example				\
@@ -1315,6 +1315,11 @@ sandbox_programs =						\
 	sandbox/fecsoft_hamming128_gentab			\
 	sandbox/fecsoft_ldpc_test				\
 	sandbox/fec_sumproduct_test				\
+	sandbox/fft_dual_radix_test				\
+	sandbox/fft_mixed_radix_test				\
+	sandbox/fft_recursive_plan_test				\
+	sandbox/fft_rader_prime_test				\
+	sandbox/fft_rader_prime_radix2_test			\
 	sandbox/fft_r2r_test					\
 	sandbox/firdes_energy_test				\
 	sandbox/firdes_fexp_test				\
@@ -1356,8 +1361,11 @@ sandbox_programs =						\
 	sandbox/symsync_eqlms_test				\
 	sandbox/svd_test					\
 	sandbox/thiran_allpass_iir_test				\
+
 #	firpfbch_analysis_test
 #	sandbox/ofdmoqam_firpfbch_cfo_test
+#	sandbox/mdct_test
+#	sandbox/fct_test
 
 
 sandbox_objects	= $(patsubst %,%.o,$(sandbox_programs))
