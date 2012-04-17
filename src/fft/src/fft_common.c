@@ -27,8 +27,6 @@
 #include <stdlib.h>
 #include "liquid.internal.h"
 
-#define FFT_MAX_FACTORS (32)
-
 struct FFT(plan_s) {
     unsigned int nfft;  // fft size
     TC * twiddle;       // twiddle factors
@@ -47,8 +45,8 @@ struct FFT(plan_s) {
     unsigned int * index_rev;   // reversed indices
 
     // Cooley-Tukey mixed-radix transform data
-    unsigned int m_vect[FFT_MAX_FACTORS];
-    unsigned int p_vect[FFT_MAX_FACTORS];
+    unsigned int m_vect[LIQUID_MAX_FACTORS];
+    unsigned int p_vect[LIQUID_MAX_FACTORS];
 
     // Rader data for transforms of prime length
     unsigned int * seq; // transformation sequence, size: nfft-1

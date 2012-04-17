@@ -103,13 +103,13 @@ void FFT(_mixed_radix_init_factors)(FFT(plan) _q,
                 break;
             }
         }
-    } while (n > 1 && num_factors < FFT_MAX_FACTORS);
+    } while (n > 1 && num_factors < LIQUID_MAX_FACTORS);
 
     // NOTE: this is extremely unlikely as the worst case is
-    //       nfft=2^MAX_FACTORS in which case we will probably run out
+    //       nfft=2^LIQUID_MAX_FACTORS in which case we will probably run out
     //       of memory first
-    if (num_factors == FFT_MAX_FACTORS) {
-        fprintf(stderr,"error: could not factor %u with %u factors\n", _n, FFT_MAX_FACTORS);
+    if (num_factors == LIQUID_MAX_FACTORS) {
+        fprintf(stderr,"error: could not factor %u with %u factors\n", _n, LIQUID_MAX_FACTORS);
         exit(1);
     }
 
