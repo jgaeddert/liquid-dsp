@@ -323,7 +323,6 @@ fft_autotests :=						\
 
 
 fft_benchmarks :=						\
-	src/fft/bench/mdct_benchmark.c				\
 	src/fft/bench/fft_composite_benchmark.c			\
 	src/fft/bench/fft_prime_benchmark.c			\
 	src/fft/bench/fft_radix2_benchmark.c			\
@@ -882,6 +881,7 @@ utility_benchmarks :=
 # legacy sources (not built, but keep around just in case)
 #	src/experimental/legacy/dct.o
 #	src/experimental/legacy/mdct.o
+#	src/experimental/legacy/mdct_benchmark.c
 
 
 # explicit targets and dependencies
