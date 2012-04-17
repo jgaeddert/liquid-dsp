@@ -1,6 +1,6 @@
 /*
- * Copyright (c) 2011 Joseph Gaeddert
- * Copyright (c) 2011 Virginia Polytechnic Institute & State University
+ * Copyright (c) 2011, 2012 Joseph Gaeddert
+ * Copyright (c) 2011, 2012 Virginia Polytechnic Institute & State University
  *
  * This file is part of liquid.
  *
@@ -44,6 +44,7 @@ liquid_fft_method liquid_fft_estimate_method(unsigned int _nfft)
         // transform is of the form 2^m
         return LIQUID_FFT_METHOD_RADIX2;
 
+#if 0
     } else if (liquid_is_prime(_nfft)) {
         // compute prime factors of _nfft-1
         unsigned int factors[LIQUID_MAX_FACTORS];
@@ -57,11 +58,12 @@ liquid_fft_method liquid_fft_estimate_method(unsigned int _nfft)
             // use Rader's alternate algorithm
             return LIQUID_FFT_METHOD_RADER_RADIX2;
         }
+#endif
     }
 
     // last resort
-    //return LIQUID_FFT_METHOD_DFT;         // use slow DFT method
-    return LIQUID_FFT_METHOD_MIXED_RADIX;   // use mixed radix method
+    return LIQUID_FFT_METHOD_DFT;         // use slow DFT method
+    //return LIQUID_FFT_METHOD_MIXED_RADIX;   // use mixed radix method
 }
 
 // is input radix-2?
