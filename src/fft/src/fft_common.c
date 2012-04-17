@@ -46,12 +46,30 @@ struct FFT(plan_s)
     T * xr; // input array (real)
     T * yr; // output array (real)
 
+    // sub-transforms
+    FFT(plan) * subplans;
+    unsigned int num_subplans;
+
+    // common data structure shared between specific FFT algorithms
     union {
         // radix-2 transform data
         struct {
             unsigned int m;             // log2(nfft)
             unsigned int * index_rev;   // reversed indices
         } radix2;
+
+        // recursive mixed-radix transform data:
+        //  - compute 'Q' FFTs of size 'P'
+        //  - apply twiddle factors
+        //  - compute 'P' FFTs of size 'Q'
+        //  - transpose result
+        struct {
+            unsigned int P; // first FFT size
+            unsigned int Q; // second FFT size
+            TC * x;         // input buffer (copied)
+            TC * t0;        // temporary buffer (small FFT input)
+            TC * t1;        // temporary buffer (small FFT output)
+        } mixedradix;
 
     } data;
 };
@@ -78,11 +96,11 @@ FFT(plan) FFT(_create_plan)(unsigned int _nfft,
         // use radix-2 decimation-in-time method
         return FFT(_create_plan_radix2)(_nfft, _x, _y, _dir, _flags);
 
-#if 0
     case LIQUID_FFT_METHOD_MIXED_RADIX:
         // use Cooley-Tukey mixed-radix algorithm
         return FFT(_create_plan_mixed_radix)(_nfft, _x, _y, _dir, _flags);
 
+#if 0
     case LIQUID_FFT_METHOD_RADER:
         // use Rader's algorithm for FFTs of prime length
         return FFT(_create_plan_rader)(_nfft, _x, _y, _dir, _flags);
@@ -115,8 +133,8 @@ void FFT(_destroy_plan)(FFT(plan) _q)
     switch (_q->method) {
     case LIQUID_FFT_METHOD_DFT:         FFT(_destroy_plan_dft)(_q); break;
     case LIQUID_FFT_METHOD_RADIX2:      FFT(_destroy_plan_radix2)(_q); break;
-#if 0
     case LIQUID_FFT_METHOD_MIXED_RADIX: FFT(_destroy_plan_mixed_radix)(_q); break;
+#if 0
     case LIQUID_FFT_METHOD_RADER:       FFT(_destroy_plan_rader)(_q); break;
     case LIQUID_FFT_METHOD_RADER_RADIX2: FFT(_destroy_plan_rader_radix2)(_q); break;
 #endif
@@ -138,8 +156,8 @@ void FFT(_print_plan)(FFT(plan) _q)
     switch (_q->method) {
     case LIQUID_FFT_METHOD_DFT:         printf("DFT\n");            break;
     case LIQUID_FFT_METHOD_RADIX2:      printf("Radix-2\n");        break;
-#if 0
     case LIQUID_FFT_METHOD_MIXED_RADIX: printf("Cooley-Tukey\n");   break;
+#if 0
     case LIQUID_FFT_METHOD_RADER:       printf("Rader (Type-I)\n"); break;
     case LIQUID_FFT_METHOD_RADER_RADIX2: printf("Rader (Type-II)\n"); break;
 #endif

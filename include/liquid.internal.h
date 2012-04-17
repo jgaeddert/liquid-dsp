@@ -767,28 +767,7 @@ FFT(plan) FFT(_create_plan_mixed_radix)(unsigned int _nfft,     \
                                         int          _dir,      \
                                         int          _flags);   \
 void FFT(_destroy_plan_mixed_radix)(FFT(plan) _q);              \
-void FFT(_mixed_radix_init_factors)(FFT(plan) _q,               \
-                                    unsigned int _n);           \
 void FFT(_execute_mixed_radix)(FFT(plan) _q);                   \
-void FFT(_mixed_radix_bfly2)(TC *         _x,                   \
-                             TC *         _twiddle,             \
-                             unsigned int _nfft,                \
-                             unsigned int _stride,              \
-                             unsigned int _m);                  \
-void FFT(_mixed_radix_bfly)(TC *         _x,                    \
-                            TC *         _twiddle,              \
-                            unsigned int _nfft,                 \
-                            unsigned int _stride,               \
-                            unsigned int _m,                    \
-                            unsigned int _p);                   \
-void FFT(_mixed_radix_cycle)(TC *         _x,                   \
-                             TC *         _y,                   \
-                             TC *         _twiddle,             \
-                             unsigned int _nfft,                \
-                             unsigned int _xoffset,             \
-                             unsigned int _xstride,             \
-                             unsigned int * _m_vect,            \
-                             unsigned int * _p_vect);           \
                                                                 \
 /* Rader's algorithm for FFTs of prime length */                \
 FFT(plan) FFT(_create_plan_rader)(unsigned int _nfft,           \

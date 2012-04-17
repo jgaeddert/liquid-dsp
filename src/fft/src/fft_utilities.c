@@ -44,8 +44,8 @@ liquid_fft_method liquid_fft_estimate_method(unsigned int _nfft)
         // transform is of the form 2^m
         return LIQUID_FFT_METHOD_RADIX2;
 
-#if 0
     } else if (liquid_is_prime(_nfft)) {
+#if 0
         // compute prime factors of _nfft-1
         unsigned int factors[LIQUID_MAX_FACTORS];
         unsigned int num_factors=0;
@@ -58,12 +58,14 @@ liquid_fft_method liquid_fft_estimate_method(unsigned int _nfft)
             // use Rader's alternate algorithm
             return LIQUID_FFT_METHOD_RADER_RADIX2;
         }
+#else
+    return LIQUID_FFT_METHOD_DFT;
 #endif
     }
 
     // last resort
-    return LIQUID_FFT_METHOD_DFT;         // use slow DFT method
-    //return LIQUID_FFT_METHOD_MIXED_RADIX;   // use mixed radix method
+    //return LIQUID_FFT_METHOD_DFT;         // use slow DFT method
+    return LIQUID_FFT_METHOD_MIXED_RADIX;   // use mixed radix method
 }
 
 // is input radix-2?
