@@ -89,6 +89,7 @@ int main(int argc, char*argv[])
     }
 
     // compute output for testing
+    printf("running dft...\n");
     dft_run(nfft, x, y_test, DFT_FORWARD);
 
     //
@@ -99,6 +100,8 @@ int main(int argc, char*argv[])
         y[i] = 0.0f;
 
     // run recursion
+    // NOTE: this will destroy input array x
+    printf("running recursion...\n");
     fft_recursion(nfft, x, y, DFT_FORWARD);
 
     // 
@@ -199,24 +202,16 @@ void fft_recursion(unsigned int    _nfft,
 
         fft_recursion(q, t0, t1, _dir);
 
-        // copy
+        // copy and transpose
         for (k=0; k<q; k++)
-            _x[q*i+k] = t1[k];
+            _y[k*p+i] = t1[k];
+            //_x[q*i+k] = t1[k];
         
 #if DEBUG
         printf("i=%3u/%3u\n", i, p);
         for (k=0; k<q; k++)
             printf("  %12.6f %12.6f\n", crealf(_x[q*i+k]), cimagf(_x[q*i+k]));
 #endif
-    }
-
-    // transpose...
-#if DEBUG
-    printf("transposing...\n");
-#endif
-    for (i=0; i<p; i++) {
-        for (k=0; k<q; k++)
-            _y[k*p+i] = _x[i*q+k];
     }
 }
 
