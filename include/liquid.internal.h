@@ -772,6 +772,7 @@ FFT(plan) FFT(_create_plan_mixed_radix)(unsigned int _nfft,     \
                                         int          _flags);   \
 void FFT(_destroy_plan_mixed_radix)(FFT(plan) _q);              \
 void FFT(_execute_mixed_radix)(FFT(plan) _q);                   \
+unsigned int FFT(_estimate_mixed_radix)(unsigned int _nfft);    \
                                                                 \
 /* Rader's algorithm for FFTs of prime length */                \
 FFT(plan) FFT(_create_plan_rader)(unsigned int _nfft,           \

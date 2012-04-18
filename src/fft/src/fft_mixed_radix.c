@@ -59,19 +59,13 @@ FFT(plan) FFT(_create_plan_mixed_radix)(unsigned int _nfft,
 
     // find first 'prime' factor of _nfft
     unsigned int i;
-    unsigned int Q=0;
-    for (i=2; i<q->nfft; i++) {
-        if ( (q->nfft % i)==0 ) {
-            Q = i;
-            break;
-        }
-    }
+    unsigned int Q = FFT(_estimate_mixed_radix)(_nfft);
     if (Q==0) {
         fprintf(stderr,"error: fft_create_plan_mixed_radix(), _nfft=%u is prime\n", _nfft);
         exit(1);
-    } if (Q==2 && (q->nfft % 4)==0) {
-        // prefer Q=4 if possible
-        Q = 4;
+    } else if ( (_nfft % Q) != 0 ) {
+        fprintf(stderr,"error: fft_create_plan_mixed_radix(), _nfft=%u is not divisible by Q=%u\n", _nfft, Q);
+        exit(1);
     }
 
     // set mixed-radix data
@@ -195,5 +189,48 @@ void FFT(_execute_mixed_radix)(FFT(plan) _q)
             printf("  %12.6f %12.6f\n", crealf(_q->y[k*P+i]), cimagf(_q->y[k*P+i]));
 #endif
     }
+}
+
+// strategize as to best radix to use
+unsigned int FFT(_estimate_mixed_radix)(unsigned int _nfft)
+{
+    // compute factors of _nfft
+    unsigned int factors[LIQUID_MAX_FACTORS];
+    unsigned int num_factors;
+    liquid_factor(_nfft, factors, &num_factors);
+
+    // check if _nfft is prime
+    if (num_factors < 2) {
+        fprintf(stderr,"warning: fft_estimate_mixed_radix(), %u is prime\n", _nfft);
+        return 0;
+    }
+
+    // if _nfft has many factors of 2, retain for later in favor of
+    // radix2 sub-fft method
+    unsigned int num_factors_2 = 0;
+    unsigned int i;
+    for (i=0; i<num_factors; i++) {
+        if (factors[i] != 2)
+            break;
+    }
+    num_factors_2 = i;
+    //printf("nfft: %u / 2^%u = %u\n", _nfft, num_factors_2, _nfft / (1<<num_factors_2));
+
+    // prefer aggregate radix-2 form if possible
+    if (num_factors_2 > 0) {
+
+        // check if there are _only_ factors of 2
+        if (num_factors_2 == num_factors) {
+            // return Q = 2^(ceil(num_factors_2 / 2))
+            // example: nfft = 128 = 2^7, return Q=2^4 = 16
+            return 1 << ((num_factors_2 + (num_factors_2%2))/2);
+        }
+
+        // return 2^num_factors_2
+        return 1 << num_factors_2;
+    }
+
+    // return next largest prime factor
+    return factors[0];
 }
 
