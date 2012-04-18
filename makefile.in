@@ -318,6 +318,7 @@ src/fft/src/mdct.o : %.o : %.c $(headers)
 
 fft_autotests :=						\
 	src/fft/tests/fft_autotest.c				\
+	src/fft/tests/fft_composite_autotest.c			\
 	src/fft/tests/fft_r2r_autotest.c			\
 	src/fft/tests/fft_shift_autotest.c			\
 
