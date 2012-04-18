@@ -300,10 +300,8 @@ fft_includes :=							\
 	src/fft/src/fft_radix2.c				\
 	src/fft/src/fft_mixed_radix.c				\
 	src/fft/src/fft_rader.c					\
+	src/fft/src/fft_rader2.c				\
 	src/fft/src/fft_r2r_1d.c				\
-
-#
-#	src/fft/src/fft_rader_radix2.c				
 
 src/fft/src/fftf.o : %.o : %.c $(headers) $(fft_includes)
 

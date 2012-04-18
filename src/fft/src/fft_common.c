@@ -79,6 +79,16 @@ struct FFT(plan_s)
             FFT(plan) ifft;     // sub-IFFT of size nfft-1
         } rader;
 
+        // Rader's alternat ealgorithm for computing FFTs of prime length
+        struct {
+            unsigned int nfft_prime;
+            unsigned int * seq; // transformation sequence, size: nfft_prime
+            TC * R;             // DFT of sequence { exp(-j*2*pi*g^i/nfft }, size: nfft_prime
+            TC * x_prime;       // sub-transform time-domain buffer
+            TC * X_prime;       // sub-transform freq-domain buffer
+            FFT(plan) fft;      // sub-FFT of size nfft_prime
+            FFT(plan) ifft;     // sub-IFFT of size nfft_prime
+        } rader2;
     } data;
 };
 
@@ -112,12 +122,10 @@ FFT(plan) FFT(_create_plan)(unsigned int _nfft,
         // use Rader's algorithm for FFTs of prime length
         return FFT(_create_plan_rader)(_nfft, _x, _y, _dir, _flags);
 
-#if 0
-    case LIQUID_FFT_METHOD_RADER_RADIX2:
+    case LIQUID_FFT_METHOD_RADER2:
         // use Rader's algorithm for FFTs of prime length
-        return FFT(_create_plan_rader_radix2)(_nfft, _x, _y, _dir, _flags);
+        return FFT(_create_plan_rader2)(_nfft, _x, _y, _dir, _flags);
 
-#endif
     case LIQUID_FFT_METHOD_DFT:
         // use slow DFT
         return FFT(_create_plan_dft)(_nfft, _x, _y, _dir, _flags);
@@ -143,9 +151,7 @@ void FFT(_destroy_plan)(FFT(plan) _q)
     case LIQUID_FFT_METHOD_RADIX2:      FFT(_destroy_plan_radix2)(_q); break;
     case LIQUID_FFT_METHOD_MIXED_RADIX: FFT(_destroy_plan_mixed_radix)(_q); break;
     case LIQUID_FFT_METHOD_RADER:       FFT(_destroy_plan_rader)(_q); break;
-#if 0
-    case LIQUID_FFT_METHOD_RADER_RADIX2: FFT(_destroy_plan_rader_radix2)(_q); break;
-#endif
+    case LIQUID_FFT_METHOD_RADER2:      FFT(_destroy_plan_rader2)(_q); break;
     case LIQUID_FFT_METHOD_NONE:        break;
     case LIQUID_FFT_METHOD_UNKNOWN:
     default:
@@ -166,11 +172,9 @@ void FFT(_print_plan)(FFT(plan) _q)
     case LIQUID_FFT_METHOD_RADIX2:      printf("Radix-2\n");        break;
     case LIQUID_FFT_METHOD_MIXED_RADIX: printf("Cooley-Tukey\n");   break;
     case LIQUID_FFT_METHOD_RADER:       printf("Rader (Type-I)\n"); break;
-#if 0
-    case LIQUID_FFT_METHOD_RADER_RADIX2: printf("Rader (Type-II)\n"); break;
-#endif
+    case LIQUID_FFT_METHOD_RADER2:      printf("Rader (Type-II)\n"); break;
     case LIQUID_FFT_METHOD_NONE:        printf("(none)\n");         break;
-    //case LIQUID_FFT_METHOD_UNKNOWN:     printf("(unknown)\n");      break;
+    case LIQUID_FFT_METHOD_UNKNOWN:     printf("(unknown)\n");      break;
     default:                            printf("(unknown)\n");      break;
     }
 }
