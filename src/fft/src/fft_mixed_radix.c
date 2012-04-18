@@ -69,6 +69,9 @@ FFT(plan) FFT(_create_plan_mixed_radix)(unsigned int _nfft,
     if (Q==0) {
         fprintf(stderr,"error: fft_create_plan_mixed_radix(), _nfft=%u is prime\n", _nfft);
         exit(1);
+    } if (Q==2 && (q->nfft % 4)==0) {
+        // prefer Q=4 if possible
+        Q = 4;
     }
 
     // set mixed-radix data
