@@ -69,6 +69,16 @@ struct FFT(plan_s)
             FFT(plan) fft_Q;    // sub-transform of size Q
         } mixedradix;
 
+        // Rader's algorithm for computing FFTs of prime length
+        struct {
+            unsigned int * seq; // transformation sequence, size: nfft-1
+            TC * R;             // DFT of sequence { exp(-j*2*pi*g^i/nfft }, size: nfft-1
+            TC * x_prime;       // sub-transform time-domain buffer
+            TC * X_prime;       // sub-transform freq-domain buffer
+            FFT(plan) fft;      // sub-FFT of size nfft-1
+            FFT(plan) ifft;     // sub-IFFT of size nfft-1
+        } rader;
+
     } data;
 };
 
@@ -98,11 +108,11 @@ FFT(plan) FFT(_create_plan)(unsigned int _nfft,
         // use Cooley-Tukey mixed-radix algorithm
         return FFT(_create_plan_mixed_radix)(_nfft, _x, _y, _dir, _flags);
 
-#if 0
     case LIQUID_FFT_METHOD_RADER:
         // use Rader's algorithm for FFTs of prime length
         return FFT(_create_plan_rader)(_nfft, _x, _y, _dir, _flags);
 
+#if 0
     case LIQUID_FFT_METHOD_RADER_RADIX2:
         // use Rader's algorithm for FFTs of prime length
         return FFT(_create_plan_rader_radix2)(_nfft, _x, _y, _dir, _flags);
@@ -132,8 +142,8 @@ void FFT(_destroy_plan)(FFT(plan) _q)
     case LIQUID_FFT_METHOD_DFT:         FFT(_destroy_plan_dft)(_q); break;
     case LIQUID_FFT_METHOD_RADIX2:      FFT(_destroy_plan_radix2)(_q); break;
     case LIQUID_FFT_METHOD_MIXED_RADIX: FFT(_destroy_plan_mixed_radix)(_q); break;
-#if 0
     case LIQUID_FFT_METHOD_RADER:       FFT(_destroy_plan_rader)(_q); break;
+#if 0
     case LIQUID_FFT_METHOD_RADER_RADIX2: FFT(_destroy_plan_rader_radix2)(_q); break;
 #endif
     case LIQUID_FFT_METHOD_NONE:        break;
@@ -155,8 +165,8 @@ void FFT(_print_plan)(FFT(plan) _q)
     case LIQUID_FFT_METHOD_DFT:         printf("DFT\n");            break;
     case LIQUID_FFT_METHOD_RADIX2:      printf("Radix-2\n");        break;
     case LIQUID_FFT_METHOD_MIXED_RADIX: printf("Cooley-Tukey\n");   break;
-#if 0
     case LIQUID_FFT_METHOD_RADER:       printf("Rader (Type-I)\n"); break;
+#if 0
     case LIQUID_FFT_METHOD_RADER_RADIX2: printf("Rader (Type-II)\n"); break;
 #endif
     case LIQUID_FFT_METHOD_NONE:        printf("(none)\n");         break;

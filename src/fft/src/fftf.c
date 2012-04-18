@@ -40,8 +40,8 @@
 #include "fft_dft.c"            // FFT definitions for DFT
 #include "fft_radix2.c"         // FFT definitions for radix-2 transforms
 #include "fft_mixed_radix.c"    // FFT definitions for mixed-radix transforms (Cooley-Tukey)
-#if 0
 #include "fft_rader.c"          // FFT definitions for transforms of prime length (Rader's algorithm)
+#if 0
 #include "fft_rader_radix2.c"       // FFT definitions for transforms of prime length (Rader's alternate algorithm)
 #endif
 #include "fft_r2r_1d.c"         // real-to-real definitions (DCT/DST)

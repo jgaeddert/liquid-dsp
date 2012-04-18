@@ -59,7 +59,7 @@ liquid_fft_method liquid_fft_estimate_method(unsigned int _nfft)
             return LIQUID_FFT_METHOD_RADER_RADIX2;
         }
 #else
-    return LIQUID_FFT_METHOD_DFT;
+    return LIQUID_FFT_METHOD_RADER;
 #endif
     }
 
