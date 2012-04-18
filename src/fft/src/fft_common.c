@@ -177,6 +177,53 @@ void FFT(_print_plan)(FFT(plan) _q)
     case LIQUID_FFT_METHOD_UNKNOWN:     printf("(unknown)\n");      break;
     default:                            printf("(unknown)\n");      break;
     }
+
+    // print recursive plan
+    FFT(_print_plan_recursive)(_q, 0);
+}
+
+// print FFT plan (recursively)
+void FFT(_print_plan_recursive)(FFT(plan)    _q,
+                                unsigned int _level)
+{
+    // print indentation based on recursion level
+    unsigned int i;
+    for (i=0; i<_level; i++)
+        printf("  ");
+    printf("%u, ", _q->nfft);
+
+    switch (_q->method) {
+    case LIQUID_FFT_METHOD_DFT:
+        printf("DFT\n");
+        break;
+
+    case LIQUID_FFT_METHOD_RADIX2:
+        printf("Radix-2\n");
+        break;
+
+    case LIQUID_FFT_METHOD_MIXED_RADIX:
+        // two internal transforms
+        printf("Cooley-Tukey mixed radix, Q=%u, P=%u\n",
+                _q->data.mixedradix.Q,
+                _q->data.mixedradix.P);
+        FFT(_print_plan_recursive)(_q->data.mixedradix.fft_Q, _level+1);
+        FFT(_print_plan_recursive)(_q->data.mixedradix.fft_P, _level+1);
+        break;
+
+    case LIQUID_FFT_METHOD_RADER:
+        printf("Rader (Type-II), nfft-prime=%u\n", _q->nfft-1);
+        FFT(_print_plan_recursive)(_q->data.rader.fft, _level+1);
+        break;
+
+    case LIQUID_FFT_METHOD_RADER2:
+        printf("Rader (Type-II), nfft-prime=%u\n", _q->data.rader2.nfft_prime);
+        FFT(_print_plan_recursive)(_q->data.rader2.fft, _level+1);
+        break;
+
+    case LIQUID_FFT_METHOD_NONE:        printf("(none)\n");         break;
+    case LIQUID_FFT_METHOD_UNKNOWN:     printf("(unknown)\n");      break;
+    default:                            printf("(unknown)\n");      break;
+    }
 }
 
 // execute fft

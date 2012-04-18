@@ -742,6 +742,10 @@ typedef enum {
 //  TC      :   primitive data type (complex)
 #define LIQUID_FFT_DEFINE_INTERNAL_API(FFT,T,TC)                \
                                                                 \
+/* print plan recursively */                                    \
+void FFT(_print_plan_recursive)(FFT(plan)    _q,                \
+                                unsigned int _level);           \
+                                                                \
 /* basic dft (slow, but guarantees correct output) */           \
 FFT(plan) FFT(_create_plan_dft)(unsigned int _nfft,             \
                                 TC *         _x,                \
