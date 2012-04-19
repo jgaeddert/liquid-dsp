@@ -59,6 +59,10 @@ FFT(plan) FFT(_create_plan_dft)(unsigned int _nfft,
     else if (q->nfft == 4) q->execute = FFT(_execute_dft_4);
     else if (q->nfft == 5) q->execute = FFT(_execute_dft_5);
     else if (q->nfft == 6) q->execute = FFT(_execute_dft_6);
+#if 0
+    else if (q->nfft == 7) q->execute = FFT(_execute_dft_7);
+#endif
+    else if (q->nfft == 8) q->execute = FFT(_execute_dft_8);
     else {
         q->execute = FFT(_execute_dft);
 
@@ -231,5 +235,76 @@ void FFT(_execute_dft_6)(FFT(plan) _q)
     y[3] = x[0] - x[1]    + x[2]    - x[3] + x[4]    - x[5];
     y[4] = x[0] + x[1]*g4 + x[2]*g2 + x[3] + x[4]*g4 + x[5]*g2;
     y[5] = x[0] + x[1]*g5 + x[2]*g4 - x[3] + x[4]*g2 + x[5]*g1;
+}
+
+#if 0
+//
+void FFT(_execute_dft_7)(FFT(plan) _q)
+{
+    // ...
+}
+#endif
+
+#define FFT_RADIX2_CRUNCH(t, k0, k1) {yp = y[k1]*(t); y[k1] = y[k0] - yp; y[k0] += yp;}
+#define FFT_RADIX2_PRINT() {unsigned int p; for (p=0; p<_q->nfft; p++) printf("  y[%u] = %12.8f + j%12.8f\n", p, crealf(y[p]), cimagf(y[p]));}
+//
+void FFT(_execute_dft_8)(FFT(plan) _q)
+{
+    TC yp;
+    TC * x = _q->x;
+    TC * y = _q->y;
+
+    // fft or ifft?
+    int fft = _q->direction == FFT_FORWARD ? 1 : 0;
+
+    // index reversal
+    y[0] = x[0];
+    y[1] = x[4];
+    y[2] = x[2];
+    y[3] = x[6];
+    y[4] = x[1];
+    y[5] = x[5];
+    y[6] = x[3];
+    y[7] = x[7];
+
+    // i=0
+    yp = y[1];  y[1] = y[0]-yp;     y[0] += yp;
+    yp = y[3];  y[3] = y[2]-yp;     y[2] += yp;
+    yp = y[5];  y[5] = y[4]-yp;     y[4] += yp;
+    yp = y[7];  y[7] = y[6]-yp;     y[6] += yp;
+
+
+    // i=1
+    yp = y[2];  y[2] = y[0]-yp;     y[0] += yp;
+    yp = y[6];  y[6] = y[4]-yp;     y[4] += yp;
+
+    if (fft) yp =  cimagf(y[3]) - crealf(y[3])*_Complex_I;
+    else     yp = -cimagf(y[3]) + crealf(y[3])*_Complex_I;
+    y[3] = y[1]-yp;
+    y[1] += yp;
+
+    if (fft) yp =  cimagf(y[7]) - crealf(y[7])*_Complex_I;
+    else     yp = -cimagf(y[7]) + crealf(y[7])*_Complex_I;
+    y[7] = y[5]-yp;
+    y[5] += yp;
+
+
+    // i=2
+    yp = y[4];  y[4] = y[0]-yp;     y[0] += yp;
+
+    if (fft) yp = y[5]*(M_SQRT1_2 - M_SQRT1_2*_Complex_I);
+    else     yp = y[5]*(M_SQRT1_2 + M_SQRT1_2*_Complex_I);
+    y[5] = y[1]-yp;
+    y[1] += yp;
+
+    if (fft) yp =  cimagf(y[6]) - crealf(y[6])*_Complex_I;
+    else     yp = -cimagf(y[6]) + crealf(y[6])*_Complex_I;
+    y[6] = y[2]-yp;
+    y[2] += yp;
+
+    if (fft) yp = y[7]*(-M_SQRT1_2 - M_SQRT1_2*_Complex_I);
+    else     yp = y[7]*(-M_SQRT1_2 + M_SQRT1_2*_Complex_I);
+    y[7] = y[3]-yp;
+    y[3] += yp;
 }
 
