@@ -90,10 +90,16 @@ void FFT(_execute_dft)(FFT(plan) _q)
     unsigned int i;
     unsigned int k;
     unsigned int nfft = _q->nfft;
+
+    // DC value is sum of input
+    _q->y[0] = _q->x[0];
+    for (i=1; i<nfft; i++)
+        _q->y[0] += _q->x[i];
     
-    for (i=0; i<nfft; i++) {
-        _q->y[i] = 0.0f;
-        for (k=0; k<nfft; k++) {
+    // compute remaining DFT values
+    for (i=1; i<nfft; i++) {
+        _q->y[i] = _q->x[0];
+        for (k=1; k<nfft; k++) {
             _q->y[i] += _q->x[k] * _q->twiddle[(i*k)%_q->nfft];
         }
     }
