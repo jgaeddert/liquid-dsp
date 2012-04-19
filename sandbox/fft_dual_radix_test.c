@@ -101,15 +101,15 @@ int main(int argc, char*argv[]) {
     for (i=0; i<n; i++)
         twiddle[i] = cexpf(-_Complex_I*2*M_PI*(float)i / (float)n);
 
-    // decimate in time
-    for (i=0; i<q; i++) {
-        for (k=0; k<p; k++)
-            y[p*i+k] = x[k*q+i];
-    }
+    // temporary buffer
+    float complex t[n];
+    for (i=0; i<n; i++)
+        t[i] = x[i];
+
 #if DEBUG
     for (i=0; i<n; i++) {
-        printf("  y[%3u] = %12.6f + j*%12.6f\n",
-            i, crealf(y[i]), cimagf(y[i]));
+        printf("  t[%3u] = %12.6f + j*%12.6f\n",
+            i, crealf(t[i]), cimagf(t[i]));
     }
 #endif
 
@@ -123,9 +123,9 @@ int main(int argc, char*argv[]) {
         // for now, copy to temp buffer, compute FFT, and store result
         float complex t0[p];
         float complex t1[p];
-        for (k=0; k<p; k++) t0[k] = y[p*i+k];
+        for (k=0; k<p; k++) t0[k] = t[q*k+i];
         dft_run(p, t0, t1, DFT_FORWARD, 0);
-        for (k=0; k<p; k++) y[p*i+k] = t1[k];
+        for (k=0; k<p; k++) t[q*k+i] = t1[k];
 
 #if DEBUG
         for (k=0; k<p; k++)
@@ -133,7 +133,27 @@ int main(int argc, char*argv[]) {
 #endif
     }
 
-    // compute 'p' DFTs of size 'q' and transpose
+    // multipy by twiddle factors
+    // NOTE: this can be combined with previous step
+    printf("multiplying twiddles...\n");
+    for (i=0; i<q; i++) {
+#if DEBUG
+        printf("  i=%3u/%3u\n", i, q);
+#endif
+        for (k=0; k<p; k++) 
+            t[q*k+i] *= twiddle[i*k];
+
+#if DEBUG
+        for (k=0; k<p; k++) {
+            printf("  tw[%4u] = %12.8f + j%12.8f, t=%12.6f + j%12.6f\n",
+                    i*k,
+                    crealf(twiddle[i*k]), cimagf(twiddle[i*k]),
+                    crealf(t[q*k+i]),     cimagf(t[q*k+i]));
+        }
+#endif
+    }
+
+    // compute 'p' DFTs of size 'q'
     printf("computing %u DFTs of size %u...\n", p, q);
     for (i=0; i<p; i++) {
 #if DEBUG
@@ -143,9 +163,9 @@ int main(int argc, char*argv[]) {
         // for now, copy to temp buffer, compute FFT, and store result
         float complex t0[q];
         float complex t1[q];
-        for (k=0; k<q; k++) t0[k] = y[p*k+i] * twiddle[i*k];
+        for (k=0; k<q; k++) t0[k] = t[q*i+k];
         dft_run(q, t0, t1, DFT_FORWARD, 0);
-        for (k=0; k<q; k++) y[p*k+i] = t1[k];
+        for (k=0; k<q; k++) t[q*i+k] = t1[k];
 
 #if DEBUG
         for (k=0; k<q; k++)
@@ -153,11 +173,18 @@ int main(int argc, char*argv[]) {
 #endif
     }
 
+    // transpose results
+    for (i=0; i<p; i++) {
+        for (k=0; k<q; k++) {
+            y[k*p+i] = t[i*q+k];
+        }
+    }
+
     // 
     // print results
     //
     for (i=0; i<n; i++) {
-        printf("  y[%3u] = %12.6f + j*%12.6f (expected %12.6f + j%12.6f)\n",
+        printf("  t[%3u] = %12.6f + j*%12.6f (expected %12.6f + j%12.6f)\n",
             i,
             crealf(y[i]),      cimagf(y[i]),
             crealf(y_test[i]), cimagf(y_test[i]));

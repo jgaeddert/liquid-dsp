@@ -20,8 +20,8 @@
  */
 
 //
-// fft_rader.c : definitions for transforms of prime length using
-//               Rader's algorithm
+// fft_rader2.c : definitions for transforms of prime length using
+//                Rader's alternate algorithm
 //
 // References:
 //  [Rader:1968] Charles M. Rader, "Discrete Fourier Transforms When
@@ -42,7 +42,7 @@
 //  _y      :   output array [size: _nfft x 1]
 //  _dir    :   fft direction: {FFT_FORWARD, FFT_REVERSE}
 //  _method :   fft method
-FFT(plan) FFT(_create_plan_rader_radix2)(unsigned int _nfft,
+FFT(plan) FFT(_create_plan_rader2)(unsigned int _nfft,
                                          TC *         _x,
                                          TC *         _y,
                                          int          _dir,
@@ -57,9 +57,9 @@ FFT(plan) FFT(_create_plan_rader_radix2)(unsigned int _nfft,
     q->flags     = _flags;
     q->kind      = LIQUID_FFT_DFT_1D;
     q->direction = (_dir == FFT_FORWARD) ? FFT_FORWARD : FFT_REVERSE;
-    q->method    = LIQUID_FFT_METHOD_RADER_RADIX2;
+    q->method    = LIQUID_FFT_METHOD_RADER2;
 
-    q->execute   = FFT(_execute_rader_radix2);
+    q->execute   = FFT(_execute_rader2);
 
     unsigned int i;
 
@@ -67,9 +67,9 @@ FFT(plan) FFT(_create_plan_rader_radix2)(unsigned int _nfft,
     unsigned int g = liquid_primitive_root_prime(q->nfft);
 
     // create and initialize sequence
-    q->seq = (unsigned int *)malloc((q->nfft-1)*sizeof(unsigned int));
+    q->data.rader2.seq = (unsigned int *)malloc((q->nfft-1)*sizeof(unsigned int));
     for (i=0; i<q->nfft-1; i++)
-        q->seq[i] = liquid_modpow(g, i+1, q->nfft);
+        q->data.rader2.seq[i] = liquid_modpow(g, i+1, q->nfft);
 
 #if 0
     // compute larger FFT length greater than 2*nfft-4
@@ -110,78 +110,108 @@ FFT(plan) FFT(_create_plan_rader_radix2)(unsigned int _nfft,
             nfft_prime_opt = n_hat;
         }
     }
-    q->nfft_prime = nfft_prime_opt;
+    q->data.rader2.nfft_prime = nfft_prime_opt;
 #else
     // compute larger FFT length greater than 2*nfft-4
     // NOTE: while any length greater than 2*nfft-4 will work, use
     //       nfft_prime = 2 ^ nextpow2( 2*nfft - 4 ) to enable
     //       radix-2 transform
     unsigned int m=0;
-    q->nfft_prime = (2*q->nfft-4)-1;
-    while (q->nfft_prime > 0) {
-        q->nfft_prime >>= 1;
+    q->data.rader2.nfft_prime = (2*q->nfft-4)-1;
+    while (q->data.rader2.nfft_prime > 0) {
+        q->data.rader2.nfft_prime >>= 1;
         m++;
     }
-    q->nfft_prime = 1 << m;
+    q->data.rader2.nfft_prime = 1 << m;
 #endif
-    //printf("nfft_prime = %u\n", q->nfft_prime);
+    //printf("nfft_prime = %u\n", q->data.rader2.nfft_prime);
     // assert(nfft_prime > 2*nfft-4)
-    
+
+    // allocate memory for sub-transforms
+    q->data.rader2.x_prime = (TC*)malloc((q->data.rader2.nfft_prime)*sizeof(TC));
+    q->data.rader2.X_prime = (TC*)malloc((q->data.rader2.nfft_prime)*sizeof(TC));
+
+    // create sub-FFT of size nfft-1
+    q->data.rader2.fft = FFT(_create_plan)(q->data.rader2.nfft_prime,
+                                           q->data.rader2.x_prime,
+                                           q->data.rader2.X_prime,
+                                           FFT_FORWARD,
+                                           q->flags);
+
+    // create sub-IFFT of size nfft-1
+    q->data.rader2.ifft = FFT(_create_plan)(q->data.rader2.nfft_prime,
+                                            q->data.rader2.X_prime,
+                                            q->data.rader2.x_prime,
+                                            FFT_REVERSE,
+                                            q->flags);
+
     // compute DFT of sequence { exp(-j*2*pi*g^i/nfft }, size: nfft_prime
     // NOTE: R[0] = -1, |R[k]| = sqrt(nfft) for k != 0
-    TC * r = (TC*)malloc(q->nfft_prime*sizeof(TC));     // temporary buffer
-    q->R   = (TC*)malloc(q->nfft_prime*sizeof(TC));
+    // (use newly-created FFT plan of length nfft_prime)
     T d = (q->direction == FFT_FORWARD) ? -1.0 : 1.0;
-    for (i=0; i<q->nfft_prime; i++)
-        r[i] = cexpf(_Complex_I*d*2*M_PI*q->seq[i%(q->nfft-1)]/(T)(q->nfft));
-    FFT(_run)(q->nfft_prime, r, q->R, FFT_FORWARD, 0);
-    free(r);    // free temporary buffer
+    for (i=0; i<q->data.rader2.nfft_prime; i++)
+        q->data.rader2.x_prime[i] = cexpf(_Complex_I*d*2*M_PI*q->data.rader2.seq[i%(q->nfft-1)]/(T)(q->nfft));
+    FFT(_execute)(q->data.rader2.fft);
+    
+    // copy result to R
+    q->data.rader2.R = (TC*)malloc(q->data.rader2.nfft_prime*sizeof(TC));
+    memmove(q->data.rader2.R, q->data.rader2.X_prime, q->data.rader2.nfft_prime*sizeof(TC));
 
     // return main object
     return q;
 }
 
 // destroy FFT plan
-void FFT(_destroy_plan_rader_radix2)(FFT(plan) _q)
+void FFT(_destroy_plan_rader2)(FFT(plan) _q)
 {
     // free data specific to Rader's algorithm
-    free(_q->seq);  // sequence
-    free(_q->R);    // pre-computed transform of exp(j*2*pi*seq)
+    free(_q->data.rader2.seq);      // sequence
+    free(_q->data.rader2.R);        // pre-computed transform of exp(j*2*pi*seq)
 
-    // free data specific to radix-2 transform
-    //free(_q->twiddle);
+    free(_q->data.rader2.x_prime);   // sub-transform input array
+    free(_q->data.rader2.X_prime);   // sub-transform output array
+
+    FFT(_destroy_plan)(_q->data.rader2.fft);
+    FFT(_destroy_plan)(_q->data.rader2.ifft);
 
     // free main object memory
     free(_q);
 }
 
 // execute Rader's algorithm
-void FFT(_execute_rader_radix2)(FFT(plan) _q)
+void FFT(_execute_rader2)(FFT(plan) _q)
 {
     unsigned int i;
 
+    // set pointers to internal buffers
+    TC * xp = _q->data.rader2.x_prime;
+    TC * Xp = _q->data.rader2.X_prime;
+    TC * R  = _q->data.rader2.R;
+    unsigned int * seq = _q->data.rader2.seq;
+
+    // set constant values
+    unsigned int nfft_prime = _q->data.rader2.nfft_prime;
+
     // compute nfft_prime-length DFT of permuted sequence with
     // nfft_prime-nfft+1 zeros inserted after first element
-    TC * xp = (TC*)malloc(_q->nfft_prime*sizeof(TC));
-    TC * Xp = (TC*)malloc(_q->nfft_prime*sizeof(TC));
-    xp[0] = _q->x[ _q->seq[_q->nfft-2] ];
-    for (i=0; i<_q->nfft_prime-_q->nfft+1; i++)
+
+    xp[0] = _q->x[ seq[_q->nfft-2] ];
+    for (i=0; i<nfft_prime-_q->nfft+1; i++)
         xp[i+1] = 0.0f;
     for (i=1; i<_q->nfft-1; i++) {
         // reverse sequence
-        unsigned int k = _q->seq[_q->nfft-1-i-1];
-        xp[i+_q->nfft_prime-_q->nfft+1] = _q->x[k];
+        unsigned int k = seq[_q->nfft-1-i-1];
+        xp[i+nfft_prime-_q->nfft+1] = _q->x[k];
     }
-    // xp should be: { x[s[end]], 0, 0, 0, ...., 0, x[s[end-1]], x[s[end-2]], ... , x[s[0]] }
-    // call radix-2 function (FFT)
-    FFT(_run)(_q->nfft_prime, xp, Xp, FFT_FORWARD, 0);
+    FFT(_execute)(_q->data.rader2.fft);
 
     // compute inverse FFT of product
     // compute nfft_prime-length inverse FFT of product
-    for (i=0; i<_q->nfft_prime; i++)
-        Xp[i] *= _q->R[i];
+    for (i=0; i<nfft_prime; i++)
+        Xp[i] *= R[i];
+
     // call radix-2 function (IFFT)
-    FFT(_run)(_q->nfft_prime, Xp, xp, FFT_REVERSE, 0);
+    FFT(_execute)(_q->data.rader2.ifft);
 
     // set DC value
     _q->y[0] = 0.0f;
@@ -190,13 +220,9 @@ void FFT(_execute_rader_radix2)(FFT(plan) _q)
 
     // reverse permute result, scale, and add offset x[0]
     for (i=0; i<_q->nfft-1; i++) {
-        unsigned int k = _q->seq[i];
+        unsigned int k = seq[i];
 
-        _q->y[k] = xp[i] / (T)(_q->nfft_prime) + _q->x[0];
+        _q->y[k] = xp[i] / (T)(nfft_prime) + _q->x[0];
     }
-
-    // free internal memory
-    free(xp);
-    free(Xp);
 }
 

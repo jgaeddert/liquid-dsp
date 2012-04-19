@@ -609,6 +609,7 @@ FFT(plan) FFT(_create_plan_r2r_1d)(unsigned int _n,             \
                                    int _kind,                   \
                                    int _flags);                 \
 void FFT(_destroy_plan)(FFT(plan) _p);                          \
+void FFT(_print_plan)(FFT(plan) _p);                            \
 void FFT(_execute)(FFT(plan) _p);                               \
                                                                 \
 /* object-independent methods */                                \

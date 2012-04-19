@@ -54,19 +54,19 @@ FFT(plan) FFT(_create_plan_radix2)(unsigned int _nfft,
     q->execute   = FFT(_execute_radix2);
 
     // initialize twiddle factors, indices for radix-2 transforms
-    q->m = liquid_msb_index(q->nfft) - 1;  // m = log2(nfft)
+    q->data.radix2.m = liquid_msb_index(q->nfft) - 1;  // m = log2(nfft)
     
-    q->index_rev = (unsigned int *) malloc((q->nfft)*sizeof(unsigned int));
+    q->data.radix2.index_rev = (unsigned int *) malloc((q->nfft)*sizeof(unsigned int));
     unsigned int i;
     for (i=0; i<q->nfft; i++)
-        q->index_rev[i] = fft_reverse_index(i,q->m);
+        q->data.radix2.index_rev[i] = fft_reverse_index(i,q->data.radix2.m);
 
     // initialize twiddle factors
-    q->twiddle = (TC *) malloc(q->nfft * sizeof(TC));
+    q->data.radix2.twiddle = (TC *) malloc(q->nfft * sizeof(TC));
     
     T d = (q->direction == FFT_FORWARD) ? -1.0 : 1.0;
     for (i=0; i<q->nfft; i++)
-        q->twiddle[i] = cexpf(_Complex_I*d*2*M_PI*(T)i / (T)(q->nfft));
+        q->data.radix2.twiddle[i] = cexpf(_Complex_I*d*2*M_PI*(T)i / (T)(q->nfft));
 
     return q;
 }
@@ -75,8 +75,8 @@ FFT(plan) FFT(_create_plan_radix2)(unsigned int _nfft,
 void FFT(_destroy_plan_radix2)(FFT(plan) _q)
 {
     // free data specific to radix-2 transforms
-    free(_q->index_rev);
-    free(_q->twiddle);
+    free(_q->data.radix2.index_rev);
+    free(_q->data.radix2.twiddle);
 
     // free main object memory
     free(_q);
@@ -88,7 +88,7 @@ void FFT(_execute_radix2)(FFT(plan) _q)
     // swap values
     unsigned int i,j,k;
     for (i=0; i<_q->nfft; i++)
-        _q->y[i] = _q->x[ _q->index_rev[i] ];
+        _q->y[i] = _q->x[ _q->data.radix2.index_rev[i] ];
 
     TC yp;
     TC *y=_q->y;
@@ -99,7 +99,7 @@ void FFT(_execute_radix2)(FFT(plan) _q)
     unsigned int stride = _q->nfft;
     unsigned int twiddle_index;
 
-    for (i=0; i<_q->m; i++) {
+    for (i=0; i<_q->data.radix2.m; i++) {
         n1 = n2;
         n2 *= 2;
         stride >>= 1;
@@ -107,7 +107,7 @@ void FFT(_execute_radix2)(FFT(plan) _q)
         twiddle_index = 0;
     
         for (j=0; j<n1; j++) {
-            t = _q->twiddle[twiddle_index];
+            t = _q->data.radix2.twiddle[twiddle_index];
             twiddle_index = (twiddle_index + stride) % _q->nfft;
 
             for (k=j; k<_q->nfft; k+=n2) {

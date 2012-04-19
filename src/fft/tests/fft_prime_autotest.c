@@ -1,7 +1,6 @@
 /*
- * Copyright (c) 2007, 2008, 2009, 2010 Joseph Gaeddert
- * Copyright (c) 2007, 2008, 2009, 2010 Virginia Polytechnic
- *                                      Institute & State University
+ * Copyright (c) 2012 Joseph Gaeddert
+ * Copyright (c) 2012 Virginia Polytechnic Institute & State University
  *
  * This file is part of liquid.
  *
@@ -19,19 +18,28 @@
  * along with liquid.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+//
+// fft_prime_autotest.c : test FFTs of prime length
+//
+
 #include "autotest/autotest.h"
 #include "liquid.h"
 
-// autotest data
-#include "fft_data.h"
+// autotest data for prime transforms
+#include "fft_data_17.h"
+#include "fft_data_43.h"
+#include "fft_data_79.h"
+#include "fft_data_157.h"
+#include "fft_data_317.h"
+#include "fft_data_509.h"
 
 // autotest helper function
 //  _x      :   fft input array
 //  _test   :   expected fft output
 //  _n      :   fft size
-void fft_test(float complex *_x,
-              float complex *_test,
-              unsigned int _n)
+void fft_prime_test(float complex * _x,
+                    float complex * _test,
+                    unsigned int    _n)
 {
     int _method = 0;
     float tol=2e-4f;
@@ -70,14 +78,9 @@ void fft_test(float complex *_x,
 // 
 // AUTOTESTS: n-point ffts
 //
-void autotest_fft_4()       { fft_test(x4,      test4,      4);     }
-void autotest_fft_5()       { fft_test(x5,      test5,      5);     }
-void autotest_fft_6()       { fft_test(x6,      test6,      6);     }
-void autotest_fft_7()       { fft_test(x7,      test7,      7);     }
-void autotest_fft_8()       { fft_test(x8,      test8,      8);     }
-void autotest_fft_9()       { fft_test(x9,      test9,      9);     }
-void autotest_fft_16()      { fft_test(x16,     test16,     16);    }
-void autotest_fft_20()      { fft_test(x20,     test20,     20);    }
-void autotest_fft_32()      { fft_test(x32,     test32,     32);    }
-void autotest_fft_64()      { fft_test(x64,     test64,     64);    }
-
+void autotest_fft_17()  { fft_prime_test(fft_test_x17,   fft_test_y17,   17); }
+void autotest_fft_43()  { fft_prime_test(fft_test_x43,   fft_test_y43,   43); }
+void autotest_fft_79()  { fft_prime_test(fft_test_x79,   fft_test_y79,   79); }
+void autotest_fft_157() { fft_prime_test(fft_test_x157,  fft_test_y157, 157); }
+void autotest_fft_317() { fft_prime_test(fft_test_x317,  fft_test_y317, 317); }
+void autotest_fft_509() { fft_prime_test(fft_test_x509,  fft_test_y509, 509); }
