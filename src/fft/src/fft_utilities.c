@@ -42,11 +42,18 @@ liquid_fft_method liquid_fft_estimate_method(unsigned int _nfft)
 
     } else if (fft_is_radix2(_nfft)) {
         // transform is of the form 2^m
+#if 0
+        // use radix-2 algorithm
         return LIQUID_FFT_METHOD_RADIX2;
+#else
+        // acutally, prefer Cooley-Tukey algorithm
+        return LIQUID_FFT_METHOD_MIXED_RADIX;
+#endif
 
     } else if (liquid_is_prime(_nfft)) {
         // prefer Rader's alternate method (using radix-2 transform)
         // unless _nfft-1 is also radix2
+        // TODO : also prefer Rader-I if _nfft-1 is mostly factors of 2
         if ( fft_is_radix2(_nfft-1) )
             return LIQUID_FFT_METHOD_RADER;
         else

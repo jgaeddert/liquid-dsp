@@ -216,7 +216,7 @@ unsigned int FFT(_estimate_mixed_radix)(unsigned int _nfft)
 
     // prefer aggregate radix-2 form if possible
     if (num_factors_2 > 0) {
-
+#if 0
         // check if there are _only_ factors of 2
         if (num_factors_2 == num_factors) {
             // return Q = 2^(ceil(num_factors_2 / 2))
@@ -226,6 +226,12 @@ unsigned int FFT(_estimate_mixed_radix)(unsigned int _nfft)
 
         // return 2^num_factors_2
         return 1 << num_factors_2;
+#else
+        // use codelets
+        if      ( (_nfft%8)==0 ) return 8;
+        else if ( (_nfft%4)==0 ) return 4;
+        else                     return 2;
+#endif
     }
 
     // return next largest prime factor
