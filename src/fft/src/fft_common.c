@@ -31,7 +31,6 @@ struct FFT(plan_s)
 {
     // common data
     unsigned int nfft;  // fft size
-    TC * twiddle;       // twiddle factors
     TC * x;             // input array pointer (not allocated)
     TC * y;             // output array pointer (not allocated)
     int direction;      // forward/reverse
@@ -48,10 +47,16 @@ struct FFT(plan_s)
 
     // common data structure shared between specific FFT algorithms
     union {
+        // DFT
+        struct {
+            TC * twiddle;               // twiddle factors
+        } dft;
+
         // radix-2 transform data
         struct {
             unsigned int m;             // log2(nfft)
             unsigned int * index_rev;   // reversed indices
+            TC * twiddle;               // twiddle factors
         } radix2;
 
         // recursive mixed-radix transform data:
@@ -65,6 +70,7 @@ struct FFT(plan_s)
             TC * x;             // input buffer (copied)
             TC * t0;            // temporary buffer (small FFT input)
             TC * t1;            // temporary buffer (small FFT output)
+            TC * twiddle;       // twiddle factors
             FFT(plan) fft_P;    // sub-transform of size P
             FFT(plan) fft_Q;    // sub-transform of size Q
         } mixedradix;

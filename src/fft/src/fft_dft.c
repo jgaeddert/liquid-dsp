@@ -51,7 +51,7 @@ FFT(plan) FFT(_create_plan_dft)(unsigned int _nfft,
     q->direction = (_dir == FFT_FORWARD) ? FFT_FORWARD : FFT_REVERSE;
     q->method    = LIQUID_FFT_METHOD_DFT;
         
-    q->twiddle = NULL;
+    q->data.dft.twiddle = NULL;
 
     // check size, use specific codelet for small DFTs
     if      (q->nfft == 2) q->execute = FFT(_execute_dft_2);
@@ -63,12 +63,12 @@ FFT(plan) FFT(_create_plan_dft)(unsigned int _nfft,
         q->execute = FFT(_execute_dft);
 
         // initialize twiddle factors
-        q->twiddle = (TC *) malloc(q->nfft * sizeof(TC));
+        q->data.dft.twiddle = (TC *) malloc(q->nfft * sizeof(TC));
         
         unsigned int i;
         T d = (q->direction == FFT_FORWARD) ? -1.0 : 1.0;
         for (i=0; i<q->nfft; i++)
-            q->twiddle[i] = cexpf(_Complex_I*d*2*M_PI*(T)i / (T)(q->nfft));
+            q->data.dft.twiddle[i] = cexpf(_Complex_I*d*2*M_PI*(T)i / (T)(q->nfft));
     }
 
     return q;
@@ -78,8 +78,8 @@ FFT(plan) FFT(_create_plan_dft)(unsigned int _nfft,
 void FFT(_destroy_plan_dft)(FFT(plan) _q)
 {
     // free twiddle factors
-    if (_q->twiddle != NULL)
-        free(_q->twiddle);
+    if (_q->data.dft.twiddle != NULL)
+        free(_q->data.dft.twiddle);
 
     // free main object memory
     free(_q);
@@ -101,7 +101,7 @@ void FFT(_execute_dft)(FFT(plan) _q)
     for (i=1; i<nfft; i++) {
         _q->y[i] = _q->x[0];
         for (k=1; k<nfft; k++) {
-            _q->y[i] += _q->x[k] * _q->twiddle[(i*k)%_q->nfft];
+            _q->y[i] += _q->x[k] * _q->data.dft.twiddle[(i*k)%_q->nfft];
         }
     }
 }

@@ -97,11 +97,11 @@ FFT(plan) FFT(_create_plan_mixed_radix)(unsigned int _nfft,
 
     // initialize twiddle factors, indices for mixed-radix transforms
     // TODO : only allocate necessary twiddle factors
-    q->twiddle = (TC *) malloc(q->nfft * sizeof(TC));
+    q->data.mixedradix.twiddle = (TC *) malloc(q->nfft * sizeof(TC));
     
     T d = (q->direction == FFT_FORWARD) ? -1.0 : 1.0;
     for (i=0; i<q->nfft; i++)
-        q->twiddle[i] = cexpf(_Complex_I*d*2*M_PI*(T)i / (T)(q->nfft));
+        q->data.mixedradix.twiddle[i] = cexpf(_Complex_I*d*2*M_PI*(T)i / (T)(q->nfft));
 
     return q;
 }
@@ -117,9 +117,7 @@ void FFT(_destroy_plan_mixed_radix)(FFT(plan) _q)
     free(_q->data.mixedradix.t0);
     free(_q->data.mixedradix.t1);
     free(_q->data.mixedradix.x);
-
-    // free twiddle factors
-    free(_q->twiddle);
+    free(_q->data.mixedradix.twiddle);
 
     // free main object memory
     free(_q);
@@ -136,7 +134,7 @@ void FFT(_execute_mixed_radix)(FFT(plan) _q)
     TC * t0      = _q->data.mixedradix.t0;  // small FFT input buffer
     TC * t1      = _q->data.mixedradix.t1;  // small FFT output buffer
     TC * x       = _q->data.mixedradix.x;   // full input buffer (data copied)
-    TC * twiddle = _q->twiddle;             // twiddle factors
+    TC * twiddle = _q->data.mixedradix.twiddle; // twiddle factors
 
     // copy input to internal buffer
     memmove(x, _q->x, _q->nfft*sizeof(TC));

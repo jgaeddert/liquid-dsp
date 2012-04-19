@@ -62,11 +62,11 @@ FFT(plan) FFT(_create_plan_radix2)(unsigned int _nfft,
         q->data.radix2.index_rev[i] = fft_reverse_index(i,q->data.radix2.m);
 
     // initialize twiddle factors
-    q->twiddle = (TC *) malloc(q->nfft * sizeof(TC));
+    q->data.radix2.twiddle = (TC *) malloc(q->nfft * sizeof(TC));
     
     T d = (q->direction == FFT_FORWARD) ? -1.0 : 1.0;
     for (i=0; i<q->nfft; i++)
-        q->twiddle[i] = cexpf(_Complex_I*d*2*M_PI*(T)i / (T)(q->nfft));
+        q->data.radix2.twiddle[i] = cexpf(_Complex_I*d*2*M_PI*(T)i / (T)(q->nfft));
 
     return q;
 }
@@ -76,7 +76,7 @@ void FFT(_destroy_plan_radix2)(FFT(plan) _q)
 {
     // free data specific to radix-2 transforms
     free(_q->data.radix2.index_rev);
-    free(_q->twiddle);
+    free(_q->data.radix2.twiddle);
 
     // free main object memory
     free(_q);
@@ -107,7 +107,7 @@ void FFT(_execute_radix2)(FFT(plan) _q)
         twiddle_index = 0;
     
         for (j=0; j<n1; j++) {
-            t = _q->twiddle[twiddle_index];
+            t = _q->data.radix2.twiddle[twiddle_index];
             twiddle_index = (twiddle_index + stride) % _q->nfft;
 
             for (k=j; k<_q->nfft; k+=n2) {
