@@ -762,6 +762,7 @@ void FFT(_execute_dft)(FFT(plan) _q);                           \
 void FFT(_execute_dft_2)(FFT(plan) _q);                         \
 void FFT(_execute_dft_3)(FFT(plan) _q);                         \
 void FFT(_execute_dft_4)(FFT(plan) _q);                         \
+void FFT(_execute_dft_5)(FFT(plan) _q);                         \
                                                                 \
 /* basic radix-2 fft (fast, but only for transforms of 2^m */   \
 FFT(plan) FFT(_create_plan_radix2)(unsigned int _nfft,          \

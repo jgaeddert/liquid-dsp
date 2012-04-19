@@ -57,6 +57,7 @@ FFT(plan) FFT(_create_plan_dft)(unsigned int _nfft,
     if      (q->nfft == 2) q->execute = FFT(_execute_dft_2);
     else if (q->nfft == 3) q->execute = FFT(_execute_dft_3);
     else if (q->nfft == 4) q->execute = FFT(_execute_dft_4);
+    else if (q->nfft == 5) q->execute = FFT(_execute_dft_5);
     else {
         q->execute = FFT(_execute_dft);
 
@@ -163,3 +164,31 @@ void FFT(_execute_dft_4)(FFT(plan) _q)
     y[3] = y[1] - yp;
     y[1] = y[1] + yp;
 }
+
+//
+void FFT(_execute_dft_5)(FFT(plan) _q)
+{
+    TC * x = _q->x;
+    TC * y = _q->y;
+
+    y[0] = x[0] + x[1] + x[2] + x[3] + x[4];
+
+    // exp(j*2*pi*1/5)
+    TC g0 =  0.309016994374947 - 0.951056516295154*_Complex_I;
+
+    // exp(j*2*pi*2/5)
+    TC g1 = -0.809016994374947 - 0.587785252292473*_Complex_I;
+
+    if (_q->direction == FFT_REVERSE) {
+        g0 = conjf(g0);
+        g1 = conjf(g1);
+    }
+    TC g0_conj = conjf(g0);
+    TC g1_conj = conjf(g1);
+
+    y[1] = x[0] + x[1]*g0      + x[2]*g1      + x[3]*g1_conj + x[4]*g0_conj;
+    y[2] = x[0] + x[1]*g1      + x[2]*g0_conj + x[3]*g0      + x[4]*g1_conj;
+    y[3] = x[0] + x[1]*g1_conj + x[2]*g0      + x[3]*g0_conj + x[4]*g1;
+    y[4] = x[0] + x[1]*g0_conj + x[2]*g1_conj + x[3]*g1      + x[4]*g0;
+}
+
