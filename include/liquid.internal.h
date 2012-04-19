@@ -733,7 +733,10 @@ typedef enum {
     LIQUID_FFT_METHOD_MIXED_RADIX,  // Cooley-Tukey mixed-radix FFT (decimation in time)
     LIQUID_FFT_METHOD_RADER,        // Rader's method for FFTs of prime length
     LIQUID_FFT_METHOD_RADER2,       // Rader's method for FFTs of prime length (alternate)
-    LIQUID_FFT_METHOD_DFT           // slow discrete Fourier transform
+    LIQUID_FFT_METHOD_DFT,          // slow discrete Fourier transform
+    
+    // specific codelets for small FFTs
+    LIQUID_FFT_METHOD_DFT_2,
 } liquid_fft_method;
 
 // Macro    :   FFT (internal)
@@ -754,6 +757,11 @@ FFT(plan) FFT(_create_plan_dft)(unsigned int _nfft,             \
                                 int          _flags);           \
 void FFT(_destroy_plan_dft)(FFT(plan) _q);                      \
 void FFT(_execute_dft)(FFT(plan) _q);                           \
+                                                                \
+/* specific codelets for small DFTs */                          \
+void FFT(_execute_dft_2)(FFT(plan) _q);                         \
+void FFT(_execute_dft_3)(FFT(plan) _q);                         \
+void FFT(_execute_dft_4)(FFT(plan) _q);                         \
                                                                 \
 /* basic radix-2 fft (fast, but only for transforms of 2^m */   \
 FFT(plan) FFT(_create_plan_radix2)(unsigned int _nfft,          \

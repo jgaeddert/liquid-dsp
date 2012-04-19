@@ -50,16 +50,24 @@ FFT(plan) FFT(_create_plan_dft)(unsigned int _nfft,
     q->kind      = LIQUID_FFT_DFT_1D;
     q->direction = (_dir == FFT_FORWARD) ? FFT_FORWARD : FFT_REVERSE;
     q->method    = LIQUID_FFT_METHOD_DFT;
+        
+    q->twiddle = NULL;
 
-    q->execute   = FFT(_execute_dft);
+    // check size, use specific codelet for small DFTs
+    if      (q->nfft == 2) q->execute = FFT(_execute_dft_2);
+    else if (q->nfft == 3) q->execute = FFT(_execute_dft_3);
+    else if (q->nfft == 4) q->execute = FFT(_execute_dft_4);
+    else {
+        q->execute = FFT(_execute_dft);
 
-    // initialize twiddle factors
-    q->twiddle = (TC *) malloc(q->nfft * sizeof(TC));
-    
-    unsigned int i;
-    T d = (q->direction == FFT_FORWARD) ? -1.0 : 1.0;
-    for (i=0; i<q->nfft; i++)
-        q->twiddle[i] = cexpf(_Complex_I*d*2*M_PI*(T)i / (T)(q->nfft));
+        // initialize twiddle factors
+        q->twiddle = (TC *) malloc(q->nfft * sizeof(TC));
+        
+        unsigned int i;
+        T d = (q->direction == FFT_FORWARD) ? -1.0 : 1.0;
+        for (i=0; i<q->nfft; i++)
+            q->twiddle[i] = cexpf(_Complex_I*d*2*M_PI*(T)i / (T)(q->nfft));
+    }
 
     return q;
 }
@@ -68,7 +76,8 @@ FFT(plan) FFT(_create_plan_dft)(unsigned int _nfft,
 void FFT(_destroy_plan_dft)(FFT(plan) _q)
 {
     // free twiddle factors
-    free(_q->twiddle);
+    if (_q->twiddle != NULL)
+        free(_q->twiddle);
 
     // free main object memory
     free(_q);
@@ -89,3 +98,68 @@ void FFT(_execute_dft)(FFT(plan) _q)
     }
 }
 
+// 
+// codelets for small DFTs
+//
+
+// 
+void FFT(_execute_dft_2)(FFT(plan) _q)
+{
+    _q->y[0] = _q->x[0] + _q->x[1];
+    _q->y[1] = _q->x[0] - _q->x[1];
+}
+
+//
+void FFT(_execute_dft_3)(FFT(plan) _q)
+{
+    TC g  = -0.5f - _Complex_I*0.866025403784439; // sqrt(3)/2
+
+    _q->y[0] = _q->x[0] + _q->x[1]          + _q->x[2];
+    TC ta    = _q->x[0] + _q->x[1]*g        + _q->x[2]*conjf(g);
+    TC tb    = _q->x[0] + _q->x[1]*conjf(g) + _q->x[2]*g;
+
+    // set return values
+    if (_q->direction == FFT_FORWARD) {
+        _q->y[1] = ta;
+        _q->y[2] = tb;
+    } else {
+        _q->y[1] = tb;
+        _q->y[2] = ta;
+    }
+}
+
+//
+void FFT(_execute_dft_4)(FFT(plan) _q)
+{
+    TC yp;
+    TC * x = _q->x;
+    TC * y = _q->y;
+
+    // index reversal
+    y[0] = x[0];
+    y[1] = x[2];
+    y[2] = x[1];
+    y[3] = x[3];
+
+    // k0 = 0, k1=1
+    yp = y[1];
+    y[1] = y[0] - yp;
+    y[0] = y[0] + yp;
+
+    // k0 = 2, k1=3
+    yp = y[3];
+    y[3] = y[2] - yp;
+    y[2] = y[2] + yp;
+
+    // k0 = 0, k1=2
+    yp = y[2];
+    y[2] = y[0] - yp;
+    y[0] = y[0] + yp;
+
+    // k0 = 1, k1=3
+    yp = cimagf(y[3]) - _Complex_I*crealf(y[3]);
+    if (_q->direction == FFT_REVERSE)
+        yp = -yp;
+    y[3] = y[1] - yp;
+    y[1] = y[1] + yp;
+}
