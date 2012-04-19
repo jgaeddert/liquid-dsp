@@ -58,6 +58,7 @@ FFT(plan) FFT(_create_plan_dft)(unsigned int _nfft,
     else if (q->nfft == 3) q->execute = FFT(_execute_dft_3);
     else if (q->nfft == 4) q->execute = FFT(_execute_dft_4);
     else if (q->nfft == 5) q->execute = FFT(_execute_dft_5);
+    else if (q->nfft == 6) q->execute = FFT(_execute_dft_6);
     else {
         q->execute = FFT(_execute_dft);
 
@@ -177,12 +178,13 @@ void FFT(_execute_dft_5)(FFT(plan) _q)
     TC * x = _q->x;
     TC * y = _q->y;
 
+    // DC value is sum of inputs
     y[0] = x[0] + x[1] + x[2] + x[3] + x[4];
 
-    // exp(j*2*pi*1/5)
+    // exp(-j*2*pi*1/5)
     TC g0 =  0.309016994374947 - 0.951056516295154*_Complex_I;
 
-    // exp(j*2*pi*2/5)
+    // exp(-j*2*pi*2/5)
     TC g1 = -0.809016994374947 - 0.587785252292473*_Complex_I;
 
     if (_q->direction == FFT_REVERSE) {
@@ -196,5 +198,38 @@ void FFT(_execute_dft_5)(FFT(plan) _q)
     y[2] = x[0] + x[1]*g1      + x[2]*g0_conj + x[3]*g0      + x[4]*g1_conj;
     y[3] = x[0] + x[1]*g1_conj + x[2]*g0      + x[3]*g0_conj + x[4]*g1;
     y[4] = x[0] + x[1]*g0_conj + x[2]*g1_conj + x[3]*g1      + x[4]*g0;
+}
+
+//
+void FFT(_execute_dft_6)(FFT(plan) _q)
+{
+    TC * x = _q->x;
+    TC * y = _q->y;
+
+    // DC value is sum of inputs
+    y[0] = x[0] + x[1] + x[2] + x[3] + x[4] + x[5];
+
+    // exp(-j*2*pi*1/6) = 1/2 - j*sqrt(3)/2
+    TC g = 0.5 - 0.866025403784439*_Complex_I;
+
+    TC g1, g2, g4, g5;
+
+    if (_q->direction == FFT_FORWARD) {
+        g1 =        g;  // exp(-j*2*pi*1/6)
+        g2 = -conjf(g); // exp(-j*2*pi*2/6)
+        g4 =       -g;  // exp(-j*2*pi*4/6)
+        g5 =  conjf(g); // exp(-j*2*pi*5/6)
+    } else {
+        g1 =  conjf(g); // exp( j*2*pi*1/6)
+        g2 =       -g;  // exp( j*2*pi*2/6)
+        g4 = -conjf(g); // exp( j*2*pi*4/6)
+        g5 =        g;  // exp( j*2*pi*5/6)
+    }
+
+    y[1] = x[0] + x[1]*g1 + x[2]*g2 - x[3] + x[4]*g4 + x[5]*g5;
+    y[2] = x[0] + x[1]*g2 + x[2]*g4 + x[3] + x[4]*g2 + x[5]*g4;
+    y[3] = x[0] - x[1]    + x[2]    - x[3] + x[4]    - x[5];
+    y[4] = x[0] + x[1]*g4 + x[2]*g2 + x[3] + x[4]*g4 + x[5]*g2;
+    y[5] = x[0] + x[1]*g5 + x[2]*g4 - x[3] + x[4]*g2 + x[5]*g1;
 }
 
