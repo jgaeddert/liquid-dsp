@@ -1157,11 +1157,19 @@ bench: $(bench_prog)
 # benchmark compare script
 scripts/benchmark_compare : % : %.c
 
+# fftbench program
+bench/fftbench.o : %.o : %.c
+	$(CC) $(BENCH_CFLAGS) $< -c -o $@
+
+bench/fftbench : % : %.o libliquid.a
+	$(CC) $^ $(BENCH_LDFLAGS) -o $@
+
 # clean up the generated files
 clean-bench:
 	$(RM) benchmark_include.h $(bench_prog).o $(bench_prog)
 	$(RM) scripts/benchmark_compare
 	$(RM) $(benchmark_obj)
+	$(RM) bench/fftbench
 
 
 ## 
