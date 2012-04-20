@@ -44,8 +44,9 @@ void usage()
     printf("  -v/q          verbose/quiet\n");
     printf("  -t[SECONDS]   set minimum execution time (s)\n");
     printf("  -o[FILENAME]  export output\n");
-    printf("  -n[NFFT]      benchmark single FFT\n");
-    printf("  -m[MODE]      mode: all, radix2, composite, prime\n");
+    printf("  -n[NFFT_MIN]  minimum FFT size (benchmark single FFT)\n");
+    printf("  -N[NFFT_MAX]  maximum FFT size\n");
+    printf("  -m[MODE]      mode: all, radix2, composite, prime, single\n");
 }
 
 // benchmark structure
@@ -64,17 +65,33 @@ struct benchmark_s {
     float flops;                // computation bandwidth
 };
 
+// simulation structure
+struct fftbench_s {
+    enum {RUN_ALL=0,
+          RUN_RADIX2,
+          RUN_COMPOSITE,
+          RUN_PRIME,
+          RUN_SINGLE
+    } mode;
+    int verbose;
+    float runtime;   // minimum run time (s)
+    
+    // min/max sizes for other modes
+    unsigned int nfft_min;  // minimum FFT size (also, size for RUN_SINGLE mode)
+    unsigned int nfft_max;  // maximum FFT size
+
+    // output file
+    char filename[128];     // output filename
+    FILE * fid;             // output file pointer
+    int output_to_file;     // output file write flag
+};
+
 // helper functions:
 char convert_units(float * _s);
 double calculate_execution_time(struct rusage, struct rusage);
 
-// run...
-#if 0
-void execute_benchmarks_radix2();
-void execute_benchmarks_composite();
-void execute_benchmarks_prime();
-void execute_benchmarks_single();
-#endif
+// run all benchmarks
+void fftbench_execute(struct fftbench_s * _fftbench);
 
 // execute single benchmark
 void execute_benchmark_fft(struct benchmark_s * _benchmark,
@@ -85,8 +102,7 @@ void benchmark_fft(struct rusage *      _start,
                    struct rusage *      _finish,
                    struct benchmark_s * _benchmark);
 
-FILE * fid; // output file id
-void output_benchmark_to_file(FILE * _fid,
+void benchmark_print_to_file(FILE * _fid,
                               struct benchmark_s * _benchmark);
 
 void benchmark_print(struct benchmark_s * _benchmark);
@@ -95,43 +111,49 @@ void benchmark_print(struct benchmark_s * _benchmark);
 int main(int argc, char *argv[])
 {
     // options
-    enum {RUN_ALL=0,
-          RUN_RADIX2,
-          RUN_COMPOSITE,
-          RUN_PRIME,
-          RUN_SINGLE
-    } mode = 0;
-    int verbose = 1;
-    int autoscale = 1;
-    int output_to_file = 0;
-    char filename[128];
-    float runtime=0.100f;   // minimum run time (s)
+    struct fftbench_s fftbench;
+    fftbench.mode       = RUN_RADIX2;
+    fftbench.verbose    = 1;
+    fftbench.runtime    = 0.1f;
+    fftbench.nfft_min   = 2;
+    fftbench.nfft_max   = 1024;
+    fftbench.filename[0]= '\0';
+    fftbench.fid        = NULL;
+    fftbench.output_to_file = 0;
 
-    unsigned int nfft = 1024;   // FFT size for 'single' mode
-    
     // get input options
     int d;
-    while((d = getopt(argc,argv,"uvqn:t:o:m:")) != EOF){
+    while((d = getopt(argc,argv,"uvqn:N:t:o:m:")) != EOF){
         switch (d) {
         case 'h':   usage();        return 0;
-        case 'v':   verbose = 1;    break;
-        case 'q':   verbose = 0;    break;
+        case 'v':   fftbench.verbose = 1;    break;
+        case 'q':   fftbench.verbose = 0;    break;
         case 'n':
-            mode = RUN_SINGLE;
-            nfft = atoi(optarg);
+            fftbench.nfft_min = atoi(optarg);
+            break;
+        case 'N':
+            fftbench.nfft_max = atoi(optarg);
             break;
         case 't':
-            runtime = atof(optarg);
-            if (runtime < 1e-3f)     runtime = 1e-3f;
-            else if (runtime > 10.f) runtime = 10.0f;
-            printf("minimum runtime: %d ms\n", (int) roundf(runtime*1e3));
+            fftbench.runtime = atof(optarg);
+            if (fftbench.runtime < 1e-3f)     fftbench.runtime = 1e-3f;
+            else if (fftbench.runtime > 10.f) fftbench.runtime = 10.0f;
+            printf("minimum runtime: %d ms\n", (int) roundf(fftbench.runtime*1e3));
             break;
         case 'o':
-            output_to_file = 1;
-            strcpy(filename, optarg);
+            fftbench.output_to_file = 1;
+            strcpy(fftbench.filename, optarg);
             break;
         case 'm':
-            printf("mode: %s\n", optarg);
+            if      (strcmp(optarg,"all")==0)       fftbench.mode = RUN_ALL;
+            else if (strcmp(optarg,"radix2")==0)    fftbench.mode = RUN_RADIX2;
+            else if (strcmp(optarg,"composite")==0) fftbench.mode = RUN_COMPOSITE;
+            else if (strcmp(optarg,"prime")==0)     fftbench.mode = RUN_PRIME;
+            else if (strcmp(optarg,"single")==0)    fftbench.mode = RUN_SINGLE;
+            else {
+                fprintf(stderr,"error: %s, unknown mode '%s'\n", argv[0], optarg);
+                exit(1);
+            }
             break;
         default:
             usage();
@@ -146,44 +168,18 @@ int main(int argc, char *argv[])
     for (i=0; i<1e6; i++) {
         // do nothing
     }
-
-#if 0
-    switch (mode) {
-    case RUN_ALL:
-        break;
-    case RUN_RADIX2:
-        break;
-    case RUN_COMPOSITE:
-        break;
-    case RUN_PRIME:
-        break;
-    case RUN_SINGLE:
-        break;
-    default:
-        fprintf(stderr,"%s, invalid mode\n", argv[0]);
-        exit(1);
-    }
-#else
-    struct benchmark_s benchmark;
-    benchmark.nfft       = 1024;
-    benchmark.direction  = FFT_FORWARD;
-    benchmark.num_trials = 1;
-    benchmark.flags      = 0;
-    benchmark.extime     = runtime;
-    benchmark.flops      = 0.0f;
-    execute_benchmark_fft(&benchmark, runtime);
-    benchmark_print(&benchmark);
-#endif
-
-    if (output_to_file) {
-        fid = fopen(filename,"w");
-        if (!fid) {
-            printf("error: could not open file %s for writing\n", filename);
-            return 1;
+    
+    // open output file (if applicable)
+    if (fftbench.output_to_file) {
+        fftbench.fid = fopen(fftbench.filename,"w");
+        if (!fftbench.fid) {
+            fprintf(stderr,"error: %s, could not open file '%s' for writing\n", argv[0], fftbench.filename);
+            exit(1);
         }
+        FILE * fid = fftbench.fid;
 
         // print header
-        fprintf(fid,"# %s : auto-generated file\n", filename);
+        fprintf(fid,"# %s : auto-generated file\n", fftbench.filename);
         fprintf(fid,"#\n");
         fprintf(fid,"# invoked as:\n");
         fprintf(fid,"#   ");
@@ -192,23 +188,20 @@ int main(int argc, char *argv[])
         fprintf(fid,"\n");
         fprintf(fid,"#\n");
         fprintf(fid,"# properties:\n");
-        fprintf(fid,"#  verbose             :   %s\n", verbose ? "true" : "false");
-        fprintf(fid,"#  autoscale           :   %s\n", autoscale ? "true" : "false");
-        fprintf(fid,"#  runtime             :   %12.8f s\n", runtime);
+        fprintf(fid,"#  verbose             :   %s\n", fftbench.verbose ? "true" : "false");
+        fprintf(fid,"#  runtime             :   %12.8f s\n", fftbench.runtime);
         fprintf(fid,"#  mode                :   \n");
         fprintf(fid,"#\n");
-#if 0
-        fprintf(fid,"# %-5s %-30s %12s %12s %12s %12s\n",
-                "id", "name", "num trials", "ex.time [s]", "rate [t/s]", "[cycles/t]");
+        fprintf(fid,"# %12s %12s %12s %12s %12s\n",
+                "nfft", "num trials", "ex. time", "us/trial", "M-flops");
+    }
 
-        for (i=0; i<NUM_AUTOSCRIPTS; i++) {
-            if (scripts[i].num_trials > 0)
-                output_benchmark_to_file(fid, &scripts[i]);
-        }
-#endif
+    // run benchmarks
+    fftbench_execute(&fftbench);
 
-        fclose(fid);
-        printf("results written to %s\n", filename);
+    if (fftbench.output_to_file) {
+        fclose(fftbench.fid);
+        printf("results written to %s\n", fftbench.filename);
     }
 
     return 0;
@@ -238,6 +231,81 @@ double calculate_execution_time(struct rusage _start, struct rusage _finish)
         + 1e-6*(_finish.ru_utime.tv_usec - _start.ru_utime.tv_usec)
         + _finish.ru_stime.tv_sec - _start.ru_stime.tv_sec
         + 1e-6*(_finish.ru_stime.tv_usec - _start.ru_stime.tv_usec);
+}
+
+// run all benchmarks
+void fftbench_execute(struct fftbench_s * _fftbench)
+{
+    // validate input
+    if (_fftbench->nfft_min > _fftbench->nfft_max && _fftbench->mode != RUN_SINGLE) {
+        fprintf(stderr,"execute_benchmarks_composite(), nfft_min cannot be greater than nfft_max\n");
+        exit(1);
+    } else if (_fftbench->runtime <= 0.0f) {
+        fprintf(stderr,"execute_benchmarks_composite(), runtime must be greater than zero\n");
+        exit(1);
+    }
+
+    // create benchmark structure
+    struct benchmark_s benchmark;
+
+    if (_fftbench->mode == RUN_SINGLE) {
+        // run single benchmark and exit
+
+        // initialize benchmark structure
+        benchmark.nfft       = _fftbench->nfft_min;
+        benchmark.direction  = FFT_FORWARD;
+        benchmark.num_trials = 1;
+        benchmark.flags      = 0;
+        benchmark.extime     = 0.0f;
+        benchmark.flops      = 0.0f;
+
+        // run the benchmark
+        execute_benchmark_fft(&benchmark, _fftbench->runtime);
+        benchmark_print(&benchmark);
+        return;
+    }
+        
+    printf("running ");
+    switch (_fftbench->mode) {
+    case RUN_ALL:       printf("all");              break;
+    case RUN_RADIX2:    printf("all power-of-two"); break;
+    case RUN_COMPOSITE: printf("all composite");    break;
+    case RUN_PRIME:     printf("all prime");        break;
+    case RUN_SINGLE:
+    default:;
+    }
+    printf(" FFTs from %u to %u:\n",
+        _fftbench->nfft_min,
+        _fftbench->nfft_max);
+
+    unsigned int nfft;
+    for (nfft=_fftbench->nfft_min; nfft<=_fftbench->nfft_max; nfft++) {
+        int isprime  = liquid_is_prime(nfft);
+        int isradix2 = (1 << liquid_nextpow2(nfft))==nfft ? 1 : 0;
+
+        // check run mode
+        if (_fftbench->mode == RUN_RADIX2 && !isradix2)
+            continue;
+        if (_fftbench->mode == RUN_COMPOSITE && isprime)
+            continue;
+        if (_fftbench->mode == RUN_PRIME && !isprime)
+            continue;
+
+        // run the transform
+        benchmark.nfft       = nfft;
+        benchmark.direction  = FFT_FORWARD;
+        benchmark.num_trials = 1;
+        benchmark.flags      = 0;
+        benchmark.extime     = 0.0f;
+        benchmark.flops      = 0.0f;
+        execute_benchmark_fft(&benchmark, _fftbench->runtime);
+
+        if (_fftbench->verbose)
+            benchmark_print(&benchmark);
+
+        if (_fftbench->output_to_file)
+            benchmark_print_to_file(_fftbench->fid, &benchmark);
+    }
 }
 
 // execute single benchmark
@@ -319,13 +387,15 @@ void benchmark_fft(struct rusage *      _start,
     free(y);
 }
 
-void output_benchmark_to_file(FILE * _fid,
-                              struct benchmark_s * _benchmark)
+void benchmark_print_to_file(FILE * _fid,
+                             struct benchmark_s * _benchmark)
 {
-    fprintf(_fid,"  %-8u %-8u %12.4e\n",
+    fprintf(_fid,"  %12u %12u %12.4e %12.6f %12.3f\n",
             _benchmark->nfft,
             _benchmark->num_trials,
-            _benchmark->extime);
+            _benchmark->extime,
+            _benchmark->time_per_trial * 1e6f,
+            _benchmark->flops * 1e-6f);
 }
 
 void benchmark_print(struct benchmark_s * _benchmark)
