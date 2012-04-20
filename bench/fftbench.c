@@ -286,7 +286,7 @@ void fftbench_execute(struct fftbench_s * _fftbench)
         // check run mode
         if (_fftbench->mode == RUN_RADIX2 && !isradix2)
             continue;
-        if (_fftbench->mode == RUN_COMPOSITE && isprime)
+        if (_fftbench->mode == RUN_COMPOSITE && (isprime || isradix2))
             continue;
         if (_fftbench->mode == RUN_PRIME && !isprime)
             continue;
