@@ -1,6 +1,6 @@
 /*
- * Copyright (c) 2007, 2008, 2009, 2010, 2011 Joseph Gaeddert
- * Copyright (c) 2007, 2008, 2009, 2010, 2011 Virginia Polytechnic
+ * Copyright (c) 2007, 2008, 2009, 2010, 2011, 2012 Joseph Gaeddert
+ * Copyright (c) 2007, 2008, 2009, 2010, 2011, 2012 Virginia Polytechnic
  *                                      Institute & State University
  *
  * This file is part of liquid.
@@ -26,6 +26,7 @@
 
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 #include <math.h>
 #include "liquid.internal.h"
 
@@ -56,16 +57,51 @@ FFT(plan) FFT(_create_plan_mixed_radix)(unsigned int _nfft,
 
     q->execute   = FFT(_execute_mixed_radix);
 
-    // initialize 'prime' factors
-    FFT(_mixed_radix_init_factors)(q, q->nfft);
+    // find first 'prime' factor of _nfft
+    unsigned int i;
+    unsigned int Q = FFT(_estimate_mixed_radix)(_nfft);
+    if (Q==0) {
+        fprintf(stderr,"error: fft_create_plan_mixed_radix(), _nfft=%u is prime\n", _nfft);
+        exit(1);
+    } else if ( (_nfft % Q) != 0 ) {
+        fprintf(stderr,"error: fft_create_plan_mixed_radix(), _nfft=%u is not divisible by Q=%u\n", _nfft, Q);
+        exit(1);
+    }
+
+    // set mixed-radix data
+    unsigned int P = q->nfft / Q;
+    q->data.mixedradix.Q = Q;
+    q->data.mixedradix.P = P;
+
+    // allocate memory for buffers
+    unsigned int t_len = Q > P ? Q : P;
+    q->data.mixedradix.t0 = (TC *) malloc(t_len * sizeof(TC));
+    q->data.mixedradix.t1 = (TC *) malloc(t_len * sizeof(TC));
+
+    // allocate memory for input buffers
+    q->data.mixedradix.x = (TC *) malloc(q->nfft * sizeof(TC));
+
+    // create P-point FFT plan
+    q->data.mixedradix.fft_P = FFT(_create_plan)(q->data.mixedradix.P,
+                                                 q->data.mixedradix.t0,
+                                                 q->data.mixedradix.t1,
+                                                 q->direction,
+                                                 q->flags);
+
+    // create Q-point FFT plan
+    q->data.mixedradix.fft_Q = FFT(_create_plan)(q->data.mixedradix.Q,
+                                                 q->data.mixedradix.t0,
+                                                 q->data.mixedradix.t1,
+                                                 q->direction,
+                                                 q->flags);
 
     // initialize twiddle factors, indices for mixed-radix transforms
-    q->twiddle = (TC *) malloc(q->nfft * sizeof(TC));
+    // TODO : only allocate necessary twiddle factors
+    q->data.mixedradix.twiddle = (TC *) malloc(q->nfft * sizeof(TC));
     
-    unsigned int i;
     T d = (q->direction == FFT_FORWARD) ? -1.0 : 1.0;
     for (i=0; i<q->nfft; i++)
-        q->twiddle[i] = cexpf(_Complex_I*d*2*M_PI*(T)i / (T)(q->nfft));
+        q->data.mixedradix.twiddle[i] = cexpf(_Complex_I*d*2*M_PI*(T)i / (T)(q->nfft));
 
     return q;
 }
@@ -73,218 +109,132 @@ FFT(plan) FFT(_create_plan_mixed_radix)(unsigned int _nfft,
 // destroy FFT plan
 void FFT(_destroy_plan_mixed_radix)(FFT(plan) _q)
 {
+    // destroy sub-plans
+    FFT(_destroy_plan)(_q->data.mixedradix.fft_P);
+    FFT(_destroy_plan)(_q->data.mixedradix.fft_Q);
+
     // free data specific to mixed-radix transforms
-    free(_q->twiddle);
+    free(_q->data.mixedradix.t0);
+    free(_q->data.mixedradix.t1);
+    free(_q->data.mixedradix.x);
+    free(_q->data.mixedradix.twiddle);
 
     // free main object memory
     free(_q);
 }
 
-// initialize mixed-radix 'prime' factors
-void FFT(_mixed_radix_init_factors)(FFT(plan) _q,
-                                    unsigned int _n)
-{
-    // find 'prime' factors
-    unsigned int k;
-    unsigned int n = _n;
-    unsigned int num_factors = 0;
-
-    do {
-        for (k=2; k<=n; k++) {
-            if ( (n%k)==0 ) {
-                // prefer radix 4 over 2 if possible
-                if ( (k==2) && (n%4)==0 )
-                    k = 4;
-
-                n /= k;
-                _q->p_vect[num_factors] = k;
-                _q->m_vect[num_factors] = n;
-                num_factors++;
-                break;
-            }
-        }
-    } while (n > 1 && num_factors < FFT_MAX_FACTORS);
-
-    // NOTE: this is extremely unlikely as the worst case is
-    //       nfft=2^MAX_FACTORS in which case we will probably run out
-    //       of memory first
-    if (num_factors == FFT_MAX_FACTORS) {
-        fprintf(stderr,"error: could not factor %u with %u factors\n", _n, FFT_MAX_FACTORS);
-        exit(1);
-    }
-
-#if FFT_DEBUG_MIXED_RADIX
-    printf("factors of %u:\n", _n);
-    for (k=0; k<num_factors; k++)
-        printf("  p=%3u, m=%3u\n", _q->p_vect[k], _q->m_vect[k]);
-#endif
-
-}
-
 // execute mixed-radix FFT
 void FFT(_execute_mixed_radix)(FFT(plan) _q)
 {
-    // call mixed-radix function
-    FFT(_mixed_radix_cycle)(_q->x, _q->y, _q->twiddle, _q->nfft, 0, 1, _q->m_vect, _q->p_vect);
+    // set internal constants
+    unsigned int P = _q->data.mixedradix.P; // first FFT size
+    unsigned int Q = _q->data.mixedradix.Q; // second FFT size
 
-}
+    // set pointers
+    TC * t0      = _q->data.mixedradix.t0;  // small FFT input buffer
+    TC * t1      = _q->data.mixedradix.t1;  // small FFT output buffer
+    TC * x       = _q->data.mixedradix.x;   // full input buffer (data copied)
+    TC * twiddle = _q->data.mixedradix.twiddle; // twiddle factors
 
-// FFT mixed-radix butterfly for 2-point DFT
-//  _x          :   input/output buffer pointer [size: _nfft x 1]
-//  _twiddle    :   pre-computed twiddle factors [size: _nfft x 1]
-//  _nfft       :   original FFT size
-//  _stride     :   output stride
-//  _m          :   number of FFTs to compute
-//
-// NOTES : the butterfly decimates in time, storing the output as
-//         contiguous samples in the same buffer.
-void FFT(_mixed_radix_bfly2)(TC *         _x,
-                             TC *         _twiddle,
-                             unsigned int _nfft,
-                             unsigned int _stride,
-                             unsigned int _m)
-{
-    unsigned int n;
-    unsigned int twiddle_index = 0;
-    for (n=0; n<_m; n++) {
-        // strip input values
-        //TC x0 = _x[n];
-        TC x1 = _x[n+_m];
-
-        // compute 2-point DFT, using appropriate twiddles
-        TC t = x1*_twiddle[twiddle_index];
-        _x[n+_m] = _x[n] - t;
-        _x[n]    = _x[n] + t;
-
-        // update twiddle index
-        twiddle_index += _stride;
-    }
-}
-
-// FFT mixed-radix butterfly
-//  _x          :   input/output buffer pointer [size: _nfft x 1]
-//  _twiddle    :   pre-computed twiddle factors [size: _nfft x 1]
-//  _nfft       :   original FFT size
-//  _stride     :   output stride
-//  _m          :   number of FFTs to compute
-//  _p          :   generic (small) FFT size
-//
-// NOTES : the butterfly decimates in time, storing the output as
-//         contiguous samples in the same buffer.
-void FFT(_mixed_radix_bfly)(TC *         _x,
-                            TC *         _twiddle,
-                            unsigned int _nfft,
-                            unsigned int _stride,
-                            unsigned int _m,
-                            unsigned int _p)
-{
-#if FFT_DEBUG_MIXED_RADIX
-    printf("  bfly: stride=%3u, m=%3u, p=%3u\n", _stride, _m, _p);
-#endif
-
-    // create temporary buffer the size of the FFT
-    TC * x_tmp = (TC *) malloc(_p*sizeof(TC));
+    // copy input to internal buffer
+    memmove(x, _q->x, _q->nfft*sizeof(TC));
 
     unsigned int i;
     unsigned int k;
 
-    unsigned int n;
-    for (n=0; n<_m; n++) {
+    // compute 'Q' DFTs of size 'P'
 #if FFT_DEBUG_MIXED_RADIX
-        printf("    u=%u\n", n);
+    printf("computing %u DFTs of size %u\n", Q, P);
 #endif
+    for (i=0; i<Q; i++) {
+        // copy to temporary buffer
+        for (k=0; k<P; k++)
+            t0[k] = x[Q*k+i];
 
-        // copy input to temporary buffer
-        for (i=0; i<_p; i++)
-            x_tmp[i] = _x[n + i*_m];
+        // run internal P-point DFT
+        FFT(_execute)(_q->data.mixedradix.fft_P);
+
+        // copy back to input, applying twiddle factors
+        for (k=0; k<P; k++)
+            x[Q*k+i] = t1[k] * twiddle[i*k];
+
+#if FFT_DEBUG_MIXED_RADIX
+        printf("i=%3u/%3u\n", i, Q);
+        for (k=0; k<P; k++)
+            printf("  %12.6f %12.6f\n", crealf(x[Q*k+i]), cimagf(x[Q*k+i]));
+#endif
+    }
+
+    // compute 'P' DFTs of size 'Q' and transpose
+#if DEBUG
+    printf("computing %u DFTs of size %u\n", P, Q);
+#endif
+    for (i=0; i<P; i++) {
+        // copy to temporary buffer
+        for (k=0; k<Q; k++)
+            t0[k] = x[Q*i+k];
+
+        // run internal Q-point DFT
+        FFT(_execute)(_q->data.mixedradix.fft_Q);
+
+        // copy and transpose
+        for (k=0; k<Q; k++)
+            _q->y[k*P+i] = t1[k];
         
-        // compute DFT, applying appropriate twiddle factors
-        unsigned int twiddle_base = n;
-        for (i=0; i<_p; i++) {
-#if FFT_DEBUG_MIXED_RADIX
-            printf("      ----\n");
+#if DEBUG
+        printf("i=%3u/%3u\n", i, P);
+        for (k=0; k<Q; k++)
+            printf("  %12.6f %12.6f\n", crealf(_q->y[k*P+i]), cimagf(_q->y[k*P+i]));
 #endif
-            TC y = x_tmp[0];
-            unsigned int twiddle_index = 0;
-            for (k=1; k<_p; k++) {
-                twiddle_index = (twiddle_index + _stride*twiddle_base) % _nfft;
-#if FFT_DEBUG_MIXED_RADIX
-                printf("      twiddle_index = %3u > %12.8f + j%12.8f, %12.8f + j%12.8f\n", twiddle_index, crealf(_twiddle[twiddle_index]), cimagf(_twiddle[twiddle_index]), crealf(x_tmp[k]), cimagf(x_tmp[k]));
-#endif
-
-                y += x_tmp[k] * _twiddle[twiddle_index];
-            }
-            // increment twiddle twiddle base
-            twiddle_base += _m;
-
-            // store output
-            _x[n + i*_m] = y;
-#if FFT_DEBUG_MIXED_RADIX
-            printf("      y = %12.6f + j%12.6f\n", crealf(y), cimagf(y));
-#endif
-        }
     }
-
-    // free temporary buffer
-    free(x_tmp);
 }
 
-// FFT mixed-radix recursive function...
-//  _x          :   constant input pointer [size: _nfft x 1]
-//  _y          :   output pointer
-//  _twiddle    :   pre-computed twiddle factors [size: _nfft x 1]
-//  _nfft       :   original FFT size
-//  _xoffset    :   input buffer offset
-//  _xstride    :   input buffer stride
-//  _m_vect     :   array of radix values [size: num_factors x 1]
-//  _p_vect     :   array of DFT values [size: num_factors x 1]
-void FFT(_mixed_radix_cycle)(TC *            _x,
-                             TC *            _y,
-                             TC *            _twiddle,
-                             unsigned int    _nfft,
-                             unsigned int    _xoffset,
-                             unsigned int    _xstride,
-                             unsigned int *  _m_vect,
-                             unsigned int *  _p_vect)
+// strategize as to best radix to use
+unsigned int FFT(_estimate_mixed_radix)(unsigned int _nfft)
 {
-    // de-reference factors and pop values off the top
-    unsigned int m = _m_vect[0];    // radix
-    unsigned int p = _p_vect[0];    // DFT size
+    // compute factors of _nfft
+    unsigned int factors[LIQUID_MAX_FACTORS];
+    unsigned int num_factors;
+    liquid_factor(_nfft, factors, &num_factors);
 
-    // increment factor pointers
-    _m_vect++;
-    _p_vect++;
-    
-#if FFT_DEBUG_MIXED_RADIX
-    printf("fftmr_cycle:    offset=%3u, stride=%3u, p=%3u, m=%3u\n", _xoffset, _xstride, p, m);
-#endif
+    // check if _nfft is prime
+    if (num_factors < 2) {
+        fprintf(stderr,"warning: fft_estimate_mixed_radix(), %u is prime\n", _nfft);
+        return 0;
+    }
 
+    // if _nfft has many factors of 2, retain for later in favor of
+    // radix2 sub-fft method
+    unsigned int num_factors_2 = 0;
     unsigned int i;
-    if ( m == 1 ) {
-        // copy data to output buffer
-        for (i=0; i<p; i++)
-            _y[i] = _x[_xoffset + _xstride*i];
+    for (i=0; i<num_factors; i++) {
+        if (factors[i] != 2)
+            break;
+    }
+    num_factors_2 = i;
+    //printf("nfft: %u / 2^%u = %u\n", _nfft, num_factors_2, _nfft / (1<<num_factors_2));
 
-    } else {
-        // call fftmr_cycle() recursively, effectively computing
-        // p DFTs each of size m samples, decimating the time
-        // input by _xstride
-        for (i=0; i<p; i++) {
-            FFT(_mixed_radix_cycle)(_x,                    // input buffer (does not change)
-                                    _y + i*m,              // increment output buffer by block size
-                                    _twiddle,              // twiddle factors (no change)
-                                    _nfft,                 // original FFT size (no change)
-                                    _xoffset + _xstride*i, // input offset (increased by _xstride)
-                                    _xstride*p,            // input stride (scaled by radix)
-                                    _m_vect,               // array of radix values (length reduced by one)
-                                    _p_vect);              // array of DFT values (length reduced by one)
+    // prefer aggregate radix-2 form if possible
+    if (num_factors_2 > 0) {
+#if 0
+        // check if there are _only_ factors of 2
+        if (num_factors_2 == num_factors) {
+            // return Q = 2^(ceil(num_factors_2 / 2))
+            // example: nfft = 128 = 2^7, return Q=2^4 = 16
+            return 1 << ((num_factors_2 + (num_factors_2%2))/2);
         }
+
+        // return 2^num_factors_2
+        return 1 << num_factors_2;
+#else
+        // use codelets
+        if      ( (_nfft%8)==0 ) return 8;
+        else if ( (_nfft%4)==0 ) return 4;
+        else                     return 2;
+#endif
     }
 
-    // run m-point DFT
-    switch (p) {
-    case 2:  FFT(_mixed_radix_bfly2)(_y, _twiddle, _nfft, _xstride, m); break;
-    default: FFT(_mixed_radix_bfly)(_y, _twiddle, _nfft, _xstride, m, p);
-    }
+    // return next largest prime factor
+    return factors[0];
 }
-                      
+

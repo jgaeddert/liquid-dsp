@@ -27,11 +27,10 @@
 #include <stdlib.h>
 #include "liquid.internal.h"
 
-#define FFT_MAX_FACTORS (32)
-
-struct FFT(plan_s) {
+struct FFT(plan_s)
+{
+    // common data
     unsigned int nfft;  // fft size
-    TC * twiddle;       // twiddle factors
     TC * x;             // input array pointer (not allocated)
     TC * y;             // output array pointer (not allocated)
     int direction;      // forward/reverse
@@ -42,25 +41,61 @@ struct FFT(plan_s) {
     // 'execute' function pointer
     void (*execute)(FFT(plan));
 
-    // radix-2 transform data
-    unsigned int m;             // log2(nfft)
-    unsigned int * index_rev;   // reversed indices
-
-    // Cooley-Tukey mixed-radix transform data
-    unsigned int m_vect[FFT_MAX_FACTORS];
-    unsigned int p_vect[FFT_MAX_FACTORS];
-
-    // Rader data for transforms of prime length
-    unsigned int * seq; // transformation sequence, size: nfft-1
-    TC * R;             // DFT of sequence { exp(-j*2*pi*g^i/nfft }, size: nfft-1
-
-    // Rader data for transforms of prime length, alternate method
-    // using larger FFT of length 2^nextpow2(2*nfft-4)
-    unsigned int nfft_prime;
-
     // real even/odd DFT parameters (DCT/DST)
     T * xr; // input array (real)
     T * yr; // output array (real)
+
+    // common data structure shared between specific FFT algorithms
+    union {
+        // DFT
+        struct {
+            TC * twiddle;               // twiddle factors
+        } dft;
+
+        // radix-2 transform data
+        struct {
+            unsigned int m;             // log2(nfft)
+            unsigned int * index_rev;   // reversed indices
+            TC * twiddle;               // twiddle factors
+        } radix2;
+
+        // recursive mixed-radix transform data:
+        //  - compute 'Q' FFTs of size 'P'
+        //  - apply twiddle factors
+        //  - compute 'P' FFTs of size 'Q'
+        //  - transpose result
+        struct {
+            unsigned int P;     // first FFT size
+            unsigned int Q;     // second FFT size
+            TC * x;             // input buffer (copied)
+            TC * t0;            // temporary buffer (small FFT input)
+            TC * t1;            // temporary buffer (small FFT output)
+            TC * twiddle;       // twiddle factors
+            FFT(plan) fft_P;    // sub-transform of size P
+            FFT(plan) fft_Q;    // sub-transform of size Q
+        } mixedradix;
+
+        // Rader's algorithm for computing FFTs of prime length
+        struct {
+            unsigned int * seq; // transformation sequence, size: nfft-1
+            TC * R;             // DFT of sequence { exp(-j*2*pi*g^i/nfft }, size: nfft-1
+            TC * x_prime;       // sub-transform time-domain buffer
+            TC * X_prime;       // sub-transform freq-domain buffer
+            FFT(plan) fft;      // sub-FFT of size nfft-1
+            FFT(plan) ifft;     // sub-IFFT of size nfft-1
+        } rader;
+
+        // Rader's alternat ealgorithm for computing FFTs of prime length
+        struct {
+            unsigned int nfft_prime;
+            unsigned int * seq; // transformation sequence, size: nfft_prime
+            TC * R;             // DFT of sequence { exp(-j*2*pi*g^i/nfft }, size: nfft_prime
+            TC * x_prime;       // sub-transform time-domain buffer
+            TC * X_prime;       // sub-transform freq-domain buffer
+            FFT(plan) fft;      // sub-FFT of size nfft_prime
+            FFT(plan) ifft;     // sub-IFFT of size nfft_prime
+        } rader2;
+    } data;
 };
 
 // create FFT plan
@@ -93,9 +128,9 @@ FFT(plan) FFT(_create_plan)(unsigned int _nfft,
         // use Rader's algorithm for FFTs of prime length
         return FFT(_create_plan_rader)(_nfft, _x, _y, _dir, _flags);
 
-    case LIQUID_FFT_METHOD_RADER_RADIX2:
+    case LIQUID_FFT_METHOD_RADER2:
         // use Rader's algorithm for FFTs of prime length
-        return FFT(_create_plan_rader_radix2)(_nfft, _x, _y, _dir, _flags);
+        return FFT(_create_plan_rader2)(_nfft, _x, _y, _dir, _flags);
 
     case LIQUID_FFT_METHOD_DFT:
         // use slow DFT
@@ -118,16 +153,82 @@ FFT(plan) FFT(_create_plan)(unsigned int _nfft,
 void FFT(_destroy_plan)(FFT(plan) _q)
 {
     switch (_q->method) {
+    case LIQUID_FFT_METHOD_DFT:         FFT(_destroy_plan_dft)(_q); break;
     case LIQUID_FFT_METHOD_RADIX2:      FFT(_destroy_plan_radix2)(_q); break;
     case LIQUID_FFT_METHOD_MIXED_RADIX: FFT(_destroy_plan_mixed_radix)(_q); break;
-    case LIQUID_FFT_METHOD_DFT:         FFT(_destroy_plan_dft)(_q); break;
     case LIQUID_FFT_METHOD_RADER:       FFT(_destroy_plan_rader)(_q); break;
-    case LIQUID_FFT_METHOD_RADER_RADIX2: FFT(_destroy_plan_rader_radix2)(_q); break;
+    case LIQUID_FFT_METHOD_RADER2:      FFT(_destroy_plan_rader2)(_q); break;
     case LIQUID_FFT_METHOD_NONE:        break;
     case LIQUID_FFT_METHOD_UNKNOWN:
     default:
         fprintf(stderr,"error: fft_destroy_plan(), unknown/invalid fft method\n");
         exit(1);
+    }
+}
+
+// print FFT plan
+void FFT(_print_plan)(FFT(plan) _q)
+{
+    printf("fft plan [%s], n=%u, ",
+            _q->direction == FFT_FORWARD ? "forward" : "reverse",
+            _q->nfft);
+
+    switch (_q->method) {
+    case LIQUID_FFT_METHOD_DFT:         printf("DFT\n");            break;
+    case LIQUID_FFT_METHOD_RADIX2:      printf("Radix-2\n");        break;
+    case LIQUID_FFT_METHOD_MIXED_RADIX: printf("Cooley-Tukey\n");   break;
+    case LIQUID_FFT_METHOD_RADER:       printf("Rader (Type-I)\n"); break;
+    case LIQUID_FFT_METHOD_RADER2:      printf("Rader (Type-II)\n"); break;
+    case LIQUID_FFT_METHOD_NONE:        printf("(none)\n");         break;
+    case LIQUID_FFT_METHOD_UNKNOWN:     printf("(unknown)\n");      break;
+    default:                            printf("(unknown)\n");      break;
+    }
+
+    // print recursive plan
+    FFT(_print_plan_recursive)(_q, 0);
+}
+
+// print FFT plan (recursively)
+void FFT(_print_plan_recursive)(FFT(plan)    _q,
+                                unsigned int _level)
+{
+    // print indentation based on recursion level
+    unsigned int i;
+    for (i=0; i<_level; i++)
+        printf("  ");
+    printf("%u, ", _q->nfft);
+
+    switch (_q->method) {
+    case LIQUID_FFT_METHOD_DFT:
+        printf("DFT\n");
+        break;
+
+    case LIQUID_FFT_METHOD_RADIX2:
+        printf("Radix-2\n");
+        break;
+
+    case LIQUID_FFT_METHOD_MIXED_RADIX:
+        // two internal transforms
+        printf("Cooley-Tukey mixed radix, Q=%u, P=%u\n",
+                _q->data.mixedradix.Q,
+                _q->data.mixedradix.P);
+        FFT(_print_plan_recursive)(_q->data.mixedradix.fft_Q, _level+1);
+        FFT(_print_plan_recursive)(_q->data.mixedradix.fft_P, _level+1);
+        break;
+
+    case LIQUID_FFT_METHOD_RADER:
+        printf("Rader (Type-II), nfft-prime=%u\n", _q->nfft-1);
+        FFT(_print_plan_recursive)(_q->data.rader.fft, _level+1);
+        break;
+
+    case LIQUID_FFT_METHOD_RADER2:
+        printf("Rader (Type-II), nfft-prime=%u\n", _q->data.rader2.nfft_prime);
+        FFT(_print_plan_recursive)(_q->data.rader2.fft, _level+1);
+        break;
+
+    case LIQUID_FFT_METHOD_NONE:        printf("(none)\n");         break;
+    case LIQUID_FFT_METHOD_UNKNOWN:     printf("(unknown)\n");      break;
+    default:                            printf("(unknown)\n");      break;
     }
 }
 

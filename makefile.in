@@ -300,7 +300,7 @@ fft_includes :=							\
 	src/fft/src/fft_radix2.c				\
 	src/fft/src/fft_mixed_radix.c				\
 	src/fft/src/fft_rader.c					\
-	src/fft/src/fft_rader_radix2.c				\
+	src/fft/src/fft_rader2.c				\
 	src/fft/src/fft_r2r_1d.c				\
 
 src/fft/src/fftf.o : %.o : %.c $(headers) $(fft_includes)
@@ -318,6 +318,8 @@ src/fft/src/mdct.o : %.o : %.c $(headers)
 
 fft_autotests :=						\
 	src/fft/tests/fft_autotest.c				\
+	src/fft/tests/fft_composite_autotest.c			\
+	src/fft/tests/fft_prime_autotest.c			\
 	src/fft/tests/fft_r2r_autotest.c			\
 	src/fft/tests/fft_shift_autotest.c			\
 
@@ -1318,6 +1320,7 @@ sandbox_programs =						\
 	sandbox/fft_dual_radix_test				\
 	sandbox/fft_mixed_radix_test				\
 	sandbox/fft_recursive_plan_test				\
+	sandbox/fft_recursive_test				\
 	sandbox/fft_rader_prime_test				\
 	sandbox/fft_rader_prime_radix2_test			\
 	sandbox/fft_r2r_test					\

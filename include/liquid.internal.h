@@ -732,8 +732,11 @@ typedef enum {
     LIQUID_FFT_METHOD_RADIX2,       // Radix-2 (decimation in time)
     LIQUID_FFT_METHOD_MIXED_RADIX,  // Cooley-Tukey mixed-radix FFT (decimation in time)
     LIQUID_FFT_METHOD_RADER,        // Rader's method for FFTs of prime length
-    LIQUID_FFT_METHOD_RADER_RADIX2, // Rader's method for FFTs of prime length (alternate)
-    LIQUID_FFT_METHOD_DFT           // slow discrete Fourier transform
+    LIQUID_FFT_METHOD_RADER2,       // Rader's method for FFTs of prime length (alternate)
+    LIQUID_FFT_METHOD_DFT,          // slow discrete Fourier transform
+    
+    // specific codelets for small FFTs
+    LIQUID_FFT_METHOD_DFT_2,
 } liquid_fft_method;
 
 // Macro    :   FFT (internal)
@@ -741,6 +744,10 @@ typedef enum {
 //  T       :   primitive data type
 //  TC      :   primitive data type (complex)
 #define LIQUID_FFT_DEFINE_INTERNAL_API(FFT,T,TC)                \
+                                                                \
+/* print plan recursively */                                    \
+void FFT(_print_plan_recursive)(FFT(plan)    _q,                \
+                                unsigned int _level);           \
                                                                 \
 /* basic dft (slow, but guarantees correct output) */           \
 FFT(plan) FFT(_create_plan_dft)(unsigned int _nfft,             \
@@ -750,6 +757,14 @@ FFT(plan) FFT(_create_plan_dft)(unsigned int _nfft,             \
                                 int          _flags);           \
 void FFT(_destroy_plan_dft)(FFT(plan) _q);                      \
 void FFT(_execute_dft)(FFT(plan) _q);                           \
+                                                                \
+/* specific codelets for small DFTs */                          \
+void FFT(_execute_dft_2)(FFT(plan) _q);                         \
+void FFT(_execute_dft_3)(FFT(plan) _q);                         \
+void FFT(_execute_dft_4)(FFT(plan) _q);                         \
+void FFT(_execute_dft_5)(FFT(plan) _q);                         \
+void FFT(_execute_dft_6)(FFT(plan) _q);                         \
+void FFT(_execute_dft_8)(FFT(plan) _q);                         \
                                                                 \
 /* basic radix-2 fft (fast, but only for transforms of 2^m */   \
 FFT(plan) FFT(_create_plan_radix2)(unsigned int _nfft,          \
@@ -767,28 +782,8 @@ FFT(plan) FFT(_create_plan_mixed_radix)(unsigned int _nfft,     \
                                         int          _dir,      \
                                         int          _flags);   \
 void FFT(_destroy_plan_mixed_radix)(FFT(plan) _q);              \
-void FFT(_mixed_radix_init_factors)(FFT(plan) _q,               \
-                                    unsigned int _n);           \
 void FFT(_execute_mixed_radix)(FFT(plan) _q);                   \
-void FFT(_mixed_radix_bfly2)(TC *         _x,                   \
-                             TC *         _twiddle,             \
-                             unsigned int _nfft,                \
-                             unsigned int _stride,              \
-                             unsigned int _m);                  \
-void FFT(_mixed_radix_bfly)(TC *         _x,                    \
-                            TC *         _twiddle,              \
-                            unsigned int _nfft,                 \
-                            unsigned int _stride,               \
-                            unsigned int _m,                    \
-                            unsigned int _p);                   \
-void FFT(_mixed_radix_cycle)(TC *         _x,                   \
-                             TC *         _y,                   \
-                             TC *         _twiddle,             \
-                             unsigned int _nfft,                \
-                             unsigned int _xoffset,             \
-                             unsigned int _xstride,             \
-                             unsigned int * _m_vect,            \
-                             unsigned int * _p_vect);           \
+unsigned int FFT(_estimate_mixed_radix)(unsigned int _nfft);    \
                                                                 \
 /* Rader's algorithm for FFTs of prime length */                \
 FFT(plan) FFT(_create_plan_rader)(unsigned int _nfft,           \
@@ -800,13 +795,13 @@ void FFT(_destroy_plan_rader)(FFT(plan) _q);                    \
 void FFT(_execute_rader)(FFT(plan) _q);                         \
                                                                 \
 /* Rader's alternate algorithm for FFTs of prime length */      \
-FFT(plan) FFT(_create_plan_rader_radix2)(unsigned int _nfft,    \
-                                         TC *         _x,       \
-                                         TC *         _y,       \
-                                         int          _dir,     \
-                                         int          _flags);  \
-void FFT(_destroy_plan_rader_radix2)(FFT(plan) _q);             \
-void FFT(_execute_rader_radix2)(FFT(plan) _q);                  \
+FFT(plan) FFT(_create_plan_rader2)(unsigned int _nfft,          \
+                                   TC *         _x,             \
+                                   TC *         _y,             \
+                                   int          _dir,           \
+                                   int          _flags);        \
+void FFT(_destroy_plan_rader2)(FFT(plan) _q);                   \
+void FFT(_execute_rader2)(FFT(plan) _q);                        \
                                                                 \
 /* discrete cosine transform (DCT) prototypes */                \
 void FFT(_execute_REDFT00)(FFT(plan) _q);   /* DCT-I   */       \

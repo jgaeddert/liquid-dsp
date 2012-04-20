@@ -1,6 +1,6 @@
 /*
- * Copyright (c) 2011 Joseph Gaeddert
- * Copyright (c) 2011 Virginia Polytechnic Institute & State University
+ * Copyright (c) 2011, 2012 Joseph Gaeddert
+ * Copyright (c) 2011, 2012 Virginia Polytechnic Institute & State University
  *
  * This file is part of liquid.
  *
@@ -36,27 +36,28 @@ liquid_fft_method liquid_fft_estimate_method(unsigned int _nfft)
         fprintf(stderr,"error: liquid_fft_estimate_method(), fft size must be > 0\n");
         return LIQUID_FFT_METHOD_UNKNOWN;
 
-    } else if (_nfft < 8) {
+    } else if (_nfft <= 8) {
         // use simple DFT
         return LIQUID_FFT_METHOD_DFT;
 
     } else if (fft_is_radix2(_nfft)) {
         // transform is of the form 2^m
+#if 0
+        // use radix-2 algorithm
         return LIQUID_FFT_METHOD_RADIX2;
+#else
+        // acutally, prefer Cooley-Tukey algorithm
+        return LIQUID_FFT_METHOD_MIXED_RADIX;
+#endif
 
     } else if (liquid_is_prime(_nfft)) {
-        // compute prime factors of _nfft-1
-        unsigned int factors[LIQUID_MAX_FACTORS];
-        unsigned int num_factors=0;
-        liquid_factor(_nfft-1,factors,&num_factors);
-        
-        if (num_factors > 2) {
-            // use Rader's algorithm
+        // prefer Rader's alternate method (using radix-2 transform)
+        // unless _nfft-1 is also radix2
+        // TODO : also prefer Rader-I if _nfft-1 is mostly factors of 2
+        if ( fft_is_radix2(_nfft-1) )
             return LIQUID_FFT_METHOD_RADER;
-        } else {
-            // use Rader's alternate algorithm
-            return LIQUID_FFT_METHOD_RADER_RADIX2;
-        }
+        else
+            return LIQUID_FFT_METHOD_RADER2;
     }
 
     // last resort
