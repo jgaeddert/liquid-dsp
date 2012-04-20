@@ -42,27 +42,31 @@ void usage()
     printf("Execute benchmark scripts for liquid-dsp library.\n");
     printf("  -h            display this help and exit\n");
     printf("  -v/q          verbose/quiet\n");
-    printf("  -n[COUNT]     set number of base trials\n");
     printf("  -t[SECONDS]   set minimum execution time (s)\n");
     printf("  -o[FILENAME]  export output\n");
+    printf("  -n[NFFT]      benchmark single FFT\n");
     printf("  -m[MODE]      mode: all, radix2, composite, prime\n");
 }
 
 // benchmark structure
 struct benchmark_s {
+    // fft options
     unsigned int nfft;          // FFT size
     int direction;              // FFT direction
-    unsigned int num_trials;    // number of trials
     int flags;                  // FFT flags/method
+
+    // benchmark results
+    unsigned int num_trials;    // number of trials
     float extime;               // execution time
+
+    // derived values
+    float time_per_trial;       // execution time per trial
     float flops;                // computation bandwidth
 };
 
 // helper functions:
 char convert_units(float * _s);
 double calculate_execution_time(struct rusage, struct rusage);
-
-unsigned long int num_base_trials = 1<<12;
 
 // run...
 #if 0
@@ -95,7 +99,7 @@ int main(int argc, char *argv[])
           RUN_RADIX2,
           RUN_COMPOSITE,
           RUN_PRIME,
-          RUN_NUMBER
+          RUN_SINGLE
     } mode = 0;
     int verbose = 1;
     int autoscale = 1;
@@ -103,8 +107,8 @@ int main(int argc, char *argv[])
     char filename[128];
     float runtime=0.100f;   // minimum run time (s)
 
-    unsigned int nfft = 1024;
-
+    unsigned int nfft = 1024;   // FFT size for 'single' mode
+    
     // get input options
     int d;
     while((d = getopt(argc,argv,"uvqn:t:o:m:")) != EOF){
@@ -113,8 +117,8 @@ int main(int argc, char *argv[])
         case 'v':   verbose = 1;    break;
         case 'q':   verbose = 0;    break;
         case 'n':
-            num_base_trials = atoi(optarg);
-            autoscale = 0;
+            mode = RUN_SINGLE;
+            nfft = atoi(optarg);
             break;
         case 't':
             runtime = atof(optarg);
@@ -153,7 +157,7 @@ int main(int argc, char *argv[])
         break;
     case RUN_PRIME:
         break;
-    case RUN_NUMBER:
+    case RUN_SINGLE:
         break;
     default:
         fprintf(stderr,"%s, invalid mode\n", argv[0]);
@@ -191,7 +195,6 @@ int main(int argc, char *argv[])
         fprintf(fid,"#  verbose             :   %s\n", verbose ? "true" : "false");
         fprintf(fid,"#  autoscale           :   %s\n", autoscale ? "true" : "false");
         fprintf(fid,"#  runtime             :   %12.8f s\n", runtime);
-        fprintf(fid,"#  num_trials          :   %lu\n", num_base_trials);
         fprintf(fid,"#  mode                :   \n");
         fprintf(fid,"#\n");
 #if 0
@@ -237,28 +240,11 @@ double calculate_execution_time(struct rusage _start, struct rusage _finish)
         + 1e-6*(_finish.ru_stime.tv_usec - _start.ru_stime.tv_usec);
 }
 
-void output_benchmark_to_file(FILE * _fid,
-                              struct benchmark_s * _benchmark)
-{
-    fprintf(_fid,"  %-8u %-8u %12.4e\n",
-            _benchmark->nfft,
-            _benchmark->num_trials,
-            _benchmark->extime);
-}
-
-void benchmark_print(struct benchmark_s * _benchmark)
-{
-    printf("  nfft=%-8u trials=%-8u runtime=%12.8f s\n",
-            _benchmark->nfft,
-            _benchmark->num_trials,
-            _benchmark->extime);
-}
-
 // execute single benchmark
 void execute_benchmark_fft(struct benchmark_s * _benchmark,
                            float                _runtime)
 {
-    unsigned long int n = 100; //num_base_trials;
+    unsigned long int n = _benchmark->num_trials;
     struct rusage start, finish;
 
     unsigned int num_attempts = 0;
@@ -285,7 +271,11 @@ void execute_benchmark_fft(struct benchmark_s * _benchmark,
         }
     } while (1);
 
-    // print results...
+    // compute time per trial
+    _benchmark->time_per_trial = _benchmark->extime / (float)_benchmark->num_trials;
+
+    // computational bandwidth (see: http://www.fftw.org/speed/)
+    _benchmark->flops = 5.0f * _benchmark->nfft * log2f(_benchmark->nfft) / _benchmark->time_per_trial;
 }
 
 // main benchmark script
@@ -327,5 +317,40 @@ void benchmark_fft(struct rusage *      _start,
     fft_destroy_plan(q);
     free(x);
     free(y);
+}
+
+void output_benchmark_to_file(FILE * _fid,
+                              struct benchmark_s * _benchmark)
+{
+    fprintf(_fid,"  %-8u %-8u %12.4e\n",
+            _benchmark->nfft,
+            _benchmark->num_trials,
+            _benchmark->extime);
+}
+
+void benchmark_print(struct benchmark_s * _benchmark)
+{
+    // format trials (iterations)
+    float trials_format = (float)(_benchmark->num_trials);
+    char trials_units = convert_units(&trials_format);
+
+    // format time (seconds)
+    float extime_format = _benchmark->extime;
+    char extime_units = convert_units(&extime_format);
+
+    // format rate (time/trial)
+    float time_format = _benchmark->time_per_trial;
+    char time_units = convert_units(&time_format);
+
+    // format computational bandwidth (flops)
+    float flops_format = _benchmark->flops;
+    char flops_units = convert_units(&flops_format);
+
+    printf("  %-8u: %8.2f %c trials / %6.2f %cs (%6.2f %cs/t) > %6.2f %c flops\n",
+            _benchmark->nfft,
+            trials_format, trials_units,
+            extime_format, extime_units,
+            time_format,   time_units,
+            flops_format,  flops_units);
 }
 

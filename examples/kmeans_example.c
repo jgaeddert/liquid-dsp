@@ -11,7 +11,7 @@
 int main() {
     // options
     unsigned int m = 5;     // number of true centroids
-    unsigned int k = m;     // number of estimated centroids
+    unsigned int k = m+1;     // number of estimated centroids
     unsigned int n = 16;    // number of samples per centroid
 
     // derived values
