@@ -59,9 +59,7 @@ FFT(plan) FFT(_create_plan_dft)(unsigned int _nfft,
     else if (q->nfft == 4) q->execute = FFT(_execute_dft_4);
     else if (q->nfft == 5) q->execute = FFT(_execute_dft_5);
     else if (q->nfft == 6) q->execute = FFT(_execute_dft_6);
-#if 0
     else if (q->nfft == 7) q->execute = FFT(_execute_dft_7);
-#endif
     else if (q->nfft == 8) q->execute = FFT(_execute_dft_8);
     else {
         q->execute = FFT(_execute_dft);
@@ -237,13 +235,38 @@ void FFT(_execute_dft_6)(FFT(plan) _q)
     y[5] = x[0] + x[1]*g5 + x[2]*g4 - x[3] + x[4]*g2 + x[5]*g1;
 }
 
-#if 0
 //
 void FFT(_execute_dft_7)(FFT(plan) _q)
 {
-    // ...
+    TC * x = _q->x;
+    TC * y = _q->y;
+
+    // DC value is sum of inputs
+    y[0] = x[0] + x[1] + x[2] + x[3] + x[4] + x[5] + x[6];
+
+    // initialize twiddle factors
+    TC g1 =  0.623489801858734 - 0.781831482468030 * _Complex_I; // exp(-j*2*pi*1/7)
+    TC g2 = -0.222520933956314 - 0.974927912181824 * _Complex_I; // exp(-j*2*pi*2/7)
+    TC g3 = -0.900968867902419 - 0.433883739117558 * _Complex_I; // exp(-j*2*pi*3/7)
+
+    if (_q->direction == FFT_FORWARD) {
+    } else {
+        g1 = conjf(g1); // exp(+j*2*pi*1/7)
+        g2 = conjf(g2); // exp(+j*2*pi*2/7)
+        g3 = conjf(g3); // exp(+j*2*pi*3/7)
+    }
+
+    TC g4 = conjf(g3);
+    TC g5 = conjf(g2);
+    TC g6 = conjf(g1);
+
+    y[1] = x[0] + x[1]*g1 + x[2]*g2 + x[3]*g3 + x[4]*g4 + x[5]*g5 + x[6]*g6;
+    y[2] = x[0] + x[1]*g2 + x[2]*g4 + x[3]*g6 + x[4]*g1 + x[5]*g3 + x[6]*g5;
+    y[3] = x[0] + x[1]*g3 + x[2]*g6 + x[3]*g2 + x[4]*g5 + x[5]*g1 + x[6]*g4;
+    y[4] = x[0] + x[1]*g4 + x[2]*g1 + x[3]*g5 + x[4]*g2 + x[5]*g6 + x[6]*g3;
+    y[5] = x[0] + x[1]*g5 + x[2]*g3 + x[3]*g1 + x[4]*g6 + x[5]*g4 + x[6]*g2;
+    y[6] = x[0] + x[1]*g6 + x[2]*g5 + x[3]*g4 + x[4]*g3 + x[5]*g2 + x[6]*g1;
 }
-#endif
 
 #define FFT_RADIX2_CRUNCH(t, k0, k1) {yp = y[k1]*(t); y[k1] = y[k0] - yp; y[k0] += yp;}
 #define FFT_RADIX2_PRINT() {unsigned int p; for (p=0; p<_q->nfft; p++) printf("  y[%u] = %12.8f + j%12.8f\n", p, crealf(y[p]), cimagf(y[p]));}
