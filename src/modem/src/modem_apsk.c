@@ -42,7 +42,7 @@ modem modem_create_apsk(unsigned int _bits_per_symbol)
     }
 
     // initialize symbol map
-    q->symbol_map = (float complex*)malloc(q->M*sizeof(float complex));
+    q->symbol_map = (TC*)malloc(q->M*sizeof(TC));
     modem_init_map(q);
     q->modulate_using_map = 1;
 
@@ -52,255 +52,255 @@ modem modem_create_apsk(unsigned int _bits_per_symbol)
 // create specific APSK-4 modem
 modem modem_create_apsk4()
 {
-    modem mod = (modem) malloc( sizeof(struct modem_s) );
-    mod->scheme = LIQUID_MODEM_APSK4;
+    MODEM() q = (MODEM()) malloc( sizeof(struct MODEM(_s)) );
+    q->scheme = LIQUID_MODEM_APSK4;
 
-    modem_init(mod, 2);
+    MODEM(_init)(q, 2);
     
     // set internals
-    mod->apsk_num_levels = apsk4_num_levels;
-    mod->apsk_p = (unsigned int *) apsk4_p;
-    mod->apsk_r = (float *) apsk4_r;
-    mod->apsk_phi = (float *) apsk4_phi;
-    mod->apsk_r_slicer = (float *) apsk4_r_slicer;
-    mod->apsk_symbol_map = (unsigned int *) apsk4_symbol_map;
+    q->apsk_num_levels = apsk4_num_levels;
+    q->apsk_p          = (unsigned int *) apsk4_p;
+    q->apsk_r          = (T *) apsk4_r;
+    q->apsk_phi        = (T *) apsk4_phi;
+    q->apsk_r_slicer   = (T *) apsk4_r_slicer;
+    q->apsk_symbol_map = (unsigned int *) apsk4_symbol_map;
 
-    mod->modulate_func = &modem_modulate_apsk;
-    mod->demodulate_func = &modem_demodulate_apsk;
+    q->modulate_func = &modem_modulate_apsk;
+    q->demodulate_func = &modem_demodulate_apsk;
 
-    mod->demod_soft_neighbors = (unsigned char*) apsk4_demod_soft_neighbors;
-    mod->demod_soft_p         = 3;
+    q->demod_soft_neighbors = (unsigned char*) apsk4_demod_soft_neighbors;
+    q->demod_soft_p         = 3;
 
-    return mod;
+    return q;
 }
 
 // create specific APSK-8 modem
 modem modem_create_apsk8()
 {
-    modem mod = (modem) malloc( sizeof(struct modem_s) );
-    mod->scheme = LIQUID_MODEM_APSK8;
+    MODEM() q = (MODEM()) malloc( sizeof(struct MODEM(_s)) );
+    q->scheme = LIQUID_MODEM_APSK8;
 
-    modem_init(mod, 3);
+    MODEM(_init)(q, 3);
     
     // set internals
-    mod->apsk_num_levels = apsk8_num_levels;
-    mod->apsk_p = (unsigned int *) apsk8_p;
-    mod->apsk_r = (float *) apsk8_r;
-    mod->apsk_phi = (float *) apsk8_phi;
-    mod->apsk_r_slicer = (float *) apsk8_r_slicer;
-    mod->apsk_symbol_map = (unsigned int *) apsk8_symbol_map;
+    q->apsk_num_levels = apsk8_num_levels;
+    q->apsk_p          = (unsigned int *) apsk8_p;
+    q->apsk_r          = (T *) apsk8_r;
+    q->apsk_phi        = (T *) apsk8_phi;
+    q->apsk_r_slicer   = (T *) apsk8_r_slicer;
+    q->apsk_symbol_map = (unsigned int *) apsk8_symbol_map;
 
-    mod->modulate_func = &modem_modulate_apsk;
-    mod->demodulate_func = &modem_demodulate_apsk;
+    q->modulate_func = &modem_modulate_apsk;
+    q->demodulate_func = &modem_demodulate_apsk;
 
-    mod->demod_soft_neighbors = (unsigned char*) apsk8_demod_soft_neighbors;
-    mod->demod_soft_p         = 3;
+    q->demod_soft_neighbors = (unsigned char*) apsk8_demod_soft_neighbors;
+    q->demod_soft_p         = 3;
 
-    return mod;
+    return q;
 }
 
 // create specific APSK-16 modem
 modem modem_create_apsk16()
 {
-    modem mod = (modem) malloc( sizeof(struct modem_s) );
-    mod->scheme = LIQUID_MODEM_APSK16;
+    MODEM() q = (MODEM()) malloc( sizeof(struct MODEM(_s)) );
+    q->scheme = LIQUID_MODEM_APSK16;
 
-    modem_init(mod, 4);
+    MODEM(_init)(q, 4);
     
     // set internals
-    mod->apsk_num_levels = apsk16_num_levels;
-    mod->apsk_p = (unsigned int *) apsk16_p;
-    mod->apsk_r = (float *) apsk16_r;
-    mod->apsk_phi = (float *) apsk16_phi;
-    mod->apsk_r_slicer = (float *) apsk16_r_slicer;
-    mod->apsk_symbol_map = (unsigned int *) apsk16_symbol_map;
+    q->apsk_num_levels = apsk16_num_levels;
+    q->apsk_p          = (unsigned int *) apsk16_p;
+    q->apsk_r          = (T *) apsk16_r;
+    q->apsk_phi        = (T *) apsk16_phi;
+    q->apsk_r_slicer   = (T *) apsk16_r_slicer;
+    q->apsk_symbol_map = (unsigned int *) apsk16_symbol_map;
 
-    mod->modulate_func = &modem_modulate_apsk;
-    mod->demodulate_func = &modem_demodulate_apsk;
+    q->modulate_func = &modem_modulate_apsk;
+    q->demodulate_func = &modem_demodulate_apsk;
 
-    mod->demod_soft_neighbors = (unsigned char*) apsk16_demod_soft_neighbors;
-    mod->demod_soft_p         = 4;
+    q->demod_soft_neighbors = (unsigned char*) apsk16_demod_soft_neighbors;
+    q->demod_soft_p         = 4;
 
-    return mod;
+    return q;
 }
 
 // create specific APSK-32 modem
 modem modem_create_apsk32()
 {
-    modem mod = (modem) malloc( sizeof(struct modem_s) );
-    mod->scheme = LIQUID_MODEM_APSK32;
+    MODEM() q = (MODEM()) malloc( sizeof(struct MODEM(_s)) );
+    q->scheme = LIQUID_MODEM_APSK32;
 
-    modem_init(mod, 5);
+    MODEM(_init)(q, 5);
     
     // set internals
-    mod->apsk_num_levels = apsk32_num_levels;
-    mod->apsk_p = (unsigned int *) apsk32_p;
-    mod->apsk_r = (float *) apsk32_r;
-    mod->apsk_phi = (float *) apsk32_phi;
-    mod->apsk_r_slicer = (float *) apsk32_r_slicer;
-    mod->apsk_symbol_map = (unsigned int *) apsk32_symbol_map;
+    q->apsk_num_levels = apsk32_num_levels;
+    q->apsk_p          = (unsigned int *) apsk32_p;
+    q->apsk_r          = (T *) apsk32_r;
+    q->apsk_phi        = (T *) apsk32_phi;
+    q->apsk_r_slicer   = (T *) apsk32_r_slicer;
+    q->apsk_symbol_map = (unsigned int *) apsk32_symbol_map;
 
-    mod->modulate_func = &modem_modulate_apsk;
-    mod->demodulate_func = &modem_demodulate_apsk;
+    q->modulate_func = &modem_modulate_apsk;
+    q->demodulate_func = &modem_demodulate_apsk;
 
-    mod->demod_soft_neighbors = (unsigned char*) apsk32_demod_soft_neighbors;
-    mod->demod_soft_p         = 4;
+    q->demod_soft_neighbors = (unsigned char*) apsk32_demod_soft_neighbors;
+    q->demod_soft_p         = 4;
 
-    return mod;
+    return q;
 }
 
 // create specific APSK-64 modem
 modem modem_create_apsk64()
 {
-    modem mod = (modem) malloc( sizeof(struct modem_s) );
-    mod->scheme = LIQUID_MODEM_APSK64;
+    MODEM() q = (MODEM()) malloc( sizeof(struct MODEM(_s)) );
+    q->scheme = LIQUID_MODEM_APSK64;
 
-    modem_init(mod, 6);
+    MODEM(_init)(q, 6);
     
     // set internals
-    mod->apsk_num_levels = apsk64_num_levels;
-    mod->apsk_p = (unsigned int *) apsk64_p;
-    mod->apsk_r = (float *) apsk64_r;
-    mod->apsk_phi = (float *) apsk64_phi;
-    mod->apsk_r_slicer = (float *) apsk64_r_slicer;
-    mod->apsk_symbol_map = (unsigned int *) apsk64_symbol_map;
+    q->apsk_num_levels = apsk64_num_levels;
+    q->apsk_p          = (unsigned int *) apsk64_p;
+    q->apsk_r          = (T *) apsk64_r;
+    q->apsk_phi        = (T *) apsk64_phi;
+    q->apsk_r_slicer   = (T *) apsk64_r_slicer;
+    q->apsk_symbol_map = (unsigned int *) apsk64_symbol_map;
 
-    mod->modulate_func = &modem_modulate_apsk;
-    mod->demodulate_func = &modem_demodulate_apsk;
+    q->modulate_func = &modem_modulate_apsk;
+    q->demodulate_func = &modem_demodulate_apsk;
 
-    mod->demod_soft_neighbors = (unsigned char*) apsk64_demod_soft_neighbors;
-    mod->demod_soft_p         = 4;
+    q->demod_soft_neighbors = (unsigned char*) apsk64_demod_soft_neighbors;
+    q->demod_soft_p         = 4;
 
-    return mod;
+    return q;
 }
 
 // create specific APSK-128 modem
 modem modem_create_apsk128()
 {
-    modem mod = (modem) malloc( sizeof(struct modem_s) );
-    mod->scheme = LIQUID_MODEM_APSK128;
+    MODEM() q = (MODEM()) malloc( sizeof(struct MODEM(_s)) );
+    q->scheme = LIQUID_MODEM_APSK128;
 
-    modem_init(mod, 7);
+    MODEM(_init)(q, 7);
     
     // set internals
-    mod->apsk_num_levels = apsk128_num_levels;
-    mod->apsk_p = (unsigned int *) apsk128_p;
-    mod->apsk_r = (float *) apsk128_r;
-    mod->apsk_phi = (float *) apsk128_phi;
-    mod->apsk_r_slicer = (float *) apsk128_r_slicer;
-    mod->apsk_symbol_map = (unsigned int *) apsk128_symbol_map;
+    q->apsk_num_levels = apsk128_num_levels;
+    q->apsk_p          = (unsigned int *) apsk128_p;
+    q->apsk_r          = (T *) apsk128_r;
+    q->apsk_phi        = (T *) apsk128_phi;
+    q->apsk_r_slicer   = (T *) apsk128_r_slicer;
+    q->apsk_symbol_map = (unsigned int *) apsk128_symbol_map;
 
-    mod->modulate_func = &modem_modulate_apsk;
-    mod->demodulate_func = &modem_demodulate_apsk;
+    q->modulate_func = &modem_modulate_apsk;
+    q->demodulate_func = &modem_demodulate_apsk;
 
-    mod->demod_soft_neighbors = (unsigned char*) apsk128_demod_soft_neighbors;
-    mod->demod_soft_p         = 5;
+    q->demod_soft_neighbors = (unsigned char*) apsk128_demod_soft_neighbors;
+    q->demod_soft_p         = 5;
 
-    return mod;
+    return q;
 }
 
 // create specific APSK-256 modem
 modem modem_create_apsk256()
 {
-    modem mod = (modem) malloc( sizeof(struct modem_s) );
-    mod->scheme = LIQUID_MODEM_APSK256;
+    MODEM() q = (MODEM()) malloc( sizeof(struct MODEM(_s)) );
+    q->scheme = LIQUID_MODEM_APSK256;
 
-    modem_init(mod, 8);
+    MODEM(_init)(q, 8);
     
     // set internals
-    mod->apsk_num_levels = apsk256_num_levels;
-    mod->apsk_p = (unsigned int *) apsk256_p;
-    mod->apsk_r = (float *) apsk256_r;
-    mod->apsk_phi = (float *) apsk256_phi;
-    mod->apsk_r_slicer = (float *) apsk256_r_slicer;
-    mod->apsk_symbol_map = (unsigned int *) apsk256_symbol_map;
+    q->apsk_num_levels = apsk256_num_levels;
+    q->apsk_p          = (unsigned int *) apsk256_p;
+    q->apsk_r          = (T *) apsk256_r;
+    q->apsk_phi        = (T *) apsk256_phi;
+    q->apsk_r_slicer   = (T *) apsk256_r_slicer;
+    q->apsk_symbol_map = (unsigned int *) apsk256_symbol_map;
 
-    mod->modulate_func = &modem_modulate_apsk;
-    mod->demodulate_func = &modem_demodulate_apsk;
+    q->modulate_func = &modem_modulate_apsk;
+    q->demodulate_func = &modem_demodulate_apsk;
 
-    mod->demod_soft_neighbors = (unsigned char*) apsk256_demod_soft_neighbors;
-    mod->demod_soft_p         = 5;
+    q->demod_soft_neighbors = (unsigned char*) apsk256_demod_soft_neighbors;
+    q->demod_soft_p         = 5;
 
-    return mod;
+    return q;
 }
 
 // modulate APSK
-void modem_modulate_apsk(modem _mod,
-                         unsigned int symbol_in,
-                         float complex *y)
+void modem_modulate_apsk(MODEM()      _q,
+                         unsigned int _sym_in,
+                         TC *         _y)
 {
-    if (symbol_in >= _mod->M) {
+    if (_sym_in >= _q->M) {
         fprintf(stderr,"error: modem_modulate_apsk(), input symbol exceeds maximum\n");
         return;
     }
 
     // map input symbol to constellation symbol
     unsigned int i;
-    unsigned int s = _mod->apsk_symbol_map[symbol_in];
+    unsigned int s = _q->apsk_symbol_map[_sym_in];
 
     // determine in which level the symbol is located
     unsigned int p=0;   // level
     unsigned int t=0;   // accumulated number of points per level
-    for (i=0; i<_mod->apsk_num_levels; i++) {
-        if (s < t + _mod->apsk_p[i]) {
+    for (i=0; i<_q->apsk_num_levels; i++) {
+        if (s < t + _q->apsk_p[i]) {
             p = i;
             break;
         }
-        t += _mod->apsk_p[i];
+        t += _q->apsk_p[i];
     }
     unsigned int s0 = s - t;
-    unsigned int s1 = _mod->apsk_p[p];
+    unsigned int s1 = _q->apsk_p[p];
 
 #if 0
-    printf("  s : %3u -> %3u in level %3u (t = %3u) [symbol %3u / %3u]\n", symbol_in, s, p, t, s0,s1);
+    printf("  s : %3u -> %3u in level %3u (t = %3u) [symbol %3u / %3u]\n", _sym_in, s, p, t, s0,s1);
 #endif
 
     // map symbol to constellation point (radius, angle)
-    float r = _mod->apsk_r[p];
-    float phi = _mod->apsk_phi[p] + (float)(s0)*2.0f*M_PI / (float)(s1);
+    T r = _q->apsk_r[p];
+    T phi = _q->apsk_phi[p] + (T)(s0)*2.0f*M_PI / (T)(s1);
 
     // compute output symbol
-    *y = r * liquid_cexpjf(phi);
+    *_y = r * liquid_cexpjf(phi);
 }
 
 // demodulate APSK
-void modem_demodulate_apsk(modem _mod,
-                           float complex _x,
-                           unsigned int * _symbol_out)
+void modem_demodulate_apsk(MODEM()        _q,
+                           TC             _x,
+                           unsigned int * _sym_out)
 {
     // compute amplitude
-    float r = cabsf(_x);
+    T r = cabsf(_x);
 
     // determine which ring to demodulate with
     unsigned int i, p=0;
-    for (i=0; i<_mod->apsk_num_levels-1; i++) {
-        if (r < _mod->apsk_r_slicer[i]) {
+    for (i=0; i<_q->apsk_num_levels-1; i++) {
+        if (r < _q->apsk_r_slicer[i]) {
             p = i;
             break;
         } else {
-            p = _mod->apsk_num_levels-1;
+            p = _q->apsk_num_levels-1;
         }
     }
 
     // find closest point in ring
-    float theta = cargf(_x);
+    T theta = cargf(_x);
     if (theta < 0.0f) theta += 2.0f*M_PI;
-    float dphi = 2.0f*M_PI / (float) _mod->apsk_p[p];
+    T dphi = 2.0f*M_PI / (T) _q->apsk_p[p];
     unsigned int s_hat=0;
-    float i_hat = (theta - _mod->apsk_phi[p]) / dphi;
+    T i_hat = (theta - _q->apsk_phi[p]) / dphi;
     s_hat = roundf(i_hat);      // compute symbol (closest angle)
-    s_hat %= _mod->apsk_p[p];   // ensure symbol is in range
+    s_hat %= _q->apsk_p[p];   // ensure symbol is in range
     //printf("          i_hat : %12.8f (%3u)\n", i_hat, s_hat);
 
     // accumulate symbol points
     for (i=0; i<p; i++)
-        s_hat += _mod->apsk_p[i];
-    //assert(s_hat < _mod->M);
+        s_hat += _q->apsk_p[i];
+    //assert(s_hat < _q->M);
 
     // reverse symbol mapping
     unsigned int s_prime=0;
-    for (i=0; i<_mod->M; i++) {
-        if ( _mod->apsk_symbol_map[i] == s_hat) {
+    for (i=0; i<_q->M; i++) {
+        if ( _q->apsk_symbol_map[i] == s_hat) {
             s_prime = i;
             break;
         }
@@ -314,10 +314,10 @@ void modem_demodulate_apsk(modem _mod,
     printf("              s : %3u > %3u\n", s_hat, s_prime);
 #endif
 
-    *_symbol_out = s_prime;
+    *_sym_out = s_prime;
 
     // re-modulate symbol and store state
-    modem_modulate(_mod, s_prime, &_mod->x_hat);
-    _mod->r = _x;
+    modem_modulate(_q, s_prime, &_q->x_hat);
+    _q->r = _x;
 }
 
