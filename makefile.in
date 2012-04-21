@@ -619,39 +619,32 @@ modem_objects :=						\
 	src/modem/src/freqmodem.o				\
 	src/modem/src/gmskdem.o					\
 	src/modem/src/gmskmod.o					\
-	src/modem/src/modem_apsk_const.o			\
-	src/modem/src/modem_arb_const.o				\
-	src/modem/src/modem_common.o				\
-	src/modem/src/modem_create.o				\
-	src/modem/src/modem_demod_soft_const.o			\
-	src/modem/src/modem_demodulate.o			\
-	src/modem/src/modem_demodulate_soft.o			\
-	src/modem/src/modem_modulate.o				\
-	src/modem/src/modem_arb16opt_const.o			\
-	src/modem/src/modem_arb32opt_const.o			\
-	src/modem/src/modem_arb64opt_const.o			\
-	src/modem/src/modem_arb128opt_const.o			\
-	src/modem/src/modem_arb256opt_const.o			\
+	src/modem/src/modemf.o					\
 	src/modem/src/modem_utilities.o				\
+
+# explicit targets and dependencies
+modem_includes :=						\
+	src/modem/src/modem_common.c				\
+	src/modem/src/modem_apsk_const.c			\
+	src/modem/src/modem_arb_const.c				\
+	src/modem/src/modem_create.c				\
+	src/modem/src/modem_demod_soft_const.c			\
+	src/modem/src/modem_demodulate.c			\
+	src/modem/src/modem_demodulate_soft.c			\
+	src/modem/src/modem_modulate.c				\
+	src/modem/src/modem_arb16opt_const.c			\
+	src/modem/src/modem_arb32opt_const.c			\
+	src/modem/src/modem_arb64opt_const.c			\
+	src/modem/src/modem_arb128opt_const.c			\
+	src/modem/src/modem_arb256opt_const.c			\
+
+# main modem object
+src/modem/src/modemf.o : %.o : %.c $(headers) $(modem_includes)
 
 
 src/modem/src/gmskmod.o: %.o : %.c $(headers)
 
 src/modem/src/gmskdem.o: %.o : %.c $(headers)
-
-src/modem/src/modem_arb_const.o: %.o : %.c $(headers)
-
-src/modem/src/modem_apsk_const.o: %.o : %.c $(headers)
-
-src/modem/src/modem_create.o: %.o : %.c $(headers)
-
-src/modem/src/modem_common.o: %.o : %.c $(headers)
-
-src/modem/src/modem_modulate.o: %.o : %.c $(headers)
-
-src/modem/src/modem_demodulate.o: %.o : %.c $(headers)
-
-src/modem/src/modem_optqam_const.o: %.o : %.c $(headers)
 
 src/modem/src/ampmodem.o: %.o : %.c $(headers)
 
