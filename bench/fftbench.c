@@ -422,27 +422,15 @@ void benchmark_print_to_file(FILE * _fid,
 
 void benchmark_print(struct benchmark_s * _benchmark)
 {
-    // format trials (iterations)
-    float trials_format = (float)(_benchmark->num_trials);
-    char trials_units = convert_units(&trials_format);
-
-    // format time (seconds)
-    float extime_format = _benchmark->extime;
-    char extime_units = convert_units(&extime_format);
-
-    // format rate (time/trial)
+    // format time/trial
     float time_format = _benchmark->time_per_trial;
     char time_units = convert_units(&time_format);
 
-    // format computational bandwidth (flops)
-    float flops_format = _benchmark->flops;
-    char flops_units = convert_units(&flops_format);
-
-    printf("  %-8u: %8.2f %c trials / %6.2f %cs (%6.2f %cs/t) > %6.2f %c flops\n",
+    printf("  %12u: %12u trials / %10.3f ms (%10.3f %cs/t) > %10.3f M flops\n",
             _benchmark->nfft,
-            trials_format, trials_units,
-            extime_format, extime_units,
-            time_format,   time_units,
-            flops_format,  flops_units);
+            _benchmark->num_trials,
+            _benchmark->extime * 1e3f,
+            time_format, time_units,
+            _benchmark->flops * 1e-6f);
 }
 
