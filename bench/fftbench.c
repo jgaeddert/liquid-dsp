@@ -46,7 +46,7 @@ void usage()
     printf("  -o[FILENAME]  export output\n");
     printf("  -n[NFFT_MIN]  minimum FFT size (benchmark single FFT)\n");
     printf("  -N[NFFT_MAX]  maximum FFT size\n");
-    printf("  -m[MODE]      mode: all, radix2, composite, prime, single\n");
+    printf("  -m[MODE]      mode: all, radix2, composite, prime, fftwbench, single\n");
 }
 
 // benchmark structure
@@ -71,7 +71,8 @@ struct fftbench_s {
           RUN_RADIX2,
           RUN_COMPOSITE,
           RUN_PRIME,
-          RUN_SINGLE
+          RUN_FFTWBENCH,
+          RUN_SINGLE,
     } mode;
     int verbose;
     float runtime;   // minimum run time (s)
@@ -149,6 +150,7 @@ int main(int argc, char *argv[])
             else if (strcmp(optarg,"radix2")==0)    fftbench.mode = RUN_RADIX2;
             else if (strcmp(optarg,"composite")==0) fftbench.mode = RUN_COMPOSITE;
             else if (strcmp(optarg,"prime")==0)     fftbench.mode = RUN_PRIME;
+            else if (strcmp(optarg,"fftwbench")==0) fftbench.mode = RUN_FFTWBENCH;
             else if (strcmp(optarg,"single")==0)    fftbench.mode = RUN_SINGLE;
             else {
                 fprintf(stderr,"error: %s, unknown mode '%s'\n", argv[0], optarg);
@@ -262,6 +264,26 @@ void fftbench_execute(struct fftbench_s * _fftbench)
         // run the benchmark
         execute_benchmark_fft(&benchmark, _fftbench->runtime);
         benchmark_print(&benchmark);
+        return;
+    } else if (_fftbench->mode == RUN_FFTWBENCH) {
+        printf("running composite FFTs from FFTW benchmark\n");
+        unsigned int nfftw[18] = {6,9,12,15,18,24,36,80,108,210,504,
+                                  1000,1960,4725,10368,27000,75600,165375};
+        unsigned int i;
+        for (i=0; i<18; i++) {
+            // initialize benchmark structure
+            benchmark.nfft       = nfftw[i];
+            benchmark.direction  = FFT_FORWARD;
+            benchmark.num_trials = 1;
+            benchmark.flags      = 0;
+
+            // run the benchmark
+            execute_benchmark_fft(&benchmark, _fftbench->runtime);
+            benchmark_print(&benchmark);
+
+            if (_fftbench->output_to_file)
+                benchmark_print_to_file(_fftbench->fid, &benchmark);
+        }
         return;
     }
         
