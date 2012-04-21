@@ -24,8 +24,8 @@
 //
 
 // create arbitrary digital modem object
-modem modem_create_arbitrary(liquid_float_complex * _table,
-                             unsigned int _M)
+MODEM() MODEM(_create_arbitrary)(TC * _table,
+                               unsigned int _M)
 {
     // strip out bits/symbol
     unsigned int m = liquid_nextpow2(_M);
@@ -36,10 +36,10 @@ modem modem_create_arbitrary(liquid_float_complex * _table,
     }
 
     // create arbitrary modem object, not initialized
-    modem q = modem_create_arb(m);
+    MODEM() q = MODEM(_create_arb)(m);
 
     // initialize object from table
-    modem_arb_init(q, _table, _M);
+    MODEM(_arb_init)(q, _table, _M);
 
     // return object
     return q;
@@ -47,52 +47,52 @@ modem modem_create_arbitrary(liquid_float_complex * _table,
 
 
 // create an arbitrary modem object
-modem modem_create_arb(unsigned int _bits_per_symbol)
+MODEM() MODEM(_create_arb)(unsigned int _bits_per_symbol)
 {
-    modem mod = (modem) malloc( sizeof(struct modem_s) );
-    mod->scheme = LIQUID_MODEM_ARB;
+    MODEM() q = (MODEM()) malloc( sizeof(struct MODEM(_s)) );
+    q->scheme = LIQUID_MODEM_ARB;
 
-    modem_init(mod, _bits_per_symbol);
+    MODEM(_init)(q, _bits_per_symbol);
 
-    mod->M = mod->M;
-    mod->symbol_map = (float complex*) calloc( mod->M, sizeof(float complex) );
+    q->M = q->M;
+    q->symbol_map = (TC*) calloc( q->M, sizeof(TC) );
 
-    mod->modulate_func = &modem_modulate_arb;
-    mod->demodulate_func = &modem_demodulate_arb;
+    q->modulate_func   = &MODEM(_modulate_arb);
+    q->demodulate_func = &MODEM(_demodulate_arb);
 
-    return mod;
+    return q;
 }
 
 // modulate arbitrary modem type
-void modem_modulate_arb(modem _mod,
-                        unsigned int symbol_in,
-                        float complex *y)
+void MODEM(_modulate_arb)(MODEM()      _q,
+                          unsigned int _sym_in,
+                          TC *         _y)
 {
-    if (symbol_in >= _mod->M) {
+    if (_sym_in >= _q->M) {
         fprintf(stderr,"error: modulate_arb(), input symbol exceeds maximum\n");
         exit(1);
     }
 
     // map sample directly to output
-    *y = _mod->symbol_map[symbol_in]; 
+    *_y = _q->symbol_map[_sym_in]; 
 }
 
 // demodulate arbitrary modem type
-void modem_demodulate_arb(modem _mod,
-                          float complex _x,
-                          unsigned int * _symbol_out)
+void MODEM(_demodulate_arb)(MODEM()        _q,
+                            TC             _x,
+                            unsigned int * _sym_out)
 {
     //printf("modem_demodulate_arb() invoked with I=%d, Q=%d\n", x);
     
     // search for symbol nearest to received sample
     unsigned int i;
     unsigned int s=0;
-    float d;            // distance
-    float d_min = 0.0f; // minimum distance
+    T d;            // distance
+    T d_min = 0.0f; // minimum distance
 
-    for (i=0; i<_mod->M; i++) {
+    for (i=0; i<_q->M; i++) {
         // compute distance from received symbol to constellation point
-        d = cabsf(_x - _mod->symbol_map[i]);
+        d = cabsf(_x - _q->symbol_map[i]);
 
         // retain symbol with minimum distance
         if ( i==0 || d < d_min ) {
@@ -102,82 +102,82 @@ void modem_demodulate_arb(modem _mod,
     }
 
     // set output symbol
-    *_symbol_out = s;
+    *_sym_out = s;
 
     // re-modulate symbol and store state
-    modem_modulate_arb(_mod, *_symbol_out, &_mod->x_hat);
-    _mod->r = _x;
+    MODEM(_modulate_arb)(_q, *_sym_out, &_q->x_hat);
+    _q->r = _x;
 }
 
 // create a V.29 modem object (4 bits/symbol)
-modem modem_create_V29()
+MODEM() MODEM(_create_V29)()
 {
-    modem mod = modem_create_arb(4);
-    modem_arb_init(mod,(float complex*)modem_arb_V29,16);
-    return mod;
+    MODEM() q = MODEM(_create_arb)(4);
+    MODEM(_arb_init)(q,(TC*)MODEM(_arb_V29),16);
+    return q;
 }
 
 // create an arb16opt (optimal 16-qam) modem object
-modem modem_create_arb16opt()
+MODEM() MODEM(_create_arb16opt)()
 {
-    modem mod = modem_create_arb(4);
-    modem_arb_init(mod,(float complex*)modem_arb16opt,16);
-    return mod;
+    MODEM() q = MODEM(_create_arb)(4);
+    MODEM(_arb_init)(q,(TC*)MODEM(_arb16opt),16);
+    return q;
 }
 
 // create an arb32opt (optimal 32-qam) modem object
-modem modem_create_arb32opt()
+MODEM() MODEM(_create_arb32opt)()
 {
-    modem mod = modem_create_arb(5);
-    modem_arb_init(mod,(float complex*)modem_arb32opt,32);
-    return mod;
+    MODEM() q = MODEM(_create_arb)(5);
+    MODEM(_arb_init)(q,(TC*)MODEM(_arb32opt),32);
+    return q;
 }
 
 // create an arb64opt (optimal 64-qam) modem object
-modem modem_create_arb64opt()
+MODEM() MODEM(_create_arb64opt)()
 {
-    modem mod = modem_create_arb(6);
-    modem_arb_init(mod,(float complex*)modem_arb64opt,64);
-    return mod;
+    MODEM() q = MODEM(_create_arb)(6);
+    MODEM(_arb_init)(q,(TC*)MODEM(_arb64opt),64);
+    return q;
 }
 
 // create an arb128opt (optimal 128-qam) modem object
-modem modem_create_arb128opt()
+MODEM() MODEM(_create_arb128opt)()
 {
-    modem mod = modem_create_arb(7);
-    modem_arb_init(mod,(float complex*)modem_arb128opt,128);
-    return mod;
+    MODEM() q = MODEM(_create_arb)(7);
+    MODEM(_arb_init)(q,(TC*)MODEM(_arb128opt),128);
+    return q;
 }
 
 // create an arb256opt (optimal 256-qam) modem object
-modem modem_create_arb256opt()
+MODEM() MODEM(_create_arb256opt)()
 {
-    modem mod = modem_create_arb(8);
-    modem_arb_init(mod,(float complex*)modem_arb256opt,256);
-    return mod;
+    MODEM() q = MODEM(_create_arb)(8);
+    MODEM(_arb_init)(q,(TC*)MODEM(_arb256opt),256);
+    return q;
 }
 
 // create an arb64vt (64-qam vt logo) modem object
-modem modem_create_arb64vt()
+MODEM() MODEM(_create_arb64vt)()
 {
-    modem mod = modem_create_arb(6);
-    modem_arb_init(mod,(float complex*)modem_arb_vt64,64);
-    return mod;
+    MODEM() q = MODEM(_create_arb)(6);
+    MODEM(_arb_init)(q,(TC*)MODEM(_arb_vt64),64);
+    return q;
 }
 
 // initialize an arbitrary modem object
 //  _mod        :   modem object
 //  _symbol_map :   arbitrary modem symbol map
 //  _len        :   number of symbols in the map
-void modem_arb_init(modem _mod,
-                    float complex *_symbol_map,
-                    unsigned int _len)
+void MODEM(_arb_init)(MODEM()      _q,
+                      TC *         _symbol_map,
+                      unsigned int _len)
 {
 #ifdef LIQUID_VALIDATE_INPUT
-    if (_mod->scheme != LIQUID_MODEM_ARB) {
+    if (_q->scheme != LIQUID_MODEM_ARB) {
         fprintf(stderr,"error: modem_arb_init(), modem is not of arbitrary type\n");
         exit(1);
-    } else if (_len != _mod->M) {
+    } else if (_len != _q->M) {
         fprintf(stderr,"error: modem_arb_init(), array sizes do not match\n");
         exit(1);
     }
@@ -185,22 +185,22 @@ void modem_arb_init(modem _mod,
 
     unsigned int i;
     for (i=0; i<_len; i++)
-        _mod->symbol_map[i] = _symbol_map[i];
+        _q->symbol_map[i] = _symbol_map[i];
 
     // balance I/Q channels
-    if (_mod->scheme == LIQUID_MODEM_ARB)
-        modem_arb_balance_iq(_mod);
+    if (_q->scheme == LIQUID_MODEM_ARB)
+        MODEM(_arb_balance_iq)(_q);
 
     // scale modem to have unity energy
-    modem_arb_scale(_mod);
+    MODEM(_arb_scale)(_q);
 
 }
 
 // initialize an arbitrary modem object on a file
 //  _mod        :   modem object
 //  _filename   :   name of the data file
-void modem_arb_init_file(modem _mod,
-                         char * _filename)
+void MODEM(_arb_init_file)(MODEM() _q,
+                           char *  _filename)
 {
     // try to open file
     FILE * fid = fopen(_filename, "r");
@@ -210,15 +210,15 @@ void modem_arb_init_file(modem _mod,
     }
 
     unsigned int i, results;
-    float sym_i, sym_q;
-    for (i=0; i<_mod->M; i++) {
+    T sym_i, sym_q;
+    for (i=0; i<_q->M; i++) {
         if ( feof(fid) ) {
             fprintf(stderr,"error: modem_arb_init_file(), premature EOF for '%s'\n", _filename);
             exit(1);
         }
 
         results = fscanf(fid, "%f %f\n", &sym_i, &sym_q);
-        _mod->symbol_map[i] = sym_i + _Complex_I*sym_q;
+        _q->symbol_map[i] = sym_i + _Complex_I*sym_q;
 
         // ensure proper number of symbols were read
         if (results < 2) {
@@ -230,79 +230,79 @@ void modem_arb_init_file(modem _mod,
     fclose(fid);
 
     // balance I/Q channels
-    if (_mod->scheme == LIQUID_MODEM_ARB)
-        modem_arb_balance_iq(_mod);
+    if (_q->scheme == LIQUID_MODEM_ARB)
+        MODEM(_arb_balance_iq)(_q);
 
     // scale modem to have unity energy
-    modem_arb_scale(_mod);
+    MODEM(_arb_scale)(_q);
 }
 
 // scale arbitrary modem constellation points
-void modem_arb_scale(modem _mod)
+void MODEM(_arb_scale)(MODEM() _q)
 {
     unsigned int i;
 
     // calculate energy
-    float mag, e = 0.0f;
-    for (i=0; i<_mod->M; i++) {
-        mag = cabsf(_mod->symbol_map[i]);
+    T mag, e = 0.0f;
+    for (i=0; i<_q->M; i++) {
+        mag = cabsf(_q->symbol_map[i]);
         e += mag*mag;
     }
 
-    e = sqrtf( e / _mod->M );
+    e = sqrtf( e / _q->M );
 
-    for (i=0; i<_mod->M; i++) {
-        _mod->symbol_map[i] /= e;
+    for (i=0; i<_q->M; i++) {
+        _q->symbol_map[i] /= e;
     }
 }
 
 // balance an arbitrary modem's I/Q points
-void modem_arb_balance_iq(modem _mod)
+void MODEM(_arb_balance_iq)(MODEM() _q)
 {
-    float complex mean=0.0f;
+    TC mean=0.0f;
     unsigned int i;
 
     // accumulate average signal
-    for (i=0; i<_mod->M; i++) {
-        mean += _mod->symbol_map[i];
+    for (i=0; i<_q->M; i++) {
+        mean += _q->symbol_map[i];
     }
-    mean /= (float) (_mod->M);
+    mean /= (T) (_q->M);
 
     // subtract mean value from reference levels
-    for (i=0; i<_mod->M; i++) {
-        _mod->symbol_map[i] -= mean;
+    for (i=0; i<_q->M; i++) {
+        _q->symbol_map[i] -= mean;
     }
 }
 
 // demodulate arbitrary modem type (soft)
-void modem_demodulate_soft_arb(modem _demod,
-                               float complex _r,
-                               unsigned int  * _s,
-                               unsigned char * _soft_bits)
+void MODEM(_demodulate_soft_arb)(MODEM()         _q,
+                                 TC              _r,
+                                 unsigned int  * _s,
+                                 unsigned char * _soft_bits)
 {
-    unsigned int bps = _demod->m;
-    unsigned int M   = _demod->M;
+    unsigned int bps = _q->m;
+    unsigned int M   = _q->M;
 
     // gamma = 1/(2*sigma^2), approximate for constellation size
-    float gamma = 1.2f*_demod->M;
+    T gamma = 1.2f*_q->M;
 
     unsigned int s=0;       // hard decision output
     unsigned int k;         // bit index
     unsigned int i;         // symbol index
-    float d;                // distance for this symbol
-    float complex x_hat;    // re-modulated symbol
+    T d;                // distance for this symbol
+    TC x_hat;    // re-modulated symbol
 
-    float dmin_0[bps];
-    float dmin_1[bps];
+    T dmin_0[bps];
+    T dmin_1[bps];
     for (k=0; k<bps; k++) {
         dmin_0[k] = 4.0f;
         dmin_1[k] = 4.0f;
     }
-    float dmin = 0.0f;
+    T dmin = 0.0f;
 
     for (i=0; i<M; i++) {
         // compute distance from received symbol
-        x_hat = _demod->symbol_map[i];
+        x_hat = _q->symbol_map[i];
         d = crealf( (_r-x_hat)*conjf(_r-x_hat) );
 
         // set hard-decision...
@@ -335,7 +335,7 @@ void modem_demodulate_soft_arb(modem _demod,
     *_s = s;
 
     // re-modulate symbol and store state
-    modem_modulate_arb(_demod, *_s, &_demod->x_hat);
-    _demod->r = _r;
+    MODEM(_modulate_arb)(_q, *_s, &_q->x_hat);
+    _q->r = _r;
 }
 
