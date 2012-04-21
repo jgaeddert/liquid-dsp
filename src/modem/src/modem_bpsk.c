@@ -32,52 +32,52 @@
 #include "liquid.internal.h"
 
 // create a bpsk (binary phase-shift keying) modem object
-modem modem_create_bpsk()
+MODEM() MODEM(_create_bpsk)()
 {
-    modem mod = (modem) malloc( sizeof(struct modem_s) );
-    mod->scheme = LIQUID_MODEM_BPSK;
+    MODEM() q = (MODEM()) malloc( sizeof(struct MODEM(_s)) );
+    q->scheme = LIQUID_MODEM_BPSK;
 
-    modem_init(mod, 1);
+    MODEM(_init)(q, 1);
 
-    mod->modulate_func = &modem_modulate_bpsk;
-    mod->demodulate_func = &modem_demodulate_bpsk;
+    q->modulate_func   = &MODEM(_modulate_bpsk);
+    q->demodulate_func = &MODEM(_demodulate_bpsk);
 
-    return mod;
+    return q;
 }
 
 // modulate BPSK
-void modem_modulate_bpsk(modem _mod,
-                         unsigned int symbol_in,
-                         float complex *y)
+void MODEM(_modulate_bpsk)(MODEM()      _q,
+                           unsigned int _sym_in,
+                           TC *         _y)
 {
     // compute output sample directly from input
-    *y = symbol_in ? -1.0f : 1.0f;
+    *_y = _sym_in ? -1.0f : 1.0f;
 }
 
 // demodulate BPSK
-void modem_demodulate_bpsk(modem _demod,
-                           float complex _x,
-                           unsigned int * _symbol_out)
+void MODEM(_demodulate_bpsk)(MODEM()        _q,
+                             TC             _x,
+                             unsigned int * _sym_out)
 {
     // slice directly to output symbol
-    *_symbol_out = (crealf(_x) > 0 ) ? 0 : 1;
+    *_sym_out = (crealf(_x) > 0 ) ? 0 : 1;
 
     // re-modulate symbol and store state
-    modem_modulate_bpsk(_demod, *_symbol_out, &_demod->x_hat);
-    _demod->r = _x;
+    MODEM(_modulate_bpsk)(_q, *_sym_out, &_q->x_hat);
+    _q->r = _x;
 }
 
 // demodulate BPSK (soft)
-void modem_demodulate_soft_bpsk(modem _demod,
-                                float complex _x,
-                                unsigned int  * _s,
-                                unsigned char * _soft_bits)
+void MODEM(_demodulate_soft_bpsk)(MODEM()         _q,
+                                  TC              _x,
+                                  unsigned int  * _s,
+                                  unsigned char * _soft_bits)
 {
     // gamma = 1/(2*sigma^2), approximate for constellation size
-    float gamma = 4.0f;
+    T gamma = 4.0f;
 
     // approximate log-likelihood ratio
-    float LLR = -2.0f * crealf(_x) * gamma;
+    T LLR = -2.0f * crealf(_x) * gamma;
     int soft_bit = LLR*16 + 127;
     if (soft_bit > 255) soft_bit = 255;
     if (soft_bit <   0) soft_bit = 0;
@@ -85,8 +85,8 @@ void modem_demodulate_soft_bpsk(modem _demod,
 
     // re-modulate symbol and store state
     unsigned int symbol_out = (crealf(_x) > 0 ) ? 0 : 1;
-    modem_modulate_bpsk(_demod, symbol_out, &_demod->x_hat);
-    _demod->r = _x;
+    MODEM(_modulate_bpsk)(_q, symbol_out, &_q->x_hat);
+    _q->r = _x;
     *_s = symbol_out;
 }
 
