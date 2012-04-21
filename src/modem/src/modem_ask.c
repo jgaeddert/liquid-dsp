@@ -24,28 +24,28 @@
 //
 
 // create an ask (amplitude-shift keying) modem object
-modem modem_create_ask(unsigned int _bits_per_symbol)
+modem MODEM(_create_ask)(unsigned int _bits_per_symbol)
 {
-    modem mod = (modem) malloc( sizeof(struct modem_s) );
+    MODEM() q = (MODEM()) malloc( sizeof(struct MODEM(_s)) );
 
-    modem_init(mod, _bits_per_symbol);
+    MODEM(_init)(q, _bits_per_symbol);
 
-    mod->m_i = mod->m;
-    mod->M_i = mod->M;
+    q->m_i = q->m;
+    q->M_i = q->M;
 
-    switch (mod->M) {
-    case 2:     mod->alpha = ASK2_ALPHA;   mod->scheme = LIQUID_MODEM_ASK2;   break;
-    case 4:     mod->alpha = ASK4_ALPHA;   mod->scheme = LIQUID_MODEM_ASK4;   break;
-    case 8:     mod->alpha = ASK8_ALPHA;   mod->scheme = LIQUID_MODEM_ASK8;   break;
-    case 16:    mod->alpha = ASK16_ALPHA;  mod->scheme = LIQUID_MODEM_ASK16;  break;
-    case 32:    mod->alpha = ASK32_ALPHA;  mod->scheme = LIQUID_MODEM_ASK32;  break;
-    case 64:    mod->alpha = ASK64_ALPHA;  mod->scheme = LIQUID_MODEM_ASK64;  break;
-    case 128:   mod->alpha = ASK128_ALPHA; mod->scheme = LIQUID_MODEM_ASK128; break;
-    case 256:   mod->alpha = ASK256_ALPHA; mod->scheme = LIQUID_MODEM_ASK256; break;
+    switch (q->M) {
+    case 2:     q->alpha = ASK2_ALPHA;   q->scheme = LIQUID_MODEM_ASK2;   break;
+    case 4:     q->alpha = ASK4_ALPHA;   q->scheme = LIQUID_MODEM_ASK4;   break;
+    case 8:     q->alpha = ASK8_ALPHA;   q->scheme = LIQUID_MODEM_ASK8;   break;
+    case 16:    q->alpha = ASK16_ALPHA;  q->scheme = LIQUID_MODEM_ASK16;  break;
+    case 32:    q->alpha = ASK32_ALPHA;  q->scheme = LIQUID_MODEM_ASK32;  break;
+    case 64:    q->alpha = ASK64_ALPHA;  q->scheme = LIQUID_MODEM_ASK64;  break;
+    case 128:   q->alpha = ASK128_ALPHA; q->scheme = LIQUID_MODEM_ASK128; break;
+    case 256:   q->alpha = ASK256_ALPHA; q->scheme = LIQUID_MODEM_ASK256; break;
     default:
 #if 0
         // calculate alpha dynamically
-        mod->alpha = expf(-0.70735 + 0.63653*mod->m);
+        q->alpha = expf(-0.70735 + 0.63653*q->m);
 #else
         fprintf(stderr,"error: modem_create_ask(), cannot support ASK with m > 8\n");
         exit(1);
@@ -53,54 +53,54 @@ modem modem_create_ask(unsigned int _bits_per_symbol)
     }
 
     unsigned int k;
-    for (k=0; k<(mod->m); k++)
-        mod->ref[k] = (1<<k) * mod->alpha;
+    for (k=0; k<(q->m); k++)
+        q->ref[k] = (1<<k) * q->alpha;
 
-    mod->modulate_func = &modem_modulate_ask;
-    mod->demodulate_func = &modem_demodulate_ask;
+    q->modulate_func = &MODEM(_modulate_ask);
+    q->demodulate_func = &MODEM(_demodulate_ask);
 
     // soft demodulation
-    if (mod->m == 2) {
-        mod->demod_soft_neighbors = (unsigned char*) ask4_demod_soft_neighbors;
-        mod->demod_soft_p         = 2;
-    } else if (mod->m == 3) {
-        mod->demod_soft_neighbors = (unsigned char*) ask8_demod_soft_neighbors;
-        mod->demod_soft_p         = 2;
-    } else if (mod->m == 4) {
-        mod->demod_soft_neighbors = (unsigned char*) ask16_demod_soft_neighbors;
-        mod->demod_soft_p         = 2;
+    if (q->m == 2) {
+        q->demod_soft_neighbors = (unsigned char*) ask4_demod_soft_neighbors;
+        q->demod_soft_p         = 2;
+    } else if (q->m == 3) {
+        q->demod_soft_neighbors = (unsigned char*) ask8_demod_soft_neighbors;
+        q->demod_soft_p         = 2;
+    } else if (q->m == 4) {
+        q->demod_soft_neighbors = (unsigned char*) ask16_demod_soft_neighbors;
+        q->demod_soft_p         = 2;
     }
 
-    return mod;
+    return q;
 }
 
 // modulate ASK
-void modem_modulate_ask(modem _mod,
-                        unsigned int symbol_in,
-                        float complex *y)
+void MODEM(_modulate_ask)(MODEM()      _q,
+                          unsigned int _sym_in,
+                          TC *         _y)
 {
     // 'encode' input symbol (actually gray decoding)
-    symbol_in = gray_decode(symbol_in);
+    _sym_in = gray_decode(_sym_in);
 
     // modulate symbol
-    *y = (2*(int)symbol_in - (int)(_mod->M) + 1) * _mod->alpha;
+    *_y = (2*(int)_sym_in - (int)(_q->M) + 1) * _q->alpha;
 }
 
 // demodulate ASK
-void modem_demodulate_ask(modem _demod,
-                          float complex _x,
-                          unsigned int * _symbol_out)
+void MODEM(_demodulate_ask)(MODEM()        _q,
+                            TC             _x,
+                            unsigned int * _sym_out)
 {
     // demodulate on linearly-spaced array
     unsigned int s;
-    float res_i;
-    modem_demodulate_linear_array_ref(crealf(_x), _demod->m, _demod->ref, &s, &res_i);
+    T res_i;
+    MODEM(_demodulate_linear_array_ref)(crealf(_x), _q->m, _q->ref, &s, &res_i);
 
     // 'decode' output symbol (actually gray encoding)
-    *_symbol_out = gray_encode(s);
+    *_sym_out = gray_encode(s);
 
     // re-modulate symbol and store state
-    modem_modulate_ask(_demod, *_symbol_out, &_demod->x_hat);
-    _demod->r = _x;
+    MODEM(_modulate_ask)(_q, *_sym_out, &_q->x_hat);
+    _q->r = _x;
 }
 
