@@ -22,6 +22,7 @@
 // modemf.c : linear modem API, floating-point (single precision)
 //
 
+#include <math.h>
 #include "liquid.internal.h"
 
 // Macro definitions
@@ -33,18 +34,28 @@
 #define PRINTVAL_T(X,F)     PRINTVAL_FLOAT(X,F)
 #define PRINTVAL_TC(X,F)    PRINTVAL_CFLOAT(X,F)
 
-// include main files
-#include "modem_common.c"           // common source must come first (object definition)
-#include "modem_apsk_const.c"       // 
-#include "modem_arb_const.c"        // 
-#include "modem_create.c"           // 
-#include "modem_demod_soft_const.c" // 
-#include "modem_demodulate.c"       // 
-#include "modem_demodulate_soft.c"  // 
-#include "modem_modulate.c"         // 
-#include "modem_arb16opt_const.c"   // 
-#include "modem_arb32opt_const.c"   // 
-#include "modem_arb64opt_const.c"   // 
-#include "modem_arb128opt_const.c"  // 
-#include "modem_arb256opt_const.c"  // 
+// common source must come first (object definition)
+#include "modem_common.c"
+
+// constants
+#include "modem_apsk_const.c"
+#include "modem_arb_const.c"
+#include "modem_demod_soft_const.c"
+
+// generic modem specifications
+#include "modem_psk.c"
+#include "modem_dpsk.c"
+#include "modem_ask.c"
+#include "modem_qam.c"
+#include "modem_apsk.c"
+
+// specific modems
+#include "modem_bpsk.c"
+#include "modem_qpsk.c"
+#include "modem_ook.c"
+#include "modem_sqam32.c"
+#include "modem_sqam128.c"
+
+// arbitary modems
+#include "modem_arb.c"
 

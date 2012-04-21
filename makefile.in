@@ -627,16 +627,18 @@ modem_includes :=						\
 	src/modem/src/modem_common.c				\
 	src/modem/src/modem_apsk_const.c			\
 	src/modem/src/modem_arb_const.c				\
-	src/modem/src/modem_create.c				\
 	src/modem/src/modem_demod_soft_const.c			\
-	src/modem/src/modem_demodulate.c			\
-	src/modem/src/modem_demodulate_soft.c			\
-	src/modem/src/modem_modulate.c				\
-	src/modem/src/modem_arb16opt_const.c			\
-	src/modem/src/modem_arb32opt_const.c			\
-	src/modem/src/modem_arb64opt_const.c			\
-	src/modem/src/modem_arb128opt_const.c			\
-	src/modem/src/modem_arb256opt_const.c			\
+	src/modem/src/modem_psk.c				\
+	src/modem/src/modem_dpsk.c				\
+	src/modem/src/modem_ask.c				\
+	src/modem/src/modem_qam.c				\
+	src/modem/src/modem_apsk.c				\
+	src/modem/src/modem_bpsk.c				\
+	src/modem/src/modem_qpsk.c				\
+	src/modem/src/modem_ook.c				\
+	src/modem/src/modem_sqam32.c				\
+	src/modem/src/modem_sqam128.c				\
+	src/modem/src/modem_arb.c				\
 
 # main modem object
 src/modem/src/modemf.o : %.o : %.c $(headers) $(modem_includes)
