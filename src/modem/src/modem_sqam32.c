@@ -23,36 +23,36 @@
 // modem_sqam32.c
 //
 
-// create a 'square' 32-QAM (on/off keying) modem object
-modem modem_create_sqam32()
+// create a 'square' 32-QAM modem object
+MODEM() MODEM(_create_sqam32)()
 {
-    modem q = (modem) malloc( sizeof(struct modem_s) );
+    MODEM() q = (MODEM()) malloc( sizeof(struct MODEM(_s)) );
     q->scheme = LIQUID_MODEM_SQAM32;
 
-    modem_init(q, 5);
+    MODEM(_init)(q, 5);
 
     // allocate memory for 8-point symbol map
-    q->symbol_map = (float complex*) malloc( 8*sizeof(float complex) );
-    memmove(q->symbol_map, modem_arb_sqam32, 8*sizeof(float complex));
+    q->symbol_map = (TC*) malloc( 8*sizeof(TC) );
+    memmove(q->symbol_map, MODEM(_arb_sqam32), 8*sizeof(TC));
 
     // set modulation, demodulation functions
-    q->modulate_func = &modem_modulate_sqam32;
-    q->demodulate_func = &modem_demodulate_sqam32;
+    q->modulate_func   = &MODEM(_modulate_sqam32);
+    q->demodulate_func = &MODEM(_demodulate_sqam32);
 
     return q;
 }
 
 // modulate symbol with 'square' 32-QAM
-void modem_modulate_sqam32(modem _q,
-                           unsigned int _symbol_in,
-                           float complex * _y)
+void MODEM(_modulate_sqam32)(MODEM()      _q,
+                             unsigned int _sym_in,
+                             TC *         _y)
 {
     // strip off most-significant two bits (quadrant)
-    unsigned int quad = (_symbol_in >> 3) & 0x03;
+    unsigned int quad = (_sym_in >> 3) & 0x03;
     
     // strip off least-significant 3 bits
-    unsigned int s = _symbol_in & 0x07;
-    float complex p = _q->symbol_map[s];
+    unsigned int s = _sym_in & 0x07;
+    TC p = _q->symbol_map[s];
     
     switch (quad) {
     case 0: *_y =  p;           return;
@@ -67,9 +67,9 @@ void modem_modulate_sqam32(modem _q,
 }
 
 // demodulate 'square' 32-QAM
-void modem_demodulate_sqam32(modem _q,
-                             float complex _x,
-                             unsigned int * _symbol_out)
+void MODEM(_demodulate_sqam32)(MODEM()        _q,
+                               TC             _x,
+                               unsigned int * _sym_out)
 {
     // determine quadrant and de-rotate to first quadrant
     // 10 | 00
@@ -77,7 +77,7 @@ void modem_demodulate_sqam32(modem _q,
     // 11 | 01
     unsigned int quad = 2*(crealf(_x) < 0.0f) + (cimagf(_x) < 0.0f);
     
-    float complex x_prime = _x;
+    TC x_prime = _x;
     switch (quad) {
     case 0: x_prime = _x;           break;
     case 1: x_prime =  conjf(_x);   break;
@@ -94,24 +94,24 @@ void modem_demodulate_sqam32(modem _q,
     assert(cimagf(x_prime) >= 0.0f);
 
     // find symbol in map closest to x_prime
-    float dmin = 0.0f;
-    float d = 0.0f;
-    float complex x_hat = 0.0f;
+    T dmin = 0.0f;
+    T d = 0.0f;
+    TC x_hat = 0.0f;
     unsigned int i;
     for (i=0; i<8; i++) {
         d = cabsf(x_prime - _q->symbol_map[i]);
         if (i==0 || d < dmin) {
             dmin = d;
-            *_symbol_out = i;
+            *_sym_out = i;
             x_hat = _q->symbol_map[i];
         }
     }
 
     // add quadrant bits
-    *_symbol_out |= (quad << 3);
+    *_sym_out |= (quad << 3);
 
     // re-modulate symbol and store state
-    modem_modulate_sqam32(_q, *_symbol_out, &_q->x_hat);
+    MODEM(_modulate_sqam32)(_q, *_sym_out, &_q->x_hat);
     _q->r = _x;
 }
 
