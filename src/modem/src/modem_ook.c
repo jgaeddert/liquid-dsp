@@ -32,38 +32,38 @@
 #include "liquid.internal.h"
 
 // create an ook (on/off keying) modem object
-modem modem_create_ook()
+MODEM() MODEM(_create_ook)()
 {
-    modem mod = (modem) malloc( sizeof(struct modem_s) );
-    mod->scheme = LIQUID_MODEM_OOK;
+    MODEM() q = (MODEM()) malloc( sizeof(struct MODEM(_s)) );
+    q->scheme = LIQUID_MODEM_OOK;
 
-    modem_init(mod, 1);
+    MODEM(_init)(q, 1);
 
-    mod->modulate_func = &modem_modulate_ook;
-    mod->demodulate_func = &modem_demodulate_ook;
+    q->modulate_func   = &MODEM(_modulate_ook);
+    q->demodulate_func = &MODEM(_demodulate_ook);
 
-    return mod;
+    return q;
 }
 
 // modulate symbol using on/off keying
-void modem_modulate_ook(modem _q,
-                        unsigned int symbol_in,
-                        float complex *y)
+void MODEM(_modulate_ook)(MODEM()         _q,
+                          unsigned int    _sym_in,
+                          float complex * _y)
 {
     // compute output sample directly from input
-    *y = symbol_in ? 0.0f : M_SQRT2;
+    *_y = _sym_in ? 0.0f : M_SQRT2;
 }
 
 // demodulate OOK
-void modem_demodulate_ook(modem _demod,
-                          float complex _x,
-                          unsigned int * _symbol_out)
+void MODEM(_demodulate_ook)(MODEM()        _q,
+                            float complex  _x,
+                            unsigned int * _sym_out)
 {
     // slice directly to output symbol
-    *_symbol_out = (crealf(_x) > M_SQRT1_2 ) ? 0 : 1;
+    *_sym_out = (crealf(_x) > M_SQRT1_2 ) ? 0 : 1;
 
     // re-modulate symbol and store state
-    modem_modulate_ook(_demod, *_symbol_out, &_demod->x_hat);
-    _demod->r = _x;
+    MODEM(_modulate_ook)(_q, *_sym_out, &_q->x_hat);
+    _q->r = _x;
 }
 
