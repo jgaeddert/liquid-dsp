@@ -32,55 +32,55 @@
 #include "liquid.internal.h"
 
 // create a qpsk (quaternary phase-shift keying) modem object
-modem modem_create_qpsk()
+MODEM() MODEM(_create_qpsk)()
 {
-    modem mod = (modem) malloc( sizeof(struct modem_s) );
-    mod->scheme = LIQUID_MODEM_QPSK;
+    MODEM() q = (MODEM()) malloc( sizeof(struct MODEM(_s)) );
+    q->scheme = LIQUID_MODEM_QPSK;
 
-    modem_init(mod, 2);
+    MODEM(_init)(q, 2);
 
-    mod->modulate_func = &modem_modulate_qpsk;
-    mod->demodulate_func = &modem_demodulate_qpsk;
+    q->modulate_func   = &MODEM(_modulate_qpsk);
+    q->demodulate_func = &MODEM(_demodulate_qpsk);
 
-    return mod;
+    return q;
 }
 
 
 // modulate QPSK
-void modem_modulate_qpsk(modem _mod,
-                         unsigned int symbol_in,
-                         float complex *y)
+void MODEM(_modulate_qpsk)(MODEM()      _q,
+                           unsigned int _sym_in,
+                           TC *         _y)
 {
     // compute output sample directly from input
-    *y  = (symbol_in & 0x01 ? -M_SQRT1_2 : M_SQRT1_2) +
-          (symbol_in & 0x02 ? -M_SQRT1_2 : M_SQRT1_2)*_Complex_I;
+    *_y  = (_sym_in & 0x01 ? -M_SQRT1_2 : M_SQRT1_2) +
+           (_sym_in & 0x02 ? -M_SQRT1_2 : M_SQRT1_2)*_Complex_I;
 }
 
 // demodulate QPSK
-void modem_demodulate_qpsk(modem _demod,
-                           float complex _x,
-                           unsigned int * _symbol_out)
+void MODEM(_demodulate_qpsk)(MODEM() _q,
+                             TC _x,
+                             unsigned int * _sym_out)
 {
     // slice directly to output symbol
-    *_symbol_out  = (crealf(_x) > 0 ? 0 : 1) +
+    *_sym_out  = (crealf(_x) > 0 ? 0 : 1) +
                     (cimagf(_x) > 0 ? 0 : 2);
 
     // re-modulate symbol and store state
-    modem_modulate_qpsk(_demod, *_symbol_out, &_demod->x_hat);
-    _demod->r = _x;
+    MODEM(_modulate_qpsk)(_q, *_sym_out, &_q->x_hat);
+    _q->r = _x;
 }
 
 // demodulate QPSK (soft)
-void modem_demodulate_soft_qpsk(modem _demod,
-                                float complex _x,
-                                unsigned int  * _s,
-                                unsigned char * _soft_bits)
+void MODEM(_demodulate_soft_qpsk)(MODEM()         _q,
+                                  TC              _x,
+                                  unsigned int  * _s,
+                                  unsigned char * _soft_bits)
 {
     // gamma = 1/(2*sigma^2), approximate for constellation size
-    float gamma = 5.8f;
+    T gamma = 5.8f;
 
     // approximate log-likelihood ratios
-    float LLR;
+    T LLR;
     int soft_bit;
     
     // compute soft value for first bit
@@ -100,7 +100,7 @@ void modem_demodulate_soft_qpsk(modem _demod,
     // re-modulate symbol and store state
     *_s  = (crealf(_x) > 0 ? 0 : 1) +
            (cimagf(_x) > 0 ? 0 : 2);
-    modem_modulate_qpsk(_demod, *_s, &_demod->x_hat);
-    _demod->r = _x;
+    MODEM(_modulate_qpsk)(_q, *_s, &_q->x_hat);
+    _q->r = _x;
 }
 
