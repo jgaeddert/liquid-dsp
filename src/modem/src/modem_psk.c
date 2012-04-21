@@ -24,95 +24,95 @@
 //
 
 // create a psk (phase-shift keying) modem object
-modem modem_create_psk(unsigned int _bits_per_symbol)
+MODEM() MODEM(_create_psk)(unsigned int _bits_per_symbol)
 {
-    modem mod = (modem) malloc( sizeof(struct modem_s) );
+    MODEM() q = (MODEM()) malloc( sizeof(struct MODEM(_s)) );
 
     switch (_bits_per_symbol) {
-    case 1: mod->scheme = LIQUID_MODEM_PSK2;   break;
-    case 2: mod->scheme = LIQUID_MODEM_PSK4;   break;
-    case 3: mod->scheme = LIQUID_MODEM_PSK8;   break;
-    case 4: mod->scheme = LIQUID_MODEM_PSK16;  break;
-    case 5: mod->scheme = LIQUID_MODEM_PSK32;  break;
-    case 6: mod->scheme = LIQUID_MODEM_PSK64;  break;
-    case 7: mod->scheme = LIQUID_MODEM_PSK128; break;
-    case 8: mod->scheme = LIQUID_MODEM_PSK256; break;
+    case 1: q->scheme = LIQUID_MODEM_PSK2;   break;
+    case 2: q->scheme = LIQUID_MODEM_PSK4;   break;
+    case 3: q->scheme = LIQUID_MODEM_PSK8;   break;
+    case 4: q->scheme = LIQUID_MODEM_PSK16;  break;
+    case 5: q->scheme = LIQUID_MODEM_PSK32;  break;
+    case 6: q->scheme = LIQUID_MODEM_PSK64;  break;
+    case 7: q->scheme = LIQUID_MODEM_PSK128; break;
+    case 8: q->scheme = LIQUID_MODEM_PSK256; break;
     default:
         fprintf(stderr,"error: modem_create_psk(), cannot support PSK with m > 8\n");
         exit(1);
     }
 
     // initialize basic modem structure
-    modem_init(mod, _bits_per_symbol);
+    MODEM(_init)(q, _bits_per_symbol);
 
     // compute alpha
-    mod->alpha = M_PI/(float)(mod->M);
+    q->alpha = M_PI/(T)(q->M);
 
     // initialize demodulation array reference
     unsigned int k;
-    for (k=0; k<(mod->m); k++)
-        mod->ref[k] = (1<<k) * mod->alpha;
+    for (k=0; k<(q->m); k++)
+        q->ref[k] = (1<<k) * q->alpha;
 
     // compute phase offset (half of phase difference between symbols)
-    mod->d_phi = M_PI*(1.0f - 1.0f/(float)(mod->M));
+    q->d_phi = M_PI*(1.0f - 1.0f/(T)(q->M));
 
     // set modulation/demodulation functions
-    mod->modulate_func = &modem_modulate_psk;
-    mod->demodulate_func = &modem_demodulate_psk;
+    q->modulate_func = &MODEM(_modulate_psk);
+    q->demodulate_func = &MODEM(_demodulate_psk);
 
     // initialize symbol map
-    mod->symbol_map = (float complex*)malloc(mod->M*sizeof(float complex));
-    modem_init_map(mod);
-    mod->modulate_using_map = 1;
+    q->symbol_map = (TC*)malloc(q->M*sizeof(TC));
+    MODEM(_init_map)(q);
+    q->modulate_using_map = 1;
 
     // soft demodulation
-    if (mod->m == 3) {
-        mod->demod_soft_neighbors = (unsigned char*) psk8_demod_soft_neighbors;
-        mod->demod_soft_p         = 2;
-    } else if (mod->m == 4) {
-        mod->demod_soft_neighbors = (unsigned char*) psk16_demod_soft_neighbors;
-        mod->demod_soft_p         = 2;
-    } else if (mod->m == 5) {
-        mod->demod_soft_neighbors = (unsigned char*) psk32_demod_soft_neighbors;
-        mod->demod_soft_p         = 2;
+    if (q->m == 3) {
+        q->demod_soft_neighbors = (unsigned char*) psk8_demod_soft_neighbors;
+        q->demod_soft_p         = 2;
+    } else if (q->m == 4) {
+        q->demod_soft_neighbors = (unsigned char*) psk16_demod_soft_neighbors;
+        q->demod_soft_p         = 2;
+    } else if (q->m == 5) {
+        q->demod_soft_neighbors = (unsigned char*) psk32_demod_soft_neighbors;
+        q->demod_soft_p         = 2;
     }
 
-    return mod;
+    return q;
 }
 
 // modulate PSK
-void modem_modulate_psk(modem _mod,
-                        unsigned int symbol_in,
-                        float complex *y)
+void MODEM(_modulate_psk)(MODEM()      _q,
+                          unsigned int _sym_in,
+                          TC *         _y)
 {
     // 'encode' input symbol (actually gray decoding)
-    symbol_in = gray_decode(symbol_in);
+    _sym_in = gray_decode(_sym_in);
 
     // compute output sample
-    *y = liquid_cexpjf(symbol_in * 2 * _mod->alpha );
+    *_y = liquid_cexpjf(_sym_in * 2 * _q->alpha );
 }
 
 // demodulate PSK
-void modem_demodulate_psk(modem _demod,
-                          float complex x,
-                          unsigned int *_symbol_out)
+void MODEM(_demodulate_psk)(MODEM()        _q,
+                            TC             _x,
+                            unsigned int * _sym_out)
 {
     // compute angle and subtract phase offset, ensuring phase is in [-pi,pi)
-    float theta = cargf(x);
-    theta -= _demod->d_phi;
+    T theta = cargf(_x);
+    theta -= _q->d_phi;
     if (theta < -M_PI)
         theta += 2*M_PI;
 
     // demodulate on linearly-spaced array
     unsigned int s;             // demodulated symbol
-    float demod_phase_error;    // demodulation phase error
-    modem_demodulate_linear_array_ref(theta, _demod->m, _demod->ref, &s, &demod_phase_error);
+    T demod_phase_error;        // demodulation phase error
+    MODEM(_demodulate_linear_array_ref)(theta, _q->m, _q->ref, &s, &demod_phase_error);
 
     // 'decode' output symbol (actually gray encoding)
-    *_symbol_out = gray_encode(s);
+    *_sym_out = gray_encode(s);
 
     // re-modulate symbol and store state
-    modem_modulate_psk(_demod, *_symbol_out, &_demod->x_hat);
-    _demod->r = x;
+    MODEM(_modulate_psk)(_q, *_sym_out, &_q->x_hat);
+    _q->r = _x;
 }
 
