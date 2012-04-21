@@ -29,6 +29,8 @@
 
 #include "liquid.internal.h"
 
+#define DEBUG_DEMODULATE_SOFT 0
+
 // modem structure used for both modulation and demodulation 
 //
 // The modem structure implements a variety of common modulation schemes,
@@ -40,28 +42,28 @@
 // for differential-mode modems (e.g. LIQUID_MODEM_DPSK) as the internal state
 // will change after each symbol.  It is usually good practice to keep
 // separate instances of modulators and demodulators.
-struct modem_s {
+struct MODEM(_s) {
     modulation_scheme scheme;       // modulation scheme
 
     unsigned int m;                 // bits per symbol (modulation depth)
     unsigned int M;                 // constellation size, M=2^m
 
-    float alpha;                    // scaling factor to ensure unity energy
+    T alpha;                        // scaling factor to ensure unity energy
 
     // Reference vector for demodulating linear arrays
     //
     // By storing these values in an array they do not need to be
     // calculated during run-time.  This speeds up the demodulation by
     // approximately 8%.
-    float ref[MAX_MOD_BITS_PER_SYMBOL];
+    T ref[MAX_MOD_BITS_PER_SYMBOL];
 
     // modulation
-    float complex * symbol_map;     // complete symbol map
+    TC * symbol_map;     // complete symbol map
     int modulate_using_map;         // modulate using map (look-up table) flag
 
     // demodulation
-    float complex r;                // received state vector
-    float complex x_hat;            // estimated symbol (demodulator)
+    TC r;                // received state vector
+    TC x_hat;            // estimated symbol (demodulator)
 
     // QAM modem
     unsigned int m_i;               // bits per symbol, in-phase
@@ -70,25 +72,25 @@ struct modem_s {
     unsigned int M_q;               // quadrature dimension, M_q=2^{m_q}
 
     // PSK/DPSK modem
-    float d_phi;                    // half of phase between symbols
-    float dpsk_phi;                 // angle state for differential PSK
+    T d_phi;                        // half of phase between symbols
+    T dpsk_phi;                     // angle state for differential PSK
 
     // APSK modem
     unsigned int apsk_num_levels;   // number of levels
     unsigned int * apsk_p;          // number of symbols per level
-    float * apsk_r;                 // radii of levels
-    float * apsk_r_slicer;          // slicer radii of levels
-    float * apsk_phi;               // phase offset of levels
+    T * apsk_r;                     // radii of levels
+    T * apsk_r_slicer;              // slicer radii of levels
+    T * apsk_phi;                   // phase offset of levels
     unsigned int * apsk_symbol_map; // symbol mapping
 
     // modulate function pointer
-    void (*modulate_func)(modem _mod,
+    void (*modulate_func)(MODEM() _q,
                           unsigned int _symbol_in,
-                          float complex * _y);
+                          TC * _y);
 
     // demodulate function pointer
-    void (*demodulate_func)(modem _demod,
-                            float complex _x,
+    void (*demodulate_func)(MODEM() _q,
+                            TC _x,
                             unsigned int * _symbol_out);
 
     // soft demodulation
@@ -99,71 +101,71 @@ struct modem_s {
 };
 
 // create digital modem of a specific scheme and bits/symbol
-modem modem_create(modulation_scheme _scheme)
+MODEM() MODEM(_create)(modulation_scheme _scheme)
 {
     switch (_scheme) {
     
     // Phase-shift keying (PSK)
-    case LIQUID_MODEM_PSK2:     return modem_create_psk(1);
-    case LIQUID_MODEM_PSK4:     return modem_create_psk(2);
-    case LIQUID_MODEM_PSK8:     return modem_create_psk(3);
-    case LIQUID_MODEM_PSK16:    return modem_create_psk(4);
-    case LIQUID_MODEM_PSK32:    return modem_create_psk(5);
-    case LIQUID_MODEM_PSK64:    return modem_create_psk(6);
-    case LIQUID_MODEM_PSK128:   return modem_create_psk(7);
-    case LIQUID_MODEM_PSK256:   return modem_create_psk(8);
+    case LIQUID_MODEM_PSK2:     return MODEM(_create_psk)(1);
+    case LIQUID_MODEM_PSK4:     return MODEM(_create_psk)(2);
+    case LIQUID_MODEM_PSK8:     return MODEM(_create_psk)(3);
+    case LIQUID_MODEM_PSK16:    return MODEM(_create_psk)(4);
+    case LIQUID_MODEM_PSK32:    return MODEM(_create_psk)(5);
+    case LIQUID_MODEM_PSK64:    return MODEM(_create_psk)(6);
+    case LIQUID_MODEM_PSK128:   return MODEM(_create_psk)(7);
+    case LIQUID_MODEM_PSK256:   return MODEM(_create_psk)(8);
 
     // Differential phase-shift keying (DPSK)
-    case LIQUID_MODEM_DPSK2:    return modem_create_dpsk(1);
-    case LIQUID_MODEM_DPSK4:    return modem_create_dpsk(2);
-    case LIQUID_MODEM_DPSK8:    return modem_create_dpsk(3);
-    case LIQUID_MODEM_DPSK16:   return modem_create_dpsk(4);
-    case LIQUID_MODEM_DPSK32:   return modem_create_dpsk(5);
-    case LIQUID_MODEM_DPSK64:   return modem_create_dpsk(6);
-    case LIQUID_MODEM_DPSK128:  return modem_create_dpsk(7);
-    case LIQUID_MODEM_DPSK256:  return modem_create_dpsk(8);
+    case LIQUID_MODEM_DPSK2:    return MODEM(_create_dpsk)(1);
+    case LIQUID_MODEM_DPSK4:    return MODEM(_create_dpsk)(2);
+    case LIQUID_MODEM_DPSK8:    return MODEM(_create_dpsk)(3);
+    case LIQUID_MODEM_DPSK16:   return MODEM(_create_dpsk)(4);
+    case LIQUID_MODEM_DPSK32:   return MODEM(_create_dpsk)(5);
+    case LIQUID_MODEM_DPSK64:   return MODEM(_create_dpsk)(6);
+    case LIQUID_MODEM_DPSK128:  return MODEM(_create_dpsk)(7);
+    case LIQUID_MODEM_DPSK256:  return MODEM(_create_dpsk)(8);
 
     // amplitude-shift keying (ASK)
-    case LIQUID_MODEM_ASK2:     return modem_create_ask(1);
-    case LIQUID_MODEM_ASK4:     return modem_create_ask(2);
-    case LIQUID_MODEM_ASK8:     return modem_create_ask(3);
-    case LIQUID_MODEM_ASK16:    return modem_create_ask(4);
-    case LIQUID_MODEM_ASK32:    return modem_create_ask(5);
-    case LIQUID_MODEM_ASK64:    return modem_create_ask(6);
-    case LIQUID_MODEM_ASK128:   return modem_create_ask(7);
-    case LIQUID_MODEM_ASK256:   return modem_create_ask(8);
+    case LIQUID_MODEM_ASK2:     return MODEM(_create_ask)(1);
+    case LIQUID_MODEM_ASK4:     return MODEM(_create_ask)(2);
+    case LIQUID_MODEM_ASK8:     return MODEM(_create_ask)(3);
+    case LIQUID_MODEM_ASK16:    return MODEM(_create_ask)(4);
+    case LIQUID_MODEM_ASK32:    return MODEM(_create_ask)(5);
+    case LIQUID_MODEM_ASK64:    return MODEM(_create_ask)(6);
+    case LIQUID_MODEM_ASK128:   return MODEM(_create_ask)(7);
+    case LIQUID_MODEM_ASK256:   return MODEM(_create_ask)(8);
 
     // rectangular quadrature amplitude-shift keying (QAM)
-    case LIQUID_MODEM_QAM4:     return modem_create_qam(2);
-    case LIQUID_MODEM_QAM8:     return modem_create_qam(3);
-    case LIQUID_MODEM_QAM16:    return modem_create_qam(4);
-    case LIQUID_MODEM_QAM32:    return modem_create_qam(5);
-    case LIQUID_MODEM_QAM64:    return modem_create_qam(6);
-    case LIQUID_MODEM_QAM128:   return modem_create_qam(7);
-    case LIQUID_MODEM_QAM256:   return modem_create_qam(8);
+    case LIQUID_MODEM_QAM4:     return MODEM(_create_qam)(2);
+    case LIQUID_MODEM_QAM8:     return MODEM(_create_qam)(3);
+    case LIQUID_MODEM_QAM16:    return MODEM(_create_qam)(4);
+    case LIQUID_MODEM_QAM32:    return MODEM(_create_qam)(5);
+    case LIQUID_MODEM_QAM64:    return MODEM(_create_qam)(6);
+    case LIQUID_MODEM_QAM128:   return MODEM(_create_qam)(7);
+    case LIQUID_MODEM_QAM256:   return MODEM(_create_qam)(8);
 
     // amplitude phase-shift keying (APSK)
-    case LIQUID_MODEM_APSK4:    return modem_create_apsk(2);
-    case LIQUID_MODEM_APSK8:    return modem_create_apsk(3);
-    case LIQUID_MODEM_APSK16:   return modem_create_apsk(4);
-    case LIQUID_MODEM_APSK32:   return modem_create_apsk(5);
-    case LIQUID_MODEM_APSK64:   return modem_create_apsk(6);
-    case LIQUID_MODEM_APSK128:  return modem_create_apsk(7);
-    case LIQUID_MODEM_APSK256:  return modem_create_apsk(8);
+    case LIQUID_MODEM_APSK4:    return MODEM(_create_apsk)(2);
+    case LIQUID_MODEM_APSK8:    return MODEM(_create_apsk)(3);
+    case LIQUID_MODEM_APSK16:   return MODEM(_create_apsk)(4);
+    case LIQUID_MODEM_APSK32:   return MODEM(_create_apsk)(5);
+    case LIQUID_MODEM_APSK64:   return MODEM(_create_apsk)(6);
+    case LIQUID_MODEM_APSK128:  return MODEM(_create_apsk)(7);
+    case LIQUID_MODEM_APSK256:  return MODEM(_create_apsk)(8);
 
     // specific modems
-    case LIQUID_MODEM_BPSK:      return modem_create_bpsk();
-    case LIQUID_MODEM_QPSK:      return modem_create_qpsk();
-    case LIQUID_MODEM_OOK:       return modem_create_ook();
-    case LIQUID_MODEM_SQAM32:    return modem_create_sqam32();
-    case LIQUID_MODEM_SQAM128:   return modem_create_sqam128();
-    case LIQUID_MODEM_V29:       return modem_create_V29();
-    case LIQUID_MODEM_ARB16OPT:  return modem_create_arb16opt();
-    case LIQUID_MODEM_ARB32OPT:  return modem_create_arb32opt();
-    case LIQUID_MODEM_ARB64OPT:  return modem_create_arb64opt();
-    case LIQUID_MODEM_ARB128OPT: return modem_create_arb128opt();
-    case LIQUID_MODEM_ARB256OPT: return modem_create_arb256opt();
-    case LIQUID_MODEM_ARB64VT:   return modem_create_arb64vt();
+    case LIQUID_MODEM_BPSK:      return MODEM(_create_bpsk)();
+    case LIQUID_MODEM_QPSK:      return MODEM(_create_qpsk)();
+    case LIQUID_MODEM_OOK:       return MODEM(_create_ook)();
+    case LIQUID_MODEM_SQAM32:    return MODEM(_create_sqam32)();
+    case LIQUID_MODEM_SQAM128:   return MODEM(_create_sqam128)();
+    case LIQUID_MODEM_V29:       return MODEM(_create_V29)();
+    case LIQUID_MODEM_ARB16OPT:  return MODEM(_create_arb16opt)();
+    case LIQUID_MODEM_ARB32OPT:  return MODEM(_create_arb32opt)();
+    case LIQUID_MODEM_ARB64OPT:  return MODEM(_create_arb64opt)();
+    case LIQUID_MODEM_ARB128OPT: return MODEM(_create_arb128opt)();
+    case LIQUID_MODEM_ARB256OPT: return MODEM(_create_arb256opt)();
+    case LIQUID_MODEM_ARB64VT:   return MODEM(_create_arb64vt)();
     
     // arbitrary modem
     case LIQUID_MODEM_ARB:
@@ -182,14 +184,14 @@ modem modem_create(modulation_scheme _scheme)
 }
 
 // recreate modulation scheme, re-allocating memory as necessary
-modem modem_recreate(modem _q,
-                     modulation_scheme _scheme)
+MODEM() MODEM(_recreate)(MODEM() _q,
+                         modulation_scheme _scheme)
 {
     // TODO : regenerate modem only when truly necessary
     if (_q->scheme != _scheme) {
         // destroy and re-create modem
-        modem_destroy(_q);
-        _q = modem_create(_scheme);
+        MODEM(_destroy)(_q);
+        _q = MODEM(_create)(_scheme);
     }
 
     // return object
@@ -197,35 +199,35 @@ modem modem_recreate(modem _q,
 }
 
 // destroy a modem object
-void modem_destroy(modem _mod)
+void MODEM(_destroy)(MODEM() _q)
 {
     // free internally-allocated memory
-    if (_mod->symbol_map != NULL)
-        free(_mod->symbol_map);
+    if (_q->symbol_map != NULL)
+        free(_q->symbol_map);
 
     // free main object memory
-    free(_mod);
+    free(_q);
 }
 
 // print a modem object
-void modem_print(modem _mod)
+void MODEM(_print)(MODEM() _q)
 {
     printf("linear modem:\n");
-    printf("    scheme:         %s\n", modulation_types[_mod->scheme].name);
-    printf("    bits/symbol:    %u\n", _mod->m);
+    printf("    scheme:         %s\n", modulation_types[_q->scheme].name);
+    printf("    bits/symbol:    %u\n", _q->m);
 }
 
 // reset a modem object (only an issue with dpsk)
-void modem_reset(modem _mod)
+void MODEM(_reset)(MODEM() _q)
 {
-    _mod->r = 1.0f;         // received sample
-    _mod->x_hat = _mod->r;  // estimated symbol
-    _mod->dpsk_phi = 0.0f;  // reset differential PSK phase state
+    _q->r = 1.0f;         // received sample
+    _q->x_hat = _q->r;  // estimated symbol
+    _q->dpsk_phi = 0.0f;  // reset differential PSK phase state
 }
 
 // initialize a generic modem object
-void modem_init(modem _mod,
-                unsigned int _bits_per_symbol)
+void MODEM(_init)(MODEM() _q,
+                  unsigned int _bits_per_symbol)
 {
     if (_bits_per_symbol < 1 ) {
         fprintf(stderr,"error: modem_init(), modem must have at least 1 bit/symbol\n");
@@ -236,44 +238,44 @@ void modem_init(modem _mod,
     }
 
     // initialize common elements
-    _mod->symbol_map = NULL;    // symbol map (LIQUID_MODEM_ARB only)
-    _mod->modulate_using_map=0; // modulate using map flag
-    _mod->alpha = 0.0f;         // scaling factor
+    _q->symbol_map = NULL;    // symbol map (LIQUID_MODEM_ARB only)
+    _q->modulate_using_map=0; // modulate using map flag
+    _q->alpha = 0.0f;         // scaling factor
 
     // QAM modem
-    _mod->m = _bits_per_symbol; // bits/symbol
-    _mod->M = 1 << (_mod->m);   // constellation size (2^m)
-    _mod->m_i = 0;              // bits/symbol (in-phase)
-    _mod->M_i = 0;              // constellation size (in-phase)
-    _mod->m_q = 0;              // bits/symbol (quadrature-phase)
-    _mod->M_q = 0;              // constellation size (quadrature-phase)
+    _q->m = _bits_per_symbol; // bits/symbol
+    _q->M = 1 << (_q->m);   // constellation size (2^m)
+    _q->m_i = 0;              // bits/symbol (in-phase)
+    _q->M_i = 0;              // constellation size (in-phase)
+    _q->m_q = 0;              // bits/symbol (quadrature-phase)
+    _q->M_q = 0;              // constellation size (quadrature-phase)
 
     // PSK/DPSK modem
-    _mod->d_phi = 0.0f;         // half of angle between symbols
-    _mod->dpsk_phi = 0.0f;      // angle state for differential PSK
+    _q->d_phi = 0.0f;         // half of angle between symbols
+    _q->dpsk_phi = 0.0f;      // angle state for differential PSK
 
     // APSK modem
-    _mod->apsk_num_levels = 0;  // number of levels
-    _mod->apsk_p = NULL;        // number of levels per symbol
-    _mod->apsk_r = NULL;        // number of levels per symbol
-    _mod->apsk_r_slicer = NULL; // radii of levels
-    _mod->apsk_phi = NULL;      // phase offset of levels
-    _mod->apsk_symbol_map=NULL; // symbol mapping
+    _q->apsk_num_levels = 0;  // number of levels
+    _q->apsk_p = NULL;        // number of levels per symbol
+    _q->apsk_r = NULL;        // number of levels per symbol
+    _q->apsk_r_slicer = NULL; // radii of levels
+    _q->apsk_phi = NULL;      // phase offset of levels
+    _q->apsk_symbol_map=NULL; // symbol mapping
 
     // set function pointers initially to NULL
-    _mod->modulate_func = NULL;
-    _mod->demodulate_func = NULL;
+    _q->modulate_func = NULL;
+    _q->demodulate_func = NULL;
 
     // soft demodulation
-    _mod->demod_soft_neighbors = NULL;
-    _mod->demod_soft_p = 0;
+    _q->demod_soft_neighbors = NULL;
+    _q->demod_soft_p = 0;
 
     // reset object
-    modem_reset(_mod);
+    MODEM(_reset)(_q);
 }
 
 // initialize symbol map for fast modulation
-void modem_init_map(modem _q)
+void MODEM(_init_map)(MODEM() _q)
 {
     // validate input
     if (_q->symbol_map == NULL) {
@@ -293,24 +295,24 @@ void modem_init_map(modem _q)
 }
 
 // Generate random symbol
-unsigned int modem_gen_rand_sym(modem _mod)
+unsigned int MODEM(_gen_rand_sym)(MODEM() _q)
 {
-    return rand() % (_mod->M);
+    return rand() % (_q->M);
 }
 
 // Get modem depth (bits/symbol)
-unsigned int modem_get_bps(modem _mod)
+unsigned int MODEM(_get_bps)(MODEM() _q)
 {
-    return _mod->m;
+    return _q->m;
 }
 
 // generic modulatio function
 //  _q          :   modem object
 //  _symbol_in  :   input symbol
 //  _y          :   output sample
-void modem_modulate(modem _q,
-                    unsigned int _symbol_in,
-                    float complex * _y)
+void MODEM(_modulate)(MODEM() _q,
+                      unsigned int _symbol_in,
+                      TC * _y)
 {
     // validate input
     if (_symbol_in >= _q->M) {
@@ -320,7 +322,7 @@ void modem_modulate(modem _q,
 
     if (_q->modulate_using_map) {
         // modulate simply using map (look-up table)
-        modem_modulate_map(_q, _symbol_in, _y);
+        MODEM(_modulate_map)(_q, _symbol_in, _y);
     } else {
         // invoke method specific to scheme (calculate symbol on the fly)
         _q->modulate_func(_q, _symbol_in, _y);
@@ -328,9 +330,9 @@ void modem_modulate(modem _q,
 }
 
 // modulate using symbol map (look-up table)
-void modem_modulate_map(modem _q,
-                        unsigned int _symbol_in,
-                        float complex * _y)
+void MODEM(_modulate_map)(MODEM() _q,
+                          unsigned int _symbol_in,
+                          TC * _y)
 {
     if (_symbol_in >= _q->M) {
         fprintf(stderr,"error: modem_modulate_table(), input symbol exceeds maximum\n");
@@ -345,33 +347,33 @@ void modem_modulate_map(modem _q,
 }
 
 // generic demodulation
-void modem_demodulate(modem _demod,
-                      float complex x,
-                      unsigned int *symbol_out)
+void MODEM(_demodulate)(MODEM() _q,
+                        TC x,
+                        unsigned int *symbol_out)
 {
     // invoke method specific to scheme (calculate symbol on the fly)
-    _demod->demodulate_func(_demod, x, symbol_out);
+    _q->demodulate_func(_q, x, symbol_out);
 }
 
 // generic soft demodulation
-void modem_demodulate_soft(modem _demod,
-                           float complex _x,
-                           unsigned int  * _s,
-                           unsigned char * _soft_bits)
+void MODEM(_demodulate_soft)(MODEM() _q,
+                             TC _x,
+                             unsigned int  * _s,
+                             unsigned char * _soft_bits)
 {
     // switch scheme
-    switch (_demod->scheme) {
-    case LIQUID_MODEM_ARB:  modem_demodulate_soft_arb( _demod,_x,_s,_soft_bits); return;
-    case LIQUID_MODEM_BPSK: modem_demodulate_soft_bpsk(_demod,_x,_s,_soft_bits); return;
-    case LIQUID_MODEM_QPSK: modem_demodulate_soft_qpsk(_demod,_x,_s,_soft_bits); return;
+    switch (_q->scheme) {
+    case LIQUID_MODEM_ARB:  MODEM(_demodulate_soft_arb)( _q,_x,_s,_soft_bits); return;
+    case LIQUID_MODEM_BPSK: MODEM(_demodulate_soft_bpsk)(_q,_x,_s,_soft_bits); return;
+    case LIQUID_MODEM_QPSK: MODEM(_demodulate_soft_qpsk)(_q,_x,_s,_soft_bits); return;
     default:;
     }
 
     // check if...
-    if (_demod->demod_soft_neighbors != NULL && _demod->demod_soft_p != 0) {
+    if (_q->demod_soft_neighbors != NULL && _q->demod_soft_p != 0) {
         // demodulate using approximate log-likelihood method with
         // look-up table for nearest neighbors
-        modem_demodulate_soft_table(_demod, _x, _s, _soft_bits);
+        MODEM(_demodulate_soft_table)(_q, _x, _s, _soft_bits);
 
         return;
     }
@@ -379,11 +381,11 @@ void modem_demodulate_soft(modem _demod,
     // for now demodulate normally and simply copy the
     // hard-demodulated bits
     unsigned int symbol_out;
-    _demod->demodulate_func(_demod, _x, &symbol_out);
+    _q->demodulate_func(_q, _x, &symbol_out);
     *_s = symbol_out;
 
     // unpack soft bits
-    liquid_unpack_soft_bits(symbol_out, _demod->m, _soft_bits);
+    liquid_unpack_soft_bits(symbol_out, _q->m, _soft_bits);
 }
 
 #if DEBUG_DEMODULATE_SOFT
@@ -398,43 +400,43 @@ void print_bitstring_demod_soft(unsigned int _x,
 #endif
 
 // generic soft demodulation using look-up table...
-//  _demod      :   demodulator object
+//  _q          :   demodulator object
 //  _r          :   received sample
 //  _s          :   hard demodulator output
 //  _soft_bits  :   soft bit ouput (approximate log-likelihood ratio)
-void modem_demodulate_soft_table(modem _demod,
-                                 float complex _r,
-                                 unsigned int * _s,
-                                 unsigned char * _soft_bits)
+void MODEM(_demodulate_soft_table)(MODEM() _q,
+                                   TC _r,
+                                   unsigned int * _s,
+                                   unsigned char * _soft_bits)
 {
     // run hard demodulation; this will store re-modulated sample
     // as internal variable x_hat
     unsigned int s;
-    modem_demodulate(_demod, _r, &s);
+    MODEM(_demodulate)(_q, _r, &s);
 
-    unsigned int bps = modem_get_bps(_demod);
+    unsigned int bps = MODEM(_get_bps)(_q);
 
     // gamma = 1/(2*sigma^2), approximate for constellation size
-    float gamma = 1.2f*_demod->M;
+    T gamma = 1.2f*_q->M;
 
     // set and initialize minimum bit values
     unsigned int i;
     unsigned int k;
-    float dmin_0[bps];
-    float dmin_1[bps];
+    T dmin_0[bps];
+    T dmin_1[bps];
     for (k=0; k<bps; k++) {
         dmin_0[k] = 8.0f;
         dmin_1[k] = 8.0f;
     }
 
     unsigned int bit;
-    float d;
-    float complex x_hat;    // re-modulated symbol
-    unsigned char * softab = _demod->demod_soft_neighbors;
-    unsigned int p = _demod->demod_soft_p;
+    T d;
+    TC x_hat;    // re-modulated symbol
+    unsigned char * softab = _q->demod_soft_neighbors;
+    unsigned int p = _q->demod_soft_p;
 
     // check hard demodulation
-    d = crealf( (_r-_demod->x_hat)*conjf(_r-_demod->x_hat) );
+    d = crealf( (_r-_q->x_hat)*conjf(_r-_q->x_hat) );
     for (k=0; k<bps; k++) {
         bit = (s >> (bps-k-1)) & 0x01;
         if (bit) dmin_1[k] = d;
@@ -444,15 +446,15 @@ void modem_demodulate_soft_table(modem _demod,
     // parse all 'nearest neighbors' and find minimum distance for each bit
     for (i=0; i<p; i++) {
         // remodulate symbol
-        if (_demod->modulate_using_map)
-            x_hat = _demod->symbol_map[ softab[s*p + i] ];
+        if (_q->modulate_using_map)
+            x_hat = _q->symbol_map[ softab[s*p + i] ];
         else
-            modem_modulate(_demod, softab[s*p+i], &x_hat);
+            MODEM(_modulate)(_q, softab[s*p+i], &x_hat);
 
         // compute magnitude squared of Euclidean distance
         //d = crealf( (_r-x_hat)*conjf(_r-x_hat) );
         // (same as above, but faster)
-        float complex e = _r - x_hat;
+        TC e = _r - x_hat;
         d = crealf(e)*crealf(e) + cimagf(e)*cimagf(e);
 
         // look at each bit in 'nearest neighbor' and update minimum
@@ -482,22 +484,22 @@ void modem_demodulate_soft_table(modem _demod,
 
 
 // get demodulator's estimated transmit sample
-void modem_get_demodulator_sample(modem _demod,
-                                  float complex * _x_hat)
+void MODEM(_get_demodulator_sample)(MODEM() _q,
+                                    TC * _x_hat)
 {
-    *_x_hat = _demod->x_hat;
+    *_x_hat = _q->x_hat;
 }
 
 // get demodulator phase error
-float modem_get_demodulator_phase_error(modem _demod)
+T MODEM(_get_demodulator_phase_error)(MODEM() _q)
 {
-    return cimagf(_demod->r*conjf(_demod->x_hat));
+    return cimagf(_q->r*conjf(_q->x_hat));
 }
 
 // get error vector magnitude
-float modem_get_demodulator_evm(modem _demod)
+T MODEM(_get_demodulator_evm)(MODEM() _q)
 {
-    return cabsf(_demod->x_hat - _demod->r);
+    return cabsf(_q->x_hat - _q->r);
 }
 
 // Demodulate a linear symbol constellation using dynamic threshold calculation
@@ -506,15 +508,15 @@ float modem_get_demodulator_evm(modem _demod)
 //  _alpha  :   scaling factor
 //  _s      :   demodulated symbol
 //  _res    :   residual
-void modem_demodulate_linear_array(float _v,
-                                   unsigned int _m,
-                                   float _alpha,
-                                   unsigned int *_s,
-                                   float *_res)
+void MODEM(_demodulate_linear_array)(T              _v,
+                                     unsigned int   _m,
+                                     T              _alpha,
+                                     unsigned int * _s,
+                                     T *            _res)
 {
     unsigned int s=0;
     unsigned int i, k = _m;
-    float ref=0.0f;
+    T ref=0.0f;
     for (i=0; i<_m; i++) {
         s <<= 1;
         s |= (_v > 0) ? 1 : 0;
@@ -532,11 +534,11 @@ void modem_demodulate_linear_array(float _v,
 //  _ref    :   array of thresholds
 //  _s      :   demodulated symbol
 //  _res    :   residual
-void modem_demodulate_linear_array_ref(float _v,
-                                       unsigned int _m,
-                                       float *_ref,
-                                       unsigned int *_s,
-                                       float *_res)
+void MODEM(_demodulate_linear_array_ref)(T              _v,
+                                         unsigned int   _m,
+                                         T *            _ref,
+                                         unsigned int * _s,
+                                         T *            _res)
 {
     // initialize loop counter
     register unsigned int i;
