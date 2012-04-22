@@ -24,17 +24,17 @@
 //
 
 // create an apsk (amplitude/phase-shift keying) modem object
-modem modem_create_apsk(unsigned int _bits_per_symbol)
+MODEM() MODEM(_create_apsk)(unsigned int _bits_per_symbol)
 {
-    modem q = NULL;
+    MODEM() q = NULL;
     switch (_bits_per_symbol) {
-    case 2: q = modem_create_apsk4();   break;
-    case 3: q = modem_create_apsk8();   break;
-    case 4: q = modem_create_apsk16();  break;
-    case 5: q = modem_create_apsk32();  break;
-    case 6: q = modem_create_apsk64();  break;
-    case 7: q = modem_create_apsk128(); break;
-    case 8: q = modem_create_apsk256(); break;
+    case 2: q = MODEM(_create_apsk4)();   break;
+    case 3: q = MODEM(_create_apsk8)();   break;
+    case 4: q = MODEM(_create_apsk16)();  break;
+    case 5: q = MODEM(_create_apsk32)();  break;
+    case 6: q = MODEM(_create_apsk64)();  break;
+    case 7: q = MODEM(_create_apsk128)(); break;
+    case 8: q = MODEM(_create_apsk256)(); break;
     default:
         fprintf(stderr,"error: modem_create_apsk(), unsupported modulation level (%u)\n",
                 _bits_per_symbol);
@@ -43,14 +43,14 @@ modem modem_create_apsk(unsigned int _bits_per_symbol)
 
     // initialize symbol map
     q->symbol_map = (TC*)malloc(q->M*sizeof(TC));
-    modem_init_map(q);
+    MODEM(_init_map)(q);
     q->modulate_using_map = 1;
 
     return q;
 }
 
 // create specific APSK-4 modem
-modem modem_create_apsk4()
+MODEM() MODEM(_create_apsk4)()
 {
     MODEM() q = (MODEM()) malloc( sizeof(struct MODEM(_s)) );
     q->scheme = LIQUID_MODEM_APSK4;
@@ -65,8 +65,8 @@ modem modem_create_apsk4()
     q->data.apsk.r_slicer   = (T *) apsk4_r_slicer;
     q->data.apsk.symbol_map = (unsigned int *) apsk4_symbol_map;
 
-    q->modulate_func = &modem_modulate_apsk;
-    q->demodulate_func = &modem_demodulate_apsk;
+    q->modulate_func = &MODEM(_modulate_apsk);
+    q->demodulate_func = &MODEM(_demodulate_apsk);
 
     q->demod_soft_neighbors = (unsigned char*) apsk4_demod_soft_neighbors;
     q->demod_soft_p         = 3;
@@ -75,7 +75,7 @@ modem modem_create_apsk4()
 }
 
 // create specific APSK-8 modem
-modem modem_create_apsk8()
+MODEM() MODEM(_create_apsk8)()
 {
     MODEM() q = (MODEM()) malloc( sizeof(struct MODEM(_s)) );
     q->scheme = LIQUID_MODEM_APSK8;
@@ -90,8 +90,8 @@ modem modem_create_apsk8()
     q->data.apsk.r_slicer   = (T *) apsk8_r_slicer;
     q->data.apsk.symbol_map = (unsigned int *) apsk8_symbol_map;
 
-    q->modulate_func = &modem_modulate_apsk;
-    q->demodulate_func = &modem_demodulate_apsk;
+    q->modulate_func = &MODEM(_modulate_apsk);
+    q->demodulate_func = &MODEM(_demodulate_apsk);
 
     q->demod_soft_neighbors = (unsigned char*) apsk8_demod_soft_neighbors;
     q->demod_soft_p         = 3;
@@ -100,7 +100,7 @@ modem modem_create_apsk8()
 }
 
 // create specific APSK-16 modem
-modem modem_create_apsk16()
+MODEM() MODEM(_create_apsk16)()
 {
     MODEM() q = (MODEM()) malloc( sizeof(struct MODEM(_s)) );
     q->scheme = LIQUID_MODEM_APSK16;
@@ -115,8 +115,8 @@ modem modem_create_apsk16()
     q->data.apsk.r_slicer   = (T *) apsk16_r_slicer;
     q->data.apsk.symbol_map = (unsigned int *) apsk16_symbol_map;
 
-    q->modulate_func = &modem_modulate_apsk;
-    q->demodulate_func = &modem_demodulate_apsk;
+    q->modulate_func = &MODEM(_modulate_apsk);
+    q->demodulate_func = &MODEM(_demodulate_apsk);
 
     q->demod_soft_neighbors = (unsigned char*) apsk16_demod_soft_neighbors;
     q->demod_soft_p         = 4;
@@ -125,7 +125,7 @@ modem modem_create_apsk16()
 }
 
 // create specific APSK-32 modem
-modem modem_create_apsk32()
+MODEM() MODEM(_create_apsk32)()
 {
     MODEM() q = (MODEM()) malloc( sizeof(struct MODEM(_s)) );
     q->scheme = LIQUID_MODEM_APSK32;
@@ -140,8 +140,8 @@ modem modem_create_apsk32()
     q->data.apsk.r_slicer   = (T *) apsk32_r_slicer;
     q->data.apsk.symbol_map = (unsigned int *) apsk32_symbol_map;
 
-    q->modulate_func = &modem_modulate_apsk;
-    q->demodulate_func = &modem_demodulate_apsk;
+    q->modulate_func = &MODEM(_modulate_apsk);
+    q->demodulate_func = &MODEM(_demodulate_apsk);
 
     q->demod_soft_neighbors = (unsigned char*) apsk32_demod_soft_neighbors;
     q->demod_soft_p         = 4;
@@ -150,7 +150,7 @@ modem modem_create_apsk32()
 }
 
 // create specific APSK-64 modem
-modem modem_create_apsk64()
+MODEM() MODEM(_create_apsk64)()
 {
     MODEM() q = (MODEM()) malloc( sizeof(struct MODEM(_s)) );
     q->scheme = LIQUID_MODEM_APSK64;
@@ -165,8 +165,8 @@ modem modem_create_apsk64()
     q->data.apsk.r_slicer   = (T *) apsk64_r_slicer;
     q->data.apsk.symbol_map = (unsigned int *) apsk64_symbol_map;
 
-    q->modulate_func = &modem_modulate_apsk;
-    q->demodulate_func = &modem_demodulate_apsk;
+    q->modulate_func = &MODEM(_modulate_apsk);
+    q->demodulate_func = &MODEM(_demodulate_apsk);
 
     q->demod_soft_neighbors = (unsigned char*) apsk64_demod_soft_neighbors;
     q->demod_soft_p         = 4;
@@ -175,7 +175,7 @@ modem modem_create_apsk64()
 }
 
 // create specific APSK-128 modem
-modem modem_create_apsk128()
+MODEM() MODEM(_create_apsk128)()
 {
     MODEM() q = (MODEM()) malloc( sizeof(struct MODEM(_s)) );
     q->scheme = LIQUID_MODEM_APSK128;
@@ -190,8 +190,8 @@ modem modem_create_apsk128()
     q->data.apsk.r_slicer   = (T *) apsk128_r_slicer;
     q->data.apsk.symbol_map = (unsigned int *) apsk128_symbol_map;
 
-    q->modulate_func = &modem_modulate_apsk;
-    q->demodulate_func = &modem_demodulate_apsk;
+    q->modulate_func = &MODEM(_modulate_apsk);
+    q->demodulate_func = &MODEM(_demodulate_apsk);
 
     q->demod_soft_neighbors = (unsigned char*) apsk128_demod_soft_neighbors;
     q->demod_soft_p         = 5;
@@ -200,7 +200,7 @@ modem modem_create_apsk128()
 }
 
 // create specific APSK-256 modem
-modem modem_create_apsk256()
+MODEM() MODEM(_create_apsk256)()
 {
     MODEM() q = (MODEM()) malloc( sizeof(struct MODEM(_s)) );
     q->scheme = LIQUID_MODEM_APSK256;
@@ -215,8 +215,8 @@ modem modem_create_apsk256()
     q->data.apsk.r_slicer   = (T *) apsk256_r_slicer;
     q->data.apsk.symbol_map = (unsigned int *) apsk256_symbol_map;
 
-    q->modulate_func = &modem_modulate_apsk;
-    q->demodulate_func = &modem_demodulate_apsk;
+    q->modulate_func = &MODEM(_modulate_apsk);
+    q->demodulate_func = &MODEM(_demodulate_apsk);
 
     q->demod_soft_neighbors = (unsigned char*) apsk256_demod_soft_neighbors;
     q->demod_soft_p         = 5;
@@ -225,9 +225,9 @@ modem modem_create_apsk256()
 }
 
 // modulate APSK
-void modem_modulate_apsk(MODEM()      _q,
-                         unsigned int _sym_in,
-                         TC *         _y)
+void MODEM(_modulate_apsk)(MODEM()      _q,
+                           unsigned int _sym_in,
+                           TC *         _y)
 {
     if (_sym_in >= _q->M) {
         fprintf(stderr,"error: modem_modulate_apsk(), input symbol exceeds maximum\n");
@@ -264,9 +264,9 @@ void modem_modulate_apsk(MODEM()      _q,
 }
 
 // demodulate APSK
-void modem_demodulate_apsk(MODEM()        _q,
-                           TC             _x,
-                           unsigned int * _sym_out)
+void MODEM(_demodulate_apsk)(MODEM()        _q,
+                             TC             _x,
+                             unsigned int * _sym_out)
 {
     // compute amplitude
     T r = cabsf(_x);
@@ -317,7 +317,7 @@ void modem_demodulate_apsk(MODEM()        _q,
     *_sym_out = s_prime;
 
     // re-modulate symbol and store state
-    modem_modulate(_q, s_prime, &_q->x_hat);
+    MODEM(_modulate)(_q, s_prime, &_q->x_hat);
     _q->r = _x;
 }
 
