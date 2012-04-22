@@ -60,7 +60,7 @@ const float apsk8_r_slicer[1] = {
 const unsigned int apsk8_symbol_map[8] = {
      0,   2,   4,   3,   1,   7,   5,   6};
   
-// APSK32(4,12)
+// APSK16(4,12)
 const unsigned int apsk16_num_levels = 2;
 const unsigned int apsk16_p[2] = {4,12};
 
