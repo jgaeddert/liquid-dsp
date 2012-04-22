@@ -1,12 +1,19 @@
 
-Major improvements since 1.1.0
+Current major improvements
   * dotprod
     - leveraging SIMD extensions for vector operations (SSE2, SSE3)
+  * fft
+    - completely re-structured internal transform strategy including
+      Cooley-Tukey mixed-radix algorithm, Rader algorithm for FFTs of
+      prime length, and specific codelets for small-size transforms.
+  * math
+    - new modular arithmetic methods (prime factor, totient, etc.)
   * modem
     - new API creates linear modem objects with one argument, e.g.
       LIQUID_MODEM_QAM16
+    - new type definitions for analog modems
 
-Major improvements since 1.0.0
+Major improvements for v1.1.0
   * build
     - simplifying build environment by explicitly defining object
       dependencies (no longer auto-generated; much faster now)

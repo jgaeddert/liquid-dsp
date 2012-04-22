@@ -644,12 +644,8 @@ FFT(plan) FFT(_create_plan_r2r_1d)(unsigned int _n,             \
                                    T * _y,                      \
                                    int _kind,                   \
                                    int _flags);                 \
-FFT(plan) FFT(_create_plan_mdct)(unsigned int _n,               \
-                                 T * _x,                        \
-                                 T * _y,                        \
-                                 int _kind,                     \
-                                 int _flags);                   \
 void FFT(_destroy_plan)(FFT(plan) _p);                          \
+void FFT(_print_plan)(FFT(plan) _p);                            \
 void FFT(_execute)(FFT(plan) _p);                               \
                                                                 \
 /* object-independent methods */                                \
@@ -660,15 +656,56 @@ void FFT(_run)(unsigned int _n,                                 \
                int _method);                                    \
 void FFT(_shift)(TC*_x, unsigned int _n);
 
+
 LIQUID_FFT_DEFINE_API(LIQUID_FFT_MANGLE_FLOAT,float,liquid_float_complex)
 
+// antiquated fft methods
+// FFT(plan) FFT(_create_plan_mdct)(unsigned int _n,
+//                                  T * _x,
+//                                  T * _y,
+//                                  int _kind,
+//                                  int _flags);
+
+
+// 
 // spectral periodogram
+//
+
 typedef struct spgram_s * spgram;
-spgram spgram_create(unsigned int _nfft);
+
+// create spgram object
+//  _nfft   :   fft size
+//  _alpha  :   averaging factor
+spgram spgram_create(unsigned int _nfft,
+                     float _alpha);
+
+// create spgram object (advanced method)
+//  _nfft   :   fft size
+//  _m      :   window size
+//  _delay  :   number of samples between transforms
+//  _alpha  :   averaging factor
+spgram spgram_create_advanced(unsigned int _nfft,
+                              unsigned int _m,
+                              unsigned int _delay,
+                              float        _alpha);
+
+// destroy spgram object
 void spgram_destroy(spgram _q);
+
+// resets the internal state of the spgram object
+void spgram_reset(spgram _q);
+
+// push samples into spgram object
+//  _q      :   spgram object
+//  _x      :   input buffer [size: _n x 1]
+//  _n      :   input buffer length
 void spgram_push(spgram _q,
                  liquid_float_complex * _x,
                  unsigned int _n);
+
+// compute spectral periodogram output
+//  _q      :   spgram object
+//  _X      :   output spectrum [dB]
 void spgram_execute(spgram _q,
                     float * _X);
 
@@ -682,15 +719,6 @@ void asgram_execute(asgram _q,
                     char * _ascii,
                     float * _peakval,
                     float * _peakfreq);
-
-// real, even DFT: DCT-II
-void  dct(float *_x, float * _y, unsigned int _n);
-void idct(float *_x, float * _y, unsigned int _n);
-void dct_typeIV(float *_x, float * _y, unsigned int _n);
-
-// modified discrete cosine transform
-void  mdct(float *_x, float * _X, float * _w, unsigned int _N);
-void imdct(float *_X, float * _x, float * _w, unsigned int _N);
 
 //
 // MODULE : filter
@@ -2727,6 +2755,46 @@ void poly_binomial_expand_pm(unsigned int _n,
                              int * _c);
 #endif
 
+// 
+// modular arithmetic, etc.
+//
+
+// maximum number of factors
+#define LIQUID_MAX_FACTORS (40)
+
+// is number prime?
+int liquid_is_prime(unsigned int _n);
+
+// compute number's prime factors
+//  _n          :   number to factor
+//  _factors    :   pre-allocated array of factors [size: LIQUID_MAX_FACTORS x 1]
+//  _num_factors:   number of factors found, sorted ascending
+void liquid_factor(unsigned int   _n,
+                   unsigned int * _factors,
+                   unsigned int * _num_factors);
+
+// compute number's unique prime factors
+//  _n          :   number to factor
+//  _factors    :   pre-allocated array of factors [size: LIQUID_MAX_FACTORS x 1]
+//  _num_factors:   number of unique factors found, sorted ascending
+void liquid_unique_factor(unsigned int   _n,
+                          unsigned int * _factors,
+                          unsigned int * _num_factors);
+
+// compute c = base^exp (mod n)
+unsigned int liquid_modpow(unsigned int _base,
+                           unsigned int _exp,
+                           unsigned int _n);
+
+// find smallest primitive root of _n
+unsigned int liquid_primitive_root(unsigned int _n);
+
+// find smallest primitive root of _n, assuming _n is prime
+unsigned int liquid_primitive_root_prime(unsigned int _n);
+
+// Euler's totient function
+unsigned int liquid_totient(unsigned int _n);
+
 
 //
 // MODULE : matrix
@@ -2997,65 +3065,76 @@ void liquid_unpack_soft_bits(unsigned int _sym_in,
 // Linear modem
 //
 
-// define struct pointer
-typedef struct modem_s * modem;
+#define LIQUID_MODEM_MANGLE_FLOAT(name) LIQUID_CONCAT(modem,name)
 
-// create digital modem object, allocating memory as necessary
-modem modem_create(modulation_scheme _scheme);
+// Macro    :   MODEM
+//  MODEM   :   name-mangling macro
+//  T       :   primitive data type
+//  TC      :   primitive data type (complex)
+#define LIQUID_MODEM_DEFINE_API(MODEM,T,TC)                     \
+                                                                \
+/* define struct pointer */                                     \
+typedef struct MODEM(_s) * MODEM();                             \
+                                                                \
+/* create digital modem object, allocating memory as necessary */ \
+MODEM() MODEM(_create)(modulation_scheme _scheme);                  \
+                                                                \
+/* create arbitrary digital modem object */                     \
+MODEM() MODEM(_create_arbitrary)(TC * _table, unsigned int _M); \
+                                                                \
+/* recreate modulation scheme, re-allocating memory as necessary */ \
+MODEM() MODEM(_recreate)(MODEM() _q,                            \
+                         modulation_scheme _scheme);            \
+                                                                \
+void MODEM(_destroy)(MODEM() _q);                               \
+void MODEM(_print)(  MODEM() _q);                               \
+void MODEM(_reset)(  MODEM() _q);                               \
+                                                                \
+/* generate random symbol */                                    \
+unsigned int MODEM(_gen_rand_sym)(MODEM() _q);                  \
+                                                                \
+/* Accessor functions */                                        \
+unsigned int MODEM(_get_bps)(MODEM() _q);                       \
+                                                                \
+/* generic modulate function; simply queries modem scheme   */  \
+/* and calls appropriate subroutine                         */  \
+/*  _q  :   modem object                                    */  \
+/*  _s  :   input symbol                                    */  \
+/*  _x  :   output sample                                   */  \
+void MODEM(_modulate)(MODEM() _q,                               \
+                      unsigned int _s,                          \
+                      TC *_y);                                  \
+                                                                \
+/* generic hard-decision demodulation function              */  \
+/*  _q  :   modem object                                    */  \
+/*  _x  :   input sample                                    */  \
+/*  _s  :   output symbol                                   */  \
+void MODEM(_demodulate)(MODEM() _q,                             \
+                        TC _x,                                  \
+                        unsigned int * _s);                     \
+                                                                \
+/* generic soft-decision demodulation function              */  \
+/*  _q          :   modem object                            */  \
+/*  _x          :   input sample                            */  \
+/*  _s          :   output hard symbol                      */  \
+/*  _soft_bits  :   output soft bits                        */  \
+void MODEM(_demodulate_soft)(MODEM() _q,                        \
+                             TC _x,                             \
+                             unsigned int  * _s,                \
+                             unsigned char * _soft_bits);       \
+                                                                \
+/* get demodulator's estimated transmit sample */               \
+void MODEM(_get_demodulator_sample)(MODEM() _q,                 \
+                                    TC * _x_hat);               \
+                                                                \
+/* get demodulator phase error */                               \
+float MODEM(_get_demodulator_phase_error)(MODEM() _q);          \
+                                                                \
+/* get demodulator error vector magnitude */                    \
+float MODEM(_get_demodulator_evm)(MODEM() _q);                  \
 
-// create arbitrary digital modem object
-modem modem_create_arbitrary(liquid_float_complex * _table, unsigned int _M);
-
-// recreate modulation scheme, re-allocating memory as necessary
-modem modem_recreate(modem _q,
-                     modulation_scheme _scheme);
-
-void modem_destroy(modem _mod);
-void modem_print(modem _mod);
-void modem_reset(modem _mod);
-
-// Generate random symbol
-unsigned int modem_gen_rand_sym(modem _mod);
-
-// Accessor functions
-unsigned int modem_get_bps(modem _mod);
-
-// generic modulate function; simply queries modem scheme and calls
-// appropriate subroutine
-//  _mod    :   modem object
-//  _s      :   input symbol
-//  _x      :   output sample
-void modem_modulate(modem _mod,
-                    unsigned int _s,
-                    liquid_float_complex *_y);
-
-// generic hard-decision demodulation function
-//  _demod  :   modem object
-//  _x      :   input sample
-//  _s      :   output symbol
-void modem_demodulate(modem _demod,
-                      liquid_float_complex _x,
-                      unsigned int * _s);
-
-// generic soft-decision demodulation function
-//  _demod      :   modem object
-//  _x          :   input sample
-//  _s          :   output hard symbol
-//  _soft_bits  :   output soft bits
-void modem_demodulate_soft(modem _demod,
-                           liquid_float_complex _x,
-                           unsigned int  * _s,
-                           unsigned char * _soft_bits);
-
-// get demodulator's estimated transmit sample
-void modem_get_demodulator_sample(modem _demod,
-                                  liquid_float_complex * _x_hat);
-
-// get demodulator phase error
-float modem_get_demodulator_phase_error(modem _demod);
-
-// get demodulator error vector magnitude
-float modem_get_demodulator_evm(modem _demod);
+// define modem APIs
+LIQUID_MODEM_DEFINE_API(LIQUID_MODEM_MANGLE_FLOAT,float,liquid_float_complex)
 
 
 //
@@ -3103,19 +3182,19 @@ void gmskdem_demodulate(gmskdem _q,
 //
 
 typedef enum {
-    LIQUID_MODEM_FM_PLL=0,
-    LIQUID_MODEM_FM_DELAY_CONJ
-} liquid_fmtype;
+    LIQUID_FREQMODEM_PLL=0,
+    LIQUID_FREQMODEM_DELAYCONJ
+} liquid_freqmodem_type;
 
 typedef struct freqmodem_s * freqmodem;
 
 // create freqmodem object
 //  _m      :   modulation index
-//  _fc     :   carrier frequency, -0.5 <= _fc < 0.5
-//  _type   :   demodulation type (e.g. LIQUID_MODEM_FM_DELAY_CONJ)
+//  _fc     :   carrier frequency, range: [-0.5,0.5]
+//  _type   :   demodulation type (e.g. LIQUID_FREQMODEM_DELAYCONJ)
 freqmodem freqmodem_create(float _m,
                            float _fc,
-                           liquid_fmtype _type);
+                           liquid_freqmodem_type _type);
 
 // destroy freqmodem object
 void freqmodem_destroy(freqmodem _fm);
@@ -3139,19 +3218,21 @@ void freqmodem_demodulate(freqmodem _fm,
 
 // amplitude modulation types
 typedef enum {
-    LIQUID_MODEM_AM_DSB=0,  // double side-band
-    LIQUID_MODEM_AM_USB,    // single side-band (upper)
-    LIQUID_MODEM_AM_LSB     // single side-band (lower)
-} liquid_modem_amtype;
+    LIQUID_AMPMODEM_DSB=0,  // double side-band
+    LIQUID_AMPMODEM_USB,    // single side-band (upper)
+    LIQUID_AMPMODEM_LSB     // single side-band (lower)
+} liquid_ampmodem_type;
 
 typedef struct ampmodem_s * ampmodem;
 
 // create ampmodem object
 //  _m                  :   modulation index
-//  _type               :   AM type (e.g. LIQUID_MODEM_AM_DSB)
+//  _fc                 :   carrier frequency, range: [-0.5,0.5]
+//  _type               :   AM type (e.g. LIQUID_AMPMODEM_DSB)
 //  _suppressed_carrier :   carrier suppression flag
 ampmodem ampmodem_create(float _m,
-                         liquid_modem_amtype _type,
+                         float _fc,
+                         liquid_ampmodem_type _type,
                          int _suppressed_carrier);
 
 // destroy ampmodem object

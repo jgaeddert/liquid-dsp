@@ -22,23 +22,24 @@ void usage()
 {
     printf("ampmodem_example [options]\n");
     printf("  u/h   : print usage\n");
-    printf("  f     : frequency offset [default: 0.02]\n");
-    printf("  p     : phase offset [default: pi/4]\n");
-    printf("  n     : number of samples [default: 256]\n");
-    printf("  S     : SNR (dB) [default: 20]\n");
-    printf("  t     : AM type (dsb/usb/lsb) [default: dsb]\n");
-    printf("  s     : suppress the carrier\n");
+    printf("  f     : frequency offset, default: 0.02\n");
+    printf("  p     : phase offset, default: -pi/4\n");
+    printf("  n     : number of samples, default: 256\n");
+    printf("  S     : SNR [dB], default: 20\n");
+    printf("  t     : AM type (dsb/usb/lsb), default: dsb\n");
+    printf("  s     : suppress the carrier, default: off\n");
 }
 
-int main(int argc, char*argv[]) {
+int main(int argc, char*argv[])
+{
     // options
     float mod_index = 0.1f;         // modulation index (bandwidth)
-    //float fc = 0.1371f*2.0f*M_PI;   // AM carrier
+    float fc = 0.0f;                // AM carrier
     float cfo = 0.02f;              // carrier frequency offset
-    float cpo = M_PI / 4.0f;        // carrier phase offset
+    float cpo = -M_PI / 4.0f;       // carrier phase offset
     unsigned int num_samples = 256; // number of samples
-    float SNRdB = 20.0f;            // signal-to-noise ratio [dB]
-    liquid_modem_amtype type = LIQUID_MODEM_AM_USB;
+    float SNRdB = 30.0f;            // signal-to-noise ratio [dB]
+    liquid_ampmodem_type type = LIQUID_AMPMODEM_USB;
     int suppressed_carrier = 0;
 
     int dopt;
@@ -54,14 +55,13 @@ int main(int argc, char*argv[]) {
         case 'S':   SNRdB = atof(optarg);       break;
         case 't':
             if (strcmp(optarg,"dsb")==0) {
-                type = LIQUID_MODEM_AM_DSB;
+                type = LIQUID_AMPMODEM_DSB;
             } else if (strcmp(optarg,"usb")==0) {
-                type = LIQUID_MODEM_AM_USB;
+                type = LIQUID_AMPMODEM_USB;
             } else if (strcmp(optarg,"lsb")==0) {
-                type = LIQUID_MODEM_AM_LSB;
+                type = LIQUID_AMPMODEM_LSB;
             } else {
-                fprintf(stderr,"error: ampmodem_example, invalid AM type: %s\n", optarg);
-                usage();
+                fprintf(stderr,"error: %s, invalid AM type: %s\n", argv[0], optarg);
                 return 1;
             }
             break;
@@ -73,8 +73,8 @@ int main(int argc, char*argv[]) {
     }
 
     // create mod/demod objects
-    ampmodem mod   = ampmodem_create(mod_index, type, suppressed_carrier);
-    ampmodem demod = ampmodem_create(mod_index, type, suppressed_carrier);
+    ampmodem mod   = ampmodem_create(mod_index, fc, type, suppressed_carrier);
+    ampmodem demod = ampmodem_create(mod_index, fc, type, suppressed_carrier);
     ampmodem_print(mod);
 
     unsigned int i;
@@ -96,7 +96,7 @@ int main(int argc, char*argv[]) {
         x[i] = tanhf(x[i]);
 
         // add frequency offset (not centered at zero)
-        x[i] *= sinf(2*M_PI*i*0.13f);
+        //x[i] *= sinf(2*M_PI*i*0.13f);
 
         // apply window
         //x[i] *= hamming(i,num_samples);
@@ -108,16 +108,11 @@ int main(int argc, char*argv[]) {
         ampmodem_modulate(mod, x[i], &y[i]);
 
     // add channel impairments
-    nco_crcf nco_channel = nco_crcf_create(LIQUID_VCO);
-    nco_crcf_set_frequency(nco_channel, cfo);
-    nco_crcf_set_phase(nco_channel, cpo);
-    float nstd = powf(10.0f,-SNRdB*0.1f);
+    float nstd = powf(10.0f,-SNRdB/20.0f);
     for (i=0; i<num_samples; i++) {
-        cawgn(&y[i], nstd);
-        nco_crcf_mix_up(nco_channel, y[i], &y[i]);
-        nco_crcf_step(nco_channel);
+        y[i] *= cexpf(_Complex_I*(2*M_PI*cfo*i + cpo));
+        y[i] += nstd*(randnf() + _Complex_I*randnf())*M_SQRT1_2;
     }
-    nco_crcf_destroy(nco_channel);
 
     // demodulate signal
     for (i=0; i<num_samples; i++)
@@ -128,7 +123,7 @@ int main(int argc, char*argv[]) {
     ampmodem_destroy(demod);
 
     // compute demodulation error
-    unsigned int delay = (type == LIQUID_MODEM_AM_DSB) ? 0 : 18; // fixed delay
+    unsigned int delay = (type == LIQUID_AMPMODEM_DSB) ? 0 : 18; // fixed delay
     float rmse = 0.0f;
     for (i=delay; i<num_samples; i++)
         rmse += (x[i-delay] - z[i]) * (x[i-delay] - z[i]);

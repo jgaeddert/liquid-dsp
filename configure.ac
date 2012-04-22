@@ -125,6 +125,7 @@ AC_ARG_ENABLE(experimental,
             examples/prqmfb_crcf_example \
             examples/qmfb_crcf_analysis_example \
             examples/qmfb_crcf_synthesis_example \
+            examples/ricek_channel_example \
             examples/smatrix_example \
             examples/symsync2_crcf_example \
             examples/symsynclp_crcf_example"
@@ -148,6 +149,7 @@ AC_ARG_ENABLE(experimental,
 # Check for necessary programs
 AC_PROG_CC
 AC_PROG_SED
+AC_PROG_GREP
 AC_PROG_INSTALL
 AC_PROG_RANLIB
 
@@ -219,25 +221,38 @@ AC_CHECK_SIZEOF(unsigned int)
 AC_CANONICAL_TARGET
 case $target_cpu in
 i386|i486|i586|i686|x86|x86_64)
-    # check compile-time MMX/SSE/SIMD flags
+    # check for MMX/SSE/AVX CPU extensions and intrinsics headers
     #   MMX     :   mmintrin.h
     #   SSE     :   xmmintrin.h
     #   SSE2    :   emmintrin.h
     #   SSE3    :   pmmintrin.h
     #   SSSE3   :   tmmintrin.h
-    #   SSE4..  :   smmintrin.h
+    #   SSE4.1/2:   smmintrin.h
+    #   AVX     :   immintrin.h
     AX_EXT
-    AC_CHECK_HEADERS(mmintrin.h xmmintrin.h emmintrin.h pmmintrin.h tmmintrin.h smmintrin.h)
 
-    MLIBS_DOTPROD="src/dotprod/src/dotprod_cccf.mmx.o \
-                   src/dotprod/src/dotprod_crcf.mmx.o \
-                   src/dotprod/src/dotprod_rrrf.mmx.o \
-                   src/dotprod/src/dotprod_cccq16.mmx.o \
-                   src/dotprod/src/dotprod_crcq16.mmx.o \
-                   src/dotprod/src/dotprod_rrrq16.mmx.o \
-                   src/dotprod/src/dotprod_cccq32.mmx.o \
-                   src/dotprod/src/dotprod_crcq32.mmx.o \
-                   src/dotprod/src/dotprod_rrrq32.mmx.o"
+    # need at least SSE2
+    if [ test "$ax_cv_have_sse2_ext" = yes && test "$ac_cv_header_emmintrin_h" = yes ]; then
+        MLIBS_DOTPROD="src/dotprod/src/dotprod_cccf.mmx.o \
+                       src/dotprod/src/dotprod_crcf.mmx.o \
+                       src/dotprod/src/dotprod_rrrf.mmx.o \
+                       src/dotprod/src/dotprod_cccq16.mmx.o \
+                       src/dotprod/src/dotprod_crcq16.mmx.o \
+                       src/dotprod/src/dotprod_rrrq16.mmx.o \
+                       src/dotprod/src/dotprod_cccq32.mmx.o \
+                       src/dotprod/src/dotprod_crcq32.mmx.o \
+                       src/dotprod/src/dotprod_rrrq32.mmx.o"
+    else
+        MLIBS_DOTPROD="src/dotprod/src/dotprod_cccf.o \
+                       src/dotprod/src/dotprod_crcf.o \
+                       src/dotprod/src/dotprod_rrrf.o \
+                       src/dotprod/src/dotprod_cccq16.o \
+                       src/dotprod/src/dotprod_crcq16.o \
+                       src/dotprod/src/dotprod_rrrq16.o \
+                       src/dotprod/src/dotprod_cccq32.o \
+                       src/dotprod/src/dotprod_crcq32.o \
+                       src/dotprod/src/dotprod_rrrq32.o"
+    fi
     case $target_os in
     darwin*)
         ARCH_OPTION="-march=core2";;

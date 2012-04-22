@@ -32,8 +32,9 @@
 
 struct spgram_s {
     // options
-    unsigned int nfft;      // fft length
-    unsigned int overlap;   //
+    unsigned int nfft;      // FFT length
+    unsigned int M;         // number of input samples in FFT
+    unsigned int delay;     // number of samples before FFT taken
     float alpha;            // filter
 
     windowcf buffer;        // input buffer
@@ -41,42 +42,83 @@ struct spgram_s {
     float complex * X;      // output fft (allocated)
     float complex * w;      // tapering window
     float * psd;            // psd (allocated)
-    fftplan p;              // fft plan
+    FFT_PLAN p;             // fft plan
 
     unsigned int num_windows; // number of fft windows accumulated
     unsigned int index;     //
 };
 
-spgram spgram_create(unsigned int _nfft)
+// create spgram object
+//  _nfft   :   fft size
+//  _alpha  :   averaging factor
+spgram spgram_create(unsigned int _nfft,
+                     float _alpha)
 {
-    // TODO : validate input
+    unsigned int _m     = _nfft / 4;    // window size
+    unsigned int _delay = _nfft / 8;    // delay between transforms
+
+    return spgram_create_advanced(_nfft, _m, _delay, _alpha);
+}
+
+
+// create spgram object (advanced method)
+//  _nfft   :   fft size
+//  _m      :   window size
+//  _delay  :   number of samples between transforms
+//  _alpha  :   averaging factor
+spgram spgram_create_advanced(unsigned int _nfft,
+                              unsigned int _m,
+                              unsigned int _delay,
+                              float        _alpha)
+{
+    // validate input
+    if (_nfft < 2) {
+        fprintf(stderr,"error: spgram_create_advanced(), fft size must be at least 2\n");
+        exit(1);
+    } else if (_m > _nfft) {
+        fprintf(stderr,"error: spgram_create_advanced(), window size cannot exceed fft size\n");
+        exit(1);
+    } else if (_delay == 0) {
+        fprintf(stderr,"error: spgram_create_advanced(), delay must be greater than zero\n");
+        exit(1);
+    } else if (_alpha <= 0.0f || _alpha > 1.0f) {
+        fprintf(stderr,"error: spgram_create_advanced(), alpha must be in (0,1]\n");
+        exit(1);
+    }
 
     spgram q = (spgram) malloc(sizeof(struct spgram_s));
 
     // input parameters
-    q->nfft    = _nfft;
-    q->overlap = q->nfft / 4;
-    q->alpha   = 0.02f;
+    q->nfft  = _nfft;
+    q->alpha = _alpha;
+    q->M     = _m;
+    q->delay = _delay;
 
-    q->buffer = windowcf_create(q->nfft);
+    q->buffer = windowcf_create(q->M);
     q->x = (float complex*) malloc((q->nfft)*sizeof(float complex));
     q->X = (float complex*) malloc((q->nfft)*sizeof(float complex));
-    q->w = (float complex*) malloc((q->nfft)*sizeof(float complex));
+    q->w = (float complex*) malloc((q->M)*sizeof(float complex));
     q->psd = (float*) malloc((q->nfft)*sizeof(float));
 
-    q->p = fft_create_plan(q->nfft, q->x, q->X, FFT_FORWARD, 0);
+    q->p = FFT_CREATE_PLAN(q->nfft, q->x, q->X, FFT_DIR_FORWARD, FFT_METHOD);
 
-    // initialize tapering window, scaled by FFT size
+    // initialize tapering window, scaled by window length size
+    // TODO : scale by window magnitude, FFT size as well
     unsigned int i;
-    for (i=0; i<q->nfft; i++)
-        q->w[i] = hamming(i,q->nfft) / (float)(q->nfft);
+    for (i=0; i<q->M; i++)
+        q->w[i] = hamming(i,q->M) / (float)(q->M);
 
-    q->num_windows = 0;
-    q->index = 0;
+    // clear FFT input
+    for (i=0; i<q->nfft; i++)
+        q->x[i] = 0.0f;
+
+    // reset the spgram object
+    spgram_reset(q);
 
     return q;
 }
 
+// destroy spgram object
 void spgram_destroy(spgram _q)
 {
     windowcf_destroy(_q->buffer);
@@ -85,10 +127,25 @@ void spgram_destroy(spgram _q)
     free(_q->X);
     free(_q->w);
     free(_q->psd);
-    fft_destroy_plan(_q->p);
+    FFT_DESTROY_PLAN(_q->p);
     free(_q);
 }
 
+// resets the internal state of the spgram object
+void spgram_reset(spgram _q)
+{
+    // clear the window buffer
+    windowcf_clear(_q->buffer);
+
+    // reset counters
+    _q->num_windows = 0;
+    _q->index = 0;
+}
+
+// push samples into spgram object
+//  _q      :   spgram object
+//  _x      :   input buffer [size: _n x 1]
+//  _n      :   input buffer length
 void spgram_push(spgram _q,
                  float complex * _x,
                  unsigned int _n)
@@ -96,26 +153,28 @@ void spgram_push(spgram _q,
     // push/write samples
     //windowcf_write(_q->buffer, _x, _n);
 
+
     unsigned int i;
     for (i=0; i<_n; i++) {
         windowcf_push(_q->buffer, _x[i]);
 
         _q->index++;
 
-        if (_q->index == _q->overlap) {
+        if (_q->index == _q->delay) {
             unsigned int j;
 
             // reset counter
             _q->index = 0;
 
-            // read buffer, copy to fft input (applying window)
+            // read buffer, copy to FFT input (applying window)
             float complex * rc;
             windowcf_read(_q->buffer, &rc);
-            for (i=0; i<_q->nfft; i++)
-                _q->x[i] = rc[i] * _q->w[i];
+            unsigned int k;
+            for (k=0; k<_q->M; k++)
+                _q->x[k] = rc[k] * _q->w[k];
 
             // execute fft
-            fft_execute(_q->p);
+            FFT_EXECUTE(_q->p);
             
             // accumulate output
             if (_q->num_windows == 0) {
@@ -133,9 +192,9 @@ void spgram_push(spgram _q,
     }
 }
 
-// execute spectral periodogram
-//  _q      :   spectral periodogram object
-//  _X      :   
+// compute spectral periodogram output
+//  _q      :   spgram object
+//  _X      :   output spectrum [dB]
 void spgram_execute(spgram _q,
                     float * _X)
 {

@@ -67,11 +67,11 @@ typedef struct {
 
 // define package_t
 typedef struct {
-    unsigned int id;                // package identification
-    unsigned int autotest_index;    // index of first autotest
-    unsigned int num_scripts;       // number of tests in package
-    const char* name;               // package name
-    int executed;                   // were any tests executed?
+    unsigned int id;            // package identification
+    unsigned int index;         // index of first autotest
+    unsigned int num_scripts;   // number of tests in package
+    const char* name;           // package name
+    int executed;               // were any tests executed?
 } package_t;
 
 // include auto-generated autotest header
@@ -154,7 +154,7 @@ int main(int argc, char *argv[])
             // list packages, scripts and exit
             for (i=0; i<NUM_PACKAGES; i++) {
                 printf("%u: %s\n", packages[i].id, packages[i].name);
-                for (j=packages[i].autotest_index; j<packages[i].num_scripts+packages[i].autotest_index; j++)
+                for (j=packages[i].index; j<packages[i].num_scripts+packages[i].index; j++)
                     printf("    %u: %s\n", scripts[j].id, scripts[j].name);
             }
             return 0;
@@ -272,7 +272,7 @@ void execute_package(package_t * _p,
     
     unsigned int i;
     for (i=0; i<_p->num_scripts; i++) {
-        execute_autotest( &scripts[ i + _p->autotest_index ], _verbose );
+        execute_autotest( &scripts[ i + _p->index ], _verbose );
     }
     
     _p->executed = 1;
@@ -288,7 +288,7 @@ void execute_package_search(package_t * _p, char * _str, int _verbose)
     } else {
 
         unsigned int i;
-        unsigned int i0 = _p->autotest_index;
+        unsigned int i0 = _p->index;
         unsigned int i1 = _p->num_scripts + i0;
         for (i=i0; i<i1; i++) {
             // see if search string matches autotest name
@@ -322,7 +322,7 @@ void print_package_results(package_t * _p)
 {
     unsigned int i;
     printf("%u: %s:\n", _p->id, _p->name);
-    for (i=_p->autotest_index; i<(_p->autotest_index+_p->num_scripts); i++)
+    for (i=_p->index; i<(_p->index+_p->num_scripts); i++)
         print_autotest_results( &scripts[i] );
 
     printf("\n");

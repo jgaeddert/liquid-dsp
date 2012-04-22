@@ -17,6 +17,7 @@ aclocal.m4
 autotest_include.h
 benchmark
 benchmark_include.h
+bench/fftbench
 configure
 config.h
 config.h.in

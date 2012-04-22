@@ -28,6 +28,7 @@ src/estimate_snr_fec
 src/estimate_snr_modem
 src/estimate_snr_test
 src/fft_example
+src/fft_spgram
 src/filter_decim_crcf
 src/filter_firdes_gmskrx_freq
 src/filter_firdes_gmskrx_time
@@ -36,6 +37,7 @@ src/filter_firfarrow_crcf
 src/filter_firfilt_crcf
 src/filter_firhilb_decim_crcf
 src/filter_iirdes
+src/filter_iirdes_example
 src/filter_iirfilt_crcf
 src/filter_interp_crcf
 src/filter_kaiser
@@ -50,6 +52,8 @@ src/math_poly_examples
 src/math_polyfit_lagrange
 src/math_window
 src/modem_demodsoft
+src/modem_freqmodem
+src/modem_ampmodem
 src/modem.gendata
 src/modem.genplot
 src/modem_phase_error

@@ -54,10 +54,10 @@ typedef struct {
 
 // define package_t
 typedef struct {
-    unsigned int id;
-    unsigned int benchmark_index;
-    unsigned int num_scripts;
-    const char* name;
+    unsigned int id;            // package identification
+    unsigned int index;         // index of first benchmark
+    unsigned int num_scripts;   // number of tests in package
+    const char* name;           // package name
 } package_t;
 
 // include auto-generated benchmark header
@@ -185,7 +185,7 @@ int main(int argc, char *argv[])
             // list packages, scripts and exit
             for (i=0; i<NUM_PACKAGES; i++) {
                 printf("%u: %s\n", packages[i].id, packages[i].name);
-                for (j=packages[i].benchmark_index; j<packages[i].num_scripts+packages[i].benchmark_index; j++)
+                for (j=packages[i].index; j<packages[i].num_scripts+packages[i].index; j++)
                     printf("    %-3u: %-22s\n", scripts[j].id, scripts[j].name);
             }
             return 0;
@@ -375,7 +375,7 @@ void execute_package(package_t* _package, int _verbose)
     
     unsigned int i;
     for (i=0; i<_package->num_scripts; i++) {
-        execute_benchmark( &scripts[ i + _package->benchmark_index ], _verbose );
+        execute_benchmark( &scripts[ i + _package->index ], _verbose );
     }
 }
 
@@ -427,7 +427,7 @@ void print_package_results(package_t* _package)
 {
     unsigned int i;
     printf("%u: %s:\n", _package->id, _package->name);
-    for (i=_package->benchmark_index; i<(_package->benchmark_index+_package->num_scripts); i++)
+    for (i=_package->index; i<(_package->index+_package->num_scripts); i++)
         print_benchmark_results( &scripts[i] );
 
     printf("\n");

@@ -730,10 +730,16 @@ typedef enum {
 } liquid_fft_kind;
 
 typedef enum {
-    LIQUID_FFT_METHOD_UNKNOWN=0,// unknown method
-    LIQUID_FFT_METHOD_LUT,      // look-up table
-    LIQUID_FFT_METHOD_RADIX2,   // Radix-2 (decimation in time)
-    LIQUID_FFT_METHOD_DFT       // slow discrete Fourier transform
+    LIQUID_FFT_METHOD_UNKNOWN=0,    // unknown method
+    LIQUID_FFT_METHOD_NONE,         // unspecified method (e.g. real-to-real)
+    LIQUID_FFT_METHOD_RADIX2,       // Radix-2 (decimation in time)
+    LIQUID_FFT_METHOD_MIXED_RADIX,  // Cooley-Tukey mixed-radix FFT (decimation in time)
+    LIQUID_FFT_METHOD_RADER,        // Rader's method for FFTs of prime length
+    LIQUID_FFT_METHOD_RADER2,       // Rader's method for FFTs of prime length (alternate)
+    LIQUID_FFT_METHOD_DFT,          // slow discrete Fourier transform
+    
+    // specific codelets for small FFTs
+    LIQUID_FFT_METHOD_DFT_2,
 } liquid_fft_method;
 
 // Macro    :   FFT (internal)
@@ -741,74 +747,80 @@ typedef enum {
 //  T       :   primitive data type
 //  TC      :   primitive data type (complex)
 #define LIQUID_FFT_DEFINE_INTERNAL_API(FFT,T,TC)                \
-struct FFT(plan_s) {                                            \
-    unsigned int n;             /* fft size */                  \
-    TC * twiddle;               /* twiddle factors */           \
-    TC * x;                     /* input array */               \
-    TC * y;                     /* output array */              \
-    int direction;              /* forward/reverse */           \
-    int flags;                                                  \
-    liquid_fft_kind kind;                                       \
-    liquid_fft_method method;                                   \
                                                                 \
-    /* radix-2 implementation data */                           \
-    int is_radix2;              /* radix-2 flag */              \
-    unsigned int * index_rev;   /* input indices (reversed) */  \
-    unsigned int m;             /* log2(n) */                   \
-    void (*execute)(FFT(plan)); /* function pointer */          \
+/* print plan recursively */                                    \
+void FFT(_print_plan_recursive)(FFT(plan)    _q,                \
+                                unsigned int _level);           \
                                                                 \
-    /* real even/odd DFTs parameters */                         \
-    T * xr;                     /* input array (real) */        \
-    T * yr;                     /* output array (real) */       \
-    TC * xc;                    /* allocated input array */     \
-    TC * yc;                    /* allocated output array */    \
+/* basic dft (slow, but guarantees correct output) */           \
+FFT(plan) FFT(_create_plan_dft)(unsigned int _nfft,             \
+                                TC *         _x,                \
+                                TC *         _y,                \
+                                int          _dir,              \
+                                int          _flags);           \
+void FFT(_destroy_plan_dft)(FFT(plan) _q);                      \
+void FFT(_execute_dft)(FFT(plan) _q);                           \
                                                                 \
-    /* modified discrete cosine transform parameters */         \
-    T * xrm;                    /* allocated input array */     \
-    T * yrm;                    /* allocated output array */    \
-    T * w;                      /* window */                    \
+/* specific codelets for small DFTs */                          \
+void FFT(_execute_dft_2)(FFT(plan) _q);                         \
+void FFT(_execute_dft_3)(FFT(plan) _q);                         \
+void FFT(_execute_dft_4)(FFT(plan) _q);                         \
+void FFT(_execute_dft_5)(FFT(plan) _q);                         \
+void FFT(_execute_dft_6)(FFT(plan) _q);                         \
+void FFT(_execute_dft_7)(FFT(plan) _q);                         \
+void FFT(_execute_dft_8)(FFT(plan) _q);                         \
                                                                 \
-    /* internal FFT plan for real DFTs */                       \
-    FFT(plan) internal_plan;                                    \
-};                                                              \
+/* basic radix-2 fft (fast, but only for transforms of 2^m */   \
+FFT(plan) FFT(_create_plan_radix2)(unsigned int _nfft,          \
+                                   TC *         _x,             \
+                                   TC *         _y,             \
+                                   int          _dir,           \
+                                   int          _flags);        \
+void FFT(_destroy_plan_radix2)(FFT(plan) _q);                   \
+void FFT(_execute_radix2)(FFT(plan) _q);                        \
                                                                 \
-/* initialization */                                            \
-void FFT(_init_null)(FFT(plan) _p);                             \
-void FFT(_init_lut)(FFT(plan) _p);                              \
-void FFT(_init_radix2)(FFT(plan) _p);                           \
+/* Cooley-Tukey mixed-radix FFT (fast when highly composite) */ \
+FFT(plan) FFT(_create_plan_mixed_radix)(unsigned int _nfft,     \
+                                        TC *         _x,        \
+                                        TC *         _y,        \
+                                        int          _dir,      \
+                                        int          _flags);   \
+void FFT(_destroy_plan_mixed_radix)(FFT(plan) _q);              \
+void FFT(_execute_mixed_radix)(FFT(plan) _q);                   \
+unsigned int FFT(_estimate_mixed_radix)(unsigned int _nfft);    \
                                                                 \
-/* execute basic dft (slow, but guarantees correct output) */   \
-void FFT(_execute_dft)(FFT(plan) _p);                           \
+/* Rader's algorithm for FFTs of prime length */                \
+FFT(plan) FFT(_create_plan_rader)(unsigned int _nfft,           \
+                                  TC *         _x,              \
+                                  TC *         _y,              \
+                                  int          _dir,            \
+                                  int          _flags);         \
+void FFT(_destroy_plan_rader)(FFT(plan) _q);                    \
+void FFT(_execute_rader)(FFT(plan) _q);                         \
                                                                 \
-/* execute basic dft using look-up table for twiddle factors */ \
-/* (fast for small fft sizes) */                                \
-void FFT(_execute_lut)(FFT(plan) _p);                           \
-                                                                \
-/* execute radix-2 fft */                                       \
-void FFT(_execute_radix2)(FFT(plan) _p);                        \
+/* Rader's alternate algorithm for FFTs of prime length */      \
+FFT(plan) FFT(_create_plan_rader2)(unsigned int _nfft,          \
+                                   TC *         _x,             \
+                                   TC *         _y,             \
+                                   int          _dir,           \
+                                   int          _flags);        \
+void FFT(_destroy_plan_rader2)(FFT(plan) _q);                   \
+void FFT(_execute_rader2)(FFT(plan) _q);                        \
                                                                 \
 /* discrete cosine transform (DCT) prototypes */                \
-void FFT(_execute_REDFT00)(FFT(plan) _p);   /* DCT-I   */       \
-void FFT(_execute_REDFT10)(FFT(plan) _p);   /* DCT-II  */       \
-void FFT(_execute_REDFT01)(FFT(plan) _p);   /* DCT-III */       \
-void FFT(_execute_REDFT11)(FFT(plan) _p);   /* DCT-IV  */       \
+void FFT(_execute_REDFT00)(FFT(plan) _q);   /* DCT-I   */       \
+void FFT(_execute_REDFT10)(FFT(plan) _q);   /* DCT-II  */       \
+void FFT(_execute_REDFT01)(FFT(plan) _q);   /* DCT-III */       \
+void FFT(_execute_REDFT11)(FFT(plan) _q);   /* DCT-IV  */       \
                                                                 \
 /* discrete sine transform (DST) prototypes */                  \
-void FFT(_execute_RODFT00)(FFT(plan) _p);   /* DST-I   */       \
-void FFT(_execute_RODFT10)(FFT(plan) _p);   /* DST-II  */       \
-void FFT(_execute_RODFT01)(FFT(plan) _p);   /* DST-III */       \
-void FFT(_execute_RODFT11)(FFT(plan) _p);   /* DST-IV  */       \
-                                                                \
-/* modified discrete cosine transforms */                       \
-void FFT(_execute_MDCT)(FFT(plan) _p);      /* MDCT    */       \
-void FFT(_execute_IMDCT)(FFT(plan) _p);     /* IMDCT   */       \
-                                                                \
-/* fast real transform (DST/DCT/MDCT) prototypes */             \
-void FFT(_execute_REDFT10_fftn)(FFT(plan) _p);                  \
-void FFT(_execute_REDFT01_fftn)(FFT(plan) _p);                  \
-void FFT(_execute_REDFT11_fft4n)(FFT(plan) _p);                 \
-void FFT(_execute_MDCT_REDFT11)(FFT(plan) _p);                  \
-void FFT(_execute_IMDCT_REDFT11)(FFT(plan) _p);                 \
+void FFT(_execute_RODFT00)(FFT(plan) _q);   /* DST-I   */       \
+void FFT(_execute_RODFT10)(FFT(plan) _q);   /* DST-II  */       \
+void FFT(_execute_RODFT01)(FFT(plan) _q);   /* DST-III */       \
+void FFT(_execute_RODFT11)(FFT(plan) _q);   /* DST-IV  */       \
+
+// determine best FFT method based on size
+liquid_fft_method liquid_fft_estimate_method(unsigned int _nfft);
 
 // is input radix-2?
 int fft_is_radix2(unsigned int _n);
@@ -1533,277 +1545,144 @@ LIQUID_MATRIX_DEFINE_INTERNAL_API(MATRIX_MANGLE_CDOUBLE, liquid_double_complex)
 #define ASK128_ALPHA    (1./sqrt(5461))
 #define ASK256_ALPHA    (1./sqrt(21845))
 
-// modem structure used for both modulation and demodulation 
-//
-// The modem structure implements a variety of common modulation schemes,
-// including (differential) phase-shift keying, and (quadrature) amplitude
-// modulation.
-//
-// While the same modem structure may be used for both modulation and
-// demodulation for most schemes, it is important to use separate objects
-// for differential-mode modems (e.g. LIQUID_MODEM_DPSK) as the internal state
-// will change after each symbol.  It is usually good practice to keep
-// separate instances of modulators and demodulators.
-struct modem_s {
-    modulation_scheme scheme;       // modulation scheme
+// Macro    :   MODEM
+//  MODEM   :   name-mangling macro
+//  T       :   primitive data type
+//  TC      :   primitive data type (complex)
+#define LIQUID_MODEM_DEFINE_INTERNAL_API(MODEM,T,TC)            \
+                                                                \
+/* initialize a generic modem object */                         \
+void MODEM(_init)(MODEM() _q, unsigned int _bits_per_symbol);   \
+                                                                \
+/* initialize symbol map for fast modulation */                 \
+void MODEM(_init_map)(MODEM() _q);                              \
+                                                                \
+/* generic modem create routines */                             \
+MODEM() MODEM(_create_ask)( unsigned int _bits_per_symbol);     \
+MODEM() MODEM(_create_qam)( unsigned int _bits_per_symbol);     \
+MODEM() MODEM(_create_psk)( unsigned int _bits_per_symbol);     \
+MODEM() MODEM(_create_dpsk)(unsigned int _bits_per_symbol);     \
+MODEM() MODEM(_create_apsk)(unsigned int _bits_per_symbol);     \
+MODEM() MODEM(_create_arb)( unsigned int _bits_per_symbol);     \
+                                                                \
+/* Initialize arbitrary modem constellation */                  \
+void MODEM(_arb_init)(MODEM() _q,                               \
+                      TC * _symbol_map,                         \
+                      unsigned int _len);                       \
+                                                                \
+/* Initialize arb modem constellation from external file */     \
+void MODEM(_arb_init_file)(MODEM() _q, char * _filename);       \
+                                                                \
+/* specific modem create routines */                            \
+MODEM() MODEM(_create_bpsk)(void);                              \
+MODEM() MODEM(_create_qpsk)(void);                              \
+MODEM() MODEM(_create_ook)(void);                               \
+MODEM() MODEM(_create_sqam32)(void);                            \
+MODEM() MODEM(_create_sqam128)(void);                           \
+MODEM() MODEM(_create_apsk4)(void);                             \
+MODEM() MODEM(_create_apsk8)(void);                             \
+MODEM() MODEM(_create_apsk16)(void);                            \
+MODEM() MODEM(_create_apsk32)(void);                            \
+MODEM() MODEM(_create_apsk64)(void);                            \
+MODEM() MODEM(_create_apsk128)(void);                           \
+MODEM() MODEM(_create_apsk256)(void);                           \
+MODEM() MODEM(_create_V29)(void);                               \
+MODEM() MODEM(_create_arb16opt)(void);                          \
+MODEM() MODEM(_create_arb32opt)(void);                          \
+MODEM() MODEM(_create_arb64opt)(void);                          \
+MODEM() MODEM(_create_arb128opt)(void);                         \
+MODEM() MODEM(_create_arb256opt)(void);                         \
+MODEM() MODEM(_create_arb64vt)(void);                           \
+                                                                \
+/* Scale arbitrary modem energy to unity */                     \
+void MODEM(_arb_scale)(MODEM() _q);                             \
+                                                                \
+/* Balance I/Q */                                               \
+void MODEM(_arb_balance_iq)(MODEM() _q);                        \
+                                                                \
+/* modulate using symbol map (look-up table) */                 \
+void MODEM(_modulate_map)(MODEM()      _q,                      \
+                          unsigned int _sym_in,                 \
+                          TC *         _y);                     \
+                                                                \
+/* modem modulate routines */                                   \
+void MODEM(_modulate_ask)      ( MODEM(), unsigned int, TC *);  \
+void MODEM(_modulate_qam)      ( MODEM(), unsigned int, TC *);  \
+void MODEM(_modulate_psk)      ( MODEM(), unsigned int, TC *);  \
+void MODEM(_modulate_dpsk)     ( MODEM(), unsigned int, TC *);  \
+void MODEM(_modulate_arb)      ( MODEM(), unsigned int, TC *);  \
+void MODEM(_modulate_apsk)     ( MODEM(), unsigned int, TC *);  \
+void MODEM(_modulate_bpsk)     ( MODEM(), unsigned int, TC *);  \
+void MODEM(_modulate_qpsk)     ( MODEM(), unsigned int, TC *);  \
+void MODEM(_modulate_ook)      ( MODEM(), unsigned int, TC *);  \
+void MODEM(_modulate_sqam32)   ( MODEM(), unsigned int, TC *);  \
+void MODEM(_modulate_sqam128)  ( MODEM(), unsigned int, TC *);  \
+                                                                \
+/* modem demodulate routines */                                 \
+void MODEM(_demodulate_ask)    ( MODEM(), TC, unsigned int *);  \
+void MODEM(_demodulate_qam)    ( MODEM(), TC, unsigned int *);  \
+void MODEM(_demodulate_psk)    ( MODEM(), TC, unsigned int *);  \
+void MODEM(_demodulate_dpsk)   ( MODEM(), TC, unsigned int *);  \
+void MODEM(_demodulate_arb)    ( MODEM(), TC, unsigned int *);  \
+void MODEM(_demodulate_apsk)   ( MODEM(), TC, unsigned int *);  \
+void MODEM(_demodulate_bpsk)   ( MODEM(), TC, unsigned int *);  \
+void MODEM(_demodulate_qpsk)   ( MODEM(), TC, unsigned int *);  \
+void MODEM(_demodulate_ook)    ( MODEM(), TC, unsigned int *);  \
+void MODEM(_demodulate_sqam32) ( MODEM(), TC, unsigned int *);  \
+void MODEM(_demodulate_sqam128)( MODEM(), TC, unsigned int *);  \
+                                                                \
+/* modem demodulate (soft) routines */                          \
+void MODEM(_demodulate_soft_bpsk)(MODEM()         _q,           \
+                                  TC              _x,           \
+                                  unsigned int *  _sym_out,     \
+                                  unsigned char * _soft_bits);  \
+void MODEM(_demodulate_soft_qpsk)(MODEM()         _q,           \
+                                  TC              _x,           \
+                                  unsigned int *  _sym_out,     \
+                                  unsigned char * _soft_bits);  \
+void MODEM(_demodulate_soft_arb)( MODEM()         _q,           \
+                                  TC              _x,           \
+                                  unsigned int *  _sym_out,     \
+                                  unsigned char * _soft_bits);  \
+                                                                \
+/* generic soft demodulation routine using nearest-neighbors */ \
+/* look-up table                                             */ \
+void MODEM(_demodulate_soft_table)(MODEM()         _q,          \
+                                   TC              _x,          \
+                                   unsigned int *  _sym_out,    \
+                                   unsigned char * _soft_bits); \
+                                                                \
+/* Demodulate a linear symbol constellation using dynamic   */  \
+/* threshold calculation                                    */  \
+/*  _v      :   input value             */                      \
+/*  _m      :   bits per symbol         */                      \
+/*  _alpha  :   scaling factor          */                      \
+/*  _s      :   demodulated symbol      */                      \
+/*  _res    :   residual                */                      \
+void modem_demodulate_linear_array(T              _v,           \
+                                   unsigned int   _m,           \
+                                   T              _alpha,       \
+                                   unsigned int * _s,           \
+                                   T *            _res);        \
+                                                                \
+/* Demodulate a linear symbol constellation using           */  \
+/* refereneced lookup table                                 */  \
+/*  _v      :   input value             */                      \
+/*  _m      :   bits per symbol         */                      \
+/*  _ref    :   array of thresholds     */                      \
+/*  _s      :   demodulated symbol      */                      \
+/*  _res    :   residual                */                      \
+void modem_demodulate_linear_array_ref(T              _v,       \
+                                       unsigned int   _m,       \
+                                       T *            _ref,     \
+                                       unsigned int * _s,       \
+                                       T *            _res);    \
 
-    unsigned int m;                 // bits per symbol (modulation depth)
-    unsigned int M;                 // constellation size, M=2^m
 
-    float alpha;                    // scaling factor to ensure unity energy
 
-    // Reference vector for demodulating linear arrays
-    //
-    // By storing these values in an array they do not need to be
-    // calculated during run-time.  This speeds up the demodulation by
-    // approximately 8%.
-    float ref[MAX_MOD_BITS_PER_SYMBOL];
+// define internal modem APIs
+LIQUID_MODEM_DEFINE_INTERNAL_API(LIQUID_MODEM_MANGLE_FLOAT,float,float complex)
 
-    // modulation
-    float complex * symbol_map;     // complete symbol map
-    int modulate_using_map;         // modulate using map (look-up table) flag
-
-    // demodulation
-    float complex r;                // received state vector
-    float complex x_hat;            // estimated symbol (demodulator)
-
-    // QAM modem
-    unsigned int m_i;               // bits per symbol, in-phase
-    unsigned int M_i;               // in-phase dimension, M_i=2^{m_i}
-    unsigned int m_q;               // bits per symbol, quadrature
-    unsigned int M_q;               // quadrature dimension, M_q=2^{m_q}
-
-    // PSK/DPSK modem
-    float d_phi;                    // half of phase between symbols
-    float dpsk_phi;                 // angle state for differential PSK
-
-    // APSK modem
-    unsigned int apsk_num_levels;   // number of levels
-    unsigned int * apsk_p;          // number of symbols per level
-    float * apsk_r;                 // radii of levels
-    float * apsk_r_slicer;          // slicer radii of levels
-    float * apsk_phi;               // phase offset of levels
-    unsigned int * apsk_symbol_map; // symbol mapping
-
-    // modulate function pointer
-    void (*modulate_func)(modem _mod,
-                          unsigned int _symbol_in,
-                          float complex * _y);
-
-    // demodulate function pointer
-    void (*demodulate_func)(modem _demod,
-                            float complex _x,
-                            unsigned int * _symbol_out);
-
-    // soft demodulation
-    //int demodulate_soft;    // soft demodulation flag
-    // neighbors array
-    unsigned char * demod_soft_neighbors;   // array of nearest neighbors
-    unsigned int demod_soft_p;              // number of neighbors in array
-};
-
-// initialize a generic modem object
-void modem_init(modem _q, unsigned int _bits_per_symbol);
-
-// initialize symbol map for fast modulation
-void modem_init_map(modem _q);
-
-// generic modem create routines
-modem modem_create_ask(unsigned int _bits_per_symbol);
-modem modem_create_qam(unsigned int _bits_per_symbol);
-modem modem_create_psk(unsigned int _bits_per_symbol);
-modem modem_create_dpsk(unsigned int _bits_per_symbol);
-modem modem_create_apsk(unsigned int _bits_per_symbol);
-modem modem_create_arb(unsigned int _bits_per_symbol);
-
-// Initialize arbitrary modem constellation
-void modem_arb_init(modem _mod, liquid_float_complex *_symbol_map, unsigned int _len);
-
-// Initialize arbitrary modem constellation on data from external file
-void modem_arb_init_file(modem _mod, char* filename);
-
-// specific modem create routines
-modem modem_create_bpsk(void);
-modem modem_create_qpsk(void);
-modem modem_create_ook(void);
-modem modem_create_sqam32(void);
-modem modem_create_sqam128(void);
-modem modem_create_apsk4(void);
-modem modem_create_apsk8(void);
-modem modem_create_apsk16(void);
-modem modem_create_apsk32(void);
-modem modem_create_apsk64(void);
-modem modem_create_apsk128(void);
-modem modem_create_apsk256(void);
-modem modem_create_V29(void);
-modem modem_create_arb16opt(void);
-modem modem_create_arb32opt(void);
-modem modem_create_arb64opt(void);
-modem modem_create_arb128opt(void);
-modem modem_create_arb256opt(void);
-modem modem_create_arb64vt(void);
-
-// Scale arbitrary modem energy to unity
-void modem_arb_scale(modem _mod);
-
-// Balance I/Q
-void modem_arb_balance_iq(modem _mod);
-
-// modulate using symbol map (look-up table)
-void modem_modulate_map(modem _q, unsigned int _symbol_in, float complex * _y);
-
-// generic modem modulate routines
-void modem_modulate_ask(modem _mod, unsigned int symbol_in, float complex *y);
-void modem_modulate_qam(modem _mod, unsigned int symbol_in, float complex *y);
-void modem_modulate_psk(modem _mod, unsigned int symbol_in, float complex *y);
-void modem_modulate_dpsk(modem _mod, unsigned int symbol_in, float complex *y);
-void modem_modulate_arb(modem _mod, unsigned int symbol_in, float complex *y);
-void modem_modulate_apsk(modem _mod, unsigned int symbol_in, float complex *y);
-//void modem_modulate_arb_mirrored(modem _mod, unsigned int symbol_in, float complex *y);
-//void modem_modulate_arb_rotated(modem _mod, unsigned int symbol_in, float complex *y);
-
-// specific modem modulate routines
-void modem_modulate_bpsk(modem _mod, unsigned int symbol_in, float complex *y);
-void modem_modulate_qpsk(modem _mod, unsigned int symbol_in, float complex *y);
-void modem_modulate_ook(modem _mod, unsigned int symbol_in, float complex *y);
-void modem_modulate_sqam32(modem _mod, unsigned int symbol_in, float complex *y);
-void modem_modulate_sqam128(modem _mod, unsigned int symbol_in, float complex *y);
-
-// generic modem demodulate routines
-void modem_demodulate_ask(modem _demod, float complex x, unsigned int *symbol_out);
-void modem_demodulate_qam(modem _demod, float complex x, unsigned int *symbol_out);
-void modem_demodulate_psk(modem _demod, float complex x, unsigned int *symbol_out);
-void modem_demodulate_dpsk(modem _demod, float complex x, unsigned int *symbol_out);
-void modem_demodulate_arb(modem _demod, float complex x, unsigned int *symbol_out);
-void modem_demodulate_apsk(modem _demod, float complex x, unsigned int *symbol_out);
-//void modem_demodulate_arb_mirrored(modem _demod, float complex x, unsigned int *symbol_out);
-//void modem_demodulate_arb_rotated(modem _demod, float complex x, unsigned int *symbol_out);
-
-// specific modem demodulate routines
-void modem_demodulate_bpsk(modem _demod, float complex x, unsigned int *symbol_out);
-void modem_demodulate_qpsk(modem _demod, float complex x, unsigned int *symbol_out);
-void modem_demodulate_ook(modem _demod, float complex x, unsigned int *symbol_out);
-void modem_demodulate_sqam32(modem _demod, float complex x, unsigned int *symbol_out);
-void modem_demodulate_sqam128(modem _demod, float complex x, unsigned int *symbol_out);
-
-// generic soft demodulation routine using nearest-neighbors look-up table
-void modem_demodulate_soft_table(modem _demod, float complex _x, unsigned int * _s, unsigned char * _soft_bits);
-
-// specific modem soft demodulate routines
-void modem_demodulate_soft_bpsk(modem _demod, float complex _x, unsigned int * _s, unsigned char * _bits_out);
-void modem_demodulate_soft_qpsk(modem _demod, float complex _x, unsigned int * _s, unsigned char * _bits_out);
-void modem_demodulate_soft_arb(modem _demod, float complex _x, unsigned int * _s, unsigned char * _bits_out);
-
-// specific modem definitions
-extern const liquid_float_complex modem_arb_sqam32[8];  // 'square' 32-qam (first quadrant)
-extern const liquid_float_complex modem_arb_sqam128[32];// 'square' 128-qam (first quadrant)
-extern const liquid_float_complex modem_arb_V29[16];    // V.29
-extern const liquid_float_complex modem_arb16opt[16];   // optimal 16-QAM
-extern const liquid_float_complex modem_arb32opt[32];   // optimal 32-QAM
-extern const liquid_float_complex modem_arb64opt[64];   // optimal 64-QAM
-extern const liquid_float_complex modem_arb128opt[128]; // optimal 128-QAM
-extern const liquid_float_complex modem_arb256opt[256]; // optimal 256-QAM
-extern const liquid_float_complex modem_arb_vt64[64];   // Virginia Tech logo
-
-extern const unsigned int apsk4_num_levels;
-extern const unsigned int apsk4_p[2];
-extern const float apsk4_r[2];
-extern const float apsk4_phi[2];
-extern const float apsk4_r_slicer[1];
-extern const unsigned int apsk4_symbol_map[4];
-
-extern const unsigned int apsk8_num_levels;
-extern const unsigned int apsk8_p[2];
-extern const float apsk8_r[2];
-extern const float apsk8_phi[2];
-extern const float apsk8_r_slicer[1];
-extern const unsigned int apsk8_symbol_map[8];
-
-extern const unsigned int apsk16_num_levels;
-extern const unsigned int apsk16_p[2];
-extern const float apsk16_r[2];
-extern const float apsk16_phi[2];
-extern const float apsk16_r_slicer[1];
-extern const unsigned int apsk16_symbol_map[16];
-
-extern const unsigned int apsk32_num_levels;
-extern const unsigned int apsk32_p[3];
-extern const float apsk32_r[3];
-extern const float apsk32_phi[3];
-extern const float apsk32_r_slicer[2];
-extern const unsigned int apsk32_symbol_map[32];
-
-extern const unsigned int apsk64_num_levels;
-extern const unsigned int apsk64_p[4];
-extern const float apsk64_r[4];
-extern const float apsk64_phi[4];
-extern const float apsk64_r_slicer[3];
-extern const unsigned int apsk64_symbol_map[64];
-
-extern const unsigned int apsk128_num_levels;
-extern const unsigned int apsk128_p[5];
-extern const float apsk128_r[5];
-extern const float apsk128_phi[5];
-extern const float apsk128_r_slicer[4];
-extern const unsigned int apsk128_symbol_map[128];
-
-extern const unsigned int apsk256_num_levels;
-extern const unsigned int apsk256_p[7];
-extern const float apsk256_r[7];
-extern const float apsk256_phi[7];
-extern const float apsk256_r_slicer[6];
-extern const unsigned int apsk256_symbol_map[256];
-
-// soft demodulation arrays
-extern const unsigned char psk4_demod_soft_neighbors[8];
-extern const unsigned char psk8_demod_soft_neighbors[16];
-extern const unsigned char psk16_demod_soft_neighbors[32];
-extern const unsigned char psk32_demod_soft_neighbors[64];
-
-extern const unsigned char ask4_demod_soft_neighbors[8];
-extern const unsigned char ask8_demod_soft_neighbors[16];
-extern const unsigned char ask16_demod_soft_neighbors[32];
-
-extern const unsigned char qam8_demod_soft_neighbors[24];
-extern const unsigned char qam16_demod_soft_neighbors[64];
-extern const unsigned char qam32_demod_soft_neighbors[128];
-extern const unsigned char qam64_demod_soft_neighbors[256];
-extern const unsigned char qam128_demod_soft_neighbors[512];
-extern const unsigned char qam256_demod_soft_neighbors[1024];
-
-extern const unsigned char apsk4_demod_soft_neighbors[12];      // p=3
-extern const unsigned char apsk8_demod_soft_neighbors[24];      // p=3
-extern const unsigned char apsk16_demod_soft_neighbors[64];     // p=4
-extern const unsigned char apsk32_demod_soft_neighbors[128];    // p=4
-extern const unsigned char apsk64_demod_soft_neighbors[256];    // p=4
-extern const unsigned char apsk128_demod_soft_neighbors[640];   // p=5
-extern const unsigned char apsk256_demod_soft_neighbors[1280];  // p=5
-
-// demodulator helper functions
-
-// Demodulate a linear symbol constellation using dynamic threshold calculation
-//  _v      :   input value
-//  _m      :   bits per symbol
-//  _alpha  :   scaling factor
-//  _s      :   demodulated symbol
-//  _res    :   residual
-void modem_demodulate_linear_array(float _v,
-                                   unsigned int _m,
-                                   float _alpha,
-                                   unsigned int *_s,
-                                   float *_res);
-
-// Demodulate a linear symbol constellation using refereneced lookup table
-//  _v      :   input value
-//  _m      :   bits per symbol
-//  _ref    :   array of thresholds
-//  _s      :   demodulated symbol
-//  _res    :   residual
-void modem_demodulate_linear_array_ref(float _v,
-                                       unsigned int _m,
-                                       float *_ref,
-                                       unsigned int *_s,
-                                       float *_res);
 
 //
 // MODULE : multicarrier
