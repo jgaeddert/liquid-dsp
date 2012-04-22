@@ -24,7 +24,7 @@
 //
 
 // create an ask (amplitude-shift keying) modem object
-modem MODEM(_create_ask)(unsigned int _bits_per_symbol)
+MODEM() MODEM(_create_ask)(unsigned int _bits_per_symbol)
 {
     MODEM() q = (MODEM()) malloc( sizeof(struct MODEM(_s)) );
 
