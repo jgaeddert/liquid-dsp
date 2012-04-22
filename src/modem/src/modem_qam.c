@@ -39,19 +39,19 @@ MODEM() MODEM(_create_qam)(unsigned int _bits_per_symbol)
 
     if (q->m % 2) {
         // rectangular qam
-        q->m_i = (q->m + 1) >> 1;
-        q->m_q = (q->m - 1) >> 1;
+        q->data.qam.m_i = (q->m + 1) >> 1;
+        q->data.qam.m_q = (q->m - 1) >> 1;
     } else {
         // square qam
-        q->m_i = q->m >> 1;
-        q->m_q = q->m >> 1;
+        q->data.qam.m_i = q->m >> 1;
+        q->data.qam.m_q = q->m >> 1;
     }
 
-    q->M_i = 1 << (q->m_i);
-    q->M_q = 1 << (q->m_q);
+    q->data.qam.M_i = 1 << (q->data.qam.m_i);
+    q->data.qam.M_q = 1 << (q->data.qam.m_q);
 
-    assert(q->m_i + q->m_q == q->m);
-    assert(q->M_i * q->M_q == q->M);
+    assert(q->data.qam.m_i + q->data.qam.m_q == q->m);
+    assert(q->data.qam.M_i * q->data.qam.M_q == q->M);
 
     switch (q->M) {
     case 4:     q->alpha = RQAM4_ALPHA;    q->scheme = LIQUID_MODEM_QAM4;   break;
@@ -120,16 +120,16 @@ void MODEM(_modulate_qam)(MODEM()      _q,
 {
     unsigned int s_i;   // in-phase symbol
     unsigned int s_q;   // quadrature symbol
-    s_i = _sym_in >> _q->m_q;
-    s_q = _sym_in & ( (1<<_q->m_q)-1 );
+    s_i = _sym_in >> _q->data.qam.m_q;
+    s_q = _sym_in & ( (1<<_q->data.qam.m_q)-1 );
 
     // 'encode' symbols (actually gray decoding)
     s_i = gray_decode(s_i);
     s_q = gray_decode(s_q);
 
     // compute output sample
-    *_y = (2*(int)s_i - (int)(_q->M_i) + 1) * _q->alpha +
-          (2*(int)s_q - (int)(_q->M_q) + 1) * _q->alpha * _Complex_I;
+    *_y = (2*(int)s_i - (int)(_q->data.qam.M_i) + 1) * _q->alpha +
+          (2*(int)s_q - (int)(_q->data.qam.M_q) + 1) * _q->alpha * _Complex_I;
 }
 
 // demodulate QAM
@@ -140,17 +140,17 @@ void MODEM(_demodulate_qam)(MODEM()      _q,
     // demodulate in-phase component on linearly-spaced array
     unsigned int s_i;   // in-phase symbol
     T res_i;        // in-phase residual
-    MODEM(_demodulate_linear_array_ref)(crealf(_x), _q->m_i, _q->ref, &s_i, &res_i);
+    MODEM(_demodulate_linear_array_ref)(crealf(_x), _q->data.qam.m_i, _q->ref, &s_i, &res_i);
 
     // demodulate quadrature component on linearly-spaced array
     unsigned int s_q;   // quadrature symbol
     T res_q;        // quadrature residual
-    MODEM(_demodulate_linear_array_ref)(cimagf(_x), _q->m_q, _q->ref, &s_q, &res_q);
+    MODEM(_demodulate_linear_array_ref)(cimagf(_x), _q->data.qam.m_q, _q->ref, &s_q, &res_q);
 
     // 'decode' output symbol (actually gray encoding)
     s_i = gray_encode(s_i);
     s_q = gray_encode(s_q);
-    *_sym_out = ( s_i << _q->m_q ) + s_q;
+    *_sym_out = ( s_i << _q->data.qam.m_q ) + s_q;
 
     // re-modulate symbol (subtract residual) and store state
     _q->x_hat = _x - (res_i + _Complex_I*res_q);

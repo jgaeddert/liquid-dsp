@@ -30,9 +30,6 @@ modem MODEM(_create_ask)(unsigned int _bits_per_symbol)
 
     MODEM(_init)(q, _bits_per_symbol);
 
-    q->m_i = q->m;
-    q->M_i = q->M;
-
     switch (q->M) {
     case 2:     q->alpha = ASK2_ALPHA;   q->scheme = LIQUID_MODEM_ASK2;   break;
     case 4:     q->alpha = ASK4_ALPHA;   q->scheme = LIQUID_MODEM_ASK4;   break;

@@ -54,7 +54,7 @@ MODEM() MODEM(_create_psk)(unsigned int _bits_per_symbol)
         q->ref[k] = (1<<k) * q->alpha;
 
     // compute phase offset (half of phase difference between symbols)
-    q->d_phi = M_PI*(1.0f - 1.0f/(T)(q->M));
+    q->data.psk.d_phi = M_PI*(1.0f - 1.0f/(T)(q->M));
 
     // set modulation/demodulation functions
     q->modulate_func = &MODEM(_modulate_psk);
@@ -99,7 +99,7 @@ void MODEM(_demodulate_psk)(MODEM()        _q,
 {
     // compute angle and subtract phase offset, ensuring phase is in [-pi,pi)
     T theta = cargf(_x);
-    theta -= _q->d_phi;
+    theta -= _q->data.psk.d_phi;
     if (theta < -M_PI)
         theta += 2*M_PI;
 

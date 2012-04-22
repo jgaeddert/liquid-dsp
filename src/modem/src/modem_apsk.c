@@ -58,12 +58,12 @@ modem modem_create_apsk4()
     MODEM(_init)(q, 2);
     
     // set internals
-    q->apsk_num_levels = apsk4_num_levels;
-    q->apsk_p          = (unsigned int *) apsk4_p;
-    q->apsk_r          = (T *) apsk4_r;
-    q->apsk_phi        = (T *) apsk4_phi;
-    q->apsk_r_slicer   = (T *) apsk4_r_slicer;
-    q->apsk_symbol_map = (unsigned int *) apsk4_symbol_map;
+    q->data.apsk.num_levels = apsk4_num_levels;
+    q->data.apsk.p          = (unsigned int *) apsk4_p;
+    q->data.apsk.r          = (T *) apsk4_r;
+    q->data.apsk.phi        = (T *) apsk4_phi;
+    q->data.apsk.r_slicer   = (T *) apsk4_r_slicer;
+    q->data.apsk.symbol_map = (unsigned int *) apsk4_symbol_map;
 
     q->modulate_func = &modem_modulate_apsk;
     q->demodulate_func = &modem_demodulate_apsk;
@@ -83,12 +83,12 @@ modem modem_create_apsk8()
     MODEM(_init)(q, 3);
     
     // set internals
-    q->apsk_num_levels = apsk8_num_levels;
-    q->apsk_p          = (unsigned int *) apsk8_p;
-    q->apsk_r          = (T *) apsk8_r;
-    q->apsk_phi        = (T *) apsk8_phi;
-    q->apsk_r_slicer   = (T *) apsk8_r_slicer;
-    q->apsk_symbol_map = (unsigned int *) apsk8_symbol_map;
+    q->data.apsk.num_levels = apsk8_num_levels;
+    q->data.apsk.p          = (unsigned int *) apsk8_p;
+    q->data.apsk.r          = (T *) apsk8_r;
+    q->data.apsk.phi        = (T *) apsk8_phi;
+    q->data.apsk.r_slicer   = (T *) apsk8_r_slicer;
+    q->data.apsk.symbol_map = (unsigned int *) apsk8_symbol_map;
 
     q->modulate_func = &modem_modulate_apsk;
     q->demodulate_func = &modem_demodulate_apsk;
@@ -108,12 +108,12 @@ modem modem_create_apsk16()
     MODEM(_init)(q, 4);
     
     // set internals
-    q->apsk_num_levels = apsk16_num_levels;
-    q->apsk_p          = (unsigned int *) apsk16_p;
-    q->apsk_r          = (T *) apsk16_r;
-    q->apsk_phi        = (T *) apsk16_phi;
-    q->apsk_r_slicer   = (T *) apsk16_r_slicer;
-    q->apsk_symbol_map = (unsigned int *) apsk16_symbol_map;
+    q->data.apsk.num_levels = apsk16_num_levels;
+    q->data.apsk.p          = (unsigned int *) apsk16_p;
+    q->data.apsk.r          = (T *) apsk16_r;
+    q->data.apsk.phi        = (T *) apsk16_phi;
+    q->data.apsk.r_slicer   = (T *) apsk16_r_slicer;
+    q->data.apsk.symbol_map = (unsigned int *) apsk16_symbol_map;
 
     q->modulate_func = &modem_modulate_apsk;
     q->demodulate_func = &modem_demodulate_apsk;
@@ -133,12 +133,12 @@ modem modem_create_apsk32()
     MODEM(_init)(q, 5);
     
     // set internals
-    q->apsk_num_levels = apsk32_num_levels;
-    q->apsk_p          = (unsigned int *) apsk32_p;
-    q->apsk_r          = (T *) apsk32_r;
-    q->apsk_phi        = (T *) apsk32_phi;
-    q->apsk_r_slicer   = (T *) apsk32_r_slicer;
-    q->apsk_symbol_map = (unsigned int *) apsk32_symbol_map;
+    q->data.apsk.num_levels = apsk32_num_levels;
+    q->data.apsk.p          = (unsigned int *) apsk32_p;
+    q->data.apsk.r          = (T *) apsk32_r;
+    q->data.apsk.phi        = (T *) apsk32_phi;
+    q->data.apsk.r_slicer   = (T *) apsk32_r_slicer;
+    q->data.apsk.symbol_map = (unsigned int *) apsk32_symbol_map;
 
     q->modulate_func = &modem_modulate_apsk;
     q->demodulate_func = &modem_demodulate_apsk;
@@ -158,12 +158,12 @@ modem modem_create_apsk64()
     MODEM(_init)(q, 6);
     
     // set internals
-    q->apsk_num_levels = apsk64_num_levels;
-    q->apsk_p          = (unsigned int *) apsk64_p;
-    q->apsk_r          = (T *) apsk64_r;
-    q->apsk_phi        = (T *) apsk64_phi;
-    q->apsk_r_slicer   = (T *) apsk64_r_slicer;
-    q->apsk_symbol_map = (unsigned int *) apsk64_symbol_map;
+    q->data.apsk.num_levels = apsk64_num_levels;
+    q->data.apsk.p          = (unsigned int *) apsk64_p;
+    q->data.apsk.r          = (T *) apsk64_r;
+    q->data.apsk.phi        = (T *) apsk64_phi;
+    q->data.apsk.r_slicer   = (T *) apsk64_r_slicer;
+    q->data.apsk.symbol_map = (unsigned int *) apsk64_symbol_map;
 
     q->modulate_func = &modem_modulate_apsk;
     q->demodulate_func = &modem_demodulate_apsk;
@@ -183,12 +183,12 @@ modem modem_create_apsk128()
     MODEM(_init)(q, 7);
     
     // set internals
-    q->apsk_num_levels = apsk128_num_levels;
-    q->apsk_p          = (unsigned int *) apsk128_p;
-    q->apsk_r          = (T *) apsk128_r;
-    q->apsk_phi        = (T *) apsk128_phi;
-    q->apsk_r_slicer   = (T *) apsk128_r_slicer;
-    q->apsk_symbol_map = (unsigned int *) apsk128_symbol_map;
+    q->data.apsk.num_levels = apsk128_num_levels;
+    q->data.apsk.p          = (unsigned int *) apsk128_p;
+    q->data.apsk.r          = (T *) apsk128_r;
+    q->data.apsk.phi        = (T *) apsk128_phi;
+    q->data.apsk.r_slicer   = (T *) apsk128_r_slicer;
+    q->data.apsk.symbol_map = (unsigned int *) apsk128_symbol_map;
 
     q->modulate_func = &modem_modulate_apsk;
     q->demodulate_func = &modem_demodulate_apsk;
@@ -208,12 +208,12 @@ modem modem_create_apsk256()
     MODEM(_init)(q, 8);
     
     // set internals
-    q->apsk_num_levels = apsk256_num_levels;
-    q->apsk_p          = (unsigned int *) apsk256_p;
-    q->apsk_r          = (T *) apsk256_r;
-    q->apsk_phi        = (T *) apsk256_phi;
-    q->apsk_r_slicer   = (T *) apsk256_r_slicer;
-    q->apsk_symbol_map = (unsigned int *) apsk256_symbol_map;
+    q->data.apsk.num_levels = apsk256_num_levels;
+    q->data.apsk.p          = (unsigned int *) apsk256_p;
+    q->data.apsk.r          = (T *) apsk256_r;
+    q->data.apsk.phi        = (T *) apsk256_phi;
+    q->data.apsk.r_slicer   = (T *) apsk256_r_slicer;
+    q->data.apsk.symbol_map = (unsigned int *) apsk256_symbol_map;
 
     q->modulate_func = &modem_modulate_apsk;
     q->demodulate_func = &modem_demodulate_apsk;
@@ -236,28 +236,28 @@ void modem_modulate_apsk(MODEM()      _q,
 
     // map input symbol to constellation symbol
     unsigned int i;
-    unsigned int s = _q->apsk_symbol_map[_sym_in];
+    unsigned int s = _q->data.apsk.symbol_map[_sym_in];
 
     // determine in which level the symbol is located
     unsigned int p=0;   // level
     unsigned int t=0;   // accumulated number of points per level
-    for (i=0; i<_q->apsk_num_levels; i++) {
-        if (s < t + _q->apsk_p[i]) {
+    for (i=0; i<_q->data.apsk.num_levels; i++) {
+        if (s < t + _q->data.apsk.p[i]) {
             p = i;
             break;
         }
-        t += _q->apsk_p[i];
+        t += _q->data.apsk.p[i];
     }
     unsigned int s0 = s - t;
-    unsigned int s1 = _q->apsk_p[p];
+    unsigned int s1 = _q->data.apsk.p[p];
 
 #if 0
     printf("  s : %3u -> %3u in level %3u (t = %3u) [symbol %3u / %3u]\n", _sym_in, s, p, t, s0,s1);
 #endif
 
     // map symbol to constellation point (radius, angle)
-    T r = _q->apsk_r[p];
-    T phi = _q->apsk_phi[p] + (T)(s0)*2.0f*M_PI / (T)(s1);
+    T r = _q->data.apsk.r[p];
+    T phi = _q->data.apsk.phi[p] + (T)(s0)*2.0f*M_PI / (T)(s1);
 
     // compute output symbol
     *_y = r * liquid_cexpjf(phi);
@@ -273,34 +273,34 @@ void modem_demodulate_apsk(MODEM()        _q,
 
     // determine which ring to demodulate with
     unsigned int i, p=0;
-    for (i=0; i<_q->apsk_num_levels-1; i++) {
-        if (r < _q->apsk_r_slicer[i]) {
+    for (i=0; i<_q->data.apsk.num_levels-1; i++) {
+        if (r < _q->data.apsk.r_slicer[i]) {
             p = i;
             break;
         } else {
-            p = _q->apsk_num_levels-1;
+            p = _q->data.apsk.num_levels-1;
         }
     }
 
     // find closest point in ring
     T theta = cargf(_x);
     if (theta < 0.0f) theta += 2.0f*M_PI;
-    T dphi = 2.0f*M_PI / (T) _q->apsk_p[p];
+    T dphi = 2.0f*M_PI / (T) _q->data.apsk.p[p];
     unsigned int s_hat=0;
-    T i_hat = (theta - _q->apsk_phi[p]) / dphi;
+    T i_hat = (theta - _q->data.apsk.phi[p]) / dphi;
     s_hat = roundf(i_hat);      // compute symbol (closest angle)
-    s_hat %= _q->apsk_p[p];   // ensure symbol is in range
+    s_hat %= _q->data.apsk.p[p];   // ensure symbol is in range
     //printf("          i_hat : %12.8f (%3u)\n", i_hat, s_hat);
 
     // accumulate symbol points
     for (i=0; i<p; i++)
-        s_hat += _q->apsk_p[i];
+        s_hat += _q->data.apsk.p[i];
     //assert(s_hat < _q->M);
 
     // reverse symbol mapping
     unsigned int s_prime=0;
     for (i=0; i<_q->M; i++) {
-        if ( _q->apsk_symbol_map[i] == s_hat) {
+        if ( _q->data.apsk.symbol_map[i] == s_hat) {
             s_prime = i;
             break;
         }

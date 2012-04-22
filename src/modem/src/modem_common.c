@@ -42,13 +42,13 @@
 // for differential-mode modems (e.g. LIQUID_MODEM_DPSK) as the internal state
 // will change after each symbol.  It is usually good practice to keep
 // separate instances of modulators and demodulators.
-struct MODEM(_s) {
-    modulation_scheme scheme;       // modulation scheme
-
-    unsigned int m;                 // bits per symbol (modulation depth)
-    unsigned int M;                 // constellation size, M=2^m
-
-    T alpha;                        // scaling factor to ensure unity energy
+struct MODEM(_s)
+{
+    // common data
+    modulation_scheme scheme;   // modulation scheme
+    unsigned int m;             // bits per symbol (modulation depth)
+    unsigned int M;             // constellation size, M=2^m
+    T alpha;                    // scaling factor to ensure unity energy
 
     // Reference vector for demodulating linear arrays
     //
@@ -65,23 +65,37 @@ struct MODEM(_s) {
     TC r;                // received state vector
     TC x_hat;            // estimated symbol (demodulator)
 
-    // QAM modem
-    unsigned int m_i;               // bits per symbol, in-phase
-    unsigned int M_i;               // in-phase dimension, M_i=2^{m_i}
-    unsigned int m_q;               // bits per symbol, quadrature
-    unsigned int M_q;               // quadrature dimension, M_q=2^{m_q}
+    // common data structure shared between specific modem types
+    union {
+        // QAM modem
+        struct {
+            unsigned int m_i;   // bits per symbol, in-phase
+            unsigned int m_q;   // bits per symbol, quadrature
+            unsigned int M_i;   // in-phase dimension, M_i=2^{m_i}
+            unsigned int M_q;   // quadrature dimension, M_q=2^{m_q}
+        } qam;
 
-    // PSK/DPSK modem
-    T d_phi;                        // half of phase between symbols
-    T dpsk_phi;                     // angle state for differential PSK
+        // PSK/DPSK modem
+        struct {
+            T d_phi;            // half of phase between symbols
+        } psk;
 
-    // APSK modem
-    unsigned int apsk_num_levels;   // number of levels
-    unsigned int * apsk_p;          // number of symbols per level
-    T * apsk_r;                     // radii of levels
-    T * apsk_r_slicer;              // slicer radii of levels
-    T * apsk_phi;                   // phase offset of levels
-    unsigned int * apsk_symbol_map; // symbol mapping
+        // DPSK modem
+        struct {
+            T d_phi;            // half of phase between symbols
+            T phi;              // angle state for differential PSK
+        } dpsk;
+
+        // APSK modem
+        struct {
+            unsigned int num_levels;   // number of levels
+            unsigned int * p;          // number of symbols per level
+            T * r;                     // radii of levels
+            T * r_slicer;              // slicer radii of levels
+            T * phi;                   // phase offset of levels
+            unsigned int * symbol_map; // symbol mapping
+        } apsk;
+    } data;
 
     // modulate function pointer
     void (*modulate_func)(MODEM() _q,
@@ -222,7 +236,9 @@ void MODEM(_reset)(MODEM() _q)
 {
     _q->r = 1.0f;         // received sample
     _q->x_hat = _q->r;  // estimated symbol
-    _q->dpsk_phi = 0.0f;  // reset differential PSK phase state
+
+    if ( liquid_modem_is_dpsk(_q->scheme) )
+        _q->data.dpsk.phi = 0.0f;  // reset differential PSK phase state
 }
 
 // initialize a generic modem object
@@ -242,25 +258,9 @@ void MODEM(_init)(MODEM() _q,
     _q->modulate_using_map=0; // modulate using map flag
     _q->alpha = 0.0f;         // scaling factor
 
-    // QAM modem
+    // common data
     _q->m = _bits_per_symbol; // bits/symbol
     _q->M = 1 << (_q->m);   // constellation size (2^m)
-    _q->m_i = 0;              // bits/symbol (in-phase)
-    _q->M_i = 0;              // constellation size (in-phase)
-    _q->m_q = 0;              // bits/symbol (quadrature-phase)
-    _q->M_q = 0;              // constellation size (quadrature-phase)
-
-    // PSK/DPSK modem
-    _q->d_phi = 0.0f;         // half of angle between symbols
-    _q->dpsk_phi = 0.0f;      // angle state for differential PSK
-
-    // APSK modem
-    _q->apsk_num_levels = 0;  // number of levels
-    _q->apsk_p = NULL;        // number of levels per symbol
-    _q->apsk_r = NULL;        // number of levels per symbol
-    _q->apsk_r_slicer = NULL; // radii of levels
-    _q->apsk_phi = NULL;      // phase offset of levels
-    _q->apsk_symbol_map=NULL; // symbol mapping
 
     // set function pointers initially to NULL
     _q->modulate_func = NULL;
