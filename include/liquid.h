@@ -626,6 +626,7 @@ void fec_decode_soft(fec _q,
 #define FFT_IMDCT   12  // IMDCT
 
 #define LIQUID_FFT_MANGLE_FLOAT(name)   LIQUID_CONCAT(fft,name)
+#define LIQUID_FFT_MANGLE_Q16(name)     LIQUID_CONCAT(fftq16,name)
 
 // Macro    :   FFT
 //  FFT     :   name-mangling macro
@@ -658,6 +659,7 @@ void FFT(_shift)(TC*_x, unsigned int _n);
 
 
 LIQUID_FFT_DEFINE_API(LIQUID_FFT_MANGLE_FLOAT,float,liquid_float_complex)
+LIQUID_FFT_DEFINE_API(LIQUID_FFT_MANGLE_Q16,  q16_t, cq16_t)
 
 // antiquated fft methods
 // FFT(plan) FFT(_create_plan_mdct)(unsigned int _n,

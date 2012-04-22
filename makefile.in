@@ -320,6 +320,7 @@ fec_benchmarks :=						\
 
 fft_objects :=							\
 	src/fft/src/fftf.o					\
+	src/fft/src/fftq16.o					\
 	src/fft/src/asgram.o					\
 	src/fft/src/spgram.o					\
 	src/fft/src/fft_utilities.o				\

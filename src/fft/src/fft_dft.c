@@ -54,6 +54,9 @@ FFT(plan) FFT(_create_plan_dft)(unsigned int _nfft,
     q->data.dft.twiddle = NULL;
 
     // check size, use specific codelet for small DFTs
+#if LIQUID_FPM
+    if (0);
+#else
     if      (q->nfft == 2) q->execute = FFT(_execute_dft_2);
     else if (q->nfft == 3) q->execute = FFT(_execute_dft_3);
     else if (q->nfft == 4) q->execute = FFT(_execute_dft_4);
@@ -61,6 +64,7 @@ FFT(plan) FFT(_create_plan_dft)(unsigned int _nfft,
     else if (q->nfft == 6) q->execute = FFT(_execute_dft_6);
     else if (q->nfft == 7) q->execute = FFT(_execute_dft_7);
     else if (q->nfft == 8) q->execute = FFT(_execute_dft_8);
+#endif
     else {
         q->execute = FFT(_execute_dft);
 
@@ -69,8 +73,14 @@ FFT(plan) FFT(_create_plan_dft)(unsigned int _nfft,
         
         unsigned int i;
         T d = (q->direction == FFT_FORWARD) ? -1.0 : 1.0;
-        for (i=0; i<q->nfft; i++)
-            q->data.dft.twiddle[i] = cexpf(_Complex_I*d*2*M_PI*(T)i / (T)(q->nfft));
+        for (i=0; i<q->nfft; i++) {
+            float complex t = cexpf(_Complex_I*d*2*M_PI*(T)i / (T)(q->nfft));
+#if LIQUID_FPM
+            q->data.dft.twiddle[i] = CQ(_float_to_fixed)(t);
+#else
+            q->data.dft.twiddle[i] = t;
+#endif
+        }
     }
 
     return q;
@@ -96,14 +106,26 @@ void FFT(_execute_dft)(FFT(plan) _q)
 
     // DC value is sum of input
     _q->y[0] = _q->x[0];
-    for (i=1; i<nfft; i++)
+    for (i=1; i<nfft; i++) {
+#if LIQUID_FPM
+        _q->y[0].real += _q->x[i].real;
+        _q->y[0].imag += _q->x[i].imag;
+#else
         _q->y[0] += _q->x[i];
+#endif
+    }
     
     // compute remaining DFT values
     for (i=1; i<nfft; i++) {
         _q->y[i] = _q->x[0];
         for (k=1; k<nfft; k++) {
+#if LIQUID_FPM
+            TC t0 = CQ(_mul)(_q->x[k],  _q->data.dft.twiddle[(i*k)%_q->nfft]);
+            _q->y[i].real += t0.real;
+            _q->y[i].imag += t0.imag;
+#else
             _q->y[i] += _q->x[k] * _q->data.dft.twiddle[(i*k)%_q->nfft];
+#endif
         }
     }
 }
@@ -112,6 +134,7 @@ void FFT(_execute_dft)(FFT(plan) _q)
 // codelets for small DFTs
 //
 
+#if !LIQUID_FPM
 // 
 void FFT(_execute_dft_2)(FFT(plan) _q)
 {
@@ -330,4 +353,4 @@ void FFT(_execute_dft_8)(FFT(plan) _q)
     y[7] = y[3]-yp;
     y[3] += yp;
 }
-
+#endif

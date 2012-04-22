@@ -65,8 +65,14 @@ FFT(plan) FFT(_create_plan_radix2)(unsigned int _nfft,
     q->data.radix2.twiddle = (TC *) malloc(q->nfft * sizeof(TC));
     
     T d = (q->direction == FFT_FORWARD) ? -1.0 : 1.0;
-    for (i=0; i<q->nfft; i++)
-        q->data.radix2.twiddle[i] = cexpf(_Complex_I*d*2*M_PI*(T)i / (T)(q->nfft));
+    for (i=0; i<q->nfft; i++) {
+        float complex t = cexpf(_Complex_I*d*2*M_PI*(T)i / (T)(q->nfft));
+#if LIQUID_FPM
+        q->data.radix2.twiddle[i] = CQ(_float_to_fixed)(t);
+#else
+        q->data.radix2.twiddle[i] = t;
+#endif
+    }
 
     return q;
 }
@@ -111,9 +117,18 @@ void FFT(_execute_radix2)(FFT(plan) _q)
             twiddle_index = (twiddle_index + stride) % _q->nfft;
 
             for (k=j; k<_q->nfft; k+=n2) {
+#if LIQUID_FPM
+                yp      = CQ(_mul)(y[k+n1], t);
+
+                y[k+n1] = CQ(_sub)(y[k], yp);
+
+                y[k].real += yp.real;
+                y[k].imag += yp.imag;
+#else
                 yp      =  y[k+n1]*t;
                 y[k+n1] =  y[k] - yp;
                 y[k]    += yp;
+#endif
             }
         }
     }

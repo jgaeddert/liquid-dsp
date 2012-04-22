@@ -149,8 +149,14 @@ FFT(plan) FFT(_create_plan_rader2)(unsigned int _nfft,
     // NOTE: R[0] = -1, |R[k]| = sqrt(nfft) for k != 0
     // (use newly-created FFT plan of length nfft_prime)
     T d = (q->direction == FFT_FORWARD) ? -1.0 : 1.0;
-    for (i=0; i<q->data.rader2.nfft_prime; i++)
-        q->data.rader2.x_prime[i] = cexpf(_Complex_I*d*2*M_PI*q->data.rader2.seq[i%(q->nfft-1)]/(T)(q->nfft));
+    for (i=0; i<q->data.rader2.nfft_prime; i++) {
+        float complex t = cexpf(_Complex_I*d*2*M_PI*q->data.rader2.seq[i%(q->nfft-1)]/(T)(q->nfft));
+#if LIQUID_FPM
+        q->data.rader2.x_prime[i] = CQ(_float_to_fixed)(t);
+#else
+        q->data.rader2.x_prime[i] = t;
+#endif
+    }
     FFT(_execute)(q->data.rader2.fft);
     
     // copy result to R
@@ -196,8 +202,14 @@ void FFT(_execute_rader2)(FFT(plan) _q)
     // nfft_prime-nfft+1 zeros inserted after first element
 
     xp[0] = _q->x[ seq[_q->nfft-2] ];
-    for (i=0; i<nfft_prime-_q->nfft+1; i++)
+    for (i=0; i<nfft_prime-_q->nfft+1; i++) {
+#if LIQUID_FPM
+        xp[i+1].real = 0;
+        xp[i+1].imag = 0;
+#else
         xp[i+1] = 0.0f;
+#endif
+    }
     for (i=1; i<_q->nfft-1; i++) {
         // reverse sequence
         unsigned int k = seq[_q->nfft-1-i-1];
@@ -207,22 +219,41 @@ void FFT(_execute_rader2)(FFT(plan) _q)
 
     // compute inverse FFT of product
     // compute nfft_prime-length inverse FFT of product
-    for (i=0; i<nfft_prime; i++)
+    for (i=0; i<nfft_prime; i++) {
+#if LIQUID_FPM
+        Xp[i] = CQ(_mul)(Xp[i], R[i]);
+#else
         Xp[i] *= R[i];
+#endif
+    }
 
     // call radix-2 function (IFFT)
     FFT(_execute)(_q->data.rader2.ifft);
 
     // set DC value
+#if LIQUID_FPM
+    _q->y[0].real = 0;
+    _q->y[0].imag = 0;
+    for (i=0; i<_q->nfft; i++) {
+        _q->y[0].real += _q->x[i].real;
+        _q->y[0].imag += _q->x[i].imag;
+    }
+#else
     _q->y[0] = 0.0f;
     for (i=0; i<_q->nfft; i++)
         _q->y[0] += _q->x[i];
+#endif
 
     // reverse permute result, scale, and add offset x[0]
     for (i=0; i<_q->nfft-1; i++) {
         unsigned int k = seq[i];
 
+#if LIQUID_FPM
+        _q->y[k].real = xp[i].real / (T)(nfft_prime) + _q->x[0].real;
+        _q->y[k].imag = xp[i].real / (T)(nfft_prime) + _q->x[0].imag;
+#else
         _q->y[k] = xp[i] / (T)(nfft_prime) + _q->x[0];
+#endif
     }
 }
 
