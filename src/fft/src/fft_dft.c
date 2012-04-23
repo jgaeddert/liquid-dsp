@@ -113,8 +113,13 @@ void FFT(_execute_dft)(FFT(plan) _q)
         ti += _q->x[i].real;
         tq += _q->x[i].imag;
     }
-    _q->y[0].real = ti;
-    _q->y[0].imag = tq;
+    if (_q->direction == FFT_FORWARD) {
+        _q->y[0].real = ti;
+        _q->y[0].imag = tq;
+    } else {
+        _q->y[0].real = ti / (int)nfft;
+        _q->y[0].imag = tq / (int)nfft;
+    }
     
     // compute remaining DFT values
     for (i=1; i<nfft; i++) {
@@ -126,8 +131,13 @@ void FFT(_execute_dft)(FFT(plan) _q)
             ti += t0.real;
             tq += t0.imag;
         }
-        _q->y[i].real = ti;
-        _q->y[i].imag = tq;
+        if (_q->direction == FFT_FORWARD) {
+            _q->y[i].real = ti;
+            _q->y[i].imag = tq;
+        } else {
+            _q->y[i].real = ti / (int)nfft;
+            _q->y[i].imag = tq / (int)nfft;
+        }
     }
 }
 

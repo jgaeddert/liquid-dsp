@@ -71,7 +71,6 @@ void fftq16_test(float complex * _x,
         CONTEND_DELTA( error, 0, tol );
     }
 
-#if 0
     // convert input to fixed-point and compute IFFT
     for (i=0; i<_n; i++)
         y[i] = cq16_float_to_fixed(_test[i]);
@@ -92,7 +91,6 @@ void fftq16_test(float complex * _x,
 
         CONTEND_DELTA( error, 0, tol );
     }
-#endif
 }
 
 
