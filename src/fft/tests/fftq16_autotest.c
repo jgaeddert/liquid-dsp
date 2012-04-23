@@ -51,6 +51,8 @@ void fftq16_test(float complex * _x,
     cq16_t y[_n];
 
     // convert input to fixed-point and compute FFT
+    if (liquid_autotest_verbose)
+        printf("running %u-point fft...\n", _n);
     for (i=0; i<_n; i++)
         x[i] = cq16_float_to_fixed(_x[i]);
     fftq16plan pf = fftq16_create_plan(_n, x, y, FFT_FORWARD, _method);
@@ -62,16 +64,20 @@ void fftq16_test(float complex * _x,
         float complex yf = cq16_fixed_to_float(y[i]);
         float error = cabsf( yf - _test[i] );
 
-        printf("  %3u : %12.8f + j*%12.8f (expected %12.8f + j%12.8f), |e| = %12.8f\n",
-                i,
-                crealf(yf), cimagf(yf),
-                crealf(_test[i]), cimagf(_test[i]),
-                error);
+        if (liquid_autotest_verbose) {
+            printf("  %3u : (%10.6f, %10.6f), expected (%10.6f, %10.6f), |e| = %12.8f\n",
+                    i,
+                    crealf(yf), cimagf(yf),
+                    crealf(_test[i]), cimagf(_test[i]),
+                    error);
+        }
 
         CONTEND_DELTA( error, 0, tol );
     }
 
     // convert input to fixed-point and compute IFFT
+    if (liquid_autotest_verbose)
+        printf("running %u-point ifft...\n", _n);
     for (i=0; i<_n; i++)
         y[i] = cq16_float_to_fixed(_test[i]);
     fftq16plan pr = fftq16_create_plan(_n, y, x, FFT_REVERSE, _method);
@@ -83,11 +89,13 @@ void fftq16_test(float complex * _x,
         float complex xf = cq16_fixed_to_float(x[i]);
         float error = cabsf( xf - _x[i] );
 
-        printf("  %3u : %12.8f + j*%12.8f (expected %12.8f + j%12.8f), |e| = %12.8f\n",
+        if (liquid_autotest_verbose) {
+            printf("  %3u : (%10.6f, %10.6f), expected (%10.6f, %10.6f), |e| = %12.8f\n",
                 i,
                 crealf(xf), cimagf(xf),
                 crealf(_x[i]), cimagf(_x[i]),
                 error);
+        }
 
         CONTEND_DELTA( error, 0, tol );
     }
