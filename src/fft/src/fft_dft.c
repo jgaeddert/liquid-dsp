@@ -97,7 +97,43 @@ void FFT(_destroy_plan_dft)(FFT(plan) _q)
     free(_q);
 }
 
-// execute DFT (slow but functionally correct)
+#if LIQUID_FPM
+
+// fixed-point DFT (slow but functionally correct)
+void FFT(_execute_dft)(FFT(plan) _q)
+{
+    unsigned int i;
+    unsigned int k;
+    unsigned int nfft = _q->nfft;
+
+    // DC value is sum of input
+    Q(_at) ti = _q->x[0].real;
+    Q(_at) tq = _q->x[0].imag;
+    for (i=1; i<nfft; i++) {
+        ti += _q->x[i].real;
+        tq += _q->x[i].imag;
+    }
+    _q->y[0].real = ti;
+    _q->y[0].imag = tq;
+    
+    // compute remaining DFT values
+    for (i=1; i<nfft; i++) {
+        ti = _q->x[0].real;
+        tq = _q->x[0].imag;
+        for (k=1; k<nfft; k++) {
+            TC t0 = CQ(_mul)(_q->x[k],  _q->data.dft.twiddle[(i*k)%_q->nfft]);
+
+            ti += t0.real;
+            tq += t0.imag;
+        }
+        _q->y[i].real = ti;
+        _q->y[i].imag = tq;
+    }
+}
+
+#else
+
+// floating-point DFT (slow but functionally correct)
 void FFT(_execute_dft)(FFT(plan) _q)
 {
     unsigned int i;
@@ -107,28 +143,18 @@ void FFT(_execute_dft)(FFT(plan) _q)
     // DC value is sum of input
     _q->y[0] = _q->x[0];
     for (i=1; i<nfft; i++) {
-#if LIQUID_FPM
-        _q->y[0].real += _q->x[i].real;
-        _q->y[0].imag += _q->x[i].imag;
-#else
         _q->y[0] += _q->x[i];
-#endif
     }
     
     // compute remaining DFT values
     for (i=1; i<nfft; i++) {
         _q->y[i] = _q->x[0];
         for (k=1; k<nfft; k++) {
-#if LIQUID_FPM
-            TC t0 = CQ(_mul)(_q->x[k],  _q->data.dft.twiddle[(i*k)%_q->nfft]);
-            _q->y[i].real += t0.real;
-            _q->y[i].imag += t0.imag;
-#else
             _q->y[i] += _q->x[k] * _q->data.dft.twiddle[(i*k)%_q->nfft];
-#endif
         }
     }
 }
+#endif
 
 // 
 // codelets for small DFTs
