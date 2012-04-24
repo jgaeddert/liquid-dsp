@@ -1155,6 +1155,7 @@ check: $(autotest_prog)
 clean-check:
 	$(RM) autotest_include.h $(autotest_prog).o $(autotest_prog)
 	$(RM) $(autotest_obj)
+	$(RM) $(autotest_extra_obj)
 
 
 ##

@@ -1,55 +1,74 @@
+/*
+ * Copyright (c) 2012 Joseph Gaeddert
+ * Copyright (c) 2012 Virginia Polytechnic Institute & State University
+ *
+ * This file is part of liquid.
+ *
+ * liquid is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * liquid is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with liquid.  If not, see <http://www.gnu.org/licenses/>.
+ */
 
-#ifndef __LIQUID_AUTOTEST_FFT_DATA_22__
-#define __LIQUID_AUTOTEST_FFT_DATA_22__
+//
+// autotest fft data for 22-point transform
+//
 
-// 22-point fft data
+#include <complex.h>
+
 float complex fft_test_x22[] = {
-   -0.266344614645 +  -1.961128230486*_Complex_I,
-   -2.706573990156 +   1.064605909926*_Complex_I,
-    0.560520260543 +   0.254083289417*_Complex_I,
-   -1.698585323077 +   1.417706630276*_Complex_I,
-   -2.097956762618 +   0.803819670646*_Complex_I,
-   -0.778236416907 +   0.384336688832*_Complex_I,
-    0.525104724929 +   0.859423122681*_Complex_I,
-    0.195695204983 +  -0.709857337064*_Complex_I,
-   -0.332423716428 +   0.951006686013*_Complex_I,
-   -2.091540804873 +   0.676979188088*_Complex_I,
-    0.276881080559 +  -0.289594670168*_Complex_I,
-   -0.522761170710 +   0.360291318709*_Complex_I,
-    0.080336314107 +   1.575390387329*_Complex_I,
-   -0.361922989890 +  -1.348079256467*_Complex_I,
-   -0.078538746153 +  -1.147795659651*_Complex_I,
-    1.691833066128 +  -0.316084312014*_Complex_I,
-   -1.555019591592 +   0.421599792849*_Complex_I,
-    0.663727692691 +  -0.583481677929*_Complex_I,
-    1.562780173368 +  -0.657125846348*_Complex_I,
-    0.288625808013 +  -0.917351074522*_Complex_I,
-   -0.478321424627 +   0.555387606673*_Complex_I,
-   -0.415250716407 +   0.891947257468*_Complex_I};
+    1.005393906711 +   1.012308570546*_Complex_I,
+    1.688071880070 +   1.150240841419*_Complex_I,
+    0.683345289428 +  -0.062623351865*_Complex_I,
+    0.155361503274 +  -0.795786088580*_Complex_I,
+   -1.820284248422 +   1.218801819999*_Complex_I,
+    0.628547514320 +  -0.973049954879*_Complex_I,
+    1.065280228237 +   0.036573157841*_Complex_I,
+   -2.060385212897 +   0.046192542979*_Complex_I,
+   -1.013657698873 +   0.781474907362*_Complex_I,
+    0.375646814842 +   1.554324770487*_Complex_I,
+    0.891369658302 +  -0.161096019710*_Complex_I,
+   -1.068796361214 +   0.437936260633*_Complex_I,
+    2.551818984217 +  -0.855823653619*_Complex_I,
+    1.902986665335 +   0.173617409071*_Complex_I,
+    0.782297326663 +   1.157416587734*_Complex_I,
+    1.408853663828 +  -0.360396487397*_Complex_I,
+   -1.133068299545 +   0.494376224047*_Complex_I,
+   -0.644483632405 +  -0.024946520734*_Complex_I,
+   -1.906331676937 +   0.114276645380*_Complex_I,
+   -0.607040125764 +   0.926527519920*_Complex_I,
+    0.405414441208 +   0.272172965895*_Complex_I,
+    0.522244149054 +   0.024648904750*_Complex_I};
 
 float complex fft_test_y22[] = {
-   -7.537971942762 +   2.286079484259*_Complex_I,
-    3.689183989587 +   7.017246324820*_Complex_I,
-   -2.857922335095 +   3.849439318027*_Complex_I,
-    1.647056372456 +  -0.583468437816*_Complex_I,
-   -1.886344824471 +  -3.964839966008*_Complex_I,
-   -8.432588510510 +  -6.959790879200*_Complex_I,
-    6.870911501964 +   1.980828110186*_Complex_I,
-   -5.137595951507 +   4.379023032002*_Complex_I,
-    2.064749007223 +   0.768247166672*_Complex_I,
-    8.054520263541 +  -5.714195607456*_Complex_I,
-    2.633622681904 +  -0.288590591982*_Complex_I,
-    3.932007337649 +   0.444052813652*_Complex_I,
-    0.937950185689 + -10.338323008665*_Complex_I,
-    5.063906296453 +  -3.004914067486*_Complex_I,
-   -5.956842101394 +  -5.159005569705*_Complex_I,
-    2.452245013458 +  -8.023846479612*_Complex_I,
-   -0.850468903235 +  -9.014989514118*_Complex_I,
-    1.041987817608 +  -0.878174436631*_Complex_I,
-    2.300814598137 +   4.763766981188*_Complex_I,
-   -0.843114950838 +  -5.795733315409*_Complex_I,
-   -4.398661506864 +  -2.491818439399*_Complex_I,
-   -8.647025561173 +  -6.415813988004*_Complex_I};
-
-#endif // __LIQUID_AUTOTEST_FFT_DATA_22__
+    3.812584769431 +   6.167167051279*_Complex_I,
+   -2.048551145080 +   1.920025824226*_Complex_I,
+    6.865239600362 +  -6.254294174522*_Complex_I,
+    6.680188302485 +   7.175301698042*_Complex_I,
+    0.336985685391 +  -2.472221525673*_Complex_I,
+    2.704578846644 +  -1.072297553521*_Complex_I,
+   -5.869735761695 +   0.406925054472*_Complex_I,
+    7.260505946731 +   4.415111182242*_Complex_I,
+    1.284910248555 +  -1.935024971881*_Complex_I,
+    1.066939615916 +  -8.084240769565*_Complex_I,
+   -5.103441669518 +   4.459170611366*_Complex_I,
+   -0.789428947455 +   1.848548655941*_Complex_I,
+   -2.925771543223 +  -0.333175332942*_Complex_I,
+    8.231473045218 +  -1.322435498403*_Complex_I,
+   -2.591866662060 +   5.216079561352*_Complex_I,
+   -0.164183264077 +  -4.464934113704*_Complex_I,
+  -10.152302601435 +   2.776060476179*_Complex_I,
+   -1.546651996340 +   8.030006620400*_Complex_I,
+    2.238990051464 +  -2.081025590453*_Complex_I,
+    2.420796442681 +  -1.572310054104*_Complex_I,
+   11.406980883199 +  10.003031983787*_Complex_I,
+   -0.999573899550 +  -0.554680582506*_Complex_I};
 
