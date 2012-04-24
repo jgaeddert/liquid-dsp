@@ -19,7 +19,7 @@
  */
 
 //
-// fft_prime_autotest.c : test FFTs of prime length
+// fft_radix2_autotest.c : test power-of-two transforms
 //
 
 #include "autotest/autotest.h"
@@ -29,11 +29,12 @@
 #include "src/fft/tests/fft_autotest.h"
 
 // 
-// AUTOTESTS: n-point ffts
+// AUTOTESTS: power-of-two transforms
 //
-void autotest_fft_17()  { fft_test( fft_test_x17,   fft_test_y17,   17); }
-void autotest_fft_43()  { fft_test( fft_test_x43,   fft_test_y43,   43); }
-void autotest_fft_79()  { fft_test( fft_test_x79,   fft_test_y79,   79); }
-void autotest_fft_157() { fft_test( fft_test_x157,  fft_test_y157, 157); }
-void autotest_fft_317() { fft_test( fft_test_x317,  fft_test_y317, 317); }
-void autotest_fft_509() { fft_test( fft_test_x509,  fft_test_y509, 509); }
+void autotest_fft_2()       { fft_test( fft_test_x2,   fft_test_y2,      2);     }
+void autotest_fft_4()       { fft_test( fft_test_x4,   fft_test_y4,      4);     }
+void autotest_fft_8()       { fft_test( fft_test_x8,   fft_test_y8,      8);     }
+void autotest_fft_16()      { fft_test( fft_test_x16,  fft_test_y16,     16);    }
+void autotest_fft_32()      { fft_test( fft_test_x32,  fft_test_y32,     32);    }
+void autotest_fft_64()      { fft_test( fft_test_x64,  fft_test_y64,     64);    }
+

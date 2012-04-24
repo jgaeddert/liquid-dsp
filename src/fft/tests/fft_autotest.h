@@ -25,7 +25,25 @@
 #ifndef __LIQUID_FFT_DATA_H__
 #define __LIQUID_FFT_DATA_H__
 
+// autotest helper function
+//  _x      :   fft input array
+//  _test   :   expected fft output
+//  _n      :   fft size
+void fft_test(float complex * _x,
+              float complex * _test,
+              unsigned int    _n);
+
+// 
+// autotest datasets
 //
+
+//
+extern float complex fft_test_x2[];
+extern float complex fft_test_y2[];
+
+extern float complex fft_test_x3[];
+extern float complex fft_test_y3[];
+
 extern float complex fft_test_x4[];
 extern float complex fft_test_y4[];
 
