@@ -25,13 +25,7 @@
 #include "autotest/autotest.h"
 #include "liquid.h"
 
-// autotest data for prime transforms
-#include "fft_data_17.h"
-#include "fft_data_43.h"
-#include "fft_data_79.h"
-#include "fft_data_157.h"
-#include "fft_data_317.h"
-#include "fft_data_509.h"
+#include "fft_data.h"
 
 // autotest helper function
 //  _x      :   fft input array

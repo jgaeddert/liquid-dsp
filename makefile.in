@@ -90,6 +90,9 @@ all:
 # additional targets to clean
 extra_clean :=
 
+# additional autotest objects
+autotest_extra_obj :=
+
 #
 # MODULE : agc - automatic gain control
 #
@@ -315,7 +318,7 @@ src/fft/src/fft_utilities.o : %.o : %.c $(headers)
 
 src/fft/src/mdct.o : %.o : %.c $(headers)
 
-
+# fft autotest scripts
 fft_autotests :=						\
 	src/fft/tests/fft_autotest.c				\
 	src/fft/tests/fft_composite_autotest.c			\
@@ -323,6 +326,39 @@ fft_autotests :=						\
 	src/fft/tests/fft_r2r_autotest.c			\
 	src/fft/tests/fft_shift_autotest.c			\
 
+# additional autotest objects
+autotest_extra_obj +=						\
+	src/fft/tests/fft_data_4.o				\
+	src/fft/tests/fft_data_5.o				\
+	src/fft/tests/fft_data_6.o				\
+	src/fft/tests/fft_data_7.o				\
+	src/fft/tests/fft_data_8.o				\
+	src/fft/tests/fft_data_9.o				\
+	src/fft/tests/fft_data_10.o				\
+	src/fft/tests/fft_data_16.o				\
+	src/fft/tests/fft_data_17.o				\
+	src/fft/tests/fft_data_20.o				\
+	src/fft/tests/fft_data_21.o				\
+	src/fft/tests/fft_data_22.o				\
+	src/fft/tests/fft_data_24.o				\
+	src/fft/tests/fft_data_26.o				\
+	src/fft/tests/fft_data_30.o				\
+	src/fft/tests/fft_data_32.o				\
+	src/fft/tests/fft_data_35.o				\
+	src/fft/tests/fft_data_36.o				\
+	src/fft/tests/fft_data_43.o				\
+	src/fft/tests/fft_data_48.o				\
+	src/fft/tests/fft_data_63.o				\
+	src/fft/tests/fft_data_64.o				\
+	src/fft/tests/fft_data_79.o				\
+	src/fft/tests/fft_data_92.o				\
+	src/fft/tests/fft_data_96.o				\
+	src/fft/tests/fft_data_120.o				\
+	src/fft/tests/fft_data_130.o				\
+	src/fft/tests/fft_data_157.o				\
+	src/fft/tests/fft_data_192.o				\
+	src/fft/tests/fft_data_317.o				\
+	src/fft/tests/fft_data_509.o				\
 
 fft_benchmarks :=						\
 	src/fft/bench/fft_composite_benchmark.c			\
@@ -1095,6 +1131,9 @@ autotest_obj = $(patsubst %.c,%.o,$(autotest_sources))
 $(autotest_obj) : %.o : %.c $(include_headers)
 	$(CC) $(CFLAGS) $< -c -o $@
 
+# additional autotest objects
+$(autotest_extra_obj) : %.o : %.c $(include_headers)
+
 # compile the autotest internal library functions without linking
 autotest/autotestlib.o : autotest/autotestlib.c autotest/autotest.h
 	$(CC) $(CFLAGS) $< -c -o $@
@@ -1105,7 +1144,7 @@ $(autotest_prog).o : autotest/autotest.c autotest/autotest.h autotest_include.h
 
 # link the autotest program with the objects
 # NOTE: linked libraries must come _after_ the target program
-$(autotest_prog): $(autotest_prog).o $(autotest_obj) autotest/autotestlib.o libliquid.a
+$(autotest_prog): $(autotest_prog).o $(autotest_obj) $(autotest_extra_obj) autotest/autotestlib.o libliquid.a
 	$(CC) $^ $(LDFLAGS) -o $@
 
 # run the autotest program

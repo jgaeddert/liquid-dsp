@@ -27,22 +27,7 @@
 #include "liquid.h"
 
 // autotest data for composite transforms
-#include "fft_data_10.h"
-#include "fft_data_21.h"
-#include "fft_data_22.h"
-#include "fft_data_24.h"
-#include "fft_data_26.h"
-#include "fft_data_30.h"
-#include "fft_data_35.h"
-#include "fft_data_36.h"
-#include "fft_data_48.h"
-#include "fft_data_63.h"
-#include "fft_data_92.h"
-#include "fft_data_96.h"
-
-#include "fft_data_120.h"
-#include "fft_data_130.h"
-#include "fft_data_192.h"
+#include "src/fft/tests/fft_data.h"
 
 // autotest helper function
 //  _x      :   fft input array
