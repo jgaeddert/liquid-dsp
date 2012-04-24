@@ -93,6 +93,9 @@ extra_clean :=
 # additional autotest objects
 autotest_extra_obj :=
 
+# additional benchmark objects
+benchmark_extra_obj :=
+
 #
 # MODULE : agc - automatic gain control
 #
@@ -1185,6 +1188,9 @@ benchmark_obj = $(patsubst %.c,%.o,$(benchmark_sources))
 $(benchmark_obj) : %.o : %.c $(include_headers)
 	$(CC) $(BENCH_CFLAGS) $< -c -o $@
 
+# additional benchmark objects
+$(benchmark_extra_obj) : %.o : %.c $(include_headers)
+
 # compile the benchmark program without linking
 $(bench_prog).o: bench/bench.c benchmark_include.h bench/bench.c
 	$(CC) $(BENCH_CFLAGS) $< -c -o $(bench_prog).o
@@ -1213,6 +1219,7 @@ clean-bench:
 	$(RM) benchmark_include.h $(bench_prog).o $(bench_prog)
 	$(RM) scripts/benchmark_compare
 	$(RM) $(benchmark_obj)
+	$(RM) $(benchmark_extra_obj)
 	$(RM) bench/fftbench
 
 
