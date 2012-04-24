@@ -737,9 +737,6 @@ typedef enum {
     LIQUID_FFT_METHOD_RADER,        // Rader's method for FFTs of prime length
     LIQUID_FFT_METHOD_RADER2,       // Rader's method for FFTs of prime length (alternate)
     LIQUID_FFT_METHOD_DFT,          // slow discrete Fourier transform
-    
-    // specific codelets for small FFTs
-    LIQUID_FFT_METHOD_DFT_2,
 } liquid_fft_method;
 
 // Macro    :   FFT (internal)

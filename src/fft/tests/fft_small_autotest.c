@@ -19,7 +19,7 @@
  */
 
 //
-// fft_prime_autotest.c : test FFTs of prime length
+// fft_small_autotest.c : test small transforms
 //
 
 #include "autotest/autotest.h"
@@ -29,11 +29,11 @@
 #include "src/fft/tests/fft_autotest.h"
 
 // 
-// AUTOTESTS: n-point ffts
+// AUTOTESTS: small FFTs
 //
-void autotest_fft_17()  { fft_test( fft_test_x17,   fft_test_y17,   17); }
-void autotest_fft_43()  { fft_test( fft_test_x43,   fft_test_y43,   43); }
-void autotest_fft_79()  { fft_test( fft_test_x79,   fft_test_y79,   79); }
-void autotest_fft_157() { fft_test( fft_test_x157,  fft_test_y157, 157); }
-void autotest_fft_317() { fft_test( fft_test_x317,  fft_test_y317, 317); }
-void autotest_fft_509() { fft_test( fft_test_x509,  fft_test_y509, 509); }
+void autotest_fft_3()       { fft_test( fft_test_x4,   fft_test_y4,      4);     }
+void autotest_fft_5()       { fft_test( fft_test_x5,   fft_test_y5,      5);     }
+void autotest_fft_6()       { fft_test( fft_test_x6,   fft_test_y6,      6);     }
+void autotest_fft_7()       { fft_test( fft_test_x7,   fft_test_y7,      7);     }
+void autotest_fft_9()       { fft_test( fft_test_x9,   fft_test_y9,      9);     }
+

@@ -19,21 +19,20 @@
  */
 
 //
-// fft_prime_autotest.c : test FFTs of prime length
+// autotest fft data for 4-point transform
 //
 
-#include "autotest/autotest.h"
-#include "liquid.h"
+#include <complex.h>
 
-// autotest data definitions
-#include "src/fft/tests/fft_autotest.h"
+float complex fft_test_x4[] = {
+   -2.218920151449 +  -1.079004048069*_Complex_I,
+    0.045264423484 +   0.426155393025*_Complex_I,
+    0.218614474268 +  -0.334711618319*_Complex_I,
+    2.182538230032 +   1.706944462070*_Complex_I};
 
-// 
-// AUTOTESTS: n-point ffts
-//
-void autotest_fft_17()  { fft_test( fft_test_x17,   fft_test_y17,   17); }
-void autotest_fft_43()  { fft_test( fft_test_x43,   fft_test_y43,   43); }
-void autotest_fft_79()  { fft_test( fft_test_x79,   fft_test_y79,   79); }
-void autotest_fft_157() { fft_test( fft_test_x157,  fft_test_y157, 157); }
-void autotest_fft_317() { fft_test( fft_test_x317,  fft_test_y317, 317); }
-void autotest_fft_509() { fft_test( fft_test_x509,  fft_test_y509, 509); }
+float complex fft_test_y4[] = {
+    0.227496976335 +   0.719384188708*_Complex_I,
+   -3.718323694762 +   1.392981376798*_Complex_I,
+   -4.228108330697 +  -3.546815521483*_Complex_I,
+   -1.156745556672 +  -2.881566236299*_Complex_I};
+
