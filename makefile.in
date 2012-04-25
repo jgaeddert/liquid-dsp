@@ -404,6 +404,7 @@ autotest_extra_obj +=						\
 
 # fft benchmark scripts
 fft_benchmarks :=						\
+	src/fft/bench/fftq16_benchmark.c			\
 	src/fft/bench/fft_composite_benchmark.c			\
 	src/fft/bench/fft_prime_benchmark.c			\
 	src/fft/bench/fft_radix2_benchmark.c			\
@@ -412,6 +413,7 @@ fft_benchmarks :=						\
 # additional benchmark objects
 benchmark_extra_obj :=						\
 	src/fft/bench/fft_runbench.o				\
+	src/fft/bench/fftq16_runbench.o				\
 
 #
 # MODULE : filter
