@@ -104,8 +104,7 @@ void usage()
     printf("  -t[SECONDS]   set minimum execution time (s)\n");
     printf("  -l            list available packages\n");
     printf("  -L            list all available scripts\n");
-    printf("  -S[STRING]    run all packages matching search string\n");
-    printf("  -s[STRING]    run all scripts matching search string\n");
+    printf("  -s[STRING]    run all packages/benchmarks matching search string\n");
     printf("  -o[FILENAME]  export output\n");
 }
 
@@ -119,8 +118,7 @@ int main(int argc, char *argv[])
     enum {RUN_ALL,
           RUN_SINGLE_BENCH,
           RUN_SINGLE_PACKAGE,
-          RUN_PACKAGE_SEARCH,
-          RUN_SCRIPT_SEARCH,
+          RUN_SEARCH,
     } mode = RUN_ALL;
     unsigned int benchmark_id = 0;
     unsigned int package_id = 0;
@@ -133,7 +131,7 @@ int main(int argc, char *argv[])
 
     // get input options
     int d;
-    while((d = getopt(argc,argv,"uhvqec:n:b:p:t:lLS:s:o:")) != EOF){
+    while((d = getopt(argc,argv,"uhvqec:n:b:p:t:lLs:o:")) != EOF){
         switch (d) {
         case 'u':
         case 'h':   usage();        return 0;
@@ -191,13 +189,8 @@ int main(int argc, char *argv[])
                     printf("    %-3u: %-22s\n", scripts[j].id, scripts[j].name);
             }
             return 0;
-        case 'S':
-            mode = RUN_PACKAGE_SEARCH;
-            strncpy(search_string, optarg, 128);
-            search_string[127] = '\0';
-            break;
         case 's':
-            mode = RUN_SCRIPT_SEARCH;
+            mode = RUN_SEARCH;
             strncpy(search_string, optarg, 128);
             search_string[127] = '\0';
             break;
@@ -240,8 +233,8 @@ int main(int argc, char *argv[])
         execute_package( &packages[package_id], verbose );
         //print_package_results( &packages[package_id] );
         break;
-    case RUN_PACKAGE_SEARCH:
-        printf("running all packages matching '%s'...\n", search_string);
+    case RUN_SEARCH:
+        printf("running all packages and benchmarks matching '%s'...\n", search_string);
         for (i=0; i<NUM_PACKAGES; i++) {
             // see if search string matches package name
             if (strstr(packages[i].name, search_string) != NULL) {
@@ -249,12 +242,10 @@ int main(int argc, char *argv[])
                 execute_package( &packages[i], verbose );
             }
         }
-        break;
-    case RUN_SCRIPT_SEARCH:
-        printf("running all scripts matching '%s'...\n", search_string);
+        printf("running all remaining scripts matching '%s'...\n", search_string);
         for (i=0; i<NUM_AUTOSCRIPTS; i++) {
             // see if search string matches benchmark name
-            if (strstr(scripts[i].name, search_string) != NULL) {
+            if (strstr(scripts[i].name, search_string) != NULL && scripts[i].num_trials == 0) {
                 // run the benchmark
                 execute_benchmark( &scripts[i], verbose );
             }
@@ -285,7 +276,7 @@ int main(int argc, char *argv[])
         fprintf(fid,"#  verbose             :   %s\n", verbose ? "true" : "false");
         fprintf(fid,"#  autoscale           :   %s\n", autoscale ? "true" : "false");
         fprintf(fid,"#  cpu_clock_detect    :   %s\n", cpu_clock_detect ? "true" : "false");
-        fprintf(fid,"#  search string       :   '%s'\n", mode == (RUN_PACKAGE_SEARCH || RUN_SCRIPT_SEARCH) ? search_string : "");
+        fprintf(fid,"#  search string       :   '%s'\n", mode == RUN_SEARCH ? search_string : "");
         fprintf(fid,"#  runtime             :   %12.8f s\n", runtime);
         fprintf(fid,"#  cpu_clock           :   %e Hz\n", cpu_clock);
         fprintf(fid,"#  num_trials          :   %lu\n", num_base_trials);
