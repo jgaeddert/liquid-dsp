@@ -55,6 +55,14 @@ extern const char liquid_version[];
 const char * liquid_libversion(void);
 int liquid_libversion_number(void);
 
+// run-time library validation
+#define LIQUID_VALIDATE_LIBVERSION                              \
+  if (LIQUID_VERSION_NUMBER != liquid_libversion_number()) {    \
+    fprintf(stderr,"%s:%u: ", __FILE__,__LINE__);               \
+    fprintf(stderr,"error: invalid liquid runtime library\n");  \
+    exit(1);                                                    \
+  }                                                             \
+
 #define LIQUID_CONCAT(prefix, name) prefix ## name
 #define LIQUID_VALIDATE_INPUT
 
