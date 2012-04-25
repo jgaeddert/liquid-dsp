@@ -18,6 +18,9 @@
  * along with liquid.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include <stdlib.h>
+#include <stdio.h>
+
 #include "autotest/autotest.h"
 #include "liquid.h"
 
@@ -34,8 +37,9 @@ void fftq16_test(float complex * _x,
 
     unsigned int i;
 
-    cq16_t x[_n];
-    cq16_t y[_n];
+    // allocate memory for arrays
+    cq16_t * x = (cq16_t*) malloc( _n*sizeof(cq16_t) );
+    cq16_t * y = (cq16_t*) malloc( _n*sizeof(cq16_t) );
 
     // convert input to fixed-point and compute FFT
     if (liquid_autotest_verbose)
@@ -86,5 +90,9 @@ void fftq16_test(float complex * _x,
 
         CONTEND_DELTA( error, 0, tol );
     }
+
+    // free allocated memory
+    free(x);
+    free(y);
 }
 
