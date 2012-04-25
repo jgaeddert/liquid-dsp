@@ -40,7 +40,6 @@ liquid/
         module2/
             ...
     examples/
-        example.mk              <-- top-level included makefile
         README                  <-- description of examples
         example1.c              <-- example program source
         example2.c              <-- example program source
