@@ -728,8 +728,8 @@ figures.gen/math_polyfit_lagrange.gnu latex.gen/math_polyfit_lagrange.tex : src/
 ##
 
 # freqmodem
-figures.gen/modem_freqmodem_time.gnu figures.gen/modem_freqmodem_freq : src/modem_freqmodem ; ./$<
-figures.gen/modem_freqmodem_time.eps figures.gen/modem_freqmodem_freq : %.eps : %.gnu
+figures.gen/modem_freqmodem_time.gnu figures.gen/modem_freqmodem_freq.gnu : src/modem_freqmodem ; ./$<
+figures.gen/modem_freqmodem_time.eps figures.gen/modem_freqmodem_freq.eps : %.eps : %.gnu
 
 # ampmodem
 figures.gen/modem_ampmodem_time.gnu figures.gen/modem_ampmodem_freq.gnu : src/modem_ampmodem ; ./$<
