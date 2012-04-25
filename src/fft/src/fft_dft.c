@@ -327,8 +327,6 @@ void FFT(_execute_dft_7)(FFT(plan) _q)
     y[6] = x[0] + x[1]*g6 + x[2]*g5 + x[3]*g4 + x[4]*g3 + x[5]*g2 + x[6]*g1;
 }
 
-#define FFT_RADIX2_CRUNCH(t, k0, k1) {yp = y[k1]*(t); y[k1] = y[k0] - yp; y[k0] += yp;}
-#define FFT_RADIX2_PRINT() {unsigned int p; for (p=0; p<_q->nfft; p++) printf("  y[%u] = %12.8f + j%12.8f\n", p, crealf(y[p]), cimagf(y[p]));}
 //
 void FFT(_execute_dft_8)(FFT(plan) _q)
 {

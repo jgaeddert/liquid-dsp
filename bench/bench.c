@@ -104,7 +104,7 @@ void usage()
     printf("  -t[SECONDS]   set minimum execution time (s)\n");
     printf("  -l            list available packages\n");
     printf("  -L            list all available scripts\n");
-    printf("  -s[STRING]    run all scripts matching search string\n");
+    printf("  -s[STRING]    run all packages/benchmarks matching search string\n");
     printf("  -o[FILENAME]  export output\n");
 }
 
@@ -118,7 +118,7 @@ int main(int argc, char *argv[])
     enum {RUN_ALL,
           RUN_SINGLE_BENCH,
           RUN_SINGLE_PACKAGE,
-          RUN_SEARCH
+          RUN_SEARCH,
     } mode = RUN_ALL;
     unsigned int benchmark_id = 0;
     unsigned int package_id = 0;
@@ -234,10 +234,18 @@ int main(int argc, char *argv[])
         //print_package_results( &packages[package_id] );
         break;
     case RUN_SEARCH:
-        printf("running all scripts matching '%s'...\n", search_string);
+        printf("running all packages and benchmarks matching '%s'...\n", search_string);
+        for (i=0; i<NUM_PACKAGES; i++) {
+            // see if search string matches package name
+            if (strstr(packages[i].name, search_string) != NULL) {
+                // run the package
+                execute_package( &packages[i], verbose );
+            }
+        }
+        printf("running all remaining scripts matching '%s'...\n", search_string);
         for (i=0; i<NUM_AUTOSCRIPTS; i++) {
             // see if search string matches benchmark name
-            if (strstr(scripts[i].name, search_string) != NULL) {
+            if (strstr(scripts[i].name, search_string) != NULL && scripts[i].num_trials == 0) {
                 // run the benchmark
                 execute_benchmark( &scripts[i], verbose );
             }

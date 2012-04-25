@@ -19,21 +19,26 @@
  */
 
 //
-// fft_prime_autotest.c : test FFTs of prime length
+// fftq16_runbench.h : benchmark execution program declaration (fixed-point)
 //
 
-#include "autotest/autotest.h"
-#include "liquid.h"
+#ifndef __FFTQ16_RUNBENCH_H__
+#define __FFTQ16_RUNBENCH_H__
 
-// autotest data definitions
-#include "src/fft/tests/fft_autotest.h"
+#include <sys/resource.h>
 
-// 
-// AUTOTESTS: n-point ffts
-//
-void autotest_fft_17()  { fft_test( fft_test_x17,   fft_test_y17,   17); }
-void autotest_fft_43()  { fft_test( fft_test_x43,   fft_test_y43,   43); }
-void autotest_fft_79()  { fft_test( fft_test_x79,   fft_test_y79,   79); }
-void autotest_fft_157() { fft_test( fft_test_x157,  fft_test_y157, 157); }
-void autotest_fft_317() { fft_test( fft_test_x317,  fft_test_y317, 317); }
-void autotest_fft_509() { fft_test( fft_test_x509,  fft_test_y509, 509); }
+#define FFTQ16_BENCHMARK_API(NFFT,D)    \
+(   struct rusage *_start,              \
+    struct rusage *_finish,             \
+    unsigned long int *_num_iterations) \
+{ fftq16_runbench(_start, _finish, _num_iterations, NFFT, D); }
+
+// Helper function to keep code base small
+void fftq16_runbench(struct rusage *     _start,
+                     struct rusage *     _finish,
+                     unsigned long int * _num_iterations,
+                     unsigned int        _nfft,
+                     int                 _direction);
+
+#endif // __FFTQ16_RUNBENCH_H__
+

@@ -22,97 +22,20 @@
 #include "autotest/autotest.h"
 #include "liquid.h"
 
-// autotest data included in "fft_data.h"
-extern float complex x4[];   extern float complex test4[];
-extern float complex x5[];   extern float complex test5[];
-extern float complex x6[];   extern float complex test6[];
-extern float complex x7[];   extern float complex test7[];
-extern float complex x8[];   extern float complex test8[];
-extern float complex x9[];   extern float complex test9[];
-extern float complex x16[];  extern float complex test16[];
-extern float complex x20[];  extern float complex test20[];
-extern float complex x32[];  extern float complex test32[];
-extern float complex x64[];  extern float complex test64[];
-
-// autotest helper function
-//  _x      :   fft input array
-//  _test   :   expected fft output
-//  _n      :   fft size
-void fftq16_test(float complex * _x,
-                 float complex * _test,
-                 unsigned int    _n)
-{
-    int _method = 0;
-    float tol   = 0.15f;    // error tolerance
-
-    unsigned int i;
-
-    cq16_t x[_n];
-    cq16_t y[_n];
-
-    // convert input to fixed-point and compute FFT
-    if (liquid_autotest_verbose)
-        printf("running %u-point fft...\n", _n);
-    for (i=0; i<_n; i++)
-        x[i] = cq16_float_to_fixed(_x[i]);
-    fftq16plan pf = fftq16_create_plan(_n, x, y, FFT_FORWARD, _method);
-    fftq16_execute(pf);
-    fftq16_destroy_plan(pf);
-
-    // validate FFT results
-    for (i=0; i<_n; i++) {
-        float complex yf = cq16_fixed_to_float(y[i]);
-        float error = cabsf( yf - _test[i] );
-
-        if (liquid_autotest_verbose) {
-            printf("  %3u : (%10.6f, %10.6f), expected (%10.6f, %10.6f), |e| = %12.8f\n",
-                    i,
-                    crealf(yf), cimagf(yf),
-                    crealf(_test[i]), cimagf(_test[i]),
-                    error);
-        }
-
-        CONTEND_DELTA( error, 0, tol );
-    }
-
-    // convert input to fixed-point and compute IFFT
-    if (liquid_autotest_verbose)
-        printf("running %u-point ifft...\n", _n);
-    for (i=0; i<_n; i++)
-        y[i] = cq16_float_to_fixed(_test[i]);
-    fftq16plan pr = fftq16_create_plan(_n, y, x, FFT_REVERSE, _method);
-    fftq16_execute(pr);
-    fftq16_destroy_plan(pr);
-
-    // validate IFFT results
-    for (i=0; i<_n; i++) {
-        float complex xf = cq16_fixed_to_float(x[i]);
-        float error = cabsf( xf - _x[i] );
-
-        if (liquid_autotest_verbose) {
-            printf("  %3u : (%10.6f, %10.6f), expected (%10.6f, %10.6f), |e| = %12.8f\n",
-                i,
-                crealf(xf), cimagf(xf),
-                crealf(_x[i]), cimagf(_x[i]),
-                error);
-        }
-
-        CONTEND_DELTA( error, 0, tol );
-    }
-}
-
+// autotest data definitions
+#include "src/fft/tests/fft_autotest.h"
 
 // 
-// AUTOTESTS: n-point FFTs
+// AUTOTESTS: fixed-point FFTs
 //
-void autotest_fftq16_4()       { fftq16_test(x4,      test4,      4);     }
-void autotest_fftq16_5()       { fftq16_test(x5,      test5,      5);     }
-void autotest_fftq16_6()       { fftq16_test(x6,      test6,      6);     }
-void autotest_fftq16_7()       { fftq16_test(x7,      test7,      7);     }
-void autotest_fftq16_8()       { fftq16_test(x8,      test8,      8);     }
-void autotest_fftq16_9()       { fftq16_test(x9,      test9,      9);     }
-void autotest_fftq16_16()      { fftq16_test(x16,     test16,     16);    }
-void autotest_fftq16_20()      { fftq16_test(x20,     test20,     20);    }
-void autotest_fftq16_32()      { fftq16_test(x32,     test32,     32);    }
-void autotest_fftq16_64()      { fftq16_test(x64,     test64,     64);    }
+void autotest_fftq16_4()       { fftq16_test( fft_test_x4,   fft_test_y4,      4);     }
+void autotest_fftq16_5()       { fftq16_test( fft_test_x5,   fft_test_y5,      5);     }
+void autotest_fftq16_6()       { fftq16_test( fft_test_x6,   fft_test_y6,      6);     }
+void autotest_fftq16_7()       { fftq16_test( fft_test_x7,   fft_test_y7,      7);     }
+void autotest_fftq16_8()       { fftq16_test( fft_test_x8,   fft_test_y8,      8);     }
+void autotest_fftq16_9()       { fftq16_test( fft_test_x9,   fft_test_y9,      9);     }
+void autotest_fftq16_16()      { fftq16_test( fft_test_x16,  fft_test_y16,     16);    }
+void autotest_fftq16_20()      { fftq16_test( fft_test_x20,  fft_test_y20,     20);    }
+void autotest_fftq16_32()      { fftq16_test( fft_test_x32,  fft_test_y32,     32);    }
+void autotest_fftq16_64()      { fftq16_test( fft_test_x64,  fft_test_y64,     64);    }
 

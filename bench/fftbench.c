@@ -285,12 +285,35 @@ void fftbench_execute(struct fftbench_s * _fftbench)
                 benchmark_print_to_file(_fftbench->fid, &benchmark);
         }
         return;
+    } else if (_fftbench->mode == RUN_RADIX2) {
+        printf("running all power-of-two FFTs from %u to %u:\n",
+            _fftbench->nfft_min,
+            _fftbench->nfft_max);
+
+        unsigned int nfft = 1 << liquid_nextpow2(_fftbench->nfft_min);
+        while ( nfft <= _fftbench->nfft_max) {
+
+            // initialize benchmark structure
+            benchmark.nfft       = nfft;
+            benchmark.direction  = FFT_FORWARD;
+            benchmark.num_trials = 1;
+            benchmark.flags      = 0;
+
+            // run the benchmark
+            execute_benchmark_fft(&benchmark, _fftbench->runtime);
+            benchmark_print(&benchmark);
+
+            if (_fftbench->output_to_file)
+                benchmark_print_to_file(_fftbench->fid, &benchmark);
+
+            nfft *= 2;
+        };
+        return;
     }
         
     printf("running ");
     switch (_fftbench->mode) {
     case RUN_ALL:       printf("all");              break;
-    case RUN_RADIX2:    printf("all power-of-two"); break;
     case RUN_COMPOSITE: printf("all composite");    break;
     case RUN_PRIME:     printf("all prime");        break;
     case RUN_SINGLE:
@@ -306,8 +329,6 @@ void fftbench_execute(struct fftbench_s * _fftbench)
         int isradix2 = (1 << liquid_nextpow2(nfft))==nfft ? 1 : 0;
 
         // check run mode
-        if (_fftbench->mode == RUN_RADIX2 && !isradix2)
-            continue;
         if (_fftbench->mode == RUN_COMPOSITE && (isprime || isradix2))
             continue;
         if (_fftbench->mode == RUN_PRIME && !isprime)
