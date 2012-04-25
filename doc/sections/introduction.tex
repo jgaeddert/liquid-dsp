@@ -81,10 +81,20 @@ The library can easily be built from source and is available from
 several places.
 The two most typical means of distribution are a compressed archive
 (a {\em tarball}) and cloning the source repository.
+
+\subsection{Building from a Tarball}
+\label{section:quickstart:tarball}
 If you are building from a tarball
 download the compressed archive {\tt liquid-dsp-v.v.v.tar.gz} to your
 local machine where {\tt v.v.v} denotes the version of the release
-(e.g. {\tt liquid-dsp-\liquidversion.tar.gz});
+(e.g. {\tt liquid-dsp-\liquidversion.tar.gz}).
+% 
+% Download the tarball and md5 check:
+%
+%   $ wget http://ganymede.ece.vt.edu/downloads/liquid-dsp-version.tar.gz
+%   $ wget http://ganymede.ece.vt.edu/downloads/liquid-dps.md5
+%   $ md5sum --check liquid-dsp.md5
+%
 % Check the validity of the tarball using MD5...
 %
 % generate:
@@ -113,6 +123,10 @@ library.
     # make install
 \end{verbatim}
 %
+
+\subsection{Cloning the Git Repository}
+\label{section:quickstart:git}
+%
 You may also build the latest version of the code by cloning the
 Git repository.
 The main repository for \liquid\ is hosted online by {\em github}
@@ -133,6 +147,10 @@ with the archive, but with the additional bootstrapping step:
     $ make
     # make install
 \end{verbatim}
+%
+
+\subsection{Additional {\tt make} Targets}
+\label{section:quickstart:targets}
 %
 You might also want to build and run the optional validation program
 (see \S\ref{section:installation:targets:autotests}) via
