@@ -93,6 +93,9 @@ extra_clean :=
 # additional autotest objects
 autotest_extra_obj :=
 
+# additional benchmark objects
+benchmark_extra_obj :=
+
 #
 # MODULE : agc - automatic gain control
 #
@@ -399,11 +402,16 @@ autotest_extra_obj +=						\
 	src/fft/tests/fft_data_317.o				\
 	src/fft/tests/fft_data_509.o				\
 
+# fft benchmark scripts
 fft_benchmarks :=						\
 	src/fft/bench/fft_composite_benchmark.c			\
 	src/fft/bench/fft_prime_benchmark.c			\
 	src/fft/bench/fft_radix2_benchmark.c			\
 	src/fft/bench/fft_r2r_benchmark.c			\
+
+# additional benchmark objects
+benchmark_extra_obj :=						\
+	src/fft/bench/fft_runbench.o				\
 
 #
 # MODULE : filter
@@ -1334,13 +1342,16 @@ benchmark_obj = $(patsubst %.c,%.o,$(benchmark_sources))
 $(benchmark_obj) : %.o : %.c $(include_headers)
 	$(CC) $(BENCH_CFLAGS) $< -c -o $@
 
+# additional benchmark objects
+$(benchmark_extra_obj) : %.o : %.c $(include_headers)
+
 # compile the benchmark program without linking
 $(bench_prog).o: bench/bench.c benchmark_include.h bench/bench.c
 	$(CC) $(BENCH_CFLAGS) $< -c -o $(bench_prog).o
 
 # link the benchmark program with the library objects
 # NOTE: linked libraries must come _after_ the target program
-$(bench_prog): $(bench_prog).o $(benchmark_obj) libliquid.a
+$(bench_prog): $(bench_prog).o $(benchmark_obj) $(benchmark_extra_obj) libliquid.a
 	$(CC) $^ $(BENCH_LDFLAGS) -o $(bench_prog)
 
 # run the benchmark program
@@ -1362,6 +1373,7 @@ clean-bench:
 	$(RM) benchmark_include.h $(bench_prog).o $(bench_prog)
 	$(RM) scripts/benchmark_compare
 	$(RM) $(benchmark_obj)
+	$(RM) $(benchmark_extra_obj)
 	$(RM) bench/fftbench
 
 
