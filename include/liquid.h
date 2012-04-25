@@ -646,20 +646,10 @@ LIQUID_FFT_DEFINE_API(LIQUID_FFT_MANGLE_FLOAT,float,liquid_float_complex)
 typedef struct spgram_s * spgram;
 
 // create spgram object
-//  _nfft   :   fft size
-//  _alpha  :   averaging factor
+//  _nfft       :   FFT size
+//  _window_len :   window length
 spgram spgram_create(unsigned int _nfft,
-                     float _alpha);
-
-// create spgram object (advanced method)
-//  _nfft   :   fft size
-//  _m      :   window size
-//  _delay  :   number of samples between transforms
-//  _alpha  :   averaging factor
-spgram spgram_create_advanced(unsigned int _nfft,
-                              unsigned int _m,
-                              unsigned int _delay,
-                              float        _alpha);
+                     unsigned int _window_len);
 
 // destroy spgram object
 void spgram_destroy(spgram _q);
@@ -671,15 +661,15 @@ void spgram_reset(spgram _q);
 //  _q      :   spgram object
 //  _x      :   input buffer [size: _n x 1]
 //  _n      :   input buffer length
-void spgram_push(spgram _q,
+void spgram_push(spgram                 _q,
                  liquid_float_complex * _x,
-                 unsigned int _n);
+                 unsigned int           _n);
 
 // compute spectral periodogram output
 //  _q      :   spgram object
-//  _X      :   output spectrum [dB]
+//  _X      :   output spectrum [dB], [size: _nfft x 1]
 void spgram_execute(spgram _q,
-                    float * _X);
+                    liquid_float_complex * _X);
 
 // ascii spectrogram
 typedef struct asgram_s * asgram;

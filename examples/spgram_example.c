@@ -14,60 +14,37 @@
 
 int main() {
     // spectral periodogram options
-    unsigned int n=256;             // spectral periodogram FFT size
-    float alpha = 0.01f;            // spectral periodogram averaging factor
+    unsigned int nfft=256;              // spectral periodogram FFT size
+    unsigned int num_samples = 2001;    // number of samples
 
-    // OFDM options
-    unsigned int nfft=64;           // OFDM FFT size
-    unsigned int num_symbols = 80;  // number of OFDM symbols
+    // allocate memory for data arrays
+    float complex x[num_samples];       // input signal
+    float complex X[nfft];              // output spectrum
+    float psd[nfft];                    // power spectral density
 
-    // initialize objects
-    float complex X[nfft];          // OFDM symbol (freq)
-    float complex x[nfft];          // OFDM symbol (time)
-    float psd[n];                   // power spectral density
+    unsigned int ramp = num_samples/20 < 10 ? 10 : num_samples/20;
 
     // create spectral periodogram
-#if 0
-    spgram q = spgram_create(n,alpha);
-#else
-    unsigned int window_size = n/2; // spgram window size
-    unsigned int delay       = n/4; // samples between transforms
-    spgram q = spgram_create_advanced(n, window_size, delay, alpha);
-#endif
-
-    // guard bands
-    unsigned int g0 = (nfft/2) - (nfft/10);
-    unsigned int g1 = (nfft/2) + (nfft/10);
-
-    // NULL bands
-    unsigned int n0 = (nfft/4) - (nfft/16);
-    unsigned int n1 = (nfft/4) + (nfft/16);
+    unsigned int window_size = nfft/2;  // spgram window size
+    unsigned int delay       = nfft/8;  // samples between transforms
+    spgram q = spgram_create(nfft, window_size);
 
     unsigned int i;
-    for (i=0; i<num_symbols; i++) {
-        // generate data
-        unsigned int j;
-        for (j=0; j<nfft; j++) {
-            if ( j==0 || (j>g0 && j<g1) || (j>n0 && j<n1) ) {
-                // NULL subcarrier
-                X[j] = 0.0f;
-            } else {
-                // DATA subcarrier (use QPSK)
-                X[j] = ( rand() % 2 ? 0.707f : -0.707f ) +
-                       ( rand() % 2 ? 0.707f : -0.707f ) * _Complex_I;
-            }
-        }
 
-        // run transform and push into spectral periodogram object
-        fft_run(nfft, X, x, FFT_REVERSE, 0);
-        spgram_push(q, x, nfft);
+    // generate signal
+    nco_crcf nco = nco_crcf_create(LIQUID_VCO);
+    for (i=0; i<num_samples; i++) {
+        nco_crcf_set_frequency(nco, 0.1f*(1.2f+sinf(0.007f*i)) );
+        nco_crcf_cexpf(nco, &x[i]);
+        nco_crcf_step(nco);
     }
+    nco_crcf_destroy(nco);
 
-    // 'execute' spectral periodogram
-    spgram_execute(q, psd);
-
-    // destroy spectral periodogram object
-    spgram_destroy(q);
+    // add soft ramping functions
+    for (i=0; i<ramp; i++) {
+        x[i]                    *= 0.5f - 0.5f*cosf(M_PI*(float)i          / (float)ramp);
+        x[num_samples-ramp+i-1] *= 0.5f - 0.5f*cosf(M_PI*(float)(ramp-i-1) / (float)ramp);
+    }
 
     // 
     // export output file
@@ -76,21 +53,46 @@ int main() {
     fprintf(fid,"%% %s : auto-generated file\n", OUTPUT_FILENAME);
     fprintf(fid,"clear all;\n");
     fprintf(fid,"close all;\n\n");
-    fprintf(fid,"n = %u;\n", n);
-    fprintf(fid,"psd = zeros(1,n);\n");
+    fprintf(fid,"nfft = %u;\n", nfft);
+    fprintf(fid,"H = zeros(1,nfft);\n");
 
-    for (i=0; i<n; i++)
-        fprintf(fid,"psd(%4u) = %12.4e;\n", i+1, psd[i]);
+    unsigned int t=0;
+    for (i=0; i<num_samples; i++) {
+        // push sample into periodogram
+        spgram_push(q, &x[i], 1);
+
+        if ( ((i+1)%delay)==0 ) {
+            // compute spectral periodogram output
+            spgram_execute(q, X);
+
+            unsigned int k;
+
+            // compute PSD and FFT shift
+            for (k=0; k<nfft; k++)
+                psd[k] = 20*log10f( cabsf(X[(k+nfft/2)%nfft]) );
+
+            // save results to file
+            for (k=0; k<nfft; k++)
+                fprintf(fid,"H(%3u,%3u) = %12.8f;\n", t+1, k+1, psd[k]);
+
+            // increment counter
+            t++;
+        }
+    }
+
+    // destroy spectral periodogram object
+    spgram_destroy(q);
 
     // print
-    fprintf(fid,"f = [0:(n-1)]/n - 0.5;\n");
+    fprintf(fid,"colors = [1 1 1; 0.25 0.78 0.50; 0 0.25 0.50; 1 1 1];\n");
+    fprintf(fid,"C = generate_colormap(colors);\n");
+    fprintf(fid,"H = H - min(min(H));\n");
+    fprintf(fid,"H = H / max(max(H));\n");
     fprintf(fid,"figure;\n");
-    fprintf(fid,"plot(f, psd, 'LineWidth', 2);\n");
-    fprintf(fid,"xlabel('frequency');\n");
-    fprintf(fid,"ylabel('PSD [dB]');\n");
-    fprintf(fid,"axis([-0.5 0.5 -40 0]);\n");
-    fprintf(fid,"axis square;\n");
-    fprintf(fid,"grid on;\n");
+    fprintf(fid,"image(40*H);\n");
+    fprintf(fid,"colormap(C);\n");
+    fprintf(fid,"xlabel('freq');\n");
+    fprintf(fid,"ylabel('time');\n");
 
     fclose(fid);
     printf("results written to %s.\n", OUTPUT_FILENAME);

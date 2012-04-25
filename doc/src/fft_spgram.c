@@ -16,11 +16,11 @@
 int main() {
     // spectral periodogram options
     unsigned int nfft=256;              // spectral periodogram FFT size
-    float alpha = 0.8f;                 // spectral periodogram averaging factor
     unsigned int num_samples = 2001;    // number of samples
 
     // allocate memory for data arrays
     float complex x[num_samples];       // input signal
+    float complex X[nfft];              // output spectrum
     float psd[nfft];                    // power spectral density
 
     unsigned int ramp = num_samples/20 < 10 ? 10 : num_samples/20;
@@ -28,7 +28,7 @@ int main() {
     // create spectral periodogram
     unsigned int window_size = nfft/2;  // spgram window size
     unsigned int delay       = nfft/8;  // samples between transforms
-    spgram q = spgram_create_advanced(nfft, window_size, delay, alpha);
+    spgram q = spgram_create(nfft, window_size);
 
     unsigned int i;
 
@@ -74,10 +74,14 @@ int main() {
         spgram_push(q, &x[i], 1);
 
         if ( ((i+1)%delay)==0 ) {
-            // 'execute' spectral periodogram
-            spgram_execute(q, psd);
+            // compute spectral periodogram output
+            spgram_execute(q, X);
 
             unsigned int k;
+
+            // compute PSD and FFT shift
+            for (k=0; k<nfft; k++)
+                psd[k] = 20*log10f( cabsf(X[(k+nfft/2)%nfft]) );
 #if 1
             for (k=0; k<nfft; k++)
                 fprintf(fid,"%12u %12.8f %12.8f\n", t, (float)k/(float)nfft - 0.5f, psd[k]);
