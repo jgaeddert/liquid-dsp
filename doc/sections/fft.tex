@@ -39,6 +39,63 @@ FFT methods for internal processing.
 This eliminates {\tt libfftw} as an external dependency, but takes
 advantage of it when available.
 
+Internally, \liquid\ uses several algorithms for computing FFTs including
+the standard decimation-in-time (DIT) for power-of-two transforms
+    \cite[\S10-4]{Ziemer:1998},
+the Cooley-Tukey mixed-radix method for composite transforms
+    \cite{CooleyTukey:1965},
+Rader's algorithm for prime-length transforms \cite{Rader:1968},
+and the DFT given by (\ref{eqn:fft:dft}) for very small values of $N$.
+The DFT given requires $\ord\bigl(N^2\bigr)$ operations
+which can be slow for even moderate sizes of $N$.
+\liquid's strategy for computing FFTs is to recursively break the
+transform into manageable pieces and perform the best method for each
+step.
+For example, a transform of length $N=128=2^7$ can be easily computed
+using the standard DIT FFT algorithm which is computationally fast.
+The Cooley-Tukey algorithm permits any factorable transform of size
+$N=PQ$ to be computed with
+$P$ transforms of size $Q$ and $Q$ transforms of size $P$.
+For example, a transform of length $N=126$ can be computed using the
+Cooley-Tukey mixed-radix algorithm by setting $P=9$ and $Q=14$.
+%($N = 128 = 2 \cdot 3 \cdot 3 \cdot 7$)
+Furthermore, each of these transforms can be further split using the
+Cooley-Tukey algorithm (e.g. $9=3\cdot3$ and $14=2\cdot7$).
+The smallest resulting transforms can finally be computed using the DFT
+algorithm without much penalty.
+For large transforms of prime length, \liquid\ uses Rader's algorithm
+\cite{Rader:1968}
+which permits any transform of prime length $N$ to be computed using an
+FFT and IFFT of length $N-1$.
+For example, Rader's algorithm can compute a 127-point transform using
+the 126-point Cooley-Tukey transform described above.%
+\footnote{Rader actually gives an alternate algorithm by which any
+          transform of prime length $N$ can be computed with an FFT and
+          an IFFT of any length greater than $2N-4$.
+          For example, the 127-point FFT could also be computed using
+          computationally efficient 256-point DIT transforms.
+          \liquid\ includes both algorithms and chooses the most
+          appropriate one for the task.}
+% 
+% example:
+%       [7440] = (2 * 2 * 2 * 2) * (3 * 5 * 31)
+%         /\
+%      16   465
+% (DIT FFT)  /\
+%          31  15
+%     (Rader)  (C-T)
+%        /       /\
+%       30      3  5
+%       /\   (DFT)(DFT)
+%      6  5
+%    (C-T)
+%     /\
+%    2  3
+% (DFT)(DFT)
+%
+Consequently, \liquid\ can compute any transform in
+$\ord\bigl(n\log(n)\bigr)$ operations.
+
 An example of the interface for computing complex discrete Fourier
 transforms is listed below.
 Notice the stark similarity to {\tt libfftw3}'s interface.
