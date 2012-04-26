@@ -49,9 +49,9 @@
     \def\dt{0.3}
     \def\ds{0.04}
 
-    \def\va{0.2}        % beginning of ramp up...
-    \def\vb{\va+\dt}    % peak
-    \def\vc{\vb+\dt}    % end of ramp down
+    \def\va{0.2*\dt}        % beginning of ramp up...
+    \def\vb{\va+\dt}        % peak
+    \def\vc{\vb+\dt}        % end of ramp down
     \def\vd{\vc+2.5*\dt}    % end of buffer
 
     \def\wa{\va+0.5*\dt}
@@ -72,7 +72,7 @@
     \def\cwfallb{\wc - 0.4*\dt}
 
     % axis 
-    \draw[very thick, black,->] (-0.02, 0.0 ) -- (2,0)           node[anchor=south] {{\it time}};
+    \draw[very thick, black,->] (-0.02, 0.0 ) -- (1.7,0)         node[anchor=south] {{\it time}};
     \draw[very thick, black,->] ( 0.0, -0.02) -- (0,1.1*\height) node[left=7pt,rotate=90] {{\it signal level}};
 
     % draw 'buffer' boxes (FFT inputs)

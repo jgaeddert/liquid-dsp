@@ -188,28 +188,39 @@ representation of available windowing functions in \liquid).
 Internally, the {\tt spgram} object using the Hamming window.%
 \footnote{Future development may permit the user to specify which
           windowing method is preferred.}
-
-\liquid\ implements a discrete spectral periodogram with the
-{\tt spgram} object.
+%
+The discrete form is simply...
+For a discretely-sampled signal $x(nT_s)$, the spectral content at time
+index $p$ is
+%    X(k) = \sum_{i=0}^{N-1}{x(i) e^{-j 2 \pi k i/N}}
+\[
+    \hat{X}_p(k) = 
+        \frac{1}{N}
+        \sum_{i=0}^{N-1}{
+            x((i+p)T_s) w(iT_s) e^{-j 2 \pi k i/N}
+        }
+\]
+%
+which is simply the $N$-point discrete Fourier transform of the input
+sequence indexed at $p$ with a shaping window applied.
 %
 \begin{figure}
 \centering
-\subfigure[{\tt spgram} input (time series)] {
-  \includegraphics[trim = 0mm 4mm 0mm 0mm, clip, width=13cm]{figures.gen/fft_spgram_time}
-}
-\subfigure[{\tt spgram} output (time-frequency response)] {
-  \includegraphics[trim = 10mm 10mm 4mm 10mm, clip, width=13cm]{figures.gen/fft_spgram_freq}
-}
-\caption{Spectral periodogram {\tt spgram} demonstration for a frequency-modulated sinuosoid.}
-\label{fig:module:fft:spgram}
+  \includegraphics[trim = 0mm 0mm 0mm 0mm, clip, width=0.95\textwidth]{figures.pgf/fft_spgram_diagram}
+\caption{Spectral periodogram functionality}
+\label{fig:module:fft:spgram:diagram}
 \end{figure}
 %
-An example of the {\tt spgram} object can be
-found in Figure~\ref{fig:module:fft:spgram} in which a
-frequency-modulated sinusoid is generated and analyzed.
-The frequency of the sinusoid changes over time and is clearly visible
-in both plots.
+Figure~\ref{fig:module:fft:spgram:diagram} depicts a spectral
+periodogram for the discrete case
+in which two overlapping transforms are taken with a delay between them.
+The windowing function provides time localization at the expense of
+frequency resolution.
+Typically the length of the window is half the size of the transform,
+and the delay is a quarter the size of the transform.
 
+\liquid\ implements a discrete spectral periodogram with the
+{\tt spgram} object.
 %
 Listed below is the full interface to the {\tt spgram} object.
 %
@@ -234,4 +245,22 @@ Listed below is the full interface to the {\tt spgram} object.
     The output array is of type {\tt float complex} and contain
     output of the FFT.
 \end{description}
+%
+\begin{figure}
+\centering
+\subfigure[{\tt spgram} input (time series)] {
+  \includegraphics[trim = 0mm 4mm 0mm 0mm, clip, width=13cm]{figures.gen/fft_spgram_time}
+}
+\subfigure[{\tt spgram} output (time-frequency response)] {
+  \includegraphics[trim = 10mm 10mm 4mm 10mm, clip, width=13cm]{figures.gen/fft_spgram_freq}
+}
+\caption{Spectral periodogram {\tt spgram} demonstration for a frequency-modulated sinuosoid.}
+\label{fig:module:fft:spgram}
+\end{figure}
+%
+An example of the {\tt spgram} object can be
+found in Figure~\ref{fig:module:fft:spgram} in which a
+frequency-modulated sinusoid is generated and analyzed.
+The frequency of the sinusoid changes over time and is clearly visible
+in both plots.
 
