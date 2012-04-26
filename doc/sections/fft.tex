@@ -65,10 +65,10 @@ The smallest resulting transforms can finally be computed using the DFT
 algorithm without much penalty.
 For large transforms of prime length, \liquid\ uses Rader's algorithm
 \cite{Rader:1968}
-which permits any transform of prime length $N$ to be computed using an
-FFT and IFFT of length $N-1$.
+which permits any transform of prime length $N$ to be computed using
+an FFT and an IFFT each of length $N-1$.
 For example, Rader's algorithm can compute a 127-point transform using
-the 126-point Cooley-Tukey transform described above.%
+the 126-point Cooley-Tukey transform (and its inverse) described above.%
 \footnote{Rader actually gives an alternate algorithm by which any
           transform of prime length $N$ can be computed with an FFT and
           an IFFT of any length greater than $2N-4$.
@@ -76,6 +76,8 @@ the 126-point Cooley-Tukey transform described above.%
           computationally efficient 256-point DIT transforms.
           \liquid\ includes both algorithms and chooses the most
           appropriate one for the task.}
+Through recursion, a tranform of any size can be decomposed into either
+computationally efficient DIT FFTs, or combinations of small DFTs.
 % 
 % example:
 %       [7440] = (2 * 2 * 2 * 2) * (3 * 5 * 31)
