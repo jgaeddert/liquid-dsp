@@ -437,7 +437,13 @@ void spc2216_decode(unsigned char * _msg_rec,
         sym_enc[1] = w[2*i+0];
         sym_enc[2] = w[2*i+1];
 
+#if DEBUG_SPC2216
         int syndrome_flag = fec_secded2216_estimate_ehat(sym_enc, e_hat);
+#else
+        // same as above, but do not declare 'syndrome_flag' variable
+        // (rid compiler of unused variable warning)
+        fec_secded2216_estimate_ehat(sym_enc, e_hat);
+#endif
 
         // apply error vector estimate to appropriate arrays
         parity_col[i] ^= e_hat[0];
