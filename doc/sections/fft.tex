@@ -185,6 +185,9 @@ between transforms.
 Typical windowing functions are the Hamming, Hann, and Kaiser windows
 (see \S\ref{module:math:window} for a description and spectral
 representation of available windowing functions in \liquid).
+Internally, the {\tt spgram} object using the Hamming window.%
+\footnote{Future development may permit the user to specify which
+          windowing method is preferred.}
 
 \liquid\ implements a discrete spectral periodogram with the
 {\tt spgram} object.
@@ -202,27 +205,21 @@ representation of available windowing functions in \liquid).
 \end{figure}
 %
 An example of the {\tt spgram} object can be
-found in Figure~\ref{fig:module:fft:spgram}.
+found in Figure~\ref{fig:module:fft:spgram} in which a
+frequency-modulated sinusoid is generated and analyzed.
+The frequency of the sinusoid changes over time and is clearly visible
+in both plots.
 
 %
 Listed below is the full interface to the {\tt spgram} object.
 %
 \begin{description}
-\item[{\tt spgram\_create(nfft,alpha)}]
+\item[{\tt spgram\_create(nfft,window\_len)}]
     creates and returns an {\tt spgram} object with a transform size of
-    {\tt nfft} samples and an averaging factor $\alpha$.
+    {\tt nfft} samples with a window of {\tt window\_len} samples.
     Internally,
     a Hamming window (see \S\ref{module:math:window:hamming})
-    with {\tt nfft}$/2$ samples is used,
-    and the delay between transforms is {\tt nfft}$/4$ samples.
-    To specify these values manually, use the
-    {\tt spgram\_create\_advanced()} method, below.
-\item[{\tt spgram\_create\_advanced(nfft,m,d,alpha)}]
-    creates and returns an {\tt spgram} object with
-    a transform size of {\tt nfft} samples,
-    a window of {\tt m} samples,
-    a delay between transforms of {\tt d} samples,
-    and an averaging factor $\alpha$.
+    is used for spectral smoothing.
 \item[{\tt spgram\_destroy(q)}]
     destroys an {\tt spgram} object, freeing all internally-allocated
     memory.
@@ -233,10 +230,8 @@ Listed below is the full interface to the {\tt spgram} object.
     of an {\tt spgram} object.
 \item[{\tt spgram\_execute(q,*X)}]
     computes the spectral periodogram output storing the result in the
-    output array $\vec{X}$.
-    The output array is of type {\tt float} and should be the
-    same length as the number of FFT points provided during the
-    {\tt create()} method.
-    The values in $\vec{X}$ represent the magnitude in dB.
+    {\tt nfft}-point output array $\vec{X}$.
+    The output array is of type {\tt float complex} and contain
+    output of the FFT.
 \end{description}
 
