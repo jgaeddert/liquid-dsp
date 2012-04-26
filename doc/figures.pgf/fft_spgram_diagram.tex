@@ -10,11 +10,11 @@
 %       /   / \   \
 %      /   /   \   \
 %     /   /     \   \
-%    /   /       \   \
-%   /   /         \   \
-% -+---+-----------+---+------->
-%  |   |           |   |
-%  va  wa          vc  wc
+%    /   /=======\===\=================+
+%   /=============\===\============+
+% -+---+-----------+---+-----------+---+-->
+%  |   |           |   |           |   |
+%  va  wa          vc  wc          vd  wd
 %
 
 \documentclass[a4paper,landscape]{article}
@@ -32,10 +32,12 @@
 \usepackage[left=1cm,right=1cm]{geometry}
 \pagestyle{empty}
 
+\input{figures.pgf/liquid-colors}
+
 \tikzstyle{inside}=[rectangle,draw=black,thick,minimum size=10mm]
 \tikzstyle{outside}=[rectangle,color=black!50,thick,minimum size=10mm]
 \tikzstyle{index}=[rectangle,fill=black,thin,font={\scriptsize\tt\color{white}},minimum size=3mm,inner sep=0mm]
-% color=black!50
+
 
 \begin{document}
 
@@ -44,16 +46,18 @@
     %\draw[step=5mm,help lines] (0,0) grid (20,2);
 
     \def\height{0.6}
-    \def\dt{0.6}
-    \def\ds{0.03}
+    \def\dt{0.3}
+    \def\ds{0.04}
 
     \def\va{0.2}        % beginning of ramp up...
     \def\vb{\va+\dt}    % peak
     \def\vc{\vb+\dt}    % end of ramp down
+    \def\vd{\vc+2.5*\dt}    % end of buffer
 
     \def\wa{\va+0.5*\dt}
     \def\wb{\wa+\dt}
     \def\wc{\wb+\dt}
+    \def\wdd{\wc+2.5*\dt} % apparently \wd is some keyword
     
     % derived constants: control points for curve (first window)
     \def\cvrisea{\va + 0.4*\dt}
@@ -71,6 +75,10 @@
     \draw[very thick, black,->] (-0.02, 0.0 ) -- (2,0)           node[anchor=south] {{\it time}};
     \draw[very thick, black,->] ( 0.0, -0.02) -- (0,1.1*\height) node[left=7pt,rotate=90] {{\it signal level}};
 
+    % draw 'buffer' boxes (FFT inputs)
+    \draw[draw=none,fill=liquid-color-mutedblue] (\va,0.2*\ds) rectangle (\vd, 1.0*\ds);
+    \draw[draw=none,fill=liquid-color-mutedred] (\wa,1.2*\ds) rectangle (\wdd,2.0*\ds);
+
     % draw curve (first window)
     \draw[very thick, black]
         (0,         0) --
@@ -79,23 +87,29 @@
         (\vc,       0);
     
     % draw curve (second window)
-    \draw[very thick, black]
+    \draw[very thick, black, dashed]
         (0,         0) --
         (\wa,       0) .. controls (\cwrisea, 0)       and (\cwriseb,\height) ..
         (\wb, \height) .. controls (\cwfalla, \height) and (\cwfallb,0)       ..
         (\wc,       0);
     
-    % |<----- delay ----->|
+    % |<----- window length ----->|
     \draw[thin,gray] (\va, -3*\ds)   --  (\va, 1*\ds);
-    \draw[thin,gray] (\wa, -3*\ds)   --  (\wa, 1*\ds);
-    \draw[thick,black,<->] (\va, -2*\ds)   --  (\wa, -2*\ds);
-    \draw (0.5*\va + 0.5*\wa, -2*\ds) node[anchor=north east] {\footnotesize\em delay};
+    \draw[thin,gray] (\vc, -3*\ds)   --  (\vc, 1*\ds);
+    \draw[thick,black,<->] (\va, -2*\ds)   --  (\vc, -2*\ds);
+    \draw (\vb, -2*\ds) node[anchor=north] {\footnotesize\em window length};
 
-    % |<----- window size ----->|
+    % |<----- fft length ----->|
     \draw[thin,gray] (\va, -5*\ds)   --  (\va, 1*\ds);
-    \draw[thin,gray] (\vc, -5*\ds)   --  (\vc, 1*\ds);
-    \draw[thick,black,<->] (\va, -4*\ds)   --  (\vc, -4*\ds);
-    \draw (\vb, -4*\ds) node[anchor=north] {\footnotesize\em window size};
+    \draw[thin,gray] (\vd, -5*\ds)   --  (\vd, 1*\ds);
+    \draw[thick,black,<->] (\va, -4*\ds)   --  (\vd, -4*\ds);
+    \draw (\vc, -4*\ds) node[anchor=north] {\footnotesize\em FFT length};
+
+    % |<----- delay ----->|
+    \draw[thin,gray] (\va, -7*\ds)   --  (\va, 1*\ds);
+    \draw[thin,gray] (\wa, -7*\ds)   --  (\wa, 1*\ds);
+    \draw[thick,black,<->] (\va, -6*\ds)   --  (\wa, -6*\ds);
+    \draw (0.5*\va + 0.5*\wa, -6*\ds) node[anchor=north east] {\footnotesize\em delay};
 
     % add text labels
     %\draw (\rampup,     0.5*\height) node[rotate=45] {\small\sf ramp up};
