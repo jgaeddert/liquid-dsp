@@ -366,6 +366,9 @@ autotest_extra_obj +=						\
 	src/fft/tests/fft_data_192.o				\
 	src/fft/tests/fft_data_317.o				\
 	src/fft/tests/fft_data_509.o				\
+	src/fft/tests/fft_r2rdata_8.o				\
+	src/fft/tests/fft_r2rdata_27.o				\
+	src/fft/tests/fft_r2rdata_32.o				\
 
 # fft benchmark scripts
 fft_benchmarks :=						\

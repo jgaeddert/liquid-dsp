@@ -139,4 +139,37 @@ extern float complex fft_test_y317[];
 extern float complex fft_test_x509[];
 extern float complex fft_test_y509[];
 
+// 8-point real even/odd dft data
+extern float fftdata_r2r_x8[];
+extern float fftdata_r2r_REDFT00_y8[];
+extern float fftdata_r2r_REDFT10_y8[];
+extern float fftdata_r2r_REDFT01_y8[];
+extern float fftdata_r2r_REDFT11_y8[];
+extern float fftdata_r2r_RODFT00_y8[];
+extern float fftdata_r2r_RODFT10_y8[];
+extern float fftdata_r2r_RODFT01_y8[];
+extern float fftdata_r2r_RODFT11_y8[];
+
+// 27-point real even/odd dft data
+extern float fftdata_r2r_x27[];
+extern float fftdata_r2r_REDFT00_y27[];
+extern float fftdata_r2r_REDFT10_y27[];
+extern float fftdata_r2r_REDFT01_y27[];
+extern float fftdata_r2r_REDFT11_y27[];
+extern float fftdata_r2r_RODFT00_y27[];
+extern float fftdata_r2r_RODFT10_y27[];
+extern float fftdata_r2r_RODFT01_y27[];
+extern float fftdata_r2r_RODFT11_y27[];
+
+// 32-point real even/odd dft data
+extern float fftdata_r2r_x32[];
+extern float fftdata_r2r_REDFT00_y32[];
+extern float fftdata_r2r_REDFT10_y32[];
+extern float fftdata_r2r_REDFT01_y32[];
+extern float fftdata_r2r_REDFT11_y32[];
+extern float fftdata_r2r_RODFT00_y32[];
+extern float fftdata_r2r_RODFT10_y32[];
+extern float fftdata_r2r_RODFT01_y32[];
+extern float fftdata_r2r_RODFT11_y32[];
+
 #endif // __LIQUID_FFT_DATA_H__
