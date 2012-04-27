@@ -702,10 +702,6 @@ int fec_sumproduct_step(unsigned char * _H,
 // MODULE : fft (fast discrete Fourier transform)
 //
 
-// fft size below which twiddle factors
-// are stored in look-up table (very fast)
-#define FFT_SIZE_LUT    16
-
 typedef enum {
     LIQUID_FFT_DFT_1D   = 0,    // complex one-dimensional FFT
 
@@ -809,11 +805,6 @@ int fft_is_radix2(unsigned int _n);
 // miscellaneous functions
 unsigned int fft_reverse_index(unsigned int _i, unsigned int _n);
 
-//
-// fft_shift
-//
-//void fft_shift_odd(float complex *_x, unsigned int _n);
-//void fft_shift_even(float complex *_x, unsigned int _n);
 
 LIQUID_FFT_DEFINE_INTERNAL_API(LIQUID_FFT_MANGLE_FLOAT, float, liquid_float_complex)
 
