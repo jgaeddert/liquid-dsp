@@ -39,7 +39,7 @@ struct FFT(plan_s)
     liquid_fft_method method;
 
     // 'execute' function pointer
-    void (*execute)(FFT(plan));
+    FFT(_execute_t) * execute;
 
     // real even/odd DFT parameters (DCT/DST)
     T * xr; // input array (real)
