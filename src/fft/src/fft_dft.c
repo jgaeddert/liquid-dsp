@@ -52,6 +52,7 @@ FFT(plan) FFT(_create_plan_dft)(unsigned int _nfft,
     q->method    = LIQUID_FFT_METHOD_DFT;
         
     q->data.dft.twiddle = NULL;
+    q->data.dft.dotprod = NULL;
 
     // check size, use specific codelet for small DFTs
     if      (q->nfft == 2) q->execute = FFT(_execute_dft_2);
@@ -66,11 +67,21 @@ FFT(plan) FFT(_create_plan_dft)(unsigned int _nfft,
 
         // initialize twiddle factors
         q->data.dft.twiddle = (TC *) malloc(q->nfft * sizeof(TC));
+
+        // create dotprod objects
+        q->data.dft.dotprod = (DOTPROD()*) malloc(q->nfft * sizeof(DOTPROD()));
         
         unsigned int i;
+        unsigned int k;
         T d = (q->direction == FFT_FORWARD) ? -1.0 : 1.0;
-        for (i=0; i<q->nfft; i++)
-            q->data.dft.twiddle[i] = cexpf(_Complex_I*d*2*M_PI*(T)i / (T)(q->nfft));
+        for (i=0; i<q->nfft; i++) {
+            // initialize twiddle factors
+            for (k=0; k<q->nfft; k++)
+                q->data.dft.twiddle[k] = cexpf(_Complex_I*d*2*M_PI*(T)(k*i) / (T)(q->nfft));
+
+            // create dotprod object
+            q->data.dft.dotprod[i] = DOTPROD(_create)(q->data.dft.twiddle, q->nfft);
+        }
     }
 
     return q;
@@ -83,6 +94,16 @@ void FFT(_destroy_plan_dft)(FFT(plan) _q)
     if (_q->data.dft.twiddle != NULL)
         free(_q->data.dft.twiddle);
 
+    // free dotprod objects
+    if (_q->data.dft.dotprod != NULL) {
+        unsigned int i;
+        for (i=0; i<_q->nfft; i++)
+            DOTPROD(_destroy)(_q->data.dft.dotprod[i]);
+
+        // free dotprod array
+        free(_q->data.dft.dotprod);
+    }
+
     // free main object memory
     free(_q);
 }
@@ -91,21 +112,27 @@ void FFT(_destroy_plan_dft)(FFT(plan) _q)
 void FFT(_execute_dft)(FFT(plan) _q)
 {
     unsigned int i;
-    unsigned int k;
     unsigned int nfft = _q->nfft;
 
+#if 0
     // DC value is sum of input
     _q->y[0] = _q->x[0];
     for (i=1; i<nfft; i++)
         _q->y[0] += _q->x[i];
     
     // compute remaining DFT values
+    unsigned int k;
     for (i=1; i<nfft; i++) {
         _q->y[i] = _q->x[0];
         for (k=1; k<nfft; k++) {
             _q->y[i] += _q->x[k] * _q->data.dft.twiddle[(i*k)%_q->nfft];
         }
     }
+#else
+    // use vector dot products
+    for (i=0; i<nfft; i++)
+        DOTPROD(_execute)(_q->data.dft.dotprod[i], _q->x, &_q->y[i]);
+#endif
 }
 
 // 
