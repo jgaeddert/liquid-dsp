@@ -71,16 +71,26 @@ FFT(plan) FFT(_create_plan_dft)(unsigned int _nfft,
         // create dotprod objects
         q->data.dft.dotprod = (DOTPROD()*) malloc(q->nfft * sizeof(DOTPROD()));
         
+        // create dotprod objects
+        // twiddles: exp(-j*2*pi*W), W=
+        //  0   0   0   0   0...
+        //  0   1   2   3   4...
+        //  0   2   4   6   8...
+        //  0   3   6   9   12...
+        //  ...
+        // Note that first row/column is zero, no multiplication necessary.
+        // Create dotprod for first row anyway because it's still faster...
         unsigned int i;
         unsigned int k;
         T d = (q->direction == FFT_FORWARD) ? -1.0 : 1.0;
         for (i=0; i<q->nfft; i++) {
             // initialize twiddle factors
-            for (k=0; k<q->nfft; k++)
-                q->data.dft.twiddle[k] = cexpf(_Complex_I*d*2*M_PI*(T)(k*i) / (T)(q->nfft));
+            // NOTE: no need to compute first twiddle because exp(-j*2*pi*0) = 1
+            for (k=1; k<q->nfft; k++)
+                q->data.dft.twiddle[k-1] = cexpf(_Complex_I*d*2*M_PI*(T)(k*i) / (T)(q->nfft));
 
             // create dotprod object
-            q->data.dft.dotprod[i] = DOTPROD(_create)(q->data.dft.twiddle, q->nfft);
+            q->data.dft.dotprod[i] = DOTPROD(_create)(q->data.dft.twiddle, q->nfft-1);
         }
     }
 
@@ -130,8 +140,11 @@ void FFT(_execute_dft)(FFT(plan) _q)
     }
 #else
     // use vector dot products
-    for (i=0; i<nfft; i++)
-        DOTPROD(_execute)(_q->data.dft.dotprod[i], _q->x, &_q->y[i]);
+    // NOTE: no need to compute first multiplication because exp(-j*2*pi*0) = 1
+    for (i=0; i<nfft; i++) {
+        DOTPROD(_execute)(_q->data.dft.dotprod[i], &_q->x[1], &_q->y[i]);
+        _q->y[i] += _q->x[0];
+    }
 #endif
 }
 
