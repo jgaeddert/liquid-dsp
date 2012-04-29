@@ -27,12 +27,6 @@
 #include <sys/resource.h>
 #include "liquid.h"
 
-#define FFT_BENCHMARK_API(NFFT,D)       \
-(   struct rusage *_start,              \
-    struct rusage *_finish,             \
-    unsigned long int *_num_iterations) \
-{ fft_runbench(_start, _finish, _num_iterations, NFFT, D); }
-
 // Helper function to keep code base small
 void fft_runbench(struct rusage *     _start,
                   struct rusage *     _finish,

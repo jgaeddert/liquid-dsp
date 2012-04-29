@@ -17,6 +17,19 @@ configure
 # ignore listings style (pygments)
 highlight.sty
 
+# auto-generated figures
+figures.gen/*.dat
+figures.gen/*.eps
+figures.gen/*.gnu
+figures.gen/*.pdf
+figures.gen/*.png
+
+figures.pgf/*.aux
+figures.pgf/*.dat
+figures.pgf/*.log
+figures.pgf/*.pdf
+figures.pgf/*.png
+
 # ignore all programs
 src/agc_transient
 src/audio_cvsd

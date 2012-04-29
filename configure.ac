@@ -23,8 +23,8 @@
 # Process with autoconf to generate configure script
 #
 
-AC_INIT([liquid-dsp],[1.1.0],[liquid@vt.edu])
-AC_CONFIG_SRCDIR([libliquid.c])
+AC_INIT([liquid-dsp],[1.2.0],[liquid@vt.edu])
+AC_CONFIG_SRCDIR([src/libliquid.c])
 
 # permit auxiliary scripts directory (e.g. config.sub, config.guess, install-sh)
 AC_CONFIG_AUX_DIR(scripts/)

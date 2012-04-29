@@ -93,8 +93,22 @@ void FFT(_execute_radix2)(FFT(plan) _q)
 {
     // swap values
     unsigned int i,j,k;
-    for (i=0; i<_q->nfft; i++)
+
+    // unroll loop
+    unsigned int nfft4 = (_q->nfft>>2)<<2;  // floor(_nfft/4)
+    for (i=0; i<nfft4; i+=4) {
+        _q->y[i  ] = _q->x[ _q->data.radix2.index_rev[i  ] ];
+        _q->y[i+1] = _q->x[ _q->data.radix2.index_rev[i+1] ];
+        _q->y[i+2] = _q->x[ _q->data.radix2.index_rev[i+2] ];
+        _q->y[i+3] = _q->x[ _q->data.radix2.index_rev[i+3] ];
+    }
+
+#if 0
+    // clean up remaining
+    // NOTE : this only happens when _nfft=2 because we know (_nfft%4)==0 otherwise
+    for ( ; i<_q->nfft; i++)
         _q->y[i] = _q->x[ _q->data.radix2.index_rev[i] ];
+#endif
 
     TC yp;
     TC *y=_q->y;
@@ -125,6 +139,7 @@ void FFT(_execute_radix2)(FFT(plan) _q)
                 y[k].real += yp.real;
                 y[k].imag += yp.imag;
 #else
+                // NOTE: most computation is with the multiplication in next line
                 yp      =  y[k+n1]*t;
                 y[k+n1] =  y[k] - yp;
                 y[k]    += yp;

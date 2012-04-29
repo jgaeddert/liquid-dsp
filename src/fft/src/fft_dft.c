@@ -52,11 +52,13 @@ FFT(plan) FFT(_create_plan_dft)(unsigned int _nfft,
     q->method    = LIQUID_FFT_METHOD_DFT;
         
     q->data.dft.twiddle = NULL;
+    q->data.dft.dotprod = NULL;
 
-    // check size, use specific codelet for small DFTs
 #if LIQUID_FPM
+    // no specific codelets for fixed-point
     if (0);
 #else
+    // check size, use specific codelet for small DFTs
     if      (q->nfft == 2) q->execute = FFT(_execute_dft_2);
     else if (q->nfft == 3) q->execute = FFT(_execute_dft_3);
     else if (q->nfft == 4) q->execute = FFT(_execute_dft_4);
@@ -69,9 +71,9 @@ FFT(plan) FFT(_create_plan_dft)(unsigned int _nfft,
         q->execute = FFT(_execute_dft);
 
         // initialize twiddle factors
-        q->data.dft.twiddle = (TC *) malloc(q->nfft * sizeof(TC));
-        
         unsigned int i;
+        unsigned int k;
+        q->data.dft.twiddle = (TC *) malloc(q->nfft * sizeof(TC));
         T d = (q->direction == FFT_FORWARD) ? -1.0 : 1.0;
         for (i=0; i<q->nfft; i++) {
             float complex t = cexpf(_Complex_I*d*2*M_PI*(T)i / (T)(q->nfft));
@@ -81,6 +83,30 @@ FFT(plan) FFT(_create_plan_dft)(unsigned int _nfft,
             q->data.dft.twiddle[i] = t;
 #endif
         }
+
+        // create dotprod objects
+        q->data.dft.dotprod = (DOTPROD()*) malloc(q->nfft * sizeof(DOTPROD()));
+        
+        // create dotprod objects
+        // twiddles: exp(-j*2*pi*W), W=
+        //  0   0   0   0   0...
+        //  0   1   2   3   4...
+        //  0   2   4   6   8...
+        //  0   3   6   9   12...
+        //  ...
+        // Note that first row/column is zero, no multiplication necessary.
+        // Create dotprod for first row anyway because it's still faster...
+        TC * dpvect = (TC *) malloc(q->nfft * sizeof(TC));
+        for (i=0; i<q->nfft; i++) {
+            // initialize twiddle factors
+            // NOTE: no need to compute first twiddle because exp(-j*2*pi*0) = 1
+            for (k=1; k<q->nfft; k++)
+                dpvect[k-1] = q->data.dft.twiddle[(i*k)%(q->nfft)];
+
+            // create dotprod object
+            q->data.dft.dotprod[i] = DOTPROD(_create)(dpvect, q->nfft-1);
+        }
+        free(dpvect);
     }
 
     return q;
@@ -93,12 +119,21 @@ void FFT(_destroy_plan_dft)(FFT(plan) _q)
     if (_q->data.dft.twiddle != NULL)
         free(_q->data.dft.twiddle);
 
+    // free dotprod objects
+    if (_q->data.dft.dotprod != NULL) {
+        unsigned int i;
+        for (i=0; i<_q->nfft; i++)
+            DOTPROD(_destroy)(_q->data.dft.dotprod[i]);
+
+        // free dotprod array
+        free(_q->data.dft.dotprod);
+    }
+
     // free main object memory
     free(_q);
 }
 
-#if LIQUID_FPM
-
+#if 0
 // fixed-point DFT (slow but functionally correct)
 void FFT(_execute_dft)(FFT(plan) _q)
 {
@@ -140,16 +175,15 @@ void FFT(_execute_dft)(FFT(plan) _q)
         }
     }
 }
-
-#else
+#endif
 
 // floating-point DFT (slow but functionally correct)
 void FFT(_execute_dft)(FFT(plan) _q)
 {
     unsigned int i;
-    unsigned int k;
     unsigned int nfft = _q->nfft;
 
+#if 0
     // DC value is sum of input
     _q->y[0] = _q->x[0];
     for (i=1; i<nfft; i++) {
@@ -157,14 +191,33 @@ void FFT(_execute_dft)(FFT(plan) _q)
     }
     
     // compute remaining DFT values
+    unsigned int k;
     for (i=1; i<nfft; i++) {
         _q->y[i] = _q->x[0];
         for (k=1; k<nfft; k++) {
             _q->y[i] += _q->x[k] * _q->data.dft.twiddle[(i*k)%_q->nfft];
         }
     }
-}
+#else
+    // use vector dot products
+    // NOTE: no need to compute first multiplication because exp(-j*2*pi*0) = 1
+    for (i=0; i<nfft; i++) {
+        DOTPROD(_execute)(_q->data.dft.dotprod[i], &_q->x[1], &_q->y[i]);
+#if LIQUID_FPM
+        _q->y[i].real += _q->x[0].real;
+        _q->y[i].imag += _q->x[0].imag;
+
+        if (_q->direction != FFT_FORWARD) {
+            _q->y[i].real /= (int)nfft;
+            _q->y[i].imag /= (int)nfft;
+        }
+#else
+        _q->y[i] += _q->x[0];
 #endif
+    }
+#endif
+}
+
 
 // 
 // codelets for small DFTs
@@ -181,6 +234,59 @@ void FFT(_execute_dft_2)(FFT(plan) _q)
 //
 void FFT(_execute_dft_3)(FFT(plan) _q)
 {
+#if 0
+    // NOTE: not as fast as other method, but perhaps useful for
+    // fixed-point algorithm
+    //  x = a + jb
+    //  y = c + jd
+    // We want to compute both x*y and x*conj(y) with as few
+    // multiplications as possible. If we define
+    //  k1 = a*(c+d);
+    //  k2 = d*(a+b);
+    //  k3 = c*(b-a);
+    //  k4 = b*(c+d);
+    // then
+    //  x*y       = (k1-k2) + j(k1+k3)
+    //  x*conj(y) = (k4-k3) + j(k4-k2)
+    T a,  b; // c=real(g)=-0.5, d=imag(g)=-sqrt(3)/2
+    T k1, k2, k3, k4;
+
+    // compute both _q->x[1]*g and _q->x[1]*conj(g) with only 4 real multiplications
+    a = crealf(_q->x[1]);
+    b = cimagf(_q->x[1]);
+    //k1 = a*(-0.5f + -0.866025403784439f);
+    k1 = -1.36602540378444f*a;
+    k2 = -0.866025403784439f*(    a + b);
+    k3 =               -0.5f*(    b - a);
+    //k4 =                   b*(-0.5f + -0.866025403784439f);
+    k4 = -1.36602540378444f*b;
+
+    TC ta1 = (k1-k2) + _Complex_I*(k1+k3);   // 
+    TC tb1 = (k4-k3) + _Complex_I*(k4-k2);   // 
+    
+    // compute both _q->x[2]*g and _q->x[2]*conj(g) with only 4 real multiplications
+    a = crealf(_q->x[2]);
+    b = cimagf(_q->x[2]);
+    //k1 = a*(-0.5f + -0.866025403784439f);
+    k1 = -1.36602540378444f*a;
+    k2 = -0.866025403784439f*(    a + b);
+    k3 =               -0.5f*(    b - a);
+    //k4 =                   b*(-0.5f + -0.866025403784439f);
+    k4 = -1.36602540378444f*b;
+
+    TC ta2 = (k1-k2) + _Complex_I*(k1+k3);   // 
+    TC tb2 = (k4-k3) + _Complex_I*(k4-k2);   // 
+    
+    // set return values
+    _q->y[0] = _q->x[0] + _q->x[1] + _q->x[2];
+    if (_q->direction == FFT_FORWARD) {
+        _q->y[1] = _q->x[0] + ta1 + tb2;
+        _q->y[2] = _q->x[0] + tb1 + ta2;
+    } else {
+        _q->y[1] = _q->x[0] + tb1 + ta2;
+        _q->y[2] = _q->x[0] + ta1 + tb2;
+    }
+#else
     TC g  = -0.5f - _Complex_I*0.866025403784439; // sqrt(3)/2
 
     _q->y[0] = _q->x[0] + _q->x[1]          + _q->x[2];
@@ -195,6 +301,7 @@ void FFT(_execute_dft_3)(FFT(plan) _q)
         _q->y[1] = tb;
         _q->y[2] = ta;
     }
+#endif
 }
 
 //

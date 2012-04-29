@@ -39,7 +39,7 @@ struct FFT(plan_s)
     liquid_fft_method method;
 
     // 'execute' function pointer
-    void (*execute)(FFT(plan));
+    FFT(_execute_t) * execute;
 
     // real even/odd DFT parameters (DCT/DST)
     T * xr; // input array (real)
@@ -50,6 +50,7 @@ struct FFT(plan_s)
         // DFT
         struct {
             TC * twiddle;               // twiddle factors
+            DOTPROD() * dotprod;        // inner dot products
         } dft;
 
         // radix-2 transform data
@@ -85,7 +86,7 @@ struct FFT(plan_s)
             FFT(plan) ifft;     // sub-IFFT of size nfft-1
         } rader;
 
-        // Rader's alternat ealgorithm for computing FFTs of prime length
+        // Rader's alternate algorithm for computing FFTs of prime length
         struct {
             unsigned int nfft_prime;
             unsigned int * seq; // transformation sequence, size: nfft_prime

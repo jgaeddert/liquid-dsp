@@ -401,6 +401,9 @@ autotest_extra_obj +=						\
 	src/fft/tests/fft_data_192.o				\
 	src/fft/tests/fft_data_317.o				\
 	src/fft/tests/fft_data_509.o				\
+	src/fft/tests/fft_r2rdata_8.o				\
+	src/fft/tests/fft_r2rdata_27.o				\
+	src/fft/tests/fft_r2rdata_32.o				\
 
 # fft benchmark scripts
 fft_benchmarks :=						\
@@ -1105,6 +1108,7 @@ src/experimental/src/filter_cccf.o: %.o : %.c $(headers) $(experimental_filter_i
 # Information about targets for each module is collected
 # in these variables
 objects :=							\
+	src/libliquid.o						\
 	$(agc_objects)						\
 	$(audio_objects)					\
 	$(buffer_objects)					\
@@ -1128,7 +1132,6 @@ objects :=							\
 	@EXPERIMENTAL_MLIBS@
 	
 
-sources			:=
 autotest_sources :=						\
 	autotest/null_autotest.c				\
 	$(agc_autotests)					\
@@ -1177,13 +1180,6 @@ benchmark_sources :=						\
 	$(sequence_benchmarks)					\
 	$(utility_benchmarks)					\
 	@EXPERIMENTAL_BENCHMARKS@
-
-
-
-# additional sources
-extra_sources := libliquid.c
-
-sources += $(extra_sources)
 
 
 ##
@@ -1441,6 +1437,7 @@ example_programs :=						\
 	examples/interp_crcf_example				\
 	examples/kbd_window_example				\
 	examples/lpc_example					\
+	examples/libliquid_example				\
 	examples/matched_filter_example				\
 	examples/math_lngamma_example				\
 	examples/math_primitive_root_example			\

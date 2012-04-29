@@ -23,11 +23,8 @@
 // autotest fft r2r (real-to-real) data
 //
 
-#ifndef __LIQUID_AUTOTEST_FFTR2RDATA8_H__
-#define __LIQUID_AUTOTEST_FFTR2RDATA8_H__
-
 // 8-point real even/odd dft data
-float fftdata_r2r_n8[] = {
+float fftdata_r2r_x8[] = {
       0.0000000000,
       1.0000000000,
       2.0000000000,
@@ -38,7 +35,7 @@ float fftdata_r2r_n8[] = {
       7.0000000000};
 
 // REDFT00
-float fftdata_r2r_REDFT00_n8[] = {
+float fftdata_r2r_REDFT00_y8[] = {
      49.0000000000,
     -20.1956693581,
      -0.0000000000,
@@ -49,7 +46,7 @@ float fftdata_r2r_REDFT00_n8[] = {
      -1.0000000000};
 
 // REDFT10
-float fftdata_r2r_REDFT10_n8[] = {
+float fftdata_r2r_REDFT10_y8[] = {
      56.0000000000,
     -25.7692920908,
       0.0000000000,
@@ -60,7 +57,7 @@ float fftdata_r2r_REDFT10_n8[] = {
      -0.2028092910};
 
 // REDFT01
-float fftdata_r2r_REDFT01_n8[] = {
+float fftdata_r2r_REDFT01_y8[] = {
      29.1819286410,
     -32.3061136840,
      12.7168729872,
@@ -71,7 +68,7 @@ float fftdata_r2r_REDFT01_n8[] = {
      -1.2927815051};
 
 // REDFT11
-float fftdata_r2r_REDFT11_n8[] = {
+float fftdata_r2r_REDFT11_y8[] = {
      24.7243981823,
     -31.5148535947,
      13.9257769120,
@@ -82,7 +79,7 @@ float fftdata_r2r_REDFT11_n8[] = {
      -7.5857732734};
 
 // RODFT00
-float fftdata_r2r_RODFT00_n8[] = {
+float fftdata_r2r_RODFT00_y8[] = {
      39.6989727373,
     -24.7272967751,
      12.1243556530,
@@ -93,7 +90,7 @@ float fftdata_r2r_RODFT00_n8[] = {
      -1.5869428264};
 
 // RODFT10
-float fftdata_r2r_RODFT10_n8[] = {
+float fftdata_r2r_RODFT10_y8[] = {
      35.8808162684,
     -20.9050074380,
      12.5996671239,
@@ -104,7 +101,7 @@ float fftdata_r2r_RODFT10_n8[] = {
      -8.0000000000};
 
 // RODFT01
-float fftdata_r2r_RODFT01_n8[] = {
+float fftdata_r2r_RODFT01_y8[] = {
      41.8902640723,
      -9.2302062214,
       0.3792058953,
@@ -115,7 +112,7 @@ float fftdata_r2r_RODFT01_n8[] = {
      -0.6033416816};
 
 // RODFT11
-float fftdata_r2r_RODFT11_n8[] = {
+float fftdata_r2r_RODFT11_y8[] = {
      46.6916824794,
      -7.4005942194,
       0.9237106918,
@@ -125,4 +122,3 @@ float fftdata_r2r_RODFT11_n8[] = {
      -0.3640003929,
      -0.5519032668};
 
-#endif // __LIQUID_AUTOTEST_FFTR2RDATA8_H__

@@ -1,6 +1,7 @@
 /*
- * Copyright (c) 2011 Joseph Gaeddert
- * Copyright (c) 2011 Virginia Polytechnic Institute & State University
+ * Copyright (c) 2011, 2012 Joseph Gaeddert
+ * Copyright (c) 2011, 2012 Virginia Polytechnic
+ *                          Institute & State University
  *
  * This file is part of liquid.
  *
@@ -32,102 +33,71 @@
 
 struct spgram_s {
     // options
-    unsigned int nfft;      // FFT length
-    unsigned int M;         // number of input samples in FFT
-    unsigned int delay;     // number of samples before FFT taken
-    float alpha;            // filter
+    unsigned int nfft;          // FFT length
+    unsigned int window_len;    // window length
 
-    windowcf buffer;        // input buffer
-    float complex * x;      // pointer to input array (allocated)
-    float complex * X;      // output fft (allocated)
-    float complex * w;      // tapering window
-    float * psd;            // psd (allocated)
-    FFT_PLAN p;             // fft plan
-
-    unsigned int num_windows; // number of fft windows accumulated
-    unsigned int index;     //
+    windowcf buffer;    // input buffer
+    float complex * x;  // pointer to input array (allocated)
+    float complex * X;  // output fft (allocated)
+    float complex * w;  // tapering window [size: w x 1]
+    FFT_PLAN fft;       // fft plan
 };
 
 // create spgram object
-//  _nfft   :   fft size
-//  _alpha  :   averaging factor
+//  _nfft       :   FFT size
+//  _window_len :   window length
 spgram spgram_create(unsigned int _nfft,
-                     float _alpha)
-{
-    unsigned int _m     = _nfft / 4;    // window size
-    unsigned int _delay = _nfft / 8;    // delay between transforms
-
-    return spgram_create_advanced(_nfft, _m, _delay, _alpha);
-}
-
-
-// create spgram object (advanced method)
-//  _nfft   :   fft size
-//  _m      :   window size
-//  _delay  :   number of samples between transforms
-//  _alpha  :   averaging factor
-spgram spgram_create_advanced(unsigned int _nfft,
-                              unsigned int _m,
-                              unsigned int _delay,
-                              float        _alpha)
+                     unsigned int _window_len)
 {
     // validate input
     if (_nfft < 2) {
         fprintf(stderr,"error: spgram_create_advanced(), fft size must be at least 2\n");
         exit(1);
-    } else if (_m > _nfft) {
+    } else if (_window_len > _nfft) {
         fprintf(stderr,"error: spgram_create_advanced(), window size cannot exceed fft size\n");
-        exit(1);
-    } else if (_delay == 0) {
-        fprintf(stderr,"error: spgram_create_advanced(), delay must be greater than zero\n");
-        exit(1);
-    } else if (_alpha <= 0.0f || _alpha > 1.0f) {
-        fprintf(stderr,"error: spgram_create_advanced(), alpha must be in (0,1]\n");
         exit(1);
     }
 
+    // allocate memory for main object
     spgram q = (spgram) malloc(sizeof(struct spgram_s));
 
-    // input parameters
-    q->nfft  = _nfft;
-    q->alpha = _alpha;
-    q->M     = _m;
-    q->delay = _delay;
+    // set input parameters
+    q->nfft       = _nfft;
+    q->window_len = _window_len;
 
-    q->buffer = windowcf_create(q->M);
+    // create FFT arrays, object
     q->x = (float complex*) malloc((q->nfft)*sizeof(float complex));
     q->X = (float complex*) malloc((q->nfft)*sizeof(float complex));
-    q->w = (float complex*) malloc((q->M)*sizeof(float complex));
-    q->psd = (float*) malloc((q->nfft)*sizeof(float));
+    q->fft = FFT_CREATE_PLAN(q->nfft, q->x, q->X, FFT_DIR_FORWARD, FFT_METHOD);
 
-    q->p = FFT_CREATE_PLAN(q->nfft, q->x, q->X, FFT_DIR_FORWARD, FFT_METHOD);
+    // create buffer
+    q->buffer = windowcf_create(q->window_len);
 
     // initialize tapering window, scaled by window length size
     // TODO : scale by window magnitude, FFT size as well
+    q->w = (float complex*) malloc((q->window_len)*sizeof(float complex));
     unsigned int i;
-    for (i=0; i<q->M; i++)
-        q->w[i] = hamming(i,q->M) / (float)(q->M);
-
-    // clear FFT input
-    for (i=0; i<q->nfft; i++)
-        q->x[i] = 0.0f;
+    for (i=0; i<q->window_len; i++)
+        q->w[i] = hamming(i, q->window_len) / (float)(q->window_len);
 
     // reset the spgram object
     spgram_reset(q);
 
+    // return new object
     return q;
 }
 
 // destroy spgram object
 void spgram_destroy(spgram _q)
 {
-    windowcf_destroy(_q->buffer);
-
+    // free allocated memory
     free(_q->x);
     free(_q->X);
     free(_q->w);
-    free(_q->psd);
-    FFT_DESTROY_PLAN(_q->p);
+    windowcf_destroy(_q->buffer);
+    FFT_DESTROY_PLAN(_q->fft);
+
+    // free main object
     free(_q);
 }
 
@@ -137,85 +107,43 @@ void spgram_reset(spgram _q)
     // clear the window buffer
     windowcf_clear(_q->buffer);
 
-    // reset counters
-    _q->num_windows = 0;
-    _q->index = 0;
+    // clear FFT input
+    unsigned int i;
+    for (i=0; i<_q->nfft; i++)
+        _q->x[i] = 0.0f;
 }
 
 // push samples into spgram object
 //  _q      :   spgram object
 //  _x      :   input buffer [size: _n x 1]
 //  _n      :   input buffer length
-void spgram_push(spgram _q,
+void spgram_push(spgram          _q,
                  float complex * _x,
-                 unsigned int _n)
+                 unsigned int    _n)
 {
     // push/write samples
-    //windowcf_write(_q->buffer, _x, _n);
-
-
-    unsigned int i;
-    for (i=0; i<_n; i++) {
-        windowcf_push(_q->buffer, _x[i]);
-
-        _q->index++;
-
-        if (_q->index == _q->delay) {
-            unsigned int j;
-
-            // reset counter
-            _q->index = 0;
-
-            // read buffer, copy to FFT input (applying window)
-            float complex * rc;
-            windowcf_read(_q->buffer, &rc);
-            unsigned int k;
-            for (k=0; k<_q->M; k++)
-                _q->x[k] = rc[k] * _q->w[k];
-
-            // execute fft
-            FFT_EXECUTE(_q->p);
-            
-            // accumulate output
-            if (_q->num_windows == 0) {
-                // first window; copy internally
-                for (j=0; j<_q->nfft; j++)
-                    _q->psd[j] = cabsf(_q->X[j]);
-            } else {
-                // 
-                for (j=0; j<_q->nfft; j++)
-                    _q->psd[j] = (1.0f - _q->alpha)*_q->psd[j] + _q->alpha*cabsf(_q->X[j]);
-            }
-
-            _q->num_windows++;
-        }
-    }
+    windowcf_write(_q->buffer, _x, _n);
 }
+
 
 // compute spectral periodogram output
 //  _q      :   spgram object
-//  _X      :   output spectrum [dB]
-void spgram_execute(spgram _q,
-                    float * _X)
+//  _X      :   output spectrum
+void spgram_execute(spgram          _q,
+                    float complex * _X)
 {
-    // check to see if any transforms have been taken
-    if (_q->num_windows == 0) {
-        // copy zeros to output
-        unsigned int i;
-        for (i=0; i<_q->nfft; i++)
-            _X[i] = 0.0f;
-
-        return;
-    }
-
-    // copy shifted PSD contents to output
     unsigned int i;
-    unsigned int k;
-    unsigned int nfft_2 = _q->nfft / 2;
-    for (i=0; i<_q->nfft; i++) {
-        k = (i + nfft_2) % _q->nfft;
-        _X[i] = 20*log10f(fabsf(_q->psd[k]));
-    }
-}
 
+    // read buffer, copy to FFT input (applying window)
+    float complex * rc;
+    windowcf_read(_q->buffer, &rc);
+    for (i=0; i<_q->window_len; i++)
+        _q->x[i] = rc[i] * _q->w[i];
+
+    // execute fft
+    FFT_EXECUTE(_q->fft);
+
+    // copy result to output
+    memmove(_X, _q->X, _q->nfft*sizeof(float complex));
+}
 
