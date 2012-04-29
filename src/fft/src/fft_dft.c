@@ -162,6 +162,59 @@ void FFT(_execute_dft_2)(FFT(plan) _q)
 //
 void FFT(_execute_dft_3)(FFT(plan) _q)
 {
+#if 0
+    // NOTE: not as fast as other method, but perhaps useful for
+    // fixed-point algorithm
+    //  x = a + jb
+    //  y = c + jd
+    // We want to compute both x*y and x*conj(y) with as few
+    // multiplications as possible. If we define
+    //  k1 = a*(c+d);
+    //  k2 = d*(a+b);
+    //  k3 = c*(b-a);
+    //  k4 = b*(c+d);
+    // then
+    //  x*y       = (k1-k2) + j(k1+k3)
+    //  x*conj(y) = (k4-k3) + j(k4-k2)
+    T a,  b; // c=real(g)=-0.5, d=imag(g)=-sqrt(3)/2
+    T k1, k2, k3, k4;
+
+    // compute both _q->x[1]*g and _q->x[1]*conj(g) with only 4 real multiplications
+    a = crealf(_q->x[1]);
+    b = cimagf(_q->x[1]);
+    //k1 = a*(-0.5f + -0.866025403784439f);
+    k1 = -1.36602540378444f*a;
+    k2 = -0.866025403784439f*(    a + b);
+    k3 =               -0.5f*(    b - a);
+    //k4 =                   b*(-0.5f + -0.866025403784439f);
+    k4 = -1.36602540378444f*b;
+
+    TC ta1 = (k1-k2) + _Complex_I*(k1+k3);   // 
+    TC tb1 = (k4-k3) + _Complex_I*(k4-k2);   // 
+    
+    // compute both _q->x[2]*g and _q->x[2]*conj(g) with only 4 real multiplications
+    a = crealf(_q->x[2]);
+    b = cimagf(_q->x[2]);
+    //k1 = a*(-0.5f + -0.866025403784439f);
+    k1 = -1.36602540378444f*a;
+    k2 = -0.866025403784439f*(    a + b);
+    k3 =               -0.5f*(    b - a);
+    //k4 =                   b*(-0.5f + -0.866025403784439f);
+    k4 = -1.36602540378444f*b;
+
+    TC ta2 = (k1-k2) + _Complex_I*(k1+k3);   // 
+    TC tb2 = (k4-k3) + _Complex_I*(k4-k2);   // 
+    
+    // set return values
+    _q->y[0] = _q->x[0] + _q->x[1] + _q->x[2];
+    if (_q->direction == FFT_FORWARD) {
+        _q->y[1] = _q->x[0] + ta1 + tb2;
+        _q->y[2] = _q->x[0] + tb1 + ta2;
+    } else {
+        _q->y[1] = _q->x[0] + tb1 + ta2;
+        _q->y[2] = _q->x[0] + ta1 + tb2;
+    }
+#else
     TC g  = -0.5f - _Complex_I*0.866025403784439; // sqrt(3)/2
 
     _q->y[0] = _q->x[0] + _q->x[1]          + _q->x[2];
@@ -176,6 +229,7 @@ void FFT(_execute_dft_3)(FFT(plan) _q)
         _q->y[1] = tb;
         _q->y[2] = ta;
     }
+#endif
 }
 
 //
