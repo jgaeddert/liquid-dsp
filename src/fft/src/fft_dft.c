@@ -54,12 +54,9 @@ FFT(plan) FFT(_create_plan_dft)(unsigned int _nfft,
     q->data.dft.twiddle = NULL;
     q->data.dft.dotprod = NULL;
 
-#if LIQUID_FPM
-    // no specific codelets for fixed-point
-    if (0);
-#else
     // check size, use specific codelet for small DFTs
     if      (q->nfft == 2) q->execute = FFT(_execute_dft_2);
+#if !LIQUID_FPM
     else if (q->nfft == 3) q->execute = FFT(_execute_dft_3);
     else if (q->nfft == 4) q->execute = FFT(_execute_dft_4);
     else if (q->nfft == 5) q->execute = FFT(_execute_dft_5);
@@ -223,14 +220,29 @@ void FFT(_execute_dft)(FFT(plan) _q)
 // codelets for small DFTs
 //
 
-#if !LIQUID_FPM
 // 
 void FFT(_execute_dft_2)(FFT(plan) _q)
 {
+#if LIQUID_FPM
+    _q->y[0].real = _q->x[0].real + _q->x[1].real;
+    _q->y[0].imag = _q->x[0].imag + _q->x[1].imag;
+
+    _q->y[1].real = _q->x[0].real - _q->x[1].real;
+    _q->y[1].imag = _q->x[0].imag - _q->x[1].imag;
+    
+    if (_q->direction == FFT_REVERSE) {
+        _q->y[0].real >>= 1;
+        _q->y[0].imag >>= 1;
+        _q->y[1].real >>= 1;
+        _q->y[1].imag >>= 1;
+    }
+#else
     _q->y[0] = _q->x[0] + _q->x[1];
     _q->y[1] = _q->x[0] - _q->x[1];
+#endif
 }
 
+#if !LIQUID_FPM
 //
 void FFT(_execute_dft_3)(FFT(plan) _q)
 {
