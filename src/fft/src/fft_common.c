@@ -50,6 +50,7 @@ struct FFT(plan_s)
         // DFT
         struct {
             TC * twiddle;               // twiddle factors
+            DOTPROD() * dotprod;        // inner dot products
         } dft;
 
         // radix-2 transform data
