@@ -62,6 +62,7 @@ FFT(plan) FFT(_create_plan_dft)(unsigned int _nfft,
     else if (q->nfft == 6) q->execute = FFT(_execute_dft_6);
     else if (q->nfft == 7) q->execute = FFT(_execute_dft_7);
     else if (q->nfft == 8) q->execute = FFT(_execute_dft_8);
+    else if (q->nfft == 16) q->execute = FFT(_execute_dft_16);
     else {
         q->execute = FFT(_execute_dft);
 
@@ -421,5 +422,110 @@ void FFT(_execute_dft_8)(FFT(plan) _q)
     else     yp = y[7]*(-M_SQRT1_2 + M_SQRT1_2*_Complex_I);
     y[7] = y[3]-yp;
     y[3] += yp;
+}
+
+
+//
+void FFT(_execute_dft_16)(FFT(plan) _q)
+{
+    TC yp;
+    TC * x = _q->x;
+    TC * y = _q->y;
+
+    // fft or ifft?
+    int fft = _q->direction == FFT_FORWARD ? 1 : 0;
+
+    // index reversal
+    y[  0] = x[  0];
+    y[  1] = x[  8];
+    y[  2] = x[  4];
+    y[  3] = x[ 12];
+    y[  4] = x[  2];
+    y[  5] = x[ 10];
+    y[  6] = x[  6];
+    y[  7] = x[ 14];
+    y[  8] = x[  1];
+    y[  9] = x[  9];
+    y[ 10] = x[  5];
+    y[ 11] = x[ 13];
+    y[ 12] = x[  3];
+    y[ 13] = x[ 11];
+    y[ 14] = x[  7];
+    y[ 15] = x[ 15];
+
+    // i=0
+    yp  = y[  1];    y[  1]  = y[  0] - yp;    y[  0] += yp;
+    yp  = y[  3];    y[  3]  = y[  2] - yp;    y[  2] += yp;
+    yp  = y[  5];    y[  5]  = y[  4] - yp;    y[  4] += yp;
+    yp  = y[  7];    y[  7]  = y[  6] - yp;    y[  6] += yp;
+    yp  = y[  9];    y[  9]  = y[  8] - yp;    y[  8] += yp;
+    yp  = y[ 11];    y[ 11]  = y[ 10] - yp;    y[ 10] += yp;
+    yp  = y[ 13];    y[ 13]  = y[ 12] - yp;    y[ 12] += yp;
+    yp  = y[ 15];    y[ 15]  = y[ 14] - yp;    y[ 14] += yp;
+
+    // i=1
+    yp  = y[  2];    y[  2]  = y[  0] - yp;    y[  0] += yp;
+    yp  = y[  6];    y[  6]  = y[  4] - yp;    y[  4] += yp;
+    yp  = y[ 10];    y[ 10]  = y[  8] - yp;    y[  8] += yp;
+    yp  = y[ 14];    y[ 14]  = y[ 12] - yp;    y[ 12] += yp;
+    if (fft) yp  = -y[  3]*_Complex_I;
+    else     yp  =  y[  3]*_Complex_I;
+    y[  3]  = y[  1] - yp;    y[  1] += yp;
+    if (fft) yp  = -y[  7]*_Complex_I;
+    else     yp  =  y[  7]*_Complex_I;
+    y[  7]  = y[  5] - yp;    y[  5] += yp;
+    if (fft) yp  = -y[ 11]*_Complex_I;
+    else     yp  =  y[ 11]*_Complex_I;
+    y[ 11]  = y[  9] - yp;    y[  9] += yp;
+    if (fft) yp  = -y[ 15]*_Complex_I;
+    else     yp  =  y[ 15]*_Complex_I;
+    y[ 15]  = y[ 13] - yp;    y[ 13] += yp;
+
+    // i=2
+    yp  = y[  4];    y[  4]  = y[  0] - yp;    y[  0] += yp;
+    yp  = y[ 12];    y[ 12]  = y[  8] - yp;    y[  8] += yp;
+    if (fft) yp  = y[  5]*(  0.70710677 + _Complex_I* -0.70710677);
+    else     yp  = y[  5]*(  0.70710677 - _Complex_I* -0.70710677);
+    y[  5]  = y[  1] - yp;    y[  1] += yp;
+    if (fft) yp  = y[ 13]*(  0.70710677 + _Complex_I* -0.70710677);
+    else     yp  = y[ 13]*(  0.70710677 - _Complex_I* -0.70710677);
+    y[ 13]  = y[  9] - yp;    y[  9] += yp;
+    if (fft) yp  = -y[  6]*_Complex_I;
+    else     yp  =  y[  6]*_Complex_I;
+    y[  6]  = y[  2] - yp;    y[  2] += yp;
+    if (fft) yp  = -y[ 14]*_Complex_I;
+    else     yp  =  y[ 14]*_Complex_I;
+    y[ 14]  = y[ 10] - yp;    y[ 10] += yp;
+    if (fft) yp  = y[  7]*( -0.70710677 + _Complex_I* -0.70710677);
+    else     yp  = y[  7]*( -0.70710677 - _Complex_I* -0.70710677);
+    y[  7]  = y[  3] - yp;    y[  3] += yp;
+    if (fft) yp  = y[ 15]*( -0.70710677 + _Complex_I* -0.70710677);
+    else     yp  = y[ 15]*( -0.70710677 - _Complex_I* -0.70710677);
+    y[ 15]  = y[ 11] - yp;    y[ 11] += yp;
+
+    // i=3
+    yp  = y[  8];    y[  8]  = y[  0] - yp;    y[  0] += yp;
+    if (fft) yp  = y[  9]*(  0.92387950 + _Complex_I* -0.38268346);
+    else     yp  = y[  9]*(  0.92387950 - _Complex_I* -0.38268346);
+    y[  9]  = y[  1] - yp;    y[  1] += yp;
+    if (fft) yp  = y[ 10]*(  0.70710677 + _Complex_I* -0.70710677);
+    else     yp  = y[ 10]*(  0.70710677 - _Complex_I* -0.70710677);
+    y[ 10]  = y[  2] - yp;    y[  2] += yp;
+    if (fft) yp  = y[ 11]*(  0.38268343 + _Complex_I* -0.92387950);
+    else     yp  = y[ 11]*(  0.38268343 - _Complex_I* -0.92387950);
+    y[ 11]  = y[  3] - yp;    y[  3] += yp;
+    if (fft) yp  = -y[ 12]*_Complex_I;
+    else     yp  =  y[ 12]*_Complex_I;
+    y[ 12]  = y[  4] - yp;    y[  4] += yp;
+    if (fft) yp  = y[ 13]*( -0.38268340 + _Complex_I* -0.92387956);
+    else     yp  = y[ 13]*( -0.38268340 - _Complex_I* -0.92387956);
+    y[ 13]  = y[  5] - yp;    y[  5] += yp;
+    if (fft) yp  = y[ 14]*( -0.70710677 + _Complex_I* -0.70710677);
+    else     yp  = y[ 14]*( -0.70710677 - _Complex_I* -0.70710677);
+    y[ 14]  = y[  6] - yp;    y[  6] += yp;
+    if (fft) yp  = y[ 15]*( -0.92387950 + _Complex_I* -0.38268349);
+    else     yp  = y[ 15]*( -0.92387950 - _Complex_I* -0.38268349);
+    y[ 15]  = y[  7] - yp;    y[  7] += yp;
+
 }
 

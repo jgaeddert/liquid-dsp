@@ -780,6 +780,7 @@ FFT(_execute_t) FFT(_execute_dft_5);                            \
 FFT(_execute_t) FFT(_execute_dft_6);                            \
 FFT(_execute_t) FFT(_execute_dft_7);                            \
 FFT(_execute_t) FFT(_execute_dft_8);                            \
+FFT(_execute_t) FFT(_execute_dft_16);                           \
                                                                 \
 /* additional methods */                                        \
 unsigned int FFT(_estimate_mixed_radix)(unsigned int _nfft);    \
