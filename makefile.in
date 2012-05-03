@@ -1048,11 +1048,11 @@ libliquid.a: $(objects)
 #
 # gcc -dynamiclib -install_name libliquid.dylib -o libliquid.dylib libmodem.a libutility.a 
 libliquid.dylib: $(objects)
-	$(CC) $(LDFLAGS) -dynamiclib -install_name $@ -o $@ $^
+	$(CC) -dynamiclib -install_name $@ -o $@ $^ $(LDFLAGS)
 
 # linux, et al
 libliquid.so: libliquid.a
-	$(CC) $(LDFLAGS) -shared -Xlinker -soname=$@ -o $@ -Wl,-whole-archive $^ -Wl,-no-whole-archive
+	$(CC) -shared -Xlinker -soname=$@ -o $@ -Wl,-whole-archive $^ -Wl,-no-whole-archive $(LDFLAGS)
 
 all: libliquid.a $(SHARED_LIB)
 
@@ -1111,7 +1111,7 @@ scripts/autoscript.o scripts/main.o : %.o : %.c
 	$(CC) $(CFLAGS) -c -o $@ $<
 
 scripts/autoscript : scripts/autoscript.o scripts/main.o
-	$(CC) $(CFLAGS) $(LDFLAGS) -o $@ $^
+	$(CC) $(CFLAGS) -o $@ $^ $(LDFLAGS)
 
 clean-autoscript :
 	$(RM) scripts/autoscript.o scripts/main.o scripts/autoscript
@@ -1153,7 +1153,7 @@ $(autotest_prog).o : autotest/autotest.c autotest/autotest.h autotest_include.h
 # link the autotest program with the objects
 # NOTE: linked libraries must come _after_ the target program
 $(autotest_prog): $(autotest_prog).o $(autotest_obj) $(autotest_extra_obj) autotest/autotestlib.o libliquid.a
-	$(CC) $^ $(LDFLAGS) -o $@
+	$(CC) $^ -o $@ $(LDFLAGS)
 
 # run the autotest program
 check: $(autotest_prog)
@@ -1199,7 +1199,7 @@ $(bench_prog).o: bench/bench.c benchmark_include.h bench/bench.c
 # link the benchmark program with the library objects
 # NOTE: linked libraries must come _after_ the target program
 $(bench_prog): $(bench_prog).o $(benchmark_obj) $(benchmark_extra_obj) libliquid.a
-	$(CC) $^ $(BENCH_LDFLAGS) -o $(bench_prog)
+	$(CC) $^ -o $(bench_prog) $(BENCH_LDFLAGS)
 
 # run the benchmark program
 bench: $(bench_prog)
@@ -1213,7 +1213,7 @@ bench/fftbench.o : %.o : %.c
 	$(CC) $(BENCH_CFLAGS) $< -c -o $@
 
 bench/fftbench : % : %.o libliquid.a
-	$(CC) $^ $(BENCH_LDFLAGS) -o $@
+	$(CC) $^ -o $@ $(BENCH_LDFLAGS)
 
 # clean up the generated files
 clean-bench:
@@ -1339,6 +1339,7 @@ EXAMPLES_LDFLAGS = $(LDFLAGS)
 $(example_objects): %.o : %.c
 
 $(example_programs): % : %.o libliquid.a
+	$(CC) $(CFLAGS) $^ -o $@ $(LDFLAGS)
 
 # clean examples
 clean-examples:
@@ -1440,7 +1441,7 @@ SANDBOX_LDFLAGS = $(LDFLAGS) -lfftw3f
 $(sandbox_objects): %.o : %.c
 
 $(sandbox_programs): % : %.o libliquid.a
-	$(CC) $(SANDBOX_LDFLAGS) $^ -o $@
+	$(CC) $(CFLAGS) $^ -o $@ $(LDFLAGS)
 
 # clean sandbox
 clean-sandbox:

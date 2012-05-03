@@ -52,7 +52,7 @@ local_pdffiles :=					\
 	figures.gen/fec_ber_ebn0_conv.pdf		\
 	figures.gen/fec_ber_esn0_convpunc.pdf		\
 	figures.gen/fec_ber_ebn0_convpunc.pdf		\
-	figures.gen/fec_ber_ebn0_hardsoft.pdf			\
+	figures.gen/fec_ber_ebn0_hardsoft.pdf		\
 							\
 	figures.gen/fft_example_time.pdf		\
 	figures.gen/fft_example_freq.pdf		\
@@ -287,6 +287,7 @@ local_progs :=						\
 	src/simulate_per_test				\
 
 $(local_progs) : % : %.c $(lib_objects) libliquid.a
+	$(CC) $(CFLAGS) $^ -o $@ $(LDFLAGS)
 
 programs : $(local_progs)
 
