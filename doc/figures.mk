@@ -237,7 +237,7 @@ $(local_pdffiles) : %.pdf : %.eps
 ## PROGRAMS
 ##
 
-local_progs :=						\
+local_programs :=					\
 	src/agc_transient				\
 	src/audio_cvsd					\
 	src/eqlms_vs_eqrls				\
@@ -285,9 +285,13 @@ local_progs :=						\
 	src/simulate_ber				\
 	src/simulate_per_test				\
 
-$(local_progs) : % : %.c $(lib_objects) libliquid.a
+local_objects = $(patsubst %,%.o,$(local_programs))
 
-programs : $(local_progs)
+$(local_objects) : %.o : %.c
+
+$(local_programs) : % : %.o $(lib_objects) libliquid.a
+
+programs : $(local_programs)
 
 
 ##
@@ -1084,6 +1088,6 @@ figures_generated +=			\
 figures_extra_gen +=
 
 figures_extra_clean +=			\
-	$(local_progs)			\
-	$(figures_extra_gen)
+	$(local_programs)		\
+	$(figures_extra_gen)		\
 
