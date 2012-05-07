@@ -89,7 +89,7 @@ void MODEM(_demodulate_dpsk)(MODEM()        _q,
                              TC             _x,
                              unsigned int * _sym_out)
 {
-    // compute angle differencd
+    // compute angle difference
     T theta = cargf(_x);
     T d_theta = cargf(_x) - _q->data.dpsk.phi;
     _q->data.dpsk.phi = theta;
