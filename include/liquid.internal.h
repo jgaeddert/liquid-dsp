@@ -1632,11 +1632,11 @@ void MODEM(_demodulate_soft_table)(MODEM()         _q,          \
 /*  _alpha  :   scaling factor          */                      \
 /*  _s      :   demodulated symbol      */                      \
 /*  _res    :   residual                */                      \
-void modem_demodulate_linear_array(T              _v,           \
-                                   unsigned int   _m,           \
-                                   T              _alpha,       \
-                                   unsigned int * _s,           \
-                                   T *            _res);        \
+void MODEM(_demodulate_linear_array)(T              _v,         \
+                                     unsigned int   _m,         \
+                                     T              _alpha,     \
+                                     unsigned int * _s,         \
+                                     T *            _res);      \
                                                                 \
 /* Demodulate a linear symbol constellation using           */  \
 /* refereneced lookup table                                 */  \
@@ -1645,11 +1645,11 @@ void modem_demodulate_linear_array(T              _v,           \
 /*  _ref    :   array of thresholds     */                      \
 /*  _s      :   demodulated symbol      */                      \
 /*  _res    :   residual                */                      \
-void modem_demodulate_linear_array_ref(T              _v,       \
-                                       unsigned int   _m,       \
-                                       T *            _ref,     \
-                                       unsigned int * _s,       \
-                                       T *            _res);    \
+void MODEM(_demodulate_linear_array_ref)(T              _v,     \
+                                         unsigned int   _m,     \
+                                         T *            _ref,   \
+                                         unsigned int * _s,     \
+                                         T *            _res);  \
 
 
 
