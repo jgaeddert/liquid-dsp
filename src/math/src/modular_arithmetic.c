@@ -152,7 +152,6 @@ unsigned int liquid_primitive_root_prime(unsigned int _n)
     //   g^( (_n-1)/m ) != 1 (mod _n)
     // for all unique roots 'm'
     unsigned int g;
-    int root_found = 0;
     for (g=2; g<_n; g++) {
         int is_root = 1;
         for (k=0; k<num_unique_factors; k++) {
@@ -166,7 +165,6 @@ unsigned int liquid_primitive_root_prime(unsigned int _n)
 
         if (is_root) {
             //printf("  %u is a primitive root!\n", g);
-            root_found = 1;
             break;
         }
     }

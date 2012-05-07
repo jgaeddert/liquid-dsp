@@ -27,6 +27,7 @@
 // const unsigned char liquid_c_ones_mod2[256];
 //
 
+#include <stdio.h>
 #include "liquid.internal.h"
 
 // count the number of ones in an integer

@@ -153,7 +153,7 @@ void fec_rs_decode(fec _q,
     unsigned int n0=0;
     unsigned int n1=0;
     unsigned int block_size = _q->dec_block_len;
-    int derrors; // number of decoder errors
+    //int derrors; // number of decoder errors
     for (i=0; i<_q->num_blocks; i++) {
 
         // the last block is smaller by the residual block length
@@ -164,10 +164,11 @@ void fec_rs_decode(fec _q,
         memmove(_q->tblock, &_msg_enc[n0], _q->enc_block_len*sizeof(unsigned char));
 
         // decode block
-        derrors = decode_rs_char(_q->rs,
-                                 _q->tblock,
-                                 _q->derrlocs,
-                                 _q->erasures);
+        //derrors = 
+        decode_rs_char(_q->rs,
+                       _q->tblock,
+                       _q->derrlocs,
+                       _q->erasures);
 
         // copy result
         memmove(&_msg_dec[n1], _q->tblock, block_size*sizeof(unsigned char));
