@@ -23,18 +23,18 @@
 // Real even/odd DFTs (discrete cosine/sine transforms)
 //
 
-// compile and run:
-//   $ gcc -Wall -I/opt/local/include -I. -I./include -c fft_r2r_test.c -o fft_r2r_test.o 
-//   $ gcc fft_r2r_test.o -lm -lc -lfftw3f -o fft_r2r_test 
-//   $ ./fft_r2r_test
-
 #include <stdio.h>
 #include <stdlib.h>
 #include <getopt.h>
 #include <math.h>
 #include <getopt.h>
 #include <complex.h>
-#include <fftw3.h>
+
+#ifdef HAVE_FFTW3_H
+#  include <fftw3.h>
+#else
+#  warning "fftw3.h not installed; this sandbox program won't run"
+#endif
 
 // print usage/help message
 void usage()
@@ -45,7 +45,9 @@ void usage()
     printf("  n     : number of points\n");
 }
 
-int main(int argc, char*argv[]) {
+int main(int argc, char*argv[])
+{
+#ifdef HAVE_FFTW3_H
     unsigned int n = 32;    // transform size
     unsigned int d = 4;     // number of elements to print each line
 
@@ -132,6 +134,9 @@ int main(int argc, char*argv[]) {
     // destroy plans
     for (i=0; i<8; i++)
         fftwf_destroy_plan(plan[i]);
+#else
+    printf("please install fftw and try again\n");
+#endif
 
     return 0;
 }

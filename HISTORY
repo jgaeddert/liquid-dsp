@@ -1,5 +1,5 @@
 
-Current major improvements
+Major improvements for v1.2.0
   * dotprod
     - leveraging SIMD extensions for vector operations (SSE2, SSE3)
   * fft

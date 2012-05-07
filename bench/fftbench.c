@@ -33,6 +33,7 @@
 #include <complex.h>
 #include <sys/resource.h>
 
+#include <fftw3.h>
 #include "liquid.h"
 
 void usage()
@@ -47,6 +48,7 @@ void usage()
     printf("  -n[NFFT_MIN]  minimum FFT size (benchmark single FFT)\n");
     printf("  -N[NFFT_MAX]  maximum FFT size\n");
     printf("  -m[MODE]      mode: all, radix2, composite, prime, fftwbench, single\n");
+    printf("  -l[library]   library: float, fftw\n");
 }
 
 // benchmark structure
@@ -65,6 +67,11 @@ struct benchmark_s {
     float flops;                // computation bandwidth
 };
 
+typedef enum {
+    LIB_FLOAT=0,
+    LIB_FFTW,
+} library_t;
+    
 // simulation structure
 struct fftbench_s {
     enum {RUN_ALL=0,
@@ -74,9 +81,13 @@ struct fftbench_s {
           RUN_FFTWBENCH,
           RUN_SINGLE,
     } mode;
+
+    // library version
+    library_t library;
+    
     int verbose;
     float runtime;   // minimum run time (s)
-    
+
     // min/max sizes for other modes
     unsigned int nfft_min;  // minimum FFT size (also, size for RUN_SINGLE mode)
     unsigned int nfft_max;  // maximum FFT size
@@ -96,12 +107,18 @@ void fftbench_execute(struct fftbench_s * _fftbench);
 
 // execute single benchmark
 void execute_benchmark_fft(struct benchmark_s * _benchmark,
-                           float                _runtime);
+                           float                _runtime,
+                           library_t            _library);
 
-// main benchmark script
+// main benchmark script (floating-point precision)
 void benchmark_fft(struct rusage *      _start,
                    struct rusage *      _finish,
                    struct benchmark_s * _benchmark);
+
+// main benchmark script (FFTW)
+void benchmark_fftw(struct rusage *      _start,
+                    struct rusage *      _finish,
+                    struct benchmark_s * _benchmark);
 
 void benchmark_print_to_file(FILE * _fid,
                               struct benchmark_s * _benchmark);
@@ -114,6 +131,7 @@ int main(int argc, char *argv[])
     // options
     struct fftbench_s fftbench;
     fftbench.mode       = RUN_RADIX2;
+    fftbench.library    = LIB_FLOAT;
     fftbench.verbose    = 1;
     fftbench.runtime    = 0.1f;
     fftbench.nfft_min   = 2;
@@ -124,7 +142,7 @@ int main(int argc, char *argv[])
 
     // get input options
     int d;
-    while((d = getopt(argc,argv,"uvqn:N:t:o:m:")) != EOF){
+    while((d = getopt(argc,argv,"hvqn:N:t:o:m:l:")) != EOF){
         switch (d) {
         case 'h':   usage();        return 0;
         case 'v':   fftbench.verbose = 1;    break;
@@ -154,6 +172,14 @@ int main(int argc, char *argv[])
             else if (strcmp(optarg,"single")==0)    fftbench.mode = RUN_SINGLE;
             else {
                 fprintf(stderr,"error: %s, unknown mode '%s'\n", argv[0], optarg);
+                exit(1);
+            }
+            break;
+        case 'l':
+            if      (strcmp(optarg,"float")==0)     fftbench.library = LIB_FLOAT;
+            else if (strcmp(optarg,"fftw")==0)      fftbench.library = LIB_FFTW;
+            else {
+                fprintf(stderr,"error: %s, unknown library option '%s'\n", argv[0], optarg);
                 exit(1);
             }
             break;
@@ -262,7 +288,7 @@ void fftbench_execute(struct fftbench_s * _fftbench)
         benchmark.flops      = 0.0f;
 
         // run the benchmark
-        execute_benchmark_fft(&benchmark, _fftbench->runtime);
+        execute_benchmark_fft(&benchmark, _fftbench->runtime, _fftbench->library);
         benchmark_print(&benchmark);
         return;
     } else if (_fftbench->mode == RUN_FFTWBENCH) {
@@ -278,19 +304,42 @@ void fftbench_execute(struct fftbench_s * _fftbench)
             benchmark.flags      = 0;
 
             // run the benchmark
-            execute_benchmark_fft(&benchmark, _fftbench->runtime);
+            execute_benchmark_fft(&benchmark, _fftbench->runtime, _fftbench->library);
             benchmark_print(&benchmark);
 
             if (_fftbench->output_to_file)
                 benchmark_print_to_file(_fftbench->fid, &benchmark);
         }
         return;
+    } else if (_fftbench->mode == RUN_RADIX2) {
+        printf("running all power-of-two FFTs from %u to %u:\n",
+            _fftbench->nfft_min,
+            _fftbench->nfft_max);
+
+        unsigned int nfft = 1 << liquid_nextpow2(_fftbench->nfft_min);
+        while ( nfft <= _fftbench->nfft_max) {
+
+            // initialize benchmark structure
+            benchmark.nfft       = nfft;
+            benchmark.direction  = FFT_FORWARD;
+            benchmark.num_trials = 1;
+            benchmark.flags      = 0;
+
+            // run the benchmark
+            execute_benchmark_fft(&benchmark, _fftbench->runtime, _fftbench->library);
+            benchmark_print(&benchmark);
+
+            if (_fftbench->output_to_file)
+                benchmark_print_to_file(_fftbench->fid, &benchmark);
+
+            nfft *= 2;
+        };
+        return;
     }
         
     printf("running ");
     switch (_fftbench->mode) {
     case RUN_ALL:       printf("all");              break;
-    case RUN_RADIX2:    printf("all power-of-two"); break;
     case RUN_COMPOSITE: printf("all composite");    break;
     case RUN_PRIME:     printf("all prime");        break;
     case RUN_SINGLE:
@@ -306,8 +355,6 @@ void fftbench_execute(struct fftbench_s * _fftbench)
         int isradix2 = (1 << liquid_nextpow2(nfft))==nfft ? 1 : 0;
 
         // check run mode
-        if (_fftbench->mode == RUN_RADIX2 && !isradix2)
-            continue;
         if (_fftbench->mode == RUN_COMPOSITE && (isprime || isradix2))
             continue;
         if (_fftbench->mode == RUN_PRIME && !isprime)
@@ -320,7 +367,7 @@ void fftbench_execute(struct fftbench_s * _fftbench)
         benchmark.flags      = 0;
         benchmark.extime     = 0.0f;
         benchmark.flops      = 0.0f;
-        execute_benchmark_fft(&benchmark, _fftbench->runtime);
+        execute_benchmark_fft(&benchmark, _fftbench->runtime, _fftbench->library);
 
         if (_fftbench->verbose)
             benchmark_print(&benchmark);
@@ -332,7 +379,8 @@ void fftbench_execute(struct fftbench_s * _fftbench)
 
 // execute single benchmark
 void execute_benchmark_fft(struct benchmark_s * _benchmark,
-                           float                _runtime)
+                           float                _runtime,
+                           library_t            _library)
 {
     unsigned long int n = _benchmark->num_trials;
     struct rusage start, finish;
@@ -344,7 +392,19 @@ void execute_benchmark_fft(struct benchmark_s * _benchmark,
 
         // set number of trials and run benchmark
         _benchmark->num_trials = n;
-        benchmark_fft(&start, &finish, _benchmark);
+
+        // run appropriate library
+        switch (_library) {
+        case LIB_FLOAT:
+            benchmark_fft(&start, &finish, _benchmark);
+            break;
+        case LIB_FFTW:
+            benchmark_fftw(&start, &finish, _benchmark);
+            break;
+        default:
+            fprintf(stderr,"error: execute_benchmark_fft(), invalid library\n");
+            exit(1);
+        }
 
         // calculate execution time
         _benchmark->extime = calculate_execution_time(start, finish);
@@ -405,6 +465,48 @@ void benchmark_fft(struct rusage *      _start,
     _benchmark->num_trials = num_iterations * 4;
 
     fft_destroy_plan(q);
+    free(x);
+    free(y);
+}
+
+// main benchmark script (FFTW)
+void benchmark_fftw(struct rusage *      _start,
+                    struct rusage *      _finish,
+                    struct benchmark_s * _benchmark)
+{
+    // initialize arrays, plan
+    float complex * x = (float complex *) malloc((_benchmark->nfft)*sizeof(float complex));
+    float complex * y = (float complex *) malloc((_benchmark->nfft)*sizeof(float complex));
+    fftwf_plan q = fftwf_plan_dft_1d(_benchmark->nfft,
+                                     x, y,
+                                     //_benchmark->direction,
+                                     FFTW_FORWARD,
+                                     FFTW_ESTIMATE);
+    
+    unsigned long int i;
+
+    // initialize input with random values
+    for (i=0; i<_benchmark->nfft; i++)
+        x[i] = randnf() + randnf()*_Complex_I;
+
+    // scale number of iterations to keep execution time
+    // relatively linear
+    unsigned int num_iterations = _benchmark->num_trials;
+
+    // start trials
+    getrusage(RUSAGE_SELF, _start);
+    for (i=0; i<num_iterations; i++) {
+        fftwf_execute(q);
+        fftwf_execute(q);
+        fftwf_execute(q);
+        fftwf_execute(q);
+    }
+    getrusage(RUSAGE_SELF, _finish);
+
+    // set actual number of iterations in result
+    _benchmark->num_trials = num_iterations * 4;
+
+    fftwf_destroy_plan(q);
     free(x);
     free(y);
 }

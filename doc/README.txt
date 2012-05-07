@@ -55,7 +55,9 @@ Installing on Mac OS X
         pgf py-pygments
 
 Installing on Ubuntu Linux
-    $ sudo apt-get install texlive-full pgf python-pygments
+NOTES: texlive-full not necessary (1.8+ GB package), but does include
+       everything necessary
+    $ sudo apt-get install texlive-full pgf python-pygments gnuplot
 
 Additional notes:
     Splatter graphics were created using GIMP with two splatter brush

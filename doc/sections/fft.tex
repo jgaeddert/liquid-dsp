@@ -26,10 +26,68 @@ Similarly, the inverse (reverse) discrete Fourier transform is:
     x(n) = \sum_{i=0}^{N-1}{X(i) e^{ j 2 \pi n i/N}}
 \end{equation}
 %
-\liquid\ implements only the basic decimation-in-time FFT algorithm for
-radix-2 transforms and the slow DFT method otherwise.
-Internal methods requiring FFTs, however, will use the {\tt fftw3}
-library \cite{fftw:web} if available.
+Internally, \liquid\ uses several algorithms for computing FFTs including
+the standard decimation-in-time (DIT) for power-of-two transforms
+    \cite[\S10-4]{Ziemer:1998},
+the Cooley-Tukey mixed-radix method for composite transforms
+    \cite{CooleyTukey:1965},
+Rader's algorithm for prime-length transforms \cite{Rader:1968},
+and the DFT given by (\ref{eqn:fft:dft}) for very small values of $N$.
+The DFT requires $\ord\bigl(N^2\bigr)$ operations
+and can be slow for even moderate sizes of $N$
+which is why it is typically reserved for small transforms.
+\liquid's strategy for computing FFTs is to recursively break the
+transform into manageable pieces and perform the best method for each
+step.
+For example, a transform of length $N=128=2^7$ can be easily computed
+using the standard DIT FFT algorithm which is computationally fast.
+The Cooley-Tukey algorithm permits any factorable transform of size
+$N=PQ$ to be computed with
+$P$ transforms of size $Q$ and $Q$ transforms of size $P$.
+For example, a transform of length $N=126$ can be computed using the
+Cooley-Tukey algorithm with radices $P=9$ and $Q=14$.
+%($N = 128 = 2 \cdot 3 \cdot 3 \cdot 7$)
+Furthermore, each of these transforms can be further split using the
+Cooley-Tukey algorithm (e.g. $9=3\cdot3$ and $14=2\cdot7$).
+The smallest resulting transforms can finally be computed using the DFT
+algorithm without much penalty.
+For large transforms of prime length, \liquid\ uses Rader's algorithm
+\cite{Rader:1968}
+which permits any transform of prime length $N$ to be computed using
+an FFT and an IFFT each of length $N-1$.
+For example, Rader's algorithm can compute a 127-point transform using
+the 126-point Cooley-Tukey transform (and its inverse) described above.%
+\footnote{Rader actually gives an alternate algorithm by which any
+          transform of prime length $N$ can be computed with an FFT and
+          an IFFT of any length greater than $2N-4$.
+          For example, the 127-point FFT could also be computed using
+          computationally efficient 256-point DIT transforms.
+          \liquid\ includes both algorithms and chooses the most
+          appropriate one for the task.}
+Through recursion, a tranform of any size can be decomposed into either
+computationally efficient DIT FFTs, or combinations of small DFTs.
+% 
+% example:
+%       [7440] = (2 * 2 * 2 * 2) * (3 * 5 * 31)
+%         /\
+%      16   465
+% (DIT FFT)  /\
+%          31  15
+%     (Rader)  (C-T)
+%        /       /\
+%       30      3  5
+%       /\   (DFT)(DFT)
+%      6  5
+%    (C-T)
+%     /\
+%    2  3
+% (DFT)(DFT)
+%
+Consequently, \liquid\ can compute any transform in
+$\ord\bigl(n\log(n)\bigr)$ operations.
+
+Even still, \liquid\ will use the {\tt fftw3} library
+library \cite{fftw:web} for internal methods if it is available.
 The presence of {\tt fftw3.h} and {\tt libfftw3} are detected by the
 configure script at build time.
 If found, \liquid\ will link against {\tt fftw} for better performance
@@ -45,20 +103,20 @@ Notice the stark similarity to {\tt libfftw3}'s interface.
 %
 \input{listings/fft.example.c.tex}
 %
-\begin{figure}
-\centering
-\subfigure[FFT input (time series)] {
-  \includegraphics[trim = 0mm 0mm 0mm 0mm, clip, width=13cm]{figures.gen/fft_example_time}
-}
-\subfigure[FFT output (frequency response)] {
-  \includegraphics[trim = 0mm 0mm 0mm 0mm, clip, width=13cm]{figures.gen/fft_example_freq}
-}
-\caption{{\tt fft()} demonstration for a 201-point transform}
-\label{fig:module:fft}
-\end{figure}
-%
-An example of the FFT input relationship can be
-found in Figure~\ref{fig:module:fft}.
+%\begin{figure}
+%\centering
+%\subfigure[FFT input (time series)] {
+%  \includegraphics[trim = 0mm 0mm 0mm 0mm, clip, width=13cm]{figures.gen/fft_example_time}
+%}
+%\subfigure[FFT output (frequency response)] {
+%  \includegraphics[trim = 0mm 0mm 0mm 0mm, clip, width=13cm]{figures.gen/fft_example_freq}
+%}
+%\caption{{\tt fft()} demonstration for a 201-point transform}
+%\label{fig:module:fft}
+%\end{figure}
+%%
+%An example of the FFT input relationship can be
+%found in Figure~\ref{fig:module:fft}.
 
 \subsection{Real even/odd DFTs}
 \label{module:fft:r2r}
@@ -185,9 +243,65 @@ between transforms.
 Typical windowing functions are the Hamming, Hann, and Kaiser windows
 (see \S\ref{module:math:window} for a description and spectral
 representation of available windowing functions in \liquid).
+Internally, the {\tt spgram} object using the Hamming window.%
+\footnote{Future development may permit the user to specify which
+          windowing method is preferred.}
+%
+For a discretely-sampled signal $x(nT_s)$, the spectral content at time
+index $p$ is
+%    X(k) = \sum_{i=0}^{N-1}{x(i) e^{-j 2 \pi k i/N}}
+\[
+    \hat{X}_p(k) = 
+        \frac{1}{N}
+        \sum_{i=0}^{N-1}{
+            x((i+p)T_s) w(iT_s) e^{-j 2 \pi k i/N}
+        }
+\]
+%
+which is simply the $N$-point discrete Fourier transform of the input
+sequence indexed at $p$ with a shaping window applied.
+%
+\begin{figure}
+\centering
+  \includegraphics[trim = 0mm 0mm 0mm 0mm, clip, width=0.95\textwidth]{figures.pgf/fft_spgram_diagram}
+\caption{Spectral periodogram functionality}
+\label{fig:module:fft:spgram:diagram}
+\end{figure}
+%
+Figure~\ref{fig:module:fft:spgram:diagram} depicts a spectral
+periodogram for the discrete case
+in which two overlapping transforms are taken with a delay between them.
+The windowing function provides time localization at the expense of
+frequency resolution.
+Typically the length of the window is half the size of the transform,
+and the delay is a quarter the size of the transform.
 
 \liquid\ implements a discrete spectral periodogram with the
 {\tt spgram} object.
+%
+Listed below is the full interface to the {\tt spgram} object.
+%
+\begin{description}
+\item[{\tt spgram\_create(nfft,window\_len)}]
+    creates and returns an {\tt spgram} object with a transform size of
+    {\tt nfft} samples with a window of {\tt window\_len} samples.
+    Internally,
+    a Hamming window (see \S\ref{module:math:window:hamming})
+    is used for spectral smoothing.
+\item[{\tt spgram\_destroy(q)}]
+    destroys an {\tt spgram} object, freeing all internally-allocated
+    memory.
+\item[{\tt spgram\_reset(q)}]
+    clears the internal {\tt spgram} buffers.
+\item[{\tt spgram\_push(q,*x,n)}]
+    pushes $n$ samples of the array $\vec{x}$ into the internal buffer
+    of an {\tt spgram} object.
+\item[{\tt spgram\_execute(q,*X)}]
+    computes the spectral periodogram output storing the result in the
+    {\tt nfft}-point output array $\vec{X}$.
+    The output array is of type {\tt float complex} and contain
+    output of the FFT.
+\end{description}
 %
 \begin{figure}
 \centering
@@ -202,41 +316,8 @@ representation of available windowing functions in \liquid).
 \end{figure}
 %
 An example of the {\tt spgram} object can be
-found in Figure~\ref{fig:module:fft:spgram}.
-
-%
-Listed below is the full interface to the {\tt spgram} object.
-%
-\begin{description}
-\item[{\tt spgram\_create(nfft,alpha)}]
-    creates and returns an {\tt spgram} object with a transform size of
-    {\tt nfft} samples and an averaging factor $\alpha$.
-    Internally,
-    a Hamming window (see \S\ref{module:math:window:hamming})
-    with {\tt nfft}$/2$ samples is used,
-    and the delay between transforms is {\tt nfft}$/4$ samples.
-    To specify these values manually, use the
-    {\tt spgram\_create\_advanced()} method, below.
-\item[{\tt spgram\_create\_advanced(nfft,m,d,alpha)}]
-    creates and returns an {\tt spgram} object with
-    a transform size of {\tt nfft} samples,
-    a window of {\tt m} samples,
-    a delay between transforms of {\tt d} samples,
-    and an averaging factor $\alpha$.
-\item[{\tt spgram\_destroy(q)}]
-    destroys an {\tt spgram} object, freeing all internally-allocated
-    memory.
-\item[{\tt spgram\_reset(q)}]
-    clears the internal {\tt spgram} buffers.
-\item[{\tt spgram\_push(q,*x,n)}]
-    pushes $n$ samples of the array $\vec{x}$ into the internal buffer
-    of an {\tt spgram} object.
-\item[{\tt spgram\_execute(q,*X)}]
-    computes the spectral periodogram output storing the result in the
-    output array $\vec{X}$.
-    The output array is of type {\tt float} and should be the
-    same length as the number of FFT points provided during the
-    {\tt create()} method.
-    The values in $\vec{X}$ represent the magnitude in dB.
-\end{description}
+found in Figure~\ref{fig:module:fft:spgram} in which a
+frequency-modulated sinusoid is generated and analyzed.
+The frequency of the sinusoid changes over time and is clearly visible
+in both plots.
 

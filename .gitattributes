@@ -1,0 +1,5 @@
+# ignore Git files for archiving
+.gitattributes  export-ignore
+.gitignore      export-ignore
+doc/.gitignore  export-ignore
+

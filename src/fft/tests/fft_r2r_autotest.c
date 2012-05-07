@@ -23,9 +23,7 @@
 #include "liquid.h"
 
 // include data sets
-#include "fft_r2r_data8.h"
-#include "fft_r2r_data32.h"
-#include "fft_r2r_data27.h"
+#include "fft_autotest.h"
 
 // autotest helper function
 void fft_r2r_test(float *_x,
@@ -64,43 +62,43 @@ void fft_r2r_test(float *_x,
 // AUTOTESTS: 8-point real-to-real ffts
 //
 
-void autotest_fft_r2r_REDFT00_n8()  { fft_r2r_test(fftdata_r2r_n8, fftdata_r2r_REDFT00_n8, 8, FFT_REDFT00); }
-void autotest_fft_r2r_REDFT10_n8()  { fft_r2r_test(fftdata_r2r_n8, fftdata_r2r_REDFT10_n8, 8, FFT_REDFT10); }
-void autotest_fft_r2r_REDFT01_n8()  { fft_r2r_test(fftdata_r2r_n8, fftdata_r2r_REDFT01_n8, 8, FFT_REDFT01); }
-void autotest_fft_r2r_REDFT11_n8()  { fft_r2r_test(fftdata_r2r_n8, fftdata_r2r_REDFT11_n8, 8, FFT_REDFT11); }
+void autotest_fft_r2r_REDFT00_n8()  { fft_r2r_test(fftdata_r2r_x8, fftdata_r2r_REDFT00_y8, 8, FFT_REDFT00); }
+void autotest_fft_r2r_REDFT10_n8()  { fft_r2r_test(fftdata_r2r_x8, fftdata_r2r_REDFT10_y8, 8, FFT_REDFT10); }
+void autotest_fft_r2r_REDFT01_n8()  { fft_r2r_test(fftdata_r2r_x8, fftdata_r2r_REDFT01_y8, 8, FFT_REDFT01); }
+void autotest_fft_r2r_REDFT11_n8()  { fft_r2r_test(fftdata_r2r_x8, fftdata_r2r_REDFT11_y8, 8, FFT_REDFT11); }
 
-void autotest_fft_r2r_RODFT00_n8()  { fft_r2r_test(fftdata_r2r_n8, fftdata_r2r_RODFT00_n8, 8, FFT_RODFT00); }
-void autotest_fft_r2r_RODFT10_n8()  { fft_r2r_test(fftdata_r2r_n8, fftdata_r2r_RODFT10_n8, 8, FFT_RODFT10); }
-void autotest_fft_r2r_RODFT01_n8()  { fft_r2r_test(fftdata_r2r_n8, fftdata_r2r_RODFT01_n8, 8, FFT_RODFT01); }
-void autotest_fft_r2r_RODFT11_n8()  { fft_r2r_test(fftdata_r2r_n8, fftdata_r2r_RODFT11_n8, 8, FFT_RODFT11); }
+void autotest_fft_r2r_RODFT00_n8()  { fft_r2r_test(fftdata_r2r_x8, fftdata_r2r_RODFT00_y8, 8, FFT_RODFT00); }
+void autotest_fft_r2r_RODFT10_n8()  { fft_r2r_test(fftdata_r2r_x8, fftdata_r2r_RODFT10_y8, 8, FFT_RODFT10); }
+void autotest_fft_r2r_RODFT01_n8()  { fft_r2r_test(fftdata_r2r_x8, fftdata_r2r_RODFT01_y8, 8, FFT_RODFT01); }
+void autotest_fft_r2r_RODFT11_n8()  { fft_r2r_test(fftdata_r2r_x8, fftdata_r2r_RODFT11_y8, 8, FFT_RODFT11); }
 
 
 // 
 // AUTOTESTS: 32-point real-to-real ffts
 //
 
-void autotest_fft_r2r_REDFT00_n32()  { fft_r2r_test(fftdata_r2r_n32, fftdata_r2r_REDFT00_n32, 32, FFT_REDFT00); }
-void autotest_fft_r2r_REDFT10_n32()  { fft_r2r_test(fftdata_r2r_n32, fftdata_r2r_REDFT10_n32, 32, FFT_REDFT10); }
-void autotest_fft_r2r_REDFT01_n32()  { fft_r2r_test(fftdata_r2r_n32, fftdata_r2r_REDFT01_n32, 32, FFT_REDFT01); }
-void autotest_fft_r2r_REDFT11_n32()  { fft_r2r_test(fftdata_r2r_n32, fftdata_r2r_REDFT11_n32, 32, FFT_REDFT11); }
+void autotest_fft_r2r_REDFT00_n32()  { fft_r2r_test(fftdata_r2r_x32, fftdata_r2r_REDFT00_y32, 32, FFT_REDFT00); }
+void autotest_fft_r2r_REDFT10_n32()  { fft_r2r_test(fftdata_r2r_x32, fftdata_r2r_REDFT10_y32, 32, FFT_REDFT10); }
+void autotest_fft_r2r_REDFT01_n32()  { fft_r2r_test(fftdata_r2r_x32, fftdata_r2r_REDFT01_y32, 32, FFT_REDFT01); }
+void autotest_fft_r2r_REDFT11_n32()  { fft_r2r_test(fftdata_r2r_x32, fftdata_r2r_REDFT11_y32, 32, FFT_REDFT11); }
 
-void autotest_fft_r2r_RODFT00_n32()  { fft_r2r_test(fftdata_r2r_n32, fftdata_r2r_RODFT00_n32, 32, FFT_RODFT00); }
-void autotest_fft_r2r_RODFT10_n32()  { fft_r2r_test(fftdata_r2r_n32, fftdata_r2r_RODFT10_n32, 32, FFT_RODFT10); }
-void autotest_fft_r2r_RODFT01_n32()  { fft_r2r_test(fftdata_r2r_n32, fftdata_r2r_RODFT01_n32, 32, FFT_RODFT01); }
-void autotest_fft_r2r_RODFT11_n32()  { fft_r2r_test(fftdata_r2r_n32, fftdata_r2r_RODFT11_n32, 32, FFT_RODFT11); }
+void autotest_fft_r2r_RODFT00_n32()  { fft_r2r_test(fftdata_r2r_x32, fftdata_r2r_RODFT00_y32, 32, FFT_RODFT00); }
+void autotest_fft_r2r_RODFT10_n32()  { fft_r2r_test(fftdata_r2r_x32, fftdata_r2r_RODFT10_y32, 32, FFT_RODFT10); }
+void autotest_fft_r2r_RODFT01_n32()  { fft_r2r_test(fftdata_r2r_x32, fftdata_r2r_RODFT01_y32, 32, FFT_RODFT01); }
+void autotest_fft_r2r_RODFT11_n32()  { fft_r2r_test(fftdata_r2r_x32, fftdata_r2r_RODFT11_y32, 32, FFT_RODFT11); }
 
 
 // 
 // AUTOTESTS: 27-point real-to-real ffts
 //
 
-void autotest_fft_r2r_REDFT00_n27()  { fft_r2r_test(fftdata_r2r_n27, fftdata_r2r_REDFT00_n27, 27, FFT_REDFT00); }
-void autotest_fft_r2r_REDFT10_n27()  { fft_r2r_test(fftdata_r2r_n27, fftdata_r2r_REDFT10_n27, 27, FFT_REDFT10); }
-void autotest_fft_r2r_REDFT01_n27()  { fft_r2r_test(fftdata_r2r_n27, fftdata_r2r_REDFT01_n27, 27, FFT_REDFT01); }
-void autotest_fft_r2r_REDFT11_n27()  { fft_r2r_test(fftdata_r2r_n27, fftdata_r2r_REDFT11_n27, 27, FFT_REDFT11); }
+void autotest_fft_r2r_REDFT00_n27()  { fft_r2r_test(fftdata_r2r_x27, fftdata_r2r_REDFT00_y27, 27, FFT_REDFT00); }
+void autotest_fft_r2r_REDFT10_n27()  { fft_r2r_test(fftdata_r2r_x27, fftdata_r2r_REDFT10_y27, 27, FFT_REDFT10); }
+void autotest_fft_r2r_REDFT01_n27()  { fft_r2r_test(fftdata_r2r_x27, fftdata_r2r_REDFT01_y27, 27, FFT_REDFT01); }
+void autotest_fft_r2r_REDFT11_n27()  { fft_r2r_test(fftdata_r2r_x27, fftdata_r2r_REDFT11_y27, 27, FFT_REDFT11); }
 
-void autotest_fft_r2r_RODFT00_n27()  { fft_r2r_test(fftdata_r2r_n27, fftdata_r2r_RODFT00_n27, 27, FFT_RODFT00); }
-void autotest_fft_r2r_RODFT10_n27()  { fft_r2r_test(fftdata_r2r_n27, fftdata_r2r_RODFT10_n27, 27, FFT_RODFT10); }
-void autotest_fft_r2r_RODFT01_n27()  { fft_r2r_test(fftdata_r2r_n27, fftdata_r2r_RODFT01_n27, 27, FFT_RODFT01); }
-void autotest_fft_r2r_RODFT11_n27()  { fft_r2r_test(fftdata_r2r_n27, fftdata_r2r_RODFT11_n27, 27, FFT_RODFT11); }
+void autotest_fft_r2r_RODFT00_n27()  { fft_r2r_test(fftdata_r2r_x27, fftdata_r2r_RODFT00_y27, 27, FFT_RODFT00); }
+void autotest_fft_r2r_RODFT10_n27()  { fft_r2r_test(fftdata_r2r_x27, fftdata_r2r_RODFT10_y27, 27, FFT_RODFT10); }
+void autotest_fft_r2r_RODFT01_n27()  { fft_r2r_test(fftdata_r2r_x27, fftdata_r2r_RODFT01_y27, 27, FFT_RODFT01); }
+void autotest_fft_r2r_RODFT11_n27()  { fft_r2r_test(fftdata_r2r_x27, fftdata_r2r_RODFT11_y27, 27, FFT_RODFT11); }
 

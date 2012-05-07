@@ -9,5 +9,5 @@ set xlabel 'Normalized Frequency'
 set ylabel 'Time'
 set nokey
 set view map
-set palette defined (-100 "white", -30 "#ACA1A4", 0 "#400040")
+set palette defined (-100 "white", -50 "white", -30 "#ACA1A4", 0 "#400040")
 splot 'figures.gen/fft_spgram_freq.dat' using 2:1:3 with image

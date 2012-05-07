@@ -90,6 +90,12 @@ all:
 # additional targets to clean
 extra_clean :=
 
+# additional autotest objects
+autotest_extra_obj :=
+
+# additional benchmark objects
+benchmark_extra_obj :=
+
 #
 # MODULE : agc - automatic gain control
 #
@@ -315,20 +321,65 @@ src/fft/src/fft_utilities.o : %.o : %.c $(headers)
 
 src/fft/src/mdct.o : %.o : %.c $(headers)
 
-
+# fft autotest scripts
 fft_autotests :=						\
-	src/fft/tests/fft_autotest.c				\
+	src/fft/tests/fft_small_autotest.c			\
+	src/fft/tests/fft_radix2_autotest.c			\
 	src/fft/tests/fft_composite_autotest.c			\
 	src/fft/tests/fft_prime_autotest.c			\
 	src/fft/tests/fft_r2r_autotest.c			\
 	src/fft/tests/fft_shift_autotest.c			\
 
+# additional autotest objects
+autotest_extra_obj +=						\
+	src/fft/tests/fft_runtest.o				\
+	src/fft/tests/fft_data_2.o				\
+	src/fft/tests/fft_data_3.o				\
+	src/fft/tests/fft_data_4.o				\
+	src/fft/tests/fft_data_5.o				\
+	src/fft/tests/fft_data_6.o				\
+	src/fft/tests/fft_data_7.o				\
+	src/fft/tests/fft_data_8.o				\
+	src/fft/tests/fft_data_9.o				\
+	src/fft/tests/fft_data_10.o				\
+	src/fft/tests/fft_data_16.o				\
+	src/fft/tests/fft_data_17.o				\
+	src/fft/tests/fft_data_20.o				\
+	src/fft/tests/fft_data_21.o				\
+	src/fft/tests/fft_data_22.o				\
+	src/fft/tests/fft_data_24.o				\
+	src/fft/tests/fft_data_26.o				\
+	src/fft/tests/fft_data_30.o				\
+	src/fft/tests/fft_data_32.o				\
+	src/fft/tests/fft_data_35.o				\
+	src/fft/tests/fft_data_36.o				\
+	src/fft/tests/fft_data_43.o				\
+	src/fft/tests/fft_data_48.o				\
+	src/fft/tests/fft_data_63.o				\
+	src/fft/tests/fft_data_64.o				\
+	src/fft/tests/fft_data_79.o				\
+	src/fft/tests/fft_data_92.o				\
+	src/fft/tests/fft_data_96.o				\
+	src/fft/tests/fft_data_120.o				\
+	src/fft/tests/fft_data_130.o				\
+	src/fft/tests/fft_data_157.o				\
+	src/fft/tests/fft_data_192.o				\
+	src/fft/tests/fft_data_317.o				\
+	src/fft/tests/fft_data_509.o				\
+	src/fft/tests/fft_r2rdata_8.o				\
+	src/fft/tests/fft_r2rdata_27.o				\
+	src/fft/tests/fft_r2rdata_32.o				\
 
+# fft benchmark scripts
 fft_benchmarks :=						\
 	src/fft/bench/fft_composite_benchmark.c			\
 	src/fft/bench/fft_prime_benchmark.c			\
 	src/fft/bench/fft_radix2_benchmark.c			\
 	src/fft/bench/fft_r2r_benchmark.c			\
+
+# additional benchmark objects
+benchmark_extra_obj :=						\
+	src/fft/bench/fft_runbench.o				\
 
 #
 # MODULE : filter
@@ -905,6 +956,7 @@ src/experimental/src/filter_cccf.o: %.o : %.c $(headers) $(experimental_filter_i
 # Information about targets for each module is collected
 # in these variables
 objects :=							\
+	src/libliquid.o						\
 	$(agc_objects)						\
 	$(audio_objects)					\
 	$(buffer_objects)					\
@@ -927,7 +979,6 @@ objects :=							\
 	@EXPERIMENTAL_MLIBS@
 	
 
-sources			:=
 autotest_sources :=						\
 	autotest/null_autotest.c				\
 	$(agc_autotests)					\
@@ -976,13 +1027,6 @@ benchmark_sources :=						\
 	@EXPERIMENTAL_BENCHMARKS@
 
 
-
-# additional sources
-extra_sources := libliquid.c
-
-sources += $(extra_sources)
-
-
 ##
 ## TARGET : all       - build shared library (default)
 ##
@@ -1000,11 +1044,11 @@ libliquid.a: $(objects)
 #
 # gcc -dynamiclib -install_name libliquid.dylib -o libliquid.dylib libmodem.a libutility.a 
 libliquid.dylib: $(objects)
-	$(CC) $(LDFLAGS) -dynamiclib -install_name $@ -o $@ $^
+	$(CC) -dynamiclib -install_name $@ -o $@ $^ $(LDFLAGS)
 
 # linux, et al
 libliquid.so: libliquid.a
-	$(CC) $(LDFLAGS) -shared -Xlinker -soname=$@ -o $@ -Wl,-whole-archive $^ -Wl,-no-whole-archive
+	$(CC) -shared -Xlinker -soname=$@ -o $@ -Wl,-whole-archive $^ -Wl,-no-whole-archive $(LDFLAGS)
 
 all: libliquid.a $(SHARED_LIB)
 
@@ -1063,7 +1107,7 @@ scripts/autoscript.o scripts/main.o : %.o : %.c
 	$(CC) $(CFLAGS) -c -o $@ $<
 
 scripts/autoscript : scripts/autoscript.o scripts/main.o
-	$(CC) $(CFLAGS) $(LDFLAGS) -o $@ $^
+	$(CC) $(CFLAGS) -o $@ $^ $(LDFLAGS)
 
 clean-autoscript :
 	$(RM) scripts/autoscript.o scripts/main.o scripts/autoscript
@@ -1091,6 +1135,9 @@ autotest_obj = $(patsubst %.c,%.o,$(autotest_sources))
 $(autotest_obj) : %.o : %.c $(include_headers)
 	$(CC) $(CFLAGS) $< -c -o $@
 
+# additional autotest objects
+$(autotest_extra_obj) : %.o : %.c $(include_headers)
+
 # compile the autotest internal library functions without linking
 autotest/autotestlib.o : autotest/autotestlib.c autotest/autotest.h
 	$(CC) $(CFLAGS) $< -c -o $@
@@ -1101,8 +1148,8 @@ $(autotest_prog).o : autotest/autotest.c autotest/autotest.h autotest_include.h
 
 # link the autotest program with the objects
 # NOTE: linked libraries must come _after_ the target program
-$(autotest_prog): $(autotest_prog).o $(autotest_obj) autotest/autotestlib.o libliquid.a
-	$(CC) $^ $(LDFLAGS) -o $@
+$(autotest_prog): $(autotest_prog).o $(autotest_obj) $(autotest_extra_obj) autotest/autotestlib.o libliquid.a
+	$(CC) $^ -o $@ $(LDFLAGS)
 
 # run the autotest program
 check: $(autotest_prog)
@@ -1112,6 +1159,7 @@ check: $(autotest_prog)
 clean-check:
 	$(RM) autotest_include.h $(autotest_prog).o $(autotest_prog)
 	$(RM) $(autotest_obj)
+	$(RM) $(autotest_extra_obj)
 
 
 ##
@@ -1137,14 +1185,17 @@ benchmark_obj = $(patsubst %.c,%.o,$(benchmark_sources))
 $(benchmark_obj) : %.o : %.c $(include_headers)
 	$(CC) $(BENCH_CFLAGS) $< -c -o $@
 
+# additional benchmark objects
+$(benchmark_extra_obj) : %.o : %.c $(include_headers)
+
 # compile the benchmark program without linking
 $(bench_prog).o: bench/bench.c benchmark_include.h bench/bench.c
 	$(CC) $(BENCH_CFLAGS) $< -c -o $(bench_prog).o
 
 # link the benchmark program with the library objects
 # NOTE: linked libraries must come _after_ the target program
-$(bench_prog): $(bench_prog).o $(benchmark_obj) libliquid.a
-	$(CC) $^ $(BENCH_LDFLAGS) -o $(bench_prog)
+$(bench_prog): $(bench_prog).o $(benchmark_obj) $(benchmark_extra_obj) libliquid.a
+	$(CC) $^ -o $(bench_prog) $(BENCH_LDFLAGS)
 
 # run the benchmark program
 bench: $(bench_prog)
@@ -1158,13 +1209,14 @@ bench/fftbench.o : %.o : %.c
 	$(CC) $(BENCH_CFLAGS) $< -c -o $@
 
 bench/fftbench : % : %.o libliquid.a
-	$(CC) $^ $(BENCH_LDFLAGS) -o $@
+	$(CC) $^ -o $@ $(BENCH_LDFLAGS)
 
 # clean up the generated files
 clean-bench:
 	$(RM) benchmark_include.h $(bench_prog).o $(bench_prog)
 	$(RM) scripts/benchmark_compare
 	$(RM) $(benchmark_obj)
+	$(RM) $(benchmark_extra_obj)
 	$(RM) bench/fftbench
 
 
@@ -1230,6 +1282,7 @@ example_programs :=						\
 	examples/interp_crcf_example				\
 	examples/kbd_window_example				\
 	examples/lpc_example					\
+	examples/libliquid_example				\
 	examples/matched_filter_example				\
 	examples/math_lngamma_example				\
 	examples/math_primitive_root_example			\
@@ -1282,6 +1335,7 @@ EXAMPLES_LDFLAGS = $(LDFLAGS)
 $(example_objects): %.o : %.c
 
 $(example_programs): % : %.o libliquid.a
+	$(CC) $(CFLAGS) $^ -o $@ $(LDFLAGS)
 
 # clean examples
 clean-examples:
@@ -1383,7 +1437,7 @@ SANDBOX_LDFLAGS = $(LDFLAGS) -lfftw3f
 $(sandbox_objects): %.o : %.c
 
 $(sandbox_programs): % : %.o libliquid.a
-	$(CC) $(SANDBOX_LDFLAGS) $^ -o $@
+	$(CC) $(CFLAGS) $^ -o $@ $(LDFLAGS)
 
 # clean sandbox
 clean-sandbox:

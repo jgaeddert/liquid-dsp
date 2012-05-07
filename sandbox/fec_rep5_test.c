@@ -3,7 +3,7 @@
 //
 
 #include <stdio.h>
-#include <liquid/liquid.h>
+#include "liquid.h"
 
 int main() {
     unsigned char s0, s1, s2, s3, s4, r, r_hat;
