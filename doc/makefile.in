@@ -40,10 +40,16 @@ TEX_FLAGS = --shell-escape
 BIB = @BIBTEX@
 BIB_FLAGS =
 CC = @CC@
-CFLAGS :=
 LDFLAGS = @LIBS@
 RM = rm -f
 MV = mv
+SED = @SED@
+
+# C compiler flags
+include_dirs	:= . .. include ../include
+INCLUDE_CFLAGS	= $(addprefix -I ,$(include_dirs))
+CONFIG_CFLAGS	= @ARCH_OPTION@ @PROFILE_OPTION@ @DEBUG_OPTION@ @SIMD_FLAGS@
+CFLAGS		+= $(INCLUDE_CFLAGS) -g -O2 -Wall -fPIC $(CONFIG_CFLAGS)
 
 EPSTOPDF = @EPSTOPDF@
 EPSTOPDF_FLAGS = --compress
@@ -55,10 +61,6 @@ PYGMENTIZE = @PYGMENTIZE@
 PYGMENTS_VERB_OPTS = -P verboptions='fontsize=\small' -P commandprefix='PY'
 PYGMENTS_OPTS = -O linenos=True $(PYGMENTS_VERB_OPTS)
 PYGMENTS_STYLE = default
-
-include_dirs	:= . .. include ../include
-INCLUDE_CFLAGS	= $(addprefix -I ,$(include_dirs))
-CFLAGS		+= $(INCLUDE_CFLAGS) -g -O2 -Wall
 
 # header dependencies
 headers		:= include/liquid.doc.h
@@ -72,7 +74,7 @@ GRAPHICS = 						\
 	graphics/liquid_splatter_03.png			\
 	graphics/liquid_splatter_04.png			\
 
-# Listings used in this document
+# C source listings used in this document
 LISTINGS_C = 						\
 	listings/agc.example.c				\
 	listings/ampmodem.example.c			\
@@ -139,7 +141,7 @@ LISTINGS_C = 						\
 	tutorials/ofdmflexframe_intermediate_tutorial.c	\
 	tutorials/ofdmflexframe_advanced_tutorial.c	\
 
-# Listings used in this document
+# C++ source listings used in this document
 LISTINGS_CC = 					\
 	listings/nco.cc				\
 
@@ -201,31 +203,43 @@ extra_clean += libliquid.a
 ## LISTINGS
 ##
 
-LISTINGS := $(LISTINGS_C) $(LISTINGS_CC)
+# main listings targets (append '.tex' to each input)
+listings_c_texfiles  = $(patsubst %,%.tex,$(LISTINGS_C))
+listings_cc_texfiles = $(patsubst %,%.tex,$(LISTINGS_CC))
+
+LISTINGS :=			\
+	$(listings_c_texfiles)	\
+	$(listings_cc_texfiles)	\
 
 # 
 # listings-check
+#
+# The listings-check target actually compiles the code listings
+# included in the document to ensure that they don't have syntax errors
+# The resulting objects are not linked to programs, however, because
+# the resulting programs would likely produce segmentation faults. This
+# is because most of the listings are code snippets which skip memory
+# allocation and array initialization for brevity.
 #
 
 # C, C++ test program objects
 listings_ctests  := $(patsubst %.c, %.c.o,  $(LISTINGS_C))
 listings_cctests := $(patsubst %.cc,%.cc.o, $(LISTINGS_CC))
 
-# simple script to generate temporary output c program file
-scripts/listings_check : % : %.c
-	$(CC) -o $@ $<
-
 # compile the objects but don't link/run them
-#   temporary program file: listings/filename.prog.c
-$(listings_ctests) : %.c.o : %.c scripts/listings_check
-	./scripts/listings_check $< $*.prog.c
-	$(CC) -I . -I../include/ -c -o $@ $*.prog.c
+#   Generate a temporary file 'listings/filename.prog.c' by replacing
+#   <liquid/liquid.h> with "listings_check.h"
+
+# specific C tests
+$(listings_ctests) : %.c.o : %.c include/listings_check.h
+	cat $< | $(SED) 's/<liquid\/liquid.h>/"listings_check.h"/g' > $*.prog.c
+	$(CC) -c -I../include -I./include -o $@ $*.prog.c
 	$(RM) $*.prog.c
 
-# specific C++ programs
-$(listings_cctests) : %.cc.o : %.cc scripts/listings_check
-	./scripts/listings_check $< $*.prog.cc
-	$(CXX) -I . -I../include/ -c -o $@ $*.prog.cc
+# specific C++ tests
+$(listings_cctests) : %.cc.o : %.cc include/listings_check.h
+	cat $< | $(SED) 's/<liquid\/liquid.h>/"listings_check.h"/g' > $*.prog.cc
+	$(CXX) -c -I../include -I./include -o $@ $*.prog.cc
 	$(RM) $*.prog.cc
 
 # main test: try to build the objects. If the code is incorrect
@@ -240,20 +254,17 @@ clean-listings-check :
 	$(RM) tutorials/*.prog.c
 	$(RM) tutorials/*.prog.cc
 	$(RM) tutorials/*.o
-	$(RM) scripts/listings_check
 
-# create listings targets (append '.tex' to each input)
-listings_c_texfiles  = $(patsubst %,%.tex,$(LISTINGS_C))
-listings_cc_texfiles = $(patsubst %,%.tex,$(LISTINGS_CC))
-listings_texfiles :=		\
-	$(listings_c_texfiles)	\
-	$(listings_cc_texfiles)	\
+# 
+# listings
+#
+# use pygments (http://pygments.org) to generate fancy syntax-highlighted
+# source
+#
 
 # generate listings style
 highlight.sty:
-	$(PYGMENTIZE) -f latex -S $(PYGMENTS_STYLE) $(PYGMENTS_VERB_OPTS) > highlight.sty
-
-# use pygments (http://pygments.org) to generate fancy syntax-highlighted source
+	$(PYGMENTIZE) -f latex -S $(PYGMENTS_STYLE) $(PYGMENTS_VERB_OPTS) > $@
 
 # C source files (force using the 'c' lexer)
 $(listings_c_texfiles) : %.tex : % %.o
@@ -264,10 +275,10 @@ $(listings_cc_texfiles) : %.tex : % %.o
 	$(PYGMENTIZE) -f latex $(PYGMENTS_OPTS) -o $@ -l c++ $<
 
 # full listings target
-listings: highlight.sty $(listings_texfiles)
+listings: highlight.sty $(LISTINGS)
 
 # clean listings
-#$(RM) $(listings_texfiles)
+#$(RM) $(LISTINGS)
 clean-listings: clean-listings-check
 	$(RM) highlight.sty
 	$(RM) listings/*.tex
@@ -370,7 +381,7 @@ latex.gen/liquid_version.tex : src/liquid_version ; ./$< > $@
 extra_clean += liquid.gen/liquid_version.tex src/liquid_version
 
 # auxillary
-liquid.aux liquid.bib.aux : liquid.tex highlight.sty $(GRAPHICS) $(SECTIONS) $(listings_texfiles) highlight.sty $(figures_generated) latex.gen/liquid_version.tex
+liquid.aux liquid.bib.aux : liquid.tex highlight.sty $(GRAPHICS) $(SECTIONS) $(LISTINGS) highlight.sty $(figures_generated) latex.gen/liquid_version.tex
 	$(TEX) $(TEX_FLAGS) liquid
 	touch liquid.bib.aux
 

@@ -36,7 +36,7 @@ liquid_fft_method liquid_fft_estimate_method(unsigned int _nfft)
         fprintf(stderr,"error: liquid_fft_estimate_method(), fft size must be > 0\n");
         return LIQUID_FFT_METHOD_UNKNOWN;
 
-    } else if (_nfft <= 8 || _nfft==11 || _nfft==13 || _nfft==17) {
+    } else if (_nfft <= 8 || _nfft==11 || _nfft==13 || _nfft==16 || _nfft==17) {
         // use simple DFT
         return LIQUID_FFT_METHOD_DFT;
 

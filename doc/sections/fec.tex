@@ -317,10 +317,10 @@ encodes them into an output block of coded data bytes.
     (see Table~\ref{tab:fec:codecs} for available codecs).
     Notice that the length of the input message does not need to be
     specified until {\tt encode()} or {\tt decode()} is invoked.
-    The second argument is intended for future development and should be
-    ignored by passing the {\tt NULL} pointer
+    The {\tt opts} argument is intended for future development and
+    should be ignored by passing the {\tt NULL} pointer
     (see example below).
-\item[{\tt fec\_recreate(q,scheme,opts)}]
+\item[{\tt fec\_recreate(q,scheme,*opts)}]
     recreates an existing {\tt fec} object with a different scheme.
 \item[{\tt fec\_destroy(q)}]
     destroys a {\tt fec} object, freeing all internally-allocated memory
@@ -393,7 +393,7 @@ block code.
 \subsection{Performance}
 \label{module:fec:performance}
 The performance of an error-correction scheme is typically measured in
-the bit error rate (BER) for a antipodally modulated signal in the
+the bit error rate (BER) for an antipodally modulated signal in the
 presence of additive white Gauss noise (AWGN).
 Certain applications prefer measuring performance in terms of the
 {\em signal} energy while others require {\em bit} energy,
