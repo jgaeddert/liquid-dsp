@@ -142,13 +142,13 @@ int main(int argc, char*argv[])
     fprintf(fid,"#\n");
     fprintf(fid,"# %-12s %4s %4s %12s %12s %12s\n", "modem", "id", "b/s", "rate [b/s]", "SNR [dB]", "Eb/N0 [dB]");
 
-    for (i=1; i<LIQUID_MODEM_NUM_FULL_SCHEMES; i++) {
+    for (i=1; i<LIQUID_MODEM_NUM_SCHEMES; i++) {
         // set up options from internal structure in modem_common.c
-        opts.ms     = modulation_types[i].ms;
-        opts.bps    = modulation_types[i].bps;
+        opts.ms = modulation_types[i].scheme;
+        unsigned int bps = modulation_types[i].bps;
 
         // estimate SNR for a specific PER
-        printf("%u-%s // %s // %s (%s: %e)\n", 1<<opts.bps,
+        printf("%u-%s // %s // %s (%s: %e)\n", 1<<bps,
                                                modulation_types[opts.ms].name,
                                                fec_scheme_str[opts.fec0][0],
                                                fec_scheme_str[opts.fec1][0],
@@ -159,7 +159,7 @@ int main(int argc, char*argv[])
         float x_hat = estimate_snr(opts, which_ber_per, which_snr_ebn0, error_rate);
 
         // compute rate [b/s/Hz]
-        float rate = opts.bps * fec_get_rate(opts.fec0) * fec_get_rate(opts.fec1);
+        float rate = bps * fec_get_rate(opts.fec0) * fec_get_rate(opts.fec1);
 
         // set estimated values
         float SNRdB_hat;
@@ -189,7 +189,7 @@ int main(int argc, char*argv[])
         // save to output file
         fprintf(fid," %4u %4u %12.6f %12.6f %12.6f\n",
                 opts.ms,
-                opts.bps,
+                bps,
                 rate,
                 SNRdB_hat,
                 EbN0dB_hat);
