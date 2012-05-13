@@ -54,22 +54,22 @@ MODEM() MODEM(_create_qam)(unsigned int _bits_per_symbol)
     assert(q->data.qam.M_i * q->data.qam.M_q == q->M);
 
     switch (q->M) {
-    case 4:     q->alpha = RQAM4_ALPHA;    q->scheme = LIQUID_MODEM_QAM4;   break;
-    case 8:     q->alpha = RQAM8_ALPHA;    q->scheme = LIQUID_MODEM_QAM8;   break;
-    case 16:    q->alpha = RQAM16_ALPHA;   q->scheme = LIQUID_MODEM_QAM16;  break;
-    case 32:    q->alpha = RQAM32_ALPHA;   q->scheme = LIQUID_MODEM_QAM32;  break;
-    case 64:    q->alpha = RQAM64_ALPHA;   q->scheme = LIQUID_MODEM_QAM64;  break;
-    case 128:   q->alpha = RQAM128_ALPHA;  q->scheme = LIQUID_MODEM_QAM128; break;
-    case 256:   q->alpha = RQAM256_ALPHA;  q->scheme = LIQUID_MODEM_QAM256; break;
+    case 4:    q->data.qam.alpha = RQAM4_ALPHA;    q->scheme = LIQUID_MODEM_QAM4;   break;
+    case 8:    q->data.qam.alpha = RQAM8_ALPHA;    q->scheme = LIQUID_MODEM_QAM8;   break;
+    case 16:   q->data.qam.alpha = RQAM16_ALPHA;   q->scheme = LIQUID_MODEM_QAM16;  break;
+    case 32:   q->data.qam.alpha = RQAM32_ALPHA;   q->scheme = LIQUID_MODEM_QAM32;  break;
+    case 64:   q->data.qam.alpha = RQAM64_ALPHA;   q->scheme = LIQUID_MODEM_QAM64;  break;
+    case 128:  q->data.qam.alpha = RQAM128_ALPHA;  q->scheme = LIQUID_MODEM_QAM128; break;
+    case 256:  q->data.qam.alpha = RQAM256_ALPHA;  q->scheme = LIQUID_MODEM_QAM256; break;
 #if 0
-    case 512:   q->alpha = RQAM512_ALPHA;     break;
-    case 1024:  q->alpha = RQAM1024_ALPHA;    break;
-    case 2048:  q->alpha = RQAM2048_ALPHA;    break;
-    case 4096:  q->alpha = RQAM4096_ALPHA;    break;
+    case 512:  q->data.qam.alpha = RQAM512_ALPHA;     break;
+    case 1024: q->data.qam.alpha = RQAM1024_ALPHA;    break;
+    case 2048: q->data.qam.alpha = RQAM2048_ALPHA;    break;
+    case 4096: q->data.qam.alpha = RQAM4096_ALPHA;    break;
     default:
         // calculate alpha dynamically
         // NOTE: this is only an approximation
-        q->alpha = sqrtf(2.0f / (T)(q->M) );
+        q->data.qam.alpha = sqrtf(2.0f / (T)(q->M) );
 #else
     default:
         fprintf(stderr,"error: modem_create_qam(), cannot support QAM with m > 8\n");
@@ -79,7 +79,7 @@ MODEM() MODEM(_create_qam)(unsigned int _bits_per_symbol)
 
     unsigned int k;
     for (k=0; k<(q->m); k++)
-        q->ref[k] = (1<<k) * q->alpha;
+        q->ref[k] = (1<<k) * q->data.qam.alpha;
 
     q->modulate_func = &MODEM(_modulate_qam);
     q->demodulate_func = &MODEM(_demodulate_qam);
@@ -128,8 +128,8 @@ void MODEM(_modulate_qam)(MODEM()      _q,
     s_q = gray_decode(s_q);
 
     // compute output sample
-    *_y = (2*(int)s_i - (int)(_q->data.qam.M_i) + 1) * _q->alpha +
-          (2*(int)s_q - (int)(_q->data.qam.M_q) + 1) * _q->alpha * _Complex_I;
+    *_y = (2*(int)s_i - (int)(_q->data.qam.M_i) + 1) * _q->data.qam.alpha +
+          (2*(int)s_q - (int)(_q->data.qam.M_q) + 1) * _q->data.qam.alpha * _Complex_I;
 }
 
 // demodulate QAM

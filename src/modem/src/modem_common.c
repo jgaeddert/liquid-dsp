@@ -48,7 +48,6 @@ struct MODEM(_s)
     modulation_scheme scheme;   // modulation scheme
     unsigned int m;             // bits per symbol (modulation depth)
     unsigned int M;             // constellation size, M=2^m
-    T alpha;                    // scaling factor to ensure unity energy
 
     // Reference vector for demodulating linear arrays
     //
@@ -73,17 +72,25 @@ struct MODEM(_s)
             unsigned int m_q;   // bits per symbol, quadrature
             unsigned int M_i;   // in-phase dimension, M_i=2^{m_i}
             unsigned int M_q;   // quadrature dimension, M_q=2^{m_q}
+            T alpha;            // scaling factor to ensure unity energy
         } qam;
+
+        // ASK modem
+        struct {
+            T alpha;            // scaling factor to ensure unity energy
+        } ask;
 
         // PSK/DPSK modem
         struct {
             T d_phi;            // half of phase between symbols
+            T alpha;            // scaling factor for phase symbols
         } psk;
 
         // DPSK modem
         struct {
             T d_phi;            // half of phase between symbols
             T phi;              // angle state for differential PSK
+            T alpha;            // scaling factor for phase symbols
         } dpsk;
 
         // APSK modem
@@ -256,7 +263,6 @@ void MODEM(_init)(MODEM() _q,
     // initialize common elements
     _q->symbol_map = NULL;    // symbol map (LIQUID_MODEM_ARB only)
     _q->modulate_using_map=0; // modulate using map flag
-    _q->alpha = 0.0f;         // scaling factor
 
     // common data
     _q->m = _bits_per_symbol; // bits/symbol

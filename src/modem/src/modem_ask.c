@@ -31,18 +31,18 @@ MODEM() MODEM(_create_ask)(unsigned int _bits_per_symbol)
     MODEM(_init)(q, _bits_per_symbol);
 
     switch (q->M) {
-    case 2:     q->alpha = ASK2_ALPHA;   q->scheme = LIQUID_MODEM_ASK2;   break;
-    case 4:     q->alpha = ASK4_ALPHA;   q->scheme = LIQUID_MODEM_ASK4;   break;
-    case 8:     q->alpha = ASK8_ALPHA;   q->scheme = LIQUID_MODEM_ASK8;   break;
-    case 16:    q->alpha = ASK16_ALPHA;  q->scheme = LIQUID_MODEM_ASK16;  break;
-    case 32:    q->alpha = ASK32_ALPHA;  q->scheme = LIQUID_MODEM_ASK32;  break;
-    case 64:    q->alpha = ASK64_ALPHA;  q->scheme = LIQUID_MODEM_ASK64;  break;
-    case 128:   q->alpha = ASK128_ALPHA; q->scheme = LIQUID_MODEM_ASK128; break;
-    case 256:   q->alpha = ASK256_ALPHA; q->scheme = LIQUID_MODEM_ASK256; break;
+    case 2:     q->data.ask.alpha = ASK2_ALPHA;   q->scheme = LIQUID_MODEM_ASK2;   break;
+    case 4:     q->data.ask.alpha = ASK4_ALPHA;   q->scheme = LIQUID_MODEM_ASK4;   break;
+    case 8:     q->data.ask.alpha = ASK8_ALPHA;   q->scheme = LIQUID_MODEM_ASK8;   break;
+    case 16:    q->data.ask.alpha = ASK16_ALPHA;  q->scheme = LIQUID_MODEM_ASK16;  break;
+    case 32:    q->data.ask.alpha = ASK32_ALPHA;  q->scheme = LIQUID_MODEM_ASK32;  break;
+    case 64:    q->data.ask.alpha = ASK64_ALPHA;  q->scheme = LIQUID_MODEM_ASK64;  break;
+    case 128:   q->data.ask.alpha = ASK128_ALPHA; q->scheme = LIQUID_MODEM_ASK128; break;
+    case 256:   q->data.ask.alpha = ASK256_ALPHA; q->scheme = LIQUID_MODEM_ASK256; break;
     default:
 #if 0
         // calculate alpha dynamically
-        q->alpha = expf(-0.70735 + 0.63653*q->m);
+        q->data.ask.alpha = expf(-0.70735 + 0.63653*q->m);
 #else
         fprintf(stderr,"error: modem_create_ask(), cannot support ASK with m > 8\n");
         exit(1);
@@ -51,7 +51,7 @@ MODEM() MODEM(_create_ask)(unsigned int _bits_per_symbol)
 
     unsigned int k;
     for (k=0; k<(q->m); k++)
-        q->ref[k] = (1<<k) * q->alpha;
+        q->ref[k] = (1<<k) * q->data.ask.alpha;
 
     q->modulate_func = &MODEM(_modulate_ask);
     q->demodulate_func = &MODEM(_demodulate_ask);
@@ -80,7 +80,7 @@ void MODEM(_modulate_ask)(MODEM()      _q,
     _sym_in = gray_decode(_sym_in);
 
     // modulate symbol
-    *_y = (2*(int)_sym_in - (int)(_q->M) + 1) * _q->alpha;
+    *_y = (2*(int)_sym_in - (int)(_q->M) + 1) * _q->data.ask.alpha;
 }
 
 // demodulate ASK
