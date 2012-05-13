@@ -822,6 +822,8 @@ modem_objects :=						\
 	src/modem/src/gmskmod.o					\
 	src/modem/src/modemf.o					\
 	src/modem/src/modem_utilities.o				\
+	
+#src/modem/src/modemq16.o
 
 # explicit targets and dependencies
 modem_includes :=						\
@@ -843,6 +845,8 @@ modem_includes :=						\
 
 # main modem object
 src/modem/src/modemf.o : %.o : %.c $(headers) $(modem_includes)
+
+#src/modem/src/modemq16.o : %.o : %.c $(headers) $(modem_includes)
 
 src/modem/src/gmskmod.o: %.o : %.c $(headers)
 

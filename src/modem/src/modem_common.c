@@ -241,11 +241,17 @@ void MODEM(_print)(MODEM() _q)
 // reset a modem object (only an issue with dpsk)
 void MODEM(_reset)(MODEM() _q)
 {
-    _q->r = 1.0f;         // received sample
+#if LIQUID_FPM
+    // received sample
+    _q->r.real = Q(_one);
+    _q->r.imag = 0;
+#else
+    _q->r = 1.0f;       // received sample
+#endif
     _q->x_hat = _q->r;  // estimated symbol
 
     if ( liquid_modem_is_dpsk(_q->scheme) )
-        _q->data.dpsk.phi = 0.0f;  // reset differential PSK phase state
+        _q->data.dpsk.phi = 0;  // reset differential PSK phase state
 }
 
 // initialize a generic modem object
@@ -437,12 +443,19 @@ void MODEM(_demodulate_soft_table)(MODEM() _q,
 
     unsigned int bit;
     T d;
+    TC del;
     TC x_hat;    // re-modulated symbol
     unsigned char * softab = _q->demod_soft_neighbors;
     unsigned int p = _q->demod_soft_p;
 
     // check hard demodulation
-    d = crealf( (_r-_q->x_hat)*conjf(_r-_q->x_hat) );
+#if LIQUID_FPM
+    del = CQ(_sub)(_r, _q->x_hat);
+    d = Q(_mul)(del.real, del.real) + Q(_mul)(del.imag, del.imag);
+#else
+    del = _r - x_hat;
+    d = crealf(del)*crealf(del) + cimagf(del)*cimagf(del);
+#endif
     for (k=0; k<bps; k++) {
         bit = (s >> (bps-k-1)) & 0x01;
         if (bit) dmin_1[k] = d;
@@ -460,8 +473,13 @@ void MODEM(_demodulate_soft_table)(MODEM() _q,
         // compute magnitude squared of Euclidean distance
         //d = crealf( (_r-x_hat)*conjf(_r-x_hat) );
         // (same as above, but faster)
-        TC e = _r - x_hat;
-        d = crealf(e)*crealf(e) + cimagf(e)*cimagf(e);
+#if LIQUID_FPM
+        del = CQ(_sub)(_r, _q->x_hat);
+        d = Q(_mul)(del.real, del.real) + Q(_mul)(del.imag, del.imag);
+#else
+        del = _r - x_hat;
+        d = crealf(del)*crealf(del) + cimagf(del)*cimagf(del);
+#endif
 
         // look at each bit in 'nearest neighbor' and update minimum
         for (k=0; k<bps; k++) {
@@ -499,13 +517,23 @@ void MODEM(_get_demodulator_sample)(MODEM() _q,
 // get demodulator phase error
 T MODEM(_get_demodulator_phase_error)(MODEM() _q)
 {
+#if LIQUID_FPM
+    // FIXME: compute fixed-point phase error
+    return 0;
+#else
     return cimagf(_q->r*conjf(_q->x_hat));
+#endif
 }
 
 // get error vector magnitude
 T MODEM(_get_demodulator_evm)(MODEM() _q)
 {
+#if LIQUID_FPM
+    // FIXME: compute fixed-point EVM
+    return 0;
+#else
     return cabsf(_q->x_hat - _q->r);
+#endif
 }
 
 // Demodulate a linear symbol constellation using dynamic threshold calculation

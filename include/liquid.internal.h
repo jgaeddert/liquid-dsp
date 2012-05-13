@@ -1661,6 +1661,7 @@ void MODEM(_demodulate_linear_array_ref)(T              _v,     \
 
 // define internal modem APIs
 LIQUID_MODEM_DEFINE_INTERNAL_API(LIQUID_MODEM_MANGLE_FLOAT,float,float complex)
+LIQUID_MODEM_DEFINE_INTERNAL_API(LIQUID_MODEM_MANGLE_Q16,  q16_t,cq16_t)
 
 
 //

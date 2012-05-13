@@ -3068,6 +3068,8 @@ void liquid_unpack_soft_bits(unsigned int _sym_in,
 //
 
 #define LIQUID_MODEM_MANGLE_FLOAT(name) LIQUID_CONCAT(modem,name)
+#define LIQUID_MODEM_MANGLE_Q16(name)   LIQUID_CONCAT(modemq16,name)
+
 
 // Macro    :   MODEM
 //  MODEM   :   name-mangling macro
@@ -3078,13 +3080,13 @@ void liquid_unpack_soft_bits(unsigned int _sym_in,
 /* define struct pointer */                                     \
 typedef struct MODEM(_s) * MODEM();                             \
                                                                 \
-/* create digital modem object, allocating memory as necessary */ \
-MODEM() MODEM(_create)(modulation_scheme _scheme);                  \
+/* create digital modem object */                               \
+MODEM() MODEM(_create)(modulation_scheme _scheme);              \
                                                                 \
 /* create arbitrary digital modem object */                     \
 MODEM() MODEM(_create_arbitrary)(TC * _table, unsigned int _M); \
                                                                 \
-/* recreate modulation scheme, re-allocating memory as necessary */ \
+/* recreate modulation scheme */                                \
 MODEM() MODEM(_recreate)(MODEM() _q,                            \
                          modulation_scheme _scheme);            \
                                                                 \
@@ -3130,13 +3132,14 @@ void MODEM(_get_demodulator_sample)(MODEM() _q,                 \
                                     TC * _x_hat);               \
                                                                 \
 /* get demodulator phase error */                               \
-float MODEM(_get_demodulator_phase_error)(MODEM() _q);          \
+T MODEM(_get_demodulator_phase_error)(MODEM() _q);              \
                                                                 \
 /* get demodulator error vector magnitude */                    \
-float MODEM(_get_demodulator_evm)(MODEM() _q);                  \
+T MODEM(_get_demodulator_evm)(MODEM() _q);                      \
 
 // define modem APIs
 LIQUID_MODEM_DEFINE_API(LIQUID_MODEM_MANGLE_FLOAT,float,liquid_float_complex)
+LIQUID_MODEM_DEFINE_API(LIQUID_MODEM_MANGLE_Q16,  q16_t,cq16_t)
 
 
 //
