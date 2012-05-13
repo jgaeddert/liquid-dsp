@@ -295,6 +295,7 @@ void execute_package_search(package_t * _p, char * _str, int _verbose)
             if (strstr(scripts[i].name, _str) != NULL) {
                 // run the autotest
                 execute_autotest( &scripts[i], _verbose );
+                _p->executed = 1;
             }
         }
     }
@@ -322,8 +323,10 @@ void print_package_results(package_t * _p)
 {
     unsigned int i;
     printf("%u: %s:\n", _p->id, _p->name);
-    for (i=_p->index; i<(_p->index+_p->num_scripts); i++)
+    for (i=_p->index; i<(_p->index+_p->num_scripts); i++) {
+        //if ( scripts[i].executed ) // only print scripts that were executed
         print_autotest_results( &scripts[i] );
+    }
 
     printf("\n");
 }

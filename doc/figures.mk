@@ -13,6 +13,7 @@ local_pgffiles :=					\
 	figures.pgf/agc_squelch.pdf			\
 	figures.pgf/agc_transfer_function.pdf		\
 	figures.pgf/bpacket_structure.pdf		\
+	figures.pgf/fft_plan_diagram.pdf		\
 	figures.pgf/fft_spgram_diagram.pdf		\
 	figures.pgf/framing_structure.pdf		\
 	figures.pgf/msresamp_decim_diagram.pdf		\
@@ -51,7 +52,7 @@ local_pdffiles :=					\
 	figures.gen/fec_ber_ebn0_conv.pdf		\
 	figures.gen/fec_ber_esn0_convpunc.pdf		\
 	figures.gen/fec_ber_ebn0_convpunc.pdf		\
-	figures.gen/fec_ber_ebn0_hardsoft.pdf			\
+	figures.gen/fec_ber_ebn0_hardsoft.pdf		\
 							\
 	figures.gen/fft_example_time.pdf		\
 	figures.gen/fft_example_freq.pdf		\
@@ -237,7 +238,7 @@ $(local_pdffiles) : %.pdf : %.eps
 ## PROGRAMS
 ##
 
-local_progs :=						\
+local_programs :=					\
 	src/agc_transient				\
 	src/audio_cvsd					\
 	src/eqlms_vs_eqrls				\
@@ -285,9 +286,14 @@ local_progs :=						\
 	src/simulate_ber				\
 	src/simulate_per_test				\
 
-$(local_progs) : % : %.c $(lib_objects) libliquid.a
+local_objects = $(patsubst %,%.o,$(local_programs))
 
-programs : $(local_progs)
+$(local_objects) : %.o : %.c
+
+$(local_programs) : % : %.o $(lib_objects) libliquid.a
+	$(CC) $(CFLAGS) $^ -o $@ $(LDFLAGS)
+
+programs : $(local_programs)
 
 
 ##
@@ -1084,6 +1090,6 @@ figures_generated +=			\
 figures_extra_gen +=
 
 figures_extra_clean +=			\
-	$(local_progs)			\
-	$(figures_extra_gen)
+	$(local_programs)		\
+	$(figures_extra_gen)		\
 

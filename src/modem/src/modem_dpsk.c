@@ -44,13 +44,13 @@ MODEM() MODEM(_create_dpsk)(unsigned int _bits_per_symbol)
 
     MODEM(_init)(q, _bits_per_symbol);
 
-    q->alpha = M_PI/(T)(q->M);
+    q->data.dpsk.alpha = M_PI/(T)(q->M);
     
     q->data.dpsk.phi = 0.0f;
 
     unsigned int k;
     for (k=0; k<(q->m); k++)
-        q->ref[k] = (1<<k) * q->alpha;
+        q->ref[k] = (1<<k) * q->data.dpsk.alpha;
 
     q->data.dpsk.d_phi = M_PI*(1.0f - 1.0f/(T)(q->M));
 
@@ -72,7 +72,7 @@ void MODEM(_modulate_dpsk)(MODEM()      _q,
     _sym_in = gray_decode(_sym_in);
 
     // compute phase difference between this symbol and the previous
-    _q->data.dpsk.phi += _sym_in * 2 * _q->alpha;
+    _q->data.dpsk.phi += _sym_in * 2 * _q->data.dpsk.alpha;
 
     // limit phase
     _q->data.dpsk.phi -= (_q->data.dpsk.phi > 2*M_PI) ? 2*M_PI : 0.0f;
@@ -89,7 +89,7 @@ void MODEM(_demodulate_dpsk)(MODEM()        _q,
                              TC             _x,
                              unsigned int * _sym_out)
 {
-    // compute angle differencd
+    // compute angle difference
     T theta = cargf(_x);
     T d_theta = cargf(_x) - _q->data.dpsk.phi;
     _q->data.dpsk.phi = theta;

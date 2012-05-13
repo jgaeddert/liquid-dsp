@@ -239,9 +239,10 @@ unsigned int FFT(_estimate_mixed_radix)(unsigned int _nfft)
         return 1 << num_factors_2;
 #else
         // use codelets
-        if      ( (_nfft%8)==0 ) return 8;
-        else if ( (_nfft%4)==0 ) return 4;
-        else                     return 2;
+        if      ( (_nfft%16)==0 ) return 16;
+        if      ( (_nfft% 8)==0 ) return  8;
+        else if ( (_nfft% 4)==0 ) return  4;
+        else                      return  2;
 #endif
     }
 

@@ -251,7 +251,7 @@ void MSRESAMP(_interp_execute)(MSRESAMP() _q,
     unsigned int k;     // number of inputs for this stage
     unsigned int s;     // half-band decimator stage counter
     unsigned int n;     // input counter
-    unsigned int g;     // half-band resampler stage index (reversed)
+    //unsigned int g;     // half-band resampler stage index (reversed)
 
     // buffer pointers (initialize BOTH to _q->buffer0);
     T * b0 = _q->buffer0;   // input buffer pointer
@@ -284,7 +284,7 @@ void MSRESAMP(_interp_execute)(MSRESAMP() _q,
                 b1 = (s%2) == 1 ? _q->buffer0 : _q->buffer1;    // output buffer
 
                 // execute half-band interpolator
-                g = _q->num_halfband_stages - s - 1;
+                //g = _q->num_halfband_stages - s - 1;
                 for (n=0; n<k; n++)
                     RESAMP2(_interp_execute)(_q->halfband_resamp[s], b0[n], &b1[2*n]);
 

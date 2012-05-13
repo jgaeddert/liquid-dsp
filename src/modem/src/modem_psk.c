@@ -46,12 +46,12 @@ MODEM() MODEM(_create_psk)(unsigned int _bits_per_symbol)
     MODEM(_init)(q, _bits_per_symbol);
 
     // compute alpha
-    q->alpha = M_PI/(T)(q->M);
+    q->data.psk.alpha = M_PI/(T)(q->M);
 
     // initialize demodulation array reference
     unsigned int k;
     for (k=0; k<(q->m); k++)
-        q->ref[k] = (1<<k) * q->alpha;
+        q->ref[k] = (1<<k) * q->data.psk.alpha;
 
     // compute phase offset (half of phase difference between symbols)
     q->data.psk.d_phi = M_PI*(1.0f - 1.0f/(T)(q->M));
@@ -89,7 +89,7 @@ void MODEM(_modulate_psk)(MODEM()      _q,
     _sym_in = gray_decode(_sym_in);
 
     // compute output sample
-    *_y = liquid_cexpjf(_sym_in * 2 * _q->alpha );
+    *_y = liquid_cexpjf(_sym_in * 2 * _q->data.psk.alpha );
 }
 
 // demodulate PSK

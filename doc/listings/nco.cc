@@ -1,6 +1,6 @@
 // file:    doc/listings/nco.cc
 // build:   g++ -c -o nco.cc.o nco.cc
-// link:    g++ -lm -lc -lliquid nco.cc.o -o nco
+// link:    g++ nco.cc.o -o nco -lm -lc -lliquid
 
 #include <iostream>
 #include <math.h>

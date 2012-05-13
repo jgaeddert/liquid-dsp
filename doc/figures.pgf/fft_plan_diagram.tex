@@ -1,0 +1,179 @@
+% 
+% figures.pgf/fft_plan_diagram.tex
+%
+% Author: Joseph D. Gaeddert
+%
+% 0:            [7440] = (2 * 2 * 2 * 2) * (3 * 5 * 31)
+%                  |
+% 1:             (C-T)
+%                 /\
+%               16  465
+%               /    \
+% 2:     (DIT FFT)  (C-T)
+%                     /\
+%                   31  15
+%                   /    \
+% 3:           (Rader)  (C-T)
+%                 /       /\
+%               30       3  5
+%               /       /    \
+% 4:         (C-T)   (DFT)  (DFT)
+%             /\
+%            6  5
+%           /    \
+% 5:     (C-T)  (DFT)
+%         /\
+%        2  3
+%       /    \
+% 6: (DFT)  (DFT)
+%
+
+\documentclass[a4paper,landscape]{article}
+
+\usepackage{pgf,tikz}
+\usepackage{verbatim}
+\usepackage[active,tightpage]{preview}
+\PreviewEnvironment{tikzpicture}
+\setlength\PreviewBorder{5pt}%
+
+\usetikzlibrary{calc,arrows,positioning}
+
+
+\usepackage{amsmath}
+\usepackage[left=1cm,right=1cm]{geometry}
+\pagestyle{empty}
+
+\input{figures.pgf/liquid-colors}
+
+\tikzstyle{number}=[
+    circle,
+    fill=liquid-color-mutedred,
+    draw=black,
+    thick,
+    minimum size=10mm]
+
+% 'method' blocks
+\tikzstyle{method-split}=[
+    rectangle,
+    draw=black,
+    rounded corners=1mm,
+    thick,
+    inner sep=1mm]
+
+\tikzstyle{method-end}=[
+    rectangle,
+    draw=black,
+    fill=green!20,
+    rounded corners=1mm,
+    thick,
+    inner sep=1mm]
+
+\begin{document}
+
+\begin{tikzpicture}[
+    scale=10,
+    >=latex,
+    node distance = 2mm and 3mm
+]
+    % 
+    % draw all nodes
+    %
+
+    % 
+    % level 0: main number
+    %
+    \node[number] (n0-7440)  {7440};
+
+    % 
+    % level 1:
+    %
+
+    % split 7440
+    \node[method-split] (m1-7440)   [below=of n0-7440]          {Cooley-Tukey};
+    \node[number]       (n1-16)     [below left =of m1-7440]    {16};
+    \node[number]       (n1-465)    [below right=of m1-7440]    {465};
+    \draw[->] (n0-7440) -- (n1-16);
+    \draw[->] (n0-7440) -- (n1-465);
+
+    % 
+    % level 2:
+    %
+
+    % end 16
+    \node[method-end]   (m2-16)     [below=of n1-16]            {DIT FFT};
+    \draw[->] (n1-16) -- (m2-16);
+
+    % split 465
+    \node[method-split] (m2-465)    [below=of n1-465]           {Cooley-Tukey};
+    \node[number]       (n2-31)     [below left =of m2-465]     {31};
+    \node[number]       (n2-15)     [below right=of m2-465]     {15};
+    \draw[->] (n1-465) -- (n2-31);
+    \draw[->] (n1-465) -- (n2-15);
+
+    % 
+    % level 3:
+    %
+    
+    % split 31
+    \node[method-split] (m3-31)     [below=of n2-31]        {Rader};
+    \node[number]       (n3-30)     [below=of m3-31]        {30};
+    \draw[->] (n2-31) -- (n3-30);
+
+    % split 15
+    \node[method-split] (m3-15) [below=of n2-15]        {Cooley-Tukey};
+    \node[number]       (n3-3)  [below left =of m3-15]  {3};
+    \node[number]       (n3-5)  [below right=of m3-15]  {5};
+    \draw[->] (n2-15) -- (n3-3);
+    \draw[->] (n2-15) -- (n3-5);
+
+    % 
+    % level 4:
+    %
+
+    % split 30
+    \node[method-split] (m4-30) [below=of n3-30]        {Cooley-Tukey};
+    \node[number]       (n4-6)  [below left =of m4-30]  {6};
+    \node[number]       (n4-5) [below right=of m4-30]  {5};
+    \draw[->] (n3-30) -- (n4-6);
+    \draw[->] (n3-30) -- (n4-5);
+
+    % end 3
+    \node[method-end]   (m4-3) [below=of n3-3]        {DFT};
+    \draw[->] (n3-3) -- (m4-3);
+    
+    % end 5
+    \node[method-end]   (m4-5) [below=of n3-5]        {DFT};
+    \draw[->] (n3-5) -- (m4-5);
+
+    % 
+    % level 5:
+    %
+
+    % split 6
+    \node[method-split] (m5-6) [below=of n4-6]        {Cooley-Tukey};
+    \node[number]       (n5-2) [below left =of m5-6]  {2};
+    \node[number]       (n5-3) [below right=of m5-6]  {3};
+    \draw[->] (n4-6) -- (n5-2);
+    \draw[->] (n4-6) -- (n5-3);
+
+    % end 5
+    \node[method-end]   (m5-5) [below=of n4-5]        {DFT};
+    \draw[->] (n4-5) -- (m5-5);
+
+    % 
+    % level 5:
+    %
+
+    % end 2
+    \node[method-end]   (m6-2) [below=of n5-2]        {DFT};
+    \draw[->] (n5-2) -- (m6-2);
+
+    % end 3
+    \node[method-end]   (m6-3) [below=of n5-3]        {DFT};
+    \draw[->] (n5-3) -- (m6-3);
+
+    
+\end{tikzpicture}
+
+\end{document}
+

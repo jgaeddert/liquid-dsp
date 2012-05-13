@@ -36,6 +36,19 @@ void usage()
     liquid_print_modulation_schemes();
 }
 
+// compute ISI for entire system
+//  _k  :   input samples/symbol
+//  _gt :   transmit filter [size: _gt_len x 1]
+//  _hc :   channel filter  [size: _hc_len x 1]
+//  _gr :   receive filter  [size: _gr_len x 1]
+float eqlms_cccf_isi(unsigned int    _k,
+                     float complex * _gt,
+                     unsigned int    _gt_len,
+                     float complex * _hc,
+                     unsigned int    _hc_len,
+                     float complex * _gr,
+                     unsigned int    _gr_len);
+
 int main(int argc, char*argv[])
 {
     // options
@@ -45,7 +58,7 @@ int main(int argc, char*argv[])
     unsigned int k=2;               // matched filter samples/symbol
     unsigned int m=3;               // matched filter delay (symbols)
     float beta=0.3f;                // matched filter excess bandwidth factor
-    unsigned int p=3;               // equalizer length (symbols, hp_len = 2*k*p+1)
+    unsigned int p=3;               // equalizer length (symbols, gr_len = 2*k*p+1)
     float mu = 0.09f;               // LMS learning rate
 
     // modulation type/depth
@@ -110,8 +123,8 @@ int main(int argc, char*argv[])
     srand( hc_len + p + nfft );
 
     // derived values
-    unsigned int hm_len = 2*k*m+1;   // matched filter length
-    unsigned int hp_len = 2*k*p+1;   // equalizer filter length
+    unsigned int gt_len = 2*k*m+1;   // matched filter length
+    unsigned int gr_len = 2*k*p+1;   // equalizer filter length
     unsigned int num_samples = k*num_symbols;
 
     // bookkeeping variables
@@ -122,14 +135,21 @@ int main(int argc, char*argv[])
 
     // least mean-squares (LMS) equalizer
     float mse[num_symbols];             // equalizer mean-squared error
-    float complex hp[hp_len];           // equalizer filter coefficients
+    float complex gr[gr_len];           // equalizer filter coefficients
 
     unsigned int i;
 
     // generate matched filter response
-    float hm[hm_len];                   // matched filter response
-    liquid_firdes_rnyquist(LIQUID_RNYQUIST_RRC, k, m, beta, 0.0f, hm);
-    interp_crcf interp = interp_crcf_create(k, hm, hm_len);
+    float gtf[gt_len];                   // matched filter response
+    liquid_firdes_rnyquist(LIQUID_RNYQUIST_RRC, k, m, beta, 0.0f, gtf);
+    
+    // convert to complex coefficients
+    float complex gt[gt_len];
+    for (i=0; i<gt_len; i++)
+        gt[i] = gtf[i]; //+ 0.1f*(randnf() + _Complex_I*randnf());
+
+    // create interpolator
+    interp_cccf interp = interp_cccf_create(k, gt, gt_len);
 
     // create the modem objects
     modem mod   = modem_create(ms);
@@ -165,7 +185,7 @@ int main(int argc, char*argv[])
 
     // interpolate
     for (i=0; i<num_symbols; i++)
-        interp_crcf_execute(interp, sym_tx[i], &x[i*k]);
+        interp_cccf_execute(interp, sym_tx[i], &x[i*k]);
     
     // push through channel
     float nstd = powf(10.0f, -SNRdB/20.0f);
@@ -178,18 +198,18 @@ int main(int argc, char*argv[])
     }
 
     // push through equalizers
-    float hpf[hp_len];
-    liquid_firdes_rnyquist(LIQUID_RNYQUIST_RRC, k, p, beta, 0.0f, hpf);
-    for (i=0; i<hp_len; i++) {
-        hp[i] = hpf[i] / (float)k;
+    float grf[gr_len];
+    liquid_firdes_rnyquist(LIQUID_RNYQUIST_RRC, k, p, beta, 0.0f, grf);
+    for (i=0; i<gr_len; i++) {
+        gr[i] = grf[i] / (float)k;
     }
 
     // create LMS equalizer
-    eqlms_cccf eq = eqlms_cccf_create(hp, hp_len);
+    eqlms_cccf eq = eqlms_cccf_create(gr, gr_len);
     eqlms_cccf_set_bw(eq, mu);
 
     // filtered error vector magnitude (emperical MSE)
-    float zeta=0.05f;   // smoothing factor (small zeta -> smooth MSE)
+    //float zeta=0.05f;   // smoothing factor (small zeta -> smooth MSE)
 
     float complex d_hat = 0.0f;
     unsigned int num_symbols_rx=0;
@@ -205,7 +225,7 @@ int main(int argc, char*argv[])
         z[i] = d_hat;
 
         // check to see if buffer is full
-        if ( i < hp_len) continue;
+        if ( i < gr_len) continue;
 
         // decimate by k
         if ( (i%k) != 0 ) continue;
@@ -221,6 +241,7 @@ int main(int argc, char*argv[])
         // update equalizers
         eqlms_cccf_step(eq, d_prime, d_hat);
 
+#if 0
         // update filtered evm estimate
         float evm = crealf( (d_prime-d_hat)*conjf(d_prime-d_hat) );
 
@@ -229,23 +250,28 @@ int main(int argc, char*argv[])
         } else {
             mse[num_symbols_rx] = mse[num_symbols_rx-1]*(1-zeta) + evm*zeta;
         }
+#else
+        // compute ISI for entire system
+        eqlms_cccf_get_weights(eq, gr);
+        mse[num_symbols_rx] = eqlms_cccf_isi(k, gt, gt_len, hc, hc_len, gr, gr_len);
+#endif
 
         // print filtered evm (emperical rms error)
         if ( ((num_symbols_rx+1)%100) == 0 )
             printf("%4u : mse = %12.8f dB\n",
                     num_symbols_rx+1,
-                    10*log10f(mse[num_symbols_rx]));
+                    20*log10f(mse[num_symbols_rx]));
         
         // increment output symbol counter
         num_symbols_rx++;
     }
 
     // get equalizer weights
-    eqlms_cccf_get_weights(eq, hp);
+    eqlms_cccf_get_weights(eq, gr);
 
     // destroy objects
     eqlms_cccf_destroy(eq);
-    interp_crcf_destroy(interp);
+    interp_cccf_destroy(interp);
     firfilt_cccf_destroy(fchannel);
     modem_destroy(mod);
     modem_destroy(demod);
@@ -328,17 +354,17 @@ int main(int argc, char*argv[])
     //
 
     // scale transmit filter appropriately
-    for (i=0; i<hm_len; i++) hm[i] /= (float)k;
+    for (i=0; i<gt_len; i++) gt[i] /= (float)k;
 
-    float complex Hm[nfft];     // transmit matched filter
+    float complex Gt[nfft];     // transmit matched filter
     float complex Hc[nfft];     // channel response
-    float complex Hp[nfft];     // equalizer response
-    liquid_doc_compute_psdf( hm, hm_len, Hm, nfft, LIQUID_DOC_PSDWINDOW_NONE, 0);
+    float complex Gr[nfft];     // equalizer response
+    liquid_doc_compute_psdcf(gt, gt_len, Gt, nfft, LIQUID_DOC_PSDWINDOW_NONE, 0);
     liquid_doc_compute_psdcf(hc, hc_len, Hc, nfft, LIQUID_DOC_PSDWINDOW_NONE, 0);
-    liquid_doc_compute_psdcf(hp, hp_len, Hp, nfft, LIQUID_DOC_PSDWINDOW_NONE, 0);
-    fft_shift(Hm, nfft);
+    liquid_doc_compute_psdcf(gr, gr_len, Gr, nfft, LIQUID_DOC_PSDWINDOW_NONE, 0);
+    fft_shift(Gt, nfft);
     fft_shift(Hc, nfft);
-    fft_shift(Hp, nfft);
+    fft_shift(Gr, nfft);
     float freq[nfft];
     for (i=0; i<nfft; i++)
         freq[i] = (float)(i) / (float)nfft - 0.5f;
@@ -368,7 +394,7 @@ int main(int argc, char*argv[])
     fprintf(fid,"     '-' using 1:2 with points pointtype 7 pointsize 0.6 linecolor rgb '%s' notitle\n", LIQUID_DOC_COLOR_BLUE);
     // received signal
     for (i=0; i<nfft; i++)
-        fprintf(fid,"%12.8f %12.4e\n", freq[i], 20*log10f(cabsf(Hm[i])) );
+        fprintf(fid,"%12.8f %12.4e\n", freq[i], 20*log10f(cabsf(Gt[i])) );
     fprintf(fid,"e\n");
 
     // channel
@@ -378,12 +404,12 @@ int main(int argc, char*argv[])
 
     // equalizer
     for (i=0; i<nfft; i++)
-        fprintf(fid,"%12.8f %12.4e\n", freq[i], 20*log10f(cabsf(Hp[i])) );
+        fprintf(fid,"%12.8f %12.4e\n", freq[i], 20*log10f(cabsf(Gr[i])) );
     fprintf(fid,"e\n");
 
     // composite
     for (i=0; i<nfft; i++)
-        fprintf(fid,"%12.8f %12.4e\n", freq[i], 20*log10f( cabsf(Hm[i])*cabsf(Hc[i])*cabsf(Hp[i])) );
+        fprintf(fid,"%12.8f %12.4e\n", freq[i], 20*log10f( cabsf(Gt[i])*cabsf(Hc[i])*cabsf(Gr[i])) );
     fprintf(fid,"e\n");
 
     // composite
@@ -454,3 +480,94 @@ int main(int argc, char*argv[])
 
     return 0;
 }
+
+// compute ISI for entire system
+//  _gt     :   transmit filter [size: _gt_len x 1]
+//  _hc     :   channel filter  [size: _hc_len x 1]
+//  _gr     :   receive filter  [size: _gr_len x 1]
+float eqlms_cccf_isi(unsigned int    _k,
+                     float complex * _gt,
+                     unsigned int    _gt_len,
+                     float complex * _hc,
+                     unsigned int    _hc_len,
+                     float complex * _gr,
+                     unsigned int    _gr_len)
+{
+    // generate composite by convolving all filters together
+    unsigned int i;
+   
+#if 0
+    printf("\n");
+    for (i=0; i<_gt_len; i++)
+        printf("  gt(%3u) = %16.12f + j*%16.12f;\n", i+1, crealf(_gt[i]), cimagf(_gt[i]));
+
+    printf("\n");
+    for (i=0; i<_hc_len; i++)
+        printf("  hc(%3u) = %16.12f + j*%16.12f;\n", i+1, crealf(_hc[i]), cimagf(_hc[i]));
+
+    printf("\n");
+    for (i=0; i<_gr_len; i++)
+        printf("  gr(%3u) = %16.12f + j*%16.12f;\n", i+1, crealf(_gr[i]), cimagf(_gr[i]));
+    
+    printf("\n");
+#endif
+
+    windowcf w;
+    float complex * rc;
+
+    // start by convolving transmit and channel filters
+    unsigned int gthc_len = _gt_len + _hc_len - 1;
+    float complex gthc[gthc_len];
+    w = windowcf_create(_gt_len);
+    for (i=0; i<gthc_len; i++) {
+        if (i < _hc_len) windowcf_push(w, conjf(_hc[_hc_len-i-1]));
+        else             windowcf_push(w, 0.0f);
+
+        windowcf_read(w, &rc);
+        dotprod_cccf_run(_gt, rc, _gt_len, &gthc[i]);
+    }
+    windowcf_destroy(w);
+
+#if 0
+    printf("composite filter:\n");
+    for (i=0; i<gthc_len; i++)
+        printf("  gthc(%3u) = %16.12f + j*%16.12f;\n", i+1, crealf(gthc[i]), cimagf(gthc[i]));
+#endif
+    
+    // convolve result with equalizer
+    unsigned int h_len = gthc_len + _gr_len - 1;
+    float complex h[h_len];
+    w = windowcf_create(gthc_len);
+    for (i=0; i<h_len; i++) {
+        if (i < _gr_len) windowcf_push(w, conjf(_gr[i]));
+        else             windowcf_push(w, 0.0f);
+
+        windowcf_read(w, &rc);
+        dotprod_cccf_run(gthc, rc, gthc_len, &h[i]);
+    }
+    windowcf_destroy(w);
+
+#if 0
+    printf("composite filter:\n");
+    for (i=0; i<h_len; i++)
+        printf("  h(%3u) = %16.12f + j*%16.12f;\n", i+1, crealf(h[i]), cimagf(h[i]));
+#endif
+
+    // compute resulting ISI
+    unsigned int n0 = (_gt_len + _gr_len + (_gt_len + _gr_len)%2)/2 - 1;
+    float isi = 0.0f;
+    unsigned int n=0;
+    for (i=0; i<h_len; i++) {
+        if (i == n0)
+            continue;
+        else if ( (i%_k)==0 ) {
+            isi += crealf( h[i]*conjf(h[i]) );
+            n++;
+        }
+    }
+    isi /= crealf( h[n0]*conjf(h[n0]) );
+    isi = sqrtf(isi / (float)n);
+
+    return isi;
+}
+
