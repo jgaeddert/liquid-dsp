@@ -649,7 +649,7 @@ void MODEM(_demodsoft_gentab)(MODEM()      _q,
     // generate constellation
     // TODO : enforce full constellation for modulation
     unsigned int M = _q->M;  // constellation size
-    float complex c[M];         // constellation
+    TC c[M];         // constellation
     for (i=0; i<M; i++)
         modem_modulate(_q, i, &c[i]);
 
@@ -666,7 +666,7 @@ void MODEM(_demodsoft_gentab)(MODEM()      _q,
     int symbol_valid;
     for (i=0; i<M; i++) {
         for (k=0; k<_p; k++) {
-            float dmin=1e9f;
+            T dmin=1e9f;
             for (j=0; j<M; j++) {
                 symbol_valid = 1;
                 // ignore this symbol
@@ -680,7 +680,7 @@ void MODEM(_demodsoft_gentab)(MODEM()      _q,
                 }
 
                 // compute distance
-                float d = cabsf( c[i] - c[j] );
+                T d = cabsf( c[i] - c[j] );
 
                 if ( d < dmin && symbol_valid ) {
                     dmin = d;
