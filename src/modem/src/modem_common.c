@@ -95,12 +95,12 @@ struct MODEM(_s)
 
         // APSK modem
         struct {
-            unsigned int num_levels;   // number of levels
-            unsigned int * p;          // number of symbols per level
-            T * r;                     // radii of levels
-            T * r_slicer;              // slicer radii of levels
-            T * phi;                   // phase offset of levels
-            unsigned int * symbol_map; // symbol mapping
+            unsigned int num_levels;    // number of levels
+            unsigned int p[8];          // number of symbols per level
+            T r[8];                     // radii of levels
+            T r_slicer[8];              // slicer radii of levels
+            T phi[8];                   // phase offset of levels
+            unsigned char * map;        // symbol mapping (allocated)
         } apsk;
 
         // 'square' 32-QAM
@@ -245,6 +245,8 @@ void MODEM(_destroy)(MODEM() _q)
         free(_q->data.sqam32.map);
     } else if (_q->scheme == LIQUID_MODEM_SQAM128) {
         free(_q->data.sqam128.map);
+    } else if (liquid_modem_is_apsk(_q->scheme)) {
+        free(_q->data.apsk.map);
     }
 
     // free main object memory

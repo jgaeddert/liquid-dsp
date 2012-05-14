@@ -21,7 +21,7 @@
 //
 // modem_apsk_const.c
 //
-// Constant APSK modems
+// APSK modem constants
 //
 
 #include <stdlib.h>
@@ -40,7 +40,7 @@ const float apsk4_phi[2] = {
 const float apsk4_r_slicer[1] = {
     0.57735026};
 
-const unsigned int apsk4_symbol_map[4] = {
+const unsigned char apsk4_map[4] = {
     3,2,1,0};
   
 
@@ -57,7 +57,7 @@ const float apsk8_phi[2] = {
 const float apsk8_r_slicer[1] = {
     0.53452247};
 
-const unsigned int apsk8_symbol_map[8] = {
+const unsigned char apsk8_map[8] = {
      0,   2,   4,   3,   1,   7,   5,   6};
   
 // APSK16(4,12)
@@ -75,7 +75,7 @@ const float apsk16_phi[2] = {
 const float apsk16_r_slicer[1] = {
     0.77992396f};
 
-const unsigned int apsk16_symbol_map[16] = {
+const unsigned char apsk16_map[16] = {
     11,  10,   8,   9,  12,   2,   7,   1,
     14,  15,   5,   4,  13,   3,   6,   0};
 
@@ -98,7 +98,7 @@ const float apsk32_r_slicer[2] = {
     0.504666925,
     0.993592590};
 
-const unsigned int apsk32_symbol_map[32] = {
+const unsigned char apsk32_map[32] = {
   26,  25,  22,  23,  27,  11,  21,   9,
   13,   3,   7,   1,  12,  10,   8,  24,
   30,  31,  18,  17,  29,  15,  19,   5,
@@ -119,7 +119,7 @@ const float apsk64_phi[4] = {
 const float apsk64_r_slicer[3] = {
     0.34950953,  0.65657398,  1.03097475};
 
-const unsigned int apsk64_symbol_map[64] = {
+const unsigned char apsk64_map[64] = {
     52,  51,  49,  50,  44,  45,  47,  46,
     53,  26,  48,  25,  43,  22,  24,  23,
     55,  28,   4,  12,  41,   7,  32,   8,
@@ -143,7 +143,7 @@ const float apsk64_phi[4] = {
 const float apsk64_r_slicer[3] = {
     0.35691531,  0.70539802,  1.09571165};
 
-const unsigned int apsk64_symbol_map[64] = {
+const unsigned char apsk64_map[64] = {
     54,  53,  51,  52,  48,  49,  28,  50,
     55,  30,  11,  29,  47,  25,  27,  26,
     57,  32,   2,  14,  45,  23,   1,   8,
@@ -168,7 +168,7 @@ const float apsk128_phi[5] = {
 const float apsk128_r_slicer[4] = {
     0.33248392,  0.58614290,  0.85072553,  1.16989195};
 
-const unsigned int apsk128_symbol_map[128] = {
+const unsigned char apsk128_map[128] = {
    112, 111, 108, 109, 102, 103, 106, 105,
    113, 110, 107,  71, 101, 104,  67,  66,
    115,  73,  39,  41,  99,  63,  38,  36,
@@ -198,7 +198,7 @@ const float apsk256_phi[7] = {
 const float apsk256_r_slicer[6] = {
     0.30585179,  0.51361996,  0.69172859,  0.86196440,  1.03485155,  1.21581364};
 
-const unsigned int apsk256_symbol_map[256] = {
+const unsigned char apsk256_map[256] = {
    232, 231, 229, 230, 224, 225, 227, 226,
    216, 217, 219, 218, 164, 223, 221, 222,
    233, 228, 170, 171, 166, 167, 169, 168,

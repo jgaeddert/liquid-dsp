@@ -59,11 +59,12 @@ MODEM() MODEM(_create_apsk4)()
     
     // set internals
     q->data.apsk.num_levels = apsk4_num_levels;
-    q->data.apsk.p          = (unsigned int *) apsk4_p;
-    q->data.apsk.r          = (T *) apsk4_r;
-    q->data.apsk.phi        = (T *) apsk4_phi;
-    q->data.apsk.r_slicer   = (T *) apsk4_r_slicer;
-    q->data.apsk.symbol_map = (unsigned int *) apsk4_symbol_map;
+    q->data.apsk.map = (unsigned char *) malloc(q->M*sizeof(unsigned char));
+    memmove(q->data.apsk.p,        apsk4_p,         q->data.apsk.num_levels*sizeof(unsigned int));
+    memmove(q->data.apsk.r,        apsk4_r,         q->data.apsk.num_levels*sizeof(T));
+    memmove(q->data.apsk.phi,      apsk4_phi,       q->data.apsk.num_levels*sizeof(T));
+    memmove(q->data.apsk.r_slicer, apsk4_r_slicer, (q->data.apsk.num_levels-1)*sizeof(T));
+    memmove(q->data.apsk.map,      apsk4_map,       q->M*sizeof(unsigned char));
 
     q->modulate_func = &MODEM(_modulate_apsk);
     q->demodulate_func = &MODEM(_demodulate_apsk);
@@ -84,11 +85,12 @@ MODEM() MODEM(_create_apsk8)()
     
     // set internals
     q->data.apsk.num_levels = apsk8_num_levels;
-    q->data.apsk.p          = (unsigned int *) apsk8_p;
-    q->data.apsk.r          = (T *) apsk8_r;
-    q->data.apsk.phi        = (T *) apsk8_phi;
-    q->data.apsk.r_slicer   = (T *) apsk8_r_slicer;
-    q->data.apsk.symbol_map = (unsigned int *) apsk8_symbol_map;
+    q->data.apsk.map = (unsigned char *) malloc(q->M*sizeof(unsigned char));
+    memmove(q->data.apsk.p,        apsk8_p,         q->data.apsk.num_levels*sizeof(unsigned int));
+    memmove(q->data.apsk.r,        apsk8_r,         q->data.apsk.num_levels*sizeof(T));
+    memmove(q->data.apsk.phi,      apsk8_phi,       q->data.apsk.num_levels*sizeof(T));
+    memmove(q->data.apsk.r_slicer, apsk8_r_slicer, (q->data.apsk.num_levels-1)*sizeof(T));
+    memmove(q->data.apsk.map,      apsk8_map,       q->M*sizeof(unsigned char));
 
     q->modulate_func = &MODEM(_modulate_apsk);
     q->demodulate_func = &MODEM(_demodulate_apsk);
@@ -109,11 +111,12 @@ MODEM() MODEM(_create_apsk16)()
     
     // set internals
     q->data.apsk.num_levels = apsk16_num_levels;
-    q->data.apsk.p          = (unsigned int *) apsk16_p;
-    q->data.apsk.r          = (T *) apsk16_r;
-    q->data.apsk.phi        = (T *) apsk16_phi;
-    q->data.apsk.r_slicer   = (T *) apsk16_r_slicer;
-    q->data.apsk.symbol_map = (unsigned int *) apsk16_symbol_map;
+    q->data.apsk.map = (unsigned char *) malloc(q->M*sizeof(unsigned char));
+    memmove(q->data.apsk.p,        apsk16_p,         q->data.apsk.num_levels*sizeof(unsigned int));
+    memmove(q->data.apsk.r,        apsk16_r,         q->data.apsk.num_levels*sizeof(T));
+    memmove(q->data.apsk.phi,      apsk16_phi,       q->data.apsk.num_levels*sizeof(T));
+    memmove(q->data.apsk.r_slicer, apsk16_r_slicer, (q->data.apsk.num_levels-1)*sizeof(T));
+    memmove(q->data.apsk.map,      apsk16_map,       q->M*sizeof(unsigned char));
 
     q->modulate_func = &MODEM(_modulate_apsk);
     q->demodulate_func = &MODEM(_demodulate_apsk);
@@ -134,11 +137,12 @@ MODEM() MODEM(_create_apsk32)()
     
     // set internals
     q->data.apsk.num_levels = apsk32_num_levels;
-    q->data.apsk.p          = (unsigned int *) apsk32_p;
-    q->data.apsk.r          = (T *) apsk32_r;
-    q->data.apsk.phi        = (T *) apsk32_phi;
-    q->data.apsk.r_slicer   = (T *) apsk32_r_slicer;
-    q->data.apsk.symbol_map = (unsigned int *) apsk32_symbol_map;
+    q->data.apsk.map = (unsigned char *) malloc(q->M*sizeof(unsigned char));
+    memmove(q->data.apsk.p,        apsk32_p,         q->data.apsk.num_levels*sizeof(unsigned int));
+    memmove(q->data.apsk.r,        apsk32_r,         q->data.apsk.num_levels*sizeof(T));
+    memmove(q->data.apsk.phi,      apsk32_phi,       q->data.apsk.num_levels*sizeof(T));
+    memmove(q->data.apsk.r_slicer, apsk32_r_slicer, (q->data.apsk.num_levels-1)*sizeof(T));
+    memmove(q->data.apsk.map,      apsk32_map,       q->M*sizeof(unsigned char));
 
     q->modulate_func = &MODEM(_modulate_apsk);
     q->demodulate_func = &MODEM(_demodulate_apsk);
@@ -159,11 +163,12 @@ MODEM() MODEM(_create_apsk64)()
     
     // set internals
     q->data.apsk.num_levels = apsk64_num_levels;
-    q->data.apsk.p          = (unsigned int *) apsk64_p;
-    q->data.apsk.r          = (T *) apsk64_r;
-    q->data.apsk.phi        = (T *) apsk64_phi;
-    q->data.apsk.r_slicer   = (T *) apsk64_r_slicer;
-    q->data.apsk.symbol_map = (unsigned int *) apsk64_symbol_map;
+    q->data.apsk.map = (unsigned char *) malloc(q->M*sizeof(unsigned char));
+    memmove(q->data.apsk.p,        apsk64_p,         q->data.apsk.num_levels*sizeof(unsigned int));
+    memmove(q->data.apsk.r,        apsk64_r,         q->data.apsk.num_levels*sizeof(T));
+    memmove(q->data.apsk.phi,      apsk64_phi,       q->data.apsk.num_levels*sizeof(T));
+    memmove(q->data.apsk.r_slicer, apsk64_r_slicer, (q->data.apsk.num_levels-1)*sizeof(T));
+    memmove(q->data.apsk.map,      apsk64_map,       q->M*sizeof(unsigned char));
 
     q->modulate_func = &MODEM(_modulate_apsk);
     q->demodulate_func = &MODEM(_demodulate_apsk);
@@ -184,11 +189,12 @@ MODEM() MODEM(_create_apsk128)()
     
     // set internals
     q->data.apsk.num_levels = apsk128_num_levels;
-    q->data.apsk.p          = (unsigned int *) apsk128_p;
-    q->data.apsk.r          = (T *) apsk128_r;
-    q->data.apsk.phi        = (T *) apsk128_phi;
-    q->data.apsk.r_slicer   = (T *) apsk128_r_slicer;
-    q->data.apsk.symbol_map = (unsigned int *) apsk128_symbol_map;
+    q->data.apsk.map = (unsigned char *) malloc(q->M*sizeof(unsigned char));
+    memmove(q->data.apsk.p,        apsk128_p,         q->data.apsk.num_levels*sizeof(unsigned int));
+    memmove(q->data.apsk.r,        apsk128_r,         q->data.apsk.num_levels*sizeof(T));
+    memmove(q->data.apsk.phi,      apsk128_phi,       q->data.apsk.num_levels*sizeof(T));
+    memmove(q->data.apsk.r_slicer, apsk128_r_slicer, (q->data.apsk.num_levels-1)*sizeof(T));
+    memmove(q->data.apsk.map,      apsk128_map,       q->M*sizeof(unsigned char));
 
     q->modulate_func = &MODEM(_modulate_apsk);
     q->demodulate_func = &MODEM(_demodulate_apsk);
@@ -209,11 +215,12 @@ MODEM() MODEM(_create_apsk256)()
     
     // set internals
     q->data.apsk.num_levels = apsk256_num_levels;
-    q->data.apsk.p          = (unsigned int *) apsk256_p;
-    q->data.apsk.r          = (T *) apsk256_r;
-    q->data.apsk.phi        = (T *) apsk256_phi;
-    q->data.apsk.r_slicer   = (T *) apsk256_r_slicer;
-    q->data.apsk.symbol_map = (unsigned int *) apsk256_symbol_map;
+    q->data.apsk.map = (unsigned char *) malloc(q->M*sizeof(unsigned char));
+    memmove(q->data.apsk.p,        apsk256_p,         q->data.apsk.num_levels*sizeof(unsigned int));
+    memmove(q->data.apsk.r,        apsk256_r,         q->data.apsk.num_levels*sizeof(T));
+    memmove(q->data.apsk.phi,      apsk256_phi,       q->data.apsk.num_levels*sizeof(T));
+    memmove(q->data.apsk.r_slicer, apsk256_r_slicer, (q->data.apsk.num_levels-1)*sizeof(T));
+    memmove(q->data.apsk.map,      apsk256_map,       q->M*sizeof(unsigned char));
 
     q->modulate_func = &MODEM(_modulate_apsk);
     q->demodulate_func = &MODEM(_demodulate_apsk);
@@ -236,7 +243,7 @@ void MODEM(_modulate_apsk)(MODEM()      _q,
 
     // map input symbol to constellation symbol
     unsigned int i;
-    unsigned int s = _q->data.apsk.symbol_map[_sym_in];
+    unsigned int s = _q->data.apsk.map[_sym_in];
 
     // determine in which level the symbol is located
     unsigned int p=0;   // level
@@ -300,7 +307,7 @@ void MODEM(_demodulate_apsk)(MODEM()        _q,
     // reverse symbol mapping
     unsigned int s_prime=0;
     for (i=0; i<_q->M; i++) {
-        if ( _q->data.apsk.symbol_map[i] == s_hat) {
+        if ( _q->data.apsk.map[i] == s_hat) {
             s_prime = i;
             break;
         }
