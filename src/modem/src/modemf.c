@@ -37,10 +37,6 @@
 // common source must come first (object definition)
 #include "modem_common.c"
 
-// constants
-#include "modem_apsk_const.c"
-#include "modem_arb_const.c"
-
 // generic modem specifications
 #include "modem_psk.c"
 #include "modem_dpsk.c"

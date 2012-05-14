@@ -47,13 +47,6 @@
 #include "modem_common.c"
 
 #if 0
-// constants
-#include "modem_apsk_const.c"
-#include "modem_arb_const.c"
-#include "modem_demod_soft_const.c"
-#endif
-
-#if 0
 // generic modem specifications
 #include "modem_psk.c"
 #include "modem_dpsk.c"
