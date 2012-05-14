@@ -33,9 +33,14 @@ MODEM() MODEM(_create_sqam32)()
 
     // allocate memory for 8-point symbol map
     q->data.sqam32.map = (TC*) malloc( 8*sizeof(TC) );
-#if T == float
-    memmove(q->data.sqam32.map, modem_arb_sqam32, 8*sizeof(TC));
+    unsigned int i;
+    for (i=0; i<8; i++) {
+#if LIQUID_FPM
+        q->data.sqam32.map[i] = CQ(_float_to_fixed)(modem_arb_sqam32[i]);
+#else
+        q->data.sqam32.map[i] = modem_arb_sqam32[i];
 #endif
+    }
 
     // set modulation, demodulation functions
     q->modulate_func   = &MODEM(_modulate_sqam32);
