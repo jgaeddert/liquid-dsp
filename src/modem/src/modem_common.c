@@ -651,7 +651,7 @@ void MODEM(_demodsoft_gentab)(MODEM()      _q,
     unsigned int M = _q->M;  // constellation size
     TC c[M];         // constellation
     for (i=0; i<M; i++)
-        modem_modulate(_q, i, &c[i]);
+        MODEM(_modulate)(_q, i, &c[i]);
 
     // 
     // find nearest symbols (see algorithm in sandbox/modem_demodulate_soft_gentab.c)
@@ -666,7 +666,11 @@ void MODEM(_demodsoft_gentab)(MODEM()      _q,
     int symbol_valid;
     for (i=0; i<M; i++) {
         for (k=0; k<_p; k++) {
+#if LIQUID_FPM
+            T dmin=Q(_max);
+#else
             T dmin=1e9f;
+#endif
             for (j=0; j<M; j++) {
                 symbol_valid = 1;
                 // ignore this symbol
@@ -679,8 +683,13 @@ void MODEM(_demodsoft_gentab)(MODEM()      _q,
                         symbol_valid = 0;
                 }
 
+#if LIQUID_FPM
+                TC del = CQ(_sub)(c[i], c[j]);
+                T  d   = Q(_mul)(del.real, del.real) + Q(_mul)(del.imag, del.imag);
+#else
                 // compute distance
                 T d = cabsf( c[i] - c[j] );
+#endif
 
                 if ( d < dmin && symbol_valid ) {
                     dmin = d;
@@ -703,6 +712,7 @@ void MODEM(_demodsoft_gentab)(MODEM()      _q,
         for (k=0; k<_p; k++) {
             printf(" ");
             print_bitstring_demod_soft(_q->demod_soft_neighbors[i*_p + k],bps);
+            // TODO : fix this for fixed-point math
             if (_q->demod_soft_neighbors[i*_p + k] < M)
                 printf("(%6.4f)", cabsf( c[i]-c[_q->demod_soft_neighbors[i*_p+k]] ));
             else
