@@ -66,21 +66,7 @@ struct MODEM(_s)
 
     // common data structure shared between specific modem types
     union {
-        // QAM modem
-        struct {
-            unsigned int m_i;   // bits per symbol, in-phase
-            unsigned int m_q;   // bits per symbol, quadrature
-            unsigned int M_i;   // in-phase dimension, M_i=2^{m_i}
-            unsigned int M_q;   // quadrature dimension, M_q=2^{m_q}
-            T alpha;            // scaling factor to ensure unity energy
-        } qam;
-
-        // ASK modem
-        struct {
-            T alpha;            // scaling factor to ensure unity energy
-        } ask;
-
-        // PSK/DPSK modem
+        // PSK modem
         struct {
             T d_phi;            // half of phase between symbols
             T alpha;            // scaling factor for phase symbols
@@ -93,15 +79,39 @@ struct MODEM(_s)
             T alpha;            // scaling factor for phase symbols
         } dpsk;
 
+        // ASK modem
+        struct {
+            T alpha;            // scaling factor to ensure unity energy
+        } ask;
+
+        // QAM modem
+        struct {
+            unsigned int m_i;   // bits per symbol, in-phase
+            unsigned int m_q;   // bits per symbol, quadrature
+            unsigned int M_i;   // in-phase dimension, M_i=2^{m_i}
+            unsigned int M_q;   // quadrature dimension, M_q=2^{m_q}
+            T alpha;            // scaling factor to ensure unity energy
+        } qam;
+
         // APSK modem
         struct {
-            unsigned int num_levels;   // number of levels
-            unsigned int * p;          // number of symbols per level
-            T * r;                     // radii of levels
-            T * r_slicer;              // slicer radii of levels
-            T * phi;                   // phase offset of levels
-            unsigned int * symbol_map; // symbol mapping
+            unsigned int num_levels;    // number of levels
+            unsigned int p[8];          // number of symbols per level
+            T r[8];                     // radii of levels
+            T r_slicer[8];              // slicer radii of levels
+            T phi[8];                   // phase offset of levels
+            unsigned char * map;        // symbol mapping (allocated)
         } apsk;
+
+        // 'square' 32-QAM
+        struct {
+            TC * map;           // 8-sample sub-map (first quadrant)
+        } sqam32;
+
+        // 'square' 128-QAM
+        struct {
+            TC * map;           // 32-sample sub-map (first quadrant)
+        } sqam128;
     } data;
 
     // modulate function pointer
@@ -229,6 +239,15 @@ void MODEM(_destroy)(MODEM() _q)
     // free soft-demodulation neighbors table
     if (_q->demod_soft_neighbors != NULL)
         free(_q->demod_soft_neighbors);
+
+    // free memory in specific data types
+    if (_q->scheme == LIQUID_MODEM_SQAM32) {
+        free(_q->data.sqam32.map);
+    } else if (_q->scheme == LIQUID_MODEM_SQAM128) {
+        free(_q->data.sqam128.map);
+    } else if (liquid_modem_is_apsk(_q->scheme)) {
+        free(_q->data.apsk.map);
+    }
 
     // free main object memory
     free(_q);
