@@ -566,6 +566,7 @@ fpm_gentab_obj_q32 = $(patsubst %.c,%.o,$(fpm_gentab_src_q32))
 
 # build gentab programs from source
 $(fpm_gentab_programs) : % : %.c $(fpm_headers)
+	$(CC) $(CFLAGS) -o $@ $< $(LDFLAGS)
 
 # generate source files by running program and piping output to target
 $(fpm_gentab_src_q16) : src/fpm/gentab/q16%.c : src/fpm/gentab/gentab.qtype% ;  ./$< -n16 > $@
