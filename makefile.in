@@ -576,6 +576,9 @@ $(fpm_gentab_src_q32) : src/fpm/gentab/q32%.c : src/fpm/gentab/gentab.qtype% ;  
 scripts/q16_float_to_fixed : % : %.c
 	$(CC) $(CFLAGS) -o $@ $< $(LDFLAGS)
 
+scripts/q16_fixed_to_float : % : %.c
+	$(CC) $(CFLAGS) -o $@ $< $(LDFLAGS)
+
 # add auto-generated files to extra_clean list (programs, sources,
 # and objects)
 extra_clean +=							\
@@ -585,6 +588,7 @@ extra_clean +=							\
 	$(fpm_gentab_obj_q16)					\
 	$(fpm_gentab_obj_q32)					\
 	scripts/q16_float_to_fixed				\
+	scripts/q16_fixed_to_float				\
 
 # target fixed-point math objects
 fpm_objects :=							\
