@@ -1618,6 +1618,10 @@ void MODEM(_demodulate_soft_arb)( MODEM()         _q,           \
                                   unsigned int *  _sym_out,     \
                                   unsigned char * _soft_bits);  \
                                                                 \
+/* generate soft demodulation look-up table */                  \
+void MODEM(_demodsoft_gentab)(MODEM()      _q,                  \
+                              unsigned int _p);                 \
+                                                                \
 /* generic soft demodulation routine using nearest-neighbors */ \
 /* look-up table                                             */ \
 void MODEM(_demodulate_soft_table)(MODEM()         _q,          \

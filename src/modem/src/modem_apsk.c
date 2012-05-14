@@ -68,8 +68,8 @@ MODEM() MODEM(_create_apsk4)()
     q->modulate_func = &MODEM(_modulate_apsk);
     q->demodulate_func = &MODEM(_demodulate_apsk);
 
-    q->demod_soft_neighbors = (unsigned char*) apsk4_demod_soft_neighbors;
-    q->demod_soft_p         = 3;
+    // initialize soft-demodulation look-up table
+    MODEM(_demodsoft_gentab)(q, 3);
 
     return q;
 }
@@ -93,8 +93,8 @@ MODEM() MODEM(_create_apsk8)()
     q->modulate_func = &MODEM(_modulate_apsk);
     q->demodulate_func = &MODEM(_demodulate_apsk);
 
-    q->demod_soft_neighbors = (unsigned char*) apsk8_demod_soft_neighbors;
-    q->demod_soft_p         = 3;
+    // initialize soft-demodulation look-up table
+    MODEM(_demodsoft_gentab)(q, 3);
 
     return q;
 }
@@ -118,8 +118,8 @@ MODEM() MODEM(_create_apsk16)()
     q->modulate_func = &MODEM(_modulate_apsk);
     q->demodulate_func = &MODEM(_demodulate_apsk);
 
-    q->demod_soft_neighbors = (unsigned char*) apsk16_demod_soft_neighbors;
-    q->demod_soft_p         = 4;
+    // initialize soft-demodulation look-up table
+    MODEM(_demodsoft_gentab)(q, 4);
 
     return q;
 }
@@ -143,8 +143,8 @@ MODEM() MODEM(_create_apsk32)()
     q->modulate_func = &MODEM(_modulate_apsk);
     q->demodulate_func = &MODEM(_demodulate_apsk);
 
-    q->demod_soft_neighbors = (unsigned char*) apsk32_demod_soft_neighbors;
-    q->demod_soft_p         = 4;
+    // initialize soft-demodulation look-up table
+    MODEM(_demodsoft_gentab)(q, 4);
 
     return q;
 }
@@ -168,8 +168,8 @@ MODEM() MODEM(_create_apsk64)()
     q->modulate_func = &MODEM(_modulate_apsk);
     q->demodulate_func = &MODEM(_demodulate_apsk);
 
-    q->demod_soft_neighbors = (unsigned char*) apsk64_demod_soft_neighbors;
-    q->demod_soft_p         = 4;
+    // initialize soft-demodulation look-up table
+    MODEM(_demodsoft_gentab)(q, 4);
 
     return q;
 }
@@ -193,8 +193,8 @@ MODEM() MODEM(_create_apsk128)()
     q->modulate_func = &MODEM(_modulate_apsk);
     q->demodulate_func = &MODEM(_demodulate_apsk);
 
-    q->demod_soft_neighbors = (unsigned char*) apsk128_demod_soft_neighbors;
-    q->demod_soft_p         = 5;
+    // initialize soft-demodulation look-up table
+    MODEM(_demodsoft_gentab)(q, 5);
 
     return q;
 }
@@ -218,8 +218,8 @@ MODEM() MODEM(_create_apsk256)()
     q->modulate_func = &MODEM(_modulate_apsk);
     q->demodulate_func = &MODEM(_demodulate_apsk);
 
-    q->demod_soft_neighbors = (unsigned char*) apsk256_demod_soft_neighbors;
-    q->demod_soft_p         = 5;
+    // initialize soft-demodulation look-up table
+    MODEM(_demodsoft_gentab)(q, 5);
 
     return q;
 }

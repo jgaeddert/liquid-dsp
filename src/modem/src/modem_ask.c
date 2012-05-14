@@ -56,17 +56,9 @@ MODEM() MODEM(_create_ask)(unsigned int _bits_per_symbol)
     q->modulate_func = &MODEM(_modulate_ask);
     q->demodulate_func = &MODEM(_demodulate_ask);
 
-    // soft demodulation
-    if (q->m == 2) {
-        q->demod_soft_neighbors = (unsigned char*) ask4_demod_soft_neighbors;
-        q->demod_soft_p         = 2;
-    } else if (q->m == 3) {
-        q->demod_soft_neighbors = (unsigned char*) ask8_demod_soft_neighbors;
-        q->demod_soft_p         = 2;
-    } else if (q->m == 4) {
-        q->demod_soft_neighbors = (unsigned char*) ask16_demod_soft_neighbors;
-        q->demod_soft_p         = 2;
-    }
+    // initialize soft-demodulation look-up table
+    if (q->m >= 2 && q->m < 8)
+        MODEM(_demodsoft_gentab)(q, 2);
 
     return q;
 }

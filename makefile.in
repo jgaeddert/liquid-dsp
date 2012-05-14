@@ -678,7 +678,6 @@ modem_includes :=						\
 	src/modem/src/modem_common.c				\
 	src/modem/src/modem_apsk_const.c			\
 	src/modem/src/modem_arb_const.c				\
-	src/modem/src/modem_demod_soft_const.c			\
 	src/modem/src/modem_psk.c				\
 	src/modem/src/modem_dpsk.c				\
 	src/modem/src/modem_ask.c				\
@@ -690,6 +689,8 @@ modem_includes :=						\
 	src/modem/src/modem_sqam32.c				\
 	src/modem/src/modem_sqam128.c				\
 	src/modem/src/modem_arb.c				\
+	
+#src/modem/src/modem_demod_soft_const.c
 
 # main modem object
 src/modem/src/modemf.o : %.o : %.c $(headers) $(modem_includes)
