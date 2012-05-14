@@ -56,6 +56,10 @@ void MODEM(_modulate_sqam32)(MODEM()      _q,
     unsigned int s = _sym_in & 0x07;
     TC p = _q->data.sqam32.map[s];
     
+#if LIQUID_FPM
+    _y[0].real = quad & 0x02 ? p.real : -p.real;
+    _y[0].imag = quad & 0x01 ? p.imag : -p.imag;
+#else
     switch (quad) {
     case 0: *_y =  p;           return;
     case 1: *_y =  conjf(p);    return;
@@ -66,6 +70,7 @@ void MODEM(_modulate_sqam32)(MODEM()      _q,
         fprintf(stderr,"error: modem_modulate_sqam32(), logic error\n");
         exit(1);
     }
+#endif
 }
 
 // demodulate 'square' 32-QAM
@@ -77,9 +82,20 @@ void MODEM(_demodulate_sqam32)(MODEM()        _q,
     // 10 | 00
     // ---+---
     // 11 | 01
+#if LIQUID_FPM
+    unsigned int quad = 2*(_x.real < 0) + (_x.imag < 0);
+#else
     unsigned int quad = 2*(crealf(_x) < 0.0f) + (cimagf(_x) < 0.0f);
+#endif
     
     TC x_prime = _x;
+#if LIQUID_FPM
+    x_prime.real = quad & 0x02 ? _x.real : -_x.real;
+    x_prime.imag = quad & 0x01 ? _x.imag : -_x.imag;
+
+    assert(x_prime.imag >= 0);
+    assert(x_prime.imag >= 0);
+#else
     switch (quad) {
     case 0: x_prime = _x;           break;
     case 1: x_prime =  conjf(_x);   break;
@@ -94,13 +110,18 @@ void MODEM(_demodulate_sqam32)(MODEM()        _q,
     //        crealf(_x), cimagf(_x), quad, crealf(r), cimagf(r));
     assert(crealf(x_prime) >= 0.0f);
     assert(cimagf(x_prime) >= 0.0f);
+#endif
 
     // find symbol in map closest to x_prime
     T dmin = 0.0f;
     T d = 0.0f;
     unsigned int i;
     for (i=0; i<8; i++) {
+#if LIQUID_FPM
+        d = CQ(_cabs2)( CQ(_sub)(x_prime, _q->data.sqam32.map[i]) );
+#else
         d = cabsf(x_prime - _q->data.sqam32.map[i]);
+#endif
         if (i==0 || d < dmin) {
             dmin = d;
             *_sym_out = i;

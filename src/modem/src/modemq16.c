@@ -30,6 +30,10 @@
 #define Q(name)             LIQUID_CONCAT(q16,name)
 #define CQ(name)            LIQUID_CONCAT(cq16,name)
 
+#define CREAL(X)            cq16_real(X)
+#define CIMAG(X)            cq16_imag(X)
+#define CONJ(X)             cq16_conj(X)
+
 // Macro definitions
 #define MODEM(name)         LIQUID_CONCAT(modemq16,name)
 
@@ -50,10 +54,10 @@
 //#include "modem_apsk.c"
 
 // specific modems
-//#include "modem_bpsk.c"
-//#include "modem_qpsk.c"
-//#include "modem_ook.c"
-//#include "modem_sqam32.c"
+#include "modem_bpsk.c"
+#include "modem_qpsk.c"
+#include "modem_ook.c"
+#include "modem_sqam32.c"
 //#include "modem_sqam128.c"
 
 // arbitary modems
