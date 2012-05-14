@@ -47,7 +47,7 @@
 #include "modem_common.c"
 
 // generic modem specifications
-//#include "modem_psk.c"
+#include "modem_psk.c"
 //#include "modem_dpsk.c"
 #include "modem_ask.c"
 #include "modem_qam.c"

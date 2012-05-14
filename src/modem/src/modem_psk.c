@@ -46,7 +46,12 @@ MODEM() MODEM(_create_psk)(unsigned int _bits_per_symbol)
     MODEM(_init)(q, _bits_per_symbol);
 
     // compute alpha
+#if LIQUID_FPM
+#  warning "TODO: check PSK scaling factor"
+    q->data.psk.alpha = Q(_2pi) / (q->M);
+#else
     q->data.psk.alpha = M_PI/(T)(q->M);
+#endif
 
     // initialize demodulation array reference
     unsigned int k;
@@ -54,7 +59,12 @@ MODEM() MODEM(_create_psk)(unsigned int _bits_per_symbol)
         q->ref[k] = (1<<k) * q->data.psk.alpha;
 
     // compute phase offset (half of phase difference between symbols)
+#if LIQUID_FPM
+#  warning "TODO: check PSK scaling factor"
+    q->data.psk.d_phi = Q(_2pi) - Q(_2pi)/q->M;
+#else
     q->data.psk.d_phi = M_PI*(1.0f - 1.0f/(T)(q->M));
+#endif
 
     // set modulation/demodulation functions
     q->modulate_func = &MODEM(_modulate_psk);
@@ -81,7 +91,12 @@ void MODEM(_modulate_psk)(MODEM()      _q,
     _sym_in = gray_decode(_sym_in);
 
     // compute output sample
+#if LIQUID_FPM
+#  warning "TODO: check PSK modulation"
+    *_y = CQ(_cexpj)(_sym_in * 2 * _q->data.psk.alpha );
+#else
     *_y = liquid_cexpjf(_sym_in * 2 * _q->data.psk.alpha );
+#endif
 }
 
 // demodulate PSK
@@ -90,10 +105,14 @@ void MODEM(_demodulate_psk)(MODEM()        _q,
                             unsigned int * _sym_out)
 {
     // compute angle and subtract phase offset, ensuring phase is in [-pi,pi)
+#if LIQUID_FPM
+    T theta = CQ(_carg)(_x);
+#else
     T theta = cargf(_x);
     theta -= _q->data.psk.d_phi;
     if (theta < -M_PI)
         theta += 2*M_PI;
+#endif
 
     // demodulate on linearly-spaced array
     unsigned int s;             // demodulated symbol
