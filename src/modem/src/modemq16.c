@@ -58,7 +58,7 @@
 #include "modem_qpsk.c"
 #include "modem_ook.c"
 #include "modem_sqam32.c"
-//#include "modem_sqam128.c"
+#include "modem_sqam128.c"
 
 // arbitary modems
 #include "modem_arb.c"
