@@ -32,9 +32,9 @@ MODEM() MODEM(_create_sqam32)()
     MODEM(_init)(q, 5);
 
     // allocate memory for 8-point symbol map
-    q->symbol_map = (TC*) malloc( 8*sizeof(TC) );
+    q->data.sqam32.map = (TC*) malloc( 8*sizeof(TC) );
 #if T == float
-    memmove(q->symbol_map, modem_arb_sqam32, 8*sizeof(TC));
+    memmove(q->data.sqam32.map, modem_arb_sqam32, 8*sizeof(TC));
 #endif
 
     // set modulation, demodulation functions
@@ -54,7 +54,7 @@ void MODEM(_modulate_sqam32)(MODEM()      _q,
     
     // strip off least-significant 3 bits
     unsigned int s = _sym_in & 0x07;
-    TC p = _q->symbol_map[s];
+    TC p = _q->data.sqam32.map[s];
     
     switch (quad) {
     case 0: *_y =  p;           return;
@@ -100,7 +100,7 @@ void MODEM(_demodulate_sqam32)(MODEM()        _q,
     T d = 0.0f;
     unsigned int i;
     for (i=0; i<8; i++) {
-        d = cabsf(x_prime - _q->symbol_map[i]);
+        d = cabsf(x_prime - _q->data.sqam32.map[i]);
         if (i==0 || d < dmin) {
             dmin = d;
             *_sym_out = i;
