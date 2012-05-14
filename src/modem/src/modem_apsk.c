@@ -262,12 +262,22 @@ void MODEM(_modulate_apsk)(MODEM()      _q,
     printf("  s : %3u -> %3u in level %3u (t = %3u) [symbol %3u / %3u]\n", _sym_in, s, p, t, s0,s1);
 #endif
 
+#if LIQUID_FPM
+#  warning "TODO: check APSK modulation"
     // map symbol to constellation point (radius, angle)
-    T r = _q->data.apsk.r[p];
+    T r   = _q->data.apsk.r[p];
+    T phi = _q->data.apsk.phi[p] + (T)(s0)*Q(_2pi) / (T)(s1);
+
+    // compute output symbol
+    *_y = CQ(_mul_scalar)( CQ(_cexpj)(phi), r);
+#else
+    // map symbol to constellation point (radius, angle)
+    T r   = _q->data.apsk.r[p];
     T phi = _q->data.apsk.phi[p] + (T)(s0)*2.0f*M_PI / (T)(s1);
 
     // compute output symbol
     *_y = r * liquid_cexpjf(phi);
+#endif
 }
 
 // demodulate APSK
@@ -276,7 +286,11 @@ void MODEM(_demodulate_apsk)(MODEM()        _q,
                              unsigned int * _sym_out)
 {
     // compute amplitude
+#if LIQUID_FPM
+    T r = CQ(_cabs)(_x);
+#else
     T r = cabsf(_x);
+#endif
 
     // determine which ring to demodulate with
     unsigned int i, p=0;
@@ -290,7 +304,11 @@ void MODEM(_demodulate_apsk)(MODEM()        _q,
     }
 
     // find closest point in ring
+#if LIQUID_FPM
+    T theta = CQ(_carg)(_x);
+#else
     T theta = cargf(_x);
+#endif
     if (theta < 0.0f) theta += 2.0f*M_PI;
     T dphi = 2.0f*M_PI / (T) _q->data.apsk.p[p];
     unsigned int s_hat=0;

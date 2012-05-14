@@ -51,7 +51,7 @@
 #include "modem_dpsk.c"
 #include "modem_ask.c"
 #include "modem_qam.c"
-//#include "modem_apsk.c"
+#include "modem_apsk.c"
 
 // specific modems
 #include "modem_bpsk.c"
