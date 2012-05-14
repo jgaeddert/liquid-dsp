@@ -1667,6 +1667,85 @@ void MODEM(_demodulate_linear_array_ref)(T              _v,     \
 LIQUID_MODEM_DEFINE_INTERNAL_API(LIQUID_MODEM_MANGLE_FLOAT,float,float complex)
 LIQUID_MODEM_DEFINE_INTERNAL_API(LIQUID_MODEM_MANGLE_Q16,  q16_t,cq16_t)
 
+//
+// modem constants
+//
+
+// APSK4(1,3)
+extern const unsigned int  apsk4_num_levels;
+extern const unsigned int  apsk4_p[2];
+extern const float         apsk4_r[2];
+extern const float         apsk4_phi[2];
+extern const float         apsk4_r_slicer[1];
+extern const unsigned char apsk4_map[4];
+
+// APSK8(1,7)
+extern const unsigned int  apsk8_num_levels;
+extern const unsigned int  apsk8_p[2];
+extern const float         apsk8_r[2];
+extern const float         apsk8_phi[2];
+extern const float         apsk8_r_slicer[1];
+extern const unsigned char apsk8_map[8];
+
+// APSK16(4,12)
+extern const unsigned int  apsk16_num_levels;
+extern const unsigned int  apsk16_p[2];
+extern const float         apsk16_r[2];
+extern const float         apsk16_phi[2];
+extern const float         apsk16_r_slicer[1];
+extern const unsigned char apsk16_map[16];
+
+// APSK32(4,12,16)
+extern const unsigned int  apsk32_num_levels;
+extern const unsigned int  apsk32_p[3];
+extern const float         apsk32_r[3];
+extern const float         apsk32_phi[3];
+extern const float         apsk32_r_slicer[2];
+extern const unsigned char apsk32_map[32];
+
+// APSK64(4,14,20,26)
+extern const unsigned int  apsk64_num_levels;
+extern const unsigned int  apsk64_p[4];
+extern const float         apsk64_r[4];
+extern const float         apsk64_phi[4];
+extern const float         apsk64_r_slicer[3];
+extern const unsigned char apsk64_map[64];
+
+// APSK128(8,18,24,36,42)
+extern const unsigned int  apsk128_num_levels;
+extern const unsigned int  apsk128_p[5];
+extern const float         apsk128_r[5];
+extern const float         apsk128_phi[5];
+extern const float         apsk128_r_slicer[4];
+extern const unsigned char apsk128_map[128];
+
+// APSK256(6,18,32,36,46,54,64)
+extern const unsigned int  apsk256_num_levels;
+extern const unsigned int  apsk256_p[7];
+extern const float         apsk256_r[7];
+extern const float         apsk256_phi[7];
+extern const float         apsk256_r_slicer[6];
+extern const unsigned char apsk256_map[256];
+
+// 'square' 32-QAM (first quadrant)
+extern const float complex modem_arb_sqam32[8];
+
+// 'square' 128-QAM (first quadrant)
+extern const float complex modem_arb_sqam128[32];
+
+// V.29 star constellation
+extern const float complex modem_arb_V29[16];
+
+// Virginia Tech logo
+extern const float complex modem_arb_vt64[64];
+
+// optimal QAM constellations
+extern const float complex modem_arb16opt[16];
+extern const float complex modem_arb32opt[32];
+extern const float complex modem_arb64opt[64];
+extern const float complex modem_arb128opt[128];
+extern const float complex modem_arb256opt[256];
+
 
 //
 // MODULE : multicarrier
