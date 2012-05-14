@@ -72,7 +72,12 @@ void MODEM(_modulate_ask)(MODEM()      _q,
     _sym_in = gray_decode(_sym_in);
 
     // modulate symbol
+#if LIQUID_FPM
+    _y[0].real = Q(_mul)( (2*(int)_sym_in - (int)(_q->M) + 1), _q->data.ask.alpha );
+    _y[0].imag = 0;
+#else
     *_y = (2*(int)_sym_in - (int)(_q->M) + 1) * _q->data.ask.alpha;
+#endif
 }
 
 // demodulate ASK
@@ -83,7 +88,11 @@ void MODEM(_demodulate_ask)(MODEM()        _q,
     // demodulate on linearly-spaced array
     unsigned int s;
     T res_i;
+#if LIQUID_FPM
+    MODEM(_demodulate_linear_array_ref)(_x.real,    _q->m, _q->ref, &s, &res_i);
+#else
     MODEM(_demodulate_linear_array_ref)(crealf(_x), _q->m, _q->ref, &s, &res_i);
+#endif
 
     // 'decode' output symbol (actually gray encoding)
     *_sym_out = gray_encode(s);

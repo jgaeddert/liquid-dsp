@@ -878,6 +878,7 @@ modem_autotests :=						\
 	src/modem/tests/modem_demodsoft_autotest.c		\
 	src/modem/tests/modem_demodstats_autotest.c		\
 
+#	src/modem/tests/modemq16_autotest.c
 
 modem_benchmarks :=						\
 	src/modem/bench/gmskmodem_benchmark.c			\

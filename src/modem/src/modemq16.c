@@ -42,11 +42,13 @@
 // common source must come first (object definition)
 #include "modem_common.c"
 
-#if 0
 // generic modem specifications
+#if 0
 #include "modem_psk.c"
 #include "modem_dpsk.c"
+#endif
 #include "modem_ask.c"
+#if 0
 #include "modem_qam.c"
 #include "modem_apsk.c"
 
