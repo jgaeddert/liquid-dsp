@@ -3016,65 +3016,76 @@ void liquid_unpack_soft_bits(unsigned int _sym_in,
 // Linear modem
 //
 
-// define struct pointer
-typedef struct modem_s * modem;
+#define LIQUID_MODEM_MANGLE_FLOAT(name) LIQUID_CONCAT(modem,name)
 
-// create digital modem object, allocating memory as necessary
-modem modem_create(modulation_scheme _scheme);
+// Macro    :   MODEM
+//  MODEM   :   name-mangling macro
+//  T       :   primitive data type
+//  TC      :   primitive data type (complex)
+#define LIQUID_MODEM_DEFINE_API(MODEM,T,TC)                     \
+                                                                \
+/* define struct pointer */                                     \
+typedef struct MODEM(_s) * MODEM();                             \
+                                                                \
+/* create digital modem object, allocating memory as necessary */ \
+MODEM() MODEM(_create)(modulation_scheme _scheme);                  \
+                                                                \
+/* create arbitrary digital modem object */                     \
+MODEM() MODEM(_create_arbitrary)(TC * _table, unsigned int _M); \
+                                                                \
+/* recreate modulation scheme, re-allocating memory as necessary */ \
+MODEM() MODEM(_recreate)(MODEM() _q,                            \
+                         modulation_scheme _scheme);            \
+                                                                \
+void MODEM(_destroy)(MODEM() _q);                               \
+void MODEM(_print)(  MODEM() _q);                               \
+void MODEM(_reset)(  MODEM() _q);                               \
+                                                                \
+/* generate random symbol */                                    \
+unsigned int MODEM(_gen_rand_sym)(MODEM() _q);                  \
+                                                                \
+/* Accessor functions */                                        \
+unsigned int MODEM(_get_bps)(MODEM() _q);                       \
+                                                                \
+/* generic modulate function; simply queries modem scheme   */  \
+/* and calls appropriate subroutine                         */  \
+/*  _q  :   modem object                                    */  \
+/*  _s  :   input symbol                                    */  \
+/*  _x  :   output sample                                   */  \
+void MODEM(_modulate)(MODEM() _q,                               \
+                      unsigned int _s,                          \
+                      TC *_y);                                  \
+                                                                \
+/* generic hard-decision demodulation function              */  \
+/*  _q  :   modem object                                    */  \
+/*  _x  :   input sample                                    */  \
+/*  _s  :   output symbol                                   */  \
+void MODEM(_demodulate)(MODEM() _q,                             \
+                        TC _x,                                  \
+                        unsigned int * _s);                     \
+                                                                \
+/* generic soft-decision demodulation function              */  \
+/*  _q          :   modem object                            */  \
+/*  _x          :   input sample                            */  \
+/*  _s          :   output hard symbol                      */  \
+/*  _soft_bits  :   output soft bits                        */  \
+void MODEM(_demodulate_soft)(MODEM() _q,                        \
+                             TC _x,                             \
+                             unsigned int  * _s,                \
+                             unsigned char * _soft_bits);       \
+                                                                \
+/* get demodulator's estimated transmit sample */               \
+void MODEM(_get_demodulator_sample)(MODEM() _q,                 \
+                                    TC * _x_hat);               \
+                                                                \
+/* get demodulator phase error */                               \
+float MODEM(_get_demodulator_phase_error)(MODEM() _q);          \
+                                                                \
+/* get demodulator error vector magnitude */                    \
+float MODEM(_get_demodulator_evm)(MODEM() _q);                  \
 
-// create arbitrary digital modem object
-modem modem_create_arbitrary(liquid_float_complex * _table, unsigned int _M);
-
-// recreate modulation scheme, re-allocating memory as necessary
-modem modem_recreate(modem _q,
-                     modulation_scheme _scheme);
-
-void modem_destroy(modem _mod);
-void modem_print(modem _mod);
-void modem_reset(modem _mod);
-
-// Generate random symbol
-unsigned int modem_gen_rand_sym(modem _mod);
-
-// Accessor functions
-unsigned int modem_get_bps(modem _mod);
-
-// generic modulate function; simply queries modem scheme and calls
-// appropriate subroutine
-//  _mod    :   modem object
-//  _s      :   input symbol
-//  _x      :   output sample
-void modem_modulate(modem _mod,
-                    unsigned int _s,
-                    liquid_float_complex *_y);
-
-// generic hard-decision demodulation function
-//  _demod  :   modem object
-//  _x      :   input sample
-//  _s      :   output symbol
-void modem_demodulate(modem _demod,
-                      liquid_float_complex _x,
-                      unsigned int * _s);
-
-// generic soft-decision demodulation function
-//  _demod      :   modem object
-//  _x          :   input sample
-//  _s          :   output hard symbol
-//  _soft_bits  :   output soft bits
-void modem_demodulate_soft(modem _demod,
-                           liquid_float_complex _x,
-                           unsigned int  * _s,
-                           unsigned char * _soft_bits);
-
-// get demodulator's estimated transmit sample
-void modem_get_demodulator_sample(modem _demod,
-                                  liquid_float_complex * _x_hat);
-
-// get demodulator phase error
-float modem_get_demodulator_phase_error(modem _demod);
-
-// get demodulator error vector magnitude
-float modem_get_demodulator_evm(modem _demod);
+// define modem APIs
+LIQUID_MODEM_DEFINE_API(LIQUID_MODEM_MANGLE_FLOAT,float,liquid_float_complex)
 
 
 //
