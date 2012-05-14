@@ -111,8 +111,13 @@ void MODEM(_modulate_qam)(MODEM()      _q,
     s_q = gray_decode(s_q);
 
     // compute output sample
+#if LIQUID_FPM
+    _y[0].real = Q(_mul)( 2*(int)s_i - (int)(_q->data.qam.M_i) + 1, _q->data.qam.alpha);
+    _y[0].imag = Q(_mul)( 2*(int)s_q - (int)(_q->data.qam.M_q) + 1, _q->data.qam.alpha);
+#else
     *_y = (2*(int)s_i - (int)(_q->data.qam.M_i) + 1) * _q->data.qam.alpha +
           (2*(int)s_q - (int)(_q->data.qam.M_q) + 1) * _q->data.qam.alpha * _Complex_I;
+#endif
 }
 
 // demodulate QAM
@@ -120,15 +125,19 @@ void MODEM(_demodulate_qam)(MODEM()      _q,
                           TC             _x,
                           unsigned int * _sym_out)
 {
-    // demodulate in-phase component on linearly-spaced array
+    // demodulate linearly-spaced arrays
     unsigned int s_i;   // in-phase symbol
-    T res_i;        // in-phase residual
-    MODEM(_demodulate_linear_array_ref)(crealf(_x), _q->data.qam.m_i, _q->ref, &s_i, &res_i);
-
-    // demodulate quadrature component on linearly-spaced array
     unsigned int s_q;   // quadrature symbol
-    T res_q;        // quadrature residual
+    T res_i;            // in-phase residual
+    T res_q;            // quadrature residual
+
+#if LIQUID_FPM
+    MODEM(_demodulate_linear_array_ref)(_x.real, _q->data.qam.m_i, _q->ref, &s_i, &res_i);
+    MODEM(_demodulate_linear_array_ref)(_x.imag, _q->data.qam.m_q, _q->ref, &s_q, &res_q);
+#else
+    MODEM(_demodulate_linear_array_ref)(crealf(_x), _q->data.qam.m_i, _q->ref, &s_i, &res_i);
     MODEM(_demodulate_linear_array_ref)(cimagf(_x), _q->data.qam.m_q, _q->ref, &s_q, &res_q);
+#endif
 
     // 'decode' output symbol (actually gray encoding)
     s_i = gray_encode(s_i);
@@ -136,7 +145,12 @@ void MODEM(_demodulate_qam)(MODEM()      _q,
     *_sym_out = ( s_i << _q->data.qam.m_q ) + s_q;
 
     // re-modulate symbol (subtract residual) and store state
+#if LIQUID_FPM
+    _q->x_hat.real = _x.real - res_i;
+    _q->x_hat.imag = _x.imag - res_q;
+#else
     _q->x_hat = _x - (res_i + _Complex_I*res_q);
+#endif
     _q->r = _x;
 }
 

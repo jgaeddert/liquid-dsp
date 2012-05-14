@@ -48,8 +48,8 @@
 #include "modem_dpsk.c"
 #endif
 #include "modem_ask.c"
-#if 0
 #include "modem_qam.c"
+#if 0
 #include "modem_apsk.c"
 
 // specific modems
