@@ -51,7 +51,12 @@ void MODEM(_modulate_bpsk)(MODEM()      _q,
                            TC *         _y)
 {
     // compute output sample directly from input
+#if LIQUID_FPM
+    _y[0].real = _sym_in ? -Q(_one) : Q(_one);
+    _y[0].imag = 0;
+#else
     *_y = _sym_in ? -1.0f : 1.0f;
+#endif
 }
 
 // demodulate BPSK
@@ -60,7 +65,11 @@ void MODEM(_demodulate_bpsk)(MODEM()        _q,
                              unsigned int * _sym_out)
 {
     // slice directly to output symbol
+#if LIQUID_FPM
+    *_sym_out = (_x.real > 0 ) ? 0 : 1;
+#else
     *_sym_out = (crealf(_x) > 0 ) ? 0 : 1;
+#endif
 
     // re-modulate symbol and store state
     MODEM(_modulate_bpsk)(_q, *_sym_out, &_q->x_hat);
@@ -73,6 +82,7 @@ void MODEM(_demodulate_soft_bpsk)(MODEM()         _q,
                                   unsigned int  * _s,
                                   unsigned char * _soft_bits)
 {
+#if !LIQUID_FPM
     // gamma = 1/(2*sigma^2), approximate for constellation size
     T gamma = 4.0f;
 
@@ -88,5 +98,6 @@ void MODEM(_demodulate_soft_bpsk)(MODEM()         _q,
     MODEM(_modulate_bpsk)(_q, symbol_out, &_q->x_hat);
     _q->r = _x;
     *_s = symbol_out;
+#endif
 }
 
