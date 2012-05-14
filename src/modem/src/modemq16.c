@@ -26,13 +26,9 @@
 #include "liquid.internal.h"
 
 // declare fixed-point math
-#define LIQUID_FPM      1
-#define Q(name)         LIQUID_CONCAT(q16,name)
-#define CQ(name)        LIQUID_CONCAT(cq16,name)
-#define  qtype_fixed_to_float(X)  q16_fixed_to_float(X)
-#define  qtype_float_to_fixed(X)  q16_float_to_fixed(X)
-#define cqtype_fixed_to_float(X) cq16_fixed_to_float(X)
-#define cqtype_float_to_fixed(X) cq16_float_to_fixed(X)
+#define LIQUID_FPM          1
+#define Q(name)             LIQUID_CONCAT(q16,name)
+#define CQ(name)            LIQUID_CONCAT(cq16,name)
 
 // Macro definitions
 #define MODEM(name)         LIQUID_CONCAT(modemq16,name)
