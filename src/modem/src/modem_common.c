@@ -455,7 +455,7 @@ void MODEM(_demodulate_soft_table)(MODEM() _q,
     del = CQ(_sub)(_r, _q->x_hat);
     d = Q(_mul)(del.real, del.real) + Q(_mul)(del.imag, del.imag);
 #else
-    del = _r - x_hat;
+    del = _r - _q->x_hat;
     d = crealf(del)*crealf(del) + cimagf(del)*cimagf(del);
 #endif
     for (k=0; k<bps; k++) {
