@@ -40,7 +40,6 @@
 // constants
 #include "modem_apsk_const.c"
 #include "modem_arb_const.c"
-#include "modem_demod_soft_const.c"
 
 // generic modem specifications
 #include "modem_psk.c"

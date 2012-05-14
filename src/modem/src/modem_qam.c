@@ -89,26 +89,9 @@ MODEM() MODEM(_create_qam)(unsigned int _bits_per_symbol)
     MODEM(_init_map)(q);
     q->modulate_using_map = 1;
 
-    // soft demodulation
-    if (q->m == 3) {
-        q->demod_soft_neighbors = (unsigned char*) qam8_demod_soft_neighbors;
-        q->demod_soft_p         = 3;
-    } else if (q->m == 4) {
-        q->demod_soft_neighbors = (unsigned char*) qam16_demod_soft_neighbors;
-        q->demod_soft_p         = 4;
-    } else if (q->m == 5) {
-        q->demod_soft_neighbors = (unsigned char*) qam32_demod_soft_neighbors;
-        q->demod_soft_p         = 4;
-    } else if (q->m == 6) {
-        q->demod_soft_neighbors = (unsigned char*) qam64_demod_soft_neighbors;
-        q->demod_soft_p         = 4;
-    } else if (q->m == 7) {
-        q->demod_soft_neighbors = (unsigned char*) qam128_demod_soft_neighbors;
-        q->demod_soft_p         = 4;
-    } else if (q->m == 8) {
-        q->demod_soft_neighbors = (unsigned char*) qam256_demod_soft_neighbors;
-        q->demod_soft_p         = 4;
-    }
+    // initialize soft-demodulation look-up table
+    if      (q->m == 3) MODEM(_demodsoft_gentab)(q, 3);
+    else if (q->m >= 4) MODEM(_demodsoft_gentab)(q, 4);
 
     return q;
 }

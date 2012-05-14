@@ -222,9 +222,13 @@ MODEM() MODEM(_recreate)(MODEM() _q,
 // destroy a modem object
 void MODEM(_destroy)(MODEM() _q)
 {
-    // free internally-allocated memory
+    // free symbol map
     if (_q->symbol_map != NULL)
         free(_q->symbol_map);
+
+    // free soft-demodulation neighbors table
+    if (_q->demod_soft_neighbors != NULL)
+        free(_q->demod_soft_neighbors);
 
     // free main object memory
     free(_q);
@@ -602,6 +606,113 @@ void MODEM(_demodulate_linear_array_ref)(T              _v,
 
     // return residual
     *_res = _v;
+}
+
+
+// generate soft demodulation look-up table
+void MODEM(_demodsoft_gentab)(MODEM()      _q,
+                              unsigned int _p)
+{
+    // validate input: ensure number of nearest symbols is not too large
+    if (_p > (_q->M-1)) {
+        fprintf(stderr,"error: modem_demodsoft_gentab(), requesting too many neighbors\n");
+        exit(1);
+    }
+    
+    // allocate internal memory
+    _q->demod_soft_p = _p;
+    _q->demod_soft_neighbors = (unsigned char*)malloc(_q->M*_p*sizeof(unsigned char));
+
+    unsigned int i;
+    unsigned int j;
+    unsigned int k;
+
+    // generate constellation
+    // TODO : enforce full constellation for modulation
+    unsigned int M = _q->M;  // constellation size
+    float complex c[M];         // constellation
+    for (i=0; i<M; i++)
+        modem_modulate(_q, i, &c[i]);
+
+    // 
+    // find nearest symbols (see algorithm in sandbox/modem_demodulate_soft_gentab.c)
+    //
+
+    // initialize table (with 'M' as invalid symbol)
+    for (i=0; i<M; i++) {
+        for (k=0; k<_p; k++)
+            _q->demod_soft_neighbors[i*_p + k] = M;
+    }
+
+    int symbol_valid;
+    for (i=0; i<M; i++) {
+        for (k=0; k<_p; k++) {
+            float dmin=1e9f;
+            for (j=0; j<M; j++) {
+                symbol_valid = 1;
+                // ignore this symbol
+                if (i==j) symbol_valid = 0;
+
+                // also ignore symbol if it is already in the index
+                unsigned int l;
+                for (l=0; l<_p; l++) {
+                    if ( _q->demod_soft_neighbors[i*_p + l] == j )
+                        symbol_valid = 0;
+                }
+
+                // compute distance
+                float d = cabsf( c[i] - c[j] );
+
+                if ( d < dmin && symbol_valid ) {
+                    dmin = d;
+                    _q->demod_soft_neighbors[i*_p + k] = j;
+                }
+
+            }
+        }
+    }
+
+#if DEBUG_DEMODULATE_SOFT
+    // 
+    // print results
+    //
+    unsigned int bps = _q->m;
+    for (i=0; i<M; i++) {
+        printf(" %4u [", i);
+        print_bitstring_demod_soft(i,bps);
+        printf("] : ");
+        for (k=0; k<_p; k++) {
+            printf(" ");
+            print_bitstring_demod_soft(_q->demod_soft_neighbors[i*_p + k],bps);
+            if (_q->demod_soft_neighbors[i*_p + k] < M)
+                printf("(%6.4f)", cabsf( c[i]-c[_q->demod_soft_neighbors[i*_p+k]] ));
+            else
+                printf("        ");
+        }
+        printf("\n");
+    }
+
+    // print c-type array
+    printf("\n");
+    printf("// %s%u soft demodulation nearest neighbors (p=%u)\n", modulation_types[_q->scheme].name, M, _p);
+    printf("const unsigned char %s%u_demod_soft_neighbors[%u] = {\n", modulation_types[_q->scheme].name, M, _p*M);
+    printf("    ");
+    for (i=0; i<M; i++) {
+        for (k=0; k<_p; k++) {
+            printf("%4u", _q->demod_soft_neighbors[i*_p+k]);
+            if (k != _p-1) printf(",");
+        }
+        if (i != M-1) {
+            printf(",   // ");
+            print_bitstring_demod_soft(i,bps);
+            printf("\n    ");
+        } else {
+            printf("};  // ");
+            print_bitstring_demod_soft(i,bps);
+            printf("\n\n");
+        }
+    }
+#endif
 }
 
 

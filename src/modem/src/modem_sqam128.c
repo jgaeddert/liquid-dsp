@@ -99,14 +99,12 @@ void MODEM(_demodulate_sqam128)(MODEM()        _q,
     // find symbol in map closest to x_prime
     T dmin = 0.0f;
     T d = 0.0f;
-    TC x_hat = 0.0f;
     unsigned int i;
     for (i=0; i<32; i++) {
         d = cabsf(x_prime - _q->symbol_map[i]);
         if (i==0 || d < dmin) {
             dmin = d;
             *_sym_out = i;
-            x_hat = _q->symbol_map[i];
         }
     }
 
