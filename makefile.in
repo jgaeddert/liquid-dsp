@@ -1203,6 +1203,7 @@ bench: $(bench_prog)
 
 # benchmark compare script
 scripts/benchmark_compare : % : %.c
+	$(CC) $(CFLAGS) -o $@ $< $(LDFLAGS)
 
 # fftbench program
 bench/fftbench.o : %.o : %.c
