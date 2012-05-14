@@ -373,6 +373,7 @@ void MODEM(_demodulate_soft)(MODEM() _q,
                              unsigned int  * _s,
                              unsigned char * _soft_bits)
 {
+#if !LIQUID_FPM
     // switch scheme
     switch (_q->scheme) {
     case LIQUID_MODEM_ARB:  MODEM(_demodulate_soft_arb)( _q,_x,_s,_soft_bits); return;
@@ -380,6 +381,7 @@ void MODEM(_demodulate_soft)(MODEM() _q,
     case LIQUID_MODEM_QPSK: MODEM(_demodulate_soft_qpsk)(_q,_x,_s,_soft_bits); return;
     default:;
     }
+#endif
 
     // check if...
     if (_q->demod_soft_neighbors != NULL && _q->demod_soft_p != 0) {
