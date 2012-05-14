@@ -43,22 +43,18 @@
 #include "modem_common.c"
 
 // generic modem specifications
-#if 0
-#include "modem_psk.c"
-#include "modem_dpsk.c"
-#endif
+//#include "modem_psk.c"
+//#include "modem_dpsk.c"
 #include "modem_ask.c"
 #include "modem_qam.c"
-#if 0
-#include "modem_apsk.c"
+//#include "modem_apsk.c"
 
 // specific modems
-#include "modem_bpsk.c"
-#include "modem_qpsk.c"
-#include "modem_ook.c"
-#include "modem_sqam32.c"
-#include "modem_sqam128.c"
+//#include "modem_bpsk.c"
+//#include "modem_qpsk.c"
+//#include "modem_ook.c"
+//#include "modem_sqam32.c"
+//#include "modem_sqam128.c"
 
 // arbitary modems
 #include "modem_arb.c"
-#endif
