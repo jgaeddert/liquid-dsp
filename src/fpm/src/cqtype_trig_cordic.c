@@ -26,7 +26,7 @@
 #include "liquidfpm.internal.h"
 
 // compute magnitude squared
-Q(_t) CQ(_abs2)(CQ(_t) _x)
+Q(_t) CQ(_cabs2)(CQ(_t) _x)
 {
     Q(_t) x2 = Q(_mul)(_x.real,_x.real) +
                Q(_mul)(_x.imag,_x.imag);
@@ -34,12 +34,12 @@ Q(_t) CQ(_abs2)(CQ(_t) _x)
 }
 
 // compute magnitude
-Q(_t) CQ(_abs)(CQ(_t) _x)
+Q(_t) CQ(_cabs)(CQ(_t) _x)
 {
     // number of iterations (precision)
     unsigned int _precision = Q(_bits);
 
-    return Q(_sqrt_newton)(CQ(_abs2)(_x), _precision);
+    return Q(_sqrt_newton)(CQ(_cabs2)(_x), _precision);
 }
 
 // compute complex sin(x) = (exp(j*x) - exp(-j*x))/(j*2)

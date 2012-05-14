@@ -245,7 +245,7 @@ CQ(_t) CQ(_div_scalar)(CQ(_t) _a,  Q(_t) _b);                       \
 CQ(_t) CQ(_inv)       (CQ(_t) _x); /* compute 1/_x */               \
                                                                     \
 /* basic operations */                                              \
-CQ(_t) CQ(_cabs)(CQ(_t) _x);                                        \
+Q(_t) CQ(_cabs)(CQ(_t) _x);                                         \
 static inline Q(_t) CQ(_carg)(CQ(_t) _x)                            \
     { return Q(_atan2)(_x.imag, _x.real); };                        \
 static inline Q(_t) CQ(_real)(CQ(_t) _a) {return _a.real;};         \
