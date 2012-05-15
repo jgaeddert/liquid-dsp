@@ -42,14 +42,14 @@
 #include "qtype_hyperbolic_shiftadd.c"
 #include "qtype_sqrt.c"
 #include "qtype_cbrt.c"
-#include "qtype_gamma.c"
-#include "qtype_erf.c"
 
 // specific type definitions (e.g. use cordic)
 #include "qtype_trig.c"
 #include "qtype_hyperbolic.c"
 #include "qtype_logexp.c"
 #include "qtype_power.c"
+#include "qtype_erf.c"
+#include "qtype_gamma.c"
 
 // complex
 #include "cqtype_arithmetic.c"
