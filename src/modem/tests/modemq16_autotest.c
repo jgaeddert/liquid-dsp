@@ -51,7 +51,7 @@ void modemq16_test_mod_demod(modulation_scheme _ms)
     }
     e = sqrtf(e / (float)M);
 
-    CONTEND_DELTA(e,1.0f,1e-3f);
+    CONTEND_DELTA(e, 1.0f, 0.005f);
 
     // clean it up
     modemq16_destroy(mod);
@@ -117,10 +117,10 @@ void xautotest_modemq16_apsk256()   { modemq16_test_mod_demod(LIQUID_MODEM_APSK2
 #endif
 
 // AUTOTESTS: Specific modems
+void autotest_modemq16_bpsk()      { modemq16_test_mod_demod(LIQUID_MODEM_BPSK);      }
+void autotest_modemq16_qpsk()      { modemq16_test_mod_demod(LIQUID_MODEM_QPSK);      }
+void autotest_modemq16_ook()       { modemq16_test_mod_demod(LIQUID_MODEM_OOK);       }
 #if 0
-void xautotest_modemq16_bpsk()      { modemq16_test_mod_demod(LIQUID_MODEM_BPSK);      }
-void xautotest_modemq16_qpsk()      { modemq16_test_mod_demod(LIQUID_MODEM_QPSK);      }
-void xautotest_modemq16_ook()       { modemq16_test_mod_demod(LIQUID_MODEM_OOK);       }
 void xautotest_modemq16_sqam32()    { modemq16_test_mod_demod(LIQUID_MODEM_SQAM32);    }
 void xautotest_modemq16_sqam128()   { modemq16_test_mod_demod(LIQUID_MODEM_SQAM128);   }
 void xautotest_modemq16_V29()       { modemq16_test_mod_demod(LIQUID_MODEM_V29);       }
