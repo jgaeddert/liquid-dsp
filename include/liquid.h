@@ -3084,7 +3084,8 @@ typedef struct MODEM(_s) * MODEM();                             \
 MODEM() MODEM(_create)(modulation_scheme _scheme);              \
                                                                 \
 /* create arbitrary digital modem object */                     \
-MODEM() MODEM(_create_arbitrary)(TC * _table, unsigned int _M); \
+MODEM() MODEM(_create_arbitrary)(liquid_float_complex * _table, \
+                                 unsigned int _M);              \
                                                                 \
 /* recreate modulation scheme */                                \
 MODEM() MODEM(_recreate)(MODEM() _q,                            \

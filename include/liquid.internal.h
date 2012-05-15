@@ -1544,10 +1544,11 @@ MODEM() MODEM(_create_dpsk)(unsigned int _bits_per_symbol);     \
 MODEM() MODEM(_create_apsk)(unsigned int _bits_per_symbol);     \
 MODEM() MODEM(_create_arb)( unsigned int _bits_per_symbol);     \
                                                                 \
-/* Initialize arbitrary modem constellation */                  \
-void MODEM(_arb_init)(MODEM() _q,                               \
-                      TC * _symbol_map,                         \
-                      unsigned int _len);                       \
+/* Initialize arbitrary modem constellation with        */      \
+/* floating-point constellation array                   */      \
+void MODEM(_arb_init)(MODEM()         _q,                       \
+                      float complex * _symbol_map,              \
+                      unsigned int    _len);                    \
                                                                 \
 /* Initialize arb modem constellation from external file */     \
 void MODEM(_arb_init_file)(MODEM() _q, char * _filename);       \

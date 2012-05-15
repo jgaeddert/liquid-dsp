@@ -122,13 +122,11 @@ void autotest_modemq16_qpsk()      { modemq16_test_mod_demod(LIQUID_MODEM_QPSK);
 void autotest_modemq16_ook()       { modemq16_test_mod_demod(LIQUID_MODEM_OOK);       }
 void autotest_modemq16_sqam32()    { modemq16_test_mod_demod(LIQUID_MODEM_SQAM32);    }
 void autotest_modemq16_sqam128()   { modemq16_test_mod_demod(LIQUID_MODEM_SQAM128);   }
-#if 0
-void xautotest_modemq16_V29()       { modemq16_test_mod_demod(LIQUID_MODEM_V29);       }
-void xautotest_modemq16_arb16opt()  { modemq16_test_mod_demod(LIQUID_MODEM_ARB16OPT);  }
-void xautotest_modemq16_arb32opt()  { modemq16_test_mod_demod(LIQUID_MODEM_ARB32OPT);  }
-void xautotest_modemq16_arb64opt()  { modemq16_test_mod_demod(LIQUID_MODEM_ARB64OPT);  }
-void xautotest_modemq16_arb128opt() { modemq16_test_mod_demod(LIQUID_MODEM_ARB128OPT); }
-void xautotest_modemq16_arb256opt() { modemq16_test_mod_demod(LIQUID_MODEM_ARB256OPT); }
-void xautotest_modemq16_arb64vt()   { modemq16_test_mod_demod(LIQUID_MODEM_ARB64VT);   }
-#endif
+void autotest_modemq16_V29()       { modemq16_test_mod_demod(LIQUID_MODEM_V29);       }
+void autotest_modemq16_arb16opt()  { modemq16_test_mod_demod(LIQUID_MODEM_ARB16OPT);  }
+void autotest_modemq16_arb32opt()  { modemq16_test_mod_demod(LIQUID_MODEM_ARB32OPT);  }
+void autotest_modemq16_arb64opt()  { modemq16_test_mod_demod(LIQUID_MODEM_ARB64OPT);  }
+void autotest_modemq16_arb128opt() { modemq16_test_mod_demod(LIQUID_MODEM_ARB128OPT); }
+void autotest_modemq16_arb256opt() { modemq16_test_mod_demod(LIQUID_MODEM_ARB256OPT); }
+void autotest_modemq16_arb64vt()   { modemq16_test_mod_demod(LIQUID_MODEM_ARB64VT);   }
 
