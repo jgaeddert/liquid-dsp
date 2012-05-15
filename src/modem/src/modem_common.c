@@ -68,8 +68,8 @@ struct MODEM(_s)
     union {
         // PSK modem
         struct {
+            float alpha;        // scaling factor for phase symbols
             T d_phi;            // half of phase between symbols
-            T alpha;            // scaling factor for phase symbols
         } psk;
 
         // DPSK modem

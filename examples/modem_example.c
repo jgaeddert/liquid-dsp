@@ -83,7 +83,7 @@ int main(int argc, char*argv[])
         modem_demodulate(demod, x, &s);
 
         if (verbose)
-            printf("%4u : %12.8f + j*%12.8f\n", i, crealf(x), cimagf(x));
+            printf("%4u > %4u : %12.8f + j*%12.8f\n", i, s, crealf(x), cimagf(x));
 
         num_sym_errors += i == s ? 0 : 1;
         num_bit_errors += count_bit_errors(i,s);

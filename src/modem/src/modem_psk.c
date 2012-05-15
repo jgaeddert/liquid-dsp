@@ -46,22 +46,20 @@ MODEM() MODEM(_create_psk)(unsigned int _bits_per_symbol)
     MODEM(_init)(q, _bits_per_symbol);
 
     // compute alpha
-#if LIQUID_FPM
-#  warning "TODO: check PSK scaling factor"
-    q->data.psk.alpha = Q(_2pi) / (q->M);
-#else
     q->data.psk.alpha = M_PI/(T)(q->M);
-#endif
 
     // initialize demodulation array reference
     unsigned int k;
     for (k=0; k<(q->m); k++)
+#if LIQUID_FPM
+        q->ref[k] = Q(_angle_float_to_fixed)((1<<k) * q->data.psk.alpha);
+#else
         q->ref[k] = (1<<k) * q->data.psk.alpha;
+#endif
 
     // compute phase offset (half of phase difference between symbols)
 #if LIQUID_FPM
-#  warning "TODO: check PSK scaling factor"
-    q->data.psk.d_phi = Q(_2pi) - Q(_2pi)/q->M;
+    q->data.psk.d_phi = Q(_pi) - Q(_pi)/q->M;
 #else
     q->data.psk.d_phi = M_PI*(1.0f - 1.0f/(T)(q->M));
 #endif
@@ -91,11 +89,11 @@ void MODEM(_modulate_psk)(MODEM()      _q,
     _sym_in = gray_decode(_sym_in);
 
     // compute output sample
+    float complex v = liquid_cexpjf(_sym_in * 2 * _q->data.psk.alpha );
 #if LIQUID_FPM
-#  warning "TODO: check PSK modulation"
-    *_y = CQ(_cexpj)(_sym_in * 2 * _q->data.psk.alpha );
+    *_y = CQ(_float_to_fixed)(v);
 #else
-    *_y = liquid_cexpjf(_sym_in * 2 * _q->data.psk.alpha );
+    *_y = v;
 #endif
 }
 
@@ -106,10 +104,11 @@ void MODEM(_demodulate_psk)(MODEM()        _q,
 {
     // compute angle and subtract phase offset, ensuring phase is in [-pi,pi)
 #if LIQUID_FPM
-    T theta = CQ(_carg)(_x);
+    T theta = CQ(_carg)(_x) - _q->data.psk.d_phi;
+    if (theta < -Q(_pi))
+        theta += Q(_2pi);
 #else
-    T theta = cargf(_x);
-    theta -= _q->data.psk.d_phi;
+    T theta = cargf(_x) - _q->data.psk.d_phi;
     if (theta < -M_PI)
         theta += 2*M_PI;
 #endif
@@ -123,7 +122,7 @@ void MODEM(_demodulate_psk)(MODEM()        _q,
     *_sym_out = gray_encode(s);
 
     // re-modulate symbol and store state
-    MODEM(_modulate_psk)(_q, *_sym_out, &_q->x_hat);
+    MODEM(_modulate)(_q, *_sym_out, &_q->x_hat);
     _q->r = _x;
 }
 

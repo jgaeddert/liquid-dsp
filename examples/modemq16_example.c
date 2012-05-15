@@ -78,8 +78,10 @@ int main(int argc, char*argv[])
         modemq16_demodulate(demod, x, &s);
 
         if (verbose) {
-            printf("%4u : %12.8f + j*%12.8f\n", i, q16_fixed_to_float(x.real),
-                                                   q16_fixed_to_float(x.imag));
+            printf("%4u > %4u : %12.8f + j*%12.8f\n",
+                    i, s,
+                    q16_fixed_to_float(x.real),
+                    q16_fixed_to_float(x.imag));
         }
 
         num_sym_errors += i == s ? 0 : 1;
