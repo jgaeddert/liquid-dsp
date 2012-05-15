@@ -74,9 +74,9 @@ struct MODEM(_s)
 
         // DPSK modem
         struct {
+            float alpha;        // scaling factor for phase symbols
+            float phi;          // angle state for differential PSK
             T d_phi;            // half of phase between symbols
-            T phi;              // angle state for differential PSK
-            T alpha;            // scaling factor for phase symbols
         } dpsk;
 
         // ASK modem

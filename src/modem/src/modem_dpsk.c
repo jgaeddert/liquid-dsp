@@ -44,22 +44,22 @@ MODEM() MODEM(_create_dpsk)(unsigned int _bits_per_symbol)
 
     MODEM(_init)(q, _bits_per_symbol);
 
-#if LIQUID_FPM
-#  warning "TODO: check DPSK scaling factor"
-    q->data.dpsk.alpha = Q(_2pi) / (q->M);
-#else
     q->data.dpsk.alpha = M_PI/(T)(q->M);
-#endif
     
-    q->data.dpsk.phi = 0.0f;
+    // set angle state to zero
+    q->data.dpsk.phi = 0;
 
+    // initialize demodulation array reference
     unsigned int k;
     for (k=0; k<(q->m); k++)
-        q->ref[k] = (1<<k) * q->data.dpsk.alpha;
+#if LIQUID_FPM
+        q->ref[k] = Q(_angle_float_to_fixed)((1<<k) * q->data.psk.alpha);
+#else
+        q->ref[k] = (1<<k) * q->data.psk.alpha;
+#endif
 
 #if LIQUID_FPM
-#  warning "TODO: check DPSK scaling factor"
-    q->data.dpsk.d_phi = Q(_2pi) - Q(_2pi)/q->M;
+    q->data.dpsk.d_phi = Q(_pi) - Q(_pi)/q->M;
 #else
     q->data.dpsk.d_phi = M_PI*(1.0f - 1.0f/(T)(q->M));
 #endif
@@ -84,16 +84,15 @@ void MODEM(_modulate_dpsk)(MODEM()      _q,
     // compute phase difference between this symbol and the previous
     _q->data.dpsk.phi += _sym_in * 2 * _q->data.dpsk.alpha;
 
-#if LIQUID_FPM
-#  warning "TODO: check DPSK modulation"
-    // compute output sample
-    *_y = CQ(_cexpj)(_q->data.dpsk.phi);
-#else
     // limit phase
     _q->data.dpsk.phi -= (_q->data.dpsk.phi > 2*M_PI) ? 2*M_PI : 0.0f;
     
     // compute output sample
-    *_y = liquid_cexpjf(_q->data.dpsk.phi);
+    float complex v = liquid_cexpjf(_q->data.dpsk.phi);
+#if LIQUID_FPM
+    *_y = CQ(_float_to_fixed)(v);
+#else
+    *_y = v;
 #endif
 
     // save symbol state
@@ -105,23 +104,26 @@ void MODEM(_demodulate_dpsk)(MODEM()        _q,
                              TC             _x,
                              unsigned int * _sym_out)
 {
-    // compute angle difference
 #if LIQUID_FPM
-    T theta = CQ(_carg)(_x);
-    T d_theta = CQ(_carg)(_x) - _q->data.dpsk.phi;
-#else
-    T theta = cargf(_x);
-    T d_theta = cargf(_x) - _q->data.dpsk.phi;
-#endif
+    // compute angle difference
+    T theta   = CQ(_carg)(_x);
+    T d_theta = theta - _q->data.dpsk.phi;
     _q->data.dpsk.phi = theta;
 
     // subtract phase offset, ensuring phase is in [-pi,pi)
     d_theta -= _q->data.dpsk.d_phi;
-#if !LIQUID_FPM
-    if (d_theta > M_PI)
-        d_theta -= 2*M_PI;
-    else if (d_theta < -M_PI)
-        d_theta += 2*M_PI;
+    if      (d_theta >  Q(_pi)) d_theta -= Q(_2pi);
+    else if (d_theta < -Q(_pi)) d_theta += Q(_2pi);
+#else
+    // compute angle difference
+    T theta = cargf(_x);
+    T d_theta = theta - _q->data.dpsk.phi;
+    _q->data.dpsk.phi = theta;
+
+    // subtract phase offset, ensuring phase is in [-pi,pi)
+    d_theta -= _q->data.dpsk.d_phi;
+    if      (d_theta >  M_PI) d_theta -= 2*M_PI;
+    else if (d_theta < -M_PI) d_theta += 2*M_PI;
 #endif
 
     // demodulate on linearly-spaced array
@@ -135,8 +137,6 @@ void MODEM(_demodulate_dpsk)(MODEM()        _q,
     // re-modulate symbol (accounting for differential rotation)
     // and store state
 #if LIQUID_FPM
-#  warning "TODO: check DPSK demodulation"
-    // compute output sample
     _q->x_hat = CQ(_cexpj)(theta - demod_phase_error);
 #else
     _q->x_hat = liquid_cexpjf(theta - demod_phase_error);
