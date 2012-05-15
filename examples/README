@@ -338,6 +338,9 @@ modem_example.c *
 
     SEE ALSO: modem_arb_example.c
 
+modemq16_example.c *
+    Fixed-point linear modem example.
+
 modem_soft_example.c *
     This example demonstates soft demodulation of linear
     modulation schemes.
