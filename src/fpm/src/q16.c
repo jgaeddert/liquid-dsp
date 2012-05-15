@@ -49,6 +49,7 @@
 #include "qtype_trig.c"
 #include "qtype_hyperbolic.c"
 #include "qtype_logexp.c"
+#include "qtype_power.c"
 
 // complex
 #include "cqtype_arithmetic.c"
