@@ -48,6 +48,7 @@
 // specific type definitions (e.g. use cordic)
 #include "qtype_trig.c"
 #include "qtype_hyperbolic.c"
+#include "qtype_logexp.c"
 
 // complex
 #include "cqtype_arithmetic.c"
