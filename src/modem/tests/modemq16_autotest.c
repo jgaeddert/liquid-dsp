@@ -120,9 +120,9 @@ void xautotest_modemq16_apsk256()   { modemq16_test_mod_demod(LIQUID_MODEM_APSK2
 void autotest_modemq16_bpsk()      { modemq16_test_mod_demod(LIQUID_MODEM_BPSK);      }
 void autotest_modemq16_qpsk()      { modemq16_test_mod_demod(LIQUID_MODEM_QPSK);      }
 void autotest_modemq16_ook()       { modemq16_test_mod_demod(LIQUID_MODEM_OOK);       }
+void autotest_modemq16_sqam32()    { modemq16_test_mod_demod(LIQUID_MODEM_SQAM32);    }
+void autotest_modemq16_sqam128()   { modemq16_test_mod_demod(LIQUID_MODEM_SQAM128);   }
 #if 0
-void xautotest_modemq16_sqam32()    { modemq16_test_mod_demod(LIQUID_MODEM_SQAM32);    }
-void xautotest_modemq16_sqam128()   { modemq16_test_mod_demod(LIQUID_MODEM_SQAM128);   }
 void xautotest_modemq16_V29()       { modemq16_test_mod_demod(LIQUID_MODEM_V29);       }
 void xautotest_modemq16_arb16opt()  { modemq16_test_mod_demod(LIQUID_MODEM_ARB16OPT);  }
 void xautotest_modemq16_arb32opt()  { modemq16_test_mod_demod(LIQUID_MODEM_ARB32OPT);  }

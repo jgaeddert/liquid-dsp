@@ -62,8 +62,8 @@ void MODEM(_modulate_sqam128)(MODEM()      _q,
     TC p = _q->data.sqam128.map[s];
     
 #if LIQUID_FPM
-    _y[0].real = quad & 0x02 ? p.real : -p.real;
-    _y[0].imag = quad & 0x01 ? p.imag : -p.imag;
+    _y[0].real = quad & 0x02 ? -p.real : p.real;
+    _y[0].imag = quad & 0x01 ? -p.imag : p.imag;
 #else
     switch (quad) {
     case 0: *_y =  p;           return;
@@ -96,8 +96,8 @@ void MODEM(_demodulate_sqam128)(MODEM()        _q,
     
     TC x_prime = _x;
 #if LIQUID_FPM
-    x_prime.real = quad & 0x02 ? _x.real : -_x.real;
-    x_prime.imag = quad & 0x01 ? _x.imag : -_x.imag;
+    x_prime.real = quad & 0x02 ? -_x.real : _x.real;
+    x_prime.imag = quad & 0x01 ? -_x.imag : _x.imag;
 
     assert(x_prime.imag >= 0);
     assert(x_prime.imag >= 0);
