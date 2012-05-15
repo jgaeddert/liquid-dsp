@@ -45,8 +45,9 @@
 #include "qtype_gamma.c"
 #include "qtype_erf.c"
 
-// trig definitions (e.g. use cordic)
+// specific type definitions (e.g. use cordic)
 #include "qtype_trig.c"
+#include "qtype_hyperbolic.c"
 
 // complex
 #include "cqtype_arithmetic.c"
