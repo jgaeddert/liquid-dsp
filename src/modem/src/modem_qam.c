@@ -23,7 +23,45 @@
 // modem_qam.c
 //
 
-#include <assert.h>
+// 'Square' QAM scaling factors
+#if 0
+#define QAM4_ALPHA      (1./sqrt(2))
+#define QAM8_ALPHA      (1./sqrt(6))
+#define QAM16_ALPHA     (1./sqrt(10))
+#define QAM32_ALPHA     (1./sqrt(20))
+#define QAM64_ALPHA     (1./sqrt(42))
+#define QAM128_ALPHA    (1./sqrt(82))
+#define QAM256_ALPHA    (1./sqrt(170))
+#define QAM1024_ALPHA   (1./sqrt(682))
+#define QAM4096_ALPHA   (1./sqrt(2730))
+#endif
+
+// Rectangular QAM scaling factors
+#if LIQUID_FPM
+#  define QAM4_ALPHA      Q(_float_to_fixed)(1./sqrt(2))
+#  define QAM8_ALPHA      Q(_float_to_fixed)(1./sqrt(6))
+#  define QAM16_ALPHA     Q(_float_to_fixed)(1./sqrt(10))
+#  define QAM32_ALPHA     Q(_float_to_fixed)(1./sqrt(26))
+#  define QAM64_ALPHA     Q(_float_to_fixed)(1./sqrt(42))
+#  define QAM128_ALPHA    Q(_float_to_fixed)(1./sqrt(106))
+#  define QAM256_ALPHA    Q(_float_to_fixed)(1./sqrt(170))
+#  define QAM512_ALPHA    Q(_float_to_fixed)(1./sqrt(426))
+#  define QAM1024_ALPHA   Q(_float_to_fixed)(1./sqrt(682))
+#  define QAM2048_ALPHA   Q(_float_to_fixed)(1./sqrt(1706))
+#  define QAM4096_ALPHA   Q(_float_to_fixed)(1./sqrt(2730))
+#else
+#  define QAM4_ALPHA      (1./sqrt(2))
+#  define QAM8_ALPHA      (1./sqrt(6))
+#  define QAM16_ALPHA     (1./sqrt(10))
+#  define QAM32_ALPHA     (1./sqrt(26))
+#  define QAM64_ALPHA     (1./sqrt(42))
+#  define QAM128_ALPHA    (1./sqrt(106))
+#  define QAM256_ALPHA    (1./sqrt(170))
+#  define QAM512_ALPHA    (1./sqrt(426))
+#  define QAM1024_ALPHA   (1./sqrt(682))
+#  define QAM2048_ALPHA   (1./sqrt(1706))
+#  define QAM4096_ALPHA   (1./sqrt(2730))
+#endif
 
 // create a qam (quaternary amplitude-shift keying) modem object
 MODEM() MODEM(_create_qam)(unsigned int _bits_per_symbol)
@@ -50,22 +88,22 @@ MODEM() MODEM(_create_qam)(unsigned int _bits_per_symbol)
     q->data.qam.M_i = 1 << (q->data.qam.m_i);
     q->data.qam.M_q = 1 << (q->data.qam.m_q);
 
-    assert(q->data.qam.m_i + q->data.qam.m_q == q->m);
-    assert(q->data.qam.M_i * q->data.qam.M_q == q->M);
+    //assert(q->data.qam.m_i + q->data.qam.m_q == q->m);
+    //assert(q->data.qam.M_i * q->data.qam.M_q == q->M);
 
     switch (q->M) {
-    case 4:    q->data.qam.alpha = RQAM4_ALPHA;    q->scheme = LIQUID_MODEM_QAM4;   break;
-    case 8:    q->data.qam.alpha = RQAM8_ALPHA;    q->scheme = LIQUID_MODEM_QAM8;   break;
-    case 16:   q->data.qam.alpha = RQAM16_ALPHA;   q->scheme = LIQUID_MODEM_QAM16;  break;
-    case 32:   q->data.qam.alpha = RQAM32_ALPHA;   q->scheme = LIQUID_MODEM_QAM32;  break;
-    case 64:   q->data.qam.alpha = RQAM64_ALPHA;   q->scheme = LIQUID_MODEM_QAM64;  break;
-    case 128:  q->data.qam.alpha = RQAM128_ALPHA;  q->scheme = LIQUID_MODEM_QAM128; break;
-    case 256:  q->data.qam.alpha = RQAM256_ALPHA;  q->scheme = LIQUID_MODEM_QAM256; break;
+    case 4:    q->data.qam.alpha = QAM4_ALPHA;    q->scheme = LIQUID_MODEM_QAM4;   break;
+    case 8:    q->data.qam.alpha = QAM8_ALPHA;    q->scheme = LIQUID_MODEM_QAM8;   break;
+    case 16:   q->data.qam.alpha = QAM16_ALPHA;   q->scheme = LIQUID_MODEM_QAM16;  break;
+    case 32:   q->data.qam.alpha = QAM32_ALPHA;   q->scheme = LIQUID_MODEM_QAM32;  break;
+    case 64:   q->data.qam.alpha = QAM64_ALPHA;   q->scheme = LIQUID_MODEM_QAM64;  break;
+    case 128:  q->data.qam.alpha = QAM128_ALPHA;  q->scheme = LIQUID_MODEM_QAM128; break;
+    case 256:  q->data.qam.alpha = QAM256_ALPHA;  q->scheme = LIQUID_MODEM_QAM256; break;
 #if 0
-    case 512:  q->data.qam.alpha = RQAM512_ALPHA;     break;
-    case 1024: q->data.qam.alpha = RQAM1024_ALPHA;    break;
-    case 2048: q->data.qam.alpha = RQAM2048_ALPHA;    break;
-    case 4096: q->data.qam.alpha = RQAM4096_ALPHA;    break;
+    case 512:  q->data.qam.alpha = QAM512_ALPHA;     break;
+    case 1024: q->data.qam.alpha = QAM1024_ALPHA;    break;
+    case 2048: q->data.qam.alpha = QAM2048_ALPHA;    break;
+    case 4096: q->data.qam.alpha = QAM4096_ALPHA;    break;
     default:
         // calculate alpha dynamically
         // NOTE: this is only an approximation
@@ -101,10 +139,11 @@ void MODEM(_modulate_qam)(MODEM()      _q,
                           unsigned int _sym_in,
                           TC *         _y)
 {
-    unsigned int s_i;   // in-phase symbol
-    unsigned int s_q;   // quadrature symbol
-    s_i = _sym_in >> _q->data.qam.m_q;
-    s_q = _sym_in & ( (1<<_q->data.qam.m_q)-1 );
+    // in-phase symbol: most-significant m_i bits
+    unsigned int s_i = _sym_in >> _q->data.qam.m_q;
+
+    // quadrature symbol: leas-significant m_q bits
+    unsigned int s_q = _sym_in & ( (1<<_q->data.qam.m_q)-1 );
 
     // 'encode' symbols (actually gray decoding)
     s_i = gray_decode(s_i);
@@ -112,8 +151,8 @@ void MODEM(_modulate_qam)(MODEM()      _q,
 
     // compute output sample
 #if LIQUID_FPM
-    _y[0].real = Q(_mul)( 2*(int)s_i - (int)(_q->data.qam.M_i) + 1, _q->data.qam.alpha);
-    _y[0].imag = Q(_mul)( 2*(int)s_q - (int)(_q->data.qam.M_q) + 1, _q->data.qam.alpha);
+    _y[0].real = ( 2*(int)s_i - (int)(_q->data.qam.M_i) + 1) * _q->data.qam.alpha;
+    _y[0].imag = ( 2*(int)s_q - (int)(_q->data.qam.M_q) + 1) * _q->data.qam.alpha;
 #else
     *_y = (2*(int)s_i - (int)(_q->data.qam.M_i) + 1) * _q->data.qam.alpha +
           (2*(int)s_q - (int)(_q->data.qam.M_q) + 1) * _q->data.qam.alpha * _Complex_I;
@@ -121,9 +160,9 @@ void MODEM(_modulate_qam)(MODEM()      _q,
 }
 
 // demodulate QAM
-void MODEM(_demodulate_qam)(MODEM()      _q,
-                          TC             _x,
-                          unsigned int * _sym_out)
+void MODEM(_demodulate_qam)(MODEM()        _q,
+                            TC             _x,
+                            unsigned int * _sym_out)
 {
     // demodulate linearly-spaced arrays
     unsigned int s_i;   // in-phase symbol

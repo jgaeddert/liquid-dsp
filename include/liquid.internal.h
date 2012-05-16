@@ -1490,40 +1490,6 @@ LIQUID_MATRIX_DEFINE_INTERNAL_API(MATRIX_MANGLE_CDOUBLE, liquid_double_complex)
 // MODULE : modem
 //
 
-// 'Square' QAM
-#define QAM4_ALPHA      (1./sqrt(2))
-#define QAM8_ALPHA      (1./sqrt(6))
-#define QAM16_ALPHA     (1./sqrt(10))
-#define QAM32_ALPHA     (1./sqrt(20))
-#define QAM64_ALPHA     (1./sqrt(42))
-#define QAM128_ALPHA    (1./sqrt(82))
-#define QAM256_ALPHA    (1./sqrt(170))
-#define QAM1024_ALPHA   (1./sqrt(682))
-#define QAM4096_ALPHA   (1./sqrt(2730))
-
-// Rectangular QAM
-#define RQAM4_ALPHA     QAM4_ALPHA
-#define RQAM8_ALPHA     QAM8_ALPHA
-#define RQAM16_ALPHA    QAM16_ALPHA
-#define RQAM32_ALPHA    (1./sqrt(26))
-#define RQAM64_ALPHA    QAM64_ALPHA
-#define RQAM128_ALPHA   (1./sqrt(106))
-#define RQAM256_ALPHA   QAM256_ALPHA
-#define RQAM512_ALPHA   (1./sqrt(426))
-#define RQAM1024_ALPHA  QAM1024_ALPHA
-#define RQAM2048_ALPHA  (1./sqrt(1706))
-#define RQAM4096_ALPHA  QAM4096_ALPHA
-
-// ASK
-#define ASK2_ALPHA      (1.)
-#define ASK4_ALPHA      (1./sqrt(5))
-#define ASK8_ALPHA      (1./sqrt(21))
-#define ASK16_ALPHA     (1./sqrt(85))
-#define ASK32_ALPHA     (1./sqrt(341))
-#define ASK64_ALPHA     (1./sqrt(1365))
-#define ASK128_ALPHA    (1./sqrt(5461))
-#define ASK256_ALPHA    (1./sqrt(21845))
-
 // Macro    :   MODEM
 //  MODEM   :   name-mangling macro
 //  T       :   primitive data type
@@ -1559,13 +1525,6 @@ MODEM() MODEM(_create_qpsk)(void);                              \
 MODEM() MODEM(_create_ook)(void);                               \
 MODEM() MODEM(_create_sqam32)(void);                            \
 MODEM() MODEM(_create_sqam128)(void);                           \
-MODEM() MODEM(_create_apsk4)(void);                             \
-MODEM() MODEM(_create_apsk8)(void);                             \
-MODEM() MODEM(_create_apsk16)(void);                            \
-MODEM() MODEM(_create_apsk32)(void);                            \
-MODEM() MODEM(_create_apsk64)(void);                            \
-MODEM() MODEM(_create_apsk128)(void);                           \
-MODEM() MODEM(_create_apsk256)(void);                           \
 MODEM() MODEM(_create_V29)(void);                               \
 MODEM() MODEM(_create_arb16opt)(void);                          \
 MODEM() MODEM(_create_arb32opt)(void);                          \
@@ -1672,136 +1631,25 @@ LIQUID_MODEM_DEFINE_INTERNAL_API(LIQUID_MODEM_MANGLE_Q16,  q16_t,cq16_t)
 // modem constants
 //
 
-// APSK4(1,3)
-extern const unsigned int  apsk4_num_levels;
-extern const unsigned int  apsk4_p[2];
-extern const float         apsk4_r[2];
-extern const float         apsk4_phi[2];
-extern const float         apsk4_r_slicer[1];
-extern const unsigned char apsk4_map[4];
+// APSK constants (container for apsk structure definitions)
+struct liquid_apsk_s {
+    modulation_scheme scheme;   // APSK modulation scheme
+    unsigned int    num_levels; // number of rings
+    unsigned int *  p;          // number of symbols per ring
+    float *         r;          // radius of each ring
+    float *         phi;        // phase offset of each ring
+    float *         r_slicer;   // radius slicer
+    unsigned char * map;        // symbol mapping
+};
 
-// APSK8(1,7)
-extern const unsigned int  apsk8_num_levels;
-extern const unsigned int  apsk8_p[2];
-extern const float         apsk8_r[2];
-extern const float         apsk8_phi[2];
-extern const float         apsk8_r_slicer[1];
-extern const unsigned char apsk8_map[8];
+extern struct liquid_apsk_s liquid_apsk4;
+extern struct liquid_apsk_s liquid_apsk8;
+extern struct liquid_apsk_s liquid_apsk16;
+extern struct liquid_apsk_s liquid_apsk32;
+extern struct liquid_apsk_s liquid_apsk64;
+extern struct liquid_apsk_s liquid_apsk128;
+extern struct liquid_apsk_s liquid_apsk256;
 
-// APSK16(4,12)
-extern const unsigned int  apsk16_num_levels;
-extern const unsigned int  apsk16_p[2];
-extern const float         apsk16_r[2];
-extern const float         apsk16_phi[2];
-extern const float         apsk16_r_slicer[1];
-extern const unsigned char apsk16_map[16];
-
-// APSK32(4,12,16)
-extern const unsigned int  apsk32_num_levels;
-extern const unsigned int  apsk32_p[3];
-extern const float         apsk32_r[3];
-extern const float         apsk32_phi[3];
-extern const float         apsk32_r_slicer[2];
-extern const unsigned char apsk32_map[32];
-
-// APSK64(4,14,20,26)
-extern const unsigned int  apsk64_num_levels;
-extern const unsigned int  apsk64_p[4];
-extern const float         apsk64_r[4];
-extern const float         apsk64_phi[4];
-extern const float         apsk64_r_slicer[3];
-extern const unsigned char apsk64_map[64];
-
-// APSK128(8,18,24,36,42)
-extern const unsigned int  apsk128_num_levels;
-extern const unsigned int  apsk128_p[5];
-extern const float         apsk128_r[5];
-extern const float         apsk128_phi[5];
-extern const float         apsk128_r_slicer[4];
-extern const unsigned char apsk128_map[128];
-
-// APSK256(6,18,32,36,46,54,64)
-extern const unsigned int  apsk256_num_levels;
-extern const unsigned int  apsk256_p[7];
-extern const float         apsk256_r[7];
-extern const float         apsk256_phi[7];
-extern const float         apsk256_r_slicer[6];
-extern const unsigned char apsk256_map[256];
-
-// 'square' 32-QAM (first quadrant)
-extern const float complex modem_arb_sqam32[8];
-
-// 'square' 128-QAM (first quadrant)
-extern const float complex modem_arb_sqam128[32];
-
-// V.29 star constellation
-extern const float complex modem_arb_V29[16];
-
-// Virginia Tech logo
-extern const float complex modem_arb_vt64[64];
-
-// optimal QAM constellations
-extern const float complex modem_arb16opt[16];
-extern const float complex modem_arb32opt[32];
-extern const float complex modem_arb64opt[64];
-extern const float complex modem_arb128opt[128];
-extern const float complex modem_arb256opt[256];
-
-// APSK4(1,3)
-extern const unsigned int  apsk4_num_levels;
-extern const unsigned int  apsk4_p[2];
-extern const float         apsk4_r[2];
-extern const float         apsk4_phi[2];
-extern const float         apsk4_r_slicer[1];
-extern const unsigned char apsk4_map[4];
-
-// APSK8(1,7)
-extern const unsigned int  apsk8_num_levels;
-extern const unsigned int  apsk8_p[2];
-extern const float         apsk8_r[2];
-extern const float         apsk8_phi[2];
-extern const float         apsk8_r_slicer[1];
-extern const unsigned char apsk8_map[8];
-
-// APSK16(4,12)
-extern const unsigned int  apsk16_num_levels;
-extern const unsigned int  apsk16_p[2];
-extern const float         apsk16_r[2];
-extern const float         apsk16_phi[2];
-extern const float         apsk16_r_slicer[1];
-extern const unsigned char apsk16_map[16];
-
-// APSK32(4,12,16)
-extern const unsigned int  apsk32_num_levels;
-extern const unsigned int  apsk32_p[3];
-extern const float         apsk32_r[3];
-extern const float         apsk32_phi[3];
-extern const float         apsk32_r_slicer[2];
-extern const unsigned char apsk32_map[32];
-
-// APSK64(4,14,20,26)
-extern const unsigned int  apsk64_num_levels;
-extern const unsigned int  apsk64_p[4];
-extern const float         apsk64_r[4];
-extern const float         apsk64_phi[4];
-extern const float         apsk64_r_slicer[3];
-extern const unsigned char apsk64_map[64];
-
-// APSK128(8,18,24,36,42)
-extern const unsigned int  apsk128_num_levels;
-extern const unsigned int  apsk128_p[5];
-extern const float         apsk128_r[5];
-extern const float         apsk128_phi[5];
-extern const float         apsk128_r_slicer[4];
-extern const unsigned char apsk128_map[128];
-
-// APSK256(6,18,32,36,46,54,64)
-extern const unsigned int  apsk256_num_levels;
-extern const unsigned int  apsk256_p[7];
-extern const float         apsk256_r[7];
-extern const float         apsk256_phi[7];
-extern const float         apsk256_r_slicer[6];
-extern const unsigned char apsk256_map[256];
 
 // 'square' 32-QAM (first quadrant)
 extern const float complex modem_arb_sqam32[8];
