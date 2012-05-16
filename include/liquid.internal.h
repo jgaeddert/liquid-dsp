@@ -1660,61 +1660,79 @@ void MODEM(_demodulate_linear_array_ref)(T              _v,     \
 // define internal modem APIs
 LIQUID_MODEM_DEFINE_INTERNAL_API(LIQUID_MODEM_MANGLE_FLOAT,float,float complex)
 
+// APSK constants (container for apsk structure definitions)
+struct liquid_apsk_s {
+    unsigned int    num_levels; // number of rings
+    unsigned int *  p;          // number of symbols per ring
+    float *         r;          // radius of each ring
+    float *         phi;        // phase offset of each ring
+    float *         r_slicer;   // radius slicer
+    unsigned char * map;        // symbol mapping
+};
+
+extern struct liquid_apsk_s liquid_apsk4;
+extern struct liquid_apsk_s liquid_apsk8;
+extern struct liquid_apsk_s liquid_apsk16;
+extern struct liquid_apsk_s liquid_apsk32;
+extern struct liquid_apsk_s liquid_apsk64;
+extern struct liquid_apsk_s liquid_apsk128;
+extern struct liquid_apsk_s liquid_apsk256;
+
 // APSK4(1,3)
-extern const unsigned int  apsk4_num_levels;
-extern const unsigned int  apsk4_p[2];
-extern const float         apsk4_r[2];
-extern const float         apsk4_phi[2];
-extern const float         apsk4_r_slicer[1];
-extern const unsigned char apsk4_map[4];
+extern unsigned int  apsk4_num_levels;
+extern unsigned int  apsk4_p[2];
+extern float         apsk4_r[2];
+extern float         apsk4_phi[2];
+extern float         apsk4_r_slicer[1];
+extern unsigned char apsk4_map[4];
 
 // APSK8(1,7)
-extern const unsigned int  apsk8_num_levels;
-extern const unsigned int  apsk8_p[2];
-extern const float         apsk8_r[2];
-extern const float         apsk8_phi[2];
-extern const float         apsk8_r_slicer[1];
-extern const unsigned char apsk8_map[8];
+extern unsigned int  apsk8_num_levels;
+extern unsigned int  apsk8_p[2];
+extern float         apsk8_r[2];
+extern float         apsk8_phi[2];
+extern float         apsk8_r_slicer[1];
+extern unsigned char apsk8_map[8];
 
 // APSK16(4,12)
-extern const unsigned int  apsk16_num_levels;
-extern const unsigned int  apsk16_p[2];
-extern const float         apsk16_r[2];
-extern const float         apsk16_phi[2];
-extern const float         apsk16_r_slicer[1];
-extern const unsigned char apsk16_map[16];
+extern unsigned int  apsk16_num_levels;
+extern unsigned int  apsk16_p[2];
+extern float         apsk16_r[2];
+extern float         apsk16_phi[2];
+extern float         apsk16_r_slicer[1];
+extern unsigned char apsk16_map[16];
 
 // APSK32(4,12,16)
-extern const unsigned int  apsk32_num_levels;
-extern const unsigned int  apsk32_p[3];
-extern const float         apsk32_r[3];
-extern const float         apsk32_phi[3];
-extern const float         apsk32_r_slicer[2];
-extern const unsigned char apsk32_map[32];
+extern unsigned int  apsk32_num_levels;
+extern unsigned int  apsk32_p[3];
+extern float         apsk32_r[3];
+extern float         apsk32_phi[3];
+extern float         apsk32_r_slicer[2];
+extern unsigned char apsk32_map[32];
 
 // APSK64(4,14,20,26)
-extern const unsigned int  apsk64_num_levels;
-extern const unsigned int  apsk64_p[4];
-extern const float         apsk64_r[4];
-extern const float         apsk64_phi[4];
-extern const float         apsk64_r_slicer[3];
-extern const unsigned char apsk64_map[64];
+extern unsigned int  apsk64_num_levels;
+extern unsigned int  apsk64_p[4];
+extern float         apsk64_r[4];
+extern float         apsk64_phi[4];
+extern float         apsk64_r_slicer[3];
+extern unsigned char apsk64_map[64];
 
 // APSK128(8,18,24,36,42)
-extern const unsigned int  apsk128_num_levels;
-extern const unsigned int  apsk128_p[5];
-extern const float         apsk128_r[5];
-extern const float         apsk128_phi[5];
-extern const float         apsk128_r_slicer[4];
-extern const unsigned char apsk128_map[128];
+extern unsigned int  apsk128_num_levels;
+extern unsigned int  apsk128_p[5];
+extern float         apsk128_r[5];
+extern float         apsk128_phi[5];
+extern float         apsk128_r_slicer[4];
+extern unsigned char apsk128_map[128];
 
 // APSK256(6,18,32,36,46,54,64)
-extern const unsigned int  apsk256_num_levels;
-extern const unsigned int  apsk256_p[7];
-extern const float         apsk256_r[7];
-extern const float         apsk256_phi[7];
-extern const float         apsk256_r_slicer[6];
-extern const unsigned char apsk256_map[256];
+extern unsigned int  apsk256_num_levels;
+extern unsigned int  apsk256_p[7];
+extern float         apsk256_r[7];
+extern float         apsk256_phi[7];
+extern float         apsk256_r_slicer[6];
+extern unsigned char apsk256_map[256];
 
 // 'square' 32-QAM (first quadrant)
 extern const float complex modem_arb_sqam32[8];

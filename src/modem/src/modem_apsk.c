@@ -26,20 +26,51 @@
 // create an apsk (amplitude/phase-shift keying) modem object
 MODEM() MODEM(_create_apsk)(unsigned int _bits_per_symbol)
 {
-    MODEM() q = NULL;
+    // pointer to APSK definition container
+    struct liquid_apsk_s * apskdef = NULL;
+    modulation_scheme ms = LIQUID_MODEM_UNKNOWN;
+
     switch (_bits_per_symbol) {
-    case 2: q = MODEM(_create_apsk4)();   break;
-    case 3: q = MODEM(_create_apsk8)();   break;
-    case 4: q = MODEM(_create_apsk16)();  break;
-    case 5: q = MODEM(_create_apsk32)();  break;
-    case 6: q = MODEM(_create_apsk64)();  break;
-    case 7: q = MODEM(_create_apsk128)(); break;
-    case 8: q = MODEM(_create_apsk256)(); break;
+    case 2: ms = LIQUID_MODEM_APSK4;    apskdef = &liquid_apsk4;    break;
+    case 3: ms = LIQUID_MODEM_APSK8;    apskdef = &liquid_apsk8;    break;
+    case 4: ms = LIQUID_MODEM_APSK16;   apskdef = &liquid_apsk16;   break;
+    case 5: ms = LIQUID_MODEM_APSK32;   apskdef = &liquid_apsk32;   break;
+    case 6: ms = LIQUID_MODEM_APSK64;   apskdef = &liquid_apsk64;   break;
+    case 7: ms = LIQUID_MODEM_APSK128;  apskdef = &liquid_apsk128;  break;
+    case 8: ms = LIQUID_MODEM_APSK256;  apskdef = &liquid_apsk256;  break;
     default:
         fprintf(stderr,"error: modem_create_apsk(), unsupported modulation level (%u)\n",
                 _bits_per_symbol);
         exit(1);
     }
+
+    MODEM() q = (MODEM()) malloc( sizeof(struct MODEM(_s)) );
+    q->scheme = ms;
+    MODEM(_init)(q, _bits_per_symbol);
+
+    // set APSK internals
+    unsigned int i;
+    q->data.apsk.num_levels = apskdef->num_levels;
+    for (i=0; i<q->data.apsk.num_levels; i++) {
+        q->data.apsk.p[i]   = apskdef->p[i];
+        q->data.apsk.r[i]   = apskdef->r[i];
+        q->data.apsk.phi[i] = apskdef->phi[i];
+    }
+
+    // radius slicer
+    for (i=0; i<q->data.apsk.num_levels-1; i++)
+        q->data.apsk.r_slicer[i] = apskdef->r_slicer[i];
+
+    // copy symbol map
+    q->data.apsk.map = (unsigned char *) malloc(q->M*sizeof(unsigned char));
+    memmove(q->data.apsk.map, apskdef->map, q->M*sizeof(unsigned char));
+
+    // set modulation/demodulation function pointers
+    q->modulate_func = &MODEM(_modulate_apsk);
+    q->demodulate_func = &MODEM(_demodulate_apsk);
+
+    // initialize soft-demodulation look-up table
+    MODEM(_demodsoft_gentab)(q, 3);
 
     // initialize symbol map
     q->symbol_map = (TC*)malloc(q->M*sizeof(TC));
