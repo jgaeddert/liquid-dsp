@@ -36,6 +36,7 @@ float         apsk4_phi[2]      = {0.0f, 0.0f};
 float         apsk4_r_slicer[1] = {0.57735026};
 unsigned char apsk4_map[4]      = {3,2,1,0};
 struct liquid_apsk_s liquid_apsk4 = {
+    LIQUID_MODEM_APSK4,
     2,
     apsk4_p,
     apsk4_r,
@@ -53,6 +54,7 @@ float         apsk8_r_slicer[1] = {0.53452247};
 unsigned char apsk8_map[8] = {
      0,   2,   4,   3,   1,   7,   5,   6};
 struct liquid_apsk_s liquid_apsk8 = {
+    LIQUID_MODEM_APSK8,
     2,
     apsk8_p,
     apsk8_r,
@@ -71,6 +73,7 @@ unsigned char apsk16_map[16] = {
     11,  10,   8,   9,  12,   2,   7,   1,
     14,  15,   5,   4,  13,   3,   6,   0};
 struct liquid_apsk_s liquid_apsk16 = {
+    LIQUID_MODEM_APSK16,
     2,
     apsk16_p,
     apsk16_r,
@@ -99,6 +102,7 @@ unsigned char apsk32_map[32] = {
   30,  31,  18,  17,  29,  15,  19,   5,
   28,   0,  20,   2,  14,  16,   6,   4};
 struct liquid_apsk_s liquid_apsk32 = {
+    LIQUID_MODEM_APSK32,
     3,
     apsk32_p,
     apsk32_r,
@@ -130,6 +134,7 @@ unsigned char apsk64_map[64] = {
     58,  33,   3,  15,  44,  22,   0,   7,
     59,  34,  17,  16,  43,  21,   5,   6};
 struct liquid_apsk_s liquid_apsk64 = {
+    LIQUID_MODEM_APSK64,
     4,
     apsk64_p,
     apsk64_r,
@@ -171,6 +176,7 @@ unsigned char apsk128_map[128] = {
     80,  79,  25,  47,  57,  56,   9,  28,
    119,  46,  24,  23,  95,  31,   8,  11};
 struct liquid_apsk_s liquid_apsk128 = {
+    LIQUID_MODEM_APSK128,
     5,
     apsk128_p,
     apsk128_r,
@@ -232,6 +238,7 @@ unsigned char apsk256_map[256] = {
    243, 181,  85, 129,   0,  22,  50,  20,
    205, 149,  63, 101,  24,   9,  30, 103};
 struct liquid_apsk_s liquid_apsk256 = {
+    LIQUID_MODEM_APSK256,
     7,
     apsk256_p,
     apsk256_r,

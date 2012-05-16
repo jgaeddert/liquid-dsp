@@ -1662,6 +1662,7 @@ LIQUID_MODEM_DEFINE_INTERNAL_API(LIQUID_MODEM_MANGLE_FLOAT,float,float complex)
 
 // APSK constants (container for apsk structure definitions)
 struct liquid_apsk_s {
+    modulation_scheme scheme;   // APSK modulation scheme
     unsigned int    num_levels; // number of rings
     unsigned int *  p;          // number of symbols per ring
     float *         r;          // radius of each ring
