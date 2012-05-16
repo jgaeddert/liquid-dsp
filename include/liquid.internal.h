@@ -1514,16 +1514,6 @@ LIQUID_MATRIX_DEFINE_INTERNAL_API(MATRIX_MANGLE_CDOUBLE, liquid_double_complex)
 #define RQAM2048_ALPHA  (1./sqrt(1706))
 #define RQAM4096_ALPHA  QAM4096_ALPHA
 
-// ASK
-#define ASK2_ALPHA      (1.)
-#define ASK4_ALPHA      (1./sqrt(5))
-#define ASK8_ALPHA      (1./sqrt(21))
-#define ASK16_ALPHA     (1./sqrt(85))
-#define ASK32_ALPHA     (1./sqrt(341))
-#define ASK64_ALPHA     (1./sqrt(1365))
-#define ASK128_ALPHA    (1./sqrt(5461))
-#define ASK256_ALPHA    (1./sqrt(21845))
-
 // Macro    :   MODEM
 //  MODEM   :   name-mangling macro
 //  T       :   primitive data type

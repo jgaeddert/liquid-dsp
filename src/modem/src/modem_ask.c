@@ -23,6 +23,27 @@
 // modem_ask.c
 //
 
+// ASK scaling factors
+#if LIQUID_FPM
+#  define ASK2_ALPHA      Q(_one)
+#  define ASK4_ALPHA      Q(_float_to_fixed)(1./sqrt(5))
+#  define ASK8_ALPHA      Q(_float_to_fixed)(1./sqrt(21))
+#  define ASK16_ALPHA     Q(_float_to_fixed)(1./sqrt(85))
+#  define ASK32_ALPHA     Q(_float_to_fixed)(1./sqrt(341))
+#  define ASK64_ALPHA     Q(_float_to_fixed)(1./sqrt(1365))
+#  define ASK128_ALPHA    Q(_float_to_fixed)(1./sqrt(5461))
+#  define ASK256_ALPHA    Q(_float_to_fixed)(1./sqrt(21845))
+#else
+#  define ASK2_ALPHA      (1.)
+#  define ASK4_ALPHA      (1./sqrt(5))
+#  define ASK8_ALPHA      (1./sqrt(21))
+#  define ASK16_ALPHA     (1./sqrt(85))
+#  define ASK32_ALPHA     (1./sqrt(341))
+#  define ASK64_ALPHA     (1./sqrt(1365))
+#  define ASK128_ALPHA    (1./sqrt(5461))
+#  define ASK256_ALPHA    (1./sqrt(21845))
+#endif
+
 // create an ask (amplitude-shift keying) modem object
 MODEM() MODEM(_create_ask)(unsigned int _bits_per_symbol)
 {
@@ -73,7 +94,7 @@ void MODEM(_modulate_ask)(MODEM()      _q,
 
     // modulate symbol
 #if LIQUID_FPM
-    _y[0].real = Q(_mul)( (2*(int)_sym_in - (int)(_q->M) + 1), _q->data.ask.alpha );
+    _y[0].real = (2*(int)_sym_in - (int)(_q->M) + 1) * _q->data.ask.alpha;
     _y[0].imag = 0;
 #else
     *_y = (2*(int)_sym_in - (int)(_q->M) + 1) * _q->data.ask.alpha;

@@ -51,7 +51,7 @@ void modemq16_test_mod_demod(modulation_scheme _ms)
     }
     e = sqrtf(e / (float)M);
 
-    CONTEND_DELTA(e,1.0f,1e-3f);
+    CONTEND_DELTA(e,1.0f,tol);
 
     // clean it up
     modemq16_destroy(mod);
@@ -83,16 +83,14 @@ void xautotest_modemq16_dpsk256()   { modemq16_test_mod_demod(LIQUID_MODEM_DPSK2
 #endif
 
 // AUTOTESTS: generic ASK
-#if 0
-void xautotest_modemq16_ask2()      { modemq16_test_mod_demod(LIQUID_MODEM_ASK2);      }
-void xautotest_modemq16_ask4()      { modemq16_test_mod_demod(LIQUID_MODEM_ASK4);      }
-void xautotest_modemq16_ask8()      { modemq16_test_mod_demod(LIQUID_MODEM_ASK8);      }
-void xautotest_modemq16_ask16()     { modemq16_test_mod_demod(LIQUID_MODEM_ASK16);     }
-void xautotest_modemq16_ask32()     { modemq16_test_mod_demod(LIQUID_MODEM_ASK32);     }
-void xautotest_modemq16_ask64()     { modemq16_test_mod_demod(LIQUID_MODEM_ASK64);     }
-void xautotest_modemq16_ask128()    { modemq16_test_mod_demod(LIQUID_MODEM_ASK128);    }
-void xautotest_modemq16_ask256()    { modemq16_test_mod_demod(LIQUID_MODEM_ASK256);    }
-#endif
+void autotest_modemq16_ask2()      { modemq16_test_mod_demod(LIQUID_MODEM_ASK2);      }
+void autotest_modemq16_ask4()      { modemq16_test_mod_demod(LIQUID_MODEM_ASK4);      }
+void autotest_modemq16_ask8()      { modemq16_test_mod_demod(LIQUID_MODEM_ASK8);      }
+void autotest_modemq16_ask16()     { modemq16_test_mod_demod(LIQUID_MODEM_ASK16);     }
+void autotest_modemq16_ask32()     { modemq16_test_mod_demod(LIQUID_MODEM_ASK32);     }
+void autotest_modemq16_ask64()     { modemq16_test_mod_demod(LIQUID_MODEM_ASK64);     }
+void autotest_modemq16_ask128()    { modemq16_test_mod_demod(LIQUID_MODEM_ASK128);    }
+void autotest_modemq16_ask256()    { modemq16_test_mod_demod(LIQUID_MODEM_ASK256);    }
 
 // AUTOTESTS: generic QAM
 #if 0
