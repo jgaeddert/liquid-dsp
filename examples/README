@@ -345,6 +345,10 @@ modem_soft_example.c *
     This example demonstates soft demodulation of linear
     modulation schemes.
 
+modemq16_soft_example.c *
+    This example demonstates soft demodulation of linear
+    modulation schemes (fixed-point math).
+
 modular_arithmetic_example.c
     This example demonstates some modular arithmetic functions.
 
