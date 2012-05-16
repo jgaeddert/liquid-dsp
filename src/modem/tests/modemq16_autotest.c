@@ -93,15 +93,13 @@ void autotest_modemq16_ask128()    { modemq16_test_mod_demod(LIQUID_MODEM_ASK128
 void autotest_modemq16_ask256()    { modemq16_test_mod_demod(LIQUID_MODEM_ASK256);    }
 
 // AUTOTESTS: generic QAM
-#if 0
-void xautotest_modemq16_qam4()      { modemq16_test_mod_demod(LIQUID_MODEM_QAM4);      }
-void xautotest_modemq16_qam8()      { modemq16_test_mod_demod(LIQUID_MODEM_QAM8);      }
-void xautotest_modemq16_qam16()     { modemq16_test_mod_demod(LIQUID_MODEM_QAM16);     }
-void xautotest_modemq16_qam32()     { modemq16_test_mod_demod(LIQUID_MODEM_QAM32);     }
-void xautotest_modemq16_qam64()     { modemq16_test_mod_demod(LIQUID_MODEM_QAM64);     }
-void xautotest_modemq16_qam128()    { modemq16_test_mod_demod(LIQUID_MODEM_QAM128);    }
-void xautotest_modemq16_qam256()    { modemq16_test_mod_demod(LIQUID_MODEM_QAM256);    }
-#endif
+void autotest_modemq16_qam4()      { modemq16_test_mod_demod(LIQUID_MODEM_QAM4);      }
+void autotest_modemq16_qam8()      { modemq16_test_mod_demod(LIQUID_MODEM_QAM8);      }
+void autotest_modemq16_qam16()     { modemq16_test_mod_demod(LIQUID_MODEM_QAM16);     }
+void autotest_modemq16_qam32()     { modemq16_test_mod_demod(LIQUID_MODEM_QAM32);     }
+void autotest_modemq16_qam64()     { modemq16_test_mod_demod(LIQUID_MODEM_QAM64);     }
+void autotest_modemq16_qam128()    { modemq16_test_mod_demod(LIQUID_MODEM_QAM128);    }
+void autotest_modemq16_qam256()    { modemq16_test_mod_demod(LIQUID_MODEM_QAM256);    }
 
 // AUTOTESTS: generic APSK (maps to specific APSK modems internally)
 #if 0

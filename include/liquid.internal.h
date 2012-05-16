@@ -1490,30 +1490,6 @@ LIQUID_MATRIX_DEFINE_INTERNAL_API(MATRIX_MANGLE_CDOUBLE, liquid_double_complex)
 // MODULE : modem
 //
 
-// 'Square' QAM
-#define QAM4_ALPHA      (1./sqrt(2))
-#define QAM8_ALPHA      (1./sqrt(6))
-#define QAM16_ALPHA     (1./sqrt(10))
-#define QAM32_ALPHA     (1./sqrt(20))
-#define QAM64_ALPHA     (1./sqrt(42))
-#define QAM128_ALPHA    (1./sqrt(82))
-#define QAM256_ALPHA    (1./sqrt(170))
-#define QAM1024_ALPHA   (1./sqrt(682))
-#define QAM4096_ALPHA   (1./sqrt(2730))
-
-// Rectangular QAM
-#define RQAM4_ALPHA     QAM4_ALPHA
-#define RQAM8_ALPHA     QAM8_ALPHA
-#define RQAM16_ALPHA    QAM16_ALPHA
-#define RQAM32_ALPHA    (1./sqrt(26))
-#define RQAM64_ALPHA    QAM64_ALPHA
-#define RQAM128_ALPHA   (1./sqrt(106))
-#define RQAM256_ALPHA   QAM256_ALPHA
-#define RQAM512_ALPHA   (1./sqrt(426))
-#define RQAM1024_ALPHA  QAM1024_ALPHA
-#define RQAM2048_ALPHA  (1./sqrt(1706))
-#define RQAM4096_ALPHA  QAM4096_ALPHA
-
 // Macro    :   MODEM
 //  MODEM   :   name-mangling macro
 //  T       :   primitive data type
