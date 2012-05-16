@@ -26,207 +26,64 @@
 // create an apsk (amplitude/phase-shift keying) modem object
 MODEM() MODEM(_create_apsk)(unsigned int _bits_per_symbol)
 {
-    MODEM() q = NULL;
+    // pointer to APSK definition container
+    struct liquid_apsk_s * apskdef = NULL;
+
     switch (_bits_per_symbol) {
-    case 2: q = MODEM(_create_apsk4)();   break;
-    case 3: q = MODEM(_create_apsk8)();   break;
-    case 4: q = MODEM(_create_apsk16)();  break;
-    case 5: q = MODEM(_create_apsk32)();  break;
-    case 6: q = MODEM(_create_apsk64)();  break;
-    case 7: q = MODEM(_create_apsk128)(); break;
-    case 8: q = MODEM(_create_apsk256)(); break;
+    case 2: apskdef = &liquid_apsk4;    break;
+    case 3: apskdef = &liquid_apsk8;    break;
+    case 4: apskdef = &liquid_apsk16;   break;
+    case 5: apskdef = &liquid_apsk32;   break;
+    case 6: apskdef = &liquid_apsk64;   break;
+    case 7: apskdef = &liquid_apsk128;  break;
+    case 8: apskdef = &liquid_apsk256;  break;
     default:
         fprintf(stderr,"error: modem_create_apsk(), unsupported modulation level (%u)\n",
                 _bits_per_symbol);
         exit(1);
     }
 
+    MODEM() q = (MODEM()) malloc( sizeof(struct MODEM(_s)) );
+    q->scheme = apskdef->scheme;
+    MODEM(_init)(q, _bits_per_symbol);
+
+    // set APSK internals
+    unsigned int i;
+    q->data.apsk.num_levels = apskdef->num_levels;
+    for (i=0; i<q->data.apsk.num_levels; i++) {
+        q->data.apsk.p[i]   = apskdef->p[i];
+        q->data.apsk.r[i]   = apskdef->r[i];
+        q->data.apsk.phi[i] = apskdef->phi[i];
+    }
+
+    // radius slicer
+    for (i=0; i<q->data.apsk.num_levels-1; i++)
+        q->data.apsk.r_slicer[i] = apskdef->r_slicer[i];
+
+    // copy symbol map
+    q->data.apsk.map = (unsigned char *) malloc(q->M*sizeof(unsigned char));
+    memmove(q->data.apsk.map, apskdef->map, q->M*sizeof(unsigned char));
+
+    // set modulation/demodulation function pointers
+    q->modulate_func = &MODEM(_modulate_apsk);
+    q->demodulate_func = &MODEM(_demodulate_apsk);
+
+    // initialize soft-demodulation look-up table
+    switch (q->m) {
+    case 2: MODEM(_demodsoft_gentab)(q, 3); break;
+    case 3: MODEM(_demodsoft_gentab)(q, 3); break;
+    case 4: MODEM(_demodsoft_gentab)(q, 4); break;
+    case 5: MODEM(_demodsoft_gentab)(q, 4); break;
+    case 6: MODEM(_demodsoft_gentab)(q, 4); break;
+    case 7: MODEM(_demodsoft_gentab)(q, 5); break;
+    case 8: MODEM(_demodsoft_gentab)(q, 5); break;
+    default:;
+    }
+
     // initialize symbol map
     q->symbol_map = (TC*)malloc(q->M*sizeof(TC));
     MODEM(_init_map)(q);
     q->modulate_using_map = 1;
-
-    return q;
-}
-
-// create specific APSK-4 modem
-MODEM() MODEM(_create_apsk4)()
-{
-    MODEM() q = (MODEM()) malloc( sizeof(struct MODEM(_s)) );
-    q->scheme = LIQUID_MODEM_APSK4;
-
-    MODEM(_init)(q, 2);
-    
-    // set internals
-    q->data.apsk.num_levels = apsk4_num_levels;
-    q->data.apsk.map = (unsigned char *) malloc(q->M*sizeof(unsigned char));
-    memmove(q->data.apsk.p,        apsk4_p,         q->data.apsk.num_levels*sizeof(unsigned int));
-    memmove(q->data.apsk.r,        apsk4_r,         q->data.apsk.num_levels*sizeof(T));
-    memmove(q->data.apsk.phi,      apsk4_phi,       q->data.apsk.num_levels*sizeof(T));
-    memmove(q->data.apsk.r_slicer, apsk4_r_slicer, (q->data.apsk.num_levels-1)*sizeof(T));
-    memmove(q->data.apsk.map,      apsk4_map,       q->M*sizeof(unsigned char));
-
-    q->modulate_func = &MODEM(_modulate_apsk);
-    q->demodulate_func = &MODEM(_demodulate_apsk);
-
-    // initialize soft-demodulation look-up table
-    MODEM(_demodsoft_gentab)(q, 3);
-
-    return q;
-}
-
-// create specific APSK-8 modem
-MODEM() MODEM(_create_apsk8)()
-{
-    MODEM() q = (MODEM()) malloc( sizeof(struct MODEM(_s)) );
-    q->scheme = LIQUID_MODEM_APSK8;
-
-    MODEM(_init)(q, 3);
-    
-    // set internals
-    q->data.apsk.num_levels = apsk8_num_levels;
-    q->data.apsk.map = (unsigned char *) malloc(q->M*sizeof(unsigned char));
-    memmove(q->data.apsk.p,        apsk8_p,         q->data.apsk.num_levels*sizeof(unsigned int));
-    memmove(q->data.apsk.r,        apsk8_r,         q->data.apsk.num_levels*sizeof(T));
-    memmove(q->data.apsk.phi,      apsk8_phi,       q->data.apsk.num_levels*sizeof(T));
-    memmove(q->data.apsk.r_slicer, apsk8_r_slicer, (q->data.apsk.num_levels-1)*sizeof(T));
-    memmove(q->data.apsk.map,      apsk8_map,       q->M*sizeof(unsigned char));
-
-    q->modulate_func = &MODEM(_modulate_apsk);
-    q->demodulate_func = &MODEM(_demodulate_apsk);
-
-    // initialize soft-demodulation look-up table
-    MODEM(_demodsoft_gentab)(q, 3);
-
-    return q;
-}
-
-// create specific APSK-16 modem
-MODEM() MODEM(_create_apsk16)()
-{
-    MODEM() q = (MODEM()) malloc( sizeof(struct MODEM(_s)) );
-    q->scheme = LIQUID_MODEM_APSK16;
-
-    MODEM(_init)(q, 4);
-    
-    // set internals
-    q->data.apsk.num_levels = apsk16_num_levels;
-    q->data.apsk.map = (unsigned char *) malloc(q->M*sizeof(unsigned char));
-    memmove(q->data.apsk.p,        apsk16_p,         q->data.apsk.num_levels*sizeof(unsigned int));
-    memmove(q->data.apsk.r,        apsk16_r,         q->data.apsk.num_levels*sizeof(T));
-    memmove(q->data.apsk.phi,      apsk16_phi,       q->data.apsk.num_levels*sizeof(T));
-    memmove(q->data.apsk.r_slicer, apsk16_r_slicer, (q->data.apsk.num_levels-1)*sizeof(T));
-    memmove(q->data.apsk.map,      apsk16_map,       q->M*sizeof(unsigned char));
-
-    q->modulate_func = &MODEM(_modulate_apsk);
-    q->demodulate_func = &MODEM(_demodulate_apsk);
-
-    // initialize soft-demodulation look-up table
-    MODEM(_demodsoft_gentab)(q, 4);
-
-    return q;
-}
-
-// create specific APSK-32 modem
-MODEM() MODEM(_create_apsk32)()
-{
-    MODEM() q = (MODEM()) malloc( sizeof(struct MODEM(_s)) );
-    q->scheme = LIQUID_MODEM_APSK32;
-
-    MODEM(_init)(q, 5);
-    
-    // set internals
-    q->data.apsk.num_levels = apsk32_num_levels;
-    q->data.apsk.map = (unsigned char *) malloc(q->M*sizeof(unsigned char));
-    memmove(q->data.apsk.p,        apsk32_p,         q->data.apsk.num_levels*sizeof(unsigned int));
-    memmove(q->data.apsk.r,        apsk32_r,         q->data.apsk.num_levels*sizeof(T));
-    memmove(q->data.apsk.phi,      apsk32_phi,       q->data.apsk.num_levels*sizeof(T));
-    memmove(q->data.apsk.r_slicer, apsk32_r_slicer, (q->data.apsk.num_levels-1)*sizeof(T));
-    memmove(q->data.apsk.map,      apsk32_map,       q->M*sizeof(unsigned char));
-
-    q->modulate_func = &MODEM(_modulate_apsk);
-    q->demodulate_func = &MODEM(_demodulate_apsk);
-
-    // initialize soft-demodulation look-up table
-    MODEM(_demodsoft_gentab)(q, 4);
-
-    return q;
-}
-
-// create specific APSK-64 modem
-MODEM() MODEM(_create_apsk64)()
-{
-    MODEM() q = (MODEM()) malloc( sizeof(struct MODEM(_s)) );
-    q->scheme = LIQUID_MODEM_APSK64;
-
-    MODEM(_init)(q, 6);
-    
-    // set internals
-    q->data.apsk.num_levels = apsk64_num_levels;
-    q->data.apsk.map = (unsigned char *) malloc(q->M*sizeof(unsigned char));
-    memmove(q->data.apsk.p,        apsk64_p,         q->data.apsk.num_levels*sizeof(unsigned int));
-    memmove(q->data.apsk.r,        apsk64_r,         q->data.apsk.num_levels*sizeof(T));
-    memmove(q->data.apsk.phi,      apsk64_phi,       q->data.apsk.num_levels*sizeof(T));
-    memmove(q->data.apsk.r_slicer, apsk64_r_slicer, (q->data.apsk.num_levels-1)*sizeof(T));
-    memmove(q->data.apsk.map,      apsk64_map,       q->M*sizeof(unsigned char));
-
-    q->modulate_func = &MODEM(_modulate_apsk);
-    q->demodulate_func = &MODEM(_demodulate_apsk);
-
-    // initialize soft-demodulation look-up table
-    MODEM(_demodsoft_gentab)(q, 4);
-
-    return q;
-}
-
-// create specific APSK-128 modem
-MODEM() MODEM(_create_apsk128)()
-{
-    MODEM() q = (MODEM()) malloc( sizeof(struct MODEM(_s)) );
-    q->scheme = LIQUID_MODEM_APSK128;
-
-    MODEM(_init)(q, 7);
-    
-    // set internals
-    q->data.apsk.num_levels = apsk128_num_levels;
-    q->data.apsk.map = (unsigned char *) malloc(q->M*sizeof(unsigned char));
-    memmove(q->data.apsk.p,        apsk128_p,         q->data.apsk.num_levels*sizeof(unsigned int));
-    memmove(q->data.apsk.r,        apsk128_r,         q->data.apsk.num_levels*sizeof(T));
-    memmove(q->data.apsk.phi,      apsk128_phi,       q->data.apsk.num_levels*sizeof(T));
-    memmove(q->data.apsk.r_slicer, apsk128_r_slicer, (q->data.apsk.num_levels-1)*sizeof(T));
-    memmove(q->data.apsk.map,      apsk128_map,       q->M*sizeof(unsigned char));
-
-    q->modulate_func = &MODEM(_modulate_apsk);
-    q->demodulate_func = &MODEM(_demodulate_apsk);
-
-    // initialize soft-demodulation look-up table
-    MODEM(_demodsoft_gentab)(q, 5);
-
-    return q;
-}
-
-// create specific APSK-256 modem
-MODEM() MODEM(_create_apsk256)()
-{
-    MODEM() q = (MODEM()) malloc( sizeof(struct MODEM(_s)) );
-    q->scheme = LIQUID_MODEM_APSK256;
-
-    MODEM(_init)(q, 8);
-    
-    // set internals
-    q->data.apsk.num_levels = apsk256_num_levels;
-    q->data.apsk.map = (unsigned char *) malloc(q->M*sizeof(unsigned char));
-    memmove(q->data.apsk.p,        apsk256_p,         q->data.apsk.num_levels*sizeof(unsigned int));
-    memmove(q->data.apsk.r,        apsk256_r,         q->data.apsk.num_levels*sizeof(T));
-    memmove(q->data.apsk.phi,      apsk256_phi,       q->data.apsk.num_levels*sizeof(T));
-    memmove(q->data.apsk.r_slicer, apsk256_r_slicer, (q->data.apsk.num_levels-1)*sizeof(T));
-    memmove(q->data.apsk.map,      apsk256_map,       q->M*sizeof(unsigned char));
-
-    q->modulate_func = &MODEM(_modulate_apsk);
-    q->demodulate_func = &MODEM(_demodulate_apsk);
-
-    // initialize soft-demodulation look-up table
-    MODEM(_demodsoft_gentab)(q, 5);
 
     return q;
 }
