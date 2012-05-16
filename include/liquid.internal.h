@@ -1552,13 +1552,6 @@ MODEM() MODEM(_create_qpsk)(void);                              \
 MODEM() MODEM(_create_ook)(void);                               \
 MODEM() MODEM(_create_sqam32)(void);                            \
 MODEM() MODEM(_create_sqam128)(void);                           \
-MODEM() MODEM(_create_apsk4)(void);                             \
-MODEM() MODEM(_create_apsk8)(void);                             \
-MODEM() MODEM(_create_apsk16)(void);                            \
-MODEM() MODEM(_create_apsk32)(void);                            \
-MODEM() MODEM(_create_apsk64)(void);                            \
-MODEM() MODEM(_create_apsk128)(void);                           \
-MODEM() MODEM(_create_apsk256)(void);                           \
 MODEM() MODEM(_create_V29)(void);                               \
 MODEM() MODEM(_create_arb16opt)(void);                          \
 MODEM() MODEM(_create_arb32opt)(void);                          \
@@ -1679,61 +1672,6 @@ extern struct liquid_apsk_s liquid_apsk64;
 extern struct liquid_apsk_s liquid_apsk128;
 extern struct liquid_apsk_s liquid_apsk256;
 
-// APSK4(1,3)
-extern unsigned int  apsk4_num_levels;
-extern unsigned int  apsk4_p[2];
-extern float         apsk4_r[2];
-extern float         apsk4_phi[2];
-extern float         apsk4_r_slicer[1];
-extern unsigned char apsk4_map[4];
-
-// APSK8(1,7)
-extern unsigned int  apsk8_num_levels;
-extern unsigned int  apsk8_p[2];
-extern float         apsk8_r[2];
-extern float         apsk8_phi[2];
-extern float         apsk8_r_slicer[1];
-extern unsigned char apsk8_map[8];
-
-// APSK16(4,12)
-extern unsigned int  apsk16_num_levels;
-extern unsigned int  apsk16_p[2];
-extern float         apsk16_r[2];
-extern float         apsk16_phi[2];
-extern float         apsk16_r_slicer[1];
-extern unsigned char apsk16_map[16];
-
-// APSK32(4,12,16)
-extern unsigned int  apsk32_num_levels;
-extern unsigned int  apsk32_p[3];
-extern float         apsk32_r[3];
-extern float         apsk32_phi[3];
-extern float         apsk32_r_slicer[2];
-extern unsigned char apsk32_map[32];
-
-// APSK64(4,14,20,26)
-extern unsigned int  apsk64_num_levels;
-extern unsigned int  apsk64_p[4];
-extern float         apsk64_r[4];
-extern float         apsk64_phi[4];
-extern float         apsk64_r_slicer[3];
-extern unsigned char apsk64_map[64];
-
-// APSK128(8,18,24,36,42)
-extern unsigned int  apsk128_num_levels;
-extern unsigned int  apsk128_p[5];
-extern float         apsk128_r[5];
-extern float         apsk128_phi[5];
-extern float         apsk128_r_slicer[4];
-extern unsigned char apsk128_map[128];
-
-// APSK256(6,18,32,36,46,54,64)
-extern unsigned int  apsk256_num_levels;
-extern unsigned int  apsk256_p[7];
-extern float         apsk256_r[7];
-extern float         apsk256_phi[7];
-extern float         apsk256_r_slicer[6];
-extern unsigned char apsk256_map[256];
 
 // 'square' 32-QAM (first quadrant)
 extern const float complex modem_arb_sqam32[8];
