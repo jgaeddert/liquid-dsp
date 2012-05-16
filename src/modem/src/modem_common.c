@@ -441,9 +441,9 @@ void print_bitstring_demod_soft(unsigned int _x,
 //  _r          :   received sample
 //  _s          :   hard demodulator output
 //  _soft_bits  :   soft bit ouput (approximate log-likelihood ratio)
-void MODEM(_demodulate_soft_table)(MODEM() _q,
-                                   TC _r,
-                                   unsigned int * _s,
+void MODEM(_demodulate_soft_table)(MODEM()         _q,
+                                   TC              _r,
+                                   unsigned int *  _s,
                                    unsigned char * _soft_bits)
 {
     // run hard demodulation; this will store re-modulated sample
@@ -453,17 +453,19 @@ void MODEM(_demodulate_soft_table)(MODEM() _q,
 
     unsigned int bps = MODEM(_get_bps)(_q);
 
-    // gamma = 1/(2*sigma^2), approximate for constellation size
-    T gamma = 1.2f*_q->M;
-
     // set and initialize minimum bit values
     unsigned int i;
     unsigned int k;
     T dmin_0[bps];
     T dmin_1[bps];
+#if LIQUID_FPM
+    T init = Q(_fixed_to_float)(Q(_max)) > 8.0f ? 8*Q(_one) : Q(_max);
+#else
+    T init = 8.0f;
+#endif
     for (k=0; k<bps; k++) {
-        dmin_0[k] = 8.0f;
-        dmin_1[k] = 8.0f;
+        dmin_0[k] = init;
+        dmin_1[k] = init;
     }
 
     unsigned int bit;
@@ -476,7 +478,7 @@ void MODEM(_demodulate_soft_table)(MODEM() _q,
     // check hard demodulation
 #if LIQUID_FPM
     del = CQ(_sub)(_r, _q->x_hat);
-    d = Q(_mul)(del.real, del.real) + Q(_mul)(del.imag, del.imag);
+    d = CQ(_cabs2)(del);
 #else
     del = _r - _q->x_hat;
     d = crealf(del)*crealf(del) + cimagf(del)*cimagf(del);
@@ -496,11 +498,10 @@ void MODEM(_demodulate_soft_table)(MODEM() _q,
             MODEM(_modulate)(_q, softab[s*p+i], &x_hat);
 
         // compute magnitude squared of Euclidean distance
-        //d = crealf( (_r-x_hat)*conjf(_r-x_hat) );
-        // (same as above, but faster)
+        //  d = | _r - x_hat |^2
 #if LIQUID_FPM
-        del = CQ(_sub)(_r, _q->x_hat);
-        d = Q(_mul)(del.real, del.real) + Q(_mul)(del.imag, del.imag);
+        del = CQ(_sub)(_r, x_hat);
+        d = CQ(_cabs2)(del);
 #else
         del = _r - x_hat;
         d = crealf(del)*crealf(del) + cimagf(del)*cimagf(del);
@@ -518,9 +519,16 @@ void MODEM(_demodulate_soft_table)(MODEM() _q,
         }
     }
 
+    // gamma = 1/(2*sigma^2), approximate for constellation size
+    float gamma = 1.2f*_q->M;
+
     // make soft bit assignments
     for (k=0; k<bps; k++) {
+#if LIQUID_FPM
+        int soft_bit = (Q(_fixed_to_float)(dmin_0[k] - dmin_1[k])*gamma)*16 + 127;
+#else
         int soft_bit = ((dmin_0[k] - dmin_1[k])*gamma)*16 + 127;
+#endif
         if (soft_bit > 255) soft_bit = 255;
         if (soft_bit <   0) soft_bit = 0;
         _soft_bits[k] = (unsigned char)soft_bit;
@@ -629,6 +637,7 @@ void MODEM(_demodulate_linear_array_ref)(T              _v,
 
 
 // generate soft demodulation look-up table
+// (see algorithm in sandbox/modem_demodulate_soft_gentab.c)
 void MODEM(_demodsoft_gentab)(MODEM()      _q,
                               unsigned int _p)
 {
@@ -646,16 +655,18 @@ void MODEM(_demodsoft_gentab)(MODEM()      _q,
     unsigned int j;
     unsigned int k;
 
-    // generate constellation
-    // TODO : enforce full constellation for modulation
-    unsigned int M = _q->M;  // constellation size
-    TC c[M];         // constellation
-    for (i=0; i<M; i++)
-        MODEM(_modulate)(_q, i, &c[i]);
-
-    // 
-    // find nearest symbols (see algorithm in sandbox/modem_demodulate_soft_gentab.c)
-    //
+    // generate constellation, converting to floating point
+    unsigned int M = _q->M; // constellation size
+    float complex c[M];     // constellation
+    for (i=0; i<M; i++) {
+        TC v;
+        MODEM(_modulate)(_q, i, &v);
+#if LIQUID_FPM
+        c[i] = CQ(_fixed_to_float)(v);
+#else
+        c[i] = v;
+#endif
+    }
 
     // initialize table (with 'M' as invalid symbol)
     for (i=0; i<M; i++) {
@@ -663,14 +674,11 @@ void MODEM(_demodsoft_gentab)(MODEM()      _q,
             _q->demod_soft_neighbors[i*_p + k] = M;
     }
 
-    int symbol_valid;
+    // find nearest symbols
+    int symbol_valid = 0;
     for (i=0; i<M; i++) {
         for (k=0; k<_p; k++) {
-#if LIQUID_FPM
-            T dmin=Q(_max);
-#else
-            T dmin=1e9f;
-#endif
+            float dmin=1e9f;
             for (j=0; j<M; j++) {
                 symbol_valid = 1;
                 // ignore this symbol
@@ -683,13 +691,8 @@ void MODEM(_demodsoft_gentab)(MODEM()      _q,
                         symbol_valid = 0;
                 }
 
-#if LIQUID_FPM
-                TC del = CQ(_sub)(c[i], c[j]);
-                T  d   = Q(_mul)(del.real, del.real) + Q(_mul)(del.imag, del.imag);
-#else
                 // compute distance
-                T d = cabsf( c[i] - c[j] );
-#endif
+                float d = cabsf( c[i] - c[j] );
 
                 if ( d < dmin && symbol_valid ) {
                     dmin = d;
@@ -714,7 +717,7 @@ void MODEM(_demodsoft_gentab)(MODEM()      _q,
             print_bitstring_demod_soft(_q->demod_soft_neighbors[i*_p + k],bps);
             // TODO : fix this for fixed-point math
             if (_q->demod_soft_neighbors[i*_p + k] < M)
-                printf("(%6.4f)", cabsf( c[i]-c[_q->demod_soft_neighbors[i*_p+k]] ));
+                printf("(%6.4f)", cabsf(c[i]-c[_q->demod_soft_neighbors[i*_p+k]]));
             else
                 printf("        ");
         }
@@ -723,8 +726,8 @@ void MODEM(_demodsoft_gentab)(MODEM()      _q,
 
     // print c-type array
     printf("\n");
-    printf("// %s%u soft demodulation nearest neighbors (p=%u)\n", modulation_types[_q->scheme].name, M, _p);
-    printf("const unsigned char %s%u_demod_soft_neighbors[%u] = {\n", modulation_types[_q->scheme].name, M, _p*M);
+    printf("// %s soft demodulation nearest neighbors (p=%u)\n", modulation_types[_q->scheme].name, _p);
+    printf("const unsigned char %s_demod_soft_neighbors[%u] = {\n", modulation_types[_q->scheme].name, _p*M);
     printf("    ");
     for (i=0; i<M; i++) {
         for (k=0; k<_p; k++) {
