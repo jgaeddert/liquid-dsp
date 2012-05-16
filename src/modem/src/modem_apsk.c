@@ -51,14 +51,25 @@ MODEM() MODEM(_create_apsk)(unsigned int _bits_per_symbol)
     unsigned int i;
     q->data.apsk.num_levels = apskdef->num_levels;
     for (i=0; i<q->data.apsk.num_levels; i++) {
+#if LIQUID_FPM
+        q->data.apsk.p[i]   = apskdef->p[i];
+        q->data.apsk.r[i]   = Q(_float_to_fixed)(apskdef->r[i]);
+        q->data.apsk.phi[i] = Q(_angle_float_to_fixed)(apskdef->phi[i]);
+#else
         q->data.apsk.p[i]   = apskdef->p[i];
         q->data.apsk.r[i]   = apskdef->r[i];
         q->data.apsk.phi[i] = apskdef->phi[i];
+#endif
     }
 
     // radius slicer
-    for (i=0; i<q->data.apsk.num_levels-1; i++)
+    for (i=0; i<q->data.apsk.num_levels-1; i++) {
+#if LIQUID_FPM
+        q->data.apsk.r_slicer[i] = Q(_float_to_fixed)(apskdef->r_slicer[i]);
+#else
         q->data.apsk.r_slicer[i] = apskdef->r_slicer[i];
+#endif
+    }
 
     // copy symbol map
     q->data.apsk.map = (unsigned char *) malloc(q->M*sizeof(unsigned char));
@@ -116,11 +127,11 @@ void MODEM(_modulate_apsk)(MODEM()      _q,
     unsigned int s1 = _q->data.apsk.p[p];
 
 #if 0
-    printf("  s : %3u -> %3u in level %3u (t = %3u) [symbol %3u / %3u]\n", _sym_in, s, p, t, s0,s1);
+    unsigned int n = _q->data.apsk.num_levels;
+    printf("  levels: %3u, s : %3u -> %3u in level %3u (t = %3u) [symbol %3u / %3u]\n", n, _sym_in, s, p, t, s0,s1);
 #endif
 
 #if LIQUID_FPM
-#  warning "TODO: check APSK modulation"
     // map symbol to constellation point (radius, angle)
     T r   = _q->data.apsk.r[p];
     T phi = _q->data.apsk.phi[p] + (T)(s0)*Q(_2pi) / (T)(s1);
@@ -144,8 +155,10 @@ void MODEM(_demodulate_apsk)(MODEM()        _q,
 {
     // compute amplitude
 #if LIQUID_FPM
+    //printf("demodulating... %12.8f +j%12.8f\n", Q(_fixed_to_float)(_x.real), Q(_fixed_to_float)(_x.imag));
     T r = CQ(_cabs)(_x);
 #else
+    //printf("demodulating... %12.8f +j%12.8f\n", crealf(_x), cimagf(_x));
     T r = cabsf(_x);
 #endif
 
@@ -163,16 +176,38 @@ void MODEM(_demodulate_apsk)(MODEM()        _q,
     // find closest point in ring
 #if LIQUID_FPM
     T theta = CQ(_carg)(_x);
+    if (theta < 0) theta += Q(_2pi);
+    T dphi = Q(_2pi) / (T) _q->data.apsk.p[p];
+    unsigned int s_hat=0;
+    //T i_hat = (theta - _q->data.apsk.phi[p]) / dphi;
+    // FIXME: with too many values in ring, roundoff error can occur!
+    T i_hat = Q(_div)( (theta - _q->data.apsk.phi[p]), dphi);
+    //s_hat = roundf(i_hat);      // compute symbol (closest angle)
+    s_hat = Q(_intpart)(i_hat + Q(_one)/2);      // compute symbol (closest angle)
+    /*
+    //printf("          i_hat : %12.8f (%3u)\n", i_hat, s_hat);
+    printf("  theta = %12.8f\n", Q(_angle_fixed_to_float)(theta));
+    printf("  dphi  = %12.8f\n", Q(_angle_fixed_to_float)(dphi));
+    printf("  i_hat = %12.8f\n", Q(_fixed_to_float)(i_hat));
+    printf("  s_hat = %u\n", s_hat);
+    */
+    s_hat %= _q->data.apsk.p[p];   // ensure symbol is in range
 #else
     T theta = cargf(_x);
-#endif
     if (theta < 0.0f) theta += 2.0f*M_PI;
     T dphi = 2.0f*M_PI / (T) _q->data.apsk.p[p];
     unsigned int s_hat=0;
     T i_hat = (theta - _q->data.apsk.phi[p]) / dphi;
     s_hat = roundf(i_hat);      // compute symbol (closest angle)
-    s_hat %= _q->data.apsk.p[p];   // ensure symbol is in range
+    /*
     //printf("          i_hat : %12.8f (%3u)\n", i_hat, s_hat);
+    printf("  theta = %12.8f\n", theta);
+    printf("  dphi  = %12.8f\n", dphi);
+    printf("  i_hat = %12.8f\n", i_hat);
+    printf("  s_hat = %u\n", s_hat);
+    */
+    s_hat %= _q->data.apsk.p[p];   // ensure symbol is in range
+#endif
 
     // accumulate symbol points
     for (i=0; i<p; i++)
