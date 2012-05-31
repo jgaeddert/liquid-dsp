@@ -49,7 +49,6 @@ int main(int argc, char*argv[])
     unsigned int cp_len = 16;           // cyclic prefix length
     unsigned int taper_len = 4;         // taper length
     unsigned int payload_len = 120;     // length of payload (bytes)
-    unsigned int num_symbols_S0 = 3;    // number of S0 training symbols
     modulation_scheme ms = LIQUID_MODEM_QPSK;
     fec_scheme fec0  = LIQUID_FEC_NONE;
     fec_scheme fec1  = LIQUID_FEC_HAMMING128;
@@ -126,7 +125,6 @@ int main(int argc, char*argv[])
     // create frame generator
     ofdmflexframegenprops_s fgprops;
     ofdmflexframegenprops_init_default(&fgprops);
-    fgprops.num_symbols_S0  = num_symbols_S0;
     fgprops.check           = check;
     fgprops.fec0            = fec0;
     fgprops.fec1            = fec1;

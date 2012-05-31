@@ -2144,7 +2144,6 @@ void gmskframesync_execute(gmskframesync _q,
 
 // ofdm frame generator properties
 typedef struct {
-    unsigned int num_symbols_S0;// number of S0 training symbols
     unsigned int check;         // data validity check
     unsigned int fec0;          // forward error-correction scheme (inner)
     unsigned int fec1;          // forward error-correction scheme (outer)
