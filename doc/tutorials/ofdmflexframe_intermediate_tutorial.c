@@ -52,13 +52,12 @@ int main() {
 
     // generate frame and synchronize
     int last_symbol=0;
-    unsigned int num_written;
     while (!last_symbol) {
         // generate symbol (write samples to buffer)
-        last_symbol = ofdmflexframegen_writesymbol(fg, buffer, &num_written);
+        last_symbol = ofdmflexframegen_writesymbol(fg, buffer);
 
         // receive symbol (read samples from buffer)
-        ofdmflexframesync_execute(fs, buffer, num_written);
+        ofdmflexframesync_execute(fs, buffer, M + cp_len);
     }
 
     // destroy objects and return

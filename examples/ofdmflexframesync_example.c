@@ -151,15 +151,14 @@ int main(int argc, char*argv[])
 
     // generate frame, push through channel
     int last_symbol=0;
-    unsigned int num_written;
     nco_crcf nco = nco_crcf_create(LIQUID_VCO);
     nco_crcf_set_frequency(nco, dphi);
     while (!last_symbol) {
         // generate symbol
-        last_symbol = ofdmflexframegen_writesymbol(fg, buffer, &num_written);
+        last_symbol = ofdmflexframegen_writesymbol(fg, buffer);
 
         // apply channel
-        for (i=0; i<num_written; i++) {
+        for (i=0; i<frame_len; i++) {
             float complex noise = nstd*( randnf() + _Complex_I*randnf())*M_SQRT1_2;
             buffer[i] *= gamma;
             buffer[i] += noise;
@@ -169,7 +168,7 @@ int main(int argc, char*argv[])
         }
 
         // receive symbol
-        ofdmflexframesync_execute(fs, buffer, num_written);
+        ofdmflexframesync_execute(fs, buffer, frame_len);
     }
     nco_crcf_destroy(nco);
 

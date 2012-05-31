@@ -30,14 +30,13 @@ int main() {
 
     // generate frame one OFDM symbol at a time
     int last_symbol=0;
-    unsigned int num_written;
     while (!last_symbol) {
         // generate symbol (write samples to buffer)
-        last_symbol = ofdmflexframegen_writesymbol(fg, buffer, &num_written);
+        last_symbol = ofdmflexframegen_writesymbol(fg, buffer);
 
         // print status
         printf("ofdmflexframegen wrote %3u samples %s\n",
-            num_written,
+            M + cp_len,
             last_symbol ? "(last symbol)" : "");
     }
 

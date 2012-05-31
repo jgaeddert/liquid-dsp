@@ -1333,28 +1333,23 @@ void ofdmflexframegen_modulate_header(ofdmflexframegen _q);
 
 // write first S0 symbol
 void ofdmflexframegen_write_S0a(ofdmflexframegen _q,
-                                float complex * _buffer,
-                                unsigned int * _num_written);
+                                float complex * _buffer);
 
 // write second S0 symbol
 void ofdmflexframegen_write_S0b(ofdmflexframegen _q,
-                                float complex * _buffer,
-                                unsigned int * _num_written);
+                                float complex * _buffer);
 
 // write S1 symbol
 void ofdmflexframegen_write_S1(ofdmflexframegen _q,
-                               float complex * _buffer,
-                               unsigned int * _num_written);
+                               float complex * _buffer);
 
 // write header symbol
 void ofdmflexframegen_write_header(ofdmflexframegen _q,
-                                   float complex * _buffer,
-                                   unsigned int * _num_written);
+                                   float complex * _buffer);
 
 // write payload symbol
 void ofdmflexframegen_write_payload(ofdmflexframegen _q,
-                                    float complex * _buffer,
-                                    unsigned int * _num_written);
+                                    float complex * _buffer);
 
 // 
 // ofdmflexframesync
