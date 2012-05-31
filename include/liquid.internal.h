@@ -1723,6 +1723,9 @@ void ofdmframe_init_S1(unsigned char * _p,
                        float complex * _s1,
                        unsigned int * _M_S1);
 
+// generate symbol (add cyclic prefix/postfix, overlap)
+void ofdmframegen_gensymbol(ofdmframegen    _q,
+                            float complex * _buffer);
 
 void ofdmframesync_cpcorrelate(ofdmframesync _q);
 void ofdmframesync_findrxypeak(ofdmframesync _q);

@@ -37,8 +37,6 @@ int main(int argc, char*argv[])
     unsigned int M = 64;                // number of subcarriers
     unsigned int cp_len = 16;           // cyclic prefix length
     unsigned int taper_len = 4;         // taper length
-    unsigned int num_symbols_S0 = 3;    // number of S0 symbols
-    unsigned int num_symbols_S1 = 1;    // number of S1 symbols (should be 1, non-negotiable)
     unsigned int num_symbols_data = 8;  // number of data symbols
     unsigned int hc_len = 1;            // channel filter length
     float hc_std = 0.10f;               // channel filter standard deviation
@@ -72,9 +70,7 @@ int main(int argc, char*argv[])
 
     // derived values
     unsigned int frame_len = M + cp_len;
-    unsigned int num_samples = num_symbols_S0*M +           // short PLCP sequence
-                               num_symbols_S1*M + cp_len +  // long PLCP sequence
-                               num_symbols_data*frame_len;  // data symbols
+    unsigned int num_samples = (3+num_symbols_data)*frame_len;  // data symbols
     float nstd = powf(10.0f, noise_floor/20.0f);
     float gamma = powf(10.0f, (SNRdB + noise_floor)/20.0f);
     printf("gamma : %f\n", gamma);
@@ -106,6 +102,7 @@ int main(int argc, char*argv[])
 
     unsigned int n=0;
 
+#if 0
     // generate sequences
     ofdmframegen_write_S0(fg, S0);
     ofdmframegen_write_S1(fg, S1);
@@ -116,17 +113,20 @@ int main(int argc, char*argv[])
         n += M;
     }
 
-#if 1
     // write long sequence cyclic prefix
     memmove(&y[n], &S1[M-cp_len], cp_len*sizeof(float complex));
     n += cp_len;
-#endif
 
     // write long sequence(s)
     for (i=0; i<num_symbols_S1; i++) {
         memmove(&y[n], S1, M*sizeof(float complex));
         n += M;
     }
+#else
+    ofdmframegen_write_S0a(fg, &y[n]);  n += frame_len;
+    ofdmframegen_write_S0b(fg, &y[n]);  n += frame_len;
+    ofdmframegen_write_S1( fg, &y[n]);  n += frame_len;
+#endif
 
     // modulate data symbols
     unsigned int s;

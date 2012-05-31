@@ -152,7 +152,7 @@ ofdmframegen ofdmframegen_create(unsigned int    _M,
         float g = sinf(M_PI_2*t);
         q->taper[i] = g*g;
     }
-#if 1
+#if 0
     // validate window symmetry
     for (i=0; i<q->taper_len; i++) {
         printf("    taper[%2u] = %12.8f (%12.8f)\n", i, q->taper[i],
@@ -220,25 +220,62 @@ void ofdmframegen_reset(ofdmframegen _q)
         _q->postfix[i] = 0.0f;
 }
 
-void ofdmframegen_write_S0(ofdmframegen _q,
-                           float complex * _y)
+// write first PLCP short sequence 'symbol' to buffer
+//
+//  |<- 2*cp->|<-       M       ->|<-       M       ->|
+//  |         |                   |                   |
+//      +-----+-------------------+-------------------+
+//     /      |                   |                   |
+//    /  ..s0 |        s0         |        s0         |
+//   /        |                   |                   |
+//  +---------+-------------------+-------------------+-----> time
+//  |                        |                        |
+//  |<-        s0[a]       ->|<-        s0[b]       ->|
+//  |        M + cp_len      |        M + cp_len      |
+//
+void ofdmframegen_write_S0a(ofdmframegen    _q,
+                            float complex * _y)
 {
-    memmove(_y, _q->s0, (_q->M)*sizeof(float complex));
+    unsigned int i;
+    unsigned int k;
+    for (i=0; i<_q->M + _q->cp_len; i++) {
+        k = (i + _q->M - 2*_q->cp_len) % _q->M;
+        _y[i] = _q->s0[k];
+    }
+
+    // apply tapering window
+    for (i=0; i<_q->taper_len; i++)
+        _y[i] *= _q->taper[i];
 }
 
+void ofdmframegen_write_S0b(ofdmframegen _q,
+                            float complex * _y)
+{
+    unsigned int i;
+    unsigned int k;
+    for (i=0; i<_q->M + _q->cp_len; i++) {
+        k = (i + _q->M - _q->cp_len) % _q->M;
+        _y[i] = _q->s0[k];
+    }
+
+    // copy postfix (first 'taper_len' samples of s0 symbol)
+    memmove(_q->postfix, _q->s0, _q->taper_len*sizeof(float complex));
+}
 
 void ofdmframegen_write_S1(ofdmframegen _q,
                            float complex * _y)
 {
-    memmove(_y, _q->s1, (_q->M)*sizeof(float complex));
+    // copy S1 symbol to output, adding cyclic prefix and tapering window
+    memmove(_q->x, _q->s1, (_q->M)*sizeof(float complex));
+    ofdmframegen_gensymbol(_q, _y);
 }
 
 
 // write OFDM symbol
-//  _q      :   framging generator object
+//  _q      :   framing generator object
 //  _x      :   input symbols, [size: _M x 1]
 //  _y      :   output samples, [size: _M x 1]
-void ofdmframegen_writesymbol(ofdmframegen _q,
+void ofdmframegen_writesymbol(ofdmframegen    _q,
                               float complex * _x,
                               float complex * _y)
 {
@@ -268,9 +305,57 @@ void ofdmframegen_writesymbol(ofdmframegen _q,
     // execute transform
     FFT_EXECUTE(_q->ifft);
 
-    // copy result to output
-    memmove( _y, &_q->x[_q->M - _q->cp_len], (_q->cp_len)*sizeof(float complex));
-    memmove(&_y[_q->cp_len], _q->x, (_q->M)*sizeof(float complex));
+    // copy result to output, adding cyclic prefix and tapering window
+    ofdmframegen_gensymbol(_q, _y);
 }
 
+// write tail to output
+void ofdmframegen_writetail(ofdmframegen    _q,
+                            float complex * _buffer)
+{
+    // write tail to output, applying tapering window
+    unsigned int i;
+    for (i=0; i<_q->taper_len; i++)
+        _buffer[i] = _q->postfix[i] * _q->taper[_q->taper_len-i-1];
+}
+
+// 
+// internal methods
+//
+
+// generate symbol (add cyclic prefix/postfix, overlap)
+//
+//  ->|   |<- taper_len
+//    +   +-----+-------------------+
+//     \ /      |                   |
+//      X       |      symbol       |
+//     / \      |                   |
+//    +---+-----+-------------------+----> time
+//    |         |                   |
+//    |<- cp  ->|<-       M       ->|
+//
+//  _q->x           :   input time-domain symbol [size: _q->M x 1]
+//  _q->postfix     :   input:  post-fix from previous symbol [size: _q->taper_len x 1]
+//                      output: post-fix from this new symbol
+//  _q->taper       :   tapering window
+//  _q->taper_len   :   tapering window length
+//
+//  _buffer         :   output sample buffer [size: (_q->M + _q->cp_len) x 1]
+void ofdmframegen_gensymbol(ofdmframegen    _q,
+                            float complex * _buffer)
+{
+    // copy input symbol with cyclic prefix to output symbol
+    memmove( &_buffer[0],          &_q->x[_q->M-_q->cp_len], _q->cp_len*sizeof(float complex));
+    memmove( &_buffer[_q->cp_len], &_q->x[               0], _q->M    * sizeof(float complex));
+    
+    // apply tapering window to over-lapping regions
+    unsigned int i;
+    for (i=0; i<_q->taper_len; i++) {
+        _buffer[i] *= _q->taper[i];
+        _buffer[i] += _q->postfix[i] * _q->taper[_q->taper_len-i-1];
+    }
+
+    // copy post-fix to output (first 'taper_len' samples of input symbol)
+    memmove(_q->postfix, _q->x, _q->taper_len*sizeof(float complex));
+}
 

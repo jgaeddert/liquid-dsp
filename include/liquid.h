@@ -3436,15 +3436,26 @@ void ofdmframegen_print(ofdmframegen _q);
 
 void ofdmframegen_reset(ofdmframegen _q);
 
-void ofdmframegen_write_S0(ofdmframegen _q,
-                           liquid_float_complex *_y);
+// write first S0 symbol
+void ofdmframegen_write_S0a(ofdmframegen _q,
+                            liquid_float_complex *_y);
 
+// write second S0 symbol
+void ofdmframegen_write_S0b(ofdmframegen _q,
+                            liquid_float_complex *_y);
+
+// write S1 symbol
 void ofdmframegen_write_S1(ofdmframegen _q,
                            liquid_float_complex *_y);
 
+// write data symbol
 void ofdmframegen_writesymbol(ofdmframegen _q,
                               liquid_float_complex * _x,
                               liquid_float_complex *_y);
+
+// write tail
+void ofdmframegen_writetail(ofdmframegen _q,
+                            liquid_float_complex * _x);
 
 // 
 // OFDM frame (symbol) synchronizer
