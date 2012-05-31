@@ -45,13 +45,8 @@ void ofdmframesync_acquire_bench(struct rusage *_start,
     unsigned int cp_len    = _cp_len;
     unsigned int taper_len = 0;
 
-    //
-    unsigned int num_symbols_S0 = 2;    // number of S0 symbols
-    unsigned int num_symbols_S1 = 2;    // number of S0 symbols
-
     // derived values
-    unsigned int num_samples = num_symbols_S0*M +           // short PLCP sequence
-                               num_symbols_S1*M + cp_len;   // long PLCP sequence
+    unsigned int num_samples = 3*(M + cp_len);
 
     // create synthesizer/analyzer objects
     ofdmframegen fg = ofdmframegen_create(M, cp_len, taper_len, NULL);
@@ -60,32 +55,22 @@ void ofdmframesync_acquire_bench(struct rusage *_start,
     ofdmframesync fs = ofdmframesync_create(M,cp_len,taper_len,NULL,NULL,NULL);
 
     unsigned int i;
-    float complex s0[M];            // short PLCP sequence
-    float complex s1[M];            // long PLCP sequence
     float complex y[num_samples];   // frame samples
-
-    // generate sequences
-    ofdmframegen_write_S0(fg, s0);
-    ofdmframegen_write_S1(fg, s1);
 
     // assemble full frame
     unsigned int n=0;
 
-    // write short sequence(s)
-    for (i=0; i<num_symbols_S0; i++) {
-        memmove(&y[n], s0, M*sizeof(float complex));
-        n += M;
-    }
+    // write first S0 symbol
+    ofdmframegen_write_S0a(fg, &y[n]);
+    n += M + cp_len;
 
-    // write long sequence cyclic prefix
-    memmove(&y[n], &s1[M-cp_len], cp_len*sizeof(float complex));
-    n += cp_len;
+    // write second S0 symbol
+    ofdmframegen_write_S0b(fg, &y[n]);
+    n += M + cp_len;
 
-    // write long sequence(s)
-    for (i=0; i<num_symbols_S1; i++) {
-        memmove(&y[n], s1, M*sizeof(float complex));
-        n += M;
-    }
+    // write S1 symbol
+    ofdmframegen_write_S1( fg, &y[n]);
+    n += M + cp_len;
 
     assert(n == num_samples);
 

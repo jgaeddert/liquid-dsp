@@ -46,10 +46,6 @@ void ofdmframesync_rxsymbol_bench(struct rusage *_start,
     unsigned int cp_len    = _cp_len;
     unsigned int taper_len = 0;
 
-    //
-    unsigned int num_symbols_S0 = 2;    // number of S0 symbols
-    unsigned int num_symbols_S1 = 2;    // number of S0 symbols
-
     // create synthesizer/analyzer objects
     ofdmframegen fg = ofdmframegen_create(M, cp_len, taper_len, NULL);
     //ofdmframegen_print(fg);
@@ -59,25 +55,20 @@ void ofdmframesync_rxsymbol_bench(struct rusage *_start,
     ofdmframesync fs = ofdmframesync_create(M,cp_len,taper_len,NULL,NULL,NULL);
 
     unsigned int i;
-    float complex s0[M];        // short PLCP sequence
-    float complex s1[M];        // long PLCP sequence
     float complex X[M];         // channelized symbol
     float complex x[M+cp_len];  // time-domain symbol
 
-    // generate sequences
-    ofdmframegen_write_S0(fg, s0);
-    ofdmframegen_write_S1(fg, s1);
+    // synchronize short sequence (first)
+    ofdmframegen_write_S0a(fg, x);
+    ofdmframesync_execute(fs, x, M+cp_len);
 
-    // synchronize short sequence(s)
-    for (i=0; i<num_symbols_S0; i++)
-        ofdmframesync_execute(fs, s0, M);
+    // synchronize short sequence (second)
+    ofdmframegen_write_S0b(fg, x);
+    ofdmframesync_execute(fs, x, M+cp_len);
 
-    // synchronize long sequence cyclic prefix
-    ofdmframesync_execute(fs, &s1[M-cp_len], cp_len);
-
-    // write long sequence(s)
-    for (i=0; i<num_symbols_S1; i++)
-        ofdmframesync_execute(fs, s1, M);
+    // synchronize long sequence
+    ofdmframegen_write_S1(fg, x);
+    ofdmframesync_execute(fs, x, M+cp_len);
 
     // modulate data symbols (use same symbol, ignore pilot phase)
     unsigned int s;
@@ -98,7 +89,7 @@ void ofdmframesync_rxsymbol_bench(struct rusage *_start,
     // start trials
     getrusage(RUSAGE_SELF, _start);
     for (i=0; i<(*_num_iterations); i++) {
-        //
+        // receive data symbols (ignoring pilots)
         ofdmframesync_execute(fs, x, M+cp_len);
         ofdmframesync_execute(fs, x, M+cp_len);
         ofdmframesync_execute(fs, x, M+cp_len);

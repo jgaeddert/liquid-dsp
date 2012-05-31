@@ -67,8 +67,6 @@ void ofdmframesync_acquire_test(unsigned int _num_subcarriers,
     float tol              = 1e-2f;             // error tolerance
 
     //
-    unsigned int num_symbols_S0 = 3;    // number of S0 symbols
-    unsigned int num_symbols_S1 = 1;    // number of S1 symbols
     float dphi = 1.0f / (float)M;       // carrier frequency offset
 
     // subcarrier allocation (initialize to default)
@@ -76,9 +74,7 @@ void ofdmframesync_acquire_test(unsigned int _num_subcarriers,
     ofdmframe_init_default_sctype(M, p);
 
     // derived values
-    unsigned int num_samples = num_symbols_S0*M +           // short PLCP sequence
-                               num_symbols_S1*M + cp_len +  // long PLCP sequence
-                               1*(M+cp_len);                // data symbol
+    unsigned int num_samples = (3 + 1)*(M + cp_len);
 
     // create synthesizer/analyzer objects
     ofdmframegen fg = ofdmframegen_create(M, cp_len, taper_len, p);
@@ -93,28 +89,20 @@ void ofdmframesync_acquire_test(unsigned int _num_subcarriers,
     float complex s1[M];            // long PLCP sequence
     float complex y[num_samples];   // frame samples
 
-    // generate sequences
-    ofdmframegen_write_S0(fg, s0);
-    ofdmframegen_write_S1(fg, s1);
-
     // assemble full frame
     unsigned int n=0;
 
-    // write short sequence(s)
-    for (i=0; i<num_symbols_S0; i++) {
-        memmove(&y[n], s0, M*sizeof(float complex));
-        n += M;
-    }
+    // write first S0 symbol
+    ofdmframegen_write_S0a(fg, &y[n]);
+    n += M + cp_len;
 
-    // write long sequence cyclic prefix
-    memmove(&y[n], &s1[M-cp_len], cp_len*sizeof(float complex));
-    n += cp_len;
+    // write second S0 symbol
+    ofdmframegen_write_S0b(fg, &y[n]);
+    n += M + cp_len;
 
-    // write long sequence(s)
-    for (i=0; i<num_symbols_S1; i++) {
-        memmove(&y[n], s1, M*sizeof(float complex));
-        n += M;
-    }
+    // write S1 symbol
+    ofdmframegen_write_S1( fg, &y[n]);
+    n += M + cp_len;
 
     // generate data symbol (random)
     for (i=0; i<M; i++) {
