@@ -128,12 +128,19 @@ struct ofdmframesync_s {
 #endif
 };
 
-ofdmframesync ofdmframesync_create(unsigned int _M,
-                                   unsigned int _cp_len,
-                                   unsigned char * _p,
-                                   //unsigned int _taper_len,
+// create OFDM framing synchronizer object
+//  _M          :   number of subcarriers, >10 typical
+//  _cp_len     :   cyclic prefix length
+//  _taper_len  :   taper length (OFDM symbol overlap)
+//  _p          :   subcarrier allocation (null, pilot, data), [size: _M x 1]
+//  _callback   :   user-defined callback function
+//  _userdata   :   user-defined data pointer
+ofdmframesync ofdmframesync_create(unsigned int           _M,
+                                   unsigned int           _cp_len,
+                                   unsigned int           _taper_len,
+                                   unsigned char *        _p,
                                    ofdmframesync_callback _callback,
-                                   void * _userdata)
+                                   void *                 _userdata)
 {
     ofdmframesync q = (ofdmframesync) malloc(sizeof(struct ofdmframesync_s));
 

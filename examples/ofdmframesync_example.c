@@ -35,6 +35,7 @@ int main(int argc, char*argv[])
     // options
     unsigned int M = 64;                // number of subcarriers
     unsigned int cp_len = 16;           // cyclic prefix length
+    unsigned int taper_len = 4;         // taper length
     unsigned int num_symbols_S0 = 3;    // number of S0 symbols
     unsigned int num_symbols_S1 = 1;    // number of S1 symbols (should be 1, non-negotiable)
     unsigned int num_symbols_data = 8;  // number of data symbols
@@ -84,11 +85,13 @@ int main(int argc, char*argv[])
     windowcf wsyms = windowcf_create(10*M);
 
     // create frame generator
-    ofdmframegen fg = ofdmframegen_create(M, cp_len, p);
+    printf("creating generator...\n");
+    ofdmframegen fg = ofdmframegen_create(M, cp_len, taper_len, p);
     ofdmframegen_print(fg);
 
     // create frame synchronizer
-    ofdmframesync fs = ofdmframesync_create(M, cp_len, p, callback, (void*)wsyms);
+    printf("creating synchronizer...\n");
+    ofdmframesync fs = ofdmframesync_create(M, cp_len, taper_len, p, callback, (void*)wsyms);
     ofdmframesync_print(fs);
 
     modem mod = modem_create(ms);

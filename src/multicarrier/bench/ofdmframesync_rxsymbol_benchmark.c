@@ -42,20 +42,21 @@ void ofdmframesync_rxsymbol_bench(struct rusage *_start,
 {
     // options
     modulation_scheme ms = LIQUID_MODEM_QPSK;
-    unsigned int M       = _num_subcarriers;
-    unsigned int cp_len  = _cp_len;
+    unsigned int M         = _num_subcarriers;
+    unsigned int cp_len    = _cp_len;
+    unsigned int taper_len = 0;
 
     //
     unsigned int num_symbols_S0 = 2;    // number of S0 symbols
     unsigned int num_symbols_S1 = 2;    // number of S0 symbols
 
     // create synthesizer/analyzer objects
-    ofdmframegen fg = ofdmframegen_create(M, cp_len, NULL);
+    ofdmframegen fg = ofdmframegen_create(M, cp_len, taper_len, NULL);
     //ofdmframegen_print(fg);
 
     modem mod = modem_create(ms);
 
-    ofdmframesync fs = ofdmframesync_create(M,cp_len,NULL,NULL,NULL);
+    ofdmframesync fs = ofdmframesync_create(M,cp_len,taper_len,NULL,NULL,NULL);
 
     unsigned int i;
     float complex s0[M];        // short PLCP sequence

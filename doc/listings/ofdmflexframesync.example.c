@@ -18,6 +18,7 @@ int main() {
     // options
     unsigned int M = 64;        // number of subcarriers
     unsigned int cp_len = 16;   // cyclic prefix length
+    unsigned int taper_len = 4; // taper length
     unsigned char p[M];         // subcarrier allocation (null/pilot/data)
     void * userdata;            // user-defined data
     
@@ -25,7 +26,8 @@ int main() {
     ofdmframe_init_default_sctype(M, p);
 
     // create frame synchronizer
-    ofdmflexframesync fs = ofdmflexframesync_create(M, cp_len, p, mycallback, userdata);
+    ofdmflexframesync fs = ofdmflexframesync_create(M, cp_len, taper_len, p,
+                                                    mycallback, userdata);
 
     // grab samples from source and push through synchronizer
     float complex buffer[20];   // time-domain buffer (any length)

@@ -43,6 +43,7 @@ void ofdmflexframesync_debug_print(ofdmflexframesync _q);
 struct ofdmflexframesync_s {
     unsigned int M;         // number of subcarriers
     unsigned int cp_len;    // cyclic prefix length
+    unsigned int taper_len; // taper length
     unsigned char * p;      // subcarrier allocation (null, pilot, data)
 
     // constants
@@ -105,15 +106,16 @@ struct ofdmflexframesync_s {
 // create ofdmflexframesync object
 //  _M          :   number of subcarriers
 //  _cp_len     :   length of cyclic prefix [samples]
+//  _taper_len  :   taper length (OFDM symbol overlap)
 //  _p          :   subcarrier allocation (PILOT/NULL/DATA) [size: _M x 1]
 //  _callback   :   user-defined callback function
 //  _userdata   :   user-defined data structure passed to callback
-ofdmflexframesync ofdmflexframesync_create(unsigned int _M,
-                                           unsigned int _cp_len,
-                                           unsigned char * _p,
-                                           //unsigned int _taper_len,
+ofdmflexframesync ofdmflexframesync_create(unsigned int               _M,
+                                           unsigned int               _cp_len,
+                                           unsigned int               _taper_len,
+                                           unsigned char *            _p,
                                            ofdmflexframesync_callback _callback,
-                                           void * _userdata)
+                                           void *                     _userdata)
 {
     ofdmflexframesync q = (ofdmflexframesync) malloc(sizeof(struct ofdmflexframesync_s));
 
@@ -129,10 +131,11 @@ ofdmflexframesync ofdmflexframesync_create(unsigned int _M,
     }
 
     // set internal properties
-    q->M        = _M;
-    q->cp_len   = _cp_len;
-    q->callback = _callback;
-    q->userdata = _userdata;
+    q->M         = _M;
+    q->cp_len    = _cp_len;
+    q->taper_len = _taper_len;
+    q->callback  = _callback;
+    q->userdata  = _userdata;
 
     // allocate memory for subcarrier allocation IDs
     q->p = (unsigned char*) malloc((q->M)*sizeof(unsigned char));
@@ -148,7 +151,7 @@ ofdmflexframesync ofdmflexframesync_create(unsigned int _M,
     ofdmframe_validate_sctype(q->p, q->M, &q->M_null, &q->M_pilot, &q->M_data);
 
     // create internal framing object
-    q->fs = ofdmframesync_create(_M, _cp_len, _p, ofdmflexframesync_internal_callback, (void*)q);
+    q->fs = ofdmframesync_create(_M, _cp_len, _taper_len, _p, ofdmflexframesync_internal_callback, (void*)q);
 
     // create header objects
     q->mod_header = modem_create(OFDMFLEXFRAME_H_MOD);

@@ -5,6 +5,7 @@ int main() {
     // options
     unsigned int M = 64;                // number of subcarriers
     unsigned int cp_len = 16;           // cyclic prefix length
+    unsigned int taper_len = 4;         // taper length
     unsigned int payload_len = 120;     // length of payload (bytes)
 
     // buffers
@@ -26,7 +27,7 @@ int main() {
     ofdmframe_init_default_sctype(M, p);
 
     // create frame generator
-    ofdmflexframegen fg = ofdmflexframegen_create(M, cp_len, p, &fgprops);
+    ofdmflexframegen fg = ofdmflexframegen_create(M,cp_len,taper_len,p,&fgprops);
 
     // ... initialize header/payload ...
 

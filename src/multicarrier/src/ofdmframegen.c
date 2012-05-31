@@ -44,6 +44,11 @@ struct ofdmframegen_s {
     unsigned int cp_len;    // cyclic prefix length
     unsigned char * p;      // subcarrier allocation (null, pilot, data)
 
+    // tapering/trasition
+    unsigned int taper_len; // number of samples in tapering window/overlap
+    float * taper;          // tapring window
+    float complex *postfix; // overlapping symbol buffer
+
     // constants
     unsigned int M_null;    // number of null subcarriers
     unsigned int M_pilot;   // number of pilot subcarriers
@@ -71,8 +76,14 @@ struct ofdmframegen_s {
     msequence ms_pilot;
 };
 
-ofdmframegen ofdmframegen_create(unsigned int _M,
-                                 unsigned int _cp_len,
+// create OFDM framing generator object
+//  _M          :   number of subcarriers, >10 typical
+//  _cp_len     :   cyclic prefix length
+//  _taper_len  :   taper length (OFDM symbol overlap)
+//  _p          :   subcarrier allocation (null, pilot, data), [size: _M x 1]
+ofdmframegen ofdmframegen_create(unsigned int    _M,
+                                 unsigned int    _cp_len,
+                                 unsigned int    _taper_len,
                                  unsigned char * _p)
 {
     // validate input
@@ -85,8 +96,9 @@ ofdmframegen ofdmframegen_create(unsigned int _M,
     }
 
     ofdmframegen q = (ofdmframegen) malloc(sizeof(struct ofdmframegen_s));
-    q->M = _M;
-    q->cp_len = _cp_len;
+    q->M         = _M;
+    q->cp_len    = _cp_len;
+    q->taper_len = _taper_len;
 
     // allocate memory for subcarrier allocation IDs
     q->p = (unsigned char*) malloc((q->M)*sizeof(unsigned char));
@@ -124,6 +136,10 @@ ofdmframegen ofdmframegen_create(unsigned int _M,
     ofdmframe_init_S0(q->p, q->M, q->S0, q->s0, &q->M_S0);
     ofdmframe_init_S1(q->p, q->M, q->S1, q->s1, &q->M_S1);
 
+    // create tapering window and transition buffer
+    q->taper   = (float*)         malloc(q->taper_len * sizeof(float));
+    q->postfix = (float complex*) malloc(q->taper_len * sizeof(float complex));
+
     // compute scaling factor
     q->g_data = 1.0f / sqrtf(q->M_pilot + q->M_data);
 
@@ -133,11 +149,9 @@ ofdmframegen ofdmframegen_create(unsigned int _M,
     return q;
 }
 
+// free transform object memory
 void ofdmframegen_destroy(ofdmframegen _q)
 {
-    // free transform object memory
-    //
-
     // free subcarrier type array memory
     free(_q->p);
 
@@ -145,6 +159,10 @@ void ofdmframegen_destroy(ofdmframegen _q)
     free(_q->X);
     free(_q->x);
     FFT_DESTROY_PLAN(_q->ifft);
+
+    // free tapering window and transition buffer
+    free(_q->taper);
+    free(_q->postfix);
 
     // free PLCP memory arrays
     free(_q->S0);

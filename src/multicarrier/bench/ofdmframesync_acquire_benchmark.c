@@ -41,8 +41,9 @@ void ofdmframesync_acquire_bench(struct rusage *_start,
                                  unsigned int _cp_len)
 {
     // options
-    unsigned int M       = _num_subcarriers;
-    unsigned int cp_len  = _cp_len;
+    unsigned int M         = _num_subcarriers;
+    unsigned int cp_len    = _cp_len;
+    unsigned int taper_len = 0;
 
     //
     unsigned int num_symbols_S0 = 2;    // number of S0 symbols
@@ -53,10 +54,10 @@ void ofdmframesync_acquire_bench(struct rusage *_start,
                                num_symbols_S1*M + cp_len;   // long PLCP sequence
 
     // create synthesizer/analyzer objects
-    ofdmframegen fg = ofdmframegen_create(M, cp_len, NULL);
+    ofdmframegen fg = ofdmframegen_create(M, cp_len, taper_len, NULL);
     //ofdmframegen_print(fg);
 
-    ofdmframesync fs = ofdmframesync_create(M,cp_len,NULL,NULL,NULL);
+    ofdmframesync fs = ofdmframesync_create(M,cp_len,taper_len,NULL,NULL,NULL);
 
     unsigned int i;
     float complex s0[M];            // short PLCP sequence

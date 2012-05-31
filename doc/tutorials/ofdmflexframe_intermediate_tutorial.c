@@ -24,6 +24,7 @@ int main() {
     // options
     unsigned int M = 64;                    // number of subcarriers
     unsigned int cp_len = 16;               // cyclic prefix length
+    unsigned int taper_len = 4;             // taper length
     unsigned int payload_len = 120;         // length of payload (bytes)
 
     // allocate memory for header, payload, sample buffer
@@ -32,10 +33,12 @@ int main() {
     unsigned char payload[payload_len];     // payload
 
     // create frame generator object with default properties
-    ofdmflexframegen fg = ofdmflexframegen_create(M, cp_len, NULL, NULL);
+    ofdmflexframegen fg =
+        ofdmflexframegen_create(M, cp_len, taper_len, NULL, NULL);
 
     // create frame synchronizer object
-    ofdmflexframesync fs = ofdmflexframesync_create(M, cp_len, NULL, mycallback, NULL);
+    ofdmflexframesync fs =
+        ofdmflexframesync_create(M, cp_len, taper_len, NULL, mycallback, NULL);
 
     unsigned int i;
 

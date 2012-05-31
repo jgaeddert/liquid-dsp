@@ -47,6 +47,7 @@ int main(int argc, char*argv[])
     // options
     unsigned int M = 64;                // number of subcarriers
     unsigned int cp_len = 16;           // cyclic prefix length
+    unsigned int taper_len = 4;         // taper length
     unsigned int payload_len = 120;     // length of payload (bytes)
     unsigned int num_symbols_S0 = 3;    // number of S0 training symbols
     modulation_scheme ms = LIQUID_MODEM_QPSK;
@@ -130,10 +131,10 @@ int main(int argc, char*argv[])
     fgprops.fec0            = fec0;
     fgprops.fec1            = fec1;
     fgprops.mod_scheme      = ms;
-    ofdmflexframegen fg = ofdmflexframegen_create(M, cp_len, p, &fgprops);
+    ofdmflexframegen fg = ofdmflexframegen_create(M, cp_len, taper_len, p, &fgprops);
 
     // create frame synchronizer
-    ofdmflexframesync fs = ofdmflexframesync_create(M, cp_len, p, callback, (void*)payload);
+    ofdmflexframesync fs = ofdmflexframesync_create(M, cp_len, taper_len, p, callback, (void*)payload);
 
     // initialize header/payload and assemble frame
     for (i=0; i<8; i++)

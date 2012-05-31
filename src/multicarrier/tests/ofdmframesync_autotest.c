@@ -55,13 +55,16 @@ int ofdmframesync_autotest_callback(float complex * _X,
 // Helper function to keep code base small
 //  _num_subcarriers    :   number of subcarriers
 //  _cp_len             :   cyclic prefix lenght
+//  _taper_len          :   taper length
 void ofdmframesync_acquire_test(unsigned int _num_subcarriers,
-                                unsigned int _cp_len)
+                                unsigned int _cp_len,
+                                unsigned int _taper_len)
 {
     // options
-    unsigned int M      = _num_subcarriers; // number of subcarriers
-    unsigned int cp_len = _cp_len;          // cyclic prefix lenght
-    float tol           = 1e-2f;            // error tolerance
+    unsigned int M         = _num_subcarriers;  // number of subcarriers
+    unsigned int cp_len    = _cp_len;           // cyclic prefix lenght
+    unsigned int taper_len = _taper_len;        // taper length
+    float tol              = 1e-2f;             // error tolerance
 
     //
     unsigned int num_symbols_S0 = 3;    // number of S0 symbols
@@ -78,12 +81,12 @@ void ofdmframesync_acquire_test(unsigned int _num_subcarriers,
                                1*(M+cp_len);                // data symbol
 
     // create synthesizer/analyzer objects
-    ofdmframegen fg = ofdmframegen_create(M, cp_len, p);
+    ofdmframegen fg = ofdmframegen_create(M, cp_len, taper_len, p);
     //ofdmframegen_print(fg);
 
     float complex X[M];         // original data sequence
     float complex X_test[M];    // recovered data sequence
-    ofdmframesync fs = ofdmframesync_create(M,cp_len,p,ofdmframesync_autotest_callback,(void*)X_test);
+    ofdmframesync fs = ofdmframesync_create(M,cp_len,taper_len,p,ofdmframesync_autotest_callback,(void*)X_test);
 
     unsigned int i;
     float complex s0[M];            // short PLCP sequence
@@ -147,8 +150,8 @@ void ofdmframesync_acquire_test(unsigned int _num_subcarriers,
 }
 
 //
-void autotest_ofdmframesync_acquire_n64()   { ofdmframesync_acquire_test(64,  8);   }
-void autotest_ofdmframesync_acquire_n128()  { ofdmframesync_acquire_test(128, 16);  }
-void autotest_ofdmframesync_acquire_n256()  { ofdmframesync_acquire_test(256, 32);  }
-void autotest_ofdmframesync_acquire_n512()  { ofdmframesync_acquire_test(512, 64);  }
+void autotest_ofdmframesync_acquire_n64()   { ofdmframesync_acquire_test(64,  8,  0); }
+void autotest_ofdmframesync_acquire_n128()  { ofdmframesync_acquire_test(128, 16, 0); }
+void autotest_ofdmframesync_acquire_n256()  { ofdmframesync_acquire_test(256, 32, 0); }
+void autotest_ofdmframesync_acquire_n512()  { ofdmframesync_acquire_test(512, 64, 0); }
 

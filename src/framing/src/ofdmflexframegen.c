@@ -52,6 +52,7 @@ void ofdmflexframegenprops_init_default(ofdmflexframegenprops_s * _props)
 struct ofdmflexframegen_s {
     unsigned int M;         // number of subcarriers
     unsigned int cp_len;    // cyclic prefix length
+    unsigned int taper_len; // taper length
     unsigned char * p;      // subcarrier allocation (null, pilot, data)
 
     // constants
@@ -106,12 +107,17 @@ struct ofdmflexframegen_s {
     ofdmflexframegenprops_s props;
 };
 
-// TODO : put these options in 'assemble()' method?
-// TODO : allow _p to be NULL pointer (and initialize with defaults)
-ofdmflexframegen ofdmflexframegen_create(unsigned int _M,
-                                         unsigned int _cp_len,
-                                         unsigned char * _p,
-                                         ofdmflexframegenprops_s * _props)
+// create OFDM flexible framing generator object
+//  _M          :   number of subcarriers, >10 typical
+//  _cp_len     :   cyclic prefix length
+//  _taper_len  :   taper length (OFDM symbol overlap)
+//  _p          :   subcarrier allocation (null, pilot, data), [size: _M x 1]
+//  _fgprops    :   frame properties (modulation scheme, etc.)
+ofdmflexframegen ofdmflexframegen_create(unsigned int              _M,
+                                         unsigned int              _cp_len,
+                                         unsigned int              _taper_len,
+                                         unsigned char *           _p,
+                                         ofdmflexframegenprops_s * _fgprops)
 {
     // validate input
     if (_M < 2) {
@@ -123,8 +129,9 @@ ofdmflexframegen ofdmflexframegen_create(unsigned int _M,
     }
 
     ofdmflexframegen q = (ofdmflexframegen) malloc(sizeof(struct ofdmflexframegen_s));
-    q->M      = _M;         // number of subcarriers
-    q->cp_len = _cp_len;    // cyclic prefix length
+    q->M         = _M;          // number of subcarriers
+    q->cp_len    = _cp_len;     // cyclic prefix length
+    q->taper_len = _taper_len;  // taper length
 
     // allocate memory for transform buffers
     q->X = (float complex*) malloc((q->M)*sizeof(float complex));
@@ -143,7 +150,7 @@ ofdmflexframegen ofdmflexframegen_create(unsigned int _M,
     ofdmframe_validate_sctype(q->p, q->M, &q->M_null, &q->M_pilot, &q->M_data);
 
     // create internal OFDM frame generator object
-    q->fg = ofdmframegen_create(q->M, q->cp_len, q->p);
+    q->fg = ofdmframegen_create(q->M, q->cp_len, q->taper_len, q->p);
 
     // create header objects
     q->mod_header = modem_create(OFDMFLEXFRAME_H_MOD);
@@ -173,7 +180,7 @@ ofdmflexframegen ofdmflexframegen_create(unsigned int _M,
     q->mod_payload = modem_create(LIQUID_MODEM_QPSK);
 
     // initialize properties
-    ofdmflexframegen_setprops(q, _props);
+    ofdmflexframegen_setprops(q, _fgprops);
 
     // reset
     ofdmflexframegen_reset(q);

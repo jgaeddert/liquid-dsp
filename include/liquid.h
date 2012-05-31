@@ -2158,13 +2158,14 @@ typedef struct ofdmflexframegen_s * ofdmflexframegen;
 // create OFDM flexible framing generator object
 //  _M          :   number of subcarriers, >10 typical
 //  _cp_len     :   cyclic prefix length
+//  _taper_len  :   taper length (OFDM symbol overlap)
 //  _p          :   subcarrier allocation (null, pilot, data), [size: _M x 1]
 //  _fgprops    :   frame properties (modulation scheme, etc.)
-ofdmflexframegen ofdmflexframegen_create(unsigned int _M,
-                                         unsigned int  _cp_len,
-                                         unsigned char * _p,
+ofdmflexframegen ofdmflexframegen_create(unsigned int              _M,
+                                         unsigned int              _cp_len,
+                                         unsigned int              _taper_len,
+                                         unsigned char *           _p,
                                          ofdmflexframegenprops_s * _fgprops);
-                                         //unsigned int  _taper_len);
 
 // destroy ofdmflexframegen object
 void ofdmflexframegen_destroy(ofdmflexframegen _q);
@@ -2228,12 +2229,20 @@ typedef int (*ofdmflexframesync_callback)(unsigned char *  _header,
                                           void *           _userdata);
 
 typedef struct ofdmflexframesync_s * ofdmflexframesync;
-ofdmflexframesync ofdmflexframesync_create(unsigned int _num_subcarriers,
-                                           unsigned int  _cp_len,
-                                           unsigned char * _p,
-                                           //unsigned int  _taper_len,
+
+// create OFDM flexible framing synchronizer object
+//  _M          :   number of subcarriers
+//  _cp_len     :   cyclic prefix length
+//  _taper_len  :   taper length (OFDM symbol overlap)
+//  _p          :   subcarrier allocation (null, pilot, data), [size: _M x 1]
+//  _callback   :   user-defined callback function
+//  _userdata   :   user-defined data pointer
+ofdmflexframesync ofdmflexframesync_create(unsigned int               _M,
+                                           unsigned int               _cp_len,
+                                           unsigned int               _taper_len,
+                                           unsigned char *            _p,
                                            ofdmflexframesync_callback _callback,
-                                           void * _userdata);
+                                           void *                     _userdata);
 
 void ofdmflexframesync_destroy(ofdmflexframesync _q);
 void ofdmflexframesync_print(ofdmflexframesync _q);
@@ -3412,13 +3421,14 @@ void ofdmframe_print_sctype(unsigned char * _p,
 typedef struct ofdmframegen_s * ofdmframegen;
 
 // create OFDM framing generator object
-//  _M      :   number of subcarriers, >10 typical
-//  _cp_len :   cyclic prefix length
-//  _p      :   subcarrier allocation (null, pilot, data), [size: _M x 1]
-ofdmframegen ofdmframegen_create(unsigned int _M,
-                                 unsigned int  _cp_len,
+//  _M          :   number of subcarriers, >10 typical
+//  _cp_len     :   cyclic prefix length
+//  _taper_len  :   taper length (OFDM symbol overlap)
+//  _p          :   subcarrier allocation (null, pilot, data), [size: _M x 1]
+ofdmframegen ofdmframegen_create(unsigned int    _M,
+                                 unsigned int    _cp_len,
+                                 unsigned int    _taper_len,
                                  unsigned char * _p);
-                                 //unsigned int  _taper_len);
 
 void ofdmframegen_destroy(ofdmframegen _q);
 
@@ -3444,12 +3454,20 @@ typedef int (*ofdmframesync_callback)(liquid_float_complex * _y,
                                       unsigned int _M,
                                       void * _userdata);
 typedef struct ofdmframesync_s * ofdmframesync;
-ofdmframesync ofdmframesync_create(unsigned int _num_subcarriers,
-                                   unsigned int  _cp_len,
-                                   unsigned char * _p,
-                                   //unsigned int  _taper_len,
+
+// create OFDM framing synchronizer object
+//  _M          :   number of subcarriers, >10 typical
+//  _cp_len     :   cyclic prefix length
+//  _taper_len  :   taper length (OFDM symbol overlap)
+//  _p          :   subcarrier allocation (null, pilot, data), [size: _M x 1]
+//  _callback   :   user-defined callback function
+//  _userdata   :   user-defined data pointer
+ofdmframesync ofdmframesync_create(unsigned int           _M,
+                                   unsigned int           _cp_len,
+                                   unsigned int           _taper_len,
+                                   unsigned char *        _p,
                                    ofdmframesync_callback _callback,
-                                   void * _userdata);
+                                   void *                 _userdata);
 void ofdmframesync_destroy(ofdmframesync _q);
 void ofdmframesync_debug_print(ofdmframesync _q, const char * _filename);
 void ofdmframesync_print(ofdmframesync _q);
