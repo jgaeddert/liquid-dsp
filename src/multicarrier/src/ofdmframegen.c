@@ -93,6 +93,12 @@ ofdmframegen ofdmframegen_create(unsigned int    _M,
     } else if (_M % 2) {
         fprintf(stderr,"error: ofdmframegen_create(), number of subcarriers must be even\n");
         exit(1);
+    } else if (_cp_len > _M) {
+        fprintf(stderr,"error: ofdmframegen_create(), cyclic prefix cannot exceed symbol length\n");
+        exit(1);
+    } else if (_taper_len > _cp_len) {
+        fprintf(stderr,"error: ofdmframegen_create(), taper length cannot exceed cyclic prefix\n");
+        exit(1);
     }
 
     ofdmframegen q = (ofdmframegen) malloc(sizeof(struct ofdmframegen_s));
@@ -123,6 +129,8 @@ ofdmframegen ofdmframegen_create(unsigned int    _M,
         exit(1);
     }
 
+    unsigned int i;
+
     // allocate memory for transform objects
     q->X = (float complex*) malloc((q->M)*sizeof(float complex));
     q->x = (float complex*) malloc((q->M)*sizeof(float complex));
@@ -139,6 +147,18 @@ ofdmframegen ofdmframegen_create(unsigned int    _M,
     // create tapering window and transition buffer
     q->taper   = (float*)         malloc(q->taper_len * sizeof(float));
     q->postfix = (float complex*) malloc(q->taper_len * sizeof(float complex));
+    for (i=0; i<q->taper_len; i++) {
+        float t = ((float)i + 0.5f) / (float)(q->taper_len);
+        float g = sinf(M_PI_2*t);
+        q->taper[i] = g*g;
+    }
+#if 1
+    // validate window symmetry
+    for (i=0; i<q->taper_len; i++) {
+        printf("    taper[%2u] = %12.8f (%12.8f)\n", i, q->taper[i],
+            q->taper[i] + q->taper[q->taper_len - i - 1]);
+    }
+#endif
 
     // compute scaling factor
     q->g_data = 1.0f / sqrtf(q->M_pilot + q->M_data);
@@ -185,6 +205,7 @@ void ofdmframegen_print(ofdmframegen _q)
     printf("      - pilot           :   %-u\n", _q->M_pilot);
     printf("      - data            :   %-u\n", _q->M_data);
     printf("    cyclic prefix len   :   %-u\n", _q->cp_len);
+    printf("    taper len           :   %-u\n", _q->taper_len);
     printf("    ");
     ofdmframe_print_sctype(_q->p, _q->M);
 }
@@ -192,6 +213,11 @@ void ofdmframegen_print(ofdmframegen _q)
 void ofdmframegen_reset(ofdmframegen _q)
 {
     msequence_reset(_q->ms_pilot);
+
+    // clear internal postfix buffer
+    unsigned int i;
+    for (i=0; i<_q->taper_len; i++)
+        _q->postfix[i] = 0.0f;
 }
 
 void ofdmframegen_write_S0(ofdmframegen _q,

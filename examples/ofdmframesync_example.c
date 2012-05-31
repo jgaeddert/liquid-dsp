@@ -19,6 +19,7 @@ void usage()
     printf("  u/h   : print usage\n");
     printf("  M     : number of subcarriers (must be even), default: 64\n");
     printf("  C     : cyclic prefix length, default: 16\n");
+    printf("  T     : taper length, default: 4\n");
     printf("  s     : signal-to-noise ratio [dB], default: 30\n");
     printf("  F     : carrier frequency offset, default: 0.002\n");
 }
@@ -49,14 +50,15 @@ int main(int argc, char*argv[])
 
     // get options
     int dopt;
-    while((dopt = getopt(argc,argv,"uhM:C:s:F:")) != EOF){
+    while((dopt = getopt(argc,argv,"uhM:C:T:s:F:")) != EOF){
         switch (dopt) {
         case 'u':
         case 'h': usage();                      return 0;
-        case 'M': M = atoi(optarg);             break;
-        case 'C': cp_len = atoi(optarg);        break;
-        case 's': SNRdB = atof(optarg);         break;
-        case 'F': dphi = atof(optarg);          break;
+        case 'M': M         = atoi(optarg);     break;
+        case 'C': cp_len    = atoi(optarg);     break;
+        case 'T': taper_len = atoi(optarg);     break;
+        case 's': SNRdB     = atof(optarg);     break;
+        case 'F': dphi      = atof(optarg);     break;
         default:
             exit(1);
         }
