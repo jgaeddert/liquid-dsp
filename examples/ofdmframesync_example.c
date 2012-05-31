@@ -83,12 +83,10 @@ int main(int argc, char*argv[])
     windowcf wsyms = windowcf_create(10*M);
 
     // create frame generator
-    printf("creating generator...\n");
     ofdmframegen fg = ofdmframegen_create(M, cp_len, taper_len, p);
     ofdmframegen_print(fg);
 
     // create frame synchronizer
-    printf("creating synchronizer...\n");
     ofdmframesync fs = ofdmframesync_create(M, cp_len, taper_len, p, callback, (void*)wsyms);
     ofdmframesync_print(fs);
 
@@ -102,31 +100,17 @@ int main(int argc, char*argv[])
 
     unsigned int n=0;
 
-#if 0
-    // generate sequences
-    ofdmframegen_write_S0(fg, S0);
-    ofdmframegen_write_S1(fg, S1);
+    // write first S0 symbol
+    ofdmframegen_write_S0a(fg, &y[n]);
+    n += frame_len;
 
-    // write short sequence(s)
-    for (i=0; i<num_symbols_S0; i++) {
-        memmove(&y[n], S0, M*sizeof(float complex));
-        n += M;
-    }
+    // write second S0 symbol
+    ofdmframegen_write_S0b(fg, &y[n]);
+    n += frame_len;
 
-    // write long sequence cyclic prefix
-    memmove(&y[n], &S1[M-cp_len], cp_len*sizeof(float complex));
-    n += cp_len;
-
-    // write long sequence(s)
-    for (i=0; i<num_symbols_S1; i++) {
-        memmove(&y[n], S1, M*sizeof(float complex));
-        n += M;
-    }
-#else
-    ofdmframegen_write_S0a(fg, &y[n]);  n += frame_len;
-    ofdmframegen_write_S0b(fg, &y[n]);  n += frame_len;
-    ofdmframegen_write_S1( fg, &y[n]);  n += frame_len;
-#endif
+    // write S1 symbol
+    ofdmframegen_write_S1( fg, &y[n]);
+    n += frame_len;
 
     // modulate data symbols
     unsigned int s;
