@@ -21,6 +21,8 @@ local_pgffiles :=					\
 	figures.pgf/nco_pll_diagram.pdf			\
 	figures.pgf/ofdmflexframe_spectrum.pdf		\
 	figures.pgf/ofdmflexframe_structure.pdf		\
+	figures.pgf/ofdm_cyclic_prefix_diagram.pdf	\
+	figures.pgf/ofdm_window_tapering_diagram.pdf	\
 	figures.pgf/window.pdf				\
 
 $(local_pgffiles) : %.pdf : %.tex
