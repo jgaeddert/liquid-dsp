@@ -16,12 +16,13 @@
 void usage()
 {
     printf("Usage: ofdmframesync_example [OPTION]\n");
-    printf("  u/h   : print usage\n");
+    printf("  h     : print help\n");
     printf("  M     : number of subcarriers (must be even), default: 64\n");
     printf("  C     : cyclic prefix length, default: 16\n");
     printf("  T     : taper length, default: 4\n");
     printf("  s     : signal-to-noise ratio [dB], default: 30\n");
     printf("  F     : carrier frequency offset, default: 0.002\n");
+    printf("  c     : number of channel filter taps, default: 1\n");
 }
 
 static int callback(float complex * _X,
@@ -34,29 +35,29 @@ int main(int argc, char*argv[])
     srand(time(NULL));
 
     // options
-    unsigned int M = 64;                // number of subcarriers
-    unsigned int cp_len = 16;           // cyclic prefix length
-    unsigned int taper_len = 4;         // taper length
-    unsigned int num_symbols_data = 8;  // number of data symbols
-    unsigned int hc_len = 1;            // channel filter length
-    float hc_std = 0.10f;               // channel filter standard deviation
-    modulation_scheme ms = LIQUID_MODEM_QPSK;
-    float noise_floor = -30.0f;         // noise floor [dB]
-    float SNRdB = 20.0f;                // signal-to-noise ratio [dB]
-    float phi   = 0.0f;                 // carrier phase offset
-    float dphi  = 0.002f;               // carrier frequency offset
+    unsigned int M           = 64;            // number of subcarriers
+    unsigned int cp_len      = 16;            // cyclic prefix length
+    unsigned int taper_len   = 4;             // taper length
+    unsigned int num_symbols = 8;             // number of data symbols
+    unsigned int hc_len      = 1;             // channel filter length
+    float hc_std             = 0.10f;         // channel filter standard deviation
+    modulation_scheme ms = LIQUID_MODEM_QPSK; // modulation scheme
+    float noise_floor        = -30.0f;        // noise floor [dB]
+    float SNRdB              = 20.0f;         // signal-to-noise ratio [dB]
+    float phi                = 0.0f;          // carrier phase offset
+    float dphi               = 0.002f;        // carrier frequency offset
 
     // get options
     int dopt;
-    while((dopt = getopt(argc,argv,"uhM:C:T:s:F:")) != EOF){
+    while((dopt = getopt(argc,argv,"hM:C:T:s:F:c:")) != EOF){
         switch (dopt) {
-        case 'u':
         case 'h': usage();                      return 0;
         case 'M': M         = atoi(optarg);     break;
         case 'C': cp_len    = atoi(optarg);     break;
         case 'T': taper_len = atoi(optarg);     break;
         case 's': SNRdB     = atof(optarg);     break;
         case 'F': dphi      = atof(optarg);     break;
+        case 'c': hc_len    = atoi(optarg);     break;
         default:
             exit(1);
         }
@@ -67,10 +68,12 @@ int main(int argc, char*argv[])
         fprintf(stderr,"error: %s, channel filter must have at least 1 tap\n", argv[0]);
         exit(1);
     }
+    
+    unsigned int i;
 
     // derived values
     unsigned int frame_len = M + cp_len;
-    unsigned int num_samples = (3+num_symbols_data)*frame_len;  // data symbols
+    unsigned int num_samples = (3+num_symbols)*frame_len;  // data symbols
     float nstd = powf(10.0f, noise_floor/20.0f);
     float gamma = powf(10.0f, (SNRdB + noise_floor)/20.0f);
     printf("gamma : %f\n", gamma);
@@ -92,7 +95,6 @@ int main(int argc, char*argv[])
 
     modem mod = modem_create(ms);
 
-    unsigned int i;
     float complex X[M];             // channelized symbols
     float complex y[num_samples];   // output time series
     float complex S0[M];            // short PLCP sequence
@@ -114,7 +116,7 @@ int main(int argc, char*argv[])
 
     // modulate data symbols
     unsigned int s;
-    for (i=0; i<num_symbols_data; i++) {
+    for (i=0; i<num_symbols; i++) {
 
         unsigned int j;
         for (j=0; j<M; j++) {
@@ -172,11 +174,20 @@ int main(int argc, char*argv[])
     // export output file
     //
 
+    // count subcarrier types
+    unsigned int M_data  = 0;
+    unsigned int M_pilot = 0;
+    unsigned int M_null  = 0;
+    ofdmframe_validate_sctype(p, M, &M_null, &M_pilot, &M_data);
+
     FILE * fid = fopen(OUTPUT_FILENAME,"w");
     fprintf(fid,"%% %s: auto-generated file\n\n", OUTPUT_FILENAME);
     fprintf(fid,"clear all;\nclose all;\n\n");
-    fprintf(fid,"M = %u;\n", M);
-    fprintf(fid,"cp_len = %u;\n", cp_len);
+    fprintf(fid,"M           = %u;\n", M);
+    fprintf(fid,"M_data      = %u;\n", M_data);
+    fprintf(fid,"M_pilot     = %u;\n", M_pilot);
+    fprintf(fid,"M_null      = %u;\n", M_null);
+    fprintf(fid,"cp_len      = %u;\n", cp_len);
     fprintf(fid,"num_samples = %u;\n", num_samples);
     fprintf(fid,"noise_floor = %f;\n", noise_floor);
     fprintf(fid,"SNRdB = %f;\n", SNRdB);
@@ -195,20 +206,23 @@ int main(int argc, char*argv[])
     fprintf(fid,"\n\n");
     fprintf(fid,"%% compute spectral periodigram\n");
     fprintf(fid,"nfft=256;\n");
+    fprintf(fid,"g = sqrt((M_data+M_pilot)/M)/(mean(hamming(nfft))*sqrt(nfft));\n");
     fprintf(fid,"f=[0:(nfft-1)]/nfft - 0.5;\n");
-    fprintf(fid,"Hc = 10*log10(abs(fftshift(fft(hc,nfft))));\n");
+    fprintf(fid,"Hc = 20*log10(abs(fftshift(fft(hc,nfft))));\n");
     fprintf(fid,"Y = zeros(1,nfft);\n");
     fprintf(fid,"v0=1; v1=v0+round(nfft); k=0;\n");
     fprintf(fid,"while v1 <= num_samples,\n");
-    fprintf(fid,"    Y += abs(fft(y(v0:[v1-1]).*hamming(v1-v0).',nfft))/(sqrt(nfft)*0.53910);\n");
+    fprintf(fid,"    Y += abs(fft(y(v0:[v1-1]).*hamming(v1-v0).',nfft))*g;\n");
     fprintf(fid,"    v0 = v0 + round(nfft/4);\n");
     fprintf(fid,"    v1 = v1 + round(nfft/4);\n");
     fprintf(fid,"    k = k+1;\n");
     fprintf(fid,"end;\n");
-    fprintf(fid,"Y  = 10*log10(abs(fftshift(Y/k)));\n");
+    fprintf(fid,"Y  = 20*log10(abs(fftshift(Y/k)));\n");
     fprintf(fid,"figure;\n");
     fprintf(fid,"plot(f,Y,f,Hc);\n");
-    fprintf(fid,"axis([-0.5 0.5 -20 0]);\n");
+    fprintf(fid,"psd_min = noise_floor - 10;\n");
+    fprintf(fid,"psd_max = noise_floor + 10 + max(SNRdB, 0);\n");
+    fprintf(fid,"axis([-0.5 0.5 psd_min psd_max]);\n");
     fprintf(fid,"xlabel('Normalized Frequency');\n");
     fprintf(fid,"ylabel('Power Spectral Density [dB]');\n");
     fprintf(fid,"title('Multipath channel response');\n");
