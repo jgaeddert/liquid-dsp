@@ -784,8 +784,8 @@ the preamble, the header, and the payload.
     The \Ss\ symbols are necessary for coarse carrier frequency
     and timing offsets while the \Sl\ sequence is used for fine timing
     acquisition and equalizer gain estimation.  The transmitter
-    generates multiple \Ss\ symbols (minimally 2, but usually 3 or more)
-    and just a single \Sl\ symbol. This aligns the receiver's timing to
+    generates two \Ss\ symbols and just a single \Sl\ symbol.
+    This aligns the receiver's timing to
     that of the transmitter, signaling the start of the header.
 \item[Header]
     The header consists of one or more OFDM symbols; the exact number of
@@ -962,12 +962,17 @@ object.
 %
 \begin{description}
 %
-\item[{\tt ofdmflexframegen\_create(M,c,*p,*fgprops)}]
+\item[{\tt ofdmflexframegen\_create(M,c,t,*p,*fgprops)}]
     creates and returns an {\tt ofdmflexframegen} object
     with $M$ subcarriers ($M$ must be an even integer),
     a cyclic prefix length of $c$ samples,
+    a taper length of $t$ samples,
     a subcarrier allocation determined by $\vec{p}$,
     and a set of properties determined by {\tt fgprops}.
+    If $\vec{p}$ is set to {\tt NULL}, the default subcarrier allocation
+    is used.
+    If {\tt fgprops} is set to {\tt NULL}, the default frame generator
+    properties are used.
 %
 \item[{\tt ofdmflexframegen\_destroy(q)}]
     destroys an {\tt ofdmflexframegen} object, freeing all
@@ -1003,13 +1008,11 @@ object.
     buffer at this point, but are generated with the
     {\tt writesymbol()} method, below.
 %
-\item[{\tt ofdmflexframegen\_writesymbol(q,*buffer,*num\_written)}]
-    writes OFDM symbols (time series) to the buffer, specifies the
-    number of samples that have been written, and returns a flag
+\item[{\tt ofdmflexframegen\_writesymbol(q,*buffer)}]
+    writes OFDM symbols (time series) to the buffer and returns a flag
     indicating if this symbol is the last in the frame.
-    All symbols are $M+c$ samples long except the \Ss\ symbols which are
-    just $M$ samples long.
-    Therefore the buffer only needs to hold at most $M+c$ samples.
+    The buffer needs to be $M+c$ samples long, the length of each
+    symbol.
 %
 \end{description}
 
@@ -1034,13 +1037,16 @@ object.
 %
 \begin{description}
 %
-\item[{\tt ofdmflexframesync\_create(M,c,*p,*callback,*userdata)}]
+\item[{\tt ofdmflexframesync\_create(M,c,t,*p,*callback,*userdata)}]
     creates and returns an {\tt ofdmflexframegen} object
     with $M$ subcarriers ($M$ must be an even integer),
     a cyclic prefix length of $c$ samples,
+    a taper length of $t$ samples,
     a subcarrier allocation determined by $\vec{p}$,
     a user-defined callback function (see description, below)
     and user-defined data pointer.
+    If $\vec{p}$ is set to {\tt NULL}, the default subcarrier allocation
+    is used.
 %
 \item[{\tt ofdmflexframesync\_destroy(q)}]
     destroys an {\tt ofdmflexframesync} object, freeing all

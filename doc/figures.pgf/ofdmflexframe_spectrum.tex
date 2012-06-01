@@ -31,6 +31,10 @@
 \usepackage[left=1cm,right=1cm]{geometry}
 \pagestyle{empty}
 
+% define colors here
+\selectcolormodel{cmyk}
+\input{figures.pgf/liquid-colors}
+
 \begin{document}
 
 \begin{tikzpicture}[scale=6,>=latex];
@@ -67,7 +71,7 @@
     \def\cth{\th - 0.5*\dr}
 
     % draw filled curve
-    \filldraw[very thick, black, fill=gray!20]
+    \filldraw[very thick, black, fill=liquid-color-purple!40]
         (-\trange,  0) --
         (\ta,       0) .. controls (\cta,0) and (\ctb,\height) ..
         (\tb,       \height) --
