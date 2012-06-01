@@ -321,6 +321,7 @@ void ofdmframesync_print(ofdmframesync _q)
     printf("ofdmframesync:\n");
     printf("    num subcarriers     :   %-u\n", _q->M);
     printf("    cyclic prefix len   :   %-u\n", _q->cp_len);
+    //printf("    taper len           :   %-u\n", _q->taper_len);
 }
 
 void ofdmframesync_reset(ofdmframesync _q)

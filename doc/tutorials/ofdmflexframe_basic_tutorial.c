@@ -7,13 +7,14 @@
 
 int main() {
     // options
-    unsigned int M = 64;                    // number of subcarriers
-    unsigned int cp_len = 16;               // cyclic prefix length
-    unsigned int taper_len = 4;             // taper length
+    unsigned int M           = 64;          // number of subcarriers
+    unsigned int cp_len      = 16;          // cyclic prefix length
+    unsigned int taper_len   = 4;           // taper length
     unsigned int payload_len = 120;         // length of payload (bytes)
 
     // allocate memory for header, payload, sample buffer
-    float complex buffer[M + cp_len];       // time-domain buffer
+    unsigned int symbol_len = M + cp_len;   // samples per OFDM symbol
+    float complex buffer[symbol_len];       // time-domain buffer
     unsigned char header[8];                // header
     unsigned char payload[payload_len];     // payload
 
@@ -36,7 +37,7 @@ int main() {
 
         // print status
         printf("ofdmflexframegen wrote %3u samples %s\n",
-            M + cp_len,
+            symbol_len,
             last_symbol ? "(last symbol)" : "");
     }
 

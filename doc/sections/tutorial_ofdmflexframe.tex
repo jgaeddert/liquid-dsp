@@ -185,13 +185,17 @@ and error vector magnitude (\S\ref{module:modem:digital:evm}).
 \label{tutorial:ofdmflexframe:framegen}
 %
 The {\tt ofdmflexframegen} object can be generated with the
-{\tt ofdmflexframegen\_create(M,c,p,props)} method which accepts four arguments:
+{\tt ofdmflexframegen\_create(M,c,t,p,props)} method which accepts five
+arguments:
 %
 \begin{itemize}
 \item $M$ is an {\tt unsigned int} representing the total number of
     subcarriers
 \item $c$ is an {\tt unsigned int} representing the length of the
     cyclic prefix
+\item $t$ is an {\tt unsigned int} representing the length of the
+    overlapping tapered window between OFDM symbols
+    ({\tt 0}$\leq${\tt t}$\leq${\tt c}).
 \item $\vec{p}$ is an $M$-element array of {\tt unsigned char} which
     gives the subcarrier allocation (e.g. which subcarriers
     are nulled/disabled, which are pilots, and which carry data).
@@ -211,12 +215,13 @@ The {\tt ofdmflexframegen} object can be generated with the
 \end{itemize}
 %
 To begin, create a frame generator having 64 subcarriers with cyclic
-prefix of 16 samples, the default subcarrier allocation, and
+prefix of 16 samples, a tapering window of 4 samples,
+the default subcarrier allocation, and
 default properties as
 %
 \begin{Verbatim}[fontsize=\small]
     // create frame generator with default parameters
-    ofdmflexframegen fg = ofdmflexframegen_create(64, 16, NULL, NULL);
+    ofdmflexframegen fg = ofdmflexframegen_create(64, 16, 4, NULL, NULL);
 \end{Verbatim}
 %
 %For now we will only set the payload length as a framing property,
@@ -321,24 +326,25 @@ Running the program should produce an output similar to this:
           * pilot           :   6
           * data            :   44
         cyclic prefix len   :   16
+        taper len           :   4
         properties:
-          * mod scheme      :   quaternary phase-shift keying (2 b/s)
+          * mod scheme      :   quaternary phase-shift keying
           * fec (inner)     :   none
           * fec (outer)     :   none
-          * CRC scheme      :   CRC (16-bit)
+          * CRC scheme      :   CRC (32-bit)
+        frame assembled     :   yes
         payload:
           * decoded bytes   :   120
-          * encoded bytes   :   122
-          * modulated syms  :   488
-        total OFDM symbols  :   23
-          * S0 symbols      :   3 @ 64
+          * encoded bytes   :   124
+          * modulated syms  :   496
+        total OFDM symbols  :   22
+          * S0 symbols      :   2 @ 80
           * S1 symbols      :   1 @ 80
           * header symbols  :   7 @ 80
           * payload symbols :   12 @ 80
-        spectral efficiency :   0.5357 b/s/Hz
-    ofdmflexframegen wrote  64 samples 
-    ofdmflexframegen wrote  64 samples 
-    ofdmflexframegen wrote  64 samples 
+        spectral efficiency :   0.5455 b/s/Hz
+    ofdmflexframegen wrote  80 samples 
+    ofdmflexframegen wrote  80 samples 
     ofdmflexframegen wrote  80 samples 
     ofdmflexframegen wrote  80 samples 
       ...
@@ -375,14 +381,17 @@ buffer created by the generator, without adding noise, carrier frequency
 offsets, or other channel impairments.
 %
 The {\tt ofdmflexframesync} object can be generated with the
-{\tt ofdmflexframesync\_create(M,c,p,callback,userdata)} method which
-accepts five arguments:
+{\tt ofdmflexframesync\_create(M,c,t,p,callback,userdata)} method which
+accepts six arguments:
 %
 \begin{itemize}
 \item $M$ is an {\tt unsigned int} representing the total number of
     subcarriers
 \item $c$ is an {\tt unsigned int} representing the length of the
     cyclic prefix
+\item $t$ is an {\tt unsigned int} representing the length of the
+    overlapping tapered window between OFDM symbols
+    ({\tt 0}$\leq${\tt t}$\leq${\tt c}).
 \item $\vec{p}$ is an $M$-element array of {\tt unsigned char} which
     gives the subcarrier allocation
     (see \S\ref{tutorial:ofdmflexframe:framegen})
@@ -504,7 +513,7 @@ method, passing it
 Print the newly created synchronizer object to the screen if you like:
 %
 \begin{Verbatim}[fontsize=\small]
-    ofdmflexframesync fs = ofdmflexframesync_create(64, 16, NULL, mycallback, NULL);
+    ofdmflexframesync fs = ofdmflexframesync_create(64, 16, 4, NULL, mycallback, NULL);
 \end{Verbatim}
 %
 Within the {\tt while} loop that writes the frame symbols to the buffer,
@@ -537,6 +546,7 @@ Your output should look something like this:
           * pilot           :   6
           * data            :   44
         cyclic prefix len   :   16
+        taper len           :   4
     ***** callback invoked!
       header (valid)
       payload (valid)
@@ -671,18 +681,18 @@ and applying different forward error-correction schemes.
 \begin{enumerate}
 \item What happens to the spectral efficiency of the frame when you
       increase the payload from 120 bytes to 400?%
-      \footnote{{\em A:} the spectral efficiency increases from 0.5357
-                to 0.8439 because the preamble accounts for less of
+      \footnote{{\em A:} the spectral efficiency increases from 0.5455
+                to 0.8511 because the preamble accounts for less of
                 frame (less overhead)}
       %
       when you decrease the cyclic prefix from 16 samples to 4?%
-      \footnote{{\em A:} the spectral efficiency increases from 0.5357
-                to 0.61686 because fewer samples are used for each OFDM
+      \footnote{{\em A:} the spectral efficiency increases from 0.5455
+                to 0.6417 because fewer samples are used for each OFDM
                 symbol (less overhead)}
       %
       when you increase the number of subcarriers from 64 to 256?%
-      \footnote{{\em A:} the spectral efficiency decreases from 0.5357
-                to 0.400 because the preamble accounts for {\em more} of
+      \footnote{{\em A:} the spectral efficiency decreases from 0.5455
+                to 0.4412 because the preamble accounts for {\em more} of
                 the frame (increased overhead).}
 \item What happens when the frame generator is created with 64
       subcarriers and the synchronizer is created with only 62?%
@@ -706,7 +716,7 @@ and applying different forward error-correction schemes.
                 frame entirely because of too much noise.}
       %
 \item What happens when you increase the carrier frequency offset from
-      0.001 to 0.05?%
+      0.001 to 0.1?%
       \footnote{{\em A:} the frame isn't detected because the carrier
                 offset is too large for the synchronizer to correct.
                 Try decreasing the number of subcarriers from 64 to 32

@@ -211,6 +211,7 @@ void ofdmflexframesync_print(ofdmflexframesync _q)
     printf("      * pilot           :   %-u\n", _q->M_pilot);
     printf("      * data            :   %-u\n", _q->M_data);
     printf("    cyclic prefix len   :   %-u\n", _q->cp_len);
+    printf("    taper len           :   %-u\n", _q->taper_len);
 }
 
 void ofdmflexframesync_reset(ofdmflexframesync _q)

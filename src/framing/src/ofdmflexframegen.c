@@ -235,6 +235,7 @@ void ofdmflexframegen_print(ofdmflexframegen _q)
     printf("      * pilot           :   %-u\n", _q->M_pilot);
     printf("      * data            :   %-u\n", _q->M_data);
     printf("    cyclic prefix len   :   %-u\n", _q->cp_len);
+    printf("    taper len           :   %-u\n", _q->taper_len);
     printf("    properties:\n");
     printf("      * mod scheme      :   %s\n", modulation_types[_q->props.mod_scheme].fullname);
     printf("      * fec (inner)     :   %s\n", fec_scheme_str[_q->props.fec0][1]);

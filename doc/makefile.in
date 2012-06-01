@@ -339,8 +339,6 @@ tutorial_progs :=					\
 	tutorials/pll_basic_tutorial			\
 	tutorials/pll_tutorial				\
 							\
-	tutorials/modem_tutorial			\
-							\
 	tutorials/fec_tutorial				\
 	tutorials/fec_init_tutorial			\
 	tutorials/fec_basic_tutorial			\
@@ -358,6 +356,9 @@ tutorial_progs :=					\
 
 # build tutorial programs
 $(tutorial_progs) : % : %.c $(lib_objects) libliquid.a
+	cat $< | $(SED) 's/<liquid\/liquid.h>/"liquid.h"/g' > $*.prog.c
+	$(CC) -I../include -I./include -o $@ $*.prog.c libliquid.a $(LDFLAGS)
+	$(RM) $*.prog.c
 
 # run tutorials, storing output
 tutorial_output = $(patsubst %,%.out,$(tutorial_progs))
