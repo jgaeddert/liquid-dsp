@@ -385,13 +385,13 @@ void ofdmframesync_execute(ofdmframesync _q,
             ofdmframesync_execute_seekplcp(_q);
             break;
         case OFDMFRAMESYNC_STATE_PLCPSHORT0:
-            ofdmframesync_execute_plcpshort0(_q);
+            ofdmframesync_execute_S0a(_q);
             break;
         case OFDMFRAMESYNC_STATE_PLCPSHORT1:
-            ofdmframesync_execute_plcpshort1(_q);
+            ofdmframesync_execute_S0b(_q);
             break;
         case OFDMFRAMESYNC_STATE_PLCPLONG:
-            ofdmframesync_execute_plcplong(_q);
+            ofdmframesync_execute_S1(_q);
             break;
         case OFDMFRAMESYNC_STATE_RXSYMBOLS:
             ofdmframesync_execute_rxsymbols(_q);
@@ -497,7 +497,7 @@ void ofdmframesync_execute_seekplcp(ofdmframesync _q)
 }
 
 // frame detection
-void ofdmframesync_execute_plcpshort0(ofdmframesync _q)
+void ofdmframesync_execute_S0a(ofdmframesync _q)
 {
     //printf("t : %u\n", _q->timer);
     _q->timer++;
@@ -546,7 +546,7 @@ void ofdmframesync_execute_plcpshort0(ofdmframesync _q)
 }
 
 // frame detection
-void ofdmframesync_execute_plcpshort1(ofdmframesync _q)
+void ofdmframesync_execute_S0b(ofdmframesync _q)
 {
     //printf("t = %u\n", _q->timer);
     _q->timer++;
@@ -627,7 +627,7 @@ void ofdmframesync_execute_plcpshort1(ofdmframesync _q)
     _q->state = OFDMFRAMESYNC_STATE_PLCPLONG;
 }
 
-void ofdmframesync_execute_plcplong(ofdmframesync _q)
+void ofdmframesync_execute_S1(ofdmframesync _q)
 {
     _q->timer--;
 
@@ -781,7 +781,7 @@ void ofdmframesync_S0_metrics(ofdmframesync _q,
 //  _q      :   ofdmframesync object
 //  _x      :   input array (time), [size: M x 1]
 //  _G      :   output gain (freq)
-void ofdmframesync_estimate_gain_S0(ofdmframesync _q,
+void ofdmframesync_estimate_gain_S0(ofdmframesync   _q,
                                     float complex * _x,
                                     float complex * _G)
 {

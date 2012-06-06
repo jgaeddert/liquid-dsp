@@ -1732,9 +1732,9 @@ void ofdmframesync_findrxypeak(ofdmframesync _q);
 void ofdmframesync_rxpayload(ofdmframesync _q);
 
 void ofdmframesync_execute_seekplcp(ofdmframesync _q);
-void ofdmframesync_execute_plcpshort0(ofdmframesync _q);
-void ofdmframesync_execute_plcpshort1(ofdmframesync _q);
-void ofdmframesync_execute_plcplong(ofdmframesync _q);
+void ofdmframesync_execute_S0a(ofdmframesync _q);
+void ofdmframesync_execute_S0b(ofdmframesync _q);
+void ofdmframesync_execute_S1( ofdmframesync _q);
 void ofdmframesync_execute_rxsymbols(ofdmframesync _q);
 
 void ofdmframesync_S0_metrics(ofdmframesync _q,
@@ -1745,7 +1745,7 @@ void ofdmframesync_S0_metrics(ofdmframesync _q,
 //  _q      :   ofdmframesync object
 //  _x      :   input array (time)
 //  _G      :   output gain (freq)
-void ofdmframesync_estimate_gain_S0(ofdmframesync _q,
+void ofdmframesync_estimate_gain_S0(ofdmframesync   _q,
                                     float complex * _x,
                                     float complex * _G);
 
