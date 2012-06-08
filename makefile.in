@@ -1417,6 +1417,7 @@ sandbox_programs =						\
 	sandbox/modem_demodulate_soft_gentab			\
 	sandbox/ofdmoqam_firpfbch_test				\
 	sandbox/ofdm_ber_test					\
+	sandbox/ofdmframe_papr_test				\
 	sandbox/packetizer_persistent_ber_test			\
 	sandbox/pll_design_test					\
 	sandbox/predemod_sync_test				\
