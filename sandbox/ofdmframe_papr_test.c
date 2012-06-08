@@ -22,7 +22,7 @@ void usage()
     printf("  M     : number of subcarriers (must be even), default: 64\n");
     printf("  C     : cyclic prefix length, default: 16\n");
     printf("  T     : taper length, default: 0\n");
-    printf("  N     : number of data frames, default: 10\n");
+    printf("  N     : number of data symbols, default: 1000\n");
 }
 
 // compute peak-to-average power ratio
@@ -33,13 +33,13 @@ float ofdmframe_PAPR(float complex * _x,
 
 int main(int argc, char*argv[])
 {
-    //srand(time(NULL));
+    srand(time(NULL));
 
     // options
-    unsigned int M           = 64;  // number of subcarriers
-    unsigned int cp_len      = 16;  // cyclic prefix length
-    unsigned int taper_len   = 0;   // taper length
-    unsigned int num_symbols = 100; // number of data symbols
+    unsigned int M           = 64;   // number of subcarriers
+    unsigned int cp_len      = 16;   // cyclic prefix length
+    unsigned int taper_len   = 0;    // taper length
+    unsigned int num_symbols = 1000; // number of data symbols
     modulation_scheme ms = LIQUID_MODEM_QPSK;
 
     // get options
@@ -73,34 +73,83 @@ int main(int argc, char*argv[])
 
     float complex X[M];             // channelized symbols
     float complex buffer[frame_len];// output time series
-    float PAPR[num_symbols];        // 
+    float * PAPR = (float*) malloc(num_symbols*sizeof(float));
+
+    // histogram display
+    float xmin = -1.29f + 0.70f*log2f(M);
+    float xmax =  8.97f + 0.34f*log2f(M);
+    unsigned int num_bins = 30;
+    float bin_width = (xmax - xmin) / (num_bins);
+    unsigned int hist[num_bins];
+    for (i=0; i<num_bins; i++)
+        hist[i] = 0;
 
     // modulate data symbols
     unsigned int j;
     unsigned int s;
+    float PAPR_min  = 0.0f;
+    float PAPR_max  = 0.0f;
+    float PAPR_mean = 0.0f;
     for (i=0; i<num_symbols; i++) {
+        // data symbol
+        for (j=0; j<M; j++) {
+            s = modem_gen_rand_sym(mod);
+            modem_modulate(mod,s,&X[j]);
+        }
+        // generate symbol
+        ofdmframegen_writesymbol(fg, X, buffer);
+#if 0
         // preamble
         if      (i==0) ofdmframegen_write_S0a(fg, buffer); // S0 symbol (first)
         else if (i==1) ofdmframegen_write_S0b(fg, buffer); // S0 symbol (second)
         else if (i==2) ofdmframegen_write_S1( fg, buffer); // S1 symbol
-        else {
-            // data symbol
-            for (j=0; j<M; j++) {
-                s = modem_gen_rand_sym(mod);
-                modem_modulate(mod,s,&X[j]);
-            }
-            // generate symbol
-            ofdmframegen_writesymbol(fg, X, buffer);
-        }
+#endif
 
-        // compute PAPR and print to screen
+        // compute PAPR
         PAPR[i] = ofdmframe_PAPR(buffer, frame_len);
-        printf("%6u : PAPR=%12.8f\n", i, PAPR[i]);
+
+        // compute bin index
+        unsigned int index;
+        float ihat = num_bins * (PAPR[i] - xmin) / (xmax - xmin);
+        if (ihat < 0.0f) index = 0;
+        else             index = (unsigned int)ihat;
+        
+        if (index >= num_bins)
+            index = num_bins-1;
+
+        hist[index]++;
+
+        // save min/max PAPR values
+        if (i==0 || PAPR[i] < PAPR_min) PAPR_min = PAPR[i];
+        if (i==0 || PAPR[i] > PAPR_max) PAPR_max = PAPR[i];
+        PAPR_mean += PAPR[i];
     }
+    PAPR_mean /= (float)num_symbols;
 
     // destroy objects
     ofdmframegen_destroy(fg);
     modem_destroy(mod);
+
+    // print results to screen
+    // find max(hist)
+    unsigned int hist_max = 0;
+    for (i=0; i<num_bins; i++)
+        hist_max = hist[i] > hist_max ? hist[i] : hist_max;
+
+    printf("%8s : %6s [%6s]\n", "PAPR[dB]", "count", "prob.");
+    for (i=0; i<num_bins; i++) {
+        printf("%8.2f : %6u [%6.4f]", xmin + i*bin_width, hist[i], (float)hist[i] / (float)num_symbols);
+
+        unsigned int k;
+        unsigned int n = round(60 * (float)hist[i] / (float)hist_max);
+        for (k=0; k<n; k++)
+            printf("#");
+        printf("\n");
+    }
+    printf("\n");
+    printf("min  PAPR: %12.4f dB\n", PAPR_min);
+    printf("max  PAPR: %12.4f dB\n", PAPR_max);
+    printf("mean PAPR: %12.4f dB\n", PAPR_mean);
 
     // 
     // export output file
@@ -114,7 +163,8 @@ int main(int argc, char*argv[])
 
     FILE * fid = fopen(OUTPUT_FILENAME,"w");
     fprintf(fid,"%% %s: auto-generated file\n\n", OUTPUT_FILENAME);
-    fprintf(fid,"clear all;\nclose all;\n\n");
+    fprintf(fid,"clear all;\n");
+    fprintf(fid,"close all;\n\n");
     fprintf(fid,"M           = %u;\n", M);
     fprintf(fid,"M_data      = %u;\n", M_data);
     fprintf(fid,"M_pilot     = %u;\n", M_pilot);
@@ -128,17 +178,20 @@ int main(int argc, char*argv[])
 
     fprintf(fid,"\n");
     fprintf(fid,"figure;\n");
-    fprintf(fid,"hist(PAPR);\n");
+    fprintf(fid,"hist(PAPR,25);\n");
 
     fprintf(fid,"\n");
     fprintf(fid,"figure;\n");
     fprintf(fid,"cdf = [(1:num_symbols)-0.5]/num_symbols;\n");
-    fprintf(fid,"plot(sort(PAPR),cdf);\n");
-    fprintf(fid,"xlabel('PAPR');\n");
-    fprintf(fid,"ylabel('CDF');\n");
+    fprintf(fid,"semilogy(sort(PAPR),1-cdf);\n");
+    fprintf(fid,"xlabel('PAPR [dB]');\n");
+    fprintf(fid,"ylabel('Complementary CDF');\n");
 
     fclose(fid);
     printf("results written to %s\n", OUTPUT_FILENAME);
+
+    // free allocated array
+    free(PAPR);
 
     printf("done.\n");
     return 0;
