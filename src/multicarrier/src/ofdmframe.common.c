@@ -32,21 +32,21 @@
 #include "liquid.internal.h"
 
 // generate short sequence symbols
-//  _p                  :   subcarrier allocation array
-//  _num_subcarriers    :   total number of subcarriers
-//  _S0                 :   output symbol (freq)
-//  _s0                 :   output symbol (time)
-//  _M_S0               :   total number of enabled subcarriers in S0
+//  _p      :   subcarrier allocation array
+//  _M      :   total number of subcarriers
+//  _S0     :   output symbol (freq)
+//  _s0     :   output symbol (time)
+//  _M_S0   :   total number of enabled subcarriers in S0
 void ofdmframe_init_S0(unsigned char * _p,
-                       unsigned int _num_subcarriers,
+                       unsigned int    _M,
                        float complex * _S0,
                        float complex * _s0,
-                       unsigned int * _M_S0)
+                       unsigned int *  _M_S0)
 {
     unsigned int i;
 
     // compute m-sequence length
-    unsigned int m = liquid_nextpow2(_num_subcarriers);
+    unsigned int m = liquid_nextpow2(_M);
     if (m < 4)      m = 4;
     else if (m > 8) m = 8;
 
@@ -57,7 +57,7 @@ void ofdmframe_init_S0(unsigned char * _p,
     unsigned int M_S0 = 0;
 
     // short sequence
-    for (i=0; i<_num_subcarriers; i++) {
+    for (i=0; i<_M; i++) {
         // generate symbol
         //s = msequence_generate_symbol(ms,1);
         s = msequence_generate_symbol(ms,3) & 0x01;
@@ -90,31 +90,31 @@ void ofdmframe_init_S0(unsigned char * _p,
     *_M_S0 = M_S0;
 
     // run inverse fft to get time-domain sequence
-    fft_run(_num_subcarriers, _S0, _s0, FFT_REVERSE, 0);
+    fft_run(_M, _S0, _s0, FFT_REVERSE, 0);
 
     // normalize time-domain sequence level
     float g = 1.0f / sqrtf(M_S0);
-    for (i=0; i<_num_subcarriers; i++)
+    for (i=0; i<_M; i++)
         _s0[i] *= g;
 }
 
 
 // generate long sequence symbols
-//  _p                  :   subcarrier allocation array
-//  _num_subcarriers    :   total number of subcarriers
-//  _S1                 :   output symbol (freq)
-//  _s1                 :   output symbol (time)
-//  _M_S1               :   total number of enabled subcarriers in S1
+//  _p      :   subcarrier allocation array
+//  _M      :   total number of subcarriers
+//  _S1     :   output symbol (freq)
+//  _s1     :   output symbol (time)
+//  _M_S1   :   total number of enabled subcarriers in S1
 void ofdmframe_init_S1(unsigned char * _p,
-                       unsigned int _num_subcarriers,
+                       unsigned int    _M,
                        float complex * _S1,
                        float complex * _s1,
-                       unsigned int * _M_S1)
+                       unsigned int *  _M_S1)
 {
     unsigned int i;
 
     // compute m-sequence length
-    unsigned int m = liquid_nextpow2(_num_subcarriers);
+    unsigned int m = liquid_nextpow2(_M);
     if (m < 4)      m = 4;
     else if (m > 8) m = 8;
 
@@ -130,7 +130,7 @@ void ofdmframe_init_S1(unsigned char * _p,
     unsigned int M_S1 = 0;
 
     // long sequence
-    for (i=0; i<_num_subcarriers; i++) {
+    for (i=0; i<_M; i++) {
         // generate symbol
         //s = msequence_generate_symbol(ms,1);
         s = msequence_generate_symbol(ms,3) & 0x01;
@@ -157,11 +157,11 @@ void ofdmframe_init_S1(unsigned char * _p,
     *_M_S1 = M_S1;
 
     // run inverse fft to get time-domain sequence
-    fft_run(_num_subcarriers, _S1, _s1, FFT_REVERSE, 0);
+    fft_run(_M, _S1, _s1, FFT_REVERSE, 0);
 
     // normalize time-domain sequence level
     float g = 1.0f / sqrtf(M_S1);
-    for (i=0; i<_num_subcarriers; i++)
+    for (i=0; i<_M; i++)
         _s1[i] *= g;
 }
 
