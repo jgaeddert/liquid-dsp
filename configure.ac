@@ -186,24 +186,29 @@ AC_CHECK_LIB([fec], [create_viterbi27], [],
 
 # check for programs (documentation)
 AC_CHECK_PROG(PDFLATEX, pdflatex, pdflatex, no)
-if test "x$PDFLATEX" == "xno"; then
+if [ test "x$PDFLATEX" == "xno" ]; then
     AC_MSG_WARN(pdflatex required to build documentation)
 fi
 AC_CHECK_PROG(BIBTEX, bibtex, bibtex, no)
-if test "x$BIBTEX" == "xno"; then
+if [ test "x$BIBTEX" == "xno" ]; then
     AC_MSG_WARN(bibtex required to build documentation)
 fi
 AC_CHECK_PROG(EPSTOPDF, epstopdf, epstopdf, no)
-if test "x$EPSTOPDF" == "xno"; then
+if [ test "x$EPSTOPDF" == "xno" ]; then
     AC_MSG_WARN(epstopdf required to build documentation)
 fi
 AC_CHECK_PROG(GNUPLOT, gnuplot, gnuplot, no)
-if test "x$GNUPLOT" == "xno"; then
+if [ test "x$GNUPLOT" == "xno" ]; then
     AC_MSG_WARN(gnuplot required to build documentation)
 fi
-AC_CHECK_PROG(PYGMENTIZE, pygmentize, pygmentize, no)
-if test "x$PYGMENTIZE" == "xno"; then
-    AC_MSG_WARN(pygmentize required to build documentation)
+AC_CHECK_PROG(PYGMENTIZE,   pygmentize,     pygmentize,     no)
+AC_CHECK_PROG(PYGMENTIZE24, pygmentize-2.4, pygmentize-2.4, no)
+if [ test "$PYGMENTIZE" == "no" ]; then
+    if [ test "$PYGMENTIZE24" == "no" ]; then
+        AC_MSG_WARN(pygmentize required to build documentation)
+    else
+        PYGMENTIZE="pygmentize-2.4"
+    fi
 fi
 
 
