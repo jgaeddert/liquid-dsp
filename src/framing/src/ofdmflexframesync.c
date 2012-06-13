@@ -254,6 +254,12 @@ float ofdmflexframesync_get_rssi(ofdmflexframesync _q)
     return ofdmframesync_get_rssi(_q->fs);
 }
 
+// received carrier frequency offset
+float ofdmflexframesync_get_cfo(ofdmflexframesync _q)
+{
+    return ofdmframesync_get_cfo(_q->fs);
+}
+
 //
 // internal methods
 //

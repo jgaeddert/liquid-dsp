@@ -2251,6 +2251,9 @@ void ofdmflexframesync_execute(ofdmflexframesync _q,
 // query the received signal strength indication
 float ofdmflexframesync_get_rssi(ofdmflexframesync _q);
 
+// query the received carrier offset estimate
+float ofdmflexframesync_get_cfo(ofdmflexframesync _q);
+
 
 
 
