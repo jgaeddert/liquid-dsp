@@ -27,6 +27,8 @@ Here is a list of common problems and potential solutions.
         /liquid-dsp/src/fec/src/fec_conv.c:210: undefined reference to `update_viterbi27_blk'
         ...
 
+ NOTE   Issue should be resolved after version 1.2.0 (commit 2f6ed1c9d39f4)
+
  A2     This is because the linker cannot find the libfec library.
         The 'configure' script checks to make sure that the fec library
         is available before compiling. If found the additional forward

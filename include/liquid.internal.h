@@ -41,6 +41,10 @@
 #  include "liquid.experimental.h"
 #endif
 
+#if defined HAVE_FEC_H && defined HAVE_LIBFEC
+#  define LIBFEC_ENABLED 1
+#endif
+
 
 //
 // Debugging macros
