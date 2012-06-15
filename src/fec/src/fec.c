@@ -72,7 +72,7 @@ void liquid_print_fec_schemes()
     // print all available MOD schemes
     printf("          ");
     for (i=0; i<LIQUID_FEC_NUM_SCHEMES; i++) {
-#if !defined HAVE_LIBFEC || !defined HAVE_FEC_H
+#if !LIBFEC_ENABLED
         if ( fec_scheme_is_convolutional(i) || fec_scheme_is_reedsolomon(i) )
             continue;
 #endif
@@ -219,7 +219,7 @@ unsigned int fec_get_enc_msg_length(fec_scheme _scheme,
     case LIQUID_FEC_SECDED3932:     return _msg_len + _msg_len/4 + ((_msg_len%4) ? 1 : 0);
     case LIQUID_FEC_SECDED7264:     return _msg_len + _msg_len/8 + ((_msg_len%8) ? 1 : 0);
 
-#if defined HAVE_LIBFEC && defined HAVE_FEC_H
+#if LIBFEC_ENABLED
     // convolutional codes
     case LIQUID_FEC_CONV_V27:       return 2*_msg_len + 2;  // (K-1)/r=12, round up to 2 bytes
     case LIQUID_FEC_CONV_V29:       return 2*_msg_len + 2;  // (K-1)/r=16, 2 bytes
@@ -414,7 +414,7 @@ float fec_get_rate(fec_scheme _scheme)
     case LIQUID_FEC_SECDED7264:     return 8./9.;
 
     // convolutional codes
-#if defined HAVE_LIBFEC && defined HAVE_FEC_H
+#if LIBFEC_ENABLED
     case LIQUID_FEC_CONV_V27:       return 1./2.;
     case LIQUID_FEC_CONV_V29:       return 1./2.;
     case LIQUID_FEC_CONV_V39:       return 1./3.;
@@ -502,7 +502,7 @@ fec fec_create(fec_scheme _scheme, void *_opts)
         return fec_secded7264_create(_opts);
 
     // convolutional codes
-#if defined HAVE_LIBFEC && defined HAVE_FEC_H
+#if LIBFEC_ENABLED
     case LIQUID_FEC_CONV_V27:
     case LIQUID_FEC_CONV_V29:
     case LIQUID_FEC_CONV_V39:

@@ -32,7 +32,7 @@
 
 #define VERBOSE_FEC_RS    0
 
-#if defined HAVE_FEC_H && defined HAVE_LIBFEC // (config.h)
+#if LIBFEC_ENABLED
 #include "fec.h"
 
 fec fec_rs_create(fec_scheme _fs)
@@ -283,7 +283,7 @@ void fec_rs_init_p8(fec _q)
     _q->nroots = 32;
 }
 
-#else   // HAVE_FEC_H (config.h)
+#else   // LIBFEC_ENABLED
 
 fec fec_rs_create(fec_scheme _fs)
 {
@@ -309,5 +309,5 @@ void fec_rs_decode(fec _q,
 {
 }
 
-#endif  // HAVE_FEC_H (config.h)
+#endif  // LIBFEC_ENABLED
 

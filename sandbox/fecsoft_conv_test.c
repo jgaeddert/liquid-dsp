@@ -231,7 +231,7 @@ int main(int argc, char *argv[]) {
     return 0;
 }
 
-#if !defined HAVE_FEC_H || !defined HAVE_LIBFEC
+#if !LIBFEC_ENABLED
 #warning "libfec not installed; this sandbox program won't run"
 //
 // libfec is not installed; need to define internal methods used in this
