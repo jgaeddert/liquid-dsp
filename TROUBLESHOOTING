@@ -48,4 +48,6 @@ Here is a list of common problems and potential solutions.
         convolutional) but will still build the internal codes (such as
         the Hamming codes). Now run "make" as normal.
 
+  NOTE  Issue should be resolved after version 1.2.0
+
 

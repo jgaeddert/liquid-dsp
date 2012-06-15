@@ -32,7 +32,7 @@
 
 #define VERBOSE_FEC_RS    0
 
-#if HAVE_FEC_H == 1 // (config.h)
+#if defined HAVE_FEC_H && defined HAVE_LIBFEC // (config.h)
 #include "fec.h"
 
 fec fec_rs_create(fec_scheme _fs)

@@ -27,7 +27,7 @@
 // Helper function to keep code base small
 void fec_test_codec(fec_scheme _fs, unsigned int _n, void * _opts)
 {
-#if HAVE_FEC_H == 0
+#if !defined HAVE_FEC_H || !defined HAVE_LIBFEC
     if ( _fs == LIQUID_FEC_CONV_V27    ||
          _fs == LIQUID_FEC_CONV_V29    ||
          _fs == LIQUID_FEC_CONV_V39    ||
