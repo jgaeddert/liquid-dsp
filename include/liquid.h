@@ -1413,6 +1413,11 @@ LIQUID_FIRHILB_DEFINE_API(FIRHILB_MANGLE_FLOAT, float, liquid_float_complex)
 #define IIRFILT_MANGLE_CRCF(name)  LIQUID_CONCAT(iirfilt_crcf,name)
 #define IIRFILT_MANGLE_CCCF(name)  LIQUID_CONCAT(iirfilt_cccf,name)
 
+// fixed-point
+#define IIRFILT_MANGLE_RRRQ16(name) LIQUID_CONCAT(iirfilt_rrrq16,name)
+#define IIRFILT_MANGLE_CRCQ16(name) LIQUID_CONCAT(iirfilt_crcq16,name)
+#define IIRFILT_MANGLE_CCCQ16(name) LIQUID_CONCAT(iirfilt_cccq16,name)
+
 // Macro:
 //   IIRFILT : name-mangling macro
 //   TO         : output data type
@@ -1469,6 +1474,11 @@ LIQUID_IIRFILT_DEFINE_API(IIRFILT_MANGLE_CCCF,
                           liquid_float_complex,
                           liquid_float_complex,
                           liquid_float_complex)
+
+// fixed-point
+LIQUID_IIRFILT_DEFINE_API(IIRFILT_MANGLE_RRRQ16,  q16_t,  q16_t,  q16_t)
+LIQUID_IIRFILT_DEFINE_API(IIRFILT_MANGLE_CRCQ16, cq16_t,  q16_t, cq16_t)
+LIQUID_IIRFILT_DEFINE_API(IIRFILT_MANGLE_CCCQ16, cq16_t, cq16_t, cq16_t)
 
 
 //

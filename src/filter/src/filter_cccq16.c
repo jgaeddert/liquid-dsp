@@ -38,14 +38,14 @@
 
 // 
 #define FIRFILT(name)       LIQUID_CONCAT(firfilt_cccq16,name)
+#define IIRFILT(name)       LIQUID_CONCAT(iirfilt_cccq16,name)
+#define IIRFILTSOS(name)    LIQUID_CONCAT(iirfiltsos_cccq16,name)
 
 #if 0
 #define AUTOCORR(name)      LIQUID_CONCAT(autocorr_cccq16,name)
 #define FIRFARROW(name)     LIQUID_CONCAT(firfarrow_cccq16,name)
 #define FIRHILB(name)       LIQUID_CONCAT(firhilbf,name)
 #define FIRPFB(name)        LIQUID_CONCAT(firpfb_cccq16,name)
-#define IIRFILT(name)       LIQUID_CONCAT(iirfilt_cccq16,name)
-#define IIRFILTSOS(name)    LIQUID_CONCAT(iirfiltsos_cccq16,name)
 #define INTERP(name)        LIQUID_CONCAT(interp_cccq16,name)
 #define DECIM(name)         LIQUID_CONCAT(decim_cccq16,name)
 #define MSRESAMP(name)      LIQUID_CONCAT(msresamp_cccq16,name)
@@ -62,6 +62,14 @@
 #define DOTPROD(name)       LIQUID_CONCAT(dotprod_cccq16,name)
 //#define POLY(name)          LIQUID_CONCAT(polyq16,name)
 
+// basic arithmetic operations
+#define MUL_TI_TC(X,Y)      cq16_mul(X,Y)
+#define ADD_TO_TO(X,Y)      cq16_add(X,Y)
+#define SUB_TO_TO(X,Y)      cq16_sub(X,Y)
+
+// basic constants
+#define TO_ZERO             (cq16_zero)
+
 #define TO_COMPLEX          1
 #define TC_COMPLEX          1
 #define TI_COMPLEX          1
@@ -72,14 +80,14 @@
 
 // source files
 #include "firfilt.c"
+#include "iirfilt.c"
+#include "iirfiltsos.c"
 
 #if 0
 #include "autocorr.c"
 #include "firfarrow.c"
 #include "firhilb.c"
 #include "firpfb.c"
-#include "iirfilt.c"
-#include "iirfiltsos.c"
 #include "interp.c"
 #include "decim.c"
 #include "msresamp.c"

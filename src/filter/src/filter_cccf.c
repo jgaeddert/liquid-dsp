@@ -51,6 +51,9 @@
 #define DOTPROD(name)       LIQUID_CONCAT(dotprod_cccf,name)
 #define POLY(name)          LIQUID_CONCAT(polyf,name)
 
+// basic constants
+#define TO_ZERO             (0.0f)
+
 #define TO_COMPLEX          1
 #define TC_COMPLEX          1
 #define TI_COMPLEX          1

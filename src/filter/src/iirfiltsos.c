@@ -54,12 +54,33 @@ IIRFILTSOS() IIRFILTSOS(_create)(TC * _b,
 // NOTE : this does not reset the internal state of the filter and
 //        could result in instability if executed on existing filter!
 void IIRFILTSOS(_set_coefficients)(IIRFILTSOS() _q,
-                                   TC * _b,
-                                   TC * _a)
+                                   TC *         _b,
+                                   TC *         _a)
 {
     // retain a0 coefficient for normalization
     TC a0 = _a[0];
 
+#if defined LIQUID_FIXED && TC_COMPLEX==0
+    // copy feed-forward coefficients (numerator)
+    _q->b[0] = qtype_float_to_fixed( qtype_fixed_to_float(_b[0]) / qtype_fixed_to_float(a0) );
+    _q->b[1] = qtype_float_to_fixed( qtype_fixed_to_float(_b[1]) / qtype_fixed_to_float(a0) );
+    _q->b[2] = qtype_float_to_fixed( qtype_fixed_to_float(_b[2]) / qtype_fixed_to_float(a0) );
+
+    // copy feed-back coefficients (denominator)
+    _q->a[0] = qtype_float_to_fixed( qtype_fixed_to_float(_a[0]) / qtype_fixed_to_float(a0) );
+    _q->a[1] = qtype_float_to_fixed( qtype_fixed_to_float(_a[1]) / qtype_fixed_to_float(a0) );
+    _q->a[2] = qtype_float_to_fixed( qtype_fixed_to_float(_a[2]) / qtype_fixed_to_float(a0) );
+#elif defined LIQUID_FIXED && TC_COMPLEX==1
+    // copy feed-forward coefficients (numerator)
+    _q->b[0] = cqtype_float_to_fixed( cqtype_fixed_to_float(_b[0]) / cqtype_fixed_to_float(a0) );
+    _q->b[1] = cqtype_float_to_fixed( cqtype_fixed_to_float(_b[1]) / cqtype_fixed_to_float(a0) );
+    _q->b[2] = cqtype_float_to_fixed( cqtype_fixed_to_float(_b[2]) / cqtype_fixed_to_float(a0) );
+
+    // copy feed-back coefficients (denominator)
+    _q->a[0] = cqtype_float_to_fixed( cqtype_fixed_to_float(_a[0]) / cqtype_fixed_to_float(a0) );
+    _q->a[1] = cqtype_float_to_fixed( cqtype_fixed_to_float(_a[1]) / cqtype_fixed_to_float(a0) );
+    _q->a[2] = cqtype_float_to_fixed( cqtype_fixed_to_float(_a[2]) / cqtype_fixed_to_float(a0) );
+#else
     // copy feed-forward coefficients (numerator)
     _q->b[0] = _b[0] / a0;
     _q->b[1] = _b[1] / a0;
@@ -69,6 +90,7 @@ void IIRFILTSOS(_set_coefficients)(IIRFILTSOS() _q,
     _q->a[0] = _a[0] / a0;
     _q->a[1] = _a[1] / a0;
     _q->a[2] = _a[2] / a0;
+#endif
 }
 
 void IIRFILTSOS(_destroy)(IIRFILTSOS() _q)
@@ -93,6 +115,11 @@ void IIRFILTSOS(_print)(IIRFILTSOS() _q)
 
 void IIRFILTSOS(_clear)(IIRFILTSOS() _q)
 {
+#ifdef LIQUID_FIXED
+    memset(_q->v, 0x00, sizeof(_q->v));
+    memset(_q->x, 0x00, sizeof(_q->x));
+    memset(_q->y, 0x00, sizeof(_q->y));
+#else
     // set to zero
     _q->v[0] = 0;
     _q->v[1] = 0;
@@ -105,7 +132,7 @@ void IIRFILTSOS(_clear)(IIRFILTSOS() _q)
     _q->y[0] = 0;
     _q->y[1] = 0;
     _q->y[2] = 0;
-
+#endif
 }
 
 void IIRFILTSOS(_execute)(IIRFILTSOS() _q,
@@ -131,15 +158,29 @@ void IIRFILTSOS(_execute_df1)(IIRFILTSOS() _q,
     _q->y[2] = _q->y[1];
     _q->y[1] = _q->y[0];
 
+#if 0
     // compute new v
     TI v = _q->x[0] * _q->b[0] +
            _q->x[1] * _q->b[1] +
            _q->x[2] * _q->b[2];
+#else
+    // run dot product
+    TO v;
+    DOTPROD(_run)(_q->b, _q->x, 3, &v);
+#endif
 
     // compute new y[0]
+#ifdef LIQUID_FIXED
+    TO t1 = MUL_TI_TC(_q->y[1], _q->a[1]);
+    TO t2 = MUL_TI_TC(_q->y[2], _q->a[2]);
+    _q->y[0] = SUB_TO_TO(v,        t1);
+    _q->y[0] = SUB_TO_TO(_q->y[0], t2);
+
+#else
     _q->y[0] = v -
                _q->y[1] * _q->a[1] -
                _q->y[2] * _q->a[2];
+#endif
 
     // set output
     *_y = _q->y[0];
@@ -154,6 +195,11 @@ void IIRFILTSOS(_execute_df2)(IIRFILTSOS() _q,
     _q->v[2] = _q->v[1];
     _q->v[1] = _q->v[0];
 
+#ifdef LIQUID_FIXED
+#  warning "fixed-point iirfiltsos_xxxt_execute_df2() not yet implemented"
+    fprintf(stderr,"error: iirfiltsos_xxxt_execute_df2() not yet implemented for FPM\n");
+    exit(1);
+#else
     // compute new v[0]
     _q->v[0] = _x - 
                _q->a[1]*_q->v[1] -
@@ -163,6 +209,7 @@ void IIRFILTSOS(_execute_df2)(IIRFILTSOS() _q,
     *_y = _q->b[0]*_q->v[0] +
           _q->b[1]*_q->v[1] +
           _q->b[2]*_q->v[2];
+#endif
 }
 
 // compute group delay in samples
@@ -176,8 +223,16 @@ float IIRFILTSOS(_groupdelay)(IIRFILTSOS() _q,
     float a[3];
     unsigned int i;
     for (i=0; i<3; i++) {
+#if defined LIQUID_FIXED && TC_COMPLEX==0
+        b[i] = qtype_fixed_to_float(_q->b[i]);
+        a[i] = qtype_fixed_to_float(_q->a[i]);
+#elif defined LIQUID_FIXED && TC_COMPLEX==1
+        b[i] = qtype_fixed_to_float(_q->b[i].real);
+        a[i] = qtype_fixed_to_float(_q->a[i].real);
+#else
         b[i] = crealf(_q->b[i]);
         a[i] = crealf(_q->a[i]);
+#endif
     }
     return iir_group_delay(b, 3, a, 3, _fc) + 2.0;
 }
