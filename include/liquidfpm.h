@@ -85,6 +85,7 @@ LIQUIDFPM_DEFINE_COMPLEX(float, liquidfpm_float_complex);
 #define q16_min         (1)                     // minimum value
 #define q16_max         (0x7fff)                // maximum value (positive)
 #define q16_one         ((1<<(q16_fracbits))-1) // 'one' representation
+#define q16_zero        (0)                     // 'zero' representation
 #define q16_pi_by_4     (0x0fff)                // phase: pi/4
 #define q16_pi_by_2     (0x1fff)                // phase: pi/2
 #define q16_pi          (0x3fff)                // phase: pi
@@ -120,6 +121,7 @@ LIQUIDFPM_DEFINE_COMPLEX(float, liquidfpm_float_complex);
 #define q32_min         (1)                     // minimum value
 #define q32_max         (0x7fffffff)            // maximum value (positive)
 #define q32_one         ((1<<(q32_fracbits))-1) // 'one' representation
+#define q32_zero        (0)                     // 'zero' representation
 #define q32_pi_by_4     (0x0fffffff)            // phase: pi/4
 #define q32_pi_by_2     (0x1fffffff)            // phase: pi/2
 #define q32_pi          (0x3fffffff)            // phase: pi
@@ -230,6 +232,11 @@ extern const Q(_t) Q(_SQRT1_2);     /* 1/sqrt(2)        */          \
                                                                     \
 /* API definition macro (complex types) */                          \
 typedef struct {Q(_t) real; Q(_t) imag;} CQ(_t);                    \
+                                                                    \
+/* constants */                                                     \
+const static CQ(_t) CQ(_zero) = {Q(_zero), Q(_zero)}; /* 0 + j0 */  \
+const static CQ(_t) CQ(_one)  = {Q(_one),  Q(_zero)}; /* 1 + j0 */  \
+const static CQ(_t) CQ(_I)    = {Q(_zero), Q(_one)};  /* 0 + j1 */  \
                                                                     \
 /* conversion */                                                    \
 liquidfpm_float_complex CQ(_fixed_to_float)(CQ(_t) _x);             \
