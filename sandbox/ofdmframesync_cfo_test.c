@@ -20,8 +20,9 @@ void usage()
     printf("  M     : number of subcarriers (must be even), default: 64\n");
     printf("  C     : cyclic prefix length, default: 16\n");
     printf("  T     : taper length, default: 4\n");
-    printf("  s     : signal-to-noise ratio [dB], default: 20\n");
-    printf("  t     : number of trials, default: 100\n");
+    printf("  S     : signal-to-noise ratio [dB], default: 20\n");
+    printf("  t     : number of trials, default: 500\n");
+    printf("  s     : number of steps, default: 21\n");
 }
 
 static int callback(float complex * _X,
@@ -39,19 +40,20 @@ int main(int argc, char*argv[])
     unsigned int taper_len   = 4;       // taper length
     float noise_floor        = -30.0f;  // noise floor [dB]
     float SNRdB              = 20.0f;   // signal-to-noise ratio [dB]
-    unsigned int num_trials  = 400;     // number of trials to simulate
+    unsigned int num_trials  = 500;     // number of trials to simulate
     unsigned int num_steps   = 21;      // number of steps
 
     // get options
     int dopt;
-    while((dopt = getopt(argc,argv,"hM:C:T:s:t:")) != EOF){
+    while((dopt = getopt(argc,argv,"hM:C:T:S:t:s:")) != EOF){
         switch (dopt) {
         case 'h': usage();                  return 0;
         case 'M': M         = atoi(optarg); break;
         case 'C': cp_len    = atoi(optarg); break;
         case 'T': taper_len = atoi(optarg); break;
-        case 's': SNRdB     = atof(optarg); break;
-        case 't': num_steps = atoi(optarg); break;
+        case 'S': SNRdB     = atof(optarg); break;
+        case 't': num_trials= atoi(optarg); break;
+        case 's': num_steps = atoi(optarg); break;
         default:
             exit(1);
         }
@@ -97,8 +99,8 @@ int main(int argc, char*argv[])
     
     // carrier frequency offset
     float nu_min = 0.0f;            // minimum
-    float nu_max = M_PI / (float)M; // maximum
-    float nu_step = (nu_max - nu_min) / (float)num_steps;
+    float nu_max = 0.9f*M_PI / (float)M; // maximum
+    float nu_step = (nu_max - nu_min) / (float)(num_steps-1);
 
     // count subcarrier types
     unsigned int M_data  = 0;
@@ -153,21 +155,17 @@ int main(int argc, char*argv[])
             num_frames_detected += frame_detected;
 
             // assume frame was detected; save carrier offset estimate
-            if (frame_detected) {
-                float nu_hat = ofdmframesync_get_cfo(fs);
+            float nu_hat = ofdmframesync_get_cfo(fs);
 
-                // accumulate statistics
-                float nu_hat_error = nu - nu_hat;
-                nu_hat_bias += nu_hat_error;
-                nu_hat_rmse += nu_hat_error*nu_hat_error;
-            }
+            // accumulate statistics
+            float nu_hat_error = nu - nu_hat;
+            nu_hat_bias += nu_hat_error;
+            nu_hat_rmse += nu_hat_error*nu_hat_error;
 
         }
-        if (num_frames_detected > 0) {
-            nu_hat_bias /= (float)num_frames_detected;
-            nu_hat_rmse /= (float)num_frames_detected;
-            nu_hat_rmse  = sqrtf(nu_hat_rmse);
-        }
+        nu_hat_bias /= (float)num_trials;
+        nu_hat_rmse /= (float)num_trials;
+        nu_hat_rmse  = sqrtf(nu_hat_rmse);
 
         // print results
         printf("%6u, nu=%12.8f", n, nu);
