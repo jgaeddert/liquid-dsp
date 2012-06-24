@@ -467,8 +467,7 @@ filter_autotests :=						\
 	src/filter/tests/filter_crosscorr_autotest.c		\
 	src/filter/tests/firdes_autotest.c			\
 	src/filter/tests/firdespm_autotest.c			\
-	src/filter/tests/firfilt_rrrf_autotest.c		\
-	src/filter/tests/firfilt_crcf_autotest.c		\
+	src/filter/tests/firfilt_xxxf_autotest.c		\
 	src/filter/tests/firhilb_autotest.c			\
 	src/filter/tests/firpfb_autotest.c			\
 	src/filter/tests/groupdelay_autotest.c			\
@@ -479,6 +478,21 @@ filter_autotests :=						\
 	src/filter/tests/interp_autotest.c			\
 	src/filter/tests/resamp2_crcf_autotest.c		\
 
+# additional autotest objects
+autotest_extra_obj +=						\
+	src/filter/tests/firfilt_runtest.o			\
+	src/filter/tests/firfilt_rrrf_data_h4x8.o		\
+	src/filter/tests/firfilt_crcf_data_h4x8.o		\
+	src/filter/tests/firfilt_cccf_data_h4x8.o		\
+	src/filter/tests/firfilt_rrrf_data_h7x16.o		\
+	src/filter/tests/firfilt_crcf_data_h7x16.o		\
+	src/filter/tests/firfilt_cccf_data_h7x16.o		\
+	src/filter/tests/firfilt_rrrf_data_h13x32.o		\
+	src/filter/tests/firfilt_crcf_data_h13x32.o		\
+	src/filter/tests/firfilt_cccf_data_h13x32.o		\
+	src/filter/tests/firfilt_rrrf_data_h23x64.o		\
+	src/filter/tests/firfilt_crcf_data_h23x64.o		\
+	src/filter/tests/firfilt_cccf_data_h23x64.o		\
 
 filter_benchmarks :=						\
 	src/filter/bench/decim_benchmark.c			\

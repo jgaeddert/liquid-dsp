@@ -69,12 +69,12 @@ fprintf(fid,'//\n');
 fprintf(fid,'// %s: autotest firfilt data\n', filename);
 fprintf(fid,'//\n');
 fprintf(fid,'\n');
-if h_complex,
+if h_complex || x_complex || y_complex,
     fprintf(fid,'#include <complex.h>\n\n');
 end;
 
 % construct base name, e.g. 'firfilt_crcf_test_h12x44'
-basename = ['firfilt_' type 'f_test_h' num2str(h_len) 'x' num2str(x_len)];
+basename = ['firfilt_' type 'f_data_h' num2str(h_len) 'x' num2str(x_len)];
 
 % save coefficients array
 if h_complex, fprintf(fid,'float complex ');
