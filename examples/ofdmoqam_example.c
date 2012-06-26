@@ -17,8 +17,7 @@ int main() {
     unsigned int m=2;               // ofdm/oqam symbol delay
     float beta = 0.99f;             // excess bandwidth factor
     float dt   = 0.0f;              // timing offset (fractional sample) 
-    modulation_scheme ms = LIQUID_MODEM_QAM; // modulation scheme
-    unsigned int bps = 2;           // modulation depth (bits/symbol)
+    modulation_scheme ms = LIQUID_MODEM_QAM4; // modulation scheme
 
     // number of frames (compensate for filter delay)
     unsigned int num_frames = num_symbols + 2*m;
@@ -30,7 +29,7 @@ int main() {
     ofdmoqam ca = ofdmoqam_create(num_channels, m, beta, dt, LIQUID_ANALYZER,0);
 
     // modem
-    modem mod = modem_create(ms,bps);
+    modem mod = modem_create(ms);
 
     FILE*fid = fopen(OUTPUT_FILENAME,"w");
     fprintf(fid,"%% %s: auto-generated file\n\n", OUTPUT_FILENAME);
