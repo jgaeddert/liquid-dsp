@@ -19,18 +19,18 @@
  */
 
 //
-// sparse matrix API: boolean
+// sparse matrix API: float
 //
 
 #include <stdlib.h>
 #include <stdio.h>
 #include "liquid.internal.h"
 
-// name-mangling macro
-#define SMATRIX(name)       LIQUID_CONCAT(smatrixb,name)
+// macro
+#define SMATRIX(name)       LIQUID_CONCAT(smatrixf,name)
 
 // primitive type
-#define T                   char
+#define T                   float
 
 // source files
 #include "smatrix.c"

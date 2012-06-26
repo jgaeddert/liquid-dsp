@@ -532,6 +532,7 @@ struct channel_s {
 //
 
 #define SMATRIX_MANGLE_BOOL(name)   LIQUID_CONCAT(smatrixb,  name)
+#define SMATRIX_MANGLE_FLOAT(name)  LIQUID_CONCAT(smatrixf,  name)
 
 // sparse 'alist' matrix type (similar to MacKay, Davey Lafferty convention)
 // large macro
@@ -567,7 +568,8 @@ T SMATRIX(_get)(SMATRIX()    _q,                                \
                 unsigned int _n);                               \
 void SMATRIX(_set)(SMATRIX()    _q,                             \
                    unsigned int _m,                             \
-                   unsigned int _n);                            \
+                   unsigned int _n,                             \
+                   T            _v);                            \
 void SMATRIX(_clear)(SMATRIX() _q,                              \
                      unsigned int _m,                           \
                      unsigned int _n);                          \
@@ -593,7 +595,8 @@ void SMATRIX(_vmul)(SMATRIX() _q,                               \
 void SMATRIX(_reset_max_mlist)(SMATRIX() _q);                   \
 void SMATRIX(_reset_max_nlist)(SMATRIX() _q);                   \
 
-LIQUID_SMATRIX_DEFINE_API(SMATRIX_MANGLE_BOOL, unsigned char)
+LIQUID_SMATRIX_DEFINE_API(SMATRIX_MANGLE_BOOL,  char)
+LIQUID_SMATRIX_DEFINE_API(SMATRIX_MANGLE_FLOAT, float)
 
 
 //

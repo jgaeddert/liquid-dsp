@@ -17,12 +17,12 @@ int main(int argc, char*argv[]) {
     smatrixb q = smatrixb_create(M,N);
 
     // set value(s)
-    smatrixb_set(q,1,2);
-    smatrixb_set(q,2,2);
-    smatrixb_set(q,2,3);
-    smatrixb_set(q,2,7);
-    smatrixb_set(q,2,8);
-    smatrixb_set(q,2,11);
+    smatrixb_set(q,1,2,  1);
+    smatrixb_set(q,2,2,  1);
+    smatrixb_set(q,2,3,  1);
+    smatrixb_set(q,2,7,  1);
+    smatrixb_set(q,2,8,  1);
+    smatrixb_set(q,2,11, 1);
     smatrixb_clear(q,2,2);
 
     printf("\ncompact form:\n");
@@ -72,16 +72,16 @@ int main(int argc, char*argv[]) {
     // 0 0 0 0 0 0 0 0 0 0 0 0
     // 0 1 0 0 0 0 0 0 0 0 0 0
     // 0 0 0 0 0 0 0 1 1 0 0 0
-    smatrixb_set(a,0,4);
-    smatrixb_set(a,2,3);
-    smatrixb_set(a,2,7);
-    smatrixb_set(a,3,4);
-    smatrixb_set(a,4,3);
-    smatrixb_set(a,4,6);
-    smatrixb_set(a,4,7);
-    smatrixb_set(a,6,1);
-    smatrixb_set(a,7,7);
-    smatrixb_set(a,7,8);
+    smatrixb_set(a,0,4, 1);
+    smatrixb_set(a,2,3, 1);
+    smatrixb_set(a,2,7, 1);
+    smatrixb_set(a,3,4, 1);
+    smatrixb_set(a,4,3, 1);
+    smatrixb_set(a,4,6, 1);
+    smatrixb_set(a,4,7, 1);
+    smatrixb_set(a,6,1, 1);
+    smatrixb_set(a,7,7, 1);
+    smatrixb_set(a,7,8, 1);
 
     // initialize 'b'
     // 1 1 0 0 0
@@ -96,16 +96,16 @@ int main(int argc, char*argv[]) {
     // 0 1 0 0 1
     // 1 0 0 1 0
     // 0 1 0 0 0
-    smatrixb_set(b,0,0);
-    smatrixb_set(b,0,1);
-    smatrixb_set(b,1,4);
-    smatrixb_set(b,5,4);
-    smatrixb_set(b,6,3);
-    smatrixb_set(b,7,3);
-    smatrixb_set(b,9,1);
-    smatrixb_set(b,9,4);
-    smatrixb_set(b,10,0);
-    smatrixb_set(b,11,1);
+    smatrixb_set(b,0,0,  1);
+    smatrixb_set(b,0,1,  1);
+    smatrixb_set(b,1,4,  1);
+    smatrixb_set(b,5,4,  1);
+    smatrixb_set(b,6,3,  1);
+    smatrixb_set(b,7,3,  1);
+    smatrixb_set(b,9,1,  1);
+    smatrixb_set(b,9,4,  1);
+    smatrixb_set(b,10,0, 1);
+    smatrixb_set(b,11,1, 1);
 
     // compute 'c'
     // 0 0 0 0 0

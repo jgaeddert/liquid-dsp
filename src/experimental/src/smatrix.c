@@ -27,6 +27,8 @@ struct SMATRIX(_s) {
     unsigned int N;                 // number of columns
     unsigned short int ** mlist;    // list of non-zero elements in each row
     unsigned short int ** nlist;    // list of non-zero elements in each col
+    T ** mvals;                     // list of non-zero values in each row
+    T ** nvals;                     // list of non-zero values in each col
     unsigned int * num_mlist;       // weight of each row, m
     unsigned int * num_nlist;       // weight of each row, n
     unsigned int max_num_mlist;     // maximum of num_mlist
@@ -59,6 +61,14 @@ SMATRIX() SMATRIX(_create)(unsigned int _M,
     for (j=0; j<q->N; j++)
         q->nlist[j] = (unsigned short int *) malloc( q->num_nlist[j]*sizeof(unsigned short int) );
 
+    // initialize values
+    q->mvals = (T **) malloc( q->M*sizeof(T*) );
+    q->nvals = (T **) malloc( q->N*sizeof(T*) );
+    for (i=0; i<q->M; i++)
+        q->mvals[i] = (T *) malloc( q->num_mlist[i]*sizeof(T) );
+    for (j=0; j<q->N; j++)
+        q->nvals[j] = (T *) malloc( q->num_nlist[j]*sizeof(T) );
+
     // set maximum list size
     q->max_num_mlist = 0;
     q->max_num_nlist = 0;
@@ -81,7 +91,7 @@ SMATRIX() SMATRIX(_create_array)(T *          _v,
     for (i=0; i<_m; i++) {
         for (j=0; j<_n; j++) {
             if (_v[i*_n + j])
-                SMATRIX(_set)(q,i,j);
+                SMATRIX(_set)(q,i,j,_v[i*_n + j]);
         }
     }
 
@@ -92,17 +102,24 @@ SMATRIX() SMATRIX(_create_array)(T *          _v,
 // destroy object
 void SMATRIX(_destroy)(SMATRIX() _q)
 {
+    unsigned int i;
+    unsigned int j;
+
     // free internal memory
     free(_q->num_mlist);
     free(_q->num_nlist);
 
     // free lists
-    unsigned int i;
-    unsigned int j;
     for (i=0; i<_q->M; i++) free(_q->mlist[i]);
     for (j=0; j<_q->N; j++) free(_q->nlist[j]);
     free(_q->mlist);
     free(_q->nlist);
+
+    // free values
+    for (i=0; i<_q->M; i++) free(_q->mvals[i]);
+    for (j=0; j<_q->N; j++) free(_q->nvals[j]);
+    free(_q->mvals);
+    free(_q->nvals);
 
     // free main object memory
     free(_q);
@@ -199,7 +216,8 @@ T SMATRIX(_get)(SMATRIX()    _q,
 // set element at index
 void SMATRIX(_set)(SMATRIX()    _q,
                    unsigned int _m,
-                   unsigned int _n)
+                   unsigned int _n,
+                   T            _v)
 {
     // validate input
     if (_m >= _q->M || _n >= _q->N) {
@@ -290,7 +308,7 @@ void SMATRIX(_eye)(SMATRIX() _q)
     unsigned int i;
     unsigned int dmin = _q->M < _q->N ? _q->M : _q->N;
     for (i=0; i<dmin; i++)
-        SMATRIX(_set)(_q, i, i);
+        SMATRIX(_set)(_q, i, i, 1);
 }
 
 // multiply two sparse binary matrices
@@ -332,9 +350,10 @@ void SMATRIX(_mul)(SMATRIX() _a,
                     p += (_a->mlist[r][i] == _b->nlist[c][j]) ? 1 : 0;
             }
 #endif
+            // FIXME: set value appropriately based on matrix type
             // set output (modulo 2)
             if ( p & 0x001 )
-                SMATRIX(_set)(_c, r, c);
+                SMATRIX(_set)(_c, r, c, 1);
         }
     }
 }
@@ -344,8 +363,8 @@ void SMATRIX(_mul)(SMATRIX() _a,
 //  _x  :   input vector [size: _N x 1]
 //  _y  :   output vector [size: _M x 1]
 void SMATRIX(_vmul)(SMATRIX() _q,
-                    T * _x,
-                    T * _y)
+                    T *       _x,
+                    T *       _y)
 {
     unsigned int i;
     unsigned int j;
@@ -354,11 +373,17 @@ void SMATRIX(_vmul)(SMATRIX() _q,
     for (i=0; i<_q->M; i++)
         _y[i] = 0;
 
-    // only flip necessary bits
+    // only compute necessary outputs
     for (j=0; j<_q->N; j++) {
         if (_x[j]) {
-            for (i=0; i<_q->num_nlist[j]; i++)
+            for (i=0; i<_q->num_nlist[j]; i++) {
+#if T == float
+                // FIXME: compute appropriate output
+                _y[ _q->nlist[j][i] ] = 0.f;
+#else
                 _y[ _q->nlist[j][i] ] ^= 1; // add 1 (modulo 2)
+#endif
+            }
         }
     }
 }
