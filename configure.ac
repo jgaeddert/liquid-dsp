@@ -70,7 +70,6 @@ AC_ARG_ENABLE(experimental,
             src/experimental/src/layer.o \
             src/experimental/src/maxnet.o \
             src/experimental/src/node.o \
-            src/experimental/src/fbasc.o \
             src/experimental/src/gport.o \
             src/experimental/src/filter_rrrf.o \
             src/experimental/src/filter_crcf.o \
@@ -86,19 +85,17 @@ AC_ARG_ENABLE(experimental,
             src/experimental/src/ofdmoqamframegen.o \
             src/experimental/src/ofdmoqamframesync.o \
             src/experimental/src/smatrix.o \
-            src/experimental/src/mdctch.o \
             src/experimental/src/ricek_channel.o"
         EXPERIMENTAL_AUTOTESTS="src/experimental/tests/ann_autotest.c \
             src/experimental/tests/gport_autotest.c \
             src/experimental/tests/smatrix_autotest.c \
             src/experimental/tests/channel_autotest.c"
 #           src/experimental/tests/ofdmoqam_autotest.c
-        EXPERIMENTAL_BENCHMARKS="src/experimental/bench/fbasc_benchmark.c \
+        EXPERIMENTAL_BENCHMARKS="src/experimental/bench/dds_benchmark.c \
             src/experimental/bench/gport_dma_benchmark.c \
             src/experimental/bench/gport_dma_threaded_benchmark.c \
             src/experimental/bench/gport_ima_benchmark.c \
             src/experimental/bench/gport_ima_threaded_benchmark.c \
-            src/experimental/bench/dds_benchmark.c \
             src/experimental/bench/ofdmoqam_benchmark.c \
             src/experimental/bench/qmfb_benchmark.c"
         EXPERIMENTAL_EXAMPLES="examples/ann_bitpattern_example \
@@ -108,7 +105,6 @@ AC_ARG_ENABLE(experimental,
             examples/ann_node_example \
             examples/ann_xor_example \
             examples/dds_cccf_example \
-            examples/fbasc_example \
             examples/gport_dma_example \
             examples/gport_dma_threaded_example \
             examples/gport_ima_example \

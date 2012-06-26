@@ -254,6 +254,7 @@ struct maxnet_s {
 // 
 
 
+#if 0
 // FBASC: filterbank audio synthesizer codec
 #define FBASC_ENCODER   0
 #define FBASC_DECODER   1
@@ -277,11 +278,6 @@ void fbasc_decode(fbasc _q,
                   unsigned char * _header,
                   unsigned char * _frame,
                   float * _audio);
-
-
-//
-// SUBMODULE-INTERNAL : audio
-//
 
 // compute normalized channel variance
 void fbasc_encoder_compute_channel_variance(fbasc _q);
@@ -318,6 +314,7 @@ void fbasc_decoder_unpack_header(fbasc _q, unsigned char * _header);
 // pack/unpack frame
 void fbasc_encoder_pack_frame(fbasc _q, unsigned char * _frame);
 void fbasc_decoder_unpack_frame(fbasc _q, unsigned char * _frame);
+#endif
 
 
 //
