@@ -531,65 +531,69 @@ struct channel_s {
 // SUBMODULE : fec
 //
 
+#define SMATRIX_MANGLE_BOOL(name)   LIQUID_CONCAT(smatrixb,  name)
+
 // sparse 'alist' matrix type (similar to MacKay, Davey Lafferty convention)
-typedef struct smatrix_s * smatrix;
-struct smatrix_s {
-    unsigned int M;                 // number of rows
-    unsigned int N;                 // number of columns
-    unsigned short int ** mlist;    // list of non-zero elements in each row
-    unsigned short int ** nlist;    // list of non-zero elements in each col
-    unsigned int * num_mlist;       // weight of each row, m
-    unsigned int * num_nlist;       // weight of each row, n
-    unsigned int max_num_mlist;     // maximum of num_mlist
-    unsigned int max_num_nlist;     // maximum of num_nlist
-};
+// large macro
+//   SMATRIX    : name-mangling macro
+//   T          : primitive data type
+#define LIQUID_SMATRIX_DEFINE_API(SMATRIX,T)                    \
+typedef struct SMATRIX(_s) * SMATRIX();                         \
+                                                                \
+/* create _M x _N matrix, initialized with zeros */             \
+SMATRIX() SMATRIX(_create)(unsigned int _M,                     \
+                           unsigned int _N);                    \
+                                                                \
+/* create _M x _N matrix, initialized on array */               \
+SMATRIX() SMATRIX(_create_array)(T *          _x,               \
+                                 unsigned int _m,               \
+                                 unsigned int _n);              \
+                                                                \
+/* destroy object */                                            \
+void SMATRIX(_destroy)(SMATRIX() _q);                           \
+                                                                \
+/* print compact form */                                        \
+void SMATRIX(_print)(SMATRIX() _q);                             \
+                                                                \
+/* print expanded form */                                       \
+void SMATRIX(_print_expanded)(SMATRIX() _q);                    \
+                                                                \
+/* zero all elements */                                         \
+void SMATRIX(_zero)(SMATRIX() _q);                              \
+                                                                \
+/* get/set/clear element at index */                            \
+T SMATRIX(_get)(SMATRIX()    _q,                                \
+                unsigned int _m,                                \
+                unsigned int _n);                               \
+void SMATRIX(_set)(SMATRIX()    _q,                             \
+                   unsigned int _m,                             \
+                   unsigned int _n);                            \
+void SMATRIX(_clear)(SMATRIX() _q,                              \
+                     unsigned int _m,                           \
+                     unsigned int _n);                          \
+                                                                \
+/* initialize to identity matrix */                             \
+void SMATRIX(_eye)(SMATRIX() _q);                               \
+                                                                \
+/* multiply two sparse binary matrices */                       \
+void SMATRIX(_mul)(SMATRIX() _x,                                \
+                   SMATRIX() _y,                                \
+                   SMATRIX() _z);                               \
+                                                                \
+/* multiply by vector (modulo 2)            */                  \
+/*  _q  :   sparse matrix                   */                  \
+/*  _x  :   input vector [size: _N x 1]     */                  \
+/*  _y  :   output vector [size: _M x 1]    */                  \
+void SMATRIX(_vmul)(SMATRIX() _q,                               \
+                    T *       _x,                               \
+                    T *       _y);                              \
+                                                                \
+/* semi-internal methods */                                     \
+                                                                \
+void SMATRIX(_reset_max_mlist)(SMATRIX() _q);                   \
+void SMATRIX(_reset_max_nlist)(SMATRIX() _q);                   \
 
-// create _M x _N matrix, initialized with zeros
-smatrix smatrix_create(unsigned int _M,
-                       unsigned int _N);
-
-// create _M x _N matrix, initialized on array
-smatrix smatrix_create_array(unsigned char * _x,
-                             unsigned int    _m,
-                             unsigned int    _n);
-
-// destroy object
-void smatrix_destroy(smatrix _q);
-
-// print compact form
-void smatrix_print(smatrix _q);
-
-// print expanded form
-void smatrix_print_expanded(smatrix _q);
-
-// zero all elements
-void smatrix_zero(smatrix _q);
-
-// get/set/clear element at index
-unsigned char smatrix_get(smatrix _q, unsigned int _m, unsigned int _n);
-void smatrix_set(smatrix _q, unsigned int _m, unsigned int _n);
-void smatrix_clear(smatrix _q, unsigned int _m, unsigned int _n);
-
-// initialize to identity matrix
-void smatrix_eye(smatrix _q);
-
-// multiply two sparse binary matrices
-void smatrix_mul(smatrix _x,
-                 smatrix _y,
-                 smatrix _z);
-
-// multiply by vector (modulo 2)
-//  _q  :   sparse matrix
-//  _x  :   input vector [size: _N x 1]
-//  _y  :   output vector [size: _M x 1]
-void smatrix_vmul(smatrix _q,
-                  unsigned char * _x,
-                  unsigned char * _y);
-
-// semi-internal methods
-
-void smatrix_reset_max_mlist(smatrix _q);
-void smatrix_reset_max_nlist(smatrix _q);
+LIQUID_SMATRIX_DEFINE_API(SMATRIX_MANGLE_BOOL, unsigned char)
 
 
 //

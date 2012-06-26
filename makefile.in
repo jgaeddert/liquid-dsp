@@ -967,6 +967,8 @@ src/experimental/src/filter_crcf.o: %.o : %.c $(headers) $(experimental_filter_i
 
 src/experimental/src/filter_cccf.o: %.o : %.c $(headers) $(experimental_filter_includes)
 
+src/experimental/src/smatrixb.o: %.o : %.c $(headers) src/experimental/src/smatrix.c
+
 
 
 
