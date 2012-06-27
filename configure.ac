@@ -99,7 +99,8 @@ AC_ARG_ENABLE(experimental,
             src/experimental/bench/gport_ima_benchmark.c \
             src/experimental/bench/gport_ima_threaded_benchmark.c \
             src/experimental/bench/ofdmoqam_benchmark.c \
-            src/experimental/bench/qmfb_benchmark.c"
+            src/experimental/bench/qmfb_benchmark.c \
+            src/experimental/bench/smatrix_mul_benchmark.c"
         EXPERIMENTAL_EXAMPLES="examples/ann_bitpattern_example \
             examples/ann_example \
             examples/ann_layer_example \
