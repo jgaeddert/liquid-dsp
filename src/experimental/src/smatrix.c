@@ -314,14 +314,14 @@ void SMATRIX(_insert)(SMATRIX()    _q,
     //printf("inserting value (m=%3u) at n=%3u, index=%3u\n", _m, _n, nindex);
 
     // insert indeces to appropriate place in list
-    memmove(&_q->mlist[_m][mindex+1], &_q->mlist[_m][mindex], (_q->num_mlist[_m]-mindex)*sizeof(unsigned short int));
-    memmove(&_q->nlist[_n][nindex+1], &_q->nlist[_n][nindex], (_q->num_nlist[_n]-nindex)*sizeof(unsigned short int));
+    memmove(&_q->mlist[_m][mindex+1], &_q->mlist[_m][mindex], (_q->num_mlist[_m]-mindex-1)*sizeof(unsigned short int));
+    memmove(&_q->nlist[_n][nindex+1], &_q->nlist[_n][nindex], (_q->num_nlist[_n]-nindex-1)*sizeof(unsigned short int));
     _q->mlist[_m][mindex] = _n;
     _q->nlist[_n][nindex] = _m;
 
     // insert values to appropriate place in list
-    memmove(&_q->mvals[_m][mindex+1], &_q->mvals[_m][mindex], (_q->num_mlist[_m]-mindex)*sizeof(T));
-    memmove(&_q->nvals[_n][nindex+1], &_q->nvals[_n][nindex], (_q->num_nlist[_n]-nindex)*sizeof(T));
+    memmove(&_q->mvals[_m][mindex+1], &_q->mvals[_m][mindex], (_q->num_mlist[_m]-mindex-1)*sizeof(T));
+    memmove(&_q->nvals[_n][nindex+1], &_q->nvals[_n][nindex], (_q->num_nlist[_n]-nindex-1)*sizeof(T));
     _q->mvals[_m][mindex] = _v;
     _q->nvals[_n][nindex] = _v;
 
