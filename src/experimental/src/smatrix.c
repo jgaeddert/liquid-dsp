@@ -308,8 +308,8 @@ void SMATRIX(_insert)(SMATRIX()    _q,
     _q->nvals[_n] = (T*) realloc(_q->nvals[_n], _q->num_nlist[_n]*sizeof(T));
 
     // find index within list to insert new value
-    unsigned int mindex = 0; //smatrix_indexsearch(_q->mlist[_m], _q->num_mlist[_m]-1, _n);
-    unsigned int nindex = 0; //smatrix_indexsearch(_q->nlist[_n], _q->num_nlist[_n]-1, _m);
+    unsigned int mindex = smatrix_indexsearch(_q->mlist[_m], _q->num_mlist[_m]-1, _n);
+    unsigned int nindex = smatrix_indexsearch(_q->nlist[_n], _q->num_nlist[_n]-1, _m);
     //printf("inserting value (n=%3u) at m=%3u, index=%3u\n", _n, _m, mindex);
     //printf("inserting value (m=%3u) at n=%3u, index=%3u\n", _m, _n, nindex);
 
@@ -473,12 +473,12 @@ void SMATRIX(_mul)(SMATRIX() _a,
     T p;            // running sum
     unsigned int num_multiplications;
 
-#if 0
+#if 1
     for (r=0; r<_c->M; r++) {
         
         // find number of non-zero entries in row 'r' of matrix '_a'
         unsigned int nnz_a_r = _a->num_mlist[r];
-        printf("%3u : %3u\n", r, nnz_a_r);
+        printf("row = %3u : %3u\n", r, nnz_a_r);
 
         // if this number is zero, there will not be any non-zero
         // entries in the corresponding row of the output matrix '_c'
@@ -486,6 +486,7 @@ void SMATRIX(_mul)(SMATRIX() _a,
             continue;
         
         for (c=0; c<_c->N; c++) {
+            printf("  col = %3u\n", c);
 
             // find number of non-zero entries in column 'c' of matrix '_b'
             unsigned int nnz_b_c = _b->num_nlist[c];
@@ -501,8 +502,33 @@ void SMATRIX(_mul)(SMATRIX() _a,
                 // determine if there are any corresponding non-zero
                 // entries in the columns of matrix '_b'
 
-                //for (j=0; j<_b->num_nlist[c]; j++) {
-                //}
+                for (j=0; j<nnz_b_c; j++) {
+                    if (_a->mlist[r][i] == _b->nlist[c][j]) {
+                        printf("  multiplying a(%3u,%3u) * b(%3u,%3u) ->",
+                                r,_a->mlist[r][i],_b->nlist[c][j],c);
+#if SMATRIX_FLOAT
+                        printf("%6.2f * %6.2f", _a->mvals[r][i], _b->nvals[c][j]);
+#endif
+                        printf("\n");
+                        p += _a->mvals[r][i] * _b->nvals[c][j];
+                        num_multiplications++;
+                    }
+                }
+            }
+
+            printf("  num multiplications: %3u, p=", num_multiplications);
+#if SMATRIX_FLOAT
+            printf("%6.2f", p);
+#endif
+            printf("\n");
+
+            if (num_multiplications > 0) {
+                printf("  >> setting c(%3u,%3u) = ", r, c);
+#if SMATRIX_FLOAT
+                printf("%6.2f", p);
+#endif
+                printf("\n");
+                SMATRIX(_set)(_c, r, c, p);
             }
         }
     }

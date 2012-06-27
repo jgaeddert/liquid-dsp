@@ -57,7 +57,7 @@ int main(int argc, char*argv[])
     printf(" ];\n");
 
     smatrixb_destroy(q);
-#else
+//#else
     unsigned int M = 12;
     unsigned int N = 12;
 
@@ -190,7 +190,7 @@ int main(int argc, char*argv[])
     printf("a:\n"); smatrixf_print(a); //smatrixf_print_expanded(a);
     printf("b:\n"); smatrixf_print(b); //smatrixf_print_expanded(b);
     // compute 'c'
-    //  0   0   0
+    //  8   0   0
     //  0   0   0
     //  0  15   0
     // 16  12   0
@@ -198,6 +198,7 @@ int main(int argc, char*argv[])
 
     // print results
     printf("c:\n"); smatrixf_print_expanded(c);
+    printf("c:\n"); smatrixf_print(c);
 
     smatrixf_destroy(a);
     smatrixf_destroy(b);
