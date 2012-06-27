@@ -28,7 +28,7 @@
 //
 
 // test sparse binary matrix methods
-void autotest_fec_smatrix()
+void xautotest_fec_smatrix()
 {
     // A = [
     //  1   0   0   0   0   0   0   0   0   0   0   0
@@ -45,25 +45,25 @@ void autotest_fec_smatrix()
     //
     
     // create sparse matrix and set values
-    smatrix A = smatrix_create(8,12);
-    smatrix_set(A,0,0);
-    smatrix_set(A,2,0);
-    smatrix_set(A,6,0);
-    smatrix_set(A,3,2);
-    smatrix_set(A,6,2);
-    smatrix_set(A,7,2);
-    smatrix_set(A,1,3);
-    smatrix_set(A,7,5);
-    smatrix_set(A,3,6);
-    smatrix_set(A,5,6);
-    smatrix_set(A,7,6);
-    smatrix_set(A,3,7);
-    smatrix_set(A,2,8);
-    smatrix_set(A,5,8);
-    smatrix_set(A,2,9);
-    smatrix_set(A,5,10);
-    smatrix_set(A,6,10);
-    smatrix_set(A,6,11);
+    smatrixb A = smatrixb_create(8,12);
+    smatrixb_set(A,0,0,  1);
+    smatrixb_set(A,2,0,  1);
+    smatrixb_set(A,6,0,  1);
+    smatrixb_set(A,3,2,  1);
+    smatrixb_set(A,6,2,  1);
+    smatrixb_set(A,7,2,  1);
+    smatrixb_set(A,1,3,  1);
+    smatrixb_set(A,7,5,  1);
+    smatrixb_set(A,3,6,  1);
+    smatrixb_set(A,5,6,  1);
+    smatrixb_set(A,7,6,  1);
+    smatrixb_set(A,3,7,  1);
+    smatrixb_set(A,2,8,  1);
+    smatrixb_set(A,5,8,  1);
+    smatrixb_set(A,2,9,  1);
+    smatrixb_set(A,5,10, 1);
+    smatrixb_set(A,6,10, 1);
+    smatrixb_set(A,6,11, 1);
 
     // generate vectors
     unsigned char x[12]     = {1, 1, 0, 0, 1, 0, 0, 1, 1, 1, 0, 1};
@@ -71,7 +71,7 @@ void autotest_fec_smatrix()
     unsigned char y[8];
 
     // multiply and run test
-    smatrix_vmul(A,x,y);
+    smatrixb_vmul(A,x,y);
 
     CONTEND_EQUALITY( y[0], y_test[0] );
     CONTEND_EQUALITY( y[1], y_test[1] );
@@ -85,10 +85,10 @@ void autotest_fec_smatrix()
     // print results (verbose)
     if (liquid_autotest_verbose) {
         printf("\ncompact form:\n");
-        smatrix_print(A);
+        smatrixb_print(A);
 
         printf("\nexpanded form:\n");
-        smatrix_print_expanded(A);
+        smatrixb_print_expanded(A);
 
         unsigned int i;
         unsigned int j;
@@ -107,11 +107,11 @@ void autotest_fec_smatrix()
     }
 
     // destroy matrix object
-    smatrix_destroy(A);
+    smatrixb_destroy(A);
 }
 
 // test sparse binary matrix multiplication
-void autotest_fec_smatrix_mul()
+void xautotest_fec_smatrixb_mul()
 {
     // a: [8 x 12]
     unsigned char a_test[96] = {
@@ -150,31 +150,31 @@ void autotest_fec_smatrix_mul()
         0, 0, 0, 0, 1,
         0, 0, 0, 1, 0};
 
-    smatrix a = smatrix_create_array(a_test,  8,12);
-    smatrix b = smatrix_create_array(b_test, 12, 5);
-    smatrix c = smatrix_create(8, 5);
+    smatrixb a = smatrixb_create_array(a_test,  8,12);
+    smatrixb b = smatrixb_create_array(b_test, 12, 5);
+    smatrixb c = smatrixb_create(8, 5);
 
     // compute output
-    smatrix_mul(a,b,c);
+    smatrixb_mul(a,b,c);
 
     // print results (verbose)
     if (liquid_autotest_verbose) {
-        printf("a:\n"); smatrix_print_expanded(a);
-        printf("b:\n"); smatrix_print_expanded(b);
-        printf("c:\n"); smatrix_print_expanded(c);
+        printf("a:\n"); smatrixb_print_expanded(a);
+        printf("b:\n"); smatrixb_print_expanded(b);
+        printf("c:\n"); smatrixb_print_expanded(c);
     }
 
     unsigned int i;
     unsigned int j;
     for (i=0; i<8; i++) {
         for (j=0; j<5; j++) {
-            CONTEND_EQUALITY( smatrix_get(c,i,j), c_test[i*5+j]);
+            CONTEND_EQUALITY( smatrixb_get(c,i,j), c_test[i*5+j]);
         }
     }
     
     // destroy objects
-    smatrix_destroy(a);
-    smatrix_destroy(b);
-    smatrix_destroy(c);
+    smatrixb_destroy(a);
+    smatrixb_destroy(b);
+    smatrixb_destroy(c);
 }
 
