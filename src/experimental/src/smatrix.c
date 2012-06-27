@@ -247,14 +247,14 @@ void SMATRIX(_zero)(SMATRIX() _q)
     _q->max_num_nlist = 0;
 }
 
-// query element at index
-T SMATRIX(_get)(SMATRIX()    _q,
-                unsigned int _m,
-                unsigned int _n)
+// determine if element is set
+int SMATRIX(_isset)(SMATRIX()    _q,
+                    unsigned int _m,
+                    unsigned int _n)
 {
     // validate input
     if (_m >= _q->M || _n >= _q->N) {
-        fprintf(stderr,"error: SMATRIX(_get)(%u,%u), index exceeds matrix dimension (%u,%u)\n",
+        fprintf(stderr,"error: SMATRIX(_isset)(%u,%u), index exceeds matrix dimension (%u,%u)\n",
                 _m, _n, _q->M, _q->N);
         exit(1);
     }
@@ -267,25 +267,24 @@ T SMATRIX(_get)(SMATRIX()    _q,
     return 0;
 }
 
-// set element at index
-void SMATRIX(_set)(SMATRIX()    _q,
-                   unsigned int _m,
-                   unsigned int _n,
-                   T            _v)
+// insert element at index
+void SMATRIX(_insert)(SMATRIX()    _q,
+                      unsigned int _m,
+                      unsigned int _n,
+                      T            _v)
 {
     // validate input
     if (_m >= _q->M || _n >= _q->N) {
-        fprintf(stderr,"error: SMATRIX(_set)(%u,%u), index exceeds matrix dimension (%u,%u)\n",
+        fprintf(stderr,"error: SMATRIX(_insert)(%u,%u), index exceeds matrix dimension (%u,%u)\n",
                 _m, _n, _q->M, _q->N);
         exit(1);
     }
 
     // check to see if element is already set
-#warning "smatrix_set(): known bug with non-boolean types"
     if (SMATRIX(_isset)(_q,_m,_n)) {
-        // value already set; no need to re-allocate
-        // FIXME: need to update value appropriately
-        printf("value already set...\n");
+        // simply set the value and return
+        printf("SMATRIX(_insert), value already set...\n");
+        SMATRIX(_set)(_q, _m, _n, _v);
         return;
     }
 
@@ -297,17 +296,17 @@ void SMATRIX(_set)(SMATRIX()    _q,
     _q->mlist[_m] = (unsigned short int*) realloc(_q->mlist[_m], _q->num_mlist[_m]*sizeof(unsigned short int));
     _q->nlist[_n] = (unsigned short int*) realloc(_q->nlist[_n], _q->num_nlist[_n]*sizeof(unsigned short int));
     
-    // reallocat values lists at this index
+    // reallocate values lists at this index
     _q->mvals[_m] = (T*) realloc(_q->mvals[_m], _q->num_mlist[_m]*sizeof(T));
     _q->nvals[_n] = (T*) realloc(_q->nvals[_n], _q->num_nlist[_n]*sizeof(T));
 
     // append index to end of list
-    // TODO : insert index at appropriate point (sorted)
+    // FIXME : insert index at appropriate point (sorted)
     _q->mlist[_m][_q->num_mlist[_m]-1] = _n;
     _q->nlist[_n][_q->num_nlist[_n]-1] = _m;
 
     // add value
-    // TODO : insert value at appropriate point (sorted)
+    // FIXME : insert value at appropriate point (sorted)
     _q->mvals[_m][_q->num_mlist[_m]-1] = _v;
     _q->nvals[_n][_q->num_nlist[_n]-1] = _v;
 
@@ -316,18 +315,19 @@ void SMATRIX(_set)(SMATRIX()    _q,
     if (_q->num_nlist[_n] > _q->max_num_nlist) _q->max_num_nlist = _q->num_nlist[_n];
 }
 
-// clear element at index
-void SMATRIX(_clear)(SMATRIX()    _q,
-                     unsigned int _m,
-                     unsigned int _n)
+// delete element at index
+void SMATRIX(_delete)(SMATRIX()    _q,
+                      unsigned int _m,
+                      unsigned int _n)
 {
     // validate input
     if (_m > _q->M || _n > _q->N) {
-        fprintf(stderr,"error: SMATRIX(_clear)(), index exceeds matrix dimension\n");
+        fprintf(stderr,"error: SMATRIX(_delete)(%u,%u), index exceeds matrix dimension (%u,%u)\n",
+                _m, _n, _q->M, _q->N);
         exit(1);
     }
 
-    // check to see if element is already set
+    // check to see if element is already not set
     if (!SMATRIX(_isset)(_q,_m,_n))
         return;
 
@@ -367,14 +367,48 @@ void SMATRIX(_clear)(SMATRIX()    _q,
         SMATRIX(_reset_max_nlist)(_q);
 }
 
-// determine if element is set
-int SMATRIX(_isset)(SMATRIX()    _q,
-                    unsigned int _m,
-                    unsigned int _n)
+// set element value at index
+void SMATRIX(_set)(SMATRIX()    _q,
+                   unsigned int _m,
+                   unsigned int _n,
+                   T            _v)
 {
     // validate input
     if (_m >= _q->M || _n >= _q->N) {
-        fprintf(stderr,"error: SMATRIX(_isset)(%u,%u), index exceeds matrix dimension (%u,%u)\n",
+        fprintf(stderr,"error: SMATRIX(_set)(%u,%u), index exceeds matrix dimension (%u,%u)\n",
+                _m, _n, _q->M, _q->N);
+        exit(1);
+    }
+
+    // insert new element if not already allocated
+    if (!SMATRIX(_isset)(_q,_m,_n)) {
+        SMATRIX(_insert)(_q,_m,_n,_v);
+        return;
+    }
+
+    // set value
+    unsigned int i;
+    unsigned int j;
+    for (j=0; j<_q->num_mlist[_m]; j++) {
+        if (_q->mlist[_m][j] == _n)
+            _q->mvals[_m][j] = _v;
+    }
+
+    for (i=0; i<_q->num_nlist[_n]; i++) {
+        if (_q->nlist[_n][i] == _m)
+            _q->nvals[_n][i] = _v;
+    }
+}
+
+
+// get element value at index (return zero if not set)
+T SMATRIX(_get)(SMATRIX()    _q,
+                unsigned int _m,
+                unsigned int _n)
+{
+    // validate input
+    if (_m >= _q->M || _n >= _q->N) {
+        fprintf(stderr,"error: SMATRIX(_get)(%u,%u), index exceeds matrix dimension (%u,%u)\n",
                 _m, _n, _q->M, _q->N);
         exit(1);
     }

@@ -562,20 +562,28 @@ void SMATRIX(_print_expanded)(SMATRIX() _q);                    \
 /* zero all elements */                                         \
 void SMATRIX(_zero)(SMATRIX() _q);                              \
                                                                 \
-/* get/set/clear element at index */                            \
-T SMATRIX(_get)(SMATRIX()    _q,                                \
-                unsigned int _m,                                \
-                unsigned int _n);                               \
+/* determine if value has been set (allocated memory) */        \
+int SMATRIX(_isset)(SMATRIX()    _q,                            \
+                    unsigned int _m,                            \
+                    unsigned int _n);                           \
+                                                                \
+/* inserts/deletes element at index (memory allocation) */      \
+void SMATRIX(_insert)(SMATRIX()    _q,                          \
+                      unsigned int _m,                          \
+                      unsigned int _n,                          \
+                      T            _v);                         \
+void SMATRIX(_delete)(SMATRIX()    _q,                          \
+                      unsigned int _m,                          \
+                      unsigned int _n);                         \
+                                                                \
+/* sets/gets the value (with memory allocation if needed) */    \
 void SMATRIX(_set)(SMATRIX()    _q,                             \
                    unsigned int _m,                             \
                    unsigned int _n,                             \
                    T            _v);                            \
-void SMATRIX(_clear)(SMATRIX() _q,                              \
-                     unsigned int _m,                           \
-                     unsigned int _n);                          \
-int SMATRIX(_isset)(SMATRIX()    _q,                            \
-                    unsigned int _m,                            \
-                    unsigned int _n);                           \
+T SMATRIX(_get)(SMATRIX()    _q,                                \
+                unsigned int _m,                                \
+                unsigned int _n);                               \
                                                                 \
 /* initialize to identity matrix */                             \
 void SMATRIX(_eye)(SMATRIX() _q);                               \
