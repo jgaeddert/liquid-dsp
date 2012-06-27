@@ -25,12 +25,12 @@
 // sparse matrix structure
 // example: the following floating-point sparse matrix is represented
 //          with the corresponding values:
-//  0   0   0   0   0
-//  0 2.3   0   0   0
-//  0   0   0   0 1.2
-//  0   0   0   0   0
-//  0 3.4   0 4.4   0
-//  0   0   0   0   0
+//    [ 0   0   0   0   0 ]
+//    [ 0 2.3   0   0   0 ]
+//    [ 0   0   0   0 1.2 ]
+//    [ 0   0   0   0   0 ]
+//    [ 0 3.4   0 4.4   0 ]
+//    [ 0   0   0   0   0 ]
 //
 //  M (rows)        :   6
 //  N (cols)        :   5
@@ -42,11 +42,17 @@
 //  num_nlist       :   { 0, 2, 0, 1, 1 }
 //  max_num_mlist   :   2
 //  max_num_nlist   :   2
+//
+// NOTE: while this particular example does not show a particular
+//       improvement in memory use, such a case can be made for
+//       extremely large matrices which only have a few non-zero
+//       entries.
+//
 struct SMATRIX(_s) {
     unsigned int M;                 // number of rows
     unsigned int N;                 // number of columns
-    unsigned short int ** mlist;    // list of non-zero elements in each row
-    unsigned short int ** nlist;    // list of non-zero elements in each col
+    unsigned short int ** mlist;    // list of non-zero col indices in each row
+    unsigned short int ** nlist;    // list of non-zero row indices in each col
     T ** mvals;                     // list of non-zero values in each row
     T ** nvals;                     // list of non-zero values in each col
     unsigned int * num_mlist;       // weight of each row, m
@@ -98,6 +104,7 @@ SMATRIX() SMATRIX(_create)(unsigned int _M,
 }
 
 // create _M x _N matrix, initialized on array
+// TODO : add tolerance for floating-point matrices
 SMATRIX() SMATRIX(_create_array)(T *          _v,
                                  unsigned int _m,
                                  unsigned int _n)
