@@ -470,15 +470,10 @@ void SMATRIX(_mul)(SMATRIX() _a,
     unsigned int i;
     unsigned int j;
 
-    T p;            // running sum
-    unsigned int num_multiplications;
-
-#if 1
     for (r=0; r<_c->M; r++) {
         
         // find number of non-zero entries in row 'r' of matrix '_a'
         unsigned int nnz_a_r = _a->num_mlist[r];
-        printf("row = %3u : %3u\n", r, nnz_a_r);
 
         // if this number is zero, there will not be any non-zero
         // entries in the corresponding row of the output matrix '_c'
@@ -486,17 +481,15 @@ void SMATRIX(_mul)(SMATRIX() _a,
             continue;
         
         for (c=0; c<_c->N; c++) {
-            printf("  col = %3u\n", c);
 
             // find number of non-zero entries in column 'c' of matrix '_b'
             unsigned int nnz_b_c = _b->num_nlist[c];
 
-            p = 0;
-            num_multiplications = 0;
+            T p = 0;
+            int set_value = 0;
 
             // find common elements between non-zero elements in
             // row 'r' of matrix '_a' and col 'c' of matrix '_b'
-
             for (i=0; i<nnz_a_r; i++) {
                 // for each non-zero entry in row 'r' of matrix '_a',
                 // determine if there are any corresponding non-zero
@@ -504,50 +497,17 @@ void SMATRIX(_mul)(SMATRIX() _a,
 
                 for (j=0; j<nnz_b_c; j++) {
                     if (_a->mlist[r][i] == _b->nlist[c][j]) {
-                        printf("  multiplying a(%3u,%3u) * b(%3u,%3u) ->",
-                                r,_a->mlist[r][i],_b->nlist[c][j],c);
-#if SMATRIX_FLOAT
-                        printf("%6.2f * %6.2f", _a->mvals[r][i], _b->nvals[c][j]);
-#endif
-                        printf("\n");
                         p += _a->mvals[r][i] * _b->nvals[c][j];
-                        num_multiplications++;
+                        set_value = 1;
                     }
                 }
             }
 
-            printf("  num multiplications: %3u, p=", num_multiplications);
-#if SMATRIX_FLOAT
-            printf("%6.2f", p);
-#endif
-            printf("\n");
-
-            if (num_multiplications > 0) {
-                printf("  >> setting c(%3u,%3u) = ", r, c);
-#if SMATRIX_FLOAT
-                printf("%6.2f", p);
-#endif
-                printf("\n");
+            // set value if any multiplications have been mad
+            if (set_value)
                 SMATRIX(_set)(_c, r, c, p);
-            }
         }
     }
-#else
-    // super slow method
-    for (r=0; r<_c->M; r++) {
-        
-        for (c=0; c<_c->N; c++) {
-
-            p = 0;
-            num_multiplications = 0;
-
-            for (i=0; i<_a->N; i++) {
-                p += SMATRIX(_get)(_a, r, i) * SMATRIX(_get)(_b, i, c);
-            }
-            SMATRIX(_set)(_c, r, c, p);
-        }
-    }
-#endif
 }
 
 // multiply by vector
