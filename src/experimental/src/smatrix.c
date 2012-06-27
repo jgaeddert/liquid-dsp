@@ -449,7 +449,7 @@ void SMATRIX(_eye)(SMATRIX() _q)
         SMATRIX(_set)(_q, i, i, 1);
 }
 
-// multiply two sparse binary matrices
+// multiply two sparse matrices
 void SMATRIX(_mul)(SMATRIX() _a,
                    SMATRIX() _b,
                    SMATRIX() _c)
@@ -461,6 +461,7 @@ void SMATRIX(_mul)(SMATRIX() _a,
     }
 
     // clear output matrix
+    // TODO: just set all values to zero; don't unallocate memory
     SMATRIX(_zero)(_c);
 
     unsigned int r; // output row
@@ -470,39 +471,60 @@ void SMATRIX(_mul)(SMATRIX() _a,
     unsigned int j;
 
     T p;            // running sum
+    unsigned int num_multiplications;
 
+#if 0
     for (r=0; r<_c->M; r++) {
+        
+        // find number of non-zero entries in row 'r' of matrix '_a'
+        unsigned int nnz_a_r = _a->num_mlist[r];
+        printf("%3u : %3u\n", r, nnz_a_r);
+
+        // if this number is zero, there will not be any non-zero
+        // entries in the corresponding row of the output matrix '_c'
+        if (nnz_a_r == 0)
+            continue;
+        
+        for (c=0; c<_c->N; c++) {
+
+            // find number of non-zero entries in column 'c' of matrix '_b'
+            unsigned int nnz_b_c = _b->num_nlist[c];
+
+            p = 0;
+            num_multiplications = 0;
+
+            // find common elements between non-zero elements in
+            // row 'r' of matrix '_a' and col 'c' of matrix '_b'
+
+            for (i=0; i<nnz_a_r; i++) {
+                // for each non-zero entry in row 'r' of matrix '_a',
+                // determine if there are any corresponding non-zero
+                // entries in the columns of matrix '_b'
+
+                //for (j=0; j<_b->num_nlist[c]; j++) {
+                //}
+            }
+        }
+    }
+#else
+    // super slow method
+    for (r=0; r<_c->M; r++) {
+        
         for (c=0; c<_c->N; c++) {
 
             p = 0;
-            // find common elements between non-zero elements in
-            // row 'r' of matrix '_a' and col 'c' of matrix '_b'
-#if 0
-            // 'get' value for each index (slow method)
-            for (i=0; i<_a->N; i++)
-                p += SMATRIX(_get)(_a,r,i) & SMATRIX(_get)(_b,i,c);
-#else
-            // parse lists looking for commonality
-            for (i=0; i<_a->num_mlist[r]; i++) {
-                for (j=0; j<_b->num_nlist[c]; j++) {
-                    //p += (_a->mlist[r][i] == _b->nlist[c][j]) ? 1 : 0;
-                    p += _a->mlist[r][i] * _b->nlist[c][j];
-                }
+            num_multiplications = 0;
+
+            for (i=0; i<_a->N; i++) {
+                p += SMATRIX(_get)(_a, r, i) * SMATRIX(_get)(_b, i, c);
             }
-#endif
-            // set value appropriately based on matrix type
-#if SMATRIX_BOOL
-            // set output (modulo 2)
-            if ( p % 2 )
-                SMATRIX(_set)(_c, r, c, 1);
-#else
             SMATRIX(_set)(_c, r, c, p);
-#endif
         }
     }
+#endif
 }
 
-// multiply by vector (modulo 2)
+// multiply by vector
 //  _q  :   sparse matrix
 //  _x  :   input vector [size: _N x 1]
 //  _y  :   output vector [size: _M x 1]

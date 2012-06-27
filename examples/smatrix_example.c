@@ -186,6 +186,8 @@ int main(int argc, char*argv[])
     smatrixf_set(b, 0,1, 6);
     smatrixf_set(b, 3,1, 5);
 
+    printf("a:\n"); smatrixf_print(a); //smatrixf_print_expanded(a);
+    printf("b:\n"); smatrixf_print(b); //smatrixf_print_expanded(b);
     // compute 'c'
     //  0   0   0
     //  0   0   0
@@ -194,8 +196,6 @@ int main(int argc, char*argv[])
     smatrixf_mul(a,b,c);
 
     // print results
-    printf("a:\n"); smatrixf_print_expanded(a);
-    printf("b:\n"); smatrixf_print_expanded(b);
     printf("c:\n"); smatrixf_print_expanded(c);
 
     smatrixf_destroy(a);
