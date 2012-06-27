@@ -26,32 +26,37 @@
 void smatrixf_mul_bench(struct rusage *     _start,
                         struct rusage *     _finish,
                         unsigned long int * _num_iterations,
-                        unsigned int        _m)
+                        unsigned int        _n)
 {
+    // normalize number of iterations
+    // time ~ _n ^ 3
+    *_num_iterations /= _n * _n * _n;
+    if (*_num_iterations < 1) *_num_iterations = 1;
+
     unsigned long int i;
 
     // generate random matrices
-    smatrixf a = smatrixf_create(_m, _m);
-    smatrixf b = smatrixf_create(_m, _m);
-    smatrixf c = smatrixf_create(_m, _m);
+    smatrixf a = smatrixf_create(_n, _n);
+    smatrixf b = smatrixf_create(_n, _n);
+    smatrixf c = smatrixf_create(_n, _n);
 
     // number of random non-zero entries
-    unsigned int nnz = _m / 10 < 5 ? 5 : _m / 10;
+    unsigned int nnz = _n / 20 < 4 ? 4 : _n / 20;
 
     // initialize _a
     for (i=0; i<nnz; i++) {
-        unsigned int r = rand() % _m;
-        unsigned int c = rand() % _m;
-        float value    = randf();
-        smatrixf_set(a, r,c, value);
+        unsigned int row = rand() % _n;
+        unsigned int col = rand() % _n;
+        float value      = randf();
+        smatrixf_set(a, row, col, value);
     }
     
-    // initialize _a
+    // initialize _b
     for (i=0; i<nnz; i++) {
-        unsigned int r = rand() % _m;
-        unsigned int c = rand() % _m;
-        float value    = randf();
-        smatrixf_set(b, r,c, value);
+        unsigned int row = rand() % _n;
+        unsigned int col = rand() % _n;
+        float value      = randf();
+        smatrixf_set(b, row, col, value);
     }
 
     // initialize c with first multiplication
@@ -80,9 +85,9 @@ void smatrixf_mul_bench(struct rusage *     _start,
     unsigned long int *_num_iterations) \
 { smatrixf_mul_bench(_start, _finish, _num_iterations, M); }
 
-void benchmark_smatrixf_mul_m32     SMATRIXF_MUL_BENCHMARK_API( 32)
-void benchmark_smatrixf_mul_m64     SMATRIXF_MUL_BENCHMARK_API( 64)
-void benchmark_smatrixf_mul_m128    SMATRIXF_MUL_BENCHMARK_API(128)
-void benchmark_smatrixf_mul_m256    SMATRIXF_MUL_BENCHMARK_API(256)
-void benchmark_smatrixf_mul_m512    SMATRIXF_MUL_BENCHMARK_API(512)
+void benchmark_smatrixf_mul_n32     SMATRIXF_MUL_BENCHMARK_API( 32)
+void benchmark_smatrixf_mul_n64     SMATRIXF_MUL_BENCHMARK_API( 64)
+void benchmark_smatrixf_mul_n128    SMATRIXF_MUL_BENCHMARK_API(128)
+void benchmark_smatrixf_mul_n256    SMATRIXF_MUL_BENCHMARK_API(256)
+void benchmark_smatrixf_mul_n512    SMATRIXF_MUL_BENCHMARK_API(512)
 

@@ -308,12 +308,12 @@ void SMATRIX(_insert)(SMATRIX()    _q,
     _q->nvals[_n] = (T*) realloc(_q->nvals[_n], _q->num_nlist[_n]*sizeof(T));
 
     // find index within list to insert new value
-    unsigned int mindex = smatrix_indexsearch(_q->mlist[_m], _q->num_mlist[_m]-1, _n);
-    unsigned int nindex = smatrix_indexsearch(_q->nlist[_n], _q->num_nlist[_n]-1, _m);
+    unsigned int mindex = 0; //smatrix_indexsearch(_q->mlist[_m], _q->num_mlist[_m]-1, _n);
+    unsigned int nindex = 0; //smatrix_indexsearch(_q->nlist[_n], _q->num_nlist[_n]-1, _m);
     //printf("inserting value (n=%3u) at m=%3u, index=%3u\n", _n, _m, mindex);
     //printf("inserting value (m=%3u) at n=%3u, index=%3u\n", _m, _n, nindex);
 
-    // insert indeces to appropriate place in list
+    // insert indices to appropriate place in list
     memmove(&_q->mlist[_m][mindex+1], &_q->mlist[_m][mindex], (_q->num_mlist[_m]-mindex-1)*sizeof(unsigned short int));
     memmove(&_q->nlist[_n][nindex+1], &_q->nlist[_n][nindex], (_q->num_nlist[_n]-nindex-1)*sizeof(unsigned short int));
     _q->mlist[_m][mindex] = _n;
