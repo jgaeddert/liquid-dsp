@@ -431,7 +431,7 @@ T SMATRIX(_get)(SMATRIX()    _q,
     unsigned int j;
     for (j=0; j<_q->num_mlist[_m]; j++) {
         if (_q->mlist[_m][j] == _n)
-            return 1;
+            return _q->mvals[_m][j];
     }
     return 0;
 }

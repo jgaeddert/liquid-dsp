@@ -11,7 +11,7 @@
 
 int main(int argc, char*argv[])
 {
-#if 1
+#if 0
     unsigned int M = 12;
     unsigned int N = 16;
 
@@ -57,6 +57,33 @@ int main(int argc, char*argv[])
     printf(" ];\n");
 
     smatrixb_destroy(q);
+#else
+    unsigned int M = 12;
+    unsigned int N = 12;
+
+    // create empty list
+    smatrixf q = smatrixf_create(M,N);
+
+    // set value(s)
+    smatrixf_set(q,1,2,  1.0f);
+    smatrixf_set(q,2,2,  2.0f);
+    smatrixf_set(q,2,3,  3.0f);
+    smatrixf_set(q,2,7,  4.0f);
+    smatrixf_set(q,2,8,  5.0f);
+    smatrixf_set(q,2,11, 6.0f);
+    smatrixf_delete(q,2,2);
+
+    printf("\ncompact form:\n");
+    smatrixf_print(q);
+
+    printf("\nexpanded form:\n");
+    smatrixf_print_expanded(q);
+
+    printf("\ncertain values:\n");
+    printf("  A[%2u,%2u] = %6.2f\n", 1, 1, smatrixf_get(q,1,1));
+    printf("  A[%2u,%2u] = %6.2f\n", 1, 2, smatrixf_get(q,1,2));
+
+    smatrixf_destroy(q);
 #endif
 
 #if 0
