@@ -573,6 +573,9 @@ void SMATRIX(_set)(SMATRIX()    _q,                             \
 void SMATRIX(_clear)(SMATRIX() _q,                              \
                      unsigned int _m,                           \
                      unsigned int _n);                          \
+int SMATRIX(_isset)(SMATRIX()    _q,                            \
+                    unsigned int _m,                            \
+                    unsigned int _n);                           \
                                                                 \
 /* initialize to identity matrix */                             \
 void SMATRIX(_eye)(SMATRIX() _q);                               \
@@ -595,7 +598,7 @@ void SMATRIX(_vmul)(SMATRIX() _q,                               \
 void SMATRIX(_reset_max_mlist)(SMATRIX() _q);                   \
 void SMATRIX(_reset_max_nlist)(SMATRIX() _q);                   \
 
-LIQUID_SMATRIX_DEFINE_API(SMATRIX_MANGLE_BOOL,  char)
+LIQUID_SMATRIX_DEFINE_API(SMATRIX_MANGLE_BOOL,  unsigned char)
 LIQUID_SMATRIX_DEFINE_API(SMATRIX_MANGLE_FLOAT, float)
 
 

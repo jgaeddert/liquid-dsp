@@ -9,7 +9,9 @@
 
 #include "liquid.internal.h"
 
-int main(int argc, char*argv[]) {
+int main(int argc, char*argv[])
+{
+#if 0
     unsigned int M = 12;
     unsigned int N = 16;
 
@@ -55,7 +57,9 @@ int main(int argc, char*argv[]) {
     printf(" ];\n");
 
     smatrixb_destroy(q);
+#endif
 
+#if 0
     // 
     // test matrix multiplication
     //
@@ -126,7 +130,51 @@ int main(int argc, char*argv[]) {
     smatrixb_destroy(a);
     smatrixb_destroy(b);
     smatrixb_destroy(c);
+#else
+    // 
+    // test matrix multiplication
+    //
+    smatrixf a = smatrixf_create(4, 5);
+    smatrixf b = smatrixf_create(5, 3);
+    smatrixf c = smatrixf_create(4, 3);
 
+    // initialize 'a'
+    // 0 0 0 0 4
+    // 0 0 0 0 0
+    // 0 0 0 3 0
+    // 2 0 0 0 1
+    smatrixf_set(a, 0,4, 4);
+    smatrixf_set(a, 2,3, 3);
+    smatrixf_set(a, 3,0, 2);
+    smatrixf_set(a, 3,4, 0);
+    smatrixf_set(a, 3,4, 1);
+
+    // initialize 'b'
+    // 7 6 0
+    // 0 0 0
+    // 0 0 0
+    // 0 5 0
+    // 0 0 0
+    smatrixf_set(b, 0,0, 7);
+    smatrixf_set(b, 0,1, 6);
+    smatrixf_set(b, 3,1, 5);
+
+    // compute 'c'
+    //  0   0   0
+    //  0   0   0
+    //  0  15   0
+    // 14  12   0
+    smatrixf_mul(a,b,c);
+
+    // print results
+    printf("a:\n"); smatrixf_print_expanded(a);
+    printf("b:\n"); smatrixf_print_expanded(b);
+    printf("c:\n"); smatrixf_print_expanded(c);
+
+    smatrixf_destroy(a);
+    smatrixf_destroy(b);
+    smatrixf_destroy(c);
+#endif
     printf("done.\n");
     return 0;
 }

@@ -22,6 +22,26 @@
 // sparse matrices
 //
 
+// sparse matrix structure
+// example: the following floating-point sparse matrix is represented
+//          with the corresponding values:
+//  0   0   0   0   0
+//  0 2.3   0   0   0
+//  0   0   0   0 1.2
+//  0   0   0   0   0
+//  0 3.4   0 4.4   0
+//  0   0   0   0   0
+//
+//  M (rows)        :   6
+//  N (cols)        :   5
+//  mlist           :   { {}, {1},   {4}, {},  {1,3}, {} }
+//  nlist           :   { {}, {1,4}, {},  {4}, {2} }
+//  mvals           :   { {}, {2.3}, {1.2}, {}, {3.4,4.4}, {} }
+//  nvals           :   { {}, {2.3, 3.4}, {}, {4.4}, {1.2} }
+//  num_mlist       :   { 0, 1, 1, 0, 2, 0 }
+//  num_nlist       :   { 0, 2, 0, 1, 1 }
+//  max_num_mlist   :   2
+//  max_num_nlist   :   2
 struct SMATRIX(_s) {
     unsigned int M;                 // number of rows
     unsigned int N;                 // number of columns
@@ -156,6 +176,25 @@ void SMATRIX(_print)(SMATRIX() _q)
             printf(" %u", _q->nlist[j][i]);
         printf("\n");
     }
+#if SMATRIX_FLOAT
+    // print mvals
+    printf("row values:\n");
+    for (i=0; i<_q->M; i++) {
+        printf("  %3u :", i);
+        for (j=0; j<_q->num_mlist[i]; j++)
+            printf(" %6.2f", _q->mvals[i][j]);
+        printf("\n");
+    }
+
+    // print nvals
+    printf("column values:\n");
+    for (j=0; j<_q->N; j++) {
+        printf("  %3u :", j);
+        for (i=0; i<_q->num_nlist[j]; i++)
+            printf(" %6.2f", _q->nvals[j][i]);
+        printf("\n");
+    }
+#endif
 }
 
 // print expanded form
@@ -169,6 +208,17 @@ void SMATRIX(_print_expanded)(SMATRIX() _q)
     for (i=0; i<_q->M; i++) {
         // reset counter
         t = 0;
+#if SMATRIX_FLOAT
+        for (j=0; j<_q->N; j++) {
+            if (t == _q->num_mlist[i])
+                printf(" %6s", "0");
+            else if (_q->mlist[i][t] == j) {
+                printf(" %6.2f", _q->mvals[i][t]);
+                t++;
+            } else
+                printf(" %6s", "0");
+        }
+#elif SMATRIX_BOOL
         for (j=0; j<_q->N; j++) {
             if (t == _q->num_mlist[i])
                 printf(" 0");
@@ -178,6 +228,9 @@ void SMATRIX(_print_expanded)(SMATRIX() _q)
             } else
                 printf(" 0");
         }
+#else
+#  error "invalid/unsupported primitive type"
+#endif
         printf("\n");
     }
 }
@@ -201,7 +254,8 @@ T SMATRIX(_get)(SMATRIX()    _q,
 {
     // validate input
     if (_m >= _q->M || _n >= _q->N) {
-        fprintf(stderr,"error: SMATRIX(_get)(), index exceeds matrix dimension\n");
+        fprintf(stderr,"error: SMATRIX(_get)(%u,%u), index exceeds matrix dimension (%u,%u)\n",
+                _m, _n, _q->M, _q->N);
         exit(1);
     }
 
@@ -221,26 +275,41 @@ void SMATRIX(_set)(SMATRIX()    _q,
 {
     // validate input
     if (_m >= _q->M || _n >= _q->N) {
-        fprintf(stderr,"error: SMATRIX(_set)(), index exceeds matrix dimension\n");
+        fprintf(stderr,"error: SMATRIX(_set)(%u,%u), index exceeds matrix dimension (%u,%u)\n",
+                _m, _n, _q->M, _q->N);
         exit(1);
     }
 
     // check to see if element is already set
-    if (SMATRIX(_get)(_q,_m,_n))
+#warning "smatrix_set(): known bug with non-boolean types"
+    if (SMATRIX(_isset)(_q,_m,_n)) {
+        // value already set; no need to re-allocate
+        // FIXME: need to update value appropriately
+        printf("value already set...\n");
         return;
+    }
 
     // increment list sizes
     _q->num_mlist[_m]++;
     _q->num_nlist[_n]++;
 
-    // reallocate lists at this index
+    // reallocate indices lists at this index
     _q->mlist[_m] = (unsigned short int*) realloc(_q->mlist[_m], _q->num_mlist[_m]*sizeof(unsigned short int));
     _q->nlist[_n] = (unsigned short int*) realloc(_q->nlist[_n], _q->num_nlist[_n]*sizeof(unsigned short int));
+    
+    // reallocat values lists at this index
+    _q->mvals[_m] = (T*) realloc(_q->mvals[_m], _q->num_mlist[_m]*sizeof(T));
+    _q->nvals[_n] = (T*) realloc(_q->nvals[_n], _q->num_nlist[_n]*sizeof(T));
 
     // append index to end of list
-    // TODO : insert index at appropriate point
+    // TODO : insert index at appropriate point (sorted)
     _q->mlist[_m][_q->num_mlist[_m]-1] = _n;
     _q->nlist[_n][_q->num_nlist[_n]-1] = _m;
+
+    // add value
+    // TODO : insert value at appropriate point (sorted)
+    _q->mvals[_m][_q->num_mlist[_m]-1] = _v;
+    _q->nvals[_n][_q->num_nlist[_n]-1] = _v;
 
     // update maximum
     if (_q->num_mlist[_m] > _q->max_num_mlist) _q->max_num_mlist = _q->num_mlist[_m];
@@ -248,9 +317,9 @@ void SMATRIX(_set)(SMATRIX()    _q,
 }
 
 // clear element at index
-void SMATRIX(_clear)(SMATRIX() _q,
-                   unsigned int _m,
-                   unsigned int _n)
+void SMATRIX(_clear)(SMATRIX()    _q,
+                     unsigned int _m,
+                     unsigned int _n)
 {
     // validate input
     if (_m > _q->M || _n > _q->N) {
@@ -259,7 +328,7 @@ void SMATRIX(_clear)(SMATRIX() _q,
     }
 
     // check to see if element is already set
-    if (!SMATRIX(_get)(_q,_m,_n))
+    if (!SMATRIX(_isset)(_q,_m,_n))
         return;
 
     // remove value from mlist (shift left)
@@ -298,6 +367,26 @@ void SMATRIX(_clear)(SMATRIX() _q,
         SMATRIX(_reset_max_nlist)(_q);
 }
 
+// determine if element is set
+int SMATRIX(_isset)(SMATRIX()    _q,
+                    unsigned int _m,
+                    unsigned int _n)
+{
+    // validate input
+    if (_m >= _q->M || _n >= _q->N) {
+        fprintf(stderr,"error: SMATRIX(_isset)(%u,%u), index exceeds matrix dimension (%u,%u)\n",
+                _m, _n, _q->M, _q->N);
+        exit(1);
+    }
+
+    unsigned int j;
+    for (j=0; j<_q->num_mlist[_m]; j++) {
+        if (_q->mlist[_m][j] == _n)
+            return 1;
+    }
+    return 0;
+}
+
 // initialize to identity matrix
 void SMATRIX(_eye)(SMATRIX() _q)
 {
@@ -331,7 +420,7 @@ void SMATRIX(_mul)(SMATRIX() _a,
     unsigned int i;
     unsigned int j;
 
-    unsigned int p; // running binary sum
+    T p;            // running sum
 
     for (r=0; r<_c->M; r++) {
         for (c=0; c<_c->N; c++) {
@@ -346,14 +435,20 @@ void SMATRIX(_mul)(SMATRIX() _a,
 #else
             // parse lists looking for commonality
             for (i=0; i<_a->num_mlist[r]; i++) {
-                for (j=0; j<_b->num_nlist[c]; j++)
-                    p += (_a->mlist[r][i] == _b->nlist[c][j]) ? 1 : 0;
+                for (j=0; j<_b->num_nlist[c]; j++) {
+                    //p += (_a->mlist[r][i] == _b->nlist[c][j]) ? 1 : 0;
+                    p += _a->mlist[r][i] * _b->nlist[c][j];
+                }
             }
 #endif
-            // FIXME: set value appropriately based on matrix type
+            // set value appropriately based on matrix type
+#if SMATRIX_BOOL
             // set output (modulo 2)
-            if ( p & 0x001 )
+            if ( p % 2 )
                 SMATRIX(_set)(_c, r, c, 1);
+#else
+            SMATRIX(_set)(_c, r, c, p);
+#endif
         }
     }
 }
@@ -377,11 +472,14 @@ void SMATRIX(_vmul)(SMATRIX() _q,
     for (j=0; j<_q->N; j++) {
         if (_x[j]) {
             for (i=0; i<_q->num_nlist[j]; i++) {
-#if T == float
                 // FIXME: compute appropriate output
+#if SMATRIX_FLOAT
+#  warning "smatrixf_vmul(), not yet implemented"
                 _y[ _q->nlist[j][i] ] = 0.f;
-#else
+#elif SMATRIX_INT
+#elif SMATRIX_BOOL
                 _y[ _q->nlist[j][i] ] ^= 1; // add 1 (modulo 2)
+#else
 #endif
             }
         }

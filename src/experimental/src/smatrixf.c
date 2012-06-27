@@ -32,5 +32,10 @@
 // primitive type
 #define T                   float
 
+// category (float/int/bool)
+#define SMATRIX_FLOAT       1
+#define SMATRIX_INT         0
+#define SMATRIX_BOOL        0
+
 // source files
 #include "smatrix.c"

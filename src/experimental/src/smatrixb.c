@@ -30,7 +30,12 @@
 #define SMATRIX(name)       LIQUID_CONCAT(smatrixb,name)
 
 // primitive type
-#define T                   char
+#define T                   unsigned char
+
+// category (float/int/bool)
+#define SMATRIX_FLOAT       0
+#define SMATRIX_INT         0
+#define SMATRIX_BOOL        1
 
 // source files
 #include "smatrix.c"
