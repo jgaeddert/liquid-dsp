@@ -1,6 +1,6 @@
 /*
- * Copyright (c) 2012 Joseph Gaeddert
- * Copyright (c) 2012 Virginia Polytechnic Institute & State University
+ * Copyright (c) 2012, Joseph Gaeddert
+ * Copyright (c) 2012, Virginia Polytechnic Institute & State University
  *
  * This file is part of liquid.
  *
@@ -18,25 +18,24 @@
  * along with liquid.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+// 
+// sparse matrices: common methods
 //
-// sparse matrix API: boolean
-//
 
-#include <stdlib.h>
-#include <stdio.h>
-#include <string.h>
-#include "liquid.internal.h"
+// search for index placement in list
+unsigned short int smatrix_indexsearch(unsigned short int * _list,
+                                       unsigned int         _num_elements,
+                                       unsigned short int   _value)
+{
+    // TODO: use bisection method
+    
+    unsigned int i;
+    for (i=0; i<_num_elements; i++) {
+        if (_list[i] > _value)
+            break;
+    }
 
-// name-mangling macro
-#define SMATRIX(name)       LIQUID_CONCAT(smatrixb,name)
+    //
+    return i;
+}
 
-// primitive type
-#define T                   unsigned char
-
-// category (float/int/bool)
-#define SMATRIX_FLOAT       0
-#define SMATRIX_INT         0
-#define SMATRIX_BOOL        1
-
-// source files
-#include "smatrix.c"

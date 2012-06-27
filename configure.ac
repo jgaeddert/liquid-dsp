@@ -84,6 +84,7 @@ AC_ARG_ENABLE(experimental,
             src/experimental/src/ofdmoqamframe.common.o \
             src/experimental/src/ofdmoqamframegen.o \
             src/experimental/src/ofdmoqamframesync.o \
+            src/experimental/src/smatrix.common.o \
             src/experimental/src/smatrixb.o \
             src/experimental/src/smatrixf.o \
             src/experimental/src/ricek_channel.o"

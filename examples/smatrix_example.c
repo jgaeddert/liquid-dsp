@@ -11,7 +11,7 @@
 
 int main(int argc, char*argv[])
 {
-#if 0
+#if 1
     unsigned int M = 12;
     unsigned int N = 16;
 
@@ -25,7 +25,7 @@ int main(int argc, char*argv[])
     smatrixb_set(q,2,7,  1);
     smatrixb_set(q,2,8,  1);
     smatrixb_set(q,2,11, 1);
-    smatrixb_clear(q,2,2);
+    smatrixb_delete(q,2,2);
 
     printf("\ncompact form:\n");
     smatrixb_print(q);

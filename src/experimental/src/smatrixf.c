@@ -24,6 +24,7 @@
 
 #include <stdlib.h>
 #include <stdio.h>
+#include <string.h>
 #include "liquid.internal.h"
 
 // macro
