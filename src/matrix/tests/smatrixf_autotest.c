@@ -27,6 +27,44 @@
 // AUTOTESTS: basic sparse matrix functionality
 //
 
+// test sparse floating-point vector multiplication
+void autotest_smatrixf_vmul()
+{
+    float tol = 1e-6f;
+
+    // A = [
+    //  0 0 0 0 4
+    //  0 0 0 0 0
+    //  0 0 0 3 0
+    //  2 0 0 0 1
+
+    // create sparse matrix and set values
+    smatrixf A = smatrixf_create(4, 5);
+    smatrixf_set(A, 0,4, 4);
+    smatrixf_set(A, 2,3, 3);
+    smatrixf_set(A, 3,0, 2);
+    smatrixf_set(A, 3,4, 0);
+    smatrixf_set(A, 3,4, 1);
+
+    // initialize input vector
+    float x[5] = {7, 1, 5, 2, 2};
+
+    float y_test[4] = {8, 0, 6, 16};
+    float y[4];
+
+    // multiply and run test
+    smatrixf_vmul(A,x,y);
+
+    // check values
+    unsigned int i;
+    unsigned int j;
+    CONTEND_DELTA( y[0], y_test[0], tol );
+    CONTEND_DELTA( y[1], y_test[1], tol );
+    CONTEND_DELTA( y[2], y_test[2], tol );
+    CONTEND_DELTA( y[3], y_test[3], tol );
+
+    smatrixf_destroy(A);
+}
 // test sparse floating-point matrix multiplication
 void autotest_smatrixf_mul()
 {
