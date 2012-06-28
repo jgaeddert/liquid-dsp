@@ -86,7 +86,7 @@ int main(int argc, char*argv[])
     smatrixf_destroy(q);
 #endif
 
-#if 0
+#if 1
     // 
     // test matrix multiplication
     //

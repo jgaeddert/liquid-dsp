@@ -230,7 +230,7 @@ void SMATRIX(_print_expanded)(SMATRIX() _q)
             if (t == _q->num_mlist[i])
                 printf(" 0");
             else if (_q->mlist[i][t] == j) {
-                printf(" 1");
+                printf(" %1u", _q->mvals[i][t]);
                 t++;
             } else
                 printf(" 0");
@@ -503,9 +503,15 @@ void SMATRIX(_mul)(SMATRIX() _a,
                 }
             }
 
-            // set value if any multiplications have been mad
-            if (set_value)
+            // set value if any multiplications have been made
+            if (set_value) {
+#if SMATRIX_BOOL
+                // set result modulo 2
+                SMATRIX(_set)(_c, r, c, p % 2);
+#else
                 SMATRIX(_set)(_c, r, c, p);
+#endif
+            }
         }
     }
 }
