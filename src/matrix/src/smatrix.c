@@ -169,6 +169,8 @@ void SMATRIX(_print)(SMATRIX() _q)
     // print mlist
     printf("row indices:\n");
     for (i=0; i<_q->M; i++) {
+        if (_q->num_mlist[i] == 0)
+            continue;
         printf("  %3u :", i);
         for (j=0; j<_q->num_mlist[i]; j++)
             printf(" %u", _q->mlist[i][j]);
@@ -178,6 +180,8 @@ void SMATRIX(_print)(SMATRIX() _q)
     // print nlist
     printf("column indices:\n");
     for (j=0; j<_q->N; j++) {
+        if (_q->num_nlist[j] == 0)
+            continue;
         printf("  %3u :", j);
         for (i=0; i<_q->num_nlist[j]; i++)
             printf(" %u", _q->nlist[j][i]);
@@ -215,29 +219,16 @@ void SMATRIX(_print_expanded)(SMATRIX() _q)
     for (i=0; i<_q->M; i++) {
         // reset counter
         t = 0;
-#if SMATRIX_FLOAT
         for (j=0; j<_q->N; j++) {
-            if (t == _q->num_mlist[i])
-                printf(" %6s", "0");
-            else if (_q->mlist[i][t] == j) {
-                printf(" %6.2f", _q->mvals[i][t]);
+            if (t == _q->num_mlist[i]) {
+                PRINTVAL_ZERO();
+            } else if (_q->mlist[i][t] == j) {
+                PRINTVAL(_q->mvals[i][t]);
                 t++;
-            } else
-                printf(" %6s", "0");
+            } else {
+                PRINTVAL_ZERO();
+            }
         }
-#elif SMATRIX_BOOL
-        for (j=0; j<_q->N; j++) {
-            if (t == _q->num_mlist[i])
-                printf(" 0");
-            else if (_q->mlist[i][t] == j) {
-                printf(" 1");
-                t++;
-            } else
-                printf(" 0");
-        }
-#else
-#  error "invalid/unsupported primitive type"
-#endif
         printf("\n");
     }
 }

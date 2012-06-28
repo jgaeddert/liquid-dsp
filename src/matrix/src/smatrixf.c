@@ -38,5 +38,9 @@
 #define SMATRIX_INT         0
 #define SMATRIX_BOOL        0
 
+// print macros
+#define PRINTVAL_ZERO()     printf(" %6s", ".");
+#define PRINTVAL(V)         printf(" %6.2f", V);
+
 // source files
 #include "smatrix.c"
