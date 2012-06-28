@@ -2928,7 +2928,8 @@ void SMATRIX(_print)(SMATRIX() _q);                             \
 void SMATRIX(_print_expanded)(SMATRIX() _q);                    \
                                                                 \
 /* zero all elements */                                         \
-void SMATRIX(_zero)(SMATRIX() _q);                              \
+void SMATRIX(_clear)(SMATRIX() _q); /* zero and keep memory  */ \
+void SMATRIX(_reset)(SMATRIX() _q); /* zero and clear memory */ \
                                                                 \
 /* determine if value has been set (allocated memory) */        \
 int SMATRIX(_isset)(SMATRIX()    _q,                            \

@@ -242,8 +242,29 @@ void SMATRIX(_print_expanded)(SMATRIX() _q)
     }
 }
 
-// zero all elements
-void SMATRIX(_zero)(SMATRIX() _q)
+// zero all values, retaining memory allocation
+void SMATRIX(_clear)(SMATRIX() _q)
+{
+    unsigned int i;
+    unsigned int j;
+    
+    // clear row entries
+    for (i=0; i<_q->M; i++) {
+        for (j=0; j<_q->num_mlist[i]; j++) {
+            _q->mvals[i][j] = 0;
+        }
+    }
+
+    // clear colum entries
+    for (j=0; j<_q->N; j++) {
+        for (i=0; i<_q->num_nlist[j]; i++) {
+            _q->nvals[j][i] = 0;
+        }
+    }
+}
+
+// zero all values, clearing memory
+void SMATRIX(_reset)(SMATRIX() _q)
 {
     unsigned int i;
     unsigned int j;
@@ -439,8 +460,8 @@ T SMATRIX(_get)(SMATRIX()    _q,
 // initialize to identity matrix
 void SMATRIX(_eye)(SMATRIX() _q)
 {
-    // zero all elements
-    SMATRIX(_zero)(_q);
+    // reset all elements
+    SMATRIX(_reset)(_q);
 
     // set values along diagonal
     unsigned int i;
@@ -460,9 +481,8 @@ void SMATRIX(_mul)(SMATRIX() _a,
         exit(1);
     }
 
-    // clear output matrix
-    // TODO: just set all values to zero; don't unallocate memory
-    SMATRIX(_zero)(_c);
+    // clear output matrix (retain memory allocation)
+    SMATRIX(_clear)(_c);
 
     unsigned int r; // output row
     unsigned int c; // output column
