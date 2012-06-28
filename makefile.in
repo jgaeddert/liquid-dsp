@@ -643,6 +643,9 @@ matrix_objects :=						\
 	src/matrix/src/matrixf.o				\
 	src/matrix/src/matrixc.o				\
 	src/matrix/src/matrixcf.o				\
+	src/matrix/src/smatrix.common.o				\
+	src/matrix/src/smatrixb.o				\
+	src/matrix/src/smatrixf.o				\
 
 
 matrix_includes :=						\
@@ -664,16 +667,22 @@ src/matrix/src/matrixf.o : %.o : %.c $(headers) $(matrix_includes)
 
 src/matrix/src/matrixcf.o : %.o : %.c $(headers) $(matrix_includes)
 
+src/matrix/src/smatrixb.o: %.o : %.c $(headers) src/matrix/src/smatrix.c
+
+src/matrix/src/smatrixf.o: %.o : %.c $(headers) src/matrix/src/smatrix.c
+
 
 
 matrix_autotests :=						\
 	src/matrix/tests/matrixcf_autotest.c			\
 	src/matrix/tests/matrixf_autotest.c			\
+	src/matrix/tests/smatrix_autotest.c			\
 
 
 matrix_benchmarks :=						\
 	src/matrix/bench/matrixf_inv_benchmark.c		\
 	src/matrix/bench/matrixf_mul_benchmark.c		\
+	src/matrix/bench/smatrixf_mul_benchmark.c		\
 
 
 # 
@@ -967,10 +976,6 @@ src/experimental/src/filter_rrrf.o: %.o : %.c $(headers) $(experimental_filter_i
 src/experimental/src/filter_crcf.o: %.o : %.c $(headers) $(experimental_filter_includes)
 
 src/experimental/src/filter_cccf.o: %.o : %.c $(headers) $(experimental_filter_includes)
-
-src/experimental/src/smatrixb.o: %.o : %.c $(headers) src/experimental/src/smatrix.c
-
-src/experimental/src/smatrixf.o: %.o : %.c $(headers) src/experimental/src/smatrix.c
 
 
 
@@ -1339,6 +1344,7 @@ example_programs :=						\
 	examples/resamp2_crcf_filter_example			\
 	examples/resamp2_crcf_interp_example			\
 	examples/scramble_example				\
+	examples/smatrix_example				\
 	examples/spgram_example					\
 	examples/symsync_crcf_example				\
 	examples/wdelayf_example				\

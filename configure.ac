@@ -84,13 +84,9 @@ AC_ARG_ENABLE(experimental,
             src/experimental/src/ofdmoqamframe.common.o \
             src/experimental/src/ofdmoqamframegen.o \
             src/experimental/src/ofdmoqamframesync.o \
-            src/experimental/src/smatrix.common.o \
-            src/experimental/src/smatrixb.o \
-            src/experimental/src/smatrixf.o \
             src/experimental/src/ricek_channel.o"
         EXPERIMENTAL_AUTOTESTS="src/experimental/tests/ann_autotest.c \
             src/experimental/tests/gport_autotest.c \
-            src/experimental/tests/smatrix_autotest.c \
             src/experimental/tests/channel_autotest.c"
 #           src/experimental/tests/ofdmoqam_autotest.c
         EXPERIMENTAL_BENCHMARKS="src/experimental/bench/dds_benchmark.c \
@@ -99,8 +95,7 @@ AC_ARG_ENABLE(experimental,
             src/experimental/bench/gport_ima_benchmark.c \
             src/experimental/bench/gport_ima_threaded_benchmark.c \
             src/experimental/bench/ofdmoqam_benchmark.c \
-            src/experimental/bench/qmfb_benchmark.c \
-            src/experimental/bench/smatrix_mul_benchmark.c"
+            src/experimental/bench/qmfb_benchmark.c "
         EXPERIMENTAL_EXAMPLES="examples/ann_bitpattern_example \
             examples/ann_example \
             examples/ann_layer_example \
@@ -125,7 +120,6 @@ AC_ARG_ENABLE(experimental,
             examples/qmfb_crcf_analysis_example \
             examples/qmfb_crcf_synthesis_example \
             examples/ricek_channel_example \
-            examples/smatrix_example \
             examples/symsync2_crcf_example \
             examples/symsynclp_crcf_example"
 #           examples/ofdmoqamframe64gen_example
