@@ -104,7 +104,6 @@ SMATRIX() SMATRIX(_create)(unsigned int _M,
 }
 
 // create _M x _N matrix, initialized on array
-// TODO : add tolerance for floating-point matrices
 SMATRIX() SMATRIX(_create_array)(T *          _v,
                                  unsigned int _m,
                                  unsigned int _n)
@@ -117,7 +116,7 @@ SMATRIX() SMATRIX(_create_array)(T *          _v,
     unsigned int j;
     for (i=0; i<_m; i++) {
         for (j=0; j<_n; j++) {
-            if (_v[i*_n + j])
+            if (_v[i*_n + j] != 0)
                 SMATRIX(_set)(q,i,j,_v[i*_n + j]);
         }
     }
@@ -233,8 +232,29 @@ void SMATRIX(_print_expanded)(SMATRIX() _q)
     }
 }
 
-// zero all elements
-void SMATRIX(_zero)(SMATRIX() _q)
+// zero all values, retaining memory allocation
+void SMATRIX(_clear)(SMATRIX() _q)
+{
+    unsigned int i;
+    unsigned int j;
+    
+    // clear row entries
+    for (i=0; i<_q->M; i++) {
+        for (j=0; j<_q->num_mlist[i]; j++) {
+            _q->mvals[i][j] = 0;
+        }
+    }
+
+    // clear colum entries
+    for (j=0; j<_q->N; j++) {
+        for (i=0; i<_q->num_nlist[j]; i++) {
+            _q->nvals[j][i] = 0;
+        }
+    }
+}
+
+// zero all values, clearing memory
+void SMATRIX(_reset)(SMATRIX() _q)
 {
     unsigned int i;
     unsigned int j;
@@ -430,8 +450,8 @@ T SMATRIX(_get)(SMATRIX()    _q,
 // initialize to identity matrix
 void SMATRIX(_eye)(SMATRIX() _q)
 {
-    // zero all elements
-    SMATRIX(_zero)(_q);
+    // reset all elements
+    SMATRIX(_reset)(_q);
 
     // set values along diagonal
     unsigned int i;
@@ -451,9 +471,8 @@ void SMATRIX(_mul)(SMATRIX() _a,
         exit(1);
     }
 
-    // clear output matrix
-    // TODO: just set all values to zero; don't unallocate memory
-    SMATRIX(_zero)(_c);
+    // clear output matrix (retain memory allocation)
+    SMATRIX(_clear)(_c);
 
     unsigned int r; // output row
     unsigned int c; // output column
@@ -494,9 +513,15 @@ void SMATRIX(_mul)(SMATRIX() _a,
                 }
             }
 
-            // set value if any multiplications have been mad
-            if (set_value)
+            // set value if any multiplications have been made
+            if (set_value) {
+#if SMATRIX_BOOL
+                // set result modulo 2
+                SMATRIX(_set)(_c, r, c, p % 2);
+#else
                 SMATRIX(_set)(_c, r, c, p);
+#endif
+            }
         }
     }
 }
@@ -516,26 +541,28 @@ void SMATRIX(_vmul)(SMATRIX() _q,
     for (i=0; i<_q->M; i++)
         _y[i] = 0;
 
-    // only compute necessary outputs
-    for (j=0; j<_q->N; j++) {
-        if (_x[j]) {
-            for (i=0; i<_q->num_nlist[j]; i++) {
-                // FIXME: compute appropriate output
-#if SMATRIX_FLOAT
-#  warning "smatrixf_vmul(), not yet implemented"
-                _y[ _q->nlist[j][i] ] = 0.f;
-#elif SMATRIX_INT
-#elif SMATRIX_BOOL
-                _y[ _q->nlist[j][i] ] ^= 1; // add 1 (modulo 2)
+    for (i=0; i<_q->M; i++) {
+
+        // running total
+        T p = 0;
+
+        // only compute multiplications on non-zero entries
+        for (j=0; j<_q->num_mlist[i]; j++)
+            p += _q->mvals[i][j] * _x[ _q->mlist[i][j] ];
+
+        // set output value appropriately
+#if SMATRIX_BOOL
+        _y[i] = p % 2;
 #else
+        _y[i] = p;
 #endif
-            }
-        }
     }
 }
 
-// semi-internal methods
 
+// 
+// internal methods
+//
 
 // find maximum mlist length
 void SMATRIX(_reset_max_mlist)(SMATRIX() _q)

@@ -2928,7 +2928,8 @@ void SMATRIX(_print)(SMATRIX() _q);                             \
 void SMATRIX(_print_expanded)(SMATRIX() _q);                    \
                                                                 \
 /* zero all elements */                                         \
-void SMATRIX(_zero)(SMATRIX() _q);                              \
+void SMATRIX(_clear)(SMATRIX() _q); /* zero and keep memory  */ \
+void SMATRIX(_reset)(SMATRIX() _q); /* zero and clear memory */ \
                                                                 \
 /* determine if value has been set (allocated memory) */        \
 int SMATRIX(_isset)(SMATRIX()    _q,                            \
@@ -2961,26 +2962,17 @@ void SMATRIX(_mul)(SMATRIX() _x,                                \
                    SMATRIX() _y,                                \
                    SMATRIX() _z);                               \
                                                                 \
-/* multiply by vector (modulo 2)            */                  \
+/* multiply by vector                       */                  \
 /*  _q  :   sparse matrix                   */                  \
 /*  _x  :   input vector [size: _N x 1]     */                  \
 /*  _y  :   output vector [size: _M x 1]    */                  \
 void SMATRIX(_vmul)(SMATRIX() _q,                               \
                     T *       _x,                               \
                     T *       _y);                              \
-                                                                \
-/* semi-internal methods */                                     \
-                                                                \
-void SMATRIX(_reset_max_mlist)(SMATRIX() _q);                   \
-void SMATRIX(_reset_max_nlist)(SMATRIX() _q);                   \
 
 LIQUID_SMATRIX_DEFINE_API(SMATRIX_MANGLE_BOOL,  unsigned char)
 LIQUID_SMATRIX_DEFINE_API(SMATRIX_MANGLE_FLOAT, float)
 
-// search for index placement in list
-unsigned short int smatrix_indexsearch(unsigned short int * _list,
-                                       unsigned int         _num_elements,
-                                       unsigned short int   _value);
 
 //
 // MODULE : modem (modulator/demodulator)

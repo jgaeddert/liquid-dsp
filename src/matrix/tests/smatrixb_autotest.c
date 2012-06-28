@@ -24,11 +24,11 @@
 #include "liquid.internal.h"
 
 // 
-// AUTOTESTS: basic encode/decode functionality
+// AUTOTESTS: basic sparse matrix functionality
 //
 
 // test sparse binary matrix methods
-void xautotest_fec_smatrix()
+void autotest_smatrixb_vmul()
 {
     // A = [
     //  1   0   0   0   0   0   0   0   0   0   0   0
@@ -111,7 +111,7 @@ void xautotest_fec_smatrix()
 }
 
 // test sparse binary matrix multiplication
-void xautotest_fec_smatrixb_mul()
+void autotest_smatrixb_mul()
 {
     // a: [8 x 12]
     unsigned char a_test[96] = {
@@ -178,63 +178,3 @@ void xautotest_fec_smatrixb_mul()
     smatrixb_destroy(c);
 }
 
-// test sparse floating-point matrix multiplication
-void autotest_smatrixf_mul()
-{
-    float tol = 1e-6f;
-
-    // intialize matrices
-    smatrixf a = smatrixf_create(4, 5);
-    smatrixf b = smatrixf_create(5, 3);
-    smatrixf c = smatrixf_create(4, 3);
-
-    // initialize 'a'
-    // 0 0 0 0 4
-    // 0 0 0 0 0
-    // 0 0 0 3 0
-    // 2 0 0 0 1
-    smatrixf_set(a, 0,4, 4);
-    smatrixf_set(a, 2,3, 3);
-    smatrixf_set(a, 3,0, 2);
-    smatrixf_set(a, 3,4, 0);
-    smatrixf_set(a, 3,4, 1);
-
-    // initialize 'b'
-    // 7 6 0
-    // 0 0 0
-    // 0 0 0
-    // 0 5 0
-    // 2 0 0
-    smatrixf_set(b, 0,0, 7);
-    smatrixf_set(b, 0,1, 6);
-    smatrixf_set(b, 3,1, 5);
-    smatrixf_set(b, 4,0, 2);
-
-    // compute 'c'
-    //  8   0   0
-    //  0   0   0
-    //  0  15   0
-    // 16  12   0
-    smatrixf_mul(a,b,c);
-
-    float c_test[12] = {
-         8,   0,   0,
-         0,   0,   0,
-         0,  15,   0,
-        16,  12,   0};
-
-    // check values
-    unsigned int i;
-    unsigned int j;
-    for (i=0; i<4; i++) {
-        for (j=0; j<3; j++) {
-            CONTEND_DELTA(smatrixf_get(c,i,j),
-                          matrixf_access(c_test,4,3,i,j),
-                          tol);
-        }
-    }
-
-    smatrixf_destroy(a);
-    smatrixf_destroy(b);
-    smatrixf_destroy(c);
-}

@@ -676,7 +676,8 @@ src/matrix/src/smatrixf.o: %.o : %.c $(headers) src/matrix/src/smatrix.c
 matrix_autotests :=						\
 	src/matrix/tests/matrixcf_autotest.c			\
 	src/matrix/tests/matrixf_autotest.c			\
-	src/matrix/tests/smatrix_autotest.c			\
+	src/matrix/tests/smatrixb_autotest.c			\
+	src/matrix/tests/smatrixf_autotest.c			\
 
 
 matrix_benchmarks :=						\
