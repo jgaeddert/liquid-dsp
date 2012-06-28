@@ -531,21 +531,21 @@ void SMATRIX(_vmul)(SMATRIX() _q,
     for (i=0; i<_q->M; i++)
         _y[i] = 0;
 
-    // only compute necessary outputs
-    for (j=0; j<_q->N; j++) {
-        if (_x[j]) {
-            for (i=0; i<_q->num_nlist[j]; i++) {
-                // FIXME: compute appropriate output
-#if SMATRIX_FLOAT
-#  warning "smatrixf_vmul(), not yet implemented"
-                _y[ _q->nlist[j][i] ] = 0.f;
-#elif SMATRIX_INT
-#elif SMATRIX_BOOL
-                _y[ _q->nlist[j][i] ] ^= 1; // add 1 (modulo 2)
+    for (i=0; i<_q->M; i++) {
+
+        // running total
+        T p = 0;
+
+        // only compute multiplications on non-zero entries
+        for (j=0; j<_q->num_mlist[i]; j++)
+            p += _q->mvals[i][j] * _x[ _q->mlist[i][j] ];
+
+        // set output value appropriately
+#if SMATRIX_BOOL
+        _y[i] = p % 2;
 #else
+        _y[i] = p;
 #endif
-            }
-        }
     }
 }
 
