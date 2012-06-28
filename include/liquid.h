@@ -2962,7 +2962,7 @@ void SMATRIX(_mul)(SMATRIX() _x,                                \
                    SMATRIX() _y,                                \
                    SMATRIX() _z);                               \
                                                                 \
-/* multiply by vector                       */                  \
+/* multiply sparse matrix by vector         */                  \
 /*  _q  :   sparse matrix                   */                  \
 /*  _x  :   input vector [size: _N x 1]     */                  \
 /*  _y  :   output vector [size: _M x 1]    */                  \
@@ -2972,6 +2972,18 @@ void SMATRIX(_vmul)(SMATRIX() _q,                               \
 
 LIQUID_SMATRIX_DEFINE_API(SMATRIX_MANGLE_BOOL,  unsigned char)
 LIQUID_SMATRIX_DEFINE_API(SMATRIX_MANGLE_FLOAT, float)
+
+// 
+// smatrix cross methods
+//
+
+// multiply sparse binary matrix by floating-point vector
+//  _q  :   sparse matrix
+//  _x  :   input vector [size: _N x 1]
+//  _y  :   output vector [size: _M x 1]
+void smatrixb_vmulf(smatrixb _q,
+                    float *  _x,
+                    float *  _y);
 
 
 //

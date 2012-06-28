@@ -44,3 +44,33 @@
 
 // source files
 #include "smatrix.c"
+
+// 
+// smatrix cross methods
+//
+
+// multiply sparse binary matrix by floating-point vector
+//  _q  :   sparse matrix
+//  _x  :   input vector [size: _N x 1]
+//  _y  :   output vector [size: _M x 1]
+void smatrixb_vmulf(smatrixb _q,
+                    float *  _x,
+                    float *  _y)
+{
+    unsigned int i;
+    unsigned int j;
+    
+    for (i=0; i<_q->M; i++) {
+
+        // running total
+        float p = 0.0f;
+
+        // only compute multiplications on non-zero entries
+        for (j=0; j<_q->num_mlist[i]; j++)
+            p += _q->mvals[i][j] * _x[ _q->mlist[i][j] ];
+
+        // set output value
+        _y[i] = p;
+    }
+}
+
