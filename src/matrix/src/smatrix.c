@@ -104,7 +104,6 @@ SMATRIX() SMATRIX(_create)(unsigned int _M,
 }
 
 // create _M x _N matrix, initialized on array
-// TODO : add tolerance for floating-point matrices
 SMATRIX() SMATRIX(_create_array)(T *          _v,
                                  unsigned int _m,
                                  unsigned int _n)
@@ -117,7 +116,7 @@ SMATRIX() SMATRIX(_create_array)(T *          _v,
     unsigned int j;
     for (i=0; i<_m; i++) {
         for (j=0; j<_n; j++) {
-            if (_v[i*_n + j])
+            if (_v[i*_n + j] != 0)
                 SMATRIX(_set)(q,i,j,_v[i*_n + j]);
         }
     }
