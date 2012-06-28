@@ -2961,26 +2961,17 @@ void SMATRIX(_mul)(SMATRIX() _x,                                \
                    SMATRIX() _y,                                \
                    SMATRIX() _z);                               \
                                                                 \
-/* multiply by vector (modulo 2)            */                  \
+/* multiply by vector                       */                  \
 /*  _q  :   sparse matrix                   */                  \
 /*  _x  :   input vector [size: _N x 1]     */                  \
 /*  _y  :   output vector [size: _M x 1]    */                  \
 void SMATRIX(_vmul)(SMATRIX() _q,                               \
                     T *       _x,                               \
                     T *       _y);                              \
-                                                                \
-/* semi-internal methods */                                     \
-                                                                \
-void SMATRIX(_reset_max_mlist)(SMATRIX() _q);                   \
-void SMATRIX(_reset_max_nlist)(SMATRIX() _q);                   \
 
 LIQUID_SMATRIX_DEFINE_API(SMATRIX_MANGLE_BOOL,  unsigned char)
 LIQUID_SMATRIX_DEFINE_API(SMATRIX_MANGLE_FLOAT, float)
 
-// search for index placement in list
-unsigned short int smatrix_indexsearch(unsigned short int * _list,
-                                       unsigned int         _num_elements,
-                                       unsigned short int   _value);
 
 //
 // MODULE : modem (modulator/demodulator)

@@ -543,8 +543,10 @@ void SMATRIX(_vmul)(SMATRIX() _q,
     }
 }
 
-// semi-internal methods
 
+// 
+// internal methods
+//
 
 // find maximum mlist length
 void SMATRIX(_reset_max_mlist)(SMATRIX() _q)
