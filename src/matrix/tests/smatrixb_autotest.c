@@ -232,6 +232,13 @@ void autotest_smatrixb_vmulf()
     smatrixb_vmulf(A,x,y);
 
     CONTEND_DELTA( y[0], y_test[0], tol );
+    CONTEND_DELTA( y[1], y_test[1], tol );
+    CONTEND_DELTA( y[2], y_test[2], tol );
+    CONTEND_DELTA( y[3], y_test[3], tol );
+    CONTEND_DELTA( y[4], y_test[4], tol );
+    CONTEND_DELTA( y[5], y_test[5], tol );
+    CONTEND_DELTA( y[6], y_test[6], tol );
+    CONTEND_DELTA( y[7], y_test[7], tol );
 
     // print results (verbose)
     if (liquid_autotest_verbose) {
