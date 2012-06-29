@@ -49,6 +49,43 @@
 // smatrix cross methods
 //
 
+// multiply sparse binary matrix by floating-point matrix
+//  _q  :   sparse matrix [size: A->M x A->N]
+//  _x  :   input vector  [size:  mx  x  nx ]
+//  _y  :   output vector [size:  my  x  ny ]
+void smatrixb_mulf(smatrixb     _A,
+                   float *      _x,
+                   unsigned int _mx,
+                   unsigned int _nx,
+                   float *      _y,
+                   unsigned int _my,
+                   unsigned int _ny)
+{
+    // ensure lengths are valid
+    if (_my != _A->M || _ny != _nx || _A->N != _mx ) {
+        fprintf(stderr,"error: matrix_mul(), invalid dimensions\n");
+        exit(1);
+    }
+    unsigned int i;
+    unsigned int j;
+
+    // clear output matrix
+    for (i=0; i<_my*_ny; i++)
+        _y[i] = 0.0f;
+
+    //
+    for (i=0; i<_A->M; i++) {
+        // find non-zero column entries in this row
+        unsigned int p;
+        for (p=0; p<_A->num_mlist[i]; p++) {
+            for (j=0; j<_ny; j++) {
+                //_y(i,j) += _x( _A->mlist[i][p], j);
+                _y[i*_ny + j] += _x[ _A->mlist[i][p]*_nx + j];
+            }
+        }
+    }
+}
+
 // multiply sparse binary matrix by floating-point vector
 //  _q  :   sparse matrix
 //  _x  :   input vector [size: _N x 1]

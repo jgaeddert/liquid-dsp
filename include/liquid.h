@@ -2977,6 +2977,18 @@ LIQUID_SMATRIX_DEFINE_API(SMATRIX_MANGLE_FLOAT, float)
 // smatrix cross methods
 //
 
+// multiply sparse binary matrix by floating-point matrix
+//  _q  :   sparse matrix [size: A->M x A->N]
+//  _x  :   input vector  [size:  mx  x  nx ]
+//  _y  :   output vector [size:  my  x  ny ]
+void smatrixb_mulf(smatrixb     _A,
+                   float *      _x,
+                   unsigned int _mx,
+                   unsigned int _nx,
+                   float *      _y,
+                   unsigned int _my,
+                   unsigned int _ny);
+
 // multiply sparse binary matrix by floating-point vector
 //  _q  :   sparse matrix
 //  _x  :   input vector [size: _N x 1]
