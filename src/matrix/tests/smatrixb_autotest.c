@@ -178,3 +178,86 @@ void autotest_smatrixb_mul()
     smatrixb_destroy(c);
 }
 
+// 
+void autotest_smatrixb_vmulf()
+{
+    // A = [
+    //  1   0   0   0   0   0   0   0   0   0   0   0
+    //  0   0   0   1   0   0   0   0   0   0   0   0
+    //  1   0   0   0   0   0   0   0   1   1   0   0
+    //  0   0   1   0   0   0   1   1   0   0   0   0
+    //  0   0   0   0   0   0   0   0   0   0   0   0
+    //  0   0   0   0   0   0   1   0   1   0   1   0
+    //  1   0   1   0   0   0   0   0   0   0   1   1
+    //  0   0   1   0   0   1   1   0   0   0   0   0]
+    //
+    // x = [3.4,-5.7, 0.3, 2.3, 1.9, 3.9, 2.3,-4.0,-0.5, 1.5,-0.6,-1.0]^T
+    // y = [3.4, 2.3, 4.4,-1.4, 0.0, 1.2, 2.1, 6.5]^T
+    //
+    
+    float tol = 1e-6f;
+
+    // create sparse matrix and set values
+    smatrixb A = smatrixb_create(8,12);
+    smatrixb_set(A,0,0,  1);
+    smatrixb_set(A,2,0,  1);
+    smatrixb_set(A,6,0,  1);
+    smatrixb_set(A,3,2,  1);
+    smatrixb_set(A,6,2,  1);
+    smatrixb_set(A,7,2,  1);
+    smatrixb_set(A,1,3,  1);
+    smatrixb_set(A,7,5,  1);
+    smatrixb_set(A,3,6,  1);
+    smatrixb_set(A,5,6,  1);
+    smatrixb_set(A,7,6,  1);
+    smatrixb_set(A,3,7,  1);
+    smatrixb_set(A,2,8,  1);
+    smatrixb_set(A,5,8,  1);
+    smatrixb_set(A,2,9,  1);
+    smatrixb_set(A,5,10, 1);
+    smatrixb_set(A,6,10, 1);
+    smatrixb_set(A,6,11, 1);
+
+    // generate vectors
+    float x[12] = {
+        3.4,  -5.7,   0.3,   2.3,   1.9,   3.9,
+        2.3,  -4.0,  -0.5,   1.5,  -0.6,  -1.0};
+
+    float y_test[8] = {
+        3.4,   2.3,   4.4,  -1.4,   0.0,   1.2,   2.1,   6.5};
+
+    float y[8];
+
+    // multiply and run test
+    smatrixb_vmulf(A,x,y);
+
+    CONTEND_DELTA( y[0], y_test[0], tol );
+
+    // print results (verbose)
+    if (liquid_autotest_verbose) {
+        printf("\ncompact form:\n");
+        smatrixb_print(A);
+
+        printf("\nexpanded form:\n");
+        smatrixb_print_expanded(A);
+
+        unsigned int i;
+        unsigned int j;
+
+        printf("x = [");
+        for (j=0; j<12; j++) printf("%8.4f", x[j]);
+        printf(" ];\n");
+
+        printf("y      = [");
+        for (i=0; i<8; i++) printf("%8.4f", y[i]);
+        printf(" ];\n");
+
+        printf("y_test = [");
+        for (i=0; i<8; i++) printf("%8.4f", y_test[i]);
+        printf(" ];\n");
+    }
+
+    // destroy matrix object
+    smatrixb_destroy(A);
+}
+
