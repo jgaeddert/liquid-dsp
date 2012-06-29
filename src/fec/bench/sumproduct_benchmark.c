@@ -64,7 +64,7 @@ void sumproduct_bench(struct rusage *     _start,
 
     // generate sparse binary matrices
     smatrixb G = smatrixb_create_array(Gs, _n, _m);
-    //smatrixb H = smatrixb_create_array(Hs, _m, _n);
+    smatrixb H = smatrixb_create_array(Hs, _m, _n);
 
     // print matrices
     //printf("G:\n"); smatrixb_print_expanded(G);
@@ -94,10 +94,10 @@ void sumproduct_bench(struct rusage *     _start,
     getrusage(RUSAGE_SELF, _start);
     int parity_pass;
     for (i=0; i<(*_num_iterations); i++) {
-        parity_pass = fec_sumproduct(Hs, _m, _n, LLR, c_hat, 1);
-        parity_pass = fec_sumproduct(Hs, _m, _n, LLR, c_hat, 1);
-        parity_pass = fec_sumproduct(Hs, _m, _n, LLR, c_hat, 1);
-        parity_pass = fec_sumproduct(Hs, _m, _n, LLR, c_hat, 1);
+        parity_pass = fec_sumproduct(_m, _n, H, LLR, c_hat, 1);
+        parity_pass = fec_sumproduct(_m, _n, H, LLR, c_hat, 1);
+        parity_pass = fec_sumproduct(_m, _n, H, LLR, c_hat, 1);
+        parity_pass = fec_sumproduct(_m, _n, H, LLR, c_hat, 1);
     }
     getrusage(RUSAGE_SELF, _finish);
     *_num_iterations *= 4;
