@@ -288,6 +288,7 @@ fec_benchmarks :=						\
 	src/fec/bench/fec_encode_benchmark.c			\
 	src/fec/bench/fec_decode_benchmark.c			\
 	src/fec/bench/fecsoft_decode_benchmark.c		\
+	src/fec/bench/sumproduct_benchmark.c			\
 
 # 
 # MODULE : fft - fast Fourier transforms, discrete sine/cosine transforms, etc.
