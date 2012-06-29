@@ -39,18 +39,18 @@ float sumproduct_phi(float _x) {
 
 // iterate over the sum-product algorithm:
 // returns 1 if parity checks, 0 otherwise
-//  _H          :   parity check matrix [size: _m x _n]
 //  _m          :   rows
 //  _n          :   cols
+//  _H          :   sparse binary parity check matrix [size: _m x _n]
 //  _LLR        :   received signal (soft bits, LLR) [size: _n x 1]
 //  _c_hat      :   estimated transmitted signal [size: _n x 1]
 //  _max_steps  :   maximum number of steps before bailing
-int fec_sumproduct(unsigned char * _H,
-                   unsigned int _m,
-                   unsigned int _n,
-                   float * _LLR,
+int fec_sumproduct(unsigned int    _m,
+                   unsigned int    _n,
+                   smatrixb        _H,
+                   float *         _LLR,
                    unsigned char * _c_hat,
-                   unsigned int _max_steps)
+                   unsigned int    _max_steps)
 {
     // TODO : validate input
     if (_n == 0 || _m == 0) {
@@ -77,9 +77,10 @@ int fec_sumproduct(unsigned char * _H,
 
     for (j=0; j<_m; j++) {
         for (i=0; i<_n; i++) {
-            Lq[j*_n+i] = _H[j*_n+i] ? Lc[i] : 0.0f;
+            Lq[j*_n+i] = smatrixb_get(_H,j,i) ? Lc[i] : 0.0f;
         }
     }
+
 #if DEBUG_SUMPRODUCT
     // print Lc
     matrixf_print(Lc,1,_n);
@@ -94,7 +95,8 @@ int fec_sumproduct(unsigned char * _H,
 #endif
 
         // step sum-product algorithm
-        parity_pass = fec_sumproduct_step(_H,_m,_n,_c_hat,Lq,Lr,Lc,LQ,parity);
+        //parity_pass = fec_sumproduct_step(_H,_m,_n,_c_hat,Lq,Lr,Lc,LQ,parity);
+        parity_pass = fec_sumproduct_step(_m,_n,_H,_c_hat,Lq,Lr,Lc,LQ,parity);
 
         // update...
         num_iterations++;
@@ -106,9 +108,9 @@ int fec_sumproduct(unsigned char * _H,
 }
 
 // sum-product algorithm, returns 1 if parity checks, 0 otherwise
-//  _H      :   parity check matrix [size: _m x _n]
 //  _m      :   rows
 //  _n      :   cols
+//  _H      :   sparse binary parity check matrix [size: _m x _n]
 //  _c_hat  :   estimated transmitted signal [size: _n x 1]
 //
 // internal state arrays
@@ -117,14 +119,14 @@ int fec_sumproduct(unsigned char * _H,
 //  _Lc     :   [size: _n x 1]
 //  _LQ     :   [size: _n x 1]
 //  _parity :   _H * _c_hat [size: _m x 1]
-int fec_sumproduct_step(unsigned char * _H,
-                        unsigned int _m,
-                        unsigned int _n,
+int fec_sumproduct_step(unsigned int    _m,
+                        unsigned int    _n,
+                        smatrixb        _H,
                         unsigned char * _c_hat,
-                        float * _Lq,
-                        float * _Lr,
-                        float * _Lc,
-                        float * _LQ,
+                        float *         _Lq,
+                        float *         _Lr,
+                        float *         _Lc,
+                        float *         _LQ,
                         unsigned char * _parity)
 {
     unsigned int i;
@@ -141,7 +143,8 @@ int fec_sumproduct_step(unsigned char * _H,
             alpha_prod = 1.0f;
             phi_sum    = 0.0f;
             for (ip=0; ip<_n; ip++) {
-                if (_H[j*_n+ip]==1 && i != ip) {
+                //if (_H[j*_n+ip]==1 && i != ip) {
+                if (smatrixb_get(_H,j,ip)==1 && i != ip) {
                     float alpha = _Lq[j*_n+ip] > 0.0f ? 1.0f : -1.0f;
                     float beta  = fabsf(_Lq[j*_n+ip]);
                     phi_sum += sumproduct_phi(beta);
@@ -167,7 +170,8 @@ int fec_sumproduct_step(unsigned char * _H,
             _Lq[j*_n+i] = _Lc[i];
 
             for (jp=0; jp<_m; jp++) {
-                if (_H[jp*_n+i]==1 && j != jp)
+                //if (_H[jp*_n+i]==1 && j != jp)
+                if (smatrixb_get(_H,jp,i)==1 && j != jp)
                     _Lq[j*_n+i] += _Lr[jp*_n+i];
             }
         }
@@ -183,7 +187,8 @@ int fec_sumproduct_step(unsigned char * _H,
         _LQ[i] = _Lc[i];  // initialize with LLR value
 
         for (j=0; j<_m; j++) {
-            if (_H[j*_n+i]==1)
+            //if (_H[j*_n+i]==1)
+            if (smatrixb_get(_H,j,i)==1)
                 _LQ[i] += _Lr[j*_n+i];
         }
     }
@@ -198,16 +203,7 @@ int fec_sumproduct_step(unsigned char * _H,
         _c_hat[i] = _LQ[i] < 0.0f ? 1 : 0;
 
     // compute parity check: p = H*c_hat
-    for (j=0; j<_m; j++) {
-        _parity[j] = 0;
-
-        // 
-        for (i=0; i<_n; i++)
-            _parity[j] += _H[j*_n+i] * _c_hat[i];
-
-        // math is modulo 2
-        _parity[j] %= 2;
-    }
+    smatrixb_vmul(_H, _c_hat, _parity);
 
     // check parity
     parity_pass = 1;

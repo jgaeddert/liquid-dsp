@@ -14,11 +14,14 @@
 int main(int argc, char*argv[])
 {
     // parity check matrix
-    unsigned char H[32] = {
+    unsigned char Hb[32] = {
         1, 1, 1, 0, 0, 0, 0, 0,
         0, 0, 0, 1, 1, 1, 0, 0,
         1, 0, 0, 1, 0, 0, 1, 0,
         0, 1, 0, 0, 1, 0, 0, 1};
+
+    // convert H to sparse matrix
+    smatrixb H = smatrixb_create_array(Hb, 4, 8);
 
     // transmitted codeword
     unsigned char c[8] = {
@@ -43,7 +46,7 @@ int main(int argc, char*argv[])
     unsigned char c_hat[n];
 
     // run internal sum-product algorithm
-    int parity_pass = fec_sumproduct(H, m, n, LLR, c_hat, max_iterations);
+    int parity_pass = fec_sumproduct(m, n, H, LLR, c_hat, max_iterations);
 
     // compute errors and print results
     unsigned int num_errors = 0;
