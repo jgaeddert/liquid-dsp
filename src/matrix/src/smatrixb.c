@@ -62,15 +62,12 @@ void smatrixb_vmulf(smatrixb _q,
     
     for (i=0; i<_q->M; i++) {
 
-        // running total
-        float p = 0.0f;
+        // reset total
+        _y[i] = 0.0f;
 
-        // only compute multiplications on non-zero entries
+        // only accumulate values on non-zero entries
         for (j=0; j<_q->num_mlist[i]; j++)
-            p += _q->mvals[i][j] * _x[ _q->mlist[i][j] ];
-
-        // set output value
-        _y[i] = p;
+            _y[i] += _x[ _q->mlist[i][j] ];
     }
 }
 
