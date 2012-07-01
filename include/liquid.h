@@ -2927,6 +2927,11 @@ void SMATRIX(_print)(SMATRIX() _q);                             \
 /* print expanded form */                                       \
 void SMATRIX(_print_expanded)(SMATRIX() _q);                    \
                                                                 \
+/* query properties methods */                                  \
+void SMATRIX(_size)(SMATRIX()      _q,                          \
+                    unsigned int * _m,                          \
+                    unsigned int * _n);                         \
+                                                                \
 /* zero all elements */                                         \
 void SMATRIX(_clear)(SMATRIX() _q); /* zero and keep memory  */ \
 void SMATRIX(_reset)(SMATRIX() _q); /* zero and clear memory */ \

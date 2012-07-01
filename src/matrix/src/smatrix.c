@@ -232,6 +232,15 @@ void SMATRIX(_print_expanded)(SMATRIX() _q)
     }
 }
 
+// get matrix dimensions
+void SMATRIX(_size)(SMATRIX()      _q,
+                    unsigned int * _m,
+                    unsigned int * _n)
+{
+    *_m = _q->M;
+    *_n = _q->N;
+}
+
 // zero all values, retaining memory allocation
 void SMATRIX(_clear)(SMATRIX() _q)
 {
