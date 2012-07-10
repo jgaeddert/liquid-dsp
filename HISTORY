@@ -2,11 +2,15 @@
 Major improvements since v1.2.0
   * fft
     - general speed improvements
+  * matrix
+    - adding smatrix family of objects to facilitate operations on
+      sparse matrices
   * modem
     - complete code re-organization (no interface change)
   * multicarrier
     - adding OFDM framing option for window tapering
-    - simplfying OFDM framing for generating preamble symbols
+    - simplfying OFDM framing for generating preamble symbols (all
+      generated OFDM symbols are the same length)
 
 Major improvements for v1.2.0
   * dotprod
