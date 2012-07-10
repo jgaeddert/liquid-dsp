@@ -56,8 +56,6 @@ void autotest_smatrixf_vmul()
     smatrixf_vmul(A,x,y);
 
     // check values
-    unsigned int i;
-    unsigned int j;
     CONTEND_DELTA( y[0], y_test[0], tol );
     CONTEND_DELTA( y[1], y_test[1], tol );
     CONTEND_DELTA( y[2], y_test[2], tol );

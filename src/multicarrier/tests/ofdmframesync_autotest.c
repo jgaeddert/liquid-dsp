@@ -85,8 +85,6 @@ void ofdmframesync_acquire_test(unsigned int _num_subcarriers,
     ofdmframesync fs = ofdmframesync_create(M,cp_len,taper_len,p,ofdmframesync_autotest_callback,(void*)X_test);
 
     unsigned int i;
-    float complex s0[M];            // short PLCP sequence
-    float complex s1[M];            // long PLCP sequence
     float complex y[num_samples];   // frame samples
 
     // assemble full frame
