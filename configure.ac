@@ -1,6 +1,6 @@
 ## 
-## Copyright (c) 2007, 2008, 2009, 2010, 2011 Joseph Gaeddert
-## Copyright (c) 2007, 2008, 2009, 2010, 2011 Virginia Polytechnic
+## Copyright (c) 2007, 2008, 2009, 2010, 2011, 2012 Joseph Gaeddert
+## Copyright (c) 2007, 2008, 2009, 2010, 2011, 2012 Virginia Polytechnic
 ##                                      Institute & State University
 ##
 ## This file is part of liquid.
@@ -19,7 +19,7 @@
 ## along with liquid.  If not, see <http://www.gnu.org/licenses/>.
 
 # 
-# Liquid SDR library configure
+# liquid-dsp library configure
 # Process with autoconf to generate configure script
 #
 
