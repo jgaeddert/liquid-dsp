@@ -683,6 +683,7 @@ matrix_autotests :=						\
 
 matrix_benchmarks :=						\
 	src/matrix/bench/matrixf_inv_benchmark.c		\
+	src/matrix/bench/matrixf_linsolve_benchmark.c		\
 	src/matrix/bench/matrixf_mul_benchmark.c		\
 	src/matrix/bench/smatrixf_mul_benchmark.c		\
 
