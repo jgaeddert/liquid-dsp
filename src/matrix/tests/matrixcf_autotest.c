@@ -147,6 +147,51 @@ void autotest_matrixcf_inv()
 }
 
 // 
+// AUTOTEST: linsolve (solve linear system of equations)
+//
+void autotest_matrixcf_linsolve()
+{
+    float tol = 1e-3f;
+
+    float complex A[16] = {
+       1.124980 + 1.792450*_Complex_I, 1.825940 - 0.861500*_Complex_I, 1.262880 - 0.634300*_Complex_I, 0.810150 - 0.811660*_Complex_I,
+      -0.989710 + 0.241180*_Complex_I, 1.429300 - 0.276810*_Complex_I, 0.226390 + 1.182250*_Complex_I,-0.626520 - 1.578440*_Complex_I,
+       0.627460 + 0.761910*_Complex_I, 0.352300 - 1.051880*_Complex_I, 0.059950 + 0.592400*_Complex_I, 1.033760 - 0.389600*_Complex_I,
+       0.543620 - 0.053630*_Complex_I, 0.312740 + 1.692770*_Complex_I, 1.424840 - 1.347840*_Complex_I, 2.006990 + 3.032760*_Complex_I};
+
+    float complex b[4] = {
+       0.158290 - 1.029130*_Complex_I,
+      -0.582070 - 0.043130*_Complex_I,
+      -0.299370 - 0.090030*_Complex_I,
+      -0.011010 + 2.239050*_Complex_I};
+
+    float complex x[4];
+    float complex x_test[4] = {
+      -1.222590 - 0.830292*_Complex_I,
+      -0.870114 + 0.021368*_Complex_I,
+       0.065725 + 1.071325*_Complex_I,
+       0.527792 + 0.524427*_Complex_I};
+
+    // run solver
+    matrixcf_linsolve(A, 4, b, x, NULL);
+
+    // validate results
+
+    CONTEND_DELTA( crealf(x[0]), crealf(x_test[0]), tol );
+    CONTEND_DELTA( cimagf(x[0]), cimagf(x_test[0]), tol );
+
+    CONTEND_DELTA( crealf(x[1]), crealf(x_test[1]), tol );
+    CONTEND_DELTA( cimagf(x[1]), cimagf(x_test[1]), tol );
+
+    CONTEND_DELTA( crealf(x[2]), crealf(x_test[2]), tol );
+    CONTEND_DELTA( cimagf(x[2]), cimagf(x_test[2]), tol );
+
+    CONTEND_DELTA( crealf(x[3]), crealf(x_test[3]), tol );
+    CONTEND_DELTA( cimagf(x[3]), cimagf(x_test[3]), tol );
+
+}
+
+// 
 // AUTOTEST: Test matrixcf multiply/transpose
 //
 void autotest_matrixcf_transmul()
