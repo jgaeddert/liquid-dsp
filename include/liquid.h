@@ -2901,6 +2901,7 @@ LIQUID_MATRIX_DEFINE_API(MATRIX_MANGLE_CDOUBLE, liquid_double_complex)
 
 #define SMATRIX_MANGLE_BOOL(name)   LIQUID_CONCAT(smatrixb,  name)
 #define SMATRIX_MANGLE_FLOAT(name)  LIQUID_CONCAT(smatrixf,  name)
+#define SMATRIX_MANGLE_INT(name)    LIQUID_CONCAT(smatrixi,  name)
 
 // sparse 'alist' matrix type (similar to MacKay, Davey Lafferty convention)
 // large macro
@@ -2977,6 +2978,7 @@ void SMATRIX(_vmul)(SMATRIX() _q,                               \
 
 LIQUID_SMATRIX_DEFINE_API(SMATRIX_MANGLE_BOOL,  unsigned char)
 LIQUID_SMATRIX_DEFINE_API(SMATRIX_MANGLE_FLOAT, float)
+LIQUID_SMATRIX_DEFINE_API(SMATRIX_MANGLE_INT,   short int)
 
 // 
 // smatrix cross methods
