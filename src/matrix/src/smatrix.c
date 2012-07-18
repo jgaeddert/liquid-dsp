@@ -492,34 +492,40 @@ void SMATRIX(_mul)(SMATRIX() _a,
     for (r=0; r<_c->M; r++) {
         
         // find number of non-zero entries in row 'r' of matrix '_a'
-        unsigned int nnz_a_r = _a->num_mlist[r];
+        unsigned int nnz_a_row = _a->num_mlist[r];
 
         // if this number is zero, there will not be any non-zero
         // entries in the corresponding row of the output matrix '_c'
-        if (nnz_a_r == 0)
+        if (nnz_a_row == 0)
             continue;
         
         for (c=0; c<_c->N; c++) {
 
             // find number of non-zero entries in column 'c' of matrix '_b'
-            unsigned int nnz_b_c = _b->num_nlist[c];
+            unsigned int nnz_b_col = _b->num_nlist[c];
 
             T p = 0;
             int set_value = 0;
 
             // find common elements between non-zero elements in
             // row 'r' of matrix '_a' and col 'c' of matrix '_b'
-            for (i=0; i<nnz_a_r; i++) {
-                // for each non-zero entry in row 'r' of matrix '_a',
-                // determine if there are any corresponding non-zero
-                // entries in the columns of matrix '_b'
+            i=0;    // reset array index for rows of '_a'
+            j=0;    // reset array index for cols of '_b'
+            while (i < nnz_a_row && j < nnz_b_col) {
+                // 
+                unsigned int ca = _a->mlist[r][i];
+                unsigned int rb = _b->nlist[c][j];
+                if (ca == rb) {
+                    // match found between _a[r,ca] and _b[rb,c]
+                    p += _a->mvals[r][i] * _b->nvals[c][j];
+                    set_value = 1;
+                    i++;
+                    j++;
+                } else if (ca < rb)
+                    i++;    // increment index for '_a'
+                else
+                    j++;    // increment index for '_b'
 
-                for (j=0; j<nnz_b_c; j++) {
-                    if (_a->mlist[r][i] == _b->nlist[c][j]) {
-                        p += _a->mvals[r][i] * _b->nvals[c][j];
-                        set_value = 1;
-                    }
-                }
             }
 
             // set value if any multiplications have been made
