@@ -57,7 +57,22 @@ float liquid_invgauss(void *       _userdata,
                       float *      _v,
                       unsigned int _n)
 {
-    return 0.0f;
+    if (_n == 0) {
+        fprintf(stderr,"error: liquid_invgauss(), input vector length cannot be zero\n");
+        exit(1);
+    }
+
+    float t = 0.0f;
+    float sigma = 1.0f;
+    unsigned int i;
+    for (i=0; i<_n; i++) {
+        t += _v[i]*_v[i] / (sigma*sigma);
+
+        // increase variance along this dimension
+        sigma *= 1.5f;
+    }
+
+    return 1 - expf(-t);
 }
 
 // n-dimensional multimodal callback function (minimum at _v = {0,0,0...}
@@ -68,6 +83,21 @@ float liquid_multimodal(void *       _userdata,
                         float *      _v,
                         unsigned int _n)
 {
-    return 0.0f;
+    if (_n == 0) {
+        fprintf(stderr,"error: liquid_multimodal(), input vector length cannot be zero\n");
+        exit(1);
+    }
+
+    float t0 = 0.0f;
+    float t1 = 0.0f;
+    float sigma = 1.0f;
+
+    unsigned int i;
+    for (i=0; i<_n; i++) {
+        t0 *= cosf(M_PI*_v[i]);
+        t1 += _v[i]*_v[i] / (sigma*sigma);
+    }
+
+    return 0.5f - 0.5f*t0*expf(-t1);
 }
 
