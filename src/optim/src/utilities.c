@@ -88,13 +88,13 @@ float liquid_multimodal(void *       _userdata,
         exit(1);
     }
 
-    float t0 = 0.0f;
+    float t0 = 1.0f;
     float t1 = 0.0f;
     float sigma = 1.0f;
 
     unsigned int i;
     for (i=0; i<_n; i++) {
-        t0 *= cosf(M_PI*_v[i]);
+        t0 *= cosf(2*M_PI*_v[i]);
         t1 += _v[i]*_v[i] / (sigma*sigma);
     }
 
