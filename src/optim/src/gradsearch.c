@@ -107,8 +107,12 @@ void gradsearch_destroy(gradsearch _q)
 void gradsearch_print(gradsearch _q)
 {
     //printf("gradient search:\n");
-    printf("u=%12.4e,|p|=%12.4e : {", _q->u, _q->pnorm);
+    printf("u=%12.4e ", _q->u);         // utility
+    //printf("|p|=%12.4e ", _q->pnorm); // norm(p)
+    printf("a=%11.4e ", _q->alpha);     // alpha (step size)
+
     unsigned int i;
+    printf("{");
     for (i=0; i<_q->num_parameters; i++)
         printf("%8.4f", _q->v[i]);
     printf("}\n");
@@ -117,14 +121,30 @@ void gradsearch_print(gradsearch _q)
 float gradsearch_step(gradsearch _q)
 {
     unsigned int i;
-    // compute gradient
-    gradsearch_gradient(_q->utility, _q->userdata, _q->v, _q->num_parameters, _q->delta, _q->p);
 
-    // normalize gradient vector
-    _q->pnorm = gradsearch_norm(_q->p, _q->num_parameters);
+    // decrease delta
+    _q->delta *= 0.99f;
+
+    // ensure norm(p) > 0, otherwise increase delta
+    unsigned int n=20;
+    for (i=0; i<n; i++) {
+        // compute gradient
+        gradsearch_gradient(_q->utility, _q->userdata, _q->v, _q->num_parameters, _q->delta, _q->p);
+
+        // normalize gradient vector
+        _q->pnorm = gradsearch_norm(_q->p, _q->num_parameters);
+
+        if (_q->pnorm > 0.0f)
+            break;
+        else
+            _q->delta *= 10.0f;
+    }
+    
+    if (i == n)
+        fprintf(stderr,"warning: gradsearch_step(), function ill-conditioned\n");
 
     // run line search
-    _q->alpha = gradsearch_linesearch(_q->utility, _q->userdata, _q->v, _q->num_parameters, _q->p, _q->alpha);
+    _q->alpha = gradsearch_linesearch(_q->utility, _q->userdata, _q->v, _q->num_parameters, _q->p, 100*_q->delta);
 
     // step in the negative direction of the gradient
     for (i=0; i<_q->num_parameters; i++)
@@ -149,7 +169,7 @@ float gradsearch_execute(gradsearch   _q,
         gradsearch_step(_q);
 
         // check exit criteria
-        if (_q->pnorm < 1e-6f) break;
+        if (i > 80 && _q->pnorm < 1e-6f) break;
     }
 
     // return curent utility

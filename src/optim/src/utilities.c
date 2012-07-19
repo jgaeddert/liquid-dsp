@@ -90,15 +90,16 @@ float liquid_multimodal(void *       _userdata,
 
     float t0 = 1.0f;
     float t1 = 0.0f;
-    float sigma = 1.0f;
+    float sigma = 4.0f;
 
     unsigned int i;
     for (i=0; i<_n; i++) {
-        t0 *= cosf(2*M_PI*_v[i]);
+        t0 *= 0.5f + 0.5f*cosf(2*M_PI*_v[i]);
         t1 += _v[i]*_v[i] / (sigma*sigma);
     }
+    //t0 = powf(t0, 1.0f / (float)_n);
 
-    return 0.5f - 0.5f*t0*expf(-t1);
+    return 1.0f - t0*expf(-t1);
 }
 
 // n-dimensional spiral utility function (minimum at _v = {0,0,0...}

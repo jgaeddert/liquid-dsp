@@ -12,12 +12,16 @@
 
 int main() {
     unsigned int num_parameters = 8;    // dimensionality of search (minimum 2)
-    unsigned int num_iterations = 1000; // number of iterations to run
+    unsigned int num_iterations = 2000; // number of iterations to run
+    utility_function func = liquid_rosenbrock;
+    //utility_function func = liquid_invgauss;
+    //utility_function func = liquid_multimodal;
+    //utility_function func = liquid_spiral;
 
     float optimum_vect[num_parameters];
     unsigned int i;
     for (i=0; i<num_parameters; i++)
-        optimum_vect[i] = 0.0f;
+        optimum_vect[i] = randnf();
 
     float optimum_utility;
 
@@ -31,7 +35,7 @@ int main() {
     gradsearch gs = gradsearch_create(NULL,
                                       optimum_vect,
                                       num_parameters,
-                                      &liquid_rosenbrock,
+                                      func,
                                       LIQUID_OPTIM_MINIMIZE,
                                       NULL);
 
@@ -40,15 +44,18 @@ int main() {
 
     // execute search one iteration at a time
     fprintf(fid,"u = zeros(1,%u);\n", num_iterations);
+    unsigned int d=1;
     for (i=0; i<num_iterations; i++) {
-        optimum_utility = liquid_rosenbrock(NULL,optimum_vect,num_parameters);
+        optimum_utility = func(NULL,optimum_vect,num_parameters);
         fprintf(fid,"u(%3u) = %12.4e;\n", i+1, optimum_utility);
 
         gradsearch_step(gs);
 
-        if (((i+1)%100)==0 || i==0) {
+        if (((i+1)%d)==0 || i==0) {
             printf("%5u: ", i+1);
             gradsearch_print(gs);
+
+            if ((i+1)==10*d) d*=10;
         }
     }
 
