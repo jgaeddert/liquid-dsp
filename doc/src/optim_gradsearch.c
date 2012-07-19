@@ -15,7 +15,7 @@
 #define OUTPUT_FILENAME_UTILITY_GNU "figures.gen/optim_gradsearch_utility.gnu"
 
 int main() {
-    unsigned int num_iterations = 2000; // number of iterations to run
+    unsigned int num_iterations = 500; // number of iterations to run
 
     // define utility function
     utility_function func = liquid_rosenbrock;
