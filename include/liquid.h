@@ -3690,13 +3690,29 @@ void liquid_unwrap_phase2(float * _theta, unsigned int _n);
 // MODULE : optimization
 //
 
-// n-dimensional rosenbrock callback function (minimum at _v = {1,1,1...}
+// n-dimensional Rosenbrock callback function (minimum at _v = {1,1,1...}
 //  _userdata   :   user-defined data structure (convenience)
 //  _v          :   input vector [size: _n x 1]
 //  _n          :   input vector size
-float rosenbrock(void * _userdata,
-                 float * _v,
-                 unsigned int _n);
+float liquid_rosenbrock(void *       _userdata,
+                        float *      _v,
+                        unsigned int _n);
+
+// n-dimensional inverse Gauss callback function (minimum at _v = {0,0,0...}
+//  _userdata   :   user-defined data structure (convenience)
+//  _v          :   input vector [size: _n x 1]
+//  _n          :   input vector size
+float liquid_invgauss(void *       _userdata,
+                      float *      _v,
+                      unsigned int _n);
+
+// n-dimensional multimodal callback function (minimum at _v = {0,0,0...}
+//  _userdata   :   user-defined data structure (convenience)
+//  _v          :   input vector [size: _n x 1]
+//  _n          :   input vector size
+float liquid_multimodal(void *       _userdata,
+                        float *      _v,
+                        unsigned int _n);
 
 
 //

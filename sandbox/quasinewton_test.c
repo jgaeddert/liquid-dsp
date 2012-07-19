@@ -192,7 +192,7 @@ float myutility(float * _x, unsigned int _n)
 
     return 1.0f - u;
 #else
-    return rosenbrock(NULL, _x, _n);
+    return liquid_rosenbrock(NULL, _x, _n);
 #endif
 }
 

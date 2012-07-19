@@ -813,20 +813,9 @@ optim_objects :=						\
 	src/optim/src/gradsearch.o				\
 	src/optim/src/optim.common.o				\
 	src/optim/src/qnsearch.o				\
-	src/optim/src/rosenbrock.o				\
+	src/optim/src/utilities.o				\
 
-
-src/optim/src/chromosome.o : %.o : %.c $(headers)
-
-src/optim/src/gasearch.o : %.o : %.c $(headers)
-
-src/optim/src/gradsearch.o : %.o : %.c $(headers)
-
-src/optim/src/optim.common.o : %.o : %.c $(headers)
-
-src/optim/src/qnsearch.o : %.o : %.c $(headers)
-
-src/optim/src/rosenbrock.o : %.o : %.c $(headers)
+$(optim_objects) : %.o : %.c $(headers)
 
 # autotests
 optim_autotests :=

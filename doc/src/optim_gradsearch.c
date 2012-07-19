@@ -29,14 +29,14 @@ int main() {
 
     // create gradsearch object
     gradsearch gs = gradsearch_create(
-        NULL, optimum_vect, 2, &rosenbrock, LIQUID_OPTIM_MINIMIZE, NULL);
+        NULL, optimum_vect, 2, &liquid_rosenbrock, LIQUID_OPTIM_MINIMIZE, NULL);
 
     // execute search
     //optimum_utility = gradsearch_run(gs, num_iterations, -1e-6f);
 
     // execute search one iteration at a time
     for (i=0; i<num_iterations; i++) {
-        optimum_utility = rosenbrock(NULL,optimum_vect,2);
+        optimum_utility = liquid_rosenbrock(NULL,optimum_vect,2);
 
         // save result
         v[i][0] = optimum_vect[0];

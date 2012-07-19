@@ -20,7 +20,7 @@
  */
 
 //
-// rosenbrock.c : n-dimensional rosenbrock utility function
+// utilities.c : n-dimensional utility functions
 //
 
 #include <stdio.h>
@@ -30,12 +30,12 @@
 #include "liquid.internal.h"
 
 // n-dimensional Rosenbrock utility function, minimum at _v = {1,1,1...}
-float rosenbrock(void * _userdata,
-                 float * _v,
-                 unsigned int _n)
+float liquid_rosenbrock(void *       _userdata,
+                        float *      _v,
+                        unsigned int _n)
 {
     if (_n == 0) {
-        fprintf(stderr,"error: rosenbrock(), input vector length cannot be zero\n");
+        fprintf(stderr,"error: liquid_rosenbrock(), input vector length cannot be zero\n");
         exit(1);
     } else if (_n == 1) {
         return (1.0f-_v[0])*(1.0f-_v[0]);
@@ -47,5 +47,27 @@ float rosenbrock(void * _userdata,
         u += powf(1-_v[i],2) + 100*powf( _v[i+1] - powf(_v[i],2), 2);
 
     return u;
+}
+
+// n-dimensional inverse Gauss callback function (minimum at _v = {0,0,0...}
+//  _userdata   :   user-defined data structure (convenience)
+//  _v          :   input vector [size: _n x 1]
+//  _n          :   input vector size
+float liquid_invgauss(void *       _userdata,
+                      float *      _v,
+                      unsigned int _n)
+{
+    return 0.0f;
+}
+
+// n-dimensional multimodal callback function (minimum at _v = {0,0,0...}
+//  _userdata   :   user-defined data structure (convenience)
+//  _v          :   input vector [size: _n x 1]
+//  _n          :   input vector size
+float liquid_multimodal(void *       _userdata,
+                        float *      _v,
+                        unsigned int _n)
+{
+    return 0.0f;
 }
 
