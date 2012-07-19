@@ -12,7 +12,7 @@
 
 int main() {
     unsigned int num_parameters = 8;    // dimensionality of search (minimum 2)
-    unsigned int num_iterations = 4000; // number of iterations to run
+    unsigned int num_iterations = 1000; // number of iterations to run
 
     float optimum_vect[num_parameters];
     unsigned int i;
@@ -46,8 +46,10 @@ int main() {
 
         gradsearch_step(gs);
 
-        if (((i+1)%100)==0)
+        if (((i+1)%100)==0 || i==0) {
+            printf("%5u: ", i+1);
             gradsearch_print(gs);
+        }
     }
 
     // print results

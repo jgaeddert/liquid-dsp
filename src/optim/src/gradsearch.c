@@ -42,29 +42,20 @@ void gradsearchprops_init_default(gradsearchprops_s * _props)
 
 // gradient search algorithm (steepest descent) object
 struct gradsearch_s {
-    float* v;           // vector to optimize (externally allocated)
-    unsigned int num_parameters;
+    float * v;                  // vector to optimize (externally allocated)
+    unsigned int num_parameters;// ...
+    float u;                    // utility at current position
 
     // properties
-    gradsearchprops_s props;
+    float delta;                // gradient approximation step size
+    float alpha;                // line search step size
 
-    float gamma;        // nominal step size
-    float delta;        // differential used to compute (estimate) derivative
-    float alpha;        // momentum constant
-    float mu;           // decremental gamma parameter
+    float * p;                  // gradient estimate
+    float pnorm;                // L2-norm of gradient estimate
 
-    float gamma_hat;    // step size (decreases each epoch)
-    float* v_prime;     // temporary vector array
-    float* dv;          // vector step
-    float* dv_hat;      // vector step (previous iteration)
-
-    float* gradient;    // gradient approximation
-    float utility;      // current utility
-
-    // External utility function.
-    utility_function get_utility;
-    void * userdata;    // object to optimize (user data)
-    int minimize;       // minimize/maximimze utility (search direction)
+    utility_function utility;   // utility function pointer
+    void * userdata;            // object to optimize (user data)
+    int direction;              // search direction (minimize/maximimze utility)
 };
 
 // create a gradient search object
@@ -74,187 +65,207 @@ struct gradsearch_s {
 //   _u                 :   utility function pointer
 //   _minmax            :   search direction (0:minimize, 1:maximize)
 //   _props             :   properties (see above)
-gradsearch gradsearch_create(void * _userdata,
-                             float * _v,
-                             unsigned int _num_parameters,
-                             utility_function _u,
-                             int _minmax,
+gradsearch gradsearch_create(void *              _userdata,
+                             float *             _v,
+                             unsigned int        _num_parameters,
+                             utility_function    _utility,
+                             int                 _direction,
                              gradsearchprops_s * _props)
 {
-    gradsearch gs = (gradsearch) malloc( sizeof(struct gradsearch_s) );
+    gradsearch q = (gradsearch) malloc( sizeof(struct gradsearch_s) );
 
-    // initialize properties
-    if (_props != NULL) {
-        gs->delta = _props->delta;
-        gs->gamma = _props->gamma;
-        gs->mu    = _props->mu;
-        gs->alpha = _props->alpha;
-    } else {
-        gs->delta = gradsearchprops_default.delta;
-        gs->gamma = gradsearchprops_default.gamma;
-        gs->mu    = gradsearchprops_default.mu;
-        gs->alpha = gradsearchprops_default.alpha;
-    }
+    // set user-defined properties
+    q->userdata       = _userdata;
+    q->v              = _v;
+    q->num_parameters = _num_parameters;
+    q->utility        = _utility;
+    q->direction      = _direction;
 
-    gs->gamma_hat = gs->gamma;
+    // set internal properties
+    // TODO : make these user-configurable properties
+    q->delta = 1e-6f;               // gradient approximation step size
+    q->alpha = q->delta * 100.0f;   // linear search step size
 
-    gs->userdata = _userdata;
-    gs->v = _v;
-    gs->num_parameters = _num_parameters;
-    gs->get_utility = _u;
-    gs->minimize = ( _minmax == LIQUID_OPTIM_MINIMIZE ) ? 1 : 0;
+    // allocate array for gradient estimate
+    q->p = (float*) malloc(q->num_parameters*sizeof(float));
+    q->pnorm = 0.0f;
+    q->u = 0.0f;
 
-    // initialize internal memory arrays
-    gs->gradient = (float*) calloc( gs->num_parameters, sizeof(float) );
-    gs->v_prime  = (float*) calloc( gs->num_parameters, sizeof(float) );
-    gs->dv_hat   = (float*) calloc( gs->num_parameters, sizeof(float) );
-    gs->dv       = (float*) calloc( gs->num_parameters, sizeof(float) );
-    gs->utility = 0.0f;
-
-    return gs;
+    return q;
 }
 
-void gradsearch_destroy(gradsearch _g)
+void gradsearch_destroy(gradsearch _q)
 {
-    free(_g->gradient);
-    free(_g->v_prime);
-    free(_g->dv_hat);
-    free(_g->dv);
-    free(_g);
+    // free gradient estimate array
+    free(_q->p);
+
+    // free main object memory
+    free(_q);
 }
 
-void gradsearch_print(gradsearch _g)
+// print status
+void gradsearch_print(gradsearch _q)
 {
-    printf("[%.3f] ", _g->utility);
+    //printf("gradient search:\n");
+    printf("u=%12.4e,|p|=%12.4e : {", _q->u, _q->pnorm);
     unsigned int i;
-    for (i=0; i<_g->num_parameters; i++)
-        printf("%.3f ", _g->v[i]);
-    printf("\n");
+    for (i=0; i<_q->num_parameters; i++)
+        printf("%8.4f", _q->v[i]);
+    printf("}\n");
 }
 
-void gradsearch_reset(gradsearch _g)
+float gradsearch_step(gradsearch _q)
 {
-    _g->gamma_hat = _g->gamma;
-}
-
-void gradsearch_step(gradsearch _g)
-{
-    // compute gradient vector (un-normalized)
-    gradsearch_compute_gradient(_g);
+    unsigned int i;
+    // compute gradient
+    gradsearch_gradient(_q->utility, _q->userdata, _q->v, _q->num_parameters, _q->delta, _q->p);
 
     // normalize gradient vector
-    gradsearch_normalize_gradient(_g);
+    _q->pnorm = gradsearch_norm(_q->p, _q->num_parameters);
 
-    // compute vector step : retain [alpha]% of old gradient
-    unsigned int i;
-    for (i=0; i<_g->num_parameters; i++) {
-        _g->dv[i] = _g->gamma_hat * _g->gradient[i] +
-                    _g->dv_hat[i] * _g->alpha;
-    }
+    // run line search
+    _q->alpha = gradsearch_linesearch(_q->utility, _q->userdata, _q->v, _q->num_parameters, _q->p, _q->alpha);
 
-    // store vector step
-    for (i=0; i<_g->num_parameters; i++)
-        _g->dv_hat[i] = _g->dv[i];
+    // step in the negative direction of the gradient
+    for (i=0; i<_q->num_parameters; i++)
+        _q->v[i] = _q->v[i] - _q->alpha*_q->p[i];
 
-    // update optimum vector: optimization type determines polarity
-    //   - (minimize)
-    //   + (maximize)
-    if (_g->minimize) {
-        for (i=0; i<_g->num_parameters; i++)
-            _g->v[i] -= _g->dv[i];
-    } else {
-        for (i=0; i<_g->num_parameters; i++)
-            _g->v[i] += _g->dv[i];
-    }
+    // evaluate utility at current position
+    _q->u = _q->utility(_q->userdata, _q->v, _q->num_parameters);
 
-    // compute utility for this parameter set,
-    float utility_tmp;
-    utility_tmp = _g->get_utility(_g->userdata, _g->v, _g->num_parameters);
-
-    // decrease gamma if utility did not improve from last iteration
-    //if ( optim_threshold_switch(utility_tmp, _g->utility, _g->minimize) &&
-    if ( optim_threshold_switch(utility_tmp, _g->utility, _g->minimize) &&
-         _g->gamma_hat > LIQUID_gradsearch_GAMMA_MIN )
-    {
-        _g->gamma_hat *= _g->mu;
-    }
-
-    // update utility
-    _g->utility = utility_tmp;
+    // return utility
+    return _q->u;
 }
 
 // batch execution of gradient search : run many steps and stop
 // when criteria are met
-float gradsearch_execute(gradsearch _g,
+float gradsearch_execute(gradsearch   _q,
                          unsigned int _max_iterations,
-                         float _target_utility)
+                         float        _target_utility)
 {
-    unsigned int i=0;
-    do {
-        i++;
-        gradsearch_step(_g);
-        //_g->utility = _g->get_utility(_g->userdata, _g->v, _g->num_parameters);
+    unsigned int i;
+    for (i=0; i<_max_iterations; i++) {
+        // step gradient search algorithm
+        gradsearch_step(_q);
 
-    } while (
-        optim_threshold_switch(_g->utility, _target_utility, _g->minimize) &&
-        i < _max_iterations);
+        // check exit criteria
+        if (_q->pnorm < 1e-6f) break;
+    }
 
-    return _g->utility;
+    // return curent utility
+    return _q->u;
 }
 
 
 // 
-// internal
+// internal (generic functions)
 //
 
-// compute the gradient vector (estimate)
-void gradsearch_compute_gradient(gradsearch _g)
+// compute the gradient of a function at a particular point
+//  _utility    :   user-defined function
+//  _userdata   :   user-defined data object
+//  _x          :   operating point, [size: _n x 1]
+//  _n          :   dimensionality of search
+//  _delta      :   step value for which to compute gradient
+//  _gradient   :   resulting gradient
+void gradsearch_gradient(utility_function _utility,
+                         void  *          _userdata,
+                         float *          _x,
+                         unsigned int     _n,
+                         float            _delta,
+                         float *          _gradient)
 {
-    // compute initial utility
-    float u, u_prime;
-    u = _g->get_utility(_g->userdata,
-                        _g->v,
-                        _g->num_parameters);
+    // operating point for evaluation
+    float x_prime[_n];
+    float u_prime;
 
-    // reset v_prime
-    memmove(_g->v_prime, _g->v, _g->num_parameters*sizeof(float));
-
+    // evaluate function at current operating point
+    float u0 = _utility(_userdata, _x, _n);
+        
     unsigned int i;
-    // compute gradient estimate on each dimension
-    for (i=0; i<_g->num_parameters; i++) {
-        // increment test vector by delta
-        _g->v_prime[i] += _g->delta;
+    for (i=0; i<_n; i++) {
+        // copy operating point
+        memmove(x_prime, _x, _n*sizeof(float));
+        
+        // increment test vector by delta along dimension 'i'
+        x_prime[i] += _delta;
 
-        // compute new utility
-        u_prime = _g->get_utility(_g->userdata, 
-                                  _g->v_prime,
-                                  _g->num_parameters);
+        // evaluate new utility
+        u_prime = _utility(_userdata, x_prime, _n);
 
-        // reset test vector
-        _g->v_prime[i] = _g->v[i];
-
-        // compute gradient estimate (slop of utility for the
-        // i^th parameter)
-        _g->gradient[i] = (u_prime - u) / _g->delta;
+        // compute gradient estimate
+        _gradient[i] = (u_prime - u0) / _delta;
     }
 }
 
-// normalize gradient vector to unity
-void gradsearch_normalize_gradient(gradsearch _g)
+// execute line search; loosely solve:
+//    min phi(alpha) := f(_x - alpha*_grad)
+//  _utility    :   user-defined function
+//  _userdata   :   user-defined data object
+//  _x          :   operating point, [size: _n x 1]
+//  _n          :   dimensionality of search
+float gradsearch_linesearch(utility_function _utility,
+                            void  *          _userdata,
+                            float *          _x,
+                            unsigned int     _n,
+                            float *          _p,
+                            float            _alpha)
 {
-    // normalize gradient
-    float sig = 0.0f;
+    // simple method: continue to increase alpha while
+    // objective function decreases
     unsigned int i;
-    for (i=0; i<_g->num_parameters; i++)
-        sig += _g->gradient[i] * _g->gradient[i];
 
-    if ( sig == 0.0f )
-        return;
+    // determine if we need to increase or decrease alpha
+    //float u0 = _utility(_userdata, _x, _n);
+    
+    float x_prime[_n];
 
-    sig = 1.0f / sqrtf(sig/(float)(_g->num_parameters));
+    // evaluate utility
+    for (i=0; i<_n; i++)
+        x_prime[i] = _x[i] - _alpha*_p[i];
+    float u0 = _utility(_userdata, x_prime, _n);
 
-    for (i=0; i<_g->num_parameters; i++)
-        _g->gradient[i] *= sig;
+    // evaluate utility with increased value for alpha
+    _alpha *= 1.01f;
+    for (i=0; i<_n; i++)
+        x_prime[i] = _x[i] - _alpha*_p[i];
+    float u1 = _utility(_userdata, x_prime, _n);
+
+    // determine scaling factor
+    float gamma = (u1 > u0) ? 0.5f : 2.0f;
+
+    do {
+        // increase alpha
+        _alpha *= gamma;
+
+        // retain old estimate
+        u0 = u1;
+
+        for (i=0; i<_n; i++)
+            x_prime[i] = _x[i] - _alpha*_p[i];
+
+        // evaluate utility
+        u1 = _utility(_userdata, x_prime, _n);
+    } while (u1 < u0);
+
+    return _alpha / gamma;
 }
 
+// normalize vector, returning its l2-norm
+float gradsearch_norm(float *      _v,
+                      unsigned int _n)
+{
+    float vnorm = 0.0f;
+
+    unsigned int i;
+    for (i=0; i<_n; i++)
+        vnorm += _v[i]*_v[i];
+
+    vnorm = sqrtf(vnorm);
+
+    for (i=0; i<_n; i++)
+        _v[i] /= vnorm;
+
+    return vnorm;
+}
 

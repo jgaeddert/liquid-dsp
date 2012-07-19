@@ -1907,11 +1907,36 @@ int optim_threshold_switch(float _u0,
                            float _u1,
                            int _minimize);
 
-// compute the gradient vector (estimate)
-void gradsearch_compute_gradient(gradsearch _g);
+// compute the gradient of a function at a particular point
+//  _utility    :   user-defined function
+//  _userdata   :   user-defined data object
+//  _x          :   operating point, [size: _n x 1]
+//  _n          :   dimensionality of search
+//  _delta      :   step value for which to compute gradient
+//  _gradient   :   resulting gradient
+void gradsearch_gradient(utility_function _utility,
+                         void  *          _userdata,
+                         float *          _x,
+                         unsigned int     _n,
+                         float            _delta,
+                         float *          _gradient);
 
-// normalize the gradient vector
-void gradsearch_normalize_gradient(gradsearch _g);
+// execute line search; loosely solve:
+//    min phi(alpha) := f(_x - alpha*_grad)
+//  _utility    :   user-defined function
+//  _userdata   :   user-defined data object
+//  _x          :   operating point, [size: _n x 1]
+//  _n          :   dimensionality of search
+float gradsearch_linesearch(utility_function _utility,
+                            void  *          _userdata,
+                            float *          _x,
+                            unsigned int     _n,
+                            float *          _grad,
+                            float            _alpha);
+
+// normalize vector, returning its l2-norm
+float gradsearch_norm(float *      _v,
+                      unsigned int _n);
 
 
 // quasi-Newton search object

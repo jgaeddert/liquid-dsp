@@ -3690,6 +3690,11 @@ void liquid_unwrap_phase2(float * _theta, unsigned int _n);
 // MODULE : optimization
 //
 
+// utility function pointer definition
+typedef float (*utility_function)(void *       _userdata,
+                                  float *      _v,
+                                  unsigned int _n);
+
 // n-dimensional Rosenbrock utility function (minimum at _v = {1,1,1...}
 //  _userdata   :   user-defined data structure (convenience)
 //  _v          :   input vector [size: _n x 1]
@@ -3730,10 +3735,6 @@ float liquid_spiral(void *       _userdata,
 #define LIQUID_OPTIM_MINIMIZE (0)
 #define LIQUID_OPTIM_MAXIMIZE (1)
 
-typedef float (*utility_function)(void * _userdata,
-                                  float * _v,
-                                  unsigned int _n);
-
 typedef struct gradsearch_s * gradsearch;
 
 // gradient search properties
@@ -3754,29 +3755,26 @@ void gradsearchprops_init_default(gradsearchprops_s * _props);
 //   _u                 :   utility function pointer
 //   _minmax            :   search direction (0:minimize, 1:maximize)
 //   _props             :   properties (see above)
-gradsearch gradsearch_create(void * _userdata,
-                             float * _v,
-                             unsigned int _num_parameters,
-                             utility_function _u,
-                             int _minmax,
+gradsearch gradsearch_create(void *              _userdata,
+                             float *             _v,
+                             unsigned int        _num_parameters,
+                             utility_function    _utility,
+                             int                 _direction,
                              gradsearchprops_s * _props);
 
 // Destroy a gradsearch object
-void gradsearch_destroy(gradsearch _g);
+void gradsearch_destroy(gradsearch _q);
 
 // Prints current status of search
-void gradsearch_print(gradsearch _g);
-
-// Resets internal state
-void gradsearch_reset(gradsearch _g);
+void gradsearch_print(gradsearch _q);
 
 // Iterate once
-void gradsearch_step(gradsearch _g);
+float gradsearch_step(gradsearch _q);
 
 // Execute the search
-float gradsearch_execute(gradsearch _g,
+float gradsearch_execute(gradsearch   _q,
                          unsigned int _max_iterations,
-                         float _target_utility);
+                         float        _target_utility);
 
 
 // quasi-Newton search
