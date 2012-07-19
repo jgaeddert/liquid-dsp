@@ -21,6 +21,7 @@ int main() {
     utility_function func = liquid_rosenbrock;
     //utility_function func = liquid_invgauss;
     //utility_function func = liquid_multimodal;
+    //utility_function func = liquid_spiral;
 
     float optimum_vect[2];
     unsigned int i;

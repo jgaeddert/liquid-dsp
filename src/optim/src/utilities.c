@@ -49,7 +49,7 @@ float liquid_rosenbrock(void *       _userdata,
     return u;
 }
 
-// n-dimensional inverse Gauss callback function (minimum at _v = {0,0,0...}
+// n-dimensional inverse Gauss utility function (minimum at _v = {0,0,0...}
 //  _userdata   :   user-defined data structure (convenience)
 //  _v          :   input vector [size: _n x 1]
 //  _n          :   input vector size
@@ -75,7 +75,7 @@ float liquid_invgauss(void *       _userdata,
     return 1 - expf(-t);
 }
 
-// n-dimensional multimodal callback function (minimum at _v = {0,0,0...}
+// n-dimensional multimodal utility function (minimum at _v = {0,0,0...}
 //  _userdata   :   user-defined data structure (convenience)
 //  _v          :   input vector [size: _n x 1]
 //  _n          :   input vector size
@@ -99,5 +99,40 @@ float liquid_multimodal(void *       _userdata,
     }
 
     return 0.5f - 0.5f*t0*expf(-t1);
+}
+
+// n-dimensional spiral utility function (minimum at _v = {0,0,0...}
+//  _userdata   :   user-defined data structure (convenience)
+//  _v          :   input vector [size: _n x 1]
+//  _n          :   input vector size
+float liquid_spiral(void *       _userdata,
+                    float *      _v,
+                    unsigned int _n)
+{
+    if (_n == 0) {
+        fprintf(stderr,"error: liquid_rosenbrock(), input vector length cannot be zero\n");
+        exit(1);
+    } else if (_n == 1) {
+        return _v[0]*_v[0];
+    }
+
+    // n is at least 2
+    float r_hat     = sqrtf(_v[0]*_v[0] + _v[1]*_v[1]);
+    float theta_hat = atan2f(_v[1], _v[0]);
+
+    float delta = theta_hat - r_hat * 10;
+    while (delta >  M_PI) delta -= 2*M_PI;
+    while (delta < -M_PI) delta += 2*M_PI;
+
+    delta = delta / M_PI;
+
+    float u = 1 - delta*delta*expf(-r_hat*r_hat/10);
+
+    // additional error...
+    unsigned int i;
+    for (i=2; i<_n; i++)
+        u += _v[i]*_v[i];
+
+    return u;
 }
 
