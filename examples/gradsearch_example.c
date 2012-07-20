@@ -4,16 +4,51 @@
 
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 #include <math.h>
+#include <getopt.h>
 
 #include "liquid.h"
 
 #define OUTPUT_FILENAME "gradsearch_example.m"
 
-int main() {
-    unsigned int num_parameters = 8;    // dimensionality of search (minimum 2)
+// print usage/help message
+void usage()
+{
+    printf("%s [options]\n", __FILE__);
+    printf("  h     : print help\n");
+    printf("  n     : number of parameters, default: 6\n");
+    printf("  t     : number of iterations, default: 2000\n");
+    printf("  u     : utility function: {rosenbrock, invgauss, multimodal, spiral}\n");
+}
+
+int main(int argc, char*argv[])
+{
+    unsigned int num_parameters = 6;    // dimensionality of search (minimum 2)
     unsigned int num_iterations = 2000; // number of iterations to run
     utility_function func = liquid_rosenbrock;
+
+    int dopt;
+    while ((dopt = getopt(argc,argv,"hn:t:u:")) != EOF) {
+        switch (dopt) {
+        case 'h':   usage();                        return 0;
+        case 'n':   num_parameters = atoi(optarg);  break;
+        case 't':   num_iterations = atoi(optarg);  break;
+        case 'u':
+            if      (strcmp(optarg,"rosenbrock")==0) func = liquid_rosenbrock;
+            else if (strcmp(optarg,"invgauss")==0)   func = liquid_invgauss;
+            else if (strcmp(optarg,"multimodal")==0) func = liquid_multimodal;
+            else if (strcmp(optarg,"spiral")==0)     func = liquid_spiral;
+            else {
+                fprintf(stderr,"error: %s, unknown/unsupported utility '%s'\n", argv[0], optarg);
+                exit(1);
+            }
+            break;
+        default:
+            exit(1);
+        }
+    }
+
     //utility_function func = liquid_invgauss;
     //utility_function func = liquid_multimodal;
     //utility_function func = liquid_spiral;
@@ -61,6 +96,7 @@ int main() {
 
     // print results
     printf("\n");
+    printf("%5u: ", num_iterations);
     gradsearch_print(gs);
 
     fprintf(fid,"figure;\n");
