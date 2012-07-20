@@ -29,7 +29,7 @@ int main() {
 
     // create qnsearch object
     qnsearch gs = qnsearch_create(
-        NULL, optimum_vect, num_parameters, &rosenbrock, LIQUID_OPTIM_MINIMIZE);
+        NULL, optimum_vect, num_parameters, &liquid_rosenbrock, LIQUID_OPTIM_MINIMIZE);
 
     // execute search
     //optimum_utility = qnsearch_run(gs, num_iterations, -1e-6f);
@@ -37,7 +37,7 @@ int main() {
     // execute search one iteration at a time
     fprintf(fid,"u = zeros(1,%u);\n", num_iterations);
     for (i=0; i<num_iterations; i++) {
-        optimum_utility = rosenbrock(NULL,optimum_vect,num_parameters);
+        optimum_utility = liquid_rosenbrock(NULL,optimum_vect,num_parameters);
         fprintf(fid,"u(%3u) = %12.4e;\n", i+1, optimum_utility);
 
         qnsearch_step(gs);

@@ -1016,6 +1016,7 @@ figures.gen/nco_pll_error.gnu : src/nco_pll
 #
 figures.gen/optim_gradsearch.dat \
 figures.gen/optim_gradsearch.gnu \
+figures.gen/optim_gradsearch_utility.dat \
 figures.gen/optim_gradsearch_utility.gnu : src/optim_gradsearch
 	./$<
 

@@ -11,10 +11,17 @@
 
 #define OUTPUT_FILENAME_DAT "figures.gen/optim_gradsearch.dat"
 #define OUTPUT_FILENAME_GNU "figures.gen/optim_gradsearch.gnu"
+#define OUTPUT_FILENAME_UTILITY_DAT "figures.gen/optim_gradsearch_utility.dat"
 #define OUTPUT_FILENAME_UTILITY_GNU "figures.gen/optim_gradsearch_utility.gnu"
 
 int main() {
-    unsigned int num_iterations = 2000; // number of iterations to run
+    unsigned int num_iterations = 500; // number of iterations to run
+
+    // define utility function
+    utility_function func = liquid_rosenbrock;
+    //utility_function func = liquid_invgauss;
+    //utility_function func = liquid_multimodal;
+    //utility_function func = liquid_spiral;
 
     float optimum_vect[2];
     unsigned int i;
@@ -29,14 +36,14 @@ int main() {
 
     // create gradsearch object
     gradsearch gs = gradsearch_create(
-        NULL, optimum_vect, 2, &rosenbrock, LIQUID_OPTIM_MINIMIZE, NULL);
+        NULL, optimum_vect, 2, func, LIQUID_OPTIM_MINIMIZE, NULL);
 
     // execute search
     //optimum_utility = gradsearch_run(gs, num_iterations, -1e-6f);
 
     // execute search one iteration at a time
     for (i=0; i<num_iterations; i++) {
-        optimum_utility = rosenbrock(NULL,optimum_vect,2);
+        optimum_utility = func(NULL,optimum_vect,2);
 
         // save result
         v[i][0] = optimum_vect[0];
@@ -69,6 +76,34 @@ int main() {
     fclose(fid);
     printf("results written to '%s'\n", OUTPUT_FILENAME_DAT);
 
+    // 
+    // export utility data
+    //
+    fid = fopen(OUTPUT_FILENAME_UTILITY_DAT,"w");
+    unsigned int num_steps = 50;
+    float xmin = -1.5f;
+    float xmax =  1.5f;
+    float xdel = (xmax - xmin)/(float)(num_steps-1);
+    float ymin = -0.5f;
+    float ymax =  1.5f;
+    float ydel = (ymax - ymin)/(float)(num_steps-1);
+    unsigned int j;
+    float vtest[2];
+    fprintf(fid,"# %-12s %-12s %-12s\n", "v[0]", "v[1]", "utility");
+    for (i=0; i<num_steps; i++) {
+        vtest[0] = xmin + i*xdel;
+        for (j=0; j<num_steps; j++) {
+            vtest[1] = ymin + j*ydel;
+            
+            // evaluate and save
+            float utest = func(NULL, vtest, 2);
+
+            fprintf(fid,"  %12.8f %12.8f %12.4e\n", vtest[0], vtest[1], utest);
+        }
+        fprintf(fid,"\n");
+    }
+    fclose(fid);
+    printf("results written to '%s'\n", OUTPUT_FILENAME_UTILITY_DAT);
 
 
     // 
@@ -98,7 +133,8 @@ int main() {
     fprintf(fid,"set contour base\n");
     fprintf(fid,"unset clabel\n");
     fprintf(fid,"set cntrparam levels 10\n");
-    fprintf(fid,"splot [-1.5:1.5] [-0.5:1.5] (1-x)**2 + 100*(y - x**2)**2 with lines linecolor rgb '#cccccc',\\\n");
+    //fprintf(fid,"splot [-1.5:1.5] [-0.5:1.5] (1-x)**2 + 100*(y - x**2)**2 with lines linecolor rgb '#cccccc',\\\n");
+    fprintf(fid,"splot '%s' with lines linecolor rgb '#cccccc',\\\n", OUTPUT_FILENAME_UTILITY_DAT);
     fprintf(fid,"      '%s' using 2:3:(($4+1e-3)*1.1) with lines linewidth 2 linecolor rgb '#004080'\n", OUTPUT_FILENAME_DAT);
     //fprintf(fid,"      '%s' using 2:3:(1e-3) with lines linewidth 2 linecolor rgb '#004080'\n", OUTPUT_FILENAME_DAT);
 

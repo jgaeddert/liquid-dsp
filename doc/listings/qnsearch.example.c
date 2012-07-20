@@ -14,7 +14,7 @@ int main() {
     qnsearch q = qnsearch_create(NULL,
                                  optimum_vect,
                                  num_parameters,
-                                 &rosenbrock,
+                                 &liquid_rosenbrock,
                                  LIQUID_OPTIM_MINIMIZE);
 
     // execute batch search
