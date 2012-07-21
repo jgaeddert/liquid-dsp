@@ -1649,6 +1649,12 @@ LIQUID_DECIM_DEFINE_API(DECIM_MANGLE_CCCF,
 #define RESAMP2_MANGLE_CRCF(name)   LIQUID_CONCAT(resamp2_crcf,name)
 #define RESAMP2_MANGLE_CCCF(name)   LIQUID_CONCAT(resamp2_cccf,name)
 
+// fixed-point
+#define RESAMP2_MANGLE_RRRQ16(name) LIQUID_CONCAT(resamp2_rrrq16,name)
+#define RESAMP2_MANGLE_CRCQ16(name) LIQUID_CONCAT(resamp2_crcq16,name)
+#define RESAMP2_MANGLE_CCCQ16(name) LIQUID_CONCAT(resamp2_cccq16,name)
+
+
 #define LIQUID_RESAMP2_DEFINE_API(RESAMP2,TO,TC,TI)             \
 typedef struct RESAMP2(_s) * RESAMP2();                         \
 RESAMP2() RESAMP2(_create)(unsigned int _m,                     \
@@ -1692,6 +1698,11 @@ LIQUID_RESAMP2_DEFINE_API(RESAMP2_MANGLE_CCCF,
                           liquid_float_complex,
                           liquid_float_complex,
                           liquid_float_complex)
+
+// fixed-point
+LIQUID_RESAMP2_DEFINE_API(RESAMP2_MANGLE_RRRQ16,  q16_t,  q16_t,  q16_t)
+LIQUID_RESAMP2_DEFINE_API(RESAMP2_MANGLE_CRCQ16, cq16_t,  q16_t, cq16_t)
+LIQUID_RESAMP2_DEFINE_API(RESAMP2_MANGLE_CCCQ16, cq16_t, cq16_t, cq16_t)
 
 
 // 

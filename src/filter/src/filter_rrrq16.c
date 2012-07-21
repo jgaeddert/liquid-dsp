@@ -32,6 +32,10 @@
 #define cqtype_fixed_to_float(X) cq16_fixed_to_float(X)
 #define cqtype_float_to_fixed(X) cq16_float_to_fixed(X)
 
+// declare fixed-point name-mangling macros
+#define Q(name)             LIQUID_CONCAT(q16,name)
+#define CQ(name)            LIQUID_CONCAT(cq16,name)
+
 // naming extensions (useful for print statements)
 #define EXTENSION_SHORT     "q16"
 #define EXTENSION_FULL      "rrrq16"
@@ -40,6 +44,7 @@
 #define FIRFILT(name)       LIQUID_CONCAT(firfilt_rrrq16,name)
 #define IIRFILT(name)       LIQUID_CONCAT(iirfilt_rrrq16,name)
 #define IIRFILTSOS(name)    LIQUID_CONCAT(iirfiltsos_rrrq16,name)
+#define RESAMP2(name)       LIQUID_CONCAT(resamp2_rrrq16,name)
 
 #if 0
 #define AUTOCORR(name)      LIQUID_CONCAT(autocorr_rrrq16,name)
@@ -50,7 +55,6 @@
 #define DECIM(name)         LIQUID_CONCAT(decim_rrrq16,name)
 #define MSRESAMP(name)      LIQUID_CONCAT(msresamp_rrrq16,name)
 #define RESAMP(name)        LIQUID_CONCAT(resamp_rrrq16,name)
-#define RESAMP2(name)       LIQUID_CONCAT(resamp2_rrrq16,name)
 #define SYMSYNC(name)       LIQUID_CONCAT(symsync_rrrq16,name)
 #endif
 
@@ -82,6 +86,7 @@
 #include "firfilt.c"
 #include "iirfilt.c"
 #include "iirfiltsos.c"
+#include "resamp2.c"
 
 #if 0
 #include "autocorr.c"
@@ -92,6 +97,5 @@
 #include "decim.c"
 #include "msresamp.c"
 #include "resamp.c"
-#include "resamp2.c"
 #include "symsync.c"
 #endif

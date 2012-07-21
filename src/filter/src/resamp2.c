@@ -1,6 +1,6 @@
 /*
- * Copyright (c) 2007, 2009, 2010 Joseph Gaeddert
- * Copyright (c) 2007, 2009, 2010 Virginia Polytechnic Institute &
+ * Copyright (c) 2007, 2009, 2010, 2012 Joseph Gaeddert
+ * Copyright (c) 2007, 2009, 2010, 2012 Virginia Polytechnic Institute &
  *                                State University
  *
  * This file is part of liquid.
@@ -38,7 +38,6 @@
 //  PRINTVAL()      print macro
 
 struct RESAMP2(_s) {
-    TC * h;                 // filter prototype
     unsigned int m;         // primitive filter length
     unsigned int h_len;     // actual filter length: h_len = 4*m+1
     float fc;               // center frequency [-1.0 <= fc <= 1.0]
@@ -56,6 +55,9 @@ struct RESAMP2(_s) {
     // halfband filter operation
     unsigned int toggle;
 };
+
+// initialize coefficients
+void RESAMP2(_init_coefficients)(RESAMP2() _q);
 
 // create a resamp2 object
 //  _m      :   filter semi-length (effective length: 4*_m+1)
@@ -82,34 +84,12 @@ RESAMP2() RESAMP2(_create)(unsigned int _m,
 
     // change filter length as necessary
     q->h_len = 4*(q->m) + 1;
-    q->h = (TC *) malloc((q->h_len)*sizeof(TC));
 
     q->h1_len = 2*(q->m);
     q->h1 = (TC *) malloc((q->h1_len)*sizeof(TC));
 
-    // design filter prototype
-    unsigned int i;
-    float t, h1, h2;
-    TC h3;
-    float beta = kaiser_beta_As(q->As);
-    for (i=0; i<q->h_len; i++) {
-        t = (float)i - (float)(q->h_len-1)/2.0f;
-        h1 = sincf(t/2.0f);
-        h2 = kaiser(i,q->h_len,beta,0);
-#if TC_COMPLEX == 1
-        h3 = cosf(2.0f*M_PI*t*q->fc) + _Complex_I*sinf(2.0f*M_PI*t*q->fc);
-#else
-        h3 = cosf(2.0f*M_PI*t*q->fc);
-#endif
-        q->h[i] = h1*h2*h3;
-    }
-
-    // resample, alternate sign, [reverse direction]
-    unsigned int j=0;
-    for (i=1; i<q->h_len; i+=2)
-        q->h1[j++] = q->h[q->h_len - i - 1];
-
-    // create dotprod object
+    // initialize coefficients and create dotprod object
+    RESAMP2(_init_coefficients)(q);
     q->dp = DOTPROD(_create)(q->h1, 2*q->m);
 
     // create window buffers
@@ -126,41 +106,26 @@ RESAMP2() RESAMP2(_create)(unsigned int _m,
 //  _m          :   filter semi-length (effective length: 4*_m+1)
 //  _fc         :   center frequency of half-band filter
 //  _As         :   stop-band attenuation [dB], _As > 0
-RESAMP2() RESAMP2(_recreate)(RESAMP2() _q,
+RESAMP2() RESAMP2(_recreate)(RESAMP2()    _q,
                              unsigned int _m,
-                             float _fc,
-                             float _As)
+                             float        _fc,
+                             float        _As)
 {
     // only re-design filter if necessary
     if (_m != _q->m) {
-        // destroy resampler and re-create from scratch
+        // new filter length: destroy resampler and re-create from scratch
         RESAMP2(_destroy)(_q);
         _q = RESAMP2(_create)(_m, _fc, _As);
 
     } else {
-        // re-design filter prototype
-        unsigned int i;
-        float t, h1, h2;
-        TC h3;
-        float beta = kaiser_beta_As(_q->As);
-        for (i=0; i<_q->h_len; i++) {
-            t = (float)i - (float)(_q->h_len-1)/2.0f;
-            h1 = sincf(t/2.0f);
-            h2 = kaiser(i,_q->h_len,beta,0);
-#if TC_COMPLEX == 1
-            h3 = cosf(2.0f*M_PI*t*_q->fc) + _Complex_I*sinf(2.0f*M_PI*t*_q->fc);
-#else
-            h3 = cosf(2.0f*M_PI*t*_q->fc);
-#endif
-            _q->h[i] = h1*h2*h3;
-        }
+        // set internal values
+        _q->fc = _fc;
+        _q->As = _As;
 
-        // resample, alternate sign, [reverse direction]
-        unsigned int j=0;
-        for (i=1; i<_q->h_len; i+=2)
-            _q->h1[j++] = _q->h[_q->h_len - i - 1];
+        // initialize coefficients
+        RESAMP2(_init_coefficients)(_q);
 
-        // create dotprod object
+        // re-create dotprod object
         _q->dp = DOTPROD(_recreate)(_q->dp, _q->h1, 2*_q->m);
     }
     return _q;
@@ -177,7 +142,6 @@ void RESAMP2(_destroy)(RESAMP2() _q)
     WINDOW(_destroy)(_q->w1);
 
     // free arrays
-    free(_q->h);
     free(_q->h1);
 
     // free main object memory
@@ -191,11 +155,13 @@ void RESAMP2(_print)(RESAMP2() _q)
             _q->h_len,
             _q->fc);
     unsigned int i;
+#if 0
     for (i=0; i<_q->h_len; i++) {
         printf("  h(%4u) = ", i+1);
         PRINTVAL_TC(_q->h[i],%12.8f);
         printf(";\n");
     }
+#endif
     printf("---\n");
     for (i=0; i<_q->h1_len; i++) {
         printf("  h1(%4u) = ", i+1);
@@ -253,8 +219,19 @@ void RESAMP2(_filter_execute)(RESAMP2() _q,
     _q->toggle = 1 - _q->toggle;
 
     // set return values, normalizing gain
+#if defined LIQUID_FIXED && TO_COMPLEX==1
+    //*_y0 = CQ(_add)(yi, yq);
+    //*_y1 = CQ(_sub)(yi, yq);
+
+    _y0->real = 0.5f*(yi.real + yq.real);  // lower band
+    _y0->imag = 0.5f*(yi.imag + yq.imag);  // lower band
+
+    _y1->real = 0.5f*(yi.real - yq.real);  // upper band
+    _y1->imag = 0.5f*(yi.imag - yq.imag);  // upper band
+#else
     *_y0 = 0.5f*(yi + yq);  // lower band
     *_y1 = 0.5f*(yi - yq);  // upper band
+#endif
 }
 
 // execute analysis half-band filterbank
@@ -270,17 +247,25 @@ void RESAMP2(_analyzer_execute)(RESAMP2() _q,
     TO y1;      // filter branch
 
     // compute filter branch
-    WINDOW(_push)(_q->w1, 0.5*_x[0]);
+    WINDOW(_push)(_q->w1, _x[0]);
     WINDOW(_read)(_q->w1, &r);
     DOTPROD(_execute)(_q->dp, r, &y1);
 
     // compute delay branch
-    WINDOW(_push)(_q->w0, 0.5*_x[1]);
+    WINDOW(_push)(_q->w0, _x[1]);
     WINDOW(_index)(_q->w0, _q->m-1, &y0);
 
     // set return value
-    _y[0] = y1 + y0;
-    _y[1] = y1 - y0;
+#if defined LIQUID_FIXED && TO_COMPLEX==1
+    _y[0].real = 0.5f*(y1.real + y0.real);
+    _y[0].imag = 0.5f*(y1.imag + y0.imag);
+
+    _y[1].real = 0.5f*(y1.real - y0.real);
+    _y[1].imag = 0.5f*(y1.imag - y0.imag);
+#else
+    _y[0] = 0.5f*(y1 + y0);
+    _y[1] = 0.5f*(y1 - y0);
+#endif
 }
 
 // execute synthesis half-band filterbank
@@ -291,15 +276,23 @@ void RESAMP2(_synthesizer_execute)(RESAMP2() _q,
                                    TI * _x,
                                    TO * _y)
 {
-    TI * r;                 // buffer read pointer
+#if defined LIQUID_FIXED && TO_COMPLEX==1
+    //TI x0 = {_x[0].real + _x[1].real, _x[0].imag + _x[1].imag};  // delay branch input
+    //TI x1 = {_x[0].real - _x[1].real, _x[0].imag - _x[1].imag};  // filter branch input
+    
+    TI x0 = CQ(_add)(_x[0], _x[1]); // delay branch input
+    TI x1 = CQ(_sub)(_x[0], _x[1]); // filter branch inpu
+#else
     TI x0 = _x[0] + _x[1];  // delay branch input
     TI x1 = _x[0] - _x[1];  // filter branch input
+#endif
 
     // compute delay branch
     WINDOW(_push)(_q->w0, x0);
     WINDOW(_index)(_q->w0, _q->m-1, &_y[0]);
 
     // compute second branch (filter)
+    TI * r;                 // buffer read pointer
     WINDOW(_push)(_q->w1, x1);
     WINDOW(_read)(_q->w1, &r);
     DOTPROD(_execute)(_q->dp, r, &_y[1]);
@@ -328,7 +321,13 @@ void RESAMP2(_decim_execute)(RESAMP2() _q,
     WINDOW(_index)(_q->w0, _q->m-1, &y0);
 
     // set return value
+#if defined LIQUID_FIXED && TO_COMPLEX==1
+    //_y->real = y0.real + y1.real;
+    //_y->imag = y0.imag + y1.imag;
+    *_y = CQ(_add)(y0, y1);
+#else
     *_y = y0 + y1;
+#endif
 }
 
 // execute half-band interpolation
@@ -349,5 +348,43 @@ void RESAMP2(_interp_execute)(RESAMP2() _q,
     WINDOW(_push)(_q->w1, _x);
     WINDOW(_read)(_q->w1, &r);
     DOTPROD(_execute)(_q->dp, r, &_y[1]);
+}
+
+// 
+// internal methods
+//
+
+// initialize coefficients
+void RESAMP2(_init_coefficients)(RESAMP2() _q)
+{
+    // design half-band filter prototype (real coefficients)
+    float h[_q->h_len];
+    liquid_firdes_kaiser(_q->h_len, 0.25f, _q->As, 0.0f, h);
+
+    unsigned int i;
+#if TC_COMPLEX == 1
+    // modulate filter coefficients
+    float complex hc[_q->h_len];
+    float t;
+    for (i=0; i<_q->h_len; i++) {
+        t = (float)i - (float)(_q->h_len-1)/2.0f;
+        hc[i] = h[i] * liquid_cexpjf(t);
+    }
+#else
+    // set pointer to original coefficients
+    float * hc = h;
+#endif
+
+    // resample, alternate sign, [reverse direction]
+    unsigned int j=0;
+    for (i=1; i<_q->h_len; i+=2) {
+#if defined LIQUID_FIXED && TC_COMPLEX == 1
+        _q->h1[j++] = CQ(_float_to_fixed)(hc[_q->h_len - i - 1]);
+#elif defined LIQUID_FIXED && TC_COMPLEX == 0
+        _q->h1[j++] = Q(_float_to_fixed)(h[_q->h_len - i - 1]);
+#else
+        _q->h1[j++] = hc[_q->h_len - i - 1];
+#endif
+    }
 }
 
