@@ -306,6 +306,42 @@ void autotest_matrixf_inv()
 }
 
 // 
+// AUTOTEST: linsolve (solve linear system of equations)
+//
+void autotest_matrixf_linsolve()
+{
+    float tol = 1e-3f;
+
+    float A[16] = {
+       0.76388, -1.64417,  0.89351,  0.82201,
+      -0.05124, -1.66461,  0.34930,  0.64149,
+      -1.06596,  0.41814,  0.52435,  0.00610,
+       0.75328, -0.26873,  0.55124, -1.11348};
+
+    float b[4] = {
+       0.21582,
+       1.53286,
+      -0.30058,
+      -1.48258};
+
+    float x[4];
+    float x_test[4] = {
+      -0.77971,
+      -1.02904,
+      -1.34225,
+       0.38786};
+
+    // run solver
+    matrixf_linsolve(A, 4, b, x, NULL);
+
+    // validate results
+    CONTEND_DELTA(x[0], x_test[0], tol);
+    CONTEND_DELTA(x[1], x_test[1], tol);
+    CONTEND_DELTA(x[2], x_test[2], tol);
+    CONTEND_DELTA(x[3], x_test[3], tol);
+}
+
+// 
 // AUTOTEST: Q/R decomp (Gram-Schmidt)
 //
 void autotest_matrixf_qrdecomp()

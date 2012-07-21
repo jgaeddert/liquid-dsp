@@ -30,7 +30,7 @@
 //
 void autotest_reedsolomon_223_255()
 {
-#if !defined HAVE_FEC_H || HAVE_FEC_H==0
+#if !LIBFEC_ENABLED
     printf("warning: Reed-Solomon codes unavailable\n");
     return;
 #endif

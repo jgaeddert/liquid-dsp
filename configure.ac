@@ -1,6 +1,6 @@
 ## 
-## Copyright (c) 2007, 2008, 2009, 2010, 2011 Joseph Gaeddert
-## Copyright (c) 2007, 2008, 2009, 2010, 2011 Virginia Polytechnic
+## Copyright (c) 2007, 2008, 2009, 2010, 2011, 2012 Joseph Gaeddert
+## Copyright (c) 2007, 2008, 2009, 2010, 2011, 2012 Virginia Polytechnic
 ##                                      Institute & State University
 ##
 ## This file is part of liquid.
@@ -19,7 +19,7 @@
 ## along with liquid.  If not, see <http://www.gnu.org/licenses/>.
 
 # 
-# Liquid SDR library configure
+# liquid-dsp library configure
 # Process with autoconf to generate configure script
 #
 
@@ -70,7 +70,6 @@ AC_ARG_ENABLE(experimental,
             src/experimental/src/layer.o \
             src/experimental/src/maxnet.o \
             src/experimental/src/node.o \
-            src/experimental/src/fbasc.o \
             src/experimental/src/gport.o \
             src/experimental/src/filter_rrrf.o \
             src/experimental/src/filter_crcf.o \
@@ -85,22 +84,18 @@ AC_ARG_ENABLE(experimental,
             src/experimental/src/ofdmoqamframe.common.o \
             src/experimental/src/ofdmoqamframegen.o \
             src/experimental/src/ofdmoqamframesync.o \
-            src/experimental/src/smatrix.o \
-            src/experimental/src/mdctch.o \
             src/experimental/src/ricek_channel.o"
         EXPERIMENTAL_AUTOTESTS="src/experimental/tests/ann_autotest.c \
             src/experimental/tests/gport_autotest.c \
-            src/experimental/tests/smatrix_autotest.c \
             src/experimental/tests/channel_autotest.c"
 #           src/experimental/tests/ofdmoqam_autotest.c
-        EXPERIMENTAL_BENCHMARKS="src/experimental/bench/fbasc_benchmark.c \
+        EXPERIMENTAL_BENCHMARKS="src/experimental/bench/dds_benchmark.c \
             src/experimental/bench/gport_dma_benchmark.c \
             src/experimental/bench/gport_dma_threaded_benchmark.c \
             src/experimental/bench/gport_ima_benchmark.c \
             src/experimental/bench/gport_ima_threaded_benchmark.c \
-            src/experimental/bench/dds_benchmark.c \
             src/experimental/bench/ofdmoqam_benchmark.c \
-            src/experimental/bench/qmfb_benchmark.c"
+            src/experimental/bench/qmfb_benchmark.c "
         EXPERIMENTAL_EXAMPLES="examples/ann_bitpattern_example \
             examples/ann_example \
             examples/ann_layer_example \
@@ -108,7 +103,6 @@ AC_ARG_ENABLE(experimental,
             examples/ann_node_example \
             examples/ann_xor_example \
             examples/dds_cccf_example \
-            examples/fbasc_example \
             examples/gport_dma_example \
             examples/gport_dma_threaded_example \
             examples/gport_ima_example \
@@ -126,7 +120,6 @@ AC_ARG_ENABLE(experimental,
             examples/qmfb_crcf_analysis_example \
             examples/qmfb_crcf_synthesis_example \
             examples/ricek_channel_example \
-            examples/smatrix_example \
             examples/symsync2_crcf_example \
             examples/symsynclp_crcf_example"
 #           examples/ofdmoqamframe64gen_example
@@ -186,24 +179,29 @@ AC_CHECK_LIB([fec], [create_viterbi27], [],
 
 # check for programs (documentation)
 AC_CHECK_PROG(PDFLATEX, pdflatex, pdflatex, no)
-if test "x$PDFLATEX" == "xno"; then
+if [ test "x$PDFLATEX" == "xno" ]; then
     AC_MSG_WARN(pdflatex required to build documentation)
 fi
 AC_CHECK_PROG(BIBTEX, bibtex, bibtex, no)
-if test "x$BIBTEX" == "xno"; then
+if [ test "x$BIBTEX" == "xno" ]; then
     AC_MSG_WARN(bibtex required to build documentation)
 fi
 AC_CHECK_PROG(EPSTOPDF, epstopdf, epstopdf, no)
-if test "x$EPSTOPDF" == "xno"; then
+if [ test "x$EPSTOPDF" == "xno" ]; then
     AC_MSG_WARN(epstopdf required to build documentation)
 fi
 AC_CHECK_PROG(GNUPLOT, gnuplot, gnuplot, no)
-if test "x$GNUPLOT" == "xno"; then
+if [ test "x$GNUPLOT" == "xno" ]; then
     AC_MSG_WARN(gnuplot required to build documentation)
 fi
-AC_CHECK_PROG(PYGMENTIZE, pygmentize, pygmentize, no)
-if test "x$PYGMENTIZE" == "xno"; then
-    AC_MSG_WARN(pygmentize required to build documentation)
+AC_CHECK_PROG(PYGMENTIZE,   pygmentize,     pygmentize,     no)
+AC_CHECK_PROG(PYGMENTIZE24, pygmentize-2.4, pygmentize-2.4, no)
+if [ test "$PYGMENTIZE" == "no" ]; then
+    if [ test "$PYGMENTIZE24" == "no" ]; then
+        AC_MSG_WARN(pygmentize required to build documentation)
+    else
+        PYGMENTIZE="pygmentize-2.4"
+    fi
 fi
 
 

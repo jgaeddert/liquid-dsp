@@ -1,5 +1,5 @@
-# Copyright (c) 2007, 2008, 2009, 2010, 2011 Joseph Gaeddert
-# Copyright (c) 2007, 2008, 2009, 2010, 2011 Virginia Polytechnic
+# Copyright (c) 2007, 2008, 2009, 2010, 2011, 2012 Joseph Gaeddert
+# Copyright (c) 2007, 2008, 2009, 2010, 2011, 2012 Virginia Polytechnic
 #                                      Institute & State University
 #
 # This file is part of liquid.
@@ -18,7 +18,7 @@
 # along with liquid.  If not, see <http://www.gnu.org/licenses/>.
 
 # 
-# Makefile for liquid SDR libraries
+# Makefile for liquid-dsp libraries
 #
 # Targets:
 #    all                 :   dynamic shared-library object (e.g. libliquid.so)
@@ -319,6 +319,7 @@ fec_benchmarks :=						\
 	src/fec/bench/fec_encode_benchmark.c			\
 	src/fec/bench/fec_decode_benchmark.c			\
 	src/fec/bench/fecsoft_decode_benchmark.c		\
+	src/fec/bench/sumproduct_benchmark.c			\
 
 # 
 # MODULE : fft - fast Fourier transforms, discrete sine/cosine transforms, etc.
@@ -507,9 +508,8 @@ filter_autotests :=						\
 	src/filter/tests/filter_crosscorr_autotest.c		\
 	src/filter/tests/firdes_autotest.c			\
 	src/filter/tests/firdespm_autotest.c			\
-	src/filter/tests/firfilt_rrrf_autotest.c		\
-	src/filter/tests/firfilt_crcf_autotest.c		\
 	src/filter/tests/firfilt_q16_autotest.c			\
+	src/filter/tests/firfilt_xxxf_autotest.c		\
 	src/filter/tests/firhilb_autotest.c			\
 	src/filter/tests/firpfb_autotest.c			\
 	src/filter/tests/groupdelay_autotest.c			\
@@ -520,6 +520,21 @@ filter_autotests :=						\
 	src/filter/tests/interp_autotest.c			\
 	src/filter/tests/resamp2_crcf_autotest.c		\
 
+# additional autotest objects
+autotest_extra_obj +=						\
+	src/filter/tests/firfilt_runtest.o			\
+	src/filter/tests/firfilt_rrrf_data_h4x8.o		\
+	src/filter/tests/firfilt_crcf_data_h4x8.o		\
+	src/filter/tests/firfilt_cccf_data_h4x8.o		\
+	src/filter/tests/firfilt_rrrf_data_h7x16.o		\
+	src/filter/tests/firfilt_crcf_data_h7x16.o		\
+	src/filter/tests/firfilt_cccf_data_h7x16.o		\
+	src/filter/tests/firfilt_rrrf_data_h13x32.o		\
+	src/filter/tests/firfilt_crcf_data_h13x32.o		\
+	src/filter/tests/firfilt_cccf_data_h13x32.o		\
+	src/filter/tests/firfilt_rrrf_data_h23x64.o		\
+	src/filter/tests/firfilt_crcf_data_h23x64.o		\
+	src/filter/tests/firfilt_cccf_data_h23x64.o		\
 
 filter_benchmarks :=						\
 	src/filter/bench/decim_benchmark.c			\
@@ -793,6 +808,10 @@ matrix_objects :=						\
 	src/matrix/src/matrixf.o				\
 	src/matrix/src/matrixc.o				\
 	src/matrix/src/matrixcf.o				\
+	src/matrix/src/smatrix.common.o				\
+	src/matrix/src/smatrixb.o				\
+	src/matrix/src/smatrixf.o				\
+	src/matrix/src/smatrixi.o				\
 
 
 matrix_includes :=						\
@@ -814,15 +833,27 @@ src/matrix/src/matrixf.o : %.o : %.c $(headers) $(matrix_includes)
 
 src/matrix/src/matrixcf.o : %.o : %.c $(headers) $(matrix_includes)
 
+src/matrix/src/smatrixb.o: %.o : %.c $(headers) src/matrix/src/smatrix.c
+
+src/matrix/src/smatrixf.o: %.o : %.c $(headers) src/matrix/src/smatrix.c
+
+src/matrix/src/smatrixi.o: %.o : %.c $(headers) src/matrix/src/smatrix.c
+
 
 
 matrix_autotests :=						\
 	src/matrix/tests/matrixcf_autotest.c			\
 	src/matrix/tests/matrixf_autotest.c			\
+	src/matrix/tests/smatrixb_autotest.c			\
+	src/matrix/tests/smatrixf_autotest.c			\
+	src/matrix/tests/smatrixi_autotest.c			\
 
 
 matrix_benchmarks :=						\
 	src/matrix/bench/matrixf_inv_benchmark.c		\
+	src/matrix/bench/matrixf_linsolve_benchmark.c		\
+	src/matrix/bench/matrixf_mul_benchmark.c		\
+	src/matrix/bench/smatrixf_mul_benchmark.c		\
 
 
 # 
@@ -953,20 +984,9 @@ optim_objects :=						\
 	src/optim/src/gradsearch.o				\
 	src/optim/src/optim.common.o				\
 	src/optim/src/qnsearch.o				\
-	src/optim/src/rosenbrock.o				\
+	src/optim/src/utilities.o				\
 
-
-src/optim/src/chromosome.o : %.o : %.c $(headers)
-
-src/optim/src/gasearch.o : %.o : %.c $(headers)
-
-src/optim/src/gradsearch.o : %.o : %.c $(headers)
-
-src/optim/src/optim.common.o : %.o : %.c $(headers)
-
-src/optim/src/qnsearch.o : %.o : %.c $(headers)
-
-src/optim/src/rosenbrock.o : %.o : %.c $(headers)
+$(optim_objects) : %.o : %.c $(headers)
 
 # autotests
 optim_autotests :=
@@ -1492,6 +1512,7 @@ example_programs :=						\
 	examples/resamp2_crcf_filter_example			\
 	examples/resamp2_crcf_interp_example			\
 	examples/scramble_example				\
+	examples/smatrix_example				\
 	examples/spgram_example					\
 	examples/symsync_crcf_example				\
 	examples/wdelayf_example				\
@@ -1589,6 +1610,8 @@ sandbox_programs =						\
 	sandbox/modem_demodulate_soft_gentab			\
 	sandbox/ofdmoqam_firpfbch_test				\
 	sandbox/ofdm_ber_test					\
+	sandbox/ofdmframe_papr_test				\
+	sandbox/ofdmframesync_cfo_test				\
 	sandbox/packetizer_persistent_ber_test			\
 	sandbox/pll_design_test					\
 	sandbox/predemod_sync_test				\

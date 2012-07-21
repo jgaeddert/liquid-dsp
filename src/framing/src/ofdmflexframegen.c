@@ -36,7 +36,6 @@
 
 // default ofdmflexframegen properties
 static ofdmflexframegenprops_s ofdmflexframegenprops_default = {
-    3,                  // num_symbols_S0
     LIQUID_CRC_32,      // check
     LIQUID_FEC_NONE,    // fec0
     LIQUID_FEC_NONE,    // fec1
@@ -52,6 +51,7 @@ void ofdmflexframegenprops_init_default(ofdmflexframegenprops_s * _props)
 struct ofdmflexframegen_s {
     unsigned int M;         // number of subcarriers
     unsigned int cp_len;    // cyclic prefix length
+    unsigned int taper_len; // taper length
     unsigned char * p;      // subcarrier allocation (null, pilot, data)
 
     // constants
@@ -68,8 +68,6 @@ struct ofdmflexframegen_s {
     ofdmframegen fg;        // frame generator object
 
     // options/derived lengths
-    //unsigned int num_symbols_S0;        // 
-    //unsigned int num_symbols_S1;        // 
     unsigned int num_symbols_header;    // number of header OFDM symbols
     unsigned int num_symbols_payload;   // number of payload OFDM symbols
 
@@ -92,8 +90,9 @@ struct ofdmflexframegen_s {
     // counters/states
     unsigned int symbol_number;         // output symbol number
     enum {
-        OFDMFLEXFRAMEGEN_STATE_S0=0,    // write S0 symbols
-        OFDMFLEXFRAMEGEN_STATE_S1,      // write S1 symbols
+        OFDMFLEXFRAMEGEN_STATE_S0a=0,   // write S0 symbol (first)
+        OFDMFLEXFRAMEGEN_STATE_S0b,     // write S0 symbol (second)
+        OFDMFLEXFRAMEGEN_STATE_S1,      // write S1 symbol
         OFDMFLEXFRAMEGEN_STATE_HEADER,  // write header symbols
         OFDMFLEXFRAMEGEN_STATE_PAYLOAD  // write payload symbols
     } state;
@@ -106,12 +105,17 @@ struct ofdmflexframegen_s {
     ofdmflexframegenprops_s props;
 };
 
-// TODO : put these options in 'assemble()' method?
-// TODO : allow _p to be NULL pointer (and initialize with defaults)
-ofdmflexframegen ofdmflexframegen_create(unsigned int _M,
-                                         unsigned int _cp_len,
-                                         unsigned char * _p,
-                                         ofdmflexframegenprops_s * _props)
+// create OFDM flexible framing generator object
+//  _M          :   number of subcarriers, >10 typical
+//  _cp_len     :   cyclic prefix length
+//  _taper_len  :   taper length (OFDM symbol overlap)
+//  _p          :   subcarrier allocation (null, pilot, data), [size: _M x 1]
+//  _fgprops    :   frame properties (modulation scheme, etc.)
+ofdmflexframegen ofdmflexframegen_create(unsigned int              _M,
+                                         unsigned int              _cp_len,
+                                         unsigned int              _taper_len,
+                                         unsigned char *           _p,
+                                         ofdmflexframegenprops_s * _fgprops)
 {
     // validate input
     if (_M < 2) {
@@ -123,8 +127,9 @@ ofdmflexframegen ofdmflexframegen_create(unsigned int _M,
     }
 
     ofdmflexframegen q = (ofdmflexframegen) malloc(sizeof(struct ofdmflexframegen_s));
-    q->M      = _M;         // number of subcarriers
-    q->cp_len = _cp_len;    // cyclic prefix length
+    q->M         = _M;          // number of subcarriers
+    q->cp_len    = _cp_len;     // cyclic prefix length
+    q->taper_len = _taper_len;  // taper length
 
     // allocate memory for transform buffers
     q->X = (float complex*) malloc((q->M)*sizeof(float complex));
@@ -143,7 +148,7 @@ ofdmflexframegen ofdmflexframegen_create(unsigned int _M,
     ofdmframe_validate_sctype(q->p, q->M, &q->M_null, &q->M_pilot, &q->M_data);
 
     // create internal OFDM frame generator object
-    q->fg = ofdmframegen_create(q->M, q->cp_len, q->p);
+    q->fg = ofdmframegen_create(q->M, q->cp_len, q->taper_len, q->p);
 
     // create header objects
     q->mod_header = modem_create(OFDMFLEXFRAME_H_MOD);
@@ -173,7 +178,7 @@ ofdmflexframegen ofdmflexframegen_create(unsigned int _M,
     q->mod_payload = modem_create(LIQUID_MODEM_QPSK);
 
     // initialize properties
-    ofdmflexframegen_setprops(q, _props);
+    ofdmflexframegen_setprops(q, _fgprops);
 
     // reset
     ofdmflexframegen_reset(q);
@@ -205,7 +210,7 @@ void ofdmflexframegen_reset(ofdmflexframegen _q)
 {
     // reset symbol counter and state
     _q->symbol_number = 0;
-    _q->state = OFDMFLEXFRAMEGEN_STATE_S0;
+    _q->state = OFDMFLEXFRAMEGEN_STATE_S0a;
     _q->frame_assembled = 0;
     _q->frame_complete = 0;
     _q->header_symbol_index = 0;
@@ -230,6 +235,7 @@ void ofdmflexframegen_print(ofdmflexframegen _q)
     printf("      * pilot           :   %-u\n", _q->M_pilot);
     printf("      * data            :   %-u\n", _q->M_data);
     printf("    cyclic prefix len   :   %-u\n", _q->cp_len);
+    printf("    taper len           :   %-u\n", _q->taper_len);
     printf("    properties:\n");
     printf("      * mod scheme      :   %s\n", modulation_types[_q->props.mod_scheme].fullname);
     printf("      * fec (inner)     :   %s\n", fec_scheme_str[_q->props.fec0][1]);
@@ -242,15 +248,14 @@ void ofdmflexframegen_print(ofdmflexframegen _q)
         printf("      * encoded bytes   :   %-u\n", _q->payload_enc_len);
         printf("      * modulated syms  :   %-u\n", _q->payload_mod_len);
         printf("    total OFDM symbols  :   %-u\n", ofdmflexframegen_getframelen(_q));
-        printf("      * S0 symbols      :   %-u @ %u\n", _q->props.num_symbols_S0, _q->M);
+        printf("      * S0 symbols      :   %-u @ %u\n", 2, _q->M+_q->cp_len);
         printf("      * S1 symbols      :   %-u @ %u\n", 1, _q->M+_q->cp_len);
         printf("      * header symbols  :   %-u @ %u\n", _q->num_symbols_header,  _q->M+_q->cp_len);
         printf("      * payload symbols :   %-u @ %u\n", _q->num_symbols_payload, _q->M+_q->cp_len);
 
         // compute asymptotic spectral efficiency
         unsigned int num_bits = 8*_q->payload_dec_len;
-        unsigned int num_samples = _q->M*_q->props.num_symbols_S0 +
-                                   (_q->M+_q->cp_len)*(1 + _q->num_symbols_header + _q->num_symbols_payload);
+        unsigned int num_samples = (_q->M+_q->cp_len)*(3 + _q->num_symbols_header + _q->num_symbols_payload);
         printf("    spectral efficiency :   %-6.4f b/s/Hz\n", (float)num_bits / (float)num_samples);
     }
 }
@@ -299,12 +304,12 @@ void ofdmflexframegen_setprops(ofdmflexframegen _q,
 //  _q              :   OFDM frame generator object
 unsigned int ofdmflexframegen_getframelen(ofdmflexframegen _q)
 {
-    // number of S0 symbols
+    // number of S0 symbols (2)
     // number of S1 symbols (1)
     // number of header symbols
     // number of payload symbols
-    return  _q->props.num_symbols_S0 +
-            1 +
+    return  2 + // S0 symbols
+            1 + // S1 symbol
             _q->num_symbols_header +
             _q->num_symbols_payload;
 }
@@ -361,40 +366,43 @@ void ofdmflexframegen_assemble(ofdmflexframegen _q,
 // write symbols of assembled frame
 //  _q              :   OFDM frame generator object
 //  _buffer         :   output buffer [size: N+cp_len x 1]
-//  _num_written    :   number written (either N or N+cp_len)
-int ofdmflexframegen_writesymbol(ofdmflexframegen _q,
-                                 liquid_float_complex * _buffer,
-                                 unsigned int * _num_written)
+int ofdmflexframegen_writesymbol(ofdmflexframegen       _q,
+                                 liquid_float_complex * _buffer)
 {
     // check if frame is actually assembled
     if ( !_q->frame_assembled ) {
         fprintf(stderr,"warning: ofdmflexframegen_writesymbol(), frame not assembled\n");
-        *_num_written = 0;
         return 1;
     }
 
     // increment symbol counter
     _q->symbol_number++;
+    //printf("writesymbol(): %u\n", _q->symbol_number);
 
     switch (_q->state) {
-    case OFDMFLEXFRAMEGEN_STATE_S0:
-        // write S0 symbols
-        ofdmflexframegen_write_S0(_q, _buffer, _num_written);
+    case OFDMFLEXFRAMEGEN_STATE_S0a:
+        // write S0 symbol (first)
+        ofdmflexframegen_write_S0a(_q, _buffer);
+        break;
+
+    case OFDMFLEXFRAMEGEN_STATE_S0b:
+        // write S0 symbol (second)
+        ofdmflexframegen_write_S0b(_q, _buffer);
         break;
 
     case OFDMFLEXFRAMEGEN_STATE_S1:
         // write S1 symbols
-        ofdmflexframegen_write_S1(_q, _buffer, _num_written);
+        ofdmflexframegen_write_S1(_q, _buffer);
         break;
 
     case OFDMFLEXFRAMEGEN_STATE_HEADER:
         // write header symbols
-        ofdmflexframegen_write_header(_q, _buffer, _num_written);
+        ofdmflexframegen_write_header(_q, _buffer);
         break;
 
     case OFDMFLEXFRAMEGEN_STATE_PAYLOAD:
         // write payload symbols
-        ofdmflexframegen_write_payload(_q, _buffer, _num_written);
+        ofdmflexframegen_write_payload(_q, _buffer);
         break;
 
     default:
@@ -510,57 +518,55 @@ void ofdmflexframegen_modulate_header(ofdmflexframegen _q)
                         &num_written);
 }
 
-// write S0 symbol
-void ofdmflexframegen_write_S0(ofdmflexframegen _q,
-                               float complex * _buffer,
-                               unsigned int * _num_written)
+// write first S0 symbol
+void ofdmflexframegen_write_S0a(ofdmflexframegen _q,
+                                float complex * _buffer)
 {
 #if DEBUG_OFDMFLEXFRAMEGEN
-    printf("writing S0 symbol\n");
+    printf("writing S0[a] symbol\n");
 #endif
 
     // write S0 symbol into front of buffer
-    ofdmframegen_write_S0(_q->fg, _buffer);
+    ofdmframegen_write_S0a(_q->fg, _buffer);
 
-    // set output length (no cyclic extension)
-    *_num_written = _q->M;
+    // update state
+    _q->state = OFDMFLEXFRAMEGEN_STATE_S0b;
+}
 
-    // check state
-    if (_q->symbol_number == _q->props.num_symbols_S0) {
-        _q->symbol_number = 0;
-        _q->state = OFDMFLEXFRAMEGEN_STATE_S1;
-    }
+// write second S0 symbol
+void ofdmflexframegen_write_S0b(ofdmflexframegen _q,
+                                float complex * _buffer)
+{
+#if DEBUG_OFDMFLEXFRAMEGEN
+    printf("writing S0[b] symbol\n");
+#endif
+
+    // write S0 symbol into front of buffer
+    ofdmframegen_write_S0b(_q->fg, _buffer);
+
+    // update state
+    _q->state = OFDMFLEXFRAMEGEN_STATE_S1;
 }
 
 // write S1 symbol
 void ofdmflexframegen_write_S1(ofdmflexframegen _q,
-                               float complex * _buffer,
-                               unsigned int * _num_written)
+                               float complex * _buffer)
 {
 #if DEBUG_OFDMFLEXFRAMEGEN
     printf("writing S1 symbol\n");
 #endif
 
     // write S1 symbol into end of buffer
-    ofdmframegen_write_S1(_q->fg, &_buffer[_q->cp_len]);
+    ofdmframegen_write_S1(_q->fg, _buffer);
 
-    // add cyclic prefix
-    memmove(_buffer, &_buffer[_q->M], _q->cp_len*sizeof(float complex));
-
-    // set output length
-    *_num_written = _q->M + _q->cp_len;
-
-    // check state
-    if (_q->symbol_number == 1) {
-        _q->symbol_number = 0;
-        _q->state = OFDMFLEXFRAMEGEN_STATE_HEADER;
-    }
+    // update state
+    _q->symbol_number = 0;
+    _q->state = OFDMFLEXFRAMEGEN_STATE_HEADER;
 }
 
 // write header symbol
 void ofdmflexframegen_write_header(ofdmflexframegen _q,
-                                   float complex * _buffer,
-                                   unsigned int * _num_written)
+                                   float complex * _buffer)
 {
 #if DEBUG_OFDMFLEXFRAMEGEN
     printf("writing header symbol\n");
@@ -595,9 +601,6 @@ void ofdmflexframegen_write_header(ofdmflexframegen _q,
     // write symbol
     ofdmframegen_writesymbol(_q->fg, _q->X, _buffer);
 
-    // set output length
-    *_num_written = _q->M + _q->cp_len;
-
     // check state
     if (_q->symbol_number == _q->num_symbols_header) {
         _q->symbol_number = 0;
@@ -607,8 +610,7 @@ void ofdmflexframegen_write_header(ofdmflexframegen _q,
 
 // write payload symbol
 void ofdmflexframegen_write_payload(ofdmflexframegen _q,
-                                    float complex * _buffer,
-                                    unsigned int * _num_written)
+                                    float complex * _buffer)
 {
 #if DEBUG_OFDMFLEXFRAMEGEN
     printf("writing payload symbol\n");
@@ -641,9 +643,6 @@ void ofdmflexframegen_write_payload(ofdmflexframegen _q,
 
     // write symbol
     ofdmframegen_writesymbol(_q->fg, _q->X, _buffer);
-
-    // set output length
-    *_num_written = _q->M + _q->cp_len;
 
     // check to see if this is the last symbol in the payload
     if (_q->symbol_number == _q->num_symbols_payload)

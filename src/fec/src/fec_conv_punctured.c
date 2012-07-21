@@ -30,7 +30,7 @@
 
 #define VERBOSE_FEC_CONV_PUNCTURED    0
 
-#if HAVE_FEC_H == 1 // (config.h)
+#if LIBFEC_ENABLED
 #include "fec.h"
 
 fec fec_conv_punctured_create(fec_scheme _fs)
@@ -423,7 +423,7 @@ void fec_conv_init_v29p78(fec _q)
 }
 
 
-#else   // HAVE_FEC_H (config.h)
+#else   // LIBFEC_ENABLED
 
 fec fec_conv_punctured_create(fec_scheme _fs)
 {
@@ -449,5 +449,5 @@ void fec_conv_punctured_decode(fec _q,
 {
 }
 
-#endif  // HAVE_FEC_H (config.h)
+#endif  // LIBFEC_ENABLED
 

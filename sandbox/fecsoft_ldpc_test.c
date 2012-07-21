@@ -8,7 +8,7 @@
 // the 16 x 16 matrix P. Each row of P is a circular shift of the
 // generator polynomial p = [ 1 0 0 0 0 1 0 0 0 0 0 1 0 0 0 0]
 // such that P^T = P and
-//  G = [I(16) P    ]
+//  G = [I(16) P    ]^T
 //  H = [P^T   I(16)]
 
 #include <stdio.h>
@@ -38,11 +38,11 @@ int main(int argc, char*argv[])
     // TODO : find 'optimal' generator polynomial
     unsigned char p[] = {1,0,0,0, 0,1,0,0, 0,0,0,1, 0,0,0,0};
 
-    // generator matrix [m x n]
-    unsigned char G[m*n];
+    // generator matrix [n x m]
+    unsigned char Gs[n*m];
 
     // parity check matrix [m x n]
-    unsigned char H[m*n];
+    unsigned char Hs[m*n];
 
     unsigned int i;
     unsigned int j;
@@ -50,15 +50,21 @@ int main(int argc, char*argv[])
     // init generator and parity check matrices
     for (i=0; i<m; i++) {
         for (j=0; j<m; j++) {
-            // G = [I(m) P]
-            G[i*n + j]     = (i==j) ? 1 : 0;
-            G[i*n + j + m] = p[(i+j)%m];
+            // G = [I(m) P]^T
+            Gs[j*m + i]       = (i==j) ? 1 : 0;
+            Gs[j*m + i + m*m] = p[(i+j)%m];
 
             // H = [P^T I(m)]
-            H[i*n + j + m] = (i==j) ? 1 : 0;
-            H[i*n + j]     = p[(i+j)%m];
+            Hs[i*n + j + m] = (i==j) ? 1 : 0;
+            Hs[i*n + j]     = p[(i+j)%m];
         }
     }
+
+    // generate sparse binary matrices
+    smatrixb G = smatrixb_create_array(Gs, n, m);
+    smatrixb H = smatrixb_create_array(Hs, m, n);
+    printf("G =\n"); smatrixb_print_expanded(G);
+    printf("H =\n"); smatrixb_print_expanded(H);
 
     // derived values
     float SNRdB_step = (SNRdB_max - SNRdB_min) / (num_steps-1);
@@ -70,24 +76,6 @@ int main(int argc, char*argv[])
     float LLR[n];           // log-likelihood ratio
     unsigned char c_hat[n]; // estimated codeword
     unsigned char x_hat[n]; // estimated message signal
-
-
-    // print generator check matrix
-    printf("G =\n");
-    for (j=0; j<m; j++) {
-        for (i=0; i<n; i++) {
-            printf("%3u", G[j*n+i]);
-        }
-        printf("\n");
-    }
-    // print parity check matrix
-    printf("H =\n");
-    for (j=0; j<m; j++) {
-        for (i=0; i<n; i++) {
-            printf("%3u", H[j*n+i]);
-        }
-        printf("\n");
-    }
 
     unsigned int t;
     unsigned int s;
@@ -113,13 +101,9 @@ int main(int argc, char*argv[])
             for (i=0; i<m; i++)
                 x[i] = rand() % 2;
 
-            // compute encoded message
-            for (i=0; i<n; i++) {
-                c[i] = 0;
-                for (j=0; j<m; j++)
-                    c[i] += G[j*n+i] * x[j];
-                c[i] %= 2;
-            }
+            smatrixb_vmul(G, x, c);
+            //printf("x = ["); for (i=0; i<m; i++) printf(" %c", x[i] ? '1' : '0'); printf(" ]\n");
+            //printf("c = ["); for (i=0; i<n; i++) printf(" %c", c[i] ? '1' : '0'); printf(" ]\n");
 
             // compute received signal (with noise) and log-likelihood ratio
             for (i=0; i<n; i++) {
@@ -129,7 +113,7 @@ int main(int argc, char*argv[])
             }
 
             // run internal sum-product algorithm
-            int parity_pass = fec_sumproduct(H, m, n, LLR, c_hat, max_iterations);
+            int parity_pass = fec_sumproduct(m, n, H, LLR, c_hat, max_iterations);
 
             // compute estimated transmitted message (first 12 bits of c_hat)
             for (i=0; i<m; i++)
@@ -150,6 +134,10 @@ int main(int argc, char*argv[])
                 num_bit_errors[s], (float)(num_bit_errors[s]) / (float)(num_trials*m),
                 0.5f*erfcf(1.0f/sigma));
     }
+
+    // destroy sparse matrices
+    smatrixb_destroy(H);
+    smatrixb_destroy(G);
 
     // 
     // export output file

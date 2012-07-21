@@ -1,6 +1,6 @@
 /*
- * Copyright (c) 2007, 2008, 2009, 2010, 2011 Joseph Gaeddert
- * Copyright (c) 2007, 2008, 2009, 2010, 2011 Virginia Polytechnic
+ * Copyright (c) 2007, 2008, 2009, 2010, 2011, 2012 Joseph Gaeddert
+ * Copyright (c) 2007, 2008, 2009, 2010, 2011, 2012 Virginia Polytechnic
  *                                        Institute & State University
  *
  * This file is part of liquid.
@@ -39,6 +39,10 @@
 
 #if LIQUID_EXPERIMENTAL == 1
 #  include "liquid.experimental.h"
+#endif
+
+#if defined HAVE_FEC_H && defined HAVE_LIBFEC
+#  define LIBFEC_ENABLED 1
 #endif
 
 
@@ -665,23 +669,23 @@ float sumproduct_phi(float _x);
 
 // iterate over the sum-product algorithm:
 // returns 1 if parity checks, 0 otherwise
-//  _H          :   parity check matrix [size: _m x _n]
 //  _m          :   rows
 //  _n          :   cols
+//  _H          :   sparse binary parity check matrix [size: _m x _n]
 //  _LLR        :   received signal (soft bits, LLR) [size: _n x 1]
 //  _c_hat      :   estimated transmitted signal [size: _n x 1]
 //  _max_steps  :   maximum number of steps before bailing
-int fec_sumproduct(unsigned char * _H,
-                   unsigned int _m,
-                   unsigned int _n,
-                   float * _LLR,
+int fec_sumproduct(unsigned int    _m,
+                   unsigned int    _n,
+                   smatrixb        _H,
+                   float *         _LLR,
                    unsigned char * _c_hat,
-                   unsigned int _max_steps);
+                   unsigned int    _max_steps);
 
 // sum-product algorithm, returns 1 if parity checks, 0 otherwise
-//  _H      :   parity check matrix [size: _m x _n]
 //  _m      :   rows
 //  _n      :   cols
+//  _H      :   sparse binary parity check matrix [size: _m x _n]
 //  _c_hat  :   estimated transmitted signal [size: _n x 1]
 //
 // internal state arrays
@@ -690,14 +694,14 @@ int fec_sumproduct(unsigned char * _H,
 //  _Lc     :   [size: _n x 1]
 //  _LQ     :   [size: _n x 1]
 //  _parity :   _H * _c_hat [size: _m x 1]
-int fec_sumproduct_step(unsigned char * _H,
-                        unsigned int _m,
-                        unsigned int _n,
+int fec_sumproduct_step(unsigned int    _m,
+                        unsigned int    _n,
+                        smatrixb        _H,
                         unsigned char * _c_hat,
-                        float * _Lq,
-                        float * _Lr,
-                        float * _Lc,
-                        float * _LQ,
+                        float *         _Lq,
+                        float *         _Lr,
+                        float *         _Lc,
+                        float *         _LQ,
                         unsigned char * _parity);
 
 
@@ -1347,25 +1351,25 @@ void ofdmflexframegen_encode_header(ofdmflexframegen _q);
 // modulate header
 void ofdmflexframegen_modulate_header(ofdmflexframegen _q);
 
-// write S0 symbol
-void ofdmflexframegen_write_S0(ofdmflexframegen _q,
-                               float complex * _buffer,
-                               unsigned int * _num_written);
+// write first S0 symbol
+void ofdmflexframegen_write_S0a(ofdmflexframegen _q,
+                                float complex * _buffer);
+
+// write second S0 symbol
+void ofdmflexframegen_write_S0b(ofdmflexframegen _q,
+                                float complex * _buffer);
 
 // write S1 symbol
 void ofdmflexframegen_write_S1(ofdmflexframegen _q,
-                               float complex * _buffer,
-                               unsigned int * _num_written);
+                               float complex * _buffer);
 
 // write header symbol
 void ofdmflexframegen_write_header(ofdmflexframegen _q,
-                                   float complex * _buffer,
-                                   unsigned int * _num_written);
+                                   float complex * _buffer);
 
 // write payload symbol
 void ofdmflexframegen_write_payload(ofdmflexframegen _q,
-                                    float complex * _buffer,
-                                    unsigned int * _num_written);
+                                    float complex * _buffer);
 
 // 
 // ofdmflexframesync
@@ -1495,6 +1499,28 @@ LIQUID_MATRIX_DEFINE_INTERNAL_API(MATRIX_MANGLE_DOUBLE,  double)
 
 LIQUID_MATRIX_DEFINE_INTERNAL_API(MATRIX_MANGLE_CFLOAT,  liquid_float_complex)
 LIQUID_MATRIX_DEFINE_INTERNAL_API(MATRIX_MANGLE_CDOUBLE, liquid_double_complex)
+
+
+// sparse 'alist' matrix type (similar to MacKay, Davey Lafferty convention)
+// large macro
+//   SMATRIX    : name-mangling macro
+//   T          : primitive data type
+#define LIQUID_SMATRIX_DEFINE_INTERNAL_API(SMATRIX,T)           \
+                                                                \
+void SMATRIX(_reset_max_mlist)(SMATRIX() _q);                   \
+void SMATRIX(_reset_max_nlist)(SMATRIX() _q);                   \
+
+LIQUID_SMATRIX_DEFINE_INTERNAL_API(SMATRIX_MANGLE_BOOL,  unsigned char)
+LIQUID_SMATRIX_DEFINE_INTERNAL_API(SMATRIX_MANGLE_FLOAT, float)
+LIQUID_SMATRIX_DEFINE_INTERNAL_API(SMATRIX_MANGLE_INT,   short int)
+
+// search for index placement in list
+unsigned short int smatrix_indexsearch(unsigned short int * _list,
+                                       unsigned int         _num_elements,
+                                       unsigned short int   _value);
+
+
+
 
 //
 // MODULE : modem
@@ -1688,38 +1714,41 @@ extern const float complex modem_arb256opt[256];
 // ofdm frame (common)
 
 // generate short sequence symbols
-//  _p                  :   subcarrier allocation array
-//  _num_subcarriers    :   total number of subcarriers
-//  _S0                 :   output symbol (freq)
-//  _s0                 :   output symbol (time)
-//  _M_S0               :   total number of enabled subcarriers in S0
+//  _p      :   subcarrier allocation array
+//  _M      :   total number of subcarriers
+//  _S0     :   output symbol (freq)
+//  _s0     :   output symbol (time)
+//  _M_S0   :   total number of enabled subcarriers in S0
 void ofdmframe_init_S0(unsigned char * _p,
-                       unsigned int _num_subcarriers,
+                       unsigned int    _M,
                        float complex * _S0,
                        float complex * _s0,
-                       unsigned int * _M_S0);
+                       unsigned int *  _M_S0);
 
 // generate long sequence symbols
-//  _p                  :   subcarrier allocation array
-//  _num_subcarriers    :   total number of subcarriers
-//  _S1                 :   output symbol (freq)
-//  _s1                 :   output symbol (time)
-//  _M_S1               :   total number of enabled subcarriers in S1
+//  _p      :   subcarrier allocation array
+//  _M      :   total number of subcarriers
+//  _S1     :   output symbol (freq)
+//  _s1     :   output symbol (time)
+//  _M_S1   :   total number of enabled subcarriers in S1
 void ofdmframe_init_S1(unsigned char * _p,
-                       unsigned int _num_subcarriers,
+                       unsigned int    _M,
                        float complex * _S1,
                        float complex * _s1,
-                       unsigned int * _M_S1);
+                       unsigned int *  _M_S1);
 
+// generate symbol (add cyclic prefix/postfix, overlap)
+void ofdmframegen_gensymbol(ofdmframegen    _q,
+                            float complex * _buffer);
 
 void ofdmframesync_cpcorrelate(ofdmframesync _q);
 void ofdmframesync_findrxypeak(ofdmframesync _q);
 void ofdmframesync_rxpayload(ofdmframesync _q);
 
 void ofdmframesync_execute_seekplcp(ofdmframesync _q);
-void ofdmframesync_execute_plcpshort0(ofdmframesync _q);
-void ofdmframesync_execute_plcpshort1(ofdmframesync _q);
-void ofdmframesync_execute_plcplong(ofdmframesync _q);
+void ofdmframesync_execute_S0a(ofdmframesync _q);
+void ofdmframesync_execute_S0b(ofdmframesync _q);
+void ofdmframesync_execute_S1( ofdmframesync _q);
 void ofdmframesync_execute_rxsymbols(ofdmframesync _q);
 
 void ofdmframesync_S0_metrics(ofdmframesync _q,
@@ -1730,7 +1759,7 @@ void ofdmframesync_S0_metrics(ofdmframesync _q,
 //  _q      :   ofdmframesync object
 //  _x      :   input array (time)
 //  _G      :   output gain (freq)
-void ofdmframesync_estimate_gain_S0(ofdmframesync _q,
+void ofdmframesync_estimate_gain_S0(ofdmframesync   _q,
                                     float complex * _x,
                                     float complex * _G);
 
@@ -1867,11 +1896,36 @@ int optim_threshold_switch(float _u0,
                            float _u1,
                            int _minimize);
 
-// compute the gradient vector (estimate)
-void gradsearch_compute_gradient(gradsearch _g);
+// compute the gradient of a function at a particular point
+//  _utility    :   user-defined function
+//  _userdata   :   user-defined data object
+//  _x          :   operating point, [size: _n x 1]
+//  _n          :   dimensionality of search
+//  _delta      :   step value for which to compute gradient
+//  _gradient   :   resulting gradient
+void gradsearch_gradient(utility_function _utility,
+                         void  *          _userdata,
+                         float *          _x,
+                         unsigned int     _n,
+                         float            _delta,
+                         float *          _gradient);
 
-// normalize the gradient vector
-void gradsearch_normalize_gradient(gradsearch _g);
+// execute line search; loosely solve:
+//    min phi(alpha) := f(_x - alpha*_grad)
+//  _utility    :   user-defined function
+//  _userdata   :   user-defined data object
+//  _x          :   operating point, [size: _n x 1]
+//  _n          :   dimensionality of search
+float gradsearch_linesearch(utility_function _utility,
+                            void  *          _userdata,
+                            float *          _x,
+                            unsigned int     _n,
+                            float *          _grad,
+                            float            _alpha);
+
+// normalize vector, returning its l2-norm
+float gradsearch_norm(float *      _v,
+                      unsigned int _n);
 
 
 // quasi-Newton search object

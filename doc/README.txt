@@ -66,6 +66,37 @@ Additional notes:
       * http://corelila.deviantart.com/art/Splatter-Brushes-60718934
       * http://hawksmont.com/blog/gimp-brushes-splatters/
 
+Documentation
+-------------
+All documentation is in [LaTeX][ctan].  Figures are auto-generated using
+[gnuplot][] and [pgf][].  Code snippets are made pretty using
+[python pygments][pygments].
+
+To build the documentation, one must first move to the root source
+directory and build the liquid DSP library.  Then move to this directory
+and simply run 'make.'  The documentation is built daily for your
+convenience at <http://ganymede.ece.vt.edu/>.
+
+### Documentation dependencies:
+  * [pdflatex][ctan]: LaTeX distribution
+  * [epstopdf][ctan]: postscript to .pdf converter
+  * [gnuplot][]:      plotting package (version 4.2 or greater)
+  * [pygments][]:     syntax highlighting
+  * [pgf][]:          LaTeX graphics package (version 2.0 or greater)
+  * liquid:           the base DSP libraries
+
+Installation on OS X 
+
+    $ sudo port install texlive-basic texlive-bin texlive-bin-extra texlive-common \
+      texlive-fontutils texlive-latex-extra texlive-latex-recommended texlive-science \
+      pgf py-pygments
+
+### Installing on Ubuntu Linux
+texlive-full not necessary (1.8+ GB package), but does include
+everything necessary.
+
+    $ sudo apt-get install texlive-full pgf python-pygments gnuplot
+
 References
     [ctan:web] The Comprehensive TeX Archive Network, Online:
         http://www.ctan.org/
@@ -79,6 +110,19 @@ References
         http://www.imagemagick.org/script/convert.php
     [macports:web] MacPorts homepage: open-source package manager, Online:
         http://www.macports.org/
+
+[FFTW]:         http://www.fftw.org/
+[octave]:       http://www.gnu.org/software/octave/
+[ctan]:         http://www.ctan.org/
+[pygments]:     http://pygments.org/
+[GIMP]:         http://www.gimp.org/
+[gnuplot]:      http://www.gnuplot.info/
+[pgf]:          http://sourceforge.net/projects/pgf/
+[macports]:     http://www.macports.org/
+[liquid.tar.gz]:http://ganymede.ece.vt.edu/
+[liquid-github]:http://github.com/jgaeddert/liquid-dsp
+[corelila]:     http://corelila.deviantart.com/art/Splatter-Brushes-60718934
+[hawksmont]:    http://hawksmont.com/blog/gimp-brushes-splatters/
 
 
 

@@ -1,6 +1,6 @@
 /*
- * Copyright (c) 2007, 2008, 2009, 2010, 2011 Joseph Gaeddert
- * Copyright (c) 2007, 2008, 2009, 2010, 2011 Virginia Polytechnic
+ * Copyright (c) 2007, 2008, 2009, 2010, 2011, 2012 Joseph Gaeddert
+ * Copyright (c) 2007, 2008, 2009, 2010, 2011, 2012 Virginia Polytechnic
  *                                        Institute & State University
  *
  * This file is part of liquid.
@@ -2216,7 +2216,6 @@ void gmskframesync_execute(gmskframesync _q,
 
 // ofdm frame generator properties
 typedef struct {
-    unsigned int num_symbols_S0;// number of S0 training symbols
     unsigned int check;         // data validity check
     unsigned int fec0;          // forward error-correction scheme (inner)
     unsigned int fec1;          // forward error-correction scheme (outer)
@@ -2230,13 +2229,14 @@ typedef struct ofdmflexframegen_s * ofdmflexframegen;
 // create OFDM flexible framing generator object
 //  _M          :   number of subcarriers, >10 typical
 //  _cp_len     :   cyclic prefix length
+//  _taper_len  :   taper length (OFDM symbol overlap)
 //  _p          :   subcarrier allocation (null, pilot, data), [size: _M x 1]
 //  _fgprops    :   frame properties (modulation scheme, etc.)
-ofdmflexframegen ofdmflexframegen_create(unsigned int _M,
-                                         unsigned int  _cp_len,
-                                         unsigned char * _p,
+ofdmflexframegen ofdmflexframegen_create(unsigned int              _M,
+                                         unsigned int              _cp_len,
+                                         unsigned int              _taper_len,
+                                         unsigned char *           _p,
                                          ofdmflexframegenprops_s * _fgprops);
-                                         //unsigned int  _taper_len);
 
 // destroy ofdmflexframegen object
 void ofdmflexframegen_destroy(ofdmflexframegen _q);
@@ -2273,11 +2273,9 @@ void ofdmflexframegen_assemble(ofdmflexframegen _q,
 
 // write symbols of assembled frame
 //  _q              :   OFDM frame generator object
-//  _buffer         :   output buffer [size: N+cp_len x 1]
-//  _num_written    :   number written (either N or N+cp_len)
+//  _buffer         :   output buffer [size: M+cp_len x 1]
 int ofdmflexframegen_writesymbol(ofdmflexframegen _q,
-                                 liquid_float_complex * _buffer,
-                                 unsigned int * _num_written);
+                                 liquid_float_complex * _buffer);
 
 // 
 // OFDM flex frame synchronizer
@@ -2300,12 +2298,20 @@ typedef int (*ofdmflexframesync_callback)(unsigned char *  _header,
                                           void *           _userdata);
 
 typedef struct ofdmflexframesync_s * ofdmflexframesync;
-ofdmflexframesync ofdmflexframesync_create(unsigned int _num_subcarriers,
-                                           unsigned int  _cp_len,
-                                           unsigned char * _p,
-                                           //unsigned int  _taper_len,
+
+// create OFDM flexible framing synchronizer object
+//  _M          :   number of subcarriers
+//  _cp_len     :   cyclic prefix length
+//  _taper_len  :   taper length (OFDM symbol overlap)
+//  _p          :   subcarrier allocation (null, pilot, data), [size: _M x 1]
+//  _callback   :   user-defined callback function
+//  _userdata   :   user-defined data pointer
+ofdmflexframesync ofdmflexframesync_create(unsigned int               _M,
+                                           unsigned int               _cp_len,
+                                           unsigned int               _taper_len,
+                                           unsigned char *            _p,
                                            ofdmflexframesync_callback _callback,
-                                           void * _userdata);
+                                           void *                     _userdata);
 
 void ofdmflexframesync_destroy(ofdmflexframesync _q);
 void ofdmflexframesync_print(ofdmflexframesync _q);
@@ -2316,6 +2322,9 @@ void ofdmflexframesync_execute(ofdmflexframesync _q,
 
 // query the received signal strength indication
 float ofdmflexframesync_get_rssi(ofdmflexframesync _q);
+
+// query the received carrier offset estimate
+float ofdmflexframesync_get_cfo(ofdmflexframesync _q);
 
 
 
@@ -2962,6 +2971,112 @@ LIQUID_MATRIX_DEFINE_API(MATRIX_MANGLE_CFLOAT,  liquid_float_complex)
 LIQUID_MATRIX_DEFINE_API(MATRIX_MANGLE_CDOUBLE, liquid_double_complex)
 
 
+#define SMATRIX_MANGLE_BOOL(name)   LIQUID_CONCAT(smatrixb,  name)
+#define SMATRIX_MANGLE_FLOAT(name)  LIQUID_CONCAT(smatrixf,  name)
+#define SMATRIX_MANGLE_INT(name)    LIQUID_CONCAT(smatrixi,  name)
+
+// sparse 'alist' matrix type (similar to MacKay, Davey Lafferty convention)
+// large macro
+//   SMATRIX    : name-mangling macro
+//   T          : primitive data type
+#define LIQUID_SMATRIX_DEFINE_API(SMATRIX,T)                    \
+typedef struct SMATRIX(_s) * SMATRIX();                         \
+                                                                \
+/* create _M x _N matrix, initialized with zeros */             \
+SMATRIX() SMATRIX(_create)(unsigned int _M,                     \
+                           unsigned int _N);                    \
+                                                                \
+/* create _M x _N matrix, initialized on array */               \
+SMATRIX() SMATRIX(_create_array)(T *          _x,               \
+                                 unsigned int _m,               \
+                                 unsigned int _n);              \
+                                                                \
+/* destroy object */                                            \
+void SMATRIX(_destroy)(SMATRIX() _q);                           \
+                                                                \
+/* print compact form */                                        \
+void SMATRIX(_print)(SMATRIX() _q);                             \
+                                                                \
+/* print expanded form */                                       \
+void SMATRIX(_print_expanded)(SMATRIX() _q);                    \
+                                                                \
+/* query properties methods */                                  \
+void SMATRIX(_size)(SMATRIX()      _q,                          \
+                    unsigned int * _m,                          \
+                    unsigned int * _n);                         \
+                                                                \
+/* zero all elements */                                         \
+void SMATRIX(_clear)(SMATRIX() _q); /* zero and keep memory  */ \
+void SMATRIX(_reset)(SMATRIX() _q); /* zero and clear memory */ \
+                                                                \
+/* determine if value has been set (allocated memory) */        \
+int SMATRIX(_isset)(SMATRIX()    _q,                            \
+                    unsigned int _m,                            \
+                    unsigned int _n);                           \
+                                                                \
+/* inserts/deletes element at index (memory allocation) */      \
+void SMATRIX(_insert)(SMATRIX()    _q,                          \
+                      unsigned int _m,                          \
+                      unsigned int _n,                          \
+                      T            _v);                         \
+void SMATRIX(_delete)(SMATRIX()    _q,                          \
+                      unsigned int _m,                          \
+                      unsigned int _n);                         \
+                                                                \
+/* sets/gets the value (with memory allocation if needed) */    \
+void SMATRIX(_set)(SMATRIX()    _q,                             \
+                   unsigned int _m,                             \
+                   unsigned int _n,                             \
+                   T            _v);                            \
+T SMATRIX(_get)(SMATRIX()    _q,                                \
+                unsigned int _m,                                \
+                unsigned int _n);                               \
+                                                                \
+/* initialize to identity matrix */                             \
+void SMATRIX(_eye)(SMATRIX() _q);                               \
+                                                                \
+/* multiply two sparse binary matrices */                       \
+void SMATRIX(_mul)(SMATRIX() _x,                                \
+                   SMATRIX() _y,                                \
+                   SMATRIX() _z);                               \
+                                                                \
+/* multiply sparse matrix by vector         */                  \
+/*  _q  :   sparse matrix                   */                  \
+/*  _x  :   input vector [size: _N x 1]     */                  \
+/*  _y  :   output vector [size: _M x 1]    */                  \
+void SMATRIX(_vmul)(SMATRIX() _q,                               \
+                    T *       _x,                               \
+                    T *       _y);                              \
+
+LIQUID_SMATRIX_DEFINE_API(SMATRIX_MANGLE_BOOL,  unsigned char)
+LIQUID_SMATRIX_DEFINE_API(SMATRIX_MANGLE_FLOAT, float)
+LIQUID_SMATRIX_DEFINE_API(SMATRIX_MANGLE_INT,   short int)
+
+// 
+// smatrix cross methods
+//
+
+// multiply sparse binary matrix by floating-point matrix
+//  _q  :   sparse matrix [size: A->M x A->N]
+//  _x  :   input vector  [size:  mx  x  nx ]
+//  _y  :   output vector [size:  my  x  ny ]
+void smatrixb_mulf(smatrixb     _A,
+                   float *      _x,
+                   unsigned int _mx,
+                   unsigned int _nx,
+                   float *      _y,
+                   unsigned int _my,
+                   unsigned int _ny);
+
+// multiply sparse binary matrix by floating-point vector
+//  _q  :   sparse matrix
+//  _x  :   input vector [size: _N x 1]
+//  _y  :   output vector [size: _M x 1]
+void smatrixb_vmulf(smatrixb _q,
+                    float *  _x,
+                    float *  _y);
+
+
 //
 // MODULE : modem (modulator/demodulator)
 //
@@ -3488,13 +3603,14 @@ void ofdmframe_print_sctype(unsigned char * _p,
 typedef struct ofdmframegen_s * ofdmframegen;
 
 // create OFDM framing generator object
-//  _M      :   number of subcarriers, >10 typical
-//  _cp_len :   cyclic prefix length
-//  _p      :   subcarrier allocation (null, pilot, data), [size: _M x 1]
-ofdmframegen ofdmframegen_create(unsigned int _M,
-                                 unsigned int  _cp_len,
+//  _M          :   number of subcarriers, >10 typical
+//  _cp_len     :   cyclic prefix length
+//  _taper_len  :   taper length (OFDM symbol overlap)
+//  _p          :   subcarrier allocation (null, pilot, data), [size: _M x 1]
+ofdmframegen ofdmframegen_create(unsigned int    _M,
+                                 unsigned int    _cp_len,
+                                 unsigned int    _taper_len,
                                  unsigned char * _p);
-                                 //unsigned int  _taper_len);
 
 void ofdmframegen_destroy(ofdmframegen _q);
 
@@ -3502,15 +3618,26 @@ void ofdmframegen_print(ofdmframegen _q);
 
 void ofdmframegen_reset(ofdmframegen _q);
 
-void ofdmframegen_write_S0(ofdmframegen _q,
-                           liquid_float_complex *_y);
+// write first S0 symbol
+void ofdmframegen_write_S0a(ofdmframegen _q,
+                            liquid_float_complex *_y);
 
+// write second S0 symbol
+void ofdmframegen_write_S0b(ofdmframegen _q,
+                            liquid_float_complex *_y);
+
+// write S1 symbol
 void ofdmframegen_write_S1(ofdmframegen _q,
                            liquid_float_complex *_y);
 
+// write data symbol
 void ofdmframegen_writesymbol(ofdmframegen _q,
                               liquid_float_complex * _x,
                               liquid_float_complex *_y);
+
+// write tail
+void ofdmframegen_writetail(ofdmframegen _q,
+                            liquid_float_complex * _x);
 
 // 
 // OFDM frame (symbol) synchronizer
@@ -3520,12 +3647,20 @@ typedef int (*ofdmframesync_callback)(liquid_float_complex * _y,
                                       unsigned int _M,
                                       void * _userdata);
 typedef struct ofdmframesync_s * ofdmframesync;
-ofdmframesync ofdmframesync_create(unsigned int _num_subcarriers,
-                                   unsigned int  _cp_len,
-                                   unsigned char * _p,
-                                   //unsigned int  _taper_len,
+
+// create OFDM framing synchronizer object
+//  _M          :   number of subcarriers, >10 typical
+//  _cp_len     :   cyclic prefix length
+//  _taper_len  :   taper length (OFDM symbol overlap)
+//  _p          :   subcarrier allocation (null, pilot, data), [size: _M x 1]
+//  _callback   :   user-defined callback function
+//  _userdata   :   user-defined data pointer
+ofdmframesync ofdmframesync_create(unsigned int           _M,
+                                   unsigned int           _cp_len,
+                                   unsigned int           _taper_len,
+                                   unsigned char *        _p,
                                    ofdmframesync_callback _callback,
-                                   void * _userdata);
+                                   void *                 _userdata);
 void ofdmframesync_destroy(ofdmframesync _q);
 void ofdmframesync_debug_print(ofdmframesync _q, const char * _filename);
 void ofdmframesync_print(ofdmframesync _q);
@@ -3633,13 +3768,42 @@ void liquid_unwrap_phase2(float * _theta, unsigned int _n);
 // MODULE : optimization
 //
 
-// n-dimensional rosenbrock callback function (minimum at _v = {1,1,1...}
+// utility function pointer definition
+typedef float (*utility_function)(void *       _userdata,
+                                  float *      _v,
+                                  unsigned int _n);
+
+// n-dimensional Rosenbrock utility function (minimum at _v = {1,1,1...}
 //  _userdata   :   user-defined data structure (convenience)
 //  _v          :   input vector [size: _n x 1]
 //  _n          :   input vector size
-float rosenbrock(void * _userdata,
-                 float * _v,
-                 unsigned int _n);
+float liquid_rosenbrock(void *       _userdata,
+                        float *      _v,
+                        unsigned int _n);
+
+// n-dimensional inverse Gauss utility function (minimum at _v = {0,0,0...}
+//  _userdata   :   user-defined data structure (convenience)
+//  _v          :   input vector [size: _n x 1]
+//  _n          :   input vector size
+float liquid_invgauss(void *       _userdata,
+                      float *      _v,
+                      unsigned int _n);
+
+// n-dimensional multimodal utility function (minimum at _v = {0,0,0...}
+//  _userdata   :   user-defined data structure (convenience)
+//  _v          :   input vector [size: _n x 1]
+//  _n          :   input vector size
+float liquid_multimodal(void *       _userdata,
+                        float *      _v,
+                        unsigned int _n);
+
+// n-dimensional spiral utility function (minimum at _v = {0,0,0...}
+//  _userdata   :   user-defined data structure (convenience)
+//  _v          :   input vector [size: _n x 1]
+//  _n          :   input vector size
+float liquid_spiral(void *       _userdata,
+                    float *      _v,
+                    unsigned int _n);
 
 
 //
@@ -3648,10 +3812,6 @@ float rosenbrock(void * _userdata,
 
 #define LIQUID_OPTIM_MINIMIZE (0)
 #define LIQUID_OPTIM_MAXIMIZE (1)
-
-typedef float (*utility_function)(void * _userdata,
-                                  float * _v,
-                                  unsigned int _n);
 
 typedef struct gradsearch_s * gradsearch;
 
@@ -3673,29 +3833,26 @@ void gradsearchprops_init_default(gradsearchprops_s * _props);
 //   _u                 :   utility function pointer
 //   _minmax            :   search direction (0:minimize, 1:maximize)
 //   _props             :   properties (see above)
-gradsearch gradsearch_create(void * _userdata,
-                             float * _v,
-                             unsigned int _num_parameters,
-                             utility_function _u,
-                             int _minmax,
+gradsearch gradsearch_create(void *              _userdata,
+                             float *             _v,
+                             unsigned int        _num_parameters,
+                             utility_function    _utility,
+                             int                 _direction,
                              gradsearchprops_s * _props);
 
 // Destroy a gradsearch object
-void gradsearch_destroy(gradsearch _g);
+void gradsearch_destroy(gradsearch _q);
 
 // Prints current status of search
-void gradsearch_print(gradsearch _g);
-
-// Resets internal state
-void gradsearch_reset(gradsearch _g);
+void gradsearch_print(gradsearch _q);
 
 // Iterate once
-void gradsearch_step(gradsearch _g);
+float gradsearch_step(gradsearch _q);
 
 // Execute the search
-float gradsearch_execute(gradsearch _g,
+float gradsearch_execute(gradsearch   _q,
                          unsigned int _max_iterations,
-                         float _target_utility);
+                         float        _target_utility);
 
 
 // quasi-Newton search

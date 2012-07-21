@@ -24,7 +24,7 @@
 
 #include "liquid.internal.h"
 
-#if HAVE_FEC_H == 1
+#if LIBFEC_ENABLED
 #include <fec.h>
 
 int fec_conv27_poly[2]  = {V27POLYA,

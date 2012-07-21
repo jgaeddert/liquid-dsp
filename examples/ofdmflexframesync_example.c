@@ -47,8 +47,8 @@ int main(int argc, char*argv[])
     // options
     unsigned int M = 64;                // number of subcarriers
     unsigned int cp_len = 16;           // cyclic prefix length
+    unsigned int taper_len = 4;         // taper length
     unsigned int payload_len = 120;     // length of payload (bytes)
-    unsigned int num_symbols_S0 = 3;    // number of S0 training symbols
     modulation_scheme ms = LIQUID_MODEM_QPSK;
     fec_scheme fec0  = LIQUID_FEC_NONE;
     fec_scheme fec1  = LIQUID_FEC_HAMMING128;
@@ -125,15 +125,14 @@ int main(int argc, char*argv[])
     // create frame generator
     ofdmflexframegenprops_s fgprops;
     ofdmflexframegenprops_init_default(&fgprops);
-    fgprops.num_symbols_S0  = num_symbols_S0;
     fgprops.check           = check;
     fgprops.fec0            = fec0;
     fgprops.fec1            = fec1;
     fgprops.mod_scheme      = ms;
-    ofdmflexframegen fg = ofdmflexframegen_create(M, cp_len, p, &fgprops);
+    ofdmflexframegen fg = ofdmflexframegen_create(M, cp_len, taper_len, p, &fgprops);
 
     // create frame synchronizer
-    ofdmflexframesync fs = ofdmflexframesync_create(M, cp_len, p, callback, (void*)payload);
+    ofdmflexframesync fs = ofdmflexframesync_create(M, cp_len, taper_len, p, callback, (void*)payload);
 
     // initialize header/payload and assemble frame
     for (i=0; i<8; i++)
@@ -152,15 +151,14 @@ int main(int argc, char*argv[])
 
     // generate frame, push through channel
     int last_symbol=0;
-    unsigned int num_written;
     nco_crcf nco = nco_crcf_create(LIQUID_VCO);
     nco_crcf_set_frequency(nco, dphi);
     while (!last_symbol) {
         // generate symbol
-        last_symbol = ofdmflexframegen_writesymbol(fg, buffer, &num_written);
+        last_symbol = ofdmflexframegen_writesymbol(fg, buffer);
 
         // apply channel
-        for (i=0; i<num_written; i++) {
+        for (i=0; i<frame_len; i++) {
             float complex noise = nstd*( randnf() + _Complex_I*randnf())*M_SQRT1_2;
             buffer[i] *= gamma;
             buffer[i] += noise;
@@ -170,7 +168,7 @@ int main(int argc, char*argv[])
         }
 
         // receive symbol
-        ofdmflexframesync_execute(fs, buffer, num_written);
+        ofdmflexframesync_execute(fs, buffer, frame_len);
     }
     nco_crcf_destroy(nco);
 

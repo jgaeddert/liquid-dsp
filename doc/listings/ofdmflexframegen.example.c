@@ -5,6 +5,7 @@ int main() {
     // options
     unsigned int M = 64;                // number of subcarriers
     unsigned int cp_len = 16;           // cyclic prefix length
+    unsigned int taper_len = 4;         // taper length
     unsigned int payload_len = 120;     // length of payload (bytes)
 
     // buffers
@@ -16,7 +17,6 @@ int main() {
     // initialize frame generator properties
     ofdmflexframegenprops_s fgprops;
     ofdmflexframegenprops_init_default(&fgprops);
-    fgprops.num_symbols_S0  = 3;
     fgprops.check           = LIQUID_CRC_32;
     fgprops.fec0            = LIQUID_FEC_NONE;
     fgprops.fec1            = LIQUID_FEC_HAMMING128;
@@ -26,7 +26,7 @@ int main() {
     ofdmframe_init_default_sctype(M, p);
 
     // create frame generator
-    ofdmflexframegen fg = ofdmflexframegen_create(M, cp_len, p, &fgprops);
+    ofdmflexframegen fg = ofdmflexframegen_create(M,cp_len,taper_len,p,&fgprops);
 
     // ... initialize header/payload ...
 
@@ -35,10 +35,9 @@ int main() {
 
     // generate frame
     int last_symbol=0;
-    unsigned int num_written;
     while (!last_symbol) {
         // generate each OFDM symbol
-        last_symbol = ofdmflexframegen_writesymbol(fg, buffer, &num_written);
+        last_symbol = ofdmflexframegen_writesymbol(fg, buffer);
     }
 
     // destroy the frame generator object

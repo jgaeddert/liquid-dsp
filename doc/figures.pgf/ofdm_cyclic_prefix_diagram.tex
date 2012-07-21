@@ -1,0 +1,115 @@
+% 
+% figures.pgf/ofdm_cyclic_prefix_diagram.tex
+%
+% Author: Joseph D. Gaeddert
+%   |             __________________________
+%   |            |      ____________________|_____
+%   |          __v_____|____________________|__   |
+%   |         /|    |    |          |    |    |\  v
+%   |        / |    |    |          |    |    | \
+%   |      r/u | cp |    |          |    |    | r\d
+%   |      /   |    |    |          |    |    |   \
+%   |_____/____|____|____|__________|____|____|____\________
+%        |     |    |    |          |    |    |    |
+%        ta    tb   tc   td         te   tf   tg   th
+%                   |                         |
+%                   |<--- original symbol --->|
+
+\documentclass[a4paper,landscape]{article}
+
+\usepackage{pgf,tikz}
+\usepackage[active,tightpage]{preview}
+\PreviewEnvironment{tikzpicture}
+\setlength\PreviewBorder{5pt}%
+
+\usetikzlibrary{arrows}
+
+\pagestyle{empty}
+
+\definecolor{liquid-color-blue}{rgb}{  0.00 0.25 0.50}
+\definecolor{liquid-color-green}{rgb}{ 0.00 0.50 0.25}
+
+\begin{document}
+
+% hidden point node
+\tikzstyle{hiddenpoint}=[circle];
+
+\tikzstyle{connector-arrow}=[->,thick]
+
+\begin{tikzpicture}[scale=4,>=latex'];
+    % input common definitions
+    \def\dt{0.3}        % default time step between sections
+    \def\ds{0.05}       % default signal level vertical line extensions
+    \def\height{0.6}    % peak height of signal
+
+    \def\ta{\dt}        % beginning of ramp up...
+    \def\tb{\ta+\dt}
+    \def\tc{\tb+\dt}
+    \def\td{\tc+\dt}
+    \def\te{\td+0.9}
+    \def\tf{\te+\dt}
+    \def\tg{\tf+\dt}
+    \def\th{\tg+\dt}    % ...end of ramp down
+    \def\ti{\th+\dt}
+
+    %\draw[step=2.5mm,help lines] (0,0) grid (3,1);
+
+    % derived constants: control points for curve
+    \def\cta{\ta + 0.5*\dt}
+    \def\ctb{\tb - 0.5*\dt}
+    \def\ctg{\tg + 0.5*\dt}
+    \def\cth{\th - 0.5*\dt}
+
+    \def\rampup{0.15}
+    \def\preamble{0.55}
+    \def\pnsequence{0.85}
+    \def\header{1.15}
+    \def\payload{1.9}
+    \def\rampdn{2.8}
+
+
+
+    % draw cyclic extension box(es)
+    \draw[fill=liquid-color-green!20] (\tb,0) rectangle (\tc,\height);
+    %\draw[fill=black!15] (\tg,0) rectangle (\th,\height);
+
+    % draw x-axis 
+    \draw[very thick, black,->] (-0.02, 0.0 ) -- (\ti,0)
+        node[anchor=south] {{\it time}};
+
+    % draw curve
+    \draw[very thick, black]
+        (\tb,       0) --
+        (\tb,       \height) --
+        (\tg,       \height);
+    
+    % intersection lines
+    %\draw[thin,gray]        (\tb,  -\ds)   --  (\tb,   \height+\ds);
+    \draw[very thick,black] (\tc,     0)   --  (\tc,   \height);
+    %\draw[thin,gray]        (\td,  -\ds)   --  (\td,   \height+\ds);
+    %\draw[thin,gray]        (\te,  -\ds)   --  (\te,   \height+\ds);
+    \draw[thin,gray]        (\tf,  -\ds)   --  (\tf,   \height+\ds);
+    \draw[very thick,black] (\tg,     0)   --  (\tg,   \height);
+
+    % hidden nodes
+    \node[hiddenpoint] (symbol-head) at (\tc+0.5*\dt,0)         {};
+    \node[hiddenpoint] (symbol-tail) at (\tf+0.5*\dt,\height)   {};
+    \node[hiddenpoint] (cp-head) at     (\tb+0.5*\dt,\height)   {};
+    \node[hiddenpoint] (cp-tail) at     (\tg+0.5*\dt,0)         {};
+
+    % draw arrows
+    \draw[connector-arrow] (symbol-tail) to [out=160, in=20]   (cp-head);
+    %\draw[connector-arrow] (symbol-head) to [out=-20, in=-160] (cp-tail);
+
+    % add text labels
+    %\draw (\rampup,     0.5*\height) node[rotate=45] {\small\sf ramp up};
+    %\draw (\preamble,   0.5*\height) node[rotate=45] {\small\sf preamble phasing};
+    %\draw (\pnsequence, 0.5*\height) node[rotate=45] {\small\sf p/n sequence};
+    %\draw (\header,     0.5*\height) node[rotate=45] {\small\sf header w/ CRC};
+    %\draw (\payload,    0.5*\height) node[rotate=45] {\small\sf payload w/ CRC};
+    %\draw (\rampdn,     0.5*\height) node[rotate=45] {\small\sf ramp down};
+
+\end{tikzpicture}
+
+\end{document}
+

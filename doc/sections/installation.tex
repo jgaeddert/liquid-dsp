@@ -185,7 +185,7 @@ platforms.
 Packaged with \liquid\ are a number of automatic test scripts to validate the
 correctness of the source code.
 The test scripts are located under each module's {\tt tests} directory and
-take the form of a C header file.
+take the form of a C source file.
 The testing framework operates similarly to CppUnit \cite{cppunit:web} and
 cxxtest \cite{cxxtest:web}, however it is written in C.
 The generator script {\tt scripts/autoscript} parses these header files looking for
@@ -250,7 +250,7 @@ help/usage information).
 %
 Simply running the program without any arguments executes all the tests and
 displays the results to the screen.
-The is the default response of the target {\tt make check}.
+This is the default response of the target {\tt make check}.
 
 \subsection{Benchmarks ({\tt make bench})}
 \label{section:installation:targets:benchmarks}

@@ -47,14 +47,18 @@ int main() {
     float complex y[n];
 
     // generate input signal (noisy sine wave with decaying amplitude)
+    unsigned int n2 = n/2;
     for (i=0; i<n; i++) {
 #if 0
         x[i]  = cexpf((2*M_PI*0.057f*_Complex_I - 0.04f)*i);
         x[i] += 0.02f*(randnf() + _Complex_I*randnf());
 #else
         x[i] = 1.0f*cexpf(_Complex_I*2*M_PI*0.057f*i) + 
-               0.5f*cexpf(_Complex_I*2*M_PI*0.192f*i);
-        x[i] *= expf(-(float)i*0.014f);
+               0.5f*cexpf(_Complex_I*2*M_PI*0.392f*i);
+        if      (i==0)  x[i] *= 0.5f;
+        else if (i<n2)  x[i] *= 1.0f;
+        else if (i==n2) x[i] *= 0.5f;
+        else if (i>n2)  x[i] *= 0.0f;
 #endif
     }
 

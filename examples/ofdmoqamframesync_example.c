@@ -95,8 +95,7 @@ int main(int argc, char *argv[])
     unsigned int num_symbols_data=8;// num data symbols
     unsigned int m=3;
     float beta = 0.9f;
-    modulation_scheme ms = LIQUID_MODEM_QAM;
-    unsigned int bps = 2;
+    modulation_scheme ms = LIQUID_MODEM_QAM4;
     float dphi=0.0f;        // carrier frequency offset (max: pi/(2*num_channels) ~ 0.024544)
     float phi=0.0f;         // carrier phase offset
     float SNRdB=30.0f;      // signal-to-noise ratio (dB)
@@ -164,7 +163,7 @@ int main(int argc, char *argv[])
     simdata.num_channels = num_channels;
     simdata.num_symbols = num_symbols_data;
     simdata.num_symbols_rx = 0;
-    simdata.demod = modem_create(ms,bps);
+    simdata.demod = modem_create(ms);
     simdata.data_tx = (unsigned int*)malloc(num_channels*num_symbols_data*sizeof(unsigned int));
     simdata.p       = (unsigned char*)malloc(num_channels*sizeof(unsigned char));
 
@@ -183,7 +182,7 @@ int main(int argc, char *argv[])
                                   &simdata.M_data);
 
     // create modem
-    modem mod = modem_create(ms,bps);
+    modem mod = modem_create(ms);
 
     // create frame generator
     ofdmoqamframegen fg = ofdmoqamframegen_create(num_channels,m,beta,simdata.p);
