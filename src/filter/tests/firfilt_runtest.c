@@ -51,6 +51,9 @@ void firfilt_rrrf_test(float *      _h,
         
         CONTEND_DELTA( y_test[i], _y[i], tol );
     }
+
+    // destroy filter object
+    firfilt_rrrf_destroy(q);
 }
 
 // autotest helper function
@@ -84,6 +87,9 @@ void firfilt_crcf_test(float *         _h,
         CONTEND_DELTA( crealf(y_test[i]), crealf(_y[i]), tol );
         CONTEND_DELTA( cimagf(y_test[i]), cimagf(_y[i]), tol );
     }
+    
+    // destroy filter object
+    firfilt_crcf_destroy(q);
 }
 
 // autotest helper function
@@ -117,6 +123,9 @@ void firfilt_cccf_test(float complex * _h,
         CONTEND_DELTA( crealf(y_test[i]), crealf(_y[i]), tol );
         CONTEND_DELTA( cimagf(y_test[i]), cimagf(_y[i]), tol );
     }
+    
+    // destroy filter object
+    firfilt_cccf_destroy(q);
 }
 
 
