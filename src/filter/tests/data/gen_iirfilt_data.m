@@ -14,10 +14,10 @@ elseif strcmp(type,'crc'),
     x_complex = 1;
     h_complex = 0;
     y_complex = 1;
-%elseif strcmp(type,'ccc'),
-%    x_complex = 1;
-%    h_complex = 1;
-%    y_complex = 1;
+elseif strcmp(type,'ccc'),
+    x_complex = 1;
+    h_complex = 1;
+    y_complex = 1;
 else,
     error(['invalid/unsupported type (' type ')']);
 end;
@@ -61,6 +61,14 @@ end;
 k = real(k);
 a = real(a);
 b = real(b) * k;
+
+% modulate coefficients
+if h_complex,
+    for i=1:h_len,
+        a(i) = a(i) * exp(j*2*pi*0.1*i);
+        b(i) = b(i) * exp(j*2*pi*0.1*i);
+    end;
+end;
 
 % generate input data
 if x_complex,
