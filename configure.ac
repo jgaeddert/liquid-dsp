@@ -234,7 +234,7 @@ i386|i486|i586|i686|x86|x86_64)
         MLIBS_DOTPROD="src/dotprod/src/dotprod_cccf.mmx.o \
                        src/dotprod/src/dotprod_crcf.mmx.o \
                        src/dotprod/src/dotprod_rrrf.mmx.o \
-                       src/dotprod/src/sumsq.o"
+                       src/dotprod/src/sumsq.mmx.o"
     else
         MLIBS_DOTPROD="src/dotprod/src/dotprod_cccf.o \
                        src/dotprod/src/dotprod_crcf.o \
