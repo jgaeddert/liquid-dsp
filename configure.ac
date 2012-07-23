@@ -264,7 +264,7 @@ arm*)
     # unknown architecture : use portable C version
     MLIBS_DOTPROD="src/dotprod/src/dotprod_cccf.o \
                    src/dotprod/src/dotprod_crcf.o \
-                   src/dotprod/src/dotprod_rrrf.mmx.o \
+                   src/dotprod/src/dotprod_rrrf.o \
                    src/dotprod/src/sumsq.o"
     ARCH_OPTION="";;
 esac
