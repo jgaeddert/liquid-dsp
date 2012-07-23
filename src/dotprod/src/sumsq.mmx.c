@@ -107,7 +107,8 @@ float liquid_sumsqf(float *      _v,
 float liquid_sumsqcf(float complex * _v,
                      unsigned int    _n)
 {
+    // simple method: type cast input as real pointer, run double
+    // length sumsqf method
     float * v = (float*) _v;
-
     return liquid_sumsqf(v, 2*_n);
 }

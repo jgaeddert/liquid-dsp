@@ -64,26 +64,9 @@ float liquid_sumsqf(float *      _v,
 float liquid_sumsqcf(float complex * _v,
                      unsigned int    _n)
 {
-    // initialize accumulator
-    float r=0;
-
-    // t = 4*(floor(_n/4))
-    unsigned int t=(_n>>2)<<2; 
-
-    // run computation in groups of 4
-    unsigned int i;
-    for (i=0; i<t; i+=4) {
-        r += crealf(_v[i  ])*crealf(_v[i  ]) + cimagf(_v[i  ])*cimagf(_v[i  ]);
-        r += crealf(_v[i+1])*crealf(_v[i+1]) + cimagf(_v[i+1])*cimagf(_v[i+1]);
-        r += crealf(_v[i+2])*crealf(_v[i+2]) + cimagf(_v[i+2])*cimagf(_v[i+2]);
-        r += crealf(_v[i+3])*crealf(_v[i+3]) + cimagf(_v[i+3])*cimagf(_v[i+3]);
-    }
-
-    // clean up remaining
-    for ( ; i<_n; i++)
-        r += crealf(_v[i])*crealf(_v[i]) + cimagf(_v[i])*cimagf(_v[i]);
-
-    // return result
-    return r;
+    // simple method: type cast input as real pointer, run double
+    // length sumsqf method
+    float * v = (float*) _v;
+    return liquid_sumsqf(v, 2*_n);
 }
 
