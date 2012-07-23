@@ -22,31 +22,40 @@ else,
     error(['invalid/unsupported type (' type ')']);
 end;
 
-% generate filter coefficients
-if h_complex,
-else,
-end;
+% 
+% generate low-pass butterworth filter coefficients
+%
 
 % generate complex roots
 n = h_len - 1;      % filter order
 r = mod(n, 2);      % odd/even order
 L = (n-r)/2;        % filter semi-length
-z = zeros(1,n);     % zeros (roots of b)
-p = zeros(1,n);     % poles (roots of a)
-for i=0:L-1,
-    % zeros
-    z(2*i+1) = -1;
-    z(2*i+2) = -1;
-
-    % poles (semi-random)
-    r     = 0.9*exp(-i/L);
-    theta = 1.3*cos((pi/2)*(i/L));
-    p(2*i+1) = r*exp( j*theta );
-    p(2*i+2) = r*exp(-j*theta );
+pa = zeros(1,n);    % analog poles (roots of a)
+for i=0:(L-1),
+    theta = (2*(i+1) + n - 1)*pi / (2*n);
+    pa(2*i+1) = exp( j*theta );
+    pa(2*i+2) = exp(-j*theta );
 end;
 if r,
-    z(end) = -1;
-    p(end) = 0.1;
+    pa(end) = -1;
+end;
+
+% convert analog poles/zeros/gain to digital
+fc = 0.1;
+m  = abs(tan(pi*fc));
+p = zeros(1,n);
+z = zeros(1,n);
+k = 1;
+for i=1:n,
+    % compute digital zeros...
+    z(i) = -1;
+
+    % compute digital pols
+    pm = pa(i)*m;
+    p(i) = (1 + pm)/(1 - pm);
+
+    % compute digital gain
+    k = k*(1 - p(i)) / (1 - z(i));
 end;
 
 % expand roots
@@ -62,7 +71,7 @@ k = real(k);
 a = real(a);
 b = real(b) * k;
 
-% modulate coefficients
+% modulate coefficients for complex type
 if h_complex,
     for i=1:h_len,
         a(i) = a(i) * exp(j*2*pi*0.1*i);
