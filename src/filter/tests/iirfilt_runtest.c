@@ -131,3 +131,154 @@ void iirfilt_cccf_test(float complex * _b,
     iirfilt_cccf_destroy(q);
 }
 
+
+
+
+// 
+// fixed-point tests
+//
+
+// autotest helper function
+//  _b      :   filter coefficients (numerator)
+//  _a      :   filter coefficients (denominator)
+//  _h_len  :   filter coefficients length
+//  _x      :   input array
+//  _x_len  :   input array length
+//  _y      :   output array
+//  _y_len  :   output array length
+void iirfilt_rrrq16_test(float *      _b,
+                         float *      _a,
+                         unsigned int _h_len,
+                         float *      _x,
+                         unsigned int _x_len,
+                         float *      _y,
+                         unsigned int _y_len)
+{
+    unsigned int i;
+    float tol = 0.2f;
+
+    // convert coefficients to fixed-point
+    q16_t b[_h_len];
+    q16_t a[_h_len];
+    for (i=0; i<_h_len; i++) {
+        b[i] = q16_float_to_fixed(_b[i]);
+        a[i] = q16_float_to_fixed(_a[i]);
+    }
+
+    // load filter coefficients externally
+    iirfilt_rrrq16 q = iirfilt_rrrq16_create(b, _h_len, a, _h_len);
+
+    // compute output
+    for (i=0; i<_x_len; i++) {
+        // convert input sample to fixed-point
+        q16_t x = q16_float_to_fixed(_x[i]);
+        q16_t y;
+        iirfilt_rrrq16_execute(q, x, &y);
+
+        // convert result to floating-point
+        float yf = q16_fixed_to_float(y);
+        
+        // check result
+        CONTEND_DELTA( yf, _y[i], tol );
+    }
+
+    // destroy filter object
+    iirfilt_rrrq16_destroy(q);
+}
+
+// autotest helper function
+//  _b      :   filter coefficients (numerator)
+//  _a      :   filter coefficients (denominator)
+//  _h_len  :   filter coefficients length
+//  _x      :   input array
+//  _x_len  :   input array length
+//  _y      :   output array
+//  _y_len  :   output array length
+void iirfilt_crcq16_test(float *         _b,
+                         float *         _a,
+                         unsigned int    _h_len,
+                         float complex * _x,
+                         unsigned int    _x_len,
+                         float complex * _y,
+                         unsigned int    _y_len)
+{
+    unsigned int i;
+    float tol = 0.2f;
+
+    // convert coefficients to fixed-point
+    q16_t b[_h_len];
+    q16_t a[_h_len];
+    for (i=0; i<_h_len; i++) {
+        b[i] = q16_float_to_fixed(_b[i]);
+        a[i] = q16_float_to_fixed(_a[i]);
+    }
+
+    // load filter coefficients externally
+    iirfilt_crcq16 q = iirfilt_crcq16_create(b, _h_len, a, _h_len);
+
+    // compute output
+    for (i=0; i<_x_len; i++) {
+        // convert input sample to fixed-point
+        cq16_t x = cq16_float_to_fixed(_x[i]);
+        cq16_t y;
+        iirfilt_crcq16_execute(q, x, &y);
+
+        // convert result to floating-point
+        float complex yf = cq16_fixed_to_float(y);
+        
+        // check result
+        CONTEND_DELTA( yf, _y[i], tol );
+    }
+
+    // destroy filter object
+    iirfilt_crcq16_destroy(q);
+}
+
+// autotest helper function
+//  _b      :   filter coefficients (numerator)
+//  _a      :   filter coefficients (denominator)
+//  _h_len  :   filter coefficients length
+//  _x      :   input array
+//  _x_len  :   input array length
+//  _y      :   output array
+//  _y_len  :   output array length
+void iirfilt_cccq16_test(float complex * _b,
+                         float complex * _a,
+                         unsigned int    _h_len,
+                         float complex * _x,
+                         unsigned int    _x_len,
+                         float complex * _y,
+                         unsigned int    _y_len)
+{
+    unsigned int i;
+    float tol = 0.2f;
+
+    // convert coefficients to fixed-point
+    cq16_t b[_h_len];
+    cq16_t a[_h_len];
+    for (i=0; i<_h_len; i++) {
+        b[i] = cq16_float_to_fixed(_b[i]);
+        a[i] = cq16_float_to_fixed(_a[i]);
+    }
+
+    // load filter coefficients externally
+    iirfilt_cccq16 q = iirfilt_cccq16_create(b, _h_len, a, _h_len);
+
+    // compute output
+    for (i=0; i<_x_len; i++) {
+        // convert input sample to fixed-point
+        cq16_t x = cq16_float_to_fixed(_x[i]);
+        cq16_t y;
+        iirfilt_cccq16_execute(q, x, &y);
+
+        // convert result to floating-point
+        float complex yf = cq16_fixed_to_float(y);
+        
+        // check result
+        CONTEND_DELTA( yf, _y[i], tol );
+    }
+
+    // destroy filter object
+    iirfilt_cccq16_destroy(q);
+}
+
