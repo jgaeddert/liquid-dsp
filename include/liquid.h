@@ -66,6 +66,8 @@ int liquid_libversion_number(void);
 #define LIQUID_CONCAT(prefix, name) prefix ## name
 #define LIQUID_VALIDATE_INPUT
 
+#include <liquidfpm.h>
+
 /* 
  * Compile-time complex data type definitions
  *
@@ -233,6 +235,14 @@ LIQUID_BUFFER_DEFINE_API(BUFFER_MANGLE_CFLOAT, liquid_float_complex)
 #define WINDOW_MANGLE_CFLOAT(name) LIQUID_CONCAT(windowcf, name)
 //#define WINDOW_MANGLE_UINT(name)   LIQUID_CONCAT(windowui, name)
 
+// fixed point
+#define WINDOW_MANGLE_Q16(name)     LIQUID_CONCAT(windowq16, name)
+#define WINDOW_MANGLE_Q32(name)     LIQUID_CONCAT(windowq32, name)
+
+#define WINDOW_MANGLE_CQ16(name)    LIQUID_CONCAT(windowcq16, name)
+#define WINDOW_MANGLE_CQ32(name)    LIQUID_CONCAT(windowcq32, name)
+
+
 // large macro
 //   WINDOW : name-mangling macro
 //   T      : data type
@@ -254,6 +264,12 @@ void WINDOW(_write)(WINDOW() _b, T * _v, unsigned int _n);
 LIQUID_WINDOW_DEFINE_API(WINDOW_MANGLE_FLOAT,  float)
 LIQUID_WINDOW_DEFINE_API(WINDOW_MANGLE_CFLOAT, liquid_float_complex)
 //LIQUID_WINDOW_DEFINE_API(WINDOW_MANGLE_UINT,   unsigned int)
+
+LIQUID_WINDOW_DEFINE_API(WINDOW_MANGLE_Q16,  q16_t)
+LIQUID_WINDOW_DEFINE_API(WINDOW_MANGLE_Q32,  q32_t)
+
+LIQUID_WINDOW_DEFINE_API(WINDOW_MANGLE_CQ16, cq16_t)
+LIQUID_WINDOW_DEFINE_API(WINDOW_MANGLE_CQ32, cq32_t)
 
 
 // wdelay functions : windowed-delay
@@ -282,7 +298,6 @@ LIQUID_WDELAY_DEFINE_API(WDELAY_MANGLE_CFLOAT, liquid_float_complex)
 //LIQUID_WDELAY_DEFINE_API(WDELAY_MANGLE_UINT,   unsigned int)
 
 
-
 //
 // MODULE : dotprod (vector dot product)
 //
@@ -290,6 +305,16 @@ LIQUID_WDELAY_DEFINE_API(WDELAY_MANGLE_CFLOAT, liquid_float_complex)
 #define DOTPROD_MANGLE_RRRF(name)   LIQUID_CONCAT(dotprod_rrrf,name)
 #define DOTPROD_MANGLE_CCCF(name)   LIQUID_CONCAT(dotprod_cccf,name)
 #define DOTPROD_MANGLE_CRCF(name)   LIQUID_CONCAT(dotprod_crcf,name)
+
+// fixed-point
+#define DOTPROD_MANGLE_RRRQ16(name) LIQUID_CONCAT(dotprod_rrrq16,name)
+#define DOTPROD_MANGLE_RRRQ32(name) LIQUID_CONCAT(dotprod_rrrq32,name)
+
+#define DOTPROD_MANGLE_CRCQ16(name) LIQUID_CONCAT(dotprod_crcq16,name)
+#define DOTPROD_MANGLE_CRCQ32(name) LIQUID_CONCAT(dotprod_crcq32,name)
+
+#define DOTPROD_MANGLE_CCCQ16(name) LIQUID_CONCAT(dotprod_cccq16,name)
+#define DOTPROD_MANGLE_CCCQ32(name) LIQUID_CONCAT(dotprod_cccq32,name)
 
 // large macro
 //   DOTPROD    : name-mangling macro
@@ -324,6 +349,17 @@ LIQUID_DOTPROD_DEFINE_API(DOTPROD_MANGLE_CRCF,
                           liquid_float_complex,
                           float,
                           liquid_float_complex)
+
+// fixed-point
+
+LIQUID_DOTPROD_DEFINE_API(DOTPROD_MANGLE_RRRQ16, q16_t, q16_t, q16_t)
+LIQUID_DOTPROD_DEFINE_API(DOTPROD_MANGLE_RRRQ32, q32_t, q32_t, q32_t)
+
+LIQUID_DOTPROD_DEFINE_API(DOTPROD_MANGLE_CRCQ16, cq16_t, q16_t, cq16_t)
+LIQUID_DOTPROD_DEFINE_API(DOTPROD_MANGLE_CRCQ32, cq32_t, q32_t, cq32_t)
+
+LIQUID_DOTPROD_DEFINE_API(DOTPROD_MANGLE_CCCQ16, cq16_t, cq16_t, cq16_t)
+LIQUID_DOTPROD_DEFINE_API(DOTPROD_MANGLE_CCCQ32, cq32_t, cq32_t, cq32_t)
 
 //
 // MODULE : equalization
@@ -598,6 +634,8 @@ void fec_decode_soft(fec _q,
 #define FFT_IMDCT   12  // IMDCT
 
 #define LIQUID_FFT_MANGLE_FLOAT(name)   LIQUID_CONCAT(fft,name)
+#define LIQUID_FFT_MANGLE_Q16(name)     LIQUID_CONCAT(fftq16,name)
+#define LIQUID_FFT_MANGLE_Q32(name)     LIQUID_CONCAT(fftq32,name)
 
 // Macro    :   FFT
 //  FFT     :   name-mangling macro
@@ -630,6 +668,8 @@ void FFT(_shift)(TC*_x, unsigned int _n);
 
 
 LIQUID_FFT_DEFINE_API(LIQUID_FFT_MANGLE_FLOAT,float,liquid_float_complex)
+LIQUID_FFT_DEFINE_API(LIQUID_FFT_MANGLE_Q16,  q16_t, cq16_t)
+LIQUID_FFT_DEFINE_API(LIQUID_FFT_MANGLE_Q32,  q32_t, cq32_t)
 
 // antiquated fft methods
 // FFT(plan) FFT(_create_plan_mdct)(unsigned int _n,
@@ -1290,6 +1330,11 @@ LIQUID_AUTOCORR_DEFINE_API(AUTOCORR_MANGLE_RRRF,
 #define FIRFILT_MANGLE_CRCF(name)  LIQUID_CONCAT(firfilt_crcf,name)
 #define FIRFILT_MANGLE_CCCF(name)  LIQUID_CONCAT(firfilt_cccf,name)
 
+// fixed-point
+#define FIRFILT_MANGLE_RRRQ16(name) LIQUID_CONCAT(firfilt_rrrq16,name)
+#define FIRFILT_MANGLE_CRCQ16(name) LIQUID_CONCAT(firfilt_crcq16,name)
+#define FIRFILT_MANGLE_CCCQ16(name) LIQUID_CONCAT(firfilt_cccq16,name)
+
 // Macro:
 //   FIRFILT : name-mangling macro
 //   TO         : output data type
@@ -1327,6 +1372,12 @@ LIQUID_FIRFILT_DEFINE_API(FIRFILT_MANGLE_CCCF,
                           liquid_float_complex,
                           liquid_float_complex)
 
+// fixed-point
+LIQUID_FIRFILT_DEFINE_API(FIRFILT_MANGLE_RRRQ16,  q16_t,  q16_t,  q16_t)
+LIQUID_FIRFILT_DEFINE_API(FIRFILT_MANGLE_CRCQ16, cq16_t,  q16_t, cq16_t)
+LIQUID_FIRFILT_DEFINE_API(FIRFILT_MANGLE_CCCQ16, cq16_t, cq16_t, cq16_t)
+
+
 //
 // FIR Hilbert transform
 //  2:1 real-to-complex decimator
@@ -1361,6 +1412,11 @@ LIQUID_FIRHILB_DEFINE_API(FIRHILB_MANGLE_FLOAT, float, liquid_float_complex)
 #define IIRFILT_MANGLE_RRRF(name)  LIQUID_CONCAT(iirfilt_rrrf,name)
 #define IIRFILT_MANGLE_CRCF(name)  LIQUID_CONCAT(iirfilt_crcf,name)
 #define IIRFILT_MANGLE_CCCF(name)  LIQUID_CONCAT(iirfilt_cccf,name)
+
+// fixed-point
+#define IIRFILT_MANGLE_RRRQ16(name) LIQUID_CONCAT(iirfilt_rrrq16,name)
+#define IIRFILT_MANGLE_CRCQ16(name) LIQUID_CONCAT(iirfilt_crcq16,name)
+#define IIRFILT_MANGLE_CCCQ16(name) LIQUID_CONCAT(iirfilt_cccq16,name)
 
 // Macro:
 //   IIRFILT : name-mangling macro
@@ -1418,6 +1474,11 @@ LIQUID_IIRFILT_DEFINE_API(IIRFILT_MANGLE_CCCF,
                           liquid_float_complex,
                           liquid_float_complex,
                           liquid_float_complex)
+
+// fixed-point
+LIQUID_IIRFILT_DEFINE_API(IIRFILT_MANGLE_RRRQ16,  q16_t,  q16_t,  q16_t)
+LIQUID_IIRFILT_DEFINE_API(IIRFILT_MANGLE_CRCQ16, cq16_t,  q16_t, cq16_t)
+LIQUID_IIRFILT_DEFINE_API(IIRFILT_MANGLE_CCCQ16, cq16_t, cq16_t, cq16_t)
 
 
 //
@@ -1588,6 +1649,12 @@ LIQUID_DECIM_DEFINE_API(DECIM_MANGLE_CCCF,
 #define RESAMP2_MANGLE_CRCF(name)   LIQUID_CONCAT(resamp2_crcf,name)
 #define RESAMP2_MANGLE_CCCF(name)   LIQUID_CONCAT(resamp2_cccf,name)
 
+// fixed-point
+#define RESAMP2_MANGLE_RRRQ16(name) LIQUID_CONCAT(resamp2_rrrq16,name)
+#define RESAMP2_MANGLE_CRCQ16(name) LIQUID_CONCAT(resamp2_crcq16,name)
+#define RESAMP2_MANGLE_CCCQ16(name) LIQUID_CONCAT(resamp2_cccq16,name)
+
+
 #define LIQUID_RESAMP2_DEFINE_API(RESAMP2,TO,TC,TI)             \
 typedef struct RESAMP2(_s) * RESAMP2();                         \
 RESAMP2() RESAMP2(_create)(unsigned int _m,                     \
@@ -1631,6 +1698,11 @@ LIQUID_RESAMP2_DEFINE_API(RESAMP2_MANGLE_CCCF,
                           liquid_float_complex,
                           liquid_float_complex,
                           liquid_float_complex)
+
+// fixed-point
+LIQUID_RESAMP2_DEFINE_API(RESAMP2_MANGLE_RRRQ16,  q16_t,  q16_t,  q16_t)
+LIQUID_RESAMP2_DEFINE_API(RESAMP2_MANGLE_CRCQ16, cq16_t,  q16_t, cq16_t)
+LIQUID_RESAMP2_DEFINE_API(RESAMP2_MANGLE_CCCQ16, cq16_t, cq16_t, cq16_t)
 
 
 // 
@@ -3132,6 +3204,8 @@ void liquid_unpack_soft_bits(unsigned int _sym_in,
 //
 
 #define LIQUID_MODEM_MANGLE_FLOAT(name) LIQUID_CONCAT(modem,name)
+#define LIQUID_MODEM_MANGLE_Q16(name)   LIQUID_CONCAT(modemq16,name)
+
 
 // Macro    :   MODEM
 //  MODEM   :   name-mangling macro
@@ -3142,13 +3216,14 @@ void liquid_unpack_soft_bits(unsigned int _sym_in,
 /* define struct pointer */                                     \
 typedef struct MODEM(_s) * MODEM();                             \
                                                                 \
-/* create digital modem object, allocating memory as necessary */ \
-MODEM() MODEM(_create)(modulation_scheme _scheme);                  \
+/* create digital modem object */                               \
+MODEM() MODEM(_create)(modulation_scheme _scheme);              \
                                                                 \
 /* create arbitrary digital modem object */                     \
-MODEM() MODEM(_create_arbitrary)(TC * _table, unsigned int _M); \
+MODEM() MODEM(_create_arbitrary)(liquid_float_complex * _table, \
+                                 unsigned int _M);              \
                                                                 \
-/* recreate modulation scheme, re-allocating memory as necessary */ \
+/* recreate modulation scheme */                                \
 MODEM() MODEM(_recreate)(MODEM() _q,                            \
                          modulation_scheme _scheme);            \
                                                                 \
@@ -3194,13 +3269,14 @@ void MODEM(_get_demodulator_sample)(MODEM() _q,                 \
                                     TC * _x_hat);               \
                                                                 \
 /* get demodulator phase error */                               \
-float MODEM(_get_demodulator_phase_error)(MODEM() _q);          \
+T MODEM(_get_demodulator_phase_error)(MODEM() _q);              \
                                                                 \
 /* get demodulator error vector magnitude */                    \
-float MODEM(_get_demodulator_evm)(MODEM() _q);                  \
+T MODEM(_get_demodulator_evm)(MODEM() _q);                      \
 
 // define modem APIs
 LIQUID_MODEM_DEFINE_API(LIQUID_MODEM_MANGLE_FLOAT,float,liquid_float_complex)
+LIQUID_MODEM_DEFINE_API(LIQUID_MODEM_MANGLE_Q16,  q16_t,cq16_t)
 
 
 //

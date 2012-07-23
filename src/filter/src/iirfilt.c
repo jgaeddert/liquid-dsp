@@ -98,13 +98,26 @@ IIRFILT() IIRFILT(_create)(TC * _b,
     TC a0 = _a[0];
 
     unsigned int i;
-#if 0
-    // read values in reverse order
-    for (i=0; i<q->nb; i++)
-        q->b[i] = _b[q->nb - i - 1];
+#if defined LIQUID_FIXED && TC_COMPLEX==0
+    for (i=0; i<q->nb; i++) {
+        q->b[i] = qtype_float_to_fixed(
+                    qtype_fixed_to_float(_b[i]) / qtype_fixed_to_float(a0) );
+    }
 
-    for (i=0; i<q->na; i++)
-        q->a[i] = _a[q->na - i - 1];
+    for (i=0; i<q->na; i++) {
+        q->a[i] = qtype_float_to_fixed(
+                    qtype_fixed_to_float(_a[i]) / qtype_fixed_to_float(a0) );
+    }
+#elif defined LIQUID_FIXED && TC_COMPLEX==1
+    for (i=0; i<q->nb; i++) {
+        q->b[i] = cqtype_float_to_fixed(
+                    cqtype_fixed_to_float(_b[i]) / cqtype_fixed_to_float(a0) );
+    }
+
+    for (i=0; i<q->na; i++) {
+        q->a[i] = cqtype_float_to_fixed(
+                    cqtype_fixed_to_float(_a[i]) / cqtype_fixed_to_float(a0) );
+    }
 #else
     for (i=0; i<q->nb; i++)
         q->b[i] = _b[i] / a0;
@@ -221,8 +234,18 @@ IIRFILT() IIRFILT(_create_prototype)(liquid_iirdes_filtertype _ftype,
     TC Ac[h_len];
     unsigned int i;
     for (i=0; i<h_len; i++) {
+#if defined LIQUID_FIXED && TC_COMPLEX==0
+        Bc[i] = qtype_float_to_fixed(B[i]);
+        Ac[i] = qtype_float_to_fixed(B[i]);
+#elif defined LIQUID_FIXED && TC_COMPLEX==1
+        Bc[i].real = qtype_float_to_fixed(B[i]);
+        Bc[i].imag = 0;
+        Ac[i].real = qtype_float_to_fixed(B[i]);
+        Ac[i].imag = 0;
+#else
         Bc[i] = B[i];
         Ac[i] = A[i];
+#endif
     }
 
     // create filter object
@@ -264,8 +287,26 @@ IIRFILT() IIRFILT(_create_pll)(float _w,
     // copy to type-specific array
     TC b[3];
     TC a[3];
+#if defined LIQUID_FIXED && TC_COMPLEX==0
+    b[0] = qtype_float_to_fixed(bf[0]);
+    b[1] = qtype_float_to_fixed(bf[1]);
+    b[2] = qtype_float_to_fixed(bf[2]);
+
+    a[0] = qtype_float_to_fixed(af[0]);
+    a[1] = qtype_float_to_fixed(af[1]);
+    a[2] = qtype_float_to_fixed(af[2]);
+#elif defined LIQUID_FIXED && TC_COMPLEX==1
+    b[0].real = qtype_float_to_fixed(bf[0]);    b[0].imag = 0;
+    b[1].real = qtype_float_to_fixed(bf[1]);    b[1].imag = 0;
+    b[2].real = qtype_float_to_fixed(bf[2]);    b[2].imag = 0;
+
+    a[0].real = qtype_float_to_fixed(af[0]);    a[0].imag = 0;
+    a[1].real = qtype_float_to_fixed(af[1]);    a[1].imag = 0;
+    a[2].real = qtype_float_to_fixed(af[2]);    a[2].imag = 0;
+#else
     b[0] = bf[0];   b[1] = bf[1];   b[2] = bf[2];
     a[0] = af[0];   a[1] = af[1];   a[2] = af[2];
+#endif
 
     // create and return filter object
     return IIRFILT(_create_sos)(b,a,1);
@@ -336,8 +377,12 @@ void IIRFILT(_clear)(IIRFILT() _q)
         }
     } else {
         // set internal buffer to zero
+#ifdef LIQUID_FIXED
+        memset(_q->v, 0x00, sizeof(_q->v));
+#else
         for (i=0; i<_q->n; i++)
             _q->v[i] = 0;
+#endif
     }
 }
 
@@ -366,6 +411,37 @@ void IIRFILT(_execute_norm)(IIRFILT() _q,
     // compute new y
     DOTPROD(_execute)(_q->dpb, _q->v, _y);
 #else
+
+#  ifdef LIQUID_FIXED
+    // compute new v
+    TI v0 = _x;
+    TI mul;
+    for (i=1; i<_q->na; i++) {
+        // multiply input by coefficient
+        mul = MUL_TI_TC(_q->v[i], _q->a[i]);
+
+        // accumulate result (subtract from)
+        //v0 -= _q->a[i] * _q->v[i];
+        SUB_TO_TO(v0, mul);
+    }
+    // assign result
+    //_q->v[0] = v0;
+    _q->v[0] = v0;
+
+    // compute new y
+    TO y0 = TO_ZERO;
+    for (i=0; i<_q->nb; i++) {
+        //y0 += _q->b[i] * _q->v[i];
+        // multiply by coefficient
+        mul = MUL_TI_TC(_q->v[i], _q->b[i]);
+
+        // accumulate result
+        ADD_TO_TO(y0, mul);
+    }
+
+    // set return value
+    *_y = y0;
+#  else // LIQUID_FIXED
     // compute new v
     TI v0 = _x;
     for (i=1; i<_q->na; i++)
@@ -379,6 +455,7 @@ void IIRFILT(_execute_norm)(IIRFILT() _q,
 
     // set return value
     *_y = y0;
+#  endif // LIQUID_FIXED
 #endif
 }
 
@@ -390,8 +467,8 @@ void IIRFILT(_execute_sos)(IIRFILT() _q,
                            TI _x,
                            TO *_y)
 {
-    TI t0 = _x;     // intermediate input
-    TO t1 = 0.;     // intermediate output
+    TI t0 = _x;         // intermediate input
+    TO t1 = TO_ZERO;    // intermediate output
     unsigned int i;
     for (i=0; i<_q->nsos; i++) {
         // run each filter separately
@@ -431,6 +508,11 @@ void IIRFILT(_freqresponse)(IIRFILT() _q,
                             float _fc,
                             float complex * _H)
 {
+#ifdef LIQUID_FIXED
+#  warning "fixed-point iirfiltsos_xxxt_freqresponse() not yet implemented"
+    fprintf(stderr,"error: iirfiltsos_xxxt_freqresponse() not yet implemented for FPM\n");
+    exit(1);
+#else
     unsigned int i;
     float complex H = 0.0f;
 
@@ -468,6 +550,7 @@ void IIRFILT(_freqresponse)(IIRFILT() _q,
 
     // set return value
     *_H = H;
+#endif
 }
 
 // compute group delay in samples
@@ -485,8 +568,24 @@ float IIRFILT(_groupdelay)(IIRFILT() _q,
         // copy coefficients
         float b[_q->nb];
         float a[_q->na];
-        for (i=0; i<_q->nb; i++) b[i] = crealf(_q->b[i]);
-        for (i=0; i<_q->na; i++) a[i] = crealf(_q->a[i]);
+        for (i=0; i<_q->nb; i++) {
+#if defined LIQUID_FIXED && TC_COMPLEX==0
+            b[i] = qtype_fixed_to_float(_q->b[i]);
+#elif defined LIQUID_FIXED && TC_COMPLEX==1
+            b[i] = qtype_fixed_to_float(_q->b[i].real);
+#else
+            b[i] = crealf(_q->b[i]);
+#endif
+        }
+        for (i=0; i<_q->na; i++) {
+#if defined LIQUID_FIXED && TC_COMPLEX==0
+            a[i] = qtype_fixed_to_float(_q->a[i]);
+#elif defined LIQUID_FIXED && TC_COMPLEX==1
+            a[i] = qtype_fixed_to_float(_q->a[i].real);
+#else
+            a[i] = crealf(_q->a[i]);
+#endif
+        }
         groupdelay = iir_group_delay(b, _q->nb, a, _q->na, _fc);
     } else {
         // accumulate group delay from second-order sections

@@ -24,8 +24,8 @@
 //
 
 // create arbitrary digital modem object
-MODEM() MODEM(_create_arbitrary)(TC * _table,
-                               unsigned int _M)
+MODEM() MODEM(_create_arbitrary)(float complex * _table,
+                                 unsigned int    _M)
 {
     // strip out bits/symbol
     unsigned int m = liquid_nextpow2(_M);
@@ -92,7 +92,11 @@ void MODEM(_demodulate_arb)(MODEM()        _q,
 
     for (i=0; i<_q->M; i++) {
         // compute distance from received symbol to constellation point
+#if LIQUID_FPM
+        d = CQ(_cabs)( CQ(_sub)(_x, _q->symbol_map[i]) );
+#else
         d = cabsf(_x - _q->symbol_map[i]);
+#endif
 
         // retain symbol with minimum distance
         if ( i==0 || d < d_min ) {
@@ -113,9 +117,7 @@ void MODEM(_demodulate_arb)(MODEM()        _q,
 MODEM() MODEM(_create_V29)()
 {
     MODEM() q = MODEM(_create_arb)(4);
-#if T == float
-    MODEM(_arb_init)(q,(TC*)modem_arb_V29,16);
-#endif
+    MODEM(_arb_init)(q,(float complex*)modem_arb_V29,16);
     return q;
 }
 
@@ -123,9 +125,7 @@ MODEM() MODEM(_create_V29)()
 MODEM() MODEM(_create_arb16opt)()
 {
     MODEM() q = MODEM(_create_arb)(4);
-#if T == float
-    MODEM(_arb_init)(q,(TC*)modem_arb16opt,16);
-#endif
+    MODEM(_arb_init)(q,(float complex*)modem_arb16opt,16);
     return q;
 }
 
@@ -133,9 +133,7 @@ MODEM() MODEM(_create_arb16opt)()
 MODEM() MODEM(_create_arb32opt)()
 {
     MODEM() q = MODEM(_create_arb)(5);
-#if T == float
-    MODEM(_arb_init)(q,(TC*)modem_arb32opt,32);
-#endif
+    MODEM(_arb_init)(q,(float complex*)modem_arb32opt,32);
     return q;
 }
 
@@ -143,9 +141,7 @@ MODEM() MODEM(_create_arb32opt)()
 MODEM() MODEM(_create_arb64opt)()
 {
     MODEM() q = MODEM(_create_arb)(6);
-#if T == float
-    MODEM(_arb_init)(q,(TC*)modem_arb64opt,64);
-#endif
+    MODEM(_arb_init)(q,(float complex*)modem_arb64opt,64);
     return q;
 }
 
@@ -153,9 +149,7 @@ MODEM() MODEM(_create_arb64opt)()
 MODEM() MODEM(_create_arb128opt)()
 {
     MODEM() q = MODEM(_create_arb)(7);
-#if T == float
-    MODEM(_arb_init)(q,(TC*)modem_arb128opt,128);
-#endif
+    MODEM(_arb_init)(q,(float complex*)modem_arb128opt,128);
     return q;
 }
 
@@ -163,9 +157,7 @@ MODEM() MODEM(_create_arb128opt)()
 MODEM() MODEM(_create_arb256opt)()
 {
     MODEM() q = MODEM(_create_arb)(8);
-#if T == float
-    MODEM(_arb_init)(q,(TC*)modem_arb256opt,256);
-#endif
+    MODEM(_arb_init)(q,(float complex*)modem_arb256opt,256);
     return q;
 }
 
@@ -173,9 +165,7 @@ MODEM() MODEM(_create_arb256opt)()
 MODEM() MODEM(_create_arb64vt)()
 {
     MODEM() q = MODEM(_create_arb)(6);
-#if T == float
-    MODEM(_arb_init)(q,(TC*)modem_arb_vt64,64);
-#endif
+    MODEM(_arb_init)(q,(float complex*)modem_arb_vt64,64);
     return q;
 }
 
@@ -183,9 +173,9 @@ MODEM() MODEM(_create_arb64vt)()
 //  _mod        :   modem object
 //  _symbol_map :   arbitrary modem symbol map
 //  _len        :   number of symbols in the map
-void MODEM(_arb_init)(MODEM()      _q,
-                      TC *         _symbol_map,
-                      unsigned int _len)
+void MODEM(_arb_init)(MODEM()         _q,
+                      float complex * _symbol_map,
+                      unsigned int    _len)
 {
 #ifdef LIQUID_VALIDATE_INPUT
     if (_q->scheme != LIQUID_MODEM_ARB) {
@@ -197,9 +187,15 @@ void MODEM(_arb_init)(MODEM()      _q,
     }
 #endif
 
+    // copy values
     unsigned int i;
-    for (i=0; i<_len; i++)
+    for (i=0; i<_len; i++) {
+#if LIQUID_FPM
+        _q->symbol_map[i] = CQ(_float_to_fixed)(_symbol_map[i]);
+#else
         _q->symbol_map[i] = _symbol_map[i];
+#endif
+    }
 
     // balance I/Q channels
     if (_q->scheme == LIQUID_MODEM_ARB)
@@ -224,7 +220,7 @@ void MODEM(_arb_init_file)(MODEM() _q,
     }
 
     unsigned int i, results;
-    T sym_i, sym_q;
+    float sym_i, sym_q;
     for (i=0; i<_q->M; i++) {
         if ( feof(fid) ) {
             fprintf(stderr,"error: modem_arb_init_file(), premature EOF for '%s'\n", _filename);
@@ -232,7 +228,12 @@ void MODEM(_arb_init_file)(MODEM() _q,
         }
 
         results = fscanf(fid, "%f %f\n", &sym_i, &sym_q);
+#if LIQUID_FPM
+        _q->symbol_map[i].real = sym_i;
+        _q->symbol_map[i].imag = sym_q;
+#else
         _q->symbol_map[i] = sym_i + _Complex_I*sym_q;
+#endif
 
         // ensure proper number of symbols were read
         if (results < 2) {
@@ -257,35 +258,58 @@ void MODEM(_arb_scale)(MODEM() _q)
     unsigned int i;
 
     // calculate energy
-    T mag, e = 0.0f;
+    float complex v;
+    float e = 0.0f;
     for (i=0; i<_q->M; i++) {
-        mag = cabsf(_q->symbol_map[i]);
-        e += mag*mag;
+#if LIQUID_FPM
+        v = CQ(_fixed_to_float)(_q->symbol_map[i]);
+#else
+        v = _q->symbol_map[i];
+#endif
+        e += crealf( v*conjf(v) );
     }
 
     e = sqrtf( e / _q->M );
 
     for (i=0; i<_q->M; i++) {
+#if LIQUID_FPM
+        v = CQ(_fixed_to_float)(_q->symbol_map[i]) / e;
+        _q->symbol_map[i] = CQ(_float_to_fixed)(v);
+#else
         _q->symbol_map[i] /= e;
+#endif
     }
 }
 
 // balance an arbitrary modem's I/Q points
 void MODEM(_arb_balance_iq)(MODEM() _q)
 {
-    TC mean=0.0f;
+    float complex mean = 0.0f;
     unsigned int i;
 
+#if LIQUID_FPM
     // accumulate average signal
-    for (i=0; i<_q->M; i++) {
-        mean += _q->symbol_map[i];
-    }
-    mean /= (T) (_q->M);
+    for (i=0; i<_q->M; i++)
+        mean += CQ(_fixed_to_float)(_q->symbol_map[i]);
+
+    mean /= (float) (_q->M);
 
     // subtract mean value from reference levels
     for (i=0; i<_q->M; i++) {
-        _q->symbol_map[i] -= mean;
+        float complex v = CQ(_fixed_to_float)(_q->symbol_map[i]) - mean;
+        _q->symbol_map[i] = CQ(_float_to_fixed)(v);
     }
+#else
+    // accumulate average signal
+    for (i=0; i<_q->M; i++)
+        mean += _q->symbol_map[i];
+
+    mean /= (float) (_q->M);
+
+    // subtract mean value from reference levels
+    for (i=0; i<_q->M; i++)
+        _q->symbol_map[i] -= mean;
+#endif
 }
 
 // demodulate arbitrary modem type (soft)
@@ -317,7 +341,11 @@ void MODEM(_demodulate_soft_arb)(MODEM()         _q,
     for (i=0; i<M; i++) {
         // compute distance from received symbol
         x_hat = _q->symbol_map[i];
+#if LIQUID_FPM
+        d = CQ(_cabs2)( CQ(_sub)(_r,x_hat) );
+#else
         d = crealf( (_r-x_hat)*conjf(_r-x_hat) );
+#endif
 
         // set hard-decision...
         if (d < dmin || i==0) {

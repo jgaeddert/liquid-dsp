@@ -52,8 +52,13 @@ void MODEM(_modulate_qpsk)(MODEM()      _q,
                            TC *         _y)
 {
     // compute output sample directly from input
+#if LIQUID_FPM
+    _y[0].real = _sym_in & 0x01 ? -Q(_SQRT1_2) : Q(_SQRT1_2);
+    _y[0].imag = _sym_in & 0x02 ? -Q(_SQRT1_2) : Q(_SQRT1_2);
+#else
     *_y  = (_sym_in & 0x01 ? -M_SQRT1_2 : M_SQRT1_2) +
            (_sym_in & 0x02 ? -M_SQRT1_2 : M_SQRT1_2)*_Complex_I;
+#endif
 }
 
 // demodulate QPSK
@@ -62,8 +67,13 @@ void MODEM(_demodulate_qpsk)(MODEM() _q,
                              unsigned int * _sym_out)
 {
     // slice directly to output symbol
+#if LIQUID_FPM
+    *_sym_out  = (_x.real > 0 ? 0 : 1) +
+                 (_x.imag > 0 ? 0 : 2);
+#else
     *_sym_out  = (crealf(_x) > 0 ? 0 : 1) +
-                    (cimagf(_x) > 0 ? 0 : 2);
+                 (cimagf(_x) > 0 ? 0 : 2);
+#endif
 
     // re-modulate symbol and store state
     MODEM(_modulate_qpsk)(_q, *_sym_out, &_q->x_hat);
@@ -76,6 +86,7 @@ void MODEM(_demodulate_soft_qpsk)(MODEM()         _q,
                                   unsigned int  * _s,
                                   unsigned char * _soft_bits)
 {
+#if !LIQUID_FPM
     // gamma = 1/(2*sigma^2), approximate for constellation size
     T gamma = 5.8f;
 
@@ -102,5 +113,6 @@ void MODEM(_demodulate_soft_qpsk)(MODEM()         _q,
            (cimagf(_x) > 0 ? 0 : 2);
     MODEM(_modulate_qpsk)(_q, *_s, &_q->x_hat);
     _q->r = _x;
+#endif
 }
 

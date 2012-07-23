@@ -57,6 +57,9 @@
 #define PRINTVAL_FLOAT(X,F)     printf(#F,crealf(X));
 #define PRINTVAL_CFLOAT(X,F)    printf(#F "+j*" #F, crealf(X), cimagf(X));
 
+#define PRINTVAL_Q16(X,F)       printf(#F,q16_fixed_to_float(X))
+#define PRINTVAL_CQ16(X,F)      printf(#F "+j*" #F, q16_fixed_to_float(X.real), q16_fixed_to_float(X.imag))
+
 //
 // MODULE : agc
 //
@@ -813,6 +816,9 @@ unsigned int fft_reverse_index(unsigned int _i, unsigned int _n);
 
 LIQUID_FFT_DEFINE_INTERNAL_API(LIQUID_FFT_MANGLE_FLOAT, float, liquid_float_complex)
 
+LIQUID_FFT_DEFINE_INTERNAL_API(LIQUID_FFT_MANGLE_Q16, q16_t, cq16_t)
+LIQUID_FFT_DEFINE_INTERNAL_API(LIQUID_FFT_MANGLE_Q32, q32_t, cq32_t)
+
 // Use fftw library if installed, otherwise use internal (less
 // efficient) fft library.
 #if HAVE_FFTW3_H
@@ -878,6 +884,11 @@ LIQUID_FIRFARROW_DEFINE_INTERNAL_API(FIRFARROW_MANGLE_CRCF,
 #define IIRFILTSOS_MANGLE_CRCF(name)  LIQUID_CONCAT(iirfiltsos_crcf,name)
 #define IIRFILTSOS_MANGLE_CCCF(name)  LIQUID_CONCAT(iirfiltsos_cccf,name)
 
+// fixed-point
+#define IIRFILTSOS_MANGLE_RRRQ16(name)  LIQUID_CONCAT(iirfiltsos_rrrq16,name)
+#define IIRFILTSOS_MANGLE_CRCQ16(name)  LIQUID_CONCAT(iirfiltsos_crcq16,name)
+#define IIRFILTSOS_MANGLE_CCCQ16(name)  LIQUID_CONCAT(iirfiltsos_cccq16,name)
+
 #define LIQUID_IIRFILTSOS_DEFINE_INTERNAL_API(IIRFILTSOS,TO,TC,TI)  \
 typedef struct IIRFILTSOS(_s) * IIRFILTSOS();                   \
                                                                 \
@@ -923,6 +934,11 @@ LIQUID_IIRFILTSOS_DEFINE_INTERNAL_API(IIRFILTSOS_MANGLE_CCCF,
                                       liquid_float_complex,
                                       liquid_float_complex,
                                       liquid_float_complex)
+
+// fixed-point
+LIQUID_IIRFILTSOS_DEFINE_INTERNAL_API(IIRFILTSOS_MANGLE_RRRQ16,  q16_t,  q16_t,  q16_t)
+LIQUID_IIRFILTSOS_DEFINE_INTERNAL_API(IIRFILTSOS_MANGLE_CRCQ16, cq16_t,  q16_t, cq16_t)
+LIQUID_IIRFILTSOS_DEFINE_INTERNAL_API(IIRFILTSOS_MANGLE_CCCQ16, cq16_t, cq16_t, cq16_t)
 
 // msresamp
 #define LIQUID_MSRESAMP_DEFINE_INTERNAL_API(MSRESAMP,TO,TC,TI)  \
@@ -1510,40 +1526,6 @@ unsigned short int smatrix_indexsearch(unsigned short int * _list,
 // MODULE : modem
 //
 
-// 'Square' QAM
-#define QAM4_ALPHA      (1./sqrt(2))
-#define QAM8_ALPHA      (1./sqrt(6))
-#define QAM16_ALPHA     (1./sqrt(10))
-#define QAM32_ALPHA     (1./sqrt(20))
-#define QAM64_ALPHA     (1./sqrt(42))
-#define QAM128_ALPHA    (1./sqrt(82))
-#define QAM256_ALPHA    (1./sqrt(170))
-#define QAM1024_ALPHA   (1./sqrt(682))
-#define QAM4096_ALPHA   (1./sqrt(2730))
-
-// Rectangular QAM
-#define RQAM4_ALPHA     QAM4_ALPHA
-#define RQAM8_ALPHA     QAM8_ALPHA
-#define RQAM16_ALPHA    QAM16_ALPHA
-#define RQAM32_ALPHA    (1./sqrt(26))
-#define RQAM64_ALPHA    QAM64_ALPHA
-#define RQAM128_ALPHA   (1./sqrt(106))
-#define RQAM256_ALPHA   QAM256_ALPHA
-#define RQAM512_ALPHA   (1./sqrt(426))
-#define RQAM1024_ALPHA  QAM1024_ALPHA
-#define RQAM2048_ALPHA  (1./sqrt(1706))
-#define RQAM4096_ALPHA  QAM4096_ALPHA
-
-// ASK
-#define ASK2_ALPHA      (1.)
-#define ASK4_ALPHA      (1./sqrt(5))
-#define ASK8_ALPHA      (1./sqrt(21))
-#define ASK16_ALPHA     (1./sqrt(85))
-#define ASK32_ALPHA     (1./sqrt(341))
-#define ASK64_ALPHA     (1./sqrt(1365))
-#define ASK128_ALPHA    (1./sqrt(5461))
-#define ASK256_ALPHA    (1./sqrt(21845))
-
 // Macro    :   MODEM
 //  MODEM   :   name-mangling macro
 //  T       :   primitive data type
@@ -1564,10 +1546,11 @@ MODEM() MODEM(_create_dpsk)(unsigned int _bits_per_symbol);     \
 MODEM() MODEM(_create_apsk)(unsigned int _bits_per_symbol);     \
 MODEM() MODEM(_create_arb)( unsigned int _bits_per_symbol);     \
                                                                 \
-/* Initialize arbitrary modem constellation */                  \
-void MODEM(_arb_init)(MODEM() _q,                               \
-                      TC * _symbol_map,                         \
-                      unsigned int _len);                       \
+/* Initialize arbitrary modem constellation with        */      \
+/* floating-point constellation array                   */      \
+void MODEM(_arb_init)(MODEM()         _q,                       \
+                      float complex * _symbol_map,              \
+                      unsigned int    _len);                    \
                                                                 \
 /* Initialize arb modem constellation from external file */     \
 void MODEM(_arb_init_file)(MODEM() _q, char * _filename);       \
@@ -1678,6 +1661,11 @@ void MODEM(_demodulate_linear_array_ref)(T              _v,     \
 
 // define internal modem APIs
 LIQUID_MODEM_DEFINE_INTERNAL_API(LIQUID_MODEM_MANGLE_FLOAT,float,float complex)
+LIQUID_MODEM_DEFINE_INTERNAL_API(LIQUID_MODEM_MANGLE_Q16,  q16_t,cq16_t)
+
+//
+// modem constants
+//
 
 // APSK constants (container for apsk structure definitions)
 struct liquid_apsk_s {

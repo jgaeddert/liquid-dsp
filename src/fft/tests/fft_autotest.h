@@ -33,6 +33,14 @@ void fft_test(float complex * _x,
               float complex * _test,
               unsigned int    _n);
 
+// autotest helper function (fixed-point)
+//  _x      :   fft input array
+//  _test   :   expected fft output
+//  _n      :   fft size
+void fftq16_test(float complex * _x,
+                 float complex * _test,
+                 unsigned int    _n);
+
 // 
 // autotest datasets
 //

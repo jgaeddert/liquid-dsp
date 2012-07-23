@@ -46,13 +46,23 @@ MODEM() MODEM(_create_dpsk)(unsigned int _bits_per_symbol)
 
     q->data.dpsk.alpha = M_PI/(T)(q->M);
     
-    q->data.dpsk.phi = 0.0f;
+    // set angle state to zero
+    q->data.dpsk.phi = 0;
 
+    // initialize demodulation array reference
     unsigned int k;
     for (k=0; k<(q->m); k++)
-        q->ref[k] = (1<<k) * q->data.dpsk.alpha;
+#if LIQUID_FPM
+        q->ref[k] = Q(_angle_float_to_fixed)((1<<k) * q->data.psk.alpha);
+#else
+        q->ref[k] = (1<<k) * q->data.psk.alpha;
+#endif
 
+#if LIQUID_FPM
+    q->data.dpsk.d_phi = Q(_pi) - Q(_pi)/q->M;
+#else
     q->data.dpsk.d_phi = M_PI*(1.0f - 1.0f/(T)(q->M));
+#endif
 
     // reset modem
     MODEM(_reset)(q);
@@ -78,7 +88,12 @@ void MODEM(_modulate_dpsk)(MODEM()      _q,
     _q->data.dpsk.phi -= (_q->data.dpsk.phi > 2*M_PI) ? 2*M_PI : 0.0f;
     
     // compute output sample
-    *_y = liquid_cexpjf(_q->data.dpsk.phi);
+    float complex v = liquid_cexpjf(_q->data.dpsk.phi);
+#if LIQUID_FPM
+    *_y = CQ(_float_to_fixed)(v);
+#else
+    *_y = v;
+#endif
 
     // save symbol state
     _q->r = *_y;
@@ -89,17 +104,27 @@ void MODEM(_demodulate_dpsk)(MODEM()        _q,
                              TC             _x,
                              unsigned int * _sym_out)
 {
+#if LIQUID_FPM
     // compute angle difference
-    T theta = cargf(_x);
-    T d_theta = cargf(_x) - _q->data.dpsk.phi;
+    T theta   = CQ(_carg)(_x);
+    T d_theta = theta - _q->data.dpsk.phi;
     _q->data.dpsk.phi = theta;
 
     // subtract phase offset, ensuring phase is in [-pi,pi)
     d_theta -= _q->data.dpsk.d_phi;
-    if (d_theta > M_PI)
-        d_theta -= 2*M_PI;
-    else if (d_theta < -M_PI)
-        d_theta += 2*M_PI;
+    if      (d_theta >  Q(_pi)) d_theta -= Q(_2pi);
+    else if (d_theta < -Q(_pi)) d_theta += Q(_2pi);
+#else
+    // compute angle difference
+    T theta = cargf(_x);
+    T d_theta = theta - _q->data.dpsk.phi;
+    _q->data.dpsk.phi = theta;
+
+    // subtract phase offset, ensuring phase is in [-pi,pi)
+    d_theta -= _q->data.dpsk.d_phi;
+    if      (d_theta >  M_PI) d_theta -= 2*M_PI;
+    else if (d_theta < -M_PI) d_theta += 2*M_PI;
+#endif
 
     // demodulate on linearly-spaced array
     unsigned int s;             // demodulated symbol
@@ -111,7 +136,11 @@ void MODEM(_demodulate_dpsk)(MODEM()        _q,
 
     // re-modulate symbol (accounting for differential rotation)
     // and store state
+#if LIQUID_FPM
+    _q->x_hat = CQ(_cexpj)(theta - demod_phase_error);
+#else
     _q->x_hat = liquid_cexpjf(theta - demod_phase_error);
+#endif
     _q->r = _x;
 }
 

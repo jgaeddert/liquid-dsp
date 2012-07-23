@@ -26,6 +26,7 @@
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
+#include <math.h>
 
 // defined:
 //  FIRFILT()       name-mangling macro
@@ -172,9 +173,8 @@ void FIRFILT(_clear)(FIRFILT() _q)
 #if LIQUID_FIRFILT_USE_WINDOW
     WINDOW(_clear)(_q->w);
 #else
-    unsigned int i;
-    for (i=0; i<_q->w_len; i++)
-        _q->w[i] = 0.0;
+    // clear buffer (set elements to zero)
+    memset(_q->w, 0x0, _q->w_len*sizeof(TI));
     _q->w_index = 0;
 #endif
 }
@@ -256,7 +256,21 @@ void FIRFILT(_freqresponse)(FIRFILT() _q,
     float complex H = 0.0f;
 
     for (i=0; i<_q->h_len; i++)
+    {
+#ifdef LIQUID_FIXED
+        // fixed-point math
+#if TC_COMPLEX==0
+        // fixed-point real coefficients
+        H += qtype_fixed_to_float(_q->h[i]) * cexpf(_Complex_I*2*M_PI*_fc*i);
+#else
+        // fixed-point complex coefficients
+        H += cqtype_fixed_to_float(_q->h[i]) * cexpf(_Complex_I*2*M_PI*_fc*i);
+#endif
+#else
+        // floating-point math
         H += _q->h[i] * cexpf(_Complex_I*2*M_PI*_fc*i);
+#endif
+    }
 
     // set return value
     *_H = H;
@@ -273,8 +287,20 @@ float FIRFILT(_groupdelay)(FIRFILT() _q,
     float h[_q->h_len];
     unsigned int i;
     unsigned int n = _q->h_len;
-    for (i=0; i<n; i++)
+    for (i=0; i<n; i++) {
+#ifdef LIQUID_FIXED
+#  if TC_COMPLEX==0
+        // fixed-point real coefficients
+        h[i] = qtype_fixed_to_float(_q->h[n-i-1]);
+#  else
+        // fixed-point complex coefficients
+        h[i] = qtype_fixed_to_float(_q->h[n-i-1].real);
+#  endif
+#else
+        // floating-point coefficients
         h[i] = crealf(_q->h[n-i-1]);
+#endif
+    }
 
     return fir_group_delay(h, n, _fc);
 }

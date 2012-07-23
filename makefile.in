@@ -144,6 +144,10 @@ audio_benchmarks :=						\
 buffer_objects :=						\
 	src/buffer/src/bufferf.o				\
 	src/buffer/src/buffercf.o				\
+	src/buffer/src/bufferq16.o				\
+	src/buffer/src/bufferq32.o				\
+	src/buffer/src/buffercq16.o				\
+	src/buffer/src/buffercq32.o				\
 
 #	src/buffer/src/bufferui.c				\
 
@@ -181,6 +185,17 @@ src/dotprod/src/dotprod_crcf.o : %.o : %.c $(headers) src/dotprod/src/dotprod.c
 
 src/dotprod/src/dotprod_rrrf.o : %.o : %.c $(headers) src/dotprod/src/dotprod.c
 
+# fixed-point
+
+src/dotprod/src/dotprod_rrrq16.o : %.o : %.c $(headers)
+src/dotprod/src/dotprod_rrrq32.o : %.o : %.c $(headers)
+
+src/dotprod/src/dotprod_crcq16.o : %.o : %.c $(headers)
+src/dotprod/src/dotprod_crcq32.o : %.o : %.c $(headers)
+
+src/dotprod/src/dotprod_cccq16.o : %.o : %.c $(headers)
+src/dotprod/src/dotprod_cccq32.o : %.o : %.c $(headers)
+
 # specific machine architectures
 
 src/dotprod/src/dotprod_rrrf.av.o : %.o : %.c $(headers)
@@ -189,15 +204,31 @@ src/dotprod/src/dotprod_rrrf.mmx.o : %.o : %.c $(headers)
 src/dotprod/src/dotprod_crcf.mmx.o : %.o : %.c $(headers)
 src/dotprod/src/dotprod_cccf.mmx.o : %.o : %.c $(headers)
 
+src/dotprod/src/dotprod_rrrq16.mmx.o : %.o : %.c $(headers)
+src/dotprod/src/dotprod_crcq16.mmx.o : %.o : %.c $(headers)
+src/dotprod/src/dotprod_cccq16.mmx.o : %.o : %.c $(headers)
+
+src/dotprod/src/dotprod_rrrq32.mmx.o : %.o : %.c $(headers)
+src/dotprod/src/dotprod_crcq32.mmx.o : %.o : %.c $(headers)
+src/dotprod/src/dotprod_cccq32.mmx.o : %.o : %.c $(headers)
+
 dotprod_autotests :=						\
 	src/dotprod/tests/dotprod_rrrf_autotest.c		\
 	src/dotprod/tests/dotprod_crcf_autotest.c		\
 	src/dotprod/tests/dotprod_cccf_autotest.c		\
+	src/dotprod/tests/dotprod_q16_autotest.c		\
+	src/dotprod/tests/dotprod_q32_autotest.c		\
 
 dotprod_benchmarks :=						\
 	src/dotprod/bench/dotprod_cccf_benchmark.c		\
 	src/dotprod/bench/dotprod_crcf_benchmark.c		\
 	src/dotprod/bench/dotprod_rrrf_benchmark.c		\
+	src/dotprod/bench/dotprod_cccq16_benchmark.c		\
+	src/dotprod/bench/dotprod_crcq16_benchmark.c		\
+	src/dotprod/bench/dotprod_rrrq16_benchmark.c		\
+	src/dotprod/bench/dotprod_cccq32_benchmark.c		\
+	src/dotprod/bench/dotprod_crcq32_benchmark.c		\
+	src/dotprod/bench/dotprod_rrrq32_benchmark.c		\
 
 # 
 # MODULE : equalization
@@ -296,6 +327,8 @@ fec_benchmarks :=						\
 
 fft_objects :=							\
 	src/fft/src/fftf.o					\
+	src/fft/src/fftq16.o					\
+	src/fft/src/fftq32.o					\
 	src/fft/src/asgram.o					\
 	src/fft/src/spgram.o					\
 	src/fft/src/fft_utilities.o				\
@@ -310,13 +343,13 @@ fft_includes :=							\
 	src/fft/src/fft_rader2.c				\
 	src/fft/src/fft_r2r_1d.c				\
 
-src/fft/src/fftf.o : %.o : %.c $(headers) $(fft_includes)
+src/fft/src/fftf.o   : %.o : %.c $(headers) $(fft_includes)
+src/fft/src/fftq16.o : %.o : %.c $(headers) $(fft_includes)
+src/fft/src/fftq32.o : %.o : %.c $(headers) $(fft_includes)
 
 src/fft/src/asgram.o : %.o : %.c $(headers)
 
 src/fft/src/dct.o : %.o : %.c $(headers)
-
-src/fft/src/fftf.o : %.o : %.c $(headers)
 
 src/fft/src/fft_utilities.o : %.o : %.c $(headers)
 
@@ -324,6 +357,7 @@ src/fft/src/mdct.o : %.o : %.c $(headers)
 
 # fft autotest scripts
 fft_autotests :=						\
+	src/fft/tests/fftq16_autotest.c				\
 	src/fft/tests/fft_small_autotest.c			\
 	src/fft/tests/fft_radix2_autotest.c			\
 	src/fft/tests/fft_composite_autotest.c			\
@@ -334,6 +368,7 @@ fft_autotests :=						\
 # additional autotest objects
 autotest_extra_obj +=						\
 	src/fft/tests/fft_runtest.o				\
+	src/fft/tests/fftq16_runtest.o				\
 	src/fft/tests/data/fft_data_2.o				\
 	src/fft/tests/data/fft_data_3.o				\
 	src/fft/tests/data/fft_data_4.o				\
@@ -373,6 +408,7 @@ autotest_extra_obj +=						\
 
 # fft benchmark scripts
 fft_benchmarks :=						\
+	src/fft/bench/fftq16_benchmark.c			\
 	src/fft/bench/fft_composite_benchmark.c			\
 	src/fft/bench/fft_prime_benchmark.c			\
 	src/fft/bench/fft_radix2_benchmark.c			\
@@ -381,6 +417,7 @@ fft_benchmarks :=						\
 # additional benchmark objects
 benchmark_extra_obj :=						\
 	src/fft/bench/fft_runbench.o				\
+	src/fft/bench/fftq16_runbench.o				\
 
 #
 # MODULE : filter
@@ -395,6 +432,9 @@ filter_objects :=						\
 	src/filter/src/filter_rrrf.o				\
 	src/filter/src/filter_crcf.o				\
 	src/filter/src/filter_cccf.o				\
+	src/filter/src/filter_rrrq16.o				\
+	src/filter/src/filter_crcq16.o				\
+	src/filter/src/filter_cccq16.o				\
 	src/filter/src/firdes.o					\
 	src/filter/src/firdespm.o				\
 	src/filter/src/fnyquist.o				\
@@ -468,6 +508,7 @@ filter_autotests :=						\
 	src/filter/tests/filter_crosscorr_autotest.c		\
 	src/filter/tests/firdes_autotest.c			\
 	src/filter/tests/firdespm_autotest.c			\
+	src/filter/tests/firfilt_xxxq16_autotest.c		\
 	src/filter/tests/firfilt_xxxf_autotest.c		\
 	src/filter/tests/firhilb_autotest.c			\
 	src/filter/tests/firpfb_autotest.c			\
@@ -516,11 +557,134 @@ filter_benchmarks :=						\
 	src/filter/bench/decim_benchmark.c			\
 	src/filter/bench/firhilb_benchmark.c			\
 	src/filter/bench/firfilt_crcf_benchmark.c		\
+	src/filter/bench/firfilt_q16_benchmark.c		\
 	src/filter/bench/iirfilt_crcf_benchmark.c		\
 	src/filter/bench/interp_crcf_benchmark.c		\
 	src/filter/bench/resamp_benchmark.c			\
 	src/filter/bench/resamp2_benchmark.c			\
 	src/filter/bench/symsync_benchmark.c			\
+
+# 
+# MODULE : fpm
+#
+
+# define specific headers for building fixed-point math objects
+fpm_headers	:= $(headers) liquidfpm.h liquidfpm.internal.h
+
+# fixed-point math auto-generated tables
+#   The target generator programs listed below determine which
+#   source files are generated. For example,
+#     "src/fpm/gentab.qtype_cordic"
+#   generates these sources:
+#     "src/fpm/gentab.q16_cordic.c"
+#     "src/fpm/gentab.q32_cordic.c"
+
+# target generator programs
+fpm_gentab_programs :=						\
+	src/fpm/gentab/gentab.qtype_constants			\
+	src/fpm/gentab/gentab.qtype_logexp_shiftadd		\
+	src/fpm/gentab/gentab.qtype_logexp_frac			\
+	src/fpm/gentab/gentab.qtype_cordic			\
+	src/fpm/gentab/gentab.qtype_hyperbolic_cordic	 	\
+	src/fpm/gentab/gentab.qtype_trigtab			\
+
+# declare target source files from above "target generator programs"
+fpm_gentab_src_q16 = $(patsubst src/fpm/gentab/gentab.qtype%,src/fpm/gentab/q16%.c,$(fpm_gentab_programs))
+fpm_gentab_src_q32 = $(patsubst src/fpm/gentab/gentab.qtype%,src/fpm/gentab/q32%.c,$(fpm_gentab_programs))
+
+# declare resulting object files from above source files
+fpm_gentab_obj_q16 = $(patsubst %.c,%.o,$(fpm_gentab_src_q16))
+fpm_gentab_obj_q32 = $(patsubst %.c,%.o,$(fpm_gentab_src_q32))
+
+# build gentab programs from source
+$(fpm_gentab_programs) : % : %.c $(fpm_headers)
+	$(CC) $(CFLAGS) -o $@ $< $(LDFLAGS)
+
+# generate source files by running program and piping output to target
+$(fpm_gentab_src_q16) : src/fpm/gentab/q16%.c : src/fpm/gentab/gentab.qtype% ;  ./$< -n16 > $@
+$(fpm_gentab_src_q32) : src/fpm/gentab/q32%.c : src/fpm/gentab/gentab.qtype% ;  ./$< -n32 > $@
+
+# type conversion scripts
+scripts/q16_float_to_fixed : % : %.c
+	$(CC) $(CFLAGS) -o $@ $< $(LDFLAGS)
+
+scripts/q16_fixed_to_float : % : %.c
+	$(CC) $(CFLAGS) -o $@ $< $(LDFLAGS)
+
+# add auto-generated files to extra_clean list (programs, sources,
+# and objects)
+extra_clean +=							\
+	$(fpm_gentab_programs)					\
+	$(fpm_gentab_src_q16)					\
+	$(fpm_gentab_src_q32)					\
+	$(fpm_gentab_obj_q16)					\
+	$(fpm_gentab_obj_q32)					\
+	scripts/q16_float_to_fixed				\
+	scripts/q16_fixed_to_float				\
+
+# target fixed-point math objects
+fpm_objects :=							\
+	src/fpm/src/q16.o					\
+	src/fpm/src/q32.o					\
+	$(fpm_gentab_obj_q16)					\
+	$(fpm_gentab_obj_q32)					\
+
+# files included by macro sources
+fpm_includes :=							\
+	src/fpm/src/cqtype_arithmetic.c				\
+	src/fpm/src/cqtype_conversion.c				\
+	src/fpm/src/cqtype_trig_cordic.c			\
+	src/fpm/src/cqtype_logexp_cordic.c			\
+	src/fpm/src/qtype_arithmetic.port.c			\
+	src/fpm/src/qtype_inv_newton.c				\
+	src/fpm/src/qtype_log2_frac.c				\
+	src/fpm/src/qtype_exp2_frac.c				\
+	src/fpm/src/qtype_log2_shiftadd.c			\
+	src/fpm/src/qtype_exp2_shiftadd.c			\
+	src/fpm/src/qtype_atan_frac.c				\
+	src/fpm/src/qtype_atan_cordic.c				\
+	src/fpm/src/qtype_sincos_cordic.c			\
+	src/fpm/src/qtype_sincos_tab.c				\
+	src/fpm/src/qtype_sinhcosh_cordic.c			\
+	src/fpm/src/qtype_hyperbolic_shiftadd.c			\
+	src/fpm/src/qtype_sqrt.c				\
+	src/fpm/src/qtype_cbrt.c				\
+	src/fpm/src/qtype_gamma.c				\
+	src/fpm/src/qtype_erf.c					\
+	src/fpm/src/qtype_trig.c				\
+	src/fpm/src/qtype_hyperbolic.c				\
+	src/fpm/src/qtype_logexp.c				\
+	src/fpm/src/qtype_power.c				\
+
+src/fpm/src/q16.o : %.o : %.c $(fpm_headers) $(fpm_includes)
+
+src/fpm/src/q32.o : %.o : %.c $(fpm_headers) $(fpm_includes)
+
+fpm_autotests :=						\
+	src/fpm/tests/qtype_constants_autotest.c		\
+	src/fpm/tests/qtype_div_autotest.c			\
+	src/fpm/tests/qtype_inv_newton_autotest.c		\
+	src/fpm/tests/qtype_mul_autotest.c			\
+	src/fpm/tests/qtype_round_autotest.c			\
+	src/fpm/tests/qtype_exp_autotest.c			\
+	src/fpm/tests/qtype_log_autotest.c			\
+	src/fpm/tests/qtype_atan_autotest.c			\
+	src/fpm/tests/qtype_sincos_autotest.c			\
+	src/fpm/tests/qtype_sinhcosh_autotest.c			\
+	src/fpm/tests/qtype_sqrt_autotest.c			\
+	src/fpm/tests/qtype_gamma_autotest.c			\
+	src/fpm/tests/qtype_erf_autotest.c			\
+	src/fpm/tests/cqtype_arithmetic_autotest.c		\
+	src/fpm/tests/cqtype_logexp_autotest.c			\
+
+fpm_benchmarks :=						\
+	src/fpm/bench/qtype_div_benchmark.c			\
+	src/fpm/bench/qtype_mul_benchmark.c			\
+	src/fpm/bench/qtype_exp2_benchmark.c			\
+	src/fpm/bench/qtype_log2_benchmark.c			\
+	src/fpm/bench/qtype_atan_benchmark.c			\
+	src/fpm/bench/qtype_sincos_benchmark.c			\
+
 
 # 
 # MODULE : framing
@@ -722,6 +886,7 @@ modem_objects :=						\
 	src/modem/src/modem_utilities.o				\
 	src/modem/src/modem_apsk_const.o			\
 	src/modem/src/modem_arb_const.o				\
+	src/modem/src/modemq16.o				\
 
 # explicit targets and dependencies
 modem_includes :=						\
@@ -743,6 +908,8 @@ modem_includes :=						\
 # main modem object
 src/modem/src/modemf.o : %.o : %.c $(headers) $(modem_includes)
 
+src/modem/src/modemq16.o : %.o : %.c $(headers) $(modem_includes)
+
 src/modem/src/gmskmod.o: %.o : %.c $(headers)
 
 src/modem/src/gmskdem.o: %.o : %.c $(headers)
@@ -762,7 +929,7 @@ modem_autotests :=						\
 	src/modem/tests/modem_autotest.c			\
 	src/modem/tests/modem_demodsoft_autotest.c		\
 	src/modem/tests/modem_demodstats_autotest.c		\
-
+	src/modem/tests/modemq16_autotest.c			\
 
 modem_benchmarks :=						\
 	src/modem/bench/gmskmodem_benchmark.c			\
@@ -1007,6 +1174,7 @@ objects :=							\
 	$(fec_objects)						\
 	$(fft_objects)						\
 	$(filter_objects)					\
+	$(fpm_objects)						\
 	$(framing_objects)					\
 	$(math_objects)						\
 	$(matrix_objects)					\
@@ -1031,6 +1199,7 @@ autotest_sources :=						\
 	$(fec_autotests)					\
 	$(fft_autotests)					\
 	$(filter_autotests)					\
+	$(fpm_autotests)					\
 	$(framing_autotests)					\
 	$(math_autotests)					\
 	$(matrix_autotests)					\
@@ -1055,6 +1224,7 @@ benchmark_sources :=						\
 	$(fec_benchmarks)					\
 	$(fft_benchmarks)					\
 	$(filter_benchmarks)					\
+	$(fpm_benchmarks)					\
 	$(framing_benchmarks)					\
 	$(math_benchmarks)					\
 	$(matrix_benchmarks)					\
@@ -1331,7 +1501,9 @@ example_programs :=						\
 	examples/math_primitive_root_example			\
 	examples/modem_arb_example				\
 	examples/modem_example					\
+	examples/modemq16_example				\
 	examples/modem_soft_example				\
+	examples/modemq16_soft_example				\
 	examples/modular_arithmetic_example			\
 	examples/msequence_example				\
 	examples/msresamp_crcf_example				\
@@ -1529,6 +1701,7 @@ clean-modules:
 	$(RM) src/fec/src/*.o          src/fec/bench/*.o          src/fec/tests/*.o
 	$(RM) src/fft/src/*.o          src/fft/bench/*.o          src/fft/tests/*.o
 	$(RM) src/filter/src/*.o       src/filter/bench/*.o       src/filter/tests/*.o
+	$(RM) src/fpm/src/*.o          src/fpm/bench/*.o          src/fpm/tests/*.o
 	$(RM) src/framing/src/*.o      src/framing/bench/*.o      src/framing/tests/*.o
 	$(RM) src/math/src/*.o         src/math/bench/*.o         src/math/tests/*.o
 	$(RM) src/matrix/src/*.o       src/matrix/bench/*.o       src/matrix/tests/*.o

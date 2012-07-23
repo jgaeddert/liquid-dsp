@@ -46,21 +46,30 @@ MODEM() MODEM(_create_ook)()
 }
 
 // modulate symbol using on/off keying
-void MODEM(_modulate_ook)(MODEM()         _q,
-                          unsigned int    _sym_in,
-                          float complex * _y)
+void MODEM(_modulate_ook)(MODEM()      _q,
+                          unsigned int _sym_in,
+                          TC *         _y)
 {
     // compute output sample directly from input
+#if LIQUID_FPM
+    _y[0].real = _sym_in ? 0.0f : Q(_SQRT2);
+    _y[0].imag = 0;
+#else
     *_y = _sym_in ? 0.0f : M_SQRT2;
+#endif
 }
 
 // demodulate OOK
 void MODEM(_demodulate_ook)(MODEM()        _q,
-                            float complex  _x,
+                            TC             _x,
                             unsigned int * _sym_out)
 {
     // slice directly to output symbol
-    *_sym_out = (crealf(_x) > M_SQRT1_2 ) ? 0 : 1;
+#if LIQUID_FPM
+    *_sym_out = _x.real > Q(_SQRT1_2) ? 0 : 1;
+#else
+    *_sym_out = crealf(_x) > M_SQRT1_2 ? 0 : 1;
+#endif
 
     // re-modulate symbol and store state
     MODEM(_modulate_ook)(_q, *_sym_out, &_q->x_hat);

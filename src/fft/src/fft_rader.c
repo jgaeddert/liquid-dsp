@@ -93,8 +93,14 @@ FFT(plan) FFT(_create_plan_rader)(unsigned int _nfft,
     // NOTE: R[0] = -1, |R[k]| = sqrt(nfft) for k != 0
     // (use newly-created FFT plan of length nfft-1)
     T d = (q->direction == FFT_FORWARD) ? -1.0 : 1.0;
-    for (i=0; i<q->nfft-1; i++)
-        q->data.rader.x_prime[i] = cexpf(_Complex_I*d*2*M_PI*q->data.rader.seq[i]/(T)(q->nfft));
+    for (i=0; i<q->nfft-1; i++) {
+        float complex t = cexpf(_Complex_I*d*2*M_PI*q->data.rader.seq[i]/(T)(q->nfft));
+#if LIQUID_FPM
+        q->data.rader.x_prime[i] = CQ(_float_to_fixed)(t);
+#else
+        q->data.rader.x_prime[i] = t;
+#endif
+    }
     FFT(_execute)(q->data.rader.fft);
 
     // copy result to R
@@ -137,23 +143,44 @@ void FFT(_execute_rader)(FFT(plan) _q)
     FFT(_execute)(_q->data.rader.fft);
 
     // compute inverse FFT of product
-    for (i=0; i<_q->nfft-1; i++)
+    for (i=0; i<_q->nfft-1; i++) {
+#if LIQUID_FPM
+        TC t = CQ(_mul)(_q->data.rader.X_prime[i], _q->data.rader.R[i]);
+        _q->data.rader.X_prime[i].real += t.real;
+        _q->data.rader.X_prime[i].imag += t.imag;
+#else
         _q->data.rader.X_prime[i] *= _q->data.rader.R[i];
+#endif
+    }
 
     // compute sub-IFFT
     // equivalent to: FFT(_run)(_q->nfft-1, Xp, xp, FFT_REVERSE, 0);
     FFT(_execute)(_q->data.rader.ifft);
 
     // set DC value
+#if LIQUID_FPM
+    _q->y[0].real = 0;
+    _q->y[0].imag = 0;
+    for (i=0; i<_q->nfft; i++) {
+        _q->y[0].real += _q->x[i].real;
+        _q->y[0].imag += _q->x[i].imag;
+    }
+#else
     _q->y[0] = 0.0f;
     for (i=0; i<_q->nfft; i++)
         _q->y[0] += _q->x[i];
+#endif
 
     // reverse permute result, scale, and add offset x[0]
     for (i=0; i<_q->nfft-1; i++) {
         unsigned int k = _q->data.rader.seq[i];
 
+#if LIQUID_FPM
+        _q->y[k].real = _q->data.rader.x_prime[i].real / (T)(_q->nfft-1) + _q->x[0].real;
+        _q->y[k].imag = _q->data.rader.x_prime[i].imag / (T)(_q->nfft-1) + _q->x[0].imag;
+#else
         _q->y[k] = _q->data.rader.x_prime[i] / (T)(_q->nfft-1) + _q->x[0];
+#endif
     }
 }
 

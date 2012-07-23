@@ -25,7 +25,7 @@
 #ifndef __LIQUID_FIRFILT_H__
 #define __LIQUID_FIRFILT_H__
 
-// autotest helper functions:
+// floating-point autotest helper functions:
 //  _h      :   filter coefficients
 //  _h_len  :   filter coefficients length
 //  _x      :   input array
@@ -52,6 +52,34 @@ void firfilt_cccf_test(float complex * _h,
                        unsigned int    _x_len,
                        float complex * _y,
                        unsigned int    _y_len);
+
+// fixed-point autotest helper functions:
+//  _h      :   filter coefficients
+//  _h_len  :   filter coefficients length
+//  _x      :   input array
+//  _x_len  :   input array length
+//  _y      :   output array
+//  _y_len  :   output array length
+void firfilt_rrrq16_test(float *      _h,
+                         unsigned int _h_len,
+                         float *      _x,
+                         unsigned int _x_len,
+                         float *      _y,
+                         unsigned int _y_len);
+
+void firfilt_crcq16_test(float *         _h,
+                         unsigned int    _h_len,
+                         float complex * _x,
+                         unsigned int    _x_len,
+                         float complex * _y,
+                         unsigned int    _y_len);
+
+void firfilt_cccq16_test(float complex * _h,
+                         unsigned int    _h_len,
+                         float complex * _x,
+                         unsigned int    _x_len,
+                         float complex * _y,
+                         unsigned int    _y_len);
 
 // 
 // autotest datasets

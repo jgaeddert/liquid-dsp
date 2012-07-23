@@ -48,7 +48,7 @@ void usage()
     printf("  -n[NFFT_MIN]  minimum FFT size (benchmark single FFT)\n");
     printf("  -N[NFFT_MAX]  maximum FFT size\n");
     printf("  -m[MODE]      mode: all, radix2, composite, prime, fftwbench, single\n");
-    printf("  -l[library]   library: float, fftw\n");
+    printf("  -l[library]   library: float, q16, fftw\n");
 }
 
 // benchmark structure
@@ -69,6 +69,7 @@ struct benchmark_s {
 
 typedef enum {
     LIB_FLOAT=0,
+    LIB_Q16,
     LIB_FFTW,
 } library_t;
     
@@ -114,6 +115,11 @@ void execute_benchmark_fft(struct benchmark_s * _benchmark,
 void benchmark_fft(struct rusage *      _start,
                    struct rusage *      _finish,
                    struct benchmark_s * _benchmark);
+
+// main benchmark script (fixed-point)
+void benchmark_fftq16(struct rusage *      _start,
+                      struct rusage *      _finish,
+                      struct benchmark_s * _benchmark);
 
 // main benchmark script (FFTW)
 void benchmark_fftw(struct rusage *      _start,
@@ -177,6 +183,7 @@ int main(int argc, char *argv[])
             break;
         case 'l':
             if      (strcmp(optarg,"float")==0)     fftbench.library = LIB_FLOAT;
+            else if (strcmp(optarg,"q16")==0)       fftbench.library = LIB_Q16;
             else if (strcmp(optarg,"fftw")==0)      fftbench.library = LIB_FFTW;
             else {
                 fprintf(stderr,"error: %s, unknown library option '%s'\n", argv[0], optarg);
@@ -398,6 +405,9 @@ void execute_benchmark_fft(struct benchmark_s * _benchmark,
         case LIB_FLOAT:
             benchmark_fft(&start, &finish, _benchmark);
             break;
+        case LIB_Q16:
+            benchmark_fftq16(&start, &finish, _benchmark);
+            break;
         case LIB_FFTW:
             benchmark_fftw(&start, &finish, _benchmark);
             break;
@@ -465,6 +475,49 @@ void benchmark_fft(struct rusage *      _start,
     _benchmark->num_trials = num_iterations * 4;
 
     fft_destroy_plan(q);
+    free(x);
+    free(y);
+}
+
+// main benchmark script (fixed-point)
+void benchmark_fftq16(struct rusage *      _start,
+                      struct rusage *      _finish,
+                      struct benchmark_s * _benchmark)
+{
+    // initialize arrays, plan
+    cq16_t * x = (cq16_t *) malloc((_benchmark->nfft)*sizeof(cq16_t));
+    cq16_t * y = (cq16_t *) malloc((_benchmark->nfft)*sizeof(cq16_t));
+    fftq16plan q = fftq16_create_plan(_benchmark->nfft,
+                                      x, y,
+                                      _benchmark->direction,
+                                      _benchmark->flags);
+    
+    unsigned long int i;
+
+    // initialize input with random values
+    for (i=0; i<_benchmark->nfft; i++) {
+        x[i].real = q16_float_to_fixed( 0.3f*randnf() );
+        x[i].imag = q16_float_to_fixed( 0.3f*randnf() );
+    }
+
+    // scale number of iterations to keep execution time
+    // relatively linear
+    unsigned int num_iterations = _benchmark->num_trials;
+
+    // start trials
+    getrusage(RUSAGE_SELF, _start);
+    for (i=0; i<num_iterations; i++) {
+        fftq16_execute(q);
+        fftq16_execute(q);
+        fftq16_execute(q);
+        fftq16_execute(q);
+    }
+    getrusage(RUSAGE_SELF, _finish);
+
+    // set actual number of iterations in result
+    _benchmark->num_trials = num_iterations * 4;
+
+    fftq16_destroy_plan(q);
     free(x);
     free(y);
 }

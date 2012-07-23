@@ -100,8 +100,14 @@ FFT(plan) FFT(_create_plan_mixed_radix)(unsigned int _nfft,
     q->data.mixedradix.twiddle = (TC *) malloc(q->nfft * sizeof(TC));
     
     T d = (q->direction == FFT_FORWARD) ? -1.0 : 1.0;
-    for (i=0; i<q->nfft; i++)
-        q->data.mixedradix.twiddle[i] = cexpf(_Complex_I*d*2*M_PI*(T)i / (T)(q->nfft));
+    for (i=0; i<q->nfft; i++) {
+        float complex t = cexpf(_Complex_I*d*2*M_PI*(T)i / (T)(q->nfft));
+#if LIQUID_FPM
+        q->data.mixedradix.twiddle[i] = CQ(_float_to_fixed)(t);
+#else
+        q->data.mixedradix.twiddle[i] = t;
+#endif
+    }
 
     return q;
 }
@@ -155,8 +161,13 @@ void FFT(_execute_mixed_radix)(FFT(plan) _q)
         FFT(_execute)(_q->data.mixedradix.fft_P);
 
         // copy back to input, applying twiddle factors
-        for (k=0; k<P; k++)
+        for (k=0; k<P; k++) {
+#if LIQUID_FPM
+            x[Q*k+i] = CQ(_mul)(t1[k], twiddle[i*k]);
+#else
             x[Q*k+i] = t1[k] * twiddle[i*k];
+#endif
+        }
 
 #if FFT_DEBUG_MIXED_RADIX
         printf("i=%3u/%3u\n", i, Q);
