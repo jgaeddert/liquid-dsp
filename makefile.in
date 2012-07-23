@@ -198,6 +198,8 @@ src/dotprod/src/dotprod_crcq32.o : %.o : %.c $(headers)
 src/dotprod/src/dotprod_cccq16.o : %.o : %.c $(headers)
 src/dotprod/src/dotprod_cccq32.o : %.o : %.c $(headers)
 
+src/dotprod/src/sumsqq16.o : %.o : %.c $(headers)
+
 # specific machine architectures
 
 src/dotprod/src/dotprod_rrrf.av.o : %.o : %.c $(headers)
@@ -220,23 +222,23 @@ dotprod_autotests :=						\
 	src/dotprod/tests/dotprod_rrrf_autotest.c		\
 	src/dotprod/tests/dotprod_crcf_autotest.c		\
 	src/dotprod/tests/dotprod_cccf_autotest.c		\
-	src/dotprod/tests/dotprod_q16_autotest.c		\
-	src/dotprod/tests/dotprod_q32_autotest.c		\
 	src/dotprod/tests/sumsqf_autotest.c			\
 	src/dotprod/tests/sumsqcf_autotest.c			\
+	src/dotprod/tests/dotprod_q16_autotest.c		\
+	src/dotprod/tests/dotprod_q32_autotest.c		\
 
 dotprod_benchmarks :=						\
 	src/dotprod/bench/dotprod_cccf_benchmark.c		\
 	src/dotprod/bench/dotprod_crcf_benchmark.c		\
 	src/dotprod/bench/dotprod_rrrf_benchmark.c		\
+	src/dotprod/bench/sumsqf_benchmark.c			\
+	src/dotprod/bench/sumsqcf_benchmark.c			\
 	src/dotprod/bench/dotprod_cccq16_benchmark.c		\
 	src/dotprod/bench/dotprod_crcq16_benchmark.c		\
 	src/dotprod/bench/dotprod_rrrq16_benchmark.c		\
 	src/dotprod/bench/dotprod_cccq32_benchmark.c		\
 	src/dotprod/bench/dotprod_crcq32_benchmark.c		\
 	src/dotprod/bench/dotprod_rrrq32_benchmark.c		\
-	src/dotprod/bench/sumsqf_benchmark.c			\
-	src/dotprod/bench/sumsqcf_benchmark.c			\
 
 # 
 # MODULE : equalization

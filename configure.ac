@@ -234,24 +234,26 @@ i386|i486|i586|i686|x86|x86_64)
         MLIBS_DOTPROD="src/dotprod/src/dotprod_cccf.mmx.o \
                        src/dotprod/src/dotprod_crcf.mmx.o \
                        src/dotprod/src/dotprod_rrrf.mmx.o \
+                       src/dotprod/src/sumsq.mmx.o \
                        src/dotprod/src/dotprod_cccq16.mmx.o \
                        src/dotprod/src/dotprod_crcq16.mmx.o \
                        src/dotprod/src/dotprod_rrrq16.mmx.o \
                        src/dotprod/src/dotprod_cccq32.mmx.o \
                        src/dotprod/src/dotprod_crcq32.mmx.o \
                        src/dotprod/src/dotprod_rrrq32.mmx.o \
-                       src/dotprod/src/sumsq.mmx.o"
+                       src/dotprod/src/sumsqq16.o"
     else
         MLIBS_DOTPROD="src/dotprod/src/dotprod_cccf.o \
                        src/dotprod/src/dotprod_crcf.o \
                        src/dotprod/src/dotprod_rrrf.o \
+                       src/dotprod/src/sumsq.o \
                        src/dotprod/src/dotprod_cccq16.o \
                        src/dotprod/src/dotprod_crcq16.o \
                        src/dotprod/src/dotprod_rrrq16.o \
                        src/dotprod/src/dotprod_cccq32.o \
                        src/dotprod/src/dotprod_crcq32.o \
                        src/dotprod/src/dotprod_rrrq32.o \
-                       src/dotprod/src/sumsq.o"
+                       src/dotprod/src/sumsqq16.o"
     fi
     case $target_os in
     darwin*)
@@ -276,26 +278,28 @@ arm*)
     MLIBS_DOTPROD="src/dotprod/src/dotprod_cccf.o \
                    src/dotprod/src/dotprod_crcf.o \
                    src/dotprod/src/dotprod_rrrf.o \
+                   src/dotprod/src/sumsq.o \
                    src/dotprod/src/dotprod_cccq16.o \
                    src/dotprod/src/dotprod_crcq16.o \
                    src/dotprod/src/dotprod_rrrq16.o \
                    src/dotprod/src/dotprod_cccq32.o \
                    src/dotprod/src/dotprod_crcq32.o \
                    src/dotprod/src/dotprod_rrrq32.o \
-                   src/dotprod/src/sumsq.o"
+                   src/dotprod/src/sumsqq16.o"
     ARCH_OPTION="-marm -mfloat-abi=softfp";;
 *)
     # unknown architecture : use portable C version
     MLIBS_DOTPROD="src/dotprod/src/dotprod_cccf.o \
                    src/dotprod/src/dotprod_crcf.o \
                    src/dotprod/src/dotprod_rrrf.o \
+                   src/dotprod/src/sumsq.o \
                    src/dotprod/src/dotprod_cccq16.o \
                    src/dotprod/src/dotprod_crcq16.o \
                    src/dotprod/src/dotprod_rrrq16.o \
                    src/dotprod/src/dotprod_cccq32.o \
                    src/dotprod/src/dotprod_crcq32.o \
                    src/dotprod/src/dotprod_rrrq32.o \
-                   src/dotprod/src/sumsq.o"
+                   src/dotprod/src/sumsqq16.o"
     ARCH_OPTION="";;
 esac
 
