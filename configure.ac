@@ -239,7 +239,8 @@ i386|i486|i586|i686|x86|x86_64)
                        src/dotprod/src/dotprod_rrrq16.mmx.o \
                        src/dotprod/src/dotprod_cccq32.mmx.o \
                        src/dotprod/src/dotprod_crcq32.mmx.o \
-                       src/dotprod/src/dotprod_rrrq32.mmx.o"
+                       src/dotprod/src/dotprod_rrrq32.mmx.o \
+                       src/dotprod/src/sumsq.mmx.o"
     else
         MLIBS_DOTPROD="src/dotprod/src/dotprod_cccf.o \
                        src/dotprod/src/dotprod_crcf.o \
@@ -249,7 +250,8 @@ i386|i486|i586|i686|x86|x86_64)
                        src/dotprod/src/dotprod_rrrq16.o \
                        src/dotprod/src/dotprod_cccq32.o \
                        src/dotprod/src/dotprod_crcq32.o \
-                       src/dotprod/src/dotprod_rrrq32.o"
+                       src/dotprod/src/dotprod_rrrq32.o \
+                       src/dotprod/src/sumsq.o"
     fi
     case $target_os in
     darwin*)
@@ -266,7 +268,8 @@ powerpc*)
                    src/dotprod/src/dotprod_rrrq16.o \
                    src/dotprod/src/dotprod_cccq32.o \
                    src/dotprod/src/dotprod_crcq32.o \
-                   src/dotprod/src/dotprod_rrrq32.o"
+                   src/dotprod/src/dotprod_rrrq32.o \
+                   src/dotprod/src/sumsq.o"
     ARCH_OPTION="-fno-common -faltivec";;
 arm*)
     # ARM architecture : use portable C version
@@ -278,7 +281,8 @@ arm*)
                    src/dotprod/src/dotprod_rrrq16.o \
                    src/dotprod/src/dotprod_cccq32.o \
                    src/dotprod/src/dotprod_crcq32.o \
-                   src/dotprod/src/dotprod_rrrq32.o"
+                   src/dotprod/src/dotprod_rrrq32.o \
+                   src/dotprod/src/sumsq.o"
     ARCH_OPTION="-marm -mfloat-abi=softfp";;
 *)
     # unknown architecture : use portable C version
@@ -290,7 +294,8 @@ arm*)
                    src/dotprod/src/dotprod_rrrq16.o \
                    src/dotprod/src/dotprod_cccq32.o \
                    src/dotprod/src/dotprod_crcq32.o \
-                   src/dotprod/src/dotprod_rrrq32.o"
+                   src/dotprod/src/dotprod_rrrq32.o \
+                   src/dotprod/src/sumsq.o"
     ARCH_OPTION="";;
 esac
 

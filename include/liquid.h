@@ -361,6 +361,16 @@ LIQUID_DOTPROD_DEFINE_API(DOTPROD_MANGLE_CRCQ32, cq32_t, q32_t, cq32_t)
 LIQUID_DOTPROD_DEFINE_API(DOTPROD_MANGLE_CCCQ16, cq16_t, cq16_t, cq16_t)
 LIQUID_DOTPROD_DEFINE_API(DOTPROD_MANGLE_CCCQ32, cq32_t, cq32_t, cq32_t)
 
+// 
+// sum squared methods
+//
+
+float liquid_sumsqf(float *      _v,
+                    unsigned int _n);
+
+float liquid_sumsqcf(liquid_float_complex * _v,
+                     unsigned int           _n);
+
 //
 // MODULE : equalization
 //

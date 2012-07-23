@@ -185,6 +185,8 @@ src/dotprod/src/dotprod_crcf.o : %.o : %.c $(headers) src/dotprod/src/dotprod.c
 
 src/dotprod/src/dotprod_rrrf.o : %.o : %.c $(headers) src/dotprod/src/dotprod.c
 
+src/dotprod/src/sumsq.o : %.o : %.c $(headers)
+
 # fixed-point
 
 src/dotprod/src/dotprod_rrrq16.o : %.o : %.c $(headers)
@@ -212,12 +214,16 @@ src/dotprod/src/dotprod_rrrq32.mmx.o : %.o : %.c $(headers)
 src/dotprod/src/dotprod_crcq32.mmx.o : %.o : %.c $(headers)
 src/dotprod/src/dotprod_cccq32.mmx.o : %.o : %.c $(headers)
 
+src/dotprod/src/sumsq.mmx.o : %.o : %.c $(headers)
+
 dotprod_autotests :=						\
 	src/dotprod/tests/dotprod_rrrf_autotest.c		\
 	src/dotprod/tests/dotprod_crcf_autotest.c		\
 	src/dotprod/tests/dotprod_cccf_autotest.c		\
 	src/dotprod/tests/dotprod_q16_autotest.c		\
 	src/dotprod/tests/dotprod_q32_autotest.c		\
+	src/dotprod/tests/sumsqf_autotest.c			\
+	src/dotprod/tests/sumsqcf_autotest.c			\
 
 dotprod_benchmarks :=						\
 	src/dotprod/bench/dotprod_cccf_benchmark.c		\
@@ -229,6 +235,8 @@ dotprod_benchmarks :=						\
 	src/dotprod/bench/dotprod_cccq32_benchmark.c		\
 	src/dotprod/bench/dotprod_crcq32_benchmark.c		\
 	src/dotprod/bench/dotprod_rrrq32_benchmark.c		\
+	src/dotprod/bench/sumsqf_benchmark.c			\
+	src/dotprod/bench/sumsqcf_benchmark.c			\
 
 # 
 # MODULE : equalization
