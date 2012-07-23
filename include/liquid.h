@@ -325,6 +325,17 @@ LIQUID_DOTPROD_DEFINE_API(DOTPROD_MANGLE_CRCF,
                           float,
                           liquid_float_complex)
 
+// 
+// sum squared methods
+//
+
+float liquid_sumsqf(float *      _v,
+                    unsigned int _n);
+
+float liquid_sumsqcf(liquid_float_complex * _v,
+                     unsigned int           _n);
+
+
 //
 // MODULE : equalization
 //
