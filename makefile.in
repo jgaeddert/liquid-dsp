@@ -201,6 +201,8 @@ dotprod_benchmarks :=						\
 	src/dotprod/bench/dotprod_cccf_benchmark.c		\
 	src/dotprod/bench/dotprod_crcf_benchmark.c		\
 	src/dotprod/bench/dotprod_rrrf_benchmark.c		\
+	src/dotprod/bench/sumsqf_benchmark.c			\
+	src/dotprod/bench/sumsqcf_benchmark.c			\
 
 # 
 # MODULE : equalization
