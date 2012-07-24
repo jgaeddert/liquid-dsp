@@ -2848,6 +2848,10 @@ unsigned int liquid_totient(unsigned int _n);
 #define MATRIX_MANGLE_CDOUBLE(name) LIQUID_CONCAT(matrixc,  name)
 #define MATRIX_MANGLE_CFLOAT(name)  LIQUID_CONCAT(matrixcf, name)
 
+// fixed-point
+#define MATRIX_MANGLE_Q16(name)     LIQUID_CONCAT(matrixq16,  name)
+#define MATRIX_MANGLE_CQ16(name)    LIQUID_CONCAT(matrixcq16, name)
+
 // large macro
 //   MATRIX : name-mangling macro
 //   T      : data type
@@ -2979,6 +2983,9 @@ LIQUID_MATRIX_DEFINE_API(MATRIX_MANGLE_DOUBLE,  double)
 
 LIQUID_MATRIX_DEFINE_API(MATRIX_MANGLE_CFLOAT,  liquid_float_complex)
 LIQUID_MATRIX_DEFINE_API(MATRIX_MANGLE_CDOUBLE, liquid_double_complex)
+
+LIQUID_MATRIX_DEFINE_API(MATRIX_MANGLE_Q16,  q16_t)
+LIQUID_MATRIX_DEFINE_API(MATRIX_MANGLE_CQ16, cq16_t)
 
 
 #define SMATRIX_MANGLE_BOOL(name)   LIQUID_CONCAT(smatrixb,  name)

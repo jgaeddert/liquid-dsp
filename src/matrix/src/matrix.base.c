@@ -47,7 +47,12 @@ void MATRIX(_eye)(T * _x, unsigned int _n)
     unsigned int r,c,k=0;
     for (r=0; r<_n; r++) {
         for (c=0; c<_n; c++) {
-            _x[k++] = r==c ? 1. : 0.;
+#if defined LIQUID_FIXED && T_COMPLEX == 1
+            _x[k++].real = r==c ? 1 : 0;
+            _x[k++].imag = 0;
+#else
+            _x[k++] = r==c ? 1 : 0;
+#endif
         }
     }
 }
@@ -58,8 +63,14 @@ void MATRIX(_ones)(T * _x,
                    unsigned int _c)
 {
     unsigned int k;
-    for (k=0; k<_r*_c; k++)
-        _x[k] = 1.;
+    for (k=0; k<_r*_c; k++) {
+#if defined LIQUID_FIXED && T_COMPLEX == 1
+            _x[k++].real = 1;
+            _x[k++].imag = 0;
+#else
+            _x[k++] = 1;
+#endif
+    }
 }
 
 // initialize matrix to zeros
@@ -68,7 +79,13 @@ void MATRIX(_zeros)(T * _x,
                     unsigned int _c)
 {
     unsigned int k;
-    for (k=0; k<_r*_c; k++)
-        _x[k] = 0.;
+    for (k=0; k<_r*_c; k++) {
+#if defined LIQUID_FIXED && T_COMPLEX == 1
+            _x[k++].real = 0;
+            _x[k++].imag = 0;
+#else
+            _x[k++] = 0;
+#endif
+    }
 }
 

@@ -836,6 +836,8 @@ matrix_objects :=						\
 	src/matrix/src/matrixf.o				\
 	src/matrix/src/matrixc.o				\
 	src/matrix/src/matrixcf.o				\
+	src/matrix/src/matrixq16.o				\
+	src/matrix/src/matrixcq16.o				\
 	src/matrix/src/smatrix.common.o				\
 	src/matrix/src/smatrixb.o				\
 	src/matrix/src/smatrixf.o				\
@@ -861,6 +863,12 @@ src/matrix/src/matrixf.o : %.o : %.c $(headers) $(matrix_includes)
 
 src/matrix/src/matrixcf.o : %.o : %.c $(headers) $(matrix_includes)
 
+# fixed-point matrix dependencies
+src/matrix/src/matrixq16.o : %.o : %.c $(headers) $(matrix_includes)
+
+src/matrix/src/matrixcq16.o : %.o : %.c $(headers) $(matrix_includes)
+
+# sparse matrix dependencies
 src/matrix/src/smatrixb.o: %.o : %.c $(headers) src/matrix/src/smatrix.c
 
 src/matrix/src/smatrixf.o: %.o : %.c $(headers) src/matrix/src/smatrix.c
