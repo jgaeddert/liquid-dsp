@@ -110,7 +110,8 @@ Available Modules
         Golay block code, as well as several checksums and cyclic
         redundancy checks
   * _fft_: fast Fourier transforms (arbitrary length), discrete sin/cos
-        transforms
+  * _fpm_: fixed-point math: basic arithmetic, trigonometric,
+        transcendental functions
   * _filter_: finite/infinite impulse response, polyphase, hilbert,
         interpolation, decimation, filter design, resampling, symbol
         timing recovery
