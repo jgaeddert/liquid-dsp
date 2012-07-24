@@ -40,8 +40,13 @@ void MATRIX(_add)(T * _X,
                   unsigned int _C)
 {
     unsigned int i;
-    for (i=0; i<(_R*_C); i++)
+    for (i=0; i<(_R*_C); i++) {
+#if defined LIQUID_FIXED
+        _Z[i] = Q(_add)(_X[i], _Y[i]);
+#else
         _Z[i] = _X[i] + _Y[i];
+#endif
+    }
 }
 
 // subtract elements of two matrices
@@ -57,8 +62,13 @@ void MATRIX(_sub)(T * _X,
                   unsigned int _C)
 {
     unsigned int i;
-    for (i=0; i<(_R*_C); i++)
+    for (i=0; i<(_R*_C); i++) {
+#if defined LIQUID_FIXED
+        _Z[i] = Q(_sub)(_X[i], _Y[i]);
+#else
         _Z[i] = _X[i] - _Y[i];
+#endif
+    }
 }
 
 // point-wise multiplication
@@ -74,8 +84,13 @@ void MATRIX(_pmul)(T * _X,
                    unsigned int _C)
 {
     unsigned int i;
-    for (i=0; i<(_R*_C); i++)
+    for (i=0; i<(_R*_C); i++) {
+#if defined LIQUID_FIXED
+        _Z[i] = Q(_mul)(_X[i], _Y[i]);
+#else
         _Z[i] = _X[i] * _Y[i];
+#endif
+    }
 }
 
 // point-wise division
@@ -91,8 +106,13 @@ void MATRIX(_pdiv)(T * _X,
                    unsigned int _C)
 {
     unsigned int i;
-    for (i=0; i<(_R*_C); i++)
+    for (i=0; i<(_R*_C); i++) {
+#if defined LIQUID_FIXED
+        _Z[i] = Q(_div)(_X[i], _Y[i]);
+#else
         _Z[i] = _X[i] / _Y[i];
+#endif
+    }
 }
 
 
@@ -111,17 +131,30 @@ void MATRIX(_mul)(T * _X, unsigned int _XR, unsigned int _XC,
     for (r=0; r<_ZR; r++) {
         for (c=0; c<_ZC; c++) {
             // z(i,j) = dotprod( x(i,:), y(:,j) )
+#if defined LIQUID_FIXED
+#  if T_COMPLEX == 1
+            Q(_t) sum = {0,0};
+#  else
+            Q(_t) sum = 0;
+#  endif
+            Q(_t) v;
+            for (i=0; i<_XC; i++) {
+                v = Q(_mul)(matrix_access(_X,_XR,_XC,r,i),
+                            matrix_access(_Y,_YR,_YC,i,c));
+                Q(_add)(sum, v);
+            }
+#else
             T sum=0.0f;
             for (i=0; i<_XC; i++) {
                 sum += matrix_access(_X,_XR,_XC,r,i) *
                        matrix_access(_Y,_YR,_YC,i,c);
             }
             matrix_access(_Z,_ZR,_ZC,r,c) = sum;
-#ifdef DEBUG
-            printf("z(%u,%u) = ", r, c);
-            MATRIX_PRINT_ELEMENT(_Z,_ZR,_ZC,r,c);
-            printf("\n");
 #endif
+            // DEBUG
+            //printf("z(%u,%u) = ", r, c);
+            //MATRIX_PRINT_ELEMENT(_Z,_ZR,_ZC,r,c);
+            //printf("\n");
         }
     }
 }
@@ -154,6 +187,10 @@ void MATRIX(_div)(T * _X,
                   T * _Z,
                   unsigned int _n)
 {
+#if defined LIQUID_FIXED
+    fprintf(stderr,"warning: %s_inv(), method not yet functional\n", MATRIX_NAME);
+    exit(1);
+#else
     // compute inv(_Y)
     T Y_inv[_n*_n];
     memmove(Y_inv, _Y, _n*_n*sizeof(T));
@@ -163,6 +200,7 @@ void MATRIX(_div)(T * _X,
     MATRIX(_mul)(_X,    _n, _n,
                  Y_inv, _n, _n,
                  _Z,    _n, _n);
+#endif
 }
 
 // matrix determinant (2 x 2)
@@ -175,7 +213,12 @@ T MATRIX(_det2x2)(T * _X,
         fprintf(stderr,"error: matrix_det2x2(), invalid dimensions\n");
         exit(1);
     }
+#if defined LIQUID_FIXED
+    return Q(_sub)( Q(_mul)(_X[0],_X[3]),
+                    Q(_mul)(_X[1],_X[2]) );
+#else
     return _X[0]*_X[3] - _X[1]*_X[2];
+#endif
 }
 
 // matrix determinant (n x n)
@@ -183,6 +226,10 @@ T MATRIX(_det)(T * _X,
                unsigned int _r,
                unsigned int _c)
 {
+#if defined LIQUID_FIXED
+    fprintf(stderr,"warning: %s_det(), method not yet functional\n", MATRIX_NAME);
+    exit(1);
+#else
     // validate input
     if (_r != _c) {
         fprintf(stderr,"error: matrix_det(), matrix must be square\n");
@@ -204,6 +251,7 @@ T MATRIX(_det)(T * _X,
         det *= matrix_access(U,n,n,i,i);
 
     return det;
+#endif
 }
 
 // compute matrix transpose
@@ -214,10 +262,17 @@ void MATRIX(_trans)(T * _X,
     // compute Hermitian transpose
     MATRIX(_hermitian)(_X,_XR,_XC);
     
-    // conjugate elements
+#if defined LIQUID_FIXED && T_COMPLEX == 1
+    // conjugate elements (fixed point)
+    unsigned int i;
+    for (i=0; i<_XR*_XC; i++)
+        _X[i] = Q(_conj)(_X[i]);
+#else
+    // conjugate elements (floating point)
     unsigned int i;
     for (i=0; i<_XR*_XC; i++)
         _X[i] = conj(_X[i]);
+#endif
 }
 
 // compute matrix Hermitian transpose
@@ -242,6 +297,10 @@ void MATRIX(_mul_transpose)(T * _x,
                             unsigned int _n,
                             T * _xxT)
 {
+#if defined LIQUID_FIXED
+    fprintf(stderr,"error: %s_mul_transpose(), method not yet functional\n", MATRIX_NAME);
+    exit(1);
+#else
     unsigned int r;
     unsigned int c;
     unsigned int i;
@@ -265,6 +324,7 @@ void MATRIX(_mul_transpose)(T * _x,
             matrix_access(_xxT,_m,_m,r,c) = sum;
         }
     }
+#endif
 }
 
 
@@ -274,6 +334,10 @@ void MATRIX(_transpose_mul)(T * _x,
                             unsigned int _n,
                             T * _xTx)
 {
+#if defined LIQUID_FIXED
+    fprintf(stderr,"warning: %s_transpose_mul(), method not yet functional\n", MATRIX_NAME);
+    exit(1);
+#else
     unsigned int r;
     unsigned int c;
     unsigned int i;
@@ -297,6 +361,7 @@ void MATRIX(_transpose_mul)(T * _x,
             matrix_access(_xTx,_n,_n,r,c) = sum;
         }
     }
+#endif
 }
 
 
@@ -306,6 +371,10 @@ void MATRIX(_mul_hermitian)(T * _x,
                             unsigned int _n,
                             T * _xxH)
 {
+#if defined LIQUID_FIXED
+    fprintf(stderr,"warning: %s_mul_hermitian(), method not yet functional\n", MATRIX_NAME);
+    exit(1);
+#else
     unsigned int r;
     unsigned int c;
     unsigned int i;
@@ -329,6 +398,7 @@ void MATRIX(_mul_hermitian)(T * _x,
             matrix_access(_xxH,_m,_m,r,c) = sum;
         }
     }
+#endif
 }
 
 
@@ -338,6 +408,10 @@ void MATRIX(_hermitian_mul)(T * _x,
                             unsigned int _n,
                             T * _xHx)
 {
+#if defined LIQUID_FIXED
+    fprintf(stderr,"warning: %s_hermitian_mul(), method not yet functional\n", MATRIX_NAME);
+    exit(1);
+#else
     unsigned int r;
     unsigned int c;
     unsigned int i;
@@ -361,5 +435,6 @@ void MATRIX(_hermitian_mul)(T * _x,
             matrix_access(_xHx,_n,_n,r,c) = sum;
         }
     }
+#endif
 }
 

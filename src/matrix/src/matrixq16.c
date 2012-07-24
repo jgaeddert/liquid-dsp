@@ -31,7 +31,6 @@
 // declare fixed-point name-mangling macros
 #define LIQUID_FIXED
 #define Q(name)         LIQUID_CONCAT(q16,name)
-#define CQ(name)        LIQUID_CONCAT(cq16,name)
 
 #define T               q16_t           // general type
 #define TP              q16_t           // primitive type
@@ -48,5 +47,5 @@
 //#include "matrix.linsolve.c"
 //#include "matrix.ludecomp.c"
 //#include "matrix.qrdecomp.c"
-//#include "matrix.math.c"
+#include "matrix.math.c"
 
