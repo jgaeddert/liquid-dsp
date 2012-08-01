@@ -25,14 +25,8 @@
 
 #include "liquid.internal.h"
 
-// declare fixed-point math
-#define LIQUID_FIXED
-#define  qtype_fixed_to_float(X)  q16_fixed_to_float(X)
-#define  qtype_float_to_fixed(X)  q16_float_to_fixed(X)
-#define cqtype_fixed_to_float(X) cq16_fixed_to_float(X)
-#define cqtype_float_to_fixed(X) cq16_float_to_fixed(X)
-
 // declare fixed-point name-mangling macros
+#define LIQUID_FIXED
 #define Q(name)             LIQUID_CONCAT(q16,name)
 #define CQ(name)            LIQUID_CONCAT(cq16,name)
 

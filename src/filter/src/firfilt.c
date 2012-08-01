@@ -261,10 +261,10 @@ void FIRFILT(_freqresponse)(FIRFILT() _q,
         // fixed-point math
 #if TC_COMPLEX==0
         // fixed-point real coefficients
-        H += qtype_fixed_to_float(_q->h[i]) * cexpf(_Complex_I*2*M_PI*_fc*i);
+        H += Q(_fixed_to_float(_q->h[i])) * cexpf(_Complex_I*2*M_PI*_fc*i);
 #else
         // fixed-point complex coefficients
-        H += cqtype_fixed_to_float(_q->h[i]) * cexpf(_Complex_I*2*M_PI*_fc*i);
+        H += CQ(_fixed_to_float)(_q->h[i]) * cexpf(_Complex_I*2*M_PI*_fc*i);
 #endif
 #else
         // floating-point math
@@ -288,14 +288,12 @@ float FIRFILT(_groupdelay)(FIRFILT() _q,
     unsigned int i;
     unsigned int n = _q->h_len;
     for (i=0; i<n; i++) {
-#ifdef LIQUID_FIXED
-#  if TC_COMPLEX==0
+#if defined LIQUID_FIXED && TC_COMPLEX==0
         // fixed-point real coefficients
-        h[i] = qtype_fixed_to_float(_q->h[n-i-1]);
-#  else
+        h[i] = Q(_fixed_to_float)(_q->h[n-i-1]);
+#elif defined LIQUID_FIXED && TC_COMPLEX==1
         // fixed-point complex coefficients
-        h[i] = qtype_fixed_to_float(_q->h[n-i-1].real);
-#  endif
+        h[i] = Q(_fixed_to_float)(_q->h[n-i-1].real);
 #else
         // floating-point coefficients
         h[i] = crealf(_q->h[n-i-1]);

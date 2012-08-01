@@ -62,24 +62,24 @@ void IIRFILTSOS(_set_coefficients)(IIRFILTSOS() _q,
 
 #if defined LIQUID_FIXED && TC_COMPLEX==0
     // copy feed-forward coefficients (numerator)
-    _q->b[0] = qtype_float_to_fixed( qtype_fixed_to_float(_b[0]) / qtype_fixed_to_float(a0) );
-    _q->b[1] = qtype_float_to_fixed( qtype_fixed_to_float(_b[1]) / qtype_fixed_to_float(a0) );
-    _q->b[2] = qtype_float_to_fixed( qtype_fixed_to_float(_b[2]) / qtype_fixed_to_float(a0) );
+    _q->b[0] = Q(_div)(_b[0], a0);
+    _q->b[1] = Q(_div)(_b[1], a0);
+    _q->b[2] = Q(_div)(_b[2], a0);
 
     // copy feed-back coefficients (denominator)
-    _q->a[0] = qtype_float_to_fixed( qtype_fixed_to_float(_a[0]) / qtype_fixed_to_float(a0) );
-    _q->a[1] = qtype_float_to_fixed( qtype_fixed_to_float(_a[1]) / qtype_fixed_to_float(a0) );
-    _q->a[2] = qtype_float_to_fixed( qtype_fixed_to_float(_a[2]) / qtype_fixed_to_float(a0) );
+    _q->a[0] = Q(_div)(_a[0], a0);
+    _q->a[1] = Q(_div)(_a[1], a0);
+    _q->a[2] = Q(_div)(_a[2], a0);
 #elif defined LIQUID_FIXED && TC_COMPLEX==1
     // copy feed-forward coefficients (numerator)
-    _q->b[0] = cqtype_float_to_fixed( cqtype_fixed_to_float(_b[0]) / cqtype_fixed_to_float(a0) );
-    _q->b[1] = cqtype_float_to_fixed( cqtype_fixed_to_float(_b[1]) / cqtype_fixed_to_float(a0) );
-    _q->b[2] = cqtype_float_to_fixed( cqtype_fixed_to_float(_b[2]) / cqtype_fixed_to_float(a0) );
+    _q->b[0] = CQ(_div)(_b[0], a0);
+    _q->b[1] = CQ(_div)(_b[1], a0);
+    _q->b[2] = CQ(_div)(_b[2], a0);
 
     // copy feed-back coefficients (denominator)
-    _q->a[0] = cqtype_float_to_fixed( cqtype_fixed_to_float(_a[0]) / cqtype_fixed_to_float(a0) );
-    _q->a[1] = cqtype_float_to_fixed( cqtype_fixed_to_float(_a[1]) / cqtype_fixed_to_float(a0) );
-    _q->a[2] = cqtype_float_to_fixed( cqtype_fixed_to_float(_a[2]) / cqtype_fixed_to_float(a0) );
+    _q->a[0] = CQ(_div)(_a[0], a0);
+    _q->a[1] = CQ(_div)(_a[1], a0);
+    _q->a[2] = CQ(_div)(_a[2], a0);
 #else
     // copy feed-forward coefficients (numerator)
     _q->b[0] = _b[0] / a0;
@@ -224,11 +224,11 @@ float IIRFILTSOS(_groupdelay)(IIRFILTSOS() _q,
     unsigned int i;
     for (i=0; i<3; i++) {
 #if defined LIQUID_FIXED && TC_COMPLEX==0
-        b[i] = qtype_fixed_to_float(_q->b[i]);
-        a[i] = qtype_fixed_to_float(_q->a[i]);
+        b[i] = Q(_fixed_to_float)(_q->b[i]);
+        a[i] = Q(_fixed_to_float)(_q->a[i]);
 #elif defined LIQUID_FIXED && TC_COMPLEX==1
-        b[i] = qtype_fixed_to_float(_q->b[i].real);
-        a[i] = qtype_fixed_to_float(_q->a[i].real);
+        b[i] = Q(_fixed_to_float)(_q->b[i].real);
+        a[i] = Q(_fixed_to_float)(_q->a[i].real);
 #else
         b[i] = crealf(_q->b[i]);
         a[i] = crealf(_q->a[i]);
