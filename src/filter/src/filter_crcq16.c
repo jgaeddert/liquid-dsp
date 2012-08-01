@@ -45,6 +45,7 @@
 #define FIRPFB(name)        LIQUID_CONCAT(firpfb_crcq16,name)
 #define IIRFILT(name)       LIQUID_CONCAT(iirfilt_crcq16,name)
 #define IIRFILTSOS(name)    LIQUID_CONCAT(iirfiltsos_crcq16,name)
+#define RESAMP(name)        LIQUID_CONCAT(resamp_crcq16,name)
 #define RESAMP2(name)       LIQUID_CONCAT(resamp2_crcq16,name)
 
 #if 0
@@ -87,6 +88,7 @@
 #include "firpfb.c"
 #include "iirfilt.c"
 #include "iirfiltsos.c"
+#include "resamp.c"
 #include "resamp2.c"
 
 #if 0
@@ -96,6 +98,5 @@
 #include "interp.c"
 #include "decim.c"
 #include "msresamp.c"
-#include "resamp.c"
 #include "symsync.c"
 #endif

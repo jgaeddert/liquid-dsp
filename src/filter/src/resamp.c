@@ -132,10 +132,20 @@ RESAMP() RESAMP(_create)(float _r,
     for (i=0; i<n; i++)
         gain += hf[i];
     gain = (q->npfb)/(gain);
+    for (i=0; i<n; i++)
+        hf[i] *= gain;
 
     // copy to type-specific array
-    for (i=0; i<n; i++)
-        h[i] = hf[i]*gain;
+    for (i=0; i<n; i++) {
+#if defined LIQUID_FIXED && TC_COMPLEX==0
+        h[i] = Q(_float_to_fixed)(hf[i]);
+#elif defined LIQUID_FIXED && TC_COMPLEX==1
+        h[i].real = Q(_float_to_fixed)(hf[i]);
+        h[i].imag = 0;
+#else
+        h[i] = hf[i];
+#endif
+    }
     q->f = FIRPFB(_create)(q->npfb,h,n-1);
 
     //for (i=0; i<n; i++)
