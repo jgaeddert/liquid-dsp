@@ -188,7 +188,7 @@ void MATRIX(_div)(T * _X,
                   unsigned int _n)
 {
 #if defined LIQUID_FIXED
-    fprintf(stderr,"warning: %s_inv(), method not yet functional\n", MATRIX_NAME);
+    fprintf(stderr,"warning: %s_div(), method not yet functional\n", MATRIX_NAME);
     exit(1);
 #else
     // compute inv(_Y)
