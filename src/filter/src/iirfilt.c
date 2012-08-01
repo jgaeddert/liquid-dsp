@@ -82,6 +82,8 @@ IIRFILT() IIRFILT(_create)(TC * _b,
         fprintf(stderr,"error: iirfilt_%s_create(), denominator length cannot be zero\n", EXTENSION_FULL);
         exit(1);
     }
+    
+    unsigned int i;
 
     // create structure and initialize
     IIRFILT() q = (IIRFILT()) malloc(sizeof(struct IIRFILT(_s)));
@@ -94,36 +96,17 @@ IIRFILT() IIRFILT(_create)(TC * _b,
     q->b = (TC *) malloc((q->na)*sizeof(TC));
     q->a = (TC *) malloc((q->nb)*sizeof(TC));
 
-    // normalize coefficients to _a[0]
+    // normalize coefficients by _a[0]
     TC a0 = _a[0];
-
-    unsigned int i;
 #if defined LIQUID_FIXED && TC_COMPLEX==0
-    for (i=0; i<q->nb; i++) {
-        q->b[i] = qtype_float_to_fixed(
-                    qtype_fixed_to_float(_b[i]) / qtype_fixed_to_float(a0) );
-    }
-
-    for (i=0; i<q->na; i++) {
-        q->a[i] = qtype_float_to_fixed(
-                    qtype_fixed_to_float(_a[i]) / qtype_fixed_to_float(a0) );
-    }
+    for (i=0; i<q->nb; i++) q->b[i] = Q(_div)(_b[i], a0);
+    for (i=0; i<q->na; i++) q->b[i] = Q(_div)(_a[i], a0);
 #elif defined LIQUID_FIXED && TC_COMPLEX==1
-    for (i=0; i<q->nb; i++) {
-        q->b[i] = cqtype_float_to_fixed(
-                    cqtype_fixed_to_float(_b[i]) / cqtype_fixed_to_float(a0) );
-    }
-
-    for (i=0; i<q->na; i++) {
-        q->a[i] = cqtype_float_to_fixed(
-                    cqtype_fixed_to_float(_a[i]) / cqtype_fixed_to_float(a0) );
-    }
+    for (i=0; i<q->nb; i++) q->b[i] = CQ(_div)(_b[i], a0);
+    for (i=0; i<q->na; i++) q->b[i] = CQ(_div)(_a[i], a0);
 #else
-    for (i=0; i<q->nb; i++)
-        q->b[i] = _b[i] / a0;
-
-    for (i=0; i<q->na; i++)
-        q->a[i] = _a[i] / a0;
+    for (i=0; i<q->nb; i++) q->b[i] = _b[i] / a0;
+    for (i=0; i<q->na; i++) q->a[i] = _a[i] / a0;
 #endif
 
     // create buffer and initialize
