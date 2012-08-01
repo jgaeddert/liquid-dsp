@@ -82,6 +82,8 @@ IIRFILT() IIRFILT(_create)(TC * _b,
         fprintf(stderr,"error: iirfilt_%s_create(), denominator length cannot be zero\n", EXTENSION_FULL);
         exit(1);
     }
+    
+    unsigned int i;
 
     // create structure and initialize
     IIRFILT() q = (IIRFILT()) malloc(sizeof(struct IIRFILT(_s)));
@@ -94,36 +96,17 @@ IIRFILT() IIRFILT(_create)(TC * _b,
     q->b = (TC *) malloc((q->na)*sizeof(TC));
     q->a = (TC *) malloc((q->nb)*sizeof(TC));
 
-    // normalize coefficients to _a[0]
+    // normalize coefficients by _a[0]
     TC a0 = _a[0];
-
-    unsigned int i;
 #if defined LIQUID_FIXED && TC_COMPLEX==0
-    for (i=0; i<q->nb; i++) {
-        q->b[i] = qtype_float_to_fixed(
-                    qtype_fixed_to_float(_b[i]) / qtype_fixed_to_float(a0) );
-    }
-
-    for (i=0; i<q->na; i++) {
-        q->a[i] = qtype_float_to_fixed(
-                    qtype_fixed_to_float(_a[i]) / qtype_fixed_to_float(a0) );
-    }
+    for (i=0; i<q->nb; i++) q->b[i] = Q(_div)(_b[i], a0);
+    for (i=0; i<q->na; i++) q->b[i] = Q(_div)(_a[i], a0);
 #elif defined LIQUID_FIXED && TC_COMPLEX==1
-    for (i=0; i<q->nb; i++) {
-        q->b[i] = cqtype_float_to_fixed(
-                    cqtype_fixed_to_float(_b[i]) / cqtype_fixed_to_float(a0) );
-    }
-
-    for (i=0; i<q->na; i++) {
-        q->a[i] = cqtype_float_to_fixed(
-                    cqtype_fixed_to_float(_a[i]) / cqtype_fixed_to_float(a0) );
-    }
+    for (i=0; i<q->nb; i++) q->b[i] = CQ(_div)(_b[i], a0);
+    for (i=0; i<q->na; i++) q->b[i] = CQ(_div)(_a[i], a0);
 #else
-    for (i=0; i<q->nb; i++)
-        q->b[i] = _b[i] / a0;
-
-    for (i=0; i<q->na; i++)
-        q->a[i] = _a[i] / a0;
+    for (i=0; i<q->nb; i++) q->b[i] = _b[i] / a0;
+    for (i=0; i<q->na; i++) q->a[i] = _a[i] / a0;
 #endif
 
     // create buffer and initialize
@@ -235,12 +218,12 @@ IIRFILT() IIRFILT(_create_prototype)(liquid_iirdes_filtertype _ftype,
     unsigned int i;
     for (i=0; i<h_len; i++) {
 #if defined LIQUID_FIXED && TC_COMPLEX==0
-        Bc[i] = qtype_float_to_fixed(B[i]);
-        Ac[i] = qtype_float_to_fixed(B[i]);
+        Bc[i] = Q(_float_to_fixed)(B[i]);
+        Ac[i] = Q(_float_to_fixed)(B[i]);
 #elif defined LIQUID_FIXED && TC_COMPLEX==1
-        Bc[i].real = qtype_float_to_fixed(B[i]);
+        Bc[i].real = Q(_float_to_fixed)(B[i]);
         Bc[i].imag = 0;
-        Ac[i].real = qtype_float_to_fixed(B[i]);
+        Ac[i].real = Q(_float_to_fixed)(B[i]);
         Ac[i].imag = 0;
 #else
         Bc[i] = B[i];
@@ -288,21 +271,21 @@ IIRFILT() IIRFILT(_create_pll)(float _w,
     TC b[3];
     TC a[3];
 #if defined LIQUID_FIXED && TC_COMPLEX==0
-    b[0] = qtype_float_to_fixed(bf[0]);
-    b[1] = qtype_float_to_fixed(bf[1]);
-    b[2] = qtype_float_to_fixed(bf[2]);
+    b[0] = Q(_float_to_fixed)(bf[0]);
+    b[1] = Q(_float_to_fixed)(bf[1]);
+    b[2] = Q(_float_to_fixed)(bf[2]);
 
-    a[0] = qtype_float_to_fixed(af[0]);
-    a[1] = qtype_float_to_fixed(af[1]);
-    a[2] = qtype_float_to_fixed(af[2]);
+    a[0] = Q(_float_to_fixed)(af[0]);
+    a[1] = Q(_float_to_fixed)(af[1]);
+    a[2] = Q(_float_to_fixed)(af[2]);
 #elif defined LIQUID_FIXED && TC_COMPLEX==1
-    b[0].real = qtype_float_to_fixed(bf[0]);    b[0].imag = 0;
-    b[1].real = qtype_float_to_fixed(bf[1]);    b[1].imag = 0;
-    b[2].real = qtype_float_to_fixed(bf[2]);    b[2].imag = 0;
+    b[0].real = Q(_float_to_fixed)(bf[0]);  b[0].imag = 0;
+    b[1].real = Q(_float_to_fixed)(bf[1]);  b[1].imag = 0;
+    b[2].real = Q(_float_to_fixed)(bf[2]);  b[2].imag = 0;
 
-    a[0].real = qtype_float_to_fixed(af[0]);    a[0].imag = 0;
-    a[1].real = qtype_float_to_fixed(af[1]);    a[1].imag = 0;
-    a[2].real = qtype_float_to_fixed(af[2]);    a[2].imag = 0;
+    a[0].real = Q(_float_to_fixed)(af[0]);  a[0].imag = 0;
+    a[1].real = Q(_float_to_fixed)(af[1]);  a[1].imag = 0;
+    a[2].real = Q(_float_to_fixed)(af[2]);  a[2].imag = 0;
 #else
     b[0] = bf[0];   b[1] = bf[1];   b[2] = bf[2];
     a[0] = af[0];   a[1] = af[1];   a[2] = af[2];
@@ -570,18 +553,18 @@ float IIRFILT(_groupdelay)(IIRFILT() _q,
         float a[_q->na];
         for (i=0; i<_q->nb; i++) {
 #if defined LIQUID_FIXED && TC_COMPLEX==0
-            b[i] = qtype_fixed_to_float(_q->b[i]);
+            b[i] = Q(_fixed_to_float)(_q->b[i]);
 #elif defined LIQUID_FIXED && TC_COMPLEX==1
-            b[i] = qtype_fixed_to_float(_q->b[i].real);
+            b[i] = Q(_fixed_to_float)(_q->b[i].real);
 #else
             b[i] = crealf(_q->b[i]);
 #endif
         }
         for (i=0; i<_q->na; i++) {
 #if defined LIQUID_FIXED && TC_COMPLEX==0
-            a[i] = qtype_fixed_to_float(_q->a[i]);
+            a[i] = Q(_fixed_to_float)(_q->a[i]);
 #elif defined LIQUID_FIXED && TC_COMPLEX==1
-            a[i] = qtype_fixed_to_float(_q->a[i].real);
+            a[i] = Q(_fixed_to_float)(_q->a[i].real);
 #else
             a[i] = crealf(_q->a[i]);
 #endif

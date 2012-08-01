@@ -25,14 +25,8 @@
 
 #include "liquid.internal.h"
 
-// declare fixed-point math
-#define LIQUID_FIXED
-#define  qtype_fixed_to_float(X)  q16_fixed_to_float(X)
-#define  qtype_float_to_fixed(X)  q16_float_to_fixed(X)
-#define cqtype_fixed_to_float(X) cq16_fixed_to_float(X)
-#define cqtype_float_to_fixed(X) cq16_float_to_fixed(X)
-
 // declare fixed-point name-mangling macros
+#define LIQUID_FIXED
 #define Q(name)             LIQUID_CONCAT(q16,name)
 #define CQ(name)            LIQUID_CONCAT(cq16,name)
 
@@ -42,19 +36,19 @@
 
 // 
 #define FIRFILT(name)       LIQUID_CONCAT(firfilt_cccq16,name)
+#define FIRPFB(name)        LIQUID_CONCAT(firpfb_cccq16,name)
 #define IIRFILT(name)       LIQUID_CONCAT(iirfilt_cccq16,name)
 #define IIRFILTSOS(name)    LIQUID_CONCAT(iirfiltsos_cccq16,name)
+#define RESAMP(name)        LIQUID_CONCAT(resamp_cccq16,name)
 #define RESAMP2(name)       LIQUID_CONCAT(resamp2_cccq16,name)
 
 #if 0
 #define AUTOCORR(name)      LIQUID_CONCAT(autocorr_cccq16,name)
 #define FIRFARROW(name)     LIQUID_CONCAT(firfarrow_cccq16,name)
 #define FIRHILB(name)       LIQUID_CONCAT(firhilbf,name)
-#define FIRPFB(name)        LIQUID_CONCAT(firpfb_cccq16,name)
 #define INTERP(name)        LIQUID_CONCAT(interp_cccq16,name)
 #define DECIM(name)         LIQUID_CONCAT(decim_cccq16,name)
 #define MSRESAMP(name)      LIQUID_CONCAT(msresamp_cccq16,name)
-#define RESAMP(name)        LIQUID_CONCAT(resamp_cccq16,name)
 #define SYMSYNC(name)       LIQUID_CONCAT(symsync_cccq16,name)
 #endif
 
@@ -84,18 +78,18 @@
 
 // source files
 #include "firfilt.c"
+#include "firpfb.c"
 #include "iirfilt.c"
 #include "iirfiltsos.c"
+#include "resamp.c"
 #include "resamp2.c"
 
 #if 0
 #include "autocorr.c"
 #include "firfarrow.c"
 #include "firhilb.c"
-#include "firpfb.c"
 #include "interp.c"
 #include "decim.c"
 #include "msresamp.c"
-#include "resamp.c"
 #include "symsync.c"
 #endif

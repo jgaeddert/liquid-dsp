@@ -1498,6 +1498,11 @@ LIQUID_IIRFILT_DEFINE_API(IIRFILT_MANGLE_CCCQ16, cq16_t, cq16_t, cq16_t)
 #define FIRPFB_MANGLE_CRCF(name)  LIQUID_CONCAT(firpfb_crcf,name)
 #define FIRPFB_MANGLE_CCCF(name)  LIQUID_CONCAT(firpfb_cccf,name)
 
+// fixed-point
+#define FIRPFB_MANGLE_RRRQ16(name) LIQUID_CONCAT(firpfb_rrrq16,name)
+#define FIRPFB_MANGLE_CRCQ16(name) LIQUID_CONCAT(firpfb_crcq16,name)
+#define FIRPFB_MANGLE_CCCQ16(name) LIQUID_CONCAT(firpfb_cccq16,name)
+
 // Macro:
 //   FIRPFB : name-mangling macro
 //   TO     : output data type
@@ -1543,6 +1548,12 @@ LIQUID_FIRPFB_DEFINE_API(FIRPFB_MANGLE_CCCF,
                          liquid_float_complex,
                          liquid_float_complex,
                          liquid_float_complex)
+
+// fixed-point
+LIQUID_FIRPFB_DEFINE_API(FIRPFB_MANGLE_RRRQ16,  q16_t,  q16_t,  q16_t)
+LIQUID_FIRPFB_DEFINE_API(FIRPFB_MANGLE_CRCQ16, cq16_t,  q16_t, cq16_t)
+LIQUID_FIRPFB_DEFINE_API(FIRPFB_MANGLE_CCCQ16, cq16_t, cq16_t, cq16_t)
+
 
 // 
 // Interpolator
@@ -1722,6 +1733,11 @@ LIQUID_RESAMP2_DEFINE_API(RESAMP2_MANGLE_CCCQ16, cq16_t, cq16_t, cq16_t)
 #define RESAMP_MANGLE_CRCF(name)    LIQUID_CONCAT(resamp_crcf,name)
 #define RESAMP_MANGLE_CCCF(name)    LIQUID_CONCAT(resamp_cccf,name)
 
+// fixed-point
+#define RESAMP_MANGLE_RRRQ16(name) LIQUID_CONCAT(resamp_rrrq16,name)
+#define RESAMP_MANGLE_CRCQ16(name) LIQUID_CONCAT(resamp_crcq16,name)
+#define RESAMP_MANGLE_CCCQ16(name) LIQUID_CONCAT(resamp_cccq16,name)
+
 #define LIQUID_RESAMP_DEFINE_API(RESAMP,TO,TC,TI)               \
 typedef struct RESAMP(_s) * RESAMP();                           \
 RESAMP() RESAMP(_create)(float _r,                              \
@@ -1752,6 +1768,11 @@ LIQUID_RESAMP_DEFINE_API(RESAMP_MANGLE_CCCF,
                          liquid_float_complex,
                          liquid_float_complex,
                          liquid_float_complex)
+
+// fixed-point
+LIQUID_RESAMP_DEFINE_API(RESAMP_MANGLE_RRRQ16,  q16_t,  q16_t,  q16_t)
+LIQUID_RESAMP_DEFINE_API(RESAMP_MANGLE_CRCQ16, cq16_t,  q16_t, cq16_t)
+LIQUID_RESAMP_DEFINE_API(RESAMP_MANGLE_CCCQ16, cq16_t, cq16_t, cq16_t)
 
 
 // 

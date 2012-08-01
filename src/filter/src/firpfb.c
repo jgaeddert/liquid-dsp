@@ -1,6 +1,6 @@
 /*
- * Copyright (c) 2007, 2008, 2009, 2010 Joseph Gaeddert
- * Copyright (c) 2007, 2008, 2009, 2010 Virginia Polytechnic
+ * Copyright (c) 2007, 2008, 2009, 2010, 2011, 2012 Joseph Gaeddert
+ * Copyright (c) 2007, 2008, 2009, 2010, 2012, 2012 Virginia Polytechnic
  *                                      Institute & State University
  *
  * This file is part of liquid.
@@ -118,8 +118,14 @@ FIRPFB() FIRPFB(_create_rnyquist)(int _type,
     // copy coefficients to type-specific array (e.g. float complex)
     unsigned int i;
     TC Hc[H_len];
-    for (i=0; i<H_len; i++)
+    for (i=0; i<H_len; i++) {
+#if defined LIQUID_FIXED && TC_COMPLEX==1
+        Hc[i].real = Hf[i];
+        Hc[i].imag = 0;
+#else
         Hc[i] = Hf[i];
+#endif
+    }
 
     // return filterbank object
     return FIRPFB(_create)(_npfb, Hc, H_len);
