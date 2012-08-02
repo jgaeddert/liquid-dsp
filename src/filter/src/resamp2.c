@@ -381,7 +381,7 @@ void RESAMP2(_init_coefficients)(RESAMP2() _q)
 #if defined LIQUID_FIXED && TC_COMPLEX == 1
         _q->h1[j++] = CQ(_float_to_fixed)(hc[_q->h_len - i - 1]);
 #elif defined LIQUID_FIXED && TC_COMPLEX == 0
-        _q->h1[j++] = Q(_float_to_fixed)(h[_q->h_len - i - 1]);
+        _q->h1[j++] = Q(_float_to_fixed)(hc[_q->h_len - i - 1]);
 #else
         _q->h1[j++] = hc[_q->h_len - i - 1];
 #endif
