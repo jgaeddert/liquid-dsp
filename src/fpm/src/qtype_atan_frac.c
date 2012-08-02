@@ -103,6 +103,7 @@ Q(_t) Q(_atan2_frac)( Q(_t) _y, Q(_t) _x )
     // compute log2(y) - log2(x)
     int   b = by - bx;
     Q(_t) f = fy - fx;
+#if 0
     Q(_t) logdiff;
     if (b >= 0 ) {
         // resulting log will be positive
@@ -111,6 +112,7 @@ Q(_t) Q(_atan2_frac)( Q(_t) _y, Q(_t) _x )
         // resulting log will be negative
         logdiff = -(abs(b) << Q(_fracbits)) + f;
     }
+#endif
 
     // ensure fractional portion is in [0,1)
     if (f < 0) {
@@ -129,7 +131,7 @@ Q(_t) Q(_atan2_frac)( Q(_t) _y, Q(_t) _x )
     float xf = Q(_fixed_to_float)(_x);
     printf("    log2(%12.8f) = %3d + %12.10f (y)\n", Q(_fixed_to_float)(_y), by - Q(_fracbits), Q(_fixed_to_float)(fy));
     printf("    log2(%12.8f) = %3d + %12.10f (x)\n", Q(_fixed_to_float)(_x), bx - Q(_fracbits), Q(_fixed_to_float)(fx));
-    printf("    logdiff            = %3d + %12.10f (%12.8f)\n", b, Q(_fixed_to_float)(f), log2f(yf/xf));
+    //printf("    logdiff            = %3d + %12.10f (%12.8f)\n", b, Q(_fixed_to_float)(f), log2f(yf/xf));
 #endif
 
     // check boundary conditions (high ratio approximation)
