@@ -878,6 +878,49 @@ LIQUID_FIRFARROW_DEFINE_INTERNAL_API(FIRFARROW_MANGLE_CRCF,
 
 
 // 
+// iirfilt : infinite impulse respone filter
+//
+#define IIRFILT_MANGLE_RRRF(name)  LIQUID_CONCAT(iirfilt_rrrf,name)
+#define IIRFILT_MANGLE_CRCF(name)  LIQUID_CONCAT(iirfilt_crcf,name)
+#define IIRFILT_MANGLE_CCCF(name)  LIQUID_CONCAT(iirfilt_cccf,name)
+
+// fixed-point
+#define IIRFILT_MANGLE_RRRQ16(name)  LIQUID_CONCAT(iirfilt_rrrq16,name)
+#define IIRFILT_MANGLE_CRCQ16(name)  LIQUID_CONCAT(iirfilt_crcq16,name)
+#define IIRFILT_MANGLE_CCCQ16(name)  LIQUID_CONCAT(iirfilt_cccq16,name)
+
+#define LIQUID_IIRFILT_DEFINE_INTERNAL_API(IIRFILT,TO,TC,TI)    \
+                                                                \
+/* frequency response (transfer function) */                    \
+void IIRFILT(_freqresponse_tf)(IIRFILT() _q,                    \
+                               float _fc,                       \
+                               liquid_float_complex * _H);      \
+                                                                \
+/* frequency response (second-order sections) */                \
+void IIRFILT(_freqresponse_sos)(IIRFILT() _q,                   \
+                                float _fc,                      \
+                                liquid_float_complex * _H);     \
+
+LIQUID_IIRFILT_DEFINE_INTERNAL_API(IIRFILT_MANGLE_RRRF,
+                                   float,
+                                   float,
+                                   float)
+LIQUID_IIRFILT_DEFINE_INTERNAL_API(IIRFILT_MANGLE_CRCF,
+                                   liquid_float_complex,
+                                   float,
+                                   liquid_float_complex)
+LIQUID_IIRFILT_DEFINE_INTERNAL_API(IIRFILT_MANGLE_CCCF,
+                                   liquid_float_complex,
+                                   liquid_float_complex,
+                                   liquid_float_complex)
+
+// fixed-point
+LIQUID_IIRFILT_DEFINE_INTERNAL_API(IIRFILT_MANGLE_RRRQ16,  q16_t,  q16_t,  q16_t)
+LIQUID_IIRFILT_DEFINE_INTERNAL_API(IIRFILT_MANGLE_CRCQ16, cq16_t,  q16_t, cq16_t)
+LIQUID_IIRFILT_DEFINE_INTERNAL_API(IIRFILT_MANGLE_CCCQ16, cq16_t, cq16_t, cq16_t)
+
+
+// 
 // iirfiltsos : infinite impulse respone filter (second-order sections)
 //
 #define IIRFILTSOS_MANGLE_RRRF(name)  LIQUID_CONCAT(iirfiltsos_rrrf,name)

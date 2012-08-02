@@ -487,53 +487,107 @@ unsigned int IIRFILT(_get_length)(IIRFILT() _q)
 //  _q      :   filter object
 //  _fc     :   frequency
 //  _H      :   output frequency response
-void IIRFILT(_freqresponse)(IIRFILT() _q,
-                            float _fc,
+void IIRFILT(_freqresponse)(IIRFILT()       _q,
+                            float           _fc,
                             float complex * _H)
 {
-#ifdef LIQUID_FIXED
-#  warning "fixed-point iirfiltsos_xxxt_freqresponse() not yet implemented"
-    fprintf(stderr,"error: iirfiltsos_xxxt_freqresponse() not yet implemented for FPM\n");
-    exit(1);
-#else
+    switch (_q->type) {
+    case IIRFILT_TYPE_NORM:
+        // normal transfer function form
+        IIRFILT(_freqresponse_tf)(_q, _fc, _H);
+        break;
+    case IIRFILT_TYPE_SOS:
+        // second-order sections form
+        IIRFILT(_freqresponse_sos)(_q, _fc, _H);
+        break;
+    default:
+        fprintf(stderr,"error: iirfilt_%s_freqresponse(), invalid form\n", EXTENSION_FULL);
+        exit(1);
+    }
+}
+
+// compute complex frequency response (transfer function form)
+//  _q      :   filter object
+//  _fc     :   frequency
+//  _H      :   output frequency response
+void IIRFILT(_freqresponse_tf)(IIRFILT()       _q,
+                               float           _fc,
+                               float complex * _H)
+{
     unsigned int i;
-    float complex H = 0.0f;
+    // 
+    float complex Ha = 0.0f;
+    float complex Hb = 0.0f;
+#if defined LIQUID_FIXED && TC_COMPLEX==0
+    float complex b[_q->nb];
+    float complex a[_q->na];
+    for (i=0; i<_q->nb; i++) b[i] = Q(_fixed_to_float)(_q->b[i]);
+    for (i=0; i<_q->na; i++) a[i] = Q(_fixed_to_float)(_q->a[i]);
+#elif defined LIQUID_FIXED && TC_COMPLEX==1
+    float complex b[_q->nb];
+    float complex a[_q->na];
+    for (i=0; i<_q->nb; i++) b[i] = CQ(_fixed_to_float)(_q->b[i]);
+    for (i=0; i<_q->na; i++) a[i] = CQ(_fixed_to_float)(_q->a[i]);
+#else
+    TC * b = _q->b;
+    TC * a = _q->a;
+#endif
 
-    if (_q->type == IIRFILT_TYPE_NORM) {
-        // 
-        float complex Ha = 0.0f;
-        float complex Hb = 0.0f;
+    for (i=0; i<_q->nb; i++)
+        Hb += b[i] * cexpf(_Complex_I*2*M_PI*_fc*i);
 
-        for (i=0; i<_q->nb; i++)
-            Hb += _q->b[i] * cexpf(_Complex_I*2*M_PI*_fc*i);
+    for (i=0; i<_q->na; i++)
+        Ha += a[i] * cexpf(_Complex_I*2*M_PI*_fc*i);
 
-        for (i=0; i<_q->na; i++)
-            Ha += _q->a[i] * cexpf(_Complex_I*2*M_PI*_fc*i);
+    // set return value
+    *_H = Hb / Ha;
+}
+
+// compute complex frequency response (second-order sections form)
+//  _q      :   filter object
+//  _fc     :   frequency
+//  _H      :   output frequency response
+void IIRFILT(_freqresponse_sos)(IIRFILT()       _q,
+                                float           _fc,
+                                float complex * _H)
+{
+    unsigned int i;
+    float complex H = 1.0f;
+
+    // compute 3-point DFT for each second-order section
+    for (i=0; i<_q->nsos; i++) {
+#if defined LIQUID_FIXED && TC_COMPLEX==0
+        float complex b[3] = { Q(_fixed_to_float)(_q->b[3*i+0]),
+                               Q(_fixed_to_float)(_q->b[3*i+1]),
+                               Q(_fixed_to_float)(_q->b[3*i+2])};
+        float complex a[3] = { Q(_fixed_to_float)(_q->a[3*i+0]),
+                               Q(_fixed_to_float)(_q->a[3*i+1]),
+                               Q(_fixed_to_float)(_q->a[3*i+2])};
+#elif defined LIQUID_FIXED && TC_COMPLEX==1
+        float complex b[3] = { CQ(_fixed_to_float)(_q->b[3*i+0]),
+                               CQ(_fixed_to_float)(_q->b[3*i+1]),
+                               CQ(_fixed_to_float)(_q->b[3*i+2])};
+        float complex a[3] = { CQ(_fixed_to_float)(_q->a[3*i+0]),
+                               CQ(_fixed_to_float)(_q->a[3*i+1]),
+                               CQ(_fixed_to_float)(_q->a[3*i+2])};
+#else
+        TC * b = &_q->b[3*i];
+        TC * a = &_q->b[3*i];
+#endif
+        float complex Hb = b[0] * cexpf(_Complex_I*2*M_PI*_fc*0) +
+                           b[1] * cexpf(_Complex_I*2*M_PI*_fc*1) +
+                           b[2] * cexpf(_Complex_I*2*M_PI*_fc*2);
+
+        float complex Ha = a[0] * cexpf(_Complex_I*2*M_PI*_fc*0) +
+                           a[1] * cexpf(_Complex_I*2*M_PI*_fc*1) +
+                           a[2] * cexpf(_Complex_I*2*M_PI*_fc*2);
 
         // TODO : check to see if we need to take conjugate
-        H = Hb / Ha;
-    } else {
-
-        H = 1.0f;
-
-        // compute 3-point DFT for each second-order section
-        for (i=0; i<_q->nsos; i++) {
-            float complex Hb =  _q->b[3*i+0] * cexpf(_Complex_I*2*M_PI*_fc*0) +
-                                _q->b[3*i+1] * cexpf(_Complex_I*2*M_PI*_fc*1) +
-                                _q->b[3*i+2] * cexpf(_Complex_I*2*M_PI*_fc*2);
-
-            float complex Ha =  _q->a[3*i+0] * cexpf(_Complex_I*2*M_PI*_fc*0) +
-                                _q->a[3*i+1] * cexpf(_Complex_I*2*M_PI*_fc*1) +
-                                _q->a[3*i+2] * cexpf(_Complex_I*2*M_PI*_fc*2);
-
-            // TODO : check to see if we need to take conjugate
-            H *= Hb / Ha;
-        }
+        H *= Hb / Ha;
     }
 
     // set return value
     *_H = H;
-#endif
 }
 
 // compute group delay in samples
