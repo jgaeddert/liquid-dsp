@@ -260,11 +260,13 @@ void liquid_firdes_rkaiser_bisection(unsigned int _k,
     float y1 = liquid_firdes_rkaiser_internal_isi(_k,_m,_beta,_dt,x1,_h);
     float y2 = liquid_firdes_rkaiser_internal_isi(_k,_m,_beta,_dt,x2,_h);
 
+    if (y1 > y0 || y1 > y2)
+        fprintf(stderr,"warning: liquid_firdes_rkaiser_bisection(): bounding region is ill-conditioned\n");
+
     // run parabolic search to find bandwidth adjustment x_hat which
     // minimizes the inter-symbol interference of the filter
     unsigned int p, pmax=14;
     float x_hat = rho_hat;
-    float y_hat;
     float xa, xb;
     float ya, yb;
 #if DEBUG_RKAISER
@@ -299,9 +301,8 @@ void liquid_firdes_rkaiser_bisection(unsigned int _k,
         }
 
         x_hat = x1;
-        y_hat = y1;
 #if DEBUG_RKAISER
-        y_hat = liquid_firdes_rkaiser_internal_isi(_k,_m,_beta,_dt,x_hat,_h);
+        float y_hat = liquid_firdes_rkaiser_internal_isi(_k,_m,_beta,_dt,x_hat,_h);
         printf("  %4u : rho=%12.8f, isi=%12.6f dB\n", p+1, x_hat, 20*log10f(y_hat));
 #endif
     };
@@ -313,7 +314,7 @@ void liquid_firdes_rkaiser_bisection(unsigned int _k,
 #endif
 
     // re-design filter with optimal value for rho
-    y_hat = liquid_firdes_rkaiser_internal_isi(_k,_m,_beta,_dt,x_hat,_h);
+    liquid_firdes_rkaiser_internal_isi(_k,_m,_beta,_dt,x_hat,_h);
 
     // normalize filter magnitude
     float e2 = 0.0f;
