@@ -195,10 +195,17 @@ void IIRFILTSOS(_execute_df2)(IIRFILTSOS() _q,
     _q->v[2] = _q->v[1];
     _q->v[1] = _q->v[0];
 
-#ifdef LIQUID_FIXED
-#  warning "fixed-point iirfiltsos_xxxt_execute_df2() not yet implemented"
-    fprintf(stderr,"error: iirfiltsos_xxxt_execute_df2() not yet implemented for FPM\n");
-    exit(1);
+#if defined LIQUID_FIXED
+    // compute new v[0]
+    TO va1 = MUL_TI_TC( _q->v[1], _q->a[1] );
+    TO va2 = MUL_TI_TC( _q->v[2], _q->a[2] );
+    _q->v[0] = SUB_TO_TO( _x, ADD_TO_TO(va1, va2) );
+
+    // compute output _y
+    TO vb0 = MUL_TI_TC( _q->v[0], _q->b[0] );
+    TO vb1 = MUL_TI_TC( _q->v[1], _q->b[1] );
+    TO vb2 = MUL_TI_TC( _q->v[2], _q->b[2] );
+    *_y = ADD_TO_TO( vb0, ADD_TO_TO(vb1, vb2) );
 #else
     // compute new v[0]
     _q->v[0] = _x - 
