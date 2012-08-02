@@ -112,12 +112,12 @@ the hard way.
    with liquid itself, the documentation must be built from scratch and
    requires the following free programs and packages:
 
-      - [pdflatex][ctan]    LaTeX compiler
-      - [bibtex][ctan]      LaTeX bibliography generator
-      - [pgf][] (v2.0)      LaTeX figures
-      - epstopdf            convert .eps to .pdf (necessary for figures)
-      - [gnuplot][]         plotting program
-      - [pygments][]        pretty syntax hilighting program
+  - [pdflatex][ctan]    LaTeX compiler
+  - [bibtex][ctan]      LaTeX bibliography generator
+  - [pgf][] (v2.0)      LaTeX figures
+  - epstopdf            convert .eps to .pdf (necessary for figures)
+  - [gnuplot][]         plotting program
+  - [pygments][]        pretty syntax hilighting program
 
   Once these dependencies are installed, you may build the documentation
   with the following command:
