@@ -56,8 +56,14 @@ void MATRIX(_inv)(T * _X, unsigned int _XR, unsigned int _XC)
             matrix_access(x,xr,xc,r,c) = matrix_access(_X,_XR,_XC,r,c);
 
         // append identity matrix
-        for (c=0; c<_XC; c++)
+        for (c=0; c<_XC; c++) {
+#if defined LIQUID_FIXED && T_COMPLEX==1
+            matrix_access(x,xr,xc,r,_XC+c).real = (r==c) ? 1 : 0;
+            matrix_access(x,xr,xc,r,_XC+c).imag = 0;
+#else
             matrix_access(x,xr,xc,r,_XC+c) = (r==c) ? 1 : 0;
+#endif
+        }
     }
 
     // perform Gauss-Jordan elimination on x
@@ -89,7 +95,13 @@ void MATRIX(_gjelim)(T * _X, unsigned int _XR, unsigned int _XC)
 
         // check values along this column and find the maximum
         for (r_hat=r; r_hat<_XR; r_hat++) {
+#if defined LIQUID_FIXED && T_COMPLEX==0
+            v = Q(_abs)( matrix_access(_X,_XR,_XC,r_hat,r) );
+#elif defined LIQUID_FIXED && T_COMPLEX==1
+            v = Q(_cabs)( matrix_access(_X,_XR,_XC,r_hat,r) );
+#else
             v = cabsf( matrix_access(_X,_XR,_XC,r_hat,r) );
+#endif
             // swap rows if necessary
             if (v > v_max || r_hat==r) {
                 r_opt = r_hat;
@@ -115,9 +127,19 @@ void MATRIX(_gjelim)(T * _X, unsigned int _XR, unsigned int _XC)
     // scale by diagonal
     T g;
     for (r=0; r<_XR; r++) {
+#if defined LIQUID_FIXED && T_COMPLEX==0
+        g = Q(_inv_newton)( matrix_access(_X,_XR,_XC,r,r), 14 );
+        for (c=0; c<_XC; c++)
+            matrix_access(_X,_XR,_XC,r,c) = Q(_mul)( g, matrix_access(_X,_XR,_XC,r,c) );
+#elif defined LIQUID_FIXED && T_COMPLEX==1
+        g = Q(_inv)( matrix_access(_X,_XR,_XC,r,r) );
+        for (c=0; c<_XC; c++)
+            matrix_access(_X,_XR,_XC,r,c) = Q(_mul)( g, matrix_access(_X,_XR,_XC,r,c) );
+#else
         g = 1 / matrix_access(_X,_XR,_XC,r,r);
         for (c=0; c<_XC; c++)
             matrix_access(_X,_XR,_XC,r,c) *= g;
+#endif
     }
 }
 
@@ -125,7 +147,11 @@ void MATRIX(_gjelim)(T * _X, unsigned int _XR, unsigned int _XC)
 void MATRIX(_pivot)(T * _X, unsigned int _XR, unsigned int _XC, unsigned int _r, unsigned int _c)
 {
     T v = matrix_access(_X,_XR,_XC,_r,_c);
+#if defined LIQUID_FIXED && T_COMPLEX==1
+    if (v.real==0 && v.imag==0) {
+#else
     if (v==0) {
+#endif
         fprintf(stderr, "warning: matrix_pivot(), pivoting on zero\n");
         return;
     }
@@ -140,12 +166,21 @@ void MATRIX(_pivot)(T * _X, unsigned int _XR, unsigned int _XC, unsigned int _r,
             continue;
 
         // compute multiplier
+#if defined LIQUID_FIXED
+        g = Q(_div)( matrix_access(_X,_XR,_XC,r,_c), v );
+#else
         g = matrix_access(_X,_XR,_XC,r,_c) / v;
+#endif
 
         // back-substitution
         for (c=0; c<_XC; c++) {
+#if defined LIQUID_FIXED
+            T v = Q(_mul)( g, matrix_access(_X,_XR,_XC,_r,c) );
+            matrix_access(_X,_XR,_XC,_r,c) = Q(_sub)( v, matrix_access(_X,_XR,_XC, r,c) );
+#else
             matrix_access(_X,_XR,_XC,r,c) = g*matrix_access(_X,_XR,_XC,_r,c) -
                                               matrix_access(_X,_XR,_XC, r,c);
+#endif
         }
     }
 }
