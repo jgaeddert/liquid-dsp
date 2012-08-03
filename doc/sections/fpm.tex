@@ -12,10 +12,54 @@ In particular \liquid\ implements two data types:
 {\tt q16\_t} and {\tt q32\_t}.
 
 % 
-% SECTION : ANGLES
+% SECTION : BASICS
 %
-\section{Angular representation}
-\label{section:fpm:angles}
+\section{Basics}
+\label{section:fpm:basics}
+
+% Q-Format
+\subsection{The Q Format}
+\label{section:fpm:basics:qformat}
+
+Under the hood,
+{\tt q16\_t} is really just the standard {\tt int16\_t}
+(the standard 16-bit signed integer type) and
+{\tt q32\_t} is really just {\tt int32\_t}, a standard 32-bit signed
+integer.
+
+Also defined are {\tt q16\_at} and {\tt q32\_at}: their double-precision
+accumulator types.
+
+
+% Angular representation
+\subsection{Angular Representation}
+\label{section:fpm:basics:angular}
+
+
+% Primitive Constants
+\subsection{Primitive Constants}
+\label{section:fpm:basics:primitives}
+
+
+{\small
+    \begin{tabular*}{0.65\textwidth}{l@{\extracolsep{\fill}}ll}
+    \toprule
+    {\it name} &
+    {\it float value} &
+    {\it description}\\\otoprule
+    %
+    {\tt q16\_min}              &   & minimum representable value \\
+    {\tt q16\_max}              &   & maximum representable value \\
+    {\tt q16\_zero}             & 0 & zero \\
+    {\tt q16\_one}              & 1 & one \\
+    {\tt q16\_2pi}              &   & 2*pi (angular) \\
+    {\tt q16\_pi}               &   & pi (angular) \\
+    {\tt q16\_pi\_by\_2}        &   & pi/2 (angular) \\
+    {\tt q16\_pi\_by\_4}        &   & pi/4 (angular) \\
+    {\tt q16\_angle\_scalarf}   &   & angular/scalar relationship\\\bottomrule
+    \end{tabular*}
+} % small
+
 
 % 
 % SECTION : MATH
@@ -44,8 +88,34 @@ In particular \liquid\ implements two data types:
 \subsection{Error and Gamma functions}
 \label{section:fpm:math:error-gamma}
 
-\subsection{Constants}
+\subsection{Mathematical Constants}
 \label{section:fpm:math:constants}
+
+Mathematical constants (see: {\tt genlib/genlib.constants.c})
+
+{\small
+    \begin{tabular*}{0.65\textwidth}{l@{\extracolsep{\fill}}ll}
+    \toprule
+    {\it name} &
+    {\it float value} &
+    {\it description}\\\otoprule
+    %
+    {\tt q16\_E}            & {\tt 2.71828182845905}    & $e$\\
+    {\tt q16\_LOG2E}        & {\tt 1.44269504088896}    & $\log_2(e)$\\
+    {\tt q16\_LOG10E}       & {\tt 0.43429448190325}    & $\log_{10}(e)$\\
+    {\tt q16\_LN2}          & {\tt 0.69314718055995}    & $\ln(2)$\\
+    {\tt q16\_LN10}         & {\tt 2.30258509299405}    & $\ln(10)$\\
+    {\tt q16\_PI}           & {\tt 3.14159265358979}    & $\pi$ (literal)\\
+    {\tt q16\_PI\_2}        & {\tt 1.57079632679490}    & $\pi/2$\\
+    {\tt q16\_PI\_4}        & {\tt 0.78539816339745}    & $\pi/4$\\
+    {\tt q16\_1\_PI}        & {\tt 0.31830988618379}    & $1/\pi$\\
+    {\tt q16\_2\_PI}        & {\tt 0.63661977236758}    & $2/\pi$\\
+    {\tt q16\_2\_SQRTPI}    & {\tt 1.12837916709551}    & $2/\sqrt{\pi}$\\
+    {\tt q16\_SQRT2}        & {\tt 1.41421356237310}    & $\sqrt{2}$\\
+    {\tt q16\_SQRT1\_2}     & {\tt 0.70710678118655}    & $\sqrt{1/2}$\\\bottomrule
+    \end{tabular*}
+} % small
+
 
 % 
 % SECTION : COMPLEX MATH

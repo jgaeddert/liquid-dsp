@@ -267,6 +267,7 @@ local_programs :=					\
 	src/filter_kaiser				\
 	src/filter_rnyquist				\
 	src/filter_symsync_crcf				\
+	src/fpm_gentab					\
 	src/interleaver_scatterplot			\
 	src/math_polyfit_lagrange			\
 	src/math_poly_examples				\
