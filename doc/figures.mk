@@ -244,6 +244,10 @@ $(local_pdffiles) : %.pdf : %.eps
 local_texfiles :=					\
 	latex.gen/liquid_version.tex			\
 	latex.gen/math_polyfit_lagrange.tex		\
+	latex.gen/q16_gentab_math.tex			\
+	latex.gen/q32_gentab_math.tex			\
+	latex.gen/q16_gentab_primitives.tex		\
+	latex.gen/q32_gentab_primitives.tex		\
 
 ##
 ## PROGRAMS
@@ -647,6 +651,16 @@ figures.gen/fft_spgram_freq.gnu : figures.gen/% : data/% ; cp $< $@
 
 figures.gen/fft_spgram_time.eps : %.eps : %.gnu %.dat
 figures.gen/fft_spgram_freq.eps : %.eps : %.gnu %.dat
+
+##
+## MODULE : fpm
+##
+
+# auto-generated constants tables
+latex.gen/q16_gentab_math.tex       : src/fpm_gentab ; ./$< -t q16 -T math > $@
+latex.gen/q32_gentab_math.tex       : src/fpm_gentab ; ./$< -t q32 -T math > $@
+latex.gen/q16_gentab_primitives.tex : src/fpm_gentab ; ./$< -t q16 -T primitives > $@
+latex.gen/q32_gentab_primitives.tex : src/fpm_gentab ; ./$< -t q32 -T primitives > $@
 
 ##
 ## MODULE : framing

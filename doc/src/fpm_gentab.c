@@ -83,13 +83,13 @@ int main(int argc, char*argv[]) {
     if (t == QTYPE_Q16 && T == TABLE_MATH) {
         q16_gentab_math();
 
-    } else if (t == QTYPE_Q16 == TABLE_PRIMITIVES) {
+    } else if (t == QTYPE_Q16 && T == TABLE_PRIMITIVES) {
         q16_gentab_primitives();
         
-    } else if (t == QTYPE_Q32 == TABLE_MATH) {
+    } else if (t == QTYPE_Q32 && T == TABLE_MATH) {
         q32_gentab_math();
         
-    } else if (t == QTYPE_Q32 == TABLE_PRIMITIVES) {
+    } else if (t == QTYPE_Q32 && T == TABLE_PRIMITIVES) {
         q32_gentab_primitives();
         
     } else {
@@ -110,11 +110,11 @@ void q16_gentab_math()
     printf("    {\\tt q16\\_LN2}       & {\\tt 0x%.*x} & {\\tt %16.*f} &   $\\ln(2)$ \\\\\n",        px, q16_LN2,      pf, q16_fixed_to_float(q16_LN2));
     printf("    {\\tt q16\\_LN10}      & {\\tt 0x%.*x} & {\\tt %16.*f} &   $\\ln(1)$ \\\\\n",        px, q16_LN10,     pf, q16_fixed_to_float(q16_LN10));
     printf("    {\\tt q16\\_PI}        & {\\tt 0x%.*x} & {\\tt %16.*f} &   $\\pi$ \\\\\n",           px, q16_PI,       pf, q16_fixed_to_float(q16_PI));
-    printf("    {\\tt q16\\_PI_2}      & {\\tt 0x%.*x} & {\\tt %16.*f} &   $\\pi/2$ \\\\\n",         px, q16_PI_2,     pf, q16_fixed_to_float(q16_PI_2));
-    printf("    {\\tt q16\\_PI_4}      & {\\tt 0x%.*x} & {\\tt %16.*f} &   $\\pi/4$ \\\\\n",         px, q16_PI_4,     pf, q16_fixed_to_float(q16_PI_4));
-    printf("    {\\tt q16\\_1_PI}      & {\\tt 0x%.*x} & {\\tt %16.*f} &   $\\1/pi$ \\\\\n",         px, q16_1_PI,     pf, q16_fixed_to_float(q16_1_PI));
-    printf("    {\\tt q16\\_2_PI}      & {\\tt 0x%.*x} & {\\tt %16.*f} &   $2/\\pi$ \\\\\n",         px, q16_2_PI,     pf, q16_fixed_to_float(q16_2_PI));
-    printf("    {\\tt q16\\_2_SQRTPI}  & {\\tt 0x%.*x} & {\\tt %16.*f} &   $2/\\sqrt{\\pi}$ \\\\\n", px, q16_2_SQRTPI, pf, q16_fixed_to_float(q16_2_SQRTPI));
+    printf("    {\\tt q16\\_PI\\_2}     & {\\tt 0x%.*x} & {\\tt %16.*f} &   $\\pi/2$ \\\\\n",        px, q16_PI_2,     pf, q16_fixed_to_float(q16_PI_2));
+    printf("    {\\tt q16\\_PI\\_4}     & {\\tt 0x%.*x} & {\\tt %16.*f} &   $\\pi/4$ \\\\\n",        px, q16_PI_4,     pf, q16_fixed_to_float(q16_PI_4));
+    printf("    {\\tt q16\\_1\\_PI}     & {\\tt 0x%.*x} & {\\tt %16.*f} &   $1/\\pi$ \\\\\n",        px, q16_1_PI,     pf, q16_fixed_to_float(q16_1_PI));
+    printf("    {\\tt q16\\_2\\_PI}     & {\\tt 0x%.*x} & {\\tt %16.*f} &   $2/\\pi$ \\\\\n",        px, q16_2_PI,     pf, q16_fixed_to_float(q16_2_PI));
+    printf("    {\\tt q16\\_2\\_SQRTPI} & {\\tt 0x%.*x} & {\\tt %16.*f} &   $2/\\sqrt{\\pi}$ \\\\\n",px, q16_2_SQRTPI, pf, q16_fixed_to_float(q16_2_SQRTPI));
     printf("    {\\tt q16\\_SQRT2}     & {\\tt 0x%.*x} & {\\tt %16.*f} &   $\\sqrt{2}$ \\\\\n",      px, q16_SQRT2,    pf, q16_fixed_to_float(q16_SQRT2));
     printf("    {\\tt q16\\_SQRT1\\_2}  & {\\tt 0x%.*x} & {\\tt %16.*f} &   $\\sqrt{1/2}$ \\\\\n",    px, q16_SQRT1_2,  pf, q16_fixed_to_float(q16_SQRT1_2));
 }
@@ -129,11 +129,11 @@ void q32_gentab_math()
     printf("    {\\tt q32\\_LN2}       & {\\tt 0x%.*x} & {\\tt %16.*f} & $\\ln(2)$ \\\\\n",        px, q32_LN2,      pf, q32_fixed_to_float(q32_LN2));
     printf("    {\\tt q32\\_LN10}      & {\\tt 0x%.*x} & {\\tt %16.*f} & $\\ln(1)$ \\\\\n",        px, q32_LN10,     pf, q32_fixed_to_float(q32_LN10));
     printf("    {\\tt q32\\_PI}        & {\\tt 0x%.*x} & {\\tt %16.*f} & $\\pi$ \\\\\n",           px, q32_PI,       pf, q32_fixed_to_float(q32_PI));
-    printf("    {\\tt q32\\_PI_2}      & {\\tt 0x%.*x} & {\\tt %16.*f} & $\\pi/2$ \\\\\n",         px, q32_PI_2,     pf, q32_fixed_to_float(q32_PI_2));
-    printf("    {\\tt q32\\_PI_4}      & {\\tt 0x%.*x} & {\\tt %16.*f} & $\\pi/4$ \\\\\n",         px, q32_PI_4,     pf, q32_fixed_to_float(q32_PI_4));
-    printf("    {\\tt q32\\_1_PI}      & {\\tt 0x%.*x} & {\\tt %16.*f} & $\\1/pi$ \\\\\n",         px, q32_1_PI,     pf, q32_fixed_to_float(q32_1_PI));
-    printf("    {\\tt q32\\_2_PI}      & {\\tt 0x%.*x} & {\\tt %16.*f} & $2/\\pi$ \\\\\n",         px, q32_2_PI,     pf, q32_fixed_to_float(q32_2_PI));
-    printf("    {\\tt q32\\_2_SQRTPI}  & {\\tt 0x%.*x} & {\\tt %16.*f} & $2/\\sqrt{\\pi}$ \\\\\n", px, q32_2_SQRTPI, pf, q32_fixed_to_float(q32_2_SQRTPI));
+    printf("    {\\tt q32\\_PI\\_2}     & {\\tt 0x%.*x} & {\\tt %16.*f} & $\\pi/2$ \\\\\n",        px, q32_PI_2,     pf, q32_fixed_to_float(q32_PI_2));
+    printf("    {\\tt q32\\_PI\\_4}     & {\\tt 0x%.*x} & {\\tt %16.*f} & $\\pi/4$ \\\\\n",        px, q32_PI_4,     pf, q32_fixed_to_float(q32_PI_4));
+    printf("    {\\tt q32\\_1\\_PI}     & {\\tt 0x%.*x} & {\\tt %16.*f} & $1/\\pi$ \\\\\n",        px, q32_1_PI,     pf, q32_fixed_to_float(q32_1_PI));
+    printf("    {\\tt q32\\_2\\_PI}     & {\\tt 0x%.*x} & {\\tt %16.*f} & $2/\\pi$ \\\\\n",        px, q32_2_PI,     pf, q32_fixed_to_float(q32_2_PI));
+    printf("    {\\tt q32\\_2\\_SQRTPI} & {\\tt 0x%.*x} & {\\tt %16.*f} & $2/\\sqrt{\\pi}$ \\\\\n", px, q32_2_SQRTPI, pf, q32_fixed_to_float(q32_2_SQRTPI));
     printf("    {\\tt q32\\_SQRT2}     & {\\tt 0x%.*x} & {\\tt %16.*f} & $\\sqrt{2}$ \\\\\n",      px, q32_SQRT2,    pf, q32_fixed_to_float(q32_SQRT2));
     printf("    {\\tt q32\\_SQRT1\\_2}  & {\\tt 0x%.*x} & {\\tt %16.*f} & $\\sqrt{1/2}$ \\\\\n",    px, q32_SQRT1_2,  pf, q32_fixed_to_float(q32_SQRT1_2));
 }

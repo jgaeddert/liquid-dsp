@@ -42,21 +42,16 @@ accumulator types.
 
 
 {\small
-    \begin{tabular*}{0.65\textwidth}{l@{\extracolsep{\fill}}ll}
+    \begin{tabular*}{0.95\textwidth}{l@{\extracolsep{\fill}}rrl}
     \toprule
     {\it name} &
+    {\it fixed value} &
     {\it float value} &
     {\it description}\\\otoprule
-    %
-    {\tt q16\_min}              &   & minimum representable value \\
-    {\tt q16\_max}              &   & maximum representable value \\
-    {\tt q16\_zero}             & 0 & zero \\
-    {\tt q16\_one}              & 1 & one \\
-    {\tt q16\_2pi}              &   & 2*pi (angular) \\
-    {\tt q16\_pi}               &   & pi (angular) \\
-    {\tt q16\_pi\_by\_2}        &   & pi/2 (angular) \\
-    {\tt q16\_pi\_by\_4}        &   & pi/4 (angular) \\
-    {\tt q16\_angle\_scalarf}   &   & angular/scalar relationship\\\bottomrule
+    \input{latex.gen/q16_gentab_primitives}
+    \midrule
+    \input{latex.gen/q32_gentab_primitives}
+    \bottomrule
     \end{tabular*}
 } % small
 
@@ -94,28 +89,18 @@ accumulator types.
 Mathematical constants (see: {\tt genlib/genlib.constants.c})
 
 {\small
-    \begin{tabular*}{0.65\textwidth}{l@{\extracolsep{\fill}}ll}
+    \begin{tabular*}{0.95\textwidth}{l@{\extracolsep{\fill}}rrl}
     \toprule
     {\it name} &
+    {\it fixed value} &
     {\it float value} &
     {\it description}\\\otoprule
-    %
-    {\tt q16\_E}            & {\tt 2.71828182845905}    & $e$\\
-    {\tt q16\_LOG2E}        & {\tt 1.44269504088896}    & $\log_2(e)$\\
-    {\tt q16\_LOG10E}       & {\tt 0.43429448190325}    & $\log_{10}(e)$\\
-    {\tt q16\_LN2}          & {\tt 0.69314718055995}    & $\ln(2)$\\
-    {\tt q16\_LN10}         & {\tt 2.30258509299405}    & $\ln(10)$\\
-    {\tt q16\_PI}           & {\tt 3.14159265358979}    & $\pi$ (literal)\\
-    {\tt q16\_PI\_2}        & {\tt 1.57079632679490}    & $\pi/2$\\
-    {\tt q16\_PI\_4}        & {\tt 0.78539816339745}    & $\pi/4$\\
-    {\tt q16\_1\_PI}        & {\tt 0.31830988618379}    & $1/\pi$\\
-    {\tt q16\_2\_PI}        & {\tt 0.63661977236758}    & $2/\pi$\\
-    {\tt q16\_2\_SQRTPI}    & {\tt 1.12837916709551}    & $2/\sqrt{\pi}$\\
-    {\tt q16\_SQRT2}        & {\tt 1.41421356237310}    & $\sqrt{2}$\\
-    {\tt q16\_SQRT1\_2}     & {\tt 0.70710678118655}    & $\sqrt{1/2}$\\\bottomrule
+    \input{latex.gen/q16_gentab_math}
+    \midrule
+    \input{latex.gen/q32_gentab_math}
+    \bottomrule
     \end{tabular*}
 } % small
-
 
 % 
 % SECTION : COMPLEX MATH
