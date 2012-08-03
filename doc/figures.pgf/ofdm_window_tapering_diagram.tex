@@ -13,7 +13,8 @@
 %        |     |    |    |          |    |    |    |     |
 %        ta    tb   tc   td         te   tf   tg   th    ti
 %                   |                         |
-%                   |<--- original symbol --->|
+%        |<-- +  -->|<--- original symbol --->|<-->|
+%              \ cyclic prefix                   \ cyclic postfix
 
 \documentclass[a4paper,landscape]{article}
 
@@ -40,6 +41,7 @@
     % input common definitions
     \def\dt{0.3}        % default time step between sections
     \def\ds{0.05}       % default signal level vertical line extensions
+    \def\dS{0.05}       % extended signal level vertical line extensions
     \def\height{0.6}    % peak height of signal
 
     \def\ta{\dt}        % beginning of ramp up...
@@ -68,9 +70,10 @@
     \def\rampdn{2.8}
 
 
-    % draw cyclic extension box(es)
-    \draw[fill=liquid-color-green!20] (\ta,0) rectangle (\tc,\height);
-    \draw[fill=liquid-color-green!20] (\tg,0) rectangle (\th,\height);
+    % draw colored box(es)
+    \draw[fill=liquid-color-green!15] (\ta,0) rectangle (\tc,\height); % cyclic prefix
+    \draw[fill=liquid-color-green!30] (\tc,0) rectangle (\tg,\height); % main symbol
+    \draw[fill=liquid-color-green!15] (\tg,0) rectangle (\th,\height); % cyclic postfix
 
     % draw x-axis 
     \draw[very thick, black,->] (-0.02, 0.0 ) -- (\ti,0)
@@ -97,10 +100,10 @@
         (\th,       0);
 
     % intersection lines
-    \draw[thin,gray]        (\tb,  -\ds)   --  (\tb,   \height+\ds);
-    \draw[very thick,black] (\tc,     0)   --  (\tc,   \height);
-    \draw[thin,gray]        (\td,  -\ds)   --  (\td,   \height+\ds);
-    \draw[thin,gray]        (\te,  -\ds)   --  (\te,   \height+\ds);
+    \draw[thin,black,dotted](\tb,  0)   --  (\tb,   \height);
+    \draw[very thick,black] (\tc,  0)   --  (\tc,   \height);
+    \draw[thin,black,dotted](\td,  0)   --  (\td,   \height);
+    \draw[thin,black,dotted](\te,  0)   --  (\te,   \height);
     %\draw[thin,gray]        (\tf,  -\ds)   --  (\tf,   \height+\ds);
     \draw[very thick,black] (\tg,     0)   --  (\tg,   \height);
 
@@ -110,7 +113,22 @@
     \node[hiddenpoint] (cp-head) at     (\tb,         \height)  {};
     \node[hiddenpoint] (cp-tail) at     (\tg+0.5*\dt, 0)        {};
 
-    % draw arrows
+    %
+    \draw[thin,black!20] (\ta,\height+\dS-0.5*\ds) -- (\ta,\height+\dS+0.5*\ds);
+    \draw[thin,black!20] (\tc,\height+\dS-0.5*\ds) -- (\tc,\height+\dS+0.5*\ds);
+    \draw[thin,black!20] (\tg,\height+\dS-0.5*\ds) -- (\tg,\height+\dS+0.5*\ds);
+    \draw[thin,black!20] (\th,\height+\dS-0.5*\ds) -- (\th,\height+\dS+0.5*\ds);
+
+    % range lines (arrows):  |<-- prefix -->|<-- orig. symbol -->|<-- postfix -->|
+    \draw[thin,black!20,<->] (\ta, \height+\dS) -- (\tc, \height+\dS);
+    \draw[thin,black!20,<->] (\tc, \height+\dS) -- (\tg, \height+\dS);
+    \draw[thin,black!20,<->] (\tg, \height+\dS) -- (\th, \height+\dS);
+
+    \draw (\tb, \height+\dS) node[anchor=south east] {\footnotesize\em cyclic prefix};
+    \draw (\te, \height+\dS) node[anchor=south east] {\footnotesize\em original symbol};
+    \draw (\tg, \height+\dS) node[anchor=south west] {\footnotesize\em cyclic postfix};
+
+    % draw curved arrows
     \draw[connector-arrow] (symbol-tail) to [out=160, in=20]   (cp-head);
     \draw[connector-arrow] (symbol-head) to [out=-20, in=-160] (cp-tail);
 

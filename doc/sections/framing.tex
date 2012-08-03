@@ -928,6 +928,40 @@ To improve the peak-to-average power ratio, the pilots are different not
 only from one symbol to another, but within each OFDM symbol.
 
 
+\subsubsection{Window Tapering}
+\label{module:framing:ofdmflexframe:tapering}
+\liquid\ includes the option for window tapering to reduce the spectral
+side-lobes of the transmitted OFDM signal by allowing adjacent symbols
+gracefully transition from one to the next.
+The tapering window is sequence of $N_t$ samples
+$\vec{w} = \{ w_0, w_1, \ldots, w_{N_t-1} \}$
+such that $w_k \in [0,1]\,\,\, \forall_{k \in \{0,N_t-1\}}$ and
+$w_k + w_{N_t-k-1} = 1$.
+Note that the tapering window length must be less than or equal to the
+cyclic prefix length, i.e. $N_t \leq N_c$.
+\liquid\ uses the sine-squared window defined as
+\cite[(4)]{802.11:standard}
+%
+\begin{equation}
+\label{eqn:ofdmframegen:window}
+    %w_n = \sin^2\Bigl( \pi(n + 1/2)/N_t \Bigr)
+    w_n = \sin^2\Bigl( \pi\frac{n + 1/2}{N_t} \Bigr)
+\end{equation}
+%
+\begin{figure}
+\centering
+  \includegraphics[trim = 0mm 0mm 0mm 0mm, clip, width=14cm]{figures.pgf/ofdm_window_tapering_diagram}
+  \caption{OFDM window tapering}
+\label{fig:module:framing:ofdmflexframe_tapering}
+\end{figure}
+%
+Figure~\ref{fig:module:framing:ofdmflexframe_tapering} demonstrates how
+the window is applied to each OFDM symbol;
+the cyclic postfix of the previous symbol overlaps the current symbol's
+cyclic prefix with the applied window providing a graceful transition
+region.
+Notice that the tapering window does {\em not} extend the length of the
+symbol beyond its cyclic prefix.
 
 \subsubsection{{\tt ofdmflexframegen}}
 \label{module:framing:ofdmflexframe:gen}

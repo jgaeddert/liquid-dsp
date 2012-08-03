@@ -46,7 +46,7 @@ struct ofdmframegen_s {
 
     // tapering/trasition
     unsigned int taper_len; // number of samples in tapering window/overlap
-    float * taper;          // tapring window
+    float * taper;          // tapering window
     float complex *postfix; // overlapping symbol buffer
 
     // constants
