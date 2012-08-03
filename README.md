@@ -35,7 +35,7 @@ There are two primary ways of obtaining the source code:
         $ md5sum --check liquid-dsp.md5
         $ tar -xf liquid-dsp-1.2.0.tar.gz
 
-2. Clone the entire [repository][liquid-github]
+2. or clone the entire [repository][liquid-github]
         
         $ git clone git://github.com/jgaeddert/liquid-dsp.git
 
@@ -73,6 +73,7 @@ make target `check`, viz.
     $ make check
 
 ### Examples
+
 Nearly all signal processing elements have a corresponding example in
 the `examples/` directory.  Most example scripts generate an output
 `.m` file for plotting with [GNU octave][octave]. All examples are
@@ -96,6 +97,32 @@ the number of trials so that each benchmark will take between 50 and
 following command:
 
     $ make bench
+
+### Documentation
+
+No serious software library would be complete without proper
+documentation. There are basically two ways to get it: the easy way and
+the hard way.
+
+1. The easy way: download the pre-compiled documentation from
+   <http://ganymede.ece.vt.edu/downloads/liquid.pdf> (4.4 MB).
+
+2. The hard way: build from scratch.
+   Because all of the figures within the documentation are generated
+   with liquid itself, the documentation must be built from scratch and
+   requires the following free programs and packages:
+
+  - [pdflatex][ctan]    LaTeX compiler
+  - [bibtex][ctan]      LaTeX bibliography generator
+  - [pgf][] (v2.0)      LaTeX figures
+  - epstopdf            convert .eps to .pdf (necessary for figures)
+  - [gnuplot][]         plotting program
+  - [pygments][]        pretty syntax hilighting program
+
+  Once these dependencies are installed, you may build the documentation
+  with the following command:
+
+        $ make doc
 
 Available Modules
 -----------------
@@ -139,23 +166,8 @@ Available Modules
         continuous-phase modulation, direct digital synthesis,
         quadrature mirror filterbanks, advanced symbol timing recovery
 
-Additional
-----------
-  * benchmarking tool (`make bench`) for testing execution speed of most
-    algorithms
-  * automatic test scripts (`make check`) for validating the code's
-    functionality
-  * full documentation (`make doc`) complete with tutorials, code
-    examples, and interface descriptions. Requires the following programs
-    and packages:
-      - [pdflatex][ctan]    LaTeX compiler
-      - [bibtex][ctan]      LaTeX bibliography generator
-      - [pgf][] (v2.0)      LaTeX figures
-      - epstopdf            convert .eps to .pdf (necessary for figures)
-      - [gnuplot][]         plotting program
-      - [pygments][]        pretty syntax hilighting program
-
 ### Additional notes
+
 Splatter graphics were created using [GIMP][] with two
 [splatter][corelila] [brush][hawksmont] plug-ins.
 
