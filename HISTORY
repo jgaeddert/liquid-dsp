@@ -1,5 +1,7 @@
 
 Major improvements since v1.2.0
+  * dotprod
+    - adding method to compute x^T * x of a vector (sum of squares)
   * fft
     - general speed improvements
   * matrix

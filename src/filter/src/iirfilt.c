@@ -252,13 +252,13 @@ IIRFILT() IIRFILT(_create_pll)(float _w,
 {
     // validate input
     if (_w <= 0.0f || _w >= 1.0f) {
-        fprintf(stderr,"error: iirfilt_xxt_create_pll(), bandwidth must be in (0,1)\n");
+        fprintf(stderr,"error: iirfilt_%s_create_pll(), bandwidth must be in (0,1)\n", EXTENSION_FULL);
         exit(1);
     } else if (_zeta <= 0.0f || _zeta >= 1.0f) {
-        fprintf(stderr,"error: iirfilt_xxt_create_pll(), damping factor must be in (0,1)\n");
+        fprintf(stderr,"error: iirfilt_%s_create_pll(), damping factor must be in (0,1)\n", EXTENSION_FULL);
         exit(1);
     } else if (_K <= 0.0f) {
-        fprintf(stderr,"error: iirfilt_xxt_create_pll(), loop gain must be greater than zero\n");
+        fprintf(stderr,"error: iirfilt_%s_create_pll(), loop gain must be greater than zero\n", EXTENSION_FULL);
         exit(1);
     }
 

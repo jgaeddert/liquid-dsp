@@ -758,7 +758,6 @@ src/framing/src/interleaver.o : %.o : %.c $(headers)
 framing_autotests :=						\
 	src/framing/tests/bpacketsync_autotest.c		\
 	src/framing/tests/bsync_autotest.c			\
-	src/framing/tests/flexframe_autotest.c			\
 	src/framing/tests/packetizer_autotest.c			\
 	src/framing/tests/interleaver_autotest.c		\
 
