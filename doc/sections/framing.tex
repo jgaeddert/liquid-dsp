@@ -991,11 +991,9 @@ object.
 %
 \item[{\tt ofdmflexframegen\_setprops(q,props)}]
     sets the configurable properties of the frame generator, including
-    the number of \Ss\ symbols,
-    the length of the payload (in bytes),
     the error-detection scheme (e.g. {\tt LIQUID\_CRC\_24}),
-    the error-correction scheme(s) (e.g. {\tt LIQUID\_FEC\_HAMMING128}),
-    and the modulation scheme/depth (e.g. {\tt LIQUID\_MODEM\_QPSK}).
+    the inner and outer error-correction scheme (e.g. {\tt LIQUID\_FEC\_HAMMING128}),
+    and the modulation scheme (e.g. {\tt LIQUID\_MODEM\_QPSK}).
 %
 \item[{\tt ofdmflexframegen\_getframelen(q)}]
     returns the number of OFDM symbols (not samples) in the frame,
