@@ -44,6 +44,7 @@
 
 // internal methods
 void dotprod_rrrf_execute_sse4(dotprod_rrrf _q, float * _x, float * _y);
+void dotprod_rrrf_execute_sse4u(dotprod_rrrf _q, float * _x, float * _y);
 
 // basic dot product (ordinal calculation)
 void dotprod_rrrf_run(float *_h,
@@ -142,13 +143,18 @@ void dotprod_rrrf_execute(dotprod_rrrf _q,
                           float * _x,
                           float * _y)
 {
-    dotprod_rrrf_execute_sse4(_q, _x, _y);
+    // switch based on size
+    if (_q->n < 16) {
+        dotprod_rrrf_execute_sse4(_q, _x, _y);
+    } else {
+        dotprod_rrrf_execute_sse4u(_q, _x, _y);
+    }
 }
 
 // use MMX/SSE extensions
 void dotprod_rrrf_execute_sse4(dotprod_rrrf _q,
-                              float * _x,
-                              float * _y)
+                               float *      _x,
+                               float *      _y)
 {
     __m128 v;   // input vector
     __m128 h;   // coefficients vector
@@ -183,6 +189,63 @@ void dotprod_rrrf_execute_sse4(dotprod_rrrf _q,
 
     // cleanup
     for (; i<_q->n; i++)
+        total += _x[i] * _q->h[i];
+
+    // set return value
+    *_y = total;
+}
+
+// use MMX/SSE extensions (unrolled)
+void dotprod_rrrf_execute_sse4u(dotprod_rrrf _q,
+                                float *      _x,
+                                float *      _y)
+{
+    __m128 v0, v1, v2, v3;
+    __m128 h0, h1, h2, h3;
+    __m128 s0, s1, s2, s3;
+    __m128 sum = _mm_setzero_ps(); // load zeros into sum register
+
+    // t = 4*(floor(_n/16))
+    unsigned int r = (_q->n >> 4) << 2;
+
+    //
+    unsigned int i;
+    for (i=0; i<r; i+=4) {
+        // load inputs into register (unaligned)
+        v0 = _mm_loadu_ps(&_x[4*i+0]);
+        v1 = _mm_loadu_ps(&_x[4*i+4]);
+        v2 = _mm_loadu_ps(&_x[4*i+8]);
+        v3 = _mm_loadu_ps(&_x[4*i+12]);
+
+        // load coefficients into register (aligned)
+        h0 = _mm_load_ps(&_q->h[4*i+0]);
+        h1 = _mm_load_ps(&_q->h[4*i+4]);
+        h2 = _mm_load_ps(&_q->h[4*i+8]);
+        h3 = _mm_load_ps(&_q->h[4*i+12]);
+
+        // compute dot products
+        s0 = _mm_dp_ps(v0, h0, 0xffffffff);
+        s1 = _mm_dp_ps(v1, h1, 0xffffffff);
+        s2 = _mm_dp_ps(v2, h2, 0xffffffff);
+        s3 = _mm_dp_ps(v3, h3, 0xffffffff);
+        
+        // parallel addition
+        // FIXME: these additions are by far the limiting factor
+        sum = _mm_add_ps( sum, s0 );
+        sum = _mm_add_ps( sum, s1 );
+        sum = _mm_add_ps( sum, s2 );
+        sum = _mm_add_ps( sum, s3 );
+    }
+
+    // aligned output array
+    float w[4] __attribute__((aligned(16)));
+
+    // unload packed array
+    _mm_store_ps(w, sum);
+    float total = w[0];
+
+    // cleanup
+    for (i=4*r; i<_q->n; i++)
         total += _x[i] * _q->h[i];
 
     // set return value
