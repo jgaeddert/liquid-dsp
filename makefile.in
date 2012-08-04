@@ -185,13 +185,18 @@ src/dotprod/src/sumsq.o : %.o : %.c $(headers)
 
 # specific machine architectures
 
+# AltiVec
 src/dotprod/src/dotprod_rrrf.av.o : %.o : %.c $(headers)
 
+# MMX/SSE2
 src/dotprod/src/dotprod_rrrf.mmx.o : %.o : %.c $(headers)
 src/dotprod/src/dotprod_crcf.mmx.o : %.o : %.c $(headers)
 src/dotprod/src/dotprod_cccf.mmx.o : %.o : %.c $(headers)
 
 src/dotprod/src/sumsq.mmx.o : %.o : %.c $(headers)
+
+# SSE4.1/2
+src/dotprod/src/dotprod_rrrf.sse4.o : %.o : %.c $(headers)
 
 dotprod_autotests :=						\
 	src/dotprod/tests/dotprod_rrrf_autotest.c		\
