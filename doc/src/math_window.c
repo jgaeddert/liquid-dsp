@@ -134,7 +134,7 @@ int main(int argc, char*argv[])
     fprintf(fid,"set grid linetype 1 linecolor rgb '%s' lw 1\n", LIQUID_DOC_COLOR_GRID);
     fprintf(fid,"set border 0\n");
     //fprintf(fid,"set zeroaxis linewidth 4 linetype 1 linecolor rgb '#000000'\n");
-    fprintf(fid,"plot '-' using 1:2 with impulses linetype 1 linewidth 4 linecolor rgb '#000000' notitle\n");
+    fprintf(fid,"plot '-' using 1:2 with impulses linetype 1 linewidth 4 linecolor rgb '%s' notitle\n", LIQUID_DOC_COLOR_PURPLE);
 
     // print window
     for (i=0; i<n; i++)
@@ -170,10 +170,11 @@ int main(int argc, char*argv[])
     fprintf(fid,"set grid xtics ytics\n");
     fprintf(fid,"set grid linetype 1 linecolor rgb '%s' lw 1\n", LIQUID_DOC_COLOR_GRID);
     fprintf(fid,"set xrange [-0.5:0.5]\n");
-    fprintf(fid,"set yrange [-80:0]\n");
+    fprintf(fid,"set yrange [-100:0]\n");
     fprintf(fid,"set border 0\n");
     //fprintf(fid,"set zeroaxis linewidth 4 linetype 1 linecolor rgb '#000000'\n");
-    fprintf(fid,"plot '-' using 1:2 with lines linetype 1 linewidth 4 linecolor rgb '#000000' notitle\n");
+    fprintf(fid,"set style fill solid 0.1\n");
+    fprintf(fid,"plot '-' using 1:2 with filledcurves above y1=-200 linetype 1 linewidth 3 linecolor rgb '%s' notitle\n", LIQUID_DOC_COLOR_BLUE);
 
     // save array to output
     unsigned int k;
