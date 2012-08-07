@@ -3,16 +3,19 @@ liquid documentation
 ====================
 
 This is the documentation directory.
-All documentation is in [LaTeX][ctan].  Figures are auto-generated using
-[gnuplot][gnuplot] and [pgf][pgf].  Code snippets are made pretty using
-[pygments][pygments].
+All documentation is written in [LaTeX][http://www.ctan.org/].
+Figures are auto-generated using
+[gnuplot](http://www.gnuplot.info/) and [pgf](http://sourceforge.net/projects/pgf/).
+Code snippets are made pretty using
+[pygments](http://pygments.org/)
 
 To build the documentation, one must first move to the root source
 directory and build the liquid DSP library.  Then move to this directory
-and simply run `make`.  The documentation is built daily for your
-convenience at <http://ganymede.ece.vt.edu/>.
+and simply run `make`.  The documentation is
+[built daily](http://ganymede.ece.vt.edu/downloads/liquid.pdf) (4.4 MB)
+for your convenience.
 
-### Documentation dependencies
+### Documentation dependencies ###
 
   * pdflatex    : LaTeX distribution
   * epstopdf    : postscript to .pdf converter
@@ -24,7 +27,7 @@ convenience at <http://ganymede.ece.vt.edu/>.
     - dvipng      : dvi to png converter (sudo apt-get install dvipng)
     - convert     : ImageMagick's command-line image conversion (html)
 
-### Documentation targets
+### Documentation targets ###
 
   * liquid.pdf      :   main documentation file
   * figures         :   automatically-generated figures
@@ -36,7 +39,7 @@ convenience at <http://ganymede.ece.vt.edu/>.
   * distclean       :   removing everything but the originally distributed files
   * html            :   html documentation [EXPERIMENTAL]
 
-### Directory listings and their contents
+### Directory listings and their contents ###
 
   * figures.gen/    :   automatically-generated figures (gnuplot)
   * figures.pgf/    :   automatically-generated figures (PGF)
@@ -47,40 +50,23 @@ convenience at <http://ganymede.ece.vt.edu/>.
   * sections/       :   documentation .tex files
   * src/            :   auto-generated figures source files
 
-### Installing on Mac OS X
+### Installing on Mac OS X ###
 
     $ sudo port install texlive-basic texlive-bin texlive-bin-extra texlive-common \
         texlive-fontutils texlive-latex-extra texlive-latex-recommended texlive-science \
         pgf py-pygments
 
-### Installing on Ubuntu Linux
+### Installing on Ubuntu Linux ###
 
 NOTES: texlive-full not necessary (1.8+ GB package), but does include
        everything necessary
 
     $ sudo apt-get install texlive-full pgf python-pygments gnuplot
 
-### Additional notes:
-    Splatter graphics were created using GIMP with two splatter brush
-    plug-ins.
+### Additional notes ###
 
-  * http://www.gimp.org/
-  * http://corelila.deviantart.com/art/Splatter-Brushes-60718934
-  * http://hawksmont.com/blog/gimp-brushes-splatters/
-
-[FFTW]:         http://www.fftw.org/
-[octave]:       http://www.gnu.org/software/octave/
-[ctan]:         http://www.ctan.org/
-[pygments]:     http://pygments.org/
-[GIMP]:         http://www.gimp.org/
-[gnuplot]:      http://www.gnuplot.info/
-[pgf]:          http://sourceforge.net/projects/pgf/
-[macports]:     http://www.macports.org/
-[liquid.tar.gz]:http://ganymede.ece.vt.edu/
-[liquid-github]:http://github.com/jgaeddert/liquid-dsp
-[corelila]:     http://corelila.deviantart.com/art/Splatter-Brushes-60718934
-[hawksmont]:    http://hawksmont.com/blog/gimp-brushes-splatters/
-
-
-
+Splatter graphics were created using [GIMP](http://www.gimp.org) with two
+[splatter](http://corelila.deviantart.com/art/Splatter-Brushes-60718934)
+[brush](http://hawksmont.com/blog/gimp-brushes-splatters/)
+plug-ins.
 

@@ -229,13 +229,20 @@ i386|i486|i586|i686|x86|x86_64)
     #   AVX     :   immintrin.h
     AX_EXT
 
-    # need at least SSE2
-    if [ test "$ax_cv_have_sse2_ext" = yes && test "$ac_cv_header_emmintrin_h" = yes ]; then
+    if [ test "$ax_cv_have_sse41_ext" = yes && test "$ac_cv_header_smmintrin_h" = yes ]; then
+        # SSE4.1/2 extensions
+        MLIBS_DOTPROD="src/dotprod/src/dotprod_cccf.mmx.o \
+                       src/dotprod/src/dotprod_crcf.mmx.o \
+                       src/dotprod/src/dotprod_rrrf.sse4.o \
+                       src/dotprod/src/sumsq.mmx.o"
+    elif [ test "$ax_cv_have_sse2_ext" = yes && test "$ac_cv_header_emmintrin_h" = yes ]; then
+        # SSE2 extensions
         MLIBS_DOTPROD="src/dotprod/src/dotprod_cccf.mmx.o \
                        src/dotprod/src/dotprod_crcf.mmx.o \
                        src/dotprod/src/dotprod_rrrf.mmx.o \
                        src/dotprod/src/sumsq.mmx.o"
     else
+        # portable C version
         MLIBS_DOTPROD="src/dotprod/src/dotprod_cccf.o \
                        src/dotprod/src/dotprod_crcf.o \
                        src/dotprod/src/dotprod_rrrf.o \

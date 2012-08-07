@@ -237,6 +237,15 @@ $(local_pdffiles) : %.pdf : %.eps
 	$(EPSTOPDF) $(EPSTOPDF_FLAGS) $< --outfile=$@
 
 ##
+## LATEX
+## 
+
+# local latex targets
+local_texfiles :=					\
+	latex.gen/liquid_version.tex			\
+	latex.gen/math_polyfit_lagrange.tex		\
+
+##
 ## PROGRAMS
 ##
 
@@ -268,6 +277,7 @@ local_programs :=					\
 	src/filter_rnyquist				\
 	src/filter_symsync_crcf				\
 	src/interleaver_scatterplot			\
+	src/liquid_version				\
 	src/math_polyfit_lagrange			\
 	src/math_poly_examples				\
 	src/math_window					\
@@ -723,6 +733,11 @@ figures.gen/math_window_kbd_time.gnu \
 figures.gen/math_window_kbd_freq.gnu : src/math_window
 	./$< -w kbd -b12.0 -n 50
 
+# 
+# liquid version
+#
+latex.gen/liquid_version.tex : src/liquid_version ; ./$< > $@
+
 #
 # math_polyfit_lagrange
 # 
@@ -1087,7 +1102,10 @@ figures.gen/sequence_msequence.gnu : src/sequence_msequence
 # accumulate targets
 figures_generated +=			\
 	$(local_pgffiles)		\
-	$(local_pdffiles)
+	$(local_pdffiles)		\
+
+latex_generated +=			\
+	$(local_texfiles)		\
 
 # additional auto-generated targets
 figures_extra_gen +=

@@ -304,13 +304,14 @@ clean-lib:
 
 # auto-generated figures, target collection variables
 figures_generated :=
+latex_generated :=
 figures_extra_clean :=
 
 # included makefile for figures
 include figures.mk
 
 # full figures target
-figures: $(figures_generated)
+figures: $(figures_generated) $(latex_generated)
 
 # clean figures target (all supplemental files)
 clean-figures-gen:
@@ -376,13 +377,8 @@ clean-tutorials :
 ## PDF DOCUMENT
 ##
 
-# version file
-src/liquid_version : % : %.c
-latex.gen/liquid_version.tex : src/liquid_version ; ./$< > $@
-extra_clean += liquid.gen/liquid_version.tex src/liquid_version
-
 # auxillary
-liquid.aux liquid.bib.aux : liquid.tex highlight.sty $(GRAPHICS) $(SECTIONS) $(LISTINGS) highlight.sty $(figures_generated) latex.gen/liquid_version.tex
+liquid.aux liquid.bib.aux : liquid.tex highlight.sty $(GRAPHICS) $(SECTIONS) $(LISTINGS) highlight.sty $(figures_generated) $(latex_generated)
 	$(TEX) $(TEX_FLAGS) liquid
 	touch liquid.bib.aux
 
