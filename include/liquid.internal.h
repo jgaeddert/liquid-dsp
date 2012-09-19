@@ -1303,7 +1303,6 @@ void gmskframesync_execute_seekpn(gmskframesync _q, float _x);
 void gmskframesync_execute_rxheader(gmskframesync _q, float _x);
 void gmskframesync_execute_rxpayload(gmskframesync _q, float _x);
 void gmskframesync_decode_header(gmskframesync _q);
-void gmskframesync_output_debug_file(gmskframesync _q, const char * _filename);
 
 
 // 

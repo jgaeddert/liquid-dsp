@@ -19,6 +19,7 @@ void usage()
 {
     printf("gmskframesync_example [options]\n");
     printf("  h     : print help\n");
+    printf("  d     : enable internal synchronizer debugging\n");
     printf("  n     : frame length [bytes], default: 40\n");
     printf("  k     : filter samples/symbol, default: 2\n");
     printf("  m     : filter semi-length, default: 4\n");
@@ -62,12 +63,15 @@ int main(int argc, char*argv[])
     float SNRdB = 30.0f;            // signal-to-noise ratio [dB]
     float dphi  = 0.05f;            // carrier offset
 
+    int debug_enabled = 0;          // debug option
+
     // get options
     int dopt;
-    while((dopt = getopt(argc,argv,"hn:k:m:b:V:C:K:s:F:")) != EOF){
+    while((dopt = getopt(argc,argv,"hdn:k:m:b:V:C:K:s:F:")) != EOF){
         switch (dopt) {
         case 'u':
         case 'h': usage();                      return 0;
+        case 'd': debug_enabled = 1;            break;
         case 'n': payload_len   = atoi(optarg); break;
         case 'k': k             = atoi(optarg); break;
         case 'm': m             = atoi(optarg); break;
@@ -133,6 +137,8 @@ int main(int argc, char*argv[])
 
     // create frame synchronizer
     gmskframesync fs = gmskframesync_create(k, m, BT, callback, (void*)&fd);
+    if (debug_enabled)
+        gmskframesync_debug_enable(fs);
 
     // assemble frame and print
     gmskframegen_assemble(fg, header, payload, payload_len, check, fec0, fec1);
@@ -174,6 +180,10 @@ int main(int argc, char*argv[])
 
     // push samples through synchronizer
     gmskframesync_execute(fs, y, num_samples);
+
+    // write debug output if enabled
+    if (debug_enabled)
+        gmskframesync_debug_print(fs, "gmskframesync_debug.m");
 
     // destroy objects
     gmskframegen_destroy(fg);

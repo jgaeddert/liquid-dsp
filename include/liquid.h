@@ -2148,6 +2148,11 @@ void gmskframesync_execute(gmskframesync _q,
                            liquid_float_complex * _x,
                            unsigned int _n);
 
+// debugging
+void gmskframesync_debug_enable(gmskframesync _q);
+void gmskframesync_debug_disable(gmskframesync _q);
+void gmskframesync_debug_print(gmskframesync _q, const char * _filename);
+
 
 // 
 // OFDM flexframe generator

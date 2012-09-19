@@ -30,7 +30,7 @@
 
 #include "liquid.internal.h"
 
-#define DEBUG_GMSKFRAMESYNC             0
+#define DEBUG_GMSKFRAMESYNC             1
 #define DEBUG_GMSKFRAMESYNC_PRINT       0
 #define DEBUG_GMSKFRAMESYNC_FILENAME    "gmskframesync_internal_debug.m"
 #define DEBUG_GMSKFRAMESYNC_BUFFER_LEN  (2000)
@@ -83,8 +83,9 @@ struct gmskframesync_s {
     } state;
     unsigned int num_symbols_received;
 
-    // debugging macros
+    // debugging structures
 #if DEBUG_GMSKFRAMESYNC
+    int debug_enabled;
     windowf  debug_agc_rssi;            // rssi buffer
     windowcf debug_x;                   // received samples buffer
     windowf  debug_framesyms;           // GMSK output symbols
@@ -160,11 +161,12 @@ gmskframesync gmskframesync_create(unsigned int _k,
     q->rssi_hat = 1.0f;
 
 #if DEBUG_GMSKFRAMESYNC
-    // debugging
-    q->debug_agc_rssi   = windowf_create(DEBUG_GMSKFRAMESYNC_BUFFER_LEN);
-    q->debug_x          = windowcf_create(DEBUG_GMSKFRAMESYNC_BUFFER_LEN);
-    q->debug_framesyms  = windowf_create(DEBUG_GMSKFRAMESYNC_BUFFER_LEN);
-    q->debug_bxy = windowf_create(DEBUG_GMSKFRAMESYNC_BUFFER_LEN);
+    // debugging structures
+    q->debug_enabled    = 0;
+    q->debug_agc_rssi   = NULL;
+    q->debug_x          = NULL;
+    q->debug_framesyms  = NULL;
+    q->debug_bxy        = NULL;
 #endif
 
     // reset synchronizer
@@ -179,14 +181,11 @@ gmskframesync gmskframesync_create(unsigned int _k,
 void gmskframesync_destroy(gmskframesync _q)
 {
 #if DEBUG_GMSKFRAMESYNC
-    // output debugging file
-    gmskframesync_output_debug_file(_q, DEBUG_GMSKFRAMESYNC_FILENAME);
-
-    // destroy debugging windows
-    windowf_destroy(_q->debug_agc_rssi);
-    windowcf_destroy(_q->debug_x);
-    windowf_destroy(_q->debug_framesyms);
-    windowf_destroy(_q->debug_bxy);
+    // destroy debugging objects
+    if (_q->debug_agc_rssi  != NULL) windowf_destroy( _q->debug_agc_rssi);
+    if (_q->debug_x         != NULL) windowcf_destroy(_q->debug_x);
+    if (_q->debug_framesyms != NULL) windowf_destroy( _q->debug_framesyms);
+    if (_q->debug_bxy       != NULL) windowf_destroy( _q->debug_bxy);
 #endif
 
     // destroy synchronizer objects
@@ -257,8 +256,10 @@ void gmskframesync_execute(gmskframesync _q,
         float alpha = 0.2f;
         _q->rssi_hat = (1.0f-alpha)*_q->rssi_hat + alpha*cabsf(s);
 #if DEBUG_GMSKFRAMESYNC
-        windowf_push(_q->debug_agc_rssi, 10*log10f(_q->rssi_hat));
-        windowcf_push(_q->debug_x, _x[i]);
+        if (_q->debug_enabled) {
+            windowf_push(_q->debug_agc_rssi, 10*log10f(_q->rssi_hat));
+            windowcf_push(_q->debug_x, _x[i]);
+        }
 #endif
         // compute phase difference
         float phi = cargf(s) * _q->k;
@@ -269,16 +270,6 @@ void gmskframesync_execute(gmskframesync _q,
         // demodulate
         unsigned int j;
         for (j=0; j<num_written; j++) {
-#if DEBUG_GMSKFRAMESYNC
-            switch (_q->state) {
-            case GMSKFRAMESYNC_STATE_SEEKPN:
-                break;
-            case GMSKFRAMESYNC_STATE_RXHEADER:
-            case GMSKFRAMESYNC_STATE_RXPAYLOAD:
-                windowf_push(_q->debug_framesyms, buffer[j]);
-                break;
-            }
-#endif
             switch (_q->state) {
             case GMSKFRAMESYNC_STATE_SEEKPN:
                 // look for p/n sequence
@@ -291,6 +282,10 @@ void gmskframesync_execute(gmskframesync _q,
                 break;
 
             case GMSKFRAMESYNC_STATE_RXPAYLOAD:
+#if DEBUG_GMSKFRAMESYNC
+                if (_q->debug_enabled)
+                    windowf_push(_q->debug_framesyms, buffer[j]);
+#endif
                 // receive payload
                 gmskframesync_execute_rxpayload(_q, buffer[j]);
                 break;
@@ -310,7 +305,8 @@ void gmskframesync_execute_seekpn(gmskframesync _q,
     bsequence_push(_q->by, _x > 0.0f ? 1 : 0);
     float bxy_out = (float)(bsequence_correlate(_q->bx, _q->by) - 32) / 32.0f;
 #if DEBUG_GMSKFRAMESYNC
-    windowf_push(_q->debug_bxy, bxy_out);
+    if (_q->debug_enabled)
+        windowf_push(_q->debug_bxy, bxy_out);
 #endif
 
     // check threshold...
@@ -522,12 +518,53 @@ void gmskframesync_decode_header(gmskframesync _q)
     //
 }
 
-void gmskframesync_output_debug_file(gmskframesync _q,
-                                     const char * _filename)
+void gmskframesync_debug_enable(gmskframesync _q)
 {
+    // create debugging objects if necessary
+#if DEBUG_GMSKFRAMESYNC
+    if (_q->debug_agc_rssi == NULL)
+        _q->debug_agc_rssi = windowf_create(DEBUG_GMSKFRAMESYNC_BUFFER_LEN);
+
+    if (_q->debug_x == NULL)
+        _q->debug_x = windowcf_create(DEBUG_GMSKFRAMESYNC_BUFFER_LEN);
+
+    if (_q->debug_framesyms == NULL)
+        _q->debug_framesyms  = windowf_create(DEBUG_GMSKFRAMESYNC_BUFFER_LEN);
+    
+    if (_q->debug_bxy == NULL)
+        _q->debug_bxy = windowf_create(DEBUG_GMSKFRAMESYNC_BUFFER_LEN);
+    
+    _q->debug_enabled = 1;
+#else
+    fprintf(stderr,"gmskframesync_debug_enable(): compile-time debugging disabled\n");
+#endif
+}
+
+void gmskframesync_debug_disable(gmskframesync _q)
+{
+#if DEBUG_GMSKFRAMESYNC
+    _q->debug_enabled = 0;
+#else
+    fprintf(stderr,"gmskframesync_debug_disable(): compile-time debugging disabled\n");
+#endif
+}
+
+void gmskframesync_debug_print(gmskframesync _q,
+                               const char *  _filename)
+{
+#if DEBUG_GMSKFRAMESYNC
+    if (_q->debug_agc_rssi  == NULL ||
+        _q->debug_x         == NULL ||
+        _q->debug_framesyms == NULL ||
+        _q->debug_bxy       == NULL)
+    {
+        fprintf(stderr,"error: gmskframe_debug_print(), debugging objects don't exist; enable debugging first\n");
+        return;
+    }
+
     FILE* fid = fopen(_filename,"w");
     if (!fid) {
-        fprintf(stderr, "error: flexframesync_output_debug_file(), could not open '%s' for writing\n", _filename);
+        fprintf(stderr, "error: gmskframesync_debug_print(), could not open '%s' for writing\n", _filename);
         return;
     }
     fprintf(fid,"%% %s: auto-generated file", _filename);
@@ -535,7 +572,6 @@ void gmskframesync_output_debug_file(gmskframesync _q,
     fprintf(fid,"clear all;\n");
     fprintf(fid,"close all;\n\n");
 
-#if DEBUG_GMSKFRAMESYNC
     fprintf(fid,"num_samples = %u;\n", DEBUG_GMSKFRAMESYNC_BUFFER_LEN);
     fprintf(fid,"t = 0:(num_samples-1);\n");
     unsigned int i;
@@ -589,10 +625,12 @@ void gmskframesync_output_debug_file(gmskframesync _q,
     fprintf(fid,"ylabel('binary cross-correlator output');\n");
     fprintf(fid,"grid on;\n");
     fprintf(fid,"\n\n");
-#endif
 
     fclose(fid);
 
     printf("gmskframesync/debug: results written to '%s'\n", _filename);
+#else
+    fprintf(stderr,"gmskframesync_debug_print(): compile-time debugging disabled\n");
+#endif
 
 }
