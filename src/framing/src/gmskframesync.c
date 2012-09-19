@@ -257,7 +257,7 @@ void gmskframesync_execute(gmskframesync _q,
         _q->rssi_hat = (1.0f-alpha)*_q->rssi_hat + alpha*cabsf(s);
 #if DEBUG_GMSKFRAMESYNC
         if (_q->debug_enabled) {
-            windowf_push(_q->debug_agc_rssi, 10*log10f(_q->rssi_hat));
+            windowf_push(_q->debug_agc_rssi, _q->rssi_hat);
             windowcf_push(_q->debug_x, _x[i]);
         }
 #endif
@@ -582,7 +582,7 @@ void gmskframesync_debug_print(gmskframesync _q,
     fprintf(fid,"agc_rssi = zeros(1,num_samples);\n");
     windowf_read(_q->debug_agc_rssi, &r);
     for (i=0; i<DEBUG_GMSKFRAMESYNC_BUFFER_LEN; i++)
-        fprintf(fid,"agc_rssi(%4u) = %12.4e;\n", i+1, r[i]);
+        fprintf(fid,"agc_rssi(%4u) = %12.4e;\n", i+1, 10*log10f(r[i]));
     fprintf(fid,"\n\n");
     fprintf(fid,"figure;\n");
     fprintf(fid,"plot(t, agc_rssi)\n");
