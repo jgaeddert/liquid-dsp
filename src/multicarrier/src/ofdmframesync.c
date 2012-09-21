@@ -1,6 +1,6 @@
 /*
- * Copyright (c) 2010, 2011 Joseph Gaeddert
- * Copyright (c) 2010, 2011 Virginia Polytechnic
+ * Copyright (c) 2010, 2011, 2012 Joseph Gaeddert
+ * Copyright (c) 2010, 2011, 2012 Virginia Polytechnic
  *                          Institute & State University
  *
  * This file is part of liquid.
@@ -115,7 +115,6 @@ struct ofdmframesync_s {
     void * userdata;
 
 #if DEBUG_OFDMFRAMESYNC
-    agc_crcf agc_rx;        // automatic gain control (rssi)
     windowcf debug_x;
     windowf  debug_rssi;
     windowcf debug_framesyms;
@@ -248,11 +247,6 @@ ofdmframesync ofdmframesync_create(unsigned int           _M,
     ofdmframesync_reset(q);
 
 #if DEBUG_OFDMFRAMESYNC
-    // agc, rssi
-    q->agc_rx = agc_crcf_create();
-    agc_crcf_set_bandwidth(q->agc_rx,  1e-2f);
-    agc_crcf_set_gain_limits(q->agc_rx, 1e-5f, 1e5f);
-
     q->debug_x =        windowcf_create(DEBUG_OFDMFRAMESYNC_BUFFER_LEN);
     q->debug_rssi =     windowf_create(DEBUG_OFDMFRAMESYNC_BUFFER_LEN);
     q->debug_framesyms =windowcf_create(DEBUG_OFDMFRAMESYNC_BUFFER_LEN);
@@ -273,8 +267,6 @@ void ofdmframesync_destroy(ofdmframesync _q)
 {
 #if DEBUG_OFDMFRAMESYNC
     ofdmframesync_debug_print(_q, DEBUG_OFDMFRAMESYNC_FILENAME);
-
-    agc_crcf_destroy(_q->agc_rx);
 
     windowcf_destroy(_q->debug_x);
     windowf_destroy(_q->debug_rssi);
@@ -372,12 +364,8 @@ void ofdmframesync_execute(ofdmframesync _q,
         windowcf_push(_q->input_buffer,x);
 
 #if DEBUG_OFDMFRAMESYNC
-        // apply agc (estimate initial signal gain)
-        float complex y;
-        agc_crcf_execute(_q->agc_rx, x, &y);
-
         windowcf_push(_q->debug_x, x);
-        windowf_push(_q->debug_rssi, agc_crcf_get_rssi(_q->agc_rx));
+        windowf_push(_q->debug_rssi, crealf(x)*crealf(x) + cimagf(x)*cimagf(x));
 #endif
 
         switch (_q->state) {
@@ -458,7 +446,6 @@ void ofdmframesync_execute_seekplcp(ofdmframesync _q)
 
     float complex s_hat;
     ofdmframesync_S0_metrics(_q, _q->G0, &s_hat);
-    //float g = agc_crcf_get_gain(_q->agc_rx);
     s_hat *= g;
 
     float tau_hat  = cargf(s_hat) * (float)(_q->M2) / (2*M_PI);
@@ -519,7 +506,6 @@ void ofdmframesync_execute_S0a(ofdmframesync _q)
 
     float complex s_hat;
     ofdmframesync_S0_metrics(_q, _q->G0, &s_hat);
-    //float g = agc_crcf_get_gain(_q->agc_rx);
     s_hat *= _q->g0;
 
     _q->s_hat_0 = s_hat;
@@ -566,7 +552,6 @@ void ofdmframesync_execute_S0b(ofdmframesync _q)
 
     float complex s_hat;
     ofdmframesync_S0_metrics(_q, _q->G1, &s_hat);
-    //float g = agc_crcf_get_gain(_q->agc_rx);
     s_hat *= _q->g0;
 
     _q->s_hat_1 = s_hat;
@@ -1158,6 +1143,8 @@ void ofdmframesync_debug_print(ofdmframesync _q,
     windowf_read(_q->debug_rssi, &r);
     for (i=0; i<DEBUG_OFDMFRAMESYNC_BUFFER_LEN; i++)
         fprintf(fid,"agc_rssi(%4u) = %12.4e;\n", i+1, r[i]);
+    fprintf(fid,"agc_rssi = filter([0.00362168 0.00724336 0.00362168],[1 -1.82269490 0.83718163],agc_rssi);\n");
+    fprintf(fid,"agc_rssi = 10*log10( agc_rssi );\n");
     fprintf(fid,"figure;\n");
     fprintf(fid,"plot(agc_rssi)\n");
     fprintf(fid,"ylabel('RSSI [dB]');\n");
