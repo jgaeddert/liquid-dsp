@@ -33,7 +33,7 @@
 
 #include "liquid.internal.h"
 
-#define DEBUG_OFDMFRAMESYNC             0
+#define DEBUG_OFDMFRAMESYNC             1
 #define DEBUG_OFDMFRAMESYNC_PRINT       0
 #define DEBUG_OFDMFRAMESYNC_FILENAME    "ofdmframesync_internal_debug.m"
 #define DEBUG_OFDMFRAMESYNC_BUFFER_LEN  (2048)
@@ -115,6 +115,8 @@ struct ofdmframesync_s {
     void * userdata;
 
 #if DEBUG_OFDMFRAMESYNC
+    int debug_enabled;
+    int debug_objects_created;
     windowcf debug_x;
     windowf  debug_rssi;
     windowcf debug_framesyms;
@@ -247,16 +249,19 @@ ofdmframesync ofdmframesync_create(unsigned int           _M,
     ofdmframesync_reset(q);
 
 #if DEBUG_OFDMFRAMESYNC
-    q->debug_x =        windowcf_create(DEBUG_OFDMFRAMESYNC_BUFFER_LEN);
-    q->debug_rssi =     windowf_create(DEBUG_OFDMFRAMESYNC_BUFFER_LEN);
-    q->debug_framesyms =windowcf_create(DEBUG_OFDMFRAMESYNC_BUFFER_LEN);
+    q->debug_enabled = 0;
+    q->debug_objects_created = 0;
+
+    q->debug_x =        NULL;
+    q->debug_rssi =     NULL;
+    q->debug_framesyms =NULL;
     
-    q->G_hat = (float complex*) malloc((q->M)*sizeof(float complex));
-    q->px    = (float*)         malloc((q->M_pilot)*sizeof(float));
-    q->py    = (float*)         malloc((q->M_pilot)*sizeof(float));
+    q->G_hat = NULL;
+    q->px    = NULL;
+    q->py    = NULL;
     
-    q->debug_pilot_0 =  windowf_create(DEBUG_OFDMFRAMESYNC_BUFFER_LEN);
-    q->debug_pilot_1 =  windowf_create(DEBUG_OFDMFRAMESYNC_BUFFER_LEN);
+    q->debug_pilot_0 = NULL;
+    q->debug_pilot_1 = NULL;
 #endif
 
     // return object
@@ -266,16 +271,15 @@ ofdmframesync ofdmframesync_create(unsigned int           _M,
 void ofdmframesync_destroy(ofdmframesync _q)
 {
 #if DEBUG_OFDMFRAMESYNC
-    ofdmframesync_debug_print(_q, DEBUG_OFDMFRAMESYNC_FILENAME);
-
-    windowcf_destroy(_q->debug_x);
-    windowf_destroy(_q->debug_rssi);
-    windowcf_destroy(_q->debug_framesyms);
-    free(_q->G_hat);
-    free(_q->px);
-    free(_q->py);
-    windowf_destroy(_q->debug_pilot_0);
-    windowf_destroy(_q->debug_pilot_1);
+    // destroy debugging objects
+    if (_q->debug_x         != NULL) windowcf_destroy(_q->debug_x);
+    if (_q->debug_rssi      != NULL) windowf_destroy(_q->debug_rssi);
+    if (_q->debug_framesyms != NULL) windowcf_destroy(_q->debug_framesyms);
+    if (_q->G_hat           != NULL) free(_q->G_hat);
+    if (_q->px              != NULL) free(_q->px);
+    if (_q->py              != NULL) free(_q->py);
+    if (_q->debug_pilot_0   != NULL) windowf_destroy(_q->debug_pilot_0);
+    if (_q->debug_pilot_1   != NULL) windowf_destroy(_q->debug_pilot_1);
 #endif
 
     // free subcarrier type array memory
@@ -1086,17 +1090,57 @@ void ofdmframesync_rxsymbol(ofdmframesync _q)
 #endif
 }
 
+// enable debugging
+void ofdmframesync_debug_enable(ofdmframesync _q)
+{
+    // create debugging objects if necessary
+#if DEBUG_OFDMFRAMESYNC
+    if (_q->debug_objects_created)
+        return;
+
+    _q->debug_x         = windowcf_create(DEBUG_OFDMFRAMESYNC_BUFFER_LEN);
+    _q->debug_rssi      = windowf_create(DEBUG_OFDMFRAMESYNC_BUFFER_LEN);
+    _q->debug_framesyms = windowcf_create(DEBUG_OFDMFRAMESYNC_BUFFER_LEN);
+    _q->G_hat           = (float complex*) malloc((_q->M)*sizeof(float complex));
+
+    _q->px = (float*) malloc((_q->M_pilot)*sizeof(float));
+    _q->py = (float*) malloc((_q->M_pilot)*sizeof(float));
+
+    _q->debug_pilot_0 = windowf_create(DEBUG_OFDMFRAMESYNC_BUFFER_LEN);
+    _q->debug_pilot_1 = windowf_create(DEBUG_OFDMFRAMESYNC_BUFFER_LEN);
+
+    _q->debug_enabled   = 1;
+    _q->debug_objects_created = 1;
+#else
+    fprintf(stderr,"gmskframesync_debug_enable(): compile-time debugging disabled\n");
+#endif
+}
+
+void ofdmframesync_debug_disable(ofdmframesync _q)
+{
+    // disable debugging
+#if DEBUG_OFDMFRAMESYNC
+    _q->debug_enabled = 0;
+#else
+    fprintf(stderr,"gmskframesync_debug_enable(): compile-time debugging disabled\n");
+#endif
+}
 
 void ofdmframesync_debug_print(ofdmframesync _q,
                                const char * _filename)
 {
+#if DEBUG_OFDMFRAMESYNC
+    if (!_q->debug_objects_created) {
+        fprintf(stderr,"error: gmskframe_debug_print(), debugging objects don't exist; enable debugging first\n");
+        return;
+    }
+
     FILE * fid = fopen(_filename,"w");
     if (!fid) {
         fprintf(stderr,"error: ofdmframe_debug_print(), could not open '%s' for writing\n", _filename);
         return;
     }
     fprintf(fid,"%% %s : auto-generated file\n", DEBUG_OFDMFRAMESYNC_FILENAME);
-#if DEBUG_OFDMFRAMESYNC
     fprintf(fid,"close all;\n");
     fprintf(fid,"clear all;\n");
     fprintf(fid,"n = %u;\n", DEBUG_OFDMFRAMESYNC_BUFFER_LEN);
@@ -1238,12 +1282,11 @@ void ofdmframesync_debug_print(ofdmframesync _q,
     fprintf(fid,"axis([-1 1 -1 1]*1.6);\n");
     fprintf(fid,"axis square;\n");
     fprintf(fid,"grid on;\n");
-#else
-    fprintf(fid,"disp('no debugging info available');\n");
-#endif
 
     fclose(fid);
     printf("ofdmframesync/debug: results written to '%s'\n", _filename);
+#else
+    fprintf(stderr,"gmskframesync_debug_print(): compile-time debugging disabled\n");
+#endif
 }
-
 

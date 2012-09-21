@@ -17,6 +17,7 @@ void usage()
 {
     printf("Usage: ofdmframesync_example [OPTION]\n");
     printf("  h     : print help\n");
+    printf("  d     : enable debugging\n");
     printf("  M     : number of subcarriers (must be even), default: 64\n");
     printf("  C     : cyclic prefix length, default: 16\n");
     printf("  T     : taper length, default: 4\n");
@@ -46,12 +47,14 @@ int main(int argc, char*argv[])
     float SNRdB              = 20.0f;         // signal-to-noise ratio [dB]
     float phi                = 0.0f;          // carrier phase offset
     float dphi               = 0.002f;        // carrier frequency offset
+    int debug_enabled        = 0;
 
     // get options
     int dopt;
-    while((dopt = getopt(argc,argv,"hM:C:T:s:F:c:")) != EOF){
+    while((dopt = getopt(argc,argv,"hdM:C:T:s:F:c:")) != EOF){
         switch (dopt) {
         case 'h': usage();                      return 0;
+        case 'd': debug_enabled = 1;            break;
         case 'M': M         = atoi(optarg);     break;
         case 'C': cp_len    = atoi(optarg);     break;
         case 'T': taper_len = atoi(optarg);     break;
@@ -92,6 +95,8 @@ int main(int argc, char*argv[])
     // create frame synchronizer
     ofdmframesync fs = ofdmframesync_create(M, cp_len, taper_len, p, callback, (void*)wsyms);
     ofdmframesync_print(fs);
+    if (debug_enabled)
+        ofdmframesync_debug_enable(fs);
 
     modem mod = modem_create(ms);
 
@@ -163,6 +168,10 @@ int main(int argc, char*argv[])
 
     // execute synchronizer
     ofdmframesync_execute(fs,y,num_samples);
+
+    // export debugging file
+    if (debug_enabled)
+        ofdmframesync_debug_print(fs, "ofdmframesync_debug.m");
 
     // destroy objects
     ofdmframegen_destroy(fg);

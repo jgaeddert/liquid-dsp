@@ -13,6 +13,7 @@ Major improvements since v1.2.0
     - adding OFDM framing option for window tapering
     - simplfying OFDM framing for generating preamble symbols (all
       generated OFDM symbols are the same length)
+    - adding run-time option for debugging ofdmframesync
 
 Major improvements for v1.2.0
   * dotprod
