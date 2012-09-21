@@ -75,6 +75,7 @@ unsigned int liquid_bdotprod(unsigned int _x,
 #elif SIZEOF_INT == 4
     return liquid_count_ones_mod2_uint32(t);
 #else
+    unsigned int i;
     unsigned int c=0;
     for (i=0; i<SIZEOF_INT; i++) {
         c += liquid_c_ones_mod2[ t & 0xff ];
