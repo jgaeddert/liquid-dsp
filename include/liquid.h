@@ -3613,6 +3613,10 @@ void ofdmframesync_execute(ofdmframesync _q,
 float ofdmframesync_get_rssi(ofdmframesync _q); // received signal strength indication
 float ofdmframesync_get_cfo(ofdmframesync _q);  // carrier offset estimate
 
+// debugging
+void ofdmframesync_debug_enable(ofdmframesync _q);
+void ofdmframesync_debug_disable(ofdmframesync _q);
+void ofdmframesync_debug_print(ofdmframesync _q, const char * _filename);
 
 
 // 
