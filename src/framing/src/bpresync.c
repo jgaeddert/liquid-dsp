@@ -47,15 +47,54 @@ BPRESYNC() BPRESYNC(_create)(TC *         _v,
                              float        _dphi_max,
                              unsigned int _m)
 {
+    // validate input
+    if (_n < 1) {
+        fprintf(stderr, "error: bpresync_%s_create(), invalid input length\n", EXTENSION_FULL);
+        exit(1);
+    } else if (_m == 0) {
+        fprintf(stderr, "error: bpresync_%s_create(), number of correlators must be at least 1\n", EXTENSION_FULL);
+        exit(1);
+    }
+
+    // allocate main object memory and initialize
     BPRESYNC() _q = (BPRESYNC()) malloc(sizeof(struct BPRESYNC(_s)));
     _q->n = _n;
     _q->m = _m;
+
+    unsigned int i;
+
+    // create internal array of frequency offsets
+    _q->dphi = (float*) malloc( _q->m*sizeof(float) );
+    for (i=0; i<_q->m; i++)
+        _q->dphi[i] = 0.0f;
+
+    // create internal synchronizers
+    _q->sync = (BSYNC()*) malloc( _q->m*sizeof(BSYNC()) );
+    TC v_prime[_q->n];
+    for (i=0; i<_q->m; i++) {
+        unsigned int k;
+        for (k=0; k<_q->n; k++)
+            v_prime[k] = _v[k] * cexpf(_Complex_I*0.0f);
+
+        _q->sync[i] = BSYNC(_create)(_q->n, v_prime);
+    }
 
     return _q;
 }
 
 void BPRESYNC(_destroy)(BPRESYNC() _q)
 {
+    unsigned int i;
+
+    // free internal syncrhonizer objects
+    for (i=0; i<_q->m; i++)
+        BSYNC(_destroy)(_q->sync[i]);
+    free(_q->sync);
+
+    // free internal frequency offset array
+    free(_q->dphi);
+
+    // free main object memory
     free(_q);
 }
 

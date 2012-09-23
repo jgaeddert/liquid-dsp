@@ -27,14 +27,17 @@
 // 
 #define BPRESYNC(name)      LIQUID_CONCAT(bpresync_cccf,name)
 
+// print and naming extensions
 #define PRINTVAL(x)         printf("%12.4e + j%12.4e", crealf(x), cimagf(x))
+#define EXTENSION_SHORT     "f"
+#define EXTENSION_FULL      "cccf"
 
 #define TO                  float complex
 #define TC                  float complex
 #define TI                  float complex
-#define ABS(X)              cabsf(X)
-#define WINDOW(name)        LIQUID_CONCAT(windowcf,name)
-#define DOTPROD(name)       LIQUID_CONCAT(dotprod_cccf,name)
+//#define ABS(X)              cabsf(X)
+//#define WINDOW(name)        LIQUID_CONCAT(windowcf,name)
+//#define DOTPROD(name)       LIQUID_CONCAT(dotprod_cccf,name)
 #define BSYNC(name)         LIQUID_CONCAT(bsync_cccf,name)
 
 #define TO_COMPLEX
