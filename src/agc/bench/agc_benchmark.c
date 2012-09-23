@@ -1,6 +1,6 @@
 /*
- * Copyright (c) 2007, 2008, 2009, 2010, 2011 Joseph Gaeddert
- * Copyright (c) 2007, 2008, 2009, 2010, 2011  Virginia Polytechnic
+ * Copyright (c) 2007, 2008, 2009, 2010, 2011, 2012 Joseph Gaeddert
+ * Copyright (c) 2007, 2008, 2009, 2010, 2011, 2012 Virginia Polytechnic
  *                                      Institute & State University
  *
  * This file is part of liquid.
@@ -24,11 +24,11 @@
 #include "liquid.h"
 
 // helper function to keep code base small
-void agc_crcf_unlocked_bench(struct rusage *_start,
-                             struct rusage *_finish,
-                             unsigned long int *_num_iterations,
-                             int _squelch,
-                             int _locked)
+void agc_crcf_bench(struct rusage *     _start,
+                    struct rusage *     _finish,
+                    unsigned long int * _num_iterations,
+                    int                 _squelch,
+                    int                 _locked)
 {
     // scale if locked
     if (_locked) *_num_iterations *= 8;
@@ -73,7 +73,7 @@ void agc_crcf_unlocked_bench(struct rusage *_start,
 (   struct rusage *_start,                      \
     struct rusage *_finish,                     \
     unsigned long int *_num_iterations)         \
-{ agc_crcf_unlocked_bench(_start, _finish, _num_iterations, SQUELCH, LOCKED); }
+{ agc_crcf_bench(_start, _finish, _num_iterations, SQUELCH, LOCKED); }
 
 void benchmark_agc_crcf                 AGC_CRCF_BENCHMARK_API(0, 0)
 void benchmark_agc_crcf_squelch         AGC_CRCF_BENCHMARK_API(1, 0)
