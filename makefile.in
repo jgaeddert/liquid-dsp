@@ -542,6 +542,7 @@ filter_benchmarks :=						\
 framing_objects :=						\
 	src/framing/src/bpacketgen.o				\
 	src/framing/src/bpacketsync.o				\
+	src/framing/src/bpresync_cccf.o				\
 	src/framing/src/bsync_rrrf.o				\
 	src/framing/src/bsync_crcf.o				\
 	src/framing/src/bsync_cccf.o				\
@@ -564,6 +565,8 @@ framing_objects :=						\
 src/framing/src/bpacketgen.o : %.o : %.c $(headers)
 
 src/framing/src/bpacketsync.o : %.o : %.c $(headers)
+
+src/framing/src/bpresync_cccf.o : %.o : %.c $(headers) src/framing/src/bpresync.c
 
 src/framing/src/bsync_rrrf.o : %.o : %.c $(headers) src/framing/src/bsync.c
 

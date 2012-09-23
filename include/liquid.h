@@ -2315,6 +2315,51 @@ LIQUID_BSYNC_DEFINE_API(BSYNC_MANGLE_CCCF,
                         liquid_float_complex)
 
 
+//
+// Binary pre-demod synchronizer
+//
+#define BPRESYNC_MANGLE_CCCF(name)  LIQUID_CONCAT(bpresync_cccf,name)
+
+// Macro:
+//   BPRESYNC   : name-mangling macro
+//   TO         : output data type
+//   TC         : coefficients data type
+//   TI         : input data type
+#define LIQUID_BPRESYNC_DEFINE_API(BPRESYNC,TO,TC,TI)           \
+typedef struct BPRESYNC(_s) * BPRESYNC();                       \
+                                                                \
+/* create binary pre-demod synchronizer                     */  \
+/*  _v          :   baseband sequence                       */  \
+/*  _n          :   baseband sequence length                */  \
+/*  _dphi_max   :   maximum absolute frequency deviation    */  \
+/*  _m          :   number of correlators                   */  \
+BPRESYNC() BPRESYNC(_create)(TC *         _v,                   \
+                             unsigned int _n,                   \
+                             float        _dphi_max,            \
+                             unsigned int _m);                  \
+                                                                \
+/* destroy binary pre-demod synchronizer                    */  \
+void BPRESYNC(_destroy)(BPRESYNC() _q);                         \
+                                                                \
+/* print binary pre-demod synchronizer internal state       */  \
+void BPRESYNC(_print)(BPRESYNC() _q);                           \
+                                                                \
+/* correlate input sequence                                 */  \
+/*  _q          :   pre-demod synchronizer object           */  \
+/*  _x          :   input sample                            */  \
+/*  _rxy        :   output cross correlation                */  \
+/*  _dphi_hat   :   output frequency offset estiamte        */  \
+void BPRESYNC(_correlate)(BPRESYNC() _q,                        \
+                          TI         _sym,                      \
+                          TO *       _rxy,                      \
+                          float *    _dphi_hat);                \
+
+LIQUID_BPRESYNC_DEFINE_API(BPRESYNC_MANGLE_CCCF,
+                           liquid_float_complex,
+                           liquid_float_complex,
+                           liquid_float_complex)
+
+
 // 
 // Packetizer
 //
