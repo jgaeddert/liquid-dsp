@@ -79,8 +79,6 @@ BPRESYNC() BPRESYNC(_create)(TC *         _v,
 
     // create internal array of frequency offsets
     _q->dphi = (float*) malloc( _q->m*sizeof(float) );
-    for (i=0; i<_q->m; i++)
-        _q->dphi[i] = 0.0f;
 
     // create internal synchronizers
     _q->sync_i = (bsequence*) malloc( _q->m*sizeof(bsequence) );
@@ -91,11 +89,11 @@ BPRESYNC() BPRESYNC(_create)(TC *         _v,
         _q->sync_i[i] = bsequence_create(_q->n);
         _q->sync_q[i] = bsequence_create(_q->n);
 
-        // generate signal with offset
-        float dphi = 0.0f;
+        // generate signal with frequency offset
+        _q->dphi[i] = -_dphi_max + ((float)i / (float)(_q->m-1))*2.0f*_dphi_max;
         unsigned int k;
         for (k=0; k<_q->n; k++) {
-            TC v_prime = _v[k] * cexpf(_Complex_I*dphi*k);
+            TC v_prime = _v[k] * cexpf(-_Complex_I*k*_q->dphi[i]);
             bsequence_push(_q->sync_i[i], crealf(v_prime)>0);
             bsequence_push(_q->sync_q[i], cimagf(v_prime)>0);
         }
@@ -186,6 +184,6 @@ void BPRESYNC(_correlate)(BPRESYNC() _q,
     }
 
     *_rxy      = _q->rxy[i_max];
-    *_dphi_hat = 0.0f;
+    *_dphi_hat = _q->dphi[i_max];
 }
 

@@ -33,7 +33,7 @@ int main(int argc, char*argv[]) {
     float dt = 0.0f;                    // fractional sample timing offset
     unsigned int num_sync_symbols = 64; // number of synchronization symbols
     float SNRdB = 30.0f;                // signal-to-noise ratio [dB]
-    float dphi = 0.0f;                  // carrier frequency offset
+    float dphi = 0.02f;                 // carrier frequency offset
     float phi  = 0.0f;                  // carrier phase offset
 
     int dopt;
@@ -69,7 +69,7 @@ int main(int argc, char*argv[]) {
     float complex x[num_samples];           // transmitted signal
     float complex y[num_samples];           // received signal
     float complex rxy[num_samples];         // pre-demod correlation output
-    float complex dphi_hat[num_samples];    // carrier offset estimate
+    float dphi_hat[num_samples];            // carrier offset estimate
 
     // create transmit/receive interpolator/decimator
     interp_crcf interp_tx = interp_crcf_create_rnyquist(LIQUID_RNYQUIST_RRC,k,m,beta,dt);
@@ -102,7 +102,7 @@ int main(int argc, char*argv[]) {
         y[i] = x[i]*cexpf(_Complex_I*(dphi*i + phi)) + nstd*(randnf() + _Complex_I*randnf())*M_SQRT1_2;
 
     // create cross-correlator
-    bpresync_cccf sync = bpresync_cccf_create(s0, k*num_sync_symbols, 0.0f, 1);
+    bpresync_cccf sync = bpresync_cccf_create(s0, k*num_sync_symbols, 0.05f, 11);
     bpresync_cccf_print(sync);
 
     // push signal through cross-correlator
@@ -114,7 +114,8 @@ int main(int argc, char*argv[]) {
 
         // detect...
         if (cabsf(rxy[i]) > 0.6f) {
-            printf("****** preamble found, rxy = %12.8f, i=%3u ******\n", cabsf(rxy[i]), i);
+            printf("****** preamble found, rxy = %12.8f (dphi-hat: %12.8f), i=%3u ******\n",
+                    cabsf(rxy[i]), dphi_hat[i], i);
         }
         
         // retain maximum
