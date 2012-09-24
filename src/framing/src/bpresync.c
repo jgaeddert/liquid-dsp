@@ -32,9 +32,15 @@
 struct BPRESYNC(_s) {
     unsigned int n;     // sequence length
     unsigned int m;     // number of binary synchronizers
-
+    
+    bsequence rx_i;     // received pattern (in-phase)
+    bsequence rx_q;     // received pattern (quadrature)
+    
     float * dphi;       // array of frequency offsets [size: m x 1]
-    BSYNC() * sync;     // binary synchronizers [size: m x 1]
+    bsequence * sync_i; // synchronization pattern (in-phase)
+    bsequence * sync_q; // synchronization pattern (quadrature)
+
+    float * rxy;        // output correlation [size: m x 1]
 };
 
 /* create binary pre-demod synchronizer                     */
@@ -63,21 +69,40 @@ BPRESYNC() BPRESYNC(_create)(TC *         _v,
 
     unsigned int i;
 
+    // create internal receive buffers
+    _q->rx_i = bsequence_create(_q->n);
+    _q->rx_q = bsequence_create(_q->n);
+    for (i=0; i<_q->n; i++) {
+        bsequence_push(_q->rx_i, (i+0) % 2);
+        bsequence_push(_q->rx_q, (i+1) % 2);
+    }
+
     // create internal array of frequency offsets
     _q->dphi = (float*) malloc( _q->m*sizeof(float) );
     for (i=0; i<_q->m; i++)
         _q->dphi[i] = 0.0f;
 
     // create internal synchronizers
-    _q->sync = (BSYNC()*) malloc( _q->m*sizeof(BSYNC()) );
-    TC v_prime[_q->n];
-    for (i=0; i<_q->m; i++) {
-        unsigned int k;
-        for (k=0; k<_q->n; k++)
-            v_prime[k] = _v[k] * cexpf(_Complex_I*0.0f);
+    _q->sync_i = (bsequence*) malloc( _q->m*sizeof(bsequence) );
+    _q->sync_q = (bsequence*) malloc( _q->m*sizeof(bsequence) );
 
-        _q->sync[i] = BSYNC(_create)(_q->n, v_prime);
+    for (i=0; i<_q->m; i++) {
+
+        _q->sync_i[i] = bsequence_create(_q->n);
+        _q->sync_q[i] = bsequence_create(_q->n);
+
+        // generate signal with offset
+        float dphi = 0.0f;
+        unsigned int k;
+        for (k=0; k<_q->n; k++) {
+            TC v_prime = _v[k] * cexpf(_Complex_I*dphi*k);
+            bsequence_push(_q->sync_i[i], crealf(v_prime)>0);
+            bsequence_push(_q->sync_q[i], cimagf(v_prime)>0);
+        }
     }
+
+    // allocate memory for cross-correlation
+    _q->rxy = (float*) malloc( _q->m*sizeof(float) );
 
     return _q;
 }
@@ -86,13 +111,23 @@ void BPRESYNC(_destroy)(BPRESYNC() _q)
 {
     unsigned int i;
 
+    // free received symbol buffers
+    free(_q->rx_i);
+    free(_q->rx_q);
+
     // free internal syncrhonizer objects
-    for (i=0; i<_q->m; i++)
-        BSYNC(_destroy)(_q->sync[i]);
-    free(_q->sync);
+    for (i=0; i<_q->m; i++) {
+        bsequence_destroy(_q->sync_i[i]);
+        bsequence_destroy(_q->sync_q[i]);
+    }
+    free(_q->sync_i);
+    free(_q->sync_q);
 
     // free internal frequency offset array
     free(_q->dphi);
+
+    // free internal cross-correlation array
+    free(_q->rxy);
 
     // free main object memory
     free(_q);
@@ -100,21 +135,57 @@ void BPRESYNC(_destroy)(BPRESYNC() _q)
 
 void BPRESYNC(_print)(BPRESYNC() _q)
 {
-    printf("bpresync_xxxt:\n");
+    printf("bpresync_%s: %u samples\n", EXTENSION_FULL, _q->n);
+}
+
+// correlate input sequence with particular 
+//  _q          :   pre-demod synchronizer object
+//  _id         :   ...
+TO BPRESYNC(_correlatex)(BPRESYNC()   _q,
+                         unsigned int _id)
+{
+    // validate input...
+    if (_id >= _q->m) {
+        fprintf(stderr,"error: bpresync_%s_correlatex(), invalid id\n", EXTENSION_FULL);
+        exit(1);
+    }
+
+    // compute...
+    TO rxy_ii = 2.*bsequence_correlate(_q->sync_i[_id], _q->rx_i) - (float)(_q->n);
+    TO rxy_qq = 2.*bsequence_correlate(_q->sync_q[_id], _q->rx_q) - (float)(_q->n);
+    TO rxy_iq = 2.*bsequence_correlate(_q->sync_i[_id], _q->rx_q) - (float)(_q->n);
+    TO rxy_qi = 2.*bsequence_correlate(_q->sync_q[_id], _q->rx_i) - (float)(_q->n);
+    
+    return ( (rxy_ii - rxy_qq) + _Complex_I*(rxy_iq + rxy_qi) ) / (float)(_q->n);
 }
 
 /* correlate input sequence                                 */
 /*  _q          :   pre-demod synchronizer object           */
 /*  _x          :   input sample                            */
 /*  _rxy        :   output cross correlation                */
-/*  _dphi_hat   :   output frequency offset estiamte        */
+/*  _dphi_hat   :   output frequency offset estimate        */
 void BPRESYNC(_correlate)(BPRESYNC() _q,
                           TI         _sym,
                           TO *       _rxy,
                           float *    _dphi_hat)
 {
     // push symbol into buffers
-    *_rxy = 0.0f;
+    bsequence_push(_q->rx_i, crealf(_sym)>0);
+    bsequence_push(_q->rx_q, cimagf(_sym)>0);
+
+    unsigned int i;
+    unsigned int i_max = 0;
+    float rxy_max = 0.0f;
+    for (i=0; i<_q->m; i++)  {
+        _q->rxy[i] = BPRESYNC(_correlatex)(_q, i);
+
+        if ( cabsf(_q->rxy[i]) > rxy_max) {
+            i_max = i;
+            rxy_max = cabsf(_q->rxy[i]);
+        }
+    }
+
+    *_rxy      = _q->rxy[i_max];
     *_dphi_hat = 0.0f;
 }
 

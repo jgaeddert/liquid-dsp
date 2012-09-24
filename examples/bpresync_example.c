@@ -39,12 +39,12 @@ int main(int argc, char*argv[]) {
     int dopt;
     while ((dopt = getopt(argc,argv,"uhk:m:n:b:s:")) != EOF) {
         switch (dopt) {
-        case 'h': usage();                      return 0;
-        case 'k': k = atoi(optarg);             break;
-        case 'm': m = atoi(optarg);             break;
-        case 'n': num_sync_symbols = atoi(optarg);   break;
-        case 'b': beta = atof(optarg);          break;
-        case 's': SNRdB = atof(optarg);         break;
+        case 'h': usage();                          return 0;
+        case 'k': k = atoi(optarg);                 break;
+        case 'm': m = atoi(optarg);                 break;
+        case 'n': num_sync_symbols = atoi(optarg);  break;
+        case 'b': beta = atof(optarg);              break;
+        case 's': SNRdB = atof(optarg);             break;
         default:
             exit(1);
         }
@@ -59,7 +59,7 @@ int main(int argc, char*argv[]) {
     }
 
     // derived values
-    unsigned int num_symbols = num_sync_symbols + 2*m;
+    unsigned int num_symbols = num_sync_symbols + 2*m + 10;
     unsigned int num_samples = k*num_symbols;
     float nstd = powf(10.0f, -SNRdB/20.0f);
 
@@ -68,9 +68,8 @@ int main(int argc, char*argv[]) {
     float complex s0[k*num_sync_symbols];   // synchronization pattern (samples)
     float complex x[num_samples];           // transmitted signal
     float complex y[num_samples];           // received signal
-    float complex z[num_samples];           // matched filter output
-    float complex rxy[num_samples];         // pre-demod output
-    float complex dphi_hat[num_samples];    // pre-demod output
+    float complex rxy[num_samples];         // pre-demod correlation output
+    float complex dphi_hat[num_samples];    // carrier offset estimate
 
     // create transmit/receive interpolator/decimator
     interp_crcf interp_tx = interp_crcf_create_rnyquist(LIQUID_RNYQUIST_RRC,k,m,beta,dt);
@@ -91,19 +90,27 @@ int main(int argc, char*argv[]) {
     // reset interpolator
     interp_crcf_clear(interp_tx);
 
+    // interpolate input
+    for (i=0; i<num_symbols; i++) {
+        float complex sym = i < num_sync_symbols ? seq[i] : 0.0f;
+
+        interp_crcf_execute(interp_tx, sym, &x[k*i]);
+    }
+
     // push through channel
     for (i=0; i<num_samples; i++)
         y[i] = x[i]*cexpf(_Complex_I*(dphi*i + phi)) + nstd*(randnf() + _Complex_I*randnf())*M_SQRT1_2;
 
     // create cross-correlator
     bpresync_cccf sync = bpresync_cccf_create(s0, k*num_sync_symbols, 0.0f, 1);
+    bpresync_cccf_print(sync);
 
     // push signal through cross-correlator
     float rxy_max = 0.0f;
     for (i=0; i<num_samples; i++) {
         
         // correlate
-        bpresync_cccf_correlate(sync, z[i], &rxy[i], &dphi_hat[i]);
+        bpresync_cccf_correlate(sync, y[i], &rxy[i], &dphi_hat[i]);
 
         // detect...
         if (cabsf(rxy[i]) > 0.6f) {
@@ -129,57 +136,33 @@ int main(int argc, char*argv[]) {
     fprintf(fid,"%% %s : auto-generated file\n", OUTPUT_FILENAME);
     fprintf(fid,"clear all\n");
     fprintf(fid,"close all\n");
-    fprintf(fid,"k = %u;\n", k);
-    fprintf(fid,"m = %u;\n", m);
-    fprintf(fid,"beta = %f;\n", beta);
-    fprintf(fid,"num_symbols = %u;\n", num_symbols);
     fprintf(fid,"num_samples = %u;\n", num_samples);
+    fprintf(fid,"num_symbols = %u;\n", num_symbols);
+    fprintf(fid,"k           = %u;\n", k);
 
     fprintf(fid,"x   = zeros(1,num_samples);\n");
     fprintf(fid,"y   = zeros(1,num_samples);\n");
+    fprintf(fid,"rxy = zeros(1,num_samples);\n");
     for (i=0; i<num_samples; i++) {
         fprintf(fid,"x(%4u)     = %12.8f + j*%12.8f;\n", i+1, crealf(x[i]),   cimagf(x[i]));
         fprintf(fid,"y(%4u)     = %12.8f + j*%12.8f;\n", i+1, crealf(y[i]),   cimagf(y[i]));
         fprintf(fid,"rxy(%4u)   = %12.8f + j*%12.8f;\n", i+1, crealf(rxy[i]), cimagf(rxy[i]));
     }
-    fprintf(fid,"z   = zeros(1,num_samples);\n");
-    fprintf(fid,"rxy = zeros(1,num_samples);\n");
-    for (i=0; i<num_samples; i++) {
-        fprintf(fid,"z(%4u)     = %12.8f + j*%12.8f;\n", i+1, crealf(z[i]),   cimagf(z[i]));
-        fprintf(fid,"rxy(%4u)   = %12.8f + j*%12.8f;\n", i+1, crealf(rxy[i]), cimagf(rxy[i]));
-    }
-
-    // save synchronization sequence
-    fprintf(fid,"num_sync_symbols = %u;\n", num_sync_symbols);
-    fprintf(fid,"num_sync_samples = %u;\n", num_sync_symbols*k);
-    fprintf(fid,"s = zeros(1,k*N);\n");
-    //for (i=0; i<N; i++)
-    //    fprintf(fid,"s(%4u:%4u) = %3d;\n", k*i+1, k*(i+1), 2*(int)(msequence_advance(ms))-1);
 
     fprintf(fid,"t=[0:(num_samples-1)]/k;\n");
     fprintf(fid,"figure;\n");
-    fprintf(fid,"plot(t,abs(rxy));\n");
-    fprintf(fid,"xlabel('time');\n");
-    fprintf(fid,"ylabel('correlator output');\n");
-    fprintf(fid,"grid on;\n");
-
-    // save...
-    fprintf(fid,"[v i] = max(abs(rxy));\n");
-    fprintf(fid,"i0=i-(k*N)+1;\n");
-    fprintf(fid,"i1=i;\n");
-    fprintf(fid,"z_hat = z(i0:i1);\n");
-    fprintf(fid,"figure;\n");
-    fprintf(fid,"t_hat=0:(k*N-1);\n");
-    fprintf(fid,"plot(t_hat,real(z_hat),...\n");
-    fprintf(fid,"     t_hat,imag(z_hat),...\n");
-    fprintf(fid,"     t_hat(1:k:end),real(z_hat(1:k:end)),'x','MarkerSize',2,...\n");
-    fprintf(fid,"     t_hat,s,'-k');\n");
-
-    // run fft for timing recovery
-    fprintf(fid,"Z_hat = fft(z_hat);\n");
-    fprintf(fid,"S     = fft(s);\n");
-    fprintf(fid,"figure;\n");
-    fprintf(fid,"plot(fftshift(arg(Z_hat./S)));\n");
+    fprintf(fid,"subplot(2,1,1);\n");
+    fprintf(fid,"  plot(t,real(y), t,imag(y));\n");
+    fprintf(fid,"  axis([0 num_symbols -2 2]);\n");
+    fprintf(fid,"  grid on;\n");
+    fprintf(fid,"  xlabel('time');\n");
+    fprintf(fid,"  ylabel('received signal');\n");
+    fprintf(fid,"subplot(2,1,2);\n");
+    fprintf(fid,"  plot(t,abs(rxy));\n");
+    fprintf(fid,"  axis([0 num_symbols 0 1]);\n");
+    fprintf(fid,"  xlabel('time');\n");
+    fprintf(fid,"  ylabel('correlator output');\n");
+    fprintf(fid,"  grid on;\n");
 
     fclose(fid);
     printf("results written to '%s'\n", OUTPUT_FILENAME);
