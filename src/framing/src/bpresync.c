@@ -114,5 +114,7 @@ void BPRESYNC(_correlate)(BPRESYNC() _q,
                           float *    _dphi_hat)
 {
     // push symbol into buffers
+    *_rxy = 0.0f;
+    *_dphi_hat = 0.0f;
 }
 

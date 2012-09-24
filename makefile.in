@@ -1291,6 +1291,7 @@ example_programs :=						\
 	examples/asgram_example					\
 	examples/autocorr_cccf_example				\
 	examples/bpacketsync_example				\
+	examples/bpresync_example				\
 	examples/bsequence_example				\
 	examples/bufferf_example				\
 	examples/chromosome_example				\
