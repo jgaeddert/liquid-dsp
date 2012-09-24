@@ -32,6 +32,15 @@
 
 #include "liquid.internal.h"
 
+// 
+struct bsequence_s {
+    unsigned int * s;           // sequence array, memory pointer
+    unsigned int num_bits;      // number of bits in sequence
+    unsigned int num_bits_msb;  // number of bits in most-significant block
+    unsigned int bit_mask_msb;  // bit mask for most-significant block
+    unsigned int s_len;         // length of array, number of allocated blocks
+};
+
 // Create a binary sequence of a specific length
 bsequence bsequence_create(unsigned int _num_bits)
 {
@@ -46,18 +55,23 @@ bsequence bsequence_create(unsigned int _num_bits)
     bs->num_bits = _num_bits;
     
     // initialize array length
-    div_t d = div( bs->num_bits, sizeof(unsigned char)*8 );
+    div_t d = div( bs->num_bits, sizeof(unsigned int)*8 );
     bs->s_len = d.quot;
     bs->s_len += (d.rem > 0) ? 1 : 0;
 
     // number of bits in MSB block
-    bs->num_bits_msb = (d.rem == 0) ? 8 : (unsigned int) d.rem;
+    bs->num_bits_msb = (d.rem == 0) ? 8*sizeof(unsigned int) : (unsigned int) d.rem;
 
     // bit mask for MSB block
-    bs->bit_mask_msb = (1 << bs->num_bits_msb)-1;
+    unsigned int i;
+    bs->bit_mask_msb = 0;
+    for (i=0; i<bs->num_bits_msb; i++) {
+        bs->bit_mask_msb <<= 1;
+        bs->bit_mask_msb |=  1;
+    }
 
     // initialze array with zeros
-    bs->s = (unsigned char*) malloc( bs->s_len * sizeof(unsigned char) );
+    bs->s = (unsigned int*) malloc( bs->s_len * sizeof(unsigned int) );
     bsequence_clear(bs);
 
     return bs;
@@ -72,47 +86,61 @@ void bsequence_destroy(bsequence _bs)
 
 void bsequence_clear(bsequence _bs)
 {
-    memset( _bs->s, 0x00, (_bs->s_len)*sizeof(unsigned char) );
+    memset( _bs->s, 0x00, (_bs->s_len)*sizeof(unsigned int) );
 }
 
 // initialize sequence on external array
 void bsequence_init(bsequence _bs,
                     unsigned char * _v)
 {
-    // copy external array to internal buffer
-    memmove(_bs->s, _v, _bs->s_len * sizeof(unsigned char));
+    // push single bit at a time
+    unsigned int i;
+    unsigned int k=0;
+    unsigned char byte = 0x00;
+    unsigned char mask = 0x80;
+    for (i=0; i<_bs->num_bits; i++) {
+        if ( (i%8)==0 ) {
+            byte = _v[k++];
+            mask = 0x80;
+        }
 
-    // apply mask to first block
-    _bs->s[0] &= _bs->bit_mask_msb;
+        bsequence_push(_bs, byte & mask ? 1 : 0);
+        mask >>= 1;
+    }
 }
 
 // Print sequence to the screen
 void bsequence_print(bsequence _bs)
 {
     unsigned int i, j;
-    unsigned char byte;
+    unsigned int chunk;
+    unsigned int p = 8*sizeof(unsigned int);
 
     printf("bsequence[%6u]:     ", _bs->num_bits);
     for (i=0; i<_bs->s_len; i++) {
-        // strip byte from sequence, starting with most-significant bits
-        byte = _bs->s[i];
+        // strip chunk from sequence, starting with most-significant bits
+        chunk = _bs->s[i];
 
-        for (j=0; j<8; j++) {
-            if (i==0 && j<8-_bs->num_bits_msb)
+        for (j=0; j<p; j++) {
+            if (i==0 && j<p-_bs->num_bits_msb)
                 printf(".");    // print '.' for each bit in byte not included in first byte
             else
-                printf("%c", (byte >> (8-j-1)) & 0x01 ? '1' : '0');
+                printf("%c", (chunk >> (p-j-1)) & 0x01 ? '1' : '0');
+            
+            if ( ((j+1)%8)==0 )
+                printf(" ");
         }
-        printf(" ");
     }
     printf("\n");
 }
 
+// push bits in from the right
 void bsequence_push(bsequence _bs,
                     unsigned int _bit)
 {
     unsigned int overflow;
-    int i;
+    unsigned int i;
+    unsigned int p = 8*sizeof(unsigned int);
 
     // shift first block
     _bs->s[0] <<= 1;
@@ -120,7 +148,7 @@ void bsequence_push(bsequence _bs,
 
     for (i=1; i<_bs->s_len; i++) {
         // overflow for i-th block is its MSB
-        overflow = (_bs->s[i] >> 7) & 0x01;
+        overflow = (_bs->s[i] >> (p-1)) & 1;
 
         // shift block 1 bit
         _bs->s[i] <<= 1;
@@ -130,14 +158,14 @@ void bsequence_push(bsequence _bs,
     }
 
     // apply input bit to LSB of last block
-    _bs->s[_bs->s_len-1] |= ( _bit & 0x01 );
+    _bs->s[_bs->s_len-1] |= ( _bit & 1 );
 }
 
 // circular shift (left)
 void bsequence_circshift(bsequence _bs)
 {
     // extract most-significant (left-most) bit
-    unsigned char msb_mask = 1 << (_bs->num_bits_msb-1);
+    unsigned int msb_mask = 1 << (_bs->num_bits_msb-1);
     unsigned int b = (_bs->s[0] & msb_mask) >> (_bs->num_bits_msb-1);
 
     // push bit into sequence
@@ -156,18 +184,18 @@ signed int bsequence_correlate(bsequence _bs1,
         exit(-1);
     }
     
-    unsigned char byte;
+    unsigned int chunk;
 
     for (i=0; i<_bs1->s_len; i++) {
         //
-        byte = _bs1->s[i] ^ _bs2->s[i];
-        byte = ~byte;
+        chunk = _bs1->s[i] ^ _bs2->s[i];
+        chunk = ~chunk;
 
-        rxy += liquid_c_ones[byte];
+        rxy += liquid_count_ones(chunk);
     }
 
     // compensate for most-significant block and return
-    rxy -= 8 - _bs1->num_bits_msb;
+    rxy -= 8*sizeof(unsigned int) - _bs1->num_bits_msb;
     return rxy;
 }
 
@@ -222,7 +250,7 @@ unsigned int bsequence_accumulate(bsequence _bs)
     unsigned int r=0;
 
     for (i=0; i<_bs->s_len; i++)
-        r += liquid_c_ones[_bs->s[i]];
+        r += liquid_count_ones(_bs->s[i]);
 
     return r;
 }
@@ -241,7 +269,7 @@ unsigned int bsequence_index(bsequence _bs,
         fprintf(stderr,"error: bsequence_index(), invalid index %u\n", _i);
         exit(-1);
     }
-    div_t d = div( _i, 8 ); // 8 bits/byte (unsigned char)
+    div_t d = div( _i, 8*sizeof(unsigned int) );
 
     // compute byte index
     unsigned int k = _bs->s_len - d.quot - 1;
@@ -252,46 +280,58 @@ unsigned int bsequence_index(bsequence _bs,
 
 // intialize two sequences to complementary codes.  sequences must
 // be of length at least 8 and a power of 2 (e.g. 8, 16, 32, 64,...)
-void bsequence_create_ccodes(bsequence _a, bsequence _b)
+void bsequence_create_ccodes(bsequence _qa, bsequence _qb)
 {
     // make sure sequences are the same length
-    if (_a->num_bits != _b->num_bits) {
+    if (_qa->num_bits != _qb->num_bits) {
         printf("error: bsequence_create_ccodes(), sequence lengths must match\n");
         exit(1);
-    } else if (_a->num_bits < 8) {
+    } else if (_qa->num_bits < 8) {
         printf("error: bsequence_create_ccodes(), sequence too short\n");
         exit(1);
-    } else if ( (_a->num_bits)%8 != 0 ) {
+    } else if ( (_qa->num_bits)%8 != 0 ) {
         printf("error: bsequence_create_ccodes(), sequence must be multiple of 8\n");
         exit(1);
     }
 
-    bsequence_clear(_a);
-    bsequence_clear(_b);
+    // generate two temporary arrays
+    unsigned int num_bytes = _qa->num_bits / 8;
+    unsigned char a[num_bytes];
+    unsigned char b[num_bytes];
 
-    _a->s[ _a->s_len - 1 ] = 0xb8;  // 1011 1000
-    _b->s[ _b->s_len - 1 ] = 0xb7;  // 1011 0111
+    memset(a, 0x00, num_bytes);
+    memset(b, 0x00, num_bytes);
 
-    unsigned int i, n=1;
-    unsigned int i_n1, i_n0, s_len = _a->s_len;
-    while (8*n < _a->num_bits) {
+    // initialize
+    a[num_bytes-1] = 0xb8;  // 1011 1000
+    b[num_bytes-1] = 0xb7;  // 1011 0111
 
-        i_n1 = s_len - n;
-        i_n0 = s_len - 2*n;
+    unsigned int i;
+    unsigned int n=1;
+    unsigned int i_n1;
+    unsigned int i_n0;
+    while (n < num_bytes) {
+
+        i_n1 = num_bytes - n;
+        i_n0 = num_bytes - 2*n;
 
         // a -> [a  b]
         // b -> [a ~b]
-        memmove(&(_a->s[i_n0]), &(_a->s[i_n1]), n*sizeof(unsigned char));
-        memmove(&(_b->s[i_n0]), &(_a->s[i_n1]), n*sizeof(unsigned char));
+        memmove(&a[i_n0], &a[i_n1], n*sizeof(unsigned char));
+        memmove(&b[i_n0], &a[i_n1], n*sizeof(unsigned char));
 
-        memmove(&(_a->s[i_n1]), &(_b->s[i_n1]), n*sizeof(unsigned char));
-        memmove(&(_b->s[i_n1]), &(_b->s[i_n1]), n*sizeof(unsigned char));
+        memmove(&a[i_n1], &b[i_n1], n*sizeof(unsigned char));
+        memmove(&b[i_n1], &b[i_n1], n*sizeof(unsigned char));
 
         // complement lower half
         for (i=0; i<n; i++)
-            _b->s[s_len-i-1] ^= 0xff;
+            b[num_bytes-i-1] ^= 0xff;
 
         n += n;
     }
+
+    // initialize on generated sequences
+    bsequence_init(_qa, a);
+    bsequence_init(_qb, b);
 }
 

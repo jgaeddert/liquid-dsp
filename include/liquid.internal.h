@@ -2067,14 +2067,6 @@ float randgammaf_delta(float _delta);
 // MODULE : sequence
 //
 
-struct bsequence_s {
-    unsigned char * s;          // sequence array, memory pointer
-    unsigned int num_bits;      // number of bits in sequence
-    unsigned int num_bits_msb;  // number of bits in most-significant block
-    unsigned char bit_mask_msb; // bit mask for most-significant block
-    unsigned int s_len;         // length of array, number of allocated blocks
-};
-
 // maximal-length sequence
 struct msequence_s {
     unsigned int m;     // length generator polynomial, shift register
