@@ -941,7 +941,8 @@ sequence_autotests :=						\
 	src/sequence/tests/msequence_autotest.c			\
 
 # benchmarks
-sequence_benchmarks :=
+sequence_benchmarks :=						\
+	src/sequence/bench/bsequence_benchmark.c		\
 
 # 
 # MODULE : utility

@@ -368,8 +368,10 @@ void ofdmframesync_execute(ofdmframesync _q,
         windowcf_push(_q->input_buffer,x);
 
 #if DEBUG_OFDMFRAMESYNC
-        windowcf_push(_q->debug_x, x);
-        windowf_push(_q->debug_rssi, crealf(x)*crealf(x) + cimagf(x)*cimagf(x));
+        if (_q->debug_enabled) {
+            windowcf_push(_q->debug_x, x);
+            windowf_push(_q->debug_rssi, crealf(x)*crealf(x) + cimagf(x)*cimagf(x));
+        }
 #endif
 
         switch (_q->state) {
@@ -725,10 +727,12 @@ void ofdmframesync_execute_rxsymbols(ofdmframesync _q)
         ofdmframesync_rxsymbol(_q);
 
 #if DEBUG_OFDMFRAMESYNC
-        unsigned int i;
-        for (i=0; i<_q->M; i++) {
-            if (_q->p[i] == OFDMFRAME_SCTYPE_DATA)
-                windowcf_push(_q->debug_framesyms, _q->X[i]);
+        if (_q->debug_enabled) {
+            unsigned int i;
+            for (i=0; i<_q->M; i++) {
+                if (_q->p[i] == OFDMFRAME_SCTYPE_DATA)
+                    windowcf_push(_q->debug_framesyms, _q->X[i]);
+            }
         }
 #endif
         // invoke callback
@@ -838,8 +842,10 @@ void ofdmframesync_estimate_eqgain(ofdmframesync _q,
                                    unsigned int _ntaps)
 {
 #if DEBUG_OFDMFRAMESYNC
-    // copy pre-smoothed gain
-    memmove(_q->G_hat, _q->G, _q->M*sizeof(float complex));
+    if (_q->debug_enabled) {
+        // copy pre-smoothed gain
+        memmove(_q->G_hat, _q->G, _q->M*sizeof(float complex));
+    }
 #endif
 
     // validate input
@@ -898,8 +904,10 @@ void ofdmframesync_estimate_eqgain_poly(ofdmframesync _q,
                                         unsigned int _order)
 {
 #if DEBUG_OFDMFRAMESYNC
-    // copy pre-smoothed gain
-    memmove(_q->G_hat, _q->G, _q->M*sizeof(float complex));
+    if (_q->debug_enabled) {
+        // copy pre-smoothed gain
+        memmove(_q->G_hat, _q->G, _q->M*sizeof(float complex));
+    }
 #endif
 
     // polynomial interpolation
@@ -1041,16 +1049,18 @@ void ofdmframesync_rxsymbol(ofdmframesync _q)
     _q->p1_prime = p_phase[1];
 
 #if DEBUG_OFDMFRAMESYNC
-    // save pilots
-    memmove(_q->px, x_phase, _q->M_pilot*sizeof(float));
-    memmove(_q->py, y_phase, _q->M_pilot*sizeof(float));
+    if (_q->debug_enabled) {
+        // save pilots
+        memmove(_q->px, x_phase, _q->M_pilot*sizeof(float));
+        memmove(_q->py, y_phase, _q->M_pilot*sizeof(float));
 
-    // NOTE : swapping values for octave
-    _q->p_phase[0] = p_phase[1];
-    _q->p_phase[1] = p_phase[0];
+        // NOTE : swapping values for octave
+        _q->p_phase[0] = p_phase[1];
+        _q->p_phase[1] = p_phase[0];
 
-    windowf_push(_q->debug_pilot_0, p_phase[0]);
-    windowf_push(_q->debug_pilot_1, p_phase[1]);
+        windowf_push(_q->debug_pilot_0, p_phase[0]);
+        windowf_push(_q->debug_pilot_1, p_phase[1]);
+    }
 #endif
 
     // compensate for phase offset
