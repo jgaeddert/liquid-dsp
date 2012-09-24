@@ -83,9 +83,9 @@ void bpresync_cccf_bench(struct rusage *     _start,
     unsigned long int * _num_iterations)    \
 { bpresync_cccf_bench(_start, _finish, _num_iterations, N, M); }
 
-void benchmark_bpresync_cccf_16   BPRESYNC_CCCF_BENCHMARK_API(16,   11);
-void benchmark_bpresync_cccf_32   BPRESYNC_CCCF_BENCHMARK_API(32,   11);
-void benchmark_bpresync_cccf_64   BPRESYNC_CCCF_BENCHMARK_API(64,   11);
-void benchmark_bpresync_cccf_128  BPRESYNC_CCCF_BENCHMARK_API(128,  11);
-void benchmark_bpresync_cccf_256  BPRESYNC_CCCF_BENCHMARK_API(256,  11);
+void benchmark_bpresync_cccf_16   BPRESYNC_CCCF_BENCHMARK_API(16,   6);
+void benchmark_bpresync_cccf_32   BPRESYNC_CCCF_BENCHMARK_API(32,   6);
+void benchmark_bpresync_cccf_64   BPRESYNC_CCCF_BENCHMARK_API(64,   6);
+void benchmark_bpresync_cccf_128  BPRESYNC_CCCF_BENCHMARK_API(128,  6);
+void benchmark_bpresync_cccf_256  BPRESYNC_CCCF_BENCHMARK_API(256,  6);
 

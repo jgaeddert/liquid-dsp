@@ -90,7 +90,7 @@ BPRESYNC() BPRESYNC(_create)(TC *         _v,
         _q->sync_q[i] = bsequence_create(_q->n);
 
         // generate signal with frequency offset
-        _q->dphi[i] = -_dphi_max + ((float)i / (float)(_q->m-1))*2.0f*_dphi_max;
+        _q->dphi[i] = (float)i / (float)(_q->m-1)*_dphi_max;
         unsigned int k;
         for (k=0; k<_q->n; k++) {
             TC v_prime = _v[k] * cexpf(-_Complex_I*k*_q->dphi[i]);
@@ -139,8 +139,10 @@ void BPRESYNC(_print)(BPRESYNC() _q)
 // correlate input sequence with particular 
 //  _q          :   pre-demod synchronizer object
 //  _id         :   ...
-TO BPRESYNC(_correlatex)(BPRESYNC()   _q,
-                         unsigned int _id)
+void BPRESYNC(_correlatex)(BPRESYNC()      _q,
+                           unsigned int    _id,
+                           float complex * _rxy0,
+                           float complex * _rxy1)
 {
     // validate input...
     if (_id >= _q->m) {
@@ -148,13 +150,23 @@ TO BPRESYNC(_correlatex)(BPRESYNC()   _q,
         exit(1);
     }
 
-    // compute...
-    TO rxy_ii = 2.*bsequence_correlate(_q->sync_i[_id], _q->rx_i) - (float)(_q->n);
-    TO rxy_qq = 2.*bsequence_correlate(_q->sync_q[_id], _q->rx_q) - (float)(_q->n);
-    TO rxy_iq = 2.*bsequence_correlate(_q->sync_i[_id], _q->rx_q) - (float)(_q->n);
-    TO rxy_qi = 2.*bsequence_correlate(_q->sync_q[_id], _q->rx_i) - (float)(_q->n);
-    
-    return ( (rxy_ii - rxy_qq) + _Complex_I*(rxy_iq + rxy_qi) ) / (float)(_q->n);
+    // compute correlations
+    int rxy_ii = 2*bsequence_correlate(_q->sync_i[_id], _q->rx_i) - (int)(_q->n);
+    int rxy_qq = 2*bsequence_correlate(_q->sync_q[_id], _q->rx_q) - (int)(_q->n);
+    int rxy_iq = 2*bsequence_correlate(_q->sync_i[_id], _q->rx_q) - (int)(_q->n);
+    int rxy_qi = 2*bsequence_correlate(_q->sync_q[_id], _q->rx_i) - (int)(_q->n);
+
+    // non-conjugated
+    int rxy_i0 = rxy_ii - rxy_qq;
+    int rxy_q0 = rxy_iq + rxy_qi;
+    *_rxy0 = (float)(rxy_i0)/(float)(_q->n) + 
+             (float)(rxy_q0)/(float)(_q->n) * _Complex_I;
+
+    // conjugated
+    int rxy_i1 =  rxy_ii + rxy_qq;
+    int rxy_q1 = -rxy_iq - rxy_qi;
+    *_rxy1 = (float)(rxy_i1)/(float)(_q->n) + 
+             (float)(rxy_q1)/(float)(_q->n) * _Complex_I;
 }
 
 /* correlate input sequence                                 */
@@ -172,18 +184,28 @@ void BPRESYNC(_correlate)(BPRESYNC() _q,
     bsequence_push(_q->rx_q, cimagf(_sym)>0);
 
     unsigned int i;
-    unsigned int i_max = 0;
-    float rxy_max = 0.0f;
+    float complex rxy_max = 0;
+    float complex rxy0;
+    float complex rxy1;
+    float dphi_hat = 0.0f;
     for (i=0; i<_q->m; i++)  {
-        _q->rxy[i] = BPRESYNC(_correlatex)(_q, i);
 
-        if ( cabsf(_q->rxy[i]) > rxy_max) {
-            i_max = i;
-            rxy_max = cabsf(_q->rxy[i]);
+        BPRESYNC(_correlatex)(_q, i, &rxy0, &rxy1);
+
+        // check non-conjugated value
+        if ( cabsf(rxy0) > cabsf(rxy_max) ) {
+            rxy_max  = rxy0;
+            dphi_hat = _q->dphi[i];
+        }
+
+        // check conjugated value
+        if ( cabsf(rxy1) > cabsf(rxy_max) ) {
+            rxy_max  = rxy1;
+            dphi_hat = -_q->dphi[i];
         }
     }
 
-    *_rxy      = _q->rxy[i_max];
-    *_dphi_hat = _q->dphi[i_max];
+    *_rxy      = rxy_max;
+    *_dphi_hat = dphi_hat;
 }
 
