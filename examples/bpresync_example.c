@@ -8,6 +8,7 @@
 #include <stdlib.h>
 #include <getopt.h>
 #include <math.h>
+#include <time.h>
 #include "liquid.h"
 
 #define OUTPUT_FILENAME "bpresync_example.m"
@@ -18,33 +19,38 @@ void usage()
     printf("bpresync_example -- test binary pre-demodulation synchronization\n");
     printf("options (default values in <>):\n");
     printf("  h     : print usage/help\n");
-    printf("  k     : samples/symbol <4>\n");
-    printf("  m     : filter delay [symbols], <3>\n");
-    printf("  n     : number of data symbols <64>\n");
-    printf("  b     : bandwidth-time product, 0 <= b <= 1, <0.3>\n");
-    printf("  s     : SNR [dB] <30>\n");
+    printf("  k     : samples/symbol, default: 2\n");
+    printf("  m     : filter delay [symbols], default: 5\n");
+    printf("  n     : number of data symbols, default: 64\n");
+    printf("  b     : bandwidth-time product, 0 < b <= 1, default: 0.3\n");
+    printf("  F     : carrier frequency offset, default: 0.02\n");
+    printf("  S     : SNR [dB], default: 20\n");
 }
 
-int main(int argc, char*argv[]) {
+int main(int argc, char*argv[])
+{
+    srand(time(NULL));
+
     // options
-    unsigned int k=4;                   // filter samples/symbol
+    unsigned int k=2;                   // filter samples/symbol
     unsigned int m=5;                   // filter delay (symbols)
-    float beta=0.5f;                    // bandwidth-time product
+    float beta=0.3f;                    // bandwidth-time product
     float dt = 0.0f;                    // fractional sample timing offset
     unsigned int num_sync_symbols = 64; // number of synchronization symbols
-    float SNRdB = 30.0f;                // signal-to-noise ratio [dB]
+    float SNRdB = 20.0f;                // signal-to-noise ratio [dB]
     float dphi = 0.02f;                 // carrier frequency offset
     float phi  = 0.0f;                  // carrier phase offset
 
     int dopt;
-    while ((dopt = getopt(argc,argv,"uhk:m:n:b:s:")) != EOF) {
+    while ((dopt = getopt(argc,argv,"uhk:m:n:b:F:S:")) != EOF) {
         switch (dopt) {
         case 'h': usage();                          return 0;
         case 'k': k = atoi(optarg);                 break;
         case 'm': m = atoi(optarg);                 break;
         case 'n': num_sync_symbols = atoi(optarg);  break;
         case 'b': beta = atof(optarg);              break;
-        case 's': SNRdB = atof(optarg);             break;
+        case 'F': dphi = atof(optarg);              break;
+        case 'S': SNRdB = atof(optarg);             break;
         default:
             exit(1);
         }
@@ -160,7 +166,7 @@ int main(int argc, char*argv[]) {
     fprintf(fid,"  ylabel('received signal');\n");
     fprintf(fid,"subplot(2,1,2);\n");
     fprintf(fid,"  plot(t,abs(rxy));\n");
-    fprintf(fid,"  axis([0 num_symbols 0 1]);\n");
+    fprintf(fid,"  axis([0 num_symbols 0 1.5]);\n");
     fprintf(fid,"  xlabel('time');\n");
     fprintf(fid,"  ylabel('correlator output');\n");
     fprintf(fid,"  grid on;\n");
