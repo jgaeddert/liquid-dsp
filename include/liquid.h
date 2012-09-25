@@ -2344,6 +2344,9 @@ void BPRESYNC(_destroy)(BPRESYNC() _q);                         \
 /* print binary pre-demod synchronizer internal state       */  \
 void BPRESYNC(_print)(BPRESYNC() _q);                           \
                                                                 \
+/* reset binary pre-demod synchronizer internal state       */  \
+void BPRESYNC(_reset)(BPRESYNC() _q);                           \
+                                                                \
 /* correlate input sequence                                 */  \
 /*  _q          :   pre-demod synchronizer object           */  \
 /*  _x          :   input sample                            */  \

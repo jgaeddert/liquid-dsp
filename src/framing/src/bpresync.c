@@ -72,10 +72,6 @@ BPRESYNC() BPRESYNC(_create)(TC *         _v,
     // create internal receive buffers
     _q->rx_i = bsequence_create(_q->n);
     _q->rx_q = bsequence_create(_q->n);
-    for (i=0; i<_q->n; i++) {
-        bsequence_push(_q->rx_i, (i+0) % 2);
-        bsequence_push(_q->rx_q, (i+1) % 2);
-    }
 
     // create internal array of frequency offsets
     _q->dphi = (float*) malloc( _q->m*sizeof(float) );
@@ -101,6 +97,9 @@ BPRESYNC() BPRESYNC(_create)(TC *         _v,
 
     // allocate memory for cross-correlation
     _q->rxy = (float*) malloc( _q->m*sizeof(float) );
+
+    // reset object
+    BPRESYNC(_reset)(_q);
 
     return _q;
 }
@@ -134,6 +133,15 @@ void BPRESYNC(_destroy)(BPRESYNC() _q)
 void BPRESYNC(_print)(BPRESYNC() _q)
 {
     printf("bpresync_%s: %u samples\n", EXTENSION_FULL, _q->n);
+}
+
+void BPRESYNC(_reset)(BPRESYNC() _q)
+{
+    unsigned int i;
+    for (i=0; i<_q->n; i++) {
+        bsequence_push(_q->rx_i, (i+0) % 2);
+        bsequence_push(_q->rx_q, (i+1) % 2);
+    }
 }
 
 // correlate input sequence with particular 
