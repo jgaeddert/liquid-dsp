@@ -22,8 +22,9 @@ void usage()
     printf("  k     : samples/symbol, default: 2\n");
     printf("  m     : filter delay [symbols], default: 5\n");
     printf("  n     : number of data symbols, default: 64\n");
-    printf("  b     : bandwidth-time product, 0 < b <= 1, default: 0.3\n");
+    printf("  b     : bandwidth-time product beta in (0,1), default: 0.3\n");
     printf("  F     : carrier frequency offset, default: 0.02\n");
+    printf("  t     : fractional sample offset dt in [-0.5, 0.5], default: 0\n");
     printf("  S     : SNR [dB], default: 20\n");
 }
 
@@ -42,7 +43,7 @@ int main(int argc, char*argv[])
     float phi  = 0.0f;                  // carrier phase offset
 
     int dopt;
-    while ((dopt = getopt(argc,argv,"uhk:m:n:b:F:S:")) != EOF) {
+    while ((dopt = getopt(argc,argv,"uhk:m:n:b:t:F:t:S:")) != EOF) {
         switch (dopt) {
         case 'h': usage();                          return 0;
         case 'k': k = atoi(optarg);                 break;
@@ -50,6 +51,7 @@ int main(int argc, char*argv[])
         case 'n': num_sync_symbols = atoi(optarg);  break;
         case 'b': beta = atof(optarg);              break;
         case 'F': dphi = atof(optarg);              break;
+        case 't': dt = atof(optarg);                break;
         case 'S': SNRdB = atof(optarg);             break;
         default:
             exit(1);
@@ -61,6 +63,9 @@ int main(int argc, char*argv[])
     // validate input
     if (beta <= 0.0f || beta >= 1.0f) {
         fprintf(stderr,"error: %s, bandwidth-time product must be in (0,1)\n", argv[0]);
+        exit(1);
+    } else if (dt < -0.5f || dt > 0.5f) {
+        fprintf(stderr,"error: %s, fractional sample offset must be in [-0.5,0.5]\n", argv[0]);
         exit(1);
     }
 
