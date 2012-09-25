@@ -44,7 +44,7 @@ int main(int argc, char*argv[])
     unsigned int num_sync_symbols = 64; // number of synchronization symbols
     float SNRdB = 20.0f;                // signal-to-noise ratio [dB]
     float dphi = 0.02f;                 // carrier frequency offset
-    float phi  = 0.0f;                  // carrier phase offset
+    float phi  = 2*M_PI*randf();        // carrier phase offset
 
     int dopt;
     while ((dopt = getopt(argc,argv,"uhk:m:n:b:t:F:t:S:")) != EOF) {
@@ -121,7 +121,9 @@ int main(int argc, char*argv[])
     bpresync_cccf_print(sync);
 
     // push signal through cross-correlator
-    float rxy_max = 0.0f;
+    float rxy_max  = 0.0f;  // maximum cross-correlation
+    float dphi_est = 0.0f;  // carrier frequency offset estimate
+    int delay_est  = 0;     // delay estimate
     for (i=0; i<num_samples; i++) {
         
         // correlate
@@ -134,8 +136,11 @@ int main(int argc, char*argv[])
         }
         
         // retain maximum
-        if (cabsf(rxy[i]) > rxy_max)
-            rxy_max = cabsf(rxy[i]);
+        if (cabsf(rxy[i]) > rxy_max) {
+            rxy_max   = cabsf(rxy[i]);
+            dphi_est  = dphi_hat[i];
+            delay_est = (int)i - (int)2*k*m;
+        }
     }
 
     // destroy objects
@@ -143,7 +148,11 @@ int main(int argc, char*argv[])
     bpresync_cccf_destroy(sync);
     
     // print results
+    printf("\n");
     printf("rxy (max) : %12.8f\n", rxy_max);
+    printf("dphi est. : %12.8f ,error=%12.8f\n", dphi_est, dphi-dphi_est);
+    printf("delay est.: %12d ,error=%3d sample(s)\n",         delay_est, k*num_sync_symbols - delay_est);
+    printf("\n");
 
     // 
     // export results
