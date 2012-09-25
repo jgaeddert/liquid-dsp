@@ -1412,6 +1412,7 @@ clean-examples:
 # NOTE: sandbox _requires_ fftw3 to build
 .PHONY: sandbox
 sandbox_programs =						\
+	sandbox/bpresync_test					\
 	sandbox/crc_gentab					\
 	sandbox/ellip_func_test					\
 	sandbox/ellip_test					\
