@@ -139,7 +139,7 @@ int main(int argc, char*argv[])
         if (cabsf(rxy[i]) > rxy_max) {
             rxy_max   = cabsf(rxy[i]);
             dphi_est  = dphi_hat[i];
-            delay_est = (int)i - (int)2*k*m;
+            delay_est = (int)i - (int)2*k*m + 1;
         }
     }
 
@@ -150,8 +150,8 @@ int main(int argc, char*argv[])
     // print results
     printf("\n");
     printf("rxy (max) : %12.8f\n", rxy_max);
-    printf("dphi est. : %12.8f ,error=%12.8f\n", dphi_est, dphi-dphi_est);
-    printf("delay est.: %12d ,error=%3d sample(s)\n",         delay_est, k*num_sync_symbols - delay_est);
+    printf("dphi est. : %12.8f ,error=%12.8f\n",      dphi_est, dphi-dphi_est);
+    printf("delay est.: %12d ,error=%3d sample(s)\n", delay_est, k*num_sync_symbols - delay_est);
     printf("\n");
 
     // 
