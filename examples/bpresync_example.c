@@ -1,7 +1,11 @@
 // 
 // bpresync_example.c
 //
-// Test binary pre-demodulator synchronizer.
+// This example demonstrates the binary pre-demodulator synchronizer. A random
+// binary sequence is generated, modulated with BPSK, and then interpolated.
+// The resulting sequence is used to generate a bpresync object which in turn
+// is used to detect a signal in the presence of carrier frequency and timing
+// offsets and additive white Gauss noise.
 //
 
 #include <stdio.h>

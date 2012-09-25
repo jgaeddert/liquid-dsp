@@ -43,6 +43,13 @@ This directory contains all the examples for interfacing the liquid modules.
 
  * `bpacketsync_example.c`:
 
+ * `bpresync_example.c`:
+    This example demonstrates the binary pre-demodulator synchronizer. A random
+    binary sequence is generated, modulated with BPSK, and then interpolated.
+    The resulting sequence is used to generate a bpresync object which in turn
+    is used to detect a signal in the presence of carrier frequency and timing
+    offsets and additive white Gauss noise.
+
  * `bsequence_example.c`:
     This example demonstrates the interface to the bsequence (binary sequence)
     object.  The bsequence object acts like a buffer of bits which are stored
