@@ -140,13 +140,10 @@ int main(int argc, char*argv[])
         fprintf(fid,"delay_err(%4u) = %12.4e;\n", i+1, delay_err[i]);
     }
 
-#if 0
     fprintf(fid,"figure;\n");
-    fprintf(fid,"subplot(3,1,1);\n");
     fprintf(fid,"  hist(rxy_max, 25);\n");
-    fprintf(fid,"subplot(3,1,2);\n");
-    fprintf(fid,"  hist(dphi_err, 25);\n");
-#endif
+    fprintf(fid,"  xlabel('|r_{xy}|');\n");
+    fprintf(fid,"  ylabel('histogram');\n");
 
     fclose(fid);
     printf("results written to '%s'\n", OUTPUT_FILENAME);
