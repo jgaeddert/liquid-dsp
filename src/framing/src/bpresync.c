@@ -41,6 +41,8 @@ struct BPRESYNC(_s) {
     bsequence * sync_q; // synchronization pattern (quadrature)
 
     float * rxy;        // output correlation [size: m x 1]
+
+    float n_inv;        // 1/n (pre-computed for speed)
 };
 
 /* create binary pre-demod synchronizer                     */
@@ -66,6 +68,8 @@ BPRESYNC() BPRESYNC(_create)(TC *         _v,
     BPRESYNC() _q = (BPRESYNC()) malloc(sizeof(struct BPRESYNC(_s)));
     _q->n = _n;
     _q->m = _m;
+
+    _q->n_inv = 1.0f / (float)(_q->n);
 
     unsigned int i;
 
@@ -167,14 +171,12 @@ void BPRESYNC(_correlatex)(BPRESYNC()      _q,
     // non-conjugated
     int rxy_i0 = rxy_ii - rxy_qq;
     int rxy_q0 = rxy_iq + rxy_qi;
-    *_rxy0 = (float)(rxy_i0)/(float)(_q->n) + 
-             (float)(rxy_q0)/(float)(_q->n) * _Complex_I;
+    *_rxy0 = (rxy_i0 + rxy_q0 * _Complex_I) * _q->n_inv;
 
     // conjugated
     int rxy_i1 =  rxy_ii + rxy_qq;
     int rxy_q1 = -rxy_iq - rxy_qi;
-    *_rxy1 = (float)(rxy_i1)/(float)(_q->n) + 
-             (float)(rxy_q1)/(float)(_q->n) * _Complex_I;
+    *_rxy1 = (rxy_i1 + rxy_q1 * _Complex_I) * _q->n_inv;
 }
 
 /* correlate input sequence                                 */
