@@ -156,8 +156,6 @@ This directory contains all the examples for interfacing the liquid modules.
 
     SEE ALSO: `firdes_kaiser_example.c`
 
- * `firfarrow_rrrf_example.c`:
-
  * `firfarrow_rrrf_sine_example.c`:
 
  * `firfilt_rrrf_example.c`:

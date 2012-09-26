@@ -1,5 +1,5 @@
 //
-// firfarrow_rrrf_example.c
+// firfarrow_rrrf_test.c
 //
 // Demonstrates the functionality of the finite impulse response Farrow
 // filter for arbitrary fractional sample group delay.
@@ -9,7 +9,7 @@
 
 #include "liquid.h"
 
-#define OUTPUT_FILENAME "firfarrow_rrrf_example.m"
+#define OUTPUT_FILENAME "firfarrow_rrrf_test.m"
 
 int main() {
     // options
