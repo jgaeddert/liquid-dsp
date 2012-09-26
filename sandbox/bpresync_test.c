@@ -94,6 +94,26 @@ int main(int argc, char*argv[])
 
     // destroy objects
     bpresync_cccf_destroy(sync);
+
+
+    // print results
+    float rxy_max_avg    = 0.0f;
+    float dphi_err_rmse  = 0.0f;
+    float delay_err_rmse = 0.0f;
+    for (i=0; i<num_trials; i++) {
+        rxy_max_avg    += rxy_max[i];
+        dphi_err_rmse  += dphi_err[i]*dphi_err[i];
+        delay_err_rmse += delay_err[i]*delay_err[i];
+    }
+
+    rxy_max_avg    = rxy_max_avg / (float)num_trials;
+    dphi_err_rmse  = sqrtf( dphi_err_rmse / (float)num_trials );
+    delay_err_rmse = sqrtf( delay_err_rmse / (float)num_trials );
+
+    printf("\n");
+    printf("    rxy_max (average)       :   %12.8f\n", rxy_max_avg);
+    printf("    dphi estimate (RMSE)    :   %12.8f\n", dphi_err_rmse);
+    printf("    delay estimate (RMSE)   :   %12.8f\n", delay_err_rmse);
     
     // 
     // export results
@@ -208,12 +228,13 @@ void bpresync_test(bpresync_cccf   _q,
             if ( cabsf(rxy) > _rxy_max[t] ) {
                 _rxy_max[t]   = cabsf(rxy);
                 _dphi_err[t]  = dphi_est - dphi;
-                _delay_err[t] = 0.0f;
+                _delay_err[t] = (float)i - (float)(_n + delay + (h_len-1)/2) + 1.0f + dt;
             }
         }
 
-        // print results
-        printf("  %3u   :   rxy_max = %12.8f\n", t, _rxy_max[t]);
+        printf("  %6u:  rxy_max=%12.8f, dphi-err=%12.8f, delay-err=%12.8f\n",
+                t, _rxy_max[t], _dphi_err[t], _delay_err[t]);
+
     }
 
     // destroy Farrow filter
