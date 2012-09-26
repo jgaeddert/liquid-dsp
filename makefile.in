@@ -1307,7 +1307,7 @@ example_programs :=						\
 	examples/fec_example					\
 	examples/fec_soft_example				\
 	examples/fft_example					\
-	examples/firfarrow_rrrf_sine_example			\
+	examples/firfarrow_rrrf_example				\
 	examples/firfilt_rrrf_example				\
 	examples/firdes_kaiser_example				\
 	examples/firdespm_example				\
