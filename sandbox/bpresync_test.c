@@ -22,6 +22,7 @@ void usage()
 {
     printf("bpresync_test -- test binary pre-demodulation synchronization\n");
     printf("  h     : print usage/help\n");
+    printf("  v     : verbose output\n");
     printf("  k     : samples/symbol, default: 2\n");
     printf("  n     : number of data symbols, default: 64\n");
     printf("  F     : carrier frequency offset, default: 0.02\n");
@@ -37,7 +38,8 @@ void bpresync_test(bpresync_cccf   _q,
                    float *         _rxy_max,
                    float *         _dphi_err,
                    float *         _delay_err,
-                   unsigned int    _num_trials);
+                   unsigned int    _num_trials,
+                   unsigned int    _verbosity);
 
 int main(int argc, char*argv[])
 {
@@ -50,10 +52,13 @@ int main(int argc, char*argv[])
     float dphi_max = 0.02f;             // maximum carrier frequency offset
     unsigned int num_trials = 40;
 
+    unsigned int verbosity = 0;         // verbosity level
+
     int dopt;
-    while ((dopt = getopt(argc,argv,"hk:n:F:S:t:")) != EOF) {
+    while ((dopt = getopt(argc,argv,"hvk:n:F:S:t:")) != EOF) {
         switch (dopt) {
         case 'h': usage();                          return 0;
+        case 'v': verbosity++;                      break;
         case 'k': k = atoi(optarg);                 break;
         case 'n': num_sync_symbols = atoi(optarg);  break;
         case 'F': dphi_max = atof(optarg);          break;
@@ -90,7 +95,8 @@ int main(int argc, char*argv[])
     bpresync_test(sync, seq, k*num_sync_symbols,
                   SNRdB, dphi_max,
                   rxy_max, dphi_err, delay_err,
-                  num_trials);
+                  num_trials,
+                  verbosity);
 
     // destroy objects
     bpresync_cccf_destroy(sync);
@@ -156,7 +162,8 @@ void bpresync_test(bpresync_cccf   _q,
                    float *         _rxy_max,
                    float *         _dphi_err,
                    float *         _delay_err,
-                   unsigned int    _num_trials)
+                   unsigned int    _num_trials,
+                   unsigned int    _verbosity)
 {
     unsigned int max_delay = 64;
     float gamma = powf(10.0f, _SNRdB/20.0f);
@@ -232,8 +239,24 @@ void bpresync_test(bpresync_cccf   _q,
             }
         }
 
-        printf("  %6u:  rxy_max=%12.8f, dphi-err=%12.8f, delay-err=%12.8f\n",
-                t, _rxy_max[t], _dphi_err[t], _delay_err[t]);
+        if (_verbosity == 0) {
+            // do nothing
+        } else if (_verbosity == 1) {
+            // print progress bar
+            if ( (t%200)==0 || t==_num_trials-1 ) {
+                float percent = (float)(t+1) / (float)_num_trials;
+                unsigned int bars = (unsigned int) (percent*60);
+                printf("[");
+                for (i=0; i<60; i++)
+                    printf("%c", i < bars ? '#' : ' ');
+                printf("] %5.1f%%\r", percent*100);
+                fflush(stdout);
+            }
+        } else {
+            // print every trial
+            printf("  %6u:  rxy_max=%12.8f, dphi-err=%12.8f, delay-err=%12.8f\n",
+                    t, _rxy_max[t], _dphi_err[t], _delay_err[t]);
+        }
 
     }
 
