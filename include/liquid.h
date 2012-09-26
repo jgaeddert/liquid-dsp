@@ -2318,6 +2318,7 @@ LIQUID_BSYNC_DEFINE_API(BSYNC_MANGLE_CCCF,
 //
 // Pre-demodulation synchronizers (binary and otherwise)
 //
+#define  PRESYNC_MANGLE_CCCF(name)  LIQUID_CONCAT( presync_cccf,name)
 #define BPRESYNC_MANGLE_CCCF(name)  LIQUID_CONCAT(bpresync_cccf,name)
 
 // Macro:
@@ -2357,7 +2358,13 @@ void PRESYNC(_correlate)(PRESYNC() _q,                          \
                          TO *       _rxy,                       \
                          float *    _dphi_hat);                 \
 
-// binary pre-demodulation synchronizers
+// non-binary pre-demodulation synchronizer
+LIQUID_PRESYNC_DEFINE_API(PRESYNC_MANGLE_CCCF,
+                          liquid_float_complex,
+                          liquid_float_complex,
+                          liquid_float_complex)
+
+// binary pre-demodulation synchronizer
 LIQUID_PRESYNC_DEFINE_API(BPRESYNC_MANGLE_CCCF,
                           liquid_float_complex,
                           liquid_float_complex,
