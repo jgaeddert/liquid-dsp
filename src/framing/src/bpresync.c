@@ -174,8 +174,8 @@ void BPRESYNC(_correlatex)(BPRESYNC()      _q,
     *_rxy0 = (rxy_i0 + rxy_q0 * _Complex_I) * _q->n_inv;
 
     // conjugated
-    int rxy_i1 =  rxy_ii + rxy_qq;
-    int rxy_q1 = -rxy_iq - rxy_qi;
+    int rxy_i1 = rxy_ii + rxy_qq;
+    int rxy_q1 = rxy_iq - rxy_qi;
     *_rxy1 = (rxy_i1 + rxy_q1 * _Complex_I) * _q->n_inv;
 }
 

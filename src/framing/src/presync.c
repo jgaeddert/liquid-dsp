@@ -179,8 +179,8 @@ void PRESYNC(_correlatex)(PRESYNC()       _q,
     *_rxy0 = (rxy_i0 + rxy_q0 * _Complex_I) * _q->n_inv;
 
     // conjugated
-    T rxy_i1 =  rxy_ii + rxy_qq;
-    T rxy_q1 = -rxy_iq - rxy_qi;
+    T rxy_i1 = rxy_ii + rxy_qq;
+    T rxy_q1 = rxy_iq - rxy_qi;
     *_rxy1 = (rxy_i1 + rxy_q1 * _Complex_I) * _q->n_inv;
 }
 
