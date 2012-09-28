@@ -239,6 +239,8 @@ dotprod_benchmarks :=						\
 	src/dotprod/bench/dotprod_cccq32_benchmark.c		\
 	src/dotprod/bench/dotprod_crcq32_benchmark.c		\
 	src/dotprod/bench/dotprod_rrrq32_benchmark.c		\
+	src/dotprod/bench/sumsqq16_benchmark.c			\
+	src/dotprod/bench/sumsqcq16_benchmark.c			\
 
 # 
 # MODULE : equalization
