@@ -16,8 +16,11 @@
 
 int main() {
     // create and initialize binary sequence
-    unsigned int n=32;
+    unsigned int n=16;
     bsequence q = bsequence_create(n);
+
+    unsigned char v[4] = {0x35, 0x35};
+    bsequence_init(q,v);
 
     bsequence_push(q,1);
     bsequence_push(q,1);
@@ -27,6 +30,11 @@ int main() {
     bsequence_push(q,0);
     bsequence_push(q,1);
 
+    bsequence_print(q);
+
+    bsequence_circshift(q);
+    bsequence_print(q);
+    bsequence_circshift(q);
     bsequence_print(q);
 
     unsigned int b;
