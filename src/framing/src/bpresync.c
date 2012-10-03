@@ -179,20 +179,25 @@ void BPRESYNC(_correlatex)(BPRESYNC()      _q,
     *_rxy1 = (rxy_i1 + rxy_q1 * _Complex_I) * _q->n_inv;
 }
 
-/* correlate input sequence                                 */
+/* push input sample into pre-demod synchronizer            */
 /*  _q          :   pre-demod synchronizer object           */
 /*  _x          :   input sample                            */
+void BPRESYNC(_push)(BPRESYNC() _q,
+                     TI         _x)
+{
+    // push symbol into buffers
+    bsequence_push(_q->rx_i, REAL(_x)>0);
+    bsequence_push(_q->rx_q, IMAG(_x)>0);
+}
+
+/* correlate input sequence                                 */
+/*  _q          :   pre-demod synchronizer object           */
 /*  _rxy        :   output cross correlation                */
 /*  _dphi_hat   :   output frequency offset estimate        */
 void BPRESYNC(_correlate)(BPRESYNC() _q,
-                          TI         _sym,
                           TO *       _rxy,
                           float *    _dphi_hat)
 {
-    // push symbol into buffers
-    bsequence_push(_q->rx_i, crealf(_sym)>0);
-    bsequence_push(_q->rx_q, cimagf(_sym)>0);
-
     unsigned int i;
     float complex rxy_max = 0;
     float complex rxy0;
@@ -203,13 +208,13 @@ void BPRESYNC(_correlate)(BPRESYNC() _q,
         BPRESYNC(_correlatex)(_q, i, &rxy0, &rxy1);
 
         // check non-conjugated value
-        if ( cabsf(rxy0) > cabsf(rxy_max) ) {
+        if ( ABS(rxy0) > ABS(rxy_max) ) {
             rxy_max  = rxy0;
             dphi_hat = _q->dphi[i];
         }
 
         // check conjugated value
-        if ( cabsf(rxy1) > cabsf(rxy_max) ) {
+        if ( ABS(rxy1) > ABS(rxy_max) ) {
             rxy_max  = rxy1;
             dphi_hat = -_q->dphi[i];
         }

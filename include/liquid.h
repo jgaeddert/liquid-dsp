@@ -2348,15 +2348,19 @@ void PRESYNC(_print)(PRESYNC() _q);                             \
 /* reset pre-demod synchronizer internal state              */  \
 void PRESYNC(_reset)(PRESYNC() _q);                             \
                                                                 \
-/* correlate input sequence                                 */  \
+/* push input sample into pre-demod synchronizer            */  \
 /*  _q          :   pre-demod synchronizer object           */  \
 /*  _x          :   input sample                            */  \
+void PRESYNC(_push)(PRESYNC() _q,                               \
+                    TI        _x);                              \
+                                                                \
+/* correlate input sequence                                 */  \
+/*  _q          :   pre-demod synchronizer object           */  \
 /*  _rxy        :   output cross correlation                */  \
 /*  _dphi_hat   :   output frequency offset estiamte        */  \
 void PRESYNC(_correlate)(PRESYNC() _q,                          \
-                         TI         _sym,                       \
-                         TO *       _rxy,                       \
-                         float *    _dphi_hat);                 \
+                         TO *      _rxy,                        \
+                         float *   _dphi_hat);                  \
 
 // non-binary pre-demodulation synchronizer
 LIQUID_PRESYNC_DEFINE_API(PRESYNC_MANGLE_CCCF,

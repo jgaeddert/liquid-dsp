@@ -62,13 +62,13 @@ void presync_cccf_bench(struct rusage *     _start,
     getrusage(RUSAGE_SELF, _start);
     for (i=0; i<(*_num_iterations); i++) {
         // push input sequence through synchronizer
-        presync_cccf_correlate(q, x[0], &rxy, &dphi_hat);
-        presync_cccf_correlate(q, x[1], &rxy, &dphi_hat);
-        presync_cccf_correlate(q, x[2], &rxy, &dphi_hat);
-        presync_cccf_correlate(q, x[3], &rxy, &dphi_hat);
-        presync_cccf_correlate(q, x[4], &rxy, &dphi_hat);
-        presync_cccf_correlate(q, x[5], &rxy, &dphi_hat);
-        presync_cccf_correlate(q, x[6], &rxy, &dphi_hat);
+        presync_cccf_push(q, x[0]);  presync_cccf_correlate(q, &rxy, &dphi_hat);
+        presync_cccf_push(q, x[1]);  presync_cccf_correlate(q, &rxy, &dphi_hat);
+        presync_cccf_push(q, x[2]);  presync_cccf_correlate(q, &rxy, &dphi_hat);
+        presync_cccf_push(q, x[3]);  presync_cccf_correlate(q, &rxy, &dphi_hat);
+        presync_cccf_push(q, x[4]);  presync_cccf_correlate(q, &rxy, &dphi_hat);
+        presync_cccf_push(q, x[5]);  presync_cccf_correlate(q, &rxy, &dphi_hat);
+        presync_cccf_push(q, x[6]);  presync_cccf_correlate(q, &rxy, &dphi_hat);
     }
     getrusage(RUSAGE_SELF, _finish);
     *_num_iterations *= 7;
