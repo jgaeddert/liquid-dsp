@@ -4,6 +4,8 @@ Major improvements since v1.2.0
     - adding method to compute x^T * x of a vector (sum of squares)
   * fft
     - general speed improvements
+  * framing
+    - adding pre-demodulator synchronizers
   * matrix
     - adding smatrix family of objects to facilitate operations on
       sparse matrices
