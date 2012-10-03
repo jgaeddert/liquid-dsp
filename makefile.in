@@ -542,6 +542,7 @@ filter_benchmarks :=						\
 framing_objects :=						\
 	src/framing/src/bpacketgen.o				\
 	src/framing/src/bpacketsync.o				\
+	src/framing/src/bpresync_cccf.o				\
 	src/framing/src/bsync_rrrf.o				\
 	src/framing/src/bsync_crcf.o				\
 	src/framing/src/bsync_cccf.o				\
@@ -556,6 +557,7 @@ framing_objects :=						\
 	src/framing/src/ofdmflexframegen.o			\
 	src/framing/src/ofdmflexframesync.o			\
 	src/framing/src/packetizer.o				\
+	src/framing/src/presync_cccf.o				\
 	src/framing/src/interleaver.o				\
 
 
@@ -564,6 +566,8 @@ framing_objects :=						\
 src/framing/src/bpacketgen.o : %.o : %.c $(headers)
 
 src/framing/src/bpacketsync.o : %.o : %.c $(headers)
+
+src/framing/src/bpresync_cccf.o : %.o : %.c $(headers) src/framing/src/bpresync.c
 
 src/framing/src/bsync_rrrf.o : %.o : %.c $(headers) src/framing/src/bsync.c
 
@@ -589,6 +593,8 @@ src/framing/src/ofdmflexframesync.o : %.o : %.c $(headers)
 
 src/framing/src/packetizer.o : %.o : %.c $(headers)
 
+src/framing/src/presync_cccf.o : %.o : %.c $(headers) src/framing/src/presync.c
+
 src/framing/src/interleaver.o : %.o : %.c $(headers)
 
 
@@ -600,7 +606,9 @@ framing_autotests :=						\
 
 
 framing_benchmarks :=						\
+	src/framing/bench/presync_benchmark.c			\
 	src/framing/bench/bpacketsync_benchmark.c		\
+	src/framing/bench/bpresync_benchmark.c			\
 	src/framing/bench/bsync_benchmark.c			\
 	src/framing/bench/flexframesync_benchmark.c		\
 	src/framing/bench/gmskframesync_benchmark.c		\
@@ -1289,6 +1297,7 @@ example_programs :=						\
 	examples/asgram_example					\
 	examples/autocorr_cccf_example				\
 	examples/bpacketsync_example				\
+	examples/bpresync_example				\
 	examples/bsequence_example				\
 	examples/bufferf_example				\
 	examples/chromosome_example				\
@@ -1406,6 +1415,7 @@ clean-examples:
 # NOTE: sandbox _requires_ fftw3 to build
 .PHONY: sandbox
 sandbox_programs =						\
+	sandbox/bpresync_test					\
 	sandbox/crc_gentab					\
 	sandbox/ellip_func_test					\
 	sandbox/ellip_test					\

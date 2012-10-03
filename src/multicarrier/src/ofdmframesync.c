@@ -1105,7 +1105,7 @@ void ofdmframesync_debug_enable(ofdmframesync _q)
 {
     // create debugging objects if necessary
 #if DEBUG_OFDMFRAMESYNC
-    if (_q->debug_enabled)
+    if (_q->debug_objects_created)
         return;
 
     _q->debug_x         = windowcf_create(DEBUG_OFDMFRAMESYNC_BUFFER_LEN);
