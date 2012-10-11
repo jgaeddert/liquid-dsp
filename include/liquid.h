@@ -3662,7 +3662,6 @@ ofdmframesync ofdmframesync_create(unsigned int           _M,
                                    ofdmframesync_callback _callback,
                                    void *                 _userdata);
 void ofdmframesync_destroy(ofdmframesync _q);
-void ofdmframesync_debug_print(ofdmframesync _q, const char * _filename);
 void ofdmframesync_print(ofdmframesync _q);
 void ofdmframesync_reset(ofdmframesync _q);
 void ofdmframesync_execute(ofdmframesync _q,
