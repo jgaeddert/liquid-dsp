@@ -3,7 +3,7 @@ liquid documentation
 ====================
 
 This is the documentation directory.
-All documentation is written in [LaTeX][http://www.ctan.org/].
+All documentation is written in [LaTeX](http://www.ctan.org/).
 Figures are auto-generated using
 [gnuplot](http://www.gnuplot.info/) and [pgf](http://sourceforge.net/projects/pgf/).
 Code snippets are made pretty using
