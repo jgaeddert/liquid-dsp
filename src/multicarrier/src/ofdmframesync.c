@@ -789,7 +789,7 @@ void ofdmframesync_estimate_gain_S0(ofdmframesync   _q,
     float gain = sqrtf(_q->M_S0) / (float)(_q->M);
 
     for (i=0; i<_q->M; i++) {
-        if (_q->p[i] != OFDMOQAMFRAME_SCTYPE_NULL && (i%2)==0) {
+        if (_q->p[i] != OFDMFRAME_SCTYPE_NULL && (i%2)==0) {
             // NOTE : if cabsf(_q->S0[i]) == 0 then we can multiply by conjugate
             //        rather than compute division
             //_G[i] = _q->X[i] / _q->S0[i];
@@ -821,7 +821,7 @@ void ofdmframesync_estimate_gain_S1(ofdmframesync _q,
     unsigned int i;
     float gain = sqrtf(_q->M_S1) / (float)(_q->M);
     for (i=0; i<_q->M; i++) {
-        if (_q->p[i] != OFDMOQAMFRAME_SCTYPE_NULL) {
+        if (_q->p[i] != OFDMFRAME_SCTYPE_NULL) {
             // NOTE : if cabsf(_q->S1[i]) == 0 then we can multiply by conjugate
             //        rather than compute division
             //_G[i] = _q->X[i] / _q->S1[i];

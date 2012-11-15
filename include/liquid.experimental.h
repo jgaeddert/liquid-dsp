@@ -878,6 +878,158 @@ void mdctch_execute_synthesizer(mdctch _q, float * _x, float * _y);
 void mdctch_execute_analyzer(mdctch _q, float * _x, float * _y);
 
 
+// FIR OFDM/OQAM
+typedef struct ofdmoqam_s * ofdmoqam;
+ofdmoqam ofdmoqam_create(unsigned int _num_channels,
+                         unsigned int _m,
+                         float _beta,
+                         float _dt,
+                         int _type,
+                         int _gradient);
+void ofdmoqam_destroy(ofdmoqam _c);
+void ofdmoqam_print(ofdmoqam _c);
+void ofdmoqam_clear(ofdmoqam _c);
+void ofdmoqam_execute(ofdmoqam _c,
+                      liquid_float_complex * _x,
+                      liquid_float_complex * _y);
+
+
+// 
+// ofdmoqamframegen
+//
+
+#define OFDMOQAMFRAME_SCTYPE_NULL     0
+#define OFDMOQAMFRAME_SCTYPE_PILOT    1
+#define OFDMOQAMFRAME_SCTYPE_DATA     2
+
+// initialize default subcarrier allocation
+//  _M      :   number of subcarriers
+//  _p      :   output subcarrier allocation array, [size: _M x 1]
+void ofdmoqamframe_init_default_sctype(unsigned int _M,
+                                       unsigned char * _p);
+
+// validate subcarrier type (count number of null, pilot, and data
+// subcarriers in the allocation)
+//  _p          :   subcarrier allocation array, [size: _M x 1]
+//  _M          :   number of subcarriers
+//  _M_null     :   output number of null subcarriers
+//  _M_pilot    :   output number of pilot subcarriers
+//  _M_data     :   output number of data subcarriers
+void ofdmoqamframe_validate_sctype(unsigned char * _p,
+                                   unsigned int _M,
+                                   unsigned int * _M_null,
+                                   unsigned int * _M_pilot,
+                                   unsigned int * _M_data);
+
+typedef struct ofdmoqamframegen_s * ofdmoqamframegen;
+
+// create OFDM/OQAM framing generator object
+//  _M      :   number of subcarriers, >10 typical
+//  _m      :   filter delay (symbols), 3 typical
+//  _beta   :   filter excess bandwidth factor, 0.9 typical
+//  _p      :   subcarrier allocation (null, pilot, data), [size: _M x 1]
+//  NOTES
+//    - The number of subcarriers must be even, typically at least 16
+//    - If _p is a NULL pointer, then the frame generator will use
+//      the default subcarrier allocation
+ofdmoqamframegen ofdmoqamframegen_create(unsigned int _M,
+                                         unsigned int _m,
+                                         float _beta,
+                                         unsigned char * _p);
+
+// destroy OFDM/OQAM framing generator object
+void ofdmoqamframegen_destroy(ofdmoqamframegen _q);
+
+void ofdmoqamframegen_print(ofdmoqamframegen _q);
+
+void ofdmoqamframegen_reset(ofdmoqamframegen _q);
+
+// short PLCP training sequence
+void ofdmoqamframegen_writeshortsequence(ofdmoqamframegen _q,
+                                         liquid_float_complex *_y);
+// long PLCP training sequence
+void ofdmoqamframegen_writelongsequence(ofdmoqamframegen _q,
+                                        liquid_float_complex *_y);
+void ofdmoqamframegen_writeheader(ofdmoqamframegen _q,
+                                  liquid_float_complex *_y);
+void ofdmoqamframegen_writesymbol(ofdmoqamframegen _q,
+                                  liquid_float_complex *_x,
+                                  liquid_float_complex *_y);
+void ofdmoqamframegen_flush(ofdmoqamframegen _q,
+                            liquid_float_complex *_y);
+
+// 
+// ofdmoqamframesync
+//
+typedef int (*ofdmoqamframesync_callback)(liquid_float_complex * _y,
+                                          void * _userdata);
+typedef struct ofdmoqamframesync_s * ofdmoqamframesync;
+ofdmoqamframesync ofdmoqamframesync_create(unsigned int _num_subcarriers,
+                                           unsigned int _m,
+                                           float _beta,
+                                           unsigned char * _p,
+                                           ofdmoqamframesync_callback _callback,
+                                           void * _userdata);
+void ofdmoqamframesync_destroy(ofdmoqamframesync _q);
+void ofdmoqamframesync_print(ofdmoqamframesync _q);
+void ofdmoqamframesync_reset(ofdmoqamframesync _q);
+void ofdmoqamframesync_execute(ofdmoqamframesync _q,
+                               liquid_float_complex * _x,
+                               unsigned int _n);
+
+// 
+// ofdm/oqam framing
+//
+
+// generate short sequence symbols
+//  _p                  :   subcarrier allocation array
+//  _num_subcarriers    :   total number of subcarriers
+//  _S0                 :   output symbol
+//  _M_S0               :   total number of enabled subcarriers in S0
+void ofdmoqamframe_init_S0(unsigned char * _p,
+                           unsigned int _num_subcarriers,
+                           float complex * _S0,
+                           unsigned int * _M_S0);
+
+// generate long sequence symbols
+//  _p                  :   subcarrier allocation array
+//  _num_subcarriers    :   total number of subcarriers
+//  _S1                 :   output symbol
+//  _M_S1               :   total number of enabled subcarriers in S1
+void ofdmoqamframe_init_S1(unsigned char * _p,
+                           unsigned int _num_subcarriers,
+                           float complex * _S1,
+                           unsigned int * _M_S1);
+
+void ofdmoqamframesync_execute_plcpshort(ofdmoqamframesync _q, float complex _x);
+void ofdmoqamframesync_execute_plcplong0(ofdmoqamframesync _q, float complex _x);
+void ofdmoqamframesync_execute_plcplong1(ofdmoqamframesync _q, float complex _x);
+void ofdmoqamframesync_execute_rxsymbols(ofdmoqamframesync _q, float complex _x);
+
+void ofdmoqamframesync_S0_metrics(ofdmoqamframesync _q,
+                                  float complex * _g_hat,
+                                  float complex * _s_hat);
+
+void ofdmoqamframesync_S1_metrics(ofdmoqamframesync _q,
+                                  float complex * _t0_hat,
+                                  float complex * _t1_hat);
+
+void ofdmoqamframesync_correct_buffer(ofdmoqamframesync _q);
+
+void ofdmoqamframesync_init_gain_window(ofdmoqamframesync _q,
+                                        float _sigma);
+
+void ofdmoqamframesync_estimate_gain(ofdmoqamframesync _q,
+                                     float complex * _G_hat,
+                                     float complex * _G);
+
+void ofdmoqamframesync_rxpayload(ofdmoqamframesync _q,
+                                 float complex * _Y0,
+                                 float complex * _Y1);
+
+
+
+
 
 //
 // SUBMODULE : modem
