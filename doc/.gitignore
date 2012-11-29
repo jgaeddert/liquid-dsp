@@ -71,6 +71,7 @@ src/modem.gendata
 src/modem.genplot
 src/modem_phase_error
 src/nco_pll
+src/ofdmflexframe_ber
 src/optim_gradsearch
 src/quantization_adc
 src/quantization_compander

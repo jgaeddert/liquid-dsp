@@ -295,6 +295,7 @@ local_programs :=					\
 	src/sequence_ccodes				\
 	src/sequence_msequence				\
 							\
+	src/ofdmflexframe_ber				\
 	src/simulate_ber				\
 	src/simulate_per_test				\
 
