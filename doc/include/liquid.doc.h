@@ -148,7 +148,7 @@ typedef struct {
 
     // channel impairments...
 
-} ofdmflexframesync_ber_opts;
+} ofdmflexframesync_fer_opts;
 
 // simulate packet error rate results
 typedef struct {
@@ -163,27 +163,12 @@ typedef struct {
     float FER;  // apparent frame error rate
     float HER;  // apparent header error rate
     float PER;  // apparent packet error rate
-} ofdmflexframesync_ber_results;
+} ofdmflexframesync_fer_results;
 
-#if 0
-void ofdmflexframesync_ber(ofdmflexframegenprops_s * _fgprops,
-                           unsigned int _M,
-                           unsigned int _cp_len,
-                           unsigned char * _p,
-                           void * _fsprops,
-                           unsigned int _payload_len,
-                           float _noise_floor_dB,
-                           float _SNRdB,
-                           float _dphi,
-                           unsigned int _num_trials,
-                           unsigned int * _num_packets_found,
-                           unsigned int * _num_headers_decoded,
-                           unsigned int * _num_payloads_decoded);
-#else
-void ofdmflexframesync_ber(ofdmflexframesync_ber_opts      _opts,
+// simulate frame detection and error rates for ofdmflexframe
+void ofdmflexframesync_fer(ofdmflexframesync_fer_opts      _opts,
                            float                           _SNRdB,
-                           ofdmflexframesync_ber_results * _results);
-#endif
+                           ofdmflexframesync_fer_results * _results);
 
 #endif // __LIQUID_DOC_H__
 

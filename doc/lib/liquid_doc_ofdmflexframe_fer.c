@@ -23,33 +23,12 @@ typedef struct {
     int payload_decoded;
 } ofdmflexframesync_per_simdata;
 
-#if 0
-void ofdmflexframesync_ber(ofdmflexframegenprops_s * _fgprops,
-                           unsigned int _M,
-                           unsigned int _cp_len,
-                           unsigned char * _p,
-                           void * _fsprops,
-                           unsigned int _payload_len,
-                           float _noise_floor_dB,
-                           float _SNRdB,
-                           float _dphi,
-                           unsigned int _num_frames,
-                           unsigned int * _num_packets_found,
-                           unsigned int * _num_headers_decoded,
-                           unsigned int * _num_payloads_decoded)
-#else
-void ofdmflexframesync_ber(ofdmflexframesync_ber_opts      _opts,
+// simulate frame detection and error rates for ofdmflexframe
+void ofdmflexframesync_fer(ofdmflexframesync_fer_opts      _opts,
                            float                           _SNRdB,
-                           ofdmflexframesync_ber_results * _results)
-#endif
+                           ofdmflexframesync_fer_results * _results)
 {
-    // define parameters
-#if 0
-    float dphi = _dphi; // carrier frequency offset
-    float phi = 0.0f;   // carrier phase offset
-#endif
     // TODO: validate options
-
     // get options
     unsigned int M              = _opts.M;
     unsigned int cp_len         = _opts.cp_len;
@@ -57,7 +36,8 @@ void ofdmflexframesync_ber(ofdmflexframesync_ber_opts      _opts,
     unsigned char * p           = _opts.p;
     unsigned int num_frames     = _opts.num_frames;
     unsigned int payload_len    = _opts.payload_len;
-    float noise_floor = -60.0f;
+    float noise_floor           = -60.0f;
+    float SNRdB                 = _SNRdB;
 
     // frame generater properties
     ofdmflexframegenprops_s fgprops;
@@ -69,7 +49,6 @@ void ofdmflexframesync_ber(ofdmflexframesync_ber_opts      _opts,
 
     // bookkeeping variables
     unsigned int i, j;
-    float SNRdB = _SNRdB;
     ofdmflexframesync_per_simdata simdata;
 
     // create ofdmflexframegen object
@@ -101,8 +80,7 @@ void ofdmflexframesync_ber(ofdmflexframesync_ber_opts      _opts,
     _results->num_packet_errors = 0;
 
     for (j=0; j<num_frames; j++) {
-        // reset synchronizer
-        //printf("resetting gen/sync\n");
+        // reset generator/synchronizer objects
         ofdmflexframegen_reset(fg);
         ofdmflexframesync_reset(fs);
 
@@ -113,14 +91,12 @@ void ofdmflexframesync_ber(ofdmflexframesync_ber_opts      _opts,
         simdata.payload_decoded = 0;
 
         // generate random packet data, encode
-        //printf("generating random packet\n");
         for (i=0; i<8; i++)
             header[i] = rand() & 0xff;
         for (i=0; i<payload_len; i++)
             payload[i] = rand() & 0xff;
 
         // encode
-        //printf("encoding frame\n");
         ofdmflexframegen_assemble(fg,header,payload,payload_len);
 
         // initialize frame synchronizer with noise
@@ -150,32 +126,40 @@ void ofdmflexframesync_ber(ofdmflexframesync_ber_opts      _opts,
         _results->num_header_errors += simdata.header_decoded  ? 0 : 1;
         _results->num_packet_errors += simdata.payload_decoded ? 0 : 1;
 
+        // peridically print results
+        if ( (((j+1) % 50)==0 || (j==num_frames-1)) && _opts.verbose) {
+            float FER = (float) _results->num_missed_frames / (float) _results->num_frames;
+            float HER = (float) _results->num_header_errors / (float) _results->num_frames;
+            float PER = (float) _results->num_packet_errors / (float) _results->num_frames;
+
+            printf(" SNR: %5.2f frames:%6u/%6u (%5.1f%%) headers:%6u/%6u (%5.1f%%) packets:%6u/%6u (%5.1f%%)\r",
+                    SNRdB,
+                    _results->num_missed_frames, _results->num_frames, FER*100,
+                    _results->num_header_errors, _results->num_frames, HER*100,
+                    _results->num_packet_errors, _results->num_frames, PER*100);
+            fflush(stdout);
+        }
+
     } // num_frames
         
-    _results->num_frames = num_frames;
+    // clean up objects
+    ofdmflexframegen_destroy(fg);
+    ofdmflexframesync_destroy(fs);
+    nco_crcf_destroy(nco_channel);
 
     // update statistics
     _results->FER = (float) _results->num_missed_frames / (float) _results->num_frames;
     _results->HER = (float) _results->num_header_errors / (float) _results->num_frames;
     _results->PER = (float) _results->num_packet_errors / (float) _results->num_frames;
 
-    if (_opts.verbose) {
-        printf("SNR %7.2f [dB], %6u trials, errors: %6u frames, %6u headers, %6u payloads\n",
-            SNRdB,
-            _results->num_frames,
-            _results->num_missed_frames,
-            _results->num_header_errors,
-            _results->num_packet_errors);
+    if ( _opts.verbose) {
+        // print new line (refesh buffer)
+        printf("\n");
     }
-
-    // clean up objects
-    ofdmflexframegen_destroy(fg);
-    ofdmflexframesync_destroy(fs);
-    nco_crcf_destroy(nco_channel);
-
     return;
 }
 
+// static callback function
 static int ofdmflexframesync_per_callback(unsigned char *  _rx_header,
                                           int              _rx_header_valid,
                                           unsigned char *  _rx_payload,

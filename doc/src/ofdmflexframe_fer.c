@@ -50,7 +50,7 @@ int main(int argc, char *argv[]) {
     float SNRdB_max         = 10.0f;
     unsigned int num_frames = 1000;
     //float noise_floor       = -30.0f;
-    const char * filename   = "ofdmflexframesync_ber_results.dat";
+    const char * filename   = "ofdmflexframesync_fer_results.dat";
     modulation_scheme ms    = LIQUID_MODEM_QPSK;
     unsigned int M          = 64;
     unsigned int cp_len     = 16;
@@ -111,7 +111,7 @@ int main(int argc, char *argv[]) {
     }
 
     // set up framing simulation options
-    ofdmflexframesync_ber_opts opts;
+    ofdmflexframesync_fer_opts opts;
     opts.M          = M;
     opts.cp_len     = cp_len;
     opts.p          = NULL;
@@ -124,28 +124,11 @@ int main(int argc, char *argv[]) {
     opts.verbose    = verbose;
 
     // create results objects
-    ofdmflexframesync_ber_results results;
+    ofdmflexframesync_fer_results results;
 
     // bookkeeping variables
-    unsigned int n, i;
+    unsigned int i;
     float SNRdB = SNRdB_start;
-    unsigned int snr_length =
-        (unsigned int) fabs( (SNRdB_max-SNRdB_start)/SNRdB_step ) + 2;
-
-#if 0
-    // print approximate spectral efficiency
-    unsigned int framebits = 8*payload_len;
-    unsigned int framesyms = 8*fgprops.payload_len / fgprops.mod_bps;
-    unsigned int frame_len = fgprops.rampup_len + fgprops.phasing_len +
-                             framesyms +
-                             fgprops.rampdn_len;
-    printf("frame spec. efficiency : %12.8f\n", (float)framebits / (float)frame_len);
-#endif
-
-    // compute asymptotic rate
-    float rate = modulation_types[opts.ms].bps *    // modulation depth
-                 fec_get_rate(opts.fec0) *          // inner code rate
-                 fec_get_rate(opts.fec1);           // outer code rate
 
     // open output file
     FILE * fid = fopen(filename,"w");
@@ -167,7 +150,6 @@ int main(int argc, char *argv[]) {
     fprintf(fid,"#  fec (inner)         :   %s\n", fec_scheme_str[opts.fec0][1]);
     fprintf(fid,"#  fec (outer)         :   %s\n", fec_scheme_str[opts.fec1][1]);
     fprintf(fid,"#  payload length      :   %u bytes\n", opts.payload_len);
-    fprintf(fid,"#  asymptotic rate     :   %-12.8f bits/second/Hz\n", rate);
     fprintf(fid,"#  frame trials        :   %u\n", opts.num_frames);
     fprintf(fid,"#\n");
     fprintf(fid,"# %8s %12s %12s %12s %12s %12s %12s %12s\n",
@@ -179,15 +161,17 @@ int main(int argc, char *argv[]) {
             "headers",
             "packets",
             "num trials");
+    fclose(fid);
 
     // start running batch trials
-    for (n=0; n<snr_length; n++) {
+    while (SNRdB <= SNRdB_max) {
 
         // run trials
-        ofdmflexframesync_ber(opts, SNRdB, &results);
+        ofdmflexframesync_fer(opts, SNRdB, &results);
 
-        // save data to file
-        fprintf(fid,"  %8.2f %12.4e %12.4e %12.4e %12u %12u %12u %12u\n",
+        // append results to file
+        fid = fopen(filename,"a");
+        fprintf(fid,"  %8.2f %12.10f %12.10f %12.10f %12u %12u %12u %12u\n",
                 SNRdB,
                 results.FER,
                 results.HER,
@@ -196,12 +180,10 @@ int main(int argc, char *argv[]) {
                 results.num_header_errors,
                 results.num_packet_errors,
                 results.num_frames);
+        fclose(fid);
 
         SNRdB += SNRdB_step;
-    } // snr_length
-
-    // close output file
-    fclose(fid);
+    }
 
     printf("results written to '%s'\n", filename);
 
