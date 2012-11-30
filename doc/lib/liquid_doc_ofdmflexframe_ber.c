@@ -18,15 +18,13 @@ static int ofdmflexframesync_per_callback(unsigned char *  _rx_header,
                                           void *           _userdata);
 
 typedef struct {
-    unsigned int num_trials;
-    unsigned int num_packets_found;
-    unsigned int num_headers_decoded;
-    unsigned int num_payloads_decoded;
-    unsigned int payload_len;
-    unsigned char * rx_packet;
+    int frame_detected;
+    int header_decoded;
+    int payload_decoded;
 } ofdmflexframesync_per_simdata;
 
-void ofdmflexframesync_per(ofdmflexframegenprops_s * _fgprops,
+#if 0
+void ofdmflexframesync_ber(ofdmflexframegenprops_s * _fgprops,
                            unsigned int _M,
                            unsigned int _cp_len,
                            unsigned char * _p,
@@ -35,43 +33,56 @@ void ofdmflexframesync_per(ofdmflexframegenprops_s * _fgprops,
                            float _noise_floor_dB,
                            float _SNRdB,
                            float _dphi,
-                           unsigned int _num_trials,
+                           unsigned int _num_frames,
                            unsigned int * _num_packets_found,
                            unsigned int * _num_headers_decoded,
                            unsigned int * _num_payloads_decoded)
+#else
+void ofdmflexframesync_ber(ofdmflexframesync_ber_opts      _opts,
+                           float                           _SNRdB,
+                           ofdmflexframesync_ber_results * _results)
+#endif
 {
     // define parameters
 #if 0
     float dphi = _dphi; // carrier frequency offset
     float phi = 0.0f;   // carrier phase offset
 #endif
-    unsigned int num_trials = _num_trials;
-    float noise_floor = _noise_floor_dB;
+    // TODO: validate options
 
-    // validate options
+    // get options
+    unsigned int M              = _opts.M;
+    unsigned int cp_len         = _opts.cp_len;
+    unsigned int taper_len      = 0;
+    unsigned char * p           = _opts.p;
+    unsigned int num_frames     = _opts.num_frames;
+    unsigned int payload_len    = _opts.payload_len;
+    float noise_floor = -60.0f;
+
+    // frame generater properties
+    ofdmflexframegenprops_s fgprops;
+    ofdmflexframegenprops_init_default(&fgprops);
+    fgprops.check           = _opts.check;
+    fgprops.fec0            = _opts.fec0;
+    fgprops.fec1            = _opts.fec1;
+    fgprops.mod_scheme      = _opts.ms;
 
     // bookkeeping variables
     unsigned int i, j;
     float SNRdB = _SNRdB;
     ofdmflexframesync_per_simdata simdata;
 
-    unsigned char rx_packet[_payload_len];
-    simdata.payload_len = _payload_len;
-    simdata.rx_packet = rx_packet;
-
-    unsigned int taper_len = 0;
-
     // create ofdmflexframegen object
-    ofdmflexframegen fg = ofdmflexframegen_create(_M, _cp_len, taper_len, _p, _fgprops);
+    ofdmflexframegen fg = ofdmflexframegen_create(M, cp_len, taper_len, p, &fgprops);
     //ofdmflexframegen_print(fg);
 
     // frame synchronizer
-    ofdmflexframesync fs = ofdmflexframesync_create(_M,_cp_len,taper_len,_p,ofdmflexframesync_per_callback,(void*)&simdata);
+    ofdmflexframesync fs = ofdmflexframesync_create(M,cp_len,taper_len,p,ofdmflexframesync_per_callback,(void*)&simdata);
     //ofdmflexframesync_print(fs);
 
     unsigned char header[8];
-    unsigned char payload[_payload_len];
-    unsigned int symbol_len = _M + _cp_len;
+    unsigned char payload[payload_len];
+    unsigned int symbol_len = M + cp_len;
     float complex buffer[symbol_len];
 
     // channel objects
@@ -83,30 +94,34 @@ void ofdmflexframesync_per(ofdmflexframegenprops_s * _fgprops,
     // ---------- BEGIN TRIALS ----------
     //
 
-    // start trials for a particular SNR
-    simdata.num_trials = 0;
-    simdata.num_packets_found = 0;
-    simdata.num_headers_decoded = 0;
-    simdata.num_payloads_decoded = 0;
+    // initalize results field
+    _results->num_frames        = 0;
+    _results->num_missed_frames = 0;
+    _results->num_header_errors = 0;
+    _results->num_packet_errors = 0;
 
-    for (j=0; j<num_trials; j++) {
+    for (j=0; j<num_frames; j++) {
         // reset synchronizer
         //printf("resetting gen/sync\n");
         ofdmflexframegen_reset(fg);
         ofdmflexframesync_reset(fs);
 
-        simdata.num_trials++;
+        _results->num_frames++;
+
+        simdata.frame_detected  = 0;
+        simdata.header_decoded  = 0;
+        simdata.payload_decoded = 0;
 
         // generate random packet data, encode
         //printf("generating random packet\n");
         for (i=0; i<8; i++)
             header[i] = rand() & 0xff;
-        for (i=0; i<_payload_len; i++)
+        for (i=0; i<payload_len; i++)
             payload[i] = rand() & 0xff;
 
         // encode
         //printf("encoding frame\n");
-        ofdmflexframegen_assemble(fg,header,payload,_payload_len);
+        ofdmflexframegen_assemble(fg,header,payload,payload_len);
 
         // initialize frame synchronizer with noise
         for (i=0; i<(rand()%100)+400; i++) {
@@ -130,43 +145,28 @@ void ofdmflexframesync_per(ofdmflexframegenprops_s * _fgprops,
             ofdmflexframesync_execute(fs, buffer, symbol_len);
         }
 
+        // accumulate results
+        _results->num_missed_frames += simdata.frame_detected  ? 0 : 1;
+        _results->num_header_errors += simdata.header_decoded  ? 0 : 1;
+        _results->num_packet_errors += simdata.payload_decoded ? 0 : 1;
 
-#if 0
-        // add channel impairments
-        //printf("channel impairments\n");
-        nco_crcf_set_frequency(nco_channel,dphi);
-        nco_crcf_set_phase(nco_channel,phi);
-        for (i=0; i<2*frame_len; i++) {
-            frame_interp[i] *= gamma;
-            cawgn(&frame_interp[i],nstd);
-            nco_crcf_mix_up(nco_channel, frame_interp[i], &frame_interp[i]);
-            nco_crcf_step(nco_channel);
-        }
+    } // num_frames
+        
+    _results->num_frames = num_frames;
 
-        // run synchronizer
-        //printf("running sync\n");
-        ofdmflexframesync_execute(fs, frame_interp, 2*frame_len);
+    // update statistics
+    _results->FER = (float) _results->num_missed_frames / (float) _results->num_frames;
+    _results->HER = (float) _results->num_header_errors / (float) _results->num_frames;
+    _results->PER = (float) _results->num_packet_errors / (float) _results->num_frames;
 
-        // push noise
-        for (i=0; i<frame_len; i++)
-            frame[i] = (randnf() + _Complex_I*randnf()) * nstd;
-        ofdmflexframesync_execute(fs,frame,frame_len);
-#endif
-
-    } // num_trials
-
-#if 0
-    printf("SNR %12.8f [dB] : %6u %6u %6u %6u\n",
-        SNRdB,
-        simdata.num_trials,
-        simdata.num_packets_found,
-        simdata.num_headers_decoded,
-        simdata.num_payloads_decoded);
-#endif
-
-    *_num_packets_found     = simdata.num_packets_found;
-    *_num_headers_decoded   = simdata.num_headers_decoded;
-    *_num_payloads_decoded  = simdata.num_payloads_decoded;
+    if (_opts.verbose) {
+        printf("SNR %7.2f [dB], %6u trials, errors: %6u frames, %6u headers, %6u payloads\n",
+            SNRdB,
+            _results->num_frames,
+            _results->num_missed_frames,
+            _results->num_header_errors,
+            _results->num_packet_errors);
+    }
 
     // clean up objects
     ofdmflexframegen_destroy(fg);
@@ -186,22 +186,18 @@ static int ofdmflexframesync_per_callback(unsigned char *  _rx_header,
 {
     ofdmflexframesync_per_simdata * simdata = (ofdmflexframesync_per_simdata*) _userdata;
 
-    simdata->num_packets_found++;
-    simdata->num_headers_decoded  += (_rx_header_valid) ? 1 : 0;
+    // specify that frame was detected
+    simdata->frame_detected = 1;
 
     if (!_rx_header_valid)
         return 0;
+    
+    // specify that header was detected
+    simdata->header_decoded = 1;
 
     if (_rx_payload_valid)
-        simdata->num_payloads_decoded++;
+        simdata->payload_decoded = 1;
 
-#if 0
-    printf("callback invoked : %6u %6u %6u %6u\n",
-        simdata->num_trials,
-        simdata->num_packets_found,
-        simdata->num_headers_decoded,
-        simdata->num_payloads_decoded);
-#endif
     return 0;
 }
 

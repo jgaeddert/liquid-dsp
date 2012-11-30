@@ -1,6 +1,6 @@
 /*
- * Copyright (c) 2007, 2008, 2009, 2010 Joseph Gaeddert
- * Copyright (c) 2007, 2008, 2009, 2010 Virginia Polytechnic
+ * Copyright (c) 2007, 2008, 2009, 2010, 2012 Joseph Gaeddert
+ * Copyright (c) 2007, 2008, 2009, 2010, 2012 Virginia Polytechnic
  *                                      Institute & State University
  *
  * This file is part of liquid.
@@ -131,43 +131,42 @@ float estimate_snr_bpsk(float _error_rate);
 // ofdmframesync performance
 //
 
-#if 0
 // simulate packet error rate options
 typedef struct {
-    modulation_scheme ms;           // modulation scheme
-    fec_scheme fec0;                // FEC codec (inner)
-    fec_scheme fec1;                // FEC codec (outer)
-    int interleaving;               // apply interleaving?
-    unsigned int dec_msg_len;       // (decoded) message length (bytes)
-    int soft_decoding;              // soft bit decoding?
-    
-    int verbose;                    // verbose output?
+    // OFDM frame properties
+    unsigned int M;             // number of subcarriers
+    unsigned int cp_len;        // cyclic prefix length
+    unsigned char * p;          // subcarrier allocation
+    modulation_scheme ms;       // modulation scheme
+    crc_scheme check;           // cyclic redundancy check
+    fec_scheme fec0;            // FEC codec (inner)
+    fec_scheme fec1;            // FEC codec (outer)
+    unsigned int payload_len;   // (decoded) message length (bytes)
+    unsigned int num_frames;    // number of frames
 
-    unsigned long int min_packet_errors;    // minimum number of packet errors
-    unsigned long int min_bit_errors;       // minimum number of bit errors
-    unsigned long int min_packet_trials;    // minimum number of packet trials
-    unsigned long int min_bit_trials;       // minimum number of bit trials
-    unsigned long int max_packet_trials;    // maximum number of packet trials
-    unsigned long int max_bit_trials;       // maximum number of bit trials
-} ofdmflexframesync_per_opts;
+    int verbose;                // verbose output?
+
+    // channel impairments...
+
+} ofdmflexframesync_ber_opts;
 
 // simulate packet error rate results
 typedef struct {
-    int success;                            // success?
 
-    unsigned long int num_bit_errors;       // number of bit errors
-    unsigned long int num_bit_trials;       // number of bit trials
+    unsigned int num_frames;            // total number of frames sent
 
-    unsigned long int num_packet_errors;    // number of packet errors
-    unsigned long int num_packet_trials;    // number of packet trials
+    unsigned int num_missed_frames;     // number of missed frames
+    unsigned int num_header_errors;     // number of header errors
+    unsigned int num_packet_errors;     // number of packet errors
 
     // derived values
-    float BER;  // apparent BER
-    float PER;  // apparent PER
-} ofdmflexframe_sync_per_results;
-#endif
+    float FER;  // apparent frame error rate
+    float HER;  // apparent header error rate
+    float PER;  // apparent packet error rate
+} ofdmflexframesync_ber_results;
 
-void ofdmflexframesync_per(ofdmflexframegenprops_s * _fgprops,
+#if 0
+void ofdmflexframesync_ber(ofdmflexframegenprops_s * _fgprops,
                            unsigned int _M,
                            unsigned int _cp_len,
                            unsigned char * _p,
@@ -180,7 +179,11 @@ void ofdmflexframesync_per(ofdmflexframegenprops_s * _fgprops,
                            unsigned int * _num_packets_found,
                            unsigned int * _num_headers_decoded,
                            unsigned int * _num_payloads_decoded);
-
+#else
+void ofdmflexframesync_ber(ofdmflexframesync_ber_opts      _opts,
+                           float                           _SNRdB,
+                           ofdmflexframesync_ber_results * _results);
+#endif
 
 #endif // __LIQUID_DOC_H__
 

@@ -30,13 +30,13 @@ void usage()
     printf("  d     : SNR step [dB], 1.0\n");
     printf("  x     : SNR max [dB], 10\n");
     printf("  n     : number of trials, 1000\n");
-    printf("  f     : frame bytes (packet len), 64\n");
+    printf("  f     : frame bytes (packet len), 256\n");
     printf("  M     : number of subcarriers (must be even), default: 64\n");
     printf("  C     : cyclic prefix length, default: 16\n");
     printf("  m     : mod scheme, default: qpsk\n");
     liquid_print_modulation_schemes();
-    printf("  c     : fec coding scheme (inner)\n");
-    printf("  k     : fec coding scheme (outer)\n");
+    printf("  c     : fec coding scheme (inner), default: h128\n");
+    printf("  k     : fec coding scheme (outer), default: none\n");
     liquid_print_fec_schemes();
 }
 
@@ -45,19 +45,20 @@ int main(int argc, char *argv[]) {
     srand( time(NULL) );
 
     // define parameters
-    float SNRdB_start = -5.0f;
-    float SNRdB_step  = 1.0f;
-    float SNRdB_max   = 10.0f;
-    unsigned int num_trials = 1000;
-    float noise_floor = -30.0f;
-    const char * filename = "ofdmflexframesync_sim_results.m";
-    modulation_scheme mod_scheme = LIQUID_MODEM_QPSK;
-    unsigned int M=64;
-    unsigned int cp_len = 16;
-    unsigned int payload_len = 64;
-    crc_scheme crc  = LIQUID_CRC_32;
-    fec_scheme fec0 = LIQUID_FEC_NONE;
-    fec_scheme fec1 = LIQUID_FEC_NONE;
+    float SNRdB_start       = -5.0f;
+    float SNRdB_step        = 1.0f;
+    float SNRdB_max         = 10.0f;
+    unsigned int num_frames = 1000;
+    //float noise_floor       = -30.0f;
+    const char * filename   = "ofdmflexframesync_ber_results.dat";
+    modulation_scheme ms    = LIQUID_MODEM_QPSK;
+    unsigned int M          = 64;
+    unsigned int cp_len     = 16;
+    unsigned int payload_len= 256;
+    crc_scheme check        = LIQUID_CRC_32;
+    fec_scheme fec0         = LIQUID_FEC_HAMMING128;
+    fec_scheme fec1         = LIQUID_FEC_NONE;
+    int verbose             = 1;
 
     // get command-line options
     int dopt;
@@ -69,13 +70,13 @@ int main(int argc, char *argv[]) {
         case 's': SNRdB_start = atof(optarg);   break;
         case 'd': SNRdB_step = atof(optarg);    break;
         case 'x': SNRdB_max = atof(optarg);     break;
-        case 'n': num_trials = atol(optarg);    break;
+        case 'n': num_frames = atol(optarg);    break;
         case 'f': payload_len = atol(optarg);   break;
         case 'M': M = atoi(optarg);             break;
         case 'C': cp_len = atoi(optarg);        break;
         case 'm':
-            mod_scheme = liquid_getopt_str2mod(optarg);
-            if (mod_scheme == LIQUID_MODEM_UNKNOWN) {
+            ms = liquid_getopt_str2mod(optarg);
+            if (ms == LIQUID_MODEM_UNKNOWN) {
                 printf("error: unknown/unsupported mod. scheme: %s\n", optarg);
                 exit(1);
             }
@@ -109,43 +110,27 @@ int main(int argc, char *argv[]) {
         exit(-1);
     }
 
+    // set up framing simulation options
+    ofdmflexframesync_ber_opts opts;
+    opts.M          = M;
+    opts.cp_len     = cp_len;
+    opts.p          = NULL;
+    opts.ms         = ms;
+    opts.check      = check;
+    opts.fec0       = fec0;
+    opts.fec1       = fec1;
+    opts.payload_len= payload_len;
+    opts.num_frames = num_frames;
+    opts.verbose    = verbose;
+
+    // create results objects
+    ofdmflexframesync_ber_results results;
+
     // bookkeeping variables
     unsigned int n, i;
     float SNRdB = SNRdB_start;
     unsigned int snr_length =
         (unsigned int) fabs( (SNRdB_max-SNRdB_start)/SNRdB_step ) + 2;
-    float SNR[snr_length];
-    unsigned int NUM_PACKETS_FOUND[snr_length];
-    unsigned int NUM_HEADERS_DECODED[snr_length];
-    unsigned int NUM_PAYLOADS_DECODED[snr_length];
-
-    // frame generater properties
-    ofdmflexframegenprops_s fgprops;
-    ofdmflexframegenprops_init_default(&fgprops);
-    fgprops.check           = crc;
-    fgprops.fec0            = fec0;
-    fgprops.fec1            = fec1;
-    fgprops.mod_scheme      = mod_scheme;
-
-    // initialize subcarrier allocation
-    unsigned char p[M];
-#if 0
-    // initialize subcarriers to default
-    ofdmframe_init_default_sctype(M,p);
-#else
-    unsigned int guard = M / 6;
-    unsigned int pilot_spacing = 8;
-    unsigned int i0 = (M/2) - guard;
-    unsigned int i1 = (M/2) + guard;
-    for (i=0; i<M; i++) {
-        if ( i == 0 || (i > i0 && i < i1) )
-            p[i] = OFDMFRAME_SCTYPE_NULL;
-        else if ( (i%pilot_spacing)==0 )
-            p[i] = OFDMFRAME_SCTYPE_PILOT;
-        else
-            p[i] = OFDMFRAME_SCTYPE_DATA;
-    }
-#endif
 
 #if 0
     // print approximate spectral efficiency
@@ -157,106 +142,68 @@ int main(int argc, char *argv[]) {
     printf("frame spec. efficiency : %12.8f\n", (float)framebits / (float)frame_len);
 #endif
 
-    // TODO : set frame synchronizer properties
+    // compute asymptotic rate
+    float rate = modulation_types[opts.ms].bps *    // modulation depth
+                 fec_get_rate(opts.fec0) *          // inner code rate
+                 fec_get_rate(opts.fec1);           // outer code rate
 
-    // print information
-    printf("    mod scheme  :   %s\n", modulation_types[mod_scheme].fullname);
-    printf("    fec (inner) :   %s\n", fec_scheme_str[fec0][1]);
-    printf("    fec (outer) :   %s\n", fec_scheme_str[fec1][1]);
-    printf("    packet len  :   %u bytes\n", payload_len);
-    printf("starting trials: \n");
+    // open output file
+    FILE * fid = fopen(filename,"w");
+    if (!fid) {
+        fprintf(stderr,"error: could not open '%s' for writing\n", filename);
+        exit(1);
+    }
+    fprintf(fid,"# %s : auto-generated file\n", filename);
+    fprintf(fid,"# invoked as: ");
+    for (i=0; i<argc; i++) fprintf(fid,"%s ", argv[i]);
+    fprintf(fid,"\n");
+    fprintf(fid,"#\n");
+    fprintf(fid,"#  M (subcarriers)     :   %u\n", opts.M);
+    fprintf(fid,"#  cyclic prefix       :   %u\n", opts.cp_len);
+    fprintf(fid,"#  allocation          :   \n"); // ofdmframe_print_sctype(opts.p, opts.M);
+    fprintf(fid,"#  modulation scheme   :   %s\n", modulation_types[opts.ms].fullname);
+    fprintf(fid,"#  modulation depth    :   %u bits/symbol\n", modulation_types[opts.ms].bps);
+    fprintf(fid,"#  check               :   %s\n", crc_scheme_str[opts.check][1]);
+    fprintf(fid,"#  fec (inner)         :   %s\n", fec_scheme_str[opts.fec0][1]);
+    fprintf(fid,"#  fec (outer)         :   %s\n", fec_scheme_str[opts.fec1][1]);
+    fprintf(fid,"#  payload length      :   %u bytes\n", opts.payload_len);
+    fprintf(fid,"#  asymptotic rate     :   %-12.8f bits/second/Hz\n", rate);
+    fprintf(fid,"#  frame trials        :   %u\n", opts.num_frames);
+    fprintf(fid,"#\n");
+    fprintf(fid,"# %8s %12s %12s %12s %12s %12s %12s %12s\n",
+            "SNR [dB]",
+            "FER (frame)",
+            "HER (header)",
+            "PER (packet)",
+            "frames",
+            "headers",
+            "packets",
+            "num trials");
 
-    unsigned int num_packets_found;
-    unsigned int num_headers_decoded;
-    unsigned int num_payloads_decoded;
     // start running batch trials
-        
-    printf("  %12s %8s %16s %16s %16s\n", "SNR [dB]", "trials", "frame", "header", "payload");
     for (n=0; n<snr_length; n++) {
 
-        // run simulation
-        float dphi = 0.0f;  // carrier frequency offset
-        ofdmflexframesync_per(&fgprops,M,cp_len,p,NULL,payload_len,
-                              noise_floor,SNRdB,dphi,
-                              num_trials,
-                              &num_packets_found,
-                              &num_headers_decoded,
-                              &num_payloads_decoded);
+        // run trials
+        ofdmflexframesync_ber(opts, SNRdB, &results);
 
-        // SNR trial successful, increase SNR
-        SNR[n] = SNRdB;
-        NUM_PACKETS_FOUND[n]    = num_packets_found;
-        NUM_HEADERS_DECODED[n]  = num_headers_decoded;
-        NUM_PAYLOADS_DECODED[n] = num_payloads_decoded;
-        
-        printf("  %12.4f %8u %8u(%5.1f%%) %8u(%5.1f%%) %8u(%5.1f%%)\n",
-            SNRdB,
-            num_trials,
-            num_packets_found,   (float)num_packets_found/(float)num_trials*100.0f,
-            num_headers_decoded, (float)num_headers_decoded/(float)num_trials*100.0f,
-            num_payloads_decoded,(float)num_payloads_decoded/(float)num_trials*100.0f);
+        // save data to file
+        fprintf(fid,"  %8.2f %12.4e %12.4e %12.4e %12u %12u %12u %12u\n",
+                SNRdB,
+                results.FER,
+                results.HER,
+                results.PER,
+                results.num_missed_frames,
+                results.num_header_errors,
+                results.num_packet_errors,
+                results.num_frames);
+
         SNRdB += SNRdB_step;
     } // snr_length
 
-
-    // write results to file
-    FILE * fid;
-    if (strcmp(filename,"")!=0) {
-        fid = fopen(filename, "w");
-        fprintf(fid,"%% %s : auto-generated file\n", filename);
-        fprintf(fid,"\n\n");
-        fprintf(fid,"clear all\n");
-        fprintf(fid,"close all\n");
-        fprintf(fid,"num_trials = %u;\n", num_trials);
-        fprintf(fid,"n = %u;\n", snr_length);
-        for (i=0; i<snr_length; i++) {
-            fprintf(fid,"SNRdB(%4u) = %12.8f;\n",i+1,SNR[i]);
-            fprintf(fid,"num_packets_found(%4u)    = %u;\n",i+1,NUM_PACKETS_FOUND[i]);
-            fprintf(fid,"num_headers_decoded(%4u)  = %u;\n",i+1,NUM_HEADERS_DECODED[i]);
-            fprintf(fid,"num_payloads_decoded(%4u) = %u;\n",i+1,NUM_PAYLOADS_DECODED[i]);
-        }
-        fprintf(fid,"\n\n");
-        fprintf(fid,"figure;\n");
-        fprintf(fid,"plot(SNRdB, num_packets_found   / num_trials,\n");
-        fprintf(fid,"     SNRdB, num_headers_decoded / num_trials,\n");
-        fprintf(fid,"     SNRdB, num_payloads_decoded / num_trials);\n");
-        fprintf(fid,"legend('preamble','header','payload',0);\n");
-        fprintf(fid,"xlabel('SNR [dB]');\n");
-        fprintf(fid,"ylabel('Probability of Detection');\n");
-        fprintf(fid,"grid on;\n");
-        fprintf(fid,"title('ofdmflexframesync synchronization performance');\n");
-        fclose(fid);
-        printf("results written to %s\n", filename);
-    }
-
-#if 1
-    fid = fopen("ofdmflexframesync_sim.dat","w");
-    fprintf(fid,"# %s : auto-generated file\n", "ofdmflexframesync_sim.dat");
-    fprintf(fid,"# options:\n");
-    fprintf(fid,"#   number of trials   : %u\n", num_trials);
-    fprintf(fid,"#   payload length     : %u (bytes)\n", payload_len);
-    fprintf(fid,"#   modulation         : %s\n", modulation_types[mod_scheme].fullname);
-    fprintf(fid,"#   fec (inner)        : %s\n", fec_scheme_str[fec0][0]);
-    fprintf(fid,"#   fec (outer)        : %s\n", fec_scheme_str[fec1][0]);
-    fprintf(fid,"#   num subcarriers    : %u\n", M);
-    fprintf(fid,"#   cyclic prefix len  : %u\n", cp_len);
-    fprintf(fid,"#\n");
-    fprintf(fid,"# %12s %12s %12s %12s\n",
-        "SNR [dB]",
-        "packets",
-        "headers",
-        "payloads");
-    for (i=0; i<snr_length; i++) {
-        fprintf(fid,"  %12.8f %12.8f %12.8f %12.8f\n",
-                SNR[i],
-                (float)NUM_PACKETS_FOUND[i]     / (float)num_trials,
-                (float)NUM_HEADERS_DECODED[i]   / (float)num_trials,
-                (float)NUM_PAYLOADS_DECODED[i]  / (float)num_trials);
-    }
+    // close output file
     fclose(fid);
-#endif
 
-    // clean up objects
+    printf("results written to '%s'\n", filename);
 
     return 0;
 }
