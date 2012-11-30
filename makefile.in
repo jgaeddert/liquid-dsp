@@ -1416,6 +1416,7 @@ clean-examples:
 .PHONY: sandbox
 sandbox_programs =						\
 	sandbox/bpresync_test					\
+	sandbox/cpmodem_test					\
 	sandbox/crc_gentab					\
 	sandbox/ellip_func_test					\
 	sandbox/ellip_test					\
