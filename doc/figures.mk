@@ -276,6 +276,7 @@ local_programs :=					\
 	src/filter_kaiser				\
 	src/filter_rnyquist				\
 	src/filter_symsync_crcf				\
+	src/gmskframe_fer				\
 	src/interleaver_scatterplot			\
 	src/liquid_version				\
 	src/math_polyfit_lagrange			\

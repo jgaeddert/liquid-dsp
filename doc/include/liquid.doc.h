@@ -127,8 +127,57 @@ float estimate_snr(simulate_per_opts _opts,
 // solve for SNR (Eb/N0) for BPSK for a given BER
 float estimate_snr_bpsk(float _error_rate);
 
+//
+// framing detection
+//
+
+// simulate packet error rate results
+typedef struct {
+
+    unsigned int num_frames;        // total number of frames sent
+
+    unsigned int num_missed_frames; // number of missed frames
+    unsigned int num_header_errors; // number of header errors
+    unsigned int num_packet_errors; // number of packet errors
+
+    // derived values
+    float FER;                      // apparent frame error rate
+    float HER;                      // apparent header error rate
+    float PER;                      // apparent packet error rate
+} fer_results;
+
+
 // 
-// ofdmframesync performance
+// gmskframe performance
+//
+
+// simulate packet error rate options
+typedef struct {
+    // GMSK frame properties
+    unsigned int k;             // samples/symbol
+    unsigned int m;             // filter delay (symbols)
+    float BT;                   // bandwidth/time constant
+    crc_scheme check;           // cyclic redundancy check
+    fec_scheme fec0;            // FEC codec (inner)
+    fec_scheme fec1;            // FEC codec (outer)
+    unsigned int payload_len;   // (decoded) message length (bytes)
+    unsigned int num_frames;    // number of frames
+
+    int verbose;                // verbose output?
+
+    // channel impairments...
+
+} gmskframe_fer_opts;
+
+
+// simulate frame detection and error rates for ofdmflexframe
+void gmskframe_fer(gmskframe_fer_opts _opts,
+                   float              _SNRdB,
+                   fer_results *      _results);
+
+
+// 
+// ofdmframe performance
 //
 
 // simulate packet error rate options
@@ -148,27 +197,12 @@ typedef struct {
 
     // channel impairments...
 
-} ofdmflexframesync_fer_opts;
-
-// simulate packet error rate results
-typedef struct {
-
-    unsigned int num_frames;            // total number of frames sent
-
-    unsigned int num_missed_frames;     // number of missed frames
-    unsigned int num_header_errors;     // number of header errors
-    unsigned int num_packet_errors;     // number of packet errors
-
-    // derived values
-    float FER;  // apparent frame error rate
-    float HER;  // apparent header error rate
-    float PER;  // apparent packet error rate
-} ofdmflexframesync_fer_results;
+} ofdmflexframe_fer_opts;
 
 // simulate frame detection and error rates for ofdmflexframe
-void ofdmflexframesync_fer(ofdmflexframesync_fer_opts      _opts,
-                           float                           _SNRdB,
-                           ofdmflexframesync_fer_results * _results);
+void ofdmflexframe_fer(ofdmflexframe_fer_opts _opts,
+                           float              _SNRdB,
+                           fer_results *      _results);
 
 #endif // __LIQUID_DOC_H__
 

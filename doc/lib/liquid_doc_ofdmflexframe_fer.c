@@ -9,35 +9,36 @@
 
 #include "liquid.doc.h"
 
-static int ofdmflexframesync_per_callback(unsigned char *  _rx_header,
-                                          int              _rx_header_valid,
-                                          unsigned char *  _rx_payload,
-                                          unsigned int     _rx_payload_len,
-                                          int              _rx_payload_valid,
-                                          framesyncstats_s _stats,
-                                          void *           _userdata);
+static int ofdmflexframe_fer_callback(unsigned char *  _rx_header,
+                                      int              _rx_header_valid,
+                                      unsigned char *  _rx_payload,
+                                      unsigned int     _rx_payload_len,
+                                      int              _rx_payload_valid,
+                                      framesyncstats_s _stats,
+                                      void *           _userdata);
 
 typedef struct {
     int frame_detected;
     int header_decoded;
     int payload_decoded;
-} ofdmflexframesync_per_simdata;
+} ofdmflexframe_fer_simdata;
 
 // simulate frame detection and error rates for ofdmflexframe
-void ofdmflexframesync_fer(ofdmflexframesync_fer_opts      _opts,
-                           float                           _SNRdB,
-                           ofdmflexframesync_fer_results * _results)
+void ofdmflexframe_fer(ofdmflexframe_fer_opts _opts,
+                       float                  _SNRdB,
+                       fer_results *          _results)
 {
     // TODO: validate options
     // get options
-    unsigned int M              = _opts.M;
-    unsigned int cp_len         = _opts.cp_len;
-    unsigned int taper_len      = 0;
-    unsigned char * p           = _opts.p;
-    unsigned int num_frames     = _opts.num_frames;
-    unsigned int payload_len    = _opts.payload_len;
-    float noise_floor           = -60.0f;
-    float SNRdB                 = _SNRdB;
+    unsigned int M          = _opts.M;
+    unsigned int cp_len     = _opts.cp_len;
+    unsigned int taper_len  = 0;
+    unsigned char * p       = _opts.p;
+    unsigned int num_frames = _opts.num_frames;
+    unsigned int payload_len= _opts.payload_len;
+    float noise_floor       = -60.0f;
+    float SNRdB             = _SNRdB;
+    int verbose             = _opts.verbose;
 
     // frame generater properties
     ofdmflexframegenprops_s fgprops;
@@ -49,14 +50,14 @@ void ofdmflexframesync_fer(ofdmflexframesync_fer_opts      _opts,
 
     // bookkeeping variables
     unsigned int i, j;
-    ofdmflexframesync_per_simdata simdata;
+    ofdmflexframe_fer_simdata simdata;
 
     // create ofdmflexframegen object
     ofdmflexframegen fg = ofdmflexframegen_create(M, cp_len, taper_len, p, &fgprops);
     //ofdmflexframegen_print(fg);
 
     // frame synchronizer
-    ofdmflexframesync fs = ofdmflexframesync_create(M,cp_len,taper_len,p,ofdmflexframesync_per_callback,(void*)&simdata);
+    ofdmflexframesync fs = ofdmflexframesync_create(M,cp_len,taper_len,p,ofdmflexframe_fer_callback,(void*)&simdata);
     //ofdmflexframesync_print(fs);
 
     unsigned char header[8];
@@ -127,7 +128,7 @@ void ofdmflexframesync_fer(ofdmflexframesync_fer_opts      _opts,
         _results->num_packet_errors += simdata.payload_decoded ? 0 : 1;
 
         // peridically print results
-        if ( (((j+1) % 50)==0 || (j==num_frames-1)) && _opts.verbose) {
+        if ( (((j+1) % 50)==0 || (j==num_frames-1)) && verbose) {
             float FER = (float) _results->num_missed_frames / (float) _results->num_frames;
             float HER = (float) _results->num_header_errors / (float) _results->num_frames;
             float PER = (float) _results->num_packet_errors / (float) _results->num_frames;
@@ -152,7 +153,7 @@ void ofdmflexframesync_fer(ofdmflexframesync_fer_opts      _opts,
     _results->HER = (float) _results->num_header_errors / (float) _results->num_frames;
     _results->PER = (float) _results->num_packet_errors / (float) _results->num_frames;
 
-    if ( _opts.verbose) {
+    if ( verbose) {
         // print new line (refesh buffer)
         printf("\n");
     }
@@ -160,7 +161,7 @@ void ofdmflexframesync_fer(ofdmflexframesync_fer_opts      _opts,
 }
 
 // static callback function
-static int ofdmflexframesync_per_callback(unsigned char *  _rx_header,
+static int ofdmflexframe_fer_callback(unsigned char *  _rx_header,
                                           int              _rx_header_valid,
                                           unsigned char *  _rx_payload,
                                           unsigned int     _rx_payload_len,
@@ -168,7 +169,7 @@ static int ofdmflexframesync_per_callback(unsigned char *  _rx_header,
                                           framesyncstats_s _stats,
                                           void *           _userdata)
 {
-    ofdmflexframesync_per_simdata * simdata = (ofdmflexframesync_per_simdata*) _userdata;
+    ofdmflexframe_fer_simdata * simdata = (ofdmflexframe_fer_simdata*) _userdata;
 
     // specify that frame was detected
     simdata->frame_detected = 1;
