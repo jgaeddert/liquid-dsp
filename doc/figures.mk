@@ -107,7 +107,8 @@ local_pdffiles :=					\
 	figures.gen/filter_symsync_crcf_const.pdf	\
 	figures.gen/filter_symsync_crcf_time.pdf	\
 							\
-	figures.gen/ofdmflexframesync_performance.pdf	\
+	figures.gen/gmskframe_performance.pdf		\
+	figures.gen/ofdmflexframe_performance.pdf	\
 							\
 	figures.gen/interleaver_scatterplot_i0.pdf	\
 	figures.gen/interleaver_scatterplot_i1.pdf	\
@@ -654,14 +655,24 @@ figures.gen/fft_spgram_freq.eps : %.eps : %.gnu %.dat
 ##
 
 # 
-# ofdmflexframesync_performance
+# gmskframe_performance
 #
 
-figures.gen/ofdmflexframesync_performance.dat \
-figures.gen/ofdmflexframesync_performance.gnu : figures.gen/% : data/ofdmflexframe/%
+figures.gen/gmskframe_performance.dat \
+figures.gen/gmskframe_performance.gnu : figures.gen/% : data/framing/%
 	cp $< $@
 
-figures.gen/ofdmflexframesync_performance.eps : %.eps : %.gnu %.dat
+figures.gen/gmskframe_performance.eps : %.eps : %.gnu %.dat
+
+# 
+# ofdmflexframe_performance
+#
+
+figures.gen/ofdmflexframe_performance.dat \
+figures.gen/ofdmflexframe_performance.gnu : figures.gen/% : data/framing/%
+	cp $< $@
+
+figures.gen/ofdmflexframe_performance.eps : %.eps : %.gnu %.dat
 
 ##
 ## MODULE : interleaver
