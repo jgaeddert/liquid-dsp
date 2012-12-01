@@ -59,6 +59,7 @@ src/filter_resamp_crcf
 src/filter_resamp2_crcf_interp
 src/filter_rnyquist
 src/filter_symsync_crcf
+src/gmskframe_fer
 src/interleaver_scatterplot
 src/liquid_version
 src/math_poly_examples
@@ -71,7 +72,7 @@ src/modem.gendata
 src/modem.genplot
 src/modem_phase_error
 src/nco_pll
-src/ofdmflexframe_ber
+src/ofdmflexframe_fer
 src/optim_gradsearch
 src/quantization_adc
 src/quantization_compander

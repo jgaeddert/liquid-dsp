@@ -276,6 +276,7 @@ local_programs :=					\
 	src/filter_kaiser				\
 	src/filter_rnyquist				\
 	src/filter_symsync_crcf				\
+	src/gmskframe_fer				\
 	src/interleaver_scatterplot			\
 	src/liquid_version				\
 	src/math_polyfit_lagrange			\
@@ -295,7 +296,7 @@ local_programs :=					\
 	src/sequence_ccodes				\
 	src/sequence_msequence				\
 							\
-	src/ofdmflexframe_ber				\
+	src/ofdmflexframe_fer				\
 	src/simulate_ber				\
 	src/simulate_per_test				\
 

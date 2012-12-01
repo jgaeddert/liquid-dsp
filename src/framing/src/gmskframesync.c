@@ -35,6 +35,9 @@
 #define DEBUG_GMSKFRAMESYNC_FILENAME    "gmskframesync_internal_debug.m"
 #define DEBUG_GMSKFRAMESYNC_BUFFER_LEN  (2000)
 
+// enable pre-demodulation filter (remove out-of-band noise)
+#define GMSKFRAMESYNC_PREFILTER         1
+
 // gmskframesync object structure
 struct gmskframesync_s {
     unsigned int k;                     // filter samples/symbol
@@ -47,6 +50,9 @@ struct gmskframesync_s {
     float evm_hat;                      // evm estimate
     unsigned int npfb;                  // number of filterbanks
     symsync_rrrf symsync;               // symbol synchronizer, matched filter
+#if GMSKFRAMESYNC_PREFILTER
+    iirfilt_crcf prefilter;             // pre-demod filter (remove out-of-band noise)
+#endif
 
     // preamble
     bsequence bx;                       // binary sequence correlator (ms-equence)
@@ -112,6 +118,16 @@ gmskframesync gmskframesync_create(unsigned int _k,
     q->callback = _callback;
     q->userdata = _userdata;
 
+#if GMSKFRAMESYNC_PREFILTER
+    q->prefilter = iirfilt_crcf_create_prototype(LIQUID_IIRDES_BUTTER,
+                                                 LIQUID_IIRDES_LOWPASS,
+                                                 LIQUID_IIRDES_SOS,
+                                                 3,
+                                                 0.5f*(1 + q->BT) / (float)(q->k),
+                                                 0.0f,
+                                                 1.0f,
+                                                 60.0f);
+#endif
     // create synchronizer objects
     q->npfb = 32;
     q->symsync = symsync_rrrf_create_rnyquist(LIQUID_RNYQUIST_GMSKRX,
@@ -190,6 +206,9 @@ void gmskframesync_destroy(gmskframesync _q)
 
     // destroy synchronizer objects
     symsync_rrrf_destroy(_q->symsync);  // symbol synchronizer, matched filter
+#if GMSKFRAMESYNC_PREFILTER
+    iirfilt_crcf_destroy(_q->prefilter);// pre-demodulator filter
+#endif
 
     // destroy/free preamble objects/arrays
     bsequence_destroy(_q->bx);
@@ -244,13 +263,19 @@ void gmskframesync_execute(gmskframesync _q,
     // synchronized sample buffer
     float buffer[4];
     unsigned int num_written=0;
+    float complex xf;   // input sample
 
     // push through synchronizer
     unsigned int i;
     for (i=0; i<_n; i++) {
+#if GMSKFRAMESYNC_PREFILTER
+        iirfilt_crcf_execute(_q->prefilter, _x[i], &xf);
+#else
+        xf = _x[i];
+#endif
         // compute differential
-        float complex s = conjf(_q->x_prime)*_x[i];
-        _q->x_prime = _x[i];
+        float complex s = conjf(_q->x_prime)*xf;
+        _q->x_prime = xf;
 
         // update rssi estimate
         float alpha = 0.2f;
@@ -258,7 +283,7 @@ void gmskframesync_execute(gmskframesync _q,
 #if DEBUG_GMSKFRAMESYNC
         if (_q->debug_enabled) {
             windowf_push(_q->debug_agc_rssi, _q->rssi_hat);
-            windowcf_push(_q->debug_x, _x[i]);
+            windowcf_push(_q->debug_x, xf);
         }
 #endif
         // compute phase difference
