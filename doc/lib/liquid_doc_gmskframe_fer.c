@@ -131,7 +131,7 @@ void gmskframe_fer(gmskframe_fer_opts _opts,
             float HER = (float) _results->num_header_errors / (float) _results->num_frames;
             float PER = (float) _results->num_packet_errors / (float) _results->num_frames;
 
-            printf(" SNR: %5.2f frames:%6u/%6u (%5.1f%%) headers:%6u/%6u (%5.1f%%) packets:%6u/%6u (%5.1f%%)\r",
+            printf(" SNR: %5.2f frames:%5u/%5u(%5.1f%%) headers:%5u/%5u(%5.1f%%) packets:%5u/%5u(%5.1f%%)\r",
                     SNRdB,
                     _results->num_missed_frames, _results->num_frames, FER*100,
                     _results->num_header_errors, _results->num_frames, HER*100,
