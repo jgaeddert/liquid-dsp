@@ -5,7 +5,8 @@ reset
 set terminal postscript eps enhanced color solid rounded
 set xrange [-6:6]
 set yrange [1e-3:1]
-#set logscale y
+set logscale y
+set format y '10^{%L}'
 set size ratio 0.6
 set size 1.0
 set xlabel 'SNR [dB]'

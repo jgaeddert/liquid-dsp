@@ -128,16 +128,17 @@ void ofdmflexframe_fer(ofdmflexframe_fer_opts _opts,
         _results->num_packet_errors += simdata.payload_decoded ? 0 : 1;
 
         // peridically print results
-        if ( (((j+1) % 50)==0 || (j==num_frames-1)) && verbose) {
+        if ( (((j+1) % 100)==0 || (j==num_frames-1)) && verbose) {
             float FER = (float) _results->num_missed_frames / (float) _results->num_frames;
             float HER = (float) _results->num_header_errors / (float) _results->num_frames;
             float PER = (float) _results->num_packet_errors / (float) _results->num_frames;
 
-            printf(" SNR: %5.2f frames:%5u/%5u(%5.1f%%) headers:%5u/%5u(%5.1f%%) packets:%5u/%5u(%5.1f%%)\r",
+            printf(" SNR: %5.2f[%6u/%6u] frames:%6u(%5.1f%%) headers:%6u(%5.1f%%) packets:%6u(%5.1f%%)\r",
                     SNRdB,
-                    _results->num_missed_frames, _results->num_frames, FER*100,
-                    _results->num_header_errors, _results->num_frames, HER*100,
-                    _results->num_packet_errors, _results->num_frames, PER*100);
+                    j+1, num_frames,
+                    _results->num_missed_frames, FER*100,
+                    _results->num_header_errors, HER*100,
+                    _results->num_packet_errors, PER*100);
             fflush(stdout);
         }
 
