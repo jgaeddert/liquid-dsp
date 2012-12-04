@@ -1309,6 +1309,10 @@ LIQUID_AUTOCORR_DEFINE_API(AUTOCORR_MANGLE_RRRF,
 #define LIQUID_FIRFILT_DEFINE_API(FIRFILT,TO,TC,TI)             \
 typedef struct FIRFILT(_s) * FIRFILT();                         \
 FIRFILT() FIRFILT(_create)(TC * _h, unsigned int _n);           \
+FIRFILT() FIRFILT(_create_kaiser)(unsigned int _n,              \
+                                  float        _fc,             \
+                                  float        _As,             \
+                                  float        _mu);            \
 FIRFILT() FIRFILT(_recreate)(FIRFILT() _f,                      \
                              TC * _h,                           \
                              unsigned int _n);                  \

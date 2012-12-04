@@ -97,18 +97,29 @@ FIRFILT() FIRFILT(_create)(TC * _h,
 }
 
 // create firfilt object from prototype
-FIRFILT() FIRFILT(_create_prototype)(unsigned int _n)
+FIRFILT() FIRFILT(_create_kaiser)(unsigned int _n,
+                                  float        _fc,
+                                  float        _As,
+                                  float        _mu)
 {
-    fprintf(stderr,"error: firfilt_%s_create_prototype(), not yet implemented\n", EXTENSION_FULL);
-    exit(1);
+    // validate input
+    if (_n == 0) {
+        fprintf(stderr,"error: firfilt_%s_create_kaiser(), filter length must be greater than zero\n", EXTENSION_FULL);
+        exit(1);
+    }
 
-    FIRFILT() q = (FIRFILT()) malloc(sizeof(struct FIRFILT(_s)));
-    q->h_len = _n;
-    q->h = (TC *) malloc((q->h_len)*sizeof(TC));
+    // compute temporary array for holding coefficients
+    float hf[_n];
+    liquid_firdes_kaiser(_n, _fc, _As, _mu, hf);
 
-    // use firdespm here
+    // copy coefficients to type-specific array
+    TC h[_n];
+    unsigned int i;
+    for (i=0; i<_n; i++)
+        h[i] = (TC) hf[i];
 
-    return q;
+    // 
+    return FIRFILT(_create)(h, _n);
 }
 
 // re-create firfilt object
