@@ -32,9 +32,6 @@
 
 #ifdef __cplusplus
 extern "C" {
-#   define LIQUID_USE_COMPLEX_H 0
-#else
-#   define LIQUID_USE_COMPLEX_H 1
 #endif /* __cplusplus */
 
 #include "liquid.h"
@@ -988,7 +985,7 @@ void ofdmoqamframesync_execute(ofdmoqamframesync _q,
 //  _M_S0               :   total number of enabled subcarriers in S0
 void ofdmoqamframe_init_S0(unsigned char * _p,
                            unsigned int _num_subcarriers,
-                           float complex * _S0,
+                           liquid_float_complex * _S0,
                            unsigned int * _M_S0);
 
 // generate long sequence symbols
@@ -998,21 +995,21 @@ void ofdmoqamframe_init_S0(unsigned char * _p,
 //  _M_S1               :   total number of enabled subcarriers in S1
 void ofdmoqamframe_init_S1(unsigned char * _p,
                            unsigned int _num_subcarriers,
-                           float complex * _S1,
+                           liquid_float_complex * _S1,
                            unsigned int * _M_S1);
 
-void ofdmoqamframesync_execute_plcpshort(ofdmoqamframesync _q, float complex _x);
-void ofdmoqamframesync_execute_plcplong0(ofdmoqamframesync _q, float complex _x);
-void ofdmoqamframesync_execute_plcplong1(ofdmoqamframesync _q, float complex _x);
-void ofdmoqamframesync_execute_rxsymbols(ofdmoqamframesync _q, float complex _x);
+void ofdmoqamframesync_execute_plcpshort(ofdmoqamframesync _q, liquid_float_complex _x);
+void ofdmoqamframesync_execute_plcplong0(ofdmoqamframesync _q, liquid_float_complex _x);
+void ofdmoqamframesync_execute_plcplong1(ofdmoqamframesync _q, liquid_float_complex _x);
+void ofdmoqamframesync_execute_rxsymbols(ofdmoqamframesync _q, liquid_float_complex _x);
 
 void ofdmoqamframesync_S0_metrics(ofdmoqamframesync _q,
-                                  float complex * _g_hat,
-                                  float complex * _s_hat);
+                                  liquid_float_complex * _g_hat,
+                                  liquid_float_complex * _s_hat);
 
 void ofdmoqamframesync_S1_metrics(ofdmoqamframesync _q,
-                                  float complex * _t0_hat,
-                                  float complex * _t1_hat);
+                                  liquid_float_complex * _t0_hat,
+                                  liquid_float_complex * _t1_hat);
 
 void ofdmoqamframesync_correct_buffer(ofdmoqamframesync _q);
 
@@ -1020,12 +1017,12 @@ void ofdmoqamframesync_init_gain_window(ofdmoqamframesync _q,
                                         float _sigma);
 
 void ofdmoqamframesync_estimate_gain(ofdmoqamframesync _q,
-                                     float complex * _G_hat,
-                                     float complex * _G);
+                                     liquid_float_complex * _G_hat,
+                                     liquid_float_complex * _G);
 
 void ofdmoqamframesync_rxpayload(ofdmoqamframesync _q,
-                                 float complex * _Y0,
-                                 float complex * _Y1);
+                                 liquid_float_complex * _Y0,
+                                 liquid_float_complex * _Y1);
 
 
 
