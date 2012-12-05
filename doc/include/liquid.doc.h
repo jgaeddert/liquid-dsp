@@ -148,6 +148,16 @@ typedef struct {
 
 
 // 
+// frame64 performance
+//
+
+// simulate frame detection and error rates for frame64
+void frame64_fer(unsigned int  _num_frames,
+                 float         _SNRdB,
+                 int           _verbose,
+                 fer_results * _results);
+
+// 
 // gmskframe performance
 //
 
@@ -170,7 +180,7 @@ typedef struct {
 } gmskframe_fer_opts;
 
 
-// simulate frame detection and error rates for ofdmflexframe
+// simulate frame detection and error rates for gmskframe
 void gmskframe_fer(gmskframe_fer_opts _opts,
                    float              _SNRdB,
                    fer_results *      _results);
