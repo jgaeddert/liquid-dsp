@@ -41,7 +41,7 @@ int main() {
     srand( time(NULL) );
 
     // options
-    float SNRdB = 20.0f;        // signal-to-noise ratio
+    float SNRdB = 0.0f;         // signal-to-noise ratio
     float noise_floor = -40.0f; // noise floor
     float phi = 0.3f;           // carrier phase offset
     float dphi = 0.05f;         // carrier frequency offset
@@ -97,6 +97,12 @@ int main() {
         nco_crcf_mix_up(nco_channel, frame_rx[i], &frame_rx[i]);
 
         nco_crcf_step(nco_channel);
+    }
+
+    // push noise through the synchronizer
+    for (i=0; i<8000; i++) {
+        float complex noise = nstd*( randnf() + _Complex_I*randnf())*M_SQRT1_2;
+        framesync64_execute(fs, &noise, 1);
     }
 
     // synchronize/receive the frame
