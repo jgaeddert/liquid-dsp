@@ -7,6 +7,7 @@
 #include <getopt.h>
 #include <math.h>
 #include <assert.h>
+#include <time.h>
 #include "liquid.h"
 
 #define OUTPUT_FILENAME "predemod_sync_test.m"
@@ -22,34 +23,40 @@ void usage()
     printf("  n     : number of data symbols, default: 64\n");
     printf("  b     : bandwidth-time product, (0,1), default: 0.3\n");
     printf("  t     : fractional sample offset, (-0.5,0.5), default: 0\n");
+    printf("  F     : frequency offset, default: 0\n");
+    printf("  P     : phase offset, default: 0\n");
     printf("  s     : SNR [dB], default: 30\n");
 }
 
-int main(int argc, char*argv[]) {
+int main(int argc, char*argv[])
+{
+    srand(time(NULL));
     // options
     unsigned int k=2;                   // filter samples/symbol
     unsigned int m=4;                   // filter delay (symbols)
     float beta=0.3f;                    // bandwidth-time product
     float dt = 0.0f;                    // fractional sample timing offset
     unsigned int num_sync_symbols = 64; // number of data symbols
-    unsigned int npfb=16;               // number of filters in bank
     float SNRdB = 30.0f;                // signal-to-noise ratio [dB]
-    unsigned int g = 0x0067;            // m-sequence generator polynomial
     float dphi = 0.0f;                  // carrier frequency offset
     float phi  = 0.0f;                  // carrier phase offset
     
     unsigned int num_delay_symbols = 12;
+    unsigned int num_dphi_hat = 21;     // number of frequency offset estimates
+    float dphi_hat_step = 0.01f;        // frequency offset step size
 
     int dopt;
-    while ((dopt = getopt(argc,argv,"uhk:m:n:b:t:s:")) != EOF) {
+    while ((dopt = getopt(argc,argv,"uhk:m:n:b:t:F:P:s:")) != EOF) {
         switch (dopt) {
         case 'h': usage();              return 0;
         case 'k': k     = atoi(optarg); break;
         case 'm': m     = atoi(optarg); break;
         case 'n': num_sync_symbols = atoi(optarg); break;
         case 'b': beta  = atof(optarg); break;
-        case 's': SNRdB = atof(optarg); break;
         case 't': dt    = atof(optarg); break;
+        case 'F': dphi  = atof(optarg); break;
+        case 'P': phi   = atof(optarg); break;
+        case 's': SNRdB = atof(optarg); break;
         default:
             exit(1);
         }
@@ -69,15 +76,15 @@ int main(int argc, char*argv[]) {
     // derived values
     unsigned int num_symbols = num_delay_symbols + num_sync_symbols + 2*m;
     unsigned int num_samples = k*num_symbols;
+    unsigned int num_sync_samples = k*num_sync_symbols;
     float nstd = powf(10.0f, -SNRdB/20.0f);
 
     // arrays
     float complex seq[num_sync_symbols];    // data sequence (symbols)
-    float complex s0[k*num_sync_symbols];   // data sequence (interpolated samples)
+    float complex s0[num_sync_samples];     // data sequence (interpolated samples)
     float complex x[num_samples];           // transmitted signal
     float complex y[num_samples];           // received signal
-    float complex z[num_samples];           // matched filter output
-    float complex rxy[num_samples];         // pre-demod output
+    float rxy[num_dphi_hat][num_samples];   // pre-demod output matrix
 
     // generate sequence
     for (i=0; i<num_sync_symbols; i++) {
@@ -94,6 +101,11 @@ int main(int argc, char*argv[]) {
         else                           interp_crcf_execute(interp_seq,      0, &s0[k*(i-m)]);
     }
     interp_crcf_destroy(interp_seq);
+    
+    // compute g = E{ |s0|^2 }
+    float g = 0.0f;
+    for (i=0; i<num_sync_samples; i++)
+        g += crealf( s0[i]*conjf(s0[i]) );
 
     // create transmit interpolator and generate sequence
     interp_crcf interp_tx = interp_crcf_create_rnyquist(LIQUID_RNYQUIST_RRC,k,m,beta,dt);
@@ -115,14 +127,30 @@ int main(int argc, char*argv[]) {
 
     // add channel impairments
     for (i=0; i<num_samples; i++) {
-        y[i] = x[i] + nstd*( randnf() + _Complex_I*randnf() );
+        y[i] = x[i]*cexp(_Complex_I*(dphi*i + phi)) + nstd*( randnf() + _Complex_I*randnf() );
     }
 
-    // create matched filter and detect signal
-    //firfilt_cccf fsync = firfilt_crcf_create(s0, k*num_sync_symbols);
+    float complex z;    // filter output sample
+    for (n=0; n<num_dphi_hat; n++) {
+        float dphi_hat = ((float)n - 0.5*(float)(num_dphi_hat-1)) * dphi_hat_step;
+        printf("  dphi_hat : %12.8f\n", dphi_hat);
 
-    // destroy objects
-    //firfilt_cccf_destroy(fsync);
+        // create flipped, conjugated coefficients
+        float complex s1[num_sync_samples];
+        for (i=0; i<num_sync_samples; i++)
+            s1[i] = conjf( s0[num_sync_samples-i-1]*cexpf(_Complex_I*(dphi_hat*i)) );
+
+        // create matched filter and detect signal
+        firfilt_cccf fsync = firfilt_cccf_create(s1, num_sync_samples);
+        for (i=0; i<num_samples; i++) {
+            firfilt_cccf_push(fsync, y[i]);
+            firfilt_cccf_execute(fsync, &z);
+
+            rxy[n][i] = cabsf(z) / g;
+        }
+        // destroy filter
+        firfilt_cccf_destroy(fsync);
+    }
     
     // print results
     //printf("rxy (max) : %12.8f\n", rxy_max);
@@ -138,8 +166,11 @@ int main(int argc, char*argv[]) {
     fprintf(fid,"m = %u;\n", m);
     fprintf(fid,"beta = %f;\n", beta);
     fprintf(fid,"num_sync_symbols = %u;\n", num_sync_symbols);
+    fprintf(fid,"num_sync_samples = k*num_sync_symbols;\n");
     fprintf(fid,"num_symbols = %u;\n", num_symbols);
     fprintf(fid,"num_samples = %u;\n", num_samples);
+    fprintf(fid,"num_dphi_hat = %u;\n", num_dphi_hat);
+    fprintf(fid,"dphi_hat_step = %f;\n", dphi_hat_step);
 
     // save sequence symbols
     fprintf(fid,"seq = zeros(1,num_sync_symbols);\n");
@@ -147,65 +178,38 @@ int main(int argc, char*argv[]) {
         fprintf(fid,"seq(%4u)   = %12.8f + j*%12.8f;\n", i+1, crealf(seq[i]), cimagf(seq[i]));
 
     // save interpolated sequence
-    fprintf(fid,"s   = zeros(1,k*num_sync_symbols);\n");
-    for (i=0; i<k*num_sync_symbols; i++)
+    fprintf(fid,"s   = zeros(1,num_sync_samples);\n");
+    for (i=0; i<num_sync_samples; i++)
         fprintf(fid,"s(%4u)     = %12.8f + j*%12.8f;\n", i+1, crealf(s0[i]), cimagf(s0[i]));
 
-    fprintf(fid,"x   = zeros(1,num_samples);\n");
-    fprintf(fid,"y   = zeros(1,num_samples);\n");
+    fprintf(fid,"x = zeros(1,num_samples);\n");
+    fprintf(fid,"y = zeros(1,num_samples);\n");
     for (i=0; i<num_samples; i++) {
-        fprintf(fid,"x(%4u)     = %12.8f + j*%12.8f;\n", i+1, crealf(x[i]),   cimagf(x[i]));
-        fprintf(fid,"y(%4u)     = %12.8f + j*%12.8f;\n", i+1, crealf(y[i]),   cimagf(y[i]));
-        //fprintf(fid,"rxy(%4u)   = %12.8f + j*%12.8f;\n", i+1, crealf(rxy[i]), cimagf(rxy[i]));
+        fprintf(fid,"x(%6u) = %12.8f + j*%12.8f;\n", i+1, crealf(x[i]),   cimagf(x[i]));
+        fprintf(fid,"y(%6u) = %12.8f + j*%12.8f;\n", i+1, crealf(y[i]),   cimagf(y[i]));
+    }
+
+    // save cross-correlation output
+    fprintf(fid,"rxy = zeros(num_dphi_hat,num_samples);\n");
+    for (n=0; n<num_dphi_hat; n++) {
+        for (i=0; i<num_samples; i++) {
+            fprintf(fid,"rxy(%6u,%6u) = %12.8f;\n", n+1, i+1, rxy[n][i]);
+        }
     }
     fprintf(fid,"t=[0:(num_samples-1)]/k;\n");
-#if 0
-    fprintf(fid,"z   = zeros(1,num_samples);\n");
-    fprintf(fid,"rxy = zeros(1,num_samples);\n");
-    for (i=0; i<num_samples; i++) {
-        fprintf(fid,"z(%4u)     = %12.8f + j*%12.8f;\n", i+1, crealf(z[i]),   cimagf(z[i]));
-        fprintf(fid,"rxy(%4u)   = %12.8f + j*%12.8f;\n", i+1, crealf(rxy[i]), cimagf(rxy[i]));
-    }
-    // save m-sequence
-    ms = msequence_create(M,g,A);
-    fprintf(fid,"N = %u;\n", N);
-    fprintf(fid,"s = zeros(1,k*N);\n");
-    for (i=0; i<N; i++)
-        fprintf(fid,"s(%4u:%4u) = %3d;\n", k*i+1, k*(i+1), 2*(int)(msequence_advance(ms))-1);
-    msequence_destroy(ms);
-
-    fprintf(fid,"figure;\n");
-    fprintf(fid,"plot(t,abs(rxy));\n");
-    fprintf(fid,"xlabel('time');\n");
-    fprintf(fid,"ylabel('correlator output');\n");
-    fprintf(fid,"grid on;\n");
-
-    // save...
-    fprintf(fid,"[v i] = max(abs(rxy));\n");
-    fprintf(fid,"i0=i-(k*N)+1;\n");
-    fprintf(fid,"i1=i;\n");
-    fprintf(fid,"z_hat = z(i0:i1);\n");
-    fprintf(fid,"figure;\n");
-    fprintf(fid,"t_hat=0:(k*N-1);\n");
-    fprintf(fid,"plot(t_hat,real(z_hat),...\n");
-    fprintf(fid,"     t_hat,imag(z_hat),...\n");
-    fprintf(fid,"     t_hat(1:k:end),real(z_hat(1:k:end)),'x','MarkerSize',2,...\n");
-    fprintf(fid,"     t_hat,s,'-k');\n");
-
-    // run fft for timing recovery
-    fprintf(fid,"Z_hat = fft(z_hat);\n");
-    fprintf(fid,"S     = fft(s);\n");
-    fprintf(fid,"figure;\n");
-    fprintf(fid,"plot(fftshift(arg(Z_hat./S)));\n");
-#endif
     fprintf(fid,"figure;\n");
     fprintf(fid,"plot(1:length(s),real(s), 1:length(s),imag(s));\n");
     
-    fprintf(fid,"z = abs( filter(fliplr(conj(s)),1,y) );\n");
+    fprintf(fid,"dphi_hat = ( [0:(num_dphi_hat-1)] - (num_dphi_hat-1)/2 ) * dphi_hat_step;\n");
+    fprintf(fid,"mesh(dphi_hat, t, rxy');\n");
+    
+#if 0
+    fprintf(fid,"z = abs( z );\n");
     fprintf(fid,"[zmax i] = max(z);\n");
     fprintf(fid,"plot(1:length(z),z,'-x');\n");
-    fprintf(fid,"axis([(i-4*k) (i+4*k) 0 zmax*1.2]);\n");
+    fprintf(fid,"axis([(i-8*k) (i+8*k) 0 zmax*1.2]);\n");
     fprintf(fid,"grid on\n");
+#endif
 
     fclose(fid);
     printf("results written to '%s'\n", OUTPUT_FILENAME);
