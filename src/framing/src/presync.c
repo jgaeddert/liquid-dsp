@@ -204,7 +204,8 @@ void PRESYNC(_correlate)(PRESYNC() _q,
                          float *   _dphi_hat)
 {
     unsigned int i;
-    float complex rxy_max = 0;
+    float complex rxy_max = 0;  // maximum cross-correlation
+    float abs_rxy_max = 0;      // absolute value of rxy_max
     float complex rxy0;
     float complex rxy1;
     float dphi_hat = 0.0f;
@@ -213,15 +214,17 @@ void PRESYNC(_correlate)(PRESYNC() _q,
         PRESYNC(_correlatex)(_q, i, &rxy0, &rxy1);
 
         // check non-conjugated value
-        if ( ABS(rxy0) > ABS(rxy_max) ) {
-            rxy_max  = rxy0;
-            dphi_hat = _q->dphi[i];
+        if ( ABS(rxy0) > abs_rxy_max ) {
+            rxy_max     = rxy0;
+            abs_rxy_max = ABS(rxy0);
+            dphi_hat    = _q->dphi[i];
         }
 
         // check conjugated value
-        if ( ABS(rxy1) > ABS(rxy_max) ) {
-            rxy_max  = rxy1;
-            dphi_hat = -_q->dphi[i];
+        if ( ABS(rxy1) > abs_rxy_max ) {
+            rxy_max     = rxy1;
+            abs_rxy_max = ABS(rxy1);
+            dphi_hat    = -_q->dphi[i];
         }
     }
 
