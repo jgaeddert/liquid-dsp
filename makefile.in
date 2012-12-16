@@ -1311,6 +1311,7 @@ example_programs :=						\
 	examples/cgsolve_example				\
 	examples/cvsd_example					\
 	examples/decim_crcf_example				\
+	examples/detector_cccf_example				\
 	examples/dotprod_rrrf_example				\
 	examples/dotprod_cccf_example				\
 	examples/eqlms_cccf_blind_example			\

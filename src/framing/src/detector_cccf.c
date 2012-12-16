@@ -110,6 +110,7 @@ int detector_cccf_correlate(detector_cccf _q,
                             float *       _dphi_hat,
                             float *       _gamma_hat)
 {
+    return 0;
 }
 
 
