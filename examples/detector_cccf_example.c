@@ -75,8 +75,7 @@ int main(int argc, char*argv[])
     // generate synchronization pattern (OFDM symbol, slightly over-sampled)
     float complex S[n];
     for (i=0; i<n; i++)
-        S[i] = (i < 0.45*n || i > 0.55*n) ? (rand()%2 ? 1.0f : -1.0f) : 0.0f;
-        //S[i] = (i < 0.45*n || i > 0.55*n) ? cexpf(_Complex_I*M_2_PI*randf()) : 0.0f;
+        S[i] = (i < 0.45*n || i > 0.55*n) ? randnf() + _Complex_I*randnf() : 0.0f;
     fft_run(n, S, s, FFT_REVERSE, 0);
     float s2 = 0.0f;
     for (i=0; i<n; i++)

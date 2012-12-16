@@ -37,12 +37,17 @@ struct detector_cccf_s {
     unsigned int n;         // sequence length
 
     //
-    //windowcf w;         // input buffer
+    windowcf buffer;        // input buffer
+    wdelayf x2;             // buffer of |x|^2 values
+    float x2_xxx;           // ...
+    float x2_hat;           // estimate of E{|x|^2}
 
     // internal correlators
     //dotprod_cccf * dp;
+    dotprod_cccf dp;
 
     // state
+    unsigned int timer;     // sample timer
 };
 
 // create detector_cccf object
@@ -60,6 +65,8 @@ detector_cccf detector_cccf_create(float complex * _s,
         fprintf(stderr,"error: detector_cccf_create(), sequence length cannot be zero\n");
         exit(1);
     }
+    
+    unsigned int i;
 
     detector_cccf q = (detector_cccf) malloc(sizeof(struct detector_cccf_s));
 
@@ -67,8 +74,18 @@ detector_cccf detector_cccf_create(float complex * _s,
     q->n = _n;
 
     // allocate memory for sequence and copy
-    q->s = (unsigned char*) malloc((q->n)*sizeof(unsigned char));
-    memmove(q->s, _s, q->n*sizeof(unsigned char));
+    q->s = (float complex*) malloc((q->n)*sizeof(float complex));
+    memmove(q->s, _s, q->n*sizeof(float complex));
+
+    // create internal buffer
+    q->buffer = windowcf_create(q->n);
+    q->x2     = wdelayf_create(q->n);
+
+    // create internal dot product object
+    float complex sconj[q->n];
+    for (i=0; i<q->n; i++)
+        sconj[i] = conjf(q->s[i]);
+    q->dp = dotprod_cccf_create(sconj, q->n);
 
     // reset state
     detector_cccf_reset(q);
@@ -79,6 +96,15 @@ detector_cccf detector_cccf_create(float complex * _s,
 
 void detector_cccf_destroy(detector_cccf _q)
 {
+    // destroy input buffer
+    windowcf_destroy(_q->buffer);
+
+    // destroy dot product
+    dotprod_cccf_destroy(_q->dp);
+
+    // destroy |x|^2 buffer
+    wdelayf_destroy(_q->x2);
+
     // free internal buffers/arrays
     free(_q->s);
 
@@ -90,11 +116,17 @@ void detector_cccf_print(detector_cccf _q)
 {
     printf("detector_cccf:\n");
     printf("    sequence length     :   %-u\n", _q->n);
+    printf("    rssi                :   ? dB\n");
 }
 
 void detector_cccf_reset(detector_cccf _q)
 {
     // reset internal state
+    windowcf_clear(_q->buffer);
+    wdelayf_clear(_q->x2);
+
+    // reset internal state
+    _q->timer = _q->n;
 }
 
 // Run sample through pre-demod detector's correlator.
@@ -110,8 +142,39 @@ int detector_cccf_correlate(detector_cccf _q,
                             float *       _dphi_hat,
                             float *       _gamma_hat)
 {
+    // push sample into buffer
+    windowcf_push(_q->buffer, _x);
+
+    // update estimate of signal magnitude
+    float x2_n = crealf(_x * conjf(_x));    // |x[n-1]|^2 (input sample)
+    float x2_0;                             // |x[0]  |^2 (oldest sample)
+    wdelayf_read(_q->x2, &x2_0);            // read oldest sample
+    wdelayf_push(_q->x2, x2_n);             // push newest sample
+    _q->x2_xxx = _q->x2_xxx + x2_n - x2_0;  // update...
+    _q->x2_hat = 0.9f*_q->x2_hat + 0.1f*(_q->x2_xxx / (float)(_q->n));
+
+    // check state
+    if (_q->timer) {
+        // hasn't timed out yet
+        printf("timer = %u\n", _q->timer);
+        _q->timer--;
+        return 0;
+    }
+
+    // compute vector dot product
+    float complex * r;
+    float complex rxy;
+    windowcf_read(_q->buffer, &r);
+    dotprod_cccf_execute(_q->dp, r, &rxy);
+
+    // scale by input signal magnitude
+    // TODO: peridically re-compute scaling factor)
+    //float rxy_abs = cabsf(rxy) / sqrtf(_q->x2_hat);
+    float rxy_abs = cabsf(rxy);
+    
+    printf("  rxy=%8.2f, x2-hat=%12.8f\n", rxy_abs, 10*log10f(_q->x2_hat));
+
+
     return 0;
 }
-
-
 
