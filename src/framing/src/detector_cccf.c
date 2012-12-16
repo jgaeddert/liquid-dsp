@@ -194,7 +194,7 @@ int detector_cccf_correlate(detector_cccf _q,
     // check state
     if (_q->timer) {
         // hasn't timed out yet
-        printf("timer = %u\n", _q->timer);
+        //printf("timer = %u\n", _q->timer);
         _q->timer--;
 #if DEBUG_DETECTOR
         windowf_push(_q->debug_rxy, 0.0f);
@@ -216,7 +216,7 @@ int detector_cccf_correlate(detector_cccf _q,
         windowf_push(_q->debug_rxy, rxy_abs);
 #endif
     
-    printf("  rxy=%8.2f, x2-hat=%12.8f\n", rxy_abs, 10*log10f(_q->x2_hat));
+    //printf("  rxy=%8.2f, x2-hat=%12.8f\n", rxy_abs, 10*log10f(_q->x2_hat));
 
     return 0;
 }
