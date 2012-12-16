@@ -42,11 +42,12 @@ void detector_cccf_debug_print(detector_cccf _q,
 struct detector_cccf_s {
     float complex * s;      // sequence
     unsigned int n;         // sequence length
+    float n_inv;            // 1/n (pre-computed for speed)
 
     //
     windowcf buffer;        // input buffer
     wdelayf x2;             // buffer of |x|^2 values
-    float x2_xxx;           // ...
+    float x2_sum;           // ...
     float x2_hat;           // estimate of E{|x|^2}
 
     // internal correlators
@@ -85,6 +86,9 @@ detector_cccf detector_cccf_create(float complex * _s,
 
     // set internal properties
     q->n = _n;
+
+    // derived values
+    q->n_inv = 1.0f / (float)(q->n);
 
     // allocate memory for sequence and copy
     q->s = (float complex*) malloc((q->n)*sizeof(float complex));
@@ -174,8 +178,14 @@ int detector_cccf_correlate(detector_cccf _q,
     float x2_0;                             // |x[0]  |^2 (oldest sample)
     wdelayf_read(_q->x2, &x2_0);            // read oldest sample
     wdelayf_push(_q->x2, x2_n);             // push newest sample
-    _q->x2_xxx = _q->x2_xxx + x2_n - x2_0;  // update...
-    _q->x2_hat = 0.9f*_q->x2_hat + 0.1f*(_q->x2_xxx / (float)(_q->n));
+    _q->x2_sum = _q->x2_sum + x2_n - x2_0;  // update sum( |x|^2 ) of last 'n' input samples
+#if 0
+    // filtered estimate of E{ |x|^2 }
+    _q->x2_hat = 0.8f*_q->x2_hat + 0.2f*_q->x2_sum*_q->n_inv;
+#else
+    // unfiltered estimate of E{ |x|^2 }
+    _q->x2_hat = _q->x2_sum * _q->n_inv;
+#endif
 
 #if DEBUG_DETECTOR
     windowcf_push(_q->debug_x, _x);
@@ -200,7 +210,7 @@ int detector_cccf_correlate(detector_cccf _q,
 
     // scale by input signal magnitude
     // TODO: peridically re-compute scaling factor)
-    float rxy_abs = cabsf(rxy) / ((float)(_q->n)*sqrtf(_q->x2_hat));
+    float rxy_abs = cabsf(rxy) * _q->n_inv / sqrtf(_q->x2_hat);
     //float rxy_abs = cabsf(rxy);
 #if DEBUG_DETECTOR
         windowf_push(_q->debug_rxy, rxy_abs);
