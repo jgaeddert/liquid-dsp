@@ -32,6 +32,13 @@
 
 #include "liquid.internal.h"
 
+#define DEBUG_DETECTOR              1
+#define DEBUG_DETECTOR_BUFFER_LEN   (400)
+#define DEBUG_DETECTOR_FILENAME     "detector_cccf_debug.m"
+
+void detector_cccf_debug_print(detector_cccf _q,
+                               const char *  _filename);
+
 struct detector_cccf_s {
     float complex * s;      // sequence
     unsigned int n;         // sequence length
@@ -48,6 +55,12 @@ struct detector_cccf_s {
 
     // state
     unsigned int timer;     // sample timer
+
+#if DEBUG_DETECTOR
+    windowcf debug_x;
+    windowf debug_x2;
+    windowf debug_rxy;
+#endif
 };
 
 // create detector_cccf object
@@ -90,12 +103,23 @@ detector_cccf detector_cccf_create(float complex * _s,
     // reset state
     detector_cccf_reset(q);
 
+#if DEBUG_DETECTOR
+    q->debug_x   = windowcf_create(DEBUG_DETECTOR_BUFFER_LEN);
+    q->debug_x2  = windowf_create(DEBUG_DETECTOR_BUFFER_LEN);
+    q->debug_rxy = windowf_create(DEBUG_DETECTOR_BUFFER_LEN);
+#endif
     // return object
     return q;
 }
 
 void detector_cccf_destroy(detector_cccf _q)
 {
+#if DEBUG_DETECTOR
+    detector_cccf_debug_print(_q, DEBUG_DETECTOR_FILENAME);
+    windowcf_destroy(_q->debug_x);
+    windowf_destroy(_q->debug_x2);
+    windowf_destroy(_q->debug_rxy);
+#endif
     // destroy input buffer
     windowcf_destroy(_q->buffer);
 
@@ -153,11 +177,18 @@ int detector_cccf_correlate(detector_cccf _q,
     _q->x2_xxx = _q->x2_xxx + x2_n - x2_0;  // update...
     _q->x2_hat = 0.9f*_q->x2_hat + 0.1f*(_q->x2_xxx / (float)(_q->n));
 
+#if DEBUG_DETECTOR
+    windowcf_push(_q->debug_x, _x);
+    windowf_push(_q->debug_x2, _q->x2_hat);
+#endif
     // check state
     if (_q->timer) {
         // hasn't timed out yet
         printf("timer = %u\n", _q->timer);
         _q->timer--;
+#if DEBUG_DETECTOR
+        windowf_push(_q->debug_rxy, 0.0f);
+#endif
         return 0;
     }
 
@@ -169,12 +200,67 @@ int detector_cccf_correlate(detector_cccf _q,
 
     // scale by input signal magnitude
     // TODO: peridically re-compute scaling factor)
-    //float rxy_abs = cabsf(rxy) / sqrtf(_q->x2_hat);
-    float rxy_abs = cabsf(rxy);
+    float rxy_abs = cabsf(rxy) / ((float)(_q->n)*sqrtf(_q->x2_hat));
+    //float rxy_abs = cabsf(rxy);
+#if DEBUG_DETECTOR
+        windowf_push(_q->debug_rxy, rxy_abs);
+#endif
     
     printf("  rxy=%8.2f, x2-hat=%12.8f\n", rxy_abs, 10*log10f(_q->x2_hat));
-
 
     return 0;
 }
 
+void detector_cccf_debug_print(detector_cccf _q,
+                               const char *  _filename)
+{
+#if DEBUG_DETECTOR
+    FILE * fid = fopen(_filename,"w");
+    if (!fid) {
+        fprintf(stderr,"error: detector_cccf_debug_print(), could not open '%s' for writing\n", _filename);
+        return;
+    }
+    fprintf(fid,"%% %s : auto-generated file\n", DEBUG_DETECTOR_FILENAME);
+    fprintf(fid,"close all;\n");
+    fprintf(fid,"clear all;\n");
+    fprintf(fid,"N = %u;\n", DEBUG_DETECTOR_BUFFER_LEN);
+    unsigned int i;
+    float complex * rc;
+    float * r;
+
+    fprintf(fid,"x = zeros(1,N);\n");
+    windowcf_read(_q->debug_x, &rc);
+    for (i=0; i<DEBUG_DETECTOR_BUFFER_LEN; i++)
+        fprintf(fid,"x(%4u) = %12.4e + j*%12.4e;\n", i+1, crealf(rc[i]), cimagf(rc[i]));
+
+    fprintf(fid,"rxy = zeros(1,N);\n");
+    windowf_read(_q->debug_rxy, &r);
+    for (i=0; i<DEBUG_DETECTOR_BUFFER_LEN; i++)
+        fprintf(fid,"rxy(%4u) = %12.4e;\n", i+1, r[i]);
+
+    fprintf(fid,"x2 = zeros(1,N);\n");
+    windowf_read(_q->debug_x2, &r);
+    for (i=0; i<DEBUG_DETECTOR_BUFFER_LEN; i++)
+        fprintf(fid,"x2(%4u) = %12.4e;\n", i+1, r[i]);
+
+    fprintf(fid,"figure;\n");
+    fprintf(fid,"t = 0:(N-1);\n");
+    fprintf(fid,"subplot(3,1,1);\n");
+    fprintf(fid,"  plot(t,real(x),t,imag(x));\n");
+    fprintf(fid,"  ylabel('received signal, x');\n");
+    fprintf(fid,"  grid on;\n");
+    fprintf(fid,"subplot(3,1,2);\n");
+    fprintf(fid,"  plot(t, rxy);\n");
+    fprintf(fid,"  ylabel('rxy');\n");
+    fprintf(fid,"  grid on;\n");
+    fprintf(fid,"subplot(3,1,3);\n");
+    fprintf(fid,"  plot(t, x2);\n");
+    fprintf(fid,"  ylabel('rssi');\n");
+    fprintf(fid,"  grid on;\n");
+
+    fclose(fid);
+    printf("detector_ccf/debug: results written to '%s'\n", _filename);
+#else
+    fprintf(stderr,"detector_cccf_debug_print(): compile-time debugging disabled\n");
+#endif
+}
