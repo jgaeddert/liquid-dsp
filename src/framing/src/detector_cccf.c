@@ -36,6 +36,12 @@
 #define DEBUG_DETECTOR_BUFFER_LEN   (400)
 #define DEBUG_DETECTOR_FILENAME     "detector_cccf_debug.m"
 
+// 
+// internal method declarations
+//
+
+float detector_cccf_estimate_timing(detector_cccf _q);
+
 void detector_cccf_debug_print(detector_cccf _q,
                                const char *  _filename);
 
@@ -263,8 +269,10 @@ int detector_cccf_correlate(detector_cccf _q,
             printf("    [%8.4f %8.4f %8.4f]\n", _q->rxy0, _q->rxy1, _q->rxy2);
             _q->rxy_max = 0.0f;
             _q->state = DETECTOR_STATE_SEEK;
-            // set timer to allow signal to settle
-            _q->timer = _q->n/4;
+            _q->timer = _q->n/4;            // set timer to allow signal to settle
+
+            // set return values
+            *_tau_hat = detector_cccf_estimate_timing(_q);
             return 1;
         }
     } else {
@@ -273,6 +281,16 @@ int detector_cccf_correlate(detector_cccf _q,
     }
 
     return 0;
+}
+
+// 
+// internal methods
+//
+
+// estimate timing
+float detector_cccf_estimate_timing(detector_cccf _q)
+{
+    return -0.5f*(_q->rxy2 - _q->rxy0) / (_q->rxy2 + _q->rxy0 - 2*_q->rxy1);
 }
 
 void detector_cccf_debug_print(detector_cccf _q,

@@ -75,7 +75,7 @@ int main(int argc, char*argv[])
     // generate synchronization pattern (OFDM symbol, slightly over-sampled)
     float complex S[n];
     for (i=0; i<n; i++)
-        S[i] = (i < 0.45*n || i > 0.55*n) ? randnf() + _Complex_I*randnf() : 0.0f;
+        S[i] = (i < 0.4*n || i > 0.6*n) ? randnf() + _Complex_I*randnf() : 0.0f;
     fft_run(n, S, s, FFT_REVERSE, 0);
     float s2 = 0.0f;
     for (i=0; i<n; i++)
@@ -123,6 +123,7 @@ int main(int argc, char*argv[])
     float dphi_hat  = 0.0f;
     float gamma_hat = 0.0f;
     int signal_detected = 0;
+    unsigned int index = 0;
     for (i=0; i<num_samples; i++) {
         
         // correlate
@@ -132,20 +133,21 @@ int main(int argc, char*argv[])
             signal_detected = 1;
             printf("****** preamble found, tau_hat=%8.6f, dphi_hat=%8.6f, gamma_hat=%8.6f\n",
                     tau_hat, dphi_hat, gamma_hat);
+            index = i;
         }
     }
 
     // destroy objects
     detector_cccf_destroy(sync);
     
-#if 0
     // print results
     printf("\n");
-    printf("rxy (max) : %12.8f\n", rxy_max);
-    printf("dphi est. : %12.8f ,error=%12.8f\n",      dphi_est, dphi-dphi_est);
-    printf("delay est.: %12d ,error=%3d sample(s)\n", delay_est, k*num_sync_symbols - delay_est);
+    printf("signal detected :   %s\n", signal_detected ? "yes" : "no");
+    float delay_est = (float) index + tau_hat;
+    float delay     = (float)(2*n) + dt; // actual delay (samples)
+    printf("delay estimate  : %8.3f, actual=%8.3f (error=%8.3f) sample(s)\n", delay_est, delay, delay-delay_est);
+    printf("dphi estimate   : %8.3f, actual=%8.3f (error=%8.3f)\n",           dphi_hat,  dphi,  dphi-dphi_hat);
     printf("\n");
-#endif
 
     // 
     // export results
