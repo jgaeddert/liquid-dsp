@@ -175,6 +175,7 @@ void detector_cccf_reset(detector_cccf _q)
     // reset internal state
     _q->timer   = _q->n;                // reset timer
     _q->state   = DETECTOR_STATE_SEEK;  // set state to seek threshold
+    _q->x2_sum  = 0.0f;
     _q->rxy_max = 0.0f;                 // 
     _q->rxy0    = 0.0f;
     _q->rxy1    = 0.0f;
