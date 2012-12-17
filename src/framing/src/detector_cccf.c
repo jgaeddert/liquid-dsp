@@ -57,8 +57,14 @@ struct detector_cccf_s {
     //dotprod_cccf * dp;
     dotprod_cccf dp;
 
-    // state
-    unsigned int timer;     // sample timer
+    // counters/states
+    enum {
+        DETECTOR_STATE_SEEK=0,  // seek sequence
+        DETECTOR_STATE_FINDMAX, // find maximum
+    } state;
+    unsigned int timer;         // sample timer
+    float rxy_max;              // maximum cross-correlation
+    float rxy0, rxy1, rxy2;     // buffer of cross-correlation outputs
 
 #if DEBUG_DETECTOR
     windowcf debug_x;
@@ -81,18 +87,21 @@ detector_cccf detector_cccf_create(float complex * _s,
     if (_n == 0) {
         fprintf(stderr,"error: detector_cccf_create(), sequence length cannot be zero\n");
         exit(1);
+    } else if (_threshold <= 0.0f) {
+        fprintf(stderr,"error: detector_cccf_create(), threshold must be greater than zero (0.6 recommended)\n");
+        exit(1);
     }
     
-    unsigned int i;
-
+    // allocate memory for main object
     detector_cccf q = (detector_cccf) malloc(sizeof(struct detector_cccf_s));
+    unsigned int i;
 
     // set internal properties
     q->n         = _n;
     q->threshold = _threshold;
 
     // derived values
-    q->n_inv = 1.0f / (float)(q->n);
+    q->n_inv = 1.0f / (float)(q->n);    // 1/n for faster processing
 
     // allocate memory for sequence and copy
     q->s = (float complex*) malloc((q->n)*sizeof(float complex));
@@ -148,7 +157,7 @@ void detector_cccf_print(detector_cccf _q)
 {
     printf("detector_cccf:\n");
     printf("    sequence length     :   %-u\n", _q->n);
-    printf("    rssi                :   ? dB\n");
+    printf("    threshold           :   %8.4f\n", _q->threshold);
 }
 
 void detector_cccf_reset(detector_cccf _q)
@@ -158,7 +167,12 @@ void detector_cccf_reset(detector_cccf _q)
     wdelayf_clear(_q->x2);
 
     // reset internal state
-    _q->timer = _q->n;
+    _q->timer   = _q->n;                // reset timer
+    _q->state   = DETECTOR_STATE_SEEK;  // set state to seek threshold
+    _q->rxy_max = 0.0f;                 // 
+    _q->rxy0    = 0.0f;
+    _q->rxy1    = 0.0f;
+    _q->rxy2    = 0.0f;
 }
 
 // Run sample through pre-demod detector's correlator.
@@ -222,8 +236,40 @@ int detector_cccf_correlate(detector_cccf _q,
     
     //printf("  rxy=%8.2f, x2-hat=%12.8f\n", rxy_abs, 10*log10f(_q->x2_hat));
 
-    if (rxy_abs > _q->threshold) {
-        return 1;
+    if (_q->state == DETECTOR_STATE_SEEK) {
+        // check to see if value exceeds threshold
+        if (rxy_abs > _q->threshold) {
+            printf("threshold exceeded:      rxy = %8.4f\n", rxy_abs);
+            _q->rxy_max = rxy_abs;
+            _q->rxy1    = rxy_abs;
+            _q->state = DETECTOR_STATE_FINDMAX;
+        } else {
+            _q->rxy0 = rxy_abs;
+        }
+    } else if (_q->state == DETECTOR_STATE_FINDMAX) {
+        // see if this new value exceeds maximum
+        if (rxy_abs > _q->rxy_max) {
+            printf("maximum not yet reached: rxy = %8.4f\n", rxy_abs);
+            _q->rxy_max = rxy_abs;
+
+            // shift buffer...
+            _q->rxy0 = _q->rxy1;
+            _q->rxy1 = rxy_abs;
+        } else {
+            // peak was found last time; run estimates, reset values,
+            // and return
+            _q->rxy2 = rxy_abs;
+            printf("maximum found:           rxy = %8.4f\n", rxy_abs);
+            printf("    [%8.4f %8.4f %8.4f]\n", _q->rxy0, _q->rxy1, _q->rxy2);
+            _q->rxy_max = 0.0f;
+            _q->state = DETECTOR_STATE_SEEK;
+            // set timer to allow signal to settle
+            _q->timer = _q->n/4;
+            return 1;
+        }
+    } else {
+        fprintf(stderr,"error: detector_cccf_correlate(), unknown/unsupported internal state\n");
+        exit(1);
     }
 
     return 0;

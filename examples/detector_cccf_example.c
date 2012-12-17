@@ -130,7 +130,8 @@ int main(int argc, char*argv[])
 
         if (detected) {
             signal_detected = 1;
-            printf("****** preamble found, tau_hat = %12.8f\n", tau_hat);
+            printf("****** preamble found, tau_hat=%8.6f, dphi_hat=%8.6f, gamma_hat=%8.6f\n",
+                    tau_hat, dphi_hat, gamma_hat);
         }
     }
 
