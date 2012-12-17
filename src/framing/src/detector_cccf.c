@@ -42,6 +42,9 @@ void detector_cccf_debug_print(detector_cccf _q,
 struct detector_cccf_s {
     float complex * s;      // sequence
     unsigned int n;         // sequence length
+    float threshold;        // detection threshold
+    
+    // derived values
     float n_inv;            // 1/n (pre-computed for speed)
 
     //
@@ -85,7 +88,8 @@ detector_cccf detector_cccf_create(float complex * _s,
     detector_cccf q = (detector_cccf) malloc(sizeof(struct detector_cccf_s));
 
     // set internal properties
-    q->n = _n;
+    q->n         = _n;
+    q->threshold = _threshold;
 
     // derived values
     q->n_inv = 1.0f / (float)(q->n);
@@ -213,10 +217,14 @@ int detector_cccf_correlate(detector_cccf _q,
     float rxy_abs = cabsf(rxy) * _q->n_inv / sqrtf(_q->x2_hat);
     //float rxy_abs = cabsf(rxy);
 #if DEBUG_DETECTOR
-        windowf_push(_q->debug_rxy, rxy_abs);
+    windowf_push(_q->debug_rxy, rxy_abs);
 #endif
     
     //printf("  rxy=%8.2f, x2-hat=%12.8f\n", rxy_abs, 10*log10f(_q->x2_hat));
+
+    if (rxy_abs > _q->threshold) {
+        return 1;
+    }
 
     return 0;
 }
