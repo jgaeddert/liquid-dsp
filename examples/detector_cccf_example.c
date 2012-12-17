@@ -21,12 +21,13 @@
 void usage()
 {
     printf("detector_example -- test binary pre-demodulation synchronization\n");
-    printf("options (default values in <>):\n");
+    printf("options:\n");
     printf("  h     : print usage/help\n");
     printf("  n     : number of sync samples, default: 128\n");
     printf("  F     : carrier frequency offset, default: 0.02\n");
     printf("  T     : fractional sample offset dt in [-0.5, 0.5], default: 0\n");
     printf("  S     : SNR [dB], default: 20\n");
+    printf("  t     : detection threshold, default: 0.3\n");
 }
 
 int main(int argc, char*argv[])
@@ -40,15 +41,17 @@ int main(int argc, char*argv[])
     float SNRdB       =  20.0f;     // signal-to-noise ratio [dB]
     float dphi        =  0.0f;      // carrier frequency offset
     float phi         =  0.0f;      // carrier phase offset
+    float threshold   =  0.3f;      // detection threshold
 
     int dopt;
-    while ((dopt = getopt(argc,argv,"hn:T:F:S:")) != EOF) {
+    while ((dopt = getopt(argc,argv,"hn:T:F:S:t:")) != EOF) {
         switch (dopt) {
         case 'h': usage();              return 0;
-        case 'n': n     = atoi(optarg); break;
-        case 'F': dphi  = atof(optarg); break;
-        case 'T': dt    = atof(optarg); break;
-        case 'S': SNRdB = atof(optarg); break;
+        case 'n': n         = atoi(optarg); break;
+        case 'F': dphi      = atof(optarg); break;
+        case 'T': dt        = atof(optarg); break;
+        case 'S': SNRdB     = atof(optarg); break;
+        case 't': threshold = atof(optarg); break;
         default:
             exit(1);
         }
@@ -115,7 +118,7 @@ int main(int argc, char*argv[])
     }
 
     // create cross-correlator
-    detector_cccf sync = detector_cccf_create(s, n, 0.5f, 0.1f);
+    detector_cccf sync = detector_cccf_create(s, n, threshold, 0.1f);
     detector_cccf_print(sync);
 
     // push signal through detector
