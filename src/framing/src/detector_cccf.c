@@ -40,7 +40,9 @@
 // internal method declarations
 //
 
-float detector_cccf_estimate_timing(detector_cccf _q);
+float detector_cccf_estimate_tau(detector_cccf _q);
+
+float detector_cccf_estimate_dphi(detector_cccf _q);
 
 void detector_cccf_debug_print(detector_cccf _q,
                                const char *  _filename);
@@ -246,7 +248,8 @@ int detector_cccf_correlate(detector_cccf _q,
     if (_q->state == DETECTOR_STATE_SEEK) {
         // check to see if value exceeds threshold
         if (rxy_abs > _q->threshold) {
-            printf("threshold exceeded:      rxy = %8.4f\n", rxy_abs);
+            float dphi_hat = detector_cccf_estimate_dphi(_q);
+            printf("threshold exceeded:      rxy = %8.4f, dphi=%8.4f\n", rxy_abs, dphi_hat);
             _q->rxy_max = rxy_abs;
             _q->rxy1    = rxy_abs;
             _q->state = DETECTOR_STATE_FINDMAX;
@@ -256,7 +259,8 @@ int detector_cccf_correlate(detector_cccf _q,
     } else if (_q->state == DETECTOR_STATE_FINDMAX) {
         // see if this new value exceeds maximum
         if (rxy_abs > _q->rxy_max) {
-            printf("maximum not yet reached: rxy = %8.4f\n", rxy_abs);
+            float dphi_hat = detector_cccf_estimate_dphi(_q);
+            printf("maximum not yet reached: rxy = %8.4f, dphi=%8.4f\n", rxy_abs, dphi_hat);
             _q->rxy_max = rxy_abs;
 
             // shift buffer...
@@ -273,7 +277,7 @@ int detector_cccf_correlate(detector_cccf _q,
             _q->timer = _q->n/4;            // set timer to allow signal to settle
 
             // set return values
-            *_tau_hat = detector_cccf_estimate_timing(_q);
+            *_tau_hat = detector_cccf_estimate_tau(_q);
             return 1;
         }
     } else {
@@ -289,9 +293,30 @@ int detector_cccf_correlate(detector_cccf _q,
 //
 
 // estimate timing
-float detector_cccf_estimate_timing(detector_cccf _q)
+float detector_cccf_estimate_tau(detector_cccf _q)
 {
-    return -0.5f*(_q->rxy2 - _q->rxy0) / (_q->rxy2 + _q->rxy0 - 2*_q->rxy1);
+    return 0.5f*(_q->rxy2 - _q->rxy0) / (_q->rxy2 + _q->rxy0 - 2*_q->rxy1);
+}
+
+float detector_cccf_estimate_dphi(detector_cccf _q)
+{
+    // read buffer...
+    float complex * r;
+    windowcf_read(_q->buffer, &r);
+
+    //
+    float complex r0 = 0.0f;
+    float complex r1 = 0.0f;
+    float complex metric = 0.0f;
+    unsigned int i;
+    for (i=0; i<_q->n; i++) {
+        r0 = r1;
+        r1 = r[i] * conjf(_q->s[i]);
+
+        metric += r1 * conjf(r0);
+    }
+
+    return cargf(metric);
 }
 
 void detector_cccf_debug_print(detector_cccf _q,
