@@ -546,6 +546,7 @@ framing_objects :=						\
 	src/framing/src/bsync_rrrf.o				\
 	src/framing/src/bsync_crcf.o				\
 	src/framing/src/bsync_cccf.o				\
+	src/framing/src/detector_cccf.o				\
 	src/framing/src/framesyncprops.o			\
 	src/framing/src/framesyncstats.o			\
 	src/framing/src/framegen64.o				\
@@ -574,6 +575,8 @@ src/framing/src/bsync_rrrf.o : %.o : %.c $(headers) src/framing/src/bsync.c
 src/framing/src/bsync_crcf.o : %.o : %.c $(headers) src/framing/src/bsync.c
 
 src/framing/src/bsync_cccf.o : %.o : %.c $(headers) src/framing/src/bsync.c
+
+src/framing/src/detector_cccf.o : %.o : %.c $(headers)
 
 src/framing/src/framesyncprops.o : %.o : %.c $(headers)
 
@@ -610,6 +613,7 @@ framing_benchmarks :=						\
 	src/framing/bench/bpacketsync_benchmark.c		\
 	src/framing/bench/bpresync_benchmark.c			\
 	src/framing/bench/bsync_benchmark.c			\
+	src/framing/bench/detector_benchmark.c			\
 	src/framing/bench/flexframesync_benchmark.c		\
 	src/framing/bench/gmskframesync_benchmark.c		\
 	src/framing/bench/interleaver_benchmark.c		\
@@ -1308,6 +1312,7 @@ example_programs :=						\
 	examples/cgsolve_example				\
 	examples/cvsd_example					\
 	examples/decim_crcf_example				\
+	examples/detector_cccf_example				\
 	examples/dotprod_rrrf_example				\
 	examples/dotprod_cccf_example				\
 	examples/eqlms_cccf_blind_example			\

@@ -2378,6 +2378,44 @@ LIQUID_PRESYNC_DEFINE_API(BPRESYNC_MANGLE_CCCF,
                           liquid_float_complex,
                           liquid_float_complex)
 
+//
+// Pre-demodulation detector
+//
+
+typedef struct detector_cccf_s * detector_cccf;
+
+// create pre-demod detector
+//  _s          :   sequence
+//  _n          :   sequence length
+//  _threshold  :   detection threshold (default: 0.7)
+//  _dphi_max   :   maximum carrier offset
+detector_cccf detector_cccf_create(liquid_float_complex * _s,
+                                   unsigned int           _n,
+                                   float                  _threshold,
+                                   float                  _dphi_max);
+
+// destroy pre-demo detector object
+void detector_cccf_destroy(detector_cccf _q);
+
+// print pre-demod detector internal state
+void detector_cccf_print(detector_cccf _q);
+
+// reset pre-demod detector internal state
+void detector_cccf_reset(detector_cccf _q);
+
+// Run sample through pre-demod detector's correlator.
+// Returns '1' if signal was detected, '0' otherwise
+//  _q          :   pre-demod detector
+//  _x          :   input sample
+//  _tau_hat    :   fractional sample offset estimate (set when detected)
+//  _dphi_hat   :   carrier frequency offset estimate (set when detected)
+//  _gamma_hat  :   channel gain estimate (set when detected)
+int detector_cccf_correlate(detector_cccf        _q,
+                            liquid_float_complex _x,
+                            float *              _tau_hat,
+                            float *              _dphi_hat,
+                            float *              _gamma_hat);
+
 
 // 
 // Packetizer
