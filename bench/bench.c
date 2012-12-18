@@ -279,6 +279,7 @@ int main(int argc, char *argv[])
         fprintf(fid,"#  search string       :   '%s'\n", mode == RUN_SEARCH ? search_string : "");
         fprintf(fid,"#  runtime             :   %12.8f s\n", runtime);
         fprintf(fid,"#  cpu_clock           :   %e Hz\n", cpu_clock);
+        fprintf(fid,"#  cpu_clock determined:   %s\n", cpu_clock_detect ? "estimated" : "specified");
         fprintf(fid,"#  num_trials          :   %lu\n", num_base_trials);
         fprintf(fid,"#\n");
         fprintf(fid,"# %-5s %-30s %12s %12s %12s %12s\n",

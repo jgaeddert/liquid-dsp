@@ -1,6 +1,6 @@
 /*
- * Copyright (c) 2007, 2008, 2009, 2010, 2011 Joseph Gaeddert
- * Copyright (c) 2007, 2008, 2009, 2010, 2011 Virginia Polytechnic
+ * Copyright (c) 2007, 2008, 2009, 2010, 2011, 2012 Joseph Gaeddert
+ * Copyright (c) 2007, 2008, 2009, 2010, 2011, 2012 Virginia Polytechnic
  *                                      Institute & State University
  *
  * This file is part of liquid.
@@ -39,8 +39,12 @@ struct EQLMS(_s) {
 
     unsigned int n;     // input counter
     WINDOW() buffer;    // input buffer
-    windowf ex2_buffer; // input energy buffer
+    wdelayf x2;         // buffer of |x|^2 values
+    float x2_sum;       // sum{ |x|^2 }
 };
+
+// update sum{|x|^2}
+void EQLMS(_update_sumsq)(EQLMS() _eq, T _x);
 
 // create least mean-squares (LMS) equalizer object
 //  _h      :   initial coefficients [size: _p x 1], default if NULL
@@ -58,7 +62,7 @@ EQLMS() EQLMS(_create)(T * _h,
     eq->w0 = (T*) malloc((eq->p)*sizeof(T));
     eq->w1 = (T*) malloc((eq->p)*sizeof(T));
     eq->buffer = WINDOW(_create)(eq->p);
-    eq->ex2_buffer = windowf_create(eq->p);
+    eq->x2     = wdelayf_create(eq->p);
 
     // copy coefficients (if not NULL)
     if (_h == NULL) {
@@ -153,7 +157,7 @@ void EQLMS(_destroy)(EQLMS() _eq)
     free(_eq->w1);
 
     WINDOW(_destroy)(_eq->buffer);
-    windowf_destroy(_eq->ex2_buffer);
+    wdelayf_destroy(_eq->x2);
     free(_eq);
 }
 
@@ -194,7 +198,7 @@ void EQLMS(_reset)(EQLMS() _eq)
     memmove(_eq->w0, _eq->h0, (_eq->p)*sizeof(T));
 
     WINDOW(_clear)(_eq->buffer);
-    windowf_clear(_eq->ex2_buffer);
+    wdelayf_clear(_eq->x2);
     _eq->n=0;
 }
 
@@ -207,8 +211,8 @@ void EQLMS(_push)(EQLMS() _eq,
     // push value into buffer
     WINDOW(_push)(_eq->buffer, _x);
 
-    // push |x|^2
-    windowf_push(_eq->ex2_buffer, crealf(_x*conj(_x)));
+    // update sum{|x|^2}
+    EQLMS(_update_sumsq)(_eq, _x);
 }
 
 // execute internal dot product
@@ -246,12 +250,6 @@ void EQLMS(_step)(EQLMS() _eq,
     // compute error (a priori)
     T alpha = _d - _d_hat;
 
-    // compute signal energy
-    float *x2, ex2=0.0f;
-    windowf_read(_eq->ex2_buffer, &x2);
-    for (i=0; i<p; i++)
-        ex2 += x2[i];
-
     // read buffer
     T * r;      // read buffer
     WINDOW(_read)(_eq->buffer, &r);
@@ -259,7 +257,7 @@ void EQLMS(_step)(EQLMS() _eq,
     // update weighting vector
     // w[n+1] = w[n] + mu*conj(d-d_hat)*x[n]/(x[n]' * conj(x[n]))
     for (i=0; i<p; i++)
-        _eq->w1[i] = _eq->w0[i] + (_eq->mu)*conj(alpha)*r[i]/ex2;
+        _eq->w1[i] = _eq->w0[i] + (_eq->mu)*conj(alpha)*r[i]/_eq->x2_sum;
 
 #ifdef DEBUG
     printf("w0: \n");
@@ -327,5 +325,20 @@ void EQLMS(_train)(EQLMS() _eq,
 
     // copy output weight vector
     EQLMS(_get_weights)(_eq, _w);
+}
+
+// 
+// internal methods
+//
+
+// update sum{|x|^2}
+void EQLMS(_update_sumsq)(EQLMS() _eq, T _x)
+{
+    // update estimate of signal magnitude squared
+    float x2_n = crealf(_x * conjf(_x));    // |x[n-1]|^2 (input sample)
+    float x2_0;                             // |x[0]  |^2 (oldest sample)
+    wdelayf_read(_eq->x2, &x2_0);           // read oldest sample
+    wdelayf_push(_eq->x2, x2_n);            // push newest sample
+    _eq->x2_sum = _eq->x2_sum + x2_n - x2_0;// update sum( |x|^2 ) of last 'n' input samples
 }
 
