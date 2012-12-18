@@ -1,6 +1,6 @@
 /*
- * Copyright (c) 2007, 2008, 2009, 2010 Joseph Gaeddert
- * Copyright (c) 2007, 2008, 2009, 2010 Virginia Polytechnic
+ * Copyright (c) 2007, 2008, 2009, 2010, 2012 Joseph Gaeddert
+ * Copyright (c) 2007, 2008, 2009, 2010, 2012 Virginia Polytechnic
  *                                      Institute & State University
  *
  * This file is part of liquid.
@@ -34,15 +34,6 @@
 
 #include "liquid.internal.h"
 
-#define FRAME64_RAMP_UP_LEN 12
-#define FRAME64_PHASING_LEN 64
-#define FRAME64_PN_LEN      64
-#define FRAME64_RAMP_DN_LEN 12
-#define FRAME64_SETTLE_LEN  8
-
-#define FRAMEGEN64_PHASING_0    ( 1.0f) //( 0.70711f + 0.70711f*_Complex_I)
-#define FRAMEGEN64_PHASING_1    (-1.0f) //(-0.70711f - 0.70711f*_Complex_I)
-
 #define DEBUG_FRAMEGEN64    0
 
 // internal
@@ -53,32 +44,26 @@ struct framegen64_s {
     float beta;             // filter excess bandwidth factor
 
     modem mod;              // QPSK modulator
-    packetizer p_header;    // header packetizer
     packetizer p_payload;   // payload packetizer
 
-    // buffers: preamble (BPSK)
-    float complex ramp_up[FRAME64_RAMP_UP_LEN];
-    float complex phasing[FRAME64_PHASING_LEN];
-    float complex pn_sequence[FRAME64_PN_LEN];
-    float complex ramp_dn[FRAME64_RAMP_DN_LEN];
-
-    // header (QPSK)
-    unsigned char header_enc[21];   // 21 = 12 bytes, crc16, h128
-    unsigned char header_sym[84];   // 84 = 21*4
+    float complex pn_sequence[64];  // 64-symbol p/n sequence
 
     // payload (QPSK)
-    unsigned char payload_enc[99];  // 99 = 64 bytes, crc16, h128
-    unsigned char payload_sym[396]; // 396 = 99*4
+    unsigned char payload_dec[64];  // 64 bytes decoded payload data
+    unsigned char payload_enc[138]; // 138 = 64 bytes, crc16, g2412
+    unsigned char payload_sym[552]; // 552 = 138 bytes * 8 bits/bytes / 2 bits/symbol
 
     // pulse-shaping filter
     interp_crcf interp;
 };
 
 // create framegen64 object
+// TODO : remove options for filter parameters (create takes no arguments)
+// TODO : permit different p/n sequence?
 //  _m      :   rrcos filter delay (number of symbols)
 //  _beta   :   rrcos filter excess bandwidth factor
 framegen64 framegen64_create(unsigned int _m,
-                             float _beta)
+                             float        _beta)
 {
     // validate input
     if (_m == 0) {
@@ -89,157 +74,104 @@ framegen64 framegen64_create(unsigned int _m,
         exit(1);
     }
 
-    framegen64 fg = (framegen64) malloc(sizeof(struct framegen64_s));
-    fg->m    = _m;
-    fg->beta = _beta;
+    framegen64 q = (framegen64) malloc(sizeof(struct framegen64_s));
+    q->m    = 3;
+    q->beta = 0.5f;
 
     unsigned int i;
-
-    // generate ramp_up
-    for (i=0; i<FRAME64_RAMP_UP_LEN; i++) {
-        fg->ramp_up[i] = (i%2) ? FRAMEGEN64_PHASING_1 : FRAMEGEN64_PHASING_0;
-        //fg->ramp_up[i] *= kaiser(i,2*FRAME64_RAMP_UP_LEN,8.0f,0.0f);
-        //fg->ramp_up[i] *= (float)(i) / (float)(FRAME64_RAMP_UP_LEN);
-        fg->ramp_up[i] *= 0.5f*(1.0f - cosf(M_PI * (float)(i) / (float)(FRAME64_RAMP_UP_LEN)));
-    }
-
-    // generate ramp_dn
-    for (i=0; i<FRAME64_RAMP_DN_LEN; i++) {
-        fg->ramp_dn[i] = (i%2) ? FRAMEGEN64_PHASING_1 : FRAMEGEN64_PHASING_0;
-        //fg->ramp_dn[i] *= kaiser(i+FRAME64_RAMP_DN_LEN,2*FRAME64_RAMP_DN_LEN,8.0f,0.0f);
-        //fg->ramp_dn[i] *= (float)(FRAME64_RAMP_DN_LEN-i-1) / (float)(FRAME64_RAMP_DN_LEN);
-        fg->ramp_dn[i] *= 0.5f*(1.0f + cos(M_PI * (float)(i) / (float)(FRAME64_RAMP_DN_LEN)));
-    }
-
-    // generate phasing pattern
-    for (i=0; i<FRAME64_PHASING_LEN; i++)
-        fg->phasing[i] = (i%2) ? FRAMEGEN64_PHASING_1 : FRAMEGEN64_PHASING_0;
 
     // generate pn sequence
     msequence ms = msequence_create(6, 0x0043, 1);
     for (i=0; i<64; i++)
-        fg->pn_sequence[i] = (msequence_advance(ms)) ? FRAMEGEN64_PHASING_1 : FRAMEGEN64_PHASING_0;
+        q->pn_sequence[i] = (msequence_advance(ms)) ? 1.0f : -1.0f;
     msequence_destroy(ms);
 
     // create pulse-shaping filter (k=2)
-    fg->interp = interp_crcf_create_rnyquist(LIQUID_RNYQUIST_ARKAISER,2,fg->m,fg->beta,0);
+    q->interp = interp_crcf_create_rnyquist(LIQUID_RNYQUIST_ARKAISER,2,q->m,q->beta,0);
 
     // create header/payload packetizers
-    fg->p_header  = packetizer_create(12, LIQUID_CRC_16, LIQUID_FEC_NONE, LIQUID_FEC_HAMMING128);
-    fg->p_payload = packetizer_create(64, LIQUID_CRC_16, LIQUID_FEC_NONE, LIQUID_FEC_HAMMING128);
+    unsigned int n      = 64;
+    crc_scheme check    = LIQUID_CRC_16;
+    fec_scheme fec0     = LIQUID_FEC_NONE;
+    fec_scheme fec1     = LIQUID_FEC_GOLAY2412;
+    q->p_payload = packetizer_create(n, check, fec0, fec1);
 
     // create modulator
-    fg->mod = modem_create(LIQUID_MODEM_QPSK);
+    q->mod = modem_create(LIQUID_MODEM_QPSK);
 
-    return fg;
+    return q;
 }
 
 // destroy framegen64 object
-void framegen64_destroy(framegen64 _fg)
+void framegen64_destroy(framegen64 _q)
 {
-    interp_crcf_destroy(_fg->interp);       // interpolator (matched filter)
-    packetizer_destroy(_fg->p_header);      // header packetizer (encoder)
-    packetizer_destroy(_fg->p_payload);     // payload packetizer (decoder)
-    modem_destroy(_fg->mod);                // QPSK header/payload modulator
+    // destroy internal objects
+    interp_crcf_destroy(_q->interp);       // interpolator (matched filter)
+    packetizer_destroy(_q->p_payload);     // payload packetizer (decoder)
+    modem_destroy(_q->mod);                // QPSK header/payload modulator
 
     // free main object memory
-    free(_fg);
+    free(_q);
 }
 
 // print framegen64 object internals
-void framegen64_print(framegen64 _fg)
+void framegen64_print(framegen64 _q)
 {
-    printf("framegen64 [m=%u, beta=%4.2f]:\n", _fg->m, _fg->beta);
-    printf("    ramp/up symbols     :   %u\n", FRAME64_RAMP_UP_LEN);
-    printf("    phasing symbols     :   64\n");
+    printf("framegen64 [m=%u, beta=%4.2f]:\n", _q->m, _q->beta);
+    printf("    ramp/up symbols     :   %u\n", 3);
     printf("    p/n symbols         :   64\n");
-    printf("    header symbols      :   84\n");
-    printf("    payload symbols     :   396\n");
-    printf("    payload symbols     :   396\n");
-    printf("    ramp\\down symbols   :   %u\n", FRAME64_RAMP_DN_LEN);
-    printf("    settling symbols    :   %u\n", FRAME64_SETTLE_LEN);
-    printf("    total symbols       :   640\n");
+    printf("    payload symbols     :   552\n");
+    printf("    ramp\\down symbols   :   %u\n", 3);
+    printf("    total symbols       :   622\n");
 }
 
 // execute frame generator (creates a frame)
-//  _fg         :   frame generator object
+//  _q         :   frame generator object
 //  _header     :   12-byte input header
 //  _payload    :   64-byte input payload
 //  _y          :   1280-sample frame
-void framegen64_execute(framegen64 _fg,
+void framegen64_execute(framegen64      _q,
                         unsigned char * _header,
                         unsigned char * _payload,
                         float complex * _y)
 {
     unsigned int i;
 
-    // encode header and scramble result
-    packetizer_encode(_fg->p_header, _header, _fg->header_enc);
-    scramble_data(_fg->header_enc, 21);
-
     // encode payload and scramble result
-    packetizer_encode(_fg->p_payload, _payload, _fg->payload_enc);
-    scramble_data(_fg->payload_enc, 99);
-
-    // generate header symbols
-    for (i=0; i<21; i++)
-        framegen64_byte_to_syms(_fg->header_enc[i], &(_fg->header_sym[4*i]));
+    packetizer_encode(_q->p_payload, _payload, _q->payload_enc);
+    scramble_data(_q->payload_enc, 138);
 
     // generate payload symbols
-    for (i=0; i<99; i++)
-        framegen64_byte_to_syms(_fg->payload_enc[i], &(_fg->payload_sym[4*i]));
+    // 138 symbols -> 552 
+    for (i=0; i<138; i++)
+        framegen64_byte_to_syms(_q->payload_enc[i], &(_q->payload_sym[4*i]));
 
     unsigned int n=0;
 
     // reset interpolator
-    interp_crcf_clear(_fg->interp);
-
-    // ramp up
-    for (i=0; i<FRAME64_RAMP_UP_LEN; i++) {
-        interp_crcf_execute(_fg->interp, _fg->ramp_up[i], &_y[n]);
-        n+=2;
-    }
-
-    // phasing
-    for (i=0; i<FRAME64_PHASING_LEN; i++) {
-        interp_crcf_execute(_fg->interp, _fg->phasing[i], &_y[n]);
-        n+=2;
-    }
+    interp_crcf_clear(_q->interp);
 
     // p/n sequence
-    for (i=0; i<FRAME64_PN_LEN; i++) {
-        interp_crcf_execute(_fg->interp, _fg->pn_sequence[i], &_y[n]);
+    for (i=0; i<64; i++) {
+        interp_crcf_execute(_q->interp, _q->pn_sequence[i], &_y[n]);
         n+=2;
     }
 
     float complex x;
-    // header
-    for (i=0; i<84; i++) {
-        modem_modulate(_fg->mod, _fg->header_sym[i], &x);
-        interp_crcf_execute(_fg->interp, x, &_y[n]);
-        n+=2;
-    }
-
     // payload
-    for (i=0; i<396; i++) {
-        modem_modulate(_fg->mod, _fg->payload_sym[i], &x);
-        interp_crcf_execute(_fg->interp, x, &_y[n]);
-        n+=2;
-    }
-
-    // ramp down
-    for (i=0; i<FRAME64_RAMP_DN_LEN; i++) {
-        interp_crcf_execute(_fg->interp, _fg->ramp_dn[i], &_y[n]);
+    for (i=0; i<552; i++) {
+        modem_modulate(_q->mod, _q->payload_sym[i], &x);
+        interp_crcf_execute(_q->interp, x, &_y[n]);
         n+=2;
     }
 
     // settling
-    for (i=0; i<FRAME64_SETTLE_LEN; i++) {
-        interp_crcf_execute(_fg->interp, 0.0f, &_y[n]);
+    for (i=0; i<6; i++) {
+        interp_crcf_execute(_q->interp, 0.0f, &_y[n]);
         n+=2;
     }
 
-    assert(n==1280);
+    assert(n==1244);
 }
 
 

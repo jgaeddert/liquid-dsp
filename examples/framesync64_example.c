@@ -41,10 +41,10 @@ int main() {
     srand( time(NULL) );
 
     // options
-    float SNRdB = 0.0f;         // signal-to-noise ratio
+    float SNRdB = 20.0f;        // signal-to-noise ratio
     float noise_floor = -40.0f; // noise floor
-    float phi = 0.3f;           // carrier phase offset
-    float dphi = 0.05f;         // carrier frequency offset
+    float dphi = 0.0f;          // carrier frequency offset
+    float theta = 0.3f;         // carrier phase offset
 
     // create framegen64 object
     unsigned int m=3;
@@ -63,9 +63,6 @@ int main() {
     // channel
     float nstd  = powf(10.0f, noise_floor/20.0f);         // noise std. dev.
     float gamma = powf(10.0f, (SNRdB+noise_floor)/20.0f); // channel gain
-    nco_crcf nco_channel = nco_crcf_create(LIQUID_VCO);
-    nco_crcf_set_phase(nco_channel, phi);
-    nco_crcf_set_frequency(nco_channel, dphi);
 
     // data payload
     unsigned int i;
@@ -76,27 +73,24 @@ int main() {
         payload[i] = rand() & 0xff;
 
     // allocate memory for the frame samples
-    float complex frame_rx[1280];
+    float complex frame_rx[1244];
     
 #if 0
     // push noise (flush the frame buffers)
-    for (i=0; i<1280; i++) {
+    for (i=0; i<1244; i++) {
         frame_rx[i] = (randnf() + _Complex_I*randnf())*0.01f*gamma;
     }
-    framesync64_execute(fs, frame_rx, 1280);
+    framesync64_execute(fs, frame_rx, 1244);
 #endif
 
     // generate the frame
     framegen64_execute(fg, header, payload, frame_rx);
 
     // add channel impairments
-    for (i=0; i<1280; i++) {
-        frame_rx[i] *= cexpf(_Complex_I*phi);
+    for (i=0; i<1244; i++) {
+        frame_rx[i] *= cexpf(_Complex_I*(dphi*i +theta));
         frame_rx[i] *= gamma;
         frame_rx[i] += nstd*( randnf() + _Complex_I*randnf())*M_SQRT1_2;
-        nco_crcf_mix_up(nco_channel, frame_rx[i], &frame_rx[i]);
-
-        nco_crcf_step(nco_channel);
     }
 
     // push noise through the synchronizer
@@ -106,12 +100,11 @@ int main() {
     }
 
     // synchronize/receive the frame
-    framesync64_execute(fs, frame_rx, 1280);
+    framesync64_execute(fs, frame_rx, 1244);
 
     // clean up allocated objects
     framegen64_destroy(fg);
     framesync64_destroy(fs);
-    nco_crcf_destroy(nco_channel);
 
     // 
     // export results
@@ -122,7 +115,7 @@ int main() {
     fprintf(fid,"clear all;\n");
     fprintf(fid,"close all;\n");
     fprintf(fid,"\n\n");
-    for (i=0; i<1280; i++)
+    for (i=0; i<1244; i++)
         fprintf(fid, "frame_rx(%4u) = %12.4e + j*%12.4e;\n", i+1, crealf(frame_rx[i]), cimagf(frame_rx[i]));
 
     fprintf(fid,"t=0:(length(frame_rx)-1);\n");
