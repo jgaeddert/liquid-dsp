@@ -33,10 +33,6 @@
 
 #include "liquid.internal.h"
 
-#define FRAMESYNC64_SQUELCH_TIMEOUT (32)
-
-#define FRAME64_PN_LEN              (64)
-
 #define DEBUG_FRAMESYNC64           0
 #define DEBUG_FRAMESYNC64_PRINT     0
 #define DEBUG_FILENAME              "framesync64_internal_debug.m"
