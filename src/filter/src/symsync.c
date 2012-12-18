@@ -23,7 +23,7 @@
 // Symbol synchronizer
 //
 // References:
-//  [Mengali:1997] Umberto Mengali and ALdo N. D'Andrea,
+//  [Mengali:1997] Umberto Mengali and Aldo N. D'Andrea,
 //      "Synchronization Techniques for Digital Receivers,"
 //      Plenum Press, New York & London, 1997.
 //  [harris:2001] frederic j. harris and Michael Rice,
