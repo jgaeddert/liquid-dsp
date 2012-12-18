@@ -124,7 +124,7 @@ detector_cccf detector_cccf_create(float complex * _s,
 
     // derived values
     q->n_inv = 1.0f / (float)(q->n);    // 1/n for faster processing
-    q->m = 4;                           // number of correlators
+    q->m = 5;                           // number of correlators
 
     // allocate memory for sequence and copy
     q->s = (float complex*) malloc((q->n)*sizeof(float complex));
@@ -144,7 +144,7 @@ detector_cccf detector_cccf_create(float complex * _s,
     float complex sconj[q->n];
     for (k=0; k<q->m; k++) {
         // pre-spin sequence (slightly over-sampled in frequency)
-        q->dphi[k] = k * 0.8f * M_PI / (float)(q->n);
+        q->dphi[k] = ((float)k - (float)(q->m-1)/2) * 0.8f * M_PI / (float)(q->n);
         for (i=0; i<q->n; i++)
             sconj[i] = conjf(q->s[i]) * cexpf(-_Complex_I*q->dphi[k]*i);
         q->dp[k] = dotprod_cccf_create(sconj, q->n);
@@ -349,7 +349,7 @@ void detector_cccf_compute_dotprods(detector_cccf _q)
 
         // save scaled magnitude
         _q->rxy[k] = cabsf(rxy) * _q->n_inv / sqrtf(_q->x2_hat);
-        printf("%8.4f (%6.4f) ", _q->rxy[k], _q->dphi[k]);
+        printf("%6.4f (%6.4f) ", _q->rxy[k], _q->dphi[k]);
 
         // find index of maximum
         if (_q->rxy[k] > rxy_max) {
@@ -395,14 +395,14 @@ void detector_cccf_estimate_offsets(detector_cccf _q,
     float r0p = _q->idetect==_q->m-1 ? _q->rxy1[_q->idetect-1] : _q->rxy1[_q->idetect+1];
     float rp0 = _q->rxy[_q->idetect];
 
-#if 0
+#if 1
     // print values for interpolation
-    printf("idetect : %u, m=%u\n", _q->idetect, _q->m);
+    printf("idetect : %u\n", _q->idetect);
     printf("             [%8.5f]\n", rm0);
     printf("                  |\n");
     printf("                  |\n");
     printf("[%8.5f]---[%8.5f]----[%8.5f]--> freq\n", r0m, r00, r0p);
-    printf("                  |\n");
+    printf("              %8.5f\n", _q->dphi[_q->idetect]);
     printf("                  |\n");
     printf("             [%8.5f]\n", rp0);
     printf("                  |\n");
@@ -410,8 +410,9 @@ void detector_cccf_estimate_offsets(detector_cccf _q,
 #endif
 
     // interpolate frequency offset estimate
-    *_dphi_hat = _q->dphi[_q->idetect] -
-                  0.5f*(r0p - r0m) / (r0p + r0m - 2*r00) * 0.8 * M_PI / (float)(_q->n);
+    float dphi_detect = _q->dphi[_q->idetect];       // frequency from detection
+    float dphi_step   = 0.8 * M_PI / (float)(_q->n); // step size between dphi bins
+    *_dphi_hat        = dphi_detect - dphi_step * 0.5f*(r0p - r0m) / (r0p + r0m - 2*r00);
 
     // interpolate timing offset estimate
     *_tau_hat  =  0.5f*(rp0 - rm0) / (rp0 + rm0 - 2*r00);

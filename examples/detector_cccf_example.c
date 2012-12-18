@@ -124,7 +124,7 @@ int main(int argc, char*argv[])
     // push signal through detector
     float tau_hat   = 0.0f;
     float dphi_hat  = 0.0f;
-    float gamma_hat = 0.0f;
+    float gamma_hat = 1.0f;
     int signal_detected = 0;
     unsigned int index = 0;
     for (i=0; i<num_samples; i++) {
@@ -150,7 +150,7 @@ int main(int argc, char*argv[])
     float delay     = (float)(2*n) + dt; // actual delay (samples)
     printf("delay estimate  : %8.3f, actual=%8.3f (error=%8.3f) sample(s)\n", delay_est, delay, delay-delay_est);
     printf("dphi estimate   : %8.5f, actual=%8.5f (error=%8.5f) rad/sample\n",dphi_hat,  dphi,  dphi-dphi_hat);
-    printf("gamma estimate  : %8.5f, actual=%8.5f (error=%8.5f) dB\n",        20*log10f(gamma_hat), 20*log10f(gamma), 20*log10(gamma/gamma_hat));
+    printf("gamma estimate  : %8.3f, actual=%8.3f (error=%8.3f) dB\n",        20*log10f(gamma_hat), 20*log10f(gamma), 20*log10(gamma/gamma_hat));
     printf("\n");
 
     // 
