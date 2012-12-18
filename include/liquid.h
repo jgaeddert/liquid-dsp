@@ -1458,11 +1458,17 @@ FIRPFB() FIRPFB(_create)(unsigned int _num_filters,             \
 /*  _k      : nominal samples/symbol                    */      \
 /*  _m      : filter delay (symbols)                    */      \
 /*  _beta   : rolloff factor (0 < beta <= 1)            */      \
-FIRPFB() FIRPFB(_create_rnyquist)(int _type,                    \
+FIRPFB() FIRPFB(_create_rnyquist)(int          _type,           \
                                   unsigned int _npfb,           \
                                   unsigned int _k,              \
                                   unsigned int _m,              \
-                                  float _beta);                 \
+                                  float        _beta);          \
+/* create from square-root derivative Nyquist prototype */      \
+FIRPFB() FIRPFB(_create_drnyquist)(int          _type,          \
+                                   unsigned int _npfb,          \
+                                   unsigned int _k,             \
+                                   unsigned int _m,             \
+                                   float        _beta);         \
 FIRPFB() FIRPFB(_recreate)(FIRPFB() _q,                         \
                            unsigned int _num_filters,           \
                            TC * _h,                             \
