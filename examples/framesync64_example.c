@@ -79,7 +79,7 @@ int main(int argc, char*argv[])
 
     // channel
     unsigned int frame_len = 1244;              // fixed frame length
-    unsigned int num_samples = frame_len + 100; // total number of samples
+    unsigned int num_samples = frame_len + 200; // total number of samples
     float nstd  = powf(10.0f, noise_floor/20.0f);         // noise std. dev.
     float gamma = powf(10.0f, (SNRdB+noise_floor)/20.0f); // channel gain
 
@@ -108,13 +108,14 @@ int main(int argc, char*argv[])
     // generate the frame
     framegen64_execute(fg, header, payload, frame);
 
-    // fractional sample delay
+    // fractional sample timing offset
     unsigned int d = 11;    // fractional sample filter delay
     firfilt_crcf finterp = firfilt_crcf_create_kaiser(2*d+1, 0.45f, 40.0f, dt);
     for (i=0; i<num_samples; i++) {
         // fractional sample timing offset
-        if (i < frame_len) firfilt_crcf_push(finterp, frame[i]);
-        else               firfilt_crcf_push(finterp, 0.0f);
+        if (i < 100)                  firfilt_crcf_push(finterp, 0.0f);
+        else if (i < frame_len + 100) firfilt_crcf_push(finterp, frame[i-100]);
+        else                          firfilt_crcf_push(finterp, 0.0f);
 
         // compute output
         firfilt_crcf_execute(finterp, &y[i]);

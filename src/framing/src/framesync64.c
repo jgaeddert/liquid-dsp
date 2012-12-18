@@ -40,7 +40,7 @@
 #define DEBUG_FRAMESYNC64           0
 #define DEBUG_FRAMESYNC64_PRINT     0
 #define DEBUG_FILENAME              "framesync64_internal_debug.m"
-#define DEBUG_BUFFER_LEN            (4096)
+#define DEBUG_BUFFER_LEN            (1600)
 
 void framesync64_debug_print(framesync64 _q);
 
@@ -48,11 +48,10 @@ void framesync64_debug_print(framesync64 _q);
 struct framesync64_s {
 
     // synchronizer objects
-    bpresync_cccf sync; // = bpresync_cccf_create(s0, k*num_sync_symbols, 0.05f, 11);
+    detector_cccf frame_detector;
 
 #if DEBUG_FRAMESYNC64
     windowcf debug_x;
-    windowcf debug_rxy;
 #endif
 };
 
@@ -60,37 +59,43 @@ struct framesync64_s {
 //  _props          :   properties structure pointer (default if NULL)
 //  _callback       :   callback function invoked when frame is received
 //  _userdata       :   user-defined data object passed to callback
-framesync64 framesync64_create(framesyncprops_s * _props,
+framesync64 framesync64_create(framesyncprops_s *   _props,
                                framesync64_callback _callback,
-                               void * _userdata)
+                               void *               _userdata)
 {
     framesync64 q = (framesync64) malloc(sizeof(struct framesync64_s));
 
     unsigned int i;
-    unsigned int j;
 
-    unsigned int k = 2;
-    unsigned int num_sync_symbols = 64;
-
-    // generate pn sequence
+    // generate p/n sequence
     msequence ms = msequence_create(6, 0x0043, 1);
-    float complex pn_sequence[num_sync_symbols];
+    float complex pn_sequence[64];
     for (i=0; i<64; i++)
         pn_sequence[i] = (msequence_advance(ms)) ? 1.0f : -1.0f;
     msequence_destroy(ms);
 
-    //
-    float dphi_max = 0.08f;
-    float complex s0[k*num_sync_symbols];
-    for (i=0; i<num_sync_symbols; i++) {
-        for (j=0; j<k; j++)
-            s0[i*k + j] = pn_sequence[i];
+    // interpolate p/n sequence
+    unsigned int k  = 2;    // samples/symbol
+    unsigned int m  = 3;    // filter delay (symbols)
+    float beta      = 0.5f; // excess bandwidth factor
+    float complex seq[k*64];
+    interp_crcf interp = interp_crcf_create_rnyquist(LIQUID_RNYQUIST_ARKAISER,k,m,beta,0);
+    for (i=0; i<64+m; i++) {
+        // compensate for filter delay
+        if (i < m) interp_crcf_execute(interp, pn_sequence[i],    &seq[0]);
+        else       interp_crcf_execute(interp, pn_sequence[i%64], &seq[2*(i-m)]);
     }
-    q->sync = bpresync_cccf_create(s0, k*num_sync_symbols, dphi_max, 5);
+    interp_crcf_destroy(interp);
+
+    // create frame detector
+    float threshold = 0.4f;
+    float dphi_max  = 0.05f;
+    q->frame_detector = detector_cccf_create(seq, k*64, threshold, dphi_max);
+
+    // reset state
 
 #if DEBUG_FRAMESYNC64
     q->debug_x         = windowcf_create(DEBUG_BUFFER_LEN);
-    q->debug_rxy       = windowcf_create(DEBUG_BUFFER_LEN);
 #endif
 
     return q;
@@ -120,11 +125,10 @@ void framesync64_destroy(framesync64 _q)
 
     // clean up debug windows
     windowcf_destroy(_q->debug_x);
-    windowcf_destroy(_q->debug_rxy);
 #endif
 
     // destroy synchronization objects
-    bpresync_cccf_destroy(_q->sync);
+    detector_cccf_destroy(_q->frame_detector);
 
     // free main object memory
     free(_q);
@@ -140,7 +144,7 @@ void framesync64_print(framesync64 _q)
 void framesync64_reset(framesync64 _q)
 {
     // reset binary pre-demod synchronizer
-    bpresync_cccf_reset(_q->sync);
+    detector_cccf_reset(_q->frame_detector);
 }
 
 // execute frame synchronizer
@@ -152,16 +156,20 @@ void framesync64_execute(framesync64     _q,
                          unsigned int    _n)
 {
     unsigned int i;
-    float complex rxy;
-    float dphi_est;
+    float tau_hat   = 0.0f;
+    float dphi_hat  = 0.0f;
+    float gamma_hat = 0.0f;
+    int detected = 0;
     for (i=0; i<_n; i++) {
         // push through pre-demod synchronizer
-        bpresync_cccf_push(_q->sync, _x[i]);
-        bpresync_cccf_correlate(_q->sync, &rxy, &dphi_est);
+        detected = detector_cccf_correlate(_q->frame_detector, _x[i], &tau_hat, &dphi_hat, &gamma_hat);
+        if (detected) {
+            printf("***** frame detected! tau-hat:%8.4f, dphi-hat:%8.4f, gamma:%8.2f dB\n",
+                    tau_hat, dphi_hat, 20*log10f(gamma_hat));
+        }
 
 #if DEBUG_FRAMESYNC64
         windowcf_push(_q->debug_x,   _x[i]);
-        windowcf_push(_q->debug_rxy, rxy);
 #endif
     }
 }
@@ -296,16 +304,6 @@ void framesync64_debug_print(framesync64 _q)
     fprintf(fid,"figure;\n");
     fprintf(fid,"plot(1:length(x),real(x), 1:length(x),imag(x));\n");
     fprintf(fid,"ylabel('received signal, x');\n");
-
-    // write rxy
-    fprintf(fid,"rxy = zeros(1,%u);\n", DEBUG_BUFFER_LEN);
-    windowcf_read(_q->debug_rxy, &rc);
-    for (i=0; i<DEBUG_BUFFER_LEN; i++)
-        fprintf(fid,"rxy(%4u) = %12.4e + j*%12.4e;\n", i+1, crealf(rc[i]), cimagf(rc[i]));
-    fprintf(fid,"\n\n");
-    fprintf(fid,"figure;\n");
-    fprintf(fid,"plot(abs(rxy))\n");
-    fprintf(fid,"ylabel('|r_{xy}|');\n");
 
     fprintf(fid,"\n\n");
     fclose(fid);

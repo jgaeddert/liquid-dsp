@@ -89,7 +89,7 @@ framegen64 framegen64_create(unsigned int _m,
     // create pulse-shaping filter (k=2)
     q->interp = interp_crcf_create_rnyquist(LIQUID_RNYQUIST_ARKAISER,2,q->m,q->beta,0);
 
-    // create header/payload packetizers
+    // create payload packetizers
     unsigned int n      = 64;
     crc_scheme check    = LIQUID_CRC_16;
     fec_scheme fec0     = LIQUID_FEC_NONE;
@@ -108,7 +108,7 @@ void framegen64_destroy(framegen64 _q)
     // destroy internal objects
     interp_crcf_destroy(_q->interp);       // interpolator (matched filter)
     packetizer_destroy(_q->p_payload);     // payload packetizer (decoder)
-    modem_destroy(_q->mod);                // QPSK header/payload modulator
+    modem_destroy(_q->mod);                // QPSK payload modulator
 
     // free main object memory
     free(_q);
@@ -126,10 +126,10 @@ void framegen64_print(framegen64 _q)
 }
 
 // execute frame generator (creates a frame)
-//  _q         :   frame generator object
+//  _q          :   frame generator object
 //  _header     :   12-byte input header
 //  _payload    :   64-byte input payload
-//  _y          :   1280-sample frame
+//  _y          :   1244-sample frame
 void framegen64_execute(framegen64      _q,
                         unsigned char * _header,
                         unsigned char * _payload,
@@ -182,7 +182,7 @@ void framegen64_execute(framegen64      _q,
 // convert one 8-bit byte to four 2-bit symbols
 //  _byte   :   input byte
 //  _syms   :   output symbols [size: 4 x 1]
-void framegen64_byte_to_syms(unsigned char _byte,
+void framegen64_byte_to_syms(unsigned char   _byte,
                              unsigned char * _syms)
 {
     _syms[0] = (_byte >> 6) & 0x03;

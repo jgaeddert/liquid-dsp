@@ -34,7 +34,7 @@
 
 #define DEBUG_DETECTOR              1
 #define DEBUG_DETECTOR_PRINT        0
-#define DEBUG_DETECTOR_BUFFER_LEN   (400)
+#define DEBUG_DETECTOR_BUFFER_LEN   (1600)
 #define DEBUG_DETECTOR_FILENAME     "detector_cccf_debug.m"
 
 // 
