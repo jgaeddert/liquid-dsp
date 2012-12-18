@@ -1,6 +1,6 @@
 /*
- * Copyright (c) 2007, 2008, 2009, 2010 Joseph Gaeddert
- * Copyright (c) 2007, 2008, 2009, 2010 Virginia Polytechnic
+ * Copyright (c) 2007, 2008, 2009, 2010, 2012 Joseph Gaeddert
+ * Copyright (c) 2007, 2008, 2009, 2010, 2012 Virginia Polytechnic
  *                                      Institute & State University
  *
  * This file is part of liquid.
@@ -33,7 +33,7 @@
 
 #include "liquid.internal.h"
 
-#define DEBUG_FRAMESYNC64           0
+#define DEBUG_FRAMESYNC64           1
 #define DEBUG_FRAMESYNC64_PRINT     0
 #define DEBUG_FILENAME              "framesync64_internal_debug.m"
 #define DEBUG_BUFFER_LEN            (1600)
@@ -44,10 +44,19 @@ void framesync64_debug_print(framesync64 _q);
 struct framesync64_s {
 
     // synchronizer objects
-    detector_cccf frame_detector;
+    detector_cccf frame_detector;       // pre-demod detector
+    windowcf buffer;                    // pre-demod buffered samples, size: k*(pn_len+m)
+    
+    // status variables
+    enum {
+        FRAME64SYNC_STATE_SEEKPN=0,     // seek p/n sequence
+        FRAME64SYNC_STATE_RXPAYLOAD,    // receive payload data
+    } state;
 
 #if DEBUG_FRAMESYNC64
-    windowcf debug_x;
+    windowcf debug_x;                   // debug: raw input samples
+    float complex debug_pn[64];         // debug: p/n symbols
+    float complex debug_payload[138];   // debug: payload symbols
 #endif
 };
 
@@ -70,7 +79,7 @@ framesync64 framesync64_create(framesyncprops_s *   _props,
         pn_sequence[i] = (msequence_advance(ms)) ? 1.0f : -1.0f;
     msequence_destroy(ms);
 
-    // interpolate p/n sequence
+    // interpolate p/n sequence with matched filter
     unsigned int k  = 2;    // samples/symbol
     unsigned int m  = 3;    // filter delay (symbols)
     float beta      = 0.5f; // excess bandwidth factor
@@ -88,10 +97,15 @@ framesync64 framesync64_create(framesyncprops_s *   _props,
     float dphi_max  = 0.05f;
     q->frame_detector = detector_cccf_create(seq, k*64, threshold, dphi_max);
 
+    // create internal synchronizer objects
+    q->buffer = windowcf_create(k*(64+m));
+
     // reset state
 
 #if DEBUG_FRAMESYNC64
-    q->debug_x         = windowcf_create(DEBUG_BUFFER_LEN);
+    q->debug_x = windowcf_create(DEBUG_BUFFER_LEN);
+    memset(q->debug_pn,      0x00,  64*sizeof(float complex));
+    memset(q->debug_payload, 0x00, 138*sizeof(float complex));
 #endif
 
     return q;
@@ -125,6 +139,7 @@ void framesync64_destroy(framesync64 _q)
 
     // destroy synchronization objects
     detector_cccf_destroy(_q->frame_detector);
+    windowcf_destroy(_q->buffer);
 
     // free main object memory
     free(_q);
@@ -141,6 +156,12 @@ void framesync64_reset(framesync64 _q)
 {
     // reset binary pre-demod synchronizer
     detector_cccf_reset(_q->frame_detector);
+
+    // clear pre-demod buffer
+    windowcf_clear(_q->buffer);
+
+    // reset state
+    _q->state = FRAME64SYNC_STATE_SEEKPN;
 }
 
 // execute frame synchronizer
@@ -152,21 +173,21 @@ void framesync64_execute(framesync64     _q,
                          unsigned int    _n)
 {
     unsigned int i;
-    float tau_hat   = 0.0f;
-    float dphi_hat  = 0.0f;
-    float gamma_hat = 0.0f;
-    int detected = 0;
     for (i=0; i<_n; i++) {
-        // push through pre-demod synchronizer
-        detected = detector_cccf_correlate(_q->frame_detector, _x[i], &tau_hat, &dphi_hat, &gamma_hat);
-        if (detected) {
-            printf("***** frame detected! tau-hat:%8.4f, dphi-hat:%8.4f, gamma:%8.2f dB\n",
-                    tau_hat, dphi_hat, 20*log10f(gamma_hat));
-        }
-
 #if DEBUG_FRAMESYNC64
         windowcf_push(_q->debug_x,   _x[i]);
 #endif
+        switch (_q->state) {
+        case FRAME64SYNC_STATE_SEEKPN:
+            framesync64_execute_seekpn(_q, _x[i], 0);
+            break;
+        case FRAME64SYNC_STATE_RXPAYLOAD:
+            framesync64_execute_rxpayload(_q, _x[i], 0);
+            break;
+        default:
+            fprintf(stderr,"error: framesync64_exeucte(), unknown/unsupported state\n");
+            exit(1);
+        }
     }
 }
 
@@ -196,6 +217,25 @@ void framesync64_execute_seekpn(framesync64   _q,
                                 float complex _x,
                                 unsigned int  _sym)
 {
+    float tau_hat   = 0.0f;
+    float dphi_hat  = 0.0f;
+    float gamma_hat = 0.0f;
+    int   detected  = 0;
+
+    //
+    windowcf_push(_q->buffer, _x);
+
+    // push through pre-demod synchronizer
+    detected = detector_cccf_correlate(_q->frame_detector, _x, &tau_hat, &dphi_hat, &gamma_hat);
+    if (detected) {
+        printf("***** frame detected! tau-hat:%8.4f, dphi-hat:%8.4f, gamma:%8.2f dB\n",
+                tau_hat, dphi_hat, 20*log10f(gamma_hat));
+
+        // TODO: push buffered samples through synchronizer
+
+        // update state
+        _q->state = FRAME64SYNC_STATE_RXPAYLOAD;
+    }
 }
 
 // execute synchronizer, receiving header
@@ -300,6 +340,33 @@ void framesync64_debug_print(framesync64 _q)
     fprintf(fid,"figure;\n");
     fprintf(fid,"plot(1:length(x),real(x), 1:length(x),imag(x));\n");
     fprintf(fid,"ylabel('received signal, x');\n");
+
+    // write pre-demod sample buffer
+    fprintf(fid,"presync_samples = zeros(1,2*(64+3));\n");
+    windowcf_read(_q->buffer, &rc);
+    for (i=0; i<2*(64+3); i++)
+        fprintf(fid,"presync_samples(%4u) = %12.4e + j*%12.4e;\n", i+1, crealf(rc[i]), cimagf(rc[i]));
+
+    // write p/n symbols
+    fprintf(fid,"pn_syms = zeros(1,64);\n");
+    rc = _q->debug_pn;
+    for (i=0; i<64; i++)
+        fprintf(fid,"pn_syms(%4u) = %12.4e + j*%12.4e;\n", i+1, crealf(rc[i]), cimagf(rc[i]));
+
+    // write payload symbols
+    fprintf(fid,"payload_syms = zeros(1,138);\n");
+    rc = _q->debug_payload;
+    for (i=0; i<138; i++)
+        fprintf(fid,"payload_syms(%4u) = %12.4e + j*%12.4e;\n", i+1, crealf(rc[i]), cimagf(rc[i]));
+
+    fprintf(fid,"figure;\n");
+    fprintf(fid,"plot(real(payload_syms),imag(payload_syms),'x',...\n");
+    fprintf(fid,"     real(pn_syms),     imag(pn_syms),     'x');\n");
+    fprintf(fid,"xlabel('in-phase');\n");
+    fprintf(fid,"ylabel('quadrature phase');\n");
+    fprintf(fid,"legend('p/n syms','payload syms','location','northeast');\n");
+    fprintf(fid,"grid on;\n");
+    fprintf(fid,"axis square;\n");
 
     fprintf(fid,"\n\n");
     fclose(fid);
