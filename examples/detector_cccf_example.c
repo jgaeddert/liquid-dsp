@@ -32,7 +32,7 @@ void usage()
 
 int main(int argc, char*argv[])
 {
-    srand(time(NULL));
+    //srand(time(NULL));
 
     // options
     unsigned int n    =  128;       // number of sync samples

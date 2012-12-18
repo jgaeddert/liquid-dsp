@@ -41,17 +41,16 @@
 //
 
 // update sum{ |x|^2 }
-void detector_cccf_update_x2(detector_cccf _q,
-                             float complex _x);
+void detector_cccf_update_sumsq(detector_cccf _q,
+                                float complex _x);
 
 // compute all dot product outputs
 void detector_cccf_compute_dotprods(detector_cccf _q);
 
-// estimate timing offset
-float detector_cccf_estimate_tau(detector_cccf _q);
-
-// estimate carrier frequency offset
-float detector_cccf_estimate_dphi(detector_cccf _q);
+// estimate carrier and timing offsets
+void detector_cccf_estimate_offsets(detector_cccf _q,
+                                    float *       _tau_hat,
+                                    float *       _dphi_hat);
 
 // print debugging information
 void detector_cccf_debug_print(detector_cccf _q,
@@ -65,18 +64,22 @@ struct detector_cccf_s {
     // derived values
     float n_inv;            // 1/n (pre-computed for speed)
     
+    windowcf buffer;        // input buffer
+
+    // internal correlators
+    dotprod_cccf * dp;      // vector dot products (pre-spun)
     unsigned int m;         // number of correlators
     float * dphi;           // correlator frequencies [size: m x 1]
     float * rxy;            // correlator outputs [size: m x 1]
+    float * rxy0;           // buffered correlator outputs [size: m x 1]
+    float * rxy1;           // buffered correlator outputs [size: m x 1]
+    unsigned int imax;      // index of maximum
+    unsigned int idetect;   // index of detection
 
-    //
-    windowcf buffer;        // input buffer
+    // estimation of E{|x|^2}
     wdelayf x2;             // buffer of |x|^2 values
-    float x2_sum;           // ...
+    float x2_sum;           // sum{ |x|^2 }
     float x2_hat;           // estimate of E{|x|^2}
-
-    // internal correlators
-    dotprod_cccf * dp;
 
     // counters/states
     enum {
@@ -84,8 +87,6 @@ struct detector_cccf_s {
         DETECTOR_STATE_FINDMAX, // find maximum
     } state;
     unsigned int timer;         // sample timer
-    float rxy_max;              // maximum cross-correlation
-    float rxy0, rxy1, rxy2;     // buffer of cross-correlation outputs
 
 #if DEBUG_DETECTOR
     windowcf debug_x;
@@ -136,13 +137,16 @@ detector_cccf detector_cccf_create(float complex * _s,
     // create internal correlators (dot products)
     q->dp   = (dotprod_cccf*) malloc((q->m)*sizeof(dotprod_cccf));
     q->dphi = (float*)        malloc((q->m)*sizeof(float));
+    q->rxy0 = (float*)        malloc((q->m)*sizeof(float));
+    q->rxy1 = (float*)        malloc((q->m)*sizeof(float));
     q->rxy  = (float*)        malloc((q->m)*sizeof(float));
-    float complex sconj[q->n];
     unsigned int k;
+    float complex sconj[q->n];
     for (k=0; k<q->m; k++) {
-        q->dphi[k] = k * 0.9f * M_PI / (float)(q->n);
+        // pre-spin sequence (slightly over-sampled in frequency)
+        q->dphi[k] = k * 0.8f * M_PI / (float)(q->n);
         for (i=0; i<q->n; i++)
-            sconj[i] = conjf(q->s[i]) * cexpf(_Complex_I*q->dphi[k]);
+            sconj[i] = conjf(q->s[i]) * cexpf(-_Complex_I*q->dphi[k]*i);
         q->dp[k] = dotprod_cccf_create(sconj, q->n);
     }
 
@@ -176,6 +180,8 @@ void detector_cccf_destroy(detector_cccf _q)
     free(_q->dp);
     free(_q->dphi);
     free(_q->rxy);
+    free(_q->rxy0);
+    free(_q->rxy1);
 
     // destroy |x|^2 buffer
     wdelayf_destroy(_q->x2);
@@ -203,11 +209,14 @@ void detector_cccf_reset(detector_cccf _q)
     // reset internal state
     _q->timer   = _q->n;                // reset timer
     _q->state   = DETECTOR_STATE_SEEK;  // set state to seek threshold
-    _q->x2_sum  = 0.0f;
-    _q->rxy_max = 0.0f;                 // 
-    _q->rxy0    = 0.0f;
-    _q->rxy1    = 0.0f;
-    _q->rxy2    = 0.0f;
+    _q->imax    = 0;                    // index of maximum rxy value
+    _q->idetect = 0;                    // index of detected maximum
+    _q->x2_sum  = 0.0f;                 // sum{ |x|^2 }
+    
+    // clear cross-correlator outputs
+    //memset(_q->rxy, 0x00, sizeof(_q->rxy));
+    memset(_q->rxy0, 0x00, sizeof(_q->rxy0));
+    memset(_q->rxy1, 0x00, sizeof(_q->rxy1));
 }
 
 // Run sample through pre-demod detector's correlator.
@@ -227,13 +236,13 @@ int detector_cccf_correlate(detector_cccf _q,
     windowcf_push(_q->buffer, _x);
 
     // update sum{|x|^2}
-    detector_cccf_update_x2(_q, _x);
+    detector_cccf_update_sumsq(_q, _x);
 
 #if DEBUG_DETECTOR
     windowcf_push(_q->debug_x, _x);
     windowf_push(_q->debug_x2, _q->x2_hat);
 #endif
-    // check state
+    // return if no timeout
     if (_q->timer) {
         // hasn't timed out yet
         //printf("timer = %u\n", _q->timer);
@@ -244,15 +253,19 @@ int detector_cccf_correlate(detector_cccf _q,
         return 0;
     }
 
+    // save previous correlator outputs
+    memmove(_q->rxy0, _q->rxy1, _q->m*sizeof(float));
+    memmove(_q->rxy1, _q->rxy,  _q->m*sizeof(float));
+
     // compute vector dot products
     detector_cccf_compute_dotprods(_q);
 
-    // strip out rxy[0]
-    float rxy = _q->rxy[0];
+    // find max{rxy}
+    float rxy_abs = _q->rxy[ _q->imax ];
 
     // scale by input signal magnitude
     // TODO: peridically re-compute scaling factor)
-    float rxy_abs = cabsf(rxy) * _q->n_inv / sqrtf(_q->x2_hat);
+    //float rxy_abs = cabsf(rxy) * _q->n_inv / sqrtf(_q->x2_hat);
     //float rxy_abs = cabsf(rxy);
 #if DEBUG_DETECTOR
     windowf_push(_q->debug_rxy, rxy_abs);
@@ -263,36 +276,31 @@ int detector_cccf_correlate(detector_cccf _q,
     if (_q->state == DETECTOR_STATE_SEEK) {
         // check to see if value exceeds threshold
         if (rxy_abs > _q->threshold) {
-            float dphi_hat = detector_cccf_estimate_dphi(_q);
-            printf("threshold exceeded:      rxy = %8.4f, dphi=%8.4f\n", rxy_abs, dphi_hat);
-            _q->rxy_max = rxy_abs;
-            _q->rxy1    = rxy_abs;
+            printf("threshold exceeded:      rxy = %8.4f\n", rxy_abs);
+            _q->idetect = _q->imax;
             _q->state = DETECTOR_STATE_FINDMAX;
-        } else {
-            _q->rxy0 = rxy_abs;
         }
     } else if (_q->state == DETECTOR_STATE_FINDMAX) {
         // see if this new value exceeds maximum
-        if (rxy_abs > _q->rxy_max) {
-            float dphi_hat = detector_cccf_estimate_dphi(_q);
-            printf("maximum not yet reached: rxy = %8.4f, dphi=%8.4f\n", rxy_abs, dphi_hat);
-            _q->rxy_max = rxy_abs;
-
-            // shift buffer...
-            _q->rxy0 = _q->rxy1;
-            _q->rxy1 = rxy_abs;
+        if ( _q->rxy[_q->imax] > _q->rxy1[_q->idetect] ) {
+            printf("maximum not yet reached: rxy = %8.4f\n", rxy_abs);
+            // set new index of maximum
+            _q->idetect = _q->imax;
         } else {
             // peak was found last time; run estimates, reset values,
             // and return
-            _q->rxy2 = rxy_abs;
             printf("maximum found:           rxy = %8.4f\n", rxy_abs);
-            printf("    [%8.4f %8.4f %8.4f]\n", _q->rxy0, _q->rxy1, _q->rxy2);
-            _q->rxy_max = 0.0f;
-            _q->state = DETECTOR_STATE_SEEK;
-            _q->timer = _q->n/4;            // set timer to allow signal to settle
+            
+            // estimate timing and carrier offsets
+            detector_cccf_estimate_offsets(_q, _tau_hat, _dphi_hat);
 
-            // set return values
-            *_tau_hat = detector_cccf_estimate_tau(_q);
+            *_gamma_hat = 1.0f;
+
+            // soft state reset
+            _q->state = DETECTOR_STATE_SEEK;
+            // set timer to allow signal to settle
+            _q->timer = _q->n/4;
+
             return 1;
         }
     } else {
@@ -308,8 +316,8 @@ int detector_cccf_correlate(detector_cccf _q,
 //
 
 // compute sum{ |x|^2 }
-void detector_cccf_update_x2(detector_cccf _q,
-                             float complex _x)
+void detector_cccf_update_sumsq(detector_cccf _q,
+                                float complex _x)
 {
     // update estimate of signal magnitude
     float x2_n = crealf(_x * conjf(_x));    // |x[n-1]|^2 (input sample)
@@ -335,20 +343,86 @@ void detector_cccf_compute_dotprods(detector_cccf _q)
     windowcf_read(_q->buffer, &r);
 
     // compute dot products
+    // TODO: compute conjugate as well
     unsigned int k;
     float complex rxy;
+    printf("  rxy : ");
+    float rxy_max = 0;
     for (k=0; k<_q->m; k++) {
+        // execute vector dot product
         dotprod_cccf_execute(_q->dp[k], r, &rxy);
-        _q->rxy[k] = cabsf(rxy);
+
+        // save scaled magnitude
+        _q->rxy[k] = cabsf(rxy) * _q->n_inv / sqrtf(_q->x2_hat);
+        printf("%8.4f (%6.4f) ", _q->rxy[k], _q->dphi[k]);
+
+        // find index of maximum
+        if (_q->rxy[k] > rxy_max) {
+            rxy_max = _q->rxy[k];
+            _q->imax = k;
+        }
     }
+    printf("\n");
 }
 
-// estimate timing
-float detector_cccf_estimate_tau(detector_cccf _q)
+// estimate carrier and timing offsets
+void detector_cccf_estimate_offsets(detector_cccf _q,
+                                    float *       _tau_hat,
+                                    float *       _dphi_hat)
 {
-    return 0.5f*(_q->rxy2 - _q->rxy0) / (_q->rxy2 + _q->rxy0 - 2*_q->rxy1);
+    // check length of...
+    if (_q->m == 1) {
+        // compute carrier offset
+        //*_dphi_hat = _q->dphi[_q->idetect];
+        *_dphi_hat = 0.0f;
+
+        // interpolate to find timing offset
+        //*_tau_hat  = 0.5f*(_q->rxy2 - _q->rxy0) / (_q->rxy2 + _q->rxy0 - 2*_q->rxy1);
+        *_tau_hat = 0.0f;
+        return;
+    }
+
+    // _q->rxy0:          [rm0]
+    //                      |
+    //                      |
+    //                      |
+    // _q->rxy1:  [r0m]---[r00]---[r0p]-->freq
+    //                      |
+    //                      |
+    //                      |
+    //                    [rp0]
+    //                      |
+    // _q->rxy              V time
+    //
+    float rm0 = _q->rxy0[_q->idetect];
+    float r0m = _q->idetect==0 ? _q->rxy1[_q->idetect+1] : _q->rxy1[_q->idetect-1];
+    float r00 = _q->rxy1[_q->idetect];
+    float r0p = _q->idetect==_q->m-1 ? _q->rxy1[_q->idetect-1] : _q->rxy1[_q->idetect+1];
+    float rp0 = _q->rxy[_q->idetect];
+
+#if 0
+    // print values for interpolation
+    printf("idetect : %u, m=%u\n", _q->idetect, _q->m);
+    printf("             [%8.5f]\n", rm0);
+    printf("                  |\n");
+    printf("                  |\n");
+    printf("[%8.5f]---[%8.5f]----[%8.5f]--> freq\n", r0m, r00, r0p);
+    printf("                  |\n");
+    printf("                  |\n");
+    printf("             [%8.5f]\n", rp0);
+    printf("                  |\n");
+    printf("                  V time\n");
+#endif
+
+    // interpolate frequency offset estimate
+    *_dphi_hat = _q->dphi[_q->idetect] -
+                  0.5f*(r0p - r0m) / (r0p + r0m - 2*r00) * 0.8 * M_PI / (float)(_q->n);
+
+    // interpolate timing offset estimate
+    *_tau_hat  =  0.5f*(rp0 - rm0) / (rp0 + rm0 - 2*r00);
 }
 
+#if 0
 float detector_cccf_estimate_dphi(detector_cccf _q)
 {
     // read buffer...
@@ -369,6 +443,7 @@ float detector_cccf_estimate_dphi(detector_cccf _q)
 
     return cargf(metric);
 }
+#endif
 
 void detector_cccf_debug_print(detector_cccf _q,
                                const char *  _filename)
