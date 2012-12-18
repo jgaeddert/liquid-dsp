@@ -149,7 +149,8 @@ int main(int argc, char*argv[])
     float delay_est = (float) index + tau_hat;
     float delay     = (float)(2*n) + dt; // actual delay (samples)
     printf("delay estimate  : %8.3f, actual=%8.3f (error=%8.3f) sample(s)\n", delay_est, delay, delay-delay_est);
-    printf("dphi estimate   : %8.3f, actual=%8.3f (error=%8.3f)\n",           dphi_hat,  dphi,  dphi-dphi_hat);
+    printf("dphi estimate   : %8.5f, actual=%8.5f (error=%8.5f) rad/sample\n",dphi_hat,  dphi,  dphi-dphi_hat);
+    printf("gamma estimate  : %8.5f, actual=%8.5f (error=%8.5f) dB\n",        20*log10f(gamma_hat), 20*log10f(gamma), 20*log10(gamma/gamma_hat));
     printf("\n");
 
     // 

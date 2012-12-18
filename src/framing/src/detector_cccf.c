@@ -263,16 +263,10 @@ int detector_cccf_correlate(detector_cccf _q,
     // find max{rxy}
     float rxy_abs = _q->rxy[ _q->imax ];
 
-    // scale by input signal magnitude
-    // TODO: peridically re-compute scaling factor)
-    //float rxy_abs = cabsf(rxy) * _q->n_inv / sqrtf(_q->x2_hat);
-    //float rxy_abs = cabsf(rxy);
 #if DEBUG_DETECTOR
     windowf_push(_q->debug_rxy, rxy_abs);
 #endif
     
-    //printf("  rxy=%8.2f, x2-hat=%12.8f\n", rxy_abs, 10*log10f(_q->x2_hat));
-
     if (_q->state == DETECTOR_STATE_SEEK) {
         // check to see if value exceeds threshold
         if (rxy_abs > _q->threshold) {
@@ -294,7 +288,7 @@ int detector_cccf_correlate(detector_cccf _q,
             // estimate timing and carrier offsets
             detector_cccf_estimate_offsets(_q, _tau_hat, _dphi_hat);
 
-            *_gamma_hat = 1.0f;
+            *_gamma_hat = sqrtf(_q->x2_hat);
 
             // soft state reset
             _q->state = DETECTOR_STATE_SEEK;
@@ -348,6 +342,7 @@ void detector_cccf_compute_dotprods(detector_cccf _q)
     float complex rxy;
     printf("  rxy : ");
     float rxy_max = 0;
+    // TODO: peridically re-compute scaling factor)
     for (k=0; k<_q->m; k++) {
         // execute vector dot product
         dotprod_cccf_execute(_q->dp[k], r, &rxy);
