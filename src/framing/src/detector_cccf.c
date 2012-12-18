@@ -33,6 +33,7 @@
 #include "liquid.internal.h"
 
 #define DEBUG_DETECTOR              1
+#define DEBUG_DETECTOR_PRINT        0
 #define DEBUG_DETECTOR_BUFFER_LEN   (400)
 #define DEBUG_DETECTOR_FILENAME     "detector_cccf_debug.m"
 
@@ -270,20 +271,26 @@ int detector_cccf_correlate(detector_cccf _q,
     if (_q->state == DETECTOR_STATE_SEEK) {
         // check to see if value exceeds threshold
         if (rxy_abs > _q->threshold) {
+#if DEBUG_DETECTOR_PRINT
             printf("threshold exceeded:      rxy = %8.4f\n", rxy_abs);
+#endif
             _q->idetect = _q->imax;
             _q->state = DETECTOR_STATE_FINDMAX;
         }
     } else if (_q->state == DETECTOR_STATE_FINDMAX) {
         // see if this new value exceeds maximum
         if ( _q->rxy[_q->imax] > _q->rxy1[_q->idetect] ) {
+#if DEBUG_DETECTOR_PRINT
             printf("maximum not yet reached: rxy = %8.4f\n", rxy_abs);
+#endif
             // set new index of maximum
             _q->idetect = _q->imax;
         } else {
             // peak was found last time; run estimates, reset values,
             // and return
+#if DEBUG_DETECTOR_PRINT
             printf("maximum found:           rxy = %8.4f\n", rxy_abs);
+#endif
             
             // estimate timing and carrier offsets
             detector_cccf_estimate_offsets(_q, _tau_hat, _dphi_hat);
@@ -340,7 +347,9 @@ void detector_cccf_compute_dotprods(detector_cccf _q)
     // TODO: compute conjugate as well
     unsigned int k;
     float complex rxy;
+#if DEBUG_DETECTOR_PRINT
     printf("  rxy : ");
+#endif
     float rxy_max = 0;
     // TODO: peridically re-compute scaling factor)
     for (k=0; k<_q->m; k++) {
@@ -349,7 +358,9 @@ void detector_cccf_compute_dotprods(detector_cccf _q)
 
         // save scaled magnitude
         _q->rxy[k] = cabsf(rxy) * _q->n_inv / sqrtf(_q->x2_hat);
+#if DEBUG_DETECTOR_PRINT
         printf("%6.4f (%6.4f) ", _q->rxy[k], _q->dphi[k]);
+#endif
 
         // find index of maximum
         if (_q->rxy[k] > rxy_max) {
@@ -357,7 +368,9 @@ void detector_cccf_compute_dotprods(detector_cccf _q)
             _q->imax = k;
         }
     }
+#if DEBUG_DETECTOR_PRINT
     printf("\n");
+#endif
 }
 
 // estimate carrier and timing offsets
@@ -395,7 +408,7 @@ void detector_cccf_estimate_offsets(detector_cccf _q,
     float r0p = _q->idetect==_q->m-1 ? _q->rxy1[_q->idetect-1] : _q->rxy1[_q->idetect+1];
     float rp0 = _q->rxy[_q->idetect];
 
-#if 1
+#if DEBUG_DETECTOR_PRINT
     // print values for interpolation
     printf("idetect : %u\n", _q->idetect);
     printf("             [%8.5f]\n", rm0);
