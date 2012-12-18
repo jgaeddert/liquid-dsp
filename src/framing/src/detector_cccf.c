@@ -40,10 +40,20 @@
 // internal method declarations
 //
 
+// update sum{ |x|^2 }
+void detector_cccf_update_x2(detector_cccf _q,
+                             float complex _x);
+
+// compute all dot product outputs
+void detector_cccf_compute_dotprods(detector_cccf _q);
+
+// estimate timing offset
 float detector_cccf_estimate_tau(detector_cccf _q);
 
+// estimate carrier frequency offset
 float detector_cccf_estimate_dphi(detector_cccf _q);
 
+// print debugging information
 void detector_cccf_debug_print(detector_cccf _q,
                                const char *  _filename);
 
@@ -54,6 +64,10 @@ struct detector_cccf_s {
     
     // derived values
     float n_inv;            // 1/n (pre-computed for speed)
+    
+    unsigned int m;         // number of correlators
+    float * dphi;           // correlator frequencies [size: m x 1]
+    float * rxy;            // correlator outputs [size: m x 1]
 
     //
     windowcf buffer;        // input buffer
@@ -62,8 +76,7 @@ struct detector_cccf_s {
     float x2_hat;           // estimate of E{|x|^2}
 
     // internal correlators
-    //dotprod_cccf * dp;
-    dotprod_cccf dp;
+    dotprod_cccf * dp;
 
     // counters/states
     enum {
@@ -110,6 +123,7 @@ detector_cccf detector_cccf_create(float complex * _s,
 
     // derived values
     q->n_inv = 1.0f / (float)(q->n);    // 1/n for faster processing
+    q->m = 4;                           // number of correlators
 
     // allocate memory for sequence and copy
     q->s = (float complex*) malloc((q->n)*sizeof(float complex));
@@ -119,11 +133,18 @@ detector_cccf detector_cccf_create(float complex * _s,
     q->buffer = windowcf_create(q->n);
     q->x2     = wdelayf_create(q->n);
 
-    // create internal dot product object
+    // create internal correlators (dot products)
+    q->dp   = (dotprod_cccf*) malloc((q->m)*sizeof(dotprod_cccf));
+    q->dphi = (float*)        malloc((q->m)*sizeof(float));
+    q->rxy  = (float*)        malloc((q->m)*sizeof(float));
     float complex sconj[q->n];
-    for (i=0; i<q->n; i++)
-        sconj[i] = conjf(q->s[i]);
-    q->dp = dotprod_cccf_create(sconj, q->n);
+    unsigned int k;
+    for (k=0; k<q->m; k++) {
+        q->dphi[k] = k * 0.9f * M_PI / (float)(q->n);
+        for (i=0; i<q->n; i++)
+            sconj[i] = conjf(q->s[i]) * cexpf(_Complex_I*q->dphi[k]);
+        q->dp[k] = dotprod_cccf_create(sconj, q->n);
+    }
 
     // reset state
     detector_cccf_reset(q);
@@ -148,8 +169,13 @@ void detector_cccf_destroy(detector_cccf _q)
     // destroy input buffer
     windowcf_destroy(_q->buffer);
 
-    // destroy dot product
-    dotprod_cccf_destroy(_q->dp);
+    // destroy internal correlators (dot products)
+    unsigned int k;
+    for (k=0; k<_q->m; k++)
+        dotprod_cccf_destroy(_q->dp[k]);
+    free(_q->dp);
+    free(_q->dphi);
+    free(_q->rxy);
 
     // destroy |x|^2 buffer
     wdelayf_destroy(_q->x2);
@@ -200,19 +226,8 @@ int detector_cccf_correlate(detector_cccf _q,
     // push sample into buffer
     windowcf_push(_q->buffer, _x);
 
-    // update estimate of signal magnitude
-    float x2_n = crealf(_x * conjf(_x));    // |x[n-1]|^2 (input sample)
-    float x2_0;                             // |x[0]  |^2 (oldest sample)
-    wdelayf_read(_q->x2, &x2_0);            // read oldest sample
-    wdelayf_push(_q->x2, x2_n);             // push newest sample
-    _q->x2_sum = _q->x2_sum + x2_n - x2_0;  // update sum( |x|^2 ) of last 'n' input samples
-#if 0
-    // filtered estimate of E{ |x|^2 }
-    _q->x2_hat = 0.8f*_q->x2_hat + 0.2f*_q->x2_sum*_q->n_inv;
-#else
-    // unfiltered estimate of E{ |x|^2 }
-    _q->x2_hat = _q->x2_sum * _q->n_inv;
-#endif
+    // update sum{|x|^2}
+    detector_cccf_update_x2(_q, _x);
 
 #if DEBUG_DETECTOR
     windowcf_push(_q->debug_x, _x);
@@ -229,11 +244,11 @@ int detector_cccf_correlate(detector_cccf _q,
         return 0;
     }
 
-    // compute vector dot product
-    float complex * r;
-    float complex rxy;
-    windowcf_read(_q->buffer, &r);
-    dotprod_cccf_execute(_q->dp, r, &rxy);
+    // compute vector dot products
+    detector_cccf_compute_dotprods(_q);
+
+    // strip out rxy[0]
+    float rxy = _q->rxy[0];
 
     // scale by input signal magnitude
     // TODO: peridically re-compute scaling factor)
@@ -291,6 +306,42 @@ int detector_cccf_correlate(detector_cccf _q,
 // 
 // internal methods
 //
+
+// compute sum{ |x|^2 }
+void detector_cccf_update_x2(detector_cccf _q,
+                             float complex _x)
+{
+    // update estimate of signal magnitude
+    float x2_n = crealf(_x * conjf(_x));    // |x[n-1]|^2 (input sample)
+    float x2_0;                             // |x[0]  |^2 (oldest sample)
+    wdelayf_read(_q->x2, &x2_0);            // read oldest sample
+    wdelayf_push(_q->x2, x2_n);             // push newest sample
+    _q->x2_sum = _q->x2_sum + x2_n - x2_0;  // update sum( |x|^2 ) of last 'n' input samples
+#if 0
+    // filtered estimate of E{ |x|^2 }
+    _q->x2_hat = 0.8f*_q->x2_hat + 0.2f*_q->x2_sum*_q->n_inv;
+#else
+    // unfiltered estimate of E{ |x|^2 }
+    _q->x2_hat = _q->x2_sum * _q->n_inv;
+#endif
+
+}
+
+// compute all dot product outputs
+void detector_cccf_compute_dotprods(detector_cccf _q)
+{
+    // read buffer
+    float complex * r;
+    windowcf_read(_q->buffer, &r);
+
+    // compute dot products
+    unsigned int k;
+    float complex rxy;
+    for (k=0; k<_q->m; k++) {
+        dotprod_cccf_execute(_q->dp[k], r, &rxy);
+        _q->rxy[k] = cabsf(rxy);
+    }
+}
 
 // estimate timing
 float detector_cccf_estimate_tau(detector_cccf _q)
