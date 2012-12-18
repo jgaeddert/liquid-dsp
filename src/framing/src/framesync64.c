@@ -39,6 +39,19 @@
 #define DEBUG_BUFFER_LEN            (1600)
 
 void framesync64_debug_print(framesync64 _q);
+void framesync64_execute_seekpn(framesync64   _q,
+                                float complex _x);
+
+// push buffered p/n sequence through synchronizer
+void framesync64_execute_pushpn(framesync64 _q);
+
+void framesync64_execute_rxpayload(framesync64   _q,
+                                   float complex _x);
+void framesync64_decode_payload(framesync64 _q);
+
+// advanced mode
+void framesync64_csma_lock(framesync64 _q);
+void framesync64_csma_unlock(framesync64 _q);
 
 // framesync64 object structure
 struct framesync64_s {
@@ -46,12 +59,17 @@ struct framesync64_s {
     // synchronizer objects
     detector_cccf frame_detector;       // pre-demod detector
     windowcf buffer;                    // pre-demod buffered samples, size: k*(pn_len+m)
+    firpfb_crcf mf;                     // matched filter decimator
+    firpfb_crcf dmf;                    // derivative matched filter decimator
     
     // status variables
     enum {
         FRAME64SYNC_STATE_SEEKPN=0,     // seek p/n sequence
         FRAME64SYNC_STATE_RXPAYLOAD,    // receive payload data
     } state;
+    float tau_hat;          // fractional timing offset estimate
+    float dphi_hat;         // carrier frequency offset estimate
+    float gamma_hat;        // channel gain estimate
 
 #if DEBUG_FRAMESYNC64
     windowcf debug_x;                   // debug: raw input samples
@@ -98,7 +116,10 @@ framesync64 framesync64_create(framesyncprops_s *   _props,
     q->frame_detector = detector_cccf_create(seq, k*64, threshold, dphi_max);
 
     // create internal synchronizer objects
+    unsigned int npfb = 32;
     q->buffer = windowcf_create(k*(64+m));
+    q->mf  = firpfb_crcf_create_rnyquist(LIQUID_RNYQUIST_ARKAISER,npfb,k,m,beta);
+    q->dmf = firpfb_crcf_create_drnyquist(LIQUID_RNYQUIST_ARKAISER,npfb,k,m,beta);
 
     // reset state
 
@@ -140,6 +161,8 @@ void framesync64_destroy(framesync64 _q)
     // destroy synchronization objects
     detector_cccf_destroy(_q->frame_detector);
     windowcf_destroy(_q->buffer);
+    firpfb_crcf_destroy(_q->mf);
+    firpfb_crcf_destroy(_q->dmf);
 
     // free main object memory
     free(_q);
@@ -179,10 +202,10 @@ void framesync64_execute(framesync64     _q,
 #endif
         switch (_q->state) {
         case FRAME64SYNC_STATE_SEEKPN:
-            framesync64_execute_seekpn(_q, _x[i], 0);
+            framesync64_execute_seekpn(_q, _x[i]);
             break;
         case FRAME64SYNC_STATE_RXPAYLOAD:
-            framesync64_execute_rxpayload(_q, _x[i], 0);
+            framesync64_execute_rxpayload(_q, _x[i]);
             break;
         default:
             fprintf(stderr,"error: framesync64_exeucte(), unknown/unsupported state\n");
@@ -195,27 +218,12 @@ void framesync64_execute(framesync64     _q,
 // internal
 //
 
-// open bandwidth of synchronizers (acquisition mode)
-void framesync64_open_bandwidth(framesync64 _q)
-{
-}
-
-// close bandwidth of synchronizers (tracking mode)
-void framesync64_close_bandwidth(framesync64 _q)
-{
-}
-
-// 
-// state-specific execute methods
-//
-
 // execute synchronizer, seeking p/n sequence
 //  _q     :   frame synchronizer object
 //  _x      :   input sample
 //  _sym    :   demodulated symbol
 void framesync64_execute_seekpn(framesync64   _q,
-                                float complex _x,
-                                unsigned int  _sym)
+                                float complex _x)
 {
     float tau_hat   = 0.0f;
     float dphi_hat  = 0.0f;
@@ -232,20 +240,37 @@ void framesync64_execute_seekpn(framesync64   _q,
                 tau_hat, dphi_hat, 20*log10f(gamma_hat));
 
         // TODO: push buffered samples through synchronizer
+        _q->tau_hat   = tau_hat;
+        _q->dphi_hat  = dphi_hat;
+        _q->gamma_hat = gamma_hat;
+        framesync64_execute_pushpn(_q);
 
         // update state
         _q->state = FRAME64SYNC_STATE_RXPAYLOAD;
     }
 }
 
-// execute synchronizer, receiving header
-//  _q     :   frame synchronizer object
-//  _x      :   input sample
-//  _sym    :   demodulated symbol
-void framesync64_execute_rxheader(framesync64   _q,
-                                  float complex _x,
-                                  unsigned int  _sym)
+// push buffered p/n sequence through synchronizer
+void framesync64_execute_pushpn(framesync64 _q)
 {
+    float complex * rc;
+    windowcf_read(_q->buffer, &rc);
+    
+    unsigned int i;
+    unsigned int n=0;
+    // TODO: set filterbank index based on tau_hat
+    unsigned int index = 0;
+    for (i=0; i<(64+3)*2; i++) {
+        firpfb_crcf_push(_q->mf, rc[i] * 0.5f / _q->gamma_hat);
+
+        if (i < 2*3)
+            continue;
+
+#if DEBUG_FRAMESYNC64
+        if ( (i%2)==1 )
+            firpfb_crcf_execute(_q->mf, index, &_q->debug_pn[n++]);
+#endif
+    }
 }
 
 // execute synchronizer, receiving payload
@@ -253,21 +278,9 @@ void framesync64_execute_rxheader(framesync64   _q,
 //  _x      :   input sample
 //  _sym    :   demodulated symbol
 void framesync64_execute_rxpayload(framesync64   _q,
-                                   float complex _x,
-                                   unsigned int  _sym)
+                                   float complex _x)
 {
 }
-
-// execute synchronizer, resetting object
-//  _q     :   frame synchronizer object
-//  _x      :   input sample
-//  _sym    :   demodulated symbol
-void framesync64_execute_reset(framesync64   _q,
-                               float complex _x,
-                               unsigned int  _sym)
-{
-}
-
 
 // enable csma and set external callback functions
 //  _q             :   frame synchronizer object
@@ -295,11 +308,6 @@ void framesync64_csma_unlock(framesync64 _q)
 // 
 // decoding methods
 //
-
-// decode header
-void framesync64_decode_header(framesync64 _q)
-{
-}
 
 void framesync64_decode_payload(framesync64 _q)
 {
@@ -366,6 +374,7 @@ void framesync64_debug_print(framesync64 _q)
     fprintf(fid,"ylabel('quadrature phase');\n");
     fprintf(fid,"legend('p/n syms','payload syms','location','northeast');\n");
     fprintf(fid,"grid on;\n");
+    fprintf(fid,"axis([-1 1 -1 1]*1.3);\n");
     fprintf(fid,"axis square;\n");
 
     fprintf(fid,"\n\n");
