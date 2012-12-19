@@ -88,6 +88,9 @@ struct framesync64_s {
     unsigned int npfb;              // number of filters in symsync
     int pfb_index;                  // hard filterbank index
     unsigned int pfb_execute;       // filterbank output flag
+
+    // QPSK demodulator
+    modem demod;
     
     // status variables
     enum {
@@ -149,7 +152,9 @@ framesync64 framesync64_create(framesyncprops_s *   _props,
     q->dmf = firpfb_crcf_create_drnyquist(LIQUID_RNYQUIST_ARKAISER,q->npfb,k,m,beta);
     q->nco_coarse = nco_crcf_create(LIQUID_NCO);
     q->nco_fine = nco_crcf_create(LIQUID_VCO);
-    nco_crcf_pll_set_bandwidth(q->nco_fine, 1e-3f);
+    nco_crcf_pll_set_bandwidth(q->nco_fine, 0.02f);
+    
+    q->demod = modem_create(LIQUID_MODEM_QPSK);
 
     // reset state
 
@@ -193,6 +198,7 @@ void framesync64_destroy(framesync64 _q)
     firpfb_crcf_destroy(_q->dmf);
     nco_crcf_destroy(_q->nco_coarse);
     nco_crcf_destroy(_q->nco_fine);
+    modem_destroy(_q->demod);
 
     // free main object memory
     free(_q);
@@ -415,8 +421,11 @@ void framesync64_syncpn(framesync64 _q)
         theta_metric += _q->pn_syms[i]*liquid_cexpjf(-dphi_hat*i)*_q->pn_sequence[i];
     float theta_hat = cargf(theta_metric);
     // TODO: compute gain correction factor
+#if 0
+    //printf("dphi-hat  : %12.8f\n", dphi_hat/2.0f + nco_crcf_get_frequency(_q->nco_coarse));
     printf("dphi-hat  : %12.8f\n", dphi_hat);
     printf("theta-hat : %12.8f\n", theta_hat);
+#endif
 
     // initialize fine-tuned nco
     nco_crcf_set_frequency(_q->nco_fine, dphi_hat);
@@ -428,7 +437,8 @@ void framesync64_syncpn(framesync64 _q)
         nco_crcf_mix_down(_q->nco_fine, _q->pn_syms[i], &_q->pn_syms[i]);
         
         // push through phase-locked loop
-        //nco_crcf_pll_step(_q->nco_fine, -cimagf(_q->pn_syms[i]));
+        float phase_error = cimagf(_q->pn_syms[i]*conjf(_q->pn_sequence[i]));
+        nco_crcf_pll_step(_q->nco_fine, phase_error);
 
         // update...
         nco_crcf_step(_q->nco_fine);
@@ -466,9 +476,11 @@ void framesync64_execute_rxpayload(framesync64   _q,
         // push through fine-tuned nco
         nco_crcf_mix_down(_q->nco_fine, y, &y);
         
-        // TODO: demodulate and compute phase error
-        //float phase_error = 0.0f;
-        //nco_crcf_pll_step(_q->nco_fine, phase_error);
+        // demodulate and compute phase error
+        unsigned int sym_out = 0;
+        modem_demodulate(_q->demod, y, &sym_out);
+        float phase_error = modem_get_demodulator_phase_error(_q->demod);
+        nco_crcf_pll_step(_q->nco_fine, phase_error);
 
         nco_crcf_step(_q->nco_fine);
 
