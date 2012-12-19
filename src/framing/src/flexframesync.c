@@ -496,8 +496,8 @@ void flexframesync_execute(flexframesync _fs, float complex *_x, unsigned int _n
 
 
 #ifdef DEBUG_FLEXFRAMESYNC
-            windowf_push(_fs->debug_nco_phase, _fs->nco_rx->theta);
-            windowf_push(_fs->debug_nco_freq,  _fs->nco_rx->d_theta);
+            windowf_push(_fs->debug_nco_phase, nco_crcf_get_phase(_fs->nco_rx));
+            windowf_push(_fs->debug_nco_freq,  nco_crcf_get_frequency(_fs->nco_rx));
             windowcf_push(_fs->debug_nco_rx_out, nco_rx_out);
 #endif
 
