@@ -1933,9 +1933,6 @@ void framesync64_execute(framesync64 _fs,
                          liquid_float_complex * _x,
                          unsigned int _n);
 
-void framesync64_getprops(framesync64 _fs, framesyncprops_s * _props);
-void framesync64_setprops(framesync64 _fs, framesyncprops_s * _props);
-
 // advanced modes
 void framesync64_set_csma_callbacks(framesync64 _fs,
                                     framesync_csma_callback _csma_lock,

@@ -165,22 +165,6 @@ framesync64 framesync64_create(framesyncprops_s *   _props,
     return q;
 }
 
-// get framesync64 properties
-//  _q     :   frame synchronizer object
-//  _props  :   frame synchronizer properties structure pointer
-void framesync64_getprops(framesync64 _q,
-                          framesyncprops_s * _props)
-{
-}
-
-// set framesync64 properties
-//  _q     :   frame synchronizer object
-//  _props  :   frame synchronizer properties structure pointer
-void framesync64_setprops(framesync64 _q,
-                          framesyncprops_s * _props)
-{
-}
-
 // destroy frame synchronizer object, freeing all internal memory
 void framesync64_destroy(framesync64 _q)
 {
