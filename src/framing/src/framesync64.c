@@ -55,26 +55,28 @@ void framesync64_csma_unlock(framesync64 _q);
 
 // framesync64 object structure
 struct framesync64_s {
+    float complex pn_sequence[64];  // 64-symbol p/n sequence
+    float complex pn_syms[64];      // received p/n symbols
+    float complex payload_syms[552];// payload symbols
 
     // synchronizer objects
-    detector_cccf frame_detector;       // pre-demod detector
-    windowcf buffer;                    // pre-demod buffered samples, size: k*(pn_len+m)
-    firpfb_crcf mf;                     // matched filter decimator
-    firpfb_crcf dmf;                    // derivative matched filter decimator
+    detector_cccf frame_detector;   // pre-demod detector
+    windowcf buffer;                // pre-demod buffered samples, size: k*(pn_len+m)
+    firpfb_crcf mf;                 // matched filter decimator
+    firpfb_crcf dmf;                // derivative matched filter decimator
     
     // status variables
     enum {
-        FRAME64SYNC_STATE_SEEKPN=0,     // seek p/n sequence
-        FRAME64SYNC_STATE_RXPAYLOAD,    // receive payload data
+        STATE_SEEKPN=0,             // seek p/n sequence
+        STATE_RXPN,                 // receive p/n sequence
+        STATE_RXPAYLOAD,            // receive payload data
     } state;
-    float tau_hat;          // fractional timing offset estimate
-    float dphi_hat;         // carrier frequency offset estimate
-    float gamma_hat;        // channel gain estimate
+    float tau_hat;                  // fractional timing offset estimate
+    float dphi_hat;                 // carrier frequency offset estimate
+    float gamma_hat;                // channel gain estimate
 
 #if DEBUG_FRAMESYNC64
     windowcf debug_x;                   // debug: raw input samples
-    float complex debug_pn[64];         // debug: p/n symbols
-    float complex debug_payload[138];   // debug: payload symbols
 #endif
 };
 
@@ -92,9 +94,8 @@ framesync64 framesync64_create(framesyncprops_s *   _props,
 
     // generate p/n sequence
     msequence ms = msequence_create(6, 0x0043, 1);
-    float complex pn_sequence[64];
     for (i=0; i<64; i++)
-        pn_sequence[i] = (msequence_advance(ms)) ? 1.0f : -1.0f;
+        q->pn_sequence[i] = (msequence_advance(ms)) ? 1.0f : -1.0f;
     msequence_destroy(ms);
 
     // interpolate p/n sequence with matched filter
@@ -105,8 +106,8 @@ framesync64 framesync64_create(framesyncprops_s *   _props,
     interp_crcf interp = interp_crcf_create_rnyquist(LIQUID_RNYQUIST_ARKAISER,k,m,beta,0);
     for (i=0; i<64+m; i++) {
         // compensate for filter delay
-        if (i < m) interp_crcf_execute(interp, pn_sequence[i],    &seq[0]);
-        else       interp_crcf_execute(interp, pn_sequence[i%64], &seq[2*(i-m)]);
+        if (i < m) interp_crcf_execute(interp, q->pn_sequence[i],    &seq[0]);
+        else       interp_crcf_execute(interp, q->pn_sequence[i%64], &seq[2*(i-m)]);
     }
     interp_crcf_destroy(interp);
 
@@ -117,7 +118,7 @@ framesync64 framesync64_create(framesyncprops_s *   _props,
 
     // create internal synchronizer objects
     unsigned int npfb = 32;
-    q->buffer = windowcf_create(k*(64+m));
+    q->buffer = windowcf_create(2*(64+3));
     q->mf  = firpfb_crcf_create_rnyquist(LIQUID_RNYQUIST_ARKAISER,npfb,k,m,beta);
     q->dmf = firpfb_crcf_create_drnyquist(LIQUID_RNYQUIST_ARKAISER,npfb,k,m,beta);
 
@@ -125,8 +126,6 @@ framesync64 framesync64_create(framesyncprops_s *   _props,
 
 #if DEBUG_FRAMESYNC64
     q->debug_x = windowcf_create(DEBUG_BUFFER_LEN);
-    memset(q->debug_pn,      0x00,  64*sizeof(float complex));
-    memset(q->debug_payload, 0x00, 138*sizeof(float complex));
 #endif
 
     return q;
@@ -182,9 +181,11 @@ void framesync64_reset(framesync64 _q)
 
     // clear pre-demod buffer
     windowcf_clear(_q->buffer);
+    memset(_q->pn_syms,      0x00,  64*sizeof(float complex));
+    memset(_q->payload_syms, 0x00, 138*sizeof(float complex));
 
     // reset state
-    _q->state = FRAME64SYNC_STATE_SEEKPN;
+    _q->state = STATE_SEEKPN;
 }
 
 // execute frame synchronizer
@@ -201,10 +202,10 @@ void framesync64_execute(framesync64     _q,
         windowcf_push(_q->debug_x,   _x[i]);
 #endif
         switch (_q->state) {
-        case FRAME64SYNC_STATE_SEEKPN:
+        case STATE_SEEKPN:
             framesync64_execute_seekpn(_q, _x[i]);
             break;
-        case FRAME64SYNC_STATE_RXPAYLOAD:
+        case STATE_RXPAYLOAD:
             framesync64_execute_rxpayload(_q, _x[i]);
             break;
         default:
@@ -246,7 +247,7 @@ void framesync64_execute_seekpn(framesync64   _q,
         framesync64_execute_pushpn(_q);
 
         // update state
-        _q->state = FRAME64SYNC_STATE_RXPAYLOAD;
+        _q->state = STATE_RXPAYLOAD;
     }
 }
 
@@ -258,19 +259,22 @@ void framesync64_execute_pushpn(framesync64 _q)
     
     unsigned int i;
     unsigned int n=0;
+    unsigned int delay = 0;
     // TODO: set filterbank index based on tau_hat
     unsigned int index = 0;
     for (i=0; i<(64+3)*2; i++) {
         firpfb_crcf_push(_q->mf, rc[i] * 0.5f / _q->gamma_hat);
 
-        if (i < 2*3)
+        if (i < delay)
             continue;
 
-#if DEBUG_FRAMESYNC64
         if ( (i%2)==1 )
-            firpfb_crcf_execute(_q->mf, index, &_q->debug_pn[n++]);
-#endif
+            firpfb_crcf_execute(_q->mf, index, &_q->pn_syms[n++]);
+
+        if (n == 64)
+            break;
     }
+    printf("n=%u\n", n);
 }
 
 // execute synchronizer, receiving payload
@@ -355,15 +359,21 @@ void framesync64_debug_print(framesync64 _q)
     for (i=0; i<2*(64+3); i++)
         fprintf(fid,"presync_samples(%4u) = %12.4e + j*%12.4e;\n", i+1, crealf(rc[i]), cimagf(rc[i]));
 
+    // write p/n sequence
+    fprintf(fid,"pn_sequence = zeros(1,64);\n");
+    rc = _q->pn_sequence;
+    for (i=0; i<64; i++)
+        fprintf(fid,"pn_sequence(%4u) = %12.4e + j*%12.4e;\n", i+1, crealf(rc[i]), cimagf(rc[i]));
+
     // write p/n symbols
     fprintf(fid,"pn_syms = zeros(1,64);\n");
-    rc = _q->debug_pn;
+    rc = _q->pn_syms;
     for (i=0; i<64; i++)
         fprintf(fid,"pn_syms(%4u) = %12.4e + j*%12.4e;\n", i+1, crealf(rc[i]), cimagf(rc[i]));
 
     // write payload symbols
     fprintf(fid,"payload_syms = zeros(1,138);\n");
-    rc = _q->debug_payload;
+    rc = _q->payload_syms;
     for (i=0; i<138; i++)
         fprintf(fid,"payload_syms(%4u) = %12.4e + j*%12.4e;\n", i+1, crealf(rc[i]), cimagf(rc[i]));
 
