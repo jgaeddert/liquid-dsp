@@ -30,6 +30,7 @@
 #include <string.h>
 #include <math.h>
 #include <complex.h>
+#include <assert.h>
 
 #include "liquid.internal.h"
 
@@ -40,6 +41,13 @@
 
 void framesync64_debug_print(framesync64 _q);
 
+#if 0
+// run symbol synchronizer
+int framesync64_symsync(framesync64     _q,
+                        float complex   _x
+                        float complex * _y);
+#endif
+
 void framesync64_execute_seekpn(framesync64   _q,
                                 float complex _x);
 
@@ -48,6 +56,9 @@ void framesync64_pushpn(framesync64 _q);
 
 void framesync64_execute_rxpn(framesync64   _q,
                               float complex _x);
+// ...
+void framesync64_syncpn(framesync64 _q);
+
 void framesync64_execute_rxpayload(framesync64   _q,
                                    float complex _x);
 void framesync64_decode_payload(framesync64 _q);
@@ -65,6 +76,8 @@ struct framesync64_s {
     // synchronizer objects
     detector_cccf frame_detector;   // pre-demod detector
     windowcf buffer;                // pre-demod buffered samples, size: k*(pn_len+m)
+    nco_crcf nco_coarse;            // coarse carrier frequency recovery
+    nco_crcf nco_fine;              // fine carrier recovery (after demod)
 
     // timing recovery objects, states
     firpfb_crcf mf;                 // matched filter decimator
@@ -134,6 +147,9 @@ framesync64 framesync64_create(framesyncprops_s *   _props,
     q->buffer = windowcf_create(2*(64+3));
     q->mf  = firpfb_crcf_create_rnyquist(LIQUID_RNYQUIST_ARKAISER, q->npfb,k,m,beta);
     q->dmf = firpfb_crcf_create_drnyquist(LIQUID_RNYQUIST_ARKAISER,q->npfb,k,m,beta);
+    q->nco_coarse = nco_crcf_create(LIQUID_NCO);
+    q->nco_fine = nco_crcf_create(LIQUID_VCO);
+    nco_crcf_pll_set_bandwidth(q->nco_fine, 1e-3f);
 
     // reset state
 
@@ -175,6 +191,8 @@ void framesync64_destroy(framesync64 _q)
     windowcf_destroy(_q->buffer);
     firpfb_crcf_destroy(_q->mf);
     firpfb_crcf_destroy(_q->dmf);
+    nco_crcf_destroy(_q->nco_coarse);
+    nco_crcf_destroy(_q->nco_fine);
 
     // free main object memory
     free(_q);
@@ -196,6 +214,10 @@ void framesync64_reset(framesync64 _q)
     windowcf_clear(_q->buffer);
     memset(_q->pn_syms,      0x00,  64*sizeof(float complex));
     memset(_q->payload_syms, 0x00, 138*sizeof(float complex));
+
+    // reset synchronizer objects
+    nco_crcf_reset(_q->nco_coarse);
+    nco_crcf_reset(_q->nco_fine);
 
     // reset state
     _q->state           = STATE_DETECTFRAME;
@@ -268,6 +290,7 @@ void framesync64_execute_seekpn(framesync64   _q,
 
         // push buffered samples through synchronizer
         // NOTE: this will set internal state appropriately
+        //       to STATE_SEEKPN
         framesync64_pushpn(_q);
     }
 }
@@ -288,6 +311,7 @@ void framesync64_pushpn(framesync64 _q)
     // compute delay and filterbank index
     //  tau_hat < 0 :   delay = 2*k*m-1, index = round(   tau_hat *npfb), flag = 0
     //  tau_hat > 0 :   delay = 2*k*m-2, index = round((1-tau_hat)*npfb), flag = 0
+    assert(_q->tau_hat < 0.5f && _q->tau_hat > -0.5f);
     unsigned int k     = 2;         // samples/symbol
     unsigned int m     = 3;         // filter delay (symbols)
     unsigned int delay = 2*k*m - 1; // samples to buffer before computing output
@@ -297,16 +321,25 @@ void framesync64_pushpn(framesync64 _q)
         _q->pfb_index += _q->npfb;
     }
     _q->pfb_execute    = 0;
-    
-    // push initial samples into filterbanks
-    for (i=0; i<delay; i++) {
-        firpfb_crcf_push(_q->mf,  rc[i] * 0.5f / _q->gamma_hat);
-        firpfb_crcf_push(_q->dmf, rc[i] * 0.5f / _q->gamma_hat);
-    }
 
-    // run remaining samples through p/n sequence recovery
-    for (; i<(64+3)*2; i++)
-        framesync64_execute_rxpn(_q, rc[i]);
+    // set carrier...
+    nco_crcf_set_frequency(_q->nco_coarse, _q->dphi_hat);
+    
+    unsigned int buffer_len = (64+m)*k;
+    for (i=0; i<buffer_len; i++) {
+        if (i < delay) {
+            float complex y;
+            nco_crcf_mix_down(_q->nco_coarse, rc[i]*0.5f/_q->gamma_hat, &y);
+            nco_crcf_step(_q->nco_coarse);
+
+            // push initial samples into filterbanks
+            firpfb_crcf_push(_q->mf,  y);
+            firpfb_crcf_push(_q->dmf, y);
+        } else {
+            // run remaining samples through p/n sequence recovery
+            framesync64_execute_rxpn(_q, rc[i]);
+        }
+    }
 
     // set state (still need a few more samples before entire p/n
     // sequence has been received)
@@ -326,9 +359,14 @@ void framesync64_execute_rxpn(framesync64   _q,
         return;
     }
 
+    // mix signal down
+    float complex y;
+    nco_crcf_mix_down(_q->nco_coarse, _x*0.5f/_q->gamma_hat, &y);
+    nco_crcf_step(_q->nco_coarse);
+
     // push sample into filterbanks
-    firpfb_crcf_push(_q->mf,  _x * 0.5f / _q->gamma_hat);
-    firpfb_crcf_push(_q->dmf, _x * 0.5f / _q->gamma_hat);
+    firpfb_crcf_push(_q->mf,  y);
+    firpfb_crcf_push(_q->dmf, y);
 
     // compute output if ...
     if (_q->pfb_execute == 0) {
@@ -345,12 +383,56 @@ void framesync64_execute_rxpn(framesync64   _q,
         // save output in p/n symbols buffer
         _q->pn_syms[ _q->pn_counter++ ] = y;
 
-        if (_q->pn_counter == 64)
+        if (_q->pn_counter == 64) {
+            framesync64_syncpn(_q);
             _q->state = STATE_RXPAYLOAD;
+        }
     }
 
     // toggle flag
     _q->pfb_execute = 1 - _q->pfb_execute;
+}
+
+// estimate residual carrier frequency and phase offsets
+void framesync64_syncpn(framesync64 _q)
+{
+    unsigned int i;
+
+    // estimate residual carrier frequency offset from p/n symbols
+    float complex dphi_metric = 0.0f;
+    float complex r0 = 0.0f;
+    float complex r1 = 0.0f;
+    for (i=0; i<64; i++) {
+        r0 = r1;
+        r1 = _q->pn_syms[i]*conjf(_q->pn_sequence[i]);
+        dphi_metric += r1 * conjf(r0);
+    }
+    float dphi_hat = cargf(dphi_metric);
+
+    // estimate carrier phase offset from p/n symbols
+    float complex theta_metric = 0.0f;
+    for (i=0; i<64; i++)
+        theta_metric += _q->pn_syms[i]*liquid_cexpjf(-dphi_hat*i)*_q->pn_sequence[i];
+    float theta_hat = cargf(theta_metric);
+    // TODO: compute gain correction factor
+    printf("dphi-hat  : %12.8f\n", dphi_hat);
+    printf("theta-hat : %12.8f\n", theta_hat);
+
+    // initialize fine-tuned nco
+    nco_crcf_set_frequency(_q->nco_fine, dphi_hat);
+    nco_crcf_set_phase(    _q->nco_fine, theta_hat);
+
+    // TODO: push through phase-locked loop?
+    for (i=0; i<64; i++) {
+        // mix signal down
+        nco_crcf_mix_down(_q->nco_fine, _q->pn_syms[i], &_q->pn_syms[i]);
+        
+        // push through phase-locked loop
+        //nco_crcf_pll_step(_q->nco_fine, -cimagf(_q->pn_syms[i]));
+
+        // update...
+        nco_crcf_step(_q->nco_fine);
+    }
 }
 
 // execute synchronizer, receiving payload
@@ -360,6 +442,47 @@ void framesync64_execute_rxpn(framesync64   _q,
 void framesync64_execute_rxpayload(framesync64   _q,
                                    float complex _x)
 {
+    // mix signal down
+    float complex y;
+    nco_crcf_mix_down(_q->nco_coarse, _x*0.5f/_q->gamma_hat, &y);
+    nco_crcf_step(_q->nco_coarse);
+
+    // push sample into filterbanks
+    firpfb_crcf_push(_q->mf,  y);
+    firpfb_crcf_push(_q->dmf, y);
+
+    // compute output if ...
+    if (_q->pfb_execute == 0) {
+        //
+        float complex y;    // matched-filter output
+        float complex dy;   // derivatived matched-filter output
+
+        firpfb_crcf_execute(_q->mf,  _q->pfb_index, &y);
+        firpfb_crcf_execute(_q->dmf, _q->pfb_index, &dy);
+
+        // TODO: update pfb index
+        // TODO: if index wraps around (either direction), toggle pfb execute again
+
+        // push through fine-tuned nco
+        nco_crcf_mix_down(_q->nco_fine, y, &y);
+        
+        // TODO: demodulate and compute phase error
+        //float phase_error = 0.0f;
+        //nco_crcf_pll_step(_q->nco_fine, phase_error);
+
+        nco_crcf_step(_q->nco_fine);
+
+        // save output in p/n symbols buffer
+        _q->payload_syms[ _q->payload_counter++ ] = y;
+
+        if (_q->payload_counter == 552) {
+            // TODO: decode payload, invoke callback, etc.
+            _q->state = STATE_DETECTFRAME;
+        }
+    }
+
+    // toggle flag
+    _q->pfb_execute = 1 - _q->pfb_execute;
 }
 
 // enable csma and set external callback functions

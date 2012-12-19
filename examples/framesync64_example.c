@@ -50,7 +50,7 @@ unsigned char payload[64];
 
 int main(int argc, char*argv[])
 {
-    srand( time(NULL) );
+    //srand( time(NULL) );
 
     // options
     float SNRdB       =  20.0f; // signal-to-noise ratio
