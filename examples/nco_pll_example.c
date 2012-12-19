@@ -52,7 +52,6 @@ int main(int argc, char*argv[]) {
             exit(1);
         }
     }
-    unsigned int d=n/32;      // print every "d" lines
 
     // objects
     nco_crcf nco_tx = nco_crcf_create(LIQUID_VCO);
@@ -97,8 +96,8 @@ int main(int argc, char*argv[]) {
         nco_crcf_step(nco_rx);
 
         // print phase error
-        if ((i)%d == 0 || i==n-1 || i==0)
-            printf("%4u : phase error = %12.8f\n", i, phase_error[i]);
+        if ( (i+1)%50 == 0 || i==n-1 || i==0)
+            printf("%4u : phase error = %12.8f\n", i+1, phase_error[i]);
     }
     nco_crcf_destroy(nco_tx);
     nco_crcf_destroy(nco_rx);
@@ -118,20 +117,24 @@ int main(int argc, char*argv[]) {
     }
     fprintf(fid,"t=0:(n-1);\n");
     fprintf(fid,"figure;\n");
-    fprintf(fid,"subplot(2,1,1);\n");
+    fprintf(fid,"subplot(3,1,1);\n");
     fprintf(fid,"  plot(t,real(x),t,real(y));\n");
     fprintf(fid,"  xlabel('time');\n");
     fprintf(fid,"  ylabel('real');\n");
-    fprintf(fid,"subplot(2,1,2);\n");
+    fprintf(fid,"  axis([0 n -1.2 1.2]);\n");
+    fprintf(fid,"  grid on;\n");
+    fprintf(fid,"subplot(3,1,2);\n");
     fprintf(fid,"  plot(t,imag(x),t,imag(y));\n");
     fprintf(fid,"  xlabel('time');\n");
     fprintf(fid,"  ylabel('imag');\n");
-
-    fprintf(fid,"figure;\n");
-    fprintf(fid,"plot(t,e);\n");
-    fprintf(fid,"xlabel('time');\n");
-    fprintf(fid,"ylabel('phase error');\n");
-    fprintf(fid,"grid on;\n");
+    fprintf(fid,"  axis([0 n -1.2 1.2]);\n");
+    fprintf(fid,"  grid on;\n");
+    fprintf(fid,"subplot(3,1,3);\n");
+    fprintf(fid,"  plot(t,e);\n");
+    fprintf(fid,"  xlabel('time');\n");
+    fprintf(fid,"  ylabel('phase error');\n");
+    fprintf(fid,"  axis([0 n -pi pi]);\n");
+    fprintf(fid,"  grid on;\n");
 
     fclose(fid);
     printf("results written to %s.\n",OUTPUT_FILENAME);
