@@ -35,7 +35,7 @@ int main(int argc, char*argv[]) {
     srand( time(NULL) );
     // parameters
     float phase_offset = M_PI / 4.0f;
-    float frequency_offset = 0.3f;
+    float frequency_offset = 0.2f;
     float pll_bandwidth = 0.01f;
     unsigned int n=512;     // number of iterations
 
