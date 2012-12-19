@@ -39,12 +39,15 @@
 #define DEBUG_BUFFER_LEN            (1600)
 
 void framesync64_debug_print(framesync64 _q);
+
 void framesync64_execute_seekpn(framesync64   _q,
                                 float complex _x);
 
 // push buffered p/n sequence through synchronizer
-void framesync64_execute_pushpn(framesync64 _q);
+void framesync64_pushpn(framesync64 _q);
 
+void framesync64_execute_rxpn(framesync64   _q,
+                              float complex _x);
 void framesync64_execute_rxpayload(framesync64   _q,
                                    float complex _x);
 void framesync64_decode_payload(framesync64 _q);
@@ -62,18 +65,28 @@ struct framesync64_s {
     // synchronizer objects
     detector_cccf frame_detector;   // pre-demod detector
     windowcf buffer;                // pre-demod buffered samples, size: k*(pn_len+m)
+
+    // timing recovery objects, states
     firpfb_crcf mf;                 // matched filter decimator
     firpfb_crcf dmf;                // derivative matched filter decimator
+#if 0
+    float pfb_index_soft;           // soft filterbank index
+#endif
+    unsigned int npfb;              // number of filters in symsync
+    int pfb_index;                  // hard filterbank index
+    unsigned int pfb_execute;       // filterbank output flag
     
     // status variables
     enum {
-        STATE_SEEKPN=0,             // seek p/n sequence
+        STATE_DETECTFRAME=0,        // detect frame (seek p/n sequence)
         STATE_RXPN,                 // receive p/n sequence
         STATE_RXPAYLOAD,            // receive payload data
     } state;
     float tau_hat;                  // fractional timing offset estimate
     float dphi_hat;                 // carrier frequency offset estimate
     float gamma_hat;                // channel gain estimate
+    unsigned int pn_counter;        //
+    unsigned int payload_counter;   //
 
 #if DEBUG_FRAMESYNC64
     windowcf debug_x;                   // debug: raw input samples
@@ -117,10 +130,10 @@ framesync64 framesync64_create(framesyncprops_s *   _props,
     q->frame_detector = detector_cccf_create(seq, k*64, threshold, dphi_max);
 
     // create internal synchronizer objects
-    unsigned int npfb = 32;
+    q->npfb = 32;
     q->buffer = windowcf_create(2*(64+3));
-    q->mf  = firpfb_crcf_create_rnyquist(LIQUID_RNYQUIST_ARKAISER,npfb,k,m,beta);
-    q->dmf = firpfb_crcf_create_drnyquist(LIQUID_RNYQUIST_ARKAISER,npfb,k,m,beta);
+    q->mf  = firpfb_crcf_create_rnyquist(LIQUID_RNYQUIST_ARKAISER, q->npfb,k,m,beta);
+    q->dmf = firpfb_crcf_create_drnyquist(LIQUID_RNYQUIST_ARKAISER,q->npfb,k,m,beta);
 
     // reset state
 
@@ -185,7 +198,9 @@ void framesync64_reset(framesync64 _q)
     memset(_q->payload_syms, 0x00, 138*sizeof(float complex));
 
     // reset state
-    _q->state = STATE_SEEKPN;
+    _q->state           = STATE_DETECTFRAME;
+    _q->pn_counter      = 0;
+    _q->payload_counter = 0;
 }
 
 // execute frame synchronizer
@@ -202,10 +217,16 @@ void framesync64_execute(framesync64     _q,
         windowcf_push(_q->debug_x,   _x[i]);
 #endif
         switch (_q->state) {
-        case STATE_SEEKPN:
+        case STATE_DETECTFRAME:
+            //printf("detect...\n");
             framesync64_execute_seekpn(_q, _x[i]);
             break;
+        case STATE_RXPN:
+            //printf("rx p/n...\n");
+            framesync64_execute_rxpn(_q, _x[i]);
+            break;
         case STATE_RXPAYLOAD:
+            //printf("rx payload...\n");
             framesync64_execute_rxpayload(_q, _x[i]);
             break;
         default:
@@ -240,41 +261,96 @@ void framesync64_execute_seekpn(framesync64   _q,
         printf("***** frame detected! tau-hat:%8.4f, dphi-hat:%8.4f, gamma:%8.2f dB\n",
                 tau_hat, dphi_hat, 20*log10f(gamma_hat));
 
-        // TODO: push buffered samples through synchronizer
+        // set internal offset parameters
         _q->tau_hat   = tau_hat;
         _q->dphi_hat  = dphi_hat;
         _q->gamma_hat = gamma_hat;
-        framesync64_execute_pushpn(_q);
 
-        // update state
-        _q->state = STATE_RXPAYLOAD;
+        // push buffered samples through synchronizer
+        // NOTE: this will set internal state appropriately
+        framesync64_pushpn(_q);
     }
 }
 
 // push buffered p/n sequence through synchronizer
-void framesync64_execute_pushpn(framesync64 _q)
+void framesync64_pushpn(framesync64 _q)
 {
+    unsigned int i;
+
+    // reset filterbanks
+    firpfb_crcf_clear(_q->mf);
+    firpfb_crcf_clear(_q->dmf);
+
+    // read buffer
     float complex * rc;
     windowcf_read(_q->buffer, &rc);
-    
-    unsigned int i;
-    unsigned int n=0;
-    unsigned int delay = 0;
-    // TODO: set filterbank index based on tau_hat
-    unsigned int index = 0;
-    for (i=0; i<(64+3)*2; i++) {
-        firpfb_crcf_push(_q->mf, rc[i] * 0.5f / _q->gamma_hat);
 
-        if (i < delay)
-            continue;
-
-        if ( (i%2)==1 )
-            firpfb_crcf_execute(_q->mf, index, &_q->pn_syms[n++]);
-
-        if (n == 64)
-            break;
+    // compute delay and filterbank index
+    //  tau_hat < 0 :   delay = 2*k*m-1, index = round(   tau_hat *npfb), flag = 0
+    //  tau_hat > 0 :   delay = 2*k*m-2, index = round((1-tau_hat)*npfb), flag = 0
+    unsigned int k     = 2;         // samples/symbol
+    unsigned int m     = 3;         // filter delay (symbols)
+    unsigned int delay = 2*k*m - 1; // samples to buffer before computing output
+    _q->pfb_index      = (int) roundf(-_q->tau_hat*32);
+    while (_q->pfb_index < 0) {
+        delay         -= 1;
+        _q->pfb_index += _q->npfb;
     }
-    printf("n=%u\n", n);
+    _q->pfb_execute    = 0;
+    
+    // push initial samples into filterbanks
+    for (i=0; i<delay; i++) {
+        firpfb_crcf_push(_q->mf,  rc[i] * 0.5f / _q->gamma_hat);
+        firpfb_crcf_push(_q->dmf, rc[i] * 0.5f / _q->gamma_hat);
+    }
+
+    // run remaining samples through p/n sequence recovery
+    for (; i<(64+3)*2; i++)
+        framesync64_execute_rxpn(_q, rc[i]);
+
+    // set state (still need a few more samples before entire p/n
+    // sequence has been received)
+    _q->state = STATE_RXPN;
+}
+
+// execute synchronizer, receiving p/n sequence
+//  _q     :   frame synchronizer object
+//  _x      :   input sample
+//  _sym    :   demodulated symbol
+void framesync64_execute_rxpn(framesync64   _q,
+                              float complex _x)
+{
+    // validate input
+    if (_q->pn_counter == 64) {
+        fprintf(stderr,"warning: framesync64_execute_rxpn(), p/n buffer already full!\n");
+        return;
+    }
+
+    // push sample into filterbanks
+    firpfb_crcf_push(_q->mf,  _x * 0.5f / _q->gamma_hat);
+    firpfb_crcf_push(_q->dmf, _x * 0.5f / _q->gamma_hat);
+
+    // compute output if ...
+    if (_q->pfb_execute == 0) {
+        //
+        float complex y;    // matched-filter output
+        float complex dy;   // derivatived matched-filter output
+
+        firpfb_crcf_execute(_q->mf,  _q->pfb_index, &y);
+        firpfb_crcf_execute(_q->dmf, _q->pfb_index, &dy);
+
+        // TODO: update pfb index
+        // TODO: if index wraps around (either direction), toggle pfb execute again
+
+        // save output in p/n symbols buffer
+        _q->pn_syms[ _q->pn_counter++ ] = y;
+
+        if (_q->pn_counter == 64)
+            _q->state = STATE_RXPAYLOAD;
+    }
+
+    // toggle flag
+    _q->pfb_execute = 1 - _q->pfb_execute;
 }
 
 // execute synchronizer, receiving payload
