@@ -1794,26 +1794,6 @@ void ofdmframesync_rxsymbol(ofdmframesync _q);
 
 // Numerically-controlled oscillator, floating point phase precision
 #define LIQUID_NCO_DEFINE_INTERNAL_API(NCO,T,TC)                \
-struct NCO(_s) {                                                \
-    liquid_ncotype type;                                        \
-    T theta;            /* NCO phase                    */      \
-    T d_theta;          /* NCO frequency                */      \
-    T sintab[256];      /* sine table                   */      \
-    unsigned int index; /* table index                  */      \
-    T sine;                                                     \
-    T cosine;                                                   \
-    void (*compute_sincos)(NCO() _q);                           \
-                                                                \
-    /* phase-locked loop */                                     \
-    T bandwidth;        /* loop filter bandwidth        */      \
-    T zeta;             /* loop filter damping factor   */      \
-    T a[3];             /* feed-back coefficients       */      \
-    T b[3];             /* feed-forward coefficients    */      \
-    iirfiltsos_rrrf pll_filter; /* iir filter object    */      \
-    T pll_phi_prime;    /* pll phase state              */      \
-    T pll_phi_hat;      /* pll output phase             */      \
-    T pll_dtheta_base;  /* NCO base frequency           */      \
-};                                                              \
                                                                 \
 /* constrain phase/frequency to be in [-pi,pi)          */      \
 void NCO(_constrain_phase)(NCO() _q);                           \

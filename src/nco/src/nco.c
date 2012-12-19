@@ -34,6 +34,27 @@
 
 #define LIQUID_DEBUG_NCO            (0)
 
+struct NCO(_s) {
+    liquid_ncotype type;
+    T theta;            // NCO phase
+    T d_theta;          // NCO frequency
+    T sintab[256];      // sine table
+    unsigned int index; // table index
+    T sine;
+    T cosine;
+    void (*compute_sincos)(NCO() _q);
+
+    // phase-locked loop
+    T bandwidth;
+    T zeta;
+    T a[3];
+    T b[3];
+    iirfiltsos_rrrf pll_filter;
+    T pll_phi_prime;
+    T pll_phi_hat;
+    T pll_dtheta_base;
+};
+
 // create nco/vco object
 NCO() NCO(_create)(liquid_ncotype _type)
 {
