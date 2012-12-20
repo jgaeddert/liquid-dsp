@@ -121,11 +121,9 @@ struct framesync64_s {
 };
 
 // create framesync64 object
-//  _props          :   properties structure pointer (default if NULL)
 //  _callback       :   callback function invoked when frame is received
 //  _userdata       :   user-defined data object passed to callback
-framesync64 framesync64_create(framesyncprops_s *   _props,
-                               framesync64_callback _callback,
+framesync64 framesync64_create(framesync64_callback _callback,
                                void *               _userdata)
 {
     framesync64 q = (framesync64) malloc(sizeof(struct framesync64_s));
@@ -204,6 +202,9 @@ void framesync64_destroy(framesync64 _q)
     nco_crcf_destroy(_q->nco_fine);
     modem_destroy(_q->demod);
     packetizer_destroy(_q->p_payload);
+
+    // reset frame statistics
+    _q->framestats.evm = 0.0f;
 
     // free main object memory
     free(_q);
@@ -291,8 +292,8 @@ void framesync64_execute_seekpn(framesync64   _q,
     // push through pre-demod synchronizer
     detected = detector_cccf_correlate(_q->frame_detector, _x, &tau_hat, &dphi_hat, &gamma_hat);
     if (detected) {
-        printf("***** frame detected! tau-hat:%8.4f, dphi-hat:%8.4f, gamma:%8.2f dB\n",
-                tau_hat, dphi_hat, 20*log10f(gamma_hat));
+        //printf("***** frame detected! tau-hat:%8.4f, dphi-hat:%8.4f, gamma:%8.2f dB\n",
+        //        tau_hat, dphi_hat, 20*log10f(gamma_hat));
 
         // set internal offset parameters
         _q->tau_hat   = tau_hat;
@@ -485,9 +486,14 @@ void framesync64_execute_rxpayload(framesync64   _q,
         unsigned int sym_out = 0;
         modem_demodulate(_q->demod, y, &sym_out);
         float phase_error = modem_get_demodulator_phase_error(_q->demod);
-        nco_crcf_pll_step(_q->nco_fine, phase_error);
+        float evm         = modem_get_demodulator_evm(_q->demod);
 
+        // update phase-locked loop and fine-tuned NCO
+        nco_crcf_pll_step(_q->nco_fine, phase_error);
         nco_crcf_step(_q->nco_fine);
+
+        // update error vector magnitude
+        _q->framestats.evm += evm*evm;
 
         // save output in p/n symbols buffer
         _q->payload_syms[ _q->payload_counter ] = y;
@@ -504,9 +510,9 @@ void framesync64_execute_rxpayload(framesync64   _q,
             framesync64_decode_payload(_q);
             
             if (_q->callback != NULL) {
-                // invoke callback method
-                // cannot decode frame: invoke callback anyway, but ignore rest of payload
-                // payload length is 0 : ignore payload
+                // invoke user-defined callback function
+                _q->framestats.evm             = 20*log10f(sqrtf(_q->framestats.evm / 552.0f));
+                _q->framestats.rssi            = 20*log10f(_q->gamma_hat);
                 _q->framestats.cfo             = nco_crcf_get_frequency(_q->nco_coarse) +
                                                  nco_crcf_get_frequency(_q->nco_fine) / 2.0f;
                 _q->framestats.framesyms       = _q->payload_syms;
@@ -568,8 +574,6 @@ void framesync64_decode_payload(framesync64 _q)
     // decode payload
     _q->crc_pass =
     packetizer_decode(_q->p_payload, _q->payload_enc, _q->payload_dec);
-
-    printf("payload crc : %s\n", _q->crc_pass ? "pass" : "FAIL");
 }
 
 // convert four 2-bit symbols into one 8-bit byte

@@ -1895,49 +1895,69 @@ typedef void (*framesync_csma_callback)(void * _userdata);
 // Basic frame generator (64 bytes data payload)
 //
 typedef struct framegen64_s * framegen64;
-framegen64 framegen64_create(unsigned int _m,
-                             float _beta);
-void framegen64_destroy(framegen64 _fg);
-void framegen64_print(framegen64 _fg);
-void framegen64_execute(framegen64 _fg,
-                        unsigned char * _header,
-                        unsigned char * _payload,
-                        liquid_float_complex * _y);
 
-// Basic frame synchronizer (64 bytes data payload)
-//  _header         :   pointer to decoded header [size: 24 x 1]
-//  _header_valid   :   header passed cyclic redundancy check? 1 (yes), 0 (no)
+// create frame generator
+framegen64 framegen64_create();
+
+// destroy frame generator
+void framegen64_destroy(framegen64 _q);
+
+// print frame generator internal properties
+void framegen64_print(framegen64 _q);
+
+// generate frame
+//  _q          :   frame generator object
+//  _payload    :   64-byte payload data
+//  _frame      :   output frame samples [size: 1244 x 1]
+void framegen64_execute(framegen64             _q,
+                        unsigned char *        _payload,
+                        liquid_float_complex * _frame);
+
+// Basic frame synchronizer (64 bytes data payload) callback
+//  _header         :   NULL
+//  _header_valid   :   0
 //  _payload        :   pointer to decoded payload [size: 64 x 1]
 //  _payload_valid  :   payload passed cyclic redundancy check? 1 (yes), 0 (no)
 //  _stats          :   frame statistics structure
 //  _userdata       :   user-defined data pointer
-typedef int (*framesync64_callback)(unsigned char * _header,
-                                    int _header_valid,
-                                    unsigned char * _payload,
-                                    int _payload_valid,
+typedef int (*framesync64_callback)(unsigned char *  _header,
+                                    int              _header_valid,
+                                    unsigned char *  _payload,
+                                    int              _payload_valid,
                                     framesyncstats_s _stats,
-                                    void * _userdata);
+                                    void *           _userdata);
 typedef struct framesync64_s * framesync64;
 
 // create framesync64 object
-//  _props      :   properties structure (default if NULL)
 //  _callback   :   callback function
 //  _userdata   :   user data pointer passed to callback function
-framesync64 framesync64_create(framesyncprops_s * _props,
-                               framesync64_callback _callback,
-                               void * _userdata);
-void framesync64_destroy(framesync64 _fs);
-void framesync64_print(framesync64 _fs);
-void framesync64_reset(framesync64 _fs);
-void framesync64_execute(framesync64 _fs,
-                         liquid_float_complex * _x,
-                         unsigned int _n);
+framesync64 framesync64_create(framesync64_callback _callback,
+                               void *               _userdata);
 
+// destroy frame synchronizer
+void framesync64_destroy(framesync64 _q);
+
+// print frame synchronizer internal properties
+void framesync64_print(framesync64 _q);
+
+// reset frame synchronizer internal state
+void framesync64_reset(framesync64 _q);
+
+// push samples through frame synchronizer
+//  _q      :   frame synchronizer object
+//  _x      :   input samples [size: _n x 1]
+//  _n      :   number of input samples
+void framesync64_execute(framesync64            _q,
+                         liquid_float_complex * _x,
+                         unsigned int           _n);
+
+#if 0
 // advanced modes
-void framesync64_set_csma_callbacks(framesync64 _fs,
+void framesync64_set_csma_callbacks(framesync64             _q,
                                     framesync_csma_callback _csma_lock,
                                     framesync_csma_callback _csma_unlock,
-                                    void * _csma_userdata);
+                                    void *                  _csma_userdata);
+#endif
 
 //
 // Flexible frame : adjustable payload, mod scheme, etc., but bring

@@ -62,18 +62,8 @@ struct framegen64_s {
 // TODO : permit different p/n sequence?
 //  _m      :   rrcos filter delay (number of symbols)
 //  _beta   :   rrcos filter excess bandwidth factor
-framegen64 framegen64_create(unsigned int _m,
-                             float        _beta)
+framegen64 framegen64_create()
 {
-    // validate input
-    if (_m == 0) {
-        fprintf(stderr,"error: framegen64_create(), m must be greater than zero\n");
-        exit(1);
-    } else if (_beta < 0.0f || _beta > 1.0f) {
-        fprintf(stderr,"error: framegen64_create(), beta must be in [0,1]\n");
-        exit(1);
-    }
-
     framegen64 q = (framegen64) malloc(sizeof(struct framegen64_s));
     q->m    = 3;
     q->beta = 0.5f;
@@ -127,13 +117,11 @@ void framegen64_print(framegen64 _q)
 
 // execute frame generator (creates a frame)
 //  _q          :   frame generator object
-//  _header     :   12-byte input header
 //  _payload    :   64-byte input payload
-//  _y          :   1244-sample frame
+//  _frame      :   1244-sample frame
 void framegen64_execute(framegen64      _q,
-                        unsigned char * _header,
                         unsigned char * _payload,
-                        float complex * _y)
+                        float complex * _frame)
 {
     unsigned int i;
 
@@ -153,7 +141,7 @@ void framegen64_execute(framegen64      _q,
 
     // p/n sequence
     for (i=0; i<64; i++) {
-        interp_crcf_execute(_q->interp, _q->pn_sequence[i], &_y[n]);
+        interp_crcf_execute(_q->interp, _q->pn_sequence[i], &_frame[n]);
         n+=2;
     }
 
@@ -161,13 +149,13 @@ void framegen64_execute(framegen64      _q,
     // payload
     for (i=0; i<552; i++) {
         modem_modulate(_q->mod, _q->payload_sym[i], &x);
-        interp_crcf_execute(_q->interp, x, &_y[n]);
+        interp_crcf_execute(_q->interp, x, &_frame[n]);
         n+=2;
     }
 
     // settling
     for (i=0; i<6; i++) {
-        interp_crcf_execute(_q->interp, 0.0f, &_y[n]);
+        interp_crcf_execute(_q->interp, 0.0f, &_frame[n]);
         n+=2;
     }
 

@@ -41,11 +41,7 @@ static int callback(unsigned char *  _header,
                     framesyncstats_s _stats,
                     void *           _userdata);
 
-static void callback_csma_lock(void * _userdata);
-static void callback_csma_unlock(void * _userdata);
-
-// global header, payload arrays
-unsigned char header[12];
+// global payload arrays
 unsigned char payload[64];
 
 int main(int argc, char*argv[])
@@ -59,10 +55,6 @@ int main(int argc, char*argv[])
     float theta       =  0.0f;  // carrier phase offset
     float dt          =  0.0f;  // fractional sample timing offset
 
-    // create framegen64 object
-    unsigned int m=3;
-    float beta=0.7f;
-    
     // get options
     int dopt;
     while((dopt = getopt(argc,argv,"hS:F:P:T:")) != EOF){
@@ -77,27 +69,22 @@ int main(int argc, char*argv[])
         }
     }
 
-    // channel
+    // derived values
     unsigned int frame_len = 1244;              // fixed frame length
     unsigned int num_samples = frame_len + 200; // total number of samples
     float nstd  = powf(10.0f, noise_floor/20.0f);         // noise std. dev.
     float gamma = powf(10.0f, (SNRdB+noise_floor)/20.0f); // channel gain
 
     // create frame generator
-    framegen64 fg = framegen64_create(m,beta);
+    framegen64 fg = framegen64_create();
 
     // create frame synchronizer using default properties
-    framesync64 fs = framesync64_create(NULL,callback,NULL);
-
-    // set advanced csma callback functions
-    framesync64_set_csma_callbacks(fs, callback_csma_lock, callback_csma_unlock, NULL);
+    framesync64 fs = framesync64_create(callback,NULL);
     framesync64_print(fs);
 
     // data payload
     unsigned int i;
-    // initialize header, payload
-    for (i=0; i<12; i++)
-        header[i] = i;
+    // initialize payload
     for (i=0; i<64; i++)
         payload[i] = rand() & 0xff;
 
@@ -106,14 +93,14 @@ int main(int argc, char*argv[])
     float complex y[num_samples];   // received sequence
     
     // generate the frame
-    framegen64_execute(fg, header, payload, frame);
+    framegen64_execute(fg, payload, frame);
 
     // fractional sample timing offset
     unsigned int d = 11;    // fractional sample filter delay
     firfilt_crcf finterp = firfilt_crcf_create_kaiser(2*d+1, 0.45f, 40.0f, dt);
     for (i=0; i<num_samples; i++) {
         // fractional sample timing offset
-        if (i < 100)                  firfilt_crcf_push(finterp, 0.0f);
+        if      (i < 100)             firfilt_crcf_push(finterp, 0.0f);
         else if (i < frame_len + 100) firfilt_crcf_push(finterp, frame[i-100]);
         else                          firfilt_crcf_push(finterp, 0.0f);
 
@@ -128,14 +115,6 @@ int main(int argc, char*argv[])
         y[i] *= gamma;
         y[i] += nstd*( randnf() + _Complex_I*randnf())*M_SQRT1_2;
     }
-
-#if 0
-    // push noise through synchronizer
-    for (i=0; i<300; i++) {
-        float complex noise = nstd*(randnf() + _Complex_I*randnf())*M_SQRT1_2;
-        framesync64_execute(fs, &noise, 1);
-    }
-#endif
 
     // synchronize/receive the frame
     framesync64_execute(fs, y, num_samples);
@@ -177,39 +156,18 @@ static int callback(unsigned char *  _header,
     printf("*** callback invoked ***\n");
     printf("    error vector mag.   : %12.8f dB\n", _stats.evm);
     printf("    rssi                : %12.8f dB\n", _stats.rssi);
+    printf("    carrier offset      : %12.8f\n", _stats.cfo);
     printf("    mod. scheme         : %s\n", modulation_types[_stats.mod_scheme].fullname);
     printf("    mod. depth          : %u\n", _stats.mod_bps);
     printf("    payload CRC         : %s\n", crc_scheme_str[_stats.check][1]);
     printf("    payload fec (inner) : %s\n", fec_scheme_str[_stats.fec0][1]);
     printf("    payload fec (outer) : %s\n", fec_scheme_str[_stats.fec1][1]);
-
-    printf("    header crc          : %s\n", _header_valid ?  "pass" : "FAIL");
+    //printf("    header crc          : %s\n", _header_valid ?  "pass" : "FAIL");
     printf("    payload crc         : %s\n", _payload_valid ? "pass" : "FAIL");
-
-    // validate payload
-    unsigned int i;
-#if 0
-    unsigned int num_header_errors=0;
-    for (i=0; i<12; i++)
-        num_header_errors += (_header[i] == header[i]) ? 0 : 1;
-    printf("    num header errors   : %u\n", num_header_errors);
-#endif
-
-    unsigned int num_payload_errors=0;
-    for (i=0; i<64; i++)
-        num_payload_errors += (_payload[i] == payload[i]) ? 0 : 1;
-    printf("    num payload errors  : %u\n", num_payload_errors);
+    printf("    num bit errors      : %u / %u\n",
+            count_bit_errors_array(_payload, payload, 64),
+            64*8);
 
     return 0;
-}
-
-static void callback_csma_lock(void * _userdata)
-{
-    printf("*** SIGNAL HIGH ***\n");
-}
-
-static void callback_csma_unlock(void * _userdata)
-{
-    printf("*** SIGNAL LOW ***\n");
 }
 

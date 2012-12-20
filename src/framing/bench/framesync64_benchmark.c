@@ -37,7 +37,7 @@ static int callback(unsigned char *  _header,
                     framesyncstats_s _stats,
                     void *           _userdata)
 {
-    printf("callback invoked, payload valid: %s\n", _payload_valid ? "yes" : "no");
+    //printf("callback invoked, payload valid: %s\n", _payload_valid ? "yes" : "no");
     framedata * fd = (framedata*) _userdata;
     fd->num_frames_detected += 1;
     fd->num_frames_valid    += _payload_valid ? 1 : 0;
@@ -53,9 +53,7 @@ void benchmark_framesync64(
     *_num_iterations /= 128;
     unsigned long int i;
 
-    unsigned int m = 3;
-    float beta     = 0.5f;
-    framegen64 fg = framegen64_create(m, beta);
+    framegen64 fg = framegen64_create();
     framegen64_print(fg);
 
     // frame data
@@ -67,14 +65,14 @@ void benchmark_framesync64(
 
     // create framesync64 object with default properties
     //framesync64props_s fsprops;
-    framesync64 fs = framesync64_create(NULL,callback,(void*)&fd);
+    framesync64 fs = framesync64_create(callback,(void*)&fd);
     framesync64_print(fs);
 
     // generate the frame
     //unsigned int frame_len = framegen64_getframelen(fg);
     unsigned int frame_len = 1244;
     float complex frame[frame_len];
-    framegen64_execute(fg, NULL, payload, frame);
+    framegen64_execute(fg, payload, frame);
 
     // add some noise
     for (i=0; i<frame_len; i++)
