@@ -171,7 +171,7 @@ framesync64 framesync64_create(framesyncprops_s *   _props,
 
     // create payload packetizer
     unsigned int n      = 64;
-    crc_scheme check    = LIQUID_CRC_16;
+    crc_scheme check    = LIQUID_CRC_32;
     fec_scheme fec0     = LIQUID_FEC_NONE;
     fec_scheme fec1     = LIQUID_FEC_GOLAY2412;
     q->p_payload = packetizer_create(n, check, fec0, fec1);
