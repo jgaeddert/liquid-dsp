@@ -615,6 +615,7 @@ framing_benchmarks :=						\
 	src/framing/bench/bsync_benchmark.c			\
 	src/framing/bench/detector_benchmark.c			\
 	src/framing/bench/flexframesync_benchmark.c		\
+	src/framing/bench/framesync64_benchmark.c		\
 	src/framing/bench/gmskframesync_benchmark.c		\
 	src/framing/bench/interleaver_benchmark.c		\
 	src/framing/bench/packetizer_decode_benchmark.c		\

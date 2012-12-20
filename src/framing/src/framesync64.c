@@ -517,7 +517,8 @@ void framesync64_execute_rxpayload(framesync64   _q,
                 _q->framestats.fec0            = LIQUID_FEC_NONE;
                 _q->framestats.fec1            = LIQUID_FEC_GOLAY2412;
 
-                _q->callback(NULL, 0,
+                _q->callback(NULL,
+                             0,
                              _q->payload_dec,
                              _q->crc_pass,
                              _q->framestats,
