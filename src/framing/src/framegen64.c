@@ -89,7 +89,7 @@ framegen64 framegen64_create(unsigned int _m,
     // create pulse-shaping filter (k=2)
     q->interp = interp_crcf_create_rnyquist(LIQUID_RNYQUIST_ARKAISER,2,q->m,q->beta,0);
 
-    // create payload packetizers
+    // create payload packetizer
     unsigned int n      = 64;
     crc_scheme check    = LIQUID_CRC_16;
     fec_scheme fec0     = LIQUID_FEC_NONE;
@@ -107,7 +107,7 @@ void framegen64_destroy(framegen64 _q)
 {
     // destroy internal objects
     interp_crcf_destroy(_q->interp);       // interpolator (matched filter)
-    packetizer_destroy(_q->p_payload);     // payload packetizer (decoder)
+    packetizer_destroy(_q->p_payload);     // payload packetizer (encoder)
     modem_destroy(_q->mod);                // QPSK payload modulator
 
     // free main object memory

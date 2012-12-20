@@ -91,6 +91,12 @@ struct framesync64_s {
 
     // QPSK demodulator
     modem demod;
+
+    // payload decoder
+    packetizer p_payload;           // payload packetizer
+    unsigned char payload_enc[138]; // encoded payload bytes
+    unsigned char payload_dec[64];  // decoded pyaload bytes
+    int crc_pass;                   // 
     
     // status variables
     enum {
@@ -156,6 +162,13 @@ framesync64 framesync64_create(framesyncprops_s *   _props,
     
     q->demod = modem_create(LIQUID_MODEM_QPSK);
 
+    // create payload packetizer
+    unsigned int n      = 64;
+    crc_scheme check    = LIQUID_CRC_16;
+    fec_scheme fec0     = LIQUID_FEC_NONE;
+    fec_scheme fec1     = LIQUID_FEC_GOLAY2412;
+    q->p_payload = packetizer_create(n, check, fec0, fec1);
+
     // reset state
 
 #if DEBUG_FRAMESYNC64
@@ -183,6 +196,7 @@ void framesync64_destroy(framesync64 _q)
     nco_crcf_destroy(_q->nco_coarse);
     nco_crcf_destroy(_q->nco_fine);
     modem_destroy(_q->demod);
+    packetizer_destroy(_q->p_payload);
 
     // free main object memory
     free(_q);
@@ -208,7 +222,7 @@ void framesync64_reset(framesync64 _q)
     // reset synchronizer objects
     nco_crcf_reset(_q->nco_coarse);
     nco_crcf_reset(_q->nco_fine);
-
+        
     // reset state
     _q->state           = STATE_DETECTFRAME;
     _q->pn_counter      = 0;
@@ -469,10 +483,18 @@ void framesync64_execute_rxpayload(framesync64   _q,
         nco_crcf_step(_q->nco_fine);
 
         // save output in p/n symbols buffer
-        _q->payload_syms[ _q->payload_counter++ ] = y;
+        _q->payload_syms[ _q->payload_counter ] = y;
+        
+        // pack encoded symbols
+        _q->payload_enc[ _q->payload_counter/4 ] <<= 2;
+        _q->payload_enc[ _q->payload_counter/4 ] |= sym_out;
+        
+        // increment counter
+        _q->payload_counter++;
 
         if (_q->payload_counter == 552) {
             // TODO: decode payload, invoke callback, etc.
+            framesync64_decode_payload(_q);
             _q->state = STATE_DETECTFRAME;
         }
     }
@@ -510,6 +532,14 @@ void framesync64_csma_unlock(framesync64 _q)
 
 void framesync64_decode_payload(framesync64 _q)
 {
+    // unscramble data
+    unscramble_data(_q->payload_enc, 138);
+
+    // decode payload
+    _q->crc_pass =
+    packetizer_decode(_q->p_payload, _q->payload_enc, _q->payload_dec);
+
+    printf("payload crc : %s\n", _q->crc_pass ? "pass" : "FAIL");
 }
 
 // convert four 2-bit symbols into one 8-bit byte
