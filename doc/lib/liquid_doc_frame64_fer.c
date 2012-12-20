@@ -44,15 +44,14 @@ void frame64_fer(unsigned int  _num_frames,
     frame64_fer_simdata simdata;
 
     // create framegen64 object
-    framegen64 fg = framegen64_create(m, beta);
+    framegen64 fg = framegen64_create();
 
     // frame synchronizer
-    framesync64 fs = framesync64_create(NULL,frame64_fer_callback,(void*)&simdata);
+    framesync64 fs = framesync64_create(frame64_fer_callback,(void*)&simdata);
 
     // allocate buffers
-    unsigned char header[12];   // header data
     unsigned char payload[64];  // payload data
-    float complex buffer[1280]; // output frame buffer
+    float complex buffer[1244]; // output frame buffer
 
     // channel objects
     nco_crcf nco_channel = nco_crcf_create(LIQUID_VCO);
@@ -80,13 +79,11 @@ void frame64_fer(unsigned int  _num_frames,
         simdata.payload_decoded = 0;
 
         // generate random packet data, encode
-        for (i=0; i<12; i++)
-            header[i] = rand() & 0xff;
         for (i=0; i<64; i++)
             payload[i] = rand() & 0xff;
 
         // generate the frame
-        framegen64_execute(fg,header,payload,buffer);
+        framegen64_execute(fg,payload,buffer);
 
         // initialize frame synchronizer with noise
         for (i=0; i<(rand()%100)+400; i++) {
@@ -96,13 +93,13 @@ void frame64_fer(unsigned int  _num_frames,
 
         // add channel impairments
         int frame_complete = 0;
-        for (i=0; i<1280; i++) {
+        for (i=0; i<1244; i++) {
             buffer[i] *= gamma;
             buffer[i] += nstd * (randnf() + _Complex_I*randnf()) * M_SQRT1_2;
         }
 
         // push frame through synchronizer
-        framesync64_execute(fs, buffer, 1280);
+        framesync64_execute(fs, buffer, 1244);
 
         // flush frame synchronizer
         for (i=0; i<2*k*m; i++) {
@@ -163,9 +160,6 @@ static int frame64_fer_callback(unsigned char *  _rx_header,
     // specify that frame was detected
     simdata->frame_detected = 1;
 
-    if (!_rx_header_valid)
-        return 0;
-    
     // specify that header was detected
     simdata->header_decoded = 1;
 

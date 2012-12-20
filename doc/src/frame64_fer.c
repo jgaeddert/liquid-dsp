@@ -26,9 +26,9 @@ void usage()
     printf("options:\n");
     printf("  u/h   : print usage/help\n");
     printf("  o     : output filename\n");
-    printf("  s     : SNR start [dB], -3\n");
+    printf("  s     : SNR start [dB], -9\n");
     printf("  d     : SNR step [dB], 1.0\n");
-    printf("  x     : SNR max [dB], 25\n");
+    printf("  x     : SNR max [dB], 6\n");
     printf("  n     : number of trials, 2000\n");
 }
 
@@ -37,9 +37,9 @@ int main(int argc, char *argv[]) {
     srand( time(NULL) );
 
     // define parameters
-    float SNRdB_start       = -3.0f;
+    float SNRdB_start       = -9.0f;
     float SNRdB_step        =  1.0f;
-    float SNRdB_max         =  25.0f;
+    float SNRdB_max         =  6.0f;
     unsigned int num_frames = 2000;
     //float noise_floor       = -40.0f;
     const char * filename   = "frame64_fer_results.dat";
