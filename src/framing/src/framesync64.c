@@ -69,6 +69,11 @@ void framesync64_csma_unlock(framesync64 _q);
 
 // framesync64 object structure
 struct framesync64_s {
+    // callback
+    framesync64_callback callback;  // user-defined callback function
+    void * userdata;                // user-defined data structure
+    framesyncstats_s framestats;    // frame statistic object
+    
     float complex pn_sequence[64];  // 64-symbol p/n sequence
     float complex pn_syms[64];      // received p/n symbols
     float complex payload_syms[552];// payload symbols
@@ -124,6 +129,8 @@ framesync64 framesync64_create(framesyncprops_s *   _props,
                                void *               _userdata)
 {
     framesync64 q = (framesync64) malloc(sizeof(struct framesync64_s));
+    q->callback = _callback;
+    q->userdata = _userdata;
 
     unsigned int i;
 
@@ -216,8 +223,8 @@ void framesync64_reset(framesync64 _q)
 
     // clear pre-demod buffer
     windowcf_clear(_q->buffer);
-    memset(_q->pn_syms,      0x00,  64*sizeof(float complex));
-    memset(_q->payload_syms, 0x00, 138*sizeof(float complex));
+    //memset(_q->pn_syms,      0x00,  64*sizeof(float complex));
+    //memset(_q->payload_syms, 0x00, 138*sizeof(float complex));
 
     // reset synchronizer objects
     nco_crcf_reset(_q->nco_coarse);
@@ -495,7 +502,29 @@ void framesync64_execute_rxpayload(framesync64   _q,
         if (_q->payload_counter == 552) {
             // TODO: decode payload, invoke callback, etc.
             framesync64_decode_payload(_q);
-            _q->state = STATE_DETECTFRAME;
+            
+            if (_q->callback != NULL) {
+                // invoke callback method
+                // cannot decode frame: invoke callback anyway, but ignore rest of payload
+                // payload length is 0 : ignore payload
+                _q->framestats.cfo             = nco_crcf_get_frequency(_q->nco_coarse) +
+                                                 nco_crcf_get_frequency(_q->nco_fine) / 2.0f;
+                _q->framestats.framesyms       = _q->payload_syms;
+                _q->framestats.num_framesyms   = 552;
+                _q->framestats.mod_scheme      = LIQUID_MODEM_QPSK;
+                _q->framestats.mod_bps         = 2;
+                _q->framestats.check           = LIQUID_CRC_32;
+                _q->framestats.fec0            = LIQUID_FEC_NONE;
+                _q->framestats.fec1            = LIQUID_FEC_GOLAY2412;
+
+                _q->callback(NULL, 0,
+                             _q->payload_dec,
+                             _q->crc_pass,
+                             _q->framestats,
+                             _q->userdata);
+            }
+
+            framesync64_reset(_q);
         }
     }
 

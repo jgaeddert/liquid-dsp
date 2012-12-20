@@ -50,7 +50,7 @@ unsigned char payload[64];
 
 int main(int argc, char*argv[])
 {
-    //srand( time(NULL) );
+    srand( time(NULL) );
 
     // options
     float SNRdB       =  20.0f; // signal-to-noise ratio
@@ -188,10 +188,12 @@ static int callback(unsigned char *  _header,
 
     // validate payload
     unsigned int i;
+#if 0
     unsigned int num_header_errors=0;
     for (i=0; i<12; i++)
         num_header_errors += (_header[i] == header[i]) ? 0 : 1;
     printf("    num header errors   : %u\n", num_header_errors);
+#endif
 
     unsigned int num_payload_errors=0;
     for (i=0; i<64; i++)
