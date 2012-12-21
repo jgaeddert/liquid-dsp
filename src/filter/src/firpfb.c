@@ -179,7 +179,7 @@ FIRPFB() FIRPFB(_create_drnyquist)(int          _type,
     // and apply scaling factor for normalized response
     TC Hc[H_len];
     for (i=0; i<H_len; i++)
-        Hc[i] = Hf[i] * 0.06f / HdH_max;
+        Hc[i] = dHf[i] * 0.06f / HdH_max;
 
     // return filterbank object
     return FIRPFB(_create)(_npfb, Hc, H_len);
