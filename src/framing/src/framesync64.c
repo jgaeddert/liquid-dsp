@@ -116,7 +116,8 @@ struct framesync64_s {
     unsigned int payload_counter;   //
 
 #if DEBUG_FRAMESYNC64
-    windowcf debug_x;                   // debug: raw input samples
+    windowcf debug_x;               // debug: raw input samples
+    float debug_nco_phase[616];     // fine-tuned nco phase, 616 = 64 + 552
 #endif
 };
 
@@ -334,7 +335,7 @@ void framesync64_pushpn(framesync64 _q)
     }
     _q->pfb_execute    = 0;
 
-    // set carrier...
+    // set coarse carrier frequency offset
     nco_crcf_set_frequency(_q->nco_coarse, _q->dphi_hat);
     
     unsigned int buffer_len = (64+m)*k;
@@ -445,6 +446,9 @@ void framesync64_syncpn(framesync64 _q)
         // push through phase-locked loop
         float phase_error = cimagf(_q->pn_syms[i]*conjf(_q->pn_sequence[i]));
         nco_crcf_pll_step(_q->nco_fine, phase_error);
+#if DEBUG_FRAMESYNC64
+        _q->debug_nco_phase[i] = nco_crcf_get_phase(_q->nco_fine);
+#endif
 
         // update...
         nco_crcf_step(_q->nco_fine);
@@ -487,6 +491,9 @@ void framesync64_execute_rxpayload(framesync64   _q,
         modem_demodulate(_q->demod, y, &sym_out);
         float phase_error = modem_get_demodulator_phase_error(_q->demod);
         float evm         = modem_get_demodulator_evm(_q->demod);
+#if DEBUG_FRAMESYNC64
+        _q->debug_nco_phase[64+_q->payload_counter] = nco_crcf_get_phase(_q->nco_fine);
+#endif
 
         // update phase-locked loop and fine-tuned NCO
         nco_crcf_pll_step(_q->nco_fine, phase_error);
@@ -645,6 +652,15 @@ void framesync64_debug_print(framesync64 _q)
     fprintf(fid,"grid on;\n");
     fprintf(fid,"axis([-1 1 -1 1]*1.3);\n");
     fprintf(fid,"axis square;\n");
+
+    // NCO, timing, etc.
+    fprintf(fid,"nco_phase = zeros(1,616);\n");
+    for (i=0; i<616; i++)
+        fprintf(fid,"nco_phase(%4u) = %12.4e;\n", i+1, _q->debug_nco_phase[i]);
+    fprintf(fid,"figure;\n");
+    fprintf(fid,"plot(nco_phase);\n");
+    fprintf(fid,"legend('nco phase','location','northeast');\n");
+    fprintf(fid,"grid on;\n");
 
     fprintf(fid,"\n\n");
     fclose(fid);
