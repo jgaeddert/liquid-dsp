@@ -631,9 +631,9 @@ void framesync64_debug_print(framesync64 _q)
         fprintf(fid,"pn_syms(%4u) = %12.4e + j*%12.4e;\n", i+1, crealf(rc[i]), cimagf(rc[i]));
 
     // write payload symbols
-    fprintf(fid,"payload_syms = zeros(1,138);\n");
+    fprintf(fid,"payload_syms = zeros(1,552);\n");
     rc = _q->payload_syms;
-    for (i=0; i<138; i++)
+    for (i=0; i<552; i++)
         fprintf(fid,"payload_syms(%4u) = %12.4e + j*%12.4e;\n", i+1, crealf(rc[i]), cimagf(rc[i]));
 
     fprintf(fid,"figure;\n");
