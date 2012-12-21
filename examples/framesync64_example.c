@@ -27,10 +27,10 @@ void usage()
 {
     printf("ofdmflexframesync_example [options]\n");
     printf("  h     : print usage\n");
-    printf("  S     : signal-to-noise ratio [dB], default: 30\n");
+    printf("  S     : signal-to-noise ratio [dB], default: 20\n");
     printf("  F     : carrier frequency offset, default: 0\n");
     printf("  P     : carrier phase offset, default: 0\n");
-    printf("  T     : fractional sample timing offset, default: 0\n");
+    printf("  T     : fractional sample timing offset, default: 0.01\n");
 }
 
 // static callback function
@@ -51,7 +51,7 @@ int main(int argc, char*argv[])
     // options
     float SNRdB       =  20.0f; // signal-to-noise ratio
     float noise_floor = -40.0f; // noise floor
-    float dphi        =  0.0f;  // carrier frequency offset
+    float dphi        =  0.01f; // carrier frequency offset
     float theta       =  0.0f;  // carrier phase offset
     float dt          =  0.0f;  // fractional sample timing offset
 
@@ -116,8 +116,20 @@ int main(int argc, char*argv[])
         y[i] += nstd*( randnf() + _Complex_I*randnf())*M_SQRT1_2;
     }
 
+#if 0
+    // add sample _rate_ offset
+    resamp_crcf resamp = resamp_crcf_create(1.002f, 13, 0.4f, 40.0f, 32);
+    float complex z[2];
+    unsigned int nw;
+    for (i=0; i<num_samples; i++) {
+        resamp_crcf_execute(resamp, y[i], z, &nw);
+        framesync64_execute(fs, z, nw);
+    }
+    resamp_crcf_destroy(resamp);
+#else
     // synchronize/receive the frame
     framesync64_execute(fs, y, num_samples);
+#endif
 
     // clean up allocated objects
     framegen64_destroy(fg);
