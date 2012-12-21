@@ -29,6 +29,19 @@ void usage()
     printf("  t     : timing phase offset [%% symbol], t in [-0.5,0.5], default: -0.2\n");
 }
 
+// filter coefficients
+//  alpha   zeta    settling time (symbols)
+//  0.90    1.5     70
+//  0.92    1.4     100
+//  0.94    1.2     110
+//  0.96    0.5     140
+//  0.98    0.2     210
+//  0.985   0.08    410
+//  0.990   0.05    500
+//  0.995   0.01    1100
+//  0.998   0.002   2500
+//
+// Let bandwidth = 1/settling time,
 
 int main(int argc, char*argv[]) {
     srand(time(NULL));
@@ -37,8 +50,8 @@ int main(int argc, char*argv[]) {
     unsigned int k=2;               // samples/symbol (input)
     unsigned int m=3;               // filter delay (symbols)
     float beta=0.5f;                // filter excess bandwidth factor
-    unsigned int npfb=32;    // number of filters in the bank
-    unsigned int num_symbols=200;   // number of data symbols
+    unsigned int npfb=32;           // number of filters in the bank
+    unsigned int num_symbols=512;   // number of data symbols
     float SNRdB = 30.0f;            // signal-to-noise ratio
     liquid_rnyquist_type ftype_tx = LIQUID_RNYQUIST_ARKAISER;
     liquid_rnyquist_type ftype_rx = LIQUID_RNYQUIST_ARKAISER;
@@ -85,10 +98,7 @@ int main(int argc, char*argv[]) {
     }
 
     // validate input
-    if (k < 2) {
-        fprintf(stderr,"error: k (samples/symbol) must be at least 2\n");
-        exit(1);
-    } else if (m < 1) {
+    if (m < 1) {
         fprintf(stderr,"error: m (filter delay) must be greater than 0\n");
         exit(1);
     } else if (beta <= 0.0f || beta > 1.0f) {
@@ -142,11 +152,13 @@ int main(int argc, char*argv[]) {
     // run symbol timing recovery algorithm
     unsigned int n = 0;
     //float tau_hat[num_samples];
+    float alpha     = 0.92;
+    float zeta      = 1.2f;
     float pfb_error = 0.0f;
     float pfb_q     = 0.0f;
     float pfb_soft  = 0.0f;
     int   pfb_index = 0;
-    unsigned int pfb_execute = 0;
+    unsigned int pfb_execute = 0;   // output flag
     // deubgging...
     float debug_pfb_error[num_symbols + 64];
     float debug_pfb_q[num_symbols + 64];
@@ -172,10 +184,23 @@ int main(int argc, char*argv[]) {
 
             // compute error
             pfb_error = crealf(conjf(v)*dv);
-            pfb_q     = 0.9f*pfb_q + 0.05f*pfb_error;
-            // update index...
+            pfb_q     = alpha*pfb_q + zeta*pfb_error;
+            pfb_soft  += pfb_q;
+
+            // update index
+            pfb_index = (int) roundf(pfb_soft);
+            while (pfb_index < 0) {
+                pfb_index += npfb;
+                pfb_soft  += npfb;
+                pfb_execute = 1-pfb_execute;
+            }
+            while (pfb_index > npfb-1) {
+                pfb_index -= npfb;
+                pfb_soft  -= npfb;
+                pfb_execute = 1-pfb_execute;
+            }
     
-            // debugging...
+            // save debugging outputs
             debug_pfb_error[n]  = pfb_error;
             debug_pfb_q[n]      = pfb_q;
             debug_pfb_soft[n]   = pfb_soft;
@@ -194,12 +219,10 @@ int main(int argc, char*argv[]) {
     firpfb_crcf_destroy(mf);
     firpfb_crcf_destroy(dmf);
 
-#if 0
     // print last several symbols to screen
     printf("output symbols:\n");
-    for (i=num_symbols_sync-10; i<num_symbols_sync; i++)
+    for (i=n-10; i<n; i++)
         printf("  sym_out(%2u) = %8.4f + j*%8.4f;\n", i+1, crealf(sym_out[i]), cimagf(sym_out[i]));
-#endif
 
     //
     // export output file
@@ -241,9 +264,16 @@ int main(int argc, char*argv[]) {
 
     fprintf(fid,"figure;\n");
     fprintf(fid,"subplot(2,1,1);\n");
-    fprintf(fid,"  plot(1:n, pfb_error, 1:n, pfb_q);\n");
+    fprintf(fid,"  plot(1:n, pfb_error, 'Color',[1 1 1]*0.8, ...\n");
+    fprintf(fid,"       1:n, pfb_q, '-b', 'LineWidth',1.2);\n");
+    fprintf(fid,"  grid on;\n");
+    fprintf(fid,"  ylabel('timing error');\n");
     fprintf(fid,"subplot(2,1,2);\n");
     fprintf(fid,"  plot(1:n, pfb_soft);\n");
+    //fprintf(fid,"  axis([0 n -1 npfb]);\n");
+    fprintf(fid,"  xlabel('output symbol');\n");
+    fprintf(fid,"  ylabel('filterbank index');\n");
+    fprintf(fid,"  grid on;\n");
 
     fclose(fid);
     printf("results written to %s.\n", OUTPUT_FILENAME);
