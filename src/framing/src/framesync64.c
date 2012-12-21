@@ -39,27 +39,38 @@
 #define DEBUG_FILENAME              "framesync64_internal_debug.m"
 #define DEBUG_BUFFER_LEN            (1600)
 
-void framesync64_debug_print(framesync64 _q);
+// push samples through detection stage
+void framesync64_execute_seekpn(framesync64   _q,
+                                float complex _x);
 
-// update symbol synchronizer
+// update symbol synchronizer internal state (filtered error, index, etc.)
+//  _q      :   frame synchronizer
+//  _mf     :   matched-filter output
+//  _dmf    :   derivative matched-filter output
 void framesync64_update_symsync(framesync64   _q,
                                 float complex _mf,
                                 float complex _dmf);
 
-void framesync64_execute_seekpn(framesync64   _q,
-                                float complex _x);
-
 // push buffered p/n sequence through synchronizer
 void framesync64_pushpn(framesync64 _q);
 
+// push samples through synchronizer, saving received p/n symbols
 void framesync64_execute_rxpn(framesync64   _q,
                               float complex _x);
-// ...
+
+// once p/n symbols are buffered, estimate residual carrier
+// frequency and phase offsets, push through fine-tuned NCO
 void framesync64_syncpn(framesync64 _q);
 
+// receive payload symbols
 void framesync64_execute_rxpayload(framesync64   _q,
                                    float complex _x);
+
+// decode payload
 void framesync64_decode_payload(framesync64 _q);
+
+// print debugging information
+void framesync64_debug_print(framesync64 _q);
 
 // advanced mode
 void framesync64_csma_lock(framesync64 _q);
@@ -72,7 +83,7 @@ struct framesync64_s {
     void * userdata;                // user-defined data structure
     framesyncstats_s framestats;    // frame statistic object
     
-    float complex pn_sequence[64];  // 64-symbol p/n sequence
+    float complex pn_sequence[64];  // known 64-symbol p/n sequence
     float complex pn_syms[64];      // received p/n symbols
     float complex payload_syms[552];// payload symbols
 
@@ -89,16 +100,16 @@ struct framesync64_s {
     float pfb_q;                    // 
     float pfb_soft;                 // soft filterbank index
     int pfb_index;                  // hard filterbank index
-    unsigned int pfb_execute;       // filterbank output flag
+    int pfb_timer;                  // filterbank output flag
 
-    // QPSK demodulator
+    // QPSK payload demodulator
     modem demod;
 
     // payload decoder
     packetizer p_payload;           // payload packetizer
     unsigned char payload_enc[138]; // encoded payload bytes
     unsigned char payload_dec[64];  // decoded pyaload bytes
-    int crc_pass;                   // 
+    int crc_pass;                   // flag to determine if payload passed
     
     // status variables
     enum {
@@ -109,8 +120,8 @@ struct framesync64_s {
     float tau_hat;                  // fractional timing offset estimate
     float dphi_hat;                 // carrier frequency offset estimate
     float gamma_hat;                // channel gain estimate
-    unsigned int pn_counter;        //
-    unsigned int payload_counter;   //
+    unsigned int pn_counter;        // counter: num of p/n syms received
+    unsigned int payload_counter;   // counter: num of payload syms received
 
 #if DEBUG_FRAMESYNC64
     windowcf debug_x;               // debug: raw input samples
@@ -151,33 +162,38 @@ framesync64 framesync64_create(framesync64_callback _callback,
     interp_crcf_destroy(interp);
 
     // create frame detector
-    float threshold = 0.4f;
-    float dphi_max  = 0.05f;
+    float threshold = 0.4f;     // detection threshold
+    float dphi_max  = 0.05f;    // maximum carrier offset allowable
     q->frame_detector = detector_cccf_create(seq, k*64, threshold, dphi_max);
-
-    // create internal synchronizer objects
-    q->npfb = 32;
     q->buffer = windowcf_create(2*(64+3));
-    q->mf  = firpfb_crcf_create_rnyquist(LIQUID_RNYQUIST_ARKAISER, q->npfb,k,m,beta);
-    q->dmf = firpfb_crcf_create_drnyquist(LIQUID_RNYQUIST_ARKAISER,q->npfb,k,m,beta);
+
+    // create symbol timing recovery filters
+    q->npfb = 32;   // number of filters in the bank
+    q->mf   = firpfb_crcf_create_rnyquist(LIQUID_RNYQUIST_ARKAISER, q->npfb,k,m,beta);
+    q->dmf  = firpfb_crcf_create_drnyquist(LIQUID_RNYQUIST_ARKAISER,q->npfb,k,m,beta);
+
+    // create down-coverters for carrier phase tracking
     q->nco_coarse = nco_crcf_create(LIQUID_NCO);
-    q->nco_fine = nco_crcf_create(LIQUID_VCO);
+    q->nco_fine   = nco_crcf_create(LIQUID_VCO);
     nco_crcf_pll_set_bandwidth(q->nco_fine, 0.02f);
     
+    // create payload demodulator
     q->demod = modem_create(LIQUID_MODEM_QPSK);
 
-    // create payload packetizer
-    unsigned int n      = 64;
-    crc_scheme check    = LIQUID_CRC_32;
-    fec_scheme fec0     = LIQUID_FEC_NONE;
-    fec_scheme fec1     = LIQUID_FEC_GOLAY2412;
+    // create payload packet decoder
+    unsigned int n   = 64;
+    crc_scheme check = LIQUID_CRC_32;
+    fec_scheme fec0  = LIQUID_FEC_NONE;
+    fec_scheme fec1  = LIQUID_FEC_GOLAY2412;
+    assert(packetizer_compute_enc_msg_len(n, check, fec0, fec1)==138);
     q->p_payload = packetizer_create(n, check, fec0, fec1);
-
-    // reset state
 
 #if DEBUG_FRAMESYNC64
     q->debug_x = windowcf_create(DEBUG_BUFFER_LEN);
 #endif
+
+    // reset state
+    framesync64_reset(q);
 
     return q;
 }
@@ -193,17 +209,14 @@ void framesync64_destroy(framesync64 _q)
 #endif
 
     // destroy synchronization objects
-    detector_cccf_destroy(_q->frame_detector);
-    windowcf_destroy(_q->buffer);
-    firpfb_crcf_destroy(_q->mf);
-    firpfb_crcf_destroy(_q->dmf);
-    nco_crcf_destroy(_q->nco_coarse);
-    nco_crcf_destroy(_q->nco_fine);
-    modem_destroy(_q->demod);
-    packetizer_destroy(_q->p_payload);
-
-    // reset frame statistics
-    _q->framestats.evm = 0.0f;
+    detector_cccf_destroy(_q->frame_detector);  // frame detector
+    windowcf_destroy(_q->buffer);               // p/n sample buffer
+    firpfb_crcf_destroy(_q->mf);                // matched filter
+    firpfb_crcf_destroy(_q->dmf);               // derivative matched filter
+    nco_crcf_destroy(_q->nco_coarse);           // coarse NCO
+    nco_crcf_destroy(_q->nco_fine);             // fine-tuned NCO
+    modem_destroy(_q->demod);                   // payload demodulator
+    packetizer_destroy(_q->p_payload);          // payload decoder
 
     // free main object memory
     free(_q);
@@ -223,18 +236,23 @@ void framesync64_reset(framesync64 _q)
 
     // clear pre-demod buffer
     windowcf_clear(_q->buffer);
-    //memset(_q->pn_syms,      0x00,  64*sizeof(float complex));
-    //memset(_q->payload_syms, 0x00, 138*sizeof(float complex));
 
-    // reset synchronizer objects
+    // reset carrier recovery objects
     nco_crcf_reset(_q->nco_coarse);
     nco_crcf_reset(_q->nco_fine);
-    _q->pfb_q = 0.0f;
+
+    // reset symbol timing recovery state
+    firpfb_crcf_clear(_q->mf);
+    firpfb_crcf_clear(_q->dmf);
+    _q->pfb_q = 0.0f;   // filtered error signal
         
     // reset state
     _q->state           = STATE_DETECTFRAME;
     _q->pn_counter      = 0;
     _q->payload_counter = 0;
+    
+    // reset frame statistics
+    _q->framestats.evm = 0.0f;
 }
 
 // execute frame synchronizer
@@ -252,15 +270,15 @@ void framesync64_execute(framesync64     _q,
 #endif
         switch (_q->state) {
         case STATE_DETECTFRAME:
-            //printf("detect...\n");
+            // detect frame (look for p/n sequence)
             framesync64_execute_seekpn(_q, _x[i]);
             break;
         case STATE_RXPN:
-            //printf("rx p/n...\n");
+            // receive p/n sequence symbols
             framesync64_execute_rxpn(_q, _x[i]);
             break;
         case STATE_RXPAYLOAD:
-            //printf("rx payload...\n");
+            // receive payload symbols
             framesync64_execute_rxpayload(_q, _x[i]);
             break;
         default:
@@ -271,7 +289,7 @@ void framesync64_execute(framesync64     _q,
 }
 
 // 
-// internal
+// internal methods
 //
 
 // execute synchronizer, seeking p/n sequence
@@ -281,24 +299,20 @@ void framesync64_execute(framesync64     _q,
 void framesync64_execute_seekpn(framesync64   _q,
                                 float complex _x)
 {
-    float tau_hat   = 0.0f;
-    float dphi_hat  = 0.0f;
-    float gamma_hat = 0.0f;
-    int   detected  = 0;
-
-    //
+    // push sample into pre-demod p/n sequence buffer
     windowcf_push(_q->buffer, _x);
 
     // push through pre-demod synchronizer
-    detected = detector_cccf_correlate(_q->frame_detector, _x, &tau_hat, &dphi_hat, &gamma_hat);
+    int detected = detector_cccf_correlate(_q->frame_detector,
+                                           _x,
+                                           &_q->tau_hat,
+                                           &_q->dphi_hat,
+                                           &_q->gamma_hat);
+
+    // check if frame has been detected
     if (detected) {
         //printf("***** frame detected! tau-hat:%8.4f, dphi-hat:%8.4f, gamma:%8.2f dB\n",
-        //        tau_hat, dphi_hat, 20*log10f(gamma_hat));
-
-        // set internal offset parameters
-        _q->tau_hat   = tau_hat;
-        _q->dphi_hat  = dphi_hat;
-        _q->gamma_hat = gamma_hat;
+        //        _q->tau_hat, _q->dphi_hat, 20*log10f(_q->gamma_hat));
 
         // push buffered samples through synchronizer
         // NOTE: this will set internal state appropriately
@@ -307,7 +321,7 @@ void framesync64_execute_seekpn(framesync64   _q,
     }
 }
 
-// update symbol synchronizer
+// update symbol synchronizer internal state (filtered error, index, etc.)
 //  _q      :   frame synchronizer
 //  _mf     :   matched-filter output
 //  _dmf    :   derivative matched-filter output
@@ -316,9 +330,10 @@ void framesync64_update_symsync(framesync64   _q,
                                 float complex _dmf)
 {
     // update filtered timing error
-    // lo bandwidth parameters: {0.92, 1.20}, about 100 symbols settling time
-    // hi bandwidth parameters: {0.99, 0.05}, about 500 symbols settling time
-    _q->pfb_q = 0.99f*_q->pfb_q + 0.05f*crealf( conjf(_mf)*_dmf );
+    // lo  bandwidth parameters: {0.92, 1.20}, about 100 symbols settling time
+    // med bandwidth parameters: {0.98, 0.20}, about 200 symbols settling time
+    // hi  bandwidth parameters: {0.99, 0.05}, about 500 symbols settling time
+    _q->pfb_q = 0.98f*_q->pfb_q + 0.20f*crealf( conjf(_mf)*_dmf );
 
     // accumulate error into soft filterbank value
     _q->pfb_soft += _q->pfb_q;
@@ -331,15 +346,15 @@ void framesync64_update_symsync(framesync64   _q,
         _q->pfb_index += _q->npfb;
         _q->pfb_soft  += _q->npfb;
 
-        // toggle filterbank execution flag
-        _q->pfb_execute = 1 - _q->pfb_execute;
+        // adjust pfb output timer
+        _q->pfb_timer--;
     }
     while (_q->pfb_index > _q->npfb-1) {
         _q->pfb_index -= _q->npfb;
         _q->pfb_soft  -= _q->npfb;
 
-        // toggle filterbank execution flag
-        _q->pfb_execute = 1 - _q->pfb_execute;
+        // adjust pfb output timer
+        _q->pfb_timer++;
     }
 }
 
@@ -370,7 +385,7 @@ void framesync64_pushpn(framesync64 _q)
         _q->pfb_index += _q->npfb;
         _q->pfb_soft  += _q->npfb;
     }
-    _q->pfb_execute    = 0;
+    _q->pfb_timer = 0;
 
     // set coarse carrier frequency offset
     nco_crcf_set_frequency(_q->nco_coarse, _q->dphi_hat);
@@ -418,8 +433,11 @@ void framesync64_execute_rxpn(framesync64   _q,
     firpfb_crcf_push(_q->mf,  y);
     firpfb_crcf_push(_q->dmf, y);
 
-    // compute output if ...
-    if (_q->pfb_execute == 0) {
+    // compute output if timeout
+    if (_q->pfb_timer <= 0) {
+        // reset timer
+        _q->pfb_timer = 2;  // k samples/symbol
+
         //
         float complex y;    // matched-filter output
         float complex dy;   // derivatived matched-filter output
@@ -444,12 +462,13 @@ void framesync64_execute_rxpn(framesync64   _q,
             _q->state = STATE_RXPAYLOAD;
         }
     }
-
-    // toggle flag
-    _q->pfb_execute = 1 - _q->pfb_execute;
+    
+    // decrement symbol timer
+    _q->pfb_timer--;
 }
 
-// estimate residual carrier frequency and phase offsets
+// once p/n symbols are buffered, estimate residual carrier
+// frequency and phase offsets, push through fine-tuned NCO
 void framesync64_syncpn(framesync64 _q)
 {
     unsigned int i;
@@ -471,17 +490,12 @@ void framesync64_syncpn(framesync64 _q)
         theta_metric += _q->pn_syms[i]*liquid_cexpjf(-dphi_hat*i)*_q->pn_sequence[i];
     float theta_hat = cargf(theta_metric);
     // TODO: compute gain correction factor
-#if 0
-    //printf("dphi-hat  : %12.8f\n", dphi_hat/2.0f + nco_crcf_get_frequency(_q->nco_coarse));
-    printf("dphi-hat  : %12.8f\n", dphi_hat);
-    printf("theta-hat : %12.8f\n", theta_hat);
-#endif
 
     // initialize fine-tuned nco
     nco_crcf_set_frequency(_q->nco_fine, dphi_hat);
     nco_crcf_set_phase(    _q->nco_fine, theta_hat);
 
-    // TODO: push through phase-locked loop?
+    // correct for carrier offset, pushing through phase-locked loop
     for (i=0; i<64; i++) {
         // mix signal down
         nco_crcf_mix_down(_q->nco_fine, _q->pn_syms[i], &_q->pn_syms[i]);
@@ -493,7 +507,7 @@ void framesync64_syncpn(framesync64 _q)
         _q->debug_nco_phase[i] = nco_crcf_get_phase(_q->nco_fine);
 #endif
 
-        // update...
+        // update nco phase
         nco_crcf_step(_q->nco_fine);
     }
 }
@@ -514,8 +528,11 @@ void framesync64_execute_rxpayload(framesync64   _q,
     firpfb_crcf_push(_q->mf,  y);
     firpfb_crcf_push(_q->dmf, y);
 
-    // compute output if flag is set to zero
-    if (_q->pfb_execute == 0) {
+    // compute output if timeout
+    if (_q->pfb_timer <= 0) {
+        // reset timer
+        _q->pfb_timer = 2;  // k samples/symbol
+
         //
         float complex y;    // matched-filter output
         float complex dy;   // derivatived matched-filter output
@@ -559,22 +576,22 @@ void framesync64_execute_rxpayload(framesync64   _q,
         _q->payload_counter++;
 
         if (_q->payload_counter == 552) {
-            // TODO: decode payload, invoke callback, etc.
+            // decode payload and invoke callback
             framesync64_decode_payload(_q);
             
             if (_q->callback != NULL) {
                 // invoke user-defined callback function
-                _q->framestats.evm             = 20*log10f(sqrtf(_q->framestats.evm / 552.0f));
-                _q->framestats.rssi            = 20*log10f(_q->gamma_hat);
-                _q->framestats.cfo             = nco_crcf_get_frequency(_q->nco_coarse) +
-                                                 nco_crcf_get_frequency(_q->nco_fine) / 2.0f;
-                _q->framestats.framesyms       = _q->payload_syms;
-                _q->framestats.num_framesyms   = 552;
-                _q->framestats.mod_scheme      = LIQUID_MODEM_QPSK;
-                _q->framestats.mod_bps         = 2;
-                _q->framestats.check           = LIQUID_CRC_32;
-                _q->framestats.fec0            = LIQUID_FEC_NONE;
-                _q->framestats.fec1            = LIQUID_FEC_GOLAY2412;
+                _q->framestats.evm           = 20*log10f(sqrtf(_q->framestats.evm / 552.0f));
+                _q->framestats.rssi          = 20*log10f(_q->gamma_hat);
+                _q->framestats.cfo           = nco_crcf_get_frequency(_q->nco_coarse) +
+                                               nco_crcf_get_frequency(_q->nco_fine) / 2.0f;
+                _q->framestats.framesyms     = _q->payload_syms;
+                _q->framestats.num_framesyms = 552;
+                _q->framestats.mod_scheme    = LIQUID_MODEM_QPSK;
+                _q->framestats.mod_bps       = 2;
+                _q->framestats.check         = LIQUID_CRC_32;
+                _q->framestats.fec0          = LIQUID_FEC_NONE;
+                _q->framestats.fec1          = LIQUID_FEC_GOLAY2412;
 
                 _q->callback(NULL,
                              0,
@@ -588,8 +605,8 @@ void framesync64_execute_rxpayload(framesync64   _q,
         }
     }
 
-    // toggle flag
-    _q->pfb_execute = 1 - _q->pfb_execute;
+    // decrement symbol timer
+    _q->pfb_timer--;
 }
 
 // enable csma and set external callback functions
@@ -614,11 +631,7 @@ void framesync64_csma_unlock(framesync64 _q)
 {
 }
 
-
-// 
-// decoding methods
-//
-
+// decode payload
 void framesync64_decode_payload(framesync64 _q)
 {
     // unscramble data
@@ -629,6 +642,7 @@ void framesync64_decode_payload(framesync64 _q)
     packetizer_decode(_q->p_payload, _q->payload_enc, _q->payload_dec);
 }
 
+#if 0
 // convert four 2-bit symbols into one 8-bit byte
 //  _syms   :   input symbols [size: 4 x 1]
 //  _byte   :   output byte
@@ -642,6 +656,7 @@ void framesync64_syms_to_byte(unsigned char * _syms,
     b |= (_syms[3]     ) & 0x03;
     *_byte = b;
 }
+#endif
 
 // huge method to write debugging data to file
 void framesync64_debug_print(framesync64 _q)
