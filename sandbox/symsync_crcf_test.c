@@ -152,13 +152,13 @@ int main(int argc, char*argv[]) {
     // run symbol timing recovery algorithm
     unsigned int n = 0;
     //float tau_hat[num_samples];
-    float alpha     = 0.92;
-    float zeta      = 1.2f;
+    float alpha     = 0.96;
+    float zeta      = 0.5f;
     float pfb_error = 0.0f;
     float pfb_q     = 0.0f;
     float pfb_soft  = 0.0f;
     int   pfb_index = 0;
-    unsigned int pfb_execute = 0;   // output flag
+    int   pfb_timer = 0;   // output flag
     // deubgging...
     float debug_pfb_error[num_symbols + 64];
     float debug_pfb_q[num_symbols + 64];
@@ -169,7 +169,10 @@ int main(int argc, char*argv[]) {
         firpfb_crcf_push(dmf, y[i]);
 
         //
-        if (pfb_execute == 0) {
+        if (pfb_timer <= 0) {
+            // reset timer
+            pfb_timer = 2;  // k samples/symbol
+
             // compute filterbank outputs
             float complex v  = 0.0f;
             float complex dv = 0.0f;
@@ -192,12 +195,12 @@ int main(int argc, char*argv[]) {
             while (pfb_index < 0) {
                 pfb_index += npfb;
                 pfb_soft  += npfb;
-                pfb_execute = 1-pfb_execute;
+                pfb_timer--;
             }
             while (pfb_index > npfb-1) {
                 pfb_index -= npfb;
                 pfb_soft  -= npfb;
-                pfb_execute = 1-pfb_execute;
+                pfb_timer++;
             }
     
             // save debugging outputs
@@ -209,10 +212,8 @@ int main(int argc, char*argv[]) {
             n++;
         }
 
-        // 
-
-        // toggle output flag
-        pfb_execute = 1-pfb_execute;
+        // decrement timer
+        pfb_timer--;
     }
     
     // destroy filterbanks
