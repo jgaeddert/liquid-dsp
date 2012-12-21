@@ -336,7 +336,7 @@ void fec_hamming128_decode_soft(fec _q,
 //        run.
 unsigned int fecsoft_hamming128_decode(unsigned char * _soft_bits)
 {
-    // find symbol with minimum distance from all 2^4 possible
+    // find symbol with minimum distance from all 2^8 possible
     unsigned int d;             // distance metric
     unsigned int dmin = 0;      // minimum distance
     unsigned int s_hat = 0;     // estimated transmitted symbol
@@ -377,7 +377,7 @@ unsigned int fecsoft_hamming128_decode(unsigned char * _soft_bits)
 // soft decoding of one symbol using nearest neighbors
 unsigned int fecsoft_hamming128_decode_n3(unsigned char * _soft_bits)
 {
-    // find symbol with minimum distance from all 2^4 possible
+    // find symbol with minimum distance from 17 nearest neighbors
     unsigned int d;             // distance metric
     unsigned int dmin = 0;      // minimum distance
     unsigned int s_hat = 0;     // estimated transmitted symbol
