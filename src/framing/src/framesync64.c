@@ -41,12 +41,10 @@
 
 void framesync64_debug_print(framesync64 _q);
 
-#if 0
-// run symbol synchronizer
-int framesync64_symsync(framesync64     _q,
-                        float complex   _x
-                        float complex * _y);
-#endif
+// update symbol synchronizer
+void framesync64_update_symsync(framesync64   _q,
+                                float complex _mf,
+                                float complex _dmf);
 
 void framesync64_execute_seekpn(framesync64   _q,
                                 float complex _x);
@@ -87,10 +85,9 @@ struct framesync64_s {
     // timing recovery objects, states
     firpfb_crcf mf;                 // matched filter decimator
     firpfb_crcf dmf;                // derivative matched filter decimator
-#if 0
-    float pfb_index_soft;           // soft filterbank index
-#endif
     unsigned int npfb;              // number of filters in symsync
+    float pfb_q;                    // 
+    float pfb_soft;                 // soft filterbank index
     int pfb_index;                  // hard filterbank index
     unsigned int pfb_execute;       // filterbank output flag
 
@@ -117,6 +114,7 @@ struct framesync64_s {
 
 #if DEBUG_FRAMESYNC64
     windowcf debug_x;               // debug: raw input samples
+    float debug_symsync_index[616]; // symbol synchronizer phase, 616 = 64 + 552
     float debug_nco_phase[616];     // fine-tuned nco phase, 616 = 64 + 552
 #endif
 };
@@ -231,6 +229,7 @@ void framesync64_reset(framesync64 _q)
     // reset synchronizer objects
     nco_crcf_reset(_q->nco_coarse);
     nco_crcf_reset(_q->nco_fine);
+    _q->pfb_q = 0.0f;
         
     // reset state
     _q->state           = STATE_DETECTFRAME;
@@ -308,6 +307,42 @@ void framesync64_execute_seekpn(framesync64   _q,
     }
 }
 
+// update symbol synchronizer
+//  _q      :   frame synchronizer
+//  _mf     :   matched-filter output
+//  _dmf    :   derivative matched-filter output
+void framesync64_update_symsync(framesync64   _q,
+                                float complex _mf,
+                                float complex _dmf)
+{
+    // update filtered timing error
+    // lo bandwidth parameters: {0.92, 1.20}, about 100 symbols settling time
+    // hi bandwidth parameters: {0.99, 0.05}, about 500 symbols settling time
+    _q->pfb_q = 0.99f*_q->pfb_q + 0.05f*crealf( conjf(_mf)*_dmf );
+
+    // accumulate error into soft filterbank value
+    _q->pfb_soft += _q->pfb_q;
+
+    // compute actual filterbank index
+    _q->pfb_index = roundf(_q->pfb_soft);
+
+    // contrain index to be in [0, npfb-1]
+    while (_q->pfb_index < 0) {
+        _q->pfb_index += _q->npfb;
+        _q->pfb_soft  += _q->npfb;
+
+        // toggle filterbank execution flag
+        _q->pfb_execute = 1 - _q->pfb_execute;
+    }
+    while (_q->pfb_index > _q->npfb-1) {
+        _q->pfb_index -= _q->npfb;
+        _q->pfb_soft  -= _q->npfb;
+
+        // toggle filterbank execution flag
+        _q->pfb_execute = 1 - _q->pfb_execute;
+    }
+}
+
 // push buffered p/n sequence through synchronizer
 void framesync64_pushpn(framesync64 _q)
 {
@@ -328,10 +363,12 @@ void framesync64_pushpn(framesync64 _q)
     unsigned int k     = 2;         // samples/symbol
     unsigned int m     = 3;         // filter delay (symbols)
     unsigned int delay = 2*k*m - 1; // samples to buffer before computing output
-    _q->pfb_index      = (int) roundf(-_q->tau_hat*32);
+    _q->pfb_soft       = -_q->tau_hat*_q->npfb;
+    _q->pfb_index      = (int) roundf(_q->pfb_soft);
     while (_q->pfb_index < 0) {
         delay         -= 1;
         _q->pfb_index += _q->npfb;
+        _q->pfb_soft  += _q->npfb;
     }
     _q->pfb_execute    = 0;
 
@@ -390,11 +427,17 @@ void framesync64_execute_rxpn(framesync64   _q,
         firpfb_crcf_execute(_q->mf,  _q->pfb_index, &y);
         firpfb_crcf_execute(_q->dmf, _q->pfb_index, &dy);
 
-        // TODO: update pfb index
-        // TODO: if index wraps around (either direction), toggle pfb execute again
+        // update pfb index
+        framesync64_update_symsync(_q, y, dy);
+#if DEBUG_FRAMESYNC64
+        _q->debug_symsync_index[_q->pn_counter] = _q->pfb_soft;
+#endif
 
         // save output in p/n symbols buffer
-        _q->pn_syms[ _q->pn_counter++ ] = y;
+        _q->pn_syms[ _q->pn_counter ] = y;
+
+        // update p/n counter
+        _q->pn_counter++;
 
         if (_q->pn_counter == 64) {
             framesync64_syncpn(_q);
@@ -471,7 +514,7 @@ void framesync64_execute_rxpayload(framesync64   _q,
     firpfb_crcf_push(_q->mf,  y);
     firpfb_crcf_push(_q->dmf, y);
 
-    // compute output if ...
+    // compute output if flag is set to zero
     if (_q->pfb_execute == 0) {
         //
         float complex y;    // matched-filter output
@@ -480,8 +523,11 @@ void framesync64_execute_rxpayload(framesync64   _q,
         firpfb_crcf_execute(_q->mf,  _q->pfb_index, &y);
         firpfb_crcf_execute(_q->dmf, _q->pfb_index, &dy);
 
-        // TODO: update pfb index
-        // TODO: if index wraps around (either direction), toggle pfb execute again
+        // update pfb index
+        framesync64_update_symsync(_q, y, dy);
+#if DEBUG_FRAMESYNC64
+        _q->debug_symsync_index[64+_q->payload_counter] = _q->pfb_soft;
+#endif
 
         // push through fine-tuned nco
         nco_crcf_mix_down(_q->nco_fine, y, &y);
@@ -654,13 +700,21 @@ void framesync64_debug_print(framesync64 _q)
     fprintf(fid,"axis square;\n");
 
     // NCO, timing, etc.
-    fprintf(fid,"nco_phase = zeros(1,616);\n");
-    for (i=0; i<616; i++)
-        fprintf(fid,"nco_phase(%4u) = %12.4e;\n", i+1, _q->debug_nco_phase[i]);
+    fprintf(fid,"symsync_index = zeros(1,616);\n");
+    fprintf(fid,"nco_phase     = zeros(1,616);\n");
+    for (i=0; i<616; i++) {
+        fprintf(fid,"symsync_index(%4u) = %12.4e;\n", i+1, _q->debug_symsync_index[i]);
+        fprintf(fid,"nco_phase(%4u)     = %12.4e;\n", i+1, _q->debug_nco_phase[i]);
+    }
     fprintf(fid,"figure;\n");
-    fprintf(fid,"plot(nco_phase);\n");
-    fprintf(fid,"legend('nco phase','location','northeast');\n");
-    fprintf(fid,"grid on;\n");
+    fprintf(fid,"subplot(2,1,1);\n");
+    fprintf(fid,"  plot(nco_phase);\n");
+    fprintf(fid,"  ylabel('nco phase');\n");
+    fprintf(fid,"  grid on;\n");
+    fprintf(fid,"subplot(2,1,2);\n");
+    fprintf(fid,"  plot(symsync_index);\n");
+    fprintf(fid,"  ylabel('symsync index');\n");
+    fprintf(fid,"  grid on;\n");
 
     fprintf(fid,"\n\n");
     fclose(fid);
