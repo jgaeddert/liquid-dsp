@@ -34,7 +34,7 @@
 
 #define DEBUG_DETECTOR              1
 #define DEBUG_DETECTOR_PRINT        0
-#define DEBUG_DETECTOR_BUFFER_LEN   (400)
+#define DEBUG_DETECTOR_BUFFER_LEN   (1600)
 #define DEBUG_DETECTOR_FILENAME     "detector_cccf_debug.m"
 
 // 
@@ -357,6 +357,8 @@ void detector_cccf_compute_dotprods(detector_cccf _q)
         dotprod_cccf_execute(_q->dp[k], r, &rxy);
 
         // save scaled magnitude
+        // TODO: compute scaled squared magnitude so as not to have
+        //       to compute square root
         _q->rxy[k] = cabsf(rxy) * _q->n_inv / sqrtf(_q->x2_hat);
 #if DEBUG_DETECTOR_PRINT
         printf("%6.4f (%6.4f) ", _q->rxy[k], _q->dphi[k]);

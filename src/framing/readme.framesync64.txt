@@ -1,33 +1,25 @@
-======================================
- frame-64 description
-======================================
 
-signal
-  ^
-  |     .+-------+-------+--------+----//---+.
-  |    / |       |       |        |         | \
-  |  r/u |phasing|  p/n  | header | payload | r\d
-  |__/   |       |       |        |         |   \__
-  +-------------------------------------------------> time
+frame64 description
+===================
 
-section             length          Description
-ramp-up             12 symbols      ramp/up phasing pattern
-phasing pattern     64 symbols      BPSK phasing pattern (+1,-1...)
-p/n sequence        64 symbols      BPSK p/n sequence (m-sequence, g=0x0043)
-header              84 symbols      12-byte packet header, 16-bit crc,
-                                    encoded with the Hamming(12,8) FEC,
-                                    modulated with QPSK
-payload             396 symbols     64-byte packet header, 16-bit crc,
-                                    encoded with the Hamming(12,8) FEC,
-                                    modulated with QPSK
-ramp-dn             12 symbols      ramp down
-settling            8  symbols      settling time for interpolator
+    signal
+      ^
+      |     .+-------+---------------------------+.
+      |    / |       |                           | \
+      |  r/u |  p/n  |           payload         | r\d
+      |__/   |       |                           |   \__
+      +--------------------------------------------------> time
 
-total:              640 symbols
+    section             length          Description
+    ramp-up             3 symbols       filter ramp/up
+    p/n sequence        64 symbols      BPSK p/n sequence (m-sequence, g=0x0043)
+    payload             552 symbols     64-byte packet header, 32-bit crc,
+                                        encoded with the Golay(24,12) FEC,
+                                        modulated with QPSK
+    ramp-dn             3 symbols       filter ramp\down
+    total:              622 symbols
 
-interpolated:       1280 samples    interpolated using half-rate square-
-                                    root Nyquist pulse-shaping filter
-
-Both the header and payload include a mandatory 16-bit crc with the
-2/3-rate Hamming(12,8) forward error-correction code.
+    interpolated:       1244 samples    interpolated using half-rate square-
+                                        root Nyquist pulse-shaping filter at
+                                        2 samples/symbol
 
