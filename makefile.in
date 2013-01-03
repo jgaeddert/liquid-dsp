@@ -255,6 +255,8 @@ fec_objects :=							\
 	src/fec/src/fec_secded2216.o				\
 	src/fec/src/fec_secded3932.o				\
 	src/fec/src/fec_secded7264.o				\
+	src/fec/src/interleaver.o				\
+	src/fec/src/packetizer.o				\
 	src/fec/gentab/reverse_byte.o				\
 	src/fec/src/sumproduct.o				\
 
@@ -291,6 +293,8 @@ fec_autotests :=						\
 	src/fec/tests/fec_secded2216_autotest.c			\
 	src/fec/tests/fec_secded3932_autotest.c			\
 	src/fec/tests/fec_secded7264_autotest.c			\
+	src/fec/tests/interleaver_autotest.c			\
+	src/fec/tests/packetizer_autotest.c			\
 
 
 # benchmarks
@@ -300,6 +304,8 @@ fec_benchmarks :=						\
 	src/fec/bench/fec_decode_benchmark.c			\
 	src/fec/bench/fecsoft_decode_benchmark.c		\
 	src/fec/bench/sumproduct_benchmark.c			\
+	src/fec/bench/interleaver_benchmark.c			\
+	src/fec/bench/packetizer_decode_benchmark.c		\
 
 # 
 # MODULE : fft - fast Fourier transforms, discrete sine/cosine transforms, etc.
@@ -555,9 +561,7 @@ framing_objects :=						\
 	src/framing/src/gmskframesync.o				\
 	src/framing/src/ofdmflexframegen.o			\
 	src/framing/src/ofdmflexframesync.o			\
-	src/framing/src/packetizer.o				\
 	src/framing/src/presync_cccf.o				\
-	src/framing/src/interleaver.o				\
 
 
 # list explicit targets and dependencies here
@@ -592,18 +596,12 @@ src/framing/src/ofdmflexframegen.o : %.o : %.c $(headers)
 
 src/framing/src/ofdmflexframesync.o : %.o : %.c $(headers)
 
-src/framing/src/packetizer.o : %.o : %.c $(headers)
-
 src/framing/src/presync_cccf.o : %.o : %.c $(headers) src/framing/src/presync.c
-
-src/framing/src/interleaver.o : %.o : %.c $(headers)
 
 
 framing_autotests :=						\
 	src/framing/tests/bpacketsync_autotest.c		\
 	src/framing/tests/bsync_autotest.c			\
-	src/framing/tests/packetizer_autotest.c			\
-	src/framing/tests/interleaver_autotest.c		\
 
 
 framing_benchmarks :=						\
@@ -615,8 +613,6 @@ framing_benchmarks :=						\
 	src/framing/bench/flexframesync_benchmark.c		\
 	src/framing/bench/framesync64_benchmark.c		\
 	src/framing/bench/gmskframesync_benchmark.c		\
-	src/framing/bench/interleaver_benchmark.c		\
-	src/framing/bench/packetizer_decode_benchmark.c		\
 
 
 # 
