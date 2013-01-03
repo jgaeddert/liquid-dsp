@@ -42,8 +42,7 @@ There are two primary ways of obtaining the source code:
 
 Once you have obtained a copy of the source code, you can now build the
 DSP library (NOTE: if you chose to clone the repository, you will need
-to also run the additional `./reconf` bootstrapping script before
-configuring):
+to also run the additional `./bootstrap.sh` script before configuring):
 
     $ ./configure
     $ make
