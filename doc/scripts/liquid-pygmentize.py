@@ -98,6 +98,8 @@ def PrintStylesheet():
     print '%'
     print '% auto-generated stylesheet from liquid-pygmentize.py'
     print '%'
+    print '\\makeatletter'
+    print '\\makeatother'
 
 def Pygmentize(_inputfile='', _outputfile=None):
     '''Simple pygmentization of input filename'''
@@ -120,11 +122,14 @@ def Pygmentize(_inputfile='', _outputfile=None):
             sys.exit(2)
 
     # print header
-    print >>f_out, '\\begin{Verbatim}[fontsize=\\small]'
+    # commandchars=\\\\\\{\\}
+    print >>f_out, '\\begin{Verbatim}[numbers=left,firstnumber=1,stepnumber=1,,fontsize=\\small]'
 
     # 'parse' file (simply read each line and print to screen)
     for line in f_in:
-        print >>f_out, line,
+        # TODO: strip out tokens (e.g. 'int', 'float', '#inclue') and make
+        # bold or something
+        print >>f_out, '  ' + line,
     
     # print footer
     print >>f_out, '\\end{Verbatim}'
