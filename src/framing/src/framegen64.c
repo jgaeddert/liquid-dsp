@@ -34,8 +34,6 @@
 
 #include "liquid.internal.h"
 
-#define DEBUG_FRAMEGEN64    0
-
 // internal
 //void framegen64_encode_header(unsigned char * _header_dec, unsigned char * _header_enc);
 
@@ -58,10 +56,9 @@ struct framegen64_s {
 };
 
 // create framegen64 object
-// TODO : remove options for filter parameters (create takes no arguments)
 // TODO : permit different p/n sequence?
-//  _m      :   rrcos filter delay (number of symbols)
-//  _beta   :   rrcos filter excess bandwidth factor
+//  _m      :   root-Nyquist filter delay (number of symbols)
+//  _beta   :   root-Nyquist filter excess bandwidth factor
 framegen64 framegen64_create()
 {
     framegen64 q = (framegen64) malloc(sizeof(struct framegen64_s));
@@ -130,7 +127,7 @@ void framegen64_execute(framegen64      _q,
     scramble_data(_q->payload_enc, 138);
 
     // generate payload symbols
-    // 138 symbols -> 552 
+    // 138 bytes -> 552 symbols
     for (i=0; i<138; i++)
         framegen64_byte_to_syms(_q->payload_enc[i], &(_q->payload_sym[4*i]));
 
