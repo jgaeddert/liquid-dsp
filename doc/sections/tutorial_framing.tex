@@ -234,26 +234,31 @@ Compile the program as before, creating the executable
 Running the program should produce an output similar to this:
 %
 \begin{Verbatim}[fontsize=\small]
-framegen64 [m=3, beta=0.70]:
-    ramp/up symbols     :   16
-    phasing symbols     :   64
-    p/n symbols         :   64
-    header symbols      :   84
-    payload symbols     :   396
-    payload symbols     :   396
-    ramp\down symbols   :   16
-    total symbols       :   640
-  0 :   0.00000000 + j*  0.00000000
-  1 :   0.00000000 + j*  0.00000000
-  2 :  -0.00011255 + j*  0.00000000
-  3 :   0.00014416 + j*  0.00000000
-  4 :   0.00040660 + j*  0.00000000
+framegen64 [m=3, beta=0.50]:
+  preamble/etc.
+    * ramp/up symbols       :   3
+    * p/n symbols           :   64
+    * ramp\down symbols     :   3
+  payload
+    * payload crc           :   CRC (24-bit)
+    * fec (inner)           :   none
+    * fec (outer)           :   Golay(24,12)
+    * payload len, coded    :   150 bytes
+    * modulation scheme     :   qpsk
+    * payload symbols       :   600
+  summary
+    * total symbols         :   670
+    * spectral efficiency   :   0.8597 b/s/Hz
+  0 :  -0.01431707 + j*  0.00000000
+  1 :   0.02657592 + j*  0.00000000
+  2 :   0.03544976 + j*  0.00000000
+  3 :  -0.10071726 + j*  0.00000000
+  4 :  -0.05426330 + j*  0.00000000
         ...
- 25 :   0.04375378 + j*  0.00000000
- 26 :   0.97077769 + j*  0.00000000
- 27 :  -0.04032370 + j*  0.00000000
- 28 :  -1.09209442 + j*  0.00000000
- 29 :   0.03534408 + j*  0.00000000
+ 26 :  -1.28444171 + j*  0.00000000
+ 27 :  -0.30773818 + j*  0.00000000
+ 28 :   1.13364959 + j*  0.00000000
+ 29 :   1.45763326 + j*  0.00000000
 done.
 \end{Verbatim}
 %
@@ -459,27 +464,24 @@ function was indeed invoked.
 Your output should look something like this:
 %
 \begin{Verbatim}[fontsize=\small]
-    framegen64 [m=3, beta=0.70]:
-        ramp/up symbols     :   16
-        phasing symbols     :   64
-        ...
-    framesync64:
-        agc signal min/max  :   -40.0 dB /  30.0dB
-        agc b/w open/closed :   1.00e-03 / 1.00e-05
-        sym b/w open/closed :   8.00e-02 / 5.00e-02
-        pll b/w open/closed :   2.00e-02 / 5.00e-03
-        samples/symbol      :   2
-        filter length       :   3
-        num filters (ppfb)  :   32
-        filter excess b/w   :   0.7000
-        squelch             :   disabled
-        auto-squelch        :   disabled
-        squelch threshold   :   -35.00 dB
-        ----
-        p/n sequence len    :   64
-        payload len         :   64 bytes
-    ***** callback invoked!
-    done.
+framegen64 [m=3, beta=0.50]:
+  preamble/etc.
+    * ramp/up symbols       :   3
+    * p/n symbols           :   64
+    * ramp\down symbols     :   3
+  payload
+    * payload crc           :   CRC (24-bit)
+    * fec (inner)           :   none
+    * fec (outer)           :   Golay(24,12)
+    * payload len, coded    :   150 bytes
+    * modulation scheme     :   qpsk
+    * payload symbols       :   600
+  summary
+    * total symbols         :   670
+    * spectral efficiency   :   0.8597 b/s/Hz
+framesync64:
+***** callback invoked!
+done.
 \end{Verbatim}
 %
 % ignore any lines pertaining to
@@ -619,19 +621,27 @@ Compile and run the program as before.
 The output of your program should look something like this:
 %
 \begin{Verbatim}[fontsize=\small]
-    framegen64 [m=3, beta=0.70]:
-        ramp/up symbols     :   16
-        phasing symbols     :   64
-        ...
-    framesync64:
-        agc signal min/max  :   -40.0 dB /  30.0dB
-        agc b/w open/closed :   1.00e-03 / 1.00e-05
-        ...
-    ***** callback invoked!
-      header (valid)
-      payload (valid)
-    received 1 frames
-    done.
+framegen64 [m=3, beta=0.50]:
+  preamble/etc.
+    * ramp/up symbols       :   3
+    * p/n symbols           :   64
+    * ramp\down symbols     :   3
+  payload
+    * payload crc           :   CRC (24-bit)
+    * fec (inner)           :   none
+    * fec (outer)           :   Golay(24,12)
+    * payload len, coded    :   150 bytes
+    * modulation scheme     :   qpsk
+    * payload symbols       :   600
+  summary
+    * total symbols         :   670
+    * spectral efficiency   :   0.8597 b/s/Hz
+framesync64:
+***** callback invoked!
+  header (valid)
+  payload (valid)
+received 1 frames
+done.
 \end{Verbatim}
 %
 % extra credit

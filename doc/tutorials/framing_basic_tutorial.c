@@ -25,7 +25,7 @@ int main() {
     // EXECUTE generator and assemble the frame
     framegen64_execute(fg, header, payload, y);
 
-    // print a few of the generated frame to the screen
+    // print a few of the generated frame samples to the screen
     for (i=0; i<30; i++)
         printf("%3u : %12.8f + j*%12.8f\n", i, crealf(y[i]), cimagf(y[i]));
 
