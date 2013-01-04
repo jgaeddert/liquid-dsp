@@ -5,7 +5,9 @@ Major improvements since v1.2.0
   * fft
     - general speed improvements
   * framing
-    - adding pre-demodulator synchronizers
+    - adding pre-demodulator synchronizer/detector
+    - completely re-structured frame[gen|sync]64 objects with vastly
+      improved performance
   * matrix
     - adding smatrix family of objects to facilitate operations on
       sparse matrices
