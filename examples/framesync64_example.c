@@ -78,6 +78,7 @@ int main(int argc, char*argv[])
 
     // create frame generator
     framegen64 fg = framegen64_create();
+    framegen64_print(fg);
 
     // create frame synchronizer using default properties
     framesync64 fs = framesync64_create(callback,NULL);

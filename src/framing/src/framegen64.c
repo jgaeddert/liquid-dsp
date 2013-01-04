@@ -45,8 +45,11 @@ struct framegen64_s {
     unsigned int m;         // filter delay (symbols)
     float beta;             // filter excess bandwidth factor
 
-    modem mod;              // QPSK modulator
+    crc_scheme check;       // cyclic redundancy check
+    fec_scheme fec0;        // outer forward error-correction code
+    fec_scheme fec1;        // inner forward error-correction code
     packetizer p_payload;   // payload packetizer
+    modem mod;              // QPSK modulator
 
     float complex pn_sequence[64];  // 64-symbol p/n sequence
 
@@ -79,11 +82,10 @@ framegen64 framegen64_create()
     q->interp = interp_crcf_create_rnyquist(LIQUID_RNYQUIST_ARKAISER,2,q->m,q->beta,0);
 
     // create payload packetizer
-    unsigned int n      = 72;
-    crc_scheme check    = LIQUID_CRC_24;
-    fec_scheme fec0     = LIQUID_FEC_NONE;
-    fec_scheme fec1     = LIQUID_FEC_GOLAY2412;
-    q->p_payload = packetizer_create(n, check, fec0, fec1);
+    q->check     = LIQUID_CRC_24;
+    q->fec0      = LIQUID_FEC_NONE;
+    q->fec1      = LIQUID_FEC_GOLAY2412;
+    q->p_payload = packetizer_create(72, q->check, q->fec0, q->fec1);
     assert( packetizer_get_enc_msg_len(q->p_payload) == 150 );
 
     // create modulator
@@ -107,12 +109,22 @@ void framegen64_destroy(framegen64 _q)
 // print framegen64 object internals
 void framegen64_print(framegen64 _q)
 {
+    float eta = (float) (8*(64 + 8)) / (float) 670;
     printf("framegen64 [m=%u, beta=%4.2f]:\n", _q->m, _q->beta);
-    printf("    ramp/up symbols     :   %u\n", 3);
-    printf("    p/n symbols         :   64\n");
-    printf("    payload symbols     :   600\n");
-    printf("    ramp\\down symbols   :   %u\n", 3);
-    printf("    total symbols       :   670\n");
+    printf("  preamble/etc.\n");
+    printf("    * ramp/up symbols       :   %u\n", 3);
+    printf("    * p/n symbols           :   64\n");
+    printf("    * ramp\\down symbols     :   %u\n", 3);
+    printf("  payload\n");
+    printf("    * payload crc           :   %s\n", crc_scheme_str[_q->check][1]);
+    printf("    * fec (inner)           :   %s\n", fec_scheme_str[_q->fec0][1]);
+    printf("    * fec (outer)           :   %s\n", fec_scheme_str[_q->fec1][1]);
+    printf("    * payload len, coded    :   %u bytes\n", 150);
+    printf("    * modulation scheme     :   %s\n", modulation_types[LIQUID_MODEM_QPSK].name);
+    printf("    * payload symbols       :   600\n");
+    printf("  summary\n");
+    printf("    * total symbols         :   670\n");
+    printf("    * spectral efficiency   :   %6.4f b/s/Hz\n", eta);
 }
 
 // execute frame generator (creates a frame)
