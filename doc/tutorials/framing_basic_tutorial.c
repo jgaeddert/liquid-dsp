@@ -6,22 +6,18 @@
 #include <liquid/liquid.h>
 
 int main() {
-    // options
-    unsigned int m=3;               // filter length (symbols)
-    float beta=0.7f;                // filter excess bandwidth factor
-
     // allocate memory for arrays
-    unsigned char header[12];       // data header
+    unsigned char header[8];        // data header
     unsigned char payload[64];      // data payload
-    float complex y[1280];          // frame samples
+    float complex y[1340];          // frame samples
 
     // CREATE frame generator
-    framegen64 fg = framegen64_create(m,beta);
+    framegen64 fg = framegen64_create();
     framegen64_print(fg);
 
     // initialize header, payload
     unsigned int i;
-    for (i=0; i<12; i++)
+    for (i=0; i<8; i++)
         header[i] = i;
     for (i=0; i<64; i++)
         payload[i] = rand() & 0xff;
