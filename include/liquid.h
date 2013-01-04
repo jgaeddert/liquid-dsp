@@ -587,6 +587,156 @@ void fec_decode_soft(fec _q,
                      unsigned char * _msg_enc,
                      unsigned char * _msg_dec);
 
+// 
+// Packetizer
+//
+
+// computes the number of encoded bytes after packetizing
+//
+//  _n      :   number of uncoded input bytes
+//  _crc    :   error-detecting scheme
+//  _fec0   :   inner forward error-correction code
+//  _fec1   :   outer forward error-correction code
+unsigned int packetizer_compute_enc_msg_len(unsigned int _n,
+                                            int _crc,
+                                            int _fec0,
+                                            int _fec1);
+
+// computes the number of decoded bytes before packetizing
+//
+//  _k      :   number of encoded bytes
+//  _crc    :   error-detecting scheme
+//  _fec0   :   inner forward error-correction code
+//  _fec1   :   outer forward error-correction code
+unsigned int packetizer_compute_dec_msg_len(unsigned int _k,
+                                            int _crc,
+                                            int _fec0,
+                                            int _fec1);
+
+typedef struct packetizer_s * packetizer;
+
+// create packetizer object
+//
+//  _n      :   number of uncoded input bytes
+//  _crc    :   error-detecting scheme
+//  _fec0   :   inner forward error-correction code
+//  _fec1   :   outer forward error-correction code
+packetizer packetizer_create(unsigned int _dec_msg_len,
+                             int _crc,
+                             int _fec0,
+                             int _fec1);
+
+// re-create packetizer object
+//
+//  _p      :   initialz packetizer object
+//  _n      :   number of uncoded input bytes
+//  _crc    :   error-detecting scheme
+//  _fec0   :   inner forward error-correction code
+//  _fec1   :   outer forward error-correction code
+packetizer packetizer_recreate(packetizer _p,
+                               unsigned int _dec_msg_len,
+                               int _crc,
+                               int _fec0,
+                               int _fec1);
+
+// destroy packetizer object
+void packetizer_destroy(packetizer _p);
+
+// print packetizer object internals
+void packetizer_print(packetizer _p);
+
+unsigned int packetizer_get_dec_msg_len(packetizer _p);
+unsigned int packetizer_get_enc_msg_len(packetizer _p);
+
+
+// packetizer_encode()
+//
+// Execute the packetizer on an input message
+//
+//  _p      :   packetizer object
+//  _msg    :   input message (uncoded bytes)
+//  _pkt    :   encoded output message
+void packetizer_encode(packetizer _p,
+                       unsigned char * _msg,
+                       unsigned char * _pkt);
+
+// packetizer_decode()
+//
+// Execute the packetizer to decode an input message, return validity
+// check of resulting data
+//
+//  _p      :   packetizer object
+//  _pkt    :   input message (coded bytes)
+//  _msg    :   decoded output message
+int  packetizer_decode(packetizer _p,
+                       unsigned char * _pkt,
+                       unsigned char * _msg);
+
+// Execute the packetizer to decode an input message, return validity
+// check of resulting data
+//
+//  _p      :   packetizer object
+//  _pkt    :   input message (coded soft bits)
+//  _msg    :   decoded output message
+int  packetizer_decode_soft(packetizer _p,
+                            unsigned char * _pkt,
+                            unsigned char * _msg);
+
+
+//
+// interleaver
+//
+typedef struct interleaver_s * interleaver;
+
+// create interleaver
+//   _n     : number of bytes
+interleaver interleaver_create(unsigned int _n);
+
+// destroy interleaver object
+void interleaver_destroy(interleaver _q);
+
+// print interleaver object internals
+void interleaver_print(interleaver _q);
+
+// set depth (number of internal iterations)
+//  _q      :   interleaver object
+//  _depth  :   depth
+void interleaver_set_depth(interleaver _q,
+                           unsigned int _depth);
+
+// execute forward interleaver (encoder)
+//  _q          :   interleaver object
+//  _msg_dec    :   decoded (un-interleaved) message
+//  _msg_enc    :   encoded (interleaved) message
+void interleaver_encode(interleaver _q,
+                        unsigned char * _msg_dec,
+                        unsigned char * _msg_enc);
+
+// execute forward interleaver (encoder) on soft bits
+//  _q          :   interleaver object
+//  _msg_dec    :   decoded (un-interleaved) message
+//  _msg_enc    :   encoded (interleaved) message
+void interleaver_encode_soft(interleaver _q,
+                             unsigned char * _msg_dec,
+                             unsigned char * _msg_enc);
+
+// execute reverse interleaver (decoder)
+//  _q          :   interleaver object
+//  _msg_enc    :   encoded (interleaved) message
+//  _msg_dec    :   decoded (un-interleaved) message
+void interleaver_decode(interleaver _q,
+                        unsigned char * _msg_enc,
+                        unsigned char * _msg_dec);
+
+// execute reverse interleaver (decoder) on soft bits
+//  _q          :   interleaver object
+//  _msg_enc    :   encoded (interleaved) message
+//  _msg_dec    :   decoded (un-interleaved) message
+void interleaver_decode_soft(interleaver _q,
+                             unsigned char * _msg_enc,
+                             unsigned char * _msg_dec);
+
+
 
 //
 // MODULE : fft (fast Fourier transform)
@@ -2438,156 +2588,6 @@ int detector_cccf_correlate(detector_cccf        _q,
                             float *              _tau_hat,
                             float *              _dphi_hat,
                             float *              _gamma_hat);
-
-
-// 
-// Packetizer
-//
-
-// computes the number of encoded bytes after packetizing
-//
-//  _n      :   number of uncoded input bytes
-//  _crc    :   error-detecting scheme
-//  _fec0   :   inner forward error-correction code
-//  _fec1   :   outer forward error-correction code
-unsigned int packetizer_compute_enc_msg_len(unsigned int _n,
-                                            int _crc,
-                                            int _fec0,
-                                            int _fec1);
-
-// computes the number of decoded bytes before packetizing
-//
-//  _k      :   number of encoded bytes
-//  _crc    :   error-detecting scheme
-//  _fec0   :   inner forward error-correction code
-//  _fec1   :   outer forward error-correction code
-unsigned int packetizer_compute_dec_msg_len(unsigned int _k,
-                                            int _crc,
-                                            int _fec0,
-                                            int _fec1);
-
-typedef struct packetizer_s * packetizer;
-
-// create packetizer object
-//
-//  _n      :   number of uncoded input bytes
-//  _crc    :   error-detecting scheme
-//  _fec0   :   inner forward error-correction code
-//  _fec1   :   outer forward error-correction code
-packetizer packetizer_create(unsigned int _dec_msg_len,
-                             int _crc,
-                             int _fec0,
-                             int _fec1);
-
-// re-create packetizer object
-//
-//  _p      :   initialz packetizer object
-//  _n      :   number of uncoded input bytes
-//  _crc    :   error-detecting scheme
-//  _fec0   :   inner forward error-correction code
-//  _fec1   :   outer forward error-correction code
-packetizer packetizer_recreate(packetizer _p,
-                               unsigned int _dec_msg_len,
-                               int _crc,
-                               int _fec0,
-                               int _fec1);
-
-// destroy packetizer object
-void packetizer_destroy(packetizer _p);
-
-// print packetizer object internals
-void packetizer_print(packetizer _p);
-
-unsigned int packetizer_get_dec_msg_len(packetizer _p);
-unsigned int packetizer_get_enc_msg_len(packetizer _p);
-
-
-// packetizer_encode()
-//
-// Execute the packetizer on an input message
-//
-//  _p      :   packetizer object
-//  _msg    :   input message (uncoded bytes)
-//  _pkt    :   encoded output message
-void packetizer_encode(packetizer _p,
-                       unsigned char * _msg,
-                       unsigned char * _pkt);
-
-// packetizer_decode()
-//
-// Execute the packetizer to decode an input message, return validity
-// check of resulting data
-//
-//  _p      :   packetizer object
-//  _pkt    :   input message (coded bytes)
-//  _msg    :   decoded output message
-int  packetizer_decode(packetizer _p,
-                       unsigned char * _pkt,
-                       unsigned char * _msg);
-
-// Execute the packetizer to decode an input message, return validity
-// check of resulting data
-//
-//  _p      :   packetizer object
-//  _pkt    :   input message (coded soft bits)
-//  _msg    :   decoded output message
-int  packetizer_decode_soft(packetizer _p,
-                            unsigned char * _pkt,
-                            unsigned char * _msg);
-
-
-//
-// interleaver
-//
-typedef struct interleaver_s * interleaver;
-
-// create interleaver
-//   _n     : number of bytes
-interleaver interleaver_create(unsigned int _n);
-
-// destroy interleaver object
-void interleaver_destroy(interleaver _q);
-
-// print interleaver object internals
-void interleaver_print(interleaver _q);
-
-// set depth (number of internal iterations)
-//  _q      :   interleaver object
-//  _depth  :   depth
-void interleaver_set_depth(interleaver _q,
-                           unsigned int _depth);
-
-// execute forward interleaver (encoder)
-//  _q          :   interleaver object
-//  _msg_dec    :   decoded (un-interleaved) message
-//  _msg_enc    :   encoded (interleaved) message
-void interleaver_encode(interleaver _q,
-                        unsigned char * _msg_dec,
-                        unsigned char * _msg_enc);
-
-// execute forward interleaver (encoder) on soft bits
-//  _q          :   interleaver object
-//  _msg_dec    :   decoded (un-interleaved) message
-//  _msg_enc    :   encoded (interleaved) message
-void interleaver_encode_soft(interleaver _q,
-                             unsigned char * _msg_dec,
-                             unsigned char * _msg_enc);
-
-// execute reverse interleaver (decoder)
-//  _q          :   interleaver object
-//  _msg_enc    :   encoded (interleaved) message
-//  _msg_dec    :   decoded (un-interleaved) message
-void interleaver_decode(interleaver _q,
-                        unsigned char * _msg_enc,
-                        unsigned char * _msg_dec);
-
-// execute reverse interleaver (decoder) on soft bits
-//  _q          :   interleaver object
-//  _msg_enc    :   encoded (interleaved) message
-//  _msg_dec    :   decoded (un-interleaved) message
-void interleaver_decode_soft(interleaver _q,
-                             unsigned char * _msg_enc,
-                             unsigned char * _msg_dec);
 
 
 //

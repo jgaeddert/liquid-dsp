@@ -1,7 +1,5 @@
 ## 
-## Copyright (c) 2007, 2008, 2009, 2010, 2011, 2012 Joseph Gaeddert
-## Copyright (c) 2007, 2008, 2009, 2010, 2011, 2012 Virginia Polytechnic
-##                                      Institute & State University
+## Copyright (c) 2007, 2008, 2009, 2010, 2011, 2012, 2013 Joseph Gaeddert
 ##
 ## This file is part of liquid.
 ##
@@ -198,7 +196,9 @@ AC_CHECK_PROG(PYGMENTIZE,   pygmentize,     pygmentize,     no)
 AC_CHECK_PROG(PYGMENTIZE24, pygmentize-2.4, pygmentize-2.4, no)
 if [ test "$PYGMENTIZE" == "no" ]; then
     if [ test "$PYGMENTIZE24" == "no" ]; then
-        AC_MSG_WARN(pygmentize required to build documentation)
+        # use uglier, but functional built-in homebrewed code listing generator
+        AC_MSG_WARN(pygmentize not found; using ./scripts/liquid-pygmentize.py as ugly alternative)
+        PYGMENTIZE="./scripts/liquid-pygmentize.py"
     else
         PYGMENTIZE="pygmentize-2.4"
     fi
