@@ -1,5 +1,8 @@
 
 Major improvements since v1.2.0
+  * documentation
+    - added script to auto-generate code listings when pygmentize
+      is unavailable (not as good, but still functional)
   * dotprod
     - adding method to compute x^T * x of a vector (sum of squares)
   * fft
