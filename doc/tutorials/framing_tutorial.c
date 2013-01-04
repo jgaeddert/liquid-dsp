@@ -35,7 +35,7 @@ int main() {
     // allocate memory for arrays
     unsigned char header[8];        // data header
     unsigned char payload[64];      // data payload
-    float complex y[1340];          // frame samples
+    float complex y[FRAME64_LEN];   // frame samples
 
     // create frame generator
     framegen64 fg = framegen64_create();
@@ -59,14 +59,14 @@ int main() {
     // add channel impairments (attenuation, carrier offset, noise)
     float nstd  = powf(10.0f, noise_floor/20.0f);        // noise std. dev.
     float gamma = powf(10.0f, (SNRdB+noise_floor)/20.0f);// channel gain
-    for (i=0; i<1340; i++) {
+    for (i=0; i<FRAME64_LEN; i++) {
         y[i] *= gamma;
         y[i] *= cexpf(_Complex_I*(phase_offset + i*frequency_offset));
         y[i] += nstd * (randnf() + _Complex_I*randnf())*M_SQRT1_2;
     }
 
     // EXECUTE synchronizer and receive the frame one sample at a time
-    for (i=0; i<1340; i++)
+    for (i=0; i<FRAME64_LEN; i++)
         framesync64_execute(fs, &y[i], 1);
 
     // DESTROY objects

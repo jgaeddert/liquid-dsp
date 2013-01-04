@@ -21,7 +21,7 @@ int main() {
     // allocate memory for arrays
     unsigned char header[8];        // data header
     unsigned char payload[64];      // data payload
-    float complex y[1340];          // frame samples
+    float complex y[FRAME64_LEN];   // frame samples
 
     // create frame generator
     framegen64 fg = framegen64_create();
@@ -43,7 +43,7 @@ int main() {
     framegen64_execute(fg, header, payload, y);
 
     // EXECUTE synchronizer and receive the entire frame at once
-    framesync64_execute(fs, y, 1340);
+    framesync64_execute(fs, y, FRAME64_LEN);
 
     // DESTROY objects
     framegen64_destroy(fg);

@@ -2044,6 +2044,10 @@ typedef void (*framesync_csma_callback)(void * _userdata);
 //
 // Basic frame generator (64 bytes data payload)
 //
+
+// frame length in samples
+#define FRAME64_LEN (1340)
+
 typedef struct framegen64_s * framegen64;
 
 // create frame generator
@@ -2059,19 +2063,19 @@ void framegen64_print(framegen64 _q);
 //  _q          :   frame generator object
 //  _header     :   8-byte header data
 //  _payload    :   64-byte payload data
-//  _frame      :   output frame samples [size: 1340 x 1]
+//  _frame      :   output frame samples [size: FRAME64_LEN x 1]
 void framegen64_execute(framegen64             _q,
                         unsigned char *        _header,
                         unsigned char *        _payload,
                         liquid_float_complex * _frame);
 
 // Basic frame synchronizer (64 bytes data payload) callback
-//  _header         :   NULL
-//  _header_valid   :   0
-//  _payload        :   pointer to decoded payload [size: 64 x 1]
-//  _payload_valid  :   payload passed cyclic redundancy check? 1 (yes), 0 (no)
-//  _stats          :   frame statistics structure
-//  _userdata       :   user-defined data pointer
+//  _header         :   header data [size: 8 bytes]
+//  _header_valid   :   is header valid? (0:no, 1:yes)
+//  _payload        :   payload data [size: 64 x 1]
+//  _payload_valid  :   is payload valid? (0:no, 1:yes)
+//  _stats          :   frame statistics object
+//  _userdata       :   pointer to userdata
 typedef int (*framesync64_callback)(unsigned char *  _header,
                                     int              _header_valid,
                                     unsigned char *  _payload,
@@ -2146,23 +2150,20 @@ void flexframegen_flush(flexframegen _fg,
 // frame synchronizer
 
 // callback
-//  _header             :   header data [size: 8 bytes]
-//  _header_valid       :   is header valid? (0:no, 1:yes)
-//  _payload            :   payload data [size: _payload_len]
-//  _payload_len        :   length of payload (bytes)
-//  _payload_valid      :   is payload valid? (0:no, 1:yes)
-//  _userdata           :   pointer to userdata
-//
-// extensions:
-//  _frame_samples      :   frame symbols (synchronized modem) [size: _framesyms_len]
-//  _frame_samples_len  :   number of frame symbols
-typedef int (*flexframesync_callback)(unsigned char * _header,
-                                      int _header_valid,
-                                      unsigned char * _payload,
-                                      unsigned int _payload_len,
-                                      int _payload_valid,
+//  _header         :   header data [size: 8 bytes]
+//  _header_valid   :   is header valid? (0:no, 1:yes)
+//  _payload        :   payload data [size: _payload_len]
+//  _payload_len    :   length of payload (bytes)
+//  _payload_valid  :   is payload valid? (0:no, 1:yes)
+//  _stats          :   frame statistics object
+//  _userdata       :   pointer to userdata
+typedef int (*flexframesync_callback)(unsigned char *  _header,
+                                      int              _header_valid,
+                                      unsigned char *  _payload,
+                                      unsigned int     _payload_len,
+                                      int              _payload_valid,
                                       framesyncstats_s _stats,
-                                      void * _userdata);
+                                      void *           _userdata);
 typedef struct flexframesync_s * flexframesync;
 
 // create flexframesync object

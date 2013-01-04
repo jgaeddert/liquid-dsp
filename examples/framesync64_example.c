@@ -71,7 +71,7 @@ int main(int argc, char*argv[])
     }
 
     // derived values
-    unsigned int frame_len = 1340;              // fixed frame length
+    unsigned int frame_len = FRAME64_LEN;       // fixed frame length
     unsigned int num_samples = frame_len + 200; // total number of samples
     float nstd  = powf(10.0f, noise_floor/20.0f);         // noise std. dev.
     float gamma = powf(10.0f, (SNRdB+noise_floor)/20.0f); // channel gain
