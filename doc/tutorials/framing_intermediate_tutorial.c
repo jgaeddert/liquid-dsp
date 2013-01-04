@@ -28,8 +28,7 @@ int main() {
     framegen64_print(fg);
 
     // create frame synchronizer using default properties
-    framesync64 fs = framesync64_create(mycallback,
-                                        NULL);
+    framesync64 fs = framesync64_create(mycallback, NULL);
     framesync64_print(fs);
 
     // initialize header, payload
