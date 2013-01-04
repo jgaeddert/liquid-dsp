@@ -15,6 +15,7 @@ local_pgffiles :=					\
 	figures.pgf/bpacket_structure.pdf		\
 	figures.pgf/fft_plan_diagram.pdf		\
 	figures.pgf/fft_spgram_diagram.pdf		\
+	figures.pgf/frame64_structure.pdf		\
 	figures.pgf/framing_structure.pdf		\
 	figures.pgf/msresamp_decim_diagram.pdf		\
 	figures.pgf/msresamp_interp_diagram.pdf		\
