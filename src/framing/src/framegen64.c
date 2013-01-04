@@ -34,8 +34,12 @@
 
 #include "liquid.internal.h"
 
-// internal
-//void framegen64_encode_header(unsigned char * _header_dec, unsigned char * _header_enc);
+// 
+// internal method declarations
+//
+
+// assemble and encode payload
+//void framegen64_encode_payload(framegen64 _q);
 
 struct framegen64_s {
     unsigned int m;         // filter delay (symbols)
@@ -47,9 +51,9 @@ struct framegen64_s {
     float complex pn_sequence[64];  // 64-symbol p/n sequence
 
     // payload (QPSK)
-    unsigned char payload_dec[64];  // 64 bytes decoded payload data
-    unsigned char payload_enc[138]; // 138 = 64 bytes, crc16, g2412
-    unsigned char payload_sym[552]; // 552 = 138 bytes * 8 bits/bytes / 2 bits/symbol
+    unsigned char payload_dec[72];  // 72 bytes decoded payload data (8 header, 64 payload)
+    unsigned char payload_enc[150]; // 150 = (8-byte header, 64-byte payload)=72, crc24, g2412
+    unsigned char payload_sym[600]; // 600 = 150 bytes * 8 bits/bytes / 2 bits/symbol
 
     // pulse-shaping filter
     interp_crcf interp;
@@ -57,8 +61,6 @@ struct framegen64_s {
 
 // create framegen64 object
 // TODO : permit different p/n sequence?
-//  _m      :   root-Nyquist filter delay (number of symbols)
-//  _beta   :   root-Nyquist filter excess bandwidth factor
 framegen64 framegen64_create()
 {
     framegen64 q = (framegen64) malloc(sizeof(struct framegen64_s));
@@ -77,11 +79,12 @@ framegen64 framegen64_create()
     q->interp = interp_crcf_create_rnyquist(LIQUID_RNYQUIST_ARKAISER,2,q->m,q->beta,0);
 
     // create payload packetizer
-    unsigned int n      = 64;
-    crc_scheme check    = LIQUID_CRC_32;
+    unsigned int n      = 72;
+    crc_scheme check    = LIQUID_CRC_24;
     fec_scheme fec0     = LIQUID_FEC_NONE;
     fec_scheme fec1     = LIQUID_FEC_GOLAY2412;
     q->p_payload = packetizer_create(n, check, fec0, fec1);
+    assert( packetizer_get_enc_msg_len(q->p_payload) == 150 );
 
     // create modulator
     q->mod = modem_create(LIQUID_MODEM_QPSK);
@@ -107,28 +110,34 @@ void framegen64_print(framegen64 _q)
     printf("framegen64 [m=%u, beta=%4.2f]:\n", _q->m, _q->beta);
     printf("    ramp/up symbols     :   %u\n", 3);
     printf("    p/n symbols         :   64\n");
-    printf("    payload symbols     :   552\n");
+    printf("    payload symbols     :   600\n");
     printf("    ramp\\down symbols   :   %u\n", 3);
-    printf("    total symbols       :   622\n");
+    printf("    total symbols       :   670\n");
 }
 
 // execute frame generator (creates a frame)
 //  _q          :   frame generator object
-//  _payload    :   64-byte input payload
-//  _frame      :   1244-sample frame
+//  _header     :   8-byte header data
+//  _payload    :   64-byte payload data
+//  _frame      :   output frame samples [size: 1340 x 1]
 void framegen64_execute(framegen64      _q,
+                        unsigned char * _header,
                         unsigned char * _payload,
                         float complex * _frame)
 {
     unsigned int i;
 
+    // concatenate header and payload
+    memmove(&_q->payload_dec[0], _header,   8*sizeof(unsigned char));
+    memmove(&_q->payload_dec[8], _payload, 64*sizeof(unsigned char));
+
     // encode payload and scramble result
-    packetizer_encode(_q->p_payload, _payload, _q->payload_enc);
-    scramble_data(_q->payload_enc, 138);
+    packetizer_encode(_q->p_payload, _q->payload_dec, _q->payload_enc);
+    scramble_data(_q->payload_enc, 150);
 
     // generate payload symbols
-    // 138 bytes -> 552 symbols
-    for (i=0; i<138; i++)
+    // 150 bytes -> 600 symbols
+    for (i=0; i<150; i++)
         framegen64_byte_to_syms(_q->payload_enc[i], &(_q->payload_sym[4*i]));
 
     unsigned int n=0;
@@ -144,19 +153,19 @@ void framegen64_execute(framegen64      _q,
 
     float complex x;
     // payload
-    for (i=0; i<552; i++) {
+    for (i=0; i<600; i++) {
         modem_modulate(_q->mod, _q->payload_sym[i], &x);
         interp_crcf_execute(_q->interp, x, &_frame[n]);
         n+=2;
     }
 
-    // settling
-    for (i=0; i<6; i++) {
+    // interpolator settling
+    for (i=0; i<2*_q->m; i++) {
         interp_crcf_execute(_q->interp, 0.0f, &_frame[n]);
         n+=2;
     }
 
-    assert(n==1244);
+    assert(n==1340);
 }
 
 

@@ -85,7 +85,7 @@ struct framesync64_s {
     
     float complex pn_sequence[64];  // known 64-symbol p/n sequence
     float complex pn_syms[64];      // received p/n symbols
-    float complex payload_syms[552];// payload symbols
+    float complex payload_syms[600];// payload symbols
 
     // synchronizer objects
     detector_cccf frame_detector;   // pre-demod detector
@@ -107,8 +107,8 @@ struct framesync64_s {
 
     // payload decoder
     packetizer p_payload;           // payload packetizer
-    unsigned char payload_enc[138]; // encoded payload bytes
-    unsigned char payload_dec[64];  // decoded pyaload bytes
+    unsigned char payload_enc[150]; // encoded payload bytes
+    unsigned char payload_dec[72];  // decoded pyaload bytes
     int crc_pass;                   // flag to determine if payload passed
     
     // status variables
@@ -125,8 +125,8 @@ struct framesync64_s {
 
 #if DEBUG_FRAMESYNC64
     windowcf debug_x;               // debug: raw input samples
-    float debug_symsync_index[616]; // symbol synchronizer phase, 616 = 64 + 552
-    float debug_nco_phase[616];     // fine-tuned nco phase, 616 = 64 + 552
+    float debug_symsync_index[664]; // symbol synchronizer phase, 664 = 64 + 600
+    float debug_nco_phase[664];     // fine-tuned nco phase, 664 = 64 + 600
 #endif
 };
 
@@ -181,11 +181,11 @@ framesync64 framesync64_create(framesync64_callback _callback,
     q->demod = modem_create(LIQUID_MODEM_QPSK);
 
     // create payload packet decoder
-    unsigned int n   = 64;
-    crc_scheme check = LIQUID_CRC_32;
+    unsigned int n   = 72;
+    crc_scheme check = LIQUID_CRC_24;
     fec_scheme fec0  = LIQUID_FEC_NONE;
     fec_scheme fec1  = LIQUID_FEC_GOLAY2412;
-    assert(packetizer_compute_enc_msg_len(n, check, fec0, fec1)==138);
+    assert(packetizer_compute_enc_msg_len(n, check, fec0, fec1)==150);
     q->p_payload = packetizer_create(n, check, fec0, fec1);
 
 #if DEBUG_FRAMESYNC64
@@ -575,27 +575,27 @@ void framesync64_execute_rxpayload(framesync64   _q,
         // increment counter
         _q->payload_counter++;
 
-        if (_q->payload_counter == 552) {
+        if (_q->payload_counter == 600) {
             // decode payload and invoke callback
             framesync64_decode_payload(_q);
             
             if (_q->callback != NULL) {
                 // invoke user-defined callback function
-                _q->framestats.evm           = 20*log10f(sqrtf(_q->framestats.evm / 552.0f));
+                _q->framestats.evm           = 20*log10f(sqrtf(_q->framestats.evm / 600.0f));
                 _q->framestats.rssi          = 20*log10f(_q->gamma_hat);
                 _q->framestats.cfo           = nco_crcf_get_frequency(_q->nco_coarse) +
                                                nco_crcf_get_frequency(_q->nco_fine) / 2.0f;
                 _q->framestats.framesyms     = _q->payload_syms;
-                _q->framestats.num_framesyms = 552;
+                _q->framestats.num_framesyms = 600;
                 _q->framestats.mod_scheme    = LIQUID_MODEM_QPSK;
                 _q->framestats.mod_bps       = 2;
-                _q->framestats.check         = LIQUID_CRC_32;
+                _q->framestats.check         = LIQUID_CRC_24;
                 _q->framestats.fec0          = LIQUID_FEC_NONE;
                 _q->framestats.fec1          = LIQUID_FEC_GOLAY2412;
 
-                _q->callback(NULL,
-                             0,
-                             _q->payload_dec,
+                _q->callback(_q->payload_dec,
+                             _q->crc_pass,
+                             &_q->payload_dec[8],
                              _q->crc_pass,
                              _q->framestats,
                              _q->userdata);
@@ -635,7 +635,7 @@ void framesync64_csma_unlock(framesync64 _q)
 void framesync64_decode_payload(framesync64 _q)
 {
     // unscramble data
-    unscramble_data(_q->payload_enc, 138);
+    unscramble_data(_q->payload_enc, 150);
 
     // decode payload
     _q->crc_pass =
@@ -699,9 +699,9 @@ void framesync64_debug_print(framesync64 _q)
         fprintf(fid,"pn_syms(%4u) = %12.4e + j*%12.4e;\n", i+1, crealf(rc[i]), cimagf(rc[i]));
 
     // write payload symbols
-    fprintf(fid,"payload_syms = zeros(1,552);\n");
+    fprintf(fid,"payload_syms = zeros(1,600);\n");
     rc = _q->payload_syms;
-    for (i=0; i<552; i++)
+    for (i=0; i<600; i++)
         fprintf(fid,"payload_syms(%4u) = %12.4e + j*%12.4e;\n", i+1, crealf(rc[i]), cimagf(rc[i]));
 
     fprintf(fid,"figure;\n");
@@ -715,9 +715,9 @@ void framesync64_debug_print(framesync64 _q)
     fprintf(fid,"axis square;\n");
 
     // NCO, timing, etc.
-    fprintf(fid,"symsync_index = zeros(1,616);\n");
-    fprintf(fid,"nco_phase     = zeros(1,616);\n");
-    for (i=0; i<616; i++) {
+    fprintf(fid,"symsync_index = zeros(1,664);\n");
+    fprintf(fid,"nco_phase     = zeros(1,664);\n");
+    for (i=0; i<664; i++) {
         fprintf(fid,"symsync_index(%4u) = %12.4e;\n", i+1, _q->debug_symsync_index[i]);
         fprintf(fid,"nco_phase(%4u)     = %12.4e;\n", i+1, _q->debug_nco_phase[i]);
     }

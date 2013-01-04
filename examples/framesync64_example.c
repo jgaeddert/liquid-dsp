@@ -41,7 +41,8 @@ static int callback(unsigned char *  _header,
                     framesyncstats_s _stats,
                     void *           _userdata);
 
-// global payload arrays
+// global arrays
+unsigned char header[8];
 unsigned char payload[64];
 
 int main(int argc, char*argv[])
@@ -70,7 +71,7 @@ int main(int argc, char*argv[])
     }
 
     // derived values
-    unsigned int frame_len = 1244;              // fixed frame length
+    unsigned int frame_len = 1340;              // fixed frame length
     unsigned int num_samples = frame_len + 200; // total number of samples
     float nstd  = powf(10.0f, noise_floor/20.0f);         // noise std. dev.
     float gamma = powf(10.0f, (SNRdB+noise_floor)/20.0f); // channel gain
@@ -84,7 +85,9 @@ int main(int argc, char*argv[])
 
     // data payload
     unsigned int i;
-    // initialize payload
+    // initialize header and payload data
+    for (i=0; i<8; i++)
+        header[i] = i;
     for (i=0; i<64; i++)
         payload[i] = rand() & 0xff;
 
@@ -93,7 +96,7 @@ int main(int argc, char*argv[])
     float complex y[num_samples];   // received sequence
     
     // generate the frame
-    framegen64_execute(fg, payload, frame);
+    framegen64_execute(fg, header, payload, frame);
 
     // fractional sample timing offset
     unsigned int d = 11;    // fractional sample filter delay
@@ -174,9 +177,15 @@ static int callback(unsigned char *  _header,
     printf("    payload CRC         : %s\n", crc_scheme_str[_stats.check][1]);
     printf("    payload fec (inner) : %s\n", fec_scheme_str[_stats.fec0][1]);
     printf("    payload fec (outer) : %s\n", fec_scheme_str[_stats.fec1][1]);
-    //printf("    header crc          : %s\n", _header_valid ?  "pass" : "FAIL");
+    printf("    header crc          : %s\n", _header_valid ? "pass" : "FAIL");
+    printf("    header data         : %.2x %.2x %.2x %.2x %.2x %.2x %.2x %.2x\n",
+            _header[0], _header[1], _header[2], _header[3],
+            _header[4], _header[5], _header[6], _header[7]);
+    printf("    num header errors   : %u / %u\n",
+            count_bit_errors_array(_header, header, 8),
+            8*8);
     printf("    payload crc         : %s\n", _payload_valid ? "pass" : "FAIL");
-    printf("    num bit errors      : %u / %u\n",
+    printf("    num payload errors  : %u / %u\n",
             count_bit_errors_array(_payload, payload, 64),
             64*8);
 
