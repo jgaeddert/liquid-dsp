@@ -163,8 +163,8 @@ static int frame64_fer_callback(unsigned char *  _rx_header,
     // specify that frame was detected
     simdata->frame_detected = 1;
 
-    // specify that header was detected
-    simdata->header_decoded = 1;
+    if (_rx_header_valid)
+        simdata->header_decoded = 1;
 
     if (_rx_payload_valid)
         simdata->payload_decoded = 1;
