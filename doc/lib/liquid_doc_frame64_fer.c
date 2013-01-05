@@ -9,11 +9,11 @@
 
 #include "liquid.doc.h"
 
-static int frame64_fer_callback(unsigned char *  _rx_header,
-                                int              _rx_header_valid,
-                                unsigned char *  _rx_payload,
-                                //unsigned int     _rx_payload_len,
-                                int              _rx_payload_valid,
+static int frame64_fer_callback(unsigned char *  _header,
+                                int              _header_valid,
+                                unsigned char *  _payload,
+                                unsigned int     _payload_len,
+                                int              _payload_valid,
                                 framesyncstats_s _stats,
                                 void *           _userdata);
 
@@ -31,9 +31,6 @@ void frame64_fer(unsigned int  _num_frames,
 {
     // TODO: validate options
     // get options
-    unsigned int k          = 2;
-    unsigned int m          = 3;
-    float beta              = 0.5f;
     unsigned int num_frames = _num_frames;
     float noise_floor       = -40.0f;   // do not change
     float SNRdB             = _SNRdB;
@@ -52,7 +49,7 @@ void frame64_fer(unsigned int  _num_frames,
     // allocate buffers
     unsigned char header[8];    // header data
     unsigned char payload[64];  // payload data
-    float complex buffer[1340]; // output frame buffer
+    float complex buffer[FRAME64_LEN]; // output frame buffer
 
     // channel objects
     nco_crcf nco_channel = nco_crcf_create(LIQUID_VCO);
@@ -95,17 +92,16 @@ void frame64_fer(unsigned int  _num_frames,
         }
 
         // add channel impairments
-        int frame_complete = 0;
-        for (i=0; i<1340; i++) {
+        for (i=0; i<FRAME64_LEN; i++) {
             buffer[i] *= gamma;
             buffer[i] += nstd * (randnf() + _Complex_I*randnf()) * M_SQRT1_2;
         }
 
         // push frame through synchronizer
-        framesync64_execute(fs, buffer, 1340);
+        framesync64_execute(fs, buffer, FRAME64_LEN);
 
         // flush frame synchronizer
-        for (i=0; i<2*k*m; i++) {
+        for (i=0; i<100; i++) {
             float complex noise = nstd * (randnf() + _Complex_I*randnf()) * M_SQRT1_2;
             framesync64_execute(fs, &noise, 1);
         }
@@ -150,11 +146,11 @@ void frame64_fer(unsigned int  _num_frames,
 }
 
 // static callback function
-static int frame64_fer_callback(unsigned char *  _rx_header,
-                                int              _rx_header_valid,
-                                unsigned char *  _rx_payload,
-                                //unsigned int     _rx_payload_len,
-                                int              _rx_payload_valid,
+static int frame64_fer_callback(unsigned char *  _header,
+                                int              _header_valid,
+                                unsigned char *  _payload,
+                                unsigned int     _payload_len,
+                                int              _payload_valid,
                                 framesyncstats_s _stats,
                                 void *           _userdata)
 {
@@ -163,10 +159,10 @@ static int frame64_fer_callback(unsigned char *  _rx_header,
     // specify that frame was detected
     simdata->frame_detected = 1;
 
-    if (_rx_header_valid)
+    if (_header_valid)
         simdata->header_decoded = 1;
 
-    if (_rx_payload_valid)
+    if (_payload_valid)
         simdata->payload_decoded = 1;
 
     return 0;

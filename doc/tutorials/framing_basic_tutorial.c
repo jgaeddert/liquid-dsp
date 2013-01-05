@@ -9,7 +9,7 @@ int main() {
     // allocate memory for arrays
     unsigned char header[8];        // data header
     unsigned char payload[64];      // data payload
-    float complex y[FRAME64_LEN];   // frame samples
+    float complex y[1340];          // frame samples
 
     // CREATE frame generator
     framegen64 fg = framegen64_create();
