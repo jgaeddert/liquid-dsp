@@ -2265,9 +2265,16 @@ void bpacketsync_execute_bit(bpacketsync _q,
 //
 
 typedef struct gmskframegen_s * gmskframegen;
+
+// create GMSK frame generator
+//  _k          :   samples/symbol
+//  _m          :   filter delay (symbols)
+//  _BT         :   bandwidth-time factor
+//  _callback   :   callback function
+//  _userdata   :   user data pointer passed to callback function
 gmskframegen gmskframegen_create(unsigned int _k,
                                  unsigned int _m,
-                                 float _BT);
+                                 float        _BT);
 void gmskframegen_destroy(gmskframegen _fg);
 void gmskframegen_print(gmskframegen _fg);
 void gmskframegen_reset(gmskframegen _fg);
@@ -2287,21 +2294,19 @@ int gmskframegen_write_samples(gmskframegen _fg,
 // GMSK frame synchronizer
 //
 
-// GMSK frame synchronizer callback
-typedef int (*gmskframesync_callback)(unsigned char *  _header,
-                                      int              _header_valid,
-                                      unsigned char *  _payload,
-                                      unsigned int     _payload_len,
-                                      int              _payload_valid,
-                                      framesyncstats_s _stats,
-                                      void *           _userdata);
-
 typedef struct gmskframesync_s * gmskframesync;
-gmskframesync gmskframesync_create(unsigned int _k,
-                                   unsigned int _m,
-                                   float _BT,
-                                   gmskframesync_callback _callback,
-                                   void * _userdata);
+
+// create GMSK frame synchronizer
+//  _k          :   samples/symbol
+//  _m          :   filter delay (symbols)
+//  _BT         :   bandwidth-time factor
+//  _callback   :   callback function
+//  _userdata   :   user data pointer passed to callback function
+gmskframesync gmskframesync_create(unsigned int       _k,
+                                   unsigned int       _m,
+                                   float              _BT,
+                                   framesync_callback _callback,
+                                   void *             _userdata);
 void gmskframesync_destroy(gmskframesync _q);
 void gmskframesync_print(gmskframesync _q);
 void gmskframesync_reset(gmskframesync _q);

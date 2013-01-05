@@ -77,7 +77,7 @@ struct gmskframesync_s {
     int payload_valid;                  // payload valid flag
 
     // callback
-    gmskframesync_callback callback;    // user-defined callback function
+    framesync_callback callback;        // user-defined callback function
     void * userdata;                    // user-defined data structure
     framesyncstats_s framestats;        //
 
@@ -99,15 +99,17 @@ struct gmskframesync_s {
 #endif
 };
 
-// create gmskframesync object
-//  _props          :   properties structure pointer (default if NULL)
-//  _callback       :   callback function invoked when frame is received
-//  _userdata       :   user-defined data object passed to callback
-gmskframesync gmskframesync_create(unsigned int _k,
-                                   unsigned int _m,
-                                   float _BT,
-                                   gmskframesync_callback _callback,
-                                   void * _userdata)
+// create GMSK frame synchronizer
+//  _k          :   samples/symbol
+//  _m          :   filter delay (symbols)
+//  _BT         :   bandwidth-time factor
+//  _callback   :   callback function
+//  _userdata   :   user data pointer passed to callback function
+gmskframesync gmskframesync_create(unsigned int       _k,
+                                   unsigned int       _m,
+                                   float              _BT,
+                                   framesync_callback _callback,
+                                   void *             _userdata)
 {
     // TODO : validate input
 
