@@ -2145,24 +2145,6 @@ void flexframegen_flush(flexframegen _fg,
 
 // frame synchronizer
 
-// callback
-//  _header             :   header data [size: 8 bytes]
-//  _header_valid       :   is header valid? (0:no, 1:yes)
-//  _payload            :   payload data [size: _payload_len]
-//  _payload_len        :   length of payload (bytes)
-//  _payload_valid      :   is payload valid? (0:no, 1:yes)
-//  _userdata           :   pointer to userdata
-//
-// extensions:
-//  _frame_samples      :   frame symbols (synchronized modem) [size: _framesyms_len]
-//  _frame_samples_len  :   number of frame symbols
-typedef int (*flexframesync_callback)(unsigned char * _header,
-                                      int _header_valid,
-                                      unsigned char * _payload,
-                                      unsigned int _payload_len,
-                                      int _payload_valid,
-                                      framesyncstats_s _stats,
-                                      void * _userdata);
 typedef struct flexframesync_s * flexframesync;
 
 // create flexframesync object
@@ -2170,8 +2152,8 @@ typedef struct flexframesync_s * flexframesync;
 //  _callback   :   callback function
 //  _userdata   :   user data pointer passed to callback function
 flexframesync flexframesync_create(framesyncprops_s * _props,
-                                   flexframesync_callback _callback,
-                                   void * _userdata);
+                                   framesync_callback _callback,
+                                   void *             _userdata);
 void flexframesync_destroy(flexframesync _fs);
 void flexframesync_getprops(flexframesync _fs, framesyncprops_s * _props);
 void flexframesync_setprops(flexframesync _fs, framesyncprops_s * _props);

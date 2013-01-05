@@ -119,7 +119,7 @@ struct flexframesync_s {
     framesyncprops_s props;
 
     // callback
-    flexframesync_callback callback;    // user-defined callback function
+    framesync_callback callback;        // user-defined callback function
     void * userdata;                    // user-defined data structure
     framesyncstats_s framestats;        // frame statistic object
 
@@ -149,8 +149,8 @@ struct flexframesync_s {
 //  _callback       :   callback function invoked when frame is received
 //  _userdata       :   user-defined data object passed to callback
 flexframesync flexframesync_create(framesyncprops_s * _props,
-                                   flexframesync_callback _callback,
-                                   void * _userdata)
+                                   framesync_callback _callback,
+                                   void *             _userdata)
 {
     flexframesync fs = (flexframesync) malloc(sizeof(struct flexframesync_s));
     fs->callback = _callback;
