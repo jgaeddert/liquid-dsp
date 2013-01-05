@@ -1,7 +1,5 @@
 /*
- * Copyright (c) 2007, 2008, 2009, 2010, 2011, 2012 Joseph Gaeddert
- * Copyright (c) 2007, 2008, 2009, 2010, 2011, 2012 Virginia Polytechnic
- *                                        Institute & State University
+ * Copyright (c) 2007, 2008, 2009, 2010, 2011, 2012, 2013 Joseph Gaeddert
  *
  * This file is part of liquid.
  *
@@ -2106,6 +2104,11 @@ void framesync64_reset(framesync64 _q);
 void framesync64_execute(framesync64            _q,
                          liquid_float_complex * _x,
                          unsigned int           _n);
+
+// enable/disable debugging
+void framesync64_debug_enable(framesync64 _q);
+void framesync64_debug_disable(framesync64 _q);
+void framesync64_debug_print(framesync64 _q, const char * _filename);
 
 #if 0
 // advanced modes

@@ -1,7 +1,5 @@
 /*
- * Copyright (c) 2007, 2008, 2009, 2010, 2012 Joseph Gaeddert
- * Copyright (c) 2007, 2008, 2009, 2010, 2012 Virginia Polytechnic
- *                                      Institute & State University
+ * Copyright (c) 2007, 2008, 2009, 2010, 2012, 2013 Joseph Gaeddert
  *
  * This file is part of liquid.
  *
@@ -69,9 +67,6 @@ void framesync64_execute_rxpayload(framesync64   _q,
 // decode payload
 void framesync64_decode_payload(framesync64 _q);
 
-// print debugging information
-void framesync64_debug_print(framesync64 _q);
-
 // advanced mode
 void framesync64_csma_lock(framesync64 _q);
 void framesync64_csma_unlock(framesync64 _q);
@@ -124,6 +119,8 @@ struct framesync64_s {
     unsigned int payload_counter;   // counter: num of payload syms received
 
 #if DEBUG_FRAMESYNC64
+    int debug_enabled;              // debugging enabled?
+    int debug_objects_created;      // debugging objects created?
     windowcf debug_x;               // debug: raw input samples
     float debug_symsync_index[664]; // symbol synchronizer phase, 664 = 64 + 600
     float debug_nco_phase[664];     // fine-tuned nco phase, 664 = 64 + 600
@@ -189,7 +186,10 @@ framesync64 framesync64_create(framesync64_callback _callback,
     q->p_payload = packetizer_create(n, check, fec0, fec1);
 
 #if DEBUG_FRAMESYNC64
-    q->debug_x = windowcf_create(DEBUG_BUFFER_LEN);
+    // set debugging flags, objects to NULL
+    q->debug_enabled         = 0;
+    q->debug_objects_created = 0;
+    q->debug_x               = NULL;
 #endif
 
     // reset state
@@ -202,10 +202,10 @@ framesync64 framesync64_create(framesync64_callback _callback,
 void framesync64_destroy(framesync64 _q)
 {
 #if DEBUG_FRAMESYNC64
-    framesync64_debug_print(_q);
-
-    // clean up debug windows
-    windowcf_destroy(_q->debug_x);
+    // clean up debug objects (if created)
+    if (_q->debug_objects_created) {
+        windowcf_destroy(_q->debug_x);
+    }
 #endif
 
     // destroy synchronization objects
@@ -266,7 +266,9 @@ void framesync64_execute(framesync64     _q,
     unsigned int i;
     for (i=0; i<_n; i++) {
 #if DEBUG_FRAMESYNC64
-        windowcf_push(_q->debug_x,   _x[i]);
+        if (_q->debug_enabled) {
+            windowcf_push(_q->debug_x, _x[i]);
+        }
 #endif
         switch (_q->state) {
         case STATE_DETECTFRAME:
@@ -448,6 +450,7 @@ void framesync64_execute_rxpn(framesync64   _q,
         // update pfb index
         framesync64_update_symsync(_q, y, dy);
 #if DEBUG_FRAMESYNC64
+        //if (_q->debug_enabled)
         _q->debug_symsync_index[_q->pn_counter] = _q->pfb_soft;
 #endif
 
@@ -504,6 +507,7 @@ void framesync64_syncpn(framesync64 _q)
         float phase_error = cimagf(_q->pn_syms[i]*conjf(_q->pn_sequence[i]));
         nco_crcf_pll_step(_q->nco_fine, phase_error);
 #if DEBUG_FRAMESYNC64
+        //if (_q->debug_enabled)
         _q->debug_nco_phase[i] = nco_crcf_get_phase(_q->nco_fine);
 #endif
 
@@ -543,6 +547,7 @@ void framesync64_execute_rxpayload(framesync64   _q,
         // update pfb index
         framesync64_update_symsync(_q, y, dy);
 #if DEBUG_FRAMESYNC64
+        //if (_q->debug_enabled)
         _q->debug_symsync_index[64+_q->payload_counter] = _q->pfb_soft;
 #endif
 
@@ -555,6 +560,7 @@ void framesync64_execute_rxpayload(framesync64   _q,
         float phase_error = modem_get_demodulator_phase_error(_q->demod);
         float evm         = modem_get_demodulator_evm(_q->demod);
 #if DEBUG_FRAMESYNC64
+        //if (_q->debug_enabled)
         _q->debug_nco_phase[64+_q->payload_counter] = nco_crcf_get_phase(_q->nco_fine);
 #endif
 
@@ -658,14 +664,50 @@ void framesync64_syms_to_byte(unsigned char * _syms,
 }
 #endif
 
-// huge method to write debugging data to file
-void framesync64_debug_print(framesync64 _q)
+// enable debugging
+void framesync64_debug_enable(framesync64 _q)
+{
+    // create debugging objects if necessary
+#if DEBUG_FRAMESYNC64
+    if (_q->debug_objects_created)
+        return;
+
+    // create debugging objects
+    _q->debug_x = windowcf_create(DEBUG_BUFFER_LEN);
+
+    // set debugging flags
+    _q->debug_enabled = 1;
+    _q->debug_objects_created = 1;
+#else
+    fprintf(stderr,"framesync64_debug_enable(): compile-time debugging disabled\n");
+#endif
+}
+
+// disable debugging
+void framesync64_debug_disable(framesync64 _q)
+{
+    // disable debugging
+#if DEBUG_FRAMESYNC64
+    _q->debug_enabled = 0;
+#else
+    fprintf(stderr,"framesync64_debug_enable(): compile-time debugging disabled\n");
+#endif
+}
+
+
+// print debugging information
+void framesync64_debug_print(framesync64  _q,
+                             const char * _filename)
 {
 #if DEBUG_FRAMESYNC64
+    if (!_q->debug_objects_created) {
+        fprintf(stderr,"error: framesync64_debug_print(), debugging objects don't exist; enable debugging first\n");
+        return;
+    }
     unsigned int i;
     float complex * rc;
-    FILE* fid = fopen(DEBUG_FILENAME,"w");
-    fprintf(fid,"%% %s: auto-generated file", DEBUG_FILENAME);
+    FILE* fid = fopen(_filename,"w");
+    fprintf(fid,"%% %s: auto-generated file", _filename);
     fprintf(fid,"\n\n");
     fprintf(fid,"clear all;\n");
     fprintf(fid,"close all;\n\n");
@@ -734,6 +776,8 @@ void framesync64_debug_print(framesync64 _q)
     fprintf(fid,"\n\n");
     fclose(fid);
 
-    printf("framesync64/debug: results written to %s\n", DEBUG_FILENAME);
+    printf("framesync64/debug: results written to %s\n", _filename);
+#else
+    fprintf(stderr,"framesync64_debug_print(): compile-time debugging disabled\n");
 #endif
 }

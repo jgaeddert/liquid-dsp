@@ -25,8 +25,9 @@
 
 void usage()
 {
-    printf("ofdmflexframesync_example [options]\n");
+    printf("framesync64_example [options]\n");
     printf("  h     : print usage\n");
+    printf("  d     : enable debugging\n");
     printf("  S     : signal-to-noise ratio [dB], default: 20\n");
     printf("  F     : carrier frequency offset, default: 0\n");
     printf("  P     : carrier phase offset, default: 0\n");
@@ -55,12 +56,14 @@ int main(int argc, char*argv[])
     float dphi        =  0.01f; // carrier frequency offset
     float theta       =  0.0f;  // carrier phase offset
     float dt          =  0.0f;  // fractional sample timing offset
+    int debug_enabled = 0;
 
     // get options
     int dopt;
-    while((dopt = getopt(argc,argv,"hS:F:P:T:")) != EOF){
+    while((dopt = getopt(argc,argv,"hdS:F:P:T:")) != EOF){
         switch (dopt) {
         case 'h': usage();              return 0;
+        case 'd': debug_enabled = 1;    break;
         case 'S': SNRdB = atof(optarg); break;
         case 'F': dphi  = atof(optarg); break;
         case 'P': theta = atof(optarg); break;
@@ -83,6 +86,8 @@ int main(int argc, char*argv[])
     // create frame synchronizer using default properties
     framesync64 fs = framesync64_create(callback,NULL);
     framesync64_print(fs);
+    if (debug_enabled)
+        framesync64_debug_enable(fs);
 
     // data payload
     unsigned int i;
@@ -135,10 +140,14 @@ int main(int argc, char*argv[])
     framesync64_execute(fs, y, num_samples);
 #endif
 
+    // export debugging file
+    if (debug_enabled)
+        framesync64_debug_print(fs, "framesync64_debug.m");
+
     // clean up allocated objects
     framegen64_destroy(fg);
     framesync64_destroy(fs);
-
+    
     // 
     // export results
     //
