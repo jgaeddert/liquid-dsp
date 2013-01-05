@@ -11,6 +11,7 @@ Major improvements since v1.2.0
     - adding generic callback function definition for all framing
       structures
     - adding pre-demodulator synchronizer/detector
+    - moved interleaver and packetizer objects to `fec` module
     - completely re-structured frame[gen|sync]64 objects with vastly
       improved performance
   * matrix

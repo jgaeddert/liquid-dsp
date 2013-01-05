@@ -19,7 +19,7 @@ Certain FEC schemes are only available to \liquid\ by installing the external
 {\tt libfec} library \cite{libfec:web}, available as a free download.
 A few low-rate (and fairly low efficiency) codes are available internally.
 
-%The {\tt packetizer} object (\S\ref{module:framing:packetizer})
+%The {\tt packetizer} object (\S\ref{module:fec:packetizer})
 %relies on the {\tt fec} objects and {\tt crc32} functions.
 
 \subsection{Cyclic Redundancy Check (Error Detection)}
@@ -588,5 +588,242 @@ plotted as a reference point.
 encoder;
 however because the performance is similar to the $K=7$ codec
 its performance is omitted for the sake of brevity.
+
+
+% 
+% interleaver
+%
+\subsection{{\tt interleaver}}
+\label{module:fec:interleaver}
+This section describes the functionality of the \liquid\ {\tt interleaver}
+object.
+In wireless communications systems, bit errors are often grouped together as a
+result of multi-path fading, demodulator symbol errors, and synchronizer
+instability.
+Interleavers serve to distribute grouped bit errors evenly throughout a block
+of data which aids certain forward error-correction (FEC) codes in their
+decoding process.
+%(see \S\ref{module:fec} on error-correcting codes).
+On the transmit side of the wireless link, the interleaver re-orders the bits
+after FEC encoding and before modulation.
+On the receiving side, the de-interleaver re-shuffles the bits to their
+original position before attempting to run the FEC decoder.
+The bit-shuffling order must be known at both the transmitter and receiver.
+
+The {\tt interleaver} object operates by permuting indices on the input data
+sequence.
+The indices are computed during the {\tt interleaver\_create()} method and
+stored internally.
+At each iteration data bytes are re-shuffled using the permutation array.
+Depending upon the properties of the array, multiple iterations should not
+result in observing the original data sequence.
+Shown below is a simple example where 8 symbols ($0,\ldots,7$) are re-ordered
+using a random permutation.
+The data at iteration 0 are the original data which are permuted twice.
+% TODO : use graphic for this...
+\begin{Verbatim}[fontsize=\small]
+    forward
+    permutation     iter[0]     iter[1]     iter[2]
+    0 -> 6          0           6           1
+    1 -> 4          1           4           3
+    2 -> 7          2           7           5
+    3 -> 0          3           0           6
+    4 -> 3          4           3           0
+    5 -> 2          5           2           7
+    6 -> 1          6           1           4
+    7 -> 5          7           5           2
+\end{Verbatim}
+%
+Reversing the process is as simple as computing the reverse permutation from
+the input; this is equivalent to reversing the arrows in the forward
+permutation
+(e.g. the $2 \rightarrow 7$ forward permutation becomes the $7 \rightarrow 2$
+reverse permutation).
+\begin{Verbatim}[fontsize=\small]
+    reverse
+    permutation     iter[2]     iter[1]     iter[0]
+    0 -> 3          1           6           0
+    1 -> 6          3           4           1
+    2 -> 5          5           7           2
+    3 -> 4          6           0           3
+    4 -> 1          0           3           4
+    5 -> 7          7           2           5
+    6 -> 0          4           1           6
+    7 -> 2          2           5           7
+\end{Verbatim}
+%
+Notice that permuting indices only re-orders the bytes of data and does
+nothing to shuffle the bits within the byte.
+It is beneficial to FEC decoders to separate the bit errors as much as
+possible.
+Therefore, in addition to index permutation, \liquid\ also applies masks to
+the data while permuting.
+% TODO : explain more
+
+\subsubsection{Interface}
+\label{module:fec:interleaver:interface}
+The {\tt interleaver} object operates like most objects in \liquid\ with
+typical {\tt create()}, {\tt destroy()}, and {\tt execute()} methods.
+
+\begin{description}
+\item[{\tt interleaver\_create(n)}]
+    creates an interleaver object accepting $n$ bytes,
+    and defaulting to 2 iterations.
+\item[{\tt interleaver\_destroy(q)}]
+    destroys the interleaver object, freeing all internally-allocated
+    memory arrays.
+\item[{\tt interleaver\_set\_num\_iterations(q,k)}]
+    sets the number of iterations of the interleaver.
+    Increasing the number of iterations helps improve bit dispersion, but can
+    also increase execution time.
+    The default number of iterations at the time of creation is 2 (see
+    Figure~\ref{fig:module:fec:interleaver:scatterplot}).
+\item[{\tt interleaver\_encode(q,*msg\_dec,*msg\_enc)}]
+    runs the forward interleaver, reading data from the first array argument
+    and writing the result to the second array argument.
+    The array pointers can reference the same block of memory, if necessary.
+\item[{\tt interleaver\_decode(q,*msg\_enc,*msg\_dec)}]
+    runs the reverse interleaver, reading data from the first array argument
+    and writing the result to the second array argument.
+    Like the {\tt encode()} method, the array pointers can reference the same
+    block of memory.
+\end{description}
+%
+This listing gives a basic demonstration to the interface to the
+{\tt interleaver} object:
+%
+\input{listings/interleaver.example.c.tex}
+
+%-------------------- FIGURE: interleaver scatterplot --------------------
+\begin{figure}
+\centering
+\mbox{
+  \subfigure[$i=0$]
+    {
+      \includegraphics[trim = 15mm 0mm 15mm 0mm, clip, height=6cm]{figures.gen/interleaver_scatterplot_i0}
+      \label{fig:interleaver:scatterplot:0}
+    } \quad
+  \subfigure[$i=1$]
+    {
+      \includegraphics[trim = 15mm 0mm 15mm 0mm, clip, height=6cm]{figures.gen/interleaver_scatterplot_i1}
+      \label{fig:interleaver:scatterplot:1}
+    } \quad
+}
+\mbox{
+  \subfigure[$i=2$]
+    {
+      \includegraphics[trim = 15mm 0mm 15mm 0mm, clip, height=6cm]{figures.gen/interleaver_scatterplot_i2}
+      \label{fig:interleaver:scatterplot:2}
+    } \quad
+  \subfigure[$i=3$]
+    {
+      \includegraphics[trim = 15mm 0mm 15mm 0mm, clip, height=6cm]{figures.gen/interleaver_scatterplot_i3}
+      \label{fig:interleaver:scatterplot:3}
+    } \quad
+}
+\mbox{
+  \subfigure[$i=4$]
+    {
+      \includegraphics[trim = 15mm 0mm 15mm 0mm, clip, height=6cm]{figures.gen/interleaver_scatterplot_i4}
+      \label{fig:interleaver:scatterplot:4}
+    } \quad
+}
+\caption{{\tt interleaver} (block) demonstration of a 64-byte (512-bit) array
+with increasing number of iterations (interleaving depth)}
+\label{fig:module:fec:interleaver:scatterplot}
+\end{figure}
+%
+A visualization of the interleaver can be seen in
+Figure~\ref{fig:module:fec:interleaver:scatterplot}
+where the input index is plotted against the output index for varying number
+of iterations.
+Notice that with zero iterations, the output and input are identical (no
+interleaving).
+With one iteration only the bytes are interleaved, and so the output is
+grouped into 8-bit blocks.
+Further iterations, however, result in sufficiently dispersed bits, and
+patterns between input and output indices become less evident.
+%
+The {\tt packetizer} object (\S\ref{module:fec:packetizer}) uses the
+{\tt interleaver} object in conjunction to forward error-correction coding
+(\S\ref{module:fec}) to provide a simple interface for generating
+protected data packets.
+A full example can be found in {\tt examples/interleaver\_example.c}.
+
+
+%
+% packetizer
+%
+\subsection{{\tt packetizer} (multi-level error-correction)}
+\label{module:fec:packetizer}
+The \liquid\ packetizer is a structure for abstracting multi-level forward
+error-correction from the user.
+The packetizer accepts a buffer of uncoded data bytes and adds a
+cyclic redundancy check (CRC) before applying two levels of forward
+error-correction and bit-level interleaving.
+The user may choose any two supported FEC schemes (including none) and the
+packetizer object will handle buffering and data management internally,
+providing a truly abstract interface.
+The same is true for the packet decoder which accepts an array
+of possibly corrupt data and attempts to recover the original message using
+the FEC schemes provided.
+The packet decoder returns the validity of the resulting CRC as well as its
+best effort of decoding the message.
+
+%The {\tt packetizer} object (\S\ref{module:fec:packetizer})
+%uses two {\tt fec} objects (an inner and outer code) in conjunction with an
+%{\tt interleaver} object (\S\ref{module:fec:interleaver})
+%and a 32-bit cyclic redundancy check.
+
+The packetizer also allows for re-structuring if the user wishes to change
+error-correction schemes or data lengths.  This is accomplished with the
+{\tt packetizer\_recreate()} method.
+Listed below is the full interface to the {\tt packetizer} object.
+%
+\begin{description}
+\item[{\tt packetizer\_create(n,crc,fec0,fec1)}]
+    creates and returns a {\tt packetizer} object which accepts $n$
+    uncoded input bytes and uses the specified CRC and bi-level FEC
+    schemes.
+\item[{\tt packetizer\_recreate(q,n,crc,fec0,fec1)}]
+    re-creates an existing {\tt packetizer} object with new parameters.
+\item[{\tt packetizer\_destroy(q)}]
+    destroys an {\tt packetizer} object, freeing all
+    internally-allocated memory.
+\item[{\tt packetizer\_print(q)}]
+    prints the internal state of the {\tt packetizer} object to the
+    standard output.
+\item[{\tt packetizer\_get\_dec\_msg\_len(q)}]
+    returns the specified decoded message length $n$ in bytes.
+\item[{\tt packetizer\_get\_enc\_msg\_len(q)}]
+    returns the fully-encoded message length $k$ in bytes.
+\item[{\tt packetizer\_encode(q,*msg,*pkt)}]
+    encodes the $n$-byte input message storing the result in the
+    $k$-byte encoded output message.
+\item[{\tt packetizer\_decode(q,*pkt,*msg)}]
+    decodes the $k$-byte encoded input message storing the result in the
+    $n$-byte output.
+    The function returns a {\tt 1} if the internal CRC passed
+    and a {\tt 0} if it failed.
+    If no CRC was specified (e.g. {\tt LIQUID\_CRC\_NONE}) then a {\tt 1} is
+    always returned.
+\item[{\tt packetizer\_decode\_soft(q,*pkt,*msg)}]
+    decodes the encoded input message just like
+    {\tt packetizer\_decode()}
+    but with soft bits instead of hard bytes.
+    The input is an array of type {\tt unsigned char} with $8 \times k$
+    elements representing soft bits.
+    As before, the function returns a {\tt 1} if the internal CRC passed
+    and a {\tt 0} if it failed.
+    See \S\ref{module:fec:soft} for more information on
+    soft-decision decoding.
+\end{description}
+%
+Here is a minimal example demonstrating the packetizer's most basic
+functionality:
+%
+\input{listings/packetizer.example.c.tex}
+%
+See also: fec module, {\tt examples/packetizer\_example.c}
 
 
