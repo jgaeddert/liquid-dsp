@@ -2033,6 +2033,21 @@ void framesyncstats_init_default(framesyncstats_s * _stats);
 // print framesyncstats object
 void framesyncstats_print(framesyncstats_s * _stats);
 
+// Generic frame synchronizer callback function type
+//  _header         :   header data [size: 8 bytes]
+//  _header_valid   :   is header valid? (0:no, 1:yes)
+//  _payload        :   payload data [size: _payload_len]
+//  _payload_len    :   length of payload (bytes)
+//  _payload_valid  :   is payload valid? (0:no, 1:yes)
+//  _stats          :   frame statistics object
+//  _userdata       :   pointer to userdata
+typedef int (*framesync_callback)(unsigned char *  _header,
+                                  int              _header_valid,
+                                  unsigned char *  _payload,
+                                  unsigned int     _payload_len,
+                                  int              _payload_valid,
+                                  framesyncstats_s _stats,
+                                  void *           _userdata);
 
 // framesync csma callback functions invoked when signal levels is high or low
 //  _userdata       :   user-defined data pointer
@@ -2067,26 +2082,13 @@ void framegen64_execute(framegen64             _q,
                         unsigned char *        _payload,
                         liquid_float_complex * _frame);
 
-// Basic frame synchronizer (64 bytes data payload) callback
-//  _header         :   header data [size: 8 bytes]
-//  _header_valid   :   is header valid? (0:no, 1:yes)
-//  _payload        :   payload data [size: 64 x 1]
-//  _payload_valid  :   is payload valid? (0:no, 1:yes)
-//  _stats          :   frame statistics object
-//  _userdata       :   pointer to userdata
-typedef int (*framesync64_callback)(unsigned char *  _header,
-                                    int              _header_valid,
-                                    unsigned char *  _payload,
-                                    int              _payload_valid,
-                                    framesyncstats_s _stats,
-                                    void *           _userdata);
 typedef struct framesync64_s * framesync64;
 
 // create framesync64 object
 //  _callback   :   callback function
 //  _userdata   :   user data pointer passed to callback function
-framesync64 framesync64_create(framesync64_callback _callback,
-                               void *               _userdata);
+framesync64 framesync64_create(framesync_callback _callback,
+                               void *             _userdata);
 
 // destroy frame synchronizer
 void framesync64_destroy(framesync64 _q);
@@ -2152,21 +2154,6 @@ void flexframegen_flush(flexframegen _fg,
 
 // frame synchronizer
 
-// callback
-//  _header         :   header data [size: 8 bytes]
-//  _header_valid   :   is header valid? (0:no, 1:yes)
-//  _payload        :   payload data [size: _payload_len]
-//  _payload_len    :   length of payload (bytes)
-//  _payload_valid  :   is payload valid? (0:no, 1:yes)
-//  _stats          :   frame statistics object
-//  _userdata       :   pointer to userdata
-typedef int (*flexframesync_callback)(unsigned char *  _header,
-                                      int              _header_valid,
-                                      unsigned char *  _payload,
-                                      unsigned int     _payload_len,
-                                      int              _payload_valid,
-                                      framesyncstats_s _stats,
-                                      void *           _userdata);
 typedef struct flexframesync_s * flexframesync;
 
 // create flexframesync object
@@ -2174,8 +2161,8 @@ typedef struct flexframesync_s * flexframesync;
 //  _callback   :   callback function
 //  _userdata   :   user data pointer passed to callback function
 flexframesync flexframesync_create(framesyncprops_s * _props,
-                                   flexframesync_callback _callback,
-                                   void * _userdata);
+                                   framesync_callback _callback,
+                                   void *             _userdata);
 void flexframesync_destroy(flexframesync _fs);
 void flexframesync_getprops(flexframesync _fs, framesyncprops_s * _props);
 void flexframesync_setprops(flexframesync _fs, framesyncprops_s * _props);
@@ -2287,9 +2274,16 @@ void bpacketsync_execute_bit(bpacketsync _q,
 //
 
 typedef struct gmskframegen_s * gmskframegen;
+
+// create GMSK frame generator
+//  _k          :   samples/symbol
+//  _m          :   filter delay (symbols)
+//  _BT         :   bandwidth-time factor
+//  _callback   :   callback function
+//  _userdata   :   user data pointer passed to callback function
 gmskframegen gmskframegen_create(unsigned int _k,
                                  unsigned int _m,
-                                 float _BT);
+                                 float        _BT);
 void gmskframegen_destroy(gmskframegen _fg);
 void gmskframegen_print(gmskframegen _fg);
 void gmskframegen_reset(gmskframegen _fg);
@@ -2309,21 +2303,19 @@ int gmskframegen_write_samples(gmskframegen _fg,
 // GMSK frame synchronizer
 //
 
-// GMSK frame synchronizer callback
-typedef int (*gmskframesync_callback)(unsigned char *  _header,
-                                      int              _header_valid,
-                                      unsigned char *  _payload,
-                                      unsigned int     _payload_len,
-                                      int              _payload_valid,
-                                      framesyncstats_s _stats,
-                                      void *           _userdata);
-
 typedef struct gmskframesync_s * gmskframesync;
-gmskframesync gmskframesync_create(unsigned int _k,
-                                   unsigned int _m,
-                                   float _BT,
-                                   gmskframesync_callback _callback,
-                                   void * _userdata);
+
+// create GMSK frame synchronizer
+//  _k          :   samples/symbol
+//  _m          :   filter delay (symbols)
+//  _BT         :   bandwidth-time factor
+//  _callback   :   callback function
+//  _userdata   :   user data pointer passed to callback function
+gmskframesync gmskframesync_create(unsigned int       _k,
+                                   unsigned int       _m,
+                                   float              _BT,
+                                   framesync_callback _callback,
+                                   void *             _userdata);
 void gmskframesync_destroy(gmskframesync _q);
 void gmskframesync_print(gmskframesync _q);
 void gmskframesync_reset(gmskframesync _q);
@@ -2408,22 +2400,6 @@ int ofdmflexframegen_writesymbol(ofdmflexframegen _q,
 // OFDM flex frame synchronizer
 //
 
-// callback
-//  _header             :   header data [size: 8 bytes]
-//  _header_valid       :   is header valid? (0:no, 1:yes)
-//  _payload            :   payload data [size: _payload_len]
-//  _payload_len        :   length of payload (bytes)
-//  _payload_valid      :   is payload valid? (0:no, 1:yes)
-//  _stats              :   framing statistics (see above)
-//  _userdata           :   pointer to userdata
-typedef int (*ofdmflexframesync_callback)(unsigned char *  _header,
-                                          int              _header_valid,
-                                          unsigned char *  _payload,
-                                          unsigned int     _payload_len,
-                                          int              _payload_valid,
-                                          framesyncstats_s _stats,
-                                          void *           _userdata);
-
 typedef struct ofdmflexframesync_s * ofdmflexframesync;
 
 // create OFDM flexible framing synchronizer object
@@ -2433,12 +2409,12 @@ typedef struct ofdmflexframesync_s * ofdmflexframesync;
 //  _p          :   subcarrier allocation (null, pilot, data), [size: _M x 1]
 //  _callback   :   user-defined callback function
 //  _userdata   :   user-defined data pointer
-ofdmflexframesync ofdmflexframesync_create(unsigned int               _M,
-                                           unsigned int               _cp_len,
-                                           unsigned int               _taper_len,
-                                           unsigned char *            _p,
-                                           ofdmflexframesync_callback _callback,
-                                           void *                     _userdata);
+ofdmflexframesync ofdmflexframesync_create(unsigned int       _M,
+                                           unsigned int       _cp_len,
+                                           unsigned int       _taper_len,
+                                           unsigned char *    _p,
+                                           framesync_callback _callback,
+                                           void *             _userdata);
 
 void ofdmflexframesync_destroy(ofdmflexframesync _q);
 void ofdmflexframesync_print(ofdmflexframesync _q);
