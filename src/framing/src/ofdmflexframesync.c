@@ -84,7 +84,7 @@ struct ofdmflexframesync_s {
     int payload_valid;                  // valid payload flag
 
     // callback
-    ofdmflexframesync_callback callback;// user-defined callback function
+    framesync_callback callback;        // user-defined callback function
     void * userdata;                    // user-defined data structure
     framesyncstats_s framestats;        // frame statistic object
     float evm_hat;                      // average error vector magnitude
@@ -110,12 +110,12 @@ struct ofdmflexframesync_s {
 //  _p          :   subcarrier allocation (PILOT/NULL/DATA) [size: _M x 1]
 //  _callback   :   user-defined callback function
 //  _userdata   :   user-defined data structure passed to callback
-ofdmflexframesync ofdmflexframesync_create(unsigned int               _M,
-                                           unsigned int               _cp_len,
-                                           unsigned int               _taper_len,
-                                           unsigned char *            _p,
-                                           ofdmflexframesync_callback _callback,
-                                           void *                     _userdata)
+ofdmflexframesync ofdmflexframesync_create(unsigned int       _M,
+                                           unsigned int       _cp_len,
+                                           unsigned int       _taper_len,
+                                           unsigned char *    _p,
+                                           framesync_callback _callback,
+                                           void *             _userdata)
 {
     ofdmflexframesync q = (ofdmflexframesync) malloc(sizeof(struct ofdmflexframesync_s));
 
@@ -344,7 +344,7 @@ void ofdmflexframesync_rxheader(ofdmflexframesync _q,
                 // compute error vector magnitude estimate
                 _q->framestats.evm = 10*log10f( _q->evm_hat/OFDMFLEXFRAME_H_SYM );
 
-                // TODO : invoke callback if header is invalid
+                // invoke callback if header is invalid
                 if (_q->header_valid)
                     _q->state = OFDMFLEXFRAMESYNC_STATE_PAYLOAD;
                 else {

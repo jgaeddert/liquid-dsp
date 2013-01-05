@@ -2391,22 +2391,6 @@ int ofdmflexframegen_writesymbol(ofdmflexframegen _q,
 // OFDM flex frame synchronizer
 //
 
-// callback
-//  _header             :   header data [size: 8 bytes]
-//  _header_valid       :   is header valid? (0:no, 1:yes)
-//  _payload            :   payload data [size: _payload_len]
-//  _payload_len        :   length of payload (bytes)
-//  _payload_valid      :   is payload valid? (0:no, 1:yes)
-//  _stats              :   framing statistics (see above)
-//  _userdata           :   pointer to userdata
-typedef int (*ofdmflexframesync_callback)(unsigned char *  _header,
-                                          int              _header_valid,
-                                          unsigned char *  _payload,
-                                          unsigned int     _payload_len,
-                                          int              _payload_valid,
-                                          framesyncstats_s _stats,
-                                          void *           _userdata);
-
 typedef struct ofdmflexframesync_s * ofdmflexframesync;
 
 // create OFDM flexible framing synchronizer object
@@ -2416,12 +2400,12 @@ typedef struct ofdmflexframesync_s * ofdmflexframesync;
 //  _p          :   subcarrier allocation (null, pilot, data), [size: _M x 1]
 //  _callback   :   user-defined callback function
 //  _userdata   :   user-defined data pointer
-ofdmflexframesync ofdmflexframesync_create(unsigned int               _M,
-                                           unsigned int               _cp_len,
-                                           unsigned int               _taper_len,
-                                           unsigned char *            _p,
-                                           ofdmflexframesync_callback _callback,
-                                           void *                     _userdata);
+ofdmflexframesync ofdmflexframesync_create(unsigned int       _M,
+                                           unsigned int       _cp_len,
+                                           unsigned int       _taper_len,
+                                           unsigned char *    _p,
+                                           framesync_callback _callback,
+                                           void *             _userdata);
 
 void ofdmflexframesync_destroy(ofdmflexframesync _q);
 void ofdmflexframesync_print(ofdmflexframesync _q);
