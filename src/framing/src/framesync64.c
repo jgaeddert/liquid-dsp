@@ -79,7 +79,7 @@ void framesync64_csma_unlock(framesync64 _q);
 // framesync64 object structure
 struct framesync64_s {
     // callback
-    framesync64_callback callback;  // user-defined callback function
+    framesync_callback callback;    // user-defined callback function
     void * userdata;                // user-defined data structure
     framesyncstats_s framestats;    // frame statistic object
     
@@ -133,8 +133,8 @@ struct framesync64_s {
 // create framesync64 object
 //  _callback       :   callback function invoked when frame is received
 //  _userdata       :   user-defined data object passed to callback
-framesync64 framesync64_create(framesync64_callback _callback,
-                               void *               _userdata)
+framesync64 framesync64_create(framesync_callback _callback,
+                               void *             _userdata)
 {
     framesync64 q = (framesync64) malloc(sizeof(struct framesync64_s));
     q->callback = _callback;
@@ -596,6 +596,7 @@ void framesync64_execute_rxpayload(framesync64   _q,
                 _q->callback(NULL,
                              0,
                              _q->payload_dec,
+                             64,
                              _q->crc_pass,
                              _q->framestats,
                              _q->userdata);

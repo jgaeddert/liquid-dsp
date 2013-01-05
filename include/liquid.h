@@ -2035,6 +2035,21 @@ void framesyncstats_init_default(framesyncstats_s * _stats);
 // print framesyncstats object
 void framesyncstats_print(framesyncstats_s * _stats);
 
+// Generic frame synchronizer callback function type
+//  _header         :   header data [size: 8 bytes]
+//  _header_valid   :   is header valid? (0:no, 1:yes)
+//  _payload        :   payload data [size: _payload_len]
+//  _payload_len    :   length of payload (bytes)
+//  _payload_valid  :   is payload valid? (0:no, 1:yes)
+//  _stats          :   frame statistics object
+//  _userdata       :   pointer to userdata
+typedef int (*framesync_callback)(unsigned char *  _header,
+                                  int              _header_valid,
+                                  unsigned char *  _payload,
+                                  unsigned int     _payload_len,
+                                  int              _payload_valid,
+                                  framesyncstats_s _stats,
+                                  void *           _userdata);
 
 // framesync csma callback functions invoked when signal levels is high or low
 //  _userdata       :   user-defined data pointer
@@ -2063,26 +2078,13 @@ void framegen64_execute(framegen64             _q,
                         unsigned char *        _payload,
                         liquid_float_complex * _frame);
 
-// Basic frame synchronizer (64 bytes data payload) callback
-//  _header         :   NULL
-//  _header_valid   :   0
-//  _payload        :   pointer to decoded payload [size: 64 x 1]
-//  _payload_valid  :   payload passed cyclic redundancy check? 1 (yes), 0 (no)
-//  _stats          :   frame statistics structure
-//  _userdata       :   user-defined data pointer
-typedef int (*framesync64_callback)(unsigned char *  _header,
-                                    int              _header_valid,
-                                    unsigned char *  _payload,
-                                    int              _payload_valid,
-                                    framesyncstats_s _stats,
-                                    void *           _userdata);
 typedef struct framesync64_s * framesync64;
 
 // create framesync64 object
 //  _callback   :   callback function
 //  _userdata   :   user data pointer passed to callback function
-framesync64 framesync64_create(framesync64_callback _callback,
-                               void *               _userdata);
+framesync64 framesync64_create(framesync_callback _callback,
+                               void *             _userdata);
 
 // destroy frame synchronizer
 void framesync64_destroy(framesync64 _q);
