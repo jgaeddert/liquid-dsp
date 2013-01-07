@@ -1246,24 +1246,6 @@ void framegen64_byte_to_syms(unsigned char _byte,
 void framesync64_syms_to_byte(unsigned char * _syms,
                               unsigned char * _byte);
 
-// flexframesync
-void flexframesync_configure_payload_buffers(flexframesync _fs);
-void flexframesync_decode_header(flexframesync _fs);
-void flexframesync_assemble_payload(flexframesync _fs);
-void flexframesync_open_bandwidth(flexframesync _fs);
-void flexframesync_close_bandwidth(flexframesync _fs);
-void flexframesync_train_eq(flexframesync _fs);
-
-// 
-void flexframesync_execute_seekpn(   flexframesync _fs, float complex _x, unsigned int _sym);
-void flexframesync_execute_rxheader( flexframesync _fs, float complex _x, unsigned int _sym);
-void flexframesync_execute_rxpayload(flexframesync _fs, float complex _x, unsigned int _sym);
-void flexframesync_execute_reset(    flexframesync _fs, float complex _x, unsigned int _sym);
-
-// advanced mode
-void flexframesync_csma_lock(flexframesync _fs);
-void flexframesync_csma_unlock(flexframesync _fs);
-
 //
 // bpacket
 //

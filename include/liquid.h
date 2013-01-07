@@ -2181,6 +2181,7 @@ int flexframegen_write_samples(flexframegen           _q,
 
 // frame synchronizer
 
+#if 0
 typedef struct flexframesync_s * flexframesync;
 
 // create flexframesync object
@@ -2204,6 +2205,40 @@ void flexframesync_set_csma_callbacks(flexframesync _fs,
                                       framesync_csma_callback _csma_lock,
                                       framesync_csma_callback _csma_unlock,
                                       void * _csma_userdata);
+#else
+typedef struct flexframesync_s * flexframesync;
+
+// create flexframesync object
+//  _callback   :   callback function
+//  _userdata   :   user data pointer passed to callback function
+flexframesync flexframesync_create(framesync_callback _callback,
+                                   void *             _userdata);
+
+// destroy frame synchronizer
+void flexframesync_destroy(flexframesync _q);
+
+// print frame synchronizer internal properties
+void flexframesync_print(flexframesync _q);
+
+// reset frame synchronizer internal state
+void flexframesync_reset(flexframesync _q);
+
+// push samples through frame synchronizer
+//  _q      :   frame synchronizer object
+//  _x      :   input samples [size: _n x 1]
+//  _n      :   number of input samples
+void flexframesync_execute(flexframesync          _q,
+                           liquid_float_complex * _x,
+                           unsigned int           _n);
+
+// enable/disable debugging
+void flexframesync_debug_enable(flexframesync _q);
+void flexframesync_debug_disable(flexframesync _q);
+void flexframesync_debug_print(flexframesync _q,
+                               const char *  _filename);
+
+#endif
+
 
 //
 // bpacket : binary packet suitable for data streaming
