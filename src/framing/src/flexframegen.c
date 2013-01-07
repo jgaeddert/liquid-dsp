@@ -92,7 +92,7 @@ struct flexframegen_s {
     interp_crcf interp;                 // interpolator object
 
     // counters/states
-    unsigned int symbol_number;         // output symbol number
+    unsigned int symbol_counter;         // output symbol number
     enum {
         STATE_PREAMBLE=0,               // write preamble p/n sequence
         STATE_HEADER,                   // write header symbols
@@ -170,14 +170,6 @@ void flexframegen_destroy(flexframegen _q)
     free(_q);
 }
 
-void flexframegen_reset(flexframegen _q)
-{
-    // reset internal state
-    _q->symbol_number = 0;
-    _q->frame_assembled = 0;
-    _q->state = STATE_PREAMBLE;
-}
-
 // print flexframegen object internals
 void flexframegen_print(flexframegen _q)
 {
@@ -190,6 +182,24 @@ void flexframegen_print(flexframegen _q)
     printf("    payload len, coded  :   %u bytes\n", _q->payload_enc_len);
     printf("    modulation scheme   :   %s\n", modulation_types[_q->props.mod_scheme].name);
     printf("    num payload symbols :   %u\n", _q->payload_mod_len);
+}
+
+// reset flexframegen object internals
+void flexframegen_reset(flexframegen _q)
+{
+    // reset internal counters
+    _q->symbol_counter  = 0;
+    _q->frame_assembled = 0;
+    _q->frame_complete  = 0;
+
+    // reset state
+    _q->state = STATE_PREAMBLE;
+}
+
+// is frame assembled?
+int flexframegen_is_assembled(flexframegen _q)
+{
+    return _q->frame_assembled;
 }
 
 // get flexframegen properties
@@ -291,8 +301,10 @@ void flexframegen_assemble(flexframegen    _q,
     liquid_repack_bytes(_q->payload_enc,  8,  _q->payload_enc_len,
                         _q->payload_mod, bps, _q->payload_mod_len,
                         &num_written);
+
 #if DEBUG_FLEXFRAMEGEN
     printf("wrote %u symbols (expected %u)\n", num_written, _q->payload_mod_len);
+    flexframegen_print(_q);
 #endif
 }
 
@@ -307,10 +319,6 @@ int flexframegen_write_samples(flexframegen    _q,
         fprintf(stderr,"warning: flexframegen_writesymbol(), frame not assembled\n");
         return 1;
     }
-
-    // increment symbol counter
-    _q->symbol_number++;
-    //printf("writesymbol(): %u\n", _q->symbol_number);
 
     switch (_q->state) {
     case STATE_PREAMBLE:
@@ -327,7 +335,7 @@ int flexframegen_write_samples(flexframegen    _q,
         break;
     case STATE_TAIL:
         // write tail symbols
-        flexframegen_write_payload(_q, _buffer);
+        flexframegen_write_tail(_q, _buffer);
         break;
     default:
         fprintf(stderr,"error: flexframegen_writesymbol(), unknown/unsupported internal state\n");
@@ -378,6 +386,9 @@ void flexframegen_reconfigure(flexframegen _q)
     _q->payload_mod_len = d.quot + (d.rem ? 1 : 0);
     _q->payload_mod = (unsigned char*)realloc(_q->payload_mod,
                                               _q->payload_mod_len*sizeof(unsigned char));
+#if DEBUG_FLEXFRAMEGEN
+    printf(">>>> payload mod length : %u\n", _q->payload_mod_len);
+#endif
 }
 
 // encode header of flexframe
@@ -453,16 +464,19 @@ void flexframegen_write_preamble(flexframegen    _q,
                                  float complex * _buffer)
 {
 #if DEBUG_FLEXFRAMEGEN
-    printf("writing preamble symbol\n");
+    //printf("writing preamble symbol %u\n", _q->symbol_counter);
 #endif
 
     // interpolate symbol
-    float complex s = _q->preamble_pn[_q->symbol_number];
+    float complex s = _q->preamble_pn[_q->symbol_counter];
     interp_crcf_execute(_q->interp, s, _buffer);
 
+    // increment symbol counter
+    _q->symbol_counter++;
+
     // check state
-    if (_q->symbol_number == 64) {
-        _q->symbol_number = 0;
+    if (_q->symbol_counter == 64) {
+        _q->symbol_counter = 0;
         _q->state = STATE_HEADER;
     }
 }
@@ -472,18 +486,21 @@ void flexframegen_write_header(flexframegen    _q,
                                float complex * _buffer)
 {
 #if DEBUG_FLEXFRAMEGEN
-    printf("writing header symbol\n");
+    //printf("writing header symbol %u\n", _q->symbol_counter);
 #endif
 
     float complex s;
-    modem_modulate(_q->mod_header, _q->header_sym[_q->symbol_number], &s);
+    modem_modulate(_q->mod_header, _q->header_sym[_q->symbol_counter], &s);
 
     // interpolate symbol
     interp_crcf_execute(_q->interp, s, _buffer);
 
+    // increment symbol counter
+    _q->symbol_counter++;
+
     // check state
-    if (_q->symbol_number == 256) {
-        _q->symbol_number = 0;
+    if (_q->symbol_counter == 256) {
+        _q->symbol_counter = 0;
         _q->state = STATE_PAYLOAD;
     }
 }
@@ -493,18 +510,21 @@ void flexframegen_write_payload(flexframegen    _q,
                                 float complex * _buffer)
 {
 #if DEBUG_FLEXFRAMEGEN
-    printf("writing payload symbol\n");
+    //printf("writing payload symbol %u\n", _q->symbol_counter);
 #endif
 
     float complex s;
-    modem_modulate(_q->mod_payload, _q->payload_mod[_q->symbol_number], &s);
+    modem_modulate(_q->mod_payload, _q->payload_mod[_q->symbol_counter], &s);
 
     // interpolate symbol
     interp_crcf_execute(_q->interp, s, _buffer);
 
+    // increment symbol counter
+    _q->symbol_counter++;
+
     // check state
-    if (_q->symbol_number == _q->payload_mod_len) {
-        _q->symbol_number = 0;
+    if (_q->symbol_counter == _q->payload_mod_len) {
+        _q->symbol_counter = 0;
         _q->state = STATE_TAIL;
     }
 }
@@ -514,14 +534,17 @@ void flexframegen_write_tail(flexframegen    _q,
                              float complex * _buffer)
 {
 #if DEBUG_FLEXFRAMEGEN
-    printf("writing tail symbol\n");
+    //printf("writing tail symbol %u\n", _q->symbol_counter);
 #endif
 
     // interpolate symbol
     interp_crcf_execute(_q->interp, 0.0f, _buffer);
 
+    // increment symbol counter
+    _q->symbol_counter++;
+
     // check state
-    if (_q->symbol_number == 2*_q->m)
+    if (_q->symbol_counter == 2*_q->m)
         _q->frame_complete = 1;
 }
 

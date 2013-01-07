@@ -2132,17 +2132,41 @@ typedef struct {
     unsigned int fec1;          // forward error-correction scheme (outer)
     unsigned int mod_scheme;    // modulation scheme
 } flexframegenprops_s;
+
 void flexframegenprops_init_default(flexframegenprops_s * _fgprops);
+
 typedef struct flexframegen_s * flexframegen;
-flexframegen flexframegen_create(flexframegenprops_s * _fgprops);
+
+// create flexframegen object
+//  _props  :   frame properties (modulation scheme, etc.)
+flexframegen flexframegen_create(flexframegenprops_s * _props);
+
+// destroy flexframegen object
 void flexframegen_destroy(flexframegen _q);
-void flexframegen_reset(flexframegen _q);
-void flexframegen_getprops(flexframegen _q, flexframegenprops_s * _fgprops);
-void flexframegen_setprops(flexframegen _q, flexframegenprops_s * _fgprops);
+
+// print flexframegen object internals
 void flexframegen_print(flexframegen _q);
+
+// reset flexframegen object internals
+void flexframegen_reset(flexframegen _q);
+
+// is frame assembled?
+int flexframegen_is_assembled(flexframegen _q);
+
+// get frame properties
+void flexframegen_getprops(flexframegen _q, flexframegenprops_s * _props);
+
+// set frame properties
+void flexframegen_setprops(flexframegen _q, flexframegenprops_s * _props);
+
+// get length of assembled frame (samples)
 unsigned int flexframegen_getframelen(flexframegen _q);
 
 // assemble a frame from an array of data
+//  _q              :   frame generator object
+//  _header         :   frame header
+//  _payload        :   payload data [size: _payload_len x 1]
+//  _payload_len    :   payload data length
 void flexframegen_assemble(flexframegen    _q,
                            unsigned char * _header,
                            unsigned char * _payload,
@@ -2387,7 +2411,8 @@ unsigned int ofdmflexframegen_getframelen(ofdmflexframegen _q);
 // assemble a frame from an array of data
 //  _q              :   OFDM frame generator object
 //  _header         :   frame header [8 bytes]
-//  _payload        :   payload data
+//  _payload        :   payload data [size: _payload_len x 1]
+//  _payload_len    :   payload data length
 void ofdmflexframegen_assemble(ofdmflexframegen _q,
                                unsigned char * _header,
                                unsigned char * _payload,

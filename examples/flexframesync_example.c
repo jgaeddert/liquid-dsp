@@ -51,9 +51,9 @@ int main(int argc, char *argv[]) {
     // create flexframegen object
     flexframegenprops_s fgprops;
     flexframegenprops_init_default(&fgprops);
-    fgprops.check       = LIQUID_CRC_NONE;
+    fgprops.check       = LIQUID_CRC_32;
     fgprops.fec0        = LIQUID_FEC_NONE;
-    fgprops.fec1        = LIQUID_FEC_NONE;
+    fgprops.fec1        = LIQUID_FEC_HAMMING128;
     fgprops.mod_scheme  = mod_scheme;
     flexframegen fg = flexframegen_create(&fgprops);
     flexframegen_print(fg);
@@ -80,12 +80,14 @@ int main(int argc, char *argv[]) {
 
     // generate the frame
     unsigned int frame_len = flexframegen_getframelen(fg);
+    printf("frame length : %u samples\n", frame_len);
     float complex x[frame_len];
     float complex y[frame_len];
 
     int frame_complete = 0;
     unsigned int n=0;
     while (!frame_complete) {
+        //printf("assert %6u < %6u\n", n, frame_len);
         assert(n < frame_len);
         frame_complete = flexframegen_write_samples(fg, &x[n]);
         n += 2;
