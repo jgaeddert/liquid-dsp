@@ -32,7 +32,7 @@
 
 #include "liquid.internal.h"
 
-#define DEBUG_FLEXFRAMEGEN          1
+#define DEBUG_FLEXFRAMEGEN          0
 
 // reconfigure internal properties
 void flexframegen_reconfigure(flexframegen _q);

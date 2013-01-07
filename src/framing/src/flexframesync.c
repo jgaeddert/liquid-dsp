@@ -33,7 +33,7 @@
 #include "liquid.internal.h"
 
 #define DEBUG_FLEXFRAMESYNC         1
-#define DEBUG_FLEXFRAMESYNC_PRINT   1
+#define DEBUG_FLEXFRAMESYNC_PRINT   0
 #define DEBUG_FILENAME              "flexframesync_internal_debug.m"
 #define DEBUG_BUFFER_LEN            (1600)
 
@@ -358,8 +358,8 @@ void flexframesync_execute_seekpn(flexframesync _q,
 
     // check if frame has been detected
     if (detected) {
-        printf("***** frame detected! tau-hat:%8.4f, dphi-hat:%8.4f, gamma:%8.2f dB\n",
-                _q->tau_hat, _q->dphi_hat, 20*log10f(_q->gamma_hat));
+        //printf("***** frame detected! tau-hat:%8.4f, dphi-hat:%8.4f, gamma:%8.2f dB\n",
+        //        _q->tau_hat, _q->dphi_hat, 20*log10f(_q->gamma_hat));
 
         // push buffered samples through synchronizer
         // NOTE: this will set internal state appropriately
@@ -753,7 +753,7 @@ void flexframesync_decode_header(flexframesync _q)
                       _q->header_enc, 32,
                       &num_written);
     assert(num_written==32);
-#if DEBUG_FLEXFRAMESYNC
+#if DEBUG_FLEXFRAMESYNC_PRINT
     unsigned int i;
     // print header (encoded)
     printf("header rx (enc) : ");
@@ -972,7 +972,7 @@ void flexframesync_debug_print(flexframesync  _q,
     fprintf(fid,"ylabel('quadrature phase');\n");
     fprintf(fid,"legend('p/n syms','payload syms','location','northeast');\n");
     fprintf(fid,"grid on;\n");
-    fprintf(fid,"axis([-1 1 -1 1]*1.3);\n");
+    fprintf(fid,"axis([-1 1 -1 1]*1.5);\n");
     fprintf(fid,"axis square;\n");
 
 #if 0

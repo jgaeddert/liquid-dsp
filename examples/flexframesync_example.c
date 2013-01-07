@@ -30,7 +30,7 @@ void usage()
 {
     printf("ofdmflexframesync_example [options]\n");
     printf("  u/h   : print usage\n");
-    printf("  s     : signal-to-noise ratio [dB], default: 30\n");
+    printf("  s     : signal-to-noise ratio [dB], default: 20\n");
     printf("  F     : carrier frequency offset, default: 0.01\n");
     printf("  n     : payload length [bytes], default: 120\n");
     printf("  m     : modulation scheme (qpsk default)\n");
@@ -61,10 +61,10 @@ int main(int argc, char *argv[])
     crc_scheme check         =  LIQUID_CRC_32;     // data validity check
     fec_scheme fec0          =  LIQUID_FEC_NONE;   // fec (inner)
     fec_scheme fec1          =  LIQUID_FEC_NONE;   // fec (outer)
-    unsigned int payload_len =  64;                // payload length
+    unsigned int payload_len =  120;               // payload length
     int debug_enabled        =  0;                 // enable debugging?
-    float noise_floor        = -30.0f;             // noise floor
-    float SNRdB              =  30.0f;             // signal-to-noise ratio
+    float noise_floor        = -60.0f;             // noise floor
+    float SNRdB              =  20.0f;             // signal-to-noise ratio
     float dphi               =  0.01f;             // carrier frequency offset
 
     // get options
