@@ -85,25 +85,6 @@ struct flexframesync_s {
     float complex preamble_rx[64];  // received p/n symbols
     float complex payload_syms[600];// payload symbols
     
-    // header (QPSK)
-    modem demod_header;             // header QPSK demodulator
-    packetizer p_header;            // header packetizer
-    unsigned char header_mod[256];  // header demodulated symbols
-    unsigned char header_enc[32];   // header data (encoded)
-    unsigned char header[19];       // header data (decoded)
-    int header_valid;               // header passed crc?
-
-#if 0
-    // payload
-    packetizer p_payload;           // payload packetizer
-    unsigned int payload_dec_len;   // payload length (num un-encoded bytes)
-    modem mod_payload;              // payload modulator
-    unsigned char * payload_enc;    // payload data (encoded bytes)
-    unsigned char * payload_mod;    // payload symbols (modem input)
-    unsigned int payload_enc_len;   // length of encoded payload
-    unsigned int payload_mod_len;   // length of encoded payload
-#endif
-
     // synchronizer objects
     detector_cccf frame_detector;   // pre-demod detector
     windowcf buffer;                // pre-demod buffered samples, size: k*(pn_len+m)
@@ -119,14 +100,29 @@ struct flexframesync_s {
     int pfb_index;                  // hard filterbank index
     int pfb_timer;                  // filterbank output flag
 
-    // QPSK payload demodulator
-    modem demod;
+    // header
+    modem demod_header;             // header BPSK demodulator
+    packetizer p_header;            // header packetizer
+    unsigned char header_mod[256];  // header demodulated symbols
+    unsigned char header_enc[32];   // header data (encoded)
+    unsigned char header[19];       // header data (decoded)
+    int header_valid;               // header passed crc?
 
-    // payload decoder
+    // payload properties
+    modulation_scheme ms_payload;   // payload modulation scheme
+    unsigned int bps_payload;       // payload modulation depth (bits/symbol)
+    modem demod_payload;            // payload demodulator
+    crc_scheme check;               // payload validity check
+    fec_scheme fec0;                // payload FEC (inner)
+    fec_scheme fec1;                // payload FEC (outer)
+    unsigned int payload_mod_len;   // length of encoded payload
+    unsigned int payload_enc_len;   // length of encoded payload
+    unsigned int payload_dec_len;   // payload length (num un-encoded bytes)
+    unsigned char * payload_mod;    // payload symbols (modem input)
+    unsigned char * payload_enc;    // payload data (encoded bytes)
+    unsigned char * payload_dec;    // payload data (encoded bytes)
     packetizer p_payload;           // payload packetizer
-    unsigned char payload_enc[150]; // encoded payload bytes
-    unsigned char payload_dec[72];  // decoded pyaload bytes
-    int crc_pass;                   // flag to determine if payload passed
+    int payload_valid;              // did payload pass crc?
     
     // status variables
     enum {
@@ -163,7 +159,7 @@ flexframesync flexframesync_create(framesync_callback _callback,
     unsigned int i;
 
     // generate p/n sequence
-    msequence ms = msequence_create(6, 0x006b, 1);
+    msequence ms = msequence_create(6, 0x005b, 1);
     for (i=0; i<64; i++)
         q->preamble_pn[i] = (msequence_advance(ms)) ? 1.0f : -1.0f;
     msequence_destroy(ms);
@@ -202,16 +198,22 @@ flexframesync flexframesync_create(framesync_callback _callback,
     q->p_header   = packetizer_create(19, LIQUID_CRC_16, LIQUID_FEC_HAMMING128, LIQUID_FEC_NONE);
     assert(packetizer_get_enc_msg_len(q->p_header)==32);
 
-    // create payload demodulator
-    q->demod = modem_create(LIQUID_MODEM_QPSK);
+    // frame properties (default values to be overwritten when frame
+    // header is received and properly decoded)
+    q->ms_payload      = LIQUID_MODEM_QPSK;
+    q->bps_payload     = 2;
+    q->payload_dec_len = 1;
+    q->check           = LIQUID_CRC_NONE;
+    q->fec0            = LIQUID_FEC_NONE;
+    q->fec1            = LIQUID_FEC_NONE;
 
-    // create payload packet decoder
-    unsigned int n   = 72;
-    crc_scheme check = LIQUID_CRC_24;
-    fec_scheme fec0  = LIQUID_FEC_NONE;
-    fec_scheme fec1  = LIQUID_FEC_GOLAY2412;
-    assert(packetizer_compute_enc_msg_len(n, check, fec0, fec1)==150);
-    q->p_payload = packetizer_create(n, check, fec0, fec1);
+    // create payload objects (overridden by received properties)
+    q->demod_payload   = modem_create(LIQUID_MODEM_QPSK);
+    q->p_payload       = packetizer_create(q->payload_dec_len, q->check, q->fec0, q->fec1);
+    q->payload_enc_len = packetizer_get_enc_msg_len(q->p_payload);
+    q->payload_enc     = (unsigned char*) malloc(q->payload_enc_len*sizeof(unsigned char));
+    q->payload_dec     = (unsigned char*) malloc(q->payload_dec_len*sizeof(unsigned char));
+    q->payload_mod_len = 0;
 
 #if DEBUG_FLEXFRAMESYNC
     // set debugging flags, objects to NULL
@@ -246,7 +248,7 @@ void flexframesync_destroy(flexframesync _q)
 
     modem_destroy(_q->demod_header);            // header demodulator
     packetizer_destroy(_q->p_header);           // header packetizer
-    modem_destroy(_q->demod);                   // payload demodulator
+    modem_destroy(_q->demod_payload);           // payload demodulator
     packetizer_destroy(_q->p_payload);          // payload decoder
 
     // free main object memory
@@ -590,13 +592,13 @@ void flexframesync_execute_rxheader(flexframesync _q,
         _q->header_mod[_q->header_counter] = (unsigned char)sym_out;
 
         // update phase-locked loop and fine-tuned NCO
-        float phase_error = modem_get_demodulator_phase_error(_q->demod);
+        float phase_error = modem_get_demodulator_phase_error(_q->demod_header);
         nco_crcf_pll_step(_q->nco_fine, phase_error);
         nco_crcf_step(_q->nco_fine);
 
 #if 0
         // update error vector magnitude
-        float evm = modem_get_demodulator_evm(_q->demod);
+        float evm = modem_get_demodulator_evm(_q->demod_header);
         _q->framestats.evm += evm*evm;
 #endif
 
@@ -626,7 +628,8 @@ void flexframesync_execute_rxpayload(flexframesync _q,
                                      float complex _x)
 {
     // reset
-
+    flexframesync_reset(_q);
+    return;
 }
 
 // decode header
@@ -691,33 +694,16 @@ void flexframesync_decode_header(flexframesync _q)
     }
 
     // strip off payload length
-    unsigned int payload_len = (_q->header[14] << 8) | (_q->header[15]);
-#if 0
-    _q->payload_len = payload_len;
+    unsigned int payload_dec_len = (_q->header[14] << 8) | (_q->header[15]);
+    _q->payload_dec_len = payload_dec_len;
 
     // configure payload receiver
     if (_q->header_valid) {
-        // configure modem
-        if (mod_scheme != _q->ms_payload) {
-#if DEBUG_FLEXFRAMESYNC_PRINT
-            printf("flexframesync : configuring payload modem : %u-%s\n",
-                    1<<mod_depth,
-                    modulation_types[mod_scheme].name);
-#endif
-            // set new modem properties
-            _q->ms_payload = mod_scheme;
-            _q->bps_payload = modulation_types[mod_scheme].bps;
+        // recreate modem
+        _q->ms_payload    = mod_scheme;
+        _q->bps_payload   = modulation_types[mod_scheme].bps;
+        _q->demod_payload = modem_recreate(_q->demod_payload, _q->ms_payload);
 
-            // recreate modem
-            _q->mod_payload = modem_recreate(_q->mod_payload, _q->ms_payload);
-        }
-
-#if DEBUG_FLEXFRAMESYNC_PRINT
-        printf("flexframesync : configuring payload packetizer : %s/%s/%s\n",
-                crc_scheme_str[check][0],
-                fec_scheme_str[fec0][0],
-                fec_scheme_str[fec1][0]);
-#endif
         // set new packetizer properties
         _q->check  = check;
         _q->fec0   = fec0;
@@ -725,29 +711,34 @@ void flexframesync_decode_header(flexframesync _q)
 
         // recreate packetizer object
         _q->p_payload = packetizer_recreate(_q->p_payload,
-                                             _q->payload_len,
-                                             _q->check,
-                                             _q->fec0,
-                                             _q->fec1);
+                                            _q->payload_dec_len,
+                                            _q->check,
+                                            _q->fec0,
+                                            _q->fec1);
 
         // re-compute payload encoded message length
-        _q->payload_enc_msg_len = packetizer_get_enc_msg_len(_q->p_payload);
+        _q->payload_enc_len = packetizer_get_enc_msg_len(_q->p_payload);
 
-        // configure buffers
-        flexframesync_configure_payload_buffers(_fs);
+        // re-allocate buffers accordingly
+        _q->payload_enc = (unsigned char*) realloc(_q->payload_enc, _q->payload_enc_len*sizeof(unsigned char));
+        _q->payload_dec = (unsigned char*) realloc(_q->payload_dec, _q->payload_dec_len*sizeof(unsigned char));
+
+        // re-compute number of modulated payload symbols
+        div_t d = div(8*_q->payload_enc_len, _q->bps_payload);
+        _q->payload_mod_len = d.quot + (d.rem ? 1 : 0);
     }
-#endif
     
 #if DEBUG_FLEXFRAMESYNC_PRINT
     // print results
     printf("flexframesync_decode_header():\n");
-    printf("    header crc  : %s\n", _q->header_valid ? "pass" : "FAIL");
-    printf("    check       : %s\n", crc_scheme_str[check][1]);
-    printf("    fec (inner) : %s\n", fec_scheme_str[fec0][1]);
-    printf("    fec (outer) : %s\n", fec_scheme_str[fec1][1]);
-    printf("    mod scheme  : %s\n", modulation_types[mod_scheme].name);
-    printf("    payload len : %u\n", payload_len);
-    printf("    num symbols : %u\n", 0);
+    printf("    header crc      : %s\n", _q->header_valid ? "pass" : "FAIL");
+    printf("    check           : %s\n", crc_scheme_str[check][1]);
+    printf("    fec (inner)     : %s\n", fec_scheme_str[fec0][1]);
+    printf("    fec (outer)     : %s\n", fec_scheme_str[fec1][1]);
+    printf("    mod scheme      : %s\n", modulation_types[mod_scheme].name);
+    printf("    payload dec len : %u\n", _q->payload_dec_len);
+    printf("    payload enc len : %u\n", _q->payload_enc_len);
+    printf("    payload mod len : %u\n", _q->payload_mod_len);
 
     printf("    user data   :");
     for (i=0; i<14; i++)

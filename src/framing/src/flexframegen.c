@@ -344,9 +344,6 @@ int flexframegen_write_samples(flexframegen    _q,
 
     if (_q->frame_complete) {
         // reset framing object
-#if DEBUG_FLEXFRAMEGEN
-        printf(" ...resetting...\n");
-#endif
         flexframegen_reset(_q);
         return 1;
     }
