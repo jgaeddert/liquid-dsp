@@ -193,7 +193,7 @@ flexframesync flexframesync_create(framesync_callback _callback,
     // create down-coverters for carrier phase tracking
     q->nco_coarse = nco_crcf_create(LIQUID_NCO);
     q->nco_fine   = nco_crcf_create(LIQUID_VCO);
-    nco_crcf_pll_set_bandwidth(q->nco_fine, 0.02f);
+    nco_crcf_pll_set_bandwidth(q->nco_fine, 0.01f);
     
     // create header objects
     q->demod_header = modem_create(LIQUID_MODEM_BPSK);
@@ -683,7 +683,6 @@ void flexframesync_execute_rxpayload(flexframesync _q,
         _q->payload_counter++;
 
         if (_q->payload_counter == _q->payload_mod_len) {
-            printf(">>>>>> payload received\n");
             // decode payload and invoke callback
             flexframesync_decode_payload(_q);
 
@@ -843,7 +842,6 @@ void flexframesync_decode_header(flexframesync _q)
 // decode payload
 void flexframesync_decode_payload(flexframesync _q)
 {
-    printf(">>>>> decoding payload...\n");
     // pack (8-bit) bytes from (bps_payload-bit) symbols
     unsigned int num_written;
     liquid_repack_bytes(_q->payload_mod, _q->bps_payload, _q->payload_mod_len,

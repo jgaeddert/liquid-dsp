@@ -21,9 +21,27 @@
 #include <string.h>
 #include <math.h>
 #include <time.h>
+#include <getopt.h>
 #include <assert.h>
 
 #include "liquid.h"
+
+void usage()
+{
+    printf("ofdmflexframesync_example [options]\n");
+    printf("  u/h   : print usage\n");
+    printf("  s     : signal-to-noise ratio [dB], default: 30\n");
+    printf("  F     : carrier frequency offset, default: 0.01\n");
+    printf("  n     : payload length [bytes], default: 120\n");
+    printf("  m     : modulation scheme (qpsk default)\n");
+    liquid_print_modulation_schemes();
+    printf("  v     : data integrity check: crc32 default\n");
+    liquid_print_crc_schemes();
+    printf("  c     : coding scheme (inner): h74 default\n");
+    printf("  k     : coding scheme (outer): none default\n");
+    liquid_print_fec_schemes();
+    printf("  d     : enable debugging\n");
+}
 
 // flexframesync callback function
 static int callback(unsigned char *  _header,
@@ -34,15 +52,39 @@ static int callback(unsigned char *  _header,
                     framesyncstats_s _stats,
                     void *           _userdata);
 
-int main(int argc, char *argv[]) {
+int main(int argc, char *argv[])
+{
     srand( time(NULL) );
 
     // options
-    float SNRdB = 30.0f;            // signal-to-noise ratio
-    float noise_floor = -30.0f;     // noise floor
-    modulation_scheme mod_scheme = LIQUID_MODEM_QPSK;
-    unsigned int payload_len = 64;  // payload length
-    int debug_enabled = 1;
+    modulation_scheme ms     =  LIQUID_MODEM_QPSK; // mod. scheme
+    crc_scheme check         =  LIQUID_CRC_32;     // data validity check
+    fec_scheme fec0          =  LIQUID_FEC_NONE;   // fec (inner)
+    fec_scheme fec1          =  LIQUID_FEC_NONE;   // fec (outer)
+    unsigned int payload_len =  64;                // payload length
+    int debug_enabled        =  0;                 // enable debugging?
+    float noise_floor        = -30.0f;             // noise floor
+    float SNRdB              =  30.0f;             // signal-to-noise ratio
+    float dphi               =  0.01f;             // carrier frequency offset
+
+    // get options
+    int dopt;
+    while((dopt = getopt(argc,argv,"uhs:F:n:m:v:c:k:d")) != EOF){
+        switch (dopt) {
+        case 'u':
+        case 'h': usage();                                       return 0;
+        case 's': SNRdB         = atof(optarg);                  break;
+        case 'F': dphi          = atof(optarg);                  break;
+        case 'n': payload_len   = atol(optarg);                  break;
+        case 'm': ms            = liquid_getopt_str2mod(optarg); break;
+        case 'v': check         = liquid_getopt_str2crc(optarg); break;
+        case 'c': fec0          = liquid_getopt_str2fec(optarg); break;
+        case 'k': fec1          = liquid_getopt_str2fec(optarg); break;
+        case 'd': debug_enabled = 1;                             break;
+        default:
+            exit(-1);
+        }
+    }
 
     // derived values
     unsigned int i;
@@ -52,10 +94,10 @@ int main(int argc, char *argv[]) {
     // create flexframegen object
     flexframegenprops_s fgprops;
     flexframegenprops_init_default(&fgprops);
-    fgprops.check       = LIQUID_CRC_32;
-    fgprops.fec0        = LIQUID_FEC_NONE;
-    fgprops.fec1        = LIQUID_FEC_HAMMING128;
-    fgprops.mod_scheme  = mod_scheme;
+    fgprops.mod_scheme  = ms;
+    fgprops.check       = check;
+    fgprops.fec0        = fec0;
+    fgprops.fec1        = fec1;
     flexframegen fg = flexframegen_create(&fgprops);
     flexframegen_print(fg);
 
@@ -101,8 +143,8 @@ int main(int argc, char *argv[]) {
 
     // add noise and push through synchronizer
     for (i=0; i<num_samples; i++) {
-        // apply channel gain to input
-        y[i] = gamma * x[i];
+        // apply channel gain and carrier offset to input
+        y[i] = gamma * x[i] * cexpf(_Complex_I*dphi*i);
 
         // add noise
         y[i] += nstd*( randnf() + _Complex_I*randnf())*M_SQRT1_2;
@@ -133,10 +175,10 @@ static int callback(unsigned char *  _header,
 {
     printf("******** callback invoked\n");
 
-    printf("    header crc          : %s\n", _header_valid ?  "pass" : "FAIL");
-    printf("    payload length      : %u\n", _payload_len);
-    printf("    payload crc         : %s\n", _payload_valid ?  "pass" : "FAIL");
     framesyncstats_print(&_stats);
+    printf("    header crc          :   %s\n", _header_valid ?  "pass" : "FAIL");
+    printf("    payload length      :   %u\n", _payload_len);
+    printf("    payload crc         :   %s\n", _payload_valid ?  "pass" : "FAIL");
 
     return 0;
 }
