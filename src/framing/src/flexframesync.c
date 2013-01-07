@@ -32,28 +32,28 @@
 
 #include "liquid.internal.h"
 
-#define DEBUG_FLEXFRAMESYNC           1
-#define DEBUG_FLEXFRAMESYNC_PRINT     1
+#define DEBUG_FLEXFRAMESYNC         1
+#define DEBUG_FLEXFRAMESYNC_PRINT   1
 #define DEBUG_FILENAME              "flexframesync_internal_debug.m"
 #define DEBUG_BUFFER_LEN            (1600)
 
 // push samples through detection stage
-void flexframesync_execute_seekpn(flexframesync   _q,
-                                float complex _x);
+void flexframesync_execute_seekpn(flexframesync _q,
+                                  float complex _x);
 
 // update symbol synchronizer internal state (filtered error, index, etc.)
 //  _q      :   frame synchronizer
 //  _mf     :   matched-filter output
 //  _dmf    :   derivative matched-filter output
-void flexframesync_update_symsync(flexframesync   _q,
-                                float complex _mf,
-                                float complex _dmf);
+void flexframesync_update_symsync(flexframesync _q,
+                                  float complex _mf,
+                                  float complex _dmf);
 
 // push buffered p/n sequence through synchronizer
 void flexframesync_pushpn(flexframesync _q);
 
 // push samples through synchronizer, saving received p/n symbols
-void flexframesync_execute_rxpn(flexframesync   _q,
+void flexframesync_execute_rxpn(flexframesync _q,
                                 float complex _x);
 
 // once p/n symbols are buffered, estimate residual carrier
@@ -61,11 +61,11 @@ void flexframesync_execute_rxpn(flexframesync   _q,
 void flexframesync_syncpn(flexframesync _q);
 
 // receive header symbols
-void flexframesync_execute_rxheader(flexframesync   _q,
+void flexframesync_execute_rxheader(flexframesync _q,
                                     float complex _x);
 
 // receive payload symbols
-void flexframesync_execute_rxpayload(flexframesync   _q,
+void flexframesync_execute_rxpayload(flexframesync _q,
                                      float complex _x);
 
 // decode header
@@ -81,12 +81,11 @@ struct flexframesync_s {
     void * userdata;                // user-defined data structure
     framesyncstats_s framestats;    // frame statistic object
     
-    float         preamble_pn[64];  // known 64-symbol p/n sequence
-    float complex preamble_rx[64];  // received p/n symbols
-    float complex payload_syms[600];// payload symbols
-    
     // synchronizer objects
     detector_cccf frame_detector;   // pre-demod detector
+    float tau_hat;                  // fractional timing offset estimate
+    float dphi_hat;                 // carrier frequency offset estimate
+    float gamma_hat;                // channel gain estimate
     windowcf buffer;                // pre-demod buffered samples, size: k*(pn_len+m)
     nco_crcf nco_coarse;            // coarse carrier frequency recovery
     nco_crcf nco_fine;              // fine carrier recovery (after demod)
@@ -100,6 +99,10 @@ struct flexframesync_s {
     int pfb_index;                  // hard filterbank index
     int pfb_timer;                  // filterbank output flag
 
+    // preamble
+    float         preamble_pn[64];  // known 64-symbol p/n sequence
+    float complex preamble_rx[64];  // received p/n symbols
+    
     // header
     modem demod_header;             // header BPSK demodulator
     packetizer p_header;            // header packetizer
@@ -118,11 +121,13 @@ struct flexframesync_s {
     unsigned int payload_mod_len;   // length of encoded payload
     unsigned int payload_enc_len;   // length of encoded payload
     unsigned int payload_dec_len;   // payload length (num un-encoded bytes)
-    unsigned char * payload_mod;    // payload symbols (modem input)
+    unsigned char * payload_mod;    // payload symbols (modem output)
     unsigned char * payload_enc;    // payload data (encoded bytes)
     unsigned char * payload_dec;    // payload data (encoded bytes)
     packetizer p_payload;           // payload packetizer
     int payload_valid;              // did payload pass crc?
+    
+    float complex payload_sym[256]; // callback payload symbols (modem input)
     
     // status variables
     enum {
@@ -131,9 +136,6 @@ struct flexframesync_s {
         STATE_RXHEADER,             // receive header data
         STATE_RXPAYLOAD,            // receive payload data
     } state;
-    float tau_hat;                  // fractional timing offset estimate
-    float dphi_hat;                 // carrier frequency offset estimate
-    float gamma_hat;                // channel gain estimate
     unsigned int pn_counter;        // counter: num of p/n syms received
     unsigned int header_counter;    // counter: num of header syms received
     unsigned int payload_counter;   // counter: num of payload syms received
@@ -211,9 +213,10 @@ flexframesync flexframesync_create(framesync_callback _callback,
     q->demod_payload   = modem_create(LIQUID_MODEM_QPSK);
     q->p_payload       = packetizer_create(q->payload_dec_len, q->check, q->fec0, q->fec1);
     q->payload_enc_len = packetizer_get_enc_msg_len(q->p_payload);
+    q->payload_mod_len = 4 * q->payload_enc_len;
+    q->payload_mod     = (unsigned char*) malloc(q->payload_mod_len*sizeof(unsigned char));
     q->payload_enc     = (unsigned char*) malloc(q->payload_enc_len*sizeof(unsigned char));
     q->payload_dec     = (unsigned char*) malloc(q->payload_dec_len*sizeof(unsigned char));
-    q->payload_mod_len = 0;
 
 #if DEBUG_FLEXFRAMESYNC
     // set debugging flags, objects to NULL
@@ -250,6 +253,11 @@ void flexframesync_destroy(flexframesync _q)
     packetizer_destroy(_q->p_header);           // header packetizer
     modem_destroy(_q->demod_payload);           // payload demodulator
     packetizer_destroy(_q->p_payload);          // payload decoder
+
+    // free buffers and arrays
+    free(_q->payload_mod);      // 
+    free(_q->payload_enc);      // 
+    free(_q->payload_dec);      // 
 
     // free main object memory
     free(_q);
@@ -609,10 +617,8 @@ void flexframesync_execute_rxheader(flexframesync _q,
             // decode header and invoke callback
             flexframesync_decode_header(_q);
             
-            // reset just for kicks
-            printf("flexframesync : resetting prematurely\n");
-            flexframesync_reset(_q);
-            return;
+            // update state
+            _q->state = STATE_RXPAYLOAD;
         }
     }
 
@@ -627,9 +633,93 @@ void flexframesync_execute_rxheader(flexframesync _q,
 void flexframesync_execute_rxpayload(flexframesync _q,
                                      float complex _x)
 {
-    // reset
-    flexframesync_reset(_q);
-    return;
+    // mix signal down
+    float complex y;
+    nco_crcf_mix_down(_q->nco_coarse, _x*0.5f/_q->gamma_hat, &y);
+    nco_crcf_step(_q->nco_coarse);
+
+    // push sample into filterbanks
+    firpfb_crcf_push(_q->mf,  y);
+    firpfb_crcf_push(_q->dmf, y);
+
+    // compute output if timeout
+    if (_q->pfb_timer <= 0) {
+        // reset timer
+        _q->pfb_timer = 2;  // k samples/symbol
+
+        //
+        float complex y;    // matched-filter output
+        float complex dy;   // derivatived matched-filter output
+
+        firpfb_crcf_execute(_q->mf,  _q->pfb_index, &y);
+        firpfb_crcf_execute(_q->dmf, _q->pfb_index, &dy);
+
+        // update pfb index
+        flexframesync_update_symsync(_q, y, dy);
+
+        // push through fine-tuned nco
+        nco_crcf_mix_down(_q->nco_fine, y, &y);
+        // save payload symbols for callback (up to 256 values)
+        if (_q->payload_counter < 256)
+            _q->payload_sym[_q->payload_counter] = y;
+        
+        // demodulate
+        unsigned int sym_out = 0;
+        modem_demodulate(_q->demod_payload, y, &sym_out);
+        _q->payload_mod[_q->payload_counter] = (unsigned char)sym_out;
+
+        // update phase-locked loop and fine-tuned NCO
+        float phase_error = modem_get_demodulator_phase_error(_q->demod_payload);
+        nco_crcf_pll_step(_q->nco_fine, phase_error);
+        nco_crcf_step(_q->nco_fine);
+
+#if 0
+        // update error vector magnitude
+        float evm = modem_get_demodulator_evm(_q->demod_payload);
+        _q->framestats.evm += evm*evm;
+#endif
+
+        // increment counter
+        _q->payload_counter++;
+
+        if (_q->payload_counter == _q->payload_mod_len) {
+            printf(">>>>>> payload received\n");
+            // decode payload and invoke callback
+            flexframesync_decode_payload(_q);
+
+            // invoke callback
+            if (_q->callback != NULL) {
+                // set framestats internals
+                _q->framestats.cfo           = nco_crcf_get_frequency(_q->nco_coarse) +
+                                               nco_crcf_get_frequency(_q->nco_fine) / 2.0f; //(float)(_q->k);
+                _q->framestats.evm           = 0.0f;
+                _q->framestats.framesyms     = _q->payload_sym;
+                _q->framestats.num_framesyms = _q->payload_mod_len > 256 ? 256 : _q->payload_mod_len;
+                _q->framestats.mod_scheme    = _q->ms_payload;
+                _q->framestats.mod_bps       = _q->bps_payload;
+                _q->framestats.check         = _q->check;
+                _q->framestats.fec0          = _q->fec0;
+                _q->framestats.fec1          = _q->fec1;
+
+                // invoke callback method
+                int rc =
+                _q->callback(_q->header,
+                             _q->header_valid,
+                             _q->payload_dec,
+                             _q->payload_dec_len,
+                             _q->payload_valid,
+                             _q->framestats,
+                             _q->userdata);
+            }
+
+            // reset frame synchronizer
+            flexframesync_reset(_q);
+            return;
+        }
+    }
+
+    // decrement symbol timer
+    _q->pfb_timer--;
 }
 
 // decode header
@@ -719,13 +809,16 @@ void flexframesync_decode_header(flexframesync _q)
         // re-compute payload encoded message length
         _q->payload_enc_len = packetizer_get_enc_msg_len(_q->p_payload);
 
-        // re-allocate buffers accordingly
-        _q->payload_enc = (unsigned char*) realloc(_q->payload_enc, _q->payload_enc_len*sizeof(unsigned char));
-        _q->payload_dec = (unsigned char*) realloc(_q->payload_dec, _q->payload_dec_len*sizeof(unsigned char));
-
         // re-compute number of modulated payload symbols
         div_t d = div(8*_q->payload_enc_len, _q->bps_payload);
         _q->payload_mod_len = d.quot + (d.rem ? 1 : 0);
+        
+        // re-allocate buffers accordingly
+        // (give encoded a few extra bytes to compensate for repacking)
+        _q->payload_mod = (unsigned char*) realloc(_q->payload_mod, (_q->payload_mod_len  )*sizeof(unsigned char));
+        _q->payload_enc = (unsigned char*) realloc(_q->payload_enc, (_q->payload_enc_len+8)*sizeof(unsigned char));
+        _q->payload_dec = (unsigned char*) realloc(_q->payload_dec, (_q->payload_dec_len  )*sizeof(unsigned char));
+
     }
     
 #if DEBUG_FLEXFRAMESYNC_PRINT
@@ -740,7 +833,7 @@ void flexframesync_decode_header(flexframesync _q)
     printf("    payload enc len : %u\n", _q->payload_enc_len);
     printf("    payload mod len : %u\n", _q->payload_mod_len);
 
-    printf("    user data   :");
+    printf("    user data       :");
     for (i=0; i<14; i++)
         printf(" %.2x", _q->header[i]);
     printf("\n");
@@ -750,6 +843,17 @@ void flexframesync_decode_header(flexframesync _q)
 // decode payload
 void flexframesync_decode_payload(flexframesync _q)
 {
+    printf(">>>>> decoding payload...\n");
+    // pack (8-bit) bytes from (bps_payload-bit) symbols
+    unsigned int num_written;
+    liquid_repack_bytes(_q->payload_mod, _q->bps_payload, _q->payload_mod_len,
+                        _q->payload_enc, 8,               _q->payload_enc_len+8,
+                        &num_written);
+
+    // decode payload
+    _q->payload_valid = packetizer_decode(_q->p_payload,
+                                          _q->payload_enc,
+                                          _q->payload_dec);
 }
 
 // enable debugging
@@ -831,9 +935,10 @@ void flexframesync_debug_print(flexframesync  _q,
         fprintf(fid,"preamble_rx(%4u) = %12.4e + j*%12.4e;\n", i+1, crealf(rc[i]), cimagf(rc[i]));
 
     // write payload symbols
-    fprintf(fid,"payload_syms = zeros(1,600);\n");
-    rc = _q->payload_syms;
-    for (i=0; i<600; i++)
+    unsigned int num_payload_syms = _q->payload_mod_len > 256 ? 256 : _q->payload_mod_len;
+    fprintf(fid,"payload_syms = zeros(1,%u);\n", num_payload_syms);
+    rc = _q->payload_sym;
+    for (i=0; i<num_payload_syms; i++)
         fprintf(fid,"payload_syms(%4u) = %12.4e + j*%12.4e;\n", i+1, crealf(rc[i]), cimagf(rc[i]));
 
     fprintf(fid,"figure;\n");
