@@ -2127,30 +2127,33 @@ void framesync64_set_csma_callbacks(framesync64             _q,
 
 // frame generator
 typedef struct {
-    unsigned int rampup_len;    // number of ramp/up symbols
-    unsigned int phasing_len;   // number of phasing symbols
-    unsigned int payload_len;   // uncoded payload length (bytes)
     unsigned int check;         // data validity check
     unsigned int fec0;          // forward error-correction scheme (inner)
     unsigned int fec1;          // forward error-correction scheme (outer)
     unsigned int mod_scheme;    // modulation scheme
-    unsigned int rampdn_len;    // number of ramp\down symbols
 } flexframegenprops_s;
-void flexframegenprops_init_default(flexframegenprops_s * _props);
+void flexframegenprops_init_default(flexframegenprops_s * _fgprops);
 typedef struct flexframegen_s * flexframegen;
-flexframegen flexframegen_create(flexframegenprops_s * _props);
-void flexframegen_destroy(flexframegen _fg);
-void flexframegen_getprops(flexframegen _fg, flexframegenprops_s * _props);
-void flexframegen_setprops(flexframegen _fg, flexframegenprops_s * _props);
-void flexframegen_print(flexframegen _fg);
-unsigned int flexframegen_getframelen(flexframegen _fg);
-void flexframegen_execute(flexframegen _fg,
-                          unsigned char * _header,
-                          unsigned char * _payload,
-                          liquid_float_complex * _y);
-void flexframegen_flush(flexframegen _fg,
-                        unsigned int _n,
-                        liquid_float_complex * _y);
+flexframegen flexframegen_create(flexframegenprops_s * _fgprops);
+void flexframegen_destroy(flexframegen _q);
+void flexframegen_reset(flexframegen _q);
+void flexframegen_getprops(flexframegen _q, flexframegenprops_s * _fgprops);
+void flexframegen_setprops(flexframegen _q, flexframegenprops_s * _fgprops);
+void flexframegen_print(flexframegen _q);
+unsigned int flexframegen_getframelen(flexframegen _q);
+
+// assemble a frame from an array of data
+void flexframegen_assemble(flexframegen    _q,
+                           unsigned char * _header,
+                           unsigned char * _payload,
+                           unsigned int    _payload_len);
+
+// write samples of assembled frame, two samples at a time, returning
+// '1' when frame is complete, '0' otherwise
+//  _q              :   frame generator object
+//  _buffer         :   output buffer [size: 2 x 1]
+int flexframegen_write_samples(flexframegen           _q,
+                               liquid_float_complex * _buffer);
 
 // frame synchronizer
 
