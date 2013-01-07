@@ -604,11 +604,9 @@ void flexframesync_execute_rxheader(flexframesync _q,
         nco_crcf_pll_step(_q->nco_fine, phase_error);
         nco_crcf_step(_q->nco_fine);
 
-#if 0
         // update error vector magnitude
         float evm = modem_get_demodulator_evm(_q->demod_header);
         _q->framestats.evm += evm*evm;
-#endif
 
         // increment counter
         _q->header_counter++;
@@ -616,6 +614,37 @@ void flexframesync_execute_rxheader(flexframesync _q,
         if (_q->header_counter == 256) {
             // decode header and invoke callback
             flexframesync_decode_header(_q);
+            
+            // invoke callback if header is invalid
+            if (!_q->header_valid && _q->callback != NULL) {
+                // set framestats internals
+                _q->framestats.evm           = 20*log10f(sqrtf(_q->framestats.evm / 256.0f));
+                _q->framestats.rssi          = 20*log10f(_q->gamma_hat);
+                _q->framestats.cfo           = nco_crcf_get_frequency(_q->nco_coarse) +
+                                               nco_crcf_get_frequency(_q->nco_fine) / 2.0f; //(float)(_q->k);
+                _q->framestats.framesyms     = NULL;
+                _q->framestats.num_framesyms = 0;
+                _q->framestats.mod_scheme    = LIQUID_MODEM_UNKNOWN;
+                _q->framestats.mod_bps       = 0;
+                _q->framestats.check         = LIQUID_CRC_UNKNOWN;
+                _q->framestats.fec0          = LIQUID_FEC_UNKNOWN;
+                _q->framestats.fec1          = LIQUID_FEC_UNKNOWN;
+
+                // invoke callback method
+                _q->callback(_q->header,
+                             _q->header_valid,
+                             NULL,
+                             0,
+                             0,
+                             _q->framestats,
+                             _q->userdata);
+            }
+            
+            if (!_q->header_valid) {
+                flexframesync_reset(_q);
+                return;
+            }
+
             
             // update state
             _q->state = STATE_RXPAYLOAD;
@@ -673,12 +702,6 @@ void flexframesync_execute_rxpayload(flexframesync _q,
         nco_crcf_pll_step(_q->nco_fine, phase_error);
         nco_crcf_step(_q->nco_fine);
 
-#if 0
-        // update error vector magnitude
-        float evm = modem_get_demodulator_evm(_q->demod_payload);
-        _q->framestats.evm += evm*evm;
-#endif
-
         // increment counter
         _q->payload_counter++;
 
@@ -689,9 +712,10 @@ void flexframesync_execute_rxpayload(flexframesync _q,
             // invoke callback
             if (_q->callback != NULL) {
                 // set framestats internals
+                _q->framestats.evm           = 20*log10f(sqrtf(_q->framestats.evm / 256.0f));
+                _q->framestats.rssi          = 20*log10f(_q->gamma_hat);
                 _q->framestats.cfo           = nco_crcf_get_frequency(_q->nco_coarse) +
                                                nco_crcf_get_frequency(_q->nco_fine) / 2.0f; //(float)(_q->k);
-                _q->framestats.evm           = 0.0f;
                 _q->framestats.framesyms     = _q->payload_sym;
                 _q->framestats.num_framesyms = _q->payload_mod_len > 256 ? 256 : _q->payload_mod_len;
                 _q->framestats.mod_scheme    = _q->ms_payload;
@@ -701,7 +725,6 @@ void flexframesync_execute_rxpayload(flexframesync _q,
                 _q->framestats.fec1          = _q->fec1;
 
                 // invoke callback method
-                int rc =
                 _q->callback(_q->header,
                              _q->header_valid,
                              _q->payload_dec,
