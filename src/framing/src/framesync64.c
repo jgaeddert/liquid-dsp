@@ -78,7 +78,7 @@ struct framesync64_s {
     void * userdata;                // user-defined data structure
     framesyncstats_s framestats;    // frame statistic object
     
-    float complex pn_sequence[64];  // known 64-symbol p/n sequence
+    float         pn_sequence[64];  // known 64-symbol p/n sequence
     float complex pn_syms[64];      // received p/n symbols
     float complex payload_syms[600];// payload symbols
 
@@ -482,7 +482,7 @@ void framesync64_syncpn(framesync64 _q)
     float complex r1 = 0.0f;
     for (i=0; i<64; i++) {
         r0 = r1;
-        r1 = _q->pn_syms[i]*conjf(_q->pn_sequence[i]);
+        r1 = _q->pn_syms[i]*_q->pn_sequence[i];
         dphi_metric += r1 * conjf(r0);
     }
     float dphi_hat = cargf(dphi_metric);
@@ -504,7 +504,7 @@ void framesync64_syncpn(framesync64 _q)
         nco_crcf_mix_down(_q->nco_fine, _q->pn_syms[i], &_q->pn_syms[i]);
         
         // push through phase-locked loop
-        float phase_error = cimagf(_q->pn_syms[i]*conjf(_q->pn_sequence[i]));
+        float phase_error = cimagf(_q->pn_syms[i]*_q->pn_sequence[i]);
         nco_crcf_pll_step(_q->nco_fine, phase_error);
 #if DEBUG_FRAMESYNC64
         //if (_q->debug_enabled)
@@ -707,6 +707,7 @@ void framesync64_debug_print(framesync64  _q,
     }
     unsigned int i;
     float complex * rc;
+    float         * r;
     FILE* fid = fopen(_filename,"w");
     fprintf(fid,"%% %s: auto-generated file", _filename);
     fprintf(fid,"\n\n");
@@ -731,9 +732,9 @@ void framesync64_debug_print(framesync64  _q,
 
     // write p/n sequence
     fprintf(fid,"pn_sequence = zeros(1,64);\n");
-    rc = _q->pn_sequence;
+    r = _q->pn_sequence;
     for (i=0; i<64; i++)
-        fprintf(fid,"pn_sequence(%4u) = %12.4e + j*%12.4e;\n", i+1, crealf(rc[i]), cimagf(rc[i]));
+        fprintf(fid,"pn_sequence(%4u) = %12.4e;\n", i+1, r[i]);
 
     // write p/n symbols
     fprintf(fid,"pn_syms = zeros(1,64);\n");

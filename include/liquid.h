@@ -2127,33 +2127,61 @@ void framesync64_set_csma_callbacks(framesync64             _q,
 
 // frame generator
 typedef struct {
-    unsigned int rampup_len;    // number of ramp/up symbols
-    unsigned int phasing_len;   // number of phasing symbols
-    unsigned int payload_len;   // uncoded payload length (bytes)
     unsigned int check;         // data validity check
     unsigned int fec0;          // forward error-correction scheme (inner)
     unsigned int fec1;          // forward error-correction scheme (outer)
     unsigned int mod_scheme;    // modulation scheme
-    unsigned int rampdn_len;    // number of ramp\down symbols
 } flexframegenprops_s;
-void flexframegenprops_init_default(flexframegenprops_s * _props);
+
+void flexframegenprops_init_default(flexframegenprops_s * _fgprops);
+
 typedef struct flexframegen_s * flexframegen;
+
+// create flexframegen object
+//  _props  :   frame properties (modulation scheme, etc.)
 flexframegen flexframegen_create(flexframegenprops_s * _props);
-void flexframegen_destroy(flexframegen _fg);
-void flexframegen_getprops(flexframegen _fg, flexframegenprops_s * _props);
-void flexframegen_setprops(flexframegen _fg, flexframegenprops_s * _props);
-void flexframegen_print(flexframegen _fg);
-unsigned int flexframegen_getframelen(flexframegen _fg);
-void flexframegen_execute(flexframegen _fg,
-                          unsigned char * _header,
-                          unsigned char * _payload,
-                          liquid_float_complex * _y);
-void flexframegen_flush(flexframegen _fg,
-                        unsigned int _n,
-                        liquid_float_complex * _y);
+
+// destroy flexframegen object
+void flexframegen_destroy(flexframegen _q);
+
+// print flexframegen object internals
+void flexframegen_print(flexframegen _q);
+
+// reset flexframegen object internals
+void flexframegen_reset(flexframegen _q);
+
+// is frame assembled?
+int flexframegen_is_assembled(flexframegen _q);
+
+// get frame properties
+void flexframegen_getprops(flexframegen _q, flexframegenprops_s * _props);
+
+// set frame properties
+void flexframegen_setprops(flexframegen _q, flexframegenprops_s * _props);
+
+// get length of assembled frame (samples)
+unsigned int flexframegen_getframelen(flexframegen _q);
+
+// assemble a frame from an array of data
+//  _q              :   frame generator object
+//  _header         :   frame header
+//  _payload        :   payload data [size: _payload_len x 1]
+//  _payload_len    :   payload data length
+void flexframegen_assemble(flexframegen    _q,
+                           unsigned char * _header,
+                           unsigned char * _payload,
+                           unsigned int    _payload_len);
+
+// write samples of assembled frame, two samples at a time, returning
+// '1' when frame is complete, '0' otherwise
+//  _q              :   frame generator object
+//  _buffer         :   output buffer [size: 2 x 1]
+int flexframegen_write_samples(flexframegen           _q,
+                               liquid_float_complex * _buffer);
 
 // frame synchronizer
 
+#if 0
 typedef struct flexframesync_s * flexframesync;
 
 // create flexframesync object
@@ -2177,6 +2205,40 @@ void flexframesync_set_csma_callbacks(flexframesync _fs,
                                       framesync_csma_callback _csma_lock,
                                       framesync_csma_callback _csma_unlock,
                                       void * _csma_userdata);
+#else
+typedef struct flexframesync_s * flexframesync;
+
+// create flexframesync object
+//  _callback   :   callback function
+//  _userdata   :   user data pointer passed to callback function
+flexframesync flexframesync_create(framesync_callback _callback,
+                                   void *             _userdata);
+
+// destroy frame synchronizer
+void flexframesync_destroy(flexframesync _q);
+
+// print frame synchronizer internal properties
+void flexframesync_print(flexframesync _q);
+
+// reset frame synchronizer internal state
+void flexframesync_reset(flexframesync _q);
+
+// push samples through frame synchronizer
+//  _q      :   frame synchronizer object
+//  _x      :   input samples [size: _n x 1]
+//  _n      :   number of input samples
+void flexframesync_execute(flexframesync          _q,
+                           liquid_float_complex * _x,
+                           unsigned int           _n);
+
+// enable/disable debugging
+void flexframesync_debug_enable(flexframesync _q);
+void flexframesync_debug_disable(flexframesync _q);
+void flexframesync_debug_print(flexframesync _q,
+                               const char *  _filename);
+
+#endif
+
 
 //
 // bpacket : binary packet suitable for data streaming
@@ -2384,7 +2446,8 @@ unsigned int ofdmflexframegen_getframelen(ofdmflexframegen _q);
 // assemble a frame from an array of data
 //  _q              :   OFDM frame generator object
 //  _header         :   frame header [8 bytes]
-//  _payload        :   payload data
+//  _payload        :   payload data [size: _payload_len x 1]
+//  _payload_len    :   payload data length
 void ofdmflexframegen_assemble(ofdmflexframegen _q,
                                unsigned char * _header,
                                unsigned char * _payload,

@@ -1246,33 +1246,6 @@ void framegen64_byte_to_syms(unsigned char _byte,
 void framesync64_syms_to_byte(unsigned char * _syms,
                               unsigned char * _byte);
 
-// flexframegen
-void flexframegen_compute_payload_len(flexframegen _fg);
-void flexframegen_compute_frame_len(flexframegen _fg);
-void flexframegen_configure_payload_buffers(flexframegen _fg);
-void flexframegen_encode_header(flexframegen _fg);
-void flexframegen_modulate_header(flexframegen _fg);
-void flexframegen_modulate_payload(flexframegen _fg);
-//void flexframegen_tmp_getheaderenc(flexframegen _fg, unsigned char * _header_enc);
-
-// flexframesync
-void flexframesync_configure_payload_buffers(flexframesync _fs);
-void flexframesync_decode_header(flexframesync _fs);
-void flexframesync_assemble_payload(flexframesync _fs);
-void flexframesync_open_bandwidth(flexframesync _fs);
-void flexframesync_close_bandwidth(flexframesync _fs);
-void flexframesync_train_eq(flexframesync _fs);
-
-// 
-void flexframesync_execute_seekpn(   flexframesync _fs, float complex _x, unsigned int _sym);
-void flexframesync_execute_rxheader( flexframesync _fs, float complex _x, unsigned int _sym);
-void flexframesync_execute_rxpayload(flexframesync _fs, float complex _x, unsigned int _sym);
-void flexframesync_execute_reset(    flexframesync _fs, float complex _x, unsigned int _sym);
-
-// advanced mode
-void flexframesync_csma_lock(flexframesync _fs);
-void flexframesync_csma_unlock(flexframesync _fs);
-
 //
 // bpacket
 //
