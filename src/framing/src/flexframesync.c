@@ -848,6 +848,9 @@ void flexframesync_decode_payload(flexframesync _q)
                         _q->payload_enc, 8,               _q->payload_enc_len+8,
                         &num_written);
 
+    // unscramble
+    unscramble_data(_q->payload_enc, _q->payload_enc_len);
+    
     // decode payload
     _q->payload_valid = packetizer_decode(_q->p_payload,
                                           _q->payload_enc,

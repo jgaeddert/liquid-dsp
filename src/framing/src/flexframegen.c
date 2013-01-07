@@ -287,6 +287,7 @@ void flexframegen_assemble(flexframegen    _q,
 
     // encode payload
     packetizer_encode(_q->p_payload, _payload, _q->payload_enc);
+    scramble_data(_q->payload_enc, _q->payload_enc_len);
 
     // 
     // pack modem symbols
