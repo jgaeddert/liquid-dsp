@@ -72,9 +72,9 @@ struct flexframegen_s {
     // header (QPSK)
     modem mod_header;                   // header QPSK modulator
     packetizer p_header;                // header packetizer
-    unsigned char header[19];           // header data (uncoded)
-    unsigned char header_enc[32];       // header data (encoded)
-    unsigned char header_sym[256];      // header symbols
+    unsigned char header[FLEXFRAME_H_DEC];      // header data (uncoded)
+    unsigned char header_enc[FLEXFRAME_H_ENC];  // header data (encoded)
+    unsigned char header_sym[FLEXFRAME_H_SYM];  // header symbols
 
     // payload
     packetizer p_payload;               // payload packetizer
@@ -120,8 +120,11 @@ flexframegen flexframegen_create(flexframegenprops_s * _fgprops)
 
     // create header objects
     q->mod_header = modem_create(LIQUID_MODEM_BPSK);
-    q->p_header   = packetizer_create(19, LIQUID_CRC_16, LIQUID_FEC_HAMMING128, LIQUID_FEC_NONE);
-    assert(packetizer_get_enc_msg_len(q->p_header)==32);
+    q->p_header   = packetizer_create(FLEXFRAME_H_DEC,
+                                      FLEXFRAME_H_CRC,
+                                      FLEXFRAME_H_FEC,
+                                      LIQUID_FEC_NONE);
+    assert(packetizer_get_enc_msg_len(q->p_header)==FLEXFRAME_H_ENC);
 
     // initial memory allocation for payload
     q->payload_dec_len = 1;
@@ -175,6 +178,7 @@ void flexframegen_print(flexframegen _q)
 {
     printf("flexframegen:\n");
     printf("    p/n sequence len    :   %u\n",       64);
+    printf("    header len          :   %u\n",      FLEXFRAME_H_SYM);
     printf("    payload len, uncoded:   %u bytes\n", _q->payload_dec_len);
     printf("    payload crc         :   %s\n", crc_scheme_str[_q->props.check][1]);
     printf("    fec (inner)         :   %s\n", fec_scheme_str[_q->props.fec0][1]);
@@ -253,17 +257,17 @@ unsigned int flexframegen_getframelen(flexframegen _q)
         return 0;
     }
     unsigned int num_frame_symbols =
-            64 +    // preamble p/n sequence length
-            256 +   // header symbols
+            64 +                    // preamble p/n sequence length
+            FLEXFRAME_H_SYM +       // header symbols
             _q->payload_mod_len +   // number of modulation symbols
-            2*_q->m;   // number of tail symbols
+            2*_q->m;                // number of tail symbols
 
     return num_frame_symbols*_q->k; // k samples/symbol
 }
 
 // exectue frame generator (create the frame)
 //  _q              :   frame generator object
-//  _header         :   14-byte header
+//  _header         :   user-defined header
 //  _payload        :   variable payload buffer (configured by setprops method)
 //  _payload_len    :   length of payload
 void flexframegen_assemble(flexframegen    _q,
@@ -281,7 +285,7 @@ void flexframegen_assemble(flexframegen    _q,
     _q->frame_assembled = 1;
 
     // copy user-defined header data
-    memmove(_q->header, _header, 14*sizeof(unsigned char));
+    memmove(_q->header, _header, FLEXFRAME_H_USER*sizeof(unsigned char));
 
     // encode full header
     flexframegen_encode_header(_q);
@@ -396,8 +400,8 @@ void flexframegen_reconfigure(flexframegen _q)
 // encode header of flexframe
 void flexframegen_encode_header(flexframegen _q)
 {
-    // first 14 bytes of header are user-defined
-    unsigned int n = 14;
+    // first several bytes of header are user-defined
+    unsigned int n = FLEXFRAME_H_USER;
 
     // TODO: add FLEXFRAME_VERSION
 
@@ -420,7 +424,7 @@ void flexframegen_encode_header(flexframegen _q)
     packetizer_encode(_q->p_header, _q->header, _q->header_enc);
 
     // scramble encoded header
-    scramble_data(_q->header_enc, 32);
+    scramble_data(_q->header_enc, FLEXFRAME_H_ENC);
 
 #if DEBUG_FLEXFRAMEGEN
     // print header (decoded)
@@ -444,7 +448,7 @@ void flexframegen_modulate_header(flexframegen _q)
     unsigned int i;
 
     // unpack header symbols
-    for (i=0; i<32; i++) {
+    for (i=0; i<FLEXFRAME_H_ENC; i++) {
         _q->header_sym[8*i+0] = (_q->header_enc[i] >> 7) & 0x01;
         _q->header_sym[8*i+1] = (_q->header_enc[i] >> 6) & 0x01;
         _q->header_sym[8*i+2] = (_q->header_enc[i] >> 5) & 0x01;
@@ -501,7 +505,7 @@ void flexframegen_write_header(flexframegen    _q,
     _q->symbol_counter++;
 
     // check state
-    if (_q->symbol_counter == 256) {
+    if (_q->symbol_counter == FLEXFRAME_H_SYM) {
         _q->symbol_counter = 0;
         _q->state = STATE_PAYLOAD;
     }

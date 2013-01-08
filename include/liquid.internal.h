@@ -1,7 +1,5 @@
 /*
- * Copyright (c) 2007, 2008, 2009, 2010, 2011, 2012 Joseph Gaeddert
- * Copyright (c) 2007, 2008, 2009, 2010, 2011, 2012 Virginia Polytechnic
- *                                        Institute & State University
+ * Copyright (c) 2007, 2008, 2009, 2010, 2011, 2012, 2013 Joseph Gaeddert
  *
  * This file is part of liquid.
  *
@@ -1265,6 +1263,23 @@ void bpacketsync_execute_rxpayload(bpacketsync _q, unsigned char _bit);
 void bpacketsync_decode_header(bpacketsync _q);
 void bpacketsync_decode_payload(bpacketsync _q);
 void bpacketsync_reconfig(bpacketsync _q);
+
+
+// 
+// flexframe
+//
+
+//#define FLEXFRAME_VERSION   (100)
+
+// header description
+#define FLEXFRAME_H_USER    (14)                    // user-defined array
+#define FLEXFRAME_H_DEC     (FLEXFRAME_H_USER+5)    // decoded length
+#define FLEXFRAME_H_CRC     (LIQUID_CRC_16)         // header CRC
+#define FLEXFRAME_H_FEC     (LIQUID_FEC_HAMMING128) // header FEC
+#define FLEXFRAME_H_ENC     (32)                    // encoded length
+//#define FLEXFRAME_H_MOD     (LIQUID_MODEM_BPSK)   // modulation scheme
+//#define FLEXFRAME_H_BPS     (1)                   // modulation depth
+#define FLEXFRAME_H_SYM     (256)                   // number of symbols
 
 
 // 

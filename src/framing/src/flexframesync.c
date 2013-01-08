@@ -106,9 +106,9 @@ struct flexframesync_s {
     // header
     modem demod_header;             // header BPSK demodulator
     packetizer p_header;            // header packetizer
-    unsigned char header_mod[256];  // header demodulated symbols
-    unsigned char header_enc[32];   // header data (encoded)
-    unsigned char header[19];       // header data (decoded)
+    unsigned char header_mod[FLEXFRAME_H_SYM];  // header demodulated symbols
+    unsigned char header_enc[FLEXFRAME_H_ENC];  // header data (encoded)
+    unsigned char header[FLEXFRAME_H_DEC];      // header data (decoded)
     int header_valid;               // header passed crc?
 
     // payload properties
@@ -144,7 +144,7 @@ struct flexframesync_s {
     int debug_enabled;              // debugging enabled?
     int debug_objects_created;      // debugging objects created?
     windowcf debug_x;               // debug: raw input samples
-    float complex header_sym[256];  // header symbols
+    float complex header_sym[FLEXFRAME_H_SYM];  // header symbols
 #endif
 };
 
@@ -197,8 +197,11 @@ flexframesync flexframesync_create(framesync_callback _callback,
     
     // create header objects
     q->demod_header = modem_create(LIQUID_MODEM_BPSK);
-    q->p_header   = packetizer_create(19, LIQUID_CRC_16, LIQUID_FEC_HAMMING128, LIQUID_FEC_NONE);
-    assert(packetizer_get_enc_msg_len(q->p_header)==32);
+    q->p_header   = packetizer_create(FLEXFRAME_H_DEC,
+                                      FLEXFRAME_H_CRC,
+                                      FLEXFRAME_H_FEC,
+                                      LIQUID_FEC_NONE);
+    assert(packetizer_get_enc_msg_len(q->p_header)==FLEXFRAME_H_ENC);
 
     // frame properties (default values to be overwritten when frame
     // header is received and properly decoded)
@@ -611,14 +614,14 @@ void flexframesync_execute_rxheader(flexframesync _q,
         // increment counter
         _q->header_counter++;
 
-        if (_q->header_counter == 256) {
+        if (_q->header_counter == FLEXFRAME_H_SYM) {
             // decode header and invoke callback
             flexframesync_decode_header(_q);
             
             // invoke callback if header is invalid
             if (!_q->header_valid && _q->callback != NULL) {
                 // set framestats internals
-                _q->framestats.evm           = 20*log10f(sqrtf(_q->framestats.evm / 256.0f));
+                _q->framestats.evm           = 20*log10f(sqrtf(_q->framestats.evm / FLEXFRAME_H_SYM));
                 _q->framestats.rssi          = 20*log10f(_q->gamma_hat);
                 _q->framestats.cfo           = nco_crcf_get_frequency(_q->nco_coarse) +
                                                nco_crcf_get_frequency(_q->nco_fine) / 2.0f; //(float)(_q->k);
@@ -712,7 +715,7 @@ void flexframesync_execute_rxpayload(flexframesync _q,
             // invoke callback
             if (_q->callback != NULL) {
                 // set framestats internals
-                _q->framestats.evm           = 20*log10f(sqrtf(_q->framestats.evm / 256.0f));
+                _q->framestats.evm           = 20*log10f(sqrtf(_q->framestats.evm / FLEXFRAME_H_SYM));
                 _q->framestats.rssi          = 20*log10f(_q->gamma_hat);
                 _q->framestats.cfo           = nco_crcf_get_frequency(_q->nco_coarse) +
                                                nco_crcf_get_frequency(_q->nco_fine) / 2.0f; //(float)(_q->k);
@@ -749,21 +752,21 @@ void flexframesync_decode_header(flexframesync _q)
 {
     // pack 256 1-bit header symbols into 32 8-bit bytes
     unsigned int num_written;
-    liquid_pack_bytes(_q->header_mod, 256,
-                      _q->header_enc, 32,
+    liquid_pack_bytes(_q->header_mod, FLEXFRAME_H_SYM,
+                      _q->header_enc, FLEXFRAME_H_ENC,
                       &num_written);
-    assert(num_written==32);
+    assert(num_written==FLEXFRAME_H_ENC);
 #if DEBUG_FLEXFRAMESYNC_PRINT
     unsigned int i;
     // print header (encoded)
     printf("header rx (enc) : ");
-    for (i=0; i<32; i++)
+    for (i=0; i<FLEXFRAME_H_ENC; i++)
         printf("%.2X ", _q->header_enc[i]);
     printf("\n");
 #endif
 
     // unscramble encoded header
-    unscramble_data(_q->header_enc, 32);
+    unscramble_data(_q->header_enc, FLEXFRAME_H_ENC);
 
     // run packet decoder
     _q->header_valid =
@@ -773,39 +776,47 @@ void flexframesync_decode_header(flexframesync _q)
     if (!_q->header_valid)
         return;
 
-    // strip off CRC, forward error-correction schemes
-    //  CRC     : most-significant 3 bits of [17]
-    //  fec0    : least-significant 5 bits of [17]
-    //  fec1    : least-significant 5 bits of [18]
-    unsigned int check = (_q->header[17] >> 5 ) & 0x07;
-    unsigned int fec0  = (_q->header[17]      ) & 0x1f;
-    unsigned int fec1  = (_q->header[18]      ) & 0x1f;
+    // first several bytes of header are user-defined
+    unsigned int n = FLEXFRAME_H_USER;
 
-    // validate properties
-    if (check >= LIQUID_CRC_NUM_SCHEMES) {
-        fprintf(stderr,"warning: flexframesync_decode_header(), decoded CRC exceeds available\n");
-        check = LIQUID_CRC_UNKNOWN;
-    }
-    if (fec0 >= LIQUID_FEC_NUM_SCHEMES) {
-        fprintf(stderr,"warning: flexframesync_decode_header(), decoded FEC (inner) exceeds available\n");
-        fec0 = LIQUID_FEC_UNKNOWN;
-    }
-    if (fec1 >= LIQUID_FEC_NUM_SCHEMES) {
-        fprintf(stderr,"warning: flexframesync_decode_header(), decoded FEC (outer) exceeds available\n");
-        fec1 = LIQUID_FEC_UNKNOWN;
-    }
+    // TODO: strip FLEXFRAME_VERSION
+
+    // strip off payload length
+    unsigned int payload_dec_len = (_q->header[n+0] << 8) | (_q->header[n+1]);
+    _q->payload_dec_len = payload_dec_len;
 
     // strip off modulation scheme/depth
-    unsigned int mod_scheme = _q->header[16];
+    unsigned int mod_scheme = _q->header[n+2];
+
+    // strip off CRC, forward error-correction schemes
+    //  CRC     : most-significant 3 bits of [n+3]
+    //  fec0    : least-significant 5 bits of [n+3]
+    //  fec1    : least-significant 5 bits of [n+4]
+    unsigned int check = (_q->header[n+3] >> 5 ) & 0x07;
+    unsigned int fec0  = (_q->header[n+3]      ) & 0x1f;
+    unsigned int fec1  = (_q->header[n+4]      ) & 0x1f;
+
+    // validate properties
     if (mod_scheme == 0 || mod_scheme >= LIQUID_MODEM_NUM_SCHEMES) {
         fprintf(stderr,"warning: flexframesync_decode_header(), invalid modulation scheme\n");
         _q->header_valid = 0;
         return;
     }
-
-    // strip off payload length
-    unsigned int payload_dec_len = (_q->header[14] << 8) | (_q->header[15]);
-    _q->payload_dec_len = payload_dec_len;
+    if (check >= LIQUID_CRC_NUM_SCHEMES) {
+        fprintf(stderr,"warning: flexframesync_decode_header(), decoded CRC exceeds available\n");
+        _q->header_valid = 0;
+        return;
+    }
+    if (fec0 >= LIQUID_FEC_NUM_SCHEMES) {
+        fprintf(stderr,"warning: flexframesync_decode_header(), decoded FEC (inner) exceeds available\n");
+        _q->header_valid = 0;
+        return;
+    }
+    if (fec1 >= LIQUID_FEC_NUM_SCHEMES) {
+        fprintf(stderr,"warning: flexframesync_decode_header(), decoded FEC (outer) exceeds available\n");
+        _q->header_valid = 0;
+        return;
+    }
 
     // configure payload receiver
     if (_q->header_valid) {
@@ -854,7 +865,7 @@ void flexframesync_decode_header(flexframesync _q)
     printf("    payload mod len : %u\n", _q->payload_mod_len);
 
     printf("    user data       :");
-    for (i=0; i<14; i++)
+    for (i=0; i<FLEXFRAME_H_USER; i++)
         printf(" %.2x", _q->header[i]);
     printf("\n");
 #endif

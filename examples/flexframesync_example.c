@@ -99,7 +99,6 @@ int main(int argc, char *argv[])
     fgprops.fec0        = fec0;
     fgprops.fec1        = fec1;
     flexframegen fg = flexframegen_create(&fgprops);
-    flexframegen_print(fg);
 
     // frame data (header and payload)
     unsigned char header[14];
@@ -119,6 +118,7 @@ int main(int argc, char *argv[])
 
     // assemble the frame
     flexframegen_assemble(fg, header, payload, payload_len);
+    flexframegen_print(fg);
 
     // generate the frame
     unsigned int frame_len = flexframegen_getframelen(fg);
