@@ -195,7 +195,7 @@ flexframesync flexframesync_create(framesync_callback _callback,
     // create down-coverters for carrier phase tracking
     q->nco_coarse = nco_crcf_create(LIQUID_NCO);
     q->nco_fine   = nco_crcf_create(LIQUID_VCO);
-    nco_crcf_pll_set_bandwidth(q->nco_fine, 0.01f);
+    nco_crcf_pll_set_bandwidth(q->nco_fine, 0.05f);
     
     // create header objects
     q->demod_header = modem_create(LIQUID_MODEM_BPSK);
@@ -385,7 +385,7 @@ void flexframesync_update_symsync(flexframesync _q,
     // lo  bandwidth parameters: {0.92, 1.20}, about 100 symbols settling time
     // med bandwidth parameters: {0.98, 0.20}, about 200 symbols settling time
     // hi  bandwidth parameters: {0.99, 0.05}, about 500 symbols settling time
-    _q->pfb_q = 0.98f*_q->pfb_q + 0.20f*crealf( conjf(_mf)*_dmf );
+    _q->pfb_q = 0.99f*_q->pfb_q + 0.05f*crealf( conjf(_mf)*_dmf );
 
     // accumulate error into soft filterbank value
     _q->pfb_soft += _q->pfb_q;
