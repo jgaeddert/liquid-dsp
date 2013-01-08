@@ -1,6 +1,5 @@
 /*
- * Copyright (c) 2012 Joseph Gaeddert
- * Copyright (c) 2012 Virginia Polytechnic Institute & State University
+ * Copyright (c) 2012, 2013 Joseph Gaeddert
  *
  * This file is part of liquid.
  *
@@ -33,6 +32,7 @@ typedef struct {
 static int callback(unsigned char *  _header,
                     int              _header_valid,
                     unsigned char *  _payload,
+                    unsigned int     _payload_len,
                     int              _payload_valid,
                     framesyncstats_s _stats,
                     void *           _userdata)
@@ -57,22 +57,22 @@ void benchmark_framesync64(
     framegen64_print(fg);
 
     // frame data
+    unsigned char header[8] = {0, 1, 2, 3, 4, 5, 6, 7};
     unsigned char payload[64];
     // initialize payload
     for (i=0; i<64; i++)
         payload[i] = rand() & 0xff;
     framedata fd = {0, 0, 0};
 
-    // create framesync64 object with default properties
-    //framesync64props_s fsprops;
+    // create framesync64 object
     framesync64 fs = framesync64_create(callback,(void*)&fd);
     framesync64_print(fs);
 
     // generate the frame
     //unsigned int frame_len = framegen64_getframelen(fg);
-    unsigned int frame_len = 1244;
+    unsigned int frame_len = FRAME64_LEN;
     float complex frame[frame_len];
-    framegen64_execute(fg, payload, frame);
+    framegen64_execute(fg, header, payload, frame);
 
     // add some noise
     for (i=0; i<frame_len; i++)
@@ -89,9 +89,9 @@ void benchmark_framesync64(
 
 
     fd.num_frames_tx = *_num_iterations;
-    printf("  frames valid/detected/transmitted  :   %6u / %6u / %6u\n",
-            fd.num_frames_valid,
+    printf("  frames detected/valid/transmitted  :   %6u / %6u / %6u\n",
             fd.num_frames_detected,
+            fd.num_frames_valid,
             fd.num_frames_tx);
 
     framegen64_destroy(fg);
