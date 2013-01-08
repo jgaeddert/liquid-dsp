@@ -11,8 +11,7 @@
 // frame. Whenever frame is found and properly decoded, its callback
 // function is invoked.
 //
-// SEE ALSO: flexframesync_advanced_example.c
-//           flexframesync_reconfig_example.c
+// SEE ALSO: flexframesync_reconfig_example.c
 //           framesync64_example.c
 //
 

@@ -220,23 +220,6 @@ This directory contains all the examples for interfacing the liquid modules.
     frame. Whenever frame is found and properly decoded, its callback
     function is invoked.
 
- * `flexframesync_advanced_example.c`:
-    This example demonstrates the interfaces to the flexframegen and
-    flexframesync objects used to completely encapsulate raw data bytes
-    into frame samples (nearly) ready for over-the-air transmission. An
-    14-byte header and variable length payload are encoded into baseband
-    symbols using the flexframegen object.  The resulting symbols are
-    interpolated using a root-Nyquist filter before adding channel
-    impairments (noise, carrier frequency/phase offset, timing phase
-    offset, etc).  The resulting samples are then fed into the
-    flexframesync object which attempts to decode the frames.  Whenever
-    a frame is found and properly decoded, its callback function is
-    invoked.
-
-    SEE ALSO: `flexframesync_example.c`
-              `flexframesync_reconfig_example.c`
-              `framesync64_example.c`
-
  * `flexframesync_reconfig_example.c`:
     Demonstrates the reconfigurability of the flexframegen and
     flexframesync objects.

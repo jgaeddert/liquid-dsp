@@ -1327,7 +1327,6 @@ example_programs :=						\
 	examples/firpfbch_analysis_example			\
 	examples/firpfbch_synthesis_example			\
 	examples/flexframesync_example				\
-	examples/flexframesync_advanced_example			\
 	examples/flexframesync_reconfig_example			\
 	examples/framesync64_example				\
 	examples/freqmodem_example				\
