@@ -248,6 +248,10 @@ void flexframegen_setprops(flexframegen          _q,
 // get frame length (number of samples)
 unsigned int flexframegen_getframelen(flexframegen _q)
 {
+    if (!_q->frame_assembled) {
+        fprintf(stderr,"warning: flexframegen_getframelen(), frame not assembled!\n");
+        return 0;
+    }
     unsigned int num_frame_symbols =
             64 +    // preamble p/n sequence length
             256 +   // header symbols
