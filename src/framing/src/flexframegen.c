@@ -69,8 +69,8 @@ struct flexframegen_s {
     float preamble_pn[64];              // p/n sequence
     // post-p/n sequence symbols?
 
-    // header (QPSK)
-    modem mod_header;                   // header QPSK modulator
+    // header (BPSK)
+    modem mod_header;                   // header BPSK modulator
     packetizer p_header;                // header packetizer
     unsigned char header[FLEXFRAME_H_DEC];      // header data (uncoded)
     unsigned char header_enc[FLEXFRAME_H_ENC];  // header data (encoded)
@@ -442,7 +442,7 @@ void flexframegen_encode_header(flexframegen _q)
 #endif
 }
 
-// modulate header into QPSK symbols
+// modulate header into BPSK symbols
 void flexframegen_modulate_header(flexframegen _q)
 {
     unsigned int i;
