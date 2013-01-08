@@ -132,7 +132,7 @@ int main(int argc, char *argv[])
     for (n=0; n<50; n++)
         x[n] = 0.0f;
     while (!frame_complete) {
-        //printf("assert %6u < %6u\n", n, frame_len);
+        //printf("assert %6u < %6u\n", n, num_samples);
         assert(n < num_samples);
         frame_complete = flexframegen_write_samples(fg, &x[n]);
         n += 2;
