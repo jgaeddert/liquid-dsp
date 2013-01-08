@@ -201,8 +201,8 @@ flexframesync flexframesync_create(framesync_callback _callback,
     q->demod_header = modem_create(LIQUID_MODEM_BPSK);
     q->p_header   = packetizer_create(FLEXFRAME_H_DEC,
                                       FLEXFRAME_H_CRC,
-                                      FLEXFRAME_H_FEC,
-                                      LIQUID_FEC_NONE);
+                                      FLEXFRAME_H_FEC0,
+                                      FLEXFRAME_H_FEC1);
     assert(packetizer_get_enc_msg_len(q->p_header)==FLEXFRAME_H_ENC);
 
     // frame properties (default values to be overwritten when frame
@@ -798,22 +798,27 @@ void flexframesync_decode_header(flexframesync _q)
     // first several bytes of header are user-defined
     unsigned int n = FLEXFRAME_H_USER;
 
-    // TODO: strip FLEXFRAME_VERSION
+    // first byte is for expansion/version validation
+    if (_q->header[n+0] != FLEXFRAME_VERSION) {
+        fprintf(stderr,"warning: flexframesync_decode_header(), invalid framing version\n");
+        _q->header_valid = 0;
+        return;
+    }
 
     // strip off payload length
-    unsigned int payload_dec_len = (_q->header[n+0] << 8) | (_q->header[n+1]);
+    unsigned int payload_dec_len = (_q->header[n+1] << 8) | (_q->header[n+2]);
     _q->payload_dec_len = payload_dec_len;
 
     // strip off modulation scheme/depth
-    unsigned int mod_scheme = _q->header[n+2];
+    unsigned int mod_scheme = _q->header[n+3];
 
     // strip off CRC, forward error-correction schemes
-    //  CRC     : most-significant 3 bits of [n+3]
-    //  fec0    : least-significant 5 bits of [n+3]
-    //  fec1    : least-significant 5 bits of [n+4]
-    unsigned int check = (_q->header[n+3] >> 5 ) & 0x07;
-    unsigned int fec0  = (_q->header[n+3]      ) & 0x1f;
-    unsigned int fec1  = (_q->header[n+4]      ) & 0x1f;
+    //  CRC     : most-significant 3 bits of [n+4]
+    //  fec0    : least-significant 5 bits of [n+4]
+    //  fec1    : least-significant 5 bits of [n+5]
+    unsigned int check = (_q->header[n+4] >> 5 ) & 0x07;
+    unsigned int fec0  = (_q->header[n+4]      ) & 0x1f;
+    unsigned int fec1  = (_q->header[n+5]      ) & 0x1f;
 
     // validate properties
     if (mod_scheme == 0 || mod_scheme >= LIQUID_MODEM_NUM_SCHEMES) {

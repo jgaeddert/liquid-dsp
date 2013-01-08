@@ -1269,17 +1269,18 @@ void bpacketsync_reconfig(bpacketsync _q);
 // flexframe
 //
 
-//#define FLEXFRAME_VERSION   (100)
+#define FLEXFRAME_VERSION   (100)
 
 // header description
 #define FLEXFRAME_H_USER    (14)                    // user-defined array
-#define FLEXFRAME_H_DEC     (FLEXFRAME_H_USER+5)    // decoded length
-#define FLEXFRAME_H_CRC     (LIQUID_CRC_16)         // header CRC
-#define FLEXFRAME_H_FEC     (LIQUID_FEC_HAMMING128) // header FEC
-#define FLEXFRAME_H_ENC     (32)                    // encoded length
+#define FLEXFRAME_H_DEC     (FLEXFRAME_H_USER+6)    // decoded length
+#define FLEXFRAME_H_CRC     (LIQUID_CRC_32)         // header CRC
+#define FLEXFRAME_H_FEC0    (LIQUID_FEC_SECDED7264) // header FEC (inner)
+#define FLEXFRAME_H_FEC1    (LIQUID_FEC_HAMMING84)  // header FEC (outer)
+#define FLEXFRAME_H_ENC     (54)                    // encoded length
 //#define FLEXFRAME_H_MOD     (LIQUID_MODEM_BPSK)   // modulation scheme
 //#define FLEXFRAME_H_BPS     (1)                   // modulation depth
-#define FLEXFRAME_H_SYM     (256)                   // number of symbols
+#define FLEXFRAME_H_SYM     (432)                   // number of symbols
 
 
 // 
