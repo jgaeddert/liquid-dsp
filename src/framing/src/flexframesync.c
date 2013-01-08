@@ -779,15 +779,14 @@ void flexframesync_decode_header(flexframesync _q)
     printf("\n");
 #endif
 
-    // unscramble encoded header
-    //unscramble_data(_q->header_enc, FLEXFRAME_H_ENC);
-
-    // run packet decoder
+    // unscramble header and run packet decoder
 #if DEMOD_HEADER_SOFT
     // soft demodulation operates on header_mod directly
+    unscramble_data_soft(_q->header_mod, FLEXFRAME_H_ENC);
     _q->header_valid =
     packetizer_decode_soft(_q->p_header, _q->header_mod, _q->header);
 #else
+    unscramble_data(_q->header_enc, FLEXFRAME_H_ENC);
     _q->header_valid =
     packetizer_decode(_q->p_header, _q->header_enc, _q->header);
 #endif
