@@ -20,27 +20,40 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <sys/resource.h>
+#include <assert.h>
 #include "liquid.h"
 
 typedef struct {
     unsigned char * header;
     unsigned char * payload;
     unsigned int num_frames_tx;
-    unsigned int num_frames_rx;
+    unsigned int num_frames_detected;
+    unsigned int num_headers_valid;
+    unsigned int num_payloads_valid;
 } framedata;
 
-static int callback(unsigned char * _rx_header,
-                    int _rx_header_valid,
-                    unsigned char * _rx_payload,
-                    unsigned int _rx_payload_len,
-                    int _rx_payload_valid,
+static int callback(unsigned char *  _header,
+                    int              _header_valid,
+                    unsigned char *  _payload,
+                    unsigned int     _payload_len,
+                    int              _payload_valid,
                     framesyncstats_s _stats,
-                    void * _userdata)
+                    void *           _userdata)
 {
     //printf("callback invoked\n");
     framedata * fd = (framedata*) _userdata;
-    if (_rx_header_valid)
-        fd->num_frames_rx++;
+
+    // increment number of frames detected
+    fd->num_frames_detected++;
+
+    // check if header is valid
+    if (_header_valid)
+        fd->num_headers_valid++;
+
+    // check if payload is valid
+    if (_payload_valid)
+        fd->num_payloads_valid++;
+
     return 0;
 }
 
@@ -72,19 +85,20 @@ void benchmark_flexframesync(
         header[i] = i;
     for (i=0; i<payload_len; i++)
         payload[i] = rand() & 0xff;
-    framedata fd = {header, payload, 0, 0};
+    framedata fd = {header, payload, 0, 0, 0, 0};
 
     // create flexframesync object
     flexframesync fs = flexframesync_create(callback,(void*)&fd);
     flexframesync_print(fs);
 
     // generate the frame
+    flexframegen_assemble(fg, header, payload, payload_len);
     unsigned int frame_len = flexframegen_getframelen(fg);
     float complex frame[frame_len];
-    flexframegen_assemble(fg, header, payload, payload_len);
     int frame_complete = 0;
     unsigned int n=0;
     while (!frame_complete) {
+        assert(n < frame_len);
         frame_complete = flexframegen_write_samples(fg, &frame[n]);
         n += 2;
     }
@@ -103,8 +117,10 @@ void benchmark_flexframesync(
 
 
     fd.num_frames_tx = *_num_iterations;
-    printf("  frames received  :   %6u / %6u\n",
-            fd.num_frames_rx,
+    printf("  frames detected/header/payload/transmitted:   %6u / %6u / %6u / %6u\n",
+            fd.num_frames_detected,
+            fd.num_headers_valid,
+            fd.num_payloads_valid,
             fd.num_frames_tx);
 
     // destroy objects
