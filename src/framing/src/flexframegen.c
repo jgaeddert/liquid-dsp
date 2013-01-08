@@ -424,7 +424,7 @@ void flexframegen_encode_header(flexframegen _q)
     packetizer_encode(_q->p_header, _q->header, _q->header_enc);
 
     // scramble encoded header
-    scramble_data(_q->header_enc, FLEXFRAME_H_ENC);
+    //scramble_data(_q->header_enc, FLEXFRAME_H_ENC);
 
 #if DEBUG_FLEXFRAMEGEN
     // print header (decoded)

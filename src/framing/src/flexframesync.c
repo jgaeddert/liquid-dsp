@@ -37,6 +37,8 @@
 #define DEBUG_FILENAME              "flexframesync_internal_debug.m"
 #define DEBUG_BUFFER_LEN            (1600)
 
+#define DEMOD_HEADER_SOFT           1
+
 // push samples through detection stage
 void flexframesync_execute_seekpn(flexframesync _q,
                                   float complex _x);
@@ -599,8 +601,14 @@ void flexframesync_execute_rxheader(flexframesync _q,
         
         // demodulate
         unsigned int sym_out = 0;
+#if DEMOD_HEADER_SOFT
+        unsigned char bpsk_soft_bit = 0;
+        modem_demodulate_soft(_q->demod_header, y, &sym_out, &bpsk_soft_bit);
+        _q->header_mod[_q->header_counter] = bpsk_soft_bit;
+#else
         modem_demodulate(_q->demod_header, y, &sym_out);
         _q->header_mod[_q->header_counter] = (unsigned char)sym_out;
+#endif
 
         // update phase-locked loop and fine-tuned NCO
         float phase_error = modem_get_demodulator_phase_error(_q->demod_header);
@@ -750,12 +758,18 @@ void flexframesync_execute_rxpayload(flexframesync _q,
 // decode header
 void flexframesync_decode_header(flexframesync _q)
 {
+#if DEMOD_HEADER_SOFT
+    // soft decoding operates on 'header_mod' array directly;
+    // no need to pack bits
+#else
     // pack 256 1-bit header symbols into 32 8-bit bytes
     unsigned int num_written;
     liquid_pack_bytes(_q->header_mod, FLEXFRAME_H_SYM,
                       _q->header_enc, FLEXFRAME_H_ENC,
                       &num_written);
     assert(num_written==FLEXFRAME_H_ENC);
+#endif 
+
 #if DEBUG_FLEXFRAMESYNC_PRINT
     unsigned int i;
     // print header (encoded)
@@ -766,11 +780,17 @@ void flexframesync_decode_header(flexframesync _q)
 #endif
 
     // unscramble encoded header
-    unscramble_data(_q->header_enc, FLEXFRAME_H_ENC);
+    //unscramble_data(_q->header_enc, FLEXFRAME_H_ENC);
 
     // run packet decoder
+#if DEMOD_HEADER_SOFT
+    // soft demodulation operates on header_mod directly
+    _q->header_valid =
+    packetizer_decode_soft(_q->p_header, _q->header_mod, _q->header);
+#else
     _q->header_valid =
     packetizer_decode(_q->p_header, _q->header_enc, _q->header);
+#endif
 
     // return if header is invalid
     if (!_q->header_valid)
