@@ -45,11 +45,11 @@ void flexframesync_execute_seekpn(flexframesync _q,
 
 // update symbol synchronizer internal state (filtered error, index, etc.)
 //  _q      :   frame synchronizer
-//  _mf     :   matched-filter output
-//  _dmf    :   derivative matched-filter output
-void flexframesync_update_symsync(flexframesync _q,
-                                  float complex _mf,
-                                  float complex _dmf);
+//  _x      :   input sample
+//  _y      :   output symbol
+int flexframesync_update_symsync(flexframesync   _q,
+                                 float complex   _x,
+                                 float complex * _y);
 
 // push buffered p/n sequence through synchronizer
 void flexframesync_pushpn(flexframesync _q);
@@ -100,6 +100,7 @@ struct flexframesync_s {
     float pfb_soft;                 // soft filterbank index
     int pfb_index;                  // hard filterbank index
     int pfb_timer;                  // filterbank output flag
+    float complex symsync_out;      // symbol synchronizer output
 
     // preamble
     float         preamble_pn[64];  // known 64-symbol p/n sequence
@@ -375,39 +376,68 @@ void flexframesync_execute_seekpn(flexframesync _q,
 
 // update symbol synchronizer internal state (filtered error, index, etc.)
 //  _q      :   frame synchronizer
-//  _mf     :   matched-filter output
-//  _dmf    :   derivative matched-filter output
-void flexframesync_update_symsync(flexframesync _q,
-                                  float complex _mf,
-                                  float complex _dmf)
+//  _x      :   input sample
+//  _y      :   output symbol
+int flexframesync_update_symsync(flexframesync   _q,
+                                 float complex   _x,
+                                 float complex * _y)
 {
-    // update filtered timing error
-    // lo  bandwidth parameters: {0.92, 1.20}, about 100 symbols settling time
-    // med bandwidth parameters: {0.98, 0.20}, about 200 symbols settling time
-    // hi  bandwidth parameters: {0.99, 0.05}, about 500 symbols settling time
-    _q->pfb_q = 0.99f*_q->pfb_q + 0.05f*crealf( conjf(_mf)*_dmf );
+    // push sample into filterbanks
+    firpfb_crcf_push(_q->mf,  _x);
+    firpfb_crcf_push(_q->dmf, _x);
 
-    // accumulate error into soft filterbank value
-    _q->pfb_soft += _q->pfb_q;
+    //
+    float complex mf_out  = 0.0f;    // matched-filter output
+    float complex dmf_out = 0.0f;    // derivatived matched-filter output
 
-    // compute actual filterbank index
-    _q->pfb_index = roundf(_q->pfb_soft);
+    int sample_available = 0;
 
-    // contrain index to be in [0, npfb-1]
-    while (_q->pfb_index < 0) {
-        _q->pfb_index += _q->npfb;
-        _q->pfb_soft  += _q->npfb;
+    // compute output if timeout
+    if (_q->pfb_timer <= 0) {
+        sample_available = 1;
 
-        // adjust pfb output timer
-        _q->pfb_timer--;
+        // reset timer
+        _q->pfb_timer = 2;  // k samples/symbol
+
+        firpfb_crcf_execute(_q->mf,  _q->pfb_index, &mf_out);
+        firpfb_crcf_execute(_q->dmf, _q->pfb_index, &dmf_out);
+
+        // update filtered timing error
+        // lo  bandwidth parameters: {0.92, 1.20}, about 100 symbols settling time
+        // med bandwidth parameters: {0.98, 0.20}, about 200 symbols settling time
+        // hi  bandwidth parameters: {0.99, 0.05}, about 500 symbols settling time
+        _q->pfb_q = 0.99f*_q->pfb_q + 0.05f*crealf( conjf(mf_out)*dmf_out );
+
+        // accumulate error into soft filterbank value
+        _q->pfb_soft += _q->pfb_q;
+
+        // compute actual filterbank index
+        _q->pfb_index = roundf(_q->pfb_soft);
+
+        // contrain index to be in [0, npfb-1]
+        while (_q->pfb_index < 0) {
+            _q->pfb_index += _q->npfb;
+            _q->pfb_soft  += _q->npfb;
+
+            // adjust pfb output timer
+            _q->pfb_timer--;
+        }
+        while (_q->pfb_index > _q->npfb-1) {
+            _q->pfb_index -= _q->npfb;
+            _q->pfb_soft  -= _q->npfb;
+
+            // adjust pfb output timer
+            _q->pfb_timer++;
+        }
     }
-    while (_q->pfb_index > _q->npfb-1) {
-        _q->pfb_index -= _q->npfb;
-        _q->pfb_soft  -= _q->npfb;
 
-        // adjust pfb output timer
-        _q->pfb_timer++;
-    }
+    // decrement symbol timer
+    _q->pfb_timer--;
+
+    // set output and return
+    *_y = mf_out;
+    
+    return sample_available;
 }
 
 // push buffered p/n sequence through synchronizer
@@ -481,27 +511,14 @@ void flexframesync_execute_rxpn(flexframesync _q,
     nco_crcf_mix_down(_q->nco_coarse, _x*0.5f/_q->gamma_hat, &y);
     nco_crcf_step(_q->nco_coarse);
 
-    // push sample into filterbanks
-    firpfb_crcf_push(_q->mf,  y);
-    firpfb_crcf_push(_q->dmf, y);
+    // update symbol synchronizer
+    float complex mf_out = 0.0f;
+    int sample_available = flexframesync_update_symsync(_q, y, &mf_out);
 
     // compute output if timeout
-    if (_q->pfb_timer <= 0) {
-        // reset timer
-        _q->pfb_timer = 2;  // k samples/symbol
-
-        //
-        float complex y;    // matched-filter output
-        float complex dy;   // derivatived matched-filter output
-
-        firpfb_crcf_execute(_q->mf,  _q->pfb_index, &y);
-        firpfb_crcf_execute(_q->dmf, _q->pfb_index, &dy);
-
-        // update pfb index
-        flexframesync_update_symsync(_q, y, dy);
-
+    if (sample_available) {
         // save output in p/n symbols buffer
-        _q->preamble_rx[ _q->pn_counter ] = y;
+        _q->preamble_rx[ _q->pn_counter ] = mf_out;
 
         // update p/n counter
         _q->pn_counter++;
@@ -511,9 +528,6 @@ void flexframesync_execute_rxpn(flexframesync _q,
             _q->state = STATE_RXHEADER;
         }
     }
-    
-    // decrement symbol timer
-    _q->pfb_timer--;
 }
 
 // once p/n symbols are buffered, estimate residual carrier
@@ -572,41 +586,28 @@ void flexframesync_execute_rxheader(flexframesync _q,
     nco_crcf_mix_down(_q->nco_coarse, _x*0.5f/_q->gamma_hat, &y);
     nco_crcf_step(_q->nco_coarse);
 
-    // push sample into filterbanks
-    firpfb_crcf_push(_q->mf,  y);
-    firpfb_crcf_push(_q->dmf, y);
+    // update symbol synchronizer
+    float complex mf_out = 0.0f;
+    int sample_available = flexframesync_update_symsync(_q, y, &mf_out);
 
     // compute output if timeout
-    if (_q->pfb_timer <= 0) {
-        //printf("  header symbol %u\n", _q->header_counter);
-        // reset timer
-        _q->pfb_timer = 2;  // k samples/symbol
-
-        //
-        float complex y;    // matched-filter output
-        float complex dy;   // derivatived matched-filter output
-
-        firpfb_crcf_execute(_q->mf,  _q->pfb_index, &y);
-        firpfb_crcf_execute(_q->dmf, _q->pfb_index, &dy);
-
-        // update pfb index
-        flexframesync_update_symsync(_q, y, dy);
-
+    if (sample_available) {
         // push through fine-tuned nco
-        nco_crcf_mix_down(_q->nco_fine, y, &y);
+        nco_crcf_mix_down(_q->nco_fine, mf_out, &mf_out);
+
 #if DEBUG_FLEXFRAMESYNC
         if (_q->debug_enabled)
-            _q->header_sym[_q->header_counter] = y;
+            _q->header_sym[_q->header_counter] = mf_out;
 #endif
         
         // demodulate
         unsigned int sym_out = 0;
 #if DEMOD_HEADER_SOFT
         unsigned char bpsk_soft_bit = 0;
-        modem_demodulate_soft(_q->demod_header, y, &sym_out, &bpsk_soft_bit);
+        modem_demodulate_soft(_q->demod_header, mf_out, &sym_out, &bpsk_soft_bit);
         _q->header_mod[_q->header_counter] = bpsk_soft_bit;
 #else
-        modem_demodulate(_q->demod_header, y, &sym_out);
+        modem_demodulate(_q->demod_header, mf_out, &sym_out);
         _q->header_mod[_q->header_counter] = (unsigned char)sym_out;
 #endif
 
@@ -661,9 +662,6 @@ void flexframesync_execute_rxheader(flexframesync _q,
             _q->state = STATE_RXPAYLOAD;
         }
     }
-
-    // decrement symbol timer
-    _q->pfb_timer--;
 }
 
 // execute synchronizer, receiving payload
@@ -678,34 +676,22 @@ void flexframesync_execute_rxpayload(flexframesync _q,
     nco_crcf_mix_down(_q->nco_coarse, _x*0.5f/_q->gamma_hat, &y);
     nco_crcf_step(_q->nco_coarse);
 
-    // push sample into filterbanks
-    firpfb_crcf_push(_q->mf,  y);
-    firpfb_crcf_push(_q->dmf, y);
+    // update symbol synchronizer
+    float complex mf_out = 0.0f;
+    int sample_available = flexframesync_update_symsync(_q, y, &mf_out);
 
     // compute output if timeout
-    if (_q->pfb_timer <= 0) {
-        // reset timer
-        _q->pfb_timer = 2;  // k samples/symbol
-
-        //
-        float complex y;    // matched-filter output
-        float complex dy;   // derivatived matched-filter output
-
-        firpfb_crcf_execute(_q->mf,  _q->pfb_index, &y);
-        firpfb_crcf_execute(_q->dmf, _q->pfb_index, &dy);
-
-        // update pfb index
-        flexframesync_update_symsync(_q, y, dy);
+    if (sample_available) {
 
         // push through fine-tuned nco
-        nco_crcf_mix_down(_q->nco_fine, y, &y);
+        nco_crcf_mix_down(_q->nco_fine, mf_out, &mf_out);
         // save payload symbols for callback (up to 256 values)
         if (_q->payload_counter < 256)
-            _q->payload_sym[_q->payload_counter] = y;
+            _q->payload_sym[_q->payload_counter] = mf_out;
         
         // demodulate
         unsigned int sym_out = 0;
-        modem_demodulate(_q->demod_payload, y, &sym_out);
+        modem_demodulate(_q->demod_payload, mf_out, &sym_out);
         _q->payload_mod[_q->payload_counter] = (unsigned char)sym_out;
 
         // update phase-locked loop and fine-tuned NCO
@@ -750,9 +736,6 @@ void flexframesync_execute_rxpayload(flexframesync _q,
             return;
         }
     }
-
-    // decrement symbol timer
-    _q->pfb_timer--;
 }
 
 // decode header
