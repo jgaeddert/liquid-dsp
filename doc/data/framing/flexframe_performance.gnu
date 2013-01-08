@@ -19,8 +19,8 @@ set key top right nobox
 set pointsize 0.6
 
 set grid linetype 1 linecolor rgb '#cccccc' lw 1
-plot 'figures.gen/flexframe_performance.dat' using 1:2 with linespoints linewidth 3 pointtype 7 linecolor rgb '#a06060' title 'Frame Detection',\
-     'figures.gen/flexframe_performance.dat' using 1:3 with linespoints linewidth 3 pointtype 7 linecolor rgb '#400040' title 'Header Decoding'
+plot 'figures.gen/flexframe_performance.dat' using 1:2 with linespoints linewidth 3 pointtype 7 linecolor rgb '#60a060' title 'Frame Detection',\
+     'figures.gen/flexframe_performance.dat' using 1:3 with linespoints linewidth 3 pointtype 7 linecolor rgb '#204020' title 'Header Decoding'
 
 #    'figures.gen/flexframe_performance.dat' using 1:4 with linespoints linewidth 2 pointtype 7 linecolor rgb '#800040' title 'Payload Decoding'
 
