@@ -122,8 +122,8 @@ flexframegen flexframegen_create(flexframegenprops_s * _fgprops)
     q->mod_header = modem_create(LIQUID_MODEM_BPSK);
     q->p_header   = packetizer_create(FLEXFRAME_H_DEC,
                                       FLEXFRAME_H_CRC,
-                                      FLEXFRAME_H_FEC,
-                                      LIQUID_FEC_NONE);
+                                      FLEXFRAME_H_FEC0,
+                                      FLEXFRAME_H_FEC1);
     assert(packetizer_get_enc_msg_len(q->p_header)==FLEXFRAME_H_ENC);
 
     // initial memory allocation for payload
@@ -403,22 +403,23 @@ void flexframegen_encode_header(flexframegen _q)
     // first several bytes of header are user-defined
     unsigned int n = FLEXFRAME_H_USER;
 
-    // TODO: add FLEXFRAME_VERSION
+    // add FLEXFRAME_VERSION
+    _q->header[n+0] = FLEXFRAME_VERSION;
 
     // add payload length
-    _q->header[n+0] = (_q->payload_dec_len >> 8) & 0xff;
-    _q->header[n+1] = (_q->payload_dec_len     ) & 0xff;
+    _q->header[n+1] = (_q->payload_dec_len >> 8) & 0xff;
+    _q->header[n+2] = (_q->payload_dec_len     ) & 0xff;
 
     // add modulation scheme/depth (pack into single byte)
-    _q->header[n+2]  = (unsigned int)(_q->props.mod_scheme);
+    _q->header[n+3]  = (unsigned int)(_q->props.mod_scheme);
 
     // add CRC, forward error-correction schemes
-    //  CRC     : most-significant 3 bits of [17]
-    //  fec0    : least-significant 5 bits of [17]
-    //  fec1    : least-significant 5 bits of [18]
-    _q->header[n+3]  = (_q->props.check & 0x07) << 5;
-    _q->header[n+3] |= (_q->props.fec0) & 0x1f;
-    _q->header[n+4]  = (_q->props.fec1) & 0x1f;
+    //  CRC     : most-significant 3 bits of [n+4]
+    //  fec0    : least-significant 5 bits of [n+4]
+    //  fec1    : least-significant 5 bits of [n+5]
+    _q->header[n+4]  = (_q->props.check & 0x07) << 5;
+    _q->header[n+4] |= (_q->props.fec0) & 0x1f;
+    _q->header[n+5]  = (_q->props.fec1) & 0x1f;
 
     // run packet encoder
     packetizer_encode(_q->p_header, _q->header, _q->header_enc);
