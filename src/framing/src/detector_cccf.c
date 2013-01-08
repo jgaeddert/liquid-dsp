@@ -32,7 +32,7 @@
 
 #include "liquid.internal.h"
 
-#define DEBUG_DETECTOR              1
+#define DEBUG_DETECTOR              0
 #define DEBUG_DETECTOR_PRINT        0
 #define DEBUG_DETECTOR_BUFFER_LEN   (1600)
 #define DEBUG_DETECTOR_FILENAME     "detector_cccf_debug.m"
@@ -504,7 +504,7 @@ void detector_cccf_debug_print(detector_cccf _q,
     fprintf(fid,"  grid on;\n");
 
     fclose(fid);
-    printf("detector_ccf/debug: results written to '%s'\n", _filename);
+    printf("detector_cccf/debug: results written to '%s'\n", _filename);
 #else
     fprintf(stderr,"detector_cccf_debug_print(): compile-time debugging disabled\n");
 #endif
