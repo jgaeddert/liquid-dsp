@@ -26,14 +26,14 @@ void usage()
     printf("options:\n");
     printf("  u/h   : print usage/help\n");
     printf("  o     : output filename\n");
-    printf("  s     : SNR start [dB], -10\n");
+    printf("  s     : SNR start [dB], -9\n");
     printf("  d     : SNR step [dB], 1.0\n");
     printf("  x     : SNR max [dB], 10\n");
     printf("  n     : number of trials, 800\n");
-    printf("  f     : frame bytes (packet len), 256\n");
+    printf("  f     : frame bytes (packet len), 16\n");
     printf("  m     : mod scheme, default: qpsk\n");
     liquid_print_modulation_schemes();
-    printf("  c     : fec coding scheme (inner), default: h128\n");
+    printf("  c     : fec coding scheme (inner), default: none\n");
     printf("  k     : fec coding scheme (outer), default: none\n");
     liquid_print_fec_schemes();
 }
@@ -43,16 +43,16 @@ int main(int argc, char *argv[]) {
     srand( time(NULL) );
 
     // define parameters
-    float SNRdB_start       = -5.0f;
-    float SNRdB_step        = 1.0f;
-    float SNRdB_max         = 10.0f;
-    unsigned int num_frames = 1000;
+    float SNRdB_start       = -9.0f;
+    float SNRdB_step        =  1.0f;
+    float SNRdB_max         =  10.0f;
+    unsigned int num_frames =  1000;
     //float noise_floor       = -30.0f;
     const char * filename   = "flexframe_fer_results.dat";
     modulation_scheme ms    = LIQUID_MODEM_QPSK;
-    unsigned int payload_len= 256;
+    unsigned int payload_len= 16;
     crc_scheme check        = LIQUID_CRC_32;
-    fec_scheme fec0         = LIQUID_FEC_HAMMING128;
+    fec_scheme fec0         = LIQUID_FEC_NONE;
     fec_scheme fec1         = LIQUID_FEC_NONE;
     int verbose             = 1;
 

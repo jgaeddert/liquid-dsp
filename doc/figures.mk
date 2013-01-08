@@ -108,6 +108,7 @@ local_pdffiles :=					\
 	figures.gen/filter_symsync_crcf_const.pdf	\
 	figures.gen/filter_symsync_crcf_time.pdf	\
 							\
+	figures.gen/flexframe_performance.pdf		\
 	figures.gen/frame64_performance.pdf		\
 	figures.gen/gmskframe_performance.pdf		\
 	figures.gen/ofdmflexframe_performance.pdf	\
@@ -657,6 +658,16 @@ figures.gen/fft_spgram_freq.eps : %.eps : %.gnu %.dat
 ##
 ## MODULE : framing
 ##
+
+# 
+# flexframe_performance
+#
+
+figures.gen/flexframe_performance.dat \
+figures.gen/flexframe_performance.gnu : figures.gen/% : data/framing/%
+	cp $< $@
+
+figures.gen/flexframe_performance.eps : %.eps : %.gnu %.dat
 
 # 
 # frame64_performance
