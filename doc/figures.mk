@@ -279,6 +279,7 @@ local_programs :=					\
 	src/filter_kaiser				\
 	src/filter_rnyquist				\
 	src/filter_symsync_crcf				\
+	src/flexframe_fer				\
 	src/frame64_fer					\
 	src/gmskframe_fer				\
 	src/interleaver_scatterplot			\

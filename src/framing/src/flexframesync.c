@@ -770,10 +770,8 @@ void flexframesync_decode_header(flexframesync _q)
     packetizer_decode(_q->p_header, _q->header_enc, _q->header);
 
     // return if header is invalid
-    if (!_q->header_valid) {
-        printf("****** HEADER INVALID\n");
+    if (!_q->header_valid)
         return;
-    }
 
     // strip off CRC, forward error-correction schemes
     //  CRC     : most-significant 3 bits of [17]
