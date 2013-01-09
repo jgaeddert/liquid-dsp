@@ -1982,28 +1982,6 @@ LIQUID_FIRFARROW_DEFINE_API(FIRFARROW_MANGLE_CRCF,
 // MODULE : framing
 //
 
-// framesyncprops : generic frame synchronizer properties structure
-
-typedef struct {
-    float agc_bw0, agc_bw1;     // automatic gain control bandwidth
-    float agc_gmin, agc_gmax;   // automatic gain control gain limits
-    float sym_bw0, sym_bw1;     // symbol synchronizer bandwidth
-    float pll_bw0, pll_bw1;     // phase-locked loop bandwidth
-    unsigned int k;             // decimation rate
-    unsigned int npfb;          // number of filters in symbol sync.
-    unsigned int m;             // filter length
-    float beta;                 // excess bandwidth
-    int squelch_enabled;        // enable/disable squelch
-    int autosquelch_enabled;    // enable/disable automatic squelch
-    float squelch_threshold;    // squelch enable/disable threshold
-    unsigned int eq_len;        // number of equalizer taps, eq_len >= 0
-    float eqrls_lambda;         // RLS equalizer forgetting factor, 0.999 typical
-} framesyncprops_s;
-
-extern framesyncprops_s framesyncprops_default;
-void framesyncprops_init_default(framesyncprops_s * _props);
-
-
 // framesyncstats : generic frame synchronizer statistic structure
 
 typedef struct {
@@ -2181,31 +2159,6 @@ int flexframegen_write_samples(flexframegen           _q,
 
 // frame synchronizer
 
-#if 0
-typedef struct flexframesync_s * flexframesync;
-
-// create flexframesync object
-//  _props      :   properties structure (default if NULL)
-//  _callback   :   callback function
-//  _userdata   :   user data pointer passed to callback function
-flexframesync flexframesync_create(framesyncprops_s * _props,
-                                   framesync_callback _callback,
-                                   void *             _userdata);
-void flexframesync_destroy(flexframesync _fs);
-void flexframesync_getprops(flexframesync _fs, framesyncprops_s * _props);
-void flexframesync_setprops(flexframesync _fs, framesyncprops_s * _props);
-void flexframesync_print(flexframesync _fs);
-void flexframesync_reset(flexframesync _fs);
-void flexframesync_execute(flexframesync _fs,
-                           liquid_float_complex * _x,
-                           unsigned int _n);
-
-// advanced modes
-void flexframesync_set_csma_callbacks(flexframesync _fs,
-                                      framesync_csma_callback _csma_lock,
-                                      framesync_csma_callback _csma_unlock,
-                                      void * _csma_userdata);
-#else
 typedef struct flexframesync_s * flexframesync;
 
 // create flexframesync object
@@ -2236,7 +2189,12 @@ void flexframesync_debug_enable(flexframesync _q);
 void flexframesync_debug_disable(flexframesync _q);
 void flexframesync_debug_print(flexframesync _q,
                                const char *  _filename);
-
+#if 0
+// advanced modes
+void flexframesync_set_csma_callbacks(flexframesync _fs,
+                                      framesync_csma_callback _csma_lock,
+                                      framesync_csma_callback _csma_unlock,
+                                      void * _csma_userdata);
 #endif
 
 
