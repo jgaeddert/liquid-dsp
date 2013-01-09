@@ -147,7 +147,8 @@ flexframegen flexframegen_create(flexframegenprops_s * _fgprops)
     q->beta = 0.5f;
     q->interp = interp_crcf_create_rnyquist(LIQUID_RNYQUIST_ARKAISER,q->k,q->m,q->beta,0);
 
-    // initialize properties
+    // ensure frame is not assembled and initialize properties
+    q->frame_assembled = 0;
     flexframegen_setprops(q, _fgprops);
 
     // reset
@@ -222,6 +223,12 @@ void flexframegen_getprops(flexframegen          _q,
 void flexframegen_setprops(flexframegen          _q,
                            flexframegenprops_s * _props)
 {
+    // if frame is already assembled, give warning
+    if (_q->frame_assembled) {
+        fprintf(stderr, "warning: flexframegen_setprops(), frame is already assembled; must reset() first\n");
+        return;
+    }
+
     // if properties object is NULL, initialize with defaults
     if (_props == NULL) {
         flexframegen_setprops(_q, &flexframegenprops_default);
