@@ -179,7 +179,7 @@ void DDS(_print)(DDS() _q)
     printf("direct digital synthesizer (dds), rate : %u\n", _q->rate);
     printf("      fc    : %8.5f\n", _q->fc0);
     printf("      bw    : %8.5f\n", _q->bw0);
-    printf("      nco/f : %8.4f\n", _q->ncox->d_theta / (2.0f*M_PI));
+    printf("      nco/f : %8.4f\n", nco_crcf_get_frequency(_q->ncox) / (2.0f*M_PI));
     printf("      As    : %8.2f [dB]\n", _q->As0);
     printf("    halfband stages (low rate -> high rate) :\n");
     unsigned int i;
