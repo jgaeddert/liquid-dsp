@@ -280,9 +280,6 @@ local_programs :=					\
 	src/filter_kaiser				\
 	src/filter_rnyquist				\
 	src/filter_symsync_crcf				\
-	src/flexframe_fer				\
-	src/frame64_fer					\
-	src/gmskframe_fer				\
 	src/interleaver_scatterplot			\
 	src/liquid_version				\
 	src/math_polyfit_lagrange			\
@@ -302,6 +299,10 @@ local_programs :=					\
 	src/sequence_ccodes				\
 	src/sequence_msequence				\
 							\
+	src/simulate_detector				\
+	src/flexframe_fer				\
+	src/frame64_fer					\
+	src/gmskframe_fer				\
 	src/ofdmflexframe_fer				\
 	src/simulate_ber				\
 	src/simulate_per_test				\
