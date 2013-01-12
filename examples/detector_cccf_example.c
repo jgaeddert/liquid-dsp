@@ -118,7 +118,7 @@ int main(int argc, char*argv[])
     }
 
     // create cross-correlator
-    detector_cccf sync = detector_cccf_create(s, n, threshold, 0.1f);
+    detector_cccf sync = detector_cccf_create(s, n, threshold, 0.03f);
     detector_cccf_print(sync);
 
     // push signal through detector

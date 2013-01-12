@@ -1,6 +1,5 @@
 /*
- * Copyright (c) 2012 Joseph Gaeddert
- * Copyright (c) 2012 Virginia Polytechnic Institute & State University
+ * Copyright (c) 2012, 2013 Joseph Gaeddert
  *
  * This file is part of liquid.
  *
@@ -70,6 +69,8 @@ struct detector_cccf_s {
     // internal correlators
     dotprod_cccf * dp;      // vector dot products (pre-spun)
     unsigned int m;         // number of correlators
+    float   dphi_step;      // step size for each correlator
+    float   dphi_max;       // maximum carrier offset
     float * dphi;           // correlator frequencies [size: m x 1]
     float * rxy;            // correlator outputs [size: m x 1]
     float * rxy0;           // buffered correlator outputs [size: m x 1]
@@ -122,10 +123,21 @@ detector_cccf detector_cccf_create(float complex * _s,
     // set internal properties
     q->n         = _n;
     q->threshold = _threshold;
+    q->dphi_max  = _dphi_max;
 
     // derived values
     q->n_inv = 1.0f / (float)(q->n);    // 1/n for faster processing
-    q->m = 5;                           // number of correlators
+    q->dphi_step = 0.8f * M_PI / (float)(q->n);
+
+    // compute number of correlators
+    q->m = (int) ceilf( fabsf(_dphi_max / q->dphi_step) );
+    
+    // ensure at least two correlators
+    if (q->m < 2)
+        q->m = 2;
+
+    // re-compute maximum carrier offset
+    q->dphi_max = q->m * q->dphi_step;
 
     // allocate memory for sequence and copy
     q->s = (float complex*) malloc((q->n)*sizeof(float complex));
@@ -145,7 +157,7 @@ detector_cccf detector_cccf_create(float complex * _s,
     float complex sconj[q->n];
     for (k=0; k<q->m; k++) {
         // pre-spin sequence (slightly over-sampled in frequency)
-        q->dphi[k] = ((float)k - (float)(q->m-1)/2) * 0.8f * M_PI / (float)(q->n);
+        q->dphi[k] = ((float)k - (float)(q->m-1)/2) * q->dphi_step;
         for (i=0; i<q->n; i++)
             sconj[i] = conjf(q->s[i]) * cexpf(-_Complex_I*q->dphi[k]*i);
         q->dp[k] = dotprod_cccf_create(sconj, q->n);
@@ -199,6 +211,8 @@ void detector_cccf_print(detector_cccf _q)
     printf("detector_cccf:\n");
     printf("    sequence length     :   %-u\n", _q->n);
     printf("    threshold           :   %8.4f\n", _q->threshold);
+    printf("    maximum carrier     :   %8.4f rad/sample\n", _q->dphi_max);
+    printf("    num. correlators    :   %u\n", _q->m);
 }
 
 void detector_cccf_reset(detector_cccf _q)
@@ -426,8 +440,7 @@ void detector_cccf_estimate_offsets(detector_cccf _q,
 
     // interpolate frequency offset estimate
     float dphi_detect = _q->dphi[_q->idetect];       // frequency from detection
-    float dphi_step   = 0.8 * M_PI / (float)(_q->n); // step size between dphi bins
-    *_dphi_hat        = dphi_detect - dphi_step * 0.5f*(r0p - r0m) / (r0p + r0m - 2*r00);
+    *_dphi_hat        = dphi_detect - _q->dphi_step * 0.5f*(r0p - r0m) / (r0p + r0m - 2*r00);
 
     // interpolate timing offset estimate
     *_tau_hat  =  0.5f*(rp0 - rm0) / (rp0 + rm0 - 2*r00);

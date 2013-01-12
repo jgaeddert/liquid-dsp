@@ -33,11 +33,11 @@ void detector_cccf_runtest(unsigned int _n,
 // AUTOTESTS
 //
 
-void autotest_detector_cccf_n64()   { detector_cccf_runtest(  64, 0.2f, 0.005f); }
-void autotest_detector_cccf_n128()  { detector_cccf_runtest( 128, 0.2f, 0.005f); }
-void autotest_detector_cccf_n256()  { detector_cccf_runtest( 256, 0.2f, 0.005f); }
-void autotest_detector_cccf_n512()  { detector_cccf_runtest( 512, 0.2f, 0.005f); }
-void autotest_detector_cccf_n1024() { detector_cccf_runtest(1024, 0.2f, 0.005f); }
+void autotest_detector_cccf_n64()   { detector_cccf_runtest(  64, 0.2f, 0.01f); }
+void autotest_detector_cccf_n128()  { detector_cccf_runtest( 128, 0.2f, 0.01f); }
+void autotest_detector_cccf_n256()  { detector_cccf_runtest( 256, 0.2f, 0.01f); }
+void autotest_detector_cccf_n512()  { detector_cccf_runtest( 512, 0.2f, 0.01f); }
+void autotest_detector_cccf_n1024() { detector_cccf_runtest(1024, 0.2f, 0.01f); }
 
 // autotest helper function
 //  _n      :   sequence length
@@ -105,7 +105,7 @@ void detector_cccf_runtest(unsigned int _n,
     firfilt_crcf_destroy(finterp);
 
     // create detector
-    detector_cccf sync = detector_cccf_create(s, _n, threshold, 0.1f);
+    detector_cccf sync = detector_cccf_create(s, _n, threshold, 2*_dphi);
     
     // push signal through detector
     float tau_hat   = 0.0f;     // fractional sample offset estimate

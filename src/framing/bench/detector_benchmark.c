@@ -1,6 +1,5 @@
 /*
- * Copyright (c) 2012 Joseph Gaeddert
- * Copyright (c) 2012 Virginia Polytechnic Institute & State University
+ * Copyright (c) 2012, 2013 Joseph Gaeddert
  *
  * This file is part of liquid.
  *
@@ -45,7 +44,7 @@ void detector_cccf_bench(struct rusage *     _start,
 
     // generate synchronizer
     float threshold = 0.5f;
-    float dphi_max  = 0.1f;
+    float dphi_max  = 0.07f;
     detector_cccf q = detector_cccf_create(h, _n, threshold, dphi_max);
 
     // input sequence (random)
