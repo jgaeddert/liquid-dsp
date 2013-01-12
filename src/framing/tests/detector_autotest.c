@@ -34,10 +34,19 @@ void detector_cccf_runtest(unsigned int _n,
 //
 
 void autotest_detector_cccf_n64()   { detector_cccf_runtest(  64, 0.2f, 0.01f); }
+void autotest_detector_cccf_n83()   { detector_cccf_runtest(  83, 0.2f, 0.01f); }
+
 void autotest_detector_cccf_n128()  { detector_cccf_runtest( 128, 0.2f, 0.01f); }
+void autotest_detector_cccf_n167()  { detector_cccf_runtest( 167, 0.2f, 0.01f); }
+
 void autotest_detector_cccf_n256()  { detector_cccf_runtest( 256, 0.2f, 0.01f); }
+void autotest_detector_cccf_n335()  { detector_cccf_runtest( 335, 0.2f, 0.01f); }
+
 void autotest_detector_cccf_n512()  { detector_cccf_runtest( 512, 0.2f, 0.01f); }
+void autotest_detector_cccf_n671()  { detector_cccf_runtest( 671, 0.2f, 0.01f); }
+
 void autotest_detector_cccf_n1024() { detector_cccf_runtest(1024, 0.2f, 0.01f); }
+void autotest_detector_cccf_n1341() { detector_cccf_runtest(1341, 0.2f, 0.01f); }
 
 // autotest helper function
 //  _n      :   sequence length
