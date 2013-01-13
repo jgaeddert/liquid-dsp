@@ -41,6 +41,9 @@
 // push buffered p/n sequence through synchronizer
 void gmskframesync_pushpn(gmskframesync _q);
 
+// ...
+void gmskframesync_syncpn(gmskframesync _q);
+
 // update instantaneous frequency estimate
 void gmskframesync_update_fi(gmskframesync _q,
                              float complex _x);
@@ -98,7 +101,8 @@ struct gmskframesync_s {
     
     // preamble
     unsigned int preamble_len;      // number of symbols in preamble
-    float * preamble_pn;            // preamble p/n sequence
+    float * preamble_pn;            // preamble p/n sequence (known)
+    float * preamble_rx;            // preamble p/n sequence (received)
 
     // status variables
     enum {
@@ -107,7 +111,7 @@ struct gmskframesync_s {
         STATE_RXHEADER,             // receive header data
         STATE_RXPAYLOAD,            // receive payload data
     } state;
-    unsigned int pn_counter;        // counter: num of p/n syms received
+    unsigned int preamble_counter;        // counter: num of p/n syms received
     unsigned int header_counter;    // counter: num of header syms received
     unsigned int payload_counter;   // counter: num of payload syms received
     // debugging structures
@@ -156,6 +160,7 @@ gmskframesync gmskframesync_create(unsigned int       _k,
     // frame detector
     q->preamble_len = 63;
     q->preamble_pn = (float*)malloc(q->preamble_len*sizeof(float));
+    q->preamble_rx = (float*)malloc(q->preamble_len*sizeof(float));
     float complex preamble_samples[q->preamble_len*q->k];
     msequence ms = msequence_create(6, 0x6d, 1);
     gmskmod mod = gmskmod_create(q->k, q->m, q->BT);
@@ -257,6 +262,7 @@ void gmskframesync_destroy(gmskframesync _q)
     detector_cccf_destroy(_q->frame_detector);
     windowcf_destroy(_q->buffer);
     free(_q->preamble_pn);
+    free(_q->preamble_rx);
     
     //
     firpfb_rrrf_destroy(_q->mf);                // matched filter
@@ -466,6 +472,16 @@ void gmskframesync_pushpn(gmskframesync _q)
     }
 }
 
+// 
+void gmskframesync_syncpn(gmskframesync _q)
+{
+    unsigned int i;
+
+    // compare expected p/n sequence with received
+    for (i=0; i<_q->preamble_len; i++)
+        printf("  %3u : %12.8f : %12.8f\n", i, _q->preamble_pn[i], _q->preamble_rx[i]);
+}
+
 // update instantaneous frequency estimate
 void gmskframesync_update_fi(gmskframesync _q,
                              float complex _x)
@@ -495,23 +511,51 @@ void gmskframesync_execute_detectframe(gmskframesync _q,
         printf("***** frame detected! tau-hat:%8.4f, dphi-hat:%8.4f, gamma:%8.2f dB\n",
                 _q->tau_hat, _q->dphi_hat, 20*log10f(_q->gamma_hat));
 
-#if 0
         // push buffered samples through synchronizer
         gmskframesync_pushpn(_q);
 
-        // update state
-        _q->state = STATE_RXPREAMBLE;
-#else
         // set state (still need a few more samples before entire p/n
         // sequence has been received)
         _q->state = STATE_RXPREAMBLE;
-#endif
     }
 }
 
 void gmskframesync_execute_rxpreamble(gmskframesync _q,
                                       float complex _x)
 {
+    // validate input
+    if (_q->preamble_counter == _q->preamble_len) {
+        fprintf(stderr,"warning: gmskframesync_execute_rxpn(), p/n buffer already full!\n");
+        return;
+    }
+
+    // mix signal down
+    float complex y;
+    nco_crcf_mix_down(_q->nco_coarse, _x/(_q->gamma_hat*_q->k), &y);
+    nco_crcf_step(_q->nco_coarse);
+
+    // update symbol synchronizer
+    float complex mf_out = 0.0f;
+    int sample_available = gmskframesync_update_symsync(_q, y, &mf_out);
+
+    // compute output if timeout
+    if (sample_available) {
+        // save output in p/n symbols buffer
+        _q->preamble_rx[ _q->preamble_counter ] = mf_out;
+
+        // update counter
+        _q->preamble_counter++;
+
+        if (_q->preamble_counter == _q->preamble_len) {
+            gmskframesync_syncpn(_q);
+#if 0
+            _q->state = STATE_RXHEADER;
+#else
+            printf("gmskframesync: resetting prematurely\n");
+            gmskframesync_reset(_q);
+#endif
+        }
+    }
 }
 
 void gmskframesync_execute_rxheader(gmskframesync _q,
