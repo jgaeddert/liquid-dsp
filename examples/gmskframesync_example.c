@@ -165,18 +165,12 @@ int main(int argc, char*argv[])
         x[n] = 0.0f;
 
     // add channel impairments
-    unsigned int hc_len = 8*k+1;
-    float hc[hc_len];
-    liquid_firdes_kaiser(hc_len, 0.45, 40.0f, 0.5f, hc);
-    firfilt_crcf fchannel = firfilt_crcf_create(hc, hc_len);
     for (i=0; i<num_samples; i++) {
-        firfilt_crcf_push(fchannel, x[i]);
-        firfilt_crcf_execute(fchannel, &y[i]);
+        y[i]  = x[i];
         y[i] *= gamma;
         y[i] *= cexpf(_Complex_I*M_2_PI*dphi*i);
         y[i] += nstd*(randnf() + randnf()*_Complex_I)*M_SQRT1_2;
     }
-    firfilt_crcf_destroy(fchannel);
 
     // push samples through synchronizer
     gmskframesync_execute(fs, y, num_samples);

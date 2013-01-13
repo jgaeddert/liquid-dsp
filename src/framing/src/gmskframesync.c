@@ -57,17 +57,21 @@ struct gmskframesync_s {
     framesync_callback callback;    // user-defined callback function
     void * userdata;                // user-defined data structure
     framesyncstats_s framestats;    // frame statistic object
-
+    
     // synchronizer objects
     detector_cccf frame_detector;   // pre-demod detector
-#if 0
     float tau_hat;                  // fractional timing offset estimate
     float dphi_hat;                 // carrier frequency offset estimate
     float gamma_hat;                // channel gain estimate
     windowcf buffer;                // pre-demod buffered samples, size: k*(pn_len+m)
+#if 0
     nco_crcf nco_coarse;            // coarse carrier frequency recovery
     nco_crcf nco_fine;              // fine carrier recovery (after demod)
 #endif
+    
+    // preamble
+    unsigned int preamble_len;      // number of symbols in preamble
+
 
     // status variables
     enum {
@@ -119,14 +123,6 @@ gmskframesync gmskframesync_create(unsigned int       _k,
                                                  1.0f,
                                                  60.0f);
 #endif
-
-    // create/allocate preamble objects/arrays
-    msequence ms = msequence_create(6, 0x6d, 1);
-    unsigned int i;
-    for (i=0; i<64; i++) {
-        unsigned int bit = msequence_advance(ms);
-    }
-    msequence_destroy(ms);
 
 #if 0
     // create/allocate header objects/arrays
@@ -261,6 +257,36 @@ void gmskframesync_execute(gmskframesync   _q,
 void gmskframesync_execute_detectframe(gmskframesync _q,
                                        float complex _x)
 {
+#if 0
+    // push sample into pre-demod p/n sequence buffer
+    windowcf_push(_q->buffer, _x);
+
+    // push through pre-demod synchronizer
+    int detected = detector_cccf_correlate(_q->frame_detector,
+                                           _x,
+                                           &_q->tau_hat,
+                                           &_q->dphi_hat,
+                                           &_q->gamma_hat);
+
+    // check if frame has been detected
+    if (detected) {
+        printf("***** frame detected! tau-hat:%8.4f, dphi-hat:%8.4f, gamma:%8.2f dB\n",
+                _q->tau_hat, _q->dphi_hat, 20*log10f(_q->gamma_hat));
+
+#if 0
+        // push buffered samples through synchronizer
+        gmskframesync_pushpn(_q);
+
+        // update state
+        _q->state = STATE_RXPREAMBLE;
+#else
+        // reset and return
+        printf("gmskframesync: resetting prematurely\n");
+        gmskframesync_reset(_q);
+        return;
+#endif
+    }
+#endif
 }
 
 void gmskframesync_execute_rxpreamble(gmskframesync _q,

@@ -1300,15 +1300,6 @@ void bpacketsync_reconfig(bpacketsync _q);
 #define GMSKFRAME_H_FEC     (LIQUID_FEC_HAMMING128) // header FEC
 #define GMSKFRAME_H_ENC     (26)                    // encoded length (bytes)
 
-// gmskframegen
-void gmskframegen_encode_header( gmskframegen _q, unsigned char * _header);
-void gmskframegen_write_rampup(  gmskframegen _q, float complex * _y);
-void gmskframegen_write_phasing( gmskframegen _q, float complex * _y);
-void gmskframegen_write_preamble(gmskframegen _q, float complex * _y);
-void gmskframegen_write_header(  gmskframegen _q, float complex * _y);
-void gmskframegen_write_payload( gmskframegen _q, float complex * _y);
-void gmskframegen_write_rampdn(  gmskframegen _q, float complex * _y);
-
 
 // 
 // ofdmflexframe
