@@ -26,6 +26,7 @@
 #include <string.h>
 #include <math.h>
 #include <complex.h>
+#include <assert.h>
 
 #include "liquid.internal.h"
 
@@ -36,6 +37,21 @@
 
 // enable pre-demodulation filter (remove out-of-band noise)
 #define GMSKFRAMESYNC_PREFILTER         0
+
+// push buffered p/n sequence through synchronizer
+void gmskframesync_pushpn(gmskframesync _q);
+
+// update instantaneous frequency estimate
+void gmskframesync_update_fi(gmskframesync _q,
+                             float complex _x);
+
+// update symbol synchronizer internal state (filtered error, index, etc.)
+//  _q      :   frame synchronizer
+//  _x      :   input sample
+//  _y      :   output symbol
+int gmskframesync_update_symsync(gmskframesync _q,
+                                 float         _x,
+                                 float *       _y);
 
 // execute stages
 void gmskframesync_execute_detectframe(gmskframesync _q, float complex _x);
@@ -58,20 +74,31 @@ struct gmskframesync_s {
     void * userdata;                // user-defined data structure
     framesyncstats_s framestats;    // frame statistic object
     
+    //
+    float complex x_prime;          // received sample state
+    float fi_hat;                   // instantaneous frequency estimate
+    
+    // timing recovery objects, states
+    firpfb_rrrf mf;                 // matched filter decimator
+    firpfb_rrrf dmf;                // derivative matched filter decimator
+    unsigned int npfb;              // number of filters in symsync
+    float pfb_q;                    // filtered timing error
+    float pfb_soft;                 // soft filterbank index
+    int pfb_index;                  // hard filterbank index
+    int pfb_timer;                  // filterbank output flag
+    float symsync_out;              // symbol synchronizer output
+
     // synchronizer objects
     detector_cccf frame_detector;   // pre-demod detector
     float tau_hat;                  // fractional timing offset estimate
     float dphi_hat;                 // carrier frequency offset estimate
     float gamma_hat;                // channel gain estimate
     windowcf buffer;                // pre-demod buffered samples, size: k*(pn_len+m)
-#if 0
     nco_crcf nco_coarse;            // coarse carrier frequency recovery
-    nco_crcf nco_fine;              // fine carrier recovery (after demod)
-#endif
     
     // preamble
     unsigned int preamble_len;      // number of symbols in preamble
-
+    float * preamble_pn;            // preamble p/n sequence
 
     // status variables
     enum {
@@ -87,8 +114,8 @@ struct gmskframesync_s {
 #if DEBUG_GMSKFRAMESYNC
     int debug_enabled;              // debugging enabled?
     int debug_objects_created;      // debugging objects created?
-    windowcf debug_x;                   // received samples buffer
-    windowf  debug_framesyms;           // GMSK output symbols
+    windowcf debug_x;               // received samples buffer
+    windowf  debug_framesyms;       // GMSK output symbols
 #endif
 };
 
@@ -128,12 +155,17 @@ gmskframesync gmskframesync_create(unsigned int       _k,
 
     // frame detector
     q->preamble_len = 63;
+    q->preamble_pn = (float*)malloc(q->preamble_len*sizeof(float));
     float complex preamble_samples[q->preamble_len*q->k];
     msequence ms = msequence_create(6, 0x6d, 1);
     gmskmod mod = gmskmod_create(q->k, q->m, q->BT);
 
     for (i=0; i<q->preamble_len + q->m; i++) {
         unsigned char bit = msequence_advance(ms);
+
+        // save p/n sequence
+        if (i < q->preamble_len)
+            q->preamble_pn[i] = bit ? 1.0f : -1.0f;
         
         // modulate/interpolate
         if (i < q->m) gmskmod_modulate(mod, bit, &preamble_samples[0]);
@@ -152,7 +184,15 @@ gmskframesync gmskframesync_create(unsigned int       _k,
     float threshold = 0.5f;     // detection threshold
     float dphi_max  = 0.05f;    // maximum carrier offset allowable
     q->frame_detector = detector_cccf_create(preamble_samples, q->preamble_len*q->k, threshold, dphi_max);
+    q->buffer = windowcf_create(q->k*(q->preamble_len+q->m));
 
+    // create symbol timing recovery filters
+    q->npfb = 32;   // number of filters in the bank
+    q->mf   = firpfb_rrrf_create_rnyquist( LIQUID_RNYQUIST_GMSKRX,q->npfb,q->k,q->m,q->BT);
+    q->dmf  = firpfb_rrrf_create_drnyquist(LIQUID_RNYQUIST_GMSKRX,q->npfb,q->k,q->m,q->BT);
+
+    // create down-coverters for carrier phase tracking
+    q->nco_coarse = nco_crcf_create(LIQUID_NCO);
 #if 0
     // create/allocate header objects/arrays
     q->header_user= (unsigned char*)malloc(GMSKFRAME_H_USER*sizeof(unsigned char));
@@ -213,7 +253,15 @@ void gmskframesync_destroy(gmskframesync _q)
 #if GMSKFRAMESYNC_PREFILTER
     iirfilt_crcf_destroy(_q->prefilter);// pre-demodulator filter
 #endif
+    // preamble
     detector_cccf_destroy(_q->frame_detector);
+    windowcf_destroy(_q->buffer);
+    free(_q->preamble_pn);
+    
+    //
+    firpfb_rrrf_destroy(_q->mf);                // matched filter
+    firpfb_rrrf_destroy(_q->dmf);               // derivative matched filter
+    nco_crcf_destroy(_q->nco_coarse);           // coarse NCO
 
     // free main object memory
     free(_q);
@@ -230,6 +278,25 @@ void gmskframesync_reset(gmskframesync _q)
 {
     // reset state
     _q->state = STATE_DETECTFRAME;
+    
+    // clear pre-demod buffer
+    windowcf_clear(_q->buffer);
+
+    // reset internal objects
+    detector_cccf_reset(_q->frame_detector);
+    
+    // reset carrier recovery objects
+    nco_crcf_reset(_q->nco_coarse);
+
+    // reset sample state
+    _q->x_prime = 0.0f;
+    _q->fi_hat  = 0.0f;
+    
+    // reset symbol timing recovery state
+    firpfb_rrrf_clear(_q->mf);
+    firpfb_rrrf_clear(_q->dmf);
+    _q->pfb_q = 0.0f;   // filtered error signal
+        
 }
 
 // execute frame synchronizer
@@ -283,13 +350,138 @@ void gmskframesync_execute(gmskframesync   _q,
 // internal methods
 //
 
+// update symbol synchronizer internal state (filtered error, index, etc.)
+//  _q      :   frame synchronizer
+//  _x      :   input sample
+//  _y      :   output symbol
+int gmskframesync_update_symsync(gmskframesync _q,
+                                 float         _x,
+                                 float *       _y)
+{
+    // push sample into filterbanks
+    firpfb_rrrf_push(_q->mf,  _x);
+    firpfb_rrrf_push(_q->dmf, _x);
+
+    //
+    float mf_out  = 0.0f;    // matched-filter output
+    float dmf_out = 0.0f;    // derivatived matched-filter output
+
+    int sample_available = 0;
+
+    // compute output if timeout
+    if (_q->pfb_timer <= 0) {
+        sample_available = 1;
+
+        // reset timer
+        _q->pfb_timer = 2;  // k samples/symbol
+
+        firpfb_rrrf_execute(_q->mf,  _q->pfb_index, &mf_out);
+        firpfb_rrrf_execute(_q->dmf, _q->pfb_index, &dmf_out);
+
+        // update filtered timing error
+        // lo  bandwidth parameters: {0.92, 1.20}, about 100 symbols settling time
+        // med bandwidth parameters: {0.98, 0.20}, about 200 symbols settling time
+        // hi  bandwidth parameters: {0.99, 0.05}, about 500 symbols settling time
+        _q->pfb_q = 0.99f*_q->pfb_q + 0.05f*crealf( conjf(mf_out)*dmf_out );
+
+        // accumulate error into soft filterbank value
+        _q->pfb_soft += _q->pfb_q;
+
+        // compute actual filterbank index
+        _q->pfb_index = roundf(_q->pfb_soft);
+
+        // contrain index to be in [0, npfb-1]
+        while (_q->pfb_index < 0) {
+            _q->pfb_index += _q->npfb;
+            _q->pfb_soft  += _q->npfb;
+
+            // adjust pfb output timer
+            _q->pfb_timer--;
+        }
+        while (_q->pfb_index > _q->npfb-1) {
+            _q->pfb_index -= _q->npfb;
+            _q->pfb_soft  -= _q->npfb;
+
+            // adjust pfb output timer
+            _q->pfb_timer++;
+        }
+    }
+
+    // decrement symbol timer
+    _q->pfb_timer--;
+
+    // set output and return
+    *_y = mf_out;
+    
+    return sample_available;
+}
+
+// push buffered p/n sequence through synchronizer
+void gmskframesync_pushpn(gmskframesync _q)
+{
+    unsigned int i;
+
+    // reset filterbanks
+    firpfb_rrrf_clear(_q->mf);
+    firpfb_rrrf_clear(_q->dmf);
+
+    // read buffer
+    float complex * rc;
+    windowcf_read(_q->buffer, &rc);
+
+    // compute delay and filterbank index
+    //  tau_hat < 0 :   delay = 2*k*m-1, index = round(   tau_hat *npfb), flag = 0
+    //  tau_hat > 0 :   delay = 2*k*m-2, index = round((1-tau_hat)*npfb), flag = 0
+    assert(_q->tau_hat < 0.5f && _q->tau_hat > -0.5f);
+    unsigned int delay = 2*_q->k*_q->m - 1; // samples to buffer before computing output
+    _q->pfb_soft       = -_q->tau_hat*_q->npfb;
+    _q->pfb_index      = (int) roundf(_q->pfb_soft);
+    while (_q->pfb_index < 0) {
+        delay         -= 1;
+        _q->pfb_index += _q->npfb;
+        _q->pfb_soft  += _q->npfb;
+    }
+    _q->pfb_timer = 0;
+
+    // set coarse carrier frequency offset
+    nco_crcf_set_frequency(_q->nco_coarse, _q->dphi_hat);
+    
+    unsigned int buffer_len = (_q->preamble_len + _q->m) * _q->k;
+    for (i=0; i<buffer_len; i++) {
+        if (i < delay) {
+            float complex y;
+            nco_crcf_mix_down(_q->nco_coarse, rc[i]/(_q->gamma_hat*_q->k), &y);
+            nco_crcf_step(_q->nco_coarse);
+
+            // update instantanenous frequency estimate
+            gmskframesync_update_fi(_q, y);
+
+            // push initial samples into filterbanks
+            firpfb_rrrf_push(_q->mf,  _q->fi_hat);
+            firpfb_rrrf_push(_q->dmf, _q->fi_hat);
+        } else {
+            // run remaining samples through p/n sequence recovery
+            gmskframesync_execute_rxpreamble(_q, rc[i]);
+        }
+    }
+}
+
+// update instantaneous frequency estimate
+void gmskframesync_update_fi(gmskframesync _q,
+                             float complex _x)
+{
+    // compute differential phase
+    _q->fi_hat = cargf(conjf(_q->x_prime)*_x) * _q->k;
+
+    // update internal state
+    _q->x_prime = _x;
+}
+
 void gmskframesync_execute_detectframe(gmskframesync _q,
                                        float complex _x)
 {
-#if 0
     // push sample into pre-demod p/n sequence buffer
     windowcf_push(_q->buffer, _x);
-#endif
 
     // push through pre-demod synchronizer
     int detected = detector_cccf_correlate(_q->frame_detector,
@@ -310,10 +502,9 @@ void gmskframesync_execute_detectframe(gmskframesync _q,
         // update state
         _q->state = STATE_RXPREAMBLE;
 #else
-        // reset and return
-        printf("gmskframesync: resetting prematurely\n");
-        gmskframesync_reset(_q);
-        return;
+        // set state (still need a few more samples before entire p/n
+        // sequence has been received)
+        _q->state = STATE_RXPREAMBLE;
 #endif
     }
 }
@@ -581,7 +772,6 @@ void gmskframesync_debug_print(gmskframesync _q,
     fprintf(fid,"num_samples = %u;\n", DEBUG_GMSKFRAMESYNC_BUFFER_LEN);
     fprintf(fid,"t = 0:(num_samples-1);\n");
     unsigned int i;
-    float * r;
     float complex * rc;
 
     // write x
@@ -596,6 +786,7 @@ void gmskframesync_debug_print(gmskframesync _q,
     fprintf(fid,"\n\n");
 
 #if 0
+    float * r;
     // write framesyms
     fprintf(fid,"framesyms = zeros(1,num_samples);\n");
     windowf_read(_q->debug_framesyms, &r);
