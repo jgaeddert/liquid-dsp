@@ -124,6 +124,35 @@ gmskframesync gmskframesync_create(unsigned int       _k,
                                                  60.0f);
 #endif
 
+    unsigned int i;
+
+    // frame detector
+    q->preamble_len = 63;
+    float complex preamble_samples[q->preamble_len*q->k];
+    msequence ms = msequence_create(6, 0x6d, 1);
+    gmskmod mod = gmskmod_create(q->k, q->m, q->BT);
+
+    for (i=0; i<q->preamble_len + q->m; i++) {
+        unsigned char bit = msequence_advance(ms);
+        
+        // modulate/interpolate
+        if (i < q->m) gmskmod_modulate(mod, bit, &preamble_samples[0]);
+        else          gmskmod_modulate(mod, bit, &preamble_samples[(i-q->m)*q->k]);
+    }
+
+    gmskmod_destroy(mod);
+    msequence_destroy(ms);
+
+#if 0
+    // print sequence
+    for (i=0; i<q->preamble_len*q->k; i++)
+        printf("preamble(%3u) = %12.8f + j*%12.8f;\n", i+1, crealf(preamble_samples[i]), cimagf(preamble_samples[i]));
+#endif
+    // create frame detector
+    float threshold = 0.5f;     // detection threshold
+    float dphi_max  = 0.05f;    // maximum carrier offset allowable
+    q->frame_detector = detector_cccf_create(preamble_samples, q->preamble_len*q->k, threshold, dphi_max);
+
 #if 0
     // create/allocate header objects/arrays
     q->header_user= (unsigned char*)malloc(GMSKFRAME_H_USER*sizeof(unsigned char));
@@ -184,7 +213,7 @@ void gmskframesync_destroy(gmskframesync _q)
 #if GMSKFRAMESYNC_PREFILTER
     iirfilt_crcf_destroy(_q->prefilter);// pre-demodulator filter
 #endif
-    //detector_cccf_destroy(_q->frame_detector);
+    detector_cccf_destroy(_q->frame_detector);
 
     // free main object memory
     free(_q);
@@ -260,6 +289,7 @@ void gmskframesync_execute_detectframe(gmskframesync _q,
 #if 0
     // push sample into pre-demod p/n sequence buffer
     windowcf_push(_q->buffer, _x);
+#endif
 
     // push through pre-demod synchronizer
     int detected = detector_cccf_correlate(_q->frame_detector,
@@ -286,7 +316,6 @@ void gmskframesync_execute_detectframe(gmskframesync _q,
         return;
 #endif
     }
-#endif
 }
 
 void gmskframesync_execute_rxpreamble(gmskframesync _q,
