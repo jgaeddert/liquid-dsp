@@ -84,15 +84,16 @@ gmskframegen gmskframegen_create(unsigned int _k,
 {
     // TODO : validate input
     gmskframegen q = (gmskframegen) malloc(sizeof(struct gmskframegen_s));
-    q->k  = _k;
-    q->m  = _m;
-    q->BT = _BT;
+    q->k  = 2;      // 
+    q->m  = 3;      // 
+    q->BT = 0.35f;  // 
 
     // internal/derived values
-    q->rampup_len   =  8;   // number of ramp/up symbols
-    q->preamble_len = 64;   // number of preamble symbols
-    q->payload_len  =  0;   // number of payload symbols
-    q->rampdn_len   =  8;   // number of ramp\dn symbols
+    q->rampup_len   =  q->m;    // number of ramp/up symbols
+    q->preamble_len = 63;       // number of preamble symbols
+    q->payload_len  =  0;       // number of payload symbols
+    q->rampdn_len   =  q->m;    // number of ramp\dn symbols
+    //q->tail         = 0;        // number of tail symbols
 
     // create modulator
     q->mod = gmskmod_create(q->k, q->m, q->BT);

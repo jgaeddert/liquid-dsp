@@ -1309,12 +1309,6 @@ void gmskframegen_write_header(  gmskframegen _q, float complex * _y);
 void gmskframegen_write_payload( gmskframegen _q, float complex * _y);
 void gmskframegen_write_rampdn(  gmskframegen _q, float complex * _y);
 
-// gmskframesync
-void gmskframesync_execute_seekpn(gmskframesync _q, float _x);
-void gmskframesync_execute_rxheader(gmskframesync _q, float _x);
-void gmskframesync_execute_rxpayload(gmskframesync _q, float _x);
-void gmskframesync_decode_header(gmskframesync _q);
-
 
 // 
 // ofdmflexframe
