@@ -50,7 +50,7 @@ struct gmskframegen_s {
 
     // preamble
     //unsigned int genpoly_header;// generator polynomial
-    msequence ms_header;        // header sequence
+    msequence ms_preamble;      // preamble p/n sequence
 
     // header
     unsigned char * header_dec; // uncoded header [GMSKFRAME_H_DEC]
@@ -99,8 +99,7 @@ gmskframegen gmskframegen_create(unsigned int _k,
     q->mod = gmskmod_create(q->k, q->m, q->BT);
 
     // preamble objects/arrays
-    //q->genpoly_header = 0x00;
-    q->ms_header = msequence_create_default(6);
+    q->ms_preamble = msequence_create(6, 0x6d, 1);
 
     // header objects/arrays
     q->header_dec = (unsigned char*)malloc(GMSKFRAME_H_DEC*sizeof(unsigned char));
@@ -148,7 +147,7 @@ void gmskframegen_destroy(gmskframegen _q)
     gmskmod_destroy(_q->mod);
 
     // destroy/free preamble objects/arrays
-    msequence_destroy(_q->ms_header);
+    msequence_destroy(_q->ms_preamble);
 
     // destroy/free header objects/arrays
     free(_q->header_dec);
@@ -171,7 +170,7 @@ void gmskframegen_reset(gmskframegen _q)
 
     // reset states
     _q->state = GMSKFRAMEGEN_STATE_RAMPUP;
-    msequence_reset(_q->ms_header);
+    msequence_reset(_q->ms_preamble);
     _q->frame_complete = 0;
     _q->symbol_counter = 0;
 }
@@ -371,13 +370,13 @@ void gmskframegen_write_rampup(gmskframegen _q,
 void gmskframegen_write_preamble(gmskframegen _q,
                                  float complex * _y)
 {
-    unsigned char bit = msequence_advance(_q->ms_header);
+    unsigned char bit = msequence_advance(_q->ms_preamble);
     gmskmod_modulate(_q->mod, bit, _y);
 
     _q->symbol_counter++;
 
     if (_q->symbol_counter == _q->preamble_len) {
-        msequence_reset(_q->ms_header);
+        msequence_reset(_q->ms_preamble);
         _q->symbol_counter = 0;
         _q->state = GMSKFRAMEGEN_STATE_HEADER;
     }

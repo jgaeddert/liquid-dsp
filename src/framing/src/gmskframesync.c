@@ -140,7 +140,7 @@ gmskframesync gmskframesync_create(unsigned int       _k,
     symsync_rrrf_set_output_rate(q->symsync, 1);
 
     // create/allocate preamble objects/arrays
-    msequence ms = msequence_create_default(6);
+    msequence ms = msequence_create(6, 0x6d, 1);
     q->bx = bsequence_create(64);
     q->by = bsequence_create(64);
     unsigned int i;
