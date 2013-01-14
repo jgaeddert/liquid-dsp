@@ -126,7 +126,7 @@ int main(int argc, char*argv[])
     gmskframegen_print(fg);
 
     // allocate memory for full frame (with noise)
-    unsigned int frame_len = gmskframegen_get_frame_len(fg);
+    unsigned int frame_len = gmskframegen_getframelen(fg);
     unsigned int num_samples = (frame_len * k) + 800;
     float complex x[num_samples];
     float complex y[num_samples];

@@ -2307,7 +2307,7 @@ void gmskframegen_assemble(gmskframegen    _fg,
                            crc_scheme      _check,
                            fec_scheme      _fec0,
                            fec_scheme      _fec1);
-unsigned int gmskframegen_get_frame_len(gmskframegen _fg);
+unsigned int gmskframegen_getframelen(gmskframegen _q);
 int gmskframegen_write_samples(gmskframegen _fg,
                                liquid_float_complex * _y);
 

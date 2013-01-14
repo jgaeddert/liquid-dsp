@@ -52,7 +52,6 @@ struct gmskframegen_s {
     unsigned int header_len;    // length of header (encoded)
     unsigned int payload_len;   //
     unsigned int tail_len;      //
-    unsigned int frame_len;     // total number of symbols in the frame
 
     // preamble
     //unsigned int genpoly_header;// generator polynomial
@@ -79,7 +78,8 @@ struct gmskframegen_s {
         STATE_PAYLOAD,          // payload (frame)
         STATE_TAIL,             // tail symbols
     } state;
-    int frame_complete;         //
+    int frame_assembled;        // frame assembled flag
+    int frame_complete;         // frame completed flag
     unsigned int symbol_counter;//
 };
 
@@ -129,12 +129,6 @@ gmskframegen gmskframegen_create()
     // allocate memory for encoded packet
     q->payload_enc = (unsigned char*) malloc(q->enc_msg_len*sizeof(unsigned char));
 
-    // compute frame length (symbols)
-    q->frame_len = q->preamble_len +
-                   q->header_len +
-                   q->payload_len +
-                   q->tail_len;
-
     // reset framing object
     gmskframegen_reset(q);
 
@@ -173,16 +167,14 @@ void gmskframegen_reset(gmskframegen _q)
     // reset states
     _q->state = STATE_PREAMBLE;
     msequence_reset(_q->ms_preamble);
-    _q->frame_complete = 0;
-    _q->symbol_counter = 0;
+    _q->frame_assembled = 0;
+    _q->frame_complete  = 0;
+    _q->symbol_counter  = 0;
 }
 
 // print gmskframegen object internals
 void gmskframegen_print(gmskframegen _q)
 {
-    // compute spectral efficiency
-    float eta = (float)(8*_q->dec_msg_len) / (float)(_q->frame_len);
-
     // plot
     printf("gmskframegen:\n");
     printf("  physical properties\n");
@@ -194,12 +186,11 @@ void gmskframegen_print(gmskframegen _q)
     printf("    header          :   %-4u symbols\n", _q->header_len);
     printf("    payload         :   %-4u symbols\n", _q->payload_len);
     printf("    tail            :   %-4u symbols\n", _q->tail_len);
-    printf("    total           :   %-4u symbols\n", _q->frame_len);
     printf("  packet properties\n");
     printf("    crc             :   %s\n", crc_scheme_str[_q->check][1]);
     printf("    fec (inner)     :   %s\n", fec_scheme_str[_q->fec0][1]);
     printf("    fec (outer)     :   %s\n", fec_scheme_str[_q->fec1][1]);
-    printf("  efficiency        :   %-8.3f b/s/Hz\n", eta);
+    printf("  total samples     :   %-4u sampels\n", gmskframegen_getframelen(_q));
 }
 
 // assemble frame
@@ -237,15 +228,12 @@ void gmskframegen_assemble(gmskframegen    _q,
         _q->enc_msg_len = packetizer_get_enc_msg_len(_q->p_payload);
         _q->payload_len = 8*_q->enc_msg_len;
 
-        // compute frame length (symbols)
-        _q->frame_len = _q->preamble_len +
-                        _q->header_len +
-                        _q->payload_len +
-                        _q->tail_len;
-
         // re-allocate memory
         _q->payload_enc = (unsigned char*) realloc(_q->payload_enc, _q->enc_msg_len*sizeof(unsigned char));
     }
+    
+    // set assembled flag
+    _q->frame_assembled = 1;
 
     // encode header
     gmskframegen_encode_header(_q, _header);
@@ -254,10 +242,21 @@ void gmskframegen_assemble(gmskframegen    _q,
     packetizer_encode(_q->p_payload, _payload, _q->payload_enc);
 }
 
-// get length of frame (symbols)
-unsigned int gmskframegen_get_frame_len(gmskframegen _q)
+// get frame length (number of samples)
+unsigned int gmskframegen_getframelen(gmskframegen _q)
 {
-    return _q->frame_len;
+    if (!_q->frame_assembled) {
+        fprintf(stderr,"warning: gmskframegen_getframelen(), frame not assembled!\n");
+        return 0;
+    }
+
+    unsigned int num_frame_symbols =
+            _q->preamble_len +      // number of preamble p/n symbols
+            GMSKFRAME_H_SYM +       // number of header symbols
+            _q->payload_len +       // number of payload symbols
+            2*_q->m;                // number of tail symbols
+
+    return num_frame_symbols*_q->k; // k samples/symbol
 }
 
 // write sample to output buffer
