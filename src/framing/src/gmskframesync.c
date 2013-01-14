@@ -31,7 +31,7 @@
 #include "liquid.internal.h"
 
 #define DEBUG_GMSKFRAMESYNC             1
-#define DEBUG_GMSKFRAMESYNC_PRINT       0
+#define DEBUG_GMSKFRAMESYNC_PRINT       1
 #define DEBUG_GMSKFRAMESYNC_FILENAME    "gmskframesync_debug.m"
 #define DEBUG_GMSKFRAMESYNC_BUFFER_LEN  (2000)
 
@@ -64,9 +64,6 @@ void gmskframesync_execute_rxpayload(  gmskframesync _q, float complex _x);
 
 // decode header
 void gmskframesync_decode_header(gmskframesync _q);
-
-// decode payload
-void gmskframesync_decode_payload(gmskframesync _q);
 
 // gmskframesync object structure
 struct gmskframesync_s {
@@ -111,6 +108,18 @@ struct gmskframesync_s {
     packetizer p_header;
     int header_valid;
 
+    // payload
+    char payload_byte;              // received byte
+    crc_scheme check;               // payload validity check
+    fec_scheme fec0;                // payload FEC (inner)
+    fec_scheme fec1;                // payload FEC (outer)
+    unsigned int payload_enc_len;   // length of encoded payload
+    unsigned int payload_dec_len;   // payload length (num un-encoded bytes)
+    unsigned char * payload_enc;    // payload data (encoded bytes)
+    unsigned char * payload_dec;    // payload data (encoded bytes)
+    packetizer p_payload;           // payload packetizer
+    int payload_valid;              // did payload pass crc?
+    
     // status variables
     enum {
         STATE_DETECTFRAME=0,        // detect frame (seek p/n sequence)
@@ -217,25 +226,18 @@ gmskframesync gmskframesync_create(unsigned int       _k,
                                       GMSKFRAME_H_FEC,
                                       LIQUID_FEC_NONE);
 
-#if 0
     // create/allocate payload objects/arrays
-    q->dec_msg_len  = 0;
-    q->check        = LIQUID_CRC_32;
-    q->fec0         = LIQUID_FEC_NONE;
-    q->fec1         = LIQUID_FEC_NONE;
-    q->p_payload = packetizer_create(q->dec_msg_len,
+    q->payload_dec_len = 1;
+    q->check           = LIQUID_CRC_32;
+    q->fec0            = LIQUID_FEC_NONE;
+    q->fec1            = LIQUID_FEC_NONE;
+    q->p_payload = packetizer_create(q->payload_dec_len,
                                      q->check,
                                      q->fec0,
                                      q->fec1);
-    q->enc_msg_len = packetizer_get_enc_msg_len(q->p_payload);
-    q->payload_enc = (unsigned char*) malloc(q->enc_msg_len*sizeof(unsigned char));
-    q->payload_dec = (unsigned char*) malloc(q->dec_msg_len*sizeof(unsigned char));
-    //q->payload_len = 8*q->enc_msg_len;
-
-    
-    // initialize...
-    q->rssi_hat = 1.0f;
-#endif
+    q->payload_enc_len = packetizer_get_enc_msg_len(q->p_payload);
+    q->payload_dec = (unsigned char*) malloc(q->payload_dec_len*sizeof(unsigned char));
+    q->payload_enc = (unsigned char*) malloc(q->payload_enc_len*sizeof(unsigned char));
 
 #if DEBUG_GMSKFRAMESYNC
     // debugging structures
@@ -287,6 +289,11 @@ void gmskframesync_destroy(gmskframesync _q)
     free(_q->header_mod);
     free(_q->header_enc);
     free(_q->header_dec);
+
+    // payload
+    packetizer_destroy(_q->p_payload);
+    free(_q->payload_enc);
+    free(_q->payload_dec);
 
     // free main object memory
     free(_q);
@@ -609,11 +616,7 @@ void gmskframesync_execute_rxheader(gmskframesync _q,
         // demodulate
         unsigned char s = mf_out > 0.0f ? 1 : 0;
 
-#if 0
-        // update evm
-        float evm = _x - (s ? 1.0f : -1.0f);
-        _q->evm_hat += evm*evm;
-#endif
+        // TODO: update evm
 
         // save bit in buffer
         _q->header_mod[_q->header_counter] = s;
@@ -624,26 +627,21 @@ void gmskframesync_execute_rxheader(gmskframesync _q,
             // decode header
             gmskframesync_decode_header(_q);
 
-            // clear encoded payload array
-            //memset(_q->payload_enc, 0x00, _q->enc_msg_len);
-
             // invoke callback if header is invalid
             if (!_q->header_valid && _q->callback != NULL) {
                 // set framestats internals
-#if 0
-                _q->framestats.rssi             = 10*log10f(_q->rssi_hat);
-                _q->framestats.evm              = 10*log10f(_q->evm_hat / (8*GMSKFRAME_H_ENC) );
-#endif
-                _q->framestats.framesyms        = NULL;
-                _q->framestats.num_framesyms    = 0;
-                _q->framestats.mod_scheme       = LIQUID_MODEM_UNKNOWN;
-                _q->framestats.mod_bps          = 1;
-                _q->framestats.check            = LIQUID_CRC_UNKNOWN;
-                _q->framestats.fec0             = LIQUID_FEC_UNKNOWN;
-                _q->framestats.fec1             = LIQUID_FEC_UNKNOWN;
+                _q->framestats.rssi          = 20*log10f(_q->gamma_hat);
+                _q->framestats.evm           = 0.0f;
+                _q->framestats.framesyms     = NULL;
+                _q->framestats.num_framesyms = 0;
+                _q->framestats.mod_scheme    = LIQUID_MODEM_UNKNOWN;
+                _q->framestats.mod_bps       = 1;
+                _q->framestats.check         = LIQUID_CRC_UNKNOWN;
+                _q->framestats.fec0          = LIQUID_FEC_UNKNOWN;
+                _q->framestats.fec1          = LIQUID_FEC_UNKNOWN;
 
                 // invoke callback method
-                _q->callback(_q->header_enc,
+                _q->callback(_q->header_dec,
                              _q->header_valid,
                              NULL,
                              0,
@@ -669,51 +667,66 @@ void gmskframesync_execute_rxheader(gmskframesync _q,
 void gmskframesync_execute_rxpayload(gmskframesync _q,
                                      float complex _x)
 {
-#if 0
-    // demodulate
-    unsigned char s = _x > 0.0f ? 1 : 0;
+    // mix signal down
+    float complex y;
+    nco_crcf_mix_down(_q->nco_coarse, _x, &y);
+    nco_crcf_step(_q->nco_coarse);
 
-    // TODO : update evm
+    // update instantanenous frequency estimate
+    gmskframesync_update_fi(_q, y);
 
-    // save bit in buffer
-    div_t d = div(_q->num_symbols_received, 8);
-    _q->payload_enc[d.quot] |= s << (8-d.rem-1);
+    // update symbol synchronizer
+    float mf_out = 0.0f;
+    int sample_available = gmskframesync_update_symsync(_q, _q->fi_hat, &mf_out);
 
-    // increment symbol counter
-    _q->num_symbols_received++;
-    if (_q->num_symbols_received == 8*_q->enc_msg_len) {
-#if DEBUG_GMSKFRAMESYNC_PRINT
-        printf("***** gmskframesync: payload received\n");
-#endif
+    // compute output if timeout
+    if (sample_available) {
+        // demodulate
+        unsigned char s = mf_out > 0.0f ? 1 : 0;
 
-        // decode payload
-        _q->payload_valid = packetizer_decode(_q->p_payload, _q->payload_enc, _q->payload_dec);
+        // TODO: update evm
 
-        // invoke callback
-        // set framestats internals
-        _q->framestats.rssi             = 10*log10f(_q->rssi_hat);
-        _q->framestats.evm              = 10*log10f(_q->evm_hat / (8*GMSKFRAME_H_ENC) );
-        _q->framestats.framesyms        = NULL;
-        _q->framestats.num_framesyms    = 0;
-        _q->framestats.mod_scheme       = LIQUID_MODEM_UNKNOWN;
-        _q->framestats.mod_bps          = 1;
-        _q->framestats.check            = _q->check;
-        _q->framestats.fec0             = _q->fec0;
-        _q->framestats.fec1             = _q->fec1;
+        // save payload
+        _q->payload_byte <<= 1;
+        _q->payload_byte |= s ? 0x01 : 0x00;
+        _q->payload_enc[_q->payload_counter/8] = _q->payload_byte;
 
-        // invoke callback method
-        _q->callback(_q->header_user,
-                     _q->header_valid,
-                     _q->payload_dec,
-                     _q->dec_msg_len,
-                     _q->payload_valid,
-                     _q->framestats,
-                     _q->userdata);
+        // increment counter
+        _q->payload_counter++;
 
-        // reset frame synchronizer
-        gmskframesync_reset(_q);
+        if (_q->payload_counter == 8*_q->payload_enc_len) {
+            // decode payload
+            _q->payload_valid = packetizer_decode(_q->p_payload,
+                                                  _q->payload_enc,
+                                                  _q->payload_dec);
+
+            // invoke callback
+            if (_q->callback != NULL) {
+                // set framestats internals
+                _q->framestats.rssi          = 20*log10f(_q->gamma_hat);
+                _q->framestats.evm           = 0.0f;
+                _q->framestats.framesyms     = NULL;
+                _q->framestats.num_framesyms = 0;
+                _q->framestats.mod_scheme    = LIQUID_MODEM_UNKNOWN;
+                _q->framestats.mod_bps       = 1;
+                _q->framestats.check         = _q->check;
+                _q->framestats.fec0          = _q->fec0;
+                _q->framestats.fec1          = _q->fec1;
+
+                // invoke callback method
+                _q->callback(_q->header_dec,
+                             _q->header_valid,
+                             _q->payload_dec,
+                             _q->payload_dec_len,
+                             _q->payload_valid,
+                             _q->framestats,
+                             _q->userdata);
+            }
+
+            // reset frame synchronizer
+            gmskframesync_reset(_q);
+        }
     }
-#endif
 }
 
 // decode header and re-configure payload decoder
@@ -745,6 +758,7 @@ void gmskframesync_decode_header(gmskframesync _q)
     if (_q->header_dec[n+0] != GMSKFRAME_VERSION) {
         fprintf(stderr,"warning: gmskframesync_decode_header(), invalid framing version\n");
         _q->header_valid = 0;
+        return;
     }
 
     // strip off payload length
@@ -776,7 +790,7 @@ void gmskframesync_decode_header(gmskframesync _q)
     }
 
     // print results
-#if 1//DEBUG_GMSKFRAMESYNC_PRINT
+#if DEBUG_GMSKFRAMESYNC_PRINT
     printf("    properties:\n");
     printf("      * fec (inner)     :   %s\n", fec_scheme_str[fec0][1]);
     printf("      * fec (outer)     :   %s\n", fec_scheme_str[fec1][1]);
@@ -784,41 +798,34 @@ void gmskframesync_decode_header(gmskframesync _q)
     printf("      * payload length  :   %u bytes\n", payload_dec_len);
 #endif
 
-#if 0
     // configure payload receiver
     if (_q->header_valid) {
         // set new packetizer properties
-        _q->dec_msg_len = dec_msg_len;
-        _q->check       = check;
-        _q->fec0        = fec0;
-        _q->fec1        = fec1;
+        _q->payload_dec_len = payload_dec_len;
+        _q->check           = check;
+        _q->fec0            = fec0;
+        _q->fec1            = fec1;
         
         // recreate packetizer object
         _q->p_payload = packetizer_recreate(_q->p_payload,
-                                            _q->dec_msg_len,
+                                            _q->payload_dec_len,
                                             _q->check,
                                             _q->fec0,
                                             _q->fec1);
 
         // re-compute payload encoded message length
-        _q->enc_msg_len = packetizer_get_enc_msg_len(_q->p_payload);
+        _q->payload_enc_len = packetizer_get_enc_msg_len(_q->p_payload);
 #if DEBUG_GMSKFRAMESYNC_PRINT
-        printf("      * payload encoded :   %u bytes\n", _q->enc_msg_len);
+        printf("      * payload encoded :   %u bytes\n", _q->payload_enc_len);
 #endif
 
         // re-allocate buffers accordingly
-        _q->payload_enc = (unsigned char*) realloc(_q->payload_enc, _q->enc_msg_len*sizeof(unsigned char));
-        _q->payload_dec = (unsigned char*) realloc(_q->payload_dec, _q->dec_msg_len*sizeof(unsigned char));
+        _q->payload_enc = (unsigned char*) realloc(_q->payload_enc, _q->payload_enc_len*sizeof(unsigned char));
+        _q->payload_dec = (unsigned char*) realloc(_q->payload_dec, _q->payload_dec_len*sizeof(unsigned char));
     }
     //
-#endif
 }
 
-
-// decode payload and set internal framestats object
-void gmskframesync_decode_payload(gmskframesync _q)
-{
-}
 
 void gmskframesync_debug_enable(gmskframesync _q)
 {
