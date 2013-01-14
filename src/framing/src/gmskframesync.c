@@ -119,6 +119,7 @@ struct gmskframesync_s {
     int debug_enabled;              // debugging enabled?
     int debug_objects_created;      // debugging objects created?
     windowcf debug_x;               // received samples buffer
+    windowf  debug_fi;              // instantaneous frequency
     windowf  debug_mf;              // matched filter output
     windowf  debug_framesyms;       // GMSK output symbols
 #endif
@@ -233,6 +234,7 @@ gmskframesync gmskframesync_create(unsigned int       _k,
     q->debug_enabled         = 0;
     q->debug_objects_created = 0;
     q->debug_x               = NULL;
+    q->debug_fi              = NULL;
     q->debug_mf              = NULL;
     q->debug_framesyms       = NULL;
 #endif
@@ -252,6 +254,7 @@ void gmskframesync_destroy(gmskframesync _q)
     // destroy debugging objects
     if (_q->debug_objects_created) {
         windowcf_destroy(_q->debug_x);
+        windowf_destroy(_q->debug_fi);
         windowf_destroy(_q->debug_mf);
         windowf_destroy( _q->debug_framesyms);
     }
@@ -376,6 +379,7 @@ int gmskframesync_update_symsync(gmskframesync _q,
     float dmf_out = 0.0f;    // derivatived matched-filter output
 #if DEBUG_GMSKFRAMESYNC
     if (_q->debug_enabled) {
+        windowf_push(_q->debug_fi, _q->fi_hat);
         firpfb_rrrf_execute(_q->mf,  _q->pfb_index, &mf_out);
         windowf_push(_q->debug_mf, mf_out);
     }
@@ -421,6 +425,7 @@ int gmskframesync_update_symsync(gmskframesync _q,
             // adjust pfb output timer
             _q->pfb_timer++;
         }
+        //printf("  b/soft    :   %12.8f\n", _q->pfb_soft);
     }
 
     // decrement symbol timer
@@ -466,7 +471,7 @@ void gmskframesync_pushpn(gmskframesync _q)
     for (i=0; i<buffer_len; i++) {
         if (i < delay) {
             float complex y;
-            nco_crcf_mix_down(_q->nco_coarse, rc[i]/(_q->gamma_hat*_q->k), &y);
+            nco_crcf_mix_down(_q->nco_coarse, rc[i], &y);
             nco_crcf_step(_q->nco_coarse);
 
             // update instantanenous frequency estimate
@@ -480,6 +485,10 @@ void gmskframesync_pushpn(gmskframesync _q)
             gmskframesync_execute_rxpreamble(_q, rc[i]);
         }
     }
+
+    // set state (still need a few more samples before entire p/n
+    // sequence has been received)
+    _q->state = STATE_RXPREAMBLE;
 }
 
 // 
@@ -522,11 +531,8 @@ void gmskframesync_execute_detectframe(gmskframesync _q,
                 _q->tau_hat, _q->dphi_hat, 20*log10f(_q->gamma_hat));
 
         // push buffered samples through synchronizer
+        // NOTE: state will be updated to STATE_RXPREAMBLE internally
         gmskframesync_pushpn(_q);
-
-        // set state (still need a few more samples before entire p/n
-        // sequence has been received)
-        _q->state = STATE_RXPREAMBLE;
     }
 }
 
@@ -541,17 +547,20 @@ void gmskframesync_execute_rxpreamble(gmskframesync _q,
 
     // mix signal down
     float complex y;
-    nco_crcf_mix_down(_q->nco_coarse, _x/(_q->gamma_hat*_q->k), &y);
+    nco_crcf_mix_down(_q->nco_coarse, _x, &y);
     nco_crcf_step(_q->nco_coarse);
+
+    // update instantanenous frequency estimate
+    gmskframesync_update_fi(_q, y);
 
     // update symbol synchronizer
     float mf_out = 0.0f;
-    int sample_available = gmskframesync_update_symsync(_q, y, &mf_out);
+    int sample_available = gmskframesync_update_symsync(_q, _q->fi_hat, &mf_out);
 
     // compute output if timeout
     if (sample_available) {
         // save output in p/n symbols buffer
-        _q->preamble_rx[ _q->preamble_counter ] = mf_out;
+        _q->preamble_rx[ _q->preamble_counter ] = mf_out / (float)(_q->k);
 
         // update counter
         _q->preamble_counter++;
@@ -783,6 +792,7 @@ void gmskframesync_debug_enable(gmskframesync _q)
 #if DEBUG_GMSKFRAMESYNC
     if (!_q->debug_objects_created) {
         _q->debug_x  = windowcf_create(DEBUG_GMSKFRAMESYNC_BUFFER_LEN);
+        _q->debug_fi = windowf_create(DEBUG_GMSKFRAMESYNC_BUFFER_LEN);
         _q->debug_mf = windowf_create(DEBUG_GMSKFRAMESYNC_BUFFER_LEN);
         _q->debug_framesyms  = windowf_create(DEBUG_GMSKFRAMESYNC_BUFFER_LEN);
     }
@@ -839,9 +849,20 @@ void gmskframesync_debug_print(gmskframesync _q,
     fprintf(fid,"ylabel('received signal, x');\n");
     fprintf(fid,"\n\n");
 
-    // write matched filter output
+    // write instantaneous frequency
     float * r;
-    fprintf(fid,"y = zeros(1,num_samples);\n");
+    fprintf(fid,"fi = zeros(1,num_samples);\n");
+    windowf_read(_q->debug_fi, &r);
+    for (i=0; i<DEBUG_GMSKFRAMESYNC_BUFFER_LEN; i++)
+        fprintf(fid,"fi(%4u) = %12.4e;\n", i+1, r[i]);
+    fprintf(fid,"\n\n");
+    fprintf(fid,"figure;\n");
+    fprintf(fid,"plot(1:length(fi),fi);\n");
+    fprintf(fid,"ylabel('Inst. Freq.');\n");
+    fprintf(fid,"\n\n");
+
+    // write matched filter output
+    fprintf(fid,"mf = zeros(1,num_samples);\n");
     windowf_read(_q->debug_mf, &r);
     for (i=0; i<DEBUG_GMSKFRAMESYNC_BUFFER_LEN; i++)
         fprintf(fid,"mf(%4u) = %12.4e;\n", i+1, r[i]);
