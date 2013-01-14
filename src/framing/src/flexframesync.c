@@ -857,6 +857,11 @@ void flexframesync_decode_header(flexframesync _q)
         _q->payload_enc = (unsigned char*) realloc(_q->payload_enc, (_q->payload_enc_len+8)*sizeof(unsigned char));
         _q->payload_dec = (unsigned char*) realloc(_q->payload_dec, (_q->payload_dec_len  )*sizeof(unsigned char));
 
+        if (_q->payload_mod == NULL || _q->payload_enc == NULL || _q->payload_dec == NULL) {
+            fprintf(stderr,"error: flexframesync_decode_header(), could not re-allocate payload arrays\n");
+            _q->header_valid = 0;
+            return;
+        }
     }
     
 #if DEBUG_FLEXFRAMESYNC_PRINT

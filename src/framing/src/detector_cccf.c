@@ -444,6 +444,10 @@ void detector_cccf_estimate_offsets(detector_cccf _q,
 
     // interpolate timing offset estimate
     *_tau_hat  =  0.5f*(rp0 - rm0) / (rp0 + rm0 - 2*r00);
+
+    // force result to be in proper range
+    if (*_tau_hat < -0.499f) *_tau_hat = -0.499f;
+    if (*_tau_hat >  0.499f) *_tau_hat =  0.499f;
 }
 
 #if 0
