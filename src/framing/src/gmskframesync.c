@@ -36,7 +36,7 @@
 #define DEBUG_GMSKFRAMESYNC_BUFFER_LEN  (2000)
 
 // enable pre-demodulation filter (remove out-of-band noise)
-#define GMSKFRAMESYNC_PREFILTER         0
+#define GMSKFRAMESYNC_PREFILTER         1
 
 // push buffered p/n sequence through synchronizer
 void gmskframesync_pushpn(gmskframesync _q);
@@ -67,6 +67,9 @@ void gmskframesync_decode_header(gmskframesync _q);
 
 // gmskframesync object structure
 struct gmskframesync_s {
+#if GMSKFRAMESYNC_PREFILTER
+    iirfilt_crcf prefilter;         // pre-demodulation filter
+#endif
     unsigned int k;                 // filter samples/symbol
     unsigned int m;                 // filter semi-length (symbols)
     float BT;                       // filter bandwidth-time product
