@@ -403,9 +403,9 @@ int flexframesync_update_symsync(flexframesync   _q,
         firpfb_crcf_execute(_q->dmf, _q->pfb_index, &dmf_out);
 
         // update filtered timing error
-        // lo  bandwidth parameters: {0.92, 1.20}, about 100 symbols settling time
+        // hi  bandwidth parameters: {0.92, 1.20}, about 100 symbols settling time
         // med bandwidth parameters: {0.98, 0.20}, about 200 symbols settling time
-        // hi  bandwidth parameters: {0.99, 0.05}, about 500 symbols settling time
+        // lo  bandwidth parameters: {0.99, 0.05}, about 500 symbols settling time
         _q->pfb_q = 0.99f*_q->pfb_q + 0.05f*crealf( conjf(mf_out)*dmf_out );
 
         // accumulate error into soft filterbank value
