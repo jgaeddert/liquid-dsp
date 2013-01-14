@@ -2296,14 +2296,7 @@ void bpacketsync_execute_bit(bpacketsync _q,
 typedef struct gmskframegen_s * gmskframegen;
 
 // create GMSK frame generator
-//  _k          :   samples/symbol
-//  _m          :   filter delay (symbols)
-//  _BT         :   bandwidth-time factor
-//  _callback   :   callback function
-//  _userdata   :   user data pointer passed to callback function
-gmskframegen gmskframegen_create(unsigned int _k,
-                                 unsigned int _m,
-                                 float        _BT);
+gmskframegen gmskframegen_create();
 void gmskframegen_destroy(gmskframegen _fg);
 void gmskframegen_print(gmskframegen _fg);
 void gmskframegen_reset(gmskframegen _fg);
@@ -2326,15 +2319,9 @@ int gmskframegen_write_samples(gmskframegen _fg,
 typedef struct gmskframesync_s * gmskframesync;
 
 // create GMSK frame synchronizer
-//  _k          :   samples/symbol
-//  _m          :   filter delay (symbols)
-//  _BT         :   bandwidth-time factor
 //  _callback   :   callback function
 //  _userdata   :   user data pointer passed to callback function
-gmskframesync gmskframesync_create(unsigned int       _k,
-                                   unsigned int       _m,
-                                   float              _BT,
-                                   framesync_callback _callback,
+gmskframesync gmskframesync_create(framesync_callback _callback,
                                    void *             _userdata);
 void gmskframesync_destroy(gmskframesync _q);
 void gmskframesync_print(gmskframesync _q);

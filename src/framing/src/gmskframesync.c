@@ -31,7 +31,7 @@
 #include "liquid.internal.h"
 
 #define DEBUG_GMSKFRAMESYNC             1
-#define DEBUG_GMSKFRAMESYNC_PRINT       1
+#define DEBUG_GMSKFRAMESYNC_PRINT       0
 #define DEBUG_GMSKFRAMESYNC_FILENAME    "gmskframesync_debug.m"
 #define DEBUG_GMSKFRAMESYNC_BUFFER_LEN  (2000)
 
@@ -142,25 +142,17 @@ struct gmskframesync_s {
 };
 
 // create GMSK frame synchronizer
-//  _k          :   samples/symbol
-//  _m          :   filter delay (symbols)
-//  _BT         :   bandwidth-time factor
 //  _callback   :   callback function
 //  _userdata   :   user data pointer passed to callback function
-gmskframesync gmskframesync_create(unsigned int       _k,
-                                   unsigned int       _m,
-                                   float              _BT,
-                                   framesync_callback _callback,
+gmskframesync gmskframesync_create(framesync_callback _callback,
                                    void *             _userdata)
 {
-    // TODO : validate input
-
     gmskframesync q = (gmskframesync) malloc(sizeof(struct gmskframesync_s));
-    q->k        = 2;        // 
-    q->m        = 3;        // 
-    q->BT       = 0.5f;     // 
     q->callback = _callback;
     q->userdata = _userdata;
+    q->k        = 2;        // samples/symbol
+    q->m        = 3;        // filter delay (symbols)
+    q->BT       = 0.5f;     // filter bandwidth-time product
 
 #if GMSKFRAMESYNC_PREFILTER
     q->prefilter = iirfilt_crcf_create_prototype(LIQUID_IIRDES_BUTTER,
@@ -551,8 +543,8 @@ void gmskframesync_execute_detectframe(gmskframesync _q,
 
     // check if frame has been detected
     if (detected) {
-        printf("***** frame detected! tau-hat:%8.4f, dphi-hat:%8.4f, gamma:%8.2f dB\n",
-                _q->tau_hat, _q->dphi_hat, 20*log10f(_q->gamma_hat));
+        //printf("***** frame detected! tau-hat:%8.4f, dphi-hat:%8.4f, gamma:%8.2f dB\n",
+        //        _q->tau_hat, _q->dphi_hat, 20*log10f(_q->gamma_hat));
 
         // push buffered samples through synchronizer
         // NOTE: state will be updated to STATE_RXPREAMBLE internally
