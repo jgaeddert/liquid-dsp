@@ -2450,6 +2450,11 @@ float ofdmflexframesync_get_rssi(ofdmflexframesync _q);
 // query the received carrier offset estimate
 float ofdmflexframesync_get_cfo(ofdmflexframesync _q);
 
+// enable/disable debugging
+void ofdmflexframesync_debug_enable(ofdmflexframesync _q);
+void ofdmflexframesync_debug_disable(ofdmflexframesync _q);
+void ofdmflexframesync_debug_print(ofdmflexframesync _q,
+                                   const char *      _filename);
 
 
 
