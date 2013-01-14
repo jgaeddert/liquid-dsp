@@ -104,6 +104,13 @@ struct gmskframesync_s {
     float * preamble_pn;            // preamble p/n sequence (known)
     float * preamble_rx;            // preamble p/n sequence (received)
 
+    // header
+    unsigned char * header_mod;
+    unsigned char * header_enc;
+    unsigned char * header_dec;
+    packetizer p_header;
+    int header_valid;
+
     // status variables
     enum {
         STATE_DETECTFRAME=0,        // detect frame (seek p/n sequence)
@@ -200,9 +207,9 @@ gmskframesync gmskframesync_create(unsigned int       _k,
 
     // create down-coverters for carrier phase tracking
     q->nco_coarse = nco_crcf_create(LIQUID_NCO);
-#if 0
+
     // create/allocate header objects/arrays
-    q->header_user= (unsigned char*)malloc(GMSKFRAME_H_USER*sizeof(unsigned char));
+    q->header_mod = (unsigned char*)malloc(GMSKFRAME_H_SYM*sizeof(unsigned char));
     q->header_enc = (unsigned char*)malloc(GMSKFRAME_H_ENC*sizeof(unsigned char));
     q->header_dec = (unsigned char*)malloc(GMSKFRAME_H_DEC*sizeof(unsigned char));
     q->p_header   = packetizer_create(GMSKFRAME_H_DEC,
@@ -210,6 +217,7 @@ gmskframesync gmskframesync_create(unsigned int       _k,
                                       GMSKFRAME_H_FEC,
                                       LIQUID_FEC_NONE);
 
+#if 0
     // create/allocate payload objects/arrays
     q->dec_msg_len  = 0;
     q->check        = LIQUID_CRC_32;
@@ -264,16 +272,21 @@ void gmskframesync_destroy(gmskframesync _q)
 #if GMSKFRAMESYNC_PREFILTER
     iirfilt_crcf_destroy(_q->prefilter);// pre-demodulator filter
 #endif
+    firpfb_rrrf_destroy(_q->mf);                // matched filter
+    firpfb_rrrf_destroy(_q->dmf);               // derivative matched filter
+    nco_crcf_destroy(_q->nco_coarse);           // coarse NCO
+
     // preamble
     detector_cccf_destroy(_q->frame_detector);
     windowcf_destroy(_q->buffer);
     free(_q->preamble_pn);
     free(_q->preamble_rx);
     
-    //
-    firpfb_rrrf_destroy(_q->mf);                // matched filter
-    firpfb_rrrf_destroy(_q->dmf);               // derivative matched filter
-    nco_crcf_destroy(_q->nco_coarse);           // coarse NCO
+    // header
+    packetizer_destroy(_q->p_header);
+    free(_q->header_mod);
+    free(_q->header_enc);
+    free(_q->header_dec);
 
     // free main object memory
     free(_q);
@@ -288,8 +301,11 @@ void gmskframesync_print(gmskframesync _q)
 // reset frame synchronizer object
 void gmskframesync_reset(gmskframesync _q)
 {
-    // reset state
+    // reset state and counters
     _q->state = STATE_DETECTFRAME;
+    _q->preamble_counter = 0;
+    _q->header_counter   = 0;
+    _q->payload_counter  = 0;
     
     // clear pre-demod buffer
     windowcf_clear(_q->buffer);
@@ -432,7 +448,7 @@ int gmskframesync_update_symsync(gmskframesync _q,
     _q->pfb_timer--;
 
     // set output and return
-    *_y = mf_out;
+    *_y = mf_out / (float)(_q->k);
     
     return sample_available;
 }
@@ -494,11 +510,12 @@ void gmskframesync_pushpn(gmskframesync _q)
 // 
 void gmskframesync_syncpn(gmskframesync _q)
 {
-    unsigned int i;
-
+#if 0
     // compare expected p/n sequence with received
+    unsigned int i;
     for (i=0; i<_q->preamble_len; i++)
         printf("  %3u : %12.8f : %12.8f\n", i, _q->preamble_pn[i], _q->preamble_rx[i]);
+#endif
 }
 
 // update instantaneous frequency estimate
@@ -567,12 +584,7 @@ void gmskframesync_execute_rxpreamble(gmskframesync _q,
 
         if (_q->preamble_counter == _q->preamble_len) {
             gmskframesync_syncpn(_q);
-#if 0
             _q->state = STATE_RXHEADER;
-#else
-            printf("gmskframesync: resetting prematurely\n");
-            gmskframesync_reset(_q);
-#endif
         }
     }
 }
@@ -580,60 +592,78 @@ void gmskframesync_execute_rxpreamble(gmskframesync _q,
 void gmskframesync_execute_rxheader(gmskframesync _q,
                                     float complex _x)
 {
+    // mix signal down
+    float complex y;
+    nco_crcf_mix_down(_q->nco_coarse, _x, &y);
+    nco_crcf_step(_q->nco_coarse);
+
+    // update instantanenous frequency estimate
+    gmskframesync_update_fi(_q, y);
+
+    // update symbol synchronizer
+    float mf_out = 0.0f;
+    int sample_available = gmskframesync_update_symsync(_q, _q->fi_hat, &mf_out);
+
+    // compute output if timeout
+    if (sample_available) {
+        // demodulate
+        unsigned char s = mf_out > 0.0f ? 1 : 0;
+
 #if 0
-    // demodulate
-    unsigned char s = _x > 0.0f ? 1 : 0;
-
-    // update evm
-    float evm = _x - (s ? 1.0f : -1.0f);
-    _q->evm_hat += evm*evm;
-
-    // save bit in buffer
-    div_t d = div(_q->num_symbols_received, 8);
-    _q->header_enc[d.quot] |= s << (8-d.rem-1);
-
-    // increment symbol counter
-    _q->num_symbols_received++;
-    if (_q->num_symbols_received == 8*GMSKFRAME_H_ENC) {
-#if DEBUG_GMSKFRAMESYNC_PRINT
-        printf("***** gmskframesync: header received\n");
-        printf("    header_enc      :");
-        unsigned int i;
-        for (i=0; i<GMSKFRAME_H_ENC; i++)
-            printf(" %.2X", _q->header_enc[i]);
-        printf("\n");
+        // update evm
+        float evm = _x - (s ? 1.0f : -1.0f);
+        _q->evm_hat += evm*evm;
 #endif
 
-        // decode header
-        gmskframesync_decode_header(_q);
+        // save bit in buffer
+        _q->header_mod[_q->header_counter] = s;
 
-        // clear encoded payload array
-        memset(_q->payload_enc, 0x00, _q->enc_msg_len);
+        // increment header counter
+        _q->header_counter++;
+        if (_q->header_counter == GMSKFRAME_H_SYM) {
+            // decode header
+            gmskframesync_decode_header(_q);
 
-        // invoke callback if header is invalid
-        if (_q->header_valid) {
+            // clear encoded payload array
+            //memset(_q->payload_enc, 0x00, _q->enc_msg_len);
+
+            // invoke callback if header is invalid
+            if (!_q->header_valid && _q->callback != NULL) {
+                // set framestats internals
+#if 0
+                _q->framestats.rssi             = 10*log10f(_q->rssi_hat);
+                _q->framestats.evm              = 10*log10f(_q->evm_hat / (8*GMSKFRAME_H_ENC) );
+#endif
+                _q->framestats.framesyms        = NULL;
+                _q->framestats.num_framesyms    = 0;
+                _q->framestats.mod_scheme       = LIQUID_MODEM_UNKNOWN;
+                _q->framestats.mod_bps          = 1;
+                _q->framestats.check            = LIQUID_CRC_UNKNOWN;
+                _q->framestats.fec0             = LIQUID_FEC_UNKNOWN;
+                _q->framestats.fec1             = LIQUID_FEC_UNKNOWN;
+
+                // invoke callback method
+                _q->callback(_q->header_enc,
+                             _q->header_valid,
+                             NULL,
+                             0,
+                             0,
+                             _q->framestats,
+                             _q->userdata);
+
+                gmskframesync_reset(_q);
+            }
+
+            // reset if invalid
+            if (!_q->header_valid) {
+                gmskframesync_reset(_q);
+                return;
+            }
+
+            // update state
             _q->state = STATE_RXPAYLOAD;
-            _q->num_symbols_received = 0;
-        } else {
-            //printf("**** header invalid!\n");
-            // set framestats internals
-            _q->framestats.rssi             = 10*log10f(_q->rssi_hat);
-            _q->framestats.evm              = 10*log10f(_q->evm_hat / (8*GMSKFRAME_H_ENC) );
-            _q->framestats.framesyms        = NULL;
-            _q->framestats.num_framesyms    = 0;
-            _q->framestats.mod_scheme       = LIQUID_MODEM_UNKNOWN;
-            _q->framestats.mod_bps          = 1;
-            _q->framestats.check            = LIQUID_CRC_UNKNOWN;
-            _q->framestats.fec0             = LIQUID_FEC_UNKNOWN;
-            _q->framestats.fec1             = LIQUID_FEC_UNKNOWN;
-
-            // invoke callback method
-            _q->callback(_q->header_user, _q->header_valid, NULL, 0, 0, _q->framestats, _q->userdata);
-
-            gmskframesync_reset(_q);
         }
     }
-#endif
 }
 
 void gmskframesync_execute_rxpayload(gmskframesync _q,
@@ -689,7 +719,13 @@ void gmskframesync_execute_rxpayload(gmskframesync _q,
 // decode header and re-configure payload decoder
 void gmskframesync_decode_header(gmskframesync _q)
 {
-#if 0
+    // pack each 1-bit header symbols into 8-bit bytes
+    unsigned int num_written;
+    liquid_pack_bytes(_q->header_mod, GMSKFRAME_H_SYM,
+                      _q->header_enc, GMSKFRAME_H_ENC,
+                      &num_written);
+    assert(num_written==GMSKFRAME_H_ENC);
+
     // unscramble data
     unscramble_data(_q->header_enc, GMSKFRAME_H_ENC);
 
@@ -700,9 +736,6 @@ void gmskframesync_decode_header(gmskframesync _q)
     printf("****** header extracted [%s]\n", _q->header_valid ? "valid" : "INVALID!");
 #endif
 
-    // copy user-defined header
-    memmove(_q->header_user, _q->header_dec, GMSKFRAME_H_USER);
-    
     if (!_q->header_valid)
         return;
 
@@ -715,7 +748,7 @@ void gmskframesync_decode_header(gmskframesync _q)
     }
 
     // strip off payload length
-    unsigned int dec_msg_len = (_q->header_dec[n+1] << 8) | (_q->header_dec[n+2]);
+    unsigned int payload_dec_len = (_q->header_dec[n+1] << 8) | (_q->header_dec[n+2]);
 
     // strip off CRC, forward error-correction schemes
     //  CRC     : most-significant 3 bits of [n+3]
@@ -743,14 +776,15 @@ void gmskframesync_decode_header(gmskframesync _q)
     }
 
     // print results
-#if DEBUG_GMSKFRAMESYNC_PRINT
+#if 1//DEBUG_GMSKFRAMESYNC_PRINT
     printf("    properties:\n");
     printf("      * fec (inner)     :   %s\n", fec_scheme_str[fec0][1]);
     printf("      * fec (outer)     :   %s\n", fec_scheme_str[fec1][1]);
     printf("      * CRC scheme      :   %s\n", crc_scheme_str[check][1]);
-    printf("      * payload length  :   %u bytes\n", dec_msg_len);
+    printf("      * payload length  :   %u bytes\n", payload_dec_len);
 #endif
 
+#if 0
     // configure payload receiver
     if (_q->header_valid) {
         // set new packetizer properties
