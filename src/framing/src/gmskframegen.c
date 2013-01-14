@@ -92,7 +92,7 @@ gmskframegen gmskframegen_create(unsigned int _k,
     gmskframegen q = (gmskframegen) malloc(sizeof(struct gmskframegen_s));
     q->k  = 2;      // 
     q->m  = 3;      // 
-    q->BT = 0.35f;  // 
+    q->BT = 0.5f;   // 
 
     // internal/derived values
     q->preamble_len = 63;       // number of preamble symbols

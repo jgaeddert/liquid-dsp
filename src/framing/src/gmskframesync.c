@@ -111,7 +111,7 @@ struct gmskframesync_s {
         STATE_RXHEADER,             // receive header data
         STATE_RXPAYLOAD,            // receive payload data
     } state;
-    unsigned int preamble_counter;        // counter: num of p/n syms received
+    unsigned int preamble_counter;  // counter: num of p/n syms received
     unsigned int header_counter;    // counter: num of header syms received
     unsigned int payload_counter;   // counter: num of payload syms received
     // debugging structures
@@ -119,6 +119,7 @@ struct gmskframesync_s {
     int debug_enabled;              // debugging enabled?
     int debug_objects_created;      // debugging objects created?
     windowcf debug_x;               // received samples buffer
+    windowf  debug_mf;              // matched filter output
     windowf  debug_framesyms;       // GMSK output symbols
 #endif
 };
@@ -140,7 +141,7 @@ gmskframesync gmskframesync_create(unsigned int       _k,
     gmskframesync q = (gmskframesync) malloc(sizeof(struct gmskframesync_s));
     q->k        = 2;        // 
     q->m        = 3;        // 
-    q->BT       = 0.35f;    // 
+    q->BT       = 0.5f;     // 
     q->callback = _callback;
     q->userdata = _userdata;
 
@@ -232,6 +233,7 @@ gmskframesync gmskframesync_create(unsigned int       _k,
     q->debug_enabled         = 0;
     q->debug_objects_created = 0;
     q->debug_x               = NULL;
+    q->debug_mf              = NULL;
     q->debug_framesyms       = NULL;
 #endif
 
@@ -250,6 +252,7 @@ void gmskframesync_destroy(gmskframesync _q)
     // destroy debugging objects
     if (_q->debug_objects_created) {
         windowcf_destroy(_q->debug_x);
+        windowf_destroy(_q->debug_mf);
         windowf_destroy( _q->debug_framesyms);
     }
 #endif
@@ -371,6 +374,13 @@ int gmskframesync_update_symsync(gmskframesync _q,
     //
     float mf_out  = 0.0f;    // matched-filter output
     float dmf_out = 0.0f;    // derivatived matched-filter output
+#if DEBUG_GMSKFRAMESYNC
+    if (_q->debug_enabled) {
+        firpfb_rrrf_execute(_q->mf,  _q->pfb_index, &mf_out);
+        windowf_push(_q->debug_mf, mf_out);
+    }
+#endif
+
 
     int sample_available = 0;
 
@@ -535,7 +545,7 @@ void gmskframesync_execute_rxpreamble(gmskframesync _q,
     nco_crcf_step(_q->nco_coarse);
 
     // update symbol synchronizer
-    float complex mf_out = 0.0f;
+    float mf_out = 0.0f;
     int sample_available = gmskframesync_update_symsync(_q, y, &mf_out);
 
     // compute output if timeout
@@ -771,11 +781,11 @@ void gmskframesync_debug_enable(gmskframesync _q)
 {
     // create debugging objects if necessary
 #if DEBUG_GMSKFRAMESYNC
-    if (_q->debug_x == NULL)
-        _q->debug_x = windowcf_create(DEBUG_GMSKFRAMESYNC_BUFFER_LEN);
-
-    if (_q->debug_framesyms == NULL)
+    if (!_q->debug_objects_created) {
+        _q->debug_x  = windowcf_create(DEBUG_GMSKFRAMESYNC_BUFFER_LEN);
+        _q->debug_mf = windowf_create(DEBUG_GMSKFRAMESYNC_BUFFER_LEN);
         _q->debug_framesyms  = windowf_create(DEBUG_GMSKFRAMESYNC_BUFFER_LEN);
+    }
     
     // set debugging flags
     _q->debug_enabled = 1;
@@ -829,8 +839,19 @@ void gmskframesync_debug_print(gmskframesync _q,
     fprintf(fid,"ylabel('received signal, x');\n");
     fprintf(fid,"\n\n");
 
-#if 0
+    // write matched filter output
     float * r;
+    fprintf(fid,"y = zeros(1,num_samples);\n");
+    windowf_read(_q->debug_mf, &r);
+    for (i=0; i<DEBUG_GMSKFRAMESYNC_BUFFER_LEN; i++)
+        fprintf(fid,"mf(%4u) = %12.4e;\n", i+1, r[i]);
+    fprintf(fid,"\n\n");
+    fprintf(fid,"figure;\n");
+    fprintf(fid,"plot(1:length(mf),mf);\n");
+    fprintf(fid,"ylabel('MF output');\n");
+    fprintf(fid,"\n\n");
+
+#if 0
     // write framesyms
     fprintf(fid,"framesyms = zeros(1,num_samples);\n");
     windowf_read(_q->debug_framesyms, &r);
