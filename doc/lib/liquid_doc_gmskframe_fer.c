@@ -30,9 +30,6 @@ void gmskframe_fer(gmskframe_fer_opts _opts,
 {
     // TODO: validate options
     // get options
-    unsigned int k          = _opts.k;
-    unsigned int m          = _opts.m;
-    float BT                = _opts.BT;
     crc_scheme check        = _opts.check;
     fec_scheme fec0         = _opts.fec0;
     fec_scheme fec1         = _opts.fec1;
@@ -41,16 +38,17 @@ void gmskframe_fer(gmskframe_fer_opts _opts,
     float noise_floor       = -60.0f;
     float SNRdB             = _SNRdB;
     int verbose             = _opts.verbose;
+    unsigned int k          = 2;    // samples/symbol (fixed)
 
     // bookkeeping variables
     unsigned int i, j;
     gmskframe_fer_simdata simdata;
 
     // create gmskframegen object
-    gmskframegen fg = gmskframegen_create(k, m, BT);
+    gmskframegen fg = gmskframegen_create();
 
     // frame synchronizer
-    gmskframesync fs = gmskframesync_create(k,m,BT,gmskframe_fer_callback,(void*)&simdata);
+    gmskframesync fs = gmskframesync_create(gmskframe_fer_callback,(void*)&simdata);
 
     // allocate buffers
     unsigned char header[8];            // header data
@@ -115,7 +113,7 @@ void gmskframe_fer(gmskframe_fer_opts _opts,
         }
 
         // flush frame synchronizer
-        for (i=0; i<2*k*m; i++) {
+        for (i=0; i<32; i++) {
             float complex noise = nstd * (randnf() + _Complex_I*randnf()) * M_SQRT1_2;
             gmskframesync_execute(fs, &noise, 1);
         }
@@ -131,7 +129,7 @@ void gmskframe_fer(gmskframe_fer_opts _opts,
             float HER = (float) _results->num_header_errors / (float) _results->num_frames;
             float PER = (float) _results->num_packet_errors / (float) _results->num_frames;
 
-            printf(" SNR: %5.2f[%6u/%6u] frames:%6u(%5.1f%%) headers:%6u(%5.1f%%) packets:%6u(%5.1f%%)\r",
+            printf(" SNR:%6.2f[%6u/%6u] frames:%6u(%5.1f%%) headers:%6u(%5.1f%%) packets:%6u(%5.1f%%)\r",
                     SNRdB,
                     j+1, num_frames,
                     _results->num_missed_frames, FER*100,

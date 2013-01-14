@@ -21,13 +21,10 @@ void usage()
     printf("  h     : print help\n");
     printf("  d     : enable internal synchronizer debugging\n");
     printf("  n     : frame length [bytes], default: 40\n");
-    printf("  k     : filter samples/symbol, default: 2\n");
-    printf("  m     : filter semi-length, default: 4\n");
-    printf("  b     : filter excess bandwidth factor, default: 0.5\n");
-    printf("  V     : data integrity check: crc32 default\n");
+    printf("  v     : data integrity check: crc32 default\n");
     liquid_print_crc_schemes();
-    printf("  C     : coding scheme (inner): h74 default\n");
-    printf("  K     : coding scheme (outer): none default\n");
+    printf("  c     : coding scheme (inner): h74 default\n");
+    printf("  k     : coding scheme (outer): none default\n");
     liquid_print_fec_schemes();
     printf("  s     : signal-to-noise ratio [dB], default: 30\n");
     printf("  F     : carrier frequency offset, default: 0.05\n");
@@ -51,10 +48,6 @@ int main(int argc, char*argv[])
 {
     srand(time(NULL));
 
-    // options
-    unsigned int k = 2;             // filter samples/symbol
-    unsigned int m = 4;             // filter semi-length (symbols)
-    float BT = 0.5f;                // filter excess bandwidth factor
     unsigned int payload_len = 40;  // length of payload (bytes)
     crc_scheme check = LIQUID_CRC_32;
     fec_scheme fec0  = LIQUID_FEC_HAMMING128;
@@ -67,16 +60,13 @@ int main(int argc, char*argv[])
 
     // get options
     int dopt;
-    while((dopt = getopt(argc,argv,"hdn:k:m:b:V:C:K:s:F:")) != EOF){
+    while((dopt = getopt(argc,argv,"hdn:v:c:k:s:F:")) != EOF){
         switch (dopt) {
         case 'u':
         case 'h': usage();                      return 0;
         case 'd': debug_enabled = 1;            break;
         case 'n': payload_len   = atoi(optarg); break;
-        case 'k': k             = atoi(optarg); break;
-        case 'm': m             = atoi(optarg); break;
-        case 'b': BT            = atof(optarg); break;
-        case 'V':
+        case 'v':
             // data integrity check
             check = liquid_getopt_str2crc(optarg);
             if (check == LIQUID_CRC_UNKNOWN) {
@@ -84,7 +74,7 @@ int main(int argc, char*argv[])
                 exit(1);
             }
             break;
-        case 'C':
+        case 'c':
             // inner FEC scheme
             fec0 = liquid_getopt_str2fec(optarg);
             if (fec0 == LIQUID_FEC_UNKNOWN) {
@@ -92,7 +82,7 @@ int main(int argc, char*argv[])
                 exit(1);
             }
             break;
-        case 'K':
+        case 'k':
             // outer FEC scheme
             fec1 = liquid_getopt_str2fec(optarg);
             if (fec1 == LIQUID_FEC_UNKNOWN) {
@@ -109,17 +99,8 @@ int main(int argc, char*argv[])
 
     unsigned int i;
 
-    // validate options
-    if (k < 2) {
-        fprintf(stderr,"error: %s, samples per symbol must be at least 2\n", argv[0]);
-        exit(1);
-    } else if (m == 0) {
-        fprintf(stderr,"error: %s, filter semi-length must be at least 1\n", argv[0]);
-        exit(1);
-    } else if (BT < 0.0f || BT > 1.0f) {
-        fprintf(stderr,"error: %s, filter excess bandwidth must be in [0,1]\n", argv[0]);
-        exit(1);
-    }
+    // fixed values
+    unsigned int k = 2;
 
     // derived values
     float nstd  = powf(10.0f, noise_floor/20.0f);
@@ -133,10 +114,10 @@ int main(int argc, char*argv[])
     struct framedata_s fd = {payload, payload_len};
 
     // create frame generator
-    gmskframegen fg = gmskframegen_create(k, m, BT);
+    gmskframegen fg = gmskframegen_create();
 
     // create frame synchronizer
-    gmskframesync fs = gmskframesync_create(k, m, BT, callback, (void*)&fd);
+    gmskframesync fs = gmskframesync_create(callback, (void*)&fd);
     if (debug_enabled)
         gmskframesync_debug_enable(fs);
 
@@ -165,18 +146,12 @@ int main(int argc, char*argv[])
         x[n] = 0.0f;
 
     // add channel impairments
-    unsigned int hc_len = 8*k+1;
-    float hc[hc_len];
-    liquid_firdes_kaiser(hc_len, 0.45, 40.0f, 0.5f, hc);
-    firfilt_crcf fchannel = firfilt_crcf_create(hc, hc_len);
     for (i=0; i<num_samples; i++) {
-        firfilt_crcf_push(fchannel, x[i]);
-        firfilt_crcf_execute(fchannel, &y[i]);
+        y[i]  = x[i];
         y[i] *= gamma;
         y[i] *= cexpf(_Complex_I*M_2_PI*dphi*i);
         y[i] += nstd*(randnf() + randnf()*_Complex_I)*M_SQRT1_2;
     }
-    firfilt_crcf_destroy(fchannel);
 
     // push samples through synchronizer
     gmskframesync_execute(fs, y, num_samples);

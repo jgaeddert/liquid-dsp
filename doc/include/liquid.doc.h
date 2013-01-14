@@ -162,9 +162,6 @@ void frame64_fer(unsigned int  _num_frames,
 // simulate packet error rate options
 typedef struct {
     // GMSK frame properties
-    unsigned int k;             // samples/symbol
-    unsigned int m;             // filter delay (symbols)
-    float BT;                   // bandwidth/time constant
     crc_scheme check;           // cyclic redundancy check
     fec_scheme fec0;            // FEC codec (inner)
     fec_scheme fec1;            // FEC codec (outer)

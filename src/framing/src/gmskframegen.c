@@ -1,6 +1,5 @@
 /*
- * Copyright (c) 2011 Joseph Gaeddert
- * Copyright (c) 2011 Virginia Polytechnic Institute & State University
+ * Copyright (c) 2011, 2013 Joseph Gaeddert
  *
  * This file is part of liquid.
  *
@@ -33,6 +32,14 @@
 
 #define DEBUG_GMSKFRAMEGEN    0
 
+// gmskframegen
+void gmskframegen_encode_header( gmskframegen _q, unsigned char * _header);
+void gmskframegen_write_preamble(gmskframegen _q, float complex * _y);
+void gmskframegen_write_header(  gmskframegen _q, float complex * _y);
+void gmskframegen_write_payload( gmskframegen _q, float complex * _y);
+void gmskframegen_write_tail(    gmskframegen _q, float complex * _y);
+
+
 // gmskframe object structure
 struct gmskframegen_s {
     gmskmod mod;                // GMSK modulator
@@ -41,17 +48,15 @@ struct gmskframegen_s {
     float BT;                   // filter bandwidth-time product
 
     // framing lengths (symbols)
-    unsigned int rampup_len;    //
-    unsigned int phasing_len;   //
     unsigned int preamble_len;  //
     unsigned int header_len;    // length of header (encoded)
     unsigned int payload_len;   //
-    unsigned int rampdn_len;    //
+    unsigned int tail_len;      //
     unsigned int frame_len;     // total number of symbols in the frame
 
     // preamble
     //unsigned int genpoly_header;// generator polynomial
-    msequence ms_header;        // header sequence
+    msequence ms_preamble;      // preamble p/n sequence
 
     // header
     unsigned char * header_dec; // uncoded header [GMSKFRAME_H_DEC]
@@ -69,41 +74,35 @@ struct gmskframegen_s {
 
     // framing state
     enum {
-        GMSKFRAMEGEN_STATE_RAMPUP,      // ramp up
-        GMSKFRAMEGEN_STATE_PHASING,     // phasing
-        GMSKFRAMEGEN_STATE_PREAMBLE,    // preamble
-        GMSKFRAMEGEN_STATE_HEADER,      // header
-        GMSKFRAMEGEN_STATE_PAYLOAD,     // payload (frame)
-        GMSKFRAMEGEN_STATE_RAMPDN,      // ramp down
+        STATE_PREAMBLE,         // preamble
+        STATE_HEADER,           // header
+        STATE_PAYLOAD,          // payload (frame)
+        STATE_TAIL,             // tail symbols
     } state;
     int frame_complete;         //
     unsigned int symbol_counter;//
 };
 
 // create gmskframegen object
-gmskframegen gmskframegen_create(unsigned int _k,
-                                 unsigned int _m,
-                                 float _BT)
+gmskframegen gmskframegen_create()
 {
-    // TODO : validate input
     gmskframegen q = (gmskframegen) malloc(sizeof(struct gmskframegen_s));
-    q->k  = _k;
-    q->m  = _m;
-    q->BT = _BT;
+
+    // set internal properties
+    q->k  = 2;      // samples/symbol
+    q->m  = 3;      // filter delay (symbols)
+    q->BT = 0.5f;   // filter bandwidth-time product
 
     // internal/derived values
-    q->rampup_len   =  8;   // number of ramp/up symbols
-    q->phasing_len  = 40;   // number of phasing symbols
-    q->preamble_len = 64;   // number of preamble symbols
-    q->payload_len  =  0;   // number of payload symbols
-    q->rampdn_len   =  8;   // number of ramp\dn symbols
+    q->preamble_len = 63;       // number of preamble symbols
+    q->payload_len  =  0;       // number of payload symbols
+    q->tail_len     = 2*q->m;   // number of tail symbols (flush interp)
 
     // create modulator
     q->mod = gmskmod_create(q->k, q->m, q->BT);
 
     // preamble objects/arrays
-    //q->genpoly_header = 0x00;
-    q->ms_header = msequence_create_default(6);
+    q->ms_preamble = msequence_create(6, 0x6d, 1);
 
     // header objects/arrays
     q->header_dec = (unsigned char*)malloc(GMSKFRAME_H_DEC*sizeof(unsigned char));
@@ -131,12 +130,10 @@ gmskframegen gmskframegen_create(unsigned int _k,
     q->payload_enc = (unsigned char*) malloc(q->enc_msg_len*sizeof(unsigned char));
 
     // compute frame length (symbols)
-    q->frame_len = q->rampup_len +
-                   q->phasing_len +
-                   q->preamble_len +
+    q->frame_len = q->preamble_len +
                    q->header_len +
                    q->payload_len +
-                   q->rampdn_len;
+                   q->tail_len;
 
     // reset framing object
     gmskframegen_reset(q);
@@ -152,7 +149,7 @@ void gmskframegen_destroy(gmskframegen _q)
     gmskmod_destroy(_q->mod);
 
     // destroy/free preamble objects/arrays
-    msequence_destroy(_q->ms_header);
+    msequence_destroy(_q->ms_preamble);
 
     // destroy/free header objects/arrays
     free(_q->header_dec);
@@ -174,8 +171,8 @@ void gmskframegen_reset(gmskframegen _q)
     gmskmod_reset(_q->mod);
 
     // reset states
-    _q->state = GMSKFRAMEGEN_STATE_RAMPUP;
-    msequence_reset(_q->ms_header);
+    _q->state = STATE_PREAMBLE;
+    msequence_reset(_q->ms_preamble);
     _q->frame_complete = 0;
     _q->symbol_counter = 0;
 }
@@ -193,11 +190,10 @@ void gmskframegen_print(gmskframegen _q)
     printf("    filter delay    :   %u symbols\n", _q->m);
     printf("    bandwidth-time  :   %-8.3f\n", _q->BT);
     printf("  framing properties\n");
-    printf("    ramp/up         :   %-4u symbols\n", _q->rampup_len);
-    printf("    phasing         :   %-4u symbols\n", _q->phasing_len);
     printf("    preamble        :   %-4u symbols\n", _q->preamble_len);
+    printf("    header          :   %-4u symbols\n", _q->header_len);
     printf("    payload         :   %-4u symbols\n", _q->payload_len);
-    printf("    ramp\\dn         :   %-4u symbols\n", _q->rampdn_len);
+    printf("    tail            :   %-4u symbols\n", _q->tail_len);
     printf("    total           :   %-4u symbols\n", _q->frame_len);
     printf("  packet properties\n");
     printf("    crc             :   %s\n", crc_scheme_str[_q->check][1]);
@@ -242,12 +238,10 @@ void gmskframegen_assemble(gmskframegen    _q,
         _q->payload_len = 8*_q->enc_msg_len;
 
         // compute frame length (symbols)
-        _q->frame_len = _q->rampup_len +
-                        _q->phasing_len +
-                        _q->preamble_len +
+        _q->frame_len = _q->preamble_len +
                         _q->header_len +
                         _q->payload_len +
-                        _q->rampdn_len;
+                        _q->tail_len;
 
         // re-allocate memory
         _q->payload_enc = (unsigned char*) realloc(_q->payload_enc, _q->enc_msg_len*sizeof(unsigned char));
@@ -271,34 +265,24 @@ int gmskframegen_write_samples(gmskframegen _q,
                                float complex * _y)
 {
     switch (_q->state) {
-    case GMSKFRAMEGEN_STATE_RAMPUP:
-        // write ramp-up symbols
-        gmskframegen_write_rampup(_q, _y);
-        break;
-
-    case GMSKFRAMEGEN_STATE_PHASING:
-        // write phasing pattern
-        gmskframegen_write_phasing(_q, _y);
-        break;
-
-    case GMSKFRAMEGEN_STATE_PREAMBLE:
+    case STATE_PREAMBLE:
         // write preamble
         gmskframegen_write_preamble(_q, _y);
         break;
 
-    case GMSKFRAMEGEN_STATE_HEADER:
+    case STATE_HEADER:
         // write header
         gmskframegen_write_header(_q, _y);
         break;
 
-    case GMSKFRAMEGEN_STATE_PAYLOAD:
-        // write ramp-up symbols
+    case STATE_PAYLOAD:
+        // write payload symbols
         gmskframegen_write_payload(_q, _y);
         break;
 
-    case GMSKFRAMEGEN_STATE_RAMPDN:
-        // write ramp-down symbols
-        gmskframegen_write_rampdn(_q, _y);
+    case STATE_TAIL:
+        // write tail symbols
+        gmskframegen_write_tail(_q, _y);
         break;
 
     default:
@@ -323,7 +307,7 @@ int gmskframegen_write_samples(gmskframegen _q,
 // internal methods
 //
 
-void gmskframegen_encode_header(gmskframegen _q,
+void gmskframegen_encode_header(gmskframegen    _q,
                                 unsigned char * _header)
 {
     // first 'n' bytes user data
@@ -359,56 +343,29 @@ void gmskframegen_encode_header(gmskframegen _q,
 #endif
 }
 
-void gmskframegen_write_rampup(gmskframegen _q,
-                               float complex * _y)
-{
-    unsigned char bit = rand() % 2;
-    gmskmod_modulate(_q->mod, bit, _y);
-
-    // TODO : check window...
-    unsigned int i;
-    for (i=0; i<_q->k; i++) {
-        _y[i] *= hamming(_q->symbol_counter*_q->k + i, 2*_q->rampup_len*_q->k);
-    }
-
-    _q->symbol_counter++;
-
-    if (_q->symbol_counter == _q->rampup_len) {
-        _q->symbol_counter = 0;
-        _q->state = GMSKFRAMEGEN_STATE_PHASING;
-    }
-}
-
-void gmskframegen_write_phasing(gmskframegen _q,
-                                float complex * _y)
-{
-    unsigned char bit = rand() % 2;
-    gmskmod_modulate(_q->mod, bit, _y);
-
-    _q->symbol_counter++;
-
-    if (_q->symbol_counter == _q->phasing_len) {
-        _q->symbol_counter = 0;
-        _q->state = GMSKFRAMEGEN_STATE_PREAMBLE;
-    }
-}
-
-void gmskframegen_write_preamble(gmskframegen _q,
+void gmskframegen_write_preamble(gmskframegen    _q,
                                  float complex * _y)
 {
-    unsigned char bit = msequence_advance(_q->ms_header);
+    unsigned char bit = msequence_advance(_q->ms_preamble);
     gmskmod_modulate(_q->mod, bit, _y);
+
+    // apply ramping window to first 'm' symbols
+    if (_q->symbol_counter < _q->m) {
+        unsigned int i;
+        for (i=0; i<_q->k; i++)
+            _y[i] *= hamming(_q->symbol_counter*_q->k + i, 2*_q->m*_q->k);
+    }
 
     _q->symbol_counter++;
 
     if (_q->symbol_counter == _q->preamble_len) {
-        msequence_reset(_q->ms_header);
+        msequence_reset(_q->ms_preamble);
         _q->symbol_counter = 0;
-        _q->state = GMSKFRAMEGEN_STATE_HEADER;
+        _q->state = STATE_HEADER;
     }
 }
 
-void gmskframegen_write_header(gmskframegen _q,
+void gmskframegen_write_header(gmskframegen    _q,
                                float complex * _y)
 {
     div_t d = div(_q->symbol_counter, 8);
@@ -423,11 +380,11 @@ void gmskframegen_write_header(gmskframegen _q,
     
     if (_q->symbol_counter == _q->header_len) {
         _q->symbol_counter = 0;
-        _q->state = GMSKFRAMEGEN_STATE_PAYLOAD;
+        _q->state = STATE_PAYLOAD;
     }
 }
 
-void gmskframegen_write_payload(gmskframegen _q,
+void gmskframegen_write_payload(gmskframegen    _q,
                                 float complex * _y)
 {
     div_t d = div(_q->symbol_counter, 8);
@@ -442,25 +399,26 @@ void gmskframegen_write_payload(gmskframegen _q,
     
     if (_q->symbol_counter == _q->payload_len) {
         _q->symbol_counter = 0;
-        _q->state = GMSKFRAMEGEN_STATE_RAMPDN;
+        _q->state = STATE_TAIL;
     }
 }
 
-void gmskframegen_write_rampdn(gmskframegen _q,
-                               float complex * _y)
+void gmskframegen_write_tail(gmskframegen    _q,
+                             float complex * _y)
 {
     unsigned char bit = rand() % 2;
     gmskmod_modulate(_q->mod, bit, _y);
 
-    // TODO : check window...
-    unsigned int i;
-    for (i=0; i<_q->k; i++) {
-        _y[i] *= hamming(_q->rampdn_len*_q->k + _q->symbol_counter*_q->k + i, 2*_q->rampdn_len*_q->k);
+    // apply ramping window to last 'm' symbols
+    if (_q->symbol_counter >= _q->m) {
+        unsigned int i;
+        for (i=0; i<_q->k; i++)
+            _y[i] *= hamming(_q->m*_q->k + (_q->symbol_counter-_q->m)*_q->k + i, 2*_q->m*_q->k);
     }
 
     _q->symbol_counter++;
 
-    if (_q->symbol_counter == _q->rampdn_len) {
+    if (_q->symbol_counter == _q->tail_len) {
         _q->symbol_counter = 0;
         _q->frame_complete = 1;
     }

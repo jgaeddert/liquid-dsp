@@ -369,7 +369,7 @@ void flexframesync_execute_seekpn(flexframesync _q,
 
         // push buffered samples through synchronizer
         // NOTE: this will set internal state appropriately
-        //       to STATE_SEEKPN
+        //       to STATE_DETECTFRAME
         flexframesync_pushpn(_q);
     }
 }
