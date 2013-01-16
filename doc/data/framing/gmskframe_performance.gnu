@@ -3,7 +3,7 @@
 #
 reset
 set terminal postscript eps enhanced color solid rounded
-set xrange [-6:8]
+set xrange [-10:8]
 set yrange [1e-3:1]
 set logscale y
 set format y '10^{%L}'

@@ -369,7 +369,7 @@ void flexframesync_execute_seekpn(flexframesync _q,
 
         // push buffered samples through synchronizer
         // NOTE: this will set internal state appropriately
-        //       to STATE_SEEKPN
+        //       to STATE_DETECTFRAME
         flexframesync_pushpn(_q);
     }
 }
@@ -403,9 +403,9 @@ int flexframesync_update_symsync(flexframesync   _q,
         firpfb_crcf_execute(_q->dmf, _q->pfb_index, &dmf_out);
 
         // update filtered timing error
-        // lo  bandwidth parameters: {0.92, 1.20}, about 100 symbols settling time
+        // hi  bandwidth parameters: {0.92, 1.20}, about 100 symbols settling time
         // med bandwidth parameters: {0.98, 0.20}, about 200 symbols settling time
-        // hi  bandwidth parameters: {0.99, 0.05}, about 500 symbols settling time
+        // lo  bandwidth parameters: {0.99, 0.05}, about 500 symbols settling time
         _q->pfb_q = 0.99f*_q->pfb_q + 0.05f*crealf( conjf(mf_out)*dmf_out );
 
         // accumulate error into soft filterbank value
@@ -857,6 +857,11 @@ void flexframesync_decode_header(flexframesync _q)
         _q->payload_enc = (unsigned char*) realloc(_q->payload_enc, (_q->payload_enc_len+8)*sizeof(unsigned char));
         _q->payload_dec = (unsigned char*) realloc(_q->payload_dec, (_q->payload_dec_len  )*sizeof(unsigned char));
 
+        if (_q->payload_mod == NULL || _q->payload_enc == NULL || _q->payload_dec == NULL) {
+            fprintf(stderr,"error: flexframesync_decode_header(), could not re-allocate payload arrays\n");
+            _q->header_valid = 0;
+            return;
+        }
     }
     
 #if DEBUG_FLEXFRAMESYNC_PRINT

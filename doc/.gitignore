@@ -82,6 +82,7 @@ src/random_histogram
 src/sequence_ccodes
 src/sequence_msequence
 src/simulate_ber
+src/simulate_detector
 src/simulate_per_test
 
 scripts/listings_check

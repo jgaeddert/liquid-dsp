@@ -29,6 +29,7 @@ void usage()
     printf("  c     : coding scheme (inner): h74 default\n");
     printf("  k     : coding scheme (outer): none default\n");
     liquid_print_fec_schemes();
+    printf("  d     : enable debugging\n");
 }
 
 // callback function
@@ -56,13 +57,15 @@ int main(int argc, char*argv[])
     float noise_floor = -30.0f;         // noise floor [dB]
     float SNRdB = 20.0f;                // signal-to-noise ratio [dB]
     float dphi = 0.02f;                 // carrier frequency offset
+    int debug_enabled =  0;             // enable debugging?
 
     // get options
     int dopt;
-    while((dopt = getopt(argc,argv,"uhs:F:M:C:n:m:v:c:k:")) != EOF){
+    while((dopt = getopt(argc,argv,"uhds:F:M:C:n:m:v:c:k:")) != EOF){
         switch (dopt) {
         case 'u':
         case 'h': usage();                      return 0;
+        case 'd': debug_enabled = 1;            break;
         case 's': SNRdB         = atof(optarg); break;
         case 'F': dphi          = atof(optarg); break;
         case 'M': M             = atoi(optarg); break;
@@ -133,6 +136,8 @@ int main(int argc, char*argv[])
 
     // create frame synchronizer
     ofdmflexframesync fs = ofdmflexframesync_create(M, cp_len, taper_len, p, callback, (void*)payload);
+    if (debug_enabled)
+        ofdmflexframesync_debug_enable(fs);
 
     // initialize header/payload and assemble frame
     for (i=0; i<8; i++)
@@ -171,6 +176,10 @@ int main(int argc, char*argv[])
         ofdmflexframesync_execute(fs, buffer, frame_len);
     }
     nco_crcf_destroy(nco);
+
+    // export debugging file
+    if (debug_enabled)
+        ofdmflexframesync_debug_print(fs, "ofdmflexframesync_debug.m");
 
     // destroy objects
     ofdmflexframegen_destroy(fg);

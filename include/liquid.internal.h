@@ -1291,7 +1291,7 @@ void bpacketsync_reconfig(bpacketsync _q);
 // gmskframe
 //
 
-#define GMSKFRAME_VERSION   (2)
+#define GMSKFRAME_VERSION   (3)
 
 // header description
 #define GMSKFRAME_H_USER    (8)                     // user-defined array
@@ -1299,21 +1299,7 @@ void bpacketsync_reconfig(bpacketsync _q);
 #define GMSKFRAME_H_CRC     (LIQUID_CRC_32)         // header CRC
 #define GMSKFRAME_H_FEC     (LIQUID_FEC_HAMMING128) // header FEC
 #define GMSKFRAME_H_ENC     (26)                    // encoded length (bytes)
-
-// gmskframegen
-void gmskframegen_encode_header( gmskframegen _q, unsigned char * _header);
-void gmskframegen_write_rampup(  gmskframegen _q, float complex * _y);
-void gmskframegen_write_phasing( gmskframegen _q, float complex * _y);
-void gmskframegen_write_preamble(gmskframegen _q, float complex * _y);
-void gmskframegen_write_header(  gmskframegen _q, float complex * _y);
-void gmskframegen_write_payload( gmskframegen _q, float complex * _y);
-void gmskframegen_write_rampdn(  gmskframegen _q, float complex * _y);
-
-// gmskframesync
-void gmskframesync_execute_seekpn(gmskframesync _q, float _x);
-void gmskframesync_execute_rxheader(gmskframesync _q, float _x);
-void gmskframesync_execute_rxpayload(gmskframesync _q, float _x);
-void gmskframesync_decode_header(gmskframesync _q);
+#define GMSKFRAME_H_SYM     (208)                   // number of encoded bits
 
 
 // 

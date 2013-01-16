@@ -30,7 +30,6 @@ void usage()
     printf("  d     : SNR step [dB], 1.0\n");
     printf("  x     : SNR max [dB], 10\n");
     printf("  n     : number of trials, 200\n");
-    printf("  b     : BT (bandwidth-time constant), default: 0.5\n");
     printf("  f     : frame bytes (packet len), 256\n");
     printf("  c     : fec coding scheme (inner), default: h128\n");
     printf("  k     : fec coding scheme (outer), default: none\n");
@@ -48,9 +47,6 @@ int main(int argc, char *argv[]) {
     unsigned int num_frames = 200;
     //float noise_floor       = -30.0f;
     const char * filename   = "gmskframe_fer_results.dat";
-    unsigned int k          = 4;
-    unsigned int m          = 3;
-    float BT                = 0.5f;
     unsigned int payload_len= 256;
     crc_scheme check        = LIQUID_CRC_32;
     fec_scheme fec0         = LIQUID_FEC_HAMMING128;
@@ -59,7 +55,7 @@ int main(int argc, char *argv[]) {
 
     // get command-line options
     int dopt;
-    while((dopt = getopt(argc,argv,"uho:s:d:x:n:b:f:c:k:")) != EOF){
+    while((dopt = getopt(argc,argv,"uho:s:d:x:n:f:c:k:")) != EOF){
         switch (dopt) {
         case 'h':
         case 'u': usage(); return 0;
@@ -68,7 +64,6 @@ int main(int argc, char *argv[]) {
         case 'd': SNRdB_step = atof(optarg);    break;
         case 'x': SNRdB_max = atof(optarg);     break;
         case 'n': num_frames = atol(optarg);    break;
-        case 'b': BT = atof(optarg);            break;
         case 'f': payload_len = atol(optarg);   break;
         case 'c':
             fec0 = liquid_getopt_str2fec(optarg);
@@ -97,16 +92,10 @@ int main(int argc, char *argv[]) {
     } else if (SNRdB_max < SNRdB_start) {
         fprintf(stderr,"error: %s, SNRdB_max must be greater than SNRdB_start\n", argv[0]);
         exit(-1);
-    } else if (BT <= 0.0f || BT > 1.0f) {
-        fprintf(stderr,"error: %s, BT must be in (0,1)\n", argv[0]);
-        exit(-1);
     }
 
     // set up framing simulation options
     gmskframe_fer_opts opts;
-    opts.k          = k;
-    opts.m          = m;
-    opts.BT         = BT;
     opts.check      = check;
     opts.fec0       = fec0;
     opts.fec1       = fec1;
@@ -132,9 +121,6 @@ int main(int argc, char *argv[]) {
     for (i=0; i<argc; i++) fprintf(fid,"%s ", argv[i]);
     fprintf(fid,"\n");
     fprintf(fid,"#\n");
-    fprintf(fid,"#  k (samples/symbol)  :   %u\n", opts.k);
-    fprintf(fid,"#  m (filter delay)    :   %u\n", opts.m);
-    fprintf(fid,"#  BT                  :   %8.6f\n", opts.BT);
     fprintf(fid,"#  check               :   %s\n", crc_scheme_str[opts.check][1]);
     fprintf(fid,"#  fec (inner)         :   %s\n", fec_scheme_str[opts.fec0][1]);
     fprintf(fid,"#  fec (outer)         :   %s\n", fec_scheme_str[opts.fec1][1]);
