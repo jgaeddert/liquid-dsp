@@ -31,7 +31,7 @@ void autotest_firpfbch_crcf_synthesis()
     float tol = 1e-4f;              // error tolerance
     unsigned int num_channels=4;    // number of channels
     unsigned int p=5;               // filter length (symbols)
-    unsigned int num_symbols=12;    // number of symbols
+    unsigned int num_symbols=40;    // number of symbols
 
     // derived values
     unsigned int num_samples = num_channels * num_symbols;
@@ -62,7 +62,7 @@ void autotest_firpfbch_crcf_synthesis()
     // generate input sequence (complex noise)
     for (i=0; i<num_symbols; i++) {
         for (j=0; j<num_channels; j++)
-            Y[i][j] = randnf() * cexpf(_Complex_I*randf()*2*M_PI);
+            Y[i][j] = 0.1f * (randnf() + _Complex_I*randnf()) * M_SQRT1_2;
     }
 
     // 
@@ -115,26 +115,21 @@ void autotest_firpfbch_crcf_synthesis()
     firfilt_crcf_destroy(f);
     firpfbch_crcf_destroy(q);
 
-
-    // 
-    // print channelizer outputs
-    //
-    if (liquid_autotest_verbose) {
-        printf("\n");
-        printf("output: filterbank:             traditional:\n");
-        for (i=0; i<num_samples; i++) {
-            printf("%3u: %10.5f+%10.5fj  %10.5f+%10.5fj\n",
-                i,
-                crealf(y0[i]), cimagf(y0[i]),
-                crealf(y1[i]), cimagf(y1[i]));
-        }
-    }
-
-
     // 
     // compare results
     // 
     for (i=0; i<num_samples; i++) {
+
+        // print channelizer outputs
+        if (liquid_autotest_verbose) {
+            printf("%3u: old:%8.5f+j%8.5f, firpfbch:%8.5f+j%8.5f, error:%12.4e+j%12.4e\n",
+                i,
+                crealf(y0[i]),       cimagf(y0[i]),
+                crealf(y1[i]),       cimagf(y1[i]),
+                crealf(y1[i]-y0[i]), cimagf(y1[i]-y0[i]));
+        }
+
+
         CONTEND_DELTA( crealf(y0[i]), crealf(y1[i]), tol );
         CONTEND_DELTA( cimagf(y0[i]), cimagf(y1[i]), tol );
     }
