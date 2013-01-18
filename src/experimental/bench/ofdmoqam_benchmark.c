@@ -20,7 +20,7 @@
 
 #include <sys/resource.h>
 #include <math.h>
-#include "liquid.h"
+#include "liquid.experimental.h"
 
 #define OFDMOQAM_EXECUTE_BENCH_API(NUM_CHANNELS,M,TYPE) \
 (   struct rusage *_start,                              \

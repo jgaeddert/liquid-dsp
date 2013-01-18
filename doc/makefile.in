@@ -182,6 +182,10 @@ lib_sources	:=				\
 	lib/liquid_doc_compute_psd.c		\
 	lib/liquid_doc_estimate_snr.c		\
 	lib/liquid_doc_freqz.c			\
+	lib/liquid_doc_flexframe_fer.c		\
+	lib/liquid_doc_frame64_fer.c		\
+	lib/liquid_doc_gmskframe_fer.c		\
+	lib/liquid_doc_ofdmflexframe_fer.c	\
 	lib/liquid_doc_simulate_per.c		\
 
 #	lib/htmlgen.envparser.c

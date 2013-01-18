@@ -1,6 +1,4 @@
-# Copyright (c) 2007, 2008, 2009, 2010, 2011, 2012 Joseph Gaeddert
-# Copyright (c) 2007, 2008, 2009, 2010, 2011, 2012 Virginia Polytechnic
-#                                      Institute & State University
+# Copyright (c) 2007, 2008, 2009, 2010, 2011, 2012, 2013 Joseph Gaeddert
 #
 # This file is part of liquid.
 #
@@ -202,8 +200,10 @@ src/dotprod/src/sumsqq16.o : %.o : %.c $(headers)
 
 # specific machine architectures
 
+# AltiVec
 src/dotprod/src/dotprod_rrrf.av.o : %.o : %.c $(headers)
 
+# MMX/SSE2
 src/dotprod/src/dotprod_rrrf.mmx.o : %.o : %.c $(headers)
 src/dotprod/src/dotprod_crcf.mmx.o : %.o : %.c $(headers)
 src/dotprod/src/dotprod_cccf.mmx.o : %.o : %.c $(headers)
@@ -217,6 +217,9 @@ src/dotprod/src/dotprod_crcq32.mmx.o : %.o : %.c $(headers)
 src/dotprod/src/dotprod_cccq32.mmx.o : %.o : %.c $(headers)
 
 src/dotprod/src/sumsq.mmx.o : %.o : %.c $(headers)
+
+# SSE4.1/2
+src/dotprod/src/dotprod_rrrf.sse4.o : %.o : %.c $(headers)
 
 dotprod_autotests :=						\
 	src/dotprod/tests/dotprod_rrrf_autotest.c		\
@@ -287,6 +290,8 @@ fec_objects :=							\
 	src/fec/src/fec_secded2216.o				\
 	src/fec/src/fec_secded3932.o				\
 	src/fec/src/fec_secded7264.o				\
+	src/fec/src/interleaver.o				\
+	src/fec/src/packetizer.o				\
 	src/fec/gentab/reverse_byte.o				\
 	src/fec/src/sumproduct.o				\
 
@@ -323,6 +328,8 @@ fec_autotests :=						\
 	src/fec/tests/fec_secded2216_autotest.c			\
 	src/fec/tests/fec_secded3932_autotest.c			\
 	src/fec/tests/fec_secded7264_autotest.c			\
+	src/fec/tests/interleaver_autotest.c			\
+	src/fec/tests/packetizer_autotest.c			\
 
 
 # benchmarks
@@ -332,6 +339,8 @@ fec_benchmarks :=						\
 	src/fec/bench/fec_decode_benchmark.c			\
 	src/fec/bench/fecsoft_decode_benchmark.c		\
 	src/fec/bench/sumproduct_benchmark.c			\
+	src/fec/bench/interleaver_benchmark.c			\
+	src/fec/bench/packetizer_decode_benchmark.c		\
 
 # 
 # MODULE : fft - fast Fourier transforms, discrete sine/cosine transforms, etc.
@@ -707,10 +716,11 @@ fpm_benchmarks :=						\
 framing_objects :=						\
 	src/framing/src/bpacketgen.o				\
 	src/framing/src/bpacketsync.o				\
+	src/framing/src/bpresync_cccf.o				\
 	src/framing/src/bsync_rrrf.o				\
 	src/framing/src/bsync_crcf.o				\
 	src/framing/src/bsync_cccf.o				\
-	src/framing/src/framesyncprops.o			\
+	src/framing/src/detector_cccf.o				\
 	src/framing/src/framesyncstats.o			\
 	src/framing/src/framegen64.o				\
 	src/framing/src/framesync64.o				\
@@ -720,8 +730,7 @@ framing_objects :=						\
 	src/framing/src/gmskframesync.o				\
 	src/framing/src/ofdmflexframegen.o			\
 	src/framing/src/ofdmflexframesync.o			\
-	src/framing/src/packetizer.o				\
-	src/framing/src/interleaver.o				\
+	src/framing/src/presync_cccf.o				\
 
 
 # list explicit targets and dependencies here
@@ -730,13 +739,15 @@ src/framing/src/bpacketgen.o : %.o : %.c $(headers)
 
 src/framing/src/bpacketsync.o : %.o : %.c $(headers)
 
+src/framing/src/bpresync_cccf.o : %.o : %.c $(headers) src/framing/src/bpresync.c
+
 src/framing/src/bsync_rrrf.o : %.o : %.c $(headers) src/framing/src/bsync.c
 
 src/framing/src/bsync_crcf.o : %.o : %.c $(headers) src/framing/src/bsync.c
 
 src/framing/src/bsync_cccf.o : %.o : %.c $(headers) src/framing/src/bsync.c
 
-src/framing/src/framesyncprops.o : %.o : %.c $(headers)
+src/framing/src/detector_cccf.o : %.o : %.c $(headers)
 
 src/framing/src/framesyncstats.o : %.o : %.c $(headers)
 
@@ -752,24 +763,25 @@ src/framing/src/ofdmflexframegen.o : %.o : %.c $(headers)
 
 src/framing/src/ofdmflexframesync.o : %.o : %.c $(headers)
 
-src/framing/src/packetizer.o : %.o : %.c $(headers)
-
-src/framing/src/interleaver.o : %.o : %.c $(headers)
+src/framing/src/presync_cccf.o : %.o : %.c $(headers) src/framing/src/presync.c
 
 
 framing_autotests :=						\
 	src/framing/tests/bpacketsync_autotest.c		\
 	src/framing/tests/bsync_autotest.c			\
-	src/framing/tests/packetizer_autotest.c			\
-	src/framing/tests/interleaver_autotest.c		\
+	src/framing/tests/detector_autotest.c			\
+	src/framing/tests/framesync64_autotest.c		\
 
 
 framing_benchmarks :=						\
+	src/framing/bench/presync_benchmark.c			\
 	src/framing/bench/bpacketsync_benchmark.c		\
+	src/framing/bench/bpresync_benchmark.c			\
+	src/framing/bench/bsync_benchmark.c			\
+	src/framing/bench/detector_benchmark.c			\
 	src/framing/bench/flexframesync_benchmark.c		\
+	src/framing/bench/framesync64_benchmark.c		\
 	src/framing/bench/gmskframesync_benchmark.c		\
-	src/framing/bench/interleaver_benchmark.c		\
-	src/framing/bench/packetizer_decode_benchmark.c		\
 
 
 # 
@@ -1112,7 +1124,8 @@ sequence_autotests :=						\
 	src/sequence/tests/msequence_autotest.c			\
 
 # benchmarks
-sequence_benchmarks :=
+sequence_benchmarks :=						\
+	src/sequence/bench/bsequence_benchmark.c		\
 
 # 
 # MODULE : utility
@@ -1466,6 +1479,7 @@ example_programs :=						\
 	examples/asgram_example					\
 	examples/autocorr_cccf_example				\
 	examples/bpacketsync_example				\
+	examples/bpresync_example				\
 	examples/bsequence_example				\
 	examples/bufferf_example				\
 	examples/chromosome_example				\
@@ -1476,6 +1490,7 @@ example_programs :=						\
 	examples/cgsolve_example				\
 	examples/cvsd_example					\
 	examples/decim_crcf_example				\
+	examples/detector_cccf_example				\
 	examples/dotprod_rrrf_example				\
 	examples/dotprod_cccf_example				\
 	examples/eqlms_cccf_blind_example			\
@@ -1485,7 +1500,6 @@ example_programs :=						\
 	examples/fec_soft_example				\
 	examples/fft_example					\
 	examples/firfarrow_rrrf_example				\
-	examples/firfarrow_rrrf_sine_example			\
 	examples/firfilt_rrrf_example				\
 	examples/firdes_kaiser_example				\
 	examples/firdespm_example				\
@@ -1496,7 +1510,6 @@ example_programs :=						\
 	examples/firpfbch_analysis_example			\
 	examples/firpfbch_synthesis_example			\
 	examples/flexframesync_example				\
-	examples/flexframesync_advanced_example			\
 	examples/flexframesync_reconfig_example			\
 	examples/framesync64_example				\
 	examples/freqmodem_example				\
@@ -1586,6 +1599,8 @@ clean-examples:
 # NOTE: sandbox _requires_ fftw3 to build
 .PHONY: sandbox
 sandbox_programs =						\
+	sandbox/bpresync_test					\
+	sandbox/cpmodem_test					\
 	sandbox/crc_gentab					\
 	sandbox/ellip_func_test					\
 	sandbox/ellip_test					\
@@ -1623,6 +1638,7 @@ sandbox_programs =						\
 	sandbox/firdes_fexp_test				\
 	sandbox/firdes_gmskrx_test				\
 	sandbox/firdes_length_test				\
+	sandbox/firfarrow_rrrf_test				\
 	sandbox/firpfbch_analysis_alignment_test		\
 	sandbox/firpfbch_analysis_equivalence_test		\
 	sandbox/firpfbch_synthesis_equivalence_test		\
@@ -1658,6 +1674,7 @@ sandbox_programs =						\
 	sandbox/resamp2_crcf_interp_recreate_test		\
 	sandbox/rkaiser2_test					\
 	sandbox/simplex_test					\
+	sandbox/symsync_crcf_test				\
 	sandbox/symsync_eqlms_test				\
 	sandbox/svd_test					\
 	sandbox/thiran_allpass_iir_test				\

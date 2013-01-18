@@ -1,18 +1,32 @@
 
 Major improvements since v1.2.0
+  * documentation
+    - added script to auto-generate code listings when pygmentize
+      is unavailable (not as good, but still functional)
   * dotprod
     - adding method to compute x^T * x of a vector (sum of squares)
   * fft
     - general speed improvements
+  * framing
+    - adding generic callback function definition for all framing
+      structures
+    - adding pre-demodulator synchronizer/detector
+    - moved interleaver and packetizer objects to `fec` module
+    - restructuring frame[gen|sync]64 and flexframe[gen|sync]
+      objects with vastly improved performance and reliability
   * matrix
-    - adding smatrix family of objects to facilitate operations on
-      sparse matrices
+    - adding smatrix family of objects (sparse matrices)
+    - improving linear solver methods (roughly doubled speed)
   * modem
-    - complete code re-organization (no interface change)
+    - re-organizing internal modem code (no interface change)
   * multicarrier
     - adding OFDM framing option for window tapering
     - simplfying OFDM framing for generating preamble symbols (all
       generated OFDM symbols are the same length)
+    - adding run-time option for debugging ofdmframesync
+  * optim
+    - gradsearch uses internal linesearch for significant speed
+      increase, better reliability, and simplified interface
 
 Major improvements for v1.2.0
   * dotprod

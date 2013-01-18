@@ -1,6 +1,5 @@
 /*
- * Copyright (c) 2011 Joseph Gaeddert
- * Copyright (c) 2011 Virginia Polytechnic Institute & State University
+ * Copyright (c) 2011, 2013 Joseph Gaeddert
  *
  * This file is part of liquid.
  *
@@ -35,10 +34,6 @@
 #define DEBUG_OFDMFLEXFRAMESYNC 0
 
 #define OFDMFLEXFRAME_H_SOFT (0)
-
-#if DEBUG_OFDMFLEXFRAMESYNC
-void ofdmflexframesync_debug_print(ofdmflexframesync _q);
-#endif
 
 struct ofdmflexframesync_s {
     unsigned int M;         // number of subcarriers
@@ -84,7 +79,7 @@ struct ofdmflexframesync_s {
     int payload_valid;                  // valid payload flag
 
     // callback
-    ofdmflexframesync_callback callback;// user-defined callback function
+    framesync_callback callback;        // user-defined callback function
     void * userdata;                    // user-defined data structure
     framesyncstats_s framestats;        // frame statistic object
     float evm_hat;                      // average error vector magnitude
@@ -110,12 +105,12 @@ struct ofdmflexframesync_s {
 //  _p          :   subcarrier allocation (PILOT/NULL/DATA) [size: _M x 1]
 //  _callback   :   user-defined callback function
 //  _userdata   :   user-defined data structure passed to callback
-ofdmflexframesync ofdmflexframesync_create(unsigned int               _M,
-                                           unsigned int               _cp_len,
-                                           unsigned int               _taper_len,
-                                           unsigned char *            _p,
-                                           ofdmflexframesync_callback _callback,
-                                           void *                     _userdata)
+ofdmflexframesync ofdmflexframesync_create(unsigned int       _M,
+                                           unsigned int       _cp_len,
+                                           unsigned int       _taper_len,
+                                           unsigned char *    _p,
+                                           framesync_callback _callback,
+                                           void *             _userdata)
 {
     ofdmflexframesync q = (ofdmflexframesync) malloc(sizeof(struct ofdmflexframesync_s));
 
@@ -260,6 +255,30 @@ float ofdmflexframesync_get_cfo(ofdmflexframesync _q)
     return ofdmframesync_get_cfo(_q->fs);
 }
 
+
+// 
+// debugging methods
+//
+
+// enable debugging for internal ofdm frame synchronizer
+void ofdmflexframesync_debug_enable(ofdmflexframesync _q)
+{
+    ofdmframesync_debug_enable(_q->fs);
+}
+
+// disable debugging for internal ofdm frame synchronizer
+void ofdmflexframesync_debug_disable(ofdmflexframesync _q)
+{
+    ofdmframesync_debug_enable(_q->fs);
+}
+
+// print debugging file for internal ofdm frame synchronizer
+void ofdmflexframesync_debug_print(ofdmflexframesync _q,
+                                   const char *      _filename)
+{
+    ofdmframesync_debug_print(_q->fs, _filename);
+}
+
 //
 // internal methods
 //
@@ -344,7 +363,7 @@ void ofdmflexframesync_rxheader(ofdmflexframesync _q,
                 // compute error vector magnitude estimate
                 _q->framestats.evm = 10*log10f( _q->evm_hat/OFDMFLEXFRAME_H_SYM );
 
-                // TODO : invoke callback if header is invalid
+                // invoke callback if header is invalid
                 if (_q->header_valid)
                     _q->state = OFDMFLEXFRAMESYNC_STATE_PAYLOAD;
                 else {

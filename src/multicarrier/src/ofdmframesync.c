@@ -1,6 +1,6 @@
 /*
- * Copyright (c) 2010, 2011 Joseph Gaeddert
- * Copyright (c) 2010, 2011 Virginia Polytechnic
+ * Copyright (c) 2010, 2011, 2012 Joseph Gaeddert
+ * Copyright (c) 2010, 2011, 2012 Virginia Polytechnic
  *                          Institute & State University
  *
  * This file is part of liquid.
@@ -33,7 +33,7 @@
 
 #include "liquid.internal.h"
 
-#define DEBUG_OFDMFRAMESYNC             0
+#define DEBUG_OFDMFRAMESYNC             1
 #define DEBUG_OFDMFRAMESYNC_PRINT       0
 #define DEBUG_OFDMFRAMESYNC_FILENAME    "ofdmframesync_internal_debug.m"
 #define DEBUG_OFDMFRAMESYNC_BUFFER_LEN  (2048)
@@ -115,7 +115,8 @@ struct ofdmframesync_s {
     void * userdata;
 
 #if DEBUG_OFDMFRAMESYNC
-    agc_crcf agc_rx;        // automatic gain control (rssi)
+    int debug_enabled;
+    int debug_objects_created;
     windowcf debug_x;
     windowf  debug_rssi;
     windowcf debug_framesyms;
@@ -248,21 +249,19 @@ ofdmframesync ofdmframesync_create(unsigned int           _M,
     ofdmframesync_reset(q);
 
 #if DEBUG_OFDMFRAMESYNC
-    // agc, rssi
-    q->agc_rx = agc_crcf_create();
-    agc_crcf_set_bandwidth(q->agc_rx,  1e-2f);
-    agc_crcf_set_gain_limits(q->agc_rx, 1e-5f, 1e5f);
+    q->debug_enabled = 0;
+    q->debug_objects_created = 0;
 
-    q->debug_x =        windowcf_create(DEBUG_OFDMFRAMESYNC_BUFFER_LEN);
-    q->debug_rssi =     windowf_create(DEBUG_OFDMFRAMESYNC_BUFFER_LEN);
-    q->debug_framesyms =windowcf_create(DEBUG_OFDMFRAMESYNC_BUFFER_LEN);
+    q->debug_x =        NULL;
+    q->debug_rssi =     NULL;
+    q->debug_framesyms =NULL;
     
-    q->G_hat = (float complex*) malloc((q->M)*sizeof(float complex));
-    q->px    = (float*)         malloc((q->M_pilot)*sizeof(float));
-    q->py    = (float*)         malloc((q->M_pilot)*sizeof(float));
+    q->G_hat = NULL;
+    q->px    = NULL;
+    q->py    = NULL;
     
-    q->debug_pilot_0 =  windowf_create(DEBUG_OFDMFRAMESYNC_BUFFER_LEN);
-    q->debug_pilot_1 =  windowf_create(DEBUG_OFDMFRAMESYNC_BUFFER_LEN);
+    q->debug_pilot_0 = NULL;
+    q->debug_pilot_1 = NULL;
 #endif
 
     // return object
@@ -272,18 +271,15 @@ ofdmframesync ofdmframesync_create(unsigned int           _M,
 void ofdmframesync_destroy(ofdmframesync _q)
 {
 #if DEBUG_OFDMFRAMESYNC
-    ofdmframesync_debug_print(_q, DEBUG_OFDMFRAMESYNC_FILENAME);
-
-    agc_crcf_destroy(_q->agc_rx);
-
-    windowcf_destroy(_q->debug_x);
-    windowf_destroy(_q->debug_rssi);
-    windowcf_destroy(_q->debug_framesyms);
-    free(_q->G_hat);
-    free(_q->px);
-    free(_q->py);
-    windowf_destroy(_q->debug_pilot_0);
-    windowf_destroy(_q->debug_pilot_1);
+    // destroy debugging objects
+    if (_q->debug_x         != NULL) windowcf_destroy(_q->debug_x);
+    if (_q->debug_rssi      != NULL) windowf_destroy(_q->debug_rssi);
+    if (_q->debug_framesyms != NULL) windowcf_destroy(_q->debug_framesyms);
+    if (_q->G_hat           != NULL) free(_q->G_hat);
+    if (_q->px              != NULL) free(_q->px);
+    if (_q->py              != NULL) free(_q->py);
+    if (_q->debug_pilot_0   != NULL) windowf_destroy(_q->debug_pilot_0);
+    if (_q->debug_pilot_1   != NULL) windowf_destroy(_q->debug_pilot_1);
 #endif
 
     // free subcarrier type array memory
@@ -372,12 +368,10 @@ void ofdmframesync_execute(ofdmframesync _q,
         windowcf_push(_q->input_buffer,x);
 
 #if DEBUG_OFDMFRAMESYNC
-        // apply agc (estimate initial signal gain)
-        float complex y;
-        agc_crcf_execute(_q->agc_rx, x, &y);
-
-        windowcf_push(_q->debug_x, x);
-        windowf_push(_q->debug_rssi, agc_crcf_get_rssi(_q->agc_rx));
+        if (_q->debug_enabled) {
+            windowcf_push(_q->debug_x, x);
+            windowf_push(_q->debug_rssi, crealf(x)*crealf(x) + cimagf(x)*cimagf(x));
+        }
 #endif
 
         switch (_q->state) {
@@ -458,7 +452,6 @@ void ofdmframesync_execute_seekplcp(ofdmframesync _q)
 
     float complex s_hat;
     ofdmframesync_S0_metrics(_q, _q->G0, &s_hat);
-    //float g = agc_crcf_get_gain(_q->agc_rx);
     s_hat *= g;
 
     float tau_hat  = cargf(s_hat) * (float)(_q->M2) / (2*M_PI);
@@ -519,7 +512,6 @@ void ofdmframesync_execute_S0a(ofdmframesync _q)
 
     float complex s_hat;
     ofdmframesync_S0_metrics(_q, _q->G0, &s_hat);
-    //float g = agc_crcf_get_gain(_q->agc_rx);
     s_hat *= _q->g0;
 
     _q->s_hat_0 = s_hat;
@@ -566,7 +558,6 @@ void ofdmframesync_execute_S0b(ofdmframesync _q)
 
     float complex s_hat;
     ofdmframesync_S0_metrics(_q, _q->G1, &s_hat);
-    //float g = agc_crcf_get_gain(_q->agc_rx);
     s_hat *= _q->g0;
 
     _q->s_hat_1 = s_hat;
@@ -736,10 +727,12 @@ void ofdmframesync_execute_rxsymbols(ofdmframesync _q)
         ofdmframesync_rxsymbol(_q);
 
 #if DEBUG_OFDMFRAMESYNC
-        unsigned int i;
-        for (i=0; i<_q->M; i++) {
-            if (_q->p[i] == OFDMFRAME_SCTYPE_DATA)
-                windowcf_push(_q->debug_framesyms, _q->X[i]);
+        if (_q->debug_enabled) {
+            unsigned int i;
+            for (i=0; i<_q->M; i++) {
+                if (_q->p[i] == OFDMFRAME_SCTYPE_DATA)
+                    windowcf_push(_q->debug_framesyms, _q->X[i]);
+            }
         }
 #endif
         // invoke callback
@@ -796,7 +789,7 @@ void ofdmframesync_estimate_gain_S0(ofdmframesync   _q,
     float gain = sqrtf(_q->M_S0) / (float)(_q->M);
 
     for (i=0; i<_q->M; i++) {
-        if (_q->p[i] != OFDMOQAMFRAME_SCTYPE_NULL && (i%2)==0) {
+        if (_q->p[i] != OFDMFRAME_SCTYPE_NULL && (i%2)==0) {
             // NOTE : if cabsf(_q->S0[i]) == 0 then we can multiply by conjugate
             //        rather than compute division
             //_G[i] = _q->X[i] / _q->S0[i];
@@ -828,7 +821,7 @@ void ofdmframesync_estimate_gain_S1(ofdmframesync _q,
     unsigned int i;
     float gain = sqrtf(_q->M_S1) / (float)(_q->M);
     for (i=0; i<_q->M; i++) {
-        if (_q->p[i] != OFDMOQAMFRAME_SCTYPE_NULL) {
+        if (_q->p[i] != OFDMFRAME_SCTYPE_NULL) {
             // NOTE : if cabsf(_q->S1[i]) == 0 then we can multiply by conjugate
             //        rather than compute division
             //_G[i] = _q->X[i] / _q->S1[i];
@@ -849,8 +842,10 @@ void ofdmframesync_estimate_eqgain(ofdmframesync _q,
                                    unsigned int _ntaps)
 {
 #if DEBUG_OFDMFRAMESYNC
-    // copy pre-smoothed gain
-    memmove(_q->G_hat, _q->G, _q->M*sizeof(float complex));
+    if (_q->debug_enabled) {
+        // copy pre-smoothed gain
+        memmove(_q->G_hat, _q->G, _q->M*sizeof(float complex));
+    }
 #endif
 
     // validate input
@@ -909,8 +904,10 @@ void ofdmframesync_estimate_eqgain_poly(ofdmframesync _q,
                                         unsigned int _order)
 {
 #if DEBUG_OFDMFRAMESYNC
-    // copy pre-smoothed gain
-    memmove(_q->G_hat, _q->G, _q->M*sizeof(float complex));
+    if (_q->debug_enabled) {
+        // copy pre-smoothed gain
+        memmove(_q->G_hat, _q->G, _q->M*sizeof(float complex));
+    }
 #endif
 
     // polynomial interpolation
@@ -1052,16 +1049,18 @@ void ofdmframesync_rxsymbol(ofdmframesync _q)
     _q->p1_prime = p_phase[1];
 
 #if DEBUG_OFDMFRAMESYNC
-    // save pilots
-    memmove(_q->px, x_phase, _q->M_pilot*sizeof(float));
-    memmove(_q->py, y_phase, _q->M_pilot*sizeof(float));
+    if (_q->debug_enabled) {
+        // save pilots
+        memmove(_q->px, x_phase, _q->M_pilot*sizeof(float));
+        memmove(_q->py, y_phase, _q->M_pilot*sizeof(float));
 
-    // NOTE : swapping values for octave
-    _q->p_phase[0] = p_phase[1];
-    _q->p_phase[1] = p_phase[0];
+        // NOTE : swapping values for octave
+        _q->p_phase[0] = p_phase[1];
+        _q->p_phase[1] = p_phase[0];
 
-    windowf_push(_q->debug_pilot_0, p_phase[0]);
-    windowf_push(_q->debug_pilot_1, p_phase[1]);
+        windowf_push(_q->debug_pilot_0, p_phase[0]);
+        windowf_push(_q->debug_pilot_1, p_phase[1]);
+    }
 #endif
 
     // compensate for phase offset
@@ -1101,17 +1100,57 @@ void ofdmframesync_rxsymbol(ofdmframesync _q)
 #endif
 }
 
+// enable debugging
+void ofdmframesync_debug_enable(ofdmframesync _q)
+{
+    // create debugging objects if necessary
+#if DEBUG_OFDMFRAMESYNC
+    if (_q->debug_objects_created)
+        return;
+
+    _q->debug_x         = windowcf_create(DEBUG_OFDMFRAMESYNC_BUFFER_LEN);
+    _q->debug_rssi      = windowf_create(DEBUG_OFDMFRAMESYNC_BUFFER_LEN);
+    _q->debug_framesyms = windowcf_create(DEBUG_OFDMFRAMESYNC_BUFFER_LEN);
+    _q->G_hat           = (float complex*) malloc((_q->M)*sizeof(float complex));
+
+    _q->px = (float*) malloc((_q->M_pilot)*sizeof(float));
+    _q->py = (float*) malloc((_q->M_pilot)*sizeof(float));
+
+    _q->debug_pilot_0 = windowf_create(DEBUG_OFDMFRAMESYNC_BUFFER_LEN);
+    _q->debug_pilot_1 = windowf_create(DEBUG_OFDMFRAMESYNC_BUFFER_LEN);
+
+    _q->debug_enabled   = 1;
+    _q->debug_objects_created = 1;
+#else
+    fprintf(stderr,"ofdmframesync_debug_enable(): compile-time debugging disabled\n");
+#endif
+}
+
+void ofdmframesync_debug_disable(ofdmframesync _q)
+{
+    // disable debugging
+#if DEBUG_OFDMFRAMESYNC
+    _q->debug_enabled = 0;
+#else
+    fprintf(stderr,"ofdmframesync_debug_enable(): compile-time debugging disabled\n");
+#endif
+}
 
 void ofdmframesync_debug_print(ofdmframesync _q,
                                const char * _filename)
 {
+#if DEBUG_OFDMFRAMESYNC
+    if (!_q->debug_objects_created) {
+        fprintf(stderr,"error: ofdmframe_debug_print(), debugging objects don't exist; enable debugging first\n");
+        return;
+    }
+
     FILE * fid = fopen(_filename,"w");
     if (!fid) {
         fprintf(stderr,"error: ofdmframe_debug_print(), could not open '%s' for writing\n", _filename);
         return;
     }
     fprintf(fid,"%% %s : auto-generated file\n", DEBUG_OFDMFRAMESYNC_FILENAME);
-#if DEBUG_OFDMFRAMESYNC
     fprintf(fid,"close all;\n");
     fprintf(fid,"clear all;\n");
     fprintf(fid,"n = %u;\n", DEBUG_OFDMFRAMESYNC_BUFFER_LEN);
@@ -1158,6 +1197,8 @@ void ofdmframesync_debug_print(ofdmframesync _q,
     windowf_read(_q->debug_rssi, &r);
     for (i=0; i<DEBUG_OFDMFRAMESYNC_BUFFER_LEN; i++)
         fprintf(fid,"agc_rssi(%4u) = %12.4e;\n", i+1, r[i]);
+    fprintf(fid,"agc_rssi = filter([0.00362168 0.00724336 0.00362168],[1 -1.82269490 0.83718163],agc_rssi);\n");
+    fprintf(fid,"agc_rssi = 10*log10( agc_rssi );\n");
     fprintf(fid,"figure;\n");
     fprintf(fid,"plot(agc_rssi)\n");
     fprintf(fid,"ylabel('RSSI [dB]');\n");
@@ -1251,12 +1292,11 @@ void ofdmframesync_debug_print(ofdmframesync _q,
     fprintf(fid,"axis([-1 1 -1 1]*1.6);\n");
     fprintf(fid,"axis square;\n");
     fprintf(fid,"grid on;\n");
-#else
-    fprintf(fid,"disp('no debugging info available');\n");
-#endif
 
     fclose(fid);
     printf("ofdmframesync/debug: results written to '%s'\n", _filename);
+#else
+    fprintf(stderr,"ofdmframesync_debug_print(): compile-time debugging disabled\n");
+#endif
 }
-
 

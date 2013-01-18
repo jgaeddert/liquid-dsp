@@ -10,6 +10,17 @@ signal
   |__/   |         |     |        |         |   \__
   +-------------------------------------------------> time
 
+new header options:
+    header      check   fec1        bytes   bpsk syms   1% FER SNR
+    [[14 + 5 + crc16] + h128 ]  >   32  >   256         3.0 dB /  2.9 dB soft
+    [[14 + 5 + crc24] + g2412]  >   45  >   360          -  dB / -
+    [[14 + 5 + crc24] + v27  ]  >   46  >   368          -  dB / -0.3 dB soft
+    [[14 + 5 + crc24] + v39  ]  >   69  >   552          -  dB / -1.1 dB soft
+    
+    concatenated code:
+    14 + 6 + 4 = 24 + secded7264 > 27 + h84 > 54
+    [[[14 + 6 + crc32] + secded7264] + h84] > 54  > 432  -  dB /  0.2 dB soft
+
 section             # syms          Description
 ramp up (r/u)       0+              phasing (1010...) with ramp up
 phasing pattern     0+              10101010...

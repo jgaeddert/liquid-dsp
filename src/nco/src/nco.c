@@ -34,6 +34,24 @@
 
 #define LIQUID_DEBUG_NCO            (0)
 
+struct NCO(_s) {
+    liquid_ncotype type;
+    T theta;            // NCO phase
+    T d_theta;          // NCO frequency
+    T sintab[256];      // sine table
+    unsigned int index; // table index
+    T sine;
+    T cosine;
+    void (*compute_sincos)(NCO() _q);
+
+    // phase-locked loop
+    T bandwidth;
+    T zeta;
+    T a[3];
+    T b[3];
+    iirfiltsos_rrrf pll_filter;
+};
+
 // create nco/vco object
 NCO() NCO(_create)(liquid_ncotype _type)
 {
@@ -88,9 +106,6 @@ void NCO(_reset)(NCO() _q)
 
     // reset pll filter state
     NCO(_pll_reset)(_q);
-
-    // reset pll base frequency
-    _q->pll_dtheta_base = 0;
 }
 
 // set frequency of nco object
@@ -125,7 +140,6 @@ void NCO(_adjust_phase)(NCO() _q, T _dphi)
 void NCO(_step)(NCO() _q)
 {
     _q->theta += _q->d_theta;
-    _q->theta += _q->pll_dtheta_base;
     NCO(_constrain_phase)(_q);
 }
 
@@ -140,7 +154,7 @@ T NCO(_get_frequency)(NCO() _q)
 {
     // return both internal NCO phase step as well
     // as PLL phase step
-    return _q->d_theta + _q->pll_dtheta_base;
+    return _q->d_theta;
 }
 
 
@@ -192,18 +206,8 @@ void NCO(_cexpf)(NCO() _q,
 // reset pll state, retaining base frequency
 void NCO(_pll_reset)(NCO() _q)
 {
-    // retain base frequency
-    _q->pll_dtheta_base += _q->d_theta;
-#if LIQUID_DEBUG_NCO
-    printf("base frequency : %f\n", _q->pll_dtheta_base);
-#endif
-
     // clear phase-locked loop filter
     iirfiltsos_rrrf_clear(_q->pll_filter);
-
-    // reset phase state
-    _q->pll_phi_prime = 0;
-    _q->pll_phi_hat = 0;
 }
 
 // set pll bandwidth
@@ -219,11 +223,21 @@ void NCO(_pll_set_bandwidth)(NCO() _q,
     _q->bandwidth = _b;
     _q->zeta = 1/sqrtf(2.0f);
 
-    // compute loop filter using active lag design
-    iirdes_pll_active_lag(_q->bandwidth, _q->zeta, NCO_PLL_GAIN_DEFAULT, _q->b, _q->a);
+    float K     = NCO_PLL_GAIN_DEFAULT; // gain
+    float zeta  = 1.0f / sqrtf(2.0f);   // damping factor
+    float wn    = _b;                   // natural frequency
+    float t1    = K/(wn*wn);            // 
+    float t2    = 2*zeta/wn - 1/K;      //
 
-    // compute loop filter using active PI design
-    //iirdes_pll_active_PI(_q->bandwidth, _q->zeta, NCO_PLL_GAIN_DEFAULT, _q->b, _q->a);
+    // feed-forward coefficients
+    _q->b[0] =  2*K*(1.+t2/2.0f);
+    _q->b[1] =  2*K*2.;
+    _q->b[2] =  2*K*(1.-t2/2.0f);
+
+    // feed-back coefficients
+    _q->a[0] =  1. + t1/2.0f;
+    _q->a[1] = -1. + t1/2.0f;
+    _q->a[2] =  0.0f;
     
     iirfiltsos_rrrf_set_coefficients(_q->pll_filter, _q->b, _q->a);
 }
@@ -234,16 +248,14 @@ void NCO(_pll_set_bandwidth)(NCO() _q,
 void NCO(_pll_step)(NCO() _q,
                     T _dphi)
 {
-    // save pll phase state
-    _q->pll_phi_prime = _q->pll_phi_hat;
-
     // execute internal filter (direct form I)
+    float error_filtered = 0.0f;
     iirfiltsos_rrrf_execute_df1(_q->pll_filter,
                                 _dphi,
-                                &_q->pll_phi_hat);
+                                &error_filtered);
 
-    // compute new phase step (frequency)
-    NCO(_set_frequency)(_q, _q->pll_phi_hat - _q->pll_phi_prime);
+    // increase frequency proportional to error
+    NCO(_adjust_frequency)(_q, error_filtered);
 
     // constrain frequency
     //NCO(_constrain_frequency)(_q);

@@ -60,6 +60,9 @@ src/filter_resamp2_crcf_interp
 src/filter_rnyquist
 src/filter_symsync_crcf
 src/fpm_gentab
+src/flexframe_fer
+src/frame64_fer
+src/gmskframe_fer
 src/interleaver_scatterplot
 src/liquid_version
 src/math_poly_examples
@@ -72,6 +75,7 @@ src/modem.gendata
 src/modem.genplot
 src/modem_phase_error
 src/nco_pll
+src/ofdmflexframe_fer
 src/optim_gradsearch
 src/quantization_adc
 src/quantization_compander
@@ -79,6 +83,7 @@ src/random_histogram
 src/sequence_ccodes
 src/sequence_msequence
 src/simulate_ber
+src/simulate_detector
 src/simulate_per_test
 
 scripts/listings_check

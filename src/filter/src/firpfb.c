@@ -1,7 +1,5 @@
 /*
- * Copyright (c) 2007, 2008, 2009, 2010, 2011, 2012 Joseph Gaeddert
- * Copyright (c) 2007, 2008, 2009, 2010, 2012, 2012 Virginia Polytechnic
- *                                      Institute & State University
+ * Copyright (c) 2007, 2008, 2009, 2010, 2011, 2012, 2013 Joseph Gaeddert
  *
  * This file is part of liquid.
  *
@@ -89,11 +87,11 @@ FIRPFB() FIRPFB(_create)(unsigned int _num_filters, TC * _h, unsigned int _h_len
 //  _k      :   samples/symbol _k > 1
 //  _m      :   filter delay (symbols), _m > 0
 //  _beta   :   excess bandwidth factor, 0 < _beta < 1
-FIRPFB() FIRPFB(_create_rnyquist)(int _type,
+FIRPFB() FIRPFB(_create_rnyquist)(int          _type,
                                   unsigned int _npfb,
                                   unsigned int _k,
                                   unsigned int _m,
-                                  float _beta)
+                                  float        _beta)
 {
     // validate input
     if (_npfb == 0) {
@@ -126,6 +124,79 @@ FIRPFB() FIRPFB(_create_rnyquist)(int _type,
         Hc[i] = Hf[i];
 #endif
     }
+
+    // return filterbank object
+    return FIRPFB(_create)(_npfb, Hc, H_len);
+}
+
+// create derivative square-root Nyquist filterbank
+//  _type   :   filter type (e.g. LIQUID_RNYQUIST_RRC)
+//  _npfb   :   number of filters in the bank
+//  _k      :   samples/symbol _k > 1
+//  _m      :   filter delay (symbols), _m > 0
+//  _beta   :   excess bandwidth factor, 0 < _beta < 1
+FIRPFB() FIRPFB(_create_drnyquist)(int          _type,
+                                   unsigned int _npfb,
+                                   unsigned int _k,
+                                   unsigned int _m,
+                                   float        _beta)
+{
+    // validate input
+    if (_npfb == 0) {
+        fprintf(stderr,"error: firpfb_%s_create_drnyquist(), number of filters must be greater than zero\n", EXTENSION_FULL);
+        exit(1);
+    } else if (_k < 2) {
+        fprintf(stderr,"error: firpfb_%s_create_drnyquist(), filter samples/symbol must be greater than 1\n", EXTENSION_FULL);
+        exit(1);
+    } else if (_m == 0) {
+        fprintf(stderr,"error: firpfb_%s_create_drnyquist(), filter delay must be greater than 0\n", EXTENSION_FULL);
+        exit(1);
+    } else if (_beta < 0.0f || _beta > 1.0f) {
+        fprintf(stderr,"error: firpfb_%s_create_drnyquist(), filter excess bandwidth factor must be in [0,1]\n", EXTENSION_FULL);
+        exit(1);
+    }
+
+    // generate square-root Nyquist filter
+    unsigned int H_len = 2*_npfb*_k*_m + 1;
+    float Hf[H_len];
+    liquid_firdes_rnyquist(_type,_npfb*_k,_m,_beta,0,Hf);
+    
+    // compute derivative filter
+    float dHf[H_len];
+    float HdH_max = 0.0f;
+    unsigned int i;
+    for (i=0; i<H_len; i++) {
+        if (i==0) {
+            dHf[i] = Hf[i+1] - Hf[H_len-1];
+        } else if (i==H_len-1) {
+            dHf[i] = Hf[0]   - Hf[i-1];
+        } else {
+            dHf[i] = Hf[i+1] - Hf[i-1];
+        }
+
+        // find maximum of h*dh
+        if ( fabsf(Hf[i]*dHf[i]) > HdH_max )
+            HdH_max = fabsf(Hf[i]*dHf[i]);
+    }
+
+    // apply scaling factor for normalized response
+    for (i=0; i<H_len; i++)
+        dHf[i] = dHf[i] * 0.06f / HdH_max;
+    
+    // copy coefficients to type-specific array (e.g. float complex)
+    TC Hc[H_len];
+#ifdef LIQUID_FIXED && TC_COMPLEX
+    for (i=0; i<H_len; i++) {
+        Hc[i].real = Q(_float_to_fixed)( dHf[i] );
+        Hc[i].imag = 0;
+    }
+#elif LIQUID_FIXED && !TC_COMPLEX
+    for (i=0; i<H_len; i++)
+        Hc[i] = Q(_float_to_fixed)( dHf[i] );
+#else
+    for (i=0; i<H_len; i++)
+        Hc[i] = (TC) dHf[i];
+#endif
 
     // return filterbank object
     return FIRPFB(_create)(_npfb, Hc, H_len);

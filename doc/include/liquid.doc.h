@@ -1,7 +1,5 @@
 /*
- * Copyright (c) 2007, 2008, 2009, 2010 Joseph Gaeddert
- * Copyright (c) 2007, 2008, 2009, 2010 Virginia Polytechnic
- *                                      Institute & State University
+ * Copyright (c) 2007, 2008, 2009, 2010, 2012, 2013 Joseph Gaeddert
  *
  * This file is part of liquid.
  *
@@ -126,6 +124,115 @@ float estimate_snr(simulate_per_opts _opts,
 
 // solve for SNR (Eb/N0) for BPSK for a given BER
 float estimate_snr_bpsk(float _error_rate);
+
+//
+// framing detection
+//
+
+// simulate packet error rate results
+typedef struct {
+
+    unsigned int num_frames;        // total number of frames sent
+
+    unsigned int num_missed_frames; // number of missed frames
+    unsigned int num_header_errors; // number of header errors
+    unsigned int num_packet_errors; // number of packet errors
+
+    // derived values
+    float FER;                      // apparent frame error rate
+    float HER;                      // apparent header error rate
+    float PER;                      // apparent packet error rate
+} fer_results;
+
+
+// 
+// frame64 performance
+//
+
+// simulate frame detection and error rates for frame64
+void frame64_fer(unsigned int  _num_frames,
+                 float         _SNRdB,
+                 int           _verbose,
+                 fer_results * _results);
+
+// 
+// gmskframe performance
+//
+
+// simulate packet error rate options
+typedef struct {
+    // GMSK frame properties
+    crc_scheme check;           // cyclic redundancy check
+    fec_scheme fec0;            // FEC codec (inner)
+    fec_scheme fec1;            // FEC codec (outer)
+    unsigned int payload_len;   // (decoded) message length (bytes)
+    unsigned int num_frames;    // number of frames
+
+    int verbose;                // verbose output?
+
+    // channel impairments...
+
+} gmskframe_fer_opts;
+
+
+// simulate frame detection and error rates for gmskframe
+void gmskframe_fer(gmskframe_fer_opts _opts,
+                   float              _SNRdB,
+                   fer_results *      _results);
+
+
+// 
+// frame performance
+//
+
+// simulate packet error rate options
+typedef struct {
+    // flexframe properties
+    modulation_scheme ms;       // modulation scheme
+    crc_scheme check;           // cyclic redundancy check
+    fec_scheme fec0;            // FEC codec (inner)
+    fec_scheme fec1;            // FEC codec (outer)
+    unsigned int payload_len;   // (decoded) message length (bytes)
+    unsigned int num_frames;    // number of frames
+
+    int verbose;                // verbose output?
+
+    // channel impairments...
+
+} flexframe_fer_opts;
+
+// simulate frame detection and error rates for flexframe
+void flexframe_fer(flexframe_fer_opts _opts,
+                   float              _SNRdB,
+                   fer_results *      _results);
+
+// 
+// ofdmframe performance
+//
+
+// simulate packet error rate options
+typedef struct {
+    // OFDM frame properties
+    unsigned int M;             // number of subcarriers
+    unsigned int cp_len;        // cyclic prefix length
+    unsigned char * p;          // subcarrier allocation
+    modulation_scheme ms;       // modulation scheme
+    crc_scheme check;           // cyclic redundancy check
+    fec_scheme fec0;            // FEC codec (inner)
+    fec_scheme fec1;            // FEC codec (outer)
+    unsigned int payload_len;   // (decoded) message length (bytes)
+    unsigned int num_frames;    // number of frames
+
+    int verbose;                // verbose output?
+
+    // channel impairments...
+
+} ofdmflexframe_fer_opts;
+
+// simulate frame detection and error rates for ofdmflexframe
+void ofdmflexframe_fer(ofdmflexframe_fer_opts _opts,
+                           float              _SNRdB,
+                           fer_results *      _results);
 
 #endif // __LIQUID_DOC_H__
 

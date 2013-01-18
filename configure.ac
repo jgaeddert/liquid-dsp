@@ -1,7 +1,5 @@
 ## 
-## Copyright (c) 2007, 2008, 2009, 2010, 2011, 2012 Joseph Gaeddert
-## Copyright (c) 2007, 2008, 2009, 2010, 2011, 2012 Virginia Polytechnic
-##                                      Institute & State University
+## Copyright (c) 2007, 2008, 2009, 2010, 2011, 2012, 2013 Joseph Gaeddert
 ##
 ## This file is part of liquid.
 ##
@@ -198,7 +196,9 @@ AC_CHECK_PROG(PYGMENTIZE,   pygmentize,     pygmentize,     no)
 AC_CHECK_PROG(PYGMENTIZE24, pygmentize-2.4, pygmentize-2.4, no)
 if [ test "$PYGMENTIZE" == "no" ]; then
     if [ test "$PYGMENTIZE24" == "no" ]; then
-        AC_MSG_WARN(pygmentize required to build documentation)
+        # use uglier, but functional built-in homebrewed code listing generator
+        AC_MSG_WARN(pygmentize not found; using ./scripts/liquid-pygmentize.py as ugly alternative)
+        PYGMENTIZE="./scripts/liquid-pygmentize.py"
     else
         PYGMENTIZE="pygmentize-2.4"
     fi
@@ -229,8 +229,14 @@ i386|i486|i586|i686|x86|x86_64)
     #   AVX     :   immintrin.h
     AX_EXT
 
-    # need at least SSE2
-    if [ test "$ax_cv_have_sse2_ext" = yes && test "$ac_cv_header_emmintrin_h" = yes ]; then
+    if [ test "$ax_cv_have_sse41_ext" = yes && test "$ac_cv_header_smmintrin_h" = yes ]; then
+        # SSE4.1/2 extensions
+        MLIBS_DOTPROD="src/dotprod/src/dotprod_cccf.mmx.o \
+                       src/dotprod/src/dotprod_crcf.mmx.o \
+                       src/dotprod/src/dotprod_rrrf.sse4.o \
+                       src/dotprod/src/sumsq.mmx.o"
+    elif [ test "$ax_cv_have_sse2_ext" = yes && test "$ac_cv_header_emmintrin_h" = yes ]; then
+        # SSE2 extensions
         MLIBS_DOTPROD="src/dotprod/src/dotprod_cccf.mmx.o \
                        src/dotprod/src/dotprod_crcf.mmx.o \
                        src/dotprod/src/dotprod_rrrf.mmx.o \
@@ -243,6 +249,7 @@ i386|i486|i586|i686|x86|x86_64)
                        src/dotprod/src/dotprod_rrrq32.mmx.o \
                        src/dotprod/src/sumsqq16.o"
     else
+        # portable C version
         MLIBS_DOTPROD="src/dotprod/src/dotprod_cccf.o \
                        src/dotprod/src/dotprod_crcf.o \
                        src/dotprod/src/dotprod_rrrf.o \

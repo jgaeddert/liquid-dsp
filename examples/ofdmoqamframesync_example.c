@@ -15,6 +15,7 @@
 #include <getopt.h>
 #include <assert.h>
 
+#include "liquid.experimental.h"
 #include "liquid.h"
 
 #define OUTPUT_FILENAME "ofdmoqamframesync_example.m"

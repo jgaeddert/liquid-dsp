@@ -15,6 +15,7 @@ local_pgffiles :=					\
 	figures.pgf/bpacket_structure.pdf		\
 	figures.pgf/fft_plan_diagram.pdf		\
 	figures.pgf/fft_spgram_diagram.pdf		\
+	figures.pgf/frame64_structure.pdf		\
 	figures.pgf/framing_structure.pdf		\
 	figures.pgf/msresamp_decim_diagram.pdf		\
 	figures.pgf/msresamp_interp_diagram.pdf		\
@@ -107,7 +108,10 @@ local_pdffiles :=					\
 	figures.gen/filter_symsync_crcf_const.pdf	\
 	figures.gen/filter_symsync_crcf_time.pdf	\
 							\
-	figures.gen/ofdmflexframesync_performance.pdf	\
+	figures.gen/flexframe_performance.pdf		\
+	figures.gen/frame64_performance.pdf		\
+	figures.gen/gmskframe_performance.pdf		\
+	figures.gen/ofdmflexframe_performance.pdf	\
 							\
 	figures.gen/interleaver_scatterplot_i0.pdf	\
 	figures.gen/interleaver_scatterplot_i1.pdf	\
@@ -300,6 +304,11 @@ local_programs :=					\
 	src/sequence_ccodes				\
 	src/sequence_msequence				\
 							\
+	src/simulate_detector				\
+	src/flexframe_fer				\
+	src/frame64_fer					\
+	src/gmskframe_fer				\
+	src/ofdmflexframe_fer				\
 	src/simulate_ber				\
 	src/simulate_per_test				\
 
@@ -667,14 +676,44 @@ latex.gen/q32_gentab_primitives.tex : src/fpm_gentab ; ./$< -t q32 -T primitives
 ##
 
 # 
-# ofdmflexframesync_performance
+# flexframe_performance
 #
 
-figures.gen/ofdmflexframesync_performance.dat \
-figures.gen/ofdmflexframesync_performance.gnu : figures.gen/% : data/ofdmflexframe/%
+figures.gen/flexframe_performance.dat \
+figures.gen/flexframe_performance.gnu : figures.gen/% : data/framing/%
 	cp $< $@
 
-figures.gen/ofdmflexframesync_performance.eps : %.eps : %.gnu %.dat
+figures.gen/flexframe_performance.eps : %.eps : %.gnu %.dat
+
+# 
+# frame64_performance
+#
+
+figures.gen/frame64_performance.dat \
+figures.gen/frame64_performance.gnu : figures.gen/% : data/framing/%
+	cp $< $@
+
+figures.gen/frame64_performance.eps : %.eps : %.gnu %.dat
+
+# 
+# gmskframe_performance
+#
+
+figures.gen/gmskframe_performance.dat \
+figures.gen/gmskframe_performance.gnu : figures.gen/% : data/framing/%
+	cp $< $@
+
+figures.gen/gmskframe_performance.eps : %.eps : %.gnu %.dat
+
+# 
+# ofdmflexframe_performance
+#
+
+figures.gen/ofdmflexframe_performance.dat \
+figures.gen/ofdmflexframe_performance.gnu : figures.gen/% : data/framing/%
+	cp $< $@
+
+figures.gen/ofdmflexframe_performance.eps : %.eps : %.gnu %.dat
 
 ##
 ## MODULE : interleaver

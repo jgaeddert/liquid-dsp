@@ -12,22 +12,21 @@ flexible, scalable, and dynamic, including filters, filter design,
 oscillators, modems, synchronizers, and complex mathematical operations.
 
 For more information, please refer to the full documentation directory
-`doc/` or download the pre-compiled `.pdf` documentation file from
-<http://ganymede.ece.vt.edu/downloads/liquid.pdf> (4.4 MB).
+`doc/` or download the pre-compiled `.pdf`
+[documentation file](http://ganymede.ece.vt.edu/downloads/liquid.pdf) (4.4 MB).
 
 Installation and Dependencies
 -----------------------------
 
 liquid-dsp only relies on `libc` and `libm` (standard C and math)
 libraries to run; however liquid will take advantage of other packages
-(such as [FFTW][]) if they are available.
+(such as [FFTW](http://www.fftw.org)) if they are available.
 
-### Getting the source code
+### Getting the source code ###
 
 There are two primary ways of obtaining the source code:
 
-1. Download the tarball from
-   <http://ganymede.ece.vt.edu/downloads/liquid-dsp-1.2.0.tar.gz> (2.6 MB),
+1. Download the [tarball](http://ganymede.ece.vt.edu/downloads/liquid-dsp-1.2.0.tar.gz) (2.6 MB),
    validate the checksum, and unpack 
 
         $ wget http://ganymede.ece.vt.edu/downloads/liquid-dsp-1.2.0.tar.gz
@@ -35,16 +34,15 @@ There are two primary ways of obtaining the source code:
         $ md5sum --check liquid-dsp.md5
         $ tar -xf liquid-dsp-1.2.0.tar.gz
 
-2. Clone the entire [repository][liquid-github]
+2. or clone the entire [repository](http://github.com/jgaeddert/liquid-dsp)
         
         $ git clone git://github.com/jgaeddert/liquid-dsp.git
 
-### Installation
+### Installation ###
 
 Once you have obtained a copy of the source code, you can now build the
 DSP library (NOTE: if you chose to clone the repository, you will need
-to also run the additional `./reconf` bootstrapping script before
-configuring):
+to also run the additional `./bootstrap.sh` script before configuring):
 
     $ ./configure
     $ make
@@ -59,7 +57,7 @@ run
 
     $ sudo make uninstall
 
-### Run all test scripts
+### Run all test scripts ###
 
 Source code validation is a critical step in any software library,
 particulary for verifying the portability of code to different
@@ -72,12 +70,13 @@ make target `check`, viz.
 
     $ make check
 
-### Examples
+### Examples ###
+
 Nearly all signal processing elements have a corresponding example in
 the `examples/` directory.  Most example scripts generate an output
-`.m` file for plotting with [GNU octave][octave]. All examples are
-built as stand-alone programs and can be compiled with the make target
-`examples`:
+`.m` file for plotting with [GNU octave](http://www.gnu.org/software/octave/)
+All examples are built as stand-alone programs and can be compiled with
+the make target `examples`:
 
     $ make examples
 
@@ -86,7 +85,7 @@ This can be accomplished by directly targeting its binary
 (e.g. `make examples/modem_example`). The example then can be run at the
 command line, viz. `./examples/modem_example`.
 
-### Benchmarking tool
+### Benchmarking tool ###
 
 Packaged with liquid are benchmarks to determine the speed each signal
 processing element can run on your machine. Initially the tool provides
@@ -96,6 +95,32 @@ the number of trials so that each benchmark will take between 50 and
 following command:
 
     $ make bench
+
+### Documentation ###
+
+No serious software library would be complete without proper
+documentation. There are basically two ways to get it: the easy way and
+the hard way.
+
+1. The easy way: download the pre-compiled
+   [documentation file](http://ganymede.ece.vt.edu/downloads/liquid.pdf) (4.4 MB).
+
+2. The hard way: build from scratch.
+   Because all of the figures within the documentation are generated
+   with liquid itself, the documentation must be built from scratch and
+   requires the following free programs and packages:
+
+  - [pdflatex](http://www.ctan.org)             LaTeX compiler
+  - [bibtex](http://www.ctan.org)               LaTeX bibliography generator
+  - [pgf](http://sourceforge.net/projects/pgf/) (version 2.0)   LaTeX figures
+  - [epstopdf](http://tug.org/epstopdf)         convert .eps to .pdf (necessary for figures)
+  - [gnuplot](http://www.gnuplot.info/)         plotting program
+  - [pygments](http://pygments.org/)            pretty syntax hilighting program
+
+  Once these dependencies are installed, you may build the documentation
+  with the following command:
+
+        $ make doc
 
 Available Modules
 -----------------
@@ -140,37 +165,10 @@ Available Modules
         continuous-phase modulation, direct digital synthesis,
         quadrature mirror filterbanks, advanced symbol timing recovery
 
-Additional
-----------
-  * benchmarking tool (`make bench`) for testing execution speed of most
-    algorithms
-  * automatic test scripts (`make check`) for validating the code's
-    functionality
-  * full documentation (`make doc`) complete with tutorials, code
-    examples, and interface descriptions. Requires the following programs
-    and packages:
-      - [pdflatex][ctan]    LaTeX compiler
-      - [bibtex][ctan]      LaTeX bibliography generator
-      - [pgf][] (v2.0)      LaTeX figures
-      - epstopdf            convert .eps to .pdf (necessary for figures)
-      - [gnuplot][]         plotting program
-      - [pygments][]        pretty syntax hilighting program
+### Additional notes ###
 
-### Additional notes
-Splatter graphics were created using [GIMP][] with two
-[splatter][corelila] [brush][hawksmont] plug-ins.
-
-
-[FFTW]:         http://www.fftw.org/
-[octave]:       http://www.gnu.org/software/octave/
-[ctan]:         http://www.ctan.org/
-[pygments]:     http://pygments.org/
-[GIMP]:         http://www.gimp.org/
-[gnuplot]:      http://www.gnuplot.info/
-[pgf]:          http://sourceforge.net/projects/pgf/
-[macports]:     http://www.macports.org/
-[liquid.tar.gz]:http://ganymede.ece.vt.edu/
-[liquid-github]:http://github.com/jgaeddert/liquid-dsp
-[corelila]:     http://corelila.deviantart.com/art/Splatter-Brushes-60718934
-[hawksmont]:    http://hawksmont.com/blog/gimp-brushes-splatters/
+Splatter graphics were created using [GIMP](http://www.gimp.org) with two
+[splatter](http://corelila.deviantart.com/art/Splatter-Brushes-60718934)
+[brush](http://hawksmont.com/blog/gimp-brushes-splatters/)
+plug-ins.
 
