@@ -21,7 +21,7 @@ int main() {
     // initialize objects
     asgram q = asgram_create(nfft);
     asgram_set_scale(q,10);
-    asgram_set_offset(q,-10);
+    asgram_set_offset(q,30);
 
     unsigned int i,n;
     float theta=0.0f, dtheta=0.0f;

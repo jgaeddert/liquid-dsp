@@ -59,7 +59,8 @@ asgram asgram_create(unsigned int _nfft)
 
     // create spectral periodogram object
     unsigned int window_len = q->nfft;
-    q->periodogram = spgram_create(q->nfft, window_len);
+    float beta = 10.0f;
+    q->periodogram = spgram_create_kaiser(q->nfft, window_len, beta);
 
     // power spectral density levels
     q->num_levels = 6;

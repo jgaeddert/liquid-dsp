@@ -806,9 +806,19 @@ typedef struct spgram_s * spgram;
 
 // create spgram object
 //  _nfft       :   FFT size
+//  _window     :   window [size: _window_len x 1]
 //  _window_len :   window length
 spgram spgram_create(unsigned int _nfft,
+                     float *      _window,
                      unsigned int _window_len);
+
+// create spgram object with Kaiser-Bessel window
+//  _nfft       :   FFT size
+//  _window_len :   window length
+//  _beta       :   Kaiser-Bessel window parameter (_beta > 0)
+spgram spgram_create_kaiser(unsigned int _nfft,
+                            unsigned int _window_len,
+                            float        _beta);
 
 // destroy spgram object
 void spgram_destroy(spgram _q);

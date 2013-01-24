@@ -16,18 +16,17 @@ int main() {
     // spectral periodogram options
     unsigned int nfft=256;              // spectral periodogram FFT size
     unsigned int num_samples = 2001;    // number of samples
+    float beta = 10.0f;                 // Kaiser-Bessel window parameter
 
     // allocate memory for data arrays
     float complex x[num_samples];       // input signal
     float complex X[nfft];              // output spectrum
     float psd[nfft];                    // power spectral density
 
-    unsigned int ramp = num_samples/20 < 10 ? 10 : num_samples/20;
-
     // create spectral periodogram
     unsigned int window_size = nfft/2;  // spgram window size
     unsigned int delay       = nfft/8;  // samples between transforms
-    spgram q = spgram_create(nfft, window_size);
+    spgram q = spgram_create_kaiser(nfft, window_size, beta);
 
     unsigned int i;
 
@@ -40,12 +39,6 @@ int main() {
     }
     nco_crcf_destroy(nco);
 
-    // add soft ramping functions
-    for (i=0; i<ramp; i++) {
-        x[i]                    *= 0.5f - 0.5f*cosf(M_PI*(float)i          / (float)ramp);
-        x[num_samples-ramp+i-1] *= 0.5f - 0.5f*cosf(M_PI*(float)(ramp-i-1) / (float)ramp);
-    }
-
     // 
     // export output file
     //
@@ -56,12 +49,20 @@ int main() {
     fprintf(fid,"nfft = %u;\n", nfft);
     fprintf(fid,"H = zeros(1,nfft);\n");
 
-    unsigned int t=0;
+    unsigned int timer = nfft;
+    unsigned int num_transforms = 0;
     for (i=0; i<num_samples; i++) {
-        // push sample into periodogram
+        // push single sample into periodogram
         spgram_push(q, &x[i], 1);
 
-        if ( ((i+1)%delay)==0 ) {
+        // update counters
+        timer--;
+
+        if ( timer == 0 ) {
+            // reset timer
+            num_transforms++;
+            timer = delay;
+
             // compute spectral periodogram output
             spgram_execute(q, X);
 
@@ -73,24 +74,23 @@ int main() {
 
             // save results to file
             for (k=0; k<nfft; k++)
-                fprintf(fid,"H(%3u,%3u) = %12.8f;\n", t+1, k+1, psd[k]);
-
-            // increment counter
-            t++;
+                fprintf(fid,"H(%3u,%3u) = %12.8f;\n", num_transforms, k+1, psd[k]);
         }
     }
 
     // destroy spectral periodogram object
     spgram_destroy(q);
 
+    printf("computed %u transforms\n", num_transforms);
+
     // print
     fprintf(fid,"colors = [1 1 1; 0.25 0.78 0.50; 0 0.25 0.50; 1 1 1];\n");
-    fprintf(fid,"C = generate_colormap(colors);\n");
+    //fprintf(fid,"C = generate_colormap(colors);\n");
     fprintf(fid,"H = H - min(min(H));\n");
     fprintf(fid,"H = H / max(max(H));\n");
     fprintf(fid,"figure;\n");
     fprintf(fid,"image(40*H);\n");
-    fprintf(fid,"colormap(C);\n");
+    //fprintf(fid,"colormap(C);\n");
     fprintf(fid,"xlabel('freq');\n");
     fprintf(fid,"ylabel('time');\n");
 
