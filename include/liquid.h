@@ -832,12 +832,29 @@ void spgram_execute(spgram _q,
 
 // ascii spectrogram
 typedef struct asgram_s * asgram;
-asgram asgram_create(liquid_float_complex *_x, unsigned int _n);
+
+// create asgram object
+//  _nfft       :   FFT size
+asgram asgram_create(unsigned int _nfft);
+void asgram_destroy(asgram _q);
 void asgram_set_scale(asgram _q, float _scale);
 void asgram_set_offset(asgram _q, float _offset);
-void asgram_destroy(asgram _q);
-void asgram_execute(asgram _q,
-                    char * _ascii,
+
+// push samples into asgram object
+//  _q      :   asgram object
+//  _x      :   input buffer [size: _n x 1]
+//  _n      :   input buffer length
+void asgram_push(asgram                 _q,
+                 liquid_float_complex * _x,
+                 unsigned int           _n);
+
+// execute asgram
+//  _q          :   asgram object
+//  _ascii      :   ASCII character output buffer [size: _nfft x 1]
+//  _peakval    :   peak PSD value [dB]
+//  _peakfreq   :   normalized frequency of peak PSD value
+void asgram_execute(asgram  _q,
+                    char *  _ascii,
                     float * _peakval,
                     float * _peakfreq);
 
