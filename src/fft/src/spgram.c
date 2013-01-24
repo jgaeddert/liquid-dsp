@@ -75,18 +75,18 @@ spgram spgram_create(unsigned int _nfft,
     // create buffer
     q->buffer = windowcf_create(q->window_len);
 
-    // initialize tapering window, scaled by window length size
-    // TODO : scale by window magnitude, FFT size as well
+    // allocate memory for window and copy
     q->w = (float*) malloc((q->window_len)*sizeof(float));
-#if 0
-    unsigned int i;
-    for (i=0; i<q->window_len; i++)
-        q->w[i] = hamming(i, q->window_len) / (float)(q->window_len);
-#else
-    // TODO: normalize window
-    // for now simply copy window coefficients
     memmove(q->w, _window, _window_len*sizeof(float));
-#endif
+
+    // scale by window magnitude, FFT size
+    unsigned int i;
+    float g = 0.0f;
+    for (i=0; i<q->window_len; i++)
+        g += q->w[i] * q->w[i];
+    g = 1.0f / ( sqrtf(g / q->window_len) * sqrtf((float)(q->nfft)) );
+    for (i=0; i<q->window_len; i++)
+        q->w[i] *= g;
 
     // reset the spgram object
     spgram_reset(q);
