@@ -1476,6 +1476,7 @@ sandbox_programs =						\
 	sandbox/modem_demodulate_arb_gentab			\
 	sandbox/modem_demodulate_soft_test			\
 	sandbox/modem_demodulate_soft_gentab			\
+	sandbox/msresamp_crcf_test				\
 	sandbox/ofdmoqam_firpfbch_test				\
 	sandbox/ofdm_ber_test					\
 	sandbox/ofdmframe_papr_test				\
