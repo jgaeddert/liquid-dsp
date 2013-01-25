@@ -15,18 +15,18 @@
 
 int main() {
     // options
-    unsigned int h_len = 13;    // filter semi-length (filter delay)
-    float r=1/sqrtf(2.0f);      // resampling rate (output/input)
-    float bw=0.25f;             // resampling filter bandwidth
+    unsigned int m = 13;        // filter semi-length (filter delay)
+    float r=1.1f;               // resampling rate (output/input)
+    float bw=0.45f;             // resampling filter bandwidth
     float As=60.0f;             // resampling filter stop-band attenuation [dB]
-    unsigned int npfb=32;       // number of filters in bank (timing resolution)
-    unsigned int n=128;         // number of input samples
-    float fc=0.193f;            // complex sinusoid frequency
+    unsigned int npfb=128;      // number of filters in bank (timing resolution)
+    unsigned int n=400;         // number of input samples
+    float fc=0.400f;            // complex sinusoid frequency
 
     unsigned int i;
 
     // number of input samples (zero-padded)
-    unsigned int nx = n + h_len;
+    unsigned int nx = n + m;
 
     // output buffer with extra padding for good measure
     unsigned int y_len = (unsigned int) ceilf(1.1 * nx * r) + 4;
@@ -36,11 +36,11 @@ int main() {
     float complex y[y_len];
 
     // create resampler
-    resamp_crcf q = resamp_crcf_create(r,h_len,bw,As,npfb);
+    resamp_crcf q = resamp_crcf_create(r,m,bw,As,npfb);
 
     // generate input signal
     for (i=0; i<nx; i++)
-        x[i] = (i < n) ? cexpf(_Complex_I*fc*i) * hamming(i,nx) : 0.0f;
+        x[i] = (i < n) ? cexpf(_Complex_I*2*M_PI*fc*i) *kaiser(i,nx,10.0f,0.0f) : 0.0f;
 
     // resample
     unsigned int ny=0;
@@ -67,7 +67,7 @@ int main() {
     FILE*fid = fopen(OUTPUT_FILENAME,"w");
     fprintf(fid,"%% %s: auto-generated file\n",OUTPUT_FILENAME);
     fprintf(fid,"clear all;\nclose all;\n\n");
-    fprintf(fid,"h_len=%u;\n", h_len);
+    fprintf(fid,"m=%u;\n", m);
     fprintf(fid,"npfb=%u;\n",  npfb);
     fprintf(fid,"r=%12.8f;\n", r);
 
@@ -87,6 +87,9 @@ int main() {
     fprintf(fid,"%% estimate PSD, normalize by array length\n");
     fprintf(fid,"X=20*log10(abs(fftshift(fft(x,nfft)/length(x))));\n");
     fprintf(fid,"Y=20*log10(abs(fftshift(fft(y,nfft)/length(y))));\n");
+    fprintf(fid,"G=max(X);\n");
+    fprintf(fid,"X=X-G;\n");
+    fprintf(fid,"Y=Y-G;\n");
     fprintf(fid,"f=[0:(nfft-1)]/nfft-0.5;\n");
     fprintf(fid,"figure;\n");
     fprintf(fid,"if r>1, fx = f/r; fy = f;   %% interpolated\n");
@@ -96,24 +99,24 @@ int main() {
     fprintf(fid,"grid on;\n");
     fprintf(fid,"xlabel('normalized frequency');\n");
     fprintf(fid,"ylabel('PSD [dB]');\n");
-    fprintf(fid,"legend('original','resampled',1);");
-    fprintf(fid,"axis([-0.5 0.5 -80 10]);\n");
+    fprintf(fid,"legend('original','resampled','location','northeast');");
+    fprintf(fid,"axis([-0.5 0.5 -100 20]);\n");
 
     fprintf(fid,"\n\n");
     fprintf(fid,"%% plot time-domain result\n");
     fprintf(fid,"tx=[0:(length(x)-1)];\n");
-    fprintf(fid,"ty=[0:(length(y)-1)]/r-h_len;\n");
+    fprintf(fid,"ty=[0:(length(y)-1)]/r-m;\n");
     fprintf(fid,"figure;\n");
     fprintf(fid,"subplot(2,1,1);\n");
     fprintf(fid,"  plot(tx,real(x),'-s','Color',[0.5 0.5 0.5],'MarkerSize',1,...\n");
     fprintf(fid,"       ty,real(y),'-s','Color',[0.5 0 0],    'MarkerSize',1);\n");
-    fprintf(fid,"  legend('original','resampled',1);");
+    fprintf(fid,"  legend('original','resampled','location','northeast');");
     fprintf(fid,"  xlabel('time');\n");
     fprintf(fid,"  ylabel('real');\n");
     fprintf(fid,"subplot(2,1,2);\n");
     fprintf(fid,"  plot(tx,imag(x),'-s','Color',[0.5 0.5 0.5],'MarkerSize',1,...\n");
     fprintf(fid,"       ty,imag(y),'-s','Color',[0 0.5 0],    'MarkerSize',1);\n");
-    fprintf(fid,"  legend('original','resampled',1);");
+    fprintf(fid,"  legend('original','resampled','location','northeast');");
     fprintf(fid,"  xlabel('time');\n");
     fprintf(fid,"  ylabel('imag');\n");
 
