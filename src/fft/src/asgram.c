@@ -35,7 +35,8 @@ struct asgram_s {
     float complex * X;  // spectral periodogram output
     float * psd;        // power spectral density
 
-    char levelchar[6];
+    float levels[10];
+    char levelchar[10];
     unsigned int num_levels;
     float scale;    // dB per division
     float offset;   // dB offset (max)
@@ -63,28 +64,21 @@ asgram asgram_create(unsigned int _nfft)
     q->periodogram = spgram_create_kaiser(q->nfft, window_len, beta);
 
     // power spectral density levels
-    q->num_levels = 6;
-    q->levelchar[0] = 'M';
-    q->levelchar[1] = '#';
-    q->levelchar[2] = '+';
+    q->num_levels = 10;
+    q->levelchar[9] = '#';
+    q->levelchar[8] = 'M';
+    q->levelchar[7] = 'N';
+    q->levelchar[6] = '&';
+    q->levelchar[5] = '*';
+    q->levelchar[4] = '+';
     q->levelchar[3] = '-';
-    q->levelchar[4] = '.';
-    q->levelchar[5] = ' ';
+    q->levelchar[2] = ',';
+    q->levelchar[1] = '.';
+    q->levelchar[0] = ' ';
 
-    q->scale  = 10.0f;
-    q->offset = 20.0f;
+    asgram_set_scale(q, 0.0f, 10.0f);
 
     return q;
-}
-
-void asgram_set_scale(asgram _q, float _scale)
-{
-    _q->scale = _scale;
-}
-
-void asgram_set_offset(asgram _q, float _offset)
-{
-    _q->offset = _offset;
 }
 
 void asgram_destroy(asgram _q)
@@ -98,6 +92,28 @@ void asgram_destroy(asgram _q)
 
     // free main object memory
     free(_q);
+}
+
+void asgram_reset(asgram _q)
+{
+    spgram_reset(_q->periodogram);
+}
+
+void asgram_set_scale(asgram _q,
+                      float  _offset,
+                      float  _scale)
+{
+    if (_scale <= 0.0f) {
+        fprintf(stderr,"asgram_set_scale(), scale must be greater than zero\n");
+        exit(1);
+    }
+
+    _q->offset = _offset;
+    _q->scale  = _scale;
+
+    unsigned int i;
+    for (i=0; i<_q->num_levels; i++)
+        _q->levels[i] = _q->offset + i*_q->scale;
 }
 
 // push samples into asgram object
@@ -117,8 +133,8 @@ void asgram_push(asgram          _q,
 //  _ascii      :   character buffer [size: 1 x n]
 //  _peakval    :   value at peak (returned value)
 //  _peakfreq   :   frequency at peak (returned value)
-void asgram_execute(asgram _q,
-                    char * _ascii,
+void asgram_execute(asgram  _q,
+                    char *  _ascii,
                     float * _peakval,
                     float * _peakfreq)
 {
@@ -139,11 +155,19 @@ void asgram_execute(asgram _q,
         }
 
         // determine ascii level (which character to use)
+#if 0
         for (j=0; j<_q->num_levels-1; j++) {
             if ( _q->psd[i] > ( _q->offset - j*(_q->scale)) )
                 break;
         }
         _ascii[i] = _q->levelchar[j];
+#else
+        _ascii[i] = _q->levelchar[0];
+        for (j=0; j<_q->num_levels; j++) {
+            if ( _q->psd[i] > _q->levels[j] )
+                _ascii[i] = _q->levelchar[j];
+        }
+#endif
     }
 
     // append null character to end of string

@@ -847,8 +847,8 @@ typedef struct asgram_s * asgram;
 //  _nfft       :   FFT size
 asgram asgram_create(unsigned int _nfft);
 void asgram_destroy(asgram _q);
-void asgram_set_scale(asgram _q, float _scale);
-void asgram_set_offset(asgram _q, float _offset);
+void asgram_reset(asgram _q);
+void asgram_set_scale(asgram _q, float _offset, float _scale);
 
 // push samples into asgram object
 //  _q      :   asgram object
