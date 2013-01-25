@@ -17,6 +17,7 @@ int main() {
     // spectral periodogram options
     unsigned int nfft=256;              // spectral periodogram FFT size
     unsigned int num_samples = 2001;    // number of samples
+    float beta = 10.0f;                 // Kaiser-Bessel window parameter
 
     // allocate memory for data arrays
     float complex x[num_samples];       // input signal
@@ -28,7 +29,7 @@ int main() {
     // create spectral periodogram
     unsigned int window_size = nfft/2;  // spgram window size
     unsigned int delay       = nfft/8;  // samples between transforms
-    spgram q = spgram_create(nfft, window_size);
+    spgram q = spgram_create_kaiser(nfft, window_size, beta);
 
     unsigned int i;
 
