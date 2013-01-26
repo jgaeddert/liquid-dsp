@@ -27,19 +27,6 @@
 
 #define LIQUID_gradsearch_GAMMA_MIN 0.000001
 
-// default gradsearch properties
-static gradsearchprops_s gradsearchprops_default = {
-    1e-6f,  // delta
-    0.002f, // gamma
-    0.1f,   // alpha
-    0.99f   // mu
-};
-
-void gradsearchprops_init_default(gradsearchprops_s * _props)
-{
-    memmove(_props, &gradsearchprops_default, sizeof(gradsearchprops_s));
-}
-
 // gradient search algorithm (steepest descent) object
 struct gradsearch_s {
     float * v;                  // vector to optimize (externally allocated)
@@ -63,14 +50,12 @@ struct gradsearch_s {
 //   _v                 :   array of parameters to optimize
 //   _num_parameters    :   array length (number of parameters to optimize)
 //   _u                 :   utility function pointer
-//   _minmax            :   search direction (0:minimize, 1:maximize)
-//   _props             :   properties (see above)
+//   _direction         :   search direction (e.g. LIQUID_OPTIM_MAXIMIZE)
 gradsearch gradsearch_create(void *              _userdata,
                              float *             _v,
                              unsigned int        _num_parameters,
                              utility_function    _utility,
-                             int                 _direction,
-                             gradsearchprops_s * _props)
+                             int                 _direction)
 {
     gradsearch q = (gradsearch) malloc( sizeof(struct gradsearch_s) );
 

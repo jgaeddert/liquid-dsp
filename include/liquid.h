@@ -3803,30 +3803,17 @@ float liquid_spiral(void *       _userdata,
 
 typedef struct gradsearch_s * gradsearch;
 
-// gradient search properties
-typedef struct {
-    float delta;    // gradient approximation step size (default: 1e-6f)
-    float gamma;    // vector step size (default: 0.002f)
-    float alpha;    // momentum parameter (default: 0.1f)
-    float mu;       // decremental gamma parameter (default: 0.99f)
-} gradsearchprops_s;
-
-// initialize default properties
-void gradsearchprops_init_default(gradsearchprops_s * _props);
-
 // Create a gradient search object
 //   _userdata          :   user data object pointer
 //   _v                 :   array of parameters to optimize
 //   _num_parameters    :   array length (number of parameters to optimize)
 //   _u                 :   utility function pointer
-//   _minmax            :   search direction (0:minimize, 1:maximize)
-//   _props             :   properties (see above)
-gradsearch gradsearch_create(void *              _userdata,
-                             float *             _v,
-                             unsigned int        _num_parameters,
-                             utility_function    _utility,
-                             int                 _direction,
-                             gradsearchprops_s * _props);
+//   _direction         :   search direction (e.g. LIQUID_OPTIM_MAXIMIZE)
+gradsearch gradsearch_create(void *           _userdata,
+                             float *          _v,
+                             unsigned int     _num_parameters,
+                             utility_function _utility,
+                             int              _direction);
 
 // Destroy a gradsearch object
 void gradsearch_destroy(gradsearch _q);
@@ -3851,12 +3838,12 @@ typedef struct qnsearch_s * qnsearch;
 //   _v                 :   array of parameters to optimize
 //   _num_parameters    :   array length
 //   _get_utility       :   utility function pointer
-//   _minmax            :   direction (0:minimize, 1:maximize)
-qnsearch qnsearch_create(void * _userdata,
-                         float * _v,
-                         unsigned int _num_parameters,
+//   _direction         :   search direction (e.g. LIQUID_OPTIM_MAXIMIZE)
+qnsearch qnsearch_create(void *           _userdata,
+                         float *          _v,
+                         unsigned int     _num_parameters,
                          utility_function _u,
-                         int _minmax);
+                         int              _direction);
 
 // Destroy a qnsearch object
 void qnsearch_destroy(qnsearch _g);

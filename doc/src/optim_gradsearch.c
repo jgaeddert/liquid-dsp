@@ -36,7 +36,7 @@ int main() {
 
     // create gradsearch object
     gradsearch gs = gradsearch_create(
-        NULL, optimum_vect, 2, func, LIQUID_OPTIM_MINIMIZE, NULL);
+        NULL, optimum_vect, 2, func, LIQUID_OPTIM_MINIMIZE);
 
     // execute search
     //optimum_utility = gradsearch_run(gs, num_iterations, -1e-6f);

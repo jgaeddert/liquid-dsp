@@ -49,10 +49,6 @@ int main(int argc, char*argv[])
         }
     }
 
-    //utility_function func = liquid_invgauss;
-    //utility_function func = liquid_multimodal;
-    //utility_function func = liquid_spiral;
-
     float optimum_vect[num_parameters];
     unsigned int i;
     for (i=0; i<num_parameters; i++)
@@ -71,8 +67,7 @@ int main(int argc, char*argv[])
                                       optimum_vect,
                                       num_parameters,
                                       func,
-                                      LIQUID_OPTIM_MINIMIZE,
-                                      NULL);
+                                      LIQUID_OPTIM_MINIMIZE);
 
     // execute search
     //optimum_utility = gradsearch_run(gs, num_iterations, -1e-6f);
