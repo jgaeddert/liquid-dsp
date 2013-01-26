@@ -52,7 +52,7 @@ int main(int argc, char*argv[])
     float optimum_vect[num_parameters];
     unsigned int i;
     for (i=0; i<num_parameters; i++)
-        optimum_vect[i] = randnf();
+        optimum_vect[i] = 0.0f;
 
     float optimum_utility;
 

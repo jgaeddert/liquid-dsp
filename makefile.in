@@ -858,7 +858,8 @@ optim_objects :=						\
 $(optim_objects) : %.o : %.c $(headers)
 
 # autotests
-optim_autotests :=
+optim_autotests :=						\
+	src/optim/tests/gradsearch_autotest.c			\
 
 # benchmarks
 optim_benchmarks :=
