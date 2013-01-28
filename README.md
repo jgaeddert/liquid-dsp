@@ -26,17 +26,18 @@ libraries to run; however liquid will take advantage of other packages
 
 There are two primary ways of obtaining the source code:
 
-1. Download the [tarball](http://ganymede.ece.vt.edu/downloads/liquid-dsp-1.2.0.tar.gz) (2.6 MB),
-   validate the checksum, and unpack 
+1. Clone the entire [repository](http://github.com/jgaeddert/liquid-dsp)
+   (recommended)
+        
+        $ git clone git://github.com/jgaeddert/liquid-dsp.git
+
+2. or download the [tarball](http://ganymede.ece.vt.edu/downloads/liquid-dsp-1.2.0.tar.gz)
+   (2.6 MB), validate the checksum, and unpack 
 
         $ wget http://ganymede.ece.vt.edu/downloads/liquid-dsp-1.2.0.tar.gz
         $ wget http://ganymede.ece.vt.edu/downloads/liquid-dsp.md5
         $ md5sum --check liquid-dsp.md5
         $ tar -xf liquid-dsp-1.2.0.tar.gz
-
-2. or clone the entire [repository](http://github.com/jgaeddert/liquid-dsp)
-        
-        $ git clone git://github.com/jgaeddert/liquid-dsp.git
 
 ### Installation ###
 
@@ -44,6 +45,7 @@ Once you have obtained a copy of the source code, you can now build the
 DSP library (NOTE: if you chose to clone the repository, you will need
 to also run the additional `./bootstrap.sh` script before configuring):
 
+    $ ./bootstrap.sh     # <- only if you cloned the Git repo
     $ ./configure
     $ make
     $ sudo make install
