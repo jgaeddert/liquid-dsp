@@ -269,17 +269,18 @@ float gradsearch_linesearch(utility_function _utility,
         
         // compute utility for line search step
         float uls = _utility(_userdata, x_prime, _n);
+        //printf("  linesearch %6u : alpha=%12.6f, u0=%12.8f, uls=%12.8f\n", num_iterations, alpha, u0, uls);
 
         // check exit criteria
-        if ( num_iterations >= 20 ) {
-            // maximum number of iterations met: stop line search
-            continue_running = 0;
-        } else if ( (_direction == LIQUID_OPTIM_MINIMIZE && uls > u0) ||
-                    (_direction == LIQUID_OPTIM_MAXIMIZE && uls < u0) )
+        if ( (_direction == LIQUID_OPTIM_MINIMIZE && uls > u0) ||
+             (_direction == LIQUID_OPTIM_MAXIMIZE && uls < u0) )
         {
             // compared this utility to previous; went too far.
             // backtrack step size and stop line search
             alpha *= 0.5f;
+            continue_running = 0;
+        } else if ( num_iterations >= 20 ) {
+            // maximum number of iterations met: stop line search
             continue_running = 0;
         } else {
             // save new best estimate, increase step size, and continue
