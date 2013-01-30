@@ -1,7 +1,5 @@
 /*
- * Copyright (c) 2007, 2008, 2009, 2010 Joseph Gaeddert
- * Copyright (c) 2007, 2008, 2009, 2010 Virginia Polytechnic
- *                                      Institute & State University
+ * Copyright (c) 2007, 2008, 2009, 2010, 2013 Joseph Gaeddert
  *
  * This file is part of liquid.
  *
@@ -19,6 +17,7 @@
  * along with liquid.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include <stdlib.h>
 #include <complex.h>
 #include "autotest/autotest.h"
 #include "liquid.h"
@@ -107,5 +106,57 @@ void autotest_nco_mixing() {
         // step nco
         nco_crcf_step(p);
     }
+}
+
+//
+// test nco block mixing
+//
+void autotest_nco_block_mixing()
+{
+    // frequency, phase
+    float f = 0.1f;
+    float phi = M_PI;
+
+    // error tolerance (high for NCO)
+    float tol = 0.05f;
+
+    unsigned int i;
+
+    // number of samples
+    unsigned int num_samples = 1024;
+
+    // store samples
+    float complex * x = (float complex*)malloc(num_samples*sizeof(float complex));
+    float complex * y = (float complex*)malloc(num_samples*sizeof(float complex));
+
+    // generate complex sin/cos
+    for (i=0; i<num_samples; i++)
+        x[i] = cexpf(_Complex_I*(f*i + phi));
+
+    // initialize nco object
+    nco_crcf p = nco_crcf_create(LIQUID_NCO);
+    nco_crcf_set_frequency(p, f);
+    nco_crcf_set_phase(p, phi);
+
+    // mix signal back to zero phase (in pieces)
+    unsigned int num_remaining = num_samples;
+    i = 0;
+    while (num_remaining > 0) {
+        unsigned int n = 7 < num_remaining ? 7 : num_remaining;
+        nco_crcf_mix_block_down(p, &x[i], &y[i], n);
+
+        i += n;
+        num_remaining -= n;
+    }
+
+    // assert mixer output is correct
+    for (i=0; i<num_samples; i++) {
+        CONTEND_DELTA( crealf(y[i]), 1.0f, tol );
+        CONTEND_DELTA( cimagf(y[i]), 0.0f, tol );
+    }
+
+    // free those buffers
+    free(x);
+    free(y);
 }
 
