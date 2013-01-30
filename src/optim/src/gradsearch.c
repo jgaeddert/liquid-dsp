@@ -23,8 +23,6 @@
 #include <math.h>
 #include "liquid.internal.h"
 
-#define LIQUID_gradsearch_GAMMA_MIN 0.000001
-
 // gradient search algorithm (steepest descent) object
 struct gradsearch_s {
     float * v;                  // vector to optimize (externally allocated)
@@ -123,8 +121,10 @@ float gradsearch_step(gradsearch _q)
             _q->delta *= 10.0f;
     }
     
-    if (i == n)
+    if (i == n) {
         fprintf(stderr,"warning: gradsearch_step(), function ill-conditioned\n");
+        return _q->utility(_q->userdata, _q->v, _q->num_parameters);
+    }
 
     // run line search
     _q->alpha = gradsearch_linesearch(_q->utility,
@@ -133,11 +133,12 @@ float gradsearch_step(gradsearch _q)
                                       _q->num_parameters,
                                       _q->v,
                                       _q->p,
-                                      _q->delta);
+                                      _q->delta*10.0f);
 
     // step in the negative direction of the gradient
+    float dir = _q->direction == LIQUID_OPTIM_MINIMIZE ? 1.0f : -1.0f;
     for (i=0; i<_q->num_parameters; i++)
-        _q->v[i] = _q->v[i] - _q->alpha*_q->p[i];
+        _q->v[i] = _q->v[i] - dir*_q->alpha*_q->p[i];
 
     // evaluate utility at current position
     _q->u = _q->utility(_q->userdata, _q->v, _q->num_parameters);
