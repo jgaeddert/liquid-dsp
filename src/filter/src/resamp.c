@@ -26,8 +26,6 @@
 #include <string.h>
 #include <math.h>
 
-#define DEBUG_RESAMP_PRINT  0
-
 // defined:
 //  TO          output data type
 //  TC          coefficient data type
@@ -35,17 +33,20 @@
 //  RESAMP()    name-mangling macro
 //  FIRPFB()    firpfb macro
 
+// enable run-time debug printing of resampler
+#define DEBUG_RESAMP_PRINT  0
+
 // use fixed-point phase vs. floating-point phase
 #define RESAMP_USE_FIXED_POINT_PHASE    1
 
 struct RESAMP(_s) {
     // filter design parameters
-    unsigned int h_len; // filter length
+    unsigned int m;     // filter semi-length, h_len = 2*m + 1
     float As;           // filter stop-band attenuation
     float fc;           // filter cutoff frequency
 
-    //
-    float r;            // resampling rate (ouput/input)
+    // resampling properties/states
+    float rate;         // resampling rate (ouput/input)
     int b;              // filterbank index
     float del;          // fractional delay step
 
@@ -70,23 +71,23 @@ struct RESAMP(_s) {
 };
 
 // create arbitrary resampler
-//  _r      :   resampling rate
-//  _h_len  :   prototype filter length, TODO: make this semi-length
-//  _fc     :   prototype filter cutoff frequency, fc in (-0.5, 0.5)
+//  _rate   :   resampling rate
+//  _m      :   prototype filter semi-length
+//  _fc     :   prototype filter cutoff frequency, fc in (0, 0.5)
 //  _As     :   prototype filter stop-band attenuation [dB] (e.g. 60)
 //  _npfb   :   number of filters in polyphase filterbank
-RESAMP() RESAMP(_create)(float        _r,
-                         unsigned int _h_len,
+RESAMP() RESAMP(_create)(float        _rate,
+                         unsigned int _m,
                          float        _fc,
                          float        _As,
                          unsigned int _npfb)
 {
     // validate input
-    if (_r <= 0) {
+    if (_rate <= 0) {
         fprintf(stderr,"error: resamp_%s_create(), resampling rate must be greater than zero\n", EXTENSION_FULL);
         exit(1);
-    } else if (_h_len == 0) {
-        fprintf(stderr,"error: resamp_%s_create(), filter length must be greater than zero\n", EXTENSION_FULL);
+    } else if (_m == 0) {
+        fprintf(stderr,"error: resamp_%s_create(), filter semi-length must be greater than zero\n", EXTENSION_FULL);
         exit(1);
     } else if (_npfb == 0) {
         fprintf(stderr,"error: resamp_%s_create(), number of filter banks must be greater than zero\n", EXTENSION_FULL);
@@ -103,14 +104,14 @@ RESAMP() RESAMP(_create)(float        _r,
     RESAMP() q = (RESAMP()) malloc(sizeof(struct RESAMP(_s)));
 
     // set properties
-    q->r     = _r;          // resampling rate
-    q->h_len = _h_len;      // prototype filter length
+    q->rate  = _rate;       // resampling rate
+    q->m     = _m;          // prototype filter semi-length
     q->fc    = _fc;         // prototype filter cutoff frequency
     q->As    = _As;         // prototype filter stop-band attenuation
 
     // set derived values
     q->b   = 0;             // initial filterbank index
-    q->del = 1.0f / q->r;   // timing phase step size (reciprocal of rate)
+    q->del = 1.0f / q->rate;// timing phase step size (reciprocal of rate)
 
 #if RESAMP_USE_FIXED_POINT_PHASE
     // using fixed-point phase, increase number of filters in bank
@@ -129,7 +130,7 @@ RESAMP() RESAMP(_create)(float        _r,
 #endif
 
     // design filter
-    unsigned int n = 2*_h_len*q->npfb+1;
+    unsigned int n = 2*q->m*q->npfb+1;
     float hf[n];
     TC h[n];
     liquid_firdes_kaiser(n,q->fc/((float)(q->npfb)),q->As,0.0f,hf);
@@ -163,7 +164,7 @@ void RESAMP(_destroy)(RESAMP() _q)
 // print resampler object
 void RESAMP(_print)(RESAMP() _q)
 {
-    printf("resampler [rate: %f]\n", _q->r);
+    printf("resampler [rate: %f]\n", _q->rate);
     FIRPFB(_print)(_q->f);
 }
 
@@ -187,8 +188,8 @@ void RESAMP(_reset)(RESAMP() _q)
 void RESAMP(_setrate)(RESAMP() _q, float _rate)
 {
     // TODO : validate rate, validate this method
-    _q->r = _rate;
-    _q->del = 1.0f / _q->r;
+    _q->rate = _rate;
+    _q->del = 1.0f / _q->rate;
 
 #if RESAMP_USE_FIXED_POINT_PHASE
     _q->d_theta = (unsigned int)( _q->max_phase * _q->del );
@@ -217,7 +218,7 @@ void RESAMP(_execute)(RESAMP()       _q,
 
 #if DEBUG_RESAMP_PRINT
 #  if RESAMP_USE_FIXED_POINT_PHASE
-        printf("  [%2u] : theta = %6u, b : %6u\n", n, _q->theta, _q->b);
+        printf("  [%2u] : theta = %8u, b : %6u\n", n, _q->theta, _q->b);
 #  else
         printf("  [%2u] : tau : %12.8f, b : %4u (%12.8f)\n", n, _q->tau, _q->b, _q->bf);
 #  endif

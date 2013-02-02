@@ -37,7 +37,7 @@ void autotest_resamp_crcf()
     unsigned int i;
 
     // number of input samples (zero-padded)
-    unsigned int nx = n + m;
+    unsigned int nx = n + 2*m + 1;
 
     // output buffer with extra padding for good measure
     unsigned int y_len = (unsigned int) ceilf(1.1 * nx * r) + 4;
