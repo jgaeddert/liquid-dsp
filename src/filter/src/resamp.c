@@ -34,7 +34,7 @@
 //  FIRPFB()    firpfb macro
 
 // enable run-time debug printing of resampler
-#define DEBUG_RESAMP_PRINT  0
+#define DEBUG_RESAMP_PRINT              0
 
 // use fixed-point phase vs. floating-point phase
 #define RESAMP_USE_FIXED_POINT_PHASE    1
@@ -112,6 +112,8 @@ RESAMP() RESAMP(_create)(float        _rate,
     // set derived values
     q->b   = 0;             // initial filterbank index
     q->del = 1.0f / q->rate;// timing phase step size (reciprocal of rate)
+    printf("rate = %12.8f\n", q->rate);
+    printf("del  = %12.8f\n", q->del);
 
 #if RESAMP_USE_FIXED_POINT_PHASE
     // using fixed-point phase, increase number of filters in bank
@@ -205,45 +207,55 @@ void RESAMP(_execute)(RESAMP()       _q,
                       TI             _x,
                       TO *           _y,
                       unsigned int * _num_written)
+#if RESAMP_USE_FIXED_POINT_PHASE
 {
+    // push input sample into filterbank
     FIRPFB(_push)(_q->f, _x);
     unsigned int n=0;
     
     //while (_q->tau < 1.0f) {
-#if RESAMP_USE_FIXED_POINT_PHASE
     while (_q->theta < _q->max_phase) {
-#else
-    while (_q->b < _q->npfb) {
-#endif
 
 #if DEBUG_RESAMP_PRINT
-#  if RESAMP_USE_FIXED_POINT_PHASE
         printf("  [%2u] : theta = %8u, b : %6u\n", n, _q->theta, _q->b);
-#  else
-        printf("  [%2u] : tau : %12.8f, b : %4u (%12.8f)\n", n, _q->tau, _q->b, _q->bf);
-#  endif
 #endif
         FIRPFB(_execute)(_q->f, _q->b, &_y[n]);
 
-#if RESAMP_USE_FIXED_POINT_PHASE
         _q->theta += _q->d_theta;
         _q->b = _q->theta >> _q->num_shift_bits;
-#else
-        _q->tau += _q->del;
-        _q->bf = _q->tau * (float)(_q->npfb);
-        _q->b  = (int)roundf(_q->bf);
-#endif
         n++;
     }
 
-#if RESAMP_USE_FIXED_POINT_PHASE
     _q->theta -= _q->max_phase;
     _q->b = _q->theta >> _q->num_shift_bits;
+
+    *_num_written = n;
+}
 #else
+{
+    // push input sample into filterbank
+    FIRPFB(_push)(_q->f, _x);
+    unsigned int n=0;
+    
+    //while (_q->tau < 1.0f) {
+    while (_q->b < _q->npfb) {
+
+#if DEBUG_RESAMP_PRINT
+        printf("  [%2u] : tau : %12.8f, b : %4u (%12.8f)\n", n+1, _q->tau, _q->b, _q->bf);
+#endif
+        FIRPFB(_execute)(_q->f, _q->b, &_y[n]);
+
+        _q->tau += _q->del;
+        _q->bf = _q->tau * (float)(_q->npfb);
+        _q->b  = (int)roundf(_q->bf);
+        n++;
+    }
+
     _q->tau -= 1.0f;
     _q->bf  -= (float)(_q->npfb);
     _q->b   -= _q->npfb;
-#endif
+
     *_num_written = n;
 }
+#endif
 
