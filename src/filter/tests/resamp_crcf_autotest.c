@@ -37,7 +37,7 @@ void autotest_resamp_crcf()
     unsigned int i;
 
     // number of input samples (zero-padded)
-    unsigned int nx = n + 2*m + 1;
+    unsigned int nx = n + m;
 
     // output buffer with extra padding for good measure
     unsigned int y_len = (unsigned int) ceilf(1.1 * nx * r) + 4;
@@ -53,7 +53,7 @@ void autotest_resamp_crcf()
     float wsum = 0.0f;
     for (i=0; i<nx; i++) {
         // compute window
-        float w = i < n ? kaiser(i, nx, 10.0f, 0.0f) : 0.0f;
+        float w = i < n ? kaiser(i, n, 10.0f, 0.0f) : 0.0f;
 
         // apply window to complex sinusoid
         x[i] = cexpf(_Complex_I*2*M_PI*fx*i) * w;
