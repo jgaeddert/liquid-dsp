@@ -6,22 +6,76 @@
 //
 
 #include <stdio.h>
+#include <stdlib.h>
 #include <complex.h>
 #include <math.h>
+#include <getopt.h>
 
 #include "liquid.h"
 
 #define OUTPUT_FILENAME "resamp_crcf_example.m"
 
-int main() {
+// print usage/help message
+void usage()
+{
+    printf("Usage: %s [OPTION]\n", __FILE__);
+    printf("  h     : print help\n");
+    printf("  r     : resampling rate (output/input),    default: 1.1\n");
+    printf("  m     : filter semi-length (delay),        default: 13\n");
+    printf("  b     : filter bandwidth, 0 < b < 0.5,     default: 0.4\n");
+    printf("  s     : filter stop-band attenuation [dB], default: 60\n");
+    printf("  p     : filter bank size,                  default: 64\n");
+    printf("  n     : number of input samples,           default: 400\n");
+    printf("  f     : input signal frequency,            default: 0.044\n");
+}
+
+int main(int argc, char*argv[])
+{
     // options
-    unsigned int m = 13;        // filter semi-length (filter delay)
-    float r=1.1f;               // resampling rate (output/input)
-    float bw=0.45f;             // resampling filter bandwidth
-    float As=60.0f;             // resampling filter stop-band attenuation [dB]
-    unsigned int npfb=128;      // number of filters in bank (timing resolution)
-    unsigned int n=400;         // number of input samples
-    float fc=0.400f;            // complex sinusoid frequency
+    float r           = 1.1f;   // resampling rate (output/input)
+    unsigned int m    = 13;     // resampling filter semi-length (filter delay)
+    float As          = 60.0f;  // resampling filter stop-band attenuation [dB]
+    float bw          = 0.45f;  // resampling filter bandwidth
+    unsigned int npfb = 64;     // number of filters in bank (timing resolution)
+    unsigned int n    = 400;    // number of input samples
+    float fc          = 0.044f; // complex sinusoid frequency
+
+    int dopt;
+    while ((dopt = getopt(argc,argv,"hr:m:b:s:p:n:f:")) != EOF) {
+        switch (dopt) {
+        case 'h':   usage();            return 0;
+        case 'r':   r    = atof(optarg); break;
+        case 'm':   m    = atoi(optarg); break;
+        case 'b':   bw   = atof(optarg); break;
+        case 's':   As   = atof(optarg); break;
+        case 'p':   npfb = atoi(optarg); break;
+        case 'n':   n    = atoi(optarg); break;
+        case 'f':   fc   = atof(optarg); break;
+        default:
+            exit(1);
+        }
+    }
+
+    // validate input
+    if (r <= 0.0f) {
+        fprintf(stderr,"error: %s, resampling rate must be greater than zero\n", argv[0]);
+        exit(1);
+    } else if (m == 0) {
+        fprintf(stderr,"error: %s, filter semi-length must be greater than zero\n", argv[0]);
+        exit(1);
+    } else if (bw == 0.0f || bw >= 0.5f) {
+        fprintf(stderr,"error: %s, filter bandwidth must be in (0,0.5)\n", argv[0]);
+        exit(1);
+    } else if (As < 0.0f) {
+        fprintf(stderr,"error: %s, filter stop-band attenuation must be greater than zero\n", argv[0]);
+        exit(1);
+    } else if (npfb == 0) {
+        fprintf(stderr,"error: %s, filter bank size must be greater than zero\n", argv[0]);
+        exit(1);
+    } else if (n == 0) {
+        fprintf(stderr,"error: %s, number of input samples must be greater than zero\n", argv[0]);
+        exit(1);
+    }
 
     unsigned int i;
 
@@ -64,9 +118,10 @@ int main() {
     // 
     // export results
     //
-    FILE*fid = fopen(OUTPUT_FILENAME,"w");
+    FILE * fid = fopen(OUTPUT_FILENAME,"w");
     fprintf(fid,"%% %s: auto-generated file\n",OUTPUT_FILENAME);
-    fprintf(fid,"clear all;\nclose all;\n\n");
+    fprintf(fid,"clear all;\n");
+    fprintf(fid,"close all;\n");
     fprintf(fid,"m=%u;\n", m);
     fprintf(fid,"npfb=%u;\n",  npfb);
     fprintf(fid,"r=%12.8f;\n", r);
