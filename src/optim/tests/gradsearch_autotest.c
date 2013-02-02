@@ -109,7 +109,7 @@ float utility_max_autotest(void *       _userdata,
     return expf(-t);
 }
 
-void xautotest_gradsearch_maxutility()
+void autotest_gradsearch_maxutility()
 {
     float tol = 1e-3f;                  // error tolerance
     unsigned int num_parameters = 6;    // dimensionality of search (minimum 2)
@@ -128,10 +128,6 @@ void xautotest_gradsearch_maxutility()
                                       utility_max_autotest,
                                       LIQUID_OPTIM_MAXIMIZE);
 
-#if 0
-    // execute search
-    float u_opt = gradsearch_execute(gs, num_iterations, -1e-6f);
-#else
     // execute search one iteration at a time
     unsigned int d=1;
     for (i=0; i<num_iterations; i++) {
@@ -147,7 +143,6 @@ void xautotest_gradsearch_maxutility()
             }
         }
     }
-#endif
 
     // destroy gradient descent search object
     gradsearch_destroy(gs);
@@ -156,7 +151,7 @@ void xautotest_gradsearch_maxutility()
     for (i=0; i<num_parameters; i++)
         CONTEND_DELTA(v_opt[i], 1.0f, tol);
 
-    // test value of utility (should be nearly 0)
-    CONTEND_DELTA( utility_max_autotest(NULL, v_opt, num_parameters), 0.0f, tol );
+    // test value of utility (should be nearly 1)
+    CONTEND_DELTA( utility_max_autotest(NULL, v_opt, num_parameters), 1.0f, tol );
 }
 
