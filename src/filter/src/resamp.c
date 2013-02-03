@@ -36,6 +36,9 @@
 // enable run-time debug printing of resampler
 #define DEBUG_RESAMP_PRINT              0
 
+// internal: update timing
+void RESAMP(_update_timing_state)(RESAMP() _q);
+
 struct RESAMP(_s) {
     // filter design parameters
     unsigned int m;     // filter semi-length, h_len = 2*m + 1
@@ -44,23 +47,24 @@ struct RESAMP(_s) {
 
     // resampling properties/states
     float rate;         // resampling rate (ouput/input)
-    int b;              // filterbank index
     float del;          // fractional delay step
 
     // floating-point phase
-    float tau;      // accumulated timing phase (0 <= tau <= 1)
-    float bf;       // soft filterbank index
+    float tau;          // accumulated timing phase, 0 <= tau < 1
+    float bf;           // soft filterbank index, bf = tau*npfb = b + mu
+    int b;              // base filterbank index, 0 <= b < npfb
+    float mu;           // fractional filterbank interpolation value, 0 <= mu < 1
+    TO y0;              // filterbank output at index b
+    TO y1;              // filterbank output at index b+1
 
     // polyphase filterbank properties/object
     unsigned int npfb;  // number of filters in the bank
-    FIRPFB() f;         // actual filterbank object
+    FIRPFB() f;         // filterbank object (interpolator)
 
-    int state;
-    unsigned int b0;
-    unsigned int b1;
-    TO y0;
-    TO y1;
-    float mu;
+    enum {
+        STATE_BOUNDARY, // boundary between input samples
+        STATE_INTERP,   // regular interpolation
+    } state;
 };
 
 // create arbitrary resampler
@@ -96,24 +100,15 @@ RESAMP() RESAMP(_create)(float        _rate,
     // allocate memory for resampler
     RESAMP() q = (RESAMP()) malloc(sizeof(struct RESAMP(_s)));
 
+    // set rate using formal method (specifies output stride
+    // value 'del')
+    RESAMP(_setrate)(q, _rate);
+
     // set properties
-    q->rate  = _rate;       // resampling rate
-    q->m     = _m;          // prototype filter semi-length
-    q->fc    = _fc;         // prototype filter cutoff frequency
-    q->As    = _As;         // prototype filter stop-band attenuation
-
-    // set derived values
-    q->b   = 0;             // initial filterbank index
-    q->del = 1.0f / q->rate;// timing phase step size (reciprocal of rate)
-#if DEBUG_RESAMP_PRINT
-    printf("rate = %12.8f\n", q->rate);
-    printf("del  = %12.8f\n", q->del);
-#endif
-
-    // set other derived values
-    q->npfb = _npfb;        // number of filters in bank
-    q->tau  = 0.0f;         // accumulated timing phase
-    q->bf   = 0.0f;         // floating-point filterbank index
+    q->m    = _m;       // prototype filter semi-length
+    q->fc   = _fc;      // prototype filter cutoff frequency
+    q->As   = _As;      // prototype filter stop-band attenuation
+    q->npfb = _npfb;    // number of filters in bank
 
     // design filter
     unsigned int n = 2*q->m*q->npfb+1;
@@ -162,22 +157,29 @@ void RESAMP(_reset)(RESAMP() _q)
     FIRPFB(_clear)(_q->f);
 
     // reset states
-    _q->b   = 0;
-    _q->tau = 0.0f;
-    _q->bf  = 0.0f;
-    _q->state = 2;
-    _q->y0    = 0;
-    _q->y1    = 0;
-    _q->b0    = 0;
-    _q->b1    = 1;
-    _q->mu    = 0.0f;
+    _q->state = STATE_INTERP;   // input/output sample state
+    _q->tau   = 0.0f;           // accumulated timing phase
+    _q->bf    = 0.0f;           // soft-valued filterbank index
+    _q->b     = 0;              // base filterbank index
+    _q->mu    = 0.0f;           // fractional filterbank interpolation value
+
+    _q->y0    = 0;              // filterbank output at index b
+    _q->y1    = 0;              // filterbank output at index b+1
 }
 
-// set rate
-void RESAMP(_setrate)(RESAMP() _q, float _rate)
+// set resampling rate
+void RESAMP(_setrate)(RESAMP() _q,
+                      float    _rate)
 {
-    // TODO : validate rate, validate this method
+    if (_rate <= 0) {
+        fprintf(stderr,"error: resamp_%s_setrate(), resampling rate must be greater than zero\n", EXTENSION_FULL);
+        exit(1);
+    }
+
+    // set internal rate
     _q->rate = _rate;
+
+    // set output stride
     _q->del = 1.0f / _q->rate;
 }
 
@@ -202,65 +204,43 @@ void RESAMP(_execute)(RESAMP()       _q,
         printf("  [%2u] : s=%1u, tau=%12.8f, b : %12.8f (%4d + %8.6f)\n", n+1, _q->state, _q->tau, _q->bf, _q->b, _q->mu);
 #endif
         switch (_q->state) {
-        case 1:
-            //printf("  state 1\n");
+        case STATE_BOUNDARY:
             // compute filterbank output
             FIRPFB(_execute)(_q->f, 0, &_q->y1);
 
             // interpolate
-            _y[n] = (1.0f - _q->mu)*_q->y0 + _q->mu*_q->y1;
+            _y[n++] = (1.0f - _q->mu)*_q->y0 + _q->mu*_q->y1;
         
-            // update timing
-            _q->tau += _q->del;
-            _q->bf  = _q->tau * (float)(_q->npfb);
-            _q->b   = (int)floorf(_q->bf);
-            _q->mu  = _q->bf - (float)(_q->b);
-            n++;
+            // update timing state
+            RESAMP(_update_timing_state)(_q);
 
-            // update state
-            _q->b0 = _q->b;
-            _q->b1 = _q->b + 1;
-            _q->state = (_q->b1 == _q->npfb) ? 3 : 2;
-            
+            _q->state = STATE_INTERP;
             break;
 
-        case 2:
-            //printf("  state 2: b0 = %3u, b1=%3u, mu=%8.6f\n", _q->b0, _q->b1, _q->mu);
-            // compute both outputs
-            FIRPFB(_execute)(_q->f, _q->b0, &_q->y0);
-            FIRPFB(_execute)(_q->f, _q->b1, &_q->y1);
+        case STATE_INTERP:
+            // compute output at base index
+            FIRPFB(_execute)(_q->f, _q->b, &_q->y0);
 
-            // interpolate...
-            _y[n] = (1.0f - _q->mu)*_q->y0 + _q->mu*_q->y1;
-
-            // update timing
-            _q->tau += _q->del;
-            _q->bf  = _q->tau * (float)(_q->npfb);
-            _q->b   = (int)floorf(_q->bf);
-            _q->mu  = _q->bf - (float)(_q->b);
-            n++;
-
-            // update state
-            _q->b0 = _q->b;
-            _q->b1 = _q->b + 1;
-            _q->state = (_q->b1 == _q->npfb) ? 3 : 2;
+            // check to see if base index is last filter in the bank, in
+            // which case the resampler needs an additional input sample
+            // to finish the linear interpolation process
+            if (_q->b == _q->npfb-1) {
+                // last filter: need additional input sample
+                _q->state = STATE_BOUNDARY;
             
-            break;
+                // set index to indicate new sample is needed
+                _q->b = _q->npfb;
+            } else {
+                // do not need additional input sample; compute
+                // output at incremented base index
+                FIRPFB(_execute)(_q->f, _q->b+1, &_q->y1);
 
-        case 3:
-            //printf("  state 3\n");
+                // perform linear interpolation between filterbank outputs
+                _y[n++] = (1.0f - _q->mu)*_q->y0 + _q->mu*_q->y1;
 
-            // compute filterbank output
-            FIRPFB(_execute)(_q->f, _q->b0, &_q->y0);
-
-            // set filterbank to maximum to require new input sample
-            _q->b  = _q->npfb;
-            _q->b0 = _q->npfb;
-            _q->b1 = 0;
-
-            // set state
-            _q->state = 1;
-
+                // update timing state
+                RESAMP(_update_timing_state)(_q);
+            }
             break;
         default:
             fprintf(stderr,"error: resamp_%s_execute(), invalid/unknown state\n", EXTENSION_FULL);
@@ -268,13 +248,31 @@ void RESAMP(_execute)(RESAMP()       _q,
         }
     }
 
+    // decrement timing phase by one sample
     _q->tau -= 1.0f;
     _q->bf  -= (float)(_q->npfb);
     _q->b   -= _q->npfb;
-    
-    _q->b0  -= _q->npfb;
-    _q->b1  -= _q->npfb;
 
+    // specify number of samples written
     *_num_written = n;
+}
+
+//
+// internal methods
+// 
+
+// update timing state; increment output timing stride and
+// quantize filterbank indices
+void RESAMP(_update_timing_state)(RESAMP() _q)
+{
+    // update high-resolution timing phase
+    _q->tau += _q->del;
+
+    // convert to high-resolution filterbank index 
+    _q->bf  = _q->tau * (float)(_q->npfb);
+
+    // split into integer filterbank index and fractional interpolation
+    _q->b   = (int)floorf(_q->bf);      // base index
+    _q->mu  = _q->bf - (float)(_q->b);  // fractional index
 }
 
