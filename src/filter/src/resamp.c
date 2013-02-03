@@ -37,7 +37,7 @@
 #define DEBUG_RESAMP_PRINT              0
 
 // use fixed-point phase vs. floating-point phase
-#define RESAMP_USE_FIXED_POINT_PHASE    1
+#define RESAMP_USE_FIXED_POINT_PHASE    0
 
 struct RESAMP(_s) {
     // filter design parameters
@@ -68,6 +68,13 @@ struct RESAMP(_s) {
     // polyphase filterbank properties/object
     unsigned int npfb;  // number of filters in the bank
     FIRPFB() f;         // actual filterbank object
+
+    int state;
+    unsigned int b0;
+    unsigned int b1;
+    TO y0;
+    TO y1;
+    float mu;
 };
 
 // create arbitrary resampler
@@ -112,8 +119,10 @@ RESAMP() RESAMP(_create)(float        _rate,
     // set derived values
     q->b   = 0;             // initial filterbank index
     q->del = 1.0f / q->rate;// timing phase step size (reciprocal of rate)
+#if DEBUG_RESAMP_PRINT
     printf("rate = %12.8f\n", q->rate);
     printf("del  = %12.8f\n", q->del);
+#endif
 
 #if RESAMP_USE_FIXED_POINT_PHASE
     // using fixed-point phase, increase number of filters in bank
@@ -149,7 +158,8 @@ RESAMP() RESAMP(_create)(float        _rate,
         h[i] = hf[i]*gain;
     q->f = FIRPFB(_create)(q->npfb,h,n-1);
 
-    // return object
+    // reset object and return
+    RESAMP(_reset)(q);
     return q;
 }
 
@@ -184,6 +194,12 @@ void RESAMP(_reset)(RESAMP() _q)
     _q->tau = 0.0f;
     _q->bf  = 0.0f;
 #endif
+    _q->state = 2;
+    _q->y0    = 0;
+    _q->y1    = 0;
+    _q->b0    = 0;
+    _q->b1    = 1;
+    _q->mu    = 0.0f;
 }
 
 // set rate
@@ -198,6 +214,105 @@ void RESAMP(_setrate)(RESAMP() _q, float _rate)
 #endif
 }
 
+
+// run arbitrary resampler
+//  _q          :   resampling object
+//  _x          :   single input sample
+//  _y          :   output array
+//  _num_written:   number of samples written to output
+void RESAMP(_execute)(RESAMP()       _q,
+                      TI             _x,
+                      TO *           _y,
+                      unsigned int * _num_written)
+{
+    // push input sample into filterbank
+    FIRPFB(_push)(_q->f, _x);
+    unsigned int n=0;
+    
+    while (_q->b < _q->npfb) {
+
+#if DEBUG_RESAMP_PRINT
+        printf("  [%2u] : s=%1u, tau=%12.8f, b : %12.8f (%4d + %8.6f)\n", n+1, _q->state, _q->tau, _q->bf, _q->b, _q->mu);
+#endif
+        switch (_q->state) {
+        case 1:
+            //printf("  state 1\n");
+            // compute filterbank output
+            FIRPFB(_execute)(_q->f, 0, &_q->y1);
+
+            // interpolate
+            _y[n] = (1.0f - _q->mu)*_q->y0 + _q->mu*_q->y1;
+        
+            // update timing
+            _q->tau += _q->del;
+            _q->bf  = _q->tau * (float)(_q->npfb);
+            _q->b   = (int)floorf(_q->bf);
+            _q->mu  = _q->bf - (float)(_q->b);
+            n++;
+
+            // update state
+            _q->b0 = _q->b;
+            _q->b1 = _q->b + 1;
+            _q->state = (_q->b1 == _q->npfb) ? 3 : 2;
+            
+            break;
+
+        case 2:
+            //printf("  state 2: b0 = %3u, b1=%3u, mu=%8.6f\n", _q->b0, _q->b1, _q->mu);
+            // compute both outputs
+            FIRPFB(_execute)(_q->f, _q->b0, &_q->y0);
+            FIRPFB(_execute)(_q->f, _q->b1, &_q->y1);
+
+            // interpolate...
+            _y[n] = (1.0f - _q->mu)*_q->y0 + _q->mu*_q->y1;
+
+            // update timing
+            _q->tau += _q->del;
+            _q->bf  = _q->tau * (float)(_q->npfb);
+            _q->b   = (int)floorf(_q->bf);
+            _q->mu  = _q->bf - (float)(_q->b);
+            n++;
+
+            // update state
+            _q->b0 = _q->b;
+            _q->b1 = _q->b + 1;
+            _q->state = (_q->b1 == _q->npfb) ? 3 : 2;
+            
+            break;
+
+        case 3:
+            //printf("  state 3\n");
+
+            // compute filterbank output
+            FIRPFB(_execute)(_q->f, _q->b0, &_q->y0);
+
+            // set filterbank to maximum to require new input sample
+            _q->b  = _q->npfb;
+            _q->b0 = _q->npfb;
+            _q->b1 = 0;
+
+            // set state
+            _q->state = 1;
+
+            break;
+        default:
+            fprintf(stderr,"error: resamp_%s_execute(), invalid/unknown state\n", EXTENSION_FULL);
+            exit(1);
+        }
+    }
+
+    _q->tau -= 1.0f;
+    _q->bf  -= (float)(_q->npfb);
+    _q->b   -= _q->npfb;
+    
+    _q->b0  -= _q->npfb;
+    _q->b1  -= _q->npfb;
+
+    *_num_written = n;
+}
+
+
+#if 0
 // run arbitrary resampler
 //  _q          :   resampling object
 //  _x          :   single input sample
@@ -257,5 +372,6 @@ void RESAMP(_execute)(RESAMP()       _q,
 
     *_num_written = n;
 }
+#endif
 #endif
 

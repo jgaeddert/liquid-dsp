@@ -217,7 +217,7 @@ int main(int argc, char*argv[])
     fprintf(fid,"xlabel('normalized frequency');\n");
     fprintf(fid,"ylabel('PSD [dB]');\n");
     fprintf(fid,"legend('original','resampled','location','northeast');");
-    fprintf(fid,"axis([-0.5 0.5 -100 20]);\n");
+    fprintf(fid,"axis([-0.5 0.5 -120 20]);\n");
 
     fprintf(fid,"\n\n");
     fprintf(fid,"%% plot time-domain result\n");
