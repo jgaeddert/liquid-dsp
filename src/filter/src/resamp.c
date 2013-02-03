@@ -36,9 +36,6 @@
 // enable run-time debug printing of resampler
 #define DEBUG_RESAMP_PRINT              0
 
-// use fixed-point phase vs. floating-point phase
-#define RESAMP_USE_FIXED_POINT_PHASE    0
-
 struct RESAMP(_s) {
     // filter design parameters
     unsigned int m;     // filter semi-length, h_len = 2*m + 1
@@ -50,20 +47,9 @@ struct RESAMP(_s) {
     int b;              // filterbank index
     float del;          // fractional delay step
 
-#if RESAMP_USE_FIXED_POINT_PHASE
-    // fixed-point phase
-    unsigned int theta;             // sampling phase
-    unsigned int d_theta;           // phase differential
-
-    unsigned int num_bits_phase;    // number of bits in phase
-    unsigned int max_phase;         // maximum phase value
-    unsigned int num_bits_npfb;     // number of bits in npfb
-    unsigned int num_shift_bits;    // number of bits to shift to compute b
-#else
     // floating-point phase
     float tau;      // accumulated timing phase (0 <= tau <= 1)
     float bf;       // soft filterbank index
-#endif
 
     // polyphase filterbank properties/object
     unsigned int npfb;  // number of filters in the bank
@@ -124,21 +110,10 @@ RESAMP() RESAMP(_create)(float        _rate,
     printf("del  = %12.8f\n", q->del);
 #endif
 
-#if RESAMP_USE_FIXED_POINT_PHASE
-    // using fixed-point phase, increase number of filters in bank
-    q->num_bits_npfb = liquid_nextpow2(_npfb);
-    q->npfb = 1<<q->num_bits_npfb;
-    q->num_bits_phase = 20;
-    q->max_phase = 1 << q->num_bits_phase;
-    q->num_shift_bits = q->num_bits_phase - q->num_bits_npfb;
-    q->theta = 0;
-    q->d_theta = (unsigned int)( q->max_phase * q->del );
-#else
     // set other derived values
     q->npfb = _npfb;        // number of filters in bank
     q->tau  = 0.0f;         // accumulated timing phase
     q->bf   = 0.0f;         // floating-point filterbank index
-#endif
 
     // design filter
     unsigned int n = 2*q->m*q->npfb+1;
@@ -188,12 +163,8 @@ void RESAMP(_reset)(RESAMP() _q)
 
     // reset states
     _q->b   = 0;
-#if RESAMP_USE_FIXED_POINT_PHASE
-    _q->theta = 0;
-#else
     _q->tau = 0.0f;
     _q->bf  = 0.0f;
-#endif
     _q->state = 2;
     _q->y0    = 0;
     _q->y1    = 0;
@@ -208,10 +179,6 @@ void RESAMP(_setrate)(RESAMP() _q, float _rate)
     // TODO : validate rate, validate this method
     _q->rate = _rate;
     _q->del = 1.0f / _q->rate;
-
-#if RESAMP_USE_FIXED_POINT_PHASE
-    _q->d_theta = (unsigned int)( _q->max_phase * _q->del );
-#endif
 }
 
 
@@ -310,68 +277,4 @@ void RESAMP(_execute)(RESAMP()       _q,
 
     *_num_written = n;
 }
-
-
-#if 0
-// run arbitrary resampler
-//  _q          :   resampling object
-//  _x          :   single input sample
-//  _y          :   output array
-//  _num_written:   number of samples written to output
-void RESAMP(_execute)(RESAMP()       _q,
-                      TI             _x,
-                      TO *           _y,
-                      unsigned int * _num_written)
-#if RESAMP_USE_FIXED_POINT_PHASE
-{
-    // push input sample into filterbank
-    FIRPFB(_push)(_q->f, _x);
-    unsigned int n=0;
-    
-    //while (_q->tau < 1.0f) {
-    while (_q->theta < _q->max_phase) {
-
-#if DEBUG_RESAMP_PRINT
-        printf("  [%2u] : theta = %8u, b : %6u\n", n, _q->theta, _q->b);
-#endif
-        FIRPFB(_execute)(_q->f, _q->b, &_y[n]);
-
-        _q->theta += _q->d_theta;
-        _q->b = _q->theta >> _q->num_shift_bits;
-        n++;
-    }
-
-    _q->theta -= _q->max_phase;
-    _q->b = _q->theta >> _q->num_shift_bits;
-
-    *_num_written = n;
-}
-#else
-{
-    // push input sample into filterbank
-    FIRPFB(_push)(_q->f, _x);
-    unsigned int n=0;
-    
-    //while (_q->tau < 1.0f) {
-    while (_q->b < _q->npfb) {
-
-#if DEBUG_RESAMP_PRINT
-        printf("  [%2u] : tau : %12.8f, b : %4u (%12.8f)\n", n+1, _q->tau, _q->b, _q->bf);
-#endif
-        FIRPFB(_execute)(_q->f, _q->b, &_y[n]);
-
-        _q->tau += _q->del;
-        _q->bf = _q->tau * (float)(_q->npfb);
-        _q->b  = (int)roundf(_q->bf);
-        n++;
-    }
-
-    _q->tau -= 1.0f;
-    _q->bf  -= (float)(_q->npfb);
-    _q->b   -= _q->npfb;
-
-    *_num_written = n;
-}
-#endif
-#endif
 
