@@ -493,6 +493,7 @@ filter_autotests :=						\
 	src/filter/tests/iirfilt_xxxf_autotest.c		\
 	src/filter/tests/iirfiltsos_rrrf_autotest.c		\
 	src/filter/tests/interp_autotest.c			\
+	src/filter/tests/msresamp_crcf_autotest.c		\
 	src/filter/tests/resamp2_crcf_autotest.c		\
 
 # additional autotest objects
