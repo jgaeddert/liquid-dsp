@@ -62,9 +62,10 @@ void resamp_crcf_bench(struct rusage *     _start,
 //
 // Resampler benchmark prototypes
 //
-void benchmark_resamp_crcf_m2    RESAMP_CRCF_BENCHMARK_API(2)
 void benchmark_resamp_crcf_m4    RESAMP_CRCF_BENCHMARK_API(4)
 void benchmark_resamp_crcf_m8    RESAMP_CRCF_BENCHMARK_API(8)
 void benchmark_resamp_crcf_m16   RESAMP_CRCF_BENCHMARK_API(16)
 void benchmark_resamp_crcf_m32   RESAMP_CRCF_BENCHMARK_API(32)
+void benchmark_resamp_crcf_m64   RESAMP_CRCF_BENCHMARK_API(64)
+void benchmark_resamp_crcf_m128  RESAMP_CRCF_BENCHMARK_API(128)
 
