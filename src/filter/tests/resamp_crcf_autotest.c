@@ -21,18 +21,18 @@
 #include "liquid.h"
 
 // 
-// AUTOTEST : test multi-stage arbitrary resampler
+// AUTOTEST : test arbitrary resampler
 //
-void autotest_msresamp_crcf()
+void autotest_resamp_crcf()
 {
     // options
     unsigned int m = 13;        // filter semi-length (filter delay)
-    float r=0.127115323f;       // resampling rate (output/input)
+    float r=1.27115323f;        // resampling rate (output/input)
+    float bw=0.45f;             // resampling filter bandwidth
     float As=60.0f;             // resampling filter stop-band attenuation [dB]
-    unsigned int n=1200;        // number of input samples
-    float fx=0.0254230646f;     // complex input sinusoid frequency (0.2*r)
-    //float bw=0.45f;             // resampling filter bandwidth
-    //unsigned int npfb=64;       // number of filters in bank (timing resolution)
+    unsigned int npfb=64;       // number of filters in bank (timing resolution)
+    unsigned int n=400;         // number of input samples
+    float fx=0.254230646f;      // complex input sinusoid frequency (0.2*r)
 
     unsigned int i;
 
@@ -47,7 +47,7 @@ void autotest_msresamp_crcf()
     float complex y[y_len];
 
     // create resampler
-    msresamp_crcf q = msresamp_crcf_create(r,As);
+    resamp_crcf q = resamp_crcf_create(r,m,bw,As,npfb);
 
     // generate input signal
     float wsum = 0.0f;
@@ -67,14 +67,14 @@ void autotest_msresamp_crcf()
     unsigned int nw;
     for (i=0; i<nx; i++) {
         // execute resampler, storing in output buffer
-        msresamp_crcf_execute(q, &x[i], 1, &y[ny], &nw);
+        resamp_crcf_execute(q, x[i], &y[ny], &nw);
 
         // increment output size
         ny += nw;
     }
 
     // clean up allocated objects
-    msresamp_crcf_destroy(q);
+    resamp_crcf_destroy(q);
 
     // check that the actual resampling rate is close to the target
     float r_actual = (float)ny / (float)nx;
@@ -84,8 +84,8 @@ void autotest_msresamp_crcf()
     }
     CONTEND_DELTA( r_actual, r, 0.01f );
 
-    // run FFT and ensure that carrier has moved and that image
-    // frequencies and distortion have been adequately suppressed
+    // TODO: run FFT and ensure that carrier has moved and that
+    //       image frequencies have been adequately suppressed
     unsigned int nfft = 1 << liquid_nextpow2(ny);
     float complex yfft[nfft];   // fft input
     float complex Yfft[nfft];   // fft output
@@ -138,12 +138,12 @@ void autotest_msresamp_crcf()
         }
     }
     if (liquid_autotest_verbose)
-        printf("  max sidelobe              :   %12.8f dB (expected at least %.2f dB)\n", max_sidelobe, -As);
+        printf("  max sidelobe              :   %12.8f dB\n", max_sidelobe);
     CONTEND_LESS_THAN( max_sidelobe, -As );
 
 #if 0
     // export results for debugging
-    char filename[] = "msresamp_crcf_autotest.m";
+    char filename[] = "resamp_crcf_autotest.m";
     FILE*fid = fopen(filename,"w");
     fprintf(fid,"%% %s: auto-generated file\n",filename);
     fprintf(fid,"clear all;\n");

@@ -1838,10 +1838,17 @@ LIQUID_RESAMP2_DEFINE_API(RESAMP2_MANGLE_CCCF,
 
 #define LIQUID_RESAMP_DEFINE_API(RESAMP,TO,TC,TI)               \
 typedef struct RESAMP(_s) * RESAMP();                           \
-RESAMP() RESAMP(_create)(float _r,                              \
-                         unsigned int _h_len,                   \
-                         float _fc,                             \
-                         float _As,                             \
+                                                                \
+/* create arbitrary resampler object                    */      \
+/*  _rate   : arbitrary resampling rate                 */      \
+/*  _m      : filter semi-length (delay)                */      \
+/*  _fc     : filter cutoff frequency, 0 < _fc < 0.5    */      \
+/*  _As     : filter stop-band attenuation [dB]         */      \
+/*  _npfb   : number of filters in the bank             */      \
+RESAMP() RESAMP(_create)(float        _rate,                    \
+                         unsigned int _m,                       \
+                         float        _fc,                      \
+                         float        _As,                      \
                          unsigned int _npfb);                   \
 void RESAMP(_destroy)(RESAMP() _q);                             \
 void RESAMP(_print)(RESAMP() _q);                               \
@@ -1850,7 +1857,7 @@ void RESAMP(_setrate)(RESAMP() _q, float _rate);                \
 void RESAMP(_execute)(RESAMP() _q,                              \
                       TI _x,                                    \
                       TO * _y,                                  \
-                      unsigned int *_num_written);
+                      unsigned int *_num_written);              \
 
 LIQUID_RESAMP_DEFINE_API(RESAMP_MANGLE_RRRF,
                          float,
