@@ -169,7 +169,6 @@ int main(int argc, char*argv[])
             // skip
         } else {
             // check output spectral content is sufficiently suppressed
-            //CONTEND_LESS_THAN( 20*log10f( cabsf(Yfft[i]) ), -As );
             float YdB = 20*log10f(cabsf(Yfft[i]));
             max_sidelobe = YdB > max_sidelobe ? YdB : max_sidelobe;
         }

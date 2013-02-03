@@ -30,9 +30,9 @@ void autotest_resamp_crcf()
     float r=1.27115323f;        // resampling rate (output/input)
     float bw=0.45f;             // resampling filter bandwidth
     float As=60.0f;             // resampling filter stop-band attenuation [dB]
-    unsigned int npfb=128;      // number of filters in bank (timing resolution)
+    unsigned int npfb=64;       // number of filters in bank (timing resolution)
     unsigned int n=400;         // number of input samples
-    float fx=0.381345969f;      // complex input sinusoid frequency (0.3*r)
+    float fx=0.254230646f;      // complex input sinusoid frequency (0.2*r)
 
     unsigned int i;
 
@@ -118,22 +118,28 @@ void autotest_resamp_crcf()
         printf("  peak frequency            :   %12.8f (expected %-12.8f)\n", fpeak, fy);
     }
     CONTEND_DELTA( Ypeak, 1.0f, 0.05f );  // peak should be 1
-    CONTEND_DELTA( fpeak, fy,   0.01f );  // value should be nearly 0.3
+    CONTEND_DELTA( fpeak, fy,   0.01f );  // value should be nearly 0.2
 
     // check magnitude
+    float max_sidelobe = -1e9f;     // maximum side-lobe [dB]
+    float main_lobe_width = 0.07f;  // TODO: figure this out from Kaiser's equations
     for (i=0; i<nfft; i++) {
         // normalized output frequency
         float f = (float)i/(float)nfft - 0.5f;
 
         // ignore frequencies within a certain range of
         // signal frequency
-        if ( fabsf(f-fy) < 0.05f ) {
+        if ( fabsf(f-fy) < main_lobe_width ) {
             // skip
         } else {
             // check output spectral content is sufficiently suppressed
-            //CONTEND_LESS_THAN( 20*log10f( cabsf(Yfft[i]) ), -As );
+            float YdB = 20*log10f(cabsf(Yfft[i]));
+            max_sidelobe = YdB > max_sidelobe ? YdB : max_sidelobe;
         }
     }
+    if (liquid_autotest_verbose)
+        printf("  max sidelobe              :   %12.8f dB\n", max_sidelobe);
+    CONTEND_LESS_THAN( max_sidelobe, -As );
 
 #if 0
     // export results for debugging
@@ -159,7 +165,7 @@ void autotest_resamp_crcf()
     fprintf(fid,"grid on;\n");
     fprintf(fid,"xlabel('normalized frequency');\n");
     fprintf(fid,"ylabel('PSD [dB]');\n");
-    fprintf(fid,"axis([-0.5 0.5 -100 20]);\n");
+    fprintf(fid,"axis([-0.5 0.5 -120 20]);\n");
 
     fclose(fid);
     printf("results written to %s\n",filename);
