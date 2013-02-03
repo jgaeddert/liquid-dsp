@@ -122,7 +122,7 @@ int main(int argc, char*argv[])
 
     fprintf(fid,"\n\n");
     fprintf(fid,"%% plot frequency-domain result\n");
-    fprintf(fid,"nfft=512;\n");
+    fprintf(fid,"nfft=2^nextpow2(max(nx,ny));\n");
     fprintf(fid,"%% estimate PSD, normalize by array length\n");
     fprintf(fid,"X=20*log10(abs(fftshift(fft(x,nfft)/length(x))));\n");
     fprintf(fid,"Y=20*log10(abs(fftshift(fft(y,nfft)/length(y))));\n");
