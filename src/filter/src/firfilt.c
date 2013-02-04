@@ -114,19 +114,16 @@ FIRFILT() FIRFILT(_create_kaiser)(unsigned int _n,
     // copy coefficients to type-specific array
     TC h[_n];
     unsigned int i;
-#ifdef LIQUID_FIXED && TC_COMPLEX
-    // fixed-point math
     for (i=0; i<_n; i++) {
+#if defined LIQUID_FIXED && TC_COMPLEX == 1
         h[i].real = Q(_float_to_fixed)( hf[i] );
         h[i].imag = 0;
-    }
-#elif LIQUID_FIXED && !TC_COMPLEX
-    for (i=0; i<_n; i++)
+#elif defined LIQUID_FIXED && TC_COMPLEX == 0
         h[i] = Q(_float_to_fixed)( hf[i] );
 #else
-    for (i=0; i<_n; i++)
         h[i] = (TC) hf[i];
 #endif
+    }
 
     // 
     return FIRFILT(_create)(h, _n);

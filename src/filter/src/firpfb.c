@@ -120,6 +120,8 @@ FIRPFB() FIRPFB(_create_rnyquist)(int          _type,
 #if defined LIQUID_FIXED && TC_COMPLEX==1
         Hc[i].real = Hf[i];
         Hc[i].imag = 0;
+#elif defined LIQUID_FIXED && TC_COMPLEX == 0
+        Hc[i] = Q(_float_to_fixed)( Hf[i] );
 #else
         Hc[i] = Hf[i];
 #endif
@@ -185,18 +187,16 @@ FIRPFB() FIRPFB(_create_drnyquist)(int          _type,
     
     // copy coefficients to type-specific array (e.g. float complex)
     TC Hc[H_len];
-#ifdef LIQUID_FIXED && TC_COMPLEX
     for (i=0; i<H_len; i++) {
+#if defined LIQUID_FIXED && TC_COMPLEX == 1
         Hc[i].real = Q(_float_to_fixed)( dHf[i] );
         Hc[i].imag = 0;
-    }
-#elif LIQUID_FIXED && !TC_COMPLEX
-    for (i=0; i<H_len; i++)
+#elif defined LIQUID_FIXED && TC_COMPLEX == 0
         Hc[i] = Q(_float_to_fixed)( dHf[i] );
 #else
-    for (i=0; i<H_len; i++)
         Hc[i] = (TC) dHf[i];
 #endif
+    }
 
     // return filterbank object
     return FIRPFB(_create)(_npfb, Hc, H_len);
