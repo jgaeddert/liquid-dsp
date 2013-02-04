@@ -102,8 +102,6 @@ int main(int argc, char*argv[])
 
     float complex X[M];             // channelized symbols
     float complex y[num_samples];   // output time series
-    float complex S0[M];            // short PLCP sequence
-    float complex S1[M];            // long PCLP sequence
 
     unsigned int n=0;
 
