@@ -170,6 +170,9 @@ void flexframegen_destroy(flexframegen _q)
     free(_q->payload_enc);              // encoded payload bytes
     free(_q->payload_mod);              // modulated payload symbols
 
+    // destroy pulse-shaping filter
+    free(_q->interp);
+
     // destroy frame generator
     free(_q);
 }
