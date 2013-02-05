@@ -503,6 +503,12 @@ src/filter/src/filter_crcf.o : %.o : %.c $(headers) $(filter_includes)
 
 src/filter/src/filter_cccf.o : %.o : %.c $(headers) $(filter_includes)
 
+src/filter/src/filter_rrrq16.o : %.o : %.c $(headers) $(filter_includes)
+
+src/filter/src/filter_crcq16.o : %.o : %.c $(headers) $(filter_includes)
+
+src/filter/src/filter_cccq16.o : %.o : %.c $(headers) $(filter_includes)
+
 src/filter/src/firdes.o : %.o : %.c $(headers)
 
 src/filter/src/firdespm.o : %.o : %.c $(headers)
