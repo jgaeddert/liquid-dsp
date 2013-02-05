@@ -540,6 +540,8 @@ filter_autotests :=						\
 	src/filter/tests/iirfiltsos_rrrf_autotest.c		\
 	src/filter/tests/iirfiltsos_rrrq16_autotest.c		\
 	src/filter/tests/interp_autotest.c			\
+	src/filter/tests/msresamp_crcf_autotest.c		\
+	src/filter/tests/resamp_crcf_autotest.c			\
 	src/filter/tests/resamp2_crcf_autotest.c		\
 
 # additional autotest objects
@@ -583,9 +585,9 @@ filter_benchmarks :=						\
 	src/filter/bench/firfilt_q16_benchmark.c		\
 	src/filter/bench/iirfilt_crcf_benchmark.c		\
 	src/filter/bench/interp_crcf_benchmark.c		\
-	src/filter/bench/resamp_benchmark.c			\
-	src/filter/bench/resamp2_benchmark.c			\
-	src/filter/bench/symsync_benchmark.c			\
+	src/filter/bench/resamp_crcf_benchmark.c		\
+	src/filter/bench/resamp2_crcf_benchmark.c		\
+	src/filter/bench/symsync_crcf_benchmark.c		\
 
 # 
 # MODULE : fpm
@@ -1039,7 +1041,8 @@ optim_objects :=						\
 $(optim_objects) : %.o : %.c $(headers)
 
 # autotests
-optim_autotests :=
+optim_autotests :=						\
+	src/optim/tests/gradsearch_autotest.c			\
 
 # benchmarks
 optim_benchmarks :=
@@ -1662,6 +1665,7 @@ sandbox_programs =						\
 	sandbox/modem_demodulate_arb_gentab			\
 	sandbox/modem_demodulate_soft_test			\
 	sandbox/modem_demodulate_soft_gentab			\
+	sandbox/msresamp_crcf_test				\
 	sandbox/ofdmoqam_firpfbch_test				\
 	sandbox/ofdm_ber_test					\
 	sandbox/ofdmframe_papr_test				\

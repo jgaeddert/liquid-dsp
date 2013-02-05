@@ -14,37 +14,83 @@
 
 int main() {
     // spectral periodogram options
-    unsigned int nfft=256;              // spectral periodogram FFT size
-    unsigned int num_samples = 2001;    // number of samples
+    unsigned int nfft=512;              // spectral periodogram FFT size
+    unsigned int num_samples = 4000;    // number of samples
+    float beta = 10.0f;                 // Kaiser-Bessel window parameter
+    float noise_floor = -60.0f;         // noise floor [dB]
+
+    unsigned int i;
+
+    // derived values
+    float nstd = powf(10.0f, noise_floor/20.0f);
 
     // allocate memory for data arrays
-    float complex x[num_samples];       // input signal
     float complex X[nfft];              // output spectrum
     float psd[nfft];                    // power spectral density
 
-    unsigned int ramp = num_samples/20 < 10 ? 10 : num_samples/20;
+    // initialize PSD estimate
+    for (i=0; i<nfft; i++)
+        psd[i] = 0.0f;
 
     // create spectral periodogram
     unsigned int window_size = nfft/2;  // spgram window size
     unsigned int delay       = nfft/8;  // samples between transforms
-    spgram q = spgram_create(nfft, window_size);
+    spgram q = spgram_create_kaiser(nfft, window_size, beta);
 
-    unsigned int i;
+    // generate signal (interpolated symbols with noise)
+    unsigned int k = 4;     // interpolation rate
+    unsigned int m = 7;     // filter delay (symbols)
+    interp_crcf interp = interp_crcf_create_rnyquist(LIQUID_RNYQUIST_RKAISER, k, m, 0.3f, 0.0f);
 
-    // generate signal
-    nco_crcf nco = nco_crcf_create(LIQUID_VCO);
-    for (i=0; i<num_samples; i++) {
-        nco_crcf_set_frequency(nco, 0.1f*(1.2f+sinf(0.007f*i)) );
-        nco_crcf_cexpf(nco, &x[i]);
-        nco_crcf_step(nco);
+    int spgram_timer = nfft;
+    unsigned int n=0;
+    float complex x[k]; // interpolator output
+    unsigned int num_transforms = 0;
+    while (n < num_samples) {
+        // generate random symbol
+        float complex s = ( rand() % 2 ? 0.707f : -0.707f ) +
+                          ( rand() % 2 ? 0.707f : -0.707f ) * _Complex_I;
+
+        // interpolate
+        interp_crcf_execute(interp, s, x);
+
+        // add noise
+        for (i=0; i<k; i++)
+            x[i] += nstd * ( randnf() + _Complex_I*randnf() ) * M_SQRT1_2;
+
+        // push resulting samples through spgram
+        spgram_push(q, x, k);
+
+        // 
+        spgram_timer -= k;
+        n += k;
+
+        //
+        if (spgram_timer <= 0) {
+            // update timer, counter
+            spgram_timer += delay;
+            num_transforms++;
+
+            // run spectral periodogram
+            spgram_execute(q, X);
+
+            // accumulate PSD and FFT shift
+            for (i=0; i<nfft; i++) {
+                float complex X0 = X[(i+nfft/2)%nfft];
+                psd[i] += crealf(X0*conjf(X0));
+            }
+        }
     }
-    nco_crcf_destroy(nco);
 
-    // add soft ramping functions
-    for (i=0; i<ramp; i++) {
-        x[i]                    *= 0.5f - 0.5f*cosf(M_PI*(float)i          / (float)ramp);
-        x[num_samples-ramp+i-1] *= 0.5f - 0.5f*cosf(M_PI*(float)(ramp-i-1) / (float)ramp);
-    }
+    // destroy objects
+    interp_crcf_destroy(interp);
+    spgram_destroy(q);
+
+    // normalize result
+    printf("computed %u transforms\n", num_transforms);
+    // TODO: ensure at least one transform was taken
+    for (i=0; i<nfft; i++)
+        psd[i] = 10*log10f( psd[i] / (float)(num_transforms) );
 
     // 
     // export output file
@@ -54,45 +100,21 @@ int main() {
     fprintf(fid,"clear all;\n");
     fprintf(fid,"close all;\n\n");
     fprintf(fid,"nfft = %u;\n", nfft);
-    fprintf(fid,"H = zeros(1,nfft);\n");
+    fprintf(fid,"f    = [0:(nfft-1)]/nfft - 0.5;\n");
+    fprintf(fid,"H    = zeros(1,nfft);\n");
+    fprintf(fid,"noise_floor = %12.6f;\n", noise_floor);
+    
+    for (i=0; i<nfft; i++)
+        fprintf(fid,"H(%6u) = %12.4e;\n", i+1, psd[i]);
 
-    unsigned int t=0;
-    for (i=0; i<num_samples; i++) {
-        // push sample into periodogram
-        spgram_push(q, &x[i], 1);
-
-        if ( ((i+1)%delay)==0 ) {
-            // compute spectral periodogram output
-            spgram_execute(q, X);
-
-            unsigned int k;
-
-            // compute PSD and FFT shift
-            for (k=0; k<nfft; k++)
-                psd[k] = 20*log10f( cabsf(X[(k+nfft/2)%nfft]) );
-
-            // save results to file
-            for (k=0; k<nfft; k++)
-                fprintf(fid,"H(%3u,%3u) = %12.8f;\n", t+1, k+1, psd[k]);
-
-            // increment counter
-            t++;
-        }
-    }
-
-    // destroy spectral periodogram object
-    spgram_destroy(q);
-
-    // print
-    fprintf(fid,"colors = [1 1 1; 0.25 0.78 0.50; 0 0.25 0.50; 1 1 1];\n");
-    fprintf(fid,"C = generate_colormap(colors);\n");
-    fprintf(fid,"H = H - min(min(H));\n");
-    fprintf(fid,"H = H / max(max(H));\n");
     fprintf(fid,"figure;\n");
-    fprintf(fid,"image(40*H);\n");
-    fprintf(fid,"colormap(C);\n");
-    fprintf(fid,"xlabel('freq');\n");
-    fprintf(fid,"ylabel('time');\n");
+    fprintf(fid,"plot(f, H, '-', 'LineWidth',1.5);\n");
+    fprintf(fid,"xlabel('Normalized Frequency [f/F_s]');\n");
+    fprintf(fid,"ylabel('Power Spectral Density [dB]');\n");
+    fprintf(fid,"grid on;\n");
+    fprintf(fid,"ymin = 10*floor([noise_floor-20]/10);\n");
+    fprintf(fid,"ymax = 10*floor([noise_floor+80]/10);\n");
+    fprintf(fid,"axis([-0.5 0.5 ymin ymax]);\n");
 
     fclose(fid);
     printf("results written to %s.\n", OUTPUT_FILENAME);

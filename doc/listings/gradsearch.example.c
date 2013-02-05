@@ -7,7 +7,7 @@ float myutility(void * _userdata, float * _v, unsigned int _n)
     float u = 0.0f;
     unsigned int i;
     for (i=0; i<_n; i++)
-        u += fabsf(_v[i]);
+        u += _v[i] * _v[i];
     return u;
 }
 
@@ -25,8 +25,7 @@ int main() {
                                       v,
                                       num_parameters,
                                       &myutility,
-                                      LIQUID_OPTIM_MINIMIZE,
-                                      NULL);
+                                      LIQUID_OPTIM_MINIMIZE);
 
     // execute batch search
     gradsearch_execute(gs, num_iterations, target_utility);

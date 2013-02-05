@@ -845,9 +845,19 @@ typedef struct spgram_s * spgram;
 
 // create spgram object
 //  _nfft       :   FFT size
+//  _window     :   window [size: _window_len x 1]
 //  _window_len :   window length
 spgram spgram_create(unsigned int _nfft,
+                     float *      _window,
                      unsigned int _window_len);
+
+// create spgram object with Kaiser-Bessel window
+//  _nfft       :   FFT size
+//  _window_len :   window length
+//  _beta       :   Kaiser-Bessel window parameter (_beta > 0)
+spgram spgram_create_kaiser(unsigned int _nfft,
+                            unsigned int _window_len,
+                            float        _beta);
 
 // destroy spgram object
 void spgram_destroy(spgram _q);
@@ -871,12 +881,29 @@ void spgram_execute(spgram _q,
 
 // ascii spectrogram
 typedef struct asgram_s * asgram;
-asgram asgram_create(liquid_float_complex *_x, unsigned int _n);
-void asgram_set_scale(asgram _q, float _scale);
-void asgram_set_offset(asgram _q, float _offset);
+
+// create asgram object
+//  _nfft       :   FFT size
+asgram asgram_create(unsigned int _nfft);
 void asgram_destroy(asgram _q);
-void asgram_execute(asgram _q,
-                    char * _ascii,
+void asgram_reset(asgram _q);
+void asgram_set_scale(asgram _q, float _offset, float _scale);
+
+// push samples into asgram object
+//  _q      :   asgram object
+//  _x      :   input buffer [size: _n x 1]
+//  _n      :   input buffer length
+void asgram_push(asgram                 _q,
+                 liquid_float_complex * _x,
+                 unsigned int           _n);
+
+// execute asgram
+//  _q          :   asgram object
+//  _ascii      :   ASCII character output buffer [size: _nfft x 1]
+//  _peakval    :   peak PSD value [dB]
+//  _peakfreq   :   normalized frequency of peak PSD value
+void asgram_execute(asgram  _q,
+                    char *  _ascii,
                     float * _peakval,
                     float * _peakfreq);
 
@@ -1898,10 +1925,17 @@ LIQUID_RESAMP2_DEFINE_API(RESAMP2_MANGLE_CCCQ16, cq16_t, cq16_t, cq16_t)
 
 #define LIQUID_RESAMP_DEFINE_API(RESAMP,TO,TC,TI)               \
 typedef struct RESAMP(_s) * RESAMP();                           \
-RESAMP() RESAMP(_create)(float _r,                              \
-                         unsigned int _h_len,                   \
-                         float _fc,                             \
-                         float _As,                             \
+                                                                \
+/* create arbitrary resampler object                    */      \
+/*  _rate   : arbitrary resampling rate                 */      \
+/*  _m      : filter semi-length (delay)                */      \
+/*  _fc     : filter cutoff frequency, 0 < _fc < 0.5    */      \
+/*  _As     : filter stop-band attenuation [dB]         */      \
+/*  _npfb   : number of filters in the bank             */      \
+RESAMP() RESAMP(_create)(float        _rate,                    \
+                         unsigned int _m,                       \
+                         float        _fc,                      \
+                         float        _As,                      \
                          unsigned int _npfb);                   \
 void RESAMP(_destroy)(RESAMP() _q);                             \
 void RESAMP(_print)(RESAMP() _q);                               \
@@ -1910,7 +1944,7 @@ void RESAMP(_setrate)(RESAMP() _q, float _rate);                \
 void RESAMP(_execute)(RESAMP() _q,                              \
                       TI _x,                                    \
                       TO * _y,                                  \
-                      unsigned int *_num_written);
+                      unsigned int *_num_written);              \
 
 LIQUID_RESAMP_DEFINE_API(RESAMP_MANGLE_RRRF,
                          float,
@@ -3879,30 +3913,17 @@ float liquid_spiral(void *       _userdata,
 
 typedef struct gradsearch_s * gradsearch;
 
-// gradient search properties
-typedef struct {
-    float delta;    // gradient approximation step size (default: 1e-6f)
-    float gamma;    // vector step size (default: 0.002f)
-    float alpha;    // momentum parameter (default: 0.1f)
-    float mu;       // decremental gamma parameter (default: 0.99f)
-} gradsearchprops_s;
-
-// initialize default properties
-void gradsearchprops_init_default(gradsearchprops_s * _props);
-
 // Create a gradient search object
 //   _userdata          :   user data object pointer
 //   _v                 :   array of parameters to optimize
 //   _num_parameters    :   array length (number of parameters to optimize)
 //   _u                 :   utility function pointer
-//   _minmax            :   search direction (0:minimize, 1:maximize)
-//   _props             :   properties (see above)
-gradsearch gradsearch_create(void *              _userdata,
-                             float *             _v,
-                             unsigned int        _num_parameters,
-                             utility_function    _utility,
-                             int                 _direction,
-                             gradsearchprops_s * _props);
+//   _direction         :   search direction (e.g. LIQUID_OPTIM_MAXIMIZE)
+gradsearch gradsearch_create(void *           _userdata,
+                             float *          _v,
+                             unsigned int     _num_parameters,
+                             utility_function _utility,
+                             int              _direction);
 
 // Destroy a gradsearch object
 void gradsearch_destroy(gradsearch _q);
@@ -3927,12 +3948,12 @@ typedef struct qnsearch_s * qnsearch;
 //   _v                 :   array of parameters to optimize
 //   _num_parameters    :   array length
 //   _get_utility       :   utility function pointer
-//   _minmax            :   direction (0:minimize, 1:maximize)
-qnsearch qnsearch_create(void * _userdata,
-                         float * _v,
-                         unsigned int _num_parameters,
+//   _direction         :   search direction (e.g. LIQUID_OPTIM_MAXIMIZE)
+qnsearch qnsearch_create(void *           _userdata,
+                         float *          _v,
+                         unsigned int     _num_parameters,
                          utility_function _u,
-                         int _minmax);
+                         int              _direction);
 
 // Destroy a qnsearch object
 void qnsearch_destroy(qnsearch _g);

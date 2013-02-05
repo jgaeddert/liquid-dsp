@@ -1833,16 +1833,24 @@ void gradsearch_gradient(utility_function _utility,
                          float *          _gradient);
 
 // execute line search; loosely solve:
-//    min phi(alpha) := f(_x - alpha*_grad)
+//
+//    min|max phi(alpha) := f(_x - alpha*_p)
+//
+// and return best guess at alpha that achieves this
+//
 //  _utility    :   user-defined function
 //  _userdata   :   user-defined data object
-//  _x          :   operating point, [size: _n x 1]
+//  _direction  :   search direction (e.g. LIQUID_OPTIM_MINIMIZE)
 //  _n          :   dimensionality of search
+//  _x          :   operating point, [size: _n x 1]
+//  _p          :   normalized gradient, [size: _n x 1]
+//  _alpha      :   initial step size
 float gradsearch_linesearch(utility_function _utility,
                             void  *          _userdata,
-                            float *          _x,
+                            int              _direction,
                             unsigned int     _n,
-                            float *          _grad,
+                            float *          _x,
+                            float *          _p,
                             float            _alpha);
 
 // normalize vector, returning its l2-norm

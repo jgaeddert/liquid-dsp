@@ -72,7 +72,7 @@ void benchmark_gmskframesync(struct rusage *     _start,
     crc_scheme check = LIQUID_CRC_32;   // data validity check
     fec_scheme fec0  = LIQUID_FEC_NONE; // inner forward error correction
     fec_scheme fec1  = LIQUID_FEC_NONE; // outer forward error correction
-    float SNRdB = 20.0f;                // SNR
+    float SNRdB = 30.0f;                // SNR
 
     // derived values
     float nstd  = powf(10.0f, -SNRdB/20.0f);
@@ -108,7 +108,7 @@ void benchmark_gmskframesync(struct rusage *     _start,
     }
     // add some noise
     for (i=0; i<frame_len; i++)
-        frame[i] += 0.02f*(randnf() + _Complex_I*randnf());
+        frame[i] += nstd*(randnf() + _Complex_I*randnf());
 
     // 
     // start trials

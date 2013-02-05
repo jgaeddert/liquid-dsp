@@ -1,7 +1,5 @@
 /*
- * Copyright (c) 2011, 2012 Joseph Gaeddert
- * Copyright (c) 2011, 2012 Virginia Polytechnic
- *                          Institute & State University
+ * Copyright (c) 2011, 2012, 2013 Joseph Gaeddert
  *
  * This file is part of liquid.
  *
@@ -36,25 +34,29 @@ struct spgram_s {
     unsigned int nfft;          // FFT length
     unsigned int window_len;    // window length
 
-    windowcf buffer;    // input buffer
-    float complex * x;  // pointer to input array (allocated)
-    float complex * X;  // output fft (allocated)
-    float complex * w;  // tapering window [size: w x 1]
-    FFT_PLAN fft;       // fft plan
+    windowcf buffer;            // input buffer
+    float complex * x;          // pointer to input array (allocated)
+    float complex * X;          // output fft (allocated)
+    float *         w;          // tapering window [size: window_len x 1]
+    FFT_PLAN fft;               // fft plan
 };
 
 // create spgram object
 //  _nfft       :   FFT size
 //  _window_len :   window length
 spgram spgram_create(unsigned int _nfft,
+                     float *      _window,
                      unsigned int _window_len)
 {
     // validate input
     if (_nfft < 2) {
-        fprintf(stderr,"error: spgram_create_advanced(), fft size must be at least 2\n");
+        fprintf(stderr,"error: spgram_create(), fft size must be at least 2\n");
         exit(1);
     } else if (_window_len > _nfft) {
-        fprintf(stderr,"error: spgram_create_advanced(), window size cannot exceed fft size\n");
+        fprintf(stderr,"error: spgram_create(), window size cannot exceed fft size\n");
+        exit(1);
+    } else if (_window_len == 0) {
+        fprintf(stderr,"error: spgram_create(), window size must be greater than zero\n");
         exit(1);
     }
 
@@ -73,15 +75,60 @@ spgram spgram_create(unsigned int _nfft,
     // create buffer
     q->buffer = windowcf_create(q->window_len);
 
-    // initialize tapering window, scaled by window length size
-    // TODO : scale by window magnitude, FFT size as well
-    q->w = (float complex*) malloc((q->window_len)*sizeof(float complex));
+    // allocate memory for window and copy
+    q->w = (float*) malloc((q->window_len)*sizeof(float));
+    memmove(q->w, _window, _window_len*sizeof(float));
+
+    // scale by window magnitude, FFT size
     unsigned int i;
+    float g = 0.0f;
     for (i=0; i<q->window_len; i++)
-        q->w[i] = hamming(i, q->window_len) / (float)(q->window_len);
+        g += q->w[i] * q->w[i];
+    g = 1.0f / ( sqrtf(g / q->window_len) * sqrtf((float)(q->nfft)) );
+    for (i=0; i<q->window_len; i++)
+        q->w[i] *= g;
 
     // reset the spgram object
     spgram_reset(q);
+
+    // return new object
+    return q;
+}
+
+// create spgram object using Kaiser-Bessel window
+//  _nfft       :   FFT size
+//  _window_len :   window length
+spgram spgram_create_kaiser(unsigned int _nfft,
+                            unsigned int _window_len,
+                            float        _beta)
+{
+    // validate input
+    if (_nfft < 2) {
+        fprintf(stderr,"error: spgram_create_kaiser(), fft size must be at least 2\n");
+        exit(1);
+    } else if (_window_len > _nfft) {
+        fprintf(stderr,"error: spgram_create_kaiser(), window size cannot exceed fft size\n");
+        exit(1);
+    } else if (_window_len == 0) {
+        fprintf(stderr,"error: spgram_create_kaiser(), window size must be greater than zero\n");
+        exit(1);
+    } else if (_beta <= 0.0f) {
+        fprintf(stderr,"error: spgram_create_kaiser(), beta must be greater than zero\n");
+        exit(1);
+    }
+
+    // initialize tapering window, scaled by window length size
+    float * w = (float*) malloc((_window_len)*sizeof(float));
+    unsigned int i;
+    float mu = 0.0f;
+    for (i=0; i<_window_len; i++)
+        w[i] = kaiser(i, _window_len, _beta, mu);
+
+    // create spgram object
+    spgram q = spgram_create(_nfft, w, _window_len);
+
+    // free window buffer
+    free(w);
 
     // return new object
     return q;
@@ -135,6 +182,7 @@ void spgram_execute(spgram          _q,
     unsigned int i;
 
     // read buffer, copy to FFT input (applying window)
+    // TODO: use SIMD extensions to speed this up
     float complex * rc;
     windowcf_read(_q->buffer, &rc);
     for (i=0; i<_q->window_len; i++)

@@ -26,17 +26,18 @@ libraries to run; however liquid will take advantage of other packages
 
 There are two primary ways of obtaining the source code:
 
-1. Download the [tarball](http://ganymede.ece.vt.edu/downloads/liquid-dsp-1.2.0.tar.gz) (2.6 MB),
-   validate the checksum, and unpack 
+1. Clone the entire [repository](http://github.com/jgaeddert/liquid-dsp)
+   (recommended)
+        
+        $ git clone git://github.com/jgaeddert/liquid-dsp.git
+
+2. or download the [tarball](http://ganymede.ece.vt.edu/downloads/liquid-dsp-1.2.0.tar.gz)
+   (2.6 MB), validate the checksum, and unpack 
 
         $ wget http://ganymede.ece.vt.edu/downloads/liquid-dsp-1.2.0.tar.gz
         $ wget http://ganymede.ece.vt.edu/downloads/liquid-dsp.md5
         $ md5sum --check liquid-dsp.md5
         $ tar -xf liquid-dsp-1.2.0.tar.gz
-
-2. or clone the entire [repository](http://github.com/jgaeddert/liquid-dsp)
-        
-        $ git clone git://github.com/jgaeddert/liquid-dsp.git
 
 ### Installation ###
 
@@ -44,6 +45,7 @@ Once you have obtained a copy of the source code, you can now build the
 DSP library (NOTE: if you chose to clone the repository, you will need
 to also run the additional `./bootstrap.sh` script before configuring):
 
+    $ ./bootstrap.sh     # <- only if you cloned the Git repo
     $ ./configure
     $ make
     $ sudo make install
@@ -129,18 +131,20 @@ Available Modules
   * _buffer_: internal buffering, circular/static, ports (threaded)
   * _dotprod_: inner dot products (real, complex), vector sum of squares
   * _equalization_: adaptive equalizers: least mean-squares, recursive
-        least squares, blind
+        least squares, semi-blind
   * _fec_: basic forward error correction codes including several
         Hamming codes, single error correction/double error detection,
         Golay block code, as well as several checksums and cyclic
-        redundancy checks
+        redundancy checks, interleaving, soft decoding
   * _fft_: fast Fourier transforms (arbitrary length), discrete sin/cos
   * _fpm_: fixed-point math: basic arithmetic, trigonometric,
         transcendental functions
   * _filter_: finite/infinite impulse response, polyphase, hilbert,
         interpolation, decimation, filter design, resampling, symbol
         timing recovery
-  * _framing_: packet framing, encoding, synchronization, interleaving
+  * _framing_: flexible framing structures for amazingly easy packet
+        software radio; dynamically adjust modulation and coding on the
+        fly with single- and multi-carrier framing structures
   * _math_: transcendental functions not in the C standard library
         (gamma, besseli, etc.), polynomial operations (curve-fitting,
         root-finding, etc.)
@@ -148,22 +152,24 @@ Available Modules
         Gauss elimination, Gram-Schmidt decomposition, linear solver,
         sparse matrix representation
   * _modem_: modulate, demodulate, PSK, differential PSK, QAM, optimal
-        QAM, as well as analog and non-linear digital modulations (FSK)
-  * _multicarrier_: filterbank channelizers, OFDM/OQAM, OFDM
+        QAM, as well as analog and non-linear digital modulations GMSK)
+  * _multicarrier_: filterbank channelizers, OFDM
   * _nco_: numerically-controlled oscillator: mixing, frequency
         synthesis, phase-locked loops
   * _optim_: (non-linear optimization) Newton-Raphson, evoluationary
-        algorithms, gradient descent
+        algorithms, gradient descent, line search
   * _quantization_: analog/digital converters, compression/expansion
   * _random_: (random number generators) uniform, exponential, gamma,
         Nakagami-m, Gauss, Rice-K, Weibull
-  * _sequence_: linear feedback shift registers, complementary codes
+  * _sequence_: linear feedback shift registers, complementary codes,
+        maximal-length sequences
   * _utility_: useful miscellany, mostly bit manipulation (shifting,
         packing, and unpacking of arrays)
   * _experimental_: artificial neural networks, communications channel
         modeling, threaded ports, filterbank audio synthesizer,
         continuous-phase modulation, direct digital synthesis,
-        quadrature mirror filterbanks, advanced symbol timing recovery
+        quadrature mirror filterbanks, advanced symbol timing recovery,
+        OFDM/OQAM
 
 ### Additional notes ###
 

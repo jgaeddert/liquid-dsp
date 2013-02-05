@@ -17,30 +17,36 @@ int main() {
     unsigned int nfft=64;
     unsigned int num_frames = 100;
     unsigned int msdelay=100;
+    float noise_floor = -40.0f;
 
     // initialize objects
-    float complex x[nfft];
-    asgram q = asgram_create(x,nfft);
-    asgram_set_scale(q,10);
-    asgram_set_offset(q,20);
+    asgram q = asgram_create(nfft);
+    asgram_set_scale(q, noise_floor-10.0f, 10.0f);
 
     unsigned int i,n;
     float theta=0.0f, dtheta=0.0f;
     float phi=0.0f, dphi = 0.001f;
 
+    float complex x[nfft];
     float maxval;
     float maxfreq;
     char ascii[nfft+1];
     ascii[nfft] = '\0'; // append null character to end of string
+    float nstd = powf(10.0f,noise_floor/20.0f);  // noise standard deviation
     for (n=0; n<num_frames; n++) {
         // generate data
         for (i=0; i<nfft; i++) {
-            x[i] = 0.1f*cexpf(_Complex_I*theta);
+            x[i] = cexpf(_Complex_I*theta);
 
             theta += dtheta;
             dtheta = 0.9f*M_PI*sinf(phi);
             phi += dphi;
+
+            x[i] += nstd * (randnf() + _Complex_I*randnf()) * M_SQRT1_2;
         }
+
+        // push samples into the spectrogram object
+        asgram_push(q, x, nfft);
 
         // execute the spectrogram
         asgram_execute(q, ascii, &maxval, &maxfreq);

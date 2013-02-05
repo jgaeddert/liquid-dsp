@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007, 2008, 2009, 2010, 2011, 2012, 2013 Joseph Gaeddert
+ * Copyright (c) 2007, 2008, 2009, 2010, 2013 Joseph Gaeddert
  *
  * This file is part of liquid.
  *
@@ -268,7 +268,7 @@ void FIRPFB(_execute)(FIRPFB() _b,
 {
     // validate input
     if (_i >= _b->num_filters) {
-        fprintf(stderr,"error: firpfb_execute(), filterbank index exceeds maximum\n");
+        fprintf(stderr,"error: firpfb_execute(), filterbank index (%u) exceeds maximum (%u)\n", _i, _b->num_filters);
         exit(1);
     }
 

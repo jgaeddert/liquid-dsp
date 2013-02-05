@@ -1,7 +1,5 @@
 /*
- * Copyright (c) 2007, 2008, 2009, 2010 Joseph Gaeddert
- * Copyright (c) 2007, 2008, 2009, 2010 Virginia Polytechnic
- *                                      Institute & State University
+ * Copyright (c) 2007, 2008, 2009, 2010, 2013 Joseph Gaeddert
  *
  * This file is part of liquid.
  *
@@ -28,8 +26,6 @@
 #include <string.h>
 #include <math.h>
 
-#define DEBUG_RESAMP_PRINT  0
-
 // defined:
 //  TO          output data type
 //  TC          coefficient data type
@@ -37,54 +33,58 @@
 //  RESAMP()    name-mangling macro
 //  FIRPFB()    firpfb macro
 
-// use fixed-point phase vs. floating-point phase
-#define RESAMP_USE_FIXED_POINT_PHASE    1
+// enable run-time debug printing of resampler
+#define DEBUG_RESAMP_PRINT              0
+
+// internal: update timing
+void RESAMP(_update_timing_state)(RESAMP() _q);
 
 struct RESAMP(_s) {
-    TC * h;
-    unsigned int h_len;
-    float As;       // stop-band attenuation
-    float fc;       // filter cutoff
+    // filter design parameters
+    unsigned int m;     // filter semi-length, h_len = 2*m + 1
+    float As;           // filter stop-band attenuation
+    float fc;           // filter cutoff frequency
 
-    float r;        // rate
-    int b;          // filterbank index
-    float del;      // fractional delay step
+    // resampling properties/states
+    float rate;         // resampling rate (ouput/input)
+    float del;          // fractional delay step
 
-#if RESAMP_USE_FIXED_POINT_PHASE
-    // fixed-point phase
-    unsigned int theta;             // sampling phase
-    unsigned int d_theta;           // phase differential
-
-    unsigned int num_bits_phase;    // number of bits in phase
-    unsigned int max_phase;         // maximum phase value
-    unsigned int num_bits_npfb;     // number of bits in npfb
-    unsigned int num_shift_bits;    // number of bits to shift to compute b
-#else
     // floating-point phase
-    float tau;      // accumulated timing phase (0 <= tau <= 1)
-    float bf;       // soft filterbank index
-#endif
+    float tau;          // accumulated timing phase, 0 <= tau < 1
+    float bf;           // soft filterbank index, bf = tau*npfb = b + mu
+    int b;              // base filterbank index, 0 <= b < npfb
+    float mu;           // fractional filterbank interpolation value, 0 <= mu < 1
+    TO y0;              // filterbank output at index b
+    TO y1;              // filterbank output at index b+1
 
-    unsigned int npfb;
-    FIRPFB() f;
+    // polyphase filterbank properties/object
+    unsigned int npfb;  // number of filters in the bank
+    FIRPFB() f;         // filterbank object (interpolator)
 
-#if 0
-    fir_prototype p;    // prototype object
-#endif
+    enum {
+        STATE_BOUNDARY, // boundary between input samples
+        STATE_INTERP,   // regular interpolation
+    } state;
 };
 
-RESAMP() RESAMP(_create)(float _r,
-                         unsigned int _h_len,
-                         float _fc,
-                         float _As,
+// create arbitrary resampler
+//  _rate   :   resampling rate
+//  _m      :   prototype filter semi-length
+//  _fc     :   prototype filter cutoff frequency, fc in (0, 0.5)
+//  _As     :   prototype filter stop-band attenuation [dB] (e.g. 60)
+//  _npfb   :   number of filters in polyphase filterbank
+RESAMP() RESAMP(_create)(float        _rate,
+                         unsigned int _m,
+                         float        _fc,
+                         float        _As,
                          unsigned int _npfb)
 {
     // validate input
-    if (_r <= 0) {
+    if (_rate <= 0) {
         fprintf(stderr,"error: resamp_%s_create(), resampling rate must be greater than zero\n", EXTENSION_FULL);
         exit(1);
-    } else if (_h_len == 0) {
-        fprintf(stderr,"error: resamp_%s_create(), filter length must be greater than zero\n", EXTENSION_FULL);
+    } else if (_m == 0) {
+        fprintf(stderr,"error: resamp_%s_create(), filter semi-length must be greater than zero\n", EXTENSION_FULL);
         exit(1);
     } else if (_npfb == 0) {
         fprintf(stderr,"error: resamp_%s_create(), number of filter banks must be greater than zero\n", EXTENSION_FULL);
@@ -97,31 +97,21 @@ RESAMP() RESAMP(_create)(float _r,
         exit(1);
     }
 
+    // allocate memory for resampler
     RESAMP() q = (RESAMP()) malloc(sizeof(struct RESAMP(_s)));
-    q->r     = _r;
-    q->As    = _As;
-    q->fc    = _fc;
-    q->h_len = _h_len;
 
-    q->b   = 0;
-    q->del = 1.0f / q->r;
+    // set rate using formal method (specifies output stride
+    // value 'del')
+    RESAMP(_setrate)(q, _rate);
 
-#if RESAMP_USE_FIXED_POINT_PHASE
-    q->num_bits_npfb = liquid_nextpow2(_npfb);
-    q->npfb = 1<<q->num_bits_npfb;
-    q->num_bits_phase = 20;
-    q->max_phase = 1 << q->num_bits_phase;
-    q->num_shift_bits = q->num_bits_phase - q->num_bits_npfb;
-    q->theta = 0;
-    q->d_theta = (unsigned int)( q->max_phase * q->del );
-#else
-    q->npfb = _npfb;
-    q->tau = 0.0f;
-    q->bf  = 0.0f;
-#endif
+    // set properties
+    q->m    = _m;       // prototype filter semi-length
+    q->fc   = _fc;      // prototype filter cutoff frequency
+    q->As   = _As;      // prototype filter stop-band attenuation
+    q->npfb = _npfb;    // number of filters in bank
 
     // design filter
-    unsigned int n = 2*_h_len*q->npfb+1;
+    unsigned int n = 2*q->m*q->npfb+1;
     float hf[n];
     TC h[n];
     liquid_firdes_kaiser(n,q->fc/((float)(q->npfb)),q->As,0.0f,hf);
@@ -137,103 +127,178 @@ RESAMP() RESAMP(_create)(float _r,
 
     // copy to type-specific array
     for (i=0; i<n; i++) {
-#if defined LIQUID_FIXED && TC_COMPLEX==0
-        h[i] = Q(_float_to_fixed)(hf[i]);
-#elif defined LIQUID_FIXED && TC_COMPLEX==1
+#if defined LIQUID_FIXED && TC_COMPLEX==1
         h[i].real = Q(_float_to_fixed)(hf[i]);
         h[i].imag = 0;
+#elif defined LIQUID_FIXED && TC_COMPLEX==0
+        h[i] = Q(_float_to_fixed)(hf[i]);
 #else
         h[i] = hf[i];
 #endif
     }
     q->f = FIRPFB(_create)(q->npfb,h,n-1);
 
-    //for (i=0; i<n; i++)
-    //    PRINTVAL_TC(h[i],%12.8f);
-    //exit(0);
-
+    // reset object and return
+    RESAMP(_reset)(q);
     return q;
 }
 
+// free arbitrary resampler object
 void RESAMP(_destroy)(RESAMP() _q)
 {
+    // free polyphase filterbank
     FIRPFB(_destroy)(_q->f);
+
+    // free main object memory
     free(_q);
 }
 
+// print resampler object
 void RESAMP(_print)(RESAMP() _q)
 {
-    printf("resampler [rate: %f]\n", _q->r);
+    printf("resampler [rate: %f]\n", _q->rate);
     FIRPFB(_print)(_q->f);
 }
 
+// reset resampler object
 void RESAMP(_reset)(RESAMP() _q)
 {
+    // clear filterbank
     FIRPFB(_clear)(_q->f);
-    _q->b   = 0;
 
-#if RESAMP_USE_FIXED_POINT_PHASE
-    _q->theta = 0;
+    // reset states
+    _q->state = STATE_INTERP;   // input/output sample state
+    _q->tau   = 0.0f;           // accumulated timing phase
+    _q->bf    = 0.0f;           // soft-valued filterbank index
+    _q->b     = 0;              // base filterbank index
+    _q->mu    = 0.0f;           // fractional filterbank interpolation value
+
+    // reset filterbank outputs at indices b and b+1
+#if defined LIQUID_FIXED && TO_COMPLEX==1
+    _q->y0.real = 0;
+    _q->y0.imag = 0;
+    _q->y1.real = 0;
+    _q->y1.imag = 0;
 #else
-    _q->tau = 0.0f;
-    _q->bf  = 0.0f;
+    _q->y0 = 0;
+    _q->y1 = 0;
 #endif
 }
 
-void RESAMP(_setrate)(RESAMP() _q, float _rate)
+// set resampling rate
+void RESAMP(_setrate)(RESAMP() _q,
+                      float    _rate)
 {
-    // TODO : validate rate, validate this method
-    _q->r = _rate;
-    _q->del = 1.0f / _q->r;
+    if (_rate <= 0) {
+        fprintf(stderr,"error: resamp_%s_setrate(), resampling rate must be greater than zero\n", EXTENSION_FULL);
+        exit(1);
+    }
 
-#if RESAMP_USE_FIXED_POINT_PHASE
-    _q->d_theta = (unsigned int)( _q->max_phase * _q->del );
-#endif
+    // set internal rate
+    _q->rate = _rate;
+
+    // set output stride
+    _q->del = 1.0f / _q->rate;
 }
 
-void RESAMP(_execute)(RESAMP() _q,
-                      TI _x,
-                      TO * _y,
-                      unsigned int *_num_written)
+
+// run arbitrary resampler
+//  _q          :   resampling object
+//  _x          :   single input sample
+//  _y          :   output array
+//  _num_written:   number of samples written to output
+void RESAMP(_execute)(RESAMP()       _q,
+                      TI             _x,
+                      TO *           _y,
+                      unsigned int * _num_written)
 {
+    // push input sample into filterbank
     FIRPFB(_push)(_q->f, _x);
     unsigned int n=0;
     
-    //while (_q->tau < 1.0f) {
-#if RESAMP_USE_FIXED_POINT_PHASE
-    while (_q->theta < _q->max_phase) {
-#else
     while (_q->b < _q->npfb) {
-#endif
 
 #if DEBUG_RESAMP_PRINT
-#  if RESAMP_USE_FIXED_POINT_PHASE
-        printf("  [%2u] : theta = %6u, b : %6u\n", n, _q->theta, _q->b);
-#  else
-        printf("  [%2u] : tau : %12.8f, b : %4u (%12.8f)\n", n, _q->tau, _q->b, _q->bf);
-#  endif
+        printf("  [%2u] : s=%1u, tau=%12.8f, b : %12.8f (%4d + %8.6f)\n", n+1, _q->state, _q->tau, _q->bf, _q->b, _q->mu);
 #endif
-        FIRPFB(_execute)(_q->f, _q->b, &_y[n]);
+        switch (_q->state) {
+        case STATE_BOUNDARY:
+            // compute filterbank output
+            FIRPFB(_execute)(_q->f, 0, &_q->y1);
 
-#if RESAMP_USE_FIXED_POINT_PHASE
-        _q->theta += _q->d_theta;
-        _q->b = _q->theta >> _q->num_shift_bits;
+            // interpolate
+#if defined LIQUID_FIXED
+            _y[n++] = _q->y0;   // FIXME: compute acutal interpolation
 #else
-        _q->tau += _q->del;
-        _q->bf = _q->tau * (float)(_q->npfb);
-        _q->b  = (int)roundf(_q->bf);
+            _y[n++] = (1.0f - _q->mu)*_q->y0 + _q->mu*_q->y1;
 #endif
-        n++;
+        
+            // update timing state
+            RESAMP(_update_timing_state)(_q);
+
+            _q->state = STATE_INTERP;
+            break;
+
+        case STATE_INTERP:
+            // compute output at base index
+            FIRPFB(_execute)(_q->f, _q->b, &_q->y0);
+
+            // check to see if base index is last filter in the bank, in
+            // which case the resampler needs an additional input sample
+            // to finish the linear interpolation process
+            if (_q->b == _q->npfb-1) {
+                // last filter: need additional input sample
+                _q->state = STATE_BOUNDARY;
+            
+                // set index to indicate new sample is needed
+                _q->b = _q->npfb;
+            } else {
+                // do not need additional input sample; compute
+                // output at incremented base index
+                FIRPFB(_execute)(_q->f, _q->b+1, &_q->y1);
+
+                // perform linear interpolation between filterbank outputs
+#if defined LIQUID_FIXED
+                _y[n++] = _q->y0;   // FIXME: compute acutal interpolation
+#else
+                _y[n++] = (1.0f - _q->mu)*_q->y0 + _q->mu*_q->y1;
+#endif
+
+                // update timing state
+                RESAMP(_update_timing_state)(_q);
+            }
+            break;
+        default:
+            fprintf(stderr,"error: resamp_%s_execute(), invalid/unknown state\n", EXTENSION_FULL);
+            exit(1);
+        }
     }
 
-#if RESAMP_USE_FIXED_POINT_PHASE
-    _q->theta -= _q->max_phase;
-    _q->b = _q->theta >> _q->num_shift_bits;
-#else
+    // decrement timing phase by one sample
     _q->tau -= 1.0f;
     _q->bf  -= (float)(_q->npfb);
     _q->b   -= _q->npfb;
-#endif
+
+    // specify number of samples written
     *_num_written = n;
+}
+
+//
+// internal methods
+// 
+
+// update timing state; increment output timing stride and
+// quantize filterbank indices
+void RESAMP(_update_timing_state)(RESAMP() _q)
+{
+    // update high-resolution timing phase
+    _q->tau += _q->del;
+
+    // convert to high-resolution filterbank index 
+    _q->bf  = _q->tau * (float)(_q->npfb);
+
+    // split into integer filterbank index and fractional interpolation
+    _q->b   = (int)floorf(_q->bf);      // base index
+    _q->mu  = _q->bf - (float)(_q->b);  // fractional index
 }
 

@@ -72,6 +72,7 @@
 #include "interp.c"
 #include "decim.c"
 #include "msresamp.c"
-#include "resamp.c"
+#include "resamp.c"         // floating-point phase version
+//#include "resamp.fixed.c" // fixed-point phase version
 #include "resamp2.c"
 #include "symsync.c"
