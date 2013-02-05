@@ -256,6 +256,22 @@ const static CQ(_t) CQ(_I)    = {Q(_zero), Q(_one)};  /* 0 + j1 */  \
 liquidfpm_float_complex CQ(_fixed_to_float)(CQ(_t) _x);             \
 CQ(_t) CQ(_float_to_fixed)(liquidfpm_float_complex _x);             \
                                                                     \
+/* convert array of fixed-point values to floating point        */  \
+/*  _dst    :   destination address                             */  \
+/*  _src    :   source address                                  */  \
+/*  _n      :   number of elements                              */  \
+void CQ(_memmove_fixed_to_float)(liquidfpm_float_complex * _x,      \
+                                 CQ(_t) *                  _y,      \
+                                 unsigned int              _n);     \
+                                                                    \
+/* convert array of floating-point values to fixed point        */  \
+/*  _dst    :   destination address                             */  \
+/*  _src    :   source address                                  */  \
+/*  _n      :   number of elements                              */  \
+void CQ(_memmove_float_to_fixed)(CQ(_t) *                  _x,      \
+                                 liquidfpm_float_complex * _y,      \
+                                 unsigned int              _n);     \
+                                                                    \
 /* arithmetic */                                                    \
 CQ(_t) CQ(_add)       (CQ(_t) _a, CQ(_t) _b);                       \
 CQ(_t) CQ(_sub)       (CQ(_t) _a, CQ(_t) _b);                       \

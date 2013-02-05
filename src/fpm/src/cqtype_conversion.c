@@ -1,7 +1,5 @@
 /*
- * Copyright (c) 2008, 2009, 2010, 2011, 2012 Joseph Gaeddert
- * Copyright (c) 2008, 2009, 2010, 2011, 2012 Virginia Polytechnic
- *                                Institute & State University
+ * Copyright (c) 2008, 2009, 2010, 2011, 2012, 2013 Joseph Gaeddert
  *
  * This file is part of liquid.
  *
@@ -41,4 +39,31 @@ CQ(_t) CQ(_float_to_fixed)(float complex _x)
     return y;
 }
 
+// convert array of fixed-point values to floating point
+//  _dst    :   destination address
+//  _src    :   source address
+//  _n      :   number of elements
+void CQ(_memmove_fixed_to_float)(float complex * _x,
+                                 CQ(_t) *        _y,
+                                 unsigned int    _n)
+{
+    // slow method; just run individual conversion on each sample
+    unsigned int i;
+    for (i=0; i<_n; i++)
+        _x[i] = CQ(_fixed_to_float)(_y[i]);
+}
+
+// convert array of floating-point values to fixed point
+//  _dst    :   destination address
+//  _src    :   source address
+//  _n      :   number of elements
+void CQ(_memmove_float_to_fixed)(CQ(_t) *        _x,
+                                 float complex * _y,
+                                 unsigned int    _n)
+{
+    // slow method; just run individual conversion on each sample
+    unsigned int i;
+    for (i=0; i<_n; i++)
+        _x[i] = CQ(_float_to_fixed)(_y[i]);
+}
 
