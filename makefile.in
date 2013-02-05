@@ -661,6 +661,7 @@ fpm_includes :=							\
 	src/fpm/src/cqtype_trig_cordic.c			\
 	src/fpm/src/cqtype_logexp_cordic.c			\
 	src/fpm/src/qtype_arithmetic.port.c			\
+	src/fpm/src/qtype_conversion.c				\
 	src/fpm/src/qtype_inv_newton.c				\
 	src/fpm/src/qtype_log2_frac.c				\
 	src/fpm/src/qtype_exp2_frac.c				\

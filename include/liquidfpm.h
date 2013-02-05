@@ -1,7 +1,5 @@
 /*
- * Copyright (c) 2008, 2009, 2010, 2011, 2012 Joseph Gaeddert
- * Copyright (c) 2008, 2009, 2010, 2011, 2012 Virginia Polytechnic
- *                                Institute & State University
+ * Copyright (c) 2008, 2009, 2010, 2011, 2012, 2013 Joseph Gaeddert
  *
  * This file is part of liquid.
  *
@@ -160,6 +158,22 @@ static inline float Q(_angle_fixed_to_float)(Q(_t) _x)              \
     { return Q(_fixed_to_float(_x)) * Q(_angle_scalarf); };         \
 static inline Q(_t) Q(_angle_float_to_fixed)(float _x)              \
     { return Q(_float_to_fixed(_x / Q(_angle_scalarf))); };         \
+                                                                    \
+/* convert array of fixed-point values to floating point        */  \
+/*  _dst    :   destination address                             */  \
+/*  _src    :   source address                                  */  \
+/*  _n      :   number of elements                              */  \
+void Q(_memmove_fixed_to_float)(float *      _x,                    \
+                                Q(_t) *      _y,                    \
+                                unsigned int _n);                   \
+                                                                    \
+/* convert array of floating-point values to fixed point        */  \
+/*  _dst    :   destination address                             */  \
+/*  _src    :   source address                                  */  \
+/*  _n      :   number of elements                              */  \
+void Q(_memmove_float_to_fixed)(Q(_t) *      _x,                    \
+                                float *      _y,                    \
+                                unsigned int _n);                   \
                                                                     \
 /* arithmetic */                                                    \
 static inline Q(_t) Q(_sign)(Q(_t) _x) {return (_x<0) ? -1 : 1;};   \

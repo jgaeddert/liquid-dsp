@@ -1,6 +1,5 @@
 /*
- * Copyright (c) 2012 Joseph Gaeddert
- * Copyright (c) 2012 Virginia Polytechnic Institute & State University
+ * Copyright (c) 2012, 2013 Joseph Gaeddert
  *
  * This file is part of liquid.
  *
@@ -29,6 +28,7 @@
 
 // source files
 #include "qtype_arithmetic.port.c"
+#include "qtype_conversion.c"
 #include "qtype_inv_newton.c"
 #include "qtype_log2_frac.c"
 #include "qtype_exp2_frac.c"
