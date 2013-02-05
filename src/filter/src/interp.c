@@ -1,6 +1,5 @@
 /*
- * Copyright (c) 2007-2011 Joseph Gaeddert
- * Copyright (c) 2007-2011 Virginia Polytechnic Institute & State University
+ * Copyright (c) 2007, 2008, 2009, 2010, 2011, 2012, 2013 Joseph Gaeddert
  *
  * This file is part of liquid.
  *
@@ -48,7 +47,7 @@ struct INTERP(_s) {
 //  _h      :   filter coefficients array [size: _h_len x 1]
 //  _h_len  :   filter length
 INTERP() INTERP(_create)(unsigned int _M,
-                         TC *_h,
+                         TC *         _h,
                          unsigned int _h_len)
 {
     // validate input
@@ -92,7 +91,7 @@ INTERP() INTERP(_create)(unsigned int _M,
 //  _As     :   stop-band attenuation [dB]
 INTERP() INTERP(_create_prototype)(unsigned int _M,
                                    unsigned int _m,
-                                   float _As)
+                                   float        _As)
 {
     // validate input
     if (_M < 2) {
@@ -128,11 +127,11 @@ INTERP() INTERP(_create_prototype)(unsigned int _M,
 //  _m      :   filter delay (symbols), _m > 0
 //  _beta   :   excess bandwidth factor, 0 < _beta < 1
 //  _dt     :   fractional sample delay, 0 <= _dt < 1
-INTERP() INTERP(_create_rnyquist)(int _type,
+INTERP() INTERP(_create_rnyquist)(int          _type,
                                   unsigned int _k,
                                   unsigned int _m,
-                                  float _beta,
-                                  float _dt)
+                                  float        _beta,
+                                  float        _dt)
 {
     // validate input
     if (_k < 2) {
@@ -192,8 +191,8 @@ void INTERP(_clear)(INTERP() _q)
 //  _x      :   input sample
 //  _y      :   output array [size: 1 x _M]
 void INTERP(_execute)(INTERP() _q,
-                      TI _x,
-                      TO *_y)
+                      TI       _x,
+                      TO *     _y)
 {
     // push sample into filterbank
     FIRPFB(_push)(_q->filterbank,  _x);

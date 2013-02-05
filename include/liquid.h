@@ -1754,7 +1754,7 @@ typedef struct INTERP(_s) * INTERP();                           \
 /*  _h      : filter coefficients [size: _h_len x 1]    */      \
 /*  _h_len  : filter length                             */      \
 INTERP() INTERP(_create)(unsigned int _M,                       \
-                         TC *_h,                                \
+                         TC *         _h,                       \
                          unsigned int _h_len);                  \
 /* create interpolator from prototype                   */      \
 /*  _M      : interpolation factor                      */      \
@@ -1762,18 +1762,18 @@ INTERP() INTERP(_create)(unsigned int _M,                       \
 /*  _As     : stop-band attenuation [dB]                */      \
 INTERP() INTERP(_create_prototype)(unsigned int _M,             \
                                    unsigned int _m,             \
-                                   float As);                   \
+                                   float        _As);           \
 /* create square-root Nyquist interpolator              */      \
 /*  _type   : filter type (e.g. LIQUID_RNYQUIST_RRC)    */      \
 /*  _k      : samples/symbol (interpolation factor)     */      \
 /*  _m      : filter delay (symbols)                    */      \
 /*  _beta   : rolloff factor (0 < beta <= 1)            */      \
 /*  _dt     : fractional sample delay                   */      \
-INTERP() INTERP(_create_rnyquist)(int _type,                    \
+INTERP() INTERP(_create_rnyquist)(int          _type,           \
                                   unsigned int _k,              \
                                   unsigned int _m,              \
-                                  float _beta,                  \
-                                  float _dt);                   \
+                                  float        _beta,           \
+                                  float        _dt);            \
 void INTERP(_destroy)(INTERP() _q);                             \
 void INTERP(_print)(INTERP() _q);                               \
 void INTERP(_clear)(INTERP() _q);                               \
