@@ -75,8 +75,16 @@ INTERP() INTERP(_create)(unsigned int _M,
 
     // load filter coefficients in regular order, padding end with zeros
     unsigned int i;
-    for (i=0; i<q->h_len; i++)
-        q->h[i] = i < _h_len ? _h[i] : 0.0f;
+    for (i=0; i<q->h_len; i++) {
+#if defined LIQUID_FIXED && TC_COMPLEX == 1
+        q->h[i].real = i < _h_len ? _h[i].real : 0;
+        q->h[i].imag = i < _h_len ? _h[i].imag : 0;
+#elif defined LIQUID_FIXED && TC_COMPLEX == 0
+        q->h[i] = i < _h_len ? _h[i] : 0;
+#else
+        q->h[i] = i < _h_len ? _h[i] : 0;
+#endif
+    }
 
     // create polyphase filterbank
     q->filterbank = FIRPFB(_create)(q->M, q->h, q->h_len);
@@ -114,8 +122,16 @@ INTERP() INTERP(_create_prototype)(unsigned int _M,
     // copy coefficients to type-specific array (e.g. float complex)
     TC hc[h_len];
     unsigned int i;
-    for (i=0; i<h_len; i++)
+    for (i=0; i<h_len; i++) {
+#if defined LIQUID_FIXED && TC_COMPLEX == 1
+        hc[i].real = Q(_float_to_fixed)(hf[i]);
+        hc[i].imag = 0;
+#elif defined LIQUID_FIXED && TC_COMPLEX == 0
+        hc[i] = Q(_float_to_fixed)(hf[i]);
+#else
         hc[i] = hf[i];
+#endif
+    }
     
     // return interpolator object
     return INTERP(_create)(_M, hc, 2*_M*_m);
@@ -150,14 +166,22 @@ INTERP() INTERP(_create_rnyquist)(int          _type,
 
     // generate square-root Nyquist filter
     unsigned int h_len = 2*_k*_m + 1;
-    float h[h_len];
-    liquid_firdes_rnyquist(_type,_k,_m,_beta,_dt,h);
+    float hf[h_len];
+    liquid_firdes_rnyquist(_type,_k,_m,_beta,_dt,hf);
 
     // copy coefficients to type-specific array (e.g. float complex)
     unsigned int i;
     TC hc[h_len];
-    for (i=0; i<h_len; i++)
-        hc[i] = h[i];
+    for (i=0; i<h_len; i++) {
+#if defined LIQUID_FIXED && TC_COMPLEX == 1
+        hc[i].real = Q(_float_to_fixed)(hf[i]);
+        hc[i].imag = 0;
+#elif defined LIQUID_FIXED && TC_COMPLEX == 0
+        hc[i] = Q(_float_to_fixed)(hf[i]);
+#else
+        hc[i] = hf[i];
+#endif
+    }
 
     // return interpolator object
     return INTERP(_create)(_k, hc, h_len);

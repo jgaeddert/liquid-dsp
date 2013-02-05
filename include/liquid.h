@@ -1747,6 +1747,11 @@ LIQUID_FIRPFB_DEFINE_API(FIRPFB_MANGLE_CCCQ16, cq16_t, cq16_t, cq16_t)
 #define INTERP_MANGLE_CRCF(name)  LIQUID_CONCAT(interp_crcf,name)
 #define INTERP_MANGLE_CCCF(name)  LIQUID_CONCAT(interp_cccf,name)
 
+// fixed-point
+#define INTERP_MANGLE_RRRQ16(name) LIQUID_CONCAT(interp_rrrq16,name)
+#define INTERP_MANGLE_CRCQ16(name) LIQUID_CONCAT(interp_crcq16,name)
+#define INTERP_MANGLE_CCCQ16(name) LIQUID_CONCAT(interp_cccq16,name)
+
 #define LIQUID_INTERP_DEFINE_API(INTERP,TO,TC,TI)               \
 typedef struct INTERP(_s) * INTERP();                           \
 /* create interpolator from external coefficients       */      \
@@ -1793,6 +1798,11 @@ LIQUID_INTERP_DEFINE_API(INTERP_MANGLE_CCCF,
                          liquid_float_complex,
                          liquid_float_complex,
                          liquid_float_complex)
+
+// fixed-point
+LIQUID_INTERP_DEFINE_API(INTERP_MANGLE_RRRQ16,  q16_t,  q16_t,  q16_t)
+LIQUID_INTERP_DEFINE_API(INTERP_MANGLE_CRCQ16, cq16_t,  q16_t, cq16_t)
+LIQUID_INTERP_DEFINE_API(INTERP_MANGLE_CCCQ16, cq16_t, cq16_t, cq16_t)
 
 // 
 // Decimator
