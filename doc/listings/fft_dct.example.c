@@ -3,9 +3,9 @@
 
 int main() {
     // options
-    unsigned int n=16;      // input data size
-    int type = FFT_REDFT01; // DCT-III
-    int flags=0;            // FFT flags (typically ignored)
+    unsigned int n=16;              // input data size
+    int type = LIQUID_FFT_REDFT01;  // DCT-III
+    int flags=0;                    // FFT flags (typically ignored)
 
     // allocated memory arrays
     float * x = (float*) malloc(n * sizeof(float));

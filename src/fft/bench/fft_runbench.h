@@ -1,6 +1,5 @@
 /*
- * Copyright (c) 2012 Joseph Gaeddert
- * Copyright (c) 2012 Virginia Polytechnic Institute & State University
+ * Copyright (c) 2012, 2013 Joseph Gaeddert
  *
  * This file is part of liquid.
  *
@@ -27,10 +26,10 @@
 
 #include <sys/resource.h>
 
-#define FFT_BENCHMARK_API(NFFT,D)       \
-(   struct rusage *_start,              \
-    struct rusage *_finish,             \
-    unsigned long int *_num_iterations) \
+#define LIQUID_FFT_BENCHMARK_API(NFFT,D)    \
+(   struct rusage *_start,                  \
+    struct rusage *_finish,                 \
+    unsigned long int *_num_iterations)     \
 { fft_runbench(_start, _finish, _num_iterations, NFFT, D); }
 
 // Helper function to keep code base small

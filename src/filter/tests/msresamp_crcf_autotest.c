@@ -91,7 +91,7 @@ void autotest_msresamp_crcf()
     float complex Yfft[nfft];   // fft output
     for (i=0; i<nfft; i++)
         yfft[i] = i < ny ? y[i] : 0.0f;
-    fft_run(nfft, yfft, Yfft, FFT_FORWARD, 0);
+    fft_run(nfft, yfft, Yfft, LIQUID_FFT_FORWARD, 0);
     fft_shift(Yfft, nfft);  // run FFT shift
 
     // find peak frequency

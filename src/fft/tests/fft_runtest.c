@@ -38,11 +38,11 @@ void fft_test(float complex * _x,
     float complex y[_n], z[_n];
 
     // compute FFT
-    fftplan pf = fft_create_plan(_n, _x, y, FFT_FORWARD, _method);
+    fftplan pf = fft_create_plan(_n, _x, y, LIQUID_FFT_FORWARD, _method);
     fft_execute(pf);
 
     // compute IFFT
-    fftplan pr = fft_create_plan(_n, y, z, FFT_REVERSE, _method);
+    fftplan pr = fft_create_plan(_n, y, z, LIQUID_FFT_BACKWARD, _method);
     fft_execute(pr);
 
     // normalize inverse

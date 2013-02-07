@@ -1,6 +1,5 @@
 /*
- * Copyright (c) 2011 Joseph Gaeddert
- * Copyright (c) 2011 Virginia Polytechnic Institute & State University
+ * Copyright (c) 2011, 2013 Joseph Gaeddert
  *
  * This file is part of liquid.
  *
@@ -92,7 +91,7 @@ void liquid_firdes_fnyquist(liquid_nyquist_type _type,
         H[i] = _root ? sqrtf(H_prime[i]) : H_prime[i];
 
     // compute ifft
-    fft_run(h_len, H, h, FFT_REVERSE, 0);
+    fft_run(h_len, H, h, LIQUID_FFT_BACKWARD, 0);
     
     // copy shifted, scaled response
     for (i=0; i<h_len; i++)

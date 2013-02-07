@@ -106,7 +106,7 @@ int main(int argc, char*argv[])
         }
 
         // run inverse transform
-        fft_run(M, X, x, FFT_REVERSE, 0);
+        fft_run(M, X, x, LIQUID_FFT_BACKWARD, 0);
 
         // scale by FFT gain so E{|x|^2} = 1
         for (i=0; i<M; i++)
@@ -125,7 +125,7 @@ int main(int argc, char*argv[])
         }
 
         // run forward transform
-        fft_run(M, &buffer[cp_len], X, FFT_FORWARD, 0);
+        fft_run(M, &buffer[cp_len], X, LIQUID_FFT_FORWARD, 0);
 
         // TODO : apply equalizer to 'X' here
 
