@@ -21,7 +21,7 @@
 #include "liquid.h"
 
 // include data sets
-#include "fft_autotest.h"
+#include "fft_runtest.h"
 
 // autotest helper function
 void fft_r2r_test(float *      _x,
