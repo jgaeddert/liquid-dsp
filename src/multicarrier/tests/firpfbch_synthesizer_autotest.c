@@ -1,6 +1,5 @@
 /*
- * Copyright (c) 2007, 2009, 2010 Joseph Gaeddert
- * Copyright (c) 2007, 2009, 2010 Virginia Polytechnic Institute & State University
+ * Copyright (c) 2007, 2009, 2010, 2013 Joseph Gaeddert
  *
  * This file is part of liquid.
  *
@@ -41,13 +40,15 @@ void autotest_firpfbch_crcf_synthesis()
 
     // generate filter
     // NOTE : these coefficients can be random; the purpose of this
-    //        exercise is to demonstrate mathematical equivalence
+    //        exercise is to demonstrate mathematical equivalence.
+    //        For the sake of consistency, use pseudo-random values
+    //        chosen from m-sequences
     unsigned int h_len = p*num_channels;
     float h[h_len];
-    for (i=0; i<h_len; i++) h[i] = randnf();
-    //for (i=0; i<h_len; i++) h[i] = 0.1f*i;
-    //for (i=0; i<h_len; i++) h[i] = (i<=m) ? 1.0f : 0.0f;
-    //for (i=0; i<h_len; i++) h[i] = 1.0f;
+    msequence ms = msequence_create_default(6);
+    for (i=0; i<h_len; i++)
+        h[i] = (float)msequence_generate_symbol(ms, 2) - 1.5f; // (-1.5, -0.5, 0.5, 1.5)
+    msequence_destroy(ms);
 
     // create filter object
     firfilt_crcf f = firfilt_crcf_create(h, h_len);
@@ -60,10 +61,14 @@ void autotest_firpfbch_crcf_synthesis()
     float complex y1[num_samples];                  // time-domain output
 
     // generate input sequence (complex noise)
+    ms = msequence_create_default(7);
     for (i=0; i<num_symbols; i++) {
-        for (j=0; j<num_channels; j++)
-            Y[i][j] = 0.1f * (randnf() + _Complex_I*randnf()) * M_SQRT1_2;
+        for (j=0; j<num_channels; j++) {
+            Y[i][j] = 0.1f * M_SQRT1_2 * ((float)msequence_generate_symbol(ms,2) - 1.5f) +
+                      0.1f * M_SQRT1_2 * ((float)msequence_generate_symbol(ms,2) - 1.5f)*_Complex_I;
+        }
     }
+    msequence_destroy(ms);
 
     // 
     // run synthesis filter bank
