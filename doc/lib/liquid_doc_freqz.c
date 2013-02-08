@@ -1,7 +1,5 @@
 /*
- * Copyright (c) 2007, 2008, 2009, 2010 Joseph Gaeddert
- * Copyright (c) 2007, 2008, 2009, 2010 Virginia Polytechnic
- *                                      Institute & State University
+ * Copyright (c) 2007, 2008, 2009, 2010, 2013 Joseph Gaeddert
  *
  * This file is part of liquid.
  *
@@ -42,7 +40,7 @@ void liquid_doc_freqz(float * _b,
     float complex B[_nfft];
     float complex A[_nfft];
     float complex X[_nfft];
-    fftplan fft = fft_create_plan(_nfft,x,X,FFT_FORWARD,0);
+    fftplan fft = fft_create_plan(_nfft,x,X,LIQUID_FFT_FORWARD,0);
 
     // numerator
     for (i=0; i<_nfft; i++)

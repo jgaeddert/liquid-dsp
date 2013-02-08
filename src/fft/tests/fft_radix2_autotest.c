@@ -1,6 +1,5 @@
 /*
- * Copyright (c) 2012 Joseph Gaeddert
- * Copyright (c) 2012 Virginia Polytechnic Institute & State University
+ * Copyright (c) 2012, 2013 Joseph Gaeddert
  *
  * This file is part of liquid.
  *
@@ -26,7 +25,7 @@
 #include "liquid.h"
 
 // autotest data definitions
-#include "src/fft/tests/fft_autotest.h"
+#include "src/fft/tests/fft_runtest.h"
 
 // 
 // AUTOTESTS: power-of-two transforms

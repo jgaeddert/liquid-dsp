@@ -11,7 +11,7 @@ int main() {
     float complex * y = (float complex*) malloc(n * sizeof(float complex));
 
     // create FFT plan
-    fftplan q = fft_create_plan(n, x, y, FFT_FORWARD, flags);
+    fftplan q = fft_create_plan(n, x, y, LIQUID_FFT_FORWARD, flags);
 
     // ... initialize input ...
 

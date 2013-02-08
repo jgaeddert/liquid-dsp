@@ -1,6 +1,5 @@
 /*
- * Copyright (c) 2011 Joseph Gaeddert
- * Copyright (c) 2011 Virginia Polytechnic Institute & State University
+ * Copyright (c) 2011, 2013 Joseph Gaeddert
  *
  * This file is part of liquid.
  *
@@ -110,7 +109,7 @@ int main(int argc, char*argv[]) {
         H_tx[i] = sqrtf(H_prime[i]);
 
     // compute ifft and copy response
-    fft_run(h_len, H_tx, h_tx, FFT_REVERSE, 0);
+    fft_run(h_len, H_tx, h_tx, LIQUID_FFT_BACKWARD, 0);
     for (i=0; i<h_len; i++)
         ht[i] = crealf( h_tx[(i+k*m+1)%h_len] ) / (float)(h_len);
 

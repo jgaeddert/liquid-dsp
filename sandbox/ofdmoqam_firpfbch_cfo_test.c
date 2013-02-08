@@ -125,9 +125,9 @@ int main() {
     float complex x[num_channels];  // time-domain buffer
     float complex X[num_channels];  // freq-domain buffer
 #if 0
-    fftplan fft = fft_create_plan(num_channels, X, x, FFT_REVERSE, 0);
+    fftplan fft = fft_create_plan(num_channels, X, x, LIQUID_FFT_BACKWARD, 0);
 #else
-    fftplan fft = fft_create_plan(num_channels, X, x, FFT_FORWARD, 0);
+    fftplan fft = fft_create_plan(num_channels, X, x, LIQUID_FFT_FORWARD, 0);
 #endif
 
     // 

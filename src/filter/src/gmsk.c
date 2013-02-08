@@ -1,6 +1,5 @@
 /*
- * Copyright (c) 2011 Joseph Gaeddert
- * Copyright (c) 2011 Virginia Polytechnic Institute & State University
+ * Copyright (c) 2011, 2013 Joseph Gaeddert
  *
  * This file is part of liquid.
  *
@@ -157,9 +156,9 @@ void liquid_firdes_gmskrx(unsigned int _k,
     }
 
     // run ffts
-    fft_run(h_len, h_prime, H_prime, FFT_FORWARD, 0);
-    fft_run(h_len, g_prime, G_prime, FFT_FORWARD, 0);
-    fft_run(h_len, h_tx,    H_tx,    FFT_FORWARD, 0);
+    fft_run(h_len, h_prime, H_prime, LIQUID_FFT_FORWARD, 0);
+    fft_run(h_len, g_prime, G_prime, LIQUID_FFT_FORWARD, 0);
+    fft_run(h_len, h_tx,    H_tx,    LIQUID_FFT_FORWARD, 0);
 
     // find minimum of reponses
     float H_tx_min = 0.0f;
@@ -181,7 +180,7 @@ void liquid_firdes_gmskrx(unsigned int _k,
     }
 
     // compute ifft and copy response
-    fft_run(h_len, H_hat, h_hat, FFT_REVERSE, 0);
+    fft_run(h_len, H_hat, h_hat, LIQUID_FFT_BACKWARD, 0);
     for (i=0; i<h_len; i++)
         hr[i] = crealf( h_hat[(i+k*m+1)%h_len] ) / (float)(k*h_len);
 

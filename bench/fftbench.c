@@ -281,7 +281,7 @@ void fftbench_execute(struct fftbench_s * _fftbench)
 
         // initialize benchmark structure
         benchmark.nfft       = _fftbench->nfft_min;
-        benchmark.direction  = FFT_FORWARD;
+        benchmark.direction  = LIQUID_FFT_FORWARD;
         benchmark.num_trials = 1;
         benchmark.flags      = 0;
         benchmark.extime     = 0.0f;
@@ -299,7 +299,7 @@ void fftbench_execute(struct fftbench_s * _fftbench)
         for (i=0; i<18; i++) {
             // initialize benchmark structure
             benchmark.nfft       = nfftw[i];
-            benchmark.direction  = FFT_FORWARD;
+            benchmark.direction  = LIQUID_FFT_FORWARD;
             benchmark.num_trials = 1;
             benchmark.flags      = 0;
 
@@ -321,7 +321,7 @@ void fftbench_execute(struct fftbench_s * _fftbench)
 
             // initialize benchmark structure
             benchmark.nfft       = nfft;
-            benchmark.direction  = FFT_FORWARD;
+            benchmark.direction  = LIQUID_FFT_FORWARD;
             benchmark.num_trials = 1;
             benchmark.flags      = 0;
 
@@ -362,7 +362,7 @@ void fftbench_execute(struct fftbench_s * _fftbench)
 
         // run the transform
         benchmark.nfft       = nfft;
-        benchmark.direction  = FFT_FORWARD;
+        benchmark.direction  = LIQUID_FFT_FORWARD;
         benchmark.num_trials = 1;
         benchmark.flags      = 0;
         benchmark.extime     = 0.0f;

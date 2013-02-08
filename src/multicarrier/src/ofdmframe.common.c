@@ -90,7 +90,7 @@ void ofdmframe_init_S0(unsigned char * _p,
     *_M_S0 = M_S0;
 
     // run inverse fft to get time-domain sequence
-    fft_run(_M, _S0, _s0, FFT_REVERSE, 0);
+    fft_run(_M, _S0, _s0, LIQUID_FFT_BACKWARD, 0);
 
     // normalize time-domain sequence level
     float g = 1.0f / sqrtf(M_S0);
@@ -157,7 +157,7 @@ void ofdmframe_init_S1(unsigned char * _p,
     *_M_S1 = M_S1;
 
     // run inverse fft to get time-domain sequence
-    fft_run(_M, _S1, _s1, FFT_REVERSE, 0);
+    fft_run(_M, _S1, _s1, LIQUID_FFT_BACKWARD, 0);
 
     // normalize time-domain sequence level
     float g = 1.0f / sqrtf(M_S1);

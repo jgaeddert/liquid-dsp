@@ -79,7 +79,7 @@ int main(int argc, char*argv[])
     float complex S[n];
     for (i=0; i<n; i++)
         S[i] = (i < 0.4*n || i > 0.6*n) ? randnf() + _Complex_I*randnf() : 0.0f;
-    fft_run(n, S, s, FFT_REVERSE, 0);
+    fft_run(n, S, s, LIQUID_FFT_BACKWARD, 0);
     float s2 = 0.0f;
     for (i=0; i<n; i++)
         s2 += crealf(s[i]*conjf(s[i]));
