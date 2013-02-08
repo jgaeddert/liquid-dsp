@@ -1,6 +1,5 @@
 /*
- * Copyright (c) 2007, 2009, 2010 Joseph Gaeddert
- * Copyright (c) 2007, 2009, 2010 Virginia Polytechnic Institute & State University
+ * Copyright (c) 2007, 2009, 2010, 2013 Joseph Gaeddert
  *
  * This file is part of liquid.
  *
@@ -30,7 +29,7 @@ void autotest_firpfbch_crcf_analysis()
     float tol = 1e-4f;              // error tolerance
     unsigned int num_channels=4;    // number of channels
     unsigned int p=5;               // filter length (symbols)
-    unsigned int num_symbols=12;    // number of symbols
+    unsigned int num_symbols=40;    // number of symbols
 
     // derived values
     unsigned int num_samples = num_channels * num_symbols;
@@ -40,10 +39,15 @@ void autotest_firpfbch_crcf_analysis()
 
     // generate filter
     // NOTE : these coefficients can be random; the purpose of this
-    //        exercise is to demonstrate mathematical equivalence
+    //        exercise is to demonstrate mathematical equivalence.
+    //        For the sake of consistency, use pseudo-random values
+    //        chosen from m-sequences
     unsigned int h_len = p*num_channels;
     float h[h_len];
-    for (i=0; i<h_len; i++) h[i] = randnf();
+    msequence ms = msequence_create_default(6);
+    for (i=0; i<h_len; i++)
+        h[i] = (float)msequence_generate_symbol(ms, 2) - 1.5f; // (-1.5, -0.5, 0.5, 1.5)
+    msequence_destroy(ms);
 
     // create filterbank object
     firpfbch_crcf q = firpfbch_crcf_create(LIQUID_ANALYZER, num_channels, p, h);
@@ -57,8 +61,12 @@ void autotest_firpfbch_crcf_analysis()
     float complex Y1[num_symbols][num_channels];    // channelized output
 
     // generate input sequence (complex noise)
-    for (i=0; i<num_samples; i++)
-        y[i] = randnf() * cexpf(_Complex_I*randf()*2*M_PI);
+    ms = msequence_create_default(7);
+    for (i=0; i<num_samples; i++) {
+        y[i] = 0.1f * M_SQRT1_2 * ((float)msequence_generate_symbol(ms,2) - 1.5f) +
+               0.1f * M_SQRT1_2 * ((float)msequence_generate_symbol(ms,2) - 1.5f)*_Complex_I;
+    }
+    msequence_destroy(ms);
 
     // 
     // run analysis filter bank

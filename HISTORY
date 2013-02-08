@@ -6,7 +6,11 @@ Major improvements since v1.2.0
   * dotprod
     - adding method to compute x^T * x of a vector (sum of squares)
   * fft
-    - general speed improvements
+    - general speed improvements for one-dimensional FFTs
+  * filter
+    - add linear interpolation for arbitrary resamp output
+    - added autotests for validating performance of both the
+      resamp and msresamp objects
   * framing
     - adding generic callback function definition for all framing
       structures
@@ -25,8 +29,9 @@ Major improvements since v1.2.0
       generated OFDM symbols are the same length)
     - adding run-time option for debugging ofdmframesync
   * optim
-    - gradsearch uses internal linesearch for significant speed
-      increase, better reliability, and simplified interface
+    - gradsearch (gradient search) uses internal linesearch for
+      significant speed increase and better reliability
+    - gradsearch interface greatly simplified
 
 Major improvements for v1.2.0
   * dotprod

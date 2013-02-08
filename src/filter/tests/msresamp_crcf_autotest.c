@@ -104,7 +104,8 @@ void autotest_msresamp_crcf()
         float f = (float)i/(float)nfft - 0.5f;
 
         // scale FFT output appropriately
-        float Ymag = 20*log10f( cabsf(Yfft[i] / (r * wsum)) );
+        Yfft[i] /= (r * wsum);
+        float Ymag = 20*log10f( cabsf(Yfft[i]) );
 
         // find frequency location of maximum magnitude
         if (Ymag > Ypeak || i==0) {

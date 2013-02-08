@@ -46,7 +46,7 @@ int main(int argc, char *argv[]) {
     float SNRdB_start       = -9.0f;
     float SNRdB_step        =  1.0f;
     float SNRdB_max         =  10.0f;
-    unsigned int num_frames =  1000;
+    unsigned int num_frames =  800;
     //float noise_floor       = -30.0f;
     const char * filename   = "flexframe_fer_results.dat";
     modulation_scheme ms    = LIQUID_MODEM_QPSK;

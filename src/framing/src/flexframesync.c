@@ -93,6 +93,9 @@ struct flexframesync_s {
     nco_crcf nco_fine;              // fine carrier recovery (after demod)
 
     // timing recovery objects, states
+    unsigned int k;                 // interp samples/symbol (fixed at 2)
+    unsigned int m;                 // interp filter delay (symbols)
+    float        beta;              // excess bandwidth factor
     firpfb_crcf mf;                 // matched filter decimator
     firpfb_crcf dmf;                // derivative matched filter decimator
     unsigned int npfb;              // number of filters in symsync
@@ -170,28 +173,28 @@ flexframesync flexframesync_create(framesync_callback _callback,
     msequence_destroy(ms);
 
     // interpolate p/n sequence with matched filter
-    unsigned int k  = 2;    // samples/symbol
-    unsigned int m  = 3;    // filter delay (symbols)
-    float beta      = 0.5f; // excess bandwidth factor
-    float complex seq[k*64];
-    interp_crcf interp = interp_crcf_create_rnyquist(LIQUID_RNYQUIST_ARKAISER,k,m,beta,0);
-    for (i=0; i<64+m; i++) {
+    q->k    = 2;        // samples/symbol
+    q->m    = 7;        // filter delay (symbols)
+    q->beta = 0.25f;    // excess bandwidth factor
+    float complex seq[q->k*64];
+    interp_crcf interp = interp_crcf_create_rnyquist(LIQUID_RNYQUIST_ARKAISER,q->k,q->m,q->beta,0);
+    for (i=0; i<64+q->m; i++) {
         // compensate for filter delay
-        if (i < m) interp_crcf_execute(interp, q->preamble_pn[i],    &seq[0]);
-        else       interp_crcf_execute(interp, q->preamble_pn[i%64], &seq[2*(i-m)]);
+        if (i < q->m) interp_crcf_execute(interp, q->preamble_pn[i],    &seq[0]);
+        else          interp_crcf_execute(interp, q->preamble_pn[i%64], &seq[q->k*(i-q->m)]);
     }
     interp_crcf_destroy(interp);
 
     // create frame detector
     float threshold = 0.4f;     // detection threshold
     float dphi_max  = 0.05f;    // maximum carrier offset allowable
-    q->frame_detector = detector_cccf_create(seq, k*64, threshold, dphi_max);
-    q->buffer = windowcf_create(2*(64+3));
+    q->frame_detector = detector_cccf_create(seq, q->k*64, threshold, dphi_max);
+    q->buffer = windowcf_create(q->k*(64+q->m));
 
     // create symbol timing recovery filters
     q->npfb = 32;   // number of filters in the bank
-    q->mf   = firpfb_crcf_create_rnyquist(LIQUID_RNYQUIST_ARKAISER, q->npfb,k,m,beta);
-    q->dmf  = firpfb_crcf_create_drnyquist(LIQUID_RNYQUIST_ARKAISER,q->npfb,k,m,beta);
+    q->mf   = firpfb_crcf_create_rnyquist(LIQUID_RNYQUIST_ARKAISER, q->npfb,q->k,q->m,q->beta);
+    q->dmf  = firpfb_crcf_create_drnyquist(LIQUID_RNYQUIST_ARKAISER,q->npfb,q->k,q->m,q->beta);
 
     // create down-coverters for carrier phase tracking
     q->nco_coarse = nco_crcf_create(LIQUID_NCO);
@@ -457,9 +460,7 @@ void flexframesync_pushpn(flexframesync _q)
     //  tau_hat < 0 :   delay = 2*k*m-1, index = round(   tau_hat *npfb), flag = 0
     //  tau_hat > 0 :   delay = 2*k*m-2, index = round((1-tau_hat)*npfb), flag = 0
     assert(_q->tau_hat < 0.5f && _q->tau_hat > -0.5f);
-    unsigned int k     = 2;         // samples/symbol
-    unsigned int m     = 3;         // filter delay (symbols)
-    unsigned int delay = 2*k*m - 1; // samples to buffer before computing output
+    unsigned int delay = 2*_q->k*_q->m - 1; // samples to buffer before computing output
     _q->pfb_soft       = -_q->tau_hat*_q->npfb;
     _q->pfb_index      = (int) roundf(_q->pfb_soft);
     while (_q->pfb_index < 0) {
@@ -472,7 +473,7 @@ void flexframesync_pushpn(flexframesync _q)
     // set coarse carrier frequency offset
     nco_crcf_set_frequency(_q->nco_coarse, _q->dphi_hat);
     
-    unsigned int buffer_len = (64+m)*k;
+    unsigned int buffer_len = (64+_q->m)*_q->k;
     for (i=0; i<buffer_len; i++) {
         if (i < delay) {
             float complex y;
@@ -962,9 +963,11 @@ void flexframesync_debug_print(flexframesync  _q,
     fprintf(fid,"ylabel('received signal, x');\n");
 
     // write pre-demod sample buffer
-    fprintf(fid,"presync_samples = zeros(1,2*(64+3));\n");
+    fprintf(fid,"k = %u;\n", _q->k);
+    fprintf(fid,"m = %u;\n", _q->m);
+    fprintf(fid,"presync_samples = zeros(1,k*(64+m));\n");
     windowcf_read(_q->buffer, &rc);
-    for (i=0; i<2*(64+3); i++)
+    for (i=0; i<_q->k*(64+_q->m); i++)
         fprintf(fid,"presync_samples(%4u) = %12.4e + j*%12.4e;\n", i+1, crealf(rc[i]), cimagf(rc[i]));
 
     // write p/n sequence

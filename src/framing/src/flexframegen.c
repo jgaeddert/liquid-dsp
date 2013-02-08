@@ -143,8 +143,8 @@ flexframegen flexframegen_create(flexframegenprops_s * _fgprops)
     
     // create pulse-shaping filter
     q->k    = 2;
-    q->m    = 3;
-    q->beta = 0.5f;
+    q->m    = 7;
+    q->beta = 0.25f;
     q->interp = interp_crcf_create_rnyquist(LIQUID_RNYQUIST_ARKAISER,q->k,q->m,q->beta,0);
 
     // ensure frame is not assembled and initialize properties
@@ -165,6 +165,7 @@ void flexframegen_destroy(flexframegen _q)
     modem_destroy(_q->mod_header);      // header modulator
     packetizer_destroy(_q->p_payload);  // payload packetizer
     modem_destroy(_q->mod_payload);     // payload modulator
+    interp_crcf_destroy(_q->interp);    // pulse-shaping filter
 
     // free buffers/arrays
     free(_q->payload_enc);              // encoded payload bytes
