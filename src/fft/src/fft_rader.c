@@ -1,7 +1,5 @@
 /*
- * Copyright (c) 2007, 2008, 2009, 2010, 2011, 2012 Joseph Gaeddert
- * Copyright (c) 2007, 2008, 2009, 2010, 2011, 2012 Virginia Polytechnic
- *                                      Institute & State University
+ * Copyright (c) 2007, 2008, 2009, 2010, 2011, 2012, 2013 Joseph Gaeddert
  *
  * This file is part of liquid.
  *
@@ -41,7 +39,7 @@
 //  _nfft   :   FFT size
 //  _x      :   input array [size: _nfft x 1]
 //  _y      :   output array [size: _nfft x 1]
-//  _dir    :   fft direction: {FFT_FORWARD, FFT_REVERSE}
+//  _dir    :   fft direction: {LIQUID_FFT_FORWARD, LIQUID_FFT_BACKWARD}
 //  _method :   fft method
 FFT(plan) FFT(_create_plan_rader)(unsigned int _nfft,
                                   TC *         _x,
@@ -56,8 +54,8 @@ FFT(plan) FFT(_create_plan_rader)(unsigned int _nfft,
     q->x         = _x;
     q->y         = _y;
     q->flags     = _flags;
-    q->kind      = LIQUID_FFT_DFT_1D;
-    q->direction = (_dir == FFT_FORWARD) ? FFT_FORWARD : FFT_REVERSE;
+    q->type      = (_dir == LIQUID_FFT_FORWARD) ? LIQUID_FFT_FORWARD : LIQUID_FFT_BACKWARD;
+    q->direction = (_dir == LIQUID_FFT_FORWARD) ? LIQUID_FFT_FORWARD : LIQUID_FFT_BACKWARD;
     q->method    = LIQUID_FFT_METHOD_RADER;
 
     q->execute   = FFT(_execute_rader);
@@ -70,14 +68,14 @@ FFT(plan) FFT(_create_plan_rader)(unsigned int _nfft,
     q->data.rader.fft = FFT(_create_plan)(q->nfft-1,
                                           q->data.rader.x_prime,
                                           q->data.rader.X_prime,
-                                          FFT_FORWARD,
+                                          LIQUID_FFT_FORWARD,
                                           q->flags);
 
     // create sub-IFFT of size nfft-1
     q->data.rader.ifft = FFT(_create_plan)(q->nfft-1,
                                            q->data.rader.X_prime,
                                            q->data.rader.x_prime,
-                                           FFT_REVERSE,
+                                           LIQUID_FFT_BACKWARD,
                                            q->flags);
 
     // compute primitive root of nfft
@@ -92,7 +90,7 @@ FFT(plan) FFT(_create_plan_rader)(unsigned int _nfft,
     // compute DFT of sequence { exp(-j*2*pi*g^i/nfft }, size: nfft-1
     // NOTE: R[0] = -1, |R[k]| = sqrt(nfft) for k != 0
     // (use newly-created FFT plan of length nfft-1)
-    T d = (q->direction == FFT_FORWARD) ? -1.0 : 1.0;
+    T d = (q->direction == LIQUID_FFT_FORWARD) ? -1.0 : 1.0;
     for (i=0; i<q->nfft-1; i++) {
         float complex t = cexpf(_Complex_I*d*2*M_PI*q->data.rader.seq[i]/(T)(q->nfft));
 #if LIQUID_FPM
@@ -139,7 +137,7 @@ void FFT(_execute_rader)(FFT(plan) _q)
         _q->data.rader.x_prime[i] = _q->x[k];
     }
     // compute sub-FFT
-    // equivalent to: FFT(_run)(_q->nfft-1, xp, Xp, FFT_FORWARD, 0);
+    // equivalent to: FFT(_run)(_q->nfft-1, xp, Xp, LIQUID_FFT_FORWARD, 0);
     FFT(_execute)(_q->data.rader.fft);
 
     // compute inverse FFT of product
@@ -154,7 +152,7 @@ void FFT(_execute_rader)(FFT(plan) _q)
     }
 
     // compute sub-IFFT
-    // equivalent to: FFT(_run)(_q->nfft-1, Xp, xp, FFT_REVERSE, 0);
+    // equivalent to: FFT(_run)(_q->nfft-1, Xp, xp, LIQUID_FFT_BACKWARD, 0);
     FFT(_execute)(_q->data.rader.ifft);
 
     // set DC value

@@ -32,8 +32,8 @@ int main() {
     for (i=0; i<n; i++) {
         x0[i] = x0[2*n-i-1] = x[i];
     }
-    fftplan pf = fft_create_plan(2*n, x0, y0, FFT_FORWARD, method);
-    fftplan pr = fft_create_plan(2*n, y1, z0, FFT_REVERSE, method);
+    fftplan pf = fft_create_plan(2*n, x0, y0, LIQUID_FFT_FORWARD,  method);
+    fftplan pr = fft_create_plan(2*n, y1, z0, LIQUID_FFT_BACKWARD, method);
 
     // execute forward plan and scale appropriately
     fft_execute(pf);

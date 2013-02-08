@@ -125,7 +125,7 @@ Notice the stark similarity to {\tt libfftw3}'s interface.
 however these are not guaranteed to be efficient.
 A list of the transforms and their descriptions is given below.
 %
-\subsubsection{{\tt FFT\_REDFT00} (DCT-I)}
+\subsubsection{{\tt LIQUID\_FFT\_REDFT00} (DCT-I)}
 \label{module:fft:r2r:REDFT00}
     \begin{equation}
     \label{eqn:fft:dct-I}
@@ -133,7 +133,7 @@ A list of the transforms and their descriptions is given below.
                \sum_{n=1}^{N-2}{x(n) \cos\left(\frac{\pi}{N-1}nk\right) }
     \end{equation}
 
-\subsubsection{{\tt FFT\_REDFT10} (DCT-II)}
+\subsubsection{{\tt LIQUID\_FFT\_REDFT10} (DCT-II)}
 \label{module:fft:r2r:REDFT10}
     \begin{equation}
     \label{eqn:fft:dct-II}
@@ -144,7 +144,7 @@ A list of the transforms and their descriptions is given below.
                 }
     \end{equation}
 
-\subsubsection{{\tt FFT\_REDFT01} (DCT-III)}
+\subsubsection{{\tt LIQUID\_FFT\_REDFT01} (DCT-III)}
 \label{module:fft:r2r:REDFT01}
     \begin{equation}
     \label{eqn:fft:dct-III}
@@ -156,7 +156,7 @@ A list of the transforms and their descriptions is given below.
                 }
     \end{equation}
 
-\subsubsection{{\tt FFT\_REDFT11} (DCT-IV)}
+\subsubsection{{\tt LIQUID\_FFT\_REDFT11} (DCT-IV)}
 \label{module:fft:r2r:REDFT11}
     \begin{equation}
     \label{eqn:fft:dct-IV}
@@ -169,7 +169,7 @@ A list of the transforms and their descriptions is given below.
                 }
     \end{equation}
 
-\subsubsection{{\tt FFT\_RODFT00} (DST-I)}
+\subsubsection{{\tt LIQUID\_FFT\_RODFT00} (DST-I)}
 \label{module:fft:r2r:RODFT00}
     \begin{equation}
     \label{eqn:fft:dst-I}
@@ -180,7 +180,7 @@ A list of the transforms and their descriptions is given below.
                 }
     \end{equation}
 
-\subsubsection{{\tt FFT\_RODFT10} (DST-II)}
+\subsubsection{{\tt LIQUID\_FFT\_RODFT10} (DST-II)}
 \label{module:fft:r2r:RODFT10}
     \begin{equation}
     \label{eqn:fft:dst-II}
@@ -191,7 +191,7 @@ A list of the transforms and their descriptions is given below.
                 }
     \end{equation}
 
-\subsubsection{{\tt FFT\_RODFT01} (DST-III)}
+\subsubsection{{\tt LIQUID\_FFT\_RODFT01} (DST-III)}
 \label{module:fft:r2r:RODFT01}
     \begin{equation}
     \label{eqn:fft:dst-III}
@@ -203,7 +203,7 @@ A list of the transforms and their descriptions is given below.
                 }
     \end{equation}
 
-\subsubsection{{\tt FFT\_RODFT11} (DST-IV)}
+\subsubsection{{\tt LIQUID\_FFT\_RODFT11} (DST-IV)}
 \label{module:fft:r2r:RODFT11}
     \begin{equation}
     \label{eqn:fft:dst-IV}
@@ -215,7 +215,7 @@ A list of the transforms and their descriptions is given below.
     \end{equation}
 
 An example of the interface for computing a discrete cosine transform
-of type-III ({\tt FFT\_REDFT01}) is listed below.
+of type-III ({\tt LIQUID\_FFT\_REDFT01}) is listed below.
 %
 \input{listings/fft_dct.example.c.tex}
 

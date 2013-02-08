@@ -775,21 +775,30 @@ void interleaver_decode_soft(interleaver _q,
 // MODULE : fft (fast Fourier transform)
 //
 
-#define FFT_FORWARD 0   // FFT
-#define FFT_REVERSE 1   // IFFT
+// type of transform
+typedef enum {
+    LIQUID_FFT_UNKNOWN  =   0,  // unknown transform type
 
-#define FFT_REDFT00 3   // DCT-I
-#define FFT_REDFT10 4   // DCT-II
-#define FFT_REDFT01 5   // DCT-III
-#define FFT_REDFT11 6   // DCT-IV
+    // regular complex one-dimensional transforms
+    LIQUID_FFT_FORWARD  =  +1,  // complex one-dimensional FFT 
+    LIQUID_FFT_BACKWARD =  -1,  // complex one-dimensional inverse FFT 
 
-#define FFT_RODFT00 7   // DST-I
-#define FFT_RODFT10 8   // DST-II
-#define FFT_RODFT01 9   // DST-III
-#define FFT_RODFT11 10  // DST-IV
+    // discrete cosine transforms
+    LIQUID_FFT_REDFT00  =  10,  // real one-dimensional DCT-I
+    LIQUID_FFT_REDFT10  =  11,  // real one-dimensional DCT-II
+    LIQUID_FFT_REDFT01  =  12,  // real one-dimensional DCT-III
+    LIQUID_FFT_REDFT11  =  13,  // real one-dimensional DCT-IV
 
-#define FFT_MDCT    11  // MDCT
-#define FFT_IMDCT   12  // IMDCT
+    // discrete sine transforms
+    LIQUID_FFT_RODFT00  =  20,  // real one-dimensional DST-I
+    LIQUID_FFT_RODFT10  =  21,  // real one-dimensional DST-II
+    LIQUID_FFT_RODFT01  =  22,  // real one-dimensional DST-III
+    LIQUID_FFT_RODFT11  =  23,  // real one-dimensional DST-IV
+
+    // modified discrete cosine transform
+    LIQUID_FFT_MDCT     =  30,  // MDCT
+    LIQUID_FFT_IMDCT    =  31,  // IMDCT
+} liquid_fft_type;
 
 #define LIQUID_FFT_MANGLE_FLOAT(name)   LIQUID_CONCAT(fft,name)
 #define LIQUID_FFT_MANGLE_Q16(name)     LIQUID_CONCAT(fftq16,name)
@@ -802,27 +811,47 @@ void interleaver_decode_soft(interleaver _q,
 #define LIQUID_FFT_DEFINE_API(FFT,T,TC)                         \
                                                                 \
 typedef struct FFT(plan_s) * FFT(plan);                         \
+                                                                \
+/* create regular complex one-dimensional transform         */  \
+/*  _n      :   transform size                              */  \
+/*  _x      :   pointer to input array  [size: _n x 1]      */  \
+/*  _y      :   pointer to output array [size: _n x 1]      */  \
+/*  _dir    :   direction (e.g. LIQUID_FFT_FORWARD)         */  \
+/*  _flags  :   options, optimization                       */  \
 FFT(plan) FFT(_create_plan)(unsigned int _n,                    \
-                            TC * _x,                            \
-                            TC * _y,                            \
-                            int _dir,                           \
-                            int _flags);                        \
+                            TC *         _x,                    \
+                            TC *         _y,                    \
+                            int          _dir,                  \
+                            int          _flags);               \
+                                                                \
+/* create real-to-real transform                            */  \
+/*  _n      :   transform size                              */  \
+/*  _x      :   pointer to input array  [size: _n x 1]      */  \
+/*  _y      :   pointer to output array [size: _n x 1]      */  \
+/*  _type   :   transform type (e.g. LIQUID_FFT_REDFT00)    */  \
+/*  _flags  :   options, optimization                       */  \
 FFT(plan) FFT(_create_plan_r2r_1d)(unsigned int _n,             \
-                                   T * _x,                      \
-                                   T * _y,                      \
-                                   int _kind,                   \
-                                   int _flags);                 \
+                                   T *          _x,             \
+                                   T *          _y,             \
+                                   int          _type,          \
+                                   int          _flags);        \
+                                                                \
+/* destroy transform                                        */  \
 void FFT(_destroy_plan)(FFT(plan) _p);                          \
+                                                                \
+/* print transform plan and internal strategy               */  \
 void FFT(_print_plan)(FFT(plan) _p);                            \
+                                                                \
+/* run the transform                                        */  \
 void FFT(_execute)(FFT(plan) _p);                               \
                                                                 \
 /* object-independent methods */                                \
 void FFT(_run)(unsigned int _n,                                 \
-               TC * _x,                                         \
-               TC * _y,                                         \
-               int _dir,                                        \
-               int _method);                                    \
-void FFT(_shift)(TC*_x, unsigned int _n);
+               TC *         _x,                                 \
+               TC *         _y,                                 \
+               int          _dir,                               \
+               int          flags);                             \
+void FFT(_shift)(TC*_x, unsigned int _n);                       \
 
 
 LIQUID_FFT_DEFINE_API(LIQUID_FFT_MANGLE_FLOAT,float,liquid_float_complex)

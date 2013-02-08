@@ -1,7 +1,5 @@
 /*
- * Copyright (c) 2007, 2008, 2009, 2010 Joseph Gaeddert
- * Copyright (c) 2007, 2008, 2009, 2010 Virginia Polytechnic
- *                                      Institute & State University
+ * Copyright (c) 2007, 2008, 2009, 2010, 2013 Joseph Gaeddert
  *
  * This file is part of liquid.
  *
@@ -54,7 +52,7 @@ void liquid_doc_compute_psdcf(float complex * _x,
     wnorm /= (float)(_n);
 
     float complex x[_nfft];
-    fftplan fft = fft_create_plan(_nfft,x,_X,FFT_FORWARD,0);
+    fftplan fft = fft_create_plan(_nfft,x,_X,LIQUID_FFT_FORWARD,0);
     for (i=0; i<_nfft; i++) {
         x[i] = i < _n ? _x[i] * w[i] / wnorm : 0.0f;
 

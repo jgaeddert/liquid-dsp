@@ -52,8 +52,8 @@ int main(int argc, char*argv[])
         x[i] = (float)i - _Complex_I*(float)i;
 
     // create fft plans
-    fftplan pf = fft_create_plan(nfft, x, y, FFT_FORWARD, method);
-    fftplan pr = fft_create_plan(nfft, y, z, FFT_REVERSE, method);
+    fftplan pf = fft_create_plan(nfft, x, y, LIQUID_FFT_FORWARD,  method);
+    fftplan pr = fft_create_plan(nfft, y, z, LIQUID_FFT_BACKWARD, method);
 
     // print fft plans
     fft_print_plan(pf);

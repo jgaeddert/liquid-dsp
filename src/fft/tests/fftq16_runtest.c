@@ -1,6 +1,5 @@
 /*
- * Copyright (c) 2012 Joseph Gaeddert
- * Copyright (c) 2012 Virginia Polytechnic Institute & State University
+ * Copyright (c) 2012, 2013 Joseph Gaeddert
  *
  * This file is part of liquid.
  *
@@ -46,7 +45,7 @@ void fftq16_test(float complex * _x,
         printf("running %u-point fft...\n", _n);
     for (i=0; i<_n; i++)
         x[i] = cq16_float_to_fixed(_x[i]);
-    fftq16plan pf = fftq16_create_plan(_n, x, y, FFT_FORWARD, _method);
+    fftq16plan pf = fftq16_create_plan(_n, x, y, LIQUID_FFT_FORWARD, _method);
     fftq16_execute(pf);
     fftq16_destroy_plan(pf);
 
@@ -71,7 +70,7 @@ void fftq16_test(float complex * _x,
         printf("running %u-point ifft...\n", _n);
     for (i=0; i<_n; i++)
         y[i] = cq16_float_to_fixed(_test[i]);
-    fftq16plan pr = fftq16_create_plan(_n, y, x, FFT_REVERSE, _method);
+    fftq16plan pr = fftq16_create_plan(_n, y, x, LIQUID_FFT_BACKWARD, _method);
     fftq16_execute(pr);
     fftq16_destroy_plan(pr);
 

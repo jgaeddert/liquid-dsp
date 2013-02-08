@@ -777,34 +777,14 @@ void interleaver_permute_mask_soft(unsigned char * _x,
 // MODULE : fft (fast discrete Fourier transform)
 //
 
-typedef enum {
-    LIQUID_FFT_DFT_1D   = 0,    // complex one-dimensional FFT
-
-    // discrete cosine transforms
-    LIQUID_FFT_REDFT00,         // real one-dimensional DCT-I
-    LIQUID_FFT_REDFT10,         // real one-dimensional DCT-II
-    LIQUID_FFT_REDFT01,         // real one-dimensional DCT-III
-    LIQUID_FFT_REDFT11,         // real one-dimensional DCT-IV
-
-    // discrete sine transforms
-    LIQUID_FFT_RODFT00,         // real one-dimensional DST-I
-    LIQUID_FFT_RODFT10,         // real one-dimensional DST-II
-    LIQUID_FFT_RODFT01,         // real one-dimensional DST-III
-    LIQUID_FFT_RODFT11,         // real one-dimensional DST-IV
-
-    // modified discrete cosine transform
-    LIQUID_FFT_MDCT,            // MDCT
-    LIQUID_FFT_IMDCT            // IMDCT
-} liquid_fft_kind;
-
+// fast fourier transform method
 typedef enum {
     LIQUID_FFT_METHOD_UNKNOWN=0,    // unknown method
-    LIQUID_FFT_METHOD_NONE,         // unspecified method (e.g. real-to-real)
     LIQUID_FFT_METHOD_RADIX2,       // Radix-2 (decimation in time)
     LIQUID_FFT_METHOD_MIXED_RADIX,  // Cooley-Tukey mixed-radix FFT (decimation in time)
     LIQUID_FFT_METHOD_RADER,        // Rader's method for FFTs of prime length
     LIQUID_FFT_METHOD_RADER2,       // Rader's method for FFTs of prime length (alternate)
-    LIQUID_FFT_METHOD_DFT,          // slow discrete Fourier transform
+    LIQUID_FFT_METHOD_DFT,          // regular discrete Fourier transform
 } liquid_fft_method;
 
 // Macro    :   FFT (internal)
@@ -871,6 +851,12 @@ void FFT(_execute_RODFT00)(FFT(plan) _q);   /* DST-I   */       \
 void FFT(_execute_RODFT10)(FFT(plan) _q);   /* DST-II  */       \
 void FFT(_execute_RODFT01)(FFT(plan) _q);   /* DST-III */       \
 void FFT(_execute_RODFT11)(FFT(plan) _q);   /* DST-IV  */       \
+                                                                \
+/* destroy real-to-real one-dimensional plan */                 \
+void FFT(_destroy_plan_r2r_1d)(FFT(plan) _q);                   \
+                                                                \
+/* print real-to-real one-dimensional plan */                   \
+void FFT(_print_plan_r2r_1d)(FFT(plan) _q);                     \
 
 // determine best FFT method based on size
 liquid_fft_method liquid_fft_estimate_method(unsigned int _nfft);
@@ -903,8 +889,8 @@ LIQUID_FFT_DEFINE_INTERNAL_API(LIQUID_FFT_MANGLE_Q32, q32_t, cq32_t)
 #   define FFT_CREATE_PLAN      fft_create_plan
 #   define FFT_DESTROY_PLAN     fft_destroy_plan
 #   define FFT_EXECUTE          fft_execute
-#   define FFT_DIR_FORWARD      FFT_FORWARD
-#   define FFT_DIR_BACKWARD     FFT_REVERSE
+#   define FFT_DIR_FORWARD      LIQUID_FFT_FORWARD
+#   define FFT_DIR_BACKWARD     LIQUID_FFT_BACKWARD
 #   define FFT_METHOD           0
 #endif
 

@@ -1,7 +1,5 @@
 /*
- * Copyright (c) 2007, 2008, 2009, 2010, 2011 Joseph Gaeddert
- * Copyright (c) 2007, 2008, 2009, 2010, 2011 Virginia Polytechnic
- *                                      Institute & State University
+ * Copyright (c) 2007, 2008, 2009, 2010, 2011, 2012, 2013 Joseph Gaeddert
  *
  * This file is part of liquid.
  *
@@ -32,12 +30,12 @@
 //  _nfft   :   FFT size
 //  _x      :   input array [size: _nfft x 1]
 //  _y      :   output array [size: _nfft x 1]
-//  _kind   :   type (e.g. FFT_REDFT00)
+//  _type   :   type (e.g. LIQUID_FFT_REDFT00)
 //  _method :   fft method
 FFT(plan) FFT(_create_plan_r2r_1d)(unsigned int _nfft,
                                    T *          _x,
                                    T *          _y,
-                                   int          _kind,
+                                   int          _type,
                                    int          _flags)
 {
     // allocate plan and initialize all internal arrays to NULL
@@ -46,30 +44,43 @@ FFT(plan) FFT(_create_plan_r2r_1d)(unsigned int _nfft,
     q->nfft   = _nfft;
     q->xr     = _x;
     q->yr     = _y;
-    q->kind   = _kind;
+    q->type   = _type;
     q->flags  = _flags;
 
     // TODO : use separate 'method' for real-to-real types
-    q->method = LIQUID_FFT_METHOD_NONE;
+    //q->method = LIQUID_FFT_METHOD_NONE;
 
-    switch (q->kind) {
-    case FFT_REDFT00:  q->execute = &FFT(_execute_REDFT00);  break;  // DCT-I
-    case FFT_REDFT10:  q->execute = &FFT(_execute_REDFT10);  break;  // DCT-II
-    case FFT_REDFT01:  q->execute = &FFT(_execute_REDFT01);  break;  // DCT-III
-    case FFT_REDFT11:  q->execute = &FFT(_execute_REDFT11);  break;  // DCT-IV
+    switch (q->type) {
+    case LIQUID_FFT_REDFT00:  q->execute = &FFT(_execute_REDFT00);  break;  // DCT-I
+    case LIQUID_FFT_REDFT10:  q->execute = &FFT(_execute_REDFT10);  break;  // DCT-II
+    case LIQUID_FFT_REDFT01:  q->execute = &FFT(_execute_REDFT01);  break;  // DCT-III
+    case LIQUID_FFT_REDFT11:  q->execute = &FFT(_execute_REDFT11);  break;  // DCT-IV
 
-    case FFT_RODFT00:  q->execute = &FFT(_execute_RODFT00);  break;  // DST-I
-    case FFT_RODFT10:  q->execute = &FFT(_execute_RODFT10);  break;  // DST-II
-    case FFT_RODFT01:  q->execute = &FFT(_execute_RODFT01);  break;  // DST-III
-    case FFT_RODFT11:  q->execute = &FFT(_execute_RODFT11);  break;  // DST-IV
+    case LIQUID_FFT_RODFT00:  q->execute = &FFT(_execute_RODFT00);  break;  // DST-I
+    case LIQUID_FFT_RODFT10:  q->execute = &FFT(_execute_RODFT10);  break;  // DST-II
+    case LIQUID_FFT_RODFT01:  q->execute = &FFT(_execute_RODFT01);  break;  // DST-III
+    case LIQUID_FFT_RODFT11:  q->execute = &FFT(_execute_RODFT11);  break;  // DST-IV
     default:
-        fprintf(stderr,"error: fft_create_plan_r2r_1d(), invalid kind, %d\n", q->kind);
+        fprintf(stderr,"error: fft_create_plan_r2r_1d(), invalid type, %d\n", q->type);
         exit(1);
     }
 
     return q;
 }
 
+// destroy real-to-real transform plan
+void FFT(_destroy_plan_r2r_1d)(FFT(plan) _q)
+{
+    // free main object memory
+    free(_q);
+}
+
+// print real-to-real transform plan
+void FFT(_print_plan_r2r_1d)(FFT(plan) _q)
+{
+    printf("real-to-real transform...\n");
+    // TODO: print actual transform type
+}
 
 //
 // DCT : Discrete Cosine Transforms

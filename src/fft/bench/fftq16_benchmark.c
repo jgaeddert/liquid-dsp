@@ -1,6 +1,5 @@
 /*
- * Copyright (c) 2012 Joseph Gaeddert
- * Copyright (c) 2012 Virginia Polytechnic Institute & State University
+ * Copyright (c) 2012, 2013 Joseph Gaeddert
  *
  * This file is part of liquid.
  *
@@ -30,19 +29,19 @@
 #include "src/fft/bench/fftq16_runbench.h"
 
 // fixed-point transforms
-void benchmark_fftq16_2      FFTQ16_BENCHMARK_API( 2,     FFT_FORWARD )
-void benchmark_fftq16_4      FFTQ16_BENCHMARK_API( 4,     FFT_FORWARD )
-void benchmark_fftq16_8      FFTQ16_BENCHMARK_API( 8,     FFT_FORWARD )
-void benchmark_fftq16_16     FFTQ16_BENCHMARK_API( 16,    FFT_FORWARD )
-void benchmark_fftq16_32     FFTQ16_BENCHMARK_API( 32,    FFT_FORWARD )
-void benchmark_fftq16_64     FFTQ16_BENCHMARK_API( 64,    FFT_FORWARD )
-void benchmark_fftq16_128    FFTQ16_BENCHMARK_API( 128,   FFT_FORWARD )
-void benchmark_fftq16_256    FFTQ16_BENCHMARK_API( 256,   FFT_FORWARD )
-void benchmark_fftq16_512    FFTQ16_BENCHMARK_API( 512,   FFT_FORWARD )
-void benchmark_fftq16_1024   FFTQ16_BENCHMARK_API( 1024,  FFT_FORWARD )
-void benchmark_fftq16_2048   FFTQ16_BENCHMARK_API( 2048,  FFT_FORWARD )
-void benchmark_fftq16_4096   FFTQ16_BENCHMARK_API( 4096,  FFT_FORWARD )
-void benchmark_fftq16_8192   FFTQ16_BENCHMARK_API( 8192,  FFT_FORWARD )
-void benchmark_fftq16_16384  FFTQ16_BENCHMARK_API( 16384, FFT_FORWARD )
-void benchmark_fftq16_32768  FFTQ16_BENCHMARK_API( 32768, FFT_FORWARD )
+void benchmark_fftq16_2      FFTQ16_BENCHMARK_API( 2,     LIQUID_FFT_FORWARD )
+void benchmark_fftq16_4      FFTQ16_BENCHMARK_API( 4,     LIQUID_FFT_FORWARD )
+void benchmark_fftq16_8      FFTQ16_BENCHMARK_API( 8,     LIQUID_FFT_FORWARD )
+void benchmark_fftq16_16     FFTQ16_BENCHMARK_API( 16,    LIQUID_FFT_FORWARD )
+void benchmark_fftq16_32     FFTQ16_BENCHMARK_API( 32,    LIQUID_FFT_FORWARD )
+void benchmark_fftq16_64     FFTQ16_BENCHMARK_API( 64,    LIQUID_FFT_FORWARD )
+void benchmark_fftq16_128    FFTQ16_BENCHMARK_API( 128,   LIQUID_FFT_FORWARD )
+void benchmark_fftq16_256    FFTQ16_BENCHMARK_API( 256,   LIQUID_FFT_FORWARD )
+void benchmark_fftq16_512    FFTQ16_BENCHMARK_API( 512,   LIQUID_FFT_FORWARD )
+void benchmark_fftq16_1024   FFTQ16_BENCHMARK_API( 1024,  LIQUID_FFT_FORWARD )
+void benchmark_fftq16_2048   FFTQ16_BENCHMARK_API( 2048,  LIQUID_FFT_FORWARD )
+void benchmark_fftq16_4096   FFTQ16_BENCHMARK_API( 4096,  LIQUID_FFT_FORWARD )
+void benchmark_fftq16_8192   FFTQ16_BENCHMARK_API( 8192,  LIQUID_FFT_FORWARD )
+void benchmark_fftq16_16384  FFTQ16_BENCHMARK_API( 16384, LIQUID_FFT_FORWARD )
+void benchmark_fftq16_32768  FFTQ16_BENCHMARK_API( 32768, LIQUID_FFT_FORWARD )
 
