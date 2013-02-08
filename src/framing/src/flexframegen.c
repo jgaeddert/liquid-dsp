@@ -165,13 +165,11 @@ void flexframegen_destroy(flexframegen _q)
     modem_destroy(_q->mod_header);      // header modulator
     packetizer_destroy(_q->p_payload);  // payload packetizer
     modem_destroy(_q->mod_payload);     // payload modulator
+    interp_crcf_destroy(_q->interp);    // pulse-shaping filter
 
     // free buffers/arrays
     free(_q->payload_enc);              // encoded payload bytes
     free(_q->payload_mod);              // modulated payload symbols
-
-    // destroy pulse-shaping filter
-    free(_q->interp);
 
     // destroy frame generator
     free(_q);
