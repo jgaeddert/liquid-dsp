@@ -13,6 +13,7 @@ end;
 
 % other options
 one_line_per_element = 1;   % display one line per element?
+print_index_as_comment = 1; % print index of element as comment?
 
 % get size of matrix
 [rows cols] = size(x);
@@ -40,6 +41,12 @@ for i=1:n,
         fprintf(fid,'  %16.12f + %16.12f*_Complex_I', real(x(i)), imag(x(i)));
     else,
         fprintf(fid,'  %16.12f', real(x(i)));
+    end;
+
+    if print_index_as_comment,
+        c = mod(i-1,cols);  % row
+        r = (i-c-1)/cols;   % column
+        fprintf(fid,' /* (%2u,%2u) */', r, c);
     end;
 
     if i==n,
