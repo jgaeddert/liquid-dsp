@@ -36,25 +36,27 @@ fprintf(fid,'// %s [size: %u x %u]\n', comment, rows, cols);
 fprintf(fid,'%s %s[] = {\n',type, varname);
 
 % write array data
-for i=1:n,
-    if iscomplex(x),
-        fprintf(fid,'  %16.12f + %16.12f*_Complex_I', real(x(i)), imag(x(i)));
-    else,
-        fprintf(fid,'  %16.12f', real(x(i)));
-    end;
+n=0;
+for r=1:rows,
+    for c=1:cols,
+        n = n+1;
+        if iscomplex(x),
+            fprintf(fid,'  %16.12f + %16.12f*_Complex_I', real(x(r,c)), imag(x(r,c)));
+        else,
+            fprintf(fid,'  %16.12f', real(x(r,c)));
+        end;
 
-    if print_index_as_comment,
-        c = mod(i-1,cols);  % row
-        r = (i-c-1)/cols;   % column
-        fprintf(fid,' /* (%2u,%2u) */', r, c);
-    end;
+        if print_index_as_comment,
+            fprintf(fid,' /* (%2u,%2u) */', r-1, c-1);
+        end;
 
-    if i==n,
-        fprintf(fid,'};\n');
-    elseif mod(i,cols)==0 || one_line_per_element,
-        fprintf(fid,',\n');
-    else,
-        fprintf(fid,', ');
+        if r==rows && c==cols,
+            fprintf(fid,'};\n');
+        elseif c==cols || one_line_per_element,
+            fprintf(fid,',\n');
+        else,
+            fprintf(fid,', ');
+        end;
     end;
 end;
 fprintf(fid,'\n');

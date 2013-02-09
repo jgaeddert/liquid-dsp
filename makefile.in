@@ -714,7 +714,7 @@ src/matrix/src/smatrixf.o: %.o : %.c $(headers) src/matrix/src/smatrix.c
 src/matrix/src/smatrixi.o: %.o : %.c $(headers) src/matrix/src/smatrix.c
 
 
-
+# matrix autotest scripts
 matrix_autotests :=						\
 	src/matrix/tests/matrixcf_autotest.c			\
 	src/matrix/tests/matrixf_autotest.c			\
@@ -722,6 +722,18 @@ matrix_autotests :=						\
 	src/matrix/tests/smatrixf_autotest.c			\
 	src/matrix/tests/smatrixi_autotest.c			\
 
+# additional autotest objects
+autotest_extra_obj +=						\
+	src/matrix/tests/data/matrixf_data_add.o		\
+	src/matrix/tests/data/matrixf_data_aug.o		\
+	src/matrix/tests/data/matrixf_data_cgsolve.o		\
+	src/matrix/tests/data/matrixf_data_chol.o		\
+	src/matrix/tests/data/matrixf_data_gramschmidt.o	\
+	src/matrix/tests/data/matrixf_data_inv.o		\
+	src/matrix/tests/data/matrixf_data_linsolve.o		\
+	src/matrix/tests/data/matrixf_data_ludecomp.o		\
+	src/matrix/tests/data/matrixf_data_mul.o		\
+	src/matrix/tests/data/matrixf_data_qrdecomp.o		\
 
 matrix_benchmarks :=						\
 	src/matrix/bench/matrixf_inv_benchmark.c		\
