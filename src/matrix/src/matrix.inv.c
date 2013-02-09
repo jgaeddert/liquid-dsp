@@ -1,7 +1,5 @@
 /*
- * Copyright (c) 2007, 2008, 2009, 2010 Joseph Gaeddert
- * Copyright (c) 2007, 2008, 2009, 2010 Virginia Polytechnic
- *                                      Institute & State University
+ * Copyright (c) 2007, 2008, 2009, 2010, 2013 Joseph Gaeddert
  *
  * This file is part of liquid.
  *
@@ -128,7 +126,7 @@ void MATRIX(_gjelim)(T * _X, unsigned int _XR, unsigned int _XC)
     T g;
     for (r=0; r<_XR; r++) {
 #if defined LIQUID_FIXED && T_COMPLEX==0
-        g = Q(_inv_newton)( matrix_access(_X,_XR,_XC,r,r), 14 );
+        g = Q(_inv)( matrix_access(_X,_XR,_XC,r,r), 14 );
         for (c=0; c<_XC; c++)
             matrix_access(_X,_XR,_XC,r,c) = Q(_mul)( g, matrix_access(_X,_XR,_XC,r,c) );
 #elif defined LIQUID_FIXED && T_COMPLEX==1
