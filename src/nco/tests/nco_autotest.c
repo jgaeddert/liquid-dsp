@@ -69,6 +69,8 @@ void autotest_nco_basic() {
         nco_crcf_step(p);
     }
 
+    // destroy NCO object
+    nco_crcf_destroy(p);
 }
 
 //
@@ -106,6 +108,9 @@ void autotest_nco_mixing() {
         // step nco
         nco_crcf_step(p);
     }
+
+    // destroy NCO object
+    nco_crcf_destroy(p);
 }
 
 //
@@ -158,5 +163,8 @@ void autotest_nco_block_mixing()
     // free those buffers
     free(x);
     free(y);
+
+    // destroy NCO object
+    nco_crcf_destroy(p);
 }
 
