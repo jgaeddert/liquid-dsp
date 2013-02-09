@@ -1,7 +1,5 @@
 /*
- * Copyright (c) 2007, 2008, 2009, 2010 Joseph Gaeddert
- * Copyright (c) 2007, 2008, 2009, 2010 Virginia Polytechnic
- *                                      Institute & State University
+ * Copyright (c) 2007, 2008, 2009, 2010, 2013 Joseph Gaeddert
  *
  * This file is part of liquid.
  *
@@ -70,6 +68,8 @@ void autotest_vco_basic() {
         nco_crcf_step(p);
     }
 
+    // destroy NCO object
+    nco_crcf_destroy(p);
 }
 
 //
@@ -107,5 +107,8 @@ void autotest_vco_mixing() {
         // step nco
         nco_crcf_step(p);
     }
+    
+    // destroy NCO object
+    nco_crcf_destroy(p);
 }
 

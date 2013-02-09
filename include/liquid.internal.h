@@ -870,12 +870,13 @@ unsigned int fft_reverse_index(unsigned int _i, unsigned int _n);
 
 LIQUID_FFT_DEFINE_INTERNAL_API(LIQUID_FFT_MANGLE_FLOAT, float, liquid_float_complex)
 
+// fixed-point FFT definitions
 LIQUID_FFT_DEFINE_INTERNAL_API(LIQUID_FFT_MANGLE_Q16, q16_t, cq16_t)
 LIQUID_FFT_DEFINE_INTERNAL_API(LIQUID_FFT_MANGLE_Q32, q32_t, cq32_t)
 
-// Use fftw library if installed, otherwise use internal (less
-// efficient) fft library.
-#if HAVE_FFTW3_H
+// Use fftw library if installed (and not overridden with configuration),
+// otherwise use internal (less efficient) fft library.
+#if HAVE_FFTW3_H && !defined LIQUID_FFTOVERRIDE
 #   include <fftw3.h>
 #   define FFT_PLAN             fftwf_plan
 #   define FFT_CREATE_PLAN      fftwf_plan_dft_1d
