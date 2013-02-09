@@ -906,6 +906,7 @@ matrix_autotests :=						\
 	src/matrix/tests/smatrixb_autotest.c			\
 	src/matrix/tests/smatrixf_autotest.c			\
 	src/matrix/tests/smatrixi_autotest.c			\
+	src/matrix/tests/matrixq16_autotest.c			\
 
 
 matrix_benchmarks :=						\
