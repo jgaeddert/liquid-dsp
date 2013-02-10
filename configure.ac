@@ -32,6 +32,7 @@ AC_LANG(C)
 
 # Autoheader
 AH_TEMPLATE([LIQUID_EXPERIMENTAL], [Enable building of experimental modules and objects.])
+AH_TEMPLATE([LIQUID_FFTOVERRIDE],  [Force internal FFT even if libfftw is available])
 
 AC_CONFIG_HEADER(config.h)
 AH_TOP([
@@ -54,6 +55,12 @@ AC_ARG_ENABLE(profile,
     AS_HELP_STRING([--enable-profile],[profile]),
     [PROFILE_OPTION="-pg"; CLIB="-lc_p"],
     [PROFILE_OPTION="";    CLIB="-lc"],
+)
+
+AC_ARG_ENABLE(fftoverride,
+    AS_HELP_STRING([--enable-fftoverride],[use internal fft even if libfftw is available]),
+    [AC_DEFINE(LIQUID_FFTOVERRIDE)],
+    [],
 )
 
 # Option to enable/disable experimental modules and objects
