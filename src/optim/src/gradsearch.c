@@ -88,9 +88,13 @@ void gradsearch_destroy(gradsearch _q)
 void gradsearch_print(gradsearch _q)
 {
     //printf("gradient search:\n");
-    printf("u=%12.4e ", _q->u);         // utility
-    //printf("|p|=%12.4e ", _q->pnorm); // norm(p)
-    printf("step=%11.4e ", _q->alpha);  // alpha (step size)
+    printf("u=%12.4e ",   _q->u);       // utility
+#if 0
+    // enable more verbose output
+    printf("|p|=%7.1e ",  _q->pnorm);   // norm(p)
+    printf("del=%7.1e ",  _q->delta);   // delta
+#endif
+    printf("step=%7.1e ", _q->alpha);   // alpha (step size)
 
     unsigned int i;
     printf("{");
@@ -103,9 +107,6 @@ float gradsearch_step(gradsearch _q)
 {
     unsigned int i;
 
-    // decrease delta
-    _q->delta *= 0.99f;
-
     // ensure norm(p) > 0, otherwise increase delta
     unsigned int n=20;
     for (i=0; i<n; i++) {
@@ -115,10 +116,18 @@ float gradsearch_step(gradsearch _q)
         // normalize gradient vector
         _q->pnorm = gradsearch_norm(_q->p, _q->num_parameters);
 
-        if (_q->pnorm > 0.0f)
+        if (_q->pnorm > 0.0f) {
+            // try to keep delta about 1e-4 * pnorm
+            if (1e-4f*_q->pnorm < _q->delta)
+                _q->delta *= 0.90f;
+            else if ( 1e-5f*_q->pnorm > _q->delta)
+                _q->delta *= 1.10f;
+
             break;
-        else
+        } else {
+            // step size is too small to approximate gradient
             _q->delta *= 10.0f;
+        }
     }
     
     if (i == n) {
@@ -133,7 +142,7 @@ float gradsearch_step(gradsearch _q)
                                       _q->num_parameters,
                                       _q->v,
                                       _q->p,
-                                      _q->delta*10.0f);
+                                      _q->delta);
 
     // step in the negative direction of the gradient
     float dir = _q->direction == LIQUID_OPTIM_MINIMIZE ? 1.0f : -1.0f;
