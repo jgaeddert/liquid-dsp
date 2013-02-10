@@ -104,9 +104,6 @@ int main(int argc, char *argv[]) {
 
     // set up framing simulation options
     gmskframe_fer_opts opts;
-    opts.k          = k;
-    opts.m          = m;
-    opts.BT         = BT;
     opts.check      = check;
     opts.fec0       = fec0;
     opts.fec1       = fec1;
@@ -132,9 +129,6 @@ int main(int argc, char *argv[]) {
     for (i=0; i<argc; i++) fprintf(fid,"%s ", argv[i]);
     fprintf(fid,"\n");
     fprintf(fid,"#\n");
-    fprintf(fid,"#  k (samples/symbol)  :   %u\n", opts.k);
-    fprintf(fid,"#  m (filter delay)    :   %u\n", opts.m);
-    fprintf(fid,"#  BT                  :   %8.6f\n", opts.BT);
     fprintf(fid,"#  check               :   %s\n", crc_scheme_str[opts.check][1]);
     fprintf(fid,"#  fec (inner)         :   %s\n", fec_scheme_str[opts.fec0][1]);
     fprintf(fid,"#  fec (outer)         :   %s\n", fec_scheme_str[opts.fec1][1]);

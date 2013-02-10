@@ -1122,7 +1122,7 @@ void ofdmframesync_debug_enable(ofdmframesync _q)
     _q->debug_enabled   = 1;
     _q->debug_objects_created = 1;
 #else
-    fprintf(stderr,"gmskframesync_debug_enable(): compile-time debugging disabled\n");
+    fprintf(stderr,"ofdmframesync_debug_enable(): compile-time debugging disabled\n");
 #endif
 }
 
@@ -1132,7 +1132,7 @@ void ofdmframesync_debug_disable(ofdmframesync _q)
 #if DEBUG_OFDMFRAMESYNC
     _q->debug_enabled = 0;
 #else
-    fprintf(stderr,"gmskframesync_debug_enable(): compile-time debugging disabled\n");
+    fprintf(stderr,"ofdmframesync_debug_enable(): compile-time debugging disabled\n");
 #endif
 }
 
@@ -1141,7 +1141,7 @@ void ofdmframesync_debug_print(ofdmframesync _q,
 {
 #if DEBUG_OFDMFRAMESYNC
     if (!_q->debug_objects_created) {
-        fprintf(stderr,"error: gmskframe_debug_print(), debugging objects don't exist; enable debugging first\n");
+        fprintf(stderr,"error: ofdmframe_debug_print(), debugging objects don't exist; enable debugging first\n");
         return;
     }
 
@@ -1296,7 +1296,7 @@ void ofdmframesync_debug_print(ofdmframesync _q,
     fclose(fid);
     printf("ofdmframesync/debug: results written to '%s'\n", _filename);
 #else
-    fprintf(stderr,"gmskframesync_debug_print(): compile-time debugging disabled\n");
+    fprintf(stderr,"ofdmframesync_debug_print(): compile-time debugging disabled\n");
 #endif
 }
 

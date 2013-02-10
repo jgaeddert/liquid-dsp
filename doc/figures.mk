@@ -15,6 +15,7 @@ local_pgffiles :=					\
 	figures.pgf/bpacket_structure.pdf		\
 	figures.pgf/fft_plan_diagram.pdf		\
 	figures.pgf/fft_spgram_diagram.pdf		\
+	figures.pgf/frame64_structure.pdf		\
 	figures.pgf/framing_structure.pdf		\
 	figures.pgf/msresamp_decim_diagram.pdf		\
 	figures.pgf/msresamp_interp_diagram.pdf		\
@@ -107,6 +108,8 @@ local_pdffiles :=					\
 	figures.gen/filter_symsync_crcf_const.pdf	\
 	figures.gen/filter_symsync_crcf_time.pdf	\
 							\
+	figures.gen/flexframe_performance.pdf		\
+	figures.gen/frame64_performance.pdf		\
 	figures.gen/gmskframe_performance.pdf		\
 	figures.gen/ofdmflexframe_performance.pdf	\
 							\
@@ -277,7 +280,6 @@ local_programs :=					\
 	src/filter_kaiser				\
 	src/filter_rnyquist				\
 	src/filter_symsync_crcf				\
-	src/gmskframe_fer				\
 	src/interleaver_scatterplot			\
 	src/liquid_version				\
 	src/math_polyfit_lagrange			\
@@ -297,6 +299,10 @@ local_programs :=					\
 	src/sequence_ccodes				\
 	src/sequence_msequence				\
 							\
+	src/simulate_detector				\
+	src/flexframe_fer				\
+	src/frame64_fer					\
+	src/gmskframe_fer				\
 	src/ofdmflexframe_fer				\
 	src/simulate_ber				\
 	src/simulate_per_test				\
@@ -653,6 +659,26 @@ figures.gen/fft_spgram_freq.eps : %.eps : %.gnu %.dat
 ##
 ## MODULE : framing
 ##
+
+# 
+# flexframe_performance
+#
+
+figures.gen/flexframe_performance.dat \
+figures.gen/flexframe_performance.gnu : figures.gen/% : data/framing/%
+	cp $< $@
+
+figures.gen/flexframe_performance.eps : %.eps : %.gnu %.dat
+
+# 
+# frame64_performance
+#
+
+figures.gen/frame64_performance.dat \
+figures.gen/frame64_performance.gnu : figures.gen/% : data/framing/%
+	cp $< $@
+
+figures.gen/frame64_performance.eps : %.eps : %.gnu %.dat
 
 # 
 # gmskframe_performance

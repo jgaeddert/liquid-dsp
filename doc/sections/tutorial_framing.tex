@@ -31,19 +31,21 @@ on the transmit side of the link
 and {\tt framesync64} is the frame synchronizer on the receive side.
 %
 Together these objects realize a
-a very simple frame which encapsulates a 12-byte header and 64-byte
-payload within a frame consisting of 640 symbols at complex baseband.
+a very simple frame which encapsulates a 8-byte header and 64-byte
+payload within a frame consisting of 670 symbols at complex baseband.
 Conveniently the frame generator interpolates these symbols with a
-matched filter to produce a 1280-sample frame at complex baseband,
+matched filter to produce a 1340-sample frame at complex baseband,
 ready to be up-converted and transmitted over the air.
-This frame has a nominal spectral efficiency of 0.8 bits/second/Hz
-(512 bits from 64 payload bytes assembled in 640 symbols).%
+This frame has a nominal spectral efficiency of approximately
+0.85 bits/second/Hz
+(512 bits from 64 payload bytes and 8 header bytes
+assembled in 670 symbols).%
 \footnote{
     For simplicity this computation of spectral efficiency
     neglects any excess bandwidth of the pulse-shaping filter.}
-This means that if you transmit with a symbol rate of 10kHz you should
-expect to see a throughput of 8kbps if all the frames are properly
-decoded.
+This means that if you transmit with a symbol rate of 100~kHz you should
+expect to see a throughput of about 76kbps if all the frames are
+properly decoded.
 On the receiving side,
 raw samples at complex baseband are streamed to an instance of
 the frame synchronizer which picks out frames and invokes a user-defined
@@ -56,7 +58,7 @@ To help with synchronization, the frame includes a special preamble
 which can be seen in the figure below.\\
 %
 % FIGURE: framing:structure
-\includegraphics[width=\textwidth]{figures.pgf/framing_structure}\\
+\includegraphics[width=\textwidth]{figures.pgf/frame64_structure}\\
 %
 After up-conversion (mixing up to a carrier frequency) the frame is
 transmitted over the link where the receiver mixes the signal back down to
@@ -73,12 +75,15 @@ channel impairments artificially.
 The frame synchronizer's purpose is to correct for all of these
 impairments (within limitations, of course) and attempt to detect the
 frame and decode its data.
-The framing preamble assists the synchronizer by introducing special
-phasing sequences before any information-bearing symbols which aids in
-correcting for carrier and timing offsets.
-Without going into great detail, these sequences significantly increase
-the probability of frame detection and decoding while adding a minimal
-amount of overhead to the frame;
+%The framing preamble assists the synchronizer by introducing special
+%phasing sequences before any information-bearing symbols which aids in
+%correcting for carrier and timing offsets.
+The {\tt p/n} (or ``pseudo-noise'') sequence assists the synchronizer
+by introducing a known sequence of bits known at the receiver to
+improve the probability of detecting the frame.
+%Without going into great detail
+This sequence significantly increases the probability of frame detection
+and decoding while adding a minimal amount of overhead to the frame;
 a small price to pay for increased data reliability!
 
 
@@ -90,7 +95,9 @@ a small price to pay for increased data reliability!
 
 As with the other tutorials I assume that you are using {\tt gcc} to
 compile your programs and link to appropriate libraries.
-Create a new file {\tt framing.c} and include the headers
+All the code listings are available in the {\tt doc/tutorials/}
+directory.
+First, create a new file {\tt framing.c} and include the headers
 {\tt stdio.h},
 {\tt stdlib.h},
 {\tt math.h},
@@ -140,9 +147,9 @@ You are now ready to add functionality to your program.
 %       * payload
 %       * etc.
 %   * options (m, beta)
-The particular framing structure we will be using accepts a 12-byte
+The particular framing structure we will be using accepts a 8-byte
 header and a 64-byte payload and assembles them into a frame
-consisting of 1280 samples.
+consisting of 1340 samples.
 These sizes are fixed and cannot be adjusted for this framing
 structure.%
 \footnote{
@@ -157,49 +164,52 @@ frames, the header can include an identification number to indicate
 where in the file it should be written.
 Another application of the header is to include a destination node
 identifier for use in packet routing for ad hoc networks.
-Both the header and payload are assembled with a 16-bit cyclic
+Both the header and payload are assembled with a 24-bit cyclic
 redundancy check (CRC) to validate the integrity of the received data
-and encoded using the Hamming(12,8) code for error correction.
+and encoded using the Golay(24,12) code for error correction.
 (see \S\ref{module:fec} for more information on error detection
 and correction capabilities in \liquid).
 The encoded header and payload are modulated with QPSK and encapsulated
-with a BPSK preamble.
+with the {\tt p/n} sequence, modulated with BPSK.
 Finally, the resulting symbols are interpolated using a square-root
-Nyquist matched filter at a rate of 2 samples per symbol.
+Nyquist filter at a rate of 2 samples per symbol.
 This entire process is handled internally so that as a user the only
 thing you will need to do is call one function.
 
 The {\tt framegen64} object can be generated with the
-{\tt framegen64\_create()} method which accepts two arguments:
-an {\tt unsigned int} and a {\tt float}
-representing the matched filter's length (in symbols) and
-excess bandwidth factor, respectively.
-To begin, create a frame generator having a square-root Nyquist filter
-with a delay of 3 and an excess bandwidth factor of 0.7 as
+{\tt framegen64\_create()} method.
+%which accepts two arguments:
+%an {\tt unsigned int} and a {\tt float}
+%representing the matched filter's length (in symbols) and
+%excess bandwidth factor, respectively.
+To begin, create a frame generator
+%having a square-root Nyquist filter
+%with a delay of 3 and an excess bandwidth factor of 0.7
+as
 %
 \begin{Verbatim}[fontsize=\small]
-    framegen64 fg = framegen64_create(3, 0.7);
+    framegen64 fg = framegen64_create();
 \end{Verbatim}
 %
 As with all structures in \liquid\ you will need to invoke the
 corresponding {\tt destroy()} method when you are finished with the
 object.
 Now allocate memory for the header and payload data arrays,
-remembering that they have lengths 12 and 64, respectively.
+remembering that they have lengths 8 and 64, respectively.
 Raw ``message'' data are stored as arrays of type {\tt unsigned char} in
 \liquid.
 %
 \begin{Verbatim}[fontsize=\small]
-    unsigned char header[12];
+    unsigned char header[8];
     unsigned char payload[64];
 \end{Verbatim}
 %
 Finally you will need to create a buffer for storing the frame samples.
-For this framing structure you will need to allocate 1280 samples of
+For this framing structure you will need to allocate 1340 samples of
 type {\tt float complex}, viz
 %
 \begin{Verbatim}[fontsize=\small]
-    float complex y[1280];
+    float complex y[1340];
 \end{Verbatim}
 %
 Initialize the header and payload arrays with whatever values you wish.
@@ -234,26 +244,31 @@ Compile the program as before, creating the executable
 Running the program should produce an output similar to this:
 %
 \begin{Verbatim}[fontsize=\small]
-framegen64 [m=3, beta=0.70]:
-    ramp/up symbols     :   16
-    phasing symbols     :   64
-    p/n symbols         :   64
-    header symbols      :   84
-    payload symbols     :   396
-    payload symbols     :   396
-    ramp\down symbols   :   16
-    total symbols       :   640
-  0 :   0.00000000 + j*  0.00000000
-  1 :   0.00000000 + j*  0.00000000
-  2 :  -0.00011255 + j*  0.00000000
-  3 :   0.00014416 + j*  0.00000000
-  4 :   0.00040660 + j*  0.00000000
+framegen64 [m=3, beta=0.50]:
+  preamble/etc.
+    * ramp/up symbols       :   3
+    * p/n symbols           :   64
+    * ramp\down symbols     :   3
+  payload
+    * payload crc           :   CRC (24-bit)
+    * fec (inner)           :   none
+    * fec (outer)           :   Golay(24,12)
+    * payload len, coded    :   150 bytes
+    * modulation scheme     :   qpsk
+    * payload symbols       :   600
+  summary
+    * total symbols         :   670
+    * spectral efficiency   :   0.8597 b/s/Hz
+  0 :  -0.01431707 + j*  0.00000000
+  1 :   0.02657592 + j*  0.00000000
+  2 :   0.03544976 + j*  0.00000000
+  3 :  -0.10071726 + j*  0.00000000
+  4 :  -0.05426330 + j*  0.00000000
         ...
- 25 :   0.04375378 + j*  0.00000000
- 26 :   0.97077769 + j*  0.00000000
- 27 :  -0.04032370 + j*  0.00000000
- 28 :  -1.09209442 + j*  0.00000000
- 29 :   0.03534408 + j*  0.00000000
+ 26 :  -1.28444171 + j*  0.00000000
+ 27 :  -0.30773818 + j*  0.00000000
+ 28 :   1.13364959 + j*  0.00000000
+ 29 :   1.45763326 + j*  0.00000000
 done.
 \end{Verbatim}
 %
@@ -311,25 +326,24 @@ the point of recovery).
 You can even pass the synchronizer one sample at a time if you wish.
 
 The {\tt framesync64} object can be generated with the
-{\tt framesync64\_create()} method which accepts three pointers as
+{\tt framesync64\_create()} method which accepts two pointers as
 arguments:
 %
 \begin{Verbatim}[fontsize=\small]
-    framesync64 framesync64_create(framesyncprops_s *   _props,
-                                   framesync64_callback _callback,
-                                   void *               _userdata);
+    framesync64 framesync64_create(framesync_callback _callback,
+                                   void *             _userdata);
 \end{Verbatim}
 %
 %Here is a description of...
 %
 \begin{description}
-\item[{\tt \_props}]
-    is a construct that defines the specific properties of the frame
-    synchronizer.
-    This includes loop bandwidths for carrier, timing, and gain
-    recovery, as well as squelch and equalizer control.
-    You may pass the value {\tt NULL} to use the default parameters
-    (recommended for now).
+%\item[{\tt \_props}]
+%    is a construct that defines the specific properties of the frame
+%    synchronizer.
+%    This includes loop bandwidths for carrier, timing, and gain
+%    recovery, as well as squelch and equalizer control.
+%    You may pass the value {\tt NULL} to use the default parameters
+%    (recommended for now).
 \item[{\tt \_callback}]
     is a pointer to your callback function which will be invoked each
     time a frame is found and decoded.
@@ -340,24 +354,27 @@ arguments:
     Set to {\tt NULL} if you don't wish to use this.
 \end{description}
 %
-The {\tt framesync64} object has a callback function which has six
+The {\tt framesync64} object has a callback function which has seven
 arguments and looks like this:
 %
 \begin{Verbatim}[fontsize=\small]
-    int framesync64_callback(unsigned char *  _header,
-                             int              _header_valid,
-                             unsigned char *  _payload,
-                             int              _payload_valid,
-                             framesyncstats_s _stats,
-                             void *           _userdata);
+    int framesync_callback(unsigned char *  _header,
+                           int              _header_valid,
+                           unsigned char *  _payload,
+                           unsigned int     _payload_len,
+                           int              _payload_valid,
+                           framesyncstats_s _stats,
+                           void *           _userdata);
 \end{Verbatim}
 %
 The callback is typically defined to be {\tt static} and is passed to
-the instance of {\tt framesync64} object when it is created.
+the instance of {\tt framesync64} object when it is created
+(don't worry if this is confusing to you now; we will go through an
+example soon that implements this process).
 %
 \begin{description}
 \item[{\tt \_header}]
-    is a pointer to the 12 bytes of decoded header data.
+    is a pointer to the 8 bytes of decoded header data.
     This pointer is not static and cannot be used after returning from
     the callback function.
     This means that it needs to be copied locally for you to retain the
@@ -376,6 +393,10 @@ the instance of {\tt framesync64} object when it is created.
     the callback function.
     Again, this means that it needs to be copied locally for you to retain the
     data.
+\item[{\tt \_payload\_len}]
+    specifies the length of the payload.
+    For this framing structure, the length of the frame will always be 64;
+    however for other framing structures this could change.
 \item[{\tt \_payload\_valid}]
     is simply a flag to indicate if the payload passed its cyclic
     redundancy check
@@ -388,7 +409,7 @@ the instance of {\tt framesync64} object when it is created.
     re-transmission request should be issued.
 \item[{\tt \_stats}]
     is a synchronizer statistics construct that indicates some useful
-    PHY information to the user.
+    physical layer information to the user.
     We will ignore this information in our program, but it can be quite
     useful for certain applications.
     For more information on the {\tt framesyncstats\_s} structure, see
@@ -424,15 +445,15 @@ This return value for the callback function should always be zero
 and is reserved for future development.
 Within your {\tt main()} definition, create an instance of
 {\tt framesync64} using the {\tt framesync64\_create()} method,
-passing it a {\tt NULL} for the first and third arguments
-(the properties and userdata constructs)
-and the name of your callback function as the second argument.
+%passing it a {\tt NULL} for the first and third arguments
+%(the properties and userdata constructs)
+%and the name of your callback function as the second argument.
+passing it the name of your callback function as the first argument
+and {\tt NULL} as the second argument.
 Print the newly created synchronizer object to the screen if you like:
 %
 \begin{Verbatim}[fontsize=\small]
-    framesync64 fs = framesync64_create(NULL,
-                                        mycallback,
-                                        NULL);
+    framesync64 fs = framesync64_create(mycallback, NULL);
     framesync64_print(fs);
 \end{Verbatim}
 %
@@ -441,10 +462,10 @@ After your line that generates the frame samples
 invoke the synchronizer's {\tt execute()} method,
 passing to it the frame synchronizer object you just created ({\tt fs}),
 the pointer to the array of frame symbols ({\tt y}),
-and the length of the array (1280):
+and the length of the array (1340):
 %
 \begin{Verbatim}[fontsize=\small]
-    framesync64_execute(fs, y, 1280);
+    framesync64_execute(fs, y, 1340);
 \end{Verbatim}
 %
 Finally, destroy the frame synchronizer object along with the frame
@@ -459,35 +480,35 @@ function was indeed invoked.
 Your output should look something like this:
 %
 \begin{Verbatim}[fontsize=\small]
-    framegen64 [m=3, beta=0.70]:
-        ramp/up symbols     :   16
-        phasing symbols     :   64
-        ...
-    framesync64:
-        agc signal min/max  :   -40.0 dB /  30.0dB
-        agc b/w open/closed :   1.00e-03 / 1.00e-05
-        sym b/w open/closed :   8.00e-02 / 5.00e-02
-        pll b/w open/closed :   2.00e-02 / 5.00e-03
-        samples/symbol      :   2
-        filter length       :   3
-        num filters (ppfb)  :   32
-        filter excess b/w   :   0.7000
-        squelch             :   disabled
-        auto-squelch        :   disabled
-        squelch threshold   :   -35.00 dB
-        ----
-        p/n sequence len    :   64
-        payload len         :   64 bytes
-    ***** callback invoked!
-    done.
+framegen64 [m=3, beta=0.50]:
+  preamble/etc.
+    * ramp/up symbols       :   3
+    * p/n symbols           :   64
+    * ramp\down symbols     :   3
+  payload
+    * payload crc           :   CRC (24-bit)
+    * fec (inner)           :   none
+    * fec (outer)           :   Golay(24,12)
+    * payload len, coded    :   150 bytes
+    * modulation scheme     :   qpsk
+    * payload symbols       :   600
+  summary
+    * total symbols         :   670
+    * spectral efficiency   :   0.8597 b/s/Hz
+framesync64:
+***** callback invoked!
+done.
 \end{Verbatim}
 %
 % ignore any lines pertaining to
 %   framesync64/debug: results written to framesync64_internal_debug.m
-As you can see, the {\tt framesync64} object has a long list of
-modifiable properties pertaining to synchronization;
-the default values provide a good initial set for a wide range of
-channel conditions.
+%As you can see, the {\tt framesync64} object has a long list of
+%modifiable properties pertaining to synchronization;
+%the default values provide a good initial set for a wide range of
+%channel conditions.
+Notice that ``{\tt ***** callback invoked!}'' indicates that the frame
+was found and that your callback function was invoked from the
+{\tt framesync64} object.
 Duplicate the line of your code that executes the frame synchronizer.
 Recompile and run your code again.
 You should see the ``{\tt ***** callback invoked!}'' printed twice.
@@ -587,7 +608,7 @@ Check the program listed below if you need help.
 
 Now modify the program to incorporate the frame counter.
 First modify the piece of code where the frame synchronizer is created:
-replace the last argument (initially set to {\tt NULL}) with the address
+replace the second argument (initially set to {\tt NULL}) with the address
 of our {\tt frame\_counter} variable.
 For posterity's sake, this address will need to be type cast to
 {\tt void*} (a void pointer) to prevent the compiler from complaining.
@@ -619,19 +640,27 @@ Compile and run the program as before.
 The output of your program should look something like this:
 %
 \begin{Verbatim}[fontsize=\small]
-    framegen64 [m=3, beta=0.70]:
-        ramp/up symbols     :   16
-        phasing symbols     :   64
-        ...
-    framesync64:
-        agc signal min/max  :   -40.0 dB /  30.0dB
-        agc b/w open/closed :   1.00e-03 / 1.00e-05
-        ...
-    ***** callback invoked!
-      header (valid)
-      payload (valid)
-    received 1 frames
-    done.
+framegen64 [m=3, beta=0.50]:
+  preamble/etc.
+    * ramp/up symbols       :   3
+    * p/n symbols           :   64
+    * ramp\down symbols     :   3
+  payload
+    * payload crc           :   CRC (24-bit)
+    * fec (inner)           :   none
+    * fec (outer)           :   Golay(24,12)
+    * payload len, coded    :   150 bytes
+    * modulation scheme     :   qpsk
+    * payload symbols       :   600
+  summary
+    * total symbols         :   670
+    * spectral efficiency   :   0.8597 b/s/Hz
+framesync64:
+***** callback invoked!
+  header (valid)
+  payload (valid)
+received 1 frames
+done.
 \end{Verbatim}
 %
 % extra credit

@@ -1,6 +1,5 @@
 #!/bin/sh
-# Copyright (c) 2007, 2009 Joseph Gaeddert
-# Copyright (c) 2007, 2009 Virginia Polytechnic Institute & State University
+# Copyright (c) 2007, 2009, 2013 Joseph Gaeddert
 #
 # This file is part of liquid.
 #
@@ -17,6 +16,12 @@
 # You should have received a copy of the GNU General Public License
 # along with liquid.  If not, see <http://www.gnu.org/licenses/>.
 
+# 
+# bootstrap.sh
+#
+# This is the bootstrapping script to auto-generate a configure
+# script for checking build environments, etc.
+#
 
 rm -f config.cache aclocal.m4
 aclocal -I./scripts

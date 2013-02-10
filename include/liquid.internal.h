@@ -1,7 +1,5 @@
 /*
- * Copyright (c) 2007, 2008, 2009, 2010, 2011, 2012 Joseph Gaeddert
- * Copyright (c) 2007, 2008, 2009, 2010, 2011, 2012 Virginia Polytechnic
- *                                        Institute & State University
+ * Copyright (c) 2007, 2008, 2009, 2010, 2011, 2012, 2013 Joseph Gaeddert
  *
  * This file is part of liquid.
  *
@@ -691,6 +689,86 @@ int fec_sumproduct_step(unsigned int    _m,
                         float *         _LQ,
                         unsigned char * _parity);
 
+// packetizer
+
+struct fecintlv_plan {
+    unsigned int dec_msg_len;
+    unsigned int enc_msg_len;
+
+    // fec codec
+    fec_scheme fs;
+    fec f;
+
+    // interleaver
+    interleaver q;
+};
+
+struct packetizer_s {
+    unsigned int msg_len;
+    unsigned int packet_len;
+
+    crc_scheme check;
+    unsigned int crc_length;
+
+    struct fecintlv_plan * plan;
+    unsigned int plan_len;
+
+    // buffers
+    unsigned int buffer_len;
+    unsigned char * buffer_0;
+    unsigned char * buffer_1;
+};
+
+// reallocate memory for buffers
+void packetizer_realloc_buffers(packetizer _p, unsigned int _len);
+
+
+//
+// interleaver
+//
+
+// structured interleaver object
+struct interleaver_s {
+    unsigned int n;     // number of bytes
+
+    unsigned int M;     // row dimension
+    unsigned int N;     // col dimension
+
+    // interleaving depth (number of permutations)
+    unsigned int depth;
+};
+
+// 
+// permutation functions
+//
+
+// permute one iteration
+void interleaver_permute(unsigned char * _x,
+                         unsigned int _n,
+                         unsigned int _M,
+                         unsigned int _N);
+
+// permute one iteration (soft bit input)
+void interleaver_permute_soft(unsigned char * _x,
+                              unsigned int _n,
+                              unsigned int _M,
+                              unsigned int _N);
+
+// permute one iteration with mask
+void interleaver_permute_mask(unsigned char * _x,
+                              unsigned int _n,
+                              unsigned int _M,
+                              unsigned int _N,
+                              unsigned char _mask);
+
+// permute one iteration (soft bit input) with mask
+void interleaver_permute_mask_soft(unsigned char * _x,
+                                   unsigned int _n,
+                                   unsigned int _M,
+                                   unsigned int _N,
+                                   unsigned char _mask);
+
+
 
 //
 // MODULE : fft (fast discrete Fourier transform)
@@ -1160,90 +1238,11 @@ float complex ellip_asnf(float complex _u,
 void framegen64_byte_to_syms(unsigned char _byte,
                              unsigned char * _syms);
 
-// framesync64
-
-void framesync64_open_bandwidth(framesync64 _fs);
-void framesync64_close_bandwidth(framesync64 _fs);
-void framesync64_decode_header(framesync64 _fs);
-void framesync64_decode_payload(framesync64 _fs);
-
 // convert four 2-bit symbols into one 8-bit byte
 //  _syms   :   input symbols [size: 4 x 1]
 //  _byte   :   output byte
 void framesync64_syms_to_byte(unsigned char * _syms,
                               unsigned char * _byte);
-
-// execute methods
-void framesync64_execute_seekpn(    framesync64 _fs, float complex _x, unsigned int _sym);
-void framesync64_execute_rxheader(  framesync64 _fs, float complex _x, unsigned int _sym);
-void framesync64_execute_rxpayload( framesync64 _fs, float complex _x, unsigned int _sym);
-void framesync64_execute_reset(     framesync64 _fs, float complex _x, unsigned int _sym);
-
-// advanced mode
-void framesync64_csma_lock(framesync64 _fs);
-void framesync64_csma_unlock(framesync64 _fs);
-
-
-// flexframegen
-void flexframegen_compute_payload_len(flexframegen _fg);
-void flexframegen_compute_frame_len(flexframegen _fg);
-void flexframegen_configure_payload_buffers(flexframegen _fg);
-void flexframegen_encode_header(flexframegen _fg);
-void flexframegen_modulate_header(flexframegen _fg);
-void flexframegen_modulate_payload(flexframegen _fg);
-//void flexframegen_tmp_getheaderenc(flexframegen _fg, unsigned char * _header_enc);
-
-// flexframesync
-void flexframesync_configure_payload_buffers(flexframesync _fs);
-void flexframesync_decode_header(flexframesync _fs);
-void flexframesync_assemble_payload(flexframesync _fs);
-void flexframesync_open_bandwidth(flexframesync _fs);
-void flexframesync_close_bandwidth(flexframesync _fs);
-void flexframesync_train_eq(flexframesync _fs);
-
-// 
-void flexframesync_execute_seekpn(   flexframesync _fs, float complex _x, unsigned int _sym);
-void flexframesync_execute_rxheader( flexframesync _fs, float complex _x, unsigned int _sym);
-void flexframesync_execute_rxpayload(flexframesync _fs, float complex _x, unsigned int _sym);
-void flexframesync_execute_reset(    flexframesync _fs, float complex _x, unsigned int _sym);
-
-// advanced mode
-void flexframesync_csma_lock(flexframesync _fs);
-void flexframesync_csma_unlock(flexframesync _fs);
-
-// packetizer
-
-struct fecintlv_plan {
-    unsigned int dec_msg_len;
-    unsigned int enc_msg_len;
-
-    // fec codec
-    fec_scheme fs;
-    fec f;
-
-    // interleaver
-    interleaver q;
-};
-
-struct packetizer_s {
-    unsigned int msg_len;
-    unsigned int packet_len;
-
-    crc_scheme check;
-    unsigned int crc_length;
-
-    struct fecintlv_plan * plan;
-    unsigned int plan_len;
-
-    // buffers
-    unsigned int buffer_len;
-    unsigned char * buffer_0;
-    unsigned char * buffer_1;
-};
-
-// reallocate memory for buffers
-void packetizer_realloc_buffers(packetizer _p, unsigned int _len);
-
 
 //
 // bpacket
@@ -1267,10 +1266,32 @@ void bpacketsync_reconfig(bpacketsync _q);
 
 
 // 
+// flexframe
+//
+
+#define FLEXFRAME_VERSION   (100)
+
+// header description
+// NOTE: The flexframe header can be improved with crc24, secded7264, v29
+//       which also generates a 54-byte frame. Improves header decoding
+//       by about 1 dB (99% probability of decoding with SNR = -1 dB);
+//       however this requires that the 'libfec' libraries are installed.
+#define FLEXFRAME_H_USER    (14)                    // user-defined array
+#define FLEXFRAME_H_DEC     (FLEXFRAME_H_USER+6)    // decoded length
+#define FLEXFRAME_H_CRC     (LIQUID_CRC_32)         // header CRC
+#define FLEXFRAME_H_FEC0    (LIQUID_FEC_SECDED7264) // header FEC (inner)
+#define FLEXFRAME_H_FEC1    (LIQUID_FEC_HAMMING84)  // header FEC (outer)
+#define FLEXFRAME_H_ENC     (54)                    // encoded length
+//#define FLEXFRAME_H_MOD     (LIQUID_MODEM_BPSK)   // modulation scheme
+//#define FLEXFRAME_H_BPS     (1)                   // modulation depth
+#define FLEXFRAME_H_SYM     (432)                   // number of symbols
+
+
+// 
 // gmskframe
 //
 
-#define GMSKFRAME_VERSION   (2)
+#define GMSKFRAME_VERSION   (3)
 
 // header description
 #define GMSKFRAME_H_USER    (8)                     // user-defined array
@@ -1278,21 +1299,7 @@ void bpacketsync_reconfig(bpacketsync _q);
 #define GMSKFRAME_H_CRC     (LIQUID_CRC_32)         // header CRC
 #define GMSKFRAME_H_FEC     (LIQUID_FEC_HAMMING128) // header FEC
 #define GMSKFRAME_H_ENC     (26)                    // encoded length (bytes)
-
-// gmskframegen
-void gmskframegen_encode_header( gmskframegen _q, unsigned char * _header);
-void gmskframegen_write_rampup(  gmskframegen _q, float complex * _y);
-void gmskframegen_write_phasing( gmskframegen _q, float complex * _y);
-void gmskframegen_write_preamble(gmskframegen _q, float complex * _y);
-void gmskframegen_write_header(  gmskframegen _q, float complex * _y);
-void gmskframegen_write_payload( gmskframegen _q, float complex * _y);
-void gmskframegen_write_rampdn(  gmskframegen _q, float complex * _y);
-
-// gmskframesync
-void gmskframesync_execute_seekpn(gmskframesync _q, float _x);
-void gmskframesync_execute_rxheader(gmskframesync _q, float _x);
-void gmskframesync_execute_rxpayload(gmskframesync _q, float _x);
-void gmskframesync_decode_header(gmskframesync _q);
+#define GMSKFRAME_H_SYM     (208)                   // number of encoded bits
 
 
 // 
@@ -1364,53 +1371,6 @@ void ofdmflexframesync_decode_header(ofdmflexframesync _q);
 // receive payload data
 void ofdmflexframesync_rxpayload(ofdmflexframesync _q,
                                 float complex * _X);
-
-
-//
-// interleaver
-//
-
-// structured interleaver object
-struct interleaver_s {
-    unsigned int n;     // number of bytes
-
-    unsigned int M;     // row dimension
-    unsigned int N;     // col dimension
-
-    // interleaving depth (number of permutations)
-    unsigned int depth;
-};
-
-// 
-// permutation functions
-//
-
-// permute one iteration
-void interleaver_permute(unsigned char * _x,
-                         unsigned int _n,
-                         unsigned int _M,
-                         unsigned int _N);
-
-// permute one iteration (soft bit input)
-void interleaver_permute_soft(unsigned char * _x,
-                              unsigned int _n,
-                              unsigned int _M,
-                              unsigned int _N);
-
-// permute one iteration with mask
-void interleaver_permute_mask(unsigned char * _x,
-                              unsigned int _n,
-                              unsigned int _M,
-                              unsigned int _N,
-                              unsigned char _mask);
-
-// permute one iteration (soft bit input) with mask
-void interleaver_permute_mask_soft(unsigned char * _x,
-                                   unsigned int _n,
-                                   unsigned int _M,
-                                   unsigned int _N,
-                                   unsigned char _mask);
-
 
 
 //
@@ -1794,26 +1754,6 @@ void ofdmframesync_rxsymbol(ofdmframesync _q);
 
 // Numerically-controlled oscillator, floating point phase precision
 #define LIQUID_NCO_DEFINE_INTERNAL_API(NCO,T,TC)                \
-struct NCO(_s) {                                                \
-    liquid_ncotype type;                                        \
-    T theta;            /* NCO phase                    */      \
-    T d_theta;          /* NCO frequency                */      \
-    T sintab[256];      /* sine table                   */      \
-    unsigned int index; /* table index                  */      \
-    T sine;                                                     \
-    T cosine;                                                   \
-    void (*compute_sincos)(NCO() _q);                           \
-                                                                \
-    /* phase-locked loop */                                     \
-    T bandwidth;        /* loop filter bandwidth        */      \
-    T zeta;             /* loop filter damping factor   */      \
-    T a[3];             /* feed-back coefficients       */      \
-    T b[3];             /* feed-forward coefficients    */      \
-    iirfiltsos_rrrf pll_filter; /* iir filter object    */      \
-    T pll_phi_prime;    /* pll phase state              */      \
-    T pll_phi_hat;      /* pll output phase             */      \
-    T pll_dtheta_base;  /* NCO base frequency           */      \
-};                                                              \
                                                                 \
 /* constrain phase/frequency to be in [-pi,pi)          */      \
 void NCO(_constrain_phase)(NCO() _q);                           \

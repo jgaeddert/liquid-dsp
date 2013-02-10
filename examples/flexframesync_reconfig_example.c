@@ -26,13 +26,13 @@ void usage()
 }
 
 // flexframesync callback function
-static int callback(unsigned char * _rx_header,
-                    int _rx_header_valid,
-                    unsigned char * _rx_payload,
-                    unsigned int _rx_payload_len,
-                    int _rx_payload_valid,
+static int callback(unsigned char *  _header,
+                    int              _header_valid,
+                    unsigned char *  _payload,
+                    unsigned int     _payload_len,
+                    int              _payload_valid,
                     framesyncstats_s _stats,
-                    void * _userdata);
+                    void *           _userdata);
 
 typedef struct {
     unsigned char * header;
@@ -49,8 +49,6 @@ int main(int argc, char *argv[]) {
 
     // define parameters
     float SNRdB = 30.0f;
-    unsigned int m = 3;     // filter delay
-    float beta = 0.7f;      // filter excess bandwidth
     float noise_floor = -30.0f;
     unsigned int num_frames = 3;
 
@@ -79,23 +77,8 @@ int main(int argc, char *argv[]) {
     unsigned char * payload = NULL;
     framedata fd = {NULL, NULL, 0, 0};
 
-    // create interpolator
-    interp_crcf interp = interp_crcf_create_rnyquist(LIQUID_RNYQUIST_RRC,2,m,beta,0);
-
     // create flexframesync object with default properties
-    framesyncprops_s fsprops;
-    framesyncprops_init_default(&fsprops);
-    fsprops.squelch_threshold = noise_floor + 3.0f;
-#if 0
-    // override default properties
-    fsprops.agc_bw0 = 1e-3f;
-    fsprops.agc_bw1 = 1e-5f;
-    fsprops.agc_gmin = 1e-3f;
-    fsprops.agc_gmax = 1e4f;
-    fsprops.pll_bw0 = 1e-1f;
-    fsprops.pll_bw1 = 1e-2f;
-#endif
-    flexframesync fs = flexframesync_create(&fsprops,callback,(void*)&fd);
+    flexframesync fs = flexframesync_create(callback,(void*)&fd);
 
     // channel
     float phi=0.0f;
@@ -118,29 +101,19 @@ int main(int argc, char *argv[]) {
     unsigned int frame_len;
     float complex * frame = NULL;
 
-    // interpolate, push through synchronizer
-    float complex x;
-    float complex y[2];
-    float complex z[2];
-    float complex noise;
-    for (i=0; i<512; i++) {
-        noise = 0.0f;
-        cawgn(&noise, nstd);
-        // push noise through sync
-        flexframesync_execute(fs, &noise, 1);
-    }
+    // push through synchronizer
+    float complex x[2];     // frame samples
+    float complex y;        // 
+    float complex noise;    //
 
     unsigned int j;
     for (j=0; j<num_frames; j++) {
         // configure frame generator properties
-        fgprops.rampup_len  = 64;
-        fgprops.phasing_len = 64;
-        fgprops.payload_len = (rand() % 256) + 1;   // random payload length
-        fgprops.check       = LIQUID_CRC_NONE;      // data validity check
-        fgprops.fec0        = LIQUID_FEC_NONE;      // inner FEC scheme
-        fgprops.fec1        = LIQUID_FEC_NONE;      // outer FEC scheme
-        fgprops.mod_scheme  = (rand() % 2) ? LIQUID_MODEM_QPSK : LIQUID_MODEM_QAM16;
-        fgprops.rampdn_len  = 64;
+        unsigned int payload_len = (rand() % 256) + 1;   // random payload length
+        fgprops.check            = LIQUID_CRC_NONE;      // data validity check
+        fgprops.fec0             = LIQUID_FEC_NONE;      // inner FEC scheme
+        fgprops.fec1             = LIQUID_FEC_NONE;      // outer FEC scheme
+        fgprops.mod_scheme       = (rand() % 2) ? LIQUID_MODEM_QPSK : LIQUID_MODEM_QAM16;
 
         // set properties
         flexframegen_setprops(fg, &fgprops);
@@ -148,10 +121,10 @@ int main(int argc, char *argv[]) {
             flexframegen_print(fg);
 
         // reallocate memory for payload
-        payload = realloc(payload, fgprops.payload_len*sizeof(unsigned char));
+        payload = realloc(payload, payload_len*sizeof(unsigned char));
 
         // initialize payload
-        for (i=0; i<fgprops.payload_len; i++)
+        for (i=0; i<payload_len; i++)
             payload[i] = rand() & 0xff;
 
         // compute frame length
@@ -164,51 +137,43 @@ int main(int argc, char *argv[]) {
         fd.header = header;
         fd.payload = payload;
 
-        // generate the frame
-        flexframegen_execute(fg, header, payload, frame);
+        // assemble the frame
+        flexframegen_assemble(fg, header, payload, payload_len);
 
-        for (i=0; i<frame_len+2*m; i++) {
+        int frame_complete = 0;
+        while (!frame_complete) {
             // compensate for filter delay
-            x = (i<frame_len) ? frame[i] : 0.0f;
+            frame_complete = flexframegen_write_samples(fg, x);
 
-            // run interpolator
-            interp_crcf_execute(interp, x, y);
+            for (i=0; i<2; i++) {
+                // add channel impairments
+                nco_crcf_mix_up(nco_channel, x[i], &y);
+                nco_crcf_step(nco_channel);
 
-            // add channel impairments
-            nco_crcf_mix_up(nco_channel, y[0], &z[0]);
-            nco_crcf_step(nco_channel);
-            nco_crcf_mix_up(nco_channel, y[1], &z[1]);
-            nco_crcf_step(nco_channel);
+                // apply channel gain
+                y *= gamma;
 
-            // apply channel gain
-            z[0] *= gamma;
-            z[1] *= gamma;
+                // add noise
+                y += nstd * (randnf() + _Complex_I*randnf()) * M_SQRT1_2;
 
-            // add noise
-            cawgn(&z[0], nstd);
-            cawgn(&z[1], nstd);
+                // emulate sample timing offset with Farrow filter
+                firfarrow_crcf_push(delay_filter, y);
+                firfarrow_crcf_execute(delay_filter, &y);
 
-            // emulate sample timing offset with Farrow filter
-            firfarrow_crcf_push(delay_filter, z[0]);
-            firfarrow_crcf_execute(delay_filter, &z[0]);
-            firfarrow_crcf_push(delay_filter, z[1]);
-            firfarrow_crcf_execute(delay_filter, &z[1]);
-
-            // push through sync
-            flexframesync_execute(fs, z, 2);
+                // push through sync
+                flexframesync_execute(fs, &y, 1);
+            }
         }
 
-        // flush frame
+        // flush farrow filter with zeros
         for (i=0; i<200; i++) {
-            noise = 0.0f;
-            cawgn(&noise, nstd);
             // push noise through sync
-            interp_crcf_execute(interp, noise, y);
-            firfarrow_crcf_push(delay_filter, y[0]);
-            firfarrow_crcf_execute(delay_filter, &z[0]);
-            firfarrow_crcf_push(delay_filter, y[1]);
-            firfarrow_crcf_execute(delay_filter, &z[1]);
-            flexframesync_execute(fs, z, 2);
+            noise = nstd * (randnf() + _Complex_I*randnf()) * M_SQRT1_2;
+            
+            firfarrow_crcf_push(delay_filter, noise);
+            firfarrow_crcf_execute(delay_filter, &y);
+
+            flexframesync_execute(fs, &y, 1);
         }
     } // num frames
 
@@ -219,7 +184,6 @@ int main(int argc, char *argv[]) {
     flexframegen_destroy(fg);
     flexframesync_destroy(fs);
     nco_crcf_destroy(nco_channel);
-    interp_crcf_destroy(interp);
     free(payload);
     free(frame);
 
@@ -227,13 +191,14 @@ int main(int argc, char *argv[]) {
     return 0;
 }
 
-static int callback(unsigned char * _rx_header,
-                    int _rx_header_valid,
-                    unsigned char * _rx_payload,
-                    unsigned int _rx_payload_len,
-                    int _rx_payload_valid,
+// flexframesync callback function
+static int callback(unsigned char *  _header,
+                    int              _header_valid,
+                    unsigned char *  _payload,
+                    unsigned int     _payload_len,
+                    int              _payload_valid,
                     framesyncstats_s _stats,
-                    void * _userdata)
+                    void *           _userdata)
 {
     if (verbose)
         printf("callback invoked\n");
@@ -241,25 +206,25 @@ static int callback(unsigned char * _rx_header,
     framedata * fd = (framedata*)_userdata;
 
     if (verbose) {
-        printf("    header crc          : %s\n", _rx_header_valid ?  "pass" : "FAIL");
-        printf("    payload length      : %u\n", _rx_payload_len);
-        printf("    payload crc         : %s\n", _rx_payload_valid ?  "pass" : "FAIL");
+        printf("    header crc          : %s\n", _header_valid ?  "pass" : "FAIL");
+        printf("    payload length      : %u\n", _payload_len);
+        printf("    payload crc         : %s\n", _payload_valid ?  "pass" : "FAIL");
         framesyncstats_print(&_stats);
     }
-    if (!_rx_header_valid)
+    if (!_header_valid)
         return 0;
 
     // validate payload
     unsigned int i;
     unsigned int num_header_errors=0;
     for (i=0; i<14; i++)
-        num_header_errors += (_rx_header[i] == fd->header[i]) ? 0 : 1;
+        num_header_errors += (_header[i] == fd->header[i]) ? 0 : 1;
     if (verbose)
         printf("    num header errors   : %u\n", num_header_errors);
 
     unsigned int num_payload_errors=0;
-    for (i=0; i<_rx_payload_len; i++)
-        num_payload_errors += (_rx_payload[i] == fd->payload[i]) ? 0 : 1;
+    for (i=0; i<_payload_len; i++)
+        num_payload_errors += (_payload[i] == fd->payload[i]) ? 0 : 1;
     if (verbose)
         printf("    num payload errors  : %u\n", num_payload_errors);
 

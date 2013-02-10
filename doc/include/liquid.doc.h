@@ -1,7 +1,5 @@
 /*
- * Copyright (c) 2007, 2008, 2009, 2010, 2012 Joseph Gaeddert
- * Copyright (c) 2007, 2008, 2009, 2010, 2012 Virginia Polytechnic
- *                                      Institute & State University
+ * Copyright (c) 2007, 2008, 2009, 2010, 2012, 2013 Joseph Gaeddert
  *
  * This file is part of liquid.
  *
@@ -148,15 +146,22 @@ typedef struct {
 
 
 // 
+// frame64 performance
+//
+
+// simulate frame detection and error rates for frame64
+void frame64_fer(unsigned int  _num_frames,
+                 float         _SNRdB,
+                 int           _verbose,
+                 fer_results * _results);
+
+// 
 // gmskframe performance
 //
 
 // simulate packet error rate options
 typedef struct {
     // GMSK frame properties
-    unsigned int k;             // samples/symbol
-    unsigned int m;             // filter delay (symbols)
-    float BT;                   // bandwidth/time constant
     crc_scheme check;           // cyclic redundancy check
     fec_scheme fec0;            // FEC codec (inner)
     fec_scheme fec1;            // FEC codec (outer)
@@ -170,11 +175,36 @@ typedef struct {
 } gmskframe_fer_opts;
 
 
-// simulate frame detection and error rates for ofdmflexframe
+// simulate frame detection and error rates for gmskframe
 void gmskframe_fer(gmskframe_fer_opts _opts,
                    float              _SNRdB,
                    fer_results *      _results);
 
+
+// 
+// frame performance
+//
+
+// simulate packet error rate options
+typedef struct {
+    // flexframe properties
+    modulation_scheme ms;       // modulation scheme
+    crc_scheme check;           // cyclic redundancy check
+    fec_scheme fec0;            // FEC codec (inner)
+    fec_scheme fec1;            // FEC codec (outer)
+    unsigned int payload_len;   // (decoded) message length (bytes)
+    unsigned int num_frames;    // number of frames
+
+    int verbose;                // verbose output?
+
+    // channel impairments...
+
+} flexframe_fer_opts;
+
+// simulate frame detection and error rates for flexframe
+void flexframe_fer(flexframe_fer_opts _opts,
+                   float              _SNRdB,
+                   fer_results *      _results);
 
 // 
 // ofdmframe performance

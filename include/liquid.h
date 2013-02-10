@@ -1,7 +1,5 @@
 /*
- * Copyright (c) 2007, 2008, 2009, 2010, 2011, 2012 Joseph Gaeddert
- * Copyright (c) 2007, 2008, 2009, 2010, 2011, 2012 Virginia Polytechnic
- *                                        Institute & State University
+ * Copyright (c) 2007, 2008, 2009, 2010, 2011, 2012, 2013 Joseph Gaeddert
  *
  * This file is part of liquid.
  *
@@ -586,6 +584,156 @@ void fec_decode_soft(fec _q,
                      unsigned int _dec_msg_len,
                      unsigned char * _msg_enc,
                      unsigned char * _msg_dec);
+
+// 
+// Packetizer
+//
+
+// computes the number of encoded bytes after packetizing
+//
+//  _n      :   number of uncoded input bytes
+//  _crc    :   error-detecting scheme
+//  _fec0   :   inner forward error-correction code
+//  _fec1   :   outer forward error-correction code
+unsigned int packetizer_compute_enc_msg_len(unsigned int _n,
+                                            int _crc,
+                                            int _fec0,
+                                            int _fec1);
+
+// computes the number of decoded bytes before packetizing
+//
+//  _k      :   number of encoded bytes
+//  _crc    :   error-detecting scheme
+//  _fec0   :   inner forward error-correction code
+//  _fec1   :   outer forward error-correction code
+unsigned int packetizer_compute_dec_msg_len(unsigned int _k,
+                                            int _crc,
+                                            int _fec0,
+                                            int _fec1);
+
+typedef struct packetizer_s * packetizer;
+
+// create packetizer object
+//
+//  _n      :   number of uncoded input bytes
+//  _crc    :   error-detecting scheme
+//  _fec0   :   inner forward error-correction code
+//  _fec1   :   outer forward error-correction code
+packetizer packetizer_create(unsigned int _dec_msg_len,
+                             int _crc,
+                             int _fec0,
+                             int _fec1);
+
+// re-create packetizer object
+//
+//  _p      :   initialz packetizer object
+//  _n      :   number of uncoded input bytes
+//  _crc    :   error-detecting scheme
+//  _fec0   :   inner forward error-correction code
+//  _fec1   :   outer forward error-correction code
+packetizer packetizer_recreate(packetizer _p,
+                               unsigned int _dec_msg_len,
+                               int _crc,
+                               int _fec0,
+                               int _fec1);
+
+// destroy packetizer object
+void packetizer_destroy(packetizer _p);
+
+// print packetizer object internals
+void packetizer_print(packetizer _p);
+
+unsigned int packetizer_get_dec_msg_len(packetizer _p);
+unsigned int packetizer_get_enc_msg_len(packetizer _p);
+
+
+// packetizer_encode()
+//
+// Execute the packetizer on an input message
+//
+//  _p      :   packetizer object
+//  _msg    :   input message (uncoded bytes)
+//  _pkt    :   encoded output message
+void packetizer_encode(packetizer _p,
+                       unsigned char * _msg,
+                       unsigned char * _pkt);
+
+// packetizer_decode()
+//
+// Execute the packetizer to decode an input message, return validity
+// check of resulting data
+//
+//  _p      :   packetizer object
+//  _pkt    :   input message (coded bytes)
+//  _msg    :   decoded output message
+int  packetizer_decode(packetizer _p,
+                       unsigned char * _pkt,
+                       unsigned char * _msg);
+
+// Execute the packetizer to decode an input message, return validity
+// check of resulting data
+//
+//  _p      :   packetizer object
+//  _pkt    :   input message (coded soft bits)
+//  _msg    :   decoded output message
+int  packetizer_decode_soft(packetizer _p,
+                            unsigned char * _pkt,
+                            unsigned char * _msg);
+
+
+//
+// interleaver
+//
+typedef struct interleaver_s * interleaver;
+
+// create interleaver
+//   _n     : number of bytes
+interleaver interleaver_create(unsigned int _n);
+
+// destroy interleaver object
+void interleaver_destroy(interleaver _q);
+
+// print interleaver object internals
+void interleaver_print(interleaver _q);
+
+// set depth (number of internal iterations)
+//  _q      :   interleaver object
+//  _depth  :   depth
+void interleaver_set_depth(interleaver _q,
+                           unsigned int _depth);
+
+// execute forward interleaver (encoder)
+//  _q          :   interleaver object
+//  _msg_dec    :   decoded (un-interleaved) message
+//  _msg_enc    :   encoded (interleaved) message
+void interleaver_encode(interleaver _q,
+                        unsigned char * _msg_dec,
+                        unsigned char * _msg_enc);
+
+// execute forward interleaver (encoder) on soft bits
+//  _q          :   interleaver object
+//  _msg_dec    :   decoded (un-interleaved) message
+//  _msg_enc    :   encoded (interleaved) message
+void interleaver_encode_soft(interleaver _q,
+                             unsigned char * _msg_dec,
+                             unsigned char * _msg_enc);
+
+// execute reverse interleaver (decoder)
+//  _q          :   interleaver object
+//  _msg_enc    :   encoded (interleaved) message
+//  _msg_dec    :   decoded (un-interleaved) message
+void interleaver_decode(interleaver _q,
+                        unsigned char * _msg_enc,
+                        unsigned char * _msg_dec);
+
+// execute reverse interleaver (decoder) on soft bits
+//  _q          :   interleaver object
+//  _msg_enc    :   encoded (interleaved) message
+//  _msg_dec    :   decoded (un-interleaved) message
+void interleaver_decode_soft(interleaver _q,
+                             unsigned char * _msg_enc,
+                             unsigned char * _msg_dec);
+
 
 
 //
@@ -1309,6 +1457,10 @@ LIQUID_AUTOCORR_DEFINE_API(AUTOCORR_MANGLE_RRRF,
 #define LIQUID_FIRFILT_DEFINE_API(FIRFILT,TO,TC,TI)             \
 typedef struct FIRFILT(_s) * FIRFILT();                         \
 FIRFILT() FIRFILT(_create)(TC * _h, unsigned int _n);           \
+FIRFILT() FIRFILT(_create_kaiser)(unsigned int _n,              \
+                                  float        _fc,             \
+                                  float        _As,             \
+                                  float        _mu);            \
 FIRFILT() FIRFILT(_recreate)(FIRFILT() _f,                      \
                              TC * _h,                           \
                              unsigned int _n);                  \
@@ -1454,11 +1606,17 @@ FIRPFB() FIRPFB(_create)(unsigned int _num_filters,             \
 /*  _k      : nominal samples/symbol                    */      \
 /*  _m      : filter delay (symbols)                    */      \
 /*  _beta   : rolloff factor (0 < beta <= 1)            */      \
-FIRPFB() FIRPFB(_create_rnyquist)(int _type,                    \
+FIRPFB() FIRPFB(_create_rnyquist)(int          _type,           \
                                   unsigned int _npfb,           \
                                   unsigned int _k,              \
                                   unsigned int _m,              \
-                                  float _beta);                 \
+                                  float        _beta);          \
+/* create from square-root derivative Nyquist prototype */      \
+FIRPFB() FIRPFB(_create_drnyquist)(int          _type,          \
+                                   unsigned int _npfb,          \
+                                   unsigned int _k,             \
+                                   unsigned int _m,             \
+                                   float        _beta);         \
 FIRPFB() FIRPFB(_recreate)(FIRPFB() _q,                         \
                            unsigned int _num_filters,           \
                            TC * _h,                             \
@@ -1824,28 +1982,6 @@ LIQUID_FIRFARROW_DEFINE_API(FIRFARROW_MANGLE_CRCF,
 // MODULE : framing
 //
 
-// framesyncprops : generic frame synchronizer properties structure
-
-typedef struct {
-    float agc_bw0, agc_bw1;     // automatic gain control bandwidth
-    float agc_gmin, agc_gmax;   // automatic gain control gain limits
-    float sym_bw0, sym_bw1;     // symbol synchronizer bandwidth
-    float pll_bw0, pll_bw1;     // phase-locked loop bandwidth
-    unsigned int k;             // decimation rate
-    unsigned int npfb;          // number of filters in symbol sync.
-    unsigned int m;             // filter length
-    float beta;                 // excess bandwidth
-    int squelch_enabled;        // enable/disable squelch
-    int autosquelch_enabled;    // enable/disable automatic squelch
-    float squelch_threshold;    // squelch enable/disable threshold
-    unsigned int eq_len;        // number of equalizer taps, eq_len >= 0
-    float eqrls_lambda;         // RLS equalizer forgetting factor, 0.999 typical
-} framesyncprops_s;
-
-extern framesyncprops_s framesyncprops_default;
-void framesyncprops_init_default(framesyncprops_s * _props);
-
-
 // framesyncstats : generic frame synchronizer statistic structure
 
 typedef struct {
@@ -1875,6 +2011,21 @@ void framesyncstats_init_default(framesyncstats_s * _stats);
 // print framesyncstats object
 void framesyncstats_print(framesyncstats_s * _stats);
 
+// Generic frame synchronizer callback function type
+//  _header         :   header data [size: 8 bytes]
+//  _header_valid   :   is header valid? (0:no, 1:yes)
+//  _payload        :   payload data [size: _payload_len]
+//  _payload_len    :   length of payload (bytes)
+//  _payload_valid  :   is payload valid? (0:no, 1:yes)
+//  _stats          :   frame statistics object
+//  _userdata       :   pointer to userdata
+typedef int (*framesync_callback)(unsigned char *  _header,
+                                  int              _header_valid,
+                                  unsigned char *  _payload,
+                                  unsigned int     _payload_len,
+                                  int              _payload_valid,
+                                  framesyncstats_s _stats,
+                                  void *           _userdata);
 
 // framesync csma callback functions invoked when signal levels is high or low
 //  _userdata       :   user-defined data pointer
@@ -1884,53 +2035,68 @@ typedef void (*framesync_csma_callback)(void * _userdata);
 //
 // Basic frame generator (64 bytes data payload)
 //
-typedef struct framegen64_s * framegen64;
-framegen64 framegen64_create(unsigned int _m,
-                             float _beta);
-void framegen64_destroy(framegen64 _fg);
-void framegen64_print(framegen64 _fg);
-void framegen64_execute(framegen64 _fg,
-                        unsigned char * _header,
-                        unsigned char * _payload,
-                        liquid_float_complex * _y);
 
-// Basic frame synchronizer (64 bytes data payload)
-//  _header         :   pointer to decoded header [size: 24 x 1]
-//  _header_valid   :   header passed cyclic redundancy check? 1 (yes), 0 (no)
-//  _payload        :   pointer to decoded payload [size: 64 x 1]
-//  _payload_valid  :   payload passed cyclic redundancy check? 1 (yes), 0 (no)
-//  _stats          :   frame statistics structure
-//  _userdata       :   user-defined data pointer
-typedef int (*framesync64_callback)(unsigned char * _header,
-                                    int _header_valid,
-                                    unsigned char * _payload,
-                                    int _payload_valid,
-                                    framesyncstats_s _stats,
-                                    void * _userdata);
+// frame length in samples
+#define FRAME64_LEN (1340)
+
+typedef struct framegen64_s * framegen64;
+
+// create frame generator
+framegen64 framegen64_create();
+
+// destroy frame generator
+void framegen64_destroy(framegen64 _q);
+
+// print frame generator internal properties
+void framegen64_print(framegen64 _q);
+
+// generate frame
+//  _q          :   frame generator object
+//  _header     :   8-byte header data
+//  _payload    :   64-byte payload data
+//  _frame      :   output frame samples [size: FRAME64_LEN x 1]
+void framegen64_execute(framegen64             _q,
+                        unsigned char *        _header,
+                        unsigned char *        _payload,
+                        liquid_float_complex * _frame);
+
 typedef struct framesync64_s * framesync64;
 
 // create framesync64 object
-//  _props      :   properties structure (default if NULL)
 //  _callback   :   callback function
 //  _userdata   :   user data pointer passed to callback function
-framesync64 framesync64_create(framesyncprops_s * _props,
-                               framesync64_callback _callback,
-                               void * _userdata);
-void framesync64_destroy(framesync64 _fs);
-void framesync64_print(framesync64 _fs);
-void framesync64_reset(framesync64 _fs);
-void framesync64_execute(framesync64 _fs,
+framesync64 framesync64_create(framesync_callback _callback,
+                               void *             _userdata);
+
+// destroy frame synchronizer
+void framesync64_destroy(framesync64 _q);
+
+// print frame synchronizer internal properties
+void framesync64_print(framesync64 _q);
+
+// reset frame synchronizer internal state
+void framesync64_reset(framesync64 _q);
+
+// push samples through frame synchronizer
+//  _q      :   frame synchronizer object
+//  _x      :   input samples [size: _n x 1]
+//  _n      :   number of input samples
+void framesync64_execute(framesync64            _q,
                          liquid_float_complex * _x,
-                         unsigned int _n);
+                         unsigned int           _n);
 
-void framesync64_getprops(framesync64 _fs, framesyncprops_s * _props);
-void framesync64_setprops(framesync64 _fs, framesyncprops_s * _props);
+// enable/disable debugging
+void framesync64_debug_enable(framesync64 _q);
+void framesync64_debug_disable(framesync64 _q);
+void framesync64_debug_print(framesync64 _q, const char * _filename);
 
+#if 0
 // advanced modes
-void framesync64_set_csma_callbacks(framesync64 _fs,
+void framesync64_set_csma_callbacks(framesync64             _q,
                                     framesync_csma_callback _csma_lock,
                                     framesync_csma_callback _csma_unlock,
-                                    void * _csma_userdata);
+                                    void *                  _csma_userdata);
+#endif
 
 //
 // Flexible frame : adjustable payload, mod scheme, etc., but bring
@@ -1939,74 +2105,98 @@ void framesync64_set_csma_callbacks(framesync64 _fs,
 
 // frame generator
 typedef struct {
-    unsigned int rampup_len;    // number of ramp/up symbols
-    unsigned int phasing_len;   // number of phasing symbols
-    unsigned int payload_len;   // uncoded payload length (bytes)
     unsigned int check;         // data validity check
     unsigned int fec0;          // forward error-correction scheme (inner)
     unsigned int fec1;          // forward error-correction scheme (outer)
     unsigned int mod_scheme;    // modulation scheme
-    unsigned int rampdn_len;    // number of ramp\down symbols
 } flexframegenprops_s;
-void flexframegenprops_init_default(flexframegenprops_s * _props);
+
+void flexframegenprops_init_default(flexframegenprops_s * _fgprops);
+
 typedef struct flexframegen_s * flexframegen;
+
+// create flexframegen object
+//  _props  :   frame properties (modulation scheme, etc.)
 flexframegen flexframegen_create(flexframegenprops_s * _props);
-void flexframegen_destroy(flexframegen _fg);
-void flexframegen_getprops(flexframegen _fg, flexframegenprops_s * _props);
-void flexframegen_setprops(flexframegen _fg, flexframegenprops_s * _props);
-void flexframegen_print(flexframegen _fg);
-unsigned int flexframegen_getframelen(flexframegen _fg);
-void flexframegen_execute(flexframegen _fg,
-                          unsigned char * _header,
-                          unsigned char * _payload,
-                          liquid_float_complex * _y);
-void flexframegen_flush(flexframegen _fg,
-                        unsigned int _n,
-                        liquid_float_complex * _y);
+
+// destroy flexframegen object
+void flexframegen_destroy(flexframegen _q);
+
+// print flexframegen object internals
+void flexframegen_print(flexframegen _q);
+
+// reset flexframegen object internals
+void flexframegen_reset(flexframegen _q);
+
+// is frame assembled?
+int flexframegen_is_assembled(flexframegen _q);
+
+// get frame properties
+void flexframegen_getprops(flexframegen _q, flexframegenprops_s * _props);
+
+// set frame properties
+void flexframegen_setprops(flexframegen _q, flexframegenprops_s * _props);
+
+// get length of assembled frame (samples)
+unsigned int flexframegen_getframelen(flexframegen _q);
+
+// assemble a frame from an array of data
+//  _q              :   frame generator object
+//  _header         :   frame header
+//  _payload        :   payload data [size: _payload_len x 1]
+//  _payload_len    :   payload data length
+void flexframegen_assemble(flexframegen    _q,
+                           unsigned char * _header,
+                           unsigned char * _payload,
+                           unsigned int    _payload_len);
+
+// write samples of assembled frame, two samples at a time, returning
+// '1' when frame is complete, '0' otherwise
+//  _q              :   frame generator object
+//  _buffer         :   output buffer [size: 2 x 1]
+int flexframegen_write_samples(flexframegen           _q,
+                               liquid_float_complex * _buffer);
 
 // frame synchronizer
 
-// callback
-//  _header             :   header data [size: 8 bytes]
-//  _header_valid       :   is header valid? (0:no, 1:yes)
-//  _payload            :   payload data [size: _payload_len]
-//  _payload_len        :   length of payload (bytes)
-//  _payload_valid      :   is payload valid? (0:no, 1:yes)
-//  _userdata           :   pointer to userdata
-//
-// extensions:
-//  _frame_samples      :   frame symbols (synchronized modem) [size: _framesyms_len]
-//  _frame_samples_len  :   number of frame symbols
-typedef int (*flexframesync_callback)(unsigned char * _header,
-                                      int _header_valid,
-                                      unsigned char * _payload,
-                                      unsigned int _payload_len,
-                                      int _payload_valid,
-                                      framesyncstats_s _stats,
-                                      void * _userdata);
 typedef struct flexframesync_s * flexframesync;
 
 // create flexframesync object
-//  _props      :   properties structure (default if NULL)
 //  _callback   :   callback function
 //  _userdata   :   user data pointer passed to callback function
-flexframesync flexframesync_create(framesyncprops_s * _props,
-                                   flexframesync_callback _callback,
-                                   void * _userdata);
-void flexframesync_destroy(flexframesync _fs);
-void flexframesync_getprops(flexframesync _fs, framesyncprops_s * _props);
-void flexframesync_setprops(flexframesync _fs, framesyncprops_s * _props);
-void flexframesync_print(flexframesync _fs);
-void flexframesync_reset(flexframesync _fs);
-void flexframesync_execute(flexframesync _fs,
-                           liquid_float_complex * _x,
-                           unsigned int _n);
+flexframesync flexframesync_create(framesync_callback _callback,
+                                   void *             _userdata);
 
+// destroy frame synchronizer
+void flexframesync_destroy(flexframesync _q);
+
+// print frame synchronizer internal properties
+void flexframesync_print(flexframesync _q);
+
+// reset frame synchronizer internal state
+void flexframesync_reset(flexframesync _q);
+
+// push samples through frame synchronizer
+//  _q      :   frame synchronizer object
+//  _x      :   input samples [size: _n x 1]
+//  _n      :   number of input samples
+void flexframesync_execute(flexframesync          _q,
+                           liquid_float_complex * _x,
+                           unsigned int           _n);
+
+// enable/disable debugging
+void flexframesync_debug_enable(flexframesync _q);
+void flexframesync_debug_disable(flexframesync _q);
+void flexframesync_debug_print(flexframesync _q,
+                               const char *  _filename);
+#if 0
 // advanced modes
 void flexframesync_set_csma_callbacks(flexframesync _fs,
                                       framesync_csma_callback _csma_lock,
                                       framesync_csma_callback _csma_unlock,
                                       void * _csma_userdata);
+#endif
+
 
 //
 // bpacket : binary packet suitable for data streaming
@@ -2104,9 +2294,9 @@ void bpacketsync_execute_bit(bpacketsync _q,
 //
 
 typedef struct gmskframegen_s * gmskframegen;
-gmskframegen gmskframegen_create(unsigned int _k,
-                                 unsigned int _m,
-                                 float _BT);
+
+// create GMSK frame generator
+gmskframegen gmskframegen_create();
 void gmskframegen_destroy(gmskframegen _fg);
 void gmskframegen_print(gmskframegen _fg);
 void gmskframegen_reset(gmskframegen _fg);
@@ -2126,21 +2316,13 @@ int gmskframegen_write_samples(gmskframegen _fg,
 // GMSK frame synchronizer
 //
 
-// GMSK frame synchronizer callback
-typedef int (*gmskframesync_callback)(unsigned char *  _header,
-                                      int              _header_valid,
-                                      unsigned char *  _payload,
-                                      unsigned int     _payload_len,
-                                      int              _payload_valid,
-                                      framesyncstats_s _stats,
-                                      void *           _userdata);
-
 typedef struct gmskframesync_s * gmskframesync;
-gmskframesync gmskframesync_create(unsigned int _k,
-                                   unsigned int _m,
-                                   float _BT,
-                                   gmskframesync_callback _callback,
-                                   void * _userdata);
+
+// create GMSK frame synchronizer
+//  _callback   :   callback function
+//  _userdata   :   user data pointer passed to callback function
+gmskframesync gmskframesync_create(framesync_callback _callback,
+                                   void *             _userdata);
 void gmskframesync_destroy(gmskframesync _q);
 void gmskframesync_print(gmskframesync _q);
 void gmskframesync_reset(gmskframesync _q);
@@ -2209,7 +2391,8 @@ unsigned int ofdmflexframegen_getframelen(ofdmflexframegen _q);
 // assemble a frame from an array of data
 //  _q              :   OFDM frame generator object
 //  _header         :   frame header [8 bytes]
-//  _payload        :   payload data
+//  _payload        :   payload data [size: _payload_len x 1]
+//  _payload_len    :   payload data length
 void ofdmflexframegen_assemble(ofdmflexframegen _q,
                                unsigned char * _header,
                                unsigned char * _payload,
@@ -2225,22 +2408,6 @@ int ofdmflexframegen_writesymbol(ofdmflexframegen _q,
 // OFDM flex frame synchronizer
 //
 
-// callback
-//  _header             :   header data [size: 8 bytes]
-//  _header_valid       :   is header valid? (0:no, 1:yes)
-//  _payload            :   payload data [size: _payload_len]
-//  _payload_len        :   length of payload (bytes)
-//  _payload_valid      :   is payload valid? (0:no, 1:yes)
-//  _stats              :   framing statistics (see above)
-//  _userdata           :   pointer to userdata
-typedef int (*ofdmflexframesync_callback)(unsigned char *  _header,
-                                          int              _header_valid,
-                                          unsigned char *  _payload,
-                                          unsigned int     _payload_len,
-                                          int              _payload_valid,
-                                          framesyncstats_s _stats,
-                                          void *           _userdata);
-
 typedef struct ofdmflexframesync_s * ofdmflexframesync;
 
 // create OFDM flexible framing synchronizer object
@@ -2250,12 +2417,12 @@ typedef struct ofdmflexframesync_s * ofdmflexframesync;
 //  _p          :   subcarrier allocation (null, pilot, data), [size: _M x 1]
 //  _callback   :   user-defined callback function
 //  _userdata   :   user-defined data pointer
-ofdmflexframesync ofdmflexframesync_create(unsigned int               _M,
-                                           unsigned int               _cp_len,
-                                           unsigned int               _taper_len,
-                                           unsigned char *            _p,
-                                           ofdmflexframesync_callback _callback,
-                                           void *                     _userdata);
+ofdmflexframesync ofdmflexframesync_create(unsigned int       _M,
+                                           unsigned int       _cp_len,
+                                           unsigned int       _taper_len,
+                                           unsigned char *    _p,
+                                           framesync_callback _callback,
+                                           void *             _userdata);
 
 void ofdmflexframesync_destroy(ofdmflexframesync _q);
 void ofdmflexframesync_print(ofdmflexframesync _q);
@@ -2374,155 +2541,43 @@ LIQUID_PRESYNC_DEFINE_API(BPRESYNC_MANGLE_CCCF,
                           liquid_float_complex,
                           liquid_float_complex)
 
-
-// 
-// Packetizer
+//
+// Pre-demodulation detector
 //
 
-// computes the number of encoded bytes after packetizing
-//
-//  _n      :   number of uncoded input bytes
-//  _crc    :   error-detecting scheme
-//  _fec0   :   inner forward error-correction code
-//  _fec1   :   outer forward error-correction code
-unsigned int packetizer_compute_enc_msg_len(unsigned int _n,
-                                            int _crc,
-                                            int _fec0,
-                                            int _fec1);
+typedef struct detector_cccf_s * detector_cccf;
 
-// computes the number of decoded bytes before packetizing
-//
-//  _k      :   number of encoded bytes
-//  _crc    :   error-detecting scheme
-//  _fec0   :   inner forward error-correction code
-//  _fec1   :   outer forward error-correction code
-unsigned int packetizer_compute_dec_msg_len(unsigned int _k,
-                                            int _crc,
-                                            int _fec0,
-                                            int _fec1);
+// create pre-demod detector
+//  _s          :   sequence
+//  _n          :   sequence length
+//  _threshold  :   detection threshold (default: 0.7)
+//  _dphi_max   :   maximum carrier offset
+detector_cccf detector_cccf_create(liquid_float_complex * _s,
+                                   unsigned int           _n,
+                                   float                  _threshold,
+                                   float                  _dphi_max);
 
-typedef struct packetizer_s * packetizer;
+// destroy pre-demo detector object
+void detector_cccf_destroy(detector_cccf _q);
 
-// create packetizer object
-//
-//  _n      :   number of uncoded input bytes
-//  _crc    :   error-detecting scheme
-//  _fec0   :   inner forward error-correction code
-//  _fec1   :   outer forward error-correction code
-packetizer packetizer_create(unsigned int _dec_msg_len,
-                             int _crc,
-                             int _fec0,
-                             int _fec1);
+// print pre-demod detector internal state
+void detector_cccf_print(detector_cccf _q);
 
-// re-create packetizer object
-//
-//  _p      :   initialz packetizer object
-//  _n      :   number of uncoded input bytes
-//  _crc    :   error-detecting scheme
-//  _fec0   :   inner forward error-correction code
-//  _fec1   :   outer forward error-correction code
-packetizer packetizer_recreate(packetizer _p,
-                               unsigned int _dec_msg_len,
-                               int _crc,
-                               int _fec0,
-                               int _fec1);
+// reset pre-demod detector internal state
+void detector_cccf_reset(detector_cccf _q);
 
-// destroy packetizer object
-void packetizer_destroy(packetizer _p);
-
-// print packetizer object internals
-void packetizer_print(packetizer _p);
-
-unsigned int packetizer_get_dec_msg_len(packetizer _p);
-unsigned int packetizer_get_enc_msg_len(packetizer _p);
-
-
-// packetizer_encode()
-//
-// Execute the packetizer on an input message
-//
-//  _p      :   packetizer object
-//  _msg    :   input message (uncoded bytes)
-//  _pkt    :   encoded output message
-void packetizer_encode(packetizer _p,
-                       unsigned char * _msg,
-                       unsigned char * _pkt);
-
-// packetizer_decode()
-//
-// Execute the packetizer to decode an input message, return validity
-// check of resulting data
-//
-//  _p      :   packetizer object
-//  _pkt    :   input message (coded bytes)
-//  _msg    :   decoded output message
-int  packetizer_decode(packetizer _p,
-                       unsigned char * _pkt,
-                       unsigned char * _msg);
-
-// Execute the packetizer to decode an input message, return validity
-// check of resulting data
-//
-//  _p      :   packetizer object
-//  _pkt    :   input message (coded soft bits)
-//  _msg    :   decoded output message
-int  packetizer_decode_soft(packetizer _p,
-                            unsigned char * _pkt,
-                            unsigned char * _msg);
-
-
-//
-// interleaver
-//
-typedef struct interleaver_s * interleaver;
-
-// create interleaver
-//   _n     : number of bytes
-interleaver interleaver_create(unsigned int _n);
-
-// destroy interleaver object
-void interleaver_destroy(interleaver _q);
-
-// print interleaver object internals
-void interleaver_print(interleaver _q);
-
-// set depth (number of internal iterations)
-//  _q      :   interleaver object
-//  _depth  :   depth
-void interleaver_set_depth(interleaver _q,
-                           unsigned int _depth);
-
-// execute forward interleaver (encoder)
-//  _q          :   interleaver object
-//  _msg_dec    :   decoded (un-interleaved) message
-//  _msg_enc    :   encoded (interleaved) message
-void interleaver_encode(interleaver _q,
-                        unsigned char * _msg_dec,
-                        unsigned char * _msg_enc);
-
-// execute forward interleaver (encoder) on soft bits
-//  _q          :   interleaver object
-//  _msg_dec    :   decoded (un-interleaved) message
-//  _msg_enc    :   encoded (interleaved) message
-void interleaver_encode_soft(interleaver _q,
-                             unsigned char * _msg_dec,
-                             unsigned char * _msg_enc);
-
-// execute reverse interleaver (decoder)
-//  _q          :   interleaver object
-//  _msg_enc    :   encoded (interleaved) message
-//  _msg_dec    :   decoded (un-interleaved) message
-void interleaver_decode(interleaver _q,
-                        unsigned char * _msg_enc,
-                        unsigned char * _msg_dec);
-
-// execute reverse interleaver (decoder) on soft bits
-//  _q          :   interleaver object
-//  _msg_enc    :   encoded (interleaved) message
-//  _msg_dec    :   decoded (un-interleaved) message
-void interleaver_decode_soft(interleaver _q,
-                             unsigned char * _msg_enc,
-                             unsigned char * _msg_dec);
+// Run sample through pre-demod detector's correlator.
+// Returns '1' if signal was detected, '0' otherwise
+//  _q          :   pre-demod detector
+//  _x          :   input sample
+//  _tau_hat    :   fractional sample offset estimate (set when detected)
+//  _dphi_hat   :   carrier frequency offset estimate (set when detected)
+//  _gamma_hat  :   channel gain estimate (set when detected)
+int detector_cccf_correlate(detector_cccf        _q,
+                            liquid_float_complex _x,
+                            float *              _tau_hat,
+                            float *              _dphi_hat,
+                            float *              _gamma_hat);
 
 
 //

@@ -89,11 +89,11 @@ FIRPFB() FIRPFB(_create)(unsigned int _num_filters, TC * _h, unsigned int _h_len
 //  _k      :   samples/symbol _k > 1
 //  _m      :   filter delay (symbols), _m > 0
 //  _beta   :   excess bandwidth factor, 0 < _beta < 1
-FIRPFB() FIRPFB(_create_rnyquist)(int _type,
+FIRPFB() FIRPFB(_create_rnyquist)(int          _type,
                                   unsigned int _npfb,
                                   unsigned int _k,
                                   unsigned int _m,
-                                  float _beta)
+                                  float        _beta)
 {
     // validate input
     if (_npfb == 0) {
@@ -120,6 +120,66 @@ FIRPFB() FIRPFB(_create_rnyquist)(int _type,
     TC Hc[H_len];
     for (i=0; i<H_len; i++)
         Hc[i] = Hf[i];
+
+    // return filterbank object
+    return FIRPFB(_create)(_npfb, Hc, H_len);
+}
+
+// create derivative square-root Nyquist filterbank
+//  _type   :   filter type (e.g. LIQUID_RNYQUIST_RRC)
+//  _npfb   :   number of filters in the bank
+//  _k      :   samples/symbol _k > 1
+//  _m      :   filter delay (symbols), _m > 0
+//  _beta   :   excess bandwidth factor, 0 < _beta < 1
+FIRPFB() FIRPFB(_create_drnyquist)(int          _type,
+                                   unsigned int _npfb,
+                                   unsigned int _k,
+                                   unsigned int _m,
+                                   float        _beta)
+{
+    // validate input
+    if (_npfb == 0) {
+        fprintf(stderr,"error: firpfb_%s_create_drnyquist(), number of filters must be greater than zero\n", EXTENSION_FULL);
+        exit(1);
+    } else if (_k < 2) {
+        fprintf(stderr,"error: firpfb_%s_create_drnyquist(), filter samples/symbol must be greater than 1\n", EXTENSION_FULL);
+        exit(1);
+    } else if (_m == 0) {
+        fprintf(stderr,"error: firpfb_%s_create_drnyquist(), filter delay must be greater than 0\n", EXTENSION_FULL);
+        exit(1);
+    } else if (_beta < 0.0f || _beta > 1.0f) {
+        fprintf(stderr,"error: firpfb_%s_create_drnyquist(), filter excess bandwidth factor must be in [0,1]\n", EXTENSION_FULL);
+        exit(1);
+    }
+
+    // generate square-root Nyquist filter
+    unsigned int H_len = 2*_npfb*_k*_m + 1;
+    float Hf[H_len];
+    liquid_firdes_rnyquist(_type,_npfb*_k,_m,_beta,0,Hf);
+    
+    // compute derivative filter
+    float dHf[H_len];
+    float HdH_max = 0.0f;
+    unsigned int i;
+    for (i=0; i<H_len; i++) {
+        if (i==0) {
+            dHf[i] = Hf[i+1] - Hf[H_len-1];
+        } else if (i==H_len-1) {
+            dHf[i] = Hf[0]   - Hf[i-1];
+        } else {
+            dHf[i] = Hf[i+1] - Hf[i-1];
+        }
+
+        // find maximum of h*dh
+        if ( fabsf(Hf[i]*dHf[i]) > HdH_max )
+            HdH_max = fabsf(Hf[i]*dHf[i]);
+    }
+
+    // copy coefficients to type-specific array (e.g. float complex)
+    // and apply scaling factor for normalized response
+    TC Hc[H_len];
+    for (i=0; i<H_len; i++)
+        Hc[i] = dHf[i] * 0.06f / HdH_max;
 
     // return filterbank object
     return FIRPFB(_create)(_npfb, Hc, H_len);

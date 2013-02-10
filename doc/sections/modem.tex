@@ -36,15 +36,14 @@ signal is
 %
 \begin{equation}
 \label{eqn:modem:freqmodem_tx}
-    s(t) =  \exp\left\{
-                j 2 \pi k f_c
-                \int_{0}^{t}{
-                    s(\tau)d\tau
-                }
+    s(t) =  A_c \exp\left\{
+                j 2 \pi \left(
+                    f_c t + k_f \int_{0}^{t}{ s(\tau)d\tau }
+                \right)
             \right\}
 \end{equation}
 %
-where $f_c$ is the carrier frequency, and $k$ is the modulation index.
+where $f_c$ is the carrier frequency, and $k_f$ is the modulation index.
 The modulation index governs the relative bandwidth of the signal.
 Two options for demodulation are possible:
 observing the instantaneous frequency on the output of a phase-locked

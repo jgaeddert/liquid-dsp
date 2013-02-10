@@ -3,17 +3,18 @@
 #
 reset
 set terminal postscript eps enhanced color solid rounded
-set xrange [-6:6]
+set xrange [-6:8]
 set yrange [1e-3:1]
-#set logscale y
+set logscale y
+set format y '10^{%L}'
 set size ratio 0.6
 set size 1.0
 set xlabel 'SNR [dB]'
-set ylabel 'Probability of Detection/Decoding'
+set ylabel 'Probability of Missed Detection/Decoding'
 set key bottom right nobox
 set grid xtics ytics
 set pointsize 0.6
-set key top left nobox
+set key top right nobox
 
 set pointsize 0.6
 

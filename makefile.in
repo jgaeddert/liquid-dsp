@@ -1,6 +1,4 @@
-# Copyright (c) 2007, 2008, 2009, 2010, 2011, 2012 Joseph Gaeddert
-# Copyright (c) 2007, 2008, 2009, 2010, 2011, 2012 Virginia Polytechnic
-#                                      Institute & State University
+# Copyright (c) 2007, 2008, 2009, 2010, 2011, 2012, 2013 Joseph Gaeddert
 #
 # This file is part of liquid.
 #
@@ -257,6 +255,8 @@ fec_objects :=							\
 	src/fec/src/fec_secded2216.o				\
 	src/fec/src/fec_secded3932.o				\
 	src/fec/src/fec_secded7264.o				\
+	src/fec/src/interleaver.o				\
+	src/fec/src/packetizer.o				\
 	src/fec/gentab/reverse_byte.o				\
 	src/fec/src/sumproduct.o				\
 
@@ -293,6 +293,8 @@ fec_autotests :=						\
 	src/fec/tests/fec_secded2216_autotest.c			\
 	src/fec/tests/fec_secded3932_autotest.c			\
 	src/fec/tests/fec_secded7264_autotest.c			\
+	src/fec/tests/interleaver_autotest.c			\
+	src/fec/tests/packetizer_autotest.c			\
 
 
 # benchmarks
@@ -302,6 +304,8 @@ fec_benchmarks :=						\
 	src/fec/bench/fec_decode_benchmark.c			\
 	src/fec/bench/fecsoft_decode_benchmark.c		\
 	src/fec/bench/sumproduct_benchmark.c			\
+	src/fec/bench/interleaver_benchmark.c			\
+	src/fec/bench/packetizer_decode_benchmark.c		\
 
 # 
 # MODULE : fft - fast Fourier transforms, discrete sine/cosine transforms, etc.
@@ -546,7 +550,7 @@ framing_objects :=						\
 	src/framing/src/bsync_rrrf.o				\
 	src/framing/src/bsync_crcf.o				\
 	src/framing/src/bsync_cccf.o				\
-	src/framing/src/framesyncprops.o			\
+	src/framing/src/detector_cccf.o				\
 	src/framing/src/framesyncstats.o			\
 	src/framing/src/framegen64.o				\
 	src/framing/src/framesync64.o				\
@@ -556,9 +560,7 @@ framing_objects :=						\
 	src/framing/src/gmskframesync.o				\
 	src/framing/src/ofdmflexframegen.o			\
 	src/framing/src/ofdmflexframesync.o			\
-	src/framing/src/packetizer.o				\
 	src/framing/src/presync_cccf.o				\
-	src/framing/src/interleaver.o				\
 
 
 # list explicit targets and dependencies here
@@ -575,7 +577,7 @@ src/framing/src/bsync_crcf.o : %.o : %.c $(headers) src/framing/src/bsync.c
 
 src/framing/src/bsync_cccf.o : %.o : %.c $(headers) src/framing/src/bsync.c
 
-src/framing/src/framesyncprops.o : %.o : %.c $(headers)
+src/framing/src/detector_cccf.o : %.o : %.c $(headers)
 
 src/framing/src/framesyncstats.o : %.o : %.c $(headers)
 
@@ -591,18 +593,13 @@ src/framing/src/ofdmflexframegen.o : %.o : %.c $(headers)
 
 src/framing/src/ofdmflexframesync.o : %.o : %.c $(headers)
 
-src/framing/src/packetizer.o : %.o : %.c $(headers)
-
 src/framing/src/presync_cccf.o : %.o : %.c $(headers) src/framing/src/presync.c
-
-src/framing/src/interleaver.o : %.o : %.c $(headers)
 
 
 framing_autotests :=						\
 	src/framing/tests/bpacketsync_autotest.c		\
 	src/framing/tests/bsync_autotest.c			\
-	src/framing/tests/packetizer_autotest.c			\
-	src/framing/tests/interleaver_autotest.c		\
+	src/framing/tests/detector_autotest.c			\
 
 
 framing_benchmarks :=						\
@@ -610,10 +607,10 @@ framing_benchmarks :=						\
 	src/framing/bench/bpacketsync_benchmark.c		\
 	src/framing/bench/bpresync_benchmark.c			\
 	src/framing/bench/bsync_benchmark.c			\
+	src/framing/bench/detector_benchmark.c			\
 	src/framing/bench/flexframesync_benchmark.c		\
+	src/framing/bench/framesync64_benchmark.c		\
 	src/framing/bench/gmskframesync_benchmark.c		\
-	src/framing/bench/interleaver_benchmark.c		\
-	src/framing/bench/packetizer_decode_benchmark.c		\
 
 
 # 
@@ -1308,6 +1305,7 @@ example_programs :=						\
 	examples/cgsolve_example				\
 	examples/cvsd_example					\
 	examples/decim_crcf_example				\
+	examples/detector_cccf_example				\
 	examples/dotprod_rrrf_example				\
 	examples/dotprod_cccf_example				\
 	examples/eqlms_cccf_blind_example			\
@@ -1327,7 +1325,6 @@ example_programs :=						\
 	examples/firpfbch_analysis_example			\
 	examples/firpfbch_synthesis_example			\
 	examples/flexframesync_example				\
-	examples/flexframesync_advanced_example			\
 	examples/flexframesync_reconfig_example			\
 	examples/framesync64_example				\
 	examples/freqmodem_example				\
@@ -1490,6 +1487,7 @@ sandbox_programs =						\
 	sandbox/resamp2_crcf_interp_recreate_test		\
 	sandbox/rkaiser2_test					\
 	sandbox/simplex_test					\
+	sandbox/symsync_crcf_test				\
 	sandbox/symsync_eqlms_test				\
 	sandbox/svd_test					\
 	sandbox/thiran_allpass_iir_test				\

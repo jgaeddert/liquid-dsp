@@ -22,12 +22,13 @@ void usage()
 {
     printf("bpresync_test -- test binary pre-demodulation synchronization\n");
     printf("  h     : print usage/help\n");
-    printf("  v     : verbose output\n");
+    printf("  v     : increase output verbosity\n");
+    printf("  q     : decrease output verbosity\n");
     printf("  k     : samples/symbol, default: 2\n");
     printf("  n     : number of data symbols, default: 64\n");
     printf("  F     : carrier frequency offset, default: 0.02\n");
     printf("  S     : SNR [dB], default: 20\n");
-    printf("  t     : number of trials, default: 40\n");
+    printf("  t     : number of trials, default: 1000\n");
 }
 
 void bpresync_test(bpresync_cccf   _q,
@@ -50,15 +51,16 @@ int main(int argc, char*argv[])
     unsigned int num_sync_symbols = 64; // number of synchronization symbols
     float SNRdB = 20.0f;                // signal-to-noise ratio [dB]
     float dphi_max = 0.02f;             // maximum carrier frequency offset
-    unsigned int num_trials = 40;
+    unsigned int num_trials = 1000;     // number of trials to run
 
-    unsigned int verbosity = 0;         // verbosity level
+    int verbosity = 1;                  // verbosity level
 
     int dopt;
-    while ((dopt = getopt(argc,argv,"hvk:n:F:S:t:")) != EOF) {
+    while ((dopt = getopt(argc,argv,"hvqk:n:F:S:t:")) != EOF) {
         switch (dopt) {
         case 'h': usage();                          return 0;
         case 'v': verbosity++;                      break;
+        case 'q': verbosity--;                      break;
         case 'k': k = atoi(optarg);                 break;
         case 'n': num_sync_symbols = atoi(optarg);  break;
         case 'F': dphi_max = atof(optarg);          break;
@@ -92,6 +94,7 @@ int main(int argc, char*argv[])
     bpresync_cccf_print(sync);
 
     // run trials
+    printf("running %u trials...\n", num_trials);
     bpresync_test(sync, seq, k*num_sync_symbols,
                   SNRdB, dphi_max,
                   rxy_max, dphi_err, delay_err,
@@ -241,7 +244,7 @@ void bpresync_test(bpresync_cccf   _q,
             // do nothing
         } else if (_verbosity == 1) {
             // print progress bar
-            if ( (t%200)==0 || t==_num_trials-1 ) {
+            if ( (t%100)==0 || t==_num_trials-1 ) {
                 float percent = (float)(t+1) / (float)_num_trials;
                 unsigned int bars = (unsigned int) (percent*60);
                 printf("[");

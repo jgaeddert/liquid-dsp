@@ -59,6 +59,8 @@ src/filter_resamp_crcf
 src/filter_resamp2_crcf_interp
 src/filter_rnyquist
 src/filter_symsync_crcf
+src/flexframe_fer
+src/frame64_fer
 src/gmskframe_fer
 src/interleaver_scatterplot
 src/liquid_version
@@ -80,6 +82,7 @@ src/random_histogram
 src/sequence_ccodes
 src/sequence_msequence
 src/simulate_ber
+src/simulate_detector
 src/simulate_per_test
 
 scripts/listings_check

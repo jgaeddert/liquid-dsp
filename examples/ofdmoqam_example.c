@@ -6,6 +6,7 @@
 #include <math.h>
 #include <string.h>
 
+#include "liquid.experimental.h"
 #include "liquid.h"
 
 #define OUTPUT_FILENAME "ofdmoqam_example.m"
