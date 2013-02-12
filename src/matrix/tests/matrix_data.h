@@ -25,7 +25,7 @@
 #define __LIQUID_MATRIX_DATA_H__
 
 // 
-// single-precision floating-point data
+// single-precision real floating-point data
 //
 
 // add
@@ -72,6 +72,55 @@ extern float matrixf_data_mul_z[];
 extern float matrixf_data_qrdecomp_A[];
 extern float matrixf_data_qrdecomp_Q[];
 extern float matrixf_data_qrdecomp_R[];
+
+
+
+// 
+// single-precision complex floating-point data
+//
+
+// add
+extern float complex matrixcf_data_add_x[];
+extern float complex matrixcf_data_add_y[];
+extern float complex matrixcf_data_add_z[];
+
+// aug
+extern float complex matrixcf_data_aug_x[];
+extern float complex matrixcf_data_aug_y[];
+extern float complex matrixcf_data_aug_z[];
+
+// chol
+extern float complex matrixcf_data_chol_A[];
+extern float complex matrixcf_data_chol_L[];
+
+// inv
+extern float complex matrixcf_data_inv_x[];
+extern float complex matrixcf_data_inv_y[];
+
+// linsolve
+extern float complex matrixcf_data_linsolve_A[];
+extern float complex matrixcf_data_linsolve_x[];
+extern float complex matrixcf_data_linsolve_b[];
+
+// ludecomp
+extern float complex matrixcf_data_ludecomp_A[];
+
+// mul
+extern float complex matrixcf_data_mul_x[];
+extern float complex matrixcf_data_mul_y[];
+extern float complex matrixcf_data_mul_z[];
+
+// qrdecomp
+extern float complex matrixcf_data_qrdecomp_A[];
+extern float complex matrixcf_data_qrdecomp_Q[];
+extern float complex matrixcf_data_qrdecomp_R[];
+
+// transmul
+extern float complex matrixcf_data_transmul_x[];
+extern float complex matrixcf_data_transmul_xxT[];
+extern float complex matrixcf_data_transmul_xxH[];
+extern float complex matrixcf_data_transmul_xTx[];
+extern float complex matrixcf_data_transmul_xHx[];
 
 #endif // __LIQUID_MATRIX_DATA_H__
 

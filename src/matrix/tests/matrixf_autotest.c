@@ -333,7 +333,7 @@ void autotest_matrixf_qrdecomp()
                 QR_test, 4, 4);
 
     // compute Q*Q^T
-    matrixf_mul_hermitian(Q, 4, 4, QQT_test);
+    matrixf_mul_transpose(Q, 4, 4, QQT_test);
 
     if (liquid_autotest_verbose) {
         printf("qrdecomp_gramschmidt:\n");
