@@ -1366,6 +1366,7 @@ example_programs :=						\
 	examples/iirdes_example					\
 	examples/iirdes_analog_example				\
 	examples/iirdes_pll_example				\
+	examples/iirfilt_cccf_example				\
 	examples/iirfilt_crcf_example				\
 	examples/interp_crcf_example				\
 	examples/kbd_window_example				\
