@@ -133,22 +133,23 @@ int main(int argc, char*argv[])
     fprintf(fid,"close all;\n");
     fprintf(fid,"\n");
     fprintf(fid,"order=%u;\n", order);
+
+    // save input, output arrays
     fprintf(fid,"n=%u;\n",n);
-    fprintf(fid,"nfft=%u;\n",nfft);
     fprintf(fid,"x=zeros(1,n);\n");
     fprintf(fid,"y=zeros(1,n);\n");
-    fprintf(fid,"H=zeros(1,nfft);\n");
-
     for (i=0; i<n; i++) {
-        //printf("%4u : %12.8f + j*%12.8f\n", i, crealf(y), cimagf(y));
         fprintf(fid,"x(%4u) = %12.4e + j*%12.4e;\n", i+1, crealf(x[i]), cimagf(x[i]));
         fprintf(fid,"y(%4u) = %12.4e + j*%12.4e;\n", i+1, crealf(y[i]), cimagf(y[i]));
     }
 
+    // save frequency response
+    fprintf(fid,"nfft=%u;\n",nfft);
+    fprintf(fid,"H=zeros(1,nfft);\n");
     for (i=0; i<nfft; i++)
         fprintf(fid,"H(%4u) = %12.8f + j*%12.8f;\n", i+1, crealf(H[i]), cimagf(H[i]));
 
-    // plot output
+    // plot time-domain output
     fprintf(fid,"t=0:(n-1);\n");
     fprintf(fid,"figure;\n");
     fprintf(fid,"subplot(2,1,1);\n");
@@ -165,6 +166,17 @@ int main(int argc, char*argv[])
     fprintf(fid,"  ylabel('imag');\n");
     fprintf(fid,"  legend('input','filtered output',1);\n");
     fprintf(fid,"  grid on;\n");
+
+    // plot spectral output
+    fprintf(fid,"X = 20*log10(abs(fftshift(fft(x))));\n");
+    fprintf(fid,"Y = 20*log10(abs(fftshift(fft(y))));\n");
+    fprintf(fid,"figure;\n");
+    fprintf(fid,"plot([0:(n-1)]/n-0.5, X, 'Color', [1 1 1]*0.5,\n");
+    fprintf(fid,"     [0:(n-1)]/n-0.5, Y, 'Color', [0 0.25 0.50]);\n");
+    fprintf(fid,"xlabel('Normalized Frequency');\n");
+    fprintf(fid,"ylabel('PSD [dB]');\n");
+    fprintf(fid,"legend('input','filtered output',1);\n");
+    fprintf(fid,"grid on;\n");
 
     // plot ideal frequency response
     fprintf(fid,"f=[0:(nfft-1)]/nfft - 0.5;\n");
