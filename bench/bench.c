@@ -1,6 +1,5 @@
 /*
- * Copyright (c) 2007, 2009 Joseph Gaeddert
- * Copyright (c) 2007, 2009 Virginia Polytechnic Institute & State University
+ * Copyright (c) 2007, 2009, 2013 Joseph Gaeddert
  *
  * This file is part of liquid.
  *
@@ -424,7 +423,7 @@ void print_benchmark_results(benchmark_t* _b)
     float cycles_format = _b->cycles_per_trial;
     char cycles_units = convert_units(&cycles_format);
 
-    printf("  %-3u: %-20s: %6.2f %c trials / %6.2f %cs (%6.2f %c t/s, %6.2f %c c/t)\n",
+    printf("  %-3u: %-30s: %6.2f %c trials / %6.2f %cs (%6.2f %c t/s, %6.2f %c c/t)\n",
         _b->id, _b->name,
         trials_format, trials_units,
         extime_format, extime_units,
