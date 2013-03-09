@@ -1,7 +1,9 @@
 // iirfilt_intdiff_test
 //
 // Tests infinite impulse reponse (IIR) integrator and differentiator
-// filters.
+// filters. The filters are each order 8 and have a near-integer group
+// delay of 7 samples. The magnitude response of the ideal is on the
+// order of -140 dB error.
 //
 // References:
 //  [Pintelon:1990] Rik Pintelon and Johan Schoukens, "Real-Time
@@ -21,43 +23,104 @@
 
 int main(int argc, char*argv[]) {
     // options
-    unsigned int num_samples = 100;
+    unsigned int num_samples = 801;
 
-    // integrator second-order sections
-    float Bi[12] = {
-        1.0f, -4.26790400000000f,  -6.400965325377000,
-        1.0f,  3.87791172132679f,   11.36377584040000,
-        1.0f, -1.42910328910057f,   20.69986108410000,
-        1.0f, -7.99261372097011f,   27.28982076915599,};
-    float Ai[12] = {
-        1.0f, -0.4194765000000000f, -0.5805235000000000f,
-        1.0f,  0.1904232630641466f,  0.0543832194444100f,
-        1.0f, -0.1456570930905469f,  0.0329333571002500f,
-        1.0f, -0.3046105139587997f,  0.0269438108284900f,};
+    // 
+    // integrator digital zeros/poles/gain, [Pintelon:1990] Table II
+    //
+    // zeros, digital, integrator
+    float complex zdi[8] = {
+        1.175839 * -1.0f,
+        3.371020 * cexpf(_Complex_I * M_PI / 180.0f * -125.1125f),
+        3.371020 * cexpf(_Complex_I * M_PI / 180.0f *  125.1125f),
+        4.549710 * cexpf(_Complex_I * M_PI / 180.0f *  -80.96404f),
+        4.549710 * cexpf(_Complex_I * M_PI / 180.0f *   80.96404f),
+        5.223966 * cexpf(_Complex_I * M_PI / 180.0f *  -40.09347f),
+        5.223966 * cexpf(_Complex_I * M_PI / 180.0f *   40.09347f),
+        5.443743,};
+    // poles, digital, integrator
+    float complex pdi[8] = {
+        0.5805235f * -1.0f,
+        0.2332021f * cexpf(_Complex_I * M_PI / 180.0f * -114.0968f),
+        0.2332021f * cexpf(_Complex_I * M_PI / 180.0f *  114.0968f),
+        0.1814755f * cexpf(_Complex_I * M_PI / 180.0f *  -66.33969f),
+        0.1814755f * cexpf(_Complex_I * M_PI / 180.0f *   66.33969f),
+        0.1641457f * cexpf(_Complex_I * M_PI / 180.0f *  -21.89539f),
+        0.1641457f * cexpf(_Complex_I * M_PI / 180.0f *   21.89539f),
+        1.0f,};
+    // gain, digital, integrator
+    float complex kdi = -1.18886273390874e-04;  // TODO: set appropriately
 
-    // differentiator second-order sections
-    float Bd[12] = {
-        1.0f,  0.70257500000000f,  -1.702575000000000f,
-        1.0f,  8.81652829611905f,   34.54365443822500f,
-        1.0f,  3.49423846094481f,   17.61834305124100f,
-        1.0f, -4.20028789957191f,   28.62553888065601f,};
-    float Ad[12] = {
-        1.0f,  0.6590848000000000f,  -0.1598824726636800f,
-        1.0f,  0.3474605342253413f,   0.0894477098996100f,
-        1.0f, -0.0658154727551225f,   0.0498373031032900f,
-        1.0f, -0.2978098115406486f,   0.0383638816890000f,};
+#if 1
+    // second-order sections
+    // allocate 12 values for 4 second-order sections each with
+    // 2 roots (order 8), e.g. (1 + r0 z^-1)(1 + r1 z^-1)
+    float Bi[12];
+    float Ai[12];
+    iirdes_dzpk2sosf(zdi, pdi, 8, kdi, Bi, Ai);
+    // create integrator
+    iirfilt_crcf integrator = iirfilt_crcf_create_sos(Bi,Ai,4);
+#else
+    // regular transfer function form
+    // 9 = order + 1
+    float bi[9];
+    float ai[9];
+    iirdes_dzpk2tff(zdi, pdi, 8, kdi, bi, ai);
+    iirfilt_crcf integrator = iirfilt_crcf_create(bi,9,ai,9);
+#endif
+
+
+    // 
+    // differentiator digital zeros/poles/gain, [Pintelon:1990] Table IV
+    //
+    // poles, digital, differentiator
+    float complex pdd[8] = {
+        0.8476936f * -1.0f,
+        0.2990781f * cexpf(_Complex_I * M_PI / 180.0f * -125.5188f),
+        0.2990781f * cexpf(_Complex_I * M_PI / 180.0f *  125.5188f),
+        0.2232427f * cexpf(_Complex_I * M_PI / 180.0f *  -81.52326f),
+        0.2232427f * cexpf(_Complex_I * M_PI / 180.0f *   81.52326f),
+        0.1958670f * cexpf(_Complex_I * M_PI / 180.0f *  -40.51510f),
+        0.1958670f * cexpf(_Complex_I * M_PI / 180.0f *   40.51510f),
+        0.1886088f,};
+    // zeros, digital, differentiator
+    float complex zdd[8] = {
+        1.702575f * -1.0f,
+        5.877385f * cexpf(_Complex_I * M_PI / 180.0f * -221.4063f),
+        5.877385f * cexpf(_Complex_I * M_PI / 180.0f *  221.4063f),
+        4.197421f * cexpf(_Complex_I * M_PI / 180.0f * -144.5972f),
+        4.197421f * cexpf(_Complex_I * M_PI / 180.0f *  144.5972f),
+        5.350284f * cexpf(_Complex_I * M_PI / 180.0f *  -66.88802f),
+        5.350284f * cexpf(_Complex_I * M_PI / 180.0f *   66.88802f),
+        1.0f,};
+    // gain, digital, differentiator
+    float complex kdd = 3.32712270428533e-06; // TODO: set appropriately
+
+#if 1
+    // second-order sections
+    // allocate 12 values for 4 second-order sections each with
+    // 2 roots (order 8), e.g. (1 + r0 z^-1)(1 + r1 z^-1)
+    float Bd[12];
+    float Ad[12];
+    iirdes_dzpk2sosf(zdd, pdd, 8, kdd, Bd, Ad);
+    // create differentiator
+    iirfilt_crcf differentiator = iirfilt_crcf_create_sos(Bd,Ad,4);
+#else
+    // regular transfer function form
+    // 9 = order + 1
+    float bd[9];
+    float ad[9];
+    iirdes_dzpk2tff(zdd, pdd, 8, kdd, bd, ad);
+    iirfilt_crcf differentiator = iirfilt_crcf_create(bd,9,ad,9);
+#endif
 
     // allocate arrays
     float complex x[num_samples];
     float complex y[num_samples];
     float complex z[num_samples];
 
-    // create filter objects
-    iirfilt_crcf integrator     = iirfilt_crcf_create_sos(Bi,Ai,4);
-    iirfilt_crcf differentiator = iirfilt_crcf_create_sos(Bd,Ad,4);
-
-    float tmin = -5.0f;
-    float tmax =  5.0f;
+    float tmin = -4.0f;
+    float tmax =  4.0f;
     float dt   = (tmax-tmin)/(float)(num_samples-1);
     unsigned int i;
     for (i=0; i<num_samples; i++) {
@@ -65,13 +128,13 @@ int main(int argc, char*argv[]) {
         float t = tmin + dt*i;
 
         // generate input signal
-        x[i] = sincf(2.0f*t) + _Complex_I*cosf(M_PI*t);
+        x[i] = sincf(4.0f*t) + _Complex_I*cosf(2*M_PI*t);
 
         // run integrator
-        iirfilt_crcf_execute(integrator, x[i], &y[i]);
+        iirfilt_crcf_execute(integrator, dt*x[i], &y[i]);
 
         // run differentitator
-        iirfilt_crcf_execute(differentiator, y[i], &z[i]);
+        iirfilt_crcf_execute(differentiator, y[i]/dt, &z[i]);
     }
 
     // open output file
@@ -100,10 +163,19 @@ int main(int argc, char*argv[]) {
     fprintf(fid,"figure;\n");
     fprintf(fid,"subplot(3,1,1);\n");
     fprintf(fid,"  plot(t, real(x), t, imag(x));\n");
+    fprintf(fid,"  axis([tmin tmax -2 2]);\n");
+    fprintf(fid,"  ylabel('input');\n");
+    fprintf(fid,"  grid on;\n");
     fprintf(fid,"subplot(3,1,2);\n");
     fprintf(fid,"  plot(t, real(y), t, imag(y));\n");
+    fprintf(fid,"  axis([tmin tmax -2 2]);\n");
+    fprintf(fid,"  ylabel('integrated');\n");
+    fprintf(fid,"  grid on;\n");
     fprintf(fid,"subplot(3,1,3);\n");
     fprintf(fid,"  plot(t, real(z), t, imag(z));\n");
+    fprintf(fid,"  axis([tmin tmax -2 2]);\n");
+    fprintf(fid,"  ylabel('int/diff');\n");
+    fprintf(fid,"  grid on;\n");
 
     // compute frequency response
     unsigned int nfft = 256;
