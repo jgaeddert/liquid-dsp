@@ -1,7 +1,5 @@
 /*
- * Copyright (c) 2007, 2008, 2009, 2010 Joseph Gaeddert
- * Copyright (c) 2007, 2008, 2009, 2010 Virginia Polytechnic
- *                                      Institute & State University
+ * Copyright (c) 2007, 2008, 2009, 2010, 2013 Joseph Gaeddert
  *
  * This file is part of liquid.
  *
@@ -31,114 +29,128 @@
 
 // freqmodem
 struct freqmodem_s {
-    liquid_freqmodem_type type; // demodulator type (PLL, DELAYCONJ)
+    // common
     float fc;                   // carrier frequency, range: [-0.5,0.5]
-    float m;                    // modulation index
+    float kf;                   // modulation index
 
     // derived values
-    float m_inv;                // 1/m
+    float kf_inv;               // 1/kf
     float dphi;                 // carrier frequency [radians]
 
+    // demodulator
+    liquid_freqmodem_type type; // demodulator type (PLL, DELAYCONJ)
     nco_crcf oscillator;        // nco
     float complex q;            // phase difference
 };
 
 // create freqmodem object
-//  _m      :   modulation index
-//  _fc     :   carrier frequency, -0.5 <= _fc < 0.5
+//  _kf     :   modulation factor
+//  _fc     :   carrier frequency, fc in [-0.5, 0.5]
 //  _type   :   demodulation type (e.g. LIQUID_FREQMODEM_DELAYCONJ)
-freqmodem freqmodem_create(float _m,
-                           float _fc,
+freqmodem freqmodem_create(float                 _kf,
+                           float                 _fc,
                            liquid_freqmodem_type _type)
 {
-    freqmodem fm = (freqmodem) malloc(sizeof(struct freqmodem_s));
-    fm->type = _type;
-    fm->m = _m;
-    fm->fc = _fc;
-    if (fm->m <= 0.0f || fm->m > 2.0f*M_PI) {
-        fprintf(stderr,"error: freqmodem_create(), modulation index %12.4e out of range (0,2*pi)\n", fm->m);
+    // validate input
+    if (_kf <= 0.0f || _kf > 1.0) {
+        fprintf(stderr,"error: freqmodem_create(), modulation factor %12.4e out of range [0,1]\n", _kf);
         exit(1);
-    } else if (fm->fc <= -0.5f || fm->fc >= 0.5f) {
-        fprintf(stderr,"error: freqmodem_create(), carrier frequency %12.4e out of range (-0.5,0.5)\n", fm->fc);
+    } else if (_fc < -0.5f || _fc > 0.5f) {
+        fprintf(stderr,"error: freqmodem_create(), carrier frequency %12.4e out of range [-0.5,0.5]\n", _fc);
         exit(1);
     }
+
+    // create main object memory
+    freqmodem q = (freqmodem) malloc(sizeof(struct freqmodem_s));
+
+    // set basic internal properties
+    q->type = _type;    // demod type
+    q->kf   = _kf;      // modulation factor
+    q->fc   = _fc;      // carrier frequency
 
     // compute derived values
-    fm->m_inv = 1.0f / fm->m;
-    fm->dphi  = fm->fc * 2 * M_PI;
+    q->kf_inv = 1.0f / q->kf;       // 1 / kf
+    q->dphi   = q->fc * 2 * M_PI;   // 
 
     // create oscillator
-    fm->oscillator = nco_crcf_create(LIQUID_VCO);
+    q->oscillator = nco_crcf_create(LIQUID_VCO);
 
-    if (fm->type == LIQUID_FREQMODEM_PLL) {
+    //
+    if (q->type == LIQUID_FREQMODEM_PLL) {
         // TODO : set initial NCO frequency ?
         // create phase-locked loop
-        nco_crcf_pll_set_bandwidth(fm->oscillator, 0.05f);
+        nco_crcf_pll_set_bandwidth(q->oscillator, 0.05f);
     }
 
-    freqmodem_reset(fm);
+    // reset modem object
+    freqmodem_reset(q);
 
-    return fm;
+    return q;
 }
 
-void freqmodem_destroy(freqmodem _fm)
+// destroy modem object
+void freqmodem_destroy(freqmodem _q)
 {
-    nco_crcf_destroy(_fm->oscillator);
-    free(_fm);
+    nco_crcf_destroy(_q->oscillator);
+    free(_q);
 }
 
-void freqmodem_print(freqmodem _fm)
+// print modulation internals
+void freqmodem_print(freqmodem _q)
 {
     printf("freqmodem:\n");
-    printf("    mod. index  :   %8.4f\n", _fm->m);
-    printf("    fc          :   %8.4f\n", _fm->fc);
+    printf("    mod. factor :   %8.4f\n", _q->kf);
+    printf("    fc          :   %8.4f\n", _q->fc);
 }
 
-void freqmodem_reset(freqmodem _fm)
+// reset modem object
+void freqmodem_reset(freqmodem _q)
 {
     // reset oscillator, phase-locked loop
-    nco_crcf_reset(_fm->oscillator);
+    nco_crcf_reset(_q->oscillator);
 
     // clear complex phase term
-    _fm->q = 0.0f;
+    _q->q = 0.0f;
 }
 
-void freqmodem_modulate(freqmodem _fm,
-                        float _x,
-                        float complex *_y)
+// modulate input sample
+void freqmodem_modulate(freqmodem       _q,
+                        float           _x,
+                        float complex * _y)
 {
-    nco_crcf_set_frequency(_fm->oscillator,
-                      (_fm->m)*_x + _fm->dphi);
+    nco_crcf_set_frequency(_q->oscillator,
+                          (_q->kf)*_x + _q->dphi);
 
-    nco_crcf_cexpf(_fm->oscillator, _y);
-    nco_crcf_step(_fm->oscillator);
+    nco_crcf_cexpf(_q->oscillator, _y);
+    nco_crcf_step(_q->oscillator);
 }
 
-void freqmodem_demodulate(freqmodem _fm,
+// run demodulator
+void freqmodem_demodulate(freqmodem     _q,
                           float complex _y,
-                          float *_x)
+                          float *       _x)
 {
-    if (_fm->type == LIQUID_FREQMODEM_PLL) {
+    if (_q->type == LIQUID_FREQMODEM_PLL) {
         // 
         // push through phase-locked loop
         //
 
         // compute phase error from internal NCO complex exponential
         float complex p;
-        nco_crcf_cexpf(_fm->oscillator, &p);
+        nco_crcf_cexpf(_q->oscillator, &p);
         float phase_error = cargf( conjf(p)*_y );
 
         // step the PLL and the internal NCO object
-        nco_crcf_pll_step(_fm->oscillator, phase_error);
-        nco_crcf_step(_fm->oscillator);
+        nco_crcf_pll_step(_q->oscillator, phase_error);
+        nco_crcf_step(_q->oscillator);
 
         // demodulated signal is (weighted) nco frequency
-        *_x = (nco_crcf_get_frequency(_fm->oscillator) -_fm->dphi) * _fm->m_inv;
+        *_x = (nco_crcf_get_frequency(_q->oscillator) -_q->dphi) * _q->kf_inv;
     } else {
         // compute phase difference and normalize by modulation index
-        *_x = (cargf(conjf(_fm->q)*(_y)) - _fm->dphi) * _fm->m_inv;
+        *_x = (cargf(conjf(_q->q)*(_y)) - _q->dphi) * _q->kf_inv;
 
-        _fm->q = _y;
+        _q->q = _y;
     }
 }
 
