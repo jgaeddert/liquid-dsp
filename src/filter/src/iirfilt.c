@@ -1,7 +1,5 @@
 /*
- * Copyright (c) 2007, 2008, 2009, 2010 Joseph Gaeddert
- * Copyright (c) 2007, 2008, 2009, 2010 Virginia Polytechnic
- *                                      Institute & State University
+ * Copyright (c) 2007, 2008, 2009, 2010, 2013 Joseph Gaeddert
  *
  * This file is part of liquid.
  *
@@ -21,6 +19,12 @@
 
 //
 // iirfilt : Infinite impulse response filter
+//
+// References:
+//  [Pintelon:1990] Rik Pintelon and Johan Schoukens, "Real-Time
+//      Integration and Differentiation of Analog Signals by Means of
+//      Digital Filtering," IEEE Transactions on Instrumentation and
+//      Measurement, vol 39 no. 6, December 1990.
 //
 
 #include <stdio.h>
@@ -234,6 +238,104 @@ IIRFILT() IIRFILT(_create_prototype)(liquid_iirdes_filtertype _ftype,
 
     // return filter object
     return q;
+}
+
+// create 8th-order integrating filter
+IIRFILT() IIRFILT(_create_integrator)()
+{
+    // 
+    // integrator digital zeros/poles/gain, [Pintelon:1990] Table II
+    //
+    // zeros, digital, integrator
+    float complex zdi[8] = {
+        1.175839 * -1.0f,
+        3.371020 * cexpf(_Complex_I * M_PI / 180.0f * -125.1125f),
+        3.371020 * cexpf(_Complex_I * M_PI / 180.0f *  125.1125f),
+        4.549710 * cexpf(_Complex_I * M_PI / 180.0f *  -80.96404f),
+        4.549710 * cexpf(_Complex_I * M_PI / 180.0f *   80.96404f),
+        5.223966 * cexpf(_Complex_I * M_PI / 180.0f *  -40.09347f),
+        5.223966 * cexpf(_Complex_I * M_PI / 180.0f *   40.09347f),
+        5.443743,};
+    // poles, digital, integrator
+    float complex pdi[8] = {
+        0.5805235f * -1.0f,
+        0.2332021f * cexpf(_Complex_I * M_PI / 180.0f * -114.0968f),
+        0.2332021f * cexpf(_Complex_I * M_PI / 180.0f *  114.0968f),
+        0.1814755f * cexpf(_Complex_I * M_PI / 180.0f *  -66.33969f),
+        0.1814755f * cexpf(_Complex_I * M_PI / 180.0f *   66.33969f),
+        0.1641457f * cexpf(_Complex_I * M_PI / 180.0f *  -21.89539f),
+        0.1641457f * cexpf(_Complex_I * M_PI / 180.0f *   21.89539f),
+        1.0f,};
+    // gain, digital, integrator
+    float complex kdi = -1.18886273390874e-04;  // TODO: set appropriately
+
+    // second-order sections
+    // allocate 12 values for 4 second-order sections each with
+    // 2 roots (order 8), e.g. (1 + r0 z^-1)(1 + r1 z^-1)
+    float Bi[12];
+    float Ai[12];
+    iirdes_dzpk2sosf(zdi, pdi, 8, kdi, Bi, Ai);
+
+    // copy to type-specific array
+    TC B[12];
+    TC A[12];
+    unsigned int i;
+    for (i=0; i<12; i++) {
+        B[i] = (TC) (Bi[i]);
+        A[i] = (TC) (Ai[i]);
+    }
+
+    // create and return filter object
+    return IIRFILT(_create_sos)(B,A,4);
+}
+
+// create 8th-order differentiation filter
+IIRFILT() IIRFILT(_create_differentiator)()
+{
+    // 
+    // differentiator digital zeros/poles/gain, [Pintelon:1990] Table IV
+    //
+    // poles, digital, differentiator
+    float complex pdd[8] = {
+        0.8476936f * -1.0f,
+        0.2990781f * cexpf(_Complex_I * M_PI / 180.0f * -125.5188f),
+        0.2990781f * cexpf(_Complex_I * M_PI / 180.0f *  125.5188f),
+        0.2232427f * cexpf(_Complex_I * M_PI / 180.0f *  -81.52326f),
+        0.2232427f * cexpf(_Complex_I * M_PI / 180.0f *   81.52326f),
+        0.1958670f * cexpf(_Complex_I * M_PI / 180.0f *  -40.51510f),
+        0.1958670f * cexpf(_Complex_I * M_PI / 180.0f *   40.51510f),
+        0.1886088f,};
+    // zeros, digital, differentiator
+    float complex zdd[8] = {
+        1.702575f * -1.0f,
+        5.877385f * cexpf(_Complex_I * M_PI / 180.0f * -221.4063f),
+        5.877385f * cexpf(_Complex_I * M_PI / 180.0f *  221.4063f),
+        4.197421f * cexpf(_Complex_I * M_PI / 180.0f * -144.5972f),
+        4.197421f * cexpf(_Complex_I * M_PI / 180.0f *  144.5972f),
+        5.350284f * cexpf(_Complex_I * M_PI / 180.0f *  -66.88802f),
+        5.350284f * cexpf(_Complex_I * M_PI / 180.0f *   66.88802f),
+        1.0f,};
+    // gain, digital, differentiator
+    float complex kdd = 3.32712270428533e-06; // TODO: set appropriately
+
+    // second-order sections
+    // allocate 12 values for 4 second-order sections each with
+    // 2 roots (order 8), e.g. (1 + r0 z^-1)(1 + r1 z^-1)
+    float Bd[12];
+    float Ad[12];
+    iirdes_dzpk2sosf(zdd, pdd, 8, kdd, Bd, Ad);
+
+    // copy to type-specific array
+    TC B[12];
+    TC A[12];
+    unsigned int i;
+    for (i=0; i<12; i++) {
+        B[i] = (TC) (Bd[i]);
+        A[i] = (TC) (Ad[i]);
+    }
+
+    // create and return filter object
+    return IIRFILT(_create_sos)(B,A,4);
 }
 
 // create phase-locked loop iirfilt object
