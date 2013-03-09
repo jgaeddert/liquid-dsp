@@ -29,22 +29,76 @@ objects.
 
 \subsubsection{{\tt freqmodem} (analog FM)}
 \label{module:modem:analog:freqmodem}
-The {\tt freqmodem} object implements an analog frequency modulation
-(FM) modulator and demodulator.
-Given an input message signal $-1 \le s(t) \le 1$, the transmitted
-signal is
+Consider a continuous saveform with a constant envelope but with a
+time-varying phase:
+\[
+    s(t) = A_c \cos(2\pi f_c t + \varphi(t))
+\]
+Let us define the generalized angle
+(also known as the {\em instantaneous phase} of the carrier)
+as
+\[
+    \theta_i(t) = 2\pi f_c t + \varphi(t)
+\]
+The {\em instantaneous frequency} of $s(t)$ is defined to be
+\[
+    f_i(t) = \frac{1}{2\pi}\frac{d\theta_i(t)}{dt} = f_c + \frac{1}{2\pi}\frac{d\varphi}{dt}
+\]
+Therefore
+\[
+    \theta_i(t) = 2\pi \int\limits_{0}^{t}{f_i(\tau)d\tau}
+\]
+This can be seen graphically in the figure below.
+    \begin{center}
+    \begin{tikzpicture}[x=15mm, y=5mm, >=latex, font=\footnotesize]
+        \draw[->] (-1,  0) -- (9, 0) node[anchor=north] {$t$};
+        \draw[->] ( 0, -1) -- (0, 9) node[anchor=west]  {$\theta_i(t)$};
+        \draw[very thick,liquid-color-blue]
+            plot[domain=-1:8, samples=51, smooth] function {1 + x + sin(1.3*x)};
+        % derivative: 1 + 1.3*cos(1.3*x);
+        %   evaluate at     :   t = 1.4
+        %   operating point :   (1.4, 3.369)
+        %   slope           :   0.679
+        %   y-intercept     :   2.418
+        %   at t=8          :   7.853
+        %   at t=7          :   7.174
+        \draw[thick, dotted, ->]
+            (0, 2.418) node[anchor=east] {$\theta_0$} --
+            (7, 7.174) node[anchor=north,yshift=-8pt] {$2\pi f_i t + \theta_0$};
+        \draw[thick, dotted] (1.4, 0) -- (1.4, 3.369);
+        %\node[circle,inner sep=1mm, liquid-color-blue, fill=liquid-color-blue!20, thick] at (1.4, 3.369) {};
+        %\node[circle,inner sep=1mm] at (1.4, 3.369) {x};
+    \end{tikzpicture}
+    \end{center}
+We can transmit an information signal $m(t)$ by varying the angle $\theta_i(t)$
+of a carrier.
+Frequency modulation (FM) varies the frequency of the carrier linearly
+with $m(t)$.
+Given an input message signal $m(t)$, the transmitted signal $s(t)$
+can be defined as
 %
-\begin{equation}
-\label{eqn:modem:freqmodem_tx}
-    s(t) =  A_c \exp\left\{
-                j 2 \pi \left(
-                    f_c t + k_f \int_{0}^{t}{ s(\tau)d\tau }
-                \right)
-            \right\}
-\end{equation}
+\begin{eqnarray*}
+    f_i(t) & = & f_c + k_f m(t) \\
+    \theta_i(t) & = & 2\pi f_c t + 2\pi k_f \int\limits_{0}^{t}{m(\tau)d\tau} \\
+    s(t)        & = & A_c\cos\left(
+                            2\pi f_c t + 2\pi k_f \int\limits_{0}^{t}{ m(\tau) d\tau }
+                        \right)
+\end{eqnarray*}
 %
 where $f_c$ is the carrier frequency, and $k_f$ is the modulation index.
 The modulation index governs the relative bandwidth of the signal.
+At complex baseband the transmitted signal is simply
+\[
+    \tilde{s}(t) = A_c\exp\left\{
+                            2\pi k_f \int\limits_{0}^{t}{ m(\tau) d\tau }
+                        \right\}
+\]
+%
+In \liquid\ the {\tt freqmodem} object implements an analog FM
+modulator and demodulator.
+Numerical integration of $m(t)$ is performed on the modulator.
+% using an 8$^{th}$-order recursive integrating filter (see section XXX)
+%
 Two options for demodulation are possible:
 observing the instantaneous frequency on the output of a phase-locked
 loop,
