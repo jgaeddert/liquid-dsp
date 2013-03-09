@@ -94,19 +94,25 @@ int main(int argc, char*argv[])
         fprintf(fid,"y(%3u) = %12.4e + j*%12.4e;\n", i+1, crealf(y[i]), cimagf(y[i]));
         fprintf(fid,"z(%3u) = %12.4e;\n", i+1, z[i]);
     }
-    // plot results
+    // plot time-domain result
     fprintf(fid,"t=0:(n-1);\n");
     fprintf(fid,"figure;\n");
-    fprintf(fid,"plot(t,x,t,z);\n");
-    fprintf(fid,"axis([0 n -1.2 1.2]);\n");
+    fprintf(fid,"subplot(2,1,1);\n");
+    fprintf(fid,"  plot(t,x,t,z);\n");
+    fprintf(fid,"  axis([0 n -1.2 1.2]);\n");
+    fprintf(fid,"  xlabel('Normalized Time [t/T_s]');\n");
+    fprintf(fid,"  ylabel('m(t)');\n");
+    fprintf(fid,"  grid on;\n");
     // spectrum
     fprintf(fid,"nfft=1024;\n");
     fprintf(fid,"f=[0:(nfft-1)]/nfft - 0.5;\n");
-    fprintf(fid,"Y = 20*log10(abs(fftshift(fft(y/n,nfft))));\n");
-    fprintf(fid,"figure;\n");
-    fprintf(fid,"plot(f,Y);\n");
-    fprintf(fid,"axis([-0.5 0.5 -60 20]);\n");
-    fprintf(fid,"grid on;\n");
+    fprintf(fid,"Y = 20*log10(abs(fftshift(fft(y.*hamming(n)'/n,nfft))));\n");
+    fprintf(fid,"subplot(2,1,2);\n");
+    fprintf(fid,"  plot(f,Y,'LineWidth',2);\n");
+    fprintf(fid,"  axis([-0.5 0.5 -80 20]);\n");
+    fprintf(fid,"  grid on;\n");
+    fprintf(fid,"  xlabel('Normalized Frequency [f/F_s]');\n");
+    fprintf(fid,"  ylabel('PSD [dB]');\n");
     fclose(fid);
     printf("results written to %s\n", OUTPUT_FILENAME);
 
