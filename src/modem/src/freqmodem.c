@@ -37,6 +37,9 @@ struct freqmodem_s {
     float kf_inv;               // 1/kf
     float dphi;                 // carrier frequency [radians]
 
+    // modulator
+    iirfilt_rrrf integrator;    // 
+
     // demodulator
     liquid_freqmodem_type type; // demodulator type (PLL, DELAYCONJ)
     nco_crcf oscillator;        // nco
@@ -72,6 +75,9 @@ freqmodem freqmodem_create(float                 _kf,
     q->kf_inv = 1.0f / q->kf;       // 1 / kf
     q->dphi   = q->fc * 2 * M_PI;   // 
 
+    // create modulator properties
+    q->integrator = iirfilt_rrrf_create_integrator();
+
     // create oscillator
     q->oscillator = nco_crcf_create(LIQUID_VCO);
 
@@ -91,7 +97,13 @@ freqmodem freqmodem_create(float                 _kf,
 // destroy modem object
 void freqmodem_destroy(freqmodem _q)
 {
+    // destroy modulator objects
+    iirfilt_rrrf_destroy(_q->integrator);
+
+    // destroy nco object
     nco_crcf_destroy(_q->oscillator);
+
+    // free main object memory
     free(_q);
 }
 
@@ -118,11 +130,17 @@ void freqmodem_modulate(freqmodem       _q,
                         float           _x,
                         float complex * _y)
 {
+#if 0
     nco_crcf_set_frequency(_q->oscillator,
                           (_q->kf)*_x + _q->dphi);
 
     nco_crcf_cexpf(_q->oscillator, _y);
     nco_crcf_step(_q->oscillator);
+#else
+    float theta_i = 0.0f;
+    iirfilt_rrrf_execute(_q->integrator, 2*M_PI*_q->kf*_x, &theta_i);
+    *_y = cexpf(_Complex_I*theta_i);
+#endif
 }
 
 // run demodulator
