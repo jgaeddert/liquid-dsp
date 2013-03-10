@@ -18,9 +18,8 @@ void usage()
 {
     printf("freqmodem_example [options]\n");
     printf("  h     : print usage\n");
-    printf("  n     : number of samples, default: 256\n");
+    printf("  n     : number of samples, default: 1024\n");
     printf("  S     : SNR [dB], default: 30\n");
-    printf("  f     : FM carrier frequency [-0.5,0.5], default: 0\n");
     printf("  m     : FM modulation index, default: 0.5\n");
     printf("  t     : FM demod. type (delayconj/pll), default: delayconj\n");
 }
@@ -28,25 +27,23 @@ void usage()
 int main(int argc, char*argv[])
 {
     // options
-    float mod_index = 0.5f;         // modulation index (bandwidth)
-    float fc = 0.0f;                // FM carrier
-    liquid_freqmodem_type type = LIQUID_FREQMODEM_DELAYCONJ;
-    unsigned int num_samples = 256; // number of samples
-    float SNRdB = 30.0f;            // signal-to-noise ratio [dB]
+    float kf = 0.2f;                    // modulation factor
+    liquid_freqdem_type type = LIQUID_FREQDEM_DELAYCONJ;
+    unsigned int num_samples = 1024;    // number of samples
+    float SNRdB = 30.0f;                // signal-to-noise ratio [dB]
 
     int dopt;
-    while ((dopt = getopt(argc,argv,"hn:S:f:m:t:")) != EOF) {
+    while ((dopt = getopt(argc,argv,"hn:S:m:t:")) != EOF) {
         switch (dopt) {
         case 'h':   usage();                    return 0;
         case 'n':   num_samples = atoi(optarg); break;
-        case 'S':   SNRdB = atof(optarg);       break;
-        case 'f':   fc = atof(optarg);          break;
-        case 'm':   mod_index = atof(optarg);   break;
+        case 'S':   SNRdB       = atof(optarg); break;
+        case 'm':   kf          = atof(optarg); break;
         case 't':
             if (strcmp(optarg,"delayconj")==0) {
-                type = LIQUID_FREQMODEM_DELAYCONJ;
+                type = LIQUID_FREQDEM_DELAYCONJ;
             } else if (strcmp(optarg,"pll")==0) {
-                type = LIQUID_FREQMODEM_PLL;
+                type = LIQUID_FREQDEM_PLL;
             } else {
                 fprintf(stderr,"error: %s, invalid FM type: %s\n", argv[0], optarg);
                 exit(1);
@@ -58,30 +55,38 @@ int main(int argc, char*argv[])
     }
 
     // create mod/demod objects
-    freqmodem mod   = freqmodem_create(mod_index,fc,type);
-    freqmodem demod = freqmodem_create(mod_index,fc,type);
-    freqmodem_print(mod);
+    freqmod mod = freqmod_create(kf);       // modulator
+    freqdem dem = freqdem_create(kf,type);  // demodulator
+    freqmod_print(mod);
 
     unsigned int i;
     float x[num_samples];
     float complex y[num_samples];
     float z[num_samples];
 
+#if 0
     // generate un-modulated signal (band-limited pulse)
-    liquid_firdes_kaiser(num_samples, 0.05f, -40.0f, 0.0f, x);
+    liquid_firdes_kaiser(num_samples, 0.02f, -40.0f, 0.0f, x);
+#else
+    for (i=0; i<num_samples; i++)
+        x[i] = cosf(2*M_PI*0.01f*i);
+#endif
 
     // modulate signal
+    printf("modulating signal...\n");
     for (i=0; i<num_samples; i++)
-        freqmodem_modulate(mod, x[i], &y[i]);
+        freqmod_modulate(mod, x[i], &y[i]);
 
     // add channel impairments
+    printf("adding channel...\n");
     float nstd = powf(10.0f,-SNRdB/20.0f);
     for (i=0; i<num_samples; i++)
         y[i] += nstd*( randnf() + _Complex_I*randnf() ) * M_SQRT1_2;
 
     // demodulate signal
+    printf("demodulating signal...\n");
     for (i=0; i<num_samples; i++)
-        freqmodem_demodulate(demod, y[i], &z[i]);
+        freqdem_demodulate(dem, y[i], &z[i]);
 
     // write results to output file
     FILE * fid = fopen(OUTPUT_FILENAME,"w");
@@ -116,7 +121,7 @@ int main(int argc, char*argv[])
     fclose(fid);
     printf("results written to %s\n", OUTPUT_FILENAME);
 
-    freqmodem_destroy(mod);
-    freqmodem_destroy(demod);
+    freqmod_destroy(mod);
+    freqdem_destroy(dem);
     return 0;
 }

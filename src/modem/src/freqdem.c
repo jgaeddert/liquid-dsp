@@ -27,78 +27,72 @@
 
 #include "liquid.internal.h"
 
-// freqmodem
-struct freqmodem_s {
+// freqdem
+struct freqdem_s {
     // common
-    float fc;                   // carrier frequency, range: [-0.5,0.5]
     float kf;                   // modulation index
 
     // derived values
-    float kf_inv;               // 1/kf
+    float twopikf_inv;          // 1/(2*pi*kf)
     float dphi;                 // carrier frequency [radians]
 
-    // modulator
-    iirfilt_rrrf integrator;    // 
-
     // demodulator
-    liquid_freqmodem_type type; // demodulator type (PLL, DELAYCONJ)
+    liquid_freqdem_type type;   // demodulator type (PLL, DELAYCONJ)
     nco_crcf oscillator;        // nco
     float complex q;            // phase difference
+    iirfilt_rrrf postfilter;    // post-filter
 };
 
-// create freqmodem object
+// create freqdem object
 //  _kf     :   modulation factor
-//  _fc     :   carrier frequency, fc in [-0.5, 0.5]
-//  _type   :   demodulation type (e.g. LIQUID_FREQMODEM_DELAYCONJ)
-freqmodem freqmodem_create(float                 _kf,
-                           float                 _fc,
-                           liquid_freqmodem_type _type)
+//  _type   :   demodulation type (e.g. LIQUID_FREQDEM_DELAYCONJ)
+freqdem freqdem_create(float                 _kf,
+                           liquid_freqdem_type _type)
 {
     // validate input
     if (_kf <= 0.0f || _kf > 1.0) {
-        fprintf(stderr,"error: freqmodem_create(), modulation factor %12.4e out of range [0,1]\n", _kf);
-        exit(1);
-    } else if (_fc < -0.5f || _fc > 0.5f) {
-        fprintf(stderr,"error: freqmodem_create(), carrier frequency %12.4e out of range [-0.5,0.5]\n", _fc);
+        fprintf(stderr,"error: freqdem_create(), modulation factor %12.4e out of range [0,1]\n", _kf);
         exit(1);
     }
 
     // create main object memory
-    freqmodem q = (freqmodem) malloc(sizeof(struct freqmodem_s));
+    freqdem q = (freqdem) malloc(sizeof(struct freqdem_s));
 
     // set basic internal properties
     q->type = _type;    // demod type
     q->kf   = _kf;      // modulation factor
-    q->fc   = _fc;      // carrier frequency
 
     // compute derived values
-    q->kf_inv = 1.0f / q->kf;       // 1 / kf
-    q->dphi   = q->fc * 2 * M_PI;   // 
-
-    // create modulator properties
-    q->integrator = iirfilt_rrrf_create_integrator();
+    q->twopikf_inv = 1.0f / (2*M_PI*q->kf);       // 1 / (2*pi*kf)
 
     // create oscillator
     q->oscillator = nco_crcf_create(LIQUID_VCO);
 
+    // create post-filter
+    float alpha = 0.999f;
+    float beta  = 0.990f;
+    float B[3] = { 1.0f, -1.0f,         0.0f       };
+    float A[3] = { 1.0f, -(alpha+beta), alpha*beta };
+    q->postfilter = iirfilt_crcf_create_sos(B, A, 1);
+
     //
-    if (q->type == LIQUID_FREQMODEM_PLL) {
+    if (q->type == LIQUID_FREQDEM_PLL) {
         // TODO : set initial NCO frequency ?
         // create phase-locked loop
         nco_crcf_pll_set_bandwidth(q->oscillator, 0.05f);
     }
 
     // reset modem object
-    freqmodem_reset(q);
+    freqdem_reset(q);
 
     return q;
 }
 
 // destroy modem object
-void freqmodem_destroy(freqmodem _q)
+void freqdem_destroy(freqdem _q)
 {
-    // destroy modulator objects
-    iirfilt_rrrf_destroy(_q->integrator);
+    // destroy post-filter
+    firfilt_rrrf_destroy(_q->postfilter);
 
     // destroy nco object
     nco_crcf_destroy(_q->oscillator);
@@ -108,15 +102,14 @@ void freqmodem_destroy(freqmodem _q)
 }
 
 // print modulation internals
-void freqmodem_print(freqmodem _q)
+void freqdem_print(freqdem _q)
 {
-    printf("freqmodem:\n");
+    printf("freqdem:\n");
     printf("    mod. factor :   %8.4f\n", _q->kf);
-    printf("    fc          :   %8.4f\n", _q->fc);
 }
 
 // reset modem object
-void freqmodem_reset(freqmodem _q)
+void freqdem_reset(freqdem _q)
 {
     // reset oscillator, phase-locked loop
     nco_crcf_reset(_q->oscillator);
@@ -125,30 +118,15 @@ void freqmodem_reset(freqmodem _q)
     _q->q = 0.0f;
 }
 
-// modulate input sample
-void freqmodem_modulate(freqmodem       _q,
-                        float           _x,
-                        float complex * _y)
+// demodulate sample
+//  _q      :   FM demodulator object
+//  _r      :   received signal
+//  _m      :   output message signal
+void freqdem_demodulate(freqdem              _q,
+                        liquid_float_complex _r,
+                        float *              _m)
 {
-#if 0
-    nco_crcf_set_frequency(_q->oscillator,
-                          (_q->kf)*_x + _q->dphi);
-
-    nco_crcf_cexpf(_q->oscillator, _y);
-    nco_crcf_step(_q->oscillator);
-#else
-    float theta_i = 0.0f;
-    iirfilt_rrrf_execute(_q->integrator, 2*M_PI*_q->kf*_x, &theta_i);
-    *_y = cexpf(_Complex_I*theta_i);
-#endif
-}
-
-// run demodulator
-void freqmodem_demodulate(freqmodem     _q,
-                          float complex _y,
-                          float *       _x)
-{
-    if (_q->type == LIQUID_FREQMODEM_PLL) {
+    if (_q->type == LIQUID_FREQDEM_PLL) {
         // 
         // push through phase-locked loop
         //
@@ -156,20 +134,23 @@ void freqmodem_demodulate(freqmodem     _q,
         // compute phase error from internal NCO complex exponential
         float complex p;
         nco_crcf_cexpf(_q->oscillator, &p);
-        float phase_error = cargf( conjf(p)*_y );
+        float phase_error = cargf( conjf(p)*_r );
 
         // step the PLL and the internal NCO object
         nco_crcf_pll_step(_q->oscillator, phase_error);
         nco_crcf_step(_q->oscillator);
 
         // demodulated signal is (weighted) nco frequency
-        *_x = (nco_crcf_get_frequency(_q->oscillator) -_q->dphi) * _q->kf_inv;
+        *_m = (nco_crcf_get_frequency(_q->oscillator) -_q->dphi) * _q->twopikf_inv;
     } else {
         // compute phase difference and normalize by modulation index
-        *_x = (cargf(conjf(_q->q)*(_y)) - _q->dphi) * _q->kf_inv;
+        *_m = (cargf(conjf(_q->q)*(_r)) - _q->dphi) * _q->twopikf_inv;
 
-        _q->q = _y;
+        _q->q = _r;
     }
+
+    // apply post-filtering
+    //iirfilt_rrrf_execute(_q->postfilter, *_m, _m);
 }
 
 
