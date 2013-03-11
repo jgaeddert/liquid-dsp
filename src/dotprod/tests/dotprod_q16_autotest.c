@@ -24,6 +24,8 @@
 #include "autotest/autotest.h"
 #include "liquid.internal.h"
 
+#define DOTPROD_Q16_AUTOTEST_DEBUG 0
+
 // helper function prototypes
 void dotprod_rrrq16_test(float *      _hf,
                          float *      _xf,
@@ -277,6 +279,23 @@ void dotprod_rrrq16_test(float *      _hf,
     dotprod_rrrq16_destroy(q);
     float y2f = q16_fixed_to_float(y2);
 
+#if DOTPROD_Q16_AUTOTEST_DEBUG
+    // print fixed-point coefficient values
+    printf("q16_t h[%u] = {\n", _n);
+    for (i=0; i<_n; i++)
+        printf("    %6d,%s", h[i], ((i+1)%4)==0 ? "\n" : "");
+    printf("};\n");
+
+    // print fixed-point input values
+    printf("q16_t x[%u] = {\n", _n);
+    for (i=0; i<_n; i++)
+        printf("    %6d,%s", x[i], ((i+1)%4)==0 ? "\n" : "");
+    printf("};\n");
+
+    // print fixed-point result
+    printf("q16_t y = %6d;\n", y0);
+#endif
+
     if (liquid_autotest_verbose) {
         printf("testing dotprod_rrrq16(%u)...\n", _n);
         printf("  dotprod_rrrq16_run    : %12.8f (expected %12.8f), e=%12.8f, tol=%12.8f\n", y0f, yf_test, y0f-yf_test, _tol);
@@ -331,6 +350,23 @@ void dotprod_crcq16_test(float *         _hf,
     dotprod_crcq16_execute(q, x, &y2);
     dotprod_crcq16_destroy(q);
     float complex y2f = cq16_fixed_to_float(y2);
+
+#if DOTPROD_Q16_AUTOTEST_DEBUG
+    // print fixed-point coefficient values
+    printf("q16_t h[%u] = {\n", _n);
+    for (i=0; i<_n; i++)
+        printf("    %6d,%s", h[i], ((i+1)%4)==0 ? "\n" : "");
+    printf("};\n");
+
+    // print fixed-point input values
+    printf("cq16_t x[%u] = {\n", _n);
+    for (i=0; i<_n; i++)
+        printf("    {%6d,%6d},%s", x[i].real, x[i].imag, ((i+1)%4)==0 ? "\n" : "");
+    printf("};\n");
+
+    // print fixed-point result
+    printf("cq16_t y = {%6d, %6d};\n", y0.real, y0.imag);
+#endif
 
     if (liquid_autotest_verbose) {
         printf("testing dotprod_crcq16(%u)...\n", _n);
@@ -391,6 +427,23 @@ void dotprod_cccq16_test(float complex * _hf,
     dotprod_cccq16_execute(q, x, &y2);
     dotprod_cccq16_destroy(q);
     float complex y2f = cq16_fixed_to_float(y2);
+
+#if DOTPROD_Q16_AUTOTEST_DEBUG
+    // print fixed-point coefficient values
+    printf("cq16_t h[%u] = {\n", _n);
+    for (i=0; i<_n; i++)
+        printf("    {%6d,%6d},%s", h[i].real, h[i].imag, ((i+1)%4)==0 ? "\n" : "");
+    printf("};\n");
+
+    // print fixed-point input values
+    printf("cq16_t x[%u] = {\n", _n);
+    for (i=0; i<_n; i++)
+        printf("    {%6d,%6d},%s", x[i].real, x[i].imag, ((i+1)%4)==0 ? "\n" : "");
+    printf("};\n");
+
+    // print fixed-point result
+    printf("cq16_t y = {%6d, %6d};\n", y0.real, y0.imag);
+#endif
 
     if (liquid_autotest_verbose) {
         printf("testing dotprod_cccq16(%u)...\n", _n);
