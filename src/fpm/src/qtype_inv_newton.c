@@ -31,6 +31,13 @@
 
 #define DEBUG_INV_NEWTON 0
 
+// use qtype_inv_newton() method for inversion
+Q(_t) Q(_inv)(Q(_t)        _x,
+              unsigned int _n)
+{
+    return Q(_inv_newton)(_x, _n);
+}
+
 // computes x = inv(d) = 1/d using iterative Newtonian method:
 //   x[k+1] = x[k] + x[k]*(1 - d*x[k])
 Q(_t) Q(_inv_newton)(Q(_t) _x,

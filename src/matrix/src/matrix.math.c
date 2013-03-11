@@ -1,7 +1,5 @@
 /*
- * Copyright (c) 2007, 2008, 2009, 2010 Joseph Gaeddert
- * Copyright (c) 2007, 2008, 2009, 2010 Virginia Polytechnic
- *                                      Institute & State University
+ * Copyright (c) 2007, 2008, 2009, 2010, 2013 Joseph Gaeddert
  *
  * This file is part of liquid.
  *
@@ -171,6 +169,7 @@ void MATRIX(_aug)(T * _x, unsigned int _rx, unsigned int _cx,
         exit(1);
     }
 
+    // TODO: improve speed with memmove
     unsigned int r, c, n;
     for (r=0; r<_rz; r++) {
         n=0;
