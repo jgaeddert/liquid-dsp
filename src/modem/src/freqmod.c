@@ -33,7 +33,7 @@ struct freqmod_s {
     float kf;
 
     // audio prefilter
-    firfilt_rrrf prefilter;
+    iirfilt_rrrf prefilter;
 
     // frequency modulation phase integrator
     iirfilt_rrrf integrator;
@@ -58,9 +58,10 @@ freqmod freqmod_create(float _kf)
     // create modulator objects
     q->integrator = iirfilt_rrrf_create_integrator();
 
-    // create audio pre-filter: null at DC, amplify high frequencies
-    float b[2] = {1.0f, -0.999f};
-    q->prefilter = firfilt_rrrf_create(b, 2);
+    // create prefilter (block DC values)
+    float b[2] = {1.0f, -1.0f  };
+    float a[2] = {1.0f, -0.9995f};
+    q->prefilter = iirfilt_rrrf_create(b, 2, a, 2);
 
     // reset modem object
     freqmod_reset(q);
@@ -72,7 +73,7 @@ freqmod freqmod_create(float _kf)
 void freqmod_destroy(freqmod _q)
 {
     // destroy audio pre-filter
-    firfilt_rrrf_destroy(_q->prefilter);
+    iirfilt_rrrf_destroy(_q->prefilter);
 
     // destroy integrator
     iirfilt_rrrf_destroy(_q->integrator);
@@ -92,7 +93,7 @@ void freqmod_print(freqmod _q)
 void freqmod_reset(freqmod _q)
 {
     // reset audio pre-filter
-    firfilt_rrrf_clear(_q->prefilter);
+    iirfilt_rrrf_clear(_q->prefilter);
 
     // reset integrator object
     iirfilt_rrrf_clear(_q->integrator);
@@ -107,8 +108,7 @@ void freqmod_modulate(freqmod         _q,
                       float complex * _s)
 {
     // push sample through pre-filter
-    firfilt_rrrf_push(_q->prefilter, _m);
-    firfilt_rrrf_execute(_q->prefilter, &_m);
+    iirfilt_rrrf_execute(_q->prefilter, _m, &_m);
     
     // integrate result
     float theta_i = 0.0f;

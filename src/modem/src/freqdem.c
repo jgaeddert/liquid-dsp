@@ -40,6 +40,7 @@ struct freqdem_s {
     liquid_freqdem_type type;   // demodulator type (PLL, DELAYCONJ)
     nco_crcf oscillator;        // nco
     float complex q;            // phase difference
+    firfilt_crcf rxfilter;      // initial receiver filter
     iirfilt_rrrf postfilter;    // post-filter
 };
 
@@ -68,18 +69,19 @@ freqdem freqdem_create(float                 _kf,
     // create oscillator
     q->oscillator = nco_crcf_create(LIQUID_VCO);
 
-    // create post-filter
-    float alpha = 0.999f;
-    float beta  = 0.990f;
-    float B[3] = { 1.0f, -1.0f,         0.0f       };
-    float A[3] = { 1.0f, -(alpha+beta), alpha*beta };
-    q->postfilter = iirfilt_crcf_create_sos(B, A, 1);
+    // create initial rx filter
+    q->rxfilter = firfilt_crcf_create_kaiser(17, 0.2f, 40.0f, 0.0f);
+
+    // create DC-blocking post-filter
+    float b[2] = {1.0f, -1.0f   };
+    float a[2] = {1.0f, -0.9999f};
+    q->postfilter = iirfilt_crcf_create(b,2,a,2);
 
     //
     if (q->type == LIQUID_FREQDEM_PLL) {
         // TODO : set initial NCO frequency ?
         // create phase-locked loop
-        nco_crcf_pll_set_bandwidth(q->oscillator, 0.05f);
+        nco_crcf_pll_set_bandwidth(q->oscillator, 0.15f);
     }
 
     // reset modem object
@@ -91,8 +93,11 @@ freqdem freqdem_create(float                 _kf,
 // destroy modem object
 void freqdem_destroy(freqdem _q)
 {
+    // destroy rx filter
+    firfilt_crcf_destroy(_q->rxfilter);
+
     // destroy post-filter
-    firfilt_rrrf_destroy(_q->postfilter);
+    iirfilt_rrrf_destroy(_q->postfilter);
 
     // destroy nco object
     nco_crcf_destroy(_q->oscillator);
@@ -126,6 +131,10 @@ void freqdem_demodulate(freqdem              _q,
                         liquid_float_complex _r,
                         float *              _m)
 {
+    // apply rx filter to input
+    firfilt_crcf_push(_q->rxfilter, _r);
+    firfilt_crcf_execute(_q->rxfilter, &_r);
+
     if (_q->type == LIQUID_FREQDEM_PLL) {
         // 
         // push through phase-locked loop
@@ -150,7 +159,11 @@ void freqdem_demodulate(freqdem              _q,
     }
 
     // apply post-filtering
-    //iirfilt_rrrf_execute(_q->postfilter, *_m, _m);
+    iirfilt_rrrf_execute(_q->postfilter, *_m, _m);
+
+    // scale result
+    // TODO: figure out why this is necessary
+    *_m *= 0.15f;
 }
 
 

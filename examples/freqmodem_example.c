@@ -20,25 +20,25 @@ void usage()
     printf("  h     : print usage\n");
     printf("  n     : number of samples, default: 1024\n");
     printf("  S     : SNR [dB], default: 30\n");
-    printf("  m     : FM modulation index, default: 0.5\n");
+    printf("  k     : FM modulation index, default: 0.02\n");
     printf("  t     : FM demod. type (delayconj/pll), default: delayconj\n");
 }
 
 int main(int argc, char*argv[])
 {
     // options
-    float kf = 0.2f;                    // modulation factor
+    float kf = 0.02f;                   // modulation factor
     liquid_freqdem_type type = LIQUID_FREQDEM_DELAYCONJ;
     unsigned int num_samples = 1024;    // number of samples
     float SNRdB = 30.0f;                // signal-to-noise ratio [dB]
 
     int dopt;
-    while ((dopt = getopt(argc,argv,"hn:S:m:t:")) != EOF) {
+    while ((dopt = getopt(argc,argv,"hn:S:k:t:")) != EOF) {
         switch (dopt) {
         case 'h':   usage();                    return 0;
         case 'n':   num_samples = atoi(optarg); break;
         case 'S':   SNRdB       = atof(optarg); break;
-        case 'm':   kf          = atof(optarg); break;
+        case 'k':   kf          = atof(optarg); break;
         case 't':
             if (strcmp(optarg,"delayconj")==0) {
                 type = LIQUID_FREQDEM_DELAYCONJ;
@@ -60,33 +60,29 @@ int main(int argc, char*argv[])
     freqmod_print(mod);
 
     unsigned int i;
-    float x[num_samples];
-    float complex y[num_samples];
-    float z[num_samples];
+    float         m[num_samples];   // message signal
+    float complex r[num_samples];   // received signal (complex baseband)
+    float         y[num_samples];   // demodulator output
 
-#if 0
-    // generate un-modulated signal (band-limited pulse)
-    liquid_firdes_kaiser(num_samples, 0.02f, -40.0f, 0.0f, x);
-#else
-    for (i=0; i<num_samples; i++)
-        x[i] = cosf(2*M_PI*0.01f*i);
-#endif
+    // generate message signal (sum of sines)
+    for (i=0; i<num_samples; i++) {
+        m[i] = 0.3f*cosf(2*M_PI*0.013f*i + 0.0f) +
+               0.2f*cosf(2*M_PI*0.021f*i + 0.4f) +
+               0.4f*cosf(2*M_PI*0.037f*i + 1.7f);
+    }
 
     // modulate signal
-    printf("modulating signal...\n");
     for (i=0; i<num_samples; i++)
-        freqmod_modulate(mod, x[i], &y[i]);
+        freqmod_modulate(mod, m[i], &r[i]);
 
     // add channel impairments
-    printf("adding channel...\n");
     float nstd = powf(10.0f,-SNRdB/20.0f);
     for (i=0; i<num_samples; i++)
-        y[i] += nstd*( randnf() + _Complex_I*randnf() ) * M_SQRT1_2;
+        r[i] += nstd*( randnf() + _Complex_I*randnf() ) * M_SQRT1_2;
 
     // demodulate signal
-    printf("demodulating signal...\n");
     for (i=0; i<num_samples; i++)
-        freqdem_demodulate(dem, y[i], &z[i]);
+        freqdem_demodulate(dem, r[i], &y[i]);
 
     // write results to output file
     FILE * fid = fopen(OUTPUT_FILENAME,"w");
@@ -95,29 +91,42 @@ int main(int argc, char*argv[])
     fprintf(fid,"close all\n");
     fprintf(fid,"n=%u;\n",num_samples);
     for (i=0; i<num_samples; i++) {
-        fprintf(fid,"x(%3u) = %12.4e;\n", i+1, x[i]);
-        fprintf(fid,"y(%3u) = %12.4e + j*%12.4e;\n", i+1, crealf(y[i]), cimagf(y[i]));
-        fprintf(fid,"z(%3u) = %12.4e;\n", i+1, z[i]);
+        fprintf(fid,"m(%3u) = %12.4e;\n", i+1, m[i]);
+        fprintf(fid,"r(%3u) = %12.4e + j*%12.4e;\n", i+1, crealf(r[i]), cimagf(r[i]));
+        fprintf(fid,"y(%3u) = %12.4e;\n", i+1, y[i]);
     }
     // plot time-domain result
     fprintf(fid,"t=0:(n-1);\n");
+    fprintf(fid,"ydelay = 17; %% pre-assessed output delay\n");
     fprintf(fid,"figure;\n");
-    fprintf(fid,"subplot(2,1,1);\n");
-    fprintf(fid,"  plot(t,x,t,z);\n");
+    fprintf(fid,"subplot(3,1,1);\n");
+    fprintf(fid,"  plot(t,m,'LineWidth',1.2,t-ydelay,y,'LineWidth',1.2);\n");
     fprintf(fid,"  axis([0 n -1.2 1.2]);\n");
     fprintf(fid,"  xlabel('Normalized Time [t/T_s]');\n");
-    fprintf(fid,"  ylabel('m(t)');\n");
+    fprintf(fid,"  ylabel('m(t), y(t)');\n");
     fprintf(fid,"  grid on;\n");
-    // spectrum
-    fprintf(fid,"nfft=1024;\n");
+    // compute spectral responses
+    fprintf(fid,"nfft=2^(1+nextpow2(n));\n");
     fprintf(fid,"f=[0:(nfft-1)]/nfft - 0.5;\n");
-    fprintf(fid,"Y = 20*log10(abs(fftshift(fft(y.*hamming(n)'/n,nfft))));\n");
-    fprintf(fid,"subplot(2,1,2);\n");
-    fprintf(fid,"  plot(f,Y,'LineWidth',2);\n");
+    fprintf(fid,"w = hamming(n)';\n");
+    fprintf(fid,"g = 1 / (mean(w) * n);\n");
+    fprintf(fid,"M = 20*log10(abs(fftshift(fft(m.*w*g,nfft))));\n");
+    fprintf(fid,"R = 20*log10(abs(fftshift(fft(r.*w*g,nfft))));\n");
+    fprintf(fid,"Y = 20*log10(abs(fftshift(fft(y.*w*g,nfft))));\n");
+    // plot spectral response (audio)
+    fprintf(fid,"subplot(3,1,2);\n");
+    fprintf(fid,"  plot(f,M,'LineWidth',1.2,f,Y,'LineWidth',1.2);\n");
     fprintf(fid,"  axis([-0.5 0.5 -80 20]);\n");
     fprintf(fid,"  grid on;\n");
     fprintf(fid,"  xlabel('Normalized Frequency [f/F_s]');\n");
-    fprintf(fid,"  ylabel('PSD [dB]');\n");
+    fprintf(fid,"  ylabel('Audio PSD [dB]');\n");
+    // plot spectral response (RF)
+    fprintf(fid,"subplot(3,1,3);\n");
+    fprintf(fid,"  plot(f,R,'LineWidth',1.2,'Color',[0.5 0.25 0]);\n");
+    fprintf(fid,"  axis([-0.5 0.5 -80 20]);\n");
+    fprintf(fid,"  grid on;\n");
+    fprintf(fid,"  xlabel('Normalized Frequency [f/F_s]');\n");
+    fprintf(fid,"  ylabel('RF PSD [dB]');\n");
     fclose(fid);
     printf("results written to %s\n", OUTPUT_FILENAME);
 
