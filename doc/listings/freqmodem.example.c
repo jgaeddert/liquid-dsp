@@ -2,28 +2,27 @@
 #include <liquid/liquid.h>
 
 int main() {
-    float mod_index = 0.1f; // modulation index (bandwidth)
-    float fc = 0.0f;        // FM carrier
-    liquid_freqmodem_type type = LIQUID_FREQMODEM_DELAYCONJ;
+    float kf = 0.02f;       // modulation index
+    liquid_freqdem_type type = LIQUID_FREQDEM_DELAYCONJ;
 
-    // create mod/demod objects
-    freqmodem mod   = freqmodem_create(mod_index,fc,type);
-    freqmodem demod = freqmodem_create(mod_index,fc,type);
+    // create modulator/demodulator objects
+    freqmod fmod = freqmod_create(kf);
+    freqdem fdem = freqdem_create(kf, type);
 
-    float s;                // input message
-    float complex x;        // modulated
+    float m;                // input message
+    float complex s;        // modulated signal
     float y;                // output/demodulated message
 
     // repeat as necessary
     {
         // modulate signal
-        freqmodem_modulate(mod, s, &x);
+        freqmod_modulate(fmod, m, &s);
 
         // demodulate signal
-        freqmodem_demodulate(demod, x, &y);
+        freqdem_demodulate(fdem, s, &y);
     }
 
     // clean up objects
-    freqmodem_destroy(mod);
-    freqmodem_destroy(demod);
+    freqmod_destroy(fmod);
+    freqdem_destroy(fdem);
 }
