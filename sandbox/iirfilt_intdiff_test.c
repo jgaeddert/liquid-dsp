@@ -49,7 +49,7 @@ int main(int argc, char*argv[]) {
         0.1641457f * cexpf(_Complex_I * M_PI / 180.0f *   21.89539f),
         1.0f,};
     // gain, digital, integrator
-    float complex kdi = -1.18886273390874e-04;  // TODO: set appropriately
+    float complex kdi = -1.89213380759321e-05f;
 
 #if 1
     // second-order sections
@@ -94,7 +94,7 @@ int main(int argc, char*argv[]) {
         5.350284f * cexpf(_Complex_I * M_PI / 180.0f *   66.88802f),
         1.0f,};
     // gain, digital, differentiator
-    float complex kdd = 3.32712270428533e-06; // TODO: set appropriately
+    float complex kdd = 2.09049284907492e-05f;
 
 #if 1
     // second-order sections
@@ -119,8 +119,8 @@ int main(int argc, char*argv[]) {
     float complex y[num_samples];
     float complex z[num_samples];
 
-    float tmin = -4.0f;
-    float tmax =  4.0f;
+    float tmin = 0.0f;
+    float tmax = 1.0f;
     float dt   = (tmax-tmin)/(float)(num_samples-1);
     unsigned int i;
     for (i=0; i<num_samples; i++) {
@@ -128,10 +128,13 @@ int main(int argc, char*argv[]) {
         float t = tmin + dt*i;
 
         // generate input signal
-        x[i] = sincf(4.0f*t) + _Complex_I*cosf(2*M_PI*t);
+        x[i] = 0.2*cosf(2*M_PI*4.1*t + 0.0f) +
+               0.4*cosf(2*M_PI*6.9*t + 0.9f) +
+               0.7*cosf(2*M_PI*9.7*t + 0.2f) +
+               _Complex_I*cosf(2*M_PI*4*t);
 
         // run integrator
-        iirfilt_crcf_execute(integrator, dt*x[i], &y[i]);
+        iirfilt_crcf_execute(integrator, x[i]*dt, &y[i]);
 
         // run differentitator
         iirfilt_crcf_execute(differentiator, y[i]/dt, &z[i]);
@@ -142,6 +145,7 @@ int main(int argc, char*argv[]) {
     fprintf(fid,"%% %s : auto-generated file\n", OUTPUT_FILENAME);
     fprintf(fid,"clear all;\n");
     fprintf(fid,"close all;\n");
+    fprintf(fid,"delay = 7; %% fixed group delay\n");
 
     // save
     fprintf(fid,"n = %u;\n", num_samples);
@@ -159,20 +163,23 @@ int main(int argc, char*argv[]) {
     fprintf(fid,"tmin = %f;\n", tmin);
     fprintf(fid,"tmax = %f;\n", tmax);
     fprintf(fid,"dt = (tmax-tmin)/(n-1);\n");
-    fprintf(fid,"t = tmin + [0:(n-1)]*dt;\n");
+    fprintf(fid,"tx = tmin + [[0:(n-1)]        ]*dt;\n");
+    fprintf(fid,"ty = tmin + [[0:(n-1)]-delay  ]*dt;\n");
+    fprintf(fid,"tz = tmin + [[0:(n-1)]-2*delay]*dt;\n");
     fprintf(fid,"figure;\n");
     fprintf(fid,"subplot(3,1,1);\n");
-    fprintf(fid,"  plot(t, real(x), t, imag(x));\n");
+    fprintf(fid,"  plot(tx, real(x), 'LineWidth', 1.2, tx, imag(x),'LineWidth',1.2);\n");
     fprintf(fid,"  axis([tmin tmax -2 2]);\n");
     fprintf(fid,"  ylabel('input');\n");
     fprintf(fid,"  grid on;\n");
     fprintf(fid,"subplot(3,1,2);\n");
-    fprintf(fid,"  plot(t, real(y), t, imag(y));\n");
-    fprintf(fid,"  axis([tmin tmax -2 2]);\n");
+    fprintf(fid,"  plot(ty, real(y),'LineWidth',1.2, ty, imag(y),'LineWidth',1.2);\n");
+    fprintf(fid,"  ymax = round(10000*max(abs(y)))/10000;\n");
+    fprintf(fid,"  axis([tmin tmax -ymax ymax]);\n");
     fprintf(fid,"  ylabel('integrated');\n");
     fprintf(fid,"  grid on;\n");
     fprintf(fid,"subplot(3,1,3);\n");
-    fprintf(fid,"  plot(t, real(z), t, imag(z));\n");
+    fprintf(fid,"  plot(tz, real(z),'LineWidth',1.2, tz, imag(z),'LineWidth',1.2);\n");
     fprintf(fid,"  axis([tmin tmax -2 2]);\n");
     fprintf(fid,"  ylabel('int/diff');\n");
     fprintf(fid,"  grid on;\n");
@@ -211,21 +218,22 @@ int main(int argc, char*argv[]) {
     fprintf(fid,"f = 0.5*[0:(nfft-1)]/nfft;\n");
     fprintf(fid,"figure;\n");
     fprintf(fid,"subplot(2,1,1),\n");
-    fprintf(fid,"  plot(f,20*log10(Hi),'-','Color',[0 0.5 0.0],'LineWidth',2,...\n");
-    fprintf(fid,"       f,20*log10(Hd),'-','Color',[0 0.0 0.5],'LineWidth',2);\n");
-    fprintf(fid,"  %%axis([0.0 0.5 0 ceil(1.1*max([gdi gdd]))]);\n");
+    fprintf(fid,"  plot(f,20*log10(Hi),    '-','Color',[0.0 0.5 0.0],'LineWidth',1.2,...\n");
+    fprintf(fid,"       f,20*log10(Hd),    '-','Color',[0.0 0.0 0.5],'LineWidth',1.2,...\n");
+    fprintf(fid,"       f,20*log10(Hi.*Hd),'-','Color',[0.5 0.3 0.0],'LineWidth',1.8);\n");
+    fprintf(fid,"  axis([0.0 0.5 -20 20]);\n");
     fprintf(fid,"  grid on;\n");
-    fprintf(fid,"  legend('Integrator','Differentiator',0);\n");
+    fprintf(fid,"  legend('Integrator','Differentiator','Composite','location','northeast');\n");
     fprintf(fid,"  xlabel('Normalized Frequency');\n");
     fprintf(fid,"  ylabel('Filter PSD [dB]');\n");
 
     // plot group delay
     fprintf(fid,"subplot(2,1,2),\n");
-    fprintf(fid,"  plot(f,gdi,'-','Color',[0 0.5 0.0],'LineWidth',2,...\n");
-    fprintf(fid,"       f,gdd,'-','Color',[0 0.0 0.5],'LineWidth',2);\n");
+    fprintf(fid,"  plot(f,gdi,'-','Color',[0 0.5 0.0],'LineWidth',1.2,...\n");
+    fprintf(fid,"       f,gdd,'-','Color',[0 0.0 0.5],'LineWidth',1.2);\n");
     fprintf(fid,"  axis([0.0 0.5 0 ceil(1.1*max([gdi gdd]))]);\n");
     fprintf(fid,"  grid on;\n");
-    fprintf(fid,"  legend('Integrator','Differentiator',0);\n");
+    fprintf(fid,"  legend('Integrator','Differentiator','location','southeast');\n");
     fprintf(fid,"  xlabel('Normalized Frequency');\n");
     fprintf(fid,"  ylabel('Group delay [samples]');\n");
 
