@@ -73,16 +73,6 @@ int main(int argc, char*argv[]) {
     // 
     // differentiator digital zeros/poles/gain, [Pintelon:1990] Table IV
     //
-    // poles, digital, differentiator
-    float complex pdd[8] = {
-        0.8476936f * -1.0f,
-        0.2990781f * cexpf(_Complex_I * M_PI / 180.0f * -125.5188f),
-        0.2990781f * cexpf(_Complex_I * M_PI / 180.0f *  125.5188f),
-        0.2232427f * cexpf(_Complex_I * M_PI / 180.0f *  -81.52326f),
-        0.2232427f * cexpf(_Complex_I * M_PI / 180.0f *   81.52326f),
-        0.1958670f * cexpf(_Complex_I * M_PI / 180.0f *  -40.51510f),
-        0.1958670f * cexpf(_Complex_I * M_PI / 180.0f *   40.51510f),
-        0.1886088f,};
     // zeros, digital, differentiator
     float complex zdd[8] = {
         1.702575f * -1.0f,
@@ -93,6 +83,16 @@ int main(int argc, char*argv[]) {
         5.350284f * cexpf(_Complex_I * M_PI / 180.0f *  -66.88802f),
         5.350284f * cexpf(_Complex_I * M_PI / 180.0f *   66.88802f),
         1.0f,};
+    // poles, digital, differentiator
+    float complex pdd[8] = {
+        0.8476936f * -1.0f,
+        0.2990781f * cexpf(_Complex_I * M_PI / 180.0f * -125.5188f),
+        0.2990781f * cexpf(_Complex_I * M_PI / 180.0f *  125.5188f),
+        0.2232427f * cexpf(_Complex_I * M_PI / 180.0f *  -81.52326f),
+        0.2232427f * cexpf(_Complex_I * M_PI / 180.0f *   81.52326f),
+        0.1958670f * cexpf(_Complex_I * M_PI / 180.0f *  -40.51510f),
+        0.1958670f * cexpf(_Complex_I * M_PI / 180.0f *   40.51510f),
+        0.1886088f,};
     // gain, digital, differentiator
     float complex kdd = 2.09049284907492e-05f;
 

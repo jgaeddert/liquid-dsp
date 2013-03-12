@@ -267,7 +267,7 @@ IIRFILT() IIRFILT(_create_integrator)()
         0.1641457f * cexpf(_Complex_I * M_PI / 180.0f *   21.89539f),
         1.0f,};
     // gain, digital, integrator
-    float complex kdi = -1.18886273390874e-04;  // TODO: set appropriately
+    float complex kdi = -1.89213380759321e-05f;
 
     // second-order sections
     // allocate 12 values for 4 second-order sections each with
@@ -295,16 +295,6 @@ IIRFILT() IIRFILT(_create_differentiator)()
     // 
     // differentiator digital zeros/poles/gain, [Pintelon:1990] Table IV
     //
-    // poles, digital, differentiator
-    float complex pdd[8] = {
-        0.8476936f * -1.0f,
-        0.2990781f * cexpf(_Complex_I * M_PI / 180.0f * -125.5188f),
-        0.2990781f * cexpf(_Complex_I * M_PI / 180.0f *  125.5188f),
-        0.2232427f * cexpf(_Complex_I * M_PI / 180.0f *  -81.52326f),
-        0.2232427f * cexpf(_Complex_I * M_PI / 180.0f *   81.52326f),
-        0.1958670f * cexpf(_Complex_I * M_PI / 180.0f *  -40.51510f),
-        0.1958670f * cexpf(_Complex_I * M_PI / 180.0f *   40.51510f),
-        0.1886088f,};
     // zeros, digital, differentiator
     float complex zdd[8] = {
         1.702575f * -1.0f,
@@ -315,8 +305,18 @@ IIRFILT() IIRFILT(_create_differentiator)()
         5.350284f * cexpf(_Complex_I * M_PI / 180.0f *  -66.88802f),
         5.350284f * cexpf(_Complex_I * M_PI / 180.0f *   66.88802f),
         1.0f,};
+    // poles, digital, differentiator
+    float complex pdd[8] = {
+        0.8476936f * -1.0f,
+        0.2990781f * cexpf(_Complex_I * M_PI / 180.0f * -125.5188f),
+        0.2990781f * cexpf(_Complex_I * M_PI / 180.0f *  125.5188f),
+        0.2232427f * cexpf(_Complex_I * M_PI / 180.0f *  -81.52326f),
+        0.2232427f * cexpf(_Complex_I * M_PI / 180.0f *   81.52326f),
+        0.1958670f * cexpf(_Complex_I * M_PI / 180.0f *  -40.51510f),
+        0.1958670f * cexpf(_Complex_I * M_PI / 180.0f *   40.51510f),
+        0.1886088f,};
     // gain, digital, differentiator
-    float complex kdd = 3.32712270428533e-06; // TODO: set appropriately
+    float complex kdd = 2.09049284907492e-05f;
 
     // second-order sections
     // allocate 12 values for 4 second-order sections each with
