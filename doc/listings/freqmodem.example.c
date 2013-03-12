@@ -2,7 +2,7 @@
 #include <liquid/liquid.h>
 
 int main() {
-    float kf = 0.02f;       // modulation index
+    float kf = 0.1f;        // modulation factor
     liquid_freqdem_type type = LIQUID_FREQDEM_DELAYCONJ;
 
     // create modulator/demodulator objects

@@ -160,10 +160,6 @@ void freqdem_demodulate(freqdem              _q,
 
     // apply post-filtering
     iirfilt_rrrf_execute(_q->postfilter, *_m, _m);
-
-    // scale result
-    // TODO: figure out why this is necessary
-    *_m *= 0.15f;
 }
 
 

@@ -16,7 +16,7 @@
 int main(int argc, char*argv[])
 {
     // options
-    float kf = 0.005f;              // modulation factor
+    float kf = 0.05f;               // modulation factor
     liquid_freqdem_type type = LIQUID_FREQDEM_DELAYCONJ;
     unsigned int num_samples = 201; // number of samples
     float SNRdB = 60.0f;            // signal-to-noise ratio [dB]

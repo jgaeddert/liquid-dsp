@@ -20,14 +20,14 @@ void usage()
     printf("  h     : print usage\n");
     printf("  n     : number of samples, default: 1024\n");
     printf("  S     : SNR [dB], default: 30\n");
-    printf("  k     : FM modulation index, default: 0.02\n");
+    printf("  k     : FM modulation factor, default: 0.1\n");
     printf("  t     : FM demod. type (delayconj/pll), default: delayconj\n");
 }
 
 int main(int argc, char*argv[])
 {
     // options
-    float kf = 0.02f;                   // modulation factor
+    float kf = 0.1f;                    // modulation factor
     liquid_freqdem_type type = LIQUID_FREQDEM_DELAYCONJ;
     unsigned int num_samples = 1024;    // number of samples
     float SNRdB = 30.0f;                // signal-to-noise ratio [dB]
