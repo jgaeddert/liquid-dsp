@@ -103,7 +103,6 @@ int main(int argc, char*argv[])
     fprintf(fid,"set yrange [-1.5:1.5]\n");
     fprintf(fid,"set size ratio 0.3\n");
     fprintf(fid,"set xlabel 'Sample Index'\n");
-    fprintf(fid,"set key top right nobox\n");
     fprintf(fid,"set ytics -5,0.5,5\n");
     fprintf(fid,"set grid xtics ytics\n");
     fprintf(fid,"set pointsize 0.6\n");
@@ -112,6 +111,7 @@ int main(int argc, char*argv[])
 
     fprintf(fid,"# input/demodulated signals\n");
     fprintf(fid,"set ylabel 'input/output signal'\n");
+    fprintf(fid,"set key top right nobox\n");
     fprintf(fid,"plot '-' using 1:2 with lines linetype 1 linewidth 2 linecolor rgb '%s' title 'input',\\\n",LIQUID_DOC_COLOR_RED);
     fprintf(fid,"     '-' using 1:2 with lines linetype 1 linecolor rgb '%s' title 'demodulated'\n",LIQUID_DOC_COLOR_GRAY);
     for (i=0; i<num_samples; i++)
@@ -121,7 +121,8 @@ int main(int argc, char*argv[])
         fprintf(fid,"%12d %12.4e\n", ((int)i)-15, z[i]);
     fprintf(fid,"e\n");
 
-    fprintf(fid,"# demodulated signals\n");
+    fprintf(fid,"# transmitted signal\n");
+    fprintf(fid,"set key bottom right nobox\n");
     fprintf(fid,"set ylabel 'modulated signal'\n");
     fprintf(fid,"plot '-' using 1:2 with lines linetype 1 linewidth 1 linecolor rgb '%s' title 'real',\\\n",LIQUID_DOC_COLOR_BLUE);
     fprintf(fid,"     '-' using 1:2 with lines linetype 1 linewidth 1 linecolor rgb '%s' title 'imag'\n",LIQUID_DOC_COLOR_GREEN);
