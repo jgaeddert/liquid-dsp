@@ -23,7 +23,6 @@ void usage()
     printf("simulate_per_test options:\n");
     printf("  u/h   : print usage\n");
     printf("  n     : number of decoded bytes, default: 1024\n");
-    printf("  p     : modulation depth, default: 2 [bits/symbol]\n");
     printf("  m     : modulation scheme, default: psk\n");
     liquid_print_modulation_schemes();
     printf("  c     : coding scheme (inner), default: h74\n");
@@ -39,7 +38,6 @@ int main(int argc, char*argv[]) {
     // options
     simulate_per_opts opts;
     opts.ms = LIQUID_MODEM_BPSK;
-    opts.bps = 1;
     opts.fec0 = LIQUID_FEC_NONE;
     opts.fec1 = LIQUID_FEC_NONE;
     opts.dec_msg_len = 1024;
@@ -55,12 +53,11 @@ int main(int argc, char*argv[]) {
 
     // read command-line options
     int dopt;
-    while((dopt = getopt(argc,argv,"uhn:p:m:c:k:SH")) != EOF){
+    while((dopt = getopt(argc,argv,"uhn:m:c:k:SH")) != EOF){
         switch (dopt) {
         case 'h':
         case 'u': usage();                          return 0;
         case 'n': opts.dec_msg_len = atoi(optarg);  break;
-        case 'p': opts.bps = atoi(optarg);          break;
         case 'm':
             opts.ms = liquid_getopt_str2mod(optarg);
             if (opts.ms == LIQUID_MODEM_UNKNOWN) {
@@ -125,6 +122,8 @@ int main(int argc, char*argv[]) {
         // save BER in array
         BER[i] = results.BER;
     }
+        
+    unsigned int bps = modulation_types[opts.ms].bps;
 
     // 
     // export data
@@ -149,7 +148,7 @@ int main(int argc, char*argv[]) {
     fprintf(fid,"xlabel('SNR [dB]');\n");
     fprintf(fid,"ylabel('Bit Error Rate');\n");
     fprintf(fid,"legend('uncoded BPSK','modem: %s (M=%u) // fec: %s',1);\n",
-            modulation_types[opts.ms].name, 1<<opts.bps, fec_scheme_str[opts.fec0][0]);
+            modulation_types[opts.ms].name, 1<<bps, fec_scheme_str[opts.fec0][0]);
     fprintf(fid,"grid on;\n");
 
     fclose(fid);

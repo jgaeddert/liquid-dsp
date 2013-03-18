@@ -40,7 +40,7 @@ int main() {
     
     // compute fft
     float complex Y[nfft];
-    fft_run(nfft, y, Y, FFT_FORWARD, 0);
+    fft_run(nfft, y, Y, LIQUID_FFT_FORWARD, 0);
 
     // print results to file(s)
     FILE * fid = NULL;
