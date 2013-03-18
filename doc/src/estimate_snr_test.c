@@ -55,7 +55,6 @@ int main(int argc, char*argv[])
     unsigned int frame_len = 1024;
     unsigned long int max_trials = 0;
 
-    unsigned int bps=2;
     modulation_scheme ms = LIQUID_MODEM_QPSK;
     fec_scheme fec0 = LIQUID_FEC_NONE;  // inner code
     fec_scheme fec1 = LIQUID_FEC_NONE;  // outer code
@@ -86,7 +85,7 @@ int main(int argc, char*argv[])
             }
             break;
         case 'm':
-            liquid_getopt_str2modbps(optarg, &ms, &bps);
+            ms = liquid_getopt_str2mod(optarg);
             if (ms == LIQUID_MODEM_UNKNOWN) {
                 fprintf(stderr,"error: modem_example, unknown/unsupported modulation scheme \"%s\"\n", optarg);
                 return 1;
@@ -122,11 +121,12 @@ int main(int argc, char*argv[])
 
     simulate_per_opts opts;
     opts.ms     = ms;
-    opts.bps    = bps;
     opts.fec0   = fec0;
     opts.fec1   = fec1;
     opts.dec_msg_len = frame_len;
     opts.soft_decoding = soft_decoding;
+    
+    unsigned int bps = modulation_types[ms].bps;
 
     // minimum number of errors to simulate
     opts.min_packet_errors  = which_ber_per==ESTIMATE_SNR_PER ? 10      : 0;
@@ -142,7 +142,7 @@ int main(int argc, char*argv[])
     opts.max_bit_trials     = which_ber_per==ESTIMATE_SNR_BER ? max_trials : -1; 
 
     // estimate SNR for a specific PER
-    printf("%u-%s // %s // %s (%s: %e)\n", 1<<opts.bps,
+    printf("%u-%s // %s // %s (%s: %e)\n", 1<<bps,
                                            modulation_types[opts.ms].name,
                                            fec_scheme_str[opts.fec0][0],
                                            fec_scheme_str[opts.fec1][0],
@@ -153,7 +153,7 @@ int main(int argc, char*argv[])
     float x_hat = estimate_snr(opts, which_ber_per, which_snr_ebn0, error_rate);
 
     // compute rate [b/s/Hz]
-    float rate = opts.bps * fec_get_rate(opts.fec0) * fec_get_rate(opts.fec1);
+    float rate = bps * fec_get_rate(opts.fec0) * fec_get_rate(opts.fec1);
 
     // set estimated values
     float SNRdB_hat;
