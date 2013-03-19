@@ -20,39 +20,43 @@ void usage()
     printf("firdes_kaiser_example:\n");
     printf("  u/h   : print usage/help\n");
     printf("  f     : filter cutoff frequency,           0 < f < 0.5, default: 0.2\n");
-    printf("  t     : filter transition bandwidth,       0 < t < 0.5, default: 0.1\n");
     printf("  s     : filter stop-band attenuation [dB], 0 < s,       default: 60\n");
     printf("  m     : fractional sample delay,        -0.5 < m < 0.5, default: 0\n");
+    printf("  n     : filter length [taps],              n > 1,       default: 55\n");
 }
 
 int main(int argc, char*argv[]) {
     // options
     float fc=0.2f;          // filter cutoff frequency
-    float ft=0.1f;          // filter transition
     float As=60.0f;         // stop-band attenuation [dB]
     float mu=0.0f;          // fractional timing offset
+    unsigned int h_len=55;  // filter length
 
     int dopt;
-    while ((dopt = getopt(argc,argv,"uhf:t:s:m:")) != EOF) {
+    while ((dopt = getopt(argc,argv,"uhf:n:s:m:")) != EOF) {
         switch (dopt) {
         case 'u':
-        case 'h': usage();                      return 0;
-        case 'f': fc = atof(optarg);            break;
-        case 't': ft = atof(optarg);            break;
-        case 's': As = atof(optarg);            break;
-        case 'm': mu = atof(optarg);            break;
+        case 'h': usage();              return 0;
+        case 'f': fc    = atof(optarg); break;
+        case 'n': h_len = atoi(optarg); break;
+        case 's': As    = atof(optarg); break;
+        case 'm': mu    = atof(optarg); break;
         default:
             exit(1);
         }
     }
 
-    // derived values
-    unsigned int h_len = estimate_req_filter_len(ft,As);
-    printf("h_len : %u\n", h_len);
+    // validate input
+    if ( fc <= 0.0f ) {
+        fprintf(stderr,"error: %s, filter cutoff frequency must be greater than zero\n", argv[0]);
+        exit(1);
+    } else if ( h_len == 0 ) {
+        fprintf(stderr,"error: %s, filter length must be greater than zero\n", argv[0]);
+        exit(1);
+    }
 
     printf("filter design parameters\n");
     printf("    cutoff frequency            :   %8.4f\n", fc);
-    printf("    transition bandwidth        :   %8.4f\n", ft);
     printf("    stop-band attenuation [dB]  :   %8.4f\n", As);
     printf("    fractional sample offset    :   %8.4f\n", mu);
     printf("    filter length               :   %u\n", h_len);

@@ -1485,6 +1485,7 @@ sandbox_programs =						\
 	sandbox/gmskmodem_test					\
 	sandbox/householder_test				\
 	sandbox/iirdes_example					\
+	sandbox/iirfilt_intdiff_test				\
 	sandbox/levinson_test					\
 	sandbox/matched_filter_test				\
 	sandbox/matched_filter_cfo_test				\

@@ -1605,6 +1605,12 @@ IIRFILT() IIRFILT(_create_prototype)(                           \
             float _Ap,                                          \
             float _As);                                         \
                                                                 \
+/* create 8th-order integrator filter                   */      \
+IIRFILT() IIRFILT(_create_integrator)();                        \
+                                                                \
+/* create 8th-order differentiator filter               */      \
+IIRFILT() IIRFILT(_create_differentiator)();                    \
+                                                                \
 /* create phase-locked loop iirfilt object              */      \
 /*  _w      : filter bandwidth                          */      \
 /*  _zeta   : damping factor (1/sqrt(2) suggested)      */      \

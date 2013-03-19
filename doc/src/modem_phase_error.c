@@ -40,7 +40,6 @@ int main(int argc, char*argv[]) {
     unsigned int num_trials = 1000; // number of trials
     float SNRdB = 12.0f;            // signal-to-noise ratio [dB]
     modulation_scheme ms = LIQUID_MODEM_QPSK;
-    unsigned int bps = 2;
     char filename[256] = "";    // output filename
 
     int dopt;
@@ -55,7 +54,7 @@ int main(int argc, char*argv[]) {
         case 's':   SNRdB = atof(optarg);           break;
         case 'P':   phi_max_abs = atof(optarg);     break;
         case 'm':
-            liquid_getopt_str2modbps(optarg, &ms, &bps);
+            ms = liquid_getopt_str2mod(optarg);
             if (ms == LIQUID_MODEM_UNKNOWN) {
                 fprintf(stderr,"error: %s, unknown/unsupported modulation scheme \"%s\"\n", argv[0], optarg);
                 return 1;
@@ -76,13 +75,9 @@ int main(int argc, char*argv[]) {
         exit(1);
         fprintf(stderr,"error: %s, number of trials must be greater than 0\n", argv[0]);
         exit(1);
-    } else if (bps == 0 || bps > 8) {
-        fprintf(stderr,"error: %s, bits per symbol must be in [1,8]\n", argv[0]);
-        exit(1);
-    } else if (ms == LIQUID_MODEM_DPSK) {
-        fprintf(stderr,"error: %s, differential PSK not allowed\n", argv[0]);
-        exit(1);
     }
+
+    unsigned int bps = modulation_types[ms].bps;
 
     // generate filenames
     if ( strcmp(filename,"")==0 )
@@ -99,9 +94,8 @@ int main(int argc, char*argv[]) {
     float phi_hat_mean_smooth[num_phi]; // phase error estimate (smoothed)
 
     // create modulator/demodulator
-    modem mod = modem_create(ms,bps);
-    modem demod = modem_create(ms,bps);
-    bps = modem_get_bps(mod);
+    modem mod = modem_create(ms);
+    modem demod = modem_create(ms);
     unsigned int M = 1 << bps;
 
     //
