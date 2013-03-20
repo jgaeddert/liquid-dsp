@@ -106,7 +106,6 @@ int main(int argc, char*argv[])
 
     // set FEC, framing length
     opts.ms     = LIQUID_MODEM_BPSK;
-    opts.bps    = 1;
     opts.fec0   = LIQUID_FEC_NONE;
     opts.fec1   = LIQUID_FEC_NONE;
     opts.dec_msg_len = frame_len;
@@ -158,7 +157,8 @@ int main(int argc, char*argv[])
         float x_hat = estimate_snr(opts, which_ber_per, which_snr_ebn0, error_rate);
 
         // compute rate [b/s/Hz]
-        float rate = opts.bps * fec_get_rate(opts.fec0) * fec_get_rate(opts.fec1);
+        unsigned int bps = modulation_types[opts.ms].bps;
+        float rate = bps * fec_get_rate(opts.fec0) * fec_get_rate(opts.fec1);
 
         // set estimated values
         float SNRdB_hat;
