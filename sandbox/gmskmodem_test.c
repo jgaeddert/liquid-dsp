@@ -83,9 +83,10 @@ int main(int argc, char*argv[]) {
 
     // generate symbols and interpolate
     float theta = 0.0f;
+    float k_inv = 1.0f / (float)k;
     for (i=0; i<num_symbols; i++) {
         sym_in[i] = rand() % 2;
-        interp_rrrf_execute(interp_tx, sym_in[i] ? 1.0f : -1.0f, &phi[k*i]);
+        interp_rrrf_execute(interp_tx, sym_in[i] ? k_inv : -k_inv, &phi[k*i]);
         //interp_rrrf_execute(interp_tx, i==0 ? 1.0f : 0.0f, &phi[k*i]);
 
         // accumulate phase
@@ -110,9 +111,6 @@ int main(int argc, char*argv[]) {
         // push through filter
         firfilt_rrrf_push(decim_rx, phi_hat[i]);
         firfilt_rrrf_execute(decim_rx, &phi_prime[i]);
-
-        // scale by samples/symbols
-        phi_prime[i] /= k;
 
         // decimate output
         if ( (i%k)==0 ) {
