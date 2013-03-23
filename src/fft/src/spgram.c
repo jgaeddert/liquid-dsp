@@ -239,7 +239,7 @@ void spgram_estimate_psd(spgram                 _q,
         if ( ((i+1)%delay)==0 || (i==_n-1)) {
             spgram_execute(_q, X);
             for (k=0; k<_q->nfft; k++)
-                _psd[k] += cabsf(X[k]);
+                _psd[k] += crealf(X[k] * conjf(X[k]));
 
             //
             num_transforms++;
