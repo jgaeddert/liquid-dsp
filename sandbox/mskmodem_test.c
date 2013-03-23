@@ -55,22 +55,52 @@ int main(int argc, char*argv[]) {
     unsigned char sym_out[num_symbols];     // output symbols
 
     // create transmit/receive interpolator/decimator
-#if 1
-    // regular MSK
-    unsigned int ht_len = k;
-    float ht[ht_len];
-    for (i=0; i<ht_len; i++)
-        ht[i] = M_PI / (2.0f * k);
-#else
-    // full-response raised-cosine pulse
-    unsigned int ht_len = k;
-    float ht[ht_len];
-    for (i=0; i<ht_len; i++)
-        ht[i] = M_PI / (2.0f*k) * (1.0f - cosf(2.0f*M_PI*i/(float)ht_len));
-#endif
+    enum {
+        TXFILT_SQUARE=0,
+        TXFILT_RCOS_FULL,
+        TXFILT_RCOS_HALF,
+        TXFILT_GMSK,
+    } tx_filter_type = TXFILT_SQUARE;
+
+    unsigned int ht_len = 0;
+    float * ht = NULL;
+    switch (tx_filter_type) {
+    case TXFILT_SQUARE:
+        // regular MSK
+        ht_len = k;
+        ht = (float*) malloc(ht_len *sizeof(float));
+        for (i=0; i<ht_len; i++)
+            ht[i] = M_PI / (2.0f * k);
+        break;
+    case TXFILT_RCOS_FULL:
+        // full-response raised-cosine pulse
+        ht_len = k;
+        ht = (float*) malloc(ht_len *sizeof(float));
+        for (i=0; i<ht_len; i++)
+            ht[i] = M_PI / (2.0f*k) * (1.0f - cosf(2.0f*M_PI*i/(float)ht_len));
+        break;
+    case TXFILT_RCOS_HALF:
+        // partial-response raised-cosine pulse
+        ht_len = 2*k;
+        ht = (float*) malloc(ht_len *sizeof(float));
+        for (i=0; i<ht_len; i++)
+            ht[i] = 0.5f * M_PI / (2.0f*k) * (1.0f - cosf(2.0f*M_PI*i/(float)ht_len));
+        break;
+    case TXFILT_GMSK:
+        ht_len = 2*k*3+1;
+        ht = (float*) malloc(ht_len *sizeof(float));
+        liquid_firdes_gmsktx(k,3,0.35f,0.0f,ht);
+        for (i=0; i<ht_len; i++)
+            ht[i] *= 1.0f / (float)k;
+        break;
+    default:
+        fprintf(stderr,"error: %s, invalid tx filter type\n", argv[0]);
+        exit(1);
+    }
     for (i=0; i<ht_len; i++)
         printf("ht(%3u) = %12.8f;\n", i+1, ht[i]);
     interp_rrrf interp_tx = interp_rrrf_create(k, ht, ht_len);
+    free(ht);
 
     // generate symbols and interpolate
     float theta = M_PI / 4.0f;
