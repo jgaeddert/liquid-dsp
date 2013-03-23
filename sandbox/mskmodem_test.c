@@ -102,6 +102,7 @@ int main(int argc, char*argv[]) {
     for (i=0; i<hr_len; i++)
         hr[i] = 4.0f / (float)k;
     firfilt_crcf decim_rx = firfilt_crcf_create(hr, hr_len);
+    float bw = 0.9f / (float)k;
 #endif
 
     // run receiver
@@ -138,36 +139,10 @@ int main(int argc, char*argv[]) {
     firfilt_crcf_destroy(decim_rx);
 
     // compute power spectral density
-    unsigned int num_transforms = 0;
-    unsigned int nfft = 512;
-    spgram periodogram = spgram_create_kaiser(nfft, nfft/2, 8.0f);
+    unsigned int nfft = 1024;
     float psd[nfft];
-    float complex X[nfft];
-    for (i=0; i<nfft; i++)
-        psd[i] = 0.0f;
-    for (i=0; i<num_samples; i++) {
-        spgram_push(periodogram, &y[i], 1);
-        if ( ((i+1)%(nfft/4))==0 ) {
-            spgram_execute(periodogram, X);
-            unsigned int k;
-            for (k=0; k<nfft; k++) {
-                float Xmag = cabsf(X[k]);
-                if (num_transforms>0) psd[k] += Xmag;
-                else                  psd[k]  = Xmag;
-            }
-            num_transforms++;
-        }
-    }
-    // ensure at least one transform is taken
-    if (num_transforms==0) {
-        spgram_execute(periodogram, X);
-        unsigned int k;
-        for (k=0; k<nfft; k++)
-            psd[k] = cabsf(X[k]);
-        num_transforms++;
-    }
-    for (i=0; i<nfft; i++)
-        psd[i] /= (float)(num_transforms);
+    spgram periodogram = spgram_create_kaiser(nfft, nfft/2, 8.0f);
+    spgram_estimate_psd(periodogram, y, num_samples, psd);
     spgram_destroy(periodogram);
 
     // 
@@ -193,14 +168,15 @@ int main(int argc, char*argv[]) {
     // save PSD with FFT shift
     fprintf(fid,"psd = zeros(1,nfft);\n");
     for (i=0; i<nfft; i++) {
-        fprintf(fid,"psd(%4u) = %12.8f;\n", i+1, psd[(i+nfft/2)%nfft]);
+        fprintf(fid,"psd(%4u) = %12.8f;\n", i+1, psd[(i+nfft/2)%nfft]/(float)k);
     }
 
     fprintf(fid,"t=[0:(num_samples-1)]/k;\n");
     fprintf(fid,"i = 1:k:num_samples;\n");
     fprintf(fid,"figure;\n");
     fprintf(fid,"subplot(3,4,1:3);\n");
-    fprintf(fid,"  plot(t,real(x),'-', t,imag(x),'-');\n");
+    fprintf(fid,"  plot(t,real(x),'-', t(i),real(x(i)),'ob',...\n");
+    fprintf(fid,"       t,imag(x),'-', t(i),imag(x(i)),'og');\n");
     fprintf(fid,"  xlabel('time');\n");
     fprintf(fid,"  ylabel('x(t)');\n");
     fprintf(fid,"  grid on;\n");
@@ -229,7 +205,7 @@ int main(int argc, char*argv[]) {
     fprintf(fid,"f = [0:(nfft-1)]/nfft - 0.5;\n");
     fprintf(fid,"subplot(3,4,9:12);\n");
     fprintf(fid,"  plot(f,20*log10(psd),'LineWidth',1.5);\n");
-    fprintf(fid,"  axis([-0.5 0.5 -40 10]);\n");
+    fprintf(fid,"  axis([-0.5 0.5 -120 20]);\n");
     fprintf(fid,"  xlabel('Normalized Frequency [f/F_s]');\n");
     fprintf(fid,"  ylabel('PSD [dB]');\n");
     fprintf(fid,"  grid on;\n");
