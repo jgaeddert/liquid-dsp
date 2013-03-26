@@ -87,11 +87,14 @@ int main(int argc, char*argv[]) {
         break;
     case TXFILT_RCOS_HALF:
         // partial-response raised-cosine pulse
-        ht_len = 2*k;
+        theta = M_PI / 4.0f;
+        ht_len = 3*k;
         tx_delay = 2;
         ht = (float*) malloc(ht_len *sizeof(float));
         for (i=0; i<ht_len; i++)
-            ht[i] = 0.5f * M_PI / (2.0f*k) * (1.0f - cosf(2.0f*M_PI*i/(float)ht_len));
+            ht[i] = 0.0f;
+        for (i=0; i<2*k; i++)
+            ht[i+k/2] = 0.5f * M_PI / (2.0f*k) * (1.0f - cosf(2.0f*M_PI*i/(float)(2*k)));
         break;
     case TXFILT_GMSK:
         ht_len = 2*k*3+1;
@@ -248,6 +251,10 @@ int main(int argc, char*argv[]) {
     fprintf(fid,"  axis([-0.5 0.5 -120 20]);\n");
     fprintf(fid,"  xlabel('Normalized Frequency [f/F_s]');\n");
     fprintf(fid,"  ylabel('PSD [dB]');\n");
+    fprintf(fid,"  grid on;\n");
+
+    fprintf(fid,"figure;\n");
+    fprintf(fid,"  plot(t,cumtrapz(phi)*2/pi, t(i),cumtrapz(phi)(i)*2/pi,'-s');\n");
     fprintf(fid,"  grid on;\n");
 
     fclose(fid);
