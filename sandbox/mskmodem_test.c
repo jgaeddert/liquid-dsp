@@ -60,16 +60,18 @@ int main(int argc, char*argv[]) {
         TXFILT_RCOS_FULL,
         TXFILT_RCOS_HALF,
         TXFILT_GMSK,
-    } tx_filter_type = TXFILT_SQUARE;
+    } tx_filter_type = TXFILT_RCOS_HALF;
 
     float theta = 0.0f;
     unsigned int ht_len = 0;
+    unsigned int tx_delay = 0;
     float * ht = NULL;
     switch (tx_filter_type) {
     case TXFILT_SQUARE:
         // regular MSK
         theta = M_PI / 4.0f;
         ht_len = k;
+        tx_delay = 1;
         ht = (float*) malloc(ht_len *sizeof(float));
         for (i=0; i<ht_len; i++)
             ht[i] = M_PI / (2.0f * k);
@@ -78,6 +80,7 @@ int main(int argc, char*argv[]) {
         // full-response raised-cosine pulse
         theta = M_PI / 4.0f;
         ht_len = k;
+        tx_delay = 1;
         ht = (float*) malloc(ht_len *sizeof(float));
         for (i=0; i<ht_len; i++)
             ht[i] = M_PI / (2.0f*k) * (1.0f - cosf(2.0f*M_PI*i/(float)ht_len));
@@ -85,12 +88,14 @@ int main(int argc, char*argv[]) {
     case TXFILT_RCOS_HALF:
         // partial-response raised-cosine pulse
         ht_len = 2*k;
+        tx_delay = 2;
         ht = (float*) malloc(ht_len *sizeof(float));
         for (i=0; i<ht_len; i++)
             ht[i] = 0.5f * M_PI / (2.0f*k) * (1.0f - cosf(2.0f*M_PI*i/(float)ht_len));
         break;
     case TXFILT_GMSK:
         ht_len = 2*k*3+1;
+        tx_delay = 3;
         ht = (float*) malloc(ht_len *sizeof(float));
         liquid_firdes_gmsktx(k,3,0.35f,0.0f,ht);
         for (i=0; i<ht_len; i++)
@@ -133,23 +138,14 @@ int main(int argc, char*argv[]) {
         y[i] = x[i] + nstd*(randnf() + _Complex_I*randnf())*M_SQRT1_2;
     
     // create decimator
-#if 1
     unsigned int m = 3;
     float bw = 0.9f / (float)k;
     firfilt_crcf decim_rx = firfilt_crcf_create_kaiser(2*k*m+1, bw, 60.0f, 0.0f);
     printf("bw = %f\n", bw);
-#else
-    unsigned int hr_len = k;
-    float hr[hr_len];
-    for (i=0; i<hr_len; i++)
-        hr[i] = 4.0f / (float)k;
-    firfilt_crcf decim_rx = firfilt_crcf_create(hr, hr_len);
-    float bw = 0.9f / (float)k;
-#endif
 
     // run receiver
-    float complex x_prime = 0.0f;
     unsigned int n=0;
+    float complex z_prime = 0.0f;
     for (i=0; i<num_samples; i++) {
         // push through filter
         firfilt_crcf_push(decim_rx, y[i]);
@@ -158,14 +154,14 @@ int main(int argc, char*argv[]) {
         z[i] *= 2.0f * bw;
 
         // decimate output
-        if ( (i%k)==k-1 ) {
-#if 0
-            sym_out[n] = phi_prime[i] > 0.0f ? 1 : 0;
-            printf("%3u : %12.8f (%1u)", n, phi_prime[i], sym_out[n]);
-            if (n >= 0) printf(" (%1u)\n", sym_in[n-0]);
-            else          printf("\n");
+        if ( (i%k)==0 ) {
+            float phi_hat = cargf(conjf(z_prime) * z[i]);
+            z_prime = z[i];
+
+            printf("%3u : %12.8f + j%12.8f (%1u)", n, crealf(z[i]), cimagf(z[i]), phi_hat > 0 ? 1 : 0);
+            if (n >= m+tx_delay) printf(" (%1u)\n", sym_in[n-m-tx_delay]);
+            else                 printf("\n");
             n++;
-#endif
         }
     }
 
@@ -199,13 +195,15 @@ int main(int argc, char*argv[]) {
     fprintf(fid,"num_samples = %u;\n", num_samples);
     fprintf(fid,"nfft        = %u;\n", nfft);
 
-    fprintf(fid,"x = zeros(1,num_samples);\n");
-    fprintf(fid,"y = zeros(1,num_samples);\n");
-    fprintf(fid,"z = zeros(1,num_samples);\n");
+    fprintf(fid,"x   = zeros(1,num_samples);\n");
+    fprintf(fid,"y   = zeros(1,num_samples);\n");
+    fprintf(fid,"z   = zeros(1,num_samples);\n");
+    fprintf(fid,"phi = zeros(1,num_samples);\n");
     for (i=0; i<num_samples; i++) {
         fprintf(fid,"x(%4u) = %12.8f + j*%12.8f;\n", i+1, crealf(x[i]), cimagf(x[i]));
         fprintf(fid,"y(%4u) = %12.8f + j*%12.8f;\n", i+1, crealf(y[i]), cimagf(y[i]));
         fprintf(fid,"z(%4u) = %12.8f + j*%12.8f;\n", i+1, crealf(z[i]), cimagf(z[i]));
+        fprintf(fid,"phi(%4u) = %12.8f;\n", i+1, phi[i]);
     }
     // save PSD with FFT shift
     fprintf(fid,"psd = zeros(1,nfft);\n");
