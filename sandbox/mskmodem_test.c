@@ -60,7 +60,7 @@ int main(int argc, char*argv[]) {
         TXFILT_RCOS_FULL,
         TXFILT_RCOS_HALF,
         TXFILT_GMSK,
-    } tx_filter_type = TXFILT_RCOS_HALF;
+    } tx_filter_type = TXFILT_GMSK;
 
     float theta = 0.0f;
     unsigned int ht_len = 0;
@@ -97,10 +97,13 @@ int main(int argc, char*argv[]) {
             ht[i+k/2] = 0.5f * M_PI / (2.0f*k) * (1.0f - cosf(2.0f*M_PI*i/(float)(2*k)));
         break;
     case TXFILT_GMSK:
-        ht_len = 2*k*3+1;
-        tx_delay = 3;
+        theta = M_PI / 4.0f;
+        ht_len = 2*k*3+1 + k/2;
+        tx_delay = 4;
         ht = (float*) malloc(ht_len *sizeof(float));
-        liquid_firdes_gmsktx(k,3,0.35f,0.0f,ht);
+        for (i=0; i<ht_len; i++)
+            ht[i] = 0.0f;
+        liquid_firdes_gmsktx(k,3,0.35f,0.0f,&ht[k/2]);
         for (i=0; i<ht_len; i++)
             ht[i] *= 1.0f / (float)k;
         break;
@@ -254,7 +257,7 @@ int main(int argc, char*argv[]) {
     fprintf(fid,"  grid on;\n");
 
     fprintf(fid,"figure;\n");
-    fprintf(fid,"  plot(t,cumtrapz(phi)*2/pi, t(i),cumtrapz(phi)(i)*2/pi,'-s');\n");
+    fprintf(fid,"  plot(t,cumtrapz(phi)*2/pi, t(i),cumtrapz(phi)(i)*2/pi,'s','MarkerSize',8);\n");
     fprintf(fid,"  grid on;\n");
 
     fclose(fid);
