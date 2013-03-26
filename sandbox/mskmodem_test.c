@@ -60,7 +60,7 @@ int main(int argc, char*argv[]) {
         TXFILT_RCOS_FULL,
         TXFILT_RCOS_HALF,
         TXFILT_GMSK,
-    } tx_filter_type = TXFILT_GMSK;
+    } tx_filter_type = TXFILT_SQUARE;
 
     float theta = 0.0f;
     unsigned int ht_len = 0;
@@ -68,6 +68,7 @@ int main(int argc, char*argv[]) {
     switch (tx_filter_type) {
     case TXFILT_SQUARE:
         // regular MSK
+        theta = M_PI / 4.0f;
         ht_len = k;
         ht = (float*) malloc(ht_len *sizeof(float));
         for (i=0; i<ht_len; i++)
@@ -107,6 +108,10 @@ int main(int argc, char*argv[]) {
     // generate symbols and interpolate
     // phase-accumulating filter (trapezoidal integrator)
     float b[2] = {0.5f,  0.5f};
+    if (tx_filter_type == TXFILT_SQUARE) {
+        b[0] = 0.0f;
+        b[1] = 1.0f;
+    }
     float a[2] = {1.0f, -1.0f};
     iirfilt_rrrf integrator = iirfilt_rrrf_create(b,2,a,2);
     iirfilt_rrrf_execute(integrator, theta, &theta);
