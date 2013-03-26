@@ -60,8 +60,9 @@ int main(int argc, char*argv[]) {
         TXFILT_RCOS_FULL,
         TXFILT_RCOS_HALF,
         TXFILT_GMSK,
-    } tx_filter_type = TXFILT_SQUARE;
+    } tx_filter_type = TXFILT_GMSK;
 
+    float theta = 0.0f;
     unsigned int ht_len = 0;
     float * ht = NULL;
     switch (tx_filter_type) {
@@ -74,6 +75,7 @@ int main(int argc, char*argv[]) {
         break;
     case TXFILT_RCOS_FULL:
         // full-response raised-cosine pulse
+        theta = M_PI / 4.0f;
         ht_len = k;
         ht = (float*) malloc(ht_len *sizeof(float));
         for (i=0; i<ht_len; i++)
@@ -103,7 +105,11 @@ int main(int argc, char*argv[]) {
     free(ht);
 
     // generate symbols and interpolate
-    float theta = M_PI / 4.0f;
+    // phase-accumulating filter (trapezoidal integrator)
+    float b[2] = {0.5f,  0.5f};
+    float a[2] = {1.0f, -1.0f};
+    iirfilt_rrrf integrator = iirfilt_rrrf_create(b,2,a,2);
+    iirfilt_rrrf_execute(integrator, theta, &theta);
     for (i=0; i<num_symbols; i++) {
         sym_in[i] = rand() % 2;
         interp_rrrf_execute(interp_tx, sym_in[i] ? 1.0f : -1.0f, &phi[k*i]);
@@ -111,10 +117,11 @@ int main(int argc, char*argv[]) {
         // accumulate phase
         unsigned int j;
         for (j=0; j<k; j++) {
+            iirfilt_rrrf_execute(integrator, phi[i*k+j], &theta);
             x[i*k+j] = cexpf(_Complex_I*theta);
-            theta += phi[i*k + j];
         }
     }
+    iirfilt_rrrf_destroy(integrator);
 
     // push through channel
     for (i=0; i<num_samples; i++)
