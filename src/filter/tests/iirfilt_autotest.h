@@ -1,6 +1,5 @@
 /*
- * Copyright (c) 2012 Joseph Gaeddert
- * Copyright (c) 2012 Virginia Polytechnic Institute & State University
+ * Copyright (c) 2007, 2008, 2009, 2010, 2011, 2012, 2013 Joseph Gaeddert
  *
  * This file is part of liquid.
  *
@@ -56,6 +55,38 @@ void iirfilt_cccf_test(float complex * _b,
                        unsigned int    _x_len,
                        float complex * _y,
                        unsigned int    _y_len);
+
+// fixed-point autotest helper functions:
+//  _b      :   filter coefficients (numerator)
+//  _a      :   filter coefficients (denominator)
+//  _h_len  :   filter coefficients length
+//  _x      :   input array
+//  _x_len  :   input array length
+//  _y      :   output array
+//  _y_len  :   output array length
+void iirfilt_rrrq16_test(float *      _b,
+                         float *      _a,
+                         unsigned int _h_len,
+                         float *      _x,
+                         unsigned int _x_len,
+                         float *      _y,
+                         unsigned int _y_len);
+
+void iirfilt_crcq16_test(float *         _b,
+                         float *         _a,
+                         unsigned int    _h_len,
+                         float complex * _x,
+                         unsigned int    _x_len,
+                         float complex * _y,
+                         unsigned int    _y_len);
+
+void iirfilt_cccq16_test(float complex * _b,
+                         float complex * _a,
+                         unsigned int    _h_len,
+                         float complex * _x,
+                         unsigned int    _x_len,
+                         float complex * _y,
+                         unsigned int    _y_len);
 
 // 
 // autotest datasets
