@@ -287,8 +287,18 @@ IIRFILT() IIRFILT(_create_integrator)()
     TC A[12];
     unsigned int i;
     for (i=0; i<12; i++) {
-        B[i] = (TC) (Bi[i]);
-        A[i] = (TC) (Ai[i]);
+#if defined LIQUID_FIXED && TC_COMPLEX==0
+        B[i] = Q(_float_to_fixed)(Bi[i]);
+        A[i] = Q(_float_to_fixed)(Ai[i]);
+#elif defined LIQUID_FIXED && TC_COMPLEX==1
+        B[i].real = Q(_float_to_fixed)(Bi[i]);
+        B[i].imag = 0;
+        A[i].real = Q(_float_to_fixed)(Ai[i]);
+        A[i].imag = 0;
+#else
+        B[i] = Bi[i];
+        A[i] = Ai[i];
+#endif
     }
 
     // create and return filter object
@@ -336,8 +346,18 @@ IIRFILT() IIRFILT(_create_differentiator)()
     TC A[12];
     unsigned int i;
     for (i=0; i<12; i++) {
-        B[i] = (TC) (Bd[i]);
-        A[i] = (TC) (Ad[i]);
+#if defined LIQUID_FIXED && TC_COMPLEX==0
+        B[i] = Q(_float_to_fixed)(Bd[i]);
+        A[i] = Q(_float_to_fixed)(Ad[i]);
+#elif defined LIQUID_FIXED && TC_COMPLEX==1
+        B[i].real = Q(_float_to_fixed)(Bd[i]);
+        B[i].imag = 0;
+        A[i].real = Q(_float_to_fixed)(Ad[i]);
+        A[i].imag = 0;
+#else
+        B[i] = Bd[i];
+        A[i] = Ad[i];
+#endif
     }
 
     // create and return filter object
