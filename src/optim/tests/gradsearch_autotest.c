@@ -34,7 +34,7 @@
 void autotest_gradsearch_rosenbrock()
 {
     float tol = 1e-2f;                  // error tolerance
-    unsigned int num_parameters = 4;    // dimensionality of search (minimum 2)
+    unsigned int num_parameters = 6;    // dimensionality of search (minimum 2)
     unsigned int num_iterations = 4000; // number of iterations to run
 
     // initialize vector for optimization
@@ -112,7 +112,7 @@ float utility_max_autotest(void *       _userdata,
 void autotest_gradsearch_maxutility()
 {
     float tol = 1e-2f;                  // error tolerance
-    unsigned int num_parameters = 4;    // dimensionality of search (minimum 2)
+    unsigned int num_parameters = 6;    // dimensionality of search (minimum 2)
     unsigned int num_iterations = 4000; // number of iterations to run
 
     // initialize vector for optimization
