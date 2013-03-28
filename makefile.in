@@ -1454,6 +1454,7 @@ sandbox_programs =						\
 	sandbox/firdes_length_test				\
 	sandbox/firfarrow_rrrf_test				\
 	sandbox/firpfbch_analysis_alignment_test		\
+	sandbox/firpfbch2_analysis_equivalence_test		\
 	sandbox/firpfbch_analysis_equivalence_test		\
 	sandbox/firpfbch_synthesis_equivalence_test		\
 	sandbox/gmskmodem_test					\
