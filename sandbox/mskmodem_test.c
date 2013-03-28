@@ -52,7 +52,7 @@ int main(int argc, char*argv[]) {
     float complex x[num_samples];           // transmitted signal
     float complex y[num_samples];           // received signal
     float complex z[num_samples];           // output...
-    unsigned char sym_out[num_symbols];     // output symbols
+    //unsigned char sym_out[num_symbols];     // output symbols
 
     // create transmit/receive interpolator/decimator
     enum {
@@ -60,7 +60,7 @@ int main(int argc, char*argv[]) {
         TXFILT_RCOS_FULL,
         TXFILT_RCOS_HALF,
         TXFILT_GMSK,
-    } tx_filter_type = TXFILT_RCOS_HALF;
+    } tx_filter_type = TXFILT_GMSK;
 
     float theta = 0.0f;
     unsigned int ht_len = 0;
@@ -97,10 +97,13 @@ int main(int argc, char*argv[]) {
             ht[i+k/2] = 0.5f * M_PI / (2.0f*k) * (1.0f - cosf(2.0f*M_PI*i/(float)(2*k)));
         break;
     case TXFILT_GMSK:
-        ht_len = 2*k*3+1;
-        tx_delay = 3;
+        theta = M_PI / 4.0f;
+        ht_len = 2*k*3+1+k;
+        tx_delay = 4;
         ht = (float*) malloc(ht_len *sizeof(float));
-        liquid_firdes_gmsktx(k,3,0.35f,0.0f,ht);
+        for (i=0; i<ht_len; i++)
+            ht[i] = 0.0f;
+        liquid_firdes_gmsktx(k,3,0.9f,0.0f,&ht[k/2]);
         for (i=0; i<ht_len; i++)
             ht[i] *= 1.0f / (float)k;
         break;
@@ -148,6 +151,8 @@ int main(int argc, char*argv[]) {
 
     // run receiver
     unsigned int n=0;
+    unsigned int num_errors = 0;
+    unsigned int num_symbols_checked = 0;
     float complex z_prime = 0.0f;
     for (i=0; i<num_samples; i++) {
         // push through filter
@@ -159,21 +164,23 @@ int main(int argc, char*argv[]) {
         // decimate output
         if ( (i%k)==0 ) {
             float phi_hat = cargf(conjf(z_prime) * z[i]);
+            unsigned int sym_out = phi_hat > 0 ? 1 : 0; // estimated transmitted symbol
             z_prime = z[i];
 
-            printf("%3u : %12.8f + j%12.8f (%1u)", n, crealf(z[i]), cimagf(z[i]), phi_hat > 0 ? 1 : 0);
-            if (n >= m+tx_delay) printf(" (%1u)\n", sym_in[n-m-tx_delay]);
-            else                 printf("\n");
+            printf("%3u : %12.8f + j%12.8f (%1u)", n, crealf(z[i]), cimagf(z[i]), sym_out);
+            if (n >= m+tx_delay) {
+                num_errors += (sym_out == sym_in[n-m-tx_delay]) ? 0 : 1;
+                num_symbols_checked++;
+                printf(" (%1u)\n", sym_in[n-m-tx_delay]);
+            } else {
+                printf("\n");
+            }
             n++;
         }
     }
 
-    // compute number of errors
-    unsigned int num_errors = 0;
-    for (i=0; i<num_data_symbols; i++)
-        num_errors += sym_in[i] == sym_out[i] ? 0 : 1;
-
-    printf("errors : %3u / %3u\n", num_errors, num_data_symbols);
+    // print number of errors
+    printf("errors : %3u / %3u\n", num_errors, num_symbols_checked);
 
     // destroy objects
     interp_rrrf_destroy(interp_tx);
