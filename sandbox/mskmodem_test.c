@@ -4,6 +4,7 @@
 
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 #include <getopt.h>
 #include <math.h>
 #include "liquid.h"
@@ -17,23 +18,47 @@ void usage()
     printf("options (default values in <>):\n");
     printf("  h     : print help\n");
     printf("  k     : samples/symbol,         default:  8\n");
+    printf("  b     : modulation index,       default:  0.5\n");
     printf("  n     : number of data symbols, default: 10\n");
     printf("  s     : SNR [dB] <30>\n");
+    printf("  t     : filter type: [square], rcos-full, rcos-half, gmsk\n");
 }
 
 int main(int argc, char*argv[]) {
     // options
     unsigned int k=8;                   // filter samples/symbol
+    float h = 0.5f;                     // modulation index (h=1/2 for MSK)
     unsigned int num_data_symbols = 20; // number of data symbols
     float SNRdB = 30.0f;                // signal-to-noise ratio [dB]
+    enum {
+        TXFILT_SQUARE=0,
+        TXFILT_RCOS_FULL,
+        TXFILT_RCOS_HALF,
+        TXFILT_GMSK,
+    } tx_filter_type = TXFILT_SQUARE;
 
     int dopt;
-    while ((dopt = getopt(argc,argv,"hk:n:s:")) != EOF) {
+    while ((dopt = getopt(argc,argv,"hk:b:n:s:t:")) != EOF) {
         switch (dopt) {
         case 'h': usage();                         return 0;
         case 'k': k = atoi(optarg);                break;
+        case 'b': h = atof(optarg);                break;
         case 'n': num_data_symbols = atoi(optarg); break;
         case 's': SNRdB = atof(optarg);            break;
+        case 't':
+            if (strcmp(optarg,"square")==0) {
+                tx_filter_type = TXFILT_SQUARE;
+            } else if (strcmp(optarg,"rcos-full")==0) {
+                tx_filter_type = TXFILT_RCOS_FULL;
+            } else if (strcmp(optarg,"rcos-half")==0) {
+                tx_filter_type = TXFILT_RCOS_HALF;
+            } else if (strcmp(optarg,"gmsk")==0) {
+                tx_filter_type = TXFILT_GMSK;
+            } else {
+                fprintf(stderr,"error: %s, unknown filter type '%s'\n", argv[0], optarg);
+                exit(1);
+            }
+            break;
         default:
             exit(1);
         }
@@ -55,57 +80,45 @@ int main(int argc, char*argv[]) {
     //unsigned char sym_out[num_symbols];     // output symbols
 
     // create transmit/receive interpolator/decimator
-    enum {
-        TXFILT_SQUARE=0,
-        TXFILT_RCOS_FULL,
-        TXFILT_RCOS_HALF,
-        TXFILT_GMSK,
-    } tx_filter_type = TXFILT_GMSK;
-
-    float theta = 0.0f;
     unsigned int ht_len = 0;
     unsigned int tx_delay = 0;
     float * ht = NULL;
     switch (tx_filter_type) {
     case TXFILT_SQUARE:
         // regular MSK
-        theta = M_PI / 4.0f;
         ht_len = k;
         tx_delay = 1;
         ht = (float*) malloc(ht_len *sizeof(float));
         for (i=0; i<ht_len; i++)
-            ht[i] = M_PI / (2.0f * k);
+            ht[i] = h * M_PI / (float)k;
         break;
     case TXFILT_RCOS_FULL:
         // full-response raised-cosine pulse
-        theta = M_PI / 4.0f;
         ht_len = k;
         tx_delay = 1;
         ht = (float*) malloc(ht_len *sizeof(float));
         for (i=0; i<ht_len; i++)
-            ht[i] = M_PI / (2.0f*k) * (1.0f - cosf(2.0f*M_PI*i/(float)ht_len));
+            ht[i] = h * M_PI / (float)k * (1.0f - cosf(2.0f*M_PI*i/(float)ht_len));
         break;
     case TXFILT_RCOS_HALF:
         // partial-response raised-cosine pulse
-        theta = M_PI / 4.0f;
         ht_len = 3*k;
         tx_delay = 2;
         ht = (float*) malloc(ht_len *sizeof(float));
         for (i=0; i<ht_len; i++)
             ht[i] = 0.0f;
         for (i=0; i<2*k; i++)
-            ht[i+k/2] = 0.5f * M_PI / (2.0f*k) * (1.0f - cosf(2.0f*M_PI*i/(float)(2*k)));
+            ht[i+k/2] = h * 0.5f * M_PI / (float)k * (1.0f - cosf(2.0f*M_PI*i/(float)(2*k)));
         break;
     case TXFILT_GMSK:
-        theta = M_PI / 4.0f;
         ht_len = 2*k*3+1+k;
         tx_delay = 4;
         ht = (float*) malloc(ht_len *sizeof(float));
         for (i=0; i<ht_len; i++)
             ht[i] = 0.0f;
-        liquid_firdes_gmsktx(k,3,0.9f,0.0f,&ht[k/2]);
+        liquid_firdes_gmsktx(k,3,0.35f,0.0f,&ht[k/2]);
         for (i=0; i<ht_len; i++)
-            ht[i] *= 1.0f / (float)k;
+            ht[i] *= h * 2.0f / (float)k;
         break;
     default:
         fprintf(stderr,"error: %s, invalid tx filter type\n", argv[0]);
@@ -125,7 +138,7 @@ int main(int argc, char*argv[]) {
     }
     float a[2] = {1.0f, -1.0f};
     iirfilt_rrrf integrator = iirfilt_rrrf_create(b,2,a,2);
-    iirfilt_rrrf_execute(integrator, theta, &theta);
+    float theta = 0.0f;
     for (i=0; i<num_symbols; i++) {
         sym_in[i] = rand() % 2;
         interp_rrrf_execute(interp_tx, sym_in[i] ? 1.0f : -1.0f, &phi[k*i]);
@@ -201,6 +214,7 @@ int main(int argc, char*argv[]) {
     fprintf(fid,"clear all\n");
     fprintf(fid,"close all\n");
     fprintf(fid,"k = %u;\n", k);
+    fprintf(fid,"h = %f;\n", h);
     fprintf(fid,"num_symbols = %u;\n", num_symbols);
     fprintf(fid,"num_samples = %u;\n", num_samples);
     fprintf(fid,"nfft        = %u;\n", nfft);
@@ -261,7 +275,13 @@ int main(int argc, char*argv[]) {
     fprintf(fid,"  grid on;\n");
 
     fprintf(fid,"figure;\n");
-    fprintf(fid,"  plot(t,cumtrapz(phi)*2/pi, t(i),cumtrapz(phi)(i)*2/pi,'-s');\n");
+    if (tx_filter_type == TXFILT_SQUARE)
+        fprintf(fid,"  theta = filter([0 1],[1 -1],phi)/(h*pi);\n");
+    else
+        fprintf(fid,"  theta = filter([0.5 0.5],[1 -1],phi)/(h*pi);\n");
+    fprintf(fid,"  plot(t,theta,'-', t(i),theta(i),'s');\n");
+    fprintf(fid,"  xlabel('time');\n");
+    fprintf(fid,"  ylabel('instantaneous phase/(h \\pi)');\n");
     fprintf(fid,"  grid on;\n");
 
     fclose(fid);
