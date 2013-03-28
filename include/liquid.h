@@ -869,6 +869,16 @@ void spgram_push(spgram                 _q,
 void spgram_execute(spgram _q,
                     liquid_float_complex * _X);
 
+// estimate spectrum on input signal
+//  _q      :   spgram object
+//  _x      :   input signal [size: _n x 1]
+//  _n      :   input signal length
+//  _psd    :   output spectrum, [size: _nfft x 1]
+void spgram_estimate_psd(spgram                 _q,
+                         liquid_float_complex * _x,
+                         unsigned int           _n,
+                         float *                _psd);
+
 // ascii spectrogram
 typedef struct asgram_s * asgram;
 
