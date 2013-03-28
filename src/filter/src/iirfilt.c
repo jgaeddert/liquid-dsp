@@ -223,11 +223,11 @@ IIRFILT() IIRFILT(_create_prototype)(liquid_iirdes_filtertype _ftype,
     for (i=0; i<h_len; i++) {
 #if defined LIQUID_FIXED && TC_COMPLEX==0
         Bc[i] = Q(_float_to_fixed)(B[i]);
-        Ac[i] = Q(_float_to_fixed)(B[i]);
+        Ac[i] = Q(_float_to_fixed)(A[i]);
 #elif defined LIQUID_FIXED && TC_COMPLEX==1
         Bc[i].real = Q(_float_to_fixed)(B[i]);
         Bc[i].imag = 0;
-        Ac[i].real = Q(_float_to_fixed)(B[i]);
+        Ac[i].real = Q(_float_to_fixed)(A[i]);
         Ac[i].imag = 0;
 #else
         Bc[i] = B[i];
