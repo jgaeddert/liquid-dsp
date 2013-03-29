@@ -44,8 +44,8 @@ int main(int argc, char*argv[])
 #else
     unsigned int h_len = 2*m*num_channels+1;
     float h[h_len];
-    liquid_firdes_kaiser(h_len, 1.0f/(float)num_channels, 81.0f, 0.0f, h);
-    h_len--;
+    // NOTE: 81.29528 dB > beta = 8.00000 (6 channels, m=4)
+    liquid_firdes_kaiser(h_len, 1.0f/(float)num_channels, 81.29528f, 0.0f, h);
 #endif
     // normalize
     float hsum = 0.0f;
@@ -78,7 +78,7 @@ int main(int argc, char*argv[])
     float h_sub[h_sub_len];
     for (i=0; i<num_channels; i++) {
         // sub-sample prototype filter
-#if 1
+#if 0
         for (j=0; j<h_sub_len; j++)
             h_sub[j] = h[j*num_channels+i];
 #else
@@ -165,14 +165,9 @@ int main(int argc, char*argv[])
             printf("  v2[%4u] = %12.8f + %12.8fj\n", j, crealf(X[j]), cimagf(X[j]));
         // execute DFT, store result in buffer 'x'
         fft_execute(fft);
-#if 0
         // scale fft output
-        for (j=0; j<num_channels; j++)
-            x[j] *= 1.0f / (num_channels);
-        printf("***** i = %u\n", i);
-        for (j=0; j<num_channels; j++)
-            printf("  ifft[%4u] = %12.8f + %12.8fj\n", j, crealf(x[j]), cimagf(x[j]));
-#endif
+        //for (j=0; j<num_channels; j++)
+        //    x[j] *= 1.0f / (num_channels);
 
         // move to output array
         for (j=0; j<num_channels; j++)
@@ -210,13 +205,13 @@ int main(int argc, char*argv[])
             firfilt_crcf_push(f, y[j]*cexpf(-_Complex_I*j*dphi));
 
             // compute output at the appropriate sample time
-            assert(n<num_symbols);
-            if ( ((j+1)%num_channels)==0 ) {
+            assert(n<2*num_symbols);
+            if ( ((j+1)%(num_channels/2))==0 ) {
                 firfilt_crcf_execute(f, &Y1[n][i]);
                 n++;
             }
         }
-        assert(n==num_symbols);
+        assert(n==2*num_symbols);
 
     }
     firfilt_crcf_destroy(f);
@@ -224,21 +219,22 @@ int main(int argc, char*argv[])
     // print filterbank channelizer
     printf("\n");
     printf("filterbank channelizer:\n");
-    for (i=0; i<num_symbols; i++) {
+    for (i=0; i<2*num_symbols; i++) {
         printf("%2u:", i);
         for (j=0; j<num_channels; j++) {
-            printf("%6.2f+%6.2fj, ", crealf(Y0[i][j]), cimagf(Y0[i][j]));
+            printf("%6.3f+%6.3fj, ", crealf(Y0[i][j]), cimagf(Y0[i][j]));
         }
         printf("\n");
     }
 
+#if 0
     // print traditional channelizer
     printf("\n");
     printf("traditional channelizer:\n");
-    for (i=0; i<num_symbols; i++) {
+    for (i=0; i<2*num_symbols; i++) {
         printf("%2u:", i);
         for (j=0; j<num_channels; j++) {
-            printf("%6.2f+%6.2fj, ", crealf(Y1[i][j]), cimagf(Y1[i][j]));
+            printf("%6.3f+%6.3fj, ", crealf(Y1[i][j]), cimagf(Y1[i][j]));
         }
         printf("\n");
     }
@@ -250,7 +246,7 @@ int main(int argc, char*argv[])
     float complex d;
     for (i=0; i<num_channels; i++) {
         mse[i] = 0.0f;
-        for (j=0; j<num_symbols; j++) {
+        for (j=0; j<2*num_symbols; j++) {
             d = Y0[j][i] - Y1[j][i];
             mse[i] += crealf(d*conjf(d));
         }
@@ -262,6 +258,7 @@ int main(int argc, char*argv[])
     for (i=0; i<num_channels; i++)
         printf("%12.4e    ", sqrt(mse[i]));
     printf("\n");
+#endif
 
     printf("done.\n");
     return 0;
