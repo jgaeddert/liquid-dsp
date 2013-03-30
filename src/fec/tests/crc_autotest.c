@@ -1,6 +1,5 @@
 /*
- * Copyright (c) 2007, 2009 Joseph Gaeddert
- * Copyright (c) 2007, 2009 Virginia Polytechnic Institute & State University
+ * Copyright (c) 2007, 2008, 2009, 2010, 2011, 2012, 2013 Joseph Gaeddert
  *
  * This file is part of liquid.
  *
@@ -23,8 +22,6 @@
 #include "autotest/autotest.h"
 #include "liquid.h"
 
-#include "liquid.internal.h" // reverse_byte, etc.
-
 //
 // AUTOTEST: reverse byte
 //
@@ -37,7 +34,7 @@ void autotest_reverse_byte()
     unsigned char r = 0x46;
 
     // 
-    CONTEND_EQUALITY(reverse_byte(b),r);
+    CONTEND_EQUALITY(liquid_reverse_byte(b),r);
 }
 
 //
@@ -52,7 +49,7 @@ void autotest_reverse_uint16()
     unsigned int r = 0x9AEF;
 
     // 
-    CONTEND_EQUALITY(reverse_uint16(b),r);
+    CONTEND_EQUALITY(liquid_reverse_uint16(b),r);
 }
 
 
@@ -69,7 +66,7 @@ void autotest_reverse_uint32()
     unsigned int r = 0x0FDC9B46;
 
     // 
-    CONTEND_EQUALITY(reverse_uint32(b),r);
+    CONTEND_EQUALITY(liquid_reverse_uint32(b),r);
 }
 
 // 

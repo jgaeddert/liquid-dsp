@@ -274,6 +274,11 @@ This directory contains all the examples for interfacing the liquid modules.
     SEE ALSO: `nco_pll_example.c`
               `nco_pll_modem_example.c`
 
+ * `iirfilt_cccf_example.c`:
+    Complex infinite impulse response filter example. Demonstrates the
+    functionality of iirfilt with complex coefficients by designing a
+    filter with specified parameters and then filters noise.
+
  * `iirfilt_crcf_example.c`:
     Complex infinite impulse response filter example. Demonstrates the
     functionality of iirfilt by designing a low-order prototype (e.g.

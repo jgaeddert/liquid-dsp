@@ -1,6 +1,5 @@
 /*
- * Copyright (c) 2007, 2009, 2011 Joseph Gaeddert
- * Copyright (c) 2007, 2009, 2011 Virginia Polytechnic Institute & State University
+ * Copyright (c) 2007, 2009, 2011, 2013 Joseph Gaeddert
  *
  * This file is part of liquid.
  *
@@ -22,53 +21,35 @@
 #include "liquid.h"
 
 // Helper function to keep code base small
-void iirfilt_crcf_bench(struct rusage *_start,
-                        struct rusage *_finish,
-                        unsigned long int *_num_iterations,
-                        unsigned int _n,
-                        unsigned int _type)
+void iirfilt_crcf_bench(struct rusage *     _start,
+                        struct rusage *     _finish,
+                        unsigned long int * _num_iterations,
+                        unsigned int        _order,
+                        unsigned int        _format)
 {
     unsigned int i;
 
     // scale number of iterations (trials)
-    if (_type == 0) {
-        // cycles/trial ~ 128 + 15.3*_n
+    if (_format == LIQUID_IIRDES_TF) {
+        // cycles/trial ~ 128 + 15.3*_order;
         *_num_iterations *= 1000;
-        *_num_iterations /= (unsigned int)(128 + 15.3*_n);
+        *_num_iterations /= (unsigned int)(128 + 15.3*_order);
     } else {
-        // cycles/trial ~ 93 + 53.3*_n
+        // cycles/trial ~ 93 + 53.3*_order
         *_num_iterations *= 800;
-        *_num_iterations /= (unsigned int)(93 + 53.3*_n);
+        *_num_iterations /= (unsigned int)(93 + 53.3*_order);
     }
 
-    // create filter object
-    iirfilt_crcf q;
-    if (_type == 0) {
-        // normal transfer function
-        float b[_n], a[_n];
-        for (i=0; i<_n; i++) {
-            b[i] = 1.0f;
-            a[i] = i==0 ? 1.0f : 0.0f;
-        }
-        q = iirfilt_crcf_create(b,_n,a,_n);
-    } else {
-        // second-order sections
-        unsigned int r = _n % 2;
-        unsigned int L = (_n-r)/2;
-        float B[3*(L+r)];
-        float A[3*(L+r)];
-        for (i=0; i<L+r; i++) {
-            B[3*i+0] = 1.0f;
-            B[3*i+1] = 1.0f;
-            B[3*i+2] = 1.0f;
-
-            A[3*i+0] = 1.0f;
-            A[3*i+1] = 0.0f;
-            A[3*i+2] = 0.0f;
-        }
-
-        q = iirfilt_crcf_create_sos(B,A,L+r);
-    }
+    // create filter object from prototype
+    float fc    =  0.2f;    // filter cut-off frequency
+    float f0    =  0.0f;    // filter center frequency (band-pass, band-stop)
+    float Ap    =  0.1f;    // filter pass-band ripple
+    float As    = 60.0f;    // filter stop-band attenuation
+    iirfilt_crcf q = iirfilt_crcf_create_prototype(LIQUID_IIRDES_BUTTER,
+                                                   LIQUID_IIRDES_LOWPASS,
+                                                   _format,
+                                                   _order,
+                                                   fc, f0, Ap, As);
 
     // initialize input/output
     float complex x[4];
@@ -87,8 +68,8 @@ void iirfilt_crcf_bench(struct rusage *_start,
     getrusage(RUSAGE_SELF, _finish);
     *_num_iterations *= 4;
 
+    // destroy filter object
     iirfilt_crcf_destroy(q);
-
 }
 
 #define IIRFILT_CRCF_BENCHMARK_API(N,T)     \
@@ -97,15 +78,17 @@ void iirfilt_crcf_bench(struct rusage *_start,
     unsigned long int *_num_iterations)     \
 { iirfilt_crcf_bench(_start, _finish, _num_iterations, N, T); }
 
-void benchmark_iirfilt_crcf_4        IIRFILT_CRCF_BENCHMARK_API(4,    0)
-void benchmark_iirfilt_crcf_8        IIRFILT_CRCF_BENCHMARK_API(8,    0)
-void benchmark_iirfilt_crcf_16       IIRFILT_CRCF_BENCHMARK_API(16,   0)
-void benchmark_iirfilt_crcf_32       IIRFILT_CRCF_BENCHMARK_API(32,   0)
-void benchmark_iirfilt_crcf_64       IIRFILT_CRCF_BENCHMARK_API(64,   0)
+// benchmark regular transfer function form
+void benchmark_iirfilt_crcf_4        IIRFILT_CRCF_BENCHMARK_API(4,    LIQUID_IIRDES_TF)
+void benchmark_iirfilt_crcf_8        IIRFILT_CRCF_BENCHMARK_API(8,    LIQUID_IIRDES_TF)
+void benchmark_iirfilt_crcf_16       IIRFILT_CRCF_BENCHMARK_API(16,   LIQUID_IIRDES_TF)
+void benchmark_iirfilt_crcf_32       IIRFILT_CRCF_BENCHMARK_API(32,   LIQUID_IIRDES_TF)
+void benchmark_iirfilt_crcf_64       IIRFILT_CRCF_BENCHMARK_API(64,   LIQUID_IIRDES_TF)
 
-void benchmark_iirfilt_crcf_sos_4    IIRFILT_CRCF_BENCHMARK_API(4,    1)
-void benchmark_iirfilt_crcf_sos_8    IIRFILT_CRCF_BENCHMARK_API(8,    1)
-void benchmark_iirfilt_crcf_sos_16   IIRFILT_CRCF_BENCHMARK_API(16,   1)
-void benchmark_iirfilt_crcf_sos_32   IIRFILT_CRCF_BENCHMARK_API(32,   1)
-void benchmark_iirfilt_crcf_sos_64   IIRFILT_CRCF_BENCHMARK_API(64,   1)
+// benchmark second-order sections form
+void benchmark_iirfilt_crcf_sos_4    IIRFILT_CRCF_BENCHMARK_API(4,    LIQUID_IIRDES_SOS)
+void benchmark_iirfilt_crcf_sos_8    IIRFILT_CRCF_BENCHMARK_API(8,    LIQUID_IIRDES_SOS)
+void benchmark_iirfilt_crcf_sos_16   IIRFILT_CRCF_BENCHMARK_API(16,   LIQUID_IIRDES_SOS)
+void benchmark_iirfilt_crcf_sos_32   IIRFILT_CRCF_BENCHMARK_API(32,   LIQUID_IIRDES_SOS)
+void benchmark_iirfilt_crcf_sos_64   IIRFILT_CRCF_BENCHMARK_API(64,   LIQUID_IIRDES_SOS)
 

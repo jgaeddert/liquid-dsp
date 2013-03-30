@@ -257,24 +257,11 @@ fec_objects :=							\
 	src/fec/src/fec_secded7264.o				\
 	src/fec/src/interleaver.o				\
 	src/fec/src/packetizer.o				\
-	src/fec/gentab/reverse_byte.o				\
 	src/fec/src/sumproduct.o				\
 
 
 # list explicit targets and dependencies here
 $(fec_objects) : %.o : %.c $(headers)
-
-# auto-generated tables
-src/fec/gentab/reverse_byte_gentab : % : %.c
-
-src/fec/gentab/reverse_byte.c : src/fec/gentab/reverse_byte_gentab
-	./$< > $@
-
-# add auto-generated files to extra_clean list
-extra_clean +=							\
-	src/fec/gentab/reverse_byte_gentab			\
-	src/fec/gentab/reverse_byte.c				\
-	src/fec/gentab/reverse_byte.o				\
 
 # autotests
 fec_autotests :=						\
@@ -978,26 +965,12 @@ sequence_benchmarks :=						\
 
 utility_objects :=						\
 	src/utility/src/bshift_array.o				\
-	src/utility/src/count_bits.o				\
+	src/utility/src/byte_utilities.o			\
 	src/utility/src/msb_index.o				\
 	src/utility/src/pack_bytes.o				\
 	src/utility/src/shift_array.o				\
-	src/utility/gentab/count_ones.o				\
 
 $(utility_objects) : %.o : %.c $(headers)
-
-# auto-generated tables
-src/utility/gentab/count_ones_gentab : % : %.c
-
-src/utility/gentab/count_ones.c : src/utility/gentab/count_ones_gentab
-	./$< > $@
-
-# add auto-generated files to extra_clean list
-extra_clean +=							\
-	src/utility/gentab/count_ones_gentab			\
-	src/utility/gentab/count_ones.c				\
-	src/utility/gentab/count_ones.o				\
-
 
 # autotests
 utility_autotests :=						\
@@ -1367,6 +1340,7 @@ example_programs :=						\
 	examples/iirdes_example					\
 	examples/iirdes_analog_example				\
 	examples/iirdes_pll_example				\
+	examples/iirfilt_cccf_example				\
 	examples/iirfilt_crcf_example				\
 	examples/interp_crcf_example				\
 	examples/kbd_window_example				\
@@ -1441,6 +1415,7 @@ clean-examples:
 sandbox_programs =						\
 	sandbox/bpresync_test					\
 	sandbox/cpmodem_test					\
+	sandbox/count_ones_gentab				\
 	sandbox/crc_gentab					\
 	sandbox/ellip_func_test					\
 	sandbox/ellip_test					\
@@ -1515,6 +1490,7 @@ sandbox_programs =						\
 	sandbox/quasinewton_test				\
 	sandbox/resamp2_crcf_filterbank_test			\
 	sandbox/resamp2_crcf_interp_recreate_test		\
+	sandbox/reverse_byte_gentab				\
 	sandbox/rkaiser2_test					\
 	sandbox/simplex_test					\
 	sandbox/symsync_crcf_test				\

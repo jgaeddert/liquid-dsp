@@ -1,6 +1,5 @@
 /*
- * Copyright (c) 2007, 2009, 2011 Joseph Gaeddert
- * Copyright (c) 2007, 2009, 2011 Virginia Polytechnic Institute & State University
+ * Copyright (c) 2007, 2008, 2009, 2010, 2011, 2012, 2013 Joseph Gaeddert
  *
  * This file is part of liquid.
  *
@@ -126,49 +125,6 @@ unsigned int crc_generate_key(crc_scheme _scheme,
     return 0;
 }
 
-// 
-// byte reversal
-//
-
-// slow implementation of byte reversal
-unsigned char reverse_byte(unsigned char _x)
-{
-    unsigned char y = 0x00;
-    unsigned int i;
-    for (i=0; i<8; i++) {
-        y <<= 1;
-        y |= _x & 1;
-        _x >>= 1;
-    }
-    return y;
-}
-
-// reverse integer with 16 bits of data
-unsigned int reverse_uint16(unsigned int _x)
-{
-    return (liquid_reverse_byte[(_x     ) & 0xff] << 8) |
-           (liquid_reverse_byte[(_x >> 8) & 0xff]     );
-}
-
-// reverse integer with 24 bits of data
-unsigned int reverse_uint24(unsigned int _x)
-{
-    return (liquid_reverse_byte[(_x      ) & 0xff] << 16) |
-           (liquid_reverse_byte[(_x >>  8) & 0xff] <<  8) |
-           (liquid_reverse_byte[(_x >> 16) & 0xff]      );
-}
-
-// reverse integer with 32 bits of data
-unsigned int reverse_uint32(unsigned int _x)
-{
-    return (liquid_reverse_byte[(_x      ) & 0xff] << 24) |
-           (liquid_reverse_byte[(_x >>  8) & 0xff] << 16) |
-           (liquid_reverse_byte[(_x >> 16) & 0xff] <<  8) |
-           (liquid_reverse_byte[(_x >> 24) & 0xff]      );
-}
-
-
-
 
 // validate message using error-detection key
 //
@@ -231,7 +187,7 @@ unsigned int crc8_generate_key(unsigned char *_msg,
                                unsigned int _n)
 {
     unsigned int i, j, b, mask, key8=~0;
-    unsigned int poly = liquid_reverse_byte[CRC8_POLY];
+    unsigned int poly = liquid_reverse_byte_gentab[CRC8_POLY];
     for (i=0; i<_n; i++) {
         b = _msg[i];
         key8 ^= b;
@@ -259,7 +215,7 @@ unsigned int crc16_generate_key(unsigned char *_msg,
                                 unsigned int _n)
 {
     unsigned int i, j, b, mask, key16=~0;
-    unsigned int poly = reverse_uint16(CRC16_POLY);
+    unsigned int poly = liquid_reverse_uint16(CRC16_POLY);
     for (i=0; i<_n; i++) {
         b = _msg[i];
         key16 ^= b;
@@ -287,7 +243,7 @@ unsigned int crc24_generate_key(unsigned char *_msg,
                                 unsigned int _n)
 {
     unsigned int i, j, b, mask, key24=~0;
-    unsigned int poly = reverse_uint24(CRC24_POLY);
+    unsigned int poly = liquid_reverse_uint24(CRC24_POLY);
     for (i=0; i<_n; i++) {
         b = _msg[i];
         key24 ^= b;
@@ -315,7 +271,7 @@ unsigned int crc32_generate_key(unsigned char *_msg,
                                 unsigned int _n)
 {
     unsigned int i, j, b, mask, key32=~0;
-    unsigned int poly = reverse_uint32(CRC32_POLY);
+    unsigned int poly = liquid_reverse_uint32(CRC32_POLY);
     for (i=0; i<_n; i++) {
         b = _msg[i];
         key32 ^= b;
