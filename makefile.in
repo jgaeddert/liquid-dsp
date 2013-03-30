@@ -1299,12 +1299,13 @@ example_programs :=						\
 	examples/bpresync_example				\
 	examples/bsequence_example				\
 	examples/bufferf_example				\
+	examples/cgsolve_example				\
 	examples/chromosome_example				\
 	examples/compand_example				\
 	examples/compand_cf_example				\
 	examples/complementary_codes_example			\
 	examples/crc_example					\
-	examples/cgsolve_example				\
+	examples/cpfskmodem_example				\
 	examples/cvsd_example					\
 	examples/decim_crcf_example				\
 	examples/detector_cccf_example				\

@@ -15,13 +15,13 @@
 void usage()
 {
     printf("mskmodem_test -- minimum-shift keying modem example\n");
-    printf("options (default values in <>):\n");
+    printf("options:\n");
     printf("  h     : print help\n");
     printf("  k     : samples/symbol,         default:  8\n");
     printf("  H     : modulation index,       default:  0.5\n");
-    printf("  B     : gmsk bandwidth-time,    default:  0.35\n");
-    printf("  n     : number of data symbols, default: 10\n");
-    printf("  s     : SNR [dB] <30>\n");
+    printf("  B     : filter roll-off,        default:  0.35\n");
+    printf("  n     : number of data symbols, default: 80\n");
+    printf("  s     : SNR [dB],               default: 20\n");
     printf("  t     : filter type: [square], rcos-full, rcos-half, gmsk\n");
 }
 

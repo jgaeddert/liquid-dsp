@@ -84,6 +84,8 @@ This directory contains all the examples for interfacing the liquid modules.
     SEE ALSO: `bsequence_example.c`
               `msequence_example.c`
 
+ * `cpfskmodem_example.c`:
+
  * `crc_example.c`:
     Cyclic redundancy check (CRC) example.  This example demonstrates how a
     CRC can be used to validate data received through un-reliable means (e.g.
