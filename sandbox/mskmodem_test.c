@@ -18,7 +18,7 @@ void usage()
     printf("options (default values in <>):\n");
     printf("  h     : print help\n");
     printf("  k     : samples/symbol,         default:  8\n");
-    printf("  b     : modulation index,       default:  0.5\n");
+    printf("  H     : modulation index,       default:  0.5\n");
     printf("  B     : gmsk bandwidth-time,    default:  0.35\n");
     printf("  n     : number of data symbols, default: 10\n");
     printf("  s     : SNR [dB] <30>\n");
@@ -28,6 +28,7 @@ void usage()
 int main(int argc, char*argv[]) {
     // options
     unsigned int k=8;                   // filter samples/symbol
+    unsigned int bps=1;                 // number of bits/symbol
     float h = 0.5f;                     // modulation index (h=1/2 for MSK)
     unsigned int num_data_symbols = 20; // number of data symbols
     float SNRdB = 30.0f;                // signal-to-noise ratio [dB]
@@ -40,11 +41,12 @@ int main(int argc, char*argv[]) {
     float gmsk_bt = 0.35f;              // GMSK bandwidth-time factor
 
     int dopt;
-    while ((dopt = getopt(argc,argv,"hk:b:B:n:s:t:")) != EOF) {
+    while ((dopt = getopt(argc,argv,"hk:b:H:B:n:s:t:")) != EOF) {
         switch (dopt) {
         case 'h': usage();                         return 0;
         case 'k': k = atoi(optarg);                break;
-        case 'b': h = atof(optarg);                break;
+        case 'b': bps = atoi(optarg);              break;
+        case 'H': h = atof(optarg);                break;
         case 'B': gmsk_bt = atof(optarg);          break;
         case 'n': num_data_symbols = atoi(optarg); break;
         case 's': SNRdB = atof(optarg);            break;
@@ -72,6 +74,7 @@ int main(int argc, char*argv[]) {
     // derived values
     unsigned int num_symbols = num_data_symbols;
     unsigned int num_samples = k*num_symbols;
+    unsigned int M = 1 << bps;              // constellation size
     float nstd = powf(10.0f, -SNRdB/20.0f);
 
     // arrays
@@ -136,6 +139,7 @@ int main(int argc, char*argv[]) {
     // phase-accumulating filter (trapezoidal integrator)
     float b[2] = {0.5f,  0.5f};
     if (tx_filter_type == TXFILT_SQUARE) {
+        // square filter: rectangular integration with one sample of delay
         b[0] = 0.0f;
         b[1] = 1.0f;
     }
@@ -143,8 +147,9 @@ int main(int argc, char*argv[]) {
     iirfilt_rrrf integrator = iirfilt_rrrf_create(b,2,a,2);
     float theta = 0.0f;
     for (i=0; i<num_symbols; i++) {
-        sym_in[i] = rand() % 2;
-        interp_rrrf_execute(interp_tx, sym_in[i] ? 1.0f : -1.0f, &phi[k*i]);
+        sym_in[i] = rand() % M;
+        float v = 2.0f*sym_in[i] - (float)(M-1);    // +/-1, +/-3, ... +/-(M-1)
+        interp_rrrf_execute(interp_tx, v, &phi[k*i]);
 
         // accumulate phase
         unsigned int j;
@@ -164,12 +169,20 @@ int main(int argc, char*argv[]) {
     float bw = 0.0f;
     firfilt_crcf decim_rx = NULL;
     if (tx_filter_type == TXFILT_SQUARE) {
-        bw = 0.9f / (float)k;
+        //bw = 0.9f / (float)k;
+        bw = 0.4f;
         decim_rx = firfilt_crcf_create_kaiser(2*k*m+1, bw, 60.0f, 0.0f);
     } else {
         // use GMSK compensating filter for all partial-response filters
-        bw = 0.5f / (float)k;
-        decim_rx = firfilt_crcf_create_rnyquist(LIQUID_RNYQUIST_GMSKRX,k,m,0.3f,0);
+        // TODO: determine appropriate bandwidth for M-CPFSK for M > 2
+        if (bps > 1) {
+            bw = 1.4f / (float)k;
+            m *= 2;
+            decim_rx = firfilt_crcf_create_rnyquist(LIQUID_RNYQUIST_GMSKRX,k/2,m,0.3f,0);
+        } else {
+            bw = 0.5f / (float)k;
+            decim_rx = firfilt_crcf_create_rnyquist(LIQUID_RNYQUIST_GMSKRX,k,m,0.3f,0);
+        }
     }
     printf("bw = %f\n", bw);
 
@@ -229,6 +242,7 @@ int main(int argc, char*argv[]) {
     fprintf(fid,"num_symbols = %u;\n", num_symbols);
     fprintf(fid,"num_samples = %u;\n", num_samples);
     fprintf(fid,"nfft        = %u;\n", nfft);
+    fprintf(fid,"delay       = %u; %% receive filter delay\n", m);
 
     fprintf(fid,"x   = zeros(1,num_samples);\n");
     fprintf(fid,"y   = zeros(1,num_samples);\n");
@@ -252,12 +266,14 @@ int main(int argc, char*argv[]) {
     fprintf(fid,"subplot(3,4,1:3);\n");
     fprintf(fid,"  plot(t,real(x),'-', t(i),real(x(i)),'ob',...\n");
     fprintf(fid,"       t,imag(x),'-', t(i),imag(x(i)),'og');\n");
+    fprintf(fid,"  axis([0 num_symbols -1.2 1.2]);\n");
     fprintf(fid,"  xlabel('time');\n");
     fprintf(fid,"  ylabel('x(t)');\n");
     fprintf(fid,"  grid on;\n");
     fprintf(fid,"subplot(3,4,5:7);\n");
-    fprintf(fid,"  plot(t,real(z),'-', t(i),real(z(i)),'ob',...\n");
-    fprintf(fid,"       t,imag(z),'-', t(i),imag(z(i)),'og');\n");
+    fprintf(fid,"  plot(t-delay,real(z),'-', t(i)-delay,real(z(i)),'ob',...\n");
+    fprintf(fid,"       t-delay,imag(z),'-', t(i)-delay,imag(z(i)),'og');\n");
+    fprintf(fid,"  axis([0 num_symbols -1.2 1.2]);\n");
     fprintf(fid,"  xlabel('time');\n");
     fprintf(fid,"  ylabel('\"matched\" filter output');\n");
     fprintf(fid,"  grid on;\n");
@@ -286,7 +302,6 @@ int main(int argc, char*argv[]) {
     fprintf(fid,"  grid on;\n");
 
     fprintf(fid,"figure;\n");
-    fprintf(fid,"  delay = %u;\n", m);  // receive filter delay
     fprintf(fid,"  %% compute instantaneous received frequency\n");
     fprintf(fid,"  freq_rx = arg( conj(z(:)) .* circshift(z(:),-1) )';\n");
     fprintf(fid,"  freq_rx(1:(k*delay)) = 0;\n");
