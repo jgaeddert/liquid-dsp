@@ -2435,6 +2435,97 @@ void gmskframesync_debug_disable(gmskframesync _q);
 void gmskframesync_debug_print(gmskframesync _q, const char * _filename);
 
 
+//
+// continuous phase frequency-shift keying (CP-FSK) modems
+//
+
+// CP-FSK filter prototypes
+typedef enum {
+    LIQUID_CPFSK_SQUARE=0,      // square pulse
+    LIQUID_CPFSK_RCOS,          // raised-cosine
+    LIQUID_CPFSK_GMSK,          //
+} liquid_cpfsk_filter;
+
+// CP-FSK modulator
+typedef struct cpfskmod_s * cpfskmod;
+
+// create cpfskmod object (frequency modulator)
+//  _bps    :   bits per symbol, _bps > 0
+//  _k      :   samples/symbol, _k > 1
+//  _m      :   filter delay (symbols), _m > 0
+//  _h      :   filter bandwidth parameter, _beta > 0
+//  _h      :   modulation index, _h > 0
+//  _type   :   filter type (e.g. LIQUID_CPFSK_SQUARE)
+cpfskmod cpfskmod_create(unsigned int _bps,
+                         unsigned int _k,
+                         unsigned int _m,
+                         float        _beta,
+                         float        _h,
+                         int          _type);
+//cpfskmod cpfskmod_create_msk(unsigned int _k);
+//cpfskmod cpfskmod_create_gmsk(unsigned int _k, float _BT);
+
+// destroy cpfskmod object
+void cpfskmod_destroy(cpfskmod _q);
+
+// print cpfskmod object internals
+void cpfskmod_print(cpfskmod _q);
+
+// reset state
+void cpfskmod_reset(cpfskmod _q);
+
+// modulate sample
+//  _q      :   frequency modulator object
+//  _s      :   input symbol
+//  _y      :   output sample array [size: _k x 1]
+void cpfskmod_modulate(cpfskmod               _q,
+                       unsigned int           _s,
+                       liquid_float_complex * _y);
+
+
+
+// CP-FSK demodulator
+typedef struct cpfskdem_s * cpfskdem;
+
+// create cpfskdem object (frequency modulator)
+//  _bps    :   bits per symbol, _bps > 0
+//  _k      :   samples/symbol, _k > 1
+//  _m      :   filter delay (symbols), _m > 0
+//  _h      :   filter bandwidth parameter, _beta > 0
+//  _h      :   modulation index, _h > 0
+//  _type   :   filter type (e.g. LIQUID_CPFSK_SQUARE)
+cpfskdem cpfskdem_create(unsigned int _bps,
+                         unsigned int _k,
+                         unsigned int _m,
+                         float        _beta,
+                         float        _h,
+                         int          _type);
+//cpfskdem cpfskdem_create_msk(unsigned int _k);
+//cpfskdem cpfskdem_create_gmsk(unsigned int _k, float _BT);
+
+// destroy cpfskdem object
+void cpfskdem_destroy(cpfskdem _q);
+
+// print cpfskdem object internals
+void cpfskdem_print(cpfskdem _q);
+
+// reset state
+void cpfskdem_reset(cpfskdem _q);
+
+// demodulate array of samples
+//  _q      :   continuous-phase frequency demodulator object
+//  _y      :   input sample array [size: _n x 1]
+//  _n      :   input sample array length
+//  _s      :   output symbol array
+//  _nw     :   number of output symbols written
+void cpfskdem_demodulate(cpfskdem               _q,
+                         liquid_float_complex * _y,
+                         unsigned int           _n,
+                         unsigned int         * _s,
+                         unsigned int         * _nw);
+
+
+
 // 
 // OFDM flexframe generator
 //
