@@ -19,6 +19,7 @@ void usage()
     printf("  h     : print help\n");
     printf("  k     : samples/symbol,         default:  8\n");
     printf("  b     : modulation index,       default:  0.5\n");
+    printf("  B     : gmsk bandwidth-time,    default:  0.35\n");
     printf("  n     : number of data symbols, default: 10\n");
     printf("  s     : SNR [dB] <30>\n");
     printf("  t     : filter type: [square], rcos-full, rcos-half, gmsk\n");
@@ -36,13 +37,15 @@ int main(int argc, char*argv[]) {
         TXFILT_RCOS_HALF,
         TXFILT_GMSK,
     } tx_filter_type = TXFILT_SQUARE;
+    float gmsk_bt = 0.35f;              // GMSK bandwidth-time factor
 
     int dopt;
-    while ((dopt = getopt(argc,argv,"hk:b:n:s:t:")) != EOF) {
+    while ((dopt = getopt(argc,argv,"hk:b:B:n:s:t:")) != EOF) {
         switch (dopt) {
         case 'h': usage();                         return 0;
         case 'k': k = atoi(optarg);                break;
         case 'b': h = atof(optarg);                break;
+        case 'B': gmsk_bt = atof(optarg);          break;
         case 'n': num_data_symbols = atoi(optarg); break;
         case 's': SNRdB = atof(optarg);            break;
         case 't':
@@ -116,7 +119,7 @@ int main(int argc, char*argv[]) {
         ht = (float*) malloc(ht_len *sizeof(float));
         for (i=0; i<ht_len; i++)
             ht[i] = 0.0f;
-        liquid_firdes_gmsktx(k,3,0.35f,0.0f,&ht[k/2]);
+        liquid_firdes_gmsktx(k,3,gmsk_bt,0.0f,&ht[k/2]);
         for (i=0; i<ht_len; i++)
             ht[i] *= h * 2.0f / (float)k;
         break;
@@ -158,8 +161,16 @@ int main(int argc, char*argv[]) {
     
     // create decimator
     unsigned int m = 3;
-    float bw = 0.9f / (float)k;
-    firfilt_crcf decim_rx = firfilt_crcf_create_kaiser(2*k*m+1, bw, 60.0f, 0.0f);
+    float bw = 0.0f;
+    firfilt_crcf decim_rx = NULL;
+    if (tx_filter_type == TXFILT_SQUARE) {
+        bw = 0.9f / (float)k;
+        decim_rx = firfilt_crcf_create_kaiser(2*k*m+1, bw, 60.0f, 0.0f);
+    } else {
+        // use GMSK compensating filter for all partial-response filters
+        bw = 0.5f / (float)k;
+        decim_rx = firfilt_crcf_create_rnyquist(LIQUID_RNYQUIST_GMSKRX,k,m,0.3f,0);
+    }
     printf("bw = %f\n", bw);
 
     // run receiver
@@ -275,13 +286,25 @@ int main(int argc, char*argv[]) {
     fprintf(fid,"  grid on;\n");
 
     fprintf(fid,"figure;\n");
-    if (tx_filter_type == TXFILT_SQUARE)
-        fprintf(fid,"  theta = filter([0 1],[1 -1],phi)/(h*pi);\n");
-    else
-        fprintf(fid,"  theta = filter([0.5 0.5],[1 -1],phi)/(h*pi);\n");
-    fprintf(fid,"  plot(t,theta,'-', t(i),theta(i),'s');\n");
+    fprintf(fid,"  delay = %u;\n", m);  // receive filter delay
+    fprintf(fid,"  %% compute instantaneous received frequency\n");
+    fprintf(fid,"  freq_rx = arg( conj(z(:)) .* circshift(z(:),-1) )';\n");
+    fprintf(fid,"  freq_rx(1:(k*delay)) = 0;\n");
+    fprintf(fid,"  freq_rx(end) = 0;\n");
+    fprintf(fid,"  %% compute instantaneous tx/rx phase\n");
+    if (tx_filter_type == TXFILT_SQUARE) {
+        fprintf(fid,"  theta_tx = filter([0 1],[1 -1],phi)/(h*pi);\n");
+        fprintf(fid,"  theta_rx = filter([0 1],[1 -1],freq_rx)/(h*pi);\n");
+    } else {
+        fprintf(fid,"  theta_tx = filter([0.5 0.5],[1 -1],phi)/(h*pi);\n");
+        fprintf(fid,"  theta_rx = filter([0.5 0.5],[1 -1],freq_rx)/(h*pi);\n");
+    }
+    fprintf(fid,"  %% plot instantaneous tx/rx phase\n");
+    fprintf(fid,"  plot(t,      theta_tx,'-b', t(i),      theta_tx(i),'sb',...\n");
+    fprintf(fid,"       t-delay,theta_rx,'-r', t(i)-delay,theta_rx(i),'sr');\n");
     fprintf(fid,"  xlabel('time');\n");
     fprintf(fid,"  ylabel('instantaneous phase/(h \\pi)');\n");
+    fprintf(fid,"  legend('transmitted','syms','received/filtered','syms','location','northwest');\n");
     fprintf(fid,"  grid on;\n");
 
     fclose(fid);
