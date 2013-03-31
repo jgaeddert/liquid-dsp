@@ -27,6 +27,15 @@
 
 #include "liquid.internal.h"
 
+// 
+// internal methods
+//
+
+// scale filter to such that sum(ht) = _v
+void cpfskmod_scale_filter(float *      _ht,
+                           unsigned int _ht_len,
+                           float        _v);
+
 // cpfskmod
 struct cpfskmod_s {
     // common
@@ -37,11 +46,18 @@ struct cpfskmod_s {
     float        h;             // modulation index
     int          type;          // filter type (e.g. LIQUID_CPFSK_SQUARE)
 
-    // modulator
-    interp_rrrf  interp;        // pulse-shaping filter interpolator
-    iirfilt_rrrf integrator;    // phase integrator
-};
+    // transmit filter delay (symbols)
+    // TODO: coordinate this value with 'm'
+    unsigned int tx_delay;
 
+    // pulse-shaping filter
+    float * ht;                 // filter coefficients
+    unsigned int ht_len;        // filter length
+    interp_rrrf  interp;        // interpolator
+
+    // phase integrator
+    iirfilt_rrrf integrator;
+};
 
 // create cpfskmod object (frequency modulator)
 //  _bps    :   bits per symbol, _bps > 0
@@ -79,32 +95,53 @@ cpfskmod cpfskmod_create(unsigned int _bps,
     cpfskmod q = (cpfskmod) malloc(sizeof(struct cpfskmod_s));
 
     // set basic internal properties
-    q->bps  = _bps;
-    q->k    = _k;
-    q->m    = _m;
-    q->beta = _beta;
-    q->type = _type;
+    q->bps  = _bps;     // bits per symbol
+    q->k    = _k;       // samples per symbol
+    q->m    = _m;       // filter delay (symbols)
+    q->beta = _beta;    // filter roll-off factor (only for certain filters)
+    q->type = _type;    // filter type
 
     // create object depending upon input type
-    float b[2] = {0.5f,  0.5f};
-    float a[2] = {1.0f, -1.0f};
-    unsigned int h_len = 0;
-    float * h = NULL;
+    float b[2] = {0.5f,  0.5f}; // integrator feed-forward coefficients
+    float a[2] = {1.0f, -1.0f}; // integrator feed-back coefficients
+    q->ht_len = 0;
+    q->ht = NULL;
     unsigned int i;
     switch(q->type) {
     case LIQUID_CPFSK_SQUARE:
-    case LIQUID_CPFSK_RCOS:
-    case LIQUID_CPFSK_GMSK:
-        h_len = q->k;
-        h = (float*) malloc(h_len*sizeof(float));
-        for (i=0; i<h_len; i++)
-            h[i] = q->h * M_PI / (float)(q->k);
+        q->ht_len = q->k;
+        q->tx_delay = 1;
+        q->ht = (float*) malloc(q->ht_len *sizeof(float));
+        for (i=0; i<q->ht_len; i++)
+            q->ht[i] = 1; //q->h * M_PI / (float)(q->k);
         break;
+    case LIQUID_CPFSK_RCOS:
+        // full-response raised-cosine pulse
+        q->ht_len = q->k;
+        q->tx_delay = 1;
+        q->ht = (float*) malloc(q->ht_len *sizeof(float));
+        for (i=0; i<q->ht_len; i++)
+            //q->ht[i] = q->h * M_PI / (float)k * (1.0f - cosf(2.0f*M_PI*i/(float)q->ht_len));
+            q->ht[i] = 1.0f - cosf(2.0f*M_PI*i/(float)q->ht_len);
+        break;
+    case LIQUID_CPFSK_GMSK:
+        q->ht_len = 2*q->k*3+1+q->k;
+        q->tx_delay = 4;
+        q->ht = (float*) malloc(q->ht_len *sizeof(float));
+        for (i=0; i<q->ht_len; i++)
+            q->ht[i] = 0.0f;
+        liquid_firdes_gmsktx(q->k,3,q->beta,0.0f,&q->ht[q->k/2]);
+        //for (i=0; i<ht_len; i++)
+        //    ht[i] *= h * 2.0f / (float)k;
+        break;
+    default:
+        fprintf(stderr,"error: cpfskmodem_create(), invalid filter type '%d'\n", q->type);
+        exit(1);
     }
 
-    // create pulse-shaping filter
-    q->interp = interp_rrrf_create(q->k, h, h_len);
-    free(h);
+    // scale filter and create pulse-shaping filter
+    cpfskmod_scale_filter(q->ht, q->ht_len, M_PI*q->h);
+    q->interp = interp_rrrf_create(q->k, q->ht, q->ht_len);
 
     // create phase integrator
     q->integrator = iirfilt_rrrf_create(b,2,a,2);
@@ -119,6 +156,7 @@ cpfskmod cpfskmod_create(unsigned int _bps,
 void cpfskmod_destroy(cpfskmod _q)
 {
     // destroy pulse-shaping filter/interpolator
+    free(_q->ht);
     interp_rrrf_destroy(_q->interp);
 
     // destroy phase integrator
@@ -146,5 +184,28 @@ void cpfskmod_modulate(cpfskmod        _q,
                        unsigned int    _s,
                        float complex * _y)
 {
+}
+
+// 
+// internal methods
+//
+
+// scale filter to such that sum(ht) = _v
+void cpfskmod_scale_filter(float *      _ht,
+                           unsigned int _ht_len,
+                           float        _v)
+{
+    unsigned int i;
+    float ht_sum = 0.0f;
+    for (i=0; i<_ht_len; i++)
+        ht_sum += _ht[i];
+
+    if (ht_sum <= 0.0f) {
+        fprintf(stderr,"warning: cpfskmod_scale_filter(), filter sum is negative or zero\n");
+        return;
+    }
+
+    for (i=0; i<_ht_len; i++)
+        _ht[i] *= _v / ht_sum;
 }
 
