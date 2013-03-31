@@ -46,16 +46,16 @@ struct cpfskdem_s {
 
 // create cpfskdem object (frequency modulator)
 //  _bps    :   bits per symbol, _bps > 0
+//  _h      :   modulation index, _h > 0
 //  _k      :   samples/symbol, _k > 1
 //  _m      :   filter delay (symbols), _m > 0
-//  _h      :   filter bandwidth parameter, _beta > 0
-//  _h      :   modulation index, _h > 0
+//  _beta   :   filter bandwidth parameter, _beta > 0
 //  _type   :   filter type (e.g. LIQUID_CPFSK_SQUARE)
 cpfskdem cpfskdem_create(unsigned int _bps,
+                         float        _h,
                          unsigned int _k,
                          unsigned int _m,
                          float        _beta,
-                         float        _h,
                          int          _type)
 {
     // validate input

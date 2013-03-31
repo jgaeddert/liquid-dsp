@@ -2451,16 +2451,16 @@ typedef struct cpfskmod_s * cpfskmod;
 
 // create cpfskmod object (frequency modulator)
 //  _bps    :   bits per symbol, _bps > 0
+//  _h      :   modulation index, _h > 0
 //  _k      :   samples/symbol, _k > 1
 //  _m      :   filter delay (symbols), _m > 0
-//  _h      :   filter bandwidth parameter, _beta > 0
-//  _h      :   modulation index, _h > 0
+//  _beta   :   filter bandwidth parameter, _beta > 0
 //  _type   :   filter type (e.g. LIQUID_CPFSK_SQUARE)
 cpfskmod cpfskmod_create(unsigned int _bps,
+                         float        _h,
                          unsigned int _k,
                          unsigned int _m,
                          float        _beta,
-                         float        _h,
                          int          _type);
 //cpfskmod cpfskmod_create_msk(unsigned int _k);
 //cpfskmod cpfskmod_create_gmsk(unsigned int _k, float _BT);
@@ -2489,16 +2489,16 @@ typedef struct cpfskdem_s * cpfskdem;
 
 // create cpfskdem object (frequency modulator)
 //  _bps    :   bits per symbol, _bps > 0
+//  _h      :   modulation index, _h > 0
 //  _k      :   samples/symbol, _k > 1
 //  _m      :   filter delay (symbols), _m > 0
-//  _h      :   filter bandwidth parameter, _beta > 0
-//  _h      :   modulation index, _h > 0
+//  _beta   :   filter bandwidth parameter, _beta > 0
 //  _type   :   filter type (e.g. LIQUID_CPFSK_SQUARE)
 cpfskdem cpfskdem_create(unsigned int _bps,
+                         float        _h,
                          unsigned int _k,
                          unsigned int _m,
                          float        _beta,
-                         float        _h,
                          int          _type);
 //cpfskdem cpfskdem_create_msk(unsigned int _k);
 //cpfskdem cpfskdem_create_gmsk(unsigned int _k, float _BT);

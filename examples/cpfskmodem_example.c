@@ -21,40 +21,43 @@ void usage()
     printf("cpfskmodem_example -- continuous-phase frequency-shift keying example\n");
     printf("options:\n");
     printf("  h     : print help\n");
-    printf("  k     : samples/symbol,         default:  8\n");
+    printf("  p     : bits/symbol,            default:  1\n");
     printf("  H     : modulation index,       default:  0.5\n");
-    printf("  B     : filter roll-off,        default:  0.35\n");
+    printf("  k     : samples/symbol,         default:  8\n");
+    printf("  m     : filter delay (symbols), default:  3\n");
+    printf("  b     : filter roll-off,        default:  0.35\n");
     printf("  n     : number of data symbols, default: 80\n");
     printf("  s     : SNR [dB],               default: 20\n");
-    printf("  t     : filter type: [square], rcos-full, rcos-half, gmsk\n");
+    printf("  t     : filter type: [square], rcos, gmsk\n");
 }
 
 int main(int argc, char*argv[])
 {
     // options
     unsigned int bps= 1;            // number of bits/symbol
+    float h         = 0.5f;         // modulation index (h=1/2 for MSK)
     unsigned int k  = 8;            // filter samples/symbol
     unsigned int m  = 3;            // filter delay (symbols)
     float beta      = 0.35f;        // GMSK bandwidth-time factor
-    float h         = 0.5f;         // modulation index (h=1/2 for MSK)
     unsigned int num_symbols = 20;  // number of data symbols
     float SNRdB     = 20.0f;        // signal-to-noise ratio [dB]
     int filter_type = LIQUID_CPFSK_SQUARE;
 
     int dopt;
-    while ((dopt = getopt(argc,argv,"hk:b:H:B:n:s:t:")) != EOF) {
+    while ((dopt = getopt(argc,argv,"hp:H:k:m:b:n:s:t:")) != EOF) {
         switch (dopt) {
         case 'h': usage();                      return 0;
-        case 'k': k     = atoi(optarg);         break;
-        case 'b': bps   = atoi(optarg);         break;
+        case 'p': bps   = atoi(optarg);         break;
         case 'H': h     = atof(optarg);         break;
-        case 'B': beta  = atof(optarg);         break;
+        case 'k': k     = atoi(optarg);         break;
+        case 'm': m     = atoi(optarg);         break;
+        case 'b': beta  = atof(optarg);         break;
         case 'n': num_symbols = atoi(optarg);   break;
         case 's': SNRdB = atof(optarg);         break;
         case 't':
             if (strcmp(optarg,"square")==0) {
                 filter_type = LIQUID_CPFSK_SQUARE;
-            } else if (strcmp(optarg,"rcos-full")==0) {
+            } else if (strcmp(optarg,"rcos")==0) {
                 filter_type = LIQUID_CPFSK_RCOS;
             } else if (strcmp(optarg,"gmsk")==0) {
                 filter_type = LIQUID_CPFSK_GMSK;
@@ -82,8 +85,11 @@ int main(int argc, char*argv[])
     unsigned int sym_out[num_symbols];      // output symbols
 
     // create modem objects
-    cpfskmod mod = cpfskmod_create(bps, k, m, beta, h, filter_type);
-    cpfskdem dem = cpfskdem_create(bps, k, m, beta, h, filter_type);
+    cpfskmod mod = cpfskmod_create(bps, h, k, m, beta, filter_type);
+    cpfskdem dem = cpfskdem_create(bps, h, k, m, beta, filter_type);
+
+    // print modulator
+    cpfskmod_print(mod);
 
     // generate message signal
     for (i=0; i<num_symbols; i++)

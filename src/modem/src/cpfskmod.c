@@ -31,10 +31,13 @@
 // internal methods
 //
 
-// scale filter to such that sum(ht) = _v
-void cpfskmod_scale_filter(float *      _ht,
-                           unsigned int _ht_len,
-                           float        _v);
+// design transmit filter
+void cpfskmod_firdes(unsigned int _k,
+                     unsigned int _m,
+                     float        _beta,
+                     int          _type,
+                     float *      _h,
+                     unsigned int _h_len);
 
 // cpfskmod
 struct cpfskmod_s {
@@ -61,16 +64,16 @@ struct cpfskmod_s {
 
 // create cpfskmod object (frequency modulator)
 //  _bps    :   bits per symbol, _bps > 0
+//  _h      :   modulation index, _h > 0
 //  _k      :   samples/symbol, _k > 1
 //  _m      :   filter delay (symbols), _m > 0
-//  _h      :   filter bandwidth parameter, _beta > 0
-//  _h      :   modulation index, _h > 0
+//  _beta   :   filter bandwidth parameter, _beta > 0
 //  _type   :   filter type (e.g. LIQUID_CPFSK_SQUARE)
 cpfskmod cpfskmod_create(unsigned int _bps,
+                         float        _h,
                          unsigned int _k,
                          unsigned int _m,
                          float        _beta,
-                         float        _h,
                          int          _type)
 {
     // validate input
@@ -96,6 +99,7 @@ cpfskmod cpfskmod_create(unsigned int _bps,
 
     // set basic internal properties
     q->bps  = _bps;     // bits per symbol
+    q->h    = _h;       // modulation index
     q->k    = _k;       // samples per symbol
     q->m    = _m;       // filter delay (symbols)
     q->beta = _beta;    // filter roll-off factor (only for certain filters)
@@ -110,37 +114,26 @@ cpfskmod cpfskmod_create(unsigned int _bps,
     switch(q->type) {
     case LIQUID_CPFSK_SQUARE:
         q->ht_len = q->k;
-        q->tx_delay = 1;
-        q->ht = (float*) malloc(q->ht_len *sizeof(float));
-        for (i=0; i<q->ht_len; i++)
-            q->ht[i] = 1; //q->h * M_PI / (float)(q->k);
+        // modify integrator
+        b[0] = 0.0f;
+        b[1] = 1.0f;
         break;
     case LIQUID_CPFSK_RCOS:
-        // full-response raised-cosine pulse
         q->ht_len = q->k;
-        q->tx_delay = 1;
-        q->ht = (float*) malloc(q->ht_len *sizeof(float));
-        for (i=0; i<q->ht_len; i++)
-            //q->ht[i] = q->h * M_PI / (float)k * (1.0f - cosf(2.0f*M_PI*i/(float)q->ht_len));
-            q->ht[i] = 1.0f - cosf(2.0f*M_PI*i/(float)q->ht_len);
         break;
     case LIQUID_CPFSK_GMSK:
-        q->ht_len = 2*q->k*3+1+q->k;
-        q->tx_delay = 4;
-        q->ht = (float*) malloc(q->ht_len *sizeof(float));
-        for (i=0; i<q->ht_len; i++)
-            q->ht[i] = 0.0f;
-        liquid_firdes_gmsktx(q->k,3,q->beta,0.0f,&q->ht[q->k/2]);
-        //for (i=0; i<ht_len; i++)
-        //    ht[i] *= h * 2.0f / (float)k;
+        q->ht_len = 2*(q->k)*(q->m)+1;
         break;
     default:
         fprintf(stderr,"error: cpfskmodem_create(), invalid filter type '%d'\n", q->type);
         exit(1);
     }
 
-    // scale filter and create pulse-shaping filter
-    cpfskmod_scale_filter(q->ht, q->ht_len, M_PI*q->h);
+    // create pulse-shaping filter and scale by modulation index
+    q->ht = (float*) malloc(q->ht_len *sizeof(float));
+    cpfskmod_firdes(q->k, q->m, q->beta, q->type, q->ht, q->ht_len);
+    for (i=0; i<q->ht_len; i++)
+        q->ht[i] *= M_PI * q->h;
     q->interp = interp_rrrf_create(q->k, q->ht, q->ht_len);
 
     // create phase integrator
@@ -169,6 +162,24 @@ void cpfskmod_destroy(cpfskmod _q)
 // print cpfskmod object internals
 void cpfskmod_print(cpfskmod _q)
 {
+    printf("cpfskmod : continuous-phase frequency-shift keying modem\n");
+    printf("    bits/symbol     :   %u\n", _q->bps);
+    printf("    modulation index:   %-6.3f\n", _q->h);
+    printf("    samples/symbol  :   %u\n", _q->k);
+    printf("    filter delay    :   %u symbols\n", _q->m);
+    printf("    filter roll-off :   %-6.3f\n", _q->beta);
+    printf("    filter type     :   ");
+    switch(_q->type) {
+    case LIQUID_CPFSK_SQUARE: printf("square\n");  break;
+    case LIQUID_CPFSK_RCOS:   printf("rcos\n");    break;
+    case LIQUID_CPFSK_GMSK:   printf("gmsk\n");    break;
+    default:                  printf("unknown\n"); break;
+    }
+    printf("    filter          :\n");
+    // print filter coefficients
+    unsigned int i;
+    for (i=0; i<_q->ht_len; i++)
+        printf("        h(%3u) = %12.8f;\n", i+1, _q->ht[i]);
 }
 
 // reset state
@@ -190,22 +201,56 @@ void cpfskmod_modulate(cpfskmod        _q,
 // internal methods
 //
 
-// scale filter to such that sum(ht) = _v
-void cpfskmod_scale_filter(float *      _ht,
-                           unsigned int _ht_len,
-                           float        _v)
+// design transmit filter
+void cpfskmod_firdes(unsigned int _k,
+                     unsigned int _m,
+                     float        _beta,
+                     int          _type,
+                     float *      _ht,
+                     unsigned int _ht_len)
 {
     unsigned int i;
+    // create filter based on specified type
+    switch(_type) {
+    case LIQUID_CPFSK_SQUARE:
+        // square pulse shaping
+        if (_ht_len != _k) {
+            fprintf(stderr,"error: cpfskmodem_firdes(), invalid filter length (square)\n");
+            exit(1);
+        }
+        for (i=0; i<_ht_len; i++)
+            _ht[i] = 1.0f;
+        break;
+    case LIQUID_CPFSK_RCOS:
+        // full-response raised-cosine pulse
+        if (_ht_len != _k) {
+            fprintf(stderr,"error: cpfskmodem_firdes(), invalid filter length (rcos)\n");
+            exit(1);
+        }
+        for (i=0; i<_ht_len; i++)
+            _ht[i] = 1.0f - cosf(2.0f*M_PI*i/(float)_ht_len);
+        break;
+    case LIQUID_CPFSK_GMSK:
+        if (_ht_len != 2*_k*_m+1) {
+            fprintf(stderr,"error: cpfskmodem_firdes(), invalid filter length (gmsk)\n");
+            exit(1);
+        }
+        liquid_firdes_gmsktx(_k,_m,_beta,0.0f,_ht);
+        // TODO: shift filter to the left by half a symbol...
+        break;
+    default:
+        fprintf(stderr,"error: cpfskmodem_firdes(), invalid filter type '%d'\n", _type);
+        exit(1);
+    }
+
+    // TODO: shift certain filters to the left... ?
+
+    // normalize pulse area to unity
     float ht_sum = 0.0f;
     for (i=0; i<_ht_len; i++)
         ht_sum += _ht[i];
 
-    if (ht_sum <= 0.0f) {
-        fprintf(stderr,"warning: cpfskmod_scale_filter(), filter sum is negative or zero\n");
-        return;
-    }
-
     for (i=0; i<_ht_len; i++)
-        _ht[i] *= _v / ht_sum;
+        _ht[i] *= 1.0f / ht_sum;
 }
 
