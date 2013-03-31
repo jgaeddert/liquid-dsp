@@ -31,7 +31,7 @@ int main(int argc, char*argv[]) {
     unsigned int bps=1;                 // number of bits/symbol
     float h = 0.5f;                     // modulation index (h=1/2 for MSK)
     unsigned int num_data_symbols = 20; // number of data symbols
-    float SNRdB = 30.0f;                // signal-to-noise ratio [dB]
+    float SNRdB = 90.0f;                // signal-to-noise ratio [dB]
     enum {
         TXFILT_SQUARE=0,
         TXFILT_RCOS_FULL,
@@ -133,7 +133,6 @@ int main(int argc, char*argv[]) {
     for (i=0; i<ht_len; i++)
         printf("ht(%3u) = %12.8f;\n", i+1, ht[i]);
     interp_rrrf interp_tx = interp_rrrf_create(k, ht, ht_len);
-    free(ht);
 
     // generate symbols and interpolate
     // phase-accumulating filter (trapezoidal integrator)
@@ -242,7 +241,7 @@ int main(int argc, char*argv[]) {
     fprintf(fid,"num_symbols = %u;\n", num_symbols);
     fprintf(fid,"num_samples = %u;\n", num_samples);
     fprintf(fid,"nfft        = %u;\n", nfft);
-    fprintf(fid,"delay       = %u; %% receive filter delay\n", m);
+    fprintf(fid,"delay       = %u; %% receive filter delay\n", tx_delay);
 
     fprintf(fid,"x   = zeros(1,num_samples);\n");
     fprintf(fid,"y   = zeros(1,num_samples);\n");
@@ -264,29 +263,29 @@ int main(int argc, char*argv[]) {
     fprintf(fid,"i = 1:k:num_samples;\n");
     fprintf(fid,"figure;\n");
     fprintf(fid,"subplot(3,4,1:3);\n");
-    fprintf(fid,"  plot(t,real(x),'-', t(i),real(x(i)),'ob',...\n");
-    fprintf(fid,"       t,imag(x),'-', t(i),imag(x(i)),'og');\n");
+    fprintf(fid,"  plot(t,real(x),'-', t(i),real(x(i)),'bs','MarkerSize',4,...\n");
+    fprintf(fid,"       t,imag(x),'-', t(i),imag(x(i)),'gs','MarkerSize',4);\n");
     fprintf(fid,"  axis([0 num_symbols -1.2 1.2]);\n");
     fprintf(fid,"  xlabel('time');\n");
     fprintf(fid,"  ylabel('x(t)');\n");
     fprintf(fid,"  grid on;\n");
     fprintf(fid,"subplot(3,4,5:7);\n");
-    fprintf(fid,"  plot(t-delay,real(z),'-', t(i)-delay,real(z(i)),'ob',...\n");
-    fprintf(fid,"       t-delay,imag(z),'-', t(i)-delay,imag(z(i)),'og');\n");
+    fprintf(fid,"  plot(t-delay,real(z),'-', t(i)-delay,real(z(i)),'bs','MarkerSize',4,...\n");
+    fprintf(fid,"       t-delay,imag(z),'-', t(i)-delay,imag(z(i)),'gs','MarkerSize',4);\n");
     fprintf(fid,"  axis([0 num_symbols -1.2 1.2]);\n");
     fprintf(fid,"  xlabel('time');\n");
     fprintf(fid,"  ylabel('\"matched\" filter output');\n");
     fprintf(fid,"  grid on;\n");
     // plot I/Q constellations
     fprintf(fid,"subplot(3,4,4);\n");
-    fprintf(fid,"  plot(real(y),imag(y),'-',real(y(i)),imag(y(i)),'rs','MarkerSize',4);\n");
+    fprintf(fid,"  plot(real(y),imag(y),'-',real(y(i)),imag(y(i)),'rs','MarkerSize',3);\n");
     fprintf(fid,"  xlabel('I');\n");
     fprintf(fid,"  ylabel('Q');\n");
     fprintf(fid,"  axis([-1 1 -1 1]*1.2);\n");
     fprintf(fid,"  axis square;\n");
     fprintf(fid,"  grid on;\n");
     fprintf(fid,"subplot(3,4,8);\n");
-    fprintf(fid,"  plot(real(z),imag(z),'-',real(z(i)),imag(z(i)),'rs','MarkerSize',4);\n");
+    fprintf(fid,"  plot(real(z),imag(z),'-',real(z(i)),imag(z(i)),'rs','MarkerSize',3);\n");
     fprintf(fid,"  xlabel('I');\n");
     fprintf(fid,"  ylabel('Q');\n");
     fprintf(fid,"  axis([-1 1 -1 1]*1.2);\n");
@@ -301,6 +300,7 @@ int main(int argc, char*argv[]) {
     fprintf(fid,"  ylabel('PSD [dB]');\n");
     fprintf(fid,"  grid on;\n");
 
+#if 0
     fprintf(fid,"figure;\n");
     fprintf(fid,"  %% compute instantaneous received frequency\n");
     fprintf(fid,"  freq_rx = arg( conj(z(:)) .* circshift(z(:),-1) )';\n");
@@ -321,9 +321,29 @@ int main(int argc, char*argv[]) {
     fprintf(fid,"  ylabel('instantaneous phase/(h \\pi)');\n");
     fprintf(fid,"  legend('transmitted','syms','received/filtered','syms','location','northwest');\n");
     fprintf(fid,"  grid on;\n");
+#else
+    // plot filter response
+    fprintf(fid,"ht_len = %u;\n", ht_len);
+    fprintf(fid,"ht     = zeros(1,ht_len);\n");
+    for (i=0; i<ht_len; i++)
+        fprintf(fid,"ht(%4u) = %12.8f;\n", i+1, ht[i]);
+    fprintf(fid,"gt1 = filter([0.5 0.5],[1 -1],ht) / (pi*h);\n");
+    fprintf(fid,"gt2 = filter([0.0 1.0],[1 -1],ht) / (pi*h);\n");
+    fprintf(fid,"tfilt = [0:(ht_len-1)]/k - delay + 0.5;\n");
+    fprintf(fid,"figure;\n");
+    fprintf(fid,"plot(tfilt,ht, '-x','MarkerSize',4,...\n");
+    fprintf(fid,"     tfilt,gt1,'-x','MarkerSize',4,...\n");
+    fprintf(fid,"     tfilt,gt2,'-x','MarkerSize',4);\n");
+    fprintf(fid,"axis([tfilt(1) tfilt(end) -0.1 1.1]);\n");
+    fprintf(fid,"legend('pulse','trap. int.','rect. int.','location','northwest');\n");
+    fprintf(fid,"grid on;\n");
+#endif
 
     fclose(fid);
     printf("results written to '%s'\n", OUTPUT_FILENAME);
+    
+    // free allocated filter memory
+    free(ht);
 
     return 0;
 }
