@@ -2442,8 +2442,9 @@ void gmskframesync_debug_print(gmskframesync _q, const char * _filename);
 // CP-FSK filter prototypes
 typedef enum {
     LIQUID_CPFSK_SQUARE=0,      // square pulse
-    LIQUID_CPFSK_RCOS,          // raised-cosine
-    LIQUID_CPFSK_GMSK,          //
+    LIQUID_CPFSK_RCOS_FULL,     // raised-cosine (full response)
+    LIQUID_CPFSK_RCOS_PARTIAL,  // raised-cosine (partial response)
+    LIQUID_CPFSK_GMSK,          // Gauss minimum-shift keying pulse
 } liquid_cpfsk_filter;
 
 // CP-FSK modulator
@@ -2452,7 +2453,7 @@ typedef struct cpfskmod_s * cpfskmod;
 // create cpfskmod object (frequency modulator)
 //  _bps    :   bits per symbol, _bps > 0
 //  _h      :   modulation index, _h > 0
-//  _k      :   samples/symbol, _k > 1
+//  _k      :   samples/symbol, _k > 1, _k even
 //  _m      :   filter delay (symbols), _m > 0
 //  _beta   :   filter bandwidth parameter, _beta > 0
 //  _type   :   filter type (e.g. LIQUID_CPFSK_SQUARE)
@@ -2490,7 +2491,7 @@ typedef struct cpfskdem_s * cpfskdem;
 // create cpfskdem object (frequency modulator)
 //  _bps    :   bits per symbol, _bps > 0
 //  _h      :   modulation index, _h > 0
-//  _k      :   samples/symbol, _k > 1
+//  _k      :   samples/symbol, _k > 1, _k even
 //  _m      :   filter delay (symbols), _m > 0
 //  _beta   :   filter bandwidth parameter, _beta > 0
 //  _type   :   filter type (e.g. LIQUID_CPFSK_SQUARE)

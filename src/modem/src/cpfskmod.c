@@ -65,7 +65,7 @@ struct cpfskmod_s {
 // create cpfskmod object (frequency modulator)
 //  _bps    :   bits per symbol, _bps > 0
 //  _h      :   modulation index, _h > 0
-//  _k      :   samples/symbol, _k > 1
+//  _k      :   samples/symbol, _k > 1, _k even
 //  _m      :   filter delay (symbols), _m > 0
 //  _beta   :   filter bandwidth parameter, _beta > 0
 //  _type   :   filter type (e.g. LIQUID_CPFSK_SQUARE)
@@ -80,8 +80,8 @@ cpfskmod cpfskmod_create(unsigned int _bps,
     if (_bps == 0) {
         fprintf(stderr,"error: cpfskmod_create(), bits/symbol must be greater than 0\n");
         exit(1);
-    } else if (_k < 2) {
-        fprintf(stderr,"error: cpfskmod_create(), samples/symbol must be greater than 2\n");
+    } else if (_k < 2 || (_k%2)) {
+        fprintf(stderr,"error: cpfskmod_create(), samples/symbol must be greater than 2 and even\n");
         exit(1);
     } else if (_m == 0) {
         fprintf(stderr,"error: cpfskmod_create(), filter delay must be greater than 0\n");
@@ -118,11 +118,15 @@ cpfskmod cpfskmod_create(unsigned int _bps,
         b[0] = 0.0f;
         b[1] = 1.0f;
         break;
-    case LIQUID_CPFSK_RCOS:
+    case LIQUID_CPFSK_RCOS_FULL:
         q->ht_len = q->k;
         break;
+    case LIQUID_CPFSK_RCOS_PARTIAL:
+        // TODO: adjust reponse based on 'm'
+        q->ht_len = 3*q->k;
+        break;
     case LIQUID_CPFSK_GMSK:
-        q->ht_len = 2*(q->k)*(q->m)+1;
+        q->ht_len = 2*(q->k)*(q->m) + (q->k) + 1;
         break;
     default:
         fprintf(stderr,"error: cpfskmodem_create(), invalid filter type '%d'\n", q->type);
@@ -170,10 +174,11 @@ void cpfskmod_print(cpfskmod _q)
     printf("    filter roll-off :   %-6.3f\n", _q->beta);
     printf("    filter type     :   ");
     switch(_q->type) {
-    case LIQUID_CPFSK_SQUARE: printf("square\n");  break;
-    case LIQUID_CPFSK_RCOS:   printf("rcos\n");    break;
-    case LIQUID_CPFSK_GMSK:   printf("gmsk\n");    break;
-    default:                  printf("unknown\n"); break;
+    case LIQUID_CPFSK_SQUARE:       printf("square\n");         break;
+    case LIQUID_CPFSK_RCOS_FULL:    printf("rcos (full)\n");    break;
+    case LIQUID_CPFSK_RCOS_PARTIAL: printf("rcos (partial)\n"); break;
+    case LIQUID_CPFSK_GMSK:         printf("gmsk\n");           break;
+    default:                        printf("unknown\n");        break;
     }
     printf("    filter          :\n");
     // print filter coefficients
@@ -221,7 +226,16 @@ void cpfskmod_firdes(unsigned int _k,
         for (i=0; i<_ht_len; i++)
             _ht[i] = 1.0f;
         break;
-    case LIQUID_CPFSK_RCOS:
+    case LIQUID_CPFSK_RCOS_FULL:
+        // full-response raised-cosine pulse
+        if (_ht_len != _k) {
+            fprintf(stderr,"error: cpfskmodem_firdes(), invalid filter length (rcos)\n");
+            exit(1);
+        }
+        for (i=0; i<_ht_len; i++)
+            _ht[i] = 1.0f - cosf(2.0f*M_PI*i/(float)_ht_len);
+        break;
+    case LIQUID_CPFSK_RCOS_PARTIAL:
         // full-response raised-cosine pulse
         if (_ht_len != _k) {
             fprintf(stderr,"error: cpfskmodem_firdes(), invalid filter length (rcos)\n");
@@ -243,7 +257,7 @@ void cpfskmod_firdes(unsigned int _k,
         exit(1);
     }
 
-    // TODO: shift certain filters to the left... ?
+    // TODO: shift certain filters...?
 
     // normalize pulse area to unity
     float ht_sum = 0.0f;

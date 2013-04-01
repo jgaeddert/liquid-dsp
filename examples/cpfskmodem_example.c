@@ -28,7 +28,7 @@ void usage()
     printf("  b     : filter roll-off,        default:  0.35\n");
     printf("  n     : number of data symbols, default: 80\n");
     printf("  s     : SNR [dB],               default: 20\n");
-    printf("  t     : filter type: [square], rcos, gmsk\n");
+    printf("  t     : filter type: [square], rcos-full, rcos-half, gmsk\n");
 }
 
 int main(int argc, char*argv[])
@@ -57,8 +57,10 @@ int main(int argc, char*argv[])
         case 't':
             if (strcmp(optarg,"square")==0) {
                 filter_type = LIQUID_CPFSK_SQUARE;
-            } else if (strcmp(optarg,"rcos")==0) {
-                filter_type = LIQUID_CPFSK_RCOS;
+            } else if (strcmp(optarg,"rcos-full")==0) {
+                filter_type = LIQUID_CPFSK_RCOS_FULL;
+            } else if (strcmp(optarg,"rcos-half")==0) {
+                filter_type = LIQUID_CPFSK_RCOS_PARTIAL;
             } else if (strcmp(optarg,"gmsk")==0) {
                 filter_type = LIQUID_CPFSK_GMSK;
             } else {

@@ -47,7 +47,7 @@ struct cpfskdem_s {
 // create cpfskdem object (frequency modulator)
 //  _bps    :   bits per symbol, _bps > 0
 //  _h      :   modulation index, _h > 0
-//  _k      :   samples/symbol, _k > 1
+//  _k      :   samples/symbol, _k > 1, _k even
 //  _m      :   filter delay (symbols), _m > 0
 //  _beta   :   filter bandwidth parameter, _beta > 0
 //  _type   :   filter type (e.g. LIQUID_CPFSK_SQUARE)
@@ -62,9 +62,8 @@ cpfskdem cpfskdem_create(unsigned int _bps,
     if (_bps == 0) {
         fprintf(stderr,"error: cpfskdem_create(), bits/symbol must be greater than 0\n");
         exit(1);
-    } else if (_k < 2) {
-        fprintf(stderr,"error: cpfskdem_create(), samples/symbol must be greater than 2\n");
-        exit(1);
+    } else if (_k < 2 || (_k%2)) {
+        fprintf(stderr,"error: cpfskmod_create(), samples/symbol must be greater than 2 and even\n");
     } else if (_m == 0) {
         fprintf(stderr,"error: cpfskdem_create(), filter delay must be greater than 0\n");
         exit(1);
@@ -89,7 +88,8 @@ cpfskdem cpfskdem_create(unsigned int _bps,
     // create object depending upon input type
     switch(q->type) {
     case LIQUID_CPFSK_SQUARE:
-    case LIQUID_CPFSK_RCOS:
+    case LIQUID_CPFSK_RCOS_FULL:
+    case LIQUID_CPFSK_RCOS_PARTIAL:
     case LIQUID_CPFSK_GMSK:
         break;
     }
