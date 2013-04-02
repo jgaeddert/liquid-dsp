@@ -803,6 +803,7 @@ src/modem/src/modem_arb_const.o: %.o : %.c $(headers)
 
 
 modem_autotests :=						\
+	src/modem/tests/freqmodem_autotest.c			\
 	src/modem/tests/modem_autotest.c			\
 	src/modem/tests/modem_demodsoft_autotest.c		\
 	src/modem/tests/modem_demodstats_autotest.c		\
