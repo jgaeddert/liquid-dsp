@@ -284,14 +284,22 @@ int main(int argc, char*argv[])
         for (j=0; j<num_channels; j++)
             printf("  v5[%4u] = %12.8f + %12.8fj\n", j, crealf(x[j]), cimagf(x[j]));
 
-#if 0
+#if 1
         // push samples into appropriate buffer
         if (toggle==0) {
-            for (j=0; j<num_channels; j++)
-                windowcf_push(w0[j], x[j]);
-        } else {
-            for (j=0; j<num_channels; j++)
+            for (j=0; j<num_channels; j++) {
+                //windowcf_push(w0[(j + num_channels/2)%num_channels], x[j]);
+                //windowcf_push(w1[(j + num_channels/2)%num_channels], x[j]);
+                //windowcf_push(w0[j], x[j]);
                 windowcf_push(w1[j], x[j]);
+            }
+        } else {
+            for (j=0; j<num_channels; j++) {
+                //windowcf_push(w1[j], x[j]);
+                windowcf_push(w0[j], x[j]);
+                //windowcf_push(w1[(j + num_channels/2)%num_channels], x[j]);
+                //windowcf_push(w0[(j + num_channels/2)%num_channels], x[j]);
+            }
         }
 #else
         for (j=0; j<num_channels/2; j++) {
@@ -306,13 +314,29 @@ int main(int argc, char*argv[])
         float complex z0;
         float complex z1;
         for (j=0; j<num_channels/2; j++) {
-            windowcf_read(w0[j], &r0);
-            windowcf_read(w1[j], &r1);
+            //unsigned int b0 = (toggle == 1) ? j : j+num_channels/2;
+            //unsigned int b1 = (toggle == 0) ? j : j+num_channels/2;
+            unsigned int b = (toggle == 0) ? j : j+num_channels/2;
+
+            windowcf_read(w0[b], &r0);
+            windowcf_read(w1[b], &r1);
+
+            // plot registers
+            unsigned int k;
+            printf("reg[0] : ");
+            for (k=0; k<f_sub_len; k++)
+                printf("(%9.2e,%9.2e),", crealf(r0[k]), cimagf(r0[k]));
+            printf("\n");
+            printf("reg[1] : ");
+            for (k=0; k<f_sub_len; k++)
+                printf("(%9.2e,%9.2e),", crealf(r1[k]), cimagf(r1[k]));
+            printf("\n");
 
             // run dot products
-            dotprod_crcf_execute(dp[j],                r0, &z0);
+            dotprod_crcf_execute(dp[j], r0, &z0);
             dotprod_crcf_execute(dp[j+num_channels/2], r1, &z1);
 
+            printf("  z(%3u) = %12.8f + %12.8fj\n", i, crealf(z0+z1), cimagf(z0+z1));
             z[n++] = z0 + z1;
         }
         toggle = 1-toggle;
