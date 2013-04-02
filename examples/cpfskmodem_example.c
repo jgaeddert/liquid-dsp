@@ -169,8 +169,8 @@ int main(int argc, char*argv[])
     // plot PSD
     fprintf(fid,"f = [0:(nfft-1)]/nfft - 0.5;\n");
     fprintf(fid,"subplot(3,4,9:12);\n");
-    fprintf(fid,"  plot(f,20*log10(psd),'LineWidth',1.5);\n");
-    fprintf(fid,"  axis([-0.5 0.5 -120 20]);\n");
+    fprintf(fid,"  plot(f,10*log10(psd),'LineWidth',1.5);\n");
+    fprintf(fid,"  axis([-0.5 0.5 -60 20]);\n");
     fprintf(fid,"  xlabel('Normalized Frequency [f/F_s]');\n");
     fprintf(fid,"  ylabel('PSD [dB]');\n");
     fprintf(fid,"  grid on;\n");
