@@ -241,7 +241,7 @@ void cpfskmod_firdes(unsigned int _k,
     // create filter based on specified type
     switch(_type) {
     case LIQUID_CPFSK_SQUARE:
-        // square pulse shaping
+        // square pulse
         if (_ht_len != _k) {
             fprintf(stderr,"error: cpfskmodem_firdes(), invalid filter length (square)\n");
             exit(1);
@@ -260,33 +260,38 @@ void cpfskmod_firdes(unsigned int _k,
         break;
     case LIQUID_CPFSK_RCOS_PARTIAL:
         // full-response raised-cosine pulse
-        if (_ht_len != _k) {
+        if (_ht_len != 3*_k) {
             fprintf(stderr,"error: cpfskmodem_firdes(), invalid filter length (rcos)\n");
             exit(1);
         }
+        // initialize with zeros
         for (i=0; i<_ht_len; i++)
-            _ht[i] = 1.0f - cosf(2.0f*M_PI*i/(float)_ht_len);
+            _ht[i] = 0.0f;
+        // adding raised-cosine pulse with half-symbol delay
+        for (i=0; i<2*_k; i++)
+            _ht[i+_k/2] = 1.0f - cosf(2.0f*M_PI*i/(float)(2*_k));
         break;
     case LIQUID_CPFSK_GMSK:
-        if (_ht_len != 2*_k*_m+1) {
+        // Gauss minimum-shift keying pulse
+        if (_ht_len != 2*_k*_m + _k + 1) {
             fprintf(stderr,"error: cpfskmodem_firdes(), invalid filter length (gmsk)\n");
             exit(1);
         }
-        liquid_firdes_gmsktx(_k,_m,_beta,0.0f,_ht);
-        // TODO: shift filter to the left by half a symbol...
+        // initialize with zeros
+        for (i=0; i<_ht_len; i++)
+            _ht[i] = 0.0f;
+        // adding Gauss pulse with half-symbol delay
+        liquid_firdes_gmsktx(_k,_m,_beta,0.0f,&_ht[_k/2]);
         break;
     default:
         fprintf(stderr,"error: cpfskmodem_firdes(), invalid filter type '%d'\n", _type);
         exit(1);
     }
 
-    // TODO: shift certain filters...?
-
     // normalize pulse area to unity
     float ht_sum = 0.0f;
     for (i=0; i<_ht_len; i++)
         ht_sum += _ht[i];
-
     for (i=0; i<_ht_len; i++)
         _ht[i] *= 1.0f / ht_sum;
 }
