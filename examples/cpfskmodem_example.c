@@ -157,22 +157,9 @@ int main(int argc, char*argv[])
     fprintf(fid,"  ylabel('x(t)');\n");
     fprintf(fid,"  grid on;\n");
     fprintf(fid,"subplot(3,4,5:7);\n");
-    fprintf(fid,"  plot(t-delay,real(z),'-', t(i)-delay,real(z(i)),'ob',...\n");
-    fprintf(fid,"       t-delay,imag(z),'-', t(i)-delay,imag(z(i)),'og');\n");
-    fprintf(fid,"  axis([0 num_symbols -1.2 1.2]);\n");
-    fprintf(fid,"  xlabel('time');\n");
-    fprintf(fid,"  ylabel('\"matched\" filter output');\n");
-    fprintf(fid,"  grid on;\n");
     // plot I/Q constellations
     fprintf(fid,"subplot(3,4,4);\n");
     fprintf(fid,"  plot(real(y),imag(y),'-',real(y(i)),imag(y(i)),'rs','MarkerSize',4);\n");
-    fprintf(fid,"  xlabel('I');\n");
-    fprintf(fid,"  ylabel('Q');\n");
-    fprintf(fid,"  axis([-1 1 -1 1]*1.2);\n");
-    fprintf(fid,"  axis square;\n");
-    fprintf(fid,"  grid on;\n");
-    fprintf(fid,"subplot(3,4,8);\n");
-    fprintf(fid,"  plot(real(z),imag(z),'-',real(z(i)),imag(z(i)),'rs','MarkerSize',4);\n");
     fprintf(fid,"  xlabel('I');\n");
     fprintf(fid,"  ylabel('Q');\n");
     fprintf(fid,"  axis([-1 1 -1 1]*1.2);\n");

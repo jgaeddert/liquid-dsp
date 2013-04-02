@@ -49,6 +49,9 @@ struct cpfskmod_s {
     float        h;             // modulation index
     int          type;          // filter type (e.g. LIQUID_CPFSK_SQUARE)
 
+    // constellation size
+    unsigned int M;
+
     // transmit filter delay (symbols)
     // TODO: coordinate this value with 'm'
     unsigned int tx_delay;
@@ -59,7 +62,8 @@ struct cpfskmod_s {
     interp_rrrf  interp;        // interpolator
 
     // phase integrator
-    iirfilt_rrrf integrator;
+    float * phase_interp;       // phase interpolation buffer
+    iirfilt_rrrf integrator;    // integrator
 };
 
 // create cpfskmod object (frequency modulator)
@@ -105,6 +109,9 @@ cpfskmod cpfskmod_create(unsigned int _bps,
     q->beta = _beta;    // filter roll-off factor (only for certain filters)
     q->type = _type;    // filter type
 
+    // derived values
+    q->M = 1 << q->bps; // constellation size
+
     // create object depending upon input type
     float b[2] = {0.5f,  0.5f}; // integrator feed-forward coefficients
     float a[2] = {1.0f, -1.0f}; // integrator feed-back coefficients
@@ -141,6 +148,7 @@ cpfskmod cpfskmod_create(unsigned int _bps,
     q->interp = interp_rrrf_create(q->k, q->ht, q->ht_len);
 
     // create phase integrator
+    q->phase_interp = (float*) malloc(q->k*sizeof(float));
     q->integrator = iirfilt_rrrf_create(b,2,a,2);
 
     // reset modem object
@@ -154,6 +162,7 @@ void cpfskmod_destroy(cpfskmod _q)
 {
     // destroy pulse-shaping filter/interpolator
     free(_q->ht);
+    free(_q->phase_interp);
     interp_rrrf_destroy(_q->interp);
 
     // destroy phase integrator
@@ -200,6 +209,20 @@ void cpfskmod_modulate(cpfskmod        _q,
                        unsigned int    _s,
                        float complex * _y)
 {
+    // run interpolator
+    float v = 2.0f*_s - (float)(_q->M) + 1.0f;
+    interp_rrrf_execute(_q->interp, v, _q->phase_interp);
+
+    // integrate phase state
+    unsigned int i;
+    float theta;
+    for (i=0; i<_q->k; i++) {
+        // push phase through integrator
+        iirfilt_rrrf_execute(_q->integrator, _q->phase_interp[i], &theta);
+
+        // compute output
+        _y[i] = liquid_cexpjf(theta);
+    }
 }
 
 // 
