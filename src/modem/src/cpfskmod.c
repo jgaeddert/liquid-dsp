@@ -199,6 +199,11 @@ void cpfskmod_print(cpfskmod _q)
 // reset state
 void cpfskmod_reset(cpfskmod _q)
 {
+    // reset interpolator
+    interp_rrrf_clear(_q->interp);
+
+    // reset phase integrator
+    iirfilt_rrrf_clear(_q->integrator);
 }
 
 // modulate sample
