@@ -108,6 +108,7 @@ int main(int argc, char*argv[])
     // demodulate signal
     unsigned int nw=0;
     cpfskdem_demodulate(dem, y, num_samples, sym_out, &nw);
+    printf("demodulator wrote %u symbols\n", nw);
 
     // destroy modem objects
     cpfskmod_destroy(mod);

@@ -27,21 +27,70 @@
 
 #include "liquid.internal.h"
 
+// 
+// internal methods
+//
+
+// initialize coherent demodulator
+void cpfskdem_init_coherent(cpfskdem _q);
+
+// initialize non-coherent demodulator
+void cpfskdem_init_noncoherent(cpfskdem _q);
+
+// demodulate array of samples (coherent)
+void cpfskdem_demodulate_coherent(cpfskdem        _q,
+                                  float complex   _y,
+                                  unsigned int  * _s,
+                                  unsigned int  * _nw);
+
+// demodulate array of samples (non-coherent)
+void cpfskdem_demodulate_noncoherent(cpfskdem        _q,
+                                     float complex   _y,
+                                     unsigned int  * _s,
+                                     unsigned int  * _nw);
+
 // cpfskdem
 struct cpfskdem_s {
     // common
-    unsigned int bps;       // bits per symbol
-    unsigned int k;         // samples per symbol
-    unsigned int m;         // filter delay (symbols)
-    float        beta;      // filter bandwidth parameter
-    float        h;         // modulation index
-    int          type;      // filter type (e.g. LIQUID_CPFSK_SQUARE)
+    unsigned int bps;           // bits per symbol
+    unsigned int k;             // samples per symbol
+    unsigned int m;             // filter delay (symbols)
+    float        beta;          // filter bandwidth parameter
+    float        h;             // modulation index
+    int          type;          // filter type (e.g. LIQUID_CPFSK_GMSK)
 
-    // demodulator...
-    // differentiator
-    // linear PSK demodulator
-    // polyphase filterbank for timing recovery
-    // equalizer
+    // constellation size
+    unsigned int M;
+
+    // demodulator type
+    enum {
+        CPFSKDEM_COHERENT=0,    // coherent demodulator
+        CPFSKDEM_NONCOHERENT    // non-coherent demodulator
+    } demod_type;
+
+    // demodulation function pointer
+    void (*demodulate)(cpfskdem        _q,
+                       float complex   _y,
+                       unsigned int  * _s,
+                       unsigned int  * _nw);
+
+    // common data structure shared between coherent and non-coherent
+    // demodulator receivers
+    union {
+        // coherent demodulator
+        struct {
+            nco_crcf nco;       // oscillator/phase-locked loop
+            firpfb_crcf mf;     // matched filter
+            firpfb_crcf dmf;    // matched filter (derivative)
+        } coherent;
+
+        // non-coherent demodulator
+        struct {
+            firpfb_rrrf mf;     // matched filter
+            firpfb_rrrf dmf;    // matched filter (derivative)
+            //eqlms_rrrf equalizer;
+        } noncoherent;
+    } data;
 };
 
 // create cpfskdem object (frequency modulator)
@@ -79,19 +128,21 @@ cpfskdem cpfskdem_create(unsigned int _bps,
     cpfskdem q = (cpfskdem) malloc(sizeof(struct cpfskdem_s));
 
     // set basic internal properties
-    q->bps  = _bps;
-    q->k    = _k;
-    q->m    = _m;
-    q->beta = _beta;
-    q->type = _type;
+    q->bps  = _bps;     // bits per symbol
+    q->h    = _h;       // modulation index
+    q->k    = _k;       // samples per symbol
+    q->m    = _m;       // filter delay (symbols)
+    q->beta = _beta;    // filter roll-off factor (only for certain filters)
+    q->type = _type;    // filter type
 
-    // create object depending upon input type
-    switch(q->type) {
-    case LIQUID_CPFSK_SQUARE:
-    case LIQUID_CPFSK_RCOS_FULL:
-    case LIQUID_CPFSK_RCOS_PARTIAL:
-    case LIQUID_CPFSK_GMSK:
-        break;
+    // derived values
+    q->M = 1 << q->bps; // constellation size
+
+    // coherent or non-coherent?
+    if (q->h > 0.66667f) {
+        cpfskdem_init_noncoherent(q);
+    } else {
+        cpfskdem_init_coherent(q);
     }
 
     // reset modem object
@@ -100,10 +151,56 @@ cpfskdem cpfskdem_create(unsigned int _bps,
     return q;
 }
 
+// initialize coherent demodulator
+void cpfskdem_init_coherent(cpfskdem _q)
+{
+    // specify coherent receiver
+    _q->demod_type = CPFSKDEM_COHERENT;
+
+    // set demodulate function pointer
+    _q->demodulate = cpfskdem_demodulate_coherent;
+
+    // create object depending upon input type
+    switch(_q->type) {
+    case LIQUID_CPFSK_SQUARE:
+    case LIQUID_CPFSK_RCOS_FULL:
+    case LIQUID_CPFSK_RCOS_PARTIAL:
+    case LIQUID_CPFSK_GMSK:
+        break;
+    }
+
+}
+
+// initialize non-coherent demodulator
+void cpfskdem_init_noncoherent(cpfskdem _q)
+{
+    // specify non-coherent receiver
+    _q->demod_type = CPFSKDEM_NONCOHERENT;
+    
+    // set demodulate function pointer
+    _q->demodulate = cpfskdem_demodulate_noncoherent;
+
+    // create object depending upon input type
+    switch(_q->type) {
+    case LIQUID_CPFSK_SQUARE:
+    case LIQUID_CPFSK_RCOS_FULL:
+    case LIQUID_CPFSK_RCOS_PARTIAL:
+    case LIQUID_CPFSK_GMSK:
+        break;
+    }
+
+}
 
 // destroy modem object
 void cpfskdem_destroy(cpfskdem _q)
 {
+    switch(_q->demod_type) {
+    case CPFSKDEM_COHERENT:
+        break;
+    case CPFSKDEM_NONCOHERENT:
+        break;
+    }
+
     // free main object memory
     free(_q);
 }
@@ -118,6 +215,12 @@ void cpfskdem_print(cpfskdem _q)
 // reset modem object
 void cpfskdem_reset(cpfskdem _q)
 {
+    switch(_q->demod_type) {
+    case CPFSKDEM_COHERENT:
+        break;
+    case CPFSKDEM_NONCOHERENT:
+        break;
+    }
 }
 
 // demodulate array of samples
@@ -131,6 +234,36 @@ void cpfskdem_demodulate(cpfskdem        _q,
                          unsigned int    _n,
                          unsigned int  * _s,
                          unsigned int  * _nw)
+{
+    // iterate through each sample calling type-specific demodulation function
+    unsigned int i;
+    unsigned int num_written = 0;
+    for (i=0; i<_n; i++) {
+        unsigned int nw;
+        _q->demodulate(_q, _y[i], &_s[num_written], &nw);
+
+        // update number of symbols written
+        num_written += nw;
+    }
+
+    // set output number of bits written
+    *_nw = num_written;
+}
+
+// demodulate array of samples (coherent)
+void cpfskdem_demodulate_coherent(cpfskdem        _q,
+                                  float complex   _y,
+                                  unsigned int  * _s,
+                                  unsigned int  * _nw)
+{
+    *_nw = 0;
+}
+
+// demodulate array of samples (non-coherent)
+void cpfskdem_demodulate_noncoherent(cpfskdem        _q,
+                                     float complex   _y,
+                                     unsigned int  * _s,
+                                     unsigned int  * _nw)
 {
     *_nw = 0;
 }
