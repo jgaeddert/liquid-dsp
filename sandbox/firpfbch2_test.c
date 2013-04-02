@@ -359,7 +359,8 @@ int main(int argc, char*argv[])
     // destroy objects
     for (i=0; i<num_channels; i++) {
         dotprod_crcf_destroy(dp[i]);
-        windowcf_destroy(w[i]);
+        windowcf_destroy(w0[i]);
+        windowcf_destroy(w1[i]);
     }
     fft_destroy_plan(fft);
 
