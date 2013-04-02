@@ -70,7 +70,6 @@ AC_ARG_ENABLE(experimental,
         EXPERIMENTAL_HEADER="liquid.experimental.h" # add 'experimental' header to list
         EXPERIMENTAL_MLIBS="src/experimental/src/ann.nodes.o \
             src/experimental/src/activation_functions.o \
-            src/experimental/src/cpmodem.o \
             src/experimental/src/kmeans.o \
             src/experimental/src/layer.o \
             src/experimental/src/maxnet.o \

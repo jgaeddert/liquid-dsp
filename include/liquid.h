@@ -1522,11 +1522,31 @@ LIQUID_AUTOCORR_DEFINE_API(AUTOCORR_MANGLE_RRRF,
 //   TI         : input data type
 #define LIQUID_FIRFILT_DEFINE_API(FIRFILT,TO,TC,TI)             \
 typedef struct FIRFILT(_s) * FIRFILT();                         \
+                                                                \
 FIRFILT() FIRFILT(_create)(TC * _h, unsigned int _n);           \
+                                                                \
+/* create using Kaiser-Bessel windowed sinc method          */  \
+/*  _n      : filter length, _n > 0                         */  \
+/*  _fc     : filter cut-off frequency 0 < _fc < 0.5        */  \
+/*  _As     : filter stop-band attenuation [dB], _As > 0    */  \
+/*  _mu     : fractional sample offset, -0.5 < _mu < 0.5    */  \
 FIRFILT() FIRFILT(_create_kaiser)(unsigned int _n,              \
                                   float        _fc,             \
                                   float        _As,             \
                                   float        _mu);            \
+                                                                \
+/* create from square-root Nyquist prototype            */      \
+/*  _type   : filter type (e.g. LIQUID_RNYQUIST_RRC)    */      \
+/*  _k      : nominal samples/symbol, _k > 1            */      \
+/*  _m      : filter delay [symbols], _m > 0            */      \
+/*  _beta   : rolloff factor, 0 < beta <= 1             */      \
+/*  _mu     : fractional sample offset,-0.5 < _mu < 0.5 */      \
+FIRFILT() FIRFILT(_create_rnyquist)(int          _type,         \
+                                    unsigned int _k,            \
+                                    unsigned int _m,            \
+                                    float        _beta,         \
+                                    float        _mu);          \
+                                                                \
 FIRFILT() FIRFILT(_recreate)(FIRFILT() _f,                      \
                              TC * _h,                           \
                              unsigned int _n);                  \
@@ -2413,6 +2433,98 @@ void gmskframesync_execute(gmskframesync _q,
 void gmskframesync_debug_enable(gmskframesync _q);
 void gmskframesync_debug_disable(gmskframesync _q);
 void gmskframesync_debug_print(gmskframesync _q, const char * _filename);
+
+
+//
+// continuous phase frequency-shift keying (CP-FSK) modems
+//
+
+// CP-FSK filter prototypes
+typedef enum {
+    LIQUID_CPFSK_SQUARE=0,      // square pulse
+    LIQUID_CPFSK_RCOS_FULL,     // raised-cosine (full response)
+    LIQUID_CPFSK_RCOS_PARTIAL,  // raised-cosine (partial response)
+    LIQUID_CPFSK_GMSK,          // Gauss minimum-shift keying pulse
+} liquid_cpfsk_filter;
+
+// CP-FSK modulator
+typedef struct cpfskmod_s * cpfskmod;
+
+// create cpfskmod object (frequency modulator)
+//  _bps    :   bits per symbol, _bps > 0
+//  _h      :   modulation index, _h > 0
+//  _k      :   samples/symbol, _k > 1, _k even
+//  _m      :   filter delay (symbols), _m > 0
+//  _beta   :   filter bandwidth parameter, _beta > 0
+//  _type   :   filter type (e.g. LIQUID_CPFSK_SQUARE)
+cpfskmod cpfskmod_create(unsigned int _bps,
+                         float        _h,
+                         unsigned int _k,
+                         unsigned int _m,
+                         float        _beta,
+                         int          _type);
+//cpfskmod cpfskmod_create_msk(unsigned int _k);
+//cpfskmod cpfskmod_create_gmsk(unsigned int _k, float _BT);
+
+// destroy cpfskmod object
+void cpfskmod_destroy(cpfskmod _q);
+
+// print cpfskmod object internals
+void cpfskmod_print(cpfskmod _q);
+
+// reset state
+void cpfskmod_reset(cpfskmod _q);
+
+// modulate sample
+//  _q      :   frequency modulator object
+//  _s      :   input symbol
+//  _y      :   output sample array [size: _k x 1]
+void cpfskmod_modulate(cpfskmod               _q,
+                       unsigned int           _s,
+                       liquid_float_complex * _y);
+
+
+
+// CP-FSK demodulator
+typedef struct cpfskdem_s * cpfskdem;
+
+// create cpfskdem object (frequency modulator)
+//  _bps    :   bits per symbol, _bps > 0
+//  _h      :   modulation index, _h > 0
+//  _k      :   samples/symbol, _k > 1, _k even
+//  _m      :   filter delay (symbols), _m > 0
+//  _beta   :   filter bandwidth parameter, _beta > 0
+//  _type   :   filter type (e.g. LIQUID_CPFSK_SQUARE)
+cpfskdem cpfskdem_create(unsigned int _bps,
+                         float        _h,
+                         unsigned int _k,
+                         unsigned int _m,
+                         float        _beta,
+                         int          _type);
+//cpfskdem cpfskdem_create_msk(unsigned int _k);
+//cpfskdem cpfskdem_create_gmsk(unsigned int _k, float _BT);
+
+// destroy cpfskdem object
+void cpfskdem_destroy(cpfskdem _q);
+
+// print cpfskdem object internals
+void cpfskdem_print(cpfskdem _q);
+
+// reset state
+void cpfskdem_reset(cpfskdem _q);
+
+// demodulate array of samples
+//  _q      :   continuous-phase frequency demodulator object
+//  _y      :   input sample array [size: _n x 1]
+//  _n      :   input sample array length
+//  _s      :   output symbol array
+//  _nw     :   number of output symbols written
+void cpfskdem_demodulate(cpfskdem               _q,
+                         liquid_float_complex * _y,
+                         unsigned int           _n,
+                         unsigned int         * _s,
+                         unsigned int         * _nw);
+
 
 
 // 
@@ -4490,6 +4602,12 @@ unsigned int liquid_msb_index(unsigned int _x);
 // Print string of bits to stdout
 void liquid_print_bitstring(unsigned int _x,
                             unsigned int _n);
+
+// reverse byte, word, etc.
+unsigned char liquid_reverse_byte(  unsigned char _x);
+unsigned int  liquid_reverse_uint16(unsigned int  _x);
+unsigned int  liquid_reverse_uint24(unsigned int  _x);
+unsigned int  liquid_reverse_uint32(unsigned int  _x);
 
 #ifdef __cplusplus
 } //extern "C"
