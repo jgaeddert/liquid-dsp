@@ -109,13 +109,13 @@ int main(int argc, char*argv[])
 
     float complex y[num_samples];                   // time-domain input
     float complex Y0[2*num_symbols][num_channels];  // channelizer output
-    float complex Y1[2*num_symbols][num_channels];  // conventional output
+    float complex z[num_samples];                   // time-domain output
 
     // generate input sequence
     for (i=0; i<num_samples; i++) {
         //y[i] = randnf() * cexpf(_Complex_I*randf()*2*M_PI);
         y[i] = (i==0) ? 1.0f : 0.0f;
-        y[i] = cexpf(_Complex_I*sqrtf(2.0f)*i*i);
+        //y[i] = cexpf(_Complex_I*sqrtf(2.0f)*i*i);
         printf("y[%3u] = %12.8f + %12.8fj\n", i, crealf(y[i]), cimagf(y[i]));
     }
 
@@ -160,12 +160,12 @@ int main(int argc, char*argv[])
             dotprod_crcf_execute(dp[dotprod_index], r, &X[buffer_index]);
         }
 
-        printf("***** i = %u\n", i);
-        for (j=0; j<num_channels; j++)
-            printf("  v2[%4u] = %12.8f + %12.8fj\n", j, crealf(X[j]), cimagf(X[j]));
+        //printf("***** i = %u\n", i);
+        //for (j=0; j<num_channels; j++)
+        //    printf("  v2[%4u] = %12.8f + %12.8fj\n", j, crealf(X[j]), cimagf(X[j]));
         // execute DFT, store result in buffer 'x'
         fft_execute(fft);
-        // scale fft output
+        // scale result by 1/num_channels (C transform)
         for (j=0; j<num_channels; j++)
             x[j] *= 1.0f / (num_channels);
 
@@ -173,48 +173,6 @@ int main(int argc, char*argv[])
         for (j=0; j<num_channels; j++)
             Y0[i][j] = x[j];
     }
-    // destroy objects
-    for (i=0; i<num_channels; i++) {
-        dotprod_crcf_destroy(dp[i]);
-        windowcf_destroy(w[i]);
-    }
-    fft_destroy_plan(fft);
-
-
-    // 
-    // run traditional down-converter (inefficient)
-    //
-    // generate filter object
-    firfilt_crcf f = firfilt_crcf_create(h, h_len);
-
-    float dphi; // carrier frequency
-    unsigned int n=0;
-    for (i=0; i<num_channels; i++) {
-
-        // reset filter
-        firfilt_crcf_clear(f);
-
-        // set center frequency
-        dphi = 2.0f * M_PI * (float)i / (float)num_channels;
-
-        // reset symbol counter
-        n=0;
-
-        for (j=0; j<num_samples; j++) {
-            // push down-converted sample into filter
-            firfilt_crcf_push(f, y[j]*cexpf(-_Complex_I*j*dphi));
-
-            // compute output at the appropriate sample time
-            assert(n<2*num_symbols);
-            if ( ((j+1)%(num_channels/2))==0 ) {
-                firfilt_crcf_execute(f, &Y1[n][i]);
-                n++;
-            }
-        }
-        assert(n==2*num_symbols);
-
-    }
-    firfilt_crcf_destroy(f);
 
     // print filterbank channelizer
     printf("\n");
@@ -226,39 +184,160 @@ int main(int argc, char*argv[])
         }
         printf("\n");
     }
+    // destroy objects
+    for (i=0; i<num_channels; i++) {
+        dotprod_crcf_destroy(dp[i]);
+        windowcf_destroy(w[i]);
+    }
+    fft_destroy_plan(fft);
+
+    // generate synthesis filter
+    unsigned int f_len = 2*m*num_channels+1;
+    float f[f_len];
+    // NOTE: 81.29528 dB > beta = 8.00000 (6 channels, m=4)
+    liquid_firdes_kaiser(f_len, 0.5f/(float)num_channels, 81.29528f, 0.0f, f);
+
+    // normalize
+    float fsum = 0.0f;
+    for (i=0; i<f_len; i++) fsum += f[i];
+    for (i=0; i<f_len; i++) f[i] = f[i] * num_channels / fsum;
+
+    // sub-sampled filters for M=6 channels, m=4, beta=8.0
+    //  -1.6032e-19  -3.8990e-04  -1.3199e-03  -2.6684e-03  -3.7608e-03  -3.3501e-03
+    //   3.6445e-18   7.1034e-03   1.7145e-02   2.6960e-02   3.1183e-02   2.3653e-02
+    //  -1.5014e-17  -3.9269e-02  -8.6387e-02  -1.2593e-01  -1.3730e-01  -9.9906e-02
+    //   3.1044e-17   1.6316e-01   3.7398e-01   6.0172e-01   8.0652e-01   9.4890e-01
+    //   9.9990e-01   9.4890e-01   8.0652e-01   6.0172e-01   3.7398e-01   1.6316e-01
+    //   3.1044e-17  -9.9906e-02  -1.3730e-01  -1.2593e-01  -8.6387e-02  -3.9269e-02
+    //  -1.5014e-17   2.3653e-02   3.1183e-02   2.6960e-02   1.7145e-02   7.1034e-03
+    //   3.6445e-18  -3.3501e-03  -3.7608e-03  -2.6684e-03  -1.3199e-03  -3.8990e-04
+
+    // create filterbank manually
+    //dotprod_crcf dp[num_channels];  // vector dot products
+    windowcf w0[num_channels];       // window buffers
+    windowcf w1[num_channels];       // window buffers
+
+#if DEBUG
+    // print coefficients
+    printf("f_prototype:\n");
+    for (i=0; i<f_len; i++)
+        printf("  f[%3u] = %12.8f\n", i, f[i]);
+#endif
+
+    // create objects
+    unsigned int f_sub_len = 2*m;
+    float f_sub[f_sub_len];
+    for (i=0; i<num_channels; i++) {
+        // sub-sample prototype filter
+#if 0
+        for (j=0; j<f_sub_len; j++)
+            f_sub[j] = f[j*num_channels+i];
+#else
+        // load coefficients in reverse order
+        for (j=0; j<f_sub_len; j++)
+            f_sub[f_sub_len-j-1] = f[j*num_channels+i];
+#endif
+
+        // create window buffer and dotprod objects
+        dp[i] = dotprod_crcf_create(f_sub, f_sub_len);
+        w0[i] = windowcf_create(f_sub_len);
+        w1[i] = windowcf_create(f_sub_len);
+
+#if DEBUG
+        printf("f_sub[%u] : \n", i);
+        for (j=0; j<f_sub_len; j++)
+            printf("  f[%3u] = %12.8f\n", j, f_sub[j]);
+#endif
+    }
+
+    // generate DFT object
+#if 1
+    fft = fft_create_plan(num_channels, X, x, LIQUID_FFT_BACKWARD, 0);
+#else
+    fft = fft_create_plan(num_channels, X, x, LIQUID_FFT_FORWARD, 0);
+#endif
+    
+    // 
+    // run synthesis filter bank
+    //
+    toggle = 0;
+    unsigned int n=0;
+    float complex z_prime[num_channels];
+    for (i=0; i<2*num_symbols; i++) {
+        // load ifft input
+        // TODO: select frequency-band filtering
+        for (j=0; j<num_channels; j++) {
+            X[j] = Y0[i][j];
+        }
+        // execute inverse DFT, store result in buffer 'x'
+        fft_execute(fft);
+
+        // scale result by 1/num_channels (C transform)
+        for (j=0; j<num_channels; j++)
+            x[j] *= 1.0f / (num_channels);
+        // scale result by num_channels/2
+        for (j=0; j<num_channels; j++)
+            x[j] *= (float)num_channels / 2.0f;
+
+        // print result
+        printf("***** i = %u\n", i);
+        for (j=0; j<num_channels; j++)
+            printf("  v5[%4u] = %12.8f + %12.8fj\n", j, crealf(x[j]), cimagf(x[j]));
 
 #if 0
-    // print traditional channelizer
-    printf("\n");
-    printf("traditional channelizer:\n");
-    for (i=0; i<2*num_symbols; i++) {
-        printf("%2u:", i);
-        for (j=0; j<num_channels; j++) {
-            printf("%6.3f+%6.3fj, ", crealf(Y1[i][j]), cimagf(Y1[i][j]));
+        // push samples into appropriate buffer
+        if (toggle==0) {
+            for (j=0; j<num_channels; j++)
+                windowcf_push(w0[j], x[j]);
+        } else {
+            for (j=0; j<num_channels; j++)
+                windowcf_push(w1[j], x[j]);
         }
-        printf("\n");
-    }
-
-    // 
-    // compare results
-    // 
-    float mse[num_channels];
-    float complex d;
-    for (i=0; i<num_channels; i++) {
-        mse[i] = 0.0f;
-        for (j=0; j<2*num_symbols; j++) {
-            d = Y0[j][i] - Y1[j][i];
-            mse[i] += crealf(d*conjf(d));
+#else
+        for (j=0; j<num_channels/2; j++) {
+            windowcf_push(w0[j],                x[j]               );
+            windowcf_push(w1[j+num_channels/2], x[j+num_channels/2]);
         }
-
-        mse[i] /= num_symbols;
-    }
-    printf("\n");
-    printf(" e:");
-    for (i=0; i<num_channels; i++)
-        printf("%12.4e    ", sqrt(mse[i]));
-    printf("\n");
 #endif
+
+        // compute filter outputs
+        float complex * r0;
+        float complex * r1;
+        float complex z0;
+        float complex z1;
+        for (j=0; j<num_channels/2; j++) {
+            windowcf_read(w0[j], &r0);
+            windowcf_read(w1[j], &r1);
+
+            // run dot products
+            dotprod_crcf_execute(dp[j],                r0, &z0);
+            dotprod_crcf_execute(dp[j+num_channels/2], r1, &z1);
+
+            z[n++] = z0 + z1;
+        }
+        toggle = 1-toggle;
+
+#if 0
+        // accumulate output samples
+        for (j=0; j<num_channels/2; j++)
+            z[n++] = z_prime[j] + z_prime[j+num_channels/2];
+#endif
+    }
+    assert( n == num_samples );
+    
+    // print output
+    printf("\n");
+    printf("filterbank synthesizer:\n");
+    for (i=0; i<num_samples; i++) {
+        printf("%6u : %12.8f+%12.8fj\n", i, crealf(z[i]), cimagf(z[i]));
+    }
+
+    // destroy objects
+    for (i=0; i<num_channels; i++) {
+        dotprod_crcf_destroy(dp[i]);
+        windowcf_destroy(w[i]);
+    }
+    fft_destroy_plan(fft);
 
     printf("done.\n");
     return 0;
