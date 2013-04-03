@@ -21,14 +21,17 @@ void usage()
     printf("cpfskmodem_example -- continuous-phase frequency-shift keying example\n");
     printf("options:\n");
     printf("  h     : print help\n");
-    printf("  p     : bits/symbol,            default:  1\n");
-    printf("  H     : modulation index,       default:  0.5\n");
-    printf("  k     : samples/symbol,         default:  8\n");
-    printf("  m     : filter delay (symbols), default:  3\n");
-    printf("  b     : filter roll-off,        default:  0.35\n");
-    printf("  n     : number of data symbols, default: 80\n");
-    printf("  s     : SNR [dB],               default: 20\n");
     printf("  t     : filter type: [square], rcos-full, rcos-half, gmsk\n");
+    printf("  p     : bits/symbol,              default:  1\n");
+    printf("  H     : modulation index,         default:  0.5\n");
+    printf("  k     : samples/symbol,           default:  8\n");
+    printf("  m     : filter delay (symbols),   default:  3\n");
+    printf("  b     : filter roll-off,          default:  0.35\n");
+    printf("  n     : number of data symbols,   default: 80\n");
+    printf("  s     : SNR [dB],                 default: 40\n");
+    printf("  F     : carrier frequency offset, default:  0\n");
+    printf("  P     : carrier phase offset,     default:  0\n");
+    printf("  T     : fractional symbol offset, default:  0\n");
 }
 
 int main(int argc, char*argv[])
@@ -36,24 +39,20 @@ int main(int argc, char*argv[])
     // options
     unsigned int bps= 1;            // number of bits/symbol
     float h         = 0.5f;         // modulation index (h=1/2 for MSK)
-    unsigned int k  = 8;            // filter samples/symbol
+    unsigned int k  = 4;            // filter samples/symbol
     unsigned int m  = 3;            // filter delay (symbols)
     float beta      = 0.35f;        // GMSK bandwidth-time factor
     unsigned int num_symbols = 20;  // number of data symbols
-    float SNRdB     = 20.0f;        // signal-to-noise ratio [dB]
+    float SNRdB     = 40.0f;        // signal-to-noise ratio [dB]
+    float cfo       = 0.0f;         // carrier frequency offset
+    float cpo       = 0.0f;         // carrier phase offset
+    float tau       = 0.0f;         // fractional symbol timing offset
     int filter_type = LIQUID_CPFSK_SQUARE;
 
     int dopt;
-    while ((dopt = getopt(argc,argv,"hp:H:k:m:b:n:s:t:")) != EOF) {
+    while ((dopt = getopt(argc,argv,"ht:p:H:k:m:b:n:s:F:P:T:")) != EOF) {
         switch (dopt) {
         case 'h': usage();                      return 0;
-        case 'p': bps   = atoi(optarg);         break;
-        case 'H': h     = atof(optarg);         break;
-        case 'k': k     = atoi(optarg);         break;
-        case 'm': m     = atoi(optarg);         break;
-        case 'b': beta  = atof(optarg);         break;
-        case 'n': num_symbols = atoi(optarg);   break;
-        case 's': SNRdB = atof(optarg);         break;
         case 't':
             if (strcmp(optarg,"square")==0) {
                 filter_type = LIQUID_CPFSK_SQUARE;
@@ -68,6 +67,16 @@ int main(int argc, char*argv[])
                 exit(1);
             }
             break;
+        case 'p': bps   = atoi(optarg);         break;
+        case 'H': h     = atof(optarg);         break;
+        case 'k': k     = atoi(optarg);         break;
+        case 'm': m     = atoi(optarg);         break;
+        case 'b': beta  = atof(optarg);         break;
+        case 'n': num_symbols = atoi(optarg);   break;
+        case 's': SNRdB = atof(optarg);         break;
+        case 'F': cfo    = atof(optarg);        break;
+        case 'P': cpo    = atof(optarg);        break;
+        case 'T': tau    = atof(optarg);        break;
         default:
             exit(1);
         }
@@ -102,8 +111,24 @@ int main(int argc, char*argv[])
         cpfskmod_modulate(mod, sym_in[i], &x[k*i]);
 
     // push through channel
-    for (i=0; i<num_samples; i++)
-        y[i] = x[i] + nstd*(randnf() + _Complex_I*randnf())*M_SQRT1_2;
+    float sample_offset = -tau * k;
+    int   sample_delay  = (int)roundf(sample_offset);
+    float dt            = sample_offset - (float)sample_delay;
+    printf("symbol delay    :   %f\n", tau);
+    printf("sample delay    :   %f = %d + %f\n", sample_offset, sample_delay, dt);
+    firfilt_crcf fchannel = firfilt_crcf_create_kaiser(8*k+2*sample_delay+1, 0.45f, 40.0f, dt);
+    for (i=0; i<num_samples; i++) {
+        // push through channel delay
+        firfilt_crcf_push(fchannel, x[i]);
+        firfilt_crcf_execute(fchannel, &y[i]);
+
+        // add carrier frequency/phase offset
+        y[i] *= cexpf(_Complex_I*(cfo*i + cpo));
+
+        // add noise
+        y[i] += nstd*(randnf() + _Complex_I*randnf())*M_SQRT1_2;
+    }
+    firfilt_crcf_destroy(fchannel);
 
     // demodulate signal
     unsigned int nw=0;
@@ -158,8 +183,21 @@ int main(int argc, char*argv[])
     fprintf(fid,"  ylabel('x(t)');\n");
     fprintf(fid,"  grid on;\n");
     fprintf(fid,"subplot(3,4,5:7);\n");
+    fprintf(fid,"  plot(t,real(y),'-', t(i),real(y(i)),'ob',...\n");
+    fprintf(fid,"       t,imag(y),'-', t(i),imag(y(i)),'og');\n");
+    fprintf(fid,"  axis([0 num_symbols -1.2 1.2]);\n");
+    fprintf(fid,"  xlabel('time');\n");
+    fprintf(fid,"  ylabel('y(t)');\n");
+    fprintf(fid,"  grid on;\n");
     // plot I/Q constellations
     fprintf(fid,"subplot(3,4,4);\n");
+    fprintf(fid,"  plot(real(x),imag(x),'-',real(x(i)),imag(x(i)),'rs','MarkerSize',4);\n");
+    fprintf(fid,"  xlabel('I');\n");
+    fprintf(fid,"  ylabel('Q');\n");
+    fprintf(fid,"  axis([-1 1 -1 1]*1.2);\n");
+    fprintf(fid,"  axis square;\n");
+    fprintf(fid,"  grid on;\n");
+    fprintf(fid,"subplot(3,4,8);\n");
     fprintf(fid,"  plot(real(y),imag(y),'-',real(y(i)),imag(y(i)),'rs','MarkerSize',4);\n");
     fprintf(fid,"  xlabel('I');\n");
     fprintf(fid,"  ylabel('Q');\n");
