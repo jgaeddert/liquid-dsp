@@ -17,21 +17,28 @@ void usage()
     printf("mskmodem_test -- minimum-shift keying modem example\n");
     printf("options:\n");
     printf("  h     : print help\n");
-    printf("  k     : samples/symbol,         default:  8\n");
-    printf("  H     : modulation index,       default:  0.5\n");
-    printf("  B     : filter roll-off,        default:  0.35\n");
-    printf("  n     : number of data symbols, default: 80\n");
-    printf("  s     : SNR [dB],               default: 20\n");
     printf("  t     : filter type: [square], rcos-full, rcos-half, gmsk\n");
+    printf("  k     : samples/symbol,           default:  8\n");
+    printf("  H     : modulation index,         default:  0.5\n");
+    printf("  B     : filter roll-off,          default:  0.35\n");
+    printf("  n     : number of data symbols,   default: 80\n");
+    printf("  s     : SNR [dB],                 default: 20\n");
+    printf("  s     : SNR [dB],                 default: 20\n");
+    printf("  F     : carrier freq. offset,     default:  0.0\n");
+    printf("  P     : carrier phase offset,     default:  0.0\n");
+    printf("  T     : fractional symbol offset, default:  0.0\n");
 }
 
 int main(int argc, char*argv[]) {
     // options
-    unsigned int k=8;                   // filter samples/symbol
-    unsigned int bps=1;                 // number of bits/symbol
-    float h = 0.5f;                     // modulation index (h=1/2 for MSK)
+    unsigned int k  = 8;        // filter samples/symbol
+    unsigned int bps= 1;        // number of bits/symbol
+    float h         = 0.5f;     // modulation index (h=1/2 for MSK)
     unsigned int num_data_symbols = 20; // number of data symbols
-    float SNRdB = 90.0f;                // signal-to-noise ratio [dB]
+    float SNRdB     = 90.0f;    // signal-to-noise ratio [dB]
+    float cfo       = 0.0f;     // carrier frequency offset
+    float cpo       = 0.0f;     // carrier phase offset
+    float tau       = 0.0f;     // fractional symbol offset
     enum {
         TXFILT_SQUARE=0,
         TXFILT_RCOS_FULL,
@@ -41,15 +48,9 @@ int main(int argc, char*argv[]) {
     float gmsk_bt = 0.35f;              // GMSK bandwidth-time factor
 
     int dopt;
-    while ((dopt = getopt(argc,argv,"hk:b:H:B:n:s:t:")) != EOF) {
+    while ((dopt = getopt(argc,argv,"ht:k:b:H:B:n:s:F:P:T:")) != EOF) {
         switch (dopt) {
         case 'h': usage();                         return 0;
-        case 'k': k = atoi(optarg);                break;
-        case 'b': bps = atoi(optarg);              break;
-        case 'H': h = atof(optarg);                break;
-        case 'B': gmsk_bt = atof(optarg);          break;
-        case 'n': num_data_symbols = atoi(optarg); break;
-        case 's': SNRdB = atof(optarg);            break;
         case 't':
             if (strcmp(optarg,"square")==0) {
                 tx_filter_type = TXFILT_SQUARE;
@@ -64,6 +65,15 @@ int main(int argc, char*argv[]) {
                 exit(1);
             }
             break;
+        case 'k': k = atoi(optarg);                break;
+        case 'b': bps = atoi(optarg);              break;
+        case 'H': h = atof(optarg);                break;
+        case 'B': gmsk_bt = atof(optarg);          break;
+        case 'n': num_data_symbols = atoi(optarg); break;
+        case 's': SNRdB = atof(optarg);            break;
+        case 'F': cfo   = atof(optarg);            break;
+        case 'P': cpo   = atof(optarg);            break;
+        case 'T': tau   = atof(optarg);            break;
         default:
             exit(1);
         }
@@ -159,8 +169,13 @@ int main(int argc, char*argv[]) {
     iirfilt_rrrf_destroy(integrator);
 
     // push through channel
-    for (i=0; i<num_samples; i++)
-        y[i] = x[i] + nstd*(randnf() + _Complex_I*randnf())*M_SQRT1_2;
+    for (i=0; i<num_samples; i++) {
+        // add carrier frequency/phase offset
+        y[i] = x[i]*cexpf(_Complex_I*(cfo*i + cpo));
+
+        // add noise
+        y[i] += nstd*(randnf() + _Complex_I*randnf())*M_SQRT1_2;
+    }
     
     // create decimator
     unsigned int m = 3;
