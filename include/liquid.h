@@ -1522,11 +1522,31 @@ LIQUID_AUTOCORR_DEFINE_API(AUTOCORR_MANGLE_RRRF,
 //   TI         : input data type
 #define LIQUID_FIRFILT_DEFINE_API(FIRFILT,TO,TC,TI)             \
 typedef struct FIRFILT(_s) * FIRFILT();                         \
+                                                                \
 FIRFILT() FIRFILT(_create)(TC * _h, unsigned int _n);           \
+                                                                \
+/* create using Kaiser-Bessel windowed sinc method          */  \
+/*  _n      : filter length, _n > 0                         */  \
+/*  _fc     : filter cut-off frequency 0 < _fc < 0.5        */  \
+/*  _As     : filter stop-band attenuation [dB], _As > 0    */  \
+/*  _mu     : fractional sample offset, -0.5 < _mu < 0.5    */  \
 FIRFILT() FIRFILT(_create_kaiser)(unsigned int _n,              \
                                   float        _fc,             \
                                   float        _As,             \
                                   float        _mu);            \
+                                                                \
+/* create from square-root Nyquist prototype            */      \
+/*  _type   : filter type (e.g. LIQUID_RNYQUIST_RRC)    */      \
+/*  _k      : nominal samples/symbol, _k > 1            */      \
+/*  _m      : filter delay [symbols], _m > 0            */      \
+/*  _beta   : rolloff factor, 0 < beta <= 1             */      \
+/*  _mu     : fractional sample offset,-0.5 < _mu < 0.5 */      \
+FIRFILT() FIRFILT(_create_rnyquist)(int          _type,         \
+                                    unsigned int _k,            \
+                                    unsigned int _m,            \
+                                    float        _beta,         \
+                                    float        _mu);          \
+                                                                \
 FIRFILT() FIRFILT(_recreate)(FIRFILT() _f,                      \
                              TC * _h,                           \
                              unsigned int _n);                  \
