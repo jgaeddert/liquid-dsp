@@ -1326,8 +1326,9 @@ example_programs :=						\
 	examples/firhilb_example				\
 	examples/firhilb_decim_example				\
 	examples/firhilb_interp_example				\
-	examples/firpfbch_example				\
+	examples/firpfbch2_example				\
 	examples/firpfbch_analysis_example			\
+	examples/firpfbch_example				\
 	examples/firpfbch_synthesis_example			\
 	examples/flexframesync_example				\
 	examples/flexframesync_reconfig_example			\

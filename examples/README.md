@@ -188,6 +188,11 @@ This directory contains all the examples for interfacing the liquid modules.
 
     SEE ALSO: `firhilb_decim_example.c`
 
+ * `firpfbch2_example.c`:
+    Example of the finite impulse response (FIR) polyphase filterbank
+    (PFB) channelizer with an output rate of 2 Fs / M as an (almost)
+    perfect reconstructive system.
+
  * `firpfbch_analysis_example.c`:
     Example of the analysis channelizer filterbank. The input signal is
     a frequency-modulated sweep over the entire band. Each filter is

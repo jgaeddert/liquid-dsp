@@ -38,16 +38,17 @@ struct FIRPFBCH2(_s) {
 
     // filter
     unsigned int h_len;         // filter length
-    TC * h;                     // filter coefficients
     
     // create separate bank of dotprod and window objects
     DOTPROD() * dp;             // dot product object array
-    WINDOW() * w;               // window buffer object array
 
     // inverse FFT plan
     FFT_PLAN ifft;              // inverse FFT object
     TO * X;                     // IFFT input array  [size: M x 1]
     TO * x;                     // IFFT output array [size: M x 1]
+
+    //
+    //WINDOW() * w;               // window buffer object array
 };
 
 // create firpfbch2 object
@@ -91,9 +92,9 @@ FIRPFBCH2() FIRPFBCH2(_create)(int          _type,
     TC h_sub[h_sub_len];
     for (i=0; i<q->M; i++) {
         // sub-sample prototype filter, loading coefficients in reverse order
-        for (n=0; n<h_sub_len; n++) {
-            h_sub[h_sub_len-n-1] = q->h[i + n*(q->M)];
-        }
+        for (n=0; n<h_sub_len; n++)
+            h_sub[h_sub_len-n-1] = _h[i + n*(q->M)];
+
         // create dotprod object
         q->dp[i] = DOTPROD(_create)(h_sub,h_sub_len);
     }
@@ -140,9 +141,14 @@ FIRPFBCH2() FIRPFBCH2(_create_kaiser)(int          _type,
     // compute filter coefficients
     liquid_firdes_kaiser(h_len, fc, _As, 0.0f, hf);
 
+    // normalize to unit average
+    float hf_sum = 0.0f;
+    unsigned int i;
+    for (i=0; i<h_len; i++) hf_sum += hf[i];
+    for (i=0; i<h_len; i++) hf[i] = hf[i] * (float)_M / hf_sum;
+
     // convert to type-specific array
     TC * h = (TC*) malloc(h_len * sizeof(TC));
-    unsigned int i;
     for (i=0; i<h_len; i++)
         h[i] = (TC) hf[i];
 
@@ -184,6 +190,12 @@ void FIRPFBCH2(_reset)(FIRPFBCH2() _q)
 // print firpfbch2 object internals
 void FIRPFBCH2(_print)(FIRPFBCH2() _q)
 {
+    printf("firpfbch2_%s:\n", EXTENSION_FULL);
+    printf("    channels    :   %u\n", _q->M);
+    printf("    h_len       :   %u\n", _q->h_len);
+    printf("    semi-length :   %u\n", _q->m);
+
+    // TODO: print filter coefficients...
 }
 
 // execute filterbank channelizer (analyzer)
