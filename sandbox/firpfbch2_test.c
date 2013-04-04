@@ -13,7 +13,7 @@
 
 #include "liquid.internal.h"
 
-#define DEBUG 1
+#define DEBUG 0
 
 int main(int argc, char*argv[])
 {
@@ -33,6 +33,10 @@ int main(int argc, char*argv[])
 
     unsigned int i;
     unsigned int j;
+
+    //
+    // ANALYSIS FILTERBANK
+    //
 
     // generate filter
     // NOTE : these coefficients can be random; the purpose of this
@@ -191,6 +195,11 @@ int main(int argc, char*argv[])
     }
     fft_destroy_plan(fft);
 
+
+    //
+    // SYNTHESIS FILTERBANK
+    //
+
     // generate synthesis filter
     unsigned int f_len = 2*m*num_channels+1;
     float f[f_len];
@@ -262,7 +271,6 @@ int main(int argc, char*argv[])
     //
     toggle = 0;
     unsigned int n=0;
-    float complex z_prime[num_channels];
     for (i=0; i<2*num_symbols; i++) {
         // load ifft input
         // TODO: select frequency-band filtering
@@ -279,34 +287,17 @@ int main(int argc, char*argv[])
         for (j=0; j<num_channels; j++)
             x[j] *= (float)num_channels / 2.0f;
 
+#if DEBUG
         // print result
         printf("***** i = %u\n", i);
         for (j=0; j<num_channels; j++)
             printf("  v5[%4u] = %12.8f + %12.8fj\n", j, crealf(x[j]), cimagf(x[j]));
-
-#if 1
-        // push samples into appropriate buffer
-        if (toggle==0) {
-            for (j=0; j<num_channels; j++) {
-                //windowcf_push(w0[(j + num_channels/2)%num_channels], x[j]);
-                //windowcf_push(w1[(j + num_channels/2)%num_channels], x[j]);
-                //windowcf_push(w0[j], x[j]);
-                windowcf_push(w1[j], x[j]);
-            }
-        } else {
-            for (j=0; j<num_channels; j++) {
-                //windowcf_push(w1[j], x[j]);
-                windowcf_push(w0[j], x[j]);
-                //windowcf_push(w1[(j + num_channels/2)%num_channels], x[j]);
-                //windowcf_push(w0[(j + num_channels/2)%num_channels], x[j]);
-            }
-        }
-#else
-        for (j=0; j<num_channels/2; j++) {
-            windowcf_push(w0[j],                x[j]               );
-            windowcf_push(w1[j+num_channels/2], x[j+num_channels/2]);
-        }
 #endif
+
+        // push samples into appropriate buffer
+        windowcf * buffer = (toggle == 0 ? w1 : w0);
+        for (j=0; j<num_channels; j++)
+            windowcf_push(buffer[j], x[j]);
 
         // compute filter outputs
         float complex * r0;
@@ -314,13 +305,12 @@ int main(int argc, char*argv[])
         float complex z0;
         float complex z1;
         for (j=0; j<num_channels/2; j++) {
-            //unsigned int b0 = (toggle == 1) ? j : j+num_channels/2;
-            //unsigned int b1 = (toggle == 0) ? j : j+num_channels/2;
             unsigned int b = (toggle == 0) ? j : j+num_channels/2;
 
             windowcf_read(w0[b], &r0);
             windowcf_read(w1[b], &r1);
 
+#if DEBUG
             // plot registers
             unsigned int k;
             printf("reg[0] : ");
@@ -331,21 +321,18 @@ int main(int argc, char*argv[])
             for (k=0; k<f_sub_len; k++)
                 printf("(%9.2e,%9.2e),", crealf(r1[k]), cimagf(r1[k]));
             printf("\n");
+#endif
 
             // run dot products
             dotprod_crcf_execute(dp[j], r0, &z0);
             dotprod_crcf_execute(dp[j+num_channels/2], r1, &z1);
 
+#if DEBUG
             printf("  z(%3u) = %12.8f + %12.8fj\n", i, crealf(z0+z1), cimagf(z0+z1));
+#endif
             z[n++] = z0 + z1;
         }
         toggle = 1-toggle;
-
-#if 0
-        // accumulate output samples
-        for (j=0; j<num_channels/2; j++)
-            z[n++] = z_prime[j] + z_prime[j+num_channels/2];
-#endif
     }
     assert( n == num_samples );
     
