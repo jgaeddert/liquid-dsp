@@ -226,6 +226,9 @@ void FIRPFBCH2(_print)(FIRPFBCH2() _q)
     printf("    semi-length :   %u\n", _q->m);
 
     // TODO: print filter coefficients...
+    unsigned int i;
+    for (i=0; i<_q->M; i++)
+        DOTPROD(_print)(_q->dp[i]);
 }
 
 // execute filterbank channelizer (analyzer)
@@ -275,6 +278,45 @@ void FIRPFBCH2(_execute_synthesizer)(FIRPFBCH2() _q,
                                      TI *        _x,
                                      TO *        _y)
 {
+    unsigned int i;
+
+    // copy input array to internal IFFT input buffer
+    memmove(_q->X, _x, _q->M * sizeof(TI));
+
+    // execute IFFT, store result in buffer 'x'
+    FFT_EXECUTE(_q->ifft);
+
+    // TODO: ignore this scaling
+    // scale result by 1/num_channels (C transform)
+    for (i=0; i<_q->M; i++)
+        _q->x[i] *= 1.0f / (float)(_q->M);
+    // scale result by num_channels/2
+    for (i=0; i<_q->M; i++)
+        _q->x[i] *= (float)(_q->M2);
+
+    // push samples into appropriate buffer
+    WINDOW() * buffer = (_q->flag == 0 ? _q->w1 : _q->w0);
+    for (i=0; i<_q->M; i++)
+        WINDOW(_push)(buffer[i], _q->x[i]);
+
+    // compute filter outputs
+    TO * r0, * r1;  // buffer read pointers
+    TO   y0,   y1;  // dotprod outputs
+    for (i=0; i<_q->M2; i++) {
+        // 
+        unsigned int b = (_q->flag == 0) ? i : i+_q->M2;
+
+        WINDOW(_read)(_q->w0[b], &r0);
+        WINDOW(_read)(_q->w1[b], &r1);
+
+        // run dot products
+        DOTPROD(_execute)(_q->dp[i],        r0, &y0);
+        DOTPROD(_execute)(_q->dp[i+_q->M2], r1, &y1);
+
+        // save output
+        _y[i] = y0 + y1;
+    }
+    _q->flag = 1 - _q->flag;
 }
 
 // execute filterbank channelizer

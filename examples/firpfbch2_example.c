@@ -40,6 +40,8 @@ int main() {
     // create filterbank objects from prototype
     firpfbch2_crcf qa = firpfbch2_crcf_create_kaiser(LIQUID_ANALYZER,    num_channels, m, As);
     firpfbch2_crcf qs = firpfbch2_crcf_create_kaiser(LIQUID_SYNTHESIZER, num_channels, m, As);
+    firpfbch2_crcf_print(qa);
+    firpfbch2_crcf_print(qs);
 
     // run channelizer
     float complex Y[num_channels];
@@ -62,6 +64,10 @@ int main() {
     // destroy fiterbank objects
     firpfbch2_crcf_destroy(qa); // analysis fitlerbank
     firpfbch2_crcf_destroy(qs); // synthesis filterbank
+
+    // print output
+    for (i=0; i<num_samples; i++)
+        printf("%3u : %12.8f + %12.8fj\n", i, crealf(y[i]), cimagf(y[i]));
 
     //
     // EXPORT DATA TO FILE
