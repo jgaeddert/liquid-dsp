@@ -47,8 +47,11 @@ struct FIRPFBCH2(_s) {
     TO * X;                     // IFFT input array  [size: M x 1]
     TO * x;                     // IFFT output array [size: M x 1]
 
-    //
-    //WINDOW() * w;               // window buffer object array
+    // common data structures shared between analysis and
+    // synthesis algorithms
+    WINDOW() * w0;              // window buffer object array
+    WINDOW() * w1;              // window buffer object array (synthesizer only)
+    int flag;
 };
 
 // create firpfbch2 object
@@ -105,7 +108,16 @@ FIRPFBCH2() FIRPFBCH2(_create)(int          _type,
     q->x = (T*) malloc((q->M)*sizeof(T));   // IFFT output
     q->ifft = FFT_CREATE_PLAN(q->M, q->X, q->x, FFT_DIR_BACKWARD, FFT_METHOD);
 
-    // return filterbank object
+    // create objects specific to type
+    q->w0 = (WINDOW()*) malloc((q->M)*sizeof(WINDOW()));
+    q->w1 = (WINDOW()*) malloc((q->M)*sizeof(WINDOW()));
+    for (i=0; i<q->M; i++) {
+        q->w0[i] = WINDOW(_create)(h_sub_len);
+        q->w1[i] = WINDOW(_create)(h_sub_len);
+    }
+
+    // reset filterbank object and return
+    FIRPFBCH2(_reset)(q);
     return q;
 }
 
@@ -177,6 +189,14 @@ void FIRPFBCH2(_destroy)(FIRPFBCH2() _q)
     FFT_DESTROY_PLAN(_q->ifft);
     free(_q->X);
     free(_q->x);
+    
+    // free window objects
+    for (i=0; i<_q->M; i++) {
+        WINDOW(_destroy)(_q->w0[i]);
+        WINDOW(_destroy)(_q->w1[i]);
+    }
+    free(_q->w0);
+    free(_q->w1);
 
     // free main object memory
     free(_q);
@@ -185,6 +205,16 @@ void FIRPFBCH2(_destroy)(FIRPFBCH2() _q)
 // reset firpfbch2 object internals
 void FIRPFBCH2(_reset)(FIRPFBCH2() _q)
 {
+    unsigned int i;
+
+    // clear window buffers
+    for (i=0; i<_q->M; i++) {
+        WINDOW(_clear)(_q->w0[i]);
+        WINDOW(_clear)(_q->w1[i]);
+    }
+
+    // reset flag
+    _q->flag = 0;
 }
 
 // print firpfbch2 object internals
@@ -205,6 +235,37 @@ void FIRPFBCH2(_execute_analyzer)(FIRPFBCH2() _q,
                                   TI *        _x,
                                   TO *        _y)
 {
+    unsigned int i;
+
+    // load buffers in blocks of num_channels/2 starting
+    // in the middle of the filter bank and moving in the
+    // negative direction
+    unsigned int base_index = _q->flag ? _q->M : _q->M2;
+    for (i=0; i<_q->M2; i++) {
+        // push sample into buffer at filter index
+        WINDOW(_push)(_q->w0[base_index-i-1], _y[i]);
+    }
+
+    // execute filter outputs
+    unsigned int offset = _q->flag ? _q->M2 : 0;
+    TI * r;      // buffer read pointer
+    for (i=0; i<_q->M; i++) {
+        unsigned int buffer_index  = (offset+i)%(_q->M);
+
+        WINDOW(_read)(_q->w0[buffer_index], &r);
+
+        DOTPROD(_execute)(_q->dp[i], r, &_q->X[buffer_index]);
+    }
+
+    // execute IFFT, store result in buffer 'x'
+    FFT_EXECUTE(_q->ifft);
+
+    // scale result by 1/num_channels (C transform)
+    for (i=0; i<_q->M; i++)
+        _y[i] = _q->x[i] / (float)(_q->M);
+
+    // update flag
+    _q->flag = 1 - _q->flag;
 }
 
 // execute filterbank channelizer (synthesizer)

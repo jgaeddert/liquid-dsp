@@ -47,6 +47,12 @@ int main() {
         // run analysis filterbank
         firpfbch2_crcf_execute(qa, &x[i], Y);
 
+        // print
+        unsigned int j;
+        printf("i = %u\n", i);
+        for (j=0; j<num_channels; j++)
+            printf("  Y[%3u] = %12.8f + %12.8fj\n", j+1, crealf(Y[j]), cimagf(Y[j]));
+
         // apply frequency-band filtering/selection
 
         // run synthesis filterbank

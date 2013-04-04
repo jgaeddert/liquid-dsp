@@ -126,11 +126,6 @@ int main(int argc, char*argv[])
     // 
     // run analysis filter bank
     //
-#if 0
-    unsigned int filter_index = 0;
-#else
-    unsigned int filter_index = num_channels/2-1;
-#endif
     float complex y_hat;    // input sample
     float complex * r;      // buffer read pointer
     int toggle = 0;         // flag indicating buffer/filter alignment
@@ -138,23 +133,21 @@ int main(int argc, char*argv[])
     //
     for (i=0; i<2*num_symbols; i++) {
 
-        // load buffers in blocks of num_channels/2
+        // load buffers in blocks of num_channels/2 starting
+        // in the middle of the filter bank and moving in the
+        // negative direction
+        unsigned int base_index = toggle ? num_channels : num_channels/2;
         for (j=0; j<num_channels/2; j++) {
             // grab sample
             y_hat = y[i*num_channels/2 + j];
 
             // push sample into buffer at filter index
-            windowcf_push(w[filter_index], y_hat);
-
-            // decrement filter index
-            filter_index = (filter_index + num_channels - 1) % num_channels;
-            //filter_index = (filter_index + 1) % num_channels;
+            windowcf_push(w[base_index-j-1], y_hat);
         }
 
         // execute filter outputs
         // reversing order of output (not sure why this is necessary)
         unsigned int offset = toggle ? num_channels/2 : 0;
-        toggle = 1-toggle;
         for (j=0; j<num_channels; j++) {
             unsigned int buffer_index  = (offset+j)%num_channels;
             unsigned int dotprod_index = j;
@@ -176,6 +169,7 @@ int main(int argc, char*argv[])
         // move to output array
         for (j=0; j<num_channels; j++)
             Y0[i][j] = x[j];
+        toggle = 1-toggle;
     }
 
     // print filterbank channelizer
