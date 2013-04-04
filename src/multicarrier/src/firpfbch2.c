@@ -243,7 +243,7 @@ void FIRPFBCH2(_execute_analyzer)(FIRPFBCH2() _q,
     unsigned int base_index = _q->flag ? _q->M : _q->M2;
     for (i=0; i<_q->M2; i++) {
         // push sample into buffer at filter index
-        WINDOW(_push)(_q->w0[base_index-i-1], _y[i]);
+        WINDOW(_push)(_q->w0[base_index-i-1], _x[i]);
     }
 
     // execute filter outputs
