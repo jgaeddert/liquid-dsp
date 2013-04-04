@@ -3623,12 +3623,12 @@ typedef struct FIRPFBCH2(_s) * FIRPFBCH2();                     \
 /* create firpfbch2 object                                  */  \
 /*  _type   :   channelizer type (e.g. LIQUID_ANALYZER)     */  \
 /*  _M      :   number of channels (must be even)           */  \
+/*  _m      :   prototype filter semi-lenth, length=2*M*m   */  \
 /*  _h      :   prototype filter coefficient array          */  \
-/*  _h_len  :   number of coefficients                      */  \
 FIRPFBCH2() FIRPFBCH2(_create)(int          _type,              \
                                unsigned int _M,                 \
-                               TC *         _h,                 \
-                               unsigned int _h_len);            \
+                               unsigned int _m,                 \
+                               TC *         _h);                \
                                                                 \
 /* create firpfbch2 object using Kaiser window prototype    */  \
 /*  _type   :   channelizer type (e.g. LIQUID_ANALYZER)     */  \
