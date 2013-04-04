@@ -811,9 +811,15 @@ multicarrier_objects :=						\
 	src/multicarrier/src/ofdmframegen.o			\
 	src/multicarrier/src/ofdmframesync.o			\
 
+$(multicarrier_objects) : %.o : %.c $(headers)
+
 # list explicit targets and dependencies here
-src/multicarrier/src/firpfbch_crcf.o : %_crcf.o : %.c
-src/multicarrier/src/firpfbch_cccf.o : %_cccf.o : %.c
+multicarrier_includes :=					\
+	src/multicarrier/src/firpfbch.c				\
+	src/multicarrier/src/firpfbch2.c			\
+
+src/multicarrier/src/firpfbch_crcf.o : %.o : %.c $(headers) $(multicarrier_includes)
+src/multicarrier/src/firpfbch_cccf.o : %.o : %.c $(headers) $(multicarrier_includes)
 
 # autotests
 multicarrier_autotests :=					\

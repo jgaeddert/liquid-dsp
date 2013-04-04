@@ -30,6 +30,7 @@
 
 // 
 #define FIRPFBCH(name)      LIQUID_CONCAT(firpfbch_crcf,name)
+#define FIRPFBCH2(name)     LIQUID_CONCAT(firpfbch2_crcf,name)
 
 #define T                   float complex   // general
 #define TO                  float complex   // output
@@ -47,5 +48,6 @@
 #define PRINTVAL_TI(X,F)    PRINTVAL_CFLOAT(X,F)
 
 // source files
-#include "firpfbch.c"
+#include "firpfbch.c"       // maximally-decimated polyphase filterbank
+#include "firpfbch2.c"      // polyphase filterbank w/ output rate 2 Fs / M
 
