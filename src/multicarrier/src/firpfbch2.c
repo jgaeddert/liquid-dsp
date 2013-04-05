@@ -303,15 +303,20 @@ void FIRPFBCH2(_execute_synthesizer)(FIRPFBCH2() _q,
     TO * r0, * r1;  // buffer read pointers
     TO   y0,   y1;  // dotprod outputs
     for (i=0; i<_q->M2; i++) {
-        // 
+        // buffer index
         unsigned int b = (_q->flag == 0) ? i : i+_q->M2;
 
+        // read buffer with index offset
         WINDOW(_read)(_q->w0[b], &r0);
         WINDOW(_read)(_q->w1[b], &r1);
 
+        // swap buffer outputs on alternating runs
+        TO * p0 = _q->flag ? r0 : r1;
+        TO * p1 = _q->flag ? r1 : r0;
+
         // run dot products
-        DOTPROD(_execute)(_q->dp[i],        r0, &y0);
-        DOTPROD(_execute)(_q->dp[i+_q->M2], r1, &y1);
+        DOTPROD(_execute)(_q->dp[i],        p0, &y0);
+        DOTPROD(_execute)(_q->dp[i+_q->M2], p1, &y1);
 
         // save output
         _y[i] = y0 + y1;

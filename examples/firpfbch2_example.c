@@ -19,7 +19,7 @@ int main() {
     // options
     unsigned int num_channels=6;    // number of channels
     unsigned int m = 4;             // filter semi-length (symbols)
-    unsigned int num_symbols=4*m;   // number of symbols
+    unsigned int num_symbols=8*m;   // number of symbols
     float As = 81.29528f;           // filter stop-band attenuation
     
     unsigned int i;
@@ -34,8 +34,10 @@ int main() {
     float complex y[num_samples];
 
     // generate input signal
-    for (i=0; i<num_samples; i++)
-        x[i] = (i==0) ? 1.0f : 0.0f;
+    for (i=0; i<num_samples; i++) {
+        //x[i] = (i==0) ? 1.0f : 0.0f;
+        x[i] = cexpf( (-0.05f + 0.07f*_Complex_I)*i );  // decaying complex exponential
+    }
 
     // create filterbank objects from prototype
     firpfbch2_crcf qa = firpfbch2_crcf_create_kaiser(LIQUID_ANALYZER,    num_channels, m, As);
@@ -95,8 +97,10 @@ int main() {
     fprintf(fid,"title('composite');\n");
     fprintf(fid,"subplot(2,1,1);\n");
     fprintf(fid,"    plot(t,real(x), t,imag(x));\n");
+    fprintf(fid,"    grid on;\n");
     fprintf(fid,"subplot(2,1,2);\n");
     fprintf(fid,"    plot(t,real(y), t,imag(y));\n");
+    fprintf(fid,"    grid on;\n");
 
     fclose(fid);
     printf("results written to '%s'\n", OUTPUT_FILENAME);
