@@ -79,6 +79,7 @@ int main() {
     fprintf(fid,"clear all;\n");
     fprintf(fid,"close all;\n");
     fprintf(fid,"num_channels=%u;\n", num_channels);
+    fprintf(fid,"m = %u;\n", m);
     fprintf(fid,"num_symbols=%u;\n",  num_symbols);
     fprintf(fid,"num_samples = num_channels*num_symbols;\n");
 
@@ -92,14 +93,17 @@ int main() {
     }
 
     // plot results
-    fprintf(fid,"t  = 0:(num_samples-1);\n");
+    fprintf(fid,"t = 0:(num_samples-1);\n");
+    fprintf(fid,"delay = 2*num_channels*m - num_channels/2 + 1;\n");
     fprintf(fid,"figure;\n");
     fprintf(fid,"title('composite');\n");
     fprintf(fid,"subplot(2,1,1);\n");
-    fprintf(fid,"    plot(t,real(x), t,imag(x));\n");
+    fprintf(fid,"    plot(t,real(x), t-delay,real(y));\n");
+    fprintf(fid,"    axis([-2 num_samples -0.3 1.1]);\n");
     fprintf(fid,"    grid on;\n");
     fprintf(fid,"subplot(2,1,2);\n");
-    fprintf(fid,"    plot(t,real(y), t,imag(y));\n");
+    fprintf(fid,"    plot(t,imag(x), t-delay,imag(y));\n");
+    fprintf(fid,"    axis([-2 num_samples -0.3 1.1]);\n");
     fprintf(fid,"    grid on;\n");
 
     fclose(fid);
