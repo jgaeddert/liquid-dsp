@@ -1,7 +1,5 @@
 /*
- * Copyright (c) 2007, 2009, 2011 Joseph Gaeddert
- * Copyright (c) 2007, 2009, 2011 Virginia Polytechnic
- *                                Institute & State University
+ * Copyright (c) 2007, 2008, 2009, 2010, 2011, 2012, 2013 Joseph Gaeddert
  *
  * This file is part of liquid.
  *
@@ -76,9 +74,11 @@ void firpfbch_crcf_execute_bench(
 }
 
 //
-void benchmark_firpfbch_crcf_n4      FIRPFBCH_EXECUTE_BENCH_API(4,   2,  LIQUID_ANALYZER)
-void benchmark_firpfbch_crcf_n16     FIRPFBCH_EXECUTE_BENCH_API(16,  2,  LIQUID_ANALYZER)
-void benchmark_firpfbch_crcf_n64     FIRPFBCH_EXECUTE_BENCH_API(64,  2,  LIQUID_ANALYZER)
-void benchmark_firpfbch_crcf_n256    FIRPFBCH_EXECUTE_BENCH_API(256, 2,  LIQUID_ANALYZER)
+void benchmark_firpfbch_crcf_a4      FIRPFBCH_EXECUTE_BENCH_API(4,    2,  LIQUID_ANALYZER)
+void benchmark_firpfbch_crcf_a16     FIRPFBCH_EXECUTE_BENCH_API(16,   2,  LIQUID_ANALYZER)
+void benchmark_firpfbch_crcf_a64     FIRPFBCH_EXECUTE_BENCH_API(64,   2,  LIQUID_ANALYZER)
+void benchmark_firpfbch_crcf_a256    FIRPFBCH_EXECUTE_BENCH_API(256,  2,  LIQUID_ANALYZER)
+void benchmark_firpfbch_crcf_a512    FIRPFBCH_EXECUTE_BENCH_API(512,  2,  LIQUID_ANALYZER)
+void benchmark_firpfbch_crcf_a1024   FIRPFBCH_EXECUTE_BENCH_API(1024, 2,  LIQUID_ANALYZER)
 
 
