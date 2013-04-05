@@ -13,7 +13,12 @@
 
 #include "liquid.internal.h"
 
+// print debug status
 #define DEBUG 0
+
+// use pseudo-random coefficients; this is useful for determining
+// functional correctness (no symmetry in filter)
+#define RANDOM_COEFFICIENTS 0
 
 int main(int argc, char*argv[])
 {
@@ -41,13 +46,18 @@ int main(int argc, char*argv[])
     // generate filter
     // NOTE : these coefficients can be random; the purpose of this
     //        exercise is to demonstrate mathematical equivalence
-#if 0
-    unsigned int h_len = 2*m*num_channels;
-    float h[h_len];
-    for (i=0; i<h_len; i++) h[i] = randnf();
-#else
     unsigned int h_len = 2*m*num_channels+1;
     float h[h_len];
+#if RANDOM_COEFFICIENTS
+    // testing: set filter coefficients to random values
+    unsigned int s0 = 1;
+    unsigned int p0 = 524287;   // large prime number
+    unsigned int g0 =   1031;   // another large prime number
+    for (i=0; i<h_len; i++) {
+        s0 = (s0 * p0) % g0;
+        h[i] = (float)s0 / (float)g0 - 0.5f;
+    }
+#else
     // NOTE: 81.29528 dB > beta = 8.00000 (6 channels, m=4)
     liquid_firdes_kaiser(h_len, 1.0f/(float)num_channels, 81.29528f, 0.0f, h);
 #endif
@@ -118,8 +128,9 @@ int main(int argc, char*argv[])
     // generate input sequence
     for (i=0; i<num_samples; i++) {
         //y[i] = randnf() * cexpf(_Complex_I*randf()*2*M_PI);
-        y[i] = (i==0) ? 1.0f : 0.0f;
-        //y[i] = cexpf(_Complex_I*sqrtf(2.0f)*i*i);
+        //y[i] = (i==0) ? 1.0f : 0.0f;
+        //y[i] = expf(-0.1f*i);
+        y[i] = cexpf( (0.1f*_Complex_I - 0.1f)*i );
         printf("y[%3u] = %12.8f + %12.8fj\n", i, crealf(y[i]), cimagf(y[i]));
     }
 
@@ -157,9 +168,11 @@ int main(int argc, char*argv[])
             dotprod_crcf_execute(dp[dotprod_index], r, &X[buffer_index]);
         }
 
-        //printf("***** i = %u\n", i);
-        //for (j=0; j<num_channels; j++)
-        //    printf("  v2[%4u] = %12.8f + %12.8fj\n", j, crealf(X[j]), cimagf(X[j]));
+#if DEBUG
+        printf("***** i = %u\n", i);
+        for (j=0; j<num_channels; j++)
+            printf("  v2[%4u] = %12.8f + %12.8fj\n", j, crealf(X[j]), cimagf(X[j]));
+#endif
         // execute DFT, store result in buffer 'x'
         fft_execute(fft);
         // scale result by 1/num_channels (C transform)
@@ -197,9 +210,19 @@ int main(int argc, char*argv[])
     // generate synthesis filter
     unsigned int f_len = 2*m*num_channels+1;
     float f[f_len];
+#if RANDOM_COEFFICIENTS
+    // testing: set filter coefficients to random values
+    unsigned int s1 = 1;
+    unsigned int p1 = 131071;   // large prime number
+    unsigned int g1 =   1031;   // another large prime number
+    for (i=0; i<f_len; i++) {
+        s1 = (s1 * p1) % g1;
+        f[i] = (float)s1 / (float)g1 - 0.5f;
+    }
+#else
     // NOTE: 81.29528 dB > beta = 8.00000 (6 channels, m=4)
     liquid_firdes_kaiser(f_len, 0.5f/(float)num_channels, 81.29528f, 0.0f, f);
-
+#endif
     // normalize
     float fsum = 0.0f;
     for (i=0; i<f_len; i++) fsum += f[i];
@@ -299,10 +322,15 @@ int main(int argc, char*argv[])
         float complex z0;
         float complex z1;
         for (j=0; j<num_channels/2; j++) {
+            // buffer index
             unsigned int b = (toggle == 0) ? j : j+num_channels/2;
 
             windowcf_read(w0[b], &r0);
             windowcf_read(w1[b], &r1);
+
+            // buffer pointers
+            float complex * p0 = toggle ? r0 : r1;
+            float complex * p1 = toggle ? r1 : r0;
 
 #if DEBUG
             // plot registers
@@ -318,8 +346,8 @@ int main(int argc, char*argv[])
 #endif
 
             // run dot products
-            dotprod_crcf_execute(dp[j], r0, &z0);
-            dotprod_crcf_execute(dp[j+num_channels/2], r1, &z1);
+            dotprod_crcf_execute(dp[j],                p0, &z0);
+            dotprod_crcf_execute(dp[j+num_channels/2], p1, &z1);
 
 #if DEBUG
             printf("  z(%3u) = %12.8f + %12.8fj\n", i, crealf(z0+z1), cimagf(z0+z1));
