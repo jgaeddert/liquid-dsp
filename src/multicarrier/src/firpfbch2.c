@@ -31,27 +31,27 @@
 
 // firpfbch2 object structure definition
 struct FIRPFBCH2(_s) {
-    int type;                   // synthesis/analysis
-    unsigned int M;             // number of channels
-    unsigned int M2;            // number of channels/2
-    unsigned int m;             // filter semi-length
+    int type;           // synthesis/analysis
+    unsigned int M;     // number of channels
+    unsigned int M2;    // number of channels/2
+    unsigned int m;     // filter semi-length
 
     // filter
-    unsigned int h_len;         // filter length
+    unsigned int h_len; // prototype filter length: 2*M*m
     
     // create separate bank of dotprod and window objects
-    DOTPROD() * dp;             // dot product object array
+    DOTPROD() * dp;     // dot product object array
 
     // inverse FFT plan
-    FFT_PLAN ifft;              // inverse FFT object
-    TO * X;                     // IFFT input array  [size: M x 1]
-    TO * x;                     // IFFT output array [size: M x 1]
+    FFT_PLAN ifft;      // inverse FFT object
+    TO * X;             // IFFT input array  [size: M x 1]
+    TO * x;             // IFFT output array [size: M x 1]
 
     // common data structures shared between analysis and
     // synthesis algorithms
-    WINDOW() * w0;              // window buffer object array
-    WINDOW() * w1;              // window buffer object array (synthesizer only)
-    int flag;
+    WINDOW() * w0;      // window buffer object array
+    WINDOW() * w1;      // window buffer object array (synthesizer only)
+    int flag;           // flag indicating filter/buffer alignment
 };
 
 // create firpfbch2 object
@@ -79,13 +79,15 @@ FIRPFBCH2() FIRPFBCH2(_create)(int          _type,
 
     // create object
     FIRPFBCH2() q = (FIRPFBCH2()) malloc(sizeof(struct FIRPFBCH2(_s)));
-    q->type       = _type;  // channelizer type (e.g. LIQUID_ANALYZER)
-    q->M          = _M;     // number of channels
-    q->m          = _m;     // prototype filter semi-length
+
+    // set input parameters
+    q->type     = _type;        // channelizer type (e.g. LIQUID_ANALYZER)
+    q->M        = _M;           // number of channels
+    q->m        = _m;           // prototype filter semi-length
 
     // compute derived values
-    q->h_len      = 2*q->M*q->m;
-    q->M2         = q->M / 2;
+    q->h_len    = 2*q->M*q->m;  // prototype filter length
+    q->M2       = q->M / 2;     // number of channels / 2
 
     // generate bank of sub-samped filters
     q->dp = (DOTPROD()*) malloc((q->M)*sizeof(DOTPROD()));
@@ -94,7 +96,8 @@ FIRPFBCH2() FIRPFBCH2(_create)(int          _type,
     unsigned int h_sub_len = 2 * q->m;
     TC h_sub[h_sub_len];
     for (i=0; i<q->M; i++) {
-        // sub-sample prototype filter, loading coefficients in reverse order
+        // sub-sample prototype filter, loading coefficients
+        // in reverse order
         for (n=0; n<h_sub_len; n++)
             h_sub[h_sub_len-n-1] = _h[i + n*(q->M)];
 
@@ -102,13 +105,13 @@ FIRPFBCH2() FIRPFBCH2(_create)(int          _type,
         q->dp[i] = DOTPROD(_create)(h_sub,h_sub_len);
     }
 
-    // create fft plan
+    // create FFT plan (inverse transform)
     // TODO : use fftw_malloc if HAVE_FFTW3_H
     q->X = (T*) malloc((q->M)*sizeof(T));   // IFFT input
     q->x = (T*) malloc((q->M)*sizeof(T));   // IFFT output
     q->ifft = FFT_CREATE_PLAN(q->M, q->X, q->x, FFT_DIR_BACKWARD, FFT_METHOD);
 
-    // create objects specific to type
+    // create buffer objects
     q->w0 = (WINDOW()*) malloc((q->M)*sizeof(WINDOW()));
     q->w1 = (WINDOW()*) malloc((q->M)*sizeof(WINDOW()));
     for (i=0; i<q->M; i++) {
@@ -147,13 +150,14 @@ FIRPFBCH2() FIRPFBCH2(_create_kaiser)(int          _type,
     unsigned int h_len = 2*_M*_m+1;
     float * hf = (float*)malloc(h_len*sizeof(float));
 
-    // filter cut-off frequency
+    // filter cut-off frequency (analyzer has twice the
+    // bandwidth of the synthesizer)
     float fc = (_type == LIQUID_ANALYZER) ? 1.0f/(float)_M : 0.5f/(float)_M;
 
-    // compute filter coefficients
+    // compute filter coefficients (floating point precision)
     liquid_firdes_kaiser(h_len, fc, _As, 0.0f, hf);
 
-    // normalize to unit average
+    // normalize to unit average and scale by number of channels
     float hf_sum = 0.0f;
     unsigned int i;
     for (i=0; i<h_len; i++) hf_sum += hf[i];
@@ -190,7 +194,7 @@ void FIRPFBCH2(_destroy)(FIRPFBCH2() _q)
     free(_q->X);
     free(_q->x);
     
-    // free window objects
+    // free window objects (buffers)
     for (i=0; i<_q->M; i++) {
         WINDOW(_destroy)(_q->w0[i]);
         WINDOW(_destroy)(_q->w1[i]);
@@ -213,7 +217,7 @@ void FIRPFBCH2(_reset)(FIRPFBCH2() _q)
         WINDOW(_clear)(_q->w1[i]);
     }
 
-    // reset flag
+    // reset filter/buffer alignment flag
     _q->flag = 0;
 }
 
@@ -253,10 +257,13 @@ void FIRPFBCH2(_execute_analyzer)(FIRPFBCH2() _q,
     unsigned int offset = _q->flag ? _q->M2 : 0;
     TI * r;      // buffer read pointer
     for (i=0; i<_q->M; i++) {
+        // compute buffer index
         unsigned int buffer_index  = (offset+i)%(_q->M);
 
+        // read buffer at index
         WINDOW(_read)(_q->w0[buffer_index], &r);
 
+        // run dot product storing result in IFFT input buffer
         DOTPROD(_execute)(_q->dp[i], r, &_q->X[buffer_index]);
     }
 
