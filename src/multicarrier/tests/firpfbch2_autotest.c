@@ -67,6 +67,7 @@ void firpfbch2_crcf_runtest(unsigned int _M,
 
     // validate output
     unsigned int delay = 2*_M*_m - _M/2 + 1;
+    float rmse = 0.0f;
     for (i=0; i<num_samples; i++) {
         //printf("%3u : %12.8f + %12.8fj\n", i, crealf(y[i]), cimagf(y[i]));
         if (i < delay) {
@@ -76,7 +77,15 @@ void firpfbch2_crcf_runtest(unsigned int _M,
             CONTEND_DELTA( crealf(y[i]), crealf(x[i-delay]), tol );
             CONTEND_DELTA( cimagf(y[i]), cimagf(x[i-delay]), tol );
         }
+
+        // compute rmse
+        float complex err = y[i] - (i < delay ? 0.0f : x[i-delay]);
+        rmse += crealf(err * conjf(err));
     }
+
+    rmse = sqrtf(rmse / (float)num_samples);
+    if (liquid_autotest_verbose)
+        printf("firpfbch2:  M=%3u, m=%2u, As=%8.2f dB, rmse=%12.4e\n", _M, _m, _As, rmse);
 }
 
 // analysis
@@ -84,6 +93,4 @@ void autotest_firpfbch2_crcf_n8()    { firpfbch2_crcf_runtest(   8, 5, 60.0f); }
 void autotest_firpfbch2_crcf_n16()   { firpfbch2_crcf_runtest(  16, 5, 60.0f); }
 void autotest_firpfbch2_crcf_n32()   { firpfbch2_crcf_runtest(  32, 5, 60.0f); }
 void autotest_firpfbch2_crcf_n64()   { firpfbch2_crcf_runtest(  64, 5, 60.0f); }
-void autotest_firpfbch2_crcf_n128()  { firpfbch2_crcf_runtest( 128, 5, 60.0f); }
-void autotest_firpfbch2_crcf_n256()  { firpfbch2_crcf_runtest( 256, 5, 60.0f); }
 
