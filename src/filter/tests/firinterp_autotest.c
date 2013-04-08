@@ -24,7 +24,7 @@
 //
 // AUTOTEST: 
 //
-void autotest_interp_rrrf_generic()
+void autotest_firinterp_rrrf_generic()
 {
     float h[9] = {
       -0.2762293319046737,
@@ -37,8 +37,8 @@ void autotest_interp_rrrf_generic()
        0.1412672462812405,
       -0.0991854372394269};
 
-    unsigned int M = 4;     // interp factor
-    interp_rrrf q = interp_rrrf_create(M,h,9);
+    unsigned int M = 4;     // firinterp factor
+    firinterp_rrrf q = firinterp_rrrf_create(M,h,9);
 
     float x[] = {1.0, -1.0, 1.0, 1.0};
     float y[16];
@@ -64,7 +64,7 @@ void autotest_interp_rrrf_generic()
 
     unsigned int i;
     for (i=0; i<4; i++)
-        interp_rrrf_execute(q, x[i], &y[i*M]);
+        firinterp_rrrf_execute(q, x[i], &y[i*M]);
 
     for (i=0; i<16; i++) {
         CONTEND_DELTA(y[i], test[i], tol);
@@ -74,13 +74,13 @@ void autotest_interp_rrrf_generic()
     }
 
     if (liquid_autotest_verbose)
-        interp_rrrf_print(q);
+        firinterp_rrrf_print(q);
 
     // destroy interpolator object
-    interp_rrrf_destroy(q);
+    firinterp_rrrf_destroy(q);
 }
 
-void autotest_interp_crcf_generic()
+void autotest_firinterp_crcf_generic()
 {
     // h = [0, 0.25, 0.5, 0.75, 1.0, 0.75, 0.5, 0.25, 0];
     float h[9] = {
@@ -94,8 +94,8 @@ void autotest_interp_crcf_generic()
       -0.6379821629743743,
        0.7019489165905530};
 
-    unsigned int M = 4;     // interp factor
-    interp_crcf q = interp_crcf_create(M,h,9);
+    unsigned int M = 4;     // firinterp factor
+    firinterp_crcf q = firinterp_crcf_create(M,h,9);
 
     //  x = [1+j*0.2, -0.2+j*1.3, 0.5+j*0.3, 1.1-j*0.2]
     float complex x[4] = {
@@ -131,7 +131,7 @@ void autotest_interp_crcf_generic()
 
     unsigned int i;
     for (i=0; i<4; i++)
-        interp_crcf_execute(q, x[i], &y[i*M]);
+        firinterp_crcf_execute(q, x[i], &y[i*M]);
 
     for (i=0; i<16; i++) {
         CONTEND_DELTA( crealf(y[i]), crealf(test[i]), tol);
@@ -142,9 +142,9 @@ void autotest_interp_crcf_generic()
     }
 
     if (liquid_autotest_verbose)
-        interp_crcf_print(q);
+        firinterp_crcf_print(q);
 
     // destroy interpolator object
-    interp_crcf_destroy(q);
+    firinterp_crcf_destroy(q);
 }
 

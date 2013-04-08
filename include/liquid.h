@@ -1775,56 +1775,56 @@ LIQUID_FIRPFB_DEFINE_API(FIRPFB_MANGLE_CCCF,
 // 
 // Interpolator
 //
-#define INTERP_MANGLE_RRRF(name)  LIQUID_CONCAT(interp_rrrf,name)
-#define INTERP_MANGLE_CRCF(name)  LIQUID_CONCAT(interp_crcf,name)
-#define INTERP_MANGLE_CCCF(name)  LIQUID_CONCAT(interp_cccf,name)
+#define FIRINTERP_MANGLE_RRRF(name)  LIQUID_CONCAT(firinterp_rrrf,name)
+#define FIRINTERP_MANGLE_CRCF(name)  LIQUID_CONCAT(firinterp_crcf,name)
+#define FIRINTERP_MANGLE_CCCF(name)  LIQUID_CONCAT(firinterp_cccf,name)
 
-#define LIQUID_INTERP_DEFINE_API(INTERP,TO,TC,TI)               \
-typedef struct INTERP(_s) * INTERP();                           \
+#define LIQUID_FIRINTERP_DEFINE_API(FIRINTERP,TO,TC,TI)         \
+typedef struct FIRINTERP(_s) * FIRINTERP();                     \
 /* create interpolator from external coefficients       */      \
 /*  _M      : interpolation factor                      */      \
 /*  _h      : filter coefficients [size: _h_len x 1]    */      \
 /*  _h_len  : filter length                             */      \
-INTERP() INTERP(_create)(unsigned int _M,                       \
-                         TC *         _h,                       \
-                         unsigned int _h_len);                  \
+FIRINTERP() FIRINTERP(_create)(unsigned int _M,                 \
+                               TC *         _h,                 \
+                               unsigned int _h_len);            \
 /* create interpolator from prototype                   */      \
 /*  _M      : interpolation factor                      */      \
 /*  _m      : filter delay (symbols)                    */      \
 /*  _As     : stop-band attenuation [dB]                */      \
-INTERP() INTERP(_create_prototype)(unsigned int _M,             \
-                                   unsigned int _m,             \
-                                   float        _As);           \
+FIRINTERP() FIRINTERP(_create_prototype)(unsigned int _M,       \
+                                         unsigned int _m,       \
+                                         float        _As);     \
 /* create square-root Nyquist interpolator              */      \
 /*  _type   : filter type (e.g. LIQUID_RNYQUIST_RRC)    */      \
 /*  _k      : samples/symbol (interpolation factor)     */      \
 /*  _m      : filter delay (symbols)                    */      \
 /*  _beta   : rolloff factor (0 < beta <= 1)            */      \
 /*  _dt     : fractional sample delay                   */      \
-INTERP() INTERP(_create_rnyquist)(int          _type,           \
-                                  unsigned int _k,              \
-                                  unsigned int _m,              \
-                                  float        _beta,           \
-                                  float        _dt);            \
-void INTERP(_destroy)(INTERP() _q);                             \
-void INTERP(_print)(INTERP() _q);                               \
-void INTERP(_clear)(INTERP() _q);                               \
-void INTERP(_execute)(INTERP() _q, TI _x, TO *_y);
+FIRINTERP() FIRINTERP(_create_rnyquist)(int          _type,     \
+                                        unsigned int _k,        \
+                                        unsigned int _m,        \
+                                        float        _beta,     \
+                                        float        _dt);      \
+void FIRINTERP(_destroy)(FIRINTERP() _q);                       \
+void FIRINTERP(_print)(FIRINTERP() _q);                         \
+void FIRINTERP(_clear)(FIRINTERP() _q);                         \
+void FIRINTERP(_execute)(FIRINTERP() _q, TI _x, TO *_y);        \
 
-LIQUID_INTERP_DEFINE_API(INTERP_MANGLE_RRRF,
-                         float,
-                         float,
-                         float)
+LIQUID_FIRINTERP_DEFINE_API(FIRINTERP_MANGLE_RRRF,
+                            float,
+                            float,
+                            float)
 
-LIQUID_INTERP_DEFINE_API(INTERP_MANGLE_CRCF,
-                         liquid_float_complex,
-                         float,
-                         liquid_float_complex)
+LIQUID_FIRINTERP_DEFINE_API(FIRINTERP_MANGLE_CRCF,
+                            liquid_float_complex,
+                            float,
+                            liquid_float_complex)
 
-LIQUID_INTERP_DEFINE_API(INTERP_MANGLE_CCCF,
-                         liquid_float_complex,
-                         liquid_float_complex,
-                         liquid_float_complex)
+LIQUID_FIRINTERP_DEFINE_API(FIRINTERP_MANGLE_CCCF,
+                            liquid_float_complex,
+                            liquid_float_complex,
+                            liquid_float_complex)
 
 // 
 // Decimator

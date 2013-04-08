@@ -136,13 +136,13 @@ int main(int argc, char*argv[]) {
     unsigned int h_len = 2*k*m+1;
     float h[h_len];
     liquid_firdes_rnyquist(ftype_tx,k,m,beta,dt,h);
-    interp_crcf q = interp_crcf_create(k,h,h_len);
+    firinterp_crcf q = firinterp_crcf_create(k,h,h_len);
     for (i=0; i<num_symbols; i++) {
-        interp_crcf_execute(q, s[i], &x[n]);
+        firinterp_crcf_execute(q, s[i], &x[n]);
         n+=k;
     }
     assert(n == num_samples);
-    interp_crcf_destroy(q);
+    firinterp_crcf_destroy(q);
 
     // 
     // run resampler

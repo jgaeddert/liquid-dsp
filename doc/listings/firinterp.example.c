@@ -1,4 +1,4 @@
-// file: doc/listings/interp.example.c
+// file: doc/listings/firinterp.example.c
 #include <liquid/liquid.h>
 
 int main() {
@@ -7,7 +7,7 @@ int main() {
 
     // design filter and create interpolator
     float h[h_len];         // filter coefficients
-    interp_crcf q = interp_crcf_create(M,h,h_len);
+    firinterp_crcf q = firinterp_crcf_create(M,h,h_len);
 
     // generate input signal and interpolate
     float complex x;        // input sample
@@ -15,9 +15,9 @@ int main() {
 
     // run interpolator (repeat as necessary)
     {
-        interp_crcf_execute(q, x, y);
+        firinterp_crcf_execute(q, x, y);
     }
 
     // destroy the interpolator object
-    interp_crcf_destroy(q);
+    firinterp_crcf_destroy(q);
 }

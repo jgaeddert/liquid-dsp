@@ -991,6 +991,69 @@ located within the main \liquid\ project directory.
 FIR filter design (\S\ref{module:filter:firdes}).
 
 
+% 
+% firinterp
+%
+\subsection{{\tt firinterp} (finite impulse reponse interpolator)}
+\label{module:filter:firinterp}
+The {\tt firinterp} object implements a basic interpolator with an integer
+output-to-input resampling ratio.
+An example of the {\tt firinterp} interface is listed below.
+%
+\input{listings/firinterp.example.c.tex}
+%
+Listed below is the full interface to the {\tt firinterp} family of
+objects.
+While each method is listed for {\tt firinterp\_crcf}, the same
+functionality applies to {\tt firinterp\_rrrf} and {\tt firinterp\_cccf}.
+%
+\begin{description}
+\item[{\tt firinterp\_crcf\_create(M,*h,N)}]
+    creates an {\tt firinterp} object with an interpolation factor $M$
+    using $N$ filter coefficients $\vec{h}$.
+\item[{\tt firinterp\_crcf\_create\_prototype(M,m,As)}]
+    create an {\tt firinterp} object using a filter prototype designed
+    using the {\tt firdes\_kaiser\_window()} method
+    (see \S\ref{module:filter:firdes})
+    with a normalized cut-off frequency $1/2M$,
+    a filter length of $2Mm$ coefficients,
+    and a stop-band attenuation of $A_s$~dB.
+\item[{\tt firinterp\_crcf\_create\_rnyquist(type,k,m,beta,dt)}]
+    creates an {\tt firinterp} object
+    from a square-root Nyquist filter prototype with
+    $k$ samples per symbol (interpolation factor),
+    $m$ symbols of delay,
+    $\beta$ excess bandwidth,
+    and a fractional sampling interval $\Delta t$.
+    \S\ref{module:filter:firdes:rnyquist}
+    provides a detailed description of the available square-root Nyquist
+    filter prototypes available in \liquid.
+\item[{\tt firinterp\_crcf\_destroy(q)}]
+    destroys the firinterpolator, freeing all internally-allocated memory.
+\item[{\tt firinterp\_crcf\_print(q)}]
+    prints the internal properties of the interpolator to the standard
+    output.
+\item[{\tt firinterp\_crcf\_clear(q)}]
+    clears the internal interpolator buffers.
+\item[{\tt firinterp\_crcf\_execute(q,x,*y)}]
+    executes the interpolator for an input $x$, storing the result in
+    the output array $y$ (which has a length of $M$ samples).
+\end{description}
+%
+\begin{figure}
+\centering
+  \includegraphics[trim = 0mm 0mm 0mm 0mm, clip, width=13cm]{figures.gen/filter_firinterp_crcf}
+\caption{{\tt firinterp\_crcf} (interpolator) example with $M=4$,
+         compensating for filter delay.}
+\label{fig:module:filter:firinterp_crcf}
+\end{figure}
+%
+A graphical example of the interpolator can be seen in
+Figure~\ref{fig:module:filter:firinterp_crcf}.
+A detailed example program is given in
+{\tt examples/firinterp\_crcf\_example.c},
+located under the main \liquid\ project directory.
+
 
 % 
 % iirfilt
@@ -1620,69 +1683,6 @@ reasons.
 \caption{{\tt besself} (Bessel filter design)}
 \label{fig:module:filter:bessel}
 \end{figure}
-
-% 
-% interp
-%
-\subsection{{\tt interp} (interpolator)}
-\label{module:filter:interp}
-The {\tt interp} object implements a basic interpolator with an integer
-output-to-input resampling ratio.
-An example of the {\tt interp} interface is listed below.
-%
-\input{listings/interp.example.c.tex}
-%
-Listed below is the full interface to the {\tt interp} family of
-objects.
-While each method is listed for {\tt interp\_crcf}, the same
-functionality applies to {\tt interp\_rrrf} and {\tt interp\_cccf}.
-%
-\begin{description}
-\item[{\tt interp\_crcf\_create(M,*h,N)}]
-    creates an {\tt interp} object with an interpolation factor $M$
-    using $N$ filter coefficients $\vec{h}$.
-\item[{\tt interp\_crcf\_create\_prototype(M,m,As)}]
-    create an {\tt interp} object using a filter prototype designed
-    using the {\tt firdes\_kaiser\_window()} method
-    (see \S\ref{module:filter:firdes})
-    with a normalized cut-off frequency $1/2M$,
-    a filter length of $2Mm$ coefficients,
-    and a stop-band attenuation of $A_s$~dB.
-\item[{\tt interp\_crcf\_create\_rnyquist(type,k,m,beta,dt)}]
-    creates an {\tt interp} object
-    from a square-root Nyquist filter prototype with
-    $k$ samples per symbol (interpolation factor),
-    $m$ symbols of delay,
-    $\beta$ excess bandwidth,
-    and a fractional sampling interval $\Delta t$.
-    \S\ref{module:filter:firdes:rnyquist}
-    provides a detailed description of the available square-root Nyquist
-    filter prototypes available in \liquid.
-\item[{\tt interp\_crcf\_destroy(q)}]
-    destroys the interpolator, freeing all internally-allocated memory.
-\item[{\tt interp\_crcf\_print(q)}]
-    prints the internal properties of the interpolator to the standard
-    output.
-\item[{\tt interp\_crcf\_clear(q)}]
-    clears the internal interpolator buffers.
-\item[{\tt interp\_crcf\_execute(q,x,*y)}]
-    executes the interpolator for an input $x$, storing the result in
-    the output array $y$ (which has a length of $M$ samples).
-\end{description}
-%
-\begin{figure}
-\centering
-  \includegraphics[trim = 0mm 0mm 0mm 0mm, clip, width=13cm]{figures.gen/filter_interp_crcf}
-\caption{{\tt interp\_crcf} (interpolator) example with $M=4$,
-         compensating for filter delay.}
-\label{fig:module:filter:interp_crcf}
-\end{figure}
-%
-A graphical example of the interpolator can be seen in
-Figure~\ref{fig:module:filter:interp_crcf}.
-A detailed example program is given in
-{\tt examples/interp\_crcf\_example.c},
-located under the main \liquid\ project directory.
 
 
 % 

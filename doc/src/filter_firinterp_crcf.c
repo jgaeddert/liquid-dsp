@@ -1,5 +1,5 @@
 //
-// filter_interp_crcf.c
+// filter_firinterp_crcf.c
 //
 
 #include <stdio.h>
@@ -9,7 +9,7 @@
 #include "liquid.h"
 #include "liquid.doc.h"
 
-#define OUTPUT_FILENAME "figures.gen/filter_interp_crcf.gnu"
+#define OUTPUT_FILENAME "figures.gen/filter_firinterp_crcf.gnu"
 
 int main() {
     // options
@@ -23,7 +23,7 @@ int main() {
     unsigned int num_samples = M*num_symbols;
 
     // create interpolator
-    interp_crcf q = interp_crcf_create_prototype(M,m,As);
+    firinterp_crcf q = firinterp_crcf_create_prototype(M,m,As);
 
     // generate input signal and interpolate
     float complex x[num_symbols];
@@ -37,10 +37,10 @@ int main() {
     }
 
     for (i=0; i<num_symbols; i++)
-        interp_crcf_execute(q, x[i], &y[i*M]);
+        firinterp_crcf_execute(q, x[i], &y[i*M]);
 
     // destroy interpolator object
-    interp_crcf_destroy(q);
+    firinterp_crcf_destroy(q);
     
     // open output file
     FILE * fid = fopen(OUTPUT_FILENAME,"w");

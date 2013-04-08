@@ -26,7 +26,7 @@
 #include <string.h>
 
 // defined:
-//  INTERP()    name-mangling macro
+//  FIRINTERP()    name-mangling macro
 //  TO          output data type
 //  TC          coefficient data type
 //  TI          input data type
@@ -34,7 +34,7 @@
 //  DOTPROD()   dotprod macro
 //  FIRPFB()    polyphase filterbank macro
 
-struct INTERP(_s) {
+struct FIRINTERP(_s) {
     TC * h;                 // prototype filter coefficients
     unsigned int h_len;     // prototype filter length
     unsigned int h_sub_len; // sub-filter length
@@ -46,9 +46,9 @@ struct INTERP(_s) {
 //  _M      :   interpolation factor
 //  _h      :   filter coefficients array [size: _h_len x 1]
 //  _h_len  :   filter length
-INTERP() INTERP(_create)(unsigned int _M,
-                         TC *         _h,
-                         unsigned int _h_len)
+FIRINTERP() FIRINTERP(_create)(unsigned int _M,
+                               TC *         _h,
+                               unsigned int _h_len)
 {
     // validate input
     if (_M < 2) {
@@ -60,7 +60,7 @@ INTERP() INTERP(_create)(unsigned int _M,
     }
 
     // allocate main object memory and set internal parameters
-    INTERP() q = (INTERP()) malloc(sizeof(struct INTERP(_s)));
+    FIRINTERP() q = (FIRINTERP()) malloc(sizeof(struct FIRINTERP(_s)));
     q->M = _M;
     q->h_len = _h_len;
 
@@ -89,9 +89,9 @@ INTERP() INTERP(_create)(unsigned int _M,
 //  _M      :   interpolation factor
 //  _m      :   symbol delay
 //  _As     :   stop-band attenuation [dB]
-INTERP() INTERP(_create_prototype)(unsigned int _M,
-                                   unsigned int _m,
-                                   float        _As)
+FIRINTERP() FIRINTERP(_create_prototype)(unsigned int _M,
+                                         unsigned int _m,
+                                         float        _As)
 {
     // validate input
     if (_M < 2) {
@@ -118,7 +118,7 @@ INTERP() INTERP(_create_prototype)(unsigned int _M,
         hc[i] = hf[i];
     
     // return interpolator object
-    return INTERP(_create)(_M, hc, 2*_M*_m);
+    return FIRINTERP(_create)(_M, hc, 2*_M*_m);
 }
 
 // create square-root Nyquist interpolator
@@ -127,11 +127,11 @@ INTERP() INTERP(_create_prototype)(unsigned int _M,
 //  _m      :   filter delay (symbols), _m > 0
 //  _beta   :   excess bandwidth factor, 0 < _beta < 1
 //  _dt     :   fractional sample delay, 0 <= _dt < 1
-INTERP() INTERP(_create_rnyquist)(int          _type,
-                                  unsigned int _k,
-                                  unsigned int _m,
-                                  float        _beta,
-                                  float        _dt)
+FIRINTERP() FIRINTERP(_create_rnyquist)(int          _type,
+                                        unsigned int _k,
+                                        unsigned int _m,
+                                        float        _beta,
+                                        float        _dt)
 {
     // validate input
     if (_k < 2) {
@@ -160,11 +160,11 @@ INTERP() INTERP(_create_rnyquist)(int          _type,
         hc[i] = h[i];
 
     // return interpolator object
-    return INTERP(_create)(_k, hc, h_len);
+    return FIRINTERP(_create)(_k, hc, h_len);
 }
 
 // destroy interpolator object
-void INTERP(_destroy)(INTERP() _q)
+void FIRINTERP(_destroy)(FIRINTERP() _q)
 {
     FIRPFB(_destroy)(_q->filterbank);
     free(_q->h);
@@ -172,7 +172,7 @@ void INTERP(_destroy)(INTERP() _q)
 }
 
 // print interpolator state
-void INTERP(_print)(INTERP() _q)
+void FIRINTERP(_print)(FIRINTERP() _q)
 {
     printf("interp():\n");
     printf("    M       :   %u\n", _q->M);
@@ -181,7 +181,7 @@ void INTERP(_print)(INTERP() _q)
 }
 
 // clear internal state
-void INTERP(_clear)(INTERP() _q)
+void FIRINTERP(_clear)(FIRINTERP() _q)
 {
     FIRPFB(_clear)(_q->filterbank);
 }
@@ -190,9 +190,9 @@ void INTERP(_clear)(INTERP() _q)
 //  _q      :   interpolator object
 //  _x      :   input sample
 //  _y      :   output array [size: 1 x _M]
-void INTERP(_execute)(INTERP() _q,
-                      TI       _x,
-                      TO *     _y)
+void FIRINTERP(_execute)(FIRINTERP() _q,
+                         TI          _x,
+                         TO *        _y)
 {
     // push sample into filterbank
     FIRPFB(_push)(_q->filterbank,  _x);

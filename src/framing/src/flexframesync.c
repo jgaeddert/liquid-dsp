@@ -177,13 +177,13 @@ flexframesync flexframesync_create(framesync_callback _callback,
     q->m    = 7;        // filter delay (symbols)
     q->beta = 0.25f;    // excess bandwidth factor
     float complex seq[q->k*64];
-    interp_crcf interp = interp_crcf_create_rnyquist(LIQUID_RNYQUIST_ARKAISER,q->k,q->m,q->beta,0);
+    firinterp_crcf interp = firinterp_crcf_create_rnyquist(LIQUID_RNYQUIST_ARKAISER,q->k,q->m,q->beta,0);
     for (i=0; i<64+q->m; i++) {
         // compensate for filter delay
-        if (i < q->m) interp_crcf_execute(interp, q->preamble_pn[i],    &seq[0]);
-        else          interp_crcf_execute(interp, q->preamble_pn[i%64], &seq[q->k*(i-q->m)]);
+        if (i < q->m) firinterp_crcf_execute(interp, q->preamble_pn[i],    &seq[0]);
+        else          firinterp_crcf_execute(interp, q->preamble_pn[i%64], &seq[q->k*(i-q->m)]);
     }
-    interp_crcf_destroy(interp);
+    firinterp_crcf_destroy(interp);
 
     // create frame detector
     float threshold = 0.4f;     // detection threshold
