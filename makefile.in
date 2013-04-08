@@ -422,6 +422,7 @@ filter_includes :=						\
 	src/filter/src/firpfb.c					\
 	src/filter/src/iirfilt.c				\
 	src/filter/src/iirfiltsos.c				\
+	src/filter/src/iirinterp.c				\
 	src/filter/src/decim.c					\
 	src/filter/src/msresamp.c				\
 	src/filter/src/resamp.c					\

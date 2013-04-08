@@ -35,6 +35,7 @@
 #define FIRPFB(name)        LIQUID_CONCAT(firpfb_crcf,name)
 #define IIRFILT(name)       LIQUID_CONCAT(iirfilt_crcf,name)
 #define IIRFILTSOS(name)    LIQUID_CONCAT(iirfiltsos_crcf,name)
+#define IIRINTERP(name)     LIQUID_CONCAT(iirinterp_crcf,name)
 #define DECIM(name)         LIQUID_CONCAT(decim_crcf,name)
 #define MSRESAMP(name)      LIQUID_CONCAT(msresamp_crcf,name)
 #define RESAMP(name)        LIQUID_CONCAT(resamp_crcf,name)
@@ -65,6 +66,7 @@
 #include "firpfb.c"
 #include "iirfilt.c"
 #include "iirfiltsos.c"
+#include "iirinterp.c"
 #include "decim.c"
 #include "msresamp.c"
 #include "resamp.c"         // floating-point phase version

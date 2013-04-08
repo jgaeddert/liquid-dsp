@@ -1773,8 +1773,10 @@ LIQUID_FIRPFB_DEFINE_API(FIRPFB_MANGLE_CCCF,
                          liquid_float_complex)
 
 // 
-// Interpolator
+// Interpolators
 //
+
+// firinterp : finite impulse response interpolator
 #define FIRINTERP_MANGLE_RRRF(name)  LIQUID_CONCAT(firinterp_rrrf,name)
 #define FIRINTERP_MANGLE_CRCF(name)  LIQUID_CONCAT(firinterp_crcf,name)
 #define FIRINTERP_MANGLE_CCCF(name)  LIQUID_CONCAT(firinterp_cccf,name)
@@ -1822,6 +1824,66 @@ LIQUID_FIRINTERP_DEFINE_API(FIRINTERP_MANGLE_CRCF,
                             liquid_float_complex)
 
 LIQUID_FIRINTERP_DEFINE_API(FIRINTERP_MANGLE_CCCF,
+                            liquid_float_complex,
+                            liquid_float_complex,
+                            liquid_float_complex)
+
+// iirinterp : infinite impulse response interpolator
+#define IIRINTERP_MANGLE_RRRF(name)  LIQUID_CONCAT(iirinterp_rrrf,name)
+#define IIRINTERP_MANGLE_CRCF(name)  LIQUID_CONCAT(iirinterp_crcf,name)
+#define IIRINTERP_MANGLE_CCCF(name)  LIQUID_CONCAT(iirinterp_cccf,name)
+
+#define LIQUID_IIRINTERP_DEFINE_API(IIRINTERP,TO,TC,TI)         \
+typedef struct IIRINTERP(_s) * IIRINTERP();                     \
+                                                                \
+/* create interpolator from external coefficients           */  \
+/*  _M      : interpolation factor                          */  \
+/*  _b      : feed-back coefficients [size: _nb x 1]        */  \
+/*  _nb     : feed-back coefficients length                 */  \
+/*  _a      : feed-forward coefficients [size: _na x 1]     */  \
+/*  _na     : feed-forward coefficients length              */  \
+IIRINTERP() IIRINTERP(_create)(unsigned int _M,                 \
+                               TC *         _b,                 \
+                               unsigned int _nb,                \
+                               TC *         _a,                 \
+                               unsigned int _na);               \
+                                                                \
+/* create interpolator from prototype                       */  \
+/*  _M      : interpolation factor                          */  \
+IIRINTERP() IIRINTERP(_create_prototype)(                       \
+                unsigned int _M,                                \
+                liquid_iirdes_filtertype _ftype,                \
+                liquid_iirdes_bandtype   _btype,                \
+                liquid_iirdes_format     _format,               \
+                unsigned int _order,                            \
+                float _fc,                                      \
+                float _f0,                                      \
+                float _Ap,                                      \
+                float _As);                                     \
+                                                                \
+/* destroy interpolator object and free internal memory     */  \
+void IIRINTERP(_destroy)(IIRINTERP() _q);                       \
+                                                                \
+/* print interpolator object internals                      */  \
+void IIRINTERP(_print)(IIRINTERP() _q);                         \
+                                                                \
+/* reset interpolator object                                */  \
+void IIRINTERP(_reset)(IIRINTERP() _q);                         \
+                                                                \
+/* execute interpolator                                     */  \
+void IIRINTERP(_execute)(IIRINTERP() _q, TI _x, TO *_y);        \
+
+LIQUID_IIRINTERP_DEFINE_API(IIRINTERP_MANGLE_RRRF,
+                            float,
+                            float,
+                            float)
+
+LIQUID_IIRINTERP_DEFINE_API(IIRINTERP_MANGLE_CRCF,
+                            liquid_float_complex,
+                            float,
+                            liquid_float_complex)
+
+LIQUID_IIRINTERP_DEFINE_API(IIRINTERP_MANGLE_CCCF,
                             liquid_float_complex,
                             liquid_float_complex,
                             liquid_float_complex)

@@ -31,9 +31,10 @@
 #define AUTOCORR(name)      LIQUID_CONCAT(autocorr_cccf,name)
 #define FIRFILT(name)       LIQUID_CONCAT(firfilt_cccf,name)
 #define FIRINTERP(name)     LIQUID_CONCAT(firinterp_cccf,name)
+#define FIRPFB(name)        LIQUID_CONCAT(firpfb_cccf,name)
 #define IIRFILT(name)       LIQUID_CONCAT(iirfilt_cccf,name)
 #define IIRFILTSOS(name)    LIQUID_CONCAT(iirfiltsos_cccf,name)
-#define FIRPFB(name)        LIQUID_CONCAT(firpfb_cccf,name)
+#define IIRINTERP(name)     LIQUID_CONCAT(iirinterp_cccf,name)
 #define DECIM(name)         LIQUID_CONCAT(decim_cccf,name)
 #define NCO(name)           LIQUID_CONCAT(nco_crcf,name)
 #define MSRESAMP(name)      LIQUID_CONCAT(msresamp_cccf,name)
@@ -64,6 +65,7 @@
 #include "firpfb.c"
 #include "iirfilt.c"
 #include "iirfiltsos.c"
+#include "iirinterp.c"
 #include "decim.c"
 //#include "qmfb.c"
 #include "msresamp.c"
