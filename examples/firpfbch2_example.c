@@ -19,7 +19,7 @@
 // print usage/help message
 void usage()
 {
-    printf("modem_example [options]\n");
+    printf("firpfbch2_example [options]\n");
     printf("  h     : print help\n");
     printf("  M     : number of channels, default: 6\n");
     printf("  m     : prototype filter semi-length, default: 4\n");
