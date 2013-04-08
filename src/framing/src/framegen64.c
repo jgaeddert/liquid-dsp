@@ -57,7 +57,7 @@ struct framegen64_s {
     unsigned char payload_sym[600]; // 600 = 150 bytes * 8 bits/bytes / 2 bits/symbol
 
     // pulse-shaping filter
-    interp_crcf interp;
+    firinterp_crcf interp;
 };
 
 // create framegen64 object
@@ -77,7 +77,7 @@ framegen64 framegen64_create()
     msequence_destroy(ms);
 
     // create pulse-shaping filter (k=2)
-    q->interp = interp_crcf_create_rnyquist(LIQUID_RNYQUIST_ARKAISER,2,q->m,q->beta,0);
+    q->interp = firinterp_crcf_create_rnyquist(LIQUID_RNYQUIST_ARKAISER,2,q->m,q->beta,0);
 
     // create payload packetizer
     q->check     = LIQUID_CRC_24;
@@ -96,9 +96,9 @@ framegen64 framegen64_create()
 void framegen64_destroy(framegen64 _q)
 {
     // destroy internal objects
-    interp_crcf_destroy(_q->interp);       // interpolator (matched filter)
-    packetizer_destroy(_q->p_payload);     // payload packetizer (encoder)
-    modem_destroy(_q->mod);                // QPSK payload modulator
+    firinterp_crcf_destroy(_q->interp);     // interpolator (matched filter)
+    packetizer_destroy(_q->p_payload);      // payload packetizer (encoder)
+    modem_destroy(_q->mod);                 // QPSK payload modulator
 
     // free main object memory
     free(_q);
@@ -153,11 +153,11 @@ void framegen64_execute(framegen64      _q,
     unsigned int n=0;
 
     // reset interpolator
-    interp_crcf_clear(_q->interp);
+    firinterp_crcf_clear(_q->interp);
 
     // p/n sequence
     for (i=0; i<64; i++) {
-        interp_crcf_execute(_q->interp, _q->pn_sequence[i], &_frame[n]);
+        firinterp_crcf_execute(_q->interp, _q->pn_sequence[i], &_frame[n]);
         n+=2;
     }
 
@@ -165,13 +165,13 @@ void framegen64_execute(framegen64      _q,
     // payload
     for (i=0; i<600; i++) {
         modem_modulate(_q->mod, _q->payload_sym[i], &x);
-        interp_crcf_execute(_q->interp, x, &_frame[n]);
+        firinterp_crcf_execute(_q->interp, x, &_frame[n]);
         n+=2;
     }
 
     // interpolator settling
     for (i=0; i<2*_q->m; i++) {
-        interp_crcf_execute(_q->interp, 0.0f, &_frame[n]);
+        firinterp_crcf_execute(_q->interp, 0.0f, &_frame[n]);
         n+=2;
     }
 

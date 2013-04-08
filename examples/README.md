@@ -106,7 +106,7 @@ This directory contains all the examples for interfacing the liquid modules.
     sequence is then decimated with the same filter, matched to the
     interpolator.
 
-    SEE ALSO: `interp_crcf_example.c`
+    SEE ALSO: `firinterp_crcf_example.c`
 
  * `decim_rrrf_example.c`:
 
@@ -187,6 +187,11 @@ This directory contains all the examples for interfacing the liquid modules.
     samples.
 
     SEE ALSO: `firhilb_decim_example.c`
+
+ * `firinterp_crcf_example.c`:
+    This example demonstrates the interp object (interpolator)
+    interface. Data symbols are generated and then interpolated
+    according to a finite impulse response Nyquist filter.
 
  * `firpfbch_analysis_example.c`:
     Example of the analysis channelizer filterbank. The input signal is
@@ -286,6 +291,10 @@ This directory contains all the examples for interfacing the liquid modules.
     coefficients are real, but the input and output arrays are complex.  The
     filter order and cutoff frequency are specified at the beginning.
 
+ * `iirinterp_crcf_example.c`:
+    This example demonstrates the iirinterp object (IIR interpolator)
+    interface.
+
  * `interleaver_example.c`:
     This example demonstrates the functionality of the liquid interleaver
     object.  Interleavers serve to distribute  grouped bit errors evenly
@@ -299,11 +308,6 @@ This directory contains all the examples for interfacing the liquid modules.
  * `interleaver_scatterplot_example.c`:
 
  * `interleaver_soft_example.c`:
-
- * `interp_crcf_example.c`:
-    This example demonstrates the interp object (interpolator)
-    interface. Data symbols are generated and then interpolated
-    according to a finite impulse response Nyquist filter.
 
  * `kbd_window_example.c`:
  * `lpc_example.c`:

@@ -125,8 +125,8 @@ int main(int argc, char*argv[]) {
     }
 
     // create interpolator and decimator
-    interp_crcf q  = interp_crcf_create(k,h,h_len);
-    decim_cccf d   = decim_cccf_create(k,gc,h_len);
+    firinterp_crcf interp = firinterp_crcf_create(k,h,h_len);
+    decim_cccf     decim  = decim_cccf_create(k,gc,h_len);
 
     // generate signal
     float complex sym_in[num_symbols];
@@ -142,7 +142,7 @@ int main(int argc, char*argv[]) {
         sym_in[i] = cexpf(_Complex_I*( 0.25f*M_PI + 0.5f*M_PI*(rand()%4)) );
 
         // interpolate
-        interp_crcf_execute(q, sym_in[i], &y[i*k]);
+        firinterp_crcf_execute(interp, sym_in[i], &y[i*k]);
 
 #if 0
         printf("  %3u : %8.5f + j*%8.5f\n", i, crealf(sym_in[i]), cimagf(sym_in[i]));
@@ -157,7 +157,7 @@ int main(int argc, char*argv[]) {
     // decimation
     for (i=0; i<num_symbols; i++) {
         // decimate
-        decim_cccf_execute(d, &y[i*k], &sym_out[i], 0);
+        decim_cccf_execute(decim, &y[i*k], &sym_out[i], 0);
 
         // normalize output
         sym_out[i] /= k;
@@ -177,8 +177,8 @@ int main(int argc, char*argv[]) {
     }
 
     // clean up objects
-    interp_crcf_destroy(q);
-    decim_cccf_destroy(d);
+    firinterp_crcf_destroy(interp);
+    decim_cccf_destroy(decim);
 
 
     FILE * fid = fopen(OUTPUT_FILENAME,"w");

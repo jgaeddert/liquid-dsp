@@ -94,6 +94,7 @@ LISTINGS_C = 						\
 	listings/firfarrow_crcf.example.c		\
 	listings/firfilt.example.c			\
 	listings/firhilb.example.c			\
+	listings/firinterp.example.c			\
 	listings/freqmodem.example.c			\
 	listings/gasearch.example.c			\
 	listings/gmskmodem.example.c			\
@@ -102,7 +103,6 @@ LISTINGS_C = 						\
 	listings/gport.indirect.example.c		\
 	listings/iirdes.example.c			\
 	listings/iirfilt.example.c			\
-	listings/interp.example.c			\
 	listings/interleaver.example.c			\
 	listings/lifecycle.example.c			\
 	listings/matrix.example.c			\

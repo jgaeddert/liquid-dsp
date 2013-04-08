@@ -151,13 +151,13 @@ framesync64 framesync64_create(framesync_callback _callback,
     unsigned int m  = 3;    // filter delay (symbols)
     float beta      = 0.5f; // excess bandwidth factor
     float complex seq[k*64];
-    interp_crcf interp = interp_crcf_create_rnyquist(LIQUID_RNYQUIST_ARKAISER,k,m,beta,0);
+    firinterp_crcf interp = firinterp_crcf_create_rnyquist(LIQUID_RNYQUIST_ARKAISER,k,m,beta,0);
     for (i=0; i<64+m; i++) {
         // compensate for filter delay
-        if (i < m) interp_crcf_execute(interp, q->preamble_pn[i],    &seq[0]);
-        else       interp_crcf_execute(interp, q->preamble_pn[i%64], &seq[2*(i-m)]);
+        if (i < m) firinterp_crcf_execute(interp, q->preamble_pn[i],    &seq[0]);
+        else       firinterp_crcf_execute(interp, q->preamble_pn[i%64], &seq[2*(i-m)]);
     }
-    interp_crcf_destroy(interp);
+    firinterp_crcf_destroy(interp);
 
     // create frame detector
     float threshold = 0.4f;     // detection threshold

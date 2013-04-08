@@ -34,8 +34,8 @@
 
 // 
 #define FIRFILT(name)       LIQUID_CONCAT(firfilt_rrrq16,name)
+#define FIRINTERP(name)     LIQUID_CONCAT(firinterp_rrrq16,name)
 #define FIRPFB(name)        LIQUID_CONCAT(firpfb_rrrq16,name)
-#define INTERP(name)        LIQUID_CONCAT(interp_rrrq16,name)
 #define IIRFILT(name)       LIQUID_CONCAT(iirfilt_rrrq16,name)
 #define IIRFILTSOS(name)    LIQUID_CONCAT(iirfiltsos_rrrq16,name)
 #define RESAMP(name)        LIQUID_CONCAT(resamp_rrrq16,name)
@@ -76,8 +76,8 @@
 
 // source files
 #include "firfilt.c"
+#include "firinterp.c"
 #include "firpfb.c"
-#include "interp.c"
 #include "iirfilt.c"
 #include "iirfiltsos.c"
 #include "resamp.c"

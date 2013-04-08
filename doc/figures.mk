@@ -93,11 +93,11 @@ local_pdffiles :=					\
 	figures.gen/filter_iirdes_example.pdf		\
 							\
 	figures.gen/filter_decim_crcf.pdf		\
-	figures.gen/filter_interp_crcf.pdf		\
 	figures.gen/filter_kaiser_time.pdf		\
 	figures.gen/filter_kaiser_freq.pdf		\
 	figures.gen/filter_firdes_gmskrx_time.pdf	\
 	figures.gen/filter_firdes_gmskrx_freq.pdf	\
+	figures.gen/filter_firinterp_crcf.pdf		\
 	figures.gen/filter_msresamp_crcf_time.pdf	\
 	figures.gen/filter_msresamp_crcf_freq.pdf	\
 	figures.gen/filter_resamp_crcf_time.pdf		\
@@ -275,9 +275,9 @@ local_programs :=					\
 	src/filter_firfarrow_crcf			\
 	src/filter_firfilt_crcf				\
 	src/filter_firhilb_decim_crcf			\
+	src/filter_firinterp_crcf			\
 	src/filter_iirfilt_crcf				\
 	src/filter_decim_crcf				\
-	src/filter_interp_crcf				\
 	src/filter_msresamp_crcf			\
 	src/filter_resamp_crcf				\
 	src/filter_resamp2_crcf_interp			\
@@ -588,7 +588,7 @@ figures.gen/filter_decim_crcf.gnu : src/filter_decim_crcf
 # 
 # interpolator
 #
-figures.gen/filter_interp_crcf.gnu : src/filter_interp_crcf
+figures.gen/filter_firinterp_crcf.gnu : src/filter_firinterp_crcf
 	./$<
 
 # 

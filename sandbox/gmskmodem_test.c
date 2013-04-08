@@ -75,7 +75,7 @@ int main(int argc, char*argv[]) {
     liquid_firdes_gmsktx(k,m,BT,0.0f,ht);
     firfilt_rrrf ft = firfilt_rrrf_create(ht,h_len);
 #else
-    interp_rrrf interp_tx = interp_rrrf_create_rnyquist(LIQUID_RNYQUIST_GMSKTX,k,m,BT,0);
+    firinterp_rrrf interp_tx = firinterp_rrrf_create_rnyquist(LIQUID_RNYQUIST_GMSKTX,k,m,BT,0);
 #endif
     float hr[h_len];    // receive filter coefficients
     liquid_firdes_gmskrx(k,m,BT,0.0f,hr);
@@ -83,10 +83,11 @@ int main(int argc, char*argv[]) {
 
     // generate symbols and interpolate
     float theta = 0.0f;
+    float k_inv = 1.0f / (float)k;
     for (i=0; i<num_symbols; i++) {
         sym_in[i] = rand() % 2;
-        interp_rrrf_execute(interp_tx, sym_in[i] ? 1.0f : -1.0f, &phi[k*i]);
-        //interp_rrrf_execute(interp_tx, i==0 ? 1.0f : 0.0f, &phi[k*i]);
+        firinterp_rrrf_execute(interp_tx, sym_in[i] ? k_inv : -k_inv, &phi[k*i]);
+        //firinterp_rrrf_execute(interp_tx, i==0 ? 1.0f : 0.0f, &phi[k*i]);
 
         // accumulate phase
         unsigned int j;
@@ -111,9 +112,6 @@ int main(int argc, char*argv[]) {
         firfilt_rrrf_push(decim_rx, phi_hat[i]);
         firfilt_rrrf_execute(decim_rx, &phi_prime[i]);
 
-        // scale by samples/symbols
-        phi_prime[i] /= k;
-
         // decimate output
         if ( (i%k)==0 ) {
             sym_out[n] = phi_prime[i] > 0.0f ? 1 : 0;
@@ -132,7 +130,7 @@ int main(int argc, char*argv[]) {
     printf("errors : %3u / %3u\n", num_errors, num_data_symbols);
 
     // destroy objects
-    interp_rrrf_destroy(interp_tx);
+    firinterp_rrrf_destroy(interp_tx);
     firfilt_rrrf_destroy(decim_rx);
 
     // 

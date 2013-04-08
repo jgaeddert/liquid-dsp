@@ -908,6 +908,16 @@ void spgram_push(spgram                 _q,
 void spgram_execute(spgram _q,
                     liquid_float_complex * _X);
 
+// estimate spectrum on input signal
+//  _q      :   spgram object
+//  _x      :   input signal [size: _n x 1]
+//  _n      :   input signal length
+//  _psd    :   output spectrum, [size: _nfft x 1]
+void spgram_estimate_psd(spgram                 _q,
+                         liquid_float_complex * _x,
+                         unsigned int           _n,
+                         float *                _psd);
+
 // ascii spectrogram
 typedef struct asgram_s * asgram;
 
@@ -1556,11 +1566,31 @@ LIQUID_AUTOCORR_DEFINE_API(AUTOCORR_MANGLE_RRRF,
 //   TI         : input data type
 #define LIQUID_FIRFILT_DEFINE_API(FIRFILT,TO,TC,TI)             \
 typedef struct FIRFILT(_s) * FIRFILT();                         \
+                                                                \
 FIRFILT() FIRFILT(_create)(TC * _h, unsigned int _n);           \
+                                                                \
+/* create using Kaiser-Bessel windowed sinc method          */  \
+/*  _n      : filter length, _n > 0                         */  \
+/*  _fc     : filter cut-off frequency 0 < _fc < 0.5        */  \
+/*  _As     : filter stop-band attenuation [dB], _As > 0    */  \
+/*  _mu     : fractional sample offset, -0.5 < _mu < 0.5    */  \
 FIRFILT() FIRFILT(_create_kaiser)(unsigned int _n,              \
                                   float        _fc,             \
                                   float        _As,             \
                                   float        _mu);            \
+                                                                \
+/* create from square-root Nyquist prototype            */      \
+/*  _type   : filter type (e.g. LIQUID_RNYQUIST_RRC)    */      \
+/*  _k      : nominal samples/symbol, _k > 1            */      \
+/*  _m      : filter delay [symbols], _m > 0            */      \
+/*  _beta   : rolloff factor, 0 < beta <= 1             */      \
+/*  _mu     : fractional sample offset,-0.5 < _mu < 0.5 */      \
+FIRFILT() FIRFILT(_create_rnyquist)(int          _type,         \
+                                    unsigned int _k,            \
+                                    unsigned int _m,            \
+                                    float        _beta,         \
+                                    float        _mu);          \
+                                                                \
 FIRFILT() FIRFILT(_recreate)(FIRFILT() _f,                      \
                              TC * _h,                           \
                              unsigned int _n);                  \
@@ -1814,68 +1844,131 @@ LIQUID_FIRPFB_DEFINE_API(FIRPFB_MANGLE_CCCQ16, cq16_t, cq16_t, cq16_t)
 
 
 // 
-// Interpolator
+// Interpolators
 //
-#define INTERP_MANGLE_RRRF(name)  LIQUID_CONCAT(interp_rrrf,name)
-#define INTERP_MANGLE_CRCF(name)  LIQUID_CONCAT(interp_crcf,name)
-#define INTERP_MANGLE_CCCF(name)  LIQUID_CONCAT(interp_cccf,name)
+
+// firinterp : finite impulse response interpolator
+#define FIRINTERP_MANGLE_RRRF(name)  LIQUID_CONCAT(firinterp_rrrf,name)
+#define FIRINTERP_MANGLE_CRCF(name)  LIQUID_CONCAT(firinterp_crcf,name)
+#define FIRINTERP_MANGLE_CCCF(name)  LIQUID_CONCAT(firinterp_cccf,name)
 
 // fixed-point
-#define INTERP_MANGLE_RRRQ16(name) LIQUID_CONCAT(interp_rrrq16,name)
-#define INTERP_MANGLE_CRCQ16(name) LIQUID_CONCAT(interp_crcq16,name)
-#define INTERP_MANGLE_CCCQ16(name) LIQUID_CONCAT(interp_cccq16,name)
+#define FIRINTERP_MANGLE_RRRQ16(name) LIQUID_CONCAT(firinterp_rrrq16,name)
+#define FIRINTERP_MANGLE_CRCQ16(name) LIQUID_CONCAT(firinterp_crcq16,name)
+#define FIRINTERP_MANGLE_CCCQ16(name) LIQUID_CONCAT(firinterp_cccq16,name)
 
-#define LIQUID_INTERP_DEFINE_API(INTERP,TO,TC,TI)               \
-typedef struct INTERP(_s) * INTERP();                           \
+#define LIQUID_FIRINTERP_DEFINE_API(FIRINTERP,TO,TC,TI)         \
+typedef struct FIRINTERP(_s) * FIRINTERP();                     \
+                                                                \
 /* create interpolator from external coefficients       */      \
 /*  _M      : interpolation factor                      */      \
 /*  _h      : filter coefficients [size: _h_len x 1]    */      \
 /*  _h_len  : filter length                             */      \
-INTERP() INTERP(_create)(unsigned int _M,                       \
-                         TC *         _h,                       \
-                         unsigned int _h_len);                  \
+FIRINTERP() FIRINTERP(_create)(unsigned int _M,                 \
+                               TC *         _h,                 \
+                               unsigned int _h_len);            \
 /* create interpolator from prototype                   */      \
 /*  _M      : interpolation factor                      */      \
 /*  _m      : filter delay (symbols)                    */      \
 /*  _As     : stop-band attenuation [dB]                */      \
-INTERP() INTERP(_create_prototype)(unsigned int _M,             \
-                                   unsigned int _m,             \
-                                   float        _As);           \
+FIRINTERP() FIRINTERP(_create_prototype)(unsigned int _M,       \
+                                         unsigned int _m,       \
+                                         float        _As);     \
 /* create square-root Nyquist interpolator              */      \
 /*  _type   : filter type (e.g. LIQUID_RNYQUIST_RRC)    */      \
 /*  _k      : samples/symbol (interpolation factor)     */      \
 /*  _m      : filter delay (symbols)                    */      \
 /*  _beta   : rolloff factor (0 < beta <= 1)            */      \
 /*  _dt     : fractional sample delay                   */      \
-INTERP() INTERP(_create_rnyquist)(int          _type,           \
-                                  unsigned int _k,              \
-                                  unsigned int _m,              \
-                                  float        _beta,           \
-                                  float        _dt);            \
-void INTERP(_destroy)(INTERP() _q);                             \
-void INTERP(_print)(INTERP() _q);                               \
-void INTERP(_clear)(INTERP() _q);                               \
-void INTERP(_execute)(INTERP() _q, TI _x, TO *_y);
+FIRINTERP() FIRINTERP(_create_rnyquist)(int          _type,     \
+                                        unsigned int _k,        \
+                                        unsigned int _m,        \
+                                        float        _beta,     \
+                                        float        _dt);      \
+void FIRINTERP(_destroy)(FIRINTERP() _q);                       \
+void FIRINTERP(_print)(FIRINTERP() _q);                         \
+void FIRINTERP(_clear)(FIRINTERP() _q);                         \
+void FIRINTERP(_execute)(FIRINTERP() _q, TI _x, TO *_y);        \
 
-LIQUID_INTERP_DEFINE_API(INTERP_MANGLE_RRRF,
-                         float,
-                         float,
-                         float)
+LIQUID_FIRINTERP_DEFINE_API(FIRINTERP_MANGLE_RRRF,
+                            float,
+                            float,
+                            float)
 
-LIQUID_INTERP_DEFINE_API(INTERP_MANGLE_CRCF,
-                         liquid_float_complex,
-                         float,
-                         liquid_float_complex)
+LIQUID_FIRINTERP_DEFINE_API(FIRINTERP_MANGLE_CRCF,
+                            liquid_float_complex,
+                            float,
+                            liquid_float_complex)
 
-LIQUID_INTERP_DEFINE_API(INTERP_MANGLE_CCCF,
-                         liquid_float_complex,
-                         liquid_float_complex,
-                         liquid_float_complex)
+LIQUID_FIRINTERP_DEFINE_API(FIRINTERP_MANGLE_CCCF,
+                            liquid_float_complex,
+                            liquid_float_complex,
+                            liquid_float_complex)
 
 // fixed-point
-LIQUID_INTERP_DEFINE_API(INTERP_MANGLE_RRRQ16,  q16_t,  q16_t,  q16_t)
-LIQUID_INTERP_DEFINE_API(INTERP_MANGLE_CRCQ16, cq16_t,  q16_t, cq16_t)
-LIQUID_INTERP_DEFINE_API(INTERP_MANGLE_CCCQ16, cq16_t, cq16_t, cq16_t)
+LIQUID_FIRINTERP_DEFINE_API(FIRINTERP_MANGLE_RRRQ16,  q16_t,  q16_t,  q16_t)
+LIQUID_FIRINTERP_DEFINE_API(FIRINTERP_MANGLE_CRCQ16, cq16_t,  q16_t, cq16_t)
+LIQUID_FIRINTERP_DEFINE_API(FIRINTERP_MANGLE_CCCQ16, cq16_t, cq16_t, cq16_t)
+
+// iirinterp : infinite impulse response interpolator
+#define IIRINTERP_MANGLE_RRRF(name)  LIQUID_CONCAT(iirinterp_rrrf,name)
+#define IIRINTERP_MANGLE_CRCF(name)  LIQUID_CONCAT(iirinterp_crcf,name)
+#define IIRINTERP_MANGLE_CCCF(name)  LIQUID_CONCAT(iirinterp_cccf,name)
+
+#define LIQUID_IIRINTERP_DEFINE_API(IIRINTERP,TO,TC,TI)         \
+typedef struct IIRINTERP(_s) * IIRINTERP();                     \
+                                                                \
+/* create interpolator from external coefficients           */  \
+/*  _M      : interpolation factor                          */  \
+/*  _b      : feed-back coefficients [size: _nb x 1]        */  \
+/*  _nb     : feed-back coefficients length                 */  \
+/*  _a      : feed-forward coefficients [size: _na x 1]     */  \
+/*  _na     : feed-forward coefficients length              */  \
+IIRINTERP() IIRINTERP(_create)(unsigned int _M,                 \
+                               TC *         _b,                 \
+                               unsigned int _nb,                \
+                               TC *         _a,                 \
+                               unsigned int _na);               \
+                                                                \
+/* create interpolator from prototype                       */  \
+/*  _M      : interpolation factor                          */  \
+IIRINTERP() IIRINTERP(_create_prototype)(                       \
+                unsigned int _M,                                \
+                liquid_iirdes_filtertype _ftype,                \
+                liquid_iirdes_bandtype   _btype,                \
+                liquid_iirdes_format     _format,               \
+                unsigned int _order,                            \
+                float _fc,                                      \
+                float _f0,                                      \
+                float _Ap,                                      \
+                float _As);                                     \
+                                                                \
+/* destroy interpolator object and free internal memory     */  \
+void IIRINTERP(_destroy)(IIRINTERP() _q);                       \
+                                                                \
+/* print interpolator object internals                      */  \
+void IIRINTERP(_print)(IIRINTERP() _q);                         \
+                                                                \
+/* reset interpolator object                                */  \
+void IIRINTERP(_reset)(IIRINTERP() _q);                         \
+                                                                \
+/* execute interpolator                                     */  \
+void IIRINTERP(_execute)(IIRINTERP() _q, TI _x, TO *_y);        \
+
+LIQUID_IIRINTERP_DEFINE_API(IIRINTERP_MANGLE_RRRF,
+                            float,
+                            float,
+                            float)
+
+LIQUID_IIRINTERP_DEFINE_API(IIRINTERP_MANGLE_CRCF,
+                            liquid_float_complex,
+                            float,
+                            liquid_float_complex)
+
+LIQUID_IIRINTERP_DEFINE_API(IIRINTERP_MANGLE_CCCF,
+                            liquid_float_complex,
+                            liquid_float_complex,
+                            liquid_float_complex)
 
 // 
 // Decimator
