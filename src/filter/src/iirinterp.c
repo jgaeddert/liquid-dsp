@@ -47,7 +47,7 @@ IIRINTERP() IIRINTERP(_create)(unsigned int _M,
 {
     // validate input
     if (_M < 2) {
-        fprintf(stderr,"error: interp_%s_create(), interp factor must be greater than 1\n", EXTENSION_FULL);
+        fprintf(stderr,"error: iirinterp_%s_create(), interp factor must be greater than 1\n", EXTENSION_FULL);
         exit(1);
     }
 
@@ -76,7 +76,7 @@ IIRINTERP() IIRINTERP(_create_prototype)(unsigned int _M,
 {
     // validate input
     if (_M < 2) {
-        fprintf(stderr,"error: interp_%s_create_prototype(), interp factor must be greater than 1\n", EXTENSION_FULL);
+        fprintf(stderr,"error: iirinterp_%s_create_prototype(), interp factor must be greater than 1\n", EXTENSION_FULL);
         exit(1);
     }
 
