@@ -1889,57 +1889,78 @@ LIQUID_IIRINTERP_DEFINE_API(IIRINTERP_MANGLE_CCCF,
                             liquid_float_complex)
 
 // 
-// Decimator
+// Decimators
 //
-#define DECIM_MANGLE_RRRF(name) LIQUID_CONCAT(decim_rrrf,name)
-#define DECIM_MANGLE_CRCF(name) LIQUID_CONCAT(decim_crcf,name)
-#define DECIM_MANGLE_CCCF(name) LIQUID_CONCAT(decim_cccf,name)
 
-#define LIQUID_DECIM_DEFINE_API(DECIM,TO,TC,TI)                 \
-typedef struct DECIM(_s) * DECIM();                             \
-DECIM() DECIM(_create)(unsigned int _D,                         \
-                       TC *_h,                                  \
-                       unsigned int _h_len);                    \
-/* create decimator from prototype                      */      \
-/*  _M      : decimation factor                         */      \
-/*  _m      : filter delay (symbols)                    */      \
-/*  _As     : stop-band attenuation [dB]                */      \
-DECIM() DECIM(_create_prototype)(unsigned int _M,               \
-                                 unsigned int _m,               \
-                                 float As);                     \
-/* create square-root Nyquist decimator                 */      \
-/*  _type   : filter type (e.g. LIQUID_RNYQUIST_RRC)    */      \
-/*  _k      : samples/symbol (decimation factor)        */      \
-/*  _m      : filter delay (symbols)                    */      \
-/*  _beta   : rolloff factor (0 < beta <= 1)            */      \
-/*  _dt     : fractional sample delay                   */      \
-DECIM() DECIM(_create_rnyquist)(int _type,                      \
-                                unsigned int _k,                \
-                                unsigned int _m,                \
-                                float _beta,                    \
-                                float _dt);                     \
-void DECIM(_destroy)(DECIM() _q);                               \
-void DECIM(_print)(DECIM() _q);                                 \
-void DECIM(_clear)(DECIM() _q);                                 \
-void DECIM(_execute)(DECIM() _q,                                \
-                     TI *_x,                                    \
-                     TO *_y,                                    \
-                     unsigned int _index);
+// firinterp : finite impulse response decimator
+#define FIRDECIM_MANGLE_RRRF(name) LIQUID_CONCAT(firdecim_rrrf,name)
+#define FIRDECIM_MANGLE_CRCF(name) LIQUID_CONCAT(firdecim_crcf,name)
+#define FIRDECIM_MANGLE_CCCF(name) LIQUID_CONCAT(firdecim_cccf,name)
 
-LIQUID_DECIM_DEFINE_API(DECIM_MANGLE_RRRF,
-                        float,
-                        float,
-                        float)
+#define LIQUID_FIRDECIM_DEFINE_API(FIRDECIM,TO,TC,TI)           \
+typedef struct FIRDECIM(_s) * FIRDECIM();                       \
+                                                                \
+/* create decimator from external coefficients              */  \
+/*  _M      : decimation factor                             */  \
+/*  _h      : filter coefficients [size: _h_len x 1]        */  \
+/*  _h_len  : filter coefficients length                    */  \
+FIRDECIM() FIRDECIM(_create)(unsigned int _M,                   \
+                             TC *         _h,                   \
+                             unsigned int _h_len);              \
+                                                                \
+/* create decimator from prototype                          */  \
+/*  _M      : decimation factor                             */  \
+/*  _m      : filter delay (symbols)                        */  \
+/*  _As     : stop-band attenuation [dB]                    */  \
+FIRDECIM() FIRDECIM(_create_prototype)(unsigned int _M,         \
+                                       unsigned int _m,         \
+                                       float        _As);       \
+                                                                \
+/* create square-root Nyquist decimator                     */  \
+/*  _type   : filter type (e.g. LIQUID_RNYQUIST_RRC)        */  \
+/*  _M      : samples/symbol (decimation factor)            */  \
+/*  _m      : filter delay (symbols)                        */  \
+/*  _beta   : rolloff factor (0 < beta <= 1)                */  \
+/*  _dt     : fractional sample delay                       */  \
+FIRDECIM() FIRDECIM(_create_rnyquist)(int          _type,       \
+                                      unsigned int _M,          \
+                                      unsigned int _m,          \
+                                      float        _beta,       \
+                                      float        _dt);        \
+                                                                \
+/* destroy decimator object                                 */  \
+void FIRDECIM(_destroy)(FIRDECIM() _q);                         \
+                                                                \
+/* print decimator object propreties to stdout              */  \
+void FIRDECIM(_print)(FIRDECIM() _q);                           \
+                                                                \
+/* reset decimator object internal state                    */  \
+void FIRDECIM(_clear)(FIRDECIM() _q);                           \
+                                                                \
+/* destroy decimator object                                 */  \
+/*  _q      : decimator object                              */  \
+/*  _x      : input samples [size: _M x 1]                  */  \
+/*  _y      : output sample pointer                         */  \
+/*  _index  : decimator output index, [0,_M-1]              */  \
+void FIRDECIM(_execute)(FIRDECIM()   _q,                        \
+                        TI *         _x,                        \
+                        TO *         _y,                        \
+                        unsigned int _index);                   \
 
-LIQUID_DECIM_DEFINE_API(DECIM_MANGLE_CRCF,
-                        liquid_float_complex,
-                        float,
-                        liquid_float_complex)
+LIQUID_FIRDECIM_DEFINE_API(FIRDECIM_MANGLE_RRRF,
+                           float,
+                           float,
+                           float)
 
-LIQUID_DECIM_DEFINE_API(DECIM_MANGLE_CCCF,
-                        liquid_float_complex,
-                        liquid_float_complex,
-                        liquid_float_complex)
+LIQUID_FIRDECIM_DEFINE_API(FIRDECIM_MANGLE_CRCF,
+                           liquid_float_complex,
+                           float,
+                           liquid_float_complex)
+
+LIQUID_FIRDECIM_DEFINE_API(FIRDECIM_MANGLE_CCCF,
+                           liquid_float_complex,
+                           liquid_float_complex,
+                           liquid_float_complex)
 
 
 // 

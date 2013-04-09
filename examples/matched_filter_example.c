@@ -143,7 +143,7 @@ int main(int argc, char*argv[]) {
 
     // create interpolator and decimator
     firinterp_rrrf interp = firinterp_rrrf_create(k, ht, h_len);
-    decim_rrrf  decim  = decim_rrrf_create( k, hr, h_len);
+    firdecim_rrrf  decim  = firdecim_rrrf_create( k, hr, h_len);
 
     for (i=0; i<num_symbols; i++) {
         // generate random symbol
@@ -153,7 +153,7 @@ int main(int argc, char*argv[]) {
         firinterp_rrrf_execute(interp, sym_in[i], &y[i*k]);
 
         // decimate
-        decim_rrrf_execute(decim, &y[i*k], &sym_out[i], 0);
+        firdecim_rrrf_execute(decim, &y[i*k], &sym_out[i], 0);
 
         // normalize output
         sym_out[i] /= k;
@@ -165,7 +165,7 @@ int main(int argc, char*argv[]) {
 
     // clean up objects
     firinterp_rrrf_destroy(interp);
-    decim_rrrf_destroy(decim);
+    firdecim_rrrf_destroy(decim);
 
     //
     // export results
