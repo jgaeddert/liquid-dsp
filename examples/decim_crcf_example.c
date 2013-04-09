@@ -7,7 +7,7 @@
 // sequence is then decimated with the same filter, matched to the
 // interpolator.
 //
-// SEE ALSO: interp_crcf_example.c
+// SEE ALSO: firinterp_crcf_example.c
 //
 
 #include <stdio.h>
@@ -80,7 +80,7 @@ int main(int argc, char*argv[]) {
     unsigned int i;
     for (i=0; i<h_len; i++)
         g[i] = h[h_len-i-1];
-    interp_crcf interp = interp_crcf_create(k,h,h_len);
+    firinterp_crcf interp = firinterp_crcf_create(k,h,h_len);
     decim_crcf  decim  = decim_crcf_create(k,g,h_len);
 
     // allocate memory for buffers
@@ -98,7 +98,7 @@ int main(int argc, char*argv[]) {
 
     // run interpolator
     for (i=0; i<num_symbols; i++) {
-        interp_crcf_execute(interp, x[i], &y[k*i]);
+        firinterp_crcf_execute(interp, x[i], &y[k*i]);
     }
 
     // run decimator
@@ -111,7 +111,7 @@ int main(int argc, char*argv[]) {
     }
 
     // destroy objects
-    interp_crcf_destroy(interp);
+    firinterp_crcf_destroy(interp);
     decim_crcf_destroy(decim);
 
     // print results to screen

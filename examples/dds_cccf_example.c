@@ -7,7 +7,7 @@
 // (interpolated and mixed up) using the DDS object.  The resulting
 // signal is then down-converted (mixed down and decimated) using
 // the same DDS object.  Results are written to a file.
-// SEE ALSO: interp_crcf_example.c
+// SEE ALSO: firinterp_crcf_example.c
 //           decim_crcf_example.c
 //           resamp2_crcf_example.c
 //           nco_example.c

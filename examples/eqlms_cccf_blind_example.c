@@ -117,7 +117,7 @@ int main(int argc, char*argv[])
 
     // generate matched filter response
     liquid_firdes_rnyquist(LIQUID_RNYQUIST_RRC, k, m, beta, 0.0f, hm);
-    interp_crcf interp = interp_crcf_create(k, hm, hm_len);
+    firinterp_crcf interp = firinterp_crcf_create(k, hm, hm_len);
 
     // create the modem objects
     modem mod   = modem_create(ms);
@@ -136,7 +136,7 @@ int main(int argc, char*argv[])
 
     // interpolate
     for (i=0; i<num_symbols; i++)
-        interp_crcf_execute(interp, sym_tx[i], &x[i*k]);
+        firinterp_crcf_execute(interp, sym_tx[i], &x[i*k]);
     
     // push through channel
     float nstd = powf(10.0f, -SNRdB/20.0f);
@@ -196,7 +196,7 @@ int main(int argc, char*argv[])
 
     // destroy objects
     eqlms_cccf_destroy(eq);
-    interp_crcf_destroy(interp);
+    firinterp_crcf_destroy(interp);
     firfilt_cccf_destroy(fchannel);
     modem_destroy(mod);
     modem_destroy(demod);
