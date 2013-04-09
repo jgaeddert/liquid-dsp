@@ -415,6 +415,7 @@ filter_objects :=						\
 
 # list explicit targets and dependencies here
 filter_includes :=						\
+	src/filter/src/firdecim.c				\
 	src/filter/src/firfarrow.c				\
 	src/filter/src/firfilt.c				\
 	src/filter/src/firhilb.c				\
@@ -423,7 +424,6 @@ filter_includes :=						\
 	src/filter/src/iirfilt.c				\
 	src/filter/src/iirfiltsos.c				\
 	src/filter/src/iirinterp.c				\
-	src/filter/src/decim.c					\
 	src/filter/src/msresamp.c				\
 	src/filter/src/resamp.c					\
 	src/filter/src/resamp2.c				\
@@ -469,7 +469,7 @@ src/filter/src/rrcos.o : %.o : %.c $(headers)
 
 
 filter_autotests :=						\
-	src/filter/tests/decim_autotest.c			\
+	src/filter/tests/firdecim_autotest.c			\
 	src/filter/tests/filter_crosscorr_autotest.c		\
 	src/filter/tests/firdes_autotest.c			\
 	src/filter/tests/firdespm_autotest.c			\
@@ -520,7 +520,7 @@ autotest_extra_obj +=						\
 	src/filter/tests/data/iirfilt_cccf_data_h7x64.o		\
 
 filter_benchmarks :=						\
-	src/filter/bench/decim_benchmark.c			\
+	src/filter/bench/firdecim_benchmark.c			\
 	src/filter/bench/firhilb_benchmark.c			\
 	src/filter/bench/firinterp_crcf_benchmark.c		\
 	src/filter/bench/firfilt_crcf_benchmark.c		\
@@ -1304,7 +1304,6 @@ example_programs :=						\
 	examples/crc_example					\
 	examples/cgsolve_example				\
 	examples/cvsd_example					\
-	examples/decim_crcf_example				\
 	examples/detector_cccf_example				\
 	examples/dotprod_rrrf_example				\
 	examples/dotprod_cccf_example				\
@@ -1314,6 +1313,7 @@ example_programs :=						\
 	examples/fec_example					\
 	examples/fec_soft_example				\
 	examples/fft_example					\
+	examples/firdecim_crcf_example				\
 	examples/firfarrow_rrrf_example				\
 	examples/firfilt_rrrf_example				\
 	examples/firdes_kaiser_example				\

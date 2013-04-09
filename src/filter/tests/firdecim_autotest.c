@@ -1,6 +1,5 @@
 /*
- * Copyright (c) 2007, 2009 Joseph Gaeddert
- * Copyright (c) 2007, 2009 Virginia Polytechnic Institute & State University
+ * Copyright (c) 2007, 2008, 2009, 2010, 2011, 2012, 2013 Joseph Gaeddert
  *
  * This file is part of liquid.
  *
@@ -24,12 +23,12 @@
 //
 // AUTOTEST: 
 //
-void autotest_decim_rrrf_generic()
+void autotest_firdecim_rrrf_generic()
 {
     float h[] = {0.5, 0.5, 0.5, 0.5};
     unsigned int h_len = 4; // filter length
     unsigned int D = 4;     // decim factor
-    decim_rrrf q = decim_rrrf_create(D,h,h_len);
+    firdecim_rrrf q = firdecim_rrrf_create(D,h,h_len);
 
     float x[16] = { 
         0.5,  0.5,  0.5,  0.5,
@@ -43,7 +42,7 @@ void autotest_decim_rrrf_generic()
 
     unsigned int i, n=0;
     for (i=0; i<4; i++) {
-        decim_rrrf_execute(q, &x[n], &y[i], D-1);
+        firdecim_rrrf_execute(q, &x[n], &y[i], D-1);
         n+=D;
     }   
 
@@ -54,6 +53,6 @@ void autotest_decim_rrrf_generic()
             printf("  y(%u) = %8.4f;\n", i+1, y[i]);
     }
 
-    decim_rrrf_destroy(q);
+    firdecim_rrrf_destroy(q);
 }
 
