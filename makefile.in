@@ -421,6 +421,7 @@ filter_includes :=						\
 	src/filter/src/firhilb.c				\
 	src/filter/src/firinterp.c				\
 	src/filter/src/firpfb.c					\
+	src/filter/src/iirdecim.c				\
 	src/filter/src/iirfilt.c				\
 	src/filter/src/iirfiltsos.c				\
 	src/filter/src/iirinterp.c				\

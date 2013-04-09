@@ -1892,7 +1892,7 @@ LIQUID_IIRINTERP_DEFINE_API(IIRINTERP_MANGLE_CCCF,
 // Decimators
 //
 
-// firinterp : finite impulse response decimator
+// firdecim : finite impulse response decimator
 #define FIRDECIM_MANGLE_RRRF(name) LIQUID_CONCAT(firdecim_rrrf,name)
 #define FIRDECIM_MANGLE_CRCF(name) LIQUID_CONCAT(firdecim_crcf,name)
 #define FIRDECIM_MANGLE_CCCF(name) LIQUID_CONCAT(firdecim_cccf,name)
@@ -1937,7 +1937,7 @@ void FIRDECIM(_print)(FIRDECIM() _q);                           \
 /* reset decimator object internal state                    */  \
 void FIRDECIM(_clear)(FIRDECIM() _q);                           \
                                                                 \
-/* destroy decimator object                                 */  \
+/* execute decimator                                        */  \
 /*  _q      : decimator object                              */  \
 /*  _x      : input samples [size: _M x 1]                  */  \
 /*  _y      : output sample pointer                         */  \
@@ -1961,6 +1961,75 @@ LIQUID_FIRDECIM_DEFINE_API(FIRDECIM_MANGLE_CCCF,
                            liquid_float_complex,
                            liquid_float_complex,
                            liquid_float_complex)
+
+
+// iirdecim : infinite impulse response decimator
+#define IIRDECIM_MANGLE_RRRF(name)  LIQUID_CONCAT(iirdecim_rrrf,name)
+#define IIRDECIM_MANGLE_CRCF(name)  LIQUID_CONCAT(iirdecim_crcf,name)
+#define IIRDECIM_MANGLE_CCCF(name)  LIQUID_CONCAT(iirdecim_cccf,name)
+
+#define LIQUID_IIRDECIM_DEFINE_API(IIRDECIM,TO,TC,TI)           \
+typedef struct IIRDECIM(_s) * IIRDECIM();                       \
+                                                                \
+/* create decimator from external coefficients              */  \
+/*  _M      : decimation factor                             */  \
+/*  _b      : feed-back coefficients [size: _nb x 1]        */  \
+/*  _nb     : feed-back coefficients length                 */  \
+/*  _a      : feed-forward coefficients [size: _na x 1]     */  \
+/*  _na     : feed-forward coefficients length              */  \
+IIRDECIM() IIRDECIM(_create)(unsigned int _M,                   \
+                             TC *         _b,                   \
+                             unsigned int _nb,                  \
+                             TC *         _a,                   \
+                             unsigned int _na);                 \
+                                                                \
+/* create decimator from prototype                          */  \
+/*  _M      : decimation factor                             */  \
+IIRDECIM() IIRDECIM(_create_prototype)(                         \
+                unsigned int _M,                                \
+                liquid_iirdes_filtertype _ftype,                \
+                liquid_iirdes_bandtype   _btype,                \
+                liquid_iirdes_format     _format,               \
+                unsigned int _order,                            \
+                float _fc,                                      \
+                float _f0,                                      \
+                float _Ap,                                      \
+                float _As);                                     \
+                                                                \
+/* destroy decimator object and free internal memory        */  \
+void IIRDECIM(_destroy)(IIRDECIM() _q);                         \
+                                                                \
+/* print decimator object internals                         */  \
+void IIRDECIM(_print)(IIRDECIM() _q);                           \
+                                                                \
+/* reset decimator object                                   */  \
+void IIRDECIM(_reset)(IIRDECIM() _q);                           \
+                                                                \
+/* execute decimator                                        */  \
+/*  _q      : decimator object                              */  \
+/*  _x      : input samples [size: _M x 1]                  */  \
+/*  _y      : output sample pointer                         */  \
+/*  _index  : decimator output index, [0,_M-1]              */  \
+void IIRDECIM(_execute)(IIRDECIM()   _q,                        \
+                        TI *         _x,                        \
+                        TO *         _y,                        \
+                        unsigned int _index);                   \
+
+LIQUID_IIRDECIM_DEFINE_API(IIRDECIM_MANGLE_RRRF,
+                           float,
+                           float,
+                           float)
+
+LIQUID_IIRDECIM_DEFINE_API(IIRDECIM_MANGLE_CRCF,
+                           liquid_float_complex,
+                           float,
+                           liquid_float_complex)
+
+LIQUID_IIRDECIM_DEFINE_API(IIRDECIM_MANGLE_CCCF,
+                           liquid_float_complex,
+                           liquid_float_complex,
+                           liquid_float_complex)
+
 
 
 // 

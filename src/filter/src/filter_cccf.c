@@ -33,6 +33,7 @@
 #define FIRFILT(name)       LIQUID_CONCAT(firfilt_cccf,name)
 #define FIRINTERP(name)     LIQUID_CONCAT(firinterp_cccf,name)
 #define FIRPFB(name)        LIQUID_CONCAT(firpfb_cccf,name)
+#define IIRDECIM(name)      LIQUID_CONCAT(iirdecim_cccf,name)
 #define IIRFILT(name)       LIQUID_CONCAT(iirfilt_cccf,name)
 #define IIRFILTSOS(name)    LIQUID_CONCAT(iirfiltsos_cccf,name)
 #define IIRINTERP(name)     LIQUID_CONCAT(iirinterp_cccf,name)
@@ -64,6 +65,7 @@
 #include "firfilt.c"
 #include "firinterp.c"
 #include "firpfb.c"
+#include "iirdecim.c"
 #include "iirfilt.c"
 #include "iirfiltsos.c"
 #include "iirinterp.c"
