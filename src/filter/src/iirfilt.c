@@ -541,7 +541,7 @@ void IIRFILT(_execute_norm)(IIRFILT() _q,
         mul = MUL_TI_TC(_q->v[i], _q->b[i]);
 
         // accumulate result
-        ADD_TO_TO(y0, mul);
+        y0 = ADD_TO_TO(y0, mul);
     }
 
     // set return value

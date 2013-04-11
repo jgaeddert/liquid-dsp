@@ -31,21 +31,21 @@
 // 
 // AUTOTEST: iirfilt_rrrq16 tests
 //
-void autotest_iirfilt_rrrq16_h3x64()
+void xautotest_iirfilt_rrrq16_h3x64()
 {
     iirfilt_rrrq16_test(iirfilt_rrrf_data_h3x64_b,
                         iirfilt_rrrf_data_h3x64_a, 3,
                         iirfilt_rrrf_data_h3x64_x, 64,
                         iirfilt_rrrf_data_h3x64_y, 64);
 }
-void autotest_iirfilt_rrrq16_h5x64()
+void xautotest_iirfilt_rrrq16_h5x64()
 {
     iirfilt_rrrq16_test(iirfilt_rrrf_data_h5x64_b,
                         iirfilt_rrrf_data_h5x64_a, 5,
                         iirfilt_rrrf_data_h5x64_x, 64,
                         iirfilt_rrrf_data_h5x64_y, 64);
 }
-void autotest_iirfilt_rrrq16_h7x64()
+void xautotest_iirfilt_rrrq16_h7x64()
 {
     iirfilt_rrrq16_test(iirfilt_rrrf_data_h7x64_b,
                         iirfilt_rrrf_data_h7x64_a, 7,
@@ -57,21 +57,21 @@ void autotest_iirfilt_rrrq16_h7x64()
 // 
 // AUTOTEST: iirfilt_crcq16 tests
 //
-void autotest_iirfilt_crcq16_h3x64()
+void xautotest_iirfilt_crcq16_h3x64()
 {
     iirfilt_crcq16_test(iirfilt_crcf_data_h3x64_b,
                         iirfilt_crcf_data_h3x64_a, 3,
                         iirfilt_crcf_data_h3x64_x, 64,
                         iirfilt_crcf_data_h3x64_y, 64);
 }
-void autotest_iirfilt_crcq16_h5x64()
+void xautotest_iirfilt_crcq16_h5x64()
 {
     iirfilt_crcq16_test(iirfilt_crcf_data_h5x64_b,
                         iirfilt_crcf_data_h5x64_a, 5,
                         iirfilt_crcf_data_h5x64_x, 64,
                         iirfilt_crcf_data_h5x64_y, 64);
 }
-void autotest_iirfilt_crcq16_h7x64()
+void xautotest_iirfilt_crcq16_h7x64()
 {
     iirfilt_crcq16_test(iirfilt_crcf_data_h7x64_b,
                         iirfilt_crcf_data_h7x64_a, 7,
@@ -83,21 +83,21 @@ void autotest_iirfilt_crcq16_h7x64()
 // 
 // AUTOTEST: iirfilt_cccq16 tests
 //
-void autotest_iirfilt_cccq16_h3x64()
+void xautotest_iirfilt_cccq16_h3x64()
 {
     iirfilt_cccq16_test(iirfilt_cccf_data_h3x64_b,
                         iirfilt_cccf_data_h3x64_a, 3,
                         iirfilt_cccf_data_h3x64_x, 64,
                         iirfilt_cccf_data_h3x64_y, 64);
 }
-void autotest_iirfilt_cccq16_h5x64()
+void xautotest_iirfilt_cccq16_h5x64()
 {
     iirfilt_cccq16_test(iirfilt_cccf_data_h5x64_b,
                         iirfilt_cccf_data_h5x64_a, 5,
                         iirfilt_cccf_data_h5x64_x, 64,
                         iirfilt_cccf_data_h5x64_y, 64);
 }
-void autotest_iirfilt_cccq16_h7x64()
+void xautotest_iirfilt_cccq16_h7x64()
 {
     iirfilt_cccq16_test(iirfilt_cccf_data_h7x64_b,
                         iirfilt_cccf_data_h7x64_a, 7,
