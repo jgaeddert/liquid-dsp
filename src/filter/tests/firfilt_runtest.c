@@ -1,6 +1,5 @@
 /*
- * Copyright (c) 2012 Joseph Gaeddert
- * Copyright (c) 2012 Virginia Polytechnic Institute & State University
+ * Copyright (c) 2012, 2013 Joseph Gaeddert
  *
  * This file is part of liquid.
  *
@@ -156,15 +155,9 @@ void firfilt_rrrq16_test(float *      _h,
     float tol = 0.01f;
 
     // convert to fixed-point
-    q16_t h[_h_len];
-    q16_t x[_x_len];
-    q16_t y[_y_len];
-    for (i=0; i<_h_len; i++)
-        h[i] = q16_float_to_fixed(_h[i]);
-    for (i=0; i<_x_len; i++)
-        x[i] = q16_float_to_fixed(_x[i]);
-    for (i=0; i<_y_len; i++)
-        y[i] = q16_float_to_fixed(_y[i]);
+    q16_t h[_h_len];    q16_memmove_float_to_fixed(h, _h, _h_len);
+    q16_t x[_x_len];    q16_memmove_float_to_fixed(x, _x, _x_len);
+    q16_t y[_y_len];    q16_memmove_float_to_fixed(y, _y, _y_len);
 
     // load filter coefficients
     firfilt_rrrq16 q = firfilt_rrrq16_create(h, _h_len);
@@ -201,15 +194,9 @@ void firfilt_crcq16_test(float *         _h,
     float tol = 0.01f;
 
     // convert to fixed-point
-    q16_t h[_h_len];
-    cq16_t x[_x_len];
-    cq16_t y[_y_len];
-    for (i=0; i<_h_len; i++)
-        h[i] = q16_float_to_fixed(_h[i]);
-    for (i=0; i<_x_len; i++)
-        x[i] = cq16_float_to_fixed(_x[i]);
-    for (i=0; i<_y_len; i++)
-        y[i] = cq16_float_to_fixed(_y[i]);
+    q16_t h[_h_len];    q16_memmove_float_to_fixed(h, _h, _h_len);
+    cq16_t x[_x_len];   cq16_memmove_float_to_fixed(x, _x, _x_len);
+    cq16_t y[_y_len];   cq16_memmove_float_to_fixed(y, _y, _y_len);
 
     // load filter coefficients
     firfilt_crcq16 q = firfilt_crcq16_create(h, _h_len);
@@ -247,15 +234,9 @@ void firfilt_cccq16_test(float complex * _h,
     float tol = 0.01f;
 
     // convert to fixed-point
-    cq16_t h[_h_len];
-    cq16_t x[_x_len];
-    cq16_t y[_y_len];
-    for (i=0; i<_h_len; i++)
-        h[i] = cq16_float_to_fixed(_h[i]);
-    for (i=0; i<_x_len; i++)
-        x[i] = cq16_float_to_fixed(_x[i]);
-    for (i=0; i<_y_len; i++)
-        y[i] = cq16_float_to_fixed(_y[i]);
+    cq16_t h[_h_len];   cq16_memmove_float_to_fixed(h, _h, _h_len);
+    cq16_t x[_x_len];   cq16_memmove_float_to_fixed(x, _x, _x_len);
+    cq16_t y[_y_len];   cq16_memmove_float_to_fixed(y, _y, _y_len);
 
     // load filter coefficients
     firfilt_cccq16 q = firfilt_cccq16_create(h, _h_len);
