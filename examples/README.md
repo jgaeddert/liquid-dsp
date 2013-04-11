@@ -99,17 +99,6 @@ This directory contains all the examples for interfacing the liquid modules.
     sinusoidal input.  The output distortion ratio is computed, and the
     time-domain results are written to a file.
 
- * `decim_crcf_example.c`:
-    This example demonstrates the decim object (decimator) interface.
-    Data symbols are generated and then interpolated according to a
-    finite impulse response square-root Nyquist filter.  The resulting
-    sequence is then decimated with the same filter, matched to the
-    interpolator.
-
-    SEE ALSO: `firinterp_crcf_example.c`
-
- * `decim_rrrf_example.c`:
-
  * `dotprod_cccf_example.c`:
     This example demonstrates the interface to the complex
     floating-point dot product object (dotprod_cccf).
@@ -150,6 +139,16 @@ This directory contains all the examples for interfacing the liquid modules.
 
     SEE ALSO: `mdct_example.c`
               `fct_example.c`
+
+ * `firdecim_crcf_example.c`:
+    This example demonstrates the interface to the firdecim (finite
+    impulse response decimator) family of objects.
+    Data symbols are generated and then interpolated according to a
+    finite impulse response square-root Nyquist filter.  The resulting
+    sequence is then decimated with the same filter, matched to the
+    interpolator.
+
+    SEE ALSO: `firinterp_crcf_example.c`
 
  * `firdes_kaiser_example.c`:
     This example demonstrates finite impulse response filter design using a

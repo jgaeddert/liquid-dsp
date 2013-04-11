@@ -126,7 +126,7 @@ int main(int argc, char*argv[]) {
 
     // create interpolator and decimator
     firinterp_crcf interp = firinterp_crcf_create(k,h,h_len);
-    decim_cccf     decim  = decim_cccf_create(k,gc,h_len);
+    firdecim_cccf  decim  = firdecim_cccf_create(k,gc,h_len);
 
     // generate signal
     float complex sym_in[num_symbols];
@@ -157,7 +157,7 @@ int main(int argc, char*argv[]) {
     // decimation
     for (i=0; i<num_symbols; i++) {
         // decimate
-        decim_cccf_execute(decim, &y[i*k], &sym_out[i], 0);
+        firdecim_cccf_execute(decim, &y[i*k], &sym_out[i], 0);
 
         // normalize output
         sym_out[i] /= k;
@@ -178,7 +178,7 @@ int main(int argc, char*argv[]) {
 
     // clean up objects
     firinterp_crcf_destroy(interp);
-    decim_cccf_destroy(decim);
+    firdecim_cccf_destroy(decim);
 
 
     FILE * fid = fopen(OUTPUT_FILENAME,"w");

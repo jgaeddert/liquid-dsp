@@ -459,15 +459,16 @@ filter_objects :=						\
 
 # list explicit targets and dependencies here
 filter_includes :=						\
+	src/filter/src/firdecim.c				\
 	src/filter/src/firfarrow.c				\
 	src/filter/src/firfilt.c				\
 	src/filter/src/firhilb.c				\
 	src/filter/src/firinterp.c				\
 	src/filter/src/firpfb.c					\
+	src/filter/src/iirdecim.c				\
 	src/filter/src/iirfilt.c				\
 	src/filter/src/iirfiltsos.c				\
 	src/filter/src/iirinterp.c				\
-	src/filter/src/decim.c					\
 	src/filter/src/msresamp.c				\
 	src/filter/src/resamp.c					\
 	src/filter/src/resamp2.c				\
@@ -519,8 +520,8 @@ src/filter/src/rrcos.o : %.o : %.c $(headers)
 
 
 filter_autotests :=						\
-	src/filter/tests/decim_autotest.c			\
 	src/filter/tests/filter_crosscorr_autotest.c		\
+	src/filter/tests/firdecim_xxxf_autotest.c		\
 	src/filter/tests/firdes_autotest.c			\
 	src/filter/tests/firdespm_autotest.c			\
 	src/filter/tests/firfilt_xxxq16_autotest.c		\
@@ -540,6 +541,24 @@ filter_autotests :=						\
 
 # additional autotest objects
 autotest_extra_obj +=						\
+	src/filter/tests/firdecim_runtest.o			\
+								\
+	src/filter/tests/data/firdecim_rrrf_data_M2h4x20.o	\
+	src/filter/tests/data/firdecim_crcf_data_M2h4x20.o	\
+	src/filter/tests/data/firdecim_cccf_data_M2h4x20.o	\
+								\
+	src/filter/tests/data/firdecim_rrrf_data_M3h7x30.o	\
+	src/filter/tests/data/firdecim_crcf_data_M3h7x30.o	\
+	src/filter/tests/data/firdecim_cccf_data_M3h7x30.o	\
+								\
+	src/filter/tests/data/firdecim_rrrf_data_M4h13x40.o	\
+	src/filter/tests/data/firdecim_crcf_data_M4h13x40.o	\
+	src/filter/tests/data/firdecim_cccf_data_M4h13x40.o	\
+								\
+	src/filter/tests/data/firdecim_rrrf_data_M5h23x50.o	\
+	src/filter/tests/data/firdecim_crcf_data_M5h23x50.o	\
+	src/filter/tests/data/firdecim_cccf_data_M5h23x50.o	\
+								\
 	src/filter/tests/firfilt_runtest.o			\
 								\
 	src/filter/tests/data/firfilt_rrrf_data_h4x8.o		\
@@ -573,7 +592,7 @@ autotest_extra_obj +=						\
 	src/filter/tests/data/iirfilt_cccf_data_h7x64.o		\
 
 filter_benchmarks :=						\
-	src/filter/bench/decim_benchmark.c			\
+	src/filter/bench/firdecim_benchmark.c			\
 	src/filter/bench/firhilb_benchmark.c			\
 	src/filter/bench/firinterp_crcf_benchmark.c		\
 	src/filter/bench/firfilt_crcf_benchmark.c		\
@@ -1496,7 +1515,6 @@ example_programs :=						\
 	examples/crc_example					\
 	examples/cgsolve_example				\
 	examples/cvsd_example					\
-	examples/decim_crcf_example				\
 	examples/detector_cccf_example				\
 	examples/dotprod_rrrf_example				\
 	examples/dotprod_cccf_example				\
@@ -1506,6 +1524,7 @@ example_programs :=						\
 	examples/fec_example					\
 	examples/fec_soft_example				\
 	examples/fft_example					\
+	examples/firdecim_crcf_example				\
 	examples/firfarrow_rrrf_example				\
 	examples/firfilt_rrrf_example				\
 	examples/firdes_kaiser_example				\
@@ -1533,6 +1552,7 @@ example_programs :=						\
 	examples/iirdes_example					\
 	examples/iirdes_analog_example				\
 	examples/iirdes_pll_example				\
+	examples/iirdecim_crcf_example				\
 	examples/iirfilt_cccf_example				\
 	examples/iirfilt_crcf_example				\
 	examples/iirinterp_crcf_example				\

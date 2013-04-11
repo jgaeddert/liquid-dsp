@@ -18,19 +18,21 @@
  */
 
 //
-// infinite impulse response interpolator
+// firdecim.c
+//
+// finite impulse response decimator object definitions
 //
 
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 
-struct IIRINTERP(_s) {
-    unsigned int M;     // interpolation factor
+// decimator structure
+struct IIRDECIM(_s) {
+    unsigned int M;     // decimation factor
 
     // TODO: use IIR polyphase filterbank
     IIRFILT() iirfilt;  // filter object
-
 };
 
 // create interpolator from external coefficients
@@ -39,7 +41,7 @@ struct IIRINTERP(_s) {
 //  _nb     : feed-back coefficients length
 //  _a      : feed-forward coefficients [size: _na x 1]
 //  _na     : feed-forward coefficients length
-IIRINTERP() IIRINTERP(_create)(unsigned int _M,
+IIRDECIM() IIRDECIM(_create)(unsigned int _M,
                                TC *         _b,
                                unsigned int _nb,
                                TC *         _a,
@@ -52,7 +54,7 @@ IIRINTERP() IIRINTERP(_create)(unsigned int _M,
     }
 
     // allocate main object memory and set internal parameters
-    IIRINTERP() q = (IIRINTERP()) malloc(sizeof(struct IIRINTERP(_s)));
+    IIRDECIM() q = (IIRDECIM()) malloc(sizeof(struct IIRDECIM(_s)));
     q->M = _M;
 
     // create filter
@@ -64,15 +66,15 @@ IIRINTERP() IIRINTERP(_create)(unsigned int _M,
 
 // create interpolator from prototype
 //  _M      :   interpolation factor
-IIRINTERP() IIRINTERP(_create_prototype)(unsigned int _M,
-                                         liquid_iirdes_filtertype _ftype,
-                                         liquid_iirdes_bandtype   _btype,
-                                         liquid_iirdes_format     _format,
-                                         unsigned int _order,
-                                         float _fc,
-                                         float _f0,
-                                         float _Ap,
-                                         float _As)
+IIRDECIM() IIRDECIM(_create_prototype)(unsigned int _M,
+                                       liquid_iirdes_filtertype _ftype,
+                                       liquid_iirdes_bandtype   _btype,
+                                       liquid_iirdes_format     _format,
+                                       unsigned int _order,
+                                       float _fc,
+                                       float _f0,
+                                       float _Ap,
+                                       float _As)
 {
     // validate input
     if (_M < 2) {
@@ -81,7 +83,7 @@ IIRINTERP() IIRINTERP(_create_prototype)(unsigned int _M,
     }
 
     // allocate main object memory and set internal parameters
-    IIRINTERP() q = (IIRINTERP()) malloc(sizeof(struct IIRINTERP(_s)));
+    IIRDECIM() q = (IIRDECIM()) malloc(sizeof(struct IIRDECIM(_s)));
     q->M = _M;
 
     // create filter
@@ -92,14 +94,14 @@ IIRINTERP() IIRINTERP(_create_prototype)(unsigned int _M,
 }
 
 // destroy interpolator object
-void IIRINTERP(_destroy)(IIRINTERP() _q)
+void IIRDECIM(_destroy)(IIRDECIM() _q)
 {
     IIRFILT(_destroy)(_q->iirfilt);
     free(_q);
 }
 
 // print interpolator state
-void IIRINTERP(_print)(IIRINTERP() _q)
+void IIRDECIM(_print)(IIRDECIM() _q)
 {
     printf("interp():\n");
     printf("    M       :   %u\n", _q->M);
@@ -107,22 +109,36 @@ void IIRINTERP(_print)(IIRINTERP() _q)
 }
 
 // clear internal state
-void IIRINTERP(_reset)(IIRINTERP() _q)
+void IIRDECIM(_reset)(IIRDECIM() _q)
 {
     IIRFILT(_clear)(_q->iirfilt);
 }
 
-// execute interpolator
-//  _q      :   interpolator object
-//  _x      :   input sample
-//  _y      :   output array [size: 1 x _M]
-void IIRINTERP(_execute)(IIRINTERP() _q,
-                         TI          _x,
-                         TO *        _y)
+// execute decimator
+//  _q      :   decimator object
+//  _x      :   input sample array [size: _M x 1]
+//  _y      :   output sample pointer
+//  _index  :   decimator output index [0,_M-1]
+void IIRDECIM(_execute)(IIRDECIM()   _q,
+                        TI *         _x,
+                        TO *         _y,
+                        unsigned int _index)
 {
-    // TODO: use iirpfb
+    // validate input
+    if (_index >= _q->M) {
+        fprintf(stderr,"error: decim_%s_execute(), output sample phase exceeds decimation factor\n", EXTENSION_FULL);
+        exit(1);
+    }
+
+    TO v; // output value
     unsigned int i;
-    for (i=0; i<_q->M; i++)
-        IIRFILT(_execute)(_q->iirfilt, i==0 ? _x : 0.0f, &_y[i]);
+    for (i=0; i<_q->M; i++) {
+        // run filter
+        IIRFILT(_execute)(_q->iirfilt, _x[i], &v);
+
+        // save output at appropriate index
+        if (i==_index)
+            *_y = v;
+    }
 }
 

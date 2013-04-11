@@ -1,7 +1,5 @@
 /*
- * Copyright (c) 2007, 2008, 2009, 2010 Joseph Gaeddert
- * Copyright (c) 2007, 2008, 2009, 2010 Virginia Polytechnic
- *                                      Institute & State University
+ * Copyright (c) 2007, 2008, 2009, 2010, 2011, 2012, 2013 Joseph Gaeddert
  *
  * This file is part of liquid.
  *
@@ -20,7 +18,7 @@
  */
 
 //
-// decim.c
+// firdecim.c
 //
 // finite impulse response decimator object definitions
 //
@@ -29,63 +27,53 @@
 #include <stdlib.h>
 #include <string.h>
 
-// defined:
-//  DECIM()     name-mangling macro
-//  TO          output data type
-//  TC          coefficients data type
-//  TI          input data type
-//  WINDOW()    window macro
-//  DOTPROD()   dotprod macro
-//  PRINTVAL()  print macro
+// decimator structure
+struct FIRDECIM(_s) {
+    TC * h;             // coefficients array
+    unsigned int h_len; // number of coefficients
+    unsigned int M;     // decimation factor
 
-struct DECIM(_s) {
-    TC * h;
-    unsigned int h_len;
-    unsigned int D;
-
-    WINDOW() w;
-    DOTPROD() dp;
-
-#if 0
-    fir_prototype p;    // prototype object
-#endif
+    WINDOW() w;         // buffer
+    DOTPROD() dp;       // vector dot product
 };
 
 // create decimator object
-//  _D      :   decimation factor
-//  _h      :   filter coefficients array pointer
-//  _h_len  :   length of filter
-DECIM() DECIM(_create)(unsigned int _D,
-                       TC *_h,
-                       unsigned int _h_len)
+//  _M      :   decimation factor
+//  _h      :   filter coefficients [size: _h_len x 1]
+//  _h_len  :   filter coefficients length
+FIRDECIM() FIRDECIM(_create)(unsigned int _M,
+                             TC *         _h,
+                             unsigned int _h_len)
 {
     // validate input
     if (_h_len == 0) {
         fprintf(stderr,"error: decim_%s_create(), filter length must be greater than zero\n", EXTENSION_FULL);
         exit(1);
-    } else if (_D == 0) {
+    } else if (_M == 0) {
         fprintf(stderr,"error: decim_%s_create(), decimation factor must be greater than zero\n", EXTENSION_FULL);
         exit(1);
     }
 
-    DECIM() q = (DECIM()) malloc(sizeof(struct DECIM(_s)));
+    FIRDECIM() q = (FIRDECIM()) malloc(sizeof(struct FIRDECIM(_s)));
     q->h_len = _h_len;
-    q->D = _D;
-    q->h = (TC*) malloc((q->h_len)*sizeof(TC));
+    q->M     = _M;
 
-    // create window (internal buffer)
-    q->w = WINDOW(_create)(q->h_len);
+    // allocate memory for coefficients
+    q->h = (TC*) malloc((q->h_len)*sizeof(TC));
 
     // load filter in reverse order
     unsigned int i;
     for (i=0; i<q->h_len; i++)
         q->h[i] = _h[_h_len-i-1];
 
+    // create window (internal buffer)
+    q->w = WINDOW(_create)(q->h_len);
+
     // create dot product object
     q->dp = DOTPROD(_create)(q->h, q->h_len);
 
     // reset filter state (clear buffer)
-    DECIM(_clear)(q);
+    FIRDECIM(_clear)(q);
 
     return q;
 }
@@ -94,9 +82,9 @@ DECIM() DECIM(_create)(unsigned int _D,
 //  _M      :   decimolation factor
 //  _m      :   symbol delay
 //  _As     :   stop-band attenuation [dB]
-DECIM() DECIM(_create_prototype)(unsigned int _M,
-                                 unsigned int _m,
-                                 float _As)
+FIRDECIM() FIRDECIM(_create_prototype)(unsigned int _M,
+                                       unsigned int _m,
+                                       float        _As)
 {
     // validate input
     if (_M < 2) {
@@ -123,23 +111,23 @@ DECIM() DECIM(_create_prototype)(unsigned int _M,
         hc[i] = hf[i];
     
     // return decimator object
-    return DECIM(_create)(_M, hc, 2*_M*_m);
+    return FIRDECIM(_create)(_M, hc, 2*_M*_m);
 }
 
 // create square-root Nyquist decimator
 //  _type   :   filter type (e.g. LIQUID_RNYQUIST_RRC)
-//  _k      :   samples/symbol _k > 1
+//  _M      :   samples/symbol _M > 1
 //  _m      :   filter delay (symbols), _m > 0
 //  _beta   :   excess bandwidth factor, 0 < _beta < 1
 //  _dt     :   fractional sample delay, 0 <= _dt < 1
-DECIM() DECIM(_create_rnyquist)(int _type,
-                                unsigned int _k,
-                                unsigned int _m,
-                                float _beta,
-                                float _dt)
+FIRDECIM() FIRDECIM(_create_rnyquist)(int          _type,
+                                      unsigned int _M,
+                                      unsigned int _m,
+                                      float        _beta,
+                                      float        _dt)
 {
     // validate input
-    if (_k < 2) {
+    if (_M < 2) {
         fprintf(stderr,"error: decim_%s_create_rnyquist(), decimation factor must be greater than 1\n", EXTENSION_FULL);
         exit(1);
     } else if (_m == 0) {
@@ -154,9 +142,9 @@ DECIM() DECIM(_create_rnyquist)(int _type,
     }
 
     // generate square-root Nyquist filter
-    unsigned int h_len = 2*_k*_m + 1;
+    unsigned int h_len = 2*_M*_m + 1;
     float h[h_len];
-    liquid_firdes_rnyquist(_type,_k,_m,_beta,_dt,h);
+    liquid_firdes_rnyquist(_type,_M,_m,_beta,_dt,h);
 
     // copy coefficients to type-specific array (e.g. float complex)
     unsigned int i;
@@ -165,11 +153,11 @@ DECIM() DECIM(_create_rnyquist)(int _type,
         hc[i] = h[i];
 
     // return decimator object
-    return DECIM(_create)(_k, hc, h_len);
+    return FIRDECIM(_create)(_M, hc, h_len);
 }
 
 // destroy decimator object
-void DECIM(_destroy)(DECIM() _q)
+void FIRDECIM(_destroy)(FIRDECIM() _q)
 {
     WINDOW(_destroy)(_q->w);
     DOTPROD(_destroy)(_q->dp);
@@ -178,38 +166,38 @@ void DECIM(_destroy)(DECIM() _q)
 }
 
 // print decimator object internals
-void DECIM(_print)(DECIM() _q)
+void FIRDECIM(_print)(FIRDECIM() _q)
 {
-    printf("DECIM() [%u] :\n", _q->D);
+    printf("FIRDECIM() [%u] :\n", _q->M);
     printf("  window:\n");
     WINDOW(_print)(_q->w);
 }
 
 // clear decimator object
-void DECIM(_clear)(DECIM() _q)
+void FIRDECIM(_clear)(FIRDECIM() _q)
 {
     WINDOW(_clear)(_q->w);
 }
 
 // execute decimator
 //  _q      :   decimator object
-//  _x      :   input sample array
+//  _x      :   input sample array [size: _M x 1]
 //  _y      :   output sample pointer
-//  _index  :   output sample phase
-void DECIM(_execute)(DECIM() _q,
-                     TI *_x,
-                     TO *_y,
-                     unsigned int _index)
+//  _index  :   decimator output index [0,_M-1]
+void FIRDECIM(_execute)(FIRDECIM()   _q,
+                        TI *         _x,
+                        TO *         _y,
+                        unsigned int _index)
 {
     // validate input
-    if (_index >= _q->D) {
+    if (_index >= _q->M) {
         fprintf(stderr,"error: decim_%s_execute(), output sample phase exceeds decimation factor\n", EXTENSION_FULL);
         exit(1);
     }
 
     TI * r; // read pointer
     unsigned int i;
-    for (i=0; i<_q->D; i++) {
+    for (i=0; i<_q->M; i++) {
         WINDOW(_push)(_q->w, _x[i]);
 
         if (i==_index) {

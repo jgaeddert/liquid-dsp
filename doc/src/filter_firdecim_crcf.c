@@ -1,5 +1,5 @@
 //
-// filter_decim_crcf.c
+// filter_firdecim_crcf.c
 //
 
 #include <stdio.h>
@@ -9,24 +9,24 @@
 #include "liquid.h"
 #include "liquid.doc.h"
 
-#define OUTPUT_FILENAME "figures.gen/filter_decim_crcf.gnu"
+#define OUTPUT_FILENAME "figures.gen/filter_firdecim_crcf.gnu"
 
 int main() {
     // options
-    unsigned int D=4;                   // samples/symbol
+    unsigned int M=4;                   // samples/symbol
     unsigned int m=3;                   // filter delay
     float beta = 0.3f;                  // filter excess bandwidth
     unsigned int num_data_symbols=32;   // number of data symbols
 
     // derived values
-    unsigned int h_len = 2*D*m+1;
+    unsigned int h_len = 2*M*m+1;
     unsigned int num_symbols = num_data_symbols + 2*m;
-    unsigned int num_samples = D*num_symbols;
+    unsigned int num_samples = M*num_symbols;
 
     // design filter and create interpolator
     float h[h_len];
-    liquid_firdes_rcos(D,m,beta,0.0f,h);
-    decim_crcf q = decim_crcf_create(D,h,h_len);
+    liquid_firdes_rcos(M,m,beta,0.0f,h);
+    firdecim_crcf q = firdecim_crcf_create(M,h,h_len);
 
     // generate input signal and interpolate
     float complex x[num_samples];
@@ -36,9 +36,9 @@ int main() {
         x[i] = 1.0f * hann(i,num_samples) * cexpf(_Complex_I * 2 * M_PI * i * 0.057f);
 
     for (i=0; i<num_symbols; i++)
-        decim_crcf_execute(q, &x[D*i], &y[i], 0);
+        firdecim_crcf_execute(q, &x[M*i], &y[i], 0);
 
-    decim_crcf_destroy(q);
+    firdecim_crcf_destroy(q);
     
     // open output file
     FILE * fid = fopen(OUTPUT_FILENAME,"w");
@@ -67,7 +67,7 @@ int main() {
     fprintf(fid,"e\n");
 
     for (i=0; i<num_symbols; i++)
-        fprintf(fid,"%12.4e %12.4e\n", (float)(i*D) - (float)(D*m), crealf(y[i])/D);
+        fprintf(fid,"%12.4e %12.4e\n", (float)(i*M) - (float)(M*m), crealf(y[i])/M);
     fprintf(fid,"e\n");
 
     fprintf(fid,"# imag\n");
@@ -80,7 +80,7 @@ int main() {
     fprintf(fid,"e\n");
 
     for (i=0; i<num_symbols; i++)
-        fprintf(fid,"%12.4e %12.4e\n", (float)(i*D) - (float)(D*m), cimagf(y[i])/D);
+        fprintf(fid,"%12.4e %12.4e\n", (float)(i*M) - (float)(M*m), cimagf(y[i])/M);
     fprintf(fid,"e\n");
 
     // close output file
