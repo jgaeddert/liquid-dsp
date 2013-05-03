@@ -41,7 +41,7 @@ int main(int argc, char*argv[])
 
     // create objects
     modem mod = modem_create(LIQUID_MODEM_QPSK);
-    interp_crcf interp = interp_crcf_create_rnyquist(LIQUID_RNYQUIST_RRC,k,m,beta,dt);
+    firinterp_crcf interp = firinterp_crcf_create_rnyquist(LIQUID_RNYQUIST_RRC,k,m,beta,dt);
     agc_crcf p = agc_crcf_create();
     agc_crcf_set_bandwidth(p, bt);
 
@@ -58,7 +58,7 @@ int main(int argc, char*argv[])
         modem_modulate(mod, sym, &s);
         s *= gamma;
 
-        interp_crcf_execute(interp, s, &x[i*k]);
+        firinterp_crcf_execute(interp, s, &x[i*k]);
     }
 
     // add noise
@@ -75,7 +75,7 @@ int main(int argc, char*argv[])
     // destroy objects
     modem_destroy(mod);
     agc_crcf_destroy(p);
-    interp_crcf_destroy(interp);
+    firinterp_crcf_destroy(interp);
 
     // print results to screen
     printf("received signal strength indication (rssi):\n");

@@ -1,7 +1,5 @@
 /*
- * Copyright (c) 2007, 2008, 2009, 2010 Joseph Gaeddert
- * Copyright (c) 2007, 2008, 2009, 2010 Virginia Polytechnic
- *                                      Institute & State University
+ * Copyright (c) 2007, 2008, 2009, 2010, 2011, 2012, 2013 Joseph Gaeddert
  *
  * This file is part of liquid.
  *
@@ -96,7 +94,11 @@ FIRFILT() FIRFILT(_create)(TC * _h,
     return q;
 }
 
-// create firfilt object from prototype
+// create filter using Kaiser-Bessel windowed sinc method
+//  _n      : filter length, _n > 0
+//  _fc     : cutoff frequency, 0 < _fc < 0.5
+//  _As     : stop-band attenuation [dB], _As > 0
+//  _mu     : fractional sample offset, -0.5 < _mu < 0.5
 FIRFILT() FIRFILT(_create_kaiser)(unsigned int _n,
                                   float        _fc,
                                   float        _As,
@@ -120,6 +122,45 @@ FIRFILT() FIRFILT(_create_kaiser)(unsigned int _n,
 
     // 
     return FIRFILT(_create)(h, _n);
+}
+
+// create from square-root Nyquist prototype
+//  _type   : filter type (e.g. LIQUID_RNYQUIST_RRC)
+//  _k      : nominal samples/symbol, _k > 1
+//  _m      : filter delay [symbols], _m > 0
+//  _beta   : rolloff factor, 0 < beta <= 1
+//  _mu     : fractional sample offset,-0.5 < _mu < 0.5
+FIRFILT() FIRFILT(_create_rnyquist)(int          _type,
+                                    unsigned int _k,
+                                    unsigned int _m,
+                                    float        _beta,
+                                    float        _mu)
+{
+    // validate input
+    if (_k < 2) {
+        fprintf(stderr,"error: firfilt_%s_create_rnyquist(), filter samples/symbol must be greater than 1\n", EXTENSION_FULL);
+        exit(1);
+    } else if (_m == 0) {
+        fprintf(stderr,"error: firfilt_%s_create_rnyquist(), filter delay must be greater than 0\n", EXTENSION_FULL);
+        exit(1);
+    } else if (_beta < 0.0f || _beta > 1.0f) {
+        fprintf(stderr,"error: firfilt_%s_create_rnyquist(), filter excess bandwidth factor must be in [0,1]\n", EXTENSION_FULL);
+        exit(1);
+    }
+
+    // generate square-root Nyquist filter
+    unsigned int h_len = 2*_k*_m + 1;
+    float hf[h_len];
+    liquid_firdes_rnyquist(_type,_k,_m,_beta,_mu,hf);
+
+    // copy coefficients to type-specific array (e.g. float complex)
+    unsigned int i;
+    TC hc[h_len];
+    for (i=0; i<h_len; i++)
+        hc[i] = hf[i];
+
+    // return filterbank object
+    return FIRFILT(_create)(hc, h_len);
 }
 
 // re-create firfilt object

@@ -25,6 +25,7 @@
 #include <stdio.h>
 #include <string.h>
 #include <math.h>
+#include <assert.h>
 
 #include <complex.h>
 #include "liquid.internal.h"
@@ -193,5 +194,66 @@ void spgram_execute(spgram          _q,
 
     // copy result to output
     memmove(_X, _q->X, _q->nfft*sizeof(float complex));
+}
+
+// estimate spectrum on input signal
+//  _q      :   spgram object
+//  _x      :   input signal [size: _n x 1]
+//  _n      :   input signal length
+//  _psd    :   output spectrum, [size: _nfft x 1]
+void spgram_estimate_psd(spgram                 _q,
+                         liquid_float_complex * _x,
+                         unsigned int           _n,
+                         float *                _psd)
+{
+    unsigned int i;
+    unsigned int k;
+
+    //
+    unsigned int delay = _q->nfft / 4;
+    if (delay == 0)
+        delay = 1;
+
+    // reset output array
+    for (i=0; i<_q->nfft; i++)
+        _psd[i] = 0.0f;
+
+    // return if input size is zero
+    if (_n == 0)
+        return;
+
+    // keep track of how many transforms have been taken
+    unsigned int num_transforms = 0;
+
+    // temporary array for output
+    float complex * X = (float complex*) malloc(_q->nfft * sizeof(float complex));
+
+    //
+    for (i=0; i<_n; i++) {
+        // push signal into periodogram object one sample
+        // at a time
+        spgram_push(_q, &_x[i], 1);
+
+        // take transform periodically, ensuring all samples
+        // are taken into account
+        if ( ((i+1)%delay)==0 || (i==_n-1)) {
+            spgram_execute(_q, X);
+            for (k=0; k<_q->nfft; k++)
+                _psd[k] += crealf(X[k] * conjf(X[k]));
+
+            //
+            num_transforms++;
+        }
+    }
+
+    // at least one transform should have been taken
+    assert(num_transforms > 0);
+    
+    // scale result by number of transforms
+    for (i=0; i<_q->nfft; i++)
+        _psd[i] /= (float)(num_transforms);
+
+    // free allocated memory
+    free(X);
 }
 

@@ -29,34 +29,9 @@ int main() {
     liquid_iirdes_bandtype   btype  = LIQUID_IIRDES_LOWPASS;
     liquid_iirdes_format     format = LIQUID_IIRDES_SOS;
 
-    // derived values : compute filter length
-    unsigned int N = order; // effective order
-    // filter order effectively doubles for band-pass, band-stop
-    // filters due to doubling the number of poles and zeros as
-    // a result of filter transformation
-    if (btype == LIQUID_IIRDES_BANDPASS ||
-        btype == LIQUID_IIRDES_BANDSTOP)
-    {
-        N *= 2;
-    }
-    unsigned int r = N%2;       // odd/even order
-    unsigned int L = (N-r)/2;   // filter semi-length
-
-    // allocate memory for filter coefficients
-    unsigned int h_len = (format == LIQUID_IIRDES_SOS) ? 3*(L+r) : N+1;
-    float b[h_len];
-    float a[h_len];
-
-    // design filter
-    liquid_iirdes(ftype, btype, format, order, fc, f0, Ap, As, b, a);
-
-    // create filter object
-    iirfilt_crcf f = NULL;
-    if (format == LIQUID_IIRDES_SOS)
-        f = iirfilt_crcf_create_sos(b,a,L+r);
-    else
-        f = iirfilt_crcf_create(b,h_len, a,h_len);
-    iirfilt_crcf_print(f);
+    // design filter from prototype
+    iirfilt_crcf q = iirfilt_crcf_create_prototype(ftype, btype, format, order, fc, f0, Ap, As);
+    iirfilt_crcf_print(q);
 
     unsigned int i;
 
@@ -68,22 +43,21 @@ int main() {
     for (i=0; i<n; i++) {
         x[i] = cexpf((2*M_PI*0.057f*_Complex_I - 0.04f)*i);
         x[i] += 0.1f*(randnf() + _Complex_I*randnf());
-    }
 
-    // run filter
-    for (i=0; i<n; i++)
-        iirfilt_crcf_execute(f, x[i], &y[i]);
+        // run filter
+        iirfilt_crcf_execute(q, x[i], &y[i]);
+    }
 
     // compute response
     unsigned int nfft=512;
     float complex H[nfft];
     for (i=0; i<nfft; i++) {
         float freq = 0.5f * (float)i / (float)nfft;
-        iirfilt_crcf_freqresponse(f, freq, &H[i]);
+        iirfilt_crcf_freqresponse(q, freq, &H[i]);
     }
 
     // destroy filter object
-    iirfilt_crcf_destroy(f);
+    iirfilt_crcf_destroy(q);
 
     // 
     // plot results to output file
@@ -108,29 +82,6 @@ int main() {
 
     for (i=0; i<nfft; i++)
         fprintf(fid,"H(%4u) = %12.8f + j*%12.8f;\n", i+1, crealf(H[i]), cimagf(H[i]));
-
-    // output filter coefficients using extra precision
-    if (format == LIQUID_IIRDES_SOS) {
-        // convert to transfer function form by convolving second-order
-        // sections (effectively this expands the polynomial)
-        fprintf(fid,"b = [1];\n");
-        fprintf(fid,"a = [1];\n");
-        for (i=0; i<L+r; i++) {
-            fprintf(fid,"b = conv(b,[%16.8e %16.8e %16.8e]);\n", b[3*i+0], b[3*i+1], b[3*i+2]);
-            fprintf(fid,"a = conv(a,[%16.8e %16.8e %16.8e]);\n", a[3*i+0], a[3*i+1], a[3*i+2]);
-        }
-
-    } else {
-        for (i=0; i<h_len; i++) {
-            fprintf(fid,"b(%3u) = %16.8e;\n", i+1, b[i]);
-            fprintf(fid,"a(%3u) = %16.8e;\n", i+1, a[i]);
-        }
-    }
-
-    // plot filter response
-    fprintf(fid,"\n");
-    fprintf(fid,"figure;\n");
-    fprintf(fid,"freqz(b,a);\n");
 
     // plot output
     fprintf(fid,"t=0:(n-1);\n");

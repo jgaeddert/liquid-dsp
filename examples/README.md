@@ -99,17 +99,6 @@ This directory contains all the examples for interfacing the liquid modules.
     sinusoidal input.  The output distortion ratio is computed, and the
     time-domain results are written to a file.
 
- * `decim_crcf_example.c`:
-    This example demonstrates the decim object (decimator) interface.
-    Data symbols are generated and then interpolated according to a
-    finite impulse response square-root Nyquist filter.  The resulting
-    sequence is then decimated with the same filter, matched to the
-    interpolator.
-
-    SEE ALSO: `interp_crcf_example.c`
-
- * `decim_rrrf_example.c`:
-
  * `dotprod_cccf_example.c`:
     This example demonstrates the interface to the complex
     floating-point dot product object (dotprod_cccf).
@@ -151,6 +140,16 @@ This directory contains all the examples for interfacing the liquid modules.
     SEE ALSO: `mdct_example.c`
               `fct_example.c`
 
+ * `firdecim_crcf_example.c`:
+    This example demonstrates the interface to the firdecim (finite
+    impulse response decimator) family of objects.
+    Data symbols are generated and then interpolated according to a
+    finite impulse response square-root Nyquist filter.  The resulting
+    sequence is then decimated with the same filter, matched to the
+    interpolator.
+
+    SEE ALSO: `firinterp_crcf_example.c`
+
  * `firdes_kaiser_example.c`:
     This example demonstrates finite impulse response filter design using a
     Kaiser window.
@@ -187,6 +186,11 @@ This directory contains all the examples for interfacing the liquid modules.
     samples.
 
     SEE ALSO: `firhilb_decim_example.c`
+
+ * `firinterp_crcf_example.c`:
+    This example demonstrates the interp object (interpolator)
+    interface. Data symbols are generated and then interpolated
+    according to a finite impulse response Nyquist filter.
 
  * `firpfbch_analysis_example.c`:
     Example of the analysis channelizer filterbank. The input signal is
@@ -274,12 +278,21 @@ This directory contains all the examples for interfacing the liquid modules.
     SEE ALSO: `nco_pll_example.c`
               `nco_pll_modem_example.c`
 
+ * `iirfilt_cccf_example.c`:
+    Complex infinite impulse response filter example. Demonstrates the
+    functionality of iirfilt with complex coefficients by designing a
+    filter with specified parameters and then filters noise.
+
  * `iirfilt_crcf_example.c`:
     Complex infinite impulse response filter example. Demonstrates the
     functionality of iirfilt by designing a low-order prototype (e.g.
     Butterworth) and using it to filter a noisy signal.  The filter
     coefficients are real, but the input and output arrays are complex.  The
     filter order and cutoff frequency are specified at the beginning.
+
+ * `iirinterp_crcf_example.c`:
+    This example demonstrates the iirinterp object (IIR interpolator)
+    interface.
 
  * `interleaver_example.c`:
     This example demonstrates the functionality of the liquid interleaver
@@ -294,11 +307,6 @@ This directory contains all the examples for interfacing the liquid modules.
  * `interleaver_scatterplot_example.c`:
 
  * `interleaver_soft_example.c`:
-
- * `interp_crcf_example.c`:
-    This example demonstrates the interp object (interpolator)
-    interface. Data symbols are generated and then interpolated
-    according to a finite impulse response Nyquist filter.
 
  * `kbd_window_example.c`:
  * `lpc_example.c`:

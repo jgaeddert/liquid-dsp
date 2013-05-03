@@ -1,7 +1,5 @@
 /*
- * Copyright (c) 2007, 2008, 2009, 2010 Joseph Gaeddert
- * Copyright (c) 2007, 2008, 2009, 2010 Virginia Polytechnic
- *                                      Institute & State University
+ * Copyright (c) 2007, 2008, 2009, 2010, 2011, 2012, 2013 Joseph Gaeddert
  *
  * This file is part of liquid.
  *
@@ -31,14 +29,16 @@
 
 // 
 #define AUTOCORR(name)      LIQUID_CONCAT(autocorr_rrrf,name)
+#define FIRDECIM(name)      LIQUID_CONCAT(firdecim_rrrf,name)
 #define FIRFARROW(name)     LIQUID_CONCAT(firfarrow_rrrf,name)
 #define FIRFILT(name)       LIQUID_CONCAT(firfilt_rrrf,name)
+#define FIRINTERP(name)     LIQUID_CONCAT(firinterp_rrrf,name)
 #define FIRHILB(name)       LIQUID_CONCAT(firhilbf,name)
 #define FIRPFB(name)        LIQUID_CONCAT(firpfb_rrrf,name)
+#define IIRDECIM(name)      LIQUID_CONCAT(iirdecim_rrrf,name)
 #define IIRFILT(name)       LIQUID_CONCAT(iirfilt_rrrf,name)
 #define IIRFILTSOS(name)    LIQUID_CONCAT(iirfiltsos_rrrf,name)
-#define INTERP(name)        LIQUID_CONCAT(interp_rrrf,name)
-#define DECIM(name)         LIQUID_CONCAT(decim_rrrf,name)
+#define IIRINTERP(name)     LIQUID_CONCAT(iirinterp_rrrf,name)
 #define MSRESAMP(name)      LIQUID_CONCAT(msresamp_rrrf,name)
 #define RESAMP(name)        LIQUID_CONCAT(resamp_rrrf,name)
 #define RESAMP2(name)       LIQUID_CONCAT(resamp2_rrrf,name)
@@ -62,14 +62,16 @@
 
 // source files
 #include "autocorr.c"
+#include "firdecim.c"
 #include "firfarrow.c"
 #include "firfilt.c"
+#include "firinterp.c"
 #include "firhilb.c"
 #include "firpfb.c"
+#include "iirdecim.c"
 #include "iirfilt.c"
 #include "iirfiltsos.c"
-#include "interp.c"
-#include "decim.c"
+#include "iirinterp.c"
 #include "msresamp.c"
 #include "resamp.c"
 #include "resamp2.c"

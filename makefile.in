@@ -257,24 +257,11 @@ fec_objects :=							\
 	src/fec/src/fec_secded7264.o				\
 	src/fec/src/interleaver.o				\
 	src/fec/src/packetizer.o				\
-	src/fec/gentab/reverse_byte.o				\
 	src/fec/src/sumproduct.o				\
 
 
 # list explicit targets and dependencies here
 $(fec_objects) : %.o : %.c $(headers)
-
-# auto-generated tables
-src/fec/gentab/reverse_byte_gentab : % : %.c
-
-src/fec/gentab/reverse_byte.c : src/fec/gentab/reverse_byte_gentab
-	./$< > $@
-
-# add auto-generated files to extra_clean list
-extra_clean +=							\
-	src/fec/gentab/reverse_byte_gentab			\
-	src/fec/gentab/reverse_byte.c				\
-	src/fec/gentab/reverse_byte.o				\
 
 # autotests
 fec_autotests :=						\
@@ -428,14 +415,16 @@ filter_objects :=						\
 
 # list explicit targets and dependencies here
 filter_includes :=						\
+	src/filter/src/firdecim.c				\
 	src/filter/src/firfarrow.c				\
 	src/filter/src/firfilt.c				\
 	src/filter/src/firhilb.c				\
+	src/filter/src/firinterp.c				\
 	src/filter/src/firpfb.c					\
+	src/filter/src/iirdecim.c				\
 	src/filter/src/iirfilt.c				\
 	src/filter/src/iirfiltsos.c				\
-	src/filter/src/interp.c					\
-	src/filter/src/decim.c					\
+	src/filter/src/iirinterp.c				\
 	src/filter/src/msresamp.c				\
 	src/filter/src/resamp.c					\
 	src/filter/src/resamp2.c				\
@@ -481,24 +470,42 @@ src/filter/src/rrcos.o : %.o : %.c $(headers)
 
 
 filter_autotests :=						\
-	src/filter/tests/decim_autotest.c			\
 	src/filter/tests/filter_crosscorr_autotest.c		\
+	src/filter/tests/firdecim_xxxf_autotest.c		\
 	src/filter/tests/firdes_autotest.c			\
 	src/filter/tests/firdespm_autotest.c			\
 	src/filter/tests/firfilt_xxxf_autotest.c		\
 	src/filter/tests/firhilb_autotest.c			\
+	src/filter/tests/firinterp_autotest.c			\
 	src/filter/tests/firpfb_autotest.c			\
 	src/filter/tests/groupdelay_autotest.c			\
 	src/filter/tests/iirdes_autotest.c			\
 	src/filter/tests/iirfilt_xxxf_autotest.c		\
 	src/filter/tests/iirfiltsos_rrrf_autotest.c		\
-	src/filter/tests/interp_autotest.c			\
 	src/filter/tests/msresamp_crcf_autotest.c		\
 	src/filter/tests/resamp_crcf_autotest.c			\
 	src/filter/tests/resamp2_crcf_autotest.c		\
 
 # additional autotest objects
 autotest_extra_obj +=						\
+	src/filter/tests/firdecim_runtest.o			\
+								\
+	src/filter/tests/data/firdecim_rrrf_data_M2h4x20.o	\
+	src/filter/tests/data/firdecim_crcf_data_M2h4x20.o	\
+	src/filter/tests/data/firdecim_cccf_data_M2h4x20.o	\
+								\
+	src/filter/tests/data/firdecim_rrrf_data_M3h7x30.o	\
+	src/filter/tests/data/firdecim_crcf_data_M3h7x30.o	\
+	src/filter/tests/data/firdecim_cccf_data_M3h7x30.o	\
+								\
+	src/filter/tests/data/firdecim_rrrf_data_M4h13x40.o	\
+	src/filter/tests/data/firdecim_crcf_data_M4h13x40.o	\
+	src/filter/tests/data/firdecim_cccf_data_M4h13x40.o	\
+								\
+	src/filter/tests/data/firdecim_rrrf_data_M5h23x50.o	\
+	src/filter/tests/data/firdecim_crcf_data_M5h23x50.o	\
+	src/filter/tests/data/firdecim_cccf_data_M5h23x50.o	\
+								\
 	src/filter/tests/firfilt_runtest.o			\
 								\
 	src/filter/tests/data/firfilt_rrrf_data_h4x8.o		\
@@ -532,11 +539,11 @@ autotest_extra_obj +=						\
 	src/filter/tests/data/iirfilt_cccf_data_h7x64.o		\
 
 filter_benchmarks :=						\
-	src/filter/bench/decim_benchmark.c			\
+	src/filter/bench/firdecim_benchmark.c			\
 	src/filter/bench/firhilb_benchmark.c			\
+	src/filter/bench/firinterp_crcf_benchmark.c		\
 	src/filter/bench/firfilt_crcf_benchmark.c		\
 	src/filter/bench/iirfilt_crcf_benchmark.c		\
-	src/filter/bench/interp_crcf_benchmark.c		\
 	src/filter/bench/resamp_crcf_benchmark.c		\
 	src/filter/bench/resamp2_crcf_benchmark.c		\
 	src/filter/bench/symsync_crcf_benchmark.c		\
@@ -979,26 +986,12 @@ sequence_benchmarks :=						\
 
 utility_objects :=						\
 	src/utility/src/bshift_array.o				\
-	src/utility/src/count_bits.o				\
+	src/utility/src/byte_utilities.o			\
 	src/utility/src/msb_index.o				\
 	src/utility/src/pack_bytes.o				\
 	src/utility/src/shift_array.o				\
-	src/utility/gentab/count_ones.o				\
 
 $(utility_objects) : %.o : %.c $(headers)
-
-# auto-generated tables
-src/utility/gentab/count_ones_gentab : % : %.c
-
-src/utility/gentab/count_ones.c : src/utility/gentab/count_ones_gentab
-	./$< > $@
-
-# add auto-generated files to extra_clean list
-extra_clean +=							\
-	src/utility/gentab/count_ones_gentab			\
-	src/utility/gentab/count_ones.c				\
-	src/utility/gentab/count_ones.o				\
-
 
 # autotests
 utility_autotests :=						\
@@ -1332,7 +1325,6 @@ example_programs :=						\
 	examples/crc_example					\
 	examples/cgsolve_example				\
 	examples/cvsd_example					\
-	examples/decim_crcf_example				\
 	examples/detector_cccf_example				\
 	examples/dotprod_rrrf_example				\
 	examples/dotprod_cccf_example				\
@@ -1342,6 +1334,7 @@ example_programs :=						\
 	examples/fec_example					\
 	examples/fec_soft_example				\
 	examples/fft_example					\
+	examples/firdecim_crcf_example				\
 	examples/firfarrow_rrrf_example				\
 	examples/firfilt_rrrf_example				\
 	examples/firdes_kaiser_example				\
@@ -1349,6 +1342,7 @@ example_programs :=						\
 	examples/firhilb_example				\
 	examples/firhilb_decim_example				\
 	examples/firhilb_interp_example				\
+	examples/firinterp_crcf_example				\
 	examples/firpfbch_example				\
 	examples/firpfbch_analysis_example			\
 	examples/firpfbch_synthesis_example			\
@@ -1368,8 +1362,10 @@ example_programs :=						\
 	examples/iirdes_example					\
 	examples/iirdes_analog_example				\
 	examples/iirdes_pll_example				\
+	examples/iirdecim_crcf_example				\
+	examples/iirfilt_cccf_example				\
 	examples/iirfilt_crcf_example				\
-	examples/interp_crcf_example				\
+	examples/iirinterp_crcf_example				\
 	examples/kbd_window_example				\
 	examples/lpc_example					\
 	examples/libliquid_example				\
@@ -1442,6 +1438,7 @@ clean-examples:
 sandbox_programs =						\
 	sandbox/bpresync_test					\
 	sandbox/cpmodem_test					\
+	sandbox/count_ones_gentab				\
 	sandbox/crc_gentab					\
 	sandbox/ellip_func_test					\
 	sandbox/ellip_test					\
@@ -1515,6 +1512,7 @@ sandbox_programs =						\
 	sandbox/quasinewton_test				\
 	sandbox/resamp2_crcf_filterbank_test			\
 	sandbox/resamp2_crcf_interp_recreate_test		\
+	sandbox/reverse_byte_gentab				\
 	sandbox/rkaiser2_test					\
 	sandbox/simplex_test					\
 	sandbox/symsync_crcf_test				\

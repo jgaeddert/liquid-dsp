@@ -869,6 +869,16 @@ void spgram_push(spgram                 _q,
 void spgram_execute(spgram _q,
                     liquid_float_complex * _X);
 
+// estimate spectrum on input signal
+//  _q      :   spgram object
+//  _x      :   input signal [size: _n x 1]
+//  _n      :   input signal length
+//  _psd    :   output spectrum, [size: _nfft x 1]
+void spgram_estimate_psd(spgram                 _q,
+                         liquid_float_complex * _x,
+                         unsigned int           _n,
+                         float *                _psd);
+
 // ascii spectrogram
 typedef struct asgram_s * asgram;
 
@@ -1512,11 +1522,31 @@ LIQUID_AUTOCORR_DEFINE_API(AUTOCORR_MANGLE_RRRF,
 //   TI         : input data type
 #define LIQUID_FIRFILT_DEFINE_API(FIRFILT,TO,TC,TI)             \
 typedef struct FIRFILT(_s) * FIRFILT();                         \
+                                                                \
 FIRFILT() FIRFILT(_create)(TC * _h, unsigned int _n);           \
+                                                                \
+/* create using Kaiser-Bessel windowed sinc method          */  \
+/*  _n      : filter length, _n > 0                         */  \
+/*  _fc     : filter cut-off frequency 0 < _fc < 0.5        */  \
+/*  _As     : filter stop-band attenuation [dB], _As > 0    */  \
+/*  _mu     : fractional sample offset, -0.5 < _mu < 0.5    */  \
 FIRFILT() FIRFILT(_create_kaiser)(unsigned int _n,              \
                                   float        _fc,             \
                                   float        _As,             \
                                   float        _mu);            \
+                                                                \
+/* create from square-root Nyquist prototype            */      \
+/*  _type   : filter type (e.g. LIQUID_RNYQUIST_RRC)    */      \
+/*  _k      : nominal samples/symbol, _k > 1            */      \
+/*  _m      : filter delay [symbols], _m > 0            */      \
+/*  _beta   : rolloff factor, 0 < beta <= 1             */      \
+/*  _mu     : fractional sample offset,-0.5 < _mu < 0.5 */      \
+FIRFILT() FIRFILT(_create_rnyquist)(int          _type,         \
+                                    unsigned int _k,            \
+                                    unsigned int _m,            \
+                                    float        _beta,         \
+                                    float        _mu);          \
+                                                                \
 FIRFILT() FIRFILT(_recreate)(FIRFILT() _f,                      \
                              TC * _h,                           \
                              unsigned int _n);                  \
@@ -1560,15 +1590,53 @@ LIQUID_FIRFILT_DEFINE_API(FIRFILT_MANGLE_CCCF,
 //   interpolation, separate objects should be used for each task.
 #define LIQUID_FIRHILB_DEFINE_API(FIRHILB,T,TC)                 \
 typedef struct FIRHILB(_s) * FIRHILB();                         \
+                                                                \
+/* create finite impulse reponse Hilbert transform          */  \
+/*  _m      : filter semi-length, delay is 2*m+1            */  \
+/*  _As     : filter stop-band attenuation [dB]             */  \
 FIRHILB() FIRHILB(_create)(unsigned int _m,                     \
-                           float _As);                          \
+                           float        _As);                   \
+                                                                \
+/* destroy finite impulse reponse Hilbert transform         */  \
 void FIRHILB(_destroy)(FIRHILB() _q);                           \
+                                                                \
+/* print firhilb object internals to stdout                 */  \
 void FIRHILB(_print)(FIRHILB() _q);                             \
-void FIRHILB(_clear)(FIRHILB() _q);                             \
-void FIRHILB(_r2c_execute)(FIRHILB() _q, T _x, TC * _y);        \
-void FIRHILB(_c2r_execute)(FIRHILB() _q, TC _x, T * _y);        \
-void FIRHILB(_decim_execute)(FIRHILB() _q, T * _x, TC * _y);    \
-void FIRHILB(_interp_execute)(FIRHILB() _q, TC _x, T * _y);     \
+                                                                \
+/* reset firhilb object internal state                      */  \
+void FIRHILB(_reset)(FIRHILB() _q);                             \
+                                                                \
+/* execute Hilbert transform (real to complex)              */  \
+/*  _q      :   Hilbert transform object                    */  \
+/*  _x      :   real-valued input sample                    */  \
+/*  _y      :   complex-valued output sample                */  \
+void FIRHILB(_r2c_execute)(FIRHILB() _q,                        \
+                           T         _x,                        \
+                           TC *      _y);                       \
+                                                                \
+/* execute Hilbert transform (complex to real)              */  \
+/*  _q      :   Hilbert transform object                    */  \
+/*  _x      :   complex-valued input sample                 */  \
+/*  _y      :   real-valued output sample                   */  \
+void FIRHILB(_c2r_execute)(FIRHILB() _q,                        \
+                           TC        _x,                        \
+                           T *       _y);                       \
+                                                                \
+/* execute Hilbert transform decimator (real to complex)    */  \
+/*  _q      :   Hilbert transform object                    */  \
+/*  _x      :   real-valued input array [size: 2 x 1]       */  \
+/*  _y      :   complex-valued output sample                */  \
+void FIRHILB(_decim_execute)(FIRHILB() _q,                      \
+                             T *       _x,                      \
+                             TC *      _y);                     \
+                                                                \
+/* execute Hilbert transform interpolator (real to complex) */  \
+/*  _q      :   Hilbert transform object                    */  \
+/*  _x      :   complex-valued input sample                 */  \
+/*  _y      :   real-valued output array [size: 2 x 1]      */  \
+void FIRHILB(_interp_execute)(FIRHILB() _q,                     \
+                              TC        _x,                     \
+                              T *       _y);                    \
 
 LIQUID_FIRHILB_DEFINE_API(FIRHILB_MANGLE_FLOAT, float, liquid_float_complex)
 //LIQUID_FIRHILB_DEFINE_API(FIRHILB_MANGLE_DOUBLE, double, liquid_double_complex)
@@ -1705,111 +1773,263 @@ LIQUID_FIRPFB_DEFINE_API(FIRPFB_MANGLE_CCCF,
                          liquid_float_complex)
 
 // 
-// Interpolator
+// Interpolators
 //
-#define INTERP_MANGLE_RRRF(name)  LIQUID_CONCAT(interp_rrrf,name)
-#define INTERP_MANGLE_CRCF(name)  LIQUID_CONCAT(interp_crcf,name)
-#define INTERP_MANGLE_CCCF(name)  LIQUID_CONCAT(interp_cccf,name)
 
-#define LIQUID_INTERP_DEFINE_API(INTERP,TO,TC,TI)               \
-typedef struct INTERP(_s) * INTERP();                           \
+// firinterp : finite impulse response interpolator
+#define FIRINTERP_MANGLE_RRRF(name)  LIQUID_CONCAT(firinterp_rrrf,name)
+#define FIRINTERP_MANGLE_CRCF(name)  LIQUID_CONCAT(firinterp_crcf,name)
+#define FIRINTERP_MANGLE_CCCF(name)  LIQUID_CONCAT(firinterp_cccf,name)
+
+#define LIQUID_FIRINTERP_DEFINE_API(FIRINTERP,TO,TC,TI)         \
+typedef struct FIRINTERP(_s) * FIRINTERP();                     \
 /* create interpolator from external coefficients       */      \
 /*  _M      : interpolation factor                      */      \
 /*  _h      : filter coefficients [size: _h_len x 1]    */      \
 /*  _h_len  : filter length                             */      \
-INTERP() INTERP(_create)(unsigned int _M,                       \
-                         TC *         _h,                       \
-                         unsigned int _h_len);                  \
+FIRINTERP() FIRINTERP(_create)(unsigned int _M,                 \
+                               TC *         _h,                 \
+                               unsigned int _h_len);            \
 /* create interpolator from prototype                   */      \
 /*  _M      : interpolation factor                      */      \
 /*  _m      : filter delay (symbols)                    */      \
 /*  _As     : stop-band attenuation [dB]                */      \
-INTERP() INTERP(_create_prototype)(unsigned int _M,             \
-                                   unsigned int _m,             \
-                                   float        _As);           \
+FIRINTERP() FIRINTERP(_create_prototype)(unsigned int _M,       \
+                                         unsigned int _m,       \
+                                         float        _As);     \
 /* create square-root Nyquist interpolator              */      \
 /*  _type   : filter type (e.g. LIQUID_RNYQUIST_RRC)    */      \
 /*  _k      : samples/symbol (interpolation factor)     */      \
 /*  _m      : filter delay (symbols)                    */      \
 /*  _beta   : rolloff factor (0 < beta <= 1)            */      \
 /*  _dt     : fractional sample delay                   */      \
-INTERP() INTERP(_create_rnyquist)(int          _type,           \
-                                  unsigned int _k,              \
-                                  unsigned int _m,              \
-                                  float        _beta,           \
-                                  float        _dt);            \
-void INTERP(_destroy)(INTERP() _q);                             \
-void INTERP(_print)(INTERP() _q);                               \
-void INTERP(_clear)(INTERP() _q);                               \
-void INTERP(_execute)(INTERP() _q, TI _x, TO *_y);
+FIRINTERP() FIRINTERP(_create_rnyquist)(int          _type,     \
+                                        unsigned int _k,        \
+                                        unsigned int _m,        \
+                                        float        _beta,     \
+                                        float        _dt);      \
+void FIRINTERP(_destroy)(FIRINTERP() _q);                       \
+void FIRINTERP(_print)(FIRINTERP() _q);                         \
+void FIRINTERP(_clear)(FIRINTERP() _q);                         \
+void FIRINTERP(_execute)(FIRINTERP() _q, TI _x, TO *_y);        \
 
-LIQUID_INTERP_DEFINE_API(INTERP_MANGLE_RRRF,
-                         float,
-                         float,
-                         float)
+LIQUID_FIRINTERP_DEFINE_API(FIRINTERP_MANGLE_RRRF,
+                            float,
+                            float,
+                            float)
 
-LIQUID_INTERP_DEFINE_API(INTERP_MANGLE_CRCF,
-                         liquid_float_complex,
-                         float,
-                         liquid_float_complex)
+LIQUID_FIRINTERP_DEFINE_API(FIRINTERP_MANGLE_CRCF,
+                            liquid_float_complex,
+                            float,
+                            liquid_float_complex)
 
-LIQUID_INTERP_DEFINE_API(INTERP_MANGLE_CCCF,
-                         liquid_float_complex,
-                         liquid_float_complex,
-                         liquid_float_complex)
+LIQUID_FIRINTERP_DEFINE_API(FIRINTERP_MANGLE_CCCF,
+                            liquid_float_complex,
+                            liquid_float_complex,
+                            liquid_float_complex)
+
+// iirinterp : infinite impulse response interpolator
+#define IIRINTERP_MANGLE_RRRF(name)  LIQUID_CONCAT(iirinterp_rrrf,name)
+#define IIRINTERP_MANGLE_CRCF(name)  LIQUID_CONCAT(iirinterp_crcf,name)
+#define IIRINTERP_MANGLE_CCCF(name)  LIQUID_CONCAT(iirinterp_cccf,name)
+
+#define LIQUID_IIRINTERP_DEFINE_API(IIRINTERP,TO,TC,TI)         \
+typedef struct IIRINTERP(_s) * IIRINTERP();                     \
+                                                                \
+/* create interpolator from external coefficients           */  \
+/*  _M      : interpolation factor                          */  \
+/*  _b      : feed-back coefficients [size: _nb x 1]        */  \
+/*  _nb     : feed-back coefficients length                 */  \
+/*  _a      : feed-forward coefficients [size: _na x 1]     */  \
+/*  _na     : feed-forward coefficients length              */  \
+IIRINTERP() IIRINTERP(_create)(unsigned int _M,                 \
+                               TC *         _b,                 \
+                               unsigned int _nb,                \
+                               TC *         _a,                 \
+                               unsigned int _na);               \
+                                                                \
+/* create interpolator from prototype                       */  \
+/*  _M      : interpolation factor                          */  \
+IIRINTERP() IIRINTERP(_create_prototype)(                       \
+                unsigned int _M,                                \
+                liquid_iirdes_filtertype _ftype,                \
+                liquid_iirdes_bandtype   _btype,                \
+                liquid_iirdes_format     _format,               \
+                unsigned int _order,                            \
+                float _fc,                                      \
+                float _f0,                                      \
+                float _Ap,                                      \
+                float _As);                                     \
+                                                                \
+/* destroy interpolator object and free internal memory     */  \
+void IIRINTERP(_destroy)(IIRINTERP() _q);                       \
+                                                                \
+/* print interpolator object internals                      */  \
+void IIRINTERP(_print)(IIRINTERP() _q);                         \
+                                                                \
+/* reset interpolator object                                */  \
+void IIRINTERP(_reset)(IIRINTERP() _q);                         \
+                                                                \
+/* execute interpolator                                     */  \
+void IIRINTERP(_execute)(IIRINTERP() _q, TI _x, TO *_y);        \
+
+LIQUID_IIRINTERP_DEFINE_API(IIRINTERP_MANGLE_RRRF,
+                            float,
+                            float,
+                            float)
+
+LIQUID_IIRINTERP_DEFINE_API(IIRINTERP_MANGLE_CRCF,
+                            liquid_float_complex,
+                            float,
+                            liquid_float_complex)
+
+LIQUID_IIRINTERP_DEFINE_API(IIRINTERP_MANGLE_CCCF,
+                            liquid_float_complex,
+                            liquid_float_complex,
+                            liquid_float_complex)
 
 // 
-// Decimator
+// Decimators
 //
-#define DECIM_MANGLE_RRRF(name) LIQUID_CONCAT(decim_rrrf,name)
-#define DECIM_MANGLE_CRCF(name) LIQUID_CONCAT(decim_crcf,name)
-#define DECIM_MANGLE_CCCF(name) LIQUID_CONCAT(decim_cccf,name)
 
-#define LIQUID_DECIM_DEFINE_API(DECIM,TO,TC,TI)                 \
-typedef struct DECIM(_s) * DECIM();                             \
-DECIM() DECIM(_create)(unsigned int _D,                         \
-                       TC *_h,                                  \
-                       unsigned int _h_len);                    \
-/* create decimator from prototype                      */      \
-/*  _M      : decimation factor                         */      \
-/*  _m      : filter delay (symbols)                    */      \
-/*  _As     : stop-band attenuation [dB]                */      \
-DECIM() DECIM(_create_prototype)(unsigned int _M,               \
-                                 unsigned int _m,               \
-                                 float As);                     \
-/* create square-root Nyquist decimator                 */      \
-/*  _type   : filter type (e.g. LIQUID_RNYQUIST_RRC)    */      \
-/*  _k      : samples/symbol (decimation factor)        */      \
-/*  _m      : filter delay (symbols)                    */      \
-/*  _beta   : rolloff factor (0 < beta <= 1)            */      \
-/*  _dt     : fractional sample delay                   */      \
-DECIM() DECIM(_create_rnyquist)(int _type,                      \
-                                unsigned int _k,                \
-                                unsigned int _m,                \
-                                float _beta,                    \
-                                float _dt);                     \
-void DECIM(_destroy)(DECIM() _q);                               \
-void DECIM(_print)(DECIM() _q);                                 \
-void DECIM(_clear)(DECIM() _q);                                 \
-void DECIM(_execute)(DECIM() _q,                                \
-                     TI *_x,                                    \
-                     TO *_y,                                    \
-                     unsigned int _index);
+// firdecim : finite impulse response decimator
+#define FIRDECIM_MANGLE_RRRF(name) LIQUID_CONCAT(firdecim_rrrf,name)
+#define FIRDECIM_MANGLE_CRCF(name) LIQUID_CONCAT(firdecim_crcf,name)
+#define FIRDECIM_MANGLE_CCCF(name) LIQUID_CONCAT(firdecim_cccf,name)
 
-LIQUID_DECIM_DEFINE_API(DECIM_MANGLE_RRRF,
-                        float,
-                        float,
-                        float)
+#define LIQUID_FIRDECIM_DEFINE_API(FIRDECIM,TO,TC,TI)           \
+typedef struct FIRDECIM(_s) * FIRDECIM();                       \
+                                                                \
+/* create decimator from external coefficients              */  \
+/*  _M      : decimation factor                             */  \
+/*  _h      : filter coefficients [size: _h_len x 1]        */  \
+/*  _h_len  : filter coefficients length                    */  \
+FIRDECIM() FIRDECIM(_create)(unsigned int _M,                   \
+                             TC *         _h,                   \
+                             unsigned int _h_len);              \
+                                                                \
+/* create decimator from prototype                          */  \
+/*  _M      : decimation factor                             */  \
+/*  _m      : filter delay (symbols)                        */  \
+/*  _As     : stop-band attenuation [dB]                    */  \
+FIRDECIM() FIRDECIM(_create_prototype)(unsigned int _M,         \
+                                       unsigned int _m,         \
+                                       float        _As);       \
+                                                                \
+/* create square-root Nyquist decimator                     */  \
+/*  _type   : filter type (e.g. LIQUID_RNYQUIST_RRC)        */  \
+/*  _M      : samples/symbol (decimation factor)            */  \
+/*  _m      : filter delay (symbols)                        */  \
+/*  _beta   : rolloff factor (0 < beta <= 1)                */  \
+/*  _dt     : fractional sample delay                       */  \
+FIRDECIM() FIRDECIM(_create_rnyquist)(int          _type,       \
+                                      unsigned int _M,          \
+                                      unsigned int _m,          \
+                                      float        _beta,       \
+                                      float        _dt);        \
+                                                                \
+/* destroy decimator object                                 */  \
+void FIRDECIM(_destroy)(FIRDECIM() _q);                         \
+                                                                \
+/* print decimator object propreties to stdout              */  \
+void FIRDECIM(_print)(FIRDECIM() _q);                           \
+                                                                \
+/* reset decimator object internal state                    */  \
+void FIRDECIM(_clear)(FIRDECIM() _q);                           \
+                                                                \
+/* execute decimator                                        */  \
+/*  _q      : decimator object                              */  \
+/*  _x      : input samples [size: _M x 1]                  */  \
+/*  _y      : output sample pointer                         */  \
+/*  _index  : decimator output index, [0,_M-1]              */  \
+void FIRDECIM(_execute)(FIRDECIM()   _q,                        \
+                        TI *         _x,                        \
+                        TO *         _y,                        \
+                        unsigned int _index);                   \
 
-LIQUID_DECIM_DEFINE_API(DECIM_MANGLE_CRCF,
-                        liquid_float_complex,
-                        float,
-                        liquid_float_complex)
+LIQUID_FIRDECIM_DEFINE_API(FIRDECIM_MANGLE_RRRF,
+                           float,
+                           float,
+                           float)
 
-LIQUID_DECIM_DEFINE_API(DECIM_MANGLE_CCCF,
-                        liquid_float_complex,
-                        liquid_float_complex,
-                        liquid_float_complex)
+LIQUID_FIRDECIM_DEFINE_API(FIRDECIM_MANGLE_CRCF,
+                           liquid_float_complex,
+                           float,
+                           liquid_float_complex)
+
+LIQUID_FIRDECIM_DEFINE_API(FIRDECIM_MANGLE_CCCF,
+                           liquid_float_complex,
+                           liquid_float_complex,
+                           liquid_float_complex)
+
+
+// iirdecim : infinite impulse response decimator
+#define IIRDECIM_MANGLE_RRRF(name)  LIQUID_CONCAT(iirdecim_rrrf,name)
+#define IIRDECIM_MANGLE_CRCF(name)  LIQUID_CONCAT(iirdecim_crcf,name)
+#define IIRDECIM_MANGLE_CCCF(name)  LIQUID_CONCAT(iirdecim_cccf,name)
+
+#define LIQUID_IIRDECIM_DEFINE_API(IIRDECIM,TO,TC,TI)           \
+typedef struct IIRDECIM(_s) * IIRDECIM();                       \
+                                                                \
+/* create decimator from external coefficients              */  \
+/*  _M      : decimation factor                             */  \
+/*  _b      : feed-back coefficients [size: _nb x 1]        */  \
+/*  _nb     : feed-back coefficients length                 */  \
+/*  _a      : feed-forward coefficients [size: _na x 1]     */  \
+/*  _na     : feed-forward coefficients length              */  \
+IIRDECIM() IIRDECIM(_create)(unsigned int _M,                   \
+                             TC *         _b,                   \
+                             unsigned int _nb,                  \
+                             TC *         _a,                   \
+                             unsigned int _na);                 \
+                                                                \
+/* create decimator from prototype                          */  \
+/*  _M      : decimation factor                             */  \
+IIRDECIM() IIRDECIM(_create_prototype)(                         \
+                unsigned int _M,                                \
+                liquid_iirdes_filtertype _ftype,                \
+                liquid_iirdes_bandtype   _btype,                \
+                liquid_iirdes_format     _format,               \
+                unsigned int _order,                            \
+                float _fc,                                      \
+                float _f0,                                      \
+                float _Ap,                                      \
+                float _As);                                     \
+                                                                \
+/* destroy decimator object and free internal memory        */  \
+void IIRDECIM(_destroy)(IIRDECIM() _q);                         \
+                                                                \
+/* print decimator object internals                         */  \
+void IIRDECIM(_print)(IIRDECIM() _q);                           \
+                                                                \
+/* reset decimator object                                   */  \
+void IIRDECIM(_reset)(IIRDECIM() _q);                           \
+                                                                \
+/* execute decimator                                        */  \
+/*  _q      : decimator object                              */  \
+/*  _x      : input samples [size: _M x 1]                  */  \
+/*  _y      : output sample pointer                         */  \
+/*  _index  : decimator output index, [0,_M-1]              */  \
+void IIRDECIM(_execute)(IIRDECIM()   _q,                        \
+                        TI *         _x,                        \
+                        TO *         _y,                        \
+                        unsigned int _index);                   \
+
+LIQUID_IIRDECIM_DEFINE_API(IIRDECIM_MANGLE_RRRF,
+                           float,
+                           float,
+                           float)
+
+LIQUID_IIRDECIM_DEFINE_API(IIRDECIM_MANGLE_CRCF,
+                           liquid_float_complex,
+                           float,
+                           liquid_float_complex)
+
+LIQUID_IIRDECIM_DEFINE_API(IIRDECIM_MANGLE_CCCF,
+                           liquid_float_complex,
+                           liquid_float_complex,
+                           liquid_float_complex)
+
 
 
 // 
@@ -4480,6 +4700,12 @@ unsigned int liquid_msb_index(unsigned int _x);
 // Print string of bits to stdout
 void liquid_print_bitstring(unsigned int _x,
                             unsigned int _n);
+
+// reverse byte, word, etc.
+unsigned char liquid_reverse_byte(  unsigned char _x);
+unsigned int  liquid_reverse_uint16(unsigned int  _x);
+unsigned int  liquid_reverse_uint24(unsigned int  _x);
+unsigned int  liquid_reverse_uint32(unsigned int  _x);
 
 #ifdef __cplusplus
 } //extern "C"

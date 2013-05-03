@@ -40,7 +40,7 @@ int main() {
     // generate signal (interpolated symbols with noise)
     unsigned int k = 4;     // interpolation rate
     unsigned int m = 7;     // filter delay (symbols)
-    interp_crcf interp = interp_crcf_create_rnyquist(LIQUID_RNYQUIST_RKAISER, k, m, 0.3f, 0.0f);
+    firinterp_crcf interp = firinterp_crcf_create_rnyquist(LIQUID_RNYQUIST_RKAISER, k, m, 0.3f, 0.0f);
 
     int spgram_timer = nfft;
     unsigned int n=0;
@@ -52,7 +52,7 @@ int main() {
                           ( rand() % 2 ? 0.707f : -0.707f ) * _Complex_I;
 
         // interpolate
-        interp_crcf_execute(interp, s, x);
+        firinterp_crcf_execute(interp, s, x);
 
         // add noise
         for (i=0; i<k; i++)
@@ -83,7 +83,7 @@ int main() {
     }
 
     // destroy objects
-    interp_crcf_destroy(interp);
+    firinterp_crcf_destroy(interp);
     spgram_destroy(q);
 
     // normalize result

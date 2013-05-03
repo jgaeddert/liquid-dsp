@@ -75,66 +75,66 @@ functionality applies to {\tt autocorr\_rrrf}.
 
 
 % 
-% decim
+% firdecim
 %
-\subsection{{\tt decim} (decimator)}
-\label{module:filter:decim}
-The {\tt decim} object family implements a basic interpolator with an
-integer output-to-input resampling ratio $D$.
+\subsection{{\tt firdecim} (decimator)}
+\label{module:filter:firdecim}
+The {\tt firdecim} object family implements a basic interpolator with an
+integer output-to-input resampling ratio $M$.
 It is essentially just a {\tt firfilt} object which operates on a block
 of samples at a time.
 An example of the decimator can be seen in
-Figure~\ref{fig:module:filter:decim_crcf}.
+Figure~\ref{fig:module:filter:firdecim_crcf}.
 %
 \begin{figure}
 \centering
-  \includegraphics[trim = 0mm 0mm 0mm 0mm, clip, width=13cm]{figures.gen/filter_decim_crcf}
-\caption{{\tt decim\_crcf} (decimator) example with $D=4$,
+  \includegraphics[trim = 0mm 0mm 0mm 0mm, clip, width=13cm]{figures.gen/filter_firdecim_crcf}
+\caption{{\tt firdecim\_crcf} (decimator) example with $M=4$,
          compensating for filter delay.}
-\label{fig:module:filter:decim_crcf}
+\label{fig:module:filter:firdecim_crcf}
 \end{figure}
 %
-Listed below is the full interface to the {\tt decim} family of
+Listed below is the full interface to the {\tt firdecim} family of
 objects.
-While each method is listed for {\tt decim\_crcf}, the same
-functionality applies to {\tt decim\_rrrf} and {\tt decim\_cccf}.
+While each method is listed for {\tt firdecim\_crcf}, the same
+functionality applies to {\tt firdecim\_rrrf} and {\tt firdecim\_cccf}.
 %
 \begin{description}
-\item[{\tt decim\_crcf\_create(D,*h,N)}]
-    creates a {\tt decim} object with a decimation factor $D$ using $N$
+\item[{\tt firdecim\_crcf\_create(M,*h,N)}]
+    creates a {\tt firdecim} object with a decimation factor $M$ using $N$
     filter coefficients $\vec{h}$.
-\item[{\tt decim\_crcf\_create\_prototype(D,m,As)}]
-    creates a {\tt decim} object from a prototype filter with a
-    decimation factor $D$,
-    a delay of $Dm$ samples, and
+\item[{\tt firdecim\_crcf\_create\_prototype(M,m,As)}]
+    creates a {\tt firdecim} object from a prototype filter with a
+    decimation factor $M$,
+    a delay of $M m$ samples, and
     a stop-band attenuation $A_s$~dB.
-\item[{\tt decim\_crcf\_create\_rnyquist(type,D,m,beta,dt)}]
-    creates a {\tt decim} object from a square-root Nyquist prototype filter with a
-    decimation factor $D$,
-    a delay of $Dm$ samples,
+\item[{\tt firdecim\_crcf\_create\_rnyquist(type,M,m,beta,dt)}]
+    creates a {\tt firdecim} object from a square-root Nyquist prototype filter with a
+    decimation factor $M$,
+    a delay of $M m$ samples,
     an excess bandwidth factor $\beta$, and
     a fractional sample delay $\Delta t$
     (see \S\ref{module:filter:firdes:rnyquist} for details).
-\item[{\tt decim\_crcf\_destroy(q)}]
-    destroys a {\tt decim} object, freeing all internally-allocated
+\item[{\tt firdecim\_crcf\_destroy(q)}]
+    destroys a {\tt firdecim} object, freeing all internally-allocated
     memory.
-\item[{\tt decim\_crcf\_print(q)}]
-    prints the parameters of a {\tt decim} object to the standard
+\item[{\tt firdecim\_crcf\_print(q)}]
+    prints the parameters of a {\tt firdecim} object to the standard
     output.
-\item[{\tt decim\_crcf\_clear(q)}]
-    clears the internal buffer of a {\tt decim} object.
-\item[{\tt decim\_crcf\_execute(q,*x,*y,k)}]
+\item[{\tt firdecim\_crcf\_clear(q)}]
+    clears the internal buffer of a {\tt firdecim} object.
+\item[{\tt firdecim\_crcf\_execute(q,*x,*y,k)}]
     computes the output decimation of the input sequence $\vec{x}$
-    (which is $D$ samples in size) at the index $k$ and stores the
+    (which is $M$ samples in size) at the index $k$ and stores the
     result in $y$.
 \end{description}
 %
-An example of the {\tt decim} interface is listed below.
+An example of the {\tt firdecim} interface is listed below.
 %
-\input{listings/decim.example.c.tex}
+\input{listings/firdecim.example.c.tex}
 %
 A more detailed example is given in
-{\tt examples/decim\_crcf\_example.c}
+{\tt examples/firdecim\_crcf\_example.c}
 in the main \liquid\ project directory.
 
 
@@ -519,7 +519,7 @@ prototypes listed in Table~\ref{tab:filter:rnyquist}.
 %
 {\tt LIQUID\_RNYQUIST\_ARKAISER}    & approximate r-Kaiser\\
 {\tt LIQUID\_RNYQUIST\_RKAISER}     & r-Kaiser\\
-{\tt LIQUID\_RNYQUIST\_RRCOS}       & square-root raised cosine\\
+{\tt LIQUID\_RNYQUIST\_RRC}         & square-root raised cosine\\
 {\tt LIQUID\_RNYQUIST\_hM3}         & harris-Moerder type 3 \cite{harris-Moerder:2005}\\
 {\tt LIQUID\_RNYQUIST\_GMSTX}       & GMSK transmit filter \cite{Proakis:2001}\\
 {\tt LIQUID\_RNYQUIST\_GMSRX}       & GMSK receive filter\\
@@ -962,8 +962,8 @@ objects.
 \item[{\tt firhilbf\_print(q)}]
     prints the internal properties of the object to the standard
     output.
-\item[{\tt firhilbf\_clear(q)}]
-    clears the internal transform buffers.
+\item[{\tt firhilbf\_reset(q)}]
+    resets the internal state of the object
 \item[{\tt firhilbf\_r2c\_execute(q,x,*y)}]
     executes the real-to-complex transform as a half-band filter,
     rejecting the negative frequency band.
@@ -990,6 +990,69 @@ located within the main \liquid\ project directory.
 {\it See also:} {\tt resamp2} (\S\ref{module:filter:resamp2}),
 FIR filter design (\S\ref{module:filter:firdes}).
 
+
+% 
+% firinterp
+%
+\subsection{{\tt firinterp} (finite impulse reponse interpolator)}
+\label{module:filter:firinterp}
+The {\tt firinterp} object implements a basic interpolator with an integer
+output-to-input resampling ratio.
+An example of the {\tt firinterp} interface is listed below.
+%
+\input{listings/firinterp.example.c.tex}
+%
+Listed below is the full interface to the {\tt firinterp} family of
+objects.
+While each method is listed for {\tt firinterp\_crcf}, the same
+functionality applies to {\tt firinterp\_rrrf} and {\tt firinterp\_cccf}.
+%
+\begin{description}
+\item[{\tt firinterp\_crcf\_create(M,*h,N)}]
+    creates an {\tt firinterp} object with an interpolation factor $M$
+    using $N$ filter coefficients $\vec{h}$.
+\item[{\tt firinterp\_crcf\_create\_prototype(M,m,As)}]
+    create an {\tt firinterp} object using a filter prototype designed
+    using the {\tt firdes\_kaiser\_window()} method
+    (see \S\ref{module:filter:firdes})
+    with a normalized cut-off frequency $1/2M$,
+    a filter length of $2Mm$ coefficients,
+    and a stop-band attenuation of $A_s$~dB.
+\item[{\tt firinterp\_crcf\_create\_rnyquist(type,k,m,beta,dt)}]
+    creates an {\tt firinterp} object
+    from a square-root Nyquist filter prototype with
+    $k$ samples per symbol (interpolation factor),
+    $m$ symbols of delay,
+    $\beta$ excess bandwidth,
+    and a fractional sampling interval $\Delta t$.
+    \S\ref{module:filter:firdes:rnyquist}
+    provides a detailed description of the available square-root Nyquist
+    filter prototypes available in \liquid.
+\item[{\tt firinterp\_crcf\_destroy(q)}]
+    destroys the firinterpolator, freeing all internally-allocated memory.
+\item[{\tt firinterp\_crcf\_print(q)}]
+    prints the internal properties of the interpolator to the standard
+    output.
+\item[{\tt firinterp\_crcf\_clear(q)}]
+    clears the internal interpolator buffers.
+\item[{\tt firinterp\_crcf\_execute(q,x,*y)}]
+    executes the interpolator for an input $x$, storing the result in
+    the output array $y$ (which has a length of $M$ samples).
+\end{description}
+%
+\begin{figure}
+\centering
+  \includegraphics[trim = 0mm 0mm 0mm 0mm, clip, width=13cm]{figures.gen/filter_firinterp_crcf}
+\caption{{\tt firinterp\_crcf} (interpolator) example with $M=4$,
+         compensating for filter delay.}
+\label{fig:module:filter:firinterp_crcf}
+\end{figure}
+%
+A graphical example of the interpolator can be seen in
+Figure~\ref{fig:module:filter:firinterp_crcf}.
+A detailed example program is given in
+{\tt examples/firinterp\_crcf\_example.c},
+located under the main \liquid\ project directory.
 
 
 % 
@@ -1620,69 +1683,6 @@ reasons.
 \caption{{\tt besself} (Bessel filter design)}
 \label{fig:module:filter:bessel}
 \end{figure}
-
-% 
-% interp
-%
-\subsection{{\tt interp} (interpolator)}
-\label{module:filter:interp}
-The {\tt interp} object implements a basic interpolator with an integer
-output-to-input resampling ratio.
-An example of the {\tt interp} interface is listed below.
-%
-\input{listings/interp.example.c.tex}
-%
-Listed below is the full interface to the {\tt interp} family of
-objects.
-While each method is listed for {\tt interp\_crcf}, the same
-functionality applies to {\tt interp\_rrrf} and {\tt interp\_cccf}.
-%
-\begin{description}
-\item[{\tt interp\_crcf\_create(M,*h,N)}]
-    creates an {\tt interp} object with an interpolation factor $M$
-    using $N$ filter coefficients $\vec{h}$.
-\item[{\tt interp\_crcf\_create\_prototype(M,m,As)}]
-    create an {\tt interp} object using a filter prototype designed
-    using the {\tt firdes\_kaiser\_window()} method
-    (see \S\ref{module:filter:firdes})
-    with a normalized cut-off frequency $1/2M$,
-    a filter length of $2Mm$ coefficients,
-    and a stop-band attenuation of $A_s$~dB.
-\item[{\tt interp\_crcf\_create\_rnyquist(type,k,m,beta,dt)}]
-    creates an {\tt interp} object
-    from a square-root Nyquist filter prototype with
-    $k$ samples per symbol (interpolation factor),
-    $m$ symbols of delay,
-    $\beta$ excess bandwidth,
-    and a fractional sampling interval $\Delta t$.
-    \S\ref{module:filter:firdes:rnyquist}
-    provides a detailed description of the available square-root Nyquist
-    filter prototypes available in \liquid.
-\item[{\tt interp\_crcf\_destroy(q)}]
-    destroys the interpolator, freeing all internally-allocated memory.
-\item[{\tt interp\_crcf\_print(q)}]
-    prints the internal properties of the interpolator to the standard
-    output.
-\item[{\tt interp\_crcf\_clear(q)}]
-    clears the internal interpolator buffers.
-\item[{\tt interp\_crcf\_execute(q,x,*y)}]
-    executes the interpolator for an input $x$, storing the result in
-    the output array $y$ (which has a length of $M$ samples).
-\end{description}
-%
-\begin{figure}
-\centering
-  \includegraphics[trim = 0mm 0mm 0mm 0mm, clip, width=13cm]{figures.gen/filter_interp_crcf}
-\caption{{\tt interp\_crcf} (interpolator) example with $M=4$,
-         compensating for filter delay.}
-\label{fig:module:filter:interp_crcf}
-\end{figure}
-%
-A graphical example of the interpolator can be seen in
-Figure~\ref{fig:module:filter:interp_crcf}.
-A detailed example program is given in
-{\tt examples/interp\_crcf\_example.c},
-located under the main \liquid\ project directory.
 
 
 % 

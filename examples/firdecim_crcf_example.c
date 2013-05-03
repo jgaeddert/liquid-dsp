@@ -1,13 +1,14 @@
 //
-// decim_crcf_example.c
+// firdecim_crcf_example.c
 //
-// This example demonstrates the decim object (decimator) interface.
+// This example demonstrates the interface to the firdecim (finite
+// impulse response decimator) family of objects.
 // Data symbols are generated and then interpolated according to a
 // finite impulse response square-root Nyquist filter.  The resulting
 // sequence is then decimated with the same filter, matched to the
 // interpolator.
 //
-// SEE ALSO: interp_crcf_example.c
+// SEE ALSO: firinterp_crcf_example.c
 //
 
 #include <stdio.h>
@@ -17,12 +18,12 @@
 
 #include "liquid.h"
 
-#define OUTPUT_FILENAME "decim_crcf_example.m"
+#define OUTPUT_FILENAME "firdecim_crcf_example.m"
 
 // print usage/help message
 void usage()
 {
-    printf("decim_crcf_example:\n");
+    printf("firdecim_crcf_example:\n");
     printf("  u/h   : print usage/help\n");
     printf("  k     : samples/symbol (interp factor), k > 1, default: 2\n");
     printf("  m     : filter delay (symbols), m > 0, default: 2\n");
@@ -80,8 +81,8 @@ int main(int argc, char*argv[]) {
     unsigned int i;
     for (i=0; i<h_len; i++)
         g[i] = h[h_len-i-1];
-    interp_crcf interp = interp_crcf_create(k,h,h_len);
-    decim_crcf  decim  = decim_crcf_create(k,g,h_len);
+    firinterp_crcf interp = firinterp_crcf_create(k,h,h_len);
+    firdecim_crcf  decim  = firdecim_crcf_create(k,g,h_len);
 
     // allocate memory for buffers
     float complex x[num_symbols];   // input symbols
@@ -98,21 +99,21 @@ int main(int argc, char*argv[]) {
 
     // run interpolator
     for (i=0; i<num_symbols; i++) {
-        interp_crcf_execute(interp, x[i], &y[k*i]);
+        firinterp_crcf_execute(interp, x[i], &y[k*i]);
     }
 
     // run decimator
     unsigned int sample_phase = 0;  // decimator output sample phase, [0,k-1]
     for (i=0; i<num_symbols; i++) {
-        decim_crcf_execute(decim, &y[k*i], &z[i], sample_phase);
+        firdecim_crcf_execute(decim, &y[k*i], &z[i], sample_phase);
 
         // normalize output by samples/symbol
         z[i] /= k;
     }
 
     // destroy objects
-    interp_crcf_destroy(interp);
-    decim_crcf_destroy(decim);
+    firinterp_crcf_destroy(interp);
+    firdecim_crcf_destroy(decim);
 
     // print results to screen
     printf("filter impulse response :\n");

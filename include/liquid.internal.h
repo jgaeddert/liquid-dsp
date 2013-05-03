@@ -140,13 +140,6 @@ LIQUID_DOTPROD_DEFINE_INTERNAL_API(DOTPROD_MANGLE_CRCF,
 
 // checksum / cyclic redundancy check (crc)
 
-// byte reversal and manipulation
-extern const unsigned char liquid_reverse_byte[256];
-unsigned char reverse_byte(unsigned char _x);
-unsigned int reverse_uint16(unsigned int _x);
-unsigned int reverse_uint24(unsigned int _x);
-unsigned int reverse_uint32(unsigned int _x);
-
 #define CRC8_POLY 0x07
 #define CRC16_POLY 0x8005
 #define CRC24_POLY 0x5D6DCB
@@ -1957,9 +1950,8 @@ extern struct msequence_s msequence_default[16];
 
 
 //
-// Miscellaneous utilities
+// MODULE : utility
 //
-
 
 // number of ones in a byte
 //  0   0000 0000   :   0
@@ -2031,5 +2023,7 @@ extern const unsigned char liquid_c_ones_mod2[256];
 // number of leading zeros in byte
 extern unsigned int liquid_c_leading_zeros[256];
 
+// byte reversal and manipulation
+extern const unsigned char liquid_reverse_byte_gentab[256];
 #endif // __LIQUID_INTERNAL_H__
 

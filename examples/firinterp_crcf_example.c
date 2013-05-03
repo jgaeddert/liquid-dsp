@@ -1,7 +1,7 @@
 //
-// interp_crcf_example.c
+// firinterp_crcf_example.c
 //
-// This example demonstrates the interp object (interpolator) interface.
+// This example demonstrates the firinterp object (interpolator) interface.
 // Data symbols are generated and then interpolated according to a
 // finite impulse response Nyquist filter.
 //
@@ -13,12 +13,12 @@
 
 #include "liquid.h"
 
-#define OUTPUT_FILENAME "interp_crcf_example.m"
+#define OUTPUT_FILENAME "firinterp_crcf_example.m"
 
 // print usage/help message
 void usage()
 {
-    printf("interp_crcf_example:\n");
+    printf("firinterp_crcf_example:\n");
     printf("  u/h   : print usage/help\n");
     printf("  k     : samples/symbol (interp factor), k > 1, default: 4\n");
     printf("  m     : filter delay (symbols), m > 0, default: 3\n");
@@ -66,7 +66,7 @@ int main(int argc, char*argv[]) {
     unsigned int num_samples = k*num_symbols;
 
     // create interpolator from prototype
-    interp_crcf q = interp_crcf_create_prototype(k,m,As);
+    firinterp_crcf q = firinterp_crcf_create_prototype(k,m,As);
 
     // generate input signal and interpolate
     float complex x[num_symbols];   // input symbols
@@ -83,10 +83,10 @@ int main(int argc, char*argv[]) {
 
     // interpolate symbols
     for (i=0; i<num_symbols; i++)
-        interp_crcf_execute(q, x[i], &y[k*i]);
+        firinterp_crcf_execute(q, x[i], &y[k*i]);
 
     // destroy interpolator object
-    interp_crcf_destroy(q);
+    firinterp_crcf_destroy(q);
 
     // print results to screen
     printf("x(t) :\n");
