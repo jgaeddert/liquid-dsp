@@ -4101,7 +4101,8 @@ typedef enum {
     LIQUID_VCO
 } liquid_ncotype;
 
-#define NCO_MANGLE_FLOAT(name)  LIQUID_CONCAT(nco_crcf, name)
+#define NCO_MANGLE_FLOAT(name)  LIQUID_CONCAT(nco_crcf,  name)
+#define NCO_MANGLE_Q16(name)    LIQUID_CONCAT(nco_crcq16,name)
 
 // large macro
 //   NCO    : name-mangling macro
@@ -4166,6 +4167,7 @@ void NCO(_mix_block_down)(NCO() _q,                             \
 
 // Define nco APIs
 LIQUID_NCO_DEFINE_API(NCO_MANGLE_FLOAT, float, liquid_float_complex)
+LIQUID_NCO_DEFINE_API(NCO_MANGLE_Q16,   q16_t, cq16_t)
 
 
 // nco utilities
