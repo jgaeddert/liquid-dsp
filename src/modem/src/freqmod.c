@@ -33,10 +33,10 @@ struct FREQMOD(_s) {
     float kf;
 
     // audio prefilter
-    iirfilt_rrrf prefilter;
+    IIRFILT_RRR() prefilter;
 
     // frequency modulation phase integrator
-    iirfilt_rrrf integrator;
+    IIRFILT_RRR() integrator;
 };
 
 // create freqmod object
@@ -50,18 +50,23 @@ FREQMOD() FREQMOD(_create)(float _kf)
     }
 
     // create main object memory
-    FREQMOD() q = (freqmod) malloc(sizeof(struct FREQMOD(_s)));
+    FREQMOD() q = (FREQMOD()) malloc(sizeof(struct FREQMOD(_s)));
 
     // set basic internal properties
     q->kf   = _kf;      // modulation factor
 
     // create modulator objects
-    q->integrator = iirfilt_rrrf_create_integrator();
+    q->integrator = IIRFILT_RRR(_create_integrator)();
 
     // create prefilter (block DC values)
+#if LIQUID_FPM
+    q16_t b[2] = {q16_one, -q16_one};
+    q16_t a[2] = {q16_one, -q16_one+(q16_one>>6)};
+#else
     float b[2] = {1.0f, -1.0f  };
     float a[2] = {1.0f, -0.9995f};
-    q->prefilter = iirfilt_rrrf_create(b, 2, a, 2);
+#endif
+    q->prefilter = IIRFILT_RRR(_create)(b, 2, a, 2);
 
     // reset modem object
     FREQMOD(_reset)(q);
@@ -73,10 +78,10 @@ FREQMOD() FREQMOD(_create)(float _kf)
 void FREQMOD(_destroy)(FREQMOD() _q)
 {
     // destroy audio pre-filter
-    iirfilt_rrrf_destroy(_q->prefilter);
+    IIRFILT_RRR(_destroy)(_q->prefilter);
 
     // destroy integrator
-    iirfilt_rrrf_destroy(_q->integrator);
+    IIRFILT_RRR(_destroy)(_q->integrator);
 
     // free main object memory
     free(_q);
@@ -93,26 +98,32 @@ void FREQMOD(_print)(FREQMOD() _q)
 void FREQMOD(_reset)(FREQMOD() _q)
 {
     // reset audio pre-filter
-    iirfilt_rrrf_clear(_q->prefilter);
+    IIRFILT_RRR(_clear)(_q->prefilter);
 
     // reset integrator object
-    iirfilt_rrrf_clear(_q->integrator);
+    IIRFILT_RRR(_clear)(_q->integrator);
 }
 
 // modulate sample
 //  _q      :   frequency modulator object
 //  _m      :   message signal m(t)
 //  _s      :   complex baseband signal s(t)
-void FREQMOD(_modulate)(FREQMOD()         _q,
-                      float           _m,
-                      float complex * _s)
+void FREQMOD(_modulate)(FREQMOD() _q,
+                        T         _m,
+                        TC *      _s)
 {
     // push sample through pre-filter
-    iirfilt_rrrf_execute(_q->prefilter, _m, &_m);
+    IIRFILT_RRR(_execute)(_q->prefilter, _m, &_m);
     
     // integrate result
+#if LIQUID_FPM
+    // TODO: implement fixed-point version
+    _s->real = 0;
+    _s->imag = 0;
+#else
     float theta_i = 0.0f;
-    iirfilt_rrrf_execute(_q->integrator, _q->kf*_m, &theta_i);
+    IIRFILT_RRR(_execute)(_q->integrator, _q->kf*_m, &theta_i);
     *_s = cexpf(_Complex_I*2.0f*M_PI*theta_i);
+#endif
 }
 

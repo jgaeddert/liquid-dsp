@@ -1,6 +1,5 @@
 /*
- * Copyright (c) 2012 Joseph Gaeddert
- * Copyright (c) 2012 Virginia Polytechnic Institute & State University
+ * Copyright (c) 2012, 2013 Joseph Gaeddert
  *
  * This file is part of liquid.
  *
@@ -36,6 +35,14 @@
 
 // Macro definitions
 #define MODEM(name)         LIQUID_CONCAT(modemq16,name)
+#define FREQMOD(name)       LIQUID_CONCAT(freqmodq16,name)
+#define FREQDEM(name)       LIQUID_CONCAT(freqdemq16,name)
+
+// supporting objects
+#define FIRFILT_CRC(name)   LIQUID_CONCAT(firfilt_crcq16,name)
+#define IIRFILT_RRR(name)   LIQUID_CONCAT(iirfilt_rrrq16,name)
+#define IIRFILT_CRC(name)   LIQUID_CONCAT(iirfilt_crcq16,name)
+#define NCO_CRC(name)       LIQUID_CONCAT(nco_crcq16,    name)
 
 #define T                   q16_t           /* primitive type */
 #define TC                  cq16_t          /* primitive type (complex) */
@@ -62,3 +69,8 @@
 
 // arbitary modems
 #include "modem_arb.c"
+
+// analog modems
+#include "freqmod.c"
+#include "freqdem.c"
+

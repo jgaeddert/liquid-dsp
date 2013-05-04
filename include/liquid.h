@@ -3786,6 +3786,7 @@ void gmskdem_demodulate(gmskdem _q,
 // Analog frequency modulator
 //
 #define LIQUID_FREQMOD_MANGLE_FLOAT(name) LIQUID_CONCAT(freqmod,name)
+#define LIQUID_FREQMOD_MANGLE_Q16(name)   LIQUID_CONCAT(freqmodq16,name)
 
 // Macro    :   FREQMOD (analog frequency modulator)
 //  FREQMOD :   name-mangling macro
@@ -3819,6 +3820,7 @@ void FREQMOD(_modulate)(FREQMOD() _q,                           \
 
 // define freqmod APIs
 LIQUID_FREQMOD_DEFINE_API(LIQUID_FREQMOD_MANGLE_FLOAT,float,liquid_float_complex)
+LIQUID_FREQMOD_DEFINE_API(LIQUID_FREQMOD_MANGLE_Q16,  q16_t, cq16_t)
 
 
 
@@ -3833,6 +3835,7 @@ typedef enum {
 } liquid_freqdem_type;
 
 #define LIQUID_FREQDEM_MANGLE_FLOAT(name) LIQUID_CONCAT(freqdem,name)
+#define LIQUID_FREQDEM_MANGLE_Q16(name)   LIQUID_CONCAT(freqdemq16,name)
 
 // Macro    :   FREQDEM (analog frequency modulator)
 //  FREQDEM :   name-mangling macro
@@ -3866,8 +3869,9 @@ void FREQDEM(_demodulate)(FREQDEM() _q,                         \
                           TC        _r,                         \
                           T *       _m);                        \
 
-// define freqmod APIs
+// define freqdem APIs
 LIQUID_FREQDEM_DEFINE_API(LIQUID_FREQDEM_MANGLE_FLOAT,float,liquid_float_complex)
+LIQUID_FREQDEM_DEFINE_API(LIQUID_FREQDEM_MANGLE_Q16,  q16_t, cq16_t)
 
 
 

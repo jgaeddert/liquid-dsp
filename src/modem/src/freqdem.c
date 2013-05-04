@@ -38,10 +38,10 @@ struct FREQDEM(_s) {
 
     // demodulator
     liquid_freqdem_type type;   // demodulator type (PLL, DELAYCONJ)
-    nco_crcf oscillator;        // nco (for phase-locked loop demod)
-    float complex q;            // phase difference
-    firfilt_crcf rxfilter;      // initial receiver filter
-    iirfilt_rrrf postfilter;    // post-filter
+    NCO_CRC() oscillator;       // nco (for phase-locked loop demod)
+    TC q;                       // phase difference
+    FIRFILT_CRC() rxfilter;     // initial receiver filter
+    IIRFILT_RRR() postfilter;   // post-filter
 };
 
 // create freqdem object
@@ -57,7 +57,7 @@ FREQDEM() FREQDEM(_create)(float               _kf,
     }
 
     // create main object memory
-    FREQDEM() q = (freqdem) malloc(sizeof(struct FREQDEM(_s)));
+    FREQDEM() q = (FREQDEM()) malloc(sizeof(struct FREQDEM(_s)));
 
     // set basic internal properties
     q->type = _type;    // demod type
@@ -67,16 +67,21 @@ FREQDEM() FREQDEM(_create)(float               _kf,
     q->twopikf_inv = 1.0f / (2*M_PI*q->kf);       // 1 / (2*pi*kf)
 
     // create oscillator and initialize PLL bandwidth
-    q->oscillator = nco_crcf_create(LIQUID_VCO);
-    nco_crcf_pll_set_bandwidth(q->oscillator, 0.08f);
+    q->oscillator = NCO_CRC(_create)(LIQUID_VCO);
+    NCO_CRC(_pll_set_bandwidth)(q->oscillator, 0.08f);
 
     // create initial rx filter
-    q->rxfilter = firfilt_crcf_create_kaiser(17, 0.2f, 40.0f, 0.0f);
+    q->rxfilter = FIRFILT_CRC(_create_kaiser)(17, 0.2f, 40.0f, 0.0f);
 
     // create DC-blocking post-filter
-    float b[2] = {1.0f, -1.0f   };
+#if LIQUID_FPM
+    q16_t b[2] = {q16_one, -q16_one};
+    q16_t a[2] = {q16_one, -q16_one+(q16_one>>6)};
+#else
+    float b[2] = {1.0f, -1.0f  };
     float a[2] = {1.0f, -0.9999f};
-    q->postfilter = iirfilt_rrrf_create(b,2,a,2);
+#endif
+    q->postfilter = IIRFILT_RRR(_create)(b, 2, a, 2);
 
     // reset modem object
     FREQDEM(_reset)(q);
@@ -88,13 +93,13 @@ FREQDEM() FREQDEM(_create)(float               _kf,
 void FREQDEM(_destroy)(FREQDEM() _q)
 {
     // destroy rx filter
-    firfilt_crcf_destroy(_q->rxfilter);
+    FIRFILT_CRC(_destroy)(_q->rxfilter);
 
     // destroy post-filter
-    iirfilt_rrrf_destroy(_q->postfilter);
+    IIRFILT_RRR(_destroy)(_q->postfilter);
 
     // destroy nco object
-    nco_crcf_destroy(_q->oscillator);
+    NCO_CRC(_destroy)(_q->oscillator);
 
     // free main object memory
     free(_q);
@@ -111,23 +116,28 @@ void FREQDEM(_print)(FREQDEM() _q)
 void FREQDEM(_reset)(FREQDEM() _q)
 {
     // reset oscillator, phase-locked loop
-    nco_crcf_reset(_q->oscillator);
+    NCO_CRC(_reset)(_q->oscillator);
 
     // clear complex phase term
+#if LIQUID_FPM
+    _q->q.real = 0;
+    _q->q.imag = 0;
+#else
     _q->q = 0.0f;
+#endif
 }
 
 // demodulate sample
 //  _q      :   FM demodulator object
 //  _r      :   received signal
 //  _m      :   output message signal
-void FREQDEM(_demodulate)(FREQDEM()              _q,
-                        liquid_float_complex _r,
-                        float *              _m)
+void FREQDEM(_demodulate)(FREQDEM() _q,
+                          TC        _r,
+                          T *       _m)
 {
     // apply rx filter to input
-    firfilt_crcf_push(_q->rxfilter, _r);
-    firfilt_crcf_execute(_q->rxfilter, &_r);
+    FIRFILT_CRC(_push)(_q->rxfilter, _r);
+    FIRFILT_CRC(_execute)(_q->rxfilter, &_r);
 
     if (_q->type == LIQUID_FREQDEM_PLL) {
         // 
@@ -135,25 +145,36 @@ void FREQDEM(_demodulate)(FREQDEM()              _q,
         //
 
         // compute phase error from internal NCO complex exponential
-        float complex p;
-        nco_crcf_cexpf(_q->oscillator, &p);
+        TC p;
+        NCO_CRC(_cexpf)(_q->oscillator, &p);
+#if LIQUID_FPM
+        // TODO: compute actual error
+        T phase_error = 0;
+#else
         float phase_error = cargf( conjf(p)*_r );
+#endif
 
         // step the PLL and the internal NCO object
-        nco_crcf_pll_step(_q->oscillator, phase_error);
-        nco_crcf_step(_q->oscillator);
+        NCO_CRC(_pll_step)(_q->oscillator, phase_error);
+        NCO_CRC(_step)(_q->oscillator);
 
         // demodulated signal is (weighted) nco frequency
-        *_m = (nco_crcf_get_frequency(_q->oscillator) -_q->dphi) * _q->twopikf_inv;
+        *_m = (NCO_CRC(_get_frequency)(_q->oscillator) -_q->dphi) * _q->twopikf_inv;
     } else {
         // compute phase difference and normalize by modulation index
+#if LIQUID_FPM
+        // TODO: compute actual output
+        *_m = 0;
+        _q->q.real = _r.real;
+        _q->q.imag = _r.imag;
+#else
         *_m = (cargf(conjf(_q->q)*(_r)) - _q->dphi) * _q->twopikf_inv;
-
         _q->q = _r;
+#endif
     }
 
     // apply post-filtering
-    iirfilt_rrrf_execute(_q->postfilter, *_m, _m);
+    IIRFILT_RRR(_execute)(_q->postfilter, *_m, _m);
 }
 
 
