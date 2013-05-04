@@ -38,7 +38,7 @@ struct freqdem_s {
 
     // demodulator
     liquid_freqdem_type type;   // demodulator type (PLL, DELAYCONJ)
-    nco_crcf oscillator;        // nco
+    nco_crcf oscillator;        // nco (for phase-locked loop demod)
     float complex q;            // phase difference
     firfilt_crcf rxfilter;      // initial receiver filter
     iirfilt_rrrf postfilter;    // post-filter
@@ -47,8 +47,8 @@ struct freqdem_s {
 // create freqdem object
 //  _kf     :   modulation factor
 //  _type   :   demodulation type (e.g. LIQUID_FREQDEM_DELAYCONJ)
-freqdem freqdem_create(float                 _kf,
-                           liquid_freqdem_type _type)
+freqdem freqdem_create(float               _kf,
+                       liquid_freqdem_type _type)
 {
     // validate input
     if (_kf <= 0.0f || _kf > 1.0) {
@@ -66,8 +66,9 @@ freqdem freqdem_create(float                 _kf,
     // compute derived values
     q->twopikf_inv = 1.0f / (2*M_PI*q->kf);       // 1 / (2*pi*kf)
 
-    // create oscillator
+    // create oscillator and initialize PLL bandwidth
     q->oscillator = nco_crcf_create(LIQUID_VCO);
+    nco_crcf_pll_set_bandwidth(q->oscillator, 0.08f);
 
     // create initial rx filter
     q->rxfilter = firfilt_crcf_create_kaiser(17, 0.2f, 40.0f, 0.0f);
@@ -76,13 +77,6 @@ freqdem freqdem_create(float                 _kf,
     float b[2] = {1.0f, -1.0f   };
     float a[2] = {1.0f, -0.9999f};
     q->postfilter = iirfilt_crcf_create(b,2,a,2);
-
-    //
-    if (q->type == LIQUID_FREQDEM_PLL) {
-        // TODO : set initial NCO frequency ?
-        // create phase-locked loop
-        nco_crcf_pll_set_bandwidth(q->oscillator, 0.15f);
-    }
 
     // reset modem object
     freqdem_reset(q);
