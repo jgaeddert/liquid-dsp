@@ -3786,39 +3786,65 @@ void gmskdem_demodulate(gmskdem _q,
 // Analog modems
 //
 
-typedef enum {
-    LIQUID_FREQMODEM_PLL=0,
-    LIQUID_FREQMODEM_DELAYCONJ
-} liquid_freqmodem_type;
+//
+// frequency modulation
+//
+typedef struct freqmod_s * freqmod;
 
-typedef struct freqmodem_s * freqmodem;
+// create freqmod object (frequency modulator)
+//  _kf      :   modulation factor
+freqmod freqmod_create(float _kf);
 
-// create freqmodem object
-//  _m      :   modulation index
-//  _fc     :   carrier frequency, range: [-0.5,0.5]
-//  _type   :   demodulation type (e.g. LIQUID_FREQMODEM_DELAYCONJ)
-freqmodem freqmodem_create(float _m,
-                           float _fc,
-                           liquid_freqmodem_type _type);
+// destroy freqmod object
+void freqmod_destroy(freqmod _q);
 
-// destroy freqmodem object
-void freqmodem_destroy(freqmodem _fm);
-
-// print freqmodem object internals
-void freqmodem_print(freqmodem _fm);
+// print freqmod object internals
+void freqmod_print(freqmod _q);
 
 // reset state
-void freqmodem_reset(freqmodem _fm);
+void freqmod_reset(freqmod _q);
 
 // modulate sample
-void freqmodem_modulate(freqmodem _fm,
-                        float _x,
-                        liquid_float_complex *_y);
+//  _q      :   frequency modulator object
+//  _m      :   message signal m(t)
+//  _s      :   complex baseband signal s(t)
+void freqmod_modulate(freqmod                _q,
+                      float                  _m,
+                      liquid_float_complex * _s);
+
+//
+// frequency demodulation
+//
+typedef struct freqdem_s * freqdem;
+
+// frequency demodulator type
+typedef enum {
+    LIQUID_FREQDEM_PLL=0,       // phase-locked loop
+    LIQUID_FREQDEM_DELAYCONJ    // delay/conjugate method
+} liquid_freqdem_type;
+
+// create freqdem object
+//  _kf     :   modulation factor
+//  _type   :   demodulation type (e.g. LIQUID_FREQDEM_DELAYCONJ)
+freqdem freqdem_create(float               _kf,
+                       liquid_freqdem_type _type);
+
+// destroy freqdem object
+void freqdem_destroy(freqdem _q);
+
+// print freqdem object internals
+void freqdem_print(freqdem _q);
+
+// reset state
+void freqdem_reset(freqdem _q);
 
 // demodulate sample
-void freqmodem_demodulate(freqmodem _fm,
-                          liquid_float_complex _y,
-                          float *_x);
+//  _q      :   FM demodulator object
+//  _r      :   received signal
+//  _m      :   output message signal
+void freqdem_demodulate(freqdem              _q,
+                        liquid_float_complex _r,
+                        float *              _m);
 
 
 // amplitude modulation types
