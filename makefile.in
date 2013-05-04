@@ -765,8 +765,6 @@ matrix_benchmarks :=						\
 
 modem_objects :=						\
 	src/modem/src/ampmodem.o				\
-	src/modem/src/freqdem.o					\
-	src/modem/src/freqmod.o					\
 	src/modem/src/gmskdem.o					\
 	src/modem/src/gmskmod.o					\
 	src/modem/src/modemf.o					\
@@ -776,6 +774,8 @@ modem_objects :=						\
 
 # explicit targets and dependencies
 modem_includes :=						\
+	src/modem/src/freqdem.c					\
+	src/modem/src/freqmod.c					\
 	src/modem/src/modem_common.c				\
 	src/modem/src/modem_psk.c				\
 	src/modem/src/modem_dpsk.c				\

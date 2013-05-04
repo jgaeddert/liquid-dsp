@@ -28,7 +28,7 @@
 #include "liquid.internal.h"
 
 // freqdem
-struct freqdem_s {
+struct FREQDEM(_s) {
     // common
     float kf;                   // modulation index
 
@@ -47,8 +47,8 @@ struct freqdem_s {
 // create freqdem object
 //  _kf     :   modulation factor
 //  _type   :   demodulation type (e.g. LIQUID_FREQDEM_DELAYCONJ)
-freqdem freqdem_create(float               _kf,
-                       liquid_freqdem_type _type)
+FREQDEM() FREQDEM(_create)(float               _kf,
+                           liquid_freqdem_type _type)
 {
     // validate input
     if (_kf <= 0.0f || _kf > 1.0) {
@@ -57,7 +57,7 @@ freqdem freqdem_create(float               _kf,
     }
 
     // create main object memory
-    freqdem q = (freqdem) malloc(sizeof(struct freqdem_s));
+    FREQDEM() q = (freqdem) malloc(sizeof(struct FREQDEM(_s)));
 
     // set basic internal properties
     q->type = _type;    // demod type
@@ -79,13 +79,13 @@ freqdem freqdem_create(float               _kf,
     q->postfilter = iirfilt_rrrf_create(b,2,a,2);
 
     // reset modem object
-    freqdem_reset(q);
+    FREQDEM(_reset)(q);
 
     return q;
 }
 
 // destroy modem object
-void freqdem_destroy(freqdem _q)
+void FREQDEM(_destroy)(FREQDEM() _q)
 {
     // destroy rx filter
     firfilt_crcf_destroy(_q->rxfilter);
@@ -101,14 +101,14 @@ void freqdem_destroy(freqdem _q)
 }
 
 // print modulation internals
-void freqdem_print(freqdem _q)
+void FREQDEM(_print)(FREQDEM() _q)
 {
     printf("freqdem:\n");
     printf("    mod. factor :   %8.4f\n", _q->kf);
 }
 
 // reset modem object
-void freqdem_reset(freqdem _q)
+void FREQDEM(_reset)(FREQDEM() _q)
 {
     // reset oscillator, phase-locked loop
     nco_crcf_reset(_q->oscillator);
@@ -121,7 +121,7 @@ void freqdem_reset(freqdem _q)
 //  _q      :   FM demodulator object
 //  _r      :   received signal
 //  _m      :   output message signal
-void freqdem_demodulate(freqdem              _q,
+void FREQDEM(_demodulate)(FREQDEM()              _q,
                         liquid_float_complex _r,
                         float *              _m)
 {

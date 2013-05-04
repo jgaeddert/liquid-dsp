@@ -27,6 +27,8 @@
 
 // Macro definitions
 #define MODEM(name)         LIQUID_CONCAT(modem,name)
+#define FREQMOD(name)       LIQUID_CONCAT(freqmod,name)
+#define FREQDEM(name)       LIQUID_CONCAT(freqdem,name)
 
 #define T                   float           /* primitive type */
 #define TC                  float complex   /* primitive type (complex) */
@@ -54,3 +56,6 @@
 // arbitary modems
 #include "modem_arb.c"
 
+// analog modems
+#include "freqmod.c"
+#include "freqdem.c"
