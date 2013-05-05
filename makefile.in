@@ -1560,6 +1560,7 @@ example_programs :=						\
 	examples/iirdecim_crcf_example				\
 	examples/iirfilt_cccf_example				\
 	examples/iirfilt_crcf_example				\
+	examples/iirfilt_crcq16_example				\
 	examples/iirinterp_crcf_example				\
 	examples/kbd_window_example				\
 	examples/lpc_example					\
