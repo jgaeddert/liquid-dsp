@@ -1679,6 +1679,9 @@ IIRFILT() IIRFILT(_create_integrator)();                        \
 /* create 8th-order differentiator filter               */      \
 IIRFILT() IIRFILT(_create_differentiator)();                    \
                                                                 \
+/* create simple DC-blocking filter                     */      \
+IIRFILT() IIRFILT(_create_dc_blocker)(float _alpha);            \
+                                                                \
 /* create phase-locked loop iirfilt object              */      \
 /*  _w      : filter bandwidth                          */      \
 /*  _zeta   : damping factor (1/sqrt(2) suggested)      */      \
