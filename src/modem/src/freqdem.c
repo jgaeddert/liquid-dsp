@@ -74,9 +74,7 @@ FREQDEM() FREQDEM(_create)(float               _kf,
     q->rxfilter = firfilt_crcf_create_kaiser(17, 0.2f, 40.0f, 0.0f);
 
     // create DC-blocking post-filter
-    float b[2] = {1.0f, -1.0f   };
-    float a[2] = {1.0f, -0.9999f};
-    q->postfilter = iirfilt_rrrf_create(b,2,a,2);
+    q->postfilter = iirfilt_rrrf_create_dc_blocker(1e-4f);
 
     // reset modem object
     FREQDEM(_reset)(q);

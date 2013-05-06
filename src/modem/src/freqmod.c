@@ -59,9 +59,7 @@ FREQMOD() FREQMOD(_create)(float _kf)
     q->integrator = iirfilt_rrrf_create_integrator();
 
     // create prefilter (block DC values)
-    float b[2] = {1.0f, -1.0f  };
-    float a[2] = {1.0f, -0.9995f};
-    q->prefilter = iirfilt_rrrf_create(b, 2, a, 2);
+    q->prefilter = iirfilt_rrrf_create_dc_blocker(5e-4f);
 
     // reset modem object
     FREQMOD(_reset)(q);
