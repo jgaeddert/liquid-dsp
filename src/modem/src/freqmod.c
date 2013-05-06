@@ -59,14 +59,7 @@ FREQMOD() FREQMOD(_create)(float _kf)
     q->integrator = IIRFILT_RRR(_create_integrator)();
 
     // create prefilter (block DC values)
-#if LIQUID_FPM
-    q16_t b[2] = {q16_one, -q16_one};
-    q16_t a[2] = {q16_one, -q16_one+(q16_one>>6)};
-#else
-    float b[2] = {1.0f, -1.0f  };
-    float a[2] = {1.0f, -0.9995f};
-#endif
-    q->prefilter = IIRFILT_RRR(_create)(b, 2, a, 2);
+    q->prefilter = IIRFILT_RRR(_create_dc_blocker)(5e-4f);
 
     // reset modem object
     FREQMOD(_reset)(q);
