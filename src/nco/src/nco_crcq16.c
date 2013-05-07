@@ -18,25 +18,29 @@
  */
 
 //
-// numerically-controlled oscillator (nco) API, floating point precision
+// numerically-controlled oscillator (nco) API, 16-biy fixed-point precision
 //
 
 #include "liquid.internal.h"
 
-#define LIQUID_FPM              (0)
-#define NCO(name)               LIQUID_CONCAT(nco_crcf,name)
-#define T                       float
-#define TC                      float complex
+#define LIQUID_FPM              (1)
+#define NCO(name)               LIQUID_CONCAT(nco_crcq16,name)
+#define T                       q16_t
+#define TC                      cq16_t
+#define Q(name)                 LIQUID_CONCAT(q16,name)
+#define CQ(name)                LIQUID_CONCAT(cq16,name)
 
 // supporting objects/methods
-#define SIN                     sinf
-#define COS                     cosf
-#define IIRFILT_RRR(name)       LIQUID_CONCAT(iirfilt_rrrf,   name)
-#define IIRFILTSOS_RRR(name)    LIQUID_CONCAT(iirfiltsos_rrrf,name)
+#define SIN                     q16_sin
+#define COS                     q16_cos
+#define IIRFILT_RRR(name)       LIQUID_CONCAT(iirfilt_rrrq16,   name)
+#define IIRFILTSOS_RRR(name)    LIQUID_CONCAT(iirfiltsos_rrrq16,name)
 
 // constants, etc.
-#define NCO_ONE                 (1.0f)
-#define NCO_PI                  (M_PI)
-#define NCO_2PI                 (2.0f*M_PI)
+#define NCO_ONE                 q16_one
+#define NCO_PI                  q16_pi
+#define NCO_2PI                 q16_2pi
 
+// include main source file
 #include "nco.c"
+

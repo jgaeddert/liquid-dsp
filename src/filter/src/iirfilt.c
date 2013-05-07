@@ -364,6 +364,30 @@ IIRFILT() IIRFILT(_create_differentiator)()
     return IIRFILT(_create_sos)(B,A,4);
 }
 
+// create DC-blocking filter
+//
+//          1 -          z^-1
+//  H(z) = ------------------
+//          1 - (1-alpha)z^-1
+IIRFILT() IIRFILT(_create_dc_blocker)(float _alpha)
+{
+    // compute DC-blocking filter coefficients
+    float a1 = -1.0f + _alpha;
+
+    // convert to type-specific array
+#if defined LIQUID_FIXED && TC_COMPLEX==0
+    TC b[2] = { Q(_one), -Q(_one) };
+    TC a[2] = { Q(_one),  Q(_float_to_fixed)(a1) };
+#elif defined LIQUID_FIXED && TC_COMPLEX==1
+    TC b[2] = { {Q(_one),0}, {-Q(_one),0} };
+    TC a[2] = { {Q(_one),0}, CQ(_float_to_fixed)(a1) };
+#else
+    TC b[2] = { 1.0f, -1.0f };
+    TC a[2] = { 1.0f,  a1   };
+#endif
+    return IIRFILT(_create)(b,2,a,2);
+}
+
 // create phase-locked loop iirfilt object
 //  _w      :   filter bandwidth
 //  _zeta   :   damping factor (1/sqrt(2) suggested)

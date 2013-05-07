@@ -951,7 +951,6 @@ matrix_benchmarks :=						\
 
 modem_objects :=						\
 	src/modem/src/ampmodem.o				\
-	src/modem/src/freqmodem.o				\
 	src/modem/src/gmskdem.o					\
 	src/modem/src/gmskmod.o					\
 	src/modem/src/modemf.o					\
@@ -962,6 +961,8 @@ modem_objects :=						\
 
 # explicit targets and dependencies
 modem_includes :=						\
+	src/modem/src/freqdem.c					\
+	src/modem/src/freqmod.c					\
 	src/modem/src/modem_common.c				\
 	src/modem/src/modem_psk.c				\
 	src/modem/src/modem_dpsk.c				\
@@ -998,6 +999,7 @@ src/modem/src/modem_arb_const.o: %.o : %.c $(headers)
 
 
 modem_autotests :=						\
+	src/modem/tests/freqmodem_autotest.c			\
 	src/modem/tests/modem_autotest.c			\
 	src/modem/tests/modem_demodsoft_autotest.c		\
 	src/modem/tests/modem_demodstats_autotest.c		\
@@ -1042,10 +1044,13 @@ multicarrier_benchmarks :=					\
 
 nco_objects :=							\
 	src/nco/src/nco_crcf.o					\
+	src/nco/src/nco_crcq16.o				\
 	src/nco/src/nco.utilities.o				\
 
 
 src/nco/src/nco_crcf.o: %.o : %.c $(headers) src/nco/src/nco.c
+
+src/nco/src/nco_crcq16.o: %.o : %.c $(headers) src/nco/src/nco.c
 
 src/nco/src/nco.utilities.o: %.o : %.c $(headers)
 
@@ -1555,6 +1560,7 @@ example_programs :=						\
 	examples/iirdecim_crcf_example				\
 	examples/iirfilt_cccf_example				\
 	examples/iirfilt_crcf_example				\
+	examples/iirfilt_crcq16_example				\
 	examples/iirinterp_crcf_example				\
 	examples/kbd_window_example				\
 	examples/lpc_example					\

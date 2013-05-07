@@ -1,6 +1,5 @@
 /*
  * Copyright (c) 2012 Joseph Gaeddert
- * Copyright (c) 2012 Virginia Polytechnic Institute & State University
  *
  * This file is part of liquid.
  *
@@ -27,6 +26,14 @@
 
 // Macro definitions
 #define MODEM(name)         LIQUID_CONCAT(modem,name)
+#define FREQMOD(name)       LIQUID_CONCAT(freqmod,name)
+#define FREQDEM(name)       LIQUID_CONCAT(freqdem,name)
+
+// supporting objects
+#define FIRFILT_CRC(name)   LIQUID_CONCAT(firfilt_crcf,name)
+#define IIRFILT_RRR(name)   LIQUID_CONCAT(iirfilt_rrrf,name)
+#define IIRFILT_CRC(name)   LIQUID_CONCAT(iirfilt_crcf,name)
+#define NCO_CRC(name)       LIQUID_CONCAT(nco_crcf,      name)
 
 #define T                   float           /* primitive type */
 #define TC                  float complex   /* primitive type (complex) */
@@ -54,3 +61,6 @@
 // arbitary modems
 #include "modem_arb.c"
 
+// analog modems
+#include "freqmod.c"
+#include "freqdem.c"

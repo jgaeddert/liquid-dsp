@@ -16,9 +16,8 @@
 int main(int argc, char*argv[])
 {
     // options
-    float mod_index = 0.1f;         // modulation index (bandwidth)
-    float fc = 0.10f;               // FM carrier
-    liquid_freqmodem_type type = LIQUID_FREQMODEM_DELAYCONJ;
+    float kf = 0.05f;               // modulation factor
+    liquid_freqdem_type type = LIQUID_FREQDEM_DELAYCONJ;
     unsigned int num_samples = 201; // number of samples
     float SNRdB = 60.0f;            // signal-to-noise ratio [dB]
 
@@ -26,9 +25,9 @@ int main(int argc, char*argv[])
     unsigned int nfft = 1024;
 
     // create mod/demod objects
-    freqmodem mod   = freqmodem_create(mod_index,fc,type);
-    freqmodem demod = freqmodem_create(mod_index,fc,type);
-    freqmodem_print(mod);
+    freqmod mod   = freqmod_create(kf);
+    freqdem demod = freqdem_create(kf,type);
+    freqmod_print(mod);
 
     unsigned int i;
     float x[num_samples];
@@ -65,7 +64,7 @@ int main(int argc, char*argv[])
 
     // modulate signal
     for (i=0; i<num_samples; i++)
-        freqmodem_modulate(mod, x[i], &y[i]);
+        freqmod_modulate(mod, x[i], &y[i]);
 
     // add noise
     float nstd = powf(10.0f,-SNRdB/20.0f);
@@ -74,11 +73,11 @@ int main(int argc, char*argv[])
 
     // demodulate signal
     for (i=0; i<num_samples; i++)
-        freqmodem_demodulate(demod, y[i], &z[i]);
+        freqdem_demodulate(demod, y[i], &z[i]);
     
     // destroy objects
-    freqmodem_destroy(mod);
-    freqmodem_destroy(demod);
+    freqmod_destroy(mod);
+    freqdem_destroy(demod);
 
     // compute power spectral density
     float complex Y[nfft];
@@ -104,7 +103,6 @@ int main(int argc, char*argv[])
     fprintf(fid,"set yrange [-1.5:1.5]\n");
     fprintf(fid,"set size ratio 0.3\n");
     fprintf(fid,"set xlabel 'Sample Index'\n");
-    fprintf(fid,"set key top right nobox\n");
     fprintf(fid,"set ytics -5,0.5,5\n");
     fprintf(fid,"set grid xtics ytics\n");
     fprintf(fid,"set pointsize 0.6\n");
@@ -113,16 +111,18 @@ int main(int argc, char*argv[])
 
     fprintf(fid,"# input/demodulated signals\n");
     fprintf(fid,"set ylabel 'input/output signal'\n");
+    fprintf(fid,"set key top right nobox\n");
     fprintf(fid,"plot '-' using 1:2 with lines linetype 1 linewidth 2 linecolor rgb '%s' title 'input',\\\n",LIQUID_DOC_COLOR_RED);
     fprintf(fid,"     '-' using 1:2 with lines linetype 1 linecolor rgb '%s' title 'demodulated'\n",LIQUID_DOC_COLOR_GRAY);
     for (i=0; i<num_samples; i++)
         fprintf(fid,"%12u %12.4e\n", i, x[i]);
     fprintf(fid,"e\n");
     for (i=0; i<num_samples; i++)
-        fprintf(fid,"%12u %12.4e\n", i, z[i]);
+        fprintf(fid,"%12d %12.4e\n", ((int)i)-15, z[i]);
     fprintf(fid,"e\n");
 
-    fprintf(fid,"# demodulated signals\n");
+    fprintf(fid,"# transmitted signal\n");
+    fprintf(fid,"set key bottom right nobox\n");
     fprintf(fid,"set ylabel 'modulated signal'\n");
     fprintf(fid,"plot '-' using 1:2 with lines linetype 1 linewidth 1 linecolor rgb '%s' title 'real',\\\n",LIQUID_DOC_COLOR_BLUE);
     fprintf(fid,"     '-' using 1:2 with lines linetype 1 linewidth 1 linecolor rgb '%s' title 'imag'\n",LIQUID_DOC_COLOR_GREEN);

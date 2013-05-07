@@ -1,7 +1,5 @@
 /*
- * Copyright (c) 2007, 2008, 2009, 2010 Joseph Gaeddert
- * Copyright (c) 2007, 2008, 2009, 2010 Virginia Polytechnic
- *                                      Institute & State University
+ * Copyright (c) 2007, 2008, 2009, 2010, 2011, 2012, 2013 Joseph Gaeddert
  *
  * This file is part of liquid.
  *
@@ -49,8 +47,23 @@ struct NCO(_s) {
     T zeta;
     T a[3];
     T b[3];
-    iirfiltsos_rrrf pll_filter;
+    IIRFILTSOS_RRR() pll_filter;    // phase-locked loop filter
 };
+
+// 
+// forward declaration of internal methods
+//
+
+// constrain phase/frequency to be in [-pi,pi)
+void NCO(_constrain_phase)(NCO() _q);
+void NCO(_constrain_frequency)(NCO() _q);
+
+// compute trigonometric functions for nco/vco type
+void NCO(_compute_sincos_nco)(NCO() _q);
+void NCO(_compute_sincos_vco)(NCO() _q);
+
+// reset internal phase-locked loop filter
+void NCO(_pll_reset)(NCO() _q);
 
 // create nco/vco object
 NCO() NCO(_create)(liquid_ncotype _type)
@@ -64,10 +77,10 @@ NCO() NCO(_create)(liquid_ncotype _type)
         q->sintab[i] = SIN(2.0f*M_PI*(float)(i)/256.0f);
 
     // set default pll bandwidth
-    q->a[0] = 1.0f;     q->b[0] = 0.0f;
-    q->a[1] = 0.0f;     q->b[1] = 0.0f;
-    q->a[2] = 0.0f;     q->b[2] = 0.0f;
-    q->pll_filter = iirfiltsos_rrrf_create(q->b, q->a);
+    q->a[0] = NCO_ONE;  q->b[0] = 0;
+    q->a[1] = 0;        q->b[1] = 0;
+    q->a[2] = 0;        q->b[2] = 0;
+    q->pll_filter = IIRFILTSOS_RRR(_create)(q->b, q->a);
     NCO(_reset)(q);
     NCO(_pll_set_bandwidth)(q, NCO_PLL_BANDWIDTH_DEFAULT);
 
@@ -87,7 +100,7 @@ NCO() NCO(_create)(liquid_ncotype _type)
 // destroy nco object
 void NCO(_destroy)(NCO() _q)
 {
-    iirfiltsos_rrrf_destroy(_q->pll_filter);
+    IIRFILTSOS_RRR(_destroy)(_q->pll_filter);
     free(_q);
 }
 
@@ -191,14 +204,19 @@ void NCO(_sincos)(NCO() _q, T* _s, T* _c)
 
 // compute complex exponential of internal phase
 void NCO(_cexpf)(NCO() _q,
-                 TC * _y)
+                 TC *  _y)
 {
     // compute sine, cosine internally, calling implementation-
     // specific function (nco, vco)
     _q->compute_sincos(_q);
 
     // set _y[0] to [cos(theta) + _Complex_I*sin(theta)]
+#if LIQUID_FPM
+    _y->real = _q->cosine;
+    _y->imag = _q->sine;
+#else
     *_y = _q->cosine + _Complex_I*(_q->sine);
+#endif
 }
 
 // pll methods
@@ -207,12 +225,12 @@ void NCO(_cexpf)(NCO() _q,
 void NCO(_pll_reset)(NCO() _q)
 {
     // clear phase-locked loop filter
-    iirfiltsos_rrrf_clear(_q->pll_filter);
+    IIRFILTSOS_RRR(_clear)(_q->pll_filter);
 }
 
 // set pll bandwidth
 void NCO(_pll_set_bandwidth)(NCO() _q,
-                             T _b)
+                             T     _b)
 {
     // validate input
     if (_b < 0.0f) {
@@ -239,20 +257,20 @@ void NCO(_pll_set_bandwidth)(NCO() _q,
     _q->a[1] = -1. + t1/2.0f;
     _q->a[2] =  0.0f;
     
-    iirfiltsos_rrrf_set_coefficients(_q->pll_filter, _q->b, _q->a);
+    IIRFILTSOS_RRR(_set_coefficients)(_q->pll_filter, _q->b, _q->a);
 }
 
 // advance pll phase
 //  _q      :   nco object
 //  _dphi   :   phase error
 void NCO(_pll_step)(NCO() _q,
-                    T _dphi)
+                    T     _dphi)
 {
     // execute internal filter (direct form I)
-    float error_filtered = 0.0f;
-    iirfiltsos_rrrf_execute_df1(_q->pll_filter,
-                                _dphi,
-                                &error_filtered);
+    T error_filtered = 0.0f;
+    IIRFILTSOS_RRR(_execute_df1)(_q->pll_filter,
+                                 _dphi,
+                                 &error_filtered);
 
     // increase frequency proportional to error
     NCO(_adjust_frequency)(_q, error_filtered);
@@ -268,15 +286,22 @@ void NCO(_pll_step)(NCO() _q,
 //  _x      :   input sample
 //  _y      :   output sample
 void NCO(_mix_up)(NCO() _q,
-                  TC _x,
-                  TC *_y)
+                  TC    _x,
+                  TC *  _y)
 {
     // compute sine, cosine internally, calling implementation-
     // specific function (nco, vco)
     _q->compute_sincos(_q);
 
     // multiply _x by [cos(theta) + _Complex_I*sin(theta)]
+#if LIQUID_FPM
+    TC v;
+    v.real = _q->cosine;
+    v.imag = _q->sine;
+    *_y = CQ(_mul)(_x, v);
+#else
     *_y = _x * (_q->cosine + _Complex_I*(_q->sine));
+#endif
 }
 
 // Rotate input vector down by NCO angle, y = x exp{-j theta}
@@ -291,7 +316,14 @@ void NCO(_mix_down)(NCO() _q,
     _q->compute_sincos(_q);
 
     // multiply _x by [cos(-theta) + _Complex_I*sin(-theta)]
+#if LIQUID_FPM
+    TC v;
+    v.real = _q->cosine;
+    v.imag = -(_q->sine);
+    *_y = CQ(_mul)(_x, v);
+#else
     *_y = _x * (_q->cosine - _Complex_I*(_q->sine));
+#endif
 }
 
 
@@ -302,13 +334,16 @@ void NCO(_mix_down)(NCO() _q,
 //  _x      :   input array [size: _n x 1]
 //  _y      :   output sample [size: _n x 1]
 //  _n      :   number of input, output samples
-void NCO(_mix_block_up)(NCO() _q,
-                        TC *_x,
-                        TC *_y,
+void NCO(_mix_block_up)(NCO()        _q,
+                        TC *         _x,
+                        TC *         _y,
                         unsigned int _n)
 {
     unsigned int i;
-
+#if LIQUID_FPM
+    for (i=0; i<_n; i++)
+        NCO(_mix_up)(_q, _x[i], &_y[i]);
+#else
     T theta =   _q->theta;
     T d_theta = _q->d_theta;
     for (i=0; i<_n; i++) {
@@ -319,6 +354,7 @@ void NCO(_mix_block_up)(NCO() _q,
     }
 
     NCO(_set_phase)(_q, theta);
+#endif
 }
 
 // Rotate input vector array down by NCO angle:
@@ -334,7 +370,10 @@ void NCO(_mix_block_down)(NCO() _q,
                           unsigned int _n)
 {
     unsigned int i;
-
+#if LIQUID_FPM
+    for (i=0; i<_n; i++)
+        NCO(_mix_down)(_q, _x[i], &_y[i]);
+#else
     T theta =   _q->theta;
     T d_theta = _q->d_theta;
     for (i=0; i<_n; i++) {
@@ -345,6 +384,7 @@ void NCO(_mix_block_down)(NCO() _q,
     }
 
     NCO(_set_phase)(_q, theta);
+#endif
 }
 
 //
@@ -354,19 +394,19 @@ void NCO(_mix_block_down)(NCO() _q,
 // constrain frequency of NCO object to be in (-pi,pi)
 void NCO(_constrain_frequency)(NCO() _q)
 {
-    if (_q->d_theta > M_PI)
-        _q->d_theta -= 2*M_PI;
-    else if (_q->d_theta < -M_PI)
-        _q->d_theta += 2*M_PI;
+    if (_q->d_theta > NCO_PI)
+        _q->d_theta -= NCO_2PI;
+    else if (_q->d_theta < -NCO_PI)
+        _q->d_theta += NCO_2PI;
 }
 
 // constrain phase of NCO object to be in (-pi,pi)
 void NCO(_constrain_phase)(NCO() _q)
 {
-    if (_q->theta > M_PI)
-        _q->theta -= 2*M_PI;
-    else if (_q->theta < -M_PI)
-        _q->theta += 2*M_PI;
+    if (_q->theta > NCO_PI)
+        _q->theta -= NCO_2PI;
+    else if (_q->theta < -NCO_PI)
+        _q->theta += NCO_2PI;
 }
 
 // compute sin, cos of internal phase of nco
