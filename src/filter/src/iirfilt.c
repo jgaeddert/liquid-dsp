@@ -104,10 +104,10 @@ IIRFILT() IIRFILT(_create)(TC * _b,
     TC a0 = _a[0];
 #if defined LIQUID_FIXED && TC_COMPLEX==0
     for (i=0; i<q->nb; i++) q->b[i] = Q(_div)(_b[i], a0);
-    for (i=0; i<q->na; i++) q->b[i] = Q(_div)(_a[i], a0);
+    for (i=0; i<q->na; i++) q->a[i] = Q(_div)(_a[i], a0);
 #elif defined LIQUID_FIXED && TC_COMPLEX==1
     for (i=0; i<q->nb; i++) q->b[i] = CQ(_div)(_b[i], a0);
-    for (i=0; i<q->na; i++) q->b[i] = CQ(_div)(_a[i], a0);
+    for (i=0; i<q->na; i++) q->a[i] = CQ(_div)(_a[i], a0);
 #else
     for (i=0; i<q->nb; i++) q->b[i] = _b[i] / a0;
     for (i=0; i<q->na; i++) q->a[i] = _a[i] / a0;
