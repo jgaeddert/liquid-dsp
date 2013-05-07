@@ -527,7 +527,7 @@ void IIRFILT(_execute_norm)(IIRFILT() _q,
 
         // accumulate result (subtract from)
         //v0 -= _q->a[i] * _q->v[i];
-        SUB_TO_TO(v0, mul);
+        v0 = SUB_TO_TO(v0, mul);
     }
     // assign result
     //_q->v[0] = v0;
