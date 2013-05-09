@@ -23,7 +23,6 @@ void usage()
     printf("  B     : filter roll-off,          default:  0.35\n");
     printf("  n     : number of data symbols,   default: 80\n");
     printf("  s     : SNR [dB],                 default: 20\n");
-    printf("  s     : SNR [dB],                 default: 20\n");
     printf("  F     : carrier freq. offset,     default:  0.0\n");
     printf("  P     : carrier phase offset,     default:  0.0\n");
     printf("  T     : fractional symbol offset, default:  0.0\n");
