@@ -470,8 +470,8 @@ src/filter/src/rrcos.o : %.o : %.c $(headers)
 
 
 filter_autotests :=						\
-	src/filter/tests/firdecim_autotest.c			\
 	src/filter/tests/filter_crosscorr_autotest.c		\
+	src/filter/tests/firdecim_xxxf_autotest.c		\
 	src/filter/tests/firdes_autotest.c			\
 	src/filter/tests/firdespm_autotest.c			\
 	src/filter/tests/firfilt_xxxf_autotest.c		\
@@ -488,6 +488,24 @@ filter_autotests :=						\
 
 # additional autotest objects
 autotest_extra_obj +=						\
+	src/filter/tests/firdecim_runtest.o			\
+								\
+	src/filter/tests/data/firdecim_rrrf_data_M2h4x20.o	\
+	src/filter/tests/data/firdecim_crcf_data_M2h4x20.o	\
+	src/filter/tests/data/firdecim_cccf_data_M2h4x20.o	\
+								\
+	src/filter/tests/data/firdecim_rrrf_data_M3h7x30.o	\
+	src/filter/tests/data/firdecim_crcf_data_M3h7x30.o	\
+	src/filter/tests/data/firdecim_cccf_data_M3h7x30.o	\
+								\
+	src/filter/tests/data/firdecim_rrrf_data_M4h13x40.o	\
+	src/filter/tests/data/firdecim_crcf_data_M4h13x40.o	\
+	src/filter/tests/data/firdecim_cccf_data_M4h13x40.o	\
+								\
+	src/filter/tests/data/firdecim_rrrf_data_M5h23x50.o	\
+	src/filter/tests/data/firdecim_crcf_data_M5h23x50.o	\
+	src/filter/tests/data/firdecim_cccf_data_M5h23x50.o	\
+								\
 	src/filter/tests/firfilt_runtest.o			\
 								\
 	src/filter/tests/data/firfilt_rrrf_data_h4x8.o		\
@@ -747,7 +765,6 @@ matrix_benchmarks :=						\
 
 modem_objects :=						\
 	src/modem/src/ampmodem.o				\
-	src/modem/src/freqmodem.o				\
 	src/modem/src/gmskdem.o					\
 	src/modem/src/gmskmod.o					\
 	src/modem/src/modemf.o					\
@@ -757,6 +774,8 @@ modem_objects :=						\
 
 # explicit targets and dependencies
 modem_includes :=						\
+	src/modem/src/freqdem.c					\
+	src/modem/src/freqmod.c					\
 	src/modem/src/modem_common.c				\
 	src/modem/src/modem_psk.c				\
 	src/modem/src/modem_dpsk.c				\
@@ -791,6 +810,7 @@ src/modem/src/modem_arb_const.o: %.o : %.c $(headers)
 
 
 modem_autotests :=						\
+	src/modem/tests/freqmodem_autotest.c			\
 	src/modem/tests/modem_autotest.c			\
 	src/modem/tests/modem_demodsoft_autotest.c		\
 	src/modem/tests/modem_demodstats_autotest.c		\
