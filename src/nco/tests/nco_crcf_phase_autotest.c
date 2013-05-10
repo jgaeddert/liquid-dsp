@@ -20,8 +20,38 @@
 #include <stdlib.h>
 #include <complex.h>
 #include "autotest/autotest.h"
-#include "nco_runtest.h"
 #include "liquid.h"
+
+// autotest helper function
+//  _theta  :   input phase
+//  _cos    :   expected output: cos(_theta)
+//  _sin    :   expected output: sin(_theta)
+//  _type   :   NCO type (e.g. LIQUID_NCO)
+//  _tol    :   error tolerance
+void nco_crcf_phase_test(float _theta,
+                         float _cos,
+                         float _sin,
+                         int   _type,
+                         float _tol)
+{
+    // create object
+    nco_crcf nco = nco_crcf_create(_type);
+
+    // set phase
+    nco_crcf_set_phase(nco, _theta);
+
+    // compute cosine and sine outputs
+    float c = nco_crcf_cos(nco);
+    float s = nco_crcf_sin(nco);
+
+    // run tests
+    CONTEND_DELTA( c, _cos, _tol );
+    CONTEND_DELTA( s, _sin, _tol );
+
+    // destroy object
+    nco_crcf_destroy(nco);
+}
+
 
 // test floating point precision nco phase
 void autotest_nco_crcf_phase()

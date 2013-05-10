@@ -865,14 +865,10 @@ src/nco/src/nco.utilities.o: %.o : %.c $(headers)
 
 # autotests
 nco_autotests :=						\
-	src/nco/tests/nco_crcf_autotest.c			\
+	src/nco/tests/nco_crcf_phase_autotest.c			\
 	src/nco/tests/pll_autotest.c				\
 	src/nco/tests/unwrap_phase_autotest.c			\
 	src/nco/tests/vco_autotest.c				\
-
-# additional autotest objects
-autotest_extra_obj +=						\
-	src/nco/tests/nco_runtest.o				\
 
 # benchmarks
 nco_benchmarks :=						\
