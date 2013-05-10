@@ -1,6 +1,5 @@
 /*
- * Copyright (c) 2007, 2009 Joseph Gaeddert
- * Copyright (c) 2007, 2009 Virginia Polytechnic Institute & State University
+ * Copyright (c) 2007, 2008, 2009, 2010, 2011, 2012, 2013 Joseph Gaeddert
  *
  * This file is part of liquid.
  *
@@ -23,64 +22,58 @@
 #include "liquid.h"
 
 //
-// Helper function: run loop
-//
-void pll_run_loop(nco_crcf _nco_tx,
-                  nco_crcf _nco_rx,
-                  unsigned int _n)
+// test phase-locked loop
+//  _type           :   NCO type (e.g. LIQUID_NCO)
+//  _phase_offset   :   initial phase offset
+//  _freq_offset    :   initial frequency offset
+//  _pll_bandwidth  :   bandwidth of phase-locked loop
+//  _num_iterations :   number of iterations to run
+//  _tol            :   error tolerance
+void nco_crcf_pll_test(int          _type,
+                       float        _phase_offset,
+                       float        _freq_offset,
+                       float        _pll_bandwidth,
+                       unsigned int _num_iterations,
+                       float        _tol)
 {
+    // objects
+    nco_crcf nco_tx = nco_crcf_create(_type);
+    nco_crcf nco_rx = nco_crcf_create(_type);
+
+    // initialize objects
+    nco_crcf_set_phase(nco_tx, _phase_offset);
+    nco_crcf_set_frequency(nco_tx, _freq_offset);
+    nco_crcf_pll_set_bandwidth(nco_rx, _pll_bandwidth);
+
     // run loop
     unsigned int i;
     float phase_error;
     float complex r, v;
-    for (i=0; i<_n; i++) {
+    for (i=0; i<_num_iterations; i++) {
         // received complex signal
-        nco_crcf_cexpf(_nco_tx,&r);
-        nco_crcf_cexpf(_nco_rx,&v);
+        nco_crcf_cexpf(nco_tx,&r);
+        nco_crcf_cexpf(nco_rx,&v);
 
         // error estimation
         phase_error = cargf(r*conjf(v));
 
         // update pll
-        nco_crcf_pll_step(_nco_rx, phase_error);
+        nco_crcf_pll_step(nco_rx, phase_error);
 
         // update nco objects
-        nco_crcf_step(_nco_tx);
-        nco_crcf_step(_nco_rx);
+        nco_crcf_step(nco_tx);
+        nco_crcf_step(nco_rx);
     }
-}
 
-//
-// test simple nco lock, phase offset
-//
-void autotest_pll_phase_offset() {
-    // parameters
-    float phase_offset = M_PI/2;
-    float frequency_offset = 0.0f;
-    float pll_bandwidth = 0.1f;
-    unsigned int n=256;     // number of iterations
-    float tol = 1e-3f;      // error tolerance
-
-    // objects
-    nco_crcf nco_tx = nco_crcf_create(LIQUID_VCO);
-    nco_crcf nco_rx = nco_crcf_create(LIQUID_VCO);
-
-    // initialize objects
-    nco_crcf_set_phase(nco_tx, phase_offset);
-    nco_crcf_set_frequency(nco_tx, frequency_offset);
-    nco_crcf_pll_set_bandwidth(nco_rx, pll_bandwidth);
-
-    // run loop
-    pll_run_loop(nco_tx, nco_rx, n);
-
-    // run tests
+    // ensure phase of oscillators is locked
     float nco_tx_phase = nco_crcf_get_phase(nco_tx);
     float nco_rx_phase = nco_crcf_get_phase(nco_rx);
-    CONTEND_DELTA(nco_tx_phase, nco_rx_phase, tol);
+    CONTEND_DELTA(nco_tx_phase, nco_rx_phase, _tol);
 
+    // ensure frequency of oscillators is locked
     float nco_tx_freq = nco_crcf_get_frequency(nco_tx);
     float nco_rx_freq = nco_crcf_get_frequency(nco_rx);
-    CONTEND_DELTA(nco_tx_freq, nco_rx_freq, tol);
+    CONTEND_DELTA(nco_tx_freq, nco_rx_freq, _tol);
 
     // clean it up
     nco_crcf_destroy(nco_tx);
@@ -88,39 +81,59 @@ void autotest_pll_phase_offset() {
 }
 
 //
-// test simple nco lock, frequency offset
+// AUTOTEST: test frequency and phase offsets
 //
-void autotest_pll_frequency_offset() {
-    // parameters
-    float phase_offset = 0.0f;
-    float frequency_offset = 0.5f;
-    float pll_bandwidth = 0.1f;
-    unsigned int n=256;     // number of iterations
-    float tol = 1e-3f;      // error tolerance
+void autotest_vco_crcf_pll_phase()
+{
+    float tol = 0.02f;
 
-    // objects
-    nco_crcf nco_tx = nco_crcf_create(LIQUID_VCO);
-    nco_crcf nco_rx = nco_crcf_create(LIQUID_VCO);
+    // test various phase offsets
+    nco_crcf_pll_test(LIQUID_NCO, -M_PI/1.1f,  0.0f, 0.1f, 256, tol);
+    nco_crcf_pll_test(LIQUID_NCO, -M_PI/2.0f,  0.0f, 0.1f, 256, tol);
+    nco_crcf_pll_test(LIQUID_NCO, -M_PI/4.0f,  0.0f, 0.1f, 256, tol);
+    nco_crcf_pll_test(LIQUID_NCO, -M_PI/8.0f,  0.0f, 0.1f, 256, tol);
+    nco_crcf_pll_test(LIQUID_NCO,  M_PI/8.0f,  0.0f, 0.1f, 256, tol);
+    nco_crcf_pll_test(LIQUID_NCO,  M_PI/4.0f,  0.0f, 0.1f, 256, tol);
+    nco_crcf_pll_test(LIQUID_NCO,  M_PI/2.0f,  0.0f, 0.1f, 256, tol);
+    nco_crcf_pll_test(LIQUID_NCO,  M_PI/1.1f,  0.0f, 0.1f, 256, tol);
+    
+    // test various frequency offsets
+    nco_crcf_pll_test(LIQUID_NCO,  0.0f,      -1.6f, 0.1f, 256, tol);
+    nco_crcf_pll_test(LIQUID_NCO,  0.0f,      -0.8f, 0.1f, 256, tol);
+    nco_crcf_pll_test(LIQUID_NCO,  0.0f,      -0.4f, 0.1f, 256, tol);
+    nco_crcf_pll_test(LIQUID_NCO,  0.0f,      -0.2f, 0.1f, 256, tol);
+    nco_crcf_pll_test(LIQUID_NCO,  0.0f,       0.2f, 0.1f, 256, tol);
+    nco_crcf_pll_test(LIQUID_NCO,  0.0f,       0.4f, 0.1f, 256, tol);
+    nco_crcf_pll_test(LIQUID_NCO,  0.0f,       0.8f, 0.1f, 256, tol);
+    nco_crcf_pll_test(LIQUID_NCO,  0.0f,       1.6f, 0.1f, 256, tol);
+}
 
-    // initialize objects
-    nco_crcf_set_phase(nco_tx, phase_offset);
-    nco_crcf_set_frequency(nco_tx, frequency_offset);
-    nco_crcf_pll_set_bandwidth(nco_rx, pll_bandwidth);
+//
+// AUTOTEST: test frequency and phase offsets
+//
+void autotest_nco_crcf_pll_phase()
+{
+    float tol = 1e-3f;
 
-    // run loop
-    pll_run_loop(nco_tx, nco_rx, n);
 
-    // run tests
-    float nco_tx_phase = nco_crcf_get_phase(nco_tx);
-    float nco_rx_phase = nco_crcf_get_phase(nco_rx);
-    CONTEND_DELTA(nco_tx_phase, nco_rx_phase, tol);
-
-    float nco_tx_freq = nco_crcf_get_frequency(nco_tx);
-    float nco_rx_freq = nco_crcf_get_frequency(nco_rx);
-    CONTEND_DELTA(nco_tx_freq, nco_rx_freq, tol);
-
-    // clean it up
-    nco_crcf_destroy(nco_tx);
-    nco_crcf_destroy(nco_rx);
+    // test various phase offsets
+    nco_crcf_pll_test(LIQUID_VCO, -M_PI/1.1f,  0.0f, 0.1f, 256, tol);
+    nco_crcf_pll_test(LIQUID_VCO, -M_PI/2.0f,  0.0f, 0.1f, 256, tol);
+    nco_crcf_pll_test(LIQUID_VCO, -M_PI/4.0f,  0.0f, 0.1f, 256, tol);
+    nco_crcf_pll_test(LIQUID_VCO, -M_PI/8.0f,  0.0f, 0.1f, 256, tol);
+    nco_crcf_pll_test(LIQUID_VCO,  M_PI/8.0f,  0.0f, 0.1f, 256, tol);
+    nco_crcf_pll_test(LIQUID_VCO,  M_PI/4.0f,  0.0f, 0.1f, 256, tol);
+    nco_crcf_pll_test(LIQUID_VCO,  M_PI/2.0f,  0.0f, 0.1f, 256, tol);
+    nco_crcf_pll_test(LIQUID_VCO,  M_PI/1.1f,  0.0f, 0.1f, 256, tol);
+    
+    // test various frequency offsets
+    nco_crcf_pll_test(LIQUID_VCO,  0.0f,      -1.6f, 0.1f, 256, tol);
+    nco_crcf_pll_test(LIQUID_VCO,  0.0f,      -0.8f, 0.1f, 256, tol);
+    nco_crcf_pll_test(LIQUID_VCO,  0.0f,      -0.4f, 0.1f, 256, tol);
+    nco_crcf_pll_test(LIQUID_VCO,  0.0f,      -0.2f, 0.1f, 256, tol);
+    nco_crcf_pll_test(LIQUID_VCO,  0.0f,       0.2f, 0.1f, 256, tol);
+    nco_crcf_pll_test(LIQUID_VCO,  0.0f,       0.4f, 0.1f, 256, tol);
+    nco_crcf_pll_test(LIQUID_VCO,  0.0f,       0.8f, 0.1f, 256, tol);
+    nco_crcf_pll_test(LIQUID_VCO,  0.0f,       1.6f, 0.1f, 256, tol);
 }
 
