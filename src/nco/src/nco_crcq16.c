@@ -18,7 +18,7 @@
  */
 
 //
-// numerically-controlled oscillator (nco) API, 16-biy fixed-point precision
+// numerically-controlled oscillator (nco) API, 16-bit fixed-point precision
 //
 
 #include "liquid.internal.h"
