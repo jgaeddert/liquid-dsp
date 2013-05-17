@@ -1050,8 +1050,6 @@ nco_objects :=							\
 
 src/nco/src/nco_crcf.o: %.o : %.c $(headers) src/nco/src/nco.c
 
-src/nco/src/nco_crcq16.o: %.o : %.c $(headers) src/nco/src/nco.c
-
 src/nco/src/nco.utilities.o: %.o : %.c $(headers)
 
 
