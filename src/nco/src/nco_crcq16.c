@@ -125,9 +125,10 @@ void nco_crcq16_reset(nco_crcq16 _q)
 
 // set frequency of nco object
 void nco_crcq16_set_frequency(nco_crcq16 _q,
-                         q16_t _f)
+                              q16_t      _f)
 {
     _q->d_theta = _f;
+    //_q->d_theta = q16_2pi >> 6;
 }
 
 // adjust frequency of nco object
@@ -155,7 +156,7 @@ void nco_crcq16_adjust_phase(nco_crcq16 _q, q16_t _dphi)
 void nco_crcq16_step(nco_crcq16 _q)
 {
     _q->theta += _q->d_theta;
-    nco_crcq16_constrain_phase(_q);
+    //nco_crcq16_constrain_phase(_q);
 }
 
 // get phase
@@ -206,17 +207,20 @@ void nco_crcq16_sincos(nco_crcq16 _q, q16_t* _s, q16_t* _c)
 
 // compute complex exponential of internal phase
 void nco_crcq16_cexpf(nco_crcq16 _q,
-                      cq16_t *  _y)
+                      cq16_t *   _y)
 {
+#if 0
     // compute sine, cosine internally, calling implementation-
     // specific function (nco, vco)
     _q->compute_sincos(_q);
 
     // set _y[0] to [cos(theta) + _Complex_I*sin(theta)]
-    _y->real = _q->cosine;
-    _y->imag = _q->sine;
-#if 0
     *_y = _q->cosine + _Complex_I*(_q->sine);
+#else
+    // FIXME: use internal values
+    *_y = cq16_cexpj( _q->theta );
+    //_y->real = _q->cosine;
+    //_y->imag = _q->sine;
 #endif
 }
 
@@ -231,10 +235,13 @@ void nco_crcq16_pll_reset(nco_crcq16 _q)
 
 // set pll bandwidth
 void nco_crcq16_pll_set_bandwidth(nco_crcq16 _q,
-                             q16_t     _b)
+                                  q16_t      _b)
 {
+    // convert bandwidth to floating point
+    float bf = q16_fixed_to_float(_b);
+
     // validate input
-    if (_b < 0.0f) {
+    if (bf < 0.0f) {
         fprintf(stderr,"error: nco_pll_set_bandwidth(), bandwidth must be positive\n");
         exit(1);
     }
@@ -244,20 +251,36 @@ void nco_crcq16_pll_set_bandwidth(nco_crcq16 _q,
 
     float K     = NCO_PLL_GAIN_DEFAULT; // gain
     float zeta  = 1.0f / sqrtf(2.0f);   // damping factor
-    float wn    = _b;                   // natural frequency
+    float wn    = bf;                   // natural frequency
     float t1    = K/(wn*wn);            // 
-    float t2    = 2*zeta/wn - 1/K;      //
+    float t2    = 2.*zeta/wn - 1./K;    //
+
+    // compute scaling factor
+    float v = 1.0f / (1. + t1/2.0f);
 
     // feed-forward coefficients
-    _q->b[0] =  2*K*(1.+t2/2.0f);
-    _q->b[1] =  2*K*2.;
-    _q->b[2] =  2*K*(1.-t2/2.0f);
+    float b0 = v*2*K*(1.+t2/2.0f);
+    float b1 = v*2*K*(2.        );
+    float b2 = v*2*K*(1.-t2/2.0f);
 
     // feed-back coefficients
-    _q->a[0] =  1. + t1/2.0f;
-    _q->a[1] = -1. + t1/2.0f;
-    _q->a[2] =  0.0f;
+    float a0 = 1.0f;
+    float a1 = v*(-1. + t1/2.0f);
+    float a2 = 0.0f;
+    //printf("b = [%8.4f %8.4f %8.4f]\n", b0, b1, b2);
+    //printf("a = [%8.4f %8.4f %8.4f]\n", a0, a1, a2);
+
+    // feed-forward coefficients
+    _q->b[0] = q16_float_to_fixed( b0 );
+    _q->b[1] = q16_float_to_fixed( b1 );
+    _q->b[2] = q16_float_to_fixed( b2 );
+
+    // feed-back coefficients
+    _q->a[0] = q16_float_to_fixed( a0 );
+    _q->a[1] = q16_float_to_fixed( a1 );
+    _q->a[2] = q16_float_to_fixed( a2 );
     
+    // set coefficients
     iirfiltsos_rrrq16_set_coefficients(_q->pll_filter, _q->b, _q->a);
 }
 
@@ -265,7 +288,7 @@ void nco_crcq16_pll_set_bandwidth(nco_crcq16 _q,
 //  _q      :   nco object
 //  _dphi   :   phase error
 void nco_crcq16_pll_step(nco_crcq16 _q,
-                    q16_t     _dphi)
+                         q16_t      _dphi)
 {
     // execute internal filter (direct form I)
     q16_t error_filtered = 0.0f;
