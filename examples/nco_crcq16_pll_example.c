@@ -18,7 +18,7 @@
 
 #include "liquid.h"
 
-#define OUTPUT_FILENAME "nco_pll_example.m"
+#define OUTPUT_FILENAME "nco_crcq16_pll_example.m"
 
 // print usage/help message
 void usage()
@@ -31,8 +31,10 @@ void usage()
     printf("  f     : frequency offset (radians), default: 0.2\n");
 }
 
-int main(int argc, char*argv[]) {
+int main(int argc, char*argv[])
+{
     srand( time(NULL) );
+
     // parameters
     float phase_offset     = M_PI / 4.0f; // initial phase offset
     float frequency_offset = 0.2f;        // initial freq. offset
