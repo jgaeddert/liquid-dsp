@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007, 2008, 2009, 2010, 2012, 2013 Joseph Gaeddert
+ * Copyright (c) 2007, 2008, 2009, 2010, 2011, 2012, 2013 Joseph Gaeddert
  *
  * This file is part of liquid.
  *
@@ -38,6 +38,7 @@
 #define FIRPFB(name)        LIQUID_CONCAT(firpfb_crcq16,name)
 #define IIRFILT(name)       LIQUID_CONCAT(iirfilt_crcq16,name)
 #define IIRFILTSOS(name)    LIQUID_CONCAT(iirfiltsos_crcq16,name)
+#define IIRINTERP(name)     LIQUID_CONCAT(iirinterp_crcq16,name)
 #define RESAMP(name)        LIQUID_CONCAT(resamp_crcq16,name)
 #define RESAMP2(name)       LIQUID_CONCAT(resamp2_crcq16,name)
 
@@ -81,6 +82,7 @@
 #include "firpfb.c"
 #include "iirfilt.c"
 #include "iirfiltsos.c"
+#include "iirinterp.c"
 #include "resamp.c"
 #include "resamp2.c"
 

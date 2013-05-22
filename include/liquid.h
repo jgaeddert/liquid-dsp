@@ -1913,10 +1913,16 @@ LIQUID_FIRINTERP_DEFINE_API(FIRINTERP_MANGLE_RRRQ16,  q16_t,  q16_t,  q16_t)
 LIQUID_FIRINTERP_DEFINE_API(FIRINTERP_MANGLE_CRCQ16, cq16_t,  q16_t, cq16_t)
 LIQUID_FIRINTERP_DEFINE_API(FIRINTERP_MANGLE_CCCQ16, cq16_t, cq16_t, cq16_t)
 
+
 // iirinterp : infinite impulse response interpolator
-#define IIRINTERP_MANGLE_RRRF(name)  LIQUID_CONCAT(iirinterp_rrrf,name)
-#define IIRINTERP_MANGLE_CRCF(name)  LIQUID_CONCAT(iirinterp_crcf,name)
-#define IIRINTERP_MANGLE_CCCF(name)  LIQUID_CONCAT(iirinterp_cccf,name)
+#define IIRINTERP_MANGLE_RRRF(name)   LIQUID_CONCAT(iirinterp_rrrf,name)
+#define IIRINTERP_MANGLE_CRCF(name)   LIQUID_CONCAT(iirinterp_crcf,name)
+#define IIRINTERP_MANGLE_CCCF(name)   LIQUID_CONCAT(iirinterp_cccf,name)
+
+// fixed-point
+#define IIRINTERP_MANGLE_RRRQ16(name) LIQUID_CONCAT(iirinterp_rrrq16,name)
+#define IIRINTERP_MANGLE_CRCQ16(name) LIQUID_CONCAT(iirinterp_crcq16,name)
+#define IIRINTERP_MANGLE_CCCQ16(name) LIQUID_CONCAT(iirinterp_cccq16,name)
 
 #define LIQUID_IIRINTERP_DEFINE_API(IIRINTERP,TO,TC,TI)         \
 typedef struct IIRINTERP(_s) * IIRINTERP();                     \
@@ -1972,6 +1978,11 @@ LIQUID_IIRINTERP_DEFINE_API(IIRINTERP_MANGLE_CCCF,
                             liquid_float_complex,
                             liquid_float_complex,
                             liquid_float_complex)
+
+// fixed-point
+LIQUID_IIRINTERP_DEFINE_API(IIRINTERP_MANGLE_RRRQ16,  q16_t,  q16_t,  q16_t)
+LIQUID_IIRINTERP_DEFINE_API(IIRINTERP_MANGLE_CRCQ16, cq16_t,  q16_t, cq16_t)
+LIQUID_IIRINTERP_DEFINE_API(IIRINTERP_MANGLE_CCCQ16, cq16_t, cq16_t, cq16_t)
 
 // 
 // Decimators
