@@ -111,11 +111,11 @@ src/agc/src/agc_rrrf.o : %.o : %.c src/agc/src/agc.c $(headers)
 
 # autotests
 agc_autotests :=						\
-	src/agc/tests/agc_autotest.c				\
+	src/agc/tests/agc_crcf_autotest.c			\
 
 # benchmarks
 agc_benchmarks :=						\
-	src/agc/bench/agc_benchmark.c				\
+	src/agc/bench/agc_crcf_benchmark.c			\
 
 #
 # MODULE : audio

@@ -1,7 +1,5 @@
 /*
- * Copyright (c) 2007, 2008, 2009, 2010 Joseph Gaeddert
- * Copyright (c) 2007, 2008, 2009, 2010 Virginia Polytechnic
- *                                      Institute & State University
+ * Copyright (c) 2007, 2008, 2009, 2010, 2011, 2012, 2013 Joseph Gaeddert
  *
  * This file is part of liquid.
  *
@@ -25,7 +23,8 @@
 // 
 // Test DC gain control
 //
-void autotest_agc_dc_gain_control() {
+void autotest_agc_crcf_dc_gain_control()
+{
     // set paramaters
     float gamma = 0.1f;             // nominal signal level
     float bt = 0.01f;               // bandwidth-time product
@@ -53,7 +52,8 @@ void autotest_agc_dc_gain_control() {
 // 
 // Test AC gain control
 //
-void autotest_agc_ac_gain_control() {
+void autotest_agc_crcf_ac_gain_control()
+{
     // set paramaters
     float gamma = 0.1f;             // nominal signal level
     float bt = 0.01f;               // bandwidth-time product
@@ -87,7 +87,8 @@ void autotest_agc_ac_gain_control() {
 // 
 // Test RSSI on sinusoidal input
 //
-void autotest_agc_rssi_sinusoid() {
+void autotest_agc_crcf_rssi_sinusoid()
+{
     // set paramaters
     float gamma = 0.3f;             // nominal signal level
     float bt = 1e-3f;               // agc bandwidth
@@ -127,7 +128,8 @@ void autotest_agc_rssi_sinusoid() {
 // 
 // Test RSSI on noise input
 //
-void autotest_agc_rssi_noise() {
+void autotest_agc_crcf_rssi_noise()
+{
     // set paramaters
     float gamma = -30.0f;           // nominal signal level [dB]
     float bt = 1e-3f;               // agc bandwidth
