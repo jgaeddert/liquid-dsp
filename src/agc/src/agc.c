@@ -1,7 +1,5 @@
 /*
- * Copyright (c) 2007, 2008, 2009, 2010 Joseph Gaeddert
- * Copyright (c) 2007, 2008, 2009, 2010 Virginia Polytechnic
- *                                      Institute & State University
+ * Copyright (c) 2007, 2008, 2009, 2010, 2011, 2012, 2013 Joseph Gaeddert
  *
  * This file is part of liquid.
  *
@@ -32,6 +30,13 @@
 // squash output signal if squelch is activate
 #define AGC_SQUELCH_GAIN 0
 
+// forward declaration of internal methods
+void AGC(_estimate_input_energy)(AGC() _q, TC _x);
+void AGC(_limit_gain)(AGC() _q);
+void AGC(_update_auto_squelch)(AGC() _q, T _rssi);
+void AGC(_execute_squelch)(AGC() _q);
+
+
 // agc structure object
 struct AGC(_s) {
     // gain variables
@@ -56,11 +61,11 @@ struct AGC(_s) {
     int is_locked;
 
     // 'true' agc method
-    float * buffer;                 // buffered |input values|^2
-    float buffer_sum;               // accumulated sum of buffer
+    T * buffer;                     // buffered |input values|^2
+    T buffer_sum;                   // accumulated sum of buffer
     unsigned int buffer_len;        // size of input buffer
     unsigned int buffer_index;      // write index of input buffer
-    float sqrt_buffer_len;          // sqrt(buffer_len)
+    T sqrt_buffer_len;              // sqrt(buffer_len)
 
     // squelch
     int squelch_activated;          // squelch activated/deactivated?
@@ -83,8 +88,13 @@ AGC() AGC(_create)(void)
     _q->gamma_hat = 1.0f;
 
     // set default gain variables
+#if defined LIQUID_FIXED
+    _q->g_min   = Q(_max) >> 1;
+    _q->g_max   = Q(_min) << 1;
+#else
     _q->g_min   = 1e-6f;
     _q->g_max   = 1e+6f;
+#endif
 
     // initialize internals
     AGC(_set_bandwidth)(_q, 0.0);
@@ -93,7 +103,7 @@ AGC() AGC(_create)(void)
     // create input buffer, initialize with zeros
     _q->buffer_len = 16;
     _q->sqrt_buffer_len = sqrtf(_q->buffer_len);
-    _q->buffer = (float*) malloc((_q->buffer_len)*sizeof(float));
+    _q->buffer = (T*) malloc((_q->buffer_len)*sizeof(T));
 
     // squelch
     _q->squelch_headroom = 0.39811f;    // roughly 4dB
@@ -122,7 +132,11 @@ void AGC(_destroy)(AGC() _q)
 // print agc object internals
 void AGC(_print)(AGC() _q)
 {
-    printf("agc [rssi: %12.4fdB]:\n", AGC(_get_rssi)(_q));
+#if defined LIQUID_FIXED
+    printf("agc [rssi: %12.4f dB]:\n", Q(_fixed_to_float)( AGC(_get_rssi)(_q)) );
+#else
+    printf("agc [rssi: %12.4f dB]:\n", AGC(_get_rssi)(_q));
+#endif
 }
 
 // reset agc object
@@ -133,7 +147,7 @@ void AGC(_reset)(AGC() _q)
     _q->g           = 1.0f;
 
     _q->buffer_index = 0;
-    _q->buffer_sum = (float)(_q->buffer_len);
+    _q->buffer_sum = (T)(_q->buffer_len);
     unsigned int i;
     for (i=0; i<_q->buffer_len; i++)
         _q->buffer[i] = 1.0f;
@@ -168,8 +182,10 @@ void AGC(_set_gain_limits)(AGC() _q,
 //  _q      :   agc object
 //  _BT     :   bandwidth
 void AGC(_set_bandwidth)(AGC() _q,
-                         T _BT)
+                         T     _BT)
 {
+    // FIXME: implement this method for fixed-point math
+
     // check to ensure _BT is reasonable
     if ( _BT < 0 ) {
         fprintf(stderr,"error: agc_%s_set_bandwidth(), bandwidth must be positive\n", EXTENSION_FULL);
@@ -183,7 +199,7 @@ void AGC(_set_bandwidth)(AGC() _q,
     _q->BT = _BT;
 
     // ensure normalized bandwidth is less than one
-    float bt = _q->BT;
+    T bt = _q->BT;
     if (bt >= 1.0f) bt = 0.99f;
 
     // compute coefficients
@@ -237,7 +253,13 @@ void AGC(_apply_gain)(AGC() _q,
                       TC *  _y)
 {
     // apply internal gain to input
+#if defined LIQUID_FIXED && TC_COMPLEX==1
+    *_y = CQ(_mul_scalar)(*_y,_q->g);
+#elif defined LIQUID_FIXED && TC_COMPLEX==0
+    *_y = Q(_mul)(*_y,_q->g);
+#else
     *_y *= _q->g;
+#endif
 
 #if AGC_SQUELCH_GAIN
     // apply squelch gain
@@ -257,22 +279,28 @@ void AGC(_execute)(AGC() _q,
     AGC(_push)(_q, _x);
 
     // apply gain to input
-    *_y = _x * _q->g;
-#if AGC_SQUELCH_GAIN
-    *_y *= _q->g_squelch;
-#endif
+    *_y = _x;
+    AGC(_apply_gain)(_q, _y);
 }
 
 // get estimated signal level (linear)
 T AGC(_get_signal_level)(AGC() _q)
 {
+#if defined LIQUID_FIXED
+    return Q(_inv)(_q->g, 8);
+#else
     return (1.0 / _q->g);
+#endif
 }
 
 // get estimated signal level (dB)
 T AGC(_get_rssi)(AGC() _q)
 {
+#if defined LIQUID_FIXED
+    return -20*Q(_log10)(_q->g);
+#else
     return -20.0*log10(_q->g);
+#endif
 }
 
 // get internal gain
@@ -286,7 +314,11 @@ void AGC(_squelch_activate)(AGC() _q)
 {
     _q->squelch_activated = 1;
 #if AGC_SQUELCH_GAIN
+#  if defined LIQUID_FIXED
+    _q->g_squelch = Q(_one);
+#  else
     _q->g_squelch = 1.0f;
+#  endif
 #endif
 }
 
@@ -314,16 +346,25 @@ void AGC(_squelch_disable_auto)(AGC() _q)
 //  _q          :   agc object
 //  _threshold  :   squelch threshold level [dB]
 void AGC(_squelch_set_threshold)(AGC() _q,
-                                 T _threshold)
+                                 T     _threshold)
 {
+#if defined LIQUID_FIXED
+    // FIXME: implement this method for fixed-point math
+#else
     _q->squelch_threshold      = powf(10.0f,_threshold / 20.0f);
     _q->squelch_threshold_auto = _q->squelch_threshold;
+#endif
 }
 
 // get squelch threshold [dB]
 T AGC(_squelch_get_threshold)(AGC() _q)
 {
+#if defined LIQUID_FIXED
+    // FIXME: check this method for fixed-point math
+    return 20*Q(_log10)(_q->squelch_threshold);
+#else
     return 20.0f*log10f(_q->squelch_threshold);
+#endif
 }
 
 // set squelch timeout (time before squelch is deactivated)
@@ -350,12 +391,14 @@ int AGC(_squelch_get_status)(AGC() _q)
 //  _q      :   agc object
 //  _x      :   input sample
 void AGC(_estimate_input_energy)(AGC() _q,
-                                 TC _x)
+                                 TC    _x)
 {
     // compute instantaneous signal energy
-#if TC_COMPLEX
-    //_q->e_hat = crealf(_x * conj(_x)); // NOTE: crealf used for roundoff error
-    // same as above, but faster since we are throwing away imaginary component
+#if defined LIQUID_FIXED && TC_COMPLEX==1
+    _q->e_hat = Q(_mul)(_x.real, _x.real) + Q(_mul)(_x.imag, _x.imag);
+#elif defined LIQUID_FIXED && TC_COMPLEX==0
+    _q->e_hat = Q(_mul)(_x,_x);
+#elif TC_COMPLEX==1
     _q->e_hat = crealf(_x)*crealf(_x) + cimagf(_x)*cimagf(_x);
 #else
     _q->e_hat = _x*_x;
@@ -393,8 +436,15 @@ void AGC(_limit_gain)(AGC() _q)
 //  _q      :   agc object
 //  _rssi   :   estimated received signal strength (linear)
 void AGC(_update_auto_squelch)(AGC() _q,
-                               T _rssi)
+                               T     _rssi)
 {
+#if defined LIQUID_FIXED
+    // FIXME: test this method for fixed-point math
+    if (_rssi < _q->squelch_threshold * _q->squelch_headroom)
+        _q->squelch_threshold = Q(_mul)(_q->squelch_threshold, Q(_float_to_fixed)(0.95f));
+    else
+        _q->squelch_threshold = Q(_mul)(_q->squelch_threshold, Q(_float_to_fixed)(1.01f));
+#else
     // if rssi dips too low (roughly 4dB below threshold),
     // decrease threshold slightly
     if (_rssi < _q->squelch_threshold * _q->squelch_headroom) {
@@ -406,6 +456,7 @@ void AGC(_update_auto_squelch)(AGC() _q,
         // continuously increase threshold
         _q->squelch_threshold *= 1.01f;
     }
+#endif
 }
 
 // execute squelch cycle

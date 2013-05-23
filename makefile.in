@@ -102,12 +102,11 @@ benchmark_extra_obj :=
 agc_objects =							\
 	src/agc/src/agc_crcf.o					\
 	src/agc/src/agc_rrrf.o					\
+	src/agc/src/agc_crcq16.o				\
+	src/agc/src/agc_rrrq16.o				\
 
 # explicit targets and dependencies
-
-src/agc/src/agc_crcf.o : %.o : %.c src/agc/src/agc.c $(headers)
-
-src/agc/src/agc_rrrf.o : %.o : %.c src/agc/src/agc.c $(headers)
+$(agc_objects) : %.o : %.c src/agc/src/agc.c $(headers)
 
 # autotests
 agc_autotests :=						\

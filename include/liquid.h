@@ -103,6 +103,10 @@ enum {
 #define AGC_MANGLE_CRCF(name)   LIQUID_CONCAT(agc_crcf, name)
 #define AGC_MANGLE_RRRF(name)   LIQUID_CONCAT(agc_rrrf, name)
 
+// fixed-point
+#define AGC_MANGLE_CRCQ16(name) LIQUID_CONCAT(agc_crcq16, name)
+#define AGC_MANGLE_RRRQ16(name) LIQUID_CONCAT(agc_rrrq16, name)
+
 // large macro
 //   AGC    : name-mangling macro
 //   T      : primitive data type
@@ -156,6 +160,10 @@ int  AGC(_squelch_get_status)(AGC() _q);
 // Define agc APIs
 LIQUID_AGC_DEFINE_API(AGC_MANGLE_CRCF, float, liquid_float_complex)
 LIQUID_AGC_DEFINE_API(AGC_MANGLE_RRRF, float, float)
+
+// fixed-point
+LIQUID_AGC_DEFINE_API(AGC_MANGLE_CRCQ16, q16_t, cq16_t)
+LIQUID_AGC_DEFINE_API(AGC_MANGLE_RRRQ16, q16_t,  q16_t)
 
 
 
