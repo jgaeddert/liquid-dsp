@@ -1578,6 +1578,7 @@ example_programs :=						\
 	examples/nco_pll_example				\
 	examples/nco_pll_modem_example				\
 	examples/nco_crcq16_pll_example				\
+	examples/nco_crcq16_pll_modem_example			\
 	examples/nyquist_filter_example				\
 	examples/ofdmflexframesync_example			\
 	examples/ofdmframesync_example				\

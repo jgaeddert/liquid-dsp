@@ -142,14 +142,14 @@ void nco_crcq16_adjust_frequency(nco_crcq16 _q,
 void nco_crcq16_set_phase(nco_crcq16 _q, q16_t _phi)
 {
     _q->theta = _phi;
-    nco_crcq16_constrain_phase(_q);
+    //nco_crcq16_constrain_phase(_q);
 }
 
 // adjust phase of nco object, constraining phase
 void nco_crcq16_adjust_phase(nco_crcq16 _q, q16_t _dphi)
 {
     _q->theta += _dphi;
-    nco_crcq16_constrain_phase(_q);
+    //nco_crcq16_constrain_phase(_q);
 }
 
 // increment internal phase of nco object
@@ -310,8 +310,8 @@ void nco_crcq16_pll_step(nco_crcq16 _q,
 //  _x      :   input sample
 //  _y      :   output sample
 void nco_crcq16_mix_up(nco_crcq16 _q,
-                  cq16_t    _x,
-                  cq16_t *  _y)
+                       cq16_t     _x,
+                       cq16_t *   _y)
 {
     // compute sine, cosine internally, calling implementation-
     // specific function (nco, vco)
@@ -332,8 +332,8 @@ void nco_crcq16_mix_up(nco_crcq16 _q,
 //  _x      :   input sample
 //  _y      :   output sample
 void nco_crcq16_mix_down(nco_crcq16 _q,
-                    cq16_t _x,
-                    cq16_t *_y)
+                         cq16_t     _x,
+                         cq16_t *   _y)
 {
     // compute sine, cosine internally
     _q->compute_sincos(_q);
@@ -432,6 +432,7 @@ void nco_crcq16_constrain_phase(nco_crcq16 _q)
 // compute sin, cos of internal phase of nco
 void nco_crcq16_compute_sincos_nco(nco_crcq16 _q)
 {
+#if 0
     // assume phase is constrained to be in (-pi,pi)
 
     // compute index
@@ -443,6 +444,11 @@ void nco_crcq16_compute_sincos_nco(nco_crcq16 _q)
     
     _q->sine = _q->sintab[_q->index];
     _q->cosine = _q->sintab[(_q->index+64)&0xff];
+#else
+    // TODO:...
+    _q->sine   = q16_sin(_q->theta);
+    _q->cosine = q16_cos(_q->theta);
+#endif
 }
 
 // compute sin, cos of internal phase of vco

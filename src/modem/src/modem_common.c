@@ -1,7 +1,5 @@
 /*
- * Copyright (c) 2007, 2008, 2009, 2010, 2012 Joseph Gaeddert
- * Copyright (c) 2007, 2008, 2009, 2010, 2012 Virginia Polytechnic
- *                                      Institute & State University
+ * Copyright (c) 2007, 2008, 2009, 2010, 2011, 2012, 2013 Joseph Gaeddert
  *
  * This file is part of liquid.
  *
@@ -551,8 +549,11 @@ void MODEM(_get_demodulator_sample)(MODEM() _q,
 T MODEM(_get_demodulator_phase_error)(MODEM() _q)
 {
 #if LIQUID_FPM
-    // FIXME: compute fixed-point phase error
-    return 0;
+    // compute fixed-point phase error
+    // FIXME: only compute necessary values
+    CQ(_t) v = CQ(_mul)( _q->r, CQ(_conj)(_q->x_hat) );
+    Q(_t)  g = (1<<(Q(_intbits)-1)) / 3.14;  // scaling factor to convert to angle (2^(intbits-1)/3.14)
+    return v.imag * g;
 #else
     return cimagf(_q->r*conjf(_q->x_hat));
 #endif
