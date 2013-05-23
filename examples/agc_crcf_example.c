@@ -1,9 +1,8 @@
 //
-// agc_example.c
+// agc_crcf_example.c
 //
-// Automatic gain control example demonstrating the transient
-// responses between the three AGC types (LIQUID_AGC_DEFAULT,
-// LIQUID_AGC_LOG, LIQUID_AGC_EXP).
+// Automatic gain control example demonstrating its transient
+// response.
 //
 
 #include <stdio.h>
@@ -13,7 +12,7 @@
 #include <getopt.h>
 #include "liquid.h"
 
-#define OUTPUT_FILENAME "agc_example.m"
+#define OUTPUT_FILENAME "agc_crcf_example.m"
 
 // print usage/help message
 void usage()

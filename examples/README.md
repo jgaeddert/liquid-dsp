@@ -4,18 +4,16 @@ liquid-dsp examples
 
 This directory contains all the examples for interfacing the liquid modules.
 
- * `agc_example.c`:
-    Automatic gain control example demonstrating the transient responses
-    between the three AGC types (LIQUID_AGC_DEFAULT, LIQUID_AGC_LOG,
-    LIQUID_AGC_EXP).
+ * `agc_crcf_example.c`:
+    Automatic gain control example demonstrating its transient response.
 
- * `agc_qpsk_example.c`:
+ * `agc_crcf_qpsk_example.c`:
     Automatic gain control test for data signals with fluctuating signal
     levels.  QPSK modulation introduces periodic random zero-crossings which
     gives instantaneous amplitude levels near zero.  This example tests the
     response of the AGC to these types of signals.
 
- * `agc_squelch_example.c`:
+ * `agc_crcf_squelch_example.c`:
     Automatic gain control with squelch example.  This example demonstrates
     the squelch control functionality of the AGC module.  Squelch is used to
     suppress the output of the AGC when the signal level drops below a certain
