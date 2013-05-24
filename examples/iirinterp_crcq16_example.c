@@ -1,5 +1,5 @@
 //
-// iirinterp_crcf_example.c
+// iirinterp_crcq16_example.c
 //
 // This example demonstrates the iirinterp object (IIR interpolator)
 // interface.
@@ -12,12 +12,12 @@
 
 #include "liquid.h"
 
-#define OUTPUT_FILENAME "iirinterp_crcf_example.m"
+#define OUTPUT_FILENAME "iirinterp_crcq16_example.m"
 
 // print usage/help message
 void usage()
 {
-    printf("iirinterp_crcf_example:\n");
+    printf("iirinterp_crcq16_example:\n");
     printf("  h     : print help\n");
     printf("  k     : samples/symbol (interp factor), k > 1, default: 4\n");
     printf("  n     : number of input samples, default: 64\n");
@@ -59,28 +59,29 @@ int main(int argc, char*argv[]) {
     float f0 =  0.0f;
     float Ap =  0.1f;
     float As = 60.0f;
-    iirinterp_crcf q = iirinterp_crcf_create_prototype(k,ftype,btype,format,order,fc,f0,Ap,As);
+    iirinterp_crcq16 q = iirinterp_crcq16_create_prototype(k,ftype,btype,format,order,fc,f0,Ap,As);
 
     // derived values
-    unsigned int delay = 2; // TODO: compute actual delay
+    //unsigned int delay = 2; // TODO: compute actual delay
 
     // generate input signal and interpolate
-    float complex x[  num_samples]; // input samples
-    float complex y[k*num_samples]; // output samples
+    cq16_t x[  num_samples]; // input samples
+    cq16_t y[k*num_samples]; // output samples
     unsigned int i;
     for (i=0; i<num_samples; i++) {
         // input signal (sinusoidal chirp)
-        x[i] = cexpf(_Complex_I*(-0.17f*i + 0.9*i*i/(float)num_samples));
+        x[i] = cq16_float_to_fixed( cexpf(_Complex_I*(-0.17f*i + 0.9*i*i/(float)num_samples)) );
 
         // apply window
-        x[i] *= (i < num_samples-5) ? hamming(i,num_samples) : 0.0f;
+        float w = (i < num_samples-5) ? hamming(i,num_samples) : 0.0f;
+        x[i] = cq16_mul_scalar( x[i], q16_float_to_fixed(w) );
 
         // push through interpolator
-        iirinterp_crcf_execute(q, x[i], &y[k*i]);
+        iirinterp_crcq16_execute(q, x[i], &y[k*i]);
     }
 
     // destroy interpolator object
-    iirinterp_crcf_destroy(q);
+    iirinterp_crcq16_destroy(q);
 
 
     // 
@@ -96,11 +97,19 @@ int main(int argc, char*argv[]) {
     fprintf(fid,"x = zeros(1,  num_samples);\n");
     fprintf(fid,"y = zeros(1,k*num_samples);\n");
 
-    for (i=0; i<num_samples; i++)
-        fprintf(fid,"x(%4u) = %12.4e + j*%12.4e;\n", i+1, crealf(x[i]), cimagf(x[i]));
+    for (i=0; i<num_samples; i++) {
+        fprintf(fid,"x(%4u) = %12.4e + j*%12.4e;\n",
+                i+1,
+                q16_fixed_to_float(x[i].real),
+                q16_fixed_to_float(x[i].imag));
+    }
 
-    for (i=0; i<k*num_samples; i++)
-        fprintf(fid,"y(%4u) = %12.4e + j*%12.4e;\n", i+1, k*crealf(y[i]), k*cimagf(y[i]));
+    for (i=0; i<k*num_samples; i++) {
+        fprintf(fid,"y(%4u) = %12.4e + j*%12.4e;\n",
+                i+1,
+                k*q16_fixed_to_float(y[i].real),
+                k*q16_fixed_to_float(y[i].imag));
+    }
 
     fprintf(fid,"\n\n");
     fprintf(fid,"tx = [0:(  num_samples-1)];\n");
