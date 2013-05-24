@@ -123,6 +123,6 @@ void IIRINTERP(_execute)(IIRINTERP() _q,
     // TODO: use iirpfb
     unsigned int i;
     for (i=0; i<_q->M; i++)
-        IIRFILT(_execute)(_q->iirfilt, i==0 ? _x : 0.0f, &_y[i]);
+        IIRFILT(_execute)(_q->iirfilt, i==0 ? _x : TO_ZERO, &_y[i]);
 }
 

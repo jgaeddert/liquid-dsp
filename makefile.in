@@ -1049,8 +1049,6 @@ nco_objects :=							\
 
 src/nco/src/nco_crcf.o: %.o : %.c $(headers) src/nco/src/nco.c
 
-src/nco/src/nco_crcq16.o: %.o : %.c $(headers) src/nco/src/nco.c
-
 src/nco/src/nco.utilities.o: %.o : %.c $(headers)
 
 
@@ -1059,6 +1057,7 @@ nco_autotests :=						\
 	src/nco/tests/nco_crcf_frequency_autotest.c		\
 	src/nco/tests/nco_crcf_phase_autotest.c			\
 	src/nco/tests/nco_crcf_pll_autotest.c			\
+	src/nco/tests/nco_crcq16_pll_autotest.c			\
 	src/nco/tests/unwrap_phase_autotest.c			\
 
 # benchmarks
@@ -1577,6 +1576,8 @@ example_programs :=						\
 	examples/nco_example					\
 	examples/nco_pll_example				\
 	examples/nco_pll_modem_example				\
+	examples/nco_crcq16_pll_example				\
+	examples/nco_crcq16_pll_modem_example			\
 	examples/nyquist_filter_example				\
 	examples/ofdmflexframesync_example			\
 	examples/ofdmframesync_example				\

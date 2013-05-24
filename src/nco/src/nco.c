@@ -247,15 +247,20 @@ void NCO(_pll_set_bandwidth)(NCO() _q,
     float t1    = K/(wn*wn);            // 
     float t2    = 2*zeta/wn - 1/K;      //
 
+    // compute scaling factor
+    float v = 1.0f / (1. + t1/2.0f);
+
     // feed-forward coefficients
-    _q->b[0] =  2*K*(1.+t2/2.0f);
-    _q->b[1] =  2*K*2.;
-    _q->b[2] =  2*K*(1.-t2/2.0f);
+    _q->b[0] = v*2*K*(1.+t2/2.0f);
+    _q->b[1] = v*2*K*2.;
+    _q->b[2] = v*2*K*(1.-t2/2.0f);
 
     // feed-back coefficients
-    _q->a[0] =  1. + t1/2.0f;
-    _q->a[1] = -1. + t1/2.0f;
-    _q->a[2] =  0.0f;
+    _q->a[0] = 1.0f;
+    _q->a[1] = v*(-1. + t1/2.0f);
+    _q->a[2] = 0.0f;
+    //printf("b = [%8.4f %8.4f %8.4f]\n", _q->b[0], _q->b[1], _q->b[2]);
+    //printf("a = [%8.4f %8.4f %8.4f]\n", _q->a[0], _q->a[1], _q->a[2]);
     
     IIRFILTSOS_RRR(_set_coefficients)(_q->pll_filter, _q->b, _q->a);
 }
