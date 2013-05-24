@@ -18,24 +18,23 @@
 void usage()
 {
     printf("iirinterp_crcf_example:\n");
-    printf("  u/h   : print usage/help\n");
+    printf("  h     : print help\n");
     printf("  k     : samples/symbol (interp factor), k > 1, default: 4\n");
-    printf("  n     : number of data symbols, default: 16\n");
+    printf("  n     : number of input samples, default: 64\n");
 }
 
 
 int main(int argc, char*argv[]) {
     // options
-    unsigned int k=4;                   // samples/symbol
-    unsigned int num_data_symbols=16;   // number of data symbols
+    unsigned int k = 4;             // interpolation factor
+    unsigned int num_samples = 64;  // number of input samples
 
     int dopt;
     while ((dopt = getopt(argc,argv,"uhk:n:")) != EOF) {
         switch (dopt) {
-        case 'u':
-        case 'h': usage();                          return 0;
-        case 'k': k = atoi(optarg);                 break;
-        case 'n': num_data_symbols = atoi(optarg);  break;
+        case 'h': usage();                      return 0;
+        case 'k': k           = atoi(optarg);   break;
+        case 'n': num_samples = atoi(optarg);   break;
         default:
             exit(1);
         }
@@ -45,7 +44,7 @@ int main(int argc, char*argv[]) {
     if (k < 2) {
         fprintf(stderr,"error: %s, interp factor must be greater than 1\n", argv[0]);
         exit(1);
-    } else if (num_data_symbols < 1) {
+    } else if (num_samples < 1) {
         fprintf(stderr,"error: %s, must have at least one data symbol\n", argv[0]);
         usage();
         return 1;
@@ -56,7 +55,7 @@ int main(int argc, char*argv[]) {
     liquid_iirdes_bandtype   btype  = LIQUID_IIRDES_LOWPASS;
     liquid_iirdes_format     format = LIQUID_IIRDES_SOS;
     unsigned int order = 8;
-    float fc =  0.5f / (float)k;
+    float fc =  0.5f / (float)k;    // filter cut-off frequency
     float f0 =  0.0f;
     float Ap =  0.1f;
     float As = 60.0f;
@@ -64,44 +63,25 @@ int main(int argc, char*argv[]) {
 
     // derived values
     unsigned int delay = 2; // TODO: compute actual delay
-    unsigned int num_symbols = num_data_symbols + 2*delay;  // compensate for filter delay
-    unsigned int num_samples = k*num_symbols;
 
     // generate input signal and interpolate
-    float complex x[num_symbols];   // input symbols
-    float complex y[num_samples];   // output samples
+    float complex x[  num_samples]; // input samples
+    float complex y[k*num_samples]; // output samples
     unsigned int i;
-    for (i=0; i<num_data_symbols; i++) {
-        x[i] = (rand() % 2 ? 1.0f : -1.0f) +
-               (rand() % 2 ? 1.0f : -1.0f) * _Complex_I;
-    }
+    for (i=0; i<num_samples; i++) {
+        // input signal (sinusoidal chirp)
+        x[i] = cexpf(_Complex_I*(-0.17f*i + 0.9*i*i/(float)num_samples));
 
-    // pad end of sequence with zeros
-    for (i=num_data_symbols; i<num_symbols; i++)
-        x[i] = 0.0f;
+        // apply window
+        x[i] *= (i < num_samples-5) ? hamming(i,num_samples) : 0.0f;
 
-    // interpolate symbols
-    for (i=0; i<num_symbols; i++)
+        // push through interpolator
         iirinterp_crcf_execute(q, x[i], &y[k*i]);
+    }
 
     // destroy interpolator object
     iirinterp_crcf_destroy(q);
 
-    // print results to screen
-    printf("x(t) :\n");
-    for (i=0; i<num_symbols; i++)
-        printf("  x(%4u) = %8.4f + j*%8.4f;\n", i, crealf(x[i]), cimagf(x[i]));
-
-#if 0
-    printf("y(t) :\n");
-    for (i=0; i<num_samples; i++) {
-        printf("  y(%4u) = %8.4f + j*%8.4f;", i, crealf(y[i]), cimagf(y[i]));
-        if ( (i >= k*m) && ((i%k)==0))
-            printf(" **\n");
-        else
-            printf("\n");
-    }
-#endif
 
     // 
     // export output file
@@ -112,31 +92,47 @@ int main(int argc, char*argv[]) {
     fprintf(fid,"close all;\n");
     fprintf(fid,"k = %u;\n", k);
     fprintf(fid,"delay = %f;\n", 1.6);
-    fprintf(fid,"num_symbols = %u;\n", num_symbols);
-    fprintf(fid,"num_samples = k*num_symbols;\n");
-    fprintf(fid,"x = zeros(1,num_symbols);\n");
-    fprintf(fid,"y = zeros(1,num_samples);\n");
-
-    for (i=0; i<num_symbols; i++)
-        fprintf(fid,"x(%4u) = %12.4e + j*%12.4e;\n", i+1, crealf(x[i]), cimagf(x[i]));
+    fprintf(fid,"num_samples = %u;\n", num_samples);
+    fprintf(fid,"x = zeros(1,  num_samples);\n");
+    fprintf(fid,"y = zeros(1,k*num_samples);\n");
 
     for (i=0; i<num_samples; i++)
-        fprintf(fid,"y(%4u) = %12.4e + j*%12.4e;\n", i+1, crealf(k*y[i]), cimagf(k*y[i]));
+        fprintf(fid,"x(%4u) = %12.4e + j*%12.4e;\n", i+1, crealf(x[i]), cimagf(x[i]));
+
+    for (i=0; i<k*num_samples; i++)
+        fprintf(fid,"y(%4u) = %12.4e + j*%12.4e;\n", i+1, k*crealf(y[i]), k*cimagf(y[i]));
 
     fprintf(fid,"\n\n");
-    fprintf(fid,"tx = [0:(num_symbols-1)];\n");
-    fprintf(fid,"ty = [0:(num_samples-1)]/k - delay;\n");
+    fprintf(fid,"tx = [0:(  num_samples-1)];\n");
+    fprintf(fid,"ty = [0:(k*num_samples-1)]/k - delay;\n");
     fprintf(fid,"figure;\n");
     fprintf(fid,"subplot(2,1,1);\n");
-    fprintf(fid,"    plot(ty,real(y),'-',tx,real(x),'s');\n");
+    fprintf(fid,"    plot(tx,real(x),'-s','MarkerSize',3,ty,real(y),'-s','MarkerSize',1);\n");
+    fprintf(fid,"    legend('input','interp','location','northeast');\n");
+    fprintf(fid,"    axis([0 num_samples -1.2 1.2]);\n");
     fprintf(fid,"    xlabel('time');\n");
     fprintf(fid,"    ylabel('real');\n");
     fprintf(fid,"    grid on;\n");
     fprintf(fid,"subplot(2,1,2);\n");
-    fprintf(fid,"    plot(ty,imag(y),'-',tx,imag(x),'s');\n");
+    fprintf(fid,"    plot(tx,imag(x),'-s','MarkerSize',3,ty,imag(y),'-s','MarkerSize',1);\n");
+    fprintf(fid,"    legend('input','interp','location','northeast');\n");
+    fprintf(fid,"    axis([0 num_samples -1.2 1.2]);\n");
     fprintf(fid,"    xlabel('time');\n");
     fprintf(fid,"    ylabel('imag');\n");
     fprintf(fid,"    grid on;\n");
+
+    // power spectral density
+    fprintf(fid,"nfft = 1024;\n");
+    fprintf(fid,"fx   = [0:(nfft-1)]/nfft - 0.5;\n");
+    fprintf(fid,"fy   = k*fx;\n");
+    fprintf(fid,"X    = 20*log10(abs(fftshift(fft(x  ,nfft))));\n");
+    fprintf(fid,"Y    = 20*log10(abs(fftshift(fft(y/k,nfft))));\n");
+    fprintf(fid,"figure;\n");
+    fprintf(fid,"plot(fx,X,'LineWidth',2, fy,Y,'LineWidth',1);\n");
+    fprintf(fid,"legend('input','interp','location','northeast');\n");
+    fprintf(fid,"xlabel('Normalized Frequency [f/F_s]');\n");
+    fprintf(fid,"ylabel('Power Spectral Density [dB]');\n");
+    fprintf(fid,"grid on;\n");
 
     fclose(fid);
     printf("results written to %s.\n",OUTPUT_FILENAME);
