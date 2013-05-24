@@ -294,6 +294,10 @@ This directory contains all the examples for interfacing the liquid modules.
     This example demonstrates the iirinterp object (IIR interpolator)
     interface.
 
+ * `iirinterp_crcq16_example.c`:
+    This example demonstrates the iirinterp object (IIR interpolator)
+    interface (fixed-point math)
+
  * `interleaver_example.c`:
     This example demonstrates the functionality of the liquid interleaver
     object.  Interleavers serve to distribute  grouped bit errors evenly
