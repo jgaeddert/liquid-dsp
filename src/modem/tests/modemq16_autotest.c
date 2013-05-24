@@ -42,10 +42,15 @@ void modemq16_test_mod_demod(modulation_scheme _ms)
         modemq16_demodulate(demod, x, &s);
         CONTEND_EQUALITY(s, i);
 
-        CONTEND_DELTA( modemq16_get_demodulator_phase_error(demod), 0, tol);
+        // get phase error and convert to float
+        q16_t phase_error = modemq16_get_demodulator_phase_error(demod);
+        CONTEND_DELTA( q16_fixed_to_float(phase_error), 0.0f, tol);
         
-        CONTEND_DELTA( modemq16_get_demodulator_evm(demod), 0, tol);
+        // get error vector magnitude (EVM) and convert to float
+        q16_t evm = modemq16_get_demodulator_evm(demod);
+        CONTEND_DELTA( q16_fixed_to_float(evm), 0.0f, tol);
 
+        // accumulate error
         float complex xf = cq16_fixed_to_float(x);
         e += crealf(xf*conjf(xf));
     }
