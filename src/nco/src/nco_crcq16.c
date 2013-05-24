@@ -165,7 +165,7 @@ q16_t nco_crcq16_get_phase(nco_crcq16 _q)
     return _q->theta;
 }
 
-// ge frequency
+// get frequency
 q16_t nco_crcq16_get_frequency(nco_crcq16 _q)
 {
     // return both internal NCO phase step as well
@@ -174,7 +174,7 @@ q16_t nco_crcq16_get_frequency(nco_crcq16 _q)
 }
 
 
-// TODO : compute sine, cosine internally
+// compute and return sine
 q16_t nco_crcq16_sin(nco_crcq16 _q)
 {
     // compute internal sin, cos
@@ -184,6 +184,7 @@ q16_t nco_crcq16_sin(nco_crcq16 _q)
     return _q->sine;
 }
 
+// compute and return cosine
 q16_t nco_crcq16_cos(nco_crcq16 _q)
 {
     // compute internal sin, cos
@@ -432,33 +433,15 @@ void nco_crcq16_constrain_phase(nco_crcq16 _q)
 // compute sin, cos of internal phase of nco
 void nco_crcq16_compute_sincos_nco(nco_crcq16 _q)
 {
-#if 0
-    // assume phase is constrained to be in (-pi,pi)
-
-    // compute index
-    // NOTE : 40.743665 ~ 256 / (2*pi)
-    // NOTE : add 512 to ensure positive value, add 0.5 for rounding precision
-    // TODO : move away from floating-point specific code
-    _q->index = ((unsigned int)((_q->theta)*40.743665f + 512.0f + 0.5f))&0xff;
-    assert(_q->index < 256);
-    
-    _q->sine = _q->sintab[_q->index];
-    _q->cosine = _q->sintab[(_q->index+64)&0xff];
-#else
-    // TODO:...
+    // use fixed look-up table
     q16_sincos_tab(_q->theta, &_q->sine, &_q->cosine);
-#endif
 }
 
 // compute sin, cos of internal phase of vco
 void nco_crcq16_compute_sincos_vco(nco_crcq16 _q)
 {
-    // TODO: use cordic
-#if 0
-    unsigned int num_iterations = 16;
+    // use cordic (although might not be as accurate as q16_sincos_tab() method)
+    unsigned int num_iterations = q16_bits;
     q16_sincos_cordic(_q->theta, &_q->sine, &_q->cosine, num_iterations);
-#else
-    q16_sincos_tab(_q->theta, &_q->sine, &_q->cosine);
-#endif
 }
 

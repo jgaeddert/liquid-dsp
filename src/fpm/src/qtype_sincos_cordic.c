@@ -1,7 +1,5 @@
 /*
- * Copyright (c) 2008, 2009, 2010, 2011, 2012 Joseph Gaeddert
- * Copyright (c) 2008, 2009, 2010, 2011, 2012 Virginia Polytechnic
- *                                Institute & State University
+ * Copyright (c) 2007, 2008, 2009, 2010, 2011, 2012, 2013 Joseph Gaeddert
  *
  * This file is part of liquid.
  *
@@ -28,6 +26,9 @@
 
 #include "liquid.internal.h"
 #include "liquidfpm.internal.h"
+
+// debug sin/cos computation using CORDIC method
+#define DEBUG_SINCOS_CORDIC 0
 
 // 
 // sin/cos CORDIC

@@ -41,10 +41,23 @@ void nco_crcq16_phase_test(float _theta,
     nco_crcq16_set_phase(nco, q16_angle_float_to_fixed(_theta));
 
     // compute cosine and sine outputs
+#if 0
     q16_t c = nco_crcq16_cos(nco);
     q16_t s = nco_crcq16_sin(nco);
+#else
+    q16_t c, s; // cosine, sine output
+    nco_crcq16_sincos(nco, &s, &c);
+#endif
 
     // run tests
+    if (liquid_autotest_verbose) {
+        printf("sincos(%10.7f) = {%10.7f, %10.7f}, expected {%10.7f, %10.7f}\n",
+                _theta,
+                q16_fixed_to_float(s),
+                q16_fixed_to_float(c),
+                _sin,
+                _cos);
+    }
     CONTEND_DELTA( q16_fixed_to_float(c), _cos, _tol );
     CONTEND_DELTA( q16_fixed_to_float(s), _sin, _tol );
 
@@ -85,7 +98,7 @@ void autotest_nco_crcq16_phase()
 void autotest_vco_crcq16_phase()
 {
     // error tolerance
-    float tol = 0.02f;
+    float tol = expf(-sqrtf(q16_fracbits));
 
     nco_crcq16_phase_test(-6.283185307f,  1.000000000f,  0.000000000f, LIQUID_VCO, tol);
     nco_crcq16_phase_test(-6.195739393f,  0.996179042f,  0.087334510f, LIQUID_VCO, tol);
