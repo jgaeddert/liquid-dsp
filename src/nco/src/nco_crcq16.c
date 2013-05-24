@@ -26,7 +26,7 @@
 #include <stdio.h>
 #include <assert.h>
 
-#include "liquidfpm.h"
+#include "liquidfpm.internal.h"
 #include "liquid.internal.h"
 
 #define NCO_PLL_BANDWIDTH_DEFAULT   (0.1)
@@ -446,16 +446,19 @@ void nco_crcq16_compute_sincos_nco(nco_crcq16 _q)
     _q->cosine = _q->sintab[(_q->index+64)&0xff];
 #else
     // TODO:...
-    _q->sine   = q16_sin(_q->theta);
-    _q->cosine = q16_cos(_q->theta);
+    q16_sincos_tab(_q->theta, &_q->sine, &_q->cosine);
 #endif
 }
 
 // compute sin, cos of internal phase of vco
 void nco_crcq16_compute_sincos_vco(nco_crcq16 _q)
 {
-    // TODO:...
-    _q->sine   = q16_sin(_q->theta);
-    _q->cosine = q16_cos(_q->theta);
+    // TODO: use cordic
+#if 0
+    unsigned int num_iterations = 16;
+    q16_sincos_cordic(_q->theta, &_q->sine, &_q->cosine, num_iterations);
+#else
+    q16_sincos_tab(_q->theta, &_q->sine, &_q->cosine);
+#endif
 }
 
