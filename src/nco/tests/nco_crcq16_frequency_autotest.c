@@ -23,10 +23,10 @@
 #include "liquid.h"
 
 // declare external arrays
-float complex nco_sincos_fsqrt1_2[];
-float complex nco_sincos_fsqrt1_3[];
-float complex nco_sincos_fsqrt1_5[];
-float complex nco_sincos_fsqrt1_7[];
+extern float complex nco_sincos_fsqrt1_2[];
+extern float complex nco_sincos_fsqrt1_3[];
+extern float complex nco_sincos_fsqrt1_5[];
+extern float complex nco_sincos_fsqrt1_7[];
 
 // autotest helper function
 //  _type       :   NCO type (e.g. LIQUID_NCO)
