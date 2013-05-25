@@ -302,9 +302,6 @@ void MODEM(_init)(MODEM() _q,
     // soft demodulation
     _q->demod_soft_neighbors = NULL;
     _q->demod_soft_p = 0;
-
-    // reset object
-    MODEM(_reset)(_q);
 }
 
 // initialize symbol map for fast modulation

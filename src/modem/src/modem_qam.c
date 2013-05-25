@@ -1,7 +1,5 @@
 /*
- * Copyright (c) 2007, 2008, 2009, 2010, 2011, 2012 Joseph Gaeddert
- * Copyright (c) 2007, 2008, 2009, 2010, 2011, 2012 Virginia Polytechnic
- *                                      Institute & State University
+ * Copyright (c) 2007, 2008, 2009, 2010, 2011, 2012, 2013 Joseph Gaeddert
  *
  * This file is part of liquid.
  *
@@ -131,6 +129,8 @@ MODEM() MODEM(_create_qam)(unsigned int _bits_per_symbol)
     if      (q->m == 3) MODEM(_demodsoft_gentab)(q, 3);
     else if (q->m >= 4) MODEM(_demodsoft_gentab)(q, 4);
 
+    // reset and return
+    MODEM(_reset)(q);
     return q;
 }
 

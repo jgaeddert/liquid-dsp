@@ -1,5 +1,5 @@
 //
-// agc_qpsk_example.c
+// agc_crcf_qpsk_example.c
 //
 // Automatic gain control test for data signals with fluctuating signal
 // levels.  QPSK modulation introduces periodic random zero-crossings
@@ -13,7 +13,7 @@
 
 #include "liquid.h"
 
-#define OUTPUT_FILENAME "agc_qpsk_example.m"
+#define OUTPUT_FILENAME "agc_crcf_qpsk_example.m"
 
 int main(int argc, char*argv[])
 {

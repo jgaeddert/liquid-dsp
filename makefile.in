@@ -110,11 +110,11 @@ $(agc_objects) : %.o : %.c src/agc/src/agc.c $(headers)
 
 # autotests
 agc_autotests :=						\
-	src/agc/tests/agc_autotest.c				\
+	src/agc/tests/agc_crcf_autotest.c			\
 
 # benchmarks
 agc_benchmarks :=						\
-	src/agc/bench/agc_benchmark.c				\
+	src/agc/bench/agc_crcf_benchmark.c			\
 
 #
 # MODULE : audio
@@ -1061,6 +1061,13 @@ nco_autotests :=						\
 	src/nco/tests/nco_crcq16_pll_autotest.c			\
 	src/nco/tests/unwrap_phase_autotest.c			\
 
+# additional autotest objects
+autotest_extra_obj +=						\
+	src/nco/tests/data/nco_sincos_fsqrt1_2.o		\
+	src/nco/tests/data/nco_sincos_fsqrt1_3.o		\
+	src/nco/tests/data/nco_sincos_fsqrt1_5.o		\
+	src/nco/tests/data/nco_sincos_fsqrt1_7.o		\
+
 # benchmarks
 nco_benchmarks :=						\
 	src/nco/bench/nco_benchmark.c				\
@@ -1501,9 +1508,9 @@ clean-bench:
 ##
 .PHONY: examples
 example_programs :=						\
-	examples/agc_example					\
-	examples/agc_qpsk_example				\
-	examples/agc_squelch_example				\
+	examples/agc_crcf_example				\
+	examples/agc_crcf_qpsk_example				\
+	examples/agc_crcf_squelch_example			\
 	examples/ampmodem_example				\
 	examples/asgram_example					\
 	examples/autocorr_cccf_example				\
