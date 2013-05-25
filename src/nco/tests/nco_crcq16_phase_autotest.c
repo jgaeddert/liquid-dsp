@@ -41,13 +41,9 @@ void nco_crcq16_phase_test(float _theta,
     nco_crcq16_set_phase(nco, q16_angle_float_to_fixed(_theta));
 
     // compute cosine and sine outputs
-#if 0
-    q16_t c = nco_crcq16_cos(nco);
-    q16_t s = nco_crcq16_sin(nco);
-#else
-    q16_t c, s; // cosine, sine output
+    q16_t c;    // cosine output
+    q16_t s;    // sine output
     nco_crcq16_sincos(nco, &s, &c);
-#endif
 
     // run tests
     if (liquid_autotest_verbose) {
