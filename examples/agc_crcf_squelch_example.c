@@ -1,5 +1,5 @@
 //
-// agc_squelch_example.c
+// agc_crcf_squelch_example.c
 //
 // Automatic gain control with squelch example.  This example demonstrates
 // the squelch control functionality of the AGC module.  Squelch is used
@@ -12,7 +12,7 @@
 #include <complex.h>
 #include "liquid.h"
 
-#define OUTPUT_FILENAME "agc_squelch_example.m"
+#define OUTPUT_FILENAME "agc_crcf_squelch_example.m"
 
 int main() {
     // options

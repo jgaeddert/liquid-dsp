@@ -22,17 +22,25 @@
 #include "autotest/autotest.h"
 #include "liquid.h"
 
+// declare external arrays
+float complex nco_sincos_fsqrt1_2[];
+float complex nco_sincos_fsqrt1_3[];
+float complex nco_sincos_fsqrt1_5[];
+float complex nco_sincos_fsqrt1_7[];
+
 // autotest helper function
 //  _type       :   NCO type (e.g. LIQUID_NCO)
 //  _phase      :   initial phase
 //  _frequency  :   initial frequency
+//  _sincos     :   external sin/cosine data
 //  _num_samples:   number of samples to test
 //  _tol        :   error tolerance
-void nco_crcf_frequency_test(int          _type,
-                             float        _phase,
-                             float        _frequency,
-                             unsigned int _num_samples,
-                             float        _tol)
+void nco_crcf_frequency_test(int             _type,
+                             float           _phase,
+                             float           _frequency,
+                             float complex * _sincos,
+                             unsigned int    _num_samples,
+                             float           _tol)
 {
     // create object
     nco_crcf nco = nco_crcf_create(_type);
@@ -48,8 +56,8 @@ void nco_crcf_frequency_test(int          _type,
         float complex y_test;
         nco_crcf_cexpf(nco, &y_test);
 
-        // compute expected output
-        float complex y = cexpf(_Complex_I*(_phase + i*_frequency));
+        // compare to expected output
+        float complex y = _sincos[i];
 
         // run tests
         CONTEND_DELTA( crealf(y_test), crealf(y), _tol );
@@ -71,11 +79,10 @@ void autotest_nco_crcf_frequency()
     float tol = 0.04f;
 
     // test frequencies with irrational values
-    nco_crcf_frequency_test(LIQUID_NCO, 0.0f,  M_SQRT2,    256, tol);
-    nco_crcf_frequency_test(LIQUID_NCO, 0.0f, -M_SQRT1_2,  256, tol);
-    nco_crcf_frequency_test(LIQUID_NCO, 0.0f,  M_2_SQRTPI, 256, tol);
-    nco_crcf_frequency_test(LIQUID_NCO, 0.0f,  M_E,        256, tol);
-    nco_crcf_frequency_test(LIQUID_NCO, 0.0f, -M_LOG2E,    256, tol);
+    nco_crcf_frequency_test(LIQUID_NCO, 0.0f, 0.707106781186547, nco_sincos_fsqrt1_2, 256, tol); // 1/sqrt(2)
+    nco_crcf_frequency_test(LIQUID_NCO, 0.0f, 0.577350269189626, nco_sincos_fsqrt1_3, 256, tol); // 1/sqrt(3)
+    nco_crcf_frequency_test(LIQUID_NCO, 0.0f, 0.447213595499958, nco_sincos_fsqrt1_5, 256, tol); // 1/sqrt(5)
+    nco_crcf_frequency_test(LIQUID_NCO, 0.0f, 0.377964473009227, nco_sincos_fsqrt1_7, 256, tol); // 1/sqrt(7)
 }
 
 // test floating point precision vco phase
@@ -85,10 +92,9 @@ void autotest_vco_crcf_frequency()
     float tol = 0.0001f;
 
     // test frequencies with irrational values
-    nco_crcf_frequency_test(LIQUID_VCO, 0.0f,  M_SQRT2,    256, tol);
-    nco_crcf_frequency_test(LIQUID_VCO, 0.0f, -M_SQRT1_2,  256, tol);
-    nco_crcf_frequency_test(LIQUID_VCO, 0.0f,  M_2_SQRTPI, 256, tol);
-    nco_crcf_frequency_test(LIQUID_VCO, 0.0f,  M_E,        256, tol);
-    nco_crcf_frequency_test(LIQUID_VCO, 0.0f, -M_LOG2E,    256, tol);
+    nco_crcf_frequency_test(LIQUID_VCO, 0.0f, 0.707106781186547, nco_sincos_fsqrt1_2, 256, tol); // 1/sqrt(2)
+    nco_crcf_frequency_test(LIQUID_VCO, 0.0f, 0.577350269189626, nco_sincos_fsqrt1_3, 256, tol); // 1/sqrt(3)
+    nco_crcf_frequency_test(LIQUID_VCO, 0.0f, 0.447213595499958, nco_sincos_fsqrt1_5, 256, tol); // 1/sqrt(5)
+    nco_crcf_frequency_test(LIQUID_VCO, 0.0f, 0.377964473009227, nco_sincos_fsqrt1_7, 256, tol); // 1/sqrt(7)
 }
 
