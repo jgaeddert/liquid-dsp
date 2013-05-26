@@ -72,15 +72,15 @@ void autotest_matrixf_aug()
 }
 
 // conjugate gradient solver
-void xautotest_matrixf_cgsolve()
+void autotest_matrixf_cgsolve()
 {
-    float tol = 1e-3f;  // error tolerance
+    float tol = 0.01;  // error tolerance
 
     // A [size: 8 x 8], symmetric positive definite matrx
     // x [size: 8 x 1]
     // b [size: 8 x 1]
     float x[8];
-    matrixf_cgsolve(matrixf_data_cgsolve_A, 5,
+    matrixf_cgsolve(matrixf_data_cgsolve_A, 8,
                     matrixf_data_cgsolve_b,
                     x, NULL);
 
