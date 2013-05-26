@@ -28,7 +28,7 @@
 // test matrix addition
 void autotest_matrixq16_add()
 {
-    float tol = 0.008;
+    float tol = 0.008f;
 
     // convert floating-point precision to fixed
     q16_t x[20];
@@ -42,5 +42,36 @@ void autotest_matrixq16_add()
     unsigned int i;
     for (i=0; i<20; i++)
         CONTEND_DELTA( q16_fixed_to_float(z[i]), matrixf_data_add_z[i], tol );
+}
+
+// test matrix augmentation
+void autotest_matrixq16_aug()
+{
+    float tol = 0.008f;
+
+    // x [size: 5 x 4]
+    // y [size: 5 x 3]
+    // z [size: 5 x 7]
+    q16_t x[20];
+    q16_t y[15];
+    q16_t z[35];
+    q16_memmove_float_to_fixed(x, matrixf_data_aug_x, 20);
+    q16_memmove_float_to_fixed(y, matrixf_data_aug_y, 15);
+    matrixq16_aug(x, 5, 4,
+                y, 5, 3,
+                z, 5, 7);
+    
+    // print result
+    if (liquid_autotest_verbose) {
+        printf("augment:\n");
+        printf("  x: ");        matrixq16_print(x,5,4);
+        printf("  y: ");        matrixq16_print(y,5,3);
+        printf("  expected: "); matrixf_print(matrixf_data_aug_z,5,7);
+        printf("  z: ");        matrixq16_print(z,5,3);
+    }
+
+    unsigned int i;
+    for (i=0; i<35; i++)
+        CONTEND_DELTA( q16_fixed_to_float(z[i]), matrixf_data_aug_z[i], tol );
 }
 
