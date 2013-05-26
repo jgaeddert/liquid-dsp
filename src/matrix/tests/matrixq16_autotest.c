@@ -66,12 +66,44 @@ void autotest_matrixq16_aug()
         printf("augment:\n");
         printf("  x: ");        matrixq16_print(x,5,4);
         printf("  y: ");        matrixq16_print(y,5,3);
-        printf("  expected: "); matrixf_print(matrixf_data_aug_z,5,7);
         printf("  z: ");        matrixq16_print(z,5,3);
+        printf("  expected: "); matrixf_print(matrixf_data_aug_z,5,7);
     }
 
     unsigned int i;
     for (i=0; i<35; i++)
         CONTEND_DELTA( q16_fixed_to_float(z[i]), matrixf_data_aug_z[i], tol );
+}
+
+// conjugate gradient solver
+void xautotest_matrixq16_cgsolve()
+{
+    AUTOTEST_WARN("matrixq16_cgsolve() not yet implemented");
+
+    float tol = 0.01;  // error tolerance
+
+    // A [size: 8 x 8], symmetric positive definite matrx
+    // x [size: 8 x 1]
+    // b [size: 8 x 1]
+    q16_t A[64];
+    q16_t x[8];
+    q16_t b[8];
+    q16_memmove_float_to_fixed(A, matrixf_data_cgsolve_A, 64);
+    q16_memmove_float_to_fixed(b, matrixf_data_cgsolve_b, 8);
+    matrixf_cgsolve(A, 8,
+                    b,
+                    x, NULL);
+
+    if (liquid_autotest_verbose) {
+        printf("cgsolve:\n");
+        printf("  A: ");        matrixq16_print(A, 8, 8);
+        printf("  b: ");        matrixq16_print(b, 8, 1);
+        printf("  x: ");        matrixq16_print(x, 8, 1);
+        printf("  expected: "); matrixf_print(matrixf_data_cgsolve_x, 8, 1);
+    }
+
+    unsigned int i;
+    for (i=0; i<8; i++)
+        CONTEND_DELTA( q16_fixed_to_float(x[i]), matrixf_data_cgsolve_x[i], tol );
 }
 
