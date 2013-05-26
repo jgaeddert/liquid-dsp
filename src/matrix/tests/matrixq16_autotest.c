@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007, 2008, 2009, 2010, 2013 Joseph Gaeddert
+ * Copyright (c) 2007, 2008, 2009, 2010, 2011, 2012, 2013 Joseph Gaeddert
  *
  * This file is part of liquid.
  *
@@ -22,28 +22,25 @@
 #include "autotest/autotest.h"
 #include "liquid.h"
 
-// 
-// AUTOTEST: Test matrixq16 add
-//
-void autotest_matrixq16_add() {
+// autotest data definitions
+#include "src/matrix/tests/matrix_data.h"
 
-    q16_t x[6] = {
-        q16_float_to_fixed(1), q16_float_to_fixed(2), q16_float_to_fixed(3),
-        q16_float_to_fixed(4), q16_float_to_fixed(5), q16_float_to_fixed(6), };
+// test matrix addition
+void autotest_matrixq16_add()
+{
+    float tol = 0.008;
 
-    q16_t y[6] = {
-        q16_float_to_fixed(0), q16_float_to_fixed(1), q16_float_to_fixed(2),
-        q16_float_to_fixed(3), q16_float_to_fixed(4), q16_float_to_fixed(5), };
+    // convert floating-point precision to fixed
+    q16_t x[20];
+    q16_t y[20];
+    q16_t z[20];
+    q16_memmove_float_to_fixed(x, matrixf_data_add_x, 20);
+    q16_memmove_float_to_fixed(y, matrixf_data_add_y, 20);
 
-    q16_t z[6];
-    float ztest[6] = {
-        1, 3, 5,
-        7, 9, 11 };
-
-    matrixq16_add(x,y,z,2,3);
+    matrixq16_add(x,y,z,5,4);
 
     unsigned int i;
-    for (i=0; i<6; i++)
-        CONTEND_DELTA( q16_fixed_to_float(z[i]), ztest[i], 1e-3f );
+    for (i=0; i<20; i++)
+        CONTEND_DELTA( q16_fixed_to_float(z[i]), matrixf_data_add_z[i], tol );
 }
 
