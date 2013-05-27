@@ -138,10 +138,16 @@ void MATRIX(_mul)(T * _X, unsigned int _XR, unsigned int _XC,
             // shift result back by number of fractional bits
             matrix_access(_Z,_ZR,_ZC,r,c) = (sum >> Q(_fracbits));
 #elif defined LIQUID_FIXED && T_COMPLEX==1
-            //Q(_t) sum = {0,0};
-#   warning "matrixcq16_mul() not yet implemented"
-            matrix_access(_Z,_ZR,_ZC,r,c).real = 0;
-            matrix_access(_Z,_ZR,_ZC,r,c).imag = 0;
+#   warning "matrixcq16_mul() has reduced precision"
+            // TODO: check this method
+            Q(_t) sum = {0,0};
+            Q(_t) v;
+            for (i=0; i<_XC; i++) {
+                v = Q(_mul)(matrix_access(_X,_XR,_XC,r,i),
+                            matrix_access(_Y,_YR,_YC,i,c));
+                sum = Q(_add)(sum, v);
+            }
+            matrix_access(_Z,_ZR,_ZC,r,c) = sum;
 #else
             T sum=0.0f;
             for (i=0; i<_XC; i++) {
