@@ -39,8 +39,10 @@ void MATRIX(_add)(T * _X,
 {
     unsigned int i;
     for (i=0; i<(_R*_C); i++) {
-#if defined LIQUID_FIXED
+#if defined LIQUID_FIXED && T_COMPLEX==0
         _Z[i] = Q(_add)(_X[i], _Y[i]);
+#elif defined LIQUID_FIXED && T_COMPLEX==1
+        _Z[i] = CQ(_add)(_X[i], _Y[i]);
 #else
         _Z[i] = _X[i] + _Y[i];
 #endif
@@ -61,8 +63,10 @@ void MATRIX(_sub)(T * _X,
 {
     unsigned int i;
     for (i=0; i<(_R*_C); i++) {
-#if defined LIQUID_FIXED
+#if defined LIQUID_FIXED && T_COMPLEX==0
         _Z[i] = Q(_sub)(_X[i], _Y[i]);
+#elif defined LIQUID_FIXED && T_COMPLEX==1
+        _Z[i] = CQ(_sub)(_X[i], _Y[i]);
 #else
         _Z[i] = _X[i] - _Y[i];
 #endif
@@ -83,8 +87,10 @@ void MATRIX(_pmul)(T * _X,
 {
     unsigned int i;
     for (i=0; i<(_R*_C); i++) {
-#if defined LIQUID_FIXED
+#if defined LIQUID_FIXED && T_COMPLEX==0
         _Z[i] = Q(_mul)(_X[i], _Y[i]);
+#elif defined LIQUID_FIXED && T_COMPLEX==1
+        _Z[i] = CQ(_mul)(_X[i], _Y[i]);
 #else
         _Z[i] = _X[i] * _Y[i];
 #endif
@@ -105,8 +111,10 @@ void MATRIX(_pdiv)(T * _X,
 {
     unsigned int i;
     for (i=0; i<(_R*_C); i++) {
-#if defined LIQUID_FIXED
+#if defined LIQUID_FIXED && T_COMPLEX==0
         _Z[i] = Q(_div)(_X[i], _Y[i]);
+#elif defined LIQUID_FIXED && T_COMPLEX==1
+        _Z[i] = CQ(_div)(_X[i], _Y[i]);
 #else
         _Z[i] = _X[i] / _Y[i];
 #endif
@@ -138,16 +146,25 @@ void MATRIX(_mul)(T * _X, unsigned int _XR, unsigned int _XC,
             // shift result back by number of fractional bits
             matrix_access(_Z,_ZR,_ZC,r,c) = (sum >> Q(_fracbits));
 #elif defined LIQUID_FIXED && T_COMPLEX==1
-#   warning "matrixcq16_mul() has reduced precision"
             // TODO: check this method
-            Q(_t) sum = {0,0};
-            Q(_t) v;
+            Q(_at) sumi = 0;
+            Q(_at) sumq = 0;
             for (i=0; i<_XC; i++) {
-                v = Q(_mul)(matrix_access(_X,_XR,_XC,r,i),
-                            matrix_access(_Y,_YR,_YC,i,c));
-                sum = Q(_add)(sum, v);
+                // strip input values
+                CQ(_t) a = matrix_access(_X,_XR,_XC,r,i);
+                CQ(_t) b = matrix_access(_Y,_YR,_YC,i,c);
+
+                // compute multiplication (only requires three arithmetic
+                // multiplies) and accumulate into summing registers
+                Q(_at) k1 = a.real * (b.real + b.imag);
+                Q(_at) k2 = b.imag * (a.real + a.imag);
+                Q(_at) k3 = b.real * (a.imag - a.real);
+
+                sumi += (k1-k2);
+                sumq += (k1+k3);
             }
-            matrix_access(_Z,_ZR,_ZC,r,c) = sum;
+            matrix_access(_Z,_ZR,_ZC,r,c).real = (sumi >> Q(_fracbits));
+            matrix_access(_Z,_ZR,_ZC,r,c).imag = (sumq >> Q(_fracbits));
 #else
             T sum=0.0f;
             for (i=0; i<_XC; i++) {
@@ -219,9 +236,12 @@ T MATRIX(_det2x2)(T * _X,
         fprintf(stderr,"error: matrix_det2x2(), invalid dimensions\n");
         exit(1);
     }
-#if defined LIQUID_FIXED
+#if defined LIQUID_FIXED && T_COMPLEX==0
     return Q(_sub)( Q(_mul)(_X[0],_X[3]),
                     Q(_mul)(_X[1],_X[2]) );
+#elif defined LIQUID_FIXED && T_COMPLEX==1
+    return CQ(_sub)( CQ(_mul)(_X[0],_X[3]),
+                     CQ(_mul)(_X[1],_X[2]) );
 #else
     return _X[0]*_X[3] - _X[1]*_X[2];
 #endif
@@ -261,7 +281,7 @@ T MATRIX(_det)(T * _X,
 }
 
 // compute matrix transpose
-void MATRIX(_trans)(T * _X,
+void MATRIX(_trans)(T *          _X,
                     unsigned int _XR,
                     unsigned int _XC)
 {
@@ -272,7 +292,7 @@ void MATRIX(_trans)(T * _X,
     // conjugate elements (fixed point)
     unsigned int i;
     for (i=0; i<_XR*_XC; i++)
-        _X[i] = Q(_conj)(_X[i]);
+        _X[i] = CQ(_conj)(_X[i]);
 #else
     // conjugate elements (floating point)
     unsigned int i;
@@ -303,34 +323,54 @@ void MATRIX(_mul_transpose)(T * _x,
                             unsigned int _n,
                             T * _xxT)
 {
-#if defined LIQUID_FIXED
-    fprintf(stderr,"error: %s_mul_transpose(), method not yet functional\n", MATRIX_NAME);
-    exit(1);
-#else
     unsigned int r;
     unsigned int c;
     unsigned int i;
 
-    // clear _xxT
-    for (i=0; i<_m*_m; i++)
-        _xxT[i] = 0.0f;
-
-    // 
-    T sum = 0;
+    // permute rows
     for (r=0; r<_m; r++) {
 
+        // permute columns
         for (c=0; c<_m; c++) {
-            sum = 0.0f;
 
+#if defined LIQUID_FIXED && T_COMPLEX==0
+            // TODO: check this
+            Q(_at) sum = 0;
+            for (i=0; i<_n; i++) {
+                sum += matrix_access(_x,_m,_n,r,i) *
+                       matrix_access(_x,_m,_n,c,i);
+            }
+            matrix_access(_xxT,_m,_m,r,c) = (sum >> Q(_fracbits));
+#elif defined LIQUID_FIXED && T_COMPLEX==1
+            // TODO: check this
+            Q(_at) sumi = 0;
+            Q(_at) sumq = 0;
+            for (i=0; i<_n; i++) {
+                // strip input values
+                CQ(_t) a = matrix_access(_x,_m,_n,r,i);
+                CQ(_t) b = matrix_access(_x,_m,_n,c,i);
+
+                // compute multiplication (only requires three arithmetic
+                // multiplies) and accumulate into summing registers
+                Q(_at) k1 = a.real * (b.real + b.imag);
+                Q(_at) k2 = b.imag * (a.real + a.imag);
+                Q(_at) k3 = b.real * (a.imag - a.real);
+
+                sumi += (k1-k2);
+                sumq += (k1+k3);
+            }
+            matrix_access(_xxT,_m,_m,r,c).real = (sumi >> Q(_fracbits));
+            matrix_access(_xxT,_m,_m,r,c).imag = (sumq >> Q(_fracbits));
+#else
+            T sum = 0.0f;
             for (i=0; i<_n; i++) {
                 sum +=        matrix_access(_x,_m,_n,r,i) *
                        conjf( matrix_access(_x,_m,_n,c,i) );
             }
-
             matrix_access(_xxT,_m,_m,r,c) = sum;
+#endif
         }
     }
-#endif
 }
 
 

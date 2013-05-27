@@ -96,7 +96,7 @@ void MATRIX(_gjelim)(T * _X, unsigned int _XR, unsigned int _XC)
 #if defined LIQUID_FIXED && T_COMPLEX==0
             v = Q(_abs)( matrix_access(_X,_XR,_XC,r_hat,r) );
 #elif defined LIQUID_FIXED && T_COMPLEX==1
-            v = Q(_cabs)( matrix_access(_X,_XR,_XC,r_hat,r) );
+            v = CQ(_cabs)( matrix_access(_X,_XR,_XC,r_hat,r) );
 #else
             v = cabsf( matrix_access(_X,_XR,_XC,r_hat,r) );
 #endif
@@ -130,9 +130,9 @@ void MATRIX(_gjelim)(T * _X, unsigned int _XR, unsigned int _XC)
         for (c=0; c<_XC; c++)
             matrix_access(_X,_XR,_XC,r,c) = Q(_mul)( g, matrix_access(_X,_XR,_XC,r,c) );
 #elif defined LIQUID_FIXED && T_COMPLEX==1
-        g = Q(_inv)( matrix_access(_X,_XR,_XC,r,r) );
+        g = CQ(_inv)( matrix_access(_X,_XR,_XC,r,r) );
         for (c=0; c<_XC; c++)
-            matrix_access(_X,_XR,_XC,r,c) = Q(_mul)( g, matrix_access(_X,_XR,_XC,r,c) );
+            matrix_access(_X,_XR,_XC,r,c) = CQ(_mul)( g, matrix_access(_X,_XR,_XC,r,c) );
 #else
         g = 1 / matrix_access(_X,_XR,_XC,r,r);
         for (c=0; c<_XC; c++)
@@ -164,17 +164,22 @@ void MATRIX(_pivot)(T * _X, unsigned int _XR, unsigned int _XC, unsigned int _r,
             continue;
 
         // compute multiplier
-#if defined LIQUID_FIXED
+#if defined LIQUID_FIXED && T_COMPLEX==0
         g = Q(_div)( matrix_access(_X,_XR,_XC,r,_c), v );
+#elif defined LIQUID_FIXED && T_COMPLEX==1
+        g = CQ(_div)( matrix_access(_X,_XR,_XC,r,_c), v );
 #else
         g = matrix_access(_X,_XR,_XC,r,_c) / v;
 #endif
 
         // back-substitution
         for (c=0; c<_XC; c++) {
-#if defined LIQUID_FIXED
+#if defined LIQUID_FIXED && T_COMPLEX==0
             T v = Q(_mul)( g, matrix_access(_X,_XR,_XC,_r,c) );
             matrix_access(_X,_XR,_XC,_r,c) = Q(_sub)( v, matrix_access(_X,_XR,_XC, r,c) );
+#elif defined LIQUID_FIXED && T_COMPLEX==1
+            T v = CQ(_mul)( g, matrix_access(_X,_XR,_XC,_r,c) );
+            matrix_access(_X,_XR,_XC,_r,c) = CQ(_sub)( v, matrix_access(_X,_XR,_XC, r,c) );
 #else
             matrix_access(_X,_XR,_XC,r,c) = g*matrix_access(_X,_XR,_XC,_r,c) -
                                               matrix_access(_X,_XR,_XC, r,c);
