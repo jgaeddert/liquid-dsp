@@ -129,18 +129,19 @@ void MATRIX(_mul)(T * _X, unsigned int _XR, unsigned int _XC,
     for (r=0; r<_ZR; r++) {
         for (c=0; c<_ZC; c++) {
             // z(i,j) = dotprod( x(i,:), y(:,j) )
-#if defined LIQUID_FIXED
-#  if T_COMPLEX == 1
-            Q(_t) sum = {0,0};
-#  else
-            Q(_t) sum = 0;
-#  endif
-            Q(_t) v;
+#if defined LIQUID_FIXED && T_COMPLEX==0
+            Q(_at) sum = 0; // accumulator (increased precision)
             for (i=0; i<_XC; i++) {
-                v = Q(_mul)(matrix_access(_X,_XR,_XC,r,i),
-                            matrix_access(_Y,_YR,_YC,i,c));
-                Q(_add)(sum, v);
+                sum += matrix_access(_X,_XR,_XC,r,i)*
+                       matrix_access(_Y,_YR,_YC,i,c);
             }
+            // shift result back by number of fractional bits
+            matrix_access(_Z,_ZR,_ZC,r,c) = (sum >> Q(_fracbits));
+#elif defined LIQUID_FIXED && T_COMPLEX==1
+            //Q(_t) sum = {0,0};
+#   warning "matrixcq16_mul() not yet implemented"
+            matrix_access(_Z,_ZR,_ZC,r,c).real = 0;
+            matrix_access(_Z,_ZR,_ZC,r,c).imag = 0;
 #else
             T sum=0.0f;
             for (i=0; i<_XC; i++) {
