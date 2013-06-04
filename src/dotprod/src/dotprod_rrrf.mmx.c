@@ -1,6 +1,5 @@
 /*
- * Copyright (c) 2007, 2009 Joseph Gaeddert
- * Copyright (c) 2007, 2009 Virginia Polytechnic Institute & State University
+ * Copyright (c) 2007, 2008, 2009, 2010, 2011, 2012, 2013 Joseph Gaeddert
  *
  * This file is part of liquid.
  *
@@ -51,14 +50,18 @@
 #define DEBUG_DOTPROD_RRRF_MMX   0
 
 // internal methods
-void dotprod_rrrf_execute_mmx(dotprod_rrrf _q, float * _x, float * _y);
-void dotprod_rrrf_execute_mmx4(dotprod_rrrf _q, float * _x, float * _y);
+void dotprod_rrrf_execute_mmx(dotprod_rrrf _q,
+                              float *      _x,
+                              float *      _y);
+void dotprod_rrrf_execute_mmx4(dotprod_rrrf _q,
+                               float *      _x,
+                               float *      _y);
 
 // basic dot product (ordinal calculation)
-void dotprod_rrrf_run(float *_h,
-                      float *_x,
+void dotprod_rrrf_run(float *      _h,
+                      float *      _x,
                       unsigned int _n,
-                      float * _y)
+                      float *      _y)
 {
     float r=0;
     unsigned int i;
@@ -68,10 +71,10 @@ void dotprod_rrrf_run(float *_h,
 }
 
 // basic dot product (ordinal calculation) with loop unrolled
-void dotprod_rrrf_run4(float *_h,
-                       float *_x,
+void dotprod_rrrf_run4(float *      _h,
+                       float *      _x,
                        unsigned int _n,
-                       float * _y)
+                       float *      _y)
 {
     float r=0;
 
@@ -104,7 +107,7 @@ struct dotprod_rrrf_s {
     float * h;          // coefficients array
 };
 
-dotprod_rrrf dotprod_rrrf_create(float * _h,
+dotprod_rrrf dotprod_rrrf_create(float *      _h,
                                  unsigned int _n)
 {
     dotprod_rrrf q = (dotprod_rrrf)malloc(sizeof(struct dotprod_rrrf_s));
@@ -121,14 +124,13 @@ dotprod_rrrf dotprod_rrrf_create(float * _h,
 }
 
 // re-create the structured dotprod object
-dotprod_rrrf dotprod_rrrf_recreate(dotprod_rrrf _dp,
+dotprod_rrrf dotprod_rrrf_recreate(dotprod_rrrf _q,
                                    float * _h,
                                    unsigned int _n)
 {
     // completely destroy and re-create dotprod object
-    dotprod_rrrf_destroy(_dp);
-    _dp = dotprod_rrrf_create(_h,_n);
-    return _dp;
+    dotprod_rrrf_destroy(_q);
+    return dotprod_rrrf_create(_h,_n);
 }
 
 
@@ -140,7 +142,7 @@ void dotprod_rrrf_destroy(dotprod_rrrf _q)
 
 void dotprod_rrrf_print(dotprod_rrrf _q)
 {
-    printf("dotprod_rrrf:\n");
+    printf("dotprod_rrrf [mmx, %u coefficients]\n", _q->n);
     unsigned int i;
     for (i=0; i<_q->n; i++)
         printf("%3u : %12.9f\n", i, _q->h[i]);
@@ -148,8 +150,8 @@ void dotprod_rrrf_print(dotprod_rrrf _q)
 
 // 
 void dotprod_rrrf_execute(dotprod_rrrf _q,
-                          float * _x,
-                          float * _y)
+                          float *      _x,
+                          float *      _y)
 {
     // switch based on size
     if (_q->n < 16) {
@@ -161,8 +163,8 @@ void dotprod_rrrf_execute(dotprod_rrrf _q,
 
 // use MMX/SSE extensions
 void dotprod_rrrf_execute_mmx(dotprod_rrrf _q,
-                              float * _x,
-                              float * _y)
+                              float *      _x,
+                              float *      _y)
 {
     // first cut: ...
     __m128 v;   // input vector
@@ -217,8 +219,8 @@ void dotprod_rrrf_execute_mmx(dotprod_rrrf _q,
 
 // use MMX/SSE extensions, unrolled loop
 void dotprod_rrrf_execute_mmx4(dotprod_rrrf _q,
-                               float * _x,
-                               float * _y)
+                               float *      _x,
+                               float *      _y)
 {
     // first cut: ...
     __m128 v0, v1, v2, v3;
