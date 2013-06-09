@@ -1,13 +1,15 @@
 //
 // firpfbch_analysis_example.c
 //
-// Example of the analysis channelizer filterbank. The input signal is a
-// frequency-modulated sweep over the entire band. Each filter is
-// illuminated as the carrier passes through its bandwidth.
+// Example of the analysis channelizer filterbank. The input signal is
+// comprised of several signals spanning different frequency bands. The
+// channelizer downconverts each to baseband (maximally decimated), and
+// the resulting spectrum of each is plotted.
 //
 
 #include <stdio.h>
 #include <math.h>
+#include <complex.h>
 
 #include "liquid.h"
 
@@ -16,92 +18,126 @@
 int main() {
     // options
     unsigned int num_channels=8;    // number of channels
-    unsigned int m=2;               // filter delay
-    float As=-60;                   // stop-band attenuation
+    unsigned int m=4;               // filter delay
+    float As=60;                    // stop-band attenuation
     unsigned int num_frames=25;     // number of frames
 
-    // create objects
-    firpfbch_crcf c = firpfbch_crcf_create_kaiser(LIQUID_ANALYZER, num_channels, m, As);
+    //
+    unsigned int i;
+    unsigned int k;
 
-    //firpfbch_crcf_print(c);
+    // derived values
+    unsigned int num_samples = num_frames * num_channels;
 
-    FILE*fid = fopen(OUTPUT_FILENAME,"w");
-    fprintf(fid,"%% %s: auto-generated file\n\n", OUTPUT_FILENAME);
-    fprintf(fid,"clear all;\nclose all;\n\n");
-    fprintf(fid,"num_channels=%u;\n", num_channels);
-    fprintf(fid,"num_frames=%u;\n", num_frames);
+    // data arrays
+    float complex x[num_samples];  // time-domain input  [size: num_samples  x 1         ]
+    float complex y[num_samples];  // channelized output [size: num_channels x num_frames]
 
-    fprintf(fid,"x = zeros(1,%u);\n",  num_channels * num_frames);
-    fprintf(fid,"y  = zeros(%u,%u);\n", num_channels, num_frames);
+    // initialize input with zeros
+    for (i=0; i<num_samples; i++)
+        x[i] = 0.0f;
 
-    unsigned int i, j, n=0;
-    float complex x[num_channels];  // time-domain input
-    float complex y[num_channels];  // channelized output
+    // generate input signal(s)
+    unsigned int num_signals = 4;
+    float fc[4] = {0.0f,   0.25f,  0.375f, -0.375f}; // center frequencies
+    float bw[4] = {0.035f, 0.035f, 0.035f,  0.035f}; // bandwidths
+    unsigned int pulse_len = 137;
+    float pulse[pulse_len];
+    for (i=0; i<num_signals; i++) {
+        // create pulse
+        liquid_firdes_kaiser(pulse_len, bw[i], 50.0f, 0.0f, pulse);
 
-    // create nco: sweeps entire range of frequencies over the evaluation interval
-    nco_crcf nco_tx = nco_crcf_create(LIQUID_VCO);
-    nco_crcf_set_frequency(nco_tx, 0.0f);
-    float df = 2*M_PI/(num_channels*num_frames);
-    printf("fr/ch:");
-    for (j=0; j<num_channels; j++)  printf("%3u",j);
-    printf("\n");
+        // add pulse to input signal with carrier offset
+        for (k=0; k<pulse_len; k++)
+            x[k] += pulse[k] * cexpf(_Complex_I*2*M_PI*fc[i]*k) * bw[i];
+    }
+
+    // create prototype filter
+    unsigned int h_len = 2*num_channels*m + 1;
+    float h[h_len];
+    liquid_firdes_kaiser(h_len, 0.5f/(float)num_channels, As, 0.0f, h);
+
+#if 0
+    // create filterbank channelizer object using internal method for filter
+    firpfbch_crcf q = firpfbch_crcf_create_kaiser(LIQUID_ANALYZER, num_channels, m, As);
+#else
+    // create filterbank channelizer object using external filter coefficients
+    firpfbch_crcf q = firpfbch_crcf_create(LIQUID_ANALYZER, num_channels, 2*m, h);
+#endif
+
+    // channelize input data
     for (i=0; i<num_frames; i++) {
-
-        // generate frame of data
-        for (j=0; j<num_channels; j++) {
-            nco_crcf_cexpf(nco_tx, &x[j]);
-            nco_crcf_adjust_frequency(nco_tx, df);
-            nco_crcf_step(nco_tx);
-        }
-
         // execute analysis filter bank
-        firpfbch_crcf_analyzer_execute(c, x, y);
+        firpfbch_crcf_analyzer_execute(q, &x[i*num_channels], &y[i*num_channels]);
+    }
 
-        printf("%4u : ", i);
-        for (j=0; j<num_channels; j++) {
-            if (cabsf(y[j]) > num_channels / 4)
-                printf(" x ");
-            else
-                printf(" . ");
-        }
-        printf("\n");
+    // destroy channelizer object
+    firpfbch_crcf_destroy(q);
+    
+    // 
+    // export results to file
+    //
+    FILE * fid = fopen(OUTPUT_FILENAME,"w");
+    fprintf(fid,"%% %s: auto-generated file\n\n", OUTPUT_FILENAME);
+    fprintf(fid,"clear all;\n");
+    fprintf(fid,"close all;\n");
+    fprintf(fid,"num_channels = %u;\n", num_channels);
+    fprintf(fid,"m            = %u;\n", m);
+    fprintf(fid,"num_frames   = %u;\n", num_frames);
+    fprintf(fid,"h_len        = 2*num_channels*m+1;\n");
+    fprintf(fid,"num_samples  = num_frames*num_channels;\n");
 
-        // write output to file
-        for (j=0; j<num_channels; j++) {
-            // frequency data
-            fprintf(fid,"y(%4u,%4u) = %12.4e + j*%12.4e;\n", j+1, i+1, crealf(y[j]), cimagf(y[j]));
+    fprintf(fid,"h = zeros(1,h_len);\n");
+    fprintf(fid,"x = zeros(1,num_samples);\n");
+    fprintf(fid,"y = zeros(num_channels, num_frames);\n");
 
-            // time data
-            fprintf(fid,"x(%4u) = %12.4e + j*%12.4e;\n", n+1, crealf(x[j]), cimag(x[j]));
-            n++;
+    // save prototype filter
+    for (i=0; i<h_len; i++)
+        fprintf(fid,"  h(%6u) = %12.4e;\n", i+1, h[i]);
+
+    // save input signal
+    for (i=0; i<num_samples; i++)
+        fprintf(fid,"  x(%6u) = %12.4e + 1i*%12.4e;\n", i+1, crealf(x[i]), cimagf(x[i]));
+
+    // save channelized output signals
+    for (i=0; i<num_frames; i++) {
+        for (k=0; k<num_channels; k++) {
+            float complex v = y[i*num_channels + k];
+            fprintf(fid,"  y(%3u,%6u) = %12.4e + 1i*%12.4e;\n", k+1, i+1, crealf(v), cimagf(v));
         }
     }
 
-    // destroy objects
-    nco_crcf_destroy(nco_tx);
-    firpfbch_crcf_destroy(c);
-
     // plot results
-    fprintf(fid,"\n\n");
+    fprintf(fid,"\n");
+    fprintf(fid,"nfft = 1024;\n"); // TODO: use nextpow2
+    fprintf(fid,"f = [0:(nfft-1)]/nfft - 0.5;\n");
+    fprintf(fid,"H = 20*log10(abs(fftshift(fft(h/num_channels,nfft))));\n");
+    fprintf(fid,"X = 20*log10(abs(fftshift(fft(x,nfft))));\n");
     fprintf(fid,"figure;\n");
     fprintf(fid,"subplot(2,1,1);\n");
-    fprintf(fid,"  plot(1:length(x),real(x),1:length(x),imag(x));\n");
-    fprintf(fid,"  xlabel('time');\n");
-    fprintf(fid,"  ylabel('signal');\n");
+    fprintf(fid,"  plot(f, H, 'Color', [0 0.5 0.25], 'LineWidth', 2);\n");
+    fprintf(fid,"  axis([-0.5 0.5 -100 10]);\n");
+    fprintf(fid,"  grid on;\n");
+    fprintf(fid,"  xlabel('Normalized Frequency [f/F_s]');\n");
+    fprintf(fid,"  ylabel('Prototype Filter PSD');\n");
     fprintf(fid,"subplot(2,1,2);\n");
-    fprintf(fid,"  plot(20*log10(abs(y.')/num_channels));\n");
-    fprintf(fid,"  xlabel('time (decimated)');\n");
-    fprintf(fid,"  ylabel('channelized energy [dB]');\n");
+    fprintf(fid,"  plot(f, X, 'Color', [0 0.25 0.5], 'LineWidth', 2);\n");
+    fprintf(fid,"  axis([-0.5 0.5 -100 0]);\n");
+    fprintf(fid,"  grid on;\n");
+    fprintf(fid,"  xlabel('Normalized Frequency [f/F_s]');\n");
+    fprintf(fid,"  ylabel('Input PSD');\n");
 
-    fprintf(fid,"n=min(num_channels,8);\n");
+    // compute the PSD of each output and plot results on a square grid
+    fprintf(fid,"n = ceil(sqrt(num_channels));\n");
     fprintf(fid,"figure;\n");
-    fprintf(fid,"for i=1:n\n");
-    fprintf(fid,"  subplot(n,1,i);\n");
-    fprintf(fid,"  plot(1:num_frames,real(y(i,:)),1:num_frames,imag(y(i,:)));\n");
-    fprintf(fid,"  axis off;\n");
-    fprintf(fid,"  ylabel(num2str(i));\n");
+    fprintf(fid,"for i=1:num_channels,\n");
+    fprintf(fid,"  Y = 20*log10(abs(fftshift(fft(y(i,:),nfft))));\n");
+    fprintf(fid,"  subplot(n,n,i);\n");
+    fprintf(fid,"  plot(f, Y, 'Color', [0.25 0 0.25], 'LineWidth', 1.5);\n");
+    fprintf(fid,"  axis([-0.5 0.5 -120 20]);\n");
+    fprintf(fid,"  grid on;\n");
+    fprintf(fid,"  title(num2str(i-1));\n");
     fprintf(fid,"end;\n");
-
 
     fclose(fid);
     printf("results written to %s\n", OUTPUT_FILENAME);

@@ -192,8 +192,9 @@ This directory contains all the examples for interfacing the liquid modules.
 
  * `firpfbch_analysis_example.c`:
     Example of the analysis channelizer filterbank. The input signal is
-    a frequency-modulated sweep over the entire band. Each filter is
-    illuminated as the carrier passes through its bandwidth.
+    comprised of several signals spanning different frequency bands. The
+    channelizer downconverts each to baseband (maximally decimated), and
+    the resulting spectrum of each is plotted.
 
  * `firpfbch_example.c`:
     Finite impulse response (FIR) polyphase filter bank (PFB)
