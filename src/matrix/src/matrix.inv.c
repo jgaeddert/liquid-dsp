@@ -27,7 +27,7 @@ void MATRIX(_inv)(T * _X, unsigned int _XR, unsigned int _XC)
 {
     // ensure lengths are valid
     if (_XR != _XC ) {
-        fprintf(stderr, "error: matrix_inv(), invalid dimensions\n");
+        fprintf(stderr, "error: %s_inv(), invalid dimensions\n", MATRIX_NAME);
         exit(1);
     }
 
@@ -56,8 +56,10 @@ void MATRIX(_inv)(T * _X, unsigned int _XR, unsigned int _XC)
         // append identity matrix
         for (c=0; c<_XC; c++) {
 #if defined LIQUID_FIXED && T_COMPLEX==1
-            matrix_access(x,xr,xc,r,_XC+c).real = (r==c) ? 1 : 0;
+            matrix_access(x,xr,xc,r,_XC+c).real = (r==c) ? Q(_one) : 0;
             matrix_access(x,xr,xc,r,_XC+c).imag = 0;
+#elif defined LIQUID_FIXED && T_COMPLEX==0
+            matrix_access(x,xr,xc,r,_XC+c) = (r==c) ? Q(_one) : 0;
 #else
             matrix_access(x,xr,xc,r,_XC+c) = (r==c) ? 1 : 0;
 #endif
@@ -85,8 +87,8 @@ void MATRIX(_gjelim)(T * _X, unsigned int _XR, unsigned int _XC)
     unsigned int r, c;
 
     // choose pivot rows based on maximum element along column
-    float v;
-    float v_max=0.;
+    TP v;
+    TP v_max=0;
     unsigned int r_opt=0;
     unsigned int r_hat;
     for (r=0; r<_XR; r++) {
@@ -108,8 +110,8 @@ void MATRIX(_gjelim)(T * _X, unsigned int _XR, unsigned int _XC)
         }
 
         // if the maximum is zero, matrix is singular
-        if (v_max == 0.0f) {
-            fprintf(stderr,"warning: matrix_gjelim(), matrix singular to machine precision\n");
+        if (v_max == 0) {
+            fprintf(stderr,"warning: %s_gjelim(), matrix singular to machine precision\n", MATRIX_NAME);
         }
 
         // if row does not match column (e.g. maximum value does not
@@ -147,10 +149,12 @@ void MATRIX(_pivot)(T * _X, unsigned int _XR, unsigned int _XC, unsigned int _r,
     T v = matrix_access(_X,_XR,_XC,_r,_c);
 #if defined LIQUID_FIXED && T_COMPLEX==1
     if (v.real==0 && v.imag==0) {
+#elif defined LIQUID_FIXED && T_COMPLEX==0
+    if (v==0) {
 #else
     if (v==0) {
 #endif
-        fprintf(stderr, "warning: matrix_pivot(), pivoting on zero\n");
+        fprintf(stderr, "warning: %s_pivot(), pivoting on zero\n", MATRIX_NAME);
         return;
     }
     unsigned int r,c;
@@ -176,10 +180,10 @@ void MATRIX(_pivot)(T * _X, unsigned int _XR, unsigned int _XC, unsigned int _r,
         for (c=0; c<_XC; c++) {
 #if defined LIQUID_FIXED && T_COMPLEX==0
             T v = Q(_mul)( g, matrix_access(_X,_XR,_XC,_r,c) );
-            matrix_access(_X,_XR,_XC,_r,c) = Q(_sub)( v, matrix_access(_X,_XR,_XC, r,c) );
+            matrix_access(_X,_XR,_XC,r,c) = Q(_sub)( v, matrix_access(_X,_XR,_XC, r,c) );
 #elif defined LIQUID_FIXED && T_COMPLEX==1
             T v = CQ(_mul)( g, matrix_access(_X,_XR,_XC,_r,c) );
-            matrix_access(_X,_XR,_XC,_r,c) = CQ(_sub)( v, matrix_access(_X,_XR,_XC, r,c) );
+            matrix_access(_X,_XR,_XC,r,c) = CQ(_sub)( v, matrix_access(_X,_XR,_XC, r,c) );
 #else
             matrix_access(_X,_XR,_XC,r,c) = g*matrix_access(_X,_XR,_XC,_r,c) -
                                               matrix_access(_X,_XR,_XC, r,c);

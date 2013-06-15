@@ -170,10 +170,7 @@ void autotest_matrixq16_gramschmidt()
 // matrix inversion
 void autotest_matrixq16_inv()
 {
-    AUTOTEST_WARN("matrixq16_inv() not yet implemented");
-    return;
-
-    float tol = 0.01f;  // error tolerance
+    float tol = 0.025f;  // error tolerance
 
     // x [size: 5 x 5]
     // y [size: 5 x 5]
@@ -193,6 +190,14 @@ void autotest_matrixq16_inv()
     unsigned int i;
     for (i=0; i<25; i++)
         CONTEND_DELTA( q16_fixed_to_float(y[i]), matrixf_data_inv_y[i], tol );
+    
+    // check that x*inv(x) ~ identity
+    if (liquid_autotest_verbose) {
+        q16_t I5[25];
+        matrixq16_mul(x,5,5, y,5,5, I5,5,5);
+        printf("  I[5]:"); matrixq16_print(I5, 5, 5);
+    }
+
 }
 
 // linsolve (solve linear system of equations)
