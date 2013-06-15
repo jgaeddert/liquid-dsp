@@ -342,50 +342,61 @@ void autotest_matrixcf_qrdecomp()
     }
 }
 
-// transpose/multiplication
+// transpose/multiply
 void autotest_matrixcf_transmul()
 {
-    // error tolerance
-    float tol = 1e-4f;
+    float tol = 1e-4f;  // error tolerance
 
-    // set pointer to input vector
-    float complex * x = matrixcf_data_transmul_x;
-
-    // computation vectors
     float complex xxT[25];  // [size: 5 x 5]
     float complex xxH[25];  // [size: 5 x 5]
     float complex xTx[16];  // [size: 4 x 4]
     float complex xHx[16];  // [size: 4 x 4]
 
-    // test results
+    // run matrix multiplications
+    matrixcf_mul_transpose(matrixcf_data_transmul_x, 5, 4, xxT);
+    matrixcf_mul_hermitian(matrixcf_data_transmul_x, 5, 4, xxH);
+    matrixcf_transpose_mul(matrixcf_data_transmul_x, 5, 4, xTx);
+    matrixcf_hermitian_mul(matrixcf_data_transmul_x, 5, 4, xHx);
+
+    if (liquid_autotest_verbose) {
+        printf("transmul:\n");
+        printf("  x: ");            matrixcf_print(matrixcf_data_transmul_x,  5,4);
+        printf("\n");
+        printf("  xxT: ");          matrixcf_print(xxT,                      5,5);
+        printf("  xxT expected: "); matrixcf_print(matrixcf_data_transmul_xxT,5,5);
+        printf("\n");
+        printf("  xxH: ");          matrixcf_print(xxH,                      5,5);
+        printf("  xxH expected: "); matrixcf_print(matrixcf_data_transmul_xxH,5,5);
+        printf("\n");
+        printf("  xTx: ");          matrixcf_print(xTx,                      4,4);
+        printf("  xTx expected: "); matrixcf_print(matrixcf_data_transmul_xTx,4,4);
+        printf("\n");
+        printf("  xHx: ");          matrixcf_print(xHx,                      4,4);
+        printf("  xHx expected: "); matrixcf_print(matrixcf_data_transmul_xHx,4,4);
+        printf("\n");
+    }
+
+    // run tests
     unsigned int i;
 
-    // test x * x^T
-    matrixcf_mul_transpose(x,5,4,xxT);
     for (i=0; i<25; i++) {
-        CONTEND_DELTA( crealf(xxT[i]), crealf(matrixcf_data_transmul_xxT[i]), tol );
-        CONTEND_DELTA( cimagf(xxT[i]), cimagf(matrixcf_data_transmul_xxT[i]), tol );
+        CONTEND_DELTA( crealf(matrixcf_data_transmul_xxT[i]), crealf(xxT[i]), tol);
+        CONTEND_DELTA( cimagf(matrixcf_data_transmul_xxT[i]), cimagf(xxT[i]), tol);
     }
 
-    // test x * x^H
-    matrixcf_mul_hermitian(x,5,4,xxH);
     for (i=0; i<25; i++) {
-        CONTEND_DELTA( crealf(xxH[i]), crealf(matrixcf_data_transmul_xxH[i]), tol );
-        CONTEND_DELTA( cimagf(xxH[i]), cimagf(matrixcf_data_transmul_xxH[i]), tol );
+        CONTEND_DELTA( crealf(matrixcf_data_transmul_xxH[i]), crealf(xxH[i]), tol);
+        CONTEND_DELTA( cimagf(matrixcf_data_transmul_xxH[i]), cimagf(xxH[i]), tol);
     }
 
-    // test x^T * x
-    matrixcf_transpose_mul(x,5,4,xTx);
     for (i=0; i<16; i++) {
-        CONTEND_DELTA( crealf(xTx[i]), crealf(matrixcf_data_transmul_xTx[i]), tol );
-        CONTEND_DELTA( cimagf(xTx[i]), cimagf(matrixcf_data_transmul_xTx[i]), tol );
+        CONTEND_DELTA( crealf(matrixcf_data_transmul_xTx[i]), crealf(xTx[i]), tol);
+        CONTEND_DELTA( cimagf(matrixcf_data_transmul_xTx[i]), cimagf(xTx[i]), tol);
     }
 
-    // test x^H * x
-    matrixcf_hermitian_mul(x,5,4,xHx);
     for (i=0; i<16; i++) {
-        CONTEND_DELTA( crealf(xHx[i]), crealf(matrixcf_data_transmul_xHx[i]), tol );
-        CONTEND_DELTA( cimagf(xHx[i]), cimagf(matrixcf_data_transmul_xHx[i]), tol );
+        CONTEND_DELTA( crealf(matrixcf_data_transmul_xHx[i]), crealf(xHx[i]), tol);
+        CONTEND_DELTA( cimagf(matrixcf_data_transmul_xHx[i]), cimagf(xHx[i]), tol);
     }
 }
 

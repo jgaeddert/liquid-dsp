@@ -926,6 +926,7 @@ autotest_extra_obj +=						\
 	src/matrix/tests/data/matrixf_data_ludecomp.o		\
 	src/matrix/tests/data/matrixf_data_mul.o		\
 	src/matrix/tests/data/matrixf_data_qrdecomp.o		\
+	src/matrix/tests/data/matrixf_data_transmul.o		\
 								\
 	src/matrix/tests/data/matrixcf_data_add.o		\
 	src/matrix/tests/data/matrixcf_data_aug.o		\
