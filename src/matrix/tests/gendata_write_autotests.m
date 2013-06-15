@@ -175,6 +175,29 @@ gendata_write_matrix(fid,Q,[basename '_Q']);
 gendata_write_matrix(fid,R,[basename '_R']);
 fclose(fid);
 
+%
+% matrix_transmul
+% 
+% transpose_mul
+% hermitian_mul
+% mul_transpose
+% mul_hermitian
+%
+x = randn(5,4);
+xxT = x   * x';
+xxH = x   * x.';
+xTx = x'  * x;
+xHx = x.' * x;
+basename = 'matrixf_data_transmul';
+filename = [dirname basename '.c'];
+fid = fopen(filename,'w');
+gendata_write_header(fid,'data for testing multiply/transpose');
+gendata_write_matrix(fid,x,  [basename '_x']);
+gendata_write_matrix(fid,xxT,[basename '_xxT']);
+gendata_write_matrix(fid,xxH,[basename '_xxH']);
+gendata_write_matrix(fid,xTx,[basename '_xTx']);
+gendata_write_matrix(fid,xHx,[basename '_xHx']);
+fclose(fid);
 
 
 
@@ -303,6 +326,11 @@ fclose(fid);
 
 %
 % matrix_transmul
+%
+% transpose_mul
+% hermitian_mul
+% mul_transpose
+% mul_hermitian
 %
 x = randn(5,4) + j*randn(5,4);
 xxT = x   * x';
