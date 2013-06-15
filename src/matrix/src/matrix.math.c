@@ -394,7 +394,7 @@ void MATRIX(_transpose_mul)(T *          _x,
 #if defined LIQUID_FIXED && T_COMPLEX==0
             // TODO: check this
             Q(_at) sum = 0;
-            for (i=0; i<_n; i++) {
+            for (i=0; i<_m; i++) {
                 sum += matrix_access(_x,_m,_n,i,r) *
                        matrix_access(_x,_m,_n,i,c);
             }
@@ -403,7 +403,7 @@ void MATRIX(_transpose_mul)(T *          _x,
             // TODO: check this
             Q(_at) sumi = 0;
             Q(_at) sumq = 0;
-            for (i=0; i<_n; i++) {
+            for (i=0; i<_m; i++) {
                 // strip input values
                 CQ(_t) a = matrix_access(_x,_m,_n,i,r);
                 CQ(_t) b = matrix_access(_x,_m,_n,i,c);
@@ -513,7 +513,7 @@ void MATRIX(_hermitian_mul)(T * _x,
 #if defined LIQUID_FIXED && T_COMPLEX==0
             // TODO: check this
             Q(_at) sum = 0;
-            for (i=0; i<_n; i++) {
+            for (i=0; i<_m; i++) {
                 sum += matrix_access(_x,_m,_n,i,r) *
                        matrix_access(_x,_m,_n,i,c);
             }
@@ -522,7 +522,7 @@ void MATRIX(_hermitian_mul)(T * _x,
             // TODO: check this
             Q(_at) sumi = 0;
             Q(_at) sumq = 0;
-            for (i=0; i<_n; i++) {
+            for (i=0; i<_m; i++) {
                 // strip input values
                 CQ(_t) a = matrix_access(_x,_m,_n,i,r);
                 CQ(_t) b = matrix_access(_x,_m,_n,i,c);

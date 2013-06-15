@@ -417,5 +417,58 @@ void autotest_matrixq16_qrdecomp()
     }
 }
 
+// transpose/multiply
+void autotest_matrixq16_transmul()
+{
+    float tol = 0.02;   // error tolerance
+
+    q16_t x[20];        // [size: 5 x 4]
+    q16_t xxT[25];      // [size: 5 x 5]
+    q16_t xxH[25];      // [size: 5 x 5]
+    q16_t xTx[16];      // [size: 4 x 4]
+    q16_t xHx[16];      // [size: 4 x 4]
+
+    q16_memmove_float_to_fixed(x, matrixf_data_transmul_x, 20);
+
+    // run matrix multiplications
+    matrixq16_mul_transpose(x, 5, 4, xxT);
+    matrixq16_mul_hermitian(x, 5, 4, xxH);
+    matrixq16_transpose_mul(x, 5, 4, xTx);
+    matrixq16_hermitian_mul(x, 5, 4, xHx);
+
+    if (liquid_autotest_verbose) {
+        printf("transmul:\n");
+        printf("  x: ");            matrixq16_print(x,  5,4);
+        printf("\n");
+        printf("  xxT: ");          matrixq16_print(xxT,                    5,5);
+        printf("  xxT expected: "); matrixf_print(matrixf_data_transmul_xxT,5,5);
+        printf("\n");
+        printf("  xxH: ");          matrixq16_print(xxH,                    5,5);
+        printf("  xxH expected: "); matrixf_print(matrixf_data_transmul_xxH,5,5);
+        printf("\n");
+        printf("  xTx: ");          matrixq16_print(xTx,                    4,4);
+        printf("  xTx expected: "); matrixf_print(matrixf_data_transmul_xTx,4,4);
+        printf("\n");
+        printf("  xHx: ");          matrixq16_print(xHx,                    4,4);
+        printf("  xHx expected: "); matrixf_print(matrixf_data_transmul_xHx,4,4);
+        printf("\n");
+    }
+
+    // run tests
+    unsigned int i;
+
+    for (i=0; i<25; i++)
+        CONTEND_DELTA( matrixf_data_transmul_xxT[i], q16_fixed_to_float(xxT[i]), tol);
+
+    for (i=0; i<25; i++)
+        CONTEND_DELTA( matrixf_data_transmul_xxH[i], q16_fixed_to_float(xxH[i]), tol);
+
+    for (i=0; i<16; i++)
+        CONTEND_DELTA( matrixf_data_transmul_xTx[i], q16_fixed_to_float(xTx[i]), tol);
+
+    for (i=0; i<16; i++)
+        CONTEND_DELTA( matrixf_data_transmul_xHx[i], q16_fixed_to_float(xHx[i]), tol);
+}
+
 
 
