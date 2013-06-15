@@ -330,7 +330,8 @@ LIQUID_WDELAY_DEFINE_API(WDELAY_MANGLE_CFLOAT, liquid_float_complex)
 #define LIQUID_DOTPROD_DEFINE_API(DOTPROD,TO,TC,TI)             \
                                                                 \
 /* run dot product without creating object */                   \
-void DOTPROD(_run)(TC *_h, TI *_x, unsigned int _n, TO *_y);    \
+void DOTPROD(_run)( TC *_h, TI *_x, unsigned int _n, TO *_y);   \
+void DOTPROD(_run4)(TC *_h, TI *_x, unsigned int _n, TO *_y);   \
                                                                 \
 typedef struct DOTPROD(_s) * DOTPROD();                         \
 DOTPROD() DOTPROD(_create)(TC * _v, unsigned int _n);           \

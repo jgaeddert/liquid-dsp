@@ -96,32 +96,6 @@ LIQUID_BUFFER_DEFINE_INTERNAL_API(BUFFER_MANGLE_CFLOAT, float complex)
 // MODULE : dotprod
 //
 
-// large macro
-//   DOTPROD    : name-mangling macro
-//   TO         : output data type
-//   TC         : coefficients data type
-//   TI         : input data type
-#define LIQUID_DOTPROD_DEFINE_INTERNAL_API(DOTPROD,TO,TC,TI)    \
-                                                                \
-/* execute dotprod 4 inputs at a time */                        \
-void DOTPROD(_run4)(TC *_h, TI *_x, unsigned int _n, TO *_y);
-
-LIQUID_DOTPROD_DEFINE_INTERNAL_API(DOTPROD_MANGLE_RRRF,
-                                   float,
-                                   float,
-                                   float)
-
-LIQUID_DOTPROD_DEFINE_INTERNAL_API(DOTPROD_MANGLE_CCCF,
-                                   liquid_float_complex,
-                                   liquid_float_complex,
-                                   liquid_float_complex)
-
-LIQUID_DOTPROD_DEFINE_INTERNAL_API(DOTPROD_MANGLE_CRCF,
-                                   liquid_float_complex,
-                                   float,
-                                   liquid_float_complex)
-
-
 
 //
 // MODULE : fec (forward error-correction)

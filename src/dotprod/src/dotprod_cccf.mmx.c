@@ -1,6 +1,5 @@
 /*
- * Copyright (c) 2012 Joseph Gaeddert
- * Copyright (c) 2012 Virginia Polytechnic Institute & State University
+ * Copyright (c) 2007, 2008, 2009, 2010, 2011, 2012, 2013 Joseph Gaeddert
  *
  * This file is part of liquid.
  *
@@ -50,10 +49,11 @@
 #define DEBUG_DOTPROD_CCCF_MMX   0
 
 // forward declaration of internal methods
-void dotprod_cccf_execute_mmx(dotprod_cccf _q,
+void dotprod_cccf_execute_mmx(dotprod_cccf    _q,
                               float complex * _x,
                               float complex * _y);
-void dotprod_cccf_execute_mmx4(dotprod_cccf _q,
+
+void dotprod_cccf_execute_mmx4(dotprod_cccf    _q,
                                float complex * _x,
                                float complex * _y);
 
@@ -109,7 +109,7 @@ struct dotprod_cccf_s {
 };
 
 dotprod_cccf dotprod_cccf_create(float complex * _h,
-                                 unsigned int _n)
+                                 unsigned int    _n)
 {
     dotprod_cccf q = (dotprod_cccf)malloc(sizeof(struct dotprod_cccf_s));
     q->n = _n;
@@ -135,14 +135,13 @@ dotprod_cccf dotprod_cccf_create(float complex * _h,
 }
 
 // re-create the structured dotprod object
-dotprod_cccf dotprod_cccf_recreate(dotprod_cccf _dp,
+dotprod_cccf dotprod_cccf_recreate(dotprod_cccf    _q,
                                    float complex * _h,
-                                   unsigned int _n)
+                                   unsigned int    _n)
 {
     // completely destroy and re-create dotprod object
-    dotprod_cccf_destroy(_dp);
-    _dp = dotprod_cccf_create(_h,_n);
-    return _dp;
+    dotprod_cccf_destroy(_q);
+    return dotprod_cccf_create(_h,_n);
 }
 
 
@@ -155,11 +154,17 @@ void dotprod_cccf_destroy(dotprod_cccf _q)
 
 void dotprod_cccf_print(dotprod_cccf _q)
 {
-    printf("dotprod_cccf:\n");
+    printf("dotprod_cccf [mmx, %u coefficients]\n", _q->n);
+    unsigned int i;
+    for (i=0; i<_q->n; i++)
+        printf("  %3u : %12.9f +j%12.9f\n", i, _q->hi[i], _q->hq[i]);
 }
 
-// 
-void dotprod_cccf_execute(dotprod_cccf _q,
+// execute structured dot product
+//  _q      :   dotprod object
+//  _x      :   input array
+//  _y      :   output sample
+void dotprod_cccf_execute(dotprod_cccf    _q,
                           float complex * _x,
                           float complex * _y)
 {
@@ -172,26 +177,6 @@ void dotprod_cccf_execute(dotprod_cccf _q,
 }
 
 // use MMX/SSE extensions
-//
-// (a + jb)(c + jd) = (ac - bd) + j(ad + bc)
-//
-// mm_x  = { x[0].real, x[0].imag, x[1].real, x[1].imag }
-// mm_hi = { h[0].real, h[0].real, h[1].real, h[1].real }
-// mm_hq = { h[0].imag, h[0].imag, h[1].imag, h[1].imag }
-//
-// mm_y0 = mm_x * mm_hi
-//       = { x[0].real * h[0].real,
-//           x[0].imag * h[0].real,
-//           x[1].real * h[1].real,
-//           x[1].imag * h[1].real };
-//
-// mm_y1 = mm_x * mm_hq
-//       = { x[0].real * h[0].imag,
-//           x[0].imag * h[0].imag,
-//           x[1].real * h[1].imag,
-//           x[1].imag * h[1].imag };
-//
-// use MMX/SSE extensions
 //  0 : (A + jB) * (I + jJ) = (AI - BJ) + j(AJ + BI)
 //  1 : (C + jD) * (K + jL) = (CK - DL) + j(CL + DK)
 //
@@ -201,7 +186,7 @@ void dotprod_cccf_execute(dotprod_cccf _q,
 //
 //  ci  :   [   AI  BI  CK  DK  ]   size: 4x32
 //  tq  :   [   AJ  BJ  CL  DL  ]   size: 4x32
-void dotprod_cccf_execute_mmx(dotprod_cccf _q,
+void dotprod_cccf_execute_mmx(dotprod_cccf    _q,
                               float complex * _x,
                               float complex * _y)
 {
@@ -294,7 +279,7 @@ void dotprod_cccf_execute_mmx(dotprod_cccf _q,
 }
 
 // use MMX/SSE extensions
-void dotprod_cccf_execute_mmx4(dotprod_cccf _q,
+void dotprod_cccf_execute_mmx4(dotprod_cccf    _q,
                                float complex * _x,
                                float complex * _y)
 {
