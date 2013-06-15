@@ -74,6 +74,13 @@ extern float matrixf_data_qrdecomp_Q[];
 extern float matrixf_data_qrdecomp_R[];
 
 
+// transmul
+extern float matrixf_data_transmul_x[];
+extern float matrixf_data_transmul_xxT[];
+extern float matrixf_data_transmul_xxH[];
+extern float matrixf_data_transmul_xTx[];
+extern float matrixf_data_transmul_xHx[];
+
 
 // 
 // single-precision complex floating-point data

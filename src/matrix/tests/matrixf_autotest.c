@@ -365,5 +365,55 @@ void autotest_matrixf_qrdecomp()
     }
 }
 
+// transpose/multiply
+void autotest_matrixf_transmul()
+{
+    float tol = 1e-4f;  // error tolerance
+
+    float xxT[25];      // [size: 5 x 5]
+    float xxH[25];      // [size: 5 x 5]
+    float xTx[16];      // [size: 4 x 4]
+    float xHx[16];      // [size: 4 x 4]
+
+    // run matrix multiplications
+    matrixf_mul_transpose(matrixf_data_transmul_x, 5, 4, xxT);
+    matrixf_mul_hermitian(matrixf_data_transmul_x, 5, 4, xxH);
+    matrixf_transpose_mul(matrixf_data_transmul_x, 5, 4, xTx);
+    matrixf_hermitian_mul(matrixf_data_transmul_x, 5, 4, xHx);
+
+    if (liquid_autotest_verbose) {
+        printf("transmul:\n");
+        printf("  x: ");            matrixf_print(matrixf_data_transmul_x,  5,4);
+        printf("\n");
+        printf("  xxT: ");          matrixf_print(xxT,                      5,5);
+        printf("  xxT expected: "); matrixf_print(matrixf_data_transmul_xxT,5,5);
+        printf("\n");
+        printf("  xxH: ");          matrixf_print(xxH,                      5,5);
+        printf("  xxH expected: "); matrixf_print(matrixf_data_transmul_xxH,5,5);
+        printf("\n");
+        printf("  xTx: ");          matrixf_print(xTx,                      4,4);
+        printf("  xTx expected: "); matrixf_print(matrixf_data_transmul_xTx,4,4);
+        printf("\n");
+        printf("  xHx: ");          matrixf_print(xHx,                      4,4);
+        printf("  xHx expected: "); matrixf_print(matrixf_data_transmul_xHx,4,4);
+        printf("\n");
+    }
+
+    // run tests
+    unsigned int i;
+
+    for (i=0; i<25; i++)
+        CONTEND_DELTA( matrixf_data_transmul_xxT[i], xxT[i], tol);
+
+    for (i=0; i<25; i++)
+        CONTEND_DELTA( matrixf_data_transmul_xxH[i], xxH[i], tol);
+
+    for (i=0; i<16; i++)
+        CONTEND_DELTA( matrixf_data_transmul_xTx[i], xTx[i], tol);
+
+    for (i=0; i<16; i++)
+        CONTEND_DELTA( matrixf_data_transmul_xHx[i], xHx[i], tol);
+}
+
 
 
