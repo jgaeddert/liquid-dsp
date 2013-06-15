@@ -359,8 +359,9 @@ void MATRIX(_mul_transpose)(T *          _x,
                 sumi += (k1-k2);
                 sumq += (k1+k3);
             }
-            matrix_access(_xxT,_m,_m,r,c).real = (sumi >> Q(_fracbits));
-            matrix_access(_xxT,_m,_m,r,c).imag = (sumq >> Q(_fracbits));
+            // conjugate result
+            matrix_access(_xxT,_m,_m,r,c).real =  (sumi >> Q(_fracbits));
+            matrix_access(_xxT,_m,_m,r,c).imag = -(sumq >> Q(_fracbits));
 #else
             // floating-point precision
             T sum = 0.0f;
@@ -416,8 +417,9 @@ void MATRIX(_transpose_mul)(T *          _x,
                 sumi += (k1-k2);
                 sumq += (k1+k3);
             }
-            matrix_access(_xTx,_n,_n,r,c).real = (sumi >> Q(_fracbits));
-            matrix_access(_xTx,_n,_n,r,c).imag = (sumq >> Q(_fracbits));
+            // conjugate result
+            matrix_access(_xTx,_n,_n,r,c).real =  (sumi >> Q(_fracbits));
+            matrix_access(_xTx,_n,_n,r,c).imag = -(sumq >> Q(_fracbits));
 #else
             // floating-point precision
             T sum = 0.0f;
@@ -434,39 +436,61 @@ void MATRIX(_transpose_mul)(T *          _x,
 
 
 // compute x*x.' on m x n matrix, result: m x m
-void MATRIX(_mul_hermitian)(T * _x,
+void MATRIX(_mul_hermitian)(T *          _x,
                             unsigned int _m,
                             unsigned int _n,
-                            T * _xxH)
+                            T *          _xxH)
 {
-#if defined LIQUID_FIXED
-    fprintf(stderr,"warning: %s_mul_hermitian(), method not yet functional\n", MATRIX_NAME);
-    exit(1);
-#else
     unsigned int r;
     unsigned int c;
     unsigned int i;
 
-    // clear _xxH
-    for (i=0; i<_m*_m; i++)
-        _xxH[i] = 0.0f;
-
-    // 
-    T sum = 0;
+    // permute rows
     for (r=0; r<_m; r++) {
 
+        // permute columns
         for (c=0; c<_m; c++) {
-            sum = 0.0f;
 
+#if defined LIQUID_FIXED && T_COMPLEX==0
+            // TODO: check this
+            Q(_at) sum = 0;
+            for (i=0; i<_n; i++) {
+                sum += matrix_access(_x,_m,_n,r,i) *
+                       matrix_access(_x,_m,_n,c,i);
+            }
+            matrix_access(_xxH,_m,_m,r,c) = (sum >> Q(_fracbits));
+#elif defined LIQUID_FIXED && T_COMPLEX==1
+            // TODO: check this
+            Q(_at) sumi = 0;
+            Q(_at) sumq = 0;
+            for (i=0; i<_n; i++) {
+                // strip input values
+                CQ(_t) a = matrix_access(_x,_m,_n,r,i);
+                CQ(_t) b = matrix_access(_x,_m,_n,c,i);
+
+                // compute multiplication (only requires three arithmetic
+                // multiplies) and accumulate into summing registers
+                Q(_at) k1 = a.real * (b.real + b.imag);
+                Q(_at) k2 = b.imag * (a.real + a.imag);
+                Q(_at) k3 = b.real * (a.imag - a.real);
+
+                sumi += (k1-k2);
+                sumq += (k1+k3);
+            }
+            matrix_access(_xxH,_m,_m,r,c).real = (sumi >> Q(_fracbits));
+            matrix_access(_xxH,_m,_m,r,c).imag = (sumq >> Q(_fracbits));
+#else
+            // floating-point precision
+            T sum = 0.0f;
             for (i=0; i<_n; i++) {
                 sum += matrix_access(_x,_m,_n,r,i) *
                        matrix_access(_x,_m,_n,c,i);
             }
 
             matrix_access(_xxH,_m,_m,r,c) = sum;
+#endif
         }
     }
-#endif
 }
 
 
@@ -476,24 +500,47 @@ void MATRIX(_hermitian_mul)(T * _x,
                             unsigned int _n,
                             T * _xHx)
 {
-#if defined LIQUID_FIXED
-    fprintf(stderr,"warning: %s_hermitian_mul(), method not yet functional\n", MATRIX_NAME);
-    exit(1);
-#else
     unsigned int r;
     unsigned int c;
     unsigned int i;
 
-    // clear _xHx
-    for (i=0; i<_n*_n; i++)
-        _xHx[i] = 0.0f;
-
-    // 
-    T sum = 0;
+    // permute rows
     for (r=0; r<_n; r++) {
 
+        // permute columns
         for (c=0; c<_n; c++) {
-            sum = 0.0f;
+
+#if defined LIQUID_FIXED && T_COMPLEX==0
+            // TODO: check this
+            Q(_at) sum = 0;
+            for (i=0; i<_n; i++) {
+                sum += matrix_access(_x,_m,_n,i,r) *
+                       matrix_access(_x,_m,_n,i,c);
+            }
+            matrix_access(_xHx,_n,_n,r,c) = (sum >> Q(_fracbits));
+#elif defined LIQUID_FIXED && T_COMPLEX==1
+            // TODO: check this
+            Q(_at) sumi = 0;
+            Q(_at) sumq = 0;
+            for (i=0; i<_n; i++) {
+                // strip input values
+                CQ(_t) a = matrix_access(_x,_m,_n,i,r);
+                CQ(_t) b = matrix_access(_x,_m,_n,i,c);
+
+                // compute multiplication (only requires three arithmetic
+                // multiplies) and accumulate into summing registers
+                Q(_at) k1 = a.real * (b.real + b.imag);
+                Q(_at) k2 = b.imag * (a.real + a.imag);
+                Q(_at) k3 = b.real * (a.imag - a.real);
+
+                sumi += (k1-k2);
+                sumq += (k1+k3);
+            }
+            matrix_access(_xHx,_n,_n,r,c).real = (sumi >> Q(_fracbits));
+            matrix_access(_xHx,_n,_n,r,c).imag = (sumq >> Q(_fracbits));
+#else
+            // floating-point math
+            T sum = 0.0f;
 
             for (i=0; i<_m; i++) {
                 sum += matrix_access(_x,_m,_n,i,r) *
@@ -501,8 +548,8 @@ void MATRIX(_hermitian_mul)(T * _x,
             }
 
             matrix_access(_xHx,_n,_n,r,c) = sum;
+#endif
         }
     }
-#endif
 }
 
