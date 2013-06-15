@@ -203,9 +203,6 @@ void autotest_matrixq16_inv()
 // linsolve (solve linear system of equations)
 void autotest_matrixq16_linsolve()
 {
-    AUTOTEST_WARN("matrixq16_linsolve() not yet implemented");
-    return;
-
     float tol = 0.01f;  // error tolerance
 
     // A [size: 5 x 5]
@@ -218,7 +215,7 @@ void autotest_matrixq16_linsolve()
     q16_memmove_float_to_fixed(b, matrixf_data_linsolve_b,  5);
     
     // run solver
-    //matrixq16_linsolve(A, 5, b, x, NULL);
+    matrixq16_linsolve(A, 5, b, x, NULL);
 
     if (liquid_autotest_verbose) {
         printf("linsolve:\n");
