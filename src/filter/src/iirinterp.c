@@ -126,3 +126,12 @@ void IIRINTERP(_execute)(IIRINTERP() _q,
         IIRFILT(_execute)(_q->iirfilt, i==0 ? _x : 0.0f, &_y[i]);
 }
 
+// get group delay
+//  _q      :   interpolator object
+//  _f      :   frequency
+float IIRINTERP(_groupdelay)(IIRINTERP() _q,
+                             float       _fc)
+{
+    return IIRFILT(_groupdelay)(_q->iirfilt, _fc) / (float) (_q->M);
+}
+

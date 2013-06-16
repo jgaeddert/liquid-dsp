@@ -1876,6 +1876,9 @@ void IIRINTERP(_reset)(IIRINTERP() _q);                         \
                                                                 \
 /* execute interpolator                                     */  \
 void IIRINTERP(_execute)(IIRINTERP() _q, TI _x, TO *_y);        \
+                                                                \
+/* get filter group delay                                   */  \
+float IIRINTERP(_groupdelay)(IIRINTERP() _q, float _fc);        \
 
 LIQUID_IIRINTERP_DEFINE_API(IIRINTERP_MANGLE_RRRF,
                             float,
