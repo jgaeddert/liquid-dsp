@@ -1877,7 +1877,7 @@ void IIRINTERP(_reset)(IIRINTERP() _q);                         \
 /* execute interpolator                                     */  \
 void IIRINTERP(_execute)(IIRINTERP() _q, TI _x, TO *_y);        \
                                                                 \
-/* get filter group delay                                   */  \
+/* get system group delay at frequency _fc                  */  \
 float IIRINTERP(_groupdelay)(IIRINTERP() _q, float _fc);        \
 
 LIQUID_IIRINTERP_DEFINE_API(IIRINTERP_MANGLE_RRRF,
@@ -2021,6 +2021,9 @@ void IIRDECIM(_execute)(IIRDECIM()   _q,                        \
                         TI *         _x,                        \
                         TO *         _y,                        \
                         unsigned int _index);                   \
+                                                                \
+/* get system group delay at frequency _fc                  */  \
+float IIRDECIM(_groupdelay)(IIRDECIM() _q, float _fc);          \
 
 LIQUID_IIRDECIM_DEFINE_API(IIRDECIM_MANGLE_RRRF,
                            float,

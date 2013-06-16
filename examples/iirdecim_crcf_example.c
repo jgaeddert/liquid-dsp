@@ -65,12 +65,18 @@ int main(int argc, char*argv[]) {
     float As = 60.0f;
     iirdecim_crcf q = iirdecim_crcf_create_prototype(M,ftype,btype,format,order,fc,f0,Ap,As);
 
+    // compute group delay
+    float delay = iirdecim_crcf_groupdelay(q,0.0f);
+
     // generate input signal and decimate
     float complex x[num_samples];   // input samples
     float complex y[num_samples/M]; // output samples
     unsigned int i;
-    for (i=0; i<num_samples; i++)
-        x[i] = cexpf(_Complex_I*(2*M_PI*0.07*i - 0.001*i*i)) * hamming(i,num_samples);
+    unsigned int w_len = num_samples > 4*delay ? num_samples - 4*delay : num_samples;
+    for (i=0; i<num_samples; i++) {
+        x[i] =  cexpf(_Complex_I*(2*M_PI*0.03*i - 0.3*i*i/(float)num_samples));
+        x[i] *= i < w_len ? hamming(i,w_len) : 0.0f;
+    }
 
     // decimate input
     for (i=0; i<num_samples/M; i++)
@@ -103,7 +109,7 @@ int main(int argc, char*argv[]) {
     fprintf(fid,"clear all;\n");
     fprintf(fid,"close all;\n");
     fprintf(fid,"M = %u;\n", M);
-    fprintf(fid,"delay = %f;\n", 1.6);
+    fprintf(fid,"delay = %f;\n", delay);
     fprintf(fid,"num_samples = %u;\n", num_samples);
     fprintf(fid,"x = zeros(1,num_samples);\n");
     fprintf(fid,"y = zeros(1,num_samples/M);\n");
@@ -116,17 +122,21 @@ int main(int argc, char*argv[]) {
 
     fprintf(fid,"\n\n");
     fprintf(fid,"tx = [0:(num_samples  -1)];\n");
-    fprintf(fid,"ty = [0:(num_samples/M-1)]*M;\n");
+    fprintf(fid,"ty = [0:(num_samples/M-1)]*M - delay;\n");
     fprintf(fid,"figure;\n");
     fprintf(fid,"subplot(2,1,1);\n");
-    fprintf(fid,"    plot(tx,real(x), tx,imag(x));\n");
+    fprintf(fid,"    plot(tx,real(x),'-s','MarkerSize',1,ty,real(y),'-s','MarkerSize',3);\n");
+    fprintf(fid,"    legend('input','decim','location','northeast');\n");
+    fprintf(fid,"    axis([0 num_samples -1.2 1.2]);\n");
     fprintf(fid,"    xlabel('time');\n");
-    fprintf(fid,"    ylabel('input');\n");
+    fprintf(fid,"    ylabel('real');\n");
     fprintf(fid,"    grid on;\n");
     fprintf(fid,"subplot(2,1,2);\n");
-    fprintf(fid,"    plot(ty,real(y), ty,imag(y));\n");
+    fprintf(fid,"    plot(tx,imag(x),'-s','MarkerSize',1,ty,imag(y),'-s','MarkerSize',3);\n");
+    fprintf(fid,"    legend('input','decim','location','northeast');\n");
+    fprintf(fid,"    axis([0 num_samples -1.2 1.2]);\n");
     fprintf(fid,"    xlabel('time');\n");
-    fprintf(fid,"    ylabel('output');\n");
+    fprintf(fid,"    ylabel('imag');\n");
     fprintf(fid,"    grid on;\n");
     
     // plot spectral response
@@ -138,10 +148,11 @@ int main(int argc, char*argv[]) {
     fprintf(fid,"figure;\n");
     fprintf(fid,"plot(fx,X,'-','Color',[0.5 0.5 0.5],...\n");
     fprintf(fid,"     fy,Y,'-','Color',[0.0 0.5 0.3],'LineWidth',2);\n");
+    fprintf(fid,"legend('input','interp','location','northeast');\n");
     fprintf(fid,"grid on;\n");
     fprintf(fid,"xlabel('Normalized Frequency [f/Fs]');\n");
     fprintf(fid,"ylabel('PSD [dB]');\n");
-    fprintf(fid,"axis([-0.5 0.5 -80 20]);\n");
+    fprintf(fid,"axis([-0.5 0.5 -100 0]);\n");
 
     fclose(fid);
     printf("results written to %s.\n",OUTPUT_FILENAME);
