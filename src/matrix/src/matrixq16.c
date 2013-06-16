@@ -40,7 +40,7 @@
     printf("%12.7f", q16_fixed_to_float(matrix_access(X,R,C,r,c)));
 
 #include "matrix.base.c"
-//#include "matrix.cgsolve.c"
+#include "matrix.cgsolve.c"
 //#include "matrix.chol.c"
 //#include "matrix.gramschmidt.c"
 #include "matrix.inv.c"

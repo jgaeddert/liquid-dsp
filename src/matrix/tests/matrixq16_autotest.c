@@ -81,7 +81,7 @@ void autotest_matrixq16_cgsolve()
     AUTOTEST_WARN("matrixq16_cgsolve() not yet implemented");
     return;
 
-    float tol = 0.01;  // error tolerance
+    float tol = 0.025;  // error tolerance
 
     // A [size: 8 x 8], symmetric positive definite matrx
     // x [size: 8 x 1]
@@ -91,11 +91,9 @@ void autotest_matrixq16_cgsolve()
     q16_t b[8];
     q16_memmove_float_to_fixed(A, matrixf_data_cgsolve_A, 64);
     q16_memmove_float_to_fixed(b, matrixf_data_cgsolve_b, 8);
-#if 0
     matrixq16_cgsolve(A, 8,
                       b,
                       x, NULL);
-#endif
 
     if (liquid_autotest_verbose) {
         printf("cgsolve:\n");

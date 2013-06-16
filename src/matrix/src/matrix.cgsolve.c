@@ -46,6 +46,14 @@ void MATRIX(_cgsolve)(T * _A,
                       T * _x,
                       void * _opts)
 {
+#if defined LIQUID_FIXED
+    // for now, simply use regular linsolve method because conjugate
+    // gradient requires a larger dynamic range than fixed-point math
+    // can support for convergence
+    fprintf(stderr,"warning: %s_cgsolve() not yet supported for fixed-point math; using %s_linsolve() instead\n",
+            MATRIX_NAME, MATRIX_NAME);
+    MATRIX(_linsolve)(_A, _n, _b, _x, _opts);
+#else
     // validate input
     if (_n == 0) {
         fprintf(stderr,"error: matrix_cgsolve(), system dimension cannot be zero\n");
@@ -176,4 +184,5 @@ void MATRIX(_cgsolve)(T * _A,
         // increment counter
         i++;
     }
+#endif // LIQUID_FPM
 }
