@@ -36,11 +36,11 @@ int main(int argc, char*argv[])
     int dopt;
     while ((dopt = getopt(argc,argv,"hr:s:n:f:")) != EOF) {
         switch (dopt) {
-        case 'h':   usage();            return 0;
-        case 'r':   r   = atof(optarg); break;
-        case 's':   As  = atof(optarg); break;
-        case 'n':   n   = atoi(optarg); break;
-        case 'f':   fc  = atof(optarg); break;
+        case 'h': usage();                return 0;
+        case 'r': r       = atof(optarg); break;
+        case 's': As      = atof(optarg); break;
+        case 'n': n       = atoi(optarg); break;
+        case 'f': fc      = atof(optarg); break;
         default:
             exit(1);
         }
@@ -92,13 +92,60 @@ int main(int argc, char*argv[])
     unsigned int ny;
     msresamp_crcf_execute(q, x, nx, y, &ny);
 
-    // print basic results
-    printf("input samples   : %u\n", nx);
-    printf("output samples  : %u\n", ny);
-    printf("delay           : %f samples\n", delay);
-
     // clean up allocated objects
     msresamp_crcf_destroy(q);
+    
+    
+    // 
+    // analyze resulting signal
+    //
+
+    // check that the actual resampling rate is close to the target
+    float r_actual = (float)ny / (float)nx;
+    float fy = fc / r;      // expected output frequency
+
+    // run FFT and ensure that carrier has moved and that image
+    // frequencies and distortion have been adequately suppressed
+    unsigned int nfft = 1 << liquid_nextpow2(ny);
+    float complex yfft[nfft];   // fft input
+    float complex Yfft[nfft];   // fft output
+    for (i=0; i<nfft; i++)
+        yfft[i] = i < ny ? y[i] : 0.0f;
+    fft_run(nfft, yfft, Yfft, LIQUID_FFT_FORWARD, 0);
+    fft_shift(Yfft, nfft);  // run FFT shift
+
+    // find peak frequency
+    float Ypeak = 0.0f;
+    float fpeak = 0.0f;
+    float max_sidelobe = -1e9f;     // maximum side-lobe [dB]
+    float main_lobe_width = 0.07f;  // TODO: figure this out from Kaiser's equations
+    for (i=0; i<nfft; i++) {
+        // normalized output frequency
+        float f = (float)i/(float)nfft - 0.5f;
+
+        // scale FFT output appropriately
+        float Ymag = 20*log10f( cabsf(Yfft[i] / (r * wsum)) );
+
+        // find frequency location of maximum magnitude
+        if (Ymag > Ypeak || i==0) {
+            Ypeak = Ymag;
+            fpeak = f;
+        }
+
+        // find peak side-lobe value, ignoring frequencies
+        // within a certain range of signal frequency
+        if ( fabsf(f-fy) > main_lobe_width )
+            max_sidelobe = Ymag > max_sidelobe ? Ymag : max_sidelobe;
+    }
+
+    // print results and check frequency location
+    printf("output results:\n");
+    printf("  desired resampling rate   :   %12.8f\n", r);
+    printf("  measured resampling rate  :   %12.8f    (%u/%u)\n", r_actual, ny, nx);
+    printf("  peak spectrum             :   %12.8f dB (expected 0.0 dB)\n", Ypeak);
+    printf("  peak frequency            :   %12.8f    (expected %-12.8f)\n", fpeak, fy);
+    printf("  max sidelobe              :   %12.8f dB (expected at least %.2f dB)\n", max_sidelobe, -As);
+
 
     // 
     // export results
