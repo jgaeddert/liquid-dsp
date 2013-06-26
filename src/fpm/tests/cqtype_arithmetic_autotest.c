@@ -1,7 +1,5 @@
 /*
- * Copyright (c) 2008, 2009, 2010, 2011, 2012 Joseph Gaeddert
- * Copyright (c) 2008, 2009, 2010, 2011, 2012 Virginia Polytechnic
- *                                Institute & State University
+ * Copyright (c) 2007, 2008, 2009, 2010, 2011, 2012, 2013 Joseph Gaeddert
  *
  * This file is part of liquid-fpm.
  *
@@ -48,11 +46,12 @@ void CQ(_test_add)(float complex _xf,                               \
     float complex ztest = CQ(_fixed_to_float)(z);                   \
                                                                     \
     if (liquid_autotest_verbose) {                                  \
-        printf("(%7.3f,%7.3f) + (%7.3f,%7.3f) = (%7.3f,%7.3f), expected: (%7.3f,%7.3f)\n", \
+        printf("(%7.3f,%7.3f) + (%7.3f,%7.3f) = (%7.3f,%7.3f), expected: (%7.3f,%7.3f), |e|=%12.4e\n", \
                 crealf(_xf), cimagf(_xf),                           \
                 crealf(_yf), cimagf(_yf),                           \
                 crealf(ztest), cimagf(ztest),                       \
-                crealf(zf), cimagf(zf));                            \
+                crealf(zf), cimagf(zf),                             \
+                cabsf(zf-ztest)/cabsf(zf));                         \
     }                                                               \
                                                                     \
     /* run comparison */                                            \
@@ -77,11 +76,12 @@ void CQ(_test_sub)(float complex _xf,                               \
     float complex ztest = CQ(_fixed_to_float)(z);                   \
                                                                     \
     if (liquid_autotest_verbose) {                                  \
-        printf("(%7.3f,%7.3f) - (%7.3f,%7.3f) = (%7.3f,%7.3f), expected: (%7.3f,%7.3f)\n", \
+        printf("(%7.3f,%7.3f) - (%7.3f,%7.3f) = (%7.3f,%7.3f), expected: (%7.3f,%7.3f), |e|=%12.4e\n", \
                 crealf(_xf), cimagf(_xf),                           \
                 crealf(_yf), cimagf(_yf),                           \
                 crealf(ztest), cimagf(ztest),                       \
-                crealf(zf), cimagf(zf));                            \
+                crealf(zf), cimagf(zf),                             \
+                cabsf(zf-ztest)/cabsf(zf));                         \
     }                                                               \
                                                                     \
     /* run comparison */                                            \
@@ -106,11 +106,12 @@ void CQ(_test_mul)(float complex _xf,                               \
     float complex ztest = CQ(_fixed_to_float)(z);                   \
                                                                     \
     if (liquid_autotest_verbose) {                                  \
-        printf("(%7.3f,%7.3f) * (%7.3f,%7.3f) = (%7.3f,%7.3f), expected: (%7.3f,%7.3f)\n", \
+        printf("(%7.3f,%7.3f) * (%7.3f,%7.3f) = (%7.3f,%7.3f), expected: (%7.3f,%7.3f), |e|=%12.4e\n", \
                 crealf(_xf), cimagf(_xf),                           \
                 crealf(_yf), cimagf(_yf),                           \
                 crealf(ztest), cimagf(ztest),                       \
-                crealf(zf), cimagf(zf));                            \
+                crealf(zf), cimagf(zf),                             \
+                cabsf(zf-ztest)/cabsf(zf));                         \
     }                                                               \
                                                                     \
     /* run comparison */                                            \
@@ -135,11 +136,12 @@ void CQ(_test_div)(float complex _xf,                               \
     float complex ztest = CQ(_fixed_to_float)(z);                   \
                                                                     \
     if (liquid_autotest_verbose) {                                  \
-        printf("(%7.3f,%7.3f) / (%7.3f,%7.3f) = (%7.3f,%7.3f), expected: (%7.3f,%7.3f)\n", \
+        printf("(%7.3f,%7.3f) / (%7.3f,%7.3f) = (%7.3f,%7.3f), expected: (%7.3f,%7.3f), |e|=%12.4e\n", \
                 crealf(_xf), cimagf(_xf),                           \
                 crealf(_yf), cimagf(_yf),                           \
                 crealf(ztest), cimagf(ztest),                       \
-                crealf(zf), cimagf(zf));                            \
+                crealf(zf), cimagf(zf),                             \
+                cabsf(zf-ztest)/cabsf(zf));                         \
     }                                                               \
                                                                     \
     /* run comparison */                                            \
