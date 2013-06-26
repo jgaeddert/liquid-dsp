@@ -716,6 +716,7 @@ fpm_autotests :=						\
 	src/fpm/tests/cqtype_logexp_autotest.c			\
 
 fpm_benchmarks :=						\
+	src/fpm/bench/cqtype_div_benchmark.c			\
 	src/fpm/bench/qtype_div_benchmark.c			\
 	src/fpm/bench/qtype_mul_benchmark.c			\
 	src/fpm/bench/qtype_exp2_benchmark.c			\
