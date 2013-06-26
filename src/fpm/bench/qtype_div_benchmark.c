@@ -1,6 +1,5 @@
 /*
- * Copyright (c) 2012 Joseph Gaeddert
- * Copyright (c) 2012 Virginia Polytechnic Institute & State University
+ * Copyright (c) 2007, 2008, 2009, 2010, 2011, 2012, 2013 Joseph Gaeddert
  *
  * This file is part of liquid.
  *
@@ -32,19 +31,18 @@ void benchmark_q16_div(struct rusage *_start,
                        unsigned long int *_num_iterations,
                        unsigned int _n)
 {
-    // initialize arrays
-    q16_t x = rand() % 0xffff;
-    q16_t y = rand() % 0xffff;
-    q16_t z;
+    // initialize values
+    q16_t y;
+    q16_t x = q16_float_to_fixed(1.1f);
 
     // start trials
     unsigned long int i;
     getrusage(RUSAGE_SELF, _start);
     for (i=0; i<(*_num_iterations); i++) {
-        z = q16_div( x, y );
-        z = q16_div( x, y );
-        z = q16_div( x, y );
-        z = q16_div( x, y );
+        y = q16_div( q16_one, x );
+        y = q16_div( y,       x );
+        y = q16_div( y,       x );
+        y = q16_div( y,       x );
     }
     getrusage(RUSAGE_SELF, _finish);
     *_num_iterations *= 4;
@@ -58,19 +56,18 @@ void benchmark_q32_div(struct rusage *_start,
                        unsigned long int *_num_iterations,
                        unsigned int _n)
 {
-    // initialize arrays
-    q32_t x = rand() % 0xffffffff;
-    q32_t y = rand() % 0xffffffff;
-    q32_t z;
+    // initialize values
+    q32_t y;
+    q32_t x = q32_float_to_fixed(1.1f);
 
     // start trials
     unsigned long int i;
     getrusage(RUSAGE_SELF, _start);
     for (i=0; i<(*_num_iterations); i++) {
-        z = q32_div( x, y );
-        z = q32_div( x, y );
-        z = q32_div( x, y );
-        z = q32_div( x, y );
+        y = q32_div( q32_one, x );
+        y = q32_div( y,       x );
+        y = q32_div( y,       x );
+        y = q32_div( y,       x );
     }
     getrusage(RUSAGE_SELF, _finish);
     *_num_iterations *= 4;
@@ -85,18 +82,17 @@ void benchmark_float_div(struct rusage *_start,
                          unsigned int _n)
 {
     // initialize arrays
-    float x = randf();
-    float y = randf();
-    float z;
+    float x = 1.1;
+    float y;
 
     // start trials
     unsigned long int i;
     getrusage(RUSAGE_SELF, _start);
     for (i=0; i<(*_num_iterations); i++) {
-        z = x / y;
-        z = x / y;
-        z = x / y;
-        z = x / y;
+        y = 1. / x;
+        y = y  / x;
+        y = y  / x;
+        y = y  / x;
     }
     getrusage(RUSAGE_SELF, _finish);
     *_num_iterations *= 4;
