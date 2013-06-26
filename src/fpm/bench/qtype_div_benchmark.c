@@ -93,10 +93,10 @@ void benchmark_float_div(struct rusage *_start,
     unsigned long int i;
     getrusage(RUSAGE_SELF, _start);
     for (i=0; i<(*_num_iterations); i++) {
-        z = x * y;
-        z = x * y;
-        z = x * y;
-        z = x * y;
+        z = x / y;
+        z = x / y;
+        z = x / y;
+        z = x / y;
     }
     getrusage(RUSAGE_SELF, _finish);
     *_num_iterations *= 4;
