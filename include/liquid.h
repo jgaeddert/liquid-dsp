@@ -2075,7 +2075,7 @@ void RESAMP2(_print)(RESAMP2() _q);                             \
 /* reset internal buffer                                    */  \
 void RESAMP2(_clear)(RESAMP2() _q);                             \
                                                                 \
-/* get filter delay (samples)                               */  \
+/* get resampler filter delay (semi-length m)               */  \
 unsigned int RESAMP2(_get_delay)(RESAMP2() _q);                 \
                                                                 \
 /* execute resamp2 as half-band filter                      */  \
@@ -2146,25 +2146,42 @@ LIQUID_RESAMP2_DEFINE_API(RESAMP2_MANGLE_CCCF,
 #define LIQUID_RESAMP_DEFINE_API(RESAMP,TO,TC,TI)               \
 typedef struct RESAMP(_s) * RESAMP();                           \
                                                                 \
-/* create arbitrary resampler object                    */      \
-/*  _rate   : arbitrary resampling rate                 */      \
-/*  _m      : filter semi-length (delay)                */      \
-/*  _fc     : filter cutoff frequency, 0 < _fc < 0.5    */      \
-/*  _As     : filter stop-band attenuation [dB]         */      \
-/*  _npfb   : number of filters in the bank             */      \
+/* create arbitrary resampler object                        */  \
+/*  _rate   : arbitrary resampling rate                     */  \
+/*  _m      : filter semi-length (delay)                    */  \
+/*  _fc     : filter cutoff frequency, 0 < _fc < 0.5        */  \
+/*  _As     : filter stop-band attenuation [dB]             */  \
+/*  _npfb   : number of filters in the bank                 */  \
 RESAMP() RESAMP(_create)(float        _rate,                    \
                          unsigned int _m,                       \
                          float        _fc,                      \
                          float        _As,                      \
                          unsigned int _npfb);                   \
+                                                                \
+/* destroy arbitrary resampler object                       */  \
 void RESAMP(_destroy)(RESAMP() _q);                             \
+                                                                \
+/* print resamp object internals to stdout                  */  \
 void RESAMP(_print)(RESAMP() _q);                               \
+                                                                \
+/* reset resamp object internals                            */  \
 void RESAMP(_reset)(RESAMP() _q);                               \
+                                                                \
+/* get resampler delay (output samples)                     */  \
+unsigned int RESAMP(_get_delay)(RESAMP() _q);                   \
+                                                                \
+/* set rate of arbitrary resampler                          */  \
 void RESAMP(_setrate)(RESAMP() _q, float _rate);                \
-void RESAMP(_execute)(RESAMP() _q,                              \
-                      TI _x,                                    \
-                      TO * _y,                                  \
-                      unsigned int *_num_written);              \
+                                                                \
+/* execute arbitrary resampler                              */  \
+/*  _q              :   resamp object                       */  \
+/*  _x              :   single input sample                 */  \
+/*  _y              :   output sample array (pointer)       */  \
+/*  _num_written    :   number of samples written to _y     */  \
+void RESAMP(_execute)(RESAMP()       _q,                        \
+                      TI             _x,                        \
+                      TO *           _y,                        \
+                      unsigned int * _num_written);             \
 
 LIQUID_RESAMP_DEFINE_API(RESAMP_MANGLE_RRRF,
                          float,
