@@ -2051,32 +2051,74 @@ LIQUID_IIRDECIM_DEFINE_API(IIRDECIM_MANGLE_CCCF,
 
 #define LIQUID_RESAMP2_DEFINE_API(RESAMP2,TO,TC,TI)             \
 typedef struct RESAMP2(_s) * RESAMP2();                         \
+                                                                \
+/* create half-band resampler                               */  \
+/*  _m      :   filter semi-length (h_len = 4*m+1)          */  \
+/*  _fc     :   filter center frequency                     */  \
+/*  _As     :   stop-band attenuation [dB]                  */  \
 RESAMP2() RESAMP2(_create)(unsigned int _m,                     \
-                           float _fc,                           \
-                           float _As);                          \
-RESAMP2() RESAMP2(_recreate)(RESAMP2() _q,                      \
+                           float        _fc,                    \
+                           float        _As);                   \
+                                                                \
+/* re-create half-band resampler with new properties        */  \
+RESAMP2() RESAMP2(_recreate)(RESAMP2()    _q,                   \
                              unsigned int _m,                   \
-                             float _fc,                         \
-                             float _As);                        \
+                             float        _fc,                  \
+                             float        _As);                 \
+                                                                \
+/* destroy half-band resampler                              */  \
 void RESAMP2(_destroy)(RESAMP2() _q);                           \
+                                                                \
+/* print resamp2 object's internals                         */  \
 void RESAMP2(_print)(RESAMP2() _q);                             \
+                                                                \
+/* reset internal buffer                                    */  \
 void RESAMP2(_clear)(RESAMP2() _q);                             \
+                                                                \
+/* get filter delay (samples)                               */  \
+unsigned int RESAMP2(_get_delay)(RESAMP2() _q);                 \
+                                                                \
+/* execute resamp2 as half-band filter                      */  \
+/*  _q      :   resamp2 object                              */  \
+/*  _x      :   input sample                                */  \
+/*  _y0     :   output sample pointer (low frequency)       */  \
+/*  _y1     :   output sample pointer (high frequency)      */  \
 void RESAMP2(_filter_execute)(RESAMP2() _q,                     \
-                              TI _x,                            \
-                              TO * _y0,                         \
-                              TO * _y1);                        \
+                              TI        _x,                     \
+                              TO *      _y0,                    \
+                              TO *      _y1);                   \
+                                                                \
+/* execute resamp2 as half-band analysis filterbank         */  \
+/*  _q      :   resamp2 object                              */  \
+/*  _x      :   input array  [size: 2 x 1]                  */  \
+/*  _y      :   output array [size: 2 x 1]                  */  \
 void RESAMP2(_analyzer_execute)(RESAMP2() _q,                   \
-                                TI * _x,                        \
-                                TO * _y);                       \
+                                TI *      _x,                   \
+                                TO *      _y);                  \
+                                                                \
+/* execute resamp2 as half-band synthesis filterbank        */  \
+/*  _q      :   resamp2 object                              */  \
+/*  _x      :   input array  [size: 2 x 1]                  */  \
+/*  _y      :   output array [size: 2 x 1]                  */  \
 void RESAMP2(_synthesizer_execute)(RESAMP2() _q,                \
-                                   TI * _x,                     \
-                                   TO * _y);                    \
+                                   TI *      _x,                \
+                                   TO *      _y);               \
+                                                                \
+/* execute resamp2 as half-band decimator                   */  \
+/*  _q      :   resamp2 object                              */  \
+/*  _x      :   input array  [size: 2 x 1]                  */  \
+/*  _y      :   output sample pointer                       */  \
 void RESAMP2(_decim_execute)(RESAMP2() _q,                      \
-                             TI * _x,                           \
-                             TO * _y);                          \
+                             TI *      _x,                      \
+                             TO *      _y);                     \
+                                                                \
+/* execute resamp2 as half-band interpolator                */  \
+/*  _q      :   resamp2 object                              */  \
+/*  _x      :   input sample                                */  \
+/*  _y      :   output array [size: 2 x 1]                  */  \
 void RESAMP2(_interp_execute)(RESAMP2() _q,                     \
-                              TI _x,                            \
-                              TO * _y);
+                              TI        _x,                     \
+                              TO *      _y);                    \
 
 LIQUID_RESAMP2_DEFINE_API(RESAMP2_MANGLE_RRRF,
                           float,
