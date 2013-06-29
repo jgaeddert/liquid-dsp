@@ -12,6 +12,8 @@
 //
 
 #include <stdio.h>
+#include <stdlib.h>
+#include <getopt.h>
 #include <complex.h>
 #include <math.h>
 
@@ -19,12 +21,34 @@
 
 #define OUTPUT_FILENAME "resamp2_crcf_decim_example.m"
 
-int main() {
+// print usage/help message
+void usage()
+{
+    printf("%s [options]\n", __FILE__);
+    printf("  h     :   print help\n");
+    printf("  n     :   number of output samples,     default: 64\n");
+    printf("  m     :   filter semi-length,           default: 5\n");
+    printf("  s     :   filter stop-band attenuation, default: 60 dB\n");
+}
+
+int main(int argc, char*argv[])
+{
     unsigned int m=5;               // filter semi-length
-    float fc=0.017f;                // input tone frequency
-    unsigned int num_samples=128;   // number of output samples
+    float fc=0.037f;                // input tone frequency
+    unsigned int num_samples = 64;  // number of output samples
     float As=60.0f;                 // stop-band attenuation [dB]
 
+    int dopt;
+    while ((dopt = getopt(argc,argv,"hn:m:s:")) != EOF) {
+        switch (dopt) {
+        case 'h':   usage();                    return 0;
+        case 'n':   num_samples = atoi(optarg); break;
+        case 'm':   m           = atoi(optarg); break;
+        case 's':   As          = atof(optarg); break;
+        default:
+            exit(1);
+        }
+    }
     unsigned int i;
 
     // allocate arrays
@@ -41,8 +65,7 @@ int main() {
         x[i] *= i < w_len ? hamming(i,w_len) : 0.0f;
     }
 
-    // create/print the half-band resampler, centered on
-    // tone frequency with a specified stop-band attenuation
+    // create/print the half-band resampler
     resamp2_crcf q = resamp2_crcf_create(m,0,As);
     resamp2_crcf_print(q);
     unsigned int delay = resamp2_crcf_get_delay(q);
