@@ -57,12 +57,15 @@ int main(int argc, char*argv[])
 
     // generate input
     unsigned int w_len = 2*num_samples - 4*m;   // window length
+    float beta = 8.0f;                          // kaiser window factor
+    float w_sum = 0.0f;                         // gain due to window
     for (i=0; i<2*num_samples; i++) {
-        // compute complex sinusoid
-        x[i] = cexpf(_Complex_I*2*M_PI*fc*i);
+        // compute windowing function and keep track of gain
+        float w = (i < w_len ? kaiser(i,w_len,beta,0) : 0.0f);
+        w_sum += w;
 
-        // apply window
-        x[i] *= i < w_len ? hamming(i,w_len) : 0.0f;
+        // compute windowed complex sinusoid
+        x[i] = w * cexpf(_Complex_I*2*M_PI*fc*i);
     }
 
     // create/print the half-band resampler
@@ -91,6 +94,7 @@ int main(int argc, char*argv[])
     fprintf(fid,"h_len=%u;\n", 4*m+1);
     fprintf(fid,"num_samples=%u;\n", num_samples);
     fprintf(fid,"delay      =%u;\n", delay);
+    fprintf(fid,"w_sum      =%12.8f;\n", w_sum);
         
     for (i=0; i<num_samples; i++) {
         // save results to output file
@@ -122,11 +126,13 @@ int main(int argc, char*argv[])
 
     // plot spectrum
     fprintf(fid,"nfft=512;\n");
-    fprintf(fid,"g = 2*0.53955/(num_samples);\n");
+    fprintf(fid,"g = 1/w_sum;\n");
     fprintf(fid,"X=20*log10(abs(fftshift(fft(  x*g,nfft))));\n");
     fprintf(fid,"Y=20*log10(abs(fftshift(fft(2*y*g,nfft))));\n");
     fprintf(fid,"f=[0:(nfft-1)]/nfft-0.5;\n");
-    fprintf(fid,"figure; plot(f,X,'Color',[0.5 0.5 0.5],f/2,Y,'LineWidth',2);\n");
+    fprintf(fid,"figure;\n");
+    fprintf(fid,"plot(f,  X,'LineWidth',1,  'Color',[0.5 0.5 0.5],...\n");
+    fprintf(fid,"     f/2,Y,'LineWidth',1.5,'Color',[0.1 0.3 0.5]);\n");
     fprintf(fid,"grid on;\n");
     fprintf(fid,"xlabel('Normalized Frequency [f/F_s]');\n");
     fprintf(fid,"ylabel('PSD [dB]');\n");
