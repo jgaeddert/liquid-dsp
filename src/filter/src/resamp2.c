@@ -211,6 +211,12 @@ void RESAMP2(_clear)(RESAMP2() _q)
     _q->toggle = 0;
 }
 
+// get filter delay (samples)
+unsigned int RESAMP2(_get_delay)(RESAMP2() _q)
+{
+    return 2*_q->m - 1;
+}
+
 // execute resamp2 as half-band filter
 //  _q      :   resamp2 object
 //  _x      :   input sample
