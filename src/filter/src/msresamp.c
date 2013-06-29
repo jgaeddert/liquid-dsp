@@ -1,6 +1,5 @@
 /*
- * Copyright (c) 2011 Joseph Gaeddert
- * Copyright (c) 2011 Virginia Polytechnic Institute & State University
+ * Copyright (c) 2007, 2008, 2009, 2010, 2011, 2012, 2013 Joseph Gaeddert
  *
  * This file is part of liquid.
  *
@@ -173,28 +172,6 @@ void MSRESAMP(_reset)(MSRESAMP() _q)
     _q->buffer_index = 0;
 }
 
-// execute multi-stage resampler
-//  _q      :   msresamp object
-//  _x      :   input sample array
-//  _y      :   output sample array
-//  _ny     :   number of samples written to _y
-void MSRESAMP(_execute)(MSRESAMP() _q,
-                        TI * _x,
-                        unsigned int _nx,
-                        TO * _y,
-                        unsigned int * _ny)
-{
-    switch(_q->halfband_type) {
-    case MSRESAMP_HALFBAND_INTERP:
-        MSRESAMP(_interp_execute)(_q, _x, _nx, _y, _ny);
-        break;
-    case MSRESAMP_HALFBAND_DECIM:
-        MSRESAMP(_decim_execute)(_q, _x, _nx, _y, _ny);
-        break;
-    default:;
-    }
-}
-
 // get filter delay (output samples)
 float MSRESAMP(_get_delay)(MSRESAMP() _q)
 {
@@ -228,6 +205,28 @@ float MSRESAMP(_get_delay)(MSRESAMP() _q)
     }
 
     return delay;
+}
+
+// execute multi-stage resampler
+//  _q      :   msresamp object
+//  _x      :   input sample array
+//  _y      :   output sample array
+//  _ny     :   number of samples written to _y
+void MSRESAMP(_execute)(MSRESAMP() _q,
+                        TI * _x,
+                        unsigned int _nx,
+                        TO * _y,
+                        unsigned int * _ny)
+{
+    switch(_q->halfband_type) {
+    case MSRESAMP_HALFBAND_INTERP:
+        MSRESAMP(_interp_execute)(_q, _x, _nx, _y, _ny);
+        break;
+    case MSRESAMP_HALFBAND_DECIM:
+        MSRESAMP(_decim_execute)(_q, _x, _nx, _y, _ny);
+        break;
+    default:;
+    }
 }
 
 // 
