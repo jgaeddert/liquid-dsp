@@ -28,6 +28,25 @@
 
 #include "liquid.internal.h"
 
+// 
+// forward declaration of internal methods
+//
+
+// execute multi-stage interpolation
+void MSRESAMP(_interp_execute)(MSRESAMP()    _q,
+                              TI *           _x,
+                              unsigned int   _nx,
+                              TO *           _y,
+                              unsigned int * _num_written);
+
+// execute multi-stage decimation
+void MSRESAMP(_decim_execute)(MSRESAMP()     _q,
+                              TI *           _x,
+                              unsigned int   _nx,
+                              TO *           _y,
+                              unsigned int * _num_written);
+
+
 struct MSRESAMP(_s) {
     // user-defined parameters
     float rate;                         // re-sampling rate
