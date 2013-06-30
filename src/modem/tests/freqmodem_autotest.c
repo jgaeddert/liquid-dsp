@@ -30,7 +30,7 @@ void freqmodem_test(float               _kf,
 {
     // options
     unsigned int num_samples = 1024;
-    float tol = 1e-2f;
+    //float tol = 1e-2f;
 
     unsigned int i;
 

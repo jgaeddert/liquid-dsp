@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007, 2008, 2009, 2010, 2013 Joseph Gaeddert
+ * Copyright (c) 2007, 2008, 2009, 2010, 2011, 2012, 2013 Joseph Gaeddert
  *
  * This file is part of liquid.
  *
@@ -183,6 +183,12 @@ void RESAMP(_reset)(RESAMP() _q)
     _q->y0 = 0;
     _q->y1 = 0;
 #endif
+}
+
+// get resampler filter delay (semi-length m)
+unsigned int RESAMP(_get_delay)(RESAMP() _q)
+{
+    return _q->m;
 }
 
 // set resampling rate
