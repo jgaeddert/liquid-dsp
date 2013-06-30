@@ -440,6 +440,12 @@ This directory contains all the examples for interfacing the liquid modules.
     in the input is 9 and not evenly divisible by 2, the last of the 5
     output symbols has a zero explicitly padded to the end.
 
+ * `resamp2_crcq16_decim_example.c`:
+    Halfband decimator.  This example demonstrates the interface to the
+    decimating halfband resampler in fixed-point math.
+
+    SEE ALSO: `resamp2_crcq16_decim_example.c`
+
  * `resamp2_crcf_decim_example.c`:
     Halfband decimator.  This example demonstrates the interface to the
     decimating halfband resampler.  A low-frequency input sinusoid is
@@ -448,6 +454,12 @@ This directory contains all the examples for interfacing the liquid modules.
 
     SEE ALSO: `resamp2_crcf_interp_example.c`
               `decim_rrrf_example.c`
+
+ * `resamp2_crcq16_interp_example.c`:
+    Halfband interpolator.  This example demonstrates the interface to the
+    interpolating halfband resampler in fixed-point math.
+
+    SEE ALSO: `resamp2_crcq16_interp_example.c`
 
  * `resamp2_crcf_example.c`:
     This example demonstrates the halfband resampler running as both an

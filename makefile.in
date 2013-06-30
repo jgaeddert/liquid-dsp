@@ -1603,6 +1603,8 @@ example_programs :=						\
 	examples/random_histogram_example			\
 	examples/repack_bytes_example				\
 	examples/resamp_crcf_example				\
+	examples/resamp2_crcq16_decim_example			\
+	examples/resamp2_crcq16_interp_example			\
 	examples/resamp2_crcf_example				\
 	examples/resamp2_crcf_decim_example			\
 	examples/resamp2_crcf_filter_example			\
