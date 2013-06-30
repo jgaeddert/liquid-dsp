@@ -691,53 +691,6 @@ void packetizer_realloc_buffers(packetizer _p, unsigned int _len);
 
 
 //
-// interleaver
-//
-
-// structured interleaver object
-struct interleaver_s {
-    unsigned int n;     // number of bytes
-
-    unsigned int M;     // row dimension
-    unsigned int N;     // col dimension
-
-    // interleaving depth (number of permutations)
-    unsigned int depth;
-};
-
-// 
-// permutation functions
-//
-
-// permute one iteration
-void interleaver_permute(unsigned char * _x,
-                         unsigned int _n,
-                         unsigned int _M,
-                         unsigned int _N);
-
-// permute one iteration (soft bit input)
-void interleaver_permute_soft(unsigned char * _x,
-                              unsigned int _n,
-                              unsigned int _M,
-                              unsigned int _N);
-
-// permute one iteration with mask
-void interleaver_permute_mask(unsigned char * _x,
-                              unsigned int _n,
-                              unsigned int _M,
-                              unsigned int _N,
-                              unsigned char _mask);
-
-// permute one iteration (soft bit input) with mask
-void interleaver_permute_mask_soft(unsigned char * _x,
-                                   unsigned int _n,
-                                   unsigned int _M,
-                                   unsigned int _N,
-                                   unsigned char _mask);
-
-
-
-//
 // MODULE : fft (fast discrete Fourier transform)
 //
 
