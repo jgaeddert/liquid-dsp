@@ -1,14 +1,10 @@
 //
-// resamp2_crcf_decim_example.c
+// resamp2_crcq16_decim_example.c
 //
 // Halfband decimator.  This example demonstrates the interface to the
-// decimating halfband resampler.  A low-frequency input sinusoid is
-// generated and fed into the decimator two samples at a time,
-// producing one output at each iteration.  The results are written to
-// an output file.
+// decimating halfband resampler in fixed-point math.
 //
-// SEE ALSO: resamp2_crcf_interp_example.c
-//           decim_rrrf_example.c
+// SEE ALSO: resamp2_crcf_decim_example.c
 //
 
 #include <stdio.h>
@@ -19,7 +15,7 @@
 
 #include "liquid.h"
 
-#define OUTPUT_FILENAME "resamp2_crcf_decim_example.m"
+#define OUTPUT_FILENAME "resamp2_crcq16_decim_example.m"
 
 // print usage/help message
 void usage()
@@ -52,8 +48,8 @@ int main(int argc, char*argv[])
     unsigned int i;
 
     // allocate arrays
-    float complex x[2*num_samples]; // input array
-    float complex y[  num_samples]; // output array
+    cq16_t x[2*num_samples]; // input array
+    cq16_t y[  num_samples]; // output array
 
     // generate input
     unsigned int w_len = 2*num_samples - 4*m;   // window length
@@ -65,25 +61,28 @@ int main(int argc, char*argv[])
         w_sum += w;
 
         // compute windowed complex sinusoid
-        x[i] = w * cexpf(_Complex_I*2*M_PI*fc*i);
+        x[i] = cq16_float_to_fixed( w*cexpf(_Complex_I*2*M_PI*fc*i) );
     }
 
     // create/print the half-band resampler
-    resamp2_crcf q = resamp2_crcf_create(m,0,As);
-    resamp2_crcf_print(q);
-    unsigned int delay = resamp2_crcf_get_delay(q);
+    resamp2_crcq16 q = resamp2_crcq16_create(m,0,As);
+    resamp2_crcq16_print(q);
+    unsigned int delay = resamp2_crcq16_get_delay(q);
 
     // run the resampler
     for (i=0; i<num_samples; i++) {
         // execute the decimator
-        resamp2_crcf_decim_execute(q, &x[2*i], &y[i]);
+        resamp2_crcq16_decim_execute(q, &x[2*i], &y[i]);
 
         // print results to screen
-        printf("y(%3u) = %8.4f + j*%8.4f;\n", i+1, crealf(y[i]), cimagf(y[i]));
+        printf("y(%3u) = %8.4f + j*%8.4f;\n",
+                i+1,
+                q16_fixed_to_float(y[i].real),
+                q16_fixed_to_float(y[i].imag));
     }
 
     // destroy half-band resampler
-    resamp2_crcf_destroy(q);
+    resamp2_crcq16_destroy(q);
 
     // 
     // export results
@@ -96,11 +95,11 @@ int main(int argc, char*argv[])
     fprintf(fid,"delay      =%u;\n", delay);
     fprintf(fid,"w_sum      =%12.8f;\n", w_sum);
         
+    // save results to output file
     for (i=0; i<num_samples; i++) {
-        // save results to output file
-        fprintf(fid,"x(%3u) = %12.8f + j*%12.8f;\n", 2*i+1,      crealf(x[2*i+0]),      cimagf(x[2*i+0]));
-        fprintf(fid,"x(%3u) = %12.8f + j*%12.8f;\n", 2*i+2,      crealf(x[2*i+1]),      cimagf(x[2*i+1]));
-        fprintf(fid,"y(%3u) = %12.8f + j*%12.8f;\n", i+1,   0.5f*crealf(y[i    ]), 0.5f*cimagf(y[i    ]));
+        fprintf(fid,"x(%3u) = %12.8f + 1j*%12.8f;\n", 2*i+1,      q16_fixed_to_float(x[2*i+0].real),      q16_fixed_to_float(x[2*i+0].imag));
+        fprintf(fid,"x(%3u) = %12.8f + 1j*%12.8f;\n", 2*i+2,      q16_fixed_to_float(x[2*i+1].real),      q16_fixed_to_float(x[2*i+1].imag));
+        fprintf(fid,"y(%3u) = %12.8f + 1j*%12.8f;\n", i+1,   0.5f*q16_fixed_to_float(y[i    ].real), 0.5f*q16_fixed_to_float(y[i    ].imag));
     }
 
     // plot time series

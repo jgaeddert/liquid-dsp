@@ -62,7 +62,7 @@ int main(int argc, char*argv[]) {
     iirinterp_crcf q = iirinterp_crcf_create_prototype(k,ftype,btype,format,order,fc,f0,Ap,As);
 
     // derived values
-    unsigned int delay = 2; // TODO: compute actual delay
+    float delay = iirinterp_crcf_groupdelay(q,0.0f);
 
     // generate input signal and interpolate
     float complex x[  num_samples]; // input samples
@@ -91,7 +91,7 @@ int main(int argc, char*argv[]) {
     fprintf(fid,"clear all;\n");
     fprintf(fid,"close all;\n");
     fprintf(fid,"k = %u;\n", k);
-    fprintf(fid,"delay = %f;\n", 1.6);
+    fprintf(fid,"delay = %f;\n", delay);
     fprintf(fid,"num_samples = %u;\n", num_samples);
     fprintf(fid,"x = zeros(1,  num_samples);\n");
     fprintf(fid,"y = zeros(1,k*num_samples);\n");

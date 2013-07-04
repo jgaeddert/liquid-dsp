@@ -42,10 +42,10 @@ struct IIRDECIM(_s) {
 //  _a      : feed-forward coefficients [size: _na x 1]
 //  _na     : feed-forward coefficients length
 IIRDECIM() IIRDECIM(_create)(unsigned int _M,
-                               TC *         _b,
-                               unsigned int _nb,
-                               TC *         _a,
-                               unsigned int _na)
+                             TC *         _b,
+                             unsigned int _nb,
+                             TC *         _a,
+                             unsigned int _na)
 {
     // validate input
     if (_M < 2) {
@@ -140,5 +140,14 @@ void IIRDECIM(_execute)(IIRDECIM()   _q,
         if (i==_index)
             *_y = v;
     }
+}
+
+// get system group delay at frequency _fc
+//  _q      :   interpolator object
+//  _f      :   frequency
+float IIRDECIM(_groupdelay)(IIRDECIM() _q,
+                            float      _fc)
+{
+    return IIRFILT(_groupdelay)(_q->iirfilt, _fc);
 }
 

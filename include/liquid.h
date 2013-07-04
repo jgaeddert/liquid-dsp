@@ -1972,6 +1972,9 @@ void IIRINTERP(_reset)(IIRINTERP() _q);                         \
                                                                 \
 /* execute interpolator                                     */  \
 void IIRINTERP(_execute)(IIRINTERP() _q, TI _x, TO *_y);        \
+                                                                \
+/* get system group delay at frequency _fc                  */  \
+float IIRINTERP(_groupdelay)(IIRINTERP() _q, float _fc);        \
 
 LIQUID_IIRINTERP_DEFINE_API(IIRINTERP_MANGLE_RRRF,
                             float,
@@ -2119,6 +2122,9 @@ void IIRDECIM(_execute)(IIRDECIM()   _q,                        \
                         TI *         _x,                        \
                         TO *         _y,                        \
                         unsigned int _index);                   \
+                                                                \
+/* get system group delay at frequency _fc                  */  \
+float IIRDECIM(_groupdelay)(IIRDECIM() _q, float _fc);          \
 
 LIQUID_IIRDECIM_DEFINE_API(IIRDECIM_MANGLE_RRRF,
                            float,
@@ -2152,32 +2158,74 @@ LIQUID_IIRDECIM_DEFINE_API(IIRDECIM_MANGLE_CCCF,
 
 #define LIQUID_RESAMP2_DEFINE_API(RESAMP2,TO,TC,TI)             \
 typedef struct RESAMP2(_s) * RESAMP2();                         \
+                                                                \
+/* create half-band resampler                               */  \
+/*  _m      :   filter semi-length (h_len = 4*m+1)          */  \
+/*  _fc     :   filter center frequency                     */  \
+/*  _As     :   stop-band attenuation [dB]                  */  \
 RESAMP2() RESAMP2(_create)(unsigned int _m,                     \
-                           float _fc,                           \
-                           float _As);                          \
-RESAMP2() RESAMP2(_recreate)(RESAMP2() _q,                      \
+                           float        _fc,                    \
+                           float        _As);                   \
+                                                                \
+/* re-create half-band resampler with new properties        */  \
+RESAMP2() RESAMP2(_recreate)(RESAMP2()    _q,                   \
                              unsigned int _m,                   \
-                             float _fc,                         \
-                             float _As);                        \
+                             float        _fc,                  \
+                             float        _As);                 \
+                                                                \
+/* destroy half-band resampler                              */  \
 void RESAMP2(_destroy)(RESAMP2() _q);                           \
+                                                                \
+/* print resamp2 object's internals                         */  \
 void RESAMP2(_print)(RESAMP2() _q);                             \
+                                                                \
+/* reset internal buffer                                    */  \
 void RESAMP2(_clear)(RESAMP2() _q);                             \
+                                                                \
+/* get resampler filter delay (semi-length m)               */  \
+unsigned int RESAMP2(_get_delay)(RESAMP2() _q);                 \
+                                                                \
+/* execute resamp2 as half-band filter                      */  \
+/*  _q      :   resamp2 object                              */  \
+/*  _x      :   input sample                                */  \
+/*  _y0     :   output sample pointer (low frequency)       */  \
+/*  _y1     :   output sample pointer (high frequency)      */  \
 void RESAMP2(_filter_execute)(RESAMP2() _q,                     \
-                              TI _x,                            \
-                              TO * _y0,                         \
-                              TO * _y1);                        \
+                              TI        _x,                     \
+                              TO *      _y0,                    \
+                              TO *      _y1);                   \
+                                                                \
+/* execute resamp2 as half-band analysis filterbank         */  \
+/*  _q      :   resamp2 object                              */  \
+/*  _x      :   input array  [size: 2 x 1]                  */  \
+/*  _y      :   output array [size: 2 x 1]                  */  \
 void RESAMP2(_analyzer_execute)(RESAMP2() _q,                   \
-                                TI * _x,                        \
-                                TO * _y);                       \
+                                TI *      _x,                   \
+                                TO *      _y);                  \
+                                                                \
+/* execute resamp2 as half-band synthesis filterbank        */  \
+/*  _q      :   resamp2 object                              */  \
+/*  _x      :   input array  [size: 2 x 1]                  */  \
+/*  _y      :   output array [size: 2 x 1]                  */  \
 void RESAMP2(_synthesizer_execute)(RESAMP2() _q,                \
-                                   TI * _x,                     \
-                                   TO * _y);                    \
+                                   TI *      _x,                \
+                                   TO *      _y);               \
+                                                                \
+/* execute resamp2 as half-band decimator                   */  \
+/*  _q      :   resamp2 object                              */  \
+/*  _x      :   input array  [size: 2 x 1]                  */  \
+/*  _y      :   output sample pointer                       */  \
 void RESAMP2(_decim_execute)(RESAMP2() _q,                      \
-                             TI * _x,                           \
-                             TO * _y);                          \
+                             TI *      _x,                      \
+                             TO *      _y);                     \
+                                                                \
+/* execute resamp2 as half-band interpolator                */  \
+/*  _q      :   resamp2 object                              */  \
+/*  _x      :   input sample                                */  \
+/*  _y      :   output array [size: 2 x 1]                  */  \
 void RESAMP2(_interp_execute)(RESAMP2() _q,                     \
-                              TI _x,                            \
-                              TO * _y);
+                              TI        _x,                     \
+                              TO *      _y);                    \
 
 LIQUID_RESAMP2_DEFINE_API(RESAMP2_MANGLE_RRRF,
                           float,
@@ -2215,25 +2263,42 @@ LIQUID_RESAMP2_DEFINE_API(RESAMP2_MANGLE_CCCQ16, cq16_t, cq16_t, cq16_t)
 #define LIQUID_RESAMP_DEFINE_API(RESAMP,TO,TC,TI)               \
 typedef struct RESAMP(_s) * RESAMP();                           \
                                                                 \
-/* create arbitrary resampler object                    */      \
-/*  _rate   : arbitrary resampling rate                 */      \
-/*  _m      : filter semi-length (delay)                */      \
-/*  _fc     : filter cutoff frequency, 0 < _fc < 0.5    */      \
-/*  _As     : filter stop-band attenuation [dB]         */      \
-/*  _npfb   : number of filters in the bank             */      \
+/* create arbitrary resampler object                        */  \
+/*  _rate   : arbitrary resampling rate                     */  \
+/*  _m      : filter semi-length (delay)                    */  \
+/*  _fc     : filter cutoff frequency, 0 < _fc < 0.5        */  \
+/*  _As     : filter stop-band attenuation [dB]             */  \
+/*  _npfb   : number of filters in the bank                 */  \
 RESAMP() RESAMP(_create)(float        _rate,                    \
                          unsigned int _m,                       \
                          float        _fc,                      \
                          float        _As,                      \
                          unsigned int _npfb);                   \
+                                                                \
+/* destroy arbitrary resampler object                       */  \
 void RESAMP(_destroy)(RESAMP() _q);                             \
+                                                                \
+/* print resamp object internals to stdout                  */  \
 void RESAMP(_print)(RESAMP() _q);                               \
+                                                                \
+/* reset resamp object internals                            */  \
 void RESAMP(_reset)(RESAMP() _q);                               \
+                                                                \
+/* get resampler delay (output samples)                     */  \
+unsigned int RESAMP(_get_delay)(RESAMP() _q);                   \
+                                                                \
+/* set rate of arbitrary resampler                          */  \
 void RESAMP(_setrate)(RESAMP() _q, float _rate);                \
-void RESAMP(_execute)(RESAMP() _q,                              \
-                      TI _x,                                    \
-                      TO * _y,                                  \
-                      unsigned int *_num_written);              \
+                                                                \
+/* execute arbitrary resampler                              */  \
+/*  _q              :   resamp object                       */  \
+/*  _x              :   single input sample                 */  \
+/*  _y              :   output sample array (pointer)       */  \
+/*  _num_written    :   number of samples written to _y     */  \
+void RESAMP(_execute)(RESAMP()       _q,                        \
+                      TI             _x,                        \
+                      TO *           _y,                        \
+                      unsigned int * _num_written);             \
 
 LIQUID_RESAMP_DEFINE_API(RESAMP_MANGLE_RRRF,
                          float,
@@ -2263,22 +2328,38 @@ LIQUID_RESAMP_DEFINE_API(RESAMP_MANGLE_CCCQ16, cq16_t, cq16_t, cq16_t)
 #define MSRESAMP_MANGLE_CRCF(name)    LIQUID_CONCAT(msresamp_crcf,name)
 #define MSRESAMP_MANGLE_CCCF(name)    LIQUID_CONCAT(msresamp_cccf,name)
 
-#define LIQUID_MSRESAMP_DEFINE_API(MSRESAMP,TO,TC,TI)               \
-typedef struct MSRESAMP(_s) * MSRESAMP();                           \
-/* create multi-stage arbitrary resampler               */          \
-/*  _r      :   resampling rate [output/input]          */          \
-/*  _As     :   stop-band attenuation [dB]              */          \
-MSRESAMP() MSRESAMP(_create)(float _r,                              \
-                             float _As);                            \
-void MSRESAMP(_destroy)(MSRESAMP() _q);                             \
-void MSRESAMP(_print)(MSRESAMP() _q);                               \
-void MSRESAMP(_reset)(MSRESAMP() _q);                               \
-void MSRESAMP(_execute)(MSRESAMP() _q,                              \
-                        TI * _x,                                    \
-                        unsigned int _nx,                           \
-                        TO * _y,                                    \
-                        unsigned int *_ny);                         \
-float MSRESAMP(_get_delay)(MSRESAMP() _q);                          \
+#define LIQUID_MSRESAMP_DEFINE_API(MSRESAMP,TO,TC,TI)           \
+typedef struct MSRESAMP(_s) * MSRESAMP();                       \
+                                                                \
+/* create multi-stage arbitrary resampler                   */  \
+/*  _r      :   resampling rate [output/input]              */  \
+/*  _As     :   stop-band attenuation [dB]                  */  \
+MSRESAMP() MSRESAMP(_create)(float _r,                          \
+                             float _As);                        \
+                                                                \
+/* destroy multi-stage arbitrary resampler                  */  \
+void MSRESAMP(_destroy)(MSRESAMP() _q);                         \
+                                                                \
+/* print msresamp object internals to stdout                */  \
+void MSRESAMP(_print)(MSRESAMP() _q);                           \
+                                                                \
+/* reset msresamp object internal state                     */  \
+void MSRESAMP(_reset)(MSRESAMP() _q);                           \
+                                                                \
+/* get filter delay (output samples)                        */  \
+float MSRESAMP(_get_delay)(MSRESAMP() _q);                      \
+                                                                \
+/* execute multi-stage resampler                            */  \
+/*  _q      :   msresamp object                             */  \
+/*  _x      :   input sample array  [size: _nx x 1]         */  \
+/*  _nx     :   input sample array size                     */  \
+/*  _y      :   output sample array [size: variable]        */  \
+/*  _ny     :   number of samples written to _y             */  \
+void MSRESAMP(_execute)(MSRESAMP()     _q,                      \
+                        TI *           _x,                      \
+                        unsigned int   _nx,                     \
+                        TO *           _y,                      \
+                        unsigned int * _ny);                    \
 
 LIQUID_MSRESAMP_DEFINE_API(MSRESAMP_MANGLE_RRRF,
                            float,
