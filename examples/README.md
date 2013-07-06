@@ -185,6 +185,11 @@ This directory contains all the examples for interfacing the liquid modules.
 
     SEE ALSO: `firhilb_decim_example.c`
 
+ * `firpfbch2_crcf_example.c`:
+    Example of the finite impulse response (FIR) polyphase filterbank
+    (PFB) channelizer with an output rate of 2 Fs / M as an (almost)
+    perfect reconstructive system.
+
  * `firinterp_crcf_example.c`:
     This example demonstrates the interp object (interpolator)
     interface. Data symbols are generated and then interpolated
