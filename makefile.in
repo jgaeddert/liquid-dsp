@@ -846,7 +846,7 @@ multicarrier_autotests :=					\
 
 # benchmarks
 multicarrier_benchmarks :=					\
-	src/multicarrier/bench/firpfbch_benchmark.c		\
+	src/multicarrier/bench/firpfbch_crcf_benchmark.c	\
 	src/multicarrier/bench/ofdmframesync_acquire_benchmark.c	\
 	src/multicarrier/bench/ofdmframesync_rxsymbol_benchmark.c	\
 
