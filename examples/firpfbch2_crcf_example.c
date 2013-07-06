@@ -1,5 +1,5 @@
 //
-// firpfbch2_example.c
+// firpfbch2_crcf_example.c
 //
 // Example of the finite impulse response (FIR) polyphase filterbank
 // (PFB) channelizer with an output rate of 2 Fs / M as an (almost)
@@ -14,12 +14,12 @@
 
 #include "liquid.h"
 
-#define OUTPUT_FILENAME "firpfbch2_example.m"
+#define OUTPUT_FILENAME "firpfbch2_crcf_example.m"
 
 // print usage/help message
 void usage()
 {
-    printf("firpfbch2_example [options]\n");
+    printf("%s [options]\n", __FILE__);
     printf("  h     : print help\n");
     printf("  M     : number of channels, default: 6\n");
     printf("  m     : prototype filter semi-length, default: 4\n");
