@@ -1,7 +1,5 @@
 /*
- * Copyright (c) 2007, 2008, 2009, 2010, 2011 Joseph Gaeddert
- * Copyright (c) 2007, 2008, 2009, 2010, 2011 Virginia Polytechnic
- *                                      Institute & State University
+ * Copyright (c) 2007, 2008, 2009, 2010, 2011, 2012, 2013 Joseph Gaeddert
  *
  * This file is part of liquid.
  *
@@ -32,6 +30,49 @@
 
 #include "liquid.internal.h"
 
+// 
+// internal methods
+//
+
+// permute one iteration
+void interleaver_permute(unsigned char * _x,
+                         unsigned int    _n,
+                         unsigned int    _M,
+                         unsigned int    _N);
+
+// permute one iteration (soft bit input)
+void interleaver_permute_soft(unsigned char * _x,
+                              unsigned int    _n,
+                              unsigned int    _M,
+                              unsigned int    _N);
+
+// permute one iteration with mask
+void interleaver_permute_mask(unsigned char * _x,
+                              unsigned int    _n,
+                              unsigned int    _M,
+                              unsigned int    _N,
+                              unsigned char   _mask);
+
+// permute one iteration (soft bit input) with mask
+void interleaver_permute_mask_soft(unsigned char * _x,
+                                   unsigned int    _n,
+                                   unsigned int    _M,
+                                   unsigned int    _N,
+                                   unsigned char   _mask);
+
+
+// structured interleaver object
+struct interleaver_s {
+    unsigned int n;     // number of bytes
+
+    unsigned int M;     // row dimension
+    unsigned int N;     // col dimension
+
+    // interleaving depth (number of permutations)
+    unsigned int depth;
+};
+
+// create interleaver of length _n input/output bytes
 interleaver interleaver_create(unsigned int _n)
 {
     interleaver q = (interleaver) malloc(sizeof(struct interleaver_s));
@@ -59,9 +100,17 @@ void interleaver_destroy(interleaver _q)
 // print interleaver internals
 void interleaver_print(interleaver _q)
 {
-    printf("interleaver [%u] :\n", _q->n);
-    printf("    M   :   %u\n", _q->M);
-    printf("    N   :   %u\n", _q->N);
+    printf("interleaver [block, %u bytes] :\n", _q->n);
+    printf("    M       :   %u\n", _q->M);
+    printf("    N       :   %u\n", _q->N);
+    printf("    depth   :   %u\n", _q->depth);
+}
+
+// set depth (number of internal iterations)
+void interleaver_set_depth(interleaver  _q,
+                           unsigned int _depth)
+{
+    _q->depth = _depth;
 }
 
 // execute forward interleaver (encoder)
@@ -132,18 +181,15 @@ void interleaver_decode_soft(interleaver _q,
     if (_q->depth > 0) interleaver_permute_soft(_msg_dec, _q->n, _q->M, _q->N);
 }
 
-// set depth (number of internal iterations)
-void interleaver_set_depth(interleaver _q, unsigned int _depth)
-{
-    _q->depth = _depth;
-}
-
+// 
+// internal permutation methods
+//
 
 // permute one iteration
 void interleaver_permute(unsigned char * _x,
-                         unsigned int _n,
-                         unsigned int _M,
-                         unsigned int _N)
+                         unsigned int    _n,
+                         unsigned int    _M,
+                         unsigned int    _N)
 {
     unsigned int i;
     unsigned int j;
@@ -171,9 +217,9 @@ void interleaver_permute(unsigned char * _x,
 
 // permute one iteration (soft bit input)
 void interleaver_permute_soft(unsigned char * _x,
-                              unsigned int _n,
-                              unsigned int _M,
-                              unsigned int _N)
+                              unsigned int    _n,
+                              unsigned int    _M,
+                              unsigned int    _N)
 {
     unsigned int i;
     unsigned int j;
@@ -203,10 +249,10 @@ void interleaver_permute_soft(unsigned char * _x,
 
 // permute one iteration with mask
 void interleaver_permute_mask(unsigned char * _x,
-                              unsigned int _n,
-                              unsigned int _M,
-                              unsigned int _N,
-                              unsigned char _mask)
+                              unsigned int    _n,
+                              unsigned int    _M,
+                              unsigned int    _N,
+                              unsigned char   _mask)
 {
     unsigned int i;
     unsigned int j;
@@ -236,10 +282,10 @@ void interleaver_permute_mask(unsigned char * _x,
 
 // permute one iteration (soft bit input)
 void interleaver_permute_mask_soft(unsigned char * _x,
-                                   unsigned int _n,
-                                   unsigned int _M,
-                                   unsigned int _N,
-                                   unsigned char _mask)
+                                   unsigned int    _n,
+                                   unsigned int    _M,
+                                   unsigned int    _N,
+                                   unsigned char   _mask)
 {
     unsigned int i;
     unsigned int j;

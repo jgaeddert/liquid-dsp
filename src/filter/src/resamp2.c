@@ -1,7 +1,5 @@
 /*
- * Copyright (c) 2007, 2009, 2010 Joseph Gaeddert
- * Copyright (c) 2007, 2009, 2010 Virginia Polytechnic Institute &
- *                                State University
+ * Copyright (c) 2007, 2008, 2009, 2010, 2011, 2012, 2013 Joseph Gaeddert
  *
  * This file is part of liquid.
  *
@@ -62,8 +60,8 @@ struct RESAMP2(_s) {
 //  _fc     :   center frequency of half-band filter
 //  _As     :   stop-band attenuation [dB], _As > 0
 RESAMP2() RESAMP2(_create)(unsigned int _m,
-                           float _fc,
-                           float _As)
+                           float        _fc,
+                           float        _As)
 {
     // validate input
     if (_m < 2) {
@@ -121,15 +119,15 @@ RESAMP2() RESAMP2(_create)(unsigned int _m,
     return q;
 }
 
-// re-create a resamp2 object
+// re-create a resamp2 object with new properties
 //  _q          :   original resamp2 object
 //  _m          :   filter semi-length (effective length: 4*_m+1)
 //  _fc         :   center frequency of half-band filter
 //  _As         :   stop-band attenuation [dB], _As > 0
-RESAMP2() RESAMP2(_recreate)(RESAMP2() _q,
+RESAMP2() RESAMP2(_recreate)(RESAMP2()    _q,
                              unsigned int _m,
-                             float _fc,
-                             float _As)
+                             float        _fc,
+                             float        _As)
 {
     // only re-design filter if necessary
     if (_m != _q->m) {
@@ -213,15 +211,21 @@ void RESAMP2(_clear)(RESAMP2() _q)
     _q->toggle = 0;
 }
 
-// execute half-band filter
+// get filter delay (samples)
+unsigned int RESAMP2(_get_delay)(RESAMP2() _q)
+{
+    return 2*_q->m - 1;
+}
+
+// execute resamp2 as half-band filter
 //  _q      :   resamp2 object
 //  _x      :   input sample
 //  _y0     :   output sample pointer (low frequency)
 //  _y1     :   output sample pointer (high frequency)
 void RESAMP2(_filter_execute)(RESAMP2() _q,
-                              TI _x,
-                              TO * _y0,
-                              TO * _y1)
+                              TI        _x,
+                              TO *      _y0,
+                              TO *      _y1)
 {
     TI * r;     // buffer read pointer
     TO yi;      // delay branch
@@ -262,8 +266,8 @@ void RESAMP2(_filter_execute)(RESAMP2() _q,
 //  _x      :   input array [size: 2 x 1]
 //  _y      :   output array [size: 2 x 1]
 void RESAMP2(_analyzer_execute)(RESAMP2() _q,
-                                TI * _x,
-                                TO * _y)
+                                TI *      _x,
+                                TO *      _y)
 {
     TI * r;     // buffer read pointer
     TO y0;      // delay branch
@@ -288,8 +292,8 @@ void RESAMP2(_analyzer_execute)(RESAMP2() _q,
 //  _x      :   input array [size: 2 x 1]
 //  _y      :   output array [size: 2 x 1]
 void RESAMP2(_synthesizer_execute)(RESAMP2() _q,
-                                   TI * _x,
-                                   TO * _y)
+                                   TI *      _x,
+                                   TO *      _y)
 {
     TI * r;                 // buffer read pointer
     TI x0 = _x[0] + _x[1];  // delay branch input
@@ -311,8 +315,8 @@ void RESAMP2(_synthesizer_execute)(RESAMP2() _q,
 //  _x      :   input array [size: 2 x 1]
 //  _y      :   output sample pointer
 void RESAMP2(_decim_execute)(RESAMP2() _q,
-                             TI * _x,
-                             TO * _y)
+                             TI *      _x,
+                             TO *      _y)
 {
     TI * r;     // buffer read pointer
     TO y0;      // delay branch
@@ -336,8 +340,8 @@ void RESAMP2(_decim_execute)(RESAMP2() _q,
 //  _x      :   input sample
 //  _y      :   output array [size: 2 x 1]
 void RESAMP2(_interp_execute)(RESAMP2() _q,
-                              TI   _x,
-                              TO * _y)
+                              TI        _x,
+                              TO *      _y)
 {
     TI * r;  // buffer read pointer
 

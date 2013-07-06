@@ -33,7 +33,7 @@ int main() {
     liquid_firdes_rrcos(k,m,beta,dt,h);
 
     // create interpolator
-    interp_crcf q = interp_crcf_create(k,h,h_len);
+    firinterp_crcf q = firinterp_crcf_create(k,h,h_len);
 
     // design polyphase filter
     unsigned int H_len = 2*num_filters*k*m + 1;
@@ -70,7 +70,7 @@ int main() {
 
     // run interpolator
     for (i=0; i<num_symbols; i++) {
-        interp_crcf_execute(q, x[i], &y[n]);
+        firinterp_crcf_execute(q, x[i], &y[n]);
         n+=k;
     }
 
@@ -136,7 +136,7 @@ int main() {
     printf("results written to %s.\n", OUTPUT_FILENAME);
 
     // clean it up
-    interp_crcf_destroy(q);
+    firinterp_crcf_destroy(q);
     symsync2_crcf_destroy(d);
     printf("done.\n");
     return 0;

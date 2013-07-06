@@ -149,7 +149,7 @@ int main(int argc, char*argv[])
         gt[i] = gtf[i]; //+ 0.1f*(randnf() + _Complex_I*randnf());
 
     // create interpolator
-    interp_cccf interp = interp_cccf_create(k, gt, gt_len);
+    firinterp_cccf interp = firinterp_cccf_create(k, gt, gt_len);
 
     // create the modem objects
     modem mod   = modem_create(ms);
@@ -185,7 +185,7 @@ int main(int argc, char*argv[])
 
     // interpolate
     for (i=0; i<num_symbols; i++)
-        interp_cccf_execute(interp, sym_tx[i], &x[i*k]);
+        firinterp_cccf_execute(interp, sym_tx[i], &x[i*k]);
     
     // push through channel
     float nstd = powf(10.0f, -SNRdB/20.0f);
@@ -271,7 +271,7 @@ int main(int argc, char*argv[])
 
     // destroy objects
     eqlms_cccf_destroy(eq);
-    interp_cccf_destroy(interp);
+    firinterp_cccf_destroy(interp);
     firfilt_cccf_destroy(fchannel);
     modem_destroy(mod);
     modem_destroy(demod);

@@ -1,7 +1,5 @@
 /*
- * Copyright (c) 2007, 2008, 2009, 2010, 2011 Joseph Gaeddert
- * Copyright (c) 2007, 2008, 2009, 2010, 2011 Virginia Polytechnic
- *                                      Institute & State University
+ * Copyright (c) 2007, 2008, 2009, 2010, 2011, 2012, 2013 Joseph Gaeddert
  *
  * This file is part of liquid.
  *
@@ -43,13 +41,26 @@
 #define DEBUG_SYMSYNC_FILENAME  "symsync_internal_debug.m"
 #define DEBUG_BUFFER_LEN        (1024)
 
-// defined:
-//  TO          output data type
-//  TC          coefficient data type
-//  TI          input data type
-//  SYMSYNC()    name-mangling macro
-//  FIRPFB()    firpfb macro
+// 
+// forward declaration of internal methods
+//
 
+// step synchronizer
+void SYMSYNC(_step)(SYMSYNC()      _q,
+                    TI             _x,
+                    TO *           _y,
+                    unsigned int * _ny);
+
+// advance internal timing loop
+void SYMSYNC(_advance_internal_loop)(SYMSYNC() _q,
+                                     TO        _mf,
+                                     TO        _dmf);
+
+// write output debugging file
+void SYMSYNC(_output_debug_file)(SYMSYNC()    _q,
+                                 const char * _filename);
+
+// internal structure
 struct SYMSYNC(_s) {
     unsigned int h_len;         // matched filter length
     unsigned int k;             // samples/symbol (input)
@@ -95,7 +106,7 @@ struct SYMSYNC(_s) {
 //  _h_len  :   length of matched filter
 SYMSYNC() SYMSYNC(_create)(unsigned int _k,
                            unsigned int _npfb,
-                           TC * _h,
+                           TC *         _h,
                            unsigned int _h_len)
 {
     // validate input
@@ -143,6 +154,7 @@ SYMSYNC() SYMSYNC(_create)(unsigned int _k,
     }
 
     // apply scaling factor for normalized response
+    // TODO: scale to 1.0 for consistency
     for (i=0; i<_h_len; i++)
         dh[i] *= 0.06f / hdh_max;
     

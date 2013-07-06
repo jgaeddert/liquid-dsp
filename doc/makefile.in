@@ -1,6 +1,4 @@
-# Copyright (c) 2007, 2008, 2009, 2010 Joseph Gaeddert
-# Copyright (c) 2007, 2008, 2009, 2010 Virginia Polytechnic
-#                                      Institute & State University
+# Copyright (c) 2007, 2008, 2009, 2010, 2011, 2012, 2013 Joseph Gaeddert
 #
 # This file is part of liquid.
 #
@@ -82,7 +80,7 @@ LISTINGS_C = 						\
 	listings/bpacket.example.c			\
 	listings/crc.example.c				\
 	listings/cvsd.example.c				\
-	listings/decim.example.c			\
+	listings/firdecim.example.c			\
 	listings/dotprod_rrrf.example.c			\
 	listings/eqlms_cccf.example.c			\
 	listings/eqlms_cccf_blind.example.c		\
@@ -94,6 +92,7 @@ LISTINGS_C = 						\
 	listings/firfarrow_crcf.example.c		\
 	listings/firfilt.example.c			\
 	listings/firhilb.example.c			\
+	listings/firinterp.example.c			\
 	listings/freqmodem.example.c			\
 	listings/gasearch.example.c			\
 	listings/gmskmodem.example.c			\
@@ -102,7 +101,6 @@ LISTINGS_C = 						\
 	listings/gport.indirect.example.c		\
 	listings/iirdes.example.c			\
 	listings/iirfilt.example.c			\
-	listings/interp.example.c			\
 	listings/interleaver.example.c			\
 	listings/lifecycle.example.c			\
 	listings/matrix.example.c			\

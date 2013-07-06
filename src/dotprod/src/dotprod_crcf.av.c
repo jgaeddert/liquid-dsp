@@ -1,6 +1,5 @@
 /*
- * Copyright (c) 2011 Joseph Gaeddert
- * Copyright (c) 2011 Virginia Polytechnic Institute & State University
+ * Copyright (c) 2007, 2008, 2009, 2010, 2011, 2012, 2013 Joseph Gaeddert
  *
  * This file is part of liquid.
  *
@@ -31,9 +30,14 @@
 
 // basic dot product
 
-void dotprod_crcf_run(float *_h,
-                      float complex *_x,
-                      unsigned int _n,
+// basic dot product
+//  _h      :   coefficients array [size: 1 x _n]
+//  _x      :   input array [size: 1 x _n]
+//  _n      :   input lengths
+//  _y      :   output dot product
+void dotprod_crcf_run(float *         _h,
+                      float complex * _x,
+                      unsigned int    _n,
                       float complex * _y)
 {
     float complex r=0;
@@ -43,9 +47,14 @@ void dotprod_crcf_run(float *_h,
     *_y = r;
 }
 
-void dotprod_crcf_run4(float *_h,
-                       float complex *_x,
-                       unsigned int _n,
+// basic dot product, unrolling loop
+//  _h      :   coefficients array [size: 1 x _n]
+//  _x      :   input array [size: 1 x _n]
+//  _n      :   input lengths
+//  _y      :   output dot product
+void dotprod_crcf_run4(float *         _h,
+                       float complex * _x,
+                       unsigned int    _n,
                        float complex * _y)
 {
     float complex r=0;
@@ -86,7 +95,8 @@ struct dotprod_crcf_s {
 };
 
 // create the structured dotprod object
-dotprod_crcf dotprod_crcf_create(float * _h, unsigned int _n)
+dotprod_crcf dotprod_crcf_create(float *      _h,
+                                 unsigned int _n)
 {
     dotprod_crcf dp = (dotprod_crcf)malloc(sizeof(struct dotprod_crcf_s));
     dp->n = _n;
@@ -113,39 +123,38 @@ dotprod_crcf dotprod_crcf_create(float * _h, unsigned int _n)
 }
 
 // re-create the structured dotprod object
-dotprod_crcf dotprod_crcf_recreate(dotprod_crcf _dp,
-                                   float * _h,
+dotprod_crcf dotprod_crcf_recreate(dotprod_crcf _q,
+                                   float *      _h,
                                    unsigned int _n)
 {
     // completely destroy and re-create dotprod object
-    dotprod_crcf_destroy(_dp);
-    _dp = dotprod_crcf_create(_h,_n);
-    return _dp;
+    dotprod_crcf_destroy(_q);
+    return dotprod_crcf_create(_h,_n);
 }
 
 // destroy the structured dotprod object
-void dotprod_crcf_destroy(dotprod_crcf _dp)
+void dotprod_crcf_destroy(dotprod_crcf _q)
 {
     // clean up coefficients arrays
     unsigned int i;
     for (i=0; i<4; i++)
-        free(_dp->h[i]);
+        free(_q->h[i]);
 
     // free allocated object memory
-    free(_dp);
+    free(_q);
 }
 
 // print the dotprod object
-void dotprod_crcf_print(dotprod_crcf _dp)
+void dotprod_crcf_print(dotprod_crcf _q)
 {
-    printf("dotprod_crcf [%u taps]:\n", _dp->n);
+    printf("dotprod_crcf [altivec, %u coefficients]:\n", _q->n);
     unsigned int i;
-    for (i=0; i<_dp->n; i++)
-        printf("  %3u : %12.9f\n", i, _dp->h[0][2*i]);
+    for (i=0; i<_q->n; i++)
+        printf("  %3u : %12.9f\n", i, _q->h[0][2*i]);
 }
 
 // exectue vectorized structured inner dot product
-void dotprod_crcf_execute(dotprod_crcf _dp,
+void dotprod_crcf_execute(dotprod_crcf    _q,
                           float complex * _x,
                           float complex * _r)
 {
@@ -159,10 +168,10 @@ void dotprod_crcf_execute(dotprod_crcf _dp,
     ar = (vector float*)( (int)_x & ~15);
     al = ((int)_x & 15)/sizeof(float);
 
-    d = (vector float*)_dp->h[al];
+    d = (vector float*)_q->h[al];
 
     // number of blocks doubles because of complex type
-    nblocks = (2*_dp->n + al - 1)/4 + 1;
+    nblocks = (2*_q->n + al - 1)/4 + 1;
 
     // split into four vectors each with four 32-bit
     // partial sums.  Effectively each loop iteration

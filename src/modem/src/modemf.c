@@ -1,6 +1,5 @@
 /*
- * Copyright (c) 2012 Joseph Gaeddert
- * Copyright (c) 2012 Virginia Polytechnic Institute & State University
+ * Copyright (c) 2007, 2008, 2009, 2010, 2011, 2012, 2013 Joseph Gaeddert
  *
  * This file is part of liquid.
  *
@@ -27,6 +26,8 @@
 
 // Macro definitions
 #define MODEM(name)         LIQUID_CONCAT(modem,name)
+#define FREQMOD(name)       LIQUID_CONCAT(freqmod,name)
+#define FREQDEM(name)       LIQUID_CONCAT(freqdem,name)
 
 #define T                   float           /* primitive type */
 #define TC                  float complex   /* primitive type (complex) */
@@ -54,3 +55,6 @@
 // arbitary modems
 #include "modem_arb.c"
 
+// analog modems
+#include "freqmod.c"
+#include "freqdem.c"

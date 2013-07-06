@@ -4,18 +4,16 @@ liquid-dsp examples
 
 This directory contains all the examples for interfacing the liquid modules.
 
- * `agc_example.c`:
-    Automatic gain control example demonstrating the transient responses
-    between the three AGC types (LIQUID_AGC_DEFAULT, LIQUID_AGC_LOG,
-    LIQUID_AGC_EXP).
+ * `agc_crcf_example.c`:
+    Automatic gain control example demonstrating its transient response.
 
- * `agc_qpsk_example.c`:
+ * `agc_crcf_qpsk_example.c`:
     Automatic gain control test for data signals with fluctuating signal
     levels.  QPSK modulation introduces periodic random zero-crossings which
     gives instantaneous amplitude levels near zero.  This example tests the
     response of the AGC to these types of signals.
 
- * `agc_squelch_example.c`:
+ * `agc_crcf_squelch_example.c`:
     Automatic gain control with squelch example.  This example demonstrates
     the squelch control functionality of the AGC module.  Squelch is used to
     suppress the output of the AGC when the signal level drops below a certain
@@ -99,17 +97,6 @@ This directory contains all the examples for interfacing the liquid modules.
     sinusoidal input.  The output distortion ratio is computed, and the
     time-domain results are written to a file.
 
- * `decim_crcf_example.c`:
-    This example demonstrates the decim object (decimator) interface.
-    Data symbols are generated and then interpolated according to a
-    finite impulse response square-root Nyquist filter.  The resulting
-    sequence is then decimated with the same filter, matched to the
-    interpolator.
-
-    SEE ALSO: `interp_crcf_example.c`
-
- * `decim_rrrf_example.c`:
-
  * `dotprod_cccf_example.c`:
     This example demonstrates the interface to the complex
     floating-point dot product object (dotprod_cccf).
@@ -150,6 +137,16 @@ This directory contains all the examples for interfacing the liquid modules.
 
     SEE ALSO: `mdct_example.c`
               `fct_example.c`
+
+ * `firdecim_crcf_example.c`:
+    This example demonstrates the interface to the firdecim (finite
+    impulse response decimator) family of objects.
+    Data symbols are generated and then interpolated according to a
+    finite impulse response square-root Nyquist filter.  The resulting
+    sequence is then decimated with the same filter, matched to the
+    interpolator.
+
+    SEE ALSO: `firinterp_crcf_example.c`
 
  * `firdes_kaiser_example.c`:
     This example demonstrates finite impulse response filter design using a
@@ -193,10 +190,16 @@ This directory contains all the examples for interfacing the liquid modules.
     (PFB) channelizer with an output rate of 2 Fs / M as an (almost)
     perfect reconstructive system.
 
+ * `firinterp_crcf_example.c`:
+    This example demonstrates the interp object (interpolator)
+    interface. Data symbols are generated and then interpolated
+    according to a finite impulse response Nyquist filter.
+
  * `firpfbch_analysis_example.c`:
     Example of the analysis channelizer filterbank. The input signal is
-    a frequency-modulated sweep over the entire band. Each filter is
-    illuminated as the carrier passes through its bandwidth.
+    comprised of several signals spanning different frequency bands. The
+    channelizer downconverts each to baseband (maximally decimated), and
+    the resulting spectrum of each is plotted.
 
  * `firpfbch_example.c`:
     Finite impulse response (FIR) polyphase filter bank (PFB)
@@ -291,6 +294,10 @@ This directory contains all the examples for interfacing the liquid modules.
     coefficients are real, but the input and output arrays are complex.  The
     filter order and cutoff frequency are specified at the beginning.
 
+ * `iirinterp_crcf_example.c`:
+    This example demonstrates the iirinterp object (IIR interpolator)
+    interface.
+
  * `interleaver_example.c`:
     This example demonstrates the functionality of the liquid interleaver
     object.  Interleavers serve to distribute  grouped bit errors evenly
@@ -304,11 +311,6 @@ This directory contains all the examples for interfacing the liquid modules.
  * `interleaver_scatterplot_example.c`:
 
  * `interleaver_soft_example.c`:
-
- * `interp_crcf_example.c`:
-    This example demonstrates the interp object (interpolator)
-    interface. Data symbols are generated and then interpolated
-    according to a finite impulse response Nyquist filter.
 
  * `kbd_window_example.c`:
  * `lpc_example.c`:

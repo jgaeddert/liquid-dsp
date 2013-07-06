@@ -29,6 +29,39 @@
 
 #include "liquid.internal.h"
 
+// reallocate memory for buffers
+void packetizer_realloc_buffers(packetizer _p, unsigned int _len);
+
+// fec/interleaver plan
+struct fecintlv_plan {
+    unsigned int dec_msg_len;
+    unsigned int enc_msg_len;
+
+    // fec codec
+    fec_scheme fs;
+    fec f;
+
+    // interleaver
+    interleaver q;
+};
+
+// packetizer object
+struct packetizer_s {
+    unsigned int msg_len;
+    unsigned int packet_len;
+
+    crc_scheme check;
+    unsigned int crc_length;
+
+    struct fecintlv_plan * plan;
+    unsigned int plan_len;
+
+    // buffers (ping-pong)
+    unsigned int buffer_len;
+    unsigned char * buffer_0;
+    unsigned char * buffer_1;
+};
+
 // computes the number of encoded bytes after packetizing
 //
 //  _n      :   number of uncoded input bytes
