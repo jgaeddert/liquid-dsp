@@ -846,7 +846,7 @@ src/multicarrier/src/firpfbch_cccf.o : %.o : %.c $(headers) $(multicarrier_inclu
 
 # autotests
 multicarrier_autotests :=					\
-	src/multicarrier/tests/firpfbch2_autotest.c		\
+	src/multicarrier/tests/firpfbch2_crcf_autotest.c	\
 	src/multicarrier/tests/firpfbch_crcf_synthesizer_autotest.c	\
 	src/multicarrier/tests/firpfbch_crcf_analyzer_autotest.c	\
 	src/multicarrier/tests/ofdmframesync_autotest.c		\
