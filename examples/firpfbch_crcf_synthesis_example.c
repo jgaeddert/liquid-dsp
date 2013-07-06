@@ -1,5 +1,5 @@
 //
-// firpfbch_synthesis_example.c
+// firpfbch_crcf_synthesis_example.c
 //
 // Example of the synthesis channelizer filterbank. The input signal is
 // comprised of several signals spanning different frequency bands. The
@@ -13,7 +13,7 @@
 
 #include "liquid.h"
 
-#define OUTPUT_FILENAME "firpfbch_synthesis_example.m"
+#define OUTPUT_FILENAME "firpfbch_crcf_synthesis_example.m"
 
 int main() {
     // options
