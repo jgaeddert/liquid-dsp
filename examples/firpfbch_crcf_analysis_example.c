@@ -1,5 +1,5 @@
 //
-// firpfbch_analysis_example.c
+// firpfbch_crcf_analysis_example.c
 //
 // Example of the analysis channelizer filterbank. The input signal is
 // comprised of several signals spanning different frequency bands. The
@@ -13,7 +13,7 @@
 
 #include "liquid.h"
 
-#define OUTPUT_FILENAME "firpfbch_analysis_example.m"
+#define OUTPUT_FILENAME "firpfbch_crcf_analysis_example.m"
 
 int main() {
     // options

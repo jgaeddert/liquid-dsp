@@ -229,7 +229,7 @@ void htmlgen_html_write_footer(htmlgen _q)
     fprintf(_q->fid_html,"    <!--\n");
     fprintf(_q->fid_html,"    <p>\n");
     fprintf(_q->fid_html,"    Validate:\n");
-    fprintf(_q->fid_html,"    <a href=\"http://validator.w3.org/check?uri=https://ganymede.ece.vt.edu/\">XHTML 1.0</a>&nbsp;|\n");
+    fprintf(_q->fid_html,"    <a href=\"http://validator.w3.org/check?uri=https://liquidsdr.org/\">XHTML 1.0</a>&nbsp;|\n");
     fprintf(_q->fid_html,"    <a href=\"http://jigsaw.w3.org/css-validator/check/referer\">CSS</a>\n");
     fprintf(_q->fid_html,"    </p>\n");
     fprintf(_q->fid_html,"    -->\n");

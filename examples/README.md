@@ -185,18 +185,23 @@ This directory contains all the examples for interfacing the liquid modules.
 
     SEE ALSO: `firhilb_decim_example.c`
 
+ * `firpfbch2_crcf_example.c`:
+    Example of the finite impulse response (FIR) polyphase filterbank
+    (PFB) channelizer with an output rate of 2 Fs / M as an (almost)
+    perfect reconstructive system.
+
  * `firinterp_crcf_example.c`:
     This example demonstrates the interp object (interpolator)
     interface. Data symbols are generated and then interpolated
     according to a finite impulse response Nyquist filter.
 
- * `firpfbch_analysis_example.c`:
+ * `firpfbch_crcf_analysis_example.c`:
     Example of the analysis channelizer filterbank. The input signal is
     comprised of several signals spanning different frequency bands. The
     channelizer downconverts each to baseband (maximally decimated), and
     the resulting spectrum of each is plotted.
 
- * `firpfbch_example.c`:
+ * `firpfbch_crcf_example.c`:
     Finite impulse response (FIR) polyphase filter bank (PFB)
     channelizer example.  This example demonstrates the functionality of
     the polyphase filter bank channelizer and how its output is
@@ -204,7 +209,7 @@ This directory contains all the examples for interfacing the liquid modules.
     (mixers/decimators). Both the synthesis and analysis filter banks
     are presented.
 
- * `firpfbch_synthesis_example.c`:
+ * `firpfbch_crcf_synthesis_example.c`:
     Example of the synthesis channelizer filterbank.  Random symbols are
     generated and loaded into the bins of the channelizer and the
     time-domain signal is synthesized.  Subcarriers around the band

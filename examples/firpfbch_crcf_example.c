@@ -1,5 +1,5 @@
 //
-// firpfbch_example.c
+// firpfbch_crcf_example.c
 //
 // Finite impulse response (FIR) polyphase filter bank (PFB)
 // channelizer example.  This example demonstrates the functionality
@@ -16,7 +16,7 @@
 
 #include "liquid.h"
 
-#define OUTPUT_FILENAME "firpfbch_example.m"
+#define OUTPUT_FILENAME "firpfbch_crcf_example.m"
 
 int main() {
     // options

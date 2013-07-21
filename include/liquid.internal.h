@@ -1253,37 +1253,6 @@ void ofdmflexframesync_rxpayload(ofdmflexframesync _q,
 // complex rotation vector: cexpf(_Complex_I*THETA)
 #define liquid_cexpjf(THETA) (cosf(THETA) + _Complex_I*sinf(THETA))
 
-// polynomials
-#define LIQUID_POLY_DEFINE_INTERNAL_API(POLY,T,TC)          \
-void POLY(_findroots_durandkerner)(T * _p,                  \
-                                   unsigned int _k,         \
-                                   TC * _roots);            \
-void POLY(_findroots_bairstow)(T * _p,                      \
-                               unsigned int _k,             \
-                               TC * _roots);                \
-void POLY(_findroots_bairstow_recursion)(T * _p,            \
-                                         unsigned int _k,   \
-                                         T * _p1,           \
-                                         T * _u,            \
-                                         T * _v);
-
-LIQUID_POLY_DEFINE_INTERNAL_API(POLY_MANGLE_DOUBLE,
-                                double,
-                                double complex)
-
-LIQUID_POLY_DEFINE_INTERNAL_API(POLY_MANGLE_FLOAT,
-                                float,
-                                float complex)
-
-LIQUID_POLY_DEFINE_INTERNAL_API(POLY_MANGLE_CDOUBLE,
-                                double complex,
-                                double complex)
-
-LIQUID_POLY_DEFINE_INTERNAL_API(POLY_MANGLE_CFLOAT,
-                                float complex,
-                                float complex)
-
-
 
 //
 // MODULE : matrix
