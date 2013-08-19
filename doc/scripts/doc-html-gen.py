@@ -133,7 +133,7 @@ def write_html_footer(fid_html):
     fid_html.write("    <!--\n");
     fid_html.write("    <p>\n")
     fid_html.write("    Validate:\n")
-    fid_html.write("    <a href=\"http://validator.w3.org/check?uri=https://ganymede.ece.vt.edu/\">XHTML 1.0</a>&nbsp;|\n")
+    fid_html.write("    <a href=\"http://validator.w3.org/check?uri=https://liquidsdr.org/\">XHTML 1.0</a>&nbsp;|\n")
     fid_html.write("    <a href=\"http://jigsaw.w3.org/css-validator/check/referer\">CSS</a>\n")
     fid_html.write("    </p>\n")
     fid_html.write("    -->\n");

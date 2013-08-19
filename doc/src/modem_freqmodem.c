@@ -118,7 +118,7 @@ int main(int argc, char*argv[])
         fprintf(fid,"%12u %12.4e\n", i, x[i]);
     fprintf(fid,"e\n");
     for (i=0; i<num_samples; i++)
-        fprintf(fid,"%12d %12.4e\n", ((int)i)-15, z[i]);
+        fprintf(fid,"%12d %12.4e\n", ((int)i)-8, z[i]);
     fprintf(fid,"e\n");
 
     fprintf(fid,"# transmitted signal\n");
