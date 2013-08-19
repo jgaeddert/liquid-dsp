@@ -4086,6 +4086,68 @@ LIQUID_FIRPFBCH_DEFINE_API(FIRPFBCH_MANGLE_CCCF,
                            liquid_float_complex,
                            liquid_float_complex)
 
+
+//
+// Finite impulse response polyphase filterbank channelizer
+// with output rate 2 Fs / M
+//
+
+#define FIRPFBCH2_MANGLE_CRCF(name) LIQUID_CONCAT(firpfbch2_crcf,name)
+
+// Macro:
+//   FIRPFBCH2  : name-mangling macro
+//   TO         : output data type
+//   TC         : coefficients data type
+//   TI         : input data type
+#define LIQUID_FIRPFBCH2_DEFINE_API(FIRPFBCH2,TO,TC,TI)         \
+typedef struct FIRPFBCH2(_s) * FIRPFBCH2();                     \
+                                                                \
+/* create firpfbch2 object                                  */  \
+/*  _type   :   channelizer type (e.g. LIQUID_ANALYZER)     */  \
+/*  _M      :   number of channels (must be even)           */  \
+/*  _m      :   prototype filter semi-lenth, length=2*M*m   */  \
+/*  _h      :   prototype filter coefficient array          */  \
+FIRPFBCH2() FIRPFBCH2(_create)(int          _type,              \
+                               unsigned int _M,                 \
+                               unsigned int _m,                 \
+                               TC *         _h);                \
+                                                                \
+/* create firpfbch2 object using Kaiser window prototype    */  \
+/*  _type   :   channelizer type (e.g. LIQUID_ANALYZER)     */  \
+/*  _M      :   number of channels (must be even)           */  \
+/*  _m      :   prototype filter semi-lenth, length=2*M*m+1 */  \
+/*  _As     :   filter stop-band attenuation [dB]           */  \
+FIRPFBCH2() FIRPFBCH2(_create_kaiser)(int          _type,       \
+                                      unsigned int _M,          \
+                                      unsigned int _m,          \
+                                      float        _As);        \
+                                                                \
+/* destroy firpfbch2 object, freeing internal memory        */  \
+void FIRPFBCH2(_destroy)(FIRPFBCH2() _q);                       \
+                                                                \
+/* reset firpfbch2 object internals                         */  \
+void FIRPFBCH2(_reset)(FIRPFBCH2() _q);                         \
+                                                                \
+/* print firpfbch2 object internals                         */  \
+void FIRPFBCH2(_print)(FIRPFBCH2() _q);                         \
+                                                                \
+/* execute filterbank channelizer                           */  \
+/* LIQUID_ANALYZER:     input: M/2, output: M               */  \
+/* LIQUID_SYNTHESIZER:  input: M,   output: M/2             */  \
+/*  _x      :   channelizer input                           */  \
+/*  _y      :   channelizer output                          */  \
+void FIRPFBCH2(_execute)(FIRPFBCH2() _q,                        \
+                         TI *        _x,                        \
+                         TO *        _y);                       \
+
+
+LIQUID_FIRPFBCH2_DEFINE_API(FIRPFBCH2_MANGLE_CRCF,
+                            liquid_float_complex,
+                            float,
+                            liquid_float_complex)
+
+
+
 #define OFDMFRAME_SCTYPE_NULL   0
 #define OFDMFRAME_SCTYPE_PILOT  1
 #define OFDMFRAME_SCTYPE_DATA   2

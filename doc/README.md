@@ -12,7 +12,7 @@ Code snippets are made pretty using
 To build the documentation, one must first move to the root source
 directory and build the liquid DSP library.  Then move to this directory
 and simply run `make`.  The documentation is
-[built daily](http://ganymede.ece.vt.edu/downloads/liquid.pdf) (4.4 MB)
+[built daily](http://liquidsdr.org/downloads/liquid.pdf) (4.4 MB)
 for your convenience.
 
 ### Documentation dependencies ###
