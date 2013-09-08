@@ -856,7 +856,7 @@ int  packetizer_decode_persistent2(packetizer _p,
 
 
 //
-// SUBMODULE : multicarrier
+// SUBMODULE : multichannel
 //
 
 // modified discrete cosine transform channelizer

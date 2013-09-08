@@ -291,7 +291,7 @@ local_programs :=					\
 	src/modem.genplot				\
 	src/modem.gendata				\
 	src/modem_phase_error				\
-	src/multicarrier_firpfbch2			\
+	src/multichannel_firpfbch2			\
 	src/nco_pll					\
 	src/optim_gradsearch				\
 	src/quantization_adc				\
