@@ -1570,6 +1570,7 @@ sandbox_programs =						\
 	sandbox/symsync_eqlms_test				\
 	sandbox/svd_test					\
 	sandbox/thiran_allpass_iir_test				\
+	sandbox/vectorcf_test					\
 
 #	firpfbch_analysis_test
 #	sandbox/ofdmoqam_firpfbch_cfo_test
