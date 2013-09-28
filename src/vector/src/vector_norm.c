@@ -24,8 +24,9 @@
 #include <stdlib.h>
 #include <string.h>
 #include <stdio.h>
+#include <math.h>
 
-// basic vector multiplication, unrolling loop
+// compute l2-norm on vector
 //  _x      :   input array [size: _n x 1]
 //  _n      :   array length
 TP VECTOR(_norm)(T *          _x,
@@ -55,5 +56,36 @@ TP VECTOR(_norm)(T *          _x,
     // return square root of accumulation
     // TODO: use generic 'sqrt' function
     return sqrtf(norm);
+}
+
+// scale vector to its l2-norm
+//  _x      :   input array [size: _n x 1]
+//  _n      :   array length
+//  _y      :   output array [size: _n x 1]
+void VECTOR(_normalize)(T *          _x,
+                        unsigned int _n,
+                        T *          _y)
+{
+    // compute l2-norm on vector
+    TP norm = VECTOR(_norm)(_x, _n);
+
+    // compute inverse
+    TP norm_inv = 1.0 / norm;
+
+    // t = 4*(floor(_n/4))
+    unsigned int t=(_n>>2)<<2; 
+
+    // scale by inverse; compute in groups of 4
+    unsigned int i;
+    for (i=0; i<t; i+=4) {
+        _y[i  ] = _x[i  ] * norm_inv;
+        _y[i+1] = _x[i+1] * norm_inv;
+        _y[i+2] = _x[i+2] * norm_inv;
+        _y[i+3] = _x[i+3] * norm_inv;
+    }
+
+    // clean up remaining
+    for ( ; i<_n; i++)
+        _y[i] = _x[i] * norm_inv;
 }
 
