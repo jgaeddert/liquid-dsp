@@ -4878,6 +4878,49 @@ unsigned int  liquid_reverse_uint16(unsigned int  _x);
 unsigned int  liquid_reverse_uint24(unsigned int  _x);
 unsigned int  liquid_reverse_uint32(unsigned int  _x);
 
+// 
+// MODULE : vector
+//
+
+#define VECTOR_MANGLE_RF(name)  LIQUID_CONCAT(liquid_vectorf, name)
+#define VECTOR_MANGLE_CF(name)  LIQUID_CONCAT(liquid_vectorcf,name)
+
+// large macro
+//   VECTOR     : name-mangling macro
+//   T          : data type
+//   TP         : primitive data type
+#define LIQUID_VECTOR_DEFINE_API(VECTOR,T,TP)                   \
+                                                                \
+/* initialization */                                            \
+void VECTOR(_zero)(T * _x, unsigned int _n);                    \
+                                                                \
+/* addition */                                                  \
+void VECTOR(_add)(T * _x, T * _y, unsigned int _n, T * _z);     \
+void VECTOR(_addscalar)(T * _x, unsigned int _n, T _v, T * _y); \
+                                                                \
+/* multiplication */                                            \
+void VECTOR(_mul)(T * _x, T * _y, unsigned int _n, T * _z);     \
+void VECTOR(_mulscalar)(T * _x, unsigned int _n, T _v, T * _y); \
+                                                                \
+/* etc. */                                                      \
+TP   VECTOR(_norm)( T * _x, unsigned int _n);                   \
+TP   VECTOR(_pnorm)(T * _x, unsigned int _n, TP _p);            \
+void VECTOR(_normalize)(T * _x, unsigned int _n, T * _y);       \
+                                                                \
+
+LIQUID_VECTOR_DEFINE_API(VECTOR_MANGLE_RF, float,                float);
+LIQUID_VECTOR_DEFINE_API(VECTOR_MANGLE_CF, liquid_float_complex, float);
+
+// 
+// mixed types
+//
+#if 0
+void liquid_vectorf_add(float *      _a,
+                        float *      _b,
+                        unsigned int _n,
+                        float *      _c);
+#endif
+
 #ifdef __cplusplus
 } //extern "C"
 #endif // __cplusplus

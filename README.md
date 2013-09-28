@@ -164,6 +164,7 @@ Available Modules
         maximal-length sequences
   * _utility_: useful miscellany, mostly bit manipulation (shifting,
         packing, and unpacking of arrays)
+  * _vector_: generic vector operations
   * _experimental_: artificial neural networks, communications channel
         modeling, threaded ports, filterbank audio synthesizer,
         continuous-phase modulation, direct digital synthesis,

@@ -1020,6 +1020,36 @@ utility_autotests :=						\
 utility_benchmarks :=
 
 
+#
+# MODULE : vector
+#
+
+# main objects list
+vector_objects :=						\
+	@MLIBS_VECTOR@						\
+
+# portable builds
+src/vector/src/vectorf_add.port.o  : %.o : %.c $(headers) src/vector/src/vector_add.c
+src/vector/src/vectorf_mul.port.o  : %.o : %.c $(headers) src/vector/src/vector_mul.c
+src/vector/src/vectorf_norm.port.o : %.o : %.c $(headers) src/vector/src/vector_norm.c
+
+src/vector/src/vectorcf_add.port.o  : %.o : %.c $(headers) src/vector/src/vector_add.c
+src/vector/src/vectorcf_mul.port.o  : %.o : %.c $(headers) src/vector/src/vector_mul.c
+src/vector/src/vectorcf_norm.port.o : %.o : %.c $(headers) src/vector/src/vector_norm.c
+
+# builds for specific architectures
+# ...
+
+# vector autotest scripts
+vector_autotests :=
+
+# additional autotest objects
+autotest_extra_obj +=
+
+# vector benchmark scripts
+vector_benchmarks :=
+
+
 # 
 # MODULE : experimental
 #
@@ -1073,6 +1103,7 @@ objects :=							\
 	$(random_objects)					\
 	$(sequence_objects)					\
 	$(utility_objects)					\
+	$(vector_objects)					\
 	@EXPERIMENTAL_MLIBS@
 	
 
@@ -1097,6 +1128,7 @@ autotest_sources :=						\
 	$(random_autotests)					\
 	$(sequence_autotests)					\
 	$(utility_autotests)					\
+	$(vector_autotests)					\
 	@EXPERIMENTAL_AUTOTESTS@
 	
 
@@ -1121,6 +1153,7 @@ benchmark_sources :=						\
 	$(random_benchmarks)					\
 	$(sequence_benchmarks)					\
 	$(utility_benchmarks)					\
+	$(vector_benchmarks)					\
 	@EXPERIMENTAL_BENCHMARKS@
 
 
@@ -1608,6 +1641,7 @@ clean-modules:
 	$(RM) src/quantization/src/*.o src/quantization/bench/*.o src/quantization/tests/*.o
 	$(RM) src/random/src/*.o       src/random/bench/*.o       src/random/tests/*.o
 	$(RM) src/utility/src/*.o      src/utility/bench/*.o      src/utility/tests/*.o
+	$(RM) src/vector/src/*.o       src/vector/bench/*.o       src/vector/tests/*.o
 	$(RM) src/experimental/src/*.o src/experimental/bench/*.o src/experimental/tests/*.o
 	$(RM) libliquid.o
 

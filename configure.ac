@@ -283,6 +283,14 @@ arm*)
     ARCH_OPTION="";;
 esac
 
+# for now all vector operations are portable C versions
+MLIBS_VECTOR="src/vector/src/vectorf_add.port.o   \
+              src/vector/src/vectorf_mul.port.o   \
+              src/vector/src/vectorf_norm.port.o  \
+              src/vector/src/vectorcf_add.port.o  \
+              src/vector/src/vectorcf_mul.port.o  \
+              src/vector/src/vectorcf_norm.port.o"
+
 case $target_os in
 darwin*)
     SH_LIB=libliquid.dylib
@@ -299,6 +307,7 @@ esac
 #
 AC_SUBST(LIBS)                      # shared libraries (-lc, -lm, etc.)
 AC_SUBST(MLIBS_DOTPROD)             # 
+AC_SUBST(MLIBS_VECTOR)              #
 AC_SUBST(EXPERIMENTAL_HEADER)       # experimental header
 AC_SUBST(EXPERIMENTAL_MLIBS)        # experimental library objects
 AC_SUBST(EXPERIMENTAL_AUTOTESTS)    # experimental autotests
