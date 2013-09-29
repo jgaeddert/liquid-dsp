@@ -4923,13 +4923,13 @@ void VECTOR(_cexpj)(TP *         _theta,                        \
                     unsigned int _n,                            \
                     T *          _x);                           \
 /* compute angle of each element: theta[i] = arg{ x[i] }    */  \
-void VECTOR(_carg)(TP *         _x,                             \
+void VECTOR(_carg)(T *          _x,                             \
                    unsigned int _n,                             \
-                   T *          _theta);                        \
+                   TP *         _theta);                        \
 /* compute absolute value of each element: y[i] = |x[i]|    */  \
-void VECTOR(_abs)(TP *         _x,                              \
+void VECTOR(_abs)(T *          _x,                              \
                   unsigned int _n,                              \
-                  T *          _y);                             \
+                  TP *         _y);                             \
                                                                 \
 /* compute sum of squares: sum{ |x|^2 }                     */  \
 TP VECTOR(_sumsq)(T *          _x,                              \
