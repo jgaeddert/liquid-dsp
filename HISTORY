@@ -32,6 +32,8 @@ Major improvements since v1.2.0
     - gradsearch (gradient search) uses internal linesearch for
       significant speed increase and better reliability
     - gradsearch interface greatly simplified
+  * vector
+    - new module to simplify basic vector operations
 
 Major improvements for v1.2.0
   * dotprod
