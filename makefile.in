@@ -1421,13 +1421,13 @@ example_programs :=						\
 	examples/symsync_crcf_example				\
 	examples/wdelayf_example				\
 	examples/windowf_example				\
+	examples/ricek_channel_example				\
 	@EXPERIMENTAL_EXAMPLES@
 
 #	examples/metadata_example
 #	examples/ofdmframegen_example
 #	examples/gmskframe_example
 #	examples/fading_generator_example
-#	examples/ricek_channel_example
 
 example_objects	= $(patsubst %,%.o,$(example_programs))
 examples: $(example_programs)
