@@ -19,8 +19,16 @@
 \usepackage[left=1cm,right=1cm]{geometry}
 \pagestyle{empty}
 
+% include special colors
+\input{figures.pgf/liquid-colors}
+
 % define new style "block" with special parameters
-\tikzstyle{block}=[rectangle,draw=black,very thick,minimum size=20mm]
+\tikzstyle{block}=[
+    rectangle,
+    draw=black,
+    very thick,
+    minimum size=20mm,
+    fill=liquid-color-mutedgreen!20]
 \tikzstyle{textbox}=[rectangle]
 \tikzstyle{connector}=[->,thick]
 
@@ -44,13 +52,13 @@
     %\draw[step=5mm,help lines] (0,0) grid (6,3);
     
     % draw major blocks
-    \node[textbox]            (input)                                        {$x$};
-    \node[block]              (arbitrary-resamp) [right=of input]            {$1 \leq r \leq 2$};
-    \node[block,fill=gray!20] (halfband-a)       [right=of arbitrary-resamp] {$\uparrow 2$};
-    \node[block,fill=gray!20] (halfband-b)       [right=of halfband-a]       {$\uparrow 2$};
-    \node[textbox]            (dotdotdot)        [right=of halfband-b]       {...};
-    \node[block,fill=gray!20] (halfband-n)       [right=of dotdotdot]        {$\uparrow 2$};
-    \node[textbox]            (output)           [right=of halfband-n]       {$y$};
+    \node[textbox]          (input)                                        {$x$};
+    \node[block,fill=white] (arbitrary-resamp) [right=of input]            {$1 \leq r \leq 2$};
+    \node[block]            (halfband-a)       [right=of arbitrary-resamp] {$\uparrow 2$};
+    \node[block]            (halfband-b)       [right=of halfband-a]       {$\uparrow 2$};
+    \node[textbox]          (dotdotdot)        [right=of halfband-b]       {...};
+    \node[block]            (halfband-n)       [right=of dotdotdot]        {$\uparrow 2$};
+    \node[textbox]          (output)           [right=of halfband-n]       {$y$};
 
     % edges
     \path

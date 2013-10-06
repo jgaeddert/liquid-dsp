@@ -153,7 +153,7 @@ Available Modules
         sparse matrix representation
   * _modem_: modulate, demodulate, PSK, differential PSK, QAM, optimal
         QAM, as well as analog and non-linear digital modulations GMSK)
-  * _multicarrier_: filterbank channelizers, OFDM
+  * _multichannel_: filterbank channelizers, OFDM
   * _nco_: numerically-controlled oscillator: mixing, frequency
         synthesis, phase-locked loops
   * _optim_: (non-linear optimization) Newton-Raphson, evoluationary

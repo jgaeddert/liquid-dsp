@@ -19,7 +19,7 @@
  */
 
 //
-// multicarrier API: complex floating-point
+// multichannel API: complex floating-point
 //
 
 #include "liquid.internal.h"

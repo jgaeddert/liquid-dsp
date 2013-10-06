@@ -164,7 +164,7 @@ SECTIONS :=					\
 	sections/math.tex			\
 	sections/matrix.tex			\
 	sections/modem.tex			\
-	sections/multicarrier.tex		\
+	sections/multichannel.tex		\
 	sections/nco.tex			\
 	sections/optim.tex			\
 	sections/quantization.tex		\

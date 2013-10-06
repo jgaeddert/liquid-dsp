@@ -1013,39 +1013,39 @@ modem_benchmarks :=						\
 	src/modem/bench/modem_demodsoft_benchmark.c		\
 
 # 
-# MODULE : multicarrier
+# MODULE : multichannel
 #
 
-multicarrier_objects :=						\
-	src/multicarrier/src/firpfbch_crcf.o			\
-	src/multicarrier/src/firpfbch_cccf.o			\
-	src/multicarrier/src/ofdmframe.common.o			\
-	src/multicarrier/src/ofdmframegen.o			\
-	src/multicarrier/src/ofdmframesync.o			\
+multichannel_objects :=						\
+	src/multichannel/src/firpfbch_crcf.o			\
+	src/multichannel/src/firpfbch_cccf.o			\
+	src/multichannel/src/ofdmframe.common.o			\
+	src/multichannel/src/ofdmframegen.o			\
+	src/multichannel/src/ofdmframesync.o			\
 
-$(multicarrier_objects) : %.o : %.c $(headers)
+$(multichannel_objects) : %.o : %.c $(headers)
 
 # list explicit targets and dependencies here
-multicarrier_includes :=					\
-	src/multicarrier/src/firpfbch.c				\
-	src/multicarrier/src/firpfbch2.c			\
+multichannel_includes :=					\
+	src/multichannel/src/firpfbch.c				\
+	src/multichannel/src/firpfbch2.c			\
 
-src/multicarrier/src/firpfbch_crcf.o : %.o : %.c $(headers) $(multicarrier_includes)
-src/multicarrier/src/firpfbch_cccf.o : %.o : %.c $(headers) $(multicarrier_includes)
+src/multichannel/src/firpfbch_crcf.o : %.o : %.c $(headers) $(multichannel_includes)
+src/multichannel/src/firpfbch_cccf.o : %.o : %.c $(headers) $(multichannel_includes)
 
 # autotests
-multicarrier_autotests :=					\
-	src/multicarrier/tests/firpfbch2_crcf_autotest.c	\
-	src/multicarrier/tests/firpfbch_crcf_synthesizer_autotest.c	\
-	src/multicarrier/tests/firpfbch_crcf_analyzer_autotest.c	\
-	src/multicarrier/tests/ofdmframesync_autotest.c		\
+multichannel_autotests :=					\
+	src/multichannel/tests/firpfbch2_crcf_autotest.c	\
+	src/multichannel/tests/firpfbch_crcf_synthesizer_autotest.c	\
+	src/multichannel/tests/firpfbch_crcf_analyzer_autotest.c	\
+	src/multichannel/tests/ofdmframesync_autotest.c		\
 
 # benchmarks
-multicarrier_benchmarks :=					\
-	src/multicarrier/bench/firpfbch_crcf_benchmark.c	\
-	src/multicarrier/bench/firpfbch2_crcf_benchmark.c	\
-	src/multicarrier/bench/ofdmframesync_acquire_benchmark.c	\
-	src/multicarrier/bench/ofdmframesync_rxsymbol_benchmark.c	\
+multichannel_benchmarks :=					\
+	src/multichannel/bench/firpfbch_crcf_benchmark.c	\
+	src/multichannel/bench/firpfbch2_crcf_benchmark.c	\
+	src/multichannel/bench/ofdmframesync_acquire_benchmark.c	\
+	src/multichannel/bench/ofdmframesync_rxsymbol_benchmark.c	\
 
 # 
 # MODULE : nco - numerically-controlled oscillator
@@ -1260,7 +1260,7 @@ objects :=							\
 	$(math_objects)						\
 	$(matrix_objects)					\
 	$(modem_objects)					\
-	$(multicarrier_objects)					\
+	$(multichannel_objects)					\
 	$(nco_objects)						\
 	$(optim_objects)					\
 	$(quantization_objects)					\
@@ -1285,7 +1285,7 @@ autotest_sources :=						\
 	$(math_autotests)					\
 	$(matrix_autotests)					\
 	$(modem_autotests)					\
-	$(multicarrier_autotests)				\
+	$(multichannel_autotests)				\
 	$(nco_autotests)					\
 	$(optim_autotests)					\
 	$(quantization_autotests)				\
@@ -1310,7 +1310,7 @@ benchmark_sources :=						\
 	$(math_benchmarks)					\
 	$(matrix_benchmarks)					\
 	$(modem_benchmarks)					\
-	$(multicarrier_benchmarks)				\
+	$(multichannel_benchmarks)				\
 	$(nco_benchmarks)					\
 	$(optim_benchmarks)					\
 	$(quantization_benchmarks)				\
@@ -1625,13 +1625,13 @@ example_programs :=						\
 	examples/symsync_crcf_example				\
 	examples/wdelayf_example				\
 	examples/windowf_example				\
+	examples/ricek_channel_example				\
 	@EXPERIMENTAL_EXAMPLES@
 
 #	examples/metadata_example
 #	examples/ofdmframegen_example
 #	examples/gmskframe_example
 #	examples/fading_generator_example
-#	examples/ricek_channel_example
 
 example_objects	= $(patsubst %,%.o,$(example_programs))
 examples: $(example_programs)
@@ -1808,7 +1808,7 @@ clean-modules:
 	$(RM) src/math/src/*.o         src/math/bench/*.o         src/math/tests/*.o
 	$(RM) src/matrix/src/*.o       src/matrix/bench/*.o       src/matrix/tests/*.o
 	$(RM) src/modem/src/*.o        src/modem/bench/*.o        src/modem/tests/*.o
-	$(RM) src/multicarrier/src/*.o src/multicarrier/bench/*.o src/multicarrier/tests/*.o
+	$(RM) src/multichannel/src/*.o src/multichannel/bench/*.o src/multichannel/tests/*.o
 	$(RM) src/nco/src/*.o          src/nco/bench/*.o          src/nco/tests/*.o
 	$(RM) src/optim/src/*.o        src/optim/bench/*.o        src/optim/tests/*.o
 	$(RM) src/quantization/src/*.o src/quantization/bench/*.o src/quantization/tests/*.o

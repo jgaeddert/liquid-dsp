@@ -56,7 +56,9 @@ FREQMOD() FREQMOD(_create)(float _kf)
     q->kf   = _kf;      // modulation factor
 
     // create modulator objects
-    q->integrator = IIRFILT_RRR(_create_integrator)();
+    float b[2] = {0.5f,  0.5f};
+    float a[2] = {1.0f, -1.0f};
+    q->integrator = iirfilt_rrrf_create(b,2,a,2);
 
     // create prefilter (block DC values)
     q->prefilter = IIRFILT_RRR(_create_dc_blocker)(5e-4f);

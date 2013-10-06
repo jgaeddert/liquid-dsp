@@ -150,7 +150,7 @@ void EQRLS(_print)(EQRLS() _eq)
     printf("P0:\n");
     for (r=0; r<p; r++) {
         for (c=0; c<p; c++) {
-            PRINTVAL(matrix_access(_eq->P0,p,r,c));
+            PRINTVAL(matrix_access(_eq->P0,p,p,r,c));
         }
         printf("\n");
     }
@@ -267,7 +267,7 @@ void EQRLS(_step)(EQRLS() _eq,
     printf("\n");
 
     DEBUG_PRINTF_CFLOAT(stdout,"    d",0,_d);
-    DEBUG_PRINTF_CFLOAT(stdout,"d_hat",0,d_hat);
+    DEBUG_PRINTF_CFLOAT(stdout,"_d_hat",0,_d_hat);
     DEBUG_PRINTF_CFLOAT(stdout,"error",0,alpha);
 
     printf("xP0: ");

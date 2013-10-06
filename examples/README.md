@@ -625,6 +625,13 @@ Some examples are only available when configured with the option
     structure for easily managing pattern sets for optimization.
 
  * `ricek_channel_example.c`:
+    This example generates correlated circular complex Gauss random variables
+    using an approximation to the ideal Doppler filter. The resulting Gauss
+    random variables are converted to Rice-K random variables using a simple
+    transformation. The resulting output file plots the filter's power
+    spectral density, the fading power envelope as a function of time, and the
+    distribution of Rice-K random variables alongside the theoretical PDF to
+    demonstrate that the technique is valid.
 
  * `symsync2_crcf_example.c`:
 

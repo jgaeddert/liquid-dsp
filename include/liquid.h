@@ -4019,7 +4019,7 @@ void ampmodem_demodulate(ampmodem _fm,
 
 
 //
-// MODULE : multicarrier
+// MODULE : multichannel
 //
 
 

@@ -1481,7 +1481,7 @@ extern const float complex modem_arb256opt[256];
 
 
 //
-// MODULE : multicarrier
+// MODULE : multichannel
 //
 
 // ofdm frame (common)
