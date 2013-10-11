@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011, 2012, 2013 Joseph Gaeddert
+ * Copyright (c) 2007, 2008, 2009, 2010, 2011, 2012, 2013 Joseph Gaeddert
  *
  * This file is part of liquid.
  *
@@ -40,6 +40,11 @@ struct spgram_s {
     float complex * X;          // output fft (allocated)
     float *         w;          // tapering window [size: window_len x 1]
     FFT_PLAN fft;               // fft plan
+
+    // psd accumulation
+    float * psd;
+    unsigned int sample_counter;
+    unsigned int num_transforms;
 };
 
 // create spgram object
@@ -69,8 +74,9 @@ spgram spgram_create(unsigned int _nfft,
     q->window_len = _window_len;
 
     // create FFT arrays, object
-    q->x = (float complex*) malloc((q->nfft)*sizeof(float complex));
-    q->X = (float complex*) malloc((q->nfft)*sizeof(float complex));
+    q->x   = (float complex*) malloc((q->nfft)*sizeof(float complex));
+    q->X   = (float complex*) malloc((q->nfft)*sizeof(float complex));
+    q->psd = (float *)        malloc((q->nfft)*sizeof(float));
     q->fft = FFT_CREATE_PLAN(q->nfft, q->x, q->X, FFT_DIR_FORWARD, FFT_METHOD);
 
     // create buffer
@@ -142,6 +148,7 @@ void spgram_destroy(spgram _q)
     free(_q->x);
     free(_q->X);
     free(_q->w);
+    free(_q->psd);
     windowcf_destroy(_q->buffer);
     FFT_DESTROY_PLAN(_q->fft);
 
@@ -159,6 +166,12 @@ void spgram_reset(spgram _q)
     unsigned int i;
     for (i=0; i<_q->nfft; i++)
         _q->x[i] = 0.0f;
+
+    // clear PSD accumulation
+    _q->num_transforms = 0;
+    _q->sample_counter          = 0;
+    for (i=0; i<_q->nfft; i++)
+        _q->psd[i] = 0.0f;
 }
 
 // push samples into spgram object
@@ -193,7 +206,60 @@ void spgram_execute(spgram          _q,
     FFT_EXECUTE(_q->fft);
 
     // copy result to output
-    memmove(_X, _q->X, _q->nfft*sizeof(float complex));
+    if (_X != NULL)
+        memmove(_X, _q->X, _q->nfft*sizeof(float complex));
+}
+
+// accumulate power spectral density
+//  _q      :   spgram object
+//  _x      :   input buffer [size: _n x 1]
+//  _n      :   input buffer length
+void spgram_accumulate_psd(spgram                 _q,
+                           liquid_float_complex * _x,
+                           unsigned int           _n)
+{
+    // push samples and run FFT at appropriate time
+    unsigned int i;
+    for (i=0; i<_n; i++) {
+        // push sample
+        windowcf_push(_q->buffer, _x[i]);
+
+        // increment counter
+        _q->sample_counter++;
+
+        // run FFT
+        if (_q->sample_counter == _q->window_len/2) {
+            // reset counter
+            _q->sample_counter = 0;
+
+            // execute transform
+            spgram_execute(_q, NULL);
+
+            // accumulate squared magnitude response
+            unsigned int k;
+            for (k=0; k<_q->nfft; k++)
+                _q->psd[k] += crealf( _q->X[k] * conjf(_q->X[k]) );
+
+            // increment number of transforms taken
+            _q->num_transforms++;
+        }
+    }
+}
+
+// write accumulated psd
+//  _q      :   spgram object
+//  _x      :   input buffer [size: _n x 1]
+//  _n      :   input buffer length [size: _nfft x 1]
+void spgram_write_accumulation(spgram  _q,
+                               float * _x)
+{
+    unsigned int i;
+
+    // scale result by number of transforms and run fft shift
+    unsigned int nfft_2 = _q->nfft / 2;
+    for (i=0; i<_q->nfft; i++)
+        _x[(i+nfft_2)%_q->nfft] = 10*log10f( _q->psd[i] / (float)(_q->num_transforms) );
+
 }
 
 // estimate spectrum on input signal
