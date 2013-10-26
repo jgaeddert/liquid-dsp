@@ -27,6 +27,10 @@ AC_CONFIG_SRCDIR([src/libliquid.c])
 # permit auxiliary scripts directory (e.g. config.sub, config.guess, install-sh)
 AC_CONFIG_AUX_DIR(scripts/)
 
+# search list for compiler: prefer environment variable 'CC', then specific
+# gcc verions over clang/llvm
+AC_PROG_CC([CC gcc-4.8 gcc-4.7 gcc-4.6 gcc cc clang])
+
 # Specify 'C' language
 AC_LANG(C)
 
