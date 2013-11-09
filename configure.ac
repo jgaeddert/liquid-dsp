@@ -161,7 +161,7 @@ AC_FUNC_MALLOC
 AC_FUNC_REALLOC
 # AC_CHECK_LIB (library, function, [action-if-found], [action-if-not-found], [other-libraries])
 AC_CHECK_LIB([c], [malloc, realloc, free, memset, memmove], [],
-             [AC_MSG_ERROR(Need standard c library!)],
+             [AC_MSG_ERROR(Could not use standard c library!)],
              [])
 AC_CHECK_LIB([m], [sinf, cosf, expf, cargf, cexpf, crealf, cimagf, sqrtf], [],
              [AC_MSG_ERROR(Need standard (complex) math library!)],
@@ -226,6 +226,12 @@ AC_TYPE_UINT8_T
 AC_CHECK_SIZEOF(int)
 AC_CHECK_SIZEOF(unsigned int)
 
+# AX_GCC_ARCHFLAG([PORTABLE?], [ACTION-SUCCESS], [ACTION-FAILURE])
+# Try to guess the "native" architecture of the target to use with gcc's
+# -march or -mtune flags. Default success action adds $ax_cv_gcc_archflag to
+# $CFLAGS (sets to "unknown" on failure).
+AX_GCC_ARCHFLAG([no],[],[])
+
 # Check canonical system
 AC_CANONICAL_TARGET
 case $target_cpu in
@@ -258,13 +264,7 @@ i386|i486|i586|i686|x86|x86_64)
                        src/dotprod/src/dotprod_crcf.o \
                        src/dotprod/src/dotprod_rrrf.o \
                        src/dotprod/src/sumsq.o"
-    fi
-    case $target_os in
-    darwin*)
-        ARCH_OPTION="-march=core2";;
-    *)
-        ARCH_OPTION="";;
-    esac;;
+    fi;;
 powerpc*)
     MLIBS_DOTPROD="src/dotprod/src/dotprod_cccf.o \
                    src/dotprod/src/dotprod_rrrf.av.o \
