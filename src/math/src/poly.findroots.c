@@ -36,16 +36,6 @@
 // forward declaration of internal methods
 //
 
-// finds the complex roots of the polynomial using the Durand-Kerner method
-void POLY(_findroots_durandkerner)(T *          _p,
-                                   unsigned int _k,
-                                   TC *         _roots);
-
-// finds the complex roots of the polynomial using Bairstow's method
-void POLY(_findroots_bairstow)(T *          _p,
-                               unsigned int _k,
-                               TC *         _roots);
-
 // iterate over Bairstow's method, finding quadratic factor x^2 + u*x + v
 void POLY(_findroots_bairstow_recursion)(T *          _p,
                                          unsigned int _k,

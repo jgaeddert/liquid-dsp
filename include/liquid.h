@@ -3233,17 +3233,32 @@ void POLY(_expandroots2)(T * _a,                                \
                          unsigned int _n,                       \
                          T * _c);                               \
                                                                 \
-/* find roots of the polynomial (complex) */                    \
-void POLY(_findroots)(T * _c,                                   \
+/* find roots of the polynomial (complex)                   */  \
+/*  _poly   : poly array, ascending powers [size: _k x 1]   */  \
+/*  _k      : poly length (poly order = _k - 1)             */  \
+/*  _roots  : resulting complex roots [size: _k-1 x 1]      */  \
+void POLY(_findroots)(T *          _poly,                       \
                       unsigned int _n,                          \
-                      TC * _roots);                             \
+                      TC *         _roots);                     \
+                                                                \
+/* find the complex roots of the polynomial using the       */  \
+/* Durand-Kerner method                                     */  \
+void POLY(_findroots_durandkerner)(T *          _poly,          \
+                                   unsigned int _k,             \
+                                   TC *         _roots);        \
+                                                                \
+/* find the complex roots of the polynomial using           */  \
+/* Bairstow's method                                        */  \
+void POLY(_findroots_bairstow)(T *          _poly,              \
+                               unsigned int _k,                 \
+                               TC *         _roots);            \
                                                                 \
 /* expands the multiplication of two polynomials */             \
-void POLY(_mul)(T * _a,                                         \
+void POLY(_mul)(T *          _a,                                \
                 unsigned int _order_a,                          \
-                T * _b,                                         \
+                T *          _b,                                \
                 unsigned int _order_b,                          \
-                T * _c);
+                T *          _c);                               \
 
 LIQUID_POLY_DEFINE_API(POLY_MANGLE_DOUBLE,
                        double,
