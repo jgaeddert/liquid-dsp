@@ -1625,5 +1625,6 @@ distclean: clean distclean-doc
 	$(RM) octave-core *.m
 	$(RM) configure config.h config.h.in config.h.in~ config.log config.status
 	$(RM) -r autom4te.cache
+	$(RM) aclocal.m4
 	$(RM) makefile
 
