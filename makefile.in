@@ -74,7 +74,7 @@ PATHSEP		= /
 # 
 # liquid headers
 #
-headers_install	:= liquid.h @EXPERIMENTAL_HEADER@
+headers_install	:= liquid.h
 headers		:= $(headers_install) liquid.internal.h
 include_headers	:= $(addprefix include/,$(headers))
 
@@ -1020,33 +1020,6 @@ utility_autotests :=						\
 utility_benchmarks :=
 
 
-# 
-# MODULE : experimental
-#
-
-# legacy sources (not built, but keep around just in case)
-#	src/experimental/legacy/dct.o
-#	src/experimental/legacy/mdct.o
-#	src/experimental/legacy/mdct_benchmark.c
-
-
-# explicit targets and dependencies
-
-experimental_filter_includes :=					\
-	src/experimental/src/iirqmfb.c				\
-	src/experimental/src/itqmfb.c				\
-	src/experimental/src/qmfb.c				\
-	src/experimental/src/symsync2.c				\
-	src/experimental/src/symsynclp.c			\
-
-src/experimental/src/filter_rrrf.o: %.o : %.c $(headers) $(experimental_filter_includes)
-
-src/experimental/src/filter_crcf.o: %.o : %.c $(headers) $(experimental_filter_includes)
-
-src/experimental/src/filter_cccf.o: %.o : %.c $(headers) $(experimental_filter_includes)
-
-
-
 
 # Target collection
 #
@@ -1073,7 +1046,6 @@ objects :=							\
 	$(random_objects)					\
 	$(sequence_objects)					\
 	$(utility_objects)					\
-	@EXPERIMENTAL_MLIBS@
 	
 
 autotest_sources :=						\
@@ -1097,7 +1069,6 @@ autotest_sources :=						\
 	$(random_autotests)					\
 	$(sequence_autotests)					\
 	$(utility_autotests)					\
-	@EXPERIMENTAL_AUTOTESTS@
 	
 
 benchmark_sources :=						\
@@ -1121,7 +1092,6 @@ benchmark_sources :=						\
 	$(random_benchmarks)					\
 	$(sequence_benchmarks)					\
 	$(utility_benchmarks)					\
-	@EXPERIMENTAL_BENCHMARKS@
 
 
 ##
@@ -1415,14 +1385,13 @@ example_programs :=						\
 	examples/resamp2_crcf_decim_example			\
 	examples/resamp2_crcf_filter_example			\
 	examples/resamp2_crcf_interp_example			\
+	examples/ricek_channel_example				\
 	examples/scramble_example				\
 	examples/smatrix_example				\
 	examples/spgram_example					\
 	examples/symsync_crcf_example				\
 	examples/wdelayf_example				\
 	examples/windowf_example				\
-	examples/ricek_channel_example				\
-	@EXPERIMENTAL_EXAMPLES@
 
 #	examples/metadata_example
 #	examples/ofdmframegen_example
@@ -1608,7 +1577,6 @@ clean-modules:
 	$(RM) src/quantization/src/*.o src/quantization/bench/*.o src/quantization/tests/*.o
 	$(RM) src/random/src/*.o       src/random/bench/*.o       src/random/tests/*.o
 	$(RM) src/utility/src/*.o      src/utility/bench/*.o      src/utility/tests/*.o
-	$(RM) src/experimental/src/*.o src/experimental/bench/*.o src/experimental/tests/*.o
 	$(RM) libliquid.o
 
 clean: clean-modules clean-autoscript clean-check clean-bench clean-examples clean-sandbox clean-doc

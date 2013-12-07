@@ -30,7 +30,6 @@
 #include <math.h>
 
 #include "liquid.h"
-#include "liquid.experimental.h"
 
 #ifdef __cplusplus
 #  include <iostream>
