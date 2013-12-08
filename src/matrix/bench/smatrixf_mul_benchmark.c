@@ -20,7 +20,8 @@
 
 #include <stdlib.h>
 #include <sys/resource.h>
-#include "liquid.experimental.h"
+
+#include "liquid.h"
 
 // Helper function to keep code base small
 void smatrixf_mul_bench(struct rusage *     _start,
