@@ -145,9 +145,7 @@ AC_ARG_ENABLE(experimental,
 )
 
 # Check for necessary programs
-# search list for compiler: prefer environment variable 'CC', then specific
-# gcc verions over clang/llvm
-AC_PROG_CC([CC gcc-4.8 gcc-4.7 gcc-4.6 gcc cc clang])
+AC_PROG_CC
 AC_PROG_SED
 AC_PROG_GREP
 AC_PROG_INSTALL
