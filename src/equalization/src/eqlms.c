@@ -1,7 +1,5 @@
 /*
- * Copyright (c) 2007, 2008, 2009, 2010, 2011, 2012 Joseph Gaeddert
- * Copyright (c) 2007, 2008, 2009, 2010, 2011, 2012 Virginia Polytechnic
- *                                      Institute & State University
+ * Copyright (c) 2007, 2008, 2009, 2010, 2011, 2012, 2013 Joseph Gaeddert
  *
  * This file is part of liquid.
  *
@@ -49,7 +47,7 @@ void EQLMS(_update_sumsq)(EQLMS() _eq, T _x);
 // create least mean-squares (LMS) equalizer object
 //  _h      :   initial coefficients [size: _p x 1], default if NULL
 //  _p      :   equalizer length (number of taps)
-EQLMS() EQLMS(_create)(T * _h,
+EQLMS() EQLMS(_create)(T *          _h,
                        unsigned int _p)
 {
     EQLMS() eq = (EQLMS()) malloc(sizeof(struct EQLMS(_s)));
@@ -87,11 +85,11 @@ EQLMS() EQLMS(_create)(T * _h,
 //  _m      :   filter delay (symbols), _m > 0
 //  _beta   :   excess bandwidth factor, 0 < _beta < 1
 //  _dt     :   fractional sample delay, 0 <= _dt < 1
-EQLMS() EQLMS(_create_rnyquist)(int _type,
+EQLMS() EQLMS(_create_rnyquist)(int          _type,
                                 unsigned int _k,
                                 unsigned int _m,
-                                float _beta,
-                                float _dt)
+                                float        _beta,
+                                float        _dt)
 {
     // validate input
     if (_k < 2) {
@@ -128,8 +126,8 @@ EQLMS() EQLMS(_create_rnyquist)(int _type,
 //  _eq     :   old equalizer object
 //  _h      :   initial coefficients [size: _p x 1], default if NULL
 //  _p      :   equalizer length (number of taps)
-EQLMS() EQLMS(_recreate)(EQLMS() _eq,
-                         T * _h,
+EQLMS() EQLMS(_recreate)(EQLMS()      _eq,
+                         T *          _h,
                          unsigned int _p)
 {
     if (_eq->p == _p) {
@@ -235,9 +233,8 @@ void EQLMS(_execute)(EQLMS() _eq,
     *_y = y;
 }
 
-// step through one cycle of equalizer
+// step through one cycle of equalizer training
 //  _eq     :   equalizer object
-//  _x      :   received sample
 //  _d      :   desired output
 //  _d_hat  :   filtered output
 void EQLMS(_step)(EQLMS() _eq,

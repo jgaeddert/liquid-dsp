@@ -21,7 +21,7 @@
 # Process with autoconf to generate configure script
 #
 
-AC_INIT([liquid-dsp],[1.2.0],[liquid@vt.edu])
+AC_INIT([liquid-dsp],[1.2.0],[support@liquidsdr.org])
 AC_CONFIG_SRCDIR([src/libliquid.c])
 
 # permit auxiliary scripts directory (e.g. config.sub, config.guess, install-sh)
@@ -156,12 +156,24 @@ AC_FUNC_ERROR_AT_LINE
 AC_FUNC_MALLOC
 AC_FUNC_REALLOC
 # AC_CHECK_LIB (library, function, [action-if-found], [action-if-not-found], [other-libraries])
-AC_CHECK_LIB([c], [malloc, realloc, free, memset, memmove], [],
-             [AC_MSG_ERROR(Need standard c library!)],
-             [])
-AC_CHECK_LIB([m], [sinf, cosf, expf, cargf, cexpf, crealf, cimagf, sqrtf], [],
-             [AC_MSG_ERROR(Need standard (complex) math library!)],
-             [])
+# Check for specific standard C libraries
+# NOTE: need to provide each check independently, otherwise modern compilers
+#       will complain
+AC_CHECK_LIB([c], [malloc],  [],[AC_MSG_ERROR(Could not use malloc)], [])
+AC_CHECK_LIB([c], [realloc], [],[AC_MSG_ERROR(Could not use realloc)],[])
+AC_CHECK_LIB([c], [free],    [],[AC_MSG_ERROR(Could not use free)],   [])
+AC_CHECK_LIB([c], [memset],  [],[AC_MSG_ERROR(Could not use memset)], [])
+AC_CHECK_LIB([c], [memmove], [],[AC_MSG_ERROR(Could not use memove)], [])
+
+# check for specific standard math libraries
+AC_CHECK_LIB([m], [sinf],    [],[AC_MSG_ERROR(Could not use sinf)],   [])
+AC_CHECK_LIB([m], [cosf],    [],[AC_MSG_ERROR(Could not use cosf)],   [])
+AC_CHECK_LIB([m], [expf],    [],[AC_MSG_ERROR(Could not use expf)],   [])
+AC_CHECK_LIB([m], [cargf],   [],[AC_MSG_ERROR(Could not use cargf)],  [])
+AC_CHECK_LIB([m], [cexpf],   [],[AC_MSG_ERROR(Could not use cexpf)],  [])
+AC_CHECK_LIB([m], [crealf],  [],[AC_MSG_ERROR(Could not use crealf)], [])
+AC_CHECK_LIB([m], [cimagf],  [],[AC_MSG_ERROR(Could not use cimagf)], [])
+AC_CHECK_LIB([m], [sqrtf],   [],[AC_MSG_ERROR(Could not use sqrtf)],  [])
 
 # Check for necessary header files
 AC_CHECK_HEADERS([stdio.h stdlib.h complex.h string.h getopt.h sys/resource.h float.h inttypes.h limits.h stdlib.h string.h unistd.h])
@@ -221,6 +233,12 @@ AC_TYPE_UINT8_T
 # Check size of certain variables
 AC_CHECK_SIZEOF(int)
 AC_CHECK_SIZEOF(unsigned int)
+
+# AX_GCC_ARCHFLAG([PORTABLE?], [ACTION-SUCCESS], [ACTION-FAILURE])
+# Try to guess the "native" architecture of the target to use with gcc's
+# -march or -mtune flags. Default success action adds $ax_cv_gcc_archflag to
+# $CFLAGS (sets to "unknown" on failure).
+AX_GCC_ARCHFLAG([no],[],[])
 
 # Check canonical system
 AC_CANONICAL_TARGET
