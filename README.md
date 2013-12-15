@@ -164,11 +164,6 @@ Available Modules
         maximal-length sequences
   * _utility_: useful miscellany, mostly bit manipulation (shifting,
         packing, and unpacking of arrays)
-  * _experimental_: artificial neural networks, communications channel
-        modeling, threaded ports, filterbank audio synthesizer,
-        continuous-phase modulation, direct digital synthesis,
-        quadrature mirror filterbanks, advanced symbol timing recovery,
-        OFDM/OQAM
 
 ### Additional notes ###
 
