@@ -7,8 +7,7 @@
 //
 // NOTE: The filterbank is not a perfect reconstruction filter; a
 //       significant amount of distortion occurs in the transition band
-//       of the half-band filters. See the 'qmfb' (quadrature mirror
-//       filterbank) object in the experimental section.
+//       of the half-band filters.
 //
 // SEE ALSO: resamp2_crcf_decim_example.c
 //           resamp2_crcf_interp_example.c

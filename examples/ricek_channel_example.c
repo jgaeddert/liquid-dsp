@@ -16,7 +16,7 @@
 #include <complex.h>
 #include <getopt.h>
 
-#include "liquid.experimental.h"
+#include "liquid.h"
 
 #define OUTPUT_FILENAME "ricek_channel_example.m"
 
