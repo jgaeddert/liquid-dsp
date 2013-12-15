@@ -240,7 +240,7 @@ void autotest_matrixq16_ludecomp_crout()
     q16_t A[64];        // [size: 8 x 8]
     q16_t L[64];        // [size: 8 x 8]
     q16_t U[64];        // [size: 8 x 8]
-    q16_t P[64];        // [size: 8 x 8]
+    //q16_t P[64];        // [size: 8 x 8]
     q16_t LU_test[64];  // [size: 8 x 8]
 
     // run decomposition
@@ -289,7 +289,7 @@ void autotest_matrixq16_ludecomp_doolittle()
     q16_t A[64];        // [size: 8 x 8]
     q16_t L[64];        // [size: 8 x 8]
     q16_t U[64];        // [size: 8 x 8]
-    q16_t P[64];        // [size: 8 x 8]
+    //q16_t P[64];        // [size: 8 x 8]
     q16_t LU_test[64];  // [size: 8 x 8]
 
     // run decomposition
