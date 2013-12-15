@@ -226,8 +226,10 @@ void EQLMS(_execute)(EQLMS() _eq,
     // compute conjugate vector dot product
     //DOTPROD(_run)(_eq->w0, r, _eq->p, &y);
     unsigned int i;
-    for (i=0; i<_eq->p; i++)
-        y += conj(_eq->w0[i])*r[i];
+    for (i=0; i<_eq->p; i++) {
+        T sum = conj(_eq->w0[i])*r[i];
+        y += sum;
+    }
 
     // set output
     *_y = y;

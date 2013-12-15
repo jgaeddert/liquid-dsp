@@ -1,7 +1,5 @@
 /*
- * Copyright (c) 2007, 2008, 2009, 2010 Joseph Gaeddert
- * Copyright (c) 2007, 2008, 2009, 2010 Virginia Polytechnic
- *                                      Institute & State University
+ * Copyright (c) 2007, 2008, 2009, 2010, 2011, 2012, 2013 Joseph Gaeddert
  *
  * This file is part of liquid.
  *
@@ -277,8 +275,10 @@ void EQRLS(_step)(EQRLS() _eq,
 #endif
     // zeta = lambda + [x.']*[P0]*[conj(x)]
     _eq->zeta = 0;
-    for (c=0; c<p; c++)
-        _eq->zeta += _eq->xP0[c] * conj(x[c]);
+    for (c=0; c<p; c++) {
+        T sum = _eq->xP0[c] * conj(x[c]);
+        _eq->zeta += sum;
+    }
     _eq->zeta += _eq->lambda;
 #ifdef DEBUG
     printf("zeta : ");
@@ -288,7 +288,8 @@ void EQRLS(_step)(EQRLS() _eq,
     for (r=0; r<p; r++) {
         _eq->g[r] = 0;
         for (c=0; c<p; c++) {
-            _eq->g[r] += matrix_access(_eq->P0,p,p,r,c) * conj(x[c]);
+            T sum = matrix_access(_eq->P0,p,p,r,c) * conj(x[c]);
+            _eq->g[r] += sum;
         }
         _eq->g[r] /= _eq->zeta;
     }
