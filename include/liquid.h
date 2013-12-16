@@ -299,6 +299,7 @@ LIQUID_WDELAY_DEFINE_API(WDELAY_MANGLE_CFLOAT, liquid_float_complex)
 /* run dot product without creating object */                   \
 void DOTPROD(_run)( TC *_h, TI *_x, unsigned int _n, TO *_y);   \
 void DOTPROD(_run4)(TC *_h, TI *_x, unsigned int _n, TO *_y);   \
+void DOTPROD(_NEON)(TC *_h, TI *_x, unsigned int _n, TO *_y);   \
                                                                 \
 typedef struct DOTPROD(_s) * DOTPROD();                         \
 DOTPROD() DOTPROD(_create)(TC * _v, unsigned int _n);           \
@@ -307,7 +308,8 @@ DOTPROD() DOTPROD(_recreate)(DOTPROD() _q,                      \
                              unsigned int _n);                  \
 void DOTPROD(_destroy)(DOTPROD() _q);                           \
 void DOTPROD(_print)(DOTPROD() _q);                             \
-void DOTPROD(_execute)(DOTPROD() _q, TI * _v, TO * _y);
+void DOTPROD(_execute)(DOTPROD() _q, TI * _v, TO * _y);         \
+void DOTPROD(_executeNEON)(DOTPROD() _q, TI * _v, TO * _y);
 
 LIQUID_DOTPROD_DEFINE_API(DOTPROD_MANGLE_RRRF,
                           float,
@@ -1999,6 +2001,10 @@ void FIRDECIM(_execute)(FIRDECIM()   _q,                        \
                         TI *         _x,                        \
                         TO *         _y,                        \
                         unsigned int _index);                   \
+void FIRDECIM(_executeNEON)(FIRDECIM()   _q,                    \
+                        TI *         _x,                        \
+                        TO *         _y,                        \
+                        unsigned int _index); 
 
 LIQUID_FIRDECIM_DEFINE_API(FIRDECIM_MANGLE_RRRF,
                            float,

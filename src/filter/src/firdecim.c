@@ -210,3 +210,32 @@ void FIRDECIM(_execute)(FIRDECIM()   _q,
     }
 }
 
+// execute decimator with NEON
+//  _q      :   decimator object
+//  _x      :   input sample array
+//  _y      :   output sample pointer
+//  _index  :   output sample phase
+void FIRDECIM(_executeNEON)(FIRDECIM() _q,
+                     TI *_x,
+                     TO *_y,
+                     unsigned int _index)
+{   // validate input
+    if (_index >= _q->M) {
+        fprintf(stderr,"error: decim_%s_execute(), output sample phase exceeds decimation factor\n", EXTENSION_FULL);
+        exit(1);
+    }
+
+    TI * r; // read pointer
+    unsigned int i;
+    for (i=0; i<_q->M; i++) {
+        WINDOW(_push)(_q->w, _x[i]);
+		
+        if (i==_index) {
+            // read buffer, retrieve pointer to aligned memory array
+            WINDOW(_read)(_q->w, &r);
+                         	
+            // execute dot product
+            DOTPROD(_executeNEON)(_q->dp, r, _y);
+        }
+    }
+}

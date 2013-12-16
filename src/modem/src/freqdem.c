@@ -119,6 +119,50 @@ void FREQDEM(_reset)(FREQDEM() _q)
 //  _q      :   FM demodulator object
 //  _r      :   received signal
 //  _m      :   output message signal
+void FREQDEM(_demodulate)(FREQDEM()          _q,
+                        liquid_float_complex _r,
+                        float *              _m)
+{
+#ifdef __ARM_NEON__
+    *_m = (cargf(conjf(_q->q)*(_r)) - _q->dphi) * _q->twopikf_inv;
+     _q->q = _r;
+#else
+    // apply rx filter to input
+    firfilt_crcf_push(_q->rxfilter, _r);
+    firfilt_crcf_execute(_q->rxfilter, &_r);
+            	
+    if (_q->type == LIQUID_FREQDEM_PLL) {
+        // 
+        // push through phase-locked loop
+        //
+             	                            				
+        // compute phase error from internal NCO complex exponential
+        float complex p;
+        nco_crcf_cexpf(_q->oscillator, &p);
+        float phase_error = cargf( conjf(p)*_r );
+				
+        // step the PLL and the internal NCO object
+        nco_crcf_pll_step(_q->oscillator, phase_error);
+        nco_crcf_step(_q->oscillator);
+                         				
+        // demodulated signal is (weighted) nco frequency
+        *_m = (nco_crcf_get_frequency(_q->oscillator) -_q->dphi) * _q->twopikf_inv;
+    } else {
+        // compute phase diff. and normalize by modulation index
+        *_m = (cargf(conjf(_q->q)*(_r)) - _q->dphi) * _q->twopikf_inv;
+        _q->q = _r;
+    }
+                         	
+    // apply post-filtering
+    iirfilt_rrrf_execute(_q->postfilter, *_m, _m);
+#endif
+}
+
+
+// demodulate sample
+//  _q      :   FM demodulator object
+//  _r      :   received signal
+//  _m      :   output message signal
 void FREQDEM(_demodulate)(FREQDEM()              _q,
                         liquid_float_complex _r,
                         float *              _m)

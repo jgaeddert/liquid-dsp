@@ -274,7 +274,8 @@ arm*)
     MLIBS_DOTPROD="src/dotprod/src/dotprod_cccf.o \
                    src/dotprod/src/dotprod_crcf.o \
                    src/dotprod/src/dotprod_rrrf.o \
-                   src/dotprod/src/sumsq.o"
+                   src/dotprod/src/sumsq.o	  \
+		   src/dotprod/src/dotprod_neon.o "
     ARCH_OPTION="-marm -mfloat-abi=softfp";;
 *)
     # unknown architecture : use portable C version
@@ -282,7 +283,7 @@ arm*)
                    src/dotprod/src/dotprod_crcf.o \
                    src/dotprod/src/dotprod_rrrf.o \
                    src/dotprod/src/sumsq.o"
-    ARCH_OPTION="";;
+    ARCH_OPTION="-marm -mfpu=neon -ftree-vectorize -ffast-math -funsafe-math-optimizations -funsafe-loop-optimizations -ftree-loop-if-convert-stores";;
 esac
 
 case $target_os in
