@@ -20,7 +20,10 @@
 //
 // Generic dot product
 //
-
+#ifdef __ARM_NEON__
+#include <arm_neon.h>
+extern float get_sum(float32x4_t);
+#endif
 #include <stdlib.h>
 #include <string.h>
 #include <stdio.h>
@@ -88,6 +91,49 @@ void DOTPROD(_run4)(TC *         _h,
 //
 // structured dot product
 //
+
+// basic dotproduct, NEON intrinsics and NEON function
+//  _h      :   coefficients array [size: 1 x _n]
+//  _x      :   input array [size: 1 x _n]
+//  _n      :   input lengths
+//  _y      :   output dot product
+void DOTPROD(_NEON)(TC *_h,
+                    TI *_x,
+                    unsigned int _n,
+                    TO * _y)
+{
+    // initialize accumulator
+    TO r=0;
+
+    // t = 4*(floor(_n/4))
+    unsigned int t=(_n>>2)<<2;
+                                                              	            	
+    // compute dotprod in groups of 4
+    unsigned int i;
+#ifdef __ARM_NEON__
+    float32x4_t h_vec, x_vec, result_vec;
+    result_vec = vdupq_n_f32(0);
+    for(i=0; i<t; i+=4){
+        h_vec = vld1q_f32(&_h[i]);
+        x_vec = vld1q_f32(&_x[i]);
+        result_vec = vmlaq_f32(result_vec, h_vec, x_vec);
+    }
+    r = get_sum(result_vec);
+#else
+    for (i=0; i<t; i+=4) {
+        r += _h[i]   * _x[i];
+        r += _h[i+1] * _x[i+1];
+        r += _h[i+2] * _x[i+2];
+        r += _h[i+3] * _x[i+3];
+    }
+#endif
+    //clean up remainig
+    for (i=t ; i<_n; i++)
+        r += _h[i] * _x[i];
+
+   // return result
+   *_y = r;
+}
 
 // create structured dot product object
 //  _h      :   coefficients array [size: 1 x _n]
@@ -161,5 +207,15 @@ void DOTPROD(_execute)(DOTPROD() _q,
 {
     // run basic dot product with unrolled loops
     DOTPROD(_run4)(_q->h, _x, _q->n, _y);
+}
+// execute structured dot product with NEON Intrinsics
+//  _q      :   dot product object
+//  _x      :   input array [size: 1 x _n]
+//  _y      :   output dot product
+void DOTPROD(_executeNEON)(DOTPROD() _q,
+                       TI * _x,
+                       TO * _y)
+{ // run dot product with NEON intrinsics
+    DOTPROD(_NEON)(_q->h, _x, _q->n, _y);
 }
 
