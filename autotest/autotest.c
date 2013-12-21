@@ -38,6 +38,7 @@ void usage()
     printf("  -h            display this help and exit\n");
     printf("  -t[ID]        run specific test\n");
     printf("  -p[ID]        run specific package\n");
+    printf("  -r            run all tests, random order\n");
     printf("  -L            lists all scripts\n");
     printf("  -l            lists all packages\n");
     printf("  -x            stop on fail\n");
@@ -109,6 +110,7 @@ int main(int argc, char *argv[])
 {
     // options
     enum {RUN_ALL,              // run all tests
+          RUN_ALL_RANDOM,       // run all tests (random order)
           RUN_SINGLE_TEST,      // run just a single test
           RUN_SINGLE_PACKAGE,   // run just a single package
           RUN_SEARCH
@@ -119,12 +121,13 @@ int main(int argc, char *argv[])
     int verbose = 1;
     int stop_on_fail = 0;
     char search_string[128];
+    int rseed = 0;
 
     unsigned int i, j;
 
     // get input options
     int d;
-    while((d = getopt(argc,argv,"ht:p:Llxs:vq")) != EOF){
+    while((d = getopt(argc,argv,"ht:p:rLlxs:vq")) != EOF){
         switch (d) {
         case 'h':
             usage();
@@ -146,6 +149,9 @@ int main(int argc, char *argv[])
             } else {
                 mode = RUN_SINGLE_PACKAGE;
             }
+            break;
+        case 'r':
+            mode = RUN_ALL_RANDOM;
             break;
         case 'L':
             // list packages, scripts and exit
@@ -195,6 +201,31 @@ int main(int argc, char *argv[])
         for (i=0; i<n; i++) {
             if (verbose)
                 print_package_results( &packages[i] );
+        }
+        break;
+    case RUN_ALL_RANDOM:
+        // initialize with large random number
+        i = 8191 % NUM_AUTOSCRIPTS;
+
+        while (n < NUM_AUTOSCRIPTS) {
+            i = (i + 524287) % NUM_AUTOSCRIPTS;
+            while (scripts[i].executed) {
+                i++;
+                if (i >= NUM_AUTOSCRIPTS)
+                    i %= NUM_AUTOSCRIPTS;
+            }
+
+            printf("executing test %4u (%4u / %4u)\n", i, n+1, NUM_AUTOSCRIPTS);
+            execute_autotest( &scripts[i], verbose );
+
+            n++;
+            if (stop_on_fail && liquid_autotest_num_failed > 0)
+                break;
+        }
+
+        for (i=0; i<n; i++) {
+            if (verbose)
+                print_autotest_results( &packages[i] );
         }
         break;
     case RUN_SINGLE_TEST:
