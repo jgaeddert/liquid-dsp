@@ -77,7 +77,7 @@ struct MSRESAMP(_s) {
 
 // create msresamp object
 //  TODO: add signal bandwidth parameter?
-//  TODO: add center frequency for resamp_ccct? facilitates DDS object synthesis
+//  TODO: add center frequency parameter; facilitates DDS object synthesis
 //  _r              :   resampling rate [output/input]
 //  _As             :   stop-band attenuation
 MSRESAMP() MSRESAMP(_create)(float _r,
@@ -235,6 +235,8 @@ void MSRESAMP(_reset)(MSRESAMP() _q)
 
     // reset buffer write pointer
     _q->buffer_index = 0;
+
+    // TODO: clear internal buffers?
 }
 
 // get filter delay (output samples)
