@@ -354,6 +354,9 @@ This directory contains all the examples for interfacing the liquid modules.
 
     SEE ALSO: `bsequence_example.c`
 
+ * `msresamp_crcf_example.c`:
+    Demonstration of the multi-stage arbitrary resampler.
+
  * `nco_example.c`:
     This example demonstrates the most basic functionality of the
     numerically-controlled oscillator (NCO) object.
