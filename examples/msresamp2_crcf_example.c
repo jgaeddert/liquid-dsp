@@ -69,6 +69,11 @@ int main(int argc, char*argv[])
     unsigned int num_stages = (unsigned int) roundf(fabsf(log2f(r)));
     mode = r < 1. ? MSRESAMP2_MODE_DECIM : MSRESAMP2_MODE_INTERP;
 
+    if (mode != MSRESAMP2_MODE_DECIM) {
+        fprintf(stderr,"warning: %s, only decimator mode supported\n", argv[0]);
+        exit(1);
+    }
+
     printf("msresamp2:\n");
     printf("    rate    :   %12.8f\n", r);
     printf("    log2(r) :   %12.8f\n", log2f(r));
@@ -80,18 +85,17 @@ int main(int argc, char*argv[])
     // create multi-stage arbitrary resampler object
     msresamp2_crcf q = msresamp2_crcf_create(num_stages, fc, f0, As);
     msresamp2_crcf_print(q);
-#if 0
     float delay = msresamp2_crcf_get_delay(q);
 
     // number of input samples (zero-padded)
-    unsigned int nx = n + (int)ceilf(delay) + 10;
-
-    // output buffer with extra padding for good measure
-    unsigned int ny_alloc = (unsigned int) (2*(float)nx * r);  // allocation for output
+    unsigned int D  = (1 << num_stages);
+    unsigned int ny = 80;
+    unsigned int nx = ny * D;
+    n = round(0.75 * nx);
 
     // allocate memory for arrays
     float complex x[nx];
-    float complex y[ny_alloc];
+    float complex y[ny];
 
     // generate input signal
     float wsum = 0.0f;
@@ -100,21 +104,19 @@ int main(int argc, char*argv[])
         float w = i < n ? kaiser(i, n, 10.0f, 0.0f) : 0.0f;
 
         // apply window to complex sinusoid
-        x[i] = cexpf(_Complex_I*2*M_PI*0.7021fc*i) * w;
+        x[i] = cexpf(_Complex_I*2*M_PI*0.37021f*fc*i) * w;
 
         // accumulate window
         wsum += w;
     }
 
     // run resampler
-    unsigned int ny;
-    msresamp2_crcf_execute(q, x, nx, y, &ny);
-#endif
+    for (i=0; i<ny; i++)
+        msresamp2_crcf_decim_execute(q, &x[i*D], &y[i]);
 
     // clean up allocated objects
     msresamp2_crcf_destroy(q);
     
-#if 0
     // 
     // analyze resulting signal
     //
@@ -239,5 +241,4 @@ int main(int argc, char*argv[])
 
     printf("done.\n");
     return 0;
-#endif
 }

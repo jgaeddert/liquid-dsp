@@ -2277,14 +2277,6 @@ void MSRESAMP2(_reset)(MSRESAMP2() _q);                         \
 /* get filter delay (output samples)                        */  \
 float MSRESAMP2(_get_delay)(MSRESAMP2() _q);                    \
                                                                 \
-/* execute multi-stage resampler as decimator               */  \
-/*  _q      : msresamp object                               */  \
-/*  _x      : input sample array  [size: 2^_num_stages x 1] */  \
-/*  _y      : output sample pointer                         */  \
-void MSRESAMP2(_decim_execute)(MSRESAMP2() _q,                  \
-                               TI *        _x,                  \
-                               TO *        _y);                 \
-                                                                \
 /* execute multi-stage resampler as interpolator            */  \
 /*  _q      : msresamp object                               */  \
 /*  _x      : input sample                                  */  \
@@ -2292,6 +2284,14 @@ void MSRESAMP2(_decim_execute)(MSRESAMP2() _q,                  \
 void MSRESAMP2(_interp_execute)(MSRESAMP2() _q,                 \
                                 TI          _x,                 \
                                 TO *        _y);                \
+                                                                \
+/* execute multi-stage resampler as decimator               */  \
+/*  _q      : msresamp object                               */  \
+/*  _x      : input sample array  [size: 2^_num_stages x 1] */  \
+/*  _y      : output sample pointer                         */  \
+void MSRESAMP2(_decim_execute)(MSRESAMP2() _q,                  \
+                               TI *        _x,                  \
+                               TO *        _y);                 \
 
 LIQUID_MSRESAMP2_DEFINE_API(MSRESAMP2_MANGLE_RRRF,
                             float,
