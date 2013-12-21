@@ -39,6 +39,9 @@ struct MSRESAMP2(_s) {
     float        f0;            // composite center frequency
     float        As;            // composite stop-band attenuation
 
+    // derived values
+    unsigned int M;             // integer resampling rate: 2^num_stages
+
     // half-band resamplers
     float * fc_stage;           // cut-off frequency for each stage
     float * f0_stage;           // center frequency for each stage
@@ -96,11 +99,12 @@ MSRESAMP2() MSRESAMP2(_create)(unsigned int _num_stages,
     q->As         = _As;
 
     // derived values
-    q->zeta = 1 << q->num_stages;
+    q->M    = 1 << q->num_stages;
+    q->zeta = 1.0f;
 
     // allocate memory for buffers
-    q->buffer0 = (T*) malloc( (1 << q->num_stages)*sizeof(T) );
-    q->buffer1 = (T*) malloc( (1 << q->num_stages)*sizeof(T) );
+    q->buffer0 = (T*) malloc( q->M * sizeof(T) );
+    q->buffer1 = (T*) malloc( q->M * sizeof(T) );
 
     // determine half-band resampler parameters
     q->fc_stage = (float*)        malloc(q->num_stages*sizeof(float)       );
@@ -202,6 +206,33 @@ void MSRESAMP2(_interp_execute)(MSRESAMP2() _q,
                                 TI          _x,
                                 TO *        _y)
 {
+    // buffer pointers (initialize BOTH to _q->buffer0);
+    T * b0 = _q->buffer0;   // input buffer pointer
+    T * b1 = _q->buffer1;   // output buffer pointer
+
+    // set input sample in first buffer
+    b0[0] = _x;
+
+    unsigned int s;         // half-band decimator stage counter
+    unsigned int k;         // number of inputs for this stage
+    for (s=0; s<_q->num_stages; s++) {
+        // compute number of inputs for this stage
+        k = 1 << s;
+
+        // set final stage output as supplied output pointer
+        if (s == _q->num_stages-1)
+            b1 = _y;
+
+        // run half-band stages as interpolators
+        unsigned int i;
+        unsigned int g = _q->num_stages-s-1;    // reversed resampler index
+        for (i=0; i<k; i++)
+            RESAMP2(_interp_execute)(_q->resamp2[g], b0[i], &b1[2*i]);
+
+        // toggle output buffer pointers
+        b0 = (s % 2) == 0 ? _q->buffer1 : _q->buffer0;
+        b1 = (s % 2) == 0 ? _q->buffer0 : _q->buffer1;
+    }
 }
 
 // execute multi-stage resampler as decimator               
@@ -216,8 +247,8 @@ void MSRESAMP2(_decim_execute)(MSRESAMP2() _q,
     T * b0 = _x;            // input buffer pointer
     T * b1 = _q->buffer1;   // output buffer pointer
 
-    unsigned int s;     // half-band decimator stage counter
-    unsigned int k;     // number of inputs for this stage
+    unsigned int s;         // half-band decimator stage counter
+    unsigned int k;         // number of inputs for this stage
     for (s=0; s<_q->num_stages; s++) {
         // compute number of outputs for this stage
         k = 1 << (_q->num_stages - s - 1);

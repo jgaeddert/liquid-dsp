@@ -21,7 +21,7 @@ void usage()
     printf("  h     : print help\n");
     printf("  r     : resampling rate (output/input), default: 0.25\n");
     printf("  s     : stop-band attenuation [dB],     default: 60\n");
-    printf("  n     : number of input samples,        default: 400\n");
+    printf("  n     : number of low-rate samples,     default: 120\n");
     printf("  f     : pass-band cut-off frequency,    default: 0.1\n");
     printf("  c     : center frequency of filter,     default: 0\n");
 }
@@ -31,7 +31,7 @@ int main(int argc, char*argv[])
     // options
     float r=0.25f;          // resampling rate (output/input)
     float As=60.0f;         // resampling filter stop-band attenuation [dB]
-    unsigned int n=400;     // number of input samples
+    unsigned int n=120;     // number of low-rate samples
     float fc=0.1f;          // complex sinusoid frequency
     float f0=0.f;           // center frequency
 
@@ -69,11 +69,6 @@ int main(int argc, char*argv[])
     unsigned int num_stages = (unsigned int) roundf(fabsf(log2f(r)));
     mode = r < 1. ? MSRESAMP2_MODE_DECIM : MSRESAMP2_MODE_INTERP;
 
-    if (mode != MSRESAMP2_MODE_DECIM) {
-        fprintf(stderr,"warning: %s, only decimator mode supported\n", argv[0]);
-        exit(1);
-    }
-
     printf("msresamp2:\n");
     printf("    rate    :   %12.8f\n", r);
     printf("    log2(r) :   %12.8f\n", log2f(r));
@@ -88,10 +83,10 @@ int main(int argc, char*argv[])
     float delay = msresamp2_crcf_get_delay(q);
 
     // number of input samples (zero-padded)
-    unsigned int D  = (1 << num_stages);
-    unsigned int ny = 80;
-    unsigned int nx = ny * D;
-    n = round(0.75 * nx);
+    unsigned int M  = (1 << num_stages);    // integer resampling rate
+    unsigned int nx = (mode == MSRESAMP2_MODE_DECIM) ? n * M : n;
+    unsigned int ny = (mode == MSRESAMP2_MODE_DECIM) ? n     : n * M;
+    unsigned int wlen = round(0.75 * nx);
 
     // allocate memory for arrays
     float complex x[nx];
@@ -101,7 +96,7 @@ int main(int argc, char*argv[])
     float wsum = 0.0f;
     for (i=0; i<nx; i++) {
         // compute window
-        float w = i < n ? kaiser(i, n, 10.0f, 0.0f) : 0.0f;
+        float w = i < wlen ? kaiser(i, wlen, 10.0f, 0.0f) : 0.0f;
 
         // apply window to complex sinusoid
         x[i] = cexpf(_Complex_I*2*M_PI*0.37021f*fc*i) * w;
@@ -111,8 +106,13 @@ int main(int argc, char*argv[])
     }
 
     // run resampler
-    for (i=0; i<ny; i++)
-        msresamp2_crcf_decim_execute(q, &x[i*D], &y[i]);
+    if (mode == MSRESAMP2_MODE_DECIM) {
+        for (i=0; i<ny; i++)
+            msresamp2_crcf_decim_execute(q, &x[i*M], &y[i]);
+    } else {
+        for (i=0; i<nx; i++)
+            msresamp2_crcf_interp_execute(q, x[i], &y[i*M]);
+    }
 
     // clean up allocated objects
     msresamp2_crcf_destroy(q);
@@ -127,7 +127,7 @@ int main(int argc, char*argv[])
 
     // run FFT and ensure that carrier has moved and that image
     // frequencies and distortion have been adequately suppressed
-    unsigned int nfft = 1 << liquid_nextpow2(ny);
+    unsigned int nfft = 1 << liquid_nextpow2(n*M);
     float complex yfft[nfft];   // fft input
     float complex Yfft[nfft];   // fft output
     for (i=0; i<nfft; i++)
