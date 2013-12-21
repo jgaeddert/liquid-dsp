@@ -40,6 +40,10 @@ struct MSRESAMP2(_s) {
     float        As;            // composite stop-band attenuation
 
     // half-band resamplers
+    float * fc_stage;           // cut-off frequency for each stage
+    float * f0_stage;           // center frequency for each stage
+    float * As_stage;           // stop-band attenuation for each stage
+    unsigned int * m_stage;     // filter semi-length for each stage
     RESAMP2() * resamp2;        // array of half-band resamplers
     T * buffer0;                // buffer[0]
     T * buffer1;                // buffer[1]
@@ -80,6 +84,8 @@ MSRESAMP2() MSRESAMP2(_create)(unsigned int _num_stages,
         _f0 = 0.;
     }
 
+    unsigned int i;
+
     // create object
     MSRESAMP2() q = (MSRESAMP2()) malloc(sizeof(struct MSRESAMP2(_s)));
 
@@ -93,23 +99,27 @@ MSRESAMP2() MSRESAMP2(_create)(unsigned int _num_stages,
     q->buffer0 = (T*) malloc( (1 << q->num_stages)*sizeof(T) );
     q->buffer1 = (T*) malloc( (1 << q->num_stages)*sizeof(T) );
 
+    // determine half-band resampler parameters
+    q->fc_stage = (float*)        malloc(q->num_stages*sizeof(float)       );
+    q->f0_stage = (float*)        malloc(q->num_stages*sizeof(float)       );
+    q->As_stage = (float*)        malloc(q->num_stages*sizeof(float)       );
+    q->m_stage  = (unsigned int*) malloc(q->num_stages*sizeof(unsigned int));
+    for (i=0; i<q->num_stages; i++) {
+        // TODO: compute parameters based on filter requirements;
+        //       for now just fix parameters
+        q->fc_stage[i] = 0.25f;
+        q->f0_stage[i] = 0.0f;
+        q->As_stage[i] = 60.0f;
+        q->m_stage[i]  = 3 + i;
+    }
+
     // create half-band resampler objects
     q->resamp2 = (RESAMP2()*) malloc(q->num_stages*sizeof(RESAMP2()));
-    unsigned int i;
     for (i=0; i<q->num_stages; i++) {
-#if 0
-        // TODO: compute length based on filter requirements
-        // comptue required filter semi-length, h_len = 4*m + 1
-        float h_len = estimate_req_filter_len_Herrmann(df, q->As);
-        float m_hat = (h_len-1.0f)/4.0f;
-        unsigned int m = m_hat < 2.0f ? 2 : (unsigned int)m_hat;
-#else
-        // for now just fix half-band filter length
-        unsigned int m = 3;
-#endif
-
         // create half-band resampler
-        q->resamp2[i] = RESAMP2(_create)(m, 0, q->As);
+        q->resamp2[i] = RESAMP2(_create)(q->m_stage[i],
+                                         q->f0_stage[i],
+                                         q->As_stage[i]);
     }
 
     // reset object
@@ -125,6 +135,12 @@ void MSRESAMP2(_destroy)(MSRESAMP2() _q)
     // free buffers
     free(_q->buffer0);
     free(_q->buffer1);
+
+    // free half-band resampler design parameter arrays
+    free(_q->fc_stage);
+    free(_q->f0_stage);
+    free(_q->As_stage);
+    free(_q->m_stage);
 
     // destroy/free half-band resampler objects
     unsigned int i;
@@ -147,10 +163,12 @@ void MSRESAMP2(_print)(MSRESAMP2() _q)
     printf("    center frequency, f0    : %12.8f / Fs\n", _q->f0);
     printf("    stop-band attenuation   : %.2f dB\n",     _q->As);
 
-    // TODO: print each stage
+    // print each stage
     unsigned int i;
-    for (i=0; i<_q->num_stages; i++)
-        RESAMP2(_print)(_q->resamp2[i]);
+    for (i=0; i<_q->num_stages; i++) {
+        printf("    stage[%2u]  {m=%3u, As=%6.2f dB, fc=%6.3f, f0=%6.3f}\n",
+                    i, _q->m_stage[i], _q->As_stage[i], _q->fc_stage[i], _q->f0_stage[i]);
+    }
 }
 
 // reset msresamp2 object internals, clear filters and nco phase
