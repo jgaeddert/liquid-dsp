@@ -89,7 +89,7 @@ FIRFILT() FIRFILT(_create)(TC * _h,
     q->dp = DOTPROD(_create)(q->h, q->h_len);
 
     // reset filter state (clear buffer)
-    FIRFILT(_clear)(q);
+    FIRFILT(_reset)(q);
 
     return q;
 }
@@ -219,7 +219,7 @@ void FIRFILT(_destroy)(FIRFILT() _q)
 }
 
 // reset internal state of filter object
-void FIRFILT(_clear)(FIRFILT() _q)
+void FIRFILT(_reset)(FIRFILT() _q)
 {
 #if LIQUID_FIRFILT_USE_WINDOW
     WINDOW(_clear)(_q->w);

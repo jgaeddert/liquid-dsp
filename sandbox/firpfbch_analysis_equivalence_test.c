@@ -136,7 +136,7 @@ int main() {
     for (i=0; i<num_channels; i++) {
 
         // reset filter
-        firfilt_crcf_clear(f);
+        firfilt_crcf_reset(f);
 
         // set center frequency
         dphi = 2.0f * M_PI * (float)i / (float)num_channels;

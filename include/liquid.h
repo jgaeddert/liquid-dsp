@@ -1606,7 +1606,7 @@ FIRFILT() FIRFILT(_recreate)(FIRFILT()    _q,                   \
 void FIRFILT(_destroy)(FIRFILT() _q);                           \
                                                                 \
 /* reset filter object's internal buffer                    */  \
-void FIRFILT(_clear)(FIRFILT() _q);                             \
+void FIRFILT(_reset)(FIRFILT() _q);                             \
                                                                 \
 /* print filter object information                          */  \
 void FIRFILT(_print)(FIRFILT() _q);                             \
