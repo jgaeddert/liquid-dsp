@@ -378,6 +378,12 @@ float liquid_sumsqf(float *      _v,
 float liquid_sumsqcf(liquid_float_complex * _v,
                      unsigned int           _n);
 
+q16_t liquid_sumsqq16(q16_t *     _v,
+                     unsigned int _n);
+
+q16_t liquid_sumsqcq16(cq16_t *     _v,
+                       unsigned int _n);
+
 //
 // MODULE : equalization
 //
