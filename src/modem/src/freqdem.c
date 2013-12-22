@@ -68,7 +68,11 @@ FREQDEM() FREQDEM(_create)(float               _kf,
 
     // create oscillator and initialize PLL bandwidth
     q->oscillator = NCO_CRC(_create)(LIQUID_VCO);
+#if defined LIQUID_FPM
+    NCO_CRC(_pll_set_bandwidth)(q->oscillator, Q(_float_to_fixed)(0.08f));
+#else
     NCO_CRC(_pll_set_bandwidth)(q->oscillator, 0.08f);
+#endif
 
     // create initial rx filter
     q->rxfilter = FIRFILT_CRC(_create_kaiser)(17, 0.2f, 40.0f, 0.0f);
