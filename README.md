@@ -1,6 +1,7 @@
 
 liquid-dsp
 ==========
+
 Software-Defined Radio Digital Signal Processing Library
 
 liquid-dsp is a free and open-source digital signal processing (DSP)
@@ -126,6 +127,7 @@ the hard way.
 
 Available Modules
 -----------------
+
   * _agc_: automatic gain control, squelch, received signal strength
   * _audio_: source audio encoders/decoders: cvsd, filterbanks
   * _buffer_: internal buffering, circular/static, ports (threaded)
@@ -165,11 +167,6 @@ Available Modules
         maximal-length sequences
   * _utility_: useful miscellany, mostly bit manipulation (shifting,
         packing, and unpacking of arrays)
-  * _experimental_: artificial neural networks, communications channel
-        modeling, threaded ports, filterbank audio synthesizer,
-        continuous-phase modulation, direct digital synthesis,
-        quadrature mirror filterbanks, advanced symbol timing recovery,
-        OFDM/OQAM
 
 ### Additional notes ###
 

@@ -46,7 +46,7 @@ SED = @SED@
 # C compiler flags
 include_dirs	:= . .. include ../include
 INCLUDE_CFLAGS	= $(addprefix -I ,$(include_dirs))
-CONFIG_CFLAGS	= @ARCH_OPTION@ @PROFILE_OPTION@ @DEBUG_OPTION@ @SIMD_FLAGS@
+CONFIG_CFLAGS	= @CFLAGS@ @PROFILE_OPTION@ @DEBUG_OPTION@
 CFLAGS		+= $(INCLUDE_CFLAGS) -g -O2 -Wall -fPIC $(CONFIG_CFLAGS)
 
 EPSTOPDF = @EPSTOPDF@
@@ -97,8 +97,6 @@ LISTINGS_C = 						\
 	listings/gasearch.example.c			\
 	listings/gmskmodem.example.c			\
 	listings/gradsearch.example.c			\
-	listings/gport.direct.example.c			\
-	listings/gport.indirect.example.c		\
 	listings/iirdes.example.c			\
 	listings/iirfilt.example.c			\
 	listings/interleaver.example.c			\
@@ -147,7 +145,6 @@ LISTINGS_CC = 					\
 SECTIONS :=					\
 	sections/introduction.tex		\
 	sections/installation.tex		\
-	sections/experimental.tex		\
 						\
 	sections/agc.tex			\
 	sections/ann.tex			\

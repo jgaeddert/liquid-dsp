@@ -1,7 +1,5 @@
 /*
- * Copyright (c) 2007, 2008, 2009, 2010 Joseph Gaeddert
- * Copyright (c) 2007, 2008, 2009, 2010 Virginia Polytechnic
- *                                      Institute & State University
+ * Copyright (c) 2007, 2008, 2009, 2010, 2011, 2012, 2013 Joseph Gaeddert
  *
  * This file is part of liquid.
  *
@@ -88,7 +86,8 @@ float iir_group_delay(float * _b,
 
     for (i=0; i<_na; i++) {
         for (j=0; j<_nb; j++) {
-            c[i+j] += conjf(_a[_na-i-1])*_b[j];
+            float sum = conjf(_a[_na-i-1])*_b[j];
+            c[i+j] += sum;
         }
     }
 
