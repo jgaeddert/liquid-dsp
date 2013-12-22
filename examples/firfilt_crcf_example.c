@@ -18,13 +18,14 @@
 
 int main() {
     // options
-    unsigned int h_len=57;  // filter length
+    unsigned int h_len=65;  // filter length
     float fc=0.1f;          // cutoff frequency
     float As=60.0f;         // stop-band attenuation
-    unsigned int n=200;     // number of samples
+    unsigned int n=240;     // number of samples
 
-    // design filter from prototype
+    // design filter from prototype and scale to bandwidth
     firfilt_crcf q = firfilt_crcf_create_kaiser(h_len, fc, As, 0.0f);
+    firfilt_crcf_set_scale(q, 2.0f*fc);
     firfilt_crcf_print(q);
 
     unsigned int i;
