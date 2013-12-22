@@ -1640,31 +1640,67 @@ FIRFILT() FIRFILT(_create_kaiser)(unsigned int _n,              \
                                   float        _As,             \
                                   float        _mu);            \
                                                                 \
-/* create from square-root Nyquist prototype            */      \
-/*  _type   : filter type (e.g. LIQUID_RNYQUIST_RRC)    */      \
-/*  _k      : nominal samples/symbol, _k > 1            */      \
-/*  _m      : filter delay [symbols], _m > 0            */      \
-/*  _beta   : rolloff factor, 0 < beta <= 1             */      \
-/*  _mu     : fractional sample offset,-0.5 < _mu < 0.5 */      \
+/* create from square-root Nyquist prototype                */  \
+/*  _type   : filter type (e.g. LIQUID_RNYQUIST_RRC)        */  \
+/*  _k      : nominal samples/symbol, _k > 1                */  \
+/*  _m      : filter delay [symbols], _m > 0                */  \
+/*  _beta   : rolloff factor, 0 < beta <= 1                 */  \
+/*  _mu     : fractional sample offset,-0.5 < _mu < 0.5     */  \
 FIRFILT() FIRFILT(_create_rnyquist)(int          _type,         \
                                     unsigned int _k,            \
                                     unsigned int _m,            \
                                     float        _beta,         \
                                     float        _mu);          \
                                                                 \
-FIRFILT() FIRFILT(_recreate)(FIRFILT() _f,                      \
-                             TC * _h,                           \
+/* re-create filter                                         */  \
+/*  _q      : original filter object                        */  \
+/*  _h      : pointer to filter coefficients [size: _n x 1] */  \
+/*  _n      : filter length, _n > 0                         */  \
+FIRFILT() FIRFILT(_recreate)(FIRFILT()    _q,                   \
+                             TC *         _h,                   \
                              unsigned int _n);                  \
-void FIRFILT(_destroy)(FIRFILT() _f);                           \
-void FIRFILT(_clear)(FIRFILT() _f);                             \
-void FIRFILT(_print)(FIRFILT() _f);                             \
-void FIRFILT(_push)(FIRFILT() _f, TI _x);                       \
-void FIRFILT(_execute)(FIRFILT() _f, TO *_y);                   \
-unsigned int FIRFILT(_get_length)(FIRFILT() _f);                \
-void FIRFILT(_freqresponse)(FIRFILT() _f,                       \
-                            float _fc,                          \
+                                                                \
+/* destroy filter object and free all internal memory       */  \
+void FIRFILT(_destroy)(FIRFILT() _q);                           \
+                                                                \
+/* reset filter object's internal buffer                    */  \
+void FIRFILT(_reset)(FIRFILT() _q);                             \
+                                                                \
+/* print filter object information                          */  \
+void FIRFILT(_print)(FIRFILT() _q);                             \
+                                                                \
+/* set output scaling for filter                            */  \
+void FIRFILT(_set_scale)(FIRFILT() _q,                          \
+                         TC        _g);                         \
+                                                                \
+/* push sample into filter object's internal buffer         */  \
+/*  _q      : filter object                                 */  \
+/*  _x      : single input sample                           */  \
+void FIRFILT(_push)(FIRFILT() _q,                               \
+                    TI        _x);                              \
+                                                                \
+/* execute the filter on internal buffer and coefficients   */  \
+/*  _q      : filter object                                 */  \
+/*  _y      : pointer to single output sample               */  \
+void FIRFILT(_execute)(FIRFILT() _q,                            \
+                       TO *      _y);                           \
+                                                                \
+/* return length of filter object                           */  \
+unsigned int FIRFILT(_get_length)(FIRFILT() _q);                \
+                                                                \
+/* compute complex frequency response of filter object      */  \
+/*  _q      : filter object                                 */  \
+/*  _fc     : frequency to evaluate                         */  \
+/*  _H      : pointer to output complex frequency response  */  \
+void FIRFILT(_freqresponse)(FIRFILT()              _q,          \
+                            float                  _fc,         \
                             liquid_float_complex * _H);         \
-float FIRFILT(_groupdelay)(FIRFILT() _f, float _fc);
+                                                                \
+/* compute and return group delay of filter object          */  \
+/*  _q      : filter object                                 */  \
+/*  _fc     : frequency to evaluate                         */  \
+float FIRFILT(_groupdelay)(FIRFILT() _q,                        \
+                           float     _fc);                      \
 
 LIQUID_FIRFILT_DEFINE_API(FIRFILT_MANGLE_RRRF,
                           float,

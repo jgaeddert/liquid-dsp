@@ -50,7 +50,8 @@ struct FIRFILT(_s) {
     unsigned int w_mask;    // window index mask
     unsigned int w_index;   // window read index
 #endif
-    DOTPROD() dp;       // dot product object
+    DOTPROD() dp;           // dot product object
+    TC scale;               // output scaling factor
 };
 
 // create firfilt object
@@ -89,8 +90,20 @@ FIRFILT() FIRFILT(_create)(TC * _h,
     // create dot product object
     q->dp = DOTPROD(_create)(q->h, q->h_len);
 
+    // set default scaling
+#if defined LIQUID_FIXED
+#  if TC_COMPLEX
+    q->scale.real = Q(_one);
+    q->scale.imag = 0;
+#  else
+    q->scale = Q(_one);
+#  endif
+#else
+    q->scale = 1;
+#endif
+
     // reset filter state (clear buffer)
-    FIRFILT(_clear)(q);
+    FIRFILT(_reset)(q);
 
     return q;
 }
@@ -236,7 +249,7 @@ void FIRFILT(_destroy)(FIRFILT() _q)
 }
 
 // reset internal state of filter object
-void FIRFILT(_clear)(FIRFILT() _q)
+void FIRFILT(_reset)(FIRFILT() _q)
 {
 #if LIQUID_FIRFILT_USE_WINDOW
     WINDOW(_clear)(_q->w);
@@ -250,24 +263,37 @@ void FIRFILT(_clear)(FIRFILT() _q)
 // print filter object internals (taps, buffer)
 void FIRFILT(_print)(FIRFILT() _q)
 {
-    printf("filter coefficients:\n");
-    unsigned int i, n = _q->h_len;
+    printf("firfilt_%s:\n", EXTENSION_FULL);
+    unsigned int i;
+    unsigned int n = _q->h_len;
     for (i=0; i<n; i++) {
         printf("  h(%3u) = ", i+1);
         PRINTVAL_TC(_q->h[n-i-1],%12.8f);
         printf("\n");
     }
 
+    // print scaling
+    printf("  scale = ");
+    PRINTVAL_TC(_q->scale,%12.8f);
+    printf("\n");
+
 #if LIQUID_FIRFILT_USE_WINDOW
     WINDOW(_print)(_q->w);
 #endif
+}
+
+// set output scaling for filter
+void FIRFILT(_set_scale)(FIRFILT() _q,
+                         TC        _scale)
+{
+    _q->scale = _scale;
 }
 
 // push sample into filter object's internal buffer
 //  _q      :   filter object
 //  _x      :   input sample
 void FIRFILT(_push)(FIRFILT() _q,
-                    TI _x)
+                    TI        _x)
 {
 #if LIQUID_FIRFILT_USE_WINDOW
     WINDOW(_push)(_q->w, _x);
@@ -292,7 +318,7 @@ void FIRFILT(_push)(FIRFILT() _q,
 //  _q      :   filter object
 //  _y      :   output sample pointer
 void FIRFILT(_execute)(FIRFILT() _q,
-                       TO *_y)
+                       TO *      _y)
 {
     // read buffer (retrieve pointer to aligned memory array)
 #if LIQUID_FIRFILT_USE_WINDOW
@@ -304,6 +330,14 @@ void FIRFILT(_execute)(FIRFILT() _q,
 
     // execute dot product
     DOTPROD(_execute)(_q->dp, r, _y);
+
+    // apply scaling factor
+#if defined LIQUID_FIXED
+    // TODO: scale by simply shifting values
+    *_y = MUL_TI_TC(*_y,_q->scale);
+#else
+    *_y *= _q->scale;
+#endif
 }
 
 // get filter length
@@ -316,13 +350,14 @@ unsigned int FIRFILT(_get_length)(FIRFILT() _q)
 //  _q      :   filter object
 //  _fc     :   frequency
 //  _H      :   output frequency response
-void FIRFILT(_freqresponse)(FIRFILT() _q,
-                            float _fc,
+void FIRFILT(_freqresponse)(FIRFILT()       _q,
+                            float           _fc,
                             float complex * _H)
 {
     unsigned int i;
     float complex H = 0.0f;
 
+    // compute dot product between coefficients and exp{ 2 pi fc {0..n-1} }
     for (i=0; i<_q->h_len; i++)
     {
 #ifdef LIQUID_FIXED
@@ -340,6 +375,17 @@ void FIRFILT(_freqresponse)(FIRFILT() _q,
 #endif
     }
 
+    // apply scaling
+#if defined LIQUID_FIXED
+#  if TC_COMPLEX
+    H *= CQ(_fixed_to_float)(_q->scale);
+#  else
+    H *= Q(_fixed_to_float)(_q->scale);
+#  endif
+#else
+    H *= _q->scale;
+#endif
+
     // set return value
     *_H = H;
 }
@@ -349,7 +395,7 @@ void FIRFILT(_freqresponse)(FIRFILT() _q,
 //  _q      :   filter object
 //  _fc     :   frequency
 float FIRFILT(_groupdelay)(FIRFILT() _q,
-                           float _fc)
+                           float     _fc)
 {
     // copy coefficients to be in correct order
     float h[_q->h_len];
