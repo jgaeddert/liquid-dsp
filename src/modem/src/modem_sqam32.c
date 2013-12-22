@@ -1,7 +1,5 @@
 /*
- * Copyright (c) 2007, 2008, 2009, 2010, 2011, 2012 Joseph Gaeddert
- * Copyright (c) 2007, 2008, 2009, 2010, 2011, 2012 Virginia Polytechnic
- *                                      Institute & State University
+ * Copyright (c) 2007, 2008, 2009, 2010, 2011, 2012, 2013 Joseph Gaeddert
  *
  * This file is part of liquid.
  *
@@ -41,6 +39,8 @@ MODEM() MODEM(_create_sqam32)()
     q->modulate_func   = &MODEM(_modulate_sqam32);
     q->demodulate_func = &MODEM(_demodulate_sqam32);
 
+    // reset and return
+    MODEM(_reset)(q);
     return q;
 }
 

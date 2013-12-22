@@ -1,6 +1,5 @@
 /*
- * Copyright (c) 2012 Joseph Gaeddert
- * Copyright (c) 2012 Virginia Polytechnic Institute & State University
+ * Copyright (c) 2007, 2008, 2009, 2010, 2011, 2012, 2013 Joseph Gaeddert
  *
  * This file is part of liquid.
  *
@@ -31,7 +30,6 @@
 #include <math.h>
 
 #include "liquid.h"
-#include "liquid.experimental.h"
 
 #ifdef __cplusplus
 #  include <iostream>

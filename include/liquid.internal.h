@@ -35,10 +35,6 @@
 #include <complex.h>
 #include "liquid.h"
 
-#if LIQUID_EXPERIMENTAL == 1
-#  include "liquid.experimental.h"
-#endif
-
 #if defined HAVE_FEC_H && defined HAVE_LIBFEC
 #  define LIBFEC_ENABLED 1
 #endif
@@ -106,32 +102,6 @@ LIQUID_BUFFER_DEFINE_INTERNAL_API(BUFFER_MANGLE_CFLOAT, float complex)
 //
 // MODULE : dotprod
 //
-
-// large macro
-//   DOTPROD    : name-mangling macro
-//   TO         : output data type
-//   TC         : coefficients data type
-//   TI         : input data type
-#define LIQUID_DOTPROD_DEFINE_INTERNAL_API(DOTPROD,TO,TC,TI)    \
-                                                                \
-/* execute dotprod 4 inputs at a time */                        \
-void DOTPROD(_run4)(TC *_h, TI *_x, unsigned int _n, TO *_y);
-
-LIQUID_DOTPROD_DEFINE_INTERNAL_API(DOTPROD_MANGLE_RRRF,
-                                   float,
-                                   float,
-                                   float)
-
-LIQUID_DOTPROD_DEFINE_INTERNAL_API(DOTPROD_MANGLE_CCCF,
-                                   liquid_float_complex,
-                                   liquid_float_complex,
-                                   liquid_float_complex)
-
-LIQUID_DOTPROD_DEFINE_INTERNAL_API(DOTPROD_MANGLE_CRCF,
-                                   liquid_float_complex,
-                                   float,
-                                   liquid_float_complex)
-
 
 
 //
@@ -682,8 +652,11 @@ int fec_sumproduct_step(unsigned int    _m,
                         float *         _LQ,
                         unsigned char * _parity);
 
+//
 // packetizer
+//
 
+// fec/interleaver plan
 struct fecintlv_plan {
     unsigned int dec_msg_len;
     unsigned int enc_msg_len;
@@ -696,6 +669,7 @@ struct fecintlv_plan {
     interleaver q;
 };
 
+// packetizer object
 struct packetizer_s {
     unsigned int msg_len;
     unsigned int packet_len;
@@ -706,61 +680,11 @@ struct packetizer_s {
     struct fecintlv_plan * plan;
     unsigned int plan_len;
 
-    // buffers
+    // buffers (ping-pong)
     unsigned int buffer_len;
     unsigned char * buffer_0;
     unsigned char * buffer_1;
 };
-
-// reallocate memory for buffers
-void packetizer_realloc_buffers(packetizer _p, unsigned int _len);
-
-
-//
-// interleaver
-//
-
-// structured interleaver object
-struct interleaver_s {
-    unsigned int n;     // number of bytes
-
-    unsigned int M;     // row dimension
-    unsigned int N;     // col dimension
-
-    // interleaving depth (number of permutations)
-    unsigned int depth;
-};
-
-// 
-// permutation functions
-//
-
-// permute one iteration
-void interleaver_permute(unsigned char * _x,
-                         unsigned int _n,
-                         unsigned int _M,
-                         unsigned int _N);
-
-// permute one iteration (soft bit input)
-void interleaver_permute_soft(unsigned char * _x,
-                              unsigned int _n,
-                              unsigned int _M,
-                              unsigned int _N);
-
-// permute one iteration with mask
-void interleaver_permute_mask(unsigned char * _x,
-                              unsigned int _n,
-                              unsigned int _M,
-                              unsigned int _N,
-                              unsigned char _mask);
-
-// permute one iteration (soft bit input) with mask
-void interleaver_permute_mask_soft(unsigned char * _x,
-                                   unsigned int _n,
-                                   unsigned int _M,
-                                   unsigned int _N,
-                                   unsigned char _mask);
-
 
 
 //
@@ -970,54 +894,6 @@ LIQUID_IIRFILTSOS_DEFINE_INTERNAL_API(IIRFILTSOS_MANGLE_CCCF,
                                       liquid_float_complex,
                                       liquid_float_complex,
                                       liquid_float_complex)
-
-// msresamp
-#define LIQUID_MSRESAMP_DEFINE_INTERNAL_API(MSRESAMP,TO,TC,TI)  \
-                                                                \
-/* execute multi-stage interpolation                    */      \
-void MSRESAMP(_interp_execute)(MSRESAMP() _q,                   \
-                              TI * _x,                          \
-                              unsigned int _nx,                 \
-                              TO * _y,                          \
-                              unsigned int * _num_written);     \
-                                                                \
-/* execute multi-stage decimation                       */      \
-void MSRESAMP(_decim_execute)(MSRESAMP() _q,                    \
-                              TI * _x,                          \
-                              unsigned int _nx,                 \
-                              TO * _y,                          \
-                              unsigned int * _num_written);     \
-
-LIQUID_MSRESAMP_DEFINE_INTERNAL_API(MSRESAMP_MANGLE_RRRF,
-                                    float,
-                                    float,
-                                    float)
-
-LIQUID_MSRESAMP_DEFINE_INTERNAL_API(MSRESAMP_MANGLE_CRCF,
-                                    liquid_float_complex,
-                                    float,
-                                    liquid_float_complex)
-
-LIQUID_MSRESAMP_DEFINE_INTERNAL_API(MSRESAMP_MANGLE_CCCF,
-                                    liquid_float_complex,
-                                    liquid_float_complex,
-                                    liquid_float_complex)
-
-
-// symsync
-#define LIQUID_SYMSYNC_DEFINE_INTERNAL_API(SYMSYNC,TO,TC,TI)    \
-void SYMSYNC(_step)(SYMSYNC() _q,                               \
-                    TI _x,                                      \
-                    TO *_y,                                     \
-                    unsigned int *_ny);                         \
-void SYMSYNC(_advance_internal_loop)(SYMSYNC() _q,              \
-                                     TO _mf,                    \
-                                     TO _dmf);                  \
-void SYMSYNC(_output_debug_file)(SYMSYNC() _q,                  \
-                                 const char * _filename);
-
-LIQUID_SYMSYNC_DEFINE_INTERNAL_API(SYMSYNC_MANGLE_RRRF, float, float, float)
-LIQUID_SYMSYNC_DEFINE_INTERNAL_API(SYMSYNC_MANGLE_CRCF, liquid_float_complex, float, liquid_float_complex)
 
 
 // firdes : finite impulse response filter design
@@ -1361,37 +1237,6 @@ void ofdmflexframesync_rxpayload(ofdmflexframesync _q,
 // complex rotation vector: cexpf(_Complex_I*THETA)
 #define liquid_cexpjf(THETA) (cosf(THETA) + _Complex_I*sinf(THETA))
 
-// polynomials
-#define LIQUID_POLY_DEFINE_INTERNAL_API(POLY,T,TC)          \
-void POLY(_findroots_durandkerner)(T * _p,                  \
-                                   unsigned int _k,         \
-                                   TC * _roots);            \
-void POLY(_findroots_bairstow)(T * _p,                      \
-                               unsigned int _k,             \
-                               TC * _roots);                \
-void POLY(_findroots_bairstow_recursion)(T * _p,            \
-                                         unsigned int _k,   \
-                                         T * _p1,           \
-                                         T * _u,            \
-                                         T * _v);
-
-LIQUID_POLY_DEFINE_INTERNAL_API(POLY_MANGLE_DOUBLE,
-                                double,
-                                double complex)
-
-LIQUID_POLY_DEFINE_INTERNAL_API(POLY_MANGLE_FLOAT,
-                                float,
-                                float complex)
-
-LIQUID_POLY_DEFINE_INTERNAL_API(POLY_MANGLE_CDOUBLE,
-                                double complex,
-                                double complex)
-
-LIQUID_POLY_DEFINE_INTERNAL_API(POLY_MANGLE_CFLOAT,
-                                float complex,
-                                float complex)
-
-
 
 //
 // MODULE : matrix
@@ -1648,7 +1493,7 @@ extern const float complex modem_arb256opt[256];
 
 
 //
-// MODULE : multicarrier
+// MODULE : multichannel
 //
 
 // ofdm frame (common)

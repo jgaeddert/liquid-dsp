@@ -85,8 +85,12 @@ void MATRIX(_gramschmidt)(T * _x,
             for (k=0; k<n; k++) {
                 ti = matrix_access(_v, _rx, _cx, k, i);
                 tj = matrix_access(_v, _rx, _cx, k, j);
-                vij += ti * conj(tj);
-                vii += ti * conj(ti);
+
+                T prodij = ti * conj(tj);
+                vij += prodij;
+
+                T prodii = ti * conj(ti);
+                vii += prodii;
             }
             // TODO : vii should be 1.0 from normalization step below
             T g = vij / vii;
@@ -105,7 +109,8 @@ void MATRIX(_gramschmidt)(T * _x,
         T tj  = 0.;
         for (k=0; k<n; k++) {
             tj = matrix_access(_v, _rx, _cx, k, j);
-            vjj += tj * conj(tj);
+            T prodjj = tj * conj(tj);
+            vjj += prodjj;
         }
         // TODO : check magnitude of vjj
         T g = 1. / sqrt( creal(vjj) );

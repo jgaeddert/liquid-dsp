@@ -1,6 +1,4 @@
-# Copyright (c) 2007, 2008, 2009, 2010 Joseph Gaeddert
-# Copyright (c) 2007, 2008, 2009, 2010 Virginia Polytechnic
-#                                      Institute & State University
+# Copyright (c) 2007, 2008, 2009, 2010, 2011, 2012, 2013 Joseph Gaeddert
 #
 # This file is part of liquid.
 #
@@ -48,7 +46,7 @@ SED = @SED@
 # C compiler flags
 include_dirs	:= . .. include ../include
 INCLUDE_CFLAGS	= $(addprefix -I ,$(include_dirs))
-CONFIG_CFLAGS	= @ARCH_OPTION@ @PROFILE_OPTION@ @DEBUG_OPTION@ @SIMD_FLAGS@
+CONFIG_CFLAGS	= @CFLAGS@ @PROFILE_OPTION@ @DEBUG_OPTION@
 CFLAGS		+= $(INCLUDE_CFLAGS) -g -O2 -Wall -fPIC $(CONFIG_CFLAGS)
 
 EPSTOPDF = @EPSTOPDF@
@@ -82,7 +80,7 @@ LISTINGS_C = 						\
 	listings/bpacket.example.c			\
 	listings/crc.example.c				\
 	listings/cvsd.example.c				\
-	listings/decim.example.c			\
+	listings/firdecim.example.c			\
 	listings/dotprod_rrrf.example.c			\
 	listings/eqlms_cccf.example.c			\
 	listings/eqlms_cccf_blind.example.c		\
@@ -94,15 +92,13 @@ LISTINGS_C = 						\
 	listings/firfarrow_crcf.example.c		\
 	listings/firfilt.example.c			\
 	listings/firhilb.example.c			\
+	listings/firinterp.example.c			\
 	listings/freqmodem.example.c			\
 	listings/gasearch.example.c			\
 	listings/gmskmodem.example.c			\
 	listings/gradsearch.example.c			\
-	listings/gport.direct.example.c			\
-	listings/gport.indirect.example.c		\
 	listings/iirdes.example.c			\
 	listings/iirfilt.example.c			\
-	listings/interp.example.c			\
 	listings/interleaver.example.c			\
 	listings/lifecycle.example.c			\
 	listings/matrix.example.c			\
@@ -149,7 +145,6 @@ LISTINGS_CC = 					\
 SECTIONS :=					\
 	sections/introduction.tex		\
 	sections/installation.tex		\
-	sections/experimental.tex		\
 						\
 	sections/agc.tex			\
 	sections/ann.tex			\
@@ -165,7 +160,7 @@ SECTIONS :=					\
 	sections/math.tex			\
 	sections/matrix.tex			\
 	sections/modem.tex			\
-	sections/multicarrier.tex		\
+	sections/multichannel.tex		\
 	sections/nco.tex			\
 	sections/optim.tex			\
 	sections/quantization.tex		\

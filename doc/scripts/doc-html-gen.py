@@ -1,7 +1,5 @@
 #!/usr/bin/python
-# Copyright (c) 2007, 2008, 2009, 2010 Joseph Gaeddert
-# Copyright (c) 2007, 2008, 2009, 2010 Virginia Polytechnic
-#                                      Institute & State University
+# Copyright (c) 2007, 2008, 2009, 2010, 2011, 2012, 2013 Joseph Gaeddert
 #
 # This file is part of liquid.
 #
@@ -135,7 +133,7 @@ def write_html_footer(fid_html):
     fid_html.write("    <!--\n");
     fid_html.write("    <p>\n")
     fid_html.write("    Validate:\n")
-    fid_html.write("    <a href=\"http://validator.w3.org/check?uri=https://ganymede.ece.vt.edu/\">XHTML 1.0</a>&nbsp;|\n")
+    fid_html.write("    <a href=\"http://validator.w3.org/check?uri=https://liquidsdr.org/\">XHTML 1.0</a>&nbsp;|\n")
     fid_html.write("    <a href=\"http://jigsaw.w3.org/css-validator/check/referer\">CSS</a>\n")
     fid_html.write("    </p>\n")
     fid_html.write("    -->\n");

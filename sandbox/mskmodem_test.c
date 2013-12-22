@@ -140,7 +140,7 @@ int main(int argc, char*argv[]) {
     }
     for (i=0; i<ht_len; i++)
         printf("ht(%3u) = %12.8f;\n", i+1, ht[i]);
-    interp_rrrf interp_tx = interp_rrrf_create(k, ht, ht_len);
+    firinterp_rrrf interp_tx = firinterp_rrrf_create(k, ht, ht_len);
 
     // generate symbols and interpolate
     // phase-accumulating filter (trapezoidal integrator)
@@ -156,7 +156,7 @@ int main(int argc, char*argv[]) {
     for (i=0; i<num_symbols; i++) {
         sym_in[i] = rand() % M;
         float v = 2.0f*sym_in[i] - (float)(M-1);    // +/-1, +/-3, ... +/-(M-1)
-        interp_rrrf_execute(interp_tx, v, &phi[k*i]);
+        firinterp_rrrf_execute(interp_tx, v, &phi[k*i]);
 
         // accumulate phase
         unsigned int j;
@@ -232,7 +232,7 @@ int main(int argc, char*argv[]) {
     printf("errors : %3u / %3u\n", num_errors, num_symbols_checked);
 
     // destroy objects
-    interp_rrrf_destroy(interp_tx);
+    firinterp_rrrf_destroy(interp_tx);
     firfilt_crcf_destroy(decim_rx);
 
     // compute power spectral density

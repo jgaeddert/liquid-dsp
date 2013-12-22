@@ -230,8 +230,8 @@ void detector_cccf_reset(detector_cccf _q)
     
     // clear cross-correlator outputs
     //memset(_q->rxy, 0x00, sizeof(_q->rxy));
-    memset(_q->rxy0, 0x00, sizeof(_q->rxy0));
-    memset(_q->rxy1, 0x00, sizeof(_q->rxy1));
+    memset(_q->rxy0, 0x00, _q->m*sizeof(float));
+    memset(_q->rxy1, 0x00, _q->m*sizeof(float));
 }
 
 // Run sample through pre-demod detector's correlator.

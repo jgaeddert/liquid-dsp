@@ -29,6 +29,9 @@
 
 #include "liquid.internal.h"
 
+// reallocate memory for buffers
+void packetizer_realloc_buffers(packetizer _p, unsigned int _len);
+
 // computes the number of encoded bytes after packetizing
 //
 //  _n      :   number of uncoded input bytes

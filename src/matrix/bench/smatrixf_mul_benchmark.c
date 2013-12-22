@@ -1,6 +1,5 @@
 /*
- * Copyright (c) 2012 Joseph Gaeddert
- * Copyright (c) 2012 Virginia Polytechnic Institute & State University
+ * Copyright (c) 2007, 2008, 2009, 2010, 2011, 2012, 2013 Joseph Gaeddert
  *
  * This file is part of liquid.
  *
@@ -20,7 +19,8 @@
 
 #include <stdlib.h>
 #include <sys/resource.h>
-#include "liquid.experimental.h"
+
+#include "liquid.h"
 
 // Helper function to keep code base small
 void smatrixf_mul_bench(struct rusage *     _start,

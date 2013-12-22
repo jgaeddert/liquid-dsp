@@ -92,12 +92,12 @@ local_pdffiles :=					\
 							\
 	figures.gen/filter_iirdes_example.pdf		\
 							\
-	figures.gen/filter_decim_crcf.pdf		\
-	figures.gen/filter_interp_crcf.pdf		\
 	figures.gen/filter_kaiser_time.pdf		\
 	figures.gen/filter_kaiser_freq.pdf		\
+	figures.gen/filter_firdecim_crcf.pdf		\
 	figures.gen/filter_firdes_gmskrx_time.pdf	\
 	figures.gen/filter_firdes_gmskrx_freq.pdf	\
+	figures.gen/filter_firinterp_crcf.pdf		\
 	figures.gen/filter_msresamp_crcf_time.pdf	\
 	figures.gen/filter_msresamp_crcf_freq.pdf	\
 	figures.gen/filter_resamp_crcf_time.pdf		\
@@ -265,15 +265,15 @@ local_programs :=					\
 	src/fft_spgram					\
 	src/filter_iirdes				\
 	src/filter_iirdes_example			\
+	src/filter_firdecim_crcf			\
 	src/filter_firdes_gmskrx_time			\
 	src/filter_firdes_gmskrx_freq			\
 	src/filter_firdespm				\
 	src/filter_firfarrow_crcf			\
 	src/filter_firfilt_crcf				\
 	src/filter_firhilb_decim_crcf			\
+	src/filter_firinterp_crcf			\
 	src/filter_iirfilt_crcf				\
-	src/filter_decim_crcf				\
-	src/filter_interp_crcf				\
 	src/filter_msresamp_crcf			\
 	src/filter_resamp_crcf				\
 	src/filter_resamp2_crcf_interp			\
@@ -291,6 +291,7 @@ local_programs :=					\
 	src/modem.genplot				\
 	src/modem.gendata				\
 	src/modem_phase_error				\
+	src/multichannel_firpfbch2			\
 	src/nco_pll					\
 	src/optim_gradsearch				\
 	src/quantization_adc				\
@@ -577,13 +578,13 @@ figures.gen/filter_iirfilt_crcf_time.gnu : src/filter_iirfilt_crcf
 # 
 # decimator
 #
-figures.gen/filter_decim_crcf.gnu : src/filter_decim_crcf
+figures.gen/filter_firdecim_crcf.gnu : src/filter_firdecim_crcf
 	./$<
 
 # 
 # interpolator
 #
-figures.gen/filter_interp_crcf.gnu : src/filter_interp_crcf
+figures.gen/filter_firinterp_crcf.gnu : src/filter_firinterp_crcf
 	./$<
 
 # 

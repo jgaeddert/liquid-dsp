@@ -28,7 +28,7 @@
 #include "liquid.internal.h"
 
 // freqmod
-struct freqmod_s {
+struct FREQMOD(_s) {
     // modulation factor for FM
     float kf;
 
@@ -41,7 +41,7 @@ struct freqmod_s {
 
 // create freqmod object
 //  _kf     :   modulation factor
-freqmod freqmod_create(float _kf)
+FREQMOD() FREQMOD(_create)(float _kf)
 {
     // validate input
     if (_kf <= 0.0f || _kf > 1.0) {
@@ -50,27 +50,27 @@ freqmod freqmod_create(float _kf)
     }
 
     // create main object memory
-    freqmod q = (freqmod) malloc(sizeof(struct freqmod_s));
+    FREQMOD() q = (freqmod) malloc(sizeof(struct FREQMOD(_s)));
 
     // set basic internal properties
     q->kf   = _kf;      // modulation factor
 
     // create modulator objects
-    q->integrator = iirfilt_rrrf_create_integrator();
+    float b[2] = {0.5f,  0.5f};
+    float a[2] = {1.0f, -1.0f};
+    q->integrator = iirfilt_rrrf_create(b,2,a,2);
 
     // create prefilter (block DC values)
-    float b[2] = {1.0f, -1.0f  };
-    float a[2] = {1.0f, -0.9995f};
-    q->prefilter = iirfilt_rrrf_create(b, 2, a, 2);
+    q->prefilter = iirfilt_rrrf_create_dc_blocker(5e-4f);
 
     // reset modem object
-    freqmod_reset(q);
+    FREQMOD(_reset)(q);
 
     return q;
 }
 
 // destroy modem object
-void freqmod_destroy(freqmod _q)
+void FREQMOD(_destroy)(FREQMOD() _q)
 {
     // destroy audio pre-filter
     iirfilt_rrrf_destroy(_q->prefilter);
@@ -83,14 +83,14 @@ void freqmod_destroy(freqmod _q)
 }
 
 // print modulation internals
-void freqmod_print(freqmod _q)
+void FREQMOD(_print)(FREQMOD() _q)
 {
     printf("freqmod:\n");
     printf("    mod. factor :   %8.4f\n", _q->kf);
 }
 
 // reset modem object
-void freqmod_reset(freqmod _q)
+void FREQMOD(_reset)(FREQMOD() _q)
 {
     // reset audio pre-filter
     iirfilt_rrrf_clear(_q->prefilter);
@@ -103,7 +103,7 @@ void freqmod_reset(freqmod _q)
 //  _q      :   frequency modulator object
 //  _m      :   message signal m(t)
 //  _s      :   complex baseband signal s(t)
-void freqmod_modulate(freqmod         _q,
+void FREQMOD(_modulate)(FREQMOD()         _q,
                       float           _m,
                       float complex * _s)
 {

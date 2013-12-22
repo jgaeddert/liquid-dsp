@@ -59,7 +59,7 @@ struct cpfskmod_s {
     // pulse-shaping filter
     float * ht;                 // filter coefficients
     unsigned int ht_len;        // filter length
-    interp_rrrf  interp;        // interpolator
+    firinterp_rrrf  interp;     // interpolator
 
     // phase integrator
     float * phase_interp;       // phase interpolation buffer
@@ -145,7 +145,7 @@ cpfskmod cpfskmod_create(unsigned int _bps,
     cpfskmod_firdes(q->k, q->m, q->beta, q->type, q->ht, q->ht_len);
     for (i=0; i<q->ht_len; i++)
         q->ht[i] *= M_PI * q->h;
-    q->interp = interp_rrrf_create(q->k, q->ht, q->ht_len);
+    q->interp = firinterp_rrrf_create(q->k, q->ht, q->ht_len);
 
     // create phase integrator
     q->phase_interp = (float*) malloc(q->k*sizeof(float));
@@ -163,7 +163,7 @@ void cpfskmod_destroy(cpfskmod _q)
     // destroy pulse-shaping filter/interpolator
     free(_q->ht);
     free(_q->phase_interp);
-    interp_rrrf_destroy(_q->interp);
+    firinterp_rrrf_destroy(_q->interp);
 
     // destroy phase integrator
     iirfilt_rrrf_destroy(_q->integrator);
@@ -200,7 +200,7 @@ void cpfskmod_print(cpfskmod _q)
 void cpfskmod_reset(cpfskmod _q)
 {
     // reset interpolator
-    interp_rrrf_clear(_q->interp);
+    firinterp_rrrf_clear(_q->interp);
 
     // reset phase integrator
     iirfilt_rrrf_clear(_q->integrator);
@@ -216,7 +216,7 @@ void cpfskmod_modulate(cpfskmod        _q,
 {
     // run interpolator
     float v = 2.0f*_s - (float)(_q->M) + 1.0f;
-    interp_rrrf_execute(_q->interp, v, _q->phase_interp);
+    firinterp_rrrf_execute(_q->interp, v, _q->phase_interp);
 
     // integrate phase state
     unsigned int i;

@@ -1,7 +1,5 @@
 /*
- * Copyright (c) 2007, 2008, 2009, 2010 Joseph Gaeddert
- * Copyright (c) 2007, 2008, 2009, 2010 Virginia Polytechnic
- *                                      Institute & State University
+ * Copyright (c) 2007, 2008, 2009, 2010, 2011, 2012, 2013 Joseph Gaeddert
  *
  * This file is part of liquid.
  *
@@ -31,13 +29,15 @@
 
 // 
 #define AUTOCORR(name)      LIQUID_CONCAT(autocorr_crcf,name)
+#define FIRDECIM(name)      LIQUID_CONCAT(firdecim_crcf,name)
 #define FIRFARROW(name)     LIQUID_CONCAT(firfarrow_crcf,name)
 #define FIRFILT(name)       LIQUID_CONCAT(firfilt_crcf,name)
+#define FIRINTERP(name)     LIQUID_CONCAT(firinterp_crcf,name)
 #define FIRPFB(name)        LIQUID_CONCAT(firpfb_crcf,name)
+#define IIRDECIM(name)      LIQUID_CONCAT(iirdecim_crcf,name)
 #define IIRFILT(name)       LIQUID_CONCAT(iirfilt_crcf,name)
 #define IIRFILTSOS(name)    LIQUID_CONCAT(iirfiltsos_crcf,name)
-#define INTERP(name)        LIQUID_CONCAT(interp_crcf,name)
-#define DECIM(name)         LIQUID_CONCAT(decim_crcf,name)
+#define IIRINTERP(name)     LIQUID_CONCAT(iirinterp_crcf,name)
 #define MSRESAMP(name)      LIQUID_CONCAT(msresamp_crcf,name)
 #define RESAMP(name)        LIQUID_CONCAT(resamp_crcf,name)
 #define RESAMP2(name)       LIQUID_CONCAT(resamp2_crcf,name)
@@ -61,13 +61,15 @@
 
 // source files
 //#include "autocorr.c"
+#include "firdecim.c"
 #include "firfarrow.c"
 #include "firfilt.c"
+#include "firinterp.c"
 #include "firpfb.c"
+#include "iirdecim.c"
 #include "iirfilt.c"
 #include "iirfiltsos.c"
-#include "interp.c"
-#include "decim.c"
+#include "iirinterp.c"
 #include "msresamp.c"
 #include "resamp.c"         // floating-point phase version
 //#include "resamp.fixed.c" // fixed-point phase version

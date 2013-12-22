@@ -28,7 +28,7 @@
 #include "liquid.internal.h"
 
 // freqdem
-struct freqdem_s {
+struct FREQDEM(_s) {
     // common
     float kf;                   // modulation index
 
@@ -38,7 +38,7 @@ struct freqdem_s {
 
     // demodulator
     liquid_freqdem_type type;   // demodulator type (PLL, DELAYCONJ)
-    nco_crcf oscillator;        // nco
+    nco_crcf oscillator;        // nco (for phase-locked loop demod)
     float complex q;            // phase difference
     firfilt_crcf rxfilter;      // initial receiver filter
     iirfilt_rrrf postfilter;    // post-filter
@@ -47,7 +47,7 @@ struct freqdem_s {
 // create freqdem object
 //  _kf     :   modulation factor
 //  _type   :   demodulation type (e.g. LIQUID_FREQDEM_DELAYCONJ)
-freqdem freqdem_create(float                 _kf,
+FREQDEM() FREQDEM(_create)(float               _kf,
                            liquid_freqdem_type _type)
 {
     // validate input
@@ -57,7 +57,7 @@ freqdem freqdem_create(float                 _kf,
     }
 
     // create main object memory
-    freqdem q = (freqdem) malloc(sizeof(struct freqdem_s));
+    FREQDEM() q = (freqdem) malloc(sizeof(struct FREQDEM(_s)));
 
     // set basic internal properties
     q->type = _type;    // demod type
@@ -66,32 +66,24 @@ freqdem freqdem_create(float                 _kf,
     // compute derived values
     q->twopikf_inv = 1.0f / (2*M_PI*q->kf);       // 1 / (2*pi*kf)
 
-    // create oscillator
+    // create oscillator and initialize PLL bandwidth
     q->oscillator = nco_crcf_create(LIQUID_VCO);
+    nco_crcf_pll_set_bandwidth(q->oscillator, 0.08f);
 
     // create initial rx filter
     q->rxfilter = firfilt_crcf_create_kaiser(17, 0.2f, 40.0f, 0.0f);
 
     // create DC-blocking post-filter
-    float b[2] = {1.0f, -1.0f   };
-    float a[2] = {1.0f, -0.9999f};
-    q->postfilter = iirfilt_crcf_create(b,2,a,2);
-
-    //
-    if (q->type == LIQUID_FREQDEM_PLL) {
-        // TODO : set initial NCO frequency ?
-        // create phase-locked loop
-        nco_crcf_pll_set_bandwidth(q->oscillator, 0.15f);
-    }
+    q->postfilter = iirfilt_rrrf_create_dc_blocker(1e-4f);
 
     // reset modem object
-    freqdem_reset(q);
+    FREQDEM(_reset)(q);
 
     return q;
 }
 
 // destroy modem object
-void freqdem_destroy(freqdem _q)
+void FREQDEM(_destroy)(FREQDEM() _q)
 {
     // destroy rx filter
     firfilt_crcf_destroy(_q->rxfilter);
@@ -107,14 +99,14 @@ void freqdem_destroy(freqdem _q)
 }
 
 // print modulation internals
-void freqdem_print(freqdem _q)
+void FREQDEM(_print)(FREQDEM() _q)
 {
     printf("freqdem:\n");
     printf("    mod. factor :   %8.4f\n", _q->kf);
 }
 
 // reset modem object
-void freqdem_reset(freqdem _q)
+void FREQDEM(_reset)(FREQDEM() _q)
 {
     // reset oscillator, phase-locked loop
     nco_crcf_reset(_q->oscillator);
@@ -127,7 +119,7 @@ void freqdem_reset(freqdem _q)
 //  _q      :   FM demodulator object
 //  _r      :   received signal
 //  _m      :   output message signal
-void freqdem_demodulate(freqdem              _q,
+void FREQDEM(_demodulate)(FREQDEM()              _q,
                         liquid_float_complex _r,
                         float *              _m)
 {

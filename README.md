@@ -1,6 +1,7 @@
 
 liquid-dsp
 ==========
+
 Software-Defined Radio Digital Signal Processing Library
 
 liquid-dsp is a free and open-source digital signal processing (DSP)
@@ -13,7 +14,7 @@ oscillators, modems, synchronizers, and complex mathematical operations.
 
 For more information, please refer to the full documentation directory
 `doc/` or download the pre-compiled `.pdf`
-[documentation file](http://ganymede.ece.vt.edu/downloads/liquid.pdf) (4.4 MB).
+[documentation file](http://liquidsdr.org/downloads/liquid.pdf) (4.4 MB).
 
 Installation and Dependencies
 -----------------------------
@@ -31,11 +32,11 @@ There are two primary ways of obtaining the source code:
         
         $ git clone git://github.com/jgaeddert/liquid-dsp.git
 
-2. or download the [tarball](http://ganymede.ece.vt.edu/downloads/liquid-dsp-1.2.0.tar.gz)
+2. or download the [tarball](http://liquidsdr.org/downloads/liquid-dsp-1.2.0.tar.gz)
    (2.6 MB), validate the checksum, and unpack 
 
-        $ wget http://ganymede.ece.vt.edu/downloads/liquid-dsp-1.2.0.tar.gz
-        $ wget http://ganymede.ece.vt.edu/downloads/liquid-dsp.md5
+        $ wget http://liquidsdr.org/downloads/liquid-dsp-1.2.0.tar.gz
+        $ wget http://liquidsdr.org/downloads/liquid-dsp.md5
         $ md5sum --check liquid-dsp.md5
         $ tar -xf liquid-dsp-1.2.0.tar.gz
 
@@ -105,7 +106,7 @@ documentation. There are basically two ways to get it: the easy way and
 the hard way.
 
 1. The easy way: download the pre-compiled
-   [documentation file](http://ganymede.ece.vt.edu/downloads/liquid.pdf) (4.4 MB).
+   [documentation file](http://liquidsdr.org/downloads/liquid.pdf) (4.4 MB).
 
 2. The hard way: build from scratch.
    Because all of the figures within the documentation are generated
@@ -126,6 +127,7 @@ the hard way.
 
 Available Modules
 -----------------
+
   * _agc_: automatic gain control, squelch, received signal strength
   * _audio_: source audio encoders/decoders: cvsd, filterbanks
   * _buffer_: internal buffering, circular/static, ports (threaded)
@@ -152,7 +154,7 @@ Available Modules
         sparse matrix representation
   * _modem_: modulate, demodulate, PSK, differential PSK, QAM, optimal
         QAM, as well as analog and non-linear digital modulations GMSK)
-  * _multicarrier_: filterbank channelizers, OFDM
+  * _multichannel_: filterbank channelizers, OFDM
   * _nco_: numerically-controlled oscillator: mixing, frequency
         synthesis, phase-locked loops
   * _optim_: (non-linear optimization) Newton-Raphson, evoluationary
@@ -164,11 +166,6 @@ Available Modules
         maximal-length sequences
   * _utility_: useful miscellany, mostly bit manipulation (shifting,
         packing, and unpacking of arrays)
-  * _experimental_: artificial neural networks, communications channel
-        modeling, threaded ports, filterbank audio synthesizer,
-        continuous-phase modulation, direct digital synthesis,
-        quadrature mirror filterbanks, advanced symbol timing recovery,
-        OFDM/OQAM
 
 ### Additional notes ###
 

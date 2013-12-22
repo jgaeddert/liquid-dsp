@@ -64,9 +64,9 @@ RANLIB	:= ranlib
 
 # flags
 INCLUDE_CFLAGS	= $(addprefix -I ,$(include_dirs))
-CONFIG_CFLAGS	= @ARCH_OPTION@ @PROFILE_OPTION@ @DEBUG_OPTION@ @SIMD_FLAGS@
+CONFIG_CFLAGS	= @CFLAGS@ @PROFILE_OPTION@ @DEBUG_OPTION@
 # -g : debugging info
-CFLAGS		+= $(INCLUDE_CFLAGS) -g -O2 -Wall -fPIC $(CONFIG_CFLAGS)
+CFLAGS		+= $(INCLUDE_CFLAGS) -Wall -fPIC $(CONFIG_CFLAGS)
 LDFLAGS		+= @LIBS@
 ARFLAGS		= r
 PATHSEP		= /
@@ -74,7 +74,7 @@ PATHSEP		= /
 # 
 # liquid headers
 #
-headers_install	:= liquid.h @EXPERIMENTAL_HEADER@
+headers_install	:= liquid.h
 headers		:= $(headers_install) liquid.internal.h
 include_headers	:= $(addprefix include/,$(headers))
 
@@ -111,11 +111,11 @@ src/agc/src/agc_rrrf.o : %.o : %.c src/agc/src/agc.c $(headers)
 
 # autotests
 agc_autotests :=						\
-	src/agc/tests/agc_autotest.c				\
+	src/agc/tests/agc_crcf_autotest.c			\
 
 # benchmarks
 agc_benchmarks :=						\
-	src/agc/bench/agc_benchmark.c				\
+	src/agc/bench/agc_crcf_benchmark.c			\
 
 #
 # MODULE : audio
@@ -415,14 +415,16 @@ filter_objects :=						\
 
 # list explicit targets and dependencies here
 filter_includes :=						\
+	src/filter/src/firdecim.c				\
 	src/filter/src/firfarrow.c				\
 	src/filter/src/firfilt.c				\
 	src/filter/src/firhilb.c				\
+	src/filter/src/firinterp.c				\
 	src/filter/src/firpfb.c					\
+	src/filter/src/iirdecim.c				\
 	src/filter/src/iirfilt.c				\
 	src/filter/src/iirfiltsos.c				\
-	src/filter/src/interp.c					\
-	src/filter/src/decim.c					\
+	src/filter/src/iirinterp.c				\
 	src/filter/src/msresamp.c				\
 	src/filter/src/resamp.c					\
 	src/filter/src/resamp2.c				\
@@ -468,24 +470,42 @@ src/filter/src/rrcos.o : %.o : %.c $(headers)
 
 
 filter_autotests :=						\
-	src/filter/tests/decim_autotest.c			\
 	src/filter/tests/filter_crosscorr_autotest.c		\
+	src/filter/tests/firdecim_xxxf_autotest.c		\
 	src/filter/tests/firdes_autotest.c			\
 	src/filter/tests/firdespm_autotest.c			\
 	src/filter/tests/firfilt_xxxf_autotest.c		\
 	src/filter/tests/firhilb_autotest.c			\
+	src/filter/tests/firinterp_autotest.c			\
 	src/filter/tests/firpfb_autotest.c			\
 	src/filter/tests/groupdelay_autotest.c			\
 	src/filter/tests/iirdes_autotest.c			\
 	src/filter/tests/iirfilt_xxxf_autotest.c		\
 	src/filter/tests/iirfiltsos_rrrf_autotest.c		\
-	src/filter/tests/interp_autotest.c			\
 	src/filter/tests/msresamp_crcf_autotest.c		\
 	src/filter/tests/resamp_crcf_autotest.c			\
 	src/filter/tests/resamp2_crcf_autotest.c		\
 
 # additional autotest objects
 autotest_extra_obj +=						\
+	src/filter/tests/firdecim_runtest.o			\
+								\
+	src/filter/tests/data/firdecim_rrrf_data_M2h4x20.o	\
+	src/filter/tests/data/firdecim_crcf_data_M2h4x20.o	\
+	src/filter/tests/data/firdecim_cccf_data_M2h4x20.o	\
+								\
+	src/filter/tests/data/firdecim_rrrf_data_M3h7x30.o	\
+	src/filter/tests/data/firdecim_crcf_data_M3h7x30.o	\
+	src/filter/tests/data/firdecim_cccf_data_M3h7x30.o	\
+								\
+	src/filter/tests/data/firdecim_rrrf_data_M4h13x40.o	\
+	src/filter/tests/data/firdecim_crcf_data_M4h13x40.o	\
+	src/filter/tests/data/firdecim_cccf_data_M4h13x40.o	\
+								\
+	src/filter/tests/data/firdecim_rrrf_data_M5h23x50.o	\
+	src/filter/tests/data/firdecim_crcf_data_M5h23x50.o	\
+	src/filter/tests/data/firdecim_cccf_data_M5h23x50.o	\
+								\
 	src/filter/tests/firfilt_runtest.o			\
 								\
 	src/filter/tests/data/firfilt_rrrf_data_h4x8.o		\
@@ -519,11 +539,11 @@ autotest_extra_obj +=						\
 	src/filter/tests/data/iirfilt_cccf_data_h7x64.o		\
 
 filter_benchmarks :=						\
-	src/filter/bench/decim_benchmark.c			\
+	src/filter/bench/firdecim_benchmark.c			\
 	src/filter/bench/firhilb_benchmark.c			\
+	src/filter/bench/firinterp_crcf_benchmark.c		\
 	src/filter/bench/firfilt_crcf_benchmark.c		\
 	src/filter/bench/iirfilt_crcf_benchmark.c		\
-	src/filter/bench/interp_crcf_benchmark.c		\
 	src/filter/bench/resamp_crcf_benchmark.c		\
 	src/filter/bench/resamp2_crcf_benchmark.c		\
 	src/filter/bench/symsync_crcf_benchmark.c		\
@@ -721,6 +741,7 @@ autotest_extra_obj +=						\
 	src/matrix/tests/data/matrixf_data_ludecomp.o		\
 	src/matrix/tests/data/matrixf_data_mul.o		\
 	src/matrix/tests/data/matrixf_data_qrdecomp.o		\
+	src/matrix/tests/data/matrixf_data_transmul.o		\
 								\
 	src/matrix/tests/data/matrixcf_data_add.o		\
 	src/matrix/tests/data/matrixcf_data_aug.o		\
@@ -747,8 +768,6 @@ modem_objects :=						\
 	src/modem/src/ampmodem.o				\
 	src/modem/src/cpfskdem.o				\
 	src/modem/src/cpfskmod.o				\
-	src/modem/src/freqdem.o					\
-	src/modem/src/freqmod.o					\
 	src/modem/src/gmskdem.o					\
 	src/modem/src/gmskmod.o					\
 	src/modem/src/modemf.o					\
@@ -758,6 +777,8 @@ modem_objects :=						\
 
 # explicit targets and dependencies
 modem_includes :=						\
+	src/modem/src/freqdem.c					\
+	src/modem/src/freqmod.c					\
 	src/modem/src/modem_common.c				\
 	src/modem/src/modem_psk.c				\
 	src/modem/src/modem_dpsk.c				\
@@ -792,6 +813,7 @@ src/modem/src/modem_arb_const.o: %.o : %.c $(headers)
 
 
 modem_autotests :=						\
+	src/modem/tests/freqmodem_autotest.c			\
 	src/modem/tests/modem_autotest.c			\
 	src/modem/tests/modem_demodsoft_autotest.c		\
 	src/modem/tests/modem_demodstats_autotest.c		\
@@ -804,31 +826,39 @@ modem_benchmarks :=						\
 	src/modem/bench/modem_demodsoft_benchmark.c		\
 
 # 
-# MODULE : multicarrier
+# MODULE : multichannel
 #
 
-multicarrier_objects :=						\
-	src/multicarrier/src/firpfbch_crcf.o			\
-	src/multicarrier/src/firpfbch_cccf.o			\
-	src/multicarrier/src/ofdmframe.common.o			\
-	src/multicarrier/src/ofdmframegen.o			\
-	src/multicarrier/src/ofdmframesync.o			\
+multichannel_objects :=						\
+	src/multichannel/src/firpfbch_crcf.o			\
+	src/multichannel/src/firpfbch_cccf.o			\
+	src/multichannel/src/ofdmframe.common.o			\
+	src/multichannel/src/ofdmframegen.o			\
+	src/multichannel/src/ofdmframesync.o			\
+
+$(multichannel_objects) : %.o : %.c $(headers)
 
 # list explicit targets and dependencies here
-src/multicarrier/src/firpfbch_crcf.o : %_crcf.o : %.c
-src/multicarrier/src/firpfbch_cccf.o : %_cccf.o : %.c
+multichannel_includes :=					\
+	src/multichannel/src/firpfbch.c				\
+	src/multichannel/src/firpfbch2.c			\
+
+src/multichannel/src/firpfbch_crcf.o : %.o : %.c $(headers) $(multichannel_includes)
+src/multichannel/src/firpfbch_cccf.o : %.o : %.c $(headers) $(multichannel_includes)
 
 # autotests
-multicarrier_autotests :=					\
-	src/multicarrier/tests/firpfbch_synthesizer_autotest.c	\
-	src/multicarrier/tests/firpfbch_analyzer_autotest.c	\
-	src/multicarrier/tests/ofdmframesync_autotest.c		\
+multichannel_autotests :=					\
+	src/multichannel/tests/firpfbch2_crcf_autotest.c	\
+	src/multichannel/tests/firpfbch_crcf_synthesizer_autotest.c	\
+	src/multichannel/tests/firpfbch_crcf_analyzer_autotest.c	\
+	src/multichannel/tests/ofdmframesync_autotest.c		\
 
 # benchmarks
-multicarrier_benchmarks :=					\
-	src/multicarrier/bench/firpfbch_benchmark.c		\
-	src/multicarrier/bench/ofdmframesync_acquire_benchmark.c	\
-	src/multicarrier/bench/ofdmframesync_rxsymbol_benchmark.c	\
+multichannel_benchmarks :=					\
+	src/multichannel/bench/firpfbch_crcf_benchmark.c	\
+	src/multichannel/bench/firpfbch2_crcf_benchmark.c	\
+	src/multichannel/bench/ofdmframesync_acquire_benchmark.c	\
+	src/multichannel/bench/ofdmframesync_rxsymbol_benchmark.c	\
 
 # 
 # MODULE : nco - numerically-controlled oscillator
@@ -846,11 +876,17 @@ src/nco/src/nco.utilities.o: %.o : %.c $(headers)
 
 # autotests
 nco_autotests :=						\
-	src/nco/tests/nco_autotest.c				\
-	src/nco/tests/pll_autotest.c				\
+	src/nco/tests/nco_crcf_frequency_autotest.c		\
+	src/nco/tests/nco_crcf_phase_autotest.c			\
+	src/nco/tests/nco_crcf_pll_autotest.c			\
 	src/nco/tests/unwrap_phase_autotest.c			\
-	src/nco/tests/vco_autotest.c				\
 
+# additional autotest objects
+autotest_extra_obj +=						\
+	src/nco/tests/data/nco_sincos_fsqrt1_2.o		\
+	src/nco/tests/data/nco_sincos_fsqrt1_3.o		\
+	src/nco/tests/data/nco_sincos_fsqrt1_5.o		\
+	src/nco/tests/data/nco_sincos_fsqrt1_7.o		\
 
 # benchmarks
 nco_benchmarks :=						\
@@ -986,33 +1022,6 @@ utility_autotests :=						\
 utility_benchmarks :=
 
 
-# 
-# MODULE : experimental
-#
-
-# legacy sources (not built, but keep around just in case)
-#	src/experimental/legacy/dct.o
-#	src/experimental/legacy/mdct.o
-#	src/experimental/legacy/mdct_benchmark.c
-
-
-# explicit targets and dependencies
-
-experimental_filter_includes :=					\
-	src/experimental/src/iirqmfb.c				\
-	src/experimental/src/itqmfb.c				\
-	src/experimental/src/qmfb.c				\
-	src/experimental/src/symsync2.c				\
-	src/experimental/src/symsynclp.c			\
-
-src/experimental/src/filter_rrrf.o: %.o : %.c $(headers) $(experimental_filter_includes)
-
-src/experimental/src/filter_crcf.o: %.o : %.c $(headers) $(experimental_filter_includes)
-
-src/experimental/src/filter_cccf.o: %.o : %.c $(headers) $(experimental_filter_includes)
-
-
-
 
 # Target collection
 #
@@ -1032,14 +1041,13 @@ objects :=							\
 	$(math_objects)						\
 	$(matrix_objects)					\
 	$(modem_objects)					\
-	$(multicarrier_objects)					\
+	$(multichannel_objects)					\
 	$(nco_objects)						\
 	$(optim_objects)					\
 	$(quantization_objects)					\
 	$(random_objects)					\
 	$(sequence_objects)					\
 	$(utility_objects)					\
-	@EXPERIMENTAL_MLIBS@
 	
 
 autotest_sources :=						\
@@ -1056,14 +1064,13 @@ autotest_sources :=						\
 	$(math_autotests)					\
 	$(matrix_autotests)					\
 	$(modem_autotests)					\
-	$(multicarrier_autotests)				\
+	$(multichannel_autotests)				\
 	$(nco_autotests)					\
 	$(optim_autotests)					\
 	$(quantization_autotests)				\
 	$(random_autotests)					\
 	$(sequence_autotests)					\
 	$(utility_autotests)					\
-	@EXPERIMENTAL_AUTOTESTS@
 	
 
 benchmark_sources :=						\
@@ -1080,14 +1087,13 @@ benchmark_sources :=						\
 	$(math_benchmarks)					\
 	$(matrix_benchmarks)					\
 	$(modem_benchmarks)					\
-	$(multicarrier_benchmarks)				\
+	$(multichannel_benchmarks)				\
 	$(nco_benchmarks)					\
 	$(optim_benchmarks)					\
 	$(quantization_benchmarks)				\
 	$(random_benchmarks)					\
 	$(sequence_benchmarks)					\
 	$(utility_benchmarks)					\
-	@EXPERIMENTAL_BENCHMARKS@
 
 
 ##
@@ -1289,9 +1295,9 @@ clean-bench:
 ##
 .PHONY: examples
 example_programs :=						\
-	examples/agc_example					\
-	examples/agc_qpsk_example				\
-	examples/agc_squelch_example				\
+	examples/agc_crcf_example				\
+	examples/agc_crcf_qpsk_example				\
+	examples/agc_crcf_squelch_example			\
 	examples/ampmodem_example				\
 	examples/asgram_example					\
 	examples/autocorr_cccf_example				\
@@ -1307,7 +1313,6 @@ example_programs :=						\
 	examples/crc_example					\
 	examples/cpfskmodem_example				\
 	examples/cvsd_example					\
-	examples/decim_crcf_example				\
 	examples/detector_cccf_example				\
 	examples/dotprod_rrrf_example				\
 	examples/dotprod_cccf_example				\
@@ -1317,6 +1322,7 @@ example_programs :=						\
 	examples/fec_example					\
 	examples/fec_soft_example				\
 	examples/fft_example					\
+	examples/firdecim_crcf_example				\
 	examples/firfarrow_rrrf_example				\
 	examples/firfilt_rrrf_example				\
 	examples/firdes_kaiser_example				\
@@ -1324,9 +1330,11 @@ example_programs :=						\
 	examples/firhilb_example				\
 	examples/firhilb_decim_example				\
 	examples/firhilb_interp_example				\
-	examples/firpfbch_example				\
-	examples/firpfbch_analysis_example			\
-	examples/firpfbch_synthesis_example			\
+	examples/firpfbch2_crcf_example				\
+	examples/firinterp_crcf_example				\
+	examples/firpfbch_crcf_example				\
+	examples/firpfbch_crcf_analysis_example			\
+	examples/firpfbch_crcf_synthesis_example		\
 	examples/flexframesync_example				\
 	examples/flexframesync_reconfig_example			\
 	examples/framesync64_example				\
@@ -1343,9 +1351,10 @@ example_programs :=						\
 	examples/iirdes_example					\
 	examples/iirdes_analog_example				\
 	examples/iirdes_pll_example				\
+	examples/iirdecim_crcf_example				\
 	examples/iirfilt_cccf_example				\
 	examples/iirfilt_crcf_example				\
-	examples/interp_crcf_example				\
+	examples/iirinterp_crcf_example				\
 	examples/kbd_window_example				\
 	examples/lpc_example					\
 	examples/libliquid_example				\
@@ -1379,19 +1388,18 @@ example_programs :=						\
 	examples/resamp2_crcf_decim_example			\
 	examples/resamp2_crcf_filter_example			\
 	examples/resamp2_crcf_interp_example			\
+	examples/ricek_channel_example				\
 	examples/scramble_example				\
 	examples/smatrix_example				\
 	examples/spgram_example					\
 	examples/symsync_crcf_example				\
 	examples/wdelayf_example				\
 	examples/windowf_example				\
-	@EXPERIMENTAL_EXAMPLES@
 
 #	examples/metadata_example
 #	examples/ofdmframegen_example
 #	examples/gmskframe_example
 #	examples/fading_generator_example
-#	examples/ricek_channel_example
 
 example_objects	= $(patsubst %,%.o,$(example_programs))
 examples: $(example_programs)
@@ -1458,6 +1466,8 @@ sandbox_programs =						\
 	sandbox/firdes_length_test				\
 	sandbox/firfarrow_rrrf_test				\
 	sandbox/firpfbch_analysis_alignment_test		\
+	sandbox/firpfbch2_analysis_equivalence_test		\
+	sandbox/firpfbch2_test					\
 	sandbox/firpfbch_analysis_equivalence_test		\
 	sandbox/firpfbch_synthesis_equivalence_test		\
 	sandbox/gmskmodem_test					\
@@ -1565,13 +1575,12 @@ clean-modules:
 	$(RM) src/math/src/*.o         src/math/bench/*.o         src/math/tests/*.o
 	$(RM) src/matrix/src/*.o       src/matrix/bench/*.o       src/matrix/tests/*.o
 	$(RM) src/modem/src/*.o        src/modem/bench/*.o        src/modem/tests/*.o
-	$(RM) src/multicarrier/src/*.o src/multicarrier/bench/*.o src/multicarrier/tests/*.o
+	$(RM) src/multichannel/src/*.o src/multichannel/bench/*.o src/multichannel/tests/*.o
 	$(RM) src/nco/src/*.o          src/nco/bench/*.o          src/nco/tests/*.o
 	$(RM) src/optim/src/*.o        src/optim/bench/*.o        src/optim/tests/*.o
 	$(RM) src/quantization/src/*.o src/quantization/bench/*.o src/quantization/tests/*.o
 	$(RM) src/random/src/*.o       src/random/bench/*.o       src/random/tests/*.o
 	$(RM) src/utility/src/*.o      src/utility/bench/*.o      src/utility/tests/*.o
-	$(RM) src/experimental/src/*.o src/experimental/bench/*.o src/experimental/tests/*.o
 	$(RM) libliquid.o
 
 clean: clean-modules clean-autoscript clean-check clean-bench clean-examples clean-sandbox clean-doc
@@ -1588,5 +1597,6 @@ distclean: clean distclean-doc
 	$(RM) octave-core *.m
 	$(RM) configure config.h config.h.in config.h.in~ config.log config.status
 	$(RM) -r autom4te.cache
+	$(RM) aclocal.m4
 	$(RM) makefile
 
