@@ -225,7 +225,7 @@ int main(int argc, char *argv[])
 
         for (i=0; i<n; i++) {
             if (verbose)
-                print_autotest_results( &packages[i] );
+                print_autotest_results( &scripts[i] );
         }
         break;
     case RUN_SINGLE_TEST:
