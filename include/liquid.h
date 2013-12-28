@@ -296,18 +296,43 @@ LIQUID_WDELAY_DEFINE_API(WDELAY_MANGLE_CFLOAT, liquid_float_complex)
 //   TI         : input data type
 #define LIQUID_DOTPROD_DEFINE_API(DOTPROD,TO,TC,TI)             \
                                                                 \
-/* run dot product without creating object */                   \
-void DOTPROD(_run)( TC *_h, TI *_x, unsigned int _n, TO *_y);   \
-void DOTPROD(_run4)(TC *_h, TI *_x, unsigned int _n, TO *_y);   \
+/* run dot product without creating object [unrolled loop]  */  \
+/*  _v      : coefficients array [size: _n x 1]             */  \
+/*  _x      : input array [size: _n x 1]                    */  \
+/*  _n      : dotprod length, _n > 0                        */  \
+/*  _y      : output sample pointer                         */  \
+void DOTPROD(_run)( TC *_v, TI *_x, unsigned int _n, TO *_y);   \
+void DOTPROD(_run4)(TC *_v, TI *_x, unsigned int _n, TO *_y);   \
                                                                 \
 typedef struct DOTPROD(_s) * DOTPROD();                         \
-DOTPROD() DOTPROD(_create)(TC * _v, unsigned int _n);           \
-DOTPROD() DOTPROD(_recreate)(DOTPROD() _q,                      \
-                             TC * _v,                           \
+                                                                \
+/* create dot product object                                */  \
+/*  _v      : coefficients array [size: _n x 1]             */  \
+/*  _n      : dotprod length, _n > 0                        */  \
+DOTPROD() DOTPROD(_create)(TC *         _v,                     \
+                           unsigned int _n);                    \
+                                                                \
+/* re-create dot product object                             */  \
+/*  _q      : old dotprod object                            */  \
+/*  _v      : coefficients array [size: _n x 1]             */  \
+/*  _n      : dotprod length, _n > 0                        */  \
+DOTPROD() DOTPROD(_recreate)(DOTPROD()    _q,                   \
+                             TC *         _v,                   \
                              unsigned int _n);                  \
+                                                                \
+/* destroy dotprod object, freeing all internal memory      */  \
 void DOTPROD(_destroy)(DOTPROD() _q);                           \
+                                                                \
+/* print dotprod object internals to standard output        */  \
 void DOTPROD(_print)(DOTPROD() _q);                             \
-void DOTPROD(_execute)(DOTPROD() _q, TI * _v, TO * _y);
+                                                                \
+/* execute dot product                                      */  \
+/*  _q      : dotprod object                                */  \
+/*  _x      : input array [size: _n x 1]                    */  \
+/*  _y      : output sample pointer                         */  \
+void DOTPROD(_execute)(DOTPROD() _q,                            \
+                       TI *      _x,                            \
+                       TO *      _y);                           \
 
 LIQUID_DOTPROD_DEFINE_API(DOTPROD_MANGLE_RRRF,
                           float,
