@@ -1558,15 +1558,34 @@ void liquid_levinson(float * _r,
 //   TC         : coefficients data type
 //   TI         : input data type
 #define LIQUID_AUTOCORR_DEFINE_API(AUTOCORR,TO,TC,TI)           \
+                                                                \
 typedef struct AUTOCORR(_s) * AUTOCORR();                       \
+                                                                \
+/* create auto-correlator object                            */  \
+/*  _window_size    : size of the correlator window         */  \
+/*  _delay          : correlator delay [samples]            */  \
 AUTOCORR() AUTOCORR(_create)(unsigned int _window_size,         \
                              unsigned int _delay);              \
-void AUTOCORR(_destroy)(AUTOCORR() _f);                         \
-void AUTOCORR(_clear)(AUTOCORR() _f);                           \
-void AUTOCORR(_print)(AUTOCORR() _f);                           \
-void AUTOCORR(_push)(AUTOCORR() _f, TI _x);                     \
-void AUTOCORR(_execute)(AUTOCORR() _f, TO *_rxx);               \
-float AUTOCORR(_get_energy)(AUTOCORR() _f);
+                                                                \
+/* destroy auto-correlator object, freeing internal memory  */  \
+void AUTOCORR(_destroy)(AUTOCORR() _q);                         \
+                                                                \
+/* reset auto-correlator object's internals                 */  \
+void AUTOCORR(_clear)(AUTOCORR() _q);                           \
+                                                                \
+/* print auto-correlator parameters to stdout               */  \
+void AUTOCORR(_print)(AUTOCORR() _q);                           \
+                                                                \
+/* push sample into auto-correlator object                  */  \
+void AUTOCORR(_push)(AUTOCORR() _q,                             \
+                     TI         _x);                            \
+                                                                \
+/* compute auto-correlation output                          */  \
+void AUTOCORR(_execute)(AUTOCORR() _q,                          \
+                        TO *       _rxx);                       \
+                                                                \
+/* return sum of squares of buffered samples                */  \
+float AUTOCORR(_get_energy)(AUTOCORR() _q);                     \
 
 LIQUID_AUTOCORR_DEFINE_API(AUTOCORR_MANGLE_CCCF,
                            liquid_float_complex,
