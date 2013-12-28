@@ -164,6 +164,13 @@ This directory contains all the examples for interfacing the liquid modules.
 
  * `firfilt_rrrf_example.c`:
 
+ * `firfilt_crcf_example.c`:
+    Complex finite impulse response filter example. Demonstrates the 
+    functionality of firfilt by designing a low-order prototype and using it 
+    to filter a noisy signal.  The filter coefficients are real, but the 
+    input and output arrays are complex. The filter order and cutoff 
+    frequency are specified at the beginning.
+
  * `firhilb_decim_example.c`:
     Hilbert transform: 2:1 real-to-complex decimator.  This example
     demonstrates the functionality of firhilb (finite impulse response Hilbert

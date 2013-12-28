@@ -80,7 +80,7 @@ int main() {
     for (i=0; i<num_channels; i++) {
 
         // reset filter
-        firfilt_crcf_clear(fa);
+        firfilt_crcf_reset(fa);
 
         // set center frequency
         dphi = 2.0f * M_PI * (float)i / (float)num_channels;
@@ -125,7 +125,7 @@ int main() {
     float complex y_hat;
     for (i=0; i<num_channels; i++) {
         // reset filter
-        firfilt_crcf_clear(fs);
+        firfilt_crcf_reset(fs);
 
         // set center frequency
         dphi = 2.0f * M_PI * (float)i / (float)num_channels;
