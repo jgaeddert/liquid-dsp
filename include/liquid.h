@@ -1571,7 +1571,7 @@ AUTOCORR() AUTOCORR(_create)(unsigned int _window_size,         \
 void AUTOCORR(_destroy)(AUTOCORR() _q);                         \
                                                                 \
 /* reset auto-correlator object's internals                 */  \
-void AUTOCORR(_clear)(AUTOCORR() _q);                           \
+void AUTOCORR(_reset)(AUTOCORR() _q);                           \
                                                                 \
 /* print auto-correlator parameters to stdout               */  \
 void AUTOCORR(_print)(AUTOCORR() _q);                           \
