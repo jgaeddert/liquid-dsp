@@ -125,7 +125,7 @@ MSRESAMP() MSRESAMP(_create)(float _r,
     q->buffer1 = (T*) malloc( q->buffer_len*sizeof(T) );
 
     // create half-band resampler objects
-    q->halfband_resamp = (RESAMP2()*) malloc(q->num_halfband_stages*sizeof(RESAMP()));
+    q->halfband_resamp = (RESAMP2()*) malloc(q->num_halfband_stages*sizeof(RESAMP2()));
     unsigned int i;
     for (i=0; i<q->num_halfband_stages; i++) {
 #if 0
