@@ -64,9 +64,9 @@ RANLIB	:= ranlib
 
 # flags
 INCLUDE_CFLAGS	= $(addprefix -I ,$(include_dirs))
-CONFIG_CFLAGS	= @ARCH_OPTION@ @PROFILE_OPTION@ @DEBUG_OPTION@ @SIMD_FLAGS@
+CONFIG_CFLAGS	= @CFLAGS@ @PROFILE_OPTION@ @DEBUG_OPTION@
 # -g : debugging info
-CFLAGS		+= $(INCLUDE_CFLAGS) -g -O2 -Wall -fPIC $(CONFIG_CFLAGS)
+CFLAGS		+= $(INCLUDE_CFLAGS) -Wall -fPIC $(CONFIG_CFLAGS)
 LDFLAGS		+= @LIBS@
 ARFLAGS		= r
 PATHSEP		= /
@@ -74,7 +74,7 @@ PATHSEP		= /
 # 
 # liquid headers
 #
-headers_install	:= liquid.h @EXPERIMENTAL_HEADER@
+headers_install	:= liquid.h
 headers		:= $(headers_install) liquid.internal.h
 include_headers	:= $(addprefix include/,$(headers))
 
@@ -1052,33 +1052,6 @@ autotest_extra_obj +=
 vector_benchmarks :=
 
 
-# 
-# MODULE : experimental
-#
-
-# legacy sources (not built, but keep around just in case)
-#	src/experimental/legacy/dct.o
-#	src/experimental/legacy/mdct.o
-#	src/experimental/legacy/mdct_benchmark.c
-
-
-# explicit targets and dependencies
-
-experimental_filter_includes :=					\
-	src/experimental/src/iirqmfb.c				\
-	src/experimental/src/itqmfb.c				\
-	src/experimental/src/qmfb.c				\
-	src/experimental/src/symsync2.c				\
-	src/experimental/src/symsynclp.c			\
-
-src/experimental/src/filter_rrrf.o: %.o : %.c $(headers) $(experimental_filter_includes)
-
-src/experimental/src/filter_crcf.o: %.o : %.c $(headers) $(experimental_filter_includes)
-
-src/experimental/src/filter_cccf.o: %.o : %.c $(headers) $(experimental_filter_includes)
-
-
-
 
 # Target collection
 #
@@ -1106,7 +1079,6 @@ objects :=							\
 	$(sequence_objects)					\
 	$(utility_objects)					\
 	$(vector_objects)					\
-	@EXPERIMENTAL_MLIBS@
 	
 
 autotest_sources :=						\
@@ -1131,7 +1103,6 @@ autotest_sources :=						\
 	$(sequence_autotests)					\
 	$(utility_autotests)					\
 	$(vector_autotests)					\
-	@EXPERIMENTAL_AUTOTESTS@
 	
 
 benchmark_sources :=						\
@@ -1156,7 +1127,6 @@ benchmark_sources :=						\
 	$(sequence_benchmarks)					\
 	$(utility_benchmarks)					\
 	$(vector_benchmarks)					\
-	@EXPERIMENTAL_BENCHMARKS@
 
 
 ##
@@ -1386,6 +1356,7 @@ example_programs :=						\
 	examples/fft_example					\
 	examples/firdecim_crcf_example				\
 	examples/firfarrow_rrrf_example				\
+	examples/firfilt_crcf_example				\
 	examples/firfilt_rrrf_example				\
 	examples/firdes_kaiser_example				\
 	examples/firdespm_example				\
@@ -1450,19 +1421,18 @@ example_programs :=						\
 	examples/resamp2_crcf_decim_example			\
 	examples/resamp2_crcf_filter_example			\
 	examples/resamp2_crcf_interp_example			\
+	examples/ricek_channel_example				\
 	examples/scramble_example				\
 	examples/smatrix_example				\
 	examples/spgram_example					\
 	examples/symsync_crcf_example				\
 	examples/wdelayf_example				\
 	examples/windowf_example				\
-	@EXPERIMENTAL_EXAMPLES@
 
 #	examples/metadata_example
 #	examples/ofdmframegen_example
 #	examples/gmskframe_example
 #	examples/fading_generator_example
-#	examples/ricek_channel_example
 
 example_objects	= $(patsubst %,%.o,$(example_programs))
 examples: $(example_programs)
@@ -1645,7 +1615,6 @@ clean-modules:
 	$(RM) src/random/src/*.o       src/random/bench/*.o       src/random/tests/*.o
 	$(RM) src/utility/src/*.o      src/utility/bench/*.o      src/utility/tests/*.o
 	$(RM) src/vector/src/*.o       src/vector/bench/*.o       src/vector/tests/*.o
-	$(RM) src/experimental/src/*.o src/experimental/bench/*.o src/experimental/tests/*.o
 	$(RM) libliquid.o
 
 clean: clean-modules clean-autoscript clean-check clean-bench clean-examples clean-sandbox clean-doc
@@ -1662,5 +1631,6 @@ distclean: clean distclean-doc
 	$(RM) octave-core *.m
 	$(RM) configure config.h config.h.in config.h.in~ config.log config.status
 	$(RM) -r autom4te.cache
+	$(RM) aclocal.m4
 	$(RM) makefile
 

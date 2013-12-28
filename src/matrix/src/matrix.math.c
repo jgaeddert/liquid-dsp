@@ -257,8 +257,9 @@ void MATRIX(_mul_transpose)(T * _x,
             sum = 0.0f;
 
             for (i=0; i<_n; i++) {
-                sum +=        matrix_access(_x,_m,_n,r,i) *
-                       conjf( matrix_access(_x,_m,_n,c,i) );
+                T prod =        matrix_access(_x,_m,_n,r,i) *
+                         conjf( matrix_access(_x,_m,_n,c,i) );
+                sum += prod;
             }
 
             matrix_access(_xxT,_m,_m,r,c) = sum;
@@ -289,8 +290,9 @@ void MATRIX(_transpose_mul)(T * _x,
             sum = 0.0f;
 
             for (i=0; i<_m; i++) {
-                sum += conjf( matrix_access(_x,_m,_n,i,r) ) *
-                              matrix_access(_x,_m,_n,i,c);
+                T prod = conjf( matrix_access(_x,_m,_n,i,r) ) *
+                                matrix_access(_x,_m,_n,i,c);
+                sum += prod;
             }
 
             matrix_access(_xTx,_n,_n,r,c) = sum;

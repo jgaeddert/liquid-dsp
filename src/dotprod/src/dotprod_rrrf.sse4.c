@@ -176,7 +176,7 @@ void dotprod_rrrf_execute_sse4(dotprod_rrrf _q,
         h = _mm_load_ps(&_q->h[i]);
 
         // compute dot product
-        s = _mm_q_ps(v, h, 0xffffffff);
+        s = _mm_dp_ps(v, h, 0xffffffff);
         
         // parallel addition
         sum = _mm_add_ps( sum, s );

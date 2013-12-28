@@ -164,6 +164,13 @@ This directory contains all the examples for interfacing the liquid modules.
 
  * `firfilt_rrrf_example.c`:
 
+ * `firfilt_crcf_example.c`:
+    Complex finite impulse response filter example. Demonstrates the 
+    functionality of firfilt by designing a low-order prototype and using it 
+    to filter a noisy signal.  The filter coefficients are real, but the 
+    input and output arrays are complex. The filter order and cutoff 
+    frequency are specified at the beginning.
+
  * `firhilb_decim_example.c`:
     Hilbert transform: 2:1 real-to-complex decimator.  This example
     demonstrates the functionality of firhilb (finite impulse response Hilbert
@@ -354,6 +361,9 @@ This directory contains all the examples for interfacing the liquid modules.
 
     SEE ALSO: `bsequence_example.c`
 
+ * `msresamp_crcf_example.c`:
+    Demonstration of the multi-stage arbitrary resampler.
+
  * `nco_example.c`:
     This example demonstrates the most basic functionality of the
     numerically-controlled oscillator (NCO) object.
@@ -457,8 +467,7 @@ This directory contains all the examples for interfacing the liquid modules.
 
     NOTE: The filterbank is not a perfect reconstruction filter; a
           significant amount of distortion occurs in the transition band
-          of the half-band filters. See the 'qmfb' (quadrature mirror
-          filterbank) object in the experimental section.
+          of the half-band filters.
 
  * `resamp2_crcf_interp_example.c`:
     Halfband interpolator.  This example demonstrates the interface to the
@@ -496,113 +505,3 @@ This directory contains all the examples for interfacing the liquid modules.
     SEE ALSO: `bufferf_example.c`
               `wdelayf_example.c`
 
-
-experimental examples
----------------------
-
-Some examples are only available when configured with the option
-`--enable-experimental`
-
- * `ann_bitpattern_example.c`:
-    Artificial neural network (ann) bit pattern example.  This example
-    demonstrates the functionality of the ann module by training a
-    simple network to learn prime numbers:
-
-        n   :   b0  b1  b2  |   y
-        --------------------+------
-        0   :   0   0   0   |   1
-        1   :   0   0   1   |   1
-        2   :   0   1   0   |   1
-        3   :   0   1   1   |   1
-        4   :   1   0   0   |   0
-        5   :   1   0   1   |   1
-        6   :   1   1   0   |   0
-        7   :   1   1   1   |   1
-
-
- * `ann_example.c`:
-    Artificial neural network (ann) example. This example demonstrates the
-    functionality of the ann module by training a simple network to learn the
-    output of a continuous function.
-
- * `ann_layer_example.c`:
-
- * `ann_maxnet_example.c`:
-   Artificial neural network (ann) maxnet example. This example demonstrates
-   the functionality of the ann maxnet by training a network to recognize and
-   separate two input patterns in a 2-dimensional plane.
-    
- * `ann_node_example.c`:
-
- * `ann_xor_example.c`:
-    Artificial neural network (ann) eXclusive OR example. This example
-    demonstrates the functionality of the ann  module by training a simple
-    network to learn the output of an exclusive or (xor) circuit:
-
-        x   y   |   z
-        --------+-----
-        0   0   |   0
-        0   1   |   1
-        1   0   |   1
-        1   1   |   0
-
- * `dds_cccf_example.c`:
-    Direct digital synthesizer example.  This example demonstrates the
-    interface to the direct digital synthesizer.  A baseband pulse is
-    generated and then efficiently up-converted (interpolated and mixed up)
-    using the DDS object.  The resulting signal is then down-converted (mixed
-    down and decimated) using the same DDS object.  Results are written to a
-    file.
-
-    SEE ALSO: `interp_crcf_example.c`
-              `decim_crcf_example.c`
-              `resamp2_crcf_example.c`
-              `nco_example.c`
-
- * `fading_generator_example.c`:
-
- * `fbasc_example.c`:
-
- * `gport_dma_example.c`:
-
- * `gport_dma_threaded_example.c`:
-
- * `gport_ima_example.c`:
-
- * `gport_ima_threaded_example.c`:
-
- * `gport_mma_threaded_example.c`:
-
- * `iirqmfb_crcf_example.c`:
-
- * `itqmfb_crcf_example.c`:
-
- * `itqmfb_rrrf_example.c`:
-   
- * `kmeans_example.c`:
-
- * `ofdmoqam_example.c`:
-
- * `ofdmoqam_firpfbch_example.c`:
-
- * `ofdmoqamframe64gen_example.c`:
-
- * `ofdmoqamframe64sync_example.c`:
-
- * `ofdmoqamframesync_example.c`:
-
- * `patternset_example.c`:
-
- * `prqmfb_crcf_example.c`:
-
- * `qmfb_crcf_analysis_example.c`:
-
- * `qmfb_crcf_synthesis_example.c`:
-    This example demonstrates the functionality of the patternset
-    structure for easily managing pattern sets for optimization.
-
- * `ricek_channel_example.c`:
-
- * `symsync2_crcf_example.c`:
-
- * `symsynclp_crcf_example.c`:

@@ -348,36 +348,82 @@ float liquid_sumsqcf(liquid_float_complex * _v,
 //   T      : data type
 #define LIQUID_EQLMS_DEFINE_API(EQLMS,T)                        \
 typedef struct EQLMS(_s) * EQLMS();                             \
-EQLMS() EQLMS(_create)(T * _h,                                  \
+                                                                \
+/* create LMS EQ initialized with external coefficients     */  \
+/*  _h      : filter coefficients (NULL for {1,0,0...})     */  \
+/*  _p      : filter length                                 */  \
+EQLMS() EQLMS(_create)(T *          _h,                         \
                        unsigned int _p);                        \
-/* create LMS EQ initialized with square-root Nyquist   */      \
-/*  _type   : filter type (e.g. LIQUID_RNYQUIST_RRC)    */      \
-/*  _k      : samples/symbol                            */      \
-/*  _m      : filter delay (symbols)                    */      \
-/*  _beta   : rolloff factor (0 < beta <= 1)            */      \
-/*  _dt     : fractional sample delay                   */      \
-EQLMS() EQLMS(_create_rnyquist)(int _type,                      \
+                                                                \
+/* create LMS EQ initialized with square-root Nyquist       */  \
+/*  _type   : filter type (e.g. LIQUID_RNYQUIST_RRC)        */  \
+/*  _k      : samples/symbol                                */  \
+/*  _m      : filter delay (symbols)                        */  \
+/*  _beta   : rolloff factor (0 < beta <= 1)                */  \
+/*  _dt     : fractional sample delay                       */  \
+EQLMS() EQLMS(_create_rnyquist)(int          _type,             \
                                 unsigned int _k,                \
                                 unsigned int _m,                \
-                                float _beta,                    \
-                                float _dt);                     \
-EQLMS() EQLMS(_recreate)(EQLMS() _eq,                           \
-                         T * _h,                                \
+                                float        _beta,             \
+                                float        _dt);              \
+                                                                \
+/* re-create EQ initialized with external coefficients      */  \
+/*  _q      :   equalizer object                            */  \
+/*  _h      :   filter coefficients (NULL for {1,0,0...})   */  \
+/*  _p      :   filter length                               */  \
+EQLMS() EQLMS(_recreate)(EQLMS()      _q,                       \
+                         T *          _h,                       \
                          unsigned int _p);                      \
-void EQLMS(_destroy)(EQLMS() _eq);                              \
-void EQLMS(_print)(EQLMS() _eq);                                \
-void EQLMS(_set_bw)(EQLMS() _eq, float _lambda);                \
+                                                                \
+/* destroy equalizer object, freeing all internal memory    */  \
+void EQLMS(_destroy)(EQLMS() _q);                               \
+                                                                \
+/* print equalizer internal state                           */  \
+void EQLMS(_print)(EQLMS() _q);                                 \
+                                                                \
+/* set equalizer learning rate                              */  \
+void EQLMS(_set_bw)(EQLMS() _q,                                 \
+                    float   _lambda);                           \
+                                                                \
+/* get equalizer learning rate                              */  \
 float EQLMS(_get_bw)(EQLMS() _eq);                              \
-void EQLMS(_reset)(EQLMS() _eq);                                \
-void EQLMS(_push)(EQLMS() _eq, T _x);                           \
-void EQLMS(_execute)(EQLMS() _eq, T * _y);                      \
-void EQLMS(_step)(EQLMS() _eq, T _d, T _d_hat);                 \
-void EQLMS(_get_weights)(EQLMS() _eq, T * _w);                  \
-void EQLMS(_train)(EQLMS() _eq,                                 \
-                   T * _w,                                      \
-                   T * _x,                                      \
-                   T * _d,                                      \
-                   unsigned int _n);
+                                                                \
+/* reset equalizer object, clearing internal state          */  \
+void EQLMS(_reset)(EQLMS() _q);                                 \
+                                                                \
+/* push sample into equalizer internal buffer               */  \
+void EQLMS(_push)(EQLMS() _q,                                   \
+                  T       _x);                                  \
+                                                                \
+/* execute internal dot product and return result           */  \
+/*  _q      :   equalizer object                            */  \
+/*  _y      :   output sample                               */  \
+void EQLMS(_execute)(EQLMS() _q,                                \
+                     T *     _y);                               \
+                                                                \
+/* step through one cycle of equalizer training             */  \
+/*  _q      :   equalizer object                            */  \
+/*  _d      :   desired output                              */  \
+/*  _d_hat  :   actual output                               */  \
+void EQLMS(_step)(EQLMS() _q,                                   \
+                  T       _d,                                   \
+                  T       _d_hat);                              \
+                                                                \
+/* reset equalizer object, clearing internal state          */  \
+void EQLMS(_get_weights)(EQLMS() _q,                            \
+                         T *     _w);                           \
+                                                                \
+/* train equalizer object on group of samples               */  \
+/*  _q      :   equalizer object                            */  \
+/*  _w      :   input/output weights   [size: _p x 1]       */  \
+/*  _x      :   received sample vector [size: _n x 1]       */  \
+/*  _d      :   desired output vector  [size: _n x 1]       */  \
+/*  _n      :   input, output vector length                 */  \
+void EQLMS(_train)(EQLMS()      _q,                             \
+                   T *          _w,                             \
+                   T *          _x,                             \
+                   T *          _d,                             \
+                   unsigned int _n);                            \
 
 LIQUID_EQLMS_DEFINE_API(EQLMS_MANGLE_RRRF, float);
 LIQUID_EQLMS_DEFINE_API(EQLMS_MANGLE_CCCF, liquid_float_complex);
@@ -1536,31 +1582,67 @@ FIRFILT() FIRFILT(_create_kaiser)(unsigned int _n,              \
                                   float        _As,             \
                                   float        _mu);            \
                                                                 \
-/* create from square-root Nyquist prototype            */      \
-/*  _type   : filter type (e.g. LIQUID_RNYQUIST_RRC)    */      \
-/*  _k      : nominal samples/symbol, _k > 1            */      \
-/*  _m      : filter delay [symbols], _m > 0            */      \
-/*  _beta   : rolloff factor, 0 < beta <= 1             */      \
-/*  _mu     : fractional sample offset,-0.5 < _mu < 0.5 */      \
+/* create from square-root Nyquist prototype                */  \
+/*  _type   : filter type (e.g. LIQUID_RNYQUIST_RRC)        */  \
+/*  _k      : nominal samples/symbol, _k > 1                */  \
+/*  _m      : filter delay [symbols], _m > 0                */  \
+/*  _beta   : rolloff factor, 0 < beta <= 1                 */  \
+/*  _mu     : fractional sample offset,-0.5 < _mu < 0.5     */  \
 FIRFILT() FIRFILT(_create_rnyquist)(int          _type,         \
                                     unsigned int _k,            \
                                     unsigned int _m,            \
                                     float        _beta,         \
                                     float        _mu);          \
                                                                 \
-FIRFILT() FIRFILT(_recreate)(FIRFILT() _f,                      \
-                             TC * _h,                           \
+/* re-create filter                                         */  \
+/*  _q      : original filter object                        */  \
+/*  _h      : pointer to filter coefficients [size: _n x 1] */  \
+/*  _n      : filter length, _n > 0                         */  \
+FIRFILT() FIRFILT(_recreate)(FIRFILT()    _q,                   \
+                             TC *         _h,                   \
                              unsigned int _n);                  \
-void FIRFILT(_destroy)(FIRFILT() _f);                           \
-void FIRFILT(_clear)(FIRFILT() _f);                             \
-void FIRFILT(_print)(FIRFILT() _f);                             \
-void FIRFILT(_push)(FIRFILT() _f, TI _x);                       \
-void FIRFILT(_execute)(FIRFILT() _f, TO *_y);                   \
-unsigned int FIRFILT(_get_length)(FIRFILT() _f);                \
-void FIRFILT(_freqresponse)(FIRFILT() _f,                       \
-                            float _fc,                          \
+                                                                \
+/* destroy filter object and free all internal memory       */  \
+void FIRFILT(_destroy)(FIRFILT() _q);                           \
+                                                                \
+/* reset filter object's internal buffer                    */  \
+void FIRFILT(_reset)(FIRFILT() _q);                             \
+                                                                \
+/* print filter object information                          */  \
+void FIRFILT(_print)(FIRFILT() _q);                             \
+                                                                \
+/* set output scaling for filter                            */  \
+void FIRFILT(_set_scale)(FIRFILT() _q,                          \
+                         TC        _g);                         \
+                                                                \
+/* push sample into filter object's internal buffer         */  \
+/*  _q      : filter object                                 */  \
+/*  _x      : single input sample                           */  \
+void FIRFILT(_push)(FIRFILT() _q,                               \
+                    TI        _x);                              \
+                                                                \
+/* execute the filter on internal buffer and coefficients   */  \
+/*  _q      : filter object                                 */  \
+/*  _y      : pointer to single output sample               */  \
+void FIRFILT(_execute)(FIRFILT() _q,                            \
+                       TO *      _y);                           \
+                                                                \
+/* return length of filter object                           */  \
+unsigned int FIRFILT(_get_length)(FIRFILT() _q);                \
+                                                                \
+/* compute complex frequency response of filter object      */  \
+/*  _q      : filter object                                 */  \
+/*  _fc     : frequency to evaluate                         */  \
+/*  _H      : pointer to output complex frequency response  */  \
+void FIRFILT(_freqresponse)(FIRFILT()              _q,          \
+                            float                  _fc,         \
                             liquid_float_complex * _H);         \
-float FIRFILT(_groupdelay)(FIRFILT() _f, float _fc);
+                                                                \
+/* compute and return group delay of filter object          */  \
+/*  _q      : filter object                                 */  \
+/*  _fc     : frequency to evaluate                         */  \
+float FIRFILT(_groupdelay)(FIRFILT() _q,                        \
+                           float     _fc);                      \
 
 LIQUID_FIRFILT_DEFINE_API(FIRFILT_MANGLE_RRRF,
                           float,
@@ -3187,17 +3269,32 @@ void POLY(_expandroots2)(T * _a,                                \
                          unsigned int _n,                       \
                          T * _c);                               \
                                                                 \
-/* find roots of the polynomial (complex) */                    \
-void POLY(_findroots)(T * _c,                                   \
+/* find roots of the polynomial (complex)                   */  \
+/*  _poly   : poly array, ascending powers [size: _k x 1]   */  \
+/*  _k      : poly length (poly order = _k - 1)             */  \
+/*  _roots  : resulting complex roots [size: _k-1 x 1]      */  \
+void POLY(_findroots)(T *          _poly,                       \
                       unsigned int _n,                          \
-                      TC * _roots);                             \
+                      TC *         _roots);                     \
+                                                                \
+/* find the complex roots of the polynomial using the       */  \
+/* Durand-Kerner method                                     */  \
+void POLY(_findroots_durandkerner)(T *          _poly,          \
+                                   unsigned int _k,             \
+                                   TC *         _roots);        \
+                                                                \
+/* find the complex roots of the polynomial using           */  \
+/* Bairstow's method                                        */  \
+void POLY(_findroots_bairstow)(T *          _poly,              \
+                               unsigned int _k,                 \
+                               TC *         _roots);            \
                                                                 \
 /* expands the multiplication of two polynomials */             \
-void POLY(_mul)(T * _a,                                         \
+void POLY(_mul)(T *          _a,                                \
                 unsigned int _order_a,                          \
-                T * _b,                                         \
+                T *          _b,                                \
                 unsigned int _order_b,                          \
-                T * _c);
+                T *          _c);                               \
 
 LIQUID_POLY_DEFINE_API(POLY_MANGLE_DOUBLE,
                        double,
