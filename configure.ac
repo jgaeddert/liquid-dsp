@@ -178,7 +178,14 @@ i386|i486|i586|i686|x86|x86_64)
         MLIBS_DOTPROD="src/dotprod/src/dotprod_cccf.mmx.o \
                        src/dotprod/src/dotprod_crcf.mmx.o \
                        src/dotprod/src/dotprod_rrrf.sse4.o \
-                       src/dotprod/src/sumsq.mmx.o"
+                       src/dotprod/src/sumsq.mmx.o \
+                       src/dotprod/src/dotprod_cccq16.mmx.o \
+                       src/dotprod/src/dotprod_crcq16.mmx.o \
+                       src/dotprod/src/dotprod_rrrq16.mmx.o \
+                       src/dotprod/src/dotprod_cccq32.mmx.o \
+                       src/dotprod/src/dotprod_crcq32.mmx.o \
+                       src/dotprod/src/dotprod_rrrq32.mmx.o \
+                       src/dotprod/src/sumsqq16.o"
     elif [ test "$ax_cv_have_sse2_ext" = yes && test "$ac_cv_header_emmintrin_h" = yes ]; then
         # SSE2 extensions
         MLIBS_DOTPROD="src/dotprod/src/dotprod_cccf.mmx.o \

@@ -507,7 +507,7 @@ void IIRFILT(_clear)(IIRFILT() _q)
     } else {
         // set internal buffer to zero
 #ifdef LIQUID_FIXED
-        memset(_q->v, 0x00, sizeof(_q->v));
+        memset(_q->v, 0x00, _q->n*sizeof(TI));
 #else
         for (i=0; i<_q->n; i++)
             _q->v[i] = 0;

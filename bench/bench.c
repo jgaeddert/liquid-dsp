@@ -304,25 +304,36 @@ void estimate_cpu_clock(void)
     struct rusage start, finish;
     double extime;
     
+    // run trials until execution time threshold is exceeded
     do {
         // trials
         n <<= 1;
-        unsigned int x=0;
+
+        // NOTE: Smart compilers will realize that this loop doesn't really do
+        //       anything, so they won't actually compute anything. We need to
+        //       actually do something interesting here to trick the compiler
+        //       into actually crunching these numbers, and then later display
+        //       the results, even if they're meaningless
+        unsigned int k = 366001;    // large prime number
+        unsigned int g = 184903;    // another large prime number
+        unsigned int s = 1;
         getrusage(RUSAGE_SELF, &start);
         for (i=0; i<n; i++) {
             // perform mindless task
-            x <<= 1;
-            x |= 1;
-            x &= 0xff;
-            x ^= 0xff;
+            s = (s*k) % g;
         }
         getrusage(RUSAGE_SELF, &finish);
 
         extime = calculate_execution_time(start, finish);
+
+        // print results to screen
+        // NOTE: it is necessary to do something with the variable 's' so that
+        //       the compiler will actually run the above loop
+        printf("%12lu trials in %8.3f ms, s = %6u\n", n, extime*1e3, s);
     } while (extime < 0.5 && n < (1<<28));
 
     // estimate cpu clock frequency
-    cpu_clock = 23.9 * n / extime;
+    cpu_clock = 9.5 * n / extime;
 
     printf("  performed %ld trials in %5.1f ms\n", n, extime * 1e3);
     

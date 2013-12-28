@@ -106,7 +106,11 @@ AGC() AGC(_create)(void)
     _q->buffer = (T*) malloc((_q->buffer_len)*sizeof(T));
 
     // squelch
+#if defined LIQUID_FIXED
+    _q->squelch_headroom = Q(_float_to_fixed)(0.39811f);    // roughly 4dB
+#else
     _q->squelch_headroom = 0.39811f;    // roughly 4dB
+#endif
     AGC(_squelch_disable_auto)(_q);
     AGC(_squelch_set_threshold)(_q, -30.0f);
     AGC(_squelch_set_timeout)(_q, 32);
@@ -200,7 +204,12 @@ void AGC(_set_bandwidth)(AGC() _q,
 
     // ensure normalized bandwidth is less than one
     T bt = _q->BT;
+#if defined LIQUID_FIXED
+    if (bt >= Q(_one))
+        bt = Q(_float_to_fixed)(0.95f);
+#else
     if (bt >= 1.0f) bt = 0.99f;
+#endif
 
     // compute coefficients
     _q->alpha = sqrtf(bt);
@@ -440,7 +449,7 @@ void AGC(_update_auto_squelch)(AGC() _q,
 {
 #if defined LIQUID_FIXED
     // FIXME: test this method for fixed-point math
-    if (_rssi < _q->squelch_threshold * _q->squelch_headroom)
+    if (_rssi < Q(_mul)(_q->squelch_threshold,_q->squelch_headroom) )
         _q->squelch_threshold = Q(_mul)(_q->squelch_threshold, Q(_float_to_fixed)(0.95f));
     else
         _q->squelch_threshold = Q(_mul)(_q->squelch_threshold, Q(_float_to_fixed)(1.01f));
