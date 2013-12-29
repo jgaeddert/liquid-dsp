@@ -101,8 +101,8 @@ FIRFARROW() FIRFARROW(_create)(unsigned int _h_len,
     // allocate memory for polynomial matrix [ h_len x Q+1 ]
     q->P = (float*) malloc((q->h_len)*(q->Q+1)*sizeof(float));
 
-    // clear the filter object
-    FIRFARROW(_clear)(q);
+    // reset the filter object
+    FIRFARROW(_reset)(q);
 
     // generate polynomials
     FIRFARROW(_genpoly)(q);
@@ -154,7 +154,7 @@ void FIRFARROW(_print)(FIRFARROW() _q)
 }
 
 // reset firfarrow object's internal state
-void FIRFARROW(_clear)(FIRFARROW() _q)
+void FIRFARROW(_reset)(FIRFARROW() _q)
 {
 #if FIRFARROW_USE_DOTPROD
     WINDOW(_clear)(_q->w);

@@ -2576,7 +2576,7 @@ void FIRFARROW(_destroy)(FIRFARROW() _q);                       \
 void FIRFARROW(_print)(FIRFARROW() _q);                         \
                                                                 \
 /* reset firfarrow object's internal state                  */  \
-void FIRFARROW(_clear)(FIRFARROW() _q);                         \
+void FIRFARROW(_reset)(FIRFARROW() _q);                         \
                                                                 \
 /* push sample into firfarrow object                        */  \
 /*  _q      : firfarrow object                              */  \
