@@ -4126,36 +4126,66 @@ void ampmodem_demodulate(ampmodem _fm,
 //   TI         : input data type
 #define LIQUID_FIRPFBCH_DEFINE_API(FIRPFBCH,TO,TC,TI)           \
 typedef struct FIRPFBCH(_s) * FIRPFBCH();                       \
-FIRPFBCH() FIRPFBCH(_create)(int _type,                         \
-                             unsigned int _num_channels,        \
+                                                                \
+/* create finite impulse response polyphase filter-bank     */  \
+/* channelizer object from external coefficients            */  \
+/*  _type   : channelizer type, e.g. LIQUID_ANALYZER        */  \
+/*  _M      : number of channels                            */  \
+/*  _p      : number of coefficients for each channel       */  \
+/*  _h      : coefficients [size: _M*_p x 1]                */  \
+FIRPFBCH() FIRPFBCH(_create)(int          _type,                \
+                             unsigned int _M,                   \
                              unsigned int _p,                   \
-                             TC * _h);                          \
-FIRPFBCH() FIRPFBCH(_create_kaiser)(int _type,                  \
+                             TC *         _h);                  \
+                                                                \
+/* create FIR polyphase filterbank channelizer object with  */  \
+/* prototype filter based on windowed Kaiser design         */  \
+/*  _type   : type (LIQUID_ANALYZER | LIQUID_SYNTHESIZER)   */  \
+/*  _M      : number of channels                            */  \
+/*  _m      : filter delay (symbols)                        */  \
+/*  _As     : stop-band attentuation [dB]                   */  \
+FIRPFBCH() FIRPFBCH(_create_kaiser)(int          _type,         \
                                     unsigned int _M,            \
                                     unsigned int _m,            \
-                                    float _As);                 \
-FIRPFBCH() FIRPFBCH(_create_rnyquist)(int _type,                \
+                                    float        _As);          \
+                                                                \
+/* create FIR polyphase filterbank channelizer object with  */  \
+/* prototype root-Nyquist filter                            */  \
+/*  _type   : type (LIQUID_ANALYZER | LIQUID_SYNTHESIZER)   */  \
+/*  _M      : number of channels                            */  \
+/*  _m      : filter delay (symbols)                        */  \
+/*  _beta   : filter excess bandwidth factor, in [0,1]      */  \
+/*  _ftype  : filter prototype (rrcos, rkaiser, etc.)       */  \
+FIRPFBCH() FIRPFBCH(_create_rnyquist)(int          _type,       \
                                       unsigned int _M,          \
                                       unsigned int _m,          \
-                                      float _beta,              \
-                                      int _ftype);              \
+                                      float        _beta,       \
+                                      int          _ftype);     \
+                                                                \
+/* destroy firpfbch object                                  */  \
 void FIRPFBCH(_destroy)(FIRPFBCH() _q);                         \
+                                                                \
+/* clear/reset firpfbch internal state                      */  \
 void FIRPFBCH(_clear)(FIRPFBCH() _q);                           \
+                                                                \
+/* print firpfbch internal parameters to stdout             */  \
 void FIRPFBCH(_print)(FIRPFBCH() _q);                           \
                                                                 \
-/* synthesizer */                                               \
+/* execute filterbank as synthesizer on block of samples    */  \
+/*  _q      : filterbank channelizer object                 */  \
+/*  _x      : channelized input, [size: num_channels x 1]   */  \
+/*  _y      : output time series, [size: num_channels x 1]  */  \
 void FIRPFBCH(_synthesizer_execute)(FIRPFBCH() _q,              \
-                                    TI * _x,                    \
-                                    TO * _X);                   \
+                                    TI *       _x,              \
+                                    TO *       _y);             \
                                                                 \
-/* analyzer */                                                  \
+/* execute filterbank as analyzer on block of samples       */  \
+/*  _q      : filterbank channelizer object                 */  \
+/*  _x      : input time series, [size: num_channels x 1]   */  \
+/*  _y      : channelized output, [size: num_channels x 1]  */  \
 void FIRPFBCH(_analyzer_execute)(FIRPFBCH() _q,                 \
-                                 TI * _x,                       \
-                                 TO * _X);                      \
-void FIRPFBCH(_analyzer_push)(FIRPFBCH() _q, TI _x);            \
-void FIRPFBCH(_analyzer_run)(FIRPFBCH() _q,                     \
-                             unsigned int _k,                   \
-                             TO * _X);
+                                 TI *       _x,                 \
+                                 TO *       _y);                \
 
 
 LIQUID_FIRPFBCH_DEFINE_API(FIRPFBCH_MANGLE_CRCF,
