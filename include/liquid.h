@@ -2458,48 +2458,78 @@ LIQUID_MSRESAMP_DEFINE_API(MSRESAMP_MANGLE_CCCF,
                            liquid_float_complex,
                            liquid_float_complex)
 
+
 // 
 // Symbol timing recovery (symbol synchronizer)
 //
 #define SYMSYNC_MANGLE_RRRF(name)   LIQUID_CONCAT(symsync_rrrf,name)
 #define SYMSYNC_MANGLE_CRCF(name)   LIQUID_CONCAT(symsync_crcf,name)
-//#define SYMSYNC_MANGLE_CCCF(name)   LIQUID_CONCAT(symsync_cccf,name)
 
 #define LIQUID_SYMSYNC_DEFINE_API(SYMSYNC,TO,TC,TI)             \
+                                                                \
 typedef struct SYMSYNC(_s) * SYMSYNC();                         \
+                                                                \
+/* create synchronizer object from external coefficients    */  \
+/*  _k      : samples per symbol                            */  \
+/*  _M      : number of filters in the bank                 */  \
+/*  _h      : matched filter coefficients [size:            */  \
+/*  _h_len  : length of matched filter                      */  \
 SYMSYNC() SYMSYNC(_create)(unsigned int _k,                     \
-                           unsigned int _num_filters,           \
-                           TC * _h,                             \
+                           unsigned int _M,                     \
+                           TC *         _h,                     \
                            unsigned int _h_len);                \
+                                                                \
 /* create square-root Nyquist symbol synchronizer           */  \
-/*  _type        : filter type (e.g. LIQUID_RNYQUIST_RRC)   */  \
-/*  _k           : samples/symbol                           */  \
-/*  _m           : symbol delay                             */  \
-/*  _beta        : rolloff factor (0 < beta <= 1)           */  \
-/*  _num_filters : number of filters in the bank            */  \
-SYMSYNC() SYMSYNC(_create_rnyquist)(int _type,                  \
+/*  _type   : filter type (e.g. LIQUID_RNYQUIST_RRC)        */  \
+/*  _k      : samples/symbol                                */  \
+/*  _m      : symbol delay                                  */  \
+/*  _beta   : rolloff factor (0 < beta <= 1)                */  \
+/*  _M      : number of filters in the bank                 */  \
+SYMSYNC() SYMSYNC(_create_rnyquist)(int          _type,         \
                                     unsigned int _k,            \
                                     unsigned int _m,            \
-                                    float _beta,                \
-                                    unsigned int _num_filters); \
+                                    float        _beta,         \
+                                    unsigned int _M);           \
+                                                                \
+/* destroy symsync object, freeing all internal memory      */  \
 void SYMSYNC(_destroy)(SYMSYNC() _q);                           \
+                                                                \
+/* print symsync object's parameters                        */  \
 void SYMSYNC(_print)(SYMSYNC() _q);                             \
-void SYMSYNC(_execute)(SYMSYNC() _q,                            \
-                       TI * _x,                                 \
-                       unsigned int _nx,                        \
-                       TO * _y,                                 \
-                       unsigned int *_ny);                      \
-void SYMSYNC(_set_output_rate)(SYMSYNC() _q,                    \
-                               unsigned int _k_out);            \
-void SYMSYNC(_set_lf_bw)(SYMSYNC() _q, float _bt);              \
-/* lock/unlock loop control */                                  \
-void SYMSYNC(_lock)(SYMSYNC() _q);                              \
+                                                                \
+/* reset symsync internal state                             */  \
+void SYMSYNC(_reset)(SYMSYNC() _q);                             \
+                                                                \
+/* lock/unlock loop control                                 */  \
+void SYMSYNC(_lock)(  SYMSYNC() _q);                            \
 void SYMSYNC(_unlock)(SYMSYNC() _q);                            \
-void SYMSYNC(_clear)(SYMSYNC() _q);                             \
+                                                                \
+/* set synchronizer output rate (samples/symbol)            */  \
+/*  _q      : synchronizer object                           */  \
+/*  _k_out  : output samples/symbol                         */  \
+void SYMSYNC(_set_output_rate)(SYMSYNC()    _q,                 \
+                               unsigned int _k_out);            \
+                                                                \
+/* set loop-filter bandwidth                                */  \
+/*  _q      : synchronizer object                           */  \
+/*  _bt     : loop bandwidth                                */  \
+void SYMSYNC(_set_lf_bw)(SYMSYNC() _q,                          \
+                         float     _bt);                        \
+                                                                \
+/* return instantaneous fractional timing offset estimate   */  \
 float SYMSYNC(_get_tau)(SYMSYNC() _q);                          \
-void SYMSYNC(_estimate_timing)(SYMSYNC() _q,                    \
-                               TI * _x,                         \
-                               unsigned int _n);
+                                                                \
+/* execute synchronizer on input data array                 */  \
+/*  _q      : synchronizer object                           */  \
+/*  _x      : input data array                              */  \
+/*  _nx     : number of input samples                       */  \
+/*  _y      : output data array                             */  \
+/*  _ny     : number of samples written to output buffer    */  \
+void SYMSYNC(_execute)(SYMSYNC()      _q,                       \
+                       TI *           _x,                       \
+                       unsigned int   _nx,                      \
+                       TO *           _y,                       \
+                       unsigned int * _ny);                     \
 
 LIQUID_SYMSYNC_DEFINE_API(SYMSYNC_MANGLE_RRRF,
                           float,

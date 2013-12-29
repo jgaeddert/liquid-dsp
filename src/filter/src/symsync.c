@@ -46,17 +46,26 @@
 //
 
 // step synchronizer
+//  _q      : symsync object
+//  _x      : input sample
+//  _y      : output sample array pointer
+//  _ny     : number of output samples written
 void SYMSYNC(_step)(SYMSYNC()      _q,
                     TI             _x,
                     TO *           _y,
                     unsigned int * _ny);
 
-// advance internal timing loop
+// advance synchronizer's internal loop filter
+//  _q      : synchronizer object
+//  _mf     : matched-filter output
+//  _dmf    : derivative matched-filter output
 void SYMSYNC(_advance_internal_loop)(SYMSYNC() _q,
                                      TO        _mf,
                                      TO        _dmf);
 
-// write output debugging file
+// print results to output debugging file
+//  _q          : synchronizer object
+//  _filename   : output filename
 void SYMSYNC(_output_debug_file)(SYMSYNC()    _q,
                                  const char * _filename);
 
@@ -85,7 +94,7 @@ struct SYMSYNC(_s) {
     float A[3];                 // loop filter feed-back coefficients
     iirfiltsos_rrrf pll;        // loop filter object (iir filter)
 
-    unsigned int npfb;
+    unsigned int M;             // number of filters in the bank
     FIRPFB()  mf;               // matched filter
     FIRPFB() dmf;               // derivative matched filter
 
@@ -98,14 +107,13 @@ struct SYMSYNC(_s) {
 #endif
 };
 
-// create synchronizer object
-//
-//  _k      :   samples per symbol
-//  _npfb   :   number of filters in the bank
-//  _h      :   matched filter coefficients
-//  _h_len  :   length of matched filter
+// create synchronizer object from external coefficients
+//  _k      : samples per symbol
+//  _M      : number of filters in the bank
+//  _h      : matched filter coefficients
+//  _h_len  : length of matched filter
 SYMSYNC() SYMSYNC(_create)(unsigned int _k,
-                           unsigned int _npfb,
+                           unsigned int _M,
                            TC *         _h,
                            unsigned int _h_len)
 {
@@ -116,7 +124,7 @@ SYMSYNC() SYMSYNC(_create)(unsigned int _k,
     } else if (_h_len == 0) {
         fprintf(stderr,"error: symsync_%s_create(), filter length must be greater than zero\n", EXTENSION_FULL);
         exit(1);
-    } else if (_npfb == 0) {
+    } else if (_M == 0) {
         fprintf(stderr,"error: symsync_%s_create(), number of filter banks must be greater than zero\n", EXTENSION_FULL);
         exit(1);
     }
@@ -124,7 +132,7 @@ SYMSYNC() SYMSYNC(_create)(unsigned int _k,
     SYMSYNC() q = (SYMSYNC()) malloc(sizeof(struct SYMSYNC(_s)));
     q->k = _k;
 
-    q->npfb = _npfb;
+    q->M = _M;
     q->tau = 0.0f;
     q->bf  = 0.0f;
     q->b   = 0;
@@ -133,7 +141,7 @@ SYMSYNC() SYMSYNC(_create)(unsigned int _k,
     SYMSYNC(_set_output_rate)(q, 1);
 
     // TODO: validate length
-    q->h_len = (_h_len-1)/q->npfb;
+    q->h_len = (_h_len-1)/q->M;
     
     // compute derivative filter
     TC dh[_h_len];
@@ -158,15 +166,15 @@ SYMSYNC() SYMSYNC(_create)(unsigned int _k,
     for (i=0; i<_h_len; i++)
         dh[i] *= 0.06f / hdh_max;
     
-    q->mf  = FIRPFB(_create)(q->npfb, _h, _h_len);
-    q->dmf = FIRPFB(_create)(q->npfb, dh, _h_len);
+    q->mf  = FIRPFB(_create)(q->M, _h, _h_len);
+    q->dmf = FIRPFB(_create)(q->M, dh, _h_len);
 
     // reset state and initialize loop filter
     q->A[0] = 1.0f;     q->B[0] = 0.0f;
     q->A[1] = 0.0f;     q->B[1] = 0.0f;
     q->A[2] = 0.0f;     q->B[2] = 0.0f;
     q->pll = iirfiltsos_rrrf_create(q->B, q->A);
-    SYMSYNC(_clear)(q);
+    SYMSYNC(_reset)(q);
     SYMSYNC(_set_lf_bw)(q, 0.01f);
 
     // set output rate nominally at 1 sample/symbol (full decimation)
@@ -192,12 +200,12 @@ SYMSYNC() SYMSYNC(_create)(unsigned int _k,
 //  _k      : samples/symbol
 //  _m      : symbol delay
 //  _beta   : rolloff factor (0 < beta <= 1)
-//  _npfb   : number of filters in the bank
-SYMSYNC() SYMSYNC(_create_rnyquist)(int _type,
+//  _M      : number of filters in the bank
+SYMSYNC() SYMSYNC(_create_rnyquist)(int          _type,
                                     unsigned int _k,
                                     unsigned int _m,
-                                    float _beta,
-                                    unsigned int _npfb)
+                                    float        _beta,
+                                    unsigned int _M)
 {
     // validate input
     if (_k < 2) {
@@ -212,11 +220,11 @@ SYMSYNC() SYMSYNC(_create_rnyquist)(int _type,
     }
 
     // allocate memory for filter coefficients
-    unsigned int H_len = 2*_npfb*_k*_m + 1;
+    unsigned int H_len = 2*_M*_k*_m + 1;
     float Hf[H_len];
 
     // design square-root Nyquist pulse-shaping filter
-    liquid_firdes_rnyquist(_type, _k*_npfb, _m, _beta, 0, Hf);
+    liquid_firdes_rnyquist(_type, _k*_M, _m, _beta, 0, Hf);
 
     // copy coefficients to type-specific array
     TC H[H_len];
@@ -225,9 +233,10 @@ SYMSYNC() SYMSYNC(_create_rnyquist)(int _type,
         H[i] = Hf[i];
 
     // create object and return
-    return SYMSYNC(_create)(_k, _npfb, H, H_len);
+    return SYMSYNC(_create)(_k, _M, H, H_len);
 }
 
+// destroy symsync object, freeing all internal memory
 void SYMSYNC(_destroy)(SYMSYNC() _q)
 {
 #if DEBUG_SYMSYNC
@@ -252,16 +261,20 @@ void SYMSYNC(_destroy)(SYMSYNC() _q)
     free(_q);
 }
 
+// print symsync object's parameters
 void SYMSYNC(_print)(SYMSYNC() _q)
 {
     printf("symsync [rate: %f]\n", _q->r);
     FIRPFB(_print)(_q->mf);
 }
 
+// reset symsync internal state
 void SYMSYNC(_reset)(SYMSYNC() _q)
 {
+    // reset polyphase filterbank
     FIRPFB(_reset)(_q->mf);
 
+    // reset counters, etc.
     _q->b       = 0;
     _q->tau     = 0.0f;
     _q->bf      = 0.0f;
@@ -270,10 +283,6 @@ void SYMSYNC(_reset)(SYMSYNC() _q)
     _q->decim_counter = 0;
     _q->tau_decim     = 0.0f;
     iirfiltsos_rrrf_reset(_q->pll);
-}
-
-void SYMSYNC(_clear)(SYMSYNC() _q) {
-    SYMSYNC(_reset)(_q);
 }
 
 // lock synchronizer object
@@ -297,34 +306,6 @@ void SYMSYNC(_setrate)(SYMSYNC() _q, float _rate)
 
 }
 
-// set synchronizer loop filter bandwidth
-//  _q      :   synchronizer object
-//  _bt     :   bandwidth
-void SYMSYNC(_set_lf_bw)(SYMSYNC() _q,
-                         float _bt)
-{
-    // validate input
-    if (_bt < 0.0f || _bt > 1.0f) {
-        fprintf(stderr,"error: symsync_%s_set_lf_bt(), bandwidth must be in [0,1]\n", EXTENSION_FULL);
-        exit(1);
-    }
-
-    float alpha = 1.000f - _bt;
-    float beta  = 0.220f * _bt;
-    float a     = 0.500f;
-    float b     = 0.495f;
-
-    _q->B[0] = beta;
-    _q->B[1] = 0.00f;
-    _q->B[2] = 0.00f;
-
-    _q->A[0] = 1.00f - a*alpha;
-    _q->A[1] = -b*alpha;
-    _q->A[2] = 0.00f;
-
-    iirfiltsos_rrrf_set_coefficients(_q->pll, _q->B, _q->A);
-}
-
 // set synchronizer output rate (samples/symbol)
 //  _q      :   synchronizer object
 //  _k_out  :   output samples/symbol
@@ -344,22 +325,53 @@ void SYMSYNC(_set_output_rate)(SYMSYNC() _q,
     _q->del = 1.0f / _q->r;
 }
 
+// set synchronizer loop filter bandwidth
+//  _q      :   synchronizer object
+//  _bt     :   loop bandwidth
+void SYMSYNC(_set_lf_bw)(SYMSYNC() _q,
+                         float     _bt)
+{
+    // validate input
+    if (_bt < 0.0f || _bt > 1.0f) {
+        fprintf(stderr,"error: symsync_%s_set_lf_bt(), bandwidth must be in [0,1]\n", EXTENSION_FULL);
+        exit(1);
+    }
+
+    // compute filter coefficients from bandwidth
+    float alpha = 1.000f - _bt;
+    float beta  = 0.220f * _bt;
+    float a     = 0.500f;
+    float b     = 0.495f;
+
+    _q->B[0] = beta;
+    _q->B[1] = 0.00f;
+    _q->B[2] = 0.00f;
+
+    _q->A[0] = 1.00f - a*alpha;
+    _q->A[1] = -b*alpha;
+    _q->A[2] = 0.00f;
+
+    // set internal parameters of 2nd-order IIR filter
+    iirfiltsos_rrrf_set_coefficients(_q->pll, _q->B, _q->A);
+}
+
+// return instantaneous fractional timing offset estimate
 float SYMSYNC(_get_tau)(SYMSYNC() _q)
 {
     return _q->tau_decim;
 }
 
 // execute synchronizer on input data array
-//  _q      :   synchronizer object
-//  _x      :   input data array
-//  _nx     :   number of input samples
-//  _y      :   output data array
-//  _ny     :   number of samples written to output buffer
-void SYMSYNC(_execute)(SYMSYNC() _q,
-                       TI * _x,
-                       unsigned int _nx,
-                       TO * _y,
-                       unsigned int *_ny)
+//  _q      : synchronizer object
+//  _x      : input data array
+//  _nx     : number of input samples
+//  _y      : output data array
+//  _ny     : number of samples written to output buffer
+void SYMSYNC(_execute)(SYMSYNC()      _q,
+                       TI *           _x,
+                       unsigned int   _nx,
+                       TO *           _y,
+                       unsigned int * _ny)
 {
     unsigned int i, ny=0, k=0;
     for (i=0; i<_nx; i++) {
@@ -370,39 +382,19 @@ void SYMSYNC(_execute)(SYMSYNC() _q,
     *_ny = ny;
 }
 
-// advance synchronizer's internal loop filter
-//  _q      :   synchronizer object
-//  _mf     :   matched-filter output
-//  _dmf    :   derivative matched-filter output
-void SYMSYNC(_advance_internal_loop)(SYMSYNC() _q,
-                                     TO _mf,
-                                     TO _dmf)
-{
-    //  1.  compute timing error signal, clipping large levels
-#if 0
-    _q->q = crealf(_mf)*crealf(_dmf) + cimagf(_mf)*cimagf(_dmf);
-#else
-    // TODO : use more efficient method to compute this
-    _q->q = crealf( conjf(_mf)*_dmf );  // [Mengali:1997] Eq.~(8.3.5)
-#endif
-    if (_q->q > 1.0f)       _q->q =  1.0f;
-    else if (_q->q < -1.0f) _q->q = -1.0f;
+//
+// internal methods
+//
 
-    //  2.  filter error signal: retain large percent (alpha) of
-    //      old estimate and small percent (beta) of new estimate
-    iirfiltsos_rrrf_execute(_q->pll, _q->q, &_q->q_hat);
-    _q->del = (float)(_q->k)/(float)(_q->k_out) + _q->q_hat;
-    //_q->del = (float)(_q->k) * (1 + _q->q_hat);
-
-#if DEBUG_SYMSYNC_PRINT
-    printf("q : %12.8f, del : %12.8f, q_hat : %12.8f\n", _q->q, _q->del, _q->q_hat);
-#endif
-}
-
-void SYMSYNC(_step)(SYMSYNC() _q,
-                    TI _x,
-                    TO * _y,
-                    unsigned int *_num_written)
+// step synchronizer
+//  _q      : symsync object
+//  _x      : input sample
+//  _y      : output sample array pointer
+//  _ny     : number of output samples written
+void SYMSYNC(_step)(SYMSYNC()      _q,
+                    TI             _x,
+                    TO *           _y,
+                    unsigned int * _ny)
 {
     // push sample into MF and dMF filterbanks
     FIRPFB(_push)(_q->mf,  _x);
@@ -415,7 +407,7 @@ void SYMSYNC(_step)(SYMSYNC() _q,
     unsigned int n=0;
     
     //while (_q->tau < 1.0f) {
-    while (_q->b < _q->npfb) {
+    while (_q->b < _q->M) {
 
 #if DEBUG_SYMSYNC_PRINT
         printf("  [%2u] : tau : %12.8f, b : %4u (%12.8f)\n", n, _q->tau, _q->b, _q->bf);
@@ -453,20 +445,52 @@ void SYMSYNC(_step)(SYMSYNC() _q,
         _q->decim_counter++;
 
         _q->tau += _q->del;
-        _q->bf = _q->tau * (float)(_q->npfb);
+        _q->bf = _q->tau * (float)(_q->M);
         _q->b  = (int)roundf(_q->bf);
         n++;
     }
 
     _q->tau -= 1.0f;
-    _q->bf  -= (float)(_q->npfb);
-    _q->b   -= _q->npfb;
+    _q->bf  -= (float)(_q->M);
+    _q->b   -= _q->M;
 
-    *_num_written = n;
+    // set output number of samples written
+    *_ny = n;
+}
+
+// advance synchronizer's internal loop filter
+//  _q      : synchronizer object
+//  _mf     : matched-filter output
+//  _dmf    : derivative matched-filter output
+void SYMSYNC(_advance_internal_loop)(SYMSYNC() _q,
+                                     TO        _mf,
+                                     TO        _dmf)
+{
+    //  1.  compute timing error signal, clipping large levels
+#if 0
+    _q->q = crealf(_mf)*crealf(_dmf) + cimagf(_mf)*cimagf(_dmf);
+#else
+    // TODO : use more efficient method to compute this
+    _q->q = crealf( conjf(_mf)*_dmf );  // [Mengali:1997] Eq.~(8.3.5)
+#endif
+    if (_q->q > 1.0f)       _q->q =  1.0f;
+    else if (_q->q < -1.0f) _q->q = -1.0f;
+
+    //  2.  filter error signal: retain large percent (alpha) of
+    //      old estimate and small percent (beta) of new estimate
+    iirfiltsos_rrrf_execute(_q->pll, _q->q, &_q->q_hat);
+    _q->del = (float)(_q->k)/(float)(_q->k_out) + _q->q_hat;
+    //_q->del = (float)(_q->k) * (1 + _q->q_hat);
+
+#if DEBUG_SYMSYNC_PRINT
+    printf("q : %12.8f, del : %12.8f, q_hat : %12.8f\n", _q->q, _q->del, _q->q_hat);
+#endif
 }
 
 // print results to output debugging file
-void SYMSYNC(_output_debug_file)(SYMSYNC() _q,
+//  _q          : synchronizer object
+//  _filename   : output filename
+void SYMSYNC(_output_debug_file)(SYMSYNC()    _q,
                                  const char * _filename)
 {
     FILE * fid = fopen(_filename, "w");
@@ -479,7 +503,7 @@ void SYMSYNC(_output_debug_file)(SYMSYNC() _q,
     fprintf(fid,"clear all;\n");
     fprintf(fid,"close all;\n");
 
-    fprintf(fid,"npfb = %u;\n",_q->npfb);
+    fprintf(fid,"M = %u;\n",_q->M);
     fprintf(fid,"k = %u;\n",_q->k);
     fprintf(fid,"\n\n");
 
@@ -509,17 +533,17 @@ void SYMSYNC(_output_debug_file)(SYMSYNC() _q,
         TO dmf;     // derivative matched filter output
 
         unsigned int n;
-        for (n=0; n<_q->npfb; n++) {
+        for (n=0; n<_q->M; n++) {
             FIRPFB(_execute)(_q->mf,  n, &mf);
             FIRPFB(_execute)(_q->dmf, n, &dmf);
 
-            fprintf(fid,"h(%4u) = %12.8f; dh(%4u) = %12.8f;\n", i*_q->npfb+n+1, crealf(mf), i*_q->npfb+n+1, crealf(dmf));
+            fprintf(fid,"h(%4u) = %12.8f; dh(%4u) = %12.8f;\n", i*_q->M+n+1, crealf(mf), i*_q->M+n+1, crealf(dmf));
         }
     }
     // plot response
     fprintf(fid,"\n");
     fprintf(fid,"figure;\n");
-    fprintf(fid,"th = [0:(h_len*npfb-1)]/(k*npfb) - h_len/(2*k);\n");
+    fprintf(fid,"th = [0:(h_len*M-1)]/(k*M) - h_len/(2*k);\n");
     //fprintf(fid,"plot(t,h,t,dh);\n");
     fprintf(fid,"subplot(3,1,1),\n");
     fprintf(fid,"  plot(th, h);\n");
@@ -577,7 +601,7 @@ void SYMSYNC(_output_debug_file)(SYMSYNC() _q,
     fprintf(fid,"plot(t,bf,'LineWidth',2,'Color',[0 0.25 0.5]);\n");
     fprintf(fid,"hold off;\n");
     fprintf(fid,"grid on;\n");
-    fprintf(fid,"axis([t(1) t(end) -1 npfb]);\n");
+    fprintf(fid,"axis([t(1) t(end) -1 M]);\n");
     fprintf(fid,"legend('b','b (soft)',0);\n");
     fprintf(fid,"xlabel('Symbol Index')\n");
     fprintf(fid,"ylabel('Polyphase Filter Index')\n");
