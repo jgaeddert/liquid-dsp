@@ -142,7 +142,7 @@ void RESAMP(_print)(RESAMP() _q)
 
 void RESAMP(_reset)(RESAMP() _q)
 {
-    FIRPFB(_clear)(_q->f);
+    FIRPFB(_reset)(_q->f);
     _q->b   = 0;
 
     _q->theta = 0;

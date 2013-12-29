@@ -1,7 +1,5 @@
 /*
- * Copyright (c) 2007, 2008, 2009, 2010 Joseph Gaeddert
- * Copyright (c) 2007, 2008, 2009, 2010 Virginia Polytechnic
- *                                      Institute & State University
+ * Copyright (c) 2007, 2008, 2009, 2010, 2011, 2012, 2013 Joseph Gaeddert
  *
  * This file is part of liquid.
  *
@@ -53,21 +51,32 @@ struct FIRPFBCH(_s) {
     TO * X;                     // fft|ifft transform output array
 };
 
+// 
+// forward declaration of internal methods
+//
+
+void FIRPFBCH(_analyzer_push)(FIRPFBCH() _q, TI _x);
+
+void FIRPFBCH(_analyzer_run)(FIRPFBCH()   _q,
+                             unsigned int _k,
+                             TO *         _X);
+
+
 // create FIR polyphase filterbank channelizer object
-//  _type           :   channelizer type (LIQUID_ANALYZER | LIQUID_SYNTHESIZER)
-//  _num_channels   :   number of channels
-//  _p              :   filter length (symbols)
-//  _h              :   filter coefficients, [size: _num_channels*_p x 1]
-FIRPFBCH() FIRPFBCH(_create)(int _type,
-                             unsigned int _num_channels,
+//  _type   : channelizer type (LIQUID_ANALYZER | LIQUID_SYNTHESIZER)
+//  _M      : number of channels
+//  _p      : filter length (symbols)
+//  _h      : filter coefficients, [size: _M*_p x 1]
+FIRPFBCH() FIRPFBCH(_create)(int          _type,
+                             unsigned int _M,
                              unsigned int _p,
-                             TC * _h)
+                             TC *         _h)
 {
     // validate input
     if (_type != LIQUID_ANALYZER && _type != LIQUID_SYNTHESIZER) {
         fprintf(stderr,"error: firpfbch_%s_create(), invalid type %d\n", EXTENSION_FULL, _type);
         exit(1);
-    } else if (_num_channels == 0) {
+    } else if (_M == 0) {
         fprintf(stderr,"error: firpfbch_%s_create(), number of channels must be greater than 0\n", EXTENSION_FULL);
         exit(1);
     } else if (_p == 0) {
@@ -75,18 +84,20 @@ FIRPFBCH() FIRPFBCH(_create)(int _type,
         exit(1);
     }
 
-    // create object
+    // create main object
     FIRPFBCH() q = (FIRPFBCH()) malloc(sizeof(struct FIRPFBCH(_s)));
+
+    // set user-defined properties
     q->type         = _type;
-    q->num_channels = _num_channels;
+    q->num_channels = _M;
     q->p            = _p;
 
     // derived values
     q->h_len = q->num_channels * q->p;
 
     // create bank of filters
-    q->dp   = (DOTPROD()*) malloc((q->num_channels)*sizeof(DOTPROD()));
-    q->w    = (WINDOW()*) malloc((q->num_channels)*sizeof(WINDOW()));
+    q->dp = (DOTPROD()*) malloc((q->num_channels)*sizeof(DOTPROD()));
+    q->w  = (WINDOW()*)  malloc((q->num_channels)*sizeof(WINDOW()));
 
     // copy filter coefficients
     q->h = (TC*) malloc((q->h_len)*sizeof(TC));
@@ -120,8 +131,8 @@ FIRPFBCH() FIRPFBCH(_create)(int _type,
     else
         q->fft = FFT_CREATE_PLAN(q->num_channels, q->X, q->x, FFT_DIR_BACKWARD, FFT_METHOD);
 
-    // clear filterbank object
-    FIRPFBCH(_clear)(q);
+    // reset filterbank object
+    FIRPFBCH(_reset)(q);
 
     // return filterbank object
     return q;
@@ -129,17 +140,17 @@ FIRPFBCH() FIRPFBCH(_create)(int _type,
 
 // create FIR polyphase filterbank channelizer object with
 // prototype filter based on windowed Kaiser design
-//  _type           :   channelizer type (LIQUID_ANALYZER | LIQUID_SYNTHESIZER)
-//  _num_channels   :   number of channels
-//  _m              :   filter delay (symbols)
-//  _As             :   stop-band attentuation [dB]
-FIRPFBCH() FIRPFBCH(_create_kaiser)(int _type,
-                                    unsigned int _num_channels,
+//  _type   : channelizer type (LIQUID_ANALYZER | LIQUID_SYNTHESIZER)
+//  _M      : number of channels
+//  _m      : filter delay (symbols)
+//  _As     : stop-band attentuation [dB]
+FIRPFBCH() FIRPFBCH(_create_kaiser)(int          _type,
+                                    unsigned int _M,
                                     unsigned int _m,
-                                    float _As)
+                                    float        _As)
 {
     // validate input
-    if (_num_channels == 0) {
+    if (_M == 0) {
         fprintf(stderr,"error: firpfbch_%s_create_kaiser(), number of channels must be greater than 0\n", EXTENSION_FULL);
         exit(1);
     } else if (_m == 0) {
@@ -150,9 +161,9 @@ FIRPFBCH() FIRPFBCH(_create_kaiser)(int _type,
     _As = fabsf(_As);
 
     // design filter
-    unsigned int h_len = 2*_num_channels*_m + 1;
+    unsigned int h_len = 2*_M*_m + 1;
     float h[h_len];
-    float fc = 0.5f / (float)_num_channels; // TODO : check this value
+    float fc = 0.5f / (float)_M; // TODO : check this value
     liquid_firdes_kaiser(h_len, fc, _As, 0.0f, h);
 
     // copy coefficients to type-specfic array
@@ -163,7 +174,7 @@ FIRPFBCH() FIRPFBCH(_create_kaiser)(int _type,
 
     // create filterbank object
     unsigned int p = 2*_m;
-    FIRPFBCH() q = FIRPFBCH(_create)(_type, _num_channels, p, hc);
+    FIRPFBCH() q = FIRPFBCH(_create)(_type, _M, p, hc);
 
     // return filterbank object
     return q;
@@ -171,22 +182,22 @@ FIRPFBCH() FIRPFBCH(_create_kaiser)(int _type,
 
 // create FIR polyphase filterbank channelizer object with
 // prototype root-Nyquist filter
-//  _type           :   channelizer type (LIQUID_ANALYZER | LIQUID_SYNTHESIZER)
-//  _num_channels   :   number of channels
-//  _m              :   filter delay (symbols)
-//  _beta           :   filter excess bandwidth factor, in [0,1]
-//  _ftype          :   filter prototype (rrcos, rkaiser, etc.)
-FIRPFBCH() FIRPFBCH(_create_rnyquist)(int _type,
-                                      unsigned int _num_channels,
+//  _type   : channelizer type (LIQUID_ANALYZER | LIQUID_SYNTHESIZER)
+//  _M      : number of channels
+//  _m      : filter delay (symbols)
+//  _beta   : filter excess bandwidth factor, in [0,1]
+//  _ftype  : filter prototype (rrcos, rkaiser, etc.)
+FIRPFBCH() FIRPFBCH(_create_rnyquist)(int          _type,
+                                      unsigned int _M,
                                       unsigned int _m,
-                                      float _beta,
-                                      int _ftype)
+                                      float        _beta,
+                                      int          _ftype)
 {
     // validate input
     if (_type != LIQUID_ANALYZER && _type != LIQUID_SYNTHESIZER) {
         fprintf(stderr,"error: firpfbch_%s_create_rnyquist(), invalid type %d\n", EXTENSION_FULL, _type);
         exit(1);
-    } else if (_num_channels == 0) {
+    } else if (_M == 0) {
         fprintf(stderr,"error: firpfbch_%s_create_rnyquist(), number of channels must be greater than 0\n", EXTENSION_FULL);
         exit(1);
     } else if (_m == 0) {
@@ -195,25 +206,25 @@ FIRPFBCH() FIRPFBCH(_create_rnyquist)(int _type,
     }
     
     // design filter
-    unsigned int h_len = 2*_num_channels*_m + 1;
+    unsigned int h_len = 2*_M*_m + 1;
     float h[h_len];
     // TODO : actually design based on requested filter prototype
     switch (_ftype) {
     case LIQUID_RNYQUIST_ARKAISER:
         // root-Nyquist Kaiser (approximate optimum)
-        liquid_firdes_arkaiser(_num_channels, _m, _beta, 0.0f, h);
+        liquid_firdes_arkaiser(_M, _m, _beta, 0.0f, h);
         break;
     case LIQUID_RNYQUIST_RKAISER:
         // root-Nyquist Kaiser (true optimum)
-        liquid_firdes_rkaiser(_num_channels, _m, _beta, 0.0f, h);
+        liquid_firdes_rkaiser(_M, _m, _beta, 0.0f, h);
         break;
     case LIQUID_RNYQUIST_RRC:
         // root raised-cosine
-        liquid_firdes_rrcos(_num_channels, _m, _beta, 0.0f, h);
+        liquid_firdes_rrcos(_M, _m, _beta, 0.0f, h);
         break;
     case LIQUID_RNYQUIST_hM3:
         // harris-Moerder-3 filter
-        liquid_firdes_hM3(_num_channels, _m, _beta, 0.0f, h);
+        liquid_firdes_hM3(_M, _m, _beta, 0.0f, h);
         break;
     default:
         fprintf(stderr,"error: firpfbch_%s_create_rnyquist(), unknown/invalid prototype (%d)\n", EXTENSION_FULL, _ftype);
@@ -222,7 +233,7 @@ FIRPFBCH() FIRPFBCH(_create_rnyquist)(int _type,
 
     // copy coefficients to type-specfic array, reversing order if
     // channelizer is an analyzer, matched filter: g(-t)
-    unsigned int g_len = 2*_num_channels*_m;
+    unsigned int g_len = 2*_M*_m;
     TC gc[g_len];
     unsigned int i;
     if (_type == LIQUID_SYNTHESIZER) {
@@ -235,7 +246,7 @@ FIRPFBCH() FIRPFBCH(_create_rnyquist)(int _type,
 
     // create filterbank object
     unsigned int p = 2*_m;
-    FIRPFBCH() q = FIRPFBCH(_create)(_type, _num_channels, p, gc);
+    FIRPFBCH() q = FIRPFBCH(_create)(_type, _M, p, gc);
 
     // return filterbank object
     return q;
@@ -266,8 +277,8 @@ void FIRPFBCH(_destroy)(FIRPFBCH() _q)
     free(_q);
 }
 
-// clear firpfbch object internals
-void FIRPFBCH(_clear)(FIRPFBCH() _q)
+// clear/reset firpfbch object internals
+void FIRPFBCH(_reset)(FIRPFBCH() _q)
 {
     unsigned int i;
     for (i=0; i<_q->num_channels; i++) {
@@ -343,6 +354,10 @@ void FIRPFBCH(_analyzer_execute)(FIRPFBCH() _q,
     // with filterbank at index zero
     FIRPFBCH(_analyzer_run)(_q, 0, _y);
 }
+
+// 
+// internal methods
+//
 
 // push single sample into analysis filterbank, updating index
 // counter appropriately

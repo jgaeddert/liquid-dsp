@@ -154,7 +154,7 @@ void RESAMP(_print)(RESAMP() _q)
 void RESAMP(_reset)(RESAMP() _q)
 {
     // clear filterbank
-    FIRPFB(_clear)(_q->f);
+    FIRPFB(_reset)(_q->f);
 
     // reset states
     _q->state = STATE_INTERP;   // input/output sample state

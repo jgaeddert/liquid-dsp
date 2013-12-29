@@ -1952,7 +1952,7 @@ void FIRPFB(_destroy)(FIRPFB() _q);                             \
 void FIRPFB(_print)(FIRPFB() _q);                               \
                                                                 \
 /* clear/reset firpfb object internal state                 */  \
-void FIRPFB(_clear)(FIRPFB() _q);                               \
+void FIRPFB(_reset)(FIRPFB() _q);                               \
                                                                 \
 /* push sample into firpfb internal buffer                  */  \
 void FIRPFB(_push)(FIRPFB() _q, TI _x);                         \
@@ -2475,48 +2475,78 @@ LIQUID_MSRESAMP_DEFINE_API(MSRESAMP_MANGLE_CCCF,
                            liquid_float_complex,
                            liquid_float_complex)
 
+
 // 
 // Symbol timing recovery (symbol synchronizer)
 //
 #define SYMSYNC_MANGLE_RRRF(name)   LIQUID_CONCAT(symsync_rrrf,name)
 #define SYMSYNC_MANGLE_CRCF(name)   LIQUID_CONCAT(symsync_crcf,name)
-//#define SYMSYNC_MANGLE_CCCF(name)   LIQUID_CONCAT(symsync_cccf,name)
 
 #define LIQUID_SYMSYNC_DEFINE_API(SYMSYNC,TO,TC,TI)             \
+                                                                \
 typedef struct SYMSYNC(_s) * SYMSYNC();                         \
+                                                                \
+/* create synchronizer object from external coefficients    */  \
+/*  _k      : samples per symbol                            */  \
+/*  _M      : number of filters in the bank                 */  \
+/*  _h      : matched filter coefficients [size:            */  \
+/*  _h_len  : length of matched filter                      */  \
 SYMSYNC() SYMSYNC(_create)(unsigned int _k,                     \
-                           unsigned int _num_filters,           \
-                           TC * _h,                             \
+                           unsigned int _M,                     \
+                           TC *         _h,                     \
                            unsigned int _h_len);                \
+                                                                \
 /* create square-root Nyquist symbol synchronizer           */  \
-/*  _type        : filter type (e.g. LIQUID_RNYQUIST_RRC)   */  \
-/*  _k           : samples/symbol                           */  \
-/*  _m           : symbol delay                             */  \
-/*  _beta        : rolloff factor (0 < beta <= 1)           */  \
-/*  _num_filters : number of filters in the bank            */  \
-SYMSYNC() SYMSYNC(_create_rnyquist)(int _type,                  \
+/*  _type   : filter type (e.g. LIQUID_RNYQUIST_RRC)        */  \
+/*  _k      : samples/symbol                                */  \
+/*  _m      : symbol delay                                  */  \
+/*  _beta   : rolloff factor (0 < beta <= 1)                */  \
+/*  _M      : number of filters in the bank                 */  \
+SYMSYNC() SYMSYNC(_create_rnyquist)(int          _type,         \
                                     unsigned int _k,            \
                                     unsigned int _m,            \
-                                    float _beta,                \
-                                    unsigned int _num_filters); \
+                                    float        _beta,         \
+                                    unsigned int _M);           \
+                                                                \
+/* destroy symsync object, freeing all internal memory      */  \
 void SYMSYNC(_destroy)(SYMSYNC() _q);                           \
+                                                                \
+/* print symsync object's parameters                        */  \
 void SYMSYNC(_print)(SYMSYNC() _q);                             \
-void SYMSYNC(_execute)(SYMSYNC() _q,                            \
-                       TI * _x,                                 \
-                       unsigned int _nx,                        \
-                       TO * _y,                                 \
-                       unsigned int *_ny);                      \
-void SYMSYNC(_set_output_rate)(SYMSYNC() _q,                    \
-                               unsigned int _k_out);            \
-void SYMSYNC(_set_lf_bw)(SYMSYNC() _q, float _bt);              \
-/* lock/unlock loop control */                                  \
-void SYMSYNC(_lock)(SYMSYNC() _q);                              \
+                                                                \
+/* reset symsync internal state                             */  \
+void SYMSYNC(_reset)(SYMSYNC() _q);                             \
+                                                                \
+/* lock/unlock loop control                                 */  \
+void SYMSYNC(_lock)(  SYMSYNC() _q);                            \
 void SYMSYNC(_unlock)(SYMSYNC() _q);                            \
-void SYMSYNC(_clear)(SYMSYNC() _q);                             \
+                                                                \
+/* set synchronizer output rate (samples/symbol)            */  \
+/*  _q      : synchronizer object                           */  \
+/*  _k_out  : output samples/symbol                         */  \
+void SYMSYNC(_set_output_rate)(SYMSYNC()    _q,                 \
+                               unsigned int _k_out);            \
+                                                                \
+/* set loop-filter bandwidth                                */  \
+/*  _q      : synchronizer object                           */  \
+/*  _bt     : loop bandwidth                                */  \
+void SYMSYNC(_set_lf_bw)(SYMSYNC() _q,                          \
+                         float     _bt);                        \
+                                                                \
+/* return instantaneous fractional timing offset estimate   */  \
 float SYMSYNC(_get_tau)(SYMSYNC() _q);                          \
-void SYMSYNC(_estimate_timing)(SYMSYNC() _q,                    \
-                               TI * _x,                         \
-                               unsigned int _n);
+                                                                \
+/* execute synchronizer on input data array                 */  \
+/*  _q      : synchronizer object                           */  \
+/*  _x      : input data array                              */  \
+/*  _nx     : number of input samples                       */  \
+/*  _y      : output data array                             */  \
+/*  _ny     : number of samples written to output buffer    */  \
+void SYMSYNC(_execute)(SYMSYNC()      _q,                       \
+                       TI *           _x,                       \
+                       unsigned int   _nx,                      \
+                       TO *           _y,                       \
+                       unsigned int * _ny);                     \
 
 LIQUID_SYMSYNC_DEFINE_API(SYMSYNC_MANGLE_RRRF,
                           float,
@@ -2543,23 +2573,67 @@ LIQUID_SYMSYNC_DEFINE_API(SYMSYNC_MANGLE_CRCF,
 //   TC         : coefficients data type
 //   TI         : input data type
 #define LIQUID_FIRFARROW_DEFINE_API(FIRFARROW,TO,TC,TI)         \
+                                                                \
 typedef struct FIRFARROW(_s) * FIRFARROW();                     \
+                                                                \
+/* create firfarrow object                                  */  \
+/*  _h_len      : filter length                             */  \
+/*  _p          : polynomial order                          */  \
+/*  _fc         : filter cutoff frequency                   */  \
+/*  _As         : stopband attenuation [dB]                 */  \
 FIRFARROW() FIRFARROW(_create)(unsigned int _h_len,             \
                                unsigned int _p,                 \
-                               float _fc,                       \
-                               float _As);                      \
-void FIRFARROW(_destroy)(FIRFARROW() _f);                       \
-void FIRFARROW(_clear)(FIRFARROW() _f);                         \
-void FIRFARROW(_print)(FIRFARROW() _f);                         \
-void FIRFARROW(_push)(FIRFARROW() _f, TI _x);                   \
-void FIRFARROW(_set_delay)(FIRFARROW() _f, float _mu);          \
-void FIRFARROW(_execute)(FIRFARROW() _f, TO *_y);               \
-unsigned int FIRFARROW(_get_length)(FIRFARROW() _f);            \
-void FIRFARROW(_get_coefficients)(FIRFARROW() _f, float * _h);  \
-void FIRFARROW(_freqresponse)(FIRFARROW() _f,                   \
-                            float _fc,                          \
-                            liquid_float_complex * _H);         \
-float FIRFARROW(_groupdelay)(FIRFARROW() _f, float _fc);
+                               float        _fc,                \
+                               float        _As);               \
+                                                                \
+/* destroy firfarrow object, freeing all internal memory    */  \
+void FIRFARROW(_destroy)(FIRFARROW() _q);                       \
+                                                                \
+/* print firfarrow object's internal properties             */  \
+void FIRFARROW(_print)(FIRFARROW() _q);                         \
+                                                                \
+/* reset firfarrow object's internal state                  */  \
+void FIRFARROW(_reset)(FIRFARROW() _q);                         \
+                                                                \
+/* push sample into firfarrow object                        */  \
+/*  _q      : firfarrow object                              */  \
+/*  _x      : input sample                                  */  \
+void FIRFARROW(_push)(FIRFARROW() _q,                           \
+                      TI          _x);                          \
+                                                                \
+/* set fractional delay of firfarrow object                 */  \
+/*  _q      : firfarrow object                              */  \
+/*  _mu     : fractional sample delay                       */  \
+void FIRFARROW(_set_delay)(FIRFARROW() _q,                      \
+                           float       _mu);                    \
+                                                                \
+/* execute firfarrow internal dot product                   */  \
+/*  _q      : firfarrow object                              */  \
+/*  _y      : output sample pointer                         */  \
+void FIRFARROW(_execute)(FIRFARROW() _q, TO *_y);               \
+                                                                \
+/* get length of firfarrow object (number of filter taps)   */  \
+unsigned int FIRFARROW(_get_length)(FIRFARROW() _q);            \
+                                                                \
+/* get coefficients of firfarrow object                     */  \
+/*  _q      : firfarrow object                              */  \
+/*  _h      : output coefficients pointer                   */  \
+void FIRFARROW(_get_coefficients)(FIRFARROW() _q,               \
+                                  float *     _h);              \
+                                                                \
+/* compute complex frequency response                       */  \
+/*  _q      : filter object                                 */  \
+/*  _fc     : frequency                                     */  \
+/*  _H      : output frequency response                     */  \
+void FIRFARROW(_freqresponse)(FIRFARROW()            _q,        \
+                              float                  _fc,       \
+                              liquid_float_complex * _H);       \
+                                                                \
+/* compute group delay [samples]                            */  \
+/*  _q      :   filter object                               */  \
+/*  _fc     :   frequency                                   */  \
+float FIRFARROW(_groupdelay)(FIRFARROW() _q,                    \
+                             float       _fc);                  \
 
 LIQUID_FIRFARROW_DEFINE_API(FIRFARROW_MANGLE_RRRF,
                             float,
@@ -4143,36 +4217,66 @@ void ampmodem_demodulate(ampmodem _fm,
 //   TI         : input data type
 #define LIQUID_FIRPFBCH_DEFINE_API(FIRPFBCH,TO,TC,TI)           \
 typedef struct FIRPFBCH(_s) * FIRPFBCH();                       \
-FIRPFBCH() FIRPFBCH(_create)(int _type,                         \
-                             unsigned int _num_channels,        \
+                                                                \
+/* create finite impulse response polyphase filter-bank     */  \
+/* channelizer object from external coefficients            */  \
+/*  _type   : channelizer type, e.g. LIQUID_ANALYZER        */  \
+/*  _M      : number of channels                            */  \
+/*  _p      : number of coefficients for each channel       */  \
+/*  _h      : coefficients [size: _M*_p x 1]                */  \
+FIRPFBCH() FIRPFBCH(_create)(int          _type,                \
+                             unsigned int _M,                   \
                              unsigned int _p,                   \
-                             TC * _h);                          \
-FIRPFBCH() FIRPFBCH(_create_kaiser)(int _type,                  \
+                             TC *         _h);                  \
+                                                                \
+/* create FIR polyphase filterbank channelizer object with  */  \
+/* prototype filter based on windowed Kaiser design         */  \
+/*  _type   : type (LIQUID_ANALYZER | LIQUID_SYNTHESIZER)   */  \
+/*  _M      : number of channels                            */  \
+/*  _m      : filter delay (symbols)                        */  \
+/*  _As     : stop-band attentuation [dB]                   */  \
+FIRPFBCH() FIRPFBCH(_create_kaiser)(int          _type,         \
                                     unsigned int _M,            \
                                     unsigned int _m,            \
-                                    float _As);                 \
-FIRPFBCH() FIRPFBCH(_create_rnyquist)(int _type,                \
+                                    float        _As);          \
+                                                                \
+/* create FIR polyphase filterbank channelizer object with  */  \
+/* prototype root-Nyquist filter                            */  \
+/*  _type   : type (LIQUID_ANALYZER | LIQUID_SYNTHESIZER)   */  \
+/*  _M      : number of channels                            */  \
+/*  _m      : filter delay (symbols)                        */  \
+/*  _beta   : filter excess bandwidth factor, in [0,1]      */  \
+/*  _ftype  : filter prototype (rrcos, rkaiser, etc.)       */  \
+FIRPFBCH() FIRPFBCH(_create_rnyquist)(int          _type,       \
                                       unsigned int _M,          \
                                       unsigned int _m,          \
-                                      float _beta,              \
-                                      int _ftype);              \
+                                      float        _beta,       \
+                                      int          _ftype);     \
+                                                                \
+/* destroy firpfbch object                                  */  \
 void FIRPFBCH(_destroy)(FIRPFBCH() _q);                         \
-void FIRPFBCH(_clear)(FIRPFBCH() _q);                           \
+                                                                \
+/* clear/reset firpfbch internal state                      */  \
+void FIRPFBCH(_reset)(FIRPFBCH() _q);                           \
+                                                                \
+/* print firpfbch internal parameters to stdout             */  \
 void FIRPFBCH(_print)(FIRPFBCH() _q);                           \
                                                                 \
-/* synthesizer */                                               \
+/* execute filterbank as synthesizer on block of samples    */  \
+/*  _q      : filterbank channelizer object                 */  \
+/*  _x      : channelized input, [size: num_channels x 1]   */  \
+/*  _y      : output time series, [size: num_channels x 1]  */  \
 void FIRPFBCH(_synthesizer_execute)(FIRPFBCH() _q,              \
-                                    TI * _x,                    \
-                                    TO * _X);                   \
+                                    TI *       _x,              \
+                                    TO *       _y);             \
                                                                 \
-/* analyzer */                                                  \
+/* execute filterbank as analyzer on block of samples       */  \
+/*  _q      : filterbank channelizer object                 */  \
+/*  _x      : input time series, [size: num_channels x 1]   */  \
+/*  _y      : channelized output, [size: num_channels x 1]  */  \
 void FIRPFBCH(_analyzer_execute)(FIRPFBCH() _q,                 \
-                                 TI * _x,                       \
-                                 TO * _X);                      \
-void FIRPFBCH(_analyzer_push)(FIRPFBCH() _q, TI _x);            \
-void FIRPFBCH(_analyzer_run)(FIRPFBCH() _q,                     \
-                             unsigned int _k,                   \
-                             TO * _X);
+                                 TI *       _x,                 \
+                                 TO *       _y);                \
 
 
 LIQUID_FIRPFBCH_DEFINE_API(FIRPFBCH_MANGLE_CRCF,

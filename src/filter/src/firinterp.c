@@ -174,7 +174,7 @@ void FIRINTERP(_print)(FIRINTERP() _q)
 // clear internal state
 void FIRINTERP(_clear)(FIRINTERP() _q)
 {
-    FIRPFB(_clear)(_q->filterbank);
+    FIRPFB(_reset)(_q->filterbank);
 }
 
 // execute interpolator
