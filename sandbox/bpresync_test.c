@@ -190,7 +190,7 @@ void bpresync_test(bpresync_cccf   _q,
         bpresync_cccf_reset(_q);
 
         // reset farrow filter
-        firfarrow_crcf_clear(fdelay);
+        firfarrow_crcf_reset(fdelay);
         firfarrow_crcf_set_delay(fdelay, dt);
 
         unsigned int i;
