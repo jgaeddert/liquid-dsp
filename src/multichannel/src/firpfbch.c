@@ -131,8 +131,8 @@ FIRPFBCH() FIRPFBCH(_create)(int          _type,
     else
         q->fft = FFT_CREATE_PLAN(q->num_channels, q->X, q->x, FFT_DIR_BACKWARD, FFT_METHOD);
 
-    // clear filterbank object
-    FIRPFBCH(_clear)(q);
+    // reset filterbank object
+    FIRPFBCH(_reset)(q);
 
     // return filterbank object
     return q;
@@ -277,8 +277,8 @@ void FIRPFBCH(_destroy)(FIRPFBCH() _q)
     free(_q);
 }
 
-// clear firpfbch object internals
-void FIRPFBCH(_clear)(FIRPFBCH() _q)
+// clear/reset firpfbch object internals
+void FIRPFBCH(_reset)(FIRPFBCH() _q)
 {
     unsigned int i;
     for (i=0; i<_q->num_channels; i++) {

@@ -4166,7 +4166,7 @@ FIRPFBCH() FIRPFBCH(_create_rnyquist)(int          _type,       \
 void FIRPFBCH(_destroy)(FIRPFBCH() _q);                         \
                                                                 \
 /* clear/reset firpfbch internal state                      */  \
-void FIRPFBCH(_clear)(FIRPFBCH() _q);                           \
+void FIRPFBCH(_reset)(FIRPFBCH() _q);                           \
                                                                 \
 /* print firpfbch internal parameters to stdout             */  \
 void FIRPFBCH(_print)(FIRPFBCH() _q);                           \
