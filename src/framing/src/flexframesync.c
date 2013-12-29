@@ -292,8 +292,8 @@ void flexframesync_reset(flexframesync _q)
     nco_crcf_reset(_q->nco_fine);
 
     // reset symbol timing recovery state
-    firpfb_crcf_clear(_q->mf);
-    firpfb_crcf_clear(_q->dmf);
+    firpfb_crcf_reset(_q->mf);
+    firpfb_crcf_reset(_q->dmf);
     _q->pfb_q = 0.0f;   // filtered error signal
         
     // reset state
@@ -449,8 +449,8 @@ void flexframesync_pushpn(flexframesync _q)
     unsigned int i;
 
     // reset filterbanks
-    firpfb_crcf_clear(_q->mf);
-    firpfb_crcf_clear(_q->dmf);
+    firpfb_crcf_reset(_q->mf);
+    firpfb_crcf_reset(_q->dmf);
 
     // read buffer
     float complex * rc;

@@ -84,8 +84,9 @@ FIRPFB() FIRPFB(_create)(unsigned int _M,
 
     // create window buffer
     q->w = WINDOW(_create)(q->h_sub_len);
-    WINDOW(_clear)(q->w);
 
+    // reset object and return
+    FIRPFB(_reset)(q);
     return q;
 }
 
@@ -251,7 +252,7 @@ void FIRPFB(_print)(FIRPFB() _q)
 }
 
 // clear/reset firpfb object internal state
-void FIRPFB(_clear)(FIRPFB() _q)
+void FIRPFB(_reset)(FIRPFB() _q)
 {
     WINDOW(_clear)(_q->w);
 }

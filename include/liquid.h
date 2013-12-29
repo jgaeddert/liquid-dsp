@@ -1952,7 +1952,7 @@ void FIRPFB(_destroy)(FIRPFB() _q);                             \
 void FIRPFB(_print)(FIRPFB() _q);                               \
                                                                 \
 /* clear/reset firpfb object internal state                 */  \
-void FIRPFB(_clear)(FIRPFB() _q);                               \
+void FIRPFB(_reset)(FIRPFB() _q);                               \
                                                                 \
 /* push sample into firpfb internal buffer                  */  \
 void FIRPFB(_push)(FIRPFB() _q, TI _x);                         \

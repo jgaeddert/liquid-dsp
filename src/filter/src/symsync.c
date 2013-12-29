@@ -260,7 +260,7 @@ void SYMSYNC(_print)(SYMSYNC() _q)
 
 void SYMSYNC(_reset)(SYMSYNC() _q)
 {
-    FIRPFB(_clear)(_q->mf);
+    FIRPFB(_reset)(_q->mf);
 
     _q->b       = 0;
     _q->tau     = 0.0f;
@@ -489,8 +489,8 @@ void SYMSYNC(_output_debug_file)(SYMSYNC() _q,
     unsigned int i;
 
     // save filter responses
-    FIRPFB(_clear)(_q->mf);
-    FIRPFB(_clear)(_q->dmf);
+    FIRPFB(_reset)(_q->mf);
+    FIRPFB(_reset)(_q->dmf);
     fprintf(fid,"h = [];\n");
     fprintf(fid,"dh = [];\n");
     fprintf(fid,"h_len = %u;\n", _q->h_len);
