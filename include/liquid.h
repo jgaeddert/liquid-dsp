@@ -1990,36 +1990,53 @@ LIQUID_FIRPFB_DEFINE_API(FIRPFB_MANGLE_CCCF,
 #define FIRINTERP_MANGLE_CCCF(name)  LIQUID_CONCAT(firinterp_cccf,name)
 
 #define LIQUID_FIRINTERP_DEFINE_API(FIRINTERP,TO,TC,TI)         \
+                                                                \
 typedef struct FIRINTERP(_s) * FIRINTERP();                     \
-/* create interpolator from external coefficients       */      \
-/*  _M      : interpolation factor                      */      \
-/*  _h      : filter coefficients [size: _h_len x 1]    */      \
-/*  _h_len  : filter length                             */      \
+                                                                \
+/* create interpolator from external coefficients           */  \
+/*  _M      : interpolation factor                          */  \
+/*  _h      : filter coefficients [size: _h_len x 1]        */  \
+/*  _h_len  : filter length                                 */  \
 FIRINTERP() FIRINTERP(_create)(unsigned int _M,                 \
                                TC *         _h,                 \
                                unsigned int _h_len);            \
-/* create interpolator from prototype                   */      \
-/*  _M      : interpolation factor                      */      \
-/*  _m      : filter delay (symbols)                    */      \
-/*  _As     : stop-band attenuation [dB]                */      \
+                                                                \
+/* create interpolator from prototype                       */  \
+/*  _M      : interpolation factor                          */  \
+/*  _m      : filter delay (symbols)                        */  \
+/*  _As     : stop-band attenuation [dB]                    */  \
 FIRINTERP() FIRINTERP(_create_prototype)(unsigned int _M,       \
                                          unsigned int _m,       \
                                          float        _As);     \
-/* create square-root Nyquist interpolator              */      \
-/*  _type   : filter type (e.g. LIQUID_RNYQUIST_RRC)    */      \
-/*  _k      : samples/symbol (interpolation factor)     */      \
-/*  _m      : filter delay (symbols)                    */      \
-/*  _beta   : rolloff factor (0 < beta <= 1)            */      \
-/*  _dt     : fractional sample delay                   */      \
+                                                                \
+/* create square-root Nyquist interpolator                  */  \
+/*  _type   : filter type (e.g. LIQUID_RNYQUIST_RRC)        */  \
+/*  _k      : samples/symbol (interpolation factor)         */  \
+/*  _m      : filter delay (symbols)                        */  \
+/*  _beta   : rolloff factor (0 < beta <= 1)                */  \
+/*  _dt     : fractional sample delay                       */  \
 FIRINTERP() FIRINTERP(_create_rnyquist)(int          _type,     \
                                         unsigned int _k,        \
                                         unsigned int _m,        \
                                         float        _beta,     \
                                         float        _dt);      \
+                                                                \
+/* destroy firinterp object, freeing all internal memory    */  \
 void FIRINTERP(_destroy)(FIRINTERP() _q);                       \
+                                                                \
+/* print firinterp object's internal properties to stdout   */  \
 void FIRINTERP(_print)(FIRINTERP() _q);                         \
+                                                                \
+/* reset internal state                                     */  \
 void FIRINTERP(_clear)(FIRINTERP() _q);                         \
-void FIRINTERP(_execute)(FIRINTERP() _q, TI _x, TO *_y);        \
+                                                                \
+/* execute interpolation                                    */  \
+/*  _q      : firinterp object                              */  \
+/*  _x      : input sample                                  */  \
+/*  _y      : output sample array [size: _M x 1]            */  \
+void FIRINTERP(_execute)(FIRINTERP() _q,                        \
+                         TI          _x,                        \
+                         TO *        _y);                       \
 
 LIQUID_FIRINTERP_DEFINE_API(FIRINTERP_MANGLE_RRRF,
                             float,
