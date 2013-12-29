@@ -103,7 +103,7 @@ int main(int argc, char*argv[])
     }
 
     // reset interpolator
-    firinterp_crcf_clear(interp);
+    firinterp_crcf_reset(interp);
 
     // interpolate input
     for (i=0; i<num_symbols; i++) {

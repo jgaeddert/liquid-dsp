@@ -115,7 +115,7 @@ void gmskmod_reset(gmskmod _q)
     _q->theta = 0.0f;
 
     // clear interpolator buffer
-    firinterp_rrrf_clear(_q->interp_tx);
+    firinterp_rrrf_reset(_q->interp_tx);
 }
 
 void gmskmod_modulate(gmskmod _q,

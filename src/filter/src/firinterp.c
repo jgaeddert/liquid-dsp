@@ -172,7 +172,7 @@ void FIRINTERP(_print)(FIRINTERP() _q)
 }
 
 // clear internal state
-void FIRINTERP(_clear)(FIRINTERP() _q)
+void FIRINTERP(_reset)(FIRINTERP() _q)
 {
     FIRPFB(_reset)(_q->filterbank);
 }

@@ -2028,7 +2028,7 @@ void FIRINTERP(_destroy)(FIRINTERP() _q);                       \
 void FIRINTERP(_print)(FIRINTERP() _q);                         \
                                                                 \
 /* reset internal state                                     */  \
-void FIRINTERP(_clear)(FIRINTERP() _q);                         \
+void FIRINTERP(_reset)(FIRINTERP() _q);                         \
                                                                 \
 /* execute interpolation                                    */  \
 /*  _q      : firinterp object                              */  \
