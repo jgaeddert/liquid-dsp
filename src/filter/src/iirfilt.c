@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007, 2008, 2009, 2010, 2013 Joseph Gaeddert
+ * Copyright (c) 2007, 2008, 2009, 2010, 2011, 2012, 2013 Joseph Gaeddert
  *
  * This file is part of liquid.
  *
@@ -73,9 +73,9 @@ struct IIRFILT(_s) {
 //  _nb     :   length of numerator
 //  _a      :   denominator, feed-back coefficients [size: _na x 1]
 //  _na     :   length of denominator
-IIRFILT() IIRFILT(_create)(TC * _b,
+IIRFILT() IIRFILT(_create)(TC *         _b,
                            unsigned int _nb,
-                           TC * _a,
+                           TC *         _a,
                            unsigned int _na)
 {
     // validate input
@@ -122,7 +122,7 @@ IIRFILT() IIRFILT(_create)(TC * _b,
 #endif
 
     // reset internal state
-    IIRFILT(_clear)(q);
+    IIRFILT(_reset)(q);
     
     // return iirfilt object
     return q;
@@ -131,7 +131,7 @@ IIRFILT() IIRFILT(_create)(TC * _b,
 // create iirfilt (infinite impulse response filter) object based
 // on second-order sections form
 //  _B      :   numerator, feed-forward coefficients [size: _nsos x 3]
-//  _A      :   denominator, feed-back coefficients [size: _nsos x 3]
+//  _A      :   denominator, feed-back coefficients  [size: _nsos x 3]
 //  _nsos   :   number of second-order sections
 //
 // NOTE: The number of second-order sections can be computed from the
@@ -139,8 +139,8 @@ IIRFILT() IIRFILT(_create)(TC * _b,
 //   r = n % 2
 //   L = (n-r)/2
 //   nsos = L+r
-IIRFILT() IIRFILT(_create_sos)(TC * _B,
-                               TC * _A,
+IIRFILT() IIRFILT(_create_sos)(TC *         _B,
+                               TC *         _A,
                                unsigned int _nsos)
 {
     // validate input
@@ -494,15 +494,15 @@ void IIRFILT(_print)(IIRFILT() _q)
     }
 }
 
-// clear
-void IIRFILT(_clear)(IIRFILT() _q)
+// clear/reset iirfilt object internals
+void IIRFILT(_reset)(IIRFILT() _q)
 {
     unsigned int i;
 
     if (_q->type == IIRFILT_TYPE_SOS) {
         // clear second-order sections
         for (i=0; i<_q->nsos; i++) {
-            IIRFILTSOS(_clear)(_q->qsos[i]);
+            IIRFILTSOS(_reset)(_q->qsos[i]);
         }
     } else {
         // set internal buffer to zero
@@ -593,8 +593,8 @@ void IIRFILT(_execute_norm)(IIRFILT() _q,
 //  _x      :   input sample
 //  _y      :   output sample
 void IIRFILT(_execute_sos)(IIRFILT() _q,
-                           TI _x,
-                           TO *_y)
+                           TI        _x,
+                           TO *      _y)
 {
     TI t0 = _x;         // intermediate input
     TO t1 = TO_ZERO;    // intermediate output
@@ -614,8 +614,8 @@ void IIRFILT(_execute_sos)(IIRFILT() _q,
 //  _x      :   input sample
 //  _y      :   output sample
 void IIRFILT(_execute)(IIRFILT() _q,
-                       TI _x,
-                       TO *_y)
+                       TI        _x,
+                       TO *      _y)
 {
     if (_q->type == IIRFILT_TYPE_NORM)
         IIRFILT(_execute_norm)(_q,_x,_y);
@@ -740,7 +740,7 @@ void IIRFILT(_freqresponse_sos)(IIRFILT()       _q,
 //  _q      :   filter object
 //  _fc     :   frequency
 float IIRFILT(_groupdelay)(IIRFILT() _q,
-                           float _fc)
+                           float     _fc)
 {
     float groupdelay = 0;
     unsigned int i;

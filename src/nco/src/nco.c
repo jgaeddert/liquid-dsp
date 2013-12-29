@@ -225,7 +225,7 @@ void NCO(_cexpf)(NCO() _q,
 void NCO(_pll_reset)(NCO() _q)
 {
     // clear phase-locked loop filter
-    IIRFILTSOS_RRR(_clear)(_q->pll_filter);
+    IIRFILTSOS_RRR(_reset)(_q->pll_filter);
 }
 
 // set pll bandwidth

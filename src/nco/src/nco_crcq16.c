@@ -84,7 +84,7 @@ nco_crcq16 nco_crcq16_create(liquid_ncotype _type)
     q->a[2] = 0;        q->b[2] = 0;
     q->pll_filter = iirfiltsos_rrrq16_create(q->b, q->a);
     nco_crcq16_reset(q);
-    nco_crcq16_pll_set_bandwidth(q, NCO_PLL_BANDWIDTH_DEFAULT);
+    nco_crcq16_pll_set_bandwidth(q, q16_float_to_fixed(NCO_PLL_BANDWIDTH_DEFAULT));
 
     // set internal method
     if (q->type == LIQUID_NCO) {
@@ -231,7 +231,7 @@ void nco_crcq16_cexpf(nco_crcq16 _q,
 void nco_crcq16_pll_reset(nco_crcq16 _q)
 {
     // clear phase-locked loop filter
-    iirfiltsos_rrrq16_clear(_q->pll_filter);
+    iirfiltsos_rrrq16_reset(_q->pll_filter);
 }
 
 // set pll bandwidth

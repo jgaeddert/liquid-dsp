@@ -1,7 +1,5 @@
 /*
- * Copyright (c) 2007, 2008, 2009, 2010 Joseph Gaeddert
- * Copyright (c) 2007, 2008, 2009, 2010 Virginia Polytechnic
- *                                      Institute & State University
+ * Copyright (c) 2007, 2008, 2009, 2010, 2011, 2012, 2013 Joseph Gaeddert
  *
  * This file is part of liquid.
  *
@@ -45,7 +43,7 @@ IIRFILTSOS() IIRFILTSOS(_create)(TC * _b,
     IIRFILTSOS(_set_coefficients)(q, _b, _a);
 
     // clear filter state
-    IIRFILTSOS(_clear)(q);
+    IIRFILTSOS(_reset)(q);
 
     return q;
 }
@@ -53,6 +51,10 @@ IIRFILTSOS() IIRFILTSOS(_create)(TC * _b,
 // set internal filter coefficients
 // NOTE : this does not reset the internal state of the filter and
 //        could result in instability if executed on existing filter!
+// explicitly set 2nd-order IIR filter coefficients
+//  _q      : iirfiltsos object
+//  _b      : feed-forward coefficients [size: _3 x 1]
+//  _a      : feed-back coefficients    [size: _3 x 1]
 void IIRFILTSOS(_set_coefficients)(IIRFILTSOS() _q,
                                    TC *         _b,
                                    TC *         _a)
@@ -93,11 +95,13 @@ void IIRFILTSOS(_set_coefficients)(IIRFILTSOS() _q,
 #endif
 }
 
+// destroy iirfiltsos object, freeing all internal memory
 void IIRFILTSOS(_destroy)(IIRFILTSOS() _q)
 {
     free(_q);
 }
 
+// print iirfiltsos object properties to stdout
 void IIRFILTSOS(_print)(IIRFILTSOS() _q)
 {
     printf("iir filter | sos:\n");
@@ -113,7 +117,8 @@ void IIRFILTSOS(_print)(IIRFILTSOS() _q)
     PRINTVAL_TC(_q->a[2],%12.8f); printf("\n");
 }
 
-void IIRFILTSOS(_clear)(IIRFILTSOS() _q)
+// clear/reset iirfiltsos object internals
+void IIRFILTSOS(_reset)(IIRFILTSOS() _q)
 {
 #ifdef LIQUID_FIXED
     memset(_q->v, 0x00, sizeof(_q->v));
@@ -135,19 +140,26 @@ void IIRFILTSOS(_clear)(IIRFILTSOS() _q)
 #endif
 }
 
+// compute filter output
+//  _q      : iirfiltsos object
+//  _x      : input sample
+//  _y      : output sample pointer
 void IIRFILTSOS(_execute)(IIRFILTSOS() _q,
-                          TI   _x,
-                          TO * _y)
+                          TI           _x,
+                          TO *         _y)
 {
     // execute type-specific code
     IIRFILTSOS(_execute_df2)(_q,_x,_y);
 }
 
 
-// direct form I
+// compute filter output, direct form I method
+//  _q      : iirfiltsos object
+//  _x      : input sample
+//  _y      : output sample pointer
 void IIRFILTSOS(_execute_df1)(IIRFILTSOS() _q,
-                              TI   _x,
-                              TO * _y)
+                              TI           _x,
+                              TO *         _y)
 {
     // advance buffer x
     _q->x[2] = _q->x[1];
@@ -186,10 +198,13 @@ void IIRFILTSOS(_execute_df1)(IIRFILTSOS() _q,
     *_y = _q->y[0];
 }
 
-// direct form II
+// compute filter output, direct form I method
+//  _q      : iirfiltsos object
+//  _x      : input sample
+//  _y      : output sample pointer
 void IIRFILTSOS(_execute_df2)(IIRFILTSOS() _q,
-                              TI   _x,
-                              TO * _y)
+                              TI           _x,
+                              TO *         _y)
 {
     // advance buffer
     _q->v[2] = _q->v[1];
@@ -223,7 +238,7 @@ void IIRFILTSOS(_execute_df2)(IIRFILTSOS() _q,
 //  _q      :   filter object
 //  _fc     :   frequency
 float IIRFILTSOS(_groupdelay)(IIRFILTSOS() _q,
-                              float _fc)
+                              float        _fc)
 {
     // copy coefficients
     float b[3];
