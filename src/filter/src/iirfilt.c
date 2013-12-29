@@ -126,7 +126,7 @@ IIRFILT() IIRFILT(_create)(TC *         _b,
 #endif
 
     // reset internal state
-    IIRFILT(_clear)(q);
+    IIRFILT(_reset)(q);
     
     // return iirfilt object
     return q;
@@ -444,14 +444,14 @@ void IIRFILT(_print)(IIRFILT() _q)
 }
 
 // clear/reset iirfilt object internals
-void IIRFILT(_clear)(IIRFILT() _q)
+void IIRFILT(_reset)(IIRFILT() _q)
 {
     unsigned int i;
 
     if (_q->type == IIRFILT_TYPE_SOS) {
         // clear second-order sections
         for (i=0; i<_q->nsos; i++) {
-            IIRFILTSOS(_clear)(_q->qsos[i]);
+            IIRFILTSOS(_reset)(_q->qsos[i]);
         }
     } else {
         // set internal buffer to zero

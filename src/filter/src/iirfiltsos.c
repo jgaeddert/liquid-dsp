@@ -43,7 +43,7 @@ IIRFILTSOS() IIRFILTSOS(_create)(TC * _b,
     IIRFILTSOS(_set_coefficients)(q, _b, _a);
 
     // clear filter state
-    IIRFILTSOS(_clear)(q);
+    IIRFILTSOS(_reset)(q);
 
     return q;
 }
@@ -96,7 +96,7 @@ void IIRFILTSOS(_print)(IIRFILTSOS() _q)
 }
 
 // clear/reset iirfiltsos object internals
-void IIRFILTSOS(_clear)(IIRFILTSOS() _q)
+void IIRFILTSOS(_reset)(IIRFILTSOS() _q)
 {
     // set to zero
     _q->v[0] = 0;

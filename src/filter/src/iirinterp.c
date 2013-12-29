@@ -109,7 +109,7 @@ void IIRINTERP(_print)(IIRINTERP() _q)
 // clear internal state
 void IIRINTERP(_reset)(IIRINTERP() _q)
 {
-    IIRFILT(_clear)(_q->iirfilt);
+    IIRFILT(_reset)(_q->iirfilt);
 }
 
 // execute interpolator

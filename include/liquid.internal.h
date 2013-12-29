@@ -884,7 +884,7 @@ void IIRFILTSOS(_destroy)(IIRFILTSOS() _q);                     \
 void IIRFILTSOS(_print)(IIRFILTSOS() _q);                       \
                                                                 \
 /* clear/reset iirfiltsos object internals                  */  \
-void IIRFILTSOS(_clear)(IIRFILTSOS() _q);                       \
+void IIRFILTSOS(_reset)(IIRFILTSOS() _q);                       \
                                                                 \
 /* compute filter output                                    */  \
 /*  _q      : iirfiltsos object                             */  \

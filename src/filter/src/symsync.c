@@ -269,7 +269,7 @@ void SYMSYNC(_reset)(SYMSYNC() _q)
     _q->q_hat   = 0.0f;
     _q->decim_counter = 0;
     _q->tau_decim     = 0.0f;
-    iirfiltsos_rrrf_clear(_q->pll);
+    iirfiltsos_rrrf_reset(_q->pll);
 }
 
 void SYMSYNC(_clear)(SYMSYNC() _q) {

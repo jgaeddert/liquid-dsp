@@ -93,10 +93,10 @@ void FREQMOD(_print)(FREQMOD() _q)
 void FREQMOD(_reset)(FREQMOD() _q)
 {
     // reset audio pre-filter
-    iirfilt_rrrf_clear(_q->prefilter);
+    iirfilt_rrrf_reset(_q->prefilter);
 
     // reset integrator object
-    iirfilt_rrrf_clear(_q->integrator);
+    iirfilt_rrrf_reset(_q->integrator);
 }
 
 // modulate sample

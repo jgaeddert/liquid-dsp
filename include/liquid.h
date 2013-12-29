@@ -1845,7 +1845,7 @@ void IIRFILT(_destroy)(IIRFILT() _q);                           \
 void IIRFILT(_print)(IIRFILT() _q);                             \
                                                                 \
 /* clear/reset iirfilt object internals                     */  \
-void IIRFILT(_clear)(IIRFILT() _q);                             \
+void IIRFILT(_reset)(IIRFILT() _q);                             \
                                                                 \
 /* compute filter output                                    */  \
 /*  _q      : iirfilt object                                */  \

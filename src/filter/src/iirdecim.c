@@ -111,7 +111,7 @@ void IIRDECIM(_print)(IIRDECIM() _q)
 // clear internal state
 void IIRDECIM(_reset)(IIRDECIM() _q)
 {
-    IIRFILT(_clear)(_q->iirfilt);
+    IIRFILT(_reset)(_q->iirfilt);
 }
 
 // execute decimator
