@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007, 2008, 2009, 2010, 2011, 2012, 2013 Joseph Gaeddert
+ * Copyright (c) 2007 - 2014 Joseph Gaeddert
  *
  * This file is part of liquid.
  *
@@ -863,33 +863,69 @@ struct IIRFILTSOS(_s) {                                         \
     TO v[3];    /* Direct form II buffer                    */  \
 };                                                              \
                                                                 \
+/* create 2nd-ordr infinite impulse reponse filter          */  \
+/*  _b      : feed-forward coefficients [size: _3 x 1]      */  \
+/*  _a      : feed-back coefficients    [size: _3 x 1]      */  \
 IIRFILTSOS() IIRFILTSOS(_create)(TC * _b,                       \
                                  TC * _a);                      \
+                                                                \
+/* explicitly set 2nd-order IIR filter coefficients         */  \
+/*  _q      : iirfiltsos object                             */  \
+/*  _b      : feed-forward coefficients [size: _3 x 1]      */  \
+/*  _a      : feed-back coefficients    [size: _3 x 1]      */  \
 void IIRFILTSOS(_set_coefficients)(IIRFILTSOS() _q,             \
-                                   TC * _b,                     \
-                                   TC * _a);                    \
+                                   TC *         _b,             \
+                                   TC *         _a);            \
+                                                                \
+/* destroy iirfiltsos object, freeing all internal memory   */  \
 void IIRFILTSOS(_destroy)(IIRFILTSOS() _q);                     \
+                                                                \
+/* print iirfiltsos object properties to stdout             */  \
 void IIRFILTSOS(_print)(IIRFILTSOS() _q);                       \
-void IIRFILTSOS(_clear)(IIRFILTSOS() _q);                       \
+                                                                \
+/* clear/reset iirfiltsos object internals                  */  \
+void IIRFILTSOS(_reset)(IIRFILTSOS() _q);                       \
+                                                                \
+/* compute filter output                                    */  \
+/*  _q      : iirfiltsos object                             */  \
+/*  _x      : input sample                                  */  \
+/*  _y      : output sample pointer                         */  \
 void IIRFILTSOS(_execute)(IIRFILTSOS() _q,                      \
-                          TI   _x,                              \
-                          TO * _y);                             \
+                          TI           _x,                      \
+                          TO *         _y);                     \
+                                                                \
+/* compute filter output, direct-form I method              */  \
+/*  _q      : iirfiltsos object                             */  \
+/*  _x      : input sample                                  */  \
+/*  _y      : output sample pointer                         */  \
 void IIRFILTSOS(_execute_df1)(IIRFILTSOS() _q,                  \
-                              TI   _x,                          \
-                              TO * _y);                         \
+                              TI           _x,                  \
+                              TO *         _y);                 \
+                                                                \
+/* compute filter output, direct-form II method             */  \
+/*  _q      : iirfiltsos object                             */  \
+/*  _x      : input sample                                  */  \
+/*  _y      : output sample pointer                         */  \
 void IIRFILTSOS(_execute_df2)(IIRFILTSOS() _q,                  \
-                              TI   _x,                          \
-                              TO * _y);                         \
-float IIRFILTSOS(_groupdelay)(IIRFILTSOS() _q, float _fc);
+                              TI           _x,                  \
+                              TO *         _y);                 \
+                                                                \
+/* compute and return group delay of filter object          */  \
+/*  _q      : filter object                                 */  \
+/*  _fc     : frequency to evaluate                         */  \
+float IIRFILTSOS(_groupdelay)(IIRFILTSOS() _q,                  \
+                              float        _fc);                \
 
 LIQUID_IIRFILTSOS_DEFINE_INTERNAL_API(IIRFILTSOS_MANGLE_RRRF,
                                       float,
                                       float,
                                       float)
+
 LIQUID_IIRFILTSOS_DEFINE_INTERNAL_API(IIRFILTSOS_MANGLE_CRCF,
                                       liquid_float_complex,
                                       float,
                                       liquid_float_complex)
+
 LIQUID_IIRFILTSOS_DEFINE_INTERNAL_API(IIRFILTSOS_MANGLE_CCCF,
                                       liquid_float_complex,
                                       liquid_float_complex,

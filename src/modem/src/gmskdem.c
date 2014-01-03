@@ -1,6 +1,5 @@
 /*
- * Copyright (c) 2010, 2011 Joseph Gaeddert
- * Copyright (c) 2010, 2011 Virginia Polytechnic Institute & State University
+ * Copyright (c) 2007 - 2014 Joseph Gaeddert
  *
  * This file is part of liquid.
  *
@@ -169,7 +168,7 @@ void gmskdem_reset(gmskdem _q)
 #if GMSKDEM_USE_EQUALIZER
     eqlms_rrrf_reset(_q->eq);
 #else
-    firfilt_rrrf_clear(_q->filter);
+    firfilt_rrrf_reset(_q->filter);
 #endif
 }
 

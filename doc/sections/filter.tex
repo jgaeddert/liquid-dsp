@@ -58,7 +58,7 @@ functionality applies to {\tt autocorr\_rrrf}.
 \item[{\tt autocorr\_cccf\_destroy(q)}]
     destroys an {\tt autocorr} object, freeing all internally-allocated
     memory.
-\item[{\tt autocorr\_cccf\_clear(q)}]
+\item[{\tt autocorr\_cccf\_reset(q)}]
     clears the internal {\tt autocorr} buffers.
 \item[{\tt autocorr\_cccf\_print(q)}]
     prints the internal state of the {\tt autocorr} object.
@@ -266,7 +266,7 @@ functionality applies to {\tt firfilt\_rrrf} and {\tt firfilt\_cccf}.
 \item[{\tt firfilt\_crcf\_print(q)}]
     prints the parameters of a {\tt firfilt} object to the standard
     output.
-\item[{\tt firfilt\_crcf\_clear(q)}]
+\item[{\tt firfilt\_crcf\_reset(q)}]
     clears the internal buffer of a {\tt firfilt} object.
 \item[{\tt firfilt\_crcf\_push(q,x)}]
     pushes an input sample $x$ into the internal buffer of the filter
@@ -1154,7 +1154,7 @@ functionality applies to {\tt iirfilt\_rrrf} and {\tt iirfilt\_cccf}.
     arrays and buffers.
 \item[{\tt iirfilt\_crcf\_print(q)}]
     prints the internals of an {\tt iirfilt} object.
-\item[{\tt iirfilt\_crcf\_clear(q)}]
+\item[{\tt iirfilt\_crcf\_reset(q)}]
     clears the filter's internal state.
 \item[{\tt iirfilt\_crcf\_execute(q,x,*y)}]
     executes one iteration of the filter with an input $x$, storing the

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007, 2008, 2009, 2010, 2011, 2012, 2013 Joseph Gaeddert
+ * Copyright (c) 2007 - 2014 Joseph Gaeddert
  *
  * This file is part of liquid.
  *
@@ -183,7 +183,7 @@ void FIRINTERP(_print)(FIRINTERP() _q)
 // clear internal state
 void FIRINTERP(_clear)(FIRINTERP() _q)
 {
-    FIRPFB(_clear)(_q->filterbank);
+    FIRPFB(_reset)(_q->filterbank);
 }
 
 // execute interpolator
