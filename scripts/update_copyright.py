@@ -21,7 +21,7 @@ ignore_files = ['update_copyright.py',]
 ignore_directories = ['.git',]
 
 # only look at these extensions
-include_extensions = ['.h', '.c', '.md', '.tex', '.ac', '.in']
+include_extensions = ['.h', '.c', '.md', '.tex', '.ac', '.in', '.m',]
 
 # new copyright string
 copyright_new = "Copyright (c) 2007 - 2014 Joseph Gaeddert"
