@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007, 2008, 2009, 2010, 2011, 2012, 2013 Joseph Gaeddert
+ * Copyright (c) 2007 - 2014 Joseph Gaeddert
  *
  * This file is part of liquid.
  *
@@ -988,11 +988,26 @@ void spgram_push(spgram                 _q,
                  liquid_float_complex * _x,
                  unsigned int           _n);
 
-// compute spectral periodogram output
+// compute spectral periodogram output from current buffer contents
 //  _q      :   spgram object
 //  _X      :   output spectrum [dB], [size: _nfft x 1]
-void spgram_execute(spgram _q,
+void spgram_execute(spgram                 _q,
                     liquid_float_complex * _X);
+
+// accumulate power spectral density
+//  _q      :   spgram object
+//  _x      :   input buffer [size: _n x 1]
+//  _n      :   input buffer length
+void spgram_accumulate_psd(spgram                 _q,
+                           liquid_float_complex * _x,
+                           unsigned int           _n);
+
+// write accumulated psd
+//  _q      :   spgram object
+//  _x      :   input buffer [size: _n x 1]
+//  _n      :   input buffer length [size: _nfft x 1]
+void spgram_write_accumulation(spgram  _q,
+                               float * _x);
 
 // estimate spectrum on input signal
 //  _q      :   spgram object
