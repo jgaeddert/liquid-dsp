@@ -153,7 +153,7 @@ void framegen64_execute(framegen64      _q,
     unsigned int n=0;
 
     // reset interpolator
-    firinterp_crcf_clear(_q->interp);
+    firinterp_crcf_reset(_q->interp);
 
     // p/n sequence
     for (i=0; i<64; i++) {

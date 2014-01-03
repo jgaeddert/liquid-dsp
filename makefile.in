@@ -1494,7 +1494,6 @@ sandbox_programs =						\
 	sandbox/ofdm_ber_test					\
 	sandbox/ofdmframe_papr_test				\
 	sandbox/ofdmframesync_cfo_test				\
-	sandbox/packetizer_persistent_ber_test			\
 	sandbox/pll_design_test					\
 	sandbox/predemod_sync_test				\
 	sandbox/quasinewton_test				\
@@ -1508,6 +1507,7 @@ sandbox_programs =						\
 	sandbox/svd_test					\
 	sandbox/thiran_allpass_iir_test				\
 
+#	sandbox/packetizer_persistent_ber_test
 #	firpfbch_analysis_test
 #	sandbox/ofdmoqam_firpfbch_cfo_test
 #	sandbox/mdct_test
