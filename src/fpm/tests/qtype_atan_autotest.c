@@ -1,6 +1,5 @@
 /*
- * Copyright (c) 2008, 2009 Joseph Gaeddert
- * Copyright (c) 2008, 2009 Virginia Polytechnic Institute & State University
+ * Copyright (c) 2007 - 2014 Joseph Gaeddert
  *
  * This file is part of liquid-fpm.
  *
