@@ -881,12 +881,22 @@ void FFT(_print_plan)(FFT(plan) _p);                            \
 void FFT(_execute)(FFT(plan) _p);                               \
                                                                 \
 /* object-independent methods */                                \
+                                                                \
+/* perform n-point FFT allocating plan internally           */  \
+/*  _nfft   : fft size                                      */  \
+/*  _x      : input array [size: _nfft x 1]                 */  \
+/*  _y      : output array [size: _nfft x 1]                */  \
+/*  _dir    : fft direction: LIQUID_FFT_{FORWARD,BACKWARD}  */  \
+/*  _flags  : fft flags                                     */  \
 void FFT(_run)(unsigned int _n,                                 \
                TC *         _x,                                 \
                TC *         _y,                                 \
                int          _dir,                               \
-               int          flags);                             \
-void FFT(_shift)(TC*_x, unsigned int _n);                       \
+               int          _flags);                            \
+                                                                \
+/* perform _n-point fft shift                               */  \
+void FFT(_shift)(TC *         _x,                               \
+                 unsigned int _n);                              \
 
 
 LIQUID_FFT_DEFINE_API(LIQUID_FFT_MANGLE_FLOAT,float,liquid_float_complex)
