@@ -894,6 +894,18 @@ void FFT(_run)(unsigned int _n,                                 \
                int          _dir,                               \
                int          _flags);                            \
                                                                 \
+/* perform n-point real FFT allocating plan internally      */  \
+/*  _nfft   : fft size                                      */  \
+/*  _x      : input array [size: _nfft x 1]                 */  \
+/*  _y      : output array [size: _nfft x 1]                */  \
+/*  _type   : fft type, e.g. LIQUID_FFT_REDFT10             */  \
+/*  _flags  : fft flags                                     */  \
+void FFT(_r2r_1d_run)(unsigned int _n,                          \
+                      T *          _x,                          \
+                      T *          _y,                          \
+                      int          _type,                       \
+                      int          _flags);                     \
+                                                                \
 /* perform _n-point fft shift                               */  \
 void FFT(_shift)(TC *         _x,                               \
                  unsigned int _n);                              \

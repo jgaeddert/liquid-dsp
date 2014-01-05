@@ -307,6 +307,28 @@ void FFT(_run)(unsigned int _nfft,
     FFT(_destroy_plan)(plan);
 }
 
+// perform real n-point FFT allocating plan internally
+//  _nfft   : fft size
+//  _x      : input array [size: _nfft x 1]
+//  _y      : output array [size: _nfft x 1]
+//  _type   : fft type, e.g. LIQUID_FFT_REDFT10
+//  _flags  : fft flags
+void FFT(_r2r_1d_run)(unsigned int _nfft,
+                      T *          _x,
+                      T *          _y,
+                      int          _type,
+                      int          _flags)
+{
+    // create plan
+    FFT(plan) plan = FFT(_create_plan_r2r_1d)(_nfft, _x, _y, _type, _flags);
+
+    // execute fft
+    FFT(_execute)(plan);
+
+    // destroy plan
+    FFT(_destroy_plan)(plan);
+}
+
 // perform _n-point FFT shift
 void FFT(_shift)(TC *_x, unsigned int _n)
 {
