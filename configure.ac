@@ -196,12 +196,15 @@ powerpc*)
                    src/dotprod/src/sumsq.o"
     ARCH_OPTION="-fno-common -faltivec";;
 arm*)
-    # ARM architecture : use portable C version
+    # TODO: check for Neon availability
+
+    # ARM architecture : use neon extensions
     MLIBS_DOTPROD="src/dotprod/src/dotprod_cccf.o \
                    src/dotprod/src/dotprod_crcf.o \
-                   src/dotprod/src/dotprod_rrrf.o \
+                   src/dotprod/src/dotprod_rrrf.neon.o \
                    src/dotprod/src/sumsq.o"
-    ARCH_OPTION="-marm -mfloat-abi=softfp";;
+    # TODO: check these flags
+    ARCH_OPTION="-ffast-math -mcpu=cortex-a8 -mfloat-abi=softfp -mfpu=neon";;
 *)
     # unknown architecture : use portable C version
     MLIBS_DOTPROD="src/dotprod/src/dotprod_cccf.o \
