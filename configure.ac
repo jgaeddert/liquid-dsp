@@ -200,7 +200,7 @@ arm*)
 
     # ARM architecture : use neon extensions
     MLIBS_DOTPROD="src/dotprod/src/dotprod_cccf.o \
-                   src/dotprod/src/dotprod_crcf.o \
+                   src/dotprod/src/dotprod_crcf.neon.o \
                    src/dotprod/src/dotprod_rrrf.neon.o \
                    src/dotprod/src/sumsq.o"
     # TODO: check these flags

@@ -198,6 +198,7 @@ src/dotprod/src/dotprod_rrrf.sse4.o : %.o : %.c $(headers)
 
 # ARM Neon
 src/dotprod/src/dotprod_rrrf.neon.o : %.o : %.c $(headers)
+src/dotprod/src/dotprod_crcf.neon.o : %.o : %.c $(headers)
 
 dotprod_autotests :=						\
 	src/dotprod/tests/dotprod_rrrf_autotest.c		\
