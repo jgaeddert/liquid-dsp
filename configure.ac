@@ -199,7 +199,7 @@ arm*)
     # TODO: check for Neon availability
 
     # ARM architecture : use neon extensions
-    MLIBS_DOTPROD="src/dotprod/src/dotprod_cccf.o \
+    MLIBS_DOTPROD="src/dotprod/src/dotprod_cccf.neon.o \
                    src/dotprod/src/dotprod_crcf.neon.o \
                    src/dotprod/src/dotprod_rrrf.neon.o \
                    src/dotprod/src/sumsq.o"
