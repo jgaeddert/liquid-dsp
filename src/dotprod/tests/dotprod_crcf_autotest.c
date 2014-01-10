@@ -131,8 +131,9 @@ void runtest_dotprod_crcf(unsigned int _n)
     }
     
     // compute expected value (ordinal computation)
-    float complex y_test;
-    dotprod_crcf_run(h, x, _n, &y_test);
+    float complex y_test=0;
+    for (i=0; i<_n; i++)
+        y_test += h[i] * x[i];
 
     // create and run dot product object
     float complex y;

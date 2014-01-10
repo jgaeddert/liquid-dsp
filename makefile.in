@@ -64,7 +64,7 @@ RANLIB	:= ranlib
 
 # flags
 INCLUDE_CFLAGS	= $(addprefix -I ,$(include_dirs))
-CONFIG_CFLAGS	= @CFLAGS@ @PROFILE_OPTION@ @DEBUG_OPTION@
+CONFIG_CFLAGS	= @CFLAGS@ @PROFILE_OPTION@ @DEBUG_OPTION@ @ARCH_OPTION@
 # -g : debugging info
 CFLAGS		+= $(INCLUDE_CFLAGS) -Wall -fPIC $(CONFIG_CFLAGS)
 LDFLAGS		+= @LIBS@
@@ -195,6 +195,11 @@ src/dotprod/src/sumsq.mmx.o : %.o : %.c $(headers)
 
 # SSE4.1/2
 src/dotprod/src/dotprod_rrrf.sse4.o : %.o : %.c $(headers)
+
+# ARM Neon
+src/dotprod/src/dotprod_rrrf.neon.o : %.o : %.c $(headers)
+src/dotprod/src/dotprod_crcf.neon.o : %.o : %.c $(headers)
+src/dotprod/src/dotprod_cccf.neon.o : %.o : %.c $(headers)
 
 dotprod_autotests :=						\
 	src/dotprod/tests/dotprod_rrrf_autotest.c		\
