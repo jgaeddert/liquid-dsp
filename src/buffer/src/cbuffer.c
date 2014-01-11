@@ -124,6 +124,18 @@ void CBUFFER(_clear)(CBUFFER() _q)
     _q->num_elements = 0;
 }
 
+// get the number of elements currently in the buffer
+unsigned int CBUFFER(_size)(CBUFFER() _q)
+{
+    return _q->num_elements;
+}
+
+// get the maximum number of elements the buffer can hold
+unsigned int CBUFFER(_max_size)(CBUFFER() _q)
+{
+    return _q->len;
+}
+
 // read buffer contents
 //  _q  : circular buffer object
 //  _v  : output pointer

@@ -217,6 +217,12 @@ void CBUFFER(_debug_print)(CBUFFER() _q);                       \
 /* clear internal buffer                                    */  \
 void CBUFFER(_clear)(CBUFFER() _q);                             \
                                                                 \
+/* get the number of elements currently in the buffer       */  \
+unsigned int CBUFFER(_size)(CBUFFER() _q);                      \
+                                                                \
+/* get the maximum number of elements the buffer can hold   */  \
+unsigned int CBUFFER(_max_size)(CBUFFER() _q);                  \
+                                                                \
 /* read buffer contents                                     */  \
 /*  _q  : circular buffer object                            */  \
 /*  _v  : output pointer                                    */  \
