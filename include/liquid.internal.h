@@ -79,25 +79,6 @@ LIQUID_AGC_DEFINE_INTERNAL_API(AGC_MANGLE_RRRF, float, float)
 // MODULE : buffer
 //
 
-// Buffers
-
-#define buffer_fast_access(c,i) (c->v[(c->read_index+i)%(c->len)])
-
-#define LIQUID_BUFFER_DEFINE_INTERNAL_API(BUFFER,T)             \
-void BUFFER(_linearize)(BUFFER() _b);                           \
-void BUFFER(_c_read)(BUFFER() _b, T ** _v, unsigned int *_n);   \
-void BUFFER(_s_read)(BUFFER() _b, T ** _v, unsigned int *_n);   \
-void BUFFER(_c_write)(BUFFER() _b, T * _v, unsigned int _n);    \
-void BUFFER(_s_write)(BUFFER() _b, T * _v, unsigned int _n);    \
-void BUFFER(_c_release)(BUFFER() _b, unsigned int _n);          \
-void BUFFER(_s_release)(BUFFER() _b, unsigned int _n);          \
-void BUFFER(_c_push)(BUFFER() _b, T _v);                        \
-void BUFFER(_s_push)(BUFFER() _b, T _v);
-
-LIQUID_BUFFER_DEFINE_INTERNAL_API(BUFFER_MANGLE_FLOAT,  float)
-LIQUID_BUFFER_DEFINE_INTERNAL_API(BUFFER_MANGLE_CFLOAT, float complex)
-//LIQUID_BUFFER_DEFINE_INTERNAL_API(BUFFER_MANGLE_UINT,   unsigned int)
-
 
 //
 // MODULE : dotprod
