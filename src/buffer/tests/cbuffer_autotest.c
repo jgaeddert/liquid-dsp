@@ -18,7 +18,7 @@
  */
 
 //
-// Circular buffer autotest
+// buffer autotest (circular)
 //
 
 #include "autotest/autotest.h"
