@@ -54,9 +54,9 @@ CBUFFER() CBUFFER(_create)(unsigned int _n)
 
     // allocate internal memory array
     q->v = (T*) malloc((q->num_allocated)*sizeof(T));
-    q->num_elements = 0;
-    q->read_index   = 0;
-    q->write_index  = 0;
+
+    // reset object
+    CBUFFER(_clear)(q);
 
     // return main object
     return q;
@@ -119,8 +119,8 @@ void CBUFFER(_debug_print)(CBUFFER() _q)
 // clear internal buffer
 void CBUFFER(_clear)(CBUFFER() _q)
 {
-    _q->read_index = 0;
-    _q->write_index = 0;
+    _q->read_index   = 0;
+    _q->write_index  = 0;
     _q->num_elements = 0;
 }
 
