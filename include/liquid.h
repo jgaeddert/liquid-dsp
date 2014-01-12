@@ -2825,7 +2825,7 @@ typedef void (*framesync_csma_callback)(void * _userdata);
 //
 
 // frame length in samples
-#define FRAME64_LEN (1340)
+#define LIQUID_FRAME64_LEN (1340)
 
 typedef struct framegen64_s * framegen64;
 
@@ -2842,7 +2842,7 @@ void framegen64_print(framegen64 _q);
 //  _q          :   frame generator object
 //  _header     :   8-byte header data
 //  _payload    :   64-byte payload data
-//  _frame      :   output frame samples [size: FRAME64_LEN x 1]
+//  _frame      :   output frame samples [size: LIQUID_FRAME64_LEN x 1]
 void framegen64_execute(framegen64             _q,
                         unsigned char *        _header,
                         unsigned char *        _payload,

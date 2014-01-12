@@ -132,7 +132,7 @@ void framegen64_print(framegen64 _q)
 //  _q          :   frame generator object
 //  _header     :   8-byte header data
 //  _payload    :   64-byte payload data
-//  _frame      :   output frame samples [size: FRAME64_LEN x 1]
+//  _frame      :   output frame samples [size: LIQUID_FRAME64_LEN x 1]
 void framegen64_execute(framegen64      _q,
                         unsigned char * _header,
                         unsigned char * _payload,
@@ -178,7 +178,7 @@ void framegen64_execute(framegen64      _q,
         n+=2;
     }
 
-    assert(n==FRAME64_LEN);
+    assert(n==LIQUID_FRAME64_LEN);
 }
 
 
