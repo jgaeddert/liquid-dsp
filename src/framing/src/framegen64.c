@@ -36,8 +36,11 @@
 // internal method declarations
 //
 
-// assemble and encode payload
-//void framegen64_encode_payload(framegen64 _q);
+// convert one 8-bit byte to four 2-bit symbols
+//  _byte   :   input byte
+//  _syms   :   output symbols [size: 4 x 1]
+void framegen64_byte_to_syms(unsigned char _byte,
+                             unsigned char * _syms);
 
 struct framegen64_s {
     unsigned int m;         // filter delay (symbols)
