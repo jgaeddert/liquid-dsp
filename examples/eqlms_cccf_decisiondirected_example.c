@@ -1,8 +1,9 @@
 // 
-// eqlms_cccf_blind_example.c
+// eqlms_cccf_decisiondirected_example.c
 //
-// Tests least mean-squares (LMS) equalizer (EQ) on a
-// signal at the symbol level.
+// Tests least mean-squares (LMS) equalizer (EQ) on a signal with a known
+// linear modulation scheme, but unknown data. The equalizer is updated
+// using decision-directed demodulator output samples.
 //
 
 #include <stdio.h>
@@ -14,12 +15,12 @@
 #include <time.h>
 #include "liquid.h"
 
-#define OUTPUT_FILENAME "eqlms_cccf_blind_example.m"
+#define OUTPUT_FILENAME "eqlms_cccf_decisiondirected_example.m"
 
 // print usage/help message
 void usage()
 {
-    printf("Usage: eqlms_cccf_blind_example [OPTION]\n");
+    printf("Usage: eqlms_cccf_decisiondirected_example [OPTION]\n");
     printf("  h     : print help\n");
     printf("  n     : number of symbols, default: 500\n");
     printf("  s     : SNR [dB], default: 30\n");

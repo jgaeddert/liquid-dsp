@@ -105,7 +105,11 @@ This directory contains all the examples for interfacing the liquid modules.
     This example demonstrates the interface to the floating-point dot
     product object (dotprod_rrrf).
 
- * `eqlms_cccf_blind_example.c`:
+ * `eqlms_cccf_decisiondirected_example.c`:
+    Tests least mean-squares (LMS) equalizer (EQ) on a signal with a known
+    linear modulation scheme, but unknown data. The equalizer is updated
+    using decision-directed demodulator output samples.
+
  * `eqlms_cccf_example.c`:
  * `eqrls_cccf_example.c`:
  * `fct_example.c`:
