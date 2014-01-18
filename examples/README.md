@@ -105,6 +105,14 @@ This directory contains all the examples for interfacing the liquid modules.
     This example demonstrates the interface to the floating-point dot
     product object (dotprod_rrrf).
 
+ * `eqlms_cccf_blind_example.c`:
+    This example tests the least mean-squares (LMS) equalizer (EQ) on a
+    signal with an unknown modulation and carrier frequency offset. That
+    is, the equalization is done completely blind of the modulation
+    scheme or its underlying data set. The error estimate assumes a
+    constant modulus linear modulation scheme. This works surprisingly
+    well even more amplitude-modulated signals, e.g. 'qam16'.
+
  * `eqlms_cccf_decisiondirected_example.c`:
     Tests least mean-squares (LMS) equalizer (EQ) on a signal with a known
     linear modulation scheme, but unknown data. The equalizer is updated

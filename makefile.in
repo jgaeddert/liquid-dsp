@@ -1319,6 +1319,7 @@ example_programs :=						\
 	examples/detector_cccf_example				\
 	examples/dotprod_rrrf_example				\
 	examples/dotprod_cccf_example				\
+	examples/eqlms_cccf_blind_example			\
 	examples/eqlms_cccf_decisiondirected_example		\
 	examples/eqlms_cccf_example				\
 	examples/eqrls_cccf_example				\
