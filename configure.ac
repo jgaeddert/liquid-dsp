@@ -1,5 +1,5 @@
 ## 
-## Copyright (c) 2007, 2008, 2009, 2010, 2011, 2012, 2013 Joseph Gaeddert
+## Copyright (c) 2007 - 2014 Joseph Gaeddert
 ##
 ## This file is part of liquid.
 ##
@@ -109,9 +109,6 @@ AC_CHECK_LIB([fftw3f], [fftwf_plan_dft_1d], [],
 AC_CHECK_LIB([fec], [create_viterbi27], [],
              [AC_MSG_WARN(fec library useful but not required)],
              [])
-#AC_CHECK_LIB([liquidfpm], [q32_mul], [],
-#             [AC_MSG_WARN(fixed-point math library useful but not required)],
-#             [])
 
 # check for programs (documentation)
 AC_CHECK_PROG(PDFLATEX, pdflatex, pdflatex, no)
@@ -199,12 +196,15 @@ powerpc*)
                    src/dotprod/src/sumsq.o"
     ARCH_OPTION="-fno-common -faltivec";;
 arm*)
-    # ARM architecture : use portable C version
-    MLIBS_DOTPROD="src/dotprod/src/dotprod_cccf.o \
-                   src/dotprod/src/dotprod_crcf.o \
-                   src/dotprod/src/dotprod_rrrf.o \
+    # TODO: check for Neon availability
+
+    # ARM architecture : use neon extensions
+    MLIBS_DOTPROD="src/dotprod/src/dotprod_cccf.neon.o \
+                   src/dotprod/src/dotprod_crcf.neon.o \
+                   src/dotprod/src/dotprod_rrrf.neon.o \
                    src/dotprod/src/sumsq.o"
-    ARCH_OPTION="-marm -mfloat-abi=softfp";;
+    # TODO: check these flags
+    ARCH_OPTION="-ffast-math -mcpu=cortex-a8 -mfloat-abi=softfp -mfpu=neon";;
 *)
     # unknown architecture : use portable C version
     MLIBS_DOTPROD="src/dotprod/src/dotprod_cccf.o \

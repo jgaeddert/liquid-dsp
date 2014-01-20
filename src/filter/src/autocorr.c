@@ -1,6 +1,5 @@
 /*
- * Copyright (c) 2007, 2009 Joseph Gaeddert
- * Copyright (c) 2007, 2009 Virginia Polytechnic Institute & State University
+ * Copyright (c) 2007 - 2014 Joseph Gaeddert
  *
  * This file is part of liquid.
  *
@@ -46,60 +45,78 @@ struct AUTOCORR(_s) {
     float * we2;        // energy buffer
     float e2_sum;       // running sum of energy
     unsigned int ie2;   // read index
-
-    TI * rw;            // input buffer read pointer
-    TC * rwdelay;       // input buffer read pointer (with delay)
 };
 
+// create auto-correlator object                            
+//  _window_size    : size of the correlator window         
+//  _delay          : correlator delay [samples]            
 AUTOCORR() AUTOCORR(_create)(unsigned int _window_size,
                              unsigned int _delay)
 {
+    // create main object
     AUTOCORR() q = (AUTOCORR()) malloc(sizeof(struct AUTOCORR(_s)));
+
+    // set user-based parameters
     q->window_size = _window_size;
-    q->delay = _delay;
+    q->delay       = _delay;
 
-    q->w        = WINDOW(_create)(q->window_size);
-    q->wdelay   = WINDOW(_create)(q->window_size + q->delay);
+    // create window objects
+    q->w      = WINDOW(_create)(q->window_size);
+    q->wdelay = WINDOW(_create)(q->window_size + q->delay);
 
-    q->we2      = (float*) malloc( (q->window_size)*sizeof(float) );
+    // allocate array for squared energy buffer
+    q->we2 = (float*) malloc( (q->window_size)*sizeof(float) );
 
     // clear object
-    AUTOCORR(_clear)(q);
+    AUTOCORR(_reset)(q);
 
+    // return main object
     return q;
 }
 
+// destroy auto-correlator object, freeing internal memory
 void AUTOCORR(_destroy)(AUTOCORR() _q)
 {
+    // destroy internal window objects
     WINDOW(_destroy)(_q->w);
     WINDOW(_destroy)(_q->wdelay);
+
+    // free array for squared energy buffer
     free(_q->we2);
+
+    // free main object memory
     free(_q);
 }
 
-void AUTOCORR(_clear)(AUTOCORR() _q)
+// reset auto-correlator object's internals
+void AUTOCORR(_reset)(AUTOCORR() _q)
 {
+    // clear/reset internal window buffers
     WINDOW(_clear)(_q->w);
     WINDOW(_clear)(_q->wdelay);
     
+    // reset internal squared energy buffer
     _q->e2_sum = 0.0;
     unsigned int i;
     for (i=0; i<_q->window_size; i++)
         _q->we2[i] = 0.0;
-    _q->ie2 = 0;
+    _q->ie2 = 0;    // reset read index to zero
 }
 
+// print auto-correlator parameters to stdout
 void AUTOCORR(_print)(AUTOCORR() _q)
 {
     printf("autocorr [%u window, %u delay]\n", _q->window_size, _q->delay);
 }
 
+// push sample into auto-correlator object
 void AUTOCORR(_push)(AUTOCORR() _q, TI _x)
 {
-    WINDOW(_push)(_q->w,      _x);
-    WINDOW(_push)(_q->wdelay, conj(_x));
+    // push input sample into buffers
+    WINDOW(_push)(_q->w,      _x);          // non-delayed buffer
+    WINDOW(_push)(_q->wdelay, conj(_x));    // delayed buffer
 
-    // push |_x|^2 into buffer
+    // push |_x|^2 into buffer at appropriate location
     float e2 = creal( _x*conj(_x) );
     _q->e2_sum -= _q->we2[ _q->ie2 ];
     _q->e2_sum += e2;
@@ -107,16 +124,26 @@ void AUTOCORR(_push)(AUTOCORR() _q, TI _x)
     _q->ie2 = (_q->ie2+1) % _q->window_size;
 }
 
+// compute auto-correlation output
 void AUTOCORR(_execute)(AUTOCORR() _q, TO *_rxx)
 {
-    WINDOW(_read)(_q->w, &_q->rw);
-    WINDOW(_read)(_q->wdelay, &_q->rwdelay);
+    // provide pointers for reading buffer
+    TI * rw;        // input buffer read pointer
+    TC * rwdelay;   // input buffer read pointer (with delay)
 
-    DOTPROD(_run4)(_q->rw,_q->rwdelay,_q->window_size,_rxx);
+    // read buffers; set internal pointers appropriately
+    WINDOW(_read)(_q->w,      &rw     );
+    WINDOW(_read)(_q->wdelay, &rwdelay);
+
+    // execute vector dot product on arrays, saving result to
+    // user-supplied output pointer
+    DOTPROD(_run4)(rw, rwdelay, _q->window_size, _rxx);
 }
 
+// return sum of squares of buffered samples
 float AUTOCORR(_get_energy)(AUTOCORR() _q)
 {
+    // value is already computed; simply return value
     return _q->e2_sum;
 }
 

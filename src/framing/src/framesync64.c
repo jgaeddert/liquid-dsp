@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007, 2008, 2009, 2010, 2012, 2013 Joseph Gaeddert
+ * Copyright (c) 2007 - 2014 Joseph Gaeddert
  *
  * This file is part of liquid.
  *
@@ -268,8 +268,8 @@ void framesync64_reset(framesync64 _q)
     nco_crcf_reset(_q->nco_fine);
 
     // reset symbol timing recovery state
-    firpfb_crcf_clear(_q->mf);
-    firpfb_crcf_clear(_q->dmf);
+    firpfb_crcf_reset(_q->mf);
+    firpfb_crcf_reset(_q->dmf);
     _q->pfb_q = 0.0f;   // filtered error signal
         
     // reset state
@@ -420,8 +420,8 @@ void framesync64_pushpn(framesync64 _q)
     unsigned int i;
 
     // reset filterbanks
-    firpfb_crcf_clear(_q->mf);
-    firpfb_crcf_clear(_q->dmf);
+    firpfb_crcf_reset(_q->mf);
+    firpfb_crcf_reset(_q->dmf);
 
     // read buffer
     float complex * rc;

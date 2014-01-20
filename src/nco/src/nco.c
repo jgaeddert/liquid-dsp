@@ -1,7 +1,5 @@
 /*
- * Copyright (c) 2007, 2008, 2009, 2010 Joseph Gaeddert
- * Copyright (c) 2007, 2008, 2009, 2010 Virginia Polytechnic
- *                                      Institute & State University
+ * Copyright (c) 2007 - 2014 Joseph Gaeddert
  *
  * This file is part of liquid.
  *
@@ -207,7 +205,7 @@ void NCO(_cexpf)(NCO() _q,
 void NCO(_pll_reset)(NCO() _q)
 {
     // clear phase-locked loop filter
-    iirfiltsos_rrrf_clear(_q->pll_filter);
+    iirfiltsos_rrrf_reset(_q->pll_filter);
 }
 
 // set pll bandwidth

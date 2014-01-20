@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2012, 2013 Joseph Gaeddert
+ * Copyright (c) 2007 - 2014 Joseph Gaeddert
  *
  * This file is part of liquid.
  *

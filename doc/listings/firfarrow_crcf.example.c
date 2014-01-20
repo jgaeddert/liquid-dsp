@@ -13,7 +13,7 @@ int main()
     firfarrow_crcf q = firfarrow_crcf_create(h_len, Q, fc, As);
 
     // set fractional sample delay
-    firfarrow_crcf_setdelay(q, 0.3f);
+    firfarrow_crcf_set_delay(q, 0.3f);
 
     float complex x;    // input sample
     float complex y;    // output sample

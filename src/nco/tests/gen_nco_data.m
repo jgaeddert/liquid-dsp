@@ -15,7 +15,7 @@ filename = ['data/' basename '.c'];
 fid      = fopen(filename,'w');
 
 fprintf(fid,'/*\n');
-fprintf(fid,' * Copyright (c) 2007, 2008, 2009, 2010, 2011, 2012, 2013 Joseph Gaeddert\n');
+fprintf(fid,' * Copyright (c) 2007 - 2014 Joseph Gaeddert\n');
 fprintf(fid,' *\n');
 fprintf(fid,' * This file is part of liquid.\n');
 fprintf(fid,' *\n');

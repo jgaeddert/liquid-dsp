@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007, 2008, 2009, 2010, 2013 Joseph Gaeddert
+ * Copyright (c) 2007 - 2014 Joseph Gaeddert
  *
  * This file is part of liquid.
  *
@@ -142,7 +142,7 @@ void RESAMP(_print)(RESAMP() _q)
 
 void RESAMP(_reset)(RESAMP() _q)
 {
-    FIRPFB(_clear)(_q->f);
+    FIRPFB(_reset)(_q->f);
     _q->b   = 0;
 
     _q->theta = 0;
