@@ -7,6 +7,10 @@
 #      split across several lines
 #   2. replaces lines like "Copyright 2007, ... 2012, 2013 Joseph Gaeddert"
 #      with an updated date
+# 
+# usage:
+#   $ python scripts/update_copyright.py <dir>
+#
 
 import os
 import sys
