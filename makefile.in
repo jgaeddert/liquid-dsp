@@ -36,7 +36,6 @@
 #    clean-sandbox       :   clean sandbox programs
 #    clean-check         :   clean autotest program
 #    clean-bench         :   clean benchmark program
-#    clean-doc           :   clean documentation
 #
 
 # autoconf initialization macros
@@ -1126,7 +1125,7 @@ libliquid.so: libliquid.a
 all: libliquid.a $(SHARED_LIB)
 
 ##
-## TARGET : help      - print list of targets (see documentation for more)
+## TARGET : help      - print list of targets
 ##
 
 # look for all occurences of '## TARGET : ' and print rest of line to screen
@@ -1537,29 +1536,13 @@ clean-sandbox:
 	$(RM) $(sandbox_programs)
 
 
-## 
-## TARGET : doc       - build documentation (doc/liquid.pdf)
-##
-
-doc : doc/liquid.pdf
-
-doc/liquid.pdf : libliquid.a
-	cd doc ; make
-
-clean-doc :
-	cd doc ; make mostlyclean
-
-distclean-doc :
-	cd doc ; make distclean
-
-
 # Clean
 .PHONY: clean
 
 ##
 ## TARGET : world     - build absolutely everything
 ##
-world : all check bench examples sandbox doc
+world : all check bench examples sandbox
 
 ##
 ## TARGET : clean     - clean build (objects, dependencies, libraries, etc.)
@@ -1587,7 +1570,7 @@ clean-modules:
 	$(RM) src/utility/src/*.o      src/utility/bench/*.o      src/utility/tests/*.o
 	$(RM) libliquid.o
 
-clean: clean-modules clean-autoscript clean-check clean-bench clean-examples clean-sandbox clean-doc
+clean: clean-modules clean-autoscript clean-check clean-bench clean-examples clean-sandbox
 	$(RM) $(extra_clean)
 	$(RM) libliquid.a
 	$(RM) $(SHARED_LIB)
@@ -1596,7 +1579,7 @@ clean: clean-modules clean-autoscript clean-check clean-bench clean-examples cle
 ## TARGET : distclean - removes everything except the originally distributed files
 ##
 
-distclean: clean distclean-doc
+distclean: clean
 	@echo "cleaning distribution..."
 	$(RM) octave-core *.m
 	$(RM) configure config.h config.h.in config.h.in~ config.log config.status

@@ -110,36 +110,6 @@ AC_CHECK_LIB([fec], [create_viterbi27], [],
              [AC_MSG_WARN(fec library useful but not required)],
              [])
 
-# check for programs (documentation)
-AC_CHECK_PROG(PDFLATEX, pdflatex, pdflatex, no)
-if [ test "x$PDFLATEX" == "xno" ]; then
-    AC_MSG_WARN(pdflatex required to build documentation)
-fi
-AC_CHECK_PROG(BIBTEX, bibtex, bibtex, no)
-if [ test "x$BIBTEX" == "xno" ]; then
-    AC_MSG_WARN(bibtex required to build documentation)
-fi
-AC_CHECK_PROG(EPSTOPDF, epstopdf, epstopdf, no)
-if [ test "x$EPSTOPDF" == "xno" ]; then
-    AC_MSG_WARN(epstopdf required to build documentation)
-fi
-AC_CHECK_PROG(GNUPLOT, gnuplot, gnuplot, no)
-if [ test "x$GNUPLOT" == "xno" ]; then
-    AC_MSG_WARN(gnuplot required to build documentation)
-fi
-AC_CHECK_PROG(PYGMENTIZE,   pygmentize,     pygmentize,     no)
-AC_CHECK_PROG(PYGMENTIZE24, pygmentize-2.4, pygmentize-2.4, no)
-if [ test "$PYGMENTIZE" == "no" ]; then
-    if [ test "$PYGMENTIZE24" == "no" ]; then
-        # use uglier, but functional built-in homebrewed code listing generator
-        AC_MSG_WARN(pygmentize not found; using ./scripts/liquid-pygmentize.py as ugly alternative)
-        PYGMENTIZE="./scripts/liquid-pygmentize.py"
-    else
-        PYGMENTIZE="pygmentize-2.4"
-    fi
-fi
-
-
 # Checks for typedefs, structures, and compiler characteristics.
 AC_C_INLINE
 AC_TYPE_SIZE_T
@@ -239,12 +209,5 @@ AC_SUBST(DEBUG_OPTION)              # debug option
 AC_SUBST(PROFILE_OPTION)            # profile symbols
 AC_SUBST(CLIB)                      # C library linkage (e.g. '-lc')
 
-# documentation programs
-AC_SUBST(PDFLATEX)                  # pdflatex
-AC_SUBST(BIBTEX)                    # bibtex
-AC_SUBST(EPSTOPDF)                  # epstopdf
-AC_SUBST(GNUPLOT)                   # gnuplot
-AC_SUBST(PYGMENTIZE)                # pygmentize
-
-AC_CONFIG_FILES([makefile doc/makefile])
+AC_CONFIG_FILES([makefile])
 AC_OUTPUT
