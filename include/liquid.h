@@ -5175,6 +5175,10 @@ unsigned int msequence_get_length(msequence _ms);
 // get the internal state of the sequence
 unsigned int msequence_get_state(msequence _ms);
 
+// set the internal state of the sequence
+void msequence_set_state(msequence    _ms,
+                         unsigned int _a);
+
 
 // 
 // MODULE : utility
