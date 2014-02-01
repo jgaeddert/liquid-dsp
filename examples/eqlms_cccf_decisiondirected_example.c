@@ -1,12 +1,9 @@
 // 
-// eqlms_cccf_blind_example.c
+// eqlms_cccf_decisiondirected_example.c
 //
-// This example tests the least mean-squares (LMS) equalizer (EQ) on a
-// signal with an unknown modulation and carrier frequency offset. That
-// is, the equalization is done completely blind of the modulation
-// scheme or its underlying data set. The error estimate assumes a
-// constant modulus linear modulation scheme. This works surprisingly
-// well even more amplitude-modulated signals, e.g. 'qam16'.
+// Tests least mean-squares (LMS) equalizer (EQ) on a signal with a known
+// linear modulation scheme, but unknown data. The equalizer is updated
+// using decision-directed demodulator output samples.
 //
 
 #include <stdio.h>
@@ -18,12 +15,12 @@
 #include <time.h>
 #include "liquid.h"
 
-#define OUTPUT_FILENAME "eqlms_cccf_blind_example.m"
+#define OUTPUT_FILENAME "eqlms_cccf_decisiondirected_example.m"
 
 // print usage/help message
 void usage()
 {
-    printf("Usage: eqlms_cccf_blind_example [OPTION]\n");
+    printf("Usage: eqlms_cccf_decisiondirected_example [OPTION]\n");
     printf("  h     : print help\n");
     printf("  n     : number of symbols, default: 500\n");
     printf("  s     : SNR [dB], default: 30\n");
@@ -39,18 +36,17 @@ void usage()
 
 int main(int argc, char*argv[])
 {
-    //srand(time(NULL));
+    srand(time(NULL));
 
     // options
-    unsigned int num_symbols=800; // number of symbols to observe
-    float SNRdB = 30.0f;          // signal-to-noise ratio [dB]
-    float fc    = 0.002f;         // carrier offset
-    unsigned int hc_len=5;        // channel filter length
-    unsigned int k=2;             // matched filter samples/symbol
-    unsigned int m=3;             // matched filter delay (symbols)
-    float beta=0.3f;              // matched filter excess bandwidth factor
-    unsigned int p=3;             // equalizer length (symbols, hp_len = 2*k*p+1)
-    float mu = 0.08f;             // equalizer learning rate
+    unsigned int num_symbols=500;   // number of symbols to observe
+    float SNRdB = 30.0f;            // signal-to-noise ratio [dB]
+    unsigned int hc_len=5;          // channel filter length
+    unsigned int k=2;               // matched filter samples/symbol
+    unsigned int m=3;               // matched filter delay (symbols)
+    float beta=0.3f;                // matched filter excess bandwidth factor
+    unsigned int p=3;               // equalizer length (symbols, hp_len = 2*k*p+1)
+    float mu = 0.08f;               // learning rate
 
     // modulation type/depth
     modulation_scheme ms = LIQUID_MODEM_QPSK;
@@ -109,11 +105,10 @@ int main(int argc, char*argv[])
     unsigned int num_samples = k*num_symbols;
 
     // bookkeeping variables
-    float complex syms_tx[num_symbols]; // transmitted data symbols
+    float complex sym_tx[num_symbols];  // transmitted data sequence
     float complex x[num_samples];       // interpolated time series
     float complex y[num_samples];       // channel output
     float complex z[num_samples];       // equalized output
-    float complex syms_rx[num_symbols]; // received data symbols
 
     float hm[hm_len];                   // matched filter response
     float complex hc[hc_len];           // channel filter coefficients
@@ -138,11 +133,11 @@ int main(int argc, char*argv[])
 
     // generate random symbols
     for (i=0; i<num_symbols; i++)
-        modem_modulate(mod, rand()%M, &syms_tx[i]);
+        modem_modulate(mod, rand()%M, &sym_tx[i]);
 
     // interpolate
     for (i=0; i<num_symbols; i++)
-        firinterp_crcf_execute(interp, syms_tx[i], &x[i*k]);
+        firinterp_crcf_execute(interp, sym_tx[i], &x[i*k]);
     
     // push through channel
     float nstd = powf(10.0f, -SNRdB/20.0f);
@@ -150,8 +145,7 @@ int main(int argc, char*argv[])
         firfilt_cccf_push(fchannel, x[i]);
         firfilt_cccf_execute(fchannel, &y[i]);
 
-        // add carrier offset and noise
-        y[i] *= cexpf(_Complex_I*2*M_PI*fc*i);
+        // add noise
         y[i] += nstd*(randnf() + randnf()*_Complex_I)*M_SQRT1_2;
     }
 
@@ -166,12 +160,7 @@ int main(int argc, char*argv[])
     // filtered error vector magnitude (emperical RMS error)
     float evm_hat = 0.03f;
 
-    // nco/pll for phase recovery
-    nco_crcf nco = nco_crcf_create(LIQUID_VCO);
-    nco_crcf_pll_set_bandwidth(nco, 0.02f);
-
     float complex d_hat = 0.0f;
-    unsigned int num_symbols_rx = 0;
     for (i=0; i<num_samples; i++) {
         // print filtered evm (emperical rms error)
         if ( ((i+1)%50)==0 )
@@ -189,33 +178,17 @@ int main(int argc, char*argv[])
         // decimate by k
         if ( (i%k) != 0 ) continue;
 
-        // update equalizer independent of the signal: estimate error
-        // assuming constant modulus signal
-        eqlms_cccf_step(eq, d_hat/cabsf(d_hat), d_hat);
-
-        // apply carrier recovery
-        float complex v;
-        nco_crcf_mix_down(nco, d_hat, &v);
-
-        // save resulting data symbol
-        if (num_symbols_rx < num_symbols)
-            syms_rx[num_symbols_rx++] = v;
-
-        // demodulate
+        // estimate transmitted signal
         unsigned int sym_out;   // output symbol
         float complex d_prime;  // estimated input sample
-        modem_demodulate(demod, v, &sym_out);
+        modem_demodulate(demod, d_hat, &sym_out);
         modem_get_demodulator_sample(demod, &d_prime);
-        float phase_error = modem_get_demodulator_phase_error(demod);
 
-        // update pll
-        nco_crcf_pll_step(nco, phase_error);
-
-        // update rx nco object
-        nco_crcf_step(nco);
+        // update equalizer
+        eqlms_cccf_step(eq, d_prime, d_hat);
 
         // update filtered evm estimate
-        float evm = crealf( (d_prime-v)*conjf(d_prime-v) );
+        float evm = crealf( (d_prime-d_hat)*conjf(d_prime-d_hat) );
         evm_hat = 0.98f*evm_hat + 0.02f*evm;
     }
 
@@ -224,7 +197,6 @@ int main(int argc, char*argv[])
 
     // destroy objects
     eqlms_cccf_destroy(eq);
-    nco_crcf_destroy(nco);
     firinterp_crcf_destroy(interp);
     firfilt_cccf_destroy(fchannel);
     modem_destroy(mod);
@@ -270,10 +242,6 @@ int main(int argc, char*argv[])
         fprintf(fid,"y(%4u) = %12.4e + j*%12.4e;\n", i+1, crealf(y[i]), cimagf(y[i]));
         fprintf(fid,"z(%4u) = %12.4e + j*%12.4e;\n", i+1, crealf(z[i]), cimagf(z[i]));
     }
-    fprintf(fid,"syms_rx = zeros(1,num_symbols);\n");
-    for (i=0; i<num_symbols; i++) {
-        fprintf(fid,"syms_rx(%4u) = %12.4e + j*%12.4e;\n", i+1, crealf(syms_rx[i]), cimagf(syms_rx[i]));
-    }
 
     // plot time response
     fprintf(fid,"t = 0:(num_samples-1);\n");
@@ -283,11 +251,11 @@ int main(int argc, char*argv[])
     fprintf(fid,"     t(tsym),real(z(tsym)),'x');\n");
 
     // plot constellation
-    fprintf(fid,"syms_rx_0 = syms_rx(1:(length(syms_rx)/2));\n");
-    fprintf(fid,"syms_rx_1 = syms_rx((length(syms_rx)/2):end);\n");
+    fprintf(fid,"tsym0 = tsym(1:(length(tsym)/2));\n");
+    fprintf(fid,"tsym1 = tsym((length(tsym)/2):end);\n");
     fprintf(fid,"figure;\n");
-    fprintf(fid,"plot(real(syms_rx_0),imag(syms_rx_0),'x','Color',[1 1 1]*0.7,...\n");
-    fprintf(fid,"     real(syms_rx_1),imag(syms_rx_1),'x','Color',[1 1 1]*0.0);\n");
+    fprintf(fid,"plot(real(z(tsym0)),imag(z(tsym0)),'x','Color',[1 1 1]*0.7,...\n");
+    fprintf(fid,"     real(z(tsym1)),imag(z(tsym1)),'x','Color',[1 1 1]*0.0);\n");
     fprintf(fid,"xlabel('In-Phase');\n");
     fprintf(fid,"ylabel('Quadrature');\n");
     fprintf(fid,"axis([-1 1 -1 1]*1.5);\n");
@@ -309,7 +277,7 @@ int main(int argc, char*argv[])
     fprintf(fid,"plot(f,Hm, f,Hc, f,Hp, f,G,'-k','LineWidth',2, [-0.5/k 0.5/k],[-6.026 -6.026],'or');\n");
     fprintf(fid,"xlabel('Normalized Frequency');\n");
     fprintf(fid,"ylabel('Power Spectral Density');\n");
-    fprintf(fid,"legend('transmit','channel','equalizer','composite','half-power points','location','northeast');\n");
+    fprintf(fid,"legend('transmit','channel','equalizer','composite','half-power points',1);\n");
     fprintf(fid,"axis([-0.5 0.5 -12 8]);\n");
     fprintf(fid,"grid on;\n");
     

@@ -202,38 +202,120 @@ void cvsd_decode8(cvsd _q, unsigned char _data, float * _audio);
 // MODULE : buffer
 //
 
-// Buffer
-#define BUFFER_MANGLE_FLOAT(name)  LIQUID_CONCAT(bufferf,  name)
-#define BUFFER_MANGLE_CFLOAT(name) LIQUID_CONCAT(buffercf, name)
-//#define BUFFER_MANGLE_UINT(name)   LIQUID_CONCAT(bufferui, name)
-
-typedef enum {
-    CIRCULAR=0,
-    STATIC
-} buffer_type;
+// circular buffer
+#define CBUFFER_MANGLE_FLOAT(name)  LIQUID_CONCAT(cbufferf,  name)
+#define CBUFFER_MANGLE_CFLOAT(name) LIQUID_CONCAT(cbuffercf, name)
 
 // large macro
-//   BUFFER : name-mangling macro
-//   T      : data type
-#define LIQUID_BUFFER_DEFINE_API(BUFFER,T)                      \
+//   CBUFFER : name-mangling macro
+//   T       : data type
+#define LIQUID_CBUFFER_DEFINE_API(CBUFFER,T)                    \
+typedef struct CBUFFER(_s) * CBUFFER();                         \
                                                                 \
-typedef struct BUFFER(_s) * BUFFER();                           \
-BUFFER() BUFFER(_create)(buffer_type _type, unsigned int _n);   \
-void BUFFER(_destroy)(BUFFER() _b);                             \
-void BUFFER(_print)(BUFFER() _b);                               \
-void BUFFER(_debug_print)(BUFFER() _b);                         \
-void BUFFER(_clear)(BUFFER() _b);                               \
-void BUFFER(_zero)(BUFFER() _b);                                \
-void BUFFER(_read)(BUFFER() _b, T ** _v, unsigned int *_nr);    \
-void BUFFER(_release)(BUFFER() _b, unsigned int _n);            \
-void BUFFER(_write)(BUFFER() _b, T * _v, unsigned int _n);      \
-void BUFFER(_push)(BUFFER() _b, T _v);
-//void BUFFER(_force_write)(BUFFER() _b, T * _v, unsigned int _n);
+/* create circular buffer object of a particular size       */  \
+CBUFFER() CBUFFER(_create)(unsigned int _n);                    \
+                                                                \
+/* destroy cbuffer object, freeing all internal memory      */  \
+void CBUFFER(_destroy)(CBUFFER() _q);                           \
+                                                                \
+/* print cbuffer object properties                          */  \
+void CBUFFER(_print)(CBUFFER() _q);                             \
+                                                                \
+/* print cbuffer object properties and internal state       */  \
+void CBUFFER(_debug_print)(CBUFFER() _q);                       \
+                                                                \
+/* clear internal buffer                                    */  \
+void CBUFFER(_clear)(CBUFFER() _q);                             \
+                                                                \
+/* get the number of elements currently in the buffer       */  \
+unsigned int CBUFFER(_size)(CBUFFER() _q);                      \
+                                                                \
+/* get the maximum number of elements the buffer can hold   */  \
+unsigned int CBUFFER(_max_size)(CBUFFER() _q);                  \
+                                                                \
+/* read buffer contents                                     */  \
+/*  _q  : circular buffer object                            */  \
+/*  _v  : output pointer                                    */  \
+/*  _nr : number of elements referenced by _v               */  \
+void CBUFFER(_read)(CBUFFER()      _q,                          \
+                    T **           _v,                          \
+                    unsigned int * _nr);                        \
+                                                                \
+/* release _n samples in the buffer                         */  \
+void CBUFFER(_release)(CBUFFER()    _q,                         \
+                       unsigned int _n);                        \
+                                                                \
+/* write samples to the buffer                              */  \
+/*  _q  : circular buffer object                            */  \
+/*  _v  : output array                                      */  \
+/*  _n  : number of samples to write                        */  \
+void CBUFFER(_write)(CBUFFER()    _q,                           \
+                     T *          _v,                           \
+                     unsigned int _n);                          \
+                                                                \
+/* write a single sample into the buffer                    */  \
+/*  _q  : circular buffer object                            */  \
+/*  _v  : input sample                                      */  \
+void CBUFFER(_push)(CBUFFER() _q,                               \
+                    T         _v);                              \
 
 // Define buffer APIs
-LIQUID_BUFFER_DEFINE_API(BUFFER_MANGLE_FLOAT,  float)
-LIQUID_BUFFER_DEFINE_API(BUFFER_MANGLE_CFLOAT, liquid_float_complex)
-//LIQUID_BUFFER_DEFINE_API(BUFFER_MANGLE_UINT,   unsigned int)
+LIQUID_CBUFFER_DEFINE_API(CBUFFER_MANGLE_FLOAT,  float)
+LIQUID_CBUFFER_DEFINE_API(CBUFFER_MANGLE_CFLOAT, liquid_float_complex)
+
+#if 0
+// static buffer
+#define SBUFFER_MANGLE_FLOAT(name)  LIQUID_CONCAT(sbufferf,  name)
+#define SBUFFER_MANGLE_CFLOAT(name) LIQUID_CONCAT(sbuffercf, name)
+
+// large macro
+//   SBUFFER : name-mangling macro
+//   T       : data type
+#define LIQUID_SBUFFER_DEFINE_API(SBUFFER,T)                    \
+typedef struct SBUFFER(_s) * SBUFFER();                         \
+                                                                \
+/* create a static buffer of a particular size              */  \
+SBUFFER() SBUFFER(_create)(unsigned int _n);                    \
+                                                                \
+/* destroy a static buffer object, freeing internal memory  */  \
+void SBUFFER(_destroy)(SBUFFER() _q);                           \
+                                                                \
+/* print sbuffer object properties                          */  \
+void SBUFFER(_print)(SBUFFER() _q);                             \
+                                                                \
+/* print sbuffer object properties and internal state       */  \
+void SBUFFER(_debug_print)(SBUFFER() _q);                       \
+                                                                \
+/* clear internal buffer                                    */  \
+void SBUFFER(_clear)(SBUFFER() _q);                             \
+                                                                \
+/* void SBUFFER(_zero)(SBUFFER() _q); */                        \
+                                                                \
+/* read buffer contents                                     */  \
+/*  _q  : static buffer object                              */  \
+/*  _v  : output pointer                                    */  \
+/*  _nr : number of elements referenced by _v               */  \
+void SBUFFER(_read)(SBUFFER() _q, T ** _v, unsigned int *_nr);  \
+                                                                \
+/* release _n samples in the buffer                         */  \
+void SBUFFER(_release)(SBUFFER() _q, unsigned int _n);          \
+                                                                \
+/* write samples to the buffer                              */  \
+/*  _q  : static buffer object                              */  \
+/*  _v  : output array                                      */  \
+/*  _n  : number of samples to write                        */  \
+void SBUFFER(_write)(SBUFFER() _q, T * _v, unsigned int _n);    \
+                                                                \
+/* write a single sample into the buffer                    */  \
+/*  _q  : static buffer object                              */  \
+/*  _v  : input sample                                      */  \
+void SBUFFER(_push)(SBUFFER() _q,                               \
+                    T         _v);                              \
+
+// Define buffer APIs
+LIQUID_SBUFFER_DEFINE_API(SBUFFER_MANGLE_FLOAT,  float)
+LIQUID_SBUFFER_DEFINE_API(SBUFFER_MANGLE_CFLOAT, liquid_float_complex)
+#endif
 
 
 // Windowing functions
@@ -932,12 +1014,34 @@ void FFT(_print_plan)(FFT(plan) _p);                            \
 void FFT(_execute)(FFT(plan) _p);                               \
                                                                 \
 /* object-independent methods */                                \
+                                                                \
+/* perform n-point FFT allocating plan internally           */  \
+/*  _nfft   : fft size                                      */  \
+/*  _x      : input array [size: _nfft x 1]                 */  \
+/*  _y      : output array [size: _nfft x 1]                */  \
+/*  _dir    : fft direction: LIQUID_FFT_{FORWARD,BACKWARD}  */  \
+/*  _flags  : fft flags                                     */  \
 void FFT(_run)(unsigned int _n,                                 \
                TC *         _x,                                 \
                TC *         _y,                                 \
                int          _dir,                               \
-               int          flags);                             \
-void FFT(_shift)(TC*_x, unsigned int _n);                       \
+               int          _flags);                            \
+                                                                \
+/* perform n-point real FFT allocating plan internally      */  \
+/*  _nfft   : fft size                                      */  \
+/*  _x      : input array [size: _nfft x 1]                 */  \
+/*  _y      : output array [size: _nfft x 1]                */  \
+/*  _type   : fft type, e.g. LIQUID_FFT_REDFT10             */  \
+/*  _flags  : fft flags                                     */  \
+void FFT(_r2r_1d_run)(unsigned int _n,                          \
+                      T *          _x,                          \
+                      T *          _y,                          \
+                      int          _type,                       \
+                      int          _flags);                     \
+                                                                \
+/* perform _n-point fft shift                               */  \
+void FFT(_shift)(TC *         _x,                               \
+                 unsigned int _n);                              \
 
 
 LIQUID_FFT_DEFINE_API(LIQUID_FFT_MANGLE_FLOAT,float,liquid_float_complex)
@@ -5214,6 +5318,10 @@ unsigned int msequence_get_length(msequence _ms);
 
 // get the internal state of the sequence
 unsigned int msequence_get_state(msequence _ms);
+
+// set the internal state of the sequence
+void msequence_set_state(msequence    _ms,
+                         unsigned int _a);
 
 
 // 

@@ -7,6 +7,10 @@
 #      split across several lines
 #   2. replaces lines like "Copyright 2007, ... 2012, 2013 Joseph Gaeddert"
 #      with an updated date
+# 
+# usage:
+#   $ python scripts/update_copyright.py <dir>
+#
 
 import os
 import sys
@@ -21,7 +25,7 @@ ignore_files = ['update_copyright.py',]
 ignore_directories = ['.git',]
 
 # only look at these extensions
-include_extensions = ['.h', '.c', '.md', '.tex', '.ac', '.in']
+include_extensions = ['.h', '.c', '.md', '.tex', '.ac', '.in', '.m',]
 
 # new copyright string
 copyright_new = "Copyright (c) 2007 - 2014 Joseph Gaeddert"

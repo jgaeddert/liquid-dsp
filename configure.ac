@@ -110,36 +110,6 @@ AC_CHECK_LIB([fec], [create_viterbi27], [],
              [AC_MSG_WARN(fec library useful but not required)],
              [])
 
-# check for programs (documentation)
-AC_CHECK_PROG(PDFLATEX, pdflatex, pdflatex, no)
-if [ test "x$PDFLATEX" == "xno" ]; then
-    AC_MSG_WARN(pdflatex required to build documentation)
-fi
-AC_CHECK_PROG(BIBTEX, bibtex, bibtex, no)
-if [ test "x$BIBTEX" == "xno" ]; then
-    AC_MSG_WARN(bibtex required to build documentation)
-fi
-AC_CHECK_PROG(EPSTOPDF, epstopdf, epstopdf, no)
-if [ test "x$EPSTOPDF" == "xno" ]; then
-    AC_MSG_WARN(epstopdf required to build documentation)
-fi
-AC_CHECK_PROG(GNUPLOT, gnuplot, gnuplot, no)
-if [ test "x$GNUPLOT" == "xno" ]; then
-    AC_MSG_WARN(gnuplot required to build documentation)
-fi
-AC_CHECK_PROG(PYGMENTIZE,   pygmentize,     pygmentize,     no)
-AC_CHECK_PROG(PYGMENTIZE24, pygmentize-2.4, pygmentize-2.4, no)
-if [ test "$PYGMENTIZE" == "no" ]; then
-    if [ test "$PYGMENTIZE24" == "no" ]; then
-        # use uglier, but functional built-in homebrewed code listing generator
-        AC_MSG_WARN(pygmentize not found; using ./scripts/liquid-pygmentize.py as ugly alternative)
-        PYGMENTIZE="./scripts/liquid-pygmentize.py"
-    else
-        PYGMENTIZE="pygmentize-2.4"
-    fi
-fi
-
-
 # Checks for typedefs, structures, and compiler characteristics.
 AC_C_INLINE
 AC_TYPE_SIZE_T
@@ -174,7 +144,7 @@ i386|i486|i586|i686|x86|x86_64)
         # SSE4.1/2 extensions
         MLIBS_DOTPROD="src/dotprod/src/dotprod_cccf.mmx.o \
                        src/dotprod/src/dotprod_crcf.mmx.o \
-                       src/dotprod/src/dotprod_rrrf.sse4.o \
+                       src/dotprod/src/dotprod_rrrf.mmx.o \
                        src/dotprod/src/sumsq.mmx.o \
                        src/dotprod/src/dotprod_cccq16.mmx.o \
                        src/dotprod/src/dotprod_crcq16.mmx.o \
@@ -229,10 +199,12 @@ powerpc*)
                    src/dotprod/src/sumsq.o"
     ARCH_OPTION="-fno-common -faltivec";;
 arm*)
-    # ARM architecture : use portable C version
-    MLIBS_DOTPROD="src/dotprod/src/dotprod_cccf.o \
-                   src/dotprod/src/dotprod_crcf.o \
-                   src/dotprod/src/dotprod_rrrf.o \
+    # TODO: check for Neon availability
+
+    # ARM architecture : use neon extensions
+    MLIBS_DOTPROD="src/dotprod/src/dotprod_cccf.neon.o \
+                   src/dotprod/src/dotprod_crcf.neon.o \
+                   src/dotprod/src/dotprod_rrrf.neon.o \
                    src/dotprod/src/sumsq.o \
                    src/dotprod/src/dotprod_cccq16.o \
                    src/dotprod/src/dotprod_crcq16.o \
@@ -241,7 +213,8 @@ arm*)
                    src/dotprod/src/dotprod_crcq32.o \
                    src/dotprod/src/dotprod_rrrq32.o \
                    src/dotprod/src/sumsqq16.o"
-    ARCH_OPTION="-marm -mfloat-abi=softfp";;
+    # TODO: check these flags
+    ARCH_OPTION="-ffast-math -mcpu=cortex-a8 -mfloat-abi=softfp -mfpu=neon";;
 *)
     # unknown architecture : use portable C version
     MLIBS_DOTPROD="src/dotprod/src/dotprod_cccf.o \
@@ -283,12 +256,5 @@ AC_SUBST(DEBUG_OPTION)              # debug option
 AC_SUBST(PROFILE_OPTION)            # profile symbols
 AC_SUBST(CLIB)                      # C library linkage (e.g. '-lc')
 
-# documentation programs
-AC_SUBST(PDFLATEX)                  # pdflatex
-AC_SUBST(BIBTEX)                    # bibtex
-AC_SUBST(EPSTOPDF)                  # epstopdf
-AC_SUBST(GNUPLOT)                   # gnuplot
-AC_SUBST(PYGMENTIZE)                # pygmentize
-
-AC_CONFIG_FILES([makefile doc/makefile])
+AC_CONFIG_FILES([makefile])
 AC_OUTPUT
