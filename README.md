@@ -12,9 +12,10 @@ cumbersome frameworks. All signal processing elements are designed to be
 flexible, scalable, and dynamic, including filters, filter design,
 oscillators, modems, synchronizers, and complex mathematical operations.
 
-For more information, please refer to the full documentation directory
-`doc/` or download the pre-compiled `.pdf`
-[documentation file](http://liquidsdr.org/downloads/liquid.pdf) (4.4 MB).
+For more information, please refer to the documentation:
+
+  * online HTML version: [http://liquidsdr.org/doc](http://liquidsdr.org/doc)
+  * pre-compiled `.pdf` version: [liquid.pdf](http://liquidsdr.org/downloads/liquid.pdf) (4.4 MB).
 
 Installation and Dependencies
 -----------------------------
@@ -99,32 +100,6 @@ following command:
 
     $ make bench
 
-### Documentation ###
-
-No serious software library would be complete without proper
-documentation. There are basically two ways to get it: the easy way and
-the hard way.
-
-1. The easy way: download the pre-compiled
-   [documentation file](http://liquidsdr.org/downloads/liquid.pdf) (4.4 MB).
-
-2. The hard way: build from scratch.
-   Because all of the figures within the documentation are generated
-   with liquid itself, the documentation must be built from scratch and
-   requires the following free programs and packages:
-
-  - [pdflatex](http://www.ctan.org)             LaTeX compiler
-  - [bibtex](http://www.ctan.org)               LaTeX bibliography generator
-  - [pgf](http://sourceforge.net/projects/pgf/) (version 2.0)   LaTeX figures
-  - [epstopdf](http://tug.org/epstopdf)         convert .eps to .pdf (necessary for figures)
-  - [gnuplot](http://www.gnuplot.info/)         plotting program
-  - [pygments](http://pygments.org/)            pretty syntax hilighting program
-
-  Once these dependencies are installed, you may build the documentation
-  with the following command:
-
-        $ make doc
-
 Available Modules
 -----------------
 
@@ -167,11 +142,4 @@ Available Modules
   * _utility_: useful miscellany, mostly bit manipulation (shifting,
         packing, and unpacking of arrays)
   * _vector_: generic vector operations
-
-### Additional notes ###
-
-Splatter graphics were created using [GIMP](http://www.gimp.org) with two
-[splatter](http://corelila.deviantart.com/art/Splatter-Brushes-60718934)
-[brush](http://hawksmont.com/blog/gimp-brushes-splatters/)
-plug-ins.
 

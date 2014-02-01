@@ -1,5 +1,5 @@
 #!/bin/sh
-# Copyright (c) 2007, 2009, 2013 Joseph Gaeddert
+# Copyright (c) 2007 - 2014 Joseph Gaeddert
 #
 # This file is part of liquid.
 #

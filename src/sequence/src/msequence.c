@@ -228,3 +228,13 @@ unsigned int msequence_get_state(msequence _ms)
     return _ms->v;
 }
 
+// set the internal state of the sequence
+void msequence_set_state(msequence    _ms,
+                         unsigned int _a)
+{
+    // set internal state
+    // NOTE: if state is set to zero, this will lock the sequence generator,
+    //       but let the user set this value if they wish
+    _ms->v = _a;
+}
+
