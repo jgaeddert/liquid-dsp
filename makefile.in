@@ -550,6 +550,7 @@ filter_benchmarks :=						\
 	src/filter/bench/firfilt_crcf_benchmark.c		\
 	src/filter/bench/iirdecim_crcf_benchmark.c		\
 	src/filter/bench/iirfilt_crcf_benchmark.c		\
+	src/filter/bench/iirinterp_crcf_benchmark.c		\
 	src/filter/bench/resamp_crcf_benchmark.c		\
 	src/filter/bench/resamp2_crcf_benchmark.c		\
 	src/filter/bench/symsync_crcf_benchmark.c		\
