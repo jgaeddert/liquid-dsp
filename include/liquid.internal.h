@@ -1102,20 +1102,6 @@ float complex ellip_asnf(float complex _u,
 // MODULE : framing
 //
 
-// framegen64
-
-// convert one 8-bit byte to four 2-bit symbols
-//  _byte   :   input byte
-//  _syms   :   output symbols [size: 4 x 1]
-void framegen64_byte_to_syms(unsigned char _byte,
-                             unsigned char * _syms);
-
-// convert four 2-bit symbols into one 8-bit byte
-//  _syms   :   input symbols [size: 4 x 1]
-//  _byte   :   output byte
-void framesync64_syms_to_byte(unsigned char * _syms,
-                              unsigned char * _byte);
-
 //
 // bpacket
 //
