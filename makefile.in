@@ -147,8 +147,6 @@ buffer_includes :=						\
 	src/buffer/src/wdelay.c					\
 	src/buffer/src/window.c					\
 
-#	src/buffer/src/sbuffer.c
-
 src/buffer/src/bufferf.o : %.o : %.c $(headers) $(buffer_includes)
 
 src/buffer/src/buffercf.o : %.o : %.c $(headers) $(buffer_includes)

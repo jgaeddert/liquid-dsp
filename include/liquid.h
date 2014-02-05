@@ -253,59 +253,6 @@ void CBUFFER(_push)(CBUFFER() _q,                               \
 LIQUID_CBUFFER_DEFINE_API(CBUFFER_MANGLE_FLOAT,  float)
 LIQUID_CBUFFER_DEFINE_API(CBUFFER_MANGLE_CFLOAT, liquid_float_complex)
 
-#if 0
-// static buffer
-#define SBUFFER_MANGLE_FLOAT(name)  LIQUID_CONCAT(sbufferf,  name)
-#define SBUFFER_MANGLE_CFLOAT(name) LIQUID_CONCAT(sbuffercf, name)
-
-// large macro
-//   SBUFFER : name-mangling macro
-//   T       : data type
-#define LIQUID_SBUFFER_DEFINE_API(SBUFFER,T)                    \
-typedef struct SBUFFER(_s) * SBUFFER();                         \
-                                                                \
-/* create a static buffer of a particular size              */  \
-SBUFFER() SBUFFER(_create)(unsigned int _n);                    \
-                                                                \
-/* destroy a static buffer object, freeing internal memory  */  \
-void SBUFFER(_destroy)(SBUFFER() _q);                           \
-                                                                \
-/* print sbuffer object properties                          */  \
-void SBUFFER(_print)(SBUFFER() _q);                             \
-                                                                \
-/* print sbuffer object properties and internal state       */  \
-void SBUFFER(_debug_print)(SBUFFER() _q);                       \
-                                                                \
-/* clear internal buffer                                    */  \
-void SBUFFER(_clear)(SBUFFER() _q);                             \
-                                                                \
-/* void SBUFFER(_zero)(SBUFFER() _q); */                        \
-                                                                \
-/* read buffer contents                                     */  \
-/*  _q  : static buffer object                              */  \
-/*  _v  : output pointer                                    */  \
-/*  _nr : number of elements referenced by _v               */  \
-void SBUFFER(_read)(SBUFFER() _q, T ** _v, unsigned int *_nr);  \
-                                                                \
-/* release _n samples in the buffer                         */  \
-void SBUFFER(_release)(SBUFFER() _q, unsigned int _n);          \
-                                                                \
-/* write samples to the buffer                              */  \
-/*  _q  : static buffer object                              */  \
-/*  _v  : output array                                      */  \
-/*  _n  : number of samples to write                        */  \
-void SBUFFER(_write)(SBUFFER() _q, T * _v, unsigned int _n);    \
-                                                                \
-/* write a single sample into the buffer                    */  \
-/*  _q  : static buffer object                              */  \
-/*  _v  : input sample                                      */  \
-void SBUFFER(_push)(SBUFFER() _q,                               \
-                    T         _v);                              \
-
-// Define buffer APIs
-LIQUID_SBUFFER_DEFINE_API(SBUFFER_MANGLE_FLOAT,  float)
-LIQUID_SBUFFER_DEFINE_API(SBUFFER_MANGLE_CFLOAT, liquid_float_complex)
-#endif
 
 
 // Windowing functions
