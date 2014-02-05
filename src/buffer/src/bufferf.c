@@ -35,9 +35,9 @@
 
 #define T float
 #define BUFFER_PRINT_LINE(B,I) \
-    printf("\t: %f", B->v[I]);
+    printf("  : %12.8f", B->v[I]);
 #define BUFFER_PRINT_VALUE(V) \
-    printf("\t: %12.4e", V);
+    printf("  : %12.4e", V);
 
 #include "cbuffer.c"
 //#include "sbuffer.c"

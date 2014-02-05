@@ -31,9 +31,9 @@
 
 #define T unsigned int
 #define BUFFER_PRINT_LINE(B,I) \
-    printf("\t: %u", B->v[I]);
+    printf("  : %12u", B->v[I]);
 #define BUFFER_PRINT_VALUE(V) \
-    printf("\t: %u", V);
+    printf("  : %12u", V);
 
 
 #include "buffer.c"

@@ -65,14 +65,17 @@ CBUFFER() CBUFFER(_create)(unsigned int _n)
 // destroy cbuffer object, freeing all internal memory
 void CBUFFER(_destroy)(CBUFFER() _q)
 {
+    // free internal memory
     free(_q->v);
+
+    // free main object
     free(_q);
 }
 
 // print cbuffer object properties
 void CBUFFER(_print)(CBUFFER() _q)
 {
-    printf("cbuffer%s [size: %u, elements: %u] ",
+    printf("cbuffer%s [size: %u, elements: %u]\n",
             EXTENSION,
             _q->len,
             _q->num_elements);
@@ -88,7 +91,7 @@ void CBUFFER(_print)(CBUFFER() _q)
 // print cbuffer object properties and internal state
 void CBUFFER(_debug_print)(CBUFFER() _q)
 {
-    printf("cbuffer%s [size: %u, elements: %u] ",
+    printf("cbuffer%s [size: %u, elements: %u]\n",
             EXTENSION,
             _q->len,
             _q->num_elements);
@@ -98,10 +101,14 @@ void CBUFFER(_debug_print)(CBUFFER() _q)
         // print read index pointer
         if (i==_q->read_index)
             printf("<r>");
+        else
+            printf("   ");
 
         // print write index pointer
         if (i==_q->write_index)
             printf("<w>");
+        else
+            printf("   ");
 
         // print buffer value
         BUFFER_PRINT_LINE(_q,i)
@@ -111,6 +118,7 @@ void CBUFFER(_debug_print)(CBUFFER() _q)
 
     // print excess buffer memory
     for (i=_q->len; i<_q->num_allocated; i++) {
+        printf("      ");
         BUFFER_PRINT_LINE(_q,i)
         printf("\n");
     }
@@ -144,19 +152,11 @@ void CBUFFER(_read)(CBUFFER()      _q,
                     T **           _v,
                     unsigned int * _n)
 {
-    //printf("buffer_read() trying to read %u elements (%u available)\n", *_n, _q->num_elements);
-#if 0
-    if (*_n > _q->num_elements) {
-        printf("error: cbuffer%s_read(), cannot read more elements than are available\n", EXTENSION);
-        *_v = NULL;
-        *_n = 0;
-        return;
-    } else
-#endif
-    if (*_n > (_q->len - _q->read_index)) {
-        //
+    // linearize tail end of buffer if necessary
+    if (*_n > (_q->len - _q->read_index))
         CBUFFER(_linearize)(_q);
-    }
+    
+    // set output pointer appropriately
     *_v = _q->v + _q->read_index;
     *_n = _q->num_elements;
 }
