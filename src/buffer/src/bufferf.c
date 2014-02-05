@@ -1,7 +1,5 @@
 /*
- * Copyright (c) 2007, 2008, 2009, 2010 Joseph Gaeddert
- * Copyright (c) 2007, 2008, 2009, 2010 Virginia Polytechnic
- *                                      Institute & State University
+ * Copyright (c) 2007 - 2014 Joseph Gaeddert
  *
  * This file is part of liquid.
  *
@@ -25,11 +23,15 @@
 
 #include "liquid.internal.h"
 
+// naming extensions (useful for print statements)
+#define EXTENSION       "f"
+
 #define BUFFER_TYPE_FLOAT
 
-#define BUFFER(name)    LIQUID_CONCAT(bufferf, name)
-#define WDELAY(name)    LIQUID_CONCAT(wdelayf, name)
-#define WINDOW(name)    LIQUID_CONCAT(windowf, name)
+#define CBUFFER(name)   LIQUID_CONCAT(cbufferf, name)
+//#define SBUFFER(name)   LIQUID_CONCAT(sbufferf, name)
+#define WDELAY(name)    LIQUID_CONCAT(wdelayf,  name)
+#define WINDOW(name)    LIQUID_CONCAT(windowf,  name)
 
 #define T float
 #define BUFFER_PRINT_LINE(B,I) \
@@ -37,7 +39,8 @@
 #define BUFFER_PRINT_VALUE(V) \
     printf("\t: %12.4e", V);
 
-#include "buffer.c"
+#include "cbuffer.c"
+//#include "sbuffer.c"
 #include "wdelay.c"
 #include "window.c"
 

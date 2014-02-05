@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007, 2008, 2009, 2010, 2011, 2012, 2013 Joseph Gaeddert
+ * Copyright (c) 2007 - 2014 Joseph Gaeddert
  *
  * This file is part of liquid.
  *
@@ -109,7 +109,7 @@ void IIRINTERP(_print)(IIRINTERP() _q)
 // clear internal state
 void IIRINTERP(_reset)(IIRINTERP() _q)
 {
-    IIRFILT(_clear)(_q->iirfilt);
+    IIRFILT(_reset)(_q->iirfilt);
 }
 
 // execute interpolator

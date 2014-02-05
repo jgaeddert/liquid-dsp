@@ -24,17 +24,8 @@ int main() {
     // derived values
     float nstd = powf(10.0f, noise_floor/20.0f);
 
-    // allocate memory for data arrays
-    float complex X[nfft];              // output spectrum
-    float psd[nfft];                    // power spectral density
-
-    // initialize PSD estimate
-    for (i=0; i<nfft; i++)
-        psd[i] = 0.0f;
-
     // create spectral periodogram
     unsigned int window_size = nfft/2;  // spgram window size
-    unsigned int delay       = nfft/8;  // samples between transforms
     spgram q = spgram_create_kaiser(nfft, window_size, beta);
 
     // generate signal (interpolated symbols with noise)
@@ -42,11 +33,10 @@ int main() {
     unsigned int m = 7;     // filter delay (symbols)
     firinterp_crcf interp = firinterp_crcf_create_rnyquist(LIQUID_RNYQUIST_RKAISER, k, m, 0.3f, 0.0f);
 
-    int spgram_timer = nfft;
     unsigned int n=0;
     float complex x[k]; // interpolator output
-    unsigned int num_transforms = 0;
-    while (n < num_samples) {
+
+    while (n<num_samples) {
         // generate random symbol
         float complex s = ( rand() % 2 ? 0.707f : -0.707f ) +
                           ( rand() % 2 ? 0.707f : -0.707f ) * _Complex_I;
@@ -58,39 +48,19 @@ int main() {
         for (i=0; i<k; i++)
             x[i] += nstd * ( randnf() + _Complex_I*randnf() ) * M_SQRT1_2;
 
-        // push resulting samples through spgram
-        spgram_push(q, x, k);
-
-        // 
-        spgram_timer -= k;
         n += k;
-
-        //
-        if (spgram_timer <= 0) {
-            // update timer, counter
-            spgram_timer += delay;
-            num_transforms++;
-
-            // run spectral periodogram
-            spgram_execute(q, X);
-
-            // accumulate PSD and FFT shift
-            for (i=0; i<nfft; i++) {
-                float complex X0 = X[(i+nfft/2)%nfft];
-                psd[i] += crealf(X0*conjf(X0));
-            }
-        }
+        
+        // push resulting samples through spgram
+        spgram_accumulate_psd(q, x, k);
     }
+
+    // compute power spectral density output
+    float psd[nfft];
+    spgram_write_accumulation(q, psd);
 
     // destroy objects
     firinterp_crcf_destroy(interp);
     spgram_destroy(q);
-
-    // normalize result
-    printf("computed %u transforms\n", num_transforms);
-    // TODO: ensure at least one transform was taken
-    for (i=0; i<nfft; i++)
-        psd[i] = 10*log10f( psd[i] / (float)(num_transforms) );
 
     // 
     // export output file

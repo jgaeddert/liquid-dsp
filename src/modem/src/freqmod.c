@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007, 2008, 2009, 2010, 2013 Joseph Gaeddert
+ * Copyright (c) 2007 - 2014 Joseph Gaeddert
  *
  * This file is part of liquid.
  *
@@ -93,10 +93,10 @@ void FREQMOD(_print)(FREQMOD() _q)
 void FREQMOD(_reset)(FREQMOD() _q)
 {
     // reset audio pre-filter
-    iirfilt_rrrf_clear(_q->prefilter);
+    iirfilt_rrrf_reset(_q->prefilter);
 
     // reset integrator object
-    iirfilt_rrrf_clear(_q->integrator);
+    iirfilt_rrrf_reset(_q->integrator);
 }
 
 // modulate sample

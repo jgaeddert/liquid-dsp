@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007, 2008, 2009, 2010, 2011, 2012, 2013 Joseph Gaeddert
+ * Copyright (c) 2007 - 2014 Joseph Gaeddert
  *
  * This file is part of liquid.
  *
@@ -115,7 +115,7 @@ void gmskmod_reset(gmskmod _q)
     _q->theta = 0.0f;
 
     // clear interpolator buffer
-    firinterp_rrrf_clear(_q->interp_tx);
+    firinterp_rrrf_reset(_q->interp_tx);
 }
 
 void gmskmod_modulate(gmskmod _q,

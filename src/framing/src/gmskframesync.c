@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011, 2013 Joseph Gaeddert
+ * Copyright (c) 2007 - 2014 Joseph Gaeddert
  *
  * This file is part of liquid.
  *
@@ -323,8 +323,8 @@ void gmskframesync_reset(gmskframesync _q)
     _q->fi_hat  = 0.0f;
     
     // reset symbol timing recovery state
-    firpfb_rrrf_clear(_q->mf);
-    firpfb_rrrf_clear(_q->dmf);
+    firpfb_rrrf_reset(_q->mf);
+    firpfb_rrrf_reset(_q->dmf);
     _q->pfb_q = 0.0f;   // filtered error signal
         
 }
@@ -461,8 +461,8 @@ void gmskframesync_pushpn(gmskframesync _q)
     unsigned int i;
 
     // reset filterbanks
-    firpfb_rrrf_clear(_q->mf);
-    firpfb_rrrf_clear(_q->dmf);
+    firpfb_rrrf_reset(_q->mf);
+    firpfb_rrrf_reset(_q->dmf);
 
     // read buffer
     float complex * rc;
