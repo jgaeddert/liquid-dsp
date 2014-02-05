@@ -151,8 +151,6 @@ src/buffer/src/bufferf.o : %.o : %.c $(headers) $(buffer_includes)
 
 src/buffer/src/buffercf.o : %.o : %.c $(headers) $(buffer_includes)
 
-src/buffer/src/bufferui.o : %.o : %.c $(headers) $(buffer_includes)
-
 
 buffer_autotests :=						\
 	src/buffer/tests/cbuffer_autotest.c			\

@@ -258,7 +258,6 @@ LIQUID_CBUFFER_DEFINE_API(CBUFFER_MANGLE_CFLOAT, liquid_float_complex)
 // Windowing functions
 #define WINDOW_MANGLE_FLOAT(name)  LIQUID_CONCAT(windowf,  name)
 #define WINDOW_MANGLE_CFLOAT(name) LIQUID_CONCAT(windowcf, name)
-//#define WINDOW_MANGLE_UINT(name)   LIQUID_CONCAT(windowui, name)
 
 // large macro
 //   WINDOW : name-mangling macro
