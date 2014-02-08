@@ -263,6 +263,39 @@ void RESAMP(_execute)(RESAMP()       _q,
     *_num_written = n;
 }
 
+// execute arbitrary resampler on a block of samples
+//  _q              :   resamp object
+//  _x              :   input buffer [size: _nx x 1]
+//  _nx             :   input buffer
+//  _y              :   output sample array (pointer)
+//  _ny             :   number of samples written to _y
+void RESAMP(_execute_block)(RESAMP()       _q,
+                            TI *           _x,
+                            unsigned int   _nx,
+                            TO *           _y,
+                            unsigned int * _ny)
+{
+    // initialize number of output samples to zero
+    unsigned int ny = 0;
+
+    // number of samples written for each individual iteration
+    unsigned int num_written;
+
+    // iterate over each input sample
+    unsigned int i;
+    for (i=0; i<_nx; i++) {
+        // run resampler on single input
+        RESAMP(_execute)(_q, _x[i], &_y[ny], &num_written);
+
+        // update output counter
+        ny += num_written;
+    }
+
+    // set return value for number of output samples written
+    *_ny = ny;
+}
+
+
 //
 // internal methods
 // 

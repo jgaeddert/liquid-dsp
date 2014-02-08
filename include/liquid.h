@@ -2468,6 +2468,18 @@ void RESAMP(_execute)(RESAMP()       _q,                        \
                       TI             _x,                        \
                       TO *           _y,                        \
                       unsigned int * _num_written);             \
+                                                                \
+/* execute arbitrary resampler on a block of samples        */  \
+/*  _q              :   resamp object                       */  \
+/*  _x              :   input buffer [size: _nx x 1]        */  \
+/*  _nx             :   input buffer                        */  \
+/*  _y              :   output sample array (pointer)       */  \
+/*  _ny             :   number of samples written to _y     */  \
+void RESAMP(_execute_block)(RESAMP()       _q,                  \
+                            TI *           _x,                  \
+                            unsigned int   _nx,                 \
+                            TO *           _y,                  \
+                            unsigned int * _ny);                \
 
 LIQUID_RESAMP_DEFINE_API(RESAMP_MANGLE_RRRF,
                          float,
