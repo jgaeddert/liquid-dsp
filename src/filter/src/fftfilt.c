@@ -93,10 +93,15 @@ FFTFILT() FFTFILT(_create)(TC *         _h,
     q->fft  = FFT_CREATE_PLAN(2*q->n, q->time_buf, q->freq_buf, FFT_DIR_FORWARD,  FFT_METHOD);
     q->ifft = FFT_CREATE_PLAN(2*q->n, q->freq_buf, q->time_buf, FFT_DIR_BACKWARD, FFT_METHOD);
 
-    // compute FFT of filter coefficients
+    // compute FFT of filter coefficients and copy to internal H array
+    unsigned int i;
+    for (i=0; i<2*q->n; i++)
+        q->time_buf[i] = (i < q->h_len) ? q->h[i] : 0;
+    FFT_EXECUTE(q->fft);
+    memmove(q->H, q->freq_buf, 2*q->n*sizeof(TI));
 
     // set default scaling
-    q->scale = 1;
+    FFTFILT(_set_scale)(q, 1);
 
     // reset filter state (clear buffer)
     FFTFILT(_reset)(q);
@@ -154,7 +159,8 @@ void FFTFILT(_print)(FFTFILT() _q)
 void FFTFILT(_set_scale)(FFTFILT() _q,
                          TC        _scale)
 {
-    _q->scale = _scale;
+    // set scale, normalized by fft size
+    _q->scale = _scale / (float)(2*_q->n);
 }
 
 // execute the filter on internal buffer and coefficients
@@ -191,10 +197,10 @@ void FFTFILT(_execute)(FFTFILT() _q,
 
     // copy output summed with buffer and scaled
     for (i=0; i<_q->n; i++)
-        _y[i] = (_q->freq_buf[i] + _q->w[i]) * _q->scale;
+        _y[i] = (_q->time_buf[i] + _q->w[i]) * _q->scale;
 
     // copy buffer
-    memmove(_q->w, &_q->freq_buf[_q->n], _q->n*sizeof(TO));
+    memmove(_q->w, &_q->time_buf[_q->n], _q->n*sizeof(TO));
 }
 
 // return length of filter object's internal coefficients
