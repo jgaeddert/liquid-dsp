@@ -1833,6 +1833,71 @@ void FIRHILB(_interp_execute)(FIRHILB() _q,                     \
 LIQUID_FIRHILB_DEFINE_API(FIRHILB_MANGLE_FLOAT, float, liquid_float_complex)
 //LIQUID_FIRHILB_DEFINE_API(FIRHILB_MANGLE_DOUBLE, double, liquid_double_complex)
 
+
+//
+// FFT-based finite impulse response filter
+//
+
+//#define FFTFILT_MANGLE_RRRF(name)  LIQUID_CONCAT(fftfilt_rrrf,name)
+#define FFTFILT_MANGLE_CRCF(name)  LIQUID_CONCAT(fftfilt_crcf,name)
+#define FFTFILT_MANGLE_CCCF(name)  LIQUID_CONCAT(fftfilt_cccf,name)
+
+// Macro:
+//   FFTFILT : name-mangling macro
+//   TO         : output data type
+//   TC         : coefficients data type
+//   TI         : input data type
+#define LIQUID_FFTFILT_DEFINE_API(FFTFILT,TO,TC,TI)             \
+typedef struct FFTFILT(_s) * FFTFILT();                         \
+                                                                \
+/* create FFT-based FIR filter using external coefficients  */  \
+/*  _h      : filter coefficients [size: _h_len x 1]        */  \
+/*  _h_len  : filter length, _h_len > 0                     */  \
+/*  _n      : block size = nfft/2, at least _h_len-1        */  \
+FFTFILT() FFTFILT(_create)(TC *         _h,                     \
+                           unsigned int _h_len,                 \
+                           unsigned int _n);                    \
+                                                                \
+/* destroy filter object and free all internal memory       */  \
+void FFTFILT(_destroy)(FFTFILT() _q);                           \
+                                                                \
+/* reset filter object's internal buffer                    */  \
+void FFTFILT(_reset)(FFTFILT() _q);                             \
+                                                                \
+/* print filter object information                          */  \
+void FFTFILT(_print)(FFTFILT() _q);                             \
+                                                                \
+/* set output scaling for filter                            */  \
+void FFTFILT(_set_scale)(FFTFILT() _q,                          \
+                         TC        _g);                         \
+                                                                \
+/* execute the filter on internal buffer and coefficients   */  \
+/*  _q      : filter object                                 */  \
+/*  _x      : pointer to input data array  [size: _n x 1]   */  \
+/*  _y      : pointer to output data array [size: _n x 1]   */  \
+void FFTFILT(_execute)(FFTFILT() _q,                            \
+                       TI *      _x,                            \
+                       TO *      _y);                           \
+                                                                \
+/* return length of filter object's internal coefficients   */  \
+unsigned int FFTFILT(_get_length)(FFTFILT() _q);                \
+
+//LIQUID_FFTFILT_DEFINE_API(FFTFILT_MANGLE_RRRF,
+//                          float,
+//                          float,
+//                          float)
+
+LIQUID_FFTFILT_DEFINE_API(FFTFILT_MANGLE_CRCF,
+                          liquid_float_complex,
+                          float,
+                          liquid_float_complex)
+
+LIQUID_FFTFILT_DEFINE_API(FFTFILT_MANGLE_CCCF,
+                          liquid_float_complex,
+                          liquid_float_complex,
+                          liquid_float_complex)
+
+
 //
 // Infinite impulse response filter
 //

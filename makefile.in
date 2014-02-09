@@ -416,6 +416,7 @@ filter_objects :=						\
 
 # list explicit targets and dependencies here
 filter_includes :=						\
+	src/filter/src/fftfilt.c				\
 	src/filter/src/firdecim.c				\
 	src/filter/src/firfarrow.c				\
 	src/filter/src/firfilt.c				\
