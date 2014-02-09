@@ -48,8 +48,13 @@ struct FFTFILT(_s) {
     TI * w;             // overlap array [size: n x 1]
 
     // FFT objects
+#ifdef LIQUID_FFTOVERRIDE
+    fftplan fft;        // FFT object (forward)
+    fftplan ifft;       // FFT object (inverse)
+#else
     FFT_PLAN fft;       // FFT object (forward)
     FFT_PLAN ifft;      // FFT object (inverse)
+#endif
 
     TC scale;           // output scaling factor
 };
@@ -90,14 +95,23 @@ FFTFILT() FFTFILT(_create)(TC *         _h,
     q->w        = (TI *) malloc((  q->n)* sizeof(TI)); // delay buffer
 
     // create internal FFT objects
+#ifdef LIQUID_FFTOVERRIDE
+    q->fft  = fft_create_plan(2*q->n, q->time_buf, q->freq_buf, LIQUID_FFT_FORWARD,  0);
+    q->ifft = fft_create_plan(2*q->n, q->freq_buf, q->time_buf, LIQUID_FFT_BACKWARD, 0);
+#else
     q->fft  = FFT_CREATE_PLAN(2*q->n, q->time_buf, q->freq_buf, FFT_DIR_FORWARD,  FFT_METHOD);
     q->ifft = FFT_CREATE_PLAN(2*q->n, q->freq_buf, q->time_buf, FFT_DIR_BACKWARD, FFT_METHOD);
+#endif
 
     // compute FFT of filter coefficients and copy to internal H array
     unsigned int i;
     for (i=0; i<2*q->n; i++)
         q->time_buf[i] = (i < q->h_len) ? q->h[i] : 0;
+#ifdef LIQUID_FFTOVERRIDE
+    fft_execute(q->fft);
+#else
     FFT_EXECUTE(q->fft);
+#endif
     memmove(q->H, q->freq_buf, 2*q->n*sizeof(TI));
 
     // set default scaling
@@ -121,8 +135,13 @@ void FFTFILT(_destroy)(FFTFILT() _q)
     free(_q->w);                // output window buffer
 
     // destroy FFT objects
+#ifdef LIQUID_FFTOVERRIDE
+    fft_destroy_plan(_q->fft);       // forward transform
+    fft_destroy_plan(_q->ifft);      // reverse transform
+#else
     FFT_DESTROY_PLAN(_q->fft);  // forward transform
     FFT_DESTROY_PLAN(_q->ifft); // reverse transform
+#endif
 
     // free main object
     free(_q);
@@ -185,7 +204,11 @@ void FFTFILT(_execute)(FFTFILT() _q,
 #endif
 
     // run forward transform
+#ifdef LIQUID_FFTOVERRIDE
+    fft_execute(_q->fft);
+#else
     FFT_EXECUTE(_q->fft);
+#endif
 
     // compute inner product between FFT{ _x } and FFT{ H }
     // TODO: use SIMD vector extensions for this
@@ -193,7 +216,11 @@ void FFTFILT(_execute)(FFTFILT() _q,
         _q->freq_buf[i] *= _q->H[i];
 
     // compute inverse transform
+#ifdef LIQUID_FFTOVERRIDE
+    fft_execute(_q->ifft);
+#else
     FFT_EXECUTE(_q->ifft);
+#endif
 
     // copy output summed with buffer and scaled
     for (i=0; i<_q->n; i++)
