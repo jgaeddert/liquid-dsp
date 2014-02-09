@@ -472,6 +472,7 @@ src/filter/src/rrcos.o : %.o : %.c $(headers)
 
 
 filter_autotests :=						\
+	src/filter/tests/fftfilt_xxxf_autotest.c		\
 	src/filter/tests/filter_crosscorr_autotest.c		\
 	src/filter/tests/firdecim_xxxf_autotest.c		\
 	src/filter/tests/firdes_autotest.c			\
@@ -490,6 +491,24 @@ filter_autotests :=						\
 
 # additional autotest objects
 autotest_extra_obj +=						\
+	src/filter/tests/fftfilt_runtest.o			\
+								\
+	src/filter/tests/data/fftfilt_rrrf_data_h4x256.o	\
+	src/filter/tests/data/fftfilt_crcf_data_h4x256.o	\
+	src/filter/tests/data/fftfilt_cccf_data_h4x256.o	\
+								\
+	src/filter/tests/data/fftfilt_rrrf_data_h7x256.o	\
+	src/filter/tests/data/fftfilt_crcf_data_h7x256.o	\
+	src/filter/tests/data/fftfilt_cccf_data_h7x256.o	\
+								\
+	src/filter/tests/data/fftfilt_rrrf_data_h13x256.o	\
+	src/filter/tests/data/fftfilt_crcf_data_h13x256.o	\
+	src/filter/tests/data/fftfilt_cccf_data_h13x256.o	\
+								\
+	src/filter/tests/data/fftfilt_rrrf_data_h23x256.o	\
+	src/filter/tests/data/fftfilt_crcf_data_h23x256.o	\
+	src/filter/tests/data/fftfilt_cccf_data_h23x256.o	\
+								\
 	src/filter/tests/firdecim_runtest.o			\
 								\
 	src/filter/tests/data/firdecim_rrrf_data_M2h4x20.o	\
