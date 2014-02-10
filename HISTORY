@@ -11,6 +11,8 @@ Major improvements since v1.2.0
     - add linear interpolation for arbitrary resamp output
     - added autotests for validating performance of both the
       resamp and msresamp objects
+    - added new fftfilt family of objects to realize linear filter
+      with fast Fourier transforms
   * framing
     - adding generic callback function definition for all framing
       structures
