@@ -1838,7 +1838,7 @@ LIQUID_FIRHILB_DEFINE_API(FIRHILB_MANGLE_FLOAT, float, liquid_float_complex)
 // FFT-based finite impulse response filter
 //
 
-//#define FFTFILT_MANGLE_RRRF(name)  LIQUID_CONCAT(fftfilt_rrrf,name)
+#define FFTFILT_MANGLE_RRRF(name)  LIQUID_CONCAT(fftfilt_rrrf,name)
 #define FFTFILT_MANGLE_CRCF(name)  LIQUID_CONCAT(fftfilt_crcf,name)
 #define FFTFILT_MANGLE_CCCF(name)  LIQUID_CONCAT(fftfilt_cccf,name)
 
@@ -1882,10 +1882,10 @@ void FFTFILT(_execute)(FFTFILT() _q,                            \
 /* return length of filter object's internal coefficients   */  \
 unsigned int FFTFILT(_get_length)(FFTFILT() _q);                \
 
-//LIQUID_FFTFILT_DEFINE_API(FFTFILT_MANGLE_RRRF,
-//                          float,
-//                          float,
-//                          float)
+LIQUID_FFTFILT_DEFINE_API(FFTFILT_MANGLE_RRRF,
+                          float,
+                          float,
+                          float)
 
 LIQUID_FFTFILT_DEFINE_API(FFTFILT_MANGLE_CRCF,
                           liquid_float_complex,

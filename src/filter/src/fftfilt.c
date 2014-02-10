@@ -42,10 +42,10 @@ struct FFTFILT(_s) {
     // internal memory arrays
     // TODO: make TI/TO type, but ensuring complex
     // TODO: use special format for fftfilt_rrrf type
-    TI * time_buf;      // time buffer [size: 2*n x 1]
-    TI * freq_buf;      // freq buffer [size: 2*n x 1]
-    TI * H;             // FFT of filter coefficients [size: 2*n x 1]
-    TI * w;             // overlap array [size: n x 1]
+    float complex * time_buf;   // time buffer [size: 2*n x 1]
+    float complex * freq_buf;   // freq buffer [size: 2*n x 1]
+    float complex * H;          // FFT of filter coefficients [size: 2*n x 1]
+    float complex * w;          // overlap array [size: n x 1]
 
     // FFT objects
 #ifdef LIQUID_FFTOVERRIDE
@@ -89,10 +89,10 @@ FFTFILT() FFTFILT(_create)(TC *         _h,
     memmove(q->h, _h, _h_len*sizeof(TC));
 
     // allocate internal memory arrays
-    q->time_buf = (TI *) malloc((2*q->n)* sizeof(TI)); // time buffer
-    q->freq_buf = (TI *) malloc((2*q->n)* sizeof(TI)); // frequency buffer
-    q->H        = (TI *) malloc((2*q->n)* sizeof(TI)); // FFT{ h }
-    q->w        = (TI *) malloc((  q->n)* sizeof(TI)); // delay buffer
+    q->time_buf = (float complex *) malloc((2*q->n)* sizeof(float complex)); // time buffer
+    q->freq_buf = (float complex *) malloc((2*q->n)* sizeof(float complex)); // frequency buffer
+    q->H        = (float complex *) malloc((2*q->n)* sizeof(float complex)); // FFT{ h }
+    q->w        = (float complex *) malloc((  q->n)* sizeof(float complex)); // delay buffer
 
     // create internal FFT objects
 #ifdef LIQUID_FFTOVERRIDE
@@ -107,12 +107,13 @@ FFTFILT() FFTFILT(_create)(TC *         _h,
     unsigned int i;
     for (i=0; i<2*q->n; i++)
         q->time_buf[i] = (i < q->h_len) ? q->h[i] : 0;
+    // time_buf > {FFT} > freq_buf
 #ifdef LIQUID_FFTOVERRIDE
     fft_execute(q->fft);
 #else
     FFT_EXECUTE(q->fft);
 #endif
-    memmove(q->H, q->freq_buf, 2*q->n*sizeof(TI));
+    memmove(q->H, q->freq_buf, 2*q->n*sizeof(float complex));
 
     // set default scaling
     FFTFILT(_set_scale)(q, 1);
@@ -193,9 +194,17 @@ void FFTFILT(_execute)(FFTFILT() _q,
     unsigned int i;
 
     // copy input
+#if 0 //TI_COMPLEX
     memmove(_q->time_buf, _x, _q->n*sizeof(TI));
+#else
+    // manual copy for type conversion
+    // TODO: use DCT or equivalent
+    for (i=0; i<_q->n; i++)
+        _q->time_buf[i] = _x[i];
+#endif
 
     // pad end of time-domain buffer with zeros
+    // TODO: not necessary to do this every time
 #if 0
     memset(&_q->time_buf[_q->n], 0, _q->n*sizeof(TI));
 #else
@@ -211,7 +220,7 @@ void FFTFILT(_execute)(FFTFILT() _q,
 #endif
 
     // compute inner product between FFT{ _x } and FFT{ H }
-#if 0
+#if 1
     for (i=0; i<2*_q->n; i++)
         _q->freq_buf[i] *= _q->H[i];
 #else
@@ -233,11 +242,18 @@ void FFTFILT(_execute)(FFTFILT() _q,
 #endif
 
     // copy output summed with buffer and scaled
+#if TI_COMPLEX
     for (i=0; i<_q->n; i++)
         _y[i] = (_q->time_buf[i] + _q->w[i]) * _q->scale;
+#else
+    // manual copy for type conversion
+    // TODO: use DCT or equivalent
+    for (i=0; i<_q->n; i++)
+        _y[i] = (T) crealf(_q->time_buf[i] + _q->w[i]) * _q->scale;
+#endif
 
     // copy buffer
-    memmove(_q->w, &_q->time_buf[_q->n], _q->n*sizeof(TO));
+    memmove(_q->w, &_q->time_buf[_q->n], _q->n*sizeof(float complex));
 }
 
 // return length of filter object's internal coefficients

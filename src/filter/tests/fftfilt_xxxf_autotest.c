@@ -27,35 +27,33 @@
 // autotest data definitions
 #include "src/filter/tests/fftfilt_autotest.h"
 
-#if 0
 // 
 // AUTOTEST: fftfilt_rrrf tests
 //
-void xautotest_fftfilt_rrrf_data_h4x256()
+void autotest_fftfilt_rrrf_data_h4x256()
 {
     fftfilt_rrrf_test(fftfilt_rrrf_data_h4x256_h, 4,
                       fftfilt_rrrf_data_h4x256_x, 256,
                       fftfilt_rrrf_data_h4x256_y, 256);
 }
-void xautotest_fftfilt_rrrf_data_h7x256()
+void autotest_fftfilt_rrrf_data_h7x256()
 {
     fftfilt_rrrf_test(fftfilt_rrrf_data_h7x256_h, 7,
                       fftfilt_rrrf_data_h7x256_x, 256,
                       fftfilt_rrrf_data_h7x256_y, 256);
 }
-void xautotest_fftfilt_rrrf_data_h13x256()
+void autotest_fftfilt_rrrf_data_h13x256()
 {
     fftfilt_rrrf_test(fftfilt_rrrf_data_h13x256_h, 13,
                       fftfilt_rrrf_data_h13x256_x, 256,
                       fftfilt_rrrf_data_h13x256_y, 256);
 }
-void xautotest_fftfilt_rrrf_data_h23x256()
+void autotest_fftfilt_rrrf_data_h23x256()
 {
     fftfilt_rrrf_test(fftfilt_rrrf_data_h23x256_h, 23,
                       fftfilt_rrrf_data_h23x256_x, 256,
                       fftfilt_rrrf_data_h23x256_y, 256);
 }
-#endif
 
 
 // 

@@ -36,7 +36,6 @@ void fftfilt_rrrf_test(float *      _h,
                        float *      _y,
                        unsigned int _y_len)
 {
-#if 0
     float tol = 0.001f;
 
     // determine appropriate block size
@@ -55,8 +54,8 @@ void fftfilt_rrrf_test(float *      _h,
     fftfilt_rrrf q = fftfilt_rrrf_create(_h, _h_len, n);
 
     // allocate memory for output
-    float complex x_test[n*num_blocks];
-    float complex y_test[n*num_blocks];
+    float x_test[n*num_blocks];
+    float y_test[n*num_blocks];
 
     // copy input for test
     unsigned int i;
@@ -73,7 +72,6 @@ void fftfilt_rrrf_test(float *      _h,
     
     // destroy filter object
     fftfilt_rrrf_destroy(q);
-#endif
 }
 
 // autotest helper function
