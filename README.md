@@ -141,4 +141,5 @@ Available Modules
         maximal-length sequences
   * _utility_: useful miscellany, mostly bit manipulation (shifting,
         packing, and unpacking of arrays)
+  * _vector_: generic vector operations
 
