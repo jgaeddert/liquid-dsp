@@ -211,9 +211,19 @@ void FFTFILT(_execute)(FFTFILT() _q,
 #endif
 
     // compute inner product between FFT{ _x } and FFT{ H }
-    // TODO: use SIMD vector extensions for this
+#if 0
     for (i=0; i<2*_q->n; i++)
         _q->freq_buf[i] *= _q->H[i];
+#else
+    // use SIMD vector extensions
+# if TI_COMPLEX
+    // complex floating-point inner product
+    liquid_vectorcf_mul(_q->freq_buf, _q->H, 2*_q->n, _q->freq_buf);
+# else
+    // real floating-point inner product
+    liquid_vectorf_mul(_q->freq_buf, _q->H, 2*_q->n, _q->freq_buf);
+# endif
+#endif
 
     // compute inverse transform
 #ifdef LIQUID_FFTOVERRIDE
