@@ -100,7 +100,7 @@ MSRESAMP2() MSRESAMP2(_create)(unsigned int _num_stages,
 
     // derived values
     q->M    = 1 << q->num_stages;
-    q->zeta = 1.0f;
+    q->zeta = 1.0f / (float)(q->M);
 
     // allocate memory for buffers
     q->buffer0 = (T*) malloc( q->M * sizeof(T) );
@@ -263,8 +263,7 @@ void MSRESAMP2(_decim_execute)(MSRESAMP2() _q,
         b1 = (s % 2) == 0 ? _q->buffer0 : _q->buffer1;
     }
 
-    // set single output sample
-    // TODO: scale appropriately
-    *_y = _q->buffer1[0];
+    // set single output sample and scale appropriately
+    *_y = b0[0] * _q->zeta;
 }
 
