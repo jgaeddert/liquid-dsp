@@ -80,7 +80,11 @@ int main(int argc, char*argv[])
     // create multi-stage arbitrary resampler object
     msresamp2_crcf q = msresamp2_crcf_create(num_stages, fc, f0, As);
     msresamp2_crcf_print(q);
-    float delay = msresamp2_crcf_get_delay(q);
+    float delay = 0.0f;
+    if (mode == MSRESAMP2_MODE_DECIM)
+        delay = msresamp2_crcf_get_decim_delay(q);
+    else
+        delay = msresamp2_crcf_get_interp_delay(q);
 
     // number of input samples (zero-padded)
     unsigned int M  = (1 << num_stages);    // integer resampling rate

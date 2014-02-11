@@ -2526,8 +2526,11 @@ void MSRESAMP2(_print)(MSRESAMP2() _q);                         \
 /* reset msresamp object internal state                     */  \
 void MSRESAMP2(_reset)(MSRESAMP2() _q);                         \
                                                                 \
-/* get filter delay (output samples)                        */  \
-float MSRESAMP2(_get_delay)(MSRESAMP2() _q);                    \
+/* get interpolation filter delay (output samples)          */  \
+float MSRESAMP2(_get_interp_delay)(MSRESAMP2() _q);             \
+                                                                \
+/* get decimation filter delay (output samples)             */  \
+float MSRESAMP2(_get_decim_delay)(MSRESAMP2() _q);              \
                                                                 \
 /* execute multi-stage resampler as interpolator            */  \
 /*  _q      : msresamp object                               */  \

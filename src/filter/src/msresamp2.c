@@ -165,7 +165,7 @@ void MSRESAMP2(_destroy)(MSRESAMP2() _q)
 void MSRESAMP2(_print)(MSRESAMP2() _q)
 {
     printf("multi-stage half-band resampler:\n");
-    printf("    number of stages        : %u stages\n",   _q->num_stages);
+    printf("    number of stages        : %u stage%s\n",  _q->num_stages, _q->num_stages == 1 ? "" : "s");
     printf("    cut-off frequency, fc   : %12.8f / Fs\n", _q->fc);
     printf("    center frequency, f0    : %12.8f / Fs\n", _q->f0);
     printf("    stop-band attenuation   : %.2f dB\n",     _q->As);
@@ -192,10 +192,42 @@ void MSRESAMP2(_reset)(MSRESAMP2() _q)
     // NOTE: not necessary to clear internal buffers
 }
 
-// get filter delay (output samples)
-float MSRESAMP2(_get_delay)(MSRESAMP2() _q)
+// get interpolation filter delay (output samples)
+float MSRESAMP2(_get_interp_delay)(MSRESAMP2() _q)
 {
-    return 0.0f;
+    // initialize delay
+    float delay = 0;
+    unsigned int i;
+
+    // add half-band resampling delay
+    for (i=0; i<_q->num_stages; i++) {
+        // filter semi-length
+        unsigned int m = _q->m_stage[i];
+
+        delay *= 0.5f;
+        delay += m;
+    }
+
+    return delay;
+}
+
+// get decimation filter delay (output samples)
+float MSRESAMP2(_get_decim_delay)(MSRESAMP2() _q)
+{
+    // initialize delay
+    float delay = 0;
+    unsigned int i;
+
+    // add half-band resampling delay
+    for (i=0; i<_q->num_stages; i++) {
+        // filter semi-length
+        unsigned int m = _q->m_stage[_q->num_stages-i-1];
+
+        delay *= 2;
+        delay += 2*m - 1;
+    }
+
+    return delay;
 }
 
 // execute multi-stage resampler as interpolator            
@@ -248,7 +280,7 @@ void MSRESAMP2(_decim_execute)(MSRESAMP2() _q,
     T * b1 = _q->buffer1;   // output buffer pointer
 
     unsigned int s;         // half-band decimator stage counter
-    unsigned int k;         // number of inputs for this stage
+    unsigned int k;         // number of outputs for this stage
     for (s=0; s<_q->num_stages; s++) {
         // compute number of outputs for this stage
         k = 1 << (_q->num_stages - s - 1);
