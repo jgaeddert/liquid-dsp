@@ -192,44 +192,72 @@ void cvsd_decode8(cvsd _q, unsigned char _data, float * _audio);
 // MODULE : buffer
 //
 
-// Buffer
-#define BUFFER_MANGLE_FLOAT(name)  LIQUID_CONCAT(bufferf,  name)
-#define BUFFER_MANGLE_CFLOAT(name) LIQUID_CONCAT(buffercf, name)
-//#define BUFFER_MANGLE_UINT(name)   LIQUID_CONCAT(bufferui, name)
-
-typedef enum {
-    CIRCULAR=0,
-    STATIC
-} buffer_type;
+// circular buffer
+#define CBUFFER_MANGLE_FLOAT(name)  LIQUID_CONCAT(cbufferf,  name)
+#define CBUFFER_MANGLE_CFLOAT(name) LIQUID_CONCAT(cbuffercf, name)
 
 // large macro
-//   BUFFER : name-mangling macro
-//   T      : data type
-#define LIQUID_BUFFER_DEFINE_API(BUFFER,T)                      \
+//   CBUFFER : name-mangling macro
+//   T       : data type
+#define LIQUID_CBUFFER_DEFINE_API(CBUFFER,T)                    \
+typedef struct CBUFFER(_s) * CBUFFER();                         \
                                                                 \
-typedef struct BUFFER(_s) * BUFFER();                           \
-BUFFER() BUFFER(_create)(buffer_type _type, unsigned int _n);   \
-void BUFFER(_destroy)(BUFFER() _b);                             \
-void BUFFER(_print)(BUFFER() _b);                               \
-void BUFFER(_debug_print)(BUFFER() _b);                         \
-void BUFFER(_clear)(BUFFER() _b);                               \
-void BUFFER(_zero)(BUFFER() _b);                                \
-void BUFFER(_read)(BUFFER() _b, T ** _v, unsigned int *_nr);    \
-void BUFFER(_release)(BUFFER() _b, unsigned int _n);            \
-void BUFFER(_write)(BUFFER() _b, T * _v, unsigned int _n);      \
-void BUFFER(_push)(BUFFER() _b, T _v);
-//void BUFFER(_force_write)(BUFFER() _b, T * _v, unsigned int _n);
+/* create circular buffer object of a particular size       */  \
+CBUFFER() CBUFFER(_create)(unsigned int _n);                    \
+                                                                \
+/* destroy cbuffer object, freeing all internal memory      */  \
+void CBUFFER(_destroy)(CBUFFER() _q);                           \
+                                                                \
+/* print cbuffer object properties                          */  \
+void CBUFFER(_print)(CBUFFER() _q);                             \
+                                                                \
+/* print cbuffer object properties and internal state       */  \
+void CBUFFER(_debug_print)(CBUFFER() _q);                       \
+                                                                \
+/* clear internal buffer                                    */  \
+void CBUFFER(_clear)(CBUFFER() _q);                             \
+                                                                \
+/* get the number of elements currently in the buffer       */  \
+unsigned int CBUFFER(_size)(CBUFFER() _q);                      \
+                                                                \
+/* get the maximum number of elements the buffer can hold   */  \
+unsigned int CBUFFER(_max_size)(CBUFFER() _q);                  \
+                                                                \
+/* read buffer contents                                     */  \
+/*  _q  : circular buffer object                            */  \
+/*  _v  : output pointer                                    */  \
+/*  _nr : number of elements referenced by _v               */  \
+void CBUFFER(_read)(CBUFFER()      _q,                          \
+                    T **           _v,                          \
+                    unsigned int * _nr);                        \
+                                                                \
+/* release _n samples in the buffer                         */  \
+void CBUFFER(_release)(CBUFFER()    _q,                         \
+                       unsigned int _n);                        \
+                                                                \
+/* write samples to the buffer                              */  \
+/*  _q  : circular buffer object                            */  \
+/*  _v  : output array                                      */  \
+/*  _n  : number of samples to write                        */  \
+void CBUFFER(_write)(CBUFFER()    _q,                           \
+                     T *          _v,                           \
+                     unsigned int _n);                          \
+                                                                \
+/* write a single sample into the buffer                    */  \
+/*  _q  : circular buffer object                            */  \
+/*  _v  : input sample                                      */  \
+void CBUFFER(_push)(CBUFFER() _q,                               \
+                    T         _v);                              \
 
 // Define buffer APIs
-LIQUID_BUFFER_DEFINE_API(BUFFER_MANGLE_FLOAT,  float)
-LIQUID_BUFFER_DEFINE_API(BUFFER_MANGLE_CFLOAT, liquid_float_complex)
-//LIQUID_BUFFER_DEFINE_API(BUFFER_MANGLE_UINT,   unsigned int)
+LIQUID_CBUFFER_DEFINE_API(CBUFFER_MANGLE_FLOAT,  float)
+LIQUID_CBUFFER_DEFINE_API(CBUFFER_MANGLE_CFLOAT, liquid_float_complex)
+
 
 
 // Windowing functions
 #define WINDOW_MANGLE_FLOAT(name)  LIQUID_CONCAT(windowf,  name)
 #define WINDOW_MANGLE_CFLOAT(name) LIQUID_CONCAT(windowcf, name)
-//#define WINDOW_MANGLE_UINT(name)   LIQUID_CONCAT(windowui, name)
 
 // large macro
 //   WINDOW : name-mangling macro
@@ -881,12 +909,34 @@ void FFT(_print_plan)(FFT(plan) _p);                            \
 void FFT(_execute)(FFT(plan) _p);                               \
                                                                 \
 /* object-independent methods */                                \
+                                                                \
+/* perform n-point FFT allocating plan internally           */  \
+/*  _nfft   : fft size                                      */  \
+/*  _x      : input array [size: _nfft x 1]                 */  \
+/*  _y      : output array [size: _nfft x 1]                */  \
+/*  _dir    : fft direction: LIQUID_FFT_{FORWARD,BACKWARD}  */  \
+/*  _flags  : fft flags                                     */  \
 void FFT(_run)(unsigned int _n,                                 \
                TC *         _x,                                 \
                TC *         _y,                                 \
                int          _dir,                               \
-               int          flags);                             \
-void FFT(_shift)(TC*_x, unsigned int _n);                       \
+               int          _flags);                            \
+                                                                \
+/* perform n-point real FFT allocating plan internally      */  \
+/*  _nfft   : fft size                                      */  \
+/*  _x      : input array [size: _nfft x 1]                 */  \
+/*  _y      : output array [size: _nfft x 1]                */  \
+/*  _type   : fft type, e.g. LIQUID_FFT_REDFT10             */  \
+/*  _flags  : fft flags                                     */  \
+void FFT(_r2r_1d_run)(unsigned int _n,                          \
+                      T *          _x,                          \
+                      T *          _y,                          \
+                      int          _type,                       \
+                      int          _flags);                     \
+                                                                \
+/* perform _n-point fft shift                               */  \
+void FFT(_shift)(TC *         _x,                               \
+                 unsigned int _n);                              \
 
 
 LIQUID_FFT_DEFINE_API(LIQUID_FFT_MANGLE_FLOAT,float,liquid_float_complex)
@@ -2005,36 +2055,53 @@ LIQUID_FIRPFB_DEFINE_API(FIRPFB_MANGLE_CCCF,
 #define FIRINTERP_MANGLE_CCCF(name)  LIQUID_CONCAT(firinterp_cccf,name)
 
 #define LIQUID_FIRINTERP_DEFINE_API(FIRINTERP,TO,TC,TI)         \
+                                                                \
 typedef struct FIRINTERP(_s) * FIRINTERP();                     \
-/* create interpolator from external coefficients       */      \
-/*  _M      : interpolation factor                      */      \
-/*  _h      : filter coefficients [size: _h_len x 1]    */      \
-/*  _h_len  : filter length                             */      \
+                                                                \
+/* create interpolator from external coefficients           */  \
+/*  _M      : interpolation factor                          */  \
+/*  _h      : filter coefficients [size: _h_len x 1]        */  \
+/*  _h_len  : filter length                                 */  \
 FIRINTERP() FIRINTERP(_create)(unsigned int _M,                 \
                                TC *         _h,                 \
                                unsigned int _h_len);            \
-/* create interpolator from prototype                   */      \
-/*  _M      : interpolation factor                      */      \
-/*  _m      : filter delay (symbols)                    */      \
-/*  _As     : stop-band attenuation [dB]                */      \
+                                                                \
+/* create interpolator from prototype                       */  \
+/*  _M      : interpolation factor                          */  \
+/*  _m      : filter delay (symbols)                        */  \
+/*  _As     : stop-band attenuation [dB]                    */  \
 FIRINTERP() FIRINTERP(_create_prototype)(unsigned int _M,       \
                                          unsigned int _m,       \
                                          float        _As);     \
-/* create square-root Nyquist interpolator              */      \
-/*  _type   : filter type (e.g. LIQUID_RNYQUIST_RRC)    */      \
-/*  _k      : samples/symbol (interpolation factor)     */      \
-/*  _m      : filter delay (symbols)                    */      \
-/*  _beta   : rolloff factor (0 < beta <= 1)            */      \
-/*  _dt     : fractional sample delay                   */      \
+                                                                \
+/* create square-root Nyquist interpolator                  */  \
+/*  _type   : filter type (e.g. LIQUID_RNYQUIST_RRC)        */  \
+/*  _k      : samples/symbol (interpolation factor)         */  \
+/*  _m      : filter delay (symbols)                        */  \
+/*  _beta   : rolloff factor (0 < beta <= 1)                */  \
+/*  _dt     : fractional sample delay                       */  \
 FIRINTERP() FIRINTERP(_create_rnyquist)(int          _type,     \
                                         unsigned int _k,        \
                                         unsigned int _m,        \
                                         float        _beta,     \
                                         float        _dt);      \
+                                                                \
+/* destroy firinterp object, freeing all internal memory    */  \
 void FIRINTERP(_destroy)(FIRINTERP() _q);                       \
+                                                                \
+/* print firinterp object's internal properties to stdout   */  \
 void FIRINTERP(_print)(FIRINTERP() _q);                         \
-void FIRINTERP(_clear)(FIRINTERP() _q);                         \
-void FIRINTERP(_execute)(FIRINTERP() _q, TI _x, TO *_y);        \
+                                                                \
+/* reset internal state                                     */  \
+void FIRINTERP(_reset)(FIRINTERP() _q);                         \
+                                                                \
+/* execute interpolation                                    */  \
+/*  _q      : firinterp object                              */  \
+/*  _x      : input sample                                  */  \
+/*  _y      : output sample array [size: _M x 1]            */  \
+void FIRINTERP(_execute)(FIRINTERP() _q,                        \
+                         TI          _x,                        \
+                         TO *        _y);                       \
 
 LIQUID_FIRINTERP_DEFINE_API(FIRINTERP_MANGLE_RRRF,
                             float,
@@ -2401,6 +2468,18 @@ void RESAMP(_execute)(RESAMP()       _q,                        \
                       TI             _x,                        \
                       TO *           _y,                        \
                       unsigned int * _num_written);             \
+                                                                \
+/* execute arbitrary resampler on a block of samples        */  \
+/*  _q              :   resamp object                       */  \
+/*  _x              :   input buffer [size: _nx x 1]        */  \
+/*  _nx             :   input buffer                        */  \
+/*  _y              :   output sample array (pointer)       */  \
+/*  _ny             :   number of samples written to _y     */  \
+void RESAMP(_execute_block)(RESAMP()       _q,                  \
+                            TI *           _x,                  \
+                            unsigned int   _nx,                 \
+                            TO *           _y,                  \
+                            unsigned int * _ny);                \
 
 LIQUID_RESAMP_DEFINE_API(RESAMP_MANGLE_RRRF,
                          float,
@@ -2768,7 +2847,7 @@ typedef void (*framesync_csma_callback)(void * _userdata);
 //
 
 // frame length in samples
-#define FRAME64_LEN (1340)
+#define LIQUID_FRAME64_LEN (1340)
 
 typedef struct framegen64_s * framegen64;
 
@@ -2785,7 +2864,7 @@ void framegen64_print(framegen64 _q);
 //  _q          :   frame generator object
 //  _header     :   8-byte header data
 //  _payload    :   64-byte payload data
-//  _frame      :   output frame samples [size: FRAME64_LEN x 1]
+//  _frame      :   output frame samples [size: LIQUID_FRAME64_LEN x 1]
 void framegen64_execute(framegen64             _q,
                         unsigned char *        _header,
                         unsigned char *        _payload,
@@ -5117,6 +5196,10 @@ unsigned int msequence_get_length(msequence _ms);
 
 // get the internal state of the sequence
 unsigned int msequence_get_state(msequence _ms);
+
+// set the internal state of the sequence
+void msequence_set_state(msequence    _ms,
+                         unsigned int _a);
 
 
 // 

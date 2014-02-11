@@ -36,7 +36,6 @@
 #    clean-sandbox       :   clean sandbox programs
 #    clean-check         :   clean autotest program
 #    clean-bench         :   clean benchmark program
-#    clean-doc           :   clean documentation
 #
 
 # autoconf initialization macros
@@ -64,7 +63,7 @@ RANLIB	:= ranlib
 
 # flags
 INCLUDE_CFLAGS	= $(addprefix -I ,$(include_dirs))
-CONFIG_CFLAGS	= @CFLAGS@ @PROFILE_OPTION@ @DEBUG_OPTION@
+CONFIG_CFLAGS	= @CFLAGS@ @DEBUG_OPTION@ @ARCH_OPTION@
 # -g : debugging info
 CFLAGS		+= $(INCLUDE_CFLAGS) -Wall -fPIC $(CONFIG_CFLAGS)
 LDFLAGS		+= @LIBS@
@@ -143,10 +142,8 @@ buffer_objects :=						\
 	src/buffer/src/bufferf.o				\
 	src/buffer/src/buffercf.o				\
 
-#	src/buffer/src/bufferui.c				\
-
 buffer_includes :=						\
-	src/buffer/src/buffer.c					\
+	src/buffer/src/cbuffer.c				\
 	src/buffer/src/wdelay.c					\
 	src/buffer/src/window.c					\
 
@@ -154,14 +151,13 @@ src/buffer/src/bufferf.o : %.o : %.c $(headers) $(buffer_includes)
 
 src/buffer/src/buffercf.o : %.o : %.c $(headers) $(buffer_includes)
 
-src/buffer/src/bufferui.o : %.o : %.c $(headers) $(buffer_includes)
-
 
 buffer_autotests :=						\
 	src/buffer/tests/cbuffer_autotest.c			\
-	src/buffer/tests/sbuffer_autotest.c			\
 	src/buffer/tests/wdelay_autotest.c			\
 	src/buffer/tests/window_autotest.c			\
+	
+#	src/buffer/tests/sbuffer_autotest.c
 
 buffer_benchmarks :=						\
 	src/buffer/bench/window_push_benchmark.c		\
@@ -195,6 +191,11 @@ src/dotprod/src/sumsq.mmx.o : %.o : %.c $(headers)
 
 # SSE4.1/2
 src/dotprod/src/dotprod_rrrf.sse4.o : %.o : %.c $(headers)
+
+# ARM Neon
+src/dotprod/src/dotprod_rrrf.neon.o : %.o : %.c $(headers)
+src/dotprod/src/dotprod_crcf.neon.o : %.o : %.c $(headers)
+src/dotprod/src/dotprod_cccf.neon.o : %.o : %.c $(headers)
 
 dotprod_autotests :=						\
 	src/dotprod/tests/dotprod_rrrf_autotest.c		\
@@ -540,11 +541,13 @@ autotest_extra_obj +=						\
 	src/filter/tests/data/iirfilt_cccf_data_h7x64.o		\
 
 filter_benchmarks :=						\
-	src/filter/bench/firdecim_benchmark.c			\
+	src/filter/bench/firdecim_crcf_benchmark.c		\
 	src/filter/bench/firhilb_benchmark.c			\
 	src/filter/bench/firinterp_crcf_benchmark.c		\
 	src/filter/bench/firfilt_crcf_benchmark.c		\
+	src/filter/bench/iirdecim_crcf_benchmark.c		\
 	src/filter/bench/iirfilt_crcf_benchmark.c		\
+	src/filter/bench/iirinterp_crcf_benchmark.c		\
 	src/filter/bench/resamp_crcf_benchmark.c		\
 	src/filter/bench/resamp2_crcf_benchmark.c		\
 	src/filter/bench/symsync_crcf_benchmark.c		\
@@ -1121,7 +1124,7 @@ libliquid.so: libliquid.a
 all: libliquid.a $(SHARED_LIB)
 
 ##
-## TARGET : help      - print list of targets (see documentation for more)
+## TARGET : help      - print list of targets
 ##
 
 # look for all occurences of '## TARGET : ' and print rest of line to screen
@@ -1303,7 +1306,7 @@ example_programs :=						\
 	examples/bpacketsync_example				\
 	examples/bpresync_example				\
 	examples/bsequence_example				\
-	examples/bufferf_example				\
+	examples/cbufferf_example				\
 	examples/chromosome_example				\
 	examples/compand_example				\
 	examples/compand_cf_example				\
@@ -1315,6 +1318,7 @@ example_programs :=						\
 	examples/dotprod_rrrf_example				\
 	examples/dotprod_cccf_example				\
 	examples/eqlms_cccf_blind_example			\
+	examples/eqlms_cccf_decisiondirected_example		\
 	examples/eqlms_cccf_example				\
 	examples/eqrls_cccf_example				\
 	examples/fec_example					\
@@ -1496,7 +1500,6 @@ sandbox_programs =						\
 	sandbox/ofdm_ber_test					\
 	sandbox/ofdmframe_papr_test				\
 	sandbox/ofdmframesync_cfo_test				\
-	sandbox/packetizer_persistent_ber_test			\
 	sandbox/pll_design_test					\
 	sandbox/predemod_sync_test				\
 	sandbox/quasinewton_test				\
@@ -1510,6 +1513,7 @@ sandbox_programs =						\
 	sandbox/svd_test					\
 	sandbox/thiran_allpass_iir_test				\
 
+#	sandbox/packetizer_persistent_ber_test
 #	firpfbch_analysis_test
 #	sandbox/ofdmoqam_firpfbch_cfo_test
 #	sandbox/mdct_test
@@ -1532,29 +1536,13 @@ clean-sandbox:
 	$(RM) $(sandbox_programs)
 
 
-## 
-## TARGET : doc       - build documentation (doc/liquid.pdf)
-##
-
-doc : doc/liquid.pdf
-
-doc/liquid.pdf : libliquid.a
-	cd doc ; make
-
-clean-doc :
-	cd doc ; make mostlyclean
-
-distclean-doc :
-	cd doc ; make distclean
-
-
 # Clean
 .PHONY: clean
 
 ##
 ## TARGET : world     - build absolutely everything
 ##
-world : all check bench examples sandbox doc
+world : all check bench examples sandbox
 
 ##
 ## TARGET : clean     - clean build (objects, dependencies, libraries, etc.)
@@ -1582,7 +1570,7 @@ clean-modules:
 	$(RM) src/utility/src/*.o      src/utility/bench/*.o      src/utility/tests/*.o
 	$(RM) libliquid.o
 
-clean: clean-modules clean-autoscript clean-check clean-bench clean-examples clean-sandbox clean-doc
+clean: clean-modules clean-autoscript clean-check clean-bench clean-examples clean-sandbox
 	$(RM) $(extra_clean)
 	$(RM) libliquid.a
 	$(RM) $(SHARED_LIB)
@@ -1591,7 +1579,7 @@ clean: clean-modules clean-autoscript clean-check clean-bench clean-examples cle
 ## TARGET : distclean - removes everything except the originally distributed files
 ##
 
-distclean: clean distclean-doc
+distclean: clean
 	@echo "cleaning distribution..."
 	$(RM) octave-core *.m
 	$(RM) configure config.h config.h.in config.h.in~ config.log config.status

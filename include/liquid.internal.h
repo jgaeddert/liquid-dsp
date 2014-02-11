@@ -79,25 +79,6 @@ LIQUID_AGC_DEFINE_INTERNAL_API(AGC_MANGLE_RRRF, float, float)
 // MODULE : buffer
 //
 
-// Buffers
-
-#define buffer_fast_access(c,i) (c->v[(c->read_index+i)%(c->len)])
-
-#define LIQUID_BUFFER_DEFINE_INTERNAL_API(BUFFER,T)             \
-void BUFFER(_linearize)(BUFFER() _b);                           \
-void BUFFER(_c_read)(BUFFER() _b, T ** _v, unsigned int *_n);   \
-void BUFFER(_s_read)(BUFFER() _b, T ** _v, unsigned int *_n);   \
-void BUFFER(_c_write)(BUFFER() _b, T * _v, unsigned int _n);    \
-void BUFFER(_s_write)(BUFFER() _b, T * _v, unsigned int _n);    \
-void BUFFER(_c_release)(BUFFER() _b, unsigned int _n);          \
-void BUFFER(_s_release)(BUFFER() _b, unsigned int _n);          \
-void BUFFER(_c_push)(BUFFER() _b, T _v);                        \
-void BUFFER(_s_push)(BUFFER() _b, T _v);
-
-LIQUID_BUFFER_DEFINE_INTERNAL_API(BUFFER_MANGLE_FLOAT,  float)
-LIQUID_BUFFER_DEFINE_INTERNAL_API(BUFFER_MANGLE_CFLOAT, float complex)
-//LIQUID_BUFFER_DEFINE_INTERNAL_API(BUFFER_MANGLE_UINT,   unsigned int)
-
 
 //
 // MODULE : dotprod
@@ -1120,20 +1101,6 @@ float complex ellip_asnf(float complex _u,
 //
 // MODULE : framing
 //
-
-// framegen64
-
-// convert one 8-bit byte to four 2-bit symbols
-//  _byte   :   input byte
-//  _syms   :   output symbols [size: 4 x 1]
-void framegen64_byte_to_syms(unsigned char _byte,
-                             unsigned char * _syms);
-
-// convert four 2-bit symbols into one 8-bit byte
-//  _syms   :   input symbols [size: 4 x 1]
-//  _byte   :   output byte
-void framesync64_syms_to_byte(unsigned char * _syms,
-                              unsigned char * _byte);
 
 //
 // bpacket

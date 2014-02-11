@@ -107,6 +107,8 @@ int main(int argc, char*argv[])
 
     // resample
     unsigned int ny=0;
+#if 0
+    // execute one sample at a time
     unsigned int nw;
     for (i=0; i<nx; i++) {
         // execute resampler, storing in output buffer
@@ -115,6 +117,10 @@ int main(int argc, char*argv[])
         // increment output size
         ny += nw;
     }
+#else
+    // execute on block of samples
+    resamp_crcf_execute_block(q, x, nx, y, &ny);
+#endif
 
     // clean up allocated objects
     resamp_crcf_destroy(q);

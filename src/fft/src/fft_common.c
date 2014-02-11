@@ -102,7 +102,7 @@ struct FFT(plan_s)
 //  _x      :   input array [size: _nfft x 1]
 //  _y      :   output array [size: _nfft x 1]
 //  _dir    :   fft direction: {LIQUID_FFT_FORWARD, LIQUID_FFT_BACKWARD}
-//  _method :   fft method
+//  _flags  :   fft method
 FFT(plan) FFT(_create_plan)(unsigned int _nfft,
                             TC *         _x,
                             TC *         _y,
@@ -289,16 +289,16 @@ void FFT(_execute)(FFT(plan) _q)
 //  _nfft   :   fft size
 //  _x      :   input array [size: _nfft x 1]
 //  _y      :   output array [size: _nfft x 1]
-//  _dir    :   fft direction: {LIQUID_FFT_FORWARD, LIQUID_FFT_BACKWARD}
-//  _method :   fft method
+//  _dir    :   fft direction: LIQUID_FFT_{FORWARD,BACKWARD}
+//  _flags  :   fft flags
 void FFT(_run)(unsigned int _nfft,
                TC *         _x,
                TC *         _y,
                int          _dir,
-               int          _method)
+               int          _flags)
 {
     // create plan
-    FFT(plan) plan = FFT(_create_plan)(_nfft, _x, _y, _dir, _method);
+    FFT(plan) plan = FFT(_create_plan)(_nfft, _x, _y, _dir, _flags);
 
     // execute fft
     FFT(_execute)(plan);
@@ -307,7 +307,29 @@ void FFT(_run)(unsigned int _nfft,
     FFT(_destroy_plan)(plan);
 }
 
-// perform _n-point fft shift
+// perform real n-point FFT allocating plan internally
+//  _nfft   : fft size
+//  _x      : input array [size: _nfft x 1]
+//  _y      : output array [size: _nfft x 1]
+//  _type   : fft type, e.g. LIQUID_FFT_REDFT10
+//  _flags  : fft flags
+void FFT(_r2r_1d_run)(unsigned int _nfft,
+                      T *          _x,
+                      T *          _y,
+                      int          _type,
+                      int          _flags)
+{
+    // create plan
+    FFT(plan) plan = FFT(_create_plan_r2r_1d)(_nfft, _x, _y, _type, _flags);
+
+    // execute fft
+    FFT(_execute)(plan);
+
+    // destroy plan
+    FFT(_destroy_plan)(plan);
+}
+
+// perform _n-point FFT shift
 void FFT(_shift)(TC *_x, unsigned int _n)
 {
     unsigned int i, n2;

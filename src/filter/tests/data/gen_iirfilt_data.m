@@ -104,7 +104,7 @@ function gen_iirfilt_datafile(type,h_len,x_len);
     fid = fopen(filename,'w');
 
     fprintf(fid,'/*\n');
-    fprintf(fid,' * Copyright (c) 2012, 2013 Joseph Gaeddert\n');
+    fprintf(fid,' * Copyright (c) 2007 - 2014 Joseph Gaeddert\n');
     fprintf(fid,' *\n');
     fprintf(fid,' * This file is part of liquid.\n');
     fprintf(fid,' *\n');

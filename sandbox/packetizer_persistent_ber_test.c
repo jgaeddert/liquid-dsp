@@ -35,26 +35,6 @@ void usage()
     liquid_print_fec_schemes();
 }
 
-// packetizer object
-// FIXME: this structure definition has been copied from the internal source
-//        file; can cause errors if changed
-#warning "struct packetizer_s redefined inside sandbox area"
-struct packetizer_s {
-    unsigned int msg_len;
-    unsigned int packet_len;
-
-    crc_scheme check;
-    unsigned int crc_length;
-
-    struct fecintlv_plan * plan;
-    unsigned int plan_len;
-
-    // buffers (ping-pong)
-    unsigned int buffer_len;
-    unsigned char * buffer_0;
-    unsigned char * buffer_1;
-};
-
 // persistent decoding methods
 int packetizer_decode_persistent(packetizer _p, unsigned char * _pkt, unsigned char * _msg);
 int packetizer_decode_persistent2(packetizer _p, unsigned char * _pkt, unsigned char * _msg);

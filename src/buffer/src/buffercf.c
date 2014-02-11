@@ -23,19 +23,24 @@
 
 #include "liquid.internal.h"
 
+// naming extensions (useful for print statements)
+#define EXTENSION       "cf"
+
 #define BUFFER_TYPE_CFLOAT
 
-#define BUFFER(name)    LIQUID_CONCAT(buffercf, name)
-#define WDELAY(name)    LIQUID_CONCAT(wdelaycf, name)
-#define WINDOW(name)    LIQUID_CONCAT(windowcf, name)
+#define CBUFFER(name)   LIQUID_CONCAT(cbuffercf, name)
+//#define SBUFFER(name)   LIQUID_CONCAT(sbuffercf, name)
+#define WDELAY(name)    LIQUID_CONCAT(wdelaycf,  name)
+#define WINDOW(name)    LIQUID_CONCAT(windowcf,  name)
 
 #define T float complex
 #define BUFFER_PRINT_LINE(B,I) \
-    printf("\t: %f + %f", crealf(B->v[I]), cimagf(B->v[I]));
+    printf("  : %12.8f + %12.8f", crealf(B->v[I]), cimagf(B->v[I]));
 #define BUFFER_PRINT_VALUE(V) \
-    printf("\t: %12.4e + %12.4e", crealf(V), cimagf(V));
+    printf("  : %12.4e + %12.4e", crealf(V), cimagf(V));
 
-#include "buffer.c"
+#include "cbuffer.c"
+//#include "sbuffer.c"
 #include "window.c"
 #include "wdelay.c"
 
