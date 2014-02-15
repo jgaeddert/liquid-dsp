@@ -36,9 +36,9 @@ struct MSRESAMP2(_s) {
     // user-defined parameters
     liquid_resamp_type type;    // resampler type (e.g. LIQUID_RESAMP_INTERP)
     unsigned int num_stages;    // number of half-band stages
-    float        fc;            // composite cut-off frequency
-    float        f0;            // composite center frequency
-    float        As;            // composite stop-band attenuation
+    float        fc;            // initial cut-off frequency
+    float        f0;            // initial center frequency
+    float        As;            // stop-band attenuation
 
     // derived values
     unsigned int M;             // integer resampling rate: 2^num_stages
@@ -128,18 +128,29 @@ MSRESAMP2() MSRESAMP2(_create)(int          _type,
     q->buffer0 = (T*) malloc( q->M * sizeof(T) );
     q->buffer1 = (T*) malloc( q->M * sizeof(T) );
 
-    // determine half-band resampler parameters
+    // allocate arrays for half-band resampler parameters
     q->fc_stage = (float*)        malloc(q->num_stages*sizeof(float)       );
     q->f0_stage = (float*)        malloc(q->num_stages*sizeof(float)       );
     q->As_stage = (float*)        malloc(q->num_stages*sizeof(float)       );
     q->m_stage  = (unsigned int*) malloc(q->num_stages*sizeof(unsigned int));
+
+    // determine half-band resampler parameters
+    float fc = q->fc;
+    float f0 = q->f0;
     for (i=0; i<q->num_stages; i++) {
-        // TODO: compute parameters based on filter requirements;
-        //       for now just fix parameters
-        q->fc_stage[i] = 0.25f;
-        q->f0_stage[i] = 0.0f;
-        q->As_stage[i] = 60.0f;
-        q->m_stage[i]  = 3 + i;
+        // compute parameters based on filter requirements;
+        f0 = 0.5f*f0;   // update center frequency
+        fc = 0.5f*fc;   // update cutoff frequency
+
+        // estiamte required filter length
+        float ft = (0.5f - fc)/2.0f;
+        unsigned int h_len = estimate_req_filter_len(ft, q->As);
+        unsigned int m = ceilf( (float)(h_len-1) / 4.0f );
+
+        q->fc_stage[i] = fc;            // filter cut-of
+        q->f0_stage[i] = f0;            // filter center frequency
+        q->As_stage[i] = q->As;         // filter stop-band attenuation
+        q->m_stage[i]  = m < 3 ? 3 : m; // minimum 2
     }
 
     // create half-band resampler objects
