@@ -2500,6 +2500,13 @@ LIQUID_RESAMP_DEFINE_API(RESAMP_MANGLE_CCCF,
 // 
 // Multi-stage half-band resampler
 //
+
+// resampling type (interpolator/decimator)
+typedef enum {
+    LIQUID_RESAMP_INTERP=0, // interpolator
+    LIQUID_RESAMP_DECIM,    // decimator
+} liquid_resamp_type;
+
 #define MSRESAMP2_MANGLE_RRRF(name) LIQUID_CONCAT(msresamp2_rrrf,name)
 #define MSRESAMP2_MANGLE_CRCF(name) LIQUID_CONCAT(msresamp2_crcf,name)
 #define MSRESAMP2_MANGLE_CCCF(name) LIQUID_CONCAT(msresamp2_cccf,name)
@@ -2508,11 +2515,13 @@ LIQUID_RESAMP_DEFINE_API(RESAMP_MANGLE_CCCF,
 typedef struct MSRESAMP2(_s) * MSRESAMP2();                     \
                                                                 \
 /* create multi-stage half-band resampler                   */  \
+/*  _type       : resampler type (e.g. LIQUID_RESAMP_DECIM) */  \
 /*  _num_stages : number of resampling stages               */  \
 /*  _fc         : filter cut-off frequency 0 < _fc < 0.5    */  \
 /*  _f0         : filter center frequency                   */  \
 /*  _As         : stop-band attenuation [dB]                */  \
-MSRESAMP2() MSRESAMP2(_create)(unsigned int _num_stages,        \
+MSRESAMP2() MSRESAMP2(_create)(int          _type,              \
+                               unsigned int _num_stages,        \
                                float        _fc,                \
                                float        _f0,                \
                                float        _As);               \
@@ -2526,27 +2535,18 @@ void MSRESAMP2(_print)(MSRESAMP2() _q);                         \
 /* reset msresamp object internal state                     */  \
 void MSRESAMP2(_reset)(MSRESAMP2() _q);                         \
                                                                 \
-/* get interpolation filter delay (output samples)          */  \
-float MSRESAMP2(_get_interp_delay)(MSRESAMP2() _q);             \
+/* get group delay (number of output samples)               */  \
+float MSRESAMP2(_get_delay)(MSRESAMP2() _q);                    \
                                                                 \
-/* get decimation filter delay (output samples)             */  \
-float MSRESAMP2(_get_decim_delay)(MSRESAMP2() _q);              \
-                                                                \
-/* execute multi-stage resampler as interpolator            */  \
+/* execute multi-stage resampler, M = 2^num_stages          */  \
+/*  LIQUID_RESAMP_INTERP:   input: 1,   output: M           */  \
+/*  LIQUID_RESAMP_DECIM:    input: M,   output: 1           */  \
 /*  _q      : msresamp object                               */  \
-/*  _x      : input sample                                  */  \
-/*  _y      : output sample array  [size:2^_num_stages x 1] */  \
-void MSRESAMP2(_interp_execute)(MSRESAMP2() _q,                 \
-                                TI          _x,                 \
-                                TO *        _y);                \
-                                                                \
-/* execute multi-stage resampler as decimator               */  \
-/*  _q      : msresamp object                               */  \
-/*  _x      : input sample array  [size: 2^_num_stages x 1] */  \
-/*  _y      : output sample pointer                         */  \
-void MSRESAMP2(_decim_execute)(MSRESAMP2() _q,                  \
-                               TI *        _x,                  \
-                               TO *        _y);                 \
+/*  _x      : input sample array                            */  \
+/*  _y      : output sample array                           */  \
+void MSRESAMP2(_execute)(MSRESAMP2() _q,                        \
+                         TI *        _x,                        \
+                         TO *        _y);                       \
 
 LIQUID_MSRESAMP2_DEFINE_API(MSRESAMP2_MANGLE_RRRF,
                             float,
