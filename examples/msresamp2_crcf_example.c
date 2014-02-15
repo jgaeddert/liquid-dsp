@@ -61,35 +61,27 @@ int main(int argc, char*argv[])
         exit(1);
     }
 
-    // determine mode and compute number of stages
-    enum {
-        MSRESAMP2_MODE_INTERP=0,
-        MSRESAMP2_MODE_DECIM,
-    } mode = 0;
+    // determine type and compute number of stages
     unsigned int num_stages = (unsigned int) roundf(fabsf(log2f(r)));
-    mode = r < 1. ? MSRESAMP2_MODE_DECIM : MSRESAMP2_MODE_INTERP;
+    int type = r < 1. ? LIQUID_RESAMP_DECIM : LIQUID_RESAMP_INTERP;
 
     printf("msresamp2:\n");
     printf("    rate    :   %12.8f\n", r);
     printf("    log2(r) :   %12.8f\n", log2f(r));
-    printf("    mode    :   %s\n", mode == MSRESAMP2_MODE_DECIM ? "decim" : "interp");
+    printf("    type    :   %s\n", type == LIQUID_RESAMP_DECIM ? "decim" : "interp");
     printf("    stages  :   %u\n", num_stages);
 
     unsigned int i;
 
     // create multi-stage arbitrary resampler object
-    msresamp2_crcf q = msresamp2_crcf_create(num_stages, fc, f0, As);
+    msresamp2_crcf q = msresamp2_crcf_create(type, num_stages, fc, f0, As);
     msresamp2_crcf_print(q);
-    float delay = 0.0f;
-    if (mode == MSRESAMP2_MODE_DECIM)
-        delay = msresamp2_crcf_get_decim_delay(q);
-    else
-        delay = msresamp2_crcf_get_interp_delay(q);
+    float delay = msresamp2_crcf_get_delay(q);
 
     // number of input samples (zero-padded)
     unsigned int M  = (1 << num_stages);    // integer resampling rate
-    unsigned int nx = (mode == MSRESAMP2_MODE_DECIM) ? n * M : n;
-    unsigned int ny = (mode == MSRESAMP2_MODE_DECIM) ? n     : n * M;
+    unsigned int nx = (type == LIQUID_RESAMP_DECIM) ? n * M : n;
+    unsigned int ny = (type == LIQUID_RESAMP_DECIM) ? n     : n * M;
     unsigned int wlen = round(0.75 * nx);
 
     // allocate memory for arrays
@@ -110,13 +102,10 @@ int main(int argc, char*argv[])
     }
 
     // run resampler
-    if (mode == MSRESAMP2_MODE_DECIM) {
-        for (i=0; i<ny; i++)
-            msresamp2_crcf_decim_execute(q, &x[i*M], &y[i]);
-    } else {
-        for (i=0; i<nx; i++)
-            msresamp2_crcf_interp_execute(q, x[i], &y[i*M]);
-    }
+    unsigned int dx = (type == LIQUID_RESAMP_INTERP) ? 1 : M; // input stride
+    unsigned int dy = (type == LIQUID_RESAMP_INTERP) ? M : 1; // output stride
+    for (i=0; i<n; i++)
+        msresamp2_crcf_execute(q, &x[i*dx], &y[i*dy]);
 
     // clean up allocated objects
     msresamp2_crcf_destroy(q);
@@ -220,7 +209,7 @@ int main(int argc, char*argv[])
     // frequency-domain results
     fprintf(fid,"\n\n");
     fprintf(fid,"%% plot frequency-domain result\n");
-    fprintf(fid,"nfft=2^nextpow2(max(nx,ny));\n");
+    fprintf(fid,"nfft=4*2^nextpow2(max(nx,ny));\n");
     fprintf(fid,"%% estimate PSD, normalize by array length\n");
     fprintf(fid,"X=20*log10(abs(fftshift(fft(x,nfft)/length(x))));\n");
     fprintf(fid,"Y=20*log10(abs(fftshift(fft(y,nfft)/length(y))));\n");
