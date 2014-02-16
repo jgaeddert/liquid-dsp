@@ -84,10 +84,7 @@ MSRESAMP2() MSRESAMP2(_create)(int          _type,
                                float        _As)
 {
     // validate input
-    if (_num_stages == 0) {
-        fprintf(stderr,"error: msresamp2_%s_create(), number of stages must be greater than zero\n", EXTENSION_FULL);
-        exit(1);
-    } else if (_num_stages > 10) {
+    if (_num_stages > 10) {
         fprintf(stderr,"error: msresamp2_%s_create(), number of stages should not exceed 10\n", EXTENSION_FULL);
         exit(1);
     }
@@ -266,7 +263,11 @@ void MSRESAMP2(_execute)(MSRESAMP2() _q,
                          TO *        _y)
 {
     // switch resampling method based on type
-    if (_q->type == LIQUID_RESAMP_INTERP) {
+    if (_q->num_stages == 0) {
+        // pass through
+        _y[0] = _x[0];
+        return;
+    } else if (_q->type == LIQUID_RESAMP_INTERP) {
         // execute multi-stage resampler as interpolator
         MSRESAMP2(_interp_execute)(_q, _x[0], _y);
     } else {
