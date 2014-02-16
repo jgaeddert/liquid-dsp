@@ -52,13 +52,12 @@ struct MSRESAMP(_s) {
     float rate;                         // re-sampling rate
     float As;                           // filter stop-band attenuation [dB]
 
+    // type: interpolator or decimator
+    int type;                           // run half-band resamplers as interp or decim
+
     // half-band resampler parameters
     unsigned int num_halfband_stages;   // number of halfband stages
-    enum {
-        MSRESAMP_HALFBAND_INTERP=0,
-        MSRESAMP_HALFBAND_DECIM
-    } halfband_type;                    // run half-band resamplers as interp or decim
-    RESAMP2() * halfband_resamp;        // halfband decimation/interpolation objects
+    MSRESAMP2() halfband_resamp;        // multi-stage halfband resampler
     float rate_halfband;                // halfband rate
 
     // arbitrary resampler parameters
@@ -67,12 +66,8 @@ struct MSRESAMP(_s) {
 
     // internal buffers (ping-pong)
     unsigned int buffer_len;            // length of each buffer
-    T * buffer0;                        // buffer[0]
-    T * buffer1;                        // buffer[1]
+    T * buffer;                         // buffer[0]
     unsigned int buffer_index;          // index of buffer
-
-    // scaling factor
-    float zeta;
 };
 
 // create msresamp object
@@ -91,25 +86,27 @@ MSRESAMP() MSRESAMP(_create)(float _r,
 
     // create object
     MSRESAMP() q = (MSRESAMP()) malloc(sizeof(struct MSRESAMP(_s)));
-    q->rate = _r;
-    q->As   = _As;
+
+    // set internal properties
+    q->rate = _r;       // composite rate
+    q->As   = _As;      // stop-band suppression
 
     // decimation or interpolation?
-    q->halfband_type = (q->rate > 1.0f) ? MSRESAMP_HALFBAND_INTERP : MSRESAMP_HALFBAND_DECIM;
+    q->type = (q->rate > 1.0f) ? LIQUID_RESAMP_INTERP : LIQUID_RESAMP_DECIM;
 
     // compute derived values
     q->rate_arbitrary = q->rate;
     q->rate_halfband  = 1.0f;
     q->num_halfband_stages = 0;
-    switch(q->halfband_type) {
-        case MSRESAMP_HALFBAND_INTERP:
+    switch(q->type) {
+        case LIQUID_RESAMP_INTERP:
             while (q->rate_arbitrary > 2.0f) {
                 q->num_halfband_stages++;
                 q->rate_halfband  *= 2.0f;
                 q->rate_arbitrary *= 0.5f;
             }
             break;
-        case MSRESAMP_HALFBAND_DECIM:
+        case LIQUID_RESAMP_DECIM:
             while (q->rate_arbitrary < 0.5f) {
                 q->num_halfband_stages++;
                 q->rate_halfband  *= 0.5f;
@@ -119,35 +116,19 @@ MSRESAMP() MSRESAMP(_create)(float _r,
         default:;
     }
 
-    // allocate memory for buffers
-    q->buffer_len = 1<<q->num_halfband_stages;
-    q->buffer0 = (T*) malloc( q->buffer_len*sizeof(T) );
-    q->buffer1 = (T*) malloc( q->buffer_len*sizeof(T) );
+    // allocate memory for buffer
+    q->buffer_len = 4 + (1 << q->num_halfband_stages);
+    q->buffer = (T*) malloc( q->buffer_len*sizeof(T) );
 
-    // create half-band resampler objects
-    q->halfband_resamp = (RESAMP2()*) malloc(q->num_halfband_stages*sizeof(RESAMP2()));
-    unsigned int i;
-    for (i=0; i<q->num_halfband_stages; i++) {
-#if 0
-        // TODO: compute length based on filter requirements
-        // comptue required filter semi-length, h_len = 4*m + 1
-        float h_len = estimate_req_filter_len_Herrmann(df, q->As);
-        float m_hat = (h_len-1.0f)/4.0f;
-        unsigned int m = m_hat < 2.0f ? 2 : (unsigned int)m_hat;
-#else
-        // for now just fix half-band filter length
-        unsigned int m = 3;
-#endif
-
-        // create half-band resampler
-        q->halfband_resamp[i] = RESAMP2(_create)(m, 0, q->As);
-    }
+    // create single multi-stage half-band resampler object
+    // TODO: compute appropriate cut-off frequency
+    q->halfband_resamp = MSRESAMP2(_create)(q->type,
+                                            q->num_halfband_stages,
+                                            0.4f, 0.0f, q->As);
 
     // create arbitrary resampler object
+    // TODO: compute appropriate parameters
     q->arbitrary_resamp = RESAMP(_create)(q->rate_arbitrary, 7, 0.4f, q->As, 64);
-
-    // set scaling factor
-    q->zeta = (q->halfband_type == MSRESAMP_HALFBAND_INTERP) ? 1.0f : q->rate_halfband;
 
     // reset object
     MSRESAMP(_reset)(q);
@@ -159,18 +140,14 @@ MSRESAMP() MSRESAMP(_create)(float _r,
 // destroy msresamp object, freeing all internally-allocated memory
 void MSRESAMP(_destroy)(MSRESAMP() _q)
 {
-    // free buffers
-    free(_q->buffer0);
-    free(_q->buffer1);
+    // free buffer
+    free(_q->buffer);
 
     // destroy arbitrary resampler
     RESAMP(_destroy)(_q->arbitrary_resamp);
 
-    // destroy/free half-band resampler objects
-    unsigned int i;
-    for (i=0; i<_q->num_halfband_stages; i++)
-        RESAMP2(_destroy)(_q->halfband_resamp[i]);
-    free(_q->halfband_resamp);
+    // destroy multi-stage half-band resampler object
+    MSRESAMP2(_destroy)(_q->halfband_resamp);
 
     // destroy main object
     free(_q);
@@ -179,45 +156,44 @@ void MSRESAMP(_destroy)(MSRESAMP() _q)
 // print msresamp object internals
 void MSRESAMP(_print)(MSRESAMP() _q)
 {
-    printf("multi-stage resampler, rate : %f\n", _q->rate);
-    printf("    type                :   %s\n", _q->halfband_type == MSRESAMP_HALFBAND_INTERP ? "interp" : "decim");
-    printf("    num halfband stages :   %u\n", _q->num_halfband_stages);
-    printf("    halfband rate       :   %s%u\n", _q->halfband_type == MSRESAMP_HALFBAND_INTERP ? "" : "1/",
+    printf("multi-stage resampler\n");
+    printf("    composite rate      : %12.10f\n", _q->rate);
+    printf("    type                : %s\n", _q->type == LIQUID_RESAMP_INTERP ? "interp" : "decim");
+    printf("    num halfband stages : %u\n", _q->num_halfband_stages);
+    printf("    halfband rate       : %s%u\n", _q->type == LIQUID_RESAMP_INTERP ? "" : "1/",
                                                  1<<_q->num_halfband_stages);
-    printf("    arbitrary rate      :   %12.10f\n", _q->rate_arbitrary);
-    printf("    stages\n");
-    //printf("    buffer len          :   %u\n", _q->buffer_len);
+    printf("    arbitrary rate      : %12.10f\n", _q->rate_arbitrary);
+    printf("    stages:\n");
+    
+    //float delay_halfband  = MSRESAMP2(_get_delay)(_q->halfband_resamp);
+    //float delay_arbitrary = RESAMP(_get_delay)(_q->arbitrary_resamp);
 
     // print each stage
-    unsigned int i;
     unsigned int stage=0;
     float r = 1.0f; // accumulated rate
     
     // arbitrary (interpolator)
-    if (_q->halfband_type == MSRESAMP_HALFBAND_INTERP) {
+    if (_q->type == LIQUID_RESAMP_INTERP) {
         float rate = _q->rate_arbitrary;
         r *= rate;  // update rate
-        unsigned int m = RESAMP(_get_delay)(_q->arbitrary_resamp);
-        printf("    [%2u, r=%11.8f] :   arbitrary, r=%12.8f, m=%u\n", stage, r, rate, m);
+        printf("    [%2u, r=%11.7f] : arbitrary, r=%12.8f\n", stage, r, rate);
         stage++;
     }
 
-    // print half-band stages
+    // print stages of half-band resampling
+    unsigned int i;
     for (i=0; i<_q->num_halfband_stages; i++) {
-        float rate = _q->halfband_type == MSRESAMP_HALFBAND_INTERP ? 2.0 : 0.5;
-        unsigned int m = (RESAMP2(_get_delay)(_q->halfband_resamp[i])+1)/2;
+        float rate = _q->type == LIQUID_RESAMP_INTERP ? 2.0f : 0.5f;
         r *= rate;
-        printf("    [%2u, r=%11.8f] :   half-band, r=%12.8f, m=%u\n",
-                stage, r, rate, m);
+        printf("    [%2u, r=%11.7f] : halfband,  r=%5.1f\n", stage, r, rate);
         stage++;
     }
 
     // arbitrary (decimator)
-    if (_q->halfband_type == MSRESAMP_HALFBAND_DECIM) {
+    if (_q->type == LIQUID_RESAMP_DECIM) {
         float rate = _q->rate_arbitrary;
         r *= rate;
-        unsigned int m = RESAMP(_get_delay)(_q->arbitrary_resamp);
-        printf("    [%2u, r=%11.8f] :   arbitrary, r=%12.8f, m=%u\n", stage, r, rate, m);
+        printf("    [%2u, r=%11.7f] : arbitrary, r=%12.8f\n", stage, r, rate);
         stage++;
     }
 }
@@ -225,10 +201,8 @@ void MSRESAMP(_print)(MSRESAMP() _q)
 // reset msresamp object internals, clear filters and nco phase
 void MSRESAMP(_reset)(MSRESAMP() _q)
 {
-    // reset half-band resampler objects
-    unsigned int i;
-    for (i=0; i<_q->num_halfband_stages; i++)
-        RESAMP2(_clear)(_q->halfband_resamp[i]);
+    // reset multi-stage half-band resampler object
+    MSRESAMP2(_reset)(_q->halfband_resamp);
 
     // reset arbitrary resampler
     RESAMP(_reset)(_q->arbitrary_resamp);
@@ -242,36 +216,28 @@ void MSRESAMP(_reset)(MSRESAMP() _q)
 // get filter delay (output samples)
 float MSRESAMP(_get_delay)(MSRESAMP() _q)
 {
-    // initialize delay
-    float delay = 0;
-    unsigned int i;
+    float delay_halfband = MSRESAMP2(_get_delay)(_q->halfband_resamp);
+    float delay_arbitrary = RESAMP(_get_delay)(_q->arbitrary_resamp);
 
-    if (_q->halfband_type == MSRESAMP_HALFBAND_DECIM) {
-        // add half-band resampling delay
-        for (i=0; i<_q->num_halfband_stages; i++) {
-            // TODO : update when length changes for filter design requirements
-            unsigned int m = 3; // filter semi-length
-            delay += 2*m;
-            delay *= 2;
-        }
+#if 0
+    printf("halfband    : rate=%12.8f, delay=%12.8f\n", (float)(1<<_q->num_halfband_stages), delay_halfband);
+    printf("arbitrary   : rate=%12.8f, delay=%12.8f\n", _q->rate_arbitrary, delay_arbitrary);
+#endif
 
-        // add arbitrary resampler delay
-        delay += 7;
+    // compute delay based on interpolation or decimation type
+    if (_q->num_halfband_stages == 0) {
+        // no half-band stages; just arbitrary resampler delay
+        return delay_arbitrary;
+    } else if (_q->type == LIQUID_RESAMP_INTERP) {
+        // interpolation
+        return delay_halfband / _q->rate_arbitrary + delay_arbitrary;
     } else {
-        // TODO : check this
-        // add arbitrary resampler delay
-        delay += 7;
-        
-        // add half-band resampling delay
-        for (i=0; i<_q->num_halfband_stages; i++) {
-            // TODO : update when length changes for filter design requirements
-            unsigned int m = 3; // filter semi-length
-            delay *= 0.5f;
-            delay += 2*m;
-        }
+        // decimation
+        unsigned int M = 1 << _q->num_halfband_stages;
+        return delay_halfband + M*delay_arbitrary;
     }
 
-    return delay;
+    return 0.0f;
 }
 
 // execute multi-stage resampler
@@ -285,11 +251,11 @@ void MSRESAMP(_execute)(MSRESAMP()     _q,
                         TO *           _y,
                         unsigned int * _ny)
 {
-    switch(_q->halfband_type) {
-    case MSRESAMP_HALFBAND_INTERP:
+    switch(_q->type) {
+    case LIQUID_RESAMP_INTERP:
         MSRESAMP(_interp_execute)(_q, _x, _nx, _y, _ny);
         break;
-    case MSRESAMP_HALFBAND_DECIM:
+    case LIQUID_RESAMP_DECIM:
         MSRESAMP(_decim_execute)(_q, _x, _nx, _y, _ny);
         break;
     default:;
@@ -311,61 +277,28 @@ void MSRESAMP(_interp_execute)(MSRESAMP()     _q,
                                TO *           _y,
                                unsigned int * _ny)
 {
-    // set output size to zero
-    *_ny = 0;
-    
-    unsigned int k;     // number of inputs for this stage
-    unsigned int s;     // half-band decimator stage counter
-    unsigned int n;     // input counter
-    //unsigned int g;     // half-band resampler stage index (reversed)
-
-    // buffer pointers (initialize BOTH to _q->buffer0);
-    T * b0 = _q->buffer0;   // input buffer pointer
-    T * b1 = _q->buffer0;   // output buffer pointer
-    
-    unsigned int nw;
-    unsigned int nw_total=0;
-
-    unsigned int j;     // 
-    T resamp_buffer[4]; // arbitrary resampling buffer
-
-    // write samples to buffer until full
     unsigned int i;
+    unsigned int nw;
+    unsigned int ny = 0;
+
+    // operate one sample at a time so that we don't overflow the internal
+    // buffer
     for (i=0; i<_nx; i++) {
-        // execute arbitrary resampler
-        RESAMP(_execute)(_q->arbitrary_resamp, _x[i]*_q->zeta, resamp_buffer, &nw);
+        // run arbitrary resampler
+        RESAMP(_execute)(_q->arbitrary_resamp, _x[i], _q->buffer, &nw);
 
-        // check if buffer is full
-        for (j=0; j<nw; j++) {
-            // set initial buffer value
-            _q->buffer0[0] = resamp_buffer[j];
-    
-            // number of inputs for this stage
-            k = 1;
+        // run multi-stage half-band resampler on each output sample
+        unsigned int k;
+        for (k=0; k<nw; k++) {
+            MSRESAMP2(_execute)(_q->halfband_resamp, &_q->buffer[k], &_y[ny]);
 
-            // run half-band decimation stage
-            for (s=0; s<_q->num_halfband_stages; s++) {
-                // set buffer pointers
-                b0 = (s%2) == 0 ? _q->buffer0 : _q->buffer1;    // input buffer
-                b1 = (s%2) == 1 ? _q->buffer0 : _q->buffer1;    // output buffer
-
-                // execute half-band interpolator
-                //g = _q->num_halfband_stages - s - 1;
-                for (n=0; n<k; n++)
-                    RESAMP2(_interp_execute)(_q->halfband_resamp[s], b0[n], &b1[2*n]);
-
-                // length doubles with each iteration
-                k <<= 1;
-            }
-
-            // copy output data and increment counter
-            // NOTE : k = 2^(num_halfband_stages)
-            memmove(&_y[nw_total], b1, k*sizeof(TO));
-            nw_total += k;
+            // increase output counter by halfband interpolation rate
+            ny += 1 << _q->num_halfband_stages;
         }
     }
 
-    *_ny = nw_total;
+    // set return value for number of samples written
+    *_ny = ny;
 }
 
 // execute multi-stage resampler as decimator
@@ -379,56 +312,35 @@ void MSRESAMP(_decim_execute)(MSRESAMP()     _q,
                               TO *           _y,
                               unsigned int * _ny)
 {
-    // set output size to zero
-    *_ny = 0;
-    
-    unsigned int k;     // number of inputs for this stage
-    unsigned int s;     // half-band decimator stage counter
-    unsigned int n;     // input counter
-    unsigned int g;     // half-band resampler stage index (reversed)
-
-    // buffer pointers (initialize BOTH to _q->buffer0);
-    T * b0 = _q->buffer0;   // input buffer pointer
-    T * b1 = _q->buffer0;   // output buffer pointer
-    
-    unsigned int nw;    // 
-    unsigned int nw_total=0;
-
-    // write samples to buffer until full
     unsigned int i;
+    unsigned int M = 1 << _q->num_halfband_stages;
+    unsigned int nw;        // number of samples written for arbitrary resamp
+    unsigned int ny = 0;    // running counter of output samples
+    TO halfband_output;     // single half-band decimator output sample
+
+    // write samples to buffer until it contains 2^num_halfband_stages
+    // TODO: write block of samples
     for (i=0; i<_nx; i++) {
         // push sample into buffer
-        _q->buffer0[_q->buffer_index++] = _x[i];
+        _q->buffer[_q->buffer_index++] = _x[i];
 
-        // check if buffer is full
-        if (_q->buffer_index == _q->buffer_len) {
-            // reset counter and run half-band decimators
+        // check if buffer has 'M' elements
+        if (_q->buffer_index == M) {
+            // run half-band decimation, producing a single output
+            MSRESAMP2(_execute)(_q->halfband_resamp, _q->buffer, &halfband_output);
+
+            // run resulting sample through arbitrary resampler
+            RESAMP(_execute)(_q->arbitrary_resamp, halfband_output, &_y[ny], &nw);
+
+            // increment output counter
+            ny += nw;
+
+            // reset buffer index
             _q->buffer_index = 0;
-    
-            // number of inputs for this stage
-            k = 1 << _q->num_halfband_stages;
-
-            // run half-band decimation stage
-            for (s=0; s<_q->num_halfband_stages; s++) {
-                // length halves with each iteration
-                k >>= 1;
-
-                // set buffer pointers
-                b0 = (s%2) == 0 ? _q->buffer0 : _q->buffer1;    // input buffer
-                b1 = (s%2) == 1 ? _q->buffer0 : _q->buffer1;    // output buffer
-
-                // execute half-band decimator
-                g = _q->num_halfband_stages - s - 1;
-                for (n=0; n<k; n++)
-                    RESAMP2(_decim_execute)(_q->halfband_resamp[g], &b0[2*n], &b1[n]);
-            }
-
-            // execute arbitrary resampler
-            RESAMP(_execute)(_q->arbitrary_resamp, b1[0]*_q->zeta, &_y[nw_total], &nw);
-            nw_total += nw;
         }
     }
 
-    *_ny = nw_total;
+    // set return value for number of samples written
+    *_ny = ny;
 }
 

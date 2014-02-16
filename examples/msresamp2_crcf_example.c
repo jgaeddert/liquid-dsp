@@ -154,6 +154,7 @@ int main(int argc, char*argv[])
 
     // print results and check frequency location
     printf("output results:\n");
+    printf("  output delay              :   %12.8f samples\n", delay);
     printf("  desired resampling rate   :   %12.8f\n", r);
     printf("  measured resampling rate  :   %12.8f    (%u/%u)\n", r_actual, ny, nx);
     printf("  peak spectrum             :   %12.8f dB (expected 0.0 dB)\n", Ypeak);
