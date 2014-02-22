@@ -2340,16 +2340,20 @@ typedef struct RESAMP2(_s) * RESAMP2();                         \
                                                                 \
 /* create half-band resampler                               */  \
 /*  _m      :   filter semi-length (h_len = 4*m+1)          */  \
-/*  _fc     :   filter center frequency                     */  \
+/*  _f0     :   filter center frequency                     */  \
 /*  _As     :   stop-band attenuation [dB]                  */  \
 RESAMP2() RESAMP2(_create)(unsigned int _m,                     \
-                           float        _fc,                    \
+                           float        _f0,                    \
                            float        _As);                   \
                                                                 \
 /* re-create half-band resampler with new properties        */  \
+/*  _q      :   original half-band resampler object         */  \
+/*  _m      :   filter semi-length (h_len = 4*m+1)          */  \
+/*  _f0     :   filter center frequency                     */  \
+/*  _As     :   stop-band attenuation [dB]                  */  \
 RESAMP2() RESAMP2(_recreate)(RESAMP2()    _q,                   \
                              unsigned int _m,                   \
-                             float        _fc,                  \
+                             float        _f0,                  \
                              float        _As);                 \
                                                                 \
 /* destroy half-band resampler                              */  \
