@@ -206,6 +206,13 @@ void cvsd_decode8(cvsd _q, unsigned char _data, float * _audio);
 #define CBUFFER_MANGLE_FLOAT(name)  LIQUID_CONCAT(cbufferf,  name)
 #define CBUFFER_MANGLE_CFLOAT(name) LIQUID_CONCAT(cbuffercf, name)
 
+// fixed-point
+#define CBUFFER_MANGLE_Q16(name)    LIQUID_CONCAT(cbufferq16,  name)
+#define CBUFFER_MANGLE_CQ16(name)   LIQUID_CONCAT(cbuffercq16, name)
+
+#define CBUFFER_MANGLE_Q32(name)    LIQUID_CONCAT(cbufferq32,  name)
+#define CBUFFER_MANGLE_CQ32(name)   LIQUID_CONCAT(cbuffercq32, name)
+
 // large macro
 //   CBUFFER : name-mangling macro
 //   T       : data type
@@ -262,6 +269,13 @@ void CBUFFER(_push)(CBUFFER() _q,                               \
 // Define buffer APIs
 LIQUID_CBUFFER_DEFINE_API(CBUFFER_MANGLE_FLOAT,  float)
 LIQUID_CBUFFER_DEFINE_API(CBUFFER_MANGLE_CFLOAT, liquid_float_complex)
+
+// fixed-point
+LIQUID_CBUFFER_DEFINE_API(CBUFFER_MANGLE_Q16,  q16_t)
+LIQUID_CBUFFER_DEFINE_API(CBUFFER_MANGLE_CQ16, cq16_t)
+
+LIQUID_CBUFFER_DEFINE_API(CBUFFER_MANGLE_Q32,  q32_t)
+LIQUID_CBUFFER_DEFINE_API(CBUFFER_MANGLE_CQ32, cq32_t)
 
 #if 0
 // static buffer

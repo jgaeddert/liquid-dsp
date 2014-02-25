@@ -23,7 +23,10 @@
 
 #include "liquid.internal.h"
 
-//#define BUFFER(name)    LIQUID_CONCAT(buffercq16, name)
+// naming extensions (useful for print statements)
+#define EXTENSION       "cq16"
+
+#define CBUFFER(name)   LIQUID_CONCAT(cbuffercq16, name)
 //#define WDELAY(name)    LIQUID_CONCAT(wdelaycq16, name)
 #define WINDOW(name)    LIQUID_CONCAT(windowcq16, name)
 
@@ -31,7 +34,7 @@
 #define BUFFER_PRINT_LINE(B,I)  printf("    : %12.8f + j%12.8f", q16_fixed_to_float(B->v[I].real), q16_fixed_to_float(B->v[I].imag));
 #define BUFFER_PRINT_VALUE(V)   printf("    : %12.4f + j%12.8f", q16_fixed_to_float(V.real), q16_fixed_to_float(V.imag));
 
-//#include "buffer.c"
+#include "cbuffer.c"
 //#include "wdelay.c"
 #include "window.c"
 
