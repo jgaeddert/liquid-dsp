@@ -223,6 +223,9 @@ unsigned int CBUFFER(_size)(CBUFFER() _q);                      \
 /* get the maximum number of elements the buffer can hold   */  \
 unsigned int CBUFFER(_max_size)(CBUFFER() _q);                  \
                                                                 \
+/* is buffer full?                                          */  \
+int CBUFFER(_is_full)(CBUFFER() _q);                            \
+                                                                \
 /* read buffer contents                                     */  \
 /*  _q  : circular buffer object                            */  \
 /*  _v  : output pointer                                    */  \

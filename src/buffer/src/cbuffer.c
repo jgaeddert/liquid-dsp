@@ -144,6 +144,12 @@ unsigned int CBUFFER(_max_size)(CBUFFER() _q)
     return _q->len;
 }
 
+// is buffer full?
+int CBUFFER(_is_full)(CBUFFER() _q)
+{
+    return (_q->num_elements == _q->len ? 1 : 0);
+}
+
 // read buffer contents
 //  _q  : circular buffer object
 //  _v  : output pointer
