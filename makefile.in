@@ -1226,6 +1226,9 @@ $(autotest_prog): $(autotest_prog).o $(autotest_obj) $(autotest_extra_obj) autot
 check: $(autotest_prog)
 	./$(autotest_prog) -v
 
+# let 'make test' be an alias for 'make check'
+test: check
+
 # clean the generated files
 clean-check:
 	$(RM) autotest_include.h $(autotest_prog).o $(autotest_prog)
