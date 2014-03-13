@@ -160,6 +160,7 @@ buffer_autotests :=						\
 #	src/buffer/tests/sbuffer_autotest.c
 
 buffer_benchmarks :=						\
+	src/buffer/bench/cbuffercf_benchmark.c			\
 	src/buffer/bench/window_push_benchmark.c		\
 	src/buffer/bench/window_read_benchmark.c		\
 
