@@ -244,6 +244,22 @@ void CBUFFER(_write)(CBUFFER()    _q,
 void CBUFFER(_pop)(CBUFFER()    _q,
                    T *          _v)
 {
+    // ensure there is at least one element
+    if (_q->num_elements == 0) {
+        fprintf(stderr,"warning: cbuffer%s_pop(), no elements available\n",
+                EXTENSION);
+        return;
+    }
+
+    // set return value
+    if (_v != NULL)
+        *_v = _q->v[ _q->read_index ];
+
+    // increment read index
+    _q->read_index = (_q->read_index + 1) % _q->max_size;
+
+    // decrement number of elements in the buffer
+    _q->num_elements--;
 }
 
 // read buffer contents
