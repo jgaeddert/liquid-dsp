@@ -203,7 +203,13 @@ void cvsd_decode8(cvsd _q, unsigned char _data, float * _audio);
 typedef struct CBUFFER(_s) * CBUFFER();                         \
                                                                 \
 /* create circular buffer object of a particular size       */  \
-CBUFFER() CBUFFER(_create)(unsigned int _n);                    \
+CBUFFER() CBUFFER(_create)(unsigned int _max_size);             \
+                                                                \
+/* create circular buffer object of a particular size and   */  \
+/* specify the maximum number of elements that can be read  */  \
+/* at any given time.                                       */  \
+CBUFFER() CBUFFER(_create_max)(unsigned int _max_size,          \
+                               unsigned int _max_read);         \
                                                                 \
 /* destroy cbuffer object, freeing all internal memory      */  \
 void CBUFFER(_destroy)(CBUFFER() _q);                           \
@@ -223,20 +229,20 @@ unsigned int CBUFFER(_size)(CBUFFER() _q);                      \
 /* get the maximum number of elements the buffer can hold   */  \
 unsigned int CBUFFER(_max_size)(CBUFFER() _q);                  \
                                                                 \
+/* get the maximum number of elements you may read at once  */  \
+unsigned int CBUFFER(_max_read)(CBUFFER() _q);                  \
+                                                                \
+/* get the number of available slots (max_size - size)      */  \
+unsigned int CBUFFER(_space_available)(CBUFFER() _q);           \
+                                                                \
 /* is buffer full?                                          */  \
 int CBUFFER(_is_full)(CBUFFER() _q);                            \
                                                                 \
-/* read buffer contents                                     */  \
+/* write a single sample into the buffer                    */  \
 /*  _q  : circular buffer object                            */  \
-/*  _v  : output pointer                                    */  \
-/*  _nr : number of elements referenced by _v               */  \
-void CBUFFER(_read)(CBUFFER()      _q,                          \
-                    T **           _v,                          \
-                    unsigned int * _nr);                        \
-                                                                \
-/* release _n samples in the buffer                         */  \
-void CBUFFER(_release)(CBUFFER()    _q,                         \
-                       unsigned int _n);                        \
+/*  _v  : input sample                                      */  \
+void CBUFFER(_push)(CBUFFER() _q,                               \
+                    T         _v);                              \
                                                                 \
 /* write samples to the buffer                              */  \
 /*  _q  : circular buffer object                            */  \
@@ -246,11 +252,25 @@ void CBUFFER(_write)(CBUFFER()    _q,                           \
                      T *          _v,                           \
                      unsigned int _n);                          \
                                                                 \
-/* write a single sample into the buffer                    */  \
+/* remove and return a single element from the buffer       */  \
 /*  _q  : circular buffer object                            */  \
-/*  _v  : input sample                                      */  \
-void CBUFFER(_push)(CBUFFER() _q,                               \
-                    T         _v);                              \
+/*  _v  : pointer to sample output                          */  \
+void CBUFFER(_pop)(CBUFFER() _q,                                \
+                   T *       _v);                               \
+                                                                \
+/* read buffer contents                                     */  \
+/*  _q              : circular buffer object                */  \
+/*  _num_requested  : number of elements requested          */  \
+/*  _v              : output pointer                        */  \
+/*  _nr             : number of elements referenced by _v   */  \
+void CBUFFER(_read)(CBUFFER()      _q,                          \
+                    unsigned int   _num_requested,              \
+                    T **           _v,                          \
+                    unsigned int * _num_read);                  \
+                                                                \
+/* release _n samples from the buffer                       */  \
+void CBUFFER(_release)(CBUFFER()    _q,                         \
+                       unsigned int _n);                        \
 
 // Define buffer APIs
 LIQUID_CBUFFER_DEFINE_API(CBUFFER_MANGLE_FLOAT,  float)

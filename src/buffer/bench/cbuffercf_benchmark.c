@@ -57,7 +57,8 @@ void cbuffercf_bench(struct rusage *     _start,
     // 
     float complex   v[_write_size]; // array for writing
     float complex * r;              // read pointer
-    unsigned int    num_elements;   // number of elements to read
+    unsigned int num_requested;     // number of elements requested
+    unsigned int num_read;          // number of elements read
 
     // initialize array for writing
     unsigned int i;
@@ -75,16 +76,20 @@ void cbuffercf_bench(struct rusage *     _start,
             cbuffercf_write(q, v, _write_size);
 
         // read up to '_read_size' elements
-        num_elements = _read_size;
-        cbuffercf_read(q, &r, &num_elements);
+        num_requested = _read_size;
+        cbuffercf_read(q, num_requested, &r, &num_read);
 
         // release elements that were read
-        cbuffercf_release(q, num_elements);
+        cbuffercf_release(q, num_read);
 
         // increment counter by number of elements passing through
-        num_total_elements += num_elements;
+        num_total_elements += num_read;
     }
     getrusage(RUSAGE_SELF, _finish);
+
+    // total number of iterations equal to to total number of elements
+    // that have passed through the buffer
+    *_num_iterations = num_total_elements;
 
     // clean up allocated memory
     cbuffercf_destroy(q);
