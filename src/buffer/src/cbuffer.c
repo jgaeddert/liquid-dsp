@@ -30,7 +30,7 @@
 // linearize buffer (if necessary)
 void CBUFFER(_linearize)(CBUFFER() _q);
 
-//
+// cbuffer object
 struct CBUFFER(_s) {
     // allocated memory array
     T * v;
@@ -178,10 +178,10 @@ unsigned int CBUFFER(_max_size)(CBUFFER() _q)
 // the buffer at any given time.
 unsigned int CBUFFER(_max_read)(CBUFFER() _q)
 {
-    return _q->max_size;
+    return _q->max_read;
 }
 
-// 
+// return number of elements available for writing
 unsigned int CBUFFER(_space_available)(CBUFFER() _q)
 {
     return _q->max_size - _q->num_elements;
@@ -199,13 +199,21 @@ int CBUFFER(_is_full)(CBUFFER() _q)
 void CBUFFER(_push)(CBUFFER() _q,
                     T         _v)
 {
-    _q->v[_q->write_index] = _v;
-    if (_q->num_elements < _q->max_size) {
-        _q->num_elements++;
-    } else {
-        _q->read_index = (_q->read_index+1) % _q->max_size;
+    // ensure buffer isn't already full
+    if (_q->num_elements == _q->max_size) {
+        fprintf(stderr,"warning: cbuffer%s_push(), no space available\n",
+                EXTENSION);
+        return;
     }
+
+    // add sample at write index
+    _q->v[_q->write_index] = _v;
+
+    // update write index
     _q->write_index = (_q->write_index+1) % _q->max_size;
+
+    // increment number of elements
+    _q->num_elements++;
 }
 
 // write samples to the buffer
@@ -216,9 +224,9 @@ void CBUFFER(_write)(CBUFFER()    _q,
                      T *          _v,
                      unsigned int _n)
 {
-    //
+    // ensure number of samples to write doesn't exceed space available
     if (_n > (_q->max_size - _q->num_elements)) {
-        printf("error: cbuffer%s_write(), cannot write more elements than are available\n", EXTENSION);
+        printf("warning: cbuffer%s_write(), cannot write more elements than are available\n", EXTENSION);
         return;
     }
 
