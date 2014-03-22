@@ -248,21 +248,29 @@ void CBUFFER(_pop)(CBUFFER()    _q,
 
 // read buffer contents
 //  _q              : circular buffer object
-//  _num_elements   : output pointer
+//  _num_requested  : number of elements requested
 //  _v              : output pointer
 //  _nr             : number of elements referenced by _v
 void CBUFFER(_read)(CBUFFER()      _q,
-                    unsigned int   _num_elements,
+                    unsigned int   _num_requested,
                     T **           _v,
                     unsigned int * _num_read)
 {
+    // adjust number requested depending upon availability
+    if (_num_requested > _q->num_elements)
+        _num_requested = _q->num_elements;
+    
+    // restrict maximum number of elements to originally specified value
+    if (_num_requested > _q->max_read)
+        _num_requested = _q->max_read;
+
     // linearize tail end of buffer if necessary
-    if (_num_elements > (_q->max_size - _q->read_index))
+    if (_num_requested > (_q->max_size - _q->read_index))
         CBUFFER(_linearize)(_q);
     
     // set output pointer appropriately
     *_v        = _q->v + _q->read_index;
-    *_num_read = _q->num_elements;
+    *_num_read = _num_requested;
 }
 
 // release _n samples in the buffer
@@ -287,11 +295,16 @@ void CBUFFER(_release)(CBUFFER()    _q,
 // internal linearization
 void CBUFFER(_linearize)(CBUFFER() _q)
 {
+#if 0
     // check to see if anything needs to be done
     if ( (_q->max_size - _q->read_index) > _q->num_elements)
         return;
+#endif
 
-    // perform memory move
-    memmove(_q->v + _q->max_size, _q->v, (_q->write_index)*sizeof(T));
+    //printf("cbuffer linearize: [%6u : %6u], num elements: %6u, read index: %6u, write index: %6u\n",
+    //        _q->max_size, _q->max_read-1, _q->num_elements, _q->read_index, _q->write_index);
+
+    // move maximum amount
+    memmove(_q->v + _q->max_size, _q->v, (_q->max_read-1)*sizeof(T));
 }
 

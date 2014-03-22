@@ -21,6 +21,7 @@
 // circular buffer autotest
 //
 
+#include <stdlib.h>
 #include "autotest/autotest.h"
 #include "liquid.h"
 
@@ -85,7 +86,6 @@ void autotest_cbufferf()
     // memory leaks are evil
     cbufferf_destroy(q);
 }
-
 
 
 // complex float complexing point
@@ -181,4 +181,86 @@ void autotest_cbuffercf()
     // memory leaks are evil
     cbuffercf_destroy(q);
 }
+
+// test general flow
+void autotest_cbufferf_flow()
+{
+    // options
+    unsigned int max_size     =   48; // maximum number of elements in buffer
+    unsigned int max_read     =   17; // maximum number of elements to read
+    unsigned int num_elements = 1200; // total number of elements for run
+
+    // flag to indicate if test was successful
+    int success = 1;
+
+    // temporary buffer to write samples before sending to cbuffer
+    float write_buffer[max_size];
+
+    // create new circular buffer
+    cbufferf q = cbufferf_create_max(max_size, max_read);
+
+    //
+    unsigned i;
+    unsigned write_id = 0;  // running total number of values written
+    unsigned read_id  = 0;  // running total number of values read
+
+    // continue running until
+    while (1) {
+        // write some values
+        unsigned int num_available_to_write = cbufferf_space_available(q);
+
+        // write samples if space is available
+        if (num_available_to_write > 0) {
+            // number of elements to write
+            unsigned int num_to_write = (rand() % num_available_to_write) + 1;
+
+            // generate samples to write
+            for (i=0; i<num_to_write; i++) {
+                write_buffer[i] = (float)(write_id);
+                write_id++;
+            }
+
+            // write samples
+            cbufferf_write(q, write_buffer, num_to_write);
+        }
+
+        // read some values
+        unsigned int num_available_to_read = cbufferf_size(q);
+        
+        // read samples if available
+        if (num_available_to_read > 0) {
+            // number of elements to read
+            unsigned int num_to_read = rand() % num_available_to_read;
+
+            // read samples
+            float *r;               // output read pointer
+            unsigned int num_read;  // number of samples read
+            cbufferf_read(q, num_to_read, &r, &num_read);
+
+            // compare results
+            for (i=0; i<num_read; i++) {
+                if (liquid_autotest_verbose)
+                    printf(" %s read %12.0f, expected %12u\n", r[i] == (float)read_id ? " " : "*", r[i], read_id);
+
+                if (r[i] != (float)read_id)
+                    success = 0;
+                read_id++;
+            }
+
+            // release all the samples that were read
+            cbufferf_release(q, num_read);
+        }
+
+        // stop on fail or upon completion
+        if (!success || read_id >= num_elements)
+            break;
+    }
+    
+    // ensure test was successful
+    CONTEND_EXPRESSION(success == 1);
+
+    // destroy object
+    cbufferf_destroy(q);
+}
+
 

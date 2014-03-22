@@ -260,11 +260,11 @@ void CBUFFER(_pop)(CBUFFER() _q,                                \
                                                                 \
 /* read buffer contents                                     */  \
 /*  _q              : circular buffer object                */  \
-/*  _num_elements   : output pointer                        */  \
+/*  _num_requested  : number of elements requested          */  \
 /*  _v              : output pointer                        */  \
 /*  _nr             : number of elements referenced by _v   */  \
 void CBUFFER(_read)(CBUFFER()      _q,                          \
-                    unsigned int   _num_elements,               \
+                    unsigned int   _num_requested,              \
                     T **           _v,                          \
                     unsigned int * _num_read);                  \
                                                                 \
