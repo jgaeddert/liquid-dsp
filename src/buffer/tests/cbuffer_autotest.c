@@ -30,58 +30,59 @@ void autotest_cbufferf()
     // input array of values
     float v[] = {1, 2, 3, 4, 5, 6, 7, 8};
 
-    // output test arrays                           
+    // output test arrays
     float test1[] = {1, 2, 3, 4};
     float test2[] = {3, 4, 1, 2, 3, 4, 5, 6, 7, 8};
     float test3[] = {3, 4, 5, 6, 7, 8};
     float test4[] = {3, 4, 5, 6, 7, 8, 1, 2, 3};
-    float *r;       // output read pointer          
-    unsigned int n; // output sample size           
+    float *r;                   // output read pointer
+    unsigned int num_requested; // number of samples requested
+    unsigned int num_read;      // number of samples read
 
-    // create new circular buffer with 10 elements  
+    // create new circular buffer with 10 elements
     cbufferf q = cbufferf_create(10);
 
-    // write 4 elements to the buffer               
+    // write 4 elements to the buffer
     cbufferf_write(q, v, 4);
 
-    // try to read 4 elements                       
-    n = 4;
-    cbufferf_read(q, &r, &n);
-    CONTEND_EQUALITY(n,4);
+    // try to read 4 elements
+    num_requested = 4;
+    cbufferf_read(q, num_requested, &r, &num_read);
+    CONTEND_EQUALITY(num_read,4);
     CONTEND_SAME_DATA(r,test1,4*sizeof(float));
 
-    // release two elements, write 8 more, read 10  
+    // release two elements, write 8 more, read 10
     cbufferf_release(q, 2);
     cbufferf_write(q, v, 8);
-    n = 10;
-    cbufferf_read(q, &r, &n);
-    CONTEND_EQUALITY(n,10);
+    num_requested = 10;
+    cbufferf_read(q, num_requested, &r, &num_read);
+    CONTEND_EQUALITY(num_read,10);
     CONTEND_SAME_DATA(r,test2,10*sizeof(float));
 
-    // release four elements, and try reading 10    
+    // release four elements, and try reading 10
     cbufferf_release(q, 4);
-    n = 10;
-    cbufferf_read(q, &r, &n);
-    CONTEND_EQUALITY(n,6);
+    num_requested = 10;
+    cbufferf_read(q, num_requested, &r, &num_read);
+    CONTEND_EQUALITY(num_read,6);
     CONTEND_SAME_DATA(r,test3,6*sizeof(float));
 
-    // test pushing multiple elements               
+    // test pushing multiple elements
     cbufferf_push(q, 1);
     cbufferf_push(q, 2);
     cbufferf_push(q, 3);
-    n = 10;
-    cbufferf_read(q, &r, &n);
-    CONTEND_EQUALITY(n,9);
+    num_requested = 10;
+    cbufferf_read(q, num_requested, &r, &num_read);
+    CONTEND_EQUALITY(num_read,9);
     CONTEND_SAME_DATA(r,test4,9*sizeof(float));
 
-    // buffer should not be full 
+    // buffer should not be full
     CONTEND_EXPRESSION( cbufferf_is_full(q)==0 );
 
-    // add one more element; buffer should be full 
+    // add one more element; buffer should be full
     cbufferf_push(q, 1);
     CONTEND_EXPRESSION( cbufferf_is_full(q)==1 );
 
-    // memory leaks are evil                        
+    // memory leaks are evil
     cbufferf_destroy(q);
 }
 
@@ -100,7 +101,7 @@ void autotest_cbuffercf()
                          7.0 - 7.0 * _Complex_I,
                          8.0 + 8.0 * _Complex_I};
 
-    // output test arrays                           
+    // output test arrays
     float complex test1[] = {1.0 - 1.0 * _Complex_I,
                              2.0 + 2.0 * _Complex_I,
                              3.0 - 3.0 * _Complex_I,
@@ -130,53 +131,54 @@ void autotest_cbuffercf()
                              1.0 - 1.0 * _Complex_I,
                              2.0 + 2.0 * _Complex_I,
                              3.0 - 3.0 * _Complex_I};
-    float complex *r;   // output read pointer          
-    unsigned int n;     // output sample size           
+    float complex *r;           // output read pointer
+    unsigned int num_requested; // number of samples requested
+    unsigned int num_read;      // number of samples read
 
-    // create new circular buffer with 10 elements  
+    // create new circular buffer with 10 elements
     cbuffercf q = cbuffercf_create(10);
 
-    // write 4 elements to the buffer               
+    // write 4 elements to the buffer
     cbuffercf_write(q, v, 4);
 
-    // try to read 4 elements                       
-    n = 4;
-    cbuffercf_read(q, &r, &n);
-    CONTEND_EQUALITY(n,4);
+    // try to read 4 elements
+    num_requested = 4;
+    cbuffercf_read(q, num_requested, &r, &num_read);
+    CONTEND_EQUALITY(num_read,4);
     CONTEND_SAME_DATA(r,test1,4*sizeof(float complex));
 
-    // release two elements, write 8 more, read 10  
+    // release two elements, write 8 more, read 10
     cbuffercf_release(q, 2);
     cbuffercf_write(q, v, 8);
-    n = 10;
-    cbuffercf_read(q, &r, &n);
-    CONTEND_EQUALITY(n,10);
+    num_requested = 10;
+    cbuffercf_read(q, num_requested, &r, &num_read);
+    CONTEND_EQUALITY(num_read,10);
     CONTEND_SAME_DATA(r,test2,10*sizeof(float complex));
 
-    // release four elements, and try reading 10    
+    // release four elements, and try reading 10
     cbuffercf_release(q, 4);
-    n = 10;
-    cbuffercf_read(q, &r, &n);
-    CONTEND_EQUALITY(n,6);
+    num_requested = 10;
+    cbuffercf_read(q, num_requested, &r, &num_read);
+    CONTEND_EQUALITY(num_read,6);
     CONTEND_SAME_DATA(r,test3,6*sizeof(float complex));
 
-    // test pushing multiple elements               
+    // test pushing multiple elements
     cbuffercf_push(q, 1.0 - 1.0 * _Complex_I);
     cbuffercf_push(q, 2.0 + 2.0 * _Complex_I);
     cbuffercf_push(q, 3.0 - 3.0 * _Complex_I);
-    n = 10;
-    cbuffercf_read(q, &r, &n);
-    CONTEND_EQUALITY(n,9);
+    num_requested = 10;
+    cbuffercf_read(q, num_requested, &r, &num_read);
+    CONTEND_EQUALITY(num_read,9);
     CONTEND_SAME_DATA(r,test4,9*sizeof(float complex));
 
-    // buffer should not be full 
+    // buffer should not be full
     CONTEND_EXPRESSION( cbuffercf_is_full(q)==0 );
 
-    // add one more element; buffer should be full 
+    // add one more element; buffer should be full
     cbuffercf_push(q, 1.0 - 1.0 * _Complex_I);
     CONTEND_EXPRESSION( cbuffercf_is_full(q)==1 );
 
-    // memory leaks are evil                        
+    // memory leaks are evil
     cbuffercf_destroy(q);
 }
 
