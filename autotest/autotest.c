@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007, 2008, 2009, 2010, 2011, 2012, 2013 Joseph Gaeddert
+ * Copyright (c) 2007 - 2014 Joseph Gaeddert
  *
  * This file is part of liquid.
  *
@@ -35,7 +35,7 @@ void usage()
     // help
     printf("Usage: xautotest [OPTION]\n");
     printf("Execute autotest scripts for liquid-dsp library.\n");
-    printf("  -h,-u         display this help and exit\n");
+    printf("  -h            display this help and exit\n");
     printf("  -t[ID]        run specific test\n");
     printf("  -p[ID]        run specific package\n");
     printf("  -L            lists all scripts\n");
@@ -124,10 +124,9 @@ int main(int argc, char *argv[])
 
     // get input options
     int d;
-    while((d = getopt(argc,argv,"hut:p:Llxs:vq")) != EOF){
+    while((d = getopt(argc,argv,"ht:p:Llxs:vq")) != EOF){
         switch (d) {
         case 'h':
-        case 'u':
             usage();
             return 0;
         case 't':

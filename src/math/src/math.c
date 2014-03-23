@@ -1,7 +1,5 @@
 /*
- * Copyright (c) 2007, 2008, 2009, 2010, 2011 Joseph Gaeddert
- * Copyright (c) 2007, 2008, 2009, 2010, 2011 Virginia Polytechnic
- *                                      Institute & State University
+ * Copyright (c) 2007 - 2014 Joseph Gaeddert
  *
  * This file is part of liquid.
  *
@@ -172,11 +170,11 @@ float liquid_nchoosek(unsigned int _n, unsigned int _k)
 
     // use lngamma() function when _n is large
     if (_n > 12) {
-        float t0 = liquid_lngammaf((float)_n + 1.0f);
-        float t1 = liquid_lngammaf((float)_n - (float)_k + 1.0f);
-        float t2 = liquid_lngammaf((float)_k + 1.0f);
+        double t0 = lgamma((double)_n + 1.0f);
+        double t1 = lgamma((double)_n - (double)_k + 1.0f);
+        double t2 = lgamma((double)_k + 1.0f);
 
-        return roundf(expf( t0 - t1 - t2 ));
+        return round(exp( t0 - t1 - t2 ));
     }
 
     // old method

@@ -1,5 +1,5 @@
 ## 
-## Copyright (c) 2007, 2008, 2009, 2010, 2011, 2012, 2013 Joseph Gaeddert
+## Copyright (c) 2007 - 2014 Joseph Gaeddert
 ##
 ## This file is part of liquid.
 ##
@@ -48,12 +48,6 @@ AC_ARG_ENABLE(debug,
     AS_HELP_STRING([--enable-debug],[debug]),
     [DEBUG_OPTION="-DDEBUG"],
     [DEBUG_OPTION=""]
-)
-
-AC_ARG_ENABLE(profile,
-    AS_HELP_STRING([--enable-profile],[profile]),
-    [PROFILE_OPTION="-pg"; CLIB="-lc_p"],
-    [PROFILE_OPTION="";    CLIB="-lc"],
 )
 
 AC_ARG_ENABLE(fftoverride,
@@ -109,39 +103,6 @@ AC_CHECK_LIB([fftw3f], [fftwf_plan_dft_1d], [],
 AC_CHECK_LIB([fec], [create_viterbi27], [],
              [AC_MSG_WARN(fec library useful but not required)],
              [])
-#AC_CHECK_LIB([liquidfpm], [q32_mul], [],
-#             [AC_MSG_WARN(fixed-point math library useful but not required)],
-#             [])
-
-# check for programs (documentation)
-AC_CHECK_PROG(PDFLATEX, pdflatex, pdflatex, no)
-if [ test "x$PDFLATEX" == "xno" ]; then
-    AC_MSG_WARN(pdflatex required to build documentation)
-fi
-AC_CHECK_PROG(BIBTEX, bibtex, bibtex, no)
-if [ test "x$BIBTEX" == "xno" ]; then
-    AC_MSG_WARN(bibtex required to build documentation)
-fi
-AC_CHECK_PROG(EPSTOPDF, epstopdf, epstopdf, no)
-if [ test "x$EPSTOPDF" == "xno" ]; then
-    AC_MSG_WARN(epstopdf required to build documentation)
-fi
-AC_CHECK_PROG(GNUPLOT, gnuplot, gnuplot, no)
-if [ test "x$GNUPLOT" == "xno" ]; then
-    AC_MSG_WARN(gnuplot required to build documentation)
-fi
-AC_CHECK_PROG(PYGMENTIZE,   pygmentize,     pygmentize,     no)
-AC_CHECK_PROG(PYGMENTIZE24, pygmentize-2.4, pygmentize-2.4, no)
-if [ test "$PYGMENTIZE" == "no" ]; then
-    if [ test "$PYGMENTIZE24" == "no" ]; then
-        # use uglier, but functional built-in homebrewed code listing generator
-        AC_MSG_WARN(pygmentize not found; using ./scripts/liquid-pygmentize.py as ugly alternative)
-        PYGMENTIZE="./scripts/liquid-pygmentize.py"
-    else
-        PYGMENTIZE="pygmentize-2.4"
-    fi
-fi
-
 
 # Checks for typedefs, structures, and compiler characteristics.
 AC_C_INLINE
@@ -177,7 +138,7 @@ i386|i486|i586|i686|x86|x86_64)
         # SSE4.1/2 extensions
         MLIBS_DOTPROD="src/dotprod/src/dotprod_cccf.mmx.o \
                        src/dotprod/src/dotprod_crcf.mmx.o \
-                       src/dotprod/src/dotprod_rrrf.sse4.o \
+                       src/dotprod/src/dotprod_rrrf.mmx.o \
                        src/dotprod/src/sumsq.mmx.o"
     elif [ test "$ax_cv_have_sse2_ext" = yes && test "$ac_cv_header_emmintrin_h" = yes ]; then
         # SSE2 extensions
@@ -199,12 +160,15 @@ powerpc*)
                    src/dotprod/src/sumsq.o"
     ARCH_OPTION="-fno-common -faltivec";;
 arm*)
-    # ARM architecture : use portable C version
-    MLIBS_DOTPROD="src/dotprod/src/dotprod_cccf.o \
-                   src/dotprod/src/dotprod_crcf.o \
-                   src/dotprod/src/dotprod_rrrf.o \
+    # TODO: check for Neon availability
+
+    # ARM architecture : use neon extensions
+    MLIBS_DOTPROD="src/dotprod/src/dotprod_cccf.neon.o \
+                   src/dotprod/src/dotprod_crcf.neon.o \
+                   src/dotprod/src/dotprod_rrrf.neon.o \
                    src/dotprod/src/sumsq.o"
-    ARCH_OPTION="-marm -mfloat-abi=softfp";;
+    # TODO: check these flags
+    ARCH_OPTION="-ffast-math -mcpu=cortex-a8 -mfloat-abi=softfp -mfpu=neon";;
 *)
     # unknown architecture : use portable C version
     MLIBS_DOTPROD="src/dotprod/src/dotprod_cccf.o \
@@ -236,15 +200,7 @@ AC_SUBST(REBIND)                    # rebinding tool (e.g. ldconfig)
 AC_SUBST(ARCH_OPTION)               # compiler architecture option
 
 AC_SUBST(DEBUG_OPTION)              # debug option
-AC_SUBST(PROFILE_OPTION)            # profile symbols
 AC_SUBST(CLIB)                      # C library linkage (e.g. '-lc')
 
-# documentation programs
-AC_SUBST(PDFLATEX)                  # pdflatex
-AC_SUBST(BIBTEX)                    # bibtex
-AC_SUBST(EPSTOPDF)                  # epstopdf
-AC_SUBST(GNUPLOT)                   # gnuplot
-AC_SUBST(PYGMENTIZE)                # pygmentize
-
-AC_CONFIG_FILES([makefile doc/makefile])
+AC_CONFIG_FILES([makefile])
 AC_OUTPUT

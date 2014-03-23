@@ -1,7 +1,5 @@
 /*
- * Copyright (c) 2007, 2008, 2009, 2010 Joseph Gaeddert
- * Copyright (c) 2007, 2008, 2009, 2010 Virginia Polytechnic
- *                                      Institute & State University
+ * Copyright (c) 2007 - 2014 Joseph Gaeddert
  *
  * This file is part of liquid.
  *
@@ -133,8 +131,9 @@ void runtest_dotprod_crcf(unsigned int _n)
     }
     
     // compute expected value (ordinal computation)
-    float complex y_test;
-    dotprod_crcf_run(h, x, _n, &y_test);
+    float complex y_test=0;
+    for (i=0; i<_n; i++)
+        y_test += h[i] * x[i];
 
     // create and run dot product object
     float complex y;

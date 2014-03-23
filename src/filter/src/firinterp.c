@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007, 2008, 2009, 2010, 2011, 2012, 2013 Joseph Gaeddert
+ * Copyright (c) 2007 - 2014 Joseph Gaeddert
  *
  * This file is part of liquid.
  *
@@ -24,15 +24,6 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-
-// defined:
-//  FIRINTERP()    name-mangling macro
-//  TO          output data type
-//  TC          coefficient data type
-//  TI          input data type
-//  WINDOW()    window macro
-//  DOTPROD()   dotprod macro
-//  FIRPFB()    polyphase filterbank macro
 
 struct FIRINTERP(_s) {
     TC * h;                 // prototype filter coefficients
@@ -181,15 +172,15 @@ void FIRINTERP(_print)(FIRINTERP() _q)
 }
 
 // clear internal state
-void FIRINTERP(_clear)(FIRINTERP() _q)
+void FIRINTERP(_reset)(FIRINTERP() _q)
 {
-    FIRPFB(_clear)(_q->filterbank);
+    FIRPFB(_reset)(_q->filterbank);
 }
 
 // execute interpolator
-//  _q      :   interpolator object
-//  _x      :   input sample
-//  _y      :   output array [size: 1 x _M]
+//  _q      : interpolator object
+//  _x      : input sample
+//  _y      : output array [size: 1 x _M]
 void FIRINTERP(_execute)(FIRINTERP() _q,
                          TI          _x,
                          TO *        _y)

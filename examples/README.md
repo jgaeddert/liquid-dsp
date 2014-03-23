@@ -108,6 +108,18 @@ This directory contains all the examples for interfacing the liquid modules.
     product object (dotprod_rrrf).
 
  * `eqlms_cccf_blind_example.c`:
+    This example tests the least mean-squares (LMS) equalizer (EQ) on a
+    signal with an unknown modulation and carrier frequency offset. That
+    is, the equalization is done completely blind of the modulation
+    scheme or its underlying data set. The error estimate assumes a
+    constant modulus linear modulation scheme. This works surprisingly
+    well even more amplitude-modulated signals, e.g. 'qam16'.
+
+ * `eqlms_cccf_decisiondirected_example.c`:
+    Tests least mean-squares (LMS) equalizer (EQ) on a signal with a known
+    linear modulation scheme, but unknown data. The equalizer is updated
+    using decision-directed demodulator output samples.
+
  * `eqlms_cccf_example.c`:
  * `eqrls_cccf_example.c`:
  * `fct_example.c`:
@@ -165,6 +177,13 @@ This directory contains all the examples for interfacing the liquid modules.
  * `firfarrow_rrrf_sine_example.c`:
 
  * `firfilt_rrrf_example.c`:
+
+ * `firfilt_crcf_example.c`:
+    Complex finite impulse response filter example. Demonstrates the 
+    functionality of firfilt by designing a low-order prototype and using it 
+    to filter a noisy signal.  The filter coefficients are real, but the 
+    input and output arrays are complex. The filter order and cutoff 
+    frequency are specified at the beginning.
 
  * `firhilb_decim_example.c`:
     Hilbert transform: 2:1 real-to-complex decimator.  This example
@@ -355,6 +374,12 @@ This directory contains all the examples for interfacing the liquid modules.
     except at index zero, where the sequences align.
 
     SEE ALSO: `bsequence_example.c`
+
+ * `msresamp_crcf_example.c`:
+    Demonstration of the multi-stage arbitrary resampler.
+
+ * `msresamp2_crcf_example.c`:
+    Demonstration of the multi-stage half-band resampler.
 
  * `nco_example.c`:
     This example demonstrates the most basic functionality of the

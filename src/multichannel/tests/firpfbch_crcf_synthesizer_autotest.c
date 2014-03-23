@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007, 2008, 2009, 2010, 2011, 2012, 2013 Joseph Gaeddert
+ * Copyright (c) 2007 - 2014 Joseph Gaeddert
  *
  * This file is part of liquid.
  *
@@ -90,7 +90,7 @@ void autotest_firpfbch_crcf_synthesis()
     float complex y_hat;
     for (i=0; i<num_channels; i++) {
         // reset filter
-        firfilt_crcf_clear(f);
+        firfilt_crcf_reset(f);
 
         // set center frequency
         dphi = 2.0f * M_PI * (float)i / (float)num_channels;

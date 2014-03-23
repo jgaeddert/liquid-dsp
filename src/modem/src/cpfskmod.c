@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007, 2008, 2009, 2010, 2011, 2012, 2013 Joseph Gaeddert
+ * Copyright (c) 2007 - 2014 Joseph Gaeddert
  *
  * This file is part of liquid.
  *
@@ -200,10 +200,10 @@ void cpfskmod_print(cpfskmod _q)
 void cpfskmod_reset(cpfskmod _q)
 {
     // reset interpolator
-    firinterp_rrrf_clear(_q->interp);
+    firinterp_rrrf_reset(_q->interp);
 
     // reset phase integrator
-    iirfilt_rrrf_clear(_q->integrator);
+    iirfilt_rrrf_reset(_q->integrator);
 }
 
 // modulate sample

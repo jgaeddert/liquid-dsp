@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007, 2008, 2009, 2010, 2011, 2012, 2013 Joseph Gaeddert
+ * Copyright (c) 2007 - 2014 Joseph Gaeddert
  *
  * This file is part of liquid.
  *
@@ -154,7 +154,7 @@ void RESAMP(_print)(RESAMP() _q)
 void RESAMP(_reset)(RESAMP() _q)
 {
     // clear filterbank
-    FIRPFB(_clear)(_q->f);
+    FIRPFB(_reset)(_q->f);
 
     // reset states
     _q->state = STATE_INTERP;   // input/output sample state
@@ -262,6 +262,39 @@ void RESAMP(_execute)(RESAMP()       _q,
     // specify number of samples written
     *_num_written = n;
 }
+
+// execute arbitrary resampler on a block of samples
+//  _q              :   resamp object
+//  _x              :   input buffer [size: _nx x 1]
+//  _nx             :   input buffer
+//  _y              :   output sample array (pointer)
+//  _ny             :   number of samples written to _y
+void RESAMP(_execute_block)(RESAMP()       _q,
+                            TI *           _x,
+                            unsigned int   _nx,
+                            TO *           _y,
+                            unsigned int * _ny)
+{
+    // initialize number of output samples to zero
+    unsigned int ny = 0;
+
+    // number of samples written for each individual iteration
+    unsigned int num_written;
+
+    // iterate over each input sample
+    unsigned int i;
+    for (i=0; i<_nx; i++) {
+        // run resampler on single input
+        RESAMP(_execute)(_q, _x[i], &_y[ny], &num_written);
+
+        // update output counter
+        ny += num_written;
+    }
+
+    // set return value for number of output samples written
+    *_ny = ny;
+}
+
 
 //
 // internal methods

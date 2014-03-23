@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007, 2008, 2009, 2010, 2011, 2012, 2013 Joseph Gaeddert
+ * Copyright (c) 2007 - 2014 Joseph Gaeddert
  *
  * This file is part of liquid.
  *
@@ -39,6 +39,7 @@
 #define IIRFILTSOS(name)    LIQUID_CONCAT(iirfiltsos_crcf,name)
 #define IIRINTERP(name)     LIQUID_CONCAT(iirinterp_crcf,name)
 #define MSRESAMP(name)      LIQUID_CONCAT(msresamp_crcf,name)
+#define MSRESAMP2(name)     LIQUID_CONCAT(msresamp2_crcf,name)
 #define RESAMP(name)        LIQUID_CONCAT(resamp_crcf,name)
 #define RESAMP2(name)       LIQUID_CONCAT(resamp2_crcf,name)
 #define SYMSYNC(name)       LIQUID_CONCAT(symsync_crcf,name)
@@ -71,6 +72,7 @@
 #include "iirfiltsos.c"
 #include "iirinterp.c"
 #include "msresamp.c"
+#include "msresamp2.c"
 #include "resamp.c"         // floating-point phase version
 //#include "resamp.fixed.c" // fixed-point phase version
 #include "resamp2.c"
