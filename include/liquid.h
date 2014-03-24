@@ -288,16 +288,53 @@ LIQUID_CBUFFER_DEFINE_API(CBUFFER_MANGLE_CFLOAT, liquid_float_complex)
 #define LIQUID_WINDOW_DEFINE_API(WINDOW,T)                      \
                                                                 \
 typedef struct WINDOW(_s) * WINDOW();                           \
+                                                                \
+/* create window buffer object of length _n                 */  \
 WINDOW() WINDOW(_create)(unsigned int _n);                      \
-WINDOW() WINDOW(_recreate)(WINDOW() _w, unsigned int _n);       \
-void WINDOW(_destroy)(WINDOW() _w);                             \
-void WINDOW(_print)(WINDOW() _w);                               \
-void WINDOW(_debug_print)(WINDOW() _w);                         \
-void WINDOW(_clear)(WINDOW() _w);                               \
-void WINDOW(_read)(WINDOW() _w, T ** _v);                       \
-void WINDOW(_index)(WINDOW() _w, unsigned int _i, T * _v);      \
-void WINDOW(_push)(WINDOW() _b, T _v);                          \
-void WINDOW(_write)(WINDOW() _b, T * _v, unsigned int _n);
+                                                                \
+/* recreate window buffer object with new length            */  \
+/*  _q      : old window object                             */  \
+/*  _n      : new window length                             */  \
+WINDOW() WINDOW(_recreate)(WINDOW() _q, unsigned int _n);       \
+                                                                \
+/* destroy window object, freeing all internally memory     */  \
+void WINDOW(_destroy)(WINDOW() _q);                             \
+                                                                \
+/* print window object to stdout                            */  \
+void WINDOW(_print)(WINDOW() _q);                               \
+                                                                \
+/* print window object to stdout (with extra information)   */  \
+void WINDOW(_debug_print)(WINDOW() _q);                         \
+                                                                \
+/* clear/reset window object (initialize to zeros)          */  \
+void WINDOW(_clear)(WINDOW() _q);                               \
+                                                                \
+/* read window buffer contents                              */  \
+/*  _q      : window object                                 */  \
+/*  _v      : output pointer (set to internal array)        */  \
+void WINDOW(_read)(WINDOW() _q, T ** _v);                       \
+                                                                \
+/* index single element in buffer at a particular index     */  \
+/*  _q      : window object                                 */  \
+/*  _i      : index of element to read                      */  \
+/*  _v      : output value pointer                          */  \
+void WINDOW(_index)(WINDOW()     _q,                            \
+                    unsigned int _i,                            \
+                    T *          _v);                           \
+                                                                \
+/* push single element onto window buffer                   */  \
+/*  _q      : window object                                 */  \
+/*  _v      : single input element                          */  \
+void WINDOW(_push)(WINDOW() _q,                                 \
+                   T        _v);                                \
+                                                                \
+/* write array of elements onto window buffer               */  \
+/*  _q      : window object                                 */  \
+/*  _v      : input array of values to write                */  \
+/*  _n      : number of input values to write               */  \
+void WINDOW(_write)(WINDOW()     _q,                            \
+                    T *          _v,                            \
+                    unsigned int _n);                           \
 
 // Define window APIs
 LIQUID_WINDOW_DEFINE_API(WINDOW_MANGLE_FLOAT,  float)
