@@ -136,8 +136,11 @@ void WINDOW(_debug_print)(WINDOW() _w)
 
 void WINDOW(_clear)(WINDOW() _w)
 {
+    // reset read index
     _w->read_index = 0;
-    memset(_w->v, 0, (_w->len)*sizeof(T));
+
+    // clear all allocated memory
+    memset(_w->v, 0, (_w->N)*sizeof(T));
 }
 
 void WINDOW(_read)(WINDOW() _w, T ** _v)
