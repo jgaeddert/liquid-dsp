@@ -170,7 +170,7 @@ void WINDOW(_push)(WINDOW() _w, T _v)
 
     // if pointer wraps around, copy excess memory
     if (_w->read_index == 0)
-        memmove(_w->v, _w->v + _w->n, (_w->len)*sizeof(T));
+        memmove(_w->v, _w->v + _w->n, (_w->len-1)*sizeof(T));
 
     // append value to end of buffer
     _w->v[_w->read_index + _w->len - 1] = _v;
