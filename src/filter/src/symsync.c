@@ -236,6 +236,52 @@ SYMSYNC() SYMSYNC(_create_rnyquist)(int          _type,
     return SYMSYNC(_create)(_k, _M, H, H_len);
 }
 
+// create symsync using Kaiser filter interpolator; useful
+// when the input signal has matched filter applied already
+//  _k      : input samples/symbol
+//  _m      : symbol delay
+//  _beta   : rolloff factor, beta in (0,1]
+//  _M      : number of filters in the bank
+SYMSYNC() SYMSYNC(_create_kaiser)(unsigned int _k,
+                                  unsigned int _m,
+                                  float        _beta,
+                                  unsigned int _M)
+{
+    // validate input
+    if (_k < 2) {
+        fprintf(stderr,"error: symsync_%s_create_kaiser(), samples/symbol must be at least 2\n", EXTENSION_FULL);
+        exit(1);
+    } else if (_m == 0) {
+        fprintf(stderr,"error: symsync_%s_create_kaiser(), filter delay (m) must be greater than zero\n", EXTENSION_FULL);
+        exit(1);
+    } else if (_beta < 0.0f || _beta > 1.0f) {
+        fprintf(stderr,"error: symsync_%s_create_kaiser(), filter excess bandwidth must be in [0,1]\n", EXTENSION_FULL);
+        exit(1);
+    }
+    //return SYMSYNC(_create_rnyquist)(LIQUID_RNYQUIST_RRC, _k, _m, _beta, _M);
+
+    // allocate memory for filter coefficients
+    unsigned int H_len = 2*_M*_k*_m + 1;
+    float Hf[H_len];
+
+    // design interpolating filter whose bandwidth is outside the cut-off
+    // frequency of input signal
+    // TODO: use _beta to compute more accurate cut-off frequency
+    float fc = 0.75f;   // filter cut-off frequency (nominal)
+    float As = 40.0f;   // filter stop-band attenuation
+    liquid_firdes_kaiser(H_len, fc / (float)(_k*_M), As, 0.0f, Hf);
+
+    // copy coefficients to type-specific array, adjusting to relative
+    // filter gain
+    unsigned int i;
+    TC H[H_len];
+    for (i=0; i<H_len; i++)
+        H[i] = Hf[i] * 2.0f * fc;
+
+    // create object and return
+    return SYMSYNC(_create)(_k, _M, H, H_len);
+}
+
 // destroy symsync object, freeing all internal memory
 void SYMSYNC(_destroy)(SYMSYNC() _q)
 {

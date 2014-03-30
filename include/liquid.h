@@ -2704,13 +2704,24 @@ SYMSYNC() SYMSYNC(_create)(unsigned int _k,                     \
 /*  _type   : filter type (e.g. LIQUID_RNYQUIST_RRC)        */  \
 /*  _k      : samples/symbol                                */  \
 /*  _m      : symbol delay                                  */  \
-/*  _beta   : rolloff factor (0 < beta <= 1)                */  \
+/*  _beta   : rolloff factor, beta in (0,1]                 */  \
 /*  _M      : number of filters in the bank                 */  \
 SYMSYNC() SYMSYNC(_create_rnyquist)(int          _type,         \
                                     unsigned int _k,            \
                                     unsigned int _m,            \
                                     float        _beta,         \
                                     unsigned int _M);           \
+                                                                \
+/* create symsync using Kaiser filter interpolator; useful  */  \
+/* when the input signal has matched filter applied already */  \
+/*  _k      : input samples/symbol                          */  \
+/*  _m      : symbol delay                                  */  \
+/*  _beta   : rolloff factor, beta in (0,1]                 */  \
+/*  _M      : number of filters in the bank                 */  \
+SYMSYNC() SYMSYNC(_create_kaiser)(unsigned int _k,              \
+                                  unsigned int _m,              \
+                                  float        _beta,           \
+                                  unsigned int _M);             \
                                                                 \
 /* destroy symsync object, freeing all internal memory      */  \
 void SYMSYNC(_destroy)(SYMSYNC() _q);                           \
