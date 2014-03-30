@@ -82,7 +82,7 @@ struct SYMSYNC(_s) {
     int b;                      // filterbank index
     float del;                  // fractional delay step
 
-    // floating-point phase
+    // floating-point timing phase
     float tau;                  // accumulated timing phase (0 <= tau <= 1)
     float tau_decim;            // timing phase, retained for get_tau() method
     float bf;                   // soft filterbank index
@@ -124,23 +124,25 @@ SYMSYNC() SYMSYNC(_create)(unsigned int _k,
     } else if (_h_len == 0) {
         fprintf(stderr,"error: symsync_%s_create(), filter length must be greater than zero\n", EXTENSION_FULL);
         exit(1);
+    } else if ( (_h_len-1) % _M ) {
+        fprintf(stderr,"error: symsync_%s_create(), filter length must be of the form: h_len = m*_k*_M + 1 \n", EXTENSION_FULL);
+        exit(1);
     } else if (_M == 0) {
         fprintf(stderr,"error: symsync_%s_create(), number of filter banks must be greater than zero\n", EXTENSION_FULL);
         exit(1);
     }
 
+    // create main object
     SYMSYNC() q = (SYMSYNC()) malloc(sizeof(struct SYMSYNC(_s)));
-    q->k = _k;
 
-    q->M = _M;
-    q->tau = 0.0f;
-    q->bf  = 0.0f;
-    q->b   = 0;
+    // set internal properties
+    q->k = _k;  // input samples per symbol
+    q->M = _M;  // number of filters in the polyphase filter bank
 
     // set output rate (nominally 1, full decimation)
     SYMSYNC(_set_output_rate)(q, 1);
 
-    // TODO: validate length
+    // set internal sub-filter length
     q->h_len = (_h_len-1)/q->M;
     
     // compute derivative filter
@@ -162,7 +164,6 @@ SYMSYNC() SYMSYNC(_create)(unsigned int _k,
     }
 
     // apply scaling factor for normalized response
-    // TODO: scale to 1.0 for consistency
     for (i=0; i<_h_len; i++)
         dh[i] *= 0.06f / hdh_max;
     
@@ -258,7 +259,6 @@ SYMSYNC() SYMSYNC(_create_kaiser)(unsigned int _k,
         fprintf(stderr,"error: symsync_%s_create_kaiser(), filter excess bandwidth must be in [0,1]\n", EXTENSION_FULL);
         exit(1);
     }
-    //return SYMSYNC(_create_rnyquist)(LIQUID_RNYQUIST_RRC, _k, _m, _beta, _M);
 
     // allocate memory for filter coefficients
     unsigned int H_len = 2*_M*_k*_m + 1;
@@ -301,6 +301,7 @@ void SYMSYNC(_destroy)(SYMSYNC() _q)
     FIRPFB(_destroy)(_q->mf);
     FIRPFB(_destroy)(_q->dmf);
 
+    // destroy timing phase-locked loop filter
     iirfiltsos_rrrf_destroy(_q->pll);
 
     // free main object memory
@@ -310,7 +311,7 @@ void SYMSYNC(_destroy)(SYMSYNC() _q)
 // print symsync object's parameters
 void SYMSYNC(_print)(SYMSYNC() _q)
 {
-    printf("symsync [rate: %f]\n", _q->r);
+    printf("symsync_%s [rate: %f]\n", EXTENSION_FULL, _q->r);
     FIRPFB(_print)(_q->mf);
 }
 
@@ -321,13 +322,15 @@ void SYMSYNC(_reset)(SYMSYNC() _q)
     FIRPFB(_reset)(_q->mf);
 
     // reset counters, etc.
-    _q->b       = 0;
-    _q->tau     = 0.0f;
-    _q->bf      = 0.0f;
-    _q->q       = 0.0f;
-    _q->q_hat   = 0.0f;
-    _q->decim_counter = 0;
-    _q->tau_decim     = 0.0f;
+    _q->b             =   0;    // filterbank index
+    _q->bf            = 0.0f;   // filterbank index (soft value)
+    _q->tau           = 0.0f;   // instantaneous timing estimate
+    _q->tau_decim     = 0.0f;   // instantaneous timing estaimte (decimated)
+    _q->q             = 0.0f;   // timing error
+    _q->q_hat         = 0.0f;   // filtered timing error
+    _q->decim_counter = 0;      // decimated output counter
+
+    // reset timing phase-locked loop filter
     iirfiltsos_rrrf_reset(_q->pll);
 }
 
@@ -432,7 +435,7 @@ void SYMSYNC(_execute)(SYMSYNC()      _q,
 // internal methods
 //
 
-// step synchronizer
+// step synchronizer with single input sample
 //  _q      : symsync object
 //  _x      : input sample
 //  _y      : output sample array pointer
@@ -447,12 +450,12 @@ void SYMSYNC(_step)(SYMSYNC()      _q,
     FIRPFB(_push)(_q->dmf, _x);
     
     // matched and derivative matched-filter outputs
-    TO  mf;
-    TO dmf;
+    TO  mf; // matched filter output
+    TO dmf; // derivative matched filter output
 
     unsigned int n=0;
     
-    //while (_q->tau < 1.0f) {
+    // continue loop until filterbank index rolls over
     while (_q->b < _q->M) {
 
 #if DEBUG_SYMSYNC_PRINT
@@ -471,34 +474,40 @@ void SYMSYNC(_step)(SYMSYNC()      _q,
             _q->decim_counter = 0;
 
 #if DEBUG_SYMSYNC
-        // save debugging variables
-        windowf_push(_q->debug_del,    _q->del);
-        windowf_push(_q->debug_tau,    _q->tau);
-        windowf_push(_q->debug_bsoft,  _q->bf);
-        windowf_push(_q->debug_b,      _q->b);
-        windowf_push(_q->debug_q_hat,  _q->q_hat);
+            // save debugging variables
+            windowf_push(_q->debug_del,    _q->del);
+            windowf_push(_q->debug_tau,    _q->tau);
+            windowf_push(_q->debug_bsoft,  _q->bf);
+            windowf_push(_q->debug_b,      _q->b);
+            windowf_push(_q->debug_q_hat,  _q->q_hat);
 #endif
 
-            if (_q->is_locked) continue;
+            // if synchronizer is locked, don't update internal timing offset
+            if (_q->is_locked)
+                continue;
 
             // compute dMF output
             FIRPFB(_execute)(_q->dmf, _q->b, &dmf);
             
             // update internal state
             SYMSYNC(_advance_internal_loop)(_q, mf, dmf);
-            _q->tau_decim = _q->tau;
+            _q->tau_decim = _q->tau;    // save return value
         }
+
+        // increment decimation counter
         _q->decim_counter++;
 
-        _q->tau += _q->del;
-        _q->bf = _q->tau * (float)(_q->M);
-        _q->b  = (int)roundf(_q->bf);
-        n++;
+        // update states
+        _q->tau += _q->del;                 // instantaneous fractional offset
+        _q->bf  = _q->tau * (float)(_q->M); // filterbank index (soft)
+        _q->b   = (int)roundf(_q->bf);      // filterbank index
+        n++;                                // number of output samples
     }
 
-    _q->tau -= 1.0f;
-    _q->bf  -= (float)(_q->M);
-    _q->b   -= _q->M;
+    // filterbank index rolled over; update states
+    _q->tau -= 1.0f;            // instantaneous fractional offset
+    _q->bf  -= (float)(_q->M);  // filterbank index (soft)
+    _q->b   -= _q->M;           // filterbank index
 
     // set output number of samples written
     *_ny = n;
@@ -512,21 +521,24 @@ void SYMSYNC(_advance_internal_loop)(SYMSYNC() _q,
                                      TO        _mf,
                                      TO        _dmf)
 {
-    //  1.  compute timing error signal, clipping large levels
+    //  1. compute timing error signal, clipping large levels
 #if 0
     _q->q = crealf(_mf)*crealf(_dmf) + cimagf(_mf)*cimagf(_dmf);
 #else
     // TODO : use more efficient method to compute this
     _q->q = crealf( conjf(_mf)*_dmf );  // [Mengali:1997] Eq.~(8.3.5)
 #endif
-    if (_q->q > 1.0f)       _q->q =  1.0f;
-    else if (_q->q < -1.0f) _q->q = -1.0f;
+    // constrain timing error
+    if      (_q->q >  1.0f) _q->q =  1.0f;  // clip large positive values
+    else if (_q->q < -1.0f) _q->q = -1.0f;  // clip large negative values
 
-    //  2.  filter error signal: retain large percent (alpha) of
-    //      old estimate and small percent (beta) of new estimate
+    //  2. filter error signal through timing loop filter: retain large
+    //     portion of old estimate and small percent of new estimate
     iirfiltsos_rrrf_execute(_q->pll, _q->q, &_q->q_hat);
+
+    // 3. update timing phase
     _q->del = (float)(_q->k)/(float)(_q->k_out) + _q->q_hat;
-    //_q->del = (float)(_q->k) * (1 + _q->q_hat);
+    //_q->del = (float)(_q->k) * (1 + _q->q_hat);   // output 1 sample per symbol
 
 #if DEBUG_SYMSYNC_PRINT
     printf("q : %12.8f, del : %12.8f, q_hat : %12.8f\n", _q->q, _q->del, _q->q_hat);
