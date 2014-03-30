@@ -27,6 +27,9 @@
 
 #include "liquid.internal.h"
 
+// default AGC loop bandwidth
+#define AGC_DEFAULT_BW   (1e-2f)
+
 // squash output signal if squelch is activate
 #define AGC_SQUELCH_GAIN 0
 
@@ -85,7 +88,7 @@ AGC() AGC(_create)(void)
     _q->g_max   = 1e+6f;
 
     // initialize internals
-    AGC(_set_bandwidth)(_q, 0.0);
+    AGC(_set_bandwidth)(_q, AGC_DEFAULT_BW);
     _q->is_locked = 0;
 
     // create input buffer, initialize with zeros
