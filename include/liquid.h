@@ -1273,89 +1273,33 @@ typedef enum {
 
 // Design root-Nyquist filter
 //  _type   : filter type (e.g. LIQUID_RNYQUIST_RRC)
-//  _k      : samples/symbol
-//  _m      : symbol delay
-//  _beta   : excess bandwidth factor, _beta in [0,1]
-//  _dt     : fractional sample delay
-//  _h      : output coefficient buffer (length: 2*k*m+1)
+//  _k      : samples/symbol,          _k > 1
+//  _m      : symbol delay,            _m > 0
+//  _beta   : excess bandwidth factor, _beta in [0,1)
+//  _dt     : fractional sample delay, _dt in [-1,1]
+//  _h      : output coefficient buffer (length: 2*_k*_m+1)
 void liquid_firdes_rnyquist(liquid_rnyquist_type _type,
-                            unsigned int _k,
-                            unsigned int _m,
-                            float _beta,
-                            float _dt,
-                            float * _h);
+                            unsigned int         _k,
+                            unsigned int         _m,
+                            float                _beta,
+                            float                _dt,
+                            float *              _h);
 
 // Design root-Nyquist raised-cosine filter
-//  _k      : samples/symbol
-//  _m      : symbol delay
-//  _beta   : rolloff factor (0 < beta <= 1)
-//  _dt     : fractional sample delay
-//  _h      : output coefficient buffer (length: 2*k*m+1)
-void liquid_firdes_rrcos(unsigned int _k,
-                         unsigned int _m,
-                         float _beta,
-                         float _dt,
-                         float * _h);
+void liquid_firdes_rrcos(unsigned int _k, unsigned int _m, float _beta, float _dt, float * _h);
 
 // Design root-Nyquist Kaiser filter
-//  _k      : samples/symbol
-//  _m      : symbol delay
-//  _beta   : rolloff factor (0 < beta <= 1)
-//  _dt     : fractional sample delay
-//  _h      : output coefficient buffer (length: 2*k*m+1)
-void liquid_firdes_rkaiser(unsigned int _k,
-                           unsigned int _m,
-                           float _beta,
-                           float _dt,
-                           float * _h);
+void liquid_firdes_rkaiser(unsigned int _k, unsigned int _m, float _beta, float _dt, float * _h);
 
 // Design (approximate) root-Nyquist Kaiser filter
-//  _k      : samples/symbol
-//  _m      : symbol delay
-//  _beta   : rolloff factor (0 < beta <= 1)
-//  _dt     : fractional sample delay
-//  _h      : output coefficient buffer (length: 2*k*m+1)
-void liquid_firdes_arkaiser(unsigned int _k,
-                            unsigned int _m,
-                            float _beta,
-                            float _dt,
-                            float * _h);
+void liquid_firdes_arkaiser(unsigned int _k, unsigned int _m, float _beta, float _dt, float * _h);
 
 // Design root-Nyquist harris-Moerder filter
-//  _k      : samples/symbol
-//  _m      : symbol delay
-//  _beta   : rolloff factor (0 < beta <= 1)
-//  _dt     : fractional sample delay
-//  _h      : output coefficient buffer (length: 2*k*m+1)
-void liquid_firdes_hM3(unsigned int _k,
-                       unsigned int _m,
-                       float _beta,
-                       float _dt,
-                       float * _h);
+void liquid_firdes_hM3(unsigned int _k, unsigned int _m, float _beta, float _dt, float * _h);
 
-// Design GMSK transmit filter
-//  _k      : samples/symbol
-//  _m      : symbol delay
-//  _beta   : rolloff factor (0 < beta <= 1)
-//  _dt     : fractional sample delay
-//  _h      : output coefficient buffer (length: 2*k*m+1)
-void liquid_firdes_gmsktx(unsigned int _k,
-                          unsigned int _m,
-                          float _beta,
-                          float _dt,
-                          float * _h);
-
-// Design GMSK receive filter
-//  _k      : samples/symbol
-//  _m      : symbol delay
-//  _beta   : rolloff factor (0 < beta <= 1)
-//  _dt     : fractional sample delay
-//  _h      : output coefficient buffer (length: 2*k*m+1)
-void liquid_firdes_gmskrx(unsigned int _k,
-                          unsigned int _m,
-                          float _beta,
-                          float _dt,
-                          float * _h);
+// Design GMSK transmit and receive filters
+void liquid_firdes_gmsktx(unsigned int _k, unsigned int _m, float _beta, float _dt, float * _h);
+void liquid_firdes_gmskrx(unsigned int _k, unsigned int _m, float _beta, float _dt, float * _h);
 
 // Design flipped exponential Nyquist/root-Nyquist filters
 void liquid_firdes_fexp( unsigned int _k, unsigned int _m, float _beta, float _dt, float * _h);
