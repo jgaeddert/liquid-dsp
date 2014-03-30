@@ -261,6 +261,21 @@ void AGC(_execute)(AGC() _q,
 #endif
 }
 
+// execute automatic gain control on block of samples
+//  _q      : automatic gain control object
+//  _x      : input data array, [size: _n x 1]
+//  _n      : number of input, output samples
+//  _y      : output data array, [szie: _n x 1]
+void AGC(_execute_block)(AGC()          _q,
+                         TC *           _x,
+                         unsigned int   _n,
+                         TC *           _y)
+{
+    unsigned int i;
+    for (i=0; i<_n; i++)
+        AGC(_execute)(_q, _x[i], &_y[i]);
+}
+
 // get estimated signal level (linear)
 T AGC(_get_signal_level)(AGC() _q)
 {

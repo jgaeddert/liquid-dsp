@@ -132,6 +132,16 @@ void AGC(_apply_gain)(AGC() _q, TC * _y);                       \
 /* same as running push(), apply_gain() */                      \
 void AGC(_execute)(AGC() _q, TC _x, TC *_y);                    \
                                                                 \
+/* execute automatic gain control on block of samples       */  \
+/*  _q      : automatic gain control object                 */  \
+/*  _x      : input data array, [size: _n x 1]              */  \
+/*  _n      : number of input, output samples               */  \
+/*  _y      : output data array, [szie: _n x 1]             */  \
+void AGC(_execute_block)(AGC()          _q,                     \
+                         TC *           _x,                     \
+                         unsigned int   _n,                     \
+                         TC *           _y);                    \
+                                                                \
 /* Return signal level (linear) relative to unity energy */     \
 T AGC(_get_signal_level)(AGC() _q);                             \
                                                                 \
