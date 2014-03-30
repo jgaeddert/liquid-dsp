@@ -2134,12 +2134,24 @@ FIRINTERP() FIRINTERP(_create_prototype)(unsigned int _M,       \
                                          unsigned int _m,       \
                                          float        _As);     \
                                                                 \
+/* create Nyquist interpolator                              */  \
+/*  _type   : filter type (e.g. LIQUID_NYQUIST_RCOS)        */  \
+/*  _k      :   samples/symbol,          _k > 1             */  \
+/*  _m      :   filter delay (symbols),  _m > 0             */  \
+/*  _beta   :   excess bandwidth factor, _beta < 1          */  \
+/*  _dt     :   fractional sample delay, _dt in (-1, 1)     */  \
+FIRINTERP() FIRINTERP(_create_nyquist)(int          _type,      \
+                                       unsigned int _k,         \
+                                       unsigned int _m,         \
+                                       float        _beta,      \
+                                       float        _dt);       \
+                                                                \
 /* create square-root Nyquist interpolator                  */  \
 /*  _type   : filter type (e.g. LIQUID_RNYQUIST_RRC)        */  \
-/*  _k      : samples/symbol (interpolation factor)         */  \
-/*  _m      : filter delay (symbols)                        */  \
-/*  _beta   : rolloff factor (0 < beta <= 1)                */  \
-/*  _dt     : fractional sample delay                       */  \
+/*  _k      :   samples/symbol,          _k > 1             */  \
+/*  _m      :   filter delay (symbols),  _m > 0             */  \
+/*  _beta   :   excess bandwidth factor, _beta < 1          */  \
+/*  _dt     :   fractional sample delay, _dt in (-1, 1)     */  \
 FIRINTERP() FIRINTERP(_create_rnyquist)(int          _type,     \
                                         unsigned int _k,        \
                                         unsigned int _m,        \
