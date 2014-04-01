@@ -3435,6 +3435,72 @@ int detector_cccf_correlate(detector_cccf        _q,
                             float *              _gamma_hat);
 
 
+// 
+// Symbol tracking: AGC > symsync > EQ > carrier recovery
+//
+#define SYMTRACK_MANGLE_RRRF(name) LIQUID_CONCAT(symtrack_rrrf,name)
+#define SYMTRACK_MANGLE_CRCF(name) LIQUID_CONCAT(symtrack_crcf,name)
+
+#define LIQUID_SYMTRACK_DEFINE_API(SYMTRACK,TO,TC,TI)           \
+                                                                \
+typedef struct SYMTRACK(_s) * SYMTRACK();                       \
+                                                                \
+/* create symtrack object with basic parameters             */  \
+/*  _k      : samples per symbol                            */  \
+/*  _m      : filter delay (symbols)                        */  \
+/*  _beta   : filter excess bandwidth                       */  \
+/*  _ms     : modulation scheme (e.g. LIQUID_MODEM_QPSK)    */  \
+SYMTRACK() SYMTRACK(_create)(unsigned int      _k,              \
+                             unsigned int      _m,              \
+                             float             _beta,           \
+                             int               _ms);            \
+                                                                \
+/* create symtrack object from root-Nyquist prototype       */  \
+/*  _type   : filter type (e.g. LIQUID_RNYQUIST_RRC)        */  \
+/*  _k      : samples per symbol                            */  \
+/*  _m      : filter delay (symbols)                        */  \
+/*  _beta   : filter excess bandwidth                       */  \
+/*  _ms     : modulation scheme (e.g. LIQUID_MODEM_QPSK)    */  \
+SYMTRACK() SYMTRACK(_create_rnyquist)(int               _type,  \
+                                      unsigned int      _k,     \
+                                      unsigned int      _m,     \
+                                      float             _beta,  \
+                                      int               _ms);   \
+                                                                \
+                                                                \
+/* destroy symtrack object, freeing all internal memory     */  \
+void SYMTRACK(_destroy)(SYMTRACK() _q);                         \
+                                                                \
+/* print symtrack object's parameters                       */  \
+void SYMTRACK(_print)(SYMTRACK() _q);                           \
+                                                                \
+/* reset symtrack internal state                            */  \
+void SYMTRACK(_reset)(SYMTRACK() _q);                           \
+                                                                \
+/* execute synchronizer on input data array                 */  \
+/*  _q      : synchronizer object                           */  \
+/*  _x      : input data array                              */  \
+/*  _nx     : number of input samples                       */  \
+/*  _y      : output data array                             */  \
+/*  _ny     : number of samples written to output buffer    */  \
+void SYMTRACK(_execute)(SYMTRACK()     _q,                      \
+                        TI *           _x,                      \
+                        unsigned int   _nx,                     \
+                        TO *           _y,                      \
+                        unsigned int * _ny);                    \
+
+LIQUID_SYMTRACK_DEFINE_API(SYMTRACK_MANGLE_RRRF,
+                           float,
+                           float,
+                           float)
+
+LIQUID_SYMTRACK_DEFINE_API(SYMTRACK_MANGLE_CRCF,
+                           liquid_float_complex,
+                           float,
+                           liquid_float_complex)
+
+
+
 //
 // MODULE : math
 //
