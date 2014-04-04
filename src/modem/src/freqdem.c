@@ -111,6 +111,9 @@ void FREQDEM(_reset)(FREQDEM() _q)
     // reset oscillator, phase-locked loop
     nco_crcf_reset(_q->oscillator);
 
+    // reset carrier frequency
+    _q->dphi = 0.0f;
+
     // clear complex phase term
     _q->q = 0.0f;
 }

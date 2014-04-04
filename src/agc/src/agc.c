@@ -27,6 +27,9 @@
 
 #include "liquid.internal.h"
 
+// default AGC loop bandwidth
+#define AGC_DEFAULT_BW   (1e-2f)
+
 // squash output signal if squelch is activate
 #define AGC_SQUELCH_GAIN 0
 
@@ -85,7 +88,7 @@ AGC() AGC(_create)(void)
     _q->g_max   = 1e+6f;
 
     // initialize internals
-    AGC(_set_bandwidth)(_q, 0.0);
+    AGC(_set_bandwidth)(_q, AGC_DEFAULT_BW);
     _q->is_locked = 0;
 
     // create input buffer, initialize with zeros
@@ -259,6 +262,21 @@ void AGC(_execute)(AGC() _q,
 #if AGC_SQUELCH_GAIN
     *_y *= _q->g_squelch;
 #endif
+}
+
+// execute automatic gain control on block of samples
+//  _q      : automatic gain control object
+//  _x      : input data array, [size: _n x 1]
+//  _n      : number of input, output samples
+//  _y      : output data array, [szie: _n x 1]
+void AGC(_execute_block)(AGC()          _q,
+                         TC *           _x,
+                         unsigned int   _n,
+                         TC *           _y)
+{
+    unsigned int i;
+    for (i=0; i<_n; i++)
+        AGC(_execute)(_q, _x[i], &_y[i]);
 }
 
 // get estimated signal level (linear)

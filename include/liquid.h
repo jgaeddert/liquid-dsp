@@ -132,6 +132,16 @@ void AGC(_apply_gain)(AGC() _q, TC * _y);                       \
 /* same as running push(), apply_gain() */                      \
 void AGC(_execute)(AGC() _q, TC _x, TC *_y);                    \
                                                                 \
+/* execute automatic gain control on block of samples       */  \
+/*  _q      : automatic gain control object                 */  \
+/*  _x      : input data array, [size: _n x 1]              */  \
+/*  _n      : number of input, output samples               */  \
+/*  _y      : output data array, [szie: _n x 1]             */  \
+void AGC(_execute_block)(AGC()          _q,                     \
+                         TC *           _x,                     \
+                         unsigned int   _n,                     \
+                         TC *           _y);                    \
+                                                                \
 /* Return signal level (linear) relative to unity energy */     \
 T AGC(_get_signal_level)(AGC() _q);                             \
                                                                 \
@@ -203,7 +213,13 @@ void cvsd_decode8(cvsd _q, unsigned char _data, float * _audio);
 typedef struct CBUFFER(_s) * CBUFFER();                         \
                                                                 \
 /* create circular buffer object of a particular size       */  \
-CBUFFER() CBUFFER(_create)(unsigned int _n);                    \
+CBUFFER() CBUFFER(_create)(unsigned int _max_size);             \
+                                                                \
+/* create circular buffer object of a particular size and   */  \
+/* specify the maximum number of elements that can be read  */  \
+/* at any given time.                                       */  \
+CBUFFER() CBUFFER(_create_max)(unsigned int _max_size,          \
+                               unsigned int _max_read);         \
                                                                 \
 /* destroy cbuffer object, freeing all internal memory      */  \
 void CBUFFER(_destroy)(CBUFFER() _q);                           \
@@ -223,17 +239,20 @@ unsigned int CBUFFER(_size)(CBUFFER() _q);                      \
 /* get the maximum number of elements the buffer can hold   */  \
 unsigned int CBUFFER(_max_size)(CBUFFER() _q);                  \
                                                                 \
-/* read buffer contents                                     */  \
-/*  _q  : circular buffer object                            */  \
-/*  _v  : output pointer                                    */  \
-/*  _nr : number of elements referenced by _v               */  \
-void CBUFFER(_read)(CBUFFER()      _q,                          \
-                    T **           _v,                          \
-                    unsigned int * _nr);                        \
+/* get the maximum number of elements you may read at once  */  \
+unsigned int CBUFFER(_max_read)(CBUFFER() _q);                  \
                                                                 \
-/* release _n samples in the buffer                         */  \
-void CBUFFER(_release)(CBUFFER()    _q,                         \
-                       unsigned int _n);                        \
+/* get the number of available slots (max_size - size)      */  \
+unsigned int CBUFFER(_space_available)(CBUFFER() _q);           \
+                                                                \
+/* is buffer full?                                          */  \
+int CBUFFER(_is_full)(CBUFFER() _q);                            \
+                                                                \
+/* write a single sample into the buffer                    */  \
+/*  _q  : circular buffer object                            */  \
+/*  _v  : input sample                                      */  \
+void CBUFFER(_push)(CBUFFER() _q,                               \
+                    T         _v);                              \
                                                                 \
 /* write samples to the buffer                              */  \
 /*  _q  : circular buffer object                            */  \
@@ -243,11 +262,25 @@ void CBUFFER(_write)(CBUFFER()    _q,                           \
                      T *          _v,                           \
                      unsigned int _n);                          \
                                                                 \
-/* write a single sample into the buffer                    */  \
+/* remove and return a single element from the buffer       */  \
 /*  _q  : circular buffer object                            */  \
-/*  _v  : input sample                                      */  \
-void CBUFFER(_push)(CBUFFER() _q,                               \
-                    T         _v);                              \
+/*  _v  : pointer to sample output                          */  \
+void CBUFFER(_pop)(CBUFFER() _q,                                \
+                   T *       _v);                               \
+                                                                \
+/* read buffer contents                                     */  \
+/*  _q              : circular buffer object                */  \
+/*  _num_requested  : number of elements requested          */  \
+/*  _v              : output pointer                        */  \
+/*  _nr             : number of elements referenced by _v   */  \
+void CBUFFER(_read)(CBUFFER()      _q,                          \
+                    unsigned int   _num_requested,              \
+                    T **           _v,                          \
+                    unsigned int * _num_read);                  \
+                                                                \
+/* release _n samples from the buffer                       */  \
+void CBUFFER(_release)(CBUFFER()    _q,                         \
+                       unsigned int _n);                        \
 
 // Define buffer APIs
 LIQUID_CBUFFER_DEFINE_API(CBUFFER_MANGLE_FLOAT,  float)
@@ -265,16 +298,53 @@ LIQUID_CBUFFER_DEFINE_API(CBUFFER_MANGLE_CFLOAT, liquid_float_complex)
 #define LIQUID_WINDOW_DEFINE_API(WINDOW,T)                      \
                                                                 \
 typedef struct WINDOW(_s) * WINDOW();                           \
+                                                                \
+/* create window buffer object of length _n                 */  \
 WINDOW() WINDOW(_create)(unsigned int _n);                      \
-WINDOW() WINDOW(_recreate)(WINDOW() _w, unsigned int _n);       \
-void WINDOW(_destroy)(WINDOW() _w);                             \
-void WINDOW(_print)(WINDOW() _w);                               \
-void WINDOW(_debug_print)(WINDOW() _w);                         \
-void WINDOW(_clear)(WINDOW() _w);                               \
-void WINDOW(_read)(WINDOW() _w, T ** _v);                       \
-void WINDOW(_index)(WINDOW() _w, unsigned int _i, T * _v);      \
-void WINDOW(_push)(WINDOW() _b, T _v);                          \
-void WINDOW(_write)(WINDOW() _b, T * _v, unsigned int _n);
+                                                                \
+/* recreate window buffer object with new length            */  \
+/*  _q      : old window object                             */  \
+/*  _n      : new window length                             */  \
+WINDOW() WINDOW(_recreate)(WINDOW() _q, unsigned int _n);       \
+                                                                \
+/* destroy window object, freeing all internally memory     */  \
+void WINDOW(_destroy)(WINDOW() _q);                             \
+                                                                \
+/* print window object to stdout                            */  \
+void WINDOW(_print)(WINDOW() _q);                               \
+                                                                \
+/* print window object to stdout (with extra information)   */  \
+void WINDOW(_debug_print)(WINDOW() _q);                         \
+                                                                \
+/* clear/reset window object (initialize to zeros)          */  \
+void WINDOW(_clear)(WINDOW() _q);                               \
+                                                                \
+/* read window buffer contents                              */  \
+/*  _q      : window object                                 */  \
+/*  _v      : output pointer (set to internal array)        */  \
+void WINDOW(_read)(WINDOW() _q, T ** _v);                       \
+                                                                \
+/* index single element in buffer at a particular index     */  \
+/*  _q      : window object                                 */  \
+/*  _i      : index of element to read                      */  \
+/*  _v      : output value pointer                          */  \
+void WINDOW(_index)(WINDOW()     _q,                            \
+                    unsigned int _i,                            \
+                    T *          _v);                           \
+                                                                \
+/* push single element onto window buffer                   */  \
+/*  _q      : window object                                 */  \
+/*  _v      : single input element                          */  \
+void WINDOW(_push)(WINDOW() _q,                                 \
+                   T        _v);                                \
+                                                                \
+/* write array of elements onto window buffer               */  \
+/*  _q      : window object                                 */  \
+/*  _v      : input array of values to write                */  \
+/*  _n      : number of input values to write               */  \
+void WINDOW(_write)(WINDOW()     _q,                            \
+                    T *          _v,                            \
+                    unsigned int _n);                           \
 
 // Define window APIs
 LIQUID_WINDOW_DEFINE_API(WINDOW_MANGLE_FLOAT,  float)
@@ -1213,89 +1283,33 @@ typedef enum {
 
 // Design root-Nyquist filter
 //  _type   : filter type (e.g. LIQUID_RNYQUIST_RRC)
-//  _k      : samples/symbol
-//  _m      : symbol delay
-//  _beta   : excess bandwidth factor, _beta in [0,1]
-//  _dt     : fractional sample delay
-//  _h      : output coefficient buffer (length: 2*k*m+1)
+//  _k      : samples/symbol,          _k > 1
+//  _m      : symbol delay,            _m > 0
+//  _beta   : excess bandwidth factor, _beta in [0,1)
+//  _dt     : fractional sample delay, _dt in [-1,1]
+//  _h      : output coefficient buffer (length: 2*_k*_m+1)
 void liquid_firdes_rnyquist(liquid_rnyquist_type _type,
-                            unsigned int _k,
-                            unsigned int _m,
-                            float _beta,
-                            float _dt,
-                            float * _h);
+                            unsigned int         _k,
+                            unsigned int         _m,
+                            float                _beta,
+                            float                _dt,
+                            float *              _h);
 
 // Design root-Nyquist raised-cosine filter
-//  _k      : samples/symbol
-//  _m      : symbol delay
-//  _beta   : rolloff factor (0 < beta <= 1)
-//  _dt     : fractional sample delay
-//  _h      : output coefficient buffer (length: 2*k*m+1)
-void liquid_firdes_rrcos(unsigned int _k,
-                         unsigned int _m,
-                         float _beta,
-                         float _dt,
-                         float * _h);
+void liquid_firdes_rrcos(unsigned int _k, unsigned int _m, float _beta, float _dt, float * _h);
 
 // Design root-Nyquist Kaiser filter
-//  _k      : samples/symbol
-//  _m      : symbol delay
-//  _beta   : rolloff factor (0 < beta <= 1)
-//  _dt     : fractional sample delay
-//  _h      : output coefficient buffer (length: 2*k*m+1)
-void liquid_firdes_rkaiser(unsigned int _k,
-                           unsigned int _m,
-                           float _beta,
-                           float _dt,
-                           float * _h);
+void liquid_firdes_rkaiser(unsigned int _k, unsigned int _m, float _beta, float _dt, float * _h);
 
 // Design (approximate) root-Nyquist Kaiser filter
-//  _k      : samples/symbol
-//  _m      : symbol delay
-//  _beta   : rolloff factor (0 < beta <= 1)
-//  _dt     : fractional sample delay
-//  _h      : output coefficient buffer (length: 2*k*m+1)
-void liquid_firdes_arkaiser(unsigned int _k,
-                            unsigned int _m,
-                            float _beta,
-                            float _dt,
-                            float * _h);
+void liquid_firdes_arkaiser(unsigned int _k, unsigned int _m, float _beta, float _dt, float * _h);
 
 // Design root-Nyquist harris-Moerder filter
-//  _k      : samples/symbol
-//  _m      : symbol delay
-//  _beta   : rolloff factor (0 < beta <= 1)
-//  _dt     : fractional sample delay
-//  _h      : output coefficient buffer (length: 2*k*m+1)
-void liquid_firdes_hM3(unsigned int _k,
-                       unsigned int _m,
-                       float _beta,
-                       float _dt,
-                       float * _h);
+void liquid_firdes_hM3(unsigned int _k, unsigned int _m, float _beta, float _dt, float * _h);
 
-// Design GMSK transmit filter
-//  _k      : samples/symbol
-//  _m      : symbol delay
-//  _beta   : rolloff factor (0 < beta <= 1)
-//  _dt     : fractional sample delay
-//  _h      : output coefficient buffer (length: 2*k*m+1)
-void liquid_firdes_gmsktx(unsigned int _k,
-                          unsigned int _m,
-                          float _beta,
-                          float _dt,
-                          float * _h);
-
-// Design GMSK receive filter
-//  _k      : samples/symbol
-//  _m      : symbol delay
-//  _beta   : rolloff factor (0 < beta <= 1)
-//  _dt     : fractional sample delay
-//  _h      : output coefficient buffer (length: 2*k*m+1)
-void liquid_firdes_gmskrx(unsigned int _k,
-                          unsigned int _m,
-                          float _beta,
-                          float _dt,
-                          float * _h);
+// Design GMSK transmit and receive filters
+void liquid_firdes_gmsktx(unsigned int _k, unsigned int _m, float _beta, float _dt, float * _h);
+void liquid_firdes_gmskrx(unsigned int _k, unsigned int _m, float _beta, float _dt, float * _h);
 
 // Design flipped exponential Nyquist/root-Nyquist filters
 void liquid_firdes_fexp( unsigned int _k, unsigned int _m, float _beta, float _dt, float * _h);
@@ -2074,12 +2088,24 @@ FIRINTERP() FIRINTERP(_create_prototype)(unsigned int _M,       \
                                          unsigned int _m,       \
                                          float        _As);     \
                                                                 \
+/* create Nyquist interpolator                              */  \
+/*  _type   : filter type (e.g. LIQUID_NYQUIST_RCOS)        */  \
+/*  _k      :   samples/symbol,          _k > 1             */  \
+/*  _m      :   filter delay (symbols),  _m > 0             */  \
+/*  _beta   :   excess bandwidth factor, _beta < 1          */  \
+/*  _dt     :   fractional sample delay, _dt in (-1, 1)     */  \
+FIRINTERP() FIRINTERP(_create_nyquist)(int          _type,      \
+                                       unsigned int _k,         \
+                                       unsigned int _m,         \
+                                       float        _beta,      \
+                                       float        _dt);       \
+                                                                \
 /* create square-root Nyquist interpolator                  */  \
 /*  _type   : filter type (e.g. LIQUID_RNYQUIST_RRC)        */  \
-/*  _k      : samples/symbol (interpolation factor)         */  \
-/*  _m      : filter delay (symbols)                        */  \
-/*  _beta   : rolloff factor (0 < beta <= 1)                */  \
-/*  _dt     : fractional sample delay                       */  \
+/*  _k      :   samples/symbol,          _k > 1             */  \
+/*  _m      :   filter delay (symbols),  _m > 0             */  \
+/*  _beta   :   excess bandwidth factor, _beta < 1          */  \
+/*  _dt     :   fractional sample delay, _dt in (-1, 1)     */  \
 FIRINTERP() FIRINTERP(_create_rnyquist)(int          _type,     \
                                         unsigned int _k,        \
                                         unsigned int _m,        \
@@ -2648,13 +2674,24 @@ SYMSYNC() SYMSYNC(_create)(unsigned int _k,                     \
 /*  _type   : filter type (e.g. LIQUID_RNYQUIST_RRC)        */  \
 /*  _k      : samples/symbol                                */  \
 /*  _m      : symbol delay                                  */  \
-/*  _beta   : rolloff factor (0 < beta <= 1)                */  \
+/*  _beta   : rolloff factor, beta in (0,1]                 */  \
 /*  _M      : number of filters in the bank                 */  \
 SYMSYNC() SYMSYNC(_create_rnyquist)(int          _type,         \
                                     unsigned int _k,            \
                                     unsigned int _m,            \
                                     float        _beta,         \
                                     unsigned int _M);           \
+                                                                \
+/* create symsync using Kaiser filter interpolator; useful  */  \
+/* when the input signal has matched filter applied already */  \
+/*  _k      : input samples/symbol                          */  \
+/*  _m      : symbol delay                                  */  \
+/*  _beta   : rolloff factor, beta in (0,1]                 */  \
+/*  _M      : number of filters in the bank                 */  \
+SYMSYNC() SYMSYNC(_create_kaiser)(unsigned int _k,              \
+                                  unsigned int _m,              \
+                                  float        _beta,           \
+                                  unsigned int _M);             \
                                                                 \
 /* destroy symsync object, freeing all internal memory      */  \
 void SYMSYNC(_destroy)(SYMSYNC() _q);                           \

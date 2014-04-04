@@ -198,6 +198,9 @@ void EQLMS(_reset)(EQLMS() _eq)
     WINDOW(_clear)(_eq->buffer);
     wdelayf_clear(_eq->x2);
     _eq->n=0;
+
+    // reset squared magnitude sum
+    _eq->x2_sum = 0;
 }
 
 // push sample into equalizer internal buffer

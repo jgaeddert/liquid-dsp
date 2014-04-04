@@ -160,6 +160,7 @@ buffer_autotests :=						\
 #	src/buffer/tests/sbuffer_autotest.c
 
 buffer_benchmarks :=						\
+	src/buffer/bench/cbuffercf_benchmark.c			\
 	src/buffer/bench/window_push_benchmark.c		\
 	src/buffer/bench/window_read_benchmark.c		\
 
@@ -1226,6 +1227,9 @@ $(autotest_prog): $(autotest_prog).o $(autotest_obj) $(autotest_extra_obj) autot
 check: $(autotest_prog)
 	./$(autotest_prog) -v
 
+# let 'make test' be an alias for 'make check'
+test: check
+
 # clean the generated files
 clean-check:
 	$(RM) autotest_include.h $(autotest_prog).o $(autotest_prog)
@@ -1397,6 +1401,7 @@ example_programs :=						\
 	examples/smatrix_example				\
 	examples/spgram_example					\
 	examples/symsync_crcf_example				\
+	examples/symsync_crcf_kaiser_example			\
 	examples/wdelayf_example				\
 	examples/windowf_example				\
 
