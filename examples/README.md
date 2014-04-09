@@ -19,6 +19,10 @@ This directory contains all the examples for interfacing the liquid modules.
     suppress the output of the AGC when the signal level drops below a certain
     threshold.
 
+ * `agc_rrrf_squelch_example.c`:
+    Automatic gain control example demonstrating its transient response on a
+    real signal.
+
  * `ampmodem_example.c`:
     Tests simple modulation/demodulation of the ampmodem (analog amplitude
     modulator/demodulator) with noise, carrier phase, and carrier frequency
