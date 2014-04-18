@@ -33,8 +33,8 @@ struct FREQDEM(_s) {
     float kf;                   // modulation index
 
     // derived values
-    float twopikf_inv;          // 1/(2*pi*kf)
-    float dphi;                 // carrier frequency [radians]
+    T twopikf_inv;              // 1/(2*pi*kf)
+    T dphi;                     // carrier frequency [radians]
 
     // demodulator
     liquid_freqdem_type type;   // demodulator type (PLL, DELAYCONJ)
@@ -64,7 +64,13 @@ FREQDEM() FREQDEM(_create)(float               _kf,
     q->kf   = _kf;      // modulation factor
 
     // compute derived values
+#if defined LIQUID_FPM
+    // 1 / (2*pi*kf)
+    q->twopikf_inv = Q(_float_to_fixed)(1.0f / (2*M_PI*q->kf));
+#else
     q->twopikf_inv = 1.0f / (2*M_PI*q->kf);       // 1 / (2*pi*kf)
+#endif
+    q->dphi = 0;
 
     // create oscillator and initialize PLL bandwidth
     q->oscillator = NCO_CRC(_create)(LIQUID_VCO);
@@ -146,7 +152,7 @@ void FREQDEM(_demodulate)(FREQDEM() _q,
         NCO_CRC(_cexpf)(_q->oscillator, &p);
 #if LIQUID_FPM
         // TODO: compute actual error
-        T phase_error = 0;
+        T phase_error = CQ(_carg)( CQ(_mul)(CQ(_conj)(p), _r) );
 #else
         float phase_error = cargf( conjf(p)*_r );
 #endif
@@ -154,16 +160,22 @@ void FREQDEM(_demodulate)(FREQDEM() _q,
         // step the PLL and the internal NCO object
         NCO_CRC(_pll_step)(_q->oscillator, phase_error);
         NCO_CRC(_step)(_q->oscillator);
+        
+        T freq = (NCO_CRC(_get_frequency)(_q->oscillator) -_q->dphi);
 
         // demodulated signal is (weighted) nco frequency
-        *_m = (NCO_CRC(_get_frequency)(_q->oscillator) -_q->dphi) * _q->twopikf_inv;
+#if LIQUID_FPM
+        *_m = Q(_mul)(freq, _q->twopikf_inv);
+#else
+        *_m = freq * _q->twopikf_inv;
+#endif
     } else {
         // compute phase difference and normalize by modulation index
 #if LIQUID_FPM
         // TODO: compute actual output
-        *_m = 0;
-        _q->q.real = _r.real;
-        _q->q.imag = _r.imag;
+        // TODO: use approximation as imag{ conj(_q->q)*r }
+        Q(_t) v = CQ(_carg)( CQ(_mul)(CQ(_conj)(_q->q), _r) ) - _q->dphi;
+        *_m = Q(_mul)( v, _q->twopikf_inv );
 #else
         *_m = (cargf(conjf(_q->q)*(_r)) - _q->dphi) * _q->twopikf_inv;
         _q->q = _r;

@@ -30,7 +30,7 @@
 // freqmod
 struct FREQMOD(_s) {
     // modulation factor for FM
-    float kf;
+    T kf;
 
     // audio prefilter
     IIRFILT_RRR() prefilter;
@@ -53,7 +53,12 @@ FREQMOD() FREQMOD(_create)(float _kf)
     FREQMOD() q = (FREQMOD()) malloc(sizeof(struct FREQMOD(_s)));
 
     // set basic internal properties
-    q->kf   = _kf;      // modulation factor
+    // modulation factor
+#if LIQUID_FPM
+    q->kf = Q(_float_to_fixed)(_kf);
+#else
+    q->kf = _kf;
+#endif
 
     // create modulator objects
 #if defined LIQUID_FPM
@@ -91,7 +96,11 @@ void FREQMOD(_destroy)(FREQMOD() _q)
 void FREQMOD(_print)(FREQMOD() _q)
 {
     printf("freqmod:\n");
+#if LIQUID_FPM
+    printf("    mod. factor :   %8.4f\n", Q(_fixed_to_float)(_q->kf));
+#else
     printf("    mod. factor :   %8.4f\n", _q->kf);
+#endif
 }
 
 // reset modem object
@@ -117,9 +126,13 @@ void FREQMOD(_modulate)(FREQMOD() _q,
     
     // integrate result
 #if LIQUID_FPM
-    // TODO: implement fixed-point version
-    _s->real = 0;
-    _s->imag = 0;
+    // TODO: implement better fixed-point version
+    // integrate phase
+    q16_t theta_i = 0;
+    IIRFILT_RRR(_execute)(_q->integrator, Q(_mul)(_q->kf,_m), &theta_i);
+
+    // compute complex exponential
+    *_s = CQ(_cexpj)( Q(_mul)(Q(_2pi),theta_i) );
 #else
     float theta_i = 0.0f;
     IIRFILT_RRR(_execute)(_q->integrator, _q->kf*_m, &theta_i);
