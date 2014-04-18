@@ -2373,6 +2373,10 @@ RESAMP2() RESAMP2(_create)(unsigned int _m,                     \
                            float        _As);                   \
                                                                 \
 /* re-create half-band resampler with new properties        */  \
+/*  _q      :   original half-band resampler object         */  \
+/*  _m      :   filter semi-length (h_len = 4*m+1)          */  \
+/*  _f0     :   filter center frequency                     */  \
+/*  _As     :   stop-band attenuation [dB]                  */  \
 RESAMP2() RESAMP2(_recreate)(RESAMP2()    _q,                   \
                              unsigned int _m,                   \
                              float        _f0,                  \
