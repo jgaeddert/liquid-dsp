@@ -20,15 +20,13 @@
 #include "autotest/autotest.h"
 #include "liquid.h"
 
-#define DEBUG_FREQMODEM_AUTOTEST 0
-
 // Help function to keep code base small
 //  _kf     :   modulation factor
 void freqmodem_test(float _kf)
 {
     // options
     unsigned int num_samples = 1024;
-    //float tol = 1e-2f;
+    float tol = 1e-6f;
 
     unsigned int i;
 
@@ -41,41 +39,26 @@ void freqmodem_test(float _kf)
     float complex r[num_samples];       // received signal (complex baseband)
     float         y[num_samples];       // demodulator output
 
-    // generate message signal (single-frequency sine)
-    for (i=0; i<num_samples; i++)
-        m[i] = 0.7f*cosf(2*M_PI*0.013f*i + 0.0f);
-
-    // modulate/demodulate signal
+    // generate message signal (sum of sines)
     for (i=0; i<num_samples; i++) {
-        // modulate
-        freqmod_modulate(mod, m[i], &r[i]);
-
-        // demodulate
-        freqdem_demodulate(dem, r[i], &y[i]);
+        m[i] = 0.3f*cosf(2*M_PI*0.013f*i + 0.0f) +
+               0.2f*cosf(2*M_PI*0.021f*i + 0.4f) +
+               0.4f*cosf(2*M_PI*0.037f*i + 1.7f);
     }
+
+    // modulate signal
+    freqmod_modulate_block(mod, m, num_samples, r);
+
+    // demodulate signal
+    freqdem_demodulate_block(dem, r, num_samples, y);
 
     // delete modem objects
     freqmod_destroy(mod);
     freqdem_destroy(dem);
 
-    // TODO: run actual comparison: remove delay and compute difference
-#if 0
-    // compute power spectral densities and compare
-    float complex mcf[num_samples];
-    float complex ycf[num_samples];
-    float complex M[num_samples];
-    float complex Y[num_samples];
-    for (i=0; i<num_samples; i++) {
-        mcf[i] = m[i] * hamming(i,num_samples);
-        ycf[i] = y[i] * hamming(i,num_samples);
-    }
-    fft_run(num_samples, mcf, M, LIQUID_FFT_FORWARD, 0);
-    fft_run(num_samples, ycf, Y, LIQUID_FFT_FORWARD, 0);
-
-    // run test: compare spectral magnitude
-    for (i=0; i<num_samples; i++)
-        CONTEND_DELTA( cabsf(Y[i]), cabsf(M[i]), tol );
-#endif
+    // compare demodulated signal to original, skipping first sample
+    for (i=1; i<num_samples; i++)
+        CONTEND_DELTA( y[i], m[i], tol );
 }
 
 // AUTOTESTS: generic PSK
