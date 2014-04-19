@@ -32,8 +32,8 @@ struct FREQMOD(_s) {
     // modulation factor for FM
     float kf;
 
-    // frequency modulation phase integrator
-    iirfilt_rrrf integrator;
+    // frequency modulation phase integral
+    float theta_prime;
 };
 
 // create freqmod object
@@ -52,23 +52,16 @@ FREQMOD() FREQMOD(_create)(float _kf)
     // set basic internal properties
     q->kf   = _kf;      // modulation factor
 
-    // create modulator objects
-    float b[2] = {0.5f,  0.5f};
-    float a[2] = {1.0f, -1.0f};
-    q->integrator = iirfilt_rrrf_create(b,2,a,2);
-
     // reset modem object
     FREQMOD(_reset)(q);
 
+    // return object
     return q;
 }
 
 // destroy modem object
 void FREQMOD(_destroy)(FREQMOD() _q)
 {
-    // destroy integrator
-    iirfilt_rrrf_destroy(_q->integrator);
-
     // free main object memory
     free(_q);
 }
@@ -83,8 +76,8 @@ void FREQMOD(_print)(FREQMOD() _q)
 // reset modem object
 void FREQMOD(_reset)(FREQMOD() _q)
 {
-    // reset integrator object
-    iirfilt_rrrf_reset(_q->integrator);
+    // reset integral
+    _q->theta_prime = 0;
 }
 
 // modulate sample
@@ -96,8 +89,9 @@ void FREQMOD(_modulate)(FREQMOD()   _q,
                         TC *        _s)
 {
     // integrate result
-    float theta_i = 0.0f;
-    iirfilt_rrrf_execute(_q->integrator, _q->kf*_m, &theta_i);
-    *_s = cexpf(_Complex_I*2.0f*M_PI*theta_i);
+    _q->theta_prime += 2 * M_PI * _q->kf * _m;
+
+    // return complex exponential of integrated phase
+    *_s = cexpf(_Complex_I*_q->theta_prime);
 }
 

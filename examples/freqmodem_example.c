@@ -26,9 +26,9 @@ void usage()
 int main(int argc, char*argv[])
 {
     // options
-    float kf = 0.1f;                    // modulation factor
+    float        kf          = 0.1f;    // modulation factor
     unsigned int num_samples = 1024;    // number of samples
-    float SNRdB = 30.0f;                // signal-to-noise ratio [dB]
+    float        SNRdB       = 30.0f;   // signal-to-noise ratio [dB]
 
     int dopt;
     while ((dopt = getopt(argc,argv,"hn:S:k:")) != EOF) {
@@ -72,7 +72,13 @@ int main(int argc, char*argv[])
     for (i=0; i<num_samples; i++)
         freqdem_demodulate(dem, r[i], &y[i]);
 
+    // destroy modem objects
+    freqmod_destroy(mod);
+    freqdem_destroy(dem);
+
+    // 
     // write results to output file
+    //
     FILE * fid = fopen(OUTPUT_FILENAME,"w");
     fprintf(fid,"%% %s : auto-generated file\n", OUTPUT_FILENAME);
     fprintf(fid,"clear all\n");
@@ -85,10 +91,10 @@ int main(int argc, char*argv[])
     }
     // plot time-domain result
     fprintf(fid,"t=0:(n-1);\n");
-    fprintf(fid,"ydelay = 17; %% pre-assessed output delay\n");
     fprintf(fid,"figure;\n");
     fprintf(fid,"subplot(3,1,1);\n");
-    fprintf(fid,"  plot(t,m,'LineWidth',1.2,t-ydelay,y,'LineWidth',1.2);\n");
+    fprintf(fid,"  plot(t,m,'LineWidth',1,'Color',[0 0.2 0.5],...);\n");
+    fprintf(fid,"       t,y,'LineWidth',1,'Color',[0 0.5 0.2]);\n");
     fprintf(fid,"  axis([0 n -1.2 1.2]);\n");
     fprintf(fid,"  xlabel('Normalized Time [t/T_s]');\n");
     fprintf(fid,"  ylabel('m(t), y(t)');\n");
@@ -103,14 +109,15 @@ int main(int argc, char*argv[])
     fprintf(fid,"Y = 20*log10(abs(fftshift(fft(y.*w*g,nfft))));\n");
     // plot spectral response (audio)
     fprintf(fid,"subplot(3,1,2);\n");
-    fprintf(fid,"  plot(f,M,'LineWidth',1.2,f,Y,'LineWidth',1.2);\n");
+    fprintf(fid,"  plot(f,M,'LineWidth',1.2,'Color',[0 0.2 0.5],...\n");
+    fprintf(fid,"       f,Y,'LineWidth',1.2,'Color',[0 0.5 0.2]);\n");
     fprintf(fid,"  axis([-0.5 0.5 -80 20]);\n");
     fprintf(fid,"  grid on;\n");
     fprintf(fid,"  xlabel('Normalized Frequency [f/F_s]');\n");
     fprintf(fid,"  ylabel('Audio PSD [dB]');\n");
     // plot spectral response (RF)
     fprintf(fid,"subplot(3,1,3);\n");
-    fprintf(fid,"  plot(f,R,'LineWidth',1.2,'Color',[0.5 0.25 0]);\n");
+    fprintf(fid,"  plot(f,R,'LineWidth',1.2,'Color',[0.5 0 0]);\n");
     fprintf(fid,"  axis([-0.5 0.5 -80 20]);\n");
     fprintf(fid,"  grid on;\n");
     fprintf(fid,"  xlabel('Normalized Frequency [f/F_s]');\n");
@@ -118,7 +125,5 @@ int main(int argc, char*argv[])
     fclose(fid);
     printf("results written to %s\n", OUTPUT_FILENAME);
 
-    freqmod_destroy(mod);
-    freqdem_destroy(dem);
     return 0;
 }
