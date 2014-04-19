@@ -24,9 +24,7 @@
 
 // Help function to keep code base small
 //  _kf     :   modulation factor
-//  _type   :   demodulation type {LIQUID_FREQDEM_DELAYCONJ, LIQUID_FREQDEM_PLL}
-void freqmodem_test(float               _kf,
-                    liquid_freqdem_type _type)
+void freqmodem_test(float _kf)
 {
     // options
     unsigned int num_samples = 1024;
@@ -35,13 +33,13 @@ void freqmodem_test(float               _kf,
     unsigned int i;
 
     // create mod/demod objects
-    freqmod mod = freqmod_create(_kf);          // modulator
-    freqdem dem = freqdem_create(_kf,_type);    // demodulator
+    freqmod mod = freqmod_create(_kf);  // modulator
+    freqdem dem = freqdem_create(_kf);  // demodulator
 
     // allocate arrays
-    float         m[num_samples];   // message signal
-    float complex r[num_samples];   // received signal (complex baseband)
-    float         y[num_samples];   // demodulator output
+    float         m[num_samples];       // message signal
+    float complex r[num_samples];       // received signal (complex baseband)
+    float         y[num_samples];       // demodulator output
 
     // generate message signal (single-frequency sine)
     for (i=0; i<num_samples; i++)
@@ -60,6 +58,7 @@ void freqmodem_test(float               _kf,
     freqmod_destroy(mod);
     freqdem_destroy(dem);
 
+    // TODO: run actual comparison: remove delay and compute difference
 #if 0
     // compute power spectral densities and compare
     float complex mcf[num_samples];
@@ -80,6 +79,7 @@ void freqmodem_test(float               _kf,
 }
 
 // AUTOTESTS: generic PSK
-void autotest_freqmodem_0p02_delayconj() { freqmodem_test(0.02f, LIQUID_FREQDEM_DELAYCONJ); }
-void autotest_freqmodem_0p02_pll()       { freqmodem_test(0.02f, LIQUID_FREQDEM_PLL);       }
+void autotest_freqmodem_kf_0_02() { freqmodem_test(0.02f); }
+void autotest_freqmodem_kf_0_04() { freqmodem_test(0.04f); }
+void autotest_freqmodem_kf_0_08() { freqmodem_test(0.08f); }
 

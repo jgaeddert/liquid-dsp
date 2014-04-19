@@ -4292,12 +4292,6 @@ LIQUID_FREQMOD_DEFINE_API(LIQUID_FREQMOD_MANGLE_FLOAT,float,liquid_float_complex
 // Analog frequency demodulator
 //
 
-// frequency demodulator type
-typedef enum {
-    LIQUID_FREQDEM_PLL=0,       // phase-locked loop
-    LIQUID_FREQDEM_DELAYCONJ    // delay/conjugate method
-} liquid_freqdem_type;
-
 #define LIQUID_FREQDEM_MANGLE_FLOAT(name) LIQUID_CONCAT(freqdem,name)
 
 // Macro    :   FREQDEM (analog frequency modulator)
@@ -4311,9 +4305,7 @@ typedef struct FREQDEM(_s) * FREQDEM();                         \
                                                                 \
 /* create freqdem object (frequency modulator)              */  \
 /*  _kf      :   modulation factor                          */  \
-/*  _type    :   demod type (e.g. LIQUID_FREQDEM_PLL)       */  \
-FREQDEM() FREQDEM(_create)(float               _kf,             \
-                           liquid_freqdem_type _type);          \
+FREQDEM() FREQDEM(_create)(float _kf);                          \
                                                                 \
 /* destroy freqdem object                                   */  \
 void FREQDEM(_destroy)(FREQDEM() _q);                           \

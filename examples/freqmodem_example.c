@@ -21,48 +21,36 @@ void usage()
     printf("  n     : number of samples, default: 1024\n");
     printf("  S     : SNR [dB], default: 30\n");
     printf("  k     : FM modulation factor, default: 0.1\n");
-    printf("  t     : FM demod. type (delayconj/pll), default: delayconj\n");
 }
 
 int main(int argc, char*argv[])
 {
     // options
     float kf = 0.1f;                    // modulation factor
-    liquid_freqdem_type type = LIQUID_FREQDEM_DELAYCONJ;
     unsigned int num_samples = 1024;    // number of samples
     float SNRdB = 30.0f;                // signal-to-noise ratio [dB]
 
     int dopt;
-    while ((dopt = getopt(argc,argv,"hn:S:k:t:")) != EOF) {
+    while ((dopt = getopt(argc,argv,"hn:S:k:")) != EOF) {
         switch (dopt) {
         case 'h':   usage();                    return 0;
         case 'n':   num_samples = atoi(optarg); break;
         case 'S':   SNRdB       = atof(optarg); break;
         case 'k':   kf          = atof(optarg); break;
-        case 't':
-            if (strcmp(optarg,"delayconj")==0) {
-                type = LIQUID_FREQDEM_DELAYCONJ;
-            } else if (strcmp(optarg,"pll")==0) {
-                type = LIQUID_FREQDEM_PLL;
-            } else {
-                fprintf(stderr,"error: %s, invalid FM type: %s\n", argv[0], optarg);
-                exit(1);
-            }
-            break;
         default:
             exit(1);
         }
     }
 
     // create mod/demod objects
-    freqmod mod = freqmod_create(kf);       // modulator
-    freqdem dem = freqdem_create(kf,type);  // demodulator
+    freqmod mod = freqmod_create(kf);   // modulator
+    freqdem dem = freqdem_create(kf);   // demodulator
     freqmod_print(mod);
 
     unsigned int i;
-    float         m[num_samples];   // message signal
-    float complex r[num_samples];   // received signal (complex baseband)
-    float         y[num_samples];   // demodulator output
+    float         m[num_samples];       // message signal
+    float complex r[num_samples];       // received signal (complex baseband)
+    float         y[num_samples];       // demodulator output
 
     // generate message signal (sum of sines)
     for (i=0; i<num_samples; i++) {
