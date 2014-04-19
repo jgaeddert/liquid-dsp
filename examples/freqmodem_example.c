@@ -74,6 +74,15 @@ int main(int argc, char*argv[])
     freqmod_destroy(mod);
     freqdem_destroy(dem);
 
+    // compute RMS error (ignore first sample)
+    float rmse = 0.0;
+    for (i=1; i<num_samples; i++) {
+        float err = y[i] - m[i];
+        rmse += err*err;
+    }
+    rmse = sqrtf( rmse / (float)(num_samples-1) );
+    printf("rmse = %12.4e\n", rmse);
+
     // 
     // write results to output file
     //

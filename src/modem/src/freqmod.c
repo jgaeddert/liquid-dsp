@@ -29,11 +29,13 @@
 
 // freqmod
 struct FREQMOD(_s) {
-    // modulation factor for FM
-    float kf;
+    float kf;   // modulation factor for FM
+    T     ref;  // phase reference: kf*2^16
 
-    // frequency modulation phase integral
-    float theta_prime;
+    // look-up table
+    unsigned int sincos_table_len;      // table length: 10 bits
+    uint16_t     sincos_table_phase;    // accumulated phase: 16 bits
+    TC *         sincos_table;          // sin|cos look-up table: 2^10 entries
 };
 
 // create freqmod object
@@ -49,8 +51,17 @@ FREQMOD() FREQMOD(_create)(float _kf)
     // create main object memory
     FREQMOD() q = (freqmod) malloc(sizeof(struct FREQMOD(_s)));
 
-    // set basic internal properties
-    q->kf   = _kf;      // modulation factor
+    // set modulation factor
+    q->kf  = _kf;
+    q->ref = q->kf * (1<<16);
+
+    // initialize look-up table
+    q->sincos_table_len = 1024;
+    q->sincos_table     = (TC*) malloc( q->sincos_table_len*sizeof(TC) );
+    unsigned int i;
+    for (i=0; i<q->sincos_table_len; i++) {
+        q->sincos_table[i] = cexpf(_Complex_I*2*M_PI*(float)i / (float)(q->sincos_table_len) );
+    }
 
     // reset modem object
     FREQMOD(_reset)(q);
@@ -62,6 +73,9 @@ FREQMOD() FREQMOD(_create)(float _kf)
 // destroy modem object
 void FREQMOD(_destroy)(FREQMOD() _q)
 {
+    // free table
+    free(_q->sincos_table);
+
     // free main object memory
     free(_q);
 }
@@ -70,14 +84,15 @@ void FREQMOD(_destroy)(FREQMOD() _q)
 void FREQMOD(_print)(FREQMOD() _q)
 {
     printf("freqmod:\n");
-    printf("    mod. factor :   %8.4f\n", _q->kf);
+    printf("    mod. factor         :   %8.4f\n", _q->kf);
+    printf("    sincos table len    :   %u\n",    _q->sincos_table_len);
 }
 
 // reset modem object
 void FREQMOD(_reset)(FREQMOD() _q)
 {
-    // reset integral
-    _q->theta_prime = 0;
+    // reset phase accumulation
+    _q->sincos_table_phase = 0;
 }
 
 // modulate sample
@@ -88,11 +103,18 @@ void FREQMOD(_modulate)(FREQMOD()   _q,
                         T           _m,
                         TC *        _s)
 {
-    // integrate result
-    _q->theta_prime += 2 * M_PI * _q->kf * _m;
+    // accumulate phase; this wraps around a 16-bit boundary and ensures
+    // that negative numbers are mapped to positive numbers
+    _q->sincos_table_phase =
+        (_q->sincos_table_phase + (1<<16) + (int)roundf(_q->ref*_m)) & 0xffff;
 
-    // return complex exponential of integrated phase
-    *_s = cexpf(_Complex_I*_q->theta_prime);
+    // compute table index: mask out 10 most significant bits with rounding
+    // (adding 0x0020 effectively rounds to nearest value with 10 bits of
+    // precision)
+    unsigned int index = ( (_q->sincos_table_phase+0x0020) >> 6) & 0x03ff;
+
+    // return table value at index
+    *_s = _q->sincos_table[index];
 }
 
 // modulate block of samples
