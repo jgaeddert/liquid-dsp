@@ -18,7 +18,7 @@
  */
 
 //
-// Frequency modulator/demodulator
+// Frequency demodulator
 //
 
 #include <stdlib.h>
@@ -30,14 +30,10 @@
 // freqdem
 struct FREQDEM(_s) {
     // common
-    float kf;           // modulation index
+    float kf;   // modulation index
+    T     ref;  // 1/(2*pi*kf)
 
-    // derived values
-    float twopikf_inv;  // 1/(2*pi*kf)
-    float dphi;         // carrier frequency [radians]
-
-    // demodulator
-    float complex q;    // phase difference
+    TC r_prime; // previous received sample
 };
 
 // create freqdem object
@@ -53,15 +49,16 @@ FREQDEM() FREQDEM(_create)(float _kf)
     // create main object memory
     FREQDEM() q = (freqdem) malloc(sizeof(struct FREQDEM(_s)));
 
-    // set basic internal properties
-    q->kf   = _kf;      // modulation factor
+    // set internal modulation factor
+    q->kf = _kf;
 
     // compute derived values
-    q->twopikf_inv = 1.0f / (2*M_PI*q->kf);       // 1 / (2*pi*kf)
+    q->ref = 1.0f / (2*M_PI*q->kf);
 
     // reset modem object
     FREQDEM(_reset)(q);
 
+    // return object
     return q;
 }
 
@@ -82,11 +79,8 @@ void FREQDEM(_print)(FREQDEM() _q)
 // reset modem object
 void FREQDEM(_reset)(FREQDEM() _q)
 {
-    // reset carrier frequency
-    _q->dphi = 0.0f;
-
     // clear complex phase term
-    _q->q = 0.0f;
+    _q->r_prime = 0;
 }
 
 // demodulate sample
@@ -98,10 +92,10 @@ void FREQDEM(_demodulate)(FREQDEM() _q,
                           T *       _m)
 {
     // compute phase difference and normalize by modulation index
-    *_m = (cargf(conjf(_q->q)*(_r)) - _q->dphi) * _q->twopikf_inv;
+    *_m = cargf( conjf(_q->r_prime)*_r ) * _q->ref;
 
     // save previous input sample
-    _q->q = _r;
+    _q->r_prime = _r;
 }
 
 // demodulate block of samples
