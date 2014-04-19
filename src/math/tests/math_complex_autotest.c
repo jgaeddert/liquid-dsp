@@ -18,7 +18,7 @@
  */
 
 #include "autotest/autotest.h"
-#include "liquid.h"
+#include "liquid.internal.h"
 
 // 
 // AUTOTEST: cexpf

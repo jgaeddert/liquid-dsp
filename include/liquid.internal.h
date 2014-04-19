@@ -1235,6 +1235,38 @@ void ofdmflexframesync_rxpayload(ofdmflexframesync _q,
 // MODULE : math
 //
 
+// 
+// basic trigonometric functions
+//
+float liquid_sinf(float _x);
+float liquid_cosf(float _x);
+float liquid_tanf(float _x);
+void  liquid_sincosf(float _x,
+                     float * _sinf,
+                     float * _cosf);
+float liquid_expf(float _x);
+float liquid_logf(float _x);
+
+// 
+// complex math operations
+//
+
+// complex square root
+float complex liquid_csqrtf(float complex _z);
+
+// complex exponent, logarithm
+float complex liquid_cexpf(float complex _z);
+float complex liquid_clogf(float complex _z);
+
+// complex arcsin, arccos, arctan
+float complex liquid_casinf(float complex _z);
+float complex liquid_cacosf(float complex _z);
+float complex liquid_catanf(float complex _z);
+
+// faster approximation to arg{*}
+float liquid_cargf_approx(float complex _z);
+
+
 // internal trig helper functions
 
 // complex rotation vector: cexpf(_Complex_I*THETA)

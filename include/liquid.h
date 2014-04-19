@@ -3443,38 +3443,6 @@ int detector_cccf_correlate(detector_cccf        _q,
 // MODULE : math
 //
 
-// 
-// basic trigonometric functions
-//
-float liquid_sinf(float _x);
-float liquid_cosf(float _x);
-float liquid_tanf(float _x);
-void  liquid_sincosf(float _x,
-                     float * _sinf,
-                     float * _cosf);
-float liquid_expf(float _x);
-float liquid_logf(float _x);
-
-// 
-// complex math operations
-//
-
-// complex square root
-liquid_float_complex liquid_csqrtf(liquid_float_complex _z);
-
-// complex exponent, logarithm
-liquid_float_complex liquid_cexpf(liquid_float_complex _z);
-liquid_float_complex liquid_clogf(liquid_float_complex _z);
-
-// complex arcsin, arccos, arctan
-liquid_float_complex liquid_casinf(liquid_float_complex _z);
-liquid_float_complex liquid_cacosf(liquid_float_complex _z);
-liquid_float_complex liquid_catanf(liquid_float_complex _z);
-
-// faster approximation to arg{*}
-float liquid_cargf_approx(liquid_float_complex _z);
-
-
 // ln( Gamma(z) )
 float liquid_lngammaf(float _z);
 
