@@ -104,4 +104,19 @@ void FREQDEM(_demodulate)(FREQDEM() _q,
     _q->q = _r;
 }
 
+// demodulate block of samples
+//  _q      :   frequency demodulator object
+//  _r      :   received signal r(t) [size: _n x 1]
+//  _n      :   number of input, output samples
+//  _m      :   message signal m(t), [size: _n x 1]
+void FREQDEM(_demodulate_block)(FREQDEM()    _q,
+                                TC *         _r,
+                                unsigned int _n,
+                                T *          _m)
+{
+    // TODO: implement more efficient method
+    unsigned int i;
+    for (i=0; i<_n; i++)
+        FREQDEM(_demodulate)(_q, _r[i], &_m[i]);
+}
 

@@ -95,3 +95,19 @@ void FREQMOD(_modulate)(FREQMOD()   _q,
     *_s = cexpf(_Complex_I*_q->theta_prime);
 }
 
+// modulate block of samples
+//  _q      :   frequency modulator object
+//  _m      :   message signal m(t), [size: _n x 1]
+//  _n      :   number of input, output samples
+//  _s      :   complex baseband signal s(t) [size: _n x 1]
+void FREQMOD(_modulate_block)(FREQMOD()    _q,
+                              T *          _m,
+                              unsigned int _n,
+                              TC *         _s)
+{
+    // TODO: implement more efficient method
+    unsigned int i;
+    for (i=0; i<_n; i++)
+        FREQMOD(_modulate)(_q, _m[i], &_s[i]);
+}
+

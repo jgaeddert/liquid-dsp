@@ -4275,13 +4275,23 @@ void FREQMOD(_print)(FREQMOD() _q);                             \
 /* reset state                                              */  \
 void FREQMOD(_reset)(FREQMOD() _q);                             \
                                                                 \
-/* modulate sample                                          */  \
+/* modulate single sample                                   */  \
 /*  _q      :   frequency modulator object                  */  \
 /*  _m      :   message signal m(t)                         */  \
 /*  _s      :   complex baseband signal s(t)                */  \
 void FREQMOD(_modulate)(FREQMOD() _q,                           \
                         T         _m,                           \
                         TC *      _s);                          \
+                                                                \
+/* modulate block of samples                                */  \
+/*  _q      :   frequency modulator object                  */  \
+/*  _m      :   message signal m(t), [size: _n x 1]         */  \
+/*  _n      :   number of input, output samples             */  \
+/*  _s      :   complex baseband signal s(t) [size: _n x 1] */  \
+void FREQMOD(_modulate_block)(FREQMOD()    _q,                  \
+                              T *          _m,                  \
+                              unsigned int _n,                  \
+                              TC *         _s);                 \
 
 // define freqmod APIs
 LIQUID_FREQMOD_DEFINE_API(LIQUID_FREQMOD_MANGLE_FLOAT,float,liquid_float_complex)
@@ -4323,8 +4333,18 @@ void FREQDEM(_reset)(FREQDEM() _q);                             \
 void FREQDEM(_demodulate)(FREQDEM() _q,                         \
                           TC        _r,                         \
                           T *       _m);                        \
+                                                                \
+/* demodulate block of samples                              */  \
+/*  _q      :   frequency demodulator object                */  \
+/*  _r      :   received signal r(t) [size: _n x 1]         */  \
+/*  _n      :   number of input, output samples             */  \
+/*  _m      :   message signal m(t), [size: _n x 1]         */  \
+void FREQDEM(_demodulate_block)(FREQDEM()    _q,                \
+                                TC *         _r,                \
+                                unsigned int _n,                \
+                                T *          _m);               \
 
-// define freqmod APIs
+// define freqdem APIs
 LIQUID_FREQDEM_DEFINE_API(LIQUID_FREQDEM_MANGLE_FLOAT,float,liquid_float_complex)
 
 

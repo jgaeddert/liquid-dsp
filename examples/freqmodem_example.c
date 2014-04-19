@@ -60,8 +60,7 @@ int main(int argc, char*argv[])
     }
 
     // modulate signal
-    for (i=0; i<num_samples; i++)
-        freqmod_modulate(mod, m[i], &r[i]);
+    freqmod_modulate_block(mod, m, num_samples, r);
 
     // add channel impairments
     float nstd = powf(10.0f,-SNRdB/20.0f);
@@ -69,8 +68,7 @@ int main(int argc, char*argv[])
         r[i] += nstd*( randnf() + _Complex_I*randnf() ) * M_SQRT1_2;
 
     // demodulate signal
-    for (i=0; i<num_samples; i++)
-        freqdem_demodulate(dem, r[i], &y[i]);
+    freqdem_demodulate_block(dem, r, num_samples, y);
 
     // destroy modem objects
     freqmod_destroy(mod);
