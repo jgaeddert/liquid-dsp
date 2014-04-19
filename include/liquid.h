@@ -74,7 +74,7 @@ int liquid_libversion_number(void);
 #if LIQUID_USE_COMPLEX_H==1
 #   include <complex.h>
 #   define LIQUID_DEFINE_COMPLEX(R,C) typedef R _Complex C
-#elif defined _GLIBCXX_COMPLEX
+#elif defined _GLIBCXX_COMPLEX || defined _LIBCPP_COMPLEX
 #   define LIQUID_DEFINE_COMPLEX(R,C) typedef std::complex<R> C
 #else
 #   define LIQUID_DEFINE_COMPLEX(R,C) typedef struct {R real; R imag;} C;
