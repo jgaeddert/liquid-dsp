@@ -135,6 +135,10 @@ void gmskmod_modulate(gmskmod _q,
         // integrate phase state
         _q->theta += phi[i];
 
+        // ensure phase in [-pi, pi]
+        if (_q->theta >  M_PI) _q->theta -= 2*M_PI;
+        if (_q->theta < -M_PI) _q->theta += 2*M_PI;
+
         // compute output
         _y[i] = liquid_cexpjf(_q->theta);
     }
