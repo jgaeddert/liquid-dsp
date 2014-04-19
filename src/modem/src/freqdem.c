@@ -18,7 +18,7 @@
  */
 
 //
-// Frequency modulator/demodulator
+// Frequency demodulator
 //
 
 #include <stdlib.h>
@@ -30,25 +30,15 @@
 // freqdem
 struct FREQDEM(_s) {
     // common
-    float kf;                   // modulation index
+    float kf;   // modulation index
+    T     ref;  // 1/(2*pi*kf)
 
-    // derived values
-    float twopikf_inv;          // 1/(2*pi*kf)
-    float dphi;                 // carrier frequency [radians]
-
-    // demodulator
-    liquid_freqdem_type type;   // demodulator type (PLL, DELAYCONJ)
-    nco_crcf oscillator;        // nco (for phase-locked loop demod)
-    float complex q;            // phase difference
-    firfilt_crcf rxfilter;      // initial receiver filter
-    iirfilt_rrrf postfilter;    // post-filter
+    TC r_prime; // previous received sample
 };
 
 // create freqdem object
 //  _kf     :   modulation factor
-//  _type   :   demodulation type (e.g. LIQUID_FREQDEM_DELAYCONJ)
-FREQDEM() FREQDEM(_create)(float               _kf,
-                           liquid_freqdem_type _type)
+FREQDEM() FREQDEM(_create)(float _kf)
 {
     // validate input
     if (_kf <= 0.0f || _kf > 1.0) {
@@ -59,41 +49,22 @@ FREQDEM() FREQDEM(_create)(float               _kf,
     // create main object memory
     FREQDEM() q = (freqdem) malloc(sizeof(struct FREQDEM(_s)));
 
-    // set basic internal properties
-    q->type = _type;    // demod type
-    q->kf   = _kf;      // modulation factor
+    // set internal modulation factor
+    q->kf = _kf;
 
     // compute derived values
-    q->twopikf_inv = 1.0f / (2*M_PI*q->kf);       // 1 / (2*pi*kf)
-
-    // create oscillator and initialize PLL bandwidth
-    q->oscillator = nco_crcf_create(LIQUID_VCO);
-    nco_crcf_pll_set_bandwidth(q->oscillator, 0.08f);
-
-    // create initial rx filter
-    q->rxfilter = firfilt_crcf_create_kaiser(17, 0.2f, 40.0f, 0.0f);
-
-    // create DC-blocking post-filter
-    q->postfilter = iirfilt_rrrf_create_dc_blocker(1e-4f);
+    q->ref = 1.0f / (2*M_PI*q->kf);
 
     // reset modem object
     FREQDEM(_reset)(q);
 
+    // return object
     return q;
 }
 
 // destroy modem object
 void FREQDEM(_destroy)(FREQDEM() _q)
 {
-    // destroy rx filter
-    firfilt_crcf_destroy(_q->rxfilter);
-
-    // destroy post-filter
-    iirfilt_rrrf_destroy(_q->postfilter);
-
-    // destroy nco object
-    nco_crcf_destroy(_q->oscillator);
-
     // free main object memory
     free(_q);
 }
@@ -108,53 +79,38 @@ void FREQDEM(_print)(FREQDEM() _q)
 // reset modem object
 void FREQDEM(_reset)(FREQDEM() _q)
 {
-    // reset oscillator, phase-locked loop
-    nco_crcf_reset(_q->oscillator);
-
-    // reset carrier frequency
-    _q->dphi = 0.0f;
-
     // clear complex phase term
-    _q->q = 0.0f;
+    _q->r_prime = 0;
 }
 
 // demodulate sample
 //  _q      :   FM demodulator object
 //  _r      :   received signal
 //  _m      :   output message signal
-void FREQDEM(_demodulate)(FREQDEM()              _q,
-                        liquid_float_complex _r,
-                        float *              _m)
+void FREQDEM(_demodulate)(FREQDEM() _q,
+                          TC        _r,
+                          T *       _m)
 {
-    // apply rx filter to input
-    firfilt_crcf_push(_q->rxfilter, _r);
-    firfilt_crcf_execute(_q->rxfilter, &_r);
+    // compute phase difference and normalize by modulation index
+    *_m = cargf( conjf(_q->r_prime)*_r ) * _q->ref;
 
-    if (_q->type == LIQUID_FREQDEM_PLL) {
-        // 
-        // push through phase-locked loop
-        //
-
-        // compute phase error from internal NCO complex exponential
-        float complex p;
-        nco_crcf_cexpf(_q->oscillator, &p);
-        float phase_error = cargf( conjf(p)*_r );
-
-        // step the PLL and the internal NCO object
-        nco_crcf_pll_step(_q->oscillator, phase_error);
-        nco_crcf_step(_q->oscillator);
-
-        // demodulated signal is (weighted) nco frequency
-        *_m = (nco_crcf_get_frequency(_q->oscillator) -_q->dphi) * _q->twopikf_inv;
-    } else {
-        // compute phase difference and normalize by modulation index
-        *_m = (cargf(conjf(_q->q)*(_r)) - _q->dphi) * _q->twopikf_inv;
-
-        _q->q = _r;
-    }
-
-    // apply post-filtering
-    iirfilt_rrrf_execute(_q->postfilter, *_m, _m);
+    // save previous input sample
+    _q->r_prime = _r;
 }
 
+// demodulate block of samples
+//  _q      :   frequency demodulator object
+//  _r      :   received signal r(t) [size: _n x 1]
+//  _n      :   number of input, output samples
+//  _m      :   message signal m(t), [size: _n x 1]
+void FREQDEM(_demodulate_block)(FREQDEM()    _q,
+                                TC *         _r,
+                                unsigned int _n,
+                                T *          _m)
+{
+    // TODO: implement more efficient method
+    unsigned int i;
+    for (i=0; i<_n; i++)
+        FREQDEM(_demodulate)(_q, _r[i], &_m[i]);
+}
 

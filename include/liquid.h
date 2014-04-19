@@ -4243,13 +4243,23 @@ void FREQMOD(_print)(FREQMOD() _q);                             \
 /* reset state                                              */  \
 void FREQMOD(_reset)(FREQMOD() _q);                             \
                                                                 \
-/* modulate sample                                          */  \
+/* modulate single sample                                   */  \
 /*  _q      :   frequency modulator object                  */  \
 /*  _m      :   message signal m(t)                         */  \
 /*  _s      :   complex baseband signal s(t)                */  \
 void FREQMOD(_modulate)(FREQMOD() _q,                           \
                         T         _m,                           \
                         TC *      _s);                          \
+                                                                \
+/* modulate block of samples                                */  \
+/*  _q      :   frequency modulator object                  */  \
+/*  _m      :   message signal m(t), [size: _n x 1]         */  \
+/*  _n      :   number of input, output samples             */  \
+/*  _s      :   complex baseband signal s(t) [size: _n x 1] */  \
+void FREQMOD(_modulate_block)(FREQMOD()    _q,                  \
+                              T *          _m,                  \
+                              unsigned int _n,                  \
+                              TC *         _s);                 \
 
 // define freqmod APIs
 LIQUID_FREQMOD_DEFINE_API(LIQUID_FREQMOD_MANGLE_FLOAT,float,liquid_float_complex)
@@ -4259,12 +4269,6 @@ LIQUID_FREQMOD_DEFINE_API(LIQUID_FREQMOD_MANGLE_FLOAT,float,liquid_float_complex
 // 
 // Analog frequency demodulator
 //
-
-// frequency demodulator type
-typedef enum {
-    LIQUID_FREQDEM_PLL=0,       // phase-locked loop
-    LIQUID_FREQDEM_DELAYCONJ    // delay/conjugate method
-} liquid_freqdem_type;
 
 #define LIQUID_FREQDEM_MANGLE_FLOAT(name) LIQUID_CONCAT(freqdem,name)
 
@@ -4279,9 +4283,7 @@ typedef struct FREQDEM(_s) * FREQDEM();                         \
                                                                 \
 /* create freqdem object (frequency modulator)              */  \
 /*  _kf      :   modulation factor                          */  \
-/*  _type    :   demod type (e.g. LIQUID_FREQDEM_PLL)       */  \
-FREQDEM() FREQDEM(_create)(float               _kf,             \
-                           liquid_freqdem_type _type);          \
+FREQDEM() FREQDEM(_create)(float _kf);                          \
                                                                 \
 /* destroy freqdem object                                   */  \
 void FREQDEM(_destroy)(FREQDEM() _q);                           \
@@ -4299,8 +4301,18 @@ void FREQDEM(_reset)(FREQDEM() _q);                             \
 void FREQDEM(_demodulate)(FREQDEM() _q,                         \
                           TC        _r,                         \
                           T *       _m);                        \
+                                                                \
+/* demodulate block of samples                              */  \
+/*  _q      :   frequency demodulator object                */  \
+/*  _r      :   received signal r(t) [size: _n x 1]         */  \
+/*  _n      :   number of input, output samples             */  \
+/*  _m      :   message signal m(t), [size: _n x 1]         */  \
+void FREQDEM(_demodulate_block)(FREQDEM()    _q,                \
+                                TC *         _r,                \
+                                unsigned int _n,                \
+                                T *          _m);               \
 
-// define freqmod APIs
+// define freqdem APIs
 LIQUID_FREQDEM_DEFINE_API(LIQUID_FREQDEM_MANGLE_FLOAT,float,liquid_float_complex)
 
 
