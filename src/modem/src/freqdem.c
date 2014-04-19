@@ -30,16 +30,14 @@
 // freqdem
 struct FREQDEM(_s) {
     // common
-    float kf;                   // modulation index
+    float kf;           // modulation index
 
     // derived values
-    float twopikf_inv;          // 1/(2*pi*kf)
-    float dphi;                 // carrier frequency [radians]
+    float twopikf_inv;  // 1/(2*pi*kf)
+    float dphi;         // carrier frequency [radians]
 
     // demodulator
-    float complex q;            // phase difference
-    firfilt_crcf rxfilter;      // initial receiver filter
-    iirfilt_rrrf postfilter;    // post-filter
+    float complex q;    // phase difference
 };
 
 // create freqdem object
@@ -61,12 +59,6 @@ FREQDEM() FREQDEM(_create)(float _kf)
     // compute derived values
     q->twopikf_inv = 1.0f / (2*M_PI*q->kf);       // 1 / (2*pi*kf)
 
-    // create initial rx filter
-    q->rxfilter = firfilt_crcf_create_kaiser(17, 0.2f, 40.0f, 0.0f);
-
-    // create DC-blocking post-filter
-    q->postfilter = iirfilt_rrrf_create_dc_blocker(1e-4f);
-
     // reset modem object
     FREQDEM(_reset)(q);
 
@@ -76,12 +68,6 @@ FREQDEM() FREQDEM(_create)(float _kf)
 // destroy modem object
 void FREQDEM(_destroy)(FREQDEM() _q)
 {
-    // destroy rx filter
-    firfilt_crcf_destroy(_q->rxfilter);
-
-    // destroy post-filter
-    iirfilt_rrrf_destroy(_q->postfilter);
-
     // free main object memory
     free(_q);
 }
@@ -107,22 +93,15 @@ void FREQDEM(_reset)(FREQDEM() _q)
 //  _q      :   FM demodulator object
 //  _r      :   received signal
 //  _m      :   output message signal
-void FREQDEM(_demodulate)(FREQDEM()              _q,
-                        liquid_float_complex _r,
-                        float *              _m)
+void FREQDEM(_demodulate)(FREQDEM() _q,
+                          TC        _r,
+                          T *       _m)
 {
-    // apply rx filter to input
-    firfilt_crcf_push(_q->rxfilter, _r);
-    firfilt_crcf_execute(_q->rxfilter, &_r);
-
     // compute phase difference and normalize by modulation index
     *_m = (cargf(conjf(_q->q)*(_r)) - _q->dphi) * _q->twopikf_inv;
 
     // save previous input sample
     _q->q = _r;
-
-    // apply post-filtering
-    iirfilt_rrrf_execute(_q->postfilter, *_m, _m);
 }
 
 

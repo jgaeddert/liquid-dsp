@@ -32,9 +32,6 @@ struct FREQMOD(_s) {
     // modulation factor for FM
     float kf;
 
-    // audio prefilter
-    iirfilt_rrrf prefilter;
-
     // frequency modulation phase integrator
     iirfilt_rrrf integrator;
 };
@@ -60,9 +57,6 @@ FREQMOD() FREQMOD(_create)(float _kf)
     float a[2] = {1.0f, -1.0f};
     q->integrator = iirfilt_rrrf_create(b,2,a,2);
 
-    // create prefilter (block DC values)
-    q->prefilter = iirfilt_rrrf_create_dc_blocker(5e-4f);
-
     // reset modem object
     FREQMOD(_reset)(q);
 
@@ -72,9 +66,6 @@ FREQMOD() FREQMOD(_create)(float _kf)
 // destroy modem object
 void FREQMOD(_destroy)(FREQMOD() _q)
 {
-    // destroy audio pre-filter
-    iirfilt_rrrf_destroy(_q->prefilter);
-
     // destroy integrator
     iirfilt_rrrf_destroy(_q->integrator);
 
@@ -92,9 +83,6 @@ void FREQMOD(_print)(FREQMOD() _q)
 // reset modem object
 void FREQMOD(_reset)(FREQMOD() _q)
 {
-    // reset audio pre-filter
-    iirfilt_rrrf_reset(_q->prefilter);
-
     // reset integrator object
     iirfilt_rrrf_reset(_q->integrator);
 }
@@ -103,13 +91,10 @@ void FREQMOD(_reset)(FREQMOD() _q)
 //  _q      :   frequency modulator object
 //  _m      :   message signal m(t)
 //  _s      :   complex baseband signal s(t)
-void FREQMOD(_modulate)(FREQMOD()         _q,
-                      float           _m,
-                      float complex * _s)
+void FREQMOD(_modulate)(FREQMOD()   _q,
+                        T           _m,
+                        TC *        _s)
 {
-    // push sample through pre-filter
-    iirfilt_rrrf_execute(_q->prefilter, _m, &_m);
-    
     // integrate result
     float theta_i = 0.0f;
     iirfilt_rrrf_execute(_q->integrator, _q->kf*_m, &theta_i);
