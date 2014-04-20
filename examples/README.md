@@ -13,16 +13,6 @@ This directory contains all the examples for interfacing the liquid modules.
     gives instantaneous amplitude levels near zero.  This example tests the
     response of the AGC to these types of signals.
 
- * `agc_crcf_squelch_example.c`:
-    Automatic gain control with squelch example.  This example demonstrates
-    the squelch control functionality of the AGC module.  Squelch is used to
-    suppress the output of the AGC when the signal level drops below a certain
-    threshold.
-
- * `agc_rrrf_squelch_example.c`:
-    Automatic gain control example demonstrating its transient response on a
-    real signal.
-
  * `ampmodem_example.c`:
     Tests simple modulation/demodulation of the ampmodem (analog amplitude
     modulator/demodulator) with noise, carrier phase, and carrier frequency
