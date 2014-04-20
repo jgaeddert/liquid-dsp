@@ -88,16 +88,6 @@ LIQUID_DEFINE_COMPLEX(double, liquid_double_complex);
 // MODULE : agc (automatic gain control)
 //
 
-// agc squelch status codes
-enum {
-    LIQUID_AGC_SQUELCH_ENABLED=0,   // squelch enabled
-    LIQUID_AGC_SQUELCH_RISE,        // rising edge trigger
-    LIQUID_AGC_SQUELCH_SIGNALHI,    // signal high
-    LIQUID_AGC_SQUELCH_FALL,        // falling edge trigger
-    LIQUID_AGC_SQUELCH_SIGNALLO,    // signal low, but no timeout
-    LIQUID_AGC_SQUELCH_TIMEOUT      // signal low, timed out
-};
-
 #define AGC_MANGLE_CRCF(name)   LIQUID_CONCAT(agc_crcf, name)
 #define AGC_MANGLE_RRRF(name)   LIQUID_CONCAT(agc_rrrf, name)
 
@@ -108,29 +98,35 @@ enum {
 #define LIQUID_AGC_DEFINE_API(AGC,T,TC)                         \
 typedef struct AGC(_s) * AGC();                                 \
                                                                 \
-AGC() AGC(_create)();                                           \
+/* create automatic gain control object                     */  \
+AGC() AGC(_create)(void);                                       \
+                                                                \
+/* destroy object, freeing all internally-allocated memory  */  \
 void AGC(_destroy)(AGC() _q);                                   \
+                                                                \
+/* print object properties to stdout                        */  \
 void AGC(_print)(AGC() _q);                                     \
+                                                                \
+/* reset object's internal state                            */  \
 void AGC(_reset)(AGC() _q);                                     \
                                                                 \
-/* set gain limits */                                           \
-void AGC(_set_gain_limits)(AGC() _q, T _gmin, T _gmax);         \
-                                                                \
-/* Set loop filter bandwidth; attack/release time */            \
-void AGC(_set_bandwidth)(AGC() _q, T _bt);                      \
+/* set loop filter bandwidth; attack/release time           */  \
+/*  _q      :   agc object                                  */  \
+/*  _BT     :   bandwidth                                   */  \
+void AGC(_set_bandwidth)(AGC() _q,                              \
+                         T     _bt);                            \
                                                                 \
 /* lock/unlock gain control */                                  \
-void AGC(_lock)(AGC() _q);                                      \
+void AGC(_lock)(  AGC() _q);                                    \
 void AGC(_unlock)(AGC() _q);                                    \
                                                                 \
-/* push input sample, update internal tracking loop */          \
-void AGC(_push)(AGC() _q, TC _x);                               \
-                                                                \
-/* apply gain to input sample */                                \
-void AGC(_apply_gain)(AGC() _q, TC * _y);                       \
-                                                                \
-/* same as running push(), apply_gain() */                      \
-void AGC(_execute)(AGC() _q, TC _x, TC *_y);                    \
+/* execute automatic gain control on an single input sample */  \
+/*  _q      : automatic gain control object                 */  \
+/*  _x      : input sample                                  */  \
+/*  _y      : output sample                                 */  \
+void AGC(_execute)(AGC() _q,                                    \
+                   TC    _x,                                    \
+                   TC *  _y);                                   \
                                                                 \
 /* execute automatic gain control on block of samples       */  \
 /*  _q      : automatic gain control object                 */  \
@@ -142,24 +138,14 @@ void AGC(_execute_block)(AGC()          _q,                     \
                          unsigned int   _n,                     \
                          TC *           _y);                    \
                                                                 \
-/* Return signal level (linear) relative to unity energy */     \
+/* return signal level (linear) relative to unity energy    */  \
 T AGC(_get_signal_level)(AGC() _q);                             \
                                                                 \
-/* Return signal level (dB) relative to unity energy */         \
+/* return signal level (dB) relative to unity energy        */  \
 T AGC(_get_rssi)(AGC() _q);                                     \
                                                                 \
-/* Return gain value (linear) relative to unity energy */       \
+/* return gain value (linear) relative to unity energy      */  \
 T AGC(_get_gain)(AGC() _q);                                     \
-                                                                \
-/* squelch */                                                   \
-void AGC(_squelch_activate)(AGC() _q);                          \
-void AGC(_squelch_deactivate)(AGC() _q);                        \
-void AGC(_squelch_enable_auto)(AGC() _q);                       \
-void AGC(_squelch_disable_auto)(AGC() _q);                      \
-void AGC(_squelch_set_threshold)(AGC() _q, T _threshold);       \
-T    AGC(_squelch_get_threshold)(AGC() _q);                     \
-void AGC(_squelch_set_timeout)(AGC() _q, unsigned int _n);      \
-int  AGC(_squelch_get_status)(AGC() _q);
 
 // Define agc APIs
 LIQUID_AGC_DEFINE_API(AGC_MANGLE_CRCF, float, liquid_float_complex)
