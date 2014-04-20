@@ -55,20 +55,6 @@
 // MODULE : agc
 //
 
-// 
-#define LIQUID_AGC_DEFINE_INTERNAL_API(AGC,T,TC)                \
-                                                                \
-void AGC(_estimate_input_energy)(AGC() _q, TC _x);              \
-void AGC(_limit_gain)(AGC() _q);                                \
-                                                                \
-/* squelch */                                                   \
-void AGC(_update_auto_squelch)(AGC() _q, T _rssi);              \
-void AGC(_execute_squelch)(AGC() _q);
-
-LIQUID_AGC_DEFINE_INTERNAL_API(AGC_MANGLE_CRCF, float, liquid_float_complex)
-LIQUID_AGC_DEFINE_INTERNAL_API(AGC_MANGLE_RRRF, float, float)
-
-
 
 //
 // MODULE : audio
