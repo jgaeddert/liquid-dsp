@@ -53,12 +53,7 @@ FREQDEM() FREQDEM(_create)(float _kf)
     q->kf = _kf;
 
     // compute derived values
-#if LIQUID_FPM
-    // FIXME: check this scaling
-    q->ref = (1<<3) / (q->kf);
-#else
     q->ref = 1.0f / (2*M_PI*q->kf);
-#endif
 
     // reset modem object
     FREQDEM(_reset)(q);
@@ -85,7 +80,7 @@ void FREQDEM(_print)(FREQDEM() _q)
 void FREQDEM(_reset)(FREQDEM() _q)
 {
     // clear complex phase term
-#if LIQUID_FPM
+#if defined LIQUID_FPM
     _q->r_prime = CQ(_zero);
 #else
     _q->r_prime = 0;
@@ -100,13 +95,13 @@ void FREQDEM(_demodulate)(FREQDEM() _q,
                           TC        _r,
                           T *       _m)
 {
+#if defined LIQUID_FPM
     // compute phase difference and normalize by modulation index
-#if LIQUID_FPM
-    // FIXME: implement fixed-point version
-    CQ(_t) tmp      = CQ(_mul)( CQ(_conj)(_q->r_prime), _r );
-    Q(_t)  dphi_hat = CQ(_carg)( tmp );
+    TC conj_mul = CQ(_mul)( CQ(_conj)(_q->r_prime), _r );
+    T  dphi_hat = CQ(_carg)( conj_mul );
     *_m = Q(_mul)( dphi_hat, _q->ref );
 #else
+    // compute phase difference and normalize by modulation index
     *_m = cargf( conjf(_q->r_prime)*_r ) * _q->ref;
 #endif
 

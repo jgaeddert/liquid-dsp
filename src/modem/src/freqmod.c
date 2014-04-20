@@ -53,12 +53,7 @@ FREQMOD() FREQMOD(_create)(float _kf)
 
     // set modulation factor
     q->kf  = _kf;
-#if LIQUID_FPM
-    // TODO: check this; need to scale by 2 pi for fixed?
     q->ref = q->kf * (1<<16);
-#else
-    q->ref = q->kf * (1<<16);
-#endif
 
     // initialize look-up table
     q->sincos_table_len = 1024;
@@ -66,8 +61,8 @@ FREQMOD() FREQMOD(_create)(float _kf)
     unsigned int i;
     for (i=0; i<q->sincos_table_len; i++) {
         float complex r = cexpf(_Complex_I*2*M_PI*(float)i / (float)(q->sincos_table_len) );
-#if LIQUID_FPM
-        q->sincos_table[i] = CQ(_float_to_fixed)(r);
+#if defined LIQUID_FPM
+        q->sincos_table[i] = CQ(_float_to_fixed)( r );
 #else
         q->sincos_table[i] = r;
 #endif
@@ -113,16 +108,10 @@ void FREQMOD(_modulate)(FREQMOD()   _q,
                         T           _m,
                         TC *        _s)
 {
-#if LIQUID_FPM
-    // accumulate phase; fixed-point implementation automatically wraps around
-    // without needing to worry about overflow, underflow
-    _q->sincos_table_phase += Q(_mul)(_q->ref,_m);
-#else
     // accumulate phase; this wraps around a 16-bit boundary and ensures
     // that negative numbers are mapped to positive numbers
     _q->sincos_table_phase =
         (_q->sincos_table_phase + (1<<16) + (int)roundf(_q->ref*_m)) & 0xffff;
-#endif
 
     // compute table index: mask out 10 most significant bits with rounding
     // (adding 0x0020 effectively rounds to nearest value with 10 bits of

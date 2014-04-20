@@ -57,7 +57,6 @@ int main(int argc, char*argv[])
         m[i] = 0.3f*cosf(2*M_PI*0.013f*i + 0.0f) +
                0.2f*cosf(2*M_PI*0.021f*i + 0.4f) +
                0.4f*cosf(2*M_PI*0.037f*i + 1.7f);
-        m[i] = 0.8f*expf( -0.001f*powf(((float)i)-120.0f,2.0f) );
     }
 
     // modulate signal

@@ -139,20 +139,20 @@ void AGC(_lock)(  AGC() _q);                                    \
 void AGC(_unlock)(AGC() _q);                                    \
                                                                 \
 /* get/set loop filter bandwidth; attack/release time       */  \
-T    AGC(_get_bandwidth)(AGC() _q);                             \
-void AGC(_set_bandwidth)(AGC() _q, T _bt);                      \
+float AGC(_get_bandwidth)(AGC() _q);                            \
+void  AGC(_set_bandwidth)(AGC() _q, float _bt);                 \
                                                                 \
 /* get/set signal level (linear) relative to unity energy   */  \
-T    AGC(_get_signal_level)(AGC() _q);                          \
-void AGC(_set_signal_level)(AGC() _q, T _signal_level);         \
+float AGC(_get_signal_level)(AGC() _q);                         \
+void  AGC(_set_signal_level)(AGC() _q, float _signal_level);    \
                                                                 \
 /* get/set signal level (dB) relative to unity energy       */  \
-T    AGC(_get_rssi)(AGC() _q);                                  \
-void AGC(_set_rssi)(AGC() _q, T _rssi);                         \
+float AGC(_get_rssi)(AGC() _q);                                 \
+void  AGC(_set_rssi)(AGC() _q, float _rssi);                    \
                                                                 \
 /* get/set gain value (linear) relative to unity energy     */  \
-T    AGC(_get_gain)(AGC() _q);                                  \
-void AGC(_set_gain)(AGC() _q, T _gain);                         \
+float AGC(_get_gain)(AGC() _q);                                 \
+void  AGC(_set_gain)(AGC() _q, float _gain);                    \
                                                                 \
 /* initialize internal gain on input array                  */  \
 /*  _q      : automatic gain control object                 */  \
@@ -307,16 +307,18 @@ LIQUID_CBUFFER_DEFINE_API(CBUFFER_MANGLE_CQ32, cq32_t)
 
 
 
+
 // Windowing functions
 #define WINDOW_MANGLE_FLOAT(name)  LIQUID_CONCAT(windowf,  name)
 #define WINDOW_MANGLE_CFLOAT(name) LIQUID_CONCAT(windowcf, name)
 
 // fixed point
-#define WINDOW_MANGLE_Q16(name)    LIQUID_CONCAT(windowq16, name)
-#define WINDOW_MANGLE_Q32(name)    LIQUID_CONCAT(windowq32, name)
+#define WINDOW_MANGLE_Q16(name)     LIQUID_CONCAT(windowq16, name)
+#define WINDOW_MANGLE_Q32(name)     LIQUID_CONCAT(windowq32, name)
 
-#define WINDOW_MANGLE_CQ16(name)   LIQUID_CONCAT(windowcq16, name)
-#define WINDOW_MANGLE_CQ32(name)   LIQUID_CONCAT(windowcq32, name)
+#define WINDOW_MANGLE_CQ16(name)    LIQUID_CONCAT(windowcq16, name)
+#define WINDOW_MANGLE_CQ32(name)    LIQUID_CONCAT(windowcq32, name)
+
 
 // large macro
 //   WINDOW : name-mangling macro
@@ -358,11 +360,18 @@ void WINDOW(_index)(WINDOW()     _q,                            \
                     unsigned int _i,                            \
                     T *          _v);                           \
                                                                 \
+/* write array of elements onto window buffer               */  \
+/*  _q      : window object                                 */  \
+/*  _v      : input array of values to write                */  \
+/*  _n      : number of input values to write               */  \
+void WINDOW(_write)(WINDOW()     _q,                            \
+                    T *          _v,                            \
+                    unsigned int _n);                           \
+                                                                \
 /* push single element onto window buffer                   */  \
 /*  _q      : window object                                 */  \
 /*  _v      : single input element                          */  \
-void WINDOW(_push)(WINDOW() _q,                                 \
-                   T        _v);                                \
+void WINDOW(_push)(WINDOW() _q, T _v);                          \
                                                                 \
 /* write array of elements onto window buffer               */  \
 /*  _q      : window object                                 */  \
@@ -375,7 +384,6 @@ void WINDOW(_write)(WINDOW()     _q,                            \
 // Define window APIs
 LIQUID_WINDOW_DEFINE_API(WINDOW_MANGLE_FLOAT,  float)
 LIQUID_WINDOW_DEFINE_API(WINDOW_MANGLE_CFLOAT, liquid_float_complex)
-//LIQUID_WINDOW_DEFINE_API(WINDOW_MANGLE_UINT,   unsigned int)
 
 LIQUID_WINDOW_DEFINE_API(WINDOW_MANGLE_Q16,  q16_t)
 LIQUID_WINDOW_DEFINE_API(WINDOW_MANGLE_Q32,  q32_t)

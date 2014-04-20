@@ -598,7 +598,7 @@ filter_benchmarks :=						\
 	src/filter/bench/firhilb_benchmark.c			\
 	src/filter/bench/firinterp_crcf_benchmark.c		\
 	src/filter/bench/firfilt_crcf_benchmark.c		\
-	src/filter/bench/iirdecim_crcf_benchmark.c		\
+	src/filter/bench/firfilt_q16_benchmark.c		\
 	src/filter/bench/iirfilt_crcf_benchmark.c		\
 	src/filter/bench/iirinterp_crcf_benchmark.c		\
 	src/filter/bench/resamp_crcf_benchmark.c		\
@@ -1543,7 +1543,6 @@ example_programs :=						\
 	examples/flexframesync_reconfig_example			\
 	examples/framesync64_example				\
 	examples/freqmodem_example				\
-	examples/freqmodemq16_example				\
 	examples/gasearch_example				\
 	examples/gasearch_knapsack_example			\
 	examples/gmskframesync_example				\

@@ -95,6 +95,7 @@ WINDOW() WINDOW(_recreate)(WINDOW() _q, unsigned int _n)
         //       fixed-point structures
         T zero;
         memset(&zero, 0x00, sizeof(T));
+
         // new buffer is larger; push zeros, then old values
         for (i=0; i<(_n-_q->len); i++)
             WINDOW(_push)(w, zero);

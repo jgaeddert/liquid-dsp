@@ -164,10 +164,11 @@ FIRINTERP() FIRINTERP(_create_nyquist)(int          _type,
     unsigned int i;
     TC hc[h_len];
     for (i=0; i<h_len; i++) {
-#if defined LIQUID_FIXED && TC_COMPLEX==0
-        hc[i] = Q(_float_to_fixed)(h[i]);
-#elif defined LIQUID_FIXED && TC_COMPLEX==1
-        hc[i] = CQ(_float_to_fixed)(h[i]);
+#if defined LIQUID_FIXED && TC_COMPLEX == 1
+        hc[i].real = Q(_float_to_fixed)( crealf(h[i]) );
+        hc[i].imag = Q(_float_to_fixed)( cimagf(h[i]) );
+#elif defined LIQUID_FIXED && TC_COMPLEX == 0
+        hc[i] = Q(_float_to_fixed)( h[i] );
 #else
         hc[i] = h[i];
 #endif
