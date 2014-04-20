@@ -36,7 +36,7 @@ struct AGC(_s) {
     T g;            // current gain value
 
     // gain control loop filter parameters
-    T bandwidth;    // bandwidth-time constant
+    float bandwidth;// bandwidth-time constant
     T alpha;        // feed-back gain
 
     // signal level estimate
@@ -141,7 +141,7 @@ void AGC(_unlock)(AGC() _q)
 }
 
 // get agc loop bandwidth
-T AGC(_get_bandwidth)(AGC() _q)
+float AGC(_get_bandwidth)(AGC() _q)
 {
     return _q->bandwidth;
 }
@@ -150,7 +150,7 @@ T AGC(_get_bandwidth)(AGC() _q)
 //  _q      :   agc object
 //  _BT     :   bandwidth
 void AGC(_set_bandwidth)(AGC() _q,
-                         T     _bt)
+                         float _bt)
 {
     // check to ensure bandwidth is reasonable
     if ( _bt < 0 ) {
@@ -169,14 +169,14 @@ void AGC(_set_bandwidth)(AGC() _q,
 }
 
 // get estimated signal level (linear)
-T AGC(_get_signal_level)(AGC() _q)
+float AGC(_get_signal_level)(AGC() _q)
 {
     return 1.0f / _q->g;
 }
 
 // set estimated signal level (linear)
 void AGC(_set_signal_level)(AGC() _q,
-                            T     _signal_level)
+                            float _signal_level)
 {
     // check to ensure signal level is reasonable
     if ( _signal_level <= 0 ) {
@@ -192,14 +192,14 @@ void AGC(_set_signal_level)(AGC() _q,
 }
 
 // get estimated signal level (dB)
-T AGC(_get_rssi)(AGC() _q)
+float AGC(_get_rssi)(AGC() _q)
 {
     return -20*log10(_q->g);
 }
 
 // set estimated signal level (dB)
 void AGC(_set_rssi)(AGC() _q,
-                    T     _rssi)
+                    float _rssi)
 {
     // set internal gain appropriately
     _q->g = powf(10.0f, -_rssi/20.0f);
@@ -213,14 +213,14 @@ void AGC(_set_rssi)(AGC() _q,
 }
 
 // get internal gain
-T AGC(_get_gain)(AGC() _q)
+float AGC(_get_gain)(AGC() _q)
 {
     return _q->g;
 }
 
 // set internal gain
 void AGC(_set_gain)(AGC() _q,
-                    T     _gain)
+                    float _gain)
 {
     // check to ensure gain is reasonable
     if ( _gain <= 0 ) {
