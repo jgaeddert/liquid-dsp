@@ -22,28 +22,15 @@
 #include "liquid.h"
 
 // helper function to keep code base small
-void agc_crcf_bench(struct rusage *     _start,
-                    struct rusage *     _finish,
-                    unsigned long int * _num_iterations,
-                    int                 _squelch,
-                    int                 _locked)
+void benchmark_agc_crcf(struct rusage *     _start,
+                        struct rusage *     _finish,
+                        unsigned long int * _num_iterations)
 {
-    // scale if locked
-    if (_locked) *_num_iterations *= 8;
-
     unsigned int i;
 
     // initialize AGC object
     agc_crcf q = agc_crcf_create();
     agc_crcf_set_bandwidth(q,0.05f);
-
-    // squelch?
-    if (_squelch) agc_crcf_squelch_activate(q);
-    else          agc_crcf_squelch_deactivate(q);
-
-    // locked?
-    if (_locked)  agc_crcf_lock(q);
-    else          agc_crcf_unlock(q);
 
     float complex x = 1e-6f;    // input sample
     float complex y;            // output sample
@@ -66,14 +53,4 @@ void agc_crcf_bench(struct rusage *     _start,
     // destroy object
     agc_crcf_destroy(q);
 }
-
-#define AGC_CRCF_BENCHMARK_API(SQUELCH,LOCKED)  \
-(   struct rusage *_start,                      \
-    struct rusage *_finish,                     \
-    unsigned long int *_num_iterations)         \
-{ agc_crcf_bench(_start, _finish, _num_iterations, SQUELCH, LOCKED); }
-
-void benchmark_agc_crcf                 AGC_CRCF_BENCHMARK_API(0, 0)
-void benchmark_agc_crcf_squelch         AGC_CRCF_BENCHMARK_API(1, 0)
-void benchmark_agc_crcf_locked          AGC_CRCF_BENCHMARK_API(0, 1)
 

@@ -63,7 +63,7 @@ RANLIB	:= ranlib
 
 # flags
 INCLUDE_CFLAGS	= $(addprefix -I ,$(include_dirs))
-CONFIG_CFLAGS	= @CFLAGS@ @PROFILE_OPTION@ @DEBUG_OPTION@ @ARCH_OPTION@
+CONFIG_CFLAGS	= @CFLAGS@ @DEBUG_OPTION@ @ARCH_OPTION@
 # -g : debugging info
 CFLAGS		+= $(INCLUDE_CFLAGS) -Wall -fPIC $(CONFIG_CFLAGS)
 LDFLAGS		+= @LIBS@
@@ -150,13 +150,9 @@ buffer_includes :=						\
 	src/buffer/src/wdelay.c					\
 	src/buffer/src/window.c					\
 
-#	src/buffer/src/sbuffer.c
-
 src/buffer/src/bufferf.o : %.o : %.c $(headers) $(buffer_includes)
 
 src/buffer/src/buffercf.o : %.o : %.c $(headers) $(buffer_includes)
-
-src/buffer/src/bufferui.o : %.o : %.c $(headers) $(buffer_includes)
 
 
 buffer_autotests :=						\
@@ -167,6 +163,7 @@ buffer_autotests :=						\
 #	src/buffer/tests/sbuffer_autotest.c
 
 buffer_benchmarks :=						\
+	src/buffer/bench/cbuffercf_benchmark.c			\
 	src/buffer/bench/window_push_benchmark.c		\
 	src/buffer/bench/window_read_benchmark.c		\
 
@@ -474,6 +471,7 @@ filter_includes :=						\
 	src/filter/src/iirfiltsos.c				\
 	src/filter/src/iirinterp.c				\
 	src/filter/src/msresamp.c				\
+	src/filter/src/msresamp2.c				\
 	src/filter/src/resamp.c					\
 	src/filter/src/resamp2.c				\
 	src/filter/src/symsync.c				\
@@ -596,12 +594,13 @@ autotest_extra_obj +=						\
 	src/filter/tests/data/iirfilt_cccf_data_h7x64.o		\
 
 filter_benchmarks :=						\
-	src/filter/bench/firdecim_benchmark.c			\
+	src/filter/bench/firdecim_crcf_benchmark.c		\
 	src/filter/bench/firhilb_benchmark.c			\
 	src/filter/bench/firinterp_crcf_benchmark.c		\
 	src/filter/bench/firfilt_crcf_benchmark.c		\
-	src/filter/bench/firfilt_q16_benchmark.c		\
+	src/filter/bench/iirdecim_crcf_benchmark.c		\
 	src/filter/bench/iirfilt_crcf_benchmark.c		\
+	src/filter/bench/iirinterp_crcf_benchmark.c		\
 	src/filter/bench/resamp_crcf_benchmark.c		\
 	src/filter/bench/resamp2_crcf_benchmark.c		\
 	src/filter/bench/symsync_crcf_benchmark.c		\
@@ -1012,6 +1011,8 @@ modem_autotests :=						\
 	src/modem/tests/modemq16_autotest.c			\
 
 modem_benchmarks :=						\
+	src/modem/bench/freqdem_benchmark.c			\
+	src/modem/bench/freqmod_benchmark.c			\
 	src/modem/bench/gmskmodem_benchmark.c			\
 	src/modem/bench/modem_modulate_benchmark.c		\
 	src/modem/bench/modem_demodulate_benchmark.c		\
@@ -1423,6 +1424,9 @@ $(autotest_prog): $(autotest_prog).o $(autotest_obj) $(autotest_extra_obj) autot
 check: $(autotest_prog)
 	./$(autotest_prog) -v
 
+# let 'make test' be an alias for 'make check'
+test: check
+
 # clean the generated files
 clean-check:
 	$(RM) autotest_include.h $(autotest_prog).o $(autotest_prog)
@@ -1496,7 +1500,7 @@ clean-bench:
 example_programs :=						\
 	examples/agc_crcf_example				\
 	examples/agc_crcf_qpsk_example				\
-	examples/agc_crcf_squelch_example			\
+	examples/agc_rrrf_example				\
 	examples/ampmodem_example				\
 	examples/asgram_example					\
 	examples/autocorr_cccf_example				\
@@ -1572,6 +1576,7 @@ example_programs :=						\
 	examples/modular_arithmetic_example			\
 	examples/msequence_example				\
 	examples/msresamp_crcf_example				\
+	examples/msresamp2_crcf_example				\
 	examples/nco_example					\
 	examples/nco_pll_example				\
 	examples/nco_pll_modem_example				\
@@ -1602,6 +1607,7 @@ example_programs :=						\
 	examples/smatrix_example				\
 	examples/spgram_example					\
 	examples/symsync_crcf_example				\
+	examples/symsync_crcf_kaiser_example			\
 	examples/wdelayf_example				\
 	examples/windowf_example				\
 

@@ -128,6 +128,55 @@ FIRINTERP() FIRINTERP(_create_prototype)(unsigned int _M,
     return FIRINTERP(_create)(_M, hc, 2*_M*_m);
 }
 
+// create Nyquist interpolator
+//  _type   :   filter type (e.g. LIQUID_NYQUIST_RCOS)
+//  _k      :   samples/symbol,          _k > 1
+//  _m      :   filter delay (symbols),  _m > 0
+//  _beta   :   excess bandwidth factor, _beta < 1
+//  _dt     :   fractional sample delay, _dt in (-1, 1)
+FIRINTERP() FIRINTERP(_create_nyquist)(int          _type,
+                                       unsigned int _k,
+                                       unsigned int _m,
+                                       float        _beta,
+                                       float        _dt)
+{
+    // validate input
+    if (_k < 2) {
+        fprintf(stderr,"error: firinterp_%s_create_nyquist(), interp factor must be greater than 1\n", EXTENSION_FULL);
+        exit(1);
+    } else if (_m == 0) {
+        fprintf(stderr,"error: firinterp_%s_create_nyquist(), filter delay must be greater than 0\n", EXTENSION_FULL);
+        exit(1);
+    } else if (_beta < 0.0f || _beta > 1.0f) {
+        fprintf(stderr,"error: firinterp_%s_create_nyquist(), filter excess bandwidth factor must be in [0,1]\n", EXTENSION_FULL);
+        exit(1);
+    } else if (_dt < -1.0f || _dt > 1.0f) {
+        fprintf(stderr,"error: firinterp_%s_create_nyquist(), filter fractional sample delay must be in [-1,1]\n", EXTENSION_FULL);
+        exit(1);
+    }
+
+    // generate Nyquist filter
+    unsigned int h_len = 2*_k*_m + 1;
+    float h[h_len];
+    liquid_firdes_nyquist(_type,_k,_m,_beta,_dt,h);
+
+    // copy coefficients to type-specific array (e.g. float complex)
+    unsigned int i;
+    TC hc[h_len];
+    for (i=0; i<h_len; i++) {
+#if defined LIQUID_FIXED && TC_COMPLEX==0
+        hc[i] = Q(_float_to_fixed)(h[i]);
+#elif defined LIQUID_FIXED && TC_COMPLEX==1
+        hc[i] = CQ(_float_to_fixed)(h[i]);
+#else
+        hc[i] = h[i];
+#endif
+    }
+
+    // return interpolator object
+    return FIRINTERP(_create)(_k, hc, h_len);
+}
+
 // create square-root Nyquist interpolator
 //  _type   :   filter type (e.g. LIQUID_RNYQUIST_RRC)
 //  _k      :   samples/symbol _k > 1

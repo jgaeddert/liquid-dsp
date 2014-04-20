@@ -29,14 +29,13 @@
 
 // freqmod
 struct FREQMOD(_s) {
-    // modulation factor for FM
-    T kf;
+    float kf;   // modulation factor for FM
+    T     ref;  // phase reference: kf*2^16
 
-    // audio prefilter
-    IIRFILT_RRR() prefilter;
-
-    // frequency modulation phase integrator
-    IIRFILT_RRR() integrator;
+    // look-up table
+    unsigned int sincos_table_len;      // table length: 10 bits
+    uint16_t     sincos_table_phase;    // accumulated phase: 16 bits
+    TC *         sincos_table;          // sin|cos look-up table: 2^10 entries
 };
 
 // create freqmod object
@@ -52,41 +51,40 @@ FREQMOD() FREQMOD(_create)(float _kf)
     // create main object memory
     FREQMOD() q = (FREQMOD()) malloc(sizeof(struct FREQMOD(_s)));
 
-    // set basic internal properties
-    // modulation factor
+    // set modulation factor
+    q->kf  = _kf;
 #if LIQUID_FPM
-    q->kf = Q(_float_to_fixed)(_kf);
+    // TODO: check this; need to scale by 2 pi for fixed?
+    q->ref = q->kf * (1<<16);
 #else
-    q->kf = _kf;
+    q->ref = q->kf * (1<<16);
 #endif
 
-    // create modulator objects
-#if defined LIQUID_FPM
-    T b[2] = {Q(_float_to_fixed)(0.5f),Q(_float_to_fixed)( 0.5f)};
-    T a[2] = {Q(_float_to_fixed)(1.0f),Q(_float_to_fixed)(-1.0f)};
+    // initialize look-up table
+    q->sincos_table_len = 1024;
+    q->sincos_table     = (TC*) malloc( q->sincos_table_len*sizeof(TC) );
+    unsigned int i;
+    for (i=0; i<q->sincos_table_len; i++) {
+        float complex r = cexpf(_Complex_I*2*M_PI*(float)i / (float)(q->sincos_table_len) );
+#if LIQUID_FPM
+        q->sincos_table[i] = CQ(_float_to_fixed)(r);
 #else
-    float b[2] = {0.5f,  0.5f};
-    float a[2] = {1.0f, -1.0f};
+        q->sincos_table[i] = r;
 #endif
-    q->integrator = IIRFILT_RRR(_create)(b,2,a,2);
-
-    // create prefilter (block DC values)
-    q->prefilter = IIRFILT_RRR(_create_dc_blocker)(5e-4f);
+    }
 
     // reset modem object
     FREQMOD(_reset)(q);
 
+    // return object
     return q;
 }
 
 // destroy modem object
 void FREQMOD(_destroy)(FREQMOD() _q)
 {
-    // destroy audio pre-filter
-    IIRFILT_RRR(_destroy)(_q->prefilter);
-
-    // destroy integrator
-    IIRFILT_RRR(_destroy)(_q->integrator);
+    // free table
+    free(_q->sincos_table);
 
     // free main object memory
     free(_q);
@@ -96,47 +94,58 @@ void FREQMOD(_destroy)(FREQMOD() _q)
 void FREQMOD(_print)(FREQMOD() _q)
 {
     printf("freqmod:\n");
-#if LIQUID_FPM
-    printf("    mod. factor :   %8.4f\n", Q(_fixed_to_float)(_q->kf));
-#else
-    printf("    mod. factor :   %8.4f\n", _q->kf);
-#endif
+    printf("    mod. factor         :   %8.4f\n", _q->kf);
+    printf("    sincos table len    :   %u\n",    _q->sincos_table_len);
 }
 
 // reset modem object
 void FREQMOD(_reset)(FREQMOD() _q)
 {
-    // reset audio pre-filter
-    IIRFILT_RRR(_reset)(_q->prefilter);
-
-    // reset integrator object
-    IIRFILT_RRR(_reset)(_q->integrator);
+    // reset phase accumulation
+    _q->sincos_table_phase = 0;
 }
 
 // modulate sample
 //  _q      :   frequency modulator object
 //  _m      :   message signal m(t)
 //  _s      :   complex baseband signal s(t)
-void FREQMOD(_modulate)(FREQMOD() _q,
-                        T         _m,
-                        TC *      _s)
+void FREQMOD(_modulate)(FREQMOD()   _q,
+                        T           _m,
+                        TC *        _s)
 {
-    // push sample through pre-filter
-    IIRFILT_RRR(_execute)(_q->prefilter, _m, &_m);
-    
-    // integrate result
 #if LIQUID_FPM
-    // TODO: implement better fixed-point version
-    // integrate phase
-    q16_t theta_i = 0;
-    IIRFILT_RRR(_execute)(_q->integrator, Q(_mul)(_q->kf,_m), &theta_i);
-
-    // compute complex exponential
-    *_s = CQ(_cexpj)( Q(_mul)(Q(_2pi),theta_i) );
+    // accumulate phase; fixed-point implementation automatically wraps around
+    // without needing to worry about overflow, underflow
+    _q->sincos_table_phase += Q(_mul)(_q->ref,_m);
 #else
-    float theta_i = 0.0f;
-    IIRFILT_RRR(_execute)(_q->integrator, _q->kf*_m, &theta_i);
-    *_s = cexpf(_Complex_I*2.0f*M_PI*theta_i);
+    // accumulate phase; this wraps around a 16-bit boundary and ensures
+    // that negative numbers are mapped to positive numbers
+    _q->sincos_table_phase =
+        (_q->sincos_table_phase + (1<<16) + (int)roundf(_q->ref*_m)) & 0xffff;
 #endif
+
+    // compute table index: mask out 10 most significant bits with rounding
+    // (adding 0x0020 effectively rounds to nearest value with 10 bits of
+    // precision)
+    unsigned int index = ( (_q->sincos_table_phase+0x0020) >> 6) & 0x03ff;
+
+    // return table value at index
+    *_s = _q->sincos_table[index];
+}
+
+// modulate block of samples
+//  _q      :   frequency modulator object
+//  _m      :   message signal m(t), [size: _n x 1]
+//  _n      :   number of input, output samples
+//  _s      :   complex baseband signal s(t) [size: _n x 1]
+void FREQMOD(_modulate_block)(FREQMOD()    _q,
+                              T *          _m,
+                              unsigned int _n,
+                              TC *         _s)
+{
+    // TODO: implement more efficient method
+    unsigned int i;
+    for (i=0; i<_n; i++)
+        FREQMOD(_modulate)(_q, _m[i], &_s[i]);
 }
 

@@ -35,9 +35,9 @@
 
 #define T float complex
 #define BUFFER_PRINT_LINE(B,I) \
-    printf("\t: %f + %f", crealf(B->v[I]), cimagf(B->v[I]));
+    printf("  : %12.8f + %12.8f", crealf(B->v[I]), cimagf(B->v[I]));
 #define BUFFER_PRINT_VALUE(V) \
-    printf("\t: %12.4e + %12.4e", crealf(V), cimagf(V));
+    printf("  : %12.4e + %12.4e", crealf(V), cimagf(V));
 
 #include "cbuffer.c"
 //#include "sbuffer.c"

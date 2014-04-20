@@ -19,47 +19,35 @@
 // print usage/help message
 void usage()
 {
-    printf("%s [options]\n", __FILE__);
+    printf("freqmodemq16_example [options]\n");
     printf("  h     : print usage\n");
     printf("  n     : number of samples, default: 1024\n");
     printf("  S     : SNR [dB], default: 30\n");
     printf("  k     : FM modulation factor, default: 0.1\n");
-    printf("  t     : FM demod. type (delayconj/pll), default: delayconj\n");
 }
 
 int main(int argc, char*argv[])
 {
     // options
-    float kf = 0.1f;                    // modulation factor
-    liquid_freqdem_type type = LIQUID_FREQDEM_DELAYCONJ;
+    float        kf          = 0.1f;    // modulation factor
     unsigned int num_samples = 1024;    // number of samples
-    float SNRdB = 30.0f;                // signal-to-noise ratio [dB]
+    float        SNRdB       = 30.0f;   // signal-to-noise ratio [dB]
 
     int dopt;
-    while ((dopt = getopt(argc,argv,"hn:S:k:t:")) != EOF) {
+    while ((dopt = getopt(argc,argv,"hn:S:k:")) != EOF) {
         switch (dopt) {
         case 'h':   usage();                    return 0;
         case 'n':   num_samples = atoi(optarg); break;
         case 'S':   SNRdB       = atof(optarg); break;
         case 'k':   kf          = atof(optarg); break;
-        case 't':
-            if (strcmp(optarg,"delayconj")==0) {
-                type = LIQUID_FREQDEM_DELAYCONJ;
-            } else if (strcmp(optarg,"pll")==0) {
-                type = LIQUID_FREQDEM_PLL;
-            } else {
-                fprintf(stderr,"error: %s, invalid FM type: %s\n", argv[0], optarg);
-                exit(1);
-            }
-            break;
         default:
             exit(1);
         }
     }
 
     // create mod/demod objects
-    freqmodq16 mod = freqmodq16_create(kf);       // modulator
-    freqdemq16 dem = freqdemq16_create(kf,type);  // demodulator
+    freqmodq16 mod = freqmodq16_create(kf);   // modulator
+    freqdemq16 dem = freqdemq16_create(kf);   // demodulator
     freqmodq16_print(mod);
 
     unsigned int i;
@@ -69,16 +57,19 @@ int main(int argc, char*argv[])
 
     // generate message signal (sum of sines)
     for (i=0; i<num_samples; i++) {
+#if 0
         m[i] = q16_float_to_fixed(
                 0.3f*cosf(2*M_PI*0.013f*i + 0.0f) +
                 0.2f*cosf(2*M_PI*0.021f*i + 0.4f) +
                 0.4f*cosf(2*M_PI*0.037f*i + 1.7f)
                );
+#else
+        m[i] = q16_float_to_fixed( 0.8f*expf( -0.001f*powf(((float)i)-120.0f,2.0f) ) );
+#endif
     }
 
     // modulate signal
-    for (i=0; i<num_samples; i++)
-        freqmodq16_modulate(mod, m[i], &r[i]);
+    freqmodq16_modulate_block(mod, m, num_samples, r);
 
     // add channel impairments
     float nstd = powf(10.0f,-SNRdB/20.0f);
@@ -88,11 +79,20 @@ int main(int argc, char*argv[])
     }
 
     // demodulate signal
-    for (i=0; i<num_samples; i++)
-        freqdemq16_demodulate(dem, r[i], &y[i]);
+    freqdemq16_demodulate_block(dem, r, num_samples, y);
 
+    // destroy modem objects
     freqmodq16_destroy(mod);
     freqdemq16_destroy(dem);
+
+    // compute RMS error (ignore first sample)
+    float rmse = 0.0;
+    for (i=1; i<num_samples; i++) {
+        q16_t err = y[i] - m[i];
+        rmse += q16_fixed_to_float( q16_mul(err,err) );
+    }
+    rmse = sqrtf( rmse / (float)(num_samples-1) );
+    printf("rmse = %12.4e\n", rmse);
 
     // write results to output file
     FILE * fid = fopen(OUTPUT_FILENAME,"w");
@@ -110,10 +110,10 @@ int main(int argc, char*argv[])
     }
     // plot time-domain result
     fprintf(fid,"t=0:(n-1);\n");
-    fprintf(fid,"ydelay = 17; %% pre-assessed output delay\n");
     fprintf(fid,"figure;\n");
     fprintf(fid,"subplot(3,1,1);\n");
-    fprintf(fid,"  plot(t,m,'LineWidth',1.2,t-ydelay,y,'LineWidth',1.2);\n");
+    fprintf(fid,"  plot(t,m,'LineWidth',1,'Color',[0 0.2 0.5],...);\n");
+    fprintf(fid,"       t,y,'LineWidth',1,'Color',[0 0.5 0.2]);\n");
     fprintf(fid,"  axis([0 n -1.2 1.2]);\n");
     fprintf(fid,"  xlabel('Normalized Time [t/T_s]');\n");
     fprintf(fid,"  ylabel('m(t), y(t)');\n");
@@ -128,20 +128,22 @@ int main(int argc, char*argv[])
     fprintf(fid,"Y = 20*log10(abs(fftshift(fft(y.*w*g,nfft))));\n");
     // plot spectral response (audio)
     fprintf(fid,"subplot(3,1,2);\n");
-    fprintf(fid,"  plot(f,M,'LineWidth',1.2,f,Y,'LineWidth',1.2);\n");
+    fprintf(fid,"  plot(f,M,'LineWidth',1.2,'Color',[0 0.2 0.5],...\n");
+    fprintf(fid,"       f,Y,'LineWidth',1.2,'Color',[0 0.5 0.2]);\n");
     fprintf(fid,"  axis([-0.5 0.5 -80 20]);\n");
     fprintf(fid,"  grid on;\n");
     fprintf(fid,"  xlabel('Normalized Frequency [f/F_s]');\n");
     fprintf(fid,"  ylabel('Audio PSD [dB]');\n");
     // plot spectral response (RF)
     fprintf(fid,"subplot(3,1,3);\n");
-    fprintf(fid,"  plot(f,R,'LineWidth',1.2,'Color',[0.5 0.25 0]);\n");
+    fprintf(fid,"  plot(f,R,'LineWidth',1.2,'Color',[0.5 0 0]);\n");
     fprintf(fid,"  axis([-0.5 0.5 -80 20]);\n");
     fprintf(fid,"  grid on;\n");
     fprintf(fid,"  xlabel('Normalized Frequency [f/F_s]');\n");
     fprintf(fid,"  ylabel('RF PSD [dB]');\n");
     fclose(fid);
     printf("results written to %s\n", OUTPUT_FILENAME);
+
 
     return 0;
 }

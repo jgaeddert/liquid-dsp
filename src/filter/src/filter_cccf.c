@@ -39,6 +39,7 @@
 #define IIRINTERP(name)     LIQUID_CONCAT(iirinterp_cccf,name)
 #define NCO(name)           LIQUID_CONCAT(nco_crcf,name)
 #define MSRESAMP(name)      LIQUID_CONCAT(msresamp_cccf,name)
+#define MSRESAMP2(name)     LIQUID_CONCAT(msresamp2_cccf,name)
 #define RESAMP(name)        LIQUID_CONCAT(resamp_cccf,name)
 #define RESAMP2(name)       LIQUID_CONCAT(resamp2_cccf,name)
 //#define SYMSYNC(name)       LIQUID_CONCAT(symsync_cccf,name)
@@ -74,6 +75,7 @@
 #include "iirinterp.c"
 //#include "qmfb.c"
 #include "msresamp.c"
+#include "msresamp2.c"
 #include "resamp.c"
 #include "resamp2.c"
 //#include "symsync.c"

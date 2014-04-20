@@ -1,7 +1,7 @@
 //
-// msresamp_crcf_example.c
+// msresamp2_crcf_example.c
 //
-// Demonstration of the multi-stage arbitrary resampler
+// Demonstration of the multi-stage half-band resampler
 //
 
 #include <stdio.h>
@@ -12,26 +12,28 @@
 
 #include "liquid.h"
 
-#define OUTPUT_FILENAME "msresamp_crcf_example.m"
+#define OUTPUT_FILENAME "msresamp2_crcf_example.m"
 
 // print usage/help message
 void usage()
 {
     printf("Usage: %s [OPTION]\n", __FILE__);
     printf("  h     : print help\n");
-    printf("  r     : resampling rate (output/input), default: 0.23175\n");
+    printf("  r     : resampling rate (output/input), default: 0.25\n");
     printf("  s     : stop-band attenuation [dB],     default: 60\n");
-    printf("  n     : number of input samples,        default: 400\n");
-    printf("  f     : input signal frequency,         default: 0.017\n");
+    printf("  n     : number of low-rate samples,     default: 120\n");
+    printf("  f     : pass-band cut-off frequency,    default: 0.1\n");
+    printf("  c     : center frequency of filter,     default: 0\n");
 }
 
 int main(int argc, char*argv[])
 {
     // options
-    float r=0.23175f;       // resampling rate (output/input)
+    float r=0.25f;          // resampling rate (output/input)
     float As=60.0f;         // resampling filter stop-band attenuation [dB]
-    unsigned int n=400;     // number of input samples
-    float fc=0.017f;        // complex sinusoid frequency
+    unsigned int n=120;     // number of low-rate samples
+    float fc=0.1f;          // complex sinusoid frequency
+    float f0=0.f;           // center frequency
 
     int dopt;
     while ((dopt = getopt(argc,argv,"hr:s:n:f:")) != EOF) {
@@ -41,6 +43,7 @@ int main(int argc, char*argv[])
         case 's': As      = atof(optarg); break;
         case 'n': n       = atoi(optarg); break;
         case 'f': fc      = atof(optarg); break;
+        case 'c': f0      = atof(optarg); break;
         default:
             exit(1);
         }
@@ -53,48 +56,59 @@ int main(int argc, char*argv[])
     } else if (r <= 0.0f) {
         fprintf(stderr,"error: %s, resampling rate must be greater than zero\n", argv[0]);
         exit(1);
-    } else if ( fabsf(log2f(r)) > 10 ) {
+    } else if ( roundf(fabsf(log2f(r))) > 10 ) {
         fprintf(stderr,"error: %s, resampling rate unreasonable\n", argv[0]);
         exit(1);
     }
 
+    // determine type and compute number of stages
+    unsigned int num_stages = (unsigned int) roundf(fabsf(log2f(r)));
+    int type = r < 1. ? LIQUID_RESAMP_DECIM : LIQUID_RESAMP_INTERP;
+
+    printf("msresamp2:\n");
+    printf("    rate    :   %12.8f\n", r);
+    printf("    log2(r) :   %12.8f\n", log2f(r));
+    printf("    type    :   %s\n", type == LIQUID_RESAMP_DECIM ? "decim" : "interp");
+    printf("    stages  :   %u\n", num_stages);
+
     unsigned int i;
 
     // create multi-stage arbitrary resampler object
-    msresamp_crcf q = msresamp_crcf_create(r,As);
-    msresamp_crcf_print(q);
-    float delay = msresamp_crcf_get_delay(q);
+    msresamp2_crcf q = msresamp2_crcf_create(type, num_stages, fc, f0, As);
+    msresamp2_crcf_print(q);
+    float delay = msresamp2_crcf_get_delay(q);
 
     // number of input samples (zero-padded)
-    unsigned int nx = n + (int)ceilf(delay) + 10;
-
-    // output buffer with extra padding for good measure
-    unsigned int ny_alloc = (unsigned int) (2*(float)nx * r);  // allocation for output
+    unsigned int M  = (1 << num_stages);    // integer resampling rate
+    unsigned int nx = (type == LIQUID_RESAMP_DECIM) ? n * M : n;
+    unsigned int ny = (type == LIQUID_RESAMP_DECIM) ? n     : n * M;
+    unsigned int wlen = round(0.75 * nx);
 
     // allocate memory for arrays
     float complex x[nx];
-    float complex y[ny_alloc];
+    float complex y[ny];
 
     // generate input signal
     float wsum = 0.0f;
     for (i=0; i<nx; i++) {
         // compute window
-        float w = i < n ? kaiser(i, n, 10.0f, 0.0f) : 0.0f;
+        float w = i < wlen ? kaiser(i, wlen, 10.0f, 0.0f) : 0.0f;
 
         // apply window to complex sinusoid
-        x[i] = cexpf(_Complex_I*2*M_PI*fc*i) * w;
+        x[i] = cexpf(_Complex_I*2*M_PI*0.37021f*fc*i) * w;
 
         // accumulate window
         wsum += w;
     }
 
     // run resampler
-    unsigned int ny;
-    msresamp_crcf_execute(q, x, nx, y, &ny);
+    unsigned int dx = (type == LIQUID_RESAMP_INTERP) ? 1 : M; // input stride
+    unsigned int dy = (type == LIQUID_RESAMP_INTERP) ? M : 1; // output stride
+    for (i=0; i<n; i++)
+        msresamp2_crcf_execute(q, &x[i*dx], &y[i*dy]);
 
     // clean up allocated objects
-    msresamp_crcf_destroy(q);
-    
+    msresamp2_crcf_destroy(q);
     
     // 
     // analyze resulting signal
@@ -106,7 +120,7 @@ int main(int argc, char*argv[])
 
     // run FFT and ensure that carrier has moved and that image
     // frequencies and distortion have been adequately suppressed
-    unsigned int nfft = 1 << liquid_nextpow2(ny);
+    unsigned int nfft = 1 << liquid_nextpow2(n*M);
     float complex yfft[nfft];   // fft input
     float complex Yfft[nfft];   // fft output
     for (i=0; i<nfft; i++)
@@ -196,7 +210,7 @@ int main(int argc, char*argv[])
     // frequency-domain results
     fprintf(fid,"\n\n");
     fprintf(fid,"%% plot frequency-domain result\n");
-    fprintf(fid,"nfft=2^nextpow2(max(nx,ny));\n");
+    fprintf(fid,"nfft=4*2^nextpow2(max(nx,ny));\n");
     fprintf(fid,"%% estimate PSD, normalize by array length\n");
     fprintf(fid,"X=20*log10(abs(fftshift(fft(x,nfft)/length(x))));\n");
     fprintf(fid,"Y=20*log10(abs(fftshift(fft(y,nfft)/length(y))));\n");

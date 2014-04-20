@@ -1148,20 +1148,6 @@ float complex ellip_asnf(float complex _u,
 // MODULE : framing
 //
 
-// framegen64
-
-// convert one 8-bit byte to four 2-bit symbols
-//  _byte   :   input byte
-//  _syms   :   output symbols [size: 4 x 1]
-void framegen64_byte_to_syms(unsigned char _byte,
-                             unsigned char * _syms);
-
-// convert four 2-bit symbols into one 8-bit byte
-//  _syms   :   input symbols [size: 4 x 1]
-//  _byte   :   output byte
-void framesync64_syms_to_byte(unsigned char * _syms,
-                              unsigned char * _byte);
-
 //
 // bpacket
 //
@@ -1294,6 +1280,38 @@ void ofdmflexframesync_rxpayload(ofdmflexframesync _q,
 //
 // MODULE : math
 //
+
+// 
+// basic trigonometric functions
+//
+float liquid_sinf(float _x);
+float liquid_cosf(float _x);
+float liquid_tanf(float _x);
+void  liquid_sincosf(float _x,
+                     float * _sinf,
+                     float * _cosf);
+float liquid_expf(float _x);
+float liquid_logf(float _x);
+
+// 
+// complex math operations
+//
+
+// complex square root
+float complex liquid_csqrtf(float complex _z);
+
+// complex exponent, logarithm
+float complex liquid_cexpf(float complex _z);
+float complex liquid_clogf(float complex _z);
+
+// complex arcsin, arccos, arctan
+float complex liquid_casinf(float complex _z);
+float complex liquid_cacosf(float complex _z);
+float complex liquid_catanf(float complex _z);
+
+// faster approximation to arg{*}
+float liquid_cargf_approx(float complex _z);
+
 
 // internal trig helper functions
 

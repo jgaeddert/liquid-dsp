@@ -50,12 +50,6 @@ AC_ARG_ENABLE(debug,
     [DEBUG_OPTION=""]
 )
 
-AC_ARG_ENABLE(profile,
-    AS_HELP_STRING([--enable-profile],[profile]),
-    [PROFILE_OPTION="-pg"; CLIB="-lc_p"],
-    [PROFILE_OPTION="";    CLIB="-lc"],
-)
-
 AC_ARG_ENABLE(fftoverride,
     AS_HELP_STRING([--enable-fftoverride],[use internal fft even if libfftw is available]),
     [AC_DEFINE(LIQUID_FFTOVERRIDE)],
@@ -253,7 +247,6 @@ AC_SUBST(REBIND)                    # rebinding tool (e.g. ldconfig)
 AC_SUBST(ARCH_OPTION)               # compiler architecture option
 
 AC_SUBST(DEBUG_OPTION)              # debug option
-AC_SUBST(PROFILE_OPTION)            # profile symbols
 AC_SUBST(CLIB)                      # C library linkage (e.g. '-lc')
 
 AC_CONFIG_FILES([makefile])

@@ -33,160 +33,199 @@ struct WINDOW(_s) {
     unsigned int m;             // floor(log2(len)) + 1
     unsigned int n;             // 2^m
     unsigned int mask;          // n-1
-    unsigned int N;             // number of elements allocated
+    unsigned int num_allocated; // number of elements allocated
                                 // in memory
     unsigned int read_index;
 };
 
+// create window buffer object of length _n
 WINDOW() WINDOW(_create)(unsigned int _n)
 {
-    WINDOW() w = (WINDOW()) malloc(sizeof(struct WINDOW(_s)));
-    w->len = _n;
+    // validate input
+    if (_n == 0) {
+        fprintf(stderr,"error: window%s_create(), window size must be greater than zero\n",
+                EXTENSION);
+        exit(1);
+    }
 
-    w->m = liquid_msb_index(_n);    // effectively floor(log2(len))+1
-    w->n = 1<<(w->m);       // 
-    w->mask = w->n - 1;     // bit mask
+    // create initial object
+    WINDOW() q = (WINDOW()) malloc(sizeof(struct WINDOW(_s)));
+
+    // set internal parameters
+    q->len  = _n;                   // nominal window size
+    q->m    = liquid_msb_index(_n); // effectively floor(log2(len))+1
+    q->n    = 1<<(q->m);            // 2^m
+    q->mask = q->n - 1;             // bit mask
 
     // number of elements to allocate to memory
-    w->N = w->n + w->len - 1;
+    q->num_allocated = q->n + q->len - 1;
 
     // allocte memory
-    w->v = (T*) malloc((w->N)*sizeof(T));
-    w->read_index = 0;
+    q->v = (T*) malloc((q->num_allocated)*sizeof(T));
+    q->read_index = 0;
 
     // clear window
-    WINDOW(_clear)(w);
+    WINDOW(_clear)(q);
 
-    return w;
+    // return object
+    return q;
 }
 
-WINDOW() WINDOW(_recreate)(WINDOW() _w, unsigned int _n)
+// recreate window buffer object with new length
+//  _q      : old window object
+//  _n      : new window length
+WINDOW() WINDOW(_recreate)(WINDOW() _q, unsigned int _n)
 {
     // TODO: only create new window if old is too small
-    
-    if (_n == _w->len)
-        return _w;
+
+    if (_n == _q->len)
+        return _q;
 
     // create new window
     WINDOW() w = WINDOW(_create)(_n);
 
     // copy old values
     T* r;
-    WINDOW(_read)(_w, &r);
-    //memmove(w->v, ...);
+    WINDOW(_read)(_q, &r);
+    //memmove(q->v, ...);
     unsigned int i;
-    if (_n > _w->len) {
+    if (_n > _q->len) {
         // initialize zero sample
         // NOTE: cannot simply state 'T zero = 0;' because of
         //       fixed-point structures
         T zero;
         memset(&zero, 0x00, sizeof(T));
-
         // new buffer is larger; push zeros, then old values
-        for (i=0; i<(_n-_w->len); i++)
+        for (i=0; i<(_n-_q->len); i++)
             WINDOW(_push)(w, zero);
-        for (i=0; i<_w->len; i++)
+        for (i=0; i<_q->len; i++)
             WINDOW(_push)(w, r[i]);
     } else {
         // new buffer is shorter; push latest old values
-        for (i=(_w->len-_n); i<_w->len; i++)
+        for (i=(_q->len-_n); i<_q->len; i++)
             WINDOW(_push)(w, r[i]);
     }
 
     // destroy old window
-    WINDOW(_destroy)(_w);
+    WINDOW(_destroy)(_q);
 
     return w;
 }
 
-void WINDOW(_destroy)(WINDOW() _w)
+// destroy window object, freeing all internally memory
+void WINDOW(_destroy)(WINDOW() _q)
 {
-    free(_w->v);
-    free(_w);
+    // free internal memory array
+    free(_q->v);
+
+    // free main object memory
+    free(_q);
 }
 
-void WINDOW(_print)(WINDOW() _w)
+// print window object to stdout
+void WINDOW(_print)(WINDOW() _q)
 {
-    printf("window [%u elements] :\n", _w->len);
+    printf("window [%u elements] :\n", _q->len);
     unsigned int i;
     T * r;
-    WINDOW(_read)(_w, &r);
-    for (i=0; i<_w->len; i++) {
+    WINDOW(_read)(_q, &r);
+    for (i=0; i<_q->len; i++) {
         printf("%4u", i);
         BUFFER_PRINT_VALUE(r[i]);
         printf("\n");
     }
 }
 
-void WINDOW(_debug_print)(WINDOW() _w)
+// print window object to stdout (with extra information)
+void WINDOW(_debug_print)(WINDOW() _q)
 {
-    printf("window [%u elements] :\n", _w->len);
+    printf("window [%u elements] :\n", _q->len);
     unsigned int i;
-    for (i=0; i<_w->len; i++) {
+    for (i=0; i<_q->len; i++) {
         // print read index pointer
-        if (i==_w->read_index)
+        if (i==_q->read_index)
             printf("<r>");
 
         // print window value
-        BUFFER_PRINT_LINE(_w,i)
+        BUFFER_PRINT_LINE(_q,i)
         printf("\n");
     }
     printf("----------------------------------\n");
 
     // print excess window memory
-    for (i=_w->len; i<_w->N; i++) {
-        BUFFER_PRINT_LINE(_w,i)
+    for (i=_q->len; i<_q->num_allocated; i++) {
+        BUFFER_PRINT_LINE(_q,i)
         printf("\n");
     }
 }
 
-void WINDOW(_clear)(WINDOW() _w)
+// clear/reset window object (initialize to zeros)
+void WINDOW(_clear)(WINDOW() _q)
 {
-    _w->read_index = 0;
-    memset(_w->v, 0, (_w->len)*sizeof(T));
+    // reset read index
+    _q->read_index = 0;
+
+    // clear all allocated memory
+    memset(_q->v, 0, (_q->num_allocated)*sizeof(T));
 }
 
-void WINDOW(_read)(WINDOW() _w, T ** _v)
+// read window buffer contents
+//  _q      : window object
+//  _v      : output pointer (set to internal array)
+void WINDOW(_read)(WINDOW() _q, T ** _v)
 {
     // return pointer to buffer
-    *_v = _w->v + _w->read_index;
+    *_v = _q->v + _q->read_index;
 }
 
-void WINDOW(_index)(WINDOW() _w,
+// index single element in buffer at a particular index
+//  _q      : window object
+//  _i      : index of element to read
+//  _v      : output value pointer
+void WINDOW(_index)(WINDOW()     _q,
                     unsigned int _i,
-                    T * _v)
+                    T *          _v)
 {
     // validate input
-    if (_i >= _w->len) {
+    if (_i >= _q->len) {
         fprintf(stderr,"error: window_index(), index value out of range\n");
         exit(1);
     }
 
     // return value at index
-    *_v = _w->v[_w->read_index + _i];
+    *_v = _q->v[_q->read_index + _i];
 }
 
-void WINDOW(_push)(WINDOW() _w, T _v)
+// push single element onto window buffer
+//  _q      : window object
+//  _v      : single input element
+void WINDOW(_push)(WINDOW() _q, T _v)
 {
     // increment index
-    _w->read_index++;
+    _q->read_index++;
 
     // wrap around pointer
-    _w->read_index &= _w->mask;
+    _q->read_index &= _q->mask;
 
     // if pointer wraps around, copy excess memory
-    if (_w->read_index == 0)
-        memmove(_w->v, _w->v + _w->n, (_w->len)*sizeof(T));
+    if (_q->read_index == 0)
+        memmove(_q->v, _q->v + _q->n, (_q->len-1)*sizeof(T));
 
     // append value to end of buffer
-    _w->v[_w->read_index + _w->len - 1] = _v;
+    _q->v[_q->read_index + _q->len - 1] = _v;
 }
 
-void WINDOW(_write)(WINDOW() _w, T * _v, unsigned int _n)
+// write array of elements onto window buffer
+//  _q      : window object
+//  _v      : input array of values to write
+//  _n      : number of input values to write
+void WINDOW(_write)(WINDOW()     _q,
+                    T *          _v,
+                    unsigned int _n)
 {
     // TODO make this more efficient
     unsigned int i;
     for (i=0; i<_n; i++)
-        WINDOW(_push)(_w, _v[i]);
+        WINDOW(_push)(_q, _v[i]);
 }
 

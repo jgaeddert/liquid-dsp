@@ -21,7 +21,7 @@
 #include "liquid.h"
 
 // Helper function to keep code base small
-void firdecim_rrrf_bench(struct rusage *     _start,
+void firdecim_crcf_bench(struct rusage *     _start,
                          struct rusage *     _finish,
                          unsigned long int * _num_iterations,
                          unsigned int        _M,
@@ -36,32 +36,38 @@ void firdecim_rrrf_bench(struct rusage *     _start,
     for (i=0; i<_h_len; i++)
         h[i] = 1.0f;
 
-    firdecim_rrrf q = firdecim_rrrf_create(_M,h,_h_len);
+    firdecim_crcf q = firdecim_crcf_create(_M,h,_h_len);
 
-    float x[_M], y;
+    // initialize input
+    float complex x[_M];
+    for (i=0; i<_M; i++)
+        x[i] = (i%2) ? 1.0f : -1.0f;
+
+    float complex y;
+
     // start trials
     getrusage(RUSAGE_SELF, _start);
     for (i=0; i<(*_num_iterations); i++) {
-        firdecim_rrrf_execute(q,x,&y,0);
-        firdecim_rrrf_execute(q,x,&y,0);
-        firdecim_rrrf_execute(q,x,&y,0);
-        firdecim_rrrf_execute(q,x,&y,0);
+        firdecim_crcf_execute(q, x, &y, 0);
+        firdecim_crcf_execute(q, x, &y, 0);
+        firdecim_crcf_execute(q, x, &y, 0);
+        firdecim_crcf_execute(q, x, &y, 0);
     }
     getrusage(RUSAGE_SELF, _finish);
     *_num_iterations *= 4;
 
-    firdecim_rrrf_destroy(q);
+    firdecim_crcf_destroy(q);
 }
 
-#define FIRDECIM_RRRF_BENCHMARK_API(M,H_LEN)    \
+#define FIRDECIM_CRCF_BENCHMARK_API(M,H_LEN)    \
 (   struct rusage *_start,                      \
     struct rusage *_finish,                     \
     unsigned long int *_num_iterations)         \
-{ firdecim_rrrf_bench(_start, _finish, _num_iterations, M, H_LEN); }
+{ firdecim_crcf_bench(_start, _finish, _num_iterations, M, H_LEN); }
 
-void benchmark_firdecim_rrrf_m2_h8     FIRDECIM_RRRF_BENCHMARK_API(2, 8)
-void benchmark_firdecim_rrrf_m4_h16    FIRDECIM_RRRF_BENCHMARK_API(4, 16)
-void benchmark_firdecim_rrrf_m8_h32    FIRDECIM_RRRF_BENCHMARK_API(8, 32)
-void benchmark_firdecim_rrrf_m16_h64   FIRDECIM_RRRF_BENCHMARK_API(16,64)
-void benchmark_firdecim_rrrf_m32_h128  FIRDECIM_RRRF_BENCHMARK_API(32,128)
+void benchmark_firdecim_crcf_m2_h8     FIRDECIM_CRCF_BENCHMARK_API(2, 8)
+void benchmark_firdecim_crcf_m4_h16    FIRDECIM_CRCF_BENCHMARK_API(4, 16)
+void benchmark_firdecim_crcf_m8_h32    FIRDECIM_CRCF_BENCHMARK_API(8, 32)
+void benchmark_firdecim_crcf_m16_h64   FIRDECIM_CRCF_BENCHMARK_API(16,64)
+void benchmark_firdecim_cccf_m32_h128  FIRDECIM_CRCF_BENCHMARK_API(32,128)
 
