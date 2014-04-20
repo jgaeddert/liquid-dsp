@@ -133,20 +133,20 @@ void AGC(_lock)(  AGC() _q);                                    \
 void AGC(_unlock)(AGC() _q);                                    \
                                                                 \
 /* get/set loop filter bandwidth; attack/release time       */  \
-T    AGC(_get_bandwidth)(AGC() _q);                             \
-void AGC(_set_bandwidth)(AGC() _q, T _bt);                      \
+float AGC(_get_bandwidth)(AGC() _q);                            \
+void  AGC(_set_bandwidth)(AGC() _q, float _bt);                 \
                                                                 \
 /* get/set signal level (linear) relative to unity energy   */  \
-T    AGC(_get_signal_level)(AGC() _q);                          \
-void AGC(_set_signal_level)(AGC() _q, T _signal_level);         \
+float AGC(_get_signal_level)(AGC() _q);                         \
+void  AGC(_set_signal_level)(AGC() _q, float _signal_level);    \
                                                                 \
 /* get/set signal level (dB) relative to unity energy       */  \
-T    AGC(_get_rssi)(AGC() _q);                                  \
-void AGC(_set_rssi)(AGC() _q, T _rssi);                         \
+float AGC(_get_rssi)(AGC() _q);                                 \
+void  AGC(_set_rssi)(AGC() _q, float _rssi);                    \
                                                                 \
 /* get/set gain value (linear) relative to unity energy     */  \
-T    AGC(_get_gain)(AGC() _q);                                  \
-void AGC(_set_gain)(AGC() _q, T _gain);                         \
+float AGC(_get_gain)(AGC() _q);                                 \
+void  AGC(_set_gain)(AGC() _q, float _gain);                    \
                                                                 \
 /* initialize internal gain on input array                  */  \
 /*  _q      : automatic gain control object                 */  \
