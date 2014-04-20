@@ -110,16 +110,6 @@ void AGC(_print)(AGC() _q);                                     \
 /* reset object's internal state                            */  \
 void AGC(_reset)(AGC() _q);                                     \
                                                                 \
-/* set loop filter bandwidth; attack/release time           */  \
-/*  _q      :   agc object                                  */  \
-/*  _BT     :   bandwidth                                   */  \
-void AGC(_set_bandwidth)(AGC() _q,                              \
-                         T     _bt);                            \
-                                                                \
-/* lock/unlock gain control */                                  \
-void AGC(_lock)(  AGC() _q);                                    \
-void AGC(_unlock)(AGC() _q);                                    \
-                                                                \
 /* execute automatic gain control on an single input sample */  \
 /*  _q      : automatic gain control object                 */  \
 /*  _x      : input sample                                  */  \
@@ -138,14 +128,25 @@ void AGC(_execute_block)(AGC()          _q,                     \
                          unsigned int   _n,                     \
                          TC *           _y);                    \
                                                                 \
-/* return signal level (linear) relative to unity energy    */  \
-T AGC(_get_signal_level)(AGC() _q);                             \
+/* lock/unlock gain control */                                  \
+void AGC(_lock)(  AGC() _q);                                    \
+void AGC(_unlock)(AGC() _q);                                    \
                                                                 \
-/* return signal level (dB) relative to unity energy        */  \
-T AGC(_get_rssi)(AGC() _q);                                     \
+/* get/set loop filter bandwidth; attack/release time       */  \
+T    AGC(_get_bandwidth)(AGC() _q);                             \
+void AGC(_set_bandwidth)(AGC() _q, T _bt);                      \
                                                                 \
-/* return gain value (linear) relative to unity energy      */  \
-T AGC(_get_gain)(AGC() _q);                                     \
+/* get/set signal level (linear) relative to unity energy   */  \
+T    AGC(_get_signal_level)(AGC() _q);                          \
+void AGC(_set_signal_level)(AGC() _q, T _signal_level);         \
+                                                                \
+/* get/set signal level (dB) relative to unity energy       */  \
+T    AGC(_get_rssi)(AGC() _q);                                  \
+void AGC(_set_rssi)(AGC() _q, T _rssi);                         \
+                                                                \
+/* get/set gain value (linear) relative to unity energy     */  \
+T    AGC(_get_gain)(AGC() _q);                                  \
+void AGC(_set_gain)(AGC() _q, T _gain);                         \
 
 // Define agc APIs
 LIQUID_AGC_DEFINE_API(AGC_MANGLE_CRCF, float, liquid_float_complex)

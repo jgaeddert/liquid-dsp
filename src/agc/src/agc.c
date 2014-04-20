@@ -81,39 +81,11 @@ void AGC(_reset)(AGC() _q)
     // reset gain estimate
     _q->g = 1.0f;
 
+    // reset signal level estimate
+    _q->y2_prime = 1.0f;
+
     // unlock gain control
     AGC(_unlock)(_q);
-}
-
-// set agc loop bandwidth
-//  _q      :   agc object
-//  _BT     :   bandwidth
-void AGC(_set_bandwidth)(AGC() _q,
-                         T     _bt)
-{
-    // check to ensure _BT is reasonable
-    if ( _bt < 0 ) {
-        fprintf(stderr,"error: agc_%s_set_bandwidth(), bandwidth must be positive\n", EXTENSION_FULL);
-        exit(-1);
-    } else if ( _bt > 1.0f ) {
-        fprintf(stderr,"error: agc_%s_set_bandwidth(), bandwidth must less than 1.0\n", EXTENSION_FULL);
-        exit(-1);
-    }
-
-    // set internal bandwidth
-    _q->alpha = _bt;
-}
-
-// lock agc
-void AGC(_lock)(AGC() _q)
-{
-    _q->is_locked = 1;
-}
-
-// unlock agc
-void AGC(_unlock)(AGC() _q)
-{
-    _q->is_locked = 0;
 }
 
 // execute automatic gain control loop
@@ -156,10 +128,67 @@ void AGC(_execute_block)(AGC()          _q,
         AGC(_execute)(_q, _x[i], &_y[i]);
 }
 
+// lock agc
+void AGC(_lock)(AGC() _q)
+{
+    _q->is_locked = 1;
+}
+
+// unlock agc
+void AGC(_unlock)(AGC() _q)
+{
+    _q->is_locked = 0;
+}
+
+// get agc loop bandwidth
+T AGC(_get_bandwidth)(AGC() _q)
+{
+    return _q->bandwidth;
+}
+
+// set agc loop bandwidth
+//  _q      :   agc object
+//  _BT     :   bandwidth
+void AGC(_set_bandwidth)(AGC() _q,
+                         T     _bt)
+{
+    // check to ensure bandwidth is reasonable
+    if ( _bt < 0 ) {
+        fprintf(stderr,"error: agc_%s_set_bandwidth(), bandwidth must be positive\n", EXTENSION_FULL);
+        exit(-1);
+    } else if ( _bt > 1.0f ) {
+        fprintf(stderr,"error: agc_%s_set_bandwidth(), bandwidth must less than 1.0\n", EXTENSION_FULL);
+        exit(-1);
+    }
+
+    // set internal bandwidth
+    _q->bandwidth = _bt;
+
+    // compute filter coefficient based on bandwidth
+    _q->alpha = _q->bandwidth;
+}
+
 // get estimated signal level (linear)
 T AGC(_get_signal_level)(AGC() _q)
 {
     return 1.0f / _q->g;
+}
+
+// set estimated signal level (linear)
+void AGC(_set_signal_level)(AGC() _q,
+                            T     _signal_level)
+{
+    // check to ensure signal level is reasonable
+    if ( _signal_level <= 0 ) {
+        fprintf(stderr,"error: agc_%s_set_signal_level(), bandwidth must be greater than zero\n", EXTENSION_FULL);
+        exit(-1);
+    }
+
+    // set internal gain appropriately
+    _q->g = 1.0f / _signal_level;
+
+    // reset internal output signal level
+    _q->y2_prime = 1.0f;
 }
 
 // get estimated signal level (dB)
@@ -168,9 +197,38 @@ T AGC(_get_rssi)(AGC() _q)
     return -20*log10(_q->g);
 }
 
+// set estimated signal level (dB)
+void AGC(_set_rssi)(AGC() _q,
+                    T     _rssi)
+{
+    // set internal gain appropriately
+    _q->g = powf(10.0f, -_rssi/20.0f);
+
+    // ensure resulting gain is not arbitrarily low
+    if (_q->g < 1e-16f)
+        _q->g = 1e-16f;
+
+    // reset internal output signal level
+    _q->y2_prime = 1.0f;
+}
+
 // get internal gain
 T AGC(_get_gain)(AGC() _q)
 {
     return _q->g;
+}
+
+// set internal gain
+void AGC(_set_gain)(AGC() _q,
+                    T     _gain)
+{
+    // check to ensure gain is reasonable
+    if ( _gain <= 0 ) {
+        fprintf(stderr,"error: agc_%s_set_gain(), gain must be greater than zero\n", EXTENSION_FULL);
+        exit(-1);
+    }
+
+    // set internal gain appropriately
+    _q->g = _gain;
 }
 
