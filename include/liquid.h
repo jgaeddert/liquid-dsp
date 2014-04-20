@@ -147,6 +147,14 @@ void AGC(_set_rssi)(AGC() _q, T _rssi);                         \
 /* get/set gain value (linear) relative to unity energy     */  \
 T    AGC(_get_gain)(AGC() _q);                                  \
 void AGC(_set_gain)(AGC() _q, T _gain);                         \
+                                                                \
+/* initialize internal gain on input array                  */  \
+/*  _q      : automatic gain control object                 */  \
+/*  _x      : input data array, [size: _n x 1]              */  \
+/*  _n      : number of input, output samples               */  \
+void AGC(_init)(AGC()        _q,                                \
+                TC *         _x,                                \
+                unsigned int _n);                               \
 
 // Define agc APIs
 LIQUID_AGC_DEFINE_API(AGC_MANGLE_CRCF, float, liquid_float_complex)

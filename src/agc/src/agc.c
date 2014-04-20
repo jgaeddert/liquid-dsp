@@ -232,3 +232,31 @@ void AGC(_set_gain)(AGC() _q,
     _q->g = _gain;
 }
 
+// initialize internal gain on input array
+//  _q      : automatic gain control object
+//  _x      : input data array, [size: _n x 1]
+//  _n      : number of input, output samples
+void AGC(_init)(AGC()        _q,
+                TC *         _x,
+                unsigned int _n)
+{
+    // ensure number of samples is greater than zero
+    if ( _n == 0 ) {
+        fprintf(stderr,"error: agc_%s_init(), number of samples must be greater than zero\n", EXTENSION_FULL);
+        exit(-1);
+    }
+
+    // compute sum squares on input
+    // TODO: use vector methods for this
+    unsigned int i;
+    T x2 = 0;
+    for (i=0; i<_n; i++)
+        x2 += crealf( _x[i]*conjf(_x[i]) );
+
+    // compute RMS level and ensure result is positive
+    x2 = sqrtf( x2 / (float) _n ) + 1e-16f;
+
+    // set internal gain based on estimated signal level
+    AGC(_set_signal_level)(_q, x2);
+}
+
