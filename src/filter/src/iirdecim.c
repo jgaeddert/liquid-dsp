@@ -135,6 +135,23 @@ void IIRDECIM(_execute)(IIRDECIM()   _q,
     }
 }
 
+// execute decimator on block of _n*_M input samples
+//  _q      : decimator object
+//  _x      : input array [size: _n*_M x 1]
+//  _n      : number of _output_ samples
+//  _y      : output array [_sze: _n x 1]
+void IIRDECIM(_execute_block)(IIRDECIM()   _q,
+                              TI *         _x,
+                              unsigned int _n,
+                              TO *         _y)
+{
+    unsigned int i;
+    for (i=0; i<_n; i++) {
+        // execute _M input samples computing just one output each time
+        IIRDECIM(_execute)(_q, &_x[i*_q->M], &_y[i]);
+    }
+}
+
 // get system group delay at frequency _fc
 //  _q      :   interpolator object
 //  _f      :   frequency

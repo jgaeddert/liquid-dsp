@@ -2404,13 +2404,23 @@ void IIRDECIM(_print)(IIRDECIM() _q);                           \
 /* reset decimator object                                   */  \
 void IIRDECIM(_reset)(IIRDECIM() _q);                           \
                                                                 \
-/* execute decimator                                        */  \
+/* execute decimator on _M input samples                    */  \
 /*  _q      : decimator object                              */  \
 /*  _x      : input samples [size: _M x 1]                  */  \
 /*  _y      : output sample pointer                         */  \
 void IIRDECIM(_execute)(IIRDECIM() _q,                          \
                         TI *       _x,                          \
                         TO *       _y);                         \
+                                                                \
+/* execute decimator on block of _n*_M input samples        */  \
+/*  _q      : decimator object                              */  \
+/*  _x      : input array [size: _n*_M x 1]                 */  \
+/*  _n      : number of _output_ samples                    */  \
+/*  _y      : output array [_sze: _n x 1]                   */  \
+void IIRDECIM(_execute_block)(IIRDECIM()   _q,                  \
+                              TI *         _x,                  \
+                              unsigned int _n,                  \
+                              TO *         _y);                 \
                                                                 \
 /* get system group delay at frequency _fc                  */  \
 float IIRDECIM(_groupdelay)(IIRDECIM() _q, float _fc);          \
