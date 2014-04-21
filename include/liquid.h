@@ -2333,10 +2333,9 @@ void FIRDECIM(_clear)(FIRDECIM() _q);                           \
 /*  _x      : input samples [size: _M x 1]                  */  \
 /*  _y      : output sample pointer                         */  \
 /*  _index  : decimator output index, [0,_M-1]              */  \
-void FIRDECIM(_execute)(FIRDECIM()   _q,                        \
-                        TI *         _x,                        \
-                        TO *         _y,                        \
-                        unsigned int _index);                   \
+void FIRDECIM(_execute)(FIRDECIM() _q,                          \
+                        TI *       _x,                          \
+                        TO *       _y);                         \
 
 LIQUID_FIRDECIM_DEFINE_API(FIRDECIM_MANGLE_RRRF,
                            float,
