@@ -2408,11 +2408,9 @@ void IIRDECIM(_reset)(IIRDECIM() _q);                           \
 /*  _q      : decimator object                              */  \
 /*  _x      : input samples [size: _M x 1]                  */  \
 /*  _y      : output sample pointer                         */  \
-/*  _index  : decimator output index, [0,_M-1]              */  \
-void IIRDECIM(_execute)(IIRDECIM()   _q,                        \
-                        TI *         _x,                        \
-                        TO *         _y,                        \
-                        unsigned int _index);                   \
+void IIRDECIM(_execute)(IIRDECIM() _q,                          \
+                        TI *       _x,                          \
+                        TO *       _y);                         \
                                                                 \
 /* get system group delay at frequency _fc                  */  \
 float IIRDECIM(_groupdelay)(IIRDECIM() _q, float _fc);          \

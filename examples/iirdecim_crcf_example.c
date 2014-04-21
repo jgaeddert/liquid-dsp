@@ -80,7 +80,7 @@ int main(int argc, char*argv[]) {
 
     // decimate input
     for (i=0; i<num_samples/M; i++)
-        iirdecim_crcf_execute(q, &x[M*i], &y[i], 0);
+        iirdecim_crcf_execute(q, &x[M*i], &y[i]);
 
     // destroy decimator object
     iirdecim_crcf_destroy(q);
