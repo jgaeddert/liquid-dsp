@@ -2883,7 +2883,19 @@ void FIRFARROW(_set_delay)(FIRFARROW() _q,                      \
 /* execute firfarrow internal dot product                   */  \
 /*  _q      : firfarrow object                              */  \
 /*  _y      : output sample pointer                         */  \
-void FIRFARROW(_execute)(FIRFARROW() _q, TO *_y);               \
+void FIRFARROW(_execute)(FIRFARROW() _q,                        \
+                         TO *        _y);                       \
+                                                                \
+/* compute firfarrow filter on block of samples; the input  */  \
+/* and output arrays may have the same pointer              */  \
+/*  _q      : firfarrow object                              */  \
+/*  _x      : input array [size: _n x 1]                    */  \
+/*  _n      : input, output array size                      */  \
+/*  _y      : output array [size: _n x 1]                   */  \
+void FIRFARROW(_execute_block)(FIRFARROW()  _q,                 \
+                               TI *         _x,                 \
+                               unsigned int _n,                 \
+                               TO *         _y);                \
                                                                 \
 /* get length of firfarrow object (number of filter taps)   */  \
 unsigned int FIRFARROW(_get_length)(FIRFARROW() _q);            \
