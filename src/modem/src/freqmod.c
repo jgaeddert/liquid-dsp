@@ -53,7 +53,12 @@ FREQMOD() FREQMOD(_create)(float _kf)
 
     // set modulation factor
     q->kf  = _kf;
+#if defined LIQUID_FPM
+    // FIXME: thoroughly test this fixed-point reference value
     q->ref = q->kf * (1<<16);
+#else
+    q->ref = q->kf * (1<<16);
+#endif
 
     // initialize look-up table
     q->sincos_table_len = 1024;
@@ -108,10 +113,16 @@ void FREQMOD(_modulate)(FREQMOD()   _q,
                         T           _m,
                         TC *        _s)
 {
+#if defined LIQUID_FPM
+    // accumulate phase; fixed-point automatically wraps phase around boundary
+    // without needing to worry about overflow, underflow
+    _q->sincos_table_phase += Q(_mul)(_m, _q->ref);
+#else
     // accumulate phase; this wraps around a 16-bit boundary and ensures
     // that negative numbers are mapped to positive numbers
     _q->sincos_table_phase =
         (_q->sincos_table_phase + (1<<16) + (int)roundf(_q->ref*_m)) & 0xffff;
+#endif
 
     // compute table index: mask out 10 most significant bits with rounding
     // (adding 0x0020 effectively rounds to nearest value with 10 bits of
