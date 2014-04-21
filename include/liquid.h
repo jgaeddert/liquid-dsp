@@ -2328,14 +2328,23 @@ void FIRDECIM(_print)(FIRDECIM() _q);                           \
 /* reset decimator object internal state                    */  \
 void FIRDECIM(_clear)(FIRDECIM() _q);                           \
                                                                 \
-/* execute decimator                                        */  \
+/* execute decimator on _M input samples                    */  \
 /*  _q      : decimator object                              */  \
 /*  _x      : input samples [size: _M x 1]                  */  \
 /*  _y      : output sample pointer                         */  \
-/*  _index  : decimator output index, [0,_M-1]              */  \
 void FIRDECIM(_execute)(FIRDECIM() _q,                          \
                         TI *       _x,                          \
                         TO *       _y);                         \
+                                                                \
+/* execute decimator on block of _n*_M input samples        */  \
+/*  _q      : decimator object                              */  \
+/*  _x      : input array [size: _n*_M x 1]                 */  \
+/*  _n      : number of _output_ samples                    */  \
+/*  _y      : output array [_sze: _n x 1]                   */  \
+void FIRDECIM(_execute_block)(FIRDECIM()   _q,                  \
+                              TI *         _x,                  \
+                              unsigned int _n,                  \
+                              TO *         _y);                 \
 
 LIQUID_FIRDECIM_DEFINE_API(FIRDECIM_MANGLE_RRRF,
                            float,

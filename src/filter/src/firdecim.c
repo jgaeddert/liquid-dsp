@@ -202,3 +202,20 @@ void FIRDECIM(_execute)(FIRDECIM() _q,
     }
 }
 
+// execute decimator on block of _n*_M input samples
+//  _q      : decimator object
+//  _x      : input array [size: _n*_M x 1]
+//  _n      : number of _output_ samples
+//  _y      : output array [_sze: _n x 1]
+void FIRDECIM(_execute_block)(FIRDECIM()   _q,
+                              TI *         _x,
+                              unsigned int _n,
+                              TO *         _y)
+{
+    unsigned int i;
+    for (i=0; i<_n; i++) {
+        // execute _M input samples computing just one output each time
+        FIRDECIM(_execute)(_q, &_x[i*_q->M], &_y[i]);
+    }
+}
+
