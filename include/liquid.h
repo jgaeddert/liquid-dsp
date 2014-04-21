@@ -2243,8 +2243,23 @@ void IIRINTERP(_print)(IIRINTERP() _q);                         \
 /* reset interpolator object                                */  \
 void IIRINTERP(_reset)(IIRINTERP() _q);                         \
                                                                 \
-/* execute interpolator                                     */  \
-void IIRINTERP(_execute)(IIRINTERP() _q, TI _x, TO *_y);        \
+/* execute interpolation on single input sample             */  \
+/*  _q      : iirinterp object                              */  \
+/*  _x      : input sample                                  */  \
+/*  _y      : output sample array [size: _M x 1]            */  \
+void IIRINTERP(_execute)(IIRINTERP() _q,                        \
+                         TI          _x,                        \
+                         TO *        _y);                       \
+                                                                \
+/* execute interpolation on block of input samples          */  \
+/*  _q      : iirinterp object                              */  \
+/*  _x      : input array [size: _n x 1]                    */  \
+/*  _n      : size of input array                           */  \
+/*  _y      : output sample array [size: _M*_n x 1]         */  \
+void IIRINTERP(_execute_block)(IIRINTERP()  _q,                 \
+                               TI *         _x,                 \
+                               unsigned int _n,                 \
+                               TO *         _y);                \
                                                                 \
 /* get system group delay at frequency _fc                  */  \
 float IIRINTERP(_groupdelay)(IIRINTERP() _q, float _fc);        \

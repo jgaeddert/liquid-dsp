@@ -126,6 +126,23 @@ void IIRINTERP(_execute)(IIRINTERP() _q,
         IIRFILT(_execute)(_q->iirfilt, i==0 ? _x : 0.0f, &_y[i]);
 }
 
+// execute interpolation on block of input samples
+//  _q      : iirinterp object
+//  _x      : input array [size: _n x 1]
+//  _n      : size of input array
+//  _y      : output sample array [size: _M*_n x 1]
+void IIRINTERP(_execute_block)(IIRINTERP()  _q,
+                               TI *         _x,
+                               unsigned int _n,
+                               TO *         _y)
+{
+    unsigned int i;
+    for (i=0; i<_n; i++) {
+        // execute one input at a time with an output stride _M
+        IIRINTERP(_execute)(_q, _x[i], &_y[i*_q->M]);
+    }
+}
+
 // get system group delay at frequency _fc
 //  _q      :   interpolator object
 //  _f      :   frequency
