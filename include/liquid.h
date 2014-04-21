@@ -1695,9 +1695,20 @@ void AUTOCORR(_print)(AUTOCORR() _q);                           \
 void AUTOCORR(_push)(AUTOCORR() _q,                             \
                      TI         _x);                            \
                                                                 \
-/* compute auto-correlation output                          */  \
+/* compute single auto-correlation output                   */  \
 void AUTOCORR(_execute)(AUTOCORR() _q,                          \
                         TO *       _rxx);                       \
+                                                                \
+/* compute auto-correlation on block of samples; the input  */  \
+/* and output arrays may have the same pointer              */  \
+/*  _q      :   auto-correlation object                     */  \
+/*  _x      :   input array [size: _n x 1]                  */  \
+/*  _n      :   number of input, output samples             */  \
+/*  _rxx    :   input array [size: _n x 1]                  */  \
+void AUTOCORR(_execute_block)(AUTOCORR()   _q,                  \
+                              TI *         _x,                  \
+                              unsigned int _n,                  \
+                              TO *         _rxx);               \
                                                                 \
 /* return sum of squares of buffered samples                */  \
 float AUTOCORR(_get_energy)(AUTOCORR() _q);                     \
