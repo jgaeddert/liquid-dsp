@@ -1797,6 +1797,17 @@ void FIRFILT(_push)(FIRFILT() _q,                               \
 void FIRFILT(_execute)(FIRFILT() _q,                            \
                        TO *      _y);                           \
                                                                 \
+/* execute the filter on a block of input samples; the      */  \
+/* input and output buffers may be the same                 */  \
+/*  _q      : filter object                                 */  \
+/*  _x      : pointer to input array [size: _n x 1]         */  \
+/*  _n      : number of input, output samples               */  \
+/*  _y      : pointer to output array [size: _n x 1]        */  \
+void FIRFILT(_execute_block)(FIRFILT()    _q,                   \
+                             TI *         _x,                   \
+                             unsigned int _n,                   \
+                             TO *         _y);                  \
+                                                                \
 /* return length of filter object                           */  \
 unsigned int FIRFILT(_get_length)(FIRFILT() _q);                \
                                                                 \
@@ -1980,6 +1991,17 @@ void IIRFILT(_reset)(IIRFILT() _q);                             \
 void IIRFILT(_execute)(IIRFILT() _q,                            \
                        TI        _x,                            \
                        TO *      _y);                           \
+                                                                \
+/* execute the filter on a block of input samples; the      */  \
+/* input and output buffers may be the same                 */  \
+/*  _q      : filter object                                 */  \
+/*  _x      : pointer to input array [size: _n x 1]         */  \
+/*  _n      : number of input, output samples               */  \
+/*  _y      : pointer to output array [size: _n x 1]        */  \
+void IIRFILT(_execute_block)(IIRFILT()    _q,                   \
+                             TI *         _x,                   \
+                             unsigned int _n,                   \
+                             TO *         _y);                  \
                                                                 \
 /* return iirfilt object's filter length (order + 1)        */  \
 unsigned int IIRFILT(_get_length)(IIRFILT() _q);                \
