@@ -10,6 +10,7 @@
 // fixed-point format.
 //
 
+#include <stdlib.h>
 #include <stdio.h>
 #include <math.h>
 #include <complex.h>
