@@ -2168,13 +2168,23 @@ void FIRINTERP(_print)(FIRINTERP() _q);                         \
 /* reset internal state                                     */  \
 void FIRINTERP(_reset)(FIRINTERP() _q);                         \
                                                                 \
-/* execute interpolation                                    */  \
+/* execute interpolation on single input sample             */  \
 /*  _q      : firinterp object                              */  \
 /*  _x      : input sample                                  */  \
 /*  _y      : output sample array [size: _M x 1]            */  \
 void FIRINTERP(_execute)(FIRINTERP() _q,                        \
                          TI          _x,                        \
                          TO *        _y);                       \
+                                                                \
+/* execute interpolation on block of input samples          */  \
+/*  _q      : firinterp object                              */  \
+/*  _x      : input array [size: _n x 1]                    */  \
+/*  _n      : size of input array                           */  \
+/*  _y      : output sample array [size: _M*_n x 1]         */  \
+void FIRINTERP(_execute_block)(FIRINTERP()  _q,                 \
+                               TI *         _x,                 \
+                               unsigned int _n,                 \
+                               TO *         _y);                \
 
 LIQUID_FIRINTERP_DEFINE_API(FIRINTERP_MANGLE_RRRF,
                             float,
