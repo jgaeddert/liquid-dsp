@@ -107,6 +107,12 @@ void FREQDEM(_demodulate)(FREQDEM() _q,
     //T  dphi_hat = Q(_atan2_frac)( conj_mul.imag, conj_mul.real ); // fast, but less accurate
     T  dphi_hat = CQ(_carg)( conj_mul );    // more accurate, but considerably slower
     *_m = Q(_mul)( dphi_hat, _q->ref );
+    
+    // super fast method, but requires _r to be normalized to 1 without
+    // penalty of output scaling improperly
+    // TODO: normalize _r to 1
+    //*_m = Q(_mul)(_q->r_prime.real, _r.imag) -
+    //      Q(_mul)(_q->r_prime.imag, _r.real);
 #else
     // compute phase difference and normalize by modulation index
     *_m = cargf( conjf(_q->r_prime)*_r ) * _q->ref;
