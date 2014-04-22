@@ -52,8 +52,13 @@ FREQDEM() FREQDEM(_create)(float _kf)
     // set internal modulation factor
     q->kf = _kf;
 
-    // compute derived values
+    // compute reference
+#if defined LIQUID_FPM
+    // FIXME: thoroughly test this fixed-point reference value
+    q->ref = (1<<3) / q->kf;
+#else
     q->ref = 1.0f / (2*M_PI*q->kf);
+#endif
 
     // reset modem object
     FREQDEM(_reset)(q);
