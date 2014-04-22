@@ -75,4 +75,58 @@ void benchmark_freqmod(struct rusage *     _start,
     freqmod_destroy(mod);
 }
 
+// frequency modulator benchmark (fixed point)
+void benchmark_freqmodq16(struct rusage *     _start,
+                          struct rusage *     _finish,
+                          unsigned long int * _num_iterations)
+{
+    // create modulator
+    float      kf  = 0.05f; // modulation index
+    freqmodq16 mod = freqmodq16_create(kf);
+
+    q16_t  m[20];   // message signal
+    cq16_t r[20];   // modulated signal
+
+    unsigned long int i;
+
+    // generate message signal (sum of sines)
+    for (i=0; i<20; i++) {
+        m[i] = q16_float_to_fixed(
+                0.3f*cosf(2*M_PI*1*i/20.0f + 0.0f) +
+                0.2f*cosf(2*M_PI*2*i/20.0f + 0.4f) +
+                0.4f*cosf(2*M_PI*3*i/20.0f + 1.7f)
+               );
+    }
+
+    // start trials
+    getrusage(RUSAGE_SELF, _start);
+    for (i=0; i<(*_num_iterations); i++) {
+        freqmodq16_modulate(mod, m[ 0], &r[ 0]);
+        freqmodq16_modulate(mod, m[ 1], &r[ 1]);
+        freqmodq16_modulate(mod, m[ 2], &r[ 2]);
+        freqmodq16_modulate(mod, m[ 3], &r[ 3]);
+        freqmodq16_modulate(mod, m[ 4], &r[ 4]);
+        freqmodq16_modulate(mod, m[ 5], &r[ 5]);
+        freqmodq16_modulate(mod, m[ 6], &r[ 6]);
+        freqmodq16_modulate(mod, m[ 7], &r[ 7]);
+        freqmodq16_modulate(mod, m[ 8], &r[ 8]);
+        freqmodq16_modulate(mod, m[ 9], &r[ 9]);
+        freqmodq16_modulate(mod, m[10], &r[10]);
+        freqmodq16_modulate(mod, m[11], &r[11]);
+        freqmodq16_modulate(mod, m[12], &r[12]);
+        freqmodq16_modulate(mod, m[13], &r[13]);
+        freqmodq16_modulate(mod, m[14], &r[14]);
+        freqmodq16_modulate(mod, m[15], &r[15]);
+        freqmodq16_modulate(mod, m[16], &r[16]);
+        freqmodq16_modulate(mod, m[17], &r[17]);
+        freqmodq16_modulate(mod, m[18], &r[18]);
+        freqmodq16_modulate(mod, m[19], &r[19]);
+    }
+    getrusage(RUSAGE_SELF, _finish);
+    *_num_iterations *= 20;
+
+    // destroy modulator
+    freqmodq16_destroy(mod);
+}
+
 

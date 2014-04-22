@@ -72,4 +72,54 @@ void benchmark_freqdem(struct rusage *     _start,
     freqdem_destroy(dem);
 }
 
+// frequency demodulator benchmark (fixed point)
+void benchmark_freqdemq16(struct rusage *     _start,
+                          struct rusage *     _finish,
+                          unsigned long int * _num_iterations)
+{
+    // create demodulator
+    float      kf  = 0.05f; // modulation index
+    freqdemq16 dem = freqdemq16_create(kf);
+
+    cq16_t r[20];   // modulated signal
+    q16_t  m[20];   // message signal
+
+    unsigned long int i;
+
+    // generate modulated signal
+    for (i=0; i<20; i++) {
+        r[i] = cq16_float_to_fixed( 0.3f*cexpf(_Complex_I*2*M_PI*i/20.0f) );
+    }
+
+    // start trials
+    getrusage(RUSAGE_SELF, _start);
+    for (i=0; i<(*_num_iterations); i++) {
+        freqdemq16_demodulate(dem, r[ 0], &m[ 0]);
+        freqdemq16_demodulate(dem, r[ 1], &m[ 1]);
+        freqdemq16_demodulate(dem, r[ 2], &m[ 2]);
+        freqdemq16_demodulate(dem, r[ 3], &m[ 3]);
+        freqdemq16_demodulate(dem, r[ 4], &m[ 4]);
+        freqdemq16_demodulate(dem, r[ 5], &m[ 5]);
+        freqdemq16_demodulate(dem, r[ 6], &m[ 6]);
+        freqdemq16_demodulate(dem, r[ 7], &m[ 7]);
+        freqdemq16_demodulate(dem, r[ 8], &m[ 8]);
+        freqdemq16_demodulate(dem, r[ 9], &m[ 9]);
+        freqdemq16_demodulate(dem, r[10], &m[10]);
+        freqdemq16_demodulate(dem, r[11], &m[11]);
+        freqdemq16_demodulate(dem, r[12], &m[12]);
+        freqdemq16_demodulate(dem, r[13], &m[13]);
+        freqdemq16_demodulate(dem, r[14], &m[14]);
+        freqdemq16_demodulate(dem, r[15], &m[15]);
+        freqdemq16_demodulate(dem, r[16], &m[16]);
+        freqdemq16_demodulate(dem, r[17], &m[17]);
+        freqdemq16_demodulate(dem, r[18], &m[18]);
+        freqdemq16_demodulate(dem, r[19], &m[19]);
+    }
+    getrusage(RUSAGE_SELF, _finish);
+    *_num_iterations *= 20;
+
+    // destroy demodulator
+    freqdemq16_destroy(dem);
+}
+
 
