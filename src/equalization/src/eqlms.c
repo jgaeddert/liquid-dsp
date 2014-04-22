@@ -159,36 +159,6 @@ void EQLMS(_destroy)(EQLMS() _eq)
     free(_eq);
 }
 
-// print eqlms object internals
-void EQLMS(_print)(EQLMS() _eq)
-{
-    printf("equalizer (LMS):\n");
-    printf("    order:      %u\n", _eq->p);
-    unsigned int i;
-    for (i=0; i<_eq->p; i++)
-        printf("  h(%3u) = %12.4e + j*%12.4e;\n", i+1, creal(_eq->w0[i]), cimag(_eq->w0[i]));
-}
-
-// set learning rate of equalizer
-//  _eq     :   equalizer object
-//  _mu     :   LMS learning rate (should be near 0), 0 < _mu < 1
-void EQLMS(_set_bw)(EQLMS() _eq,
-                    float _mu)
-{
-    if (_mu < 0.0f) {
-        fprintf(stderr,"error: eqlms_%s_set_bw(), learning rate cannot be less than zero\n", EXTENSION_FULL);
-        exit(1);
-    }
-
-    _eq->mu = _mu;
-}
-
-// get learning rate of equalizer
-float EQLMS(_get_bw)(EQLMS() _eq)
-{
-    return _eq->mu;
-}
-
 // reset equalizer
 void EQLMS(_reset)(EQLMS() _eq)
 {
@@ -201,6 +171,36 @@ void EQLMS(_reset)(EQLMS() _eq)
 
     // reset squared magnitude sum
     _eq->x2_sum = 0;
+}
+
+// print eqlms object internals
+void EQLMS(_print)(EQLMS() _eq)
+{
+    printf("equalizer (LMS):\n");
+    printf("    order:      %u\n", _eq->p);
+    unsigned int i;
+    for (i=0; i<_eq->p; i++)
+        printf("  h(%3u) = %12.4e + j*%12.4e;\n", i+1, creal(_eq->w0[i]), cimag(_eq->w0[i]));
+}
+
+// get learning rate of equalizer
+float EQLMS(_get_bw)(EQLMS() _eq)
+{
+    return _eq->mu;
+}
+
+// set learning rate of equalizer
+//  _eq     :   equalizer object
+//  _mu     :   LMS learning rate (should be near 0), 0 < _mu < 1
+void EQLMS(_set_bw)(EQLMS() _eq,
+                    float   _mu)
+{
+    if (_mu < 0.0f) {
+        fprintf(stderr,"error: eqlms_%s_set_bw(), learning rate cannot be less than zero\n", EXTENSION_FULL);
+        exit(1);
+    }
+
+    _eq->mu = _mu;
 }
 
 // push sample into equalizer internal buffer

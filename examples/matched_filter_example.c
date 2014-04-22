@@ -153,7 +153,7 @@ int main(int argc, char*argv[]) {
         firinterp_rrrf_execute(interp, sym_in[i], &y[i*k]);
 
         // decimate
-        firdecim_rrrf_execute(decim, &y[i*k], &sym_out[i], 0);
+        firdecim_rrrf_execute(decim, &y[i*k], &sym_out[i]);
 
         // normalize output
         sym_out[i] /= k;

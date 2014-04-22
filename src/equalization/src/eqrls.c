@@ -53,102 +53,107 @@ struct EQRLS(_s) {
 // create recursive least-squares (RLS) equalizer object
 //  _h      :   initial coefficients [size: _p x 1], default if NULL
 //  _p      :   equalizer length (number of taps)
-EQRLS() EQRLS(_create)(T * _h,
+EQRLS() EQRLS(_create)(T *          _h,
                        unsigned int _p)
 {
-    EQRLS() eq = (EQRLS()) malloc(sizeof(struct EQRLS(_s)));
+    EQRLS() q = (EQRLS()) malloc(sizeof(struct EQRLS(_s)));
 
     // set filter order, other parameters
-    eq->p = _p;
-    eq->lambda = 0.99f;
-    eq->delta = 0.1f;
-    eq->n=0;
+    q->p      = _p;     // filter order
+    q->lambda = 0.99f;  // learning rate
+    q->delta  = 0.1f;   // initialization factor
 
     // allocate memory for matrices
-    eq->h0 =    (T*) malloc((eq->p)*sizeof(T));
-    eq->w0 =    (T*) malloc((eq->p)*sizeof(T));
-    eq->w1 =    (T*) malloc((eq->p)*sizeof(T));
-    eq->P0 =    (T*) malloc((eq->p)*(eq->p)*sizeof(T));
-    eq->P1 =    (T*) malloc((eq->p)*(eq->p)*sizeof(T));
-    eq->g =     (T*) malloc((eq->p)*sizeof(T));
+    q->h0 = (T*) malloc((q->p)*sizeof(T));
+    q->w0 = (T*) malloc((q->p)*sizeof(T));
+    q->w1 = (T*) malloc((q->p)*sizeof(T));
+    q->P0 = (T*) malloc((q->p)*(q->p)*sizeof(T));
+    q->P1 = (T*) malloc((q->p)*(q->p)*sizeof(T));
+    q->g  = (T*) malloc((q->p)*sizeof(T));
 
-    eq->xP0 =   (T*) malloc((eq->p)*sizeof(T));
-    eq->gxl =   (T*) malloc((eq->p)*(eq->p)*sizeof(T));
-    eq->gxlP0 = (T*) malloc((eq->p)*(eq->p)*sizeof(T));
+    q->xP0 =   (T*) malloc((q->p)*sizeof(T));
+    q->gxl =   (T*) malloc((q->p)*(q->p)*sizeof(T));
+    q->gxlP0 = (T*) malloc((q->p)*(q->p)*sizeof(T));
 
-    eq->buffer = WINDOW(_create)(eq->p);
+    q->buffer = WINDOW(_create)(q->p);
 
     // copy coefficients (if not NULL)
     if (_h == NULL) {
         // initial coefficients with delta at first index
         unsigned int i;
-        for (i=0; i<eq->p; i++)
-            eq->h0[i] = (i==0) ? 1.0 : 0.0;
+        for (i=0; i<q->p; i++)
+            q->h0[i] = (i==0) ? 1.0 : 0.0;
     } else {
         // copy user-defined initial coefficients
-        memmove(eq->h0, _h, (eq->p)*sizeof(T));
+        memmove(q->h0, _h, (q->p)*sizeof(T));
     }
 
-    EQRLS(_reset)(eq);
+    // reset equalizer
+    EQRLS(_reset)(q);
 
-    return eq;
+    // return object
+    return q;
 }
 
 
 // re-create recursive least-squares (RLS) equalizer object
-//  _eq     :   old equalizer object
-//  _h      :   initial coefficients [size: _p x 1], default if NULL
-//  _p      :   equalizer length (number of taps)
-EQRLS() EQRLS(_recreate)(EQRLS() _eq,
-                         T * _h,
+//  _q  : old equalizer object
+//  _h  : filter coefficients (NULL for {1,0,0...})
+//  _p  : equalizer length (number of taps)
+EQRLS() EQRLS(_recreate)(EQRLS()      _q,
+                         T *          _h,
                          unsigned int _p)
 {
-    if (_eq->p == _p) {
+    if (_q->p == _p) {
         // length hasn't changed; copy default coefficients
         // and return object
         unsigned int i;
-        for (i=0; i<_eq->p; i++)
-            _eq->h0[i] = _h[i];
-        return _eq;
+        for (i=0; i<_q->p; i++)
+            _q->h0[i] = _h[i];
+        return _q;
     }
 
     // completely destroy old equalizer object
-    EQRLS(_destroy)(_eq);
+    EQRLS(_destroy)(_q);
 
     // create new one and return
     return EQRLS(_create)(_h,_p);
 }
 
 // destroy eqrls object
-void EQRLS(_destroy)(EQRLS() _eq)
+void EQRLS(_destroy)(EQRLS() _q)
 {
-    free(_eq->h0);
-    free(_eq->w0);
-    free(_eq->w1);
-    free(_eq->P0);
-    free(_eq->P1);
-    free(_eq->g);
+    // free vectors and matrices
+    free(_q->h0);
+    free(_q->w0);
+    free(_q->w1);
+    free(_q->P0);
+    free(_q->P1);
+    free(_q->g);
 
-    free(_eq->xP0);
-    free(_eq->gxl);
-    free(_eq->gxlP0);
+    free(_q->xP0);
+    free(_q->gxl);
+    free(_q->gxlP0);
 
-    WINDOW(_destroy)(_eq->buffer);
-    free(_eq);
+    // destroy window buffer
+    WINDOW(_destroy)(_q->buffer);
+
+    // free main object memory
+    free(_q);
 }
 
 // print eqrls object internals
-void EQRLS(_print)(EQRLS() _eq)
+void EQRLS(_print)(EQRLS() _q)
 {
     printf("equalizer (RLS):\n");
-    printf("    order:      %u\n", _eq->p);
+    printf("    order:      %u\n", _q->p);
 
 #ifdef DEBUG
-    unsigned int r,c,p=_eq->p;
+    unsigned int r,c,p=_q->p;
     printf("P0:\n");
     for (r=0; r<p; r++) {
         for (c=0; c<p; c++) {
-            PRINTVAL(matrix_access(_eq->P0,p,p,r,c));
+            PRINTVAL(matrix_access(_q->P0,p,p,r,c));
         }
         printf("\n");
     }
@@ -156,7 +161,7 @@ void EQRLS(_print)(EQRLS() _eq)
     printf("P1:\n");
     for (r=0; r<p; r++) {
         for (c=0; c<p; c++) {
-            PRINTVAL(matrix_access(_eq->P1,p,p,r,c));
+            PRINTVAL(matrix_access(_q->P1,p,p,r,c));
         }
         printf("\n");
     }
@@ -164,97 +169,102 @@ void EQRLS(_print)(EQRLS() _eq)
     printf("gxl:\n");
     for (r=0; r<p; r++) {
         for (c=0; c<p; c++) {
-            PRINTVAL(matrix_access(_eq->gxl,p,p,r,c));
+            PRINTVAL(matrix_access(_q->gxl,p,p,r,c));
         }
         printf("\n");
     }
 #endif
 }
 
+// reset equalizer
+void EQRLS(_reset)(EQRLS() _q)
+{
+    // reset input counter
+    _q->n = 0;
+
+    unsigned int i, j;
+    // initialize...
+    for (i=0; i<_q->p; i++) {
+        for (j=0; j<_q->p; j++) {
+            if (i==j)   _q->P0[(_q->p)*i + j] = 1 / (_q->delta);
+            else        _q->P0[(_q->p)*i + j] = 0;
+        }
+    }
+
+    // copy default coefficients
+    memmove(_q->w0, _q->h0, (_q->p)*sizeof(T));
+
+    // clear window object
+    WINDOW(_clear)(_q->buffer);
+}
+
+// get learning rate of equalizer
+float EQRLS(_get_bw)(EQRLS() _q)
+{
+    return _q->lambda;
+}
+
 // set learning rate of equalizer
-//  _eq     :   equalizer object
+//  _q     :   equalizer object
 //  _lambda :   RLS learning rate (should be close to 1.0), 0 < _lambda < 1
-void EQRLS(_set_bw)(EQRLS() _eq,
-                    float _lambda)
+void EQRLS(_set_bw)(EQRLS() _q,
+                    float   _lambda)
 {
     if (_lambda < 0.0f || _lambda > 1.0f) {
         printf("error: eqrls_%s_set_bw(), learning rate must be in (0,1)\n", EXTENSION_FULL);
         exit(1);
     }
 
-    _eq->lambda = _lambda;
-}
-
-// get learning rate of equalizer
-float EQRLS(_get_bw)(EQRLS() _eq)
-{
-    return _eq->lambda;
-}
-
-// reset equalizer
-void EQRLS(_reset)(EQRLS() _eq)
-{
-    unsigned int i, j;
-    // initialize...
-    for (i=0; i<_eq->p; i++) {
-        for (j=0; j<_eq->p; j++) {
-            if (i==j)   _eq->P0[(_eq->p)*i + j] = 1 / (_eq->delta);
-            else        _eq->P0[(_eq->p)*i + j] = 0;
-        }
-    }
-
-    // copy default coefficients
-    memmove(_eq->w0, _eq->h0, (_eq->p)*sizeof(T));
-
-    WINDOW(_clear)(_eq->buffer);
+    // set internal value
+    _q->lambda = _lambda;
 }
 
 // push sample into equalizer internal buffer
-//  _eq     :   equalizer object
-//  _x      :   received sample
-void EQRLS(_push)(EQRLS() _eq,
+//  _q  :   equalizer object
+//  _x  :   received sample
+void EQRLS(_push)(EQRLS() _q,
                   T _x)
 {
     // push value into buffer
-    WINDOW(_push)(_eq->buffer, _x);
+    WINDOW(_push)(_q->buffer, _x);
 }
 
 // execute internal dot product
-//  _eq     :   equalizer object
+//  _q      :   equalizer object
 //  _y      :   output sample
-void EQRLS(_execute)(EQRLS() _eq,
-                     T * _y)
+void EQRLS(_execute)(EQRLS() _q,
+                     T *     _y)
 {
     // compute vector dot product
     T * r;      // read buffer
-    WINDOW(_read)(_eq->buffer, &r);
-    DOTPROD(_run)(_eq->w0, r, _eq->p, _y);
+    WINDOW(_read)(_q->buffer, &r);
+    DOTPROD(_run)(_q->w0, r, _q->p, _y);
 }
 
 // execute cycle of equalizer, filtering output
-//  _eq     :   equalizer object
+//  _q      :   equalizer object
 //  _x      :   received sample
 //  _d      :   desired output
 //  _d_hat  :   filtered output
-void EQRLS(_step)(EQRLS() _eq,
-                 T _d,
-                 T _d_hat)
+void EQRLS(_step)(EQRLS() _q,
+                  T       _d,
+                  T       _d_hat)
 {
     unsigned int i,r,c;
-    unsigned int p=_eq->p;
+    unsigned int p=_q->p;
 
     // compute error (a priori)
     T alpha = _d - _d_hat;
 
     // read buffer
     T * x;
-    WINDOW(_read)(_eq->buffer, &x);
+    WINDOW(_read)(_q->buffer, &x);
 
     // compute gain vector
     for (c=0; c<p; c++) {
-        _eq->xP0[c] = 0;
+        _q->xP0[c] = 0;
         for (r=0; r<p; r++) {
-            _eq->xP0[c] += x[r] * matrix_access(_eq->P0,p,p,r,c);
+            _q->xP0[c] += x[r] * matrix_access(_q->P0,p,p,r,c);
         }
     }
 
@@ -270,34 +280,34 @@ void EQRLS(_step)(EQRLS() _eq,
 
     printf("xP0: ");
     for (c=0; c<p; c++)
-        PRINTVAL(_eq->xP0[c]);
+        PRINTVAL(_q->xP0[c]);
     printf("\n");
 #endif
     // zeta = lambda + [x.']*[P0]*[conj(x)]
-    _eq->zeta = 0;
+    _q->zeta = 0;
     for (c=0; c<p; c++) {
-        T sum = _eq->xP0[c] * conj(x[c]);
-        _eq->zeta += sum;
+        T sum = _q->xP0[c] * conj(x[c]);
+        _q->zeta += sum;
     }
-    _eq->zeta += _eq->lambda;
+    _q->zeta += _q->lambda;
 #ifdef DEBUG
     printf("zeta : ");
-    PRINTVAL(_eq->zeta);
+    PRINTVAL(_q->zeta);
     printf("\n");
 #endif
     for (r=0; r<p; r++) {
-        _eq->g[r] = 0;
+        _q->g[r] = 0;
         for (c=0; c<p; c++) {
-            T sum = matrix_access(_eq->P0,p,p,r,c) * conj(x[c]);
-            _eq->g[r] += sum;
+            T sum = matrix_access(_q->P0,p,p,r,c) * conj(x[c]);
+            _q->g[r] += sum;
         }
-        _eq->g[r] /= _eq->zeta;
+        _q->g[r] /= _q->zeta;
     }
 #ifdef DEBUG
     printf("g: ");
     for (i=0; i<p; i++)
-        PRINTVAL(_eq->g[i]);
-        //printf("%6.3f ", _eq->g[i]);
+        PRINTVAL(_q->g[i]);
+        //printf("%6.3f ", _q->g[i]);
     printf("\n");
 #endif
 
@@ -305,90 +315,94 @@ void EQRLS(_step)(EQRLS() _eq,
     for (r=0; r<p; r++) {
         for (c=0; c<p; c++) {
             // gxl = [g] * [x.'] / lambda
-            matrix_access(_eq->gxl,p,p,r,c) = _eq->g[r] * x[c] / _eq->lambda;
+            matrix_access(_q->gxl,p,p,r,c) = _q->g[r] * x[c] / _q->lambda;
         }
     }
     // multiply two [pxp] matrices: gxlP0 = gxl * P0
-    MATRIX(_mul)(_eq->gxl,  p,p,
-                 _eq->P0,   p,p,
-                 _eq->gxlP0,p,p);
+    MATRIX(_mul)(_q->gxl,  p,p,
+                 _q->P0,   p,p,
+                 _q->gxlP0,p,p);
 
     for (i=0; i<p*p; i++)
-        _eq->P1[i] = _eq->P0[i] / _eq->lambda - _eq->gxlP0[i];
+        _q->P1[i] = _q->P0[i] / _q->lambda - _q->gxlP0[i];
 
     // update weighting vector
     for (i=0; i<p; i++)
-        _eq->w1[i] = _eq->w0[i] + alpha*(_eq->g[i]);
+        _q->w1[i] = _q->w0[i] + alpha*(_q->g[i]);
 
 #ifdef DEBUG
     printf("w0: \n");
     for (i=0; i<p; i++) {
-        PRINTVAL(_eq->w0[i]);
+        PRINTVAL(_q->w0[i]);
         printf("\n");
     }
     printf("w1: \n");
     for (i=0; i<p; i++) {
-        PRINTVAL(_eq->w1[i]);
+        PRINTVAL(_q->w1[i]);
         printf("\n");
-    EQRLS(_print)(_eq);
+    EQRLS(_print)(_q);
     }
-    //if (_eq->n == 7)
+    //if (_q->n == 7)
     //    exit(0);
 
 #endif
 
     // copy old values
-    memmove(_eq->w0, _eq->w1,   p*sizeof(T));
-    memmove(_eq->P0, _eq->P1, p*p*sizeof(T));
+    memmove(_q->w0, _q->w1,   p*sizeof(T));
+    memmove(_q->P0, _q->P1, p*p*sizeof(T));
 
 }
 
 // retrieve internal filter coefficients
-void EQRLS(_get_weights)(EQRLS() _eq, T * _w)
+//  _q      :   equalizer object
+//  _w      :   weights [size: _p x 1]
+void EQRLS(_get_weights)(EQRLS() _q,
+                         T *     _w)
 {
-    // copy output weight vector
-    unsigned int i, p=_eq->p;
-    for (i=0; i<p; i++)
-        _w[i] = _eq->w1[p-i-1];
+    // copy output weight vector, reversing order
+    unsigned int i;
+    for (i=0; i<_q->p; i++)
+        _w[i] = _q->w1[_q->p-i-1];
 }
 
 // train equalizer object
-//  _eq     :   equalizer object
+//  _q      :   equalizer object
 //  _w      :   initial weights / output weights
 //  _x      :   received sample vector
 //  _d      :   desired output vector
 //  _n      :   vector length
-void EQRLS(_train)(EQRLS() _eq,
-                   T * _w,
-                   T * _x,
-                   T * _d,
+void EQRLS(_train)(EQRLS()      _q,
+                   T *          _w,
+                   T *          _x,
+                   T *          _d,
                    unsigned int _n)
 {
-    unsigned int i, p=_eq->p;
-    if (_n < p) {
-        printf("warning: eqrls_%s_train(), traning sequence less than filter order\n", EXTENSION_FULL);
+    unsigned int i;
+    if (_n < _q->p) {
+        printf("warning: eqrls_%s_train(), traning sequence less than filter order\n",
+                EXTENSION_FULL);
         return;
     }
 
     // reset equalizer state
-    EQRLS(_reset)(_eq);
+    EQRLS(_reset)(_q);
 
     // copy initial weights into buffer
-    for (i=0; i<p; i++)
-        _eq->w0[i] = _w[p - i - 1];
+    for (i=0; i<_q->p; i++)
+        _q->w0[i] = _w[_q->p - i - 1];
 
     T d_hat;
     for (i=0; i<_n; i++) {
         // push sample into internal buffer
-        EQRLS(_push)(_eq, _x[i]);
+        EQRLS(_push)(_q, _x[i]);
 
         // execute vector dot product
-        EQRLS(_execute)(_eq, &d_hat);
+        EQRLS(_execute)(_q, &d_hat);
 
         // step through training cycle
-        EQRLS(_step)(_eq, _d[i], d_hat);
+        EQRLS(_step)(_q, _d[i], d_hat);
     }
 
     // copy output weight vector
-    EQRLS(_get_weights)(_eq, _w);
+    EQRLS(_get_weights)(_q, _w);
 }

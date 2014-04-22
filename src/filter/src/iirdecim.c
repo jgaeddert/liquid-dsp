@@ -121,15 +121,8 @@ void IIRDECIM(_reset)(IIRDECIM() _q)
 //  _index  :   decimator output index [0,_M-1]
 void IIRDECIM(_execute)(IIRDECIM()   _q,
                         TI *         _x,
-                        TO *         _y,
-                        unsigned int _index)
+                        TO *         _y)
 {
-    // validate input
-    if (_index >= _q->M) {
-        fprintf(stderr,"error: decim_%s_execute(), output sample phase exceeds decimation factor\n", EXTENSION_FULL);
-        exit(1);
-    }
-
     TO v; // output value
     unsigned int i;
     for (i=0; i<_q->M; i++) {
@@ -137,8 +130,25 @@ void IIRDECIM(_execute)(IIRDECIM()   _q,
         IIRFILT(_execute)(_q->iirfilt, _x[i], &v);
 
         // save output at appropriate index
-        if (i==_index)
+        if (i==0)
             *_y = v;
+    }
+}
+
+// execute decimator on block of _n*_M input samples
+//  _q      : decimator object
+//  _x      : input array [size: _n*_M x 1]
+//  _n      : number of _output_ samples
+//  _y      : output array [_sze: _n x 1]
+void IIRDECIM(_execute_block)(IIRDECIM()   _q,
+                              TI *         _x,
+                              unsigned int _n,
+                              TO *         _y)
+{
+    unsigned int i;
+    for (i=0; i<_n; i++) {
+        // execute _M input samples computing just one output each time
+        IIRDECIM(_execute)(_q, &_x[i*_q->M], &_y[i]);
     }
 }
 

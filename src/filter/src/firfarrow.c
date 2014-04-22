@@ -226,6 +226,28 @@ void FIRFARROW(_execute)(FIRFARROW() _q,
 #endif
 }
 
+// compute firfarrow filter on block of samples; the input
+// and output arrays may have the same pointer
+//  _q      : firfarrow object
+//  _x      : input array [size: _n x 1]
+//  _n      : input, output array size
+//  _y      : output array [size: _n x 1]
+void FIRFARROW(_execute_block)(FIRFARROW()  _q,
+                               TI *         _x,
+                               unsigned int _n,
+                               TO *         _y)
+{
+    unsigned int i;
+
+    for (i=0; i<_n; i++) {
+        // push input sample
+        FIRFARROW(_push)(_q, _x[i]);
+
+        // compute output
+        FIRFARROW(_execute)(_q, &_y[i]);
+    }
+}
+
 // get length of firfarrow object (number of filter taps)
 unsigned int FIRFARROW(_get_length)(FIRFARROW() _q)
 {

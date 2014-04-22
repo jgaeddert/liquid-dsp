@@ -340,6 +340,27 @@ void FIRFILT(_execute)(FIRFILT() _q,
 #endif
 }
 
+// execute the filter on a block of input samples; the
+// input and output buffers may be the same
+//  _q      : filter object
+//  _x      : pointer to input array [size: _n x 1]
+//  _n      : number of input, output samples
+//  _y      : pointer to output array [size: _n x 1]
+void FIRFILT(_execute_block)(FIRFILT()    _q,
+                             TI *         _x,
+                             unsigned int _n,
+                             TO *         _y)
+{
+    unsigned int i;
+    for (i=0; i<_n; i++) {
+        // push sample into filter
+        FIRFILT(_push)(_q, _x[i]);
+
+        // compute output sample
+        FIRFILT(_execute)(_q, &_y[i]);
+    }
+}
+
 // get filter length
 unsigned int FIRFILT(_get_length)(FIRFILT() _q)
 {
