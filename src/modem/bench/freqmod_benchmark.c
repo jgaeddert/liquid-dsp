@@ -23,7 +23,7 @@
 #include <sys/resource.h>
 #include "liquid.h"
 
-// Helper function to keep code base small
+// frequency modulator benchmark
 void benchmark_freqmod(struct rusage *     _start,
                        struct rusage *     _finish,
                        unsigned long int * _num_iterations)
