@@ -25,6 +25,7 @@
 #include <stdio.h>
 #include <math.h>
 
+#include "liquidfpm.internal.h"
 #include "liquid.internal.h"
 
 // freqdem
@@ -103,7 +104,8 @@ void FREQDEM(_demodulate)(FREQDEM() _q,
 #if defined LIQUID_FPM
     // compute phase difference and normalize by modulation index
     TC conj_mul = CQ(_mul)( CQ(_conj)(_q->r_prime), _r );
-    T  dphi_hat = CQ(_carg)( conj_mul );
+    //T  dphi_hat = Q(_atan2_frac)( conj_mul.imag, conj_mul.real ); // fast, but less accurate
+    T  dphi_hat = CQ(_carg)( conj_mul );    // more accurate, but considerably slower
     *_m = Q(_mul)( dphi_hat, _q->ref );
 #else
     // compute phase difference and normalize by modulation index
