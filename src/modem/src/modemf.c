@@ -22,6 +22,7 @@
 //
 
 #include <math.h>
+#include <stdint.h>
 #include "liquid.internal.h"
 
 // Macro definitions
