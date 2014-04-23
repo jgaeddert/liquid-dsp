@@ -176,6 +176,23 @@ void ampmodem_modulate(ampmodem _q,
     nco_crcf_step(_q->oscillator);
 }
 
+// modulate block of samples
+//  _q      :   ampmodem object
+//  _m      :   message signal m(t), [size: _n x 1]
+//  _n      :   number of input, output samples
+//  _s      :   complex baseband signal s(t) [size: _n x 1]
+void ampmodem_modulate_block(ampmodem        _q,
+                             float *         _m,
+                             unsigned int    _n,
+                             float complex * _s)
+{
+    // TODO: implement more efficient method
+    unsigned int i;
+    for (i=0; i<_n; i++)
+        ampmodem_modulate(_q, _m[i], &_s[i]);
+}
+
+
 void ampmodem_demodulate(ampmodem _q,
                          float complex _y,
                          float *_x)
@@ -220,6 +237,22 @@ void ampmodem_demodulate(ampmodem _q,
                         (1 - _q->ssb_alpha)*_q->ssb_q_hat;
         *_x = 2.0f*(t - _q->ssb_q_hat);
     }
+}
+
+// demodulate block of samples
+//  _q      :   frequency demodulator object
+//  _r      :   received signal r(t) [size: _n x 1]
+//  _n      :   number of input, output samples
+//  _m      :   message signal m(t), [size: _n x 1]
+void ampmodem_demodulate_block(ampmodem        _q,
+                               float complex * _r,
+                               unsigned int    _n,
+                               float *         _m)
+{
+    // TODO: implement more efficient method
+    unsigned int i;
+    for (i=0; i<_n; i++)
+        ampmodem_demodulate(_q, _r[i], &_m[i]);
 }
 
 // export debugging file
