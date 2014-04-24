@@ -47,7 +47,7 @@ void firdecim_rrrf_test(unsigned int    _M,
     unsigned int i;
     // compute output
     for (i=0; i<_y_len; i++) {
-        firdecim_rrrf_execute(q, &_x[_M*i], &y_test[i], 0);
+        firdecim_rrrf_execute(q, &_x[_M*i], &y_test[i]);
         
         CONTEND_DELTA( y_test[i], _y[i], tol );
     }
@@ -83,7 +83,7 @@ void firdecim_crcf_test(unsigned int    _M,
     unsigned int i;
     // compute output
     for (i=0; i<_y_len; i++) {
-        firdecim_crcf_execute(q, &_x[_M*i], &y_test[i], 0);
+        firdecim_crcf_execute(q, &_x[_M*i], &y_test[i]);
         
         CONTEND_DELTA( crealf(y_test[i]), crealf(_y[i]), tol );
         CONTEND_DELTA( cimagf(y_test[i]), cimagf(_y[i]), tol );
@@ -120,7 +120,7 @@ void firdecim_cccf_test(unsigned int    _M,
     unsigned int i;
     // compute output
     for (i=0; i<_y_len; i++) {
-        firdecim_cccf_execute(q, &_x[_M*i], &y_test[i], 0);
+        firdecim_cccf_execute(q, &_x[_M*i], &y_test[i]);
         
         CONTEND_DELTA( crealf(y_test[i]), crealf(_y[i]), tol );
         CONTEND_DELTA( cimagf(y_test[i]), cimagf(_y[i]), tol );

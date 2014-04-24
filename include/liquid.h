@@ -496,18 +496,16 @@ EQLMS() EQLMS(_recreate)(EQLMS()      _q,                       \
 /* destroy equalizer object, freeing all internal memory    */  \
 void EQLMS(_destroy)(EQLMS() _q);                               \
                                                                 \
+/* reset equalizer object, clearing internal state          */  \
+void EQLMS(_reset)(EQLMS() _q);                                 \
+                                                                \
 /* print equalizer internal state                           */  \
 void EQLMS(_print)(EQLMS() _q);                                 \
                                                                 \
-/* set equalizer learning rate                              */  \
-void EQLMS(_set_bw)(EQLMS() _q,                                 \
-                    float   _lambda);                           \
-                                                                \
-/* get equalizer learning rate                              */  \
-float EQLMS(_get_bw)(EQLMS() _eq);                              \
-                                                                \
-/* reset equalizer object, clearing internal state          */  \
-void EQLMS(_reset)(EQLMS() _q);                                 \
+/* get/set equalizer learning rate                          */  \
+float EQLMS(_get_bw)(EQLMS() _q);                               \
+void  EQLMS(_set_bw)(EQLMS() _q,                                \
+                     float   _lambda);                          \
                                                                 \
 /* push sample into equalizer internal buffer               */  \
 void EQLMS(_push)(EQLMS() _q,                                   \
@@ -527,7 +525,9 @@ void EQLMS(_step)(EQLMS() _q,                                   \
                   T       _d,                                   \
                   T       _d_hat);                              \
                                                                 \
-/* reset equalizer object, clearing internal state          */  \
+/* get equalizer's internal coefficients                    */  \
+/*  _q      :   equalizer object                            */  \
+/*  _w      :   weights [size: _p x 1]                      */  \
 void EQLMS(_get_weights)(EQLMS() _q,                            \
                          T *     _w);                           \
                                                                 \
@@ -556,24 +556,65 @@ LIQUID_EQLMS_DEFINE_API(EQLMS_MANGLE_CCCF, liquid_float_complex);
 //   T      : data type
 #define LIQUID_EQRLS_DEFINE_API(EQRLS,T)                        \
 typedef struct EQRLS(_s) * EQRLS();                             \
-EQRLS() EQRLS(_create)(T * _h,                                  \
+                                                                \
+/* create RLS EQ initialized with external coefficients     */  \
+/*  _h  : filter coefficients (NULL for {1,0,0...})         */  \
+/*  _p  : filter length                                     */  \
+EQRLS() EQRLS(_create)(T *          _h,                         \
                        unsigned int _p);                        \
-EQRLS() EQRLS(_recreate)(EQRLS() _eq,                           \
-                         T * _h,                                \
+                                                                \
+/* re-create RLS EQ initialized with external coefficients  */  \
+/*  _q  : initial equalizer object                          */  \
+/*  _h  : filter coefficients (NULL for {1,0,0...})         */  \
+/*  _p  : filter length                                     */  \
+EQRLS() EQRLS(_recreate)(EQRLS()      _q,                       \
+                         T *          _h,                       \
                          unsigned int _p);                      \
-void EQRLS(_destroy)(EQRLS() _eq);                              \
-void EQRLS(_print)(EQRLS() _eq);                                \
-void EQRLS(_set_bw)(EQRLS() _eq, float _mu);                    \
-float EQRLS(_get_bw)(EQRLS() _eq);                              \
-void EQRLS(_reset)(EQRLS() _eq);                                \
-void EQRLS(_push)(EQRLS() _eq, T _x);                           \
-void EQRLS(_execute)(EQRLS() _eq, T * _y);                      \
-void EQRLS(_step)(EQRLS() _eq, T _d, T _d_hat);                 \
-void EQRLS(_get_weights)(EQRLS() _eq, T * _w);                  \
-void EQRLS(_train)(EQRLS() _eq,                                 \
-                   T * _w,                                      \
-                   T * _x,                                      \
-                   T * _d,                                      \
+                                                                \
+/* destroy equalizer object, freeing all internal memory    */  \
+void EQRLS(_destroy)(EQRLS() _q);                               \
+                                                                \
+/* print equalizer internal state                           */  \
+void EQRLS(_print)(EQRLS() _q);                                 \
+                                                                \
+/* reset equalizer object, clearing internal state          */  \
+void EQRLS(_reset)(EQRLS() _q);                                 \
+                                                                \
+/* get/set equalizer learning rate                          */  \
+float EQRLS(_get_bw)(EQRLS() _q);                               \
+void  EQRLS(_set_bw)(EQRLS() _q,                                \
+                     float   _mu);                              \
+                                                                \
+/* push sample into equalizer internal buffer               */  \
+void EQRLS(_push)(EQRLS() _q, T _x);                            \
+                                                                \
+/* execute internal dot product and return result           */  \
+/*  _q      :   equalizer object                            */  \
+/*  _y      :   output sample                               */  \
+void EQRLS(_execute)(EQRLS() _q, T * _y);                       \
+                                                                \
+/* step through one cycle of equalizer training             */  \
+/*  _q      :   equalizer object                            */  \
+/*  _d      :   desired output                              */  \
+/*  _d_hat  :   actual output                               */  \
+void EQRLS(_step)(EQRLS() _q, T _d, T _d_hat);                  \
+                                                                \
+/* retrieve internal filter coefficients                    */  \
+/*  _q      :   equalizer object                            */  \
+/*  _w      :   weights [size: _p x 1]                      */  \
+void EQRLS(_get_weights)(EQRLS() _q,                            \
+                         T *     _w);                           \
+                                                                \
+/* train equalizer object on group of samples               */  \
+/*  _q      :   equalizer object                            */  \
+/*  _w      :   input/output weights   [size: _p x 1]       */  \
+/*  _x      :   received sample vector [size: _n x 1]       */  \
+/*  _d      :   desired output vector  [size: _n x 1]       */  \
+/*  _n      :   input, output vector length                 */  \
+void EQRLS(_train)(EQRLS()      _q,                             \
+                   T *          _w,                             \
+                   T *          _x,                             \
+                   T *          _d,                             \
                    unsigned int _n);
 
 LIQUID_EQRLS_DEFINE_API(EQRLS_MANGLE_RRRF, float);
@@ -1654,9 +1695,20 @@ void AUTOCORR(_print)(AUTOCORR() _q);                           \
 void AUTOCORR(_push)(AUTOCORR() _q,                             \
                      TI         _x);                            \
                                                                 \
-/* compute auto-correlation output                          */  \
+/* compute single auto-correlation output                   */  \
 void AUTOCORR(_execute)(AUTOCORR() _q,                          \
                         TO *       _rxx);                       \
+                                                                \
+/* compute auto-correlation on block of samples; the input  */  \
+/* and output arrays may have the same pointer              */  \
+/*  _q      :   auto-correlation object                     */  \
+/*  _x      :   input array [size: _n x 1]                  */  \
+/*  _n      :   number of input, output samples             */  \
+/*  _rxx    :   input array [size: _n x 1]                  */  \
+void AUTOCORR(_execute_block)(AUTOCORR()   _q,                  \
+                              TI *         _x,                  \
+                              unsigned int _n,                  \
+                              TO *         _rxx);               \
                                                                 \
 /* return sum of squares of buffered samples                */  \
 float AUTOCORR(_get_energy)(AUTOCORR() _q);                     \
@@ -2138,13 +2190,23 @@ void FIRINTERP(_print)(FIRINTERP() _q);                         \
 /* reset internal state                                     */  \
 void FIRINTERP(_reset)(FIRINTERP() _q);                         \
                                                                 \
-/* execute interpolation                                    */  \
+/* execute interpolation on single input sample             */  \
 /*  _q      : firinterp object                              */  \
 /*  _x      : input sample                                  */  \
 /*  _y      : output sample array [size: _M x 1]            */  \
 void FIRINTERP(_execute)(FIRINTERP() _q,                        \
                          TI          _x,                        \
                          TO *        _y);                       \
+                                                                \
+/* execute interpolation on block of input samples          */  \
+/*  _q      : firinterp object                              */  \
+/*  _x      : input array [size: _n x 1]                    */  \
+/*  _n      : size of input array                           */  \
+/*  _y      : output sample array [size: _M*_n x 1]         */  \
+void FIRINTERP(_execute_block)(FIRINTERP()  _q,                 \
+                               TI *         _x,                 \
+                               unsigned int _n,                 \
+                               TO *         _y);                \
 
 LIQUID_FIRINTERP_DEFINE_API(FIRINTERP_MANGLE_RRRF,
                             float,
@@ -2203,8 +2265,23 @@ void IIRINTERP(_print)(IIRINTERP() _q);                         \
 /* reset interpolator object                                */  \
 void IIRINTERP(_reset)(IIRINTERP() _q);                         \
                                                                 \
-/* execute interpolator                                     */  \
-void IIRINTERP(_execute)(IIRINTERP() _q, TI _x, TO *_y);        \
+/* execute interpolation on single input sample             */  \
+/*  _q      : iirinterp object                              */  \
+/*  _x      : input sample                                  */  \
+/*  _y      : output sample array [size: _M x 1]            */  \
+void IIRINTERP(_execute)(IIRINTERP() _q,                        \
+                         TI          _x,                        \
+                         TO *        _y);                       \
+                                                                \
+/* execute interpolation on block of input samples          */  \
+/*  _q      : iirinterp object                              */  \
+/*  _x      : input array [size: _n x 1]                    */  \
+/*  _n      : size of input array                           */  \
+/*  _y      : output sample array [size: _M*_n x 1]         */  \
+void IIRINTERP(_execute_block)(IIRINTERP()  _q,                 \
+                               TI *         _x,                 \
+                               unsigned int _n,                 \
+                               TO *         _y);                \
                                                                 \
 /* get system group delay at frequency _fc                  */  \
 float IIRINTERP(_groupdelay)(IIRINTERP() _q, float _fc);        \
@@ -2273,15 +2350,23 @@ void FIRDECIM(_print)(FIRDECIM() _q);                           \
 /* reset decimator object internal state                    */  \
 void FIRDECIM(_clear)(FIRDECIM() _q);                           \
                                                                 \
-/* execute decimator                                        */  \
+/* execute decimator on _M input samples                    */  \
 /*  _q      : decimator object                              */  \
 /*  _x      : input samples [size: _M x 1]                  */  \
 /*  _y      : output sample pointer                         */  \
-/*  _index  : decimator output index, [0,_M-1]              */  \
-void FIRDECIM(_execute)(FIRDECIM()   _q,                        \
-                        TI *         _x,                        \
-                        TO *         _y,                        \
-                        unsigned int _index);                   \
+void FIRDECIM(_execute)(FIRDECIM() _q,                          \
+                        TI *       _x,                          \
+                        TO *       _y);                         \
+                                                                \
+/* execute decimator on block of _n*_M input samples        */  \
+/*  _q      : decimator object                              */  \
+/*  _x      : input array [size: _n*_M x 1]                 */  \
+/*  _n      : number of _output_ samples                    */  \
+/*  _y      : output array [_sze: _n x 1]                   */  \
+void FIRDECIM(_execute_block)(FIRDECIM()   _q,                  \
+                              TI *         _x,                  \
+                              unsigned int _n,                  \
+                              TO *         _y);                 \
 
 LIQUID_FIRDECIM_DEFINE_API(FIRDECIM_MANGLE_RRRF,
                            float,
@@ -2341,15 +2426,23 @@ void IIRDECIM(_print)(IIRDECIM() _q);                           \
 /* reset decimator object                                   */  \
 void IIRDECIM(_reset)(IIRDECIM() _q);                           \
                                                                 \
-/* execute decimator                                        */  \
+/* execute decimator on _M input samples                    */  \
 /*  _q      : decimator object                              */  \
 /*  _x      : input samples [size: _M x 1]                  */  \
 /*  _y      : output sample pointer                         */  \
-/*  _index  : decimator output index, [0,_M-1]              */  \
-void IIRDECIM(_execute)(IIRDECIM()   _q,                        \
-                        TI *         _x,                        \
-                        TO *         _y,                        \
-                        unsigned int _index);                   \
+void IIRDECIM(_execute)(IIRDECIM() _q,                          \
+                        TI *       _x,                          \
+                        TO *       _y);                         \
+                                                                \
+/* execute decimator on block of _n*_M input samples        */  \
+/*  _q      : decimator object                              */  \
+/*  _x      : input array [size: _n*_M x 1]                 */  \
+/*  _n      : number of _output_ samples                    */  \
+/*  _y      : output array [_sze: _n x 1]                   */  \
+void IIRDECIM(_execute_block)(IIRDECIM()   _q,                  \
+                              TI *         _x,                  \
+                              unsigned int _n,                  \
+                              TO *         _y);                 \
                                                                 \
 /* get system group delay at frequency _fc                  */  \
 float IIRDECIM(_groupdelay)(IIRDECIM() _q, float _fc);          \
@@ -2812,7 +2905,19 @@ void FIRFARROW(_set_delay)(FIRFARROW() _q,                      \
 /* execute firfarrow internal dot product                   */  \
 /*  _q      : firfarrow object                              */  \
 /*  _y      : output sample pointer                         */  \
-void FIRFARROW(_execute)(FIRFARROW() _q, TO *_y);               \
+void FIRFARROW(_execute)(FIRFARROW() _q,                        \
+                         TO *        _y);                       \
+                                                                \
+/* compute firfarrow filter on block of samples; the input  */  \
+/* and output arrays may have the same pointer              */  \
+/*  _q      : firfarrow object                              */  \
+/*  _x      : input array [size: _n x 1]                    */  \
+/*  _n      : input, output array size                      */  \
+/*  _y      : output array [size: _n x 1]                   */  \
+void FIRFARROW(_execute_block)(FIRFARROW()  _q,                 \
+                               TI *         _x,                 \
+                               unsigned int _n,                 \
+                               TO *         _y);                \
                                                                 \
 /* get length of firfarrow object (number of filter taps)   */  \
 unsigned int FIRFARROW(_get_length)(FIRFARROW() _q);            \
