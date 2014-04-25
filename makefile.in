@@ -73,7 +73,7 @@ PATHSEP		= /
 # 
 # liquid headers
 #
-headers_install	:= liquid.h
+headers_install	:= liquid.h liquidfpm.h
 headers		:= $(headers_install) liquid.internal.h
 include_headers	:= $(addprefix include/,$(headers))
 
