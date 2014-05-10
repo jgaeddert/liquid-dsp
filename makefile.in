@@ -575,6 +575,7 @@ framing_objects :=						\
 	src/framing/src/ofdmflexframegen.o			\
 	src/framing/src/ofdmflexframesync.o			\
 	src/framing/src/presync_cccf.o				\
+	src/framing/src/symtrack_cccf.o				\
 
 
 # list explicit targets and dependencies here
