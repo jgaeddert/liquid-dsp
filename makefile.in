@@ -1403,6 +1403,7 @@ example_programs :=						\
 	examples/spgram_example					\
 	examples/symsync_crcf_example				\
 	examples/symsync_crcf_kaiser_example			\
+	examples/symtrack_cccf_example				\
 	examples/wdelayf_example				\
 	examples/windowf_example				\
 
