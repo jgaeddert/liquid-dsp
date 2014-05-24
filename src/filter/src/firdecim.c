@@ -183,30 +183,39 @@ void FIRDECIM(_clear)(FIRDECIM() _q)
 //  _q      :   decimator object
 //  _x      :   input sample array [size: _M x 1]
 //  _y      :   output sample pointer
-//  _index  :   decimator output index [0,_M-1]
-void FIRDECIM(_execute)(FIRDECIM()   _q,
-                        TI *         _x,
-                        TO *         _y,
-                        unsigned int _index)
+void FIRDECIM(_execute)(FIRDECIM() _q,
+                        TI *       _x,
+                        TO *       _y)
 {
-    // validate input
-    if (_index >= _q->M) {
-        fprintf(stderr,"error: decim_%s_execute(), output sample phase exceeds decimation factor\n", EXTENSION_FULL);
-        exit(1);
-    }
-
     TI * r; // read pointer
     unsigned int i;
     for (i=0; i<_q->M; i++) {
         WINDOW(_push)(_q->w, _x[i]);
 
-        if (i==_index) {
+        if (i==0) {
             // read buffer (retrieve pointer to aligned memory array)
             WINDOW(_read)(_q->w, &r);
 
             // execute dot product
             DOTPROD(_execute)(_q->dp, r, _y);
         }
+    }
+}
+
+// execute decimator on block of _n*_M input samples
+//  _q      : decimator object
+//  _x      : input array [size: _n*_M x 1]
+//  _n      : number of _output_ samples
+//  _y      : output array [_sze: _n x 1]
+void FIRDECIM(_execute_block)(FIRDECIM()   _q,
+                              TI *         _x,
+                              unsigned int _n,
+                              TO *         _y)
+{
+    unsigned int i;
+    for (i=0; i<_n; i++) {
+        // execute _M input samples computing just one output each time
+        FIRDECIM(_execute)(_q, &_x[i*_q->M], &_y[i]);
     }
 }
 

@@ -103,7 +103,7 @@ following command:
 Available Modules
 -----------------
 
-  * _agc_: automatic gain control, squelch, received signal strength
+  * _agc_: automatic gain control, received signal strength
   * _audio_: source audio encoders/decoders: cvsd, filterbanks
   * _buffer_: internal buffering, circular/static, ports (threaded)
   * _dotprod_: inner dot products (real, complex), vector sum of squares

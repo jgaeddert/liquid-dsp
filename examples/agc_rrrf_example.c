@@ -1,5 +1,5 @@
 //
-// agc_crcf_example.c
+// agc_rrrf_example.c
 //
 // Automatic gain control example demonstrating its transient
 // response.
@@ -8,11 +8,10 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <math.h>
-#include <complex.h>
 #include <getopt.h>
 #include "liquid.h"
 
-#define OUTPUT_FILENAME "agc_crcf_example.m"
+#define OUTPUT_FILENAME "agc_rrrf_example.m"
 
 // print usage/help message
 void usage()
@@ -54,31 +53,28 @@ int main(int argc, char*argv[])
     unsigned int i;
 
     // create objects
-    agc_crcf q = agc_crcf_create();
-    agc_crcf_set_bandwidth(q, bt);
+    agc_rrrf q = agc_rrrf_create();
+    agc_rrrf_set_bandwidth(q, bt);
 
-    float complex x[num_samples];   // input
-    float complex y[num_samples];   // output
-    float rssi[num_samples];        // received signal strength
+    float x[num_samples];       // input
+    float y[num_samples];       // output
+    float rssi[num_samples];    // received signal strength
 
     // print info
     printf("automatic gain control // loop bandwidth: %4.2e\n",bt);
 
     // generate signal
     for (i=0; i<num_samples; i++)
-        x[i] = gamma * cexpf(_Complex_I*2*M_PI*0.0193f*i);
+        x[i] = gamma * cosf(2*M_PI*0.093f*i);
 
     // run agc
     for (i=0; i<num_samples; i++) {
-        // apply gain
-        agc_crcf_execute(q, x[i], &y[i]);
-
-        // retrieve signal level [dB]
-        rssi[i] = agc_crcf_get_rssi(q);
+        agc_rrrf_execute(q, x[i], &y[i]);
+        rssi[i] = agc_rrrf_get_rssi(q);
     }
 
     // destroy AGC object
-    agc_crcf_destroy(q);
+    agc_rrrf_destroy(q);
 
     // 
     // export results
@@ -93,8 +89,8 @@ int main(int argc, char*argv[])
     fprintf(fid,"n = %u;\n", num_samples);
 
     for (i=0; i<num_samples; i++) {
-        fprintf(fid,"x(%4u) = %12.4e + j*%12.4e;\n", i+1, crealf(x[i]), cimagf(x[i]));
-        fprintf(fid,"y(%4u) = %12.4e + j*%12.4e;\n", i+1, crealf(y[i]), cimagf(y[i]));
+        fprintf(fid,"x(%4u) = %12.4e;\n", i+1, x[i]);
+        fprintf(fid,"y(%4u) = %12.4e;\n", i+1, y[i]);
         fprintf(fid,"rssi(%4u)  = %12.4e;\n", i+1, rssi[i]);
     }
 
@@ -103,14 +99,12 @@ int main(int argc, char*argv[])
     fprintf(fid,"figure;\n");
     fprintf(fid,"t = 0:(n-1);\n");
     fprintf(fid,"subplot(3,1,1);\n");
-    fprintf(fid,"  plot(t, real(x), '-', 'Color',[0 0.2 0.5],...\n");
-    fprintf(fid,"       t, imag(x), '-', 'Color',[0 0.5 0.2]);\n");
+    fprintf(fid,"  plot(t,x, '-','Color',[0 0.2 0.5]);\n");
     fprintf(fid,"  grid on;\n");
     fprintf(fid,"  xlabel('sample index');\n");
     fprintf(fid,"  ylabel('input');\n");
     fprintf(fid,"subplot(3,1,2);\n");
-    fprintf(fid,"  plot(t, real(y), '-', 'Color',[0 0.2 0.5],...\n");
-    fprintf(fid,"       t, imag(y), '-', 'Color',[0 0.5 0.2]);\n");
+    fprintf(fid,"  plot(t,y, '-','Color',[0 0.5 0.2]);\n");
     fprintf(fid,"  grid on;\n");
     fprintf(fid,"  xlabel('sample index');\n");
     fprintf(fid,"  ylabel('output');\n");

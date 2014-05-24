@@ -103,9 +103,8 @@ int main(int argc, char*argv[]) {
     }
 
     // run decimator
-    unsigned int sample_phase = 0;  // decimator output sample phase, [0,k-1]
     for (i=0; i<num_symbols; i++) {
-        firdecim_crcf_execute(decim, &y[k*i], &z[i], sample_phase);
+        firdecim_crcf_execute(decim, &y[k*i], &z[i]);
 
         // normalize output by samples/symbol
         z[i] /= k;
