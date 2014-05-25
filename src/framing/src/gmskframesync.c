@@ -206,8 +206,8 @@ gmskframesync gmskframesync_create(framesync_callback _callback,
 
     // create symbol timing recovery filters
     q->npfb = 32;   // number of filters in the bank
-    q->mf   = firpfb_rrrf_create_rnyquist( LIQUID_RNYQUIST_GMSKRX,q->npfb,q->k,q->m,q->BT);
-    q->dmf  = firpfb_rrrf_create_drnyquist(LIQUID_RNYQUIST_GMSKRX,q->npfb,q->k,q->m,q->BT);
+    q->mf   = firpfb_rrrf_create_rnyquist( LIQUID_FIRFILT_GMSKRX,q->npfb,q->k,q->m,q->BT);
+    q->dmf  = firpfb_rrrf_create_drnyquist(LIQUID_FIRFILT_GMSKRX,q->npfb,q->k,q->m,q->BT);
 
     // create down-coverters for carrier phase tracking
     q->nco_coarse = nco_crcf_create(LIQUID_NCO);

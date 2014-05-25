@@ -48,7 +48,7 @@ int main(int argc, char*argv[])
     float        tau         =  -0.20f; // fractional symbol offset
 
     // Nyquist filter type
-    liquid_nyquist_type ftype = LIQUID_NYQUIST_KAISER;
+    liquid_firfilt_type ftype = LIQUID_FIRFILT_KAISER;
     
     int dopt;
     while ((dopt = getopt(argc,argv,"uhk:m:b:B:s:w:n:t:")) != EOF) {

@@ -210,19 +210,19 @@ FIRPFBCH() FIRPFBCH(_create_rnyquist)(int          _type,
     float h[h_len];
     // TODO : actually design based on requested filter prototype
     switch (_ftype) {
-    case LIQUID_RNYQUIST_ARKAISER:
+    case LIQUID_FIRFILT_ARKAISER:
         // root-Nyquist Kaiser (approximate optimum)
         liquid_firdes_arkaiser(_M, _m, _beta, 0.0f, h);
         break;
-    case LIQUID_RNYQUIST_RKAISER:
+    case LIQUID_FIRFILT_RKAISER:
         // root-Nyquist Kaiser (true optimum)
         liquid_firdes_rkaiser(_M, _m, _beta, 0.0f, h);
         break;
-    case LIQUID_RNYQUIST_RRC:
+    case LIQUID_FIRFILT_RRC:
         // root raised-cosine
         liquid_firdes_rrcos(_M, _m, _beta, 0.0f, h);
         break;
-    case LIQUID_RNYQUIST_hM3:
+    case LIQUID_FIRFILT_hM3:
         // harris-Moerder-3 filter
         liquid_firdes_hM3(_M, _m, _beta, 0.0f, h);
         break;

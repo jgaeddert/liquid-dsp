@@ -29,7 +29,7 @@ int main(int argc, char*argv[]) {
     unsigned int k=2;   // samples/symbol
     unsigned int m=4;   // symbol delay
     float beta=0.33f;   // excess bandwidth factor
-    int ftype = LIQUID_NYQUIST_RCOS;
+    int ftype = LIQUID_FIRFILT_RCOS;
 
     int dopt;
     while ((dopt = getopt(argc,argv,"uht:k:m:b:")) != EOF) {
@@ -40,17 +40,17 @@ int main(int argc, char*argv[]) {
             return 0;
         case 't':
             if (strcmp(optarg,"kaiser")==0) {
-                ftype = LIQUID_NYQUIST_KAISER;
+                ftype = LIQUID_FIRFILT_KAISER;
             } else if (strcmp(optarg,"pm")==0) {
-                ftype = LIQUID_NYQUIST_PM;
+                ftype = LIQUID_FIRFILT_PM;
             } else if (strcmp(optarg,"rcos")==0) {
-                ftype = LIQUID_NYQUIST_RCOS;
+                ftype = LIQUID_FIRFILT_RCOS;
             } else if (strcmp(optarg,"fexp")==0) {
-                ftype = LIQUID_NYQUIST_FEXP;
+                ftype = LIQUID_FIRFILT_FEXP;
             } else if (strcmp(optarg,"fsech")==0) {
-                ftype = LIQUID_NYQUIST_FSECH;
+                ftype = LIQUID_FIRFILT_FSECH;
             } else if (strcmp(optarg,"farcsech")==0) {
-                ftype = LIQUID_NYQUIST_FARCSECH;
+                ftype = LIQUID_FIRFILT_FARCSECH;
             } else {
                 fprintf(stderr,"error: %s, unknown filter type '%s'\n", argv[0], optarg);
                 exit(1);

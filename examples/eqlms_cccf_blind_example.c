@@ -122,7 +122,7 @@ int main(int argc, char*argv[])
     unsigned int i;
 
     // generate matched filter response
-    liquid_firdes_rnyquist(LIQUID_RNYQUIST_RRC, k, m, beta, 0.0f, hm);
+    liquid_firdes_rnyquist(LIQUID_FIRFILT_RRC, k, m, beta, 0.0f, hm);
     firinterp_crcf interp = firinterp_crcf_create(k, hm, hm_len);
 
     // create the modem objects
@@ -157,7 +157,7 @@ int main(int argc, char*argv[])
 
     // push through equalizer
     // create equalizer, intialized with square-root Nyquist filter
-    eqlms_cccf eq = eqlms_cccf_create_rnyquist(LIQUID_RNYQUIST_RRC, k, p, beta, 0.0f);
+    eqlms_cccf eq = eqlms_cccf_create_rnyquist(LIQUID_FIRFILT_RRC, k, p, beta, 0.0f);
     eqlms_cccf_set_bw(eq, mu);
 
     // get initialized weights

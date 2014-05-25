@@ -36,9 +36,9 @@
 //  _h      : output coefficient buffer (length: 2*k*m+1)
 void liquid_firdes_gmsktx(unsigned int _k,
                           unsigned int _m,
-                          float _beta,
-                          float _dt,
-                          float * _h)
+                          float        _beta,
+                          float        _dt,
+                          float *      _h)
 {
     // validate input
     if ( _k < 1 ) {
@@ -85,9 +85,9 @@ void liquid_firdes_gmsktx(unsigned int _k,
 //  _h      : output coefficient buffer (length: 2*k*m+1)
 void liquid_firdes_gmskrx(unsigned int _k,
                           unsigned int _m,
-                          float _beta,
-                          float _dt,
-                          float * _h)
+                          float        _beta,
+                          float        _dt,
+                          float *      _h)
 {
     // validate input
     if ( _k < 1 ) {
@@ -108,7 +108,7 @@ void liquid_firdes_gmskrx(unsigned int _k,
     // internal options
     float beta = BT;                // prototype filter cut-off
     float delta = 1e-3f;            // filter design correction factor
-    liquid_nyquist_type prototype = LIQUID_NYQUIST_KAISER;    // Nyquist prototype
+    liquid_firfilt_type prototype = LIQUID_FIRFILT_KAISER;    // Nyquist prototype
 
     unsigned int i;
 

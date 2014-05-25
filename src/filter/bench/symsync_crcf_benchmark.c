@@ -34,7 +34,7 @@ void symsync_crcf_bench(struct rusage *     _start,
     float beta        = 0.3f;   // filter excess bandwidth factor
 
     // create symbol synchronizer
-    symsync_crcf q = symsync_crcf_create_rnyquist(LIQUID_RNYQUIST_RRC,
+    symsync_crcf q = symsync_crcf_create_rnyquist(LIQUID_FIRFILT_RRC,
                                                   k, m, beta, npfb);
 
     //

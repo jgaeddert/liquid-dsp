@@ -18,7 +18,7 @@ int main() {
     unsigned int m=3;               // filter delay (symbols)
     float beta = 0.9f;              // filter excess bandwidth factor
     unsigned int delay = 3;         // initial sampling delay
-    int ftype = LIQUID_RNYQUIST_ARKAISER;
+    int ftype = LIQUID_FIRFILT_ARKAISER;
 
     // derived values
     unsigned int num_frames = num_symbols + 2*m;            // compensate for filter delay

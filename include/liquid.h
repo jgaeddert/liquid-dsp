@@ -474,7 +474,7 @@ EQLMS() EQLMS(_create)(T *          _h,                         \
                        unsigned int _p);                        \
                                                                 \
 /* create LMS EQ initialized with square-root Nyquist       */  \
-/*  _type   : filter type (e.g. LIQUID_RNYQUIST_RRC)        */  \
+/*  _type   : filter type (e.g. LIQUID_FIRFILT_RRC)         */  \
 /*  _k      : samples/symbol                                */  \
 /*  _m      : filter delay (symbols)                        */  \
 /*  _beta   : rolloff factor (0 < beta <= 1)                */  \
@@ -1154,6 +1154,34 @@ void asgram_execute(asgram  _q,
 // MODULE : filter
 //
 
+//
+// firdes: finite impulse response filter design
+//
+
+// prototypes
+typedef enum {
+    LIQUID_FIRFILT_UNKNOWN=0,   // unknown filter type
+
+    // Nyquist filter prototypes
+    LIQUID_FIRFILT_KAISER,      // Nyquist Kaiser filter
+    LIQUID_FIRFILT_PM,          // Parks-McClellan filter
+    LIQUID_FIRFILT_RCOS,        // raised-cosine filter
+    LIQUID_FIRFILT_FEXP,        // flipped exponential
+    LIQUID_FIRFILT_FSECH,       // flipped hyperbolic secant
+    LIQUID_FIRFILT_FARCSECH,    // flipped arc-hyperbolic secant
+
+    // root-Nyquist filter prototypes
+    LIQUID_FIRFILT_ARKAISER,    // root-Nyquist Kaiser (approximate optimum)
+    LIQUID_FIRFILT_RKAISER,     // root-Nyquist Kaiser (true optimum)
+    LIQUID_FIRFILT_RRC,         // root raised-cosine
+    LIQUID_FIRFILT_hM3,         // harris-Moerder-3 filter
+    LIQUID_FIRFILT_GMSKTX,      // GMSK transmit filter
+    LIQUID_FIRFILT_GMSKRX,      // GMSK receive filter
+    LIQUID_FIRFILT_RFEXP,       // flipped exponential
+    LIQUID_FIRFILT_RFSECH,      // flipped hyperbolic secant
+    LIQUID_FIRFILT_RFARCSECH,   // flipped arc-hyperbolic secant
+} liquid_firfilt_type;
+
 // estimate required filter length given
 //  _df     :   transition bandwidth (0 < _b < 0.5)
 //  _As     :   stop-band attenuation [dB], _As > 0
@@ -1179,29 +1207,19 @@ float estimate_req_filter_df(float _As,
 float kaiser_beta_As(float _As);
 
 
-// Nyquist filter prototypes
-typedef enum {
-    LIQUID_NYQUIST_KAISER=0,    // Nyquist Kaiser filter
-    LIQUID_NYQUIST_PM,          // Parks-McClellan filter
-    LIQUID_NYQUIST_RCOS,        // raised-cosine filter
-    LIQUID_NYQUIST_FEXP,        // flipped exponential
-    LIQUID_NYQUIST_FSECH,       // flipped hyperbolic secant
-    LIQUID_NYQUIST_FARCSECH,    // flipped arc-hyperbolic secant
-} liquid_nyquist_type;
-
 // Design Nyquist filter
-//  _type   : filter type (e.g. LIQUID_NYQUIST_RCOS)
+//  _type   : filter type (e.g. LIQUID_FIRFILT_RCOS)
 //  _k      : samples/symbol
 //  _m      : symbol delay
 //  _beta   : excess bandwidth factor, _beta in [0,1]
 //  _dt     : fractional sample delay
 //  _h      : output coefficient buffer (length: 2*k*m+1)
-void liquid_firdes_nyquist(liquid_nyquist_type _type,
-                           unsigned int _k,
-                           unsigned int _m,
-                           float _beta,
-                           float _dt,
-                           float * _h);
+void liquid_firdes_nyquist(liquid_firfilt_type _type,
+                           unsigned int        _k,
+                           unsigned int        _m,
+                           float               _beta,
+                           float               _dt,
+                           float *             _h);
 
 
 // Design FIR filter using Parks-McClellan algorithm
@@ -1304,32 +1322,19 @@ void liquid_firdes_rcos(unsigned int _k,
                         float _dt,
                         float * _h);
 
-// root-Nyquist filter prototypes
-typedef enum {
-    LIQUID_RNYQUIST_ARKAISER=0, // root-Nyquist Kaiser (approximate optimum)
-    LIQUID_RNYQUIST_RKAISER,    // root-Nyquist Kaiser (true optimum)
-    LIQUID_RNYQUIST_RRC,        // root raised-cosine
-    LIQUID_RNYQUIST_hM3,        // harris-Moerder-3 filter
-    LIQUID_RNYQUIST_GMSKTX,     // GMSK transmit filter
-    LIQUID_RNYQUIST_GMSKRX,     // GMSK receive filter
-    LIQUID_RNYQUIST_FEXP,       // flipped exponential
-    LIQUID_RNYQUIST_FSECH,      // flipped hyperbolic secant
-    LIQUID_RNYQUIST_FARCSECH,   // flipped arc-hyperbolic secant
-} liquid_rnyquist_type;
-
 // Design root-Nyquist filter
-//  _type   : filter type (e.g. LIQUID_RNYQUIST_RRC)
+//  _type   : filter type (e.g. LIQUID_FIRFILT_RRC)
 //  _k      : samples/symbol,          _k > 1
 //  _m      : symbol delay,            _m > 0
 //  _beta   : excess bandwidth factor, _beta in [0,1)
 //  _dt     : fractional sample delay, _dt in [-1,1]
 //  _h      : output coefficient buffer (length: 2*_k*_m+1)
-void liquid_firdes_rnyquist(liquid_rnyquist_type _type,
-                            unsigned int         _k,
-                            unsigned int         _m,
-                            float                _beta,
-                            float                _dt,
-                            float *              _h);
+void liquid_firdes_rnyquist(liquid_firfilt_type _type,
+                            unsigned int        _k,
+                            unsigned int        _m,
+                            float               _beta,
+                            float               _dt,
+                            float *             _h);
 
 // Design root-Nyquist raised-cosine filter
 void liquid_firdes_rrcos(unsigned int _k, unsigned int _m, float _beta, float _dt, float * _h);
@@ -1753,7 +1758,7 @@ FIRFILT() FIRFILT(_create_kaiser)(unsigned int _n,              \
                                   float        _mu);            \
                                                                 \
 /* create from square-root Nyquist prototype                */  \
-/*  _type   : filter type (e.g. LIQUID_RNYQUIST_RRC)        */  \
+/*  _type   : filter type (e.g. LIQUID_FIRFILT_RRC)         */  \
 /*  _k      : nominal samples/symbol, _k > 1                */  \
 /*  _m      : filter delay [symbols], _m > 0                */  \
 /*  _beta   : rolloff factor, 0 < beta <= 1                 */  \
@@ -2125,7 +2130,7 @@ FIRPFB() FIRPFB(_create)(unsigned int _M,                       \
                          unsigned int _h_len);                  \
                                                                 \
 /* create firpfb from square-root Nyquist prototype         */  \
-/*  _type   : filter type (e.g. LIQUID_RNYQUIST_RRC)        */  \
+/*  _type   : filter type (e.g. LIQUID_FIRFILT_RRC)         */  \
 /*  _npfb   : number of filters in the bank                 */  \
 /*  _k      : nominal samples/symbol                        */  \
 /*  _m      : filter delay (symbols)                        */  \
@@ -2137,7 +2142,7 @@ FIRPFB() FIRPFB(_create_rnyquist)(int          _type,           \
                                   float        _beta);          \
                                                                 \
 /* create from square-root derivative Nyquist prototype     */  \
-/*  _type   : filter type (e.g. LIQUID_RNYQUIST_RRC)        */  \
+/*  _type   : filter type (e.g. LIQUID_FIRFILT_RRC)         */  \
 /*  _npfb   : number of filters in the bank                 */  \
 /*  _k      : nominal samples/symbol                        */  \
 /*  _m      : filter delay (symbols)                        */  \
@@ -2223,7 +2228,7 @@ FIRINTERP() FIRINTERP(_create_prototype)(unsigned int _M,       \
                                          float        _As);     \
                                                                 \
 /* create Nyquist interpolator                              */  \
-/*  _type   : filter type (e.g. LIQUID_NYQUIST_RCOS)        */  \
+/*  _type   : filter type (e.g. LIQUID_FIRFILT_RCOS)        */  \
 /*  _k      :   samples/symbol,          _k > 1             */  \
 /*  _m      :   filter delay (symbols),  _m > 0             */  \
 /*  _beta   :   excess bandwidth factor, _beta < 1          */  \
@@ -2235,7 +2240,7 @@ FIRINTERP() FIRINTERP(_create_nyquist)(int          _type,      \
                                        float        _dt);       \
                                                                 \
 /* create square-root Nyquist interpolator                  */  \
-/*  _type   : filter type (e.g. LIQUID_RNYQUIST_RRC)        */  \
+/*  _type   : filter type (e.g. LIQUID_FIRFILT_RRC)         */  \
 /*  _k      :   samples/symbol,          _k > 1             */  \
 /*  _m      :   filter delay (symbols),  _m > 0             */  \
 /*  _beta   :   excess bandwidth factor, _beta < 1          */  \
@@ -2395,7 +2400,7 @@ FIRDECIM() FIRDECIM(_create_prototype)(unsigned int _M,         \
                                        float        _As);       \
                                                                 \
 /* create square-root Nyquist decimator                     */  \
-/*  _type   : filter type (e.g. LIQUID_RNYQUIST_RRC)        */  \
+/*  _type   : filter type (e.g. LIQUID_FIRFILT_RRC)         */  \
 /*  _M      : samples/symbol (decimation factor)            */  \
 /*  _m      : filter delay (symbols)                        */  \
 /*  _beta   : rolloff factor (0 < beta <= 1)                */  \
@@ -2846,7 +2851,7 @@ SYMSYNC() SYMSYNC(_create)(unsigned int _k,                     \
                            unsigned int _h_len);                \
                                                                 \
 /* create square-root Nyquist symbol synchronizer           */  \
-/*  _type   : filter type (e.g. LIQUID_RNYQUIST_RRC)        */  \
+/*  _type   : filter type (e.g. LIQUID_FIRFILT_RRC)         */  \
 /*  _k      : samples/symbol                                */  \
 /*  _m      : symbol delay                                  */  \
 /*  _beta   : rolloff factor, beta in (0,1]                 */  \
