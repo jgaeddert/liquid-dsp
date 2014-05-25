@@ -1017,7 +1017,7 @@ float liquid_firdes_rkaiser_internal_isi(unsigned int _k,
                                          float * _h);
 
 // Design flipped Nyquist/root-Nyquist filters
-void liquid_firdes_fnyquist(liquid_nyquist_type _type,
+void liquid_firdes_fnyquist(liquid_firfilt_type _type,
                             int                 _root,
                             unsigned int        _k,
                             unsigned int        _m,

@@ -31,7 +31,7 @@ int main() {
     // generate signal (interpolated symbols with noise)
     unsigned int k = 4;     // interpolation rate
     unsigned int m = 7;     // filter delay (symbols)
-    firinterp_crcf interp = firinterp_crcf_create_rnyquist(LIQUID_RNYQUIST_RKAISER, k, m, 0.3f, 0.0f);
+    firinterp_crcf interp = firinterp_crcf_create_rnyquist(LIQUID_FIRFILT_RKAISER, k, m, 0.3f, 0.0f);
 
     unsigned int n=0;
     float complex x[k]; // interpolator output

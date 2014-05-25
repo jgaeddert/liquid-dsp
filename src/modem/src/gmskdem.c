@@ -98,7 +98,7 @@ gmskdem gmskdem_create(unsigned int _k,
 
 #if GMSKDEM_USE_EQUALIZER
     // receiver matched filter/equalizer
-    q->eq = eqlms_rrrf_create_rnyquist(LIQUID_RNYQUIST_GMSKRX,
+    q->eq = eqlms_rrrf_create_rnyquist(LIQUID_FIRFILT_GMSKRX,
                                        q->k,
                                        q->m,
                                        q->BT,

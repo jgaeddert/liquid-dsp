@@ -177,7 +177,7 @@ flexframesync flexframesync_create(framesync_callback _callback,
     q->m    = 7;        // filter delay (symbols)
     q->beta = 0.25f;    // excess bandwidth factor
     float complex seq[q->k*64];
-    firinterp_crcf interp = firinterp_crcf_create_rnyquist(LIQUID_RNYQUIST_ARKAISER,q->k,q->m,q->beta,0);
+    firinterp_crcf interp = firinterp_crcf_create_rnyquist(LIQUID_FIRFILT_ARKAISER,q->k,q->m,q->beta,0);
     for (i=0; i<64+q->m; i++) {
         // compensate for filter delay
         if (i < q->m) firinterp_crcf_execute(interp, q->preamble_pn[i],    &seq[0]);
@@ -193,8 +193,8 @@ flexframesync flexframesync_create(framesync_callback _callback,
 
     // create symbol timing recovery filters
     q->npfb = 32;   // number of filters in the bank
-    q->mf   = firpfb_crcf_create_rnyquist(LIQUID_RNYQUIST_ARKAISER, q->npfb,q->k,q->m,q->beta);
-    q->dmf  = firpfb_crcf_create_drnyquist(LIQUID_RNYQUIST_ARKAISER,q->npfb,q->k,q->m,q->beta);
+    q->mf   = firpfb_crcf_create_rnyquist(LIQUID_FIRFILT_ARKAISER, q->npfb,q->k,q->m,q->beta);
+    q->dmf  = firpfb_crcf_create_drnyquist(LIQUID_FIRFILT_ARKAISER,q->npfb,q->k,q->m,q->beta);
 
     // create down-coverters for carrier phase tracking
     q->nco_coarse = nco_crcf_create(LIQUID_NCO);
