@@ -1182,6 +1182,9 @@ typedef enum {
     LIQUID_FIRFILT_RFARCSECH,   // flipped arc-hyperbolic secant
 } liquid_firfilt_type;
 
+// returns filter type based on input string
+int liquid_getopt_str2firfilt(const char * _str);
+
 // estimate required filter length given
 //  _df     :   transition bandwidth (0 < _b < 0.5)
 //  _As     :   stop-band attenuation [dB], _As > 0

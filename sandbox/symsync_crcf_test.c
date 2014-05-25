@@ -65,22 +65,14 @@ int main(int argc, char*argv[]) {
         case 'u':
         case 'h':   usage();                        return 0;
         case 'T':
-            if (strcmp(optarg,"rrcos")==0) {
-                ftype_tx = LIQUID_FIRFILT_RRC;
-                ftype_rx = LIQUID_FIRFILT_RRC;
-            } else if (strcmp(optarg,"rkaiser")==0) {
-                ftype_tx = LIQUID_FIRFILT_RKAISER;
-                ftype_rx = LIQUID_FIRFILT_RKAISER;
-            } else if (strcmp(optarg,"arkaiser")==0) {
-                ftype_tx = LIQUID_FIRFILT_ARKAISER;
-                ftype_rx = LIQUID_FIRFILT_ARKAISER;
-            } else if (strcmp(optarg,"hM3")==0) {
-                ftype_tx = LIQUID_FIRFILT_hM3;
-                ftype_rx = LIQUID_FIRFILT_hM3;
-            } else if (strcmp(optarg,"gmsk")==0) {
+            if (strcmp(optarg,"gmsk")==0) {
                 ftype_tx = LIQUID_FIRFILT_GMSKTX;
                 ftype_rx = LIQUID_FIRFILT_GMSKRX;
             } else {
+                ftype_tx = liquid_getopt_str2firfilt(optarg);
+                ftype_rx = liquid_getopt_str2firfilt(optarg);
+            }
+            if (ftype_tx == LIQUID_FIRFILT_UNKNOWN) {
                 fprintf(stderr,"error: %s, unknown filter type '%s'\n", argv[0], optarg);
                 exit(1);
             }
