@@ -1225,6 +1225,7 @@ uninstall:
 	$(RM) $(addprefix $(prefix)/include/liquid/, $(headers_install))
 	$(RM) $(exec_prefix)/lib/libliquid.a
 	$(RM) $(exec_prefix)/lib/$(SHARED_LIB)
+	$(RM) $(exec_prefix)/bin/liquid
 	@echo "done."
 
 ##
@@ -1601,9 +1602,6 @@ clean-sandbox:
 	$(RM) $(sandbox_programs)
 
 
-# Clean
-.PHONY: clean
-
 ##
 ## TARGET : world     - build absolutely everything
 ##
@@ -1612,6 +1610,8 @@ world : all check bench examples sandbox
 ##
 ## TARGET : clean     - clean build (objects, dependencies, libraries, etc.)
 ##
+
+.PHONY: clean
 
 clean-modules:
 	@echo "cleaning modules..."
