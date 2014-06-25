@@ -144,7 +144,7 @@ void asgram_execute(asgram  _q,
     // compute PSD magnitude and apply FFT shift
     unsigned int i;
     for (i=0; i<_q->nfft; i++)
-        _q->psd[i] = 20*log10f(cabsf(_q->X[(i + _q->nfft/2)%_q->nfft]));
+        _q->psd[i] = 10*log10f(cabsf(_q->X[(i + _q->nfft/2)%_q->nfft]));
 
     unsigned int j;
     for (i=0; i<_q->nfft; i++) {
