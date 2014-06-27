@@ -91,7 +91,7 @@ spgram spgram_create(unsigned int _nfft,
     float g = 0.0f;
     for (i=0; i<q->window_len; i++)
         g += q->w[i] * q->w[i];
-    g = 1.0f / ( sqrtf(g / q->window_len) * sqrtf((float)(q->nfft)) );
+    g = M_SQRT2 / ( sqrtf(g / q->window_len) * sqrtf((float)(q->nfft)) );
     for (i=0; i<q->window_len; i++)
         q->w[i] *= g;
 
