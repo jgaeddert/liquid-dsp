@@ -357,15 +357,37 @@ LIQUID_WINDOW_DEFINE_API(WINDOW_MANGLE_CFLOAT, liquid_float_complex)
 //   WDELAY : name-mangling macro
 //   T      : data type
 #define LIQUID_WDELAY_DEFINE_API(WDELAY,T)                      \
-                                                                \
 typedef struct WDELAY(_s) * WDELAY();                           \
-WDELAY() WDELAY(_create)(unsigned int _k);                      \
-WDELAY() WDELAY(_recreate)(WDELAY() _w, unsigned int _k);       \
-void WDELAY(_destroy)(WDELAY() _w);                             \
-void WDELAY(_print)(WDELAY() _w);                               \
-void WDELAY(_clear)(WDELAY() _w);                               \
-void WDELAY(_read)(WDELAY() _w, T * _v);                        \
-void WDELAY(_push)(WDELAY() _b, T _v);
+                                                                \
+/* create delay buffer object with '_delay' samples         */  \
+WDELAY() WDELAY(_create)(unsigned int _delay);                  \
+                                                                \
+/* re-create delay buffer object with '_delay' samples      */  \
+/*  _q      :   old delay buffer object                     */  \
+/*  _delay  :   delay for new object                        */  \
+WDELAY() WDELAY(_recreate)(WDELAY()     _q,                     \
+                           unsigned int _delay);                \
+                                                                \
+/* destroy delay buffer object, freeing internal memory     */  \
+void WDELAY(_destroy)(WDELAY() _q);                             \
+                                                                \
+/* print delay buffer object's state to stdout              */  \
+void WDELAY(_print)(WDELAY() _q);                               \
+                                                                \
+/* clear/reset state of object                              */  \
+void WDELAY(_clear)(WDELAY() _q);                               \
+                                                                \
+/* read delayed sample from delay buffer object             */  \
+/*  _q  :   delay buffer object                             */  \
+/*  _v  :   value of delayed element                        */  \
+void WDELAY(_read)(WDELAY() _q,                                 \
+                   T *      _v);                                \
+                                                                \
+/* push new sample into delay buffer object                 */  \
+/*  _q  :   delay buffer object                             */  \
+/*  _v  :   new value to be added to buffer                 */  \
+void WDELAY(_push)(WDELAY() _q,                                 \
+                   T        _v);                                \
 
 // Define wdelay APIs
 LIQUID_WDELAY_DEFINE_API(WDELAY_MANGLE_FLOAT,  float)
