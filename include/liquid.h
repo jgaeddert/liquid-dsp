@@ -1081,68 +1081,80 @@ LIQUID_FFT_DEFINE_API(LIQUID_FFT_MANGLE_FLOAT,float,liquid_float_complex)
 // spectral periodogram
 //
 
-typedef struct spgram_s * spgram;
+#define LIQUID_SPGRAM_MANGLE_CFLOAT(name) LIQUID_CONCAT(spgram,name)
 
-// create spgram object
-//  _nfft       :   FFT size
-//  _window     :   window [size: _window_len x 1]
-//  _window_len :   window length
-spgram spgram_create(unsigned int _nfft,
-                     float *      _window,
-                     unsigned int _window_len);
+// Macro    :   SPGRAM
+//  SPGRAM  :   name-mangling macro
+//  T       :   primitive data type
+//  TI      :   primitive data type (input)
+#define LIQUID_SPGRAM_DEFINE_API(SPGRAM,T,TI)                   \
+                                                                \
+typedef struct SPGRAM(_s) * SPGRAM();                           \
+                                                                \
+/* create spgram object                                     */  \
+/*  _nfft       :   FFT size                                */  \
+/*  _window     :   window [size: _window_len x 1]          */  \
+/*  _window_len :   window length                           */  \
+SPGRAM() SPGRAM(_create)(unsigned int _nfft,                    \
+                         float *      _window,                  \
+                         unsigned int _window_len);             \
+                                                                \
+/* create spgram object with Kaiser-Bessel window           */  \
+/*  _nfft       :   FFT size                                */  \
+/*  _window_len :   window length                           */  \
+/*  _beta       :   Kaiser-Bessel parameter (_beta > 0)     */  \
+SPGRAM() SPGRAM(_create_kaiser)(unsigned int _nfft,             \
+                                unsigned int _window_len,       \
+                                float        _beta);            \
+                                                                \
+/* destroy spgram object                                    */  \
+void SPGRAM(_destroy)(SPGRAM() _q);                             \
+                                                                \
+/* resets the internal state of the spgram object           */  \
+void SPGRAM(_reset)(SPGRAM() _q);                               \
+                                                                \
+/* push samples into spgram object                          */  \
+/*  _q      :   spgram object                               */  \
+/*  _x      :   input buffer [size: _n x 1]                 */  \
+/*  _n      :   input buffer length                         */  \
+void SPGRAM(_push)(SPGRAM()               _q,                   \
+                   liquid_float_complex * _x,                   \
+                   unsigned int           _n);                  \
+                                                                \
+/* compute spectral periodogram output from current buffer  */  \
+/* contents                                                 */  \
+/*  _q      :   spgram object                               */  \
+/*  _X      :   output spectrum [dB], [size: _nfft x 1]     */  \
+void SPGRAM(_execute)(SPGRAM() _q,                              \
+                      TI *     _X);                             \
+                                                                \
+/* accumulate power spectral density                        */  \
+/*  _q      :   spgram object                               */  \
+/*  _x      :   input buffer [size: _n x 1]                 */  \
+/*  _n      :   input buffer length                         */  \
+void SPGRAM(_accumulate_psd)(SPGRAM()       _q,                 \
+                             TI *           _x,                 \
+                             unsigned int   _n);                \
+                                                                \
+/* write accumulated psd                                    */  \
+/*  _q      :   spgram object                               */  \
+/*  _x      :   input buffer [size: _n x 1]                 */  \
+/*  _n      :   input buffer length [size: _nfft x 1]       */  \
+void SPGRAM(_write_accumulation)(SPGRAM() _q,                   \
+                                 T *      _x);                  \
+                                                                \
+/* estimate spectrum on input signal                        */  \
+/*  _q      :   spgram object                               */  \
+/*  _x      :   input signal [size: _n x 1]                 */  \
+/*  _n      :   input signal length                         */  \
+/*  _psd    :   output spectrum, [size: _nfft x 1]          */  \
+void SPGRAM(_estimate_psd)(SPGRAM()     _q,                     \
+                           TI *         _x,                     \
+                           unsigned int _n,                     \
+                           T *          _psd);                  \
 
-// create spgram object with Kaiser-Bessel window
-//  _nfft       :   FFT size
-//  _window_len :   window length
-//  _beta       :   Kaiser-Bessel window parameter (_beta > 0)
-spgram spgram_create_kaiser(unsigned int _nfft,
-                            unsigned int _window_len,
-                            float        _beta);
+LIQUID_SPGRAM_DEFINE_API(LIQUID_SPGRAM_MANGLE_CFLOAT,float,liquid_float_complex)
 
-// destroy spgram object
-void spgram_destroy(spgram _q);
-
-// resets the internal state of the spgram object
-void spgram_reset(spgram _q);
-
-// push samples into spgram object
-//  _q      :   spgram object
-//  _x      :   input buffer [size: _n x 1]
-//  _n      :   input buffer length
-void spgram_push(spgram                 _q,
-                 liquid_float_complex * _x,
-                 unsigned int           _n);
-
-// compute spectral periodogram output from current buffer contents
-//  _q      :   spgram object
-//  _X      :   output spectrum [dB], [size: _nfft x 1]
-void spgram_execute(spgram                 _q,
-                    liquid_float_complex * _X);
-
-// accumulate power spectral density
-//  _q      :   spgram object
-//  _x      :   input buffer [size: _n x 1]
-//  _n      :   input buffer length
-void spgram_accumulate_psd(spgram                 _q,
-                           liquid_float_complex * _x,
-                           unsigned int           _n);
-
-// write accumulated psd
-//  _q      :   spgram object
-//  _x      :   input buffer [size: _n x 1]
-//  _n      :   input buffer length [size: _nfft x 1]
-void spgram_write_accumulation(spgram  _q,
-                               float * _x);
-
-// estimate spectrum on input signal
-//  _q      :   spgram object
-//  _x      :   input signal [size: _n x 1]
-//  _n      :   input signal length
-//  _psd    :   output spectrum, [size: _nfft x 1]
-void spgram_estimate_psd(spgram                 _q,
-                         liquid_float_complex * _x,
-                         unsigned int           _n,
-                         float *                _psd);
 
 // ascii spectrogram
 typedef struct asgram_s * asgram;
