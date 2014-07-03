@@ -51,6 +51,7 @@ srcdir		:= @srcdir@
 libdir		:= @libdir@
 prefix		:= @prefix@
 exec_prefix	:= @exec_prefix@
+VPATH		:= @srcdir@
 include_dirs	:= . include
 
 # programs
@@ -1226,6 +1227,8 @@ install: all
 	@echo "installing..."
 	@echo ""
 	mkdir -p $(DESTDIR)$(exec_prefix)$(libdir)
+	install -m 644 -p $(SHARED_LIB) libliquid.a $(DESTDIR)$(libdir)
+	mkdir -p $(DESTDIR)$(prefix)/include
 	mkdir -p $(DESTDIR)$(prefix)/include/liquid
 	install -m 644 -p ${ARCHIVE_LIB} ${SHARED_LIB} $(DESTDIR)$(exec_prefix)$(libdir)
 	install -m 644 -p $(addprefix include/,$(headers_install)) $(DESTDIR)$(prefix)/include/liquid
