@@ -39,27 +39,27 @@
 #
 
 # autoconf initialization macros
-NAME      := @PACKAGE_NAME@
-VERSION   := @PACKAGE_VERSION@
-BUGREPORT := @PACKAGE_BUGREPORT@
+NAME		:= @PACKAGE_NAME@
+VERSION		:= @PACKAGE_VERSION@
+BUGREPORT	:= @PACKAGE_BUGREPORT@
 
 # paths
-srcdir = @srcdir@
-prefix = @prefix@
-exec_prefix = @exec_prefix@
-VPATH = @srcdir@
+srcdir		:= @srcdir@
+libdir		:= @libdir@
+prefix		:= @prefix@
+exec_prefix	:= @exec_prefix@
+VPATH		:= @srcdir@
 include_dirs	:= . include
 vpath %.h $(include_dirs)
-modulesdir = src
 
 # programs
-CC = @CC@
-MV	:= mv -f
-RM	:= rm -f
-SED	:= @SED@
-GREP	:= @GREP@
-AR	:= ar
-RANLIB	:= ranlib
+CC		:= @CC@
+MV		:= mv -f
+RM		:= rm -f
+SED		:= @SED@
+GREP		:= @GREP@
+AR		:= ar
+RANLIB		:= ranlib
 
 # flags
 INCLUDE_CFLAGS	= $(addprefix -I ,$(include_dirs))
@@ -1197,11 +1197,11 @@ help:
 
 install:
 	@echo "installing..."
-	mkdir -p $(exec_prefix)/lib
-	install -m 644 -p $(SHARED_LIB) libliquid.a $(exec_prefix)/lib
-	mkdir -p $(prefix)/include
-	mkdir -p $(prefix)/include/liquid
-	install -m 644 -p $(addprefix include/,$(headers_install)) $(prefix)/include/liquid
+	@echo ""
+	mkdir -p $(DESTDIR)$(exec_prefix)$(libdir)
+	mkdir -p $(DESTDIR)$(prefix)/include/liquid
+	install -m 644 -p $(SHARED_LIB) libliquid.a $(DESTDIR)$(exec_prefix)$(libdir)
+	install -m 644 -p $(addprefix include/,$(headers_install)) $(DESTDIR)$(prefix)/include/liquid
 	@echo ""
 	@echo "---------------------------------------------------------"
 	@echo "  liquid-dsp was successfully installed.     "
@@ -1210,7 +1210,7 @@ install:
 	@echo "  libraries by running 'ldconfig' to make the shared"
 	@echo "  object available.  You might also need to modify your"
 	@echo "  LD_LIBRARY_PATH environment variable to include the"
-	@echo "  directory $(exec_prefix)"
+	@echo "  directory $(DESTDIR)$(exec_prefix)"
 	@echo ""
 	@echo "  Please report bugs to $(BUGREPORT)"
 	@echo "---------------------------------------------------------"
@@ -1222,10 +1222,9 @@ install:
 
 uninstall:
 	@echo "uninstalling..."
-	$(RM) $(addprefix $(prefix)/include/liquid/, $(headers_install))
-	$(RM) $(exec_prefix)/lib/libliquid.a
-	$(RM) $(exec_prefix)/lib/$(SHARED_LIB)
-	$(RM) $(exec_prefix)/bin/liquid
+	$(RM) $(addprefix $(DESTDIR)$(prefix)/include/liquid/, $(headers_install))
+	$(RM) $(DESTDIR)$(exec_prefix)$(libdir)/libliquid.a
+	$(RM) $(DESTDIR)$(exec_prefix)$(libdir)/$(SHARED_LIB)
 	@echo "done."
 
 ##
