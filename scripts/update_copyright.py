@@ -16,6 +16,12 @@ import os
 import sys
 import re
 
+# new copyright
+newcopy = []
+newcopy.append('Copyright (c) 2007 - 2014 Joseph Gaeddert\n')
+newcopy.append('You may use this for whatever you want\n')
+newcopy.append('Hokies rule.\n')
+
 rootdir = sys.argv[1]
 
 # specific files to ignore
@@ -36,32 +42,57 @@ def update_copyright(filename=""):
     Update copyright on file.
     """
     # try to open file
-    contents_old = []
+    contents = []
     with open( filename, 'r' ) as f:
         # read lines from file (removing newline character at end)
         for line in f:
-            #contents_old.append(line.strip('\n\r'))
-            contents_old.append(line)
+            #contents.append(line.strip('\n\r'))
+            contents.append(line)
 
     # parse contents
-    contents_new = []
-    for line in contents_old:
-        if re.search(r'Copyright.*Virginia Poly',line):
-            # delete line
-            pass
-        elif re.search(r'Institute & State University',line):
-            # delete line
-            pass
-        elif re.search( r'Copyright \(c\)', line ):
-            # replace with new copyright
-            contents_new.append( re.sub(r'Copyright \(c\).*', copyright_new, line) )
-        else:
-            # regular line
-            contents_new.append(line)
+    index_start = -1
+    index_stop  = -1
+
+    # search for copyright; starts at top of file
+    for i in range(min(10, len(contents))):
+        if re.search(r'Copyright .* Joseph Gaeddert',contents[i]):
+            index_start = i
+            break
+
+    if index_start == -1:
+        print '  >> no copyright found'
+        return
+
+    # look for end of copyright
+    #for i in range(index_start+15,index_start+15+min(10, len(contents))):
+    i = index_start + 15
+    if re.search(r'along with liquid.  If not, see',contents[i]):
+        index_stop = i
+    else:
+        print '    >> could not find end of copyright'
+        return
+
+    # check comment type
+    m = re.search(r'^( \*|#+) +Copyright',contents[index_start])
+    if m:
+        comment = m.group(1)
+    else:
+        raise Exception('unexpected error')
+
+    # delete items in list
+    contents.__delslice__(index_start, index_stop+1)
+
+    # insert new copyright
+    for i in range(len(newcopy)):
+        contents.insert(index_start+i, comment + ' ' + newcopy[i])
+
+    # print...
+    for line in contents:
+        print line.rstrip()
 
     # open original file for writing
     with open( filename, 'w' ) as f:
-        for line in contents_new:
+        for line in contents:
             f.write(line)
 
 #
