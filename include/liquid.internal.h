@@ -42,6 +42,85 @@
 #  define LIBFEC_ENABLED 1
 #endif
 
+// error handling
+#if 0
+#define LIQUID_ERROR_STRLEN (256);
+extern int  liquid_errval;
+extern char liquid_errstr[LIQUID_ERROR_STRLEN];
+#endif
+
+// basic error types
+typedef enum {
+    // everything ok
+    LIQUID_OK=0,
+
+    // invalid parameter, or configuration; examples:
+    //  - setting bandwidth of a filter to a negative number
+    //  - setting FFT size to zero
+    //  - create a spectral periodogram object with window size greater than nfft
+    LIQUID_ERROR_INVALID_CONFIGURATION,
+
+    // input out of range; examples:
+    //  - try to take log of -1
+    //  - try to create an FFT plan of size zero
+    LIQUID_ERROR_INPUT_VALUE_OUT_OF_RANGE,
+
+    // invalid vector length or dimension; examples
+    //  - trying to refer to the 17th element of a 2 x 2 matrix
+    LIQUID_ERROR_INPUT_DIMENSION_OUT_OF_RANGE,
+
+    // invalid mode; examples:
+    //  - try to create a modem of type 'LIQUID_MODEM_XXX' which does not exit
+    LIQUID_ERROR_INVALID_MODE,
+
+    // unsupported mode (e.g. LIQUID_FEC_CONV_V27 with 'libfec' not installed)
+    LIQUID_ERROR_UNSUPPORTED_MODE,
+
+    // object has not been created or properly initialized
+    //  - try to run firfilt_crcf_execute(NULL, ...)
+    //  - try to modulate using an arbitrary modem without initializing the constellation
+    LIQUID_ERROR_OBJECT_NOT_INITIALIZED,
+
+    // not enough memory allocated for operation; examples:
+    //  - try to factor 100 = 2*2*5*5 but only give 3 spaces for factors
+    LIQUID_ERROR_INSUFFICIENT_MEMORY,
+
+    // file input/output; examples:
+    //  - could not open a file for writing because of insufficient permissions
+    //  - could not open a file for reading because it does not exist
+    //  - try to read more data than a file has space for
+    //  - could not parse line in file (improper formatting)
+    LIQUID_ERROR_FILE_IO,
+
+    // internal logic error; this is a bug with liquid and should be reported immediately
+    LIQUID_ERROR_INTERNAL_LOGIC,
+
+} liquid_error_type;
+
+// format error internally and print to standard output
+//  _file       :   name of file (preprocessor macro)
+//  _line       :   line number (preprocessor macro)
+//  _method     :   method or function name
+//  _message    :   error message
+int liquid_format_error(const char * _file,
+                        unsigned int _line,
+                        const char * _method,
+                        int          _error_type,
+                        const char * _message,
+                        ...);
+
+#if 0
+// pre-processor function as wrapper around internal method to get file name
+// and line number for source of error
+#define liquid_error(method, type, message, ...) {
+    liquid_format_error(__FILE__, __LINE__, method, type, message, ...);
+}
+#endif
+
+#if 0
+void liquid_error_verbose(void);
+void liquid_error_quiet(void);
+#endif
 
 //
 // Debugging macros
