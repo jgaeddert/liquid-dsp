@@ -51,9 +51,6 @@ char liquid_error_filename[LIQUID_ERROR_STRLEN] = "";
 // line number
 int liquid_error_line = -1;
 
-// method from which error originated
-char liquid_error_method[LIQUID_ERROR_STRLEN] = "";
-
 // static error value
 int liquid_error_value = LIQUID_OK;
 
@@ -63,14 +60,10 @@ char liquid_error_message[LIQUID_ERROR_STRLEN] = "";
 // format error internally and print to standard output
 //  _file       :   name of file (preprocessor macro)
 //  _line       :   line number (preprocessor macro)
-//  _method     :   method or function name
-//  _message    :   error message
-int liquid_format_error(const char * _file,
-                        unsigned int _line,
-                        const char * _method,
-                        int          _code,
-                        const char * _message,
-                        ...)
+//  _code       :   error code
+void liquid_format_error(const char * _file,
+                         unsigned int _line,
+                         int          _code)
 {
     // check code
     switch (_code) {
@@ -98,17 +91,8 @@ int liquid_format_error(const char * _file,
     // copy line number
     liquid_error_line = _line;
 
-    // copy method name
-    strncpy(liquid_error_method, _method, LIQUID_ERROR_STRLEN-1);
-
     // copy error code
     liquid_error_value = _code;
-
-    // copy error message
-    strncpy(liquid_error_message, _message, LIQUID_ERROR_STRLEN-1);
-
-    // return original error code
-    return _code;
 }
 
 // print error status; example:
@@ -159,9 +143,7 @@ void liquid_error_print(void)
     }
 
     // print file, line, and method information
-    fprintf(stderr,"    %s:%d: %s(),\n", liquid_error_filename,
-                                         liquid_error_line,
-                                         liquid_error_method);
+    fprintf(stderr,"    %s:%d\n", liquid_error_filename, liquid_error_line);
 
     // print custom error message
     fprintf(stderr,"    %s\n", liquid_error_message);

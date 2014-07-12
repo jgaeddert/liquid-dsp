@@ -46,7 +46,6 @@
 #define LIQUID_ERROR_STRLEN (256)
 extern char liquid_error_filename[LIQUID_ERROR_STRLEN];
 extern int  liquid_error_line;
-extern char liquid_error_method[LIQUID_ERROR_STRLEN];
 extern int  liquid_error_value;
 extern char liquid_error_message[LIQUID_ERROR_STRLEN];
 
@@ -101,22 +100,20 @@ typedef enum {
 // format error internally and print to standard output
 //  _file       :   name of file (preprocessor macro)
 //  _line       :   line number (preprocessor macro)
-//  _method     :   method or function name
 //  _code       :   error code
-//  _message    :   error message
-int liquid_format_error(const char * _file,
-                        unsigned int _line,
-                        const char * _method,
-                        int          _code,
-                        const char * _message,
-                        ...);
+void liquid_format_error(const char * _file,
+                         unsigned int _line,
+                         int          _code);
 
-#if 0
 // pre-processor function as wrapper around internal method to get file name
 // and line number for source of error
-#define liquid_error(method, type, message, ...) \
-    liquid_format_error(__FILE__, __LINE__, method, type, message, ...);
-#endif
+#define liquid_error(code, format, ...)                                         \
+{                                                                               \
+  if (code != LIQUID_OK) {                                                      \
+    snprintf(liquid_error_message, LIQUID_ERROR_STRLEN, format, ##__VA_ARGS__); \
+    liquid_format_error(__FILE__, __LINE__, code);                              \
+  }                                                                             \
+}
 
 #if 0
 void liquid_error_verbose(void);

@@ -12,10 +12,8 @@
 int main(int argc, char*argv[])
 {
     // test message handling
-    int rc = liquid_format_error("myfile",22,"main",LIQUID_ERROR_FILE_IO,"my message");
-
-    if (rc != LIQUID_OK)
-        liquid_error_print();
+    liquid_error(LIQUID_ERROR_FILE_IO,"main(), found %u, expected %u", 1, 0);
+    liquid_error_print();
 
     //
     printf("done.\n");
