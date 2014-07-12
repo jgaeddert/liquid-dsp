@@ -1081,7 +1081,7 @@ LIQUID_FFT_DEFINE_API(LIQUID_FFT_MANGLE_FLOAT,float,liquid_float_complex)
 // spectral periodogram
 //
 
-#define LIQUID_SPGRAM_MANGLE_CFLOAT(name) LIQUID_CONCAT(spgram,name)
+#define LIQUID_SPGRAM_MANGLE_CFLOAT(name) LIQUID_CONCAT(spgramcf,name)
 
 // Macro    :   SPGRAM
 //  SPGRAM  :   name-mangling macro
@@ -1117,9 +1117,9 @@ void SPGRAM(_reset)(SPGRAM() _q);                               \
 /*  _q      :   spgram object                               */  \
 /*  _x      :   input buffer [size: _n x 1]                 */  \
 /*  _n      :   input buffer length                         */  \
-void SPGRAM(_push)(SPGRAM()               _q,                   \
-                   liquid_float_complex * _x,                   \
-                   unsigned int           _n);                  \
+void SPGRAM(_push)(SPGRAM()     _q,                             \
+                   TI *         _x,                             \
+                   unsigned int _n);                            \
                                                                 \
 /* compute spectral periodogram output from current buffer  */  \
 /* contents                                                 */  \
