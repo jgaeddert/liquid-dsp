@@ -1,5 +1,5 @@
 //
-// spgram_example.c
+// spgramcf_example.c
 //
 // Spectral periodogram example.
 //
@@ -10,7 +10,7 @@
 
 #include "liquid.h"
 
-#define OUTPUT_FILENAME "spgram_example.m"
+#define OUTPUT_FILENAME "spgramcf_example.m"
 
 int main() {
     // spectral periodogram options
@@ -25,8 +25,8 @@ int main() {
     float nstd = powf(10.0f, noise_floor/20.0f);
 
     // create spectral periodogram
-    unsigned int window_size = nfft/2;  // spgram window size
-    spgram q = spgram_create_kaiser(nfft, window_size, beta);
+    unsigned int window_size = nfft/2;  // spgramcf window size
+    spgramcf q = spgramcf_create_kaiser(nfft, window_size, beta);
 
     // generate signal (interpolated symbols with noise)
     unsigned int k = 4;     // interpolation rate
@@ -50,17 +50,17 @@ int main() {
 
         n += k;
         
-        // push resulting samples through spgram
-        spgram_accumulate_psd(q, x, k);
+        // push resulting samples through spgramcf
+        spgramcf_accumulate_psd(q, x, k);
     }
 
     // compute power spectral density output
     float psd[nfft];
-    spgram_write_accumulation(q, psd);
+    spgramcf_write_accumulation(q, psd);
 
     // destroy objects
     firinterp_crcf_destroy(interp);
-    spgram_destroy(q);
+    spgramcf_destroy(q);
 
     // 
     // export output file

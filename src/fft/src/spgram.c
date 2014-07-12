@@ -30,57 +30,58 @@
 #include <complex.h>
 #include "liquid.internal.h"
 
-struct spgram_s {
+struct SPGRAM(_s) {
     // options
     unsigned int nfft;          // FFT length
     unsigned int window_len;    // window length
 
-    windowcf buffer;            // input buffer
-    float complex * x;          // pointer to input array (allocated)
-    float complex * X;          // output fft (allocated)
-    float *         w;          // tapering window [size: window_len x 1]
+    WINDOW() buffer;            // input buffer
+    TI * x;                     // pointer to input array (allocated)
+    TI * X;                     // output fft (allocated)
+    T  * w;                     // tapering window [size: window_len x 1]
     FFT_PLAN fft;               // fft plan
 
     // psd accumulation
-    float * psd;
+    TO * psd;
     unsigned int sample_counter;
     unsigned int num_transforms;
 };
 
 // create spgram object
 //  _nfft       :   FFT size
+//  _window     :   window coefficients [size: _window_len x 1]
 //  _window_len :   window length
-spgram spgram_create(unsigned int _nfft,
-                     float *      _window,
-                     unsigned int _window_len)
+SPGRAM() SPGRAM(_create)(unsigned int _nfft,
+                         T *          _window,
+                         unsigned int _window_len)
 {
     // validate input
     if (_nfft < 2) {
-        fprintf(stderr,"error: spgram_create(), fft size must be at least 2\n");
+        fprintf(stderr,"error: %s_create(), fft size must be at least 2\n", NAME);
         exit(1);
     } else if (_window_len > _nfft) {
-        fprintf(stderr,"error: spgram_create(), window size cannot exceed fft size\n");
+        fprintf(stderr,"error: %s_create(), window size cannot exceed fft size\n", NAME);
         exit(1);
     } else if (_window_len == 0) {
-        fprintf(stderr,"error: spgram_create(), window size must be greater than zero\n");
+        fprintf(stderr,"error: %s_create(), window size must be greater than zero\n", NAME);
         exit(1);
     }
 
     // allocate memory for main object
-    spgram q = (spgram) malloc(sizeof(struct spgram_s));
+    SPGRAM() q = (SPGRAM()) malloc(sizeof(struct SPGRAM(_s)));
 
     // set input parameters
     q->nfft       = _nfft;
     q->window_len = _window_len;
 
     // create FFT arrays, object
-    q->x   = (float complex*) malloc((q->nfft)*sizeof(float complex));
-    q->X   = (float complex*) malloc((q->nfft)*sizeof(float complex));
-    q->psd = (float *)        malloc((q->nfft)*sizeof(float));
+    q->x   = (TI*) malloc((q->nfft)*sizeof(TI));
+    q->X   = (TI*) malloc((q->nfft)*sizeof(TI));
+    q->psd = (T *) malloc((q->nfft)*sizeof(T));
     q->fft = FFT_CREATE_PLAN(q->nfft, q->x, q->X, FFT_DIR_FORWARD, FFT_METHOD);
 
     // create buffer
-    q->buffer = windowcf_create(q->window_len);
+    q->buffer = WINDOW(_create)(q->window_len);
 
     // allocate memory for window and copy
     q->w = (float*) malloc((q->window_len)*sizeof(float));
@@ -96,7 +97,7 @@ spgram spgram_create(unsigned int _nfft,
         q->w[i] *= g;
 
     // reset the spgram object
-    spgram_reset(q);
+    SPGRAM(_reset)(q);
 
     // return new object
     return q;
@@ -105,22 +106,22 @@ spgram spgram_create(unsigned int _nfft,
 // create spgram object using Kaiser-Bessel window
 //  _nfft       :   FFT size
 //  _window_len :   window length
-spgram spgram_create_kaiser(unsigned int _nfft,
-                            unsigned int _window_len,
-                            float        _beta)
+SPGRAM() SPGRAM(_create_kaiser)(unsigned int _nfft,
+                                unsigned int _window_len,
+                                float        _beta)
 {
     // validate input
     if (_nfft < 2) {
-        fprintf(stderr,"error: spgram_create_kaiser(), fft size must be at least 2\n");
+        fprintf(stderr,"error: %s_create_kaiser(), fft size must be at least 2\n", NAME);
         exit(1);
     } else if (_window_len > _nfft) {
-        fprintf(stderr,"error: spgram_create_kaiser(), window size cannot exceed fft size\n");
+        fprintf(stderr,"error: %s_create_kaiser(), window size cannot exceed fft size\n", NAME);
         exit(1);
     } else if (_window_len == 0) {
-        fprintf(stderr,"error: spgram_create_kaiser(), window size must be greater than zero\n");
+        fprintf(stderr,"error: %s_create_kaiser(), window size must be greater than zero\n", NAME);
         exit(1);
     } else if (_beta <= 0.0f) {
-        fprintf(stderr,"error: spgram_create_kaiser(), beta must be greater than zero\n");
+        fprintf(stderr,"error: %s_create_kaiser(), beta must be greater than zero\n", NAME);
         exit(1);
     }
 
@@ -132,7 +133,7 @@ spgram spgram_create_kaiser(unsigned int _nfft,
         w[i] = kaiser(i, _window_len, _beta, mu);
 
     // create spgram object
-    spgram q = spgram_create(_nfft, w, _window_len);
+    SPGRAM() q = SPGRAM(_create)(_nfft, w, _window_len);
 
     // free window buffer
     free(w);
@@ -142,14 +143,14 @@ spgram spgram_create_kaiser(unsigned int _nfft,
 }
 
 // destroy spgram object
-void spgram_destroy(spgram _q)
+void SPGRAM(_destroy)(SPGRAM() _q)
 {
     // free allocated memory
     free(_q->x);
     free(_q->X);
     free(_q->w);
     free(_q->psd);
-    windowcf_destroy(_q->buffer);
+    WINDOW(_destroy)(_q->buffer);
     FFT_DESTROY_PLAN(_q->fft);
 
     // free main object
@@ -157,10 +158,10 @@ void spgram_destroy(spgram _q)
 }
 
 // resets the internal state of the spgram object
-void spgram_reset(spgram _q)
+void SPGRAM(_reset)(SPGRAM() _q)
 {
     // clear the window buffer
-    windowcf_clear(_q->buffer);
+    WINDOW(_clear)(_q->buffer);
 
     // clear FFT input
     unsigned int i;
@@ -178,27 +179,27 @@ void spgram_reset(spgram _q)
 //  _q      :   spgram object
 //  _x      :   input buffer [size: _n x 1]
 //  _n      :   input buffer length
-void spgram_push(spgram          _q,
-                 float complex * _x,
-                 unsigned int    _n)
+void SPGRAM(_push)(SPGRAM()     _q,
+                   TI *         _x,
+                   unsigned int _n)
 {
     // push/write samples
-    windowcf_write(_q->buffer, _x, _n);
+    WINDOW(_write)(_q->buffer, _x, _n);
 }
 
 
 // compute spectral periodogram output
 //  _q      :   spgram object
 //  _X      :   output spectrum
-void spgram_execute(spgram          _q,
-                    float complex * _X)
+void SPGRAM(_execute)(SPGRAM() _q,
+                      TI *     _X)
 {
     unsigned int i;
 
     // read buffer, copy to FFT input (applying window)
     // TODO: use SIMD extensions to speed this up
-    float complex * rc;
-    windowcf_read(_q->buffer, &rc);
+    TI * rc;
+    WINDOW(_read)(_q->buffer, &rc);
     for (i=0; i<_q->window_len; i++)
         _q->x[i] = rc[i] * _q->w[i];
 
@@ -207,22 +208,22 @@ void spgram_execute(spgram          _q,
 
     // copy result to output
     if (_X != NULL)
-        memmove(_X, _q->X, _q->nfft*sizeof(float complex));
+        memmove(_X, _q->X, _q->nfft*sizeof(TI));
 }
 
 // accumulate power spectral density
 //  _q      :   spgram object
 //  _x      :   input buffer [size: _n x 1]
 //  _n      :   input buffer length
-void spgram_accumulate_psd(spgram                 _q,
-                           liquid_float_complex * _x,
-                           unsigned int           _n)
+void SPGRAM(_accumulate_psd)(SPGRAM()     _q,
+                             TI *         _x,
+                             unsigned int _n)
 {
     // push samples and run FFT at appropriate time
     unsigned int i;
     for (i=0; i<_n; i++) {
         // push sample
-        windowcf_push(_q->buffer, _x[i]);
+        WINDOW(_push)(_q->buffer, _x[i]);
 
         // increment counter
         _q->sample_counter++;
@@ -233,7 +234,7 @@ void spgram_accumulate_psd(spgram                 _q,
             _q->sample_counter = 0;
 
             // execute transform
-            spgram_execute(_q, NULL);
+            SPGRAM(_execute)(_q, NULL);
 
             // accumulate squared magnitude response
             unsigned int k;
@@ -250,7 +251,7 @@ void spgram_accumulate_psd(spgram                 _q,
 //  _q      :   spgram object
 //  _x      :   input buffer [size: _n x 1]
 //  _n      :   input buffer length [size: _nfft x 1]
-void spgram_write_accumulation(spgram  _q,
+void SPGRAM(_write_accumulation)(SPGRAM()  _q,
                                float * _x)
 {
     unsigned int i;
@@ -267,10 +268,10 @@ void spgram_write_accumulation(spgram  _q,
 //  _x      :   input signal [size: _n x 1]
 //  _n      :   input signal length
 //  _psd    :   output spectrum, [size: _nfft x 1]
-void spgram_estimate_psd(spgram                 _q,
-                         liquid_float_complex * _x,
-                         unsigned int           _n,
-                         float *                _psd)
+void SPGRAM(_estimate_psd)(SPGRAM()     _q,
+                           TI *         _x,
+                           unsigned int _n,
+                           TO *         _psd)
 {
     unsigned int i;
     unsigned int k;
@@ -292,18 +293,18 @@ void spgram_estimate_psd(spgram                 _q,
     unsigned int num_transforms = 0;
 
     // temporary array for output
-    float complex * X = (float complex*) malloc(_q->nfft * sizeof(float complex));
+    TI * X = (TI*) malloc(_q->nfft * sizeof(TI));
 
     //
     for (i=0; i<_n; i++) {
         // push signal into periodogram object one sample
         // at a time
-        spgram_push(_q, &_x[i], 1);
+        SPGRAM(_push)(_q, &_x[i], 1);
 
         // take transform periodically, ensuring all samples
         // are taken into account
         if ( ((i+1)%delay)==0 || (i==_n-1)) {
-            spgram_execute(_q, X);
+            SPGRAM(_execute)(_q, X);
             for (k=0; k<_q->nfft; k++)
                 _psd[k] += crealf(X[k] * conjf(X[k]));
 
