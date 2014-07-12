@@ -43,11 +43,12 @@
 #endif
 
 // error handling
-#if 0
-#define LIQUID_ERROR_STRLEN (256);
-extern int  liquid_errval;
-extern char liquid_errstr[LIQUID_ERROR_STRLEN];
-#endif
+#define LIQUID_ERROR_STRLEN (256)
+extern char liquid_error_filename[LIQUID_ERROR_STRLEN];
+extern int  liquid_error_line;
+extern char liquid_error_method[LIQUID_ERROR_STRLEN];
+extern int  liquid_error_value;
+extern char liquid_error_message[LIQUID_ERROR_STRLEN];
 
 // basic error types
 typedef enum {
@@ -95,26 +96,26 @@ typedef enum {
     // internal logic error; this is a bug with liquid and should be reported immediately
     LIQUID_ERROR_INTERNAL_LOGIC,
 
-} liquid_error_type;
+} liquid_error_code;
 
 // format error internally and print to standard output
 //  _file       :   name of file (preprocessor macro)
 //  _line       :   line number (preprocessor macro)
 //  _method     :   method or function name
+//  _code       :   error code
 //  _message    :   error message
 int liquid_format_error(const char * _file,
                         unsigned int _line,
                         const char * _method,
-                        int          _error_type,
+                        int          _code,
                         const char * _message,
                         ...);
 
 #if 0
 // pre-processor function as wrapper around internal method to get file name
 // and line number for source of error
-#define liquid_error(method, type, message, ...) {
+#define liquid_error(method, type, message, ...) \
     liquid_format_error(__FILE__, __LINE__, method, type, message, ...);
-}
 #endif
 
 #if 0

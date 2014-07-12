@@ -67,6 +67,13 @@ int liquid_libversion_number(void);
     exit(1);                                                                \
   }                                                                         \
 
+//
+// error handling
+//
+
+// print error status
+void liquid_error_print(void);
+
 #define LIQUID_CONCAT(prefix, name) prefix ## name
 #define LIQUID_VALIDATE_INPUT
 

@@ -160,6 +160,10 @@ This directory contains all the examples for interfacing the liquid modules.
 
  * `eqlms_cccf_example.c`:
  * `eqrls_cccf_example.c`:
+
+ * `error_handling_example.c`:
+    This example demonstrates error handling in liquid.
+
  * `fct_example.c`:
 
  * `fec_example.c`:
