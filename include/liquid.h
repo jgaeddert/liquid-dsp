@@ -1082,12 +1082,14 @@ LIQUID_FFT_DEFINE_API(LIQUID_FFT_MANGLE_FLOAT,float,liquid_float_complex)
 //
 
 #define LIQUID_SPGRAM_MANGLE_CFLOAT(name) LIQUID_CONCAT(spgramcf,name)
+#define LIQUID_SPGRAM_MANGLE_FLOAT(name)  LIQUID_CONCAT(spgramf, name)
 
 // Macro    :   SPGRAM
 //  SPGRAM  :   name-mangling macro
 //  T       :   primitive data type
+//  TC      :   primitive data type (complex)
 //  TI      :   primitive data type (input)
-#define LIQUID_SPGRAM_DEFINE_API(SPGRAM,T,TI)                   \
+#define LIQUID_SPGRAM_DEFINE_API(SPGRAM,T,TC,TI)                \
                                                                 \
 typedef struct SPGRAM(_s) * SPGRAM();                           \
                                                                 \
@@ -1124,9 +1126,9 @@ void SPGRAM(_push)(SPGRAM()     _q,                             \
 /* compute spectral periodogram output from current buffer  */  \
 /* contents                                                 */  \
 /*  _q      :   spgram object                               */  \
-/*  _X      :   output spectrum [dB], [size: _nfft x 1]     */  \
+/*  _X      :   output complex spectrum [size: _nfft x 1]   */  \
 void SPGRAM(_execute)(SPGRAM() _q,                              \
-                      TI *     _X);                             \
+                      TC *     _X);                             \
                                                                 \
 /* accumulate power spectral density                        */  \
 /*  _q      :   spgram object                               */  \
@@ -1153,7 +1155,15 @@ void SPGRAM(_estimate_psd)(SPGRAM()     _q,                     \
                            unsigned int _n,                     \
                            T *          _psd);                  \
 
-LIQUID_SPGRAM_DEFINE_API(LIQUID_SPGRAM_MANGLE_CFLOAT,float,liquid_float_complex)
+LIQUID_SPGRAM_DEFINE_API(LIQUID_SPGRAM_MANGLE_CFLOAT,
+                         float,
+                         liquid_float_complex,
+                         liquid_float_complex)
+
+LIQUID_SPGRAM_DEFINE_API(LIQUID_SPGRAM_MANGLE_FLOAT,
+                         float,
+                         liquid_float_complex,
+                         float)
 
 
 // ascii spectrogram
