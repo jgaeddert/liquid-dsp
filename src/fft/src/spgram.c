@@ -36,13 +36,13 @@ struct SPGRAM(_s) {
     unsigned int window_len;    // window length
 
     WINDOW() buffer;            // input buffer
-    TI * x;                     // pointer to input array (allocated)
-    TI * X;                     // output fft (allocated)
+    TC * x;                     // pointer to input array (allocated)
+    TC * X;                     // output fft (allocated)
     T  * w;                     // tapering window [size: window_len x 1]
     FFT_PLAN fft;               // fft plan
 
     // psd accumulation
-    TO * psd;
+    T * psd;
     unsigned int sample_counter;
     unsigned int num_transforms;
 };
@@ -52,7 +52,7 @@ struct SPGRAM(_s) {
 //  _window     :   window coefficients [size: _window_len x 1]
 //  _window_len :   window length
 SPGRAM() SPGRAM(_create)(unsigned int _nfft,
-                         T *          _window,
+                         float *      _window,
                          unsigned int _window_len)
 {
     // validate input
@@ -75,27 +75,28 @@ SPGRAM() SPGRAM(_create)(unsigned int _nfft,
     q->window_len = _window_len;
 
     // create FFT arrays, object
-    q->x   = (TI*) malloc((q->nfft)*sizeof(TI));
-    q->X   = (TI*) malloc((q->nfft)*sizeof(TI));
-    q->psd = (T *) malloc((q->nfft)*sizeof(T));
+    q->x   = (TC*) malloc((q->nfft)*sizeof(TC));
+    q->X   = (TC*) malloc((q->nfft)*sizeof(TC));
+    q->psd = (T *) malloc((q->nfft)*sizeof(T ));
     q->fft = FFT_CREATE_PLAN(q->nfft, q->x, q->X, FFT_DIR_FORWARD, FFT_METHOD);
 
     // create buffer
     q->buffer = WINDOW(_create)(q->window_len);
 
-    // allocate memory for window and copy
-    q->w = (float*) malloc((q->window_len)*sizeof(float));
-    memmove(q->w, _window, _window_len*sizeof(float));
+    // allocate memory for window
+    q->w = (T*) malloc((q->window_len)*sizeof(T));
 
     // scale by window magnitude, FFT size
     unsigned int i;
     float g = 0.0f;
     for (i=0; i<q->window_len; i++)
-        g += q->w[i] * q->w[i];
+        g += _window[i] * _window[i];
     g = M_SQRT2 / ( sqrtf(g / q->window_len) * sqrtf((float)(q->nfft)) );
-    for (i=0; i<q->window_len; i++)
-        q->w[i] *= g;
 
+    // scale window and copy
+    for (i=0; i<q->window_len; i++)
+        q->w[i] = g * _window[i];
+    
     // reset the spgram object
     SPGRAM(_reset)(q);
 
@@ -190,9 +191,9 @@ void SPGRAM(_push)(SPGRAM()     _q,
 
 // compute spectral periodogram output
 //  _q      :   spgram object
-//  _X      :   output spectrum
+//  _X      :   output complex spectrum
 void SPGRAM(_execute)(SPGRAM() _q,
-                      TI *     _X)
+                      TC *     _X)
 {
     unsigned int i;
 
@@ -251,16 +252,16 @@ void SPGRAM(_accumulate_psd)(SPGRAM()     _q,
 //  _q      :   spgram object
 //  _x      :   input buffer [size: _n x 1]
 //  _n      :   input buffer length [size: _nfft x 1]
-void SPGRAM(_write_accumulation)(SPGRAM()  _q,
-                               float * _x)
+void SPGRAM(_write_accumulation)(SPGRAM() _q,
+                                 T *      _x)
 {
     unsigned int i;
 
     // scale result by number of transforms and run fft shift
     unsigned int nfft_2 = _q->nfft / 2;
+    //float        scale  = -10*log10f( (float)(_q->num_transforms) );
     for (i=0; i<_q->nfft; i++)
         _x[(i+nfft_2)%_q->nfft] = 10*log10f( _q->psd[i] / (float)(_q->num_transforms) );
-
 }
 
 // estimate spectrum on input signal
@@ -271,7 +272,7 @@ void SPGRAM(_write_accumulation)(SPGRAM()  _q,
 void SPGRAM(_estimate_psd)(SPGRAM()     _q,
                            TI *         _x,
                            unsigned int _n,
-                           TO *         _psd)
+                           T *          _psd)
 {
     unsigned int i;
     unsigned int k;
@@ -293,7 +294,7 @@ void SPGRAM(_estimate_psd)(SPGRAM()     _q,
     unsigned int num_transforms = 0;
 
     // temporary array for output
-    TI * X = (TI*) malloc(_q->nfft * sizeof(TI));
+    TC * X = (TC*) malloc(_q->nfft * sizeof(TC));
 
     //
     for (i=0; i<_n; i++) {

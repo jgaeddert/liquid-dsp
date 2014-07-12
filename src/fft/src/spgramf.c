@@ -24,22 +24,22 @@
 #include "liquid.internal.h"
 
 // naming extensions (useful for print statements)
-#define NAME                "spgramcf"
+#define NAME                "spgramf"
 
 // name-mangling macros
-#define SPGRAM(name)        LIQUID_CONCAT(spgramcf,name)
-#define WINDOW(name)        LIQUID_CONCAT(windowcf,name)
+#define SPGRAM(name)        LIQUID_CONCAT(spgramf,name)
+#define WINDOW(name)        LIQUID_CONCAT(windowf,name)
 #define FFT(name)           LIQUID_CONCAT(fft,name)
 
 #define T                   float           // primitive type (real)
 #define TC                  float complex   // primitive type (complex)
-#define TI                  float complex   // input type
+#define TI                  float           // input type
 
-#define TI_COMPLEX          1
+#define TI_COMPLEX          0
 
 #define PRINTVAL_T(X,F)     PRINTVAL_FLOAT(X,F)
 #define PRINTVAL_TC(X,F)    PRINTVAL_CFLOAT(X,F)
-#define PRINTVAL_TI(X,F)    PRINTVAL_CFLOAT(X,F)
+#define PRINTVAL_TI(X,F)    PRINTVAL_FLOAT(X,F)
 
 // source files
 #include "spgram.c"

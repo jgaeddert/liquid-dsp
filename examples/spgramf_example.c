@@ -1,7 +1,7 @@
 //
-// spgramcf_example.c
+// spgramf_example.c
 //
-// Spectral periodogram example with complex inputs.
+// Spectral periodogram example with real inputs.
 //
 
 #include <stdio.h>
@@ -10,7 +10,7 @@
 
 #include "liquid.h"
 
-#define OUTPUT_FILENAME "spgramcf_example.m"
+#define OUTPUT_FILENAME "spgramf_example.m"
 
 int main() {
     // spectral periodogram options
@@ -25,46 +25,45 @@ int main() {
     float nstd = powf(10.0f, noise_floor/20.0f);
 
     // create spectral periodogram
-    unsigned int window_size = nfft/2;  // spgramcf window size
-    spgramcf q = spgramcf_create_kaiser(nfft, window_size, beta);
+    unsigned int window_size = nfft/2;  // spgramf window size
+    spgramf q = spgramf_create_kaiser(nfft, window_size, beta);
 
     // generate signal (filter with frequency offset)
     unsigned int  h_len = 91;       // filter length
     float         fc    = 0.07f;    // filter cut-off frequency
     float         f0    = 0.20f;    // filter center frequency
     float         As    = 60.0f;    // filter stop-band attenuation
-    float         h[h_len];         // filter coefficients (prototype)
-    float complex hc[h_len];        // filter coefficients (complex, offset)
+    float         h[h_len];         // filter coefficients
     liquid_firdes_kaiser(h_len, fc, As, 0, h);
-    // convert to complex coefficients with frequency offset
+    // add frequency offset
     for (i=0; i<h_len; i++)
-        hc[i] = h[i] * cexpf(_Complex_I*2*M_PI*f0*i);
-    firfilt_cccf filter = firfilt_cccf_create(hc, h_len);
-    firfilt_cccf_set_scale(filter, fc);
+        h[i] *= cosf(2*M_PI*f0*i);
+    firfilt_rrrf filter = firfilt_rrrf_create(h, h_len);
+    firfilt_rrrf_set_scale(filter, 2.0f*fc);
 
     for (i=0; i<num_samples; i++) {
         // generate random sample
-        float complex x = randnf() + _Complex_I*randnf();
+        float x = randnf();
 
         // filter
-        float complex y = 0;
-        firfilt_cccf_push(filter, x);
-        firfilt_cccf_execute(filter, &y);
+        float y = 0;
+        firfilt_rrrf_push(filter, x);
+        firfilt_rrrf_execute(filter, &y);
 
         // add noise
-        y += nstd * ( randnf() + _Complex_I*randnf() ) * M_SQRT1_2;
+        y += nstd * randnf();
 
         // push resulting sample through periodogram
-        spgramcf_accumulate_psd(q, &y, 1);
+        spgramf_accumulate_psd(q, &y, 1);
     }
 
     // compute power spectral density output
     float psd[nfft];
-    spgramcf_write_accumulation(q, psd);
+    spgramf_write_accumulation(q, psd);
 
     // destroy objects
-    firfilt_cccf_destroy(filter);
-    spgramcf_destroy(q);
+    firfilt_rrrf_destroy(filter);
+    spgramf_destroy(q);
 
     // 
     // export output file
