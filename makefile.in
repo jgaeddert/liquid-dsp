@@ -39,27 +39,25 @@
 #
 
 # autoconf initialization macros
-NAME      := @PACKAGE_NAME@
-VERSION   := @PACKAGE_VERSION@
-BUGREPORT := @PACKAGE_BUGREPORT@
+NAME		:= @PACKAGE_NAME@
+VERSION		:= @PACKAGE_VERSION@
+BUGREPORT	:= @PACKAGE_BUGREPORT@
 
 # paths
-srcdir = @srcdir@
-prefix = @prefix@
-exec_prefix = @exec_prefix@
-VPATH = @srcdir@
+srcdir		:= @srcdir@
+libdir		:= @libdir@
+prefix		:= @prefix@
+exec_prefix	:= @exec_prefix@
 include_dirs	:= . include
-vpath %.h $(include_dirs)
-modulesdir = src
 
 # programs
-CC = @CC@
-MV	:= mv -f
-RM	:= rm -f
-SED	:= @SED@
-GREP	:= @GREP@
-AR	:= ar
-RANLIB	:= ranlib
+CC		:= @CC@
+MV		:= mv -f
+RM		:= rm -f
+SED		:= @SED@
+GREP		:= @GREP@
+AR		:= ar
+RANLIB		:= ranlib
 
 # flags
 INCLUDE_CFLAGS	= $(addprefix -I ,$(include_dirs))
@@ -105,7 +103,7 @@ agc_objects =							\
 	src/agc/src/agc_rrrq16.o				\
 
 # explicit targets and dependencies
-$(agc_objects) : %.o : %.c src/agc/src/agc.c $(headers)
+$(agc_objects) : %.o : %.c src/agc/src/agc.c $(include_headers)
 
 # autotests
 agc_autotests :=						\
@@ -123,7 +121,7 @@ agc_benchmarks :=						\
 audio_objects :=						\
 	src/audio/src/cvsd.o					\
 
-src/cvsd/src/cvsd.o : %.o : %.c $(headers)
+src/cvsd/src/cvsd.o : %.o : %.c $(include_headers)
 
 
 audio_autotests :=						\
@@ -150,9 +148,9 @@ buffer_includes :=						\
 	src/buffer/src/wdelay.c					\
 	src/buffer/src/window.c					\
 
-src/buffer/src/bufferf.o : %.o : %.c $(headers) $(buffer_includes)
+src/buffer/src/bufferf.o : %.o : %.c $(include_headers) $(buffer_includes)
 
-src/buffer/src/buffercf.o : %.o : %.c $(headers) $(buffer_includes)
+src/buffer/src/buffercf.o : %.o : %.c $(include_headers) $(buffer_includes)
 
 
 buffer_autotests :=						\
@@ -173,54 +171,54 @@ buffer_benchmarks :=						\
 dotprod_objects :=						\
 	@MLIBS_DOTPROD@						\
 
-src/dotprod/src/dotprod_cccf.o : %.o : %.c $(headers) src/dotprod/src/dotprod.c
+src/dotprod/src/dotprod_cccf.o : %.o : %.c $(include_headers) src/dotprod/src/dotprod.c
 
-src/dotprod/src/dotprod_crcf.o : %.o : %.c $(headers) src/dotprod/src/dotprod.c
+src/dotprod/src/dotprod_crcf.o : %.o : %.c $(include_headers) src/dotprod/src/dotprod.c
 
-src/dotprod/src/dotprod_rrrf.o : %.o : %.c $(headers) src/dotprod/src/dotprod.c
+src/dotprod/src/dotprod_rrrf.o : %.o : %.c $(include_headers) src/dotprod/src/dotprod.c
 
-src/dotprod/src/sumsq.o : %.o : %.c $(headers)
+src/dotprod/src/sumsq.o : %.o : %.c $(include_headers)
 
 # fixed-point
 
-src/dotprod/src/dotprod_rrrq16.o : %.o : %.c $(headers)
-src/dotprod/src/dotprod_rrrq32.o : %.o : %.c $(headers)
+src/dotprod/src/dotprod_rrrq16.o : %.o : %.c $(include_headers)
+src/dotprod/src/dotprod_rrrq32.o : %.o : %.c $(include_headers)
 
-src/dotprod/src/dotprod_crcq16.o : %.o : %.c $(headers)
-src/dotprod/src/dotprod_crcq32.o : %.o : %.c $(headers)
+src/dotprod/src/dotprod_crcq16.o : %.o : %.c $(include_headers)
+src/dotprod/src/dotprod_crcq32.o : %.o : %.c $(include_headers)
 
-src/dotprod/src/dotprod_cccq16.o : %.o : %.c $(headers)
-src/dotprod/src/dotprod_cccq32.o : %.o : %.c $(headers)
+src/dotprod/src/dotprod_cccq16.o : %.o : %.c $(include_headers)
+src/dotprod/src/dotprod_cccq32.o : %.o : %.c $(include_headers)
 
-src/dotprod/src/sumsqq16.o : %.o : %.c $(headers)
+src/dotprod/src/sumsqq16.o : %.o : %.c $(include_headers)
 
 # specific machine architectures
 
 # AltiVec
-src/dotprod/src/dotprod_rrrf.av.o : %.o : %.c $(headers)
+src/dotprod/src/dotprod_rrrf.av.o : %.o : %.c $(include_headers)
 
 # MMX/SSE2
-src/dotprod/src/dotprod_rrrf.mmx.o : %.o : %.c $(headers)
-src/dotprod/src/dotprod_crcf.mmx.o : %.o : %.c $(headers)
-src/dotprod/src/dotprod_cccf.mmx.o : %.o : %.c $(headers)
+src/dotprod/src/dotprod_rrrf.mmx.o : %.o : %.c $(include_headers)
+src/dotprod/src/dotprod_crcf.mmx.o : %.o : %.c $(include_headers)
+src/dotprod/src/dotprod_cccf.mmx.o : %.o : %.c $(include_headers)
 
-src/dotprod/src/dotprod_rrrq16.mmx.o : %.o : %.c $(headers)
-src/dotprod/src/dotprod_crcq16.mmx.o : %.o : %.c $(headers)
-src/dotprod/src/dotprod_cccq16.mmx.o : %.o : %.c $(headers)
+src/dotprod/src/dotprod_rrrq16.mmx.o : %.o : %.c $(include_headers)
+src/dotprod/src/dotprod_crcq16.mmx.o : %.o : %.c $(include_headers)
+src/dotprod/src/dotprod_cccq16.mmx.o : %.o : %.c $(include_headers)
 
-src/dotprod/src/dotprod_rrrq32.mmx.o : %.o : %.c $(headers)
-src/dotprod/src/dotprod_crcq32.mmx.o : %.o : %.c $(headers)
-src/dotprod/src/dotprod_cccq32.mmx.o : %.o : %.c $(headers)
+src/dotprod/src/dotprod_rrrq32.mmx.o : %.o : %.c $(include_headers)
+src/dotprod/src/dotprod_crcq32.mmx.o : %.o : %.c $(include_headers)
+src/dotprod/src/dotprod_cccq32.mmx.o : %.o : %.c $(include_headers)
 
-src/dotprod/src/sumsq.mmx.o : %.o : %.c $(headers)
+src/dotprod/src/sumsq.mmx.o : %.o : %.c $(include_headers)
 
 # SSE4.1/2
-src/dotprod/src/dotprod_rrrf.sse4.o : %.o : %.c $(headers)
+src/dotprod/src/dotprod_rrrf.sse4.o : %.o : %.c $(include_headers)
 
 # ARM Neon
-src/dotprod/src/dotprod_rrrf.neon.o : %.o : %.c $(headers)
-src/dotprod/src/dotprod_crcf.neon.o : %.o : %.c $(headers)
-src/dotprod/src/dotprod_cccf.neon.o : %.o : %.c $(headers)
+src/dotprod/src/dotprod_rrrf.neon.o : %.o : %.c $(include_headers)
+src/dotprod/src/dotprod_crcf.neon.o : %.o : %.c $(include_headers)
+src/dotprod/src/dotprod_cccf.neon.o : %.o : %.c $(include_headers)
 
 dotprod_autotests :=						\
 	src/dotprod/tests/dotprod_rrrf_autotest.c		\
@@ -254,7 +252,7 @@ equalization_objects :=						\
 	src/equalization/src/equalizer_rrrf.o			\
 
 
-$(equalization_objects) : %.o : %.c $(headers) src/equalization/src/eqlms.c src/equalization/src/eqrls.c
+$(equalization_objects) : %.o : %.c $(include_headers) src/equalization/src/eqlms.c src/equalization/src/eqrls.c
 
 
 # autotests
@@ -297,7 +295,7 @@ fec_objects :=							\
 
 
 # list explicit targets and dependencies here
-$(fec_objects) : %.o : %.c $(headers)
+$(fec_objects) : %.o : %.c $(include_headers)
 
 # autotests
 fec_autotests :=						\
@@ -339,7 +337,8 @@ fft_objects :=							\
 	src/fft/src/fftq16.o					\
 	src/fft/src/fftq32.o					\
 	src/fft/src/asgram.o					\
-	src/fft/src/spgram.o					\
+	src/fft/src/spgramcf.o					\
+	src/fft/src/spgramf.o					\
 	src/fft/src/fft_utilities.o				\
 
 # explicit targets and dependencies
@@ -352,17 +351,21 @@ fft_includes :=							\
 	src/fft/src/fft_rader2.c				\
 	src/fft/src/fft_r2r_1d.c				\
 
-src/fft/src/fftf.o   : %.o : %.c $(headers) $(fft_includes)
-src/fft/src/fftq16.o : %.o : %.c $(headers) $(fft_includes)
-src/fft/src/fftq32.o : %.o : %.c $(headers) $(fft_includes)
+src/fft/src/fftf.o   : %.o : %.c $(include_headers) $(fft_includes)
+src/fft/src/fftq16.o : %.o : %.c $(include_headers) $(fft_includes)
+src/fft/src/fftq32.o : %.o : %.c $(include_headers) $(fft_includes)
 
-src/fft/src/asgram.o : %.o : %.c $(headers)
+src/fft/src/asgram.o : %.o : %.c $(include_headers)
 
-src/fft/src/dct.o : %.o : %.c $(headers)
+src/fft/src/dct.o : %.o : %.c $(include_headers)
 
-src/fft/src/fft_utilities.o : %.o : %.c $(headers)
+src/fft/src/fft_utilities.o : %.o : %.c $(include_headers)
 
-src/fft/src/mdct.o : %.o : %.c $(headers)
+src/fft/src/mdct.o : %.o : %.c $(include_headers)
+
+src/fft/src/spgramcf.o : %.o : %.c $(include_headers) src/fft/src/spgram.c
+
+src/fft/src/spgramf.o : %.o : %.c $(include_headers) src/fft/src/spgram.c
 
 # fft autotest scripts
 fft_autotests :=						\
@@ -477,49 +480,49 @@ filter_includes :=						\
 	src/filter/src/resamp2.c				\
 	src/filter/src/symsync.c				\
 
-src/filter/src/bessel.o : %.o : %.c $(headers)
+src/filter/src/bessel.o : %.o : %.c $(include_headers)
 
-src/filter/src/bessel.o : %.o : %.c $(headers)
+src/filter/src/bessel.o : %.o : %.c $(include_headers)
 
-src/filter/src/butter.o : %.o : %.c $(headers)
+src/filter/src/butter.o : %.o : %.c $(include_headers)
 
-src/filter/src/cheby1.o : %.o : %.c $(headers)
+src/filter/src/cheby1.o : %.o : %.c $(include_headers)
 
-src/filter/src/cheby2.o : %.o : %.c $(headers)
+src/filter/src/cheby2.o : %.o : %.c $(include_headers)
 
-src/filter/src/ellip.o : %.o : %.c $(headers)
+src/filter/src/ellip.o : %.o : %.c $(include_headers)
 
-src/filter/src/filter_rrrf.o : %.o : %.c $(headers) $(filter_includes)
+src/filter/src/filter_rrrf.o : %.o : %.c $(include_headers) $(filter_includes)
 
-src/filter/src/filter_crcf.o : %.o : %.c $(headers) $(filter_includes)
+src/filter/src/filter_crcf.o : %.o : %.c $(include_headers) $(filter_includes)
 
-src/filter/src/filter_cccf.o : %.o : %.c $(headers) $(filter_includes)
+src/filter/src/filter_cccf.o : %.o : %.c $(include_headers) $(filter_includes)
 
-src/filter/src/filter_rrrq16.o : %.o : %.c $(headers) $(filter_includes)
+src/filter/src/filter_rrrq16.o : %.o : %.c $(include_headers) $(filter_includes)
 
-src/filter/src/filter_crcq16.o : %.o : %.c $(headers) $(filter_includes)
+src/filter/src/filter_crcq16.o : %.o : %.c $(include_headers) $(filter_includes)
 
-src/filter/src/filter_cccq16.o : %.o : %.c $(headers) $(filter_includes)
+src/filter/src/filter_cccq16.o : %.o : %.c $(include_headers) $(filter_includes)
 
-src/filter/src/firdes.o : %.o : %.c $(headers)
+src/filter/src/firdes.o : %.o : %.c $(include_headers)
 
-src/filter/src/firdespm.o : %.o : %.c $(headers)
+src/filter/src/firdespm.o : %.o : %.c $(include_headers)
 
-src/filter/src/group_delay.o : %.o : %.c $(headers)
+src/filter/src/group_delay.o : %.o : %.c $(include_headers)
 
-src/filter/src/hM3.o : %.o : %.c $(headers)
+src/filter/src/hM3.o : %.o : %.c $(include_headers)
 
-src/filter/src/iirdes.pll.o : %.o : %.c $(headers)
+src/filter/src/iirdes.pll.o : %.o : %.c $(include_headers)
 
-src/filter/src/iirdes.o : %.o : %.c $(headers)
+src/filter/src/iirdes.o : %.o : %.c $(include_headers)
 
-src/filter/src/lpc.o : %.o : %.c $(headers)
+src/filter/src/lpc.o : %.o : %.c $(include_headers)
 
-src/filter/src/rcos.o : %.o : %.c $(headers)
+src/filter/src/rcos.o : %.o : %.c $(include_headers)
 
-src/filter/src/rkaiser.o : %.o : %.c $(headers)
+src/filter/src/rkaiser.o : %.o : %.c $(include_headers)
 
-src/filter/src/rrcos.o : %.o : %.c $(headers)
+src/filter/src/rrcos.o : %.o : %.c $(include_headers)
 
 
 filter_autotests :=						\
@@ -631,7 +634,7 @@ filter_benchmarks :=						\
 #
 
 # define specific headers for building fixed-point math objects
-fpm_headers	:= $(headers) liquidfpm.h liquidfpm.internal.h
+fpm_headers	:= $(include_headers) include/liquidfpm.h include/liquidfpm.internal.h
 
 # fixed-point math auto-generated tables
 #   The target generator programs listed below determine which
@@ -776,35 +779,35 @@ framing_objects :=						\
 
 # list explicit targets and dependencies here
 
-src/framing/src/bpacketgen.o : %.o : %.c $(headers)
+src/framing/src/bpacketgen.o : %.o : %.c $(include_headers)
 
-src/framing/src/bpacketsync.o : %.o : %.c $(headers)
+src/framing/src/bpacketsync.o : %.o : %.c $(include_headers)
 
-src/framing/src/bpresync_cccf.o : %.o : %.c $(headers) src/framing/src/bpresync.c
+src/framing/src/bpresync_cccf.o : %.o : %.c $(include_headers) src/framing/src/bpresync.c
 
-src/framing/src/bsync_rrrf.o : %.o : %.c $(headers) src/framing/src/bsync.c
+src/framing/src/bsync_rrrf.o : %.o : %.c $(include_headers) src/framing/src/bsync.c
 
-src/framing/src/bsync_crcf.o : %.o : %.c $(headers) src/framing/src/bsync.c
+src/framing/src/bsync_crcf.o : %.o : %.c $(include_headers) src/framing/src/bsync.c
 
-src/framing/src/bsync_cccf.o : %.o : %.c $(headers) src/framing/src/bsync.c
+src/framing/src/bsync_cccf.o : %.o : %.c $(include_headers) src/framing/src/bsync.c
 
-src/framing/src/detector_cccf.o : %.o : %.c $(headers)
+src/framing/src/detector_cccf.o : %.o : %.c $(include_headers)
 
-src/framing/src/framesyncstats.o : %.o : %.c $(headers)
+src/framing/src/framesyncstats.o : %.o : %.c $(include_headers)
 
-src/framing/src/framegen64.o : %.o : %.c $(headers)
+src/framing/src/framegen64.o : %.o : %.c $(include_headers)
 
-src/framing/src/framesync64.o : %.o : %.c $(headers)
+src/framing/src/framesync64.o : %.o : %.c $(include_headers)
 
-src/framing/src/flexframegen.o : %.o : %.c $(headers)
+src/framing/src/flexframegen.o : %.o : %.c $(include_headers)
 
-src/framing/src/flexframesync.o : %.o : %.c $(headers)
+src/framing/src/flexframesync.o : %.o : %.c $(include_headers)
 
-src/framing/src/ofdmflexframegen.o : %.o : %.c $(headers)
+src/framing/src/ofdmflexframegen.o : %.o : %.c $(include_headers)
 
-src/framing/src/ofdmflexframesync.o : %.o : %.c $(headers)
+src/framing/src/ofdmflexframesync.o : %.o : %.c $(include_headers)
 
-src/framing/src/presync_cccf.o : %.o : %.c $(headers) src/framing/src/presync.c
+src/framing/src/presync_cccf.o : %.o : %.c $(include_headers) src/framing/src/presync.c
 
 
 framing_autotests :=						\
@@ -848,25 +851,25 @@ poly_includes :=						\
 	src/math/src/poly.findroots.c				\
 	src/math/src/poly.lagrange.c				\
 
-src/math/src/poly.o : %.o : %.c $(headers) $(poly_includes)
+src/math/src/poly.o : %.o : %.c $(include_headers) $(poly_includes)
 
-src/math/src/polyc.o : %.o : %.c $(headers) $(poly_includes)
+src/math/src/polyc.o : %.o : %.c $(include_headers) $(poly_includes)
 
-src/math/src/polyf.o : %.o : %.c $(headers) $(poly_includes)
+src/math/src/polyf.o : %.o : %.c $(include_headers) $(poly_includes)
 
-src/math/src/polycf.o : %.o : %.c $(headers) $(poly_includes)
+src/math/src/polycf.o : %.o : %.c $(include_headers) $(poly_includes)
 
-src/math/src/math.o : %.o : %.c $(headers)
+src/math/src/math.o : %.o : %.c $(include_headers)
 
-src/math/src/math.bessel.o : %.o : %.c $(headers)
+src/math/src/math.bessel.o : %.o : %.c $(include_headers)
 
-src/math/src/math.gamma.o : %.o : %.c $(headers)
+src/math/src/math.gamma.o : %.o : %.c $(include_headers)
 
-src/math/src/math.complex.o : %.o : %.c $(headers)
+src/math/src/math.complex.o : %.o : %.c $(include_headers)
 
-src/math/src/math.trig.o : %.o : %.c $(headers)
+src/math/src/math.trig.o : %.o : %.c $(include_headers)
 
-src/math/src/modular_arithmetic.o : %.o : %.c $(headers)
+src/math/src/modular_arithmetic.o : %.o : %.c $(include_headers)
 
 
 math_autotests :=						\
@@ -910,25 +913,25 @@ matrix_includes :=						\
 	src/matrix/src/matrix.qrdecomp.c			\
 	src/matrix/src/matrix.math.c				\
 
-src/matrix/src/matrix.o : %.o : %.c $(headers) $(matrix_includes)
+src/matrix/src/matrix.o : %.o : %.c $(include_headers) $(matrix_includes)
 
-src/matrix/src/matrixc.o : %.o : %.c $(headers) $(matrix_includes)
+src/matrix/src/matrixc.o : %.o : %.c $(include_headers) $(matrix_includes)
 
-src/matrix/src/matrixf.o : %.o : %.c $(headers) $(matrix_includes)
+src/matrix/src/matrixf.o : %.o : %.c $(include_headers) $(matrix_includes)
 
-src/matrix/src/matrixcf.o : %.o : %.c $(headers) $(matrix_includes)
+src/matrix/src/matrixcf.o : %.o : %.c $(include_headers) $(matrix_includes)
 
 # fixed-point matrix dependencies
-src/matrix/src/matrixq16.o : %.o : %.c $(headers) $(matrix_includes)
+src/matrix/src/matrixq16.o : %.o : %.c $(include_headers) $(matrix_includes)
 
-src/matrix/src/matrixcq16.o : %.o : %.c $(headers) $(matrix_includes)
+src/matrix/src/matrixcq16.o : %.o : %.c $(include_headers) $(matrix_includes)
 
 # sparse matrix dependencies
-src/matrix/src/smatrixb.o: %.o : %.c $(headers) src/matrix/src/smatrix.c
+src/matrix/src/smatrixb.o: %.o : %.c $(include_headers) src/matrix/src/smatrix.c
 
-src/matrix/src/smatrixf.o: %.o : %.c $(headers) src/matrix/src/smatrix.c
+src/matrix/src/smatrixf.o: %.o : %.c $(include_headers) src/matrix/src/smatrix.c
 
-src/matrix/src/smatrixi.o: %.o : %.c $(headers) src/matrix/src/smatrix.c
+src/matrix/src/smatrixi.o: %.o : %.c $(include_headers) src/matrix/src/smatrix.c
 
 
 # matrix autotest scripts
@@ -1005,23 +1008,23 @@ modem_includes :=						\
 #src/modem/src/modem_demod_soft_const.c
 
 # main modem object
-src/modem/src/modemf.o : %.o : %.c $(headers) $(modem_includes)
+src/modem/src/modemf.o : %.o : %.c $(include_headers) $(modem_includes)
 
-src/modem/src/modemq16.o : %.o : %.c $(headers) $(modem_includes)
+src/modem/src/modemq16.o : %.o : %.c $(include_headers) $(modem_includes)
 
-src/modem/src/gmskmod.o: %.o : %.c $(headers)
+src/modem/src/gmskmod.o: %.o : %.c $(include_headers)
 
-src/modem/src/gmskdem.o: %.o : %.c $(headers)
+src/modem/src/gmskdem.o: %.o : %.c $(include_headers)
 
-src/modem/src/ampmodem.o: %.o : %.c $(headers)
+src/modem/src/ampmodem.o: %.o : %.c $(include_headers)
 
-src/modem/src/freqmodem.o: %.o : %.c $(headers)
+src/modem/src/freqmodem.o: %.o : %.c $(include_headers)
 
-src/modem/src/modem_utilities.o: %.o : %.c $(headers)
+src/modem/src/modem_utilities.o: %.o : %.c $(include_headers)
 
-src/modem/src/modem_apsk_const.o: %.o : %.c $(headers)
+src/modem/src/modem_apsk_const.o: %.o : %.c $(include_headers)
 
-src/modem/src/modem_arb_const.o: %.o : %.c $(headers)
+src/modem/src/modem_arb_const.o: %.o : %.c $(include_headers)
 
 
 modem_autotests :=						\
@@ -1050,15 +1053,15 @@ multichannel_objects :=						\
 	src/multichannel/src/ofdmframegen.o			\
 	src/multichannel/src/ofdmframesync.o			\
 
-$(multichannel_objects) : %.o : %.c $(headers)
+$(multichannel_objects) : %.o : %.c $(include_headers)
 
 # list explicit targets and dependencies here
 multichannel_includes :=					\
 	src/multichannel/src/firpfbch.c				\
 	src/multichannel/src/firpfbch2.c			\
 
-src/multichannel/src/firpfbch_crcf.o : %.o : %.c $(headers) $(multichannel_includes)
-src/multichannel/src/firpfbch_cccf.o : %.o : %.c $(headers) $(multichannel_includes)
+src/multichannel/src/firpfbch_crcf.o : %.o : %.c $(include_headers) $(multichannel_includes)
+src/multichannel/src/firpfbch_cccf.o : %.o : %.c $(include_headers) $(multichannel_includes)
 
 # autotests
 multichannel_autotests :=					\
@@ -1084,9 +1087,9 @@ nco_objects :=							\
 	src/nco/src/nco.utilities.o				\
 
 
-src/nco/src/nco_crcf.o: %.o : %.c $(headers) src/nco/src/nco.c
+src/nco/src/nco_crcf.o: %.o : %.c $(include_headers) src/nco/src/nco.c
 
-src/nco/src/nco.utilities.o: %.o : %.c $(headers)
+src/nco/src/nco.utilities.o: %.o : %.c $(include_headers)
 
 
 # autotests
@@ -1123,7 +1126,7 @@ optim_objects :=						\
 	src/optim/src/qnsearch.o				\
 	src/optim/src/utilities.o				\
 
-$(optim_objects) : %.o : %.c $(headers)
+$(optim_objects) : %.o : %.c $(include_headers)
 
 # autotests
 optim_autotests :=						\
@@ -1144,13 +1147,13 @@ quantization_objects :=						\
 	src/quantization/src/quantizer.inline.o			\
 
 
-src/quantization/src/compand.o: %.o : %.c $(headers)
+src/quantization/src/compand.o: %.o : %.c $(include_headers)
 
-src/quantization/src/quantizercf.o: %.o : %.c $(headers) src/quantization/src/quantizer.c
+src/quantization/src/quantizercf.o: %.o : %.c $(include_headers) src/quantization/src/quantizer.c
 
-src/quantization/src/quantizerf.o: %.o : %.c $(headers) src/quantization/src/quantizer.c
+src/quantization/src/quantizerf.o: %.o : %.c $(include_headers) src/quantization/src/quantizer.c
 
-src/quantization/src/quantizer.inline.o: %.o : %.c $(headers)
+src/quantization/src/quantizer.inline.o: %.o : %.c $(include_headers)
 
 
 # autotests
@@ -1179,7 +1182,7 @@ random_objects :=						\
 	src/random/src/scramble.o				\
 
 
-$(random_objects) : %.o : %.c $(headers)
+$(random_objects) : %.o : %.c $(include_headers)
 
 # autotests
 random_autotests :=						\
@@ -1202,7 +1205,7 @@ sequence_objects :=						\
 	src/sequence/src/msequence.o				\
 
 
-$(sequence_objects) : %.o : %.c $(headers)
+$(sequence_objects) : %.o : %.c $(include_headers)
 
 
 # autotests
@@ -1226,7 +1229,7 @@ utility_objects :=						\
 	src/utility/src/pack_bytes.o				\
 	src/utility/src/shift_array.o				\
 
-$(utility_objects) : %.o : %.c $(headers)
+$(utility_objects) : %.o : %.c $(include_headers)
 
 # autotests
 utility_autotests :=						\
@@ -1249,15 +1252,15 @@ vector_objects :=						\
 	@MLIBS_VECTOR@						\
 
 # portable builds
-src/vector/src/vectorf_add.port.o  : %.o : %.c $(headers) src/vector/src/vector_add.c
-src/vector/src/vectorf_norm.port.o : %.o : %.c $(headers) src/vector/src/vector_norm.c
-src/vector/src/vectorf_mul.port.o  : %.o : %.c $(headers) src/vector/src/vector_mul.c
-src/vector/src/vectorf_trig.port.o : %.o : %.c $(headers) src/vector/src/vector_trig.c
+src/vector/src/vectorf_add.port.o  : %.o : %.c $(include_headers) src/vector/src/vector_add.c
+src/vector/src/vectorf_norm.port.o : %.o : %.c $(include_headers) src/vector/src/vector_norm.c
+src/vector/src/vectorf_mul.port.o  : %.o : %.c $(include_headers) src/vector/src/vector_mul.c
+src/vector/src/vectorf_trig.port.o : %.o : %.c $(include_headers) src/vector/src/vector_trig.c
 
-src/vector/src/vectorcf_add.port.o  : %.o : %.c $(headers) src/vector/src/vector_add.c
-src/vector/src/vectorcf_norm.port.o : %.o : %.c $(headers) src/vector/src/vector_norm.c
-src/vector/src/vectorcf_mul.port.o  : %.o : %.c $(headers) src/vector/src/vector_mul.c
-src/vector/src/vectorcf_trig.port.o : %.o : %.c $(headers) src/vector/src/vector_trig.c
+src/vector/src/vectorcf_add.port.o  : %.o : %.c $(include_headers) src/vector/src/vector_add.c
+src/vector/src/vectorcf_norm.port.o : %.o : %.c $(include_headers) src/vector/src/vector_norm.c
+src/vector/src/vectorcf_mul.port.o  : %.o : %.c $(include_headers) src/vector/src/vector_mul.c
+src/vector/src/vectorcf_trig.port.o : %.o : %.c $(include_headers) src/vector/src/vector_trig.c
 
 # builds for specific architectures
 # ...
@@ -1392,11 +1395,11 @@ help:
 
 install:
 	@echo "installing..."
-	mkdir -p $(exec_prefix)/lib
-	install -m 644 -p $(SHARED_LIB) libliquid.a $(exec_prefix)/lib
-	mkdir -p $(prefix)/include
-	mkdir -p $(prefix)/include/liquid
-	install -m 644 -p $(addprefix include/,$(headers_install)) $(prefix)/include/liquid
+	@echo ""
+	mkdir -p $(DESTDIR)$(exec_prefix)$(libdir)
+	mkdir -p $(DESTDIR)$(prefix)/include/liquid
+	install -m 644 -p $(SHARED_LIB) libliquid.a $(DESTDIR)$(exec_prefix)$(libdir)
+	install -m 644 -p $(addprefix include/,$(headers_install)) $(DESTDIR)$(prefix)/include/liquid
 	@echo ""
 	@echo "---------------------------------------------------------"
 	@echo "  liquid-dsp was successfully installed.     "
@@ -1405,7 +1408,7 @@ install:
 	@echo "  libraries by running 'ldconfig' to make the shared"
 	@echo "  object available.  You might also need to modify your"
 	@echo "  LD_LIBRARY_PATH environment variable to include the"
-	@echo "  directory $(exec_prefix)"
+	@echo "  directory $(DESTDIR)$(exec_prefix)"
 	@echo ""
 	@echo "  Please report bugs to $(BUGREPORT)"
 	@echo "---------------------------------------------------------"
@@ -1417,9 +1420,9 @@ install:
 
 uninstall:
 	@echo "uninstalling..."
-	$(RM) $(addprefix $(prefix)/include/liquid/, $(headers_install))
-	$(RM) $(exec_prefix)/lib/libliquid.a
-	$(RM) $(exec_prefix)/lib/$(SHARED_LIB)
+	$(RM) $(addprefix $(DESTDIR)$(prefix)/include/liquid/, $(headers_install))
+	$(RM) $(DESTDIR)$(exec_prefix)$(libdir)/libliquid.a
+	$(RM) $(DESTDIR)$(exec_prefix)$(libdir)/$(SHARED_LIB)
 	@echo "done."
 
 ##
@@ -1662,7 +1665,8 @@ example_programs :=						\
 	examples/ricek_channel_example				\
 	examples/scramble_example				\
 	examples/smatrix_example				\
-	examples/spgram_example					\
+	examples/spgramcf_example				\
+	examples/spgramf_example				\
 	examples/symsync_crcf_example				\
 	examples/symsync_crcf_kaiser_example			\
 	examples/wdelayf_example				\
@@ -1806,9 +1810,6 @@ clean-sandbox:
 	$(RM) $(sandbox_programs)
 
 
-# Clean
-.PHONY: clean
-
 ##
 ## TARGET : world     - build absolutely everything
 ##
@@ -1817,6 +1818,8 @@ world : all check bench examples sandbox
 ##
 ## TARGET : clean     - clean build (objects, dependencies, libraries, etc.)
 ##
+
+.PHONY: clean
 
 clean-modules:
 	@echo "cleaning modules..."

@@ -402,15 +402,37 @@ LIQUID_WINDOW_DEFINE_API(WINDOW_MANGLE_CQ32, cq32_t)
 //   WDELAY : name-mangling macro
 //   T      : data type
 #define LIQUID_WDELAY_DEFINE_API(WDELAY,T)                      \
-                                                                \
 typedef struct WDELAY(_s) * WDELAY();                           \
-WDELAY() WDELAY(_create)(unsigned int _k);                      \
-WDELAY() WDELAY(_recreate)(WDELAY() _w, unsigned int _k);       \
-void WDELAY(_destroy)(WDELAY() _w);                             \
-void WDELAY(_print)(WDELAY() _w);                               \
-void WDELAY(_clear)(WDELAY() _w);                               \
-void WDELAY(_read)(WDELAY() _w, T * _v);                        \
-void WDELAY(_push)(WDELAY() _b, T _v);
+                                                                \
+/* create delay buffer object with '_delay' samples         */  \
+WDELAY() WDELAY(_create)(unsigned int _delay);                  \
+                                                                \
+/* re-create delay buffer object with '_delay' samples      */  \
+/*  _q      :   old delay buffer object                     */  \
+/*  _delay  :   delay for new object                        */  \
+WDELAY() WDELAY(_recreate)(WDELAY()     _q,                     \
+                           unsigned int _delay);                \
+                                                                \
+/* destroy delay buffer object, freeing internal memory     */  \
+void WDELAY(_destroy)(WDELAY() _q);                             \
+                                                                \
+/* print delay buffer object's state to stdout              */  \
+void WDELAY(_print)(WDELAY() _q);                               \
+                                                                \
+/* clear/reset state of object                              */  \
+void WDELAY(_clear)(WDELAY() _q);                               \
+                                                                \
+/* read delayed sample from delay buffer object             */  \
+/*  _q  :   delay buffer object                             */  \
+/*  _v  :   value of delayed element                        */  \
+void WDELAY(_read)(WDELAY() _q,                                 \
+                   T *      _v);                                \
+                                                                \
+/* push new sample into delay buffer object                 */  \
+/*  _q  :   delay buffer object                             */  \
+/*  _v  :   new value to be added to buffer                 */  \
+void WDELAY(_push)(WDELAY() _q,                                 \
+                   T        _v);                                \
 
 // Define wdelay APIs
 LIQUID_WDELAY_DEFINE_API(WDELAY_MANGLE_FLOAT,  float)
@@ -1133,68 +1155,90 @@ LIQUID_FFT_DEFINE_API(LIQUID_FFT_MANGLE_Q32,  q32_t, cq32_t)
 // spectral periodogram
 //
 
-typedef struct spgram_s * spgram;
+#define LIQUID_SPGRAM_MANGLE_CFLOAT(name) LIQUID_CONCAT(spgramcf,name)
+#define LIQUID_SPGRAM_MANGLE_FLOAT(name)  LIQUID_CONCAT(spgramf, name)
 
-// create spgram object
-//  _nfft       :   FFT size
-//  _window     :   window [size: _window_len x 1]
-//  _window_len :   window length
-spgram spgram_create(unsigned int _nfft,
-                     float *      _window,
-                     unsigned int _window_len);
+// Macro    :   SPGRAM
+//  SPGRAM  :   name-mangling macro
+//  T       :   primitive data type
+//  TC      :   primitive data type (complex)
+//  TI      :   primitive data type (input)
+#define LIQUID_SPGRAM_DEFINE_API(SPGRAM,T,TC,TI)                \
+                                                                \
+typedef struct SPGRAM(_s) * SPGRAM();                           \
+                                                                \
+/* create spgram object                                     */  \
+/*  _nfft       :   FFT size                                */  \
+/*  _window     :   window [size: _window_len x 1]          */  \
+/*  _window_len :   window length                           */  \
+SPGRAM() SPGRAM(_create)(unsigned int _nfft,                    \
+                         float *      _window,                  \
+                         unsigned int _window_len);             \
+                                                                \
+/* create spgram object with Kaiser-Bessel window           */  \
+/*  _nfft       :   FFT size                                */  \
+/*  _window_len :   window length                           */  \
+/*  _beta       :   Kaiser-Bessel parameter (_beta > 0)     */  \
+SPGRAM() SPGRAM(_create_kaiser)(unsigned int _nfft,             \
+                                unsigned int _window_len,       \
+                                float        _beta);            \
+                                                                \
+/* destroy spgram object                                    */  \
+void SPGRAM(_destroy)(SPGRAM() _q);                             \
+                                                                \
+/* resets the internal state of the spgram object           */  \
+void SPGRAM(_reset)(SPGRAM() _q);                               \
+                                                                \
+/* push samples into spgram object                          */  \
+/*  _q      :   spgram object                               */  \
+/*  _x      :   input buffer [size: _n x 1]                 */  \
+/*  _n      :   input buffer length                         */  \
+void SPGRAM(_push)(SPGRAM()     _q,                             \
+                   TI *         _x,                             \
+                   unsigned int _n);                            \
+                                                                \
+/* compute spectral periodogram output from current buffer  */  \
+/* contents                                                 */  \
+/*  _q      :   spgram object                               */  \
+/*  _X      :   output complex spectrum [size: _nfft x 1]   */  \
+void SPGRAM(_execute)(SPGRAM() _q,                              \
+                      TC *     _X);                             \
+                                                                \
+/* accumulate power spectral density                        */  \
+/*  _q      :   spgram object                               */  \
+/*  _x      :   input buffer [size: _n x 1]                 */  \
+/*  _n      :   input buffer length                         */  \
+void SPGRAM(_accumulate_psd)(SPGRAM()       _q,                 \
+                             TI *           _x,                 \
+                             unsigned int   _n);                \
+                                                                \
+/* write accumulated psd                                    */  \
+/*  _q      :   spgram object                               */  \
+/*  _x      :   input buffer [size: _n x 1]                 */  \
+/*  _n      :   input buffer length [size: _nfft x 1]       */  \
+void SPGRAM(_write_accumulation)(SPGRAM() _q,                   \
+                                 T *      _x);                  \
+                                                                \
+/* estimate spectrum on input signal                        */  \
+/*  _q      :   spgram object                               */  \
+/*  _x      :   input signal [size: _n x 1]                 */  \
+/*  _n      :   input signal length                         */  \
+/*  _psd    :   output spectrum, [size: _nfft x 1]          */  \
+void SPGRAM(_estimate_psd)(SPGRAM()     _q,                     \
+                           TI *         _x,                     \
+                           unsigned int _n,                     \
+                           T *          _psd);                  \
 
-// create spgram object with Kaiser-Bessel window
-//  _nfft       :   FFT size
-//  _window_len :   window length
-//  _beta       :   Kaiser-Bessel window parameter (_beta > 0)
-spgram spgram_create_kaiser(unsigned int _nfft,
-                            unsigned int _window_len,
-                            float        _beta);
+LIQUID_SPGRAM_DEFINE_API(LIQUID_SPGRAM_MANGLE_CFLOAT,
+                         float,
+                         liquid_float_complex,
+                         liquid_float_complex)
 
-// destroy spgram object
-void spgram_destroy(spgram _q);
+LIQUID_SPGRAM_DEFINE_API(LIQUID_SPGRAM_MANGLE_FLOAT,
+                         float,
+                         liquid_float_complex,
+                         float)
 
-// resets the internal state of the spgram object
-void spgram_reset(spgram _q);
-
-// push samples into spgram object
-//  _q      :   spgram object
-//  _x      :   input buffer [size: _n x 1]
-//  _n      :   input buffer length
-void spgram_push(spgram                 _q,
-                 liquid_float_complex * _x,
-                 unsigned int           _n);
-
-// compute spectral periodogram output from current buffer contents
-//  _q      :   spgram object
-//  _X      :   output spectrum [dB], [size: _nfft x 1]
-void spgram_execute(spgram                 _q,
-                    liquid_float_complex * _X);
-
-// accumulate power spectral density
-//  _q      :   spgram object
-//  _x      :   input buffer [size: _n x 1]
-//  _n      :   input buffer length
-void spgram_accumulate_psd(spgram                 _q,
-                           liquid_float_complex * _x,
-                           unsigned int           _n);
-
-// write accumulated psd
-//  _q      :   spgram object
-//  _x      :   input buffer [size: _n x 1]
-//  _n      :   input buffer length [size: _nfft x 1]
-void spgram_write_accumulation(spgram  _q,
-                               float * _x);
-
-// estimate spectrum on input signal
-//  _q      :   spgram object
-//  _x      :   input signal [size: _n x 1]
-//  _n      :   input signal length
-//  _psd    :   output spectrum, [size: _nfft x 1]
-void spgram_estimate_psd(spgram                 _q,
-                         liquid_float_complex * _x,
-                         unsigned int           _n,
-                         float *                _psd);
 
 // ascii spectrogram
 typedef struct asgram_s * asgram;

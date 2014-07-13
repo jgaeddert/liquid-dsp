@@ -30,10 +30,10 @@
 #include "liquid.internal.h"
 
 struct asgram_s {
-    unsigned int nfft;  // transform size
-    spgram periodogram; // spectral periodogram object
-    float complex * X;  // spectral periodogram output
-    float * psd;        // power spectral density
+    unsigned int nfft;      // transform size
+    spgramcf periodogram;   // spectral periodogram object
+    float complex * X;      // spectral periodogram output
+    float * psd;            // power spectral density
 
     float levels[10];
     char levelchar[10];
@@ -61,7 +61,7 @@ asgram asgram_create(unsigned int _nfft)
     // create spectral periodogram object
     unsigned int window_len = q->nfft;
     float beta = 10.0f;
-    q->periodogram = spgram_create_kaiser(q->nfft, window_len, beta);
+    q->periodogram = spgramcf_create_kaiser(q->nfft, window_len, beta);
 
     // power spectral density levels
     q->num_levels = 10;
@@ -84,7 +84,7 @@ asgram asgram_create(unsigned int _nfft)
 void asgram_destroy(asgram _q)
 {
     // destroy spectral periodogram object
-    spgram_destroy(_q->periodogram);
+    spgramcf_destroy(_q->periodogram);
 
     // free PSD estimate array
     free(_q->X);
@@ -96,7 +96,7 @@ void asgram_destroy(asgram _q)
 
 void asgram_reset(asgram _q)
 {
-    spgram_reset(_q->periodogram);
+    spgramcf_reset(_q->periodogram);
 }
 
 void asgram_set_scale(asgram _q,
@@ -125,7 +125,7 @@ void asgram_push(asgram          _q,
                  unsigned int    _n)
 {
     // push samples into internal spectral periodogram
-    spgram_push(_q->periodogram, _x, _n);
+    spgramcf_push(_q->periodogram, _x, _n);
 }
 
 // execute ascii spectrogram
@@ -139,12 +139,12 @@ void asgram_execute(asgram  _q,
                     float * _peakfreq)
 {
     // execute spectral periodogram
-    spgram_execute(_q->periodogram, _q->X);
+    spgramcf_execute(_q->periodogram, _q->X);
 
     // compute PSD magnitude and apply FFT shift
     unsigned int i;
     for (i=0; i<_q->nfft; i++)
-        _q->psd[i] = 20*log10f(cabsf(_q->X[(i + _q->nfft/2)%_q->nfft]));
+        _q->psd[i] = 10*log10f(cabsf(_q->X[(i + _q->nfft/2)%_q->nfft]));
 
     unsigned int j;
     for (i=0; i<_q->nfft; i++) {

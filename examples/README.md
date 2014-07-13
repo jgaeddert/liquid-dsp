@@ -535,6 +535,12 @@ This directory contains all the examples for interfacing the liquid modules.
 
  * `smatrix_example.c`:
 
+ * `spgramcf_example.c`:
+   Spectral periodogram example with complex inputs.
+
+ * `spgramf_example.c`:
+   Spectral periodogram example with real inputs.
+
  * `symsync_crcf_example.c`:
 
  * `wdelayf_example.c`:
