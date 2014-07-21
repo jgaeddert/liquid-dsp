@@ -1,5 +1,7 @@
 //
+// ofdmframesync_example.c
 //
+// Example demonstrating the base OFDM frame synchronizer.
 //
 
 #include <stdio.h>
@@ -18,21 +20,30 @@ void usage()
     printf("Usage: ofdmframesync_example [OPTION]\n");
     printf("  h     : print help\n");
     printf("  d     : enable debugging\n");
-    printf("  M     : number of subcarriers (must be even), default: 64\n");
-    printf("  C     : cyclic prefix length, default: 16\n");
-    printf("  T     : taper length, default: 4\n");
-    printf("  s     : signal-to-noise ratio [dB], default: 30\n");
-    printf("  F     : carrier frequency offset, default: 0.002\n");
-    printf("  c     : number of channel filter taps, default: 1\n");
+    printf("  M     : number of subcarriers (must be even),  default: 64\n");
+    printf("  C     : cyclic prefix length,                  default: 16\n");
+    printf("  T     : taper length,                          default: 4\n");
+    printf("  s     : signal-to-noise ratio [dB],            default: 30\n");
+    printf("  F     : carrier frequency offset,              default: 0.002\n");
+    printf("  c     : number of channel filter coefficients, default: 1\n");
 }
 
+// forward declaration of callback function; this will be invoked for every
+// OFDM symbol received by the parent ofdmframesync object. The object will
+// reset when something other than a zero is returned.
+//  _X          : array of received subcarrier samples [size: _M x 1]
+//  _p          : subcarrier allocation array [size: _M x 1]
+//  _M          : number of subcarriers
+//  _userdata   : user-defined data pointer
 static int callback(float complex * _X,
                     unsigned char * _p,
-                    unsigned int _M,
-                    void * _userdata);
+                    unsigned int    _M,
+                    void *          _userdata);
 
+// main function
 int main(int argc, char*argv[])
 {
+    // set the random seed differently for each run
     srand(time(NULL));
 
     // options
@@ -75,13 +86,12 @@ int main(int argc, char*argv[])
     unsigned int i;
 
     // derived values
-    unsigned int frame_len = M + cp_len;
-    unsigned int num_samples = (3+num_symbols)*frame_len;  // data symbols
-    float nstd = powf(10.0f, noise_floor/20.0f);
-    float gamma = powf(10.0f, (SNRdB + noise_floor)/20.0f);
-    printf("gamma : %f\n", gamma);
+    unsigned int frame_len   = M + cp_len;
+    unsigned int num_samples = (3+num_symbols)*frame_len;
+    float        nstd        = powf(10.0f, noise_floor/20.0f);
+    float        gamma       = powf(10.0f, (SNRdB + noise_floor)/20.0f);
 
-    // initialize subcarrier allocation
+    // initialize subcarrier allocation to default
     unsigned char p[M];
     ofdmframe_init_default_sctype(M, p);
 
@@ -131,7 +141,7 @@ int main(int argc, char*argv[])
         n += frame_len;
     }
 
-    // create channel filter (random delay taps)
+    // create channel filter (random delay coefficients)
     float complex hc[hc_len];
     for (i=0; i<hc_len; i++) {
         hc[i] = (i==0) ? 1.0f : hc_std*randnf()*cexpf(_Complex_I*2*M_PI*randf());
@@ -230,6 +240,7 @@ int main(int argc, char*argv[])
     fprintf(fid,"psd_min = noise_floor - 10;\n");
     fprintf(fid,"psd_max = noise_floor + 10 + max(SNRdB, 0);\n");
     fprintf(fid,"axis([-0.5 0.5 psd_min psd_max]);\n");
+    fprintf(fid,"grid on;\n");
     fprintf(fid,"xlabel('Normalized Frequency');\n");
     fprintf(fid,"ylabel('Power Spectral Density [dB]');\n");
     fprintf(fid,"title('Multipath channel response');\n");
@@ -264,10 +275,15 @@ int main(int argc, char*argv[])
     return 0;
 }
 
+// callback function
+//  _X          : array of received subcarrier samples [size: _M x 1]
+//  _p          : subcarrier allocation array [size: _M x 1]
+//  _M          : number of subcarriers
+//  _userdata   : user-defined data pointer
 static int callback(float complex * _X,
                     unsigned char * _p,
-                    unsigned int _M,
-                    void * _userdata)
+                    unsigned int    _M,
+                    void *          _userdata)
 {
     printf("**** callback invoked\n");
 
