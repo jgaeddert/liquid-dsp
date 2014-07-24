@@ -59,11 +59,19 @@ GREP		:= @GREP@
 AR		:= ar
 RANLIB		:= ranlib
 
+#build environment specific 
+SYS := $(shell gcc -dumpmachine)
+
 # flags
 INCLUDE_CFLAGS	= $(addprefix -I ,$(include_dirs))
 CONFIG_CFLAGS	= @CFLAGS@ @DEBUG_OPTION@ @ARCH_OPTION@
 # -g : debugging info
+ifneq (, $(findstring mingw, $(SYS)))
+# mingw warns about -fPIC being default already.
+CFLAGS		+= $(INCLUDE_CFLAGS) -Wall $(CONFIG_CFLAGS)
+else
 CFLAGS		+= $(INCLUDE_CFLAGS) -Wall -fPIC $(CONFIG_CFLAGS)
+endif
 LDFLAGS		+= @LIBS@
 ARFLAGS		= r
 PATHSEP		= /
@@ -1182,6 +1190,10 @@ libliquid.dylib: $(objects)
 # linux, et al
 libliquid.so: libliquid.a
 	$(CC) -shared -Xlinker -soname=$@ -o $@ -Wl,-whole-archive $^ -Wl,-no-whole-archive $(LDFLAGS)
+
+# windows, mingw
+libliquid.dll: libliquid.a
+	$(CC) -shared -Xlinker -soname=$@ -o $@ -Wl,-whole-archive,--output-def,libliquid.def,--out-implib,imp_libliquid.lib  $^ -Wl,-no-whole-archive $(LDFLAGS)
 
 all: libliquid.a $(SHARED_LIB)
 
