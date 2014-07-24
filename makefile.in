@@ -68,7 +68,7 @@ CONFIG_CFLAGS	= @CFLAGS@ @DEBUG_OPTION@ @ARCH_OPTION@
 # -g : debugging info
 ifneq (, $(findstring mingw, $(SYS)))
 # mingw warns about -fPIC being default already.
-CFLAGS		+= $(INCLUDE_CFLAGS) -Wall $(CONFIG_CFLAGS)
+CFLAGS		+= $(INCLUDE_CFLAGS) -Wall $(CONFIG_CFLAGS) -mstackrealign
 else
 CFLAGS		+= $(INCLUDE_CFLAGS) -Wall -fPIC $(CONFIG_CFLAGS)
 endif
