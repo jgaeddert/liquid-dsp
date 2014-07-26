@@ -58,7 +58,8 @@ int main() {
         asgramcf_execute(q, ascii, &maxval, &maxfreq);
 
         // print the spectrogram to stdout
-        printf(" > %s < pk%5.1f dB [%5.2f]\n", ascii, maxval, maxfreq);
+        //printf(" > %s < pk%5.1f dB [%5.2f]\n", ascii, maxval, maxfreq);
+        asgramcf_print(q);
 
 #if 0
         // find peak and print arrow pointing to peak

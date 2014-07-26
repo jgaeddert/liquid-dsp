@@ -182,4 +182,19 @@ void ASGRAM(_execute)(ASGRAM()  _q,
     //_ascii[i] = '\0';
 }
 
+// compute spectral periodogram output from current buffer
+// contents and print standard format to stdout
+void ASGRAM(_print)(ASGRAM() _q)
+{
+    float maxval;
+    float maxfreq;
+    char ascii[_q->nfft+1];
+    ascii[_q->nfft] = '\0'; // append null character to end of string
+        
+    // execute the spectrogram
+    ASGRAM(_execute)(_q, ascii, &maxval, &maxfreq);
+
+    // print the spectrogram to stdout
+    printf(" > %s < pk%5.1f dB [%5.2f]\n", ascii, maxval, maxfreq);
+}
 

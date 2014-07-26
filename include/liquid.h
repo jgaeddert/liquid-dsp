@@ -1216,6 +1216,10 @@ void ASGRAM(_execute)(ASGRAM() _q,                              \
                       char *  _ascii,                           \
                       float * _peakval,                         \
                       float * _peakfreq);                       \
+                                                                \
+/* compute spectral periodogram output from current buffer  */  \
+/* contents and print standard format to stdout             */  \
+void ASGRAM(_print)(ASGRAM() _q);                               \
 
 LIQUID_ASGRAM_DEFINE_API(LIQUID_ASGRAM_MANGLE_CFLOAT,
                          float,
