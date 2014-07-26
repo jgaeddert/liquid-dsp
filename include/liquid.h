@@ -1165,34 +1165,68 @@ LIQUID_SPGRAM_DEFINE_API(LIQUID_SPGRAM_MANGLE_FLOAT,
                          liquid_float_complex,
                          float)
 
+// 
+// asgram : ascii spectral periodogram
+//
 
-// ascii spectrogram
-typedef struct asgram_s * asgram;
+#define LIQUID_ASGRAM_MANGLE_CFLOAT(name) LIQUID_CONCAT(asgramcf,name)
+#define LIQUID_ASGRAM_MANGLE_FLOAT(name)  LIQUID_CONCAT(asgramf, name)
 
-// create asgram object
-//  _nfft       :   FFT size
-asgram asgram_create(unsigned int _nfft);
-void asgram_destroy(asgram _q);
-void asgram_reset(asgram _q);
-void asgram_set_scale(asgram _q, float _offset, float _scale);
+// Macro    :   ASGRAM
+//  ASGRAM  :   name-mangling macro
+//  T       :   primitive data type
+//  TC      :   primitive data type (complex)
+//  TI      :   primitive data type (input)
+#define LIQUID_ASGRAM_DEFINE_API(ASGRAM,T,TC,TI)                \
+                                                                \
+typedef struct ASGRAM(_s) * ASGRAM();                           \
+                                                                \
+/* create asgram object with size _nfft                     */  \
+ASGRAM() ASGRAM(_create)(unsigned int _nfft);                   \
+                                                                \
+/* destroy asgram object                                    */  \
+void ASGRAM(_destroy)(ASGRAM() _q);                             \
+                                                                \
+/* resets the internal state of the asgram object           */  \
+void ASGRAM(_reset)(ASGRAM() _q);                               \
+                                                                \
+/* set scale and offset for spectrogram                     */  \
+/*  _q      :   asgram object                               */  \
+/*  _offset :   signal offset level [dB]                    */  \
+/*  _scale  :   signal scale [dB]                           */  \
+void ASGRAM(_set_scale)(ASGRAM() _q,                            \
+                        float    _offset,                       \
+                        float    _scale);                       \
+                                                                \
+/* push samples into spgram object                          */  \
+/*  _q      :   spgram object                               */  \
+/*  _x      :   input buffer [size: _n x 1]                 */  \
+/*  _n      :   input buffer length                         */  \
+void ASGRAM(_push)(ASGRAM()     _q,                             \
+                   TI *         _x,                             \
+                   unsigned int _n);                            \
+                                                                \
+/* compute spectral periodogram output from current buffer  */  \
+/* contents                                                 */  \
+/*  _q          :   spgram object                           */  \
+/*  _ascii      :   output ASCII string [size: _nfft x 1]   */  \
+/*  _peakval    :   peak power spectral density value [dB]  */  \
+/*  _peakfreq   :   peak power spectral density frequency   */  \
+void ASGRAM(_execute)(ASGRAM() _q,                              \
+                      char *  _ascii,                           \
+                      float * _peakval,                         \
+                      float * _peakfreq);                       \
 
-// push samples into asgram object
-//  _q      :   asgram object
-//  _x      :   input buffer [size: _n x 1]
-//  _n      :   input buffer length
-void asgram_push(asgram                 _q,
-                 liquid_float_complex * _x,
-                 unsigned int           _n);
+LIQUID_ASGRAM_DEFINE_API(LIQUID_ASGRAM_MANGLE_CFLOAT,
+                         float,
+                         liquid_float_complex,
+                         liquid_float_complex)
 
-// execute asgram
-//  _q          :   asgram object
-//  _ascii      :   ASCII character output buffer [size: _nfft x 1]
-//  _peakval    :   peak PSD value [dB]
-//  _peakfreq   :   normalized frequency of peak PSD value
-void asgram_execute(asgram  _q,
-                    char *  _ascii,
-                    float * _peakval,
-                    float * _peakfreq);
+LIQUID_ASGRAM_DEFINE_API(LIQUID_ASGRAM_MANGLE_FLOAT,
+                         float,
+                         liquid_float_complex,
+                         float)
+
 
 //
 // MODULE : filter

@@ -18,7 +18,7 @@ This directory contains all the examples for interfacing the liquid modules.
     modulator/demodulator) with noise, carrier phase, and carrier frequency
     offsets.
 
- * `asgram_example.c`:
+ * `asgramcf_example.c`:
     ASCII spectrogram example.  This example demonstrates the functionality of
     the ASCII spectrogram.  A sweeping complex sinusoid is generated and the
     resulting frequency response is printed to the screen.

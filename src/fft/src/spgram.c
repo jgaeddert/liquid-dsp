@@ -57,13 +57,13 @@ SPGRAM() SPGRAM(_create)(unsigned int _nfft,
 {
     // validate input
     if (_nfft < 2) {
-        fprintf(stderr,"error: %s_create(), fft size must be at least 2\n", NAME);
+        fprintf(stderr,"error: spgram%s_create(), fft size must be at least 2\n", EXTENSION);
         exit(1);
     } else if (_window_len > _nfft) {
-        fprintf(stderr,"error: %s_create(), window size cannot exceed fft size\n", NAME);
+        fprintf(stderr,"error: spgram%s_create(), window size cannot exceed fft size\n", EXTENSION);
         exit(1);
     } else if (_window_len == 0) {
-        fprintf(stderr,"error: %s_create(), window size must be greater than zero\n", NAME);
+        fprintf(stderr,"error: spgram%s_create(), window size must be greater than zero\n", EXTENSION);
         exit(1);
     }
 
@@ -113,16 +113,16 @@ SPGRAM() SPGRAM(_create_kaiser)(unsigned int _nfft,
 {
     // validate input
     if (_nfft < 2) {
-        fprintf(stderr,"error: %s_create_kaiser(), fft size must be at least 2\n", NAME);
+        fprintf(stderr,"error: spgram%s_create_kaiser(), fft size must be at least 2\n", EXTENSION);
         exit(1);
     } else if (_window_len > _nfft) {
-        fprintf(stderr,"error: %s_create_kaiser(), window size cannot exceed fft size\n", NAME);
+        fprintf(stderr,"error: spgram%s_create_kaiser(), window size cannot exceed fft size\n", EXTENSION);
         exit(1);
     } else if (_window_len == 0) {
-        fprintf(stderr,"error: %s_create_kaiser(), window size must be greater than zero\n", NAME);
+        fprintf(stderr,"error: spgram%s_create_kaiser(), window size must be greater than zero\n", EXTENSION);
         exit(1);
     } else if (_beta <= 0.0f) {
-        fprintf(stderr,"error: %s_create_kaiser(), beta must be greater than zero\n", NAME);
+        fprintf(stderr,"error: spgram%s_create_kaiser(), beta must be greater than zero\n", EXTENSION);
         exit(1);
     }
 

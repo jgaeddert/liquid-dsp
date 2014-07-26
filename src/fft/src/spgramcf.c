@@ -24,9 +24,10 @@
 #include "liquid.internal.h"
 
 // naming extensions (useful for print statements)
-#define NAME                "spgramcf"
+#define EXTENSION           "cf"
 
 // name-mangling macros
+#define ASGRAM(name)        LIQUID_CONCAT(asgramcf,name)
 #define SPGRAM(name)        LIQUID_CONCAT(spgramcf,name)
 #define WINDOW(name)        LIQUID_CONCAT(windowcf,name)
 #define FFT(name)           LIQUID_CONCAT(fft,name)
@@ -42,5 +43,6 @@
 #define PRINTVAL_TI(X,F)    PRINTVAL_CFLOAT(X,F)
 
 // source files
+#include "asgram.c"
 #include "spgram.c"
 
