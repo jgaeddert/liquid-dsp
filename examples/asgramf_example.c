@@ -1,9 +1,11 @@
 //
 // asgramf_example.c
 //
-// ASCII spectrogram example.  This example demonstrates the functionality
-// of the ASCII spectrogram.  A sweeping real-valued sinusoid is generated and
-// the resulting frequency response is printed to the screen.
+// ASCII spectrogram example for real-valued input. This example demonstrates
+// the functionality of the ASCII spectrogram for real-valued input siganls.
+// A cosine signal with time-varying frequency is generated and the resulting
+// spectral periodogram is printed to the screen. Because the time signal has
+// no complex component, its spectrum is symmetric.
 //
 
 #include <unistd.h> // usleep
