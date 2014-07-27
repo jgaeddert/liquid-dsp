@@ -1115,13 +1115,19 @@ void SPGRAM(_destroy)(SPGRAM() _q);                             \
 /* resets the internal state of the spgram object           */  \
 void SPGRAM(_reset)(SPGRAM() _q);                               \
                                                                 \
-/* push samples into spgram object                          */  \
+/* push a single sample into the spgram object              */  \
+/*  _q      :   spgram object                               */  \
+/*  _x      :   input sample                                */  \
+void SPGRAM(_push)(SPGRAM() _q,                                 \
+                   TI       _x);                                \
+                                                                \
+/* write a block of samples to the spgram object            */  \
 /*  _q      :   spgram object                               */  \
 /*  _x      :   input buffer [size: _n x 1]                 */  \
 /*  _n      :   input buffer length                         */  \
-void SPGRAM(_push)(SPGRAM()     _q,                             \
-                   TI *         _x,                             \
-                   unsigned int _n);                            \
+void SPGRAM(_write)(SPGRAM()     _q,                            \
+                    TI *         _x,                            \
+                    unsigned int _n);                           \
                                                                 \
 /* compute spectral periodogram output from current buffer  */  \
 /* contents                                                 */  \
@@ -1198,13 +1204,19 @@ void ASGRAM(_set_scale)(ASGRAM() _q,                            \
                         float    _offset,                       \
                         float    _scale);                       \
                                                                 \
-/* push samples into spgram object                          */  \
-/*  _q      :   spgram object                               */  \
+/* push a single sample into the asgram object              */  \
+/*  _q      :   asgram object                               */  \
+/*  _x      :   input sample                                */  \
+void ASGRAM(_push)(ASGRAM() _q,                                 \
+                   TI       _x);                                \
+                                                                \
+/* write a block of samples to the asgram object            */  \
+/*  _q      :   asgram object                               */  \
 /*  _x      :   input buffer [size: _n x 1]                 */  \
 /*  _n      :   input buffer length                         */  \
-void ASGRAM(_push)(ASGRAM()     _q,                             \
-                   TI *         _x,                             \
-                   unsigned int _n);                            \
+void ASGRAM(_write)(ASGRAM()     _q,                            \
+                    TI *         _x,                            \
+                    unsigned int _n);                           \
                                                                 \
 /* compute spectral periodogram output from current buffer  */  \
 /* contents                                                 */  \

@@ -176,15 +176,25 @@ void SPGRAM(_reset)(SPGRAM() _q)
         _q->psd[i] = 0.0f;
 }
 
-// push samples into spgram object
+// push a single sample into the spgram object
+//  _q      :   spgram object
+//  _x      :   input sample
+void SPGRAM(_push)(SPGRAM() _q,
+                   TI       _x)
+{
+    // push sample into internal window
+    WINDOW(_push)(_q->buffer, _x);
+}
+
+// write a block of samples to the spgram object
 //  _q      :   spgram object
 //  _x      :   input buffer [size: _n x 1]
 //  _n      :   input buffer length
-void SPGRAM(_push)(SPGRAM()     _q,
-                   TI *         _x,
-                   unsigned int _n)
+void SPGRAM(_write)(SPGRAM()     _q,
+                    TI *         _x,
+                    unsigned int _n)
 {
-    // push/write samples
+    // write a block of samples to the internal window
     WINDOW(_write)(_q->buffer, _x, _n);
 }
 
@@ -300,7 +310,7 @@ void SPGRAM(_estimate_psd)(SPGRAM()     _q,
     for (i=0; i<_n; i++) {
         // push signal into periodogram object one sample
         // at a time
-        SPGRAM(_push)(_q, &_x[i], 1);
+        SPGRAM(_push)(_q, _x[i]);
 
         // take transform periodically, ensuring all samples
         // are taken into account

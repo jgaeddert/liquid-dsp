@@ -32,25 +32,21 @@ int main() {
     float phi    = 0.0f;    // phase of sinusoidal frequency drift
     float dphi   = 0.003f;  // frequency of sinusoidal frequency drift
 
-    float x[nfft];
     float nstd = powf(10.0f,noise_floor/20.0f);  // noise standard deviation
     for (n=0; n<num_frames; n++) {
         // generate a frame of data samples
         for (i=0; i<nfft; i++) {
-            // cosine wave of time-varying frequency
-            x[i] = cosf(theta);
+            // cosine wave of time-varying frequency with noise
+            float x = cosf(theta) + nstd*randnf();
 
-            // add noise to signal
-            x[i] += nstd * randnf();
+            // push sample into spectrogram object
+            asgramf_push(q, x);
 
             // adjust frequency and phase
             theta  += dtheta;
             dtheta =  0.5f*M_PI + 0.4f*M_PI*sinf(phi) * hamming(n, num_frames);
             phi    += dphi;
         }
-
-        // push samples into the spectrogram object
-        asgramf_push(q, x, nfft);
 
         // print the spectrogram to stdout
         asgramf_print(q);

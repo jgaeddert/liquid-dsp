@@ -124,16 +124,27 @@ void ASGRAM(_set_scale)(ASGRAM() _q,
         _q->levels[i] = _q->offset + i*_q->scale;
 }
 
-// push samples into asgram object
+// push a single sample into the asgram object
 //  _q      :   asgram object
 //  _x      :   input buffer [size: _n x 1]
 //  _n      :   input buffer length
-void ASGRAM(_push)(ASGRAM()     _q,
-                   TI *         _x,
-                   unsigned int _n)
+void ASGRAM(_push)(ASGRAM() _q,
+                   TI       _x)
 {
-    // push samples into internal spectral periodogram
-    SPGRAM(_push)(_q->periodogram, _x, _n);
+    // push sample into internal spectral periodogram
+    SPGRAM(_push)(_q->periodogram, _x);
+}
+
+// write a block of samples to the asgram object
+//  _q      :   asgram object
+//  _x      :   input buffer [size: _n x 1]
+//  _n      :   input buffer length
+void ASGRAM(_write)(ASGRAM()     _q,
+                    TI *         _x,
+                    unsigned int _n)
+{
+    // write samples to internal spectral periodogram
+    SPGRAM(_write)(_q->periodogram, _x, _n);
 }
 
 // compute spectral periodogram output from current buffer contents

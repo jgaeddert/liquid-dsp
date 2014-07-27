@@ -8,6 +8,7 @@
 //
 
 #include <unistd.h> // usleep
+#include <string.h>
 #include <stdio.h>
 #include <math.h>
 
@@ -52,8 +53,8 @@ int main() {
             phi    += dphi;
         }
 
-        // push samples into the spectrogram object
-        asgramcf_push(q, x, nfft);
+        // write block of samples to the spectrogram object
+        asgramcf_write(q, x, nfft);
 
         // execute the spectrogram
         asgramcf_execute(q, ascii, &maxval, &maxfreq);
