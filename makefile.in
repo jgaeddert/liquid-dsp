@@ -1366,6 +1366,7 @@ example_programs :=						\
 	examples/agc_rrrf_example				\
 	examples/ampmodem_example				\
 	examples/asgramcf_example				\
+	examples/asgramf_example				\
 	examples/autocorr_cccf_example				\
 	examples/bpacketsync_example				\
 	examples/bpresync_example				\

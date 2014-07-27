@@ -204,7 +204,7 @@ void SPGRAM(_execute)(SPGRAM() _q,
     for (i=0; i<_q->window_len; i++)
         _q->x[i] = rc[i] * _q->w[i];
 
-    // execute fft
+    // execute fft on _q->x and store result in _q->X
     FFT_EXECUTE(_q->fft);
 
     // copy result to output
