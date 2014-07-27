@@ -209,7 +209,7 @@ void SPGRAM(_execute)(SPGRAM() _q,
 
     // copy result to output
     if (_X != NULL)
-        memmove(_X, _q->X, _q->nfft*sizeof(TI));
+        memmove(_X, _q->X, _q->nfft*sizeof(TC));
 }
 
 // accumulate power spectral density
