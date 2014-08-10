@@ -1129,12 +1129,19 @@ void SPGRAM(_write)(SPGRAM()     _q,                            \
                     TI *         _x,                            \
                     unsigned int _n);                           \
                                                                 \
-/* compute spectral periodogram output from current buffer  */  \
-/* contents                                                 */  \
+/* compute spectral periodogram output (complex values)     */  \
+/* from current buffer contents                             */  \
 /*  _q      :   spgram object                               */  \
 /*  _X      :   output complex spectrum [size: _nfft x 1]   */  \
 void SPGRAM(_execute)(SPGRAM() _q,                              \
                       TC *     _X);                             \
+                                                                \
+/* compute spectral periodogram output (fft-shifted values  */  \
+/* in dB) from current buffer contents                      */  \
+/*  _q      :   spgram object                               */  \
+/*  _X      :   output spectrum [size: _nfft x 1]           */  \
+void SPGRAM(_execute_psd)(SPGRAM() _q,                          \
+                          T *      _X);                         \
                                                                 \
 /* accumulate power spectral density                        */  \
 /*  _q      :   spgram object                               */  \

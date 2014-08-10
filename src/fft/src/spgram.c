@@ -199,9 +199,10 @@ void SPGRAM(_write)(SPGRAM()     _q,
 }
 
 
-// compute spectral periodogram output
+// compute spectral periodogram output (complex values)
+// from current buffer contents
 //  _q      :   spgram object
-//  _X      :   output complex spectrum
+//  _X      :   output complex spectrum [size: _nfft x 1]
 void SPGRAM(_execute)(SPGRAM() _q,
                       TC *     _X)
 {
@@ -220,6 +221,26 @@ void SPGRAM(_execute)(SPGRAM() _q,
     // copy result to output
     if (_X != NULL)
         memmove(_X, _q->X, _q->nfft*sizeof(TC));
+}
+
+// compute spectral periodogram output (fft-shifted values
+// in dB) from current buffer contents
+//  _q      :   spgram object
+//  _X      :   output spectrum [size: _nfft x 1]
+void SPGRAM(_execute_psd)(SPGRAM() _q,
+                          T *      _X)
+{
+    // run internal transform
+    SPGRAM(_execute)(_q, NULL);
+
+    // compute magnitude in dB and run FFT shift
+    unsigned int i;
+    unsigned int nfft_2 = _q->nfft / 2;
+    for (i=0; i<_q->nfft; i++) {
+        unsigned int k = (i + nfft_2) % _q->nfft;
+
+        _X[k] = 10*log10f( crealf( _q->X[k] * conjf(_q->X[k]) ) + 1e-16f);
+    }
 }
 
 // accumulate power spectral density
