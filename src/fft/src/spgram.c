@@ -239,7 +239,7 @@ void SPGRAM(_execute_psd)(SPGRAM() _q,
     for (i=0; i<_q->nfft; i++) {
         unsigned int k = (i + nfft_2) % _q->nfft;
 
-        _X[k] = 10*log10f( crealf( _q->X[k] * conjf(_q->X[k]) ) + 1e-16f);
+        _X[k] = 10*log10f( crealf( _q->X[i] * conjf(_q->X[i]) ) + 1e-16f);
     }
 }
 
