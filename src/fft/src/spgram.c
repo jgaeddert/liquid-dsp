@@ -169,11 +169,13 @@ void SPGRAM(_reset)(SPGRAM() _q)
     for (i=0; i<_q->nfft; i++)
         _q->x[i] = 0.0f;
 
-    // clear PSD accumulation
+    // reset counters
     _q->num_transforms = 0;
-    _q->sample_counter          = 0;
+    _q->sample_counter = 0;
+
+    // clear PSD accumulation (set equal to unity, equal to zero dB)
     for (i=0; i<_q->nfft; i++)
-        _q->psd[i] = 0.0f;
+        _q->psd[i] = 1;
 }
 
 // push a single sample into the spgram object
@@ -246,11 +248,19 @@ void SPGRAM(_execute_psd)(SPGRAM() _q,
 // accumulate power spectral density
 //  _q      :   spgram object
 //  _x      :   input buffer [size: _n x 1]
+//  _alpha  :   auto-regressive memory factor, [0,1]
 //  _n      :   input buffer length
 void SPGRAM(_accumulate_psd)(SPGRAM()     _q,
                              TI *         _x,
+                             float        _alpha,
                              unsigned int _n)
 {
+    // validate input
+    if (_alpha < 0.0f || _alpha > 1.0f) {
+        fprintf(stderr,"error: spgram%s_accumulate_psd(), alpha must be in (0,1)\n", EXTENSION);
+        exit(1);
+    }
+
     // push samples and run FFT at appropriate time
     unsigned int i;
     for (i=0; i<_n; i++) {
@@ -262,16 +272,20 @@ void SPGRAM(_accumulate_psd)(SPGRAM()     _q,
 
         // run FFT
         if (_q->sample_counter == _q->window_len/2) {
-            // reset counter
-            _q->sample_counter = 0;
+            // override alpha for first transform
+            if (_q->num_transforms==0)
+                _alpha = 1.0f;
 
             // execute transform
             SPGRAM(_execute)(_q, NULL);
 
-            // accumulate squared magnitude response
+            // accumulate squared magnitude response scaled by alpha
             unsigned int k;
             for (k=0; k<_q->nfft; k++)
-                _q->psd[k] += crealf( _q->X[k] * conjf(_q->X[k]) );
+                _q->psd[k] = (1.0f - _alpha)*_q->psd[k] + _alpha*crealf( _q->X[k] * conjf(_q->X[k]) );
+
+            // reset counter
+            _q->sample_counter = 0;
 
             // increment number of transforms taken
             _q->num_transforms++;
@@ -288,11 +302,17 @@ void SPGRAM(_write_accumulation)(SPGRAM() _q,
 {
     unsigned int i;
 
+#if 0
+    // check number of transforms
+    if (_q->num_transforms == 0)
+        fprintf(stderr,"warning: spgram%s_write_accumulation(), no transforms taken yet\n", EXTENSION);
+#endif
+
     // scale result by number of transforms and run fft shift
     unsigned int nfft_2 = _q->nfft / 2;
     //float        scale  = -10*log10f( (float)(_q->num_transforms) );
     for (i=0; i<_q->nfft; i++)
-        _x[(i+nfft_2)%_q->nfft] = 10*log10f( _q->psd[i] / (float)(_q->num_transforms) );
+        _x[(i+nfft_2)%_q->nfft] = 10*log10f(_q->psd[i]);
 }
 
 // estimate spectrum on input signal
@@ -305,6 +325,15 @@ void SPGRAM(_estimate_psd)(SPGRAM()     _q,
                            unsigned int _n,
                            T *          _psd)
 {
+    // return if input size is zero
+    if (_n == 0) {
+        fprintf(stderr,"warning: spgram%s_estimate_psd(), input size is zero\n", EXTENSION);
+        return;
+    }
+
+    // reset object
+    SPGRAM(_reset)(_q);
+
     unsigned int i;
     unsigned int k;
 
@@ -317,15 +346,8 @@ void SPGRAM(_estimate_psd)(SPGRAM()     _q,
     for (i=0; i<_q->nfft; i++)
         _psd[i] = 0.0f;
 
-    // return if input size is zero
-    if (_n == 0)
-        return;
-
     // keep track of how many transforms have been taken
     unsigned int num_transforms = 0;
-
-    // temporary array for output
-    TC * X = (TC*) malloc(_q->nfft * sizeof(TC));
 
     //
     for (i=0; i<_n; i++) {
@@ -336,11 +358,16 @@ void SPGRAM(_estimate_psd)(SPGRAM()     _q,
         // take transform periodically, ensuring all samples
         // are taken into account
         if ( ((i+1)%delay)==0 || (i==_n-1)) {
-            SPGRAM(_execute)(_q, X);
-            for (k=0; k<_q->nfft; k++)
-                _psd[k] += crealf(X[k] * conjf(X[k]));
+            // run trasform
+            SPGRAM(_execute)(_q, NULL);
 
-            //
+            // accumulate power spectral density, taking fft shift
+            for (k=0; k<_q->nfft; k++) {
+                unsigned int p = (k + _q->nfft/2) % _q->nfft;
+                _psd[p] += crealf(_q->X[k] * conjf(_q->X[k]));
+            }
+
+            // increment number of transforms taken
             num_transforms++;
         }
     }
@@ -348,11 +375,8 @@ void SPGRAM(_estimate_psd)(SPGRAM()     _q,
     // at least one transform should have been taken
     assert(num_transforms > 0);
     
-    // scale result by number of transforms
+    // scale result by number of transforms and compute result in dB
     for (i=0; i<_q->nfft; i++)
-        _psd[i] /= (float)(num_transforms);
-
-    // free allocated memory
-    free(X);
+        _psd[i] = 10*log10f( _psd[i] / (float)(num_transforms) );
 }
 

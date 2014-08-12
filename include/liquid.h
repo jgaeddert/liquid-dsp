@@ -1146,9 +1146,11 @@ void SPGRAM(_execute_psd)(SPGRAM() _q,                          \
 /* accumulate power spectral density                        */  \
 /*  _q      :   spgram object                               */  \
 /*  _x      :   input buffer [size: _n x 1]                 */  \
+/*  _alpha  :   auto-regressive memory factor, [0,1]        */  \
 /*  _n      :   input buffer length                         */  \
 void SPGRAM(_accumulate_psd)(SPGRAM()       _q,                 \
                              TI *           _x,                 \
+                             float          _alpha,             \
                              unsigned int   _n);                \
                                                                 \
 /* write accumulated psd                                    */  \
