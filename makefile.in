@@ -633,6 +633,8 @@ src/framing/src/ofdmflexframesync.o : %.o : %.c $(include_headers)
 
 src/framing/src/presync_cccf.o : %.o : %.c $(include_headers) src/framing/src/presync.c
 
+src/framing/src/symtrack_cccf.o : %.o : %.c $(include_headers) src/framing/src/symtrack.c
+
 
 framing_autotests :=						\
 	src/framing/tests/bpacketsync_autotest.c		\

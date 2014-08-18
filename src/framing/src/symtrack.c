@@ -67,12 +67,12 @@ struct SYMTRACK(_s) {
 };
 
 // create symtrack object with basic parameters
-//  _type   : filter type (e.g. LIQUID_RNYQUIST_RRC)
+//  _ftype  : filter type (e.g. LIQUID_RNYQUIST_RRC)
 //  _k      : samples per symbol
 //  _m      : filter delay (symbols)
 //  _beta   : filter excess bandwidth
 //  _ms     : modulation scheme (e.g. LIQUID_MODEM_QPSK)
-SYMTRACK() SYMTRACK(_create)(int          _type,
+SYMTRACK() SYMTRACK(_create)(int          _ftype,
                              unsigned int _k,
                              unsigned int _m,
                              float        _beta,
@@ -96,6 +96,35 @@ SYMTRACK() SYMTRACK(_create)(int          _type,
     // allocate memory for main object
     SYMTRACK() q = (SYMTRACK()) malloc( sizeof(struct SYMTRACK(_s)) );
 
+    // set input parameters
+    q->filter_type = _ftype;
+    q->k           = _k;
+    q->m           = _m;
+    q->beta        = _beta;
+    q->mod_scheme  = _ms;
+
+    // set default bandwidth
+    q->agc_bandwidth = 1e-3f;
+
+    // create
+    q->agc = AGC(_create)();
+    if (q->filter_type == LIQUID_FIRFILT_UNKNOWN)
+        q->symsync = SYMSYNC(_create_kaiser)(q->k, q->m, 0.9f, 16);
+    else
+        q->symsync = SYMSYNC(_create_rnyquist)(q->filter_type, q->k, q->m, q->beta, 16);
+
+    // equalizer (NULL sets {1,0,0,...})
+    q->eq = EQLMS(_create)(NULL, 7);
+
+    // nco and phase-locked loop
+    q->nco = NCO(_create)(LIQUID_VCO);
+
+    // demodulator
+    q->demod = (q->mod_scheme == LIQUID_MODEM_UNKNOWN) ? NULL : MODEM(_create)(q->mod_scheme);
+
+    // set default bandwidth
+    SYMTRACK(_set_bandwidth)(q, 0.02f);
+
     // return main object
     return q;
 }
@@ -114,6 +143,13 @@ SYMTRACK() SYMTRACK(_create_default)()
 // destroy symtrack object, freeing all internal memory
 void SYMTRACK(_destroy)(SYMTRACK() _q)
 {
+    // destroy objects
+    AGC(_destroy)(    _q->agc);
+    SYMSYNC(_destroy)(_q->symsync);
+    EQLMS(_destroy)(  _q->eq);
+    NCO(_destroy)(    _q->nco);
+    MODEM(_destroy)(  _q->demod);
+
     // free main object
     free(_q);
 }
@@ -127,6 +163,31 @@ void SYMTRACK(_print)(SYMTRACK() _q)
 // reset symtrack internal state
 void SYMTRACK(_reset)(SYMTRACK() _q)
 {
+}
+
+// set symtrack internal bandwidth
+void SYMTRACK(_set_bandwidth)(SYMTRACK() _q,
+                              float      _bw)
+{
+    // validate input
+    if (_bw < 0) {
+        fprintf(stderr,"error: symtrack_%s_create(), bandwidth must be greater than zero\n", EXTENSION_FULL);
+        exit(1);
+    }
+
+    // set bandwidths accordingly
+    float agc_bandwidth = _bw;
+    float eq_bandwidth  = _bw;
+    float pll_bandwidth = _bw;
+
+    //
+    AGC(_set_bandwidth)(_q->agc, agc_bandwidth);
+
+    //
+    EQLMS(_set_bw)(_q->eq, eq_bandwidth);
+    
+    //
+    NCO(_pll_set_bandwidth)(_q->nco, pll_bandwidth);
 }
 
 // execute synchronizer on single input sample

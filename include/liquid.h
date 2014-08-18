@@ -3748,12 +3748,12 @@ int detector_cccf_correlate(detector_cccf        _q,
 typedef struct SYMTRACK(_s) * SYMTRACK();                       \
                                                                 \
 /* create symtrack object with default parameters           */  \
-/*  _type   : filter type (e.g. LIQUID_RNYQUIST_RRC)        */  \
+/*  _ftype  : filter type (e.g. LIQUID_RNYQUIST_RRC)        */  \
 /*  _k      : samples per symbol                            */  \
 /*  _m      : filter delay (symbols)                        */  \
 /*  _beta   : filter excess bandwidth                       */  \
 /*  _ms     : modulation scheme (e.g. LIQUID_MODEM_QPSK)    */  \
-SYMTRACK() SYMTRACK(_create)(int          _type,                \
+SYMTRACK() SYMTRACK(_create)(int          _ftype,               \
                              unsigned int _k,                   \
                              unsigned int _m,                   \
                              float        _beta,                \
@@ -3770,6 +3770,9 @@ void SYMTRACK(_print)(SYMTRACK() _q);                           \
                                                                 \
 /* reset symtrack internal state                            */  \
 void SYMTRACK(_reset)(SYMTRACK() _q);                           \
+                                                                \
+/* set symtrack internal bandwidth                          */  \
+void SYMTRACK(_set_bandwidth)(SYMTRACK() _q, float _bw);        \
                                                                 \
 /* execute synchronizer on single input sample              */  \
 /*  _q      : synchronizer object                           */  \
