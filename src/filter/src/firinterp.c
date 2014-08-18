@@ -236,3 +236,20 @@ void FIRINTERP(_execute)(FIRINTERP() _q,
         FIRPFB(_execute)(_q->filterbank, i, &_y[i]);
 }
 
+// execute interpolation on block of input samples
+//  _q      : firinterp object
+//  _x      : input array [size: _n x 1]
+//  _n      : size of input array
+//  _y      : output sample array [size: _M*_n x 1]
+void FIRINTERP(_execute_block)(FIRINTERP()  _q,
+                               TI *         _x,
+                               unsigned int _n,
+                               TO *         _y)
+{
+    unsigned int i;
+    for (i=0; i<_n; i++) {
+        // execute one input at a time with an output stride _M
+        FIRINTERP(_execute)(_q, _x[i], &_y[i*_q->M]);
+    }
+}
+

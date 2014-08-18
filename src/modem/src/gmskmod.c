@@ -79,7 +79,7 @@ gmskmod gmskmod_create(unsigned int _k,
     liquid_firdes_gmsktx(q->k, q->m, q->BT, 0.0f, q->h);
 
     // create interpolator object
-    q->interp_tx = firinterp_rrrf_create_rnyquist(LIQUID_RNYQUIST_GMSKTX, q->k, q->m, q->BT, 0);
+    q->interp_tx = firinterp_rrrf_create_rnyquist(LIQUID_FIRFILT_GMSKTX, q->k, q->m, q->BT, 0);
 
     // reset modem state
     gmskmod_reset(q);
@@ -134,6 +134,10 @@ void gmskmod_modulate(gmskmod _q,
     for (i=0; i<_q->k; i++) {
         // integrate phase state
         _q->theta += phi[i];
+
+        // ensure phase in [-pi, pi]
+        if (_q->theta >  M_PI) _q->theta -= 2*M_PI;
+        if (_q->theta < -M_PI) _q->theta += 2*M_PI;
 
         // compute output
         _y[i] = liquid_cexpjf(_q->theta);

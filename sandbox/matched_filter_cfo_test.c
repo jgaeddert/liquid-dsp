@@ -157,7 +157,7 @@ int main(int argc, char*argv[]) {
     // decimation
     for (i=0; i<num_symbols; i++) {
         // decimate
-        firdecim_cccf_execute(decim, &y[i*k], &sym_out[i], 0);
+        firdecim_cccf_execute(decim, &y[i*k], &sym_out[i]);
 
         // normalize output
         sym_out[i] /= k;

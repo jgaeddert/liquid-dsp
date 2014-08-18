@@ -140,6 +140,27 @@ void AUTOCORR(_execute)(AUTOCORR() _q, TO *_rxx)
     DOTPROD(_run4)(rw, rwdelay, _q->window_size, _rxx);
 }
 
+// compute auto-correlation on block of samples; the input
+// and output arrays may have the same pointer
+//  _q      :   auto-correlation object
+//  _x      :   input array [size: _n x 1]
+//  _n      :   number of input, output samples
+//  _rxx    :   input array [size: _n x 1]
+void AUTOCORR(_execute_block)(AUTOCORR()   _q,
+                              TI *         _x,
+                              unsigned int _n,
+                              TO *         _rxx)
+{
+    unsigned int i;
+    for (i=0; i<_n; i++) {
+        // push input sample into auto-correlator
+        AUTOCORR(_push)(_q, _x[i]);
+
+        // compute output
+        AUTOCORR(_execute)(_q, &_rxx[i]);
+    }
+}
+
 // return sum of squares of buffered samples
 float AUTOCORR(_get_energy)(AUTOCORR() _q)
 {

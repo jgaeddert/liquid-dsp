@@ -26,9 +26,9 @@
 void autotest_agc_crcf_dc_gain_control()
 {
     // set paramaters
-    float gamma = 0.1f;             // nominal signal level
-    float bt = 0.01f;               // bandwidth-time product
-    float tol = 0.001f;             // error tolerance
+    float gamma = 0.1f;     // nominal signal level
+    float bt    = 0.1f;     // bandwidth-time product
+    float tol   = 0.001f;   // error tolerance
 
     // create AGC object and initialize
     agc_crcf q = agc_crcf_create();
@@ -56,9 +56,9 @@ void autotest_agc_crcf_ac_gain_control()
 {
     // set paramaters
     float gamma = 0.1f;             // nominal signal level
-    float bt = 0.01f;               // bandwidth-time product
-    float tol = 0.001f;             // error tolerance
-    float dphi = 0.1f;              // NCO frequency
+    float bt    = 0.1f;             // bandwidth-time product
+    float tol   = 0.001f;           // error tolerance
+    float dphi  = 0.1f;             // NCO frequency
 
     // create AGC object and initialize
     agc_crcf q = agc_crcf_create();
@@ -90,12 +90,12 @@ void autotest_agc_crcf_ac_gain_control()
 void autotest_agc_crcf_rssi_sinusoid()
 {
     // set paramaters
-    float gamma = 0.3f;             // nominal signal level
-    float bt = 1e-3f;               // agc bandwidth
-    float tol = 0.001f;             // error tolerance
+    float gamma = 0.3f;         // nominal signal level
+    float bt    = 0.05f;        // agc bandwidth
+    float tol   = 0.001f;       // error tolerance
 
     // signal properties
-    float dphi = 0.1f;              // signal frequency
+    float dphi = 0.1f;          // signal frequency
 
     // create AGC object and initialize
     agc_crcf q = agc_crcf_create();
@@ -105,7 +105,7 @@ void autotest_agc_crcf_rssi_sinusoid()
     float complex x, y;
     for (i=0; i<512; i++) {
         // generate sample (complex sinusoid)
-        x = cexpf(_Complex_I*dphi*i) * gamma;
+        x = gamma * cexpf(_Complex_I*dphi*i);
 
         // execute agc
         agc_crcf_execute(q, x, &y);
@@ -131,9 +131,9 @@ void autotest_agc_crcf_rssi_sinusoid()
 void autotest_agc_crcf_rssi_noise()
 {
     // set paramaters
-    float gamma = -30.0f;           // nominal signal level [dB]
-    float bt = 1e-3f;               // agc bandwidth
-    float tol = 2.0f;               // error tolerance [dB]
+    float gamma = -30.0f;   // nominal signal level [dB]
+    float bt    =  0.01f;   // agc bandwidth
+    float tol   =  0.2f;    // error tolerance [dB]
 
     // signal properties
     float nstd = powf(10.0f, gamma/20);
@@ -144,7 +144,7 @@ void autotest_agc_crcf_rssi_noise()
 
     unsigned int i;
     float complex x, y;
-    for (i=0; i<1024; i++) {
+    for (i=0; i<2000; i++) {
         // generate sample (circular complex noise)
         x = nstd*(randnf() + _Complex_I*randnf())*M_SQRT1_2;
 

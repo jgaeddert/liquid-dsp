@@ -11,6 +11,8 @@ Major improvements since v1.2.0
     - add linear interpolation for arbitrary resamp output
     - added autotests for validating performance of both the
       resamp and msresamp objects
+    - added new fftfilt family of objects to realize linear filter
+      with fast Fourier transforms
   * framing
     - adding generic callback function definition for all framing
       structures
@@ -32,6 +34,8 @@ Major improvements since v1.2.0
     - gradsearch (gradient search) uses internal linesearch for
       significant speed increase and better reliability
     - gradsearch interface greatly simplified
+  * vector
+    - new module to simplify basic vector operations
 
 Major improvements for v1.2.0
   * dotprod

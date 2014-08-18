@@ -178,6 +178,16 @@ arm*)
     ARCH_OPTION="";;
 esac
 
+# for now all vector operations are portable C versions
+MLIBS_VECTOR="src/vector/src/vectorf_add.port.o   \
+              src/vector/src/vectorf_norm.port.o  \
+              src/vector/src/vectorf_mul.port.o   \
+              src/vector/src/vectorf_trig.port.o  \
+              src/vector/src/vectorcf_add.port.o  \
+              src/vector/src/vectorcf_norm.port.o \
+              src/vector/src/vectorcf_mul.port.o  \
+              src/vector/src/vectorcf_trig.port.o"
+
 case $target_os in
 darwin*)
     SH_LIB=libliquid.dylib
@@ -194,6 +204,7 @@ esac
 #
 AC_SUBST(LIBS)                      # shared libraries (-lc, -lm, etc.)
 AC_SUBST(MLIBS_DOTPROD)             # 
+AC_SUBST(MLIBS_VECTOR)              #
 
 AC_SUBST(SH_LIB)                    # output shared library target
 AC_SUBST(REBIND)                    # rebinding tool (e.g. ldconfig)

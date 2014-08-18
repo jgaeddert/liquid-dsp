@@ -80,7 +80,7 @@ framegen64 framegen64_create()
     msequence_destroy(ms);
 
     // create pulse-shaping filter (k=2)
-    q->interp = firinterp_crcf_create_rnyquist(LIQUID_RNYQUIST_ARKAISER,2,q->m,q->beta,0);
+    q->interp = firinterp_crcf_create_rnyquist(LIQUID_FIRFILT_ARKAISER,2,q->m,q->beta,0);
 
     // create payload packetizer
     q->check     = LIQUID_CRC_24;
