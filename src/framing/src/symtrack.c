@@ -103,7 +103,7 @@ SYMTRACK() SYMTRACK(_create)(int          _type,
 // create symtrack object using default parameters
 SYMTRACK() SYMTRACK(_create_default)()
 {
-    return SYMTRACK(_create)(LIQUID_RNYQUIST_ARKAISER,
+    return SYMTRACK(_create)(LIQUID_FIRFILT_ARKAISER,
                              2,     // samples/symbol
                              7,     // filter delay
                              0.3f,  // filter excess bandwidth

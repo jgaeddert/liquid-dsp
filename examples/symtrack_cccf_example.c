@@ -91,7 +91,7 @@ int main(int argc, char*argv[]) {
     //
 
     // design interpolating filter
-    firinterp_crcf interp = firinterp_crcf_create_rnyquist(LIQUID_RNYQUIST_RRC,k,m,beta,tau);
+    firinterp_crcf interp = firinterp_crcf_create_rnyquist(LIQUID_FIRFILT_RRC,k,m,beta,tau);
     for (i=0; i<num_symbols; i++) {
         // generate random QPSK symbol
         float complex s = cexpf(_Complex_I*0.5f*M_PI*((rand() % 4) + 0.5f));
@@ -116,7 +116,7 @@ int main(int argc, char*argv[]) {
     // create and run symbol synchronizer
     //
 
-    symtrack_cccf symtrack = symtrack_cccf_create(LIQUID_RNYQUIST_RRC,
+    symtrack_cccf symtrack = symtrack_cccf_create(LIQUID_FIRFILT_RRC,
                                             k, m, beta, LIQUID_MODEM_QPSK);
 
     unsigned int num_symbols_sync = 0;
