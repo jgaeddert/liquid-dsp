@@ -28,7 +28,7 @@
 
 #define DEBUG_SYMTRACK           0
 #define DEBUG_SYMTRACK_PRINT     0
-#define DEBUG_SYMTRACK_FILENAME  "symsync_internal_debug.m"
+#define DEBUG_SYMTRACK_FILENAME  "symtrack_internal_debug.m"
 #define DEBUG_BUFFER_LEN        (1024)
 
 //
@@ -51,8 +51,10 @@ struct SYMTRACK(_s) {
     float agc_bandwidth;
 
     // symbol timing recovery
-    SYMSYNC() symsync;
-    float     symsync_bandwidth;
+    SYMSYNC()    symsync;
+    float        symsync_bandwidth;
+    TO           symsync_buf[8];
+    unsigned int symsync_index;
 
     // equalizer/decimator
     EQLMS() eq;
@@ -103,15 +105,15 @@ SYMTRACK() SYMTRACK(_create)(int          _ftype,
     q->beta        = _beta;
     q->mod_scheme  = _ms;
 
-    // set default bandwidth
-    q->agc_bandwidth = 1e-3f;
-
-    // create
+    // create automatic gain control
     q->agc = AGC(_create)();
+    
+    // create symbol synchronizer (2 samples per symbol)
     if (q->filter_type == LIQUID_FIRFILT_UNKNOWN)
         q->symsync = SYMSYNC(_create_kaiser)(q->k, q->m, 0.9f, 16);
     else
         q->symsync = SYMSYNC(_create_rnyquist)(q->filter_type, q->k, q->m, q->beta, 16);
+    SYMSYNC(_set_output_rate)(q->symsync, 2);
 
     // equalizer (NULL sets {1,0,0,...})
     q->eq = EQLMS(_create)(NULL, 7);
@@ -123,7 +125,7 @@ SYMTRACK() SYMTRACK(_create)(int          _ftype,
     q->demod = (q->mod_scheme == LIQUID_MODEM_UNKNOWN) ? NULL : MODEM(_create)(q->mod_scheme);
 
     // set default bandwidth
-    SYMTRACK(_set_bandwidth)(q, 0.02f);
+    SYMTRACK(_set_bandwidth)(q, 0.1f);
 
     // return main object
     return q;
@@ -163,6 +165,10 @@ void SYMTRACK(_print)(SYMTRACK() _q)
 // reset symtrack internal state
 void SYMTRACK(_reset)(SYMTRACK() _q)
 {
+    // reset objects
+
+    // reset internal counters
+    _q->symsync_index = 0;
 }
 
 // set symtrack internal bandwidth
@@ -176,17 +182,21 @@ void SYMTRACK(_set_bandwidth)(SYMTRACK() _q,
     }
 
     // set bandwidths accordingly
-    float agc_bandwidth = _bw;
-    float eq_bandwidth  = _bw;
-    float pll_bandwidth = _bw;
+    float agc_bandwidth     = 0.1f;
+    float symsync_bandwidth = 0.01f;
+    float eq_bandwidth      = 1e-6f;
+    float pll_bandwidth     = 0.001f;
 
-    //
+    // automatic gain control
     AGC(_set_bandwidth)(_q->agc, agc_bandwidth);
 
-    //
+    // symbol timing recovery
+    SYMSYNC(_set_lf_bw)(_q->symsync, symsync_bandwidth);
+
+    // equalizer
     EQLMS(_set_bw)(_q->eq, eq_bandwidth);
     
-    //
+    // phase-locked loop
     NCO(_pll_set_bandwidth)(_q->nco, pll_bandwidth);
 }
 
@@ -200,6 +210,55 @@ void SYMTRACK(_execute)(SYMTRACK()     _q,
                         TO *           _y,
                         unsigned int * _ny)
 {
+    TO v;   // output sample
+    unsigned int i;
+    unsigned int num_outputs = 0;
+
+    // run sample through automatic gain control
+    AGC(_execute)(_q->agc, _x, &v);
+
+    // symbol synchronizer
+    unsigned int nw = 0;
+    SYMSYNC(_execute)(_q->symsync, &v, 1, _q->symsync_buf, &nw);
+
+    // process each output sample
+    for (i=0; i<nw; i++) {
+        // phase-locked loop
+
+        // equalizer/decimator (2 samples per symbol)
+        EQLMS(_push)(_q->eq, _q->symsync_buf[i]);
+
+        // decimate result
+        _q->symsync_index++;
+        if ((_q->symsync_index % 2) != 1)
+            continue;
+
+        // compute equalizer output
+        TO d_hat;
+        EQLMS(_execute)(_q->eq, &d_hat);
+
+        // update equalizer independent of the signal: estimate error
+        // assuming constant modulus signal
+        //EQLMS(_step)(_q->eq, d_hat/cabsf(d_hat), d_hat);
+
+        // demodulate result, apply phase correction
+        float phase_error = 0;
+        if (_q->demod != NULL) {
+            // demodulate
+        } else {
+            //
+        }
+
+        // save result to output
+        _y[num_outputs++] = d_hat;
+    }
+
+#if DEBUG_SYMTRACK
+    printf("symsync wrote %u samples, %u outputs\n", nw, num_outputs);
+#endif
+
+    //
+    *_ny = num_outputs;
 }
 
 // execute synchronizer on input data array
@@ -214,5 +273,19 @@ void SYMTRACK(_execute_block)(SYMTRACK()     _q,
                               TO *           _y,
                               unsigned int * _ny)
 {
+    //
+    unsigned int i;
+    unsigned int num_written = 0;
+
+    //
+    for (i=0; i<_nx; i++) {
+        unsigned int nw = 0;
+        SYMTRACK(_execute)(_q, _x[i], &_y[num_written], &nw);
+
+        num_written += nw;
+    }
+
+    //
+    *_ny = num_written;
 }
 

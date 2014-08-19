@@ -127,6 +127,36 @@ int main(int argc, char*argv[]) {
     printf("symbols in  : %u\n", num_symbols);
     printf("symbols out : %u\n", num_symbols_sync);
 
+    //
+    // export output file
+    //
+
+    FILE* fid = fopen(OUTPUT_FILENAME,"w");
+    fprintf(fid,"%% %s, auto-generated file\n\n", OUTPUT_FILENAME);
+    fprintf(fid,"close all;\nclear all;\n\n");
+
+    fprintf(fid,"num_symbols=%u;\n",num_symbols_sync);
+
+    for (i=0; i<num_symbols_sync; i++)
+        fprintf(fid,"z(%3u) = %12.8f + j*%12.8f;\n", i+1, crealf(sym_out[i]), cimagf(sym_out[i]));
+
+    fprintf(fid,"iz0 = 1:round(length(z)*0.5);\n");
+    fprintf(fid,"iz1 = round(length(z)*0.5):length(z);\n");
+    fprintf(fid,"figure;\n");
+    fprintf(fid,"hold on;\n");
+    fprintf(fid,"plot(real(z(iz0)),imag(z(iz0)),'x','MarkerSize',4,'Color',[0.6 0.6 0.6]);\n");
+    fprintf(fid,"plot(real(z(iz1)),imag(z(iz1)),'o','MarkerSize',4,'Color',[0 0.25 0.5]);\n");
+    fprintf(fid,"hold off;\n");
+    fprintf(fid,"axis square;\n");
+    fprintf(fid,"grid on;\n");
+    fprintf(fid,"axis([-1 1 -1 1]*1.6);\n");
+    fprintf(fid,"xlabel('In-phase');\n");
+    fprintf(fid,"ylabel('Quadrature');\n");
+    fprintf(fid,"legend(['first 50%%'],['last 50%%'],1);\n");
+
+    fclose(fid);
+    printf("results written to %s.\n", OUTPUT_FILENAME);
+
     // clean it up
     printf("done.\n");
     return 0;
