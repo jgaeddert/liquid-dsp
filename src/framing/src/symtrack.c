@@ -103,7 +103,7 @@ SYMTRACK() SYMTRACK(_create)(int          _ftype,
     q->k           = _k;
     q->m           = _m;
     q->beta        = _beta;
-    q->mod_scheme  = _ms;
+    q->mod_scheme  = _ms == LIQUID_MODEM_UNKNOWN ? LIQUID_MODEM_BPSK : _ms;
 
     // create automatic gain control
     q->agc = AGC(_create)();
@@ -122,7 +122,7 @@ SYMTRACK() SYMTRACK(_create)(int          _ftype,
     q->nco = NCO(_create)(LIQUID_VCO);
 
     // demodulator
-    q->demod = (q->mod_scheme == LIQUID_MODEM_UNKNOWN) ? NULL : MODEM(_create)(q->mod_scheme);
+    q->demod = MODEM(_create)(q->mod_scheme);
 
     // set default bandwidth
     SYMTRACK(_set_bandwidth)(q, 0.1f);
@@ -223,10 +223,12 @@ void SYMTRACK(_execute)(SYMTRACK()     _q,
 
     // process each output sample
     for (i=0; i<nw; i++) {
-        // phase-locked loop
+        // update phase-locked loop
+        NCO(_step)(_q->nco);
+        nco_crcf_mix_down(_q->nco, _q->symsync_buf[i], &v);
 
         // equalizer/decimator (2 samples per symbol)
-        EQLMS(_push)(_q->eq, _q->symsync_buf[i]);
+        EQLMS(_push)(_q->eq, v);
 
         // decimate result
         _q->symsync_index++;
@@ -242,12 +244,12 @@ void SYMTRACK(_execute)(SYMTRACK()     _q,
         //EQLMS(_step)(_q->eq, d_hat/cabsf(d_hat), d_hat);
 
         // demodulate result, apply phase correction
-        float phase_error = 0;
-        if (_q->demod != NULL) {
-            // demodulate
-        } else {
-            //
-        }
+        unsigned int sym_out;
+        MODEM(_demodulate)(_q->demod, d_hat, &sym_out);
+        float phase_error = MODEM(_get_demodulator_phase_error)(_q->demod);
+
+        // update pll
+        NCO(_pll_step)(_q->nco, phase_error);
 
         // save result to output
         _y[num_outputs++] = d_hat;

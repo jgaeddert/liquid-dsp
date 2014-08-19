@@ -108,7 +108,9 @@ int main(int argc, char*argv[]) {
     //
     float nstd = powf(10.0f, -SNRdB/20.0f);
     for (i=0; i<num_samples; i++) {
-        y[i] =  x[i] + nstd*(randnf() + _Complex_I*randnf());
+        y[i] =  x[i];
+        y[i] *= cexpf(_Complex_I*2*M_PI*0.06);
+        y[i] += nstd*(randnf() + _Complex_I*randnf());
         y[i] *= gamma;
     }
 
@@ -152,7 +154,7 @@ int main(int argc, char*argv[]) {
     fprintf(fid,"axis([-1 1 -1 1]*1.6);\n");
     fprintf(fid,"xlabel('In-phase');\n");
     fprintf(fid,"ylabel('Quadrature');\n");
-    fprintf(fid,"legend(['first 50%%'],['last 50%%'],1);\n");
+    fprintf(fid,"legend(['first 50%%'],['last 50%%'],'location','northeast');\n");
 
     fclose(fid);
     printf("results written to %s.\n", OUTPUT_FILENAME);
