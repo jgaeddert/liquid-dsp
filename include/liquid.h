@@ -491,9 +491,9 @@ typedef struct EQLMS(_s) * EQLMS();                             \
                                                                 \
 /* create LMS EQ initialized with external coefficients     */  \
 /*  _h      : filter coefficients (NULL for {1,0,0...})     */  \
-/*  _p      : filter length                                 */  \
+/*  _h_len  : filter length                                 */  \
 EQLMS() EQLMS(_create)(T *          _h,                         \
-                       unsigned int _p);                        \
+                       unsigned int _h_len);                    \
                                                                 \
 /* create LMS EQ initialized with square-root Nyquist       */  \
 /*  _type   : filter type (e.g. LIQUID_FIRFILT_RRC)         */  \
@@ -510,10 +510,10 @@ EQLMS() EQLMS(_create_rnyquist)(int          _type,             \
 /* re-create EQ initialized with external coefficients      */  \
 /*  _q      :   equalizer object                            */  \
 /*  _h      :   filter coefficients (NULL for {1,0,0...})   */  \
-/*  _p      :   filter length                               */  \
+/*  _h_len  :   filter length                               */  \
 EQLMS() EQLMS(_recreate)(EQLMS()      _q,                       \
                          T *          _h,                       \
-                         unsigned int _p);                      \
+                         unsigned int _h_len);                  \
                                                                 \
 /* destroy equalizer object, freeing all internal memory    */  \
 void EQLMS(_destroy)(EQLMS() _q);                               \
