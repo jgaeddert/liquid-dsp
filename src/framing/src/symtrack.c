@@ -232,7 +232,7 @@ void SYMTRACK(_execute)(SYMTRACK()     _q,
 
         // decimate result
         _q->symsync_index++;
-        if ((_q->symsync_index % 2) != 1)
+        if ( !(_q->symsync_index % 2) )
             continue;
 
         // compute equalizer output
@@ -241,7 +241,8 @@ void SYMTRACK(_execute)(SYMTRACK()     _q,
 
         // update equalizer independent of the signal: estimate error
         // assuming constant modulus signal
-        //EQLMS(_step)(_q->eq, d_hat/cabsf(d_hat), d_hat);
+        // TODO: use decision-directed feedback when modulation scheme is known
+        EQLMS(_step)(_q->eq, d_hat/cabsf(d_hat), d_hat);
 
         // demodulate result, apply phase correction
         unsigned int sym_out;
