@@ -397,6 +397,55 @@ LIQUID_WDELAY_DEFINE_API(WDELAY_MANGLE_CFLOAT, liquid_float_complex)
 
 
 //
+// MODULE : channel
+//
+
+#define CHANNEL_MANGLE_CCCF(name)   LIQUID_CONCAT(channel_cccf,name)
+
+// large macro
+//   CHANNEL    : name-mangling macro
+//   TO         : output data type
+//   TC         : coefficients data type
+//   TI         : input data type
+#define LIQUID_CHANNEL_DEFINE_API(CHANNEL,TO,TC,TI)             \
+                                                                \
+typedef struct CHANNEL(_s) * CHANNEL();                         \
+                                                                \
+/* create channel object                                    */  \
+CHANNEL() CHANNEL(_create)();                                   \
+                                                                \
+/* destroy channel object, freeing all internal memory      */  \
+void CHANNEL(_destroy)(CHANNEL() _q);                           \
+                                                                \
+/* print channel object internals to standard output        */  \
+void CHANNEL(_print)(CHANNEL() _q);                             \
+                                                                \
+/* apply additive white Gausss noise impairment             */  \
+/*  _q              : channel object                        */  \
+/*  _noise_floor_dB : noise floor power spectral density    */  \
+/*  _SNR_dB         : signal-to-noise ratio [dB]            */  \
+void CHANNEL(_add_awgn)(CHANNEL() _q,                           \
+                        float     _noise_floor_dB,              \
+                        float     _SNRdB);                      \
+                                                                \
+/* apply channel impairments on input array                 */  \
+/*  _q      : channel object                                */  \
+/*  _x      : input array [size: _nx x 1]                   */  \
+/*  _nx     : input array length                            */  \
+/*  _y      : output array                                  */  \
+/*  _ny     : output array length                           */  \
+void CHANNEL(_execute)(CHANNEL()      _q,                       \
+                       TI *           _x,                       \
+                       unsigned int   _nx,                      \
+                       TO *           _y,                       \
+                       unsigned int * _ny);                     \
+
+LIQUID_CHANNEL_DEFINE_API(CHANNEL_MANGLE_CCCF,
+                          liquid_float_complex,
+                          liquid_float_complex,
+                          liquid_float_complex)
+
+//
 // MODULE : dotprod (vector dot product)
 //
 

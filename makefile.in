@@ -163,6 +163,23 @@ buffer_benchmarks :=						\
 	src/buffer/bench/window_read_benchmark.c		\
 
 # 
+# MODULE : channel
+#
+
+channel_objects :=						\
+	src/channel/src/channel_cccf.o				\
+
+src/channel/src/channel_cccf.o : %.o : %.c $(include_headers) src/channel/src/channel.c
+
+channel_autotests :=						\
+	
+#src/channel/tests/channel_cccf_autotest.c
+
+channel_benchmarks :=						\
+
+#src/channel/bench/channel_cccf_benchmark.c
+
+# 
 # MODULE : dotprod
 #
 dotprod_objects :=						\
@@ -1095,6 +1112,7 @@ objects :=							\
 	$(agc_objects)						\
 	$(audio_objects)					\
 	$(buffer_objects)					\
+	$(channel_objects)					\
 	$(dotprod_objects)					\
 	$(equalization_objects)					\
 	$(fec_objects)						\
@@ -1119,6 +1137,7 @@ autotest_sources :=						\
 	$(agc_autotests)					\
 	$(audio_autotests)					\
 	$(buffer_autotests)					\
+	$(channel_autotests)					\
 	$(dotprod_autotests)					\
 	$(equalization_autotests)				\
 	$(fec_autotests)					\
@@ -1143,6 +1162,7 @@ benchmark_sources :=						\
 	$(agc_benchmarks)					\
 	$(audio_benchmarks)					\
 	$(buffer_benchmarks)					\
+	$(channel_benchmarks)					\
 	$(dotprod_benchmarks)					\
 	$(equalization_benchmarks)				\
 	$(fec_benchmarks)					\
@@ -1375,6 +1395,7 @@ example_programs :=						\
 	examples/bpresync_example				\
 	examples/bsequence_example				\
 	examples/cbufferf_example				\
+	examples/channel_cccf_example				\
 	examples/chromosome_example				\
 	examples/compand_example				\
 	examples/compand_cf_example				\
@@ -1625,6 +1646,7 @@ clean-modules:
 	$(RM) src/agc/src/*.o          src/agc/bench/*.o          src/agc/tests/*.o
 	$(RM) src/audio/src/*.o        src/audio/bench/*.o        src/audio/tests/*.o
 	$(RM) src/buffer/src/*.o       src/buffer/bench/*.o       src/buffer/tests/*.o
+	$(RM) src/channel/src/*.o      src/channel/bench/*.o      src/channel/tests/*.o
 	$(RM) src/dotprod/src/*.o      src/dotprod/bench/*.o      src/dotprod/tests/*.o
 	$(RM) src/equalization/src/*.o src/equalization/bench/*.o src/equalization/tests/*.o
 	$(RM) src/fec/src/*.o          src/fec/bench/*.o          src/fec/tests/*.o
