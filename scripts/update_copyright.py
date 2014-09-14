@@ -104,7 +104,12 @@ def update_copyright(filename=""):
 
     # insert new copyright
     for i in range(len(newcopy)):
-        contents.insert(index_start+i, comment + ' ' + newcopy[i])
+        # only add space after comment characters if string is not empty
+        # (e.g. print ' *' instead of ' * ')
+        space = ' ' if len(newcopy[i].strip()) > 0 else ''
+
+        # insert new comment
+        contents.insert(index_start+i, comment + space + newcopy[i])
 
     '''
     # print...
