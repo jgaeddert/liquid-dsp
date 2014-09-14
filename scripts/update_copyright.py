@@ -17,26 +17,30 @@ import sys
 import re
 
 # new copyright
-newcopy = []
-newcopy.append('Copyright (c) 2007 - 2014 Joseph Gaeddert\n')
-newcopy.append('\n')
-newcopy.append('Permission is hereby granted, free of charge, to any person obtaining a copy\n')
-newcopy.append('of this software and associated documentation files (the "Software"), to deal\n')
-newcopy.append('in the Software without restriction, including without limitation the rights\n')
-newcopy.append('to use, copy, modify, merge, publish, distribute, sublicense, and/or sell\n')
-newcopy.append('copies of the Software, and to permit persons to whom the Software is\n')
-newcopy.append('furnished to do so, subject to the following conditions:\n')
-newcopy.append('\n')
-newcopy.append('The above copyright notice and this permission notice shall be included in\n')
-newcopy.append('all copies or substantial portions of the Software.\n')
-newcopy.append('\n')
-newcopy.append('THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR\n')
-newcopy.append('IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,\n')
-newcopy.append('FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE\n')
-newcopy.append('AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER\n')
-newcopy.append('LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,\n')
-newcopy.append('OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN\n')
-newcopy.append('THE SOFTWARE.\n')
+newcopy = '''\
+Copyright (c) 2007 - 2014 Joseph Gaeddert
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in
+all copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+THE SOFTWARE.'''.splitlines()
+
+# add new line character to end of each line
+for i in xrange(len(newcopy)):
+    newcopy[i] += '\n'
 
 rootdir = sys.argv[1]
 
