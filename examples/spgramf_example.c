@@ -18,6 +18,7 @@ int main() {
     unsigned int num_samples =   4000;  // number of samples
     float        beta        =  10.0f;  // Kaiser-Bessel window parameter
     float        noise_floor = -60.0f;  // noise floor [dB]
+    float        alpha       =   0.1f;  // PSD estimate bandwidth
 
     unsigned int i;
 
@@ -54,7 +55,7 @@ int main() {
         y += nstd * randnf();
 
         // push resulting sample through periodogram
-        spgramf_accumulate_psd(q, &y, 1);
+        spgramf_accumulate_psd(q, &y, alpha, 1);
     }
 
     // compute power spectral density output

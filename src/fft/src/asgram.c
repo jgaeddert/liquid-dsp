@@ -29,39 +29,41 @@
 #include <complex.h>
 #include "liquid.internal.h"
 
-struct asgram_s {
-    unsigned int nfft;      // transform size
-    spgramcf periodogram;   // spectral periodogram object
-    float complex * X;      // spectral periodogram output
-    float * psd;            // power spectral density
+struct ASGRAM(_s) {
+    unsigned int nfft;          // transform size
+    SPGRAM()     periodogram;   // spectral periodogram object
+    TC *         X;             // spectral periodogram output
+    float *      psd;           // power spectral density
 
-    float levels[10];
-    char levelchar[10];
-    unsigned int num_levels;
-    float scale;    // dB per division
-    float offset;   // dB offset (max)
+    float        levels[10];    // threshold for signal levels
+    char         levelchar[10]; // characters representing levels
+    unsigned int num_levels;    // number of levels
+    float        scale;         // dB per division
+    float        offset;        // dB offset (max)
 };
 
-asgram asgram_create(unsigned int _nfft)
+// create asgram object with size _nfft
+ASGRAM() ASGRAM(_create)(unsigned int _nfft)
 {
     // validate input
     if (_nfft < 2) {
-        fprintf(stderr,"error: asgram_create(), fft size must be at least 2\n");
+        fprintf(stderr,"error: asgram%s_create(), fft size must be at least 2\n", EXTENSION);
         exit(1);
     }
 
-    asgram q = (asgram) malloc(sizeof(struct asgram_s));
+    // create main object
+    ASGRAM() q = (ASGRAM()) malloc(sizeof(struct ASGRAM(_s)));
 
     q->nfft = _nfft;
 
     // allocate memory for PSD estimate
-    q->X   = (float complex *) malloc((q->nfft)*sizeof(float complex));
-    q->psd = (float *)         malloc((q->nfft)*sizeof(float));
+    q->X   = (TC *   ) malloc((q->nfft)*sizeof(TC)   );
+    q->psd = (float *) malloc((q->nfft)*sizeof(float));
 
     // create spectral periodogram object
     unsigned int window_len = q->nfft;
     float beta = 10.0f;
-    q->periodogram = spgramcf_create_kaiser(q->nfft, window_len, beta);
+    q->periodogram = SPGRAM(_create_kaiser)(q->nfft, window_len, beta);
 
     // power spectral density levels
     q->num_levels = 10;
@@ -76,15 +78,16 @@ asgram asgram_create(unsigned int _nfft)
     q->levelchar[1] = '.';
     q->levelchar[0] = ' ';
 
-    asgram_set_scale(q, 0.0f, 10.0f);
+    ASGRAM(_set_scale)(q, 0.0f, 10.0f);
 
     return q;
 }
 
-void asgram_destroy(asgram _q)
+// destroy asgram object
+void ASGRAM(_destroy)(ASGRAM() _q)
 {
     // destroy spectral periodogram object
-    spgramcf_destroy(_q->periodogram);
+    SPGRAM(_destroy)(_q->periodogram);
 
     // free PSD estimate array
     free(_q->X);
@@ -94,17 +97,22 @@ void asgram_destroy(asgram _q)
     free(_q);
 }
 
-void asgram_reset(asgram _q)
+// resets the internal state of the asgram object
+void ASGRAM(_reset)(ASGRAM() _q)
 {
-    spgramcf_reset(_q->periodogram);
+    SPGRAM(_reset)(_q->periodogram);
 }
 
-void asgram_set_scale(asgram _q,
-                      float  _offset,
-                      float  _scale)
+// set scale and offset for spectrogram
+//  _q      :   asgram object
+//  _offset :   signal offset level [dB]
+//  _scale  :   signal scale [dB]
+void ASGRAM(_set_scale)(ASGRAM() _q,
+                        float    _offset,
+                        float    _scale)
 {
     if (_scale <= 0.0f) {
-        fprintf(stderr,"asgram_set_scale(), scale must be greater than zero\n");
+        fprintf(stderr,"ASGRAM(_set_scale)(), scale must be greater than zero\n");
         exit(1);
     }
 
@@ -116,30 +124,41 @@ void asgram_set_scale(asgram _q,
         _q->levels[i] = _q->offset + i*_q->scale;
 }
 
-// push samples into asgram object
+// push a single sample into the asgram object
 //  _q      :   asgram object
 //  _x      :   input buffer [size: _n x 1]
 //  _n      :   input buffer length
-void asgram_push(asgram          _q,
-                 float complex * _x,
-                 unsigned int    _n)
+void ASGRAM(_push)(ASGRAM() _q,
+                   TI       _x)
 {
-    // push samples into internal spectral periodogram
-    spgramcf_push(_q->periodogram, _x, _n);
+    // push sample into internal spectral periodogram
+    SPGRAM(_push)(_q->periodogram, _x);
 }
 
-// execute ascii spectrogram
+// write a block of samples to the asgram object
+//  _q      :   asgram object
+//  _x      :   input buffer [size: _n x 1]
+//  _n      :   input buffer length
+void ASGRAM(_write)(ASGRAM()     _q,
+                    TI *         _x,
+                    unsigned int _n)
+{
+    // write samples to internal spectral periodogram
+    SPGRAM(_write)(_q->periodogram, _x, _n);
+}
+
+// compute spectral periodogram output from current buffer contents
 //  _q          :   ascii spectrogram object
 //  _ascii      :   character buffer [size: 1 x n]
 //  _peakval    :   value at peak (returned value)
 //  _peakfreq   :   frequency at peak (returned value)
-void asgram_execute(asgram  _q,
-                    char *  _ascii,
-                    float * _peakval,
-                    float * _peakfreq)
+void ASGRAM(_execute)(ASGRAM()  _q,
+                      char *    _ascii,
+                      float *   _peakval,
+                      float *   _peakfreq)
 {
     // execute spectral periodogram
-    spgramcf_execute(_q->periodogram, _q->X);
+    SPGRAM(_execute)(_q->periodogram, _q->X);
 
     // compute PSD magnitude and apply FFT shift
     unsigned int i;
@@ -174,4 +193,19 @@ void asgram_execute(asgram  _q,
     //_ascii[i] = '\0';
 }
 
+// compute spectral periodogram output from current buffer
+// contents and print standard format to stdout
+void ASGRAM(_print)(ASGRAM() _q)
+{
+    float maxval;
+    float maxfreq;
+    char ascii[_q->nfft+1];
+    ascii[_q->nfft] = '\0'; // append null character to end of string
+        
+    // execute the spectrogram
+    ASGRAM(_execute)(_q, ascii, &maxval, &maxfreq);
+
+    // print the spectrogram to stdout
+    printf(" > %s < pk%5.1f dB [%5.2f]\n", ascii, maxval, maxfreq);
+}
 

@@ -122,11 +122,11 @@ void AGC(_execute)(AGC() _q,                                    \
 /*  _q      : automatic gain control object                 */  \
 /*  _x      : input data array, [size: _n x 1]              */  \
 /*  _n      : number of input, output samples               */  \
-/*  _y      : output data array, [szie: _n x 1]             */  \
-void AGC(_execute_block)(AGC()          _q,                     \
-                         TC *           _x,                     \
-                         unsigned int   _n,                     \
-                         TC *           _y);                    \
+/*  _y      : output data array, [size: _n x 1]             */  \
+void AGC(_execute_block)(AGC()        _q,                       \
+                         TC *         _x,                       \
+                         unsigned int _n,                       \
+                         TC *         _y);                      \
                                                                 \
 /* lock/unlock gain control */                                  \
 void AGC(_lock)(  AGC() _q);                                    \
@@ -491,9 +491,9 @@ typedef struct EQLMS(_s) * EQLMS();                             \
                                                                 \
 /* create LMS EQ initialized with external coefficients     */  \
 /*  _h      : filter coefficients (NULL for {1,0,0...})     */  \
-/*  _p      : filter length                                 */  \
+/*  _h_len  : filter length                                 */  \
 EQLMS() EQLMS(_create)(T *          _h,                         \
-                       unsigned int _p);                        \
+                       unsigned int _h_len);                    \
                                                                 \
 /* create LMS EQ initialized with square-root Nyquist       */  \
 /*  _type   : filter type (e.g. LIQUID_FIRFILT_RRC)         */  \
@@ -510,10 +510,10 @@ EQLMS() EQLMS(_create_rnyquist)(int          _type,             \
 /* re-create EQ initialized with external coefficients      */  \
 /*  _q      :   equalizer object                            */  \
 /*  _h      :   filter coefficients (NULL for {1,0,0...})   */  \
-/*  _p      :   filter length                               */  \
+/*  _h_len  :   filter length                               */  \
 EQLMS() EQLMS(_recreate)(EQLMS()      _q,                       \
                          T *          _h,                       \
-                         unsigned int _p);                      \
+                         unsigned int _h_len);                  \
                                                                 \
 /* destroy equalizer object, freeing all internal memory    */  \
 void EQLMS(_destroy)(EQLMS() _q);                               \
@@ -1115,27 +1115,42 @@ void SPGRAM(_destroy)(SPGRAM() _q);                             \
 /* resets the internal state of the spgram object           */  \
 void SPGRAM(_reset)(SPGRAM() _q);                               \
                                                                 \
-/* push samples into spgram object                          */  \
+/* push a single sample into the spgram object              */  \
+/*  _q      :   spgram object                               */  \
+/*  _x      :   input sample                                */  \
+void SPGRAM(_push)(SPGRAM() _q,                                 \
+                   TI       _x);                                \
+                                                                \
+/* write a block of samples to the spgram object            */  \
 /*  _q      :   spgram object                               */  \
 /*  _x      :   input buffer [size: _n x 1]                 */  \
 /*  _n      :   input buffer length                         */  \
-void SPGRAM(_push)(SPGRAM()     _q,                             \
-                   TI *         _x,                             \
-                   unsigned int _n);                            \
+void SPGRAM(_write)(SPGRAM()     _q,                            \
+                    TI *         _x,                            \
+                    unsigned int _n);                           \
                                                                 \
-/* compute spectral periodogram output from current buffer  */  \
-/* contents                                                 */  \
+/* compute spectral periodogram output (complex values)     */  \
+/* from current buffer contents                             */  \
 /*  _q      :   spgram object                               */  \
 /*  _X      :   output complex spectrum [size: _nfft x 1]   */  \
 void SPGRAM(_execute)(SPGRAM() _q,                              \
                       TC *     _X);                             \
                                                                 \
+/* compute spectral periodogram output (fft-shifted values  */  \
+/* in dB) from current buffer contents                      */  \
+/*  _q      :   spgram object                               */  \
+/*  _X      :   output spectrum [size: _nfft x 1]           */  \
+void SPGRAM(_execute_psd)(SPGRAM() _q,                          \
+                          T *      _X);                         \
+                                                                \
 /* accumulate power spectral density                        */  \
 /*  _q      :   spgram object                               */  \
 /*  _x      :   input buffer [size: _n x 1]                 */  \
+/*  _alpha  :   auto-regressive memory factor, [0,1]        */  \
 /*  _n      :   input buffer length                         */  \
 void SPGRAM(_accumulate_psd)(SPGRAM()       _q,                 \
                              TI *           _x,                 \
+                             float          _alpha,             \
                              unsigned int   _n);                \
                                                                 \
 /* write accumulated psd                                    */  \
@@ -1165,34 +1180,78 @@ LIQUID_SPGRAM_DEFINE_API(LIQUID_SPGRAM_MANGLE_FLOAT,
                          liquid_float_complex,
                          float)
 
+// 
+// asgram : ascii spectral periodogram
+//
 
-// ascii spectrogram
-typedef struct asgram_s * asgram;
+#define LIQUID_ASGRAM_MANGLE_CFLOAT(name) LIQUID_CONCAT(asgramcf,name)
+#define LIQUID_ASGRAM_MANGLE_FLOAT(name)  LIQUID_CONCAT(asgramf, name)
 
-// create asgram object
-//  _nfft       :   FFT size
-asgram asgram_create(unsigned int _nfft);
-void asgram_destroy(asgram _q);
-void asgram_reset(asgram _q);
-void asgram_set_scale(asgram _q, float _offset, float _scale);
+// Macro    :   ASGRAM
+//  ASGRAM  :   name-mangling macro
+//  T       :   primitive data type
+//  TC      :   primitive data type (complex)
+//  TI      :   primitive data type (input)
+#define LIQUID_ASGRAM_DEFINE_API(ASGRAM,T,TC,TI)                \
+                                                                \
+typedef struct ASGRAM(_s) * ASGRAM();                           \
+                                                                \
+/* create asgram object with size _nfft                     */  \
+ASGRAM() ASGRAM(_create)(unsigned int _nfft);                   \
+                                                                \
+/* destroy asgram object                                    */  \
+void ASGRAM(_destroy)(ASGRAM() _q);                             \
+                                                                \
+/* resets the internal state of the asgram object           */  \
+void ASGRAM(_reset)(ASGRAM() _q);                               \
+                                                                \
+/* set scale and offset for spectrogram                     */  \
+/*  _q      :   asgram object                               */  \
+/*  _offset :   signal offset level [dB]                    */  \
+/*  _scale  :   signal scale [dB]                           */  \
+void ASGRAM(_set_scale)(ASGRAM() _q,                            \
+                        float    _offset,                       \
+                        float    _scale);                       \
+                                                                \
+/* push a single sample into the asgram object              */  \
+/*  _q      :   asgram object                               */  \
+/*  _x      :   input sample                                */  \
+void ASGRAM(_push)(ASGRAM() _q,                                 \
+                   TI       _x);                                \
+                                                                \
+/* write a block of samples to the asgram object            */  \
+/*  _q      :   asgram object                               */  \
+/*  _x      :   input buffer [size: _n x 1]                 */  \
+/*  _n      :   input buffer length                         */  \
+void ASGRAM(_write)(ASGRAM()     _q,                            \
+                    TI *         _x,                            \
+                    unsigned int _n);                           \
+                                                                \
+/* compute spectral periodogram output from current buffer  */  \
+/* contents                                                 */  \
+/*  _q          :   spgram object                           */  \
+/*  _ascii      :   output ASCII string [size: _nfft x 1]   */  \
+/*  _peakval    :   peak power spectral density value [dB]  */  \
+/*  _peakfreq   :   peak power spectral density frequency   */  \
+void ASGRAM(_execute)(ASGRAM() _q,                              \
+                      char *  _ascii,                           \
+                      float * _peakval,                         \
+                      float * _peakfreq);                       \
+                                                                \
+/* compute spectral periodogram output from current buffer  */  \
+/* contents and print standard format to stdout             */  \
+void ASGRAM(_print)(ASGRAM() _q);                               \
 
-// push samples into asgram object
-//  _q      :   asgram object
-//  _x      :   input buffer [size: _n x 1]
-//  _n      :   input buffer length
-void asgram_push(asgram                 _q,
-                 liquid_float_complex * _x,
-                 unsigned int           _n);
+LIQUID_ASGRAM_DEFINE_API(LIQUID_ASGRAM_MANGLE_CFLOAT,
+                         float,
+                         liquid_float_complex,
+                         liquid_float_complex)
 
-// execute asgram
-//  _q          :   asgram object
-//  _ascii      :   ASCII character output buffer [size: _nfft x 1]
-//  _peakval    :   peak PSD value [dB]
-//  _peakfreq   :   normalized frequency of peak PSD value
-void asgram_execute(asgram  _q,
-                    char *  _ascii,
-                    float * _peakval,
-                    float * _peakfreq);
+LIQUID_ASGRAM_DEFINE_API(LIQUID_ASGRAM_MANGLE_FLOAT,
+                         float,
+                         liquid_float_complex,
+                         float)
+
 
 //
 // MODULE : filter
@@ -1946,6 +2005,17 @@ void FIRHILB(_decim_execute)(FIRHILB() _q,                      \
                              T *       _x,                      \
                              TC *      _y);                     \
                                                                 \
+/* execute Hilbert transform decimator (real to complex) on */  \
+/* a block of samples                                       */  \
+/*  _q      :   Hilbert transform object                    */  \
+/*  _x      :   real-valued input array [size: 2*_n x 1]    */  \
+/*  _n      :   number of *output* samples                  */  \
+/*  _y      :   complex-valued output array [size: _n x 1]  */  \
+void FIRHILB(_decim_execute_block)(FIRHILB()    _q,             \
+                                   T *          _x,             \
+                                   unsigned int _n,             \
+                                   TC *         _y);            \
+                                                                \
 /* execute Hilbert transform interpolator (real to complex) */  \
 /*  _q      :   Hilbert transform object                    */  \
 /*  _x      :   complex-valued input sample                 */  \
@@ -1953,6 +2023,17 @@ void FIRHILB(_decim_execute)(FIRHILB() _q,                      \
 void FIRHILB(_interp_execute)(FIRHILB() _q,                     \
                               TC        _x,                     \
                               T *       _y);                    \
+                                                                \
+/* execute Hilbert transform interpolator (complex to real) */  \
+/* on a block of samples                                    */  \
+/*  _q      :   Hilbert transform object                    */  \
+/*  _x      :   complex-valued input array [size: _n x 1]   */  \
+/*  _n      :   number of *input* samples                   */  \
+/*  _y      :   real-valued output array [size: 2*_n x 1]   */  \
+void FIRHILB(_interp_execute_block)(FIRHILB()    _q,            \
+                                    TC *         _x,            \
+                                    unsigned int _n,            \
+                                    T *          _y);           \
 
 LIQUID_FIRHILB_DEFINE_API(FIRHILB_MANGLE_FLOAT, float, liquid_float_complex)
 //LIQUID_FIRHILB_DEFINE_API(FIRHILB_MANGLE_DOUBLE, double, liquid_double_complex)
