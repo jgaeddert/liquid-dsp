@@ -36,13 +36,13 @@ void usage()
     printf("Usage: xautotest [OPTION]\n");
     printf("Execute autotest scripts for liquid-dsp library.\n");
     printf("  -h            display this help and exit\n");
-    printf("  -t[ID]        run specific test\n");
-    printf("  -p[ID]        run specific package\n");
+    printf("  -t <id>       run specific test\n");
+    printf("  -p <id>       run specific package\n");
     printf("  -r            run all tests, random order\n");
     printf("  -L            lists all scripts\n");
     printf("  -l            lists all packages\n");
     printf("  -x            stop on fail\n");
-    printf("  -s[STRING]    run all tests matching search string\n");
+    printf("  -s <string>   run all tests matching search string\n");
     printf("  -v            verbose\n");
     printf("  -q            quiet\n");
 }
@@ -105,6 +105,12 @@ void print_package_results(package_t * _p);
 // print all unstable tests (those which failed or gave warnings)
 void print_unstable_tests(void);
 
+// print list of tests
+void print_test_list(void);
+
+// print list of packages
+void print_package_list(void);
+
 // main function
 int main(int argc, char *argv[])
 {
@@ -116,14 +122,15 @@ int main(int argc, char *argv[])
           RUN_SEARCH
     } mode = RUN_ALL;
 
-    unsigned int autotest_id = 0;
-    unsigned int package_id = 0;
-    int verbose = 1;
-    int stop_on_fail = 0;
-    char search_string[128];
-    int rseed = 0;
+    // set defaults
+    unsigned int autotest_id        = 0;
+    unsigned int package_id         = 0;
+    int          verbose            = 1;
+    int          stop_on_fail       = 0;
+    int          rseed              = 0;
+    char         search_string[128] = "";
 
-    unsigned int i, j;
+    unsigned int i;
 
     // get input options
     int d;
@@ -134,37 +141,22 @@ int main(int argc, char *argv[])
             return 0;
         case 't':
             autotest_id = atoi(optarg);
-            if (autotest_id >= NUM_AUTOSCRIPTS) {
-                printf("error, cannot run autotest %u; index exceeded\n", autotest_id);
-                return -1;
-            } else {
-                mode = RUN_SINGLE_TEST;
-            }
+            mode = RUN_SINGLE_TEST;
             break;
         case 'p':
             package_id = atoi(optarg);
-            if (package_id >= NUM_PACKAGES) {
-                printf("error, cannot run package %u; index exceeded\n", package_id);
-                return -1;
-            } else {
-                mode = RUN_SINGLE_PACKAGE;
-            }
+            mode = RUN_SINGLE_PACKAGE;
             break;
         case 'r':
             mode = RUN_ALL_RANDOM;
             break;
         case 'L':
             // list packages, scripts and exit
-            for (i=0; i<NUM_PACKAGES; i++) {
-                printf("%u: %s\n", packages[i].id, packages[i].name);
-                for (j=packages[i].index; j<packages[i].num_scripts+packages[i].index; j++)
-                    printf("    %u: %s\n", scripts[j].id, scripts[j].name);
-            }
+            print_test_list();
             return 0;
         case 'l':
             // list only packages and exit
-            for (i=0; i<NUM_PACKAGES; i++)
-                printf("%u: %s\n", packages[i].id, packages[i].name);
+            print_package_list();
             return 0;
         case 'x':
             stop_on_fail = 1;
@@ -187,6 +179,15 @@ int main(int argc, char *argv[])
         }
     }
 
+    // validate results
+    if (autotest_id >= NUM_AUTOSCRIPTS) {
+        printf("error, cannot run autotest %u; index exceeded\n", autotest_id);
+        return -1;
+    } else if (package_id >= NUM_PACKAGES) {
+        printf("error, cannot run package %u; index exceeded\n", package_id);
+        return -1;
+    }
+
     unsigned int n=0;
     switch (mode) {
     case RUN_ALL:
@@ -205,7 +206,7 @@ int main(int argc, char *argv[])
         break;
     case RUN_ALL_RANDOM:
         // initialize with large random number
-        i = 8191 % NUM_AUTOSCRIPTS;
+        i = (rseed + 8191) % NUM_AUTOSCRIPTS;
 
         while (n < NUM_AUTOSCRIPTS) {
             i = (i + 524287) % NUM_AUTOSCRIPTS;
@@ -385,5 +386,23 @@ void print_unstable_tests(void)
             }
         }
     }
+}
+
+void print_test_list(void)
+{
+    unsigned int i;
+    unsigned int j;
+    for (i=0; i<NUM_PACKAGES; i++) {
+        printf("%u: %s\n", packages[i].id, packages[i].name);
+        for (j=packages[i].index; j<packages[i].num_scripts+packages[i].index; j++)
+            printf("    %u: %s\n", scripts[j].id, scripts[j].name);
+    }
+}
+
+void print_package_list(void)
+{
+    unsigned int i;
+    for (i=0; i<NUM_PACKAGES; i++)
+        printf("%u: %s\n", packages[i].id, packages[i].name);
 }
 
