@@ -25,10 +25,6 @@ int main() {
     float fc=0.37f;                 // signal center frequency
     unsigned int num_samples=128;   // number of samples
 
-    // create Hilbert transform object
-    firhilbf q = firhilbf_create(m,As);
-    firhilbf_print(q);
-
     // data arrays
     float x[2*num_samples];         // real input
     float complex y[num_samples];   // complex output
@@ -38,15 +34,17 @@ int main() {
     for (i=0; i<2*num_samples; i++)
         x[i] = cosf(2*M_PI*fc*i);
 
-    for (i=0; i<num_samples; i++) {
-        // execute transform (decimator) to compute complex signal
-        firhilbf_decim_execute(q, &x[2*i], &y[i]);
+    // create Hilbert transform object
+    firhilbf q = firhilbf_create(m,As);
 
-        printf("y(%3u) = %12.8f + j*%12.8f;\n", i+1, crealf(y[i]), cimagf(y[i]));
-    }
+    // execute transform (decimator) to compute complex signal
+    firhilbf_decim_execute_block(q, x, num_samples, y);
 
     // destroy Hilbert transform object
     firhilbf_destroy(q);
+
+    printf("firhilb decimated %u real samples to %u complex samples\n",
+            num_samples, 2*num_samples);
 
     // 
     // export results to file
@@ -79,7 +77,7 @@ int main() {
     fprintf(fid,"axis([-0.5 0.5 -80 20]);\n");
     fprintf(fid,"xlabel('normalized frequency');\n");
     fprintf(fid,"ylabel('PSD [dB]');\n");
-    fprintf(fid,"legend('original/real','transformed/decimated',1);");
+    fprintf(fid,"legend('original/real','transformed/decimated','location','northeast');");
 
     fclose(fid);
     printf("results written to %s\n", OUTPUT_FILENAME);
