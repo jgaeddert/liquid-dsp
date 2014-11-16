@@ -176,8 +176,12 @@ int AGC(_execute_block)(AGC()        _q,
                         TC *         _y)
 {
     unsigned int i;
-    for (i=0; i<_n; i++)
-        AGC(_execute)(_q, _x[i], &_y[i]);
+    for (i=0; i<_n; i++) {
+        int rc = AGC(_execute)(_q, _x[i], &_y[i]);
+
+        if (rc != LIQUID_OK)
+            return rc;
+    }
 
     return LIQUID_OK;
 }
