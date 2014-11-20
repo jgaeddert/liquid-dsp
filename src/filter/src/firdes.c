@@ -30,6 +30,7 @@
 
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 #include <math.h>
 
 #include "liquid.internal.h"
@@ -277,18 +278,18 @@ void liquid_firdes_kaiser(unsigned int _n,
 }
 
 // Design Nyquist filter
-//  _type   : filter type (e.g. LIQUID_NYQUIST_RCOS)
+//  _type   : filter type (e.g. LIQUID_FIRFILT_RCOS)
 //  _k      : samples/symbol
 //  _m      : symbol delay
 //  _beta   : excess bandwidth factor, _beta in [0,1]
 //  _dt     : fractional sample delay
 //  _h      : output coefficient buffer (length: 2*k*m+1)
-void liquid_firdes_nyquist(liquid_nyquist_type _type,
-                           unsigned int _k,
-                           unsigned int _m,
-                           float _beta,
-                           float _dt,
-                           float * _h)
+void liquid_firdes_nyquist(liquid_firfilt_type _type,
+                           unsigned int        _k,
+                           unsigned int        _m,
+                           float               _beta,
+                           float               _dt,
+                           float *             _h)
 {
     // compute filter parameters
     unsigned int h_len = 2*_k*_m + 1;   // length
@@ -307,23 +308,23 @@ void liquid_firdes_nyquist(liquid_nyquist_type _type,
                                         LIQUID_FIRDESPM_FLATWEIGHT};
 
     switch (_type) {
-    case LIQUID_NYQUIST_KAISER:
+    case LIQUID_FIRFILT_KAISER:
         liquid_firdes_kaiser(h_len, fc, As, _dt, _h);
         break;
-    case LIQUID_NYQUIST_PM:
+    case LIQUID_FIRFILT_PM:
         // WARNING: input timing offset is ignored here
         firdespm_run(h_len, 3, bands, des, weights, wtype, LIQUID_FIRDESPM_BANDPASS, _h);
         break;
-    case LIQUID_NYQUIST_RCOS:
+    case LIQUID_FIRFILT_RCOS:
         liquid_firdes_rcos(_k, _m, _beta, _dt, _h);
         break;
-    case LIQUID_NYQUIST_FEXP:
+    case LIQUID_FIRFILT_FEXP:
         liquid_firdes_fexp(_k, _m, _beta, _dt, _h);
         break;
-    case LIQUID_NYQUIST_FSECH:
+    case LIQUID_FIRFILT_FSECH:
         liquid_firdes_fsech(_k, _m, _beta, _dt, _h);
         break;
-    case LIQUID_NYQUIST_FARCSECH:
+    case LIQUID_FIRFILT_FARCSECH:
         liquid_firdes_farcsech(_k, _m, _beta, _dt, _h);
         break;
     default:
@@ -334,49 +335,49 @@ void liquid_firdes_nyquist(liquid_nyquist_type _type,
 
 
 // Design root-Nyquist filter
-//  _type   : filter type (e.g. LIQUID_RNYQUIST_RRC)
+//  _type   : filter type (e.g. LIQUID_FIRFILT_RRRC)
 //  _k      : samples/symbol
 //  _m      : symbol delay
 //  _beta   : excess bandwidth factor, _beta in [0,1]
 //  _dt     : fractional sample delay
 //  _h      : output coefficient buffer (length: 2*k*m+1)
-void liquid_firdes_rnyquist(liquid_rnyquist_type _type,
-                            unsigned int _k,
-                            unsigned int _m,
-                            float _beta,
-                            float _dt,
-                            float * _h)
+void liquid_firdes_rnyquist(liquid_firfilt_type _type,
+                            unsigned int        _k,
+                            unsigned int        _m,
+                            float               _beta,
+                            float               _dt,
+                            float *             _h)
 {
     switch (_type) {
-    case LIQUID_RNYQUIST_ARKAISER:
+    case LIQUID_FIRFILT_ARKAISER:
         liquid_firdes_arkaiser(_k, _m, _beta, _dt, _h);
         break;
-    case LIQUID_RNYQUIST_RKAISER:
+    case LIQUID_FIRFILT_RKAISER:
         liquid_firdes_rkaiser(_k, _m, _beta, _dt, _h);
         break;
-    case LIQUID_RNYQUIST_RRC:
+    case LIQUID_FIRFILT_RRC:
         liquid_firdes_rrcos(_k, _m, _beta, _dt, _h);
         break;
-    case LIQUID_RNYQUIST_hM3:
+    case LIQUID_FIRFILT_hM3:
         liquid_firdes_hM3(_k, _m, _beta, _dt, _h);
         break;
-    case LIQUID_RNYQUIST_GMSKTX:
+    case LIQUID_FIRFILT_GMSKTX:
         liquid_firdes_gmsktx(_k, _m, _beta, _dt, _h);
         break;
-    case LIQUID_RNYQUIST_GMSKRX:
+    case LIQUID_FIRFILT_GMSKRX:
         liquid_firdes_gmskrx(_k, _m, _beta, _dt, _h);
         break;
-    case LIQUID_RNYQUIST_FEXP:
+    case LIQUID_FIRFILT_RFEXP:
         liquid_firdes_rfexp(_k, _m, _beta, _dt, _h);
         break;
-    case LIQUID_RNYQUIST_FSECH:
+    case LIQUID_FIRFILT_RFSECH:
         liquid_firdes_rfsech(_k, _m, _beta, _dt, _h);
         break;
-    case LIQUID_RNYQUIST_FARCSECH:
+    case LIQUID_FIRFILT_RFARCSECH:
         liquid_firdes_rfarcsech(_k, _m, _beta, _dt, _h);
         break;
     default:
-        fprintf(stderr,"error: liquid_firdes_rnyquist(), invalid filter type '%d'\n", _type);
+        fprintf(stderr,"error: liquid_firdes_rnyquist(), invalid root-Nyquist filter type '%d'\n", _type);
         exit(1);
     }
 }
@@ -600,6 +601,34 @@ float liquid_filter_energy(float * _h,
 
     // return energy ratio
     return e_stopband / e_total;
+}
+
+// returns filter type based on input string
+int liquid_getopt_str2firfilt(const char * _str)
+{
+    // Generic filter designs
+    if      (strcmp(_str,"kaiser")   ==0) return LIQUID_FIRFILT_KAISER;
+    else if (strcmp(_str,"pm")       ==0) return LIQUID_FIRFILT_PM;
+    
+    // Nyquist filter designs
+    else if (strcmp(_str,"rcos")     ==0) return LIQUID_FIRFILT_RCOS;
+    else if (strcmp(_str,"fexp")     ==0) return LIQUID_FIRFILT_FEXP;
+    else if (strcmp(_str,"fsech")    ==0) return LIQUID_FIRFILT_FSECH;
+    else if (strcmp(_str,"farcsech") ==0) return LIQUID_FIRFILT_FARCSECH;
+
+    // root-Nyquist filter designs
+    else if (strcmp(_str,"arkaiser") ==0) return LIQUID_FIRFILT_ARKAISER;
+    else if (strcmp(_str,"rkaiser")  ==0) return LIQUID_FIRFILT_RKAISER;
+    else if (strcmp(_str,"rrcos")    ==0) return LIQUID_FIRFILT_RRC;
+    else if (strcmp(_str,"hM3")      ==0) return LIQUID_FIRFILT_hM3;
+    else if (strcmp(_str,"gmsktx")   ==0) return LIQUID_FIRFILT_GMSKTX;
+    else if (strcmp(_str,"gmskrx")   ==0) return LIQUID_FIRFILT_GMSKRX;
+    else if (strcmp(_str,"rfexp")    ==0) return LIQUID_FIRFILT_RFEXP;
+    else if (strcmp(_str,"rfsech")   ==0) return LIQUID_FIRFILT_RFSECH;
+    else if (strcmp(_str,"rfarcsech")==0) return LIQUID_FIRFILT_RFARCSECH;
+
+    // filter type unknown
+    return LIQUID_FIRFILT_UNKNOWN;
 }
 
 

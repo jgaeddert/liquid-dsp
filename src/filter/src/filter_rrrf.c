@@ -29,6 +29,7 @@
 
 // 
 #define AUTOCORR(name)      LIQUID_CONCAT(autocorr_rrrf,name)
+#define FFTFILT(name)       LIQUID_CONCAT(fftfilt_rrrf,name)
 #define FIRDECIM(name)      LIQUID_CONCAT(firdecim_rrrf,name)
 #define FIRFARROW(name)     LIQUID_CONCAT(firfarrow_rrrf,name)
 #define FIRFILT(name)       LIQUID_CONCAT(firfilt_rrrf,name)
@@ -63,6 +64,7 @@
 
 // source files
 #include "autocorr.c"
+#include "fftfilt.c"
 #include "firdecim.c"
 #include "firfarrow.c"
 #include "firfilt.c"

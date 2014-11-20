@@ -49,7 +49,7 @@ int main(int argc, char*argv[]) {
     unsigned int num_symbols=500;   // number of data symbols
     unsigned int hc_len=5;          // channel filter length
     float SNRdB = 30.0f;            // signal-to-noise ratio
-    liquid_rnyquist_type ftype = LIQUID_RNYQUIST_ARKAISER;
+    liquid_firfilt_type ftype = LIQUID_FIRFILT_ARKAISER;
 
     float bt=0.05f;                 // symbol synchronizer loop filter bandwidth
     float tau=-0.1f;                // fractional symbol offset

@@ -18,16 +18,16 @@
 int main(int argc, char*argv[])
 {
     // options
-    float noise_floor = -40.0f;         // noise floor [dB]
-    float SNRdB = 20.0f;                // signal-to-noise ratio [dB]
-    float bt=1e-2f;         // loop bandwidth
-    unsigned int num_symbols=100;     // number of iterations
-    unsigned int d=5;       // print every d iterations
+    float        noise_floor= -40.0f;   // noise floor [dB]
+    float        SNRdB      = 20.0f;    // signal-to-noise ratio [dB]
+    float        bt         = 0.05f;    // loop bandwidth
+    unsigned int num_symbols= 100;      // number of iterations
+    unsigned int d          = 5;        // print every d iterations
 
-    unsigned int k=2;       // interpolation factor (samples/symbol)
-    unsigned int m=3;       // filter delay (symbols)
-    float beta=0.3f;        // filter excess bandwidth factor
-    float dt = 0.0f;        // filter fractional sample delay
+    unsigned int k          = 2;        // interpolation factor (samples/symbol)
+    unsigned int m          = 3;        // filter delay (symbols)
+    float        beta       = 0.3f;     // filter excess bandwidth factor
+    float        dt         = 0.0f;     // filter fractional sample delay
 
     // derived values
     unsigned int num_samples=num_symbols*k;
@@ -41,7 +41,7 @@ int main(int argc, char*argv[])
 
     // create objects
     modem mod = modem_create(LIQUID_MODEM_QPSK);
-    firinterp_crcf interp = firinterp_crcf_create_rnyquist(LIQUID_RNYQUIST_RRC,k,m,beta,dt);
+    firinterp_crcf interp = firinterp_crcf_create_rnyquist(LIQUID_FIRFILT_RRC,k,m,beta,dt);
     agc_crcf p = agc_crcf_create();
     agc_crcf_set_bandwidth(p, bt);
 
@@ -112,11 +112,13 @@ int main(int argc, char*argv[])
     fprintf(fid,"plot(t,rssi,'-k','LineWidth',2);\n");
     fprintf(fid,"xlabel('sample index');\n");
     fprintf(fid,"ylabel('rssi [dB]');\n");
+    fprintf(fid,"grid on;\n");
     fprintf(fid,"\n\n");
     fprintf(fid,"figure;\n");
     fprintf(fid,"plot(t,real(y),t,imag(y));\n");
     fprintf(fid,"xlabel('sample index');\n");
     fprintf(fid,"ylabel('agc output');\n");
+    fprintf(fid,"grid on;\n");
     fclose(fid);
     printf("results written to %s\n", OUTPUT_FILENAME);
 

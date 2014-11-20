@@ -33,14 +33,14 @@
 #include "liquid.internal.h"
 
 // Design flipped Nyquist/root-Nyquist filter
-//  _type   : filter type (e.g. LIQUID_NYQUIST_FEXP)
+//  _type   : filter type (e.g. LIQUID_FIRFILT_FEXP)
 //  _root   : square-root Nyquist filter?
 //  _k      : samples/symbol
 //  _m      : symbol delay
 //  _beta   : rolloff factor (0 < beta <= 1)
 //  _dt     : fractional sample delay
 //  _h      : output coefficient buffer (length: 2*k*m+1)
-void liquid_firdes_fnyquist(liquid_nyquist_type _type,
+void liquid_firdes_fnyquist(liquid_firfilt_type _type,
                             int                 _root,
                             unsigned int        _k,
                             unsigned int        _m,
@@ -71,13 +71,13 @@ void liquid_firdes_fnyquist(liquid_nyquist_type _type,
 
     // compute Nyquist filter frequency response
     switch (_type) {
-    case LIQUID_NYQUIST_FEXP:
+    case LIQUID_FIRFILT_FEXP:
         liquid_firdes_fexp_freqresponse(_k, _m, _beta, H_prime);
         break;
-    case LIQUID_NYQUIST_FSECH:
+    case LIQUID_FIRFILT_FSECH:
         liquid_firdes_fsech_freqresponse(_k, _m, _beta, H_prime);
         break;
-    case LIQUID_NYQUIST_FARCSECH:
+    case LIQUID_FIRFILT_FARCSECH:
         liquid_firdes_farcsech_freqresponse(_k, _m, _beta, H_prime);
         break;
     default:
@@ -111,7 +111,7 @@ void liquid_firdes_fexp(unsigned int _k,
                         float * _h)
 {
     // compute resonse using generic function
-    liquid_firdes_fnyquist(LIQUID_NYQUIST_FEXP, 0, _k, _m, _beta, _dt, _h);
+    liquid_firdes_fnyquist(LIQUID_FIRFILT_FEXP, 0, _k, _m, _beta, _dt, _h);
 }
 
 // Design fexp square-root Nyquist filter
@@ -127,7 +127,7 @@ void liquid_firdes_rfexp(unsigned int _k,
                          float * _h)
 {
     // compute resonse using generic function
-    liquid_firdes_fnyquist(LIQUID_NYQUIST_FEXP, 1, _k, _m, _beta, _dt, _h);
+    liquid_firdes_fnyquist(LIQUID_FIRFILT_FEXP, 1, _k, _m, _beta, _dt, _h);
 }
 
 // flipped exponential frequency response
@@ -187,7 +187,7 @@ void liquid_firdes_fsech(unsigned int _k,
                          float * _h)
 {
     // compute resonse using generic function
-    liquid_firdes_fnyquist(LIQUID_NYQUIST_FSECH, 0, _k, _m, _beta, _dt, _h);
+    liquid_firdes_fnyquist(LIQUID_FIRFILT_FSECH, 0, _k, _m, _beta, _dt, _h);
 }
 
 // Design fsech square-root Nyquist filter
@@ -203,7 +203,7 @@ void liquid_firdes_rfsech(unsigned int _k,
                           float * _h)
 {
     // compute resonse using generic function
-    liquid_firdes_fnyquist(LIQUID_NYQUIST_FSECH, 1, _k, _m, _beta, _dt, _h);
+    liquid_firdes_fnyquist(LIQUID_FIRFILT_FSECH, 1, _k, _m, _beta, _dt, _h);
 }
 
 // flipped exponential frequency response
@@ -263,7 +263,7 @@ void liquid_firdes_farcsech(unsigned int _k,
                             float * _h)
 {
     // compute resonse using generic function
-    liquid_firdes_fnyquist(LIQUID_NYQUIST_FARCSECH, 0, _k, _m, _beta, _dt, _h);
+    liquid_firdes_fnyquist(LIQUID_FIRFILT_FARCSECH, 0, _k, _m, _beta, _dt, _h);
 }
 
 // Design farcsech square-root Nyquist filter
@@ -279,7 +279,7 @@ void liquid_firdes_rfarcsech(unsigned int _k,
                              float * _h)
 {
     // compute resonse using generic function
-    liquid_firdes_fnyquist(LIQUID_NYQUIST_FARCSECH, 1, _k, _m, _beta, _dt, _h);
+    liquid_firdes_fnyquist(LIQUID_FIRFILT_FARCSECH, 1, _k, _m, _beta, _dt, _h);
 }
 
 // hyperbolic arc-secant

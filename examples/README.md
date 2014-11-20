@@ -13,21 +13,23 @@ This directory contains all the examples for interfacing the liquid modules.
     gives instantaneous amplitude levels near zero.  This example tests the
     response of the AGC to these types of signals.
 
- * `agc_crcf_squelch_example.c`:
-    Automatic gain control with squelch example.  This example demonstrates
-    the squelch control functionality of the AGC module.  Squelch is used to
-    suppress the output of the AGC when the signal level drops below a certain
-    threshold.
-
  * `ampmodem_example.c`:
     Tests simple modulation/demodulation of the ampmodem (analog amplitude
     modulator/demodulator) with noise, carrier phase, and carrier frequency
     offsets.
 
- * `asgram_example.c`:
-    ASCII spectrogram example.  This example demonstrates the functionality of
-    the ASCII spectrogram.  A sweeping complex sinusoid is generated and the
-    resulting frequency response is printed to the screen.
+ * `asgramcf_example.c`:
+    ASCII spectrogram example for complex inputs. This example demonstrates
+    the functionality of the ASCII spectrogram. A sweeping complex sinusoid
+    is generated and the resulting spectral periodogram is printed to the
+    screen.
+
+ * `asgramf_example.c`:
+    ASCII spectrogram example for real-valued input. This example demonstrates
+    the functionality of the ASCII spectrogram for real-valued input siganls.
+    A cosine signal with time-varying frequency is generated and the resulting
+    spectral periodogram is printed to the screen. Because the time signal has
+    no complex component, its spectrum is symmetric.
 
  * `autocorr_cccf_example.c`:
     This example demonstrates the autocorr (auto-correlation) object
@@ -151,6 +153,17 @@ This directory contains all the examples for interfacing the liquid modules.
 
     SEE ALSO: `mdct_example.c`
               `fct_example.c`
+
+  * `fftfilt_crcf_example.c`
+
+    Complex FFT-based finite impulse response filter example. This example
+    demonstrates the functionality of firfilt by designing a low-order 
+    prototype and using it to filter a noisy signal.  The filter coefficients
+    are  real, but the input and output arrays are complex. The filter order
+    and cutoff frequency are specified at the beginning, and the result is
+    compared to the regular corresponding firfilt_crcf output.
+
+    SEE ALSO: `firfilt_crcf_example.c`
 
  * `firdecim_crcf_example.c`:
     This example demonstrates the interface to the firdecim (finite
@@ -508,6 +521,12 @@ This directory contains all the examples for interfacing the liquid modules.
     entropy.  This example demonstrates the interface.
 
  * `smatrix_example.c`:
+
+ * `spgramcf_example.c`:
+   Spectral periodogram example with complex inputs.
+
+ * `spgramf_example.c`:
+   Spectral periodogram example with real inputs.
 
  * `symsync_crcf_example.c`:
 

@@ -48,10 +48,10 @@ void firdecim_crcf_bench(struct rusage *     _start,
     // start trials
     getrusage(RUSAGE_SELF, _start);
     for (i=0; i<(*_num_iterations); i++) {
-        firdecim_crcf_execute(q, x, &y, 0);
-        firdecim_crcf_execute(q, x, &y, 0);
-        firdecim_crcf_execute(q, x, &y, 0);
-        firdecim_crcf_execute(q, x, &y, 0);
+        firdecim_crcf_execute(q, x, &y);
+        firdecim_crcf_execute(q, x, &y);
+        firdecim_crcf_execute(q, x, &y);
+        firdecim_crcf_execute(q, x, &y);
     }
     getrusage(RUSAGE_SELF, _finish);
     *_num_iterations *= 4;
