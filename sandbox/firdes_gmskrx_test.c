@@ -98,7 +98,7 @@ int main(int argc, char*argv[]) {
 
     // create 'prototype' matched filter
     // for now use raised-cosine
-    liquid_firdes_nyquist(LIQUID_NYQUIST_RCOS,k,m,beta,0.0f,h_primef);
+    liquid_firdes_nyquist(LIQUID_FIRFILT_RCOS,k,m,beta,0.0f,h_primef);
 
     // create 'gain' filter to improve stop-band rejection
     float fc = (0.7f + 0.1*beta) / (float)k;
@@ -113,9 +113,9 @@ int main(int argc, char*argv[]) {
     }
 
     // run ffts
-    fft_run(h_len, h_prime, H_prime, FFT_FORWARD, 0);
-    fft_run(h_len, g_prime, G_prime, FFT_FORWARD, 0);
-    fft_run(h_len, h_tx,    H_tx,    FFT_FORWARD, 0);
+    fft_run(h_len, h_prime, H_prime, LIQUID_FFT_FORWARD, 0);
+    fft_run(h_len, g_prime, G_prime, LIQUID_FFT_FORWARD, 0);
+    fft_run(h_len, h_tx,    H_tx,    LIQUID_FFT_FORWARD, 0);
 
 #if 0
     // print results
@@ -147,7 +147,7 @@ int main(int argc, char*argv[]) {
     }
 
     // compute ifft and copy response
-    fft_run(h_len, H_hat, h_hat, FFT_REVERSE, 0);
+    fft_run(h_len, H_hat, h_hat, LIQUID_FFT_BACKWARD, 0);
     for (i=0; i<h_len; i++)
         hr[i] = crealf( h_hat[(i+k*m+1)%h_len] ) / (float)(k*h_len);
 

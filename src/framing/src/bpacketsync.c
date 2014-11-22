@@ -1,6 +1,5 @@
 /*
- * Copyright (c) 2011 Joseph Gaeddert
- * Copyright (c) 2011 Virginia Polytechnic Institute & State University
+ * Copyright (c) 2007 - 2014 Joseph Gaeddert
  *
  * This file is part of liquid.
  *
@@ -155,6 +154,8 @@ void bpacketsync_destroy(bpacketsync _q)
 {
     // free arrays
     free(_q->pnsequence);
+    free(_q->payload_enc);
+    free(_q->payload_dec);
 
     // destroy internal objects
     msequence_destroy(_q->ms);

@@ -44,8 +44,8 @@ int main(int argc, char*argv[]) {
     unsigned int num_filters=32;    // number of filters in the bank
     unsigned int num_symbols=200;   // number of data symbols
     float SNRdB = 30.0f;            // signal-to-noise ratio
-    liquid_rnyquist_type ftype_tx = LIQUID_RNYQUIST_RRC;
-    liquid_rnyquist_type ftype_rx = LIQUID_RNYQUIST_RRC;
+    liquid_firfilt_type ftype_tx = LIQUID_FIRFILT_RRC;
+    liquid_firfilt_type ftype_rx = LIQUID_FIRFILT_RRC;
 
     float bt=0.02f;     // loop filter bandwidth
     float tau=-0.2f;    // fractional symbol offset
@@ -60,22 +60,14 @@ int main(int argc, char*argv[]) {
         case 'u':
         case 'h':   usage();                        return 0;
         case 'T':
-            if (strcmp(optarg,"rrcos")==0) {
-                ftype_tx = LIQUID_RNYQUIST_RRC;
-                ftype_rx = LIQUID_RNYQUIST_RRC;
-            } else if (strcmp(optarg,"rkaiser")==0) {
-                ftype_tx = LIQUID_RNYQUIST_RKAISER;
-                ftype_rx = LIQUID_RNYQUIST_RKAISER;
-            } else if (strcmp(optarg,"arkaiser")==0) {
-                ftype_tx = LIQUID_RNYQUIST_ARKAISER;
-                ftype_rx = LIQUID_RNYQUIST_ARKAISER;
-            } else if (strcmp(optarg,"hM3")==0) {
-                ftype_tx = LIQUID_RNYQUIST_hM3;
-                ftype_rx = LIQUID_RNYQUIST_hM3;
-            } else if (strcmp(optarg,"gmsk")==0) {
-                ftype_tx = LIQUID_RNYQUIST_GMSKTX;
-                ftype_rx = LIQUID_RNYQUIST_GMSKRX;
+            if (strcmp(optarg,"gmsk")==0) {
+                ftype_tx = LIQUID_FIRFILT_GMSKTX;
+                ftype_rx = LIQUID_FIRFILT_GMSKRX;
             } else {
+                ftype_tx = liquid_getopt_str2firfilt(optarg);
+                ftype_rx = liquid_getopt_str2firfilt(optarg);
+            }
+            if (ftype_tx == LIQUID_FIRFILT_UNKNOWN) {
                 fprintf(stderr,"error: %s, unknown filter type '%s'\n", argv[0], optarg);
                 exit(1);
             }
@@ -159,13 +151,13 @@ int main(int argc, char*argv[]) {
     unsigned int h_len = 2*k*m+1;
     float h[h_len];
     liquid_firdes_rnyquist(ftype_tx,k,m,beta,dt,h);
-    interp_crcf q = interp_crcf_create(k,h,h_len);
+    firinterp_crcf q = firinterp_crcf_create(k,h,h_len);
     for (i=0; i<num_symbols; i++) {
-        interp_crcf_execute(q, s[i], &x[n]);
+        firinterp_crcf_execute(q, s[i], &x[n]);
         n+=k;
     }
     assert(n == num_samples);
-    interp_crcf_destroy(q);
+    firinterp_crcf_destroy(q);
 
     // 
     // run resampler

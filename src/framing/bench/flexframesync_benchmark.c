@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007, 2009, 2013 Joseph Gaeddert
+ * Copyright (c) 2007 - 2014 Joseph Gaeddert
  *
  * This file is part of liquid.
  *
@@ -115,7 +115,7 @@ void benchmark_flexframesync(
     }
     getrusage(RUSAGE_SELF, _finish);
 
-
+    // print results
     fd.num_frames_tx = *_num_iterations;
     printf("  frames detected/header/payload/transmitted:   %6u / %6u / %6u / %6u\n",
             fd.num_frames_detected,

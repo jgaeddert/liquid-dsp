@@ -1,6 +1,5 @@
 /*
- * Copyright (c) 2011 Joseph Gaeddert
- * Copyright (c) 2011 Virginia Polytechnic Institute & State University
+ * Copyright (c) 2007 - 2014 Joseph Gaeddert
  *
  * This file is part of liquid.
  *
@@ -113,8 +112,10 @@ void MATRIX(_cgsolve)(T * _A,
 
         // gamma = d0^T * q
         gamma = 0.0;
-        for (j=0; j<_n; j++)
-            gamma += conj(d0[j]) * q[j];
+        for (j=0; j<_n; j++) {
+            T prod = conj(d0[j]) * q[j];
+            gamma += prod;
+        }
 
         // step size: alpha = (r0^T * r0) / (d0^T * A * d0)
         //                  = delta0 / gamma

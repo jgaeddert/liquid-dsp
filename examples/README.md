@@ -4,32 +4,32 @@ liquid-dsp examples
 
 This directory contains all the examples for interfacing the liquid modules.
 
- * `agc_example.c`:
-    Automatic gain control example demonstrating the transient responses
-    between the three AGC types (LIQUID_AGC_DEFAULT, LIQUID_AGC_LOG,
-    LIQUID_AGC_EXP).
+ * `agc_crcf_example.c`:
+    Automatic gain control example demonstrating its transient response.
 
- * `agc_qpsk_example.c`:
+ * `agc_crcf_qpsk_example.c`:
     Automatic gain control test for data signals with fluctuating signal
     levels.  QPSK modulation introduces periodic random zero-crossings which
     gives instantaneous amplitude levels near zero.  This example tests the
     response of the AGC to these types of signals.
-
- * `agc_squelch_example.c`:
-    Automatic gain control with squelch example.  This example demonstrates
-    the squelch control functionality of the AGC module.  Squelch is used to
-    suppress the output of the AGC when the signal level drops below a certain
-    threshold.
 
  * `ampmodem_example.c`:
     Tests simple modulation/demodulation of the ampmodem (analog amplitude
     modulator/demodulator) with noise, carrier phase, and carrier frequency
     offsets.
 
- * `asgram_example.c`:
-    ASCII spectrogram example.  This example demonstrates the functionality of
-    the ASCII spectrogram.  A sweeping complex sinusoid is generated and the
-    resulting frequency response is printed to the screen.
+ * `asgramcf_example.c`:
+    ASCII spectrogram example for complex inputs. This example demonstrates
+    the functionality of the ASCII spectrogram. A sweeping complex sinusoid
+    is generated and the resulting spectral periodogram is printed to the
+    screen.
+
+ * `asgramf_example.c`:
+    ASCII spectrogram example for real-valued input. This example demonstrates
+    the functionality of the ASCII spectrogram for real-valued input siganls.
+    A cosine signal with time-varying frequency is generated and the resulting
+    spectral periodogram is printed to the screen. Because the time signal has
+    no complex component, its spectrum is symmetric.
 
  * `autocorr_cccf_example.c`:
     This example demonstrates the autocorr (auto-correlation) object
@@ -99,17 +99,6 @@ This directory contains all the examples for interfacing the liquid modules.
     sinusoidal input.  The output distortion ratio is computed, and the
     time-domain results are written to a file.
 
- * `decim_crcf_example.c`:
-    This example demonstrates the decim object (decimator) interface.
-    Data symbols are generated and then interpolated according to a
-    finite impulse response square-root Nyquist filter.  The resulting
-    sequence is then decimated with the same filter, matched to the
-    interpolator.
-
-    SEE ALSO: `interp_crcf_example.c`
-
- * `decim_rrrf_example.c`:
-
  * `dotprod_cccf_example.c`:
     This example demonstrates the interface to the complex
     floating-point dot product object (dotprod_cccf).
@@ -119,6 +108,18 @@ This directory contains all the examples for interfacing the liquid modules.
     product object (dotprod_rrrf).
 
  * `eqlms_cccf_blind_example.c`:
+    This example tests the least mean-squares (LMS) equalizer (EQ) on a
+    signal with an unknown modulation and carrier frequency offset. That
+    is, the equalization is done completely blind of the modulation
+    scheme or its underlying data set. The error estimate assumes a
+    constant modulus linear modulation scheme. This works surprisingly
+    well even more amplitude-modulated signals, e.g. 'qam16'.
+
+ * `eqlms_cccf_decisiondirected_example.c`:
+    Tests least mean-squares (LMS) equalizer (EQ) on a signal with a known
+    linear modulation scheme, but unknown data. The equalizer is updated
+    using decision-directed demodulator output samples.
+
  * `eqlms_cccf_example.c`:
  * `eqrls_cccf_example.c`:
  * `fct_example.c`:
@@ -151,6 +152,27 @@ This directory contains all the examples for interfacing the liquid modules.
     SEE ALSO: `mdct_example.c`
               `fct_example.c`
 
+  * `fftfilt_crcf_example.c`
+
+    Complex FFT-based finite impulse response filter example. This example
+    demonstrates the functionality of firfilt by designing a low-order 
+    prototype and using it to filter a noisy signal.  The filter coefficients
+    are  real, but the input and output arrays are complex. The filter order
+    and cutoff frequency are specified at the beginning, and the result is
+    compared to the regular corresponding firfilt_crcf output.
+
+    SEE ALSO: `firfilt_crcf_example.c`
+
+ * `firdecim_crcf_example.c`:
+    This example demonstrates the interface to the firdecim (finite
+    impulse response decimator) family of objects.
+    Data symbols are generated and then interpolated according to a
+    finite impulse response square-root Nyquist filter.  The resulting
+    sequence is then decimated with the same filter, matched to the
+    interpolator.
+
+    SEE ALSO: `firinterp_crcf_example.c`
+
  * `firdes_kaiser_example.c`:
     This example demonstrates finite impulse response filter design using a
     Kaiser window.
@@ -166,6 +188,13 @@ This directory contains all the examples for interfacing the liquid modules.
  * `firfarrow_rrrf_sine_example.c`:
 
  * `firfilt_rrrf_example.c`:
+
+ * `firfilt_crcf_example.c`:
+    Complex finite impulse response filter example. Demonstrates the 
+    functionality of firfilt by designing a low-order prototype and using it 
+    to filter a noisy signal.  The filter coefficients are real, but the 
+    input and output arrays are complex. The filter order and cutoff 
+    frequency are specified at the beginning.
 
  * `firhilb_decim_example.c`:
     Hilbert transform: 2:1 real-to-complex decimator.  This example
@@ -188,12 +217,23 @@ This directory contains all the examples for interfacing the liquid modules.
 
     SEE ALSO: `firhilb_decim_example.c`
 
- * `firpfbch_analysis_example.c`:
-    Example of the analysis channelizer filterbank. The input signal is
-    a frequency-modulated sweep over the entire band. Each filter is
-    illuminated as the carrier passes through its bandwidth.
+ * `firpfbch2_crcf_example.c`:
+    Example of the finite impulse response (FIR) polyphase filterbank
+    (PFB) channelizer with an output rate of 2 Fs / M as an (almost)
+    perfect reconstructive system.
 
- * `firpfbch_example.c`:
+ * `firinterp_crcf_example.c`:
+    This example demonstrates the interp object (interpolator)
+    interface. Data symbols are generated and then interpolated
+    according to a finite impulse response Nyquist filter.
+
+ * `firpfbch_crcf_analysis_example.c`:
+    Example of the analysis channelizer filterbank. The input signal is
+    comprised of several signals spanning different frequency bands. The
+    channelizer downconverts each to baseband (maximally decimated), and
+    the resulting spectrum of each is plotted.
+
+ * `firpfbch_crcf_example.c`:
     Finite impulse response (FIR) polyphase filter bank (PFB)
     channelizer example.  This example demonstrates the functionality of
     the polyphase filter bank channelizer and how its output is
@@ -201,7 +241,7 @@ This directory contains all the examples for interfacing the liquid modules.
     (mixers/decimators). Both the synthesis and analysis filter banks
     are presented.
 
- * `firpfbch_synthesis_example.c`:
+ * `firpfbch_crcf_synthesis_example.c`:
     Example of the synthesis channelizer filterbank.  Random symbols are
     generated and loaded into the bins of the channelizer and the
     time-domain signal is synthesized.  Subcarriers around the band
@@ -274,12 +314,21 @@ This directory contains all the examples for interfacing the liquid modules.
     SEE ALSO: `nco_pll_example.c`
               `nco_pll_modem_example.c`
 
+ * `iirfilt_cccf_example.c`:
+    Complex infinite impulse response filter example. Demonstrates the
+    functionality of iirfilt with complex coefficients by designing a
+    filter with specified parameters and then filters noise.
+
  * `iirfilt_crcf_example.c`:
     Complex infinite impulse response filter example. Demonstrates the
     functionality of iirfilt by designing a low-order prototype (e.g.
     Butterworth) and using it to filter a noisy signal.  The filter
     coefficients are real, but the input and output arrays are complex.  The
     filter order and cutoff frequency are specified at the beginning.
+
+ * `iirinterp_crcf_example.c`:
+    This example demonstrates the iirinterp object (IIR interpolator)
+    interface.
 
  * `interleaver_example.c`:
     This example demonstrates the functionality of the liquid interleaver
@@ -294,11 +343,6 @@ This directory contains all the examples for interfacing the liquid modules.
  * `interleaver_scatterplot_example.c`:
 
  * `interleaver_soft_example.c`:
-
- * `interp_crcf_example.c`:
-    This example demonstrates the interp object (interpolator)
-    interface. Data symbols are generated and then interpolated
-    according to a finite impulse response Nyquist filter.
 
  * `kbd_window_example.c`:
  * `lpc_example.c`:
@@ -341,6 +385,12 @@ This directory contains all the examples for interfacing the liquid modules.
     except at index zero, where the sequences align.
 
     SEE ALSO: `bsequence_example.c`
+
+ * `msresamp_crcf_example.c`:
+    Demonstration of the multi-stage arbitrary resampler.
+
+ * `msresamp2_crcf_example.c`:
+    Demonstration of the multi-stage half-band resampler.
 
  * `nco_example.c`:
     This example demonstrates the most basic functionality of the
@@ -445,8 +495,7 @@ This directory contains all the examples for interfacing the liquid modules.
 
     NOTE: The filterbank is not a perfect reconstruction filter; a
           significant amount of distortion occurs in the transition band
-          of the half-band filters. See the 'qmfb' (quadrature mirror
-          filterbank) object in the experimental section.
+          of the half-band filters.
 
  * `resamp2_crcf_interp_example.c`:
     Halfband interpolator.  This example demonstrates the interface to the
@@ -471,6 +520,12 @@ This directory contains all the examples for interfacing the liquid modules.
 
  * `smatrix_example.c`:
 
+ * `spgramcf_example.c`:
+   Spectral periodogram example with complex inputs.
+
+ * `spgramf_example.c`:
+   Spectral periodogram example with real inputs.
+
  * `symsync_crcf_example.c`:
 
  * `wdelayf_example.c`:
@@ -484,113 +539,3 @@ This directory contains all the examples for interfacing the liquid modules.
     SEE ALSO: `bufferf_example.c`
               `wdelayf_example.c`
 
-
-experimental examples
----------------------
-
-Some examples are only available when configured with the option
-`--enable-experimental`
-
- * `ann_bitpattern_example.c`:
-    Artificial neural network (ann) bit pattern example.  This example
-    demonstrates the functionality of the ann module by training a
-    simple network to learn prime numbers:
-
-        n   :   b0  b1  b2  |   y
-        --------------------+------
-        0   :   0   0   0   |   1
-        1   :   0   0   1   |   1
-        2   :   0   1   0   |   1
-        3   :   0   1   1   |   1
-        4   :   1   0   0   |   0
-        5   :   1   0   1   |   1
-        6   :   1   1   0   |   0
-        7   :   1   1   1   |   1
-
-
- * `ann_example.c`:
-    Artificial neural network (ann) example. This example demonstrates the
-    functionality of the ann module by training a simple network to learn the
-    output of a continuous function.
-
- * `ann_layer_example.c`:
-
- * `ann_maxnet_example.c`:
-   Artificial neural network (ann) maxnet example. This example demonstrates
-   the functionality of the ann maxnet by training a network to recognize and
-   separate two input patterns in a 2-dimensional plane.
-    
- * `ann_node_example.c`:
-
- * `ann_xor_example.c`:
-    Artificial neural network (ann) eXclusive OR example. This example
-    demonstrates the functionality of the ann  module by training a simple
-    network to learn the output of an exclusive or (xor) circuit:
-
-        x   y   |   z
-        --------+-----
-        0   0   |   0
-        0   1   |   1
-        1   0   |   1
-        1   1   |   0
-
- * `dds_cccf_example.c`:
-    Direct digital synthesizer example.  This example demonstrates the
-    interface to the direct digital synthesizer.  A baseband pulse is
-    generated and then efficiently up-converted (interpolated and mixed up)
-    using the DDS object.  The resulting signal is then down-converted (mixed
-    down and decimated) using the same DDS object.  Results are written to a
-    file.
-
-    SEE ALSO: `interp_crcf_example.c`
-              `decim_crcf_example.c`
-              `resamp2_crcf_example.c`
-              `nco_example.c`
-
- * `fading_generator_example.c`:
-
- * `fbasc_example.c`:
-
- * `gport_dma_example.c`:
-
- * `gport_dma_threaded_example.c`:
-
- * `gport_ima_example.c`:
-
- * `gport_ima_threaded_example.c`:
-
- * `gport_mma_threaded_example.c`:
-
- * `iirqmfb_crcf_example.c`:
-
- * `itqmfb_crcf_example.c`:
-
- * `itqmfb_rrrf_example.c`:
-   
- * `kmeans_example.c`:
-
- * `ofdmoqam_example.c`:
-
- * `ofdmoqam_firpfbch_example.c`:
-
- * `ofdmoqamframe64gen_example.c`:
-
- * `ofdmoqamframe64sync_example.c`:
-
- * `ofdmoqamframesync_example.c`:
-
- * `patternset_example.c`:
-
- * `prqmfb_crcf_example.c`:
-
- * `qmfb_crcf_analysis_example.c`:
-
- * `qmfb_crcf_synthesis_example.c`:
-    This example demonstrates the functionality of the patternset
-    structure for easily managing pattern sets for optimization.
-
- * `ricek_channel_example.c`:
-
- * `symsync2_crcf_example.c`:
-
- * `symsynclp_crcf_example.c`:

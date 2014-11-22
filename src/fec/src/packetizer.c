@@ -1,7 +1,5 @@
 /*
- * Copyright (c) 2007, 2008, 2009, 2010 Joseph Gaeddert
- * Copyright (c) 2007, 2008, 2009, 2010 Virginia Polytechnic
- *                                      Institute & State University
+ * Copyright (c) 2007 - 2014 Joseph Gaeddert
  *
  * This file is part of liquid.
  *
@@ -28,6 +26,9 @@
 #include <string.h>
 
 #include "liquid.internal.h"
+
+// reallocate memory for buffers
+void packetizer_realloc_buffers(packetizer _p, unsigned int _len);
 
 // computes the number of encoded bytes after packetizing
 //

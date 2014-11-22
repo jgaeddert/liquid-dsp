@@ -1,6 +1,5 @@
 /*
- * Copyright (c) 2007, 2009 Joseph Gaeddert
- * Copyright (c) 2007, 2009 Virginia Polytechnic Institute & State University
+ * Copyright (c) 2007 - 2014 Joseph Gaeddert
  *
  * This file is part of liquid.
  *
@@ -36,12 +35,16 @@ void interleaver_test_hard(unsigned int _n)
     for (i=0; i<_n; i++)
         x[i] = rand() & 0xFF;
 
+    // create interleaver object
     interleaver q = interleaver_create(_n);
 
     interleaver_encode(q,x,y);
     interleaver_decode(q,y,z);
 
     CONTEND_SAME_DATA(x, z, _n);
+
+    // destroy interleaver object
+    interleaver_destroy(q);
 }
 
 // 
@@ -57,12 +60,16 @@ void interleaver_test_soft(unsigned int _n)
     for (i=0; i<8*_n; i++)
         x[i] = rand() & 0xFF;
 
+    // create interleaver object
     interleaver q = interleaver_create(_n);
 
     interleaver_encode_soft(q,x,y);
     interleaver_decode_soft(q,y,z);
 
     CONTEND_SAME_DATA(x, z, 8*_n);
+    
+    // destroy interleaver object
+    interleaver_destroy(q);
 }
 
 void autotest_interleaver_hard_8()      { interleaver_test_hard(8   ); }

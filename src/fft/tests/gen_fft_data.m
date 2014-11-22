@@ -12,8 +12,7 @@ filename = ['fft_data_' num2str(n) '.c'];
 fid = fopen(filename,'w');
 
 fprintf(fid,'/*\n');
-fprintf(fid,' * Copyright (c) 2012 Joseph Gaeddert\n');
-fprintf(fid,' * Copyright (c) 2012 Virginia Polytechnic Institute & State University\n');
+fprintf(fid,' * Copyright (c) 2007 - 2014 Joseph Gaeddert\n');
 fprintf(fid,' *\n');
 fprintf(fid,' * This file is part of liquid.\n');
 fprintf(fid,' *\n');

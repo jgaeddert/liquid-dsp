@@ -1,7 +1,5 @@
 /*
- * Copyright (c) 2007, 2008, 2009, 2010, 2011 Joseph Gaeddert
- * Copyright (c) 2007, 2008, 2009, 2010, 2011 Virginia Polytechnic
- *                                      Institute & State University
+ * Copyright (c) 2007 - 2014 Joseph Gaeddert
  *
  * This file is part of liquid.
  *
@@ -28,6 +26,9 @@
 
 #include "liquid.internal.h"
 
+// enable use of the pre-emphasis and post-emphasis filters
+#define CVSD_ENABLE_SIGNAL_CONDITIONING (1)
+
 struct cvsd_s {
     unsigned int num_bits;
     unsigned char bitref;   // historical bit reference
@@ -39,10 +40,12 @@ struct cvsd_s {
     float delta_min;        // minimum delta
     float delta_max;        // maximum delta
 
+#if CVSD_ENABLE_SIGNAL_CONDITIONING
     float alpha;            // pre-/de-emphasis filter coefficient
     float beta;             // DC-blocking coefficient (decoder)
     iirfilt_rrrf prefilt;   // pre-emphasis filter (encoder)
     iirfilt_rrrf postfilt;  // e-emphasis filter (decoder)
+#endif
 };
 
 // create cvsd object
@@ -76,6 +79,7 @@ cvsd cvsd_create(unsigned int _num_bits,
     q->delta_min = 0.01f;
     q->delta_max = 1.0f;
 
+#if CVSD_ENABLE_SIGNAL_CONDITIONING
     // design pre-emphasis filter
     q->alpha = _alpha;
     float b_pre[2] = {1.0f, -q->alpha};
@@ -87,6 +91,7 @@ cvsd cvsd_create(unsigned int _num_bits,
     float b_post[3] = {1.0f, -1.0f, 0.0f};
     float a_post[3] = {1.0f, -(q->alpha + q->beta), q->alpha*q->beta};
     q->postfilt = iirfilt_rrrf_create(b_post,3,a_post,3);
+#endif
 
     return q;
 }
@@ -94,9 +99,11 @@ cvsd cvsd_create(unsigned int _num_bits,
 // destroy cvsd object
 void cvsd_destroy(cvsd _q)
 {
+#if CVSD_ENABLE_SIGNAL_CONDITIONING
     // destroy filters
     iirfilt_rrrf_destroy(_q->prefilt);
     iirfilt_rrrf_destroy(_q->postfilt);
+#endif
 
     // free main object memory
     free(_q);
@@ -108,12 +115,8 @@ void cvsd_print(cvsd _q)
     printf("cvsd codec:\n");
     printf("    num bits: %u\n", _q->num_bits);
     printf("    zeta    : %8.4f\n", _q->zeta);
+#if CVSD_ENABLE_SIGNAL_CONDITIONING
     printf("    alpha   : %8.4f\n", _q->alpha);
-#if 0
-    printf("  pre-emphasis filter:\n");
-    iirfilt_rrrf_print(_q->prefilt);
-    printf("  post-emphasis filter:\n");
-    iirfilt_rrrf_print(_q->postfilt);
 #endif
 }
 
@@ -123,7 +126,11 @@ unsigned char cvsd_encode(cvsd _q,
 {
     // push audio sample through pre-filter
     float y;
+#if CVSD_ENABLE_SIGNAL_CONDITIONING
     iirfilt_rrrf_execute(_q->prefilt, _audio_sample, &y);
+#else
+    y = _audio_sample;
+#endif
 
     // determine output value
     unsigned char bit = (_q->ref > y) ? 0 : 1;
@@ -181,7 +188,11 @@ float cvsd_decode(cvsd _q,
 
     // push reference value through post-filter
     float y;
+#if CVSD_ENABLE_SIGNAL_CONDITIONING
     iirfilt_rrrf_execute(_q->postfilt, _q->ref, &y);
+#else
+    y = _q->ref;
+#endif
 
     return y;
 }

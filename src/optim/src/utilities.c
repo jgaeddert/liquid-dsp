@@ -1,7 +1,5 @@
 /*
- * Copyright (c) 2007, 2008, 2009, 2010 Joseph Gaeddert
- * Copyright (c) 2007, 2008, 2009, 2010 Virginia Polytechnic
- *                                      Institute & State University
+ * Copyright (c) 2007 - 2014 Joseph Gaeddert
  *
  * This file is part of liquid.
  *
@@ -49,7 +47,7 @@ float liquid_rosenbrock(void *       _userdata,
     return u;
 }
 
-// n-dimensional inverse Gauss utility function (minimum at _v = {0,0,0...}
+// n-dimensional inverse Gauss utility function (minimum at _v = {1,1,1...}
 //  _userdata   :   user-defined data structure (convenience)
 //  _v          :   input vector [size: _n x 1]
 //  _n          :   input vector size
@@ -66,7 +64,7 @@ float liquid_invgauss(void *       _userdata,
     float sigma = 1.0f;
     unsigned int i;
     for (i=0; i<_n; i++) {
-        t += _v[i]*_v[i] / (sigma*sigma);
+        t += (_v[i]-1.0f)*(_v[i]-1.0f) / (sigma*sigma);
 
         // increase variance along this dimension
         sigma *= 1.5f;

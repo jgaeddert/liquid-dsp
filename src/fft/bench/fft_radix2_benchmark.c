@@ -1,6 +1,5 @@
 /*
- * Copyright (c) 2007, 2009, 2012 Joseph Gaeddert
- * Copyright (c) 2007, 2009, 2012 Virginia Polytechnic Institute & State University
+ * Copyright (c) 2007 - 2014 Joseph Gaeddert
  *
  * This file is part of liquid.
  *
@@ -30,19 +29,19 @@
 #include "src/fft/bench/fft_runbench.h"
 
 // power-of-two transforms
-void benchmark_fft_2      FFT_BENCHMARK_API(2,       FFT_FORWARD)
-void benchmark_fft_4      FFT_BENCHMARK_API(4,       FFT_FORWARD)
-void benchmark_fft_8      FFT_BENCHMARK_API(8,       FFT_FORWARD)
-void benchmark_fft_16     FFT_BENCHMARK_API(16,      FFT_FORWARD)
-void benchmark_fft_32     FFT_BENCHMARK_API(32,      FFT_FORWARD)
-void benchmark_fft_64     FFT_BENCHMARK_API(64,      FFT_FORWARD)
-void benchmark_fft_128    FFT_BENCHMARK_API(128,     FFT_FORWARD)
-void benchmark_fft_256    FFT_BENCHMARK_API(256,     FFT_FORWARD)
-void benchmark_fft_512    FFT_BENCHMARK_API(512,     FFT_FORWARD)
-void benchmark_fft_1024   FFT_BENCHMARK_API(1024,    FFT_FORWARD)
-void benchmark_fft_2048   FFT_BENCHMARK_API(2048,    FFT_FORWARD)
-void benchmark_fft_4096   FFT_BENCHMARK_API(4096,    FFT_FORWARD)
-void benchmark_fft_8192   FFT_BENCHMARK_API(8192,    FFT_FORWARD)
-void benchmark_fft_16384  FFT_BENCHMARK_API(16384,   FFT_FORWARD)
-void benchmark_fft_32768  FFT_BENCHMARK_API(32768,   FFT_FORWARD)
+void benchmark_fft_2      LIQUID_FFT_BENCHMARK_API(2,       LIQUID_FFT_FORWARD)
+void benchmark_fft_4      LIQUID_FFT_BENCHMARK_API(4,       LIQUID_FFT_FORWARD)
+void benchmark_fft_8      LIQUID_FFT_BENCHMARK_API(8,       LIQUID_FFT_FORWARD)
+void benchmark_fft_16     LIQUID_FFT_BENCHMARK_API(16,      LIQUID_FFT_FORWARD)
+void benchmark_fft_32     LIQUID_FFT_BENCHMARK_API(32,      LIQUID_FFT_FORWARD)
+void benchmark_fft_64     LIQUID_FFT_BENCHMARK_API(64,      LIQUID_FFT_FORWARD)
+void benchmark_fft_128    LIQUID_FFT_BENCHMARK_API(128,     LIQUID_FFT_FORWARD)
+void benchmark_fft_256    LIQUID_FFT_BENCHMARK_API(256,     LIQUID_FFT_FORWARD)
+void benchmark_fft_512    LIQUID_FFT_BENCHMARK_API(512,     LIQUID_FFT_FORWARD)
+void benchmark_fft_1024   LIQUID_FFT_BENCHMARK_API(1024,    LIQUID_FFT_FORWARD)
+void benchmark_fft_2048   LIQUID_FFT_BENCHMARK_API(2048,    LIQUID_FFT_FORWARD)
+void benchmark_fft_4096   LIQUID_FFT_BENCHMARK_API(4096,    LIQUID_FFT_FORWARD)
+void benchmark_fft_8192   LIQUID_FFT_BENCHMARK_API(8192,    LIQUID_FFT_FORWARD)
+void benchmark_fft_16384  LIQUID_FFT_BENCHMARK_API(16384,   LIQUID_FFT_FORWARD)
+void benchmark_fft_32768  LIQUID_FFT_BENCHMARK_API(32768,   LIQUID_FFT_FORWARD)
 

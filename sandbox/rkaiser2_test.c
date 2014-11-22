@@ -1,6 +1,5 @@
 /*
- * Copyright (c) 2011 Joseph Gaeddert
- * Copyright (c) 2011 Virginia Polytechnic Institute & State University
+ * Copyright (c) 2007 - 2014 Joseph Gaeddert
  *
  * This file is part of liquid.
  *
@@ -176,18 +175,10 @@ void liquid_firdes_rkaiser_filter2(unsigned int _k,
     q.w1    = 0.5;
 
     // create gradsearch object
-    gradsearchprops_s gsprops;
-    gradsearchprops_init_default(&gsprops);
-    gsprops.delta = 1e-6f;  // gradient approximation step size
-    gsprops.gamma = 0.0005f;// vector step size
-    gsprops.alpha = 0.5f;   // momentum parameter
-    gsprops.mu    = 0.90f;  // decremental gamma paramter (best if not exactly 1.0)
-
     gradsearch gs = gradsearch_create((void*)&q,
                                       v, 2,       // vector optimizer
                                       gs_utility,
-                                      LIQUID_OPTIM_MINIMIZE,
-                                      &gsprops);
+                                      LIQUID_OPTIM_MINIMIZE);
 
     // run search
     unsigned int i;

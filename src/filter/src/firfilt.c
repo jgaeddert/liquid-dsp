@@ -1,7 +1,5 @@
 /*
- * Copyright (c) 2007, 2008, 2009, 2010 Joseph Gaeddert
- * Copyright (c) 2007, 2008, 2009, 2010 Virginia Polytechnic
- *                                      Institute & State University
+ * Copyright (c) 2007 - 2014 Joseph Gaeddert
  *
  * This file is part of liquid.
  *
@@ -51,7 +49,8 @@ struct FIRFILT(_s) {
     unsigned int w_mask;    // window index mask
     unsigned int w_index;   // window read index
 #endif
-    DOTPROD() dp;       // dot product object
+    DOTPROD() dp;           // dot product object
+    TC scale;               // output scaling factor
 };
 
 // create firfilt object
@@ -90,13 +89,20 @@ FIRFILT() FIRFILT(_create)(TC * _h,
     // create dot product object
     q->dp = DOTPROD(_create)(q->h, q->h_len);
 
+    // set default scaling
+    q->scale = 1;
+
     // reset filter state (clear buffer)
-    FIRFILT(_clear)(q);
+    FIRFILT(_reset)(q);
 
     return q;
 }
 
-// create firfilt object from prototype
+// create filter using Kaiser-Bessel windowed sinc method
+//  _n      : filter length, _n > 0
+//  _fc     : cutoff frequency, 0 < _fc < 0.5
+//  _As     : stop-band attenuation [dB], _As > 0
+//  _mu     : fractional sample offset, -0.5 < _mu < 0.5
 FIRFILT() FIRFILT(_create_kaiser)(unsigned int _n,
                                   float        _fc,
                                   float        _As,
@@ -120,6 +126,45 @@ FIRFILT() FIRFILT(_create_kaiser)(unsigned int _n,
 
     // 
     return FIRFILT(_create)(h, _n);
+}
+
+// create from square-root Nyquist prototype
+//  _type   : filter type (e.g. LIQUID_RNYQUIST_RRC)
+//  _k      : nominal samples/symbol, _k > 1
+//  _m      : filter delay [symbols], _m > 0
+//  _beta   : rolloff factor, 0 < beta <= 1
+//  _mu     : fractional sample offset,-0.5 < _mu < 0.5
+FIRFILT() FIRFILT(_create_rnyquist)(int          _type,
+                                    unsigned int _k,
+                                    unsigned int _m,
+                                    float        _beta,
+                                    float        _mu)
+{
+    // validate input
+    if (_k < 2) {
+        fprintf(stderr,"error: firfilt_%s_create_rnyquist(), filter samples/symbol must be greater than 1\n", EXTENSION_FULL);
+        exit(1);
+    } else if (_m == 0) {
+        fprintf(stderr,"error: firfilt_%s_create_rnyquist(), filter delay must be greater than 0\n", EXTENSION_FULL);
+        exit(1);
+    } else if (_beta < 0.0f || _beta > 1.0f) {
+        fprintf(stderr,"error: firfilt_%s_create_rnyquist(), filter excess bandwidth factor must be in [0,1]\n", EXTENSION_FULL);
+        exit(1);
+    }
+
+    // generate square-root Nyquist filter
+    unsigned int h_len = 2*_k*_m + 1;
+    float hf[h_len];
+    liquid_firdes_rnyquist(_type,_k,_m,_beta,_mu,hf);
+
+    // copy coefficients to type-specific array (e.g. float complex)
+    unsigned int i;
+    TC hc[h_len];
+    for (i=0; i<h_len; i++)
+        hc[i] = hf[i];
+
+    // return filterbank object
+    return FIRFILT(_create)(hc, h_len);
 }
 
 // re-create firfilt object
@@ -178,7 +223,7 @@ void FIRFILT(_destroy)(FIRFILT() _q)
 }
 
 // reset internal state of filter object
-void FIRFILT(_clear)(FIRFILT() _q)
+void FIRFILT(_reset)(FIRFILT() _q)
 {
 #if LIQUID_FIRFILT_USE_WINDOW
     WINDOW(_clear)(_q->w);
@@ -193,24 +238,37 @@ void FIRFILT(_clear)(FIRFILT() _q)
 // print filter object internals (taps, buffer)
 void FIRFILT(_print)(FIRFILT() _q)
 {
-    printf("filter coefficients:\n");
-    unsigned int i, n = _q->h_len;
+    printf("firfilt_%s:\n", EXTENSION_FULL);
+    unsigned int i;
+    unsigned int n = _q->h_len;
     for (i=0; i<n; i++) {
         printf("  h(%3u) = ", i+1);
         PRINTVAL_TC(_q->h[n-i-1],%12.8f);
         printf("\n");
     }
 
+    // print scaling
+    printf("  scale = ");
+    PRINTVAL_TC(_q->scale,%12.8f);
+    printf("\n");
+
 #if LIQUID_FIRFILT_USE_WINDOW
     WINDOW(_print)(_q->w);
 #endif
+}
+
+// set output scaling for filter
+void FIRFILT(_set_scale)(FIRFILT() _q,
+                         TC        _scale)
+{
+    _q->scale = _scale;
 }
 
 // push sample into filter object's internal buffer
 //  _q      :   filter object
 //  _x      :   input sample
 void FIRFILT(_push)(FIRFILT() _q,
-                    TI _x)
+                    TI        _x)
 {
 #if LIQUID_FIRFILT_USE_WINDOW
     WINDOW(_push)(_q->w, _x);
@@ -235,7 +293,7 @@ void FIRFILT(_push)(FIRFILT() _q,
 //  _q      :   filter object
 //  _y      :   output sample pointer
 void FIRFILT(_execute)(FIRFILT() _q,
-                       TO *_y)
+                       TO *      _y)
 {
     // read buffer (retrieve pointer to aligned memory array)
 #if LIQUID_FIRFILT_USE_WINDOW
@@ -247,6 +305,30 @@ void FIRFILT(_execute)(FIRFILT() _q,
 
     // execute dot product
     DOTPROD(_execute)(_q->dp, r, _y);
+
+    // apply scaling factor
+    *_y *= _q->scale;
+}
+
+// execute the filter on a block of input samples; the
+// input and output buffers may be the same
+//  _q      : filter object
+//  _x      : pointer to input array [size: _n x 1]
+//  _n      : number of input, output samples
+//  _y      : pointer to output array [size: _n x 1]
+void FIRFILT(_execute_block)(FIRFILT()    _q,
+                             TI *         _x,
+                             unsigned int _n,
+                             TO *         _y)
+{
+    unsigned int i;
+    for (i=0; i<_n; i++) {
+        // push sample into filter
+        FIRFILT(_push)(_q, _x[i]);
+
+        // compute output sample
+        FIRFILT(_execute)(_q, &_y[i]);
+    }
 }
 
 // get filter length
@@ -259,15 +341,19 @@ unsigned int FIRFILT(_get_length)(FIRFILT() _q)
 //  _q      :   filter object
 //  _fc     :   frequency
 //  _H      :   output frequency response
-void FIRFILT(_freqresponse)(FIRFILT() _q,
-                            float _fc,
+void FIRFILT(_freqresponse)(FIRFILT()       _q,
+                            float           _fc,
                             float complex * _H)
 {
     unsigned int i;
     float complex H = 0.0f;
 
+    // compute dot product between coefficients and exp{ 2 pi fc {0..n-1} }
     for (i=0; i<_q->h_len; i++)
         H += _q->h[i] * cexpf(_Complex_I*2*M_PI*_fc*i);
+
+    // apply scaling
+    H *= _q->scale;
 
     // set return value
     *_H = H;
@@ -278,7 +364,7 @@ void FIRFILT(_freqresponse)(FIRFILT() _q,
 //  _q      :   filter object
 //  _fc     :   frequency
 float FIRFILT(_groupdelay)(FIRFILT() _q,
-                           float _fc)
+                           float     _fc)
 {
     // copy coefficients to be in correct order
     float h[_q->h_len];

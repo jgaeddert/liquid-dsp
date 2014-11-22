@@ -1,7 +1,5 @@
 /*
- * Copyright (c) 2007, 2008, 2009, 2010, 2012 Joseph Gaeddert
- * Copyright (c) 2007, 2008, 2009, 2010, 2012 Virginia Polytechnic
- *                                      Institute & State University
+ * Copyright (c) 2007 - 2014 Joseph Gaeddert
  *
  * This file is part of liquid.
  *
@@ -298,9 +296,6 @@ void MODEM(_init)(MODEM() _q,
     // soft demodulation
     _q->demod_soft_neighbors = NULL;
     _q->demod_soft_p = 0;
-
-    // reset object
-    MODEM(_reset)(_q);
 }
 
 // initialize symbol map for fast modulation

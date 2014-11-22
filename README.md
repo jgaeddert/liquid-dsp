@@ -1,6 +1,7 @@
 
 liquid-dsp
 ==========
+
 Software-Defined Radio Digital Signal Processing Library
 
 liquid-dsp is a free and open-source digital signal processing (DSP)
@@ -11,9 +12,10 @@ cumbersome frameworks. All signal processing elements are designed to be
 flexible, scalable, and dynamic, including filters, filter design,
 oscillators, modems, synchronizers, and complex mathematical operations.
 
-For more information, please refer to the full documentation directory
-`doc/` or download the pre-compiled `.pdf`
-[documentation file](http://ganymede.ece.vt.edu/downloads/liquid.pdf) (4.4 MB).
+For more information, please refer to the documentation:
+
+  * online HTML version: [http://liquidsdr.org/doc](http://liquidsdr.org/doc)
+  * pre-compiled `.pdf` version: [liquid.pdf](http://liquidsdr.org/downloads/liquid.pdf) (4.4 MB).
 
 Installation and Dependencies
 -----------------------------
@@ -26,17 +28,18 @@ libraries to run; however liquid will take advantage of other packages
 
 There are two primary ways of obtaining the source code:
 
-1. Download the [tarball](http://ganymede.ece.vt.edu/downloads/liquid-dsp-1.2.0.tar.gz) (2.6 MB),
-   validate the checksum, and unpack 
-
-        $ wget http://ganymede.ece.vt.edu/downloads/liquid-dsp-1.2.0.tar.gz
-        $ wget http://ganymede.ece.vt.edu/downloads/liquid-dsp.md5
-        $ md5sum --check liquid-dsp.md5
-        $ tar -xf liquid-dsp-1.2.0.tar.gz
-
-2. or clone the entire [repository](http://github.com/jgaeddert/liquid-dsp)
+1. Clone the entire [repository](http://github.com/jgaeddert/liquid-dsp)
+   (recommended)
         
         $ git clone git://github.com/jgaeddert/liquid-dsp.git
+
+2. or download the [tarball](http://liquidsdr.org/downloads/liquid-dsp-1.2.0.tar.gz)
+   (2.6 MB), validate the checksum, and unpack 
+
+        $ wget http://liquidsdr.org/downloads/liquid-dsp-1.2.0.tar.gz
+        $ wget http://liquidsdr.org/downloads/liquid-dsp.md5
+        $ md5sum --check liquid-dsp.md5
+        $ tar -xf liquid-dsp-1.2.0.tar.gz
 
 ### Installation ###
 
@@ -44,6 +47,7 @@ Once you have obtained a copy of the source code, you can now build the
 DSP library (NOTE: if you chose to clone the repository, you will need
 to also run the additional `./bootstrap.sh` script before configuring):
 
+    $ ./bootstrap.sh     # <- only if you cloned the Git repo
     $ ./configure
     $ make
     $ sudo make install
@@ -96,50 +100,27 @@ following command:
 
     $ make bench
 
-### Documentation ###
-
-No serious software library would be complete without proper
-documentation. There are basically two ways to get it: the easy way and
-the hard way.
-
-1. The easy way: download the pre-compiled
-   [documentation file](http://ganymede.ece.vt.edu/downloads/liquid.pdf) (4.4 MB).
-
-2. The hard way: build from scratch.
-   Because all of the figures within the documentation are generated
-   with liquid itself, the documentation must be built from scratch and
-   requires the following free programs and packages:
-
-  - [pdflatex](http://www.ctan.org)             LaTeX compiler
-  - [bibtex](http://www.ctan.org)               LaTeX bibliography generator
-  - [pgf](http://sourceforge.net/projects/pgf/) (version 2.0)   LaTeX figures
-  - [epstopdf](http://tug.org/epstopdf)         convert .eps to .pdf (necessary for figures)
-  - [gnuplot](http://www.gnuplot.info/)         plotting program
-  - [pygments](http://pygments.org/)            pretty syntax hilighting program
-
-  Once these dependencies are installed, you may build the documentation
-  with the following command:
-
-        $ make doc
-
 Available Modules
 -----------------
-  * _agc_: automatic gain control, squelch, received signal strength
+
+  * _agc_: automatic gain control, received signal strength
   * _audio_: source audio encoders/decoders: cvsd, filterbanks
   * _buffer_: internal buffering, circular/static, ports (threaded)
   * _dotprod_: inner dot products (real, complex), vector sum of squares
   * _equalization_: adaptive equalizers: least mean-squares, recursive
-        least squares, blind
+        least squares, semi-blind
   * _fec_: basic forward error correction codes including several
         Hamming codes, single error correction/double error detection,
         Golay block code, as well as several checksums and cyclic
-        redundancy checks
+        redundancy checks, interleaving, soft decoding
   * _fft_: fast Fourier transforms (arbitrary length), discrete sin/cos
         transforms
   * _filter_: finite/infinite impulse response, polyphase, hilbert,
         interpolation, decimation, filter design, resampling, symbol
         timing recovery
-  * _framing_: packet framing, encoding, synchronization, interleaving
+  * _framing_: flexible framing structures for amazingly easy packet
+        software radio; dynamically adjust modulation and coding on the
+        fly with single- and multi-carrier framing structures
   * _math_: transcendental functions not in the C standard library
         (gamma, besseli, etc.), polynomial operations (curve-fitting,
         root-finding, etc.)
@@ -147,27 +128,18 @@ Available Modules
         Gauss elimination, Gram-Schmidt decomposition, linear solver,
         sparse matrix representation
   * _modem_: modulate, demodulate, PSK, differential PSK, QAM, optimal
-        QAM, as well as analog and non-linear digital modulations (FSK)
-  * _multicarrier_: filterbank channelizers, OFDM/OQAM, OFDM
+        QAM, as well as analog and non-linear digital modulations GMSK)
+  * _multichannel_: filterbank channelizers, OFDM
   * _nco_: numerically-controlled oscillator: mixing, frequency
         synthesis, phase-locked loops
   * _optim_: (non-linear optimization) Newton-Raphson, evoluationary
-        algorithms, gradient descent
+        algorithms, gradient descent, line search
   * _quantization_: analog/digital converters, compression/expansion
   * _random_: (random number generators) uniform, exponential, gamma,
         Nakagami-m, Gauss, Rice-K, Weibull
-  * _sequence_: linear feedback shift registers, complementary codes
+  * _sequence_: linear feedback shift registers, complementary codes,
+        maximal-length sequences
   * _utility_: useful miscellany, mostly bit manipulation (shifting,
         packing, and unpacking of arrays)
-  * _experimental_: artificial neural networks, communications channel
-        modeling, threaded ports, filterbank audio synthesizer,
-        continuous-phase modulation, direct digital synthesis,
-        quadrature mirror filterbanks, advanced symbol timing recovery
-
-### Additional notes ###
-
-Splatter graphics were created using [GIMP](http://www.gimp.org) with two
-[splatter](http://corelila.deviantart.com/art/Splatter-Brushes-60718934)
-[brush](http://hawksmont.com/blog/gimp-brushes-splatters/)
-plug-ins.
+  * _vector_: generic vector operations
 

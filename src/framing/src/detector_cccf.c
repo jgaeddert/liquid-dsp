@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2012, 2013 Joseph Gaeddert
+ * Copyright (c) 2007 - 2014 Joseph Gaeddert
  *
  * This file is part of liquid.
  *
@@ -230,8 +230,8 @@ void detector_cccf_reset(detector_cccf _q)
     
     // clear cross-correlator outputs
     //memset(_q->rxy, 0x00, sizeof(_q->rxy));
-    memset(_q->rxy0, 0x00, sizeof(_q->rxy0));
-    memset(_q->rxy1, 0x00, sizeof(_q->rxy1));
+    memset(_q->rxy0, 0x00, _q->m*sizeof(float));
+    memset(_q->rxy1, 0x00, _q->m*sizeof(float));
 }
 
 // Run sample through pre-demod detector's correlator.
@@ -444,6 +444,10 @@ void detector_cccf_estimate_offsets(detector_cccf _q,
 
     // interpolate timing offset estimate
     *_tau_hat  =  0.5f*(rp0 - rm0) / (rp0 + rm0 - 2*r00);
+
+    // force result to be in proper range
+    if (*_tau_hat < -0.499f) *_tau_hat = -0.499f;
+    if (*_tau_hat >  0.499f) *_tau_hat =  0.499f;
 }
 
 #if 0

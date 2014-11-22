@@ -72,9 +72,9 @@ int main() {
     float complex x[num_channels];  // time-domain buffer
     float complex X[num_channels];  // freq-domain buffer
 #if 1
-    fftplan ifft = fft_create_plan(num_channels, X, x, FFT_REVERSE, 0);
+    fftplan ifft = fft_create_plan(num_channels, X, x, LIQUID_FFT_BACKWARD, 0);
 #else
-    fftplan ifft = fft_create_plan(num_channels, X, x, FFT_FORWARD, 0);
+    fftplan ifft = fft_create_plan(num_channels, X, x, LIQUID_FFT_FORWARD, 0);
 #endif
 
     // generate filter object
@@ -134,7 +134,7 @@ int main() {
     float complex y_hat;
     for (i=0; i<num_channels; i++) {
         // reset filter
-        firfilt_crcf_clear(f);
+        firfilt_crcf_reset(f);
 
         // set center frequency
         dphi = 2.0f * M_PI * (float)i / (float)num_channels;

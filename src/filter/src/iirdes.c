@@ -1,7 +1,5 @@
 /*
- * Copyright (c) 2007, 2008, 2009, 2010 Joseph Gaeddert
- * Copyright (c) 2007, 2008, 2009, 2010 Virginia Polytechnic
- *                                      Institute & State University
+ * Copyright (c) 2007 - 2014 Joseph Gaeddert
  *
  * This file is part of liquid.
  *
@@ -391,10 +389,16 @@ void iirdes_dzpk2sosf(float complex * _zd,
         _B[3*i+2] =  0.0;
     }
 
+    // distribute gain equally amongst all feed-forward
+    // coefficients
+    float k = powf( crealf(_kd), 1.0f/(float)(L+r) );
+
     // adjust gain of first element
-    _B[0] *= crealf(_kd);
-    _B[1] *= crealf(_kd);
-    _B[2] *= crealf(_kd);
+    for (i=0; i<L+r; i++) {
+        _B[3*i+0] *= k;
+        _B[3*i+1] *= k;
+        _B[3*i+2] *= k;
+    }
 }
 
 // digital z/p/k low-pass to high-pass transformation

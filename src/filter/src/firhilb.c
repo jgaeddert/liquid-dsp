@@ -1,7 +1,5 @@
 /*
- * Copyright (c) 2007, 2009, 2010, 2011 Joseph Gaeddert
- * Copyright (c) 2007, 2009, 2010, 2011 Virginia Polytechnic Institute &
- *                                State University
+ * Copyright (c) 2007 - 2014 Joseph Gaeddert
  *
  * This file is part of liquid.
  *
@@ -43,8 +41,7 @@ struct FIRHILB(_s) {
     unsigned int h_len;     // length of filter
     float As;               // filter stop-band attenuation [dB]
 
-    unsigned int m;         // primitive filter length (filter semi-
-                            // length), h_len = 4*m+1
+    unsigned int m;         // filter semi-length, h_len = 4*m+1
 
     // quadrature filter component
     T * hq;                 // quadrature filter coefficients
@@ -57,7 +54,7 @@ struct FIRHILB(_s) {
     // vector dot product
     DOTPROD() dpq;
 
-    // regular r2c|c2r operation
+    // regular real-to-complex/complex-to-real operation
     unsigned int toggle;
 };
 
@@ -65,7 +62,7 @@ struct FIRHILB(_s) {
 //  _m      :   filter semi-length (delay: 2*m+1)
 //  _As     :   stop-band attenuation [dB]
 FIRHILB() FIRHILB(_create)(unsigned int _m,
-                           float _As)
+                           float        _As)
 {
     // validate firhilb inputs
     if (_m < 2) {
@@ -73,16 +70,19 @@ FIRHILB() FIRHILB(_create)(unsigned int _m,
         exit(1);
     }
 
+    // allocate memory for main object
     FIRHILB() q = (FIRHILB()) malloc(sizeof(struct FIRHILB(_s)));
-    q->m  = _m;
-    q->As = fabsf(_As);
+    q->m  = _m;         // filter semi-length
+    q->As = fabsf(_As); // stop-band attenuation
 
+    // set filter length and allocate memory for coefficients
     q->h_len = 4*(q->m) + 1;
-    q->h  = (T *)         malloc((q->h_len)*sizeof(T));
-    q->hc = (T complex *) malloc((q->h_len)*sizeof(T complex));
+    q->h     = (T *)         malloc((q->h_len)*sizeof(T));
+    q->hc    = (T complex *) malloc((q->h_len)*sizeof(T complex));
 
+    // allocate memory for quadrature filter component
     q->hq_len = 2*(q->m);
-    q->hq = (T *) malloc((q->hq_len)*sizeof(T));
+    q->hq     = (T *) malloc((q->hq_len)*sizeof(T));
 
     // compute filter coefficients for half-band filter
     liquid_firdes_kaiser(q->h_len, 0.25f, q->As, 0.0f, q->h);
@@ -91,7 +91,6 @@ FIRHILB() FIRHILB(_create)(unsigned int _m,
     unsigned int i;
     for (i=0; i<q->h_len; i++) {
         float t = (float)i - (float)(q->h_len-1)/2.0f;
-        //q->h[i]  *= sinf(0.5f*M_PI*t);
         q->hc[i] = q->h[i] * cexpf(_Complex_I*0.5f*M_PI*t);
         q->h[i]  = cimagf(q->hc[i]);
     }
@@ -101,15 +100,17 @@ FIRHILB() FIRHILB(_create)(unsigned int _m,
     for (i=1; i<q->h_len; i+=2)
         q->hq[j++] = q->h[q->h_len - i - 1];
 
+    // create windows for upper and lower polyphase filter branches
     q->w1 = WINDOW(_create)(2*(q->m));
-    WINDOW(_clear)(q->w1);
-
     q->w0 = WINDOW(_create)(2*(q->m));
     WINDOW(_clear)(q->w0);
+    WINDOW(_clear)(q->w1);
 
     // create internal dot product object
     q->dpq = DOTPROD(_create)(q->hq, q->hq_len);
 
+    // reset internal state and return object
+    FIRHILB(_reset)(q);
     return q;
 }
 
@@ -123,9 +124,12 @@ void FIRHILB(_destroy)(FIRHILB() _q)
     // destroy internal dot product object
     DOTPROD(_destroy)(_q->dpq);
 
+    // free coefficients arrays
     free(_q->h);
     free(_q->hc);
     free(_q->hq);
+
+    // free main object memory
     free(_q);
 }
 
@@ -147,8 +151,8 @@ void FIRHILB(_print)(FIRHILB() _q)
     }
 }
 
-// clear firhilb object buffers
-void FIRHILB(_clear)(FIRHILB() _q)
+// reset firhilb object internal state
+void FIRHILB(_reset)(FIRHILB() _q)
 {
     // clear window buffers
     WINDOW(_clear)(_q->w0);
@@ -162,8 +166,8 @@ void FIRHILB(_clear)(FIRHILB() _q)
 //  _q      :   firhilb object
 //  _x      :   real-valued input sample
 //  _y      :   complex-valued output sample
-void FIRHILB(_r2c_execute)(FIRHILB() _q,
-                           T _x,
+void FIRHILB(_r2c_execute)(FIRHILB()   _q,
+                           T           _x,
                            T complex * _y)
 {
     T * r;  // buffer read pointer
@@ -209,7 +213,7 @@ void FIRHILB(_r2c_execute)(FIRHILB() _q,
 //  _x      :   real-valued output sample
 void FIRHILB(_c2r_execute)(FIRHILB() _q,
                            T complex _x,
-                           T * _y)
+                           T *       _y)
 {
     *_y = crealf(_x);
 }
@@ -218,9 +222,9 @@ void FIRHILB(_c2r_execute)(FIRHILB() _q,
 //  _q      :   firhilb object
 //  _x      :   real-valued input array [size: 2 x 1]
 //  _y      :   complex-valued output sample
-void FIRHILB(_decim_execute)(FIRHILB() _q,
-                             T * _x,
-                             T complex *_y)
+void FIRHILB(_decim_execute)(FIRHILB()   _q,
+                             T *         _x,
+                             T complex * _y)
 {
     T * r;  // buffer read pointer
     T yi;   // in-phase component
@@ -238,13 +242,30 @@ void FIRHILB(_decim_execute)(FIRHILB() _q,
     *_y = yi + _Complex_I * yq;
 }
 
+// execute Hilbert transform decimator (real to complex) on
+// a block of samples
+//  _q      :   Hilbert transform object
+//  _x      :   real-valued input array [size: 2*_n x 1]
+//  _n      :   number of *output* samples
+//  _y      :   complex-valued output array [size: _n x 1]
+void FIRHILB(_decim_execute_block)(FIRHILB()    _q,
+                                   T *          _x,
+                                   unsigned int _n,
+                                   T complex *  _y)
+{
+    unsigned int i;
+
+    for (i=0; i<_n; i++)
+        FIRHILB(_decim_execute)(_q, &_x[2*i], &_y[i]);
+}
+
 // execute Hilbert transform interpolator (complex to real)
 //  _q      :   firhilb object
 //  _y      :   complex-valued input sample
 //  _x      :   real-valued output array [size: 2 x 1]
 void FIRHILB(_interp_execute)(FIRHILB() _q,
                               T complex _x,
-                              T *_y)
+                              T *       _y)
 {
     T * r;  // buffer read pointer
 
@@ -259,3 +280,19 @@ void FIRHILB(_interp_execute)(FIRHILB() _q,
     DOTPROD(_execute)(_q->dpq, r, &_y[1]);
 }
 
+// execute Hilbert transform interpolator (complex to real)
+// on a block of samples
+//  _q      :   Hilbert transform object
+//  _x      :   complex-valued input array [size: _n x 1]
+//  _n      :   number of *input* samples
+//  _y      :   real-valued output array [size: 2*_n x 1]
+void FIRHILB(_interp_execute_block)(FIRHILB()    _q,
+                                    T complex *  _x,
+                                    unsigned int _n,
+                                    T *          _y)
+{
+    unsigned int i;
+
+    for (i=0; i<_n; i++)
+        FIRHILB(_interp_execute)(_q, _x[i], &_y[2*i]);
+}

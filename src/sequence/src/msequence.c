@@ -1,7 +1,5 @@
 /*
- * Copyright (c) 2007, 2008, 2009, 2010 Joseph Gaeddert
- * Copyright (c) 2007, 2008, 2009, 2010 Virginia Polytechnic
- *                                      Institute & State University
+ * Copyright (c) 2007 - 2014 Joseph Gaeddert
  *
  * This file is part of liquid.
  *
@@ -228,5 +226,15 @@ unsigned int msequence_get_length(msequence _ms)
 unsigned int msequence_get_state(msequence _ms)
 {
     return _ms->v;
+}
+
+// set the internal state of the sequence
+void msequence_set_state(msequence    _ms,
+                         unsigned int _a)
+{
+    // set internal state
+    // NOTE: if state is set to zero, this will lock the sequence generator,
+    //       but let the user set this value if they wish
+    _ms->v = _a;
 }
 

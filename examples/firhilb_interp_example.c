@@ -24,10 +24,6 @@ int main() {
     float fc=0.37f;                 // signal center frequency
     unsigned int num_samples=128;   // number of samples
 
-    // create Hilbert transform object
-    firhilbf q = firhilbf_create(m,As);
-    firhilbf_print(q);
-
     // data arrays
     float complex x[num_samples];   // complex input
     float y[2*num_samples];         // real output
@@ -37,16 +33,17 @@ int main() {
     for (i=0; i<num_samples; i++)
         x[i] = cexpf(_Complex_I*2*M_PI*fc*i);
 
-    for (i=0; i<num_samples; i++) {
-        // execute transform (interpolator) to compute real signal
-        firhilbf_interp_execute(q, x[i], &y[2*i]);
+    // create Hilbert transform object
+    firhilbf q = firhilbf_create(m,As);
 
-        printf("y(%3u) = %12.8f;\n", 2*i+1, y[2*i+0]);
-        printf("y(%3u) = %12.8f;\n", 2*i+2, y[2*i+1]);
-    }
+    // execute transform (interpolator) to compute real signal
+    firhilbf_interp_execute_block(q, x, num_samples, y);
 
     // destroy Hilbert transform object
     firhilbf_destroy(q);
+
+    printf("firhilb interpolated %u complex samples to %u real samples\n",
+            2*num_samples, num_samples);
 
     // 
     // export results to file
@@ -79,7 +76,7 @@ int main() {
     fprintf(fid,"axis([-0.5 0.5 -80 20]);\n");
     fprintf(fid,"xlabel('normalized frequency');\n");
     fprintf(fid,"ylabel('PSD [dB]');\n");
-    fprintf(fid,"legend('original/complex','transformed/interpolated',1);");
+    fprintf(fid,"legend('original/complex','transformed/interpolated','location','northeast');");
 
     fclose(fid);
     printf("results written to %s\n", OUTPUT_FILENAME);

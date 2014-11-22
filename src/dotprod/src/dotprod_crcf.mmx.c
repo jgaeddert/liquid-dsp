@@ -1,6 +1,5 @@
 /*
- * Copyright (c) 2012 Joseph Gaeddert
- * Copyright (c) 2012 Virginia Polytechnic Institute & State University
+ * Copyright (c) 2007 - 2014 Joseph Gaeddert
  *
  * This file is part of liquid.
  *
@@ -33,10 +32,10 @@
 #define DEBUG_DOTPROD_CRCF_MMX   0
 
 // forward declaration of internal methods
-void dotprod_crcf_execute_mmx(dotprod_crcf _q,
+void dotprod_crcf_execute_mmx(dotprod_crcf    _q,
                               float complex * _x,
                               float complex * _y);
-void dotprod_crcf_execute_mmx4(dotprod_crcf _q,
+void dotprod_crcf_execute_mmx4(dotprod_crcf    _q,
                                float complex * _x,
                                float complex * _y);
 
@@ -90,7 +89,7 @@ struct dotprod_crcf_s {
     float * h;          // coefficients array
 };
 
-dotprod_crcf dotprod_crcf_create(float * _h,
+dotprod_crcf dotprod_crcf_create(float *      _h,
                                  unsigned int _n)
 {
     dotprod_crcf q = (dotprod_crcf)malloc(sizeof(struct dotprod_crcf_s));
@@ -112,14 +111,13 @@ dotprod_crcf dotprod_crcf_create(float * _h,
 }
 
 // re-create the structured dotprod object
-dotprod_crcf dotprod_crcf_recreate(dotprod_crcf _dp,
-                                   float * _h,
+dotprod_crcf dotprod_crcf_recreate(dotprod_crcf _q,
+                                   float *      _h,
                                    unsigned int _n)
 {
     // completely destroy and re-create dotprod object
-    dotprod_crcf_destroy(_dp);
-    _dp = dotprod_crcf_create(_h,_n);
-    return _dp;
+    dotprod_crcf_destroy(_q);
+    return dotprod_crcf_create(_h,_n);
 }
 
 
@@ -131,16 +129,16 @@ void dotprod_crcf_destroy(dotprod_crcf _q)
 
 void dotprod_crcf_print(dotprod_crcf _q)
 {
-    printf("dotprod_crcf:\n");
-    unsigned int i;
     // print coefficients to screen, skipping odd entries (due
     // to repeated coefficients)
+    printf("dotprod_crcf [mmx, %u coefficients]\n", _q->n);
+    unsigned int i;
     for (i=0; i<_q->n; i++)
-        printf("%3u : %12.9f\n", i, _q->h[2*i]);
+        printf("  %3u : %12.9f\n", i, _q->h[2*i]);
 }
 
 // 
-void dotprod_crcf_execute(dotprod_crcf _q,
+void dotprod_crcf_execute(dotprod_crcf    _q,
                           float complex * _x,
                           float complex * _y)
 {
@@ -153,7 +151,7 @@ void dotprod_crcf_execute(dotprod_crcf _q,
 }
 
 // use MMX/SSE extensions
-void dotprod_crcf_execute_mmx(dotprod_crcf _q,
+void dotprod_crcf_execute_mmx(dotprod_crcf    _q,
                               float complex * _x,
                               float complex * _y)
 {
@@ -209,7 +207,7 @@ void dotprod_crcf_execute_mmx(dotprod_crcf _q,
 }
 
 // use MMX/SSE extensions
-void dotprod_crcf_execute_mmx4(dotprod_crcf _q,
+void dotprod_crcf_execute_mmx4(dotprod_crcf    _q,
                                float complex * _x,
                                float complex * _y)
 {

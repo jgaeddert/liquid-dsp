@@ -1,7 +1,5 @@
 /*
- * Copyright (c) 2007, 2008, 2009, 2010 Joseph Gaeddert
- * Copyright (c) 2007, 2008, 2009, 2010 Virginia Polytechnic
- *                                      Institute & State University
+ * Copyright (c) 2007 - 2014 Joseph Gaeddert
  *
  * This file is part of liquid.
  *
@@ -21,6 +19,12 @@
 
 //
 // iirfilt : Infinite impulse response filter
+//
+// References:
+//  [Pintelon:1990] Rik Pintelon and Johan Schoukens, "Real-Time
+//      Integration and Differentiation of Analog Signals by Means of
+//      Digital Filtering," IEEE Transactions on Instrumentation and
+//      Measurement, vol 39 no. 6, December 1990.
 //
 
 #include <stdio.h>
@@ -69,9 +73,9 @@ struct IIRFILT(_s) {
 //  _nb     :   length of numerator
 //  _a      :   denominator, feed-back coefficients [size: _na x 1]
 //  _na     :   length of denominator
-IIRFILT() IIRFILT(_create)(TC * _b,
+IIRFILT() IIRFILT(_create)(TC *         _b,
                            unsigned int _nb,
-                           TC * _a,
+                           TC *         _a,
                            unsigned int _na)
 {
     // validate input
@@ -122,7 +126,7 @@ IIRFILT() IIRFILT(_create)(TC * _b,
 #endif
 
     // reset internal state
-    IIRFILT(_clear)(q);
+    IIRFILT(_reset)(q);
     
     // return iirfilt object
     return q;
@@ -131,7 +135,7 @@ IIRFILT() IIRFILT(_create)(TC * _b,
 // create iirfilt (infinite impulse response filter) object based
 // on second-order sections form
 //  _B      :   numerator, feed-forward coefficients [size: _nsos x 3]
-//  _A      :   denominator, feed-back coefficients [size: _nsos x 3]
+//  _A      :   denominator, feed-back coefficients  [size: _nsos x 3]
 //  _nsos   :   number of second-order sections
 //
 // NOTE: The number of second-order sections can be computed from the
@@ -139,8 +143,8 @@ IIRFILT() IIRFILT(_create)(TC * _b,
 //   r = n % 2
 //   L = (n-r)/2
 //   nsos = L+r
-IIRFILT() IIRFILT(_create_sos)(TC * _B,
-                               TC * _A,
+IIRFILT() IIRFILT(_create_sos)(TC *         _B,
+                               TC *         _A,
                                unsigned int _nsos)
 {
     // validate input
@@ -236,6 +240,121 @@ IIRFILT() IIRFILT(_create_prototype)(liquid_iirdes_filtertype _ftype,
     return q;
 }
 
+// create 8th-order integrating filter
+IIRFILT() IIRFILT(_create_integrator)()
+{
+    // 
+    // integrator digital zeros/poles/gain, [Pintelon:1990] Table II
+    //
+    // zeros, digital, integrator
+    float complex zdi[8] = {
+        1.175839 * -1.0f,
+        3.371020 * cexpf(_Complex_I * M_PI / 180.0f * -125.1125f),
+        3.371020 * cexpf(_Complex_I * M_PI / 180.0f *  125.1125f),
+        4.549710 * cexpf(_Complex_I * M_PI / 180.0f *  -80.96404f),
+        4.549710 * cexpf(_Complex_I * M_PI / 180.0f *   80.96404f),
+        5.223966 * cexpf(_Complex_I * M_PI / 180.0f *  -40.09347f),
+        5.223966 * cexpf(_Complex_I * M_PI / 180.0f *   40.09347f),
+        5.443743,};
+    // poles, digital, integrator
+    float complex pdi[8] = {
+        0.5805235f * -1.0f,
+        0.2332021f * cexpf(_Complex_I * M_PI / 180.0f * -114.0968f),
+        0.2332021f * cexpf(_Complex_I * M_PI / 180.0f *  114.0968f),
+        0.1814755f * cexpf(_Complex_I * M_PI / 180.0f *  -66.33969f),
+        0.1814755f * cexpf(_Complex_I * M_PI / 180.0f *   66.33969f),
+        0.1641457f * cexpf(_Complex_I * M_PI / 180.0f *  -21.89539f),
+        0.1641457f * cexpf(_Complex_I * M_PI / 180.0f *   21.89539f),
+        1.0f,};
+    // gain, digital, integrator
+    float complex kdi = -1.89213380759321e-05f;
+
+    // second-order sections
+    // allocate 12 values for 4 second-order sections each with
+    // 2 roots (order 8), e.g. (1 + r0 z^-1)(1 + r1 z^-1)
+    float Bi[12];
+    float Ai[12];
+    iirdes_dzpk2sosf(zdi, pdi, 8, kdi, Bi, Ai);
+
+    // copy to type-specific array
+    TC B[12];
+    TC A[12];
+    unsigned int i;
+    for (i=0; i<12; i++) {
+        B[i] = (TC) (Bi[i]);
+        A[i] = (TC) (Ai[i]);
+    }
+
+    // create and return filter object
+    return IIRFILT(_create_sos)(B,A,4);
+}
+
+// create 8th-order differentiation filter
+IIRFILT() IIRFILT(_create_differentiator)()
+{
+    // 
+    // differentiator digital zeros/poles/gain, [Pintelon:1990] Table IV
+    //
+    // zeros, digital, differentiator
+    float complex zdd[8] = {
+        1.702575f * -1.0f,
+        5.877385f * cexpf(_Complex_I * M_PI / 180.0f * -221.4063f),
+        5.877385f * cexpf(_Complex_I * M_PI / 180.0f *  221.4063f),
+        4.197421f * cexpf(_Complex_I * M_PI / 180.0f * -144.5972f),
+        4.197421f * cexpf(_Complex_I * M_PI / 180.0f *  144.5972f),
+        5.350284f * cexpf(_Complex_I * M_PI / 180.0f *  -66.88802f),
+        5.350284f * cexpf(_Complex_I * M_PI / 180.0f *   66.88802f),
+        1.0f,};
+    // poles, digital, differentiator
+    float complex pdd[8] = {
+        0.8476936f * -1.0f,
+        0.2990781f * cexpf(_Complex_I * M_PI / 180.0f * -125.5188f),
+        0.2990781f * cexpf(_Complex_I * M_PI / 180.0f *  125.5188f),
+        0.2232427f * cexpf(_Complex_I * M_PI / 180.0f *  -81.52326f),
+        0.2232427f * cexpf(_Complex_I * M_PI / 180.0f *   81.52326f),
+        0.1958670f * cexpf(_Complex_I * M_PI / 180.0f *  -40.51510f),
+        0.1958670f * cexpf(_Complex_I * M_PI / 180.0f *   40.51510f),
+        0.1886088f,};
+    // gain, digital, differentiator
+    float complex kdd = 2.09049284907492e-05f;
+
+    // second-order sections
+    // allocate 12 values for 4 second-order sections each with
+    // 2 roots (order 8), e.g. (1 + r0 z^-1)(1 + r1 z^-1)
+    float Bd[12];
+    float Ad[12];
+    iirdes_dzpk2sosf(zdd, pdd, 8, kdd, Bd, Ad);
+
+    // copy to type-specific array
+    TC B[12];
+    TC A[12];
+    unsigned int i;
+    for (i=0; i<12; i++) {
+        B[i] = (TC) (Bd[i]);
+        A[i] = (TC) (Ad[i]);
+    }
+
+    // create and return filter object
+    return IIRFILT(_create_sos)(B,A,4);
+}
+
+// create DC-blocking filter
+//
+//          1 -          z^-1
+//  H(z) = ------------------
+//          1 - (1-alpha)z^-1
+IIRFILT() IIRFILT(_create_dc_blocker)(float _alpha)
+{
+    // compute DC-blocking filter coefficients
+    float bf[2] = {1.0f, -1.0f  };
+    float af[2] = {1.0f, -1.0f + _alpha};
+
+    // convert to type-specific array
+    TC b[2] = {(TC)bf[0], (TC)bf[1]};
+    TC a[2] = {(TC)af[0], (TC)af[1]};
+    return IIRFILT(_create)(b,2,a,2);
+}
+
 // create phase-locked loop iirfilt object
 //  _w      :   filter bandwidth
 //  _zeta   :   damping factor (1/sqrt(2) suggested)
@@ -324,15 +443,15 @@ void IIRFILT(_print)(IIRFILT() _q)
     }
 }
 
-// clear
-void IIRFILT(_clear)(IIRFILT() _q)
+// clear/reset iirfilt object internals
+void IIRFILT(_reset)(IIRFILT() _q)
 {
     unsigned int i;
 
     if (_q->type == IIRFILT_TYPE_SOS) {
         // clear second-order sections
         for (i=0; i<_q->nsos; i++) {
-            IIRFILTSOS(_clear)(_q->qsos[i]);
+            IIRFILTSOS(_reset)(_q->qsos[i]);
         }
     } else {
         // set internal buffer to zero
@@ -387,8 +506,8 @@ void IIRFILT(_execute_norm)(IIRFILT() _q,
 //  _x      :   input sample
 //  _y      :   output sample
 void IIRFILT(_execute_sos)(IIRFILT() _q,
-                           TI _x,
-                           TO *_y)
+                           TI        _x,
+                           TO *      _y)
 {
     TI t0 = _x;     // intermediate input
     TO t1 = 0.;     // intermediate output
@@ -408,14 +527,32 @@ void IIRFILT(_execute_sos)(IIRFILT() _q,
 //  _x      :   input sample
 //  _y      :   output sample
 void IIRFILT(_execute)(IIRFILT() _q,
-                       TI _x,
-                       TO *_y)
+                       TI        _x,
+                       TO *      _y)
 {
     if (_q->type == IIRFILT_TYPE_NORM)
         IIRFILT(_execute_norm)(_q,_x,_y);
     else
         IIRFILT(_execute_sos)(_q,_x,_y);
 }
+
+// execute the filter on a block of input samples; the
+// input and output buffers may be the same
+//  _q      : filter object
+//  _x      : pointer to input array [size: _n x 1]
+//  _n      : number of input, output samples
+//  _y      : pointer to output array [size: _n x 1]
+void IIRFILT(_execute_block)(IIRFILT()    _q,
+                             TI *         _x,
+                             unsigned int _n,
+                             TO *         _y)
+{
+    unsigned int i;
+    for (i=0; i<_n; i++)
+        // compute output sample
+        IIRFILT(_execute)(_q, _x[i], &_y[i]);
+}
+
 
 // get filter length (order + 1)
 unsigned int IIRFILT(_get_length)(IIRFILT() _q)
@@ -427,8 +564,8 @@ unsigned int IIRFILT(_get_length)(IIRFILT() _q)
 //  _q      :   filter object
 //  _fc     :   frequency
 //  _H      :   output frequency response
-void IIRFILT(_freqresponse)(IIRFILT() _q,
-                            float _fc,
+void IIRFILT(_freqresponse)(IIRFILT()       _q,
+                            float           _fc,
                             float complex * _H)
 {
     unsigned int i;
@@ -474,7 +611,7 @@ void IIRFILT(_freqresponse)(IIRFILT() _q,
 //  _q      :   filter object
 //  _fc     :   frequency
 float IIRFILT(_groupdelay)(IIRFILT() _q,
-                           float _fc)
+                           float     _fc)
 {
     float groupdelay = 0;
     unsigned int i;

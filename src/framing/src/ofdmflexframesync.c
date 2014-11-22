@@ -1,6 +1,5 @@
 /*
- * Copyright (c) 2011 Joseph Gaeddert
- * Copyright (c) 2011 Virginia Polytechnic Institute & State University
+ * Copyright (c) 2007 - 2014 Joseph Gaeddert
  *
  * This file is part of liquid.
  *
@@ -35,10 +34,6 @@
 #define DEBUG_OFDMFLEXFRAMESYNC 0
 
 #define OFDMFLEXFRAME_H_SOFT (0)
-
-#if DEBUG_OFDMFLEXFRAMESYNC
-void ofdmflexframesync_debug_print(ofdmflexframesync _q);
-#endif
 
 struct ofdmflexframesync_s {
     unsigned int M;         // number of subcarriers
@@ -258,6 +253,30 @@ float ofdmflexframesync_get_rssi(ofdmflexframesync _q)
 float ofdmflexframesync_get_cfo(ofdmflexframesync _q)
 {
     return ofdmframesync_get_cfo(_q->fs);
+}
+
+
+// 
+// debugging methods
+//
+
+// enable debugging for internal ofdm frame synchronizer
+void ofdmflexframesync_debug_enable(ofdmflexframesync _q)
+{
+    ofdmframesync_debug_enable(_q->fs);
+}
+
+// disable debugging for internal ofdm frame synchronizer
+void ofdmflexframesync_debug_disable(ofdmflexframesync _q)
+{
+    ofdmframesync_debug_enable(_q->fs);
+}
+
+// print debugging file for internal ofdm frame synchronizer
+void ofdmflexframesync_debug_print(ofdmflexframesync _q,
+                                   const char *      _filename)
+{
+    ofdmframesync_debug_print(_q->fs, _filename);
 }
 
 //

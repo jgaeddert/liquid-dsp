@@ -87,7 +87,7 @@ int main(int argc, char*argv[])
     float dphi_hat[num_samples];            // carrier offset estimate
 
     // create transmit/receive interpolator/decimator
-    interp_crcf interp_tx = interp_crcf_create_rnyquist(LIQUID_RNYQUIST_RRC,k,m,beta,dt);
+    firinterp_crcf interp = firinterp_crcf_create_rnyquist(LIQUID_FIRFILT_RRC,k,m,beta,dt);
 
     // generate synchronization pattern (BPSK) and interpolate
     for (i=0; i<num_sync_symbols + 2*m; i++) {
@@ -98,18 +98,18 @@ int main(int argc, char*argv[])
             seq[i] = sym;
         }
 
-        if (i < 2*m) interp_crcf_execute(interp_tx, sym, s0);
-        else         interp_crcf_execute(interp_tx, sym, &s0[k*(i-2*m)]);
+        if (i < 2*m) firinterp_crcf_execute(interp, sym, s0);
+        else         firinterp_crcf_execute(interp, sym, &s0[k*(i-2*m)]);
     }
 
     // reset interpolator
-    interp_crcf_clear(interp_tx);
+    firinterp_crcf_reset(interp);
 
     // interpolate input
     for (i=0; i<num_symbols; i++) {
         float complex sym = i < num_sync_symbols ? seq[i] : 0.0f;
 
-        interp_crcf_execute(interp_tx, sym, &x[k*i]);
+        firinterp_crcf_execute(interp, sym, &x[k*i]);
     }
 
     // push through channel
@@ -145,7 +145,7 @@ int main(int argc, char*argv[])
     }
 
     // destroy objects
-    interp_crcf_destroy(interp_tx);
+    firinterp_crcf_destroy(interp);
     bpresync_cccf_destroy(sync);
     
     // print results

@@ -1,6 +1,5 @@
 /*
- * Copyright (c) 2007, 2009 Joseph Gaeddert
- * Copyright (c) 2007, 2009 Virginia Polytechnic Institute & State University
+ * Copyright (c) 2007 - 2014 Joseph Gaeddert
  *
  * This file is part of liquid.
  *
@@ -31,10 +30,15 @@
 
 // basic dot product
 
-void dotprod_rrrf_run(float *_h,
-                      float *_x,
+// basic dot product
+//  _h      :   coefficients array [size: 1 x _n]
+//  _x      :   input array [size: 1 x _n]
+//  _n      :   input lengths
+//  _y      :   output dot product
+void dotprod_rrrf_run(float *      _h,
+                      float *      _x,
                       unsigned int _n,
-                      float * _y)
+                      float *      _y)
 {
     float r=0;
     unsigned int i;
@@ -43,10 +47,15 @@ void dotprod_rrrf_run(float *_h,
     *_y = r;
 }
 
-void dotprod_rrrf_run4(float *_h,
-                       float *_x,
+// basic dot product, unrolling loop
+//  _h      :   coefficients array [size: 1 x _n]
+//  _x      :   input array [size: 1 x _n]
+//  _n      :   input lengths
+//  _y      :   output dot product
+void dotprod_rrrf_run4(float *      _h,
+                       float *      _x,
                        unsigned int _n,
-                       float * _y)
+                       float *      _y)
 {
     float r=0;
 
@@ -86,7 +95,8 @@ struct dotprod_rrrf_s {
 };
 
 // create the structured dotprod object
-dotprod_rrrf dotprod_rrrf_create(float * _h, unsigned int _n)
+dotprod_rrrf dotprod_rrrf_create(float *      _h,
+                                 unsigned int _n)
 {
     dotprod_rrrf dp = (dotprod_rrrf)malloc(sizeof(struct dotprod_rrrf_s));
     dp->n = _n;
@@ -108,41 +118,40 @@ dotprod_rrrf dotprod_rrrf_create(float * _h, unsigned int _n)
 }
 
 // re-create the structured dotprod object
-dotprod_rrrf dotprod_rrrf_recreate(dotprod_rrrf _dp,
-                                   float * _h,
+dotprod_rrrf dotprod_rrrf_recreate(dotprod_rrrf _q,
+                                   float *      _h,
                                    unsigned int _n)
 {
     // completely destroy and re-create dotprod object
-    dotprod_rrrf_destroy(_dp);
-    _dp = dotprod_rrrf_create(_h,_n);
-    return _dp;
+    dotprod_rrrf_destroy(_q);
+    return dotprod_rrrf_create(_h,_n);
 }
 
 // destroy the structured dotprod object
-void dotprod_rrrf_destroy(dotprod_rrrf _dp)
+void dotprod_rrrf_destroy(dotprod_rrrf _q)
 {
     // clean up coefficients arrays
     unsigned int i;
     for (i=0; i<4; i++)
-        free(_dp->h[i]);
+        free(_q->h[i]);
 
     // free allocated object memory
-    free(_dp);
+    free(_q);
 }
 
 // print the dotprod object
-void dotprod_rrrf_print(dotprod_rrrf _dp)
+void dotprod_rrrf_print(dotprod_rrrf _q)
 {
-    printf("dotprod_rrrf [%u taps]:\n", _dp->n);
+    printf("dotprod_rrrf [altivec, %u coefficients]:\n", _q->n);
     unsigned int i;
-    for (i=0; i<_dp->n; i++)
-        printf("  %3u : %12.9f\n", i, _dp->h[0][i]);
+    for (i=0; i<_q->n; i++)
+        printf("  %3u : %12.9f\n", i, _q->h[0][i]);
 }
 
 // exectue vectorized structured inner dot product
-void dotprod_rrrf_execute(dotprod_rrrf _dp,
-                          float * _x,
-                          float * _r)
+void dotprod_rrrf_execute(dotprod_rrrf _q,
+                          float *      _x,
+                          float *      _r)
 {
     int al; // input data alignment
 
@@ -154,9 +163,9 @@ void dotprod_rrrf_execute(dotprod_rrrf _dp,
     ar = (vector float*)( (int)_x & ~15);
     al = ((int)_x & 15)/sizeof(float);
 
-    d = (vector float*)_dp->h[al];
+    d = (vector float*)_q->h[al];
 
-    nblocks = (_dp->n + al - 1)/4 + 1;
+    nblocks = (_q->n + al - 1)/4 + 1;
 
     // split into four vectors each with four 32-bit
     // partial sums.  Effectively each loop iteration

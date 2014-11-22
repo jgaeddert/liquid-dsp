@@ -1,7 +1,5 @@
 /*
- * Copyright (c) 2007, 2008, 2009, 2010 Joseph Gaeddert
- * Copyright (c) 2007, 2008, 2009, 2010 Virginia Polytechnic
- *                                      Institute & State University
+ * Copyright (c) 2007 - 2014 Joseph Gaeddert
  *
  * This file is part of liquid.
  *
@@ -61,14 +59,14 @@ struct FIRFARROW(_s) {
 };
 
 // create firfarrow object
-//  _h_len      :   filter length
-//  _p          :   polynomial order
-//  _fc         :   filter cutoff frequency
-//  _As         :   stopband attenuation [dB]
+//  _h_len      : filter length
+//  _p          : polynomial order
+//  _fc         : filter cutoff frequency
+//  _As         : stopband attenuation [dB]
 FIRFARROW() FIRFARROW(_create)(unsigned int _h_len,
                                unsigned int _p,
-                               float _fc,
-                               float _As)
+                               float        _fc,
+                               float        _As)
 {
     // validate input
     if (_h_len < 2) {
@@ -82,105 +80,111 @@ FIRFARROW() FIRFARROW(_create)(unsigned int _h_len,
         exit(1);
     }
 
-    FIRFARROW() f = (FIRFARROW()) malloc(sizeof(struct FIRFARROW(_s)));
-    f->h_len = _h_len;  // filter length
-    f->Q     = _p;      // polynomial order
-    f->As    = _As;     // filter stop-band attenuation
-    f->fc    = _fc;     // filter cutoff frequency
+    // create main object
+    FIRFARROW() q = (FIRFARROW()) malloc(sizeof(struct FIRFARROW(_s)));
+
+    // set internal properties
+    q->h_len = _h_len;  // filter length
+    q->Q     = _p;      // polynomial order
+    q->As    = _As;     // filter stop-band attenuation
+    q->fc    = _fc;     // filter cutoff frequency
 
     // allocate memory for filter coefficients
-    f->h = (TC *) malloc((f->h_len)*sizeof(TC));
+    q->h = (TC *) malloc((q->h_len)*sizeof(TC));
 
 #if FIRFARROW_USE_DOTPROD
-    f->w = WINDOW(_create)(f->h_len);
+    q->w = WINDOW(_create)(q->h_len);
 #else
-    f->v = malloc((f->h_len)*sizeof(TI));
+    q->v = malloc((q->h_len)*sizeof(TI));
 #endif
 
     // allocate memory for polynomial matrix [ h_len x Q+1 ]
-    f->P = (float*) malloc((f->h_len)*(f->Q+1)*sizeof(float));
+    q->P = (float*) malloc((q->h_len)*(q->Q+1)*sizeof(float));
 
-    // clear the filter object
-    FIRFARROW(_clear)(f);
+    // reset the filter object
+    FIRFARROW(_reset)(q);
 
     // generate polynomials
-    FIRFARROW(_genpoly)(f);
+    FIRFARROW(_genpoly)(q);
 
     // set nominal delay of 0
-    FIRFARROW(_set_delay)(f,0.0f);
+    FIRFARROW(_set_delay)(q,0.0f);
 
-    return f;
+    // return main object
+    return q;
 }
 
-// destroy firfarrow object
-void FIRFARROW(_destroy)(FIRFARROW() _f)
+// destroy firfarrow object, freeing all internal memory
+void FIRFARROW(_destroy)(FIRFARROW() _q)
 {
 #if FIRFARROW_USE_DOTPROD
-    WINDOW(_destroy)(_f->w);
+    WINDOW(_destroy)(_q->w);
 #else
-    free(_f->v);
+    free(_q->v);
 #endif
-    free(_f->h);    // free the filter coefficients array
-    free(_f->P);    // free the polynomial matrix
-    free(_f);
+    free(_q->h);    // free the filter coefficients array
+    free(_q->P);    // free the polynomial matrix
+
+    // free main object
+    free(_q);
 }
 
-// clear firfarrow object
-void FIRFARROW(_clear)(FIRFARROW() _f)
+// print firfarrow object's internal properties
+void FIRFARROW(_print)(FIRFARROW() _q)
 {
-#if FIRFARROW_USE_DOTPROD
-    WINDOW(_clear)(_f->w);
-#else
-    unsigned int i;
-    for (i=0; i<_f->h_len; i++)
-        _f->v[i] = 0;
-    _f->v_index = 0;
-#endif
-}
-
-// print firfarrow object internals
-void FIRFARROW(_print)(FIRFARROW() _f)
-{
-    printf("firfarrow [len : %u, poly-order : %u]\n", _f->h_len, _f->Q);
+    printf("firfarrow [len : %u, poly-order : %u]\n", _q->h_len, _q->Q);
     printf("polynomial coefficients:\n");
 
     // print coefficients
     unsigned int i, j, n=0;
-    for (i=0; i<_f->h_len; i++) {
+    for (i=0; i<_q->h_len; i++) {
         printf("  %3u : ", i);
-        for (j=0; j<_f->Q+1; j++)
-            printf("%12.4e ", _f->P[n++]);
+        for (j=0; j<_q->Q+1; j++)
+            printf("%12.4e ", _q->P[n++]);
         printf("\n");
     }
 
-    printf("filter coefficients (mu=%8.4f):\n", _f->mu);
-    n = _f->h_len;
+    printf("filter coefficients (mu=%8.4f):\n", _q->mu);
+    n = _q->h_len;
     for (i=0; i<n; i++) {
         printf("  h(%3u) = ", i+1);
-        PRINTVAL_TC(_f->h[n-i-1],%12.8f);
+        PRINTVAL_TC(_q->h[n-i-1],%12.8f);
         printf(";\n");
     }
 }
 
+// reset firfarrow object's internal state
+void FIRFARROW(_reset)(FIRFARROW() _q)
+{
+#if FIRFARROW_USE_DOTPROD
+    WINDOW(_clear)(_q->w);
+#else
+    unsigned int i;
+    for (i=0; i<_q->h_len; i++)
+        _q->v[i] = 0;
+    _q->v_index = 0;
+#endif
+}
+
 // push sample into firfarrow object
-//  _f      :   firfarrow object
+//  _q      :   firfarrow object
 //  _x      :   input sample
-void FIRFARROW(_push)(FIRFARROW() _f,
+void FIRFARROW(_push)(FIRFARROW() _q,
                       TI _x)
 {
 #if FIRFARROW_USE_DOTPROD
-    WINDOW(_push)(_f->w, _x);
+    WINDOW(_push)(_q->w, _x);
 #else
-    _f->v[ _f->v_index ] = _x;
-    (_f->v_index)++;
-    _f->v_index = (_f->v_index) % (_f->h_len);
+    _q->v[ _q->v_index ] = _x;
+    (_q->v_index)++;
+    _q->v_index = (_q->v_index) % (_q->h_len);
 #endif
 }
 
 // set fractional delay of firfarrow object
-//  _f      :   firfarrow object
-//  _mu     :   fractional sample delay
-void FIRFARROW(_set_delay)(FIRFARROW() _f,
+//  _q      : firfarrow object
+//  _mu     : fractional sample delay
+void FIRFARROW(_set_delay)(FIRFARROW() _q,
                            float _mu)
 {
     // validate input
@@ -189,58 +193,80 @@ void FIRFARROW(_set_delay)(FIRFARROW() _f,
     }
 
     unsigned int i, n=0;
-    for (i=0; i<_f->h_len; i++) {
+    for (i=0; i<_q->h_len; i++) {
         // compute filter tap from polynomial using negative
         // value for _mu
-        _f->h[i] = POLY(_val)(_f->P+n, _f->Q, -_mu);
+        _q->h[i] = POLY(_val)(_q->P+n, _q->Q, -_mu);
 
         // normalize filter by inverse of DC response
-        _f->h[i] *= _f->gamma;
+        _q->h[i] *= _q->gamma;
 
-        n += _f->Q+1;
+        n += _q->Q+1;
 
-        //printf("  h[%3u] = %12.8f\n", i, _f->h[i]);
+        //printf("  h[%3u] = %12.8f\n", i, _q->h[i]);
     }
 }
 
 // execute firfarrow internal dot product
-//  _f      :   firfarrow object
-//  _y      :   output sample pointer
-void FIRFARROW(_execute)(FIRFARROW() _f,
-                         TO *_y)
+//  _q      : firfarrow object
+//  _y      : output sample pointer
+void FIRFARROW(_execute)(FIRFARROW() _q,
+                         TO *        _y)
 {
 #if FIRFARROW_USE_DOTPROD
     TI *r;
-    WINDOW(_read)(_f->w, &r);
-    DOTPROD(_run4)(_f->h, r, _f->h_len, _y);
+    WINDOW(_read)(_q->w, &r);
+    DOTPROD(_run4)(_q->h, r, _q->h_len, _y);
 #else
     TO y = 0;
     unsigned int i;
-    for (i=0; i<_f->h_len; i++)
-        y += _f->v[ (i+_f->v_index)%(_f->h_len) ] * _f->h[i];
+    for (i=0; i<_q->h_len; i++)
+        y += _q->v[ (i+_q->v_index)%(_q->h_len) ] * _q->h[i];
     *_y = y;
 #endif
 }
 
-// get length of firfarrow object (number of filter taps)
-unsigned int FIRFARROW(_get_length)(FIRFARROW() _f)
+// compute firfarrow filter on block of samples; the input
+// and output arrays may have the same pointer
+//  _q      : firfarrow object
+//  _x      : input array [size: _n x 1]
+//  _n      : input, output array size
+//  _y      : output array [size: _n x 1]
+void FIRFARROW(_execute_block)(FIRFARROW()  _q,
+                               TI *         _x,
+                               unsigned int _n,
+                               TO *         _y)
 {
-    return _f->h_len;
+    unsigned int i;
+
+    for (i=0; i<_n; i++) {
+        // push input sample
+        FIRFARROW(_push)(_q, _x[i]);
+
+        // compute output
+        FIRFARROW(_execute)(_q, &_y[i]);
+    }
+}
+
+// get length of firfarrow object (number of filter taps)
+unsigned int FIRFARROW(_get_length)(FIRFARROW() _q)
+{
+    return _q->h_len;
 }
 
 // get coefficients of firfarrow object
-//  _f      :   firfarrow object
-//  _h      :   output coefficients pointer
-void FIRFARROW(_get_coefficients)(FIRFARROW() _f,
-                                  TC * _h)
+//  _q      : firfarrow object
+//  _h      : output coefficients pointer
+void FIRFARROW(_get_coefficients)(FIRFARROW() _q,
+                                  TC *        _h)
 {
-    memmove(_h, _f->h, (_f->h_len)*sizeof(TC));
+    memmove(_h, _q->h, (_q->h_len)*sizeof(TC));
 }
 
 // compute complex frequency response
-//  _q      :   filter object
-//  _fc     :   frequency
-//  _H      :   output frequency response
+//  _q      : filter object
+//  _fc     : frequency
+//  _H      : output frequency response
 void FIRFARROW(_freqresponse)(FIRFARROW() _q,
                               float _fc,
                               float complex * _H)
@@ -255,7 +281,7 @@ void FIRFARROW(_freqresponse)(FIRFARROW() _q,
     *_H = H;
 }
 
-// compute group delay in samples
+// compute group delay [samples]
 //  _q      :   filter object
 //  _fc     :   frequency
 float FIRFARROW(_groupdelay)(FIRFARROW() _q,

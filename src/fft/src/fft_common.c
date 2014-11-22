@@ -1,7 +1,5 @@
 /*
- * Copyright (c) 2007, 2008, 2009, 2010, 2011, 2012 Joseph Gaeddert
- * Copyright (c) 2007, 2008, 2009, 2010, 2011, 2012 Virginia Polytechnic
- *                                      Institute & State University
+ * Copyright (c) 2007 - 2014 Joseph Gaeddert
  *
  * This file is part of liquid.
  *
@@ -35,8 +33,8 @@ struct FFT(plan_s)
     TC * y;             // output array pointer (not allocated)
     int direction;      // forward/reverse
     int flags;
-    liquid_fft_kind kind;
-    liquid_fft_method method;
+    liquid_fft_type   type;     // type of transform
+    liquid_fft_method method;   // transform method
 
     // 'execute' function pointer
     FFT(_execute_t) * execute;
@@ -99,12 +97,12 @@ struct FFT(plan_s)
     } data;
 };
 
-// create FFT plan
+// create FFT plan, regular complex one-dimensional transform
 //  _nfft   :   FFT size
 //  _x      :   input array [size: _nfft x 1]
 //  _y      :   output array [size: _nfft x 1]
-//  _dir    :   fft direction: {FFT_FORWARD, FFT_REVERSE}
-//  _method :   fft method
+//  _dir    :   fft direction: {LIQUID_FFT_FORWARD, LIQUID_FFT_BACKWARD}
+//  _flags  :   fft method
 FFT(plan) FFT(_create_plan)(unsigned int _nfft,
                             TC *         _x,
                             TC *         _y,
@@ -137,10 +135,6 @@ FFT(plan) FFT(_create_plan)(unsigned int _nfft,
         // use slow DFT
         return FFT(_create_plan_dft)(_nfft, _x, _y, _dir, _flags);
 
-    case LIQUID_FFT_METHOD_NONE:
-        // no method specified (e.g. real-to-real method)
-        break;
-
     case LIQUID_FFT_METHOD_UNKNOWN:
     default:
         fprintf(stderr,"error: fft_create_plan(), unknown/invalid fft method\n");
@@ -153,16 +147,42 @@ FFT(plan) FFT(_create_plan)(unsigned int _nfft,
 // destroy FFT plan
 void FFT(_destroy_plan)(FFT(plan) _q)
 {
-    switch (_q->method) {
-    case LIQUID_FFT_METHOD_DFT:         FFT(_destroy_plan_dft)(_q); break;
-    case LIQUID_FFT_METHOD_RADIX2:      FFT(_destroy_plan_radix2)(_q); break;
-    case LIQUID_FFT_METHOD_MIXED_RADIX: FFT(_destroy_plan_mixed_radix)(_q); break;
-    case LIQUID_FFT_METHOD_RADER:       FFT(_destroy_plan_rader)(_q); break;
-    case LIQUID_FFT_METHOD_RADER2:      FFT(_destroy_plan_rader2)(_q); break;
-    case LIQUID_FFT_METHOD_NONE:        break;
-    case LIQUID_FFT_METHOD_UNKNOWN:
+    switch (_q->type) {
+    // complex one-dimensional transforms
+    case LIQUID_FFT_FORWARD:
+    case LIQUID_FFT_BACKWARD:
+        switch (_q->method) {
+        case LIQUID_FFT_METHOD_DFT:         FFT(_destroy_plan_dft)(_q);         return;
+        case LIQUID_FFT_METHOD_RADIX2:      FFT(_destroy_plan_radix2)(_q);      return;
+        case LIQUID_FFT_METHOD_MIXED_RADIX: FFT(_destroy_plan_mixed_radix)(_q); return;
+        case LIQUID_FFT_METHOD_RADER:       FFT(_destroy_plan_rader)(_q);       return;
+        case LIQUID_FFT_METHOD_RADER2:      FFT(_destroy_plan_rader2)(_q);      return;
+        case LIQUID_FFT_METHOD_UNKNOWN:
+        default:
+            fprintf(stderr,"error: fft_destroy_plan(), unknown/invalid fft method\n");
+            exit(1);
+        }
+        break;
+    // discrete cosine transforms
+    case LIQUID_FFT_REDFT00:
+    case LIQUID_FFT_REDFT10:
+    case LIQUID_FFT_REDFT01:
+    case LIQUID_FFT_REDFT11:
+    // discrete sine transforms
+    case LIQUID_FFT_RODFT00:
+    case LIQUID_FFT_RODFT10:
+    case LIQUID_FFT_RODFT01:
+    case LIQUID_FFT_RODFT11:
+        FFT(_destroy_plan_r2r_1d)(_q);
+        break;
+
+    // modified discrete cosine transform
+    case LIQUID_FFT_MDCT:   break;
+    case LIQUID_FFT_IMDCT:  break;
+
+    case LIQUID_FFT_UNKNOWN:
     default:
-        fprintf(stderr,"error: fft_destroy_plan(), unknown/invalid fft method\n");
+        fprintf(stderr,"error: fft_destroy_plan(), unknown/invalid fft type\n");
         exit(1);
     }
 }
@@ -170,23 +190,49 @@ void FFT(_destroy_plan)(FFT(plan) _q)
 // print FFT plan
 void FFT(_print_plan)(FFT(plan) _q)
 {
-    printf("fft plan [%s], n=%u, ",
-            _q->direction == FFT_FORWARD ? "forward" : "reverse",
-            _q->nfft);
+    switch (_q->type) {
+    // complex one-dimensional transforms
+    case LIQUID_FFT_FORWARD:
+    case LIQUID_FFT_BACKWARD:
+        printf("fft plan [%s], n=%u, ",
+                _q->direction == LIQUID_FFT_FORWARD ? "forward" : "reverse",
+                _q->nfft);
+        switch (_q->method) {
+        case LIQUID_FFT_METHOD_DFT:         printf("DFT\n");                break;
+        case LIQUID_FFT_METHOD_RADIX2:      printf("Radix-2\n");            break;
+        case LIQUID_FFT_METHOD_MIXED_RADIX: printf("Cooley-Tukey\n");       break;
+        case LIQUID_FFT_METHOD_RADER:       printf("Rader (Type I)\n");     break;
+        case LIQUID_FFT_METHOD_RADER2:      printf("Rader (Type II)\n");    break;
+        case LIQUID_FFT_METHOD_UNKNOWN:
+        default:
+            fprintf(stderr,"error: fft_destroy_plan(), unknown/invalid fft method\n");
+            exit(1);
+        }
+        // print recursive plan
+        FFT(_print_plan_recursive)(_q, 0);
+        break;
+    // discrete cosine transforms
+    case LIQUID_FFT_REDFT00:
+    case LIQUID_FFT_REDFT10:
+    case LIQUID_FFT_REDFT01:
+    case LIQUID_FFT_REDFT11:
+    // discrete sine transforms
+    case LIQUID_FFT_RODFT00:
+    case LIQUID_FFT_RODFT10:
+    case LIQUID_FFT_RODFT01:
+    case LIQUID_FFT_RODFT11:
+        FFT(_print_plan)(_q);
+        break;
 
-    switch (_q->method) {
-    case LIQUID_FFT_METHOD_DFT:         printf("DFT\n");            break;
-    case LIQUID_FFT_METHOD_RADIX2:      printf("Radix-2\n");        break;
-    case LIQUID_FFT_METHOD_MIXED_RADIX: printf("Cooley-Tukey\n");   break;
-    case LIQUID_FFT_METHOD_RADER:       printf("Rader (Type-I)\n"); break;
-    case LIQUID_FFT_METHOD_RADER2:      printf("Rader (Type-II)\n"); break;
-    case LIQUID_FFT_METHOD_NONE:        printf("(none)\n");         break;
-    case LIQUID_FFT_METHOD_UNKNOWN:     printf("(unknown)\n");      break;
-    default:                            printf("(unknown)\n");      break;
+    // modified discrete cosine transform
+    case LIQUID_FFT_MDCT:   break;
+    case LIQUID_FFT_IMDCT:  break;
+
+    case LIQUID_FFT_UNKNOWN:
+    default:
+        fprintf(stderr,"error: fft_print_plan(), unknown/invalid fft type\n");
+        exit(1);
     }
-
-    // print recursive plan
-    FFT(_print_plan_recursive)(_q, 0);
 }
 
 // print FFT plan (recursively)
@@ -227,7 +273,6 @@ void FFT(_print_plan_recursive)(FFT(plan)    _q,
         FFT(_print_plan_recursive)(_q->data.rader2.fft, _level+1);
         break;
 
-    case LIQUID_FFT_METHOD_NONE:        printf("(none)\n");         break;
     case LIQUID_FFT_METHOD_UNKNOWN:     printf("(unknown)\n");      break;
     default:                            printf("(unknown)\n");      break;
     }
@@ -244,16 +289,16 @@ void FFT(_execute)(FFT(plan) _q)
 //  _nfft   :   fft size
 //  _x      :   input array [size: _nfft x 1]
 //  _y      :   output array [size: _nfft x 1]
-//  _dir    :   fft direction: {FFT_FORWARD, FFT_REVERSE}
-//  _method :   fft method
+//  _dir    :   fft direction: LIQUID_FFT_{FORWARD,BACKWARD}
+//  _flags  :   fft flags
 void FFT(_run)(unsigned int _nfft,
                TC *         _x,
                TC *         _y,
                int          _dir,
-               int          _method)
+               int          _flags)
 {
     // create plan
-    FFT(plan) plan = FFT(_create_plan)(_nfft, _x, _y, _dir, _method);
+    FFT(plan) plan = FFT(_create_plan)(_nfft, _x, _y, _dir, _flags);
 
     // execute fft
     FFT(_execute)(plan);
@@ -262,7 +307,29 @@ void FFT(_run)(unsigned int _nfft,
     FFT(_destroy_plan)(plan);
 }
 
-// perform _n-point fft shift
+// perform real n-point FFT allocating plan internally
+//  _nfft   : fft size
+//  _x      : input array [size: _nfft x 1]
+//  _y      : output array [size: _nfft x 1]
+//  _type   : fft type, e.g. LIQUID_FFT_REDFT10
+//  _flags  : fft flags
+void FFT(_r2r_1d_run)(unsigned int _nfft,
+                      T *          _x,
+                      T *          _y,
+                      int          _type,
+                      int          _flags)
+{
+    // create plan
+    FFT(plan) plan = FFT(_create_plan_r2r_1d)(_nfft, _x, _y, _type, _flags);
+
+    // execute fft
+    FFT(_execute)(plan);
+
+    // destroy plan
+    FFT(_destroy_plan)(plan);
+}
+
+// perform _n-point FFT shift
 void FFT(_shift)(TC *_x, unsigned int _n)
 {
     unsigned int i, n2;

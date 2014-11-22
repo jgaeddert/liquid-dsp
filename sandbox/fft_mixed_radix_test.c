@@ -1,7 +1,5 @@
 /*
- * Copyright (c) 2007, 2008, 2009, 2010 Joseph Gaeddert
- * Copyright (c) 2007, 2008, 2009, 2010 Virginia Polytechnic
- *                                      Institute & State University
+ * Copyright (c) 2007 - 2014 Joseph Gaeddert
  *
  * This file is part of liquid.
  *
@@ -271,8 +269,8 @@ int main(int argc, char*argv[]) {
     // compute error
     float rmse = 0.0f;
     for (i=0; i<nfft; i++) {
-        float e = y[i] - y_test[i];
-        rmse += e*conjf(e);
+        float e = cabsf(y[i] - y_test[i]);
+        rmse += e*e;
     }
     rmse = sqrtf(rmse / (float)nfft);
     printf("RMS error : %12.4e (%s)\n", rmse, rmse < 1e-3 ? "pass" : "FAIL");

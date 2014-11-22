@@ -1,6 +1,5 @@
 /*
- * Copyright (c) 2007, 2009 Joseph Gaeddert
- * Copyright (c) 2007, 2009 Virginia Polytechnic Institute & State University
+ * Copyright (c) 2007 - 2014 Joseph Gaeddert
  *
  * This file is part of liquid.
  *
@@ -43,14 +42,18 @@
 #define DEBUG_DOTPROD_RRRF_SSE4     0
 
 // internal methods
-void dotprod_rrrf_execute_sse4(dotprod_rrrf _q, float * _x, float * _y);
-void dotprod_rrrf_execute_sse4u(dotprod_rrrf _q, float * _x, float * _y);
+void dotprod_rrrf_execute_sse4(dotprod_rrrf _q,
+                               float *      _x,
+                               float *      _y);
+void dotprod_rrrf_execute_sse4u(dotprod_rrrf _q,
+                                float *      _x,
+                                float *      _y);
 
 // basic dot product (ordinal calculation)
-void dotprod_rrrf_run(float *_h,
-                      float *_x,
+void dotprod_rrrf_run(float *      _h,
+                      float *      _x,
                       unsigned int _n,
-                      float * _y)
+                      float *      _y)
 {
     float r=0;
     unsigned int i;
@@ -60,10 +63,10 @@ void dotprod_rrrf_run(float *_h,
 }
 
 // basic dot product (ordinal calculation) with loop unrolled
-void dotprod_rrrf_run4(float *_h,
-                       float *_x,
+void dotprod_rrrf_run4(float *      _h,
+                       float *      _x,
                        unsigned int _n,
-                       float * _y)
+                       float *      _y)
 {
     float r=0;
 
@@ -96,7 +99,7 @@ struct dotprod_rrrf_s {
     float * h;          // coefficients array
 };
 
-dotprod_rrrf dotprod_rrrf_create(float * _h,
+dotprod_rrrf dotprod_rrrf_create(float *      _h,
                                  unsigned int _n)
 {
     dotprod_rrrf q = (dotprod_rrrf)malloc(sizeof(struct dotprod_rrrf_s));
@@ -113,14 +116,13 @@ dotprod_rrrf dotprod_rrrf_create(float * _h,
 }
 
 // re-create the structured dotprod object
-dotprod_rrrf dotprod_rrrf_recreate(dotprod_rrrf _dp,
-                                   float * _h,
+dotprod_rrrf dotprod_rrrf_recreate(dotprod_rrrf _q,
+                                   float *      _h,
                                    unsigned int _n)
 {
     // completely destroy and re-create dotprod object
-    dotprod_rrrf_destroy(_dp);
-    _dp = dotprod_rrrf_create(_h,_n);
-    return _dp;
+    dotprod_rrrf_destroy(_q);
+    return dotprod_rrrf_create(_h,_n);
 }
 
 
@@ -132,7 +134,7 @@ void dotprod_rrrf_destroy(dotprod_rrrf _q)
 
 void dotprod_rrrf_print(dotprod_rrrf _q)
 {
-    printf("dotprod_rrrf:\n");
+    printf("dotprod_rrrf [sse4.1/4.2, %u coefficients]\n", _q->n);
     unsigned int i;
     for (i=0; i<_q->n; i++)
         printf("%3u : %12.9f\n", i, _q->h[i]);
@@ -140,8 +142,8 @@ void dotprod_rrrf_print(dotprod_rrrf _q)
 
 // 
 void dotprod_rrrf_execute(dotprod_rrrf _q,
-                          float * _x,
-                          float * _y)
+                          float *      _x,
+                          float *      _y)
 {
     // switch based on size
     if (_q->n < 16) {
@@ -212,15 +214,15 @@ void dotprod_rrrf_execute_sse4u(dotprod_rrrf _q,
     unsigned int i;
     for (i=0; i<r; i+=4) {
         // load inputs into register (unaligned)
-        v0 = _mm_loadu_ps(&_x[4*i+0]);
-        v1 = _mm_loadu_ps(&_x[4*i+4]);
-        v2 = _mm_loadu_ps(&_x[4*i+8]);
+        v0 = _mm_loadu_ps(&_x[4*i+ 0]);
+        v1 = _mm_loadu_ps(&_x[4*i+ 4]);
+        v2 = _mm_loadu_ps(&_x[4*i+ 8]);
         v3 = _mm_loadu_ps(&_x[4*i+12]);
 
         // load coefficients into register (aligned)
-        h0 = _mm_load_ps(&_q->h[4*i+0]);
-        h1 = _mm_load_ps(&_q->h[4*i+4]);
-        h2 = _mm_load_ps(&_q->h[4*i+8]);
+        h0 = _mm_load_ps(&_q->h[4*i+ 0]);
+        h1 = _mm_load_ps(&_q->h[4*i+ 4]);
+        h2 = _mm_load_ps(&_q->h[4*i+ 8]);
         h3 = _mm_load_ps(&_q->h[4*i+12]);
 
         // compute dot products

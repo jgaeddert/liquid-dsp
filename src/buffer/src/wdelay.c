@@ -1,6 +1,5 @@
 /*
- * Copyright (c) 2007, 2009 Joseph Gaeddert
- * Copyright (c) 2007, 2009 Virginia Polytechnic Institute & State University
+ * Copyright (c) 2007 - 2014 Joseph Gaeddert
  *
  * This file is part of liquid.
  *
@@ -30,89 +29,110 @@
 
 struct WDELAY(_s) {
     T * v;                      // allocated array pointer
-    unsigned int k;             // length of window
+    unsigned int delay;         // length of window
     unsigned int read_index;
 };
 
-WDELAY() WDELAY(_create)(unsigned int _k)
+// create delay buffer object with '_delay' samples
+WDELAY() WDELAY(_create)(unsigned int _delay)
 {
-    WDELAY() w = (WDELAY()) malloc(sizeof(struct WDELAY(_s)));
-    w->k = _k;
+    // create main object
+    WDELAY() q = (WDELAY()) malloc(sizeof(struct WDELAY(_s)));
+
+    // set internal values
+    q->delay = _delay;
 
     // allocte memory
-    w->v = (T*) malloc((w->k)*sizeof(T));
-    w->read_index = 0;
+    q->v = (T*) malloc((q->delay)*sizeof(T));
+    q->read_index = 0;
 
     // clear window
-    WDELAY(_clear)(w);
+    WDELAY(_clear)(q);
 
-    return w;
+    return q;
 }
 
-WDELAY() WDELAY(_recreate)(WDELAY() _w,
-                           unsigned int _k)
+// re-create delay buffer object with '_delay' samples
+//  _q      :   old delay buffer object
+//  _delay  :   delay for new object
+WDELAY() WDELAY(_recreate)(WDELAY()     _q,
+                           unsigned int _delay)
 {
     // copy internal buffer, re-aligned
-    unsigned int ktmp = _w->k;
-    T * vtmp = (T*) malloc(_w->k * sizeof(T));
+    unsigned int ktmp = _q->delay;
+    T * vtmp = (T*) malloc(_q->delay * sizeof(T));
     unsigned int i;
-    for (i=0; i<_w->k; i++)
-        vtmp[i] = _w->v[ (i + _w->read_index) % _w->k ];
+    for (i=0; i<_q->delay; i++)
+        vtmp[i] = _q->v[ (i + _q->read_index) % _q->delay ];
     
     // destroy object and re-create it
-    WDELAY(_destroy)(_w);
-    _w = WDELAY(_create)(_k);
+    WDELAY(_destroy)(_q);
+    _q = WDELAY(_create)(_delay);
 
     // push old values
     for (i=0; i<ktmp; i++)
-        WDELAY(_push)(_w, vtmp[i]);
+        WDELAY(_push)(_q, vtmp[i]);
 
     // free temporary array
     free(vtmp);
 
     // return object
-    return _w;
+    return _q;
 }
 
-void WDELAY(_destroy)(WDELAY() _w)
+// destroy delay buffer object, freeing internal memory
+void WDELAY(_destroy)(WDELAY() _q)
 {
-    free(_w->v);
-    free(_w);
+    // free internal array buffer
+    free(_q->v);
+
+    // free main object memory
+    free(_q);
 }
 
-void WDELAY(_print)(WDELAY() _w)
+// print delay buffer object's state to stdout
+void WDELAY(_print)(WDELAY() _q)
 {
-    printf("wdelay [%u elements] :\n", _w->k);
+    printf("wdelay [%u elements] :\n", _q->delay);
     unsigned int i, j;
-    for (i=0; i<_w->k; i++) {
-        j = (i + _w->read_index) % _w->k;
+    for (i=0; i<_q->delay; i++) {
+        j = (i + _q->read_index) % _q->delay;
         printf("%4u", i);
-        BUFFER_PRINT_VALUE(_w->v[j]);
+        BUFFER_PRINT_VALUE(_q->v[j]);
         printf("\n");
     }
 }
 
-void WDELAY(_clear)(WDELAY() _w)
+// clear/reset state of object
+void WDELAY(_clear)(WDELAY() _q)
 {
-    _w->read_index = 0;
-    memset(_w->v, 0, (_w->k)*sizeof(T));
+    _q->read_index = 0;
+    memset(_q->v, 0, (_q->delay)*sizeof(T));
 }
 
-void WDELAY(_read)(WDELAY() _w, T * _v)
+// read delayed sample from delay buffer object
+//  _q  :   delay buffer object
+//  _v  :   value of delayed element
+void WDELAY(_read)(WDELAY() _q,
+                   T *      _v)
 {
     // return value at end of buffer
-    *_v = _w->v[_w->read_index];
+    *_v = _q->v[_q->read_index];
 }
 
-void WDELAY(_push)(WDELAY() _w, T _v)
+// push new sample into delay buffer object
+//  _q  :   delay buffer object
+//  _v  :   new value to be added to buffer
+void WDELAY(_push)(WDELAY() _q,
+                   T        _v)
 {
     // append value to end of buffer
-    _w->v[_w->read_index] = _v;
+    _q->v[_q->read_index] = _v;
 
     // increment index
-    _w->read_index++;
+    _q->read_index++;
 
     // wrap around pointer
-    _w->read_index %= _w->k;
+    _q->read_index %= _q->delay;
 }
 

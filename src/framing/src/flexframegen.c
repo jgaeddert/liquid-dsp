@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007, 2008, 2009, 2010, 2013 Joseph Gaeddert
+ * Copyright (c) 2007 - 2014 Joseph Gaeddert
  *
  * This file is part of liquid.
  *
@@ -89,7 +89,7 @@ struct flexframegen_s {
     unsigned int k;                     // interp samples/symbol (fixed at 2)
     unsigned int m;                     // interp filter delay (symbols)
     float        beta;                  // excess bandwidth factor
-    interp_crcf interp;                 // interpolator object
+    firinterp_crcf interp;              // interpolator object
 
     // counters/states
     unsigned int symbol_counter;         // output symbol number
@@ -143,9 +143,9 @@ flexframegen flexframegen_create(flexframegenprops_s * _fgprops)
     
     // create pulse-shaping filter
     q->k    = 2;
-    q->m    = 3;
-    q->beta = 0.5f;
-    q->interp = interp_crcf_create_rnyquist(LIQUID_RNYQUIST_ARKAISER,q->k,q->m,q->beta,0);
+    q->m    = 7;
+    q->beta = 0.25f;
+    q->interp = firinterp_crcf_create_rnyquist(LIQUID_FIRFILT_ARKAISER,q->k,q->m,q->beta,0);
 
     // ensure frame is not assembled and initialize properties
     q->frame_assembled = 0;
@@ -165,6 +165,7 @@ void flexframegen_destroy(flexframegen _q)
     modem_destroy(_q->mod_header);      // header modulator
     packetizer_destroy(_q->p_payload);  // payload packetizer
     modem_destroy(_q->mod_payload);     // payload modulator
+    firinterp_crcf_destroy(_q->interp); // pulse-shaping filter
 
     // free buffers/arrays
     free(_q->payload_enc);              // encoded payload bytes
@@ -483,7 +484,7 @@ void flexframegen_write_preamble(flexframegen    _q,
 
     // interpolate symbol
     float complex s = _q->preamble_pn[_q->symbol_counter];
-    interp_crcf_execute(_q->interp, s, _buffer);
+    firinterp_crcf_execute(_q->interp, s, _buffer);
 
     // increment symbol counter
     _q->symbol_counter++;
@@ -507,7 +508,7 @@ void flexframegen_write_header(flexframegen    _q,
     modem_modulate(_q->mod_header, _q->header_sym[_q->symbol_counter], &s);
 
     // interpolate symbol
-    interp_crcf_execute(_q->interp, s, _buffer);
+    firinterp_crcf_execute(_q->interp, s, _buffer);
 
     // increment symbol counter
     _q->symbol_counter++;
@@ -531,7 +532,7 @@ void flexframegen_write_payload(flexframegen    _q,
     modem_modulate(_q->mod_payload, _q->payload_mod[_q->symbol_counter], &s);
 
     // interpolate symbol
-    interp_crcf_execute(_q->interp, s, _buffer);
+    firinterp_crcf_execute(_q->interp, s, _buffer);
 
     // increment symbol counter
     _q->symbol_counter++;
@@ -552,7 +553,7 @@ void flexframegen_write_tail(flexframegen    _q,
 #endif
 
     // interpolate symbol
-    interp_crcf_execute(_q->interp, 0.0f, _buffer);
+    firinterp_crcf_execute(_q->interp, 0.0f, _buffer);
 
     // increment symbol counter
     _q->symbol_counter++;

@@ -1,7 +1,5 @@
 /*
- * Copyright (c) 2007, 2008, 2009, 2010 Joseph Gaeddert
- * Copyright (c) 2007, 2008, 2009, 2010 Virginia Polytechnic
- *                                      Institute & State University
+ * Copyright (c) 2007 - 2014 Joseph Gaeddert
  *
  * This file is part of liquid.
  *
@@ -207,7 +205,7 @@ void NCO(_cexpf)(NCO() _q,
 void NCO(_pll_reset)(NCO() _q)
 {
     // clear phase-locked loop filter
-    iirfiltsos_rrrf_clear(_q->pll_filter);
+    iirfiltsos_rrrf_reset(_q->pll_filter);
 }
 
 // set pll bandwidth
@@ -308,7 +306,9 @@ void NCO(_mix_block_up)(NCO() _q,
                         unsigned int _n)
 {
     unsigned int i;
-
+    // FIXME: this method should be more efficient but is causing occasional
+    //        errors so instead favor slower but more reliable algorithm
+#if 0
     T theta =   _q->theta;
     T d_theta = _q->d_theta;
     for (i=0; i<_n; i++) {
@@ -319,6 +319,15 @@ void NCO(_mix_block_up)(NCO() _q,
     }
 
     NCO(_set_phase)(_q, theta);
+#else
+    for (i=0; i<_n; i++) {
+        // mix single sample up
+        NCO(_mix_up)(_q, _x[i], &_y[i]);
+
+        // step NCO phase
+        NCO(_step)(_q);
+    }
+#endif
 }
 
 // Rotate input vector array down by NCO angle:
@@ -334,7 +343,9 @@ void NCO(_mix_block_down)(NCO() _q,
                           unsigned int _n)
 {
     unsigned int i;
-
+    // FIXME: this method should be more efficient but is causing occasional
+    //        errors so instead favor slower but more reliable algorithm
+#if 0
     T theta =   _q->theta;
     T d_theta = _q->d_theta;
     for (i=0; i<_n; i++) {
@@ -345,6 +356,15 @@ void NCO(_mix_block_down)(NCO() _q,
     }
 
     NCO(_set_phase)(_q, theta);
+#else
+    for (i=0; i<_n; i++) {
+        // mix single sample down
+        NCO(_mix_down)(_q, _x[i], &_y[i]);
+
+        // step NCO phase
+        NCO(_step)(_q);
+    }
+#endif
 }
 
 //

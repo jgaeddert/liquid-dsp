@@ -1,7 +1,5 @@
 /*
- * Copyright (c) 2007, 2008, 2009, 2010, 2011, 2012 Joseph Gaeddert
- * Copyright (c) 2007, 2008, 2009, 2010, 2011, 2012 Virginia Polytechnic
- *                                      Institute & State University
+ * Copyright (c) 2007 - 2014 Joseph Gaeddert
  *
  * This file is part of liquid.
  *
@@ -54,12 +52,11 @@ MODEM() MODEM(_create_dpsk)(unsigned int _bits_per_symbol)
 
     q->data.dpsk.d_phi = M_PI*(1.0f - 1.0f/(T)(q->M));
 
-    // reset modem
-    MODEM(_reset)(q);
-
     q->modulate_func = &MODEM(_modulate_dpsk);
     q->demodulate_func = &MODEM(_demodulate_dpsk);
 
+    // reset and return
+    MODEM(_reset)(q);
     return q;
 }
 

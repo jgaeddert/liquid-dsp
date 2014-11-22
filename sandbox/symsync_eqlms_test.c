@@ -49,7 +49,7 @@ int main(int argc, char*argv[]) {
     unsigned int num_symbols=500;   // number of data symbols
     unsigned int hc_len=5;          // channel filter length
     float SNRdB = 30.0f;            // signal-to-noise ratio
-    liquid_rnyquist_type ftype = LIQUID_RNYQUIST_ARKAISER;
+    liquid_firfilt_type ftype = LIQUID_FIRFILT_ARKAISER;
 
     float bt=0.05f;                 // symbol synchronizer loop filter bandwidth
     float tau=-0.1f;                // fractional symbol offset
@@ -141,10 +141,10 @@ int main(int argc, char*argv[]) {
     // design interpolating filter
     float ht[ht_len];
     liquid_firdes_rnyquist(ftype,k,m,beta,dt,ht);
-    interp_crcf q = interp_crcf_create(k, ht, ht_len);
+    firinterp_crcf q = firinterp_crcf_create(k, ht, ht_len);
     for (i=0; i<num_symbols; i++)
-        interp_crcf_execute(q, s[i], &x[i*k]);
-    interp_crcf_destroy(q);
+        firinterp_crcf_execute(q, s[i], &x[i*k]);
+    firinterp_crcf_destroy(q);
 
 
     // 

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007, 2008, 2009, 2010, 2011, 2012, 2013 Joseph Gaeddert
+ * Copyright (c) 2007 - 2014 Joseph Gaeddert
  *
  * This file is part of liquid.
  *
@@ -35,10 +35,6 @@
 #include <complex.h>
 #include "liquid.h"
 
-#if LIQUID_EXPERIMENTAL == 1
-#  include "liquid.experimental.h"
-#endif
-
 #if defined HAVE_FEC_H && defined HAVE_LIBFEC
 #  define LIBFEC_ENABLED 1
 #endif
@@ -59,20 +55,6 @@
 // MODULE : agc
 //
 
-// 
-#define LIQUID_AGC_DEFINE_INTERNAL_API(AGC,T,TC)                \
-                                                                \
-void AGC(_estimate_input_energy)(AGC() _q, TC _x);              \
-void AGC(_limit_gain)(AGC() _q);                                \
-                                                                \
-/* squelch */                                                   \
-void AGC(_update_auto_squelch)(AGC() _q, T _rssi);              \
-void AGC(_execute_squelch)(AGC() _q);
-
-LIQUID_AGC_DEFINE_INTERNAL_API(AGC_MANGLE_CRCF, float, liquid_float_complex)
-LIQUID_AGC_DEFINE_INTERNAL_API(AGC_MANGLE_RRRF, float, float)
-
-
 
 //
 // MODULE : audio
@@ -83,55 +65,10 @@ LIQUID_AGC_DEFINE_INTERNAL_API(AGC_MANGLE_RRRF, float, float)
 // MODULE : buffer
 //
 
-// Buffers
-
-#define buffer_fast_access(c,i) (c->v[(c->read_index+i)%(c->len)])
-
-#define LIQUID_BUFFER_DEFINE_INTERNAL_API(BUFFER,T)             \
-void BUFFER(_linearize)(BUFFER() _b);                           \
-void BUFFER(_c_read)(BUFFER() _b, T ** _v, unsigned int *_n);   \
-void BUFFER(_s_read)(BUFFER() _b, T ** _v, unsigned int *_n);   \
-void BUFFER(_c_write)(BUFFER() _b, T * _v, unsigned int _n);    \
-void BUFFER(_s_write)(BUFFER() _b, T * _v, unsigned int _n);    \
-void BUFFER(_c_release)(BUFFER() _b, unsigned int _n);          \
-void BUFFER(_s_release)(BUFFER() _b, unsigned int _n);          \
-void BUFFER(_c_push)(BUFFER() _b, T _v);                        \
-void BUFFER(_s_push)(BUFFER() _b, T _v);
-
-LIQUID_BUFFER_DEFINE_INTERNAL_API(BUFFER_MANGLE_FLOAT,  float)
-LIQUID_BUFFER_DEFINE_INTERNAL_API(BUFFER_MANGLE_CFLOAT, float complex)
-//LIQUID_BUFFER_DEFINE_INTERNAL_API(BUFFER_MANGLE_UINT,   unsigned int)
-
 
 //
 // MODULE : dotprod
 //
-
-// large macro
-//   DOTPROD    : name-mangling macro
-//   TO         : output data type
-//   TC         : coefficients data type
-//   TI         : input data type
-#define LIQUID_DOTPROD_DEFINE_INTERNAL_API(DOTPROD,TO,TC,TI)    \
-                                                                \
-/* execute dotprod 4 inputs at a time */                        \
-void DOTPROD(_run4)(TC *_h, TI *_x, unsigned int _n, TO *_y);
-
-LIQUID_DOTPROD_DEFINE_INTERNAL_API(DOTPROD_MANGLE_RRRF,
-                                   float,
-                                   float,
-                                   float)
-
-LIQUID_DOTPROD_DEFINE_INTERNAL_API(DOTPROD_MANGLE_CCCF,
-                                   liquid_float_complex,
-                                   liquid_float_complex,
-                                   liquid_float_complex)
-
-LIQUID_DOTPROD_DEFINE_INTERNAL_API(DOTPROD_MANGLE_CRCF,
-                                   liquid_float_complex,
-                                   float,
-                                   liquid_float_complex)
-
 
 
 //
@@ -139,13 +76,6 @@ LIQUID_DOTPROD_DEFINE_INTERNAL_API(DOTPROD_MANGLE_CRCF,
 //
 
 // checksum / cyclic redundancy check (crc)
-
-// byte reversal and manipulation
-extern const unsigned char liquid_reverse_byte[256];
-unsigned char reverse_byte(unsigned char _x);
-unsigned int reverse_uint16(unsigned int _x);
-unsigned int reverse_uint24(unsigned int _x);
-unsigned int reverse_uint32(unsigned int _x);
 
 #define CRC8_POLY 0x07
 #define CRC16_POLY 0x8005
@@ -689,8 +619,11 @@ int fec_sumproduct_step(unsigned int    _m,
                         float *         _LQ,
                         unsigned char * _parity);
 
+//
 // packetizer
+//
 
+// fec/interleaver plan
 struct fecintlv_plan {
     unsigned int dec_msg_len;
     unsigned int enc_msg_len;
@@ -703,6 +636,7 @@ struct fecintlv_plan {
     interleaver q;
 };
 
+// packetizer object
 struct packetizer_s {
     unsigned int msg_len;
     unsigned int packet_len;
@@ -713,95 +647,25 @@ struct packetizer_s {
     struct fecintlv_plan * plan;
     unsigned int plan_len;
 
-    // buffers
+    // buffers (ping-pong)
     unsigned int buffer_len;
     unsigned char * buffer_0;
     unsigned char * buffer_1;
 };
-
-// reallocate memory for buffers
-void packetizer_realloc_buffers(packetizer _p, unsigned int _len);
-
-
-//
-// interleaver
-//
-
-// structured interleaver object
-struct interleaver_s {
-    unsigned int n;     // number of bytes
-
-    unsigned int M;     // row dimension
-    unsigned int N;     // col dimension
-
-    // interleaving depth (number of permutations)
-    unsigned int depth;
-};
-
-// 
-// permutation functions
-//
-
-// permute one iteration
-void interleaver_permute(unsigned char * _x,
-                         unsigned int _n,
-                         unsigned int _M,
-                         unsigned int _N);
-
-// permute one iteration (soft bit input)
-void interleaver_permute_soft(unsigned char * _x,
-                              unsigned int _n,
-                              unsigned int _M,
-                              unsigned int _N);
-
-// permute one iteration with mask
-void interleaver_permute_mask(unsigned char * _x,
-                              unsigned int _n,
-                              unsigned int _M,
-                              unsigned int _N,
-                              unsigned char _mask);
-
-// permute one iteration (soft bit input) with mask
-void interleaver_permute_mask_soft(unsigned char * _x,
-                                   unsigned int _n,
-                                   unsigned int _M,
-                                   unsigned int _N,
-                                   unsigned char _mask);
-
 
 
 //
 // MODULE : fft (fast discrete Fourier transform)
 //
 
-typedef enum {
-    LIQUID_FFT_DFT_1D   = 0,    // complex one-dimensional FFT
-
-    // discrete cosine transforms
-    LIQUID_FFT_REDFT00,         // real one-dimensional DCT-I
-    LIQUID_FFT_REDFT10,         // real one-dimensional DCT-II
-    LIQUID_FFT_REDFT01,         // real one-dimensional DCT-III
-    LIQUID_FFT_REDFT11,         // real one-dimensional DCT-IV
-
-    // discrete sine transforms
-    LIQUID_FFT_RODFT00,         // real one-dimensional DST-I
-    LIQUID_FFT_RODFT10,         // real one-dimensional DST-II
-    LIQUID_FFT_RODFT01,         // real one-dimensional DST-III
-    LIQUID_FFT_RODFT11,         // real one-dimensional DST-IV
-
-    // modified discrete cosine transform
-    LIQUID_FFT_MDCT,            // MDCT
-    LIQUID_FFT_IMDCT            // IMDCT
-} liquid_fft_kind;
-
+// fast fourier transform method
 typedef enum {
     LIQUID_FFT_METHOD_UNKNOWN=0,    // unknown method
-    LIQUID_FFT_METHOD_NONE,         // unspecified method (e.g. real-to-real)
     LIQUID_FFT_METHOD_RADIX2,       // Radix-2 (decimation in time)
     LIQUID_FFT_METHOD_MIXED_RADIX,  // Cooley-Tukey mixed-radix FFT (decimation in time)
     LIQUID_FFT_METHOD_RADER,        // Rader's method for FFTs of prime length
     LIQUID_FFT_METHOD_RADER2,       // Rader's method for FFTs of prime length (alternate)
-    LIQUID_FFT_METHOD_DFT,          // slow discrete Fourier transform
+    LIQUID_FFT_METHOD_DFT,          // regular discrete Fourier transform
 } liquid_fft_method;
 
 // Macro    :   FFT (internal)
@@ -868,6 +732,12 @@ void FFT(_execute_RODFT00)(FFT(plan) _q);   /* DST-I   */       \
 void FFT(_execute_RODFT10)(FFT(plan) _q);   /* DST-II  */       \
 void FFT(_execute_RODFT01)(FFT(plan) _q);   /* DST-III */       \
 void FFT(_execute_RODFT11)(FFT(plan) _q);   /* DST-IV  */       \
+                                                                \
+/* destroy real-to-real one-dimensional plan */                 \
+void FFT(_destroy_plan_r2r_1d)(FFT(plan) _q);                   \
+                                                                \
+/* print real-to-real one-dimensional plan */                   \
+void FFT(_print_plan_r2r_1d)(FFT(plan) _q);                     \
 
 // determine best FFT method based on size
 liquid_fft_method liquid_fft_estimate_method(unsigned int _nfft);
@@ -881,9 +751,9 @@ unsigned int fft_reverse_index(unsigned int _i, unsigned int _n);
 
 LIQUID_FFT_DEFINE_INTERNAL_API(LIQUID_FFT_MANGLE_FLOAT, float, liquid_float_complex)
 
-// Use fftw library if installed, otherwise use internal (less
-// efficient) fft library.
-#if HAVE_FFTW3_H
+// Use fftw library if installed (and not overridden with configuration),
+// otherwise use internal (less efficient) fft library.
+#if HAVE_FFTW3_H && !defined LIQUID_FFTOVERRIDE
 #   include <fftw3.h>
 #   define FFT_PLAN             fftwf_plan
 #   define FFT_CREATE_PLAN      fftwf_plan_dft_1d
@@ -897,8 +767,8 @@ LIQUID_FFT_DEFINE_INTERNAL_API(LIQUID_FFT_MANGLE_FLOAT, float, liquid_float_comp
 #   define FFT_CREATE_PLAN      fft_create_plan
 #   define FFT_DESTROY_PLAN     fft_destroy_plan
 #   define FFT_EXECUTE          fft_execute
-#   define FFT_DIR_FORWARD      FFT_FORWARD
-#   define FFT_DIR_BACKWARD     FFT_REVERSE
+#   define FFT_DIR_FORWARD      LIQUID_FFT_FORWARD
+#   define FFT_DIR_BACKWARD     LIQUID_FFT_BACKWARD
 #   define FFT_METHOD           0
 #endif
 
@@ -960,85 +830,73 @@ struct IIRFILTSOS(_s) {                                         \
     TO v[3];    /* Direct form II buffer                    */  \
 };                                                              \
                                                                 \
+/* create 2nd-ordr infinite impulse reponse filter          */  \
+/*  _b      : feed-forward coefficients [size: _3 x 1]      */  \
+/*  _a      : feed-back coefficients    [size: _3 x 1]      */  \
 IIRFILTSOS() IIRFILTSOS(_create)(TC * _b,                       \
                                  TC * _a);                      \
+                                                                \
+/* explicitly set 2nd-order IIR filter coefficients         */  \
+/*  _q      : iirfiltsos object                             */  \
+/*  _b      : feed-forward coefficients [size: _3 x 1]      */  \
+/*  _a      : feed-back coefficients    [size: _3 x 1]      */  \
 void IIRFILTSOS(_set_coefficients)(IIRFILTSOS() _q,             \
-                                   TC * _b,                     \
-                                   TC * _a);                    \
+                                   TC *         _b,             \
+                                   TC *         _a);            \
+                                                                \
+/* destroy iirfiltsos object, freeing all internal memory   */  \
 void IIRFILTSOS(_destroy)(IIRFILTSOS() _q);                     \
+                                                                \
+/* print iirfiltsos object properties to stdout             */  \
 void IIRFILTSOS(_print)(IIRFILTSOS() _q);                       \
-void IIRFILTSOS(_clear)(IIRFILTSOS() _q);                       \
+                                                                \
+/* clear/reset iirfiltsos object internals                  */  \
+void IIRFILTSOS(_reset)(IIRFILTSOS() _q);                       \
+                                                                \
+/* compute filter output                                    */  \
+/*  _q      : iirfiltsos object                             */  \
+/*  _x      : input sample                                  */  \
+/*  _y      : output sample pointer                         */  \
 void IIRFILTSOS(_execute)(IIRFILTSOS() _q,                      \
-                          TI   _x,                              \
-                          TO * _y);                             \
+                          TI           _x,                      \
+                          TO *         _y);                     \
+                                                                \
+/* compute filter output, direct-form I method              */  \
+/*  _q      : iirfiltsos object                             */  \
+/*  _x      : input sample                                  */  \
+/*  _y      : output sample pointer                         */  \
 void IIRFILTSOS(_execute_df1)(IIRFILTSOS() _q,                  \
-                              TI   _x,                          \
-                              TO * _y);                         \
+                              TI           _x,                  \
+                              TO *         _y);                 \
+                                                                \
+/* compute filter output, direct-form II method             */  \
+/*  _q      : iirfiltsos object                             */  \
+/*  _x      : input sample                                  */  \
+/*  _y      : output sample pointer                         */  \
 void IIRFILTSOS(_execute_df2)(IIRFILTSOS() _q,                  \
-                              TI   _x,                          \
-                              TO * _y);                         \
-float IIRFILTSOS(_groupdelay)(IIRFILTSOS() _q, float _fc);
+                              TI           _x,                  \
+                              TO *         _y);                 \
+                                                                \
+/* compute and return group delay of filter object          */  \
+/*  _q      : filter object                                 */  \
+/*  _fc     : frequency to evaluate                         */  \
+float IIRFILTSOS(_groupdelay)(IIRFILTSOS() _q,                  \
+                              float        _fc);                \
 
 LIQUID_IIRFILTSOS_DEFINE_INTERNAL_API(IIRFILTSOS_MANGLE_RRRF,
                                       float,
                                       float,
                                       float)
+
 LIQUID_IIRFILTSOS_DEFINE_INTERNAL_API(IIRFILTSOS_MANGLE_CRCF,
                                       liquid_float_complex,
                                       float,
                                       liquid_float_complex)
+
 LIQUID_IIRFILTSOS_DEFINE_INTERNAL_API(IIRFILTSOS_MANGLE_CCCF,
                                       liquid_float_complex,
                                       liquid_float_complex,
                                       liquid_float_complex)
-
-// msresamp
-#define LIQUID_MSRESAMP_DEFINE_INTERNAL_API(MSRESAMP,TO,TC,TI)  \
-                                                                \
-/* execute multi-stage interpolation                    */      \
-void MSRESAMP(_interp_execute)(MSRESAMP() _q,                   \
-                              TI * _x,                          \
-                              unsigned int _nx,                 \
-                              TO * _y,                          \
-                              unsigned int * _num_written);     \
-                                                                \
-/* execute multi-stage decimation                       */      \
-void MSRESAMP(_decim_execute)(MSRESAMP() _q,                    \
-                              TI * _x,                          \
-                              unsigned int _nx,                 \
-                              TO * _y,                          \
-                              unsigned int * _num_written);     \
-
-LIQUID_MSRESAMP_DEFINE_INTERNAL_API(MSRESAMP_MANGLE_RRRF,
-                                    float,
-                                    float,
-                                    float)
-
-LIQUID_MSRESAMP_DEFINE_INTERNAL_API(MSRESAMP_MANGLE_CRCF,
-                                    liquid_float_complex,
-                                    float,
-                                    liquid_float_complex)
-
-LIQUID_MSRESAMP_DEFINE_INTERNAL_API(MSRESAMP_MANGLE_CCCF,
-                                    liquid_float_complex,
-                                    liquid_float_complex,
-                                    liquid_float_complex)
-
-
-// symsync
-#define LIQUID_SYMSYNC_DEFINE_INTERNAL_API(SYMSYNC,TO,TC,TI)    \
-void SYMSYNC(_step)(SYMSYNC() _q,                               \
-                    TI _x,                                      \
-                    TO *_y,                                     \
-                    unsigned int *_ny);                         \
-void SYMSYNC(_advance_internal_loop)(SYMSYNC() _q,              \
-                                     TO _mf,                    \
-                                     TO _dmf);                  \
-void SYMSYNC(_output_debug_file)(SYMSYNC() _q,                  \
-                                 const char * _filename);
-
-LIQUID_SYMSYNC_DEFINE_INTERNAL_API(SYMSYNC_MANGLE_RRRF, float, float, float)
-LIQUID_SYMSYNC_DEFINE_INTERNAL_API(SYMSYNC_MANGLE_CRCF, liquid_float_complex, float, liquid_float_complex)
 
 
 // firdes : finite impulse response filter design
@@ -1099,7 +957,7 @@ float liquid_firdes_rkaiser_internal_isi(unsigned int _k,
                                          float * _h);
 
 // Design flipped Nyquist/root-Nyquist filters
-void liquid_firdes_fnyquist(liquid_nyquist_type _type,
+void liquid_firdes_fnyquist(liquid_firfilt_type _type,
                             int                 _root,
                             unsigned int        _k,
                             unsigned int        _m,
@@ -1229,20 +1087,6 @@ float complex ellip_asnf(float complex _u,
 //
 // MODULE : framing
 //
-
-// framegen64
-
-// convert one 8-bit byte to four 2-bit symbols
-//  _byte   :   input byte
-//  _syms   :   output symbols [size: 4 x 1]
-void framegen64_byte_to_syms(unsigned char _byte,
-                             unsigned char * _syms);
-
-// convert four 2-bit symbols into one 8-bit byte
-//  _syms   :   input symbols [size: 4 x 1]
-//  _byte   :   output byte
-void framesync64_syms_to_byte(unsigned char * _syms,
-                              unsigned char * _byte);
 
 //
 // bpacket
@@ -1377,41 +1221,42 @@ void ofdmflexframesync_rxpayload(ofdmflexframesync _q,
 // MODULE : math
 //
 
+// 
+// basic trigonometric functions
+//
+float liquid_sinf(float _x);
+float liquid_cosf(float _x);
+float liquid_tanf(float _x);
+void  liquid_sincosf(float _x,
+                     float * _sinf,
+                     float * _cosf);
+float liquid_expf(float _x);
+float liquid_logf(float _x);
+
+// 
+// complex math operations
+//
+
+// complex square root
+float complex liquid_csqrtf(float complex _z);
+
+// complex exponent, logarithm
+float complex liquid_cexpf(float complex _z);
+float complex liquid_clogf(float complex _z);
+
+// complex arcsin, arccos, arctan
+float complex liquid_casinf(float complex _z);
+float complex liquid_cacosf(float complex _z);
+float complex liquid_catanf(float complex _z);
+
+// faster approximation to arg{*}
+float liquid_cargf_approx(float complex _z);
+
+
 // internal trig helper functions
 
 // complex rotation vector: cexpf(_Complex_I*THETA)
 #define liquid_cexpjf(THETA) (cosf(THETA) + _Complex_I*sinf(THETA))
-
-// polynomials
-#define LIQUID_POLY_DEFINE_INTERNAL_API(POLY,T,TC)          \
-void POLY(_findroots_durandkerner)(T * _p,                  \
-                                   unsigned int _k,         \
-                                   TC * _roots);            \
-void POLY(_findroots_bairstow)(T * _p,                      \
-                               unsigned int _k,             \
-                               TC * _roots);                \
-void POLY(_findroots_bairstow_recursion)(T * _p,            \
-                                         unsigned int _k,   \
-                                         T * _p1,           \
-                                         T * _u,            \
-                                         T * _v);
-
-LIQUID_POLY_DEFINE_INTERNAL_API(POLY_MANGLE_DOUBLE,
-                                double,
-                                double complex)
-
-LIQUID_POLY_DEFINE_INTERNAL_API(POLY_MANGLE_FLOAT,
-                                float,
-                                float complex)
-
-LIQUID_POLY_DEFINE_INTERNAL_API(POLY_MANGLE_CDOUBLE,
-                                double complex,
-                                double complex)
-
-LIQUID_POLY_DEFINE_INTERNAL_API(POLY_MANGLE_CFLOAT,
-                                float complex,
-                                float complex)
-
 
 
 //
@@ -1669,7 +1514,7 @@ extern const float complex modem_arb256opt[256];
 
 
 //
-// MODULE : multicarrier
+// MODULE : multichannel
 //
 
 // ofdm frame (common)
@@ -1802,16 +1647,24 @@ void gradsearch_gradient(utility_function _utility,
                          float *          _gradient);
 
 // execute line search; loosely solve:
-//    min phi(alpha) := f(_x - alpha*_grad)
+//
+//    min|max phi(alpha) := f(_x - alpha*_p)
+//
+// and return best guess at alpha that achieves this
+//
 //  _utility    :   user-defined function
 //  _userdata   :   user-defined data object
-//  _x          :   operating point, [size: _n x 1]
+//  _direction  :   search direction (e.g. LIQUID_OPTIM_MINIMIZE)
 //  _n          :   dimensionality of search
+//  _x          :   operating point, [size: _n x 1]
+//  _p          :   normalized gradient, [size: _n x 1]
+//  _alpha      :   initial step size
 float gradsearch_linesearch(utility_function _utility,
                             void  *          _userdata,
-                            float *          _x,
+                            int              _direction,
                             unsigned int     _n,
-                            float *          _grad,
+                            float *          _x,
+                            float *          _p,
                             float            _alpha);
 
 // normalize vector, returning its l2-norm
@@ -1963,9 +1816,8 @@ extern struct msequence_s msequence_default[16];
 
 
 //
-// Miscellaneous utilities
+// MODULE : utility
 //
-
 
 // number of ones in a byte
 //  0   0000 0000   :   0
@@ -2037,5 +1889,7 @@ extern const unsigned char liquid_c_ones_mod2[256];
 // number of leading zeros in byte
 extern unsigned int liquid_c_leading_zeros[256];
 
+// byte reversal and manipulation
+extern const unsigned char liquid_reverse_byte_gentab[256];
 #endif // __LIQUID_INTERNAL_H__
 

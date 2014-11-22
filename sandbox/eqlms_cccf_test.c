@@ -60,10 +60,10 @@ int main() {
 #else
     design_rrc_filter(k,m,beta,dt,hm);
 #endif
-    interp_crcf interp = interp_crcf_create(k,hm,h_len);
+    firinterp_crcf interp = firinterp_crcf_create(k,hm,h_len);
     for (i=0; i<num_symbols; i++)
-        interp_crcf_execute(interp, s[i], &x[i*k]);
-    interp_crcf_destroy(interp);
+        firinterp_crcf_execute(interp, s[i], &x[i*k]);
+    firinterp_crcf_destroy(interp);
 
     // generate channel filter
     float complex hc[hc_len];

@@ -1,5 +1,5 @@
 ## 
-## Copyright (c) 2007, 2008, 2009, 2010, 2011, 2012, 2013 Joseph Gaeddert
+## Copyright (c) 2007 - 2014 Joseph Gaeddert
 ##
 ## This file is part of liquid.
 ##
@@ -21,7 +21,7 @@
 # Process with autoconf to generate configure script
 #
 
-AC_INIT([liquid-dsp],[1.2.0],[liquid@vt.edu])
+AC_INIT([liquid-dsp],[1.2.0],[support@liquidsdr.org])
 AC_CONFIG_SRCDIR([src/libliquid.c])
 
 # permit auxiliary scripts directory (e.g. config.sub, config.guess, install-sh)
@@ -31,7 +31,7 @@ AC_CONFIG_AUX_DIR(scripts/)
 AC_LANG(C)
 
 # Autoheader
-AH_TEMPLATE([LIQUID_EXPERIMENTAL], [Enable building of experimental modules and objects.])
+AH_TEMPLATE([LIQUID_FFTOVERRIDE],  [Force internal FFT even if libfftw is available])
 
 AC_CONFIG_HEADER(config.h)
 AH_TOP([
@@ -50,91 +50,10 @@ AC_ARG_ENABLE(debug,
     [DEBUG_OPTION=""]
 )
 
-AC_ARG_ENABLE(profile,
-    AS_HELP_STRING([--enable-profile],[profile]),
-    [PROFILE_OPTION="-pg"; CLIB="-lc_p"],
-    [PROFILE_OPTION="";    CLIB="-lc"],
-)
-
-# Option to enable/disable experimental modules and objects
-AC_ARG_ENABLE(experimental,
-    AS_HELP_STRING([--enable-experimental],[enable experimental modules, objects]),
-    [   # experimental option enabled
-        EXPERIMENTAL_HEADER="liquid.experimental.h" # add 'experimental' header to list
-        EXPERIMENTAL_MLIBS="src/experimental/src/ann.nodes.o \
-            src/experimental/src/activation_functions.o \
-            src/experimental/src/cpmodem.o \
-            src/experimental/src/kmeans.o \
-            src/experimental/src/layer.o \
-            src/experimental/src/maxnet.o \
-            src/experimental/src/node.o \
-            src/experimental/src/gport.o \
-            src/experimental/src/filter_rrrf.o \
-            src/experimental/src/filter_crcf.o \
-            src/experimental/src/filter_cccf.o \
-            src/experimental/src/packetizer.o \
-            src/experimental/src/patternset.o \
-            src/experimental/src/awgn_channel.o \
-            src/experimental/src/lognorm_channel.o \
-            src/experimental/src/channel.o \
-            src/experimental/src/pamodel.o \
-            src/experimental/src/ofdmoqam.o \
-            src/experimental/src/ofdmoqamframe.common.o \
-            src/experimental/src/ofdmoqamframegen.o \
-            src/experimental/src/ofdmoqamframesync.o \
-            src/experimental/src/ricek_channel.o"
-        EXPERIMENTAL_AUTOTESTS="src/experimental/tests/ann_autotest.c \
-            src/experimental/tests/gport_autotest.c \
-            src/experimental/tests/channel_autotest.c"
-#           src/experimental/tests/ofdmoqam_autotest.c
-        EXPERIMENTAL_BENCHMARKS="src/experimental/bench/dds_benchmark.c \
-            src/experimental/bench/gport_dma_benchmark.c \
-            src/experimental/bench/gport_dma_threaded_benchmark.c \
-            src/experimental/bench/gport_ima_benchmark.c \
-            src/experimental/bench/gport_ima_threaded_benchmark.c \
-            src/experimental/bench/ofdmoqam_benchmark.c \
-            src/experimental/bench/qmfb_benchmark.c "
-        EXPERIMENTAL_EXAMPLES="examples/ann_bitpattern_example \
-            examples/ann_example \
-            examples/ann_layer_example \
-            examples/ann_maxnet_example \
-            examples/ann_node_example \
-            examples/ann_xor_example \
-            examples/dds_cccf_example \
-            examples/gport_dma_example \
-            examples/gport_dma_threaded_example \
-            examples/gport_ima_example \
-            examples/gport_ima_threaded_example \
-            examples/gport_mma_threaded_example \
-            examples/iirqmfb_crcf_example \
-            examples/itqmfb_crcf_example \
-            examples/itqmfb_rrrf_example \
-            examples/kmeans_example \
-            examples/ofdmoqamframesync_example \
-            examples/ofdmoqam_example \
-            examples/ofdmoqam_firpfbch_example \
-            examples/patternset_example \
-            examples/prqmfb_crcf_example \
-            examples/qmfb_crcf_analysis_example \
-            examples/qmfb_crcf_synthesis_example \
-            examples/ricek_channel_example \
-            examples/symsync2_crcf_example \
-            examples/symsynclp_crcf_example"
-#           examples/ofdmoqamframe64gen_example
-#           examples/ofdmoqamframe64sync_example
-        AC_DEFINE(LIQUID_EXPERIMENTAL)
-        AC_CHECK_HEADERS(pthread.h)
-        AC_CHECK_LIB([pthread], [pthread_mutex_init], [],
-                     [AC_MSG_ERROR(Need POSIX thread library for experimental build!)],
-                     [])
-    ],
-    [   # experimental option disabled
-        EXPERIMENTAL_HEADER=""
-        EXPERIMENTAL_MLIBS=""
-        EXPERIMENTAL_AUTOTESTS=""
-        EXPERIMENTAL_BENCHMARKS=""
-        EXPERIMENTAL_EXAMPLES=""
-    ],
+AC_ARG_ENABLE(fftoverride,
+    AS_HELP_STRING([--enable-fftoverride],[use internal fft even if libfftw is available]),
+    [AC_DEFINE(LIQUID_FFTOVERRIDE)],
+    [],
 )
 
 # Check for necessary programs
@@ -148,13 +67,26 @@ AC_PROG_RANLIB
 AC_FUNC_ERROR_AT_LINE
 AC_FUNC_MALLOC
 AC_FUNC_REALLOC
+
 # AC_CHECK_LIB (library, function, [action-if-found], [action-if-not-found], [other-libraries])
-AC_CHECK_LIB([c], [malloc, realloc, free, memset, memmove], [],
-             [AC_MSG_ERROR(Need standard c library!)],
-             [])
-AC_CHECK_LIB([m], [sinf, cosf, expf, cargf, cexpf, crealf, cimagf, sqrtf], [],
-             [AC_MSG_ERROR(Need standard (complex) math library!)],
-             [])
+AC_CHECK_LIB([c],[main], [],[AC_MSG_ERROR(Could not use standard C library)],   [])
+AC_CHECK_LIB([m],[main], [],[AC_MSG_ERROR(Could not use standard math library)],[])
+
+# AC_CHECK_FUNC(function, [action-if-found], [action-if-not-found])
+AC_CHECK_FUNC([malloc],  [],[AC_MSG_ERROR(Could not use malloc())])
+AC_CHECK_FUNC([realloc], [],[AC_MSG_ERROR(Could not use realloc())],)
+AC_CHECK_FUNC([free],    [],[AC_MSG_ERROR(Could not use free())],)
+AC_CHECK_FUNC([memset],  [],[AC_MSG_ERROR(Could not use memset())],)
+AC_CHECK_FUNC([memmove], [],[AC_MSG_ERROR(Could not use memove())],)
+
+AC_CHECK_FUNC([sinf],    [],[AC_MSG_ERROR(Could not use sinf())],)
+AC_CHECK_FUNC([cosf],    [],[AC_MSG_ERROR(Could not use cosf())],)
+AC_CHECK_FUNC([expf],    [],[AC_MSG_ERROR(Could not use expf())],)
+AC_CHECK_FUNC([cargf],   [],[AC_MSG_ERROR(Could not use cargf())],)
+AC_CHECK_FUNC([cexpf],   [],[AC_MSG_ERROR(Could not use cexpf())],)
+AC_CHECK_FUNC([crealf],  [],[AC_MSG_ERROR(Could not use crealf())],)
+AC_CHECK_FUNC([cimagf],  [],[AC_MSG_ERROR(Could not use cimagf())],)
+AC_CHECK_FUNC([sqrtf],   [],[AC_MSG_ERROR(Could not use sqrtf())],)
 
 # Check for necessary header files
 AC_CHECK_HEADERS([stdio.h stdlib.h complex.h string.h getopt.h sys/resource.h float.h inttypes.h limits.h stdlib.h string.h unistd.h])
@@ -171,39 +103,6 @@ AC_CHECK_LIB([fftw3f], [fftwf_plan_dft_1d], [],
 AC_CHECK_LIB([fec], [create_viterbi27], [],
              [AC_MSG_WARN(fec library useful but not required)],
              [])
-#AC_CHECK_LIB([liquidfpm], [q32_mul], [],
-#             [AC_MSG_WARN(fixed-point math library useful but not required)],
-#             [])
-
-# check for programs (documentation)
-AC_CHECK_PROG(PDFLATEX, pdflatex, pdflatex, no)
-if [ test "x$PDFLATEX" == "xno" ]; then
-    AC_MSG_WARN(pdflatex required to build documentation)
-fi
-AC_CHECK_PROG(BIBTEX, bibtex, bibtex, no)
-if [ test "x$BIBTEX" == "xno" ]; then
-    AC_MSG_WARN(bibtex required to build documentation)
-fi
-AC_CHECK_PROG(EPSTOPDF, epstopdf, epstopdf, no)
-if [ test "x$EPSTOPDF" == "xno" ]; then
-    AC_MSG_WARN(epstopdf required to build documentation)
-fi
-AC_CHECK_PROG(GNUPLOT, gnuplot, gnuplot, no)
-if [ test "x$GNUPLOT" == "xno" ]; then
-    AC_MSG_WARN(gnuplot required to build documentation)
-fi
-AC_CHECK_PROG(PYGMENTIZE,   pygmentize,     pygmentize,     no)
-AC_CHECK_PROG(PYGMENTIZE24, pygmentize-2.4, pygmentize-2.4, no)
-if [ test "$PYGMENTIZE" == "no" ]; then
-    if [ test "$PYGMENTIZE24" == "no" ]; then
-        # use uglier, but functional built-in homebrewed code listing generator
-        AC_MSG_WARN(pygmentize not found; using ./scripts/liquid-pygmentize.py as ugly alternative)
-        PYGMENTIZE="./scripts/liquid-pygmentize.py"
-    else
-        PYGMENTIZE="pygmentize-2.4"
-    fi
-fi
-
 
 # Checks for typedefs, structures, and compiler characteristics.
 AC_C_INLINE
@@ -214,6 +113,12 @@ AC_TYPE_UINT8_T
 # Check size of certain variables
 AC_CHECK_SIZEOF(int)
 AC_CHECK_SIZEOF(unsigned int)
+
+# AX_GCC_ARCHFLAG([PORTABLE?], [ACTION-SUCCESS], [ACTION-FAILURE])
+# Try to guess the "native" architecture of the target to use with gcc's
+# -march or -mtune flags. Default success action adds $ax_cv_gcc_archflag to
+# $CFLAGS (sets to "unknown" on failure).
+AX_GCC_ARCHFLAG([no],[],[])
 
 # Check canonical system
 AC_CANONICAL_TARGET
@@ -233,7 +138,7 @@ i386|i486|i586|i686|x86|x86_64)
         # SSE4.1/2 extensions
         MLIBS_DOTPROD="src/dotprod/src/dotprod_cccf.mmx.o \
                        src/dotprod/src/dotprod_crcf.mmx.o \
-                       src/dotprod/src/dotprod_rrrf.sse4.o \
+                       src/dotprod/src/dotprod_rrrf.mmx.o \
                        src/dotprod/src/sumsq.mmx.o"
     elif [ test "$ax_cv_have_sse2_ext" = yes && test "$ac_cv_header_emmintrin_h" = yes ]; then
         # SSE2 extensions
@@ -247,13 +152,7 @@ i386|i486|i586|i686|x86|x86_64)
                        src/dotprod/src/dotprod_crcf.o \
                        src/dotprod/src/dotprod_rrrf.o \
                        src/dotprod/src/sumsq.o"
-    fi
-    case $target_os in
-    darwin*)
-        ARCH_OPTION="-march=core2";;
-    *)
-        ARCH_OPTION="";;
-    esac;;
+    fi;;
 powerpc*)
     MLIBS_DOTPROD="src/dotprod/src/dotprod_cccf.o \
                    src/dotprod/src/dotprod_rrrf.av.o \
@@ -261,12 +160,15 @@ powerpc*)
                    src/dotprod/src/sumsq.o"
     ARCH_OPTION="-fno-common -faltivec";;
 arm*)
-    # ARM architecture : use portable C version
-    MLIBS_DOTPROD="src/dotprod/src/dotprod_cccf.o \
-                   src/dotprod/src/dotprod_crcf.o \
-                   src/dotprod/src/dotprod_rrrf.o \
+    # TODO: check for Neon availability
+
+    # ARM architecture : use neon extensions
+    MLIBS_DOTPROD="src/dotprod/src/dotprod_cccf.neon.o \
+                   src/dotprod/src/dotprod_crcf.neon.o \
+                   src/dotprod/src/dotprod_rrrf.neon.o \
                    src/dotprod/src/sumsq.o"
-    ARCH_OPTION="-marm -mfloat-abi=softfp";;
+    # TODO: check these flags
+    ARCH_OPTION="-ffast-math -mcpu=cortex-a8 -mfloat-abi=softfp -mfpu=neon";;
 *)
     # unknown architecture : use portable C version
     MLIBS_DOTPROD="src/dotprod/src/dotprod_cccf.o \
@@ -275,6 +177,16 @@ arm*)
                    src/dotprod/src/sumsq.o"
     ARCH_OPTION="";;
 esac
+
+# for now all vector operations are portable C versions
+MLIBS_VECTOR="src/vector/src/vectorf_add.port.o   \
+              src/vector/src/vectorf_norm.port.o  \
+              src/vector/src/vectorf_mul.port.o   \
+              src/vector/src/vectorf_trig.port.o  \
+              src/vector/src/vectorcf_add.port.o  \
+              src/vector/src/vectorcf_norm.port.o \
+              src/vector/src/vectorcf_mul.port.o  \
+              src/vector/src/vectorcf_trig.port.o"
 
 case $target_os in
 darwin*)
@@ -292,26 +204,14 @@ esac
 #
 AC_SUBST(LIBS)                      # shared libraries (-lc, -lm, etc.)
 AC_SUBST(MLIBS_DOTPROD)             # 
-AC_SUBST(EXPERIMENTAL_HEADER)       # experimental header
-AC_SUBST(EXPERIMENTAL_MLIBS)        # experimental library objects
-AC_SUBST(EXPERIMENTAL_AUTOTESTS)    # experimental autotests
-AC_SUBST(EXPERIMENTAL_BENCHMARKS)   # experimental benchmarks
-AC_SUBST(EXPERIMENTAL_EXAMPLES)     # experimental examples
+AC_SUBST(MLIBS_VECTOR)              #
 
 AC_SUBST(SH_LIB)                    # output shared library target
 AC_SUBST(REBIND)                    # rebinding tool (e.g. ldconfig)
 AC_SUBST(ARCH_OPTION)               # compiler architecture option
 
 AC_SUBST(DEBUG_OPTION)              # debug option
-AC_SUBST(PROFILE_OPTION)            # profile symbols
 AC_SUBST(CLIB)                      # C library linkage (e.g. '-lc')
 
-# documentation programs
-AC_SUBST(PDFLATEX)                  # pdflatex
-AC_SUBST(BIBTEX)                    # bibtex
-AC_SUBST(EPSTOPDF)                  # epstopdf
-AC_SUBST(GNUPLOT)                   # gnuplot
-AC_SUBST(PYGMENTIZE)                # pygmentize
-
-AC_CONFIG_FILES([makefile doc/makefile])
+AC_CONFIG_FILES([makefile])
 AC_OUTPUT

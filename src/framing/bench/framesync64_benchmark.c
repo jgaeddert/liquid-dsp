@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2012, 2013 Joseph Gaeddert
+ * Copyright (c) 2007 - 2014 Joseph Gaeddert
  *
  * This file is part of liquid.
  *
@@ -70,7 +70,7 @@ void benchmark_framesync64(
 
     // generate the frame
     //unsigned int frame_len = framegen64_getframelen(fg);
-    unsigned int frame_len = FRAME64_LEN;
+    unsigned int frame_len = LIQUID_FRAME64_LEN;
     float complex frame[frame_len];
     framegen64_execute(fg, header, payload, frame);
 

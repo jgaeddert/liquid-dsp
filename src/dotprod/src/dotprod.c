@@ -1,7 +1,5 @@
 /*
- * Copyright (c) 2007, 2008, 2009, 2010 Joseph Gaeddert
- * Copyright (c) 2007, 2008, 2009, 2010 Virginia Polytechnic
- *                                      Institute & State University
+ * Copyright (c) 2007 - 2014 Joseph Gaeddert
  *
  * This file is part of liquid.
  *
@@ -38,10 +36,10 @@ struct DOTPROD(_s) {
 //  _x      :   input array [size: 1 x _n]
 //  _n      :   input lengths
 //  _y      :   output dot product
-void DOTPROD(_run)(TC *_h,
-                   TI *_x,
+void DOTPROD(_run)(TC *         _h,
+                   TI *         _x,
                    unsigned int _n,
-                   TO * _y)
+                   TO *         _y)
 {
     // initialize accumulator
     TO r=0;
@@ -59,10 +57,10 @@ void DOTPROD(_run)(TC *_h,
 //  _x      :   input array [size: 1 x _n]
 //  _n      :   input lengths
 //  _y      :   output dot product
-void DOTPROD(_run4)(TC *_h,
-                    TI *_x,
+void DOTPROD(_run4)(TC *         _h,
+                    TI *         _x,
                     unsigned int _n,
-                    TO * _y)
+                    TO *         _y)
 {
     // initialize accumulator
     TO r=0;
@@ -94,7 +92,7 @@ void DOTPROD(_run4)(TC *_h,
 // create structured dot product object
 //  _h      :   coefficients array [size: 1 x _n]
 //  _n      :   dot product length
-DOTPROD() DOTPROD(_create)(TC * _h,
+DOTPROD() DOTPROD(_create)(TC *         _h,
                            unsigned int _n)
 {
     DOTPROD() q = (DOTPROD()) malloc(sizeof(struct DOTPROD(_s)));
@@ -114,8 +112,8 @@ DOTPROD() DOTPROD(_create)(TC * _h,
 //  _q      :   old dot dot product object
 //  _h      :   new coefficients [size: 1 x _n]
 //  _n      :   new dot product size
-DOTPROD() DOTPROD(_recreate)(DOTPROD() _q,
-                             TC * _h,
+DOTPROD() DOTPROD(_recreate)(DOTPROD()    _q,
+                             TC *         _h,
                              unsigned int _n)
 {
     // check to see if length has changed
@@ -144,7 +142,7 @@ void DOTPROD(_destroy)(DOTPROD() _q)
 // print dot product object
 void DOTPROD(_print)(DOTPROD() _q)
 {
-    printf("dotprod [%u elements]:\n", _q->n);
+    printf("dotprod [portable, %u coefficients]:\n", _q->n);
     unsigned int i;
     for (i=0; i<_q->n; i++) {
         printf("  %4u: %12.8f + j*%12.8f\n", i,
@@ -158,8 +156,8 @@ void DOTPROD(_print)(DOTPROD() _q)
 //  _x      :   input array [size: 1 x _n]
 //  _y      :   output dot product
 void DOTPROD(_execute)(DOTPROD() _q,
-                       TI * _x,
-                       TO * _y)
+                       TI *      _x,
+                       TO *      _y)
 {
     // run basic dot product with unrolled loops
     DOTPROD(_run4)(_q->h, _x, _q->n, _y);

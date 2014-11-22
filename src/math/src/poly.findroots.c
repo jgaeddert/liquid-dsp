@@ -1,7 +1,5 @@
 /*
- * Copyright (c) 2007, 2008, 2009, 2010 Joseph Gaeddert
- * Copyright (c) 2007, 2008, 2009, 2010 Virginia Polytechnic
- *                                      Institute & State University
+ * Copyright (c) 2007 - 2014 Joseph Gaeddert
  *
  * This file is part of liquid.
  *
@@ -31,15 +29,31 @@
 
 #include "liquid.internal.h"
 
+// debug polynomial root-finding methods?
+#define LIQUID_POLY_FINDROOTS_DEBUG     0
+
+// 
+// forward declaration of internal methods
+//
+
+// iterate over Bairstow's method, finding quadratic factor x^2 + u*x + v
+void POLY(_findroots_bairstow_recursion)(T *          _p,
+                                         unsigned int _k,
+                                         T *          _p1,
+                                         T *          _u,
+                                         T *          _v);
+
 
 // finds the complex roots of the polynomial
 //  _p      :   polynomial array, ascending powers [size: _k x 1]
 //  _k      :   polynomials length (poly order = _k - 1)
 //  _roots  :   resulting complex roots [size: _k-1 x 1]
-void POLY(_findroots)(T * _p,
+void POLY(_findroots)(T *          _p,
                       unsigned int _k,
-                      TC * _roots)
+                      TC *         _roots)
 {
+    // find roots of polynomial using Bairstow's method (more
+    // accurate and reliable than Durand-Kerner)
     POLY(_findroots_bairstow)(_p,_k,_roots);
 }
 
@@ -47,9 +61,9 @@ void POLY(_findroots)(T * _p,
 //  _p      :   polynomial array, ascending powers [size: _k x 1]
 //  _k      :   polynomials length (poly order = _k - 1)
 //  _roots  :   resulting complex roots [size: _k-1 x 1]
-void POLY(_findroots_durandkerner)(T * _p,
+void POLY(_findroots_durandkerner)(T *          _p,
                                    unsigned int _k,
-                                   TC * _roots)
+                                   TC *         _roots)
 {
     if (_k < 2) {
         fprintf(stderr,"%s_findroots_durandkerner(), order must be greater than 0\n", POLY_NAME);
@@ -89,7 +103,7 @@ void POLY(_findroots_durandkerner)(T * _p,
     //for (i=0; i<num_iterations; i++) {
     i = 0;
     while (continue_iterating) {
-#if 0
+#if LIQUID_POLY_FINDROOTS_DEBUG
         printf("%s_findroots(), i=%3u :\n", POLY_NAME, i);
         for (j=0; j<num_roots; j++)
             printf("  r[%3u] = %12.8f + j*%12.8f\n", j, crealf(r0[j]), cimagf(r0[j]));
@@ -112,7 +126,7 @@ void POLY(_findroots_durandkerner)(T * _p,
             delta += crealf(e*conjf(e));
         }
         delta /= num_roots * gmax;
-#if 0
+#if LIQUID_POLY_FINDROOTS_DEBUG
         printf("delta[%3u] = %12.4e\n", i, delta);
 #endif
 
@@ -131,9 +145,9 @@ void POLY(_findroots_durandkerner)(T * _p,
 //  _p      :   polynomial array, ascending powers [size: _k x 1]
 //  _k      :   polynomials length (poly order = _k - 1)
 //  _roots  :   resulting complex roots [size: _k-1 x 1]
-void POLY(_findroots_bairstow)(T * _p,
+void POLY(_findroots_bairstow)(T *          _p,
                                unsigned int _k,
-                               TC * _roots)
+                               TC *         _roots)
 {
     T p0[_k];       // buffer 0
     T p1[_k];       // buffer 1
@@ -174,7 +188,7 @@ void POLY(_findroots_bairstow)(T * _p,
         _roots[k++] = r0;
         _roots[k++] = r1;
 
-#if 0
+#if LIQUID_POLY_FINDROOTS_DEBUG
         // print debugging info
         unsigned int j;
         printf("initial polynomial:\n");
@@ -199,10 +213,11 @@ void POLY(_findroots_bairstow)(T * _p,
     }
 
     if (r==0) {
+#if LIQUID_POLY_FINDROOTS_DEBUG
         assert(n==2);
+#endif
         _roots[k++] = -pr[0]/pr[1];
     }
-    //assert( k == _k-1 );
 }
 
 // iterate over Bairstow's method, finding quadratic factor x^2 + u*x + v
@@ -211,11 +226,11 @@ void POLY(_findroots_bairstow)(T * _p,
 //  _p1     :   reduced polynomial (output) [size: _k-2 x 1]
 //  _u      :   input: initial estimate for u; output: resulting u
 //  _v      :   input: initial estimate for v; output: resulting v
-void POLY(_findroots_bairstow_recursion)(T * _p,
+void POLY(_findroots_bairstow_recursion)(T *          _p,
                                          unsigned int _k,
-                                         T * _p1,
-                                         T * _u,
-                                         T * _v)
+                                         T *          _p1,
+                                         T *          _u,
+                                         T *          _v)
 {
     // validate length
     if (_k < 3) {
@@ -261,7 +276,7 @@ void POLY(_findroots_bairstow_recursion)(T * _p,
         du = - q*(-h*c   + g*d);
         dv = - q*(-g*v*c + (g*u-h)*d);
 
-#if 0
+#if LIQUID_POLY_FINDROOTS_DEBUG
         // print debugging info
         printf("bairstow [%u] :\n", k);
         printf("  u     : %12.4e + j*%12.4e\n", crealf(u), cimagf(u));
@@ -309,3 +324,4 @@ void POLY(_findroots_bairstow_recursion)(T * _p,
     *_v = v;
 
 }
+

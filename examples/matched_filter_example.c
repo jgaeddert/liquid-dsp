@@ -31,8 +31,8 @@ int main(int argc, char*argv[]) {
     unsigned int m=3;   // symbol delay
     float beta=0.7f;    // excess bandwidth factor
     unsigned int num_symbols=16;
-    int ftype_tx = LIQUID_RNYQUIST_RRC;
-    int ftype_rx = LIQUID_RNYQUIST_RRC;
+    int ftype_tx = LIQUID_FIRFILT_RRC;
+    int ftype_rx = LIQUID_FIRFILT_RRC;
 
     int dopt;
     while ((dopt = getopt(argc,argv,"uht:k:m:b:n:")) != EOF) {
@@ -40,31 +40,14 @@ int main(int argc, char*argv[]) {
         case 'u':
         case 'h':   usage();            return 0;
         case 't':
-            if (strcmp(optarg,"rrcos")==0) {
-                ftype_tx = LIQUID_RNYQUIST_RRC;
-                ftype_rx = LIQUID_RNYQUIST_RRC;
-            } else if (strcmp(optarg,"rkaiser")==0) {
-                ftype_tx = LIQUID_RNYQUIST_RKAISER;
-                ftype_rx = LIQUID_RNYQUIST_RKAISER;
-            } else if (strcmp(optarg,"arkaiser")==0) {
-                ftype_tx = LIQUID_RNYQUIST_ARKAISER;
-                ftype_rx = LIQUID_RNYQUIST_ARKAISER;
-            } else if (strcmp(optarg,"hM3")==0) {
-                ftype_tx = LIQUID_RNYQUIST_hM3;
-                ftype_rx = LIQUID_RNYQUIST_hM3;
-            } else if (strcmp(optarg,"gmsk")==0) {
-                ftype_tx = LIQUID_RNYQUIST_GMSKTX;
-                ftype_rx = LIQUID_RNYQUIST_GMSKRX;
-            } else if (strcmp(optarg,"fexp")==0) {
-                ftype_tx = LIQUID_RNYQUIST_FEXP;
-                ftype_rx = LIQUID_RNYQUIST_FEXP;
-            } else if (strcmp(optarg,"fsech")==0) {
-                ftype_tx = LIQUID_RNYQUIST_FSECH;
-                ftype_rx = LIQUID_RNYQUIST_FSECH;
-            } else if (strcmp(optarg,"farcsech")==0) {
-                ftype_tx = LIQUID_RNYQUIST_FARCSECH;
-                ftype_rx = LIQUID_RNYQUIST_FARCSECH;
+            if (strcmp(optarg,"gmsk")==0) {
+                ftype_tx = LIQUID_FIRFILT_GMSKTX;
+                ftype_rx = LIQUID_FIRFILT_GMSKRX;
             } else {
+                ftype_tx = liquid_getopt_str2firfilt(optarg);
+                ftype_rx = liquid_getopt_str2firfilt(optarg);
+            }
+            if (ftype_tx == LIQUID_FIRFILT_UNKNOWN) {
                 fprintf(stderr,"error: %s, unknown filter type '%s'\n", argv[0], optarg);
                 exit(1);
             }
@@ -142,18 +125,18 @@ int main(int argc, char*argv[]) {
     float sym_out[num_symbols];
 
     // create interpolator and decimator
-    interp_rrrf interp = interp_rrrf_create(k, ht, h_len);
-    decim_rrrf  decim  = decim_rrrf_create( k, hr, h_len);
+    firinterp_rrrf interp = firinterp_rrrf_create(k, ht, h_len);
+    firdecim_rrrf  decim  = firdecim_rrrf_create( k, hr, h_len);
 
     for (i=0; i<num_symbols; i++) {
         // generate random symbol
         sym_in[i] = (rand() % 2) ? 1.0f : -1.0f;
 
         // interpolate
-        interp_rrrf_execute(interp, sym_in[i], &y[i*k]);
+        firinterp_rrrf_execute(interp, sym_in[i], &y[i*k]);
 
         // decimate
-        decim_rrrf_execute(decim, &y[i*k], &sym_out[i], 0);
+        firdecim_rrrf_execute(decim, &y[i*k], &sym_out[i]);
 
         // normalize output
         sym_out[i] /= k;
@@ -164,8 +147,8 @@ int main(int argc, char*argv[]) {
     }
 
     // clean up objects
-    interp_rrrf_destroy(interp);
-    decim_rrrf_destroy(decim);
+    firinterp_rrrf_destroy(interp);
+    firdecim_rrrf_destroy(decim);
 
     //
     // export results

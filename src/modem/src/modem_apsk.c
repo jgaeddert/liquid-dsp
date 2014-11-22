@@ -1,7 +1,5 @@
 /*
- * Copyright (c) 2007, 2008, 2009, 2010, 2011, 2012 Joseph Gaeddert
- * Copyright (c) 2007, 2008, 2009, 2010, 2011, 2012 Virginia Polytechnic
- *                                      Institute & State University
+ * Copyright (c) 2007 - 2014 Joseph Gaeddert
  *
  * This file is part of liquid.
  *
@@ -85,6 +83,8 @@ MODEM() MODEM(_create_apsk)(unsigned int _bits_per_symbol)
     MODEM(_init_map)(q);
     q->modulate_using_map = 1;
 
+    // reset modem and return
+    MODEM(_reset)(q);
     return q;
 }
 

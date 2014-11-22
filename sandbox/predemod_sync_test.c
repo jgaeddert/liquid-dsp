@@ -94,13 +94,13 @@ int main(int argc, char*argv[])
     }
 
     // create interpolated sequence, compensating for filter delay
-    interp_crcf interp_seq = interp_crcf_create_rnyquist(LIQUID_RNYQUIST_RRC,k,m,beta,0.0f);
+    firinterp_crcf interp_seq = firinterp_crcf_create_rnyquist(LIQUID_FIRFILT_RRC,k,m,beta,0.0f);
     for (i=0; i<num_sync_symbols+m; i++) {
-        if      (i < m)                interp_crcf_execute(interp_seq, seq[i], &s0[0]);
-        else if (i < num_sync_symbols) interp_crcf_execute(interp_seq, seq[i], &s0[k*(i-m)]);
-        else                           interp_crcf_execute(interp_seq,      0, &s0[k*(i-m)]);
+        if      (i < m)                firinterp_crcf_execute(interp_seq, seq[i], &s0[0]);
+        else if (i < num_sync_symbols) firinterp_crcf_execute(interp_seq, seq[i], &s0[k*(i-m)]);
+        else                           firinterp_crcf_execute(interp_seq,      0, &s0[k*(i-m)]);
     }
-    interp_crcf_destroy(interp_seq);
+    firinterp_crcf_destroy(interp_seq);
     
     // compute g = E{ |s0|^2 }
     float g = 0.0f;
@@ -108,22 +108,22 @@ int main(int argc, char*argv[])
         g += crealf( s0[i]*conjf(s0[i]) );
 
     // create transmit interpolator and generate sequence
-    interp_crcf interp_tx = interp_crcf_create_rnyquist(LIQUID_RNYQUIST_RRC,k,m,beta,dt);
+    firinterp_crcf interp_tx = firinterp_crcf_create_rnyquist(LIQUID_FIRFILT_RRC,k,m,beta,dt);
     unsigned int n=0;
     for (i=0; i<num_delay_symbols; i++) {
-        interp_crcf_execute(interp_tx, 0, &x[k*n]);
+        firinterp_crcf_execute(interp_tx, 0, &x[k*n]);
         n++;
     }
     for (i=0; i<num_sync_symbols; i++) {
-        interp_crcf_execute(interp_tx, seq[i], &x[k*n]);
+        firinterp_crcf_execute(interp_tx, seq[i], &x[k*n]);
         n++;
     }
     for (i=0; i<2*m; i++) {
-        interp_crcf_execute(interp_tx, 0, &x[k*n]);
+        firinterp_crcf_execute(interp_tx, 0, &x[k*n]);
         n++;
     }
     assert(n==num_symbols);
-    interp_crcf_destroy(interp_tx);
+    firinterp_crcf_destroy(interp_tx);
 
     // add channel impairments
     for (i=0; i<num_samples; i++) {

@@ -1,7 +1,5 @@
 /*
- * Copyright (c) 2007, 2008, 2009, 2010, 2011 Joseph Gaeddert
- * Copyright (c) 2007, 2008, 2009, 2010, 2011 Virginia Polytechnic
- *                                      Institute & State University
+ * Copyright (c) 2007 - 2014 Joseph Gaeddert
  *
  * This file is part of liquid.
  *
@@ -32,7 +30,7 @@
 //  _nfft   :   FFT size
 //  _x      :   input array [size: _nfft x 1]
 //  _y      :   output array [size: _nfft x 1]
-//  _dir    :   fft direction: {FFT_FORWARD, FFT_REVERSE}
+//  _dir    :   fft direction: {LIQUID_FFT_FORWARD, LIQUID_FFT_BACKWARD}
 //  _method :   fft method
 FFT(plan) FFT(_create_plan_dft)(unsigned int _nfft,
                                 TC *         _x,
@@ -47,8 +45,8 @@ FFT(plan) FFT(_create_plan_dft)(unsigned int _nfft,
     q->x         = _x;
     q->y         = _y;
     q->flags     = _flags;
-    q->kind      = LIQUID_FFT_DFT_1D;
-    q->direction = (_dir == FFT_FORWARD) ? FFT_FORWARD : FFT_REVERSE;
+    q->type      = (_dir == LIQUID_FFT_FORWARD) ? LIQUID_FFT_FORWARD : LIQUID_FFT_BACKWARD;
+    q->direction = (_dir == LIQUID_FFT_FORWARD) ? LIQUID_FFT_FORWARD : LIQUID_FFT_BACKWARD;
     q->method    = LIQUID_FFT_METHOD_DFT;
         
     q->data.dft.twiddle = NULL;
@@ -73,7 +71,7 @@ FFT(plan) FFT(_create_plan_dft)(unsigned int _nfft,
         q->data.dft.dotprod = (DOTPROD()*) malloc(q->nfft * sizeof(DOTPROD()));
         
         // create dotprod objects
-        // twiddles: exp(-j*2*pi*W), W=
+        // twiddles: exp(-j*2*pi*W/n), W=
         //  0   0   0   0   0...
         //  0   1   2   3   4...
         //  0   2   4   6   8...
@@ -83,7 +81,7 @@ FFT(plan) FFT(_create_plan_dft)(unsigned int _nfft,
         // Create dotprod for first row anyway because it's still faster...
         unsigned int i;
         unsigned int k;
-        T d = (q->direction == FFT_FORWARD) ? -1.0 : 1.0;
+        T d = (q->direction == LIQUID_FFT_FORWARD) ? -1.0 : 1.0;
         for (i=0; i<q->nfft; i++) {
             // initialize twiddle factors
             // NOTE: no need to compute first twiddle because exp(-j*2*pi*0) = 1
@@ -208,7 +206,7 @@ void FFT(_execute_dft_3)(FFT(plan) _q)
     
     // set return values
     _q->y[0] = _q->x[0] + _q->x[1] + _q->x[2];
-    if (_q->direction == FFT_FORWARD) {
+    if (_q->direction == LIQUID_FFT_FORWARD) {
         _q->y[1] = _q->x[0] + ta1 + tb2;
         _q->y[2] = _q->x[0] + tb1 + ta2;
     } else {
@@ -223,7 +221,7 @@ void FFT(_execute_dft_3)(FFT(plan) _q)
     TC tb    = _q->x[0] + _q->x[1]*conjf(g) + _q->x[2]*g;
 
     // set return values
-    if (_q->direction == FFT_FORWARD) {
+    if (_q->direction == LIQUID_FFT_FORWARD) {
         _q->y[1] = ta;
         _q->y[2] = tb;
     } else {
@@ -263,7 +261,7 @@ void FFT(_execute_dft_4)(FFT(plan) _q)
 
     // k0 = 1, k1=3
     yp = cimagf(y[3]) - _Complex_I*crealf(y[3]);
-    if (_q->direction == FFT_REVERSE)
+    if (_q->direction == LIQUID_FFT_BACKWARD)
         yp = -yp;
     y[3] = y[1] - yp;
     y[1] = y[1] + yp;
@@ -284,7 +282,7 @@ void FFT(_execute_dft_5)(FFT(plan) _q)
     // exp(-j*2*pi*2/5)
     TC g1 = -0.809016994374947 - 0.587785252292473*_Complex_I;
 
-    if (_q->direction == FFT_REVERSE) {
+    if (_q->direction == LIQUID_FFT_BACKWARD) {
         g0 = conjf(g0);
         g1 = conjf(g1);
     }
@@ -311,7 +309,7 @@ void FFT(_execute_dft_6)(FFT(plan) _q)
 
     TC g1, g2, g4, g5;
 
-    if (_q->direction == FFT_FORWARD) {
+    if (_q->direction == LIQUID_FFT_FORWARD) {
         g1 =        g;  // exp(-j*2*pi*1/6)
         g2 = -conjf(g); // exp(-j*2*pi*2/6)
         g4 =       -g;  // exp(-j*2*pi*4/6)
@@ -344,7 +342,7 @@ void FFT(_execute_dft_7)(FFT(plan) _q)
     TC g2 = -0.222520933956314 - 0.974927912181824 * _Complex_I; // exp(-j*2*pi*2/7)
     TC g3 = -0.900968867902419 - 0.433883739117558 * _Complex_I; // exp(-j*2*pi*3/7)
 
-    if (_q->direction == FFT_FORWARD) {
+    if (_q->direction == LIQUID_FFT_FORWARD) {
     } else {
         g1 = conjf(g1); // exp(+j*2*pi*1/7)
         g2 = conjf(g2); // exp(+j*2*pi*2/7)
@@ -371,7 +369,7 @@ void FFT(_execute_dft_8)(FFT(plan) _q)
     TC * y = _q->y;
 
     // fft or ifft?
-    int fft = _q->direction == FFT_FORWARD ? 1 : 0;
+    int fft = _q->direction == LIQUID_FFT_FORWARD ? 1 : 0;
 
     // index reversal
     y[0] = x[0];
@@ -433,7 +431,7 @@ void FFT(_execute_dft_16)(FFT(plan) _q)
     TC * y = _q->y;
 
     // fft or ifft?
-    int fft = _q->direction == FFT_FORWARD ? 1 : 0;
+    int fft = _q->direction == LIQUID_FFT_FORWARD ? 1 : 0;
 
     // index reversal
     y[ 0] = x[ 0];

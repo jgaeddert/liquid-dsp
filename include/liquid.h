@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007, 2008, 2009, 2010, 2011, 2012, 2013 Joseph Gaeddert
+ * Copyright (c) 2007 - 2014 Joseph Gaeddert
  *
  * This file is part of liquid.
  *
@@ -74,7 +74,7 @@ int liquid_libversion_number(void);
 #if LIQUID_USE_COMPLEX_H==1
 #   include <complex.h>
 #   define LIQUID_DEFINE_COMPLEX(R,C) typedef R _Complex C
-#elif defined _GLIBCXX_COMPLEX
+#elif defined _GLIBCXX_COMPLEX || defined _LIBCPP_COMPLEX
 #   define LIQUID_DEFINE_COMPLEX(R,C) typedef std::complex<R> C
 #else
 #   define LIQUID_DEFINE_COMPLEX(R,C) typedef struct {R real; R imag;} C;
@@ -88,16 +88,6 @@ LIQUID_DEFINE_COMPLEX(double, liquid_double_complex);
 // MODULE : agc (automatic gain control)
 //
 
-// agc squelch status codes
-enum {
-    LIQUID_AGC_SQUELCH_ENABLED=0,   // squelch enabled
-    LIQUID_AGC_SQUELCH_RISE,        // rising edge trigger
-    LIQUID_AGC_SQUELCH_SIGNALHI,    // signal high
-    LIQUID_AGC_SQUELCH_FALL,        // falling edge trigger
-    LIQUID_AGC_SQUELCH_SIGNALLO,    // signal low, but no timeout
-    LIQUID_AGC_SQUELCH_TIMEOUT      // signal low, timed out
-};
-
 #define AGC_MANGLE_CRCF(name)   LIQUID_CONCAT(agc_crcf, name)
 #define AGC_MANGLE_RRRF(name)   LIQUID_CONCAT(agc_rrrf, name)
 
@@ -108,48 +98,63 @@ enum {
 #define LIQUID_AGC_DEFINE_API(AGC,T,TC)                         \
 typedef struct AGC(_s) * AGC();                                 \
                                                                 \
-AGC() AGC(_create)();                                           \
+/* create automatic gain control object                     */  \
+AGC() AGC(_create)(void);                                       \
+                                                                \
+/* destroy object, freeing all internally-allocated memory  */  \
 void AGC(_destroy)(AGC() _q);                                   \
+                                                                \
+/* print object properties to stdout                        */  \
 void AGC(_print)(AGC() _q);                                     \
+                                                                \
+/* reset object's internal state                            */  \
 void AGC(_reset)(AGC() _q);                                     \
                                                                 \
-/* set gain limits */                                           \
-void AGC(_set_gain_limits)(AGC() _q, T _gmin, T _gmax);         \
+/* execute automatic gain control on an single input sample */  \
+/*  _q      : automatic gain control object                 */  \
+/*  _x      : input sample                                  */  \
+/*  _y      : output sample                                 */  \
+void AGC(_execute)(AGC() _q,                                    \
+                   TC    _x,                                    \
+                   TC *  _y);                                   \
                                                                 \
-/* Set loop filter bandwidth; attack/release time */            \
-void AGC(_set_bandwidth)(AGC() _q, T _bt);                      \
+/* execute automatic gain control on block of samples       */  \
+/*  _q      : automatic gain control object                 */  \
+/*  _x      : input data array, [size: _n x 1]              */  \
+/*  _n      : number of input, output samples               */  \
+/*  _y      : output data array, [size: _n x 1]             */  \
+void AGC(_execute_block)(AGC()        _q,                       \
+                         TC *         _x,                       \
+                         unsigned int _n,                       \
+                         TC *         _y);                      \
                                                                 \
 /* lock/unlock gain control */                                  \
-void AGC(_lock)(AGC() _q);                                      \
+void AGC(_lock)(  AGC() _q);                                    \
 void AGC(_unlock)(AGC() _q);                                    \
                                                                 \
-/* push input sample, update internal tracking loop */          \
-void AGC(_push)(AGC() _q, TC _x);                               \
+/* get/set loop filter bandwidth; attack/release time       */  \
+float AGC(_get_bandwidth)(AGC() _q);                            \
+void  AGC(_set_bandwidth)(AGC() _q, float _bt);                 \
                                                                 \
-/* apply gain to input sample */                                \
-void AGC(_apply_gain)(AGC() _q, TC * _y);                       \
+/* get/set signal level (linear) relative to unity energy   */  \
+float AGC(_get_signal_level)(AGC() _q);                         \
+void  AGC(_set_signal_level)(AGC() _q, float _signal_level);    \
                                                                 \
-/* same as running push(), apply_gain() */                      \
-void AGC(_execute)(AGC() _q, TC _x, TC *_y);                    \
+/* get/set signal level (dB) relative to unity energy       */  \
+float AGC(_get_rssi)(AGC() _q);                                 \
+void  AGC(_set_rssi)(AGC() _q, float _rssi);                    \
                                                                 \
-/* Return signal level (linear) relative to unity energy */     \
-T AGC(_get_signal_level)(AGC() _q);                             \
+/* get/set gain value (linear) relative to unity energy     */  \
+float AGC(_get_gain)(AGC() _q);                                 \
+void  AGC(_set_gain)(AGC() _q, float _gain);                    \
                                                                 \
-/* Return signal level (dB) relative to unity energy */         \
-T AGC(_get_rssi)(AGC() _q);                                     \
-                                                                \
-/* Return gain value (linear) relative to unity energy */       \
-T AGC(_get_gain)(AGC() _q);                                     \
-                                                                \
-/* squelch */                                                   \
-void AGC(_squelch_activate)(AGC() _q);                          \
-void AGC(_squelch_deactivate)(AGC() _q);                        \
-void AGC(_squelch_enable_auto)(AGC() _q);                       \
-void AGC(_squelch_disable_auto)(AGC() _q);                      \
-void AGC(_squelch_set_threshold)(AGC() _q, T _threshold);       \
-T    AGC(_squelch_get_threshold)(AGC() _q);                     \
-void AGC(_squelch_set_timeout)(AGC() _q, unsigned int _n);      \
-int  AGC(_squelch_get_status)(AGC() _q);
+/* initialize internal gain on input array                  */  \
+/*  _q      : automatic gain control object                 */  \
+/*  _x      : input data array, [size: _n x 1]              */  \
+/*  _n      : number of input, output samples               */  \
+void AGC(_init)(AGC()        _q,                                \
+                TC *         _x,                                \
+                unsigned int _n);                               \
 
 // Define agc APIs
 LIQUID_AGC_DEFINE_API(AGC_MANGLE_CRCF, float, liquid_float_complex)
@@ -192,44 +197,95 @@ void cvsd_decode8(cvsd _q, unsigned char _data, float * _audio);
 // MODULE : buffer
 //
 
-// Buffer
-#define BUFFER_MANGLE_FLOAT(name)  LIQUID_CONCAT(bufferf,  name)
-#define BUFFER_MANGLE_CFLOAT(name) LIQUID_CONCAT(buffercf, name)
-//#define BUFFER_MANGLE_UINT(name)   LIQUID_CONCAT(bufferui, name)
-
-typedef enum {
-    CIRCULAR=0,
-    STATIC
-} buffer_type;
+// circular buffer
+#define CBUFFER_MANGLE_FLOAT(name)  LIQUID_CONCAT(cbufferf,  name)
+#define CBUFFER_MANGLE_CFLOAT(name) LIQUID_CONCAT(cbuffercf, name)
 
 // large macro
-//   BUFFER : name-mangling macro
-//   T      : data type
-#define LIQUID_BUFFER_DEFINE_API(BUFFER,T)                      \
+//   CBUFFER : name-mangling macro
+//   T       : data type
+#define LIQUID_CBUFFER_DEFINE_API(CBUFFER,T)                    \
+typedef struct CBUFFER(_s) * CBUFFER();                         \
                                                                 \
-typedef struct BUFFER(_s) * BUFFER();                           \
-BUFFER() BUFFER(_create)(buffer_type _type, unsigned int _n);   \
-void BUFFER(_destroy)(BUFFER() _b);                             \
-void BUFFER(_print)(BUFFER() _b);                               \
-void BUFFER(_debug_print)(BUFFER() _b);                         \
-void BUFFER(_clear)(BUFFER() _b);                               \
-void BUFFER(_zero)(BUFFER() _b);                                \
-void BUFFER(_read)(BUFFER() _b, T ** _v, unsigned int *_nr);    \
-void BUFFER(_release)(BUFFER() _b, unsigned int _n);            \
-void BUFFER(_write)(BUFFER() _b, T * _v, unsigned int _n);      \
-void BUFFER(_push)(BUFFER() _b, T _v);
-//void BUFFER(_force_write)(BUFFER() _b, T * _v, unsigned int _n);
+/* create circular buffer object of a particular size       */  \
+CBUFFER() CBUFFER(_create)(unsigned int _max_size);             \
+                                                                \
+/* create circular buffer object of a particular size and   */  \
+/* specify the maximum number of elements that can be read  */  \
+/* at any given time.                                       */  \
+CBUFFER() CBUFFER(_create_max)(unsigned int _max_size,          \
+                               unsigned int _max_read);         \
+                                                                \
+/* destroy cbuffer object, freeing all internal memory      */  \
+void CBUFFER(_destroy)(CBUFFER() _q);                           \
+                                                                \
+/* print cbuffer object properties                          */  \
+void CBUFFER(_print)(CBUFFER() _q);                             \
+                                                                \
+/* print cbuffer object properties and internal state       */  \
+void CBUFFER(_debug_print)(CBUFFER() _q);                       \
+                                                                \
+/* clear internal buffer                                    */  \
+void CBUFFER(_clear)(CBUFFER() _q);                             \
+                                                                \
+/* get the number of elements currently in the buffer       */  \
+unsigned int CBUFFER(_size)(CBUFFER() _q);                      \
+                                                                \
+/* get the maximum number of elements the buffer can hold   */  \
+unsigned int CBUFFER(_max_size)(CBUFFER() _q);                  \
+                                                                \
+/* get the maximum number of elements you may read at once  */  \
+unsigned int CBUFFER(_max_read)(CBUFFER() _q);                  \
+                                                                \
+/* get the number of available slots (max_size - size)      */  \
+unsigned int CBUFFER(_space_available)(CBUFFER() _q);           \
+                                                                \
+/* is buffer full?                                          */  \
+int CBUFFER(_is_full)(CBUFFER() _q);                            \
+                                                                \
+/* write a single sample into the buffer                    */  \
+/*  _q  : circular buffer object                            */  \
+/*  _v  : input sample                                      */  \
+void CBUFFER(_push)(CBUFFER() _q,                               \
+                    T         _v);                              \
+                                                                \
+/* write samples to the buffer                              */  \
+/*  _q  : circular buffer object                            */  \
+/*  _v  : output array                                      */  \
+/*  _n  : number of samples to write                        */  \
+void CBUFFER(_write)(CBUFFER()    _q,                           \
+                     T *          _v,                           \
+                     unsigned int _n);                          \
+                                                                \
+/* remove and return a single element from the buffer       */  \
+/*  _q  : circular buffer object                            */  \
+/*  _v  : pointer to sample output                          */  \
+void CBUFFER(_pop)(CBUFFER() _q,                                \
+                   T *       _v);                               \
+                                                                \
+/* read buffer contents                                     */  \
+/*  _q              : circular buffer object                */  \
+/*  _num_requested  : number of elements requested          */  \
+/*  _v              : output pointer                        */  \
+/*  _nr             : number of elements referenced by _v   */  \
+void CBUFFER(_read)(CBUFFER()      _q,                          \
+                    unsigned int   _num_requested,              \
+                    T **           _v,                          \
+                    unsigned int * _num_read);                  \
+                                                                \
+/* release _n samples from the buffer                       */  \
+void CBUFFER(_release)(CBUFFER()    _q,                         \
+                       unsigned int _n);                        \
 
 // Define buffer APIs
-LIQUID_BUFFER_DEFINE_API(BUFFER_MANGLE_FLOAT,  float)
-LIQUID_BUFFER_DEFINE_API(BUFFER_MANGLE_CFLOAT, liquid_float_complex)
-//LIQUID_BUFFER_DEFINE_API(BUFFER_MANGLE_UINT,   unsigned int)
+LIQUID_CBUFFER_DEFINE_API(CBUFFER_MANGLE_FLOAT,  float)
+LIQUID_CBUFFER_DEFINE_API(CBUFFER_MANGLE_CFLOAT, liquid_float_complex)
+
 
 
 // Windowing functions
 #define WINDOW_MANGLE_FLOAT(name)  LIQUID_CONCAT(windowf,  name)
 #define WINDOW_MANGLE_CFLOAT(name) LIQUID_CONCAT(windowcf, name)
-//#define WINDOW_MANGLE_UINT(name)   LIQUID_CONCAT(windowui, name)
 
 // large macro
 //   WINDOW : name-mangling macro
@@ -237,16 +293,53 @@ LIQUID_BUFFER_DEFINE_API(BUFFER_MANGLE_CFLOAT, liquid_float_complex)
 #define LIQUID_WINDOW_DEFINE_API(WINDOW,T)                      \
                                                                 \
 typedef struct WINDOW(_s) * WINDOW();                           \
+                                                                \
+/* create window buffer object of length _n                 */  \
 WINDOW() WINDOW(_create)(unsigned int _n);                      \
-WINDOW() WINDOW(_recreate)(WINDOW() _w, unsigned int _n);       \
-void WINDOW(_destroy)(WINDOW() _w);                             \
-void WINDOW(_print)(WINDOW() _w);                               \
-void WINDOW(_debug_print)(WINDOW() _w);                         \
-void WINDOW(_clear)(WINDOW() _w);                               \
-void WINDOW(_read)(WINDOW() _w, T ** _v);                       \
-void WINDOW(_index)(WINDOW() _w, unsigned int _i, T * _v);      \
-void WINDOW(_push)(WINDOW() _b, T _v);                          \
-void WINDOW(_write)(WINDOW() _b, T * _v, unsigned int _n);
+                                                                \
+/* recreate window buffer object with new length            */  \
+/*  _q      : old window object                             */  \
+/*  _n      : new window length                             */  \
+WINDOW() WINDOW(_recreate)(WINDOW() _q, unsigned int _n);       \
+                                                                \
+/* destroy window object, freeing all internally memory     */  \
+void WINDOW(_destroy)(WINDOW() _q);                             \
+                                                                \
+/* print window object to stdout                            */  \
+void WINDOW(_print)(WINDOW() _q);                               \
+                                                                \
+/* print window object to stdout (with extra information)   */  \
+void WINDOW(_debug_print)(WINDOW() _q);                         \
+                                                                \
+/* clear/reset window object (initialize to zeros)          */  \
+void WINDOW(_clear)(WINDOW() _q);                               \
+                                                                \
+/* read window buffer contents                              */  \
+/*  _q      : window object                                 */  \
+/*  _v      : output pointer (set to internal array)        */  \
+void WINDOW(_read)(WINDOW() _q, T ** _v);                       \
+                                                                \
+/* index single element in buffer at a particular index     */  \
+/*  _q      : window object                                 */  \
+/*  _i      : index of element to read                      */  \
+/*  _v      : output value pointer                          */  \
+void WINDOW(_index)(WINDOW()     _q,                            \
+                    unsigned int _i,                            \
+                    T *          _v);                           \
+                                                                \
+/* push single element onto window buffer                   */  \
+/*  _q      : window object                                 */  \
+/*  _v      : single input element                          */  \
+void WINDOW(_push)(WINDOW() _q,                                 \
+                   T        _v);                                \
+                                                                \
+/* write array of elements onto window buffer               */  \
+/*  _q      : window object                                 */  \
+/*  _v      : input array of values to write                */  \
+/*  _n      : number of input values to write               */  \
+void WINDOW(_write)(WINDOW()     _q,                            \
+                    T *          _v,                            \
+                    unsigned int _n);                           \
 
 // Define window APIs
 LIQUID_WINDOW_DEFINE_API(WINDOW_MANGLE_FLOAT,  float)
@@ -264,15 +357,37 @@ LIQUID_WINDOW_DEFINE_API(WINDOW_MANGLE_CFLOAT, liquid_float_complex)
 //   WDELAY : name-mangling macro
 //   T      : data type
 #define LIQUID_WDELAY_DEFINE_API(WDELAY,T)                      \
-                                                                \
 typedef struct WDELAY(_s) * WDELAY();                           \
-WDELAY() WDELAY(_create)(unsigned int _k);                      \
-WDELAY() WDELAY(_recreate)(WDELAY() _w, unsigned int _k);       \
-void WDELAY(_destroy)(WDELAY() _w);                             \
-void WDELAY(_print)(WDELAY() _w);                               \
-void WDELAY(_clear)(WDELAY() _w);                               \
-void WDELAY(_read)(WDELAY() _w, T * _v);                        \
-void WDELAY(_push)(WDELAY() _b, T _v);
+                                                                \
+/* create delay buffer object with '_delay' samples         */  \
+WDELAY() WDELAY(_create)(unsigned int _delay);                  \
+                                                                \
+/* re-create delay buffer object with '_delay' samples      */  \
+/*  _q      :   old delay buffer object                     */  \
+/*  _delay  :   delay for new object                        */  \
+WDELAY() WDELAY(_recreate)(WDELAY()     _q,                     \
+                           unsigned int _delay);                \
+                                                                \
+/* destroy delay buffer object, freeing internal memory     */  \
+void WDELAY(_destroy)(WDELAY() _q);                             \
+                                                                \
+/* print delay buffer object's state to stdout              */  \
+void WDELAY(_print)(WDELAY() _q);                               \
+                                                                \
+/* clear/reset state of object                              */  \
+void WDELAY(_clear)(WDELAY() _q);                               \
+                                                                \
+/* read delayed sample from delay buffer object             */  \
+/*  _q  :   delay buffer object                             */  \
+/*  _v  :   value of delayed element                        */  \
+void WDELAY(_read)(WDELAY() _q,                                 \
+                   T *      _v);                                \
+                                                                \
+/* push new sample into delay buffer object                 */  \
+/*  _q  :   delay buffer object                             */  \
+/*  _v  :   new value to be added to buffer                 */  \
+void WDELAY(_push)(WDELAY() _q,                                 \
+                   T        _v);                                \
 
 // Define wdelay APIs
 LIQUID_WDELAY_DEFINE_API(WDELAY_MANGLE_FLOAT,  float)
@@ -296,17 +411,43 @@ LIQUID_WDELAY_DEFINE_API(WDELAY_MANGLE_CFLOAT, liquid_float_complex)
 //   TI         : input data type
 #define LIQUID_DOTPROD_DEFINE_API(DOTPROD,TO,TC,TI)             \
                                                                 \
-/* run dot product without creating object */                   \
-void DOTPROD(_run)(TC *_h, TI *_x, unsigned int _n, TO *_y);    \
+/* run dot product without creating object [unrolled loop]  */  \
+/*  _v      : coefficients array [size: _n x 1]             */  \
+/*  _x      : input array [size: _n x 1]                    */  \
+/*  _n      : dotprod length, _n > 0                        */  \
+/*  _y      : output sample pointer                         */  \
+void DOTPROD(_run)( TC *_v, TI *_x, unsigned int _n, TO *_y);   \
+void DOTPROD(_run4)(TC *_v, TI *_x, unsigned int _n, TO *_y);   \
                                                                 \
 typedef struct DOTPROD(_s) * DOTPROD();                         \
-DOTPROD() DOTPROD(_create)(TC * _v, unsigned int _n);           \
-DOTPROD() DOTPROD(_recreate)(DOTPROD() _q,                      \
-                             TC * _v,                           \
+                                                                \
+/* create dot product object                                */  \
+/*  _v      : coefficients array [size: _n x 1]             */  \
+/*  _n      : dotprod length, _n > 0                        */  \
+DOTPROD() DOTPROD(_create)(TC *         _v,                     \
+                           unsigned int _n);                    \
+                                                                \
+/* re-create dot product object                             */  \
+/*  _q      : old dotprod object                            */  \
+/*  _v      : coefficients array [size: _n x 1]             */  \
+/*  _n      : dotprod length, _n > 0                        */  \
+DOTPROD() DOTPROD(_recreate)(DOTPROD()    _q,                   \
+                             TC *         _v,                   \
                              unsigned int _n);                  \
+                                                                \
+/* destroy dotprod object, freeing all internal memory      */  \
 void DOTPROD(_destroy)(DOTPROD() _q);                           \
+                                                                \
+/* print dotprod object internals to standard output        */  \
 void DOTPROD(_print)(DOTPROD() _q);                             \
-void DOTPROD(_execute)(DOTPROD() _q, TI * _v, TO * _y);
+                                                                \
+/* execute dot product                                      */  \
+/*  _q      : dotprod object                                */  \
+/*  _x      : input array [size: _n x 1]                    */  \
+/*  _y      : output sample pointer                         */  \
+void DOTPROD(_execute)(DOTPROD() _q,                            \
+                       TI *      _x,                            \
+                       TO *      _y);                           \
 
 LIQUID_DOTPROD_DEFINE_API(DOTPROD_MANGLE_RRRF,
                           float,
@@ -347,36 +488,82 @@ float liquid_sumsqcf(liquid_float_complex * _v,
 //   T      : data type
 #define LIQUID_EQLMS_DEFINE_API(EQLMS,T)                        \
 typedef struct EQLMS(_s) * EQLMS();                             \
-EQLMS() EQLMS(_create)(T * _h,                                  \
-                       unsigned int _p);                        \
-/* create LMS EQ initialized with square-root Nyquist   */      \
-/*  _type   : filter type (e.g. LIQUID_RNYQUIST_RRC)    */      \
-/*  _k      : samples/symbol                            */      \
-/*  _m      : filter delay (symbols)                    */      \
-/*  _beta   : rolloff factor (0 < beta <= 1)            */      \
-/*  _dt     : fractional sample delay                   */      \
-EQLMS() EQLMS(_create_rnyquist)(int _type,                      \
+                                                                \
+/* create LMS EQ initialized with external coefficients     */  \
+/*  _h      : filter coefficients (NULL for {1,0,0...})     */  \
+/*  _h_len  : filter length                                 */  \
+EQLMS() EQLMS(_create)(T *          _h,                         \
+                       unsigned int _h_len);                    \
+                                                                \
+/* create LMS EQ initialized with square-root Nyquist       */  \
+/*  _type   : filter type (e.g. LIQUID_FIRFILT_RRC)         */  \
+/*  _k      : samples/symbol                                */  \
+/*  _m      : filter delay (symbols)                        */  \
+/*  _beta   : rolloff factor (0 < beta <= 1)                */  \
+/*  _dt     : fractional sample delay                       */  \
+EQLMS() EQLMS(_create_rnyquist)(int          _type,             \
                                 unsigned int _k,                \
                                 unsigned int _m,                \
-                                float _beta,                    \
-                                float _dt);                     \
-EQLMS() EQLMS(_recreate)(EQLMS() _eq,                           \
-                         T * _h,                                \
-                         unsigned int _p);                      \
-void EQLMS(_destroy)(EQLMS() _eq);                              \
-void EQLMS(_print)(EQLMS() _eq);                                \
-void EQLMS(_set_bw)(EQLMS() _eq, float _lambda);                \
-float EQLMS(_get_bw)(EQLMS() _eq);                              \
-void EQLMS(_reset)(EQLMS() _eq);                                \
-void EQLMS(_push)(EQLMS() _eq, T _x);                           \
-void EQLMS(_execute)(EQLMS() _eq, T * _y);                      \
-void EQLMS(_step)(EQLMS() _eq, T _d, T _d_hat);                 \
-void EQLMS(_get_weights)(EQLMS() _eq, T * _w);                  \
-void EQLMS(_train)(EQLMS() _eq,                                 \
-                   T * _w,                                      \
-                   T * _x,                                      \
-                   T * _d,                                      \
-                   unsigned int _n);
+                                float        _beta,             \
+                                float        _dt);              \
+                                                                \
+/* re-create EQ initialized with external coefficients      */  \
+/*  _q      :   equalizer object                            */  \
+/*  _h      :   filter coefficients (NULL for {1,0,0...})   */  \
+/*  _h_len  :   filter length                               */  \
+EQLMS() EQLMS(_recreate)(EQLMS()      _q,                       \
+                         T *          _h,                       \
+                         unsigned int _h_len);                  \
+                                                                \
+/* destroy equalizer object, freeing all internal memory    */  \
+void EQLMS(_destroy)(EQLMS() _q);                               \
+                                                                \
+/* reset equalizer object, clearing internal state          */  \
+void EQLMS(_reset)(EQLMS() _q);                                 \
+                                                                \
+/* print equalizer internal state                           */  \
+void EQLMS(_print)(EQLMS() _q);                                 \
+                                                                \
+/* get/set equalizer learning rate                          */  \
+float EQLMS(_get_bw)(EQLMS() _q);                               \
+void  EQLMS(_set_bw)(EQLMS() _q,                                \
+                     float   _lambda);                          \
+                                                                \
+/* push sample into equalizer internal buffer               */  \
+void EQLMS(_push)(EQLMS() _q,                                   \
+                  T       _x);                                  \
+                                                                \
+/* execute internal dot product and return result           */  \
+/*  _q      :   equalizer object                            */  \
+/*  _y      :   output sample                               */  \
+void EQLMS(_execute)(EQLMS() _q,                                \
+                     T *     _y);                               \
+                                                                \
+/* step through one cycle of equalizer training             */  \
+/*  _q      :   equalizer object                            */  \
+/*  _d      :   desired output                              */  \
+/*  _d_hat  :   actual output                               */  \
+void EQLMS(_step)(EQLMS() _q,                                   \
+                  T       _d,                                   \
+                  T       _d_hat);                              \
+                                                                \
+/* get equalizer's internal coefficients                    */  \
+/*  _q      :   equalizer object                            */  \
+/*  _w      :   weights [size: _p x 1]                      */  \
+void EQLMS(_get_weights)(EQLMS() _q,                            \
+                         T *     _w);                           \
+                                                                \
+/* train equalizer object on group of samples               */  \
+/*  _q      :   equalizer object                            */  \
+/*  _w      :   input/output weights   [size: _p x 1]       */  \
+/*  _x      :   received sample vector [size: _n x 1]       */  \
+/*  _d      :   desired output vector  [size: _n x 1]       */  \
+/*  _n      :   input, output vector length                 */  \
+void EQLMS(_train)(EQLMS()      _q,                             \
+                   T *          _w,                             \
+                   T *          _x,                             \
+                   T *          _d,                             \
+                   unsigned int _n);                            \
 
 LIQUID_EQLMS_DEFINE_API(EQLMS_MANGLE_RRRF, float);
 LIQUID_EQLMS_DEFINE_API(EQLMS_MANGLE_CCCF, liquid_float_complex);
@@ -391,24 +578,65 @@ LIQUID_EQLMS_DEFINE_API(EQLMS_MANGLE_CCCF, liquid_float_complex);
 //   T      : data type
 #define LIQUID_EQRLS_DEFINE_API(EQRLS,T)                        \
 typedef struct EQRLS(_s) * EQRLS();                             \
-EQRLS() EQRLS(_create)(T * _h,                                  \
+                                                                \
+/* create RLS EQ initialized with external coefficients     */  \
+/*  _h  : filter coefficients (NULL for {1,0,0...})         */  \
+/*  _p  : filter length                                     */  \
+EQRLS() EQRLS(_create)(T *          _h,                         \
                        unsigned int _p);                        \
-EQRLS() EQRLS(_recreate)(EQRLS() _eq,                           \
-                         T * _h,                                \
+                                                                \
+/* re-create RLS EQ initialized with external coefficients  */  \
+/*  _q  : initial equalizer object                          */  \
+/*  _h  : filter coefficients (NULL for {1,0,0...})         */  \
+/*  _p  : filter length                                     */  \
+EQRLS() EQRLS(_recreate)(EQRLS()      _q,                       \
+                         T *          _h,                       \
                          unsigned int _p);                      \
-void EQRLS(_destroy)(EQRLS() _eq);                              \
-void EQRLS(_print)(EQRLS() _eq);                                \
-void EQRLS(_set_bw)(EQRLS() _eq, float _mu);                    \
-float EQRLS(_get_bw)(EQRLS() _eq);                              \
-void EQRLS(_reset)(EQRLS() _eq);                                \
-void EQRLS(_push)(EQRLS() _eq, T _x);                           \
-void EQRLS(_execute)(EQRLS() _eq, T * _y);                      \
-void EQRLS(_step)(EQRLS() _eq, T _d, T _d_hat);                 \
-void EQRLS(_get_weights)(EQRLS() _eq, T * _w);                  \
-void EQRLS(_train)(EQRLS() _eq,                                 \
-                   T * _w,                                      \
-                   T * _x,                                      \
-                   T * _d,                                      \
+                                                                \
+/* destroy equalizer object, freeing all internal memory    */  \
+void EQRLS(_destroy)(EQRLS() _q);                               \
+                                                                \
+/* print equalizer internal state                           */  \
+void EQRLS(_print)(EQRLS() _q);                                 \
+                                                                \
+/* reset equalizer object, clearing internal state          */  \
+void EQRLS(_reset)(EQRLS() _q);                                 \
+                                                                \
+/* get/set equalizer learning rate                          */  \
+float EQRLS(_get_bw)(EQRLS() _q);                               \
+void  EQRLS(_set_bw)(EQRLS() _q,                                \
+                     float   _mu);                              \
+                                                                \
+/* push sample into equalizer internal buffer               */  \
+void EQRLS(_push)(EQRLS() _q, T _x);                            \
+                                                                \
+/* execute internal dot product and return result           */  \
+/*  _q      :   equalizer object                            */  \
+/*  _y      :   output sample                               */  \
+void EQRLS(_execute)(EQRLS() _q, T * _y);                       \
+                                                                \
+/* step through one cycle of equalizer training             */  \
+/*  _q      :   equalizer object                            */  \
+/*  _d      :   desired output                              */  \
+/*  _d_hat  :   actual output                               */  \
+void EQRLS(_step)(EQRLS() _q, T _d, T _d_hat);                  \
+                                                                \
+/* retrieve internal filter coefficients                    */  \
+/*  _q      :   equalizer object                            */  \
+/*  _w      :   weights [size: _p x 1]                      */  \
+void EQRLS(_get_weights)(EQRLS() _q,                            \
+                         T *     _w);                           \
+                                                                \
+/* train equalizer object on group of samples               */  \
+/*  _q      :   equalizer object                            */  \
+/*  _w      :   input/output weights   [size: _p x 1]       */  \
+/*  _x      :   received sample vector [size: _n x 1]       */  \
+/*  _d      :   desired output vector  [size: _n x 1]       */  \
+/*  _n      :   input, output vector length                 */  \
+void EQRLS(_train)(EQRLS()      _q,                             \
+                   T *          _w,                             \
+                   T *          _x,                             \
+                   T *          _d,                             \
                    unsigned int _n);
 
 LIQUID_EQRLS_DEFINE_API(EQRLS_MANGLE_RRRF, float);
@@ -740,21 +968,30 @@ void interleaver_decode_soft(interleaver _q,
 // MODULE : fft (fast Fourier transform)
 //
 
-#define FFT_FORWARD 0   // FFT
-#define FFT_REVERSE 1   // IFFT
+// type of transform
+typedef enum {
+    LIQUID_FFT_UNKNOWN  =   0,  // unknown transform type
 
-#define FFT_REDFT00 3   // DCT-I
-#define FFT_REDFT10 4   // DCT-II
-#define FFT_REDFT01 5   // DCT-III
-#define FFT_REDFT11 6   // DCT-IV
+    // regular complex one-dimensional transforms
+    LIQUID_FFT_FORWARD  =  +1,  // complex one-dimensional FFT 
+    LIQUID_FFT_BACKWARD =  -1,  // complex one-dimensional inverse FFT 
 
-#define FFT_RODFT00 7   // DST-I
-#define FFT_RODFT10 8   // DST-II
-#define FFT_RODFT01 9   // DST-III
-#define FFT_RODFT11 10  // DST-IV
+    // discrete cosine transforms
+    LIQUID_FFT_REDFT00  =  10,  // real one-dimensional DCT-I
+    LIQUID_FFT_REDFT10  =  11,  // real one-dimensional DCT-II
+    LIQUID_FFT_REDFT01  =  12,  // real one-dimensional DCT-III
+    LIQUID_FFT_REDFT11  =  13,  // real one-dimensional DCT-IV
 
-#define FFT_MDCT    11  // MDCT
-#define FFT_IMDCT   12  // IMDCT
+    // discrete sine transforms
+    LIQUID_FFT_RODFT00  =  20,  // real one-dimensional DST-I
+    LIQUID_FFT_RODFT10  =  21,  // real one-dimensional DST-II
+    LIQUID_FFT_RODFT01  =  22,  // real one-dimensional DST-III
+    LIQUID_FFT_RODFT11  =  23,  // real one-dimensional DST-IV
+
+    // modified discrete cosine transform
+    LIQUID_FFT_MDCT     =  30,  // MDCT
+    LIQUID_FFT_IMDCT    =  31,  // IMDCT
+} liquid_fft_type;
 
 #define LIQUID_FFT_MANGLE_FLOAT(name)   LIQUID_CONCAT(fft,name)
 
@@ -765,27 +1002,69 @@ void interleaver_decode_soft(interleaver _q,
 #define LIQUID_FFT_DEFINE_API(FFT,T,TC)                         \
                                                                 \
 typedef struct FFT(plan_s) * FFT(plan);                         \
+                                                                \
+/* create regular complex one-dimensional transform         */  \
+/*  _n      :   transform size                              */  \
+/*  _x      :   pointer to input array  [size: _n x 1]      */  \
+/*  _y      :   pointer to output array [size: _n x 1]      */  \
+/*  _dir    :   direction (e.g. LIQUID_FFT_FORWARD)         */  \
+/*  _flags  :   options, optimization                       */  \
 FFT(plan) FFT(_create_plan)(unsigned int _n,                    \
-                            TC * _x,                            \
-                            TC * _y,                            \
-                            int _dir,                           \
-                            int _flags);                        \
+                            TC *         _x,                    \
+                            TC *         _y,                    \
+                            int          _dir,                  \
+                            int          _flags);               \
+                                                                \
+/* create real-to-real transform                            */  \
+/*  _n      :   transform size                              */  \
+/*  _x      :   pointer to input array  [size: _n x 1]      */  \
+/*  _y      :   pointer to output array [size: _n x 1]      */  \
+/*  _type   :   transform type (e.g. LIQUID_FFT_REDFT00)    */  \
+/*  _flags  :   options, optimization                       */  \
 FFT(plan) FFT(_create_plan_r2r_1d)(unsigned int _n,             \
-                                   T * _x,                      \
-                                   T * _y,                      \
-                                   int _kind,                   \
-                                   int _flags);                 \
+                                   T *          _x,             \
+                                   T *          _y,             \
+                                   int          _type,          \
+                                   int          _flags);        \
+                                                                \
+/* destroy transform                                        */  \
 void FFT(_destroy_plan)(FFT(plan) _p);                          \
+                                                                \
+/* print transform plan and internal strategy               */  \
 void FFT(_print_plan)(FFT(plan) _p);                            \
+                                                                \
+/* run the transform                                        */  \
 void FFT(_execute)(FFT(plan) _p);                               \
                                                                 \
 /* object-independent methods */                                \
+                                                                \
+/* perform n-point FFT allocating plan internally           */  \
+/*  _nfft   : fft size                                      */  \
+/*  _x      : input array [size: _nfft x 1]                 */  \
+/*  _y      : output array [size: _nfft x 1]                */  \
+/*  _dir    : fft direction: LIQUID_FFT_{FORWARD,BACKWARD}  */  \
+/*  _flags  : fft flags                                     */  \
 void FFT(_run)(unsigned int _n,                                 \
-               TC * _x,                                         \
-               TC * _y,                                         \
-               int _dir,                                        \
-               int _method);                                    \
-void FFT(_shift)(TC*_x, unsigned int _n);
+               TC *         _x,                                 \
+               TC *         _y,                                 \
+               int          _dir,                               \
+               int          _flags);                            \
+                                                                \
+/* perform n-point real FFT allocating plan internally      */  \
+/*  _nfft   : fft size                                      */  \
+/*  _x      : input array [size: _nfft x 1]                 */  \
+/*  _y      : output array [size: _nfft x 1]                */  \
+/*  _type   : fft type, e.g. LIQUID_FFT_REDFT10             */  \
+/*  _flags  : fft flags                                     */  \
+void FFT(_r2r_1d_run)(unsigned int _n,                          \
+                      T *          _x,                          \
+                      T *          _y,                          \
+                      int          _type,                       \
+                      int          _flags);                     \
+                                                                \
+/* perform _n-point fft shift                               */  \
+void FFT(_shift)(TC *         _x,                               \
+                 unsigned int _n);                              \
 
 
 LIQUID_FFT_DEFINE_API(LIQUID_FFT_MANGLE_FLOAT,float,liquid_float_complex)
@@ -802,48 +1081,212 @@ LIQUID_FFT_DEFINE_API(LIQUID_FFT_MANGLE_FLOAT,float,liquid_float_complex)
 // spectral periodogram
 //
 
-typedef struct spgram_s * spgram;
+#define LIQUID_SPGRAM_MANGLE_CFLOAT(name) LIQUID_CONCAT(spgramcf,name)
+#define LIQUID_SPGRAM_MANGLE_FLOAT(name)  LIQUID_CONCAT(spgramf, name)
 
-// create spgram object
-//  _nfft       :   FFT size
-//  _window_len :   window length
-spgram spgram_create(unsigned int _nfft,
-                     unsigned int _window_len);
+// Macro    :   SPGRAM
+//  SPGRAM  :   name-mangling macro
+//  T       :   primitive data type
+//  TC      :   primitive data type (complex)
+//  TI      :   primitive data type (input)
+#define LIQUID_SPGRAM_DEFINE_API(SPGRAM,T,TC,TI)                \
+                                                                \
+typedef struct SPGRAM(_s) * SPGRAM();                           \
+                                                                \
+/* create spgram object                                     */  \
+/*  _nfft       :   FFT size                                */  \
+/*  _window     :   window [size: _window_len x 1]          */  \
+/*  _window_len :   window length                           */  \
+SPGRAM() SPGRAM(_create)(unsigned int _nfft,                    \
+                         float *      _window,                  \
+                         unsigned int _window_len);             \
+                                                                \
+/* create spgram object with Kaiser-Bessel window           */  \
+/*  _nfft       :   FFT size                                */  \
+/*  _window_len :   window length                           */  \
+/*  _beta       :   Kaiser-Bessel parameter (_beta > 0)     */  \
+SPGRAM() SPGRAM(_create_kaiser)(unsigned int _nfft,             \
+                                unsigned int _window_len,       \
+                                float        _beta);            \
+                                                                \
+/* destroy spgram object                                    */  \
+void SPGRAM(_destroy)(SPGRAM() _q);                             \
+                                                                \
+/* resets the internal state of the spgram object           */  \
+void SPGRAM(_reset)(SPGRAM() _q);                               \
+                                                                \
+/* push a single sample into the spgram object              */  \
+/*  _q      :   spgram object                               */  \
+/*  _x      :   input sample                                */  \
+void SPGRAM(_push)(SPGRAM() _q,                                 \
+                   TI       _x);                                \
+                                                                \
+/* write a block of samples to the spgram object            */  \
+/*  _q      :   spgram object                               */  \
+/*  _x      :   input buffer [size: _n x 1]                 */  \
+/*  _n      :   input buffer length                         */  \
+void SPGRAM(_write)(SPGRAM()     _q,                            \
+                    TI *         _x,                            \
+                    unsigned int _n);                           \
+                                                                \
+/* compute spectral periodogram output (complex values)     */  \
+/* from current buffer contents                             */  \
+/*  _q      :   spgram object                               */  \
+/*  _X      :   output complex spectrum [size: _nfft x 1]   */  \
+void SPGRAM(_execute)(SPGRAM() _q,                              \
+                      TC *     _X);                             \
+                                                                \
+/* compute spectral periodogram output (fft-shifted values  */  \
+/* in dB) from current buffer contents                      */  \
+/*  _q      :   spgram object                               */  \
+/*  _X      :   output spectrum [size: _nfft x 1]           */  \
+void SPGRAM(_execute_psd)(SPGRAM() _q,                          \
+                          T *      _X);                         \
+                                                                \
+/* accumulate power spectral density                        */  \
+/*  _q      :   spgram object                               */  \
+/*  _x      :   input buffer [size: _n x 1]                 */  \
+/*  _alpha  :   auto-regressive memory factor, [0,1]        */  \
+/*  _n      :   input buffer length                         */  \
+void SPGRAM(_accumulate_psd)(SPGRAM()       _q,                 \
+                             TI *           _x,                 \
+                             float          _alpha,             \
+                             unsigned int   _n);                \
+                                                                \
+/* write accumulated psd                                    */  \
+/*  _q      :   spgram object                               */  \
+/*  _x      :   input buffer [size: _n x 1]                 */  \
+/*  _n      :   input buffer length [size: _nfft x 1]       */  \
+void SPGRAM(_write_accumulation)(SPGRAM() _q,                   \
+                                 T *      _x);                  \
+                                                                \
+/* estimate spectrum on input signal                        */  \
+/*  _q      :   spgram object                               */  \
+/*  _x      :   input signal [size: _n x 1]                 */  \
+/*  _n      :   input signal length                         */  \
+/*  _psd    :   output spectrum, [size: _nfft x 1]          */  \
+void SPGRAM(_estimate_psd)(SPGRAM()     _q,                     \
+                           TI *         _x,                     \
+                           unsigned int _n,                     \
+                           T *          _psd);                  \
 
-// destroy spgram object
-void spgram_destroy(spgram _q);
+LIQUID_SPGRAM_DEFINE_API(LIQUID_SPGRAM_MANGLE_CFLOAT,
+                         float,
+                         liquid_float_complex,
+                         liquid_float_complex)
 
-// resets the internal state of the spgram object
-void spgram_reset(spgram _q);
+LIQUID_SPGRAM_DEFINE_API(LIQUID_SPGRAM_MANGLE_FLOAT,
+                         float,
+                         liquid_float_complex,
+                         float)
 
-// push samples into spgram object
-//  _q      :   spgram object
-//  _x      :   input buffer [size: _n x 1]
-//  _n      :   input buffer length
-void spgram_push(spgram                 _q,
-                 liquid_float_complex * _x,
-                 unsigned int           _n);
+// 
+// asgram : ascii spectral periodogram
+//
 
-// compute spectral periodogram output
-//  _q      :   spgram object
-//  _X      :   output spectrum [dB], [size: _nfft x 1]
-void spgram_execute(spgram _q,
-                    liquid_float_complex * _X);
+#define LIQUID_ASGRAM_MANGLE_CFLOAT(name) LIQUID_CONCAT(asgramcf,name)
+#define LIQUID_ASGRAM_MANGLE_FLOAT(name)  LIQUID_CONCAT(asgramf, name)
 
-// ascii spectrogram
-typedef struct asgram_s * asgram;
-asgram asgram_create(liquid_float_complex *_x, unsigned int _n);
-void asgram_set_scale(asgram _q, float _scale);
-void asgram_set_offset(asgram _q, float _offset);
-void asgram_destroy(asgram _q);
-void asgram_execute(asgram _q,
-                    char * _ascii,
-                    float * _peakval,
-                    float * _peakfreq);
+// Macro    :   ASGRAM
+//  ASGRAM  :   name-mangling macro
+//  T       :   primitive data type
+//  TC      :   primitive data type (complex)
+//  TI      :   primitive data type (input)
+#define LIQUID_ASGRAM_DEFINE_API(ASGRAM,T,TC,TI)                \
+                                                                \
+typedef struct ASGRAM(_s) * ASGRAM();                           \
+                                                                \
+/* create asgram object with size _nfft                     */  \
+ASGRAM() ASGRAM(_create)(unsigned int _nfft);                   \
+                                                                \
+/* destroy asgram object                                    */  \
+void ASGRAM(_destroy)(ASGRAM() _q);                             \
+                                                                \
+/* resets the internal state of the asgram object           */  \
+void ASGRAM(_reset)(ASGRAM() _q);                               \
+                                                                \
+/* set scale and offset for spectrogram                     */  \
+/*  _q      :   asgram object                               */  \
+/*  _offset :   signal offset level [dB]                    */  \
+/*  _scale  :   signal scale [dB]                           */  \
+void ASGRAM(_set_scale)(ASGRAM() _q,                            \
+                        float    _offset,                       \
+                        float    _scale);                       \
+                                                                \
+/* push a single sample into the asgram object              */  \
+/*  _q      :   asgram object                               */  \
+/*  _x      :   input sample                                */  \
+void ASGRAM(_push)(ASGRAM() _q,                                 \
+                   TI       _x);                                \
+                                                                \
+/* write a block of samples to the asgram object            */  \
+/*  _q      :   asgram object                               */  \
+/*  _x      :   input buffer [size: _n x 1]                 */  \
+/*  _n      :   input buffer length                         */  \
+void ASGRAM(_write)(ASGRAM()     _q,                            \
+                    TI *         _x,                            \
+                    unsigned int _n);                           \
+                                                                \
+/* compute spectral periodogram output from current buffer  */  \
+/* contents                                                 */  \
+/*  _q          :   spgram object                           */  \
+/*  _ascii      :   output ASCII string [size: _nfft x 1]   */  \
+/*  _peakval    :   peak power spectral density value [dB]  */  \
+/*  _peakfreq   :   peak power spectral density frequency   */  \
+void ASGRAM(_execute)(ASGRAM() _q,                              \
+                      char *  _ascii,                           \
+                      float * _peakval,                         \
+                      float * _peakfreq);                       \
+                                                                \
+/* compute spectral periodogram output from current buffer  */  \
+/* contents and print standard format to stdout             */  \
+void ASGRAM(_print)(ASGRAM() _q);                               \
+
+LIQUID_ASGRAM_DEFINE_API(LIQUID_ASGRAM_MANGLE_CFLOAT,
+                         float,
+                         liquid_float_complex,
+                         liquid_float_complex)
+
+LIQUID_ASGRAM_DEFINE_API(LIQUID_ASGRAM_MANGLE_FLOAT,
+                         float,
+                         liquid_float_complex,
+                         float)
+
 
 //
 // MODULE : filter
 //
+
+//
+// firdes: finite impulse response filter design
+//
+
+// prototypes
+typedef enum {
+    LIQUID_FIRFILT_UNKNOWN=0,   // unknown filter type
+
+    // Nyquist filter prototypes
+    LIQUID_FIRFILT_KAISER,      // Nyquist Kaiser filter
+    LIQUID_FIRFILT_PM,          // Parks-McClellan filter
+    LIQUID_FIRFILT_RCOS,        // raised-cosine filter
+    LIQUID_FIRFILT_FEXP,        // flipped exponential
+    LIQUID_FIRFILT_FSECH,       // flipped hyperbolic secant
+    LIQUID_FIRFILT_FARCSECH,    // flipped arc-hyperbolic secant
+
+    // root-Nyquist filter prototypes
+    LIQUID_FIRFILT_ARKAISER,    // root-Nyquist Kaiser (approximate optimum)
+    LIQUID_FIRFILT_RKAISER,     // root-Nyquist Kaiser (true optimum)
+    LIQUID_FIRFILT_RRC,         // root raised-cosine
+    LIQUID_FIRFILT_hM3,         // harris-Moerder-3 filter
+    LIQUID_FIRFILT_GMSKTX,      // GMSK transmit filter
+    LIQUID_FIRFILT_GMSKRX,      // GMSK receive filter
+    LIQUID_FIRFILT_RFEXP,       // flipped exponential
+    LIQUID_FIRFILT_RFSECH,      // flipped hyperbolic secant
+    LIQUID_FIRFILT_RFARCSECH,   // flipped arc-hyperbolic secant
+} liquid_firfilt_type;
+
+// returns filter type based on input string
+int liquid_getopt_str2firfilt(const char * _str);
 
 // estimate required filter length given
 //  _df     :   transition bandwidth (0 < _b < 0.5)
@@ -870,29 +1313,19 @@ float estimate_req_filter_df(float _As,
 float kaiser_beta_As(float _As);
 
 
-// Nyquist filter prototypes
-typedef enum {
-    LIQUID_NYQUIST_KAISER=0,    // Nyquist Kaiser filter
-    LIQUID_NYQUIST_PM,          // Parks-McClellan filter
-    LIQUID_NYQUIST_RCOS,        // raised-cosine filter
-    LIQUID_NYQUIST_FEXP,        // flipped exponential
-    LIQUID_NYQUIST_FSECH,       // flipped hyperbolic secant
-    LIQUID_NYQUIST_FARCSECH,    // flipped arc-hyperbolic secant
-} liquid_nyquist_type;
-
 // Design Nyquist filter
-//  _type   : filter type (e.g. LIQUID_NYQUIST_RCOS)
+//  _type   : filter type (e.g. LIQUID_FIRFILT_RCOS)
 //  _k      : samples/symbol
 //  _m      : symbol delay
 //  _beta   : excess bandwidth factor, _beta in [0,1]
 //  _dt     : fractional sample delay
 //  _h      : output coefficient buffer (length: 2*k*m+1)
-void liquid_firdes_nyquist(liquid_nyquist_type _type,
-                           unsigned int _k,
-                           unsigned int _m,
-                           float _beta,
-                           float _dt,
-                           float * _h);
+void liquid_firdes_nyquist(liquid_firfilt_type _type,
+                           unsigned int        _k,
+                           unsigned int        _m,
+                           float               _beta,
+                           float               _dt,
+                           float *             _h);
 
 
 // Design FIR filter using Parks-McClellan algorithm
@@ -995,104 +1428,35 @@ void liquid_firdes_rcos(unsigned int _k,
                         float _dt,
                         float * _h);
 
-// root-Nyquist filter prototypes
-typedef enum {
-    LIQUID_RNYQUIST_ARKAISER=0, // root-Nyquist Kaiser (approximate optimum)
-    LIQUID_RNYQUIST_RKAISER,    // root-Nyquist Kaiser (true optimum)
-    LIQUID_RNYQUIST_RRC,        // root raised-cosine
-    LIQUID_RNYQUIST_hM3,        // harris-Moerder-3 filter
-    LIQUID_RNYQUIST_GMSKTX,     // GMSK transmit filter
-    LIQUID_RNYQUIST_GMSKRX,     // GMSK receive filter
-    LIQUID_RNYQUIST_FEXP,       // flipped exponential
-    LIQUID_RNYQUIST_FSECH,      // flipped hyperbolic secant
-    LIQUID_RNYQUIST_FARCSECH,   // flipped arc-hyperbolic secant
-} liquid_rnyquist_type;
-
 // Design root-Nyquist filter
-//  _type   : filter type (e.g. LIQUID_RNYQUIST_RRC)
-//  _k      : samples/symbol
-//  _m      : symbol delay
-//  _beta   : excess bandwidth factor, _beta in [0,1]
-//  _dt     : fractional sample delay
-//  _h      : output coefficient buffer (length: 2*k*m+1)
-void liquid_firdes_rnyquist(liquid_rnyquist_type _type,
-                            unsigned int _k,
-                            unsigned int _m,
-                            float _beta,
-                            float _dt,
-                            float * _h);
+//  _type   : filter type (e.g. LIQUID_FIRFILT_RRC)
+//  _k      : samples/symbol,          _k > 1
+//  _m      : symbol delay,            _m > 0
+//  _beta   : excess bandwidth factor, _beta in [0,1)
+//  _dt     : fractional sample delay, _dt in [-1,1]
+//  _h      : output coefficient buffer (length: 2*_k*_m+1)
+void liquid_firdes_rnyquist(liquid_firfilt_type _type,
+                            unsigned int        _k,
+                            unsigned int        _m,
+                            float               _beta,
+                            float               _dt,
+                            float *             _h);
 
 // Design root-Nyquist raised-cosine filter
-//  _k      : samples/symbol
-//  _m      : symbol delay
-//  _beta   : rolloff factor (0 < beta <= 1)
-//  _dt     : fractional sample delay
-//  _h      : output coefficient buffer (length: 2*k*m+1)
-void liquid_firdes_rrcos(unsigned int _k,
-                         unsigned int _m,
-                         float _beta,
-                         float _dt,
-                         float * _h);
+void liquid_firdes_rrcos(unsigned int _k, unsigned int _m, float _beta, float _dt, float * _h);
 
 // Design root-Nyquist Kaiser filter
-//  _k      : samples/symbol
-//  _m      : symbol delay
-//  _beta   : rolloff factor (0 < beta <= 1)
-//  _dt     : fractional sample delay
-//  _h      : output coefficient buffer (length: 2*k*m+1)
-void liquid_firdes_rkaiser(unsigned int _k,
-                           unsigned int _m,
-                           float _beta,
-                           float _dt,
-                           float * _h);
+void liquid_firdes_rkaiser(unsigned int _k, unsigned int _m, float _beta, float _dt, float * _h);
 
 // Design (approximate) root-Nyquist Kaiser filter
-//  _k      : samples/symbol
-//  _m      : symbol delay
-//  _beta   : rolloff factor (0 < beta <= 1)
-//  _dt     : fractional sample delay
-//  _h      : output coefficient buffer (length: 2*k*m+1)
-void liquid_firdes_arkaiser(unsigned int _k,
-                            unsigned int _m,
-                            float _beta,
-                            float _dt,
-                            float * _h);
+void liquid_firdes_arkaiser(unsigned int _k, unsigned int _m, float _beta, float _dt, float * _h);
 
 // Design root-Nyquist harris-Moerder filter
-//  _k      : samples/symbol
-//  _m      : symbol delay
-//  _beta   : rolloff factor (0 < beta <= 1)
-//  _dt     : fractional sample delay
-//  _h      : output coefficient buffer (length: 2*k*m+1)
-void liquid_firdes_hM3(unsigned int _k,
-                       unsigned int _m,
-                       float _beta,
-                       float _dt,
-                       float * _h);
+void liquid_firdes_hM3(unsigned int _k, unsigned int _m, float _beta, float _dt, float * _h);
 
-// Design GMSK transmit filter
-//  _k      : samples/symbol
-//  _m      : symbol delay
-//  _beta   : rolloff factor (0 < beta <= 1)
-//  _dt     : fractional sample delay
-//  _h      : output coefficient buffer (length: 2*k*m+1)
-void liquid_firdes_gmsktx(unsigned int _k,
-                          unsigned int _m,
-                          float _beta,
-                          float _dt,
-                          float * _h);
-
-// Design GMSK receive filter
-//  _k      : samples/symbol
-//  _m      : symbol delay
-//  _beta   : rolloff factor (0 < beta <= 1)
-//  _dt     : fractional sample delay
-//  _h      : output coefficient buffer (length: 2*k*m+1)
-void liquid_firdes_gmskrx(unsigned int _k,
-                          unsigned int _m,
-                          float _beta,
-                          float _dt,
-                          float * _h);
+// Design GMSK transmit and receive filters
+void liquid_firdes_gmsktx(unsigned int _k, unsigned int _m, float _beta, float _dt, float * _h);
+void liquid_firdes_gmskrx(unsigned int _k, unsigned int _m, float _beta, float _dt, float * _h);
 
 // Design flipped exponential Nyquist/root-Nyquist filters
 void liquid_firdes_fexp( unsigned int _k, unsigned int _m, float _beta, float _dt, float * _h);
@@ -1420,15 +1784,45 @@ void liquid_levinson(float * _r,
 //   TC         : coefficients data type
 //   TI         : input data type
 #define LIQUID_AUTOCORR_DEFINE_API(AUTOCORR,TO,TC,TI)           \
+                                                                \
 typedef struct AUTOCORR(_s) * AUTOCORR();                       \
+                                                                \
+/* create auto-correlator object                            */  \
+/*  _window_size    : size of the correlator window         */  \
+/*  _delay          : correlator delay [samples]            */  \
 AUTOCORR() AUTOCORR(_create)(unsigned int _window_size,         \
                              unsigned int _delay);              \
-void AUTOCORR(_destroy)(AUTOCORR() _f);                         \
-void AUTOCORR(_clear)(AUTOCORR() _f);                           \
-void AUTOCORR(_print)(AUTOCORR() _f);                           \
-void AUTOCORR(_push)(AUTOCORR() _f, TI _x);                     \
-void AUTOCORR(_execute)(AUTOCORR() _f, TO *_rxx);               \
-float AUTOCORR(_get_energy)(AUTOCORR() _f);
+                                                                \
+/* destroy auto-correlator object, freeing internal memory  */  \
+void AUTOCORR(_destroy)(AUTOCORR() _q);                         \
+                                                                \
+/* reset auto-correlator object's internals                 */  \
+void AUTOCORR(_reset)(AUTOCORR() _q);                           \
+                                                                \
+/* print auto-correlator parameters to stdout               */  \
+void AUTOCORR(_print)(AUTOCORR() _q);                           \
+                                                                \
+/* push sample into auto-correlator object                  */  \
+void AUTOCORR(_push)(AUTOCORR() _q,                             \
+                     TI         _x);                            \
+                                                                \
+/* compute single auto-correlation output                   */  \
+void AUTOCORR(_execute)(AUTOCORR() _q,                          \
+                        TO *       _rxx);                       \
+                                                                \
+/* compute auto-correlation on block of samples; the input  */  \
+/* and output arrays may have the same pointer              */  \
+/*  _q      :   auto-correlation object                     */  \
+/*  _x      :   input array [size: _n x 1]                  */  \
+/*  _n      :   number of input, output samples             */  \
+/*  _rxx    :   input array [size: _n x 1]                  */  \
+void AUTOCORR(_execute_block)(AUTOCORR()   _q,                  \
+                              TI *         _x,                  \
+                              unsigned int _n,                  \
+                              TO *         _rxx);               \
+                                                                \
+/* return sum of squares of buffered samples                */  \
+float AUTOCORR(_get_energy)(AUTOCORR() _q);                     \
 
 LIQUID_AUTOCORR_DEFINE_API(AUTOCORR_MANGLE_CCCF,
                            liquid_float_complex,
@@ -1456,24 +1850,91 @@ LIQUID_AUTOCORR_DEFINE_API(AUTOCORR_MANGLE_RRRF,
 //   TI         : input data type
 #define LIQUID_FIRFILT_DEFINE_API(FIRFILT,TO,TC,TI)             \
 typedef struct FIRFILT(_s) * FIRFILT();                         \
+                                                                \
 FIRFILT() FIRFILT(_create)(TC * _h, unsigned int _n);           \
+                                                                \
+/* create using Kaiser-Bessel windowed sinc method          */  \
+/*  _n      : filter length, _n > 0                         */  \
+/*  _fc     : filter cut-off frequency 0 < _fc < 0.5        */  \
+/*  _As     : filter stop-band attenuation [dB], _As > 0    */  \
+/*  _mu     : fractional sample offset, -0.5 < _mu < 0.5    */  \
 FIRFILT() FIRFILT(_create_kaiser)(unsigned int _n,              \
                                   float        _fc,             \
                                   float        _As,             \
                                   float        _mu);            \
-FIRFILT() FIRFILT(_recreate)(FIRFILT() _f,                      \
-                             TC * _h,                           \
+                                                                \
+/* create from square-root Nyquist prototype                */  \
+/*  _type   : filter type (e.g. LIQUID_FIRFILT_RRC)         */  \
+/*  _k      : nominal samples/symbol, _k > 1                */  \
+/*  _m      : filter delay [symbols], _m > 0                */  \
+/*  _beta   : rolloff factor, 0 < beta <= 1                 */  \
+/*  _mu     : fractional sample offset,-0.5 < _mu < 0.5     */  \
+FIRFILT() FIRFILT(_create_rnyquist)(int          _type,         \
+                                    unsigned int _k,            \
+                                    unsigned int _m,            \
+                                    float        _beta,         \
+                                    float        _mu);          \
+                                                                \
+/* re-create filter                                         */  \
+/*  _q      : original filter object                        */  \
+/*  _h      : pointer to filter coefficients [size: _n x 1] */  \
+/*  _n      : filter length, _n > 0                         */  \
+FIRFILT() FIRFILT(_recreate)(FIRFILT()    _q,                   \
+                             TC *         _h,                   \
                              unsigned int _n);                  \
-void FIRFILT(_destroy)(FIRFILT() _f);                           \
-void FIRFILT(_clear)(FIRFILT() _f);                             \
-void FIRFILT(_print)(FIRFILT() _f);                             \
-void FIRFILT(_push)(FIRFILT() _f, TI _x);                       \
-void FIRFILT(_execute)(FIRFILT() _f, TO *_y);                   \
-unsigned int FIRFILT(_get_length)(FIRFILT() _f);                \
-void FIRFILT(_freqresponse)(FIRFILT() _f,                       \
-                            float _fc,                          \
+                                                                \
+/* destroy filter object and free all internal memory       */  \
+void FIRFILT(_destroy)(FIRFILT() _q);                           \
+                                                                \
+/* reset filter object's internal buffer                    */  \
+void FIRFILT(_reset)(FIRFILT() _q);                             \
+                                                                \
+/* print filter object information                          */  \
+void FIRFILT(_print)(FIRFILT() _q);                             \
+                                                                \
+/* set output scaling for filter                            */  \
+void FIRFILT(_set_scale)(FIRFILT() _q,                          \
+                         TC        _g);                         \
+                                                                \
+/* push sample into filter object's internal buffer         */  \
+/*  _q      : filter object                                 */  \
+/*  _x      : single input sample                           */  \
+void FIRFILT(_push)(FIRFILT() _q,                               \
+                    TI        _x);                              \
+                                                                \
+/* execute the filter on internal buffer and coefficients   */  \
+/*  _q      : filter object                                 */  \
+/*  _y      : pointer to single output sample               */  \
+void FIRFILT(_execute)(FIRFILT() _q,                            \
+                       TO *      _y);                           \
+                                                                \
+/* execute the filter on a block of input samples; the      */  \
+/* input and output buffers may be the same                 */  \
+/*  _q      : filter object                                 */  \
+/*  _x      : pointer to input array [size: _n x 1]         */  \
+/*  _n      : number of input, output samples               */  \
+/*  _y      : pointer to output array [size: _n x 1]        */  \
+void FIRFILT(_execute_block)(FIRFILT()    _q,                   \
+                             TI *         _x,                   \
+                             unsigned int _n,                   \
+                             TO *         _y);                  \
+                                                                \
+/* return length of filter object                           */  \
+unsigned int FIRFILT(_get_length)(FIRFILT() _q);                \
+                                                                \
+/* compute complex frequency response of filter object      */  \
+/*  _q      : filter object                                 */  \
+/*  _fc     : frequency to evaluate                         */  \
+/*  _H      : pointer to output complex frequency response  */  \
+void FIRFILT(_freqresponse)(FIRFILT()              _q,          \
+                            float                  _fc,         \
                             liquid_float_complex * _H);         \
-float FIRFILT(_groupdelay)(FIRFILT() _f, float _fc);
+                                                                \
+/* compute and return group delay of filter object          */  \
+/*  _q      : filter object                                 */  \
+/*  _fc     : frequency to evaluate                         */  \
+float FIRFILT(_groupdelay)(FIRFILT() _q,                        \
+                           float     _fc);                      \
 
 LIQUID_FIRFILT_DEFINE_API(FIRFILT_MANGLE_RRRF,
                           float,
@@ -1504,18 +1965,143 @@ LIQUID_FIRFILT_DEFINE_API(FIRFILT_MANGLE_CCCF,
 //   interpolation, separate objects should be used for each task.
 #define LIQUID_FIRHILB_DEFINE_API(FIRHILB,T,TC)                 \
 typedef struct FIRHILB(_s) * FIRHILB();                         \
+                                                                \
+/* create finite impulse reponse Hilbert transform          */  \
+/*  _m      : filter semi-length, delay is 2*m+1            */  \
+/*  _As     : filter stop-band attenuation [dB]             */  \
 FIRHILB() FIRHILB(_create)(unsigned int _m,                     \
-                           float _As);                          \
+                           float        _As);                   \
+                                                                \
+/* destroy finite impulse reponse Hilbert transform         */  \
 void FIRHILB(_destroy)(FIRHILB() _q);                           \
+                                                                \
+/* print firhilb object internals to stdout                 */  \
 void FIRHILB(_print)(FIRHILB() _q);                             \
-void FIRHILB(_clear)(FIRHILB() _q);                             \
-void FIRHILB(_r2c_execute)(FIRHILB() _q, T _x, TC * _y);        \
-void FIRHILB(_c2r_execute)(FIRHILB() _q, TC _x, T * _y);        \
-void FIRHILB(_decim_execute)(FIRHILB() _q, T * _x, TC * _y);    \
-void FIRHILB(_interp_execute)(FIRHILB() _q, TC _x, T * _y);     \
+                                                                \
+/* reset firhilb object internal state                      */  \
+void FIRHILB(_reset)(FIRHILB() _q);                             \
+                                                                \
+/* execute Hilbert transform (real to complex)              */  \
+/*  _q      :   Hilbert transform object                    */  \
+/*  _x      :   real-valued input sample                    */  \
+/*  _y      :   complex-valued output sample                */  \
+void FIRHILB(_r2c_execute)(FIRHILB() _q,                        \
+                           T         _x,                        \
+                           TC *      _y);                       \
+                                                                \
+/* execute Hilbert transform (complex to real)              */  \
+/*  _q      :   Hilbert transform object                    */  \
+/*  _x      :   complex-valued input sample                 */  \
+/*  _y      :   real-valued output sample                   */  \
+void FIRHILB(_c2r_execute)(FIRHILB() _q,                        \
+                           TC        _x,                        \
+                           T *       _y);                       \
+                                                                \
+/* execute Hilbert transform decimator (real to complex)    */  \
+/*  _q      :   Hilbert transform object                    */  \
+/*  _x      :   real-valued input array [size: 2 x 1]       */  \
+/*  _y      :   complex-valued output sample                */  \
+void FIRHILB(_decim_execute)(FIRHILB() _q,                      \
+                             T *       _x,                      \
+                             TC *      _y);                     \
+                                                                \
+/* execute Hilbert transform decimator (real to complex) on */  \
+/* a block of samples                                       */  \
+/*  _q      :   Hilbert transform object                    */  \
+/*  _x      :   real-valued input array [size: 2*_n x 1]    */  \
+/*  _n      :   number of *output* samples                  */  \
+/*  _y      :   complex-valued output array [size: _n x 1]  */  \
+void FIRHILB(_decim_execute_block)(FIRHILB()    _q,             \
+                                   T *          _x,             \
+                                   unsigned int _n,             \
+                                   TC *         _y);            \
+                                                                \
+/* execute Hilbert transform interpolator (real to complex) */  \
+/*  _q      :   Hilbert transform object                    */  \
+/*  _x      :   complex-valued input sample                 */  \
+/*  _y      :   real-valued output array [size: 2 x 1]      */  \
+void FIRHILB(_interp_execute)(FIRHILB() _q,                     \
+                              TC        _x,                     \
+                              T *       _y);                    \
+                                                                \
+/* execute Hilbert transform interpolator (complex to real) */  \
+/* on a block of samples                                    */  \
+/*  _q      :   Hilbert transform object                    */  \
+/*  _x      :   complex-valued input array [size: _n x 1]   */  \
+/*  _n      :   number of *input* samples                   */  \
+/*  _y      :   real-valued output array [size: 2*_n x 1]   */  \
+void FIRHILB(_interp_execute_block)(FIRHILB()    _q,            \
+                                    TC *         _x,            \
+                                    unsigned int _n,            \
+                                    T *          _y);           \
 
 LIQUID_FIRHILB_DEFINE_API(FIRHILB_MANGLE_FLOAT, float, liquid_float_complex)
 //LIQUID_FIRHILB_DEFINE_API(FIRHILB_MANGLE_DOUBLE, double, liquid_double_complex)
+
+
+//
+// FFT-based finite impulse response filter
+//
+
+#define FFTFILT_MANGLE_RRRF(name)  LIQUID_CONCAT(fftfilt_rrrf,name)
+#define FFTFILT_MANGLE_CRCF(name)  LIQUID_CONCAT(fftfilt_crcf,name)
+#define FFTFILT_MANGLE_CCCF(name)  LIQUID_CONCAT(fftfilt_cccf,name)
+
+// Macro:
+//   FFTFILT : name-mangling macro
+//   TO         : output data type
+//   TC         : coefficients data type
+//   TI         : input data type
+#define LIQUID_FFTFILT_DEFINE_API(FFTFILT,TO,TC,TI)             \
+typedef struct FFTFILT(_s) * FFTFILT();                         \
+                                                                \
+/* create FFT-based FIR filter using external coefficients  */  \
+/*  _h      : filter coefficients [size: _h_len x 1]        */  \
+/*  _h_len  : filter length, _h_len > 0                     */  \
+/*  _n      : block size = nfft/2, at least _h_len-1        */  \
+FFTFILT() FFTFILT(_create)(TC *         _h,                     \
+                           unsigned int _h_len,                 \
+                           unsigned int _n);                    \
+                                                                \
+/* destroy filter object and free all internal memory       */  \
+void FFTFILT(_destroy)(FFTFILT() _q);                           \
+                                                                \
+/* reset filter object's internal buffer                    */  \
+void FFTFILT(_reset)(FFTFILT() _q);                             \
+                                                                \
+/* print filter object information                          */  \
+void FFTFILT(_print)(FFTFILT() _q);                             \
+                                                                \
+/* set output scaling for filter                            */  \
+void FFTFILT(_set_scale)(FFTFILT() _q,                          \
+                         TC        _g);                         \
+                                                                \
+/* execute the filter on internal buffer and coefficients   */  \
+/*  _q      : filter object                                 */  \
+/*  _x      : pointer to input data array  [size: _n x 1]   */  \
+/*  _y      : pointer to output data array [size: _n x 1]   */  \
+void FFTFILT(_execute)(FFTFILT() _q,                            \
+                       TI *      _x,                            \
+                       TO *      _y);                           \
+                                                                \
+/* return length of filter object's internal coefficients   */  \
+unsigned int FFTFILT(_get_length)(FFTFILT() _q);                \
+
+LIQUID_FFTFILT_DEFINE_API(FFTFILT_MANGLE_RRRF,
+                          float,
+                          float,
+                          float)
+
+LIQUID_FFTFILT_DEFINE_API(FFTFILT_MANGLE_CRCF,
+                          liquid_float_complex,
+                          float,
+                          liquid_float_complex)
+
+LIQUID_FFTFILT_DEFINE_API(FFTFILT_MANGLE_CCCF,
+                          liquid_float_complex,
+                          liquid_float_complex,
+                          liquid_float_complex)
+
 
 //
 // Infinite impulse response filter
@@ -1531,41 +2117,105 @@ LIQUID_FIRHILB_DEFINE_API(FIRHILB_MANGLE_FLOAT, float, liquid_float_complex)
 //   TC         : coefficients data type
 //   TI         : input data type
 #define LIQUID_IIRFILT_DEFINE_API(IIRFILT,TO,TC,TI)             \
+                                                                \
 typedef struct IIRFILT(_s) * IIRFILT();                         \
-IIRFILT() IIRFILT(_create)(TC * _b,                             \
+                                                                \
+/* create infinite impulse reponse filter                   */  \
+/*  _b      : feed-forward coefficients [size: _nb x 1]     */  \
+/*  _nb     : number of feed-forward coefficients           */  \
+/*  _a      : feed-back coefficients [size: _na x 1]        */  \
+/*  _na     : number of feed-back coefficients              */  \
+IIRFILT() IIRFILT(_create)(TC *         _b,                     \
                            unsigned int _nb,                    \
-                           TC * _a,                             \
+                           TC *         _a,                     \
                            unsigned int _na);                   \
-IIRFILT() IIRFILT(_create_sos)(TC * _B,                         \
-                               TC * _A,                         \
+                                                                \
+/* create IIR filter using 2nd-order secitons               */  \
+/*  _B      : feed-forward coefficients [size: _nsos x 3]   */  \
+/*  _A      : feed-back coefficients    [size: _nsos x 3]   */  \
+IIRFILT() IIRFILT(_create_sos)(TC *         _B,                 \
+                               TC *         _A,                 \
                                unsigned int _nsos);             \
+                                                                \
+/* create IIR filter from design template                   */  \
+/*  _ftype  : filter type (e.g. LIQUID_IIRDES_BUTTER)       */  \
+/*  _btype  : band type (e.g. LIQUID_IIRDES_BANDPASS)       */  \
+/*  _format : coefficients format (e.g. LIQUID_IIRDES_SOS)  */  \
+/*  _n      : filter order                                  */  \
+/*  _fc     : low-pass prototype cut-off frequency          */  \
+/*  _f0     : center frequency (band-pass, band-stop)       */  \
+/*  _Ap     : pass-band ripple in dB                        */  \
+/*  _As     : stop-band ripple in dB                        */  \
 IIRFILT() IIRFILT(_create_prototype)(                           \
             liquid_iirdes_filtertype _ftype,                    \
             liquid_iirdes_bandtype   _btype,                    \
             liquid_iirdes_format     _format,                   \
-            unsigned int _order,                                \
+            unsigned int             _order,                    \
             float _fc,                                          \
             float _f0,                                          \
             float _Ap,                                          \
             float _As);                                         \
                                                                 \
-/* create phase-locked loop iirfilt object              */      \
-/*  _w      : filter bandwidth                          */      \
-/*  _zeta   : damping factor (1/sqrt(2) suggested)      */      \
-/*  _K      : loop gain (1000 suggested)                */      \
+/* create 8th-order integrator filter                       */  \
+IIRFILT() IIRFILT(_create_integrator)();                        \
+                                                                \
+/* create 8th-order differentiator filter                   */  \
+IIRFILT() IIRFILT(_create_differentiator)();                    \
+                                                                \
+/* create simple DC-blocking filter                         */  \
+IIRFILT() IIRFILT(_create_dc_blocker)(float _alpha);            \
+                                                                \
+/* create phase-locked loop iirfilt object                  */  \
+/*  _w      : filter bandwidth                              */  \
+/*  _zeta   : damping factor (1/sqrt(2) suggested)          */  \
+/*  _K      : loop gain (1000 suggested)                    */  \
 IIRFILT() IIRFILT(_create_pll)(float _w,                        \
                                float _zeta,                     \
                                float _K);                       \
                                                                 \
-void IIRFILT(_destroy)(IIRFILT() _f);                           \
-void IIRFILT(_print)(IIRFILT() _f);                             \
-void IIRFILT(_clear)(IIRFILT() _f);                             \
-void IIRFILT(_execute)(IIRFILT() _f, TI _x, TO *_y);            \
-unsigned int IIRFILT(_get_length)(IIRFILT() _f);                \
-void IIRFILT(_freqresponse)(IIRFILT() _f,                       \
-                            float _fc,                          \
+/* destroy iirfilt object, freeing all internal memory      */  \
+void IIRFILT(_destroy)(IIRFILT() _q);                           \
+                                                                \
+/* print iirfilt object properties to stdout                */  \
+void IIRFILT(_print)(IIRFILT() _q);                             \
+                                                                \
+/* clear/reset iirfilt object internals                     */  \
+void IIRFILT(_reset)(IIRFILT() _q);                             \
+                                                                \
+/* compute filter output                                    */  \
+/*  _q      : iirfilt object                                */  \
+/*  _x      : input sample                                  */  \
+/*  _y      : output sample pointer                         */  \
+void IIRFILT(_execute)(IIRFILT() _q,                            \
+                       TI        _x,                            \
+                       TO *      _y);                           \
+                                                                \
+/* execute the filter on a block of input samples; the      */  \
+/* input and output buffers may be the same                 */  \
+/*  _q      : filter object                                 */  \
+/*  _x      : pointer to input array [size: _n x 1]         */  \
+/*  _n      : number of input, output samples               */  \
+/*  _y      : pointer to output array [size: _n x 1]        */  \
+void IIRFILT(_execute_block)(IIRFILT()    _q,                   \
+                             TI *         _x,                   \
+                             unsigned int _n,                   \
+                             TO *         _y);                  \
+                                                                \
+/* return iirfilt object's filter length (order + 1)        */  \
+unsigned int IIRFILT(_get_length)(IIRFILT() _q);                \
+                                                                \
+/* compute complex frequency response of filter object      */  \
+/*  _q      : filter object                                 */  \
+/*  _fc     : frequency to evaluate                         */  \
+/*  _H      : pointer to output complex frequency response  */  \
+void IIRFILT(_freqresponse)(IIRFILT()              _q,          \
+                            float                  _fc,         \
                             liquid_float_complex * _H);         \
-float IIRFILT(_groupdelay)(IIRFILT() _f, float _fc);
+                                                                \
+/* compute and return group delay of filter object          */  \
+/*  _q      : filter object                                 */  \
+/*  _fc     : frequency to evaluate                         */  \
+float IIRFILT(_groupdelay)(IIRFILT() _q, float _fc);            \
 
 LIQUID_IIRFILT_DEFINE_API(IIRFILT_MANGLE_RRRF,
                           float,
@@ -1596,36 +2246,70 @@ LIQUID_IIRFILT_DEFINE_API(IIRFILT_MANGLE_CCCF,
 //   TC     : coefficients data type
 //   TI     : input data type
 #define LIQUID_FIRPFB_DEFINE_API(FIRPFB,TO,TC,TI)               \
+                                                                \
 typedef struct FIRPFB(_s) * FIRPFB();                           \
-FIRPFB() FIRPFB(_create)(unsigned int _num_filters,             \
-                         TC * _h,                               \
+                                                                \
+/* create firpfb from external coefficients                 */  \
+/*  _M      : number of filters in the bank                 */  \
+/*  _h      : coefficients [size: _M*_h_len x 1]            */  \
+/*  _h_len  : filter delay (symbols)                        */  \
+FIRPFB() FIRPFB(_create)(unsigned int _M,                       \
+                         TC *         _h,                       \
                          unsigned int _h_len);                  \
-/* create from square-root Nyquist prototype            */      \
-/*  _type   : filter type (e.g. LIQUID_RNYQUIST_RRC)    */      \
-/*  _npfb   : number of filters in the bank             */      \
-/*  _k      : nominal samples/symbol                    */      \
-/*  _m      : filter delay (symbols)                    */      \
-/*  _beta   : rolloff factor (0 < beta <= 1)            */      \
+                                                                \
+/* create firpfb from square-root Nyquist prototype         */  \
+/*  _type   : filter type (e.g. LIQUID_FIRFILT_RRC)         */  \
+/*  _npfb   : number of filters in the bank                 */  \
+/*  _k      : nominal samples/symbol                        */  \
+/*  _m      : filter delay (symbols)                        */  \
+/*  _beta   : rolloff factor (0 < beta <= 1)                */  \
 FIRPFB() FIRPFB(_create_rnyquist)(int          _type,           \
                                   unsigned int _npfb,           \
                                   unsigned int _k,              \
                                   unsigned int _m,              \
                                   float        _beta);          \
-/* create from square-root derivative Nyquist prototype */      \
+                                                                \
+/* create from square-root derivative Nyquist prototype     */  \
+/*  _type   : filter type (e.g. LIQUID_FIRFILT_RRC)         */  \
+/*  _npfb   : number of filters in the bank                 */  \
+/*  _k      : nominal samples/symbol                        */  \
+/*  _m      : filter delay (symbols)                        */  \
+/*  _beta   : rolloff factor (0 < beta <= 1)                */  \
 FIRPFB() FIRPFB(_create_drnyquist)(int          _type,          \
                                    unsigned int _npfb,          \
                                    unsigned int _k,             \
                                    unsigned int _m,             \
                                    float        _beta);         \
-FIRPFB() FIRPFB(_recreate)(FIRPFB() _q,                         \
-                           unsigned int _num_filters,           \
-                           TC * _h,                             \
+                                                                \
+/* re-create filterbank object                              */  \
+/*  _q      : original firpfb object                        */  \
+/*  _M      : number of filters in the bank                 */  \
+/*  _h      : coefficients [size: _M x _h_len]              */  \
+/*  _h_len  : length of each filter                         */  \
+FIRPFB() FIRPFB(_recreate)(FIRPFB()     _q,                     \
+                           unsigned int _M,                     \
+                           TC *         _h,                     \
                            unsigned int _h_len);                \
-void FIRPFB(_destroy)(FIRPFB() _b);                             \
-void FIRPFB(_print)(FIRPFB() _b);                               \
-void FIRPFB(_push)(FIRPFB() _b, TI _x);                         \
-void FIRPFB(_execute)(FIRPFB() _b, unsigned int _i, TO *_y);    \
-void FIRPFB(_clear)(FIRPFB() _b);
+                                                                \
+/* destroy firpfb object, freeing all internal memory       */  \
+void FIRPFB(_destroy)(FIRPFB() _q);                             \
+                                                                \
+/* print firpfb object's parameters                         */  \
+void FIRPFB(_print)(FIRPFB() _q);                               \
+                                                                \
+/* clear/reset firpfb object internal state                 */  \
+void FIRPFB(_reset)(FIRPFB() _q);                               \
+                                                                \
+/* push sample into firpfb internal buffer                  */  \
+void FIRPFB(_push)(FIRPFB() _q, TI _x);                         \
+                                                                \
+/* execute the filter on internal buffer and coefficients   */  \
+/*  _q      : firpfb object                                 */  \
+/*  _i      : index of filter to use                        */  \
+/*  _y      : pointer to output sample                      */  \
+void FIRPFB(_execute)(FIRPFB()     _q,                          \
+                      unsigned int _i,                          \
+                      TO *         _y);                         \
 
 LIQUID_FIRPFB_DEFINE_API(FIRPFB_MANGLE_RRRF,
                          float,
@@ -1643,111 +2327,339 @@ LIQUID_FIRPFB_DEFINE_API(FIRPFB_MANGLE_CCCF,
                          liquid_float_complex)
 
 // 
-// Interpolator
+// Interpolators
 //
-#define INTERP_MANGLE_RRRF(name)  LIQUID_CONCAT(interp_rrrf,name)
-#define INTERP_MANGLE_CRCF(name)  LIQUID_CONCAT(interp_crcf,name)
-#define INTERP_MANGLE_CCCF(name)  LIQUID_CONCAT(interp_cccf,name)
 
-#define LIQUID_INTERP_DEFINE_API(INTERP,TO,TC,TI)               \
-typedef struct INTERP(_s) * INTERP();                           \
-/* create interpolator from external coefficients       */      \
-/*  _M      : interpolation factor                      */      \
-/*  _h      : filter coefficients [size: _h_len x 1]    */      \
-/*  _h_len  : filter length                             */      \
-INTERP() INTERP(_create)(unsigned int _M,                       \
-                         TC *_h,                                \
-                         unsigned int _h_len);                  \
-/* create interpolator from prototype                   */      \
-/*  _M      : interpolation factor                      */      \
-/*  _m      : filter delay (symbols)                    */      \
-/*  _As     : stop-band attenuation [dB]                */      \
-INTERP() INTERP(_create_prototype)(unsigned int _M,             \
-                                   unsigned int _m,             \
-                                   float As);                   \
-/* create square-root Nyquist interpolator              */      \
-/*  _type   : filter type (e.g. LIQUID_RNYQUIST_RRC)    */      \
-/*  _k      : samples/symbol (interpolation factor)     */      \
-/*  _m      : filter delay (symbols)                    */      \
-/*  _beta   : rolloff factor (0 < beta <= 1)            */      \
-/*  _dt     : fractional sample delay                   */      \
-INTERP() INTERP(_create_rnyquist)(int _type,                    \
-                                  unsigned int _k,              \
-                                  unsigned int _m,              \
-                                  float _beta,                  \
-                                  float _dt);                   \
-void INTERP(_destroy)(INTERP() _q);                             \
-void INTERP(_print)(INTERP() _q);                               \
-void INTERP(_clear)(INTERP() _q);                               \
-void INTERP(_execute)(INTERP() _q, TI _x, TO *_y);
+// firinterp : finite impulse response interpolator
+#define FIRINTERP_MANGLE_RRRF(name)  LIQUID_CONCAT(firinterp_rrrf,name)
+#define FIRINTERP_MANGLE_CRCF(name)  LIQUID_CONCAT(firinterp_crcf,name)
+#define FIRINTERP_MANGLE_CCCF(name)  LIQUID_CONCAT(firinterp_cccf,name)
 
-LIQUID_INTERP_DEFINE_API(INTERP_MANGLE_RRRF,
-                         float,
-                         float,
-                         float)
+#define LIQUID_FIRINTERP_DEFINE_API(FIRINTERP,TO,TC,TI)         \
+                                                                \
+typedef struct FIRINTERP(_s) * FIRINTERP();                     \
+                                                                \
+/* create interpolator from external coefficients           */  \
+/*  _M      : interpolation factor                          */  \
+/*  _h      : filter coefficients [size: _h_len x 1]        */  \
+/*  _h_len  : filter length                                 */  \
+FIRINTERP() FIRINTERP(_create)(unsigned int _M,                 \
+                               TC *         _h,                 \
+                               unsigned int _h_len);            \
+                                                                \
+/* create interpolator from prototype                       */  \
+/*  _M      : interpolation factor                          */  \
+/*  _m      : filter delay (symbols)                        */  \
+/*  _As     : stop-band attenuation [dB]                    */  \
+FIRINTERP() FIRINTERP(_create_prototype)(unsigned int _M,       \
+                                         unsigned int _m,       \
+                                         float        _As);     \
+                                                                \
+/* create Nyquist interpolator                              */  \
+/*  _type   : filter type (e.g. LIQUID_FIRFILT_RCOS)        */  \
+/*  _k      :   samples/symbol,          _k > 1             */  \
+/*  _m      :   filter delay (symbols),  _m > 0             */  \
+/*  _beta   :   excess bandwidth factor, _beta < 1          */  \
+/*  _dt     :   fractional sample delay, _dt in (-1, 1)     */  \
+FIRINTERP() FIRINTERP(_create_nyquist)(int          _type,      \
+                                       unsigned int _k,         \
+                                       unsigned int _m,         \
+                                       float        _beta,      \
+                                       float        _dt);       \
+                                                                \
+/* create square-root Nyquist interpolator                  */  \
+/*  _type   : filter type (e.g. LIQUID_FIRFILT_RRC)         */  \
+/*  _k      :   samples/symbol,          _k > 1             */  \
+/*  _m      :   filter delay (symbols),  _m > 0             */  \
+/*  _beta   :   excess bandwidth factor, _beta < 1          */  \
+/*  _dt     :   fractional sample delay, _dt in (-1, 1)     */  \
+FIRINTERP() FIRINTERP(_create_rnyquist)(int          _type,     \
+                                        unsigned int _k,        \
+                                        unsigned int _m,        \
+                                        float        _beta,     \
+                                        float        _dt);      \
+                                                                \
+/* destroy firinterp object, freeing all internal memory    */  \
+void FIRINTERP(_destroy)(FIRINTERP() _q);                       \
+                                                                \
+/* print firinterp object's internal properties to stdout   */  \
+void FIRINTERP(_print)(FIRINTERP() _q);                         \
+                                                                \
+/* reset internal state                                     */  \
+void FIRINTERP(_reset)(FIRINTERP() _q);                         \
+                                                                \
+/* execute interpolation on single input sample             */  \
+/*  _q      : firinterp object                              */  \
+/*  _x      : input sample                                  */  \
+/*  _y      : output sample array [size: _M x 1]            */  \
+void FIRINTERP(_execute)(FIRINTERP() _q,                        \
+                         TI          _x,                        \
+                         TO *        _y);                       \
+                                                                \
+/* execute interpolation on block of input samples          */  \
+/*  _q      : firinterp object                              */  \
+/*  _x      : input array [size: _n x 1]                    */  \
+/*  _n      : size of input array                           */  \
+/*  _y      : output sample array [size: _M*_n x 1]         */  \
+void FIRINTERP(_execute_block)(FIRINTERP()  _q,                 \
+                               TI *         _x,                 \
+                               unsigned int _n,                 \
+                               TO *         _y);                \
 
-LIQUID_INTERP_DEFINE_API(INTERP_MANGLE_CRCF,
-                         liquid_float_complex,
-                         float,
-                         liquid_float_complex)
+LIQUID_FIRINTERP_DEFINE_API(FIRINTERP_MANGLE_RRRF,
+                            float,
+                            float,
+                            float)
 
-LIQUID_INTERP_DEFINE_API(INTERP_MANGLE_CCCF,
-                         liquid_float_complex,
-                         liquid_float_complex,
-                         liquid_float_complex)
+LIQUID_FIRINTERP_DEFINE_API(FIRINTERP_MANGLE_CRCF,
+                            liquid_float_complex,
+                            float,
+                            liquid_float_complex)
+
+LIQUID_FIRINTERP_DEFINE_API(FIRINTERP_MANGLE_CCCF,
+                            liquid_float_complex,
+                            liquid_float_complex,
+                            liquid_float_complex)
+
+// iirinterp : infinite impulse response interpolator
+#define IIRINTERP_MANGLE_RRRF(name)  LIQUID_CONCAT(iirinterp_rrrf,name)
+#define IIRINTERP_MANGLE_CRCF(name)  LIQUID_CONCAT(iirinterp_crcf,name)
+#define IIRINTERP_MANGLE_CCCF(name)  LIQUID_CONCAT(iirinterp_cccf,name)
+
+#define LIQUID_IIRINTERP_DEFINE_API(IIRINTERP,TO,TC,TI)         \
+typedef struct IIRINTERP(_s) * IIRINTERP();                     \
+                                                                \
+/* create interpolator from external coefficients           */  \
+/*  _M      : interpolation factor                          */  \
+/*  _b      : feed-back coefficients [size: _nb x 1]        */  \
+/*  _nb     : feed-back coefficients length                 */  \
+/*  _a      : feed-forward coefficients [size: _na x 1]     */  \
+/*  _na     : feed-forward coefficients length              */  \
+IIRINTERP() IIRINTERP(_create)(unsigned int _M,                 \
+                               TC *         _b,                 \
+                               unsigned int _nb,                \
+                               TC *         _a,                 \
+                               unsigned int _na);               \
+                                                                \
+/* create interpolator from prototype                       */  \
+/*  _M      : interpolation factor                          */  \
+IIRINTERP() IIRINTERP(_create_prototype)(                       \
+                unsigned int _M,                                \
+                liquid_iirdes_filtertype _ftype,                \
+                liquid_iirdes_bandtype   _btype,                \
+                liquid_iirdes_format     _format,               \
+                unsigned int _order,                            \
+                float _fc,                                      \
+                float _f0,                                      \
+                float _Ap,                                      \
+                float _As);                                     \
+                                                                \
+/* destroy interpolator object and free internal memory     */  \
+void IIRINTERP(_destroy)(IIRINTERP() _q);                       \
+                                                                \
+/* print interpolator object internals                      */  \
+void IIRINTERP(_print)(IIRINTERP() _q);                         \
+                                                                \
+/* reset interpolator object                                */  \
+void IIRINTERP(_reset)(IIRINTERP() _q);                         \
+                                                                \
+/* execute interpolation on single input sample             */  \
+/*  _q      : iirinterp object                              */  \
+/*  _x      : input sample                                  */  \
+/*  _y      : output sample array [size: _M x 1]            */  \
+void IIRINTERP(_execute)(IIRINTERP() _q,                        \
+                         TI          _x,                        \
+                         TO *        _y);                       \
+                                                                \
+/* execute interpolation on block of input samples          */  \
+/*  _q      : iirinterp object                              */  \
+/*  _x      : input array [size: _n x 1]                    */  \
+/*  _n      : size of input array                           */  \
+/*  _y      : output sample array [size: _M*_n x 1]         */  \
+void IIRINTERP(_execute_block)(IIRINTERP()  _q,                 \
+                               TI *         _x,                 \
+                               unsigned int _n,                 \
+                               TO *         _y);                \
+                                                                \
+/* get system group delay at frequency _fc                  */  \
+float IIRINTERP(_groupdelay)(IIRINTERP() _q, float _fc);        \
+
+LIQUID_IIRINTERP_DEFINE_API(IIRINTERP_MANGLE_RRRF,
+                            float,
+                            float,
+                            float)
+
+LIQUID_IIRINTERP_DEFINE_API(IIRINTERP_MANGLE_CRCF,
+                            liquid_float_complex,
+                            float,
+                            liquid_float_complex)
+
+LIQUID_IIRINTERP_DEFINE_API(IIRINTERP_MANGLE_CCCF,
+                            liquid_float_complex,
+                            liquid_float_complex,
+                            liquid_float_complex)
 
 // 
-// Decimator
+// Decimators
 //
-#define DECIM_MANGLE_RRRF(name) LIQUID_CONCAT(decim_rrrf,name)
-#define DECIM_MANGLE_CRCF(name) LIQUID_CONCAT(decim_crcf,name)
-#define DECIM_MANGLE_CCCF(name) LIQUID_CONCAT(decim_cccf,name)
 
-#define LIQUID_DECIM_DEFINE_API(DECIM,TO,TC,TI)                 \
-typedef struct DECIM(_s) * DECIM();                             \
-DECIM() DECIM(_create)(unsigned int _D,                         \
-                       TC *_h,                                  \
-                       unsigned int _h_len);                    \
-/* create decimator from prototype                      */      \
-/*  _M      : decimation factor                         */      \
-/*  _m      : filter delay (symbols)                    */      \
-/*  _As     : stop-band attenuation [dB]                */      \
-DECIM() DECIM(_create_prototype)(unsigned int _M,               \
-                                 unsigned int _m,               \
-                                 float As);                     \
-/* create square-root Nyquist decimator                 */      \
-/*  _type   : filter type (e.g. LIQUID_RNYQUIST_RRC)    */      \
-/*  _k      : samples/symbol (decimation factor)        */      \
-/*  _m      : filter delay (symbols)                    */      \
-/*  _beta   : rolloff factor (0 < beta <= 1)            */      \
-/*  _dt     : fractional sample delay                   */      \
-DECIM() DECIM(_create_rnyquist)(int _type,                      \
-                                unsigned int _k,                \
-                                unsigned int _m,                \
-                                float _beta,                    \
-                                float _dt);                     \
-void DECIM(_destroy)(DECIM() _q);                               \
-void DECIM(_print)(DECIM() _q);                                 \
-void DECIM(_clear)(DECIM() _q);                                 \
-void DECIM(_execute)(DECIM() _q,                                \
-                     TI *_x,                                    \
-                     TO *_y,                                    \
-                     unsigned int _index);
+// firdecim : finite impulse response decimator
+#define FIRDECIM_MANGLE_RRRF(name) LIQUID_CONCAT(firdecim_rrrf,name)
+#define FIRDECIM_MANGLE_CRCF(name) LIQUID_CONCAT(firdecim_crcf,name)
+#define FIRDECIM_MANGLE_CCCF(name) LIQUID_CONCAT(firdecim_cccf,name)
 
-LIQUID_DECIM_DEFINE_API(DECIM_MANGLE_RRRF,
-                        float,
-                        float,
-                        float)
+#define LIQUID_FIRDECIM_DEFINE_API(FIRDECIM,TO,TC,TI)           \
+typedef struct FIRDECIM(_s) * FIRDECIM();                       \
+                                                                \
+/* create decimator from external coefficients              */  \
+/*  _M      : decimation factor                             */  \
+/*  _h      : filter coefficients [size: _h_len x 1]        */  \
+/*  _h_len  : filter coefficients length                    */  \
+FIRDECIM() FIRDECIM(_create)(unsigned int _M,                   \
+                             TC *         _h,                   \
+                             unsigned int _h_len);              \
+                                                                \
+/* create decimator from prototype                          */  \
+/*  _M      : decimation factor                             */  \
+/*  _m      : filter delay (symbols)                        */  \
+/*  _As     : stop-band attenuation [dB]                    */  \
+FIRDECIM() FIRDECIM(_create_prototype)(unsigned int _M,         \
+                                       unsigned int _m,         \
+                                       float        _As);       \
+                                                                \
+/* create square-root Nyquist decimator                     */  \
+/*  _type   : filter type (e.g. LIQUID_FIRFILT_RRC)         */  \
+/*  _M      : samples/symbol (decimation factor)            */  \
+/*  _m      : filter delay (symbols)                        */  \
+/*  _beta   : rolloff factor (0 < beta <= 1)                */  \
+/*  _dt     : fractional sample delay                       */  \
+FIRDECIM() FIRDECIM(_create_rnyquist)(int          _type,       \
+                                      unsigned int _M,          \
+                                      unsigned int _m,          \
+                                      float        _beta,       \
+                                      float        _dt);        \
+                                                                \
+/* destroy decimator object                                 */  \
+void FIRDECIM(_destroy)(FIRDECIM() _q);                         \
+                                                                \
+/* print decimator object propreties to stdout              */  \
+void FIRDECIM(_print)(FIRDECIM() _q);                           \
+                                                                \
+/* reset decimator object internal state                    */  \
+void FIRDECIM(_clear)(FIRDECIM() _q);                           \
+                                                                \
+/* execute decimator on _M input samples                    */  \
+/*  _q      : decimator object                              */  \
+/*  _x      : input samples [size: _M x 1]                  */  \
+/*  _y      : output sample pointer                         */  \
+void FIRDECIM(_execute)(FIRDECIM() _q,                          \
+                        TI *       _x,                          \
+                        TO *       _y);                         \
+                                                                \
+/* execute decimator on block of _n*_M input samples        */  \
+/*  _q      : decimator object                              */  \
+/*  _x      : input array [size: _n*_M x 1]                 */  \
+/*  _n      : number of _output_ samples                    */  \
+/*  _y      : output array [_sze: _n x 1]                   */  \
+void FIRDECIM(_execute_block)(FIRDECIM()   _q,                  \
+                              TI *         _x,                  \
+                              unsigned int _n,                  \
+                              TO *         _y);                 \
 
-LIQUID_DECIM_DEFINE_API(DECIM_MANGLE_CRCF,
-                        liquid_float_complex,
-                        float,
-                        liquid_float_complex)
+LIQUID_FIRDECIM_DEFINE_API(FIRDECIM_MANGLE_RRRF,
+                           float,
+                           float,
+                           float)
 
-LIQUID_DECIM_DEFINE_API(DECIM_MANGLE_CCCF,
-                        liquid_float_complex,
-                        liquid_float_complex,
-                        liquid_float_complex)
+LIQUID_FIRDECIM_DEFINE_API(FIRDECIM_MANGLE_CRCF,
+                           liquid_float_complex,
+                           float,
+                           liquid_float_complex)
+
+LIQUID_FIRDECIM_DEFINE_API(FIRDECIM_MANGLE_CCCF,
+                           liquid_float_complex,
+                           liquid_float_complex,
+                           liquid_float_complex)
+
+
+// iirdecim : infinite impulse response decimator
+#define IIRDECIM_MANGLE_RRRF(name)  LIQUID_CONCAT(iirdecim_rrrf,name)
+#define IIRDECIM_MANGLE_CRCF(name)  LIQUID_CONCAT(iirdecim_crcf,name)
+#define IIRDECIM_MANGLE_CCCF(name)  LIQUID_CONCAT(iirdecim_cccf,name)
+
+#define LIQUID_IIRDECIM_DEFINE_API(IIRDECIM,TO,TC,TI)           \
+typedef struct IIRDECIM(_s) * IIRDECIM();                       \
+                                                                \
+/* create decimator from external coefficients              */  \
+/*  _M      : decimation factor                             */  \
+/*  _b      : feed-back coefficients [size: _nb x 1]        */  \
+/*  _nb     : feed-back coefficients length                 */  \
+/*  _a      : feed-forward coefficients [size: _na x 1]     */  \
+/*  _na     : feed-forward coefficients length              */  \
+IIRDECIM() IIRDECIM(_create)(unsigned int _M,                   \
+                             TC *         _b,                   \
+                             unsigned int _nb,                  \
+                             TC *         _a,                   \
+                             unsigned int _na);                 \
+                                                                \
+/* create decimator from prototype                          */  \
+/*  _M      : decimation factor                             */  \
+IIRDECIM() IIRDECIM(_create_prototype)(                         \
+                unsigned int _M,                                \
+                liquid_iirdes_filtertype _ftype,                \
+                liquid_iirdes_bandtype   _btype,                \
+                liquid_iirdes_format     _format,               \
+                unsigned int _order,                            \
+                float _fc,                                      \
+                float _f0,                                      \
+                float _Ap,                                      \
+                float _As);                                     \
+                                                                \
+/* destroy decimator object and free internal memory        */  \
+void IIRDECIM(_destroy)(IIRDECIM() _q);                         \
+                                                                \
+/* print decimator object internals                         */  \
+void IIRDECIM(_print)(IIRDECIM() _q);                           \
+                                                                \
+/* reset decimator object                                   */  \
+void IIRDECIM(_reset)(IIRDECIM() _q);                           \
+                                                                \
+/* execute decimator on _M input samples                    */  \
+/*  _q      : decimator object                              */  \
+/*  _x      : input samples [size: _M x 1]                  */  \
+/*  _y      : output sample pointer                         */  \
+void IIRDECIM(_execute)(IIRDECIM() _q,                          \
+                        TI *       _x,                          \
+                        TO *       _y);                         \
+                                                                \
+/* execute decimator on block of _n*_M input samples        */  \
+/*  _q      : decimator object                              */  \
+/*  _x      : input array [size: _n*_M x 1]                 */  \
+/*  _n      : number of _output_ samples                    */  \
+/*  _y      : output array [_sze: _n x 1]                   */  \
+void IIRDECIM(_execute_block)(IIRDECIM()   _q,                  \
+                              TI *         _x,                  \
+                              unsigned int _n,                  \
+                              TO *         _y);                 \
+                                                                \
+/* get system group delay at frequency _fc                  */  \
+float IIRDECIM(_groupdelay)(IIRDECIM() _q, float _fc);          \
+
+LIQUID_IIRDECIM_DEFINE_API(IIRDECIM_MANGLE_RRRF,
+                           float,
+                           float,
+                           float)
+
+LIQUID_IIRDECIM_DEFINE_API(IIRDECIM_MANGLE_CRCF,
+                           liquid_float_complex,
+                           float,
+                           liquid_float_complex)
+
+LIQUID_IIRDECIM_DEFINE_API(IIRDECIM_MANGLE_CCCF,
+                           liquid_float_complex,
+                           liquid_float_complex,
+                           liquid_float_complex)
+
 
 
 // 
@@ -1759,32 +2671,78 @@ LIQUID_DECIM_DEFINE_API(DECIM_MANGLE_CCCF,
 
 #define LIQUID_RESAMP2_DEFINE_API(RESAMP2,TO,TC,TI)             \
 typedef struct RESAMP2(_s) * RESAMP2();                         \
+                                                                \
+/* create half-band resampler                               */  \
+/*  _m      :   filter semi-length (h_len = 4*m+1)          */  \
+/*  _f0     :   filter center frequency                     */  \
+/*  _As     :   stop-band attenuation [dB]                  */  \
 RESAMP2() RESAMP2(_create)(unsigned int _m,                     \
-                           float _fc,                           \
-                           float _As);                          \
-RESAMP2() RESAMP2(_recreate)(RESAMP2() _q,                      \
+                           float        _f0,                    \
+                           float        _As);                   \
+                                                                \
+/* re-create half-band resampler with new properties        */  \
+/*  _q      :   original half-band resampler object         */  \
+/*  _m      :   filter semi-length (h_len = 4*m+1)          */  \
+/*  _f0     :   filter center frequency                     */  \
+/*  _As     :   stop-band attenuation [dB]                  */  \
+RESAMP2() RESAMP2(_recreate)(RESAMP2()    _q,                   \
                              unsigned int _m,                   \
-                             float _fc,                         \
-                             float _As);                        \
+                             float        _f0,                  \
+                             float        _As);                 \
+                                                                \
+/* destroy half-band resampler                              */  \
 void RESAMP2(_destroy)(RESAMP2() _q);                           \
+                                                                \
+/* print resamp2 object's internals                         */  \
 void RESAMP2(_print)(RESAMP2() _q);                             \
+                                                                \
+/* reset internal buffer                                    */  \
 void RESAMP2(_clear)(RESAMP2() _q);                             \
+                                                                \
+/* get resampler filter delay (semi-length m)               */  \
+unsigned int RESAMP2(_get_delay)(RESAMP2() _q);                 \
+                                                                \
+/* execute resamp2 as half-band filter                      */  \
+/*  _q      :   resamp2 object                              */  \
+/*  _x      :   input sample                                */  \
+/*  _y0     :   output sample pointer (low frequency)       */  \
+/*  _y1     :   output sample pointer (high frequency)      */  \
 void RESAMP2(_filter_execute)(RESAMP2() _q,                     \
-                              TI _x,                            \
-                              TO * _y0,                         \
-                              TO * _y1);                        \
+                              TI        _x,                     \
+                              TO *      _y0,                    \
+                              TO *      _y1);                   \
+                                                                \
+/* execute resamp2 as half-band analysis filterbank         */  \
+/*  _q      :   resamp2 object                              */  \
+/*  _x      :   input array  [size: 2 x 1]                  */  \
+/*  _y      :   output array [size: 2 x 1]                  */  \
 void RESAMP2(_analyzer_execute)(RESAMP2() _q,                   \
-                                TI * _x,                        \
-                                TO * _y);                       \
+                                TI *      _x,                   \
+                                TO *      _y);                  \
+                                                                \
+/* execute resamp2 as half-band synthesis filterbank        */  \
+/*  _q      :   resamp2 object                              */  \
+/*  _x      :   input array  [size: 2 x 1]                  */  \
+/*  _y      :   output array [size: 2 x 1]                  */  \
 void RESAMP2(_synthesizer_execute)(RESAMP2() _q,                \
-                                   TI * _x,                     \
-                                   TO * _y);                    \
+                                   TI *      _x,                \
+                                   TO *      _y);               \
+                                                                \
+/* execute resamp2 as half-band decimator                   */  \
+/*  _q      :   resamp2 object                              */  \
+/*  _x      :   input array  [size: 2 x 1]                  */  \
+/*  _y      :   output sample pointer                       */  \
 void RESAMP2(_decim_execute)(RESAMP2() _q,                      \
-                             TI * _x,                           \
-                             TO * _y);                          \
+                             TI *      _x,                      \
+                             TO *      _y);                     \
+                                                                \
+/* execute resamp2 as half-band interpolator                */  \
+/*  _q      :   resamp2 object                              */  \
+/*  _x      :   input sample                                */  \
+/*  _y      :   output array [size: 2 x 1]                  */  \
 void RESAMP2(_interp_execute)(RESAMP2() _q,                     \
-                              TI _x,                            \
-                              TO * _y);
+                              TI        _x,                     \
+                              TO *      _y);                    \
 
 LIQUID_RESAMP2_DEFINE_API(RESAMP2_MANGLE_RRRF,
                           float,
@@ -1811,19 +2769,55 @@ LIQUID_RESAMP2_DEFINE_API(RESAMP2_MANGLE_CCCF,
 
 #define LIQUID_RESAMP_DEFINE_API(RESAMP,TO,TC,TI)               \
 typedef struct RESAMP(_s) * RESAMP();                           \
-RESAMP() RESAMP(_create)(float _r,                              \
-                         unsigned int _h_len,                   \
-                         float _fc,                             \
-                         float _As,                             \
+                                                                \
+/* create arbitrary resampler object                        */  \
+/*  _rate   : arbitrary resampling rate                     */  \
+/*  _m      : filter semi-length (delay)                    */  \
+/*  _fc     : filter cutoff frequency, 0 < _fc < 0.5        */  \
+/*  _As     : filter stop-band attenuation [dB]             */  \
+/*  _npfb   : number of filters in the bank                 */  \
+RESAMP() RESAMP(_create)(float        _rate,                    \
+                         unsigned int _m,                       \
+                         float        _fc,                      \
+                         float        _As,                      \
                          unsigned int _npfb);                   \
+                                                                \
+/* destroy arbitrary resampler object                       */  \
 void RESAMP(_destroy)(RESAMP() _q);                             \
+                                                                \
+/* print resamp object internals to stdout                  */  \
 void RESAMP(_print)(RESAMP() _q);                               \
+                                                                \
+/* reset resamp object internals                            */  \
 void RESAMP(_reset)(RESAMP() _q);                               \
+                                                                \
+/* get resampler delay (output samples)                     */  \
+unsigned int RESAMP(_get_delay)(RESAMP() _q);                   \
+                                                                \
+/* set rate of arbitrary resampler                          */  \
 void RESAMP(_setrate)(RESAMP() _q, float _rate);                \
-void RESAMP(_execute)(RESAMP() _q,                              \
-                      TI _x,                                    \
-                      TO * _y,                                  \
-                      unsigned int *_num_written);
+                                                                \
+/* execute arbitrary resampler                              */  \
+/*  _q              :   resamp object                       */  \
+/*  _x              :   single input sample                 */  \
+/*  _y              :   output sample array (pointer)       */  \
+/*  _num_written    :   number of samples written to _y     */  \
+void RESAMP(_execute)(RESAMP()       _q,                        \
+                      TI             _x,                        \
+                      TO *           _y,                        \
+                      unsigned int * _num_written);             \
+                                                                \
+/* execute arbitrary resampler on a block of samples        */  \
+/*  _q              :   resamp object                       */  \
+/*  _x              :   input buffer [size: _nx x 1]        */  \
+/*  _nx             :   input buffer                        */  \
+/*  _y              :   output sample array (pointer)       */  \
+/*  _ny             :   number of samples written to _y     */  \
+void RESAMP(_execute_block)(RESAMP()       _q,                  \
+                            TI *           _x,                  \
+                            unsigned int   _nx,                 \
+                            TO *           _y,                  \
+                            unsigned int * _ny);                \
 
 LIQUID_RESAMP_DEFINE_API(RESAMP_MANGLE_RRRF,
                          float,
@@ -1842,28 +2836,111 @@ LIQUID_RESAMP_DEFINE_API(RESAMP_MANGLE_CCCF,
 
 
 // 
+// Multi-stage half-band resampler
+//
+
+// resampling type (interpolator/decimator)
+typedef enum {
+    LIQUID_RESAMP_INTERP=0, // interpolator
+    LIQUID_RESAMP_DECIM,    // decimator
+} liquid_resamp_type;
+
+#define MSRESAMP2_MANGLE_RRRF(name) LIQUID_CONCAT(msresamp2_rrrf,name)
+#define MSRESAMP2_MANGLE_CRCF(name) LIQUID_CONCAT(msresamp2_crcf,name)
+#define MSRESAMP2_MANGLE_CCCF(name) LIQUID_CONCAT(msresamp2_cccf,name)
+
+#define LIQUID_MSRESAMP2_DEFINE_API(MSRESAMP2,TO,TC,TI)         \
+typedef struct MSRESAMP2(_s) * MSRESAMP2();                     \
+                                                                \
+/* create multi-stage half-band resampler                   */  \
+/*  _type       : resampler type (e.g. LIQUID_RESAMP_DECIM) */  \
+/*  _num_stages : number of resampling stages               */  \
+/*  _fc         : filter cut-off frequency 0 < _fc < 0.5    */  \
+/*  _f0         : filter center frequency                   */  \
+/*  _As         : stop-band attenuation [dB]                */  \
+MSRESAMP2() MSRESAMP2(_create)(int          _type,              \
+                               unsigned int _num_stages,        \
+                               float        _fc,                \
+                               float        _f0,                \
+                               float        _As);               \
+                                                                \
+/* destroy multi-stage half-bandresampler                   */  \
+void MSRESAMP2(_destroy)(MSRESAMP2() _q);                       \
+                                                                \
+/* print msresamp object internals to stdout                */  \
+void MSRESAMP2(_print)(MSRESAMP2() _q);                         \
+                                                                \
+/* reset msresamp object internal state                     */  \
+void MSRESAMP2(_reset)(MSRESAMP2() _q);                         \
+                                                                \
+/* get group delay (number of output samples)               */  \
+float MSRESAMP2(_get_delay)(MSRESAMP2() _q);                    \
+                                                                \
+/* execute multi-stage resampler, M = 2^num_stages          */  \
+/*  LIQUID_RESAMP_INTERP:   input: 1,   output: M           */  \
+/*  LIQUID_RESAMP_DECIM:    input: M,   output: 1           */  \
+/*  _q      : msresamp object                               */  \
+/*  _x      : input sample array                            */  \
+/*  _y      : output sample array                           */  \
+void MSRESAMP2(_execute)(MSRESAMP2() _q,                        \
+                         TI *        _x,                        \
+                         TO *        _y);                       \
+
+LIQUID_MSRESAMP2_DEFINE_API(MSRESAMP2_MANGLE_RRRF,
+                            float,
+                            float,
+                            float)
+
+LIQUID_MSRESAMP2_DEFINE_API(MSRESAMP2_MANGLE_CRCF,
+                            liquid_float_complex,
+                            float,
+                            liquid_float_complex)
+
+LIQUID_MSRESAMP2_DEFINE_API(MSRESAMP2_MANGLE_CCCF,
+                            liquid_float_complex,
+                            liquid_float_complex,
+                            liquid_float_complex)
+
+
+// 
 // Multi-stage arbitrary resampler
 //
 #define MSRESAMP_MANGLE_RRRF(name)    LIQUID_CONCAT(msresamp_rrrf,name)
 #define MSRESAMP_MANGLE_CRCF(name)    LIQUID_CONCAT(msresamp_crcf,name)
 #define MSRESAMP_MANGLE_CCCF(name)    LIQUID_CONCAT(msresamp_cccf,name)
 
-#define LIQUID_MSRESAMP_DEFINE_API(MSRESAMP,TO,TC,TI)               \
-typedef struct MSRESAMP(_s) * MSRESAMP();                           \
-/* create multi-stage arbitrary resampler               */          \
-/*  _r      :   resampling rate [output/input]          */          \
-/*  _As     :   stop-band attenuation [dB]              */          \
-MSRESAMP() MSRESAMP(_create)(float _r,                              \
-                             float _As);                            \
-void MSRESAMP(_destroy)(MSRESAMP() _q);                             \
-void MSRESAMP(_print)(MSRESAMP() _q);                               \
-void MSRESAMP(_reset)(MSRESAMP() _q);                               \
-void MSRESAMP(_execute)(MSRESAMP() _q,                              \
-                        TI * _x,                                    \
-                        unsigned int _nx,                           \
-                        TO * _y,                                    \
-                        unsigned int *_ny);                         \
-float MSRESAMP(_get_delay)(MSRESAMP() _q);                          \
+#define LIQUID_MSRESAMP_DEFINE_API(MSRESAMP,TO,TC,TI)           \
+typedef struct MSRESAMP(_s) * MSRESAMP();                       \
+                                                                \
+/* create multi-stage arbitrary resampler                   */  \
+/*  _r      :   resampling rate [output/input]              */  \
+/*  _As     :   stop-band attenuation [dB]                  */  \
+MSRESAMP() MSRESAMP(_create)(float _r,                          \
+                             float _As);                        \
+                                                                \
+/* destroy multi-stage arbitrary resampler                  */  \
+void MSRESAMP(_destroy)(MSRESAMP() _q);                         \
+                                                                \
+/* print msresamp object internals to stdout                */  \
+void MSRESAMP(_print)(MSRESAMP() _q);                           \
+                                                                \
+/* reset msresamp object internal state                     */  \
+void MSRESAMP(_reset)(MSRESAMP() _q);                           \
+                                                                \
+/* get filter delay (output samples)                        */  \
+float MSRESAMP(_get_delay)(MSRESAMP() _q);                      \
+                                                                \
+/* execute multi-stage resampler                            */  \
+/*  _q      :   msresamp object                             */  \
+/*  _x      :   input sample array  [size: _nx x 1]         */  \
+/*  _nx     :   input sample array size                     */  \
+/*  _y      :   output sample array [size: variable]        */  \
+/*  _ny     :   number of samples written to _y             */  \
+void MSRESAMP(_execute)(MSRESAMP()     _q,                      \
+                        TI *           _x,                      \
+                        unsigned int   _nx,                     \
+                        TO *           _y,                      \
+                        unsigned int * _ny);                    \
 
 LIQUID_MSRESAMP_DEFINE_API(MSRESAMP_MANGLE_RRRF,
                            float,
@@ -1880,48 +2957,89 @@ LIQUID_MSRESAMP_DEFINE_API(MSRESAMP_MANGLE_CCCF,
                            liquid_float_complex,
                            liquid_float_complex)
 
+
 // 
 // Symbol timing recovery (symbol synchronizer)
 //
 #define SYMSYNC_MANGLE_RRRF(name)   LIQUID_CONCAT(symsync_rrrf,name)
 #define SYMSYNC_MANGLE_CRCF(name)   LIQUID_CONCAT(symsync_crcf,name)
-//#define SYMSYNC_MANGLE_CCCF(name)   LIQUID_CONCAT(symsync_cccf,name)
 
 #define LIQUID_SYMSYNC_DEFINE_API(SYMSYNC,TO,TC,TI)             \
+                                                                \
 typedef struct SYMSYNC(_s) * SYMSYNC();                         \
+                                                                \
+/* create synchronizer object from external coefficients    */  \
+/*  _k      : samples per symbol                            */  \
+/*  _M      : number of filters in the bank                 */  \
+/*  _h      : matched filter coefficients [size:            */  \
+/*  _h_len  : length of matched filter                      */  \
 SYMSYNC() SYMSYNC(_create)(unsigned int _k,                     \
-                           unsigned int _num_filters,           \
-                           TC * _h,                             \
+                           unsigned int _M,                     \
+                           TC *         _h,                     \
                            unsigned int _h_len);                \
+                                                                \
 /* create square-root Nyquist symbol synchronizer           */  \
-/*  _type        : filter type (e.g. LIQUID_RNYQUIST_RRC)   */  \
-/*  _k           : samples/symbol                           */  \
-/*  _m           : symbol delay                             */  \
-/*  _beta        : rolloff factor (0 < beta <= 1)           */  \
-/*  _num_filters : number of filters in the bank            */  \
-SYMSYNC() SYMSYNC(_create_rnyquist)(int _type,                  \
+/*  _type   : filter type (e.g. LIQUID_FIRFILT_RRC)         */  \
+/*  _k      : samples/symbol                                */  \
+/*  _m      : symbol delay                                  */  \
+/*  _beta   : rolloff factor, beta in (0,1]                 */  \
+/*  _M      : number of filters in the bank                 */  \
+SYMSYNC() SYMSYNC(_create_rnyquist)(int          _type,         \
                                     unsigned int _k,            \
                                     unsigned int _m,            \
-                                    float _beta,                \
-                                    unsigned int _num_filters); \
+                                    float        _beta,         \
+                                    unsigned int _M);           \
+                                                                \
+/* create symsync using Kaiser filter interpolator; useful  */  \
+/* when the input signal has matched filter applied already */  \
+/*  _k      : input samples/symbol                          */  \
+/*  _m      : symbol delay                                  */  \
+/*  _beta   : rolloff factor, beta in (0,1]                 */  \
+/*  _M      : number of filters in the bank                 */  \
+SYMSYNC() SYMSYNC(_create_kaiser)(unsigned int _k,              \
+                                  unsigned int _m,              \
+                                  float        _beta,           \
+                                  unsigned int _M);             \
+                                                                \
+/* destroy symsync object, freeing all internal memory      */  \
 void SYMSYNC(_destroy)(SYMSYNC() _q);                           \
+                                                                \
+/* print symsync object's parameters                        */  \
 void SYMSYNC(_print)(SYMSYNC() _q);                             \
-void SYMSYNC(_execute)(SYMSYNC() _q,                            \
-                       TI * _x,                                 \
-                       unsigned int _nx,                        \
-                       TO * _y,                                 \
-                       unsigned int *_ny);                      \
-void SYMSYNC(_set_output_rate)(SYMSYNC() _q,                    \
-                               unsigned int _k_out);            \
-void SYMSYNC(_set_lf_bw)(SYMSYNC() _q, float _bt);              \
-/* lock/unlock loop control */                                  \
-void SYMSYNC(_lock)(SYMSYNC() _q);                              \
+                                                                \
+/* reset symsync internal state                             */  \
+void SYMSYNC(_reset)(SYMSYNC() _q);                             \
+                                                                \
+/* lock/unlock loop control                                 */  \
+void SYMSYNC(_lock)(  SYMSYNC() _q);                            \
 void SYMSYNC(_unlock)(SYMSYNC() _q);                            \
-void SYMSYNC(_clear)(SYMSYNC() _q);                             \
+                                                                \
+/* set synchronizer output rate (samples/symbol)            */  \
+/*  _q      : synchronizer object                           */  \
+/*  _k_out  : output samples/symbol                         */  \
+void SYMSYNC(_set_output_rate)(SYMSYNC()    _q,                 \
+                               unsigned int _k_out);            \
+                                                                \
+/* set loop-filter bandwidth                                */  \
+/*  _q      : synchronizer object                           */  \
+/*  _bt     : loop bandwidth                                */  \
+void SYMSYNC(_set_lf_bw)(SYMSYNC() _q,                          \
+                         float     _bt);                        \
+                                                                \
+/* return instantaneous fractional timing offset estimate   */  \
 float SYMSYNC(_get_tau)(SYMSYNC() _q);                          \
-void SYMSYNC(_estimate_timing)(SYMSYNC() _q,                    \
-                               TI * _x,                         \
-                               unsigned int _n);
+                                                                \
+/* execute synchronizer on input data array                 */  \
+/*  _q      : synchronizer object                           */  \
+/*  _x      : input data array                              */  \
+/*  _nx     : number of input samples                       */  \
+/*  _y      : output data array                             */  \
+/*  _ny     : number of samples written to output buffer    */  \
+void SYMSYNC(_execute)(SYMSYNC()      _q,                       \
+                       TI *           _x,                       \
+                       unsigned int   _nx,                      \
+                       TO *           _y,                       \
+                       unsigned int * _ny);                     \
 
 LIQUID_SYMSYNC_DEFINE_API(SYMSYNC_MANGLE_RRRF,
                           float,
@@ -1948,23 +3066,79 @@ LIQUID_SYMSYNC_DEFINE_API(SYMSYNC_MANGLE_CRCF,
 //   TC         : coefficients data type
 //   TI         : input data type
 #define LIQUID_FIRFARROW_DEFINE_API(FIRFARROW,TO,TC,TI)         \
+                                                                \
 typedef struct FIRFARROW(_s) * FIRFARROW();                     \
+                                                                \
+/* create firfarrow object                                  */  \
+/*  _h_len      : filter length                             */  \
+/*  _p          : polynomial order                          */  \
+/*  _fc         : filter cutoff frequency                   */  \
+/*  _As         : stopband attenuation [dB]                 */  \
 FIRFARROW() FIRFARROW(_create)(unsigned int _h_len,             \
                                unsigned int _p,                 \
-                               float _fc,                       \
-                               float _As);                      \
-void FIRFARROW(_destroy)(FIRFARROW() _f);                       \
-void FIRFARROW(_clear)(FIRFARROW() _f);                         \
-void FIRFARROW(_print)(FIRFARROW() _f);                         \
-void FIRFARROW(_push)(FIRFARROW() _f, TI _x);                   \
-void FIRFARROW(_set_delay)(FIRFARROW() _f, float _mu);          \
-void FIRFARROW(_execute)(FIRFARROW() _f, TO *_y);               \
-unsigned int FIRFARROW(_get_length)(FIRFARROW() _f);            \
-void FIRFARROW(_get_coefficients)(FIRFARROW() _f, float * _h);  \
-void FIRFARROW(_freqresponse)(FIRFARROW() _f,                   \
-                            float _fc,                          \
-                            liquid_float_complex * _H);         \
-float FIRFARROW(_groupdelay)(FIRFARROW() _f, float _fc);
+                               float        _fc,                \
+                               float        _As);               \
+                                                                \
+/* destroy firfarrow object, freeing all internal memory    */  \
+void FIRFARROW(_destroy)(FIRFARROW() _q);                       \
+                                                                \
+/* print firfarrow object's internal properties             */  \
+void FIRFARROW(_print)(FIRFARROW() _q);                         \
+                                                                \
+/* reset firfarrow object's internal state                  */  \
+void FIRFARROW(_reset)(FIRFARROW() _q);                         \
+                                                                \
+/* push sample into firfarrow object                        */  \
+/*  _q      : firfarrow object                              */  \
+/*  _x      : input sample                                  */  \
+void FIRFARROW(_push)(FIRFARROW() _q,                           \
+                      TI          _x);                          \
+                                                                \
+/* set fractional delay of firfarrow object                 */  \
+/*  _q      : firfarrow object                              */  \
+/*  _mu     : fractional sample delay                       */  \
+void FIRFARROW(_set_delay)(FIRFARROW() _q,                      \
+                           float       _mu);                    \
+                                                                \
+/* execute firfarrow internal dot product                   */  \
+/*  _q      : firfarrow object                              */  \
+/*  _y      : output sample pointer                         */  \
+void FIRFARROW(_execute)(FIRFARROW() _q,                        \
+                         TO *        _y);                       \
+                                                                \
+/* compute firfarrow filter on block of samples; the input  */  \
+/* and output arrays may have the same pointer              */  \
+/*  _q      : firfarrow object                              */  \
+/*  _x      : input array [size: _n x 1]                    */  \
+/*  _n      : input, output array size                      */  \
+/*  _y      : output array [size: _n x 1]                   */  \
+void FIRFARROW(_execute_block)(FIRFARROW()  _q,                 \
+                               TI *         _x,                 \
+                               unsigned int _n,                 \
+                               TO *         _y);                \
+                                                                \
+/* get length of firfarrow object (number of filter taps)   */  \
+unsigned int FIRFARROW(_get_length)(FIRFARROW() _q);            \
+                                                                \
+/* get coefficients of firfarrow object                     */  \
+/*  _q      : firfarrow object                              */  \
+/*  _h      : output coefficients pointer                   */  \
+void FIRFARROW(_get_coefficients)(FIRFARROW() _q,               \
+                                  float *     _h);              \
+                                                                \
+/* compute complex frequency response                       */  \
+/*  _q      : filter object                                 */  \
+/*  _fc     : frequency                                     */  \
+/*  _H      : output frequency response                     */  \
+void FIRFARROW(_freqresponse)(FIRFARROW()            _q,        \
+                              float                  _fc,       \
+                              liquid_float_complex * _H);       \
+                                                                \
+/* compute group delay [samples]                            */  \
+/*  _q      :   filter object                               */  \
+/*  _fc     :   frequency                                   */  \
+float FIRFARROW(_groupdelay)(FIRFARROW() _q,                    \
+                             float       _fc);                  \
 
 LIQUID_FIRFARROW_DEFINE_API(FIRFARROW_MANGLE_RRRF,
                             float,
@@ -2037,7 +3211,7 @@ typedef void (*framesync_csma_callback)(void * _userdata);
 //
 
 // frame length in samples
-#define FRAME64_LEN (1340)
+#define LIQUID_FRAME64_LEN (1340)
 
 typedef struct framegen64_s * framegen64;
 
@@ -2054,7 +3228,7 @@ void framegen64_print(framegen64 _q);
 //  _q          :   frame generator object
 //  _header     :   8-byte header data
 //  _payload    :   64-byte payload data
-//  _frame      :   output frame samples [size: FRAME64_LEN x 1]
+//  _frame      :   output frame samples [size: LIQUID_FRAME64_LEN x 1]
 void framegen64_execute(framegen64             _q,
                         unsigned char *        _header,
                         unsigned char *        _payload,
@@ -2307,7 +3481,7 @@ void gmskframegen_assemble(gmskframegen    _fg,
                            crc_scheme      _check,
                            fec_scheme      _fec0,
                            fec_scheme      _fec1);
-unsigned int gmskframegen_get_frame_len(gmskframegen _fg);
+unsigned int gmskframegen_getframelen(gmskframegen _q);
 int gmskframegen_write_samples(gmskframegen _fg,
                                liquid_float_complex * _y);
 
@@ -2437,6 +3611,11 @@ float ofdmflexframesync_get_rssi(ofdmflexframesync _q);
 // query the received carrier offset estimate
 float ofdmflexframesync_get_cfo(ofdmflexframesync _q);
 
+// enable/disable debugging
+void ofdmflexframesync_debug_enable(ofdmflexframesync _q);
+void ofdmflexframesync_debug_disable(ofdmflexframesync _q);
+void ofdmflexframesync_debug_print(ofdmflexframesync _q,
+                                   const char *      _filename);
 
 
 
@@ -2583,38 +3762,6 @@ int detector_cccf_correlate(detector_cccf        _q,
 //
 // MODULE : math
 //
-
-// 
-// basic trigonometric functions
-//
-float liquid_sinf(float _x);
-float liquid_cosf(float _x);
-float liquid_tanf(float _x);
-void  liquid_sincosf(float _x,
-                     float * _sinf,
-                     float * _cosf);
-float liquid_expf(float _x);
-float liquid_logf(float _x);
-
-// 
-// complex math operations
-//
-
-// complex square root
-liquid_float_complex liquid_csqrtf(liquid_float_complex _z);
-
-// complex exponent, logarithm
-liquid_float_complex liquid_cexpf(liquid_float_complex _z);
-liquid_float_complex liquid_clogf(liquid_float_complex _z);
-
-// complex arcsin, arccos, arctan
-liquid_float_complex liquid_casinf(liquid_float_complex _z);
-liquid_float_complex liquid_cacosf(liquid_float_complex _z);
-liquid_float_complex liquid_catanf(liquid_float_complex _z);
-
-// faster approximation to arg{*}
-float liquid_cargf_approx(liquid_float_complex _z);
-
 
 // ln( Gamma(z) )
 float liquid_lngammaf(float _z);
@@ -2808,17 +3955,32 @@ void POLY(_expandroots2)(T * _a,                                \
                          unsigned int _n,                       \
                          T * _c);                               \
                                                                 \
-/* find roots of the polynomial (complex) */                    \
-void POLY(_findroots)(T * _c,                                   \
+/* find roots of the polynomial (complex)                   */  \
+/*  _poly   : poly array, ascending powers [size: _k x 1]   */  \
+/*  _k      : poly length (poly order = _k - 1)             */  \
+/*  _roots  : resulting complex roots [size: _k-1 x 1]      */  \
+void POLY(_findroots)(T *          _poly,                       \
                       unsigned int _n,                          \
-                      TC * _roots);                             \
+                      TC *         _roots);                     \
+                                                                \
+/* find the complex roots of the polynomial using the       */  \
+/* Durand-Kerner method                                     */  \
+void POLY(_findroots_durandkerner)(T *          _poly,          \
+                                   unsigned int _k,             \
+                                   TC *         _roots);        \
+                                                                \
+/* find the complex roots of the polynomial using           */  \
+/* Bairstow's method                                        */  \
+void POLY(_findroots_bairstow)(T *          _poly,              \
+                               unsigned int _k,                 \
+                               TC *         _roots);            \
                                                                 \
 /* expands the multiplication of two polynomials */             \
-void POLY(_mul)(T * _a,                                         \
+void POLY(_mul)(T *          _a,                                \
                 unsigned int _order_a,                          \
-                T * _b,                                         \
+                T *          _b,                                \
                 unsigned int _order_b,                          \
-                T * _c);
+                T *          _c);                               \
 
 LIQUID_POLY_DEFINE_API(POLY_MANGLE_DOUBLE,
                        double,
@@ -3375,42 +4537,104 @@ void gmskdem_demodulate(gmskdem _q,
                         unsigned int * _sym);
 
 // 
-// Analog modems
+// Analog frequency modulator
+//
+#define LIQUID_FREQMOD_MANGLE_FLOAT(name) LIQUID_CONCAT(freqmod,name)
+
+// Macro    :   FREQMOD (analog frequency modulator)
+//  FREQMOD :   name-mangling macro
+//  T       :   primitive data type
+//  TC      :   primitive data type (complex)
+#define LIQUID_FREQMOD_DEFINE_API(FREQMOD,T,TC)                 \
+                                                                \
+/* define struct pointer */                                     \
+typedef struct FREQMOD(_s) * FREQMOD();                         \
+                                                                \
+/* create freqmod object (frequency modulator)              */  \
+/*  _kf     :   modulation factor                           */  \
+FREQMOD() FREQMOD(_create)(float _kf);                          \
+                                                                \
+/* destroy freqmod object                                   */  \
+void FREQMOD(_destroy)(FREQMOD() _q);                           \
+                                                                \
+/* print freqmod object internals                           */  \
+void FREQMOD(_print)(FREQMOD() _q);                             \
+                                                                \
+/* reset state                                              */  \
+void FREQMOD(_reset)(FREQMOD() _q);                             \
+                                                                \
+/* modulate single sample                                   */  \
+/*  _q      :   frequency modulator object                  */  \
+/*  _m      :   message signal m(t)                         */  \
+/*  _s      :   complex baseband signal s(t)                */  \
+void FREQMOD(_modulate)(FREQMOD() _q,                           \
+                        T         _m,                           \
+                        TC *      _s);                          \
+                                                                \
+/* modulate block of samples                                */  \
+/*  _q      :   frequency modulator object                  */  \
+/*  _m      :   message signal m(t), [size: _n x 1]         */  \
+/*  _n      :   number of input, output samples             */  \
+/*  _s      :   complex baseband signal s(t) [size: _n x 1] */  \
+void FREQMOD(_modulate_block)(FREQMOD()    _q,                  \
+                              T *          _m,                  \
+                              unsigned int _n,                  \
+                              TC *         _s);                 \
+
+// define freqmod APIs
+LIQUID_FREQMOD_DEFINE_API(LIQUID_FREQMOD_MANGLE_FLOAT,float,liquid_float_complex)
+
+
+
+// 
+// Analog frequency demodulator
 //
 
-typedef enum {
-    LIQUID_FREQMODEM_PLL=0,
-    LIQUID_FREQMODEM_DELAYCONJ
-} liquid_freqmodem_type;
+#define LIQUID_FREQDEM_MANGLE_FLOAT(name) LIQUID_CONCAT(freqdem,name)
 
-typedef struct freqmodem_s * freqmodem;
+// Macro    :   FREQDEM (analog frequency modulator)
+//  FREQDEM :   name-mangling macro
+//  T       :   primitive data type
+//  TC      :   primitive data type (complex)
+#define LIQUID_FREQDEM_DEFINE_API(FREQDEM,T,TC)                 \
+                                                                \
+/* define struct pointer */                                     \
+typedef struct FREQDEM(_s) * FREQDEM();                         \
+                                                                \
+/* create freqdem object (frequency modulator)              */  \
+/*  _kf      :   modulation factor                          */  \
+FREQDEM() FREQDEM(_create)(float _kf);                          \
+                                                                \
+/* destroy freqdem object                                   */  \
+void FREQDEM(_destroy)(FREQDEM() _q);                           \
+                                                                \
+/* print freqdem object internals                           */  \
+void FREQDEM(_print)(FREQDEM() _q);                             \
+                                                                \
+/* reset state                                              */  \
+void FREQDEM(_reset)(FREQDEM() _q);                             \
+                                                                \
+/* demodulate sample                                        */  \
+/*  _q      :   frequency modulator object                  */  \
+/*  _r      :   received signal r(t)                        */  \
+/*  _m      :   output message signal m(t)                  */  \
+void FREQDEM(_demodulate)(FREQDEM() _q,                         \
+                          TC        _r,                         \
+                          T *       _m);                        \
+                                                                \
+/* demodulate block of samples                              */  \
+/*  _q      :   frequency demodulator object                */  \
+/*  _r      :   received signal r(t) [size: _n x 1]         */  \
+/*  _n      :   number of input, output samples             */  \
+/*  _m      :   message signal m(t), [size: _n x 1]         */  \
+void FREQDEM(_demodulate_block)(FREQDEM()    _q,                \
+                                TC *         _r,                \
+                                unsigned int _n,                \
+                                T *          _m);               \
 
-// create freqmodem object
-//  _m      :   modulation index
-//  _fc     :   carrier frequency, range: [-0.5,0.5]
-//  _type   :   demodulation type (e.g. LIQUID_FREQMODEM_DELAYCONJ)
-freqmodem freqmodem_create(float _m,
-                           float _fc,
-                           liquid_freqmodem_type _type);
+// define freqdem APIs
+LIQUID_FREQDEM_DEFINE_API(LIQUID_FREQDEM_MANGLE_FLOAT,float,liquid_float_complex)
 
-// destroy freqmodem object
-void freqmodem_destroy(freqmodem _fm);
-
-// print freqmodem object internals
-void freqmodem_print(freqmodem _fm);
-
-// reset state
-void freqmodem_reset(freqmodem _fm);
-
-// modulate sample
-void freqmodem_modulate(freqmodem _fm,
-                        float _x,
-                        liquid_float_complex *_y);
-
-// demodulate sample
-void freqmodem_demodulate(freqmodem _fm,
-                          liquid_float_complex _y,
-                          float *_x);
 
 
 // amplitude modulation types
@@ -3453,7 +4677,7 @@ void ampmodem_demodulate(ampmodem _fm,
 
 
 //
-// MODULE : multicarrier
+// MODULE : multichannel
 //
 
 
@@ -3478,36 +4702,66 @@ void ampmodem_demodulate(ampmodem _fm,
 //   TI         : input data type
 #define LIQUID_FIRPFBCH_DEFINE_API(FIRPFBCH,TO,TC,TI)           \
 typedef struct FIRPFBCH(_s) * FIRPFBCH();                       \
-FIRPFBCH() FIRPFBCH(_create)(int _type,                         \
-                             unsigned int _num_channels,        \
+                                                                \
+/* create finite impulse response polyphase filter-bank     */  \
+/* channelizer object from external coefficients            */  \
+/*  _type   : channelizer type, e.g. LIQUID_ANALYZER        */  \
+/*  _M      : number of channels                            */  \
+/*  _p      : number of coefficients for each channel       */  \
+/*  _h      : coefficients [size: _M*_p x 1]                */  \
+FIRPFBCH() FIRPFBCH(_create)(int          _type,                \
+                             unsigned int _M,                   \
                              unsigned int _p,                   \
-                             TC * _h);                          \
-FIRPFBCH() FIRPFBCH(_create_kaiser)(int _type,                  \
+                             TC *         _h);                  \
+                                                                \
+/* create FIR polyphase filterbank channelizer object with  */  \
+/* prototype filter based on windowed Kaiser design         */  \
+/*  _type   : type (LIQUID_ANALYZER | LIQUID_SYNTHESIZER)   */  \
+/*  _M      : number of channels                            */  \
+/*  _m      : filter delay (symbols)                        */  \
+/*  _As     : stop-band attentuation [dB]                   */  \
+FIRPFBCH() FIRPFBCH(_create_kaiser)(int          _type,         \
                                     unsigned int _M,            \
                                     unsigned int _m,            \
-                                    float _As);                 \
-FIRPFBCH() FIRPFBCH(_create_rnyquist)(int _type,                \
+                                    float        _As);          \
+                                                                \
+/* create FIR polyphase filterbank channelizer object with  */  \
+/* prototype root-Nyquist filter                            */  \
+/*  _type   : type (LIQUID_ANALYZER | LIQUID_SYNTHESIZER)   */  \
+/*  _M      : number of channels                            */  \
+/*  _m      : filter delay (symbols)                        */  \
+/*  _beta   : filter excess bandwidth factor, in [0,1]      */  \
+/*  _ftype  : filter prototype (rrcos, rkaiser, etc.)       */  \
+FIRPFBCH() FIRPFBCH(_create_rnyquist)(int          _type,       \
                                       unsigned int _M,          \
                                       unsigned int _m,          \
-                                      float _beta,              \
-                                      int _ftype);              \
+                                      float        _beta,       \
+                                      int          _ftype);     \
+                                                                \
+/* destroy firpfbch object                                  */  \
 void FIRPFBCH(_destroy)(FIRPFBCH() _q);                         \
-void FIRPFBCH(_clear)(FIRPFBCH() _q);                           \
+                                                                \
+/* clear/reset firpfbch internal state                      */  \
+void FIRPFBCH(_reset)(FIRPFBCH() _q);                           \
+                                                                \
+/* print firpfbch internal parameters to stdout             */  \
 void FIRPFBCH(_print)(FIRPFBCH() _q);                           \
                                                                 \
-/* synthesizer */                                               \
+/* execute filterbank as synthesizer on block of samples    */  \
+/*  _q      : filterbank channelizer object                 */  \
+/*  _x      : channelized input, [size: num_channels x 1]   */  \
+/*  _y      : output time series, [size: num_channels x 1]  */  \
 void FIRPFBCH(_synthesizer_execute)(FIRPFBCH() _q,              \
-                                    TI * _x,                    \
-                                    TO * _X);                   \
+                                    TI *       _x,              \
+                                    TO *       _y);             \
                                                                 \
-/* analyzer */                                                  \
+/* execute filterbank as analyzer on block of samples       */  \
+/*  _q      : filterbank channelizer object                 */  \
+/*  _x      : input time series, [size: num_channels x 1]   */  \
+/*  _y      : channelized output, [size: num_channels x 1]  */  \
 void FIRPFBCH(_analyzer_execute)(FIRPFBCH() _q,                 \
-                                 TI * _x,                       \
-                                 TO * _X);                      \
-void FIRPFBCH(_analyzer_push)(FIRPFBCH() _q, TI _x);            \
-void FIRPFBCH(_analyzer_run)(FIRPFBCH() _q,                     \
-                             unsigned int _k,                   \
-                             TO * _X);
+                                 TI *       _x,                 \
+                                 TO *       _y);                \
 
 
 LIQUID_FIRPFBCH_DEFINE_API(FIRPFBCH_MANGLE_CRCF,
@@ -3519,6 +4773,68 @@ LIQUID_FIRPFBCH_DEFINE_API(FIRPFBCH_MANGLE_CCCF,
                            liquid_float_complex,
                            liquid_float_complex,
                            liquid_float_complex)
+
+
+//
+// Finite impulse response polyphase filterbank channelizer
+// with output rate 2 Fs / M
+//
+
+#define FIRPFBCH2_MANGLE_CRCF(name) LIQUID_CONCAT(firpfbch2_crcf,name)
+
+// Macro:
+//   FIRPFBCH2  : name-mangling macro
+//   TO         : output data type
+//   TC         : coefficients data type
+//   TI         : input data type
+#define LIQUID_FIRPFBCH2_DEFINE_API(FIRPFBCH2,TO,TC,TI)         \
+typedef struct FIRPFBCH2(_s) * FIRPFBCH2();                     \
+                                                                \
+/* create firpfbch2 object                                  */  \
+/*  _type   :   channelizer type (e.g. LIQUID_ANALYZER)     */  \
+/*  _M      :   number of channels (must be even)           */  \
+/*  _m      :   prototype filter semi-lenth, length=2*M*m   */  \
+/*  _h      :   prototype filter coefficient array          */  \
+FIRPFBCH2() FIRPFBCH2(_create)(int          _type,              \
+                               unsigned int _M,                 \
+                               unsigned int _m,                 \
+                               TC *         _h);                \
+                                                                \
+/* create firpfbch2 object using Kaiser window prototype    */  \
+/*  _type   :   channelizer type (e.g. LIQUID_ANALYZER)     */  \
+/*  _M      :   number of channels (must be even)           */  \
+/*  _m      :   prototype filter semi-lenth, length=2*M*m+1 */  \
+/*  _As     :   filter stop-band attenuation [dB]           */  \
+FIRPFBCH2() FIRPFBCH2(_create_kaiser)(int          _type,       \
+                                      unsigned int _M,          \
+                                      unsigned int _m,          \
+                                      float        _As);        \
+                                                                \
+/* destroy firpfbch2 object, freeing internal memory        */  \
+void FIRPFBCH2(_destroy)(FIRPFBCH2() _q);                       \
+                                                                \
+/* reset firpfbch2 object internals                         */  \
+void FIRPFBCH2(_reset)(FIRPFBCH2() _q);                         \
+                                                                \
+/* print firpfbch2 object internals                         */  \
+void FIRPFBCH2(_print)(FIRPFBCH2() _q);                         \
+                                                                \
+/* execute filterbank channelizer                           */  \
+/* LIQUID_ANALYZER:     input: M/2, output: M               */  \
+/* LIQUID_SYNTHESIZER:  input: M,   output: M/2             */  \
+/*  _x      :   channelizer input                           */  \
+/*  _y      :   channelizer output                          */  \
+void FIRPFBCH2(_execute)(FIRPFBCH2() _q,                        \
+                         TI *        _x,                        \
+                         TO *        _y);                       \
+
+
+LIQUID_FIRPFBCH2_DEFINE_API(FIRPFBCH2_MANGLE_CRCF,
+                            liquid_float_complex,
+                            float,
+                            liquid_float_complex)
+
+
 
 #define OFDMFRAME_SCTYPE_NULL   0
 #define OFDMFRAME_SCTYPE_PILOT  1
@@ -3771,30 +5087,17 @@ float liquid_spiral(void *       _userdata,
 
 typedef struct gradsearch_s * gradsearch;
 
-// gradient search properties
-typedef struct {
-    float delta;    // gradient approximation step size (default: 1e-6f)
-    float gamma;    // vector step size (default: 0.002f)
-    float alpha;    // momentum parameter (default: 0.1f)
-    float mu;       // decremental gamma parameter (default: 0.99f)
-} gradsearchprops_s;
-
-// initialize default properties
-void gradsearchprops_init_default(gradsearchprops_s * _props);
-
 // Create a gradient search object
 //   _userdata          :   user data object pointer
 //   _v                 :   array of parameters to optimize
 //   _num_parameters    :   array length (number of parameters to optimize)
 //   _u                 :   utility function pointer
-//   _minmax            :   search direction (0:minimize, 1:maximize)
-//   _props             :   properties (see above)
-gradsearch gradsearch_create(void *              _userdata,
-                             float *             _v,
-                             unsigned int        _num_parameters,
-                             utility_function    _utility,
-                             int                 _direction,
-                             gradsearchprops_s * _props);
+//   _direction         :   search direction (e.g. LIQUID_OPTIM_MAXIMIZE)
+gradsearch gradsearch_create(void *           _userdata,
+                             float *          _v,
+                             unsigned int     _num_parameters,
+                             utility_function _utility,
+                             int              _direction);
 
 // Destroy a gradsearch object
 void gradsearch_destroy(gradsearch _q);
@@ -3819,12 +5122,12 @@ typedef struct qnsearch_s * qnsearch;
 //   _v                 :   array of parameters to optimize
 //   _num_parameters    :   array length
 //   _get_utility       :   utility function pointer
-//   _minmax            :   direction (0:minimize, 1:maximize)
-qnsearch qnsearch_create(void * _userdata,
-                         float * _v,
-                         unsigned int _num_parameters,
+//   _direction         :   search direction (e.g. LIQUID_OPTIM_MAXIMIZE)
+qnsearch qnsearch_create(void *           _userdata,
+                         float *          _v,
+                         unsigned int     _num_parameters,
                          utility_function _u,
-                         int _minmax);
+                         int              _direction);
 
 // Destroy a qnsearch object
 void qnsearch_destroy(qnsearch _g);
@@ -4238,6 +5541,10 @@ unsigned int msequence_get_length(msequence _ms);
 // get the internal state of the sequence
 unsigned int msequence_get_state(msequence _ms);
 
+// set the internal state of the sequence
+void msequence_set_state(msequence    _ms,
+                         unsigned int _a);
+
 
 // 
 // MODULE : utility
@@ -4393,6 +5700,96 @@ unsigned int liquid_msb_index(unsigned int _x);
 // Print string of bits to stdout
 void liquid_print_bitstring(unsigned int _x,
                             unsigned int _n);
+
+// reverse byte, word, etc.
+unsigned char liquid_reverse_byte(  unsigned char _x);
+unsigned int  liquid_reverse_uint16(unsigned int  _x);
+unsigned int  liquid_reverse_uint24(unsigned int  _x);
+unsigned int  liquid_reverse_uint32(unsigned int  _x);
+
+// 
+// MODULE : vector
+//
+
+#define VECTOR_MANGLE_RF(name)  LIQUID_CONCAT(liquid_vectorf, name)
+#define VECTOR_MANGLE_CF(name)  LIQUID_CONCAT(liquid_vectorcf,name)
+
+// large macro
+//   VECTOR     : name-mangling macro
+//   T          : data type
+//   TP         : data type (primitive)
+#define LIQUID_VECTOR_DEFINE_API(VECTOR,T,TP)                   \
+                                                                \
+/* initialize vector with scalar: x[i] = c (scalar)         */  \
+void VECTOR(_init)(T            _c,                             \
+                   T *          _x,                             \
+                   unsigned int _n);                            \
+                                                                \
+/* add each element: z[i] = x[i] + y[i]                     */  \
+void VECTOR(_add)(T *          _x,                              \
+                  T *          _y,                              \
+                  unsigned int _n,                              \
+                  T *          _z);                             \
+/* add scalar to each element: y[i] = x[i] + c              */  \
+void VECTOR(_addscalar)(T *          _x,                        \
+                        unsigned int _n,                        \
+                        T            _c,                        \
+                        T *          _y);                       \
+                                                                \
+/* multiply each element: z[i] = x[i] * y[i]                */  \
+void VECTOR(_mul)(T *          _x,                              \
+                  T *          _y,                              \
+                  unsigned int _n,                              \
+                  T *          _z);                             \
+/* multiply each element with scalar: y[i] = x[i] * c       */  \
+void VECTOR(_mulscalar)(T *          _x,                        \
+                        unsigned int _n,                        \
+                        T            _c,                        \
+                        T *          _y);                       \
+                                                                \
+/* compute complex phase rotation: x[i] = exp{j theta[i]}   */  \
+void VECTOR(_cexpj)(TP *         _theta,                        \
+                    unsigned int _n,                            \
+                    T *          _x);                           \
+/* compute angle of each element: theta[i] = arg{ x[i] }    */  \
+void VECTOR(_carg)(T *          _x,                             \
+                   unsigned int _n,                             \
+                   TP *         _theta);                        \
+/* compute absolute value of each element: y[i] = |x[i]|    */  \
+void VECTOR(_abs)(T *          _x,                              \
+                  unsigned int _n,                              \
+                  TP *         _y);                             \
+                                                                \
+/* compute sum of squares: sum{ |x|^2 }                     */  \
+TP VECTOR(_sumsq)(T *          _x,                              \
+                  unsigned int _n);                             \
+                                                                \
+/* compute l-2 norm: sqrt{ sum{ |x|^2 } }                   */  \
+TP VECTOR(_norm)(T *          _x,                               \
+                 unsigned int _n);                              \
+                                                                \
+/* compute l-p norm: { sum{ |x|^p } }^(1/p)                 */  \
+TP VECTOR(_pnorm)(T *          _x,                              \
+                  unsigned int _n,                              \
+                  TP           _p);                             \
+                                                                \
+/* scale vector elements by l-2 norm: y[i] = x[i]/norm(x)   */  \
+void VECTOR(_normalize)(T *          _x,                        \
+                        unsigned int _n,                        \
+                        T *          _y);                       \
+
+LIQUID_VECTOR_DEFINE_API(VECTOR_MANGLE_RF, float,                float);
+LIQUID_VECTOR_DEFINE_API(VECTOR_MANGLE_CF, liquid_float_complex, float);
+
+// 
+// mixed types
+//
+#if 0
+void liquid_vectorf_add(float *      _a,
+                        float *      _b,
+                        unsigned int _n,
+                        float *      _c);
+#endif
 
 #ifdef __cplusplus
 } //extern "C"

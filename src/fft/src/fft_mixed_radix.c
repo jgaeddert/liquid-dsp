@@ -1,7 +1,5 @@
 /*
- * Copyright (c) 2007, 2008, 2009, 2010, 2011, 2012 Joseph Gaeddert
- * Copyright (c) 2007, 2008, 2009, 2010, 2011, 2012 Virginia Polytechnic
- *                                      Institute & State University
+ * Copyright (c) 2007 - 2014 Joseph Gaeddert
  *
  * This file is part of liquid.
  *
@@ -36,7 +34,7 @@
 //  _nfft   :   FFT size
 //  _x      :   input array [size: _nfft x 1]
 //  _y      :   output array [size: _nfft x 1]
-//  _dir    :   fft direction: {FFT_FORWARD, FFT_REVERSE}
+//  _dir    :   fft direction: {LIQUID_FFT_FORWARD, LIQUID_FFT_BACKWARD}
 //  _method :   fft method
 FFT(plan) FFT(_create_plan_mixed_radix)(unsigned int _nfft,
                                         TC *         _x,
@@ -51,8 +49,8 @@ FFT(plan) FFT(_create_plan_mixed_radix)(unsigned int _nfft,
     q->x         = _x;
     q->y         = _y;
     q->flags     = _flags;
-    q->kind      = LIQUID_FFT_DFT_1D;
-    q->direction = (_dir == FFT_FORWARD) ? FFT_FORWARD : FFT_REVERSE;
+    q->type      = (_dir == LIQUID_FFT_FORWARD) ? LIQUID_FFT_FORWARD : LIQUID_FFT_BACKWARD;
+    q->direction = (_dir == LIQUID_FFT_FORWARD) ? LIQUID_FFT_FORWARD : LIQUID_FFT_BACKWARD;
     q->method    = LIQUID_FFT_METHOD_MIXED_RADIX;
 
     q->execute   = FFT(_execute_mixed_radix);
@@ -99,7 +97,7 @@ FFT(plan) FFT(_create_plan_mixed_radix)(unsigned int _nfft,
     // TODO : only allocate necessary twiddle factors
     q->data.mixedradix.twiddle = (TC *) malloc(q->nfft * sizeof(TC));
     
-    T d = (q->direction == FFT_FORWARD) ? -1.0 : 1.0;
+    T d = (q->direction == LIQUID_FFT_FORWARD) ? -1.0 : 1.0;
     for (i=0; i<q->nfft; i++)
         q->data.mixedradix.twiddle[i] = cexpf(_Complex_I*d*2*M_PI*(T)i / (T)(q->nfft));
 

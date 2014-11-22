@@ -1,6 +1,5 @@
 /*
- * Copyright (c) 2010, 2011 Joseph Gaeddert
- * Copyright (c) 2010, 2011 Virginia Polytechnic Institute & State University
+ * Copyright (c) 2007 - 2014 Joseph Gaeddert
  *
  * This file is part of liquid.
  *
@@ -37,7 +36,7 @@ struct gmskmod_s {
     float * h;              // pulse shaping filter
 
     // interpolator
-    interp_rrrf interp_tx;
+    firinterp_rrrf interp_tx;
 
     float theta;            // phase state
     float k_inv;            // 1/k
@@ -80,7 +79,7 @@ gmskmod gmskmod_create(unsigned int _k,
     liquid_firdes_gmsktx(q->k, q->m, q->BT, 0.0f, q->h);
 
     // create interpolator object
-    q->interp_tx = interp_rrrf_create_rnyquist(LIQUID_RNYQUIST_GMSKTX, q->k, q->m, q->BT, 0);
+    q->interp_tx = firinterp_rrrf_create_rnyquist(LIQUID_FIRFILT_GMSKTX, q->k, q->m, q->BT, 0);
 
     // reset modem state
     gmskmod_reset(q);
@@ -92,7 +91,7 @@ gmskmod gmskmod_create(unsigned int _k,
 void gmskmod_destroy(gmskmod _q)
 {
     // destroy interpolator
-    interp_rrrf_destroy(_q->interp_tx);
+    firinterp_rrrf_destroy(_q->interp_tx);
 
     // free transmit filter array
     free(_q->h);
@@ -116,7 +115,7 @@ void gmskmod_reset(gmskmod _q)
     _q->theta = 0.0f;
 
     // clear interpolator buffer
-    interp_rrrf_clear(_q->interp_tx);
+    firinterp_rrrf_reset(_q->interp_tx);
 }
 
 void gmskmod_modulate(gmskmod _q,
@@ -128,13 +127,17 @@ void gmskmod_modulate(gmskmod _q,
 
     // run interpolator
     float phi[_q->k];
-    interp_rrrf_execute(_q->interp_tx, x, phi);
+    firinterp_rrrf_execute(_q->interp_tx, x, phi);
 
     // integrate phase state
     unsigned int i;
     for (i=0; i<_q->k; i++) {
         // integrate phase state
         _q->theta += phi[i];
+
+        // ensure phase in [-pi, pi]
+        if (_q->theta >  M_PI) _q->theta -= 2*M_PI;
+        if (_q->theta < -M_PI) _q->theta += 2*M_PI;
 
         // compute output
         _y[i] = liquid_cexpjf(_q->theta);

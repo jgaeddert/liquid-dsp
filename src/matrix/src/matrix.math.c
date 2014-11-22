@@ -1,7 +1,5 @@
 /*
- * Copyright (c) 2007, 2008, 2009, 2010 Joseph Gaeddert
- * Copyright (c) 2007, 2008, 2009, 2010 Virginia Polytechnic
- *                                      Institute & State University
+ * Copyright (c) 2007 - 2014 Joseph Gaeddert
  *
  * This file is part of liquid.
  *
@@ -138,6 +136,7 @@ void MATRIX(_aug)(T * _x, unsigned int _rx, unsigned int _cx,
         exit(1);
     }
 
+    // TODO: improve speed with memmove
     unsigned int r, c, n;
     for (r=0; r<_rz; r++) {
         n=0;
@@ -258,8 +257,9 @@ void MATRIX(_mul_transpose)(T * _x,
             sum = 0.0f;
 
             for (i=0; i<_n; i++) {
-                sum +=        matrix_access(_x,_m,_n,r,i) *
-                       conjf( matrix_access(_x,_m,_n,c,i) );
+                T prod =        matrix_access(_x,_m,_n,r,i) *
+                         conjf( matrix_access(_x,_m,_n,c,i) );
+                sum += prod;
             }
 
             matrix_access(_xxT,_m,_m,r,c) = sum;
@@ -290,8 +290,9 @@ void MATRIX(_transpose_mul)(T * _x,
             sum = 0.0f;
 
             for (i=0; i<_m; i++) {
-                sum += conjf( matrix_access(_x,_m,_n,i,r) ) *
-                              matrix_access(_x,_m,_n,i,c);
+                T prod = conjf( matrix_access(_x,_m,_n,i,r) ) *
+                                matrix_access(_x,_m,_n,i,c);
+                sum += prod;
             }
 
             matrix_access(_xTx,_n,_n,r,c) = sum;
