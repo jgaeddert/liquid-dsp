@@ -493,6 +493,7 @@ filter_autotests :=						\
 	src/filter/tests/resamp_crcf_autotest.c			\
 	src/filter/tests/resamp2_crcf_autotest.c		\
 	src/filter/tests/symsync_crcf_autotest.c		\
+	src/filter/tests/symsync_rrrf_autotest.c		\
 
 # additional autotest objects
 autotest_extra_obj +=						\
