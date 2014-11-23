@@ -24,29 +24,35 @@
 #include "autotest/autotest.h"
 #include "liquid.h"
 
-void autotest_symsync_crcf()
+//
+void symsync_crcf_test(unsigned int _k,
+                       unsigned int _m,
+                       float        _beta,
+                       float        _tau,
+                       float        _rate)
 {
     // options
     float        tol        =  0.2f;    // error tolerance
-    unsigned int k          =  2;       // samples/symbol (input)
-    unsigned int m          =  3;       // filter delay (symbols)
-    float        beta       =  0.5f;    // filter excess bandwidth factor
+    unsigned int k          =  _k;      // samples/symbol (input)
+    unsigned int m          =  _m;      // filter delay (symbols)
+    float        beta       =  _beta;   // filter excess bandwidth factor
     unsigned int num_filters= 32;       // number of filters in the bank
 
     unsigned int num_symbols_init=200;  // number of initial symbols
-    unsigned int num_symbols_test=200;  // number of testing symbols
+    unsigned int num_symbols_test=100;  // number of testing symbols
 
+    // transmit/receive filter types
     liquid_firfilt_type ftype_tx = LIQUID_FIRFILT_ARKAISER;
     liquid_firfilt_type ftype_rx = LIQUID_FIRFILT_ARKAISER;
 
-    float bt=0.02f;     // loop filter bandwidth
-    float tau=-0.2f;    // fractional symbol offset
-    float r = 1.00f;    // resampled rate
+    float bt    =  0.02f;               // loop filter bandwidth
+    float tau   =  _tau;                // fractional symbol offset
+    float rate  =  _rate;               // resampled rate
 
     // derived values
     unsigned int num_symbols = num_symbols_init + num_symbols_test;
     unsigned int num_samples = k*num_symbols;
-    unsigned int num_samples_resamp = (unsigned int) ceilf(num_samples*r*1.1f) + 4;
+    unsigned int num_samples_resamp = (unsigned int) ceilf(num_samples*rate*1.1f) + 4;
     
     // compute delay
     while (tau < 0) tau += 1.0f;    // ensure positive tau
@@ -95,13 +101,12 @@ void autotest_symsync_crcf()
     // run resampler
     //
 
-#if 1
     // create resampler
     unsigned int resamp_len = 10*k; // resampling filter semi-length (filter delay)
     float resamp_bw = 0.45f;        // resampling filter bandwidth
     float resamp_As = 60.0f;        // resampling filter stop-band attenuation
     unsigned int resamp_npfb = 64;  // number of filters in bank
-    resamp_crcf resamp = resamp_crcf_create(r, resamp_len, resamp_bw, resamp_As, resamp_npfb);
+    resamp_crcf resamp = resamp_crcf_create(rate, resamp_len, resamp_bw, resamp_As, resamp_npfb);
 
     // run resampler on block
     unsigned int ny;
@@ -109,11 +114,6 @@ void autotest_symsync_crcf()
 
     // destroy resampler
     resamp_crcf_destroy(resamp);
-#else
-    for (i=0; i<num_samples; i++)
-        y[i] = x[i];
-    unsigned int ny = num_samples;
-#endif
 
     // 
     // create and run symbol synchronizer
@@ -132,15 +132,29 @@ void autotest_symsync_crcf()
     // destroy synchronizer
     symsync_crcf_destroy(sync);
 
+    // compute total delay through system
+    // (initial filter + resampler + matched filter)
+    unsigned int delay = m + 10 + m;
+
+    if (liquid_autotest_verbose) {
+        printf("symsync_crcf_test(),\n");
+        printf("    k       :   %u\n",      k);
+        printf("    m       :   %u\n",      m);
+        printf("    beta    :   %-8.4f\n",   beta);
+        printf("    tau     :   %-8.4f\n",   tau);
+        printf("    rate    :   %-12.8f\n",  rate);
+        printf("output symbols:\n");
+    }
+
     // compare (and print) results
-    unsigned int delay = m + 10 + m;    // initial filter, resampler, matched filter
-    printf("output symbols:\n");
-    for (i=num_symbols_init; i<nz; i++) {
+    for (i=nz-num_symbols_test; i<nz; i++) {
         // compute error
         float err = cabsf( z[i] - s[i-delay] );
         
+        // assert that error is below tolerance
         CONTEND_LESS_THAN( err, tol );
 
+        // print formatted results if desired
         if (liquid_autotest_verbose) {
             printf("  sym_out(%4u) = %8.4f + j*%8.4f; %% {%8.4f + j*%8.4f} e = %12.8f %s\n",
                     i+1,
@@ -151,4 +165,10 @@ void autotest_symsync_crcf()
     }
 
 }
+
+// autotest scenarios
+void autotest_symsync_crcf_scenario_0() { symsync_crcf_test(2, 7, 0.35,  0.00, 1.0f    ); }
+void autotest_symsync_crcf_scenario_1() { symsync_crcf_test(2, 7, 0.35, -0.25, 1.0f    ); }
+void autotest_symsync_crcf_scenario_2() { symsync_crcf_test(2, 7, 0.35, -0.25, 1.0001f ); }
+void autotest_symsync_crcf_scenario_3() { symsync_crcf_test(2, 7, 0.35, -0.25, 0.9999f ); }
 
