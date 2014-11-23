@@ -1465,6 +1465,7 @@ example_programs :=						\
 	examples/spgramcf_example				\
 	examples/spgramf_example				\
 	examples/symsync_crcf_example				\
+	examples/symsync_crcf_full_example			\
 	examples/symsync_crcf_kaiser_example			\
 	examples/wdelayf_example				\
 	examples/windowf_example				\
