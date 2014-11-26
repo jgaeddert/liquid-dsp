@@ -25,6 +25,8 @@
 #include "liquid.internal.h"
 
 #define CHANNEL(name)   LIQUID_CONCAT(channel_cccf,name)
+#define NCO(name)       LIQUID_CONCAT(nco_crcf,name)
+
 #define TO              float complex   // output type
 #define TC              float complex   // coefficients type
 #define TI              float complex   // input type

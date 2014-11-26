@@ -428,6 +428,14 @@ void CHANNEL(_add_awgn)(CHANNEL() _q,                           \
                         float     _noise_floor_dB,              \
                         float     _SNRdB);                      \
                                                                 \
+/* apply carrier offset impairment                          */  \
+/*  _q          : channel object                            */  \
+/*  _frequency  : carrier frequency offse [radians/sample   */  \
+/*  _phase      : carrier phase offset    [radians]         */  \
+void CHANNEL(_add_carrier_offset)(CHANNEL() _q,                 \
+                                  float     _frequency,         \
+                                  float     _phase);            \
+                                                                \
 /* apply channel impairments on input array                 */  \
 /*  _q      : channel object                                */  \
 /*  _x      : input array [size: _nx x 1]                   */  \

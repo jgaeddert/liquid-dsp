@@ -41,6 +41,9 @@ int main(int argc, char*argv[]) {
     float        tau         = -0.2f;   // fractional symbol offset
     float        rate        = 1.001f;  // sample rate offset
     
+    float        dphi        =  0.1f;   // carrier frequency offset [radians/sample]
+    float        phi         =  2.1f;   // carrier phase offset [radians]
+
     int dopt;
     while ((dopt = getopt(argc,argv,"hm:b:s:w:n:t:r:")) != EOF) {
         switch (dopt) {
@@ -109,6 +112,7 @@ int main(int argc, char*argv[]) {
 
     // add channel impairments
     channel_cccf_add_awgn(channel, noise_floor, SNRdB);
+    channel_cccf_add_carrier_offset(channel, dphi, phi);
 
     // apply channel
     channel_cccf_execute(channel, x, nx, y, &ny);

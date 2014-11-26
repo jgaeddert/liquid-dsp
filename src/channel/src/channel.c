@@ -34,6 +34,12 @@ struct CHANNEL(_s) {
     T   nstd;           // noise standard deviation
     float noise_floor_dB;
     float SNRdB;
+
+    // carrier offset
+    int enabled_carrier;// carrier offset enabled?
+    float dphi;         // channel gain
+    float phi;          // noise standard deviation
+    NCO() nco;          // oscillator
 };
 
 // create structured channel object
@@ -45,7 +51,11 @@ CHANNEL() CHANNEL(_create)(TC *         _h,
     CHANNEL() q = (CHANNEL()) malloc(sizeof(struct CHANNEL(_s)));
 
     // initialize all options as off
-    q->enabled_awgn = 0;
+    q->enabled_awgn     = 0;
+    q->enabled_carrier  = 0;
+
+    // create internal objects
+    q->nco = NCO(_create)(LIQUID_VCO);
 
     // return object
     return q;
@@ -54,6 +64,9 @@ CHANNEL() CHANNEL(_create)(TC *         _h,
 // destroy channel object
 void CHANNEL(_destroy)(CHANNEL() _q)
 {
+    // destroy internal objects
+    NCO(_destroy)(_q->nco);
+
     // free main object memory
     free(_q);
 }
@@ -87,6 +100,26 @@ void CHANNEL(_add_awgn)(CHANNEL() _q,
     _q->gamma = powf(10.0f, (_q->SNRdB+_q->noise_floor_dB)/20.0f);
 }
 
+// apply carrier offset impairment
+//  _q          : channel object
+//  _frequency  : carrier frequency offse [radians/sample
+//  _phase      : carrier phase offset    [radians]
+void CHANNEL(_add_carrier_offset)(CHANNEL() _q,
+                                  float     _frequency,
+                                  float     _phase)
+{
+    // enable module
+    _q->enabled_carrier = 1;
+
+    //
+    _q->dphi    = _frequency;
+    _q->phi     = _phase;
+
+    // set values appropriately
+    NCO(_set_frequency)(_q->nco, _q->dphi);
+    NCO(_set_phase)(    _q->nco, _q->phi);
+}
+
 // apply channel impairments on input array
 //  _q      : channel object
 //  _x      : input array [size: _nx x 1]
@@ -102,7 +135,12 @@ void CHANNEL(_execute)(CHANNEL()      _q,
     unsigned int i;
 
     for (i=0; i<_nx; i++) {
-        _y[i] = _x[i];
+
+        // apply carrier if enabled
+        if (_q->enabled_carrier)
+            NCO(_mix_up)(_q->nco, _x[i], &_y[i]);
+        else
+            _y[i] = _x[i];
 
         // apply AWGN if enabled
         if (_q->enabled_awgn) {
