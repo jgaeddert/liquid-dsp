@@ -27,12 +27,12 @@ void usage()
     printf("  T     : filter type: [rrcos], rkaiser, arkaiser, hM3, gmsk\n");
     printf("  k     : filter samples/symbol,   default: 2\n");
     printf("  K     : output samples/symbol,   default: 2\n");
-    printf("  m     : filter delay (symbols),  default: 3\n");
+    printf("  m     : filter delay (symbols),  default: 5\n");
     printf("  b     : filter excess bandwidth, default: 0.5\n");
     printf("  B     : filter polyphase banks,  default: 32\n");
     printf("  s     : signal-to-noise ratio,   default: 30dB\n");
     printf("  w     : timing pll bandwidth,    default: 0.02\n");
-    printf("  n     : number of symbols,       default: 200\n");
+    printf("  n     : number of symbols,       default: 400\n");
     printf("  t     : timing phase offset [%% symbol], t in [-0.5,0.5], default: -0.2\n");
     printf("  r     : timing freq. offset [%% symbol], default: 1.000\n");
 }
@@ -44,10 +44,10 @@ int main(int argc, char*argv[]) {
     // options
     unsigned int k           =   2;     // samples/symbol (input)
     unsigned int k_out       =   2;     // samples/symbol (output)
-    unsigned int m           =   3;     // filter delay (symbols)
+    unsigned int m           =   5;     // filter delay (symbols)
     float        beta        =   0.5f;  // filter excess bandwidth factor
     unsigned int num_filters =  32;     // number of filters in the bank
-    unsigned int num_symbols = 200;     // number of data symbols
+    unsigned int num_symbols = 400;     // number of data symbols
     float        SNRdB       =  30.0f;  // signal-to-noise ratio
 
     // transmit/receive filter types
@@ -288,7 +288,7 @@ int main(int argc, char*argv[]) {
     fprintf(fid,"hold off;\n");
     fprintf(fid,"axis square;\n");
     fprintf(fid,"grid on;\n");
-    fprintf(fid,"axis([-1 1 -1 1]*1.6);\n");
+    fprintf(fid,"axis([-1 1 -1 1]*2.0);\n");
     fprintf(fid,"xlabel('In-phase');\n");
     fprintf(fid,"ylabel('Quadrature');\n");
     fprintf(fid,"legend(['first 50%%'],['last 50%%'],'location','northeast');\n");

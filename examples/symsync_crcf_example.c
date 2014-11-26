@@ -26,10 +26,10 @@ void usage()
     printf("symsync_crcf_example [options]\n");
     printf("  h     : print help\n");
     printf("  k     : filter samples/symbol, default: 2\n");
-    printf("  m     : filter delay (symbols), default: 3\n");
+    printf("  m     : filter delay (symbols), default: 5\n");
     printf("  b     : filter excess bandwidth, default: 0.5\n");
     printf("  B     : filter polyphase banks, default: 32\n");
-    printf("  n     : number of symbols, default: 200\n");
+    printf("  n     : number of symbols, default: 400\n");
 }
 
 int main(int argc, char*argv[]) {
@@ -37,10 +37,10 @@ int main(int argc, char*argv[]) {
 
     // options
     unsigned int k           = 2;       // samples/symbol (input)
-    unsigned int m           = 3;       // filter delay (symbols)
+    unsigned int m           = 5;       // filter delay (symbols)
     float        beta        = 0.5f;    // filter excess bandwidth factor
     unsigned int num_filters = 32;      // number of filters in the bank
-    unsigned int num_symbols = 200;     // number of data symbols
+    unsigned int num_symbols = 400;     // number of data symbols
 
     int dopt;
     while ((dopt = getopt(argc,argv,"hk:m:b:B:s:n:")) != EOF) {
