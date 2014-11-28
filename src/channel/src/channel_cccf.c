@@ -24,8 +24,13 @@
 #include <complex.h>
 #include "liquid.internal.h"
 
+// naming extensions (useful for print statements)
+#define EXTENSION_SHORT "f"
+#define EXTENSION_FULL  "cccf"
+
 #define CHANNEL(name)   LIQUID_CONCAT(channel_cccf,name)
 #define NCO(name)       LIQUID_CONCAT(nco_crcf,name)
+#define FIRFILT(name)   LIQUID_CONCAT(firfilt_cccf,name)
 
 #define TO              float complex   // output type
 #define TC              float complex   // coefficients type

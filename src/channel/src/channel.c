@@ -29,17 +29,23 @@
 // portable structured channel object
 struct CHANNEL(_s) {
     // additive white Gauss noise
-    int enabled_awgn;   // AWGN enabled?
-    T   gamma;          // channel gain
-    T   nstd;           // noise standard deviation
+    int   enabled_awgn;     // AWGN enabled?
+    T     gamma;            // channel gain
+    T     nstd;             // noise standard deviation
     float noise_floor_dB;
     float SNRdB;
 
     // carrier offset
-    int enabled_carrier;// carrier offset enabled?
-    float dphi;         // channel gain
-    float phi;          // noise standard deviation
-    NCO() nco;          // oscillator
+    int   enabled_carrier;  // carrier offset enabled?
+    float dphi;             // channel gain
+    float phi;              // noise standard deviation
+    NCO() nco;              // oscillator
+
+    // multi-path channel
+    int enabled_multipath;          // enable multi-path channel filter?
+    FIRFILT()    channel_filter;    // multi-path channel filter object
+    TC *         h;                 // multi-path channel filter coefficients
+    unsigned int h_len;             // multi-path channel filter length
 };
 
 // create structured channel object
@@ -51,11 +57,16 @@ CHANNEL() CHANNEL(_create)(TC *         _h,
     CHANNEL() q = (CHANNEL()) malloc(sizeof(struct CHANNEL(_s)));
 
     // initialize all options as off
-    q->enabled_awgn     = 0;
-    q->enabled_carrier  = 0;
+    q->enabled_awgn      = 0;
+    q->enabled_carrier   = 0;
+    q->enabled_multipath = 0;
 
     // create internal objects
     q->nco = NCO(_create)(LIQUID_VCO);
+    q->channel_filter = NULL;
+    q->h_len          = 1;
+    q->h              = (TC*) malloc(q->h_len*sizeof(TC));
+    q->h[0]           = 1.0f;
 
     // return object
     return q;
@@ -66,6 +77,9 @@ void CHANNEL(_destroy)(CHANNEL() _q)
 {
     // destroy internal objects
     NCO(_destroy)(_q->nco);
+    free(_q->h);
+    if (_q->channel_filter != NULL)
+        FIRFILT(_destroy)(_q->channel_filter);
 
     // free main object memory
     free(_q);
@@ -111,13 +125,61 @@ void CHANNEL(_add_carrier_offset)(CHANNEL() _q,
     // enable module
     _q->enabled_carrier = 1;
 
-    //
-    _q->dphi    = _frequency;
-    _q->phi     = _phase;
+    // carrier frequency/phase offsets
+    _q->dphi = _frequency;
+    _q->phi  = _phase;
 
     // set values appropriately
     NCO(_set_frequency)(_q->nco, _q->dphi);
     NCO(_set_phase)(    _q->nco, _q->phi);
+}
+
+// apply mulit-path channel impairment
+//  _q          : channel object
+//  _h          : channel coefficients (NULL for random)
+//  _h_len      : number of channel coefficients
+void CHANNEL(_add_multipath)(CHANNEL()    _q,
+                             TC *         _h,
+                             unsigned int _h_len)
+{
+    if (_h_len == 0) {
+        fprintf(stderr,"warning: channel_%s_add_multipath(), filter length is zero (ignoring)\n", EXTENSION_FULL);
+        return;
+    } else if (_h_len > 1000) {
+        fprintf(stderr,"warning: channel_%s_add_multipath(), filter length exceeds maximum\n", EXTENSION_FULL);
+        exit(1);
+    }
+
+    // enable module
+    _q->enabled_multipath = 1;
+
+    // set values appropriately
+    // TODO: test for types other than float complex
+    if (_q->h_len != _h_len)
+        _q->h = (TC*) realloc(_q->h, _h_len*sizeof(TC));
+
+    // update length
+    _q->h_len = _h_len;
+    
+    if (_h == NULL) {
+        // generate random coefficients
+        // TODO: support types other than float
+        _q->h[0] = 1.0f;
+        unsigned int i;
+        for (i=1; i<_q->h_len; i++)
+            _q->h[i] = 0.05f * ( randnf() * _Complex_I*randnf() );
+    } else {
+        // copy coefficients internally
+        memmove(_q->h, _h, _q->h_len*sizeof(TC));
+    }
+
+    // destroy multi-path channel object if it already exists
+    // TODO: recreate object
+    if (_q->channel_filter != NULL)
+        FIRFILT(_destroy)(_q->channel_filter);
+
+    // create new filter
+    _q->channel_filter = FIRFILT(_create)(_q->h, _q->h_len);
 }
 
 // apply channel impairments on input array
@@ -136,11 +198,16 @@ void CHANNEL(_execute)(CHANNEL()      _q,
 
     for (i=0; i<_nx; i++) {
 
+        // apply filter
+        if (_q->enabled_multipath) {
+            FIRFILT(_push)(   _q->channel_filter,  _x[i]);
+            FIRFILT(_execute)(_q->channel_filter, &_y[i]);
+        } else
+            _y[i] = _x[i];
+
         // apply carrier if enabled
         if (_q->enabled_carrier)
-            NCO(_mix_up)(_q->nco, _x[i], &_y[i]);
-        else
-            _y[i] = _x[i];
+            NCO(_mix_up)(_q->nco, _y[i], &_y[i]);
 
         // apply AWGN if enabled
         if (_q->enabled_awgn) {

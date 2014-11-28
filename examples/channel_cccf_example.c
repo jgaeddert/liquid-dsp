@@ -23,7 +23,7 @@ void usage()
     printf("  b     : filter excess bandwidth, default: 0.5\n");
     printf("  s     : signal-to-noise ratio,   default: 30dB\n");
     printf("  w     : timing pll bandwidth,    default: 0.02\n");
-    printf("  n     : number of symbols,       default: 200\n");
+    printf("  n     : number of symbols,       default: 800\n");
     printf("  t     : timing phase offset [%% symbol], t in [-0.5,0.5], default: -0.2\n");
 }
 
@@ -113,6 +113,7 @@ int main(int argc, char*argv[]) {
     // add channel impairments
     channel_cccf_add_awgn(channel, noise_floor, SNRdB);
     channel_cccf_add_carrier_offset(channel, dphi, phi);
+    channel_cccf_add_multipath(channel, NULL, 10);
 
     // apply channel
     channel_cccf_execute(channel, x, nx, y, &ny);
@@ -139,7 +140,7 @@ int main(int argc, char*argv[]) {
     // export output file
     //
 
-    FILE* fid = fopen(OUTPUT_FILENAME,"w");
+    FILE * fid = fopen(OUTPUT_FILENAME,"w");
     fprintf(fid,"%% %s, auto-generated file\n\n", OUTPUT_FILENAME);
     fprintf(fid,"close all;\nclear all;\n\n");
 
