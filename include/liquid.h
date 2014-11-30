@@ -2070,6 +2070,17 @@ void FIRHILB(_decim_execute)(FIRHILB() _q,                      \
                              T *       _x,                      \
                              TC *      _y);                     \
                                                                 \
+/* execute Hilbert transform decimator (real to complex) on */  \
+/* a block of samples                                       */  \
+/*  _q      :   Hilbert transform object                    */  \
+/*  _x      :   real-valued input array [size: 2*_n x 1]    */  \
+/*  _n      :   number of *output* samples                  */  \
+/*  _y      :   complex-valued output array [size: _n x 1]  */  \
+void FIRHILB(_decim_execute_block)(FIRHILB()    _q,             \
+                                   T *          _x,             \
+                                   unsigned int _n,             \
+                                   TC *         _y);            \
+                                                                \
 /* execute Hilbert transform interpolator (real to complex) */  \
 /*  _q      :   Hilbert transform object                    */  \
 /*  _x      :   complex-valued input sample                 */  \
@@ -2077,6 +2088,17 @@ void FIRHILB(_decim_execute)(FIRHILB() _q,                      \
 void FIRHILB(_interp_execute)(FIRHILB() _q,                     \
                               TC        _x,                     \
                               T *       _y);                    \
+                                                                \
+/* execute Hilbert transform interpolator (complex to real) */  \
+/* on a block of samples                                    */  \
+/*  _q      :   Hilbert transform object                    */  \
+/*  _x      :   complex-valued input array [size: _n x 1]   */  \
+/*  _n      :   number of *input* samples                   */  \
+/*  _y      :   real-valued output array [size: 2*_n x 1]   */  \
+void FIRHILB(_interp_execute_block)(FIRHILB()    _q,            \
+                                    TC *         _x,            \
+                                    unsigned int _n,            \
+                                    T *          _y);           \
 
 LIQUID_FIRHILB_DEFINE_API(FIRHILB_MANGLE_FLOAT, float, liquid_float_complex)
 //LIQUID_FIRHILB_DEFINE_API(FIRHILB_MANGLE_DOUBLE, double, liquid_double_complex)

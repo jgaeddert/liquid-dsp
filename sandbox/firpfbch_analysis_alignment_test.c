@@ -11,6 +11,15 @@
 
 #define OUTPUT_FILENAME "firpfbch_analysis_sync_test.m"
 
+// forward declaration of internal methods
+
+void firpfbch_crcf_analyzer_push(firpfbch_crcf _q,
+                                 float complex _x);
+
+void firpfbch_crcf_analyzer_run(firpfbch_crcf   _q,
+                                unsigned int    _k,
+                                float complex * _X);
+
 int main() {
     // options
     unsigned int num_channels=4;    // must be even number
