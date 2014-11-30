@@ -412,7 +412,7 @@ LIQUID_WDELAY_DEFINE_API(WDELAY_MANGLE_CFLOAT, liquid_float_complex)
 typedef struct CHANNEL(_s) * CHANNEL();                         \
                                                                 \
 /* create channel object                                    */  \
-CHANNEL() CHANNEL(_create)();                                   \
+CHANNEL() CHANNEL(_create)(void);                               \
                                                                 \
 /* destroy channel object, freeing all internal memory      */  \
 void CHANNEL(_destroy)(CHANNEL() _q);                           \

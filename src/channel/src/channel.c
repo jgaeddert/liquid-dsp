@@ -42,17 +42,14 @@ struct CHANNEL(_s) {
     NCO() nco;              // oscillator
 
     // multi-path channel
-    int enabled_multipath;          // enable multi-path channel filter?
+    int          enabled_multipath; // enable multi-path channel filter?
     FIRFILT()    channel_filter;    // multi-path channel filter object
     TC *         h;                 // multi-path channel filter coefficients
     unsigned int h_len;             // multi-path channel filter length
 };
 
 // create structured channel object
-//  _h      :   coefficients array [size: 1 x _n]
-//  _n      :   channel length
-CHANNEL() CHANNEL(_create)(TC *         _h,
-                           unsigned int _n)
+CHANNEL() CHANNEL(_create)(void)
 {
     CHANNEL() q = (CHANNEL()) malloc(sizeof(struct CHANNEL(_s)));
 
@@ -63,10 +60,10 @@ CHANNEL() CHANNEL(_create)(TC *         _h,
 
     // create internal objects
     q->nco = NCO(_create)(LIQUID_VCO);
-    q->channel_filter = NULL;
     q->h_len          = 1;
     q->h              = (TC*) malloc(q->h_len*sizeof(TC));
     q->h[0]           = 1.0f;
+    q->channel_filter = FIRFILT(_create)(q->h, q->h_len);
 
     // return object
     return q;
@@ -77,9 +74,8 @@ void CHANNEL(_destroy)(CHANNEL() _q)
 {
     // destroy internal objects
     NCO(_destroy)(_q->nco);
+    FIRFILT(_destroy)(_q->channel_filter);
     free(_q->h);
-    if (_q->channel_filter != NULL)
-        FIRFILT(_destroy)(_q->channel_filter);
 
     // free main object memory
     free(_q);
@@ -161,6 +157,7 @@ void CHANNEL(_add_multipath)(CHANNEL()    _q,
     // update length
     _q->h_len = _h_len;
     
+    // copy coefficients internally
     if (_h == NULL) {
         // generate random coefficients
         // TODO: support types other than float
@@ -173,13 +170,8 @@ void CHANNEL(_add_multipath)(CHANNEL()    _q,
         memmove(_q->h, _h, _q->h_len*sizeof(TC));
     }
 
-    // destroy multi-path channel object if it already exists
-    // TODO: recreate object
-    if (_q->channel_filter != NULL)
-        FIRFILT(_destroy)(_q->channel_filter);
-
-    // create new filter
-    _q->channel_filter = FIRFILT(_create)(_q->h, _q->h_len);
+    // re-create channel filter
+    _q->channel_filter = FIRFILT(_recreate)(_q->channel_filter, _q->h, _q->h_len);
 }
 
 // apply channel impairments on input array
