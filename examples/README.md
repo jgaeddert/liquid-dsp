@@ -1,4 +1,4 @@
-
+a
 liquid-dsp examples
 ===================
 
@@ -527,6 +527,21 @@ This directory contains all the examples for interfacing the liquid modules.
    Spectral periodogram example with real inputs.
 
  * `symsync_crcf_example.c`:
+    This example demonstrates the basic principles of the symbol timing
+    recovery family of objects, specifically symsync_crcf. A set of random
+    QPSK symbols are generated and interpolated with a timing offset. The
+    resulting signal is run through the symsync_crcf object which applies a
+    matched filter and recovers timing producing a clean constellation.
+
+ * `symsync_crcf_full_example.c`:
+    This example extends that of `symsync_crcf_example.c` by including options
+    for simulating a timing rate offset in addition to just a timing phase
+    error. The resulting output file shows not just the constellation but the
+    time domain sequence as well as the timing phase estimate over time.
+
+ * `symsync_crcf_kaiser_example.c`:
+    This is a simplified example of the symync family of objects to show how
+    symbol timing can be recovered after the matched filter output.
 
  * `wdelayf_example.c`:
 

@@ -492,6 +492,8 @@ filter_autotests :=						\
 	src/filter/tests/msresamp_crcf_autotest.c		\
 	src/filter/tests/resamp_crcf_autotest.c			\
 	src/filter/tests/resamp2_crcf_autotest.c		\
+	src/filter/tests/symsync_crcf_autotest.c		\
+	src/filter/tests/symsync_rrrf_autotest.c		\
 
 # additional autotest objects
 autotest_extra_obj +=						\
@@ -1467,6 +1469,7 @@ example_programs :=						\
 	examples/spgramcf_example				\
 	examples/spgramf_example				\
 	examples/symsync_crcf_example				\
+	examples/symsync_crcf_full_example			\
 	examples/symsync_crcf_kaiser_example			\
 	examples/symtrack_cccf_example				\
 	examples/wdelayf_example				\
