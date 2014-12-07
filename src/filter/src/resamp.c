@@ -62,8 +62,8 @@ struct RESAMP(_s) {
     FIRPFB() f;         // filterbank object (interpolator)
 
     enum {
-        STATE_BOUNDARY, // boundary between input samples
-        STATE_INTERP,   // regular interpolation
+        RESAMP_STATE_BOUNDARY, // boundary between input samples
+        RESAMP_STATE_INTERP,   // regular interpolation
     } state;
 };
 
@@ -157,7 +157,7 @@ void RESAMP(_reset)(RESAMP() _q)
     FIRPFB(_reset)(_q->f);
 
     // reset states
-    _q->state = STATE_INTERP;   // input/output sample state
+    _q->state = RESAMP_STATE_INTERP;// input/output sample state
     _q->tau   = 0.0f;           // accumulated timing phase
     _q->bf    = 0.0f;           // soft-valued filterbank index
     _q->b     = 0;              // base filterbank index
@@ -210,7 +210,7 @@ void RESAMP(_execute)(RESAMP()       _q,
         printf("  [%2u] : s=%1u, tau=%12.8f, b : %12.8f (%4d + %8.6f)\n", n+1, _q->state, _q->tau, _q->bf, _q->b, _q->mu);
 #endif
         switch (_q->state) {
-        case STATE_BOUNDARY:
+        case RESAMP_STATE_BOUNDARY:
             // compute filterbank output
             FIRPFB(_execute)(_q->f, 0, &_q->y1);
 
@@ -220,10 +220,10 @@ void RESAMP(_execute)(RESAMP()       _q,
             // update timing state
             RESAMP(_update_timing_state)(_q);
 
-            _q->state = STATE_INTERP;
+            _q->state = RESAMP_STATE_INTERP;
             break;
 
-        case STATE_INTERP:
+        case RESAMP_STATE_INTERP:
             // compute output at base index
             FIRPFB(_execute)(_q->f, _q->b, &_q->y0);
 
@@ -232,7 +232,7 @@ void RESAMP(_execute)(RESAMP()       _q,
             // to finish the linear interpolation process
             if (_q->b == _q->npfb-1) {
                 // last filter: need additional input sample
-                _q->state = STATE_BOUNDARY;
+                _q->state = RESAMP_STATE_BOUNDARY;
             
                 // set index to indicate new sample is needed
                 _q->b = _q->npfb;
