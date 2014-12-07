@@ -127,7 +127,8 @@ SYMTRACK() SYMTRACK(_create)(int          _ftype,
     // set default bandwidth
     SYMTRACK(_set_bandwidth)(q, 0.1f);
 
-    // return main object
+    // reset and return main object
+    SYMTRACK(_reset)(q);
     return q;
 }
 
