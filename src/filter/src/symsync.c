@@ -99,11 +99,6 @@ struct SYMSYNC(_s) {
     FIRPFB()      mf;           // matched filter
     FIRPFB()     dmf;           // derivative matched filter
 
-    enum {
-        STATE_BOUNDARY,         // boundary between input samples
-        STATE_INTERP,           // regular interpolation
-    } state;
-
 #if DEBUG_SYMSYNC
     windowf debug_rate;
     windowf debug_del;
