@@ -26,6 +26,8 @@
 #include <stdio.h>
 #include <math.h>
 
+#define ENABLE_MULTIPATH 0
+
 // portable structured channel object
 struct CHANNEL(_s) {
     // additive white Gauss noise
@@ -41,11 +43,13 @@ struct CHANNEL(_s) {
     float phi;              // noise standard deviation
     NCO() nco;              // oscillator
 
+#if ENABLE_MULTIPATH
     // multi-path channel
     int          enabled_multipath; // enable multi-path channel filter?
     FIRFILT()    channel_filter;    // multi-path channel filter object
     TC *         h;                 // multi-path channel filter coefficients
     unsigned int h_len;             // multi-path channel filter length
+#endif
 };
 
 // create structured channel object
@@ -56,14 +60,18 @@ CHANNEL() CHANNEL(_create)(void)
     // initialize all options as off
     q->enabled_awgn      = 0;
     q->enabled_carrier   = 0;
+#if ENABLE_MULTIPATH
     q->enabled_multipath = 0;
+#endif
 
     // create internal objects
     q->nco = NCO(_create)(LIQUID_VCO);
+#if ENABLE_MULTIPATH
     q->h_len          = 1;
     q->h              = (TC*) malloc(q->h_len*sizeof(TC));
     q->h[0]           = 1.0f;
     q->channel_filter = FIRFILT(_create)(q->h, q->h_len);
+#endif
 
     // return object
     return q;
@@ -74,8 +82,10 @@ void CHANNEL(_destroy)(CHANNEL() _q)
 {
     // destroy internal objects
     NCO(_destroy)(_q->nco);
+#if ENABLE_MULTIPATH
     FIRFILT(_destroy)(_q->channel_filter);
     free(_q->h);
+#endif
 
     // free main object memory
     free(_q);
@@ -138,6 +148,7 @@ void CHANNEL(_add_multipath)(CHANNEL()    _q,
                              TC *         _h,
                              unsigned int _h_len)
 {
+#if ENABLE_MULTIPATH
     if (_h_len == 0) {
         fprintf(stderr,"warning: channel_%s_add_multipath(), filter length is zero (ignoring)\n", EXTENSION_FULL);
         return;
@@ -172,6 +183,7 @@ void CHANNEL(_add_multipath)(CHANNEL()    _q,
 
     // re-create channel filter
     _q->channel_filter = FIRFILT(_recreate)(_q->channel_filter, _q->h, _q->h_len);
+#endif
 }
 
 // apply channel impairments on input array
@@ -190,12 +202,16 @@ void CHANNEL(_execute)(CHANNEL()      _q,
 
     for (i=0; i<_nx; i++) {
 
+#if ENABLE_MULTIPATH
         // apply filter
         if (_q->enabled_multipath) {
             FIRFILT(_push)(   _q->channel_filter,  _x[i]);
             FIRFILT(_execute)(_q->channel_filter, &_y[i]);
         } else
             _y[i] = _x[i];
+#else
+        _y[i] = _x[i];
+#endif
 
         // apply carrier if enabled
         if (_q->enabled_carrier)
