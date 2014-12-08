@@ -178,7 +178,7 @@ void SYMTRACK(_set_bandwidth)(SYMTRACK() _q,
 {
     // validate input
     if (_bw < 0) {
-        fprintf(stderr,"error: symtrack_%s_create(), bandwidth must be greater than zero\n", EXTENSION_FULL);
+        fprintf(stderr,"error: symtrack_%s_set_bandwidth(), bandwidth must be greater than zero\n", EXTENSION_FULL);
         exit(1);
     }
 
