@@ -29,6 +29,7 @@
 
 #define PRINTVAL(x)         printf("%12.4e + j%12.4e", crealf(x), cimagf(x))
 
+#define T                   float
 #define TO                  float complex
 #define TC                  float complex
 #define TI                  float complex

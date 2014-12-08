@@ -3830,7 +3830,13 @@ int detector_cccf_correlate(detector_cccf        _q,
 #define SYMTRACK_MANGLE_RRRF(name) LIQUID_CONCAT(symtrack_rrrf,name)
 #define SYMTRACK_MANGLE_CCCF(name) LIQUID_CONCAT(symtrack_cccf,name)
 
-#define LIQUID_SYMTRACK_DEFINE_API(SYMTRACK,TO,TC,TI)           \
+// large macro
+//   SYMTRACK   : name-mangling macro
+//   T          : data type, primitive
+//   TO         : data type, output
+//   TC         : data type, coefficients
+//   TI         : data type, input
+#define LIQUID_SYMTRACK_DEFINE_API(SYMTRACK,T,TO,TC,TI)         \
                                                                 \
 typedef struct SYMTRACK(_s) * SYMTRACK();                       \
                                                                 \
@@ -3889,9 +3895,11 @@ void SYMTRACK(_execute_block)(SYMTRACK()     _q,                \
 LIQUID_SYMTRACK_DEFINE_API(SYMTRACK_MANGLE_RRRF,
                            float,
                            float,
+                           float,
                            float)
 
 LIQUID_SYMTRACK_DEFINE_API(SYMTRACK_MANGLE_CCCF,
+                           float,
                            liquid_float_complex,
                            liquid_float_complex,
                            liquid_float_complex)
