@@ -3870,6 +3870,9 @@ void SYMTRACK(_set_modscheme)(SYMTRACK() _q, int _ms);          \
 /* set symtrack internal bandwidth                          */  \
 void SYMTRACK(_set_bandwidth)(SYMTRACK() _q, float _bw);        \
                                                                 \
+/* adjust internal nco by requested phase                   */  \
+void SYMTRACK(_adjust_phase)(SYMTRACK() _q, T _dphi);           \
+                                                                \
 /* execute synchronizer on single input sample              */  \
 /*  _q      : synchronizer object                           */  \
 /*  _x      : input data sample                             */  \

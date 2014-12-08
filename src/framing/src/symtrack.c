@@ -218,6 +218,14 @@ void SYMTRACK(_set_bandwidth)(SYMTRACK() _q,
     NCO(_pll_set_bandwidth)(_q->nco, pll_bandwidth);
 }
 
+// adjust internal nco by requested phase
+void SYMTRACK(_adjust_phase)(SYMTRACK() _q,
+                             T          _dphi)
+{
+    // adjust internal nco phase
+    NCO(_adjust_phase)(_q->nco, _dphi);
+}
+
 // execute synchronizer on single input sample
 //  _q      : synchronizer object
 //  _x      : input data sample
