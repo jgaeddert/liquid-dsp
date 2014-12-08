@@ -172,6 +172,23 @@ void SYMTRACK(_reset)(SYMTRACK() _q)
     _q->symsync_index = 0;
 }
 
+// set symtrack modulation scheme
+void SYMTRACK(_set_modscheme)(SYMTRACK() _q,
+                              int        _ms)
+{
+    // validate input
+    if (_ms == LIQUID_MODEM_UNKNOWN || _ms >= LIQUID_MODEM_NUM_SCHEMES) {
+        fprintf(stderr,"error: symtrack_%s_set_modscheme(), invalid/unsupported modulation scheme\n", EXTENSION_FULL);
+        exit(1);
+    }
+
+    // set internal modulation scheme
+    _q->mod_scheme = _ms;
+
+    // re-create modem
+    _q->demod = MODEM(_recreate)(_q->demod, _q->mod_scheme);
+}
+
 // set symtrack internal bandwidth
 void SYMTRACK(_set_bandwidth)(SYMTRACK() _q,
                               float      _bw)

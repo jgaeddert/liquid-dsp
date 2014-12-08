@@ -3858,6 +3858,9 @@ void SYMTRACK(_print)(SYMTRACK() _q);                           \
 /* reset symtrack internal state                            */  \
 void SYMTRACK(_reset)(SYMTRACK() _q);                           \
                                                                 \
+/* set symtrack modulation scheme                           */  \
+void SYMTRACK(_set_modscheme)(SYMTRACK() _q, int _ms);          \
+                                                                \
 /* set symtrack internal bandwidth                          */  \
 void SYMTRACK(_set_bandwidth)(SYMTRACK() _q, float _bw);        \
                                                                 \
