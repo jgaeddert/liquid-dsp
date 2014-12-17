@@ -4993,7 +4993,7 @@ void NCO(_sincos)(NCO() _q, T* _s, T* _c);                      \
 void NCO(_cexpf)(NCO() _q, TC * _y);                            \
                                                                 \
 /* pll : phase-locked loop                              */      \
-void NCO(_pll_set_bandwidth)(NCO() _q, T _b);                   \
+void NCO(_pll_set_bandwidth)(NCO() _q, T _bandwidth);           \
 void NCO(_pll_step)(NCO() _q, T _dphi);                         \
                                                                 \
 /* Rotate input sample up by NCO angle (no stepping)    */      \
