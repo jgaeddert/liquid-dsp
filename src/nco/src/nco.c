@@ -43,11 +43,8 @@ struct NCO(_s) {
     void (*compute_sincos)(NCO() _q);
 
     // phase-locked loop
-    T bandwidth;
-    T zeta;
-    T a[3];
-    T b[3];
-    iirfiltsos_rrrf pll_filter;
+    T alpha;
+    T beta;
 };
 
 // create nco/vco object
@@ -62,11 +59,6 @@ NCO() NCO(_create)(liquid_ncotype _type)
         q->sintab[i] = SIN(2.0f*M_PI*(float)(i)/256.0f);
 
     // set default pll bandwidth
-    q->a[0] = 1.0f;     q->b[0] = 0.0f;
-    q->a[1] = 0.0f;     q->b[1] = 0.0f;
-    q->a[2] = 0.0f;     q->b[2] = 0.0f;
-    q->pll_filter = iirfiltsos_rrrf_create(q->b, q->a);
-    NCO(_reset)(q);
     NCO(_pll_set_bandwidth)(q, NCO_PLL_BANDWIDTH_DEFAULT);
 
     // set internal method
@@ -79,13 +71,14 @@ NCO() NCO(_create)(liquid_ncotype _type)
         exit(1);
     }
 
+    // reset object and return
+    NCO(_reset)(q);
     return q;
 }
 
 // destroy nco object
 void NCO(_destroy)(NCO() _q)
 {
-    iirfiltsos_rrrf_destroy(_q->pll_filter);
     free(_q);
 }
 
@@ -150,8 +143,6 @@ T NCO(_get_phase)(NCO() _q)
 // ge frequency
 T NCO(_get_frequency)(NCO() _q)
 {
-    // return both internal NCO phase step as well
-    // as PLL phase step
     return _q->d_theta;
 }
 
@@ -204,56 +195,33 @@ void NCO(_cexpf)(NCO() _q,
 // reset pll state, retaining base frequency
 void NCO(_pll_reset)(NCO() _q)
 {
-    // clear phase-locked loop filter
-    iirfiltsos_rrrf_reset(_q->pll_filter);
 }
 
 // set pll bandwidth
 void NCO(_pll_set_bandwidth)(NCO() _q,
-                             T _b)
+                             T     _bandwidth)
 {
     // validate input
-    if (_b < 0.0f) {
+    if (_bandwidth < 0.0f) {
         fprintf(stderr,"error: nco_pll_set_bandwidth(), bandwidth must be positive\n");
         exit(1);
     }
 
-    _q->bandwidth = _b;
-    _q->zeta = 1/sqrtf(2.0f);
-
-    float K     = NCO_PLL_GAIN_DEFAULT; // gain
-    float zeta  = 1.0f / sqrtf(2.0f);   // damping factor
-    float wn    = _b;                   // natural frequency
-    float t1    = K/(wn*wn);            // 
-    float t2    = 2*zeta/wn - 1/K;      //
-
-    // feed-forward coefficients
-    _q->b[0] =  2*K*(1.+t2/2.0f);
-    _q->b[1] =  2*K*2.;
-    _q->b[2] =  2*K*(1.-t2/2.0f);
-
-    // feed-back coefficients
-    _q->a[0] =  1. + t1/2.0f;
-    _q->a[1] = -1. + t1/2.0f;
-    _q->a[2] =  0.0f;
-    
-    iirfiltsos_rrrf_set_coefficients(_q->pll_filter, _q->b, _q->a);
+    _q->alpha = _bandwidth;         // frequency proportion
+    _q->beta  = sqrtf(_q->alpha);   // phase proportion
 }
 
 // advance pll phase
 //  _q      :   nco object
 //  _dphi   :   phase error
 void NCO(_pll_step)(NCO() _q,
-                    T _dphi)
+                    T     _dphi)
 {
-    // execute internal filter (direct form I)
-    float error_filtered = 0.0f;
-    iirfiltsos_rrrf_execute_df1(_q->pll_filter,
-                                _dphi,
-                                &error_filtered);
-
     // increase frequency proportional to error
-    NCO(_adjust_frequency)(_q, error_filtered);
+    NCO(_adjust_frequency)(_q, _dphi*_q->alpha);
+
+    // increase phase proportional to error
+    NCO(_adjust_phase)(_q, _dphi*_q->beta);
 
     // constrain frequency
     //NCO(_constrain_frequency)(_q);

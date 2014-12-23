@@ -75,6 +75,12 @@ void nco_crcf_pll_test(int          _type,
     float nco_rx_freq = nco_crcf_get_frequency(nco_rx);
     CONTEND_DELTA(nco_tx_freq, nco_rx_freq, _tol);
 
+    if (liquid_autotest_verbose) {
+        printf("  phase error : %12.4e, frequency error : %12.4e\n",
+                cargf( cexpf(_Complex_I*(nco_tx_phase-nco_rx_phase)) ),
+                nco_tx_freq-nco_rx_freq);
+    }
+
     // clean it up
     nco_crcf_destroy(nco_tx);
     nco_crcf_destroy(nco_rx);
@@ -85,7 +91,7 @@ void nco_crcf_pll_test(int          _type,
 //
 void autotest_vco_crcf_pll_phase()
 {
-    float tol = 0.02f;
+    float tol = 0.01f;
 
     // test various phase offsets
     nco_crcf_pll_test(LIQUID_NCO, -M_PI/1.1f,  0.0f, 0.1f, 256, tol);
@@ -113,8 +119,7 @@ void autotest_vco_crcf_pll_phase()
 //
 void autotest_nco_crcf_pll_phase()
 {
-    float tol = 1e-3f;
-
+    float tol = 1e-4f;
 
     // test various phase offsets
     nco_crcf_pll_test(LIQUID_VCO, -M_PI/1.1f,  0.0f, 0.1f, 256, tol);
