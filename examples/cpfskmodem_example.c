@@ -142,9 +142,9 @@ int main(int argc, char*argv[])
     // compute power spectral density
     unsigned int nfft = 1024;
     float psd[nfft];
-    spgram periodogram = spgram_create_kaiser(nfft, nfft/2, 8.0f);
-    spgram_estimate_psd(periodogram, y, num_samples, psd);
-    spgram_destroy(periodogram);
+    spgramcf periodogram = spgramcf_create_kaiser(nfft, nfft/2, 8.0f);
+    spgramcf_estimate_psd(periodogram, y, num_samples, psd);
+    spgramcf_destroy(periodogram);
 
     // 
     // export results
