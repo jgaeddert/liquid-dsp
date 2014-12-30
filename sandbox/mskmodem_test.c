@@ -21,8 +21,8 @@ void usage()
     printf("  k     : samples/symbol,           default:  8\n");
     printf("  H     : modulation index,         default:  0.5\n");
     printf("  B     : filter roll-off,          default:  0.35\n");
-    printf("  n     : number of data symbols,   default: 80\n");
-    printf("  s     : SNR [dB],                 default: 20\n");
+    printf("  n     : number of data symbols,   default: 20\n");
+    printf("  s     : SNR [dB],                 default: 80\n");
     printf("  F     : carrier freq. offset,     default:  0.0\n");
     printf("  P     : carrier phase offset,     default:  0.0\n");
     printf("  T     : fractional symbol offset, default:  0.0\n");
@@ -34,7 +34,7 @@ int main(int argc, char*argv[]) {
     unsigned int bps= 1;        // number of bits/symbol
     float h         = 0.5f;     // modulation index (h=1/2 for MSK)
     unsigned int num_data_symbols = 20; // number of data symbols
-    float SNRdB     = 90.0f;    // signal-to-noise ratio [dB]
+    float SNRdB     = 80.0f;    // signal-to-noise ratio [dB]
     float cfo       = 0.0f;     // carrier frequency offset
     float cpo       = 0.0f;     // carrier phase offset
     float tau       = 0.0f;     // fractional symbol offset
@@ -190,10 +190,10 @@ int main(int argc, char*argv[]) {
         if (bps > 1) {
             bw = 1.4f / (float)k;
             m *= 2;
-            decim_rx = firfilt_crcf_create_rnyquist(LIQUID_RNYQUIST_GMSKRX,k/2,m,0.3f,0);
+            decim_rx = firfilt_crcf_create_rnyquist(LIQUID_FIRFILT_GMSKRX,k/2,m,0.3f,0);
         } else {
             bw = 0.5f / (float)k;
-            decim_rx = firfilt_crcf_create_rnyquist(LIQUID_RNYQUIST_GMSKRX,k,m,0.3f,0);
+            decim_rx = firfilt_crcf_create_rnyquist(LIQUID_FIRFILT_GMSKRX,k,m,0.3f,0);
         }
     }
     printf("bw = %f\n", bw);
@@ -235,12 +235,12 @@ int main(int argc, char*argv[]) {
     firinterp_rrrf_destroy(interp_tx);
     firfilt_crcf_destroy(decim_rx);
 
-    // compute power spectral density
+    // compute power spectral density of transmitted signal
     unsigned int nfft = 1024;
     float psd[nfft];
-    spgram periodogram = spgram_create_kaiser(nfft, nfft/2, 8.0f);
-    spgram_estimate_psd(periodogram, y, num_samples, psd);
-    spgram_destroy(periodogram);
+    spgramcf periodogram = spgramcf_create_kaiser(nfft, nfft/2, 8.0f);
+    spgramcf_estimate_psd(periodogram, x, num_samples, psd);
+    spgramcf_destroy(periodogram);
 
     // 
     // export results
@@ -266,11 +266,10 @@ int main(int argc, char*argv[]) {
         fprintf(fid,"z(%4u) = %12.8f + j*%12.8f;\n", i+1, crealf(z[i]), cimagf(z[i]));
         fprintf(fid,"phi(%4u) = %12.8f;\n", i+1, phi[i]);
     }
-    // save PSD with FFT shift
+    // save PSD
     fprintf(fid,"psd = zeros(1,nfft);\n");
-    for (i=0; i<nfft; i++) {
-        fprintf(fid,"psd(%4u) = %12.8f;\n", i+1, psd[(i+nfft/2)%nfft]/(float)k);
-    }
+    for (i=0; i<nfft; i++)
+        fprintf(fid,"psd(%4u) = %12.8f;\n", i+1, psd[i]);
 
     fprintf(fid,"t=[0:(num_samples-1)]/k;\n");
     fprintf(fid,"i = 1:k:num_samples;\n");
@@ -307,8 +306,8 @@ int main(int argc, char*argv[]) {
     // plot PSD
     fprintf(fid,"f = [0:(nfft-1)]/nfft - 0.5;\n");
     fprintf(fid,"subplot(3,4,9:12);\n");
-    fprintf(fid,"  plot(f,10*log10(psd),'LineWidth',1.5);\n");
-    fprintf(fid,"  axis([-0.5 0.5 -60 20]);\n");
+    fprintf(fid,"  plot(f,psd,'LineWidth',1.5);\n");
+    fprintf(fid,"  axis([-0.5 0.5 -40 20]);\n");
     fprintf(fid,"  xlabel('Normalized Frequency [f/F_s]');\n");
     fprintf(fid,"  ylabel('PSD [dB]');\n");
     fprintf(fid,"  grid on;\n");
