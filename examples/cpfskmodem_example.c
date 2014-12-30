@@ -139,11 +139,11 @@ int main(int argc, char*argv[])
     cpfskmod_destroy(mod);
     cpfskdem_destroy(dem);
 
-    // compute power spectral density
+    // compute power spectral density of transmitted signal
     unsigned int nfft = 1024;
     float psd[nfft];
     spgramcf periodogram = spgramcf_create_kaiser(nfft, nfft/2, 8.0f);
-    spgramcf_estimate_psd(periodogram, y, num_samples, psd);
+    spgramcf_estimate_psd(periodogram, x, num_samples, psd);
     spgramcf_destroy(periodogram);
 
     // 
@@ -166,11 +166,10 @@ int main(int argc, char*argv[])
         fprintf(fid,"x(%4u) = %12.8f + j*%12.8f;\n", i+1, crealf(x[i]), cimagf(x[i]));
         fprintf(fid,"y(%4u) = %12.8f + j*%12.8f;\n", i+1, crealf(y[i]), cimagf(y[i]));
     }
-    // save PSD with FFT shift
+    // save power spectral density
     fprintf(fid,"psd = zeros(1,nfft);\n");
-    for (i=0; i<nfft; i++) {
-        fprintf(fid,"psd(%4u) = %12.8f;\n", i+1, psd[(i+nfft/2)%nfft]/(float)k);
-    }
+    for (i=0; i<nfft; i++)
+        fprintf(fid,"psd(%4u) = %12.8f;\n", i+1, psd[i]);
 
     fprintf(fid,"t=[0:(num_samples-1)]/k;\n");
     fprintf(fid,"i = 1:k:num_samples;\n");
@@ -207,7 +206,7 @@ int main(int argc, char*argv[])
     // plot PSD
     fprintf(fid,"f = [0:(nfft-1)]/nfft - 0.5;\n");
     fprintf(fid,"subplot(3,4,9:12);\n");
-    fprintf(fid,"  plot(f,10*log10(psd),'LineWidth',1.5);\n");
+    fprintf(fid,"  plot(f,psd,'LineWidth',1.5);\n");
     fprintf(fid,"  axis([-0.5 0.5 -60 20]);\n");
     fprintf(fid,"  xlabel('Normalized Frequency [f/F_s]');\n");
     fprintf(fid,"  ylabel('PSD [dB]');\n");
