@@ -19,6 +19,7 @@ void usage()
     printf("  h     : print help\n");
     printf("  t     : filter type: [square], rcos-full, rcos-half, gmsk\n");
     printf("  k     : samples/symbol,           default:  8\n");
+    printf("  b     : bits/symbol,              default:  1\n");
     printf("  H     : modulation index,         default:  0.5\n");
     printf("  B     : filter roll-off,          default:  0.35\n");
     printf("  n     : number of data symbols,   default: 20\n");
@@ -179,22 +180,43 @@ int main(int argc, char*argv[]) {
     // create decimator
     unsigned int m = 3;
     float bw = 0.0f;
+    float beta = 0.0f;
     firfilt_crcf decim_rx = NULL;
-    if (tx_filter_type == TXFILT_SQUARE) {
+    switch (tx_filter_type) {
+    case TXFILT_SQUARE:
         //bw = 0.9f / (float)k;
         bw = 0.4f;
         decim_rx = firfilt_crcf_create_kaiser(2*k*m+1, bw, 60.0f, 0.0f);
-    } else {
-        // use GMSK compensating filter for all partial-response filters
-        // TODO: determine appropriate bandwidth for M-CPFSK for M > 2
-        if (bps > 1) {
-            bw = 1.4f / (float)k;
-            m *= 2;
-            decim_rx = firfilt_crcf_create_rnyquist(LIQUID_FIRFILT_GMSKRX,k/2,m,0.3f,0);
+        firfilt_crcf_set_scale(decim_rx, 2.0f * bw);
+        break;
+    case TXFILT_RCOS_FULL:
+        if (M==2) {
+            decim_rx = firfilt_crcf_create_rnyquist(LIQUID_FIRFILT_GMSKRX,k,m,0.5f,0);
+            firfilt_crcf_set_scale(decim_rx, 1.33f / (float)k);
         } else {
-            bw = 0.5f / (float)k;
-            decim_rx = firfilt_crcf_create_rnyquist(LIQUID_FIRFILT_GMSKRX,k,m,0.3f,0);
+            decim_rx = firfilt_crcf_create_rnyquist(LIQUID_FIRFILT_GMSKRX,k/2,2*m,0.9f,0);
+            firfilt_crcf_set_scale(decim_rx, 3.25f / (float)k);
         }
+        break;
+    case TXFILT_RCOS_HALF:
+        if (M==2) {
+            decim_rx = firfilt_crcf_create_rnyquist(LIQUID_FIRFILT_GMSKRX,k,m,0.3f,0);
+            firfilt_crcf_set_scale(decim_rx, 1.10f / (float)k);
+        } else {
+            decim_rx = firfilt_crcf_create_rnyquist(LIQUID_FIRFILT_GMSKRX,k/2,2*m,0.27f,0);
+            firfilt_crcf_set_scale(decim_rx, 2.90f / (float)k);
+        }
+        break;
+    case TXFILT_GMSK:
+        bw = 0.5f / (float)k;
+        // TODO: figure out beta value here
+        beta = (M == 2) ? 0.8*gmsk_bt : 1.0*gmsk_bt;
+        decim_rx = firfilt_crcf_create_rnyquist(LIQUID_FIRFILT_GMSKRX,k,m,beta,0);
+        firfilt_crcf_set_scale(decim_rx, 2.0f * bw);
+        break;
+    default:
+        fprintf(stderr,"error: %s, invalid tx filter type\n", argv[0]);
+        exit(1);
     }
     printf("bw = %f\n", bw);
 
@@ -208,15 +230,21 @@ int main(int argc, char*argv[]) {
         firfilt_crcf_push(decim_rx, y[i]);
         firfilt_crcf_execute(decim_rx, &z[i]);
 
-        z[i] *= 2.0f * bw;
-
         // decimate output
         if ( (i%k)==0 ) {
-            float phi_hat = cargf(conjf(z_prime) * z[i]);
-            unsigned int sym_out = phi_hat > 0 ? 1 : 0; // estimated transmitted symbol
+            // compute instantaneous frequency scaled by modulation index
+            float phi_hat = cargf(conjf(z_prime) * z[i]) / (h * M_PI);
+
+            // estimate transmitted symbol
+            float v = (phi_hat + (M-1.0))*0.5f;
+            unsigned int sym_out = ((int) roundf(v)) % M;
+
+            // save current point
             z_prime = z[i];
 
-            printf("%3u : %12.8f + j%12.8f (%1u)", n, crealf(z[i]), cimagf(z[i]), sym_out);
+            // print result to screen
+            printf("%3u : %12.8f + j%12.8f, <f=%8.4f : %8.4f> (%1u)",
+                    n, crealf(z[i]), cimagf(z[i]), phi_hat, v, sym_out);
             if (n >= m+tx_delay) {
                 num_errors += (sym_out == sym_in[n-m-tx_delay]) ? 0 : 1;
                 num_symbols_checked++;
@@ -239,7 +267,7 @@ int main(int argc, char*argv[]) {
     unsigned int nfft = 1024;
     float psd[nfft];
     spgramcf periodogram = spgramcf_create_kaiser(nfft, nfft/2, 8.0f);
-    spgramcf_estimate_psd(periodogram, x, num_samples, psd);
+    spgramcf_estimate_psd(periodogram, y, num_samples, psd);
     spgramcf_destroy(periodogram);
 
     // 
