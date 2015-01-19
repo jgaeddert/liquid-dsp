@@ -75,11 +75,14 @@ int main(int argc, char*argv[])
     if (k < M) {
         fprintf(stderr,"errors: %s, samples/symbol must be at least modulation size (M=%u)\n", __FILE__,M);
         exit(1);
-    } else if (k > 1024) {
-        fprintf(stderr,"errors: %s, samples/symbol exceeds maximum (1024)\n", __FILE__);
+    } else if (k > 2048) {
+        fprintf(stderr,"errors: %s, samples/symbol exceeds maximum (2048)\n", __FILE__);
         exit(1);
-    } else if (M > 2048) {
-        fprintf(stderr,"errors: %s, modulation size (M=%u) exceeds maximum (2048)\n", __FILE__, M);
+    } else if (M > 1024) {
+        fprintf(stderr,"errors: %s, modulation size (M=%u) exceeds maximum (1024)\n", __FILE__, M);
+        exit(1);
+    } else if (bandwidth <= 0.0f || bandwidth >= 0.5f) {
+        fprintf(stderr,"errors: %s, bandwidht must be in (0,0.5)\n", __FILE__);
         exit(1);
     }
 
@@ -88,13 +91,13 @@ int main(int argc, char*argv[])
     unsigned int K = 0;                 // demodulation FFT size
     float        df = bandwidth / M2;   // frequency spacing
     float        err_min = 1e9f;
-    unsigned int K_min = k;
-    unsigned int K_max = k*4;
+    unsigned int K_min = k;                     // minimum FFT size
+    unsigned int K_max = k*4 < 16 ? 16 : k*4;   // maximum FFT size
     unsigned int K_hat;
     for (K_hat=K_min; K_hat<=K_max; K_hat++) {
-        // compute candidate
-        float v     = 0.5f*df * (float)K_hat;
-        float err = fabsf( roundf(v) - v );
+        // compute candidate FFT size
+        float v     = 0.5f*df * (float)K_hat;   // bin spacing
+        float err = fabsf( roundf(v) - v );     // fractional bin spacing
 
         // print results
         printf("  K_hat = %4u : v = %12.8f, err=%12.8f %s\n", K_hat, v, err, err < err_min ? "*" : "");
@@ -126,6 +129,14 @@ int main(int argc, char*argv[])
         unsigned int index = (unsigned int) (idx < 0 ? roundf(idx + K) : roundf(idx));
         demod_map[i] = index;
         printf("  s=%3u, f = %12.8f, index=%3u\n", i, freq, index);
+    }
+
+    // check for uniqueness
+    for (i=1; i<M; i++) {
+        if (demod_map[i] == demod_map[i-1]) {
+            fprintf(stderr,"warning: demod map is not unique; consider increasing bandwidth\n");
+            break;
+        }
     }
 
     // generate message symbols and modulate
@@ -233,6 +244,11 @@ int main(int argc, char*argv[])
     // 
     // export results
     //
+    
+    // truncate to at most 10 symbols
+    if (num_symbols > 10)
+        num_symbols = 10;
+    num_samples = k*num_symbols;
     FILE * fid = fopen(OUTPUT_FILENAME,"w");
     fprintf(fid,"%% %s : auto-generated file\n", OUTPUT_FILENAME);
     fprintf(fid,"clear all\n");
@@ -264,7 +280,8 @@ int main(int argc, char*argv[])
     fprintf(fid,"  plot(t,real(y),'-', 'Color',[0 0.3 0.5]);\n");
     fprintf(fid,"  plot(t,imag(y),'-', 'Color',[0 0.5 0.3]);\n");
     fprintf(fid,"hold off;\n");
-    fprintf(fid,"axis([0 10 -1.2 1.2]);\n");
+    fprintf(fid,"ymax = ceil(max(abs(y))*5)/5;\n");
+    fprintf(fid,"axis([0 num_symbols -ymax ymax]);\n");
     fprintf(fid,"xlabel('time');\n");
     fprintf(fid,"ylabel('x(t)');\n");
     fprintf(fid,"grid on;\n");
@@ -273,7 +290,7 @@ int main(int argc, char*argv[])
     fprintf(fid,"subplot(2,1,2),\n");
     fprintf(fid,"f = [0:(nfft-1)]/nfft - 0.5;\n");
     fprintf(fid,"plot(f,psd,'LineWidth',1.5,'Color',[0.5 0 0]);\n");
-    fprintf(fid,"axis([-0.5 0.5 -40 20]);\n");
+    fprintf(fid,"axis([-0.5 0.5 -40 40]);\n");
     fprintf(fid,"xlabel('Normalized Frequency [f/F_s]');\n");
     fprintf(fid,"ylabel('PSD [dB]');\n");
     fprintf(fid,"grid on;\n");
