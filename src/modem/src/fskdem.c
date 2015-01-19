@@ -47,7 +47,7 @@ struct fskdem_s {
     unsigned int    K;          // FFT size
     float complex * buf_time;   // FFT input buffer
     float complex * buf_freq;   // FFT output buffer
-    fftplan         fft;        // FFT object
+    FFT_PLAN        fft;        // FFT object
     unsigned int *  demod_map;  // demodulation map
 
     // firpfb resampler for timing recovery
@@ -140,7 +140,7 @@ fskdem fskdem_create(unsigned int _m,
     // allocate memory for transform
     q->buf_time = (float complex*) malloc(q->K * sizeof(float complex));
     q->buf_freq = (float complex*) malloc(q->K * sizeof(float complex));
-    q->fft = fft_create_plan(q->K, q->buf_time, q->buf_freq, LIQUID_FFT_FORWARD, 0);
+    q->fft = FFT_CREATE_PLAN(q->K, q->buf_time, q->buf_freq, FFT_DIR_FORWARD, 0);
 
     // reset modem object
     fskdem_reset(q);
@@ -156,7 +156,7 @@ void fskdem_destroy(fskdem _q)
     free(_q->demod_map);
     free(_q->buf_time);
     free(_q->buf_freq);
-    fft_destroy_plan(_q->fft);
+    FFT_DESTROY_PLAN(_q->fft);
 
     // free main object memory
     free(_q);
@@ -206,7 +206,7 @@ unsigned int fskdem_demodulate(fskdem          _q,
     memmove(_q->buf_time, _y, _q->k*sizeof(float complex));
 
     // compute transform, storing result in 'buf_freq'
-    fft_execute(_q->fft);
+    FFT_EXECUTE(_q->fft);
 
     // find maximum by looking at particular bins
     float        vmax  = 0;
