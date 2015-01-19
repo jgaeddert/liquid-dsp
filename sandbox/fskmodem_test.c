@@ -64,22 +64,32 @@ int main(int argc, char*argv[])
     unsigned int i;
     unsigned int j;
 
+    k = 2*(1<<bps);
+
     // derived values
     unsigned int num_samples = k*num_symbols;
-    unsigned int M = 1 << bps;              // constellation size
-    float nstd = powf(10.0f, -SNRdB/20.0f);
-    float M2 = 0.5f*(float)(M-1);
+    unsigned int M           = 1 << bps;              // constellation size
+    float        nstd        = powf(10.0f, -SNRdB/20.0f);
+    float        M2          = 0.5f*(float)(M-1);
+
+    // compute appropriate demodulation FFT size
+    unsigned int K = 2*k;
 
     // arrays
-    unsigned int sym_in[num_symbols];       // input symbols
+    unsigned int  sym_in[num_symbols];      // input symbols
     float complex x[num_samples];           // transmitted signal
     float complex y[num_samples];           // received signal
-    //unsigned int sym_out[num_symbols];      // output symbols
+    unsigned int  sym_out[num_symbols];     // output symbols
+
+    // print frequency bins
+    for (i=0; i<M; i++)
+        printf("  s=%3u, f = %12.8f\n", i, ((float)i - M2) * bandwidth / M2);
+
 
     // generate message symbols and modulate
     for (i=0; i<num_symbols; i++) {
         // generate random symbol
-        sym_in[i] = rand() % M;
+        sym_in[i] = (i < M) ? i : rand() % M;
 
         // compute frequency
         float dphi = 2*M_PI*((float)sym_in[i] - M2) * bandwidth / M2;
@@ -96,7 +106,72 @@ int main(int argc, char*argv[])
     for (i=0; i<num_samples; i++)
         y[i] = x[i] + nstd*(randnf() + _Complex_I*randnf())*M_SQRT1_2;
 
-    // TODO: demodulate signal
+#if 0
+    // demodulate signal: least-squares method
+    float complex buf_time[K];
+    float complex buf_freq[K];
+    fftplan fft = fft_create_plan(K, buf_time, buf_freq, LIQUID_FFT_FORWARD, 0);
+
+    for (i=0; i<K; i++)
+        buf_time[i] = 0.0f;
+    unsigned int n = 0;
+    j = 0;
+    for (i=0; i<num_samples; i++) {
+        // start filling time buffer with samples (assume perfect symbol timing)
+        buf_time[n++] = y[i];
+
+        // demodulate symbol
+        if (n==k) {
+            // reset counter
+            n = 0;
+
+            // compute transform, storing result in 'buf_freq'
+            fft_execute(fft);
+
+            // print results
+            if (j==0) {
+                unsigned int s;
+                for (s=0; s<K; s++)
+                    printf("  Y(%3u) = |%12.8f| <%12.8f>\n", s, cabsf(buf_freq[s]), cargf(buf_freq[s]));
+            }
+            sym_out[j++] = 0;
+        }
+    }
+    // 
+    fft_destroy_plan(fft);
+#else
+    // demodulate signal: high SNR method
+    float complex buf_time[k];
+    unsigned int n = 0;
+    j = 0;
+    for (i=0; i<num_samples; i++) {
+        // start filling time buffer with samples (assume perfect symbol timing)
+        buf_time[n++] = y[i];
+
+        // demodulate symbol
+        if (n==k) {
+            // reset counter
+            n = 0;
+
+            // estimate frequency
+            float complex metric = 0;
+            unsigned int s;
+            for (s=1; s<k; s++)
+                metric += buf_time[s] * conjf(buf_time[s-1]);
+            float dphi_hat = cargf(metric) / (2*M_PI);
+            unsigned int v=( (unsigned int) roundf(dphi_hat*M2/bandwidth + M2) ) % M;
+            sym_out[j++] = v;
+            printf("%3u : %12.8f : %u\n", j, dphi_hat, v);
+        }
+    }
+#endif
+
+    // count errors
+    unsigned int num_symbol_errors = 0;
+    for (i=0; i<num_symbols; i++)
+        num_symbol_errors += (sym_in[i] == sym_out[i]) ? 0 : 1;
+
+    printf("symbol errors: %u / %u\n", num_symbol_errors, num_symbols);
 
     // compute power spectral density of transmitted signal
     unsigned int nfft = 2048;
@@ -136,8 +211,8 @@ int main(int argc, char*argv[])
     // plot time signal
     fprintf(fid,"subplot(2,1,1),\n");
     fprintf(fid,"hold on;\n");
-    fprintf(fid,"  plot(t,real(x),'-', 'Color',[0 0.3 0.5]);\n");
-    fprintf(fid,"  plot(t,imag(x),'-', 'Color',[0 0.5 0.3]);\n");
+    fprintf(fid,"  plot(t,real(y),'-', 'Color',[0 0.3 0.5]);\n");
+    fprintf(fid,"  plot(t,imag(y),'-', 'Color',[0 0.5 0.3]);\n");
     fprintf(fid,"hold off;\n");
     fprintf(fid,"axis([0 10 -1.2 1.2]);\n");
     fprintf(fid,"xlabel('time');\n");
