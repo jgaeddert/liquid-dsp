@@ -55,8 +55,8 @@ fskmod fskmod_create(unsigned int _m,
     if (_m == 0) {
         fprintf(stderr,"error: fskmod_create(), bits/symbol must be greater than 0\n");
         exit(1);
-    } else if (_k < 2 || _k > 1024) {
-        fprintf(stderr,"error: fskmod_create(), samples/symbol must be in [2^_m, 1024]\n");
+    } else if (_k < 2 || _k > 2048) {
+        fprintf(stderr,"error: fskmod_create(), samples/symbol must be in [2^_m, 2048]\n");
         exit(1);
     } else if (_bandwidth <= 0.0f || _bandwidth >= 0.5f) {
         fprintf(stderr,"error: fskmod_create(), bandwidth must be in (0,0.5)\n");
