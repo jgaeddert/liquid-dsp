@@ -28,7 +28,7 @@
 
 #include "liquid.internal.h"
 
-#define DEBUG_FSKDEM 1
+#define DEBUG_FSKDEM 0
 
 // 
 // internal methods
