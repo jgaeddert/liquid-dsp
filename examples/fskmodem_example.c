@@ -37,13 +37,14 @@ int main(int argc, char*argv[])
     // options
     unsigned int m           =   3;     // number of bits/symbol
     unsigned int k           =   0;     // filter samples/symbol
-    unsigned int num_symbols = 200;     // number of data symbols
+    unsigned int num_symbols = 8000;    // number of data symbols
     float        SNRdB       = 40.0f;   // signal-to-noise ratio [dB]
     float        cfo         = 0.0f;    // carrier frequency offset
     float        cpo         = 0.0f;    // carrier phase offset
     float        tau         = 0.0f;    // fractional symbol timing offset
     float        bandwidth   = 0.20;    // frequency spacing
     unsigned int nfft        = 1200;    // FFT size for compute spectrum
+    float        alpha       = 0.01f;    // PSD accumulation constant
 
     int dopt;
     while ((dopt = getopt(argc,argv,"hm:k:b:n:s:F:P:T:")) != EOF) {
@@ -118,7 +119,7 @@ int main(int argc, char*argv[])
         num_symbol_errors += (sym_in == sym_out) ? 0 : 1;
 
         // estimate power spectral density
-        spgramcf_accumulate_psd(periodogram, buf_rx, 0.01f, k);
+        spgramcf_accumulate_psd(periodogram, buf_rx, alpha, k);
     }
 
     printf("symbol errors: %u / %u\n", num_symbol_errors, num_symbols);
@@ -150,7 +151,7 @@ int main(int argc, char*argv[])
     fprintf(fid,"figure('Color','white');\n");
     fprintf(fid,"f = [0:(nfft-1)]/nfft - 0.5;\n");
     fprintf(fid,"plot(f,psd,'LineWidth',1.5,'Color',[0.5 0 0]);\n");
-    fprintf(fid,"axis([-0.5 0.5 -40 40]);\n");
+    fprintf(fid,"axis([-0.5 0.5 -40 20]);\n");
     fprintf(fid,"xlabel('Normalized Frequency [f/F_s]');\n");
     fprintf(fid,"ylabel('PSD [dB]');\n");
     fprintf(fid,"grid on;\n");

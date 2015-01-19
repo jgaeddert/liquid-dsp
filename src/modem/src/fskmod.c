@@ -38,10 +38,9 @@ struct fskmod_s {
     unsigned int k;             // samples per symbol
     float        bandwidth;     // filter bandwidth parameter
 
-    // constellation size
-    unsigned int M;
-
-    // nco
+    unsigned int M;             // constellation size
+    float        M2;            // (M-1)/2
+    nco_crcf     oscillator;    // nco
 };
 
 // create fskmod object (frequency modulator)
@@ -68,22 +67,29 @@ fskmod fskmod_create(unsigned int _m,
     fskmod q = (fskmod) malloc(sizeof(struct fskmod_s));
 
     // set basic internal properties
-    q->m         = _m;          // bits per symbol
-    q->k         = _k;          // samples per symbol
-    q->bandwidth = _bandwidth;  // signal bandwidth
+    q->m         = _m;              // bits per symbol
+    q->k         = _k;              // samples per symbol
+    q->bandwidth = _bandwidth;      // signal bandwidth
 
     // derived values
-    q->M = 1 << q->m; // constellation size
+    q->M  = 1 << q->m;              // constellation size
+    q->M2 = 0.5f*(float)(q->M-1);   // (M-1)/2
+
+    q->oscillator = nco_crcf_create(LIQUID_VCO);
 
     // reset modem object
     fskmod_reset(q);
 
+    // return main object
     return q;
 }
 
 // destroy fskmod object
 void fskmod_destroy(fskmod _q)
 {
+    // destroy oscillator object
+    nco_crcf_destroy(_q->oscillator);
+
     // free main object memory
     free(_q);
 }
@@ -100,6 +106,8 @@ void fskmod_print(fskmod _q)
 // reset state
 void fskmod_reset(fskmod _q)
 {
+    // reset internal objects
+    nco_crcf_reset(_q->oscillator);
 }
 
 // modulate sample
@@ -110,5 +118,27 @@ void fskmod_modulate(fskmod          _q,
                      unsigned int    _s,
                      float complex * _y)
 {
+    // validate input
+    if (_s >= _q->M) {
+        fprintf(stderr,"warning: fskmod_modulate(), input symbol (%u) exceeds maximum (%u)\n",
+                _s, _q->M);
+        _s = 0;
+    }
+
+    // compute appropriate frequency
+    float dphi = ((float)_s - _q->M2) * 2 * M_PI * _q->bandwidth / _q->M2;
+
+    // set frequency appropriately
+    nco_crcf_set_frequency(_q->oscillator, dphi);
+
+    // generate output tone
+    unsigned int i;
+    for (i=0; i<_q->k; i++) {
+        // compute complex output
+        nco_crcf_cexpf(_q->oscillator, &_y[i]);
+        
+        // step oscillator
+        nco_crcf_step(_q->oscillator);
+    }
 }
 
