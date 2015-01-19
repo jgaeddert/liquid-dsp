@@ -798,6 +798,8 @@ modem_objects :=						\
 	src/modem/src/ampmodem.o				\
 	src/modem/src/cpfskdem.o				\
 	src/modem/src/cpfskmod.o				\
+	src/modem/src/fskdem.o					\
+	src/modem/src/fskmod.o					\
 	src/modem/src/gmskdem.o					\
 	src/modem/src/gmskmod.o					\
 	src/modem/src/modemf.o					\
@@ -1413,6 +1415,7 @@ example_programs :=						\
 	examples/flexframesync_reconfig_example			\
 	examples/framesync64_example				\
 	examples/freqmodem_example				\
+	examples/fskmodem_example				\
 	examples/gasearch_example				\
 	examples/gasearch_knapsack_example			\
 	examples/gmskframesync_example				\

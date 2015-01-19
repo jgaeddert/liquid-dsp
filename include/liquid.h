@@ -4678,6 +4678,81 @@ void cpfskdem_demodulate(cpfskdem               _q,
 
 
 
+//
+// M-ary frequency-shift keying (MFSK) modems
+//
+
+// FSK modulator
+typedef struct fskmod_s * fskmod;
+
+// create fskmod object (frequency modulator)
+//  _m          :   bits per symbol, _bps > 0
+//  _k          :   samples/symbol, _k >= 2^_m
+//  _bandwidth  :   total signal bandwidth, (0,0.5)
+fskmod fskmod_create(unsigned int _m,
+                     unsigned int _k,
+                     float        _bandwidth);
+
+// destroy fskmod object
+void fskmod_destroy(fskmod _q);
+
+// print fskmod object internals
+void fskmod_print(fskmod _q);
+
+// reset state
+void fskmod_reset(fskmod _q);
+
+// modulate sample
+//  _q      :   frequency modulator object
+//  _s      :   input symbol
+//  _y      :   output sample array [size: _k x 1]
+void fskmod_modulate(fskmod                 _q,
+                     unsigned int           _s,
+                     liquid_float_complex * _y);
+
+
+
+// CP-FSK demodulator
+typedef struct fskdem_s * fskdem;
+
+// create fskdem object (frequency demodulator)
+//  _m          :   bits per symbol, _bps > 0
+//  _k          :   samples/symbol, _k >= 2^_m
+//  _bandwidth  :   total signal bandwidth, (0,0.5)
+fskdem fskdem_create(unsigned int _m,
+                     unsigned int _k,
+                     float        _bandwidth);
+
+// destroy fskdem object
+void fskdem_destroy(fskdem _q);
+
+// print fskdem object internals
+void fskdem_print(fskdem _q);
+
+// reset state
+void fskdem_reset(fskdem _q);
+
+#if 0
+// demodulate array of samples, recovering timing etc.
+//  _q      :   continuous-phase frequency demodulator object
+//  _y      :   input sample array [size: _n x 1]
+//  _n      :   input sample array length
+//  _s      :   output symbol array
+//  _nw     :   number of output symbols written
+void fskdem_demodulate(fskdem                 _q,
+                       liquid_float_complex * _y,
+                       unsigned int           _n,
+                       unsigned int         * _s,
+                       unsigned int         * _nw);
+#else
+// demodulate symbol, assuming perfect symbol timing
+//  _q      :   continuous-phase frequency demodulator object
+//  _y      :   input sample array [size: _k x 1]
+unsigned int fskdem_demodulate(fskdem                 _q,
+                               liquid_float_complex * _y);
+#endif
+
+
 // 
 // Analog frequency demodulator
 //

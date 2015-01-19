@@ -1,5 +1,5 @@
 // 
-// fskmodem_example.c
+// fskmodem_test.c
 //
 // This example demostrates the continuous phase frequency-shift keying
 // (CP-FSK) modem in liquid. A message signal is modulated and the
@@ -14,7 +14,7 @@
 
 #include "liquid.h"
 
-#define OUTPUT_FILENAME "fskmodem_example.m"
+#define OUTPUT_FILENAME "fskmodem_test.m"
 
 // print usage/help message
 void usage()
