@@ -280,6 +280,11 @@ This directory contains all the examples for interfacing the liquid modules.
 
  * `freqmodem_example.c`:
 
+ * `fskmodem_example.c`:
+    This example demostrates the M-ary frequency-shift keying
+    (MFSK) modem in liquid. A message signal is modulated and the
+    resulting signal is recovered using a demodulator object.
+
  * `gasearch_example.c`:
 
  * `gasearch_knapsack_example.c`:

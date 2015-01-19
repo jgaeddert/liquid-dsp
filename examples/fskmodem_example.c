@@ -1,8 +1,8 @@
 // 
 // fskmodem_example.c
 //
-// This example demostrates the continuous phase frequency-shift keying
-// (CP-FSK) modem in liquid. A message signal is modulated and the
+// This example demostrates the M-ary frequency-shift keying
+// (MFSK) modem in liquid. A message signal is modulated and the
 // resulting signal is recovered using a demodulator object.
 //
 
@@ -19,7 +19,7 @@
 // print usage/help message
 void usage()
 {
-    printf("fskmodem_example -- continuous-phase frequency-shift keying example\n");
+    printf("fskmodem_example -- frequency-shift keying example\n");
     printf("options:\n");
     printf("  h     : print help\n");
     printf("  m     : bits/symbol,              default:  1\n");
