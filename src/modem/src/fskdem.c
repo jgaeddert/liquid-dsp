@@ -50,8 +50,8 @@ struct fskdem_s {
     FFT_PLAN        fft;        // FFT object
     unsigned int *  demod_map;  // demodulation map
 
-    // firpfb resampler for timing recovery
-    // nco for carrier recovery
+    // state variables
+    unsigned int    s_demod;    // demodulated symbol (used for frequency error)
 };
 
 // create fskdem object (frequency demodulator)
@@ -174,10 +174,15 @@ void fskdem_print(fskdem _q)
 // reset state
 void fskdem_reset(fskdem _q)
 {
-    // reset time buffer
+    // reset time and frequency buffers
     unsigned int i;
-    for (i=0; i<_q->K; i++)
+    for (i=0; i<_q->K; i++) {
         _q->buf_time[i] = 0.0f;
+        _q->buf_freq[i] = 0.0f;
+    }
+
+    // clear state variables
+    _q->s_demod = 0;
 }
 
 // demodulate symbol, assuming perfect symbol timing
@@ -195,18 +200,37 @@ unsigned int fskdem_demodulate(fskdem          _q,
     // find maximum by looking at particular bins
     float        vmax  = 0;
     unsigned int s     = 0;
-    unsigned int s_opt = 0;
 
     // run search
     for (s=0; s<_q->M; s++) {
         float v = cabsf( _q->buf_freq[_q->demod_map[s]] );
         if (s==0 || v > vmax) {
-            s_opt = s;
-            vmax  =v;
+            // save optimal output symbol
+            _q->s_demod = s;
+
+            // save peak FFT bin value
+            vmax = v;
         }
     }
 
     // save best result
-    return s_opt;
+    return _q->s_demod;
+}
+
+// get demodulator frequency error
+float fskdem_get_frequency_error(fskdem _q)
+{
+    // get index of peak bin
+    unsigned int index = _q->buf_freq[ _q->s_demod ];
+
+    // extract peak value of previous, post FFT index
+    float vm = cabsf( (_q->s_demod + _q->K - 1) % _q->K );  // previous
+    float v0 = cabsf(  _q->s_demod                      );  // peak
+    float vp = cabsf( (_q->s_demod +         1) % _q->K );  // post
+
+    // compute derivative
+    // TODO: compensate for bin spacing
+    // TODO: just find peak using polynomial interpolation
+    return (vp - vm) / v0;
 }
 

@@ -4738,6 +4738,9 @@ void fskdem_reset(fskdem _q);
 unsigned int fskdem_demodulate(fskdem                 _q,
                                liquid_float_complex * _y);
 
+// get demodulator frequency error
+float fskdem_get_frequency_error(fskdem _q);
+
 
 // 
 // Analog frequency demodulator
