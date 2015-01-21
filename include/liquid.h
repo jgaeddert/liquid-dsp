@@ -4732,25 +4732,11 @@ void fskdem_print(fskdem _q);
 // reset state
 void fskdem_reset(fskdem _q);
 
-#if 0
-// demodulate array of samples, recovering timing etc.
-//  _q      :   continuous-phase frequency demodulator object
-//  _y      :   input sample array [size: _n x 1]
-//  _n      :   input sample array length
-//  _s      :   output symbol array
-//  _nw     :   number of output symbols written
-void fskdem_demodulate(fskdem                 _q,
-                       liquid_float_complex * _y,
-                       unsigned int           _n,
-                       unsigned int         * _s,
-                       unsigned int         * _nw);
-#else
 // demodulate symbol, assuming perfect symbol timing
-//  _q      :   continuous-phase frequency demodulator object
+//  _q      :   fskdem object
 //  _y      :   input sample array [size: _k x 1]
 unsigned int fskdem_demodulate(fskdem                 _q,
                                liquid_float_complex * _y);
-#endif
 
 
 // 
