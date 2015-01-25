@@ -352,7 +352,12 @@ This directory contains all the examples for interfacing the liquid modules.
  * `interleaver_soft_example.c`:
 
  * `kbd_window_example.c`:
+
  * `lpc_example.c`:
+    This example demonstrates linear prediction in liquid. An input signal
+    is generated which exhibits a strong temporal correlation. The linear
+    predictor generates an approximating all-pole filter which minimizes
+    the squared error between the prediction and the actual output.
 
  * `matched_filter_example.c`:
 

@@ -133,6 +133,30 @@ RESAMP() RESAMP(_create)(float        _rate,
     return q;
 }
 
+// create arbitrary resampler object with a specified input
+// resampling rate and default parameters
+//  m (filter semi-length) = 7
+//  fc (filter cutoff frequency) = 0.25
+//  As (filter stop-band attenuation) = 60 dB
+//  npfb (number of filters in the bank) = 64
+RESAMP() RESAMP(_create_default)(float _rate)
+{
+    // validate input
+    if (_rate <= 0) {
+        fprintf(stderr,"error: resamp_%s_create_default(), resampling rate must be greater than zero\n", EXTENSION_FULL);
+        exit(1);
+    }
+
+    // det default parameters
+    unsigned int m    = 7;
+    float        fc   = 0.25f;
+    float        As   = 60.0f;
+    unsigned int npfb = 64;
+
+    // create and return resamp object
+    return RESAMP(_create)(_rate, m, fc, As, npfb);
+}
+
 // free arbitrary resampler object
 void RESAMP(_destroy)(RESAMP() _q)
 {
