@@ -2782,6 +2782,14 @@ RESAMP() RESAMP(_create)(float        _rate,                    \
                          float        _As,                      \
                          unsigned int _npfb);                   \
                                                                 \
+/* create arbitrary resampler object with a specified input */  \
+/* resampling rate and default parameters                   */  \
+/*  m (filter semi-length) = 7                              */  \
+/*  fc (filter cutoff frequency) = 0.25                     */  \
+/*  As (filter stop-band attenuation) = 60 dB               */  \
+/*  npfb (number of filters in the bank) = 64               */  \
+RESAMP() RESAMP(_create_default)(float _rate);                  \
+                                                                \
 /* destroy arbitrary resampler object                       */  \
 void RESAMP(_destroy)(RESAMP() _q);                             \
                                                                 \
