@@ -1394,6 +1394,7 @@ example_programs :=						\
 	examples/fftfilt_crcf_example				\
 	examples/firdecim_crcf_example				\
 	examples/firfarrow_rrrf_example				\
+	examples/firfilt_cccf_example				\
 	examples/firfilt_crcf_example				\
 	examples/firfilt_rrrf_example				\
 	examples/firdes_kaiser_example				\

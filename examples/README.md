@@ -189,6 +189,11 @@ This directory contains all the examples for interfacing the liquid modules.
 
  * `firfilt_rrrf_example.c`:
 
+ * `firfilt_cccf_example.c`:
+    This example demonstrates the finite impulse response (FIR) filter
+    with complex coefficients as a cross-correlator between transmitted
+    and received sequences.
+
  * `firfilt_crcf_example.c`:
     Complex finite impulse response filter example. Demonstrates the 
     functionality of firfilt by designing a low-order prototype and using it 
