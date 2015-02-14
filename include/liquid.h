@@ -2156,6 +2156,13 @@ IIRFILT() IIRFILT(_create_prototype)(                           \
             float _Ap,                                          \
             float _As);                                         \
                                                                 \
+/* create simplified low-pass Butterworth IIR filter */         \
+/*  _n      : filter order                                  */  \
+/*  _fc     : low-pass prototype cut-off frequency          */  \
+IIRFILT() IIRFILT(_create_lowpass)(                             \
+            unsigned int _order,                                \
+            float        _fc);                                  \
+                                                                \
 /* create 8th-order integrator filter                       */  \
 IIRFILT() IIRFILT(_create_integrator)();                        \
                                                                 \
