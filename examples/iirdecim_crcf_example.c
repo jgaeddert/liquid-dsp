@@ -55,15 +55,8 @@ int main(int argc, char*argv[]) {
     num_samples += (num_samples % M);
 
     // create decimator from prototype
-    liquid_iirdes_filtertype ftype  = LIQUID_IIRDES_BUTTER;
-    liquid_iirdes_bandtype   btype  = LIQUID_IIRDES_LOWPASS;
-    liquid_iirdes_format     format = LIQUID_IIRDES_SOS;
     unsigned int order = 8;
-    float fc =  0.5f / (float)M;
-    float f0 =  0.0f;
-    float Ap =  0.1f;
-    float As = 60.0f;
-    iirdecim_crcf q = iirdecim_crcf_create_prototype(M,ftype,btype,format,order,fc,f0,Ap,As);
+    iirdecim_crcf q = iirdecim_crcf_create_default(M,order);
 
     // compute group delay
     float delay = iirdecim_crcf_groupdelay(q,0.0f);
