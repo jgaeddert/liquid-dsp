@@ -21,10 +21,7 @@ int main() {
     unsigned int p = 4;     // prediction filter order
 
     // create low-pass filter object
-    iirfilt_rrrf f = iirfilt_rrrf_create_prototype(LIQUID_IIRDES_BUTTER,
-                                                   LIQUID_IIRDES_LOWPASS,
-                                                   LIQUID_IIRDES_SOS,
-                                                   2, 0.05f, 0, 1, 60);
+    iirfilt_rrrf f = iirfilt_rrrf_create_lowpass(2, 0.05f);
     iirfilt_rrrf_print(f);
 
     unsigned int i;
@@ -123,7 +120,7 @@ int main() {
     fprintf(fid,"  plot(t,y_hat,'LineWidth',1.5,'Color',[0 0.5 0.2]);\n");
     fprintf(fid,"  hold off;\n");
     fprintf(fid,"  ylabel('signal');\n");
-    fprintf(fid,"  legend('y','lpc estimate','location','northeast');\n");
+    fprintf(fid,"  legend('input','LPC estimate','location','northeast');\n");
     fprintf(fid,"  grid on;\n");
     fprintf(fid,"subplot(5,1,4);\n");
     fprintf(fid,"  plot(t,y-y_hat,'LineWidth',2,'Color',[1 1 1]*0.6);\n");
