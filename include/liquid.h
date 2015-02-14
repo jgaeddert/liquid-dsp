@@ -2448,6 +2448,13 @@ IIRINTERP() IIRINTERP(_create)(unsigned int _M,                 \
                                TC *         _a,                 \
                                unsigned int _na);               \
                                                                 \
+/* create decimator with default Butterworth prototype      */  \
+/*  _M      : decimation factor                             */  \
+/*  _order  : filter order                                  */  \
+IIRINTERP() IIRINTERP(_create_default)(                         \
+                unsigned int _M,                                \
+                unsigned int _order);                           \
+                                                                \
 /* create interpolator from prototype                       */  \
 /*  _M      : interpolation factor                          */  \
 IIRINTERP() IIRINTERP(_create_prototype)(                       \
