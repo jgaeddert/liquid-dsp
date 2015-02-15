@@ -76,10 +76,10 @@ void packetizer_decode_bench(struct rusage * _start,
     getrusage(RUSAGE_SELF, _start);
     for (i=0; i<(*_num_iterations); i++) {
         // decode packet
-        crc_pass = packetizer_decode(p, msg_rec, msg_rec);
-        crc_pass = packetizer_decode(p, msg_rec, msg_rec);
-        crc_pass = packetizer_decode(p, msg_rec, msg_rec);
-        crc_pass = packetizer_decode(p, msg_rec, msg_rec);
+        crc_pass = packetizer_decode(p, msg_rec, msg_dec);
+        crc_pass = packetizer_decode(p, msg_rec, msg_dec);
+        crc_pass = packetizer_decode(p, msg_rec, msg_dec);
+        crc_pass = packetizer_decode(p, msg_rec, msg_dec);
     }
     getrusage(RUSAGE_SELF, _finish);
     *_num_iterations *= 4;
