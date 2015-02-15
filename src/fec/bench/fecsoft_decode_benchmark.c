@@ -141,10 +141,10 @@ void fecsoft_decode_bench(
     // start trials
     getrusage(RUSAGE_SELF, _start);
     for (i=0; i<(*_num_iterations); i++) {
-        fec_decode_soft(q, _n, msg_enc, msg_dec);
-        fec_decode_soft(q, _n, msg_enc, msg_dec);
-        fec_decode_soft(q, _n, msg_enc, msg_dec);
-        fec_decode_soft(q, _n, msg_enc, msg_dec);
+        fec_decode_soft(q, _n, msg_soft, msg_dec);
+        fec_decode_soft(q, _n, msg_soft, msg_dec);
+        fec_decode_soft(q, _n, msg_soft, msg_dec);
+        fec_decode_soft(q, _n, msg_soft, msg_dec);
     }
     getrusage(RUSAGE_SELF, _finish);
     *_num_iterations *= 4;
