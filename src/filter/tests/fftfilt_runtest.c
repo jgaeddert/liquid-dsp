@@ -54,13 +54,9 @@ void fftfilt_rrrf_test(float *      _h,
     fftfilt_rrrf q = fftfilt_rrrf_create(_h, _h_len, n);
 
     // allocate memory for output
-    float x_test[n*num_blocks];
     float y_test[n*num_blocks];
 
-    // copy input for test
     unsigned int i;
-    for (i=0; i<n*num_blocks; i++)
-        x_test[i] = (i < _x_len) ? _x[i] : 0;
 
     // compute output in blocks of size 'n'
     for (i=0; i<num_blocks; i++)
@@ -106,13 +102,9 @@ void fftfilt_crcf_test(float *         _h,
     fftfilt_crcf q = fftfilt_crcf_create(_h, _h_len, n);
 
     // allocate memory for output
-    float complex x_test[n*num_blocks];
     float complex y_test[n*num_blocks];
 
-    // copy input for test
     unsigned int i;
-    for (i=0; i<n*num_blocks; i++)
-        x_test[i] = (i < _x_len) ? _x[i] : 0;
 
     // compute output in blocks of size 'n'
     for (i=0; i<num_blocks; i++)
@@ -160,13 +152,9 @@ void fftfilt_cccf_test(float complex * _h,
     fftfilt_cccf q = fftfilt_cccf_create(_h, _h_len, n);
 
     // allocate memory for output
-    float complex x_test[n*num_blocks];
     float complex y_test[n*num_blocks];
 
-    // copy input for test
     unsigned int i;
-    for (i=0; i<n*num_blocks; i++)
-        x_test[i] = (i < _x_len) ? _x[i] : 0;
 
     // compute output in blocks of size 'n'
     for (i=0; i<num_blocks; i++)
