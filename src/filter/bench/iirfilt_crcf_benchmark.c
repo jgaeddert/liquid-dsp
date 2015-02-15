@@ -92,3 +92,33 @@ void benchmark_iirfilt_crcf_sos_16   IIRFILT_CRCF_BENCHMARK_API(16,   LIQUID_IIR
 void benchmark_iirfilt_crcf_sos_32   IIRFILT_CRCF_BENCHMARK_API(32,   LIQUID_IIRDES_SOS)
 void benchmark_iirfilt_crcf_sos_64   IIRFILT_CRCF_BENCHMARK_API(64,   LIQUID_IIRDES_SOS)
 
+// benchmark DC-blocking filter
+void benchmark_irfilt_crcf_dcblock(struct rusage *     _start,
+                                   struct rusage *     _finish,
+                                   unsigned long int * _num_iterations)
+{
+    unsigned long int i;
+
+    // create filter object
+    iirfilt_crcf q = iirfilt_crcf_create_dc_blocker(0.1f);
+
+    // initialize input/output
+    float complex x[4];
+    for (i=0; i<4; i++)
+        x[i] = randnf() + _Complex_I*randnf();
+
+    // start trials
+    getrusage(RUSAGE_SELF, _start);
+    for (i=0; i<(*_num_iterations); i++) {
+        iirfilt_crcf_execute(q, x[0], &x[0]);
+        iirfilt_crcf_execute(q, x[1], &x[1]);
+        iirfilt_crcf_execute(q, x[2], &x[2]);
+        iirfilt_crcf_execute(q, x[3], &x[3]);
+    }
+    getrusage(RUSAGE_SELF, _finish);
+    *_num_iterations *= 4;
+
+    // destroy filter object
+    iirfilt_crcf_destroy(q);
+}
+
