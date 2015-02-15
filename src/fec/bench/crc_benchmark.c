@@ -45,7 +45,7 @@ void crc_bench(struct rusage *_start,
 
     // create arrays
     unsigned char msg[_n];
-    unsigned int key;
+    unsigned int key = 0;
 
     // initialze message
     for (i=0; i<_n; i++)
@@ -54,10 +54,10 @@ void crc_bench(struct rusage *_start,
     // start trials
     getrusage(RUSAGE_SELF, _start);
     for (i=0; i<(*_num_iterations); i++) {
-        key = crc_generate_key(_crc, msg, _n);
-        key = crc_generate_key(_crc, msg, _n);
-        key = crc_generate_key(_crc, msg, _n);
-        key = crc_generate_key(_crc, msg, _n);
+        key ^= crc_generate_key(_crc, msg, _n);
+        key ^= crc_generate_key(_crc, msg, _n);
+        key ^= crc_generate_key(_crc, msg, _n);
+        key ^= crc_generate_key(_crc, msg, _n);
     }
     getrusage(RUSAGE_SELF, _finish);
     *_num_iterations *= 4;

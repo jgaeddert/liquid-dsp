@@ -36,15 +36,15 @@ void bsequence_correlate_bench(struct rusage *_start,
     bsequence bs2 = bsequence_create(_n);
 
     unsigned long int i;
-    int rxy;
+    int rxy = 0;
 
     // start trials
     getrusage(RUSAGE_SELF, _start);
     for (i=0; i<(*_num_iterations); i++) {
-        rxy = bsequence_correlate(bs1, bs2);
-        rxy = bsequence_correlate(bs1, bs2);
-        rxy = bsequence_correlate(bs1, bs2);
-        rxy = bsequence_correlate(bs1, bs2);
+        rxy += bsequence_correlate(bs1, bs2);
+        rxy -= bsequence_correlate(bs1, bs2);
+        rxy += bsequence_correlate(bs1, bs2);
+        rxy -= bsequence_correlate(bs1, bs2);
     }
     getrusage(RUSAGE_SELF, _finish);
     *_num_iterations *= 4;

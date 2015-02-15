@@ -60,16 +60,16 @@ void detector_cccf_bench(struct rusage *     _start,
 
     // start trials
     getrusage(RUSAGE_SELF, _start);
-    int detected;
+    int detected = 0;
     for (i=0; i<(*_num_iterations); i++) {
         // push input sequence through synchronizer
-        detected = detector_cccf_correlate(q, x[0], &tau_hat, & dphi_hat, &gamma_hat);
-        detected = detector_cccf_correlate(q, x[1], &tau_hat, & dphi_hat, &gamma_hat);
-        detected = detector_cccf_correlate(q, x[2], &tau_hat, & dphi_hat, &gamma_hat);
-        detected = detector_cccf_correlate(q, x[3], &tau_hat, & dphi_hat, &gamma_hat);
-        detected = detector_cccf_correlate(q, x[4], &tau_hat, & dphi_hat, &gamma_hat);
-        detected = detector_cccf_correlate(q, x[5], &tau_hat, & dphi_hat, &gamma_hat);
-        detected = detector_cccf_correlate(q, x[6], &tau_hat, & dphi_hat, &gamma_hat);
+        detected ^= detector_cccf_correlate(q, x[0], &tau_hat, & dphi_hat, &gamma_hat);
+        detected ^= detector_cccf_correlate(q, x[1], &tau_hat, & dphi_hat, &gamma_hat);
+        detected ^= detector_cccf_correlate(q, x[2], &tau_hat, & dphi_hat, &gamma_hat);
+        detected ^= detector_cccf_correlate(q, x[3], &tau_hat, & dphi_hat, &gamma_hat);
+        detected ^= detector_cccf_correlate(q, x[4], &tau_hat, & dphi_hat, &gamma_hat);
+        detected ^= detector_cccf_correlate(q, x[5], &tau_hat, & dphi_hat, &gamma_hat);
+        detected ^= detector_cccf_correlate(q, x[6], &tau_hat, & dphi_hat, &gamma_hat);
     }
     getrusage(RUSAGE_SELF, _finish);
     *_num_iterations *= 7;
