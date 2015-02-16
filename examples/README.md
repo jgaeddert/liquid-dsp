@@ -482,6 +482,21 @@ This directory contains all the examples for interfacing the liquid modules.
     in the input is 9 and not evenly divisible by 2, the last of the 5
     output symbols has a zero explicitly padded to the end.
 
+  * `resamp2_cccf_example.c`
+    This example demonstrates the halfband resampler cenetered at the
+    quarter sample rate to split the signal into positive and negative
+    frequency bands. Two distinct narrow-band signals are generated; one
+    at a positive frequency and one at a negative frequency. The resamp2
+    object is run as a filter to separate the two about the zero-
+    frequency center point.
+
+ * `resamp2_crcf_example.c`:
+    This example demonstrates the halfband resampler running as both an
+    interpolator and a decimator. A narrow-band signal is first
+    interpolated by a factor of 2, and then decimated. The resulting RMS
+     error between the final signal and original is computed and printed
+    to the screen.
+
  * `resamp2_crcf_decim_example.c`:
     Halfband decimator.  This example demonstrates the interface to the
     decimating halfband resampler.  A low-frequency input sinusoid is
@@ -490,13 +505,6 @@ This directory contains all the examples for interfacing the liquid modules.
 
     SEE ALSO: `resamp2_crcf_interp_example.c`
               `decim_rrrf_example.c`
-
- * `resamp2_crcf_example.c`:
-    This example demonstrates the halfband resampler running as both an
-    interpolator and a decimator. A narrow-band signal is first
-    interpolated by a factor of 2, and then decimated. The resulting RMS
-     error between the final signal and original is computed and printed
-    to the screen.
 
  * `resamp2_crcf_filter_example.c`:
     Halfband (two-channel) filterbank example. This example demonstrates
