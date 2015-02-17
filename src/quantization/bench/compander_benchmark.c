@@ -28,17 +28,17 @@ void benchmark_compress_mulaw(
 {
     unsigned long int i;
 
-    float x = -0.1f;
+    float x  = -0.1f;
     float mu = 255.0f;
-    float y;
+    float y  = 0.0f;
 
     // start trials
     getrusage(RUSAGE_SELF, _start);
     for (i=0; i<(*_num_iterations); i++) {
-        y = compress_mulaw(x,mu);
-        y = compress_mulaw(x,mu);
-        y = compress_mulaw(x,mu);
-        y = compress_mulaw(x,mu);
+        y += compress_mulaw(x,mu);
+        y -= compress_mulaw(x,mu);
+        x += compress_mulaw(y,mu);
+        x -= compress_mulaw(y,mu);
     }
     getrusage(RUSAGE_SELF, _finish);
     *_num_iterations *= 4;
@@ -52,17 +52,17 @@ void benchmark_expand_mulaw(
 {
     unsigned long int i;
 
-    float x;
+    float x  = 0.0f;
     float mu = 255.0f;
-    float y = 0.75f;
+    float y  = 0.75f;
 
     // start trials
     getrusage(RUSAGE_SELF, _start);
     for (i=0; i<(*_num_iterations); i++) {
-        x = expand_mulaw(y,mu);
-        x = expand_mulaw(y,mu);
-        x = expand_mulaw(y,mu);
-        x = expand_mulaw(y,mu);
+        x += expand_mulaw(y,mu);
+        x -= expand_mulaw(y,mu);
+        y += expand_mulaw(x,mu);
+        y -= expand_mulaw(x,mu);
     }
     getrusage(RUSAGE_SELF, _finish);
     *_num_iterations *= 4;

@@ -1394,6 +1394,7 @@ example_programs :=						\
 	examples/fftfilt_crcf_example				\
 	examples/firdecim_crcf_example				\
 	examples/firfarrow_rrrf_example				\
+	examples/firfilt_cccf_example				\
 	examples/firfilt_crcf_example				\
 	examples/firfilt_rrrf_example				\
 	examples/firdes_kaiser_example				\
@@ -1425,6 +1426,7 @@ example_programs :=						\
 	examples/iirdecim_crcf_example				\
 	examples/iirfilt_cccf_example				\
 	examples/iirfilt_crcf_example				\
+	examples/iirfilt_crcf_dcblocker_example			\
 	examples/iirinterp_crcf_example				\
 	examples/kbd_window_example				\
 	examples/lpc_example					\
@@ -1456,6 +1458,7 @@ example_programs :=						\
 	examples/random_histogram_example			\
 	examples/repack_bytes_example				\
 	examples/resamp_crcf_example				\
+	examples/resamp2_cccf_example				\
 	examples/resamp2_crcf_example				\
 	examples/resamp2_crcf_decim_example			\
 	examples/resamp2_crcf_filter_example			\

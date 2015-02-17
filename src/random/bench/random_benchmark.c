@@ -30,16 +30,16 @@ void benchmark_random_uniform(struct rusage *_start,
     // normalize number of iterations
     *_num_iterations *= 10;
 
-    float x;
+    float x = 0.0f;
     unsigned long int i;
 
     // start trials
     getrusage(RUSAGE_SELF, _start);
     for (i=0; i<(*_num_iterations); i++) {
-        x = randf();
-        x = randf();
-        x = randf();
-        x = randf();
+        x += randf();
+        x += randf();
+        x += randf();
+        x += randf();
     }
     getrusage(RUSAGE_SELF, _finish);
     *_num_iterations *= 4;
@@ -55,16 +55,16 @@ void benchmark_random_normal(struct rusage *_start,
     // normalize number of iterations
     *_num_iterations *= 1;
 
-    float x;
+    float x = 0.0f;
     unsigned long int i;
 
     // start trials
     getrusage(RUSAGE_SELF, _start);
     for (i=0; i<(*_num_iterations); i++) {
-        x = randnf();
-        x = randnf();
-        x = randnf();
-        x = randnf();
+        x += randnf();
+        x += randnf();
+        x += randnf();
+        x += randnf();
     }
     getrusage(RUSAGE_SELF, _finish);
     *_num_iterations *= 4;
@@ -80,7 +80,7 @@ void benchmark_random_complex_normal(struct rusage *_start,
     // normalize number of iterations
     *_num_iterations /= 2;
 
-    float complex x;
+    float complex x = 0.0f;
     unsigned long int i;
 
     // start trials
@@ -105,16 +105,19 @@ void benchmark_random_weibull(struct rusage *_start,
     // normalize number of iterations
     *_num_iterations *= 2;
 
-    float x, alpha=1.0f, beta=2.0f, gamma=6.0f;
+    float x=0.0f;
+    float alpha=1.0f;
+    float beta=2.0f;
+    float gamma=6.0f;
     unsigned long int i;
 
     // start trials
     getrusage(RUSAGE_SELF, _start);
     for (i=0; i<(*_num_iterations); i++) {
-        x = randweibf(alpha,beta,gamma);
-        x = randweibf(alpha,beta,gamma);
-        x = randweibf(alpha,beta,gamma);
-        x = randweibf(alpha,beta,gamma);
+        x += randweibf(alpha,beta,gamma);
+        x += randweibf(alpha,beta,gamma);
+        x += randweibf(alpha,beta,gamma);
+        x += randweibf(alpha,beta,gamma);
     }
     getrusage(RUSAGE_SELF, _finish);
     *_num_iterations *= 4;
@@ -130,16 +133,18 @@ void benchmark_random_ricek(struct rusage *_start,
     // normalize number of iterations
     *_num_iterations /= 3;
 
-    float x, K=2.0f, omega=1.0f;
+    float x = 0.0f;
+    float K=2.0f;
+    float omega=1.0f;
     unsigned long int i;
 
     // start trials
     getrusage(RUSAGE_SELF, _start);
     for (i=0; i<(*_num_iterations); i++) {
-        x = randricekf(K,omega);
-        x = randricekf(K,omega);
-        x = randricekf(K,omega);
-        x = randricekf(K,omega);
+        x += randricekf(K,omega);
+        x += randricekf(K,omega);
+        x += randricekf(K,omega);
+        x += randricekf(K,omega);
     }
     getrusage(RUSAGE_SELF, _finish);
     *_num_iterations *= 4;

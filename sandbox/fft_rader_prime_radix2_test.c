@@ -363,6 +363,8 @@ unsigned int primitive_root(unsigned int _n)
         }
     }
 
+    if (!root_found)
+        printf("warning: primitive_root(), could not find primitive root of %u\n", _n);
     return g;
 }
 

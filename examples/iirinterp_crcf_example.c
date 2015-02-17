@@ -51,15 +51,8 @@ int main(int argc, char*argv[]) {
     }
 
     // create interpolator from prototype
-    liquid_iirdes_filtertype ftype  = LIQUID_IIRDES_BUTTER;
-    liquid_iirdes_bandtype   btype  = LIQUID_IIRDES_LOWPASS;
-    liquid_iirdes_format     format = LIQUID_IIRDES_SOS;
     unsigned int order = 8;
-    float fc =  0.5f / (float)k;    // filter cut-off frequency
-    float f0 =  0.0f;
-    float Ap =  0.1f;
-    float As = 60.0f;
-    iirinterp_crcf q = iirinterp_crcf_create_prototype(k,ftype,btype,format,order,fc,f0,Ap,As);
+    iirinterp_crcf q = iirinterp_crcf_create_default(k,order);
 
     // derived values
     float delay = iirinterp_crcf_groupdelay(q,0.0f);

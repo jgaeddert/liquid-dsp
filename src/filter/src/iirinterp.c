@@ -62,6 +62,23 @@ IIRINTERP() IIRINTERP(_create)(unsigned int _M,
     return q;
 }
 
+// create decimator with default Butterworth prototype
+//  _M      : decimation factor
+//  _order  : filter order
+IIRINTERP() IIRINTERP(_create_default)(unsigned int _M,
+                                       unsigned int _order)
+{
+    return IIRINTERP(_create_prototype)(_M,
+                                        LIQUID_IIRDES_BUTTER,
+                                        LIQUID_IIRDES_LOWPASS,
+                                        LIQUID_IIRDES_SOS,
+                                        _order,
+                                        0.5f / (float)_M,    // fc
+                                        0.0f,                // f0
+                                        0.1f,                // pass-band ripple,
+                                        60.0f);              // stop-band attenuation
+}
+
 // create interpolator from prototype
 //  _M      :   interpolation factor
 IIRINTERP() IIRINTERP(_create_prototype)(unsigned int _M,

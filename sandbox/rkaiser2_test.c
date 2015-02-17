@@ -53,10 +53,10 @@ struct gsuserdata_s {
 //  _dt     :   filter fractional sample delay
 //  _h      :   resulting filter [size: 2*_k*_m+1]
 void liquid_firdes_rkaiser_filter2(unsigned int _k,
-                            unsigned int _m,
-                            float _beta,
-                            float _dt,
-                            float * _h);
+                                   unsigned int _m,
+                                   float        _beta,
+                                   float        _dt,
+                                   float *      _h);
 
 // gradient search utility
 float gs_utility(void * _userdata,
@@ -127,10 +127,10 @@ int main() {
 //  _dt     :   filter fractional sample delay
 //  _h      :   resulting filter [size: 2*_k*_m+1]
 void liquid_firdes_rkaiser_filter2(unsigned int _k,
-                            unsigned int _m,
-                            float _beta,
-                            float _dt,
-                            float * _h)
+                                   unsigned int _m,
+                                   float        _beta,
+                                   float        _dt,
+                                   float *      _h)
 {
     // validate input
     if (_k < 2) {
@@ -166,13 +166,13 @@ void liquid_firdes_rkaiser_filter2(unsigned int _k,
 #endif
     float v[2] = {fc, As/1000};
 
-    struct gsuserdata_s q;
-    q.k     = _k;
-    q.m     = _m;
-    q.beta  = _beta;
-    q.dt    = _dt;
-    q.w0    = 0.5;
-    q.w1    = 0.5;
+    struct gsuserdata_s q = {
+        .k    = _k,
+        .m    = _m,
+        .beta = _beta,
+        .dt   = _dt,
+        .w0   = 0.5f,
+        .w1   = 0.5f};
 
     // create gradsearch object
     gradsearch gs = gradsearch_create((void*)&q,
@@ -183,9 +183,9 @@ void liquid_firdes_rkaiser_filter2(unsigned int _k,
     // run search
     unsigned int i;
     unsigned int num_iterations = 100;
-    float utility;
     for (i=0; i<num_iterations; i++) {
-        utility = gs_utility((void*)&q,v,2);
+        // compute utility for plotting
+        //float utility = gs_utility((void*)&q,v,2);
 
         gradsearch_step(gs);
 

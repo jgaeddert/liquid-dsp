@@ -64,17 +64,34 @@ IIRDECIM() IIRDECIM(_create)(unsigned int _M,
     return q;
 }
 
+// create decimator with default Butterworth prototype
+//  _M      : decimation factor
+//  _order  : filter order
+IIRDECIM() IIRDECIM(_create_default)(unsigned int _M,
+                                     unsigned int _order)
+{
+    return IIRDECIM(_create_prototype)(_M,
+                                       LIQUID_IIRDES_BUTTER,
+                                       LIQUID_IIRDES_LOWPASS,
+                                       LIQUID_IIRDES_SOS,
+                                       _order,
+                                       0.5f / (float)_M,    // fc
+                                       0.0f,                // f0
+                                       0.1f,                // pass-band ripple,
+                                       60.0f);              // stop-band attenuation
+}
+
 // create interpolator from prototype
 //  _M      :   interpolation factor
-IIRDECIM() IIRDECIM(_create_prototype)(unsigned int _M,
+IIRDECIM() IIRDECIM(_create_prototype)(unsigned int             _M,
                                        liquid_iirdes_filtertype _ftype,
                                        liquid_iirdes_bandtype   _btype,
                                        liquid_iirdes_format     _format,
-                                       unsigned int _order,
-                                       float _fc,
-                                       float _f0,
-                                       float _Ap,
-                                       float _As)
+                                       unsigned int             _order,
+                                       float                    _fc,
+                                       float                    _f0,
+                                       float                    _Ap,
+                                       float                    _As)
 {
     // validate input
     if (_M < 2) {

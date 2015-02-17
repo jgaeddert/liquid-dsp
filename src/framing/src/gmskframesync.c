@@ -158,14 +158,8 @@ gmskframesync gmskframesync_create(framesync_callback _callback,
     q->BT       = 0.5f;     // filter bandwidth-time product
 
 #if GMSKFRAMESYNC_PREFILTER
-    q->prefilter = iirfilt_crcf_create_prototype(LIQUID_IIRDES_BUTTER,
-                                                 LIQUID_IIRDES_LOWPASS,
-                                                 LIQUID_IIRDES_SOS,
-                                                 3,
-                                                 0.5f*(1 + q->BT) / (float)(q->k),
-                                                 0.0f,
-                                                 1.0f,
-                                                 60.0f);
+    // create default low-pass Butterworth filter
+    q->prefilter = iirfilt_crcf_create_lowpass(3, 0.5f*(1 + q->BT) / (float)(q->k));
 #endif
 
     unsigned int i;

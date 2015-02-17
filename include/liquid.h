@@ -2156,6 +2156,13 @@ IIRFILT() IIRFILT(_create_prototype)(                           \
             float _Ap,                                          \
             float _As);                                         \
                                                                 \
+/* create simplified low-pass Butterworth IIR filter */         \
+/*  _n      : filter order                                  */  \
+/*  _fc     : low-pass prototype cut-off frequency          */  \
+IIRFILT() IIRFILT(_create_lowpass)(                             \
+            unsigned int _order,                                \
+            float        _fc);                                  \
+                                                                \
 /* create 8th-order integrator filter                       */  \
 IIRFILT() IIRFILT(_create_integrator)();                        \
                                                                 \
@@ -2441,6 +2448,13 @@ IIRINTERP() IIRINTERP(_create)(unsigned int _M,                 \
                                TC *         _a,                 \
                                unsigned int _na);               \
                                                                 \
+/* create decimator with default Butterworth prototype      */  \
+/*  _M      : decimation factor                             */  \
+/*  _order  : filter order                                  */  \
+IIRINTERP() IIRINTERP(_create_default)(                         \
+                unsigned int _M,                                \
+                unsigned int _order);                           \
+                                                                \
 /* create interpolator from prototype                       */  \
 /*  _M      : interpolation factor                          */  \
 IIRINTERP() IIRINTERP(_create_prototype)(                       \
@@ -2602,18 +2616,33 @@ IIRDECIM() IIRDECIM(_create)(unsigned int _M,                   \
                              TC *         _a,                   \
                              unsigned int _na);                 \
                                                                 \
+/* create decimator with default Butterworth prototype      */  \
+/*  _M      : decimation factor                             */  \
+/*  _order  : filter order                                  */  \
+IIRDECIM() IIRDECIM(_create_default)(                           \
+                unsigned int _M,                                \
+                unsigned int _order);                           \
+                                                                \
 /* create decimator from prototype                          */  \
 /*  _M      : decimation factor                             */  \
+/*  _ftype  : filter type (e.g. LIQUID_IIRDES_BUTTER)       */  \
+/*  _btype  : band type (e.g. LIQUID_IIRDES_BANDPASS)       */  \
+/*  _format : coefficients format (e.g. LIQUID_IIRDES_SOS)  */  \
+/*  _n      : filter order                                  */  \
+/*  _fc     : low-pass prototype cut-off frequency          */  \
+/*  _f0     : center frequency (band-pass, band-stop)       */  \
+/*  _Ap     : pass-band ripple in dB                        */  \
+/*  _As     : stop-band ripple in dB                        */  \
 IIRDECIM() IIRDECIM(_create_prototype)(                         \
-                unsigned int _M,                                \
+                unsigned int             _M,                    \
                 liquid_iirdes_filtertype _ftype,                \
                 liquid_iirdes_bandtype   _btype,                \
                 liquid_iirdes_format     _format,               \
-                unsigned int _order,                            \
-                float _fc,                                      \
-                float _f0,                                      \
-                float _Ap,                                      \
-                float _As);                                     \
+                unsigned int             _order,                \
+                float                    _fc,                   \
+                float                    _f0,                   \
+                float                    _Ap,                   \
+                float                    _As);                  \
                                                                 \
 /* destroy decimator object and free internal memory        */  \
 void IIRDECIM(_destroy)(IIRDECIM() _q);                         \
@@ -2781,6 +2810,14 @@ RESAMP() RESAMP(_create)(float        _rate,                    \
                          float        _fc,                      \
                          float        _As,                      \
                          unsigned int _npfb);                   \
+                                                                \
+/* create arbitrary resampler object with a specified input */  \
+/* resampling rate and default parameters                   */  \
+/*  m (filter semi-length) = 7                              */  \
+/*  fc (filter cutoff frequency) = 0.25                     */  \
+/*  As (filter stop-band attenuation) = 60 dB               */  \
+/*  npfb (number of filters in the bank) = 64               */  \
+RESAMP() RESAMP(_create_default)(float _rate);                  \
                                                                 \
 /* destroy arbitrary resampler object                       */  \
 void RESAMP(_destroy)(RESAMP() _q);                             \

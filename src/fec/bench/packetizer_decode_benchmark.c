@@ -32,60 +32,50 @@
 { packetizer_decode_bench(_start, _finish, _num_iterations, N, CRC, FEC0, FEC1); }
 
 // Helper function to keep code base small
-void packetizer_decode_bench(struct rusage * _start,
-                             struct rusage * _finish,
-                             unsigned long int *_num_iterations,
-                             unsigned int _n,
-                             crc_scheme _crc,
-                             fec_scheme _fec0,
-                             fec_scheme _fec1)
+void packetizer_decode_bench(struct rusage *     _start,
+                             struct rusage *     _finish,
+                             unsigned long int * _num_iterations,
+                             unsigned int        _n,
+                             crc_scheme          _crc,
+                             fec_scheme          _fec0,
+                             fec_scheme          _fec1)
 {
+    //
+    unsigned int msg_dec_len = _n;
+    unsigned int msg_enc_len = packetizer_compute_enc_msg_len(_n,_crc,_fec0,_fec1);
+
     // adjust number of iterations
-    //  k-cycles/trial ~ 221 + 1.6125*_n
+    //  k-cycles/trial ~ 221 + 1.6125*msg_dec_len;
+    // TODO: adjust iterations based on encoder types
     *_num_iterations *= 1000;
-    *_num_iterations /= 221 + 1.6125*_n;
+    *_num_iterations /= 221 + 1.6125*msg_dec_len;
 
-    // create packet generator
-    packetizer p = packetizer_create(_n, _crc, _fec0, _fec1);
-
-    unsigned int k = packetizer_compute_enc_msg_len(_n,_crc,_fec0,_fec1);
-    unsigned char msg_org[_n];
-    unsigned char msg_rec[ k];
-    unsigned char msg_dec[_n];
+    unsigned char msg_rec[msg_enc_len];
+    unsigned char msg_dec[msg_dec_len];
 
     // initialize data
     unsigned long int i;
-    for (i=0; i<_n; i++) {
-        msg_org[i] = rand() & 0xff;
-        msg_dec[i] = 0x00;
-    }
+    for (i=0; i<msg_enc_len; i++) msg_rec[i] = rand() & 0xff;
+    for (i=0; i<msg_dec_len; i++) msg_dec[i] = 0x00;
 
-    // encode packet
-    packetizer_encode(p, msg_org, msg_rec);
-
-    // corrupt data
-    msg_rec[0] ^= 0x0f;
-
-    // initialize original data message
-    for (i=0; i<_n; i++)
-        msg_org[i] = rand() % 256;
-
-    int crc_pass;
+    // create packet generator
+    packetizer q = packetizer_create(msg_dec_len, _crc, _fec0, _fec1);
+    int crc_pass = 0;
 
     // start trials
     getrusage(RUSAGE_SELF, _start);
     for (i=0; i<(*_num_iterations); i++) {
         // decode packet
-        crc_pass = packetizer_decode(p, msg_rec, msg_rec);
-        crc_pass = packetizer_decode(p, msg_rec, msg_rec);
-        crc_pass = packetizer_decode(p, msg_rec, msg_rec);
-        crc_pass = packetizer_decode(p, msg_rec, msg_rec);
+        crc_pass |= packetizer_decode(q, msg_rec, msg_dec);
+        crc_pass |= packetizer_decode(q, msg_rec, msg_dec);
+        crc_pass |= packetizer_decode(q, msg_rec, msg_dec);
+        crc_pass |= packetizer_decode(q, msg_rec, msg_dec);
     }
     getrusage(RUSAGE_SELF, _finish);
     *_num_iterations *= 4;
 
     // clean up allocated objects
-    packetizer_destroy(p);
+    packetizer_destroy(q);
 }
 
 

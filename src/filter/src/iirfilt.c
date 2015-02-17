@@ -240,6 +240,23 @@ IIRFILT() IIRFILT(_create_prototype)(liquid_iirdes_filtertype _ftype,
     return q;
 }
 
+// create simplified low-pass Butterworth IIR filter
+//  _n      : filter order
+//  _fc     : low-pass prototype cut-off frequency
+IIRFILT() IIRFILT(_create_lowpass)(
+            unsigned int _order,
+            float        _fc)
+{
+    return IIRFILT(_create_prototype)(LIQUID_IIRDES_BUTTER,
+                                      LIQUID_IIRDES_LOWPASS,
+                                      LIQUID_IIRDES_SOS,
+                                      _order,
+                                      _fc,
+                                      0.0f,      // center
+                                      0.1f,      // pass-band ripple
+                                      60.0f);    // stop-band attenuation
+}
+
 // create 8th-order integrating filter
 IIRFILT() IIRFILT(_create_integrator)()
 {
