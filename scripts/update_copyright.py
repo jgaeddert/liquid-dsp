@@ -1,16 +1,12 @@
 #!/usr/bin/python
 
-# this script updates the copyright license lines in all directories
-# to do two things:
-#   1. Removes lines like 'Copyright (c) ... Virginia Polytechnic...' and
-#      ' ... Institute & State University', noting that sometimes this is
-#      split across several lines
-#   2. replaces lines like "Copyright 2007, ... 2012, 2013 Joseph Gaeddert"
-#      with an updated date
-# 
-# usage:
-#   $ python scripts/update_copyright.py <dir>
-#
+'''
+This script updates the copyright license lines for all files within a
+particular directory.
+
+usage:
+  $ python scripts/update_copyright.py <dir>
+'''
 
 import os
 import sys
@@ -52,9 +48,6 @@ ignore_directories = ['.git',]
 
 # only look at these extensions
 include_extensions = ['.h', '.c', '.md', '.tex', '.ac', '.in', '.m',]
-
-# new copyright string
-copyright_new = "Copyright (c) 2007 - 2014 Joseph Gaeddert"
 
 #
 def update_copyright(filename=""):
