@@ -76,8 +76,8 @@ int main() {
     fprintf(fid,"figure;\n");
     fprintf(fid,"subplot(3,1,1);\n");
     fprintf(fid,"  hold on;\n");
-    fprintf(fid,"  plot(t,real(x),'Color',[0 0.2 0.5]);\n");
-    fprintf(fid,"  plot(t,imag(x),'Color',[0 0.5 0.2]);\n");
+    fprintf(fid,"  plot(t,real(x),'Color',[1 1 1]*0.7,'LineWidth',1);\n");
+    fprintf(fid,"  plot(t,imag(x),'Color',[1 1 1]*0.5,'LineWidth',2);\n");
     fprintf(fid,"  hold off;\n");
     fprintf(fid,"  grid on;\n");
     fprintf(fid,"  legend('real','imag','location','northeast');\n");
@@ -85,20 +85,23 @@ int main() {
     fprintf(fid,"  ylabel('original');\n");
     fprintf(fid,"subplot(3,1,2);\n");
     fprintf(fid,"  hold on;\n");
-    fprintf(fid,"  plot(t,real(y0),'Color',[0 0.2 0.5]);\n");
-    fprintf(fid,"  plot(t,imag(y0),'Color',[0 0.5 0.2]);\n");
+    fprintf(fid,"  plot(t,real(y0),'Color',[1 1 1]*0.7,'LineWidth',1);\n");
+    fprintf(fid,"  plot(t,imag(y0),'Color',[0 0.5 0.2],'LineWidth',2);\n");
     fprintf(fid,"  hold off;\n");
     fprintf(fid,"  grid on;\n");
+    fprintf(fid,"  legend('real','imag','location','northeast');\n");
     fprintf(fid,"  axis([0 num_samples -2 2]);\n");
-    fprintf(fid,"  ylabel('interpolated');\n");
+    fprintf(fid,"  ylabel('negative band');\n");
     fprintf(fid,"subplot(3,1,3);\n");
     fprintf(fid,"  hold on;\n");
-    fprintf(fid,"  plot(t,real(y1),'Color',[0 0.2 0.5]);\n");
-    fprintf(fid,"  plot(t,imag(y1),'Color',[0 0.5 0.2]);\n");
+    fprintf(fid,"  plot(t,real(y1),'Color',[1 1 1]*0.7,'LineWidth',1);\n");
+    fprintf(fid,"  plot(t,imag(y1),'Color',[0 0.2 0.5],'LineWidth',2);\n");
     fprintf(fid,"  hold off;\n");
     fprintf(fid,"  grid on;\n");
+    fprintf(fid,"  legend('real','imag','location','northeast');\n");
     fprintf(fid,"  axis([0 num_samples -2 2]);\n");
-    fprintf(fid,"  ylabel('interp/decim');\n");
+    fprintf(fid,"  ylabel('positive band');\n");
+    fprintf(fid,"  xlabel('sample index');\n");
 
     // plot spectrum results
     fprintf(fid,"\n\n");
@@ -117,7 +120,8 @@ int main() {
     fprintf(fid,"legend('original','negative','positive','location','northeast');\n");
     fprintf(fid,"grid on;\n");
     fprintf(fid,"axis([-0.5 0.5 -120 20]);\n");
-
+    fprintf(fid,"xlabel('Normalized Frequency [f/F_s]');\n");
+    fprintf(fid,"ylabel('Power Spectral Density [dB]');\n");
 
     fclose(fid);
     printf("results written to %s\n",OUTPUT_FILENAME);
