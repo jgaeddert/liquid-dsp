@@ -3242,6 +3242,43 @@ typedef int (*framesync_callback)(unsigned char *  _header,
 //  _userdata       :   user-defined data pointer
 typedef void (*framesync_csma_callback)(void * _userdata);
 
+//
+// packet encoder/decoder
+//
+
+typedef struct qpacketmodem_s * qpacketmodem;
+
+// create packet encoder
+qpacketmodem qpacketmodem_create();
+
+void qpacketmodem_destroy(qpacketmodem _q);
+void qpacketmodem_reset(qpacketmodem _q);
+void qpacketmodem_print(qpacketmodem _q);
+
+int qpacketmodem_configure(qpacketmodem _q,
+                           unsigned int   _payload_len,
+                           crc_scheme     _check,
+                           fec_scheme     _fec0,
+                           fec_scheme     _fec1,
+                           int            _ms);
+
+// get length of frame in symbols
+unsigned int qpacketmodem_get_frame_len(qpacketmodem _q);
+
+// encode packet into modulated frame samples
+// TODO: include method with just symbol indices? would be useful for
+//       non-linear modulation types
+void qpacketmodem_encode(qpacketmodem           _q,
+                         unsigned char *        _payload,
+                         liquid_float_complex * _frame);
+
+// decode packet into modulated frame samples
+// TODO: include method with just symbol indices? would be useful for
+//       non-linear modulation types
+int qpacketmodem_decode(qpacketmodem           _q,
+                        liquid_float_complex * _frame,
+                        unsigned char *        _payload);
+
 
 //
 // Basic frame generator (64 bytes data payload)

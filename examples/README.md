@@ -468,7 +468,14 @@ This directory contains all the examples for interfacing the liquid modules.
 
     SEE ALSO: `polyfit_example.c`
 
+ * `qpacketmodem_example.c`:
+    This example demonstrates the basic packet modem encoder/decoder
+    operation. A packet of data is encoded and modulated into symbols,
+    channel noise is added, and the resulting packet is demodulated
+    and decoded.
+
  * `qnsearch_example.c`:
+
  * `quantize_example.c`:
 
  * `random_histogram_example.c`:
