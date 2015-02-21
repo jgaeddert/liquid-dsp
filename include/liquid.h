@@ -3279,6 +3279,54 @@ int qpacketmodem_decode(qpacketmodem           _q,
                         liquid_float_complex * _frame,
                         unsigned char *        _payload);
 
+//
+// pilot generator for streaming applications
+//
+typedef struct qpilotgen_s * qpilotgen;
+
+// create packet encoder
+qpilotgen qpilotgen_create(unsigned int _payload_len,
+                           unsigned int _pilot_spacing);
+
+qpilotgen qpilotgen_recreate(qpilotgen    _q,
+                             unsigned int _payload_len,
+                             unsigned int _pilot_spacing);
+
+void qpilotgen_destroy(qpilotgen _q);
+void qpilotgen_reset(  qpilotgen _q);
+void qpilotgen_print(  qpilotgen _q);
+
+unsigned int qpilotgen_get_frame_len(qpilotgen _q);
+
+// insert pilot symbols
+void qpilotgen_execute(qpilotgen              _q,
+                       liquid_float_complex * _payload,
+                       liquid_float_complex * _frame);
+
+//
+// pilot synchronizer for streaming applications
+//
+typedef struct qpilotsync_s * qpilotsync;
+
+// create packet encoder
+qpilotsync qpilotsync_create(unsigned int _payload_len,
+                             unsigned int _pilot_spacing);
+
+qpilotsync qpilotsync_recreate(qpilotsync   _q,
+                               unsigned int _payload_len,
+                               unsigned int _pilot_spacing);
+
+void qpilotsync_destroy(qpilotsync _q);
+void qpilotsync_reset(  qpilotsync _q);
+void qpilotsync_print(  qpilotsync _q);
+
+unsigned int qpilotsync_get_frame_len(qpilotsync _q);
+
+// recover frame symbols from received frame
+void qpilotsync_execute(qpilotsync             _q,
+                        liquid_float_complex * _frame,
+                        liquid_float_complex * _payload);
+
 
 //
 // Basic frame generator (64 bytes data payload)

@@ -601,6 +601,8 @@ framing_objects :=						\
 	src/framing/src/ofdmflexframesync.o			\
 	src/framing/src/presync_cccf.o				\
 	src/framing/src/qpacketmodem.o				\
+	src/framing/src/qpilotgen.o				\
+	src/framing/src/qpilotsync.o				\
 
 
 # list explicit targets and dependencies here
@@ -1456,6 +1458,7 @@ example_programs :=						\
 	examples/polyfit_lagrange_example			\
 	examples/poly_findroots_example				\
 	examples/qpacketmodem_example				\
+	examples/qpilotsync_example				\
 	examples/qnsearch_example				\
 	examples/quantize_example				\
 	examples/random_histogram_example			\
