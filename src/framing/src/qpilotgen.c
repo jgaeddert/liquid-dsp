@@ -73,7 +73,6 @@ qpilotgen qpilotgen_create(unsigned int _payload_len,
 
     // find appropriate sequence size
     unsigned int m = liquid_nextpow2(q->num_pilots);
-    printf("num pilots : %u, m = %u\n", q->num_pilots, m);
 
     // generate pilot sequence
     msequence seq = msequence_create_default(m);

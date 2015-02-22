@@ -80,7 +80,6 @@ qpilotsync qpilotsync_create(unsigned int _payload_len,
 
     // find appropriate sequence size
     unsigned int m = liquid_nextpow2(q->num_pilots);
-    printf("num pilots : %u, m = %u\n", q->num_pilots, m);
 
     // generate pilot sequence
     msequence seq = msequence_create_default(m);
@@ -96,7 +95,6 @@ qpilotsync qpilotsync_create(unsigned int _payload_len,
 
     // compute fft size and create transform objects
     q->nfft = 1 << liquid_nextpow2(q->num_pilots + (q->num_pilots>>1));
-    printf("num pilots: %u, fft size: %u\n", q->num_pilots, q->nfft);
     q->buf_time = (float complex*) malloc(q->nfft*sizeof(float complex));
     q->buf_freq = (float complex*) malloc(q->nfft*sizeof(float complex));
     q->fft      = fft_create_plan(q->nfft, q->buf_time, q->buf_freq, LIQUID_FFT_FORWARD, 0);
@@ -150,6 +148,7 @@ void qpilotsync_print(qpilotsync _q)
     printf("  pilot spacing :   %u\n", _q->pilot_spacing);
     printf("  num pilots    :   %u\n", _q->num_pilots);
     printf("  frame len     :   %u\n", _q->frame_len);
+    printf("  nfft          :   %u\n", _q->nfft);
 }
 
 // get length of frame in symbols
