@@ -35,6 +35,9 @@ int main(int argc, char *argv[])
     unsigned int pilot_spacing =  20;                       // pilot spacing
     float        SNRdB         = 20.0f;                     // signal-to-noise ratio [dB]
     const char   filename[]    = "qpilotsync_example.m";    // output filename
+    float        dphi          = 0.0075f;                   // carrier frequency offset
+    float        phi           = 2.1800f;                   // carrier phase offset
+    float        gain          = 0.5f;                      // channel gain
 
     // get options
     int dopt;
@@ -88,8 +91,11 @@ int main(int argc, char *argv[])
 
     // add channel impairments
     // TODO: add carrier offset
-    for (i=0; i<frame_len; i++)
-        frame_rx[i] = frame_tx[i] + nstd*(randnf() + _Complex_I*randnf())*M_SQRT1_2;
+    for (i=0; i<frame_len; i++) {
+        frame_rx[i]  = frame_tx[i] * cexpf(_Complex_I*dphi*i + _Complex_I*phi);
+        frame_rx[i] += nstd*(randnf() + _Complex_I*randnf())*M_SQRT1_2;
+        frame_rx[i] *= gain;
+    }
 
     // recieve frame
     qpilotsync_execute(ps, frame_rx, payload_rx);
@@ -124,17 +130,27 @@ int main(int argc, char *argv[])
     fprintf(fid,"frame_len   = %u;\n", frame_len);
     fprintf(fid,"frame_tx   = zeros(1,frame_len);\n");
     fprintf(fid,"payload_rx = zeros(1,payload_len);\n");
-#if 0
     for (i=0; i<frame_len; i++)
-        fprintf(fid,"y(%6u) = %12.4e + 1i*%12.4e;\n", i+1, crealf(frame_rx[i]), cimagf(frame_rx[i]));
-#endif
-    fprintf(fid,"figure('Color','white');\n");
-    fprintf(fid,"plot(real(y),imag(y),'x','MarkerSize',3);\n");
-    fprintf(fid,"axis([-1 1 -1 1]*1.5);\n");
-    fprintf(fid,"axis square;\n");
-    fprintf(fid,"grid on;\n");
-    fprintf(fid,"xlabel('real');\n");
-    fprintf(fid,"ylabel('imag');\n");
+        fprintf(fid,"frame_rx(%6u) = %12.4e + 1i*%12.4e;\n", i+1, crealf(frame_rx[i]), cimagf(frame_rx[i]));
+    for (i=0; i<payload_len; i++)
+        fprintf(fid,"payload_rx(%6u) = %12.4e + 1i*%12.4e;\n", i+1, crealf(payload_rx[i]), cimagf(payload_rx[i]));
+    fprintf(fid,"figure('Color','white','position',[100 100 950 400]);\n");
+    fprintf(fid,"subplot(1,2,1);\n");
+    fprintf(fid,"  plot(real(frame_rx),  imag(frame_rx),  'x','MarkerSize',3);\n");
+    fprintf(fid,"  axis([-1 1 -1 1]*1.5);\n");
+    fprintf(fid,"  axis square;\n");
+    fprintf(fid,"  grid on;\n");
+    fprintf(fid,"  xlabel('real');\n");
+    fprintf(fid,"  ylabel('imag');\n");
+    fprintf(fid,"  title('received');\n");
+    fprintf(fid,"subplot(1,2,2);\n");
+    fprintf(fid,"  plot(real(payload_rx),imag(payload_rx),'x','MarkerSize',3);\n");
+    fprintf(fid,"  axis([-1 1 -1 1]*1.5);\n");
+    fprintf(fid,"  axis square;\n");
+    fprintf(fid,"  grid on;\n");
+    fprintf(fid,"  xlabel('real');\n");
+    fprintf(fid,"  ylabel('imag');\n");
+    fprintf(fid,"  title('recovered');\n");
 
     fclose(fid);
     printf("results written to '%s'\n", filename);

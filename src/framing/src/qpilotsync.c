@@ -40,6 +40,11 @@ struct qpilotsync_s {
     unsigned int    num_pilots;     // total number of pilot symbols
     unsigned int    frame_len;      // total number of frame symbols
     float complex * pilots;         // pilot sequence
+
+    unsigned int    nfft;           // FFT size
+    float complex * buf_time;       // FFT time buffer
+    float complex * buf_freq;       // FFT freq buffer
+    fftplan         fft;            // transform object
 };
 
 // create packet encoder
@@ -82,12 +87,20 @@ qpilotsync qpilotsync_create(unsigned int _payload_len,
         unsigned int s = msequence_generate_symbol(seq, 2);
 
         // save modulated symbol
-        float theta = (2 * M_PI * (float)s / 4.0f) + M_PI / 2.0f;
+        float theta = (2 * M_PI * (float)s / 4.0f) + M_PI / 4.0f;
         q->pilots[i] = cexpf(_Complex_I*theta);
     }
     msequence_destroy(seq);
 
-    // return pointer to main object
+    // compute fft size and create transform objects
+    q->nfft = 1 << liquid_nextpow2(q->num_pilots + (q->num_pilots>>1));
+    printf("num pilots: %u, fft size: %u\n", q->num_pilots, q->nfft);
+    q->buf_time = (float complex*) malloc(q->nfft*sizeof(float complex));
+    q->buf_freq = (float complex*) malloc(q->nfft*sizeof(float complex));
+    q->fft      = fft_create_plan(q->nfft, q->buf_time, q->buf_freq, LIQUID_FFT_FORWARD, 0);
+
+    // reset and return pointer to main object
+    qpilotsync_reset(q);
     return q;
 }
 
@@ -110,6 +123,11 @@ void qpilotsync_destroy(qpilotsync _q)
 {
     // free arrays
     free(_q->pilots);
+    free(_q->buf_time);
+    free(_q->buf_freq);
+
+    // destroy objects
+    fft_destroy_plan(_q->fft);
     
     // free main object memory
     free(_q);
@@ -117,6 +135,10 @@ void qpilotsync_destroy(qpilotsync _q)
 
 void qpilotsync_reset(qpilotsync _q)
 {
+    // clear FFT input buffer
+    unsigned int i;
+    for (i=0; i<_q->nfft; i++)
+        _q->buf_time[i] = 0.0f;
 }
 
 void qpilotsync_print(qpilotsync _q)
@@ -144,11 +166,93 @@ void qpilotsync_execute(qpilotsync      _q,
     unsigned int i;
     unsigned int n = 0;
     unsigned int p = 0;
+
+    // extract pilots and de-rotate with known sequence
+    for (i=0; i<_q->num_pilots; i++) {
+        _q->buf_time[i] = _frame[i*_q->pilot_spacing] * conjf(_q->pilots[i]);
+
+        // debug:
+        printf("(%8.4f,%8.4f) = (%8.4f,%8.4f) * conj(%8.4f,%8.4f)\n",
+            crealf(_q->buf_time[i]),
+            cimagf(_q->buf_time[i]),
+            crealf(_frame[i*_q->pilot_spacing]),
+            cimagf(_frame[i*_q->pilot_spacing]),
+            crealf(_q->pilots[i]),
+            cimagf(_q->pilots[i]));
+    }
+
+    // compute frequency offset by computing transform and finding peak
+    fft_execute(_q->fft);
+    unsigned int i0 = 0;
+    float        y0 = 0;
+    for (i=0; i<_q->nfft; i++) {
+#if 0
+        printf("X(%3u) = %12.8f + 1i*%12.8f; %% %12.8f\n",
+                i+1, crealf(_q->buf_freq[i]), cimagf(_q->buf_freq[i]), cabsf(_q->buf_freq[i]));
+#endif
+        if (i==0 || cabsf(_q->buf_freq[i]) > y0) {
+            i0 = i;
+            y0 = cabsf(_q->buf_freq[i]);
+        }
+    }
+    printf("peak of %12.8f at %u\n", y0, i0);
+    // interpolate and recover frequency
+    unsigned int ineg = (i0 + _q->nfft - 1) % _q->nfft;
+    unsigned int ipos = (i0 +            1) % _q->nfft;
+    float        ypos = cabsf(_q->buf_freq[ipos]);
+    float        yneg = cabsf(_q->buf_freq[ineg]);
+    float        a    =  0.5f*(ypos + yneg) - y0;
+    float        b    =  0.5f*(ypos - yneg);
+    float        c    =  y0;
+    float        idx  = -b / (2.0f*a); //-0.5f*(ypos - yneg) / (ypos + yneg - 2*y0);
+    printf("X[%3u] = %12.8f <%12.8f>\n", ineg, yneg, cargf(_q->buf_freq[ineg]));
+    printf("X[%3u] = %12.8f <%12.8f>\n", i0,   y0,   cargf(_q->buf_freq[i0]));
+    printf("X[%3u] = %12.8f <%12.8f>\n", ipos, ypos, cargf(_q->buf_freq[ipos]));
+    printf("yneg  = %12.8f;\n", yneg);
+    printf("ypos  = %12.8f;\n", ypos);
+    printf("y0    = %12.8f;\n", y0);
+    float index = (float)i0 + idx;
+    printf("interpolated peak at %12.8f (%u + %12.8f)\n", index, i0, idx);
+    float dphi_hat = (i0 > _q->nfft/2 ? index-64.0f : index) * 2*M_PI / (float)(_q->nfft * _q->pilot_spacing);
+
+    // estimate carrier phase offset
+#if 1
+    // METHOD 1: linear interpolation of phase in FFT output buffer
+    float v0 = cargf(_q->buf_freq[ idx < 0 ? ineg : i0   ]);
+    float v1 = cargf(_q->buf_freq[ idx < 0 ? i0   : ipos ]);
+    float xp = idx < 0 ? 1+idx : idx;
+    float phi_hat  = (v1-v0)*xp + v0;
+    printf("v0 = %12.8f, v1 = %12.8f, xp = %12.8f\n", v0, v1, xp);
+
+    // channel gain: use quadratic interpolation of FFT amplitude to find peak
+    //               correlation output in the frequency domain
+    float g_hat = (a*idx*idx + b*idx + c) / (float)(_q->num_pilots);
+#else
+    // METHOD 2: compute metric by de-rotating pilots and measuring resulting phase
+    // NOTE: this is possibly more accurate than the above method but might also
+    //       be more computationally complex
+    float complex metric = 0;
+    for (i=0; i<_q->num_pilots; i++)
+        metric += _q->buf_time[i] * cexpf(-_Complex_I*dphi_hat*i*(float)(_q->pilot_spacing));
+    printf("metric : %12.8f <%12.8f>\n", cabsf(metric), cargf(metric));
+    float phi_hat = cargf(metric);
+    float g_hat   = cabsf(metric) / (float)(_q->num_pilots);
+#endif
+
+    // print estimates of carrier frequency, phase, gain
+    printf("dphi-hat    :   %12.8f\n", dphi_hat);
+    printf(" phi-hat    :   %12.8f\n",  phi_hat);
+    printf("   g-hat    :   %12.8f\n",    g_hat);
+
+    // frequency correction
+    float g = 1.0f / g_hat;
+
+    // recover frame symbols
     for (i=0; i<_q->frame_len; i++) {
         if ( (i % _q->pilot_spacing)==0 )
             p++;
         else
-            _payload[n++] = _frame[i];
+            _payload[n++] = g * _frame[i] * cexpf(-_Complex_I*(dphi_hat*i + phi_hat));
     }
     //printf("n = %u (expected %u)\n", n, _q->payload_len);
     //printf("p = %u (expected %u)\n", p, _q->num_pilots);

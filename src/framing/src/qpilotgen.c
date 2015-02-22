@@ -82,7 +82,7 @@ qpilotgen qpilotgen_create(unsigned int _payload_len,
         unsigned int s = msequence_generate_symbol(seq, 2);
 
         // save modulated symbol
-        float theta = (2 * M_PI * (float)s / 4.0f) + M_PI / 2.0f;
+        float theta = (2 * M_PI * (float)s / 4.0f) + M_PI / 4.0f;
         q->pilots[i] = cexpf(_Complex_I*theta);
     }
     msequence_destroy(seq);
