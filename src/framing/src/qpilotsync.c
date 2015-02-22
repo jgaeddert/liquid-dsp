@@ -33,6 +33,8 @@
 
 #include "liquid.internal.h"
 
+#define DEBUG_QPILOTSYNC 0
+
 struct qpilotsync_s {
     // properties
     unsigned int    payload_len;    // number of samples in payload
@@ -171,7 +173,7 @@ void qpilotsync_execute(qpilotsync      _q,
     for (i=0; i<_q->num_pilots; i++) {
         _q->buf_time[i] = _frame[i*_q->pilot_spacing] * conjf(_q->pilots[i]);
 
-        // debug:
+#if DEBUG_QPILOTSYNC
         printf("(%8.4f,%8.4f) = (%8.4f,%8.4f) * conj(%8.4f,%8.4f)\n",
             crealf(_q->buf_time[i]),
             cimagf(_q->buf_time[i]),
@@ -179,6 +181,7 @@ void qpilotsync_execute(qpilotsync      _q,
             cimagf(_frame[i*_q->pilot_spacing]),
             crealf(_q->pilots[i]),
             cimagf(_q->pilots[i]));
+#endif
     }
 
     // compute frequency offset by computing transform and finding peak
@@ -186,7 +189,7 @@ void qpilotsync_execute(qpilotsync      _q,
     unsigned int i0 = 0;
     float        y0 = 0;
     for (i=0; i<_q->nfft; i++) {
-#if 0
+#if DEBUG_QPILOTSYNC
         printf("X(%3u) = %12.8f + 1i*%12.8f; %% %12.8f\n",
                 i+1, crealf(_q->buf_freq[i]), cimagf(_q->buf_freq[i]), cabsf(_q->buf_freq[i]));
 #endif
@@ -195,7 +198,7 @@ void qpilotsync_execute(qpilotsync      _q,
             y0 = cabsf(_q->buf_freq[i]);
         }
     }
-    printf("peak of %12.8f at %u\n", y0, i0);
+
     // interpolate and recover frequency
     unsigned int ineg = (i0 + _q->nfft - 1) % _q->nfft;
     unsigned int ipos = (i0 +            1) % _q->nfft;
@@ -205,15 +208,17 @@ void qpilotsync_execute(qpilotsync      _q,
     float        b    =  0.5f*(ypos - yneg);
     float        c    =  y0;
     float        idx  = -b / (2.0f*a); //-0.5f*(ypos - yneg) / (ypos + yneg - 2*y0);
+    float index = (float)i0 + idx;
+    float dphi_hat = (i0 > _q->nfft/2 ? index-64.0f : index) * 2*M_PI / (float)(_q->nfft * _q->pilot_spacing);
+#if DEBUG_QPILOTSYNC
     printf("X[%3u] = %12.8f <%12.8f>\n", ineg, yneg, cargf(_q->buf_freq[ineg]));
     printf("X[%3u] = %12.8f <%12.8f>\n", i0,   y0,   cargf(_q->buf_freq[i0]));
     printf("X[%3u] = %12.8f <%12.8f>\n", ipos, ypos, cargf(_q->buf_freq[ipos]));
     printf("yneg  = %12.8f;\n", yneg);
     printf("ypos  = %12.8f;\n", ypos);
     printf("y0    = %12.8f;\n", y0);
-    float index = (float)i0 + idx;
     printf("interpolated peak at %12.8f (%u + %12.8f)\n", index, i0, idx);
-    float dphi_hat = (i0 > _q->nfft/2 ? index-64.0f : index) * 2*M_PI / (float)(_q->nfft * _q->pilot_spacing);
+#endif
 
     // estimate carrier phase offset
 #if 1
@@ -222,7 +227,7 @@ void qpilotsync_execute(qpilotsync      _q,
     float v1 = cargf(_q->buf_freq[ idx < 0 ? i0   : ipos ]);
     float xp = idx < 0 ? 1+idx : idx;
     float phi_hat  = (v1-v0)*xp + v0;
-    printf("v0 = %12.8f, v1 = %12.8f, xp = %12.8f\n", v0, v1, xp);
+    //printf("v0 = %12.8f, v1 = %12.8f, xp = %12.8f\n", v0, v1, xp);
 
     // channel gain: use quadratic interpolation of FFT amplitude to find peak
     //               correlation output in the frequency domain
@@ -234,15 +239,17 @@ void qpilotsync_execute(qpilotsync      _q,
     float complex metric = 0;
     for (i=0; i<_q->num_pilots; i++)
         metric += _q->buf_time[i] * cexpf(-_Complex_I*dphi_hat*i*(float)(_q->pilot_spacing));
-    printf("metric : %12.8f <%12.8f>\n", cabsf(metric), cargf(metric));
+    //printf("metric : %12.8f <%12.8f>\n", cabsf(metric), cargf(metric));
     float phi_hat = cargf(metric);
     float g_hat   = cabsf(metric) / (float)(_q->num_pilots);
 #endif
 
+#if DEBUG_QPILOTSYNC
     // print estimates of carrier frequency, phase, gain
     printf("dphi-hat    :   %12.8f\n", dphi_hat);
     printf(" phi-hat    :   %12.8f\n",  phi_hat);
     printf("   g-hat    :   %12.8f\n",    g_hat);
+#endif
 
     // frequency correction
     float g = 1.0f / g_hat;
@@ -254,9 +261,11 @@ void qpilotsync_execute(qpilotsync      _q,
         else
             _payload[n++] = g * _frame[i] * cexpf(-_Complex_I*(dphi_hat*i + phi_hat));
     }
-    //printf("n = %u (expected %u)\n", n, _q->payload_len);
-    //printf("p = %u (expected %u)\n", p, _q->num_pilots);
+#if DEBUG_QPILOTSYNC
+    printf("n = %u (expected %u)\n", n, _q->payload_len);
+    printf("p = %u (expected %u)\n", p, _q->num_pilots);
     assert(n == _q->payload_len);
     assert(p == _q->num_pilots);
+#endif
 }
 
