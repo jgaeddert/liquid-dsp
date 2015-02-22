@@ -64,9 +64,6 @@ void framesync64_syncpn(framesync64 _q);
 void framesync64_execute_rxpayload(framesync64   _q,
                                    float complex _x);
 
-// decode payload
-void framesync64_decode_payload(framesync64 _q);
-
 // framesync64 object structure
 struct framesync64_s {
     // callback
@@ -81,7 +78,6 @@ struct framesync64_s {
     float gamma_hat;                // channel gain estimate
     windowcf buffer;                // pre-demod buffered samples, size: k*(pn_len+m)
     nco_crcf nco_coarse;            // coarse carrier frequency recovery
-    nco_crcf nco_fine;              // fine carrier recovery (after demod)
 
     // timing recovery objects, states
     firpfb_crcf mf;                 // matched filter decimator
@@ -98,19 +94,12 @@ struct framesync64_s {
     float complex preamble_rx[64];  // received p/n symbols
     
     // payload decoder
-    modem demod;                    // payload demodulator
-    crc_scheme check;               // payload validity check
-    fec_scheme fec0;                // payload FEC (inner)
-    fec_scheme fec1;                // payload FEC (outer)
-    unsigned int payload_mod_len;   // length of encoded payload
-    unsigned int payload_enc_len;   // length of encoded payload
-    unsigned int payload_dec_len;   // payload length (num un-encoded bytes)
-    float complex * payload_sym;    // payload symbols (modem input)  [size: _payload_mod_len x 1]
-    unsigned char * payload_mod;    // payload symbols (modem output) [size: _payload_mod_len x 1]
-    unsigned char * payload_enc;    // payload data (encoded bytes)   [size: _payload_enc_len x 1]
-    unsigned char * payload_dec;    // payload data (decoded bytes)   [size: _payload_dec_len x 1]
-    packetizer p_payload;           // payload packetizer
-    int payload_valid;              // did payload pass crc?
+    float complex payload_rx[630];  // received payload symbols with pilots
+    float complex payload_sym[600]; // received payload symbols
+    unsigned char payload_dec[72];  // decoded payload bytes
+    qpacketmodem  dec;              // packet demodulator/decoder
+    qpilotsync    pilotsync;        // pilot extraction, carrier recovery
+    int           payload_valid;    // did payload pass crc?
     
     // status variables
     enum {
@@ -172,37 +161,20 @@ framesync64 framesync64_create(framesync_callback _callback,
 
     // create down-coverters for carrier phase tracking
     q->nco_coarse = nco_crcf_create(LIQUID_NCO);
-    q->nco_fine   = nco_crcf_create(LIQUID_VCO);
-    nco_crcf_pll_set_bandwidth(q->nco_fine, 0.05f);
     
-    // frame properties
-    q->demod           = modem_create(LIQUID_MODEM_QPSK);
-    q->payload_dec_len = 64 + 8;
-    q->check           = LIQUID_CRC_24;
-    q->fec0            = LIQUID_FEC_NONE;
-    q->fec1            = LIQUID_FEC_GOLAY2412;
+    // create payload demodulator/decoder object
+    int check      = LIQUID_CRC_24;
+    int fec0       = LIQUID_FEC_NONE;
+    int fec1       = LIQUID_FEC_GOLAY2412;
+    int mod_scheme = LIQUID_MODEM_QPSK;
+    q->dec         = qpacketmodem_create();
+    qpacketmodem_configure(q->dec, 72, check, fec0, fec1, mod_scheme);
+    //qpacketmodem_print(q->dec);
+    assert( qpacketmodem_get_frame_len(q->dec)==600 );
 
-    // create payload objects
-    q->p_payload       = packetizer_create(q->payload_dec_len, q->check, q->fec0, q->fec1);
-    q->payload_enc_len = packetizer_get_enc_msg_len(q->p_payload);
-    q->payload_mod_len = 4 * q->payload_enc_len;
-
-#if 0
-    // validate expected lengths
-    printf("framesync64:\n");
-    printf("  payload dec len   :   %u\n", q->payload_dec_len);
-    printf("  payload enc len   :   %u\n", q->payload_enc_len);
-    printf("  payload mod len   :   %u\n", q->payload_mod_len);
-    assert(q->payload_dec_len == 72);
-    assert(q->payload_enc_len == 150);
-    assert(q->payload_mod_len == 600);
-#endif
-
-    // allocate memory arrays
-    q->payload_sym = (float complex*) malloc(q->payload_mod_len*sizeof(float complex));
-    q->payload_mod = (unsigned char*) malloc(q->payload_mod_len*sizeof(unsigned char));
-    q->payload_enc = (unsigned char*) malloc(q->payload_enc_len*sizeof(unsigned char));
-    q->payload_dec = (unsigned char*) malloc(q->payload_dec_len*sizeof(unsigned char));
+    // create pilot synchronizer
+    q->pilotsync   = qpilotsync_create(600, 21);
+    assert( qpilotsync_get_frame_len(q->pilotsync)==630 );
 
 #if DEBUG_FRAMESYNC64
     // set debugging flags, objects to NULL
@@ -233,16 +205,9 @@ void framesync64_destroy(framesync64 _q)
     firpfb_crcf_destroy(_q->mf);                // matched filter
     firpfb_crcf_destroy(_q->dmf);               // derivative matched filter
     nco_crcf_destroy(_q->nco_coarse);           // coarse NCO
-    nco_crcf_destroy(_q->nco_fine);             // fine-tuned NCO
 
-    modem_destroy(_q->demod);                   // payload demodulator
-    packetizer_destroy(_q->p_payload);          // payload decoder
-
-    // free buffers and arrays
-    free(_q->payload_sym);      // payload symbols (modem input)
-    free(_q->payload_mod);      // payload symbols (modem output)
-    free(_q->payload_enc);      // payload data (encoded bytes)
-    free(_q->payload_dec);      // payload data (decoded bytes)
+    qpacketmodem_destroy(_q->dec);              // payload demodulator
+    qpilotsync_destroy(_q->pilotsync);          // pilot synchronizer
 
     // free main object memory
     free(_q);
@@ -265,7 +230,6 @@ void framesync64_reset(framesync64 _q)
 
     // reset carrier recovery objects
     nco_crcf_reset(_q->nco_coarse);
-    nco_crcf_reset(_q->nco_fine);
 
     // reset symbol timing recovery state
     firpfb_crcf_reset(_q->mf);
@@ -527,30 +491,10 @@ void framesync64_syncpn(framesync64 _q)
         theta_metric += _q->preamble_rx[i]*liquid_cexpjf(-dphi_hat*i)*_q->preamble_pn[i];
     float theta_hat = cargf(theta_metric);
     // TODO: compute gain correction factor
-
-    // initialize fine-tuned nco
-    nco_crcf_set_frequency(_q->nco_fine, dphi_hat);
-    nco_crcf_set_phase(    _q->nco_fine, theta_hat);
-
-    // correct for carrier offset, pushing through phase-locked loop
-    for (i=0; i<64; i++) {
-        // mix signal down
-        nco_crcf_mix_down(_q->nco_fine, _q->preamble_rx[i], &_q->preamble_rx[i]);
-        
-        // push through phase-locked loop
-        float phase_error = cimagf(_q->preamble_rx[i]*_q->preamble_pn[i]);
-        nco_crcf_pll_step(_q->nco_fine, phase_error);
-#if DEBUG_FRAMESYNC64
-        //_q->debug_nco_phase[i] = nco_crcf_get_phase(_q->nco_fine);
-#endif
-
-        // update nco phase
-        nco_crcf_step(_q->nco_fine);
-    }
 }
 
 // execute synchronizer, receiving payload
-//  _q     :   frame synchronizer object
+//  _q      :   frame synchronizer object
 //  _x      :   input sample
 //  _sym    :   demodulated symbol
 void framesync64_execute_rxpayload(framesync64   _q,
@@ -567,54 +511,40 @@ void framesync64_execute_rxpayload(framesync64   _q,
 
     // compute output if timeout
     if (sample_available) {
-
-        // push through fine-tuned nco
-        nco_crcf_mix_down(_q->nco_fine, mf_out, &mf_out);
-        
-        // demodulate
-        unsigned int sym_out = 0;
-        modem_demodulate(_q->demod, mf_out, &sym_out);
-
-        // update phase-locked loop and fine-tuned NCO
-        float phase_error = modem_get_demodulator_phase_error(_q->demod);
-        nco_crcf_pll_step(_q->nco_fine, phase_error);
-        nco_crcf_step(_q->nco_fine);
-        
         // save payload symbols (modem input/output)
-        _q->payload_sym[_q->payload_counter] = mf_out;
-        _q->payload_mod[_q->payload_counter] = (unsigned char)sym_out;
-
-        // update error vector magnitude
-        float evm = modem_get_demodulator_evm(_q->demod);
-        _q->framestats.evm += evm*evm;
+        _q->payload_rx[_q->payload_counter] = mf_out;
 
         // increment counter
         _q->payload_counter++;
 
-        if (_q->payload_counter == _q->payload_mod_len) {
-            // decode payload and invoke callback
-            framesync64_decode_payload(_q);
+        if (_q->payload_counter == 630) {
+            // recover data symbols from pilots
+            qpilotsync_execute(_q->pilotsync, _q->payload_rx, _q->payload_sym);
+
+            // decode payload
+            _q->payload_valid = qpacketmodem_decode(_q->dec,
+                                                    _q->payload_sym,
+                                                    _q->payload_dec);
 
             // invoke callback
             if (_q->callback != NULL) {
                 // set framestats internals
-                _q->framestats.evm           = 20*log10f(sqrtf(_q->framestats.evm / _q->payload_mod_len));
+                _q->framestats.evm           = 0.0f; //20*log10f(sqrtf(_q->framestats.evm / 600));
                 _q->framestats.rssi          = 20*log10f(_q->gamma_hat);
-                _q->framestats.cfo           = nco_crcf_get_frequency(_q->nco_coarse) +
-                                               nco_crcf_get_frequency(_q->nco_fine) / 2.0f; //(float)(_q->k);
+                _q->framestats.cfo           = nco_crcf_get_frequency(_q->nco_coarse);
                 _q->framestats.framesyms     = _q->payload_sym;
-                _q->framestats.num_framesyms = _q->payload_mod_len;
+                _q->framestats.num_framesyms = 600;
                 _q->framestats.mod_scheme    = LIQUID_MODEM_QPSK;
                 _q->framestats.mod_bps       = 2;
-                _q->framestats.check         = _q->check;
-                _q->framestats.fec0          = _q->fec0;
-                _q->framestats.fec1          = _q->fec1;
+                _q->framestats.check         = LIQUID_CRC_24;
+                _q->framestats.fec0          = LIQUID_FEC_NONE;
+                _q->framestats.fec1          = LIQUID_FEC_GOLAY2412;
 
                 // invoke callback method
                 _q->callback(&_q->payload_dec[0],   // header is first 8 bytes
                              _q->payload_valid,
                              &_q->payload_dec[8],   // payload is last 64 bytes
-                             _q->payload_dec_len,
+                             64,
                              _q->payload_valid,
                              _q->framestats,
                              _q->userdata);
@@ -625,26 +555,6 @@ void framesync64_execute_rxpayload(framesync64   _q,
             return;
         }
     }
-}
-
-// decode payload
-void framesync64_decode_payload(framesync64 _q)
-{
-    // pack (8-bit) bytes from (bps_payload-bit) symbols
-    unsigned int bps = modem_get_bps(_q->demod);
-    unsigned int num_written;
-    liquid_repack_bytes(_q->payload_mod, bps, _q->payload_mod_len,
-                        _q->payload_enc, 8,   _q->payload_enc_len+8,
-                        &num_written);
-    assert(num_written = _q->payload_enc_len);
-
-    // unscramble
-    unscramble_data(_q->payload_enc, _q->payload_enc_len);
-    
-    // decode payload
-    _q->payload_valid = packetizer_decode(_q->p_payload,
-                                          _q->payload_enc,
-                                          _q->payload_dec);
 }
 
 // enable debugging
@@ -726,17 +636,16 @@ void framesync64_debug_print(framesync64  _q,
         fprintf(fid,"preamble_rx(%4u) = %12.4e + j*%12.4e;\n", i+1, crealf(rc[i]), cimagf(rc[i]));
 
     // write payload symbols
-    fprintf(fid,"payload_syms = zeros(1,%u);\n", _q->payload_mod_len);
+    unsigned int payload_sym_len = 600;
+    fprintf(fid,"payload_syms = zeros(1,%u);\n", payload_sym_len);
     rc = _q->payload_sym;
-    for (i=0; i<_q->payload_mod_len; i++)
+    for (i=0; i<payload_sym_len; i++)
         fprintf(fid,"payload_syms(%4u) = %12.4e + j*%12.4e;\n", i+1, crealf(rc[i]), cimagf(rc[i]));
 
     fprintf(fid,"figure;\n");
-    fprintf(fid,"plot(real(payload_syms),imag(payload_syms),'x',...\n");
-    fprintf(fid,"     real(preamble_rx),     imag(preamble_rx),     'x');\n");
+    fprintf(fid,"plot(real(payload_syms),imag(payload_syms),'o');\n");
     fprintf(fid,"xlabel('in-phase');\n");
     fprintf(fid,"ylabel('quadrature phase');\n");
-    fprintf(fid,"legend('payload syms','preamble syms','location','northeast');\n");
     fprintf(fid,"grid on;\n");
     fprintf(fid,"axis([-1 1 -1 1]*1.5);\n");
     fprintf(fid,"axis square;\n");

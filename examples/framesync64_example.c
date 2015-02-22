@@ -126,20 +126,8 @@ int main(int argc, char*argv[])
         y[i] += nstd*( randnf() + _Complex_I*randnf())*M_SQRT1_2;
     }
 
-#if 0
-    // add sample _rate_ offset
-    resamp_crcf resamp = resamp_crcf_create(1.002f, 13, 0.4f, 40.0f, 32);
-    float complex z[2];
-    unsigned int nw;
-    for (i=0; i<num_samples; i++) {
-        resamp_crcf_execute(resamp, y[i], z, &nw);
-        framesync64_execute(fs, z, nw);
-    }
-    resamp_crcf_destroy(resamp);
-#else
     // synchronize/receive the frame
     framesync64_execute(fs, y, num_samples);
-#endif
 
     // export debugging file
     if (debug_enabled)
