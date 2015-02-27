@@ -1457,6 +1457,7 @@ example_programs :=						\
 	examples/polyfit_example				\
 	examples/polyfit_lagrange_example			\
 	examples/poly_findroots_example				\
+	examples/qpacketmodem_performance_example		\
 	examples/qpacketmodem_example				\
 	examples/qpilotsync_example				\
 	examples/qnsearch_example				\

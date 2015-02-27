@@ -39,12 +39,12 @@ struct qpacketmodem_s {
     packetizer p;                       // encoder/decoder
 
     // payload
-    unsigned int bits_per_symbol;       // modulator bits/symbol
-    unsigned int payload_dec_len;       // payload length (num un-encoded bytes)
+    unsigned int    bits_per_symbol;    // modulator bits/symbol
+    unsigned int    payload_dec_len;    // payload length (num un-encoded bytes)
     unsigned char * payload_enc;        // payload data (encoded bytes)
     unsigned char * payload_mod;        // payload symbols (modulator output, demod input)
-    unsigned int payload_enc_len;       // length of encoded payload
-    unsigned int payload_mod_len;       // length of encoded payload
+    unsigned int    payload_enc_len;    // length of encoded payload
+    unsigned int    payload_mod_len;    // length of encoded payload
 };
 
 // create packet encoder
