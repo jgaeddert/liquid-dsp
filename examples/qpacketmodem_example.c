@@ -29,6 +29,7 @@ void usage()
     printf("  c     : coding scheme (inner): g2412 default\n");
     printf("  k     : coding scheme (outer): none default\n");
     liquid_print_fec_schemes();
+    printf("  s     : signal-to-noise ratio [dB], default: 6\n");
 }
 
 int main(int argc, char *argv[])
@@ -36,30 +37,33 @@ int main(int argc, char *argv[])
     //srand( time(NULL) );
 
     // options
-    modulation_scheme ms     = LIQUID_MODEM_QPSK;       // mod. scheme
-    crc_scheme check         = LIQUID_CRC_32;           // data validity check
-    fec_scheme fec0          = LIQUID_FEC_GOLAY2412;    // fec (inner)
-    fec_scheme fec1          = LIQUID_FEC_NONE;         // fec (outer)
-    unsigned int payload_len = 400;                     // payload length
-    const char filename[]    = "qpacketmodem_example.m";// output filename
+    modulation_scheme ms     = LIQUID_MODEM_QPSK;        // mod. scheme
+    crc_scheme   check       = LIQUID_CRC_32;            // data validity check
+    fec_scheme   fec0        = LIQUID_FEC_GOLAY2412;     // fec (inner)
+    fec_scheme   fec1        = LIQUID_FEC_NONE;          // fec (outer)
+    unsigned int payload_len = 400;                      // payload length
+    float        SNRdB       = 6.0f;                     // SNR [dB]
+    const char   filename[]  = "qpacketmodem_example.m"; // output filename
 
     // get options
     int dopt;
-    while((dopt = getopt(argc,argv,"hn:m:v:c:k:")) != EOF){
+    while((dopt = getopt(argc,argv,"hn:m:v:c:k:s:")) != EOF){
         switch (dopt) {
-        case 'h': usage();                                       return 0;
-        case 'n': payload_len   = atol(optarg);                  break;
-        case 'm': ms            = liquid_getopt_str2mod(optarg); break;
-        case 'v': check         = liquid_getopt_str2crc(optarg); break;
-        case 'c': fec0          = liquid_getopt_str2fec(optarg); break;
-        case 'k': fec1          = liquid_getopt_str2fec(optarg); break;
+        case 'h': usage();                                     return 0;
+        case 'n': payload_len = atol(optarg);                  break;
+        case 'm': ms          = liquid_getopt_str2mod(optarg); break;
+        case 'v': check       = liquid_getopt_str2crc(optarg); break;
+        case 'c': fec0        = liquid_getopt_str2fec(optarg); break;
+        case 'k': fec1        = liquid_getopt_str2fec(optarg); break;
+        case 's': SNRdB       = atof(optarg);                  break;
         default:
             exit(-1);
         }
     }
+    unsigned int i;
 
     // derived values
-    unsigned int i;
+    float nstd = powf(10.0f, -SNRdB/20.0f);
 
     // create and configure packet encoder/decoder object
     qpacketmodem q = qpacketmodem_create();
@@ -88,7 +92,7 @@ int main(int argc, char *argv[])
 
     // add noise
     for (i=0; i<frame_len; i++)
-        frame_rx[i] = frame_tx[i] + 0.5f*(randnf() + _Complex_I*randnf())*M_SQRT1_2;
+        frame_rx[i] = frame_tx[i] + nstd*(randnf() + _Complex_I*randnf())*M_SQRT1_2;
 
     // decode frame
     int crc_pass = qpacketmodem_decode(q, frame_rx, payload_rx);

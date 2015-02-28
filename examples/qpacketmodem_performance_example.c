@@ -161,9 +161,9 @@ int main(int argc, char *argv[])
             modulation_types[ms].name);
     fprintf(fid,"rate              = 8*payload_len / frame_len; %% true rate [bits/symbol]\n");
     for (i=0; i<num_snr; i++) {
-        fprintf(fid,"SNRdB(%4u) = %12.8f;\n",i+1, SNRdB_min + i*SNRdB_step);
-        fprintf(fid,"BER(%6u) = %12.4e;\n",  i+1, BER[i]);
-        fprintf(fid,"PER(%6u) = %12.4e;\n",  i+1, PER[i]);
+        fprintf(fid,"SNRdB(%4u) = %12.8f; ",  i+1, SNRdB_min + i*SNRdB_step);
+        fprintf(fid,"BER(%6u)   = %12.4e; ",  i+1, BER[i]);
+        fprintf(fid,"PER(%6u)   = %12.4e;\n", i+1, PER[i]);
     }
     
     // plot BER vs. SNR
