@@ -27,9 +27,6 @@ void usage()
     printf("  b     : signal bandwidth          default:  0.2\n");
     printf("  n     : number of data symbols,   default: 80\n");
     printf("  s     : SNR [dB],                 default: 40\n");
-    printf("  F     : carrier frequency offset, default:  0\n");
-    printf("  P     : carrier phase offset,     default:  0\n");
-    printf("  T     : fractional symbol offset, default:  0\n");
 }
 
 int main(int argc, char*argv[])
@@ -39,15 +36,12 @@ int main(int argc, char*argv[])
     unsigned int k           =   0;     // filter samples/symbol
     unsigned int num_symbols = 8000;    // number of data symbols
     float        SNRdB       = 40.0f;   // signal-to-noise ratio [dB]
-    float        cfo         = 0.0f;    // carrier frequency offset
-    float        cpo         = 0.0f;    // carrier phase offset
-    float        tau         = 0.0f;    // fractional symbol timing offset
     float        bandwidth   = 0.20;    // frequency spacing
     unsigned int nfft        = 1200;    // FFT size for compute spectrum
-    float        alpha       = 0.01f;    // PSD accumulation constant
+    float        alpha       = 0.01f;   // PSD accumulation constant
 
     int dopt;
-    while ((dopt = getopt(argc,argv,"hm:k:b:n:s:F:P:T:")) != EOF) {
+    while ((dopt = getopt(argc,argv,"hm:k:b:n:s:")) != EOF) {
         switch (dopt) {
         case 'h': usage();                      return 0;
         case 'm': m           = atoi(optarg);   break;
@@ -55,9 +49,6 @@ int main(int argc, char*argv[])
         case 'b': bandwidth   = atof(optarg);   break;
         case 'n': num_symbols = atoi(optarg);   break;
         case 's': SNRdB       = atof(optarg);   break;
-        case 'F': cfo         = atof(optarg);   break;
-        case 'P': cpo         = atof(optarg);   break;
-        case 'T': tau         = atof(optarg);   break;
         default:
             exit(1);
         }
