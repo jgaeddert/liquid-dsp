@@ -336,13 +336,13 @@ fft_objects :=							\
 	src/fft/src/fftf.o					\
 	src/fft/src/fftq16.o					\
 	src/fft/src/fftq32.o					\
-	src/fft/src/asgram.o					\
 	src/fft/src/spgramcf.o					\
 	src/fft/src/spgramf.o					\
 	src/fft/src/fft_utilities.o				\
 
 # explicit targets and dependencies
 fft_includes :=							\
+	src/fft/src/asgram.c					\
 	src/fft/src/fft_common.c				\
 	src/fft/src/fft_dft.c					\
 	src/fft/src/fft_radix2.c				\
@@ -355,17 +355,15 @@ src/fft/src/fftf.o   : %.o : %.c $(include_headers) $(fft_includes)
 src/fft/src/fftq16.o : %.o : %.c $(include_headers) $(fft_includes)
 src/fft/src/fftq32.o : %.o : %.c $(include_headers) $(fft_includes)
 
-src/fft/src/asgram.o : %.o : %.c $(include_headers)
-
 src/fft/src/dct.o : %.o : %.c $(include_headers)
 
 src/fft/src/fft_utilities.o : %.o : %.c $(include_headers)
 
 src/fft/src/mdct.o : %.o : %.c $(include_headers)
 
-src/fft/src/spgramcf.o : %.o : %.c $(include_headers) src/fft/src/spgram.c
+src/fft/src/spgramcf.o : %.o : %.c $(include_headers) src/fft/src/asgram.c src/fft/src/spgram.c
 
-src/fft/src/spgramf.o : %.o : %.c $(include_headers) src/fft/src/spgram.c
+src/fft/src/spgramf.o : %.o : %.c $(include_headers) src/fft/src/asgram.c src/fft/src/spgram.c
 
 # fft autotest scripts
 fft_autotests :=						\
@@ -545,6 +543,8 @@ filter_autotests :=						\
 	src/filter/tests/msresamp_crcf_autotest.c		\
 	src/filter/tests/resamp_crcf_autotest.c			\
 	src/filter/tests/resamp2_crcf_autotest.c		\
+	src/filter/tests/symsync_crcf_autotest.c		\
+	src/filter/tests/symsync_rrrf_autotest.c		\
 
 # additional autotest objects
 autotest_extra_obj +=						\
@@ -815,6 +815,7 @@ framing_autotests :=						\
 	src/framing/tests/bsync_autotest.c			\
 	src/framing/tests/detector_autotest.c			\
 	src/framing/tests/framesync64_autotest.c		\
+	src/framing/tests/flexframesync_autotest.c		\
 
 
 framing_benchmarks :=						\
@@ -1561,7 +1562,8 @@ example_programs :=						\
 	examples/agc_crcf_qpsk_example				\
 	examples/agc_rrrf_example				\
 	examples/ampmodem_example				\
-	examples/asgram_example					\
+	examples/asgramcf_example				\
+	examples/asgramf_example				\
 	examples/autocorr_cccf_example				\
 	examples/bpacketsync_example				\
 	examples/bpresync_example				\
@@ -1587,6 +1589,7 @@ example_programs :=						\
 	examples/fftfilt_crcf_example				\
 	examples/firdecim_crcf_example				\
 	examples/firfarrow_rrrf_example				\
+	examples/firfilt_cccf_example				\
 	examples/firfilt_crcf_example				\
 	examples/firfilt_rrrf_example				\
 	examples/firdes_kaiser_example				\
@@ -1620,6 +1623,7 @@ example_programs :=						\
 	examples/iirfilt_cccf_example				\
 	examples/iirfilt_crcf_example				\
 	examples/iirfilt_crcq16_example				\
+	examples/iirfilt_crcf_dcblocker_example			\
 	examples/iirinterp_crcf_example				\
 	examples/iirinterp_crcq16_example			\
 	examples/kbd_window_example				\
@@ -1656,18 +1660,20 @@ example_programs :=						\
 	examples/random_histogram_example			\
 	examples/repack_bytes_example				\
 	examples/resamp_crcf_example				\
-	examples/resamp2_crcq16_decim_example			\
-	examples/resamp2_crcq16_interp_example			\
+	examples/resamp2_cccf_example				\
 	examples/resamp2_crcf_example				\
 	examples/resamp2_crcf_decim_example			\
 	examples/resamp2_crcf_filter_example			\
 	examples/resamp2_crcf_interp_example			\
+	examples/resamp2_crcq16_decim_example			\
+	examples/resamp2_crcq16_interp_example			\
 	examples/ricek_channel_example				\
 	examples/scramble_example				\
 	examples/smatrix_example				\
 	examples/spgramcf_example				\
 	examples/spgramf_example				\
 	examples/symsync_crcf_example				\
+	examples/symsync_crcf_full_example			\
 	examples/symsync_crcf_kaiser_example			\
 	examples/wdelayf_example				\
 	examples/windowf_example				\

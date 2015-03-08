@@ -93,10 +93,10 @@ void sumproduct_bench(struct rusage *     _start,
     getrusage(RUSAGE_SELF, _start);
     int parity_pass;
     for (i=0; i<(*_num_iterations); i++) {
-        parity_pass = fec_sumproduct(_m, _n, H, LLR, c_hat, 1);
-        parity_pass = fec_sumproduct(_m, _n, H, LLR, c_hat, 1);
-        parity_pass = fec_sumproduct(_m, _n, H, LLR, c_hat, 1);
-        parity_pass = fec_sumproduct(_m, _n, H, LLR, c_hat, 1);
+        parity_pass = fec_sumproduct(_m, _n, H, LLR, c_hat, 1); LLR[i%_m] += parity_pass ? 1 : -1;
+        parity_pass = fec_sumproduct(_m, _n, H, LLR, c_hat, 1); LLR[i%_m] += parity_pass ? 1 : -1;
+        parity_pass = fec_sumproduct(_m, _n, H, LLR, c_hat, 1); LLR[i%_m] += parity_pass ? 1 : -1;
+        parity_pass = fec_sumproduct(_m, _n, H, LLR, c_hat, 1); LLR[i%_m] += parity_pass ? 1 : -1;
     }
     getrusage(RUSAGE_SELF, _finish);
     *_num_iterations *= 4;

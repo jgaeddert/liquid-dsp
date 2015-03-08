@@ -32,7 +32,7 @@ void sumsqf_bench(struct rusage *     _start,
     if (*_num_iterations < 1) *_num_iterations = 1;
 
     float x[_n];
-    float y;
+    float y = 0.0f;
     unsigned int long i;
     for (i=0; i<_n; i++)
         x[i] = 1.0f;
@@ -40,10 +40,13 @@ void sumsqf_bench(struct rusage *     _start,
     // start trials
     getrusage(RUSAGE_SELF, _start);
     for (i=0; i<(*_num_iterations); i++) {
-        y = liquid_sumsqf(x, _n);
-        y = liquid_sumsqf(x, _n);
-        y = liquid_sumsqf(x, _n);
-        y = liquid_sumsqf(x, _n);
+        y += liquid_sumsqf(x, _n);
+        y -= liquid_sumsqf(x, _n);
+        y += liquid_sumsqf(x, _n);
+        y -= liquid_sumsqf(x, _n);
+        
+        // change input
+        x[i%_n] = y;
     }
     getrusage(RUSAGE_SELF, _finish);
     *_num_iterations *= 4;

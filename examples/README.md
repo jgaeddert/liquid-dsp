@@ -1,4 +1,4 @@
-
+a
 liquid-dsp examples
 ===================
 
@@ -18,10 +18,18 @@ This directory contains all the examples for interfacing the liquid modules.
     modulator/demodulator) with noise, carrier phase, and carrier frequency
     offsets.
 
- * `asgram_example.c`:
-    ASCII spectrogram example.  This example demonstrates the functionality of
-    the ASCII spectrogram.  A sweeping complex sinusoid is generated and the
-    resulting frequency response is printed to the screen.
+ * `asgramcf_example.c`:
+    ASCII spectrogram example for complex inputs. This example demonstrates
+    the functionality of the ASCII spectrogram. A sweeping complex sinusoid
+    is generated and the resulting spectral periodogram is printed to the
+    screen.
+
+ * `asgramf_example.c`:
+    ASCII spectrogram example for real-valued input. This example demonstrates
+    the functionality of the ASCII spectrogram for real-valued input siganls.
+    A cosine signal with time-varying frequency is generated and the resulting
+    spectral periodogram is printed to the screen. Because the time signal has
+    no complex component, its spectrum is symmetric.
 
  * `autocorr_cccf_example.c`:
     This example demonstrates the autocorr (auto-correlation) object
@@ -180,6 +188,11 @@ This directory contains all the examples for interfacing the liquid modules.
  * `firfarrow_rrrf_sine_example.c`:
 
  * `firfilt_rrrf_example.c`:
+
+ * `firfilt_cccf_example.c`:
+    This example demonstrates the finite impulse response (FIR) filter
+    with complex coefficients as a cross-correlator between transmitted
+    and received sequences.
 
  * `firfilt_crcf_example.c`:
     Complex finite impulse response filter example. Demonstrates the 
@@ -341,7 +354,12 @@ This directory contains all the examples for interfacing the liquid modules.
  * `interleaver_soft_example.c`:
 
  * `kbd_window_example.c`:
+
  * `lpc_example.c`:
+    This example demonstrates linear prediction in liquid. An input signal
+    is generated which exhibits a strong temporal correlation. The linear
+    predictor generates an approximating all-pole filter which minimizes
+    the squared error between the prediction and the actual output.
 
  * `matched_filter_example.c`:
 
@@ -475,11 +493,28 @@ This directory contains all the examples for interfacing the liquid modules.
     in the input is 9 and not evenly divisible by 2, the last of the 5
     output symbols has a zero explicitly padded to the end.
 
+<<<<<<< HEAD
  * `resamp2_crcq16_decim_example.c`:
     Halfband decimator.  This example demonstrates the interface to the
     decimating halfband resampler in fixed-point math.
 
     SEE ALSO: `resamp2_crcq16_decim_example.c`
+=======
+  * `resamp2_cccf_example.c`
+    This example demonstrates the halfband resampler cenetered at the
+    quarter sample rate to split the signal into positive and negative
+    frequency bands. Two distinct narrow-band signals are generated; one
+    at a positive frequency and one at a negative frequency. The resamp2
+    object is run as a filter to separate the two about the zero-
+    frequency center point.
+
+ * `resamp2_crcf_example.c`:
+    This example demonstrates the halfband resampler running as both an
+    interpolator and a decimator. A narrow-band signal is first
+    interpolated by a factor of 2, and then decimated. The resulting RMS
+     error between the final signal and original is computed and printed
+    to the screen.
+>>>>>>> master
 
  * `resamp2_crcf_decim_example.c`:
     Halfband decimator.  This example demonstrates the interface to the
@@ -490,6 +525,7 @@ This directory contains all the examples for interfacing the liquid modules.
     SEE ALSO: `resamp2_crcf_interp_example.c`
               `decim_rrrf_example.c`
 
+<<<<<<< HEAD
  * `resamp2_crcq16_interp_example.c`:
     Halfband interpolator.  This example demonstrates the interface to the
     interpolating halfband resampler in fixed-point math.
@@ -503,6 +539,8 @@ This directory contains all the examples for interfacing the liquid modules.
      error between the final signal and original is computed and printed
     to the screen.
 
+=======
+>>>>>>> master
  * `resamp2_crcf_filter_example.c`:
     Halfband (two-channel) filterbank example. This example demonstrates
     the analyzer/synthesizer execute() methods for the resamp2_xxxt
@@ -542,6 +580,21 @@ This directory contains all the examples for interfacing the liquid modules.
    Spectral periodogram example with real inputs.
 
  * `symsync_crcf_example.c`:
+    This example demonstrates the basic principles of the symbol timing
+    recovery family of objects, specifically symsync_crcf. A set of random
+    QPSK symbols are generated and interpolated with a timing offset. The
+    resulting signal is run through the symsync_crcf object which applies a
+    matched filter and recovers timing producing a clean constellation.
+
+ * `symsync_crcf_full_example.c`:
+    This example extends that of `symsync_crcf_example.c` by including options
+    for simulating a timing rate offset in addition to just a timing phase
+    error. The resulting output file shows not just the constellation but the
+    time domain sequence as well as the timing phase estimate over time.
+
+ * `symsync_crcf_kaiser_example.c`:
+    This is a simplified example of the symync family of objects to show how
+    symbol timing can be recovered after the matched filter output.
 
  * `wdelayf_example.c`:
 

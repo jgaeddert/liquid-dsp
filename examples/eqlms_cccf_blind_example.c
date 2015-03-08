@@ -183,9 +183,6 @@ int main(int argc, char*argv[])
         // store output
         z[i] = d_hat;
 
-        // check to see if buffer is full
-        if ( i < hp_len) continue;
-
         // decimate by k
         if ( (i%k) != 0 ) continue;
 
