@@ -507,6 +507,12 @@ EQLMS() EQLMS(_create_rnyquist)(int          _type,             \
                                 float        _beta,             \
                                 float        _dt);              \
                                                                 \
+/* create LMS EQ initialized with low-pass filter           */  \
+/*  _h_len  : filter length                                 */  \
+/*  _fc     : filter cut-off, _fc in (0,0.5]                */  \
+EQLMS() EQLMS(_create_lowpass)(unsigned int _h_len,             \
+                               float        _fc);               \
+                                                                \
 /* re-create EQ initialized with external coefficients      */  \
 /*  _q      :   equalizer object                            */  \
 /*  _h      :   filter coefficients (NULL for {1,0,0...})   */  \
