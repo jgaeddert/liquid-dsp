@@ -209,7 +209,15 @@ else
                        src/dotprod/src/dotprod_rrrq32.o \
                        src/dotprod/src/sumsqq16.o"
         ARCH_OPTION="-fno-common -faltivec";;
-    arm*)
+    armv1*|armv2*|armv3*|armv4*|armv5*|armv6*)
+        # assume neon instructions are NOT available
+        MLIBS_DOTPROD="src/dotprod/src/dotprod_cccf.o \
+                       src/dotprod/src/dotprod_crcf.o \
+                       src/dotprod/src/dotprod_rrrf.o \
+                       src/dotprod/src/sumsq.o"
+        ARCH_OPTION="-ffast-math";;
+    armv7*|armv8*)
+        # assume neon instructions are available
         # TODO: check for Neon availability
 
         # ARM architecture : use neon extensions
