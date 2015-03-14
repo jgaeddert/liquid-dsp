@@ -1296,6 +1296,7 @@ test: check
 # clean the generated files
 clean-check:
 	$(RM) autotest_include.h $(autotest_prog).o $(autotest_prog)
+	$(RM) autotest/autotestlib.o
 	$(RM) $(autotest_obj)
 	$(RM) $(autotest_extra_obj)
 
@@ -1356,6 +1357,7 @@ clean-bench:
 	$(RM) scripts/benchmark_compare
 	$(RM) $(benchmark_obj)
 	$(RM) $(benchmark_extra_obj)
+	$(RM) bench/fftbench.o
 	$(RM) bench/fftbench
 
 
@@ -1642,9 +1644,10 @@ clean-modules:
 	$(RM) src/optim/src/*.o        src/optim/bench/*.o        src/optim/tests/*.o
 	$(RM) src/quantization/src/*.o src/quantization/bench/*.o src/quantization/tests/*.o
 	$(RM) src/random/src/*.o       src/random/bench/*.o       src/random/tests/*.o
+	$(RM) src/sequence/src/*.o     src/sequence/bench/*.o     src/sequence/tests/*.o
 	$(RM) src/utility/src/*.o      src/utility/bench/*.o      src/utility/tests/*.o
 	$(RM) src/vector/src/*.o       src/vector/bench/*.o       src/vector/tests/*.o
-	$(RM) libliquid.o
+	$(RM) src/libliquid.o
 
 clean: clean-modules clean-autoscript clean-check clean-bench clean-examples clean-sandbox
 	$(RM) $(extra_clean)
