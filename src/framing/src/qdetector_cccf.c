@@ -49,22 +49,24 @@ struct qdetector_cccf_s {
     
     firfilt_crcf    filter;         // matched filter
 
-    windowcf        buffer;         // input buffer [size: nfft]
-
     unsigned int    s_len;          // template (time) length: k * (sequence_len + 2*m)
     float complex * s;              // template (time), [size: s_len x 1]
     float complex * S;              // template (freq), [size: nfft x 1]
+    float           s2_sum;         // sum{ s^2 }
 
-    float complex * buf_time;       // time-domain buffer
-    float complex * buf_freq;       // frequence-domain buffer
+    float complex * buf_time_0;     // time-domain buffer (FFT)
+    float complex * buf_freq_0;     // frequence-domain buffer (FFT)
+    float complex * buf_freq_1;     // frequence-domain buffer (IFFT)
+    float complex * buf_time_1;     // time-domain buffer (IFFT)
     unsigned int    nfft;           // fft size
     fftplan         fft;            // FFT
     fftplan         ifft;           // IFFT
 
-    unsigned int    timer;          //
+    unsigned int    counter;        //
     unsigned int    num_transforms; //
 
-    float           x2_sum;         // sum{ |x|^2 }
+    float           x2_sum_0;       // sum{ |x|^2 } of first half of buffer
+    float           x2_sum_1;       // sum{ |x|^2 } of second half of buffer
 
     float           gamma_hat;      // signal level estimate
     float           tau_hat;        // timing offset estimate
@@ -99,9 +101,15 @@ qdetector_cccf qdetector_cccf_create(float complex * _sequence,
     if (_sequence_len == 0) {
         fprintf(stderr,"error: qdetector_cccf_create(), sequence length cannot be zero\n");
         exit(1);
-    } else if (_k < 2) {
-    } else if (_m < 1) {
+    } else if (_k < 2 || _k > 80) {
+        fprintf(stderr,"error: qdetector_cccf_create(), samples per symbol must be in [2,80]\n");
+        exit(1);
+    } else if (_m < 1 || _m > 100) {
+        fprintf(stderr,"error: qdetector_cccf_create(), filter delay must be in [1,100]\n");
+        exit(1);
     } else if (_beta < 0.0f || _beta > 1.0f) {
+        fprintf(stderr,"error: qdetector_cccf_create(), excess bandwidth factor must be in [0,1]\n");
+        exit(1);
     }
     unsigned int i;
     
@@ -121,41 +129,34 @@ qdetector_cccf qdetector_cccf_create(float complex * _sequence,
     q->s_len = q->k * (q->sequence_len + 2*q->m);
     q->s     = (float complex*) malloc(q->s_len * sizeof(float complex));
     firinterp_crcf interp = firinterp_crcf_create_rnyquist(q->ftype, q->k, q->m, q->beta, 0);
-    //firinterp_crcf_execute_block(interp, q->sequence, q->sequence_len, q->s);
     for (i=0; i<q->sequence_len + 2*q->m; i++)
         firinterp_crcf_execute(interp, i < q->sequence_len ? q->sequence[i] : 0, &q->s[q->k*i]);
     firinterp_crcf_destroy(interp);
+    q->s2_sum = liquid_sumsqcf(q->s, q->s_len); // compute sum{ s^2 }
 
     // prepare transforms
-    q->nfft     = 1 << liquid_nextpow2( (unsigned int)( 1.5f * q->s_len ) );
-    q->buffer   = windowcf_create(q->nfft);
-    q->buf_time = (float complex*) malloc(q->nfft * sizeof(float complex));
-    q->buf_freq = (float complex*) malloc(q->nfft * sizeof(float complex));
+    q->nfft     = 1 << liquid_nextpow2( (unsigned int)( 1.5f * q->s_len ) ); // NOTE: must be even
+    q->buf_time_0 = (float complex*) malloc(q->nfft * sizeof(float complex));
+    q->buf_freq_0 = (float complex*) malloc(q->nfft * sizeof(float complex));
+    q->buf_freq_1 = (float complex*) malloc(q->nfft * sizeof(float complex));
+    q->buf_time_1 = (float complex*) malloc(q->nfft * sizeof(float complex));
 
-    q->fft  = fft_create_plan(q->nfft, q->buf_time, q->buf_freq, LIQUID_FFT_FORWARD,  0);
-    q->ifft = fft_create_plan(q->nfft, q->buf_freq, q->buf_time, LIQUID_FFT_BACKWARD, 0);
+    q->fft  = fft_create_plan(q->nfft, q->buf_time_0, q->buf_freq_0, LIQUID_FFT_FORWARD,  0);
+    q->ifft = fft_create_plan(q->nfft, q->buf_freq_1, q->buf_time_1, LIQUID_FFT_BACKWARD, 0);
 
     // create frequency-domain template by taking nfft-point transform on 's', storing in 'S'
     q->S = (float complex*) malloc(q->nfft * sizeof(float complex));
-    memset(q->buf_time, 0x00, q->nfft*sizeof(float complex));
-    memmove(q->buf_time, q->s, q->s_len*sizeof(float complex));
+    memset(q->buf_time_0, 0x00, q->nfft*sizeof(float complex));
+    memmove(q->buf_time_0, q->s, q->s_len*sizeof(float complex));
     fft_execute(q->fft);
-    memmove(q->S, q->buf_freq, q->nfft*sizeof(float complex));
-#if 0
-    FILE * fid = fopen("qdetector_debug.m", "w");
-    fprintf(fid,"clear all; close all;\n");
-    fprintf(fid,"nfft = %u;\n", q->nfft);
-    for (i=0; i<q->s_len; i++)
-        fprintf(fid,"s(%6u) = %12.4e + 1i*%12.4e;\n", i+1, crealf(q->s[i]), cimagf(q->s[i]));
-    for (i=0; i<q->nfft; i++)
-        fprintf(fid,"S(%6u) = %12.4e + 1i*%12.4e;\n", i+1, crealf(q->S[i]), cimagf(q->S[i]));
-    fclose(fid);
-    printf("debug: qdetector_debug.m\n");
-#endif
+    memmove(q->S, q->buf_freq_0, q->nfft*sizeof(float complex));
 
     // reset state variables
-    q->timer = q->nfft / 2;
+    q->counter        = q->nfft/2;
     q->num_transforms = 0;
+    q->x2_sum_0       = 0.0f;
+    q->x2_sum_1       = 0.0f;
+    memset(q->buf_time_0, 0x00, q->nfft*sizeof(float complex));
 
     // return object
     return q;
@@ -165,13 +166,14 @@ void qdetector_cccf_destroy(qdetector_cccf _q)
 {
     // free allocated arrays
     free(_q->sequence);
-    free(_q->s       );
-    free(_q->S       );
-    free(_q->buf_time);
-    free(_q->buf_freq);
+    free(_q->s         );
+    free(_q->S         );
+    free(_q->buf_time_0);
+    free(_q->buf_freq_0);
+    free(_q->buf_freq_1);
+    free(_q->buf_time_1);
 
     // destroy objects
-    windowcf_destroy(_q->buffer);
     fft_destroy_plan(_q->fft);
     fft_destroy_plan(_q->ifft);
 
@@ -198,31 +200,36 @@ void qdetector_cccf_reset(qdetector_cccf _q)
 void qdetector_cccf_execute(qdetector_cccf _q,
                             float complex  _x)
 {
-    windowcf_push(_q->buffer, _x);
-    _q->timer--;
+    // write sample to buffer and increment counter
+    _q->buf_time_0[_q->counter++] = _x;
 
-    if (_q->timer)
+    // accumulate signal magnitude
+    _q->x2_sum_1 += crealf(_x)*crealf(_x) + cimagf(_x)*cimagf(_x);
+
+    if (_q->counter < _q->nfft)
         return;
     
     unsigned int i;
 
-    // reset timer
-    _q->timer = _q->nfft / 2;
-
-    // read buffer and copy to FFT input buffer
-    float complex * r;
-    windowcf_read(_q->buffer, &r);
-    memmove(_q->buf_time, r, _q->nfft*sizeof(float complex));
+    // reset counter (last half of time buffer)
+    _q->counter = _q->nfft/2;
 
     // run transform
     fft_execute(_q->fft);
     
     // cross-multiply
     for (i=0; i<_q->nfft; i++)
-        _q->buf_freq[i] *= conjf(_q->S[i]);
+        _q->buf_freq_1[i] = _q->buf_freq_0[i] * conjf(_q->S[i]);
 
     // run inverse transform
     fft_execute(_q->ifft);
+    
+    // scale by signal level (TODO: use median rather than mean signal level)
+    float g0 = sqrtf(_q->x2_sum_0 + _q->x2_sum_1) * sqrtf((float)(_q->s_len) / (float)(_q->nfft));
+    float g = 1.0f / ( (float)(_q->nfft) * g0 * sqrtf(_q->s2_sum) );
+    for (i=0; i<_q->nfft; i++)
+        _q->buf_time_1[i] *= g;
+
 #if DEBUG_QDETECTOR
     char filename[64];
     sprintf(filename,"qdetector_out_%u.m", _q->num_transforms);
@@ -230,7 +237,7 @@ void qdetector_cccf_execute(qdetector_cccf _q,
     fprintf(fid,"clear all; close all;\n");
     fprintf(fid,"nfft = %u;\n", _q->nfft);
     for (i=0; i<_q->nfft; i++)
-        fprintf(fid,"rxy(%6u) = %12.4e + 1i*%12.4e;\n", i+1, crealf(_q->buf_time[i]), cimagf(_q->buf_time[i]));
+        fprintf(fid,"rxy(%6u) = %12.4e + 1i*%12.4e;\n", i+1, crealf(_q->buf_time_1[i]), cimagf(_q->buf_time_1[i]));
     fprintf(fid,"figure;\n");
     fprintf(fid,"t=[0:(nfft-1)];\n");
     fprintf(fid,"plot(t,abs(rxy));\n");
@@ -239,6 +246,29 @@ void qdetector_cccf_execute(qdetector_cccf _q,
     printf("debug: %s\n", filename);
 #endif
     _q->num_transforms++;
+
+    // search for peak
+    float        rxy_peak  = 0.0f;
+    unsigned int rxy_index = 0;
+    for (i=0; i<_q->nfft; i++) {
+        float rxy_abs = cabsf(_q->buf_time_1[i]);
+        if (rxy_abs > rxy_peak || i==0) {
+            rxy_peak  = rxy_abs;
+            rxy_index = i;
+        }
+    }
+    // check detection threshold
+    float rxy_threshold = 0.7f;
+    if (rxy_peak > rxy_threshold) {
+        printf("*** frame detected! rxy = %12.8f, idx=%u\n", rxy_peak, rxy_index);
+    }
+
+    // copy last half of fft input buffer to front
+    memmove(_q->buf_time_0, _q->buf_time_0 + _q->nfft/2, (_q->nfft/2)*sizeof(float complex));
+
+    // swap accumulated signal levels
+    _q->x2_sum_0 = _q->x2_sum_1;
+    _q->x2_sum_1 = 0.0f;
 }
 
 

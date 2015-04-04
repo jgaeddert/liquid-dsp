@@ -36,6 +36,7 @@ int main(int argc, char*argv[])
     unsigned int m            =    7;
     float        beta         =  0.3f;
     int          ftype        = LIQUID_FIRFILT_ARKAISER;
+    float        gamma        =  0.5f;  // channel gain
 
 #if 0
     float        noise_floor  = -30.0f; // noise floor [dB]
@@ -75,10 +76,7 @@ int main(int argc, char*argv[])
     // derived values
     unsigned int num_symbols = 8*sequence_len + 2*m;
     unsigned int num_samples = k * num_symbols;
-#if 0
-    float        nstd        = powf(10.0f, noise_floor/20.0f);
-    float        gamma       = powf(10.0f, (SNRdB + noise_floor)/20.0f);
-#endif
+    float        nstd        = 0.1f;
 
     // arrays
     float complex x[num_samples];   // transmitted signal
@@ -108,16 +106,16 @@ int main(int argc, char*argv[])
     for (i=0; i<num_samples; i++) {
         y[i] = x[i];
 
-        /*
         // channel gain
         y[i] *= gamma;
 
+        /*
         // carrier offset
         y[i] *= cexpf(_Complex_I*(dphi*i + phi));
+        */
         
         // noise
         y[i] += nstd*(randnf() + _Complex_I*randnf())*M_SQRT1_2;
-        */
     }
 
     // create detector
