@@ -73,7 +73,7 @@ int main(int argc, char*argv[])
 #endif
 
     // derived values
-    unsigned int num_symbols = 3*sequence_len + 2*m;
+    unsigned int num_symbols = 8*sequence_len + 2*m;
     unsigned int num_samples = k * num_symbols;
 #if 0
     float        nstd        = powf(10.0f, noise_floor/20.0f);
@@ -122,9 +122,10 @@ int main(int argc, char*argv[])
 
     // create detector
     qdetector_cccf q = qdetector_cccf_create(sequence, sequence_len, ftype, k, m, beta);
+    qdetector_cccf_print(q);
 
     //
-    qdetector_cccf_execute(q,y,num_samples);
+    qdetector_cccf_execute_block(q,y,num_samples);
 
     // destroy objects
     qdetector_cccf_destroy(q);
