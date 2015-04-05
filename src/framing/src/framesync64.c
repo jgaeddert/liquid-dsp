@@ -276,6 +276,7 @@ void framesync64_execute_seekpn(framesync64   _q,
                 _q->tau_hat, _q->dphi_hat, 20*log10f(_q->gamma_hat));
 
         // set estimates
+        firpfb_crcf_set_scale(_q->mf, 0.5f / _q->gamma_hat);
         _q->pfb_index = 0;  // TODO: set value appropriately if tau_hat is negative
         nco_crcf_set_frequency(_q->mixer, _q->dphi_hat);
         nco_crcf_set_phase    (_q->mixer, _q->phi_hat );
