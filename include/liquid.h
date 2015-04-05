@@ -3872,12 +3872,8 @@ void qdetector_cccf_destroy(qdetector_cccf _q);
 void qdetector_cccf_print  (qdetector_cccf _q);
 void qdetector_cccf_reset  (qdetector_cccf _q);
 
-void qdetector_cccf_execute(qdetector_cccf       _q,
+int  qdetector_cccf_execute(qdetector_cccf       _q,
                             liquid_float_complex _x);
-
-void qdetector_cccf_execute_block(qdetector_cccf         _q,
-                                  liquid_float_complex * _x,
-                                  unsigned int           _n);
 
 //
 // Pre-demodulation detector

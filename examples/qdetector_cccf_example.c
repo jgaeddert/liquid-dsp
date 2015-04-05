@@ -41,11 +41,11 @@ int main(int argc, char*argv[])
 #if 0
     float        noise_floor  = -30.0f; // noise floor [dB]
     float        SNRdB        =  20.0f; // signal-to-noise ratio [dB]
+#endif
     float        tau          =  0.0f;  // fractional timing offset
-    float        dphi         =  0.0f;  // carrier frequency offset
+    float        dphi         =  0.01f;  // carrier frequency offset
     float        phi          =  0.0f;  // carrier phase offset
     float        threshold    =  0.3f;  // detection threshold
-#endif
 
 #if 0
     int dopt;
@@ -109,10 +109,8 @@ int main(int argc, char*argv[])
         // channel gain
         y[i] *= gamma;
 
-        /*
         // carrier offset
         y[i] *= cexpf(_Complex_I*(dphi*i + phi));
-        */
         
         // noise
         y[i] += nstd*(randnf() + _Complex_I*randnf())*M_SQRT1_2;
@@ -122,8 +120,18 @@ int main(int argc, char*argv[])
     qdetector_cccf q = qdetector_cccf_create(sequence, sequence_len, ftype, k, m, beta);
     qdetector_cccf_print(q);
 
+    // delay
+    unsigned int num_delay = 250;
+    for (i=0; i<num_delay; i++)
+        qdetector_cccf_execute(q,0.0f);
+
     //
-    qdetector_cccf_execute_block(q,y,num_samples);
+    for (i=0; i<num_samples; i++) {
+        int rc = qdetector_cccf_execute(q,y[i]);
+
+        if (rc)
+            printf("\nframe detected!\n");
+    }
 
     // destroy objects
     qdetector_cccf_destroy(q);
