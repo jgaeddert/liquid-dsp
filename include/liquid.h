@@ -1900,7 +1900,7 @@ void FIRFILT(_print)(FIRFILT() _q);                             \
                                                                 \
 /* set output scaling for filter                            */  \
 void FIRFILT(_set_scale)(FIRFILT() _q,                          \
-                         TC        _g);                         \
+                         TC        _scale);                     \
                                                                 \
 /* push sample into filter object's internal buffer         */  \
 /*  _q      : filter object                                 */  \
@@ -2080,7 +2080,7 @@ void FFTFILT(_print)(FFTFILT() _q);                             \
                                                                 \
 /* set output scaling for filter                            */  \
 void FFTFILT(_set_scale)(FFTFILT() _q,                          \
-                         TC        _g);                         \
+                         TC        _scale);                     \
                                                                 \
 /* execute the filter on internal buffer and coefficients   */  \
 /*  _q      : filter object                                 */  \
@@ -2309,6 +2309,10 @@ void FIRPFB(_destroy)(FIRPFB() _q);                             \
                                                                 \
 /* print firpfb object's parameters                         */  \
 void FIRPFB(_print)(FIRPFB() _q);                               \
+                                                                \
+/* set output scaling for filter                            */  \
+void FIRPFB(_set_scale)(FIRPFB() _q,                            \
+                        TC       _g);                           \
                                                                 \
 /* clear/reset firpfb object internal state                 */  \
 void FIRPFB(_reset)(FIRPFB() _q);                               \
