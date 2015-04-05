@@ -35,7 +35,7 @@ int main(int argc, char *argv[])
     unsigned int pilot_spacing =  20;                       // pilot spacing
     float        SNRdB         = 20.0f;                     // signal-to-noise ratio [dB]
     const char   filename[]    = "qpilotsync_example.m";    // output filename
-    float        dphi          = 0.0075f;                   // carrier frequency offset
+    float        dphi          = -0.0075f;                   // carrier frequency offset
     float        phi           = 2.1800f;                   // carrier phase offset
     float        gain          = 0.5f;                      // channel gain
 
