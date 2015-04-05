@@ -208,7 +208,7 @@ void qpilotsync_execute(qpilotsync      _q,
     float        c    =  y0;
     float        idx  = -b / (2.0f*a); //-0.5f*(ypos - yneg) / (ypos + yneg - 2*y0);
     float index = (float)i0 + idx;
-    float dphi_hat = (i0 > _q->nfft/2 ? index-64.0f : index) * 2*M_PI / (float)(_q->nfft * _q->pilot_spacing);
+    float dphi_hat = (i0 > _q->nfft/2 ? index-(float)_q->nfft : index) * 2*M_PI / (float)(_q->nfft * _q->pilot_spacing);
 #if DEBUG_QPILOTSYNC
     printf("X[%3u] = %12.8f <%12.8f>\n", ineg, yneg, cargf(_q->buf_freq[ineg]));
     printf("X[%3u] = %12.8f <%12.8f>\n", i0,   y0,   cargf(_q->buf_freq[i0]));
@@ -220,7 +220,7 @@ void qpilotsync_execute(qpilotsync      _q,
 #endif
 
     // estimate carrier phase offset
-#if 1
+#if 0
     // METHOD 1: linear interpolation of phase in FFT output buffer
     float v0 = cargf(_q->buf_freq[ idx < 0 ? ineg : i0   ]);
     float v1 = cargf(_q->buf_freq[ idx < 0 ? i0   : ipos ]);
