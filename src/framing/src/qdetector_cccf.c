@@ -350,7 +350,9 @@ void qdetector_cccf_execute_seek(qdetector_cccf _q,
 
     float rxy_threshold = 0.7f;
     if (rxy_peak > rxy_threshold && rxy_index < _q->nfft/2) {
+#if DEBUG_QDETECTOR_PRINT
         printf("*** frame detected! rxy = %12.8f, time index=%u, freq. offset=%d\n", rxy_peak, rxy_index, rxy_offset);
+#endif
         // update state, reset counter, copy buffer appropriately
         _q->state = QDETECTOR_STATE_ALIGN;
         _q->offset = rxy_offset;
@@ -383,7 +385,7 @@ void qdetector_cccf_execute_align(qdetector_cccf _q,
     if (_q->counter < _q->nfft)
         return;
 
-    printf("signal is aligned!\n");
+    //printf("signal is aligned!\n");
 
     // estimate timing offset
     fft_execute(_q->fft);
@@ -401,19 +403,13 @@ void qdetector_cccf_execute_align(qdetector_cccf _q,
     float yneg = cabsf(_q->buf_time_1[_q->nfft-1]);  yneg = sqrtf(yneg);
     float y0   = cabsf(_q->buf_time_1[         0]);  y0   = sqrtf(y0  );
     float ypos = cabsf(_q->buf_time_1[         1]);  ypos = sqrtf(ypos);
-    printf("  y[    -1] : %12.8f\n", yneg);
-    printf("  y[     0] : %12.8f\n", y0  );
-    printf("  y[    +1] : %12.8f\n", ypos);
     // TODO: compute timing offset estimate from these values
     float a     =  0.5f*(ypos + yneg) - y0;
     float b     =  0.5f*(ypos - yneg);
     float c     =  y0;
     _q->tau_hat = -b / (2.0f*a); //-0.5f*(ypos - yneg) / (ypos + yneg - 2*y0);
-    printf("  tau-hat   : %12.8f\n", _q->tau_hat);
     float g_hat   = (a*_q->tau_hat*_q->tau_hat + b*_q->tau_hat + c);
     _q->gamma_hat = g_hat * g_hat / ((float)(_q->nfft) * _q->s2_sum); // g_hat^2 because of sqrt for yneg/y0/ypos
-    //printf("  g-hat:    : %12.8f\n", g_hat);
-    printf("  gamma-hat : %12.8f\n", _q->gamma_hat);
 
     // copy buffer to preserve data integrity
     memmove(_q->buf_time_1, _q->buf_time_0, _q->nfft*sizeof(float complex));
@@ -455,16 +451,12 @@ void qdetector_cccf_execute_align(qdetector_cccf _q,
     unsigned int ipos = (i0            + 1)%_q->nfft;
     float        vneg = cabsf(_q->buf_freq_0[ineg]);
     float        vpos = cabsf(_q->buf_freq_0[ipos]);
-    printf("  v[%4u-1] : %12.8f\n", i0,vneg);
-    printf("  v[%4u+0] : %12.8f\n", i0,v0  );
-    printf("  v[%4u+1] : %12.8f\n", i0,vpos);
     a            =  0.5f*(vpos + vneg) - v0;
     b            =  0.5f*(vpos - vneg);
     c            =  v0;
     float idx    = -b / (2.0f*a); //-0.5f*(vpos - vneg) / (vpos + vneg - 2*v0);
     float index  = (float)i0 + idx;
     _q->dphi_hat = (i0 > _q->nfft/2 ? index-(float)_q->nfft : index) * 2*M_PI / (float)(_q->nfft);
-    printf("  dphi-hat  : %12.8f\n", _q->dphi_hat);
 
     // estimate carrier phase offset
 #if 0
@@ -484,7 +476,20 @@ void qdetector_cccf_execute_align(qdetector_cccf _q,
     //printf("metric : %12.8f <%12.8f>\n", cabsf(metric), cargf(metric));
     _q->phi_hat = cargf(metric);
 #endif
+
+#if DEBUG_QDETECTOR_PRINT
+    printf("  y[    -1] : %12.8f\n", yneg);
+    printf("  y[     0] : %12.8f\n", y0  );
+    printf("  y[    +1] : %12.8f\n", ypos);
+    printf("  tau-hat   : %12.8f\n", _q->tau_hat);
+    //printf("  g-hat:    : %12.8f\n", g_hat);
+    printf("  gamma-hat : %12.8f\n", _q->gamma_hat);
+    printf("  v[%4u-1] : %12.8f\n", i0,vneg);
+    printf("  v[%4u+0] : %12.8f\n", i0,v0  );
+    printf("  v[%4u+1] : %12.8f\n", i0,vpos);
+    printf("  dphi-hat  : %12.8f\n", _q->dphi_hat);
     printf("  phi-hat   : %12.8f\n", _q->phi_hat);
+#endif
 
     // set flag
     _q->frame_detected = 1;
