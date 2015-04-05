@@ -41,7 +41,7 @@
 void framesync64_execute_seekpn(framesync64   _q,
                                 float complex _x);
 
-// update symbol synchronizer internal state (filtered error, index, etc.)
+// step receiver mixer, matched filter, decimator
 //  _q      :   frame synchronizer
 //  _x      :   input sample
 //  _y      :   output symbol
@@ -75,7 +75,7 @@ struct framesync64_s {
     // timing recovery objects, states
     firpfb_crcf mf;                 // matched filter decimator
     unsigned int npfb;              // number of filters in symsync
-    unsigned int    mf_counter;       // matched filter output timer
+    int             mf_counter;       // matched filter output timer
     unsigned int    pfb_index;      // filterbank index
     float complex symsync_out;      // symbol synchronizer output
 
@@ -275,9 +275,19 @@ void framesync64_execute_seekpn(framesync64   _q,
         printf("***** frame detected! tau-hat:%8.4f, dphi-hat:%8.4f, gamma:%8.2f dB\n",
                 _q->tau_hat, _q->dphi_hat, 20*log10f(_q->gamma_hat));
 
-        // set estimates
+        // set appropriate filterbank index
+        if (_q->tau_hat > 0) {
+            _q->pfb_index = (unsigned int)(      _q->tau_hat  * _q->npfb) % _q->npfb;
+            _q->mf_counter = 0;
+        } else {
+            _q->pfb_index = (unsigned int)((1.0f+_q->tau_hat) * _q->npfb) % _q->npfb;
+            _q->mf_counter = 1;
+        }
+        
+        // output filter scale
         firpfb_crcf_set_scale(_q->mf, 0.5f / _q->gamma_hat);
-        _q->pfb_index = 0;  // TODO: set value appropriately if tau_hat is negative
+
+        // set frequency/phase of mixer
         nco_crcf_set_frequency(_q->mixer, _q->dphi_hat);
         nco_crcf_set_phase    (_q->mixer, _q->phi_hat );
 
@@ -290,7 +300,7 @@ void framesync64_execute_seekpn(framesync64   _q,
     }
 }
 
-// step...
+// step receiver mixer, matched filter, decimator
 //  _q      :   frame synchronizer
 //  _x      :   input sample
 //  _y      :   output symbol
@@ -311,14 +321,13 @@ int framesync64_step(framesync64     _q,
 
     // increment counter to determine if sample is available
     _q->mf_counter++;
-    int sample_available = (_q->mf_counter == 1) ? 1 : 0;
+    int sample_available = (_q->mf_counter >= 1) ? 1 : 0;
     
     // set output sample if available
-    if (sample_available)
+    if (sample_available) {
         *_y = v;
-
-    // reset counter modulo samples/symbol
-    _q->mf_counter %= 2; // k=2 samples/symbol
+        _q->mf_counter -= 2;
+    }
 
     // return flag
     return sample_available;
