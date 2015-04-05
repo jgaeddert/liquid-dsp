@@ -36,7 +36,7 @@ int main(int argc, char*argv[])
     unsigned int m            =    7;
     float        beta         =  0.3f;
     int          ftype        = LIQUID_FIRFILT_ARKAISER;
-    float        gamma        =  1.0f;  // channel gain
+    float        gamma        = 10.0f;  // channel gain
 
 #if 0
     float        noise_floor  = -30.0f; // noise floor [dB]
@@ -81,12 +81,13 @@ int main(int argc, char*argv[])
     // arrays
     float complex x[num_samples];   // transmitted signal
     float complex y[num_samples];   // received signal
+    float complex syms_rx[num_symbols]; // recovered symbols
 
     // generate synchronization sequence (QPSK symbols)
     float complex sequence[sequence_len];
     for (i=0; i<sequence_len; i++) {
-        sequence[i] = (rand() % 2 ? 1.0f : -1.0f) +
-                      (rand() % 2 ? 1.0f : -1.0f) * _Complex_I;
+        sequence[i] = (rand() % 2 ? 1.0f : -1.0f) * M_SQRT1_2 +
+                      (rand() % 2 ? 1.0f : -1.0f) * M_SQRT1_2 * _Complex_I;
     }
 
     // generate transmitted signal
@@ -133,22 +134,50 @@ int main(int argc, char*argv[])
         qdetector_cccf_execute(q,0.0f);
 
     //
+    float complex * v = NULL;
     for (i=0; i<num_samples; i++) {
-        float complex * v = qdetector_cccf_execute(q,y[i]);
+        v = qdetector_cccf_execute(q,y[i]);
 
         if (v != NULL) {
             printf("\nframe detected!\n");
             frame_detected = 1;
 
             // get statistics
-            tau_hat   = qdetector_cccf_get_tau    (q);
-            gamma_hat = qdetector_cccf_get_gamma  (q);
-            dphi_hat  = qdetector_cccf_get_dphi   (q);
-            phi_hat   = qdetector_cccf_get_phi    (q);
+            tau_hat   = qdetector_cccf_get_tau(q);
+            gamma_hat = qdetector_cccf_get_gamma(q);
+            dphi_hat  = qdetector_cccf_get_dphi(q);
+            phi_hat   = qdetector_cccf_get_phi(q);
             break;
-
-            // TODO: apply matched filter, etc. and recover symbols
         }
+    }
+
+    unsigned int num_syms_rx = 0;   // output symbol counter
+    unsigned int counter     = 0;   // decimation counter
+    if (frame_detected) {
+        // recover symbols
+        unsigned int n = qdetector_cccf_get_buf_len(q);
+        firfilt_crcf mf = firfilt_crcf_create_rnyquist(ftype, k, m, beta, tau_hat);
+        firfilt_crcf_set_scale(mf, 1.0f / (float)(k*gamma_hat));
+        nco_crcf     nco = nco_crcf_create(LIQUID_VCO);
+        nco_crcf_set_frequency(nco, dphi_hat);
+        nco_crcf_set_phase    (nco,  phi_hat);
+
+        for (i=0; i<n; i++) {
+            // 
+            float complex sample;
+            nco_crcf_mix_down(nco, v[i], &sample);
+            nco_crcf_step(nco);
+
+            // apply decimator
+            firfilt_crcf_push(mf, sample);
+            counter++;
+            if (counter == k-1)
+                firfilt_crcf_execute(mf, &syms_rx[num_syms_rx++]);
+            counter %= k;
+        }
+
+        nco_crcf_destroy(nco);
+        firfilt_crcf_destroy(mf);
     }
 
     // destroy objects
@@ -161,6 +190,7 @@ int main(int argc, char*argv[])
     printf("  tau hat       : %8.3f, actual=%8.3f (error=%8.3f) samples\n",    tau_hat,   tau,   tau_hat   - tau  );
     printf("  dphi hat      : %8.5f, actual=%8.5f (error=%8.5f) rad/sample\n", dphi_hat,  dphi,  dphi_hat  - dphi );
     printf("  phi hat       : %8.5f, actual=%8.5f (error=%8.5f) radians\n",    phi_hat,   phi,   phi_hat   - phi  );
+    printf("  symbols rx    : %u\n", num_syms_rx);
     printf("\n");
 
     // 
@@ -180,6 +210,10 @@ int main(int argc, char*argv[])
         fprintf(fid,"y(%4u) = %12.8f + j*%12.8f;\n", i+1, crealf(y[i]), cimagf(y[i]));
     }
 
+    fprintf(fid,"num_syms_rx = %u;\n", num_syms_rx);
+    for (i=0; i<num_syms_rx; i++)
+        fprintf(fid,"syms_rx(%4u) = %12.8f + j*%12.8f;\n", i+1, crealf(syms_rx[i]), cimagf(syms_rx[i]));
+
     fprintf(fid,"t=[0:(num_samples-1)];\n");
     fprintf(fid,"figure;\n");
     fprintf(fid,"subplot(2,1,1);\n");
@@ -192,6 +226,14 @@ int main(int argc, char*argv[])
     fprintf(fid,"  grid on;\n");
     fprintf(fid,"  xlabel('time');\n");
     fprintf(fid,"  ylabel('received signal');\n");
+
+    fprintf(fid,"figure;\n");
+    fprintf(fid,"plot(real(syms_rx), imag(syms_rx), 'x');\n");
+    fprintf(fid,"axis([-1 1 -1 1]*1.5);\n");
+    fprintf(fid,"axis square;\n");
+    fprintf(fid,"grid on;\n");
+    fprintf(fid,"xlabel('real');\n");
+    fprintf(fid,"ylabel('imag');\n");
 
     fclose(fid);
     printf("results written to '%s'\n", OUTPUT_FILENAME);

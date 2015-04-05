@@ -412,7 +412,7 @@ void qdetector_cccf_execute_align(qdetector_cccf _q,
     printf("  tau-hat   : %12.8f\n", _q->tau_hat);
     float g_hat   = (a*_q->tau_hat*_q->tau_hat + b*_q->tau_hat + c);
     _q->gamma_hat = g_hat * g_hat / ((float)(_q->nfft) * _q->s2_sum); // g_hat^2 because of sqrt for yneg/y0/ypos
-    printf("  g-hat:    : %12.8f\n", g_hat);
+    //printf("  g-hat:    : %12.8f\n", g_hat);
     printf("  gamma-hat : %12.8f\n", _q->gamma_hat);
 
     // copy buffer to preserve data integrity
