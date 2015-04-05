@@ -122,9 +122,11 @@ framesync64 framesync64_create(framesync_callback _callback,
     unsigned int i;
 
     // generate p/n sequence
-    msequence ms = msequence_create(6, 0x0043, 1);
-    for (i=0; i<64; i++)
-        q->preamble_pn[i] = (msequence_advance(ms)) ? 1.0f : -1.0f;
+    msequence ms = msequence_create(7, 0x0089, 1);
+    for (i=0; i<64; i++) {
+        q->preamble_pn[i] = (msequence_advance(ms) ? M_SQRT1_2 : -M_SQRT1_2) +
+                            (msequence_advance(ms) ? M_SQRT1_2 : -M_SQRT1_2)*_Complex_I;
+    }
     msequence_destroy(ms);
 
     // create frame detector
