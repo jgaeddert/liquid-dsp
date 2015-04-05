@@ -65,19 +65,18 @@ struct framesync64_s {
     framesyncstats_s    framestats; // frame statistic object
     
     // synchronizer objects
-    qdetector_cccf detector;  // pre-demod detector
-    float tau_hat;                  // fractional timing offset estimate
-    float dphi_hat;                 // carrier frequency offset estimate
-    float phi_hat;                  // carrier phase offset estimate
-    float gamma_hat;                // channel gain estimate
-    nco_crcf mixer;            // coarse carrier frequency recovery
+    qdetector_cccf      detector;   // pre-demod detector
+    float               tau_hat;    // fractional timing offset estimate
+    float               dphi_hat;   // carrier frequency offset estimate
+    float               phi_hat;    // carrier phase offset estimate
+    float               gamma_hat;  // channel gain estimate
+    nco_crcf            mixer;      // coarse carrier frequency recovery
 
     // timing recovery objects, states
-    firpfb_crcf mf;                 // matched filter decimator
-    unsigned int npfb;              // number of filters in symsync
-    int             mf_counter;       // matched filter output timer
-    unsigned int    pfb_index;      // filterbank index
-    float complex symsync_out;      // symbol synchronizer output
+    firpfb_crcf         mf;         // matched filter decimator
+    unsigned int        npfb;       // number of filters in symsync
+    int                 mf_counter; // matched filter output timer
+    unsigned int        pfb_index;  // filterbank index
 
     //eqlms_cccf equalizer;         // equalizer (trained on input p/n sequence)
 
@@ -86,19 +85,19 @@ struct framesync64_s {
     float complex preamble_rx[64];  // received p/n symbols
     
     // payload decoder
-    float complex payload_rx[630];  // received payload symbols with pilots
+    float complex payload_rx [630]; // received payload symbols with pilots
     float complex payload_sym[600]; // received payload symbols
-    unsigned char payload_dec[72];  // decoded payload bytes
+    unsigned char payload_dec[ 72]; // decoded payload bytes
     qpacketmodem  dec;              // packet demodulator/decoder
     qpilotsync    pilotsync;        // pilot extraction, carrier recovery
     int           payload_valid;    // did payload pass crc?
     
     // status variables
     enum {
-        FRAMESYNC64_STATE_DETECTFRAME=0,        // detect frame (seek p/n sequence)
-        FRAMESYNC64_STATE_RXPREAMBLE,           // receive p/n sequence
-        FRAMESYNC64_STATE_RXPAYLOAD,            // receive payload data
-    } state;
+        FRAMESYNC64_STATE_DETECTFRAME=0,    // detect frame (seek p/n sequence)
+        FRAMESYNC64_STATE_RXPREAMBLE,       // receive p/n sequence
+        FRAMESYNC64_STATE_RXPAYLOAD,        // receive payload data
+    }            state;
     unsigned int preamble_counter;  // counter: num of p/n syms received
     unsigned int payload_counter;   // counter: num of payload syms received
 
@@ -274,8 +273,10 @@ void framesync64_execute_seekpn(framesync64   _q,
         _q->dphi_hat  = qdetector_cccf_get_dphi (_q->detector);
         _q->phi_hat   = qdetector_cccf_get_phi  (_q->detector);
 
+#if DEBUG_FRAMESYNC64_PRINT
         printf("***** frame detected! tau-hat:%8.4f, dphi-hat:%8.4f, gamma:%8.2f dB\n",
                 _q->tau_hat, _q->dphi_hat, 20*log10f(_q->gamma_hat));
+#endif
 
         // set appropriate filterbank index
         if (_q->tau_hat > 0) {
@@ -327,7 +328,10 @@ int framesync64_step(framesync64     _q,
     
     // set output sample if available
     if (sample_available) {
+        // set output
         *_y = v;
+
+        // decrement counter by k=2 samples/symbol
         _q->mf_counter -= 2;
     }
 
@@ -342,25 +346,23 @@ int framesync64_step(framesync64     _q,
 void framesync64_execute_rxpreamble(framesync64   _q,
                                     float complex _x)
 {
-    //
+    // step synchronizer
     float complex mf_out = 0.0f;
     int sample_available = framesync64_step(_q, _x, &mf_out);
 
     // compute output if timeout
     if (sample_available) {
 
-        // TODO: absorb delays in filter
-
         // save output in p/n symbols buffer
-        unsigned int m = 3;
-        if (_q->preamble_counter >= 2*m)
-            _q->preamble_rx[ _q->preamble_counter-2*m ] = mf_out;
+        unsigned int delay = 2*3;   // filter delay
+        if (_q->preamble_counter >= delay)
+            _q->preamble_rx[ _q->preamble_counter-delay ] = mf_out;
 
         // update p/n counter
         _q->preamble_counter++;
 
         // update state
-        if (_q->preamble_counter == 64 + 2*m)
+        if (_q->preamble_counter == 64 + delay)
             _q->state = FRAMESYNC64_STATE_RXPAYLOAD;
     }
 }
@@ -372,7 +374,7 @@ void framesync64_execute_rxpreamble(framesync64   _q,
 void framesync64_execute_rxpayload(framesync64   _q,
                                    float complex _x)
 {
-    //
+    // step synchronizer
     float complex mf_out = 0.0f;
     int sample_available = framesync64_step(_q, _x, &mf_out);
 
@@ -454,7 +456,6 @@ void framesync64_debug_disable(framesync64 _q)
 #endif
 }
 
-
 // print debugging information
 void framesync64_debug_print(framesync64  _q,
                              const char * _filename)
@@ -509,25 +510,6 @@ void framesync64_debug_print(framesync64  _q,
     fprintf(fid,"grid on;\n");
     fprintf(fid,"axis([-1 1 -1 1]*1.5);\n");
     fprintf(fid,"axis square;\n");
-
-#if 0
-    // NCO, timing, etc.
-    fprintf(fid,"symsync_index = zeros(1,664);\n");
-    fprintf(fid,"nco_phase     = zeros(1,664);\n");
-    for (i=0; i<664; i++) {
-        fprintf(fid,"symsync_index(%4u) = %12.4e;\n", i+1, _q->debug_symsync_index[i]);
-        fprintf(fid,"nco_phase(%4u)     = %12.4e;\n", i+1, _q->debug_nco_phase[i]);
-    }
-    fprintf(fid,"figure;\n");
-    fprintf(fid,"subplot(2,1,1);\n");
-    fprintf(fid,"  plot(nco_phase);\n");
-    fprintf(fid,"  ylabel('nco phase');\n");
-    fprintf(fid,"  grid on;\n");
-    fprintf(fid,"subplot(2,1,2);\n");
-    fprintf(fid,"  plot(symsync_index);\n");
-    fprintf(fid,"  ylabel('symsync index');\n");
-    fprintf(fid,"  grid on;\n");
-#endif
 
     fprintf(fid,"\n\n");
     fclose(fid);
