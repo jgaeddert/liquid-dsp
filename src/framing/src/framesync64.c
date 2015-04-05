@@ -77,8 +77,7 @@ struct framesync64_s {
     unsigned int        npfb;       // number of filters in symsync
     int                 mf_counter; // matched filter output timer
     unsigned int        pfb_index;  // filterbank index
-
-    //eqlms_cccf equalizer;         // equalizer (trained on input p/n sequence)
+    eqlms_cccf          equalizer;  // equalizer (trained on p/n sequence)
 
     // preamble
     float complex preamble_pn[64];  // known 64-symbol p/n sequence
@@ -138,6 +137,11 @@ framesync64 framesync64_create(framesync_callback _callback,
     q->npfb = 32;   // number of filters in the bank
     q->mf   = firpfb_crcf_create_rnyquist(LIQUID_FIRFILT_ARKAISER, q->npfb,k,m,beta);
 
+    // create equalizer
+    unsigned int p = 3;
+    q->equalizer = eqlms_cccf_create_lowpass(2*k*p+1, 0.4f);
+    eqlms_cccf_set_bw(q->equalizer, 0.5f);
+
     // create down-coverters for carrier phase tracking
     q->mixer = nco_crcf_create(LIQUID_NCO);
     
@@ -162,9 +166,8 @@ framesync64 framesync64_create(framesync_callback _callback,
     q->debug_x               = NULL;
 #endif
 
-    // reset state
+    // reset state and return
     framesync64_reset(q);
-
     return q;
 }
 
@@ -179,12 +182,12 @@ void framesync64_destroy(framesync64 _q)
 #endif
 
     // destroy synchronization objects
-    qdetector_cccf_destroy(_q->detector);  // frame detector
-    firpfb_crcf_destroy(_q->mf);                // matched filter
-    nco_crcf_destroy(_q->mixer);           // coarse NCO
-
-    qpacketmodem_destroy(_q->dec);              // payload demodulator
-    qpilotsync_destroy(_q->pilotsync);          // pilot synchronizer
+    qdetector_cccf_destroy(_q->detector);   // frame detector
+    firpfb_crcf_destroy   (_q->mf);         // matched filter
+    nco_crcf_destroy      (_q->mixer);      // coarse NCO
+    eqlms_cccf_destroy    (_q->equalizer);  // LMS equalizer
+    qpacketmodem_destroy  (_q->dec);        // payload demodulator
+    qpilotsync_destroy    (_q->pilotsync);  // pilot synchronizer
 
     // free main object memory
     free(_q);
@@ -321,6 +324,7 @@ int framesync64_step(framesync64     _q,
     firpfb_crcf_execute(_q->mf, _q->pfb_index, &v);
 
     // TODO: push sample through equalizer
+    eqlms_cccf_push(_q->equalizer, v);
 
     // increment counter to determine if sample is available
     _q->mf_counter++;
@@ -328,6 +332,9 @@ int framesync64_step(framesync64     _q,
     
     // set output sample if available
     if (sample_available) {
+        // compute equalizer output
+        eqlms_cccf_execute(_q->equalizer, &v);
+
         // set output
         *_y = v;
 
@@ -354,9 +361,15 @@ void framesync64_execute_rxpreamble(framesync64   _q,
     if (sample_available) {
 
         // save output in p/n symbols buffer
-        unsigned int delay = 2*3;   // filter delay
-        if (_q->preamble_counter >= delay)
-            _q->preamble_rx[ _q->preamble_counter-delay ] = mf_out;
+        unsigned int delay = 2*3 + 3;   // delay from matched filter and equalizer
+        if (_q->preamble_counter >= delay) {
+            unsigned int index = _q->preamble_counter-delay;
+
+            _q->preamble_rx[index] = mf_out;
+        
+            // train equalizer
+            eqlms_cccf_step(_q->equalizer, _q->preamble_pn[index], mf_out);
+        }
 
         // update p/n counter
         _q->preamble_counter++;
