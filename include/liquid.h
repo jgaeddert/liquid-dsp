@@ -3872,8 +3872,15 @@ void qdetector_cccf_destroy(qdetector_cccf _q);
 void qdetector_cccf_print  (qdetector_cccf _q);
 void qdetector_cccf_reset  (qdetector_cccf _q);
 
-int  qdetector_cccf_execute(qdetector_cccf       _q,
-                            liquid_float_complex _x);
+// run detector, looking for sequence; return pointer to aligned, buffered samples
+void * qdetector_cccf_execute(qdetector_cccf       _q,
+                              liquid_float_complex _x);
+
+unsigned int qdetector_cccf_get_buf_len(qdetector_cccf _q); // buffer length
+float        qdetector_cccf_get_tau    (qdetector_cccf _q); // fractional timing offset estimate
+float        qdetector_cccf_get_gamma  (qdetector_cccf _q); // channel gain
+float        qdetector_cccf_get_dphi   (qdetector_cccf _q); // carrier frequency offset estimate
+float        qdetector_cccf_get_phi    (qdetector_cccf _q); // carrier phase offset estimate
 
 //
 // Pre-demodulation detector

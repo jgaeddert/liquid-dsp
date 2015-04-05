@@ -36,16 +36,16 @@ int main(int argc, char*argv[])
     unsigned int m            =    7;
     float        beta         =  0.3f;
     int          ftype        = LIQUID_FIRFILT_ARKAISER;
-    float        gamma        =  0.5f;  // channel gain
+    float        gamma        =  1.0f;  // channel gain
 
 #if 0
     float        noise_floor  = -30.0f; // noise floor [dB]
     float        SNRdB        =  20.0f; // signal-to-noise ratio [dB]
-#endif
-    float        tau          =  0.0f;  // fractional timing offset
-    float        dphi         =  0.01f;  // carrier frequency offset
-    float        phi          =  0.0f;  // carrier phase offset
     float        threshold    =  0.3f;  // detection threshold
+#endif
+    float        tau          = -0.3f;  // fractional sample timing offset
+    float        dphi         = -0.03f; // carrier frequency offset
+    float        phi          =  0.5f;  // carrier phase offset
 
 #if 0
     int dopt;
@@ -90,7 +90,7 @@ int main(int argc, char*argv[])
     }
 
     // generate transmitted signal
-    firinterp_crcf interp = firinterp_crcf_create_rnyquist(ftype, k, m, beta, 0);
+    firinterp_crcf interp = firinterp_crcf_create_rnyquist(ftype, k, m, beta, -tau);
     unsigned int n = 0;
     for (i=0; i<num_symbols; i++) {
         // original sequence, then random symbols
@@ -116,6 +116,13 @@ int main(int argc, char*argv[])
         y[i] += nstd*(randnf() + _Complex_I*randnf())*M_SQRT1_2;
     }
 
+    //
+    float tau_hat   = 0.0f;
+    float gamma_hat = 0.0f;
+    float dphi_hat  = 0.0f;
+    float phi_hat   = 0.0f;
+    int   frame_detected = 0;
+
     // create detector
     qdetector_cccf q = qdetector_cccf_create(sequence, sequence_len, ftype, k, m, beta);
     qdetector_cccf_print(q);
@@ -127,26 +134,34 @@ int main(int argc, char*argv[])
 
     //
     for (i=0; i<num_samples; i++) {
-        int rc = qdetector_cccf_execute(q,y[i]);
+        float complex * v = qdetector_cccf_execute(q,y[i]);
 
-        if (rc)
+        if (v != NULL) {
             printf("\nframe detected!\n");
+            frame_detected = 1;
+
+            // get statistics
+            tau_hat   = qdetector_cccf_get_tau    (q);
+            gamma_hat = qdetector_cccf_get_gamma  (q);
+            dphi_hat  = qdetector_cccf_get_dphi   (q);
+            phi_hat   = qdetector_cccf_get_phi    (q);
+            break;
+
+            // TODO: apply matched filter, etc. and recover symbols
+        }
     }
 
     // destroy objects
     qdetector_cccf_destroy(q);
 
-#if 0
     // print results
     printf("\n");
-    printf("signal detected :   %s\n", signal_detected ? "yes" : "no");
-    float delay_est = (float) index + tau_hat;
-    float delay     = (float)(2*n) + dt; // actual delay (samples)
-    printf("delay estimate  : %8.3f, actual=%8.3f (error=%8.3f) sample(s)\n", delay_est, delay, delay-delay_est);
-    printf("dphi estimate   : %8.5f, actual=%8.5f (error=%8.5f) rad/sample\n",dphi_hat,  dphi,  dphi-dphi_hat);
-    printf("gamma estimate  : %8.3f, actual=%8.3f (error=%8.3f) dB\n",        20*log10f(gamma_hat), 20*log10f(gamma), 20*log10(gamma/gamma_hat));
+    printf("frame detected  :   %s\n", frame_detected ? "yes" : "no");
+    printf("  gamma hat     : %8.3f, actual=%8.3f (error=%8.3f)\n",            gamma_hat, gamma, gamma_hat - gamma);
+    printf("  tau hat       : %8.3f, actual=%8.3f (error=%8.3f) samples\n",    tau_hat,   tau,   tau_hat   - tau  );
+    printf("  dphi hat      : %8.5f, actual=%8.5f (error=%8.5f) rad/sample\n", dphi_hat,  dphi,  dphi_hat  - dphi );
+    printf("  phi hat       : %8.5f, actual=%8.5f (error=%8.5f) radians\n",    phi_hat,   phi,   phi_hat   - phi  );
     printf("\n");
-#endif
 
     // 
     // export results

@@ -29,7 +29,7 @@
 
 #include "liquid.internal.h"
 
-#define DEBUG_QDETECTOR              1
+#define DEBUG_QDETECTOR              0
 #define DEBUG_QDETECTOR_PRINT        0
 #define DEBUG_QDETECTOR_FILENAME     "qdetector_cccf_debug.m"
 
@@ -70,16 +70,17 @@ struct qdetector_cccf_s {
     float           x2_sum_0;       // sum{ |x|^2 } of first half of buffer
     float           x2_sum_1;       // sum{ |x|^2 } of second half of buffer
 
-    int             offset;         // offset index for which peak was found
-    float           gamma_hat;      // signal level estimate
+    int             offset;         // FFT offset index for peak correlation (coarse carrier estimate)
     float           tau_hat;        // timing offset estimate
-    float           phi_hat;        // carrier phase offset estimate
+    float           gamma_hat;      // signal level estimate (channel gain)
     float           dphi_hat;       // carrier frequency offset estimate
+    float           phi_hat;        // carrier phase offset estimate
 
     enum {
         QDETECTOR_STATE_SEEK,       // seek sequence
         QDETECTOR_STATE_ALIGN,      // align sequence
-    } state;                        // execution state
+    }               state;          // execution state
+    int             frame_detected; // frame detected?
 
 #if DEBUG_QDETECTOR
     //windowcf        debug_x;
@@ -160,7 +161,14 @@ qdetector_cccf qdetector_cccf_create(float complex * _sequence,
     q->x2_sum_0       = 0.0f;
     q->x2_sum_1       = 0.0f;
     q->state          = QDETECTOR_STATE_SEEK;
+    q->frame_detected = 0;
     memset(q->buf_time_0, 0x00, q->nfft*sizeof(float complex));
+    
+    // reset estimates
+    q->tau_hat   = 0.0f;
+    q->gamma_hat = 0.0f;
+    q->dphi_hat  = 0.0f;
+    q->phi_hat   = 0.0f;
 
     // return object
     return q;
@@ -203,7 +211,7 @@ void qdetector_cccf_reset(qdetector_cccf _q)
 {
 }
 
-int qdetector_cccf_execute(qdetector_cccf _q,
+void * qdetector_cccf_execute(qdetector_cccf _q,
                            float complex  _x)
 {
     switch (_q->state) {
@@ -218,19 +226,49 @@ int qdetector_cccf_execute(qdetector_cccf _q,
         break;
     }
 
-    return 0;
+    // check if frame was detected
+    if (_q->frame_detected) {
+        // clear flag
+        _q->frame_detected = 0;
+
+        // return pointer to internal buffer of saved samples
+        return (void*)(_q->buf_time_1);
+    }
+
+    // frame not yet ready
+    return NULL;
 }
 
-#if 0
-void qdetector_cccf_execute_block(qdetector_cccf  _q,
-                                  float complex * _x,
-                                  unsigned int    _n)
+// buffer length
+unsigned int qdetector_cccf_get_buf_len(qdetector_cccf _q)
 {
-    unsigned int i;
-    for (i=0; i<_n; i++)
-        qdetector_cccf_execute(_q, _x[i]);
+    return _q->nfft;
 }
-#endif
+
+// fractional timing offset estimate
+float qdetector_cccf_get_tau(qdetector_cccf _q)
+{
+    return _q->tau_hat;
+}
+
+// channel gain
+float qdetector_cccf_get_gamma(qdetector_cccf _q)
+{
+    return _q->gamma_hat;
+}
+
+// carrier frequency offset estimate
+float qdetector_cccf_get_dphi(qdetector_cccf _q)
+{
+    return _q->dphi_hat;
+}
+
+// carrier phase offset estimate
+float qdetector_cccf_get_phi(qdetector_cccf _q)
+{
+    return _q->phi_hat;
+}
+
 
 //
 // internal methods
@@ -270,7 +308,7 @@ void qdetector_cccf_execute_seek(qdetector_cccf _q,
         // cross-multiply, aligning appropriately
         for (i=0; i<_q->nfft; i++) {
             // shifted index
-            unsigned int j = (i + _q->nfft + offset) % _q->nfft;
+            unsigned int j = (i + _q->nfft - offset) % _q->nfft;
 
             _q->buf_freq_1[i] = _q->buf_freq_0[i] * conjf(_q->S[j]);
         }
@@ -349,37 +387,38 @@ void qdetector_cccf_execute_align(qdetector_cccf _q,
 
     // estimate timing offset
     fft_execute(_q->fft);
-    // cross-multiply, aligning appropriately
+    // cross-multiply frequency-domain components, aligning appropriately with
+    // estimated FFT offset index due to carrier frequency offset in received signal
     unsigned int i;
     for (i=0; i<_q->nfft; i++) {
         // shifted index
-        unsigned int j = (i + _q->nfft + _q->offset) % _q->nfft;
+        unsigned int j = (i + _q->nfft - _q->offset) % _q->nfft;
         _q->buf_freq_1[i] = _q->buf_freq_0[i] * conjf(_q->S[j]);
     }
     fft_execute(_q->ifft);
-    float yneg = cabsf(_q->buf_time_1[_q->nfft-1]);
-    float y0   = cabsf(_q->buf_time_1[         0]);
-    float ypos = cabsf(_q->buf_time_1[         1]);
-    printf("  y[-1]     : %12.8f\n", yneg);
-    printf("  y[ 0]     : %12.8f\n", y0  );
-    printf("  y[+1]     : %12.8f\n", ypos);
+    // time aligned to index 0
+    // NOTE: taking the sqrt removes bias in the timing estimate, but messes up gamma estimate
+    float yneg = cabsf(_q->buf_time_1[_q->nfft-1]);  yneg = sqrtf(yneg);
+    float y0   = cabsf(_q->buf_time_1[         0]);  y0   = sqrtf(y0  );
+    float ypos = cabsf(_q->buf_time_1[         1]);  ypos = sqrtf(ypos);
+    printf("  y[    -1] : %12.8f\n", yneg);
+    printf("  y[     0] : %12.8f\n", y0  );
+    printf("  y[    +1] : %12.8f\n", ypos);
     // TODO: compute timing offset estimate from these values
-    float        a       =  0.5f*(ypos + yneg) - y0;
-    float        b       =  0.5f*(ypos - yneg);
-    float        c       =  y0;
-    float        tau_hat = -b / (2.0f*a); //-0.5f*(ypos - yneg) / (ypos + yneg - 2*y0);
-    printf("  tau-hat   : %12.8f\n", tau_hat);
-    float gamma_hat = (a*tau_hat*tau_hat + b*tau_hat + c) / ((float)(_q->nfft) * _q->s2_sum);
-    printf("  gamma-hat : %12.8f\n", gamma_hat);
+    float a     =  0.5f*(ypos + yneg) - y0;
+    float b     =  0.5f*(ypos - yneg);
+    float c     =  y0;
+    _q->tau_hat = -b / (2.0f*a); //-0.5f*(ypos - yneg) / (ypos + yneg - 2*y0);
+    printf("  tau-hat   : %12.8f\n", _q->tau_hat);
+    float g_hat   = (a*_q->tau_hat*_q->tau_hat + b*_q->tau_hat + c);
+    _q->gamma_hat = g_hat * g_hat / ((float)(_q->nfft) * _q->s2_sum); // g_hat^2 because of sqrt for yneg/y0/ypos
+    printf("  g-hat:    : %12.8f\n", g_hat);
+    printf("  gamma-hat : %12.8f\n", _q->gamma_hat);
 
     // copy buffer to preserve data integrity
     memmove(_q->buf_time_1, _q->buf_time_0, _q->nfft*sizeof(float complex));
 
     // estimate carrier frequency offset
-#if 0
-    // TODO: use more sophisticated method
-    float dphi_hat = 2 * M_PI * (float)(_q->offset) / (float)(_q->nfft);
-#else
     for (i=0; i<_q->nfft; i++)
         _q->buf_time_0[i] *= i < _q->s_len ? conjf(_q->s[i]) : 0.0f;
     fft_execute(_q->fft);
@@ -401,7 +440,8 @@ void qdetector_cccf_execute_align(qdetector_cccf _q,
     fclose(fid);
     printf("debug: %s\n", filename);
 #endif
-    // search for peak
+    // search for peak (NOTE: should be at: _q->offset)
+    // TODO: don't search for peak but just use internal offset
     float        v0 = 0.0f;
     unsigned int i0 = 0;
     for (i=0; i<_q->nfft; i++) {
@@ -413,36 +453,48 @@ void qdetector_cccf_execute_align(qdetector_cccf _q,
     }
     unsigned int ineg = (i0 + _q->nfft - 1)%_q->nfft;
     unsigned int ipos = (i0            + 1)%_q->nfft;
-    float        vneg = _q->buf_freq_0[ineg];
-    float        vpos = _q->buf_freq_0[ipos];
-    printf("  v[-1]     : %12.8f\n", vneg);
-    printf("  v[ 0]     : %12.8f\n", v0  );
-    printf("  v[+1]     : %12.8f\n", vpos);
-    a           =  0.5f*(vpos + vneg) - v0;
-    b           =  0.5f*(vpos - vneg);
-    c           =  v0;
-    float idx   = -b / (2.0f*a); //-0.5f*(vpos - vneg) / (vpos + vneg - 2*v0);
-    float index = (float)i0 + idx;
-    float dphi_hat = (i0 > _q->nfft/2 ? index-(float)_q->nfft : index) * 2*M_PI / (float)(_q->nfft);
-    printf("  dphi-hat  : %12.8f\n", dphi_hat);
-#endif
+    float        vneg = cabsf(_q->buf_freq_0[ineg]);
+    float        vpos = cabsf(_q->buf_freq_0[ipos]);
+    printf("  v[%4u-1] : %12.8f\n", i0,vneg);
+    printf("  v[%4u+0] : %12.8f\n", i0,v0  );
+    printf("  v[%4u+1] : %12.8f\n", i0,vpos);
+    a            =  0.5f*(vpos + vneg) - v0;
+    b            =  0.5f*(vpos - vneg);
+    c            =  v0;
+    float idx    = -b / (2.0f*a); //-0.5f*(vpos - vneg) / (vpos + vneg - 2*v0);
+    float index  = (float)i0 + idx;
+    _q->dphi_hat = (i0 > _q->nfft/2 ? index-(float)_q->nfft : index) * 2*M_PI / (float)(_q->nfft);
+    printf("  dphi-hat  : %12.8f\n", _q->dphi_hat);
 
     // estimate carrier phase offset
+#if 0
     // METHOD 1: linear interpolation of phase in FFT output buffer
-    float p0 = cargf(_q->buf_freq_0[ idx < 0 ? ineg : i0   ]);
-    float p1 = cargf(_q->buf_freq_0[ idx < 0 ? i0   : ipos ]);
-    float xp = idx < 0 ? 1+idx : idx;
-    float phi_hat  = (p1-p0)*xp + p0;
+    float p0     = cargf(_q->buf_freq_0[ idx < 0 ? ineg : i0   ]);
+    float p1     = cargf(_q->buf_freq_0[ idx < 0 ? i0   : ipos ]);
+    float xp     = idx < 0 ? 1+idx : idx;
+    _q->phi_hat  = (p1-p0)*xp + p0;
     //printf("v0 = %12.8f, v1 = %12.8f, xp = %12.8f\n", v0, v1, xp);
-    printf("  phi-hat   : %12.8f\n", phi_hat);
+#else
+    // METHOD 2: compute metric by de-rotating signal and measuring resulting phase
+    // NOTE: this is possibly more accurate than the above method but might also
+    //       be more computationally complex
+    float complex metric = 0;
+    for (i=0; i<_q->s_len; i++)
+        metric += _q->buf_time_0[i] * cexpf(-_Complex_I*_q->dphi_hat*i);
+    //printf("metric : %12.8f <%12.8f>\n", cabsf(metric), cargf(metric));
+    _q->phi_hat = cargf(metric);
+#endif
+    printf("  phi-hat   : %12.8f\n", _q->phi_hat);
 
-    
+    // set flag
+    _q->frame_detected = 1;
+
     // reset state
+    // copy saved buffer state (last half of buf_time_1 to front half of buf_time_0)
+    memmove(_q->buf_time_0, _q->buf_time_1 + _q->nfft/2, (_q->nfft/2)*sizeof(float complex));
     _q->state = QDETECTOR_STATE_SEEK;
     _q->x2_sum_0 = liquid_sumsqcf(_q->buf_time_0, _q->nfft/2);
     _q->x2_sum_1 = 0;
     _q->counter = _q->nfft/2;
-    // copy last half of fft input buffer to front
-    memmove(_q->buf_time_0, _q->buf_time_0 + _q->nfft/2, (_q->nfft/2)*sizeof(float complex));
 }
 
