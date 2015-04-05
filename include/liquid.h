@@ -3343,7 +3343,7 @@ void qpilotsync_execute(qpilotsync             _q,
 //
 
 // frame length in samples
-#define LIQUID_FRAME64_LEN (1400)
+#define LIQUID_FRAME64_LEN (1416)
 
 typedef struct framegen64_s * framegen64;
 

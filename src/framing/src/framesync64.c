@@ -65,6 +65,8 @@ struct framesync64_s {
     framesyncstats_s    framestats; // frame statistic object
     
     // synchronizer objects
+    unsigned int        m;          // filter delay (symbols)
+    float               beta;       // filter excess bandwidth factor
     qdetector_cccf      detector;   // pre-demod detector
     float               tau_hat;    // fractional timing offset estimate
     float               dphi_hat;   // carrier frequency offset estimate
@@ -116,6 +118,8 @@ framesync64 framesync64_create(framesync_callback _callback,
     framesync64 q = (framesync64) malloc(sizeof(struct framesync64_s));
     q->callback = _callback;
     q->userdata = _userdata;
+    q->m        = 7;    // filter delay (symbols)
+    q->beta     = 0.3f; // excess bandwidth factor
 
     unsigned int i;
 
@@ -129,13 +133,11 @@ framesync64 framesync64_create(framesync_callback _callback,
 
     // create frame detector
     unsigned int k    = 2;    // samples/symbol
-    unsigned int m    = 3;    // filter delay (symbols)
-    float        beta = 0.5f; // excess bandwidth factor
-    q->detector = qdetector_cccf_create(q->preamble_pn, 64, LIQUID_FIRFILT_ARKAISER, k, m, beta);
+    q->detector = qdetector_cccf_create(q->preamble_pn, 64, LIQUID_FIRFILT_ARKAISER, k, q->m, q->beta);
 
     // create symbol timing recovery filters
     q->npfb = 32;   // number of filters in the bank
-    q->mf   = firpfb_crcf_create_rnyquist(LIQUID_FIRFILT_ARKAISER, q->npfb,k,m,beta);
+    q->mf   = firpfb_crcf_create_rnyquist(LIQUID_FIRFILT_ARKAISER, q->npfb,k,q->m,q->beta);
 
     // create equalizer
     unsigned int p = 3;
@@ -361,7 +363,7 @@ void framesync64_execute_rxpreamble(framesync64   _q,
     if (sample_available) {
 
         // save output in p/n symbols buffer
-        unsigned int delay = 2*3 + 3;   // delay from matched filter and equalizer
+        unsigned int delay = 2*_q->m + 3; // delay from matched filter and equalizer
         if (_q->preamble_counter >= delay) {
             unsigned int index = _q->preamble_counter-delay;
 

@@ -48,8 +48,8 @@ struct framegen64_s {
 framegen64 framegen64_create()
 {
     framegen64 q = (framegen64) malloc(sizeof(struct framegen64_s));
-    q->m    = 3;
-    q->beta = 0.5f;
+    q->m    = 7;
+    q->beta = 0.3f;
 
     unsigned int i;
 
@@ -96,12 +96,12 @@ void framegen64_destroy(framegen64 _q)
 // print framegen64 object internals
 void framegen64_print(framegen64 _q)
 {
-    float eta = (float) (8*(64 + 8)) / (float) 670;
+    float eta = (float) (8*(64 + 8)) / (float) (LIQUID_FRAME64_LEN/2);
     printf("framegen64 [m=%u, beta=%4.2f]:\n", _q->m, _q->beta);
     printf("  preamble/etc.\n");
-    printf("    * ramp/up symbols       :   %u\n", 3);
+    printf("    * ramp/up symbols       :   %u\n", _q->m);
     printf("    * p/n symbols           :   64\n");
-    printf("    * ramp\\down symbols     :   %u\n", 3);
+    printf("    * ramp\\down symbols     :   %u\n", _q->m);
     printf("  payload\n");
 #if 0
     printf("    * payload crc           :   %s\n", crc_scheme_str[_q->check][1]);
@@ -114,7 +114,7 @@ void framegen64_print(framegen64 _q)
     printf("    * payload symbols       :   600\n");
     printf("    * pilot symbols         :    30\n");
     printf("  summary\n");
-    printf("    * total symbols         :   700\n");
+    printf("    * total symbols         :   %u\n", LIQUID_FRAME64_LEN/2);
     printf("    * spectral efficiency   :   %6.4f b/s/Hz\n", eta);
 }
 
