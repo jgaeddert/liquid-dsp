@@ -87,7 +87,7 @@ void MATRIX(_gjelim)(T * _X, unsigned int _XR, unsigned int _XC)
 
         // check values along this column and find the maximum
         for (r_hat=r; r_hat<_XR; r_hat++) {
-            v = cabsf( matrix_access(_X,_XR,_XC,r_hat,r) );
+            v = T_ABS( matrix_access(_X,_XR,_XC,r_hat,r) );
             // swap rows if necessary
             if (v > v_max || r_hat==r) {
                 r_opt = r_hat;

@@ -70,9 +70,12 @@ void MATRIX(_qrdecomp_gramschmidt)(T *          _x,
         // compute e_k = e_k / |e_k|
         float ek = 0.0f;
         T ak;
+        TP ak2;
         for (i=0; i<n; i++) {
-            ak = matrix_access(e,n,n,i,k);
-            ek += fabsf( ak*conjf(ak) );
+            ak  = matrix_access(e,n,n,i,k);
+            ak2 = T_ABS(ak);
+            ak2 = ak2 * ak2;
+            ek += ak2;
         }
         ek = sqrtf(ek);
 

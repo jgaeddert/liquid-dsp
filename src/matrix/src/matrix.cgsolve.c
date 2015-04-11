@@ -158,7 +158,7 @@ void MATRIX(_cgsolve)(T *          _A,
             d1[j] = r1[j] + beta*d0[j];
 
         // compute residual
-        res = sqrt( cabs(delta1) / cabs(delta_init) );
+        res = sqrt( T_ABS(delta1) / T_ABS(delta_init) );
         if (i==0 || res < res_opt) {
             // save best solution
             res_opt = res;

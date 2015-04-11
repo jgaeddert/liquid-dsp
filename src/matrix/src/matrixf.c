@@ -30,6 +30,9 @@
 #define TP              float           // primitive type
 #define T_COMPLEX       0               // is type complex?
 
+#define T_ABS(X)        fabsf(X)
+#define TP_ABS(X)       fabsf(X)
+
 #define MATRIX_PRINT_ELEMENT(X,R,C,r,c) \
     printf("%12.7f", matrix_access(X,R,C,r,c));
 
