@@ -523,7 +523,7 @@ void firdespm_iext_search(firdespm _q)
 
 #if 0
     // check for extremum at f=0
-    if ( fabsf(_q->E[0]) > fabsf(_q->E[1]) )
+    if ( fabs(_q->E[0]) > fabs(_q->E[1]) )
         found_iext[num_found++] = 0;
 #else
     // force f=0 into candidate set
@@ -548,7 +548,7 @@ void firdespm_iext_search(firdespm _q)
 
 #if 0
     // check for extremum at f=0.5
-    if ( fabsf(_q->E[_q->grid_size-1]) > fabsf(_q->E[_q->grid_size-2]) )
+    if ( fabs(_q->E[_q->grid_size-1]) > fabs(_q->E[_q->grid_size-2]) )
         found_iext[num_found++] = _q->grid_size-1;
 #else
     // force f=0.5 into candidate set
@@ -591,7 +591,7 @@ void firdespm_iext_search(firdespm _q)
         alternating_sign = 1;
         for (i=1; i<num_found; i++) {
             // update new minimum error extreme
-            if ( fabsf(_q->E[found_iext[i]]) < fabsf(_q->E[found_iext[imin]]) )
+            if ( fabs(_q->E[found_iext[i]]) < fabs(_q->E[found_iext[imin]]) )
                 imin = i;
     
             if ( sign && _q->E[found_iext[i]] < 0.0 ) {
@@ -601,7 +601,7 @@ void firdespm_iext_search(firdespm _q)
             } else {
                 // found two extrema with non-alternating sign; delete
                 // the smaller of the two
-                if ( fabsf(_q->E[found_iext[i]]) < fabsf(_q->E[found_iext[i-1]]) )
+                if ( fabs(_q->E[found_iext[i]]) < fabs(_q->E[found_iext[i-1]]) )
                     imin = i;
                 else
                     imin = i-1;
@@ -613,8 +613,8 @@ void firdespm_iext_search(firdespm _q)
 
         // 
         if ( alternating_sign && num_extra==1) {
-            //imin = (fabsf(_q->E[found_iext[0]]) > fabsf(_q->E[found_iext[num_extra-1]])) ? 0 : num_extra-1;
-            if (fabsf(_q->E[found_iext[0]]) < fabsf(_q->E[found_iext[num_found-1]]))
+            //imin = (fabs(_q->E[found_iext[0]]) > fabs(_q->E[found_iext[num_extra-1]])) ? 0 : num_extra-1;
+            if (fabs(_q->E[found_iext[0]]) < fabs(_q->E[found_iext[num_found-1]]))
                 imin = 0;
             else
                 imin = num_found-1;
@@ -671,7 +671,7 @@ int firdespm_is_search_complete(firdespm _q)
     double emin=0.0;
     double emax=0.0;
     for (i=0; i<_q->r+1; i++) {
-        e = fabsf(_q->E[_q->iext[i]]);
+        e = fabs(_q->E[_q->iext[i]]);
         if (i==0 || e < emin) emin = e;
         if (i==0 || e > emax) emax = e;
     }
