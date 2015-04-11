@@ -39,11 +39,11 @@
 //  _b      :   equality [size: _n x 1]
 //  _x      :   solution estimate [size: _n x 1]
 //  _opts   :   options (ignored for now)
-void MATRIX(_cgsolve)(T * _A,
+void MATRIX(_cgsolve)(T *          _A,
                       unsigned int _n,
-                      T * _b,
-                      T * _x,
-                      void * _opts)
+                      T *          _b,
+                      T *          _x,
+                      void *       _opts)
 {
     // validate input
     if (_n == 0) {

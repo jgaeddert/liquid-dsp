@@ -27,11 +27,11 @@
 #define DEBUG_MATRIX_QRDECOMP 1
 
 // Q/R decomposition using the Gram-Schmidt algorithm
-void MATRIX(_qrdecomp_gramschmidt)(T * _x,
+void MATRIX(_qrdecomp_gramschmidt)(T *          _x,
                                    unsigned int _rx,
                                    unsigned int _cx,
-                                   T * _Q,
-                                   T * _R)
+                                   T *          _Q,
+                                   T *          _R)
 {
     // validate input
     if (_rx != _cx) {

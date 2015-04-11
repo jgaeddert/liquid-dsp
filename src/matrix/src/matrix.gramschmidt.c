@@ -48,10 +48,10 @@ void MATRIX(_proj)(T * _u,
 }
 
 // Orthnormalization using the Gram-Schmidt algorithm
-void MATRIX(_gramschmidt)(T * _x,
+void MATRIX(_gramschmidt)(T *          _x,
                           unsigned int _rx,
                           unsigned int _cx,
-                          T * _v)
+                          T *          _v)
 {
     // validate input
     if (_rx == 0 || _cx == 0) {

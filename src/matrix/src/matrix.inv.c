@@ -150,6 +150,9 @@ void MATRIX(_pivot)(T * _X, unsigned int _XR, unsigned int _XC, unsigned int _r,
 
 void MATRIX(_swaprows)(T * _X, unsigned int _XR, unsigned int _XC, unsigned int _r1, unsigned int _r2)
 {
+    if (_r1 == _r2)
+        return;
+
     unsigned int c;
     T v_tmp;
     for (c=0; c<_XC; c++) {
