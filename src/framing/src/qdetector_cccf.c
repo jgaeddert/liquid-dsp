@@ -139,7 +139,7 @@ qdetector_cccf qdetector_cccf_create(float complex * _sequence,
     q->s2_sum = liquid_sumsqcf(q->s, q->s_len); // compute sum{ s^2 }
 
     // prepare transforms
-    q->nfft     = 1 << liquid_nextpow2( (unsigned int)( 1.5f * q->s_len ) ); // NOTE: must be even
+    q->nfft     = 1 << liquid_nextpow2( (unsigned int)( 2 * q->s_len ) ); // NOTE: must be even
     q->buf_time_0 = (float complex*) malloc(q->nfft * sizeof(float complex));
     q->buf_freq_0 = (float complex*) malloc(q->nfft * sizeof(float complex));
     q->buf_freq_1 = (float complex*) malloc(q->nfft * sizeof(float complex));
@@ -349,7 +349,7 @@ void qdetector_cccf_execute_seek(qdetector_cccf _q,
     }
 
     float rxy_threshold = 0.7f;
-    if (rxy_peak > rxy_threshold && rxy_index < _q->nfft/2) {
+    if (rxy_peak > rxy_threshold && rxy_index < _q->nfft - _q->s_len) {
 #if DEBUG_QDETECTOR_PRINT
         printf("*** frame detected! rxy = %12.8f, time index=%u, freq. offset=%d\n", rxy_peak, rxy_index, rxy_offset);
 #endif
