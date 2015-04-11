@@ -29,6 +29,12 @@
 #define T               float complex
 #define TC              float complex
 
+#define T_COMPLEX       1
+#define TI_COMPLEX      1
+
+#define T_ABS(X)        cabsf(X)
+#define TC_ABS(X)       cabsf(X)
+
 #include "poly.common.c"
 #include "poly.expand.c"
 #include "poly.findroots.c"
