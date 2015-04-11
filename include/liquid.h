@@ -1303,13 +1303,13 @@ unsigned int estimate_req_filter_len(float _df,
 // estimate filter stop-band attenuation given
 //  _df     :   transition bandwidth (0 < _b < 0.5)
 //  _N      :   filter length
-float estimate_req_filter_As(float _df,
+float estimate_req_filter_As(float        _df,
                              unsigned int _N);
 
 // estimate filter transition bandwidth given
 //  _As     :   stop-band attenuation [dB], _As > 0
 //  _N      :   filter length
-float estimate_req_filter_df(float _As,
+float estimate_req_filter_df(float        _As,
                              unsigned int _N);
 
 
@@ -1416,10 +1416,10 @@ void liquid_firdes_kaiser(unsigned int _n,
 //  _theta  : LoS component angle of arrival
 //  _h      : output coefficient buffer
 void liquid_firdes_doppler(unsigned int _n,
-                           float _fd,
-                           float _K,
-                           float _theta,
-                           float *_h);
+                           float        _fd,
+                           float        _K,
+                           float        _theta,
+                           float *      _h);
 
 
 // Design Nyquist raised-cosine filter
@@ -1504,9 +1504,9 @@ float iir_group_delay(float * _b,
 //  _h      :   filter coefficients [size: _h_len x 1]
 //  _h_len  :   filter length
 //  _lag    :   auto-correlation lag (samples)
-float liquid_filter_autocorr(float * _h,
+float liquid_filter_autocorr(float *      _h,
                              unsigned int _h_len,
-                             int _lag);
+                             int          _lag);
 
 // liquid_filter_crosscorr()
 //
@@ -1517,11 +1517,11 @@ float liquid_filter_autocorr(float * _h,
 //  _g      :   filter coefficients [size: _g_len]
 //  _g_len  :   filter length
 //  _lag    :   cross-correlation lag (samples)
-float liquid_filter_crosscorr(float * _h,
+float liquid_filter_crosscorr(float *      _h,
                               unsigned int _h_len,
-                              float * _g,
+                              float *      _g,
                               unsigned int _g_len,
-                              int _lag);
+                              int          _lag);
 
 // liquid_filter_isi()
 //
@@ -1533,11 +1533,11 @@ float liquid_filter_crosscorr(float * _h,
 //  _m      :   filter delay (symbols)
 //  _rms    :   output root mean-squared ISI
 //  _max    :   maximum ISI
-void liquid_filter_isi(float * _h,
+void liquid_filter_isi(float *      _h,
                        unsigned int _k,
                        unsigned int _m,
-                       float * _rms,
-                       float * _max);
+                       float *      _rms,
+                       float *      _max);
 
 // Compute relative out-of-band energy
 //
@@ -1545,9 +1545,9 @@ void liquid_filter_isi(float * _h,
 //  _h_len  :   filter length
 //  _fc     :   analysis cut-off frequency
 //  _nfft   :   fft size
-float liquid_filter_energy(float * _h,
+float liquid_filter_energy(float *      _h,
                            unsigned int _h_len,
-                           float _fc,
+                           float        _fc,
                            unsigned int _nfft);
 
 
