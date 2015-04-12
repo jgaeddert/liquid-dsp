@@ -125,7 +125,7 @@ int main(int argc, char*argv[])
     int   frame_detected = 0;
 
     // create detector
-    qdetector_cccf q = qdetector_cccf_create(sequence, sequence_len, ftype, k, m, beta);
+    qdetector_cccf q = qdetector_cccf_create_symbols(sequence, sequence_len, ftype, k, m, beta);
     qdetector_cccf_print(q);
 
     // delay

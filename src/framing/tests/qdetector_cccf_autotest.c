@@ -108,7 +108,7 @@ void qdetector_cccf_runtest(unsigned int _sequence_len)
     int   false_positive = 0;
 
     // create detector
-    qdetector_cccf q = qdetector_cccf_create(sequence, _sequence_len, ftype, k, m, beta);
+    qdetector_cccf q = qdetector_cccf_create_symbols(sequence, _sequence_len, ftype, k, m, beta);
     if (liquid_autotest_verbose)
         qdetector_cccf_print(q);
 

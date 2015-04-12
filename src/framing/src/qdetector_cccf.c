@@ -40,17 +40,6 @@ void qdetector_cccf_execute_align(qdetector_cccf _q,
 
 // main object definition
 struct qdetector_cccf_s {
-    float complex * sequence;       // original sequence of symbols
-    unsigned int    sequence_len;   // sequence length
-    unsigned int    k;              // samples/symbol
-    unsigned int    m;              // filter delay [symbols]
-    float           beta;           // excess bandwidth factor
-    int             ftype;          // filter type, e.g. LIQUID_FIRDES_RRC
-
-    float           threshold;      // detection threshold
-    
-    firfilt_crcf    filter;         // matched filter
-
     unsigned int    s_len;          // template (time) length: k * (sequence_len + 2*m)
     float complex * s;              // template (time), [size: s_len x 1]
     float complex * S;              // template (freq), [size: nfft x 1]
@@ -61,11 +50,12 @@ struct qdetector_cccf_s {
     float complex * buf_freq_1;     // frequence-domain buffer (IFFT)
     float complex * buf_time_1;     // time-domain buffer (IFFT)
     unsigned int    nfft;           // fft size
-    fftplan         fft;            // FFT object
-    fftplan         ifft;           // IFFT object
+    fftplan         fft;            // FFT object:  buf_time_0 > buf_freq_0
+    fftplan         ifft;           // IFFT object: buf_freq_1 > buf_freq_1
 
     unsigned int    counter;        // sample counter for determining when to compute FFTs
-    unsigned int    num_transforms; // number of transforms taken
+    float           threshold;      // detection threshold
+    unsigned int    num_transforms; // number of transforms taken (debugging)
 
     float           x2_sum_0;       // sum{ |x|^2 } of first half of buffer
     float           x2_sum_1;       // sum{ |x|^2 } of second half of buffer
@@ -81,65 +71,31 @@ struct qdetector_cccf_s {
         QDETECTOR_STATE_ALIGN,      // align sequence
     }               state;          // execution state
     int             frame_detected; // frame detected?
-
-#if DEBUG_QDETECTOR
-    //windowcf        debug_x;
-#endif
 };
 
-// create detector
-//  _sequence       :   symbol sequence
-//  _sequence_len   :   length of symbol sequence
-//  _k              :   samples/symbol
-//  _m              :   filter delay
-//  _beta           :   excess bandwidth factor
-//  _type           :   filter prototype (e.g. LIQUID_FIRFILT_RRC)
-qdetector_cccf qdetector_cccf_create(float complex * _sequence,
-                                     unsigned int    _sequence_len,
-                                     int             _ftype,
-                                     unsigned int    _k,
-                                     unsigned int    _m,
-                                     float           _beta)
+// create detector with generic sequence
+//  _s      :   sample sequence
+//  _s_len  :   length of sample sequence
+qdetector_cccf qdetector_cccf_create(float complex * _s,
+                                     unsigned int    _s_len)
 {
     // validate input
-    if (_sequence_len == 0) {
+    if (_s_len == 0) {
         fprintf(stderr,"error: qdetector_cccf_create(), sequence length cannot be zero\n");
         exit(1);
-    } else if (_k < 2 || _k > 80) {
-        fprintf(stderr,"error: qdetector_cccf_create(), samples per symbol must be in [2,80]\n");
-        exit(1);
-    } else if (_m < 1 || _m > 100) {
-        fprintf(stderr,"error: qdetector_cccf_create(), filter delay must be in [1,100]\n");
-        exit(1);
-    } else if (_beta < 0.0f || _beta > 1.0f) {
-        fprintf(stderr,"error: qdetector_cccf_create(), excess bandwidth factor must be in [0,1]\n");
-        exit(1);
     }
-    unsigned int i;
     
     // allocate memory for main object and set internal properties
     qdetector_cccf q = (qdetector_cccf) malloc(sizeof(struct qdetector_cccf_s));
-    q->sequence_len  = _sequence_len;
-    q->ftype         = _ftype;
-    q->k             = _k;
-    q->m             = _m;
-    q->beta          = _beta;
+    q->s_len = _s_len;
 
-    // copy sequence
-    q->sequence = (float complex*) malloc(q->sequence_len*sizeof(float complex));
-    memmove(q->sequence, _sequence, q->sequence_len*sizeof(float complex));
-
-    // create time-domain template
-    q->s_len = q->k * (q->sequence_len + 2*q->m);
-    q->s     = (float complex*) malloc(q->s_len * sizeof(float complex));
-    firinterp_crcf interp = firinterp_crcf_create_rnyquist(q->ftype, q->k, q->m, q->beta, 0);
-    for (i=0; i<q->sequence_len + 2*q->m; i++)
-        firinterp_crcf_execute(interp, i < q->sequence_len ? q->sequence[i] : 0, &q->s[q->k*i]);
-    firinterp_crcf_destroy(interp);
+    // allocate memory and copy sequence
+    q->s = (float complex*) malloc(q->s_len * sizeof(float complex));
+    memmove(q->s, _s, q->s_len*sizeof(float complex));
     q->s2_sum = liquid_sumsqcf(q->s, q->s_len); // compute sum{ s^2 }
 
     // prepare transforms
-    q->nfft     = 1 << liquid_nextpow2( (unsigned int)( 2 * q->s_len ) ); // NOTE: must be even
+    q->nfft       = 1 << liquid_nextpow2( (unsigned int)( 2 * q->s_len ) ); // NOTE: must be even
     q->buf_time_0 = (float complex*) malloc(q->nfft * sizeof(float complex));
     q->buf_freq_0 = (float complex*) malloc(q->nfft * sizeof(float complex));
     q->buf_freq_1 = (float complex*) malloc(q->nfft * sizeof(float complex));
@@ -176,10 +132,58 @@ qdetector_cccf qdetector_cccf_create(float complex * _sequence,
     return q;
 }
 
+
+// create detector from sequence of symbols using internal linear interpolator
+//  _sequence       :   symbol sequence
+//  _sequence_len   :   length of symbol sequence
+//  _k              :   samples/symbol
+//  _m              :   filter delay
+//  _beta           :   excess bandwidth factor
+//  _type           :   filter prototype (e.g. LIQUID_FIRFILT_RRC)
+qdetector_cccf qdetector_cccf_create_symbols(float complex * _sequence,
+                                             unsigned int    _sequence_len,
+                                             int             _ftype,
+                                             unsigned int    _k,
+                                             unsigned int    _m,
+                                             float           _beta)
+{
+    // validate input
+    if (_sequence_len == 0) {
+        fprintf(stderr,"error: qdetector_cccf_create_symbols(), sequence length cannot be zero\n");
+        exit(1);
+    } else if (_k < 2 || _k > 80) {
+        fprintf(stderr,"error: qdetector_cccf_create_symbols(), samples per symbol must be in [2,80]\n");
+        exit(1);
+    } else if (_m < 1 || _m > 100) {
+        fprintf(stderr,"error: qdetector_cccf_create_symbols(), filter delay must be in [1,100]\n");
+        exit(1);
+    } else if (_beta < 0.0f || _beta > 1.0f) {
+        fprintf(stderr,"error: qdetector_cccf_create_symbols(), excess bandwidth factor must be in [0,1]\n");
+        exit(1);
+    }
+    
+    // create time-domain template
+    unsigned int    s_len = _k * (_sequence_len + 2*_m);
+    float complex * s     = (float complex*) malloc(s_len * sizeof(float complex));
+    firinterp_crcf interp = firinterp_crcf_create_rnyquist(_ftype, _k, _m, _beta, 0);
+    unsigned int i;
+    for (i=0; i<_sequence_len + 2*_m; i++)
+        firinterp_crcf_execute(interp, i < _sequence_len ? _sequence[i] : 0, &s[_k*i]);
+    firinterp_crcf_destroy(interp);
+
+    // create main object
+    qdetector_cccf q = qdetector_cccf_create(s, s_len);
+
+    // free allocated temporary array
+    free(s);
+
+    // return object
+    return q;
+}
+
 void qdetector_cccf_destroy(qdetector_cccf _q)
 {
     // free allocated arrays
-    free(_q->sequence);
     free(_q->s         );
     free(_q->S         );
     free(_q->buf_time_0);
@@ -198,11 +202,6 @@ void qdetector_cccf_destroy(qdetector_cccf _q)
 void qdetector_cccf_print(qdetector_cccf _q)
 {
     printf("qdetector_cccf:\n");
-    printf("  sequence length       :   %-u\n",  _q->sequence_len);
-    printf("  filter type           :   %-u\n",  _q->ftype);
-    printf("  k    (samples/symbol) :   %-u\n",  _q->k);
-    printf("  m    (filter delay)   :   %-u\n",  _q->m);
-    printf("  beta (excess b/w)     :   %.3f\n", _q->beta);
     printf("  template length (time):   %-u\n",  _q->s_len);
     printf("  FFT size              :   %-u\n",  _q->nfft);
     
@@ -377,6 +376,7 @@ void qdetector_cccf_execute_seek(qdetector_cccf _q,
         }
     }
 
+    // increment number of transforms (debugging)
     _q->num_transforms++;
 
     if (rxy_peak > _q->threshold && rxy_index < _q->nfft - _q->s_len) {
