@@ -37,6 +37,8 @@
 #define DEBUG_FILENAME              "framesync64_internal_debug.m"
 #define DEBUG_BUFFER_LEN            (1600)
 
+#define FRAMESYNC64_ENABLE_EQ       0
+
 // push samples through detection stage
 void framesync64_execute_seekpn(framesync64   _q,
                                 float complex _x);
@@ -79,7 +81,9 @@ struct framesync64_s {
     unsigned int        npfb;       // number of filters in symsync
     int                 mf_counter; // matched filter output timer
     unsigned int        pfb_index;  // filterbank index
+#if FRAMESYNC64_ENABLE_EQ
     eqlms_cccf          equalizer;  // equalizer (trained on p/n sequence)
+#endif
 
     // preamble
     float complex preamble_pn[64];  // known 64-symbol p/n sequence
@@ -139,10 +143,12 @@ framesync64 framesync64_create(framesync_callback _callback,
     q->npfb = 32;   // number of filters in the bank
     q->mf   = firpfb_crcf_create_rnyquist(LIQUID_FIRFILT_ARKAISER, q->npfb,k,q->m,q->beta);
 
+#if FRAMESYNC64_ENABLE_EQ
     // create equalizer
     unsigned int p = 3;
     q->equalizer = eqlms_cccf_create_lowpass(2*k*p+1, 0.4f);
-    eqlms_cccf_set_bw(q->equalizer, 0.5f);
+    eqlms_cccf_set_bw(q->equalizer, 0.05f);
+#endif
 
     // create down-coverters for carrier phase tracking
     q->mixer = nco_crcf_create(LIQUID_NCO);
@@ -187,9 +193,11 @@ void framesync64_destroy(framesync64 _q)
     qdetector_cccf_destroy(_q->detector);   // frame detector
     firpfb_crcf_destroy   (_q->mf);         // matched filter
     nco_crcf_destroy      (_q->mixer);      // coarse NCO
-    eqlms_cccf_destroy    (_q->equalizer);  // LMS equalizer
     qpacketmodem_destroy  (_q->dec);        // payload demodulator
     qpilotsync_destroy    (_q->pilotsync);  // pilot synchronizer
+#if FRAMESYNC64_ENABLE_EQ
+    eqlms_cccf_destroy    (_q->equalizer);  // LMS equalizer
+#endif
 
     // free main object memory
     free(_q);
@@ -325,8 +333,10 @@ int framesync64_step(framesync64     _q,
     firpfb_crcf_push   (_q->mf, v);
     firpfb_crcf_execute(_q->mf, _q->pfb_index, &v);
 
-    // TODO: push sample through equalizer
+#if FRAMESYNC64_ENABLE_EQ
+    // push sample through equalizer
     eqlms_cccf_push(_q->equalizer, v);
+#endif
 
     // increment counter to determine if sample is available
     _q->mf_counter++;
@@ -334,8 +344,10 @@ int framesync64_step(framesync64     _q,
     
     // set output sample if available
     if (sample_available) {
+#if FRAMESYNC64_ENABLE_EQ
         // compute equalizer output
         eqlms_cccf_execute(_q->equalizer, &v);
+#endif
 
         // set output
         *_y = v;
@@ -363,14 +375,20 @@ void framesync64_execute_rxpreamble(framesync64   _q,
     if (sample_available) {
 
         // save output in p/n symbols buffer
+#if FRAMESYNC64_ENABLE_EQ
         unsigned int delay = 2*_q->m + 3; // delay from matched filter and equalizer
+#else
+        unsigned int delay = 2*_q->m;     // delay from matched filter
+#endif
         if (_q->preamble_counter >= delay) {
             unsigned int index = _q->preamble_counter-delay;
 
             _q->preamble_rx[index] = mf_out;
         
+#if FRAMESYNC64_ENABLE_EQ
             // train equalizer
             eqlms_cccf_step(_q->equalizer, _q->preamble_pn[index], mf_out);
+#endif
         }
 
         // update p/n counter
@@ -511,8 +529,14 @@ void framesync64_debug_print(framesync64  _q,
     for (i=0; i<64; i++)
         fprintf(fid,"preamble_rx(%4u) = %12.4e + 1i*%12.4e;\n", i+1, crealf(rc[i]), cimagf(rc[i]));
 
-    // write payload symbols
+    // write raw payload symbols
     unsigned int payload_sym_len = 600;
+    fprintf(fid,"payload_rx = zeros(1,%u);\n", payload_sym_len);
+    rc = _q->payload_rx;
+    for (i=0; i<payload_sym_len; i++)
+        fprintf(fid,"payload_rx(%4u) = %12.4e + j*%12.4e;\n", i+1, crealf(rc[i]), cimagf(rc[i]));
+
+    // write payload symbols
     fprintf(fid,"payload_syms = zeros(1,%u);\n", payload_sym_len);
     rc = _q->payload_sym;
     for (i=0; i<payload_sym_len; i++)
