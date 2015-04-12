@@ -33,8 +33,11 @@
 #define DEBUG_QDETECTOR_PRINT        0
 #define DEBUG_QDETECTOR_FILENAME     "qdetector_cccf_debug.m"
 
+// seek signal (initial detection)
 void qdetector_cccf_execute_seek(qdetector_cccf _q,
                                  float complex  _x);
+
+// align signal in time, compute offset estimates
 void qdetector_cccf_execute_align(qdetector_cccf _q,
                                   float complex  _x);
 
@@ -202,9 +205,9 @@ void qdetector_cccf_destroy(qdetector_cccf _q)
 void qdetector_cccf_print(qdetector_cccf _q)
 {
     printf("qdetector_cccf:\n");
-    printf("  template length (time):   %-u\n",  _q->s_len);
-    printf("  FFT size              :   %-u\n",  _q->nfft);
-    
+    printf("  template length (time):   %-u\n",   _q->s_len);
+    printf("  FFT size              :   %-u\n",   _q->nfft);
+    printf("  detection threshold   :   %6.4f\n", _q->threshold);
     printf("  sum{ s^2 }            :   %.2f\n",  _q->s2_sum);
 }
 
@@ -213,7 +216,7 @@ void qdetector_cccf_reset(qdetector_cccf _q)
 }
 
 void * qdetector_cccf_execute(qdetector_cccf _q,
-                           float complex  _x)
+                              float complex  _x)
 {
     switch (_q->state) {
     case QDETECTOR_STATE_SEEK:
@@ -300,6 +303,7 @@ float qdetector_cccf_get_phi(qdetector_cccf _q)
 // internal methods
 //
 
+// seek signal (initial detection)
 void qdetector_cccf_execute_seek(qdetector_cccf _q,
                                  float complex  _x)
 {
