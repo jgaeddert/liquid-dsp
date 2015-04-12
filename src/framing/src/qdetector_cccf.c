@@ -170,6 +170,8 @@ qdetector_cccf qdetector_cccf_create(float complex * _sequence,
     q->dphi_hat  = 0.0f;
     q->phi_hat   = 0.0f;
 
+    qdetector_cccf_set_threshold(q,0.5f);
+
     // return object
     return q;
 }
@@ -237,6 +239,19 @@ void * qdetector_cccf_execute(qdetector_cccf _q,
 
     // frame not yet ready
     return NULL;
+}
+
+// set detection threshold (should be between 0 and 1, good starting point is 0.5)
+void qdetector_cccf_set_threshold(qdetector_cccf _q,
+                                  float          _threshold)
+{
+    if (_threshold <= 0.0f || _threshold > 2.0f) {
+        fprintf(stderr,"warning: threshold (%12.4e) out of range; ignoring\n", _threshold);
+        return;
+    }
+
+    // set internal threshold value
+    _q->threshold = _threshold;
 }
 
 // buffer length
@@ -352,8 +367,7 @@ void qdetector_cccf_execute_seek(qdetector_cccf _q,
 
     _q->num_transforms++;
 
-    float rxy_threshold = 0.7f;
-    if (rxy_peak > rxy_threshold && rxy_index < _q->nfft - _q->s_len) {
+    if (rxy_peak > _q->threshold && rxy_index < _q->nfft - _q->s_len) {
 #if DEBUG_QDETECTOR_PRINT
         printf("*** frame detected! rxy = %12.8f, time index=%u, freq. offset=%d\n", rxy_peak, rxy_index, rxy_offset);
 #endif

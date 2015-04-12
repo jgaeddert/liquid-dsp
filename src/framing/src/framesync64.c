@@ -138,6 +138,7 @@ framesync64 framesync64_create(framesync_callback _callback,
     // create frame detector
     unsigned int k    = 2;    // samples/symbol
     q->detector = qdetector_cccf_create(q->preamble_pn, 64, LIQUID_FIRFILT_ARKAISER, k, q->m, q->beta);
+    qdetector_cccf_set_threshold(q->detector, 0.5f);
 
     // create symbol timing recovery filters
     q->npfb = 32;   // number of filters in the bank
