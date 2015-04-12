@@ -254,6 +254,18 @@ void qdetector_cccf_set_threshold(qdetector_cccf _q,
     _q->threshold = _threshold;
 }
 
+// get sequence length
+unsigned int qdetector_cccf_get_seq_len(qdetector_cccf _q)
+{
+    return _q->s_len;
+}
+
+// pointer to sequence
+const void * qdetector_cccf_get_sequence(qdetector_cccf _q)
+{
+    return (const void*) _q->s;
+}
+
 // buffer length
 unsigned int qdetector_cccf_get_buf_len(qdetector_cccf _q)
 {
