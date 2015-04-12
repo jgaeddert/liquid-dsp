@@ -1303,13 +1303,13 @@ unsigned int estimate_req_filter_len(float _df,
 // estimate filter stop-band attenuation given
 //  _df     :   transition bandwidth (0 < _b < 0.5)
 //  _N      :   filter length
-float estimate_req_filter_As(float _df,
+float estimate_req_filter_As(float        _df,
                              unsigned int _N);
 
 // estimate filter transition bandwidth given
 //  _As     :   stop-band attenuation [dB], _As > 0
 //  _N      :   filter length
-float estimate_req_filter_df(float _As,
+float estimate_req_filter_df(float        _As,
                              unsigned int _N);
 
 
@@ -1416,10 +1416,10 @@ void liquid_firdes_kaiser(unsigned int _n,
 //  _theta  : LoS component angle of arrival
 //  _h      : output coefficient buffer
 void liquid_firdes_doppler(unsigned int _n,
-                           float _fd,
-                           float _K,
-                           float _theta,
-                           float *_h);
+                           float        _fd,
+                           float        _K,
+                           float        _theta,
+                           float *      _h);
 
 
 // Design Nyquist raised-cosine filter
@@ -1504,9 +1504,9 @@ float iir_group_delay(float * _b,
 //  _h      :   filter coefficients [size: _h_len x 1]
 //  _h_len  :   filter length
 //  _lag    :   auto-correlation lag (samples)
-float liquid_filter_autocorr(float * _h,
+float liquid_filter_autocorr(float *      _h,
                              unsigned int _h_len,
-                             int _lag);
+                             int          _lag);
 
 // liquid_filter_crosscorr()
 //
@@ -1517,11 +1517,11 @@ float liquid_filter_autocorr(float * _h,
 //  _g      :   filter coefficients [size: _g_len]
 //  _g_len  :   filter length
 //  _lag    :   cross-correlation lag (samples)
-float liquid_filter_crosscorr(float * _h,
+float liquid_filter_crosscorr(float *      _h,
                               unsigned int _h_len,
-                              float * _g,
+                              float *      _g,
                               unsigned int _g_len,
-                              int _lag);
+                              int          _lag);
 
 // liquid_filter_isi()
 //
@@ -1533,11 +1533,11 @@ float liquid_filter_crosscorr(float * _h,
 //  _m      :   filter delay (symbols)
 //  _rms    :   output root mean-squared ISI
 //  _max    :   maximum ISI
-void liquid_filter_isi(float * _h,
+void liquid_filter_isi(float *      _h,
                        unsigned int _k,
                        unsigned int _m,
-                       float * _rms,
-                       float * _max);
+                       float *      _rms,
+                       float *      _max);
 
 // Compute relative out-of-band energy
 //
@@ -1545,9 +1545,9 @@ void liquid_filter_isi(float * _h,
 //  _h_len  :   filter length
 //  _fc     :   analysis cut-off frequency
 //  _nfft   :   fft size
-float liquid_filter_energy(float * _h,
+float liquid_filter_energy(float *      _h,
                            unsigned int _h_len,
-                           float _fc,
+                           float        _fc,
                            unsigned int _nfft);
 
 
@@ -4229,121 +4229,305 @@ unsigned int liquid_totient(unsigned int _n);
 //   MATRIX : name-mangling macro
 //   T      : data type
 #define LIQUID_MATRIX_DEFINE_API(MATRIX,T)                      \
-void MATRIX(_print)(T * _x,                                     \
-                    unsigned int _rx,                           \
-                    unsigned int _cx);                          \
-void MATRIX(_add)(T * _x,                                       \
-                  T * _y,                                       \
-                  T * _z,                                       \
+                                                                \
+/* print array as matrix                                    */  \
+/*  _x      : input matrix [size: _r x _c]                  */  \
+/*  _r      : rows                                          */  \
+/*  _c      : columns                                       */  \
+void MATRIX(_print)(T *          _x,                            \
+                    unsigned int _r,                            \
+                    unsigned int _c);                           \
+                                                                \
+/* add two matrices _x and _y saving the result in _z       */  \
+/*  _x      : input matrix  [size: _r x _c]                 */  \
+/*  _y      : input matrix  [size: _r x _c]                 */  \
+/*  _z      : output matrix [size: _r x _c]                 */  \
+/*  _r      : rows                                          */  \
+/*  _c      : columns                                       */  \
+void MATRIX(_add)(T *          _x,                              \
+                  T *          _y,                              \
+                  T *          _z,                              \
                   unsigned int _r,                              \
                   unsigned int _c);                             \
-void MATRIX(_sub)(T * _x,                                       \
-                  T * _y,                                       \
-                  T * _z,                                       \
+                                                                \
+/* subtract two matrices _x and _y saving the result in _z  */  \
+/*  _x      : input matrix  [size: _r x _c]                 */  \
+/*  _y      : input matrix  [size: _r x _c]                 */  \
+/*  _z      : output matrix [size: _r x _c]                 */  \
+/*  _r      : rows                                          */  \
+/*  _c      : columns                                       */  \
+void MATRIX(_sub)(T *          _x,                              \
+                  T *          _y,                              \
+                  T *          _z,                              \
                   unsigned int _r,                              \
                   unsigned int _c);                             \
-void MATRIX(_pmul)(T * _x,                                      \
-                   T * _y,                                      \
-                   T * _z,                                      \
+                                                                \
+/* perform point-wise multiplication of two matrices _x     */  \
+/* and _y saving the result in _z                           */  \
+/*  _x      : input matrix  [size: _r x _c]                 */  \
+/*  _y      : input matrix  [size: _r x _c]                 */  \
+/*  _z      : output matrix [size: _r x _c]                 */  \
+/*  _r      : rows                                          */  \
+/*  _c      : columns                                       */  \
+void MATRIX(_pmul)(T *          _x,                             \
+                   T *          _y,                             \
+                   T *          _z,                             \
                    unsigned int _r,                             \
                    unsigned int _c);                            \
-void MATRIX(_pdiv)(T * _x,                                      \
-                   T * _y,                                      \
-                   T * _z,                                      \
+                                                                \
+/* perform point-wise division of two matrices _x and _y    */  \
+/* saving the result in _z                                  */  \
+/*  _x      : input matrix  [size: _r x _c]                 */  \
+/*  _y      : input matrix  [size: _r x _c]                 */  \
+/*  _z      : output matrix [size: _r x _c]                 */  \
+/*  _r      : rows                                          */  \
+/*  _c      : columns                                       */  \
+void MATRIX(_pdiv)(T *          _x,                             \
+                   T *          _y,                             \
+                   T *          _z,                             \
                    unsigned int _r,                             \
                    unsigned int _c);                            \
+                                                                \
+/* multiply two matrices _x and _y storing the result in _z */  \
+/* NOTE: _rz = _rx, _cz = _cy, and _cx = _ry                */  \
+/*  _x      : input matrix  [size: _rx x _cx]               */  \
+/*  _y      : input matrix  [size: _ry x _cy]               */  \
+/*  _z      : output matrix [size: _rz x _cz]               */  \
 void MATRIX(_mul)(T * _x, unsigned int _rx, unsigned int _cx,   \
                   T * _y, unsigned int _ry, unsigned int _cy,   \
                   T * _z, unsigned int _rz, unsigned int _cz);  \
-void MATRIX(_div)(T * _x, T * _y, T * _z, unsigned int _n);     \
-T    MATRIX(_det)(T * _x, unsigned int _r, unsigned int _c);    \
-void MATRIX(_trans)(T * _x, unsigned int _rx, unsigned int _cx);\
-void MATRIX(_hermitian)(T * _x,                                 \
-                        unsigned int _rx,                       \
-                        unsigned int _cx);                      \
+                                                                \
+/* solve _x = _y*_z for _z for square matrices of size _n   */  \
+/*  _x      : input matrix  [size: _n x _n]                 */  \
+/*  _y      : input matrix  [size: _n x _n]                 */  \
+/*  _z      : output matrix [size: _n x _n]                 */  \
+void MATRIX(_div)(T *          _x,                              \
+                  T *          _y,                              \
+                  T *          _z,                              \
+                  unsigned int _n);                             \
+                                                                \
+/* compute the determinant of a square matrix _x            */  \
+/*  _x      : input matrix [size: _r x _c]                  */  \
+/*  _r      : rows                                          */  \
+/*  _c      : columns                                       */  \
+T MATRIX(_det)(T *          _x,                                 \
+               unsigned int _r,                                 \
+               unsigned int _c);                                \
+                                                                \
+/* compute the in-place transpose of the matrix _x          */  \
+/*  _x      : input matrix [size: _r x _c]                  */  \
+/*  _r      : rows                                          */  \
+/*  _c      : columns                                       */  \
+void MATRIX(_trans)(T *          _x,                            \
+                    unsigned int _r,                            \
+                    unsigned int _c);                           \
+                                                                \
+/* compute the in-place Hermitian transpose of _x           */  \
+/*  _x      : input matrix [size: _r x _c]                  */  \
+/*  _r      : rows                                          */  \
+/*  _c      : columns                                       */  \
+void MATRIX(_hermitian)(T *          _x,                        \
+                        unsigned int _r,                        \
+                        unsigned int _c);                       \
                                                                 \
 /* compute x*x' on [m x n] matrix, result: [m x m]          */  \
-void MATRIX(_mul_transpose)(T * _x,                             \
+/*  _x      : input matrix [size: _m x _n]                  */  \
+/*  _m      : input rows                                    */  \
+/*  _n      : input columns                                 */  \
+/*  _xxT    : output matrix [size: _m x _m]                 */  \
+void MATRIX(_mul_transpose)(T *          _x,                    \
                             unsigned int _m,                    \
                             unsigned int _n,                    \
-                            T * _xxT);                          \
-/* compute x'*x on [m x n] matrix, result: [n x n]          */  \
-void MATRIX(_transpose_mul)(T * _x,                             \
-                            unsigned int _m,                    \
-                            unsigned int _n,                    \
-                            T * _xTx);                          \
-/* compute x*x.' on [m x n] matrix, result: [m x m]          */ \
-void MATRIX(_mul_hermitian)(T * _x,                             \
-                            unsigned int _m,                    \
-                            unsigned int _n,                    \
-                            T * _xxH);                          \
-/* compute x.'*x on [m x n] matrix, result: [n x n]          */ \
-void MATRIX(_hermitian_mul)(T * _x,                             \
-                            unsigned int _m,                    \
-                            unsigned int _n,                    \
-                            T * _xHx);                          \
+                            T *          _xxT);                 \
                                                                 \
+/* compute x'*x on [m x n] matrix, result: [n x n]          */  \
+/*  _x      : input matrix [size: _m x _n]                  */  \
+/*  _m      : input rows                                    */  \
+/*  _n      : input columns                                 */  \
+/*  _xTx    : output matrix [size: _n x _n]                 */  \
+void MATRIX(_transpose_mul)(T *          _x,                    \
+                            unsigned int _m,                    \
+                            unsigned int _n,                    \
+                            T *          _xTx);                 \
+                                                                \
+/* compute x*x.' on [m x n] matrix, result: [m x m]         */  \
+/*  _x      : input matrix [size: _m x _n]                  */  \
+/*  _m      : input rows                                    */  \
+/*  _n      : input columns                                 */  \
+/*  _xxH    : output matrix [size: _m x _m]                 */  \
+void MATRIX(_mul_hermitian)(T *          _x,                    \
+                            unsigned int _m,                    \
+                            unsigned int _n,                    \
+                            T *          _xxH);                 \
+                                                                \
+/* compute x.'*x on [m x n] matrix, result: [n x n]         */  \
+/*  _x      : input matrix [size: _m x _n]                  */  \
+/*  _m      : input rows                                    */  \
+/*  _n      : input columns                                 */  \
+/*  _xHx    : output matrix [size: _n x _n]                 */  \
+void MATRIX(_hermitian_mul)(T *          _x,                    \
+                            unsigned int _m,                    \
+                            unsigned int _n,                    \
+                            T *          _xHx);                 \
+                                                                \
+                                                                \
+/* augment two matrices _x and _y storing the result in _z  */  \
+/* NOTE: _rz = _rx = _ry, _rx = _ry, and _cz = _cx + _cy    */  \
+/*  _x      : input matrix  [size: _rx x _cx]               */  \
+/*  _y      : input matrix  [size: _ry x _cy]               */  \
+/*  _z      : output matrix [size: _rz x _cz]               */  \
 void MATRIX(_aug)(T * _x, unsigned int _rx, unsigned int _cx,   \
                   T * _y, unsigned int _ry, unsigned int _cy,   \
                   T * _z, unsigned int _rz, unsigned int _cz);  \
-void MATRIX(_inv)(T * _x,                                       \
-                  unsigned int _rx,                             \
-                  unsigned int _cx);                            \
-void MATRIX(_eye)(T * _x,                                       \
+                                                                \
+/* compute the inverse of a square matrix _x                */  \
+/*  _x      : input/output matrix [size: _r x _c]           */  \
+/*  _r      : rows                                          */  \
+/*  _c      : columns                                       */  \
+void MATRIX(_inv)(T *          _x,                              \
+                  unsigned int _r,                              \
+                  unsigned int _c);                             \
+                                                                \
+/* generate the identity square matrix of size _n           */  \
+/*  _x      : output matrix [size: _n x _n]                 */  \
+/*  _n      : dimensions of _x                              */  \
+void MATRIX(_eye)(T *          _x,                              \
                   unsigned int _n);                             \
-void MATRIX(_ones)(T * _x,                                      \
+                                                                \
+/* generate the all-ones matrix of size _n                  */  \
+/*  _x      : output matrix [size: _r x _c]                 */  \
+/*  _r      : rows                                          */  \
+/*  _c      : columns                                       */  \
+void MATRIX(_ones)(T *          _n,                             \
                    unsigned int _r,                             \
                    unsigned int _c);                            \
-void MATRIX(_zeros)(T * _x,                                     \
+                                                                \
+/* generate the all-zeros matrix of size _n                 */  \
+/*  _x      : output matrix [size: _r x _c]                 */  \
+/*  _r      : rows                                          */  \
+/*  _c      : columns                                       */  \
+void MATRIX(_zeros)(T *          _x,                            \
                     unsigned int _r,                            \
                     unsigned int _c);                           \
-void MATRIX(_gjelim)(T * _x,                                    \
-                     unsigned int _rx,                          \
-                     unsigned int _cx);                         \
-void MATRIX(_pivot)(T * _x,                                     \
-               unsigned int _rx,                                \
-               unsigned int _cx,                                \
-               unsigned int _r,                                 \
-               unsigned int _c);                                \
-void MATRIX(_swaprows)(T * _x,                                  \
-                  unsigned int _rx,                             \
-                  unsigned int _cx,                             \
-                  unsigned int _r1,                             \
-                  unsigned int _r2);                            \
-void MATRIX(_linsolve)(T * _A,                                  \
-                       unsigned int _r,                         \
-                       T * _b,                                  \
-                       T * _x,                                  \
-                       void * _opts);                           \
-void MATRIX(_cgsolve)(T * _A,                                   \
-                      unsigned int _r,                          \
-                      T * _b,                                   \
-                      T * _x,                                   \
-                      void * _opts);                            \
-void MATRIX(_ludecomp_crout)(T * _x,                            \
+                                                                \
+/* perform Gauss-Jordan elimination on matrix _x            */  \
+/*  _x      : input/output matrix [size: _r x _c]           */  \
+/*  _r      : rows                                          */  \
+/*  _c      : columns                                       */  \
+void MATRIX(_gjelim)(T *          _x,                           \
+                     unsigned int _r,                           \
+                     unsigned int _c);                          \
+                                                                \
+/* pivot on element _x[_r,_c]                               */  \
+/*  _x      : output matrix [size: _rx x _cx]               */  \
+/*  _rx     : rows of _x                                    */  \
+/*  _cx     : columns of _x                                 */  \
+/*  _r      : pivot row                                     */  \
+/*  _c      : pivot column                                  */  \
+void MATRIX(_pivot)(T *          _x,                            \
+                    unsigned int _rx,                           \
+                    unsigned int _cx,                           \
+                    unsigned int _r,                            \
+                    unsigned int _c);                           \
+                                                                \
+/* swap rows _r1 and _r2 of matrix _x                       */  \
+/*  _x      : input/output matrix [size: _rx x _cx]         */  \
+/*  _rx     : rows of _x                                    */  \
+/*  _cx     : columns of _x                                 */  \
+/*  _r1     : first row to swap                             */  \
+/*  _r2     : second row to swap                            */  \
+void MATRIX(_swaprows)(T *          _x,                         \
+                       unsigned int _rx,                        \
+                       unsigned int _cx,                        \
+                       unsigned int _r1,                        \
+                       unsigned int _r2);                       \
+                                                                \
+/* solve linear system of _n equations: _A*_x = _b          */  \
+/*  _A      :   system matrix [size: _n x _n]               */  \
+/*  _n      :   system size                                 */  \
+/*  _b      :   equality vector [size: _n x 1]              */  \
+/*  _x      :   solution vector [size: _n x 1]              */  \
+/*  _opts   :   options (ignored for now)                   */  \
+void MATRIX(_linsolve)(T *          _A,                         \
+                       unsigned int _n,                         \
+                       T *          _b,                         \
+                       T *          _x,                         \
+                       void *       _opts);                     \
+                                                                \
+/* solve linear system of equations using conjugate         */  \
+/* gradient method                                          */  \
+/*  _A      :   symmetric positive definite square matrix   */  \
+/*  _n      :   system dimension                            */  \
+/*  _b      :   equality [size: _n x 1]                     */  \
+/*  _x      :   solution estimate [size: _n x 1]            */  \
+/*  _opts   :   options (ignored for now)                   */  \
+void MATRIX(_cgsolve)(T *          _A,                          \
+                      unsigned int _n,                          \
+                      T *          _b,                          \
+                      T *          _x,                          \
+                      void *       _opts);                      \
+                                                                \
+/* L/U/P decomposition, Crout's method                      */  \
+/*  _x      : input/output matrix [size: _rx x _cx]         */  \
+/*  _rx     : rows of _x                                    */  \
+/*  _cx     : columns of _x                                 */  \
+/*  _L      : first row to swap                             */  \
+/*  _U      : first row to swap                             */  \
+/*  _P      : first row to swap                             */  \
+void MATRIX(_ludecomp_crout)(T *          _x,                   \
                              unsigned int _rx,                  \
                              unsigned int _cx,                  \
-                             T * _L,                            \
-                             T * _U,                            \
-                             T * _P);                           \
-void MATRIX(_ludecomp_doolittle)(T * _x,                        \
+                             T *          _L,                   \
+                             T *          _U,                   \
+                             T *          _P);                  \
+                                                                \
+/* L/U/P decomposition, Doolittle's method                  */  \
+/*  _x      : input/output matrix [size: _rx x _cx]         */  \
+/*  _rx     : rows of _x                                    */  \
+/*  _cx     : columns of _x                                 */  \
+/*  _L      : first row to swap                             */  \
+/*  _U      : first row to swap                             */  \
+/*  _P      : first row to swap                             */  \
+void MATRIX(_ludecomp_doolittle)(T *          _x,               \
                                  unsigned int _rx,              \
                                  unsigned int _cx,              \
-                                 T * _L,                        \
-                                 T * _U,                        \
-                                 T * _P);                       \
-void MATRIX(_gramschmidt)(T * _A,                               \
-                          unsigned int _rx,                     \
-                          unsigned int _cx,                     \
-                          T * _U);                              \
-void MATRIX(_qrdecomp_gramschmidt)(T * _x,                      \
-                                   unsigned int _rx,            \
-                                   unsigned int _cx,            \
-                                   T * _Q,                      \
-                                   T * _R);                     \
-void MATRIX(_chol)(T * _A,                                      \
+                                 T *          _L,               \
+                                 T *          _U,               \
+                                 T *          _P);              \
+                                                                \
+/* Orthnormalization using the Gram-Schmidt algorithm       */  \
+/*  _A      : input matrix [size: _r x _c]                  */  \
+/*  _r      : rows                                          */  \
+/*  _c      : columns                                       */  \
+/*  _v      : output matrix                                 */  \
+void MATRIX(_gramschmidt)(T *          _A,                      \
+                          unsigned int _r,                      \
+                          unsigned int _c,                      \
+                          T *          _v);                     \
+                                                                \
+/* Q/R decomposition using the Gram-Schmidt algorithm such  */  \
+/* that _A = _Q*_R and _Q^T * _Q = _In and _R is a diagonal */  \
+/* matrix                                                   */  \
+/* NOTE: all matrices are square                            */  \
+/*  _A      : input matrix [size: _m x _m]                  */  \
+/*  _m      : rows                                          */  \
+/*  _n      : columns (same as cols)                        */  \
+/*  _Q      : output matrix [size: _m x _m]                 */  \
+/*  _R      : output matrix [size: _m x _m]                 */  \
+void MATRIX(_qrdecomp_gramschmidt)(T *          _A,             \
+                                   unsigned int _m,             \
+                                   unsigned int _n,             \
+                                   T *          _Q,             \
+                                   T *          _R);            \
+                                                                \
+/* Compute Cholesky decomposition of a symmetric/Hermitian  */  \
+/* positive-definite matrix as A = L * L^T                  */  \
+/*  _A      :   input square matrix [size: _n x _n]         */  \
+/*  _n      :   input matrix dimension                      */  \
+/*  _L      :   output lower-triangular matrix              */  \
+void MATRIX(_chol)(T *          _A,                             \
                    unsigned int _n,                             \
-                   T * _L);                                     \
+                   T *          _L);                            \
 
 #define matrix_access(X,R,C,r,c) ((X)[(r)*(C)+(c)])
 

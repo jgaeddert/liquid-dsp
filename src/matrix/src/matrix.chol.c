@@ -31,9 +31,9 @@
 //  _A      :   input square matrix [size: _n x _n]
 //  _n      :   input matrix dimension
 //  _L      :   output lower-triangular matrix
-void MATRIX(_chol)(T * _A,
+void MATRIX(_chol)(T *          _A,
                    unsigned int _n,
-                   T * _L)
+                   T *          _L)
 {
     // reset L
     unsigned int i;
