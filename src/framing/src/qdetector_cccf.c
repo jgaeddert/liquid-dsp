@@ -332,7 +332,9 @@ void qdetector_cccf_execute_seek(qdetector_cccf _q,
         fprintf(fid,"t=[0:(nfft-1)];\n");
         fprintf(fid,"plot(t,abs(rxy));\n");
         fprintf(fid,"grid on;\n");
-        fprintf(fid,"axis([0 512 0 1.5]);\n");
+        fprintf(fid,"axis([0 %u 0 1.5]);\n", _q->nfft);
+        fprintf(fid,"[v i] = max(abs(rxy));\n");
+        fprintf(fid,"title(sprintf('peak of %%12.8f at index %%u', v, i));\n");
         fclose(fid);
         printf("debug: %s\n", filename);
 #endif
@@ -347,6 +349,8 @@ void qdetector_cccf_execute_seek(qdetector_cccf _q,
             }
         }
     }
+
+    _q->num_transforms++;
 
     float rxy_threshold = 0.7f;
     if (rxy_peak > rxy_threshold && rxy_index < _q->nfft - _q->s_len) {
@@ -364,9 +368,10 @@ void qdetector_cccf_execute_seek(qdetector_cccf _q,
 
         return;
     }
+#if DEBUG_QDETECTOR_PRINT
+    printf(" no detect, rxy = %12.8f, time index=%u, freq. offset=%d\n", rxy_peak, rxy_index, rxy_offset);
+#endif
     
-    _q->num_transforms++;
-
     // copy last half of fft input buffer to front
     memmove(_q->buf_time_0, _q->buf_time_0 + _q->nfft/2, (_q->nfft/2)*sizeof(float complex));
 
