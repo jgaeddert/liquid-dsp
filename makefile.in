@@ -642,9 +642,10 @@ framing_autotests :=						\
 	src/framing/tests/bpacketsync_autotest.c		\
 	src/framing/tests/bsync_autotest.c			\
 	src/framing/tests/detector_autotest.c			\
+	src/framing/tests/flexframesync_autotest.c		\
 	src/framing/tests/framesync64_autotest.c		\
 	src/framing/tests/qpacketmodem_autotest.c		\
-	src/framing/tests/flexframesync_autotest.c		\
+	src/framing/tests/qpilotsync_autotest.c			\
 
 
 framing_benchmarks :=						\
