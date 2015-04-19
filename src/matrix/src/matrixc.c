@@ -30,6 +30,9 @@
 #define TP              double          // primitive type
 #define T_COMPLEX       1               // is type complex?
 
+#define T_ABS(X)        cabs(X)
+#define TP_ABS(X)       fabs(X)
+
 #define MATRIX_PRINT_ELEMENT(X,R,C,r,c)     \
     printf("%7.2f+j%6.2f ",                 \
         crealf(matrix_access(X,R,C,r,c)),   \

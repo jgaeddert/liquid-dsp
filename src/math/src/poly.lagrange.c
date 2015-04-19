@@ -139,7 +139,7 @@ T POLY(_val_lagrange_barycentric)(T * _x,
         g = _x0 - _x[j];
 
         // test for "exact" fit
-        if (cabsf(g) < tol)
+        if (T_ABS(g) < tol)
             return _y[j];
 
         t0 += _w[j] * _y[j] / g;
