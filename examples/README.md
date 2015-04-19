@@ -468,6 +468,12 @@ This directory contains all the examples for interfacing the liquid modules.
 
     SEE ALSO: `polyfit_example.c`
 
+ * `qdetector_cccf_example.c`:
+    This example demonstrates the functionality of the qdetector object
+    to detect an arbitrary signal in time in the presence of noise,
+    carrier frequency/phase offsets, and fractional-sample timing
+    offsets.
+
  * `qpacketmodem_example.c`:
     This example demonstrates the basic packet modem encoder/decoder
     operation. A packet of data is encoded and modulated into symbols,

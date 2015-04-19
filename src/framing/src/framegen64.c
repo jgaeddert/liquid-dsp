@@ -48,15 +48,17 @@ struct framegen64_s {
 framegen64 framegen64_create()
 {
     framegen64 q = (framegen64) malloc(sizeof(struct framegen64_s));
-    q->m    = 3;
-    q->beta = 0.5f;
+    q->m    = 7;
+    q->beta = 0.3f;
 
     unsigned int i;
 
     // generate pn sequence
-    msequence ms = msequence_create(6, 0x0043, 1);
-    for (i=0; i<64; i++)
-        q->pn_sequence[i] = (msequence_advance(ms)) ? 1.0f : -1.0f;
+    msequence ms = msequence_create(7, 0x0089, 1);
+    for (i=0; i<64; i++) {
+        q->pn_sequence[i] = (msequence_advance(ms) ? M_SQRT1_2 : -M_SQRT1_2) +
+                            (msequence_advance(ms) ? M_SQRT1_2 : -M_SQRT1_2)*_Complex_I;
+    }
     msequence_destroy(ms);
 
     // create payload encoder/modulator object
@@ -94,25 +96,26 @@ void framegen64_destroy(framegen64 _q)
 // print framegen64 object internals
 void framegen64_print(framegen64 _q)
 {
-    float eta = (float) (8*(64 + 8)) / (float) 670;
+    float eta = (float) (8*(64 + 8)) / (float) (LIQUID_FRAME64_LEN/2);
     printf("framegen64 [m=%u, beta=%4.2f]:\n", _q->m, _q->beta);
     printf("  preamble/etc.\n");
-    printf("    * ramp/up symbols       :   %u\n", 3);
-    printf("    * p/n symbols           :   64\n");
-    printf("    * ramp\\down symbols     :   %u\n", 3);
+    printf("    * ramp/up symbols       :   %3u\n", _q->m);
+    printf("    * p/n symbols           :   %3u\n", 64);
+    printf("    * ramp\\down symbols     :   %3u\n", _q->m);
+    printf("    * zero padding          :   %3u\n", 12);
     printf("  payload\n");
 #if 0
     printf("    * payload crc           :   %s\n", crc_scheme_str[_q->check][1]);
     printf("    * fec (inner)           :   %s\n", fec_scheme_str[_q->fec0][1]);
     printf("    * fec (outer)           :   %s\n", fec_scheme_str[_q->fec1][1]);
 #endif
-    printf("    * payload len, uncoded  :   %u bytes\n", 64);
-    printf("    * payload len, coded    :   %u bytes\n", 150);
+    printf("    * payload len, uncoded  :   %3u bytes\n", 64);
+    printf("    * payload len, coded    :   %3u bytes\n", 150);
     printf("    * modulation scheme     :   %s\n", modulation_types[LIQUID_MODEM_QPSK].name);
-    printf("    * payload symbols       :   600\n");
-    printf("    * pilot symbols         :    30\n");
+    printf("    * payload symbols       :   %3u\n", 600);
+    printf("    * pilot symbols         :   %3u\n", 30);
     printf("  summary\n");
-    printf("    * total symbols         :   700\n");
+    printf("    * total symbols         :   %3u\n", LIQUID_FRAME64_LEN/2);
     printf("    * spectral efficiency   :   %6.4f b/s/Hz\n", eta);
 }
 
@@ -156,7 +159,7 @@ void framegen64_execute(framegen64      _q,
     }
 
     // interpolator settling
-    for (i=0; i<2*_q->m; i++) {
+    for (i=0; i<2*_q->m + 2 + 10; i++) {
         firinterp_crcf_execute(_q->interp, 0.0f, &_frame[n]);
         n+=2;
     }

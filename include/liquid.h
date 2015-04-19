@@ -3348,7 +3348,7 @@ float qpilotsync_get_gain(qpilotsync _q);
 //
 
 // frame length in samples
-#define LIQUID_FRAME64_LEN (1400)
+#define LIQUID_FRAME64_LEN (1440)
 
 typedef struct framegen64_s * framegen64;
 
@@ -3856,6 +3856,53 @@ LIQUID_PRESYNC_DEFINE_API(BPRESYNC_MANGLE_CCCF,
                           liquid_float_complex,
                           liquid_float_complex,
                           liquid_float_complex)
+
+//
+// Frame detector
+//
+
+typedef struct qdetector_cccf_s * qdetector_cccf;
+
+// create detector with generic sequence
+//  _s      :   sample sequence
+//  _s_len  :   length of sample sequence
+qdetector_cccf qdetector_cccf_create(liquid_float_complex * _s,
+                                     unsigned int           _s_len);
+
+// create detector from sequence of symbols using internal linear interpolator
+//  _sequence       :   symbol sequence
+//  _sequence_len   :   length of symbol sequence
+//  _k              :   samples/symbol
+//  _m              :   filter delay
+//  _beta           :   excess bandwidth factor
+//  _type           :   filter prototype (e.g. LIQUID_FIRFILT_RRC)
+qdetector_cccf qdetector_cccf_create_symbols(liquid_float_complex * _sequence,
+                                             unsigned int           _sequence_len,
+                                             int                    _ftype,
+                                             unsigned int           _k,
+                                             unsigned int           _m,
+                                             float                  _beta);
+
+void qdetector_cccf_destroy(qdetector_cccf _q);
+void qdetector_cccf_print  (qdetector_cccf _q);
+void qdetector_cccf_reset  (qdetector_cccf _q);
+
+// run detector, looking for sequence; return pointer to aligned, buffered samples
+void * qdetector_cccf_execute(qdetector_cccf       _q,
+                              liquid_float_complex _x);
+
+// set detection threshold (should be between 0 and 1, good starting point is 0.5)
+void qdetector_cccf_set_threshold(qdetector_cccf _q,
+                                  float          _threshold);
+
+// access methods
+unsigned int qdetector_cccf_get_seq_len (qdetector_cccf _q); // sequence length
+const void * qdetector_cccf_get_sequence(qdetector_cccf _q); // pointer to sequence
+unsigned int qdetector_cccf_get_buf_len (qdetector_cccf _q); // buffer length
+float        qdetector_cccf_get_tau     (qdetector_cccf _q); // fractional timing offset estimate
+float        qdetector_cccf_get_gamma   (qdetector_cccf _q); // channel gain
+float        qdetector_cccf_get_dphi    (qdetector_cccf _q); // carrier frequency offset estimate
+float        qdetector_cccf_get_phi     (qdetector_cccf _q); // carrier phase offset estimate
 
 //
 // Pre-demodulation detector
