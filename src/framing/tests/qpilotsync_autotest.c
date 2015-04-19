@@ -10,7 +10,7 @@
 #include "autotest/autotest.h"
 #include "liquid.h"
 
-#define DEBUG_QPILOTSYNC_AUTOTEST 1
+#define DEBUG_QPILOTSYNC_AUTOTEST 0
 
 // 
 // AUTOTEST : test simple recovery of frame in noise
@@ -37,7 +37,6 @@ void qpilotsync_test(modulation_scheme _ms,
     // create pilot generator and synchronizer objects
     qpilotgen  pg = qpilotgen_create( _payload_len, _pilot_spacing);
     qpilotsync ps = qpilotsync_create(_payload_len, _pilot_spacing);
-    qpilotgen_print(pg);
 
     // get frame length
     unsigned int frame_len = qpilotgen_get_frame_len(pg);
@@ -92,20 +91,25 @@ void qpilotsync_test(modulation_scheme _ms,
     unsigned int bit_errors = 0;
     for (i=0; i<_payload_len; i++)
         bit_errors += count_bit_errors(payload_sym_rx[i], payload_sym_tx[i]);
-    printf("received bit errors : %u / %u\n", bit_errors, _payload_len * modem_get_bps(mod));
 
     // get estimates
     float dphi_hat  = qpilotsync_get_dphi(ps);
     float phi_hat   = qpilotsync_get_phi (ps);
     float gamma_hat = qpilotsync_get_gain(ps);
 
-    CONTEND_DELTA(  dphi_hat,  _dphi, 0.01f );
-    CONTEND_DELTA(   phi_hat,   _phi, 0.10f );
-    CONTEND_DELTA( gamma_hat, _gamma, 0.05f );
-
+    if (liquid_autotest_verbose) {
+        qpilotgen_print(pg);
+        printf("  received bit errors : %u / %u\n", bit_errors, _payload_len * modem_get_bps(mod));
+        printf("  dphi (carrier freq.): %12.8ff (expected %12.8f, error=%12.8f)\n", dphi_hat, _dphi, _dphi-dphi_hat);
+        printf("  phi  (carrier phase): %12.8ff (expected %12.8f, error=%12.8f)\n",  phi_hat,  _phi, _phi-phi_hat);
+        printf("  gamma (channel gain): %12.8ff (expected %12.8f, error=%12.8f)\n", gamma_hat, _gamma, _gamma-gamma_hat);
+    }
+    
     // check to see that frame was recovered
+    CONTEND_DELTA   (   dphi_hat,  _dphi, 0.010f );
+    CONTEND_DELTA   (    phi_hat,   _phi, 0.087f );  // 0.087 radians is about 5 degrees
+    CONTEND_DELTA   (  gamma_hat, _gamma, 0.010f );
     CONTEND_EQUALITY( bit_errors, 0 );
-    //CONTEND_SAME_DATA( payload_tx, payload_rx, _payload_len );
     
     // destroy allocated objects
     qpilotgen_destroy(pg);
@@ -116,7 +120,7 @@ void qpilotsync_test(modulation_scheme _ms,
 #if DEBUG_QPILOTSYNC_AUTOTEST
     // write symbols to output file for plotting
     char filename[256];
-    sprintf(filename,"qpilotsync_autotest_debug.m");
+    sprintf(filename,"qpilotsync_autotest_%u_%u_debug.m", _payload_len, _pilot_spacing);
     FILE * fid = fopen(filename,"w");
     if (!fid) {
         fprintf(stderr,"error: could not open '%s' for writing\n", filename);
@@ -156,5 +160,9 @@ void qpilotsync_test(modulation_scheme _ms,
 #endif
 }
 
-void autotest_qpilotsync_qpsk() { qpilotsync_test(LIQUID_MODEM_QPSK,100,10,0.0f,0.0f,1.0f,40.0f); }
+void autotest_qpilotsync_100_16() { qpilotsync_test(LIQUID_MODEM_QPSK, 100, 16, 0.07f, 1.2f, 0.7f, 40.0f); }
+void autotest_qpilotsync_200_20() { qpilotsync_test(LIQUID_MODEM_QPSK, 200, 20, 0.07f, 1.2f, 0.7f, 40.0f); }
+void autotest_qpilotsync_300_24() { qpilotsync_test(LIQUID_MODEM_QPSK, 300, 24, 0.07f, 1.2f, 0.7f, 40.0f); }
+void autotest_qpilotsync_400_28() { qpilotsync_test(LIQUID_MODEM_QPSK, 400, 28, 0.07f, 1.2f, 0.7f, 40.0f); }
+void autotest_qpilotsync_500_32() { qpilotsync_test(LIQUID_MODEM_QPSK, 500, 32, 0.07f, 1.2f, 0.7f, 40.0f); }
 
