@@ -3333,6 +3333,11 @@ void qpilotsync_execute(qpilotsync             _q,
                         liquid_float_complex * _frame,
                         liquid_float_complex * _payload);
 
+// get estimates
+float qpilotsync_get_dphi(qpilotsync _q);
+float qpilotsync_get_phi (qpilotsync _q);
+float qpilotsync_get_gain(qpilotsync _q);
+
 
 //
 // Basic frame generator (64 bytes data payload)
