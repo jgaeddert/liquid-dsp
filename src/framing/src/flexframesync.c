@@ -696,7 +696,7 @@ void flexframesync_execute_rxpayload(flexframesync _q,
 
                 // invoke callback method
                 _q->callback(_q->header_dec,
-                             _q->payload_valid,
+                             _q->header_valid,
                              _q->payload_dec,
                              _q->payload_dec_len,
                              _q->payload_valid,
