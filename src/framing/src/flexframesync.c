@@ -658,12 +658,14 @@ void flexframesync_execute_rxpayload(flexframesync _q,
         // TODO: clean this up
         // mix down with fine-tuned oscillator
         nco_crcf_mix_down(_q->pll, mf_out, &mf_out);
-        // track phase
+        // track phase, accumulate error-vector magnitude
         unsigned int sym;
         modem_demodulate(_q->payload_demod, mf_out, &sym);
         float phase_error = modem_get_demodulator_phase_error(_q->payload_demod);
+        float evm         = modem_get_demodulator_evm        (_q->payload_demod);
         nco_crcf_pll_step(_q->pll, phase_error);
         nco_crcf_step(_q->pll);
+        _q->framestats.evm += evm*evm;
 
         // save payload symbols (modem input/output)
         _q->payload_sym[_q->symbol_counter] = mf_out;
@@ -681,7 +683,7 @@ void flexframesync_execute_rxpayload(flexframesync _q,
             if (_q->callback != NULL) {
                 // set framestats internals
                 int ms = qpacketmodem_get_modscheme(_q->payload_decoder);
-                _q->framestats.evm           = 0.0f; //20*log10f(sqrtf(_q->framestats.evm / 600));
+                _q->framestats.evm           = 10*log10f(_q->framestats.evm / (float)_q->payload_sym_len);
                 _q->framestats.rssi          = 20*log10f(_q->gamma_hat);
                 _q->framestats.cfo           = nco_crcf_get_frequency(_q->mixer);
                 _q->framestats.framesyms     = _q->payload_sym;
