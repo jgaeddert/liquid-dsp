@@ -1113,7 +1113,8 @@ void bpacketsync_reconfig(bpacketsync _q);
 // flexframe
 //
 
-#define FLEXFRAME_VERSION   (100)
+// flexframe protocol
+#define FLEXFRAME_PROTOCOL  (101)
 
 // header description
 // NOTE: The flexframe header can be improved with crc24, secded7264, v29

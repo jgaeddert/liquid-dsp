@@ -3446,7 +3446,7 @@ int flexframegen_is_assembled(flexframegen _q);
 void flexframegen_getprops(flexframegen _q, flexframegenprops_s * _props);
 
 // set frame properties
-void flexframegen_setprops(flexframegen _q, flexframegenprops_s * _props);
+int flexframegen_setprops(flexframegen _q, flexframegenprops_s * _props);
 
 // get length of assembled frame (samples)
 unsigned int flexframegen_getframelen(flexframegen _q);

@@ -53,7 +53,7 @@ static int callback(unsigned char *  _header,
 
 int main(int argc, char *argv[])
 {
-    srand( time(NULL) );
+    //srand( time(NULL) );
 
     // options
     modulation_scheme ms     =  LIQUID_MODEM_QPSK; // mod. scheme
