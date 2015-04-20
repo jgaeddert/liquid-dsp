@@ -877,8 +877,12 @@ void packetizer_destroy(packetizer _p);
 // print packetizer object internals
 void packetizer_print(packetizer _p);
 
+// access methods
 unsigned int packetizer_get_dec_msg_len(packetizer _p);
 unsigned int packetizer_get_enc_msg_len(packetizer _p);
+crc_scheme   packetizer_get_crc        (packetizer _p);
+fec_scheme   packetizer_get_fec0       (packetizer _p);
+fec_scheme   packetizer_get_fec1       (packetizer _p);
 
 
 // packetizer_encode()
@@ -3259,21 +3263,29 @@ typedef void (*framesync_csma_callback)(void * _userdata);
 typedef struct qpacketmodem_s * qpacketmodem;
 
 // create packet encoder
-qpacketmodem qpacketmodem_create();
-
-void qpacketmodem_destroy(qpacketmodem _q);
-void qpacketmodem_reset(qpacketmodem _q);
-void qpacketmodem_print(qpacketmodem _q);
+qpacketmodem qpacketmodem_create ();
+void         qpacketmodem_destroy(qpacketmodem _q);
+void         qpacketmodem_reset  (qpacketmodem _q);
+void         qpacketmodem_print  (qpacketmodem _q);
 
 int qpacketmodem_configure(qpacketmodem _q,
-                           unsigned int   _payload_len,
-                           crc_scheme     _check,
-                           fec_scheme     _fec0,
-                           fec_scheme     _fec1,
-                           int            _ms);
+                           unsigned int _payload_len,
+                           crc_scheme   _check,
+                           fec_scheme   _fec0,
+                           fec_scheme   _fec1,
+                           int          _ms);
 
 // get length of frame in symbols
 unsigned int qpacketmodem_get_frame_len(qpacketmodem _q);
+
+// get payload length (bytes)
+unsigned int qpacketmodem_get_payload_len(qpacketmodem _q);
+
+// regular access methods
+unsigned int qpacketmodem_get_crc      (qpacketmodem _q);
+unsigned int qpacketmodem_get_fec0     (qpacketmodem _q);
+unsigned int qpacketmodem_get_fec1     (qpacketmodem _q);
+unsigned int qpacketmodem_get_modscheme(qpacketmodem _q);
 
 // encode packet into modulated frame samples
 // TODO: include method with just symbol indices? would be useful for
@@ -4803,41 +4815,46 @@ void liquid_unpack_soft_bits(unsigned int _sym_in,
 /* define struct pointer */                                     \
 typedef struct MODEM(_s) * MODEM();                             \
                                                                 \
-/* create digital modem object, allocating memory as necessary */ \
-MODEM() MODEM(_create)(modulation_scheme _scheme);                  \
+/* create digital modem object                              */  \
+MODEM() MODEM(_create)(modulation_scheme _scheme);              \
                                                                 \
-/* create arbitrary digital modem object */                     \
-MODEM() MODEM(_create_arbitrary)(TC * _table, unsigned int _M); \
+/* create arbitrary digital modem object                    */  \
+/*  _table  :   array of complex constellation points       */  \
+/*  _M      :   modulation order and table size             */  \
+MODEM() MODEM(_create_arbitrary)(TC *         _table,           \
+                                 unsigned int _M);              \
                                                                 \
-/* recreate modulation scheme, re-allocating memory as necessary */ \
-MODEM() MODEM(_recreate)(MODEM() _q,                            \
+/* recreate modulation scheme, re-allocating memory as      */  \
+/* necessary                                                */  \
+MODEM() MODEM(_recreate)(MODEM()           _q,                  \
                          modulation_scheme _scheme);            \
                                                                 \
 void MODEM(_destroy)(MODEM() _q);                               \
 void MODEM(_print)(  MODEM() _q);                               \
 void MODEM(_reset)(  MODEM() _q);                               \
                                                                 \
-/* generate random symbol */                                    \
+/* generate random symbol                                   */  \
 unsigned int MODEM(_gen_rand_sym)(MODEM() _q);                  \
                                                                 \
 /* Accessor functions */                                        \
-unsigned int MODEM(_get_bps)(MODEM() _q);                       \
+unsigned int      MODEM(_get_bps)   (MODEM() _q);               \
+modulation_scheme MODEM(_get_scheme)(MODEM() _q);               \
                                                                 \
 /* generic modulate function; simply queries modem scheme   */  \
 /* and calls appropriate subroutine                         */  \
 /*  _q  :   modem object                                    */  \
 /*  _s  :   input symbol                                    */  \
 /*  _x  :   output sample                                   */  \
-void MODEM(_modulate)(MODEM() _q,                               \
+void MODEM(_modulate)(MODEM()      _q,                          \
                       unsigned int _s,                          \
-                      TC *_y);                                  \
+                      TC *         _y);                         \
                                                                 \
 /* generic hard-decision demodulation function              */  \
 /*  _q  :   modem object                                    */  \
 /*  _x  :   input sample                                    */  \
 /*  _s  :   output symbol                                   */  \
-void MODEM(_demodulate)(MODEM() _q,                             \
-                        TC _x,                                  \
+void MODEM(_demodulate)(MODEM()        _q,                      \
+                        TC             _x,                      \
                         unsigned int * _s);                     \
                                                                 \
 /* generic soft-decision demodulation function              */  \
@@ -4845,14 +4862,14 @@ void MODEM(_demodulate)(MODEM() _q,                             \
 /*  _x          :   input sample                            */  \
 /*  _s          :   output hard symbol                      */  \
 /*  _soft_bits  :   output soft bits                        */  \
-void MODEM(_demodulate_soft)(MODEM() _q,                        \
-                             TC _x,                             \
+void MODEM(_demodulate_soft)(MODEM()         _q,                \
+                             TC              _x,                \
                              unsigned int  * _s,                \
                              unsigned char * _soft_bits);       \
                                                                 \
 /* get demodulator's estimated transmit sample */               \
 void MODEM(_get_demodulator_sample)(MODEM() _q,                 \
-                                    TC * _x_hat);               \
+                                    TC *    _x_hat);            \
                                                                 \
 /* get demodulator phase error */                               \
 float MODEM(_get_demodulator_phase_error)(MODEM() _q);          \

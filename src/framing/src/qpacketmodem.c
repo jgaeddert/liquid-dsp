@@ -20,7 +20,7 @@
 //
 // qpacketmodem.c
 //
-// packet encoder
+// convenient modulator/demodulator and packet encoder/decoder combination
 //
 
 #include <stdlib.h>
@@ -37,10 +37,8 @@
 
 struct qpacketmodem_s {
     // properties
-    modem mod_payload;                  // payload modulator
-    packetizer p;                       // encoder/decoder
-
-    // payload
+    modem           mod_payload;        // payload modulator/demodulator
+    packetizer      p;                  // packet encoder/decoder
     unsigned int    bits_per_symbol;    // modulator bits/symbol
     unsigned int    payload_dec_len;    // number of decoded payload bytes
     unsigned char * payload_enc;        // payload data (encoded bytes)
@@ -93,6 +91,7 @@ qpacketmodem qpacketmodem_create()
     return q;
 }
 
+// destroy object, freeing all internal arrays
 void qpacketmodem_destroy(qpacketmodem _q)
 {
     // free objects
@@ -104,18 +103,20 @@ void qpacketmodem_destroy(qpacketmodem _q)
     free(_q->payload_mod);
 }
 
+// reset object
 void qpacketmodem_reset(qpacketmodem _q)
 {
     modem_reset(_q->mod_payload);
 }
 
+// print object internals
 void qpacketmodem_print(qpacketmodem _q)
 {
     printf("qpacketmodem:\n");
-    printf("  check             :   %s\n", "-");
-    printf("  fec (inner)       :   %s\n", "-");
-    printf("  fec (outer)       :   %s\n", "-");
-    printf("  modulation scheme :   %s\n", "-");
+    printf("  check             :   %s\n", crc_scheme_str[packetizer_get_crc(_q->p)][1]);
+    printf("  fec (inner)       :   %s\n", fec_scheme_str[packetizer_get_fec0(_q->p)][1]);
+    printf("  fec (outer)       :   %s\n", fec_scheme_str[packetizer_get_fec1(_q->p)][1]);
+    printf("  modulation scheme :   %s\n", modulation_types[modem_get_scheme(_q->mod_payload)].name);
     printf("  payload dec len   :   %u\n", _q->payload_dec_len);
     printf("  payload enc len   :   %u\n", _q->payload_enc_len);
     printf("  payload bit len   :   %u\n", _q->payload_bit_len);
@@ -167,6 +168,33 @@ int qpacketmodem_configure(qpacketmodem _q,
 unsigned int qpacketmodem_get_frame_len(qpacketmodem _q)
 {
     return _q->payload_mod_len;
+}
+
+// get payload length (bytes)
+unsigned int qpacketmodem_get_payload_len(qpacketmodem _q)
+{
+    // number of decoded payload bytes
+    return _q->payload_dec_len;
+}
+
+unsigned int qpacketmodem_get_crc(qpacketmodem _q)
+{
+    return packetizer_get_crc(_q->p);
+}
+
+unsigned int qpacketmodem_get_fec0(qpacketmodem _q)
+{
+    return packetizer_get_fec0(_q->p);
+}
+
+unsigned int qpacketmodem_get_fec1(qpacketmodem _q)
+{
+    return packetizer_get_fec1(_q->p);
+}
+
+unsigned int qpacketmodem_get_modscheme(qpacketmodem _q)
+{
+    return modem_get_scheme(_q->mod_payload);
 }
 
 // encode packet into modulated frame samples
