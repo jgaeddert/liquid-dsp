@@ -3278,6 +3278,15 @@ int qpacketmodem_configure(qpacketmodem _q,
 // get length of frame in symbols
 unsigned int qpacketmodem_get_frame_len(qpacketmodem _q);
 
+// get payload length (bytes)
+unsigned int qpacketmodem_get_payload_len(qpacketmodem _q);
+
+// regular access methods
+unsigned int qpacketmodem_get_crc      (qpacketmodem _q);
+unsigned int qpacketmodem_get_fec0     (qpacketmodem _q);
+unsigned int qpacketmodem_get_fec1     (qpacketmodem _q);
+unsigned int qpacketmodem_get_modscheme(qpacketmodem _q);
+
 // encode packet into modulated frame samples
 // TODO: include method with just symbol indices? would be useful for
 //       non-linear modulation types

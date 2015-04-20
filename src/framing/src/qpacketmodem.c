@@ -170,6 +170,33 @@ unsigned int qpacketmodem_get_frame_len(qpacketmodem _q)
     return _q->payload_mod_len;
 }
 
+// get payload length (bytes)
+unsigned int qpacketmodem_get_payload_len(qpacketmodem _q)
+{
+    // number of decoded payload bytes
+    return _q->payload_dec_len;
+}
+
+unsigned int qpacketmodem_get_crc(qpacketmodem _q)
+{
+    return packetizer_get_crc(_q->p);
+}
+
+unsigned int qpacketmodem_get_fec0(qpacketmodem _q)
+{
+    return packetizer_get_fec0(_q->p);
+}
+
+unsigned int qpacketmodem_get_fec1(qpacketmodem _q)
+{
+    return packetizer_get_fec1(_q->p);
+}
+
+unsigned int qpacketmodem_get_modscheme(qpacketmodem _q)
+{
+    return modem_get_scheme(_q->mod_payload);
+}
+
 // encode packet into modulated frame samples
 // TODO: include method with just symbol indices? would be useful for
 //       non-linear modulation types
