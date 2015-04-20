@@ -3259,18 +3259,17 @@ typedef void (*framesync_csma_callback)(void * _userdata);
 typedef struct qpacketmodem_s * qpacketmodem;
 
 // create packet encoder
-qpacketmodem qpacketmodem_create();
-
-void qpacketmodem_destroy(qpacketmodem _q);
-void qpacketmodem_reset(qpacketmodem _q);
-void qpacketmodem_print(qpacketmodem _q);
+qpacketmodem qpacketmodem_create ();
+void         qpacketmodem_destroy(qpacketmodem _q);
+void         qpacketmodem_reset  (qpacketmodem _q);
+void         qpacketmodem_print  (qpacketmodem _q);
 
 int qpacketmodem_configure(qpacketmodem _q,
-                           unsigned int   _payload_len,
-                           crc_scheme     _check,
-                           fec_scheme     _fec0,
-                           fec_scheme     _fec1,
-                           int            _ms);
+                           unsigned int _payload_len,
+                           crc_scheme   _check,
+                           fec_scheme   _fec0,
+                           fec_scheme   _fec1,
+                           int          _ms);
 
 // get length of frame in symbols
 unsigned int qpacketmodem_get_frame_len(qpacketmodem _q);

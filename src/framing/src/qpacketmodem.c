@@ -20,7 +20,7 @@
 //
 // qpacketmodem.c
 //
-// packet encoder
+// convenient modulator/demodulator and packet encoder/decoder combination
 //
 
 #include <stdlib.h>
@@ -37,10 +37,8 @@
 
 struct qpacketmodem_s {
     // properties
-    modem mod_payload;                  // payload modulator
-    packetizer p;                       // encoder/decoder
-
-    // payload
+    modem           mod_payload;        // payload modulator/demodulator
+    packetizer      p;                  // packet encoder/decoder
     unsigned int    bits_per_symbol;    // modulator bits/symbol
     unsigned int    payload_dec_len;    // number of decoded payload bytes
     unsigned char * payload_enc;        // payload data (encoded bytes)
@@ -93,6 +91,7 @@ qpacketmodem qpacketmodem_create()
     return q;
 }
 
+// destroy object, freeing all internal arrays
 void qpacketmodem_destroy(qpacketmodem _q)
 {
     // free objects
@@ -104,11 +103,13 @@ void qpacketmodem_destroy(qpacketmodem _q)
     free(_q->payload_mod);
 }
 
+// reset object
 void qpacketmodem_reset(qpacketmodem _q)
 {
     modem_reset(_q->mod_payload);
 }
 
+// print object internals
 void qpacketmodem_print(qpacketmodem _q)
 {
     printf("qpacketmodem:\n");
