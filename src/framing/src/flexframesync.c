@@ -680,16 +680,17 @@ void flexframesync_execute_rxpayload(flexframesync _q,
             // invoke callback
             if (_q->callback != NULL) {
                 // set framestats internals
+                int ms = qpacketmodem_get_modscheme(_q->payload_decoder);
                 _q->framestats.evm           = 0.0f; //20*log10f(sqrtf(_q->framestats.evm / 600));
                 _q->framestats.rssi          = 20*log10f(_q->gamma_hat);
                 _q->framestats.cfo           = nco_crcf_get_frequency(_q->mixer);
                 _q->framestats.framesyms     = _q->payload_sym;
                 _q->framestats.num_framesyms = _q->payload_sym_len;
-                _q->framestats.mod_scheme    = LIQUID_MODEM_UNKNOWN;// FIXME
-                _q->framestats.mod_bps       = 0;                   // FIXME
-                _q->framestats.check         = LIQUID_CRC_UNKNOWN;  // FIXME
-                _q->framestats.fec0          = LIQUID_FEC_UNKNOWN;  // FIXME
-                _q->framestats.fec1          = LIQUID_FEC_UNKNOWN;  // FIXME
+                _q->framestats.mod_scheme    = ms;
+                _q->framestats.mod_bps       = modulation_types[ms].bps;
+                _q->framestats.check         = qpacketmodem_get_crc(_q->payload_decoder);
+                _q->framestats.fec0          = qpacketmodem_get_fec0(_q->payload_decoder);
+                _q->framestats.fec1          = qpacketmodem_get_fec1(_q->payload_decoder);
 
                 // invoke callback method
                 _q->callback(_q->header_dec,
