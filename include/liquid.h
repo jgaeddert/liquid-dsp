@@ -877,8 +877,12 @@ void packetizer_destroy(packetizer _p);
 // print packetizer object internals
 void packetizer_print(packetizer _p);
 
+// access methods
 unsigned int packetizer_get_dec_msg_len(packetizer _p);
 unsigned int packetizer_get_enc_msg_len(packetizer _p);
+crc_scheme   packetizer_get_crc        (packetizer _p);
+fec_scheme   packetizer_get_fec0       (packetizer _p);
+fec_scheme   packetizer_get_fec1       (packetizer _p);
 
 
 // packetizer_encode()
