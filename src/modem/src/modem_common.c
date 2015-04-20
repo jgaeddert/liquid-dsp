@@ -330,6 +330,12 @@ unsigned int MODEM(_get_bps)(MODEM() _q)
     return _q->m;
 }
 
+// get modulation scheme
+modulation_scheme MODEM(_get_scheme)(MODEM() _q)
+{
+    return _q->scheme;
+}
+
 // generic modulatio function
 //  _q          :   modem object
 //  _symbol_in  :   input symbol
