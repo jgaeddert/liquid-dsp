@@ -119,37 +119,34 @@ int main(int argc, char *argv[])
     flexframegen_assemble(fg, header, payload, payload_len);
     flexframegen_print(fg);
 
-    // generate the frame
-    unsigned int frame_len = flexframegen_getframelen(fg);
-    unsigned int num_samples = frame_len + 100;
-    float complex x[num_samples];
-    float complex y[num_samples];
+    // generate the frame in blocks
+    unsigned int  buf_len = 256;
+    float complex x[buf_len];
+    float complex y[buf_len];
 
     int frame_complete = 0;
-    unsigned int n;
-    for (n=0; n<50; n++)
-        x[n] = 0.0f;
+    float phi = 0.0f;
     while (!frame_complete) {
-        //printf("assert %6u < %6u\n", n, num_samples);
-        assert(n < num_samples);
-        frame_complete = flexframegen_write_samples(fg, &x[n]);
-        n += 2;
+        // write samples to buffer
+        frame_complete = flexframegen_write_samples(fg, x, buf_len);
+
+#if 0
+        // add noise and push through synchronizer
+        for (i=0; i<buf_len; i++) {
+            // apply channel gain and carrier offset to input
+            y[i] = gamma * x[i] * cexpf(_Complex_I*phi);
+            phi += dphi;
+
+            // add noise
+            y[i] += nstd*( randnf() + _Complex_I*randnf())*M_SQRT1_2;
+        }
+
+        // run through frame synchronizer
+        flexframesync_execute(fs, y, buf_len);
+#else
+        flexframesync_execute(fs, x, buf_len);
+#endif
     }
-    for (; n<num_samples; n++)
-        x[n] = 0.0f;
-    assert(n == num_samples);
-
-    // add noise and push through synchronizer
-    for (i=0; i<num_samples; i++) {
-        // apply channel gain and carrier offset to input
-        y[i] = gamma * x[i] * cexpf(_Complex_I*dphi*i);
-
-        // add noise
-        y[i] += nstd*( randnf() + _Complex_I*randnf())*M_SQRT1_2;
-    }
-
-    // run through frame synchronizer
-    flexframesync_execute(fs, y, num_samples);
 
     // export debugging file
     if (debug_enabled)

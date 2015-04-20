@@ -98,11 +98,10 @@ int main(int argc, char *argv[]) {
         header[i] = i;
 
     // frame buffers, properties
-    unsigned int frame_len;
-    float complex * frame = NULL;
+    unsigned int  buf_len = 256;
+    float complex buf[buf_len];
 
     // push through synchronizer
-    float complex x[2];     // frame samples
     float complex y;        // 
     float complex noise;    //
 
@@ -127,13 +126,6 @@ int main(int argc, char *argv[]) {
         for (i=0; i<payload_len; i++)
             payload[i] = rand() & 0xff;
 
-        // compute frame length
-        frame_len = flexframegen_getframelen(fg);
-
-        // reallocate memory for frame
-        frame = realloc(frame, frame_len*sizeof(float complex));
-
-        // set framedata pointers
         fd.header = header;
         fd.payload = payload;
 
@@ -143,11 +135,11 @@ int main(int argc, char *argv[]) {
         int frame_complete = 0;
         while (!frame_complete) {
             // compensate for filter delay
-            frame_complete = flexframegen_write_samples(fg, x);
+            frame_complete = flexframegen_write_samples(fg, buf, buf_len);
 
-            for (i=0; i<2; i++) {
+            for (i=0; i<buf_len; i++) {
                 // add channel impairments
-                nco_crcf_mix_up(nco_channel, x[i], &y);
+                nco_crcf_mix_up(nco_channel, buf[i], &y);
                 nco_crcf_step(nco_channel);
 
                 // apply channel gain
@@ -185,7 +177,6 @@ int main(int argc, char *argv[]) {
     flexframesync_destroy(fs);
     nco_crcf_destroy(nco_channel);
     free(payload);
-    free(frame);
 
     printf("done.\n");
     return 0;

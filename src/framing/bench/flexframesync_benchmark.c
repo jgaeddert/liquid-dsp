@@ -96,11 +96,8 @@ void benchmark_flexframesync(
     unsigned int frame_len = flexframegen_getframelen(fg);
     float complex frame[frame_len];
     int frame_complete = 0;
-    unsigned int n=0;
     while (!frame_complete) {
-        assert(n < frame_len);
-        frame_complete = flexframegen_write_samples(fg, &frame[n]);
-        n += 2;
+        frame_complete = flexframegen_write_samples(fg, frame, frame_len);
     }
     // add some noise
     for (i=0; i<frame_len; i++)

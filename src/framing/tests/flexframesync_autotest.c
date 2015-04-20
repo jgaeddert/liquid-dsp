@@ -86,7 +86,7 @@ void autotest_flexframesync()
     float complex buf[2];
     while (!frame_complete) {
         // write samples to buffer
-        frame_complete = flexframegen_write_samples(fg, buf);
+        frame_complete = flexframegen_write_samples(fg, buf, 2);
 
         // run through frame synchronizer
         flexframesync_execute(fs, buf, 2);

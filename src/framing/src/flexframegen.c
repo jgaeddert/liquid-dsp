@@ -35,11 +35,12 @@
 #define DEBUG_FLEXFRAMEGEN 1
 
 // reconfigure internal properties
-void flexframegen_reconfigure   (flexframegen _q);
-void flexframegen_write_preamble(flexframegen _q, float complex * _buffer);
-void flexframegen_write_header  (flexframegen _q, float complex * _buffer);
-void flexframegen_write_payload (flexframegen _q, float complex * _buffer);
-void flexframegen_write_tail    (flexframegen _q, float complex * _buffer);
+void          flexframegen_reconfigure      (flexframegen _q);
+float complex flexframegen_generate_symbol  (flexframegen _q);
+float complex flexframegen_generate_preamble(flexframegen _q);
+float complex flexframegen_generate_header  (flexframegen _q);
+float complex flexframegen_generate_payload (flexframegen _q);
+float complex flexframegen_generate_tail    (flexframegen _q);
 
 // default flexframegen properties
 static flexframegenprops_s flexframegenprops_default = {
@@ -60,6 +61,7 @@ struct flexframegen_s {
     unsigned int    m;                  // interp filter delay (symbols)
     float           beta;               // excess bandwidth factor
     firinterp_crcf  interp;             // interpolator object
+    float complex   buf_interp[2];      // output interpolator buffer [size: k x 1]
 
     flexframegenprops_s props;          // payload properties
 
@@ -83,6 +85,7 @@ struct flexframegen_s {
 
     // counters/states
     unsigned int    symbol_counter;     // output symbol number
+    unsigned int    sample_counter;     // output sample number
     int             frame_assembled;    // frame assembled flag
     int             frame_complete;     // frame completed flag
     enum {
@@ -170,7 +173,7 @@ void flexframegen_print(flexframegen _q)
 {
     unsigned int num_frame_symbols =
             64 +                    // preamble p/n sequence length
-            _q->header_mod_len +    // header symbols
+            _q->header_sym_len +    // header symbols
             _q->payload_sym_len +   // number of modulation symbols
             2*_q->m;                // number of tail symbols
     unsigned int num_frame_bits = 8*_q->payload_dec_len;
@@ -195,6 +198,7 @@ void flexframegen_reset(flexframegen _q)
 {
     // reset internal counters and state
     _q->symbol_counter  = 0;
+    _q->sample_counter  = 0;
     _q->frame_assembled = 0;
     _q->frame_complete  = 0;
     _q->state           = STATE_PREAMBLE;
@@ -266,7 +270,7 @@ unsigned int flexframegen_getframelen(flexframegen _q)
     }
     unsigned int num_frame_symbols =
             64 +                    // preamble p/n sequence length
-            _q->header_mod_len +    // header symbols
+            _q->header_sym_len +    // header symbols
             _q->payload_sym_len +   // number of modulation symbols
             2*_q->m;                // number of tail symbols
 
@@ -283,9 +287,8 @@ void flexframegen_assemble(flexframegen    _q,
                            unsigned char * _payload,
                            unsigned int    _payload_dec_len)
 {
-    // reset object if frame is already assembled
-    if (_q->frame_assembled)
-        flexframegen_reset(_q);
+    // reset object
+    flexframegen_reset(_q);
 
     // set decoded payload length
     _q->payload_dec_len = _payload_dec_len;
@@ -330,47 +333,35 @@ void flexframegen_assemble(flexframegen    _q,
     _q->frame_assembled = 1;
 }
 
-// write symbols of assembled frame
-//  _q              :   frame generator object
-//  _buffer         :   output buffer [size: N+cp_len x 1]
+// write samples of assembled frame, two samples at a time, returning
+// '1' when frame is complete, '0' otherwise. Zeros will be written
+// to the buffer if the frame is not assembled
+//  _q          :   frame generator object
+//  _buffer     :   output buffer [size: _buffer_len x 1]
+//  _buffer_len :   output buffer length
 int flexframegen_write_samples(flexframegen    _q,
-                               float complex * _buffer)
+                               float complex * _buffer,
+                               unsigned int    _buffer_len)
 {
-    // check if frame is actually assembled
-    if ( !_q->frame_assembled ) {
-        fprintf(stderr,"warning: flexframegen_writesymbol(), frame not assembled\n");
-        return 1;
+    unsigned int i;
+    for (i=0; i<_buffer_len; i++) {
+        // determine if new sample needs to be written
+        if (_q->sample_counter == 0) {
+            // generate new symbol
+            float complex sym = flexframegen_generate_symbol(_q);
+
+            // interpolate result
+            firinterp_crcf_execute(_q->interp, sym, _q->buf_interp);
+        }
+        
+        // write output sample from interpolator buffer
+        _buffer[i] = _q->buf_interp[_q->sample_counter];
+            
+        // adjust sample counter
+        _q->sample_counter = (_q->sample_counter + 1) % _q->k;
     }
 
-    switch (_q->state) {
-    case STATE_PREAMBLE:
-        // write preamble
-        flexframegen_write_preamble(_q, _buffer);
-        break;
-    case STATE_HEADER:
-        // write header symbols
-        flexframegen_write_header(_q, _buffer);
-        break;
-    case STATE_PAYLOAD:
-        // write payload symbols
-        flexframegen_write_payload(_q, _buffer);
-        break;
-    case STATE_TAIL:
-        // write tail symbols
-        flexframegen_write_tail(_q, _buffer);
-        break;
-    default:
-        fprintf(stderr,"error: flexframegen_writesymbol(), unknown/unsupported internal state\n");
-        exit(1);
-    }
-
-    if (_q->frame_complete) {
-        // reset framing object
-        flexframegen_reset(_q);
-        return 1;
-    }
-
-    return 0;
+    return _q->frame_complete;
 }
 
 //
@@ -400,72 +391,78 @@ void flexframegen_reconfigure(flexframegen _q)
     }
 }
 
-// write preamble
-void flexframegen_write_preamble(flexframegen    _q,
-                                 float complex * _buffer)
+// fill interpolator buffer
+float complex flexframegen_generate_symbol(flexframegen _q)
 {
-    // interpolate symbol
-    float complex s = _q->preamble_pn[_q->symbol_counter];
-    firinterp_crcf_execute(_q->interp, s, _buffer);
+    // write zeros to buffer if frame is not assembled
+    if (!_q->frame_assembled)
+        return 0.0f;
 
-    // increment symbol counter
-    _q->symbol_counter++;
+    switch (_q->state) {
+    case STATE_PREAMBLE: return flexframegen_generate_preamble(_q); break;
+    case STATE_HEADER:   return flexframegen_generate_header  (_q); break;
+    case STATE_PAYLOAD:  return flexframegen_generate_payload (_q); break;
+    case STATE_TAIL:     return flexframegen_generate_tail    (_q); break;
+    default:
+        fprintf(stderr,"error: flexframegen_generate_symbol(), unknown/unsupported internal state\n");
+        exit(1);
+    }
+
+    return 0.0f;
+}
+
+// generate preamble
+float complex flexframegen_generate_preamble(flexframegen _q)
+{
+    float complex symbol = _q->preamble_pn[_q->symbol_counter++];
 
     // check state
     if (_q->symbol_counter == 64) {
         _q->symbol_counter = 0;
         _q->state = STATE_HEADER;
     }
+    return symbol;
 }
 
-// write header
-void flexframegen_write_header(flexframegen    _q,
-                               float complex * _buffer)
+// generate header
+float complex flexframegen_generate_header(flexframegen _q)
 {
-    // interpolate symbol
-    float complex s = _q->header_sym[_q->symbol_counter];
-    firinterp_crcf_execute(_q->interp, s, _buffer);
-
-    // increment symbol counter
-    _q->symbol_counter++;
+    float complex symbol = _q->header_sym[_q->symbol_counter++];
 
     // check state
     if (_q->symbol_counter == _q->header_sym_len) {
         _q->symbol_counter = 0;
         _q->state = STATE_PAYLOAD;
     }
+    return symbol;
 }
 
-// write payload
-void flexframegen_write_payload(flexframegen    _q,
-                                float complex * _buffer)
+// generate payload
+float complex flexframegen_generate_payload(flexframegen _q)
 {
-    // interpolate symbol
-    float complex s = _q->payload_sym[_q->symbol_counter];
-    firinterp_crcf_execute(_q->interp, s, _buffer);
-
-    // increment symbol counter
-    _q->symbol_counter++;
+    float complex symbol = _q->payload_sym[_q->symbol_counter++];
 
     // check state
     if (_q->symbol_counter == _q->payload_sym_len) {
         _q->symbol_counter = 0;
         _q->state = STATE_TAIL;
     }
+    return symbol;
 }
 
-// write tail
-void flexframegen_write_tail(flexframegen    _q,
-                             float complex * _buffer)
+// generate tail
+float complex flexframegen_generate_tail(flexframegen _q)
 {
-    // interpolate symbol
-    firinterp_crcf_execute(_q->interp, 0.0f, _buffer);
-
     // increment symbol counter
     _q->symbol_counter++;
 
     // check state
-    if (_q->symbol_counter == 2*_q->m)
-        _q->frame_complete = 1;
+    if (_q->symbol_counter == 2*_q->m) {
+        _q->symbol_counter  = 0;
+        _q->frame_complete  = 1;
+        _q->frame_assembled = 0;
+    }
+
+    return 0.0f;
 }
 

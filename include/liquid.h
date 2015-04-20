@@ -3474,11 +3474,14 @@ void flexframegen_assemble(flexframegen    _q,
                            unsigned int    _payload_len);
 
 // write samples of assembled frame, two samples at a time, returning
-// '1' when frame is complete, '0' otherwise
-//  _q              :   frame generator object
-//  _buffer         :   output buffer [size: 2 x 1]
+// '1' when frame is complete, '0' otherwise. Zeros will be written
+// to the buffer if the frame is not assembled
+//  _q          :   frame generator object
+//  _buffer     :   output buffer [size: _buffer_len x 1]
+//  _buffer_len :   output buffer length
 int flexframegen_write_samples(flexframegen           _q,
-                               liquid_float_complex * _buffer);
+                               liquid_float_complex * _buffer,
+                               unsigned int           _buffer_len);
 
 // frame synchronizer
 
