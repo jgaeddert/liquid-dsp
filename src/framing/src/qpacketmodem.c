@@ -113,10 +113,10 @@ void qpacketmodem_reset(qpacketmodem _q)
 void qpacketmodem_print(qpacketmodem _q)
 {
     printf("qpacketmodem:\n");
-    printf("  check             :   %s\n", "-");
-    printf("  fec (inner)       :   %s\n", "-");
-    printf("  fec (outer)       :   %s\n", "-");
-    printf("  modulation scheme :   %s\n", "-");
+    printf("  check             :   %s\n", crc_scheme_str[packetizer_get_crc(_q->p)][1]);
+    printf("  fec (inner)       :   %s\n", fec_scheme_str[packetizer_get_fec0(_q->p)][1]);
+    printf("  fec (outer)       :   %s\n", fec_scheme_str[packetizer_get_fec1(_q->p)][1]);
+    printf("  modulation scheme :   %s\n", modulation_types[modem_get_scheme(_q->mod_payload)].name);
     printf("  payload dec len   :   %u\n", _q->payload_dec_len);
     printf("  payload enc len   :   %u\n", _q->payload_enc_len);
     printf("  payload bit len   :   %u\n", _q->payload_bit_len);
