@@ -283,6 +283,10 @@ void flexframegen_assemble(flexframegen    _q,
                            unsigned char * _payload,
                            unsigned int    _payload_dec_len)
 {
+    // reset object if frame is already assembled
+    if (_q->frame_assembled)
+        flexframegen_reset(_q);
+
     // set decoded payload length
     _q->payload_dec_len = _payload_dec_len;
 
