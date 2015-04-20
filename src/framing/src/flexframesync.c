@@ -35,7 +35,7 @@
 #define DEBUG_FLEXFRAMESYNC         1
 #define DEBUG_FLEXFRAMESYNC_PRINT   0
 #define DEBUG_FILENAME              "flexframesync_internal_debug.m"
-#define DEBUG_BUFFER_LEN            (1600)
+#define DEBUG_BUFFER_LEN            (2000)
 
 #define FLEXFRAMESYNC_ENABLE_EQ     0
 
@@ -758,6 +758,9 @@ void flexframesync_debug_print(flexframesync _q,
     fprintf(fid,"clear all;\n");
     fprintf(fid,"close all;\n\n");
     fprintf(fid,"n = %u;\n", DEBUG_BUFFER_LEN);
+    
+    // main figure
+    fprintf(fid,"figure('Color','white','position',[100 100 800 600]);\n");
 
     // write x
     fprintf(fid,"x = zeros(1,n);\n");
@@ -765,8 +768,10 @@ void flexframesync_debug_print(flexframesync _q,
     for (i=0; i<DEBUG_BUFFER_LEN; i++)
         fprintf(fid,"x(%4u) = %12.4e + j*%12.4e;\n", i+1, crealf(rc[i]), cimagf(rc[i]));
     fprintf(fid,"\n\n");
-    fprintf(fid,"figure;\n");
+    fprintf(fid,"subplot(3,2,1:2);\n");
     fprintf(fid,"plot(1:length(x),real(x), 1:length(x),imag(x));\n");
+    fprintf(fid,"grid on;\n");
+    fprintf(fid,"xlabel('sample index');\n");
     fprintf(fid,"ylabel('received signal, x');\n");
 
     // write p/n sequence
@@ -793,7 +798,7 @@ void flexframesync_debug_print(flexframesync _q,
     for (i=0; i<_q->payload_sym_len; i++)
         fprintf(fid,"payload_sym(%4u) = %12.4e + j*%12.4e;\n", i+1, crealf(rc[i]), cimagf(rc[i]));
 
-    fprintf(fid,"figure;\n");
+    fprintf(fid,"subplot(3,2,[3 5]);\n");
     fprintf(fid,"plot(real(header_mod),imag(header_mod),'o');\n");
     fprintf(fid,"xlabel('in-phase');\n");
     fprintf(fid,"ylabel('quadrature phase');\n");
@@ -802,7 +807,7 @@ void flexframesync_debug_print(flexframesync _q,
     fprintf(fid,"axis square;\n");
     fprintf(fid,"title('Received Header Symbols');\n");
 
-    fprintf(fid,"figure;\n");
+    fprintf(fid,"subplot(3,2,[4 6]);\n");
     fprintf(fid,"plot(real(payload_sym),imag(payload_sym),'+');\n");
     fprintf(fid,"xlabel('in-phase');\n");
     fprintf(fid,"ylabel('quadrature phase');\n");
