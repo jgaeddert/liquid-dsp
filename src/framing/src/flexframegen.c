@@ -179,7 +179,7 @@ void flexframegen_print(flexframegen _q)
     printf("flexframegen:\n");
     printf("  head          : %u symbols\n", _q->m);
     printf("  preamble      : %u\n", 64);
-    printf("  header        : %u symbols (%u bytes)\n", _q->header_sym_len, FLEXFRAME_H_SYM);
+    printf("  header        : %u symbols (%u bytes)\n", _q->header_sym_len, FLEXFRAME_H_DEC);
     printf("  payload       : %u symbols (%u bytes)\n", _q->payload_sym_len, _q->payload_dec_len);
     printf("    payload crc : %s\n", crc_scheme_str[_q->props.check][1]);
     printf("    fec (inner) : %s\n", fec_scheme_str[_q->props.fec0][1]);

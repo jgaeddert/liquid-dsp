@@ -122,7 +122,6 @@ int main(int argc, char *argv[])
     // generate the frame
     unsigned int frame_len = flexframegen_getframelen(fg);
     unsigned int num_samples = frame_len + 100;
-    printf("frame length : %u samples\n", frame_len);
     float complex x[num_samples];
     float complex y[num_samples];
 

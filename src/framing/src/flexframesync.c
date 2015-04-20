@@ -395,9 +395,9 @@ void flexframesync_execute_seekpn(flexframesync _q,
 //  _q      :   frame synchronizer
 //  _x      :   input sample
 //  _y      :   output symbol
-int flexframesync_step(flexframesync     _q,
-                     float complex   _x,
-                     float complex * _y)
+int flexframesync_step(flexframesync   _q,
+                       float complex   _x,
+                       float complex * _y)
 {
     // mix sample down
     float complex v;
@@ -439,8 +439,8 @@ int flexframesync_step(flexframesync     _q,
 //  _q     :   frame synchronizer object
 //  _x      :   input sample
 //  _sym    :   demodulated symbol
-void flexframesync_execute_rxpreamble(flexframesync   _q,
-                                    float complex _x)
+void flexframesync_execute_rxpreamble(flexframesync _q,
+                                      float complex _x)
 {
     // step synchronizer
     float complex mf_out = 0.0f;
@@ -623,7 +623,7 @@ void flexframesync_decode_header(flexframesync _q)
         return;
     }
 
-#if 1 //DEBUG_FLEXFRAMESYNC_PRINT
+#if DEBUG_FLEXFRAMESYNC_PRINT
     // print results
     printf("flexframesync_decode_header():\n");
     printf("    header crc      : %s\n", _q->header_valid ? "pass" : "FAIL");
@@ -742,8 +742,8 @@ void flexframesync_debug_disable(flexframesync _q)
 }
 
 // print debugging information
-void flexframesync_debug_print(flexframesync  _q,
-                             const char * _filename)
+void flexframesync_debug_print(flexframesync _q,
+                               const char *  _filename)
 {
 #if DEBUG_FLEXFRAMESYNC
     if (!_q->debug_objects_created) {
@@ -781,15 +781,6 @@ void flexframesync_debug_print(flexframesync  _q,
     for (i=0; i<64; i++)
         fprintf(fid,"preamble_rx(%4u) = %12.4e + 1i*%12.4e;\n", i+1, crealf(rc[i]), cimagf(rc[i]));
 
-#if 0
-    // write raw header symbols (before qpilotsync)
-    // NOTE: these should be pretty good if the qdetector has done its job properly
-    fprintf(fid,"header_sym = zeros(1,%u);\n", _q->header_sym_len);
-    rc = _q->header_sym;
-    for (i=0; i<_q->header_sym_len; i++)
-        fprintf(fid,"header_sym(%4u) = %12.4e + j*%12.4e;\n", i+1, crealf(rc[i]), cimagf(rc[i]));
-#endif
-
     // write recovered header symbols (after qpilotsync)
     fprintf(fid,"header_mod = zeros(1,%u);\n", _q->header_mod_len);
     rc = _q->header_mod;
@@ -797,18 +788,28 @@ void flexframesync_debug_print(flexframesync  _q,
         fprintf(fid,"header_mod(%4u) = %12.4e + j*%12.4e;\n", i+1, crealf(rc[i]), cimagf(rc[i]));
 
     // write raw payload symbols
-    fprintf(fid,"payload_syms = zeros(1,%u);\n", _q->payload_sym_len);
+    fprintf(fid,"payload_sym = zeros(1,%u);\n", _q->payload_sym_len);
     rc = _q->payload_sym;
     for (i=0; i<_q->payload_sym_len; i++)
-        fprintf(fid,"payload_syms(%4u) = %12.4e + j*%12.4e;\n", i+1, crealf(rc[i]), cimagf(rc[i]));
+        fprintf(fid,"payload_sym(%4u) = %12.4e + j*%12.4e;\n", i+1, crealf(rc[i]), cimagf(rc[i]));
 
     fprintf(fid,"figure;\n");
-    fprintf(fid,"plot(real(payload_syms),imag(payload_syms),'o');\n");
+    fprintf(fid,"plot(real(header_mod),imag(header_mod),'o');\n");
     fprintf(fid,"xlabel('in-phase');\n");
     fprintf(fid,"ylabel('quadrature phase');\n");
     fprintf(fid,"grid on;\n");
     fprintf(fid,"axis([-1 1 -1 1]*1.5);\n");
     fprintf(fid,"axis square;\n");
+    fprintf(fid,"title('Received Header Symbols');\n");
+
+    fprintf(fid,"figure;\n");
+    fprintf(fid,"plot(real(payload_sym),imag(payload_sym),'+');\n");
+    fprintf(fid,"xlabel('in-phase');\n");
+    fprintf(fid,"ylabel('quadrature phase');\n");
+    fprintf(fid,"grid on;\n");
+    fprintf(fid,"axis([-1 1 -1 1]*1.5);\n");
+    fprintf(fid,"axis square;\n");
+    fprintf(fid,"title('Received Payload Symbols');\n");
 
     fprintf(fid,"\n\n");
     fclose(fid);
