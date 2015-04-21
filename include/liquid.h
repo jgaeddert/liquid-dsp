@@ -3236,6 +3236,22 @@ void framesyncstats_init_default(framesyncstats_s * _stats);
 // print framesyncstats object
 void framesyncstats_print(framesyncstats_s * _stats);
 
+
+// framedatastats : gather frame data
+typedef struct {
+    unsigned int      num_frames_detected;
+    unsigned int      num_headers_valid;
+    unsigned int      num_payloads_valid;
+    unsigned long int num_bytes_received;
+} framedatastats_s;
+
+// reset framedatastats object
+void framedatastats_reset(framedatastats_s * _stats);
+
+// print framedatastats object
+void framedatastats_print(framedatastats_s * _stats);
+
+
 // Generic frame synchronizer callback function type
 //  _header         :   header data [size: 8 bytes]
 //  _header_valid   :   is header valid? (0:no, 1:yes)

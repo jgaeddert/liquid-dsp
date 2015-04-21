@@ -590,6 +590,7 @@ framing_objects :=						\
 	src/framing/src/bsync_crcf.o				\
 	src/framing/src/bsync_cccf.o				\
 	src/framing/src/detector_cccf.o				\
+	src/framing/src/framedatastats.o			\
 	src/framing/src/framesyncstats.o			\
 	src/framing/src/framegen64.o				\
 	src/framing/src/framesync64.o				\
@@ -621,6 +622,8 @@ src/framing/src/bsync_crcf.o : %.o : %.c $(include_headers) src/framing/src/bsyn
 src/framing/src/bsync_cccf.o : %.o : %.c $(include_headers) src/framing/src/bsync.c
 
 src/framing/src/detector_cccf.o : %.o : %.c $(include_headers)
+
+src/framing/src/framedatastats.o : %.o : %.c $(include_headers)
 
 src/framing/src/framesyncstats.o : %.o : %.c $(include_headers)
 
