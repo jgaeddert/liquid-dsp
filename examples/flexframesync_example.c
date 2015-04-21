@@ -129,7 +129,6 @@ int main(int argc, char *argv[])
         // write samples to buffer
         frame_complete = flexframegen_write_samples(fg, x, buf_len);
 
-#if 0
         // add noise and push through synchronizer
         for (i=0; i<buf_len; i++) {
             // apply channel gain and carrier offset to input
@@ -142,9 +141,6 @@ int main(int argc, char *argv[])
 
         // run through frame synchronizer
         flexframesync_execute(fs, y, buf_len);
-#else
-        flexframesync_execute(fs, x, buf_len);
-#endif
     }
 
     // export debugging file
