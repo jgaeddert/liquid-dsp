@@ -57,8 +57,8 @@ void framedatastats_print(framedatastats_s * _stats)
     }
 
     printf("  frames detected   : %u\n", _stats->num_frames_detected);
-    printf("  headers valid     : %6u (%8.4f %%)\n", _stats->num_headers_valid,  percent_headers);
-    printf("  payloads valid    : %6u (%8.4f %%)\n", _stats->num_payloads_valid, percent_payloads);
+    printf("  headers valid     : %-6u (%8.4f %%)\n", _stats->num_headers_valid,  percent_headers);
+    printf("  payloads valid    : %-6u (%8.4f %%)\n", _stats->num_payloads_valid, percent_payloads);
     printf("  bytes received    : %lu\n", _stats->num_bytes_received);
 }
 

@@ -3526,19 +3526,15 @@ void flexframesync_execute(flexframesync          _q,
                            liquid_float_complex * _x,
                            unsigned int           _n);
 
+// frame data statistics
+void             flexframesync_reset_framedatastats(flexframesync _q);
+framedatastats_s flexframesync_get_framedatastats  (flexframesync _q);
+
 // enable/disable debugging
 void flexframesync_debug_enable(flexframesync _q);
 void flexframesync_debug_disable(flexframesync _q);
 void flexframesync_debug_print(flexframesync _q,
                                const char *  _filename);
-#if 0
-// advanced modes
-void flexframesync_set_csma_callbacks(flexframesync _fs,
-                                      framesync_csma_callback _csma_lock,
-                                      framesync_csma_callback _csma_unlock,
-                                      void * _csma_userdata);
-#endif
-
 
 //
 // bpacket : binary packet suitable for data streaming

@@ -381,7 +381,6 @@ void flexframesync_execute_seekpn(flexframesync _q,
 
         // update state
         _q->state = FLEXFRAMESYNC_STATE_RXPREAMBLE;
-        _q->framedatastats.num_frames_detected++;
 
 #if DEBUG_FLEXFRAMESYNC
         // the debug_qdetector_flush prevents samples from being written twice
@@ -513,6 +512,8 @@ void flexframesync_execute_rxheader(flexframesync _q,
 
             // header invalid: invoke callback
             if (_q->callback != NULL) {
+                _q->framedatastats.num_frames_detected++;
+
                 // set framestats internals
                 _q->framesyncstats.evm           = 0.0f; //20*log10f(sqrtf(_q->framesyncstats.evm / 600));
                 _q->framesyncstats.rssi          = 20*log10f(_q->gamma_hat);
@@ -687,6 +688,7 @@ void flexframesync_execute_rxpayload(flexframesync _q,
             // invoke callback
             if (_q->callback != NULL) {
                 // update statistics
+                _q->framedatastats.num_frames_detected++;
                 _q->framedatastats.num_headers_valid++;
                 _q->framedatastats.num_payloads_valid++;
                 _q->framedatastats.num_bytes_received += _q->payload_dec_len;
@@ -719,6 +721,18 @@ void flexframesync_execute_rxpayload(flexframesync _q,
             return;
         }
     }
+}
+
+// reset frame data statistics
+void flexframesync_reset_framedatastats(flexframesync _q)
+{
+    framedatastats_reset(&_q->framedatastats);
+}
+
+// retrieve frame data statistics
+framedatastats_s flexframesync_get_framedatastats(flexframesync _q)
+{
+    return _q->framedatastats;
 }
 
 // enable debugging
