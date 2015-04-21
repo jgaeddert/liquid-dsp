@@ -69,9 +69,10 @@ void flexframesync_execute_rxpayload(flexframesync _q,
 // flexframesync object structure
 struct flexframesync_s {
     // callback
-    framesync_callback  callback;   // user-defined callback function
-    void *              userdata;   // user-defined data structure
-    framesyncstats_s    framestats; // frame statistic object
+    framesync_callback  callback;       // user-defined callback function
+    void *              userdata;       // user-defined data structure
+    framesyncstats_s    framesyncstats; // frame statistic object (synchronizer)
+    framedatastats_s    framedatastats; // frame statistic object (synchronizer)
     
     // synchronizer objects
     unsigned int    m;                  // filter delay (symbols)
@@ -215,6 +216,8 @@ flexframesync flexframesync_create(framesync_callback _callback,
     q->payload_sym = (float complex*) malloc(q->payload_sym_len*sizeof(float complex));
     q->payload_dec = (unsigned char*) malloc(q->payload_dec_len*sizeof(unsigned char));
 
+    // reset global data counters
+    framedatastats_reset(&q->framedatastats);
 
 #if DEBUG_FLEXFRAMESYNC
     // set debugging flags, objects to NULL
@@ -268,6 +271,7 @@ void flexframesync_destroy(flexframesync _q)
 void flexframesync_print(flexframesync _q)
 {
     printf("flexframesync:\n");
+    framedatastats_print(&_q->framedatastats);
 }
 
 // reset frame synchronizer object
@@ -289,7 +293,7 @@ void flexframesync_reset(flexframesync _q)
     _q->symbol_counter  = 0;
     
     // reset frame statistics
-    _q->framestats.evm = 0.0f;
+    _q->framesyncstats.evm = 0.0f;
 }
 
 // execute frame synchronizer
@@ -377,6 +381,7 @@ void flexframesync_execute_seekpn(flexframesync _q,
 
         // update state
         _q->state = FLEXFRAMESYNC_STATE_RXPREAMBLE;
+        _q->framedatastats.num_frames_detected++;
 
 #if DEBUG_FLEXFRAMESYNC
         // the debug_qdetector_flush prevents samples from being written twice
@@ -509,16 +514,16 @@ void flexframesync_execute_rxheader(flexframesync _q,
             // header invalid: invoke callback
             if (_q->callback != NULL) {
                 // set framestats internals
-                _q->framestats.evm           = 0.0f; //20*log10f(sqrtf(_q->framestats.evm / 600));
-                _q->framestats.rssi          = 20*log10f(_q->gamma_hat);
-                _q->framestats.cfo           = nco_crcf_get_frequency(_q->mixer);
-                _q->framestats.framesyms     = NULL;
-                _q->framestats.num_framesyms = 0;
-                _q->framestats.mod_scheme    = LIQUID_MODEM_UNKNOWN;
-                _q->framestats.mod_bps       = 0;
-                _q->framestats.check         = LIQUID_CRC_UNKNOWN;
-                _q->framestats.fec0          = LIQUID_FEC_UNKNOWN;
-                _q->framestats.fec1          = LIQUID_FEC_UNKNOWN;
+                _q->framesyncstats.evm           = 0.0f; //20*log10f(sqrtf(_q->framesyncstats.evm / 600));
+                _q->framesyncstats.rssi          = 20*log10f(_q->gamma_hat);
+                _q->framesyncstats.cfo           = nco_crcf_get_frequency(_q->mixer);
+                _q->framesyncstats.framesyms     = NULL;
+                _q->framesyncstats.num_framesyms = 0;
+                _q->framesyncstats.mod_scheme    = LIQUID_MODEM_UNKNOWN;
+                _q->framesyncstats.mod_bps       = 0;
+                _q->framesyncstats.check         = LIQUID_CRC_UNKNOWN;
+                _q->framesyncstats.fec0          = LIQUID_FEC_UNKNOWN;
+                _q->framesyncstats.fec1          = LIQUID_FEC_UNKNOWN;
 
                 // invoke callback method
                 _q->callback(_q->header_dec,
@@ -526,7 +531,7 @@ void flexframesync_execute_rxheader(flexframesync _q,
                              NULL,  // payload
                              0,     // payload length
                              0,     // payload valid,
-                             _q->framestats,
+                             _q->framesyncstats,
                              _q->userdata);
             }
 
@@ -665,7 +670,7 @@ void flexframesync_execute_rxpayload(flexframesync _q,
         float evm         = modem_get_demodulator_evm        (_q->payload_demod);
         nco_crcf_pll_step(_q->pll, phase_error);
         nco_crcf_step(_q->pll);
-        _q->framestats.evm += evm*evm;
+        _q->framesyncstats.evm += evm*evm;
 
         // save payload symbols (modem input/output)
         _q->payload_sym[_q->symbol_counter] = mf_out;
@@ -681,18 +686,23 @@ void flexframesync_execute_rxpayload(flexframesync _q,
 
             // invoke callback
             if (_q->callback != NULL) {
+                // update statistics
+                _q->framedatastats.num_headers_valid++;
+                _q->framedatastats.num_payloads_valid++;
+                _q->framedatastats.num_bytes_received += _q->payload_dec_len;
+
                 // set framestats internals
                 int ms = qpacketmodem_get_modscheme(_q->payload_decoder);
-                _q->framestats.evm           = 10*log10f(_q->framestats.evm / (float)_q->payload_sym_len);
-                _q->framestats.rssi          = 20*log10f(_q->gamma_hat);
-                _q->framestats.cfo           = nco_crcf_get_frequency(_q->mixer);
-                _q->framestats.framesyms     = _q->payload_sym;
-                _q->framestats.num_framesyms = _q->payload_sym_len;
-                _q->framestats.mod_scheme    = ms;
-                _q->framestats.mod_bps       = modulation_types[ms].bps;
-                _q->framestats.check         = qpacketmodem_get_crc(_q->payload_decoder);
-                _q->framestats.fec0          = qpacketmodem_get_fec0(_q->payload_decoder);
-                _q->framestats.fec1          = qpacketmodem_get_fec1(_q->payload_decoder);
+                _q->framesyncstats.evm           = 10*log10f(_q->framesyncstats.evm / (float)_q->payload_sym_len);
+                _q->framesyncstats.rssi          = 20*log10f(_q->gamma_hat);
+                _q->framesyncstats.cfo           = nco_crcf_get_frequency(_q->mixer);
+                _q->framesyncstats.framesyms     = _q->payload_sym;
+                _q->framesyncstats.num_framesyms = _q->payload_sym_len;
+                _q->framesyncstats.mod_scheme    = ms;
+                _q->framesyncstats.mod_bps       = modulation_types[ms].bps;
+                _q->framesyncstats.check         = qpacketmodem_get_crc(_q->payload_decoder);
+                _q->framesyncstats.fec0          = qpacketmodem_get_fec0(_q->payload_decoder);
+                _q->framesyncstats.fec1          = qpacketmodem_get_fec1(_q->payload_decoder);
 
                 // invoke callback method
                 _q->callback(_q->header_dec,
@@ -700,7 +710,7 @@ void flexframesync_execute_rxpayload(flexframesync _q,
                              _q->payload_dec,
                              _q->payload_dec_len,
                              _q->payload_valid,
-                             _q->framestats,
+                             _q->framesyncstats,
                              _q->userdata);
             }
 

@@ -105,7 +105,6 @@ int main(int argc, char *argv[])
 
     // create flexframesync object
     flexframesync fs = flexframesync_create(callback,NULL);
-    flexframesync_print(fs);
     if (debug_enabled)
         flexframesync_debug_enable(fs);
 
@@ -152,6 +151,7 @@ int main(int argc, char *argv[])
     if (debug_enabled)
         flexframesync_debug_print(fs, "flexframesync_debug.m");
 
+    flexframesync_print(fs);
     // destroy allocated objects
     flexframegen_destroy(fg);
     flexframesync_destroy(fs);
