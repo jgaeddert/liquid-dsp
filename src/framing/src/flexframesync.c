@@ -212,12 +212,12 @@ flexframesync flexframesync_create(framesync_callback _callback,
     //assert( qpacketmodem_get_frame_len(q->payload_decoder)==600 );
     q->payload_sym_len = qpacketmodem_get_frame_len(q->payload_decoder);
 
-    //
+    // allocate memory for payload symbols and recovered data bytes
     q->payload_sym = (float complex*) malloc(q->payload_sym_len*sizeof(float complex));
     q->payload_dec = (unsigned char*) malloc(q->payload_dec_len*sizeof(unsigned char));
 
     // reset global data counters
-    framedatastats_reset(&q->framedatastats);
+    flexframesync_reset_framedatastats(q);
 
 #if DEBUG_FLEXFRAMESYNC
     // set debugging flags, objects to NULL
@@ -502,7 +502,6 @@ void flexframesync_execute_rxheader(flexframesync _q,
             // decode header
             flexframesync_decode_header(_q);
 
-            // reconfigure
             if (_q->header_valid) {
                 // continue on to decoding payload
                 _q->symbol_counter = 0;
@@ -510,10 +509,11 @@ void flexframesync_execute_rxheader(flexframesync _q,
                 return;
             }
 
+            // update statistics
+            _q->framedatastats.num_frames_detected++;
+
             // header invalid: invoke callback
             if (_q->callback != NULL) {
-                _q->framedatastats.num_frames_detected++;
-
                 // set framestats internals
                 _q->framesyncstats.evm           = 0.0f; //20*log10f(sqrtf(_q->framesyncstats.evm / 600));
                 _q->framesyncstats.rssi          = 20*log10f(_q->gamma_hat);
@@ -685,14 +685,14 @@ void flexframesync_execute_rxpayload(flexframesync _q,
                                                     _q->payload_sym,
                                                     _q->payload_dec);
 
+            // update statistics
+            _q->framedatastats.num_frames_detected++;
+            _q->framedatastats.num_headers_valid++;
+            _q->framedatastats.num_payloads_valid++;
+            _q->framedatastats.num_bytes_received += _q->payload_dec_len;
+
             // invoke callback
             if (_q->callback != NULL) {
-                // update statistics
-                _q->framedatastats.num_frames_detected++;
-                _q->framedatastats.num_headers_valid++;
-                _q->framedatastats.num_payloads_valid++;
-                _q->framedatastats.num_bytes_received += _q->payload_dec_len;
-
                 // set framestats internals
                 int ms = qpacketmodem_get_modscheme(_q->payload_decoder);
                 _q->framesyncstats.evm           = 10*log10f(_q->framesyncstats.evm / (float)_q->payload_sym_len);
