@@ -3825,6 +3825,51 @@ int detector_cccf_correlate(detector_cccf        _q,
 
 
 // 
+// symbol streaming for testing (no meaningful data, just symbols)
+//
+#define SYMSTREAM_MANGLE_CFLOAT(name) LIQUID_CONCAT(symstreamcf,name)
+
+#define LIQUID_SYMSTREAM_DEFINE_API(SYMSTREAM,TO)               \
+                                                                \
+typedef struct SYMSTREAM(_s) * SYMSTREAM();                     \
+                                                                \
+/* create default symstream object                          */  \
+/* (LIQUID_RNYQUIST_ARKAISER, k=2, m=7, beta=0.3, QPSK)     */  \
+SYMSTREAM() SYMSTREAM(_create)(void);                           \
+                                                                \
+/* create symstream object with linear modulation           */  \
+/*  _ftype  : filter type (e.g. LIQUID_RNYQUIST_RRC)        */  \
+/*  _k      : samples per symbol                            */  \
+/*  _m      : filter delay (symbols)                        */  \
+/*  _beta   : filter excess bandwidth                       */  \
+/*  _ms     : modulation scheme (e.g. LIQUID_MODEM_QPSK)    */  \
+SYMSTREAM() SYMSTREAM(_create_linear)(int          _ftype,      \
+                                      unsigned int _k,          \
+                                      unsigned int _m,          \
+                                      float        _beta,       \
+                                      int          _ms);        \
+                                                                \
+/* destroy symstream object, freeing all internal memory    */  \
+void SYMSTREAM(_destroy)(SYMSTREAM() _q);                       \
+                                                                \
+/* print symstream object's parameters                      */  \
+void SYMSTREAM(_print)(SYMSTREAM() _q);                         \
+                                                                \
+/* reset symstream internal state                           */  \
+void SYMSTREAM(_reset)(SYMSTREAM() _q);                         \
+                                                                \
+/* write block of samples to output buffer                  */  \
+/*  _q      : synchronizer object                           */  \
+/*  _buf    : output buffer [size: _buf_len x 1]            */  \
+/*  _buf_len: output buffer size                            */  \
+void SYMSTREAM(_write_samples)(SYMSTREAM()  _q,                 \
+                               TO *         _buf,               \
+                               unsigned int _buf_len);          \
+    
+LIQUID_SYMSTREAM_DEFINE_API(SYMSTREAM_MANGLE_CFLOAT, liquid_float_complex)
+
+
+// 
 // Symbol tracking: AGC > symsync > EQ > carrier recovery
 //
 #define SYMTRACK_MANGLE_RRRF(name) LIQUID_CONCAT(symtrack_rrrf,name)
