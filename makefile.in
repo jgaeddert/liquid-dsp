@@ -590,6 +590,7 @@ framing_objects :=						\
 	src/framing/src/bsync_crcf.o				\
 	src/framing/src/bsync_cccf.o				\
 	src/framing/src/detector_cccf.o				\
+	src/framing/src/framedatastats.o			\
 	src/framing/src/framesyncstats.o			\
 	src/framing/src/framegen64.o				\
 	src/framing/src/framesync64.o				\
@@ -600,6 +601,10 @@ framing_objects :=						\
 	src/framing/src/ofdmflexframegen.o			\
 	src/framing/src/ofdmflexframesync.o			\
 	src/framing/src/presync_cccf.o				\
+	src/framing/src/qdetector_cccf.o			\
+	src/framing/src/qpacketmodem.o				\
+	src/framing/src/qpilotgen.o				\
+	src/framing/src/qpilotsync.o				\
 
 
 # list explicit targets and dependencies here
@@ -617,6 +622,8 @@ src/framing/src/bsync_crcf.o : %.o : %.c $(include_headers) src/framing/src/bsyn
 src/framing/src/bsync_cccf.o : %.o : %.c $(include_headers) src/framing/src/bsync.c
 
 src/framing/src/detector_cccf.o : %.o : %.c $(include_headers)
+
+src/framing/src/framedatastats.o : %.o : %.c $(include_headers)
 
 src/framing/src/framesyncstats.o : %.o : %.c $(include_headers)
 
@@ -639,8 +646,11 @@ framing_autotests :=						\
 	src/framing/tests/bpacketsync_autotest.c		\
 	src/framing/tests/bsync_autotest.c			\
 	src/framing/tests/detector_autotest.c			\
-	src/framing/tests/framesync64_autotest.c		\
 	src/framing/tests/flexframesync_autotest.c		\
+	src/framing/tests/framesync64_autotest.c		\
+	src/framing/tests/qdetector_cccf_autotest.c		\
+	src/framing/tests/qpacketmodem_autotest.c		\
+	src/framing/tests/qpilotsync_autotest.c			\
 
 
 framing_benchmarks :=						\
@@ -1456,8 +1466,12 @@ example_programs :=						\
 	examples/polyfit_example				\
 	examples/polyfit_lagrange_example			\
 	examples/poly_findroots_example				\
-	examples/quantize_example				\
+	examples/qdetector_cccf_example				\
+	examples/qpacketmodem_performance_example		\
+	examples/qpacketmodem_example				\
+	examples/qpilotsync_example				\
 	examples/qnsearch_example				\
+	examples/quantize_example				\
 	examples/random_histogram_example			\
 	examples/repack_bytes_example				\
 	examples/resamp_crcf_example				\

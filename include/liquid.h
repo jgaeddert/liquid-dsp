@@ -3236,6 +3236,22 @@ void framesyncstats_init_default(framesyncstats_s * _stats);
 // print framesyncstats object
 void framesyncstats_print(framesyncstats_s * _stats);
 
+
+// framedatastats : gather frame data
+typedef struct {
+    unsigned int      num_frames_detected;
+    unsigned int      num_headers_valid;
+    unsigned int      num_payloads_valid;
+    unsigned long int num_bytes_received;
+} framedatastats_s;
+
+// reset framedatastats object
+void framedatastats_reset(framedatastats_s * _stats);
+
+// print framedatastats object
+void framedatastats_print(framedatastats_s * _stats);
+
+
 // Generic frame synchronizer callback function type
 //  _header         :   header data [size: 8 bytes]
 //  _header_valid   :   is header valid? (0:no, 1:yes)
@@ -3256,13 +3272,111 @@ typedef int (*framesync_callback)(unsigned char *  _header,
 //  _userdata       :   user-defined data pointer
 typedef void (*framesync_csma_callback)(void * _userdata);
 
+//
+// packet encoder/decoder
+//
+
+typedef struct qpacketmodem_s * qpacketmodem;
+
+// create packet encoder
+qpacketmodem qpacketmodem_create ();
+void         qpacketmodem_destroy(qpacketmodem _q);
+void         qpacketmodem_reset  (qpacketmodem _q);
+void         qpacketmodem_print  (qpacketmodem _q);
+
+int qpacketmodem_configure(qpacketmodem _q,
+                           unsigned int _payload_len,
+                           crc_scheme   _check,
+                           fec_scheme   _fec0,
+                           fec_scheme   _fec1,
+                           int          _ms);
+
+// get length of frame in symbols
+unsigned int qpacketmodem_get_frame_len(qpacketmodem _q);
+
+// get payload length (bytes)
+unsigned int qpacketmodem_get_payload_len(qpacketmodem _q);
+
+// regular access methods
+unsigned int qpacketmodem_get_crc      (qpacketmodem _q);
+unsigned int qpacketmodem_get_fec0     (qpacketmodem _q);
+unsigned int qpacketmodem_get_fec1     (qpacketmodem _q);
+unsigned int qpacketmodem_get_modscheme(qpacketmodem _q);
+
+// encode packet into modulated frame samples
+// TODO: include method with just symbol indices? would be useful for
+//       non-linear modulation types
+void qpacketmodem_encode(qpacketmodem           _q,
+                         unsigned char *        _payload,
+                         liquid_float_complex * _frame);
+
+// decode packet into modulated frame samples
+// TODO: include method with just symbol indices? would be useful for
+//       non-linear modulation types
+int qpacketmodem_decode(qpacketmodem           _q,
+                        liquid_float_complex * _frame,
+                        unsigned char *        _payload);
+
+//
+// pilot generator for streaming applications
+//
+typedef struct qpilotgen_s * qpilotgen;
+
+// create packet encoder
+qpilotgen qpilotgen_create(unsigned int _payload_len,
+                           unsigned int _pilot_spacing);
+
+qpilotgen qpilotgen_recreate(qpilotgen    _q,
+                             unsigned int _payload_len,
+                             unsigned int _pilot_spacing);
+
+void qpilotgen_destroy(qpilotgen _q);
+void qpilotgen_reset(  qpilotgen _q);
+void qpilotgen_print(  qpilotgen _q);
+
+unsigned int qpilotgen_get_frame_len(qpilotgen _q);
+
+// insert pilot symbols
+void qpilotgen_execute(qpilotgen              _q,
+                       liquid_float_complex * _payload,
+                       liquid_float_complex * _frame);
+
+//
+// pilot synchronizer for streaming applications
+//
+typedef struct qpilotsync_s * qpilotsync;
+
+// create packet encoder
+qpilotsync qpilotsync_create(unsigned int _payload_len,
+                             unsigned int _pilot_spacing);
+
+qpilotsync qpilotsync_recreate(qpilotsync   _q,
+                               unsigned int _payload_len,
+                               unsigned int _pilot_spacing);
+
+void qpilotsync_destroy(qpilotsync _q);
+void qpilotsync_reset(  qpilotsync _q);
+void qpilotsync_print(  qpilotsync _q);
+
+unsigned int qpilotsync_get_frame_len(qpilotsync _q);
+
+// recover frame symbols from received frame
+void qpilotsync_execute(qpilotsync             _q,
+                        liquid_float_complex * _frame,
+                        liquid_float_complex * _payload);
+
+// get estimates
+float qpilotsync_get_dphi(qpilotsync _q);
+float qpilotsync_get_phi (qpilotsync _q);
+float qpilotsync_get_gain(qpilotsync _q);
+
 
 //
 // Basic frame generator (64 bytes data payload)
 //
 
 // frame length in samples
-#define LIQUID_FRAME64_LEN (1340)
+#define LIQUID_FRAME64_LEN (1440)
 
 typedef struct framegen64_s * framegen64;
 
@@ -3360,7 +3474,7 @@ int flexframegen_is_assembled(flexframegen _q);
 void flexframegen_getprops(flexframegen _q, flexframegenprops_s * _props);
 
 // set frame properties
-void flexframegen_setprops(flexframegen _q, flexframegenprops_s * _props);
+int flexframegen_setprops(flexframegen _q, flexframegenprops_s * _props);
 
 // get length of assembled frame (samples)
 unsigned int flexframegen_getframelen(flexframegen _q);
@@ -3376,11 +3490,14 @@ void flexframegen_assemble(flexframegen    _q,
                            unsigned int    _payload_len);
 
 // write samples of assembled frame, two samples at a time, returning
-// '1' when frame is complete, '0' otherwise
-//  _q              :   frame generator object
-//  _buffer         :   output buffer [size: 2 x 1]
+// '1' when frame is complete, '0' otherwise. Zeros will be written
+// to the buffer if the frame is not assembled
+//  _q          :   frame generator object
+//  _buffer     :   output buffer [size: _buffer_len x 1]
+//  _buffer_len :   output buffer length
 int flexframegen_write_samples(flexframegen           _q,
-                               liquid_float_complex * _buffer);
+                               liquid_float_complex * _buffer,
+                               unsigned int           _buffer_len);
 
 // frame synchronizer
 
@@ -3409,19 +3526,15 @@ void flexframesync_execute(flexframesync          _q,
                            liquid_float_complex * _x,
                            unsigned int           _n);
 
+// frame data statistics
+void             flexframesync_reset_framedatastats(flexframesync _q);
+framedatastats_s flexframesync_get_framedatastats  (flexframesync _q);
+
 // enable/disable debugging
 void flexframesync_debug_enable(flexframesync _q);
 void flexframesync_debug_disable(flexframesync _q);
 void flexframesync_debug_print(flexframesync _q,
                                const char *  _filename);
-#if 0
-// advanced modes
-void flexframesync_set_csma_callbacks(flexframesync _fs,
-                                      framesync_csma_callback _csma_lock,
-                                      framesync_csma_callback _csma_unlock,
-                                      void * _csma_userdata);
-#endif
-
 
 //
 // bpacket : binary packet suitable for data streaming
@@ -3770,6 +3883,78 @@ LIQUID_PRESYNC_DEFINE_API(BPRESYNC_MANGLE_CCCF,
                           liquid_float_complex,
                           liquid_float_complex,
                           liquid_float_complex)
+
+//
+// Frame detector
+//
+
+typedef struct qdetector_cccf_s * qdetector_cccf;
+
+// create detector with generic sequence
+//  _s      :   sample sequence
+//  _s_len  :   length of sample sequence
+qdetector_cccf qdetector_cccf_create(liquid_float_complex * _s,
+                                     unsigned int           _s_len);
+
+// create detector from sequence of symbols using internal linear interpolator
+//  _sequence       :   symbol sequence
+//  _sequence_len   :   length of symbol sequence
+//  _ftype          :   filter prototype (e.g. LIQUID_FIRFILT_RRC)
+//  _k              :   samples/symbol
+//  _m              :   filter delay
+//  _beta           :   excess bandwidth factor
+qdetector_cccf qdetector_cccf_create_linear(liquid_float_complex * _sequence,
+                                            unsigned int           _sequence_len,
+                                            int                    _ftype,
+                                            unsigned int           _k,
+                                            unsigned int           _m,
+                                            float                  _beta);
+
+// create detector from sequence of GMSK symbols
+//  _sequence       :   bit sequence
+//  _sequence_len   :   length of bit sequence
+//  _k              :   samples/symbol
+//  _m              :   filter delay
+//  _beta           :   excess bandwidth factor
+qdetector_cccf qdetector_cccf_create_gmsk(unsigned char * _sequence,
+                                          unsigned int    _sequence_len,
+                                          unsigned int    _k,
+                                          unsigned int    _m,
+                                          float           _beta);
+
+// create detector from sequence of symbols using internal linear interpolator
+//  _sequence       :   symbol sequence
+//  _sequence_len   :   length of symbol sequence
+//  _k              :   samples/symbol
+//  _m              :   filter delay
+//  _beta           :   excess bandwidth factor
+//  _type           :   filter prototype (e.g. LIQUID_FIRFILT_RRC)
+qdetector_cccf qdetector_cccf_create_gmsk(unsigned char * _sequence,
+                                          unsigned int    _sequence_len,
+                                          unsigned int    _k,
+                                          unsigned int    _m,
+                                          float           _beta);
+
+void qdetector_cccf_destroy(qdetector_cccf _q);
+void qdetector_cccf_print  (qdetector_cccf _q);
+void qdetector_cccf_reset  (qdetector_cccf _q);
+
+// run detector, looking for sequence; return pointer to aligned, buffered samples
+void * qdetector_cccf_execute(qdetector_cccf       _q,
+                              liquid_float_complex _x);
+
+// set detection threshold (should be between 0 and 1, good starting point is 0.5)
+void qdetector_cccf_set_threshold(qdetector_cccf _q,
+                                  float          _threshold);
+
+// access methods
+unsigned int qdetector_cccf_get_seq_len (qdetector_cccf _q); // sequence length
+const void * qdetector_cccf_get_sequence(qdetector_cccf _q); // pointer to sequence
+unsigned int qdetector_cccf_get_buf_len (qdetector_cccf _q); // buffer length
+float        qdetector_cccf_get_tau     (qdetector_cccf _q); // fractional timing offset estimate
+float        qdetector_cccf_get_gamma   (qdetector_cccf _q); // channel gain
+float        qdetector_cccf_get_dphi    (qdetector_cccf _q); // carrier frequency offset estimate
+float        qdetector_cccf_get_phi     (qdetector_cccf _q); // carrier phase offset estimate
 
 //
 // Pre-demodulation detector

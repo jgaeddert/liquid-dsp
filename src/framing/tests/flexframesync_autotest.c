@@ -23,27 +23,6 @@
 #include "autotest/autotest.h"
 #include "liquid.h"
 
-static int callback(unsigned char *  _header,
-                    int              _header_valid,
-                    unsigned char *  _payload,
-                    unsigned int     _payload_len,
-                    int              _payload_valid,
-                    framesyncstats_s _stats,
-                    void *           _userdata)
-{
-    if (liquid_autotest_verbose)
-        printf("*** flexframesync callback invoked, payload valid: %s ***\n", _payload_valid ? "yes" : "no");
-
-    int * frame_recovered = (int*) _userdata;
-
-    if (_header_valid && _payload_valid)
-        *frame_recovered = 1;
-    else
-        *frame_recovered = 0;
-    
-    return 0;
-}
-
 // 
 // AUTOTEST : test simple recovery of frame in noise
 //
@@ -67,8 +46,7 @@ void autotest_flexframesync()
     flexframegen fg = flexframegen_create(&fgprops);
 
     // create flexframesync object
-    int frame_recovered = 0;
-    flexframesync fs = flexframesync_create(callback,(void*)&frame_recovered);
+    flexframesync fs = flexframesync_create(NULL,NULL);
     
     // initialize header and payload
     unsigned char header[14] = {0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13};
@@ -86,14 +64,22 @@ void autotest_flexframesync()
     float complex buf[2];
     while (!frame_complete) {
         // write samples to buffer
-        frame_complete = flexframegen_write_samples(fg, buf);
+        frame_complete = flexframegen_write_samples(fg, buf, 2);
 
         // run through frame synchronizer
         flexframesync_execute(fs, buf, 2);
     }
 
+    // get frame data statistics
+    framedatastats_s stats = flexframesync_get_framedatastats(fs);
+    if (liquid_autotest_verbose)
+        flexframesync_print(fs);
+
     // check to see that frame was recovered
-    CONTEND_EQUALITY( frame_recovered, 1 );
+    CONTEND_EQUALITY( stats.num_frames_detected, 1 );
+    CONTEND_EQUALITY( stats.num_headers_valid,   1 );
+    CONTEND_EQUALITY( stats.num_payloads_valid,  1 );
+    CONTEND_EQUALITY( stats.num_bytes_received,  _payload_len );
 
     // destroy objects
     flexframegen_destroy(fg);
