@@ -467,7 +467,7 @@ void ofdmflexframegen_encode_header(ofdmflexframegen _q)
     unsigned int n = OFDMFLEXFRAME_H_USER;
 
     // first byte is for expansion/version validation
-    _q->header[n+0] = OFDMFLEXFRAME_VERSION;
+    _q->header[n+0] = OFDMFLEXFRAME_PROTOCOL;
 
     // add payload length
     _q->header[n+1] = (_q->payload_dec_len >> 8) & 0xff;

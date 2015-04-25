@@ -453,7 +453,7 @@ void ofdmflexframesync_decode_header(ofdmflexframesync _q)
     unsigned int n = OFDMFLEXFRAME_H_USER;
 
     // first byte is for expansion/version validation
-    if (_q->header[n+0] != OFDMFLEXFRAME_VERSION) {
+    if (_q->header[n+0] != OFDMFLEXFRAME_PROTOCOL) {
         fprintf(stderr,"warning: ofdmflexframesync_decode_header(), invalid framing version\n");
         _q->header_valid = 0;
     }

@@ -1150,7 +1150,7 @@ void bpacketsync_reconfig(bpacketsync _q);
 // ofdmflexframe
 //
 
-#define OFDMFLEXFRAME_VERSION   (104)
+#define OFDMFLEXFRAME_PROTOCOL  (104)
 
 // header description
 #define OFDMFLEXFRAME_H_USER    (8)                         // user-defined array
