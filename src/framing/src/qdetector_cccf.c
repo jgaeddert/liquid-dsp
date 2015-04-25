@@ -184,6 +184,52 @@ qdetector_cccf qdetector_cccf_create_linear(float complex * _sequence,
     return q;
 }
 
+// create detector from sequence of symbols using internal linear interpolator
+//  _sequence       :   bit sequence
+//  _sequence_len   :   length of bit sequence
+//  _k              :   samples/symbol
+//  _m              :   filter delay
+//  _beta           :   excess bandwidth factor
+qdetector_cccf qdetector_cccf_create_gmsk(unsigned char * _sequence,
+                                          unsigned int    _sequence_len,
+                                          unsigned int    _k,
+                                          unsigned int    _m,
+                                          float           _beta)
+{
+    // validate input
+    if (_sequence_len == 0) {
+        fprintf(stderr,"error: qdetector_cccf_create_gmsk(), sequence length cannot be zero\n");
+        exit(1);
+    } else if (_k < 2 || _k > 80) {
+        fprintf(stderr,"error: qdetector_cccf_create_gmsk(), samples per symbol must be in [2,80]\n");
+        exit(1);
+    } else if (_m < 1 || _m > 100) {
+        fprintf(stderr,"error: qdetector_cccf_create_gmsk(), filter delay must be in [1,100]\n");
+        exit(1);
+    } else if (_beta < 0.0f || _beta > 1.0f) {
+        fprintf(stderr,"error: qdetector_cccf_create_gmsk(), excess bandwidth factor must be in [0,1]\n");
+        exit(1);
+    }
+    
+    // create time-domain template using GMSK modem
+    unsigned int    s_len = _k * (_sequence_len + 2*_m);
+    float complex * s     = (float complex*) malloc(s_len * sizeof(float complex));
+    gmskmod mod = gmskmod_create(_k, _m, _beta);
+    unsigned int i;
+    for (i=0; i<_sequence_len + 2*_m; i++)
+        gmskmod_modulate(mod, i < _sequence_len ? _sequence[i] : 0, &s[_k*i]);
+    gmskmod_destroy(mod);
+
+    // create main object
+    qdetector_cccf q = qdetector_cccf_create(s, s_len);
+
+    // free allocated temporary array
+    free(s);
+
+    // return object
+    return q;
+}
+
 void qdetector_cccf_destroy(qdetector_cccf _q)
 {
     // free allocated arrays

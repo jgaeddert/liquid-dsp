@@ -3878,6 +3878,18 @@ qdetector_cccf qdetector_cccf_create_linear(liquid_float_complex * _sequence,
                                             unsigned int           _m,
                                             float                  _beta);
 
+// create detector from sequence of GMSK symbols
+//  _sequence       :   bit sequence
+//  _sequence_len   :   length of bit sequence
+//  _k              :   samples/symbol
+//  _m              :   filter delay
+//  _beta           :   excess bandwidth factor
+qdetector_cccf qdetector_cccf_create_gmsk(unsigned char * _sequence,
+                                          unsigned int    _sequence_len,
+                                          unsigned int    _k,
+                                          unsigned int    _m,
+                                          float           _beta);
+
 void qdetector_cccf_destroy(qdetector_cccf _q);
 void qdetector_cccf_print  (qdetector_cccf _q);
 void qdetector_cccf_reset  (qdetector_cccf _q);
