@@ -27,7 +27,7 @@
 
 void usage()
 {
-    printf("ofdmflexframesync_example [options]\n");
+    printf("flexframesync_example [options]\n");
     printf("  u/h   : print usage\n");
     printf("  s     : signal-to-noise ratio [dB], default: 20\n");
     printf("  F     : carrier frequency offset, default: 0.01\n");
