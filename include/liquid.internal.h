@@ -1162,61 +1162,6 @@ void bpacketsync_reconfig(bpacketsync _q);
 #define OFDMFLEXFRAME_H_BPS     (1)                         // modulation depth
 #define OFDMFLEXFRAME_H_SYM     (288)                       // number of symbols
 
-// 
-// ofdmflexframegen
-//
-
-// reconfigure internal buffers, objects, etc.
-void ofdmflexframegen_reconfigure(ofdmflexframegen _q);
-
-// encode header
-void ofdmflexframegen_encode_header(ofdmflexframegen _q);
-
-// modulate header
-void ofdmflexframegen_modulate_header(ofdmflexframegen _q);
-
-// write first S0 symbol
-void ofdmflexframegen_write_S0a(ofdmflexframegen _q,
-                                float complex * _buffer);
-
-// write second S0 symbol
-void ofdmflexframegen_write_S0b(ofdmflexframegen _q,
-                                float complex * _buffer);
-
-// write S1 symbol
-void ofdmflexframegen_write_S1(ofdmflexframegen _q,
-                               float complex * _buffer);
-
-// write header symbol
-void ofdmflexframegen_write_header(ofdmflexframegen _q,
-                                   float complex * _buffer);
-
-// write payload symbol
-void ofdmflexframegen_write_payload(ofdmflexframegen _q,
-                                    float complex * _buffer);
-
-// 
-// ofdmflexframesync
-//
-
-// internal callback
-int ofdmflexframesync_internal_callback(float complex * _X,
-                                        unsigned char * _p,
-                                        unsigned int    _M,
-                                        void * _userdata);
-
-// receive header data
-void ofdmflexframesync_rxheader(ofdmflexframesync _q,
-                                float complex * _X);
-
-// decode header
-void ofdmflexframesync_decode_header(ofdmflexframesync _q);
-
-// receive payload data
-void ofdmflexframesync_rxpayload(ofdmflexframesync _q,
-                                float complex * _X);
-
-
 //
 // MODULE : math
 //
