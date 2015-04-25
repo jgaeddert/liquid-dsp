@@ -3867,16 +3867,16 @@ qdetector_cccf qdetector_cccf_create(liquid_float_complex * _s,
 // create detector from sequence of symbols using internal linear interpolator
 //  _sequence       :   symbol sequence
 //  _sequence_len   :   length of symbol sequence
+//  _ftype          :   filter prototype (e.g. LIQUID_FIRFILT_RRC)
 //  _k              :   samples/symbol
 //  _m              :   filter delay
 //  _beta           :   excess bandwidth factor
-//  _type           :   filter prototype (e.g. LIQUID_FIRFILT_RRC)
-qdetector_cccf qdetector_cccf_create_symbols(liquid_float_complex * _sequence,
-                                             unsigned int           _sequence_len,
-                                             int                    _ftype,
-                                             unsigned int           _k,
-                                             unsigned int           _m,
-                                             float                  _beta);
+qdetector_cccf qdetector_cccf_create_linear(liquid_float_complex * _sequence,
+                                            unsigned int           _sequence_len,
+                                            int                    _ftype,
+                                            unsigned int           _k,
+                                            unsigned int           _m,
+                                            float                  _beta);
 
 void qdetector_cccf_destroy(qdetector_cccf _q);
 void qdetector_cccf_print  (qdetector_cccf _q);

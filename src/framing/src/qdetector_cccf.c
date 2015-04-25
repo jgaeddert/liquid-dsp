@@ -139,29 +139,29 @@ qdetector_cccf qdetector_cccf_create(float complex * _s,
 // create detector from sequence of symbols using internal linear interpolator
 //  _sequence       :   symbol sequence
 //  _sequence_len   :   length of symbol sequence
+//  _ftype          :   filter prototype (e.g. LIQUID_FIRFILT_RRC)
 //  _k              :   samples/symbol
 //  _m              :   filter delay
 //  _beta           :   excess bandwidth factor
-//  _type           :   filter prototype (e.g. LIQUID_FIRFILT_RRC)
-qdetector_cccf qdetector_cccf_create_symbols(float complex * _sequence,
-                                             unsigned int    _sequence_len,
-                                             int             _ftype,
-                                             unsigned int    _k,
-                                             unsigned int    _m,
-                                             float           _beta)
+qdetector_cccf qdetector_cccf_create_linear(float complex * _sequence,
+                                            unsigned int    _sequence_len,
+                                            int             _ftype,
+                                            unsigned int    _k,
+                                            unsigned int    _m,
+                                            float           _beta)
 {
     // validate input
     if (_sequence_len == 0) {
-        fprintf(stderr,"error: qdetector_cccf_create_symbols(), sequence length cannot be zero\n");
+        fprintf(stderr,"error: qdetector_cccf_create_linear(), sequence length cannot be zero\n");
         exit(1);
     } else if (_k < 2 || _k > 80) {
-        fprintf(stderr,"error: qdetector_cccf_create_symbols(), samples per symbol must be in [2,80]\n");
+        fprintf(stderr,"error: qdetector_cccf_create_linear(), samples per symbol must be in [2,80]\n");
         exit(1);
     } else if (_m < 1 || _m > 100) {
-        fprintf(stderr,"error: qdetector_cccf_create_symbols(), filter delay must be in [1,100]\n");
+        fprintf(stderr,"error: qdetector_cccf_create_linear(), filter delay must be in [1,100]\n");
         exit(1);
     } else if (_beta < 0.0f || _beta > 1.0f) {
-        fprintf(stderr,"error: qdetector_cccf_create_symbols(), excess bandwidth factor must be in [0,1]\n");
+        fprintf(stderr,"error: qdetector_cccf_create_linear(), excess bandwidth factor must be in [0,1]\n");
         exit(1);
     }
     
