@@ -688,7 +688,7 @@ void flexframesync_execute_rxpayload(flexframesync _q,
             // update statistics
             _q->framedatastats.num_frames_detected++;
             _q->framedatastats.num_headers_valid++;
-            _q->framedatastats.num_payloads_valid++;
+            _q->framedatastats.num_payloads_valid += _q->payload_valid;
             _q->framedatastats.num_bytes_received += _q->payload_dec_len;
 
             // invoke callback
