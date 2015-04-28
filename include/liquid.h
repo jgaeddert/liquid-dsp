@@ -539,6 +539,14 @@ void  EQLMS(_set_bw)(EQLMS() _q,                                \
 void EQLMS(_push)(EQLMS() _q,                                   \
                   T       _x);                                  \
                                                                 \
+/* push sample into equalizer internal buffer as block      */  \
+/*  _q      :   equalizer object                            */  \
+/*  _x      :   input sample array                          */  \
+/*  _n      :   input sample array length                   */  \
+void EQLMS(_push_block)(EQLMS()      _q,                        \
+                        T *          _x,                        \
+                        unsigned int _n);                       \
+                                                                \
 /* execute internal dot product and return result           */  \
 /*  _q      :   equalizer object                            */  \
 /*  _y      :   output sample                               */  \
