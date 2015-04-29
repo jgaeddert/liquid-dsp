@@ -26,11 +26,12 @@
 void autotest_eqlms_cccf_blind()
 {
     // parameters
-    float           tol         = 1e-2f;    // error tolerance
+    float           tol         = 2e-2f;    // error tolerance
     unsigned int    k           =  2;       // samples/symbol
     unsigned int    m           =  7;       // filter delay
     float           beta        =  0.3f;    // excess bandwidth factor
     unsigned int    p           =  7;       // equalizer order
+    float           mu          =  0.7f;    // equalizer bandwidth
     unsigned int    num_symbols = 400;      // number of symbols to observe
 
     // create sequence generator for repeatability
@@ -41,12 +42,16 @@ void autotest_eqlms_cccf_blind()
 
     // create equalizer
     eqlms_cccf eq = eqlms_cccf_create_rnyquist(LIQUID_FIRFILT_ARKAISER,k,p,beta,0);
-    eqlms_cccf_set_bw(eq, 0.5f);
+    eqlms_cccf_set_bw(eq, mu);
 
     // create channel filter
-    unsigned int h_len = 5; // channel filter length
-    float complex h[5] = {1.0f, 0.0f, -0.1f, 0.02f, -0.1f};
-    firfilt_cccf fchannel = firfilt_cccf_create(h,h_len);
+    float complex h[5] = {
+        { 1.00f,  0.00f},
+        { 0.00f, -0.01f},
+        {-0.11f,  0.02f},
+        { 0.02f,  0.01f},
+        {-0.09f, -0.04f} };
+    firfilt_cccf fchannel = firfilt_cccf_create(h,5);
 
     // arrays
     float complex buf[k];               // filter buffer
@@ -83,7 +88,7 @@ void autotest_eqlms_cccf_blind()
     }
 
     // compare input, output
-    unsigned int settling_delay = 250;
+    unsigned int settling_delay = 285;
     for (i=m+p; i<num_symbols; i++) {
         // compensate for delay
         j = i-m-p;
