@@ -3902,6 +3902,10 @@ void * qdetector_cccf_execute(qdetector_cccf       _q,
 void qdetector_cccf_set_threshold(qdetector_cccf _q,
                                   float          _threshold);
 
+// set carrier offset search range
+void qdetector_cccf_set_range(qdetector_cccf _q,
+                              float          _dphi_max);
+
 // access methods
 unsigned int qdetector_cccf_get_seq_len (qdetector_cccf _q); // sequence length
 const void * qdetector_cccf_get_sequence(qdetector_cccf _q); // pointer to sequence
