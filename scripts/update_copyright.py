@@ -153,13 +153,13 @@ for root, subFolders, files in os.walk(rootdir):
 
         # check filename
         if filePath in ignore_files:
-            print "  " + filePath + ":" + " "*(align-len(filename)) + "ignoring this specific file"
+            print "  " + filePath + ":" + " "*(align-len(filePath)) + "ignoring this specific file"
             continue;
 
         # check filename extension
         baseName, extension = os.path.splitext(filename)
         if extension not in include_extensions:
-            print "  " + filePath + ":" + " "*(align-len(filename)) + "improper extension; ignoring file"
+            print "  " + filePath + ":" + " "*(align-len(filePath)) + "improper extension; ignoring file"
             continue;
 
         # continue on with this file
