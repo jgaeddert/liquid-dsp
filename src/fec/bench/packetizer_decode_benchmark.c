@@ -1,20 +1,23 @@
 /*
- * Copyright (c) 2007 - 2014 Joseph Gaeddert
+ * Copyright (c) 2007 - 2015 Joseph Gaeddert
  *
- * This file is part of liquid.
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
  *
- * liquid is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
+ * The above copyright notice and this permission notice shall be included in
+ * all copies or substantial portions of the Software.
  *
- * liquid is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with liquid.  If not, see <http://www.gnu.org/licenses/>.
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+ * THE SOFTWARE.
  */
 
 #include <stdio.h>
@@ -32,60 +35,50 @@
 { packetizer_decode_bench(_start, _finish, _num_iterations, N, CRC, FEC0, FEC1); }
 
 // Helper function to keep code base small
-void packetizer_decode_bench(struct rusage * _start,
-                             struct rusage * _finish,
-                             unsigned long int *_num_iterations,
-                             unsigned int _n,
-                             crc_scheme _crc,
-                             fec_scheme _fec0,
-                             fec_scheme _fec1)
+void packetizer_decode_bench(struct rusage *     _start,
+                             struct rusage *     _finish,
+                             unsigned long int * _num_iterations,
+                             unsigned int        _n,
+                             crc_scheme          _crc,
+                             fec_scheme          _fec0,
+                             fec_scheme          _fec1)
 {
+    //
+    unsigned int msg_dec_len = _n;
+    unsigned int msg_enc_len = packetizer_compute_enc_msg_len(_n,_crc,_fec0,_fec1);
+
     // adjust number of iterations
-    //  k-cycles/trial ~ 221 + 1.6125*_n
+    //  k-cycles/trial ~ 221 + 1.6125*msg_dec_len;
+    // TODO: adjust iterations based on encoder types
     *_num_iterations *= 1000;
-    *_num_iterations /= 221 + 1.6125*_n;
+    *_num_iterations /= 221 + 1.6125*msg_dec_len;
 
-    // create packet generator
-    packetizer p = packetizer_create(_n, _crc, _fec0, _fec1);
-
-    unsigned int k = packetizer_compute_enc_msg_len(_n,_crc,_fec0,_fec1);
-    unsigned char msg_org[_n];
-    unsigned char msg_rec[ k];
-    unsigned char msg_dec[_n];
+    unsigned char msg_rec[msg_enc_len];
+    unsigned char msg_dec[msg_dec_len];
 
     // initialize data
     unsigned long int i;
-    for (i=0; i<_n; i++) {
-        msg_org[i] = rand() & 0xff;
-        msg_dec[i] = 0x00;
-    }
+    for (i=0; i<msg_enc_len; i++) msg_rec[i] = rand() & 0xff;
+    for (i=0; i<msg_dec_len; i++) msg_dec[i] = 0x00;
 
-    // encode packet
-    packetizer_encode(p, msg_org, msg_rec);
-
-    // corrupt data
-    msg_rec[0] ^= 0x0f;
-
-    // initialize original data message
-    for (i=0; i<_n; i++)
-        msg_org[i] = rand() % 256;
-
-    int crc_pass;
+    // create packet generator
+    packetizer q = packetizer_create(msg_dec_len, _crc, _fec0, _fec1);
+    int crc_pass = 0;
 
     // start trials
     getrusage(RUSAGE_SELF, _start);
     for (i=0; i<(*_num_iterations); i++) {
         // decode packet
-        crc_pass = packetizer_decode(p, msg_rec, msg_rec);
-        crc_pass = packetizer_decode(p, msg_rec, msg_rec);
-        crc_pass = packetizer_decode(p, msg_rec, msg_rec);
-        crc_pass = packetizer_decode(p, msg_rec, msg_rec);
+        crc_pass |= packetizer_decode(q, msg_rec, msg_dec);
+        crc_pass |= packetizer_decode(q, msg_rec, msg_dec);
+        crc_pass |= packetizer_decode(q, msg_rec, msg_dec);
+        crc_pass |= packetizer_decode(q, msg_rec, msg_dec);
     }
     getrusage(RUSAGE_SELF, _finish);
     *_num_iterations *= 4;
 
     // clean up allocated objects
-    packetizer_destroy(p);
+    packetizer_destroy(q);
 }
 
 

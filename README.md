@@ -143,3 +143,10 @@ Available Modules
         packing, and unpacking of arrays)
   * _vector_: generic vector operations
 
+### License ###
+
+liquid projects are released under the MIT license.
+Short version: this code is copyrighted to me (Joseph D. Gaeddert), I give you
+permission to do what you want with it except remove my name from the credits.
+See the LICENSE file for specific terms.
+

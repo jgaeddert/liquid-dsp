@@ -1,20 +1,23 @@
 /*
- * Copyright (c) 2007 - 2014 Joseph Gaeddert
+ * Copyright (c) 2007 - 2015 Joseph Gaeddert
  *
- * This file is part of liquid.
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
  *
- * liquid is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
+ * The above copyright notice and this permission notice shall be included in
+ * all copies or substantial portions of the Software.
  *
- * liquid is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with liquid.  If not, see <http://www.gnu.org/licenses/>.
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+ * THE SOFTWARE.
  */
 
 //
@@ -1113,7 +1116,8 @@ void bpacketsync_reconfig(bpacketsync _q);
 // flexframe
 //
 
-#define FLEXFRAME_VERSION   (100)
+// flexframe protocol
+#define FLEXFRAME_PROTOCOL  (101)
 
 // header description
 // NOTE: The flexframe header can be improved with crc24, secded7264, v29
@@ -1125,10 +1129,6 @@ void bpacketsync_reconfig(bpacketsync _q);
 #define FLEXFRAME_H_CRC     (LIQUID_CRC_32)         // header CRC
 #define FLEXFRAME_H_FEC0    (LIQUID_FEC_SECDED7264) // header FEC (inner)
 #define FLEXFRAME_H_FEC1    (LIQUID_FEC_HAMMING84)  // header FEC (outer)
-#define FLEXFRAME_H_ENC     (54)                    // encoded length
-//#define FLEXFRAME_H_MOD     (LIQUID_MODEM_BPSK)   // modulation scheme
-//#define FLEXFRAME_H_BPS     (1)                   // modulation depth
-#define FLEXFRAME_H_SYM     (432)                   // number of symbols
 
 
 // 
@@ -1150,7 +1150,7 @@ void bpacketsync_reconfig(bpacketsync _q);
 // ofdmflexframe
 //
 
-#define OFDMFLEXFRAME_VERSION   (104)
+#define OFDMFLEXFRAME_PROTOCOL  (104)
 
 // header description
 #define OFDMFLEXFRAME_H_USER    (8)                         // user-defined array
@@ -1161,61 +1161,6 @@ void bpacketsync_reconfig(bpacketsync _q);
 #define OFDMFLEXFRAME_H_MOD     (LIQUID_MODEM_BPSK)         // modulation scheme
 #define OFDMFLEXFRAME_H_BPS     (1)                         // modulation depth
 #define OFDMFLEXFRAME_H_SYM     (288)                       // number of symbols
-
-// 
-// ofdmflexframegen
-//
-
-// reconfigure internal buffers, objects, etc.
-void ofdmflexframegen_reconfigure(ofdmflexframegen _q);
-
-// encode header
-void ofdmflexframegen_encode_header(ofdmflexframegen _q);
-
-// modulate header
-void ofdmflexframegen_modulate_header(ofdmflexframegen _q);
-
-// write first S0 symbol
-void ofdmflexframegen_write_S0a(ofdmflexframegen _q,
-                                float complex * _buffer);
-
-// write second S0 symbol
-void ofdmflexframegen_write_S0b(ofdmflexframegen _q,
-                                float complex * _buffer);
-
-// write S1 symbol
-void ofdmflexframegen_write_S1(ofdmflexframegen _q,
-                               float complex * _buffer);
-
-// write header symbol
-void ofdmflexframegen_write_header(ofdmflexframegen _q,
-                                   float complex * _buffer);
-
-// write payload symbol
-void ofdmflexframegen_write_payload(ofdmflexframegen _q,
-                                    float complex * _buffer);
-
-// 
-// ofdmflexframesync
-//
-
-// internal callback
-int ofdmflexframesync_internal_callback(float complex * _X,
-                                        unsigned char * _p,
-                                        unsigned int    _M,
-                                        void * _userdata);
-
-// receive header data
-void ofdmflexframesync_rxheader(ofdmflexframesync _q,
-                                float complex * _X);
-
-// decode header
-void ofdmflexframesync_decode_header(ofdmflexframesync _q);
-
-// receive payload data
-void ofdmflexframesync_rxpayload(ofdmflexframesync _q,
-                                float complex * _X);
-
 
 //
 // MODULE : math
