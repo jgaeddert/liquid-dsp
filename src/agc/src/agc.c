@@ -113,7 +113,12 @@ void AGC(_execute)(AGC() _q,
         return;
 
     // update gain according to output energy
-    _q->g *= expf( -0.5f*_q->alpha*logf(_q->y2_prime) );
+    if (_q->y2_prime > 1e-6f)
+        _q->g *= expf( -0.5f*_q->alpha*logf(_q->y2_prime) );
+
+    // clamp to 120 dB gain
+    if (_q->g > 1e6f)
+        _q->g = 1e6f;
 }
 
 // execute automatic gain control on block of samples

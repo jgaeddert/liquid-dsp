@@ -224,6 +224,21 @@ unsigned int packetizer_get_enc_msg_len(packetizer _p)
     return _p->packet_len;
 }
 
+crc_scheme packetizer_get_crc(packetizer _p)
+{
+    return _p->check;
+}
+
+fec_scheme packetizer_get_fec0(packetizer _p)
+{
+    return _p->plan[0].fs;
+}
+
+fec_scheme packetizer_get_fec1(packetizer _p)
+{
+    return _p->plan[1].fs;
+}
+
 // Execute the packetizer on an input message
 //
 //  _p      :   packetizer object

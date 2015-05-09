@@ -85,7 +85,7 @@ void POLY(_findroots_durandkerner)(T *          _p,
     float g     = 0.0f;
     float gmax  = 0.0f;
     for (i=0; i<_k; i++) {
-        g = cabsf(_p[i]);
+        g = T_ABS(_p[i]);
         if (i==0 || g > gmax)
             gmax = g;
     }
@@ -314,7 +314,7 @@ void POLY(_findroots_bairstow_recursion)(T *          _p,
         k++;
 
         // exit conditions
-        if (cabsf(du+dv) < 1e-6f || k == max_num_iterations)
+        if (T_ABS(du+dv) < 1e-6f || k == max_num_iterations)
             continue_iterating = 0;
     }
 

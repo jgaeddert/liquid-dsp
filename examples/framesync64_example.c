@@ -56,7 +56,7 @@ int main(int argc, char*argv[])
     float noise_floor = -40.0f; // noise floor
     float dphi        =  0.01f; // carrier frequency offset
     float theta       =  0.0f;  // carrier phase offset
-    float dt          =  0.0f;  // fractional sample timing offset
+    float dt          =  -0.2f;  // fractional sample timing offset
     int debug_enabled = 0;
 
     // get options
@@ -107,7 +107,7 @@ int main(int argc, char*argv[])
 
     // fractional sample timing offset
     unsigned int d = 11;    // fractional sample filter delay
-    firfilt_crcf finterp = firfilt_crcf_create_kaiser(2*d+1, 0.45f, 40.0f, dt);
+    firfilt_crcf finterp = firfilt_crcf_create_kaiser(2*d+1, 0.45f, 40.0f, -dt);
     for (i=0; i<num_samples; i++) {
         // fractional sample timing offset
         if      (i < 100)             firfilt_crcf_push(finterp, 0.0f);
@@ -126,20 +126,8 @@ int main(int argc, char*argv[])
         y[i] += nstd*( randnf() + _Complex_I*randnf())*M_SQRT1_2;
     }
 
-#if 0
-    // add sample _rate_ offset
-    resamp_crcf resamp = resamp_crcf_create(1.002f, 13, 0.4f, 40.0f, 32);
-    float complex z[2];
-    unsigned int nw;
-    for (i=0; i<num_samples; i++) {
-        resamp_crcf_execute(resamp, y[i], z, &nw);
-        framesync64_execute(fs, z, nw);
-    }
-    resamp_crcf_destroy(resamp);
-#else
     // synchronize/receive the frame
     framesync64_execute(fs, y, num_samples);
-#endif
 
     // export debugging file
     if (debug_enabled)

@@ -42,11 +42,11 @@
 //  _b      :   equality [size: _n x 1]
 //  _x      :   solution estimate [size: _n x 1]
 //  _opts   :   options (ignored for now)
-void MATRIX(_cgsolve)(T * _A,
+void MATRIX(_cgsolve)(T *          _A,
                       unsigned int _n,
-                      T * _b,
-                      T * _x,
-                      void * _opts)
+                      T *          _b,
+                      T *          _x,
+                      void *       _opts)
 {
     // validate input
     if (_n == 0) {
@@ -161,7 +161,7 @@ void MATRIX(_cgsolve)(T * _A,
             d1[j] = r1[j] + beta*d0[j];
 
         // compute residual
-        res = sqrt( cabs(delta1) / cabs(delta_init) );
+        res = sqrt( T_ABS(delta1) / T_ABS(delta_init) );
         if (i==0 || res < res_opt) {
             // save best solution
             res_opt = res;

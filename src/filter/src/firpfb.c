@@ -36,6 +36,7 @@ struct FIRPFB(_s) {
 
     WINDOW() w;                 // window buffer
     DOTPROD() * dp;             // array of vector dot product objects
+    TC scale;                   // output scaling factor
 };
 
 // create firpfb from external coefficients
@@ -87,6 +88,9 @@ FIRPFB() FIRPFB(_create)(unsigned int _M,
 
     // create window buffer
     q->w = WINDOW(_create)(q->h_sub_len);
+
+    // set default scaling
+    q->scale = 1;
 
     // reset object and return
     FIRPFB(_reset)(q);
@@ -260,6 +264,13 @@ void FIRPFB(_reset)(FIRPFB() _q)
     WINDOW(_clear)(_q->w);
 }
 
+// set output scaling for filter
+void FIRPFB(_set_scale)(FIRPFB() _q,
+                         TC      _scale)
+{
+    _q->scale = _scale;
+}
+
 // push sample into firpfb internal buffer
 void FIRPFB(_push)(FIRPFB() _q, TI _x)
 {
@@ -271,9 +282,9 @@ void FIRPFB(_push)(FIRPFB() _q, TI _x)
 //  _q      : firpfb object
 //  _i      : index of filter to use
 //  _y      : pointer to output sample
-void FIRPFB(_execute)(FIRPFB() _q,
+void FIRPFB(_execute)(FIRPFB()     _q,
                       unsigned int _i,
-                      TO *_y)
+                      TO *         _y)
 {
     // validate input
     if (_i >= _q->num_filters) {
@@ -288,5 +299,8 @@ void FIRPFB(_execute)(FIRPFB() _q,
 
     // execute dot product
     DOTPROD(_execute)(_q->dp[_i], r, _y);
+
+    // apply scaling factor
+    *_y *= _q->scale;
 }
 

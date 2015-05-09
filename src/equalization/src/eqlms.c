@@ -126,6 +126,35 @@ EQLMS() EQLMS(_create_rnyquist)(int          _type,
     return EQLMS(_create)(hc, h_len);
 }
 
+// create LMS EQ initialized with low-pass filter
+//  _h_len  : filter length
+//  _fc     : filter cut-off, _fc in (0,0.5]
+EQLMS() EQLMS(_create_lowpass)(unsigned int _h_len,
+                               float        _fc)
+{
+    // validate input
+    if (_h_len == 0) {
+        fprintf(stderr,"error: eqlms_%s_create_lowpass(), filter length must be greater than 0\n", EXTENSION_FULL);
+        exit(1);
+    } else if (_fc <= 0.0f || _fc > 0.5f) {
+        fprintf(stderr,"error: eqlms_%s_create_rnyquist(), filter cutoff must be in (0,0.5]\n", EXTENSION_FULL);
+        exit(1);
+    }
+
+    // generate low-pass filter prototype
+    float h[_h_len];
+    liquid_firdes_kaiser(_h_len, _fc, 40.0f, 0.0f, h);
+
+    // copy coefficients to type-specific array (e.g. float complex)
+    unsigned int i;
+    T hc[_h_len];
+    for (i=0; i<_h_len; i++)
+        hc[i] = h[i];
+
+    // return equalizer object
+    return EQLMS(_create)(hc, _h_len);
+}
+
 // re-create least mean-squares (LMS) equalizer object
 //  _q      :   old equalizer object
 //  _h      :   initial coefficients [size: _p x 1], default if NULL
@@ -223,6 +252,19 @@ void EQLMS(_push)(EQLMS() _q,
 
     // decrement timer
     if (_q->timer) _q->timer--;
+}
+
+// push sample into equalizer internal buffer as block
+//  _q      :   equalizer object
+//  _x      :   input sample array
+//  _n      :   input sample array length
+void EQLMS(_push_block)(EQLMS()      _q,
+                        T *          _x,
+                        unsigned int _n)
+{
+    unsigned int i;
+    for (i=0; i<_n; i++)
+        EQLMS(_push)(_q, _x[i]);
 }
 
 // execute internal dot product

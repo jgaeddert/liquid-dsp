@@ -36,6 +36,35 @@
 
 #define DEBUG_OFDMFLEXFRAMEGEN            0
 
+// reconfigure internal buffers, objects, etc.
+void ofdmflexframegen_reconfigure(ofdmflexframegen _q);
+
+// encode header
+void ofdmflexframegen_encode_header(ofdmflexframegen _q);
+
+// modulate header
+void ofdmflexframegen_modulate_header(ofdmflexframegen _q);
+
+// write first S0 symbol
+void ofdmflexframegen_write_S0a(ofdmflexframegen _q,
+                                float complex * _buffer);
+
+// write second S0 symbol
+void ofdmflexframegen_write_S0b(ofdmflexframegen _q,
+                                float complex * _buffer);
+
+// write S1 symbol
+void ofdmflexframegen_write_S1(ofdmflexframegen _q,
+                               float complex * _buffer);
+
+// write header symbol
+void ofdmflexframegen_write_header(ofdmflexframegen _q,
+                                   float complex * _buffer);
+
+// write payload symbol
+void ofdmflexframegen_write_payload(ofdmflexframegen _q,
+                                    float complex * _buffer);
+
 // default ofdmflexframegen properties
 static ofdmflexframegenprops_s ofdmflexframegenprops_default = {
     LIQUID_CRC_32,      // check
@@ -470,7 +499,7 @@ void ofdmflexframegen_encode_header(ofdmflexframegen _q)
     unsigned int n = OFDMFLEXFRAME_H_USER;
 
     // first byte is for expansion/version validation
-    _q->header[n+0] = OFDMFLEXFRAME_VERSION;
+    _q->header[n+0] = OFDMFLEXFRAME_PROTOCOL;
 
     // add payload length
     _q->header[n+1] = (_q->payload_dec_len >> 8) & 0xff;

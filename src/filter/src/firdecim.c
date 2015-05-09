@@ -209,7 +209,7 @@ void FIRDECIM(_execute)(FIRDECIM() _q,
 //  _q      : decimator object
 //  _x      : input array [size: _n*_M x 1]
 //  _n      : number of _output_ samples
-//  _y      : output array [_sze: _n x 1]
+//  _y      : output array [_size: _n x 1]
 void FIRDECIM(_execute_block)(FIRDECIM()   _q,
                               TI *         _x,
                               unsigned int _n,

@@ -1116,7 +1116,8 @@ void bpacketsync_reconfig(bpacketsync _q);
 // flexframe
 //
 
-#define FLEXFRAME_VERSION   (100)
+// flexframe protocol
+#define FLEXFRAME_PROTOCOL  (101)
 
 // header description
 // NOTE: The flexframe header can be improved with crc24, secded7264, v29
@@ -1128,10 +1129,6 @@ void bpacketsync_reconfig(bpacketsync _q);
 #define FLEXFRAME_H_CRC     (LIQUID_CRC_32)         // header CRC
 #define FLEXFRAME_H_FEC0    (LIQUID_FEC_SECDED7264) // header FEC (inner)
 #define FLEXFRAME_H_FEC1    (LIQUID_FEC_HAMMING84)  // header FEC (outer)
-#define FLEXFRAME_H_ENC     (54)                    // encoded length
-//#define FLEXFRAME_H_MOD     (LIQUID_MODEM_BPSK)   // modulation scheme
-//#define FLEXFRAME_H_BPS     (1)                   // modulation depth
-#define FLEXFRAME_H_SYM     (432)                   // number of symbols
 
 
 // 
@@ -1153,7 +1150,7 @@ void bpacketsync_reconfig(bpacketsync _q);
 // ofdmflexframe
 //
 
-#define OFDMFLEXFRAME_VERSION   (104)
+#define OFDMFLEXFRAME_PROTOCOL  (104)
 
 // header description
 #define OFDMFLEXFRAME_H_USER    (8)                         // user-defined array
@@ -1164,61 +1161,6 @@ void bpacketsync_reconfig(bpacketsync _q);
 #define OFDMFLEXFRAME_H_MOD     (LIQUID_MODEM_BPSK)         // modulation scheme
 #define OFDMFLEXFRAME_H_BPS     (1)                         // modulation depth
 #define OFDMFLEXFRAME_H_SYM     (288)                       // number of symbols
-
-// 
-// ofdmflexframegen
-//
-
-// reconfigure internal buffers, objects, etc.
-void ofdmflexframegen_reconfigure(ofdmflexframegen _q);
-
-// encode header
-void ofdmflexframegen_encode_header(ofdmflexframegen _q);
-
-// modulate header
-void ofdmflexframegen_modulate_header(ofdmflexframegen _q);
-
-// write first S0 symbol
-void ofdmflexframegen_write_S0a(ofdmflexframegen _q,
-                                float complex * _buffer);
-
-// write second S0 symbol
-void ofdmflexframegen_write_S0b(ofdmflexframegen _q,
-                                float complex * _buffer);
-
-// write S1 symbol
-void ofdmflexframegen_write_S1(ofdmflexframegen _q,
-                               float complex * _buffer);
-
-// write header symbol
-void ofdmflexframegen_write_header(ofdmflexframegen _q,
-                                   float complex * _buffer);
-
-// write payload symbol
-void ofdmflexframegen_write_payload(ofdmflexframegen _q,
-                                    float complex * _buffer);
-
-// 
-// ofdmflexframesync
-//
-
-// internal callback
-int ofdmflexframesync_internal_callback(float complex * _X,
-                                        unsigned char * _p,
-                                        unsigned int    _M,
-                                        void * _userdata);
-
-// receive header data
-void ofdmflexframesync_rxheader(ofdmflexframesync _q,
-                                float complex * _X);
-
-// decode header
-void ofdmflexframesync_decode_header(ofdmflexframesync _q);
-
-// receive payload data
-void ofdmflexframesync_rxpayload(ofdmflexframesync _q,
-                                float complex * _X);
-
 
 //
 // MODULE : math

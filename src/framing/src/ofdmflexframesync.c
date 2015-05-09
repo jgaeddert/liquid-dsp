@@ -38,6 +38,28 @@
 
 #define OFDMFLEXFRAME_H_SOFT (0)
 
+// 
+// ofdmflexframesync
+//
+
+// internal callback
+int ofdmflexframesync_internal_callback(float complex * _X,
+                                        unsigned char * _p,
+                                        unsigned int    _M,
+                                        void * _userdata);
+
+// receive header data
+void ofdmflexframesync_rxheader(ofdmflexframesync _q,
+                                float complex * _X);
+
+// decode header
+void ofdmflexframesync_decode_header(ofdmflexframesync _q);
+
+// receive payload data
+void ofdmflexframesync_rxpayload(ofdmflexframesync _q,
+                                float complex * _X);
+
+
 struct ofdmflexframesync_s {
     unsigned int M;         // number of subcarriers
     unsigned int cp_len;    // cyclic prefix length
@@ -456,7 +478,7 @@ void ofdmflexframesync_decode_header(ofdmflexframesync _q)
     unsigned int n = OFDMFLEXFRAME_H_USER;
 
     // first byte is for expansion/version validation
-    if (_q->header[n+0] != OFDMFLEXFRAME_VERSION) {
+    if (_q->header[n+0] != OFDMFLEXFRAME_PROTOCOL) {
         fprintf(stderr,"warning: ofdmflexframesync_decode_header(), invalid framing version\n");
         _q->header_valid = 0;
     }
