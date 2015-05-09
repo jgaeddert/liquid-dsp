@@ -49,6 +49,9 @@ ignore_directories = ['.git',]
 # only look at these extensions
 include_extensions = ['.h', '.c', '.md', '.tex', '.ac', '.in', '.m',]
 
+# print alignment for status
+align = 56
+
 #
 def update_copyright(filename=""):
     """
@@ -73,7 +76,7 @@ def update_copyright(filename=""):
             break
 
     if index_start == -1:
-        print '  >> no copyright found'
+        print "  " + filename + ":" + " "*(align-len(filename)) + "no copyright found"
         return
 
     # look for end of copyright
@@ -81,8 +84,11 @@ def update_copyright(filename=""):
     i = index_start + 15
     if re.search(r'along with liquid.  If not, see',contents[i]):
         index_stop = i
+    elif re.search(r'AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM',contents[i]):
+        print "  " + filename + ":" + " "*(align-len(filename)) + "copyright already updated"
+        return
     else:
-        print '    >> could not find end of copyright'
+        print "  " + filename + ":" + " "*(align-len(filename)) + "could not find end of copyright"
         return
 
     # check comment type
@@ -104,16 +110,12 @@ def update_copyright(filename=""):
         # insert new comment
         contents.insert(index_start+i, comment + space + newcopy[i])
 
-    '''
-    # print...
-    for line in contents:
-        print line.rstrip()
-    '''
-
     # open original file for writing
     with open( filename, 'w' ) as f:
         for line in contents:
             f.write(line)
+            
+    print "  " + filename + ":" + " "*(align-len(filename)) + "updated"
 
 #
 for root, subFolders, files in os.walk(rootdir):
@@ -140,17 +142,16 @@ for root, subFolders, files in os.walk(rootdir):
 
         # check filename
         if filePath in ignore_files:
-            print "  " + filePath + " (ignoring this specific file)"
+            print "  " + filePath + ":" + " "*(align-len(filename)) + "ignoring this specific file"
             continue;
 
         # check filename extension
         baseName, extension = os.path.splitext(filename)
         if extension not in include_extensions:
-            print "  " + filePath + " (improper extension; ignoring file)"
+            print "  " + filePath + ":" + " "*(align-len(filename)) + "improper extension; ignoring file"
             continue;
 
         # continue on with this file
-        print "  " + filePath
         update_copyright(filePath)
 
 
