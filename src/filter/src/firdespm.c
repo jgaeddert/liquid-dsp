@@ -1,20 +1,23 @@
 /*
- * Copyright (c) 2007 - 2014 Joseph Gaeddert
+ * Copyright (c) 2007 - 2015 Joseph Gaeddert
  *
- * This file is part of liquid.
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
  *
- * liquid is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
+ * The above copyright notice and this permission notice shall be included in
+ * all copies or substantial portions of the Software.
  *
- * liquid is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with liquid.  If not, see <http://www.gnu.org/licenses/>.
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+ * THE SOFTWARE.
  */
 
 //
@@ -523,7 +526,7 @@ void firdespm_iext_search(firdespm _q)
 
 #if 0
     // check for extremum at f=0
-    if ( fabsf(_q->E[0]) > fabsf(_q->E[1]) )
+    if ( fabs(_q->E[0]) > fabs(_q->E[1]) )
         found_iext[num_found++] = 0;
 #else
     // force f=0 into candidate set
@@ -548,7 +551,7 @@ void firdespm_iext_search(firdespm _q)
 
 #if 0
     // check for extremum at f=0.5
-    if ( fabsf(_q->E[_q->grid_size-1]) > fabsf(_q->E[_q->grid_size-2]) )
+    if ( fabs(_q->E[_q->grid_size-1]) > fabs(_q->E[_q->grid_size-2]) )
         found_iext[num_found++] = _q->grid_size-1;
 #else
     // force f=0.5 into candidate set
@@ -591,7 +594,7 @@ void firdespm_iext_search(firdespm _q)
         alternating_sign = 1;
         for (i=1; i<num_found; i++) {
             // update new minimum error extreme
-            if ( fabsf(_q->E[found_iext[i]]) < fabsf(_q->E[found_iext[imin]]) )
+            if ( fabs(_q->E[found_iext[i]]) < fabs(_q->E[found_iext[imin]]) )
                 imin = i;
     
             if ( sign && _q->E[found_iext[i]] < 0.0 ) {
@@ -601,7 +604,7 @@ void firdespm_iext_search(firdespm _q)
             } else {
                 // found two extrema with non-alternating sign; delete
                 // the smaller of the two
-                if ( fabsf(_q->E[found_iext[i]]) < fabsf(_q->E[found_iext[i-1]]) )
+                if ( fabs(_q->E[found_iext[i]]) < fabs(_q->E[found_iext[i-1]]) )
                     imin = i;
                 else
                     imin = i-1;
@@ -613,8 +616,8 @@ void firdespm_iext_search(firdespm _q)
 
         // 
         if ( alternating_sign && num_extra==1) {
-            //imin = (fabsf(_q->E[found_iext[0]]) > fabsf(_q->E[found_iext[num_extra-1]])) ? 0 : num_extra-1;
-            if (fabsf(_q->E[found_iext[0]]) < fabsf(_q->E[found_iext[num_found-1]]))
+            //imin = (fabs(_q->E[found_iext[0]]) > fabs(_q->E[found_iext[num_extra-1]])) ? 0 : num_extra-1;
+            if (fabs(_q->E[found_iext[0]]) < fabs(_q->E[found_iext[num_found-1]]))
                 imin = 0;
             else
                 imin = num_found-1;
@@ -671,7 +674,7 @@ int firdespm_is_search_complete(firdespm _q)
     double emin=0.0;
     double emax=0.0;
     for (i=0; i<_q->r+1; i++) {
-        e = fabsf(_q->E[_q->iext[i]]);
+        e = fabs(_q->E[_q->iext[i]]);
         if (i==0 || e < emin) emin = e;
         if (i==0 || e > emax) emax = e;
     }

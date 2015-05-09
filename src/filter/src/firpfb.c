@@ -1,20 +1,23 @@
 /*
- * Copyright (c) 2007 - 2014 Joseph Gaeddert
+ * Copyright (c) 2007 - 2015 Joseph Gaeddert
  *
- * This file is part of liquid.
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
  *
- * liquid is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
+ * The above copyright notice and this permission notice shall be included in
+ * all copies or substantial portions of the Software.
  *
- * liquid is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with liquid.  If not, see <http://www.gnu.org/licenses/>.
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+ * THE SOFTWARE.
  */
 
 //
@@ -33,6 +36,7 @@ struct FIRPFB(_s) {
 
     WINDOW() w;                 // window buffer
     DOTPROD() * dp;             // array of vector dot product objects
+    TC scale;                   // output scaling factor
 };
 
 // create firpfb from external coefficients
@@ -84,6 +88,16 @@ FIRPFB() FIRPFB(_create)(unsigned int _M,
 
     // create window buffer
     q->w = WINDOW(_create)(q->h_sub_len);
+
+    // set default scaling
+#if defined LIQUID_FIXED && TC_COMPLEX==1
+    q->scale.real = Q(_one);
+    q->scale.imag = 0;
+#elif defined LIQUID_FIXED && TC_COMPLEX==0
+    q->scale = Q(_one);
+#else
+    q->scale = 1;
+#endif
 
     // reset object and return
     FIRPFB(_reset)(q);
@@ -276,6 +290,13 @@ void FIRPFB(_reset)(FIRPFB() _q)
     WINDOW(_clear)(_q->w);
 }
 
+// set output scaling for filter
+void FIRPFB(_set_scale)(FIRPFB() _q,
+                         TC      _scale)
+{
+    _q->scale = _scale;
+}
+
 // push sample into firpfb internal buffer
 void FIRPFB(_push)(FIRPFB() _q, TI _x)
 {
@@ -287,9 +308,9 @@ void FIRPFB(_push)(FIRPFB() _q, TI _x)
 //  _q      : firpfb object
 //  _i      : index of filter to use
 //  _y      : pointer to output sample
-void FIRPFB(_execute)(FIRPFB() _q,
+void FIRPFB(_execute)(FIRPFB()     _q,
                       unsigned int _i,
-                      TO *_y)
+                      TO *         _y)
 {
     // validate input
     if (_i >= _q->num_filters) {
@@ -304,5 +325,13 @@ void FIRPFB(_execute)(FIRPFB() _q,
 
     // execute dot product
     DOTPROD(_execute)(_q->dp[_i], r, _y);
+
+    // apply scaling factor
+#if defined LIQUID_FIXED
+    // TODO: scale by simply shifting values
+    *_y = MUL_TI_TC(*_y,_q->scale);
+#else
+    *_y *= _q->scale;
+#endif
 }
 
