@@ -12,6 +12,17 @@ import os
 import sys
 import re
 
+def usage():
+    print __doc__
+
+if len(sys.argv) != 2:
+    sys.stderr.write("error: please provide an input directory\n")
+    usage()
+    sys.exit(-1)
+elif sys.argv[1] in ('-h','--help'):
+    usage()
+    sys.exit(0)
+
 # new copyright
 newcopy = '''\
 Copyright (c) 2007 - 2015 Joseph Gaeddert
