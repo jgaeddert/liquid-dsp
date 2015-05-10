@@ -106,6 +106,8 @@ Available Modules
   * _agc_: automatic gain control, received signal strength
   * _audio_: source audio encoders/decoders: cvsd, filterbanks
   * _buffer_: internal buffering, circular/static, ports (threaded)
+  * _channel_: additive noise, multi-path fading, carrier phase/frequency
+        offsets, timing phase/rate offsets
   * _dotprod_: inner dot products (real, complex), vector sum of squares
   * _equalization_: adaptive equalizers: least mean-squares, recursive
         least squares, semi-blind
