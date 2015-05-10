@@ -161,12 +161,17 @@ void CHANNEL(_add_multipath)(CHANNEL()    _q,
     
     // copy coefficients internally
     if (_h == NULL) {
-        // generate random coefficients
+        // generate random coefficients using m-sequence generator
         // TODO: support types other than float
         _q->h[0] = 1.0f;
         unsigned int i;
-        for (i=1; i<_q->h_len; i++)
-            _q->h[i] = 0.05f * ( randnf() * _Complex_I*randnf() );
+        msequence ms = msequence_create_default(14);
+        for (i=1; i<_q->h_len; i++) {
+            float vi = msequence_generate_symbol(ms, 8) / 256.0f - 0.5f;
+            float vq = msequence_generate_symbol(ms, 8) / 256.0f - 0.5f;
+            _q->h[i] = (vi + _Complex_I*vq) * 0.2f;
+        }
+        msequence_destroy(ms);
     } else {
         // copy coefficients internally
         memmove(_q->h, _h, _q->h_len*sizeof(TC));
