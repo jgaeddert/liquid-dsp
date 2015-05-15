@@ -32,8 +32,9 @@
 #define EXTENSION_FULL  "cccf"
 
 #define CHANNEL(name)   LIQUID_CONCAT(channel_cccf,name)
-#define NCO(name)       LIQUID_CONCAT(nco_crcf,name)
 #define FIRFILT(name)   LIQUID_CONCAT(firfilt_cccf,name)
+#define NCO(name)       LIQUID_CONCAT(nco_crcf,name)
+#define RESAMP(name)    LIQUID_CONCAT(resamp_crcf,name)
 
 #define TO              float complex   // output type
 #define TC              float complex   // coefficients type

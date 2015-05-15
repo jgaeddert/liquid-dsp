@@ -431,6 +431,14 @@ void CHANNEL(_add_awgn)(CHANNEL() _q,                           \
                         float     _noise_floor_dB,              \
                         float     _SNRdB);                      \
                                                                 \
+/* apply additive white Gausss noise impairment             */  \
+/*  _q              : channel object                        */  \
+/*  _delay          : resampling delay                      */  \
+/*  _rate           : resampling rate                       */  \
+void CHANNEL(_add_resamp)(CHANNEL() _q,                         \
+                          float     _delay,                     \
+                          float     _rate);                     \
+                                                                \
 /* apply carrier offset impairment                          */  \
 /*  _q          : channel object                            */  \
 /*  _frequency  : carrier frequency offse [radians/sample   */  \

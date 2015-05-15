@@ -88,8 +88,8 @@ int main(int argc, char*argv[]) {
     unsigned int nx =   num_symbols*k;
     unsigned int ny = (unsigned int) ceilf(rate * nx) + 64;
 
-    printf("    nx  :   %u\n", nx);
-    printf("    ny  :   %u\n", ny);
+    printf("        nx  : %u\n", nx);
+    printf("        ny  : %u\n", ny);
 
     float complex x[nx];    // interpolated samples
     float complex y[ny];    //
@@ -114,9 +114,10 @@ int main(int argc, char*argv[]) {
     channel_cccf channel = channel_cccf_create();
 
     // add channel impairments
-    channel_cccf_add_awgn(channel, noise_floor, SNRdB);
+    channel_cccf_add_awgn          (channel, noise_floor, SNRdB);
     channel_cccf_add_carrier_offset(channel, dphi, phi);
-    channel_cccf_add_multipath(channel, NULL, 10);
+  //channel_cccf_add_multipath     (channel, NULL, 10);
+    channel_cccf_add_resamp        (channel, 0.0f, 1.005f);
 
     // apply channel
     channel_cccf_execute(channel, x, nx, y, &ny);
