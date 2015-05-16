@@ -20,45 +20,64 @@
 // print usage/help message
 void usage()
 {
-    printf("symtrack_cccf_example [options]\n");
+    printf("channel_cccf_example [options]\n");
     printf("  h     : print this help file\n");
+    printf("  k     : filter samples/symbol,   default: 2\n");
     printf("  m     : filter delay (symbols),  default: 3\n");
     printf("  b     : filter excess bandwidth, default: 0.5\n");
-    printf("  s     : signal-to-noise ratio,   default: 30dB\n");
+    printf("  s     : signal-to-noise ratio,   default: 30 dB\n");
     printf("  w     : timing pll bandwidth,    default: 0.02\n");
-    printf("  n     : number of symbols,       default: 200\n");
+    printf("  n     : number of symbols,       default: 4000\n");
     printf("  t     : timing phase offset [%% symbol], t in [-0.5,0.5], default: -0.2\n");
 }
 
 
-int main(int argc, char*argv[]) {
+int main(int argc, char*argv[])
+{
     srand(time(NULL));
 
     // options
-    unsigned int m           = 3;       // filter delay (symbols)
-    float        beta        = 0.5f;    // filter excess bandwidth factor
-    unsigned int num_symbols = 800;     // number of data symbols
-    float        SNRdB       = 30.0f;   // signal-to-noise ratio
+    int          ftype       = LIQUID_FIRFILT_ARKAISER;
+    int          ms          = LIQUID_MODEM_QPSK;
+    unsigned int k           = 2;       // samples per symbol
+    unsigned int m           = 7;       // filter delay (symbols)
+    float        beta        = 0.20f;   // filter excess bandwidth factor
+    unsigned int num_symbols = 4000;    // number of data symbols
+    unsigned int hc_len      =   4;     // channel filter length
+    float        noise_floor = -60.0f;  // noise floor [dB]
+    float        SNRdB       = 30.0f;   // signal-to-noise ratio [dB]
     float        bandwidth   =  0.02f;  // loop filter bandwidth
     float        tau         = -0.2f;   // fractional symbol offset
-    
+    float        rate        = 1.001f;  // sample rate offset
+    float        dphi        =  0.01f;  // carrier frequency offset [radians/sample]
+    float        phi         =  2.1f;   // carrier phase offset [radians]
+
+    unsigned int nfft        =   2400;  // spectral periodogram FFT size
+    unsigned int num_samples = 200000;  // number of samples
+    float        alpha       =   0.01f; // PSD estimate bandwidth
+
     int dopt;
-    while ((dopt = getopt(argc,argv,"hm:b:s:w:n:t:")) != EOF) {
+    while ((dopt = getopt(argc,argv,"hk:m:b:s:w:n:t:r:")) != EOF) {
         switch (dopt) {
         case 'h':   usage();                        return 0;
+        case 'k':   k           = atoi(optarg);     break;
         case 'm':   m           = atoi(optarg);     break;
         case 'b':   beta        = atof(optarg);     break;
         case 's':   SNRdB       = atof(optarg);     break;
         case 'w':   bandwidth   = atof(optarg);     break;
         case 'n':   num_symbols = atoi(optarg);     break;
         case 't':   tau         = atof(optarg);     break;
+        case 'r':   rate        = atof(optarg);     break;
         default:
             exit(1);
         }
     }
 
     // validate input
-    if (m < 1) {
+    if (k < 2) {
+        fprintf(stderr,"error: k (samples/symbol) must be greater than 1\n");
+        exit(1);
+    } else if (m < 1) {
         fprintf(stderr,"error: m (filter delay) must be greater than 0\n");
         exit(1);
     } else if (beta <= 0.0f || beta > 1.0f) {
@@ -73,87 +92,123 @@ int main(int argc, char*argv[]) {
     } else if (tau < -1.0f || tau > 1.0f) {
         fprintf(stderr,"error: timing phase offset must be in [-1,1]\n");
         exit(1);
+    } else if (rate > 1.02f || rate < 0.98f) {
+        fprintf(stderr,"error: timing rate offset must be in [1.02,0.98]\n");
+        exit(1);
     }
 
     unsigned int i;
 
-    // derived/fixed values
-    unsigned int k=2;   // samples per symbol
-    unsigned int num_samples = k*num_symbols;
-    float        gamma       = 0.1f;        // channel gain
+    // buffers
+    unsigned int    buf_len = 400;      // buffer size
+    float complex   x   [buf_len];      // original signal
+    float complex   y   [buf_len*2];    // channel output (larger to accommodate resampler)
+    float complex   syms[buf_len];      // recovered symbols
+    // window for saving last few symbols
+    windowcf sym_buf = windowcf_create(buf_len);
 
-    float complex x[num_samples];           // interpolated samples
-    float complex y[num_samples];           // 
-    float complex sym_out[num_symbols + 64];// synchronized symbols
+    // create stream generator
+    symstreamcf gen = symstreamcf_create_linear(ftype,k,m,beta,ms);
 
-    // 
-    // generate input sequence (stream of interpolated QPSK symbols)
-    //
-    symstreamcf gen = symstreamcf_create_linear(LIQUID_FIRFILT_RRC,k,m,beta,LIQUID_MODEM_QPSK);
-    symstreamcf_write_samples(gen, x, num_samples);
-    symstreamcf_destroy(gen);
+    // create channel emulator
+    channel_cccf channel = channel_cccf_create();
+    // add channel impairments
+    channel_cccf_add_awgn          (channel, noise_floor, SNRdB);
+    channel_cccf_add_carrier_offset(channel, dphi, phi);
+    channel_cccf_add_multipath     (channel, NULL, hc_len);
+    channel_cccf_add_resamp        (channel, 0.0f, rate);
 
-    // 
-    // add channel gain, noise
-    //
-    float nstd = powf(10.0f, -SNRdB/20.0f);
-    for (i=0; i<num_samples; i++) {
-        y[i] =  x[i];
-        y[i] *= cexpf(_Complex_I*2*M_PI*0.06);
-        y[i] += nstd*(randnf() + _Complex_I*randnf());
-        y[i] *= gamma;
+    // create symbol tracking synchronizer
+    symtrack_cccf symtrack = symtrack_cccf_create(ftype,k,m,beta,ms);
+    symtrack_cccf_set_bandwidth(symtrack,0.05f);
+
+    // create spectral periodogram for estimating spectrum
+    unsigned int window_size = nfft/2;  // spgramcf window size
+    spgramcf periodogram = spgramcf_create_kaiser(nfft, window_size, 10.0f);
+
+    unsigned int total_samples = 0;
+    unsigned int ny;
+    unsigned int total_symbols = 0;
+    while (total_samples < num_samples) {
+        // write samples to buffer
+        symstreamcf_write_samples(gen, x, buf_len);
+
+        // apply channel
+        channel_cccf_execute(channel, x, buf_len, y, &ny);
+
+        // run resulting stream through synchronizer
+        
+        // push resulting sample through periodogram
+        spgramcf_accumulate_psd(periodogram, y, alpha, ny);
+
+        // 
+        unsigned int num_symbols_sync;
+        symtrack_cccf_execute_block(symtrack, y, ny, syms, &num_symbols_sync);
+        total_symbols += num_symbols_sync;
+
+        // write resulting symbols to window buffer for plotting
+        windowcf_write(sym_buf, syms, num_symbols_sync);
+
+        // accumulated samples
+        total_samples += buf_len;
     }
+    printf("total samples: %u\n", total_samples);
+    printf("total symbols: %u\n", total_symbols);
 
-    // 
-    // create and run symbol synchronizer
-    //
-
-    symtrack_cccf symtrack = symtrack_cccf_create(LIQUID_FIRFILT_RRC,
-                                            k, m, beta, LIQUID_MODEM_QPSK);
-
-    unsigned int num_symbols_sync = 0;
-    symtrack_cccf_execute_block(symtrack, y, num_samples, sym_out, &num_symbols_sync);
-    symtrack_cccf_destroy(symtrack);
-
-    // print results
-    printf("symbols in  : %u\n", num_symbols);
-    printf("symbols out : %u\n", num_symbols_sync);
+    // write accumulated power spectral density estimate
+    float psd[nfft];
+    spgramcf_write_accumulation(periodogram, psd);
 
     //
     // export output file
     //
 
-    FILE* fid = fopen(OUTPUT_FILENAME,"w");
+    FILE * fid = fopen(OUTPUT_FILENAME,"w");
     fprintf(fid,"%% %s, auto-generated file\n\n", OUTPUT_FILENAME);
-    fprintf(fid,"close all;\nclear all;\n\n");
+    fprintf(fid,"clear all;\n");
+    fprintf(fid,"close all;\n");
 
-    fprintf(fid,"num_symbols=%u;\n",num_symbols_sync);
+    // read buffer and write last symbols to file
+    float complex * rc;
+    windowcf_read(sym_buf, &rc);
+    fprintf(fid,"syms = zeros(1,%u);\n", buf_len);
+    for (i=0; i<buf_len; i++)
+        fprintf(fid,"syms(%3u) = %12.8f + j*%12.8f;\n", i+1, crealf(rc[i]), cimagf(rc[i]));
 
-    for (i=0; i<num_symbols_sync; i++)
-        fprintf(fid,"z(%3u) = %12.8f + j*%12.8f;\n", i+1, crealf(sym_out[i]), cimagf(sym_out[i]));
+    // power spectral density estimate
+    fprintf(fid,"nfft = %u;\n", nfft);
+    fprintf(fid,"f=[0:(nfft-1)]/nfft - 0.5;\n");
+    fprintf(fid,"psd = zeros(1,nfft);\n");
+    for (i=0; i<nfft; i++)
+        fprintf(fid,"psd(%3u) = %12.8f;\n", i+1, psd[i]);
 
-    fprintf(fid,"iz0 = 1:round(length(z)*0.5);\n");
-    fprintf(fid,"iz1 = round(length(z)*0.5):length(z);\n");
-    fprintf(fid,"figure('Color','white','position',[500 500 800 400]);\n");
-    fprintf(fid,"subplot(1,2,1);\n");
-    fprintf(fid,"plot(real(z(iz0)),imag(z(iz0)),'x','MarkerSize',4);\n");
+    fprintf(fid,"figure('Color','white','position',[500 500 1400 400]);\n");
+    fprintf(fid,"subplot(1,3,1);\n");
+    fprintf(fid,"plot(real(syms),imag(syms),'x','MarkerSize',4);\n");
     fprintf(fid,"  axis square;\n");
     fprintf(fid,"  grid on;\n");
     fprintf(fid,"  axis([-1 1 -1 1]*1.6);\n");
     fprintf(fid,"  xlabel('In-phase');\n");
     fprintf(fid,"  ylabel('Quadrature');\n");
-    fprintf(fid,"  title('First 50%% of symbols');\n");
-    fprintf(fid,"subplot(1,2,2);\n");
-    fprintf(fid,"  plot(real(z(iz1)),imag(z(iz1)),'x','MarkerSize',4);\n");
-    fprintf(fid,"  axis square;\n");
+    fprintf(fid,"  title('Last %u symbols');\n", buf_len);
+    fprintf(fid,"subplot(1,3,2:3);\n");
+    fprintf(fid,"  plot(f, psd, 'LineWidth',1.5,'Color',[0 0.5 0.2]);\n");
     fprintf(fid,"  grid on;\n");
-    fprintf(fid,"  axis([-1 1 -1 1]*1.5);\n");
-    fprintf(fid,"  xlabel('In-phase');\n");
-    fprintf(fid,"  ylabel('Quadrature');\n");
-    fprintf(fid,"  title('Last 50%% of symbols');\n");
+    fprintf(fid,"  pmin = 10*floor(0.1*min(psd - 5));\n");
+    fprintf(fid,"  pmax = 10*ceil (0.1*max(psd + 5));\n");
+    fprintf(fid,"  axis([-0.5 0.5 pmin pmax]);\n");
+    fprintf(fid,"  xlabel('Normalized Frequency [f/F_s]');\n");
+    fprintf(fid,"  ylabel('Power Spectral Density [dB]');\n");
 
     fclose(fid);
     printf("results written to %s.\n", OUTPUT_FILENAME);
+
+    // destroy objects
+    symstreamcf_destroy  (gen);
+    spgramcf_destroy     (periodogram);
+    channel_cccf_destroy (channel);
+    symtrack_cccf_destroy(symtrack);
+    windowcf_destroy     (sym_buf);
 
     // clean it up
     printf("done.\n");
