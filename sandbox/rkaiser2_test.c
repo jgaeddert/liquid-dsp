@@ -1,20 +1,23 @@
 /*
- * Copyright (c) 2007 - 2014 Joseph Gaeddert
+ * Copyright (c) 2007 - 2015 Joseph Gaeddert
  *
- * This file is part of liquid.
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
  *
- * liquid is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
+ * The above copyright notice and this permission notice shall be included in
+ * all copies or substantial portions of the Software.
  *
- * liquid is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with liquid.  If not, see <http://www.gnu.org/licenses/>.
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+ * THE SOFTWARE.
  */
 
 //
@@ -53,10 +56,10 @@ struct gsuserdata_s {
 //  _dt     :   filter fractional sample delay
 //  _h      :   resulting filter [size: 2*_k*_m+1]
 void liquid_firdes_rkaiser_filter2(unsigned int _k,
-                            unsigned int _m,
-                            float _beta,
-                            float _dt,
-                            float * _h);
+                                   unsigned int _m,
+                                   float        _beta,
+                                   float        _dt,
+                                   float *      _h);
 
 // gradient search utility
 float gs_utility(void * _userdata,
@@ -127,10 +130,10 @@ int main() {
 //  _dt     :   filter fractional sample delay
 //  _h      :   resulting filter [size: 2*_k*_m+1]
 void liquid_firdes_rkaiser_filter2(unsigned int _k,
-                            unsigned int _m,
-                            float _beta,
-                            float _dt,
-                            float * _h)
+                                   unsigned int _m,
+                                   float        _beta,
+                                   float        _dt,
+                                   float *      _h)
 {
     // validate input
     if (_k < 2) {
@@ -166,13 +169,13 @@ void liquid_firdes_rkaiser_filter2(unsigned int _k,
 #endif
     float v[2] = {fc, As/1000};
 
-    struct gsuserdata_s q;
-    q.k     = _k;
-    q.m     = _m;
-    q.beta  = _beta;
-    q.dt    = _dt;
-    q.w0    = 0.5;
-    q.w1    = 0.5;
+    struct gsuserdata_s q = {
+        .k    = _k,
+        .m    = _m,
+        .beta = _beta,
+        .dt   = _dt,
+        .w0   = 0.5f,
+        .w1   = 0.5f};
 
     // create gradsearch object
     gradsearch gs = gradsearch_create((void*)&q,
@@ -183,9 +186,9 @@ void liquid_firdes_rkaiser_filter2(unsigned int _k,
     // run search
     unsigned int i;
     unsigned int num_iterations = 100;
-    float utility;
     for (i=0; i<num_iterations; i++) {
-        utility = gs_utility((void*)&q,v,2);
+        // compute utility for plotting
+        //float utility = gs_utility((void*)&q,v,2);
 
         gradsearch_step(gs);
 

@@ -1,20 +1,22 @@
-## 
-## Copyright (c) 2007 - 2014 Joseph Gaeddert
-##
-## This file is part of liquid.
-##
-## liquid is free software: you can redistribute it and/or modify
-## it under the terms of the GNU General Public License as published by
-## the Free Software Foundation, either version 3 of the License, or
-## (at your option) any later version.
-##
-## liquid is distributed in the hope that it will be useful,
-## but WITHOUT ANY WARRANTY; without even the implied warranty of
-## MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-## GNU General Public License for more details.
-##
-## You should have received a copy of the GNU General Public License
-## along with liquid.  If not, see <http://www.gnu.org/licenses/>.
+# Copyright (c) 2007 - 2015 Joseph Gaeddert
+# 
+# Permission is hereby granted, free of charge, to any person obtaining a copy
+# of this software and associated documentation files (the "Software"), to deal
+# in the Software without restriction, including without limitation the rights
+# to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+# copies of the Software, and to permit persons to whom the Software is
+# furnished to do so, subject to the following conditions:
+# 
+# The above copyright notice and this permission notice shall be included in
+# all copies or substantial portions of the Software.
+# 
+# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+# OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+# THE SOFTWARE.
 
 # 
 # liquid-dsp library configure
@@ -32,6 +34,7 @@ AC_LANG(C)
 
 # Autoheader
 AH_TEMPLATE([LIQUID_FFTOVERRIDE],  [Force internal FFT even if libfftw is available])
+AH_TEMPLATE([LIQUID_SIMDOVERRIDE], [Force overriding of SIMD (use portable C code)])
 
 AC_CONFIG_HEADER(config.h)
 AH_TOP([
@@ -48,6 +51,12 @@ AC_ARG_ENABLE(debug,
     AS_HELP_STRING([--enable-debug],[debug]),
     [DEBUG_OPTION="-DDEBUG"],
     [DEBUG_OPTION=""]
+)
+
+AC_ARG_ENABLE(simdoverride,
+    AS_HELP_STRING([--enable-simdoverride],[use portable C code for dotprod, etc. even if SIMD extensions are available]),
+    [AC_DEFINE(LIQUID_SIMDOVERRIDE)],
+    [],
 )
 
 AC_ARG_ENABLE(fftoverride,
@@ -120,63 +129,82 @@ AC_CHECK_SIZEOF(unsigned int)
 # $CFLAGS (sets to "unknown" on failure).
 AX_GCC_ARCHFLAG([no],[],[])
 
-# Check canonical system
-AC_CANONICAL_TARGET
-case $target_cpu in
-i386|i486|i586|i686|x86|x86_64)
-    # check for MMX/SSE/AVX CPU extensions and intrinsics headers
-    #   MMX     :   mmintrin.h
-    #   SSE     :   xmmintrin.h
-    #   SSE2    :   emmintrin.h
-    #   SSE3    :   pmmintrin.h
-    #   SSSE3   :   tmmintrin.h
-    #   SSE4.1/2:   smmintrin.h
-    #   AVX     :   immintrin.h
-    AX_EXT
-
-    if [ test "$ax_cv_have_sse41_ext" = yes && test "$ac_cv_header_smmintrin_h" = yes ]; then
-        # SSE4.1/2 extensions
-        MLIBS_DOTPROD="src/dotprod/src/dotprod_cccf.mmx.o \
-                       src/dotprod/src/dotprod_crcf.mmx.o \
-                       src/dotprod/src/dotprod_rrrf.mmx.o \
-                       src/dotprod/src/sumsq.mmx.o"
-    elif [ test "$ax_cv_have_sse2_ext" = yes && test "$ac_cv_header_emmintrin_h" = yes ]; then
-        # SSE2 extensions
-        MLIBS_DOTPROD="src/dotprod/src/dotprod_cccf.mmx.o \
-                       src/dotprod/src/dotprod_crcf.mmx.o \
-                       src/dotprod/src/dotprod_rrrf.mmx.o \
-                       src/dotprod/src/sumsq.mmx.o"
-    else
-        # portable C version
-        MLIBS_DOTPROD="src/dotprod/src/dotprod_cccf.o \
-                       src/dotprod/src/dotprod_crcf.o \
-                       src/dotprod/src/dotprod_rrrf.o \
-                       src/dotprod/src/sumsq.o"
-    fi;;
-powerpc*)
-    MLIBS_DOTPROD="src/dotprod/src/dotprod_cccf.o \
-                   src/dotprod/src/dotprod_rrrf.av.o \
-                   src/dotprod/src/dotprod_crcf.av.o \
-                   src/dotprod/src/sumsq.o"
-    ARCH_OPTION="-fno-common -faltivec";;
-arm*)
-    # TODO: check for Neon availability
-
-    # ARM architecture : use neon extensions
-    MLIBS_DOTPROD="src/dotprod/src/dotprod_cccf.neon.o \
-                   src/dotprod/src/dotprod_crcf.neon.o \
-                   src/dotprod/src/dotprod_rrrf.neon.o \
-                   src/dotprod/src/sumsq.o"
-    # TODO: check these flags
-    ARCH_OPTION="-ffast-math -mcpu=cortex-a8 -mfloat-abi=softfp -mfpu=neon";;
-*)
-    # unknown architecture : use portable C version
+# override SIMD
+if test "${enable_simdoverride+set}" = set; then
+    # portable C version
     MLIBS_DOTPROD="src/dotprod/src/dotprod_cccf.o \
                    src/dotprod/src/dotprod_crcf.o \
                    src/dotprod/src/dotprod_rrrf.o \
                    src/dotprod/src/sumsq.o"
-    ARCH_OPTION="";;
-esac
+    ARCH_OPTION=""
+else
+    # Check canonical system
+    AC_CANONICAL_TARGET
+    case $target_cpu in
+    i386|i486|i586|i686|x86|x86_64)
+        # check for MMX/SSE/AVX CPU extensions and intrinsics headers
+        #   MMX     :   mmintrin.h
+        #   SSE     :   xmmintrin.h
+        #   SSE2    :   emmintrin.h
+        #   SSE3    :   pmmintrin.h
+        #   SSSE3   :   tmmintrin.h
+        #   SSE4.1/2:   smmintrin.h
+        #   AVX     :   immintrin.h
+        AX_EXT
+
+        if [ test "$ax_cv_have_sse41_ext" = yes && test "$ac_cv_header_smmintrin_h" = yes ]; then
+            # SSE4.1/2 extensions
+            MLIBS_DOTPROD="src/dotprod/src/dotprod_cccf.mmx.o \
+                           src/dotprod/src/dotprod_crcf.mmx.o \
+                           src/dotprod/src/dotprod_rrrf.mmx.o \
+                           src/dotprod/src/sumsq.mmx.o"
+        elif [ test "$ax_cv_have_sse2_ext" = yes && test "$ac_cv_header_emmintrin_h" = yes ]; then
+            # SSE2 extensions
+            MLIBS_DOTPROD="src/dotprod/src/dotprod_cccf.mmx.o \
+                           src/dotprod/src/dotprod_crcf.mmx.o \
+                           src/dotprod/src/dotprod_rrrf.mmx.o \
+                           src/dotprod/src/sumsq.mmx.o"
+        else
+            # portable C version
+            MLIBS_DOTPROD="src/dotprod/src/dotprod_cccf.o \
+                           src/dotprod/src/dotprod_crcf.o \
+                           src/dotprod/src/dotprod_rrrf.o \
+                           src/dotprod/src/sumsq.o"
+        fi;;
+    powerpc*)
+        MLIBS_DOTPROD="src/dotprod/src/dotprod_cccf.o \
+                       src/dotprod/src/dotprod_rrrf.av.o \
+                       src/dotprod/src/dotprod_crcf.av.o \
+                       src/dotprod/src/sumsq.o"
+        ARCH_OPTION="-fno-common -faltivec";;
+    armv1*|armv2*|armv3*|armv4*|armv5*|armv6*)
+        # assume neon instructions are NOT available
+        MLIBS_DOTPROD="src/dotprod/src/dotprod_cccf.o \
+                       src/dotprod/src/dotprod_crcf.o \
+                       src/dotprod/src/dotprod_rrrf.o \
+                       src/dotprod/src/sumsq.o"
+        ARCH_OPTION="-ffast-math";;
+    armv7*|armv8*)
+        # assume neon instructions are available
+        # TODO: check for Neon availability
+
+        # ARM architecture : use neon extensions
+        MLIBS_DOTPROD="src/dotprod/src/dotprod_cccf.neon.o \
+                       src/dotprod/src/dotprod_crcf.neon.o \
+                       src/dotprod/src/dotprod_rrrf.neon.o \
+                       src/dotprod/src/sumsq.o"
+        # TODO: check these flags
+        ARCH_OPTION="-ffast-math -mcpu=cortex-a8 -mfloat-abi=softfp -mfpu=neon";;
+    *)
+        # unknown architecture : use portable C version
+        MLIBS_DOTPROD="src/dotprod/src/dotprod_cccf.o \
+                       src/dotprod/src/dotprod_crcf.o \
+                       src/dotprod/src/dotprod_rrrf.o \
+                       src/dotprod/src/sumsq.o"
+        ARCH_OPTION="";;
+    esac
+fi
+
 
 # for now all vector operations are portable C versions
 MLIBS_VECTOR="src/vector/src/vectorf_add.port.o   \

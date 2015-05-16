@@ -1,6 +1,11 @@
 //
 // lpc_example.c
 //
+// This example demonstrates linear prediction in liquid. An input signal
+// is generated which exhibits a strong temporal correlation. The linear
+// predictor generates an approximating all-pole filter which minimizes
+// the squared error between the prediction and the actual output.
+//
 
 #include <stdio.h>
 #include <math.h>
@@ -15,39 +20,20 @@ int main() {
     unsigned int n = 200;   // input sequence length
     unsigned int p = 4;     // prediction filter order
 
-    // original filter
-#if 1
-    // autoregressive moving average filter
-    // ./examples/iirdes_example -t butter -n3 -otf -f0.2
-    float b[4] = {0.01809893, 0.05429679, 0.05429679, 0.01809893};
-    float a[4] = {1.00000000, -1.76004195, 1.18289328, -0.27805993};
-#else
-    // autoregressive filter
-    float b[4] = {1.0f, 0.0f, 0.0f, 0.0f};
-    float a[4] = {1.0f, 0.5f, 0.4f, 0.3f};
-#endif
-
-    // create filter object
-    iirfilt_rrrf f = iirfilt_rrrf_create(b,4, a,4);
+    // create low-pass filter object
+    iirfilt_rrrf f = iirfilt_rrrf_create_lowpass(2, 0.05f);
     iirfilt_rrrf_print(f);
 
     unsigned int i;
 
     // allocate memory for data arrays
-    float x[n];         // input noise sequence
-    float y[n];         // output filtered noise sequence
+    float y[n];         // input signal (filtered noise)
     float a_hat[p+1];   // lpc output
     float g_hat[p+1];   // lpc output
 
-    // generate input noise signal
-    for (i=0; i<n; i++) {
-        x[i] = randnf();
-        //x[i] = ( (i%20) == 0 ) ? 1.0f : 0.0f;
-    }
-
-    // run filter
+    // generate input signal (filtered noise)
     for (i=0; i<n; i++)
-        iirfilt_rrrf_execute(f, x[i], &y[i]);
+        iirfilt_rrrf_execute(f, randnf(), &y[i]);
 
     // destroy filter object
     iirfilt_rrrf_destroy(f);
@@ -114,13 +100,11 @@ int main() {
     }
 #endif
 
-    fprintf(fid,"x      = zeros(1,n);\n");
     fprintf(fid,"y      = zeros(1,n);\n");
     fprintf(fid,"y_hat  = zeros(1,n);\n");
     fprintf(fid,"lag    = zeros(1,n);\n");
     fprintf(fid,"rxx    = zeros(1,n);\n");
     for (i=0; i<n; i++) {
-        fprintf(fid,"x(%4u) = %12.4e + j*%12.4e;\n", i+1, crealf(x[i]), cimagf(x[i]));
         fprintf(fid,"y(%4u) = %12.4e + j*%12.4e;\n", i+1, crealf(y[i]), cimagf(y[i]));
         fprintf(fid,"y_hat(%4u) = %12.4e + j*%12.4e;\n", i+1, crealf(y_hat[i]), cimagf(y_hat[i]));
         fprintf(fid,"lag(%4u) = %12.4e + j*%12.4e;\n", i+1, crealf(lag[i]), cimagf(lag[i]));
@@ -130,26 +114,25 @@ int main() {
     // plot output
     fprintf(fid,"t=0:(n-1);\n");
     fprintf(fid,"figure;\n");
-    fprintf(fid,"  plot(t,x,'-','Color',[1 1 1]*0.5,'LineWidth',1,...\n");
-    fprintf(fid,"       t,y,'-','Color',[0 0.5 0.25],'LineWidth',2);\n");
-    fprintf(fid,"  xlabel('time');\n");
-    fprintf(fid,"  ylabel('real');\n");
-    fprintf(fid,"  legend('input','filtered output',1);\n");
-    fprintf(fid,"  grid on;\n");
-
-    fprintf(fid,"figure;\n");
     fprintf(fid,"subplot(5,1,1:3);\n");
-    fprintf(fid,"  plot(t,y,t,y_hat);\n");
+    fprintf(fid,"  hold on;\n");
+    fprintf(fid,"  plot(t,y,    'LineWidth',1.5,'Color',[0 0.2 0.5]);\n");
+    fprintf(fid,"  plot(t,y_hat,'LineWidth',1.5,'Color',[0 0.5 0.2]);\n");
+    fprintf(fid,"  hold off;\n");
     fprintf(fid,"  ylabel('signal');\n");
-    fprintf(fid,"  legend('y','lpc estimate',1);\n");
+    fprintf(fid,"  legend('input','LPC estimate','location','northeast');\n");
     fprintf(fid,"  grid on;\n");
     fprintf(fid,"subplot(5,1,4);\n");
-    fprintf(fid,"  plot(t,y-y_hat);\n");
+    fprintf(fid,"  plot(t,y-y_hat,'LineWidth',2,'Color',[1 1 1]*0.6);\n");
     fprintf(fid,"  ylabel('error');\n");
+    fprintf(fid,"  axis([0 n -0.1 0.1]);\n");
+    fprintf(fid,"  grid on;\n");
     fprintf(fid,"subplot(5,1,5);\n");
-    fprintf(fid,"  plot(t,rxx);\n");
+    fprintf(fid,"  plot(t,rxx,'LineWidth',2,'Color',[0.5 0 0]);\n");
     fprintf(fid,"  xlabel('time');\n");
     fprintf(fid,"  ylabel('r_{xx}(e)');\n");
+    fprintf(fid,"  axis([0 n -1.0 1]);\n");
+    fprintf(fid,"  grid on;\n");
 
     fclose(fid);
     printf("results written to %s.\n", OUTPUT_FILENAME);

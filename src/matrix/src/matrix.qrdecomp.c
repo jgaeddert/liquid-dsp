@@ -1,20 +1,23 @@
 /*
- * Copyright (c) 2007 - 2014 Joseph Gaeddert
+ * Copyright (c) 2007 - 2015 Joseph Gaeddert
  *
- * This file is part of liquid.
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
  *
- * liquid is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
+ * The above copyright notice and this permission notice shall be included in
+ * all copies or substantial portions of the Software.
  *
- * liquid is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with liquid.  If not, see <http://www.gnu.org/licenses/>.
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+ * THE SOFTWARE.
  */
 
 //
@@ -27,11 +30,11 @@
 #define DEBUG_MATRIX_QRDECOMP 1
 
 // Q/R decomposition using the Gram-Schmidt algorithm
-void MATRIX(_qrdecomp_gramschmidt)(T * _x,
+void MATRIX(_qrdecomp_gramschmidt)(T *          _x,
                                    unsigned int _rx,
                                    unsigned int _cx,
-                                   T * _Q,
-                                   T * _R)
+                                   T *          _Q,
+                                   T *          _R)
 {
     // validate input
     if (_rx != _cx) {
@@ -70,9 +73,12 @@ void MATRIX(_qrdecomp_gramschmidt)(T * _x,
         // compute e_k = e_k / |e_k|
         float ek = 0.0f;
         T ak;
+        TP ak2;
         for (i=0; i<n; i++) {
-            ak = matrix_access(e,n,n,i,k);
-            ek += fabsf( ak*conjf(ak) );
+            ak  = matrix_access(e,n,n,i,k);
+            ak2 = T_ABS(ak);
+            ak2 = ak2 * ak2;
+            ek += ak2;
         }
         ek = sqrtf(ek);
 

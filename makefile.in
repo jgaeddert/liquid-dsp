@@ -1,19 +1,22 @@
-# Copyright (c) 2007 - 2014 Joseph Gaeddert
-#
-# This file is part of liquid.
-#
-# liquid is free software: you can redistribute it and/or modify
-# it under the terms of the GNU General Public License as published by
-# the Free Software Foundation, either version 3 of the License, or
-# (at your option) any later version.
-#
-# liquid is distributed in the hope that it will be useful,
-# but WITHOUT ANY WARRANTY; without even the implied warranty of
-# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-# GNU General Public License for more details.
-#
-# You should have received a copy of the GNU General Public License
-# along with liquid.  If not, see <http://www.gnu.org/licenses/>.
+# Copyright (c) 2007 - 2015 Joseph Gaeddert
+# 
+# Permission is hereby granted, free of charge, to any person obtaining a copy
+# of this software and associated documentation files (the "Software"), to deal
+# in the Software without restriction, including without limitation the rights
+# to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+# copies of the Software, and to permit persons to whom the Software is
+# furnished to do so, subject to the following conditions:
+# 
+# The above copyright notice and this permission notice shall be included in
+# all copies or substantial portions of the Software.
+# 
+# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+# OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+# THE SOFTWARE.
 
 # 
 # Makefile for liquid-dsp libraries
@@ -240,6 +243,7 @@ $(equalization_objects) : %.o : %.c $(include_headers) src/equalization/src/eqlm
 
 # autotests
 equalization_autotests :=					\
+	src/equalization/tests/eqlms_cccf_autotest.c		\
 	src/equalization/tests/eqrls_rrrf_autotest.c		\
 
 
@@ -607,6 +611,7 @@ framing_objects :=						\
 	src/framing/src/bsync_crcf.o				\
 	src/framing/src/bsync_cccf.o				\
 	src/framing/src/detector_cccf.o				\
+	src/framing/src/framedatastats.o			\
 	src/framing/src/framesyncstats.o			\
 	src/framing/src/framegen64.o				\
 	src/framing/src/framesync64.o				\
@@ -617,7 +622,12 @@ framing_objects :=						\
 	src/framing/src/ofdmflexframegen.o			\
 	src/framing/src/ofdmflexframesync.o			\
 	src/framing/src/presync_cccf.o				\
+	src/framing/src/symstreamcf.o				\
 	src/framing/src/symtrack_cccf.o				\
+	src/framing/src/qdetector_cccf.o			\
+	src/framing/src/qpacketmodem.o				\
+	src/framing/src/qpilotgen.o				\
+	src/framing/src/qpilotsync.o				\
 
 
 # list explicit targets and dependencies here
@@ -636,6 +646,8 @@ src/framing/src/bsync_cccf.o : %.o : %.c $(include_headers) src/framing/src/bsyn
 
 src/framing/src/detector_cccf.o : %.o : %.c $(include_headers)
 
+src/framing/src/framedatastats.o : %.o : %.c $(include_headers)
+
 src/framing/src/framesyncstats.o : %.o : %.c $(include_headers)
 
 src/framing/src/framegen64.o : %.o : %.c $(include_headers)
@@ -652,6 +664,8 @@ src/framing/src/ofdmflexframesync.o : %.o : %.c $(include_headers)
 
 src/framing/src/presync_cccf.o : %.o : %.c $(include_headers) src/framing/src/presync.c
 
+src/framing/src/symstreamcf.o : %.o : %.c $(include_headers) src/framing/src/symstream.c
+
 src/framing/src/symtrack_cccf.o : %.o : %.c $(include_headers) src/framing/src/symtrack.c
 
 
@@ -659,7 +673,11 @@ framing_autotests :=						\
 	src/framing/tests/bpacketsync_autotest.c		\
 	src/framing/tests/bsync_autotest.c			\
 	src/framing/tests/detector_autotest.c			\
+	src/framing/tests/flexframesync_autotest.c		\
 	src/framing/tests/framesync64_autotest.c		\
+	src/framing/tests/qdetector_cccf_autotest.c		\
+	src/framing/tests/qpacketmodem_autotest.c		\
+	src/framing/tests/qpilotsync_autotest.c			\
 
 
 framing_benchmarks :=						\
@@ -1318,6 +1336,7 @@ test: check
 # clean the generated files
 clean-check:
 	$(RM) autotest_include.h $(autotest_prog).o $(autotest_prog)
+	$(RM) autotest/autotestlib.o
 	$(RM) $(autotest_obj)
 	$(RM) $(autotest_extra_obj)
 
@@ -1378,6 +1397,7 @@ clean-bench:
 	$(RM) scripts/benchmark_compare
 	$(RM) $(benchmark_obj)
 	$(RM) $(benchmark_extra_obj)
+	$(RM) bench/fftbench.o
 	$(RM) bench/fftbench
 
 
@@ -1418,6 +1438,7 @@ example_programs :=						\
 	examples/fftfilt_crcf_example				\
 	examples/firdecim_crcf_example				\
 	examples/firfarrow_rrrf_example				\
+	examples/firfilt_cccf_example				\
 	examples/firfilt_crcf_example				\
 	examples/firfilt_rrrf_example				\
 	examples/firdes_kaiser_example				\
@@ -1449,6 +1470,7 @@ example_programs :=						\
 	examples/iirdecim_crcf_example				\
 	examples/iirfilt_cccf_example				\
 	examples/iirfilt_crcf_example				\
+	examples/iirfilt_crcf_dcblocker_example			\
 	examples/iirinterp_crcf_example				\
 	examples/kbd_window_example				\
 	examples/lpc_example					\
@@ -1475,11 +1497,16 @@ example_programs :=						\
 	examples/polyfit_example				\
 	examples/polyfit_lagrange_example			\
 	examples/poly_findroots_example				\
-	examples/quantize_example				\
+	examples/qdetector_cccf_example				\
+	examples/qpacketmodem_performance_example		\
+	examples/qpacketmodem_example				\
+	examples/qpilotsync_example				\
 	examples/qnsearch_example				\
+	examples/quantize_example				\
 	examples/random_histogram_example			\
 	examples/repack_bytes_example				\
 	examples/resamp_crcf_example				\
+	examples/resamp2_cccf_example				\
 	examples/resamp2_crcf_example				\
 	examples/resamp2_crcf_decim_example			\
 	examples/resamp2_crcf_filter_example			\
@@ -1492,6 +1519,7 @@ example_programs :=						\
 	examples/symsync_crcf_example				\
 	examples/symsync_crcf_full_example			\
 	examples/symsync_crcf_kaiser_example			\
+	examples/symstreamcf_example				\
 	examples/symtrack_cccf_example				\
 	examples/wdelayf_example				\
 	examples/windowf_example				\
@@ -1664,9 +1692,10 @@ clean-modules:
 	$(RM) src/optim/src/*.o        src/optim/bench/*.o        src/optim/tests/*.o
 	$(RM) src/quantization/src/*.o src/quantization/bench/*.o src/quantization/tests/*.o
 	$(RM) src/random/src/*.o       src/random/bench/*.o       src/random/tests/*.o
+	$(RM) src/sequence/src/*.o     src/sequence/bench/*.o     src/sequence/tests/*.o
 	$(RM) src/utility/src/*.o      src/utility/bench/*.o      src/utility/tests/*.o
 	$(RM) src/vector/src/*.o       src/vector/bench/*.o       src/vector/tests/*.o
-	$(RM) libliquid.o
+	$(RM) src/libliquid.o
 
 clean: clean-modules clean-autoscript clean-check clean-bench clean-examples clean-sandbox
 	$(RM) $(extra_clean)

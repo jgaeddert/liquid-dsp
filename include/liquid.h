@@ -1,20 +1,23 @@
 /*
- * Copyright (c) 2007 - 2014 Joseph Gaeddert
+ * Copyright (c) 2007 - 2015 Joseph Gaeddert
  *
- * This file is part of liquid.
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
  *
- * liquid is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
+ * The above copyright notice and this permission notice shall be included in
+ * all copies or substantial portions of the Software.
  *
- * liquid is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with liquid.  If not, see <http://www.gnu.org/licenses/>.
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+ * THE SOFTWARE.
  */
 #ifndef __LIQUID_H__
 #define __LIQUID_H__
@@ -428,6 +431,14 @@ void CHANNEL(_add_awgn)(CHANNEL() _q,                           \
                         float     _noise_floor_dB,              \
                         float     _SNRdB);                      \
                                                                 \
+/* apply additive white Gausss noise impairment             */  \
+/*  _q              : channel object                        */  \
+/*  _delay          : resampling delay                      */  \
+/*  _rate           : resampling rate                       */  \
+void CHANNEL(_add_resamp)(CHANNEL() _q,                         \
+                          float     _delay,                     \
+                          float     _rate);                     \
+                                                                \
 /* apply carrier offset impairment                          */  \
 /*  _q          : channel object                            */  \
 /*  _frequency  : carrier frequency offse [radians/sample   */  \
@@ -572,6 +583,12 @@ EQLMS() EQLMS(_create_rnyquist)(int          _type,             \
                                 float        _beta,             \
                                 float        _dt);              \
                                                                 \
+/* create LMS EQ initialized with low-pass filter           */  \
+/*  _h_len  : filter length                                 */  \
+/*  _fc     : filter cut-off, _fc in (0,0.5]                */  \
+EQLMS() EQLMS(_create_lowpass)(unsigned int _h_len,             \
+                               float        _fc);               \
+                                                                \
 /* re-create EQ initialized with external coefficients      */  \
 /*  _q      :   equalizer object                            */  \
 /*  _h      :   filter coefficients (NULL for {1,0,0...})   */  \
@@ -597,6 +614,14 @@ void  EQLMS(_set_bw)(EQLMS() _q,                                \
 /* push sample into equalizer internal buffer               */  \
 void EQLMS(_push)(EQLMS() _q,                                   \
                   T       _x);                                  \
+                                                                \
+/* push sample into equalizer internal buffer as block      */  \
+/*  _q      :   equalizer object                            */  \
+/*  _x      :   input sample array                          */  \
+/*  _n      :   input sample array length                   */  \
+void EQLMS(_push_block)(EQLMS()      _q,                        \
+                        T *          _x,                        \
+                        unsigned int _n);                       \
                                                                 \
 /* execute internal dot product and return result           */  \
 /*  _q      :   equalizer object                            */  \
@@ -936,8 +961,12 @@ void packetizer_destroy(packetizer _p);
 // print packetizer object internals
 void packetizer_print(packetizer _p);
 
+// access methods
 unsigned int packetizer_get_dec_msg_len(packetizer _p);
 unsigned int packetizer_get_enc_msg_len(packetizer _p);
+crc_scheme   packetizer_get_crc        (packetizer _p);
+fec_scheme   packetizer_get_fec0       (packetizer _p);
+fec_scheme   packetizer_get_fec1       (packetizer _p);
 
 
 // packetizer_encode()
@@ -1362,13 +1391,13 @@ unsigned int estimate_req_filter_len(float _df,
 // estimate filter stop-band attenuation given
 //  _df     :   transition bandwidth (0 < _b < 0.5)
 //  _N      :   filter length
-float estimate_req_filter_As(float _df,
+float estimate_req_filter_As(float        _df,
                              unsigned int _N);
 
 // estimate filter transition bandwidth given
 //  _As     :   stop-band attenuation [dB], _As > 0
 //  _N      :   filter length
-float estimate_req_filter_df(float _As,
+float estimate_req_filter_df(float        _As,
                              unsigned int _N);
 
 
@@ -1475,10 +1504,10 @@ void liquid_firdes_kaiser(unsigned int _n,
 //  _theta  : LoS component angle of arrival
 //  _h      : output coefficient buffer
 void liquid_firdes_doppler(unsigned int _n,
-                           float _fd,
-                           float _K,
-                           float _theta,
-                           float *_h);
+                           float        _fd,
+                           float        _K,
+                           float        _theta,
+                           float *      _h);
 
 
 // Design Nyquist raised-cosine filter
@@ -1563,9 +1592,9 @@ float iir_group_delay(float * _b,
 //  _h      :   filter coefficients [size: _h_len x 1]
 //  _h_len  :   filter length
 //  _lag    :   auto-correlation lag (samples)
-float liquid_filter_autocorr(float * _h,
+float liquid_filter_autocorr(float *      _h,
                              unsigned int _h_len,
-                             int _lag);
+                             int          _lag);
 
 // liquid_filter_crosscorr()
 //
@@ -1576,11 +1605,11 @@ float liquid_filter_autocorr(float * _h,
 //  _g      :   filter coefficients [size: _g_len]
 //  _g_len  :   filter length
 //  _lag    :   cross-correlation lag (samples)
-float liquid_filter_crosscorr(float * _h,
+float liquid_filter_crosscorr(float *      _h,
                               unsigned int _h_len,
-                              float * _g,
+                              float *      _g,
                               unsigned int _g_len,
-                              int _lag);
+                              int          _lag);
 
 // liquid_filter_isi()
 //
@@ -1592,11 +1621,11 @@ float liquid_filter_crosscorr(float * _h,
 //  _m      :   filter delay (symbols)
 //  _rms    :   output root mean-squared ISI
 //  _max    :   maximum ISI
-void liquid_filter_isi(float * _h,
+void liquid_filter_isi(float *      _h,
                        unsigned int _k,
                        unsigned int _m,
-                       float * _rms,
-                       float * _max);
+                       float *      _rms,
+                       float *      _max);
 
 // Compute relative out-of-band energy
 //
@@ -1604,9 +1633,9 @@ void liquid_filter_isi(float * _h,
 //  _h_len  :   filter length
 //  _fc     :   analysis cut-off frequency
 //  _nfft   :   fft size
-float liquid_filter_energy(float * _h,
+float liquid_filter_energy(float *      _h,
                            unsigned int _h_len,
-                           float _fc,
+                           float        _fc,
                            unsigned int _nfft);
 
 
@@ -1959,7 +1988,7 @@ void FIRFILT(_print)(FIRFILT() _q);                             \
                                                                 \
 /* set output scaling for filter                            */  \
 void FIRFILT(_set_scale)(FIRFILT() _q,                          \
-                         TC        _g);                         \
+                         TC        _scale);                     \
                                                                 \
 /* push sample into filter object's internal buffer         */  \
 /*  _q      : filter object                                 */  \
@@ -2139,7 +2168,7 @@ void FFTFILT(_print)(FFTFILT() _q);                             \
                                                                 \
 /* set output scaling for filter                            */  \
 void FFTFILT(_set_scale)(FFTFILT() _q,                          \
-                         TC        _g);                         \
+                         TC        _scale);                     \
                                                                 \
 /* execute the filter on internal buffer and coefficients   */  \
 /*  _q      : filter object                                 */  \
@@ -2220,6 +2249,13 @@ IIRFILT() IIRFILT(_create_prototype)(                           \
             float _f0,                                          \
             float _Ap,                                          \
             float _As);                                         \
+                                                                \
+/* create simplified low-pass Butterworth IIR filter */         \
+/*  _n      : filter order                                  */  \
+/*  _fc     : low-pass prototype cut-off frequency          */  \
+IIRFILT() IIRFILT(_create_lowpass)(                             \
+            unsigned int _order,                                \
+            float        _fc);                                  \
                                                                 \
 /* create 8th-order integrator filter                       */  \
 IIRFILT() IIRFILT(_create_integrator)();                        \
@@ -2361,6 +2397,10 @@ void FIRPFB(_destroy)(FIRPFB() _q);                             \
                                                                 \
 /* print firpfb object's parameters                         */  \
 void FIRPFB(_print)(FIRPFB() _q);                               \
+                                                                \
+/* set output scaling for filter                            */  \
+void FIRPFB(_set_scale)(FIRPFB() _q,                            \
+                        TC       _g);                           \
                                                                 \
 /* clear/reset firpfb object internal state                 */  \
 void FIRPFB(_reset)(FIRPFB() _q);                               \
@@ -2506,6 +2546,13 @@ IIRINTERP() IIRINTERP(_create)(unsigned int _M,                 \
                                TC *         _a,                 \
                                unsigned int _na);               \
                                                                 \
+/* create decimator with default Butterworth prototype      */  \
+/*  _M      : decimation factor                             */  \
+/*  _order  : filter order                                  */  \
+IIRINTERP() IIRINTERP(_create_default)(                         \
+                unsigned int _M,                                \
+                unsigned int _order);                           \
+                                                                \
 /* create interpolator from prototype                       */  \
 /*  _M      : interpolation factor                          */  \
 IIRINTERP() IIRINTERP(_create_prototype)(                       \
@@ -2625,7 +2672,7 @@ void FIRDECIM(_execute)(FIRDECIM() _q,                          \
 /*  _q      : decimator object                              */  \
 /*  _x      : input array [size: _n*_M x 1]                 */  \
 /*  _n      : number of _output_ samples                    */  \
-/*  _y      : output array [_sze: _n x 1]                   */  \
+/*  _y      : output array [_size: _n x 1]                  */  \
 void FIRDECIM(_execute_block)(FIRDECIM()   _q,                  \
                               TI *         _x,                  \
                               unsigned int _n,                  \
@@ -2667,18 +2714,33 @@ IIRDECIM() IIRDECIM(_create)(unsigned int _M,                   \
                              TC *         _a,                   \
                              unsigned int _na);                 \
                                                                 \
+/* create decimator with default Butterworth prototype      */  \
+/*  _M      : decimation factor                             */  \
+/*  _order  : filter order                                  */  \
+IIRDECIM() IIRDECIM(_create_default)(                           \
+                unsigned int _M,                                \
+                unsigned int _order);                           \
+                                                                \
 /* create decimator from prototype                          */  \
 /*  _M      : decimation factor                             */  \
+/*  _ftype  : filter type (e.g. LIQUID_IIRDES_BUTTER)       */  \
+/*  _btype  : band type (e.g. LIQUID_IIRDES_BANDPASS)       */  \
+/*  _format : coefficients format (e.g. LIQUID_IIRDES_SOS)  */  \
+/*  _n      : filter order                                  */  \
+/*  _fc     : low-pass prototype cut-off frequency          */  \
+/*  _f0     : center frequency (band-pass, band-stop)       */  \
+/*  _Ap     : pass-band ripple in dB                        */  \
+/*  _As     : stop-band ripple in dB                        */  \
 IIRDECIM() IIRDECIM(_create_prototype)(                         \
-                unsigned int _M,                                \
+                unsigned int             _M,                    \
                 liquid_iirdes_filtertype _ftype,                \
                 liquid_iirdes_bandtype   _btype,                \
                 liquid_iirdes_format     _format,               \
-                unsigned int _order,                            \
-                float _fc,                                      \
-                float _f0,                                      \
-                float _Ap,                                      \
-                float _As);                                     \
+                unsigned int             _order,                \
+                float                    _fc,                   \
+                float                    _f0,                   \
+                float                    _Ap,                   \
+                float                    _As);                  \
                                                                 \
 /* destroy decimator object and free internal memory        */  \
 void IIRDECIM(_destroy)(IIRDECIM() _q);                         \
@@ -2846,6 +2908,14 @@ RESAMP() RESAMP(_create)(float        _rate,                    \
                          float        _fc,                      \
                          float        _As,                      \
                          unsigned int _npfb);                   \
+                                                                \
+/* create arbitrary resampler object with a specified input */  \
+/* resampling rate and default parameters                   */  \
+/*  m (filter semi-length) = 7                              */  \
+/*  fc (filter cutoff frequency) = 0.25                     */  \
+/*  As (filter stop-band attenuation) = 60 dB               */  \
+/*  npfb (number of filters in the bank) = 64               */  \
+RESAMP() RESAMP(_create_default)(float _rate);                  \
                                                                 \
 /* destroy arbitrary resampler object                       */  \
 void RESAMP(_destroy)(RESAMP() _q);                             \
@@ -3250,6 +3320,22 @@ void framesyncstats_init_default(framesyncstats_s * _stats);
 // print framesyncstats object
 void framesyncstats_print(framesyncstats_s * _stats);
 
+
+// framedatastats : gather frame data
+typedef struct {
+    unsigned int      num_frames_detected;
+    unsigned int      num_headers_valid;
+    unsigned int      num_payloads_valid;
+    unsigned long int num_bytes_received;
+} framedatastats_s;
+
+// reset framedatastats object
+void framedatastats_reset(framedatastats_s * _stats);
+
+// print framedatastats object
+void framedatastats_print(framedatastats_s * _stats);
+
+
 // Generic frame synchronizer callback function type
 //  _header         :   header data [size: 8 bytes]
 //  _header_valid   :   is header valid? (0:no, 1:yes)
@@ -3270,13 +3356,111 @@ typedef int (*framesync_callback)(unsigned char *  _header,
 //  _userdata       :   user-defined data pointer
 typedef void (*framesync_csma_callback)(void * _userdata);
 
+//
+// packet encoder/decoder
+//
+
+typedef struct qpacketmodem_s * qpacketmodem;
+
+// create packet encoder
+qpacketmodem qpacketmodem_create ();
+void         qpacketmodem_destroy(qpacketmodem _q);
+void         qpacketmodem_reset  (qpacketmodem _q);
+void         qpacketmodem_print  (qpacketmodem _q);
+
+int qpacketmodem_configure(qpacketmodem _q,
+                           unsigned int _payload_len,
+                           crc_scheme   _check,
+                           fec_scheme   _fec0,
+                           fec_scheme   _fec1,
+                           int          _ms);
+
+// get length of frame in symbols
+unsigned int qpacketmodem_get_frame_len(qpacketmodem _q);
+
+// get payload length (bytes)
+unsigned int qpacketmodem_get_payload_len(qpacketmodem _q);
+
+// regular access methods
+unsigned int qpacketmodem_get_crc      (qpacketmodem _q);
+unsigned int qpacketmodem_get_fec0     (qpacketmodem _q);
+unsigned int qpacketmodem_get_fec1     (qpacketmodem _q);
+unsigned int qpacketmodem_get_modscheme(qpacketmodem _q);
+
+// encode packet into modulated frame samples
+// TODO: include method with just symbol indices? would be useful for
+//       non-linear modulation types
+void qpacketmodem_encode(qpacketmodem           _q,
+                         unsigned char *        _payload,
+                         liquid_float_complex * _frame);
+
+// decode packet into modulated frame samples
+// TODO: include method with just symbol indices? would be useful for
+//       non-linear modulation types
+int qpacketmodem_decode(qpacketmodem           _q,
+                        liquid_float_complex * _frame,
+                        unsigned char *        _payload);
+
+//
+// pilot generator for streaming applications
+//
+typedef struct qpilotgen_s * qpilotgen;
+
+// create packet encoder
+qpilotgen qpilotgen_create(unsigned int _payload_len,
+                           unsigned int _pilot_spacing);
+
+qpilotgen qpilotgen_recreate(qpilotgen    _q,
+                             unsigned int _payload_len,
+                             unsigned int _pilot_spacing);
+
+void qpilotgen_destroy(qpilotgen _q);
+void qpilotgen_reset(  qpilotgen _q);
+void qpilotgen_print(  qpilotgen _q);
+
+unsigned int qpilotgen_get_frame_len(qpilotgen _q);
+
+// insert pilot symbols
+void qpilotgen_execute(qpilotgen              _q,
+                       liquid_float_complex * _payload,
+                       liquid_float_complex * _frame);
+
+//
+// pilot synchronizer for streaming applications
+//
+typedef struct qpilotsync_s * qpilotsync;
+
+// create packet encoder
+qpilotsync qpilotsync_create(unsigned int _payload_len,
+                             unsigned int _pilot_spacing);
+
+qpilotsync qpilotsync_recreate(qpilotsync   _q,
+                               unsigned int _payload_len,
+                               unsigned int _pilot_spacing);
+
+void qpilotsync_destroy(qpilotsync _q);
+void qpilotsync_reset(  qpilotsync _q);
+void qpilotsync_print(  qpilotsync _q);
+
+unsigned int qpilotsync_get_frame_len(qpilotsync _q);
+
+// recover frame symbols from received frame
+void qpilotsync_execute(qpilotsync             _q,
+                        liquid_float_complex * _frame,
+                        liquid_float_complex * _payload);
+
+// get estimates
+float qpilotsync_get_dphi(qpilotsync _q);
+float qpilotsync_get_phi (qpilotsync _q);
+float qpilotsync_get_gain(qpilotsync _q);
+
 
 //
 // Basic frame generator (64 bytes data payload)
 //
 
 // frame length in samples
-#define LIQUID_FRAME64_LEN (1340)
+#define LIQUID_FRAME64_LEN (1440)
 
 typedef struct framegen64_s * framegen64;
 
@@ -3374,7 +3558,7 @@ int flexframegen_is_assembled(flexframegen _q);
 void flexframegen_getprops(flexframegen _q, flexframegenprops_s * _props);
 
 // set frame properties
-void flexframegen_setprops(flexframegen _q, flexframegenprops_s * _props);
+int flexframegen_setprops(flexframegen _q, flexframegenprops_s * _props);
 
 // get length of assembled frame (samples)
 unsigned int flexframegen_getframelen(flexframegen _q);
@@ -3390,11 +3574,14 @@ void flexframegen_assemble(flexframegen    _q,
                            unsigned int    _payload_len);
 
 // write samples of assembled frame, two samples at a time, returning
-// '1' when frame is complete, '0' otherwise
-//  _q              :   frame generator object
-//  _buffer         :   output buffer [size: 2 x 1]
+// '1' when frame is complete, '0' otherwise. Zeros will be written
+// to the buffer if the frame is not assembled
+//  _q          :   frame generator object
+//  _buffer     :   output buffer [size: _buffer_len x 1]
+//  _buffer_len :   output buffer length
 int flexframegen_write_samples(flexframegen           _q,
-                               liquid_float_complex * _buffer);
+                               liquid_float_complex * _buffer,
+                               unsigned int           _buffer_len);
 
 // frame synchronizer
 
@@ -3423,19 +3610,15 @@ void flexframesync_execute(flexframesync          _q,
                            liquid_float_complex * _x,
                            unsigned int           _n);
 
+// frame data statistics
+void             flexframesync_reset_framedatastats(flexframesync _q);
+framedatastats_s flexframesync_get_framedatastats  (flexframesync _q);
+
 // enable/disable debugging
 void flexframesync_debug_enable(flexframesync _q);
 void flexframesync_debug_disable(flexframesync _q);
 void flexframesync_debug_print(flexframesync _q,
                                const char *  _filename);
-#if 0
-// advanced modes
-void flexframesync_set_csma_callbacks(flexframesync _fs,
-                                      framesync_csma_callback _csma_lock,
-                                      framesync_csma_callback _csma_unlock,
-                                      void * _csma_userdata);
-#endif
-
 
 //
 // bpacket : binary packet suitable for data streaming
@@ -3786,6 +3969,78 @@ LIQUID_PRESYNC_DEFINE_API(BPRESYNC_MANGLE_CCCF,
                           liquid_float_complex)
 
 //
+// Frame detector
+//
+
+typedef struct qdetector_cccf_s * qdetector_cccf;
+
+// create detector with generic sequence
+//  _s      :   sample sequence
+//  _s_len  :   length of sample sequence
+qdetector_cccf qdetector_cccf_create(liquid_float_complex * _s,
+                                     unsigned int           _s_len);
+
+// create detector from sequence of symbols using internal linear interpolator
+//  _sequence       :   symbol sequence
+//  _sequence_len   :   length of symbol sequence
+//  _ftype          :   filter prototype (e.g. LIQUID_FIRFILT_RRC)
+//  _k              :   samples/symbol
+//  _m              :   filter delay
+//  _beta           :   excess bandwidth factor
+qdetector_cccf qdetector_cccf_create_linear(liquid_float_complex * _sequence,
+                                            unsigned int           _sequence_len,
+                                            int                    _ftype,
+                                            unsigned int           _k,
+                                            unsigned int           _m,
+                                            float                  _beta);
+
+// create detector from sequence of GMSK symbols
+//  _sequence       :   bit sequence
+//  _sequence_len   :   length of bit sequence
+//  _k              :   samples/symbol
+//  _m              :   filter delay
+//  _beta           :   excess bandwidth factor
+qdetector_cccf qdetector_cccf_create_gmsk(unsigned char * _sequence,
+                                          unsigned int    _sequence_len,
+                                          unsigned int    _k,
+                                          unsigned int    _m,
+                                          float           _beta);
+
+// create detector from sequence of symbols using internal linear interpolator
+//  _sequence       :   symbol sequence
+//  _sequence_len   :   length of symbol sequence
+//  _k              :   samples/symbol
+//  _m              :   filter delay
+//  _beta           :   excess bandwidth factor
+//  _type           :   filter prototype (e.g. LIQUID_FIRFILT_RRC)
+qdetector_cccf qdetector_cccf_create_gmsk(unsigned char * _sequence,
+                                          unsigned int    _sequence_len,
+                                          unsigned int    _k,
+                                          unsigned int    _m,
+                                          float           _beta);
+
+void qdetector_cccf_destroy(qdetector_cccf _q);
+void qdetector_cccf_print  (qdetector_cccf _q);
+void qdetector_cccf_reset  (qdetector_cccf _q);
+
+// run detector, looking for sequence; return pointer to aligned, buffered samples
+void * qdetector_cccf_execute(qdetector_cccf       _q,
+                              liquid_float_complex _x);
+
+// set detection threshold (should be between 0 and 1, good starting point is 0.5)
+void qdetector_cccf_set_threshold(qdetector_cccf _q,
+                                  float          _threshold);
+
+// access methods
+unsigned int qdetector_cccf_get_seq_len (qdetector_cccf _q); // sequence length
+const void * qdetector_cccf_get_sequence(qdetector_cccf _q); // pointer to sequence
+unsigned int qdetector_cccf_get_buf_len (qdetector_cccf _q); // buffer length
+float        qdetector_cccf_get_tau     (qdetector_cccf _q); // fractional timing offset estimate
+float        qdetector_cccf_get_gamma   (qdetector_cccf _q); // channel gain
+float        qdetector_cccf_get_dphi    (qdetector_cccf _q); // carrier frequency offset estimate
+float        qdetector_cccf_get_phi     (qdetector_cccf _q); // carrier phase offset estimate
+
+//
 // Pre-demodulation detector
 //
 
@@ -3822,6 +4077,51 @@ int detector_cccf_correlate(detector_cccf        _q,
                             float *              _tau_hat,
                             float *              _dphi_hat,
                             float *              _gamma_hat);
+
+
+// 
+// symbol streaming for testing (no meaningful data, just symbols)
+//
+#define SYMSTREAM_MANGLE_CFLOAT(name) LIQUID_CONCAT(symstreamcf,name)
+
+#define LIQUID_SYMSTREAM_DEFINE_API(SYMSTREAM,TO)               \
+                                                                \
+typedef struct SYMSTREAM(_s) * SYMSTREAM();                     \
+                                                                \
+/* create default symstream object                          */  \
+/* (LIQUID_RNYQUIST_ARKAISER, k=2, m=7, beta=0.3, QPSK)     */  \
+SYMSTREAM() SYMSTREAM(_create)(void);                           \
+                                                                \
+/* create symstream object with linear modulation           */  \
+/*  _ftype  : filter type (e.g. LIQUID_RNYQUIST_RRC)        */  \
+/*  _k      : samples per symbol                            */  \
+/*  _m      : filter delay (symbols)                        */  \
+/*  _beta   : filter excess bandwidth                       */  \
+/*  _ms     : modulation scheme (e.g. LIQUID_MODEM_QPSK)    */  \
+SYMSTREAM() SYMSTREAM(_create_linear)(int          _ftype,      \
+                                      unsigned int _k,          \
+                                      unsigned int _m,          \
+                                      float        _beta,       \
+                                      int          _ms);        \
+                                                                \
+/* destroy symstream object, freeing all internal memory    */  \
+void SYMSTREAM(_destroy)(SYMSTREAM() _q);                       \
+                                                                \
+/* print symstream object's parameters                      */  \
+void SYMSTREAM(_print)(SYMSTREAM() _q);                         \
+                                                                \
+/* reset symstream internal state                           */  \
+void SYMSTREAM(_reset)(SYMSTREAM() _q);                         \
+                                                                \
+/* write block of samples to output buffer                  */  \
+/*  _q      : synchronizer object                           */  \
+/*  _buf    : output buffer [size: _buf_len x 1]            */  \
+/*  _buf_len: output buffer size                            */  \
+void SYMSTREAM(_write_samples)(SYMSTREAM()  _q,                 \
+                               TO *         _buf,               \
+                               unsigned int _buf_len);          \
+    
+LIQUID_SYMSTREAM_DEFINE_API(SYMSTREAM_MANGLE_CFLOAT, liquid_float_complex)
 
 
 // 
@@ -4213,121 +4513,305 @@ unsigned int liquid_totient(unsigned int _n);
 //   MATRIX : name-mangling macro
 //   T      : data type
 #define LIQUID_MATRIX_DEFINE_API(MATRIX,T)                      \
-void MATRIX(_print)(T * _x,                                     \
-                    unsigned int _rx,                           \
-                    unsigned int _cx);                          \
-void MATRIX(_add)(T * _x,                                       \
-                  T * _y,                                       \
-                  T * _z,                                       \
+                                                                \
+/* print array as matrix                                    */  \
+/*  _x      : input matrix [size: _r x _c]                  */  \
+/*  _r      : rows                                          */  \
+/*  _c      : columns                                       */  \
+void MATRIX(_print)(T *          _x,                            \
+                    unsigned int _r,                            \
+                    unsigned int _c);                           \
+                                                                \
+/* add two matrices _x and _y saving the result in _z       */  \
+/*  _x      : input matrix  [size: _r x _c]                 */  \
+/*  _y      : input matrix  [size: _r x _c]                 */  \
+/*  _z      : output matrix [size: _r x _c]                 */  \
+/*  _r      : rows                                          */  \
+/*  _c      : columns                                       */  \
+void MATRIX(_add)(T *          _x,                              \
+                  T *          _y,                              \
+                  T *          _z,                              \
                   unsigned int _r,                              \
                   unsigned int _c);                             \
-void MATRIX(_sub)(T * _x,                                       \
-                  T * _y,                                       \
-                  T * _z,                                       \
+                                                                \
+/* subtract two matrices _x and _y saving the result in _z  */  \
+/*  _x      : input matrix  [size: _r x _c]                 */  \
+/*  _y      : input matrix  [size: _r x _c]                 */  \
+/*  _z      : output matrix [size: _r x _c]                 */  \
+/*  _r      : rows                                          */  \
+/*  _c      : columns                                       */  \
+void MATRIX(_sub)(T *          _x,                              \
+                  T *          _y,                              \
+                  T *          _z,                              \
                   unsigned int _r,                              \
                   unsigned int _c);                             \
-void MATRIX(_pmul)(T * _x,                                      \
-                   T * _y,                                      \
-                   T * _z,                                      \
+                                                                \
+/* perform point-wise multiplication of two matrices _x     */  \
+/* and _y saving the result in _z                           */  \
+/*  _x      : input matrix  [size: _r x _c]                 */  \
+/*  _y      : input matrix  [size: _r x _c]                 */  \
+/*  _z      : output matrix [size: _r x _c]                 */  \
+/*  _r      : rows                                          */  \
+/*  _c      : columns                                       */  \
+void MATRIX(_pmul)(T *          _x,                             \
+                   T *          _y,                             \
+                   T *          _z,                             \
                    unsigned int _r,                             \
                    unsigned int _c);                            \
-void MATRIX(_pdiv)(T * _x,                                      \
-                   T * _y,                                      \
-                   T * _z,                                      \
+                                                                \
+/* perform point-wise division of two matrices _x and _y    */  \
+/* saving the result in _z                                  */  \
+/*  _x      : input matrix  [size: _r x _c]                 */  \
+/*  _y      : input matrix  [size: _r x _c]                 */  \
+/*  _z      : output matrix [size: _r x _c]                 */  \
+/*  _r      : rows                                          */  \
+/*  _c      : columns                                       */  \
+void MATRIX(_pdiv)(T *          _x,                             \
+                   T *          _y,                             \
+                   T *          _z,                             \
                    unsigned int _r,                             \
                    unsigned int _c);                            \
+                                                                \
+/* multiply two matrices _x and _y storing the result in _z */  \
+/* NOTE: _rz = _rx, _cz = _cy, and _cx = _ry                */  \
+/*  _x      : input matrix  [size: _rx x _cx]               */  \
+/*  _y      : input matrix  [size: _ry x _cy]               */  \
+/*  _z      : output matrix [size: _rz x _cz]               */  \
 void MATRIX(_mul)(T * _x, unsigned int _rx, unsigned int _cx,   \
                   T * _y, unsigned int _ry, unsigned int _cy,   \
                   T * _z, unsigned int _rz, unsigned int _cz);  \
-void MATRIX(_div)(T * _x, T * _y, T * _z, unsigned int _n);     \
-T    MATRIX(_det)(T * _x, unsigned int _r, unsigned int _c);    \
-void MATRIX(_trans)(T * _x, unsigned int _rx, unsigned int _cx);\
-void MATRIX(_hermitian)(T * _x,                                 \
-                        unsigned int _rx,                       \
-                        unsigned int _cx);                      \
+                                                                \
+/* solve _x = _y*_z for _z for square matrices of size _n   */  \
+/*  _x      : input matrix  [size: _n x _n]                 */  \
+/*  _y      : input matrix  [size: _n x _n]                 */  \
+/*  _z      : output matrix [size: _n x _n]                 */  \
+void MATRIX(_div)(T *          _x,                              \
+                  T *          _y,                              \
+                  T *          _z,                              \
+                  unsigned int _n);                             \
+                                                                \
+/* compute the determinant of a square matrix _x            */  \
+/*  _x      : input matrix [size: _r x _c]                  */  \
+/*  _r      : rows                                          */  \
+/*  _c      : columns                                       */  \
+T MATRIX(_det)(T *          _x,                                 \
+               unsigned int _r,                                 \
+               unsigned int _c);                                \
+                                                                \
+/* compute the in-place transpose of the matrix _x          */  \
+/*  _x      : input matrix [size: _r x _c]                  */  \
+/*  _r      : rows                                          */  \
+/*  _c      : columns                                       */  \
+void MATRIX(_trans)(T *          _x,                            \
+                    unsigned int _r,                            \
+                    unsigned int _c);                           \
+                                                                \
+/* compute the in-place Hermitian transpose of _x           */  \
+/*  _x      : input matrix [size: _r x _c]                  */  \
+/*  _r      : rows                                          */  \
+/*  _c      : columns                                       */  \
+void MATRIX(_hermitian)(T *          _x,                        \
+                        unsigned int _r,                        \
+                        unsigned int _c);                       \
                                                                 \
 /* compute x*x' on [m x n] matrix, result: [m x m]          */  \
-void MATRIX(_mul_transpose)(T * _x,                             \
+/*  _x      : input matrix [size: _m x _n]                  */  \
+/*  _m      : input rows                                    */  \
+/*  _n      : input columns                                 */  \
+/*  _xxT    : output matrix [size: _m x _m]                 */  \
+void MATRIX(_mul_transpose)(T *          _x,                    \
                             unsigned int _m,                    \
                             unsigned int _n,                    \
-                            T * _xxT);                          \
-/* compute x'*x on [m x n] matrix, result: [n x n]          */  \
-void MATRIX(_transpose_mul)(T * _x,                             \
-                            unsigned int _m,                    \
-                            unsigned int _n,                    \
-                            T * _xTx);                          \
-/* compute x*x.' on [m x n] matrix, result: [m x m]          */ \
-void MATRIX(_mul_hermitian)(T * _x,                             \
-                            unsigned int _m,                    \
-                            unsigned int _n,                    \
-                            T * _xxH);                          \
-/* compute x.'*x on [m x n] matrix, result: [n x n]          */ \
-void MATRIX(_hermitian_mul)(T * _x,                             \
-                            unsigned int _m,                    \
-                            unsigned int _n,                    \
-                            T * _xHx);                          \
+                            T *          _xxT);                 \
                                                                 \
+/* compute x'*x on [m x n] matrix, result: [n x n]          */  \
+/*  _x      : input matrix [size: _m x _n]                  */  \
+/*  _m      : input rows                                    */  \
+/*  _n      : input columns                                 */  \
+/*  _xTx    : output matrix [size: _n x _n]                 */  \
+void MATRIX(_transpose_mul)(T *          _x,                    \
+                            unsigned int _m,                    \
+                            unsigned int _n,                    \
+                            T *          _xTx);                 \
+                                                                \
+/* compute x*x.' on [m x n] matrix, result: [m x m]         */  \
+/*  _x      : input matrix [size: _m x _n]                  */  \
+/*  _m      : input rows                                    */  \
+/*  _n      : input columns                                 */  \
+/*  _xxH    : output matrix [size: _m x _m]                 */  \
+void MATRIX(_mul_hermitian)(T *          _x,                    \
+                            unsigned int _m,                    \
+                            unsigned int _n,                    \
+                            T *          _xxH);                 \
+                                                                \
+/* compute x.'*x on [m x n] matrix, result: [n x n]         */  \
+/*  _x      : input matrix [size: _m x _n]                  */  \
+/*  _m      : input rows                                    */  \
+/*  _n      : input columns                                 */  \
+/*  _xHx    : output matrix [size: _n x _n]                 */  \
+void MATRIX(_hermitian_mul)(T *          _x,                    \
+                            unsigned int _m,                    \
+                            unsigned int _n,                    \
+                            T *          _xHx);                 \
+                                                                \
+                                                                \
+/* augment two matrices _x and _y storing the result in _z  */  \
+/* NOTE: _rz = _rx = _ry, _rx = _ry, and _cz = _cx + _cy    */  \
+/*  _x      : input matrix  [size: _rx x _cx]               */  \
+/*  _y      : input matrix  [size: _ry x _cy]               */  \
+/*  _z      : output matrix [size: _rz x _cz]               */  \
 void MATRIX(_aug)(T * _x, unsigned int _rx, unsigned int _cx,   \
                   T * _y, unsigned int _ry, unsigned int _cy,   \
                   T * _z, unsigned int _rz, unsigned int _cz);  \
-void MATRIX(_inv)(T * _x,                                       \
-                  unsigned int _rx,                             \
-                  unsigned int _cx);                            \
-void MATRIX(_eye)(T * _x,                                       \
+                                                                \
+/* compute the inverse of a square matrix _x                */  \
+/*  _x      : input/output matrix [size: _r x _c]           */  \
+/*  _r      : rows                                          */  \
+/*  _c      : columns                                       */  \
+void MATRIX(_inv)(T *          _x,                              \
+                  unsigned int _r,                              \
+                  unsigned int _c);                             \
+                                                                \
+/* generate the identity square matrix of size _n           */  \
+/*  _x      : output matrix [size: _n x _n]                 */  \
+/*  _n      : dimensions of _x                              */  \
+void MATRIX(_eye)(T *          _x,                              \
                   unsigned int _n);                             \
-void MATRIX(_ones)(T * _x,                                      \
+                                                                \
+/* generate the all-ones matrix of size _n                  */  \
+/*  _x      : output matrix [size: _r x _c]                 */  \
+/*  _r      : rows                                          */  \
+/*  _c      : columns                                       */  \
+void MATRIX(_ones)(T *          _n,                             \
                    unsigned int _r,                             \
                    unsigned int _c);                            \
-void MATRIX(_zeros)(T * _x,                                     \
+                                                                \
+/* generate the all-zeros matrix of size _n                 */  \
+/*  _x      : output matrix [size: _r x _c]                 */  \
+/*  _r      : rows                                          */  \
+/*  _c      : columns                                       */  \
+void MATRIX(_zeros)(T *          _x,                            \
                     unsigned int _r,                            \
                     unsigned int _c);                           \
-void MATRIX(_gjelim)(T * _x,                                    \
-                     unsigned int _rx,                          \
-                     unsigned int _cx);                         \
-void MATRIX(_pivot)(T * _x,                                     \
-               unsigned int _rx,                                \
-               unsigned int _cx,                                \
-               unsigned int _r,                                 \
-               unsigned int _c);                                \
-void MATRIX(_swaprows)(T * _x,                                  \
-                  unsigned int _rx,                             \
-                  unsigned int _cx,                             \
-                  unsigned int _r1,                             \
-                  unsigned int _r2);                            \
-void MATRIX(_linsolve)(T * _A,                                  \
-                       unsigned int _r,                         \
-                       T * _b,                                  \
-                       T * _x,                                  \
-                       void * _opts);                           \
-void MATRIX(_cgsolve)(T * _A,                                   \
-                      unsigned int _r,                          \
-                      T * _b,                                   \
-                      T * _x,                                   \
-                      void * _opts);                            \
-void MATRIX(_ludecomp_crout)(T * _x,                            \
+                                                                \
+/* perform Gauss-Jordan elimination on matrix _x            */  \
+/*  _x      : input/output matrix [size: _r x _c]           */  \
+/*  _r      : rows                                          */  \
+/*  _c      : columns                                       */  \
+void MATRIX(_gjelim)(T *          _x,                           \
+                     unsigned int _r,                           \
+                     unsigned int _c);                          \
+                                                                \
+/* pivot on element _x[_r,_c]                               */  \
+/*  _x      : output matrix [size: _rx x _cx]               */  \
+/*  _rx     : rows of _x                                    */  \
+/*  _cx     : columns of _x                                 */  \
+/*  _r      : pivot row                                     */  \
+/*  _c      : pivot column                                  */  \
+void MATRIX(_pivot)(T *          _x,                            \
+                    unsigned int _rx,                           \
+                    unsigned int _cx,                           \
+                    unsigned int _r,                            \
+                    unsigned int _c);                           \
+                                                                \
+/* swap rows _r1 and _r2 of matrix _x                       */  \
+/*  _x      : input/output matrix [size: _rx x _cx]         */  \
+/*  _rx     : rows of _x                                    */  \
+/*  _cx     : columns of _x                                 */  \
+/*  _r1     : first row to swap                             */  \
+/*  _r2     : second row to swap                            */  \
+void MATRIX(_swaprows)(T *          _x,                         \
+                       unsigned int _rx,                        \
+                       unsigned int _cx,                        \
+                       unsigned int _r1,                        \
+                       unsigned int _r2);                       \
+                                                                \
+/* solve linear system of _n equations: _A*_x = _b          */  \
+/*  _A      :   system matrix [size: _n x _n]               */  \
+/*  _n      :   system size                                 */  \
+/*  _b      :   equality vector [size: _n x 1]              */  \
+/*  _x      :   solution vector [size: _n x 1]              */  \
+/*  _opts   :   options (ignored for now)                   */  \
+void MATRIX(_linsolve)(T *          _A,                         \
+                       unsigned int _n,                         \
+                       T *          _b,                         \
+                       T *          _x,                         \
+                       void *       _opts);                     \
+                                                                \
+/* solve linear system of equations using conjugate         */  \
+/* gradient method                                          */  \
+/*  _A      :   symmetric positive definite square matrix   */  \
+/*  _n      :   system dimension                            */  \
+/*  _b      :   equality [size: _n x 1]                     */  \
+/*  _x      :   solution estimate [size: _n x 1]            */  \
+/*  _opts   :   options (ignored for now)                   */  \
+void MATRIX(_cgsolve)(T *          _A,                          \
+                      unsigned int _n,                          \
+                      T *          _b,                          \
+                      T *          _x,                          \
+                      void *       _opts);                      \
+                                                                \
+/* L/U/P decomposition, Crout's method                      */  \
+/*  _x      : input/output matrix [size: _rx x _cx]         */  \
+/*  _rx     : rows of _x                                    */  \
+/*  _cx     : columns of _x                                 */  \
+/*  _L      : first row to swap                             */  \
+/*  _U      : first row to swap                             */  \
+/*  _P      : first row to swap                             */  \
+void MATRIX(_ludecomp_crout)(T *          _x,                   \
                              unsigned int _rx,                  \
                              unsigned int _cx,                  \
-                             T * _L,                            \
-                             T * _U,                            \
-                             T * _P);                           \
-void MATRIX(_ludecomp_doolittle)(T * _x,                        \
+                             T *          _L,                   \
+                             T *          _U,                   \
+                             T *          _P);                  \
+                                                                \
+/* L/U/P decomposition, Doolittle's method                  */  \
+/*  _x      : input/output matrix [size: _rx x _cx]         */  \
+/*  _rx     : rows of _x                                    */  \
+/*  _cx     : columns of _x                                 */  \
+/*  _L      : first row to swap                             */  \
+/*  _U      : first row to swap                             */  \
+/*  _P      : first row to swap                             */  \
+void MATRIX(_ludecomp_doolittle)(T *          _x,               \
                                  unsigned int _rx,              \
                                  unsigned int _cx,              \
-                                 T * _L,                        \
-                                 T * _U,                        \
-                                 T * _P);                       \
-void MATRIX(_gramschmidt)(T * _A,                               \
-                          unsigned int _rx,                     \
-                          unsigned int _cx,                     \
-                          T * _U);                              \
-void MATRIX(_qrdecomp_gramschmidt)(T * _x,                      \
-                                   unsigned int _rx,            \
-                                   unsigned int _cx,            \
-                                   T * _Q,                      \
-                                   T * _R);                     \
-void MATRIX(_chol)(T * _A,                                      \
+                                 T *          _L,               \
+                                 T *          _U,               \
+                                 T *          _P);              \
+                                                                \
+/* Orthnormalization using the Gram-Schmidt algorithm       */  \
+/*  _A      : input matrix [size: _r x _c]                  */  \
+/*  _r      : rows                                          */  \
+/*  _c      : columns                                       */  \
+/*  _v      : output matrix                                 */  \
+void MATRIX(_gramschmidt)(T *          _A,                      \
+                          unsigned int _r,                      \
+                          unsigned int _c,                      \
+                          T *          _v);                     \
+                                                                \
+/* Q/R decomposition using the Gram-Schmidt algorithm such  */  \
+/* that _A = _Q*_R and _Q^T * _Q = _In and _R is a diagonal */  \
+/* matrix                                                   */  \
+/* NOTE: all matrices are square                            */  \
+/*  _A      : input matrix [size: _m x _m]                  */  \
+/*  _m      : rows                                          */  \
+/*  _n      : columns (same as cols)                        */  \
+/*  _Q      : output matrix [size: _m x _m]                 */  \
+/*  _R      : output matrix [size: _m x _m]                 */  \
+void MATRIX(_qrdecomp_gramschmidt)(T *          _A,             \
+                                   unsigned int _m,             \
+                                   unsigned int _n,             \
+                                   T *          _Q,             \
+                                   T *          _R);            \
+                                                                \
+/* Compute Cholesky decomposition of a symmetric/Hermitian  */  \
+/* positive-definite matrix as A = L * L^T                  */  \
+/*  _A      :   input square matrix [size: _n x _n]         */  \
+/*  _n      :   input matrix dimension                      */  \
+/*  _L      :   output lower-triangular matrix              */  \
+void MATRIX(_chol)(T *          _A,                             \
                    unsigned int _n,                             \
-                   T * _L);                                     \
+                   T *          _L);                            \
 
 #define matrix_access(X,R,C,r,c) ((X)[(r)*(C)+(c)])
 
@@ -4585,41 +5069,46 @@ void liquid_unpack_soft_bits(unsigned int _sym_in,
 /* define struct pointer */                                     \
 typedef struct MODEM(_s) * MODEM();                             \
                                                                 \
-/* create digital modem object, allocating memory as necessary */ \
-MODEM() MODEM(_create)(modulation_scheme _scheme);                  \
+/* create digital modem object                              */  \
+MODEM() MODEM(_create)(modulation_scheme _scheme);              \
                                                                 \
-/* create arbitrary digital modem object */                     \
-MODEM() MODEM(_create_arbitrary)(TC * _table, unsigned int _M); \
+/* create arbitrary digital modem object                    */  \
+/*  _table  :   array of complex constellation points       */  \
+/*  _M      :   modulation order and table size             */  \
+MODEM() MODEM(_create_arbitrary)(TC *         _table,           \
+                                 unsigned int _M);              \
                                                                 \
-/* recreate modulation scheme, re-allocating memory as necessary */ \
-MODEM() MODEM(_recreate)(MODEM() _q,                            \
+/* recreate modulation scheme, re-allocating memory as      */  \
+/* necessary                                                */  \
+MODEM() MODEM(_recreate)(MODEM()           _q,                  \
                          modulation_scheme _scheme);            \
                                                                 \
 void MODEM(_destroy)(MODEM() _q);                               \
 void MODEM(_print)(  MODEM() _q);                               \
 void MODEM(_reset)(  MODEM() _q);                               \
                                                                 \
-/* generate random symbol */                                    \
+/* generate random symbol                                   */  \
 unsigned int MODEM(_gen_rand_sym)(MODEM() _q);                  \
                                                                 \
 /* Accessor functions */                                        \
-unsigned int MODEM(_get_bps)(MODEM() _q);                       \
+unsigned int      MODEM(_get_bps)   (MODEM() _q);               \
+modulation_scheme MODEM(_get_scheme)(MODEM() _q);               \
                                                                 \
 /* generic modulate function; simply queries modem scheme   */  \
 /* and calls appropriate subroutine                         */  \
 /*  _q  :   modem object                                    */  \
 /*  _s  :   input symbol                                    */  \
 /*  _x  :   output sample                                   */  \
-void MODEM(_modulate)(MODEM() _q,                               \
+void MODEM(_modulate)(MODEM()      _q,                          \
                       unsigned int _s,                          \
-                      TC *_y);                                  \
+                      TC *         _y);                         \
                                                                 \
 /* generic hard-decision demodulation function              */  \
 /*  _q  :   modem object                                    */  \
 /*  _x  :   input sample                                    */  \
 /*  _s  :   output symbol                                   */  \
-void MODEM(_demodulate)(MODEM() _q,                             \
-                        TC _x,                                  \
+void MODEM(_demodulate)(MODEM()        _q,                      \
+                        TC             _x,                      \
                         unsigned int * _s);                     \
                                                                 \
 /* generic soft-decision demodulation function              */  \
@@ -4627,14 +5116,14 @@ void MODEM(_demodulate)(MODEM() _q,                             \
 /*  _x          :   input sample                            */  \
 /*  _s          :   output hard symbol                      */  \
 /*  _soft_bits  :   output soft bits                        */  \
-void MODEM(_demodulate_soft)(MODEM() _q,                        \
-                             TC _x,                             \
+void MODEM(_demodulate_soft)(MODEM()         _q,                \
+                             TC              _x,                \
                              unsigned int  * _s,                \
                              unsigned char * _soft_bits);       \
                                                                 \
 /* get demodulator's estimated transmit sample */               \
 void MODEM(_get_demodulator_sample)(MODEM() _q,                 \
-                                    TC * _x_hat);               \
+                                    TC *    _x_hat);            \
                                                                 \
 /* get demodulator phase error */                               \
 float MODEM(_get_demodulator_phase_error)(MODEM() _q);          \
@@ -5143,7 +5632,7 @@ void NCO(_sincos)(NCO() _q, T* _s, T* _c);                      \
 void NCO(_cexpf)(NCO() _q, TC * _y);                            \
                                                                 \
 /* pll : phase-locked loop                              */      \
-void NCO(_pll_set_bandwidth)(NCO() _q, T _b);                   \
+void NCO(_pll_set_bandwidth)(NCO() _q, T _bandwidth);           \
 void NCO(_pll_step)(NCO() _q, T _dphi);                         \
                                                                 \
 /* Rotate input sample up by NCO angle (no stepping)    */      \

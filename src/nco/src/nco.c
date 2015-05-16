@@ -1,20 +1,23 @@
 /*
- * Copyright (c) 2007 - 2014 Joseph Gaeddert
+ * Copyright (c) 2007 - 2015 Joseph Gaeddert
  *
- * This file is part of liquid.
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
  *
- * liquid is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
+ * The above copyright notice and this permission notice shall be included in
+ * all copies or substantial portions of the Software.
  *
- * liquid is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with liquid.  If not, see <http://www.gnu.org/licenses/>.
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+ * THE SOFTWARE.
  */
 
 //
@@ -43,11 +46,8 @@ struct NCO(_s) {
     void (*compute_sincos)(NCO() _q);
 
     // phase-locked loop
-    T bandwidth;
-    T zeta;
-    T a[3];
-    T b[3];
-    iirfiltsos_rrrf pll_filter;
+    T alpha;
+    T beta;
 };
 
 // create nco/vco object
@@ -62,11 +62,6 @@ NCO() NCO(_create)(liquid_ncotype _type)
         q->sintab[i] = SIN(2.0f*M_PI*(float)(i)/256.0f);
 
     // set default pll bandwidth
-    q->a[0] = 1.0f;     q->b[0] = 0.0f;
-    q->a[1] = 0.0f;     q->b[1] = 0.0f;
-    q->a[2] = 0.0f;     q->b[2] = 0.0f;
-    q->pll_filter = iirfiltsos_rrrf_create(q->b, q->a);
-    NCO(_reset)(q);
     NCO(_pll_set_bandwidth)(q, NCO_PLL_BANDWIDTH_DEFAULT);
 
     // set internal method
@@ -79,13 +74,14 @@ NCO() NCO(_create)(liquid_ncotype _type)
         exit(1);
     }
 
+    // reset object and return
+    NCO(_reset)(q);
     return q;
 }
 
 // destroy nco object
 void NCO(_destroy)(NCO() _q)
 {
-    iirfiltsos_rrrf_destroy(_q->pll_filter);
     free(_q);
 }
 
@@ -150,8 +146,6 @@ T NCO(_get_phase)(NCO() _q)
 // ge frequency
 T NCO(_get_frequency)(NCO() _q)
 {
-    // return both internal NCO phase step as well
-    // as PLL phase step
     return _q->d_theta;
 }
 
@@ -204,56 +198,33 @@ void NCO(_cexpf)(NCO() _q,
 // reset pll state, retaining base frequency
 void NCO(_pll_reset)(NCO() _q)
 {
-    // clear phase-locked loop filter
-    iirfiltsos_rrrf_reset(_q->pll_filter);
 }
 
 // set pll bandwidth
 void NCO(_pll_set_bandwidth)(NCO() _q,
-                             T _b)
+                             T     _bandwidth)
 {
     // validate input
-    if (_b < 0.0f) {
+    if (_bandwidth < 0.0f) {
         fprintf(stderr,"error: nco_pll_set_bandwidth(), bandwidth must be positive\n");
         exit(1);
     }
 
-    _q->bandwidth = _b;
-    _q->zeta = 1/sqrtf(2.0f);
-
-    float K     = NCO_PLL_GAIN_DEFAULT; // gain
-    float zeta  = 1.0f / sqrtf(2.0f);   // damping factor
-    float wn    = _b;                   // natural frequency
-    float t1    = K/(wn*wn);            // 
-    float t2    = 2*zeta/wn - 1/K;      //
-
-    // feed-forward coefficients
-    _q->b[0] =  2*K*(1.+t2/2.0f);
-    _q->b[1] =  2*K*2.;
-    _q->b[2] =  2*K*(1.-t2/2.0f);
-
-    // feed-back coefficients
-    _q->a[0] =  1. + t1/2.0f;
-    _q->a[1] = -1. + t1/2.0f;
-    _q->a[2] =  0.0f;
-    
-    iirfiltsos_rrrf_set_coefficients(_q->pll_filter, _q->b, _q->a);
+    _q->alpha = _bandwidth;         // frequency proportion
+    _q->beta  = sqrtf(_q->alpha);   // phase proportion
 }
 
 // advance pll phase
 //  _q      :   nco object
 //  _dphi   :   phase error
 void NCO(_pll_step)(NCO() _q,
-                    T _dphi)
+                    T     _dphi)
 {
-    // execute internal filter (direct form I)
-    float error_filtered = 0.0f;
-    iirfiltsos_rrrf_execute_df1(_q->pll_filter,
-                                _dphi,
-                                &error_filtered);
-
     // increase frequency proportional to error
-    NCO(_adjust_frequency)(_q, error_filtered);
+    NCO(_adjust_frequency)(_q, _dphi*_q->alpha);
+
+    // increase phase proportional to error
+    NCO(_adjust_phase)(_q, _dphi*_q->beta);
 
     // constrain frequency
     //NCO(_constrain_frequency)(_q);

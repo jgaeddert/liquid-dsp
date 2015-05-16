@@ -87,21 +87,11 @@ int main(int argc, char*argv[]) {
     float complex sym_out[num_symbols + 64];// synchronized symbols
 
     // 
-    // generate input sequence
+    // generate input sequence (stream of interpolated QPSK symbols)
     //
-
-    // design interpolating filter
-    firinterp_crcf interp = firinterp_crcf_create_rnyquist(LIQUID_FIRFILT_RRC,k,m,beta,tau);
-    for (i=0; i<num_symbols; i++) {
-        // generate random QPSK symbol
-        float complex s = cexpf(_Complex_I*0.5f*M_PI*((rand() % 4) + 0.5f));
-
-        // interpolate
-        firinterp_crcf_execute(interp, s, &x[i*k]);
-    }
-    firinterp_crcf_destroy(interp);
-
-    // TODO: 
+    symstreamcf gen = symstreamcf_create_linear(LIQUID_FIRFILT_RRC,k,m,beta,LIQUID_MODEM_QPSK);
+    symstreamcf_write_samples(gen, x, num_samples);
+    symstreamcf_destroy(gen);
 
     // 
     // add channel gain, noise
@@ -144,17 +134,23 @@ int main(int argc, char*argv[]) {
 
     fprintf(fid,"iz0 = 1:round(length(z)*0.5);\n");
     fprintf(fid,"iz1 = round(length(z)*0.5):length(z);\n");
-    fprintf(fid,"figure;\n");
-    fprintf(fid,"hold on;\n");
-    fprintf(fid,"plot(real(z(iz0)),imag(z(iz0)),'x','MarkerSize',4,'Color',[0.6 0.6 0.6]);\n");
-    fprintf(fid,"plot(real(z(iz1)),imag(z(iz1)),'o','MarkerSize',4,'Color',[0 0.25 0.5]);\n");
-    fprintf(fid,"hold off;\n");
-    fprintf(fid,"axis square;\n");
-    fprintf(fid,"grid on;\n");
-    fprintf(fid,"axis([-1 1 -1 1]*1.6);\n");
-    fprintf(fid,"xlabel('In-phase');\n");
-    fprintf(fid,"ylabel('Quadrature');\n");
-    fprintf(fid,"legend(['first 50%%'],['last 50%%'],'location','northeast');\n");
+    fprintf(fid,"figure('Color','white','position',[500 500 800 400]);\n");
+    fprintf(fid,"subplot(1,2,1);\n");
+    fprintf(fid,"plot(real(z(iz0)),imag(z(iz0)),'x','MarkerSize',4);\n");
+    fprintf(fid,"  axis square;\n");
+    fprintf(fid,"  grid on;\n");
+    fprintf(fid,"  axis([-1 1 -1 1]*1.6);\n");
+    fprintf(fid,"  xlabel('In-phase');\n");
+    fprintf(fid,"  ylabel('Quadrature');\n");
+    fprintf(fid,"  title('First 50%% of symbols');\n");
+    fprintf(fid,"subplot(1,2,2);\n");
+    fprintf(fid,"  plot(real(z(iz1)),imag(z(iz1)),'x','MarkerSize',4);\n");
+    fprintf(fid,"  axis square;\n");
+    fprintf(fid,"  grid on;\n");
+    fprintf(fid,"  axis([-1 1 -1 1]*1.5);\n");
+    fprintf(fid,"  xlabel('In-phase');\n");
+    fprintf(fid,"  ylabel('Quadrature');\n");
+    fprintf(fid,"  title('Last 50%% of symbols');\n");
 
     fclose(fid);
     printf("results written to %s.\n", OUTPUT_FILENAME);

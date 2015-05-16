@@ -21,7 +21,7 @@ void usage()
     printf("  h     : print this help file\n");
     printf("  m     : filter delay (symbols),  default: 3\n");
     printf("  b     : filter excess bandwidth, default: 0.5\n");
-    printf("  s     : signal-to-noise ratio,   default: 30dB\n");
+    printf("  s     : signal-to-noise ratio,   default: 30 dB\n");
     printf("  w     : timing pll bandwidth,    default: 0.02\n");
     printf("  n     : number of symbols,       default: 800\n");
     printf("  t     : timing phase offset [%% symbol], t in [-0.5,0.5], default: -0.2\n");
@@ -35,13 +35,13 @@ int main(int argc, char*argv[]) {
     unsigned int m           = 3;       // filter delay (symbols)
     float        beta        = 0.5f;    // filter excess bandwidth factor
     unsigned int num_symbols = 800;     // number of data symbols
+    unsigned int hc_len      =   3;     // channel filter length
     float        noise_floor = -60.0f;  // noise floor [dB]
     float        SNRdB       = 30.0f;   // signal-to-noise ratio [dB]
     float        bandwidth   =  0.02f;  // loop filter bandwidth
     float        tau         = -0.2f;   // fractional symbol offset
     float        rate        = 1.001f;  // sample rate offset
-    
-    float        dphi        =  0.1f;   // carrier frequency offset [radians/sample]
+    float        dphi        =  0.01f;  // carrier frequency offset [radians/sample]
     float        phi         =  2.1f;   // carrier phase offset [radians]
 
     int dopt;
@@ -88,8 +88,8 @@ int main(int argc, char*argv[]) {
     unsigned int nx =   num_symbols*k;
     unsigned int ny = (unsigned int) ceilf(rate * nx) + 64;
 
-    printf("    nx  :   %u\n", nx);
-    printf("    ny  :   %u\n", ny);
+    printf("        nx  : %u\n", nx);
+    printf("        ny  : %u\n", ny);
 
     float complex x[nx];    // interpolated samples
     float complex y[ny];    //
@@ -114,9 +114,10 @@ int main(int argc, char*argv[]) {
     channel_cccf channel = channel_cccf_create();
 
     // add channel impairments
-    channel_cccf_add_awgn(channel, noise_floor, SNRdB);
+    channel_cccf_add_awgn          (channel, noise_floor, SNRdB);
     channel_cccf_add_carrier_offset(channel, dphi, phi);
-    channel_cccf_add_multipath(channel, NULL, 10);
+    channel_cccf_add_multipath     (channel, NULL, hc_len);
+    channel_cccf_add_resamp        (channel, 0.0f, rate);
 
     // apply channel
     channel_cccf_execute(channel, x, nx, y, &ny);
@@ -130,6 +131,9 @@ int main(int argc, char*argv[]) {
 
     symtrack_cccf symtrack = symtrack_cccf_create(LIQUID_FIRFILT_RRC,
                                             k, m, beta, LIQUID_MODEM_QPSK);
+    
+    //
+    symtrack_cccf_set_bandwidth(symtrack,0.05f);
 
     unsigned int num_symbols_sync = 0;
     symtrack_cccf_execute_block(symtrack, y, ny, sym_out, &num_symbols_sync);
@@ -154,17 +158,23 @@ int main(int argc, char*argv[]) {
 
     fprintf(fid,"iz0 = 1:round(length(z)*0.5);\n");
     fprintf(fid,"iz1 = round(length(z)*0.5):length(z);\n");
-    fprintf(fid,"figure;\n");
-    fprintf(fid,"hold on;\n");
-    fprintf(fid,"plot(real(z(iz0)),imag(z(iz0)),'x','MarkerSize',4,'Color',[0.6 0.6 0.6]);\n");
-    fprintf(fid,"plot(real(z(iz1)),imag(z(iz1)),'o','MarkerSize',4,'Color',[0 0.25 0.5]);\n");
-    fprintf(fid,"hold off;\n");
-    fprintf(fid,"axis square;\n");
-    fprintf(fid,"grid on;\n");
-    fprintf(fid,"axis([-1 1 -1 1]*1.6);\n");
-    fprintf(fid,"xlabel('In-phase');\n");
-    fprintf(fid,"ylabel('Quadrature');\n");
-    fprintf(fid,"legend(['first 50%%'],['last 50%%'],'location','northeast');\n");
+    fprintf(fid,"figure('Color','white','position',[500 500 800 400]);\n");
+    fprintf(fid,"subplot(1,2,1);\n");
+    fprintf(fid,"plot(real(z(iz0)),imag(z(iz0)),'x','MarkerSize',4);\n");
+    fprintf(fid,"  axis square;\n");
+    fprintf(fid,"  grid on;\n");
+    fprintf(fid,"  axis([-1 1 -1 1]*1.6);\n");
+    fprintf(fid,"  xlabel('In-phase');\n");
+    fprintf(fid,"  ylabel('Quadrature');\n");
+    fprintf(fid,"  title('First 50%% of symbols');\n");
+    fprintf(fid,"subplot(1,2,2);\n");
+    fprintf(fid,"  plot(real(z(iz1)),imag(z(iz1)),'x','MarkerSize',4);\n");
+    fprintf(fid,"  axis square;\n");
+    fprintf(fid,"  grid on;\n");
+    fprintf(fid,"  axis([-1 1 -1 1]*1.5);\n");
+    fprintf(fid,"  xlabel('In-phase');\n");
+    fprintf(fid,"  ylabel('Quadrature');\n");
+    fprintf(fid,"  title('Last 50%% of symbols');\n");
 
     fclose(fid);
     printf("results written to %s.\n", OUTPUT_FILENAME);

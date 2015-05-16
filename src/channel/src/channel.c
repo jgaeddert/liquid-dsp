@@ -1,20 +1,23 @@
 /*
- * Copyright (c) 2007 - 2014 Joseph Gaeddert
+ * Copyright (c) 2007 - 2015 Joseph Gaeddert
  *
- * This file is part of liquid.
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
  *
- * liquid is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
+ * The above copyright notice and this permission notice shall be included in
+ * all copies or substantial portions of the Software.
  *
- * liquid is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with liquid.  If not, see <http://www.gnu.org/licenses/>.
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+ * THE SOFTWARE.
  */
 
 //
@@ -28,24 +31,31 @@
 
 // portable structured channel object
 struct CHANNEL(_s) {
+    // sample rate
+    int             enabled_resamp;     // resampler enabled?
+    unsigned int    resamp_m;           // resampling filter semi-length
+    float           resamp_rate;        // resampling rate
+    TO              resamp_buf[8];      // resampling buffer
+    RESAMP()        resamp;             // resampling filter
+
     // additive white Gauss noise
-    int   enabled_awgn;     // AWGN enabled?
-    T     gamma;            // channel gain
-    T     nstd;             // noise standard deviation
-    float noise_floor_dB;
-    float SNRdB;
+    int             enabled_awgn;       // AWGN enabled?
+    T               gamma;              // channel gain
+    T               nstd;               // noise standard deviation
+    float           noise_floor_dB;     // noise floor
+    float           SNRdB;              // signal-to-noise ratio [dB]
 
     // carrier offset
-    int   enabled_carrier;  // carrier offset enabled?
-    float dphi;             // channel gain
-    float phi;              // noise standard deviation
-    NCO() nco;              // oscillator
+    int             enabled_carrier;    // carrier offset enabled?
+    float           dphi;               // channel gain
+    float           phi;                // noise standard deviation
+    NCO()           nco;                // oscillator
 
     // multi-path channel
-    int          enabled_multipath; // enable multi-path channel filter?
-    FIRFILT()    channel_filter;    // multi-path channel filter object
-    TC *         h;                 // multi-path channel filter coefficients
-    unsigned int h_len;             // multi-path channel filter length
+    int             enabled_multipath;  // enable multi-path channel filter?
+    FIRFILT()       channel_filter;     // multi-path channel filter object
+    TC *            h;                  // multi-path channel filter coefficients
+    unsigned int    h_len;              // multi-path channel filter length
 };
 
 // create structured channel object
@@ -54,12 +64,16 @@ CHANNEL() CHANNEL(_create)(void)
     CHANNEL() q = (CHANNEL()) malloc(sizeof(struct CHANNEL(_s)));
 
     // initialize all options as off
+    q->enabled_resamp    = 0;
     q->enabled_awgn      = 0;
     q->enabled_carrier   = 0;
     q->enabled_multipath = 0;
 
     // create internal objects
-    q->nco = NCO(_create)(LIQUID_VCO);
+    q->resamp_rate    = 1.0f;
+    q->resamp_m       = 17;
+    q->resamp         = RESAMP(_create)(q->resamp_rate, q->resamp_m, 0.45f, 50.0f, 64);
+    q->nco            = NCO(_create)(LIQUID_VCO);
     q->h_len          = 1;
     q->h              = (TC*) malloc(q->h_len*sizeof(TC));
     q->h[0]           = 1.0f;
@@ -110,6 +124,34 @@ void CHANNEL(_add_awgn)(CHANNEL() _q,
     _q->gamma = powf(10.0f, (_q->SNRdB+_q->noise_floor_dB)/20.0f);
 }
 
+// apply additive white Gausss noise impairment
+//  _q              : channel object
+//  _delay          : resampling delay
+//  _rate           : resampling rate
+void CHANNEL(_add_resamp)(CHANNEL() _q,
+                          float     _delay,
+                          float     _rate)
+{
+    if (_delay < -0.5f || _delay > 0.5f) {
+        fprintf(stderr,"warning: channel_%s_add_resamp(), delay must be in [-0.5,0.5]; ignoring\n", EXTENSION_FULL);
+        return;
+    } else if (_rate < 0.95f || _rate > 1.05f) {
+        fprintf(stderr,"warning: channel_%s_add_resamp(), rate must be in [0.95,1.05]; ignoring\n", EXTENSION_FULL);
+        return;
+    }
+
+    // enable module
+    _q->enabled_resamp = 1;
+
+    // set parameters
+    _q->resamp_rate = _rate;
+
+    // TODO: set delay appropriately
+    
+    //
+    RESAMP(_setrate)(_q->resamp, _q->resamp_rate);
+}
+
 // apply carrier offset impairment
 //  _q          : channel object
 //  _frequency  : carrier frequency offse [radians/sample
@@ -126,7 +168,8 @@ void CHANNEL(_add_carrier_offset)(CHANNEL() _q,
     _q->phi  = _phase;
 
     // set values appropriately
-    NCO(_set_phase)(    _q->nco, _q->phi);
+    NCO(_set_frequency)(_q->nco, _q->dphi);
+    NCO(_set_phase)    (_q->nco, _q->phi);
 }
 
 // apply mulit-path channel impairment
@@ -158,12 +201,17 @@ void CHANNEL(_add_multipath)(CHANNEL()    _q,
     
     // copy coefficients internally
     if (_h == NULL) {
-        // generate random coefficients
+        // generate random coefficients using m-sequence generator
         // TODO: support types other than float
         _q->h[0] = 1.0f;
         unsigned int i;
-        for (i=1; i<_q->h_len; i++)
-            _q->h[i] = 0.05f * ( randnf() * _Complex_I*randnf() );
+        msequence ms = msequence_create_default(14);
+        for (i=1; i<_q->h_len; i++) {
+            float vi = msequence_generate_symbol(ms, 8) / 256.0f - 0.5f;
+            float vq = msequence_generate_symbol(ms, 8) / 256.0f - 0.5f;
+            _q->h[i] = (vi + _Complex_I*vq) * 0.5f;
+        }
+        msequence_destroy(ms);
     } else {
         // copy coefficients internally
         memmove(_q->h, _h, _q->h_len*sizeof(TC));
@@ -186,27 +234,43 @@ void CHANNEL(_execute)(CHANNEL()      _q,
                        unsigned int * _ny)
 {
     unsigned int i;
+    unsigned int j;
+    unsigned int num_resamp;    // resampler output length
+    unsigned int n=0;           // number of output samples
 
+    // apply channel effects on each input sample
     for (i=0; i<_nx; i++) {
 
-        // apply filter
-        if (_q->enabled_multipath) {
-            FIRFILT(_push)(   _q->channel_filter,  _x[i]);
-            FIRFILT(_execute)(_q->channel_filter, &_y[i]);
-        } else
-            _y[i] = _x[i];
+        // apply resampler (always push through resampling filter)
+        RESAMP(_execute)(_q->resamp, _x[i], _q->resamp_buf, &num_resamp);
 
-        // apply carrier if enabled
-        if (_q->enabled_carrier)
-            NCO(_mix_up)(_q->nco, _y[i], &_y[i]);
+        // run resulting resampled result through remaining channel objects
+        for (j=0; j<num_resamp; j++) {
+            // apply filter
+            if (_q->enabled_multipath) {
+                FIRFILT(_push)(   _q->channel_filter,  _q->resamp_buf[j]);
+                FIRFILT(_execute)(_q->channel_filter, &_y[n]);
+            } else
+                _y[n] = _q->resamp_buf[j];
 
-        // apply AWGN if enabled
-        if (_q->enabled_awgn) {
-            _y[i] *= _q->gamma;
-            _y[i] += _q->nstd * ( randnf() + _Complex_I*randnf() ) * M_SQRT1_2;
+            // apply carrier if enabled
+            if (_q->enabled_carrier) {
+                NCO(_mix_up)(_q->nco, _y[n], &_y[n]);
+                NCO(_step)  (_q->nco);
+            }
+
+            // apply AWGN if enabled
+            if (_q->enabled_awgn) {
+                _y[n] *= _q->gamma;
+                _y[n] += _q->nstd * ( randnf() + _Complex_I*randnf() ) * M_SQRT1_2;
+            }
+
+            // increment output sample counter
+            n++;
         }
     }
 
-    *_ny = _nx;
+    // set output sample length
+    *_ny = n;
 }
 

@@ -31,13 +31,16 @@ void usage()
     printf("  f     : frequency offset (radians), default: 0.3\n");
 }
 
-int main(int argc, char*argv[]) {
+int main(int argc, char*argv[])
+{
+    // set random seed
     srand( time(NULL) );
+
     // parameters
-    float phase_offset = M_PI / 4.0f;
-    float frequency_offset = 0.2f;
-    float pll_bandwidth = 0.01f;
-    unsigned int n=512;     // number of iterations
+    float phase_offset     = 0.0f;      // initial phase offset
+    float frequency_offset = 0.40f;     // initial frequency offset
+    float pll_bandwidth    = 0.003f;    // phase-locked loop bandwidth
+    unsigned int n         = 512;       // number of iterations
 
     int dopt;
     while ((dopt = getopt(argc,argv,"uhb:n:p:f:")) != EOF) {
@@ -83,17 +86,17 @@ int main(int argc, char*argv[]) {
         if (i == 100) nco_pll_set_bandwidth(nco_rx, pll_bandwidth*0.2f);
 #endif
 
-        // generate complex sinusoid
+        // generate input
         nco_crcf_cexpf(nco_rx, &y[i]);
+
+        // update rx nco object
+        nco_crcf_step(nco_rx);
 
         // compute phase error
         phase_error[i] = cargf(x[i]*conjf(y[i]));
 
         // update pll
         nco_crcf_pll_step(nco_rx, phase_error[i]);
-
-        // update rx nco object
-        nco_crcf_step(nco_rx);
 
         // print phase error
         if ( (i+1)%50 == 0 || i==n-1 || i==0)
@@ -118,19 +121,25 @@ int main(int argc, char*argv[]) {
     fprintf(fid,"t=0:(n-1);\n");
     fprintf(fid,"figure;\n");
     fprintf(fid,"subplot(3,1,1);\n");
-    fprintf(fid,"  plot(t,real(x),t,real(y));\n");
+    fprintf(fid,"  hold on;\n");
+    fprintf(fid,"  plot(t,real(x),'Color',[1 1 1]*0.8);\n");
+    fprintf(fid,"  plot(t,real(y),'Color',[0 0.2 0.5]);\n");
+    fprintf(fid,"  hold off;\n");
     fprintf(fid,"  xlabel('time');\n");
     fprintf(fid,"  ylabel('real');\n");
     fprintf(fid,"  axis([0 n -1.2 1.2]);\n");
     fprintf(fid,"  grid on;\n");
     fprintf(fid,"subplot(3,1,2);\n");
-    fprintf(fid,"  plot(t,imag(x),t,imag(y));\n");
+    fprintf(fid,"  hold on;\n");
+    fprintf(fid,"  plot(t,imag(x),'Color',[1 1 1]*0.8);\n");
+    fprintf(fid,"  plot(t,imag(y),'Color',[0 0.5 0.2]);\n");
+    fprintf(fid,"  hold off;\n");
     fprintf(fid,"  xlabel('time');\n");
     fprintf(fid,"  ylabel('imag');\n");
     fprintf(fid,"  axis([0 n -1.2 1.2]);\n");
     fprintf(fid,"  grid on;\n");
     fprintf(fid,"subplot(3,1,3);\n");
-    fprintf(fid,"  plot(t,e);\n");
+    fprintf(fid,"  plot(t,e,'Color',[0.5 0 0]);\n");
     fprintf(fid,"  xlabel('time');\n");
     fprintf(fid,"  ylabel('phase error');\n");
     fprintf(fid,"  axis([0 n -pi pi]);\n");
