@@ -41,37 +41,36 @@
 // internal structure
 struct SYMTRACK(_s) {
     // parameters
-    int             filter_type;   // filter type (e.g. LIQUID_RNYQUIST_RKAISER)
-    unsigned int    k;             // samples/symbol
-    unsigned int    m;             // filter semi-length
-    float           beta;          // filter excess bandwidth
-    int             mod_scheme;    // demodulator
-
-    // derived values
+    int             filter_type;        // filter type (e.g. LIQUID_RNYQUIST_RKAISER)
+    unsigned int    k;                  // samples/symbol
+    unsigned int    m;                  // filter semi-length
+    float           beta;               // filter excess bandwidth
+    int             mod_scheme;         // demodulator
 
     // automatic gain control
-    AGC()           agc;
-    float           agc_bandwidth;
+    AGC()           agc;                // agc object
+    float           agc_bandwidth;      // agc bandwidth
 
     // symbol timing recovery
-    SYMSYNC()       symsync;
-    float           symsync_bandwidth;
-    TO              symsync_buf[8];
-    unsigned int    symsync_index;
+    SYMSYNC()       symsync;            // symbol timing recovery object
+    float           symsync_bandwidth;  // symsync loop bandwidth
+    TO              symsync_buf[8];     // symsync output buffer
+    unsigned int    symsync_index;      // symsync output sample index
 
     // equalizer/decimator
-    EQLMS()         eq;
-    float           eq_bandwidth;
+    EQLMS()         eq;                 // equalizer (LMS)
+    unsigned int    eq_len;             // equalizer length
+    float           eq_bandwidth;       // equalizer bandwidth
 
     // nco/phase-locked loop
-    NCO()           nco;
-    float           pll_bandwidth;
+    NCO()           nco;                // nco (carrier recovery)
+    float           pll_bandwidth;      // phase-locked loop bandwidth
 
     // demodulator
-    MODEM()         demod;
+    MODEM()         demod;              // linear modem demodulator
 
     // state and counters
-    unsigned int    num_symbols_received;
+    unsigned int    num_syms_rx;        // number of symbols recovered
 };
 
 // create symtrack object with basic parameters
@@ -87,10 +86,7 @@ SYMTRACK() SYMTRACK(_create)(int          _ftype,
                              int          _ms)
 {
     // validate input
-    if (_k != 2) {
-        fprintf(stderr,"error: symtrack_%s_create(), samples/symbol must be 2\n", EXTENSION_FULL);
-        exit(1);
-    } else if (_m == 0) {
+    if (_m == 0) {
         fprintf(stderr,"error: symtrack_%s_create(), filter delay must be greater than zero\n", EXTENSION_FULL);
         exit(1);
     } else if (_beta <= 0.0f || _beta > 1.0f) {
@@ -114,15 +110,16 @@ SYMTRACK() SYMTRACK(_create)(int          _ftype,
     // create automatic gain control
     q->agc = AGC(_create)();
     
-    // create symbol synchronizer (2 samples per symbol)
+    // create symbol synchronizer (output rate: 2 samples per symbol)
     if (q->filter_type == LIQUID_FIRFILT_UNKNOWN)
         q->symsync = SYMSYNC(_create_kaiser)(q->k, q->m, 0.9f, 16);
     else
         q->symsync = SYMSYNC(_create_rnyquist)(q->filter_type, q->k, q->m, q->beta, 16);
     SYMSYNC(_set_output_rate)(q->symsync, 2);
 
-    // create equalizer as default low-pass filter with integer symbol delay (assume k=2)
-    q->eq = EQLMS(_create_lowpass)(2*4+1,0.45f);
+    // create equalizer as default low-pass filter with integer symbol delay (2 samples/symbol)
+    q->eq_len = 2 * 4 + 1;
+    q->eq = EQLMS(_create_lowpass)(q->eq_len,0.45f);
 
     // nco and phase-locked loop
     q->nco = NCO(_create)(LIQUID_VCO);
@@ -176,7 +173,7 @@ void SYMTRACK(_reset)(SYMTRACK() _q)
 
     // reset internal counters
     _q->symsync_index = 0;
-    _q->num_symbols_received = 0;
+    _q->num_syms_rx = 0;
 }
 
 // set symtrack modulation scheme
@@ -261,16 +258,16 @@ void SYMTRACK(_execute)(SYMTRACK()     _q,
         NCO(_step)(_q->nco);
         nco_crcf_mix_down(_q->nco, _q->symsync_buf[i], &v);
 
-        // equalizer/decimator (2 samples per symbol)
+        // equalizer/decimator
         EQLMS(_push)(_q->eq, v);
 
-        // decimate result
+        // decimate result, noting that symsync outputs at exactly 2 samples/symbol
         _q->symsync_index++;
         if ( !(_q->symsync_index % 2) )
             continue;
 
         // increment number of symbols received
-        _q->num_symbols_received++;
+        _q->num_syms_rx++;
 
         // compute equalizer output
         TO d_hat;
@@ -285,7 +282,7 @@ void SYMTRACK(_execute)(SYMTRACK()     _q,
         // assuming constant modulus signal
         // TODO: use decision-directed feedback when modulation scheme is known
         // TODO: check lock conditions of previous object to determine when to run equalizer
-        if (_q->num_symbols_received > 200)
+        if (_q->num_syms_rx > 200)
             EQLMS(_step)(_q->eq, d_hat/cabsf(d_hat), d_hat);
 
         // update pll
