@@ -41,34 +41,37 @@
 // internal structure
 struct SYMTRACK(_s) {
     // parameters
-    int          filter_type;   // filter type (e.g. LIQUID_RNYQUIST_RKAISER)
-    unsigned int k;             // samples/symbol
-    unsigned int m;             // filter semi-length
-    float        beta;          // filter excess bandwidth
-    int          mod_scheme;    // demodulator
+    int             filter_type;   // filter type (e.g. LIQUID_RNYQUIST_RKAISER)
+    unsigned int    k;             // samples/symbol
+    unsigned int    m;             // filter semi-length
+    float           beta;          // filter excess bandwidth
+    int             mod_scheme;    // demodulator
 
     // derived values
 
     // automatic gain control
-    AGC() agc;
-    float agc_bandwidth;
+    AGC()           agc;
+    float           agc_bandwidth;
 
     // symbol timing recovery
-    SYMSYNC()    symsync;
-    float        symsync_bandwidth;
-    TO           symsync_buf[8];
-    unsigned int symsync_index;
+    SYMSYNC()       symsync;
+    float           symsync_bandwidth;
+    TO              symsync_buf[8];
+    unsigned int    symsync_index;
 
     // equalizer/decimator
-    EQLMS() eq;
-    float   eq_bandwidth;
+    EQLMS()         eq;
+    float           eq_bandwidth;
 
     // nco/phase-locked loop
-    NCO() nco;
-    float pll_bandwidth;
+    NCO()           nco;
+    float           pll_bandwidth;
 
     // demodulator
-    MODEM() demod;
+    MODEM()         demod;
+
+    // state and counters
+    unsigned int    num_symbols_received;
 };
 
 // create symtrack object with basic parameters
@@ -118,8 +121,8 @@ SYMTRACK() SYMTRACK(_create)(int          _ftype,
         q->symsync = SYMSYNC(_create_rnyquist)(q->filter_type, q->k, q->m, q->beta, 16);
     SYMSYNC(_set_output_rate)(q->symsync, 2);
 
-    // equalizer (NULL sets {1,0,0,...})
-    q->eq = EQLMS(_create)(NULL, 7);
+    // create equalizer as default low-pass filter with integer symbol delay (assume k=2)
+    q->eq = EQLMS(_create_lowpass)(2*4+1,0.45f);
 
     // nco and phase-locked loop
     q->nco = NCO(_create)(LIQUID_VCO);
@@ -150,11 +153,11 @@ SYMTRACK() SYMTRACK(_create_default)()
 void SYMTRACK(_destroy)(SYMTRACK() _q)
 {
     // destroy objects
-    AGC(_destroy)(    _q->agc);
+    AGC    (_destroy)(_q->agc);
     SYMSYNC(_destroy)(_q->symsync);
-    EQLMS(_destroy)(  _q->eq);
-    NCO(_destroy)(    _q->nco);
-    MODEM(_destroy)(  _q->demod);
+    EQLMS  (_destroy)(_q->eq);
+    NCO    (_destroy)(_q->nco);
+    MODEM  (_destroy)(_q->demod);
 
     // free main object
     free(_q);
@@ -173,6 +176,7 @@ void SYMTRACK(_reset)(SYMTRACK() _q)
 
     // reset internal counters
     _q->symsync_index = 0;
+    _q->num_symbols_received = 0;
 }
 
 // set symtrack modulation scheme
@@ -198,14 +202,15 @@ void SYMTRACK(_set_bandwidth)(SYMTRACK() _q,
 {
     // validate input
     if (_bw < 0) {
-        fprintf(stderr,"error: symtrack_%s_set_bandwidth(), bandwidth must be greater than zero\n", EXTENSION_FULL);
+        fprintf(stderr,"error: symtrack_%s_set_bandwidth(), bandwidth must be in [0,1]\n", EXTENSION_FULL);
         exit(1);
     }
 
     // set bandwidths accordingly
-    float agc_bandwidth     = 0.1f;
-    float symsync_bandwidth = 0.01f;
-    float eq_bandwidth      = 1e-6f;
+    // TODO: set bandwidths based on input bandwidth
+    float agc_bandwidth     = 0.02f;
+    float symsync_bandwidth = 0.001f;
+    float eq_bandwidth      = 0.02f;
     float pll_bandwidth     = 0.001f;
 
     // automatic gain control
@@ -264,19 +269,24 @@ void SYMTRACK(_execute)(SYMTRACK()     _q,
         if ( !(_q->symsync_index % 2) )
             continue;
 
+        // increment number of symbols received
+        _q->num_symbols_received++;
+
         // compute equalizer output
         TO d_hat;
         EQLMS(_execute)(_q->eq, &d_hat);
-
-        // update equalizer independent of the signal: estimate error
-        // assuming constant modulus signal
-        // TODO: use decision-directed feedback when modulation scheme is known
-        EQLMS(_step)(_q->eq, d_hat/cabsf(d_hat), d_hat);
 
         // demodulate result, apply phase correction
         unsigned int sym_out;
         MODEM(_demodulate)(_q->demod, d_hat, &sym_out);
         float phase_error = MODEM(_get_demodulator_phase_error)(_q->demod);
+
+        // update equalizer independent of the signal: estimate error
+        // assuming constant modulus signal
+        // TODO: use decision-directed feedback when modulation scheme is known
+        // TODO: check lock conditions of previous object to determine when to run equalizer
+        if (_q->num_symbols_received > 200)
+            EQLMS(_step)(_q->eq, d_hat/cabsf(d_hat), d_hat);
 
         // update pll
         NCO(_pll_step)(_q->nco, phase_error);
