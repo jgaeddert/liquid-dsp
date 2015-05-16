@@ -21,7 +21,7 @@ void usage()
     printf("  h     : print this help file\n");
     printf("  m     : filter delay (symbols),  default: 3\n");
     printf("  b     : filter excess bandwidth, default: 0.5\n");
-    printf("  s     : signal-to-noise ratio,   default: 30dB\n");
+    printf("  s     : signal-to-noise ratio,   default: 30 dB\n");
     printf("  w     : timing pll bandwidth,    default: 0.02\n");
     printf("  n     : number of symbols,       default: 800\n");
     printf("  t     : timing phase offset [%% symbol], t in [-0.5,0.5], default: -0.2\n");
@@ -35,13 +35,13 @@ int main(int argc, char*argv[]) {
     unsigned int m           = 3;       // filter delay (symbols)
     float        beta        = 0.5f;    // filter excess bandwidth factor
     unsigned int num_symbols = 800;     // number of data symbols
+    unsigned int hc_len      =   3;     // channel filter length
     float        noise_floor = -60.0f;  // noise floor [dB]
     float        SNRdB       = 30.0f;   // signal-to-noise ratio [dB]
     float        bandwidth   =  0.02f;  // loop filter bandwidth
     float        tau         = -0.2f;   // fractional symbol offset
     float        rate        = 1.001f;  // sample rate offset
-    
-    float        dphi        =  0.1f;   // carrier frequency offset [radians/sample]
+    float        dphi        =  0.01f;  // carrier frequency offset [radians/sample]
     float        phi         =  2.1f;   // carrier phase offset [radians]
 
     int dopt;
@@ -116,8 +116,8 @@ int main(int argc, char*argv[]) {
     // add channel impairments
     channel_cccf_add_awgn          (channel, noise_floor, SNRdB);
     channel_cccf_add_carrier_offset(channel, dphi, phi);
-    channel_cccf_add_multipath     (channel, NULL, 3);
-    channel_cccf_add_resamp        (channel, 0.0f, 1.007f);
+    channel_cccf_add_multipath     (channel, NULL, hc_len);
+    channel_cccf_add_resamp        (channel, 0.0f, rate);
 
     // apply channel
     channel_cccf_execute(channel, x, nx, y, &ny);
@@ -131,6 +131,9 @@ int main(int argc, char*argv[]) {
 
     symtrack_cccf symtrack = symtrack_cccf_create(LIQUID_FIRFILT_RRC,
                                             k, m, beta, LIQUID_MODEM_QPSK);
+    
+    //
+    symtrack_cccf_set_bandwidth(symtrack,0.05f);
 
     unsigned int num_symbols_sync = 0;
     symtrack_cccf_execute_block(symtrack, y, ny, sym_out, &num_symbols_sync);

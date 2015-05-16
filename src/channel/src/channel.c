@@ -71,8 +71,8 @@ CHANNEL() CHANNEL(_create)(void)
 
     // create internal objects
     q->resamp_rate    = 1.0f;
-    q->resamp_m       = 7;
-    q->resamp         = RESAMP(_create)(q->resamp_rate, q->resamp_m, 0.4f, 60.0f, 64);
+    q->resamp_m       = 17;
+    q->resamp         = RESAMP(_create)(q->resamp_rate, q->resamp_m, 0.45f, 50.0f, 64);
     q->nco            = NCO(_create)(LIQUID_VCO);
     q->h_len          = 1;
     q->h              = (TC*) malloc(q->h_len*sizeof(TC));
@@ -168,7 +168,8 @@ void CHANNEL(_add_carrier_offset)(CHANNEL() _q,
     _q->phi  = _phase;
 
     // set values appropriately
-    NCO(_set_phase)(    _q->nco, _q->phi);
+    NCO(_set_frequency)(_q->nco, _q->dphi);
+    NCO(_set_phase)    (_q->nco, _q->phi);
 }
 
 // apply mulit-path channel impairment
@@ -208,7 +209,7 @@ void CHANNEL(_add_multipath)(CHANNEL()    _q,
         for (i=1; i<_q->h_len; i++) {
             float vi = msequence_generate_symbol(ms, 8) / 256.0f - 0.5f;
             float vq = msequence_generate_symbol(ms, 8) / 256.0f - 0.5f;
-            _q->h[i] = (vi + _Complex_I*vq) * 0.2f;
+            _q->h[i] = (vi + _Complex_I*vq) * 0.5f;
         }
         msequence_destroy(ms);
     } else {
@@ -243,7 +244,7 @@ void CHANNEL(_execute)(CHANNEL()      _q,
         // apply resampler (always push through resampling filter)
         RESAMP(_execute)(_q->resamp, _x[i], _q->resamp_buf, &num_resamp);
 
-        // 
+        // run resulting resampled result through remaining channel objects
         for (j=0; j<num_resamp; j++) {
             // apply filter
             if (_q->enabled_multipath) {
@@ -253,8 +254,10 @@ void CHANNEL(_execute)(CHANNEL()      _q,
                 _y[n] = _q->resamp_buf[j];
 
             // apply carrier if enabled
-            if (_q->enabled_carrier)
+            if (_q->enabled_carrier) {
                 NCO(_mix_up)(_q->nco, _y[n], &_y[n]);
+                NCO(_step)  (_q->nco);
+            }
 
             // apply AWGN if enabled
             if (_q->enabled_awgn) {
