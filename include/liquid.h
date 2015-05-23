@@ -696,24 +696,41 @@ crc_scheme liquid_getopt_str2crc(const char * _str);
 unsigned int crc_get_length(crc_scheme _scheme);
 
 // generate error-detection key
-//
 //  _scheme     :   error-detection scheme
 //  _msg        :   input data message, [size: _n x 1]
 //  _n          :   input data message size
-unsigned int crc_generate_key(crc_scheme _scheme,
+unsigned int crc_generate_key(crc_scheme      _scheme,
                               unsigned char * _msg,
-                              unsigned int _n);
+                              unsigned int    _n);
+
+// generate error-detection key and append to end of message
+//  _scheme     :   error-detection scheme (resulting in 'p' bytes)
+//  _msg        :   input data message, [size: _n+p x 1]
+//  _n          :   input data message size (excluding key at end)
+void crc_append_key(crc_scheme      _scheme,
+                    unsigned char * _msg,
+                    unsigned int    _n);
 
 // validate message using error-detection key
-//
 //  _scheme     :   error-detection scheme
 //  _msg        :   input data message, [size: _n x 1]
 //  _n          :   input data message size
 //  _key        :   error-detection key
-int crc_validate_message(crc_scheme _scheme,
+int crc_validate_message(crc_scheme      _scheme,
                          unsigned char * _msg,
-                         unsigned int _n,
-                         unsigned int _key);
+                         unsigned int    _n,
+                         unsigned int    _key);
+
+// check message with key appended to end of array
+//  _scheme     :   error-detection scheme (resulting in 'p' bytes)
+//  _msg        :   input data message, [size: _n+p x 1]
+//  _n          :   input data message size (excluding key at end)
+int crc_check_key(crc_scheme      _scheme,
+                  unsigned char * _msg,
+                  unsigned int    _n);
+
+// get size of key (bytes)
+unsigned int crc_sizeof_key(crc_scheme _scheme);
 
 
 // available FEC schemes
