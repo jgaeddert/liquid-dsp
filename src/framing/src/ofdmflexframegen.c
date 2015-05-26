@@ -1,20 +1,23 @@
 /*
- * Copyright (c) 2007 - 2014 Joseph Gaeddert
+ * Copyright (c) 2007 - 2015 Joseph Gaeddert
  *
- * This file is part of liquid.
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
  *
- * liquid is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
+ * The above copyright notice and this permission notice shall be included in
+ * all copies or substantial portions of the Software.
  *
- * liquid is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with liquid.  If not, see <http://www.gnu.org/licenses/>.
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+ * THE SOFTWARE.
  */
 
 //
@@ -32,6 +35,35 @@
 #include "liquid.internal.h"
 
 #define DEBUG_OFDMFLEXFRAMEGEN            0
+
+// reconfigure internal buffers, objects, etc.
+void ofdmflexframegen_reconfigure(ofdmflexframegen _q);
+
+// encode header
+void ofdmflexframegen_encode_header(ofdmflexframegen _q);
+
+// modulate header
+void ofdmflexframegen_modulate_header(ofdmflexframegen _q);
+
+// write first S0 symbol
+void ofdmflexframegen_write_S0a(ofdmflexframegen _q,
+                                float complex * _buffer);
+
+// write second S0 symbol
+void ofdmflexframegen_write_S0b(ofdmflexframegen _q,
+                                float complex * _buffer);
+
+// write S1 symbol
+void ofdmflexframegen_write_S1(ofdmflexframegen _q,
+                               float complex * _buffer);
+
+// write header symbol
+void ofdmflexframegen_write_header(ofdmflexframegen _q,
+                                   float complex * _buffer);
+
+// write payload symbol
+void ofdmflexframegen_write_payload(ofdmflexframegen _q,
+                                    float complex * _buffer);
 
 // default ofdmflexframegen properties
 static ofdmflexframegenprops_s ofdmflexframegenprops_default = {
@@ -467,7 +499,7 @@ void ofdmflexframegen_encode_header(ofdmflexframegen _q)
     unsigned int n = OFDMFLEXFRAME_H_USER;
 
     // first byte is for expansion/version validation
-    _q->header[n+0] = OFDMFLEXFRAME_VERSION;
+    _q->header[n+0] = OFDMFLEXFRAME_PROTOCOL;
 
     // add payload length
     _q->header[n+1] = (_q->payload_dec_len >> 8) & 0xff;
