@@ -314,7 +314,10 @@ float kaiser(unsigned int _n,
 float hamming(unsigned int _n, unsigned int _N)
 {
     // TODO add reference
-    return 0.53836 - 0.46164*cosf( (2*M_PI*(float)_n) / ((float)(_N-1)) );
+	float a0 = 0.53836;
+	float a1 = 0.46164;
+	float _wn = 2*M_PI*_n/(_N-1);
+    return a0 - a1*cosf(_wn);
 }
 
 // Hann window
@@ -322,7 +325,24 @@ float hann(unsigned int _n, unsigned int _N)
 {
     // TODO test this function
     // TODO add reference
-    return 0.5f - 0.5f*cosf( (2*M_PI*(float)_n) / ((float)(_N-1)) );
+	float a0 = 0.5f;
+	float _wn = 2*M_PI*_n/(_N-1);
+    return a0 - a0*cosf(_wn);
+}
+
+
+// Flat Top window
+float flattop(unsigned int _n, unsigned int _N){
+	// TODO test this function
+	// TODO add references
+	float a0 = 1.0;
+	float a1 = 1.93;
+	float a2 = 1.29;
+	float a3 = 0.388;
+	float a4 = 0.028;
+	float _wn = 2*M_PI*_n/(_N-1);
+	return a0 - a1*cosf(_wn) + a2*cosf(2*_wn)
+		- a3*cosf(3*_wn) +a4*cosf(4*_wn);
 }
 
 // Blackman-harris window [harris:1978]
@@ -334,9 +354,60 @@ float blackmanharris(unsigned int _n, unsigned int _N)
     float a1 = 0.48829;
     float a2 = 0.14128;
     float a3 = 0.01168;
-    float t = 2*M_PI*(float)_n / ((float)(_N-1));
-
+    float t = 2*M_PI*_n / ((float)(_N-1));
     return a0 - a1*cosf(t) + a2*cosf(2*t) - a3*cosf(3*t);
 }
 
+// 4-term Blackman-Harris window
+float blackmanharris4t(unsigned int _n, unsigned int _N)
+{
+   	// TODO test this function
+	// TODO add reference
+	float a0 = 0.27105140069342;
+	float a1 = 0.43329793923448;
+	float a2 = 0.21812299954311;
+	float a3 = 0.06592544638803;
+	float _wn = 2*M_PI*_n/(_N-1);
+	return a0 - a1*cosf(_wn) + a2*cosf(2*_wn) - a3*cosf(3*_wn);
+}
 
+// 7-term Blackman-Harris window
+float blackmanharris7t(unsigned int _n, unsigned int _N){
+   	// TODO test this function
+	// TODO add reference
+	float a0 = 0.27105140069342;
+	float a1 = 0.43329793923448;
+	float a2 = 0.21812299954311;
+	float a3 = 0.06592544638803;
+	float a4 = 0.01081174209837;
+	float a5 = 0.00077658482522;
+	float a6 = 0.00001388721735;
+	float _wn = 2*M_PI*_n/(_N-1);
+	return a0 - a1*cosf(_wn) + a2*cosf(2*_wn)
+		-a3*cosf(3*_wn) + a4*cosf(4*_wn)
+ 			- a5*cosf(5*_wn) + a6*cosf(6*_wn);
+}
+
+// Welch window
+float welch(unsigned int _n, unsigned int _N)
+{
+   	// TODO test this function
+	// TODO add reference
+	return 1.0 - (_n - ((_N-1)/2))/((_N-1)/2);
+}
+
+// Gaussian window 
+float gaussian(unsigned int _n, unsigned int _N, float deviation)
+{
+   	// TODO test this function
+	// TODO add reference
+	return expf(-0.5* powf(_n-((float)(_N-1)/2)/(deviation*(float)(_N-1)/2), 2)); 
+}
+
+// Poisson (exponential) window
+float poisson(unsigned int _n, unsigned int _N, float time_decay_db){
+	// TODO test this function
+	// TODO add reference
+	float tau = _N*8.69/(2*time_decay_db);
+	return expf(-(1/tau)*(_n - ((float)(_N-1)/2)));
+}
