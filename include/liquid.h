@@ -4111,9 +4111,39 @@ float hann(unsigned int _n, unsigned int _N);
 //  _N      :   full window length
 float blackmanharris(unsigned int _n, unsigned int _N);
 
+// Blackman-Harris-4term window (better dynamic range)
+//  _n      :   window index
+// _N       :   full window length
+float blackmanharris4t(unsigned int _n, unsigned int _N);
+ 
+// Blackman-Harris-7term window (best dynamic range)
+//  _n      :   window index
+// _N       :   full window length
+float blackmanharris7t(unsigned int _n, unsigned int _N);
+
+// Flat Top window (best amplitude accuracy)
+//  _n      :   window index
+// _N       :   full window length
+float flattop(unsigned int _n, unsigned int _N);
+
+// Welch window
+//  _n      :   window index
+//  _N      :   full window length
+float welch(unsigned int _n, unsigned int _N);
+
+// Gaussian window (normal)
+//  _n      :   window index
+// _N       :   full window length
+// deviation:   sigma(_N-1)/2
+float gaussian(unsigned int _n, unsigned int _N, float deviation);
+
+// Poisson (exponential) window
+//  _n      :   window index
+// _N       :   full window length
+// time decay:  time decay in dB
+float poisson(unsigned int _n, unsigned int _N, float time_decay_db);
 
 // polynomials
-
 
 #define POLY_MANGLE_DOUBLE(name)    LIQUID_CONCAT(poly,   name)
 #define POLY_MANGLE_FLOAT(name)     LIQUID_CONCAT(polyf,  name)
