@@ -2,7 +2,11 @@
 // symtrack_cccf_example.c
 //
 // This example demonstrates how to recover data symbols using the symtrack
-// object.
+// object. A stream of modulated and interpolated symbols are generated using
+// the symstream object. The resulting samples are passed through a channel
+// to add various impairments. The symtrack object recovers timing, carrier,
+// and other information imparted by the channel and returns data symbols
+// ready for demodulation.
 //
 
 #include <stdio.h>
@@ -31,11 +35,8 @@ void usage()
     printf("  t     : timing phase offset [%% symbol], t in [-0.5,0.5], default: -0.2\n");
 }
 
-
 int main(int argc, char*argv[])
 {
-    srand(time(NULL));
-
     // options
     int          ftype       = LIQUID_FIRFILT_ARKAISER;
     int          ms          = LIQUID_MODEM_QPSK;

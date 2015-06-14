@@ -596,6 +596,15 @@ This directory contains all the examples for interfacing the liquid modules.
     This is a simplified example of the symync family of objects to show how
     symbol timing can be recovered after the matched filter output.
 
+  * `symtrack_cccf_example.c`:
+    
+    This example demonstrates how to recover data symbols using the symtrack
+    object. A stream of modulated and interpolated symbols are generated using
+    the symstream object. The resulting samples are passed through a channel
+    to add various impairments. The symtrack object recovers timing, carrier,
+    and other information imparted by the channel and returns data symbols
+    ready for demodulation.
+
  * `wdelayf_example.c`:
 
  * `windowf_example.c`:
