@@ -20,7 +20,7 @@
 // print usage/help message
 void usage()
 {
-    printf("channel_cccf_example [options]\n");
+    printf("symtrack_cccf_example [options]\n");
     printf("  h     : print this help file\n");
     printf("  k     : filter samples/symbol,   default: 2\n");
     printf("  m     : filter delay (symbols),  default: 3\n");
@@ -110,9 +110,8 @@ int main(int argc, char*argv[])
     // create stream generator
     symstreamcf gen = symstreamcf_create_linear(ftype,k,m,beta,ms);
 
-    // create channel emulator
+    // create channel emulator and add impairments
     channel_cccf channel = channel_cccf_create();
-    // add channel impairments
     channel_cccf_add_awgn          (channel, noise_floor, SNRdB);
     channel_cccf_add_carrier_offset(channel, dphi, phi);
     channel_cccf_add_multipath     (channel, NULL, hc_len);
@@ -123,25 +122,23 @@ int main(int argc, char*argv[])
     symtrack_cccf_set_bandwidth(symtrack,0.05f);
 
     // create spectral periodogram for estimating spectrum
-    unsigned int window_size = nfft/2;  // spgramcf window size
-    spgramcf periodogram = spgramcf_create_kaiser(nfft, window_size, 10.0f);
+    spgramcf periodogram = spgramcf_create_default(nfft);
 
     unsigned int total_samples = 0;
     unsigned int ny;
     unsigned int total_symbols = 0;
-    while (total_samples < num_samples) {
+    while (total_samples < num_samples)
+    {
         // write samples to buffer
         symstreamcf_write_samples(gen, x, buf_len);
 
         // apply channel
         channel_cccf_execute(channel, x, buf_len, y, &ny);
 
-        // run resulting stream through synchronizer
-        
         // push resulting sample through periodogram
         spgramcf_accumulate_psd(periodogram, y, alpha, ny);
 
-        // 
+        // run resulting stream through synchronizer
         unsigned int num_symbols_sync;
         symtrack_cccf_execute_block(symtrack, y, ny, syms, &num_symbols_sync);
         total_symbols += num_symbols_sync;
