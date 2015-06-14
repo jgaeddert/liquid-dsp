@@ -1147,6 +1147,9 @@ SPGRAM() SPGRAM(_create_kaiser)(unsigned int _nfft,             \
                                 unsigned int _window_len,       \
                                 float        _beta);            \
                                                                 \
+/* create default spgram object (Kaiser-Bessel window)      */  \
+SPGRAM() SPGRAM(_create_default)(unsigned int _nfft);           \
+                                                                \
 /* destroy spgram object                                    */  \
 void SPGRAM(_destroy)(SPGRAM() _q);                             \
                                                                 \
