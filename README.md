@@ -147,8 +147,10 @@ Available Modules
 
 ### License ###
 
-liquid projects are released under the MIT license.
-Short version: this code is copyrighted to me (Joseph D. Gaeddert), I give you
-permission to do what you want with it except remove my name from the credits.
-See the LICENSE file for specific terms.
+liquid projects are released under the X11/MIT license.
+Short version: this code is copyrighted to me (Joseph D. Gaeddert),
+I give you permission to do wantever you want with it except remove my name
+from the credits. See the LICENSE file or
+[http://opensource.org/licenses/MIT](http://opensource.org/licenses/MIT)
+for specific terms.
 

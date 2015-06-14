@@ -1422,6 +1422,7 @@ example_programs :=						\
 	examples/compand_example				\
 	examples/compand_cf_example				\
 	examples/complementary_codes_example			\
+	examples/conversion_example				\
 	examples/crc_example					\
 	examples/cgsolve_example				\
 	examples/cvsd_example					\

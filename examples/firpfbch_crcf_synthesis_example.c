@@ -17,10 +17,10 @@
 
 int main() {
     // options
-    unsigned int num_channels=16;   // number of channels
-    unsigned int m=5;               // filter delay
-    float As=60;                    // stop-band attenuation
-    unsigned int num_frames=25;     // number of frames
+    unsigned int num_channels = 16;     // number of channels
+    unsigned int m            =  5;     // filter delay
+    float        As           = 60;     // stop-band attenuation
+    unsigned int num_frames   = 25;     // number of frames
 
     //
     unsigned int i;
@@ -33,19 +33,19 @@ int main() {
     float complex x[num_channels][num_frames];  // channelized input
     float complex y[num_samples];               // time-domain output [size: num_samples  x 1]
 
+    // create narrow-band pulse
+    unsigned int pulse_len = 17;        // pulse length [samples]
+    float        bw        = 0.30f;     // pulse width (bandwidth)
+    float        pulse[pulse_len];      // buffer
+    liquid_firdes_kaiser(pulse_len, bw, 50.0f, 0.0f, pulse);
+
     // generate input signal(s)
     int enabled[num_channels];  // signal enabled?
-    unsigned int pulse_len = 17;
-    float pulse[pulse_len];
     for (i=0; i<num_channels; i++) {
         // pseudo-random channel enabled flag
         enabled[i] = ((i*37)%101)%2;
 
         if (enabled[i]) {
-            // create pulse
-            float bw = 0.30f; // pulse width
-            liquid_firdes_kaiser(pulse_len, bw, 50.0f, 0.0f, pulse);
-
             // move pulse to input buffer
             for (k=0; k<num_frames; k++)
                 x[i][k] = k < pulse_len ? bw*pulse[k] : 0.0f;

@@ -146,6 +146,21 @@ SPGRAM() SPGRAM(_create_kaiser)(unsigned int _nfft,
     return q;
 }
 
+// create default spgram object (Kaiser-Bessel window)
+SPGRAM() SPGRAM(_create_default)(unsigned int _nfft)
+{
+    // validate input
+    if (_nfft < 2) {
+        fprintf(stderr,"error: spgram%s_create_default(), fft size must be at least 2\n", EXTENSION);
+        exit(1);
+    }
+
+    // return object
+    unsigned int window_size = _nfft/2;
+    float        beta        = 10.0f;
+    return SPGRAM(_create_kaiser)(_nfft, window_size, beta);
+}
+
 // destroy spgram object
 void SPGRAM(_destroy)(SPGRAM() _q)
 {
