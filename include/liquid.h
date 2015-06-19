@@ -4144,6 +4144,70 @@ void SYMSTREAM(_write_samples)(SYMSTREAM()  _q,                 \
 LIQUID_SYMSTREAM_DEFINE_API(SYMSTREAM_MANGLE_CFLOAT, liquid_float_complex)
 
 
+
+//
+// multi-signal source for testing (no meaningful data, just signals)
+//
+#define MSOURCE_MANGLE_CFLOAT(name) LIQUID_CONCAT(msourcecf,name)
+
+#define LIQUID_MSOURCE_DEFINE_API(MSOURCE,TO)                   \
+                                                                \
+typedef struct MSOURCE(_s) * MSOURCE();                         \
+                                                                \
+/* create default msource object                            */  \
+MSOURCE() MSOURCE(_create)(void);                               \
+                                                                \
+/* destroy msource object                                   */  \
+void MSOURCE(_destroy)(MSOURCE() _q);                           \
+                                                                \
+/* reset msrouce object                                     */  \
+void MSOURCE(_reset)(MSOURCE() _q);                             \
+                                                                \
+/* add signal sources                                       */  \
+int MSOURCE(_add_tone) (MSOURCE() _q);                          \
+int MSOURCE(_add_noise)(MSOURCE() _q, float _bandwidth);        \
+int MSOURCE(_add_modem)(MSOURCE()    _q,                        \
+                        int          _ms,                       \
+                        unsigned int _k,                        \
+                        unsigned int _m,                        \
+                        float        _beta);                    \
+                                                                \
+/* remove signal                                            */  \
+void MSOURCE(_remove)(MSOURCE() _q, int _id);                   \
+                                                                \
+/* enable/disable signal                                    */  \
+void MSOURCE(_enable) (MSOURCE() _q, int _id);                  \
+void MSOURCE(_disable)(MSOURCE() _q, int _id);                  \
+                                                                \
+/* set signal gain                                          */  \
+/*  _q      :   msource object                              */  \
+/*  _id     :   source id                                   */  \
+/*  _gain   :   signal gain                                 */  \
+void MSOURCE(_set_gain)(MSOURCE() _q,                           \
+                        int       _id,                          \
+                        float     _gain);                       \
+                                                                \
+/* set carrier offset to signal                             */  \
+/*  _q      :   msource object                              */  \
+/*  _id     :   source id                                   */  \
+/*  _fc     :   carrier offset, fc in [-0.5,0.5]            */  \
+void MSOURCE(_set_frequency)(MSOURCE() _q,                      \
+                             int       _id,                     \
+                             float     _dphi);                  \
+                                                                \
+/* write block of samples to output buffer                  */  \
+/*  _q      : synchronizer object                           */  \
+/*  _buf    : output buffer [size: _buf_len x 1]            */  \
+/*  _buf_len: output buffer size                            */  \
+void MSOURCE(_write_samples)(MSOURCE()    _q,                   \
+                             TO *         _buf,                 \
+                             unsigned int _buf_len);            \
+    
+LIQUID_MSOURCE_DEFINE_API(MSOURCE_MANGLE_CFLOAT, liquid_float_complex)
+
+
+
+
 // 
 // Symbol tracking: AGC > symsync > EQ > carrier recovery
 //
