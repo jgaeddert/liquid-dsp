@@ -32,16 +32,27 @@
 // forward declaration of internal single source object and methods
 typedef struct QSOURCE(_s) * QSOURCE();
 QSOURCE() QSOURCE(_create_tone)();
+
 QSOURCE() QSOURCE(_create_noise)(float _bandwidth);
-QSOURCE() QSOURCE(_create_modem)(int _ms, unsigned int _k, unsigned int _m, float _beta);
-void      QSOURCE(_destroy)   (QSOURCE() _q);
-void      QSOURCE(_reset)     (QSOURCE() _q);
-void      QSOURCE(_set_gain)     (QSOURCE() _q,
-                                  float     _gain);
-void      QSOURCE(_set_frequency)(QSOURCE() _q,
-                                  float     _dphi);
-void      QSOURCE(_gen_sample)(QSOURCE() _q,
-                               TO *      _v);
+
+QSOURCE() QSOURCE(_create_modem)(int          _ms,
+                                 unsigned int _k,
+                                 unsigned int _m,
+                                 float        _beta);
+
+void QSOURCE(_destroy)(QSOURCE() _q);
+
+void QSOURCE(_reset)(QSOURCE() _q);
+
+void QSOURCE(_set_gain)(QSOURCE() _q,
+                        float     _gain_dB);
+
+void QSOURCE(_set_frequency)(QSOURCE() _q,
+                             float     _dphi);
+
+void QSOURCE(_gen_sample)(QSOURCE() _q,
+                          TO *      _v);
+
 // internal structure
 struct MSOURCE(_s)
 {
@@ -166,10 +177,10 @@ void MSOURCE(_disable)(MSOURCE() _q,
 // set signal gain
 //  _q      :   msource object
 //  _id     :   source id
-//  _gain   :   signal gain
+//  _gain_dB:   signal gain in dB
 void MSOURCE(_set_gain)(MSOURCE() _q,
                         int       _id,
-                        float     _gain)
+                        float     _gain_dB)
 {
     // validate input
     if (_id > _q->num_sources) {
@@ -179,7 +190,7 @@ void MSOURCE(_set_gain)(MSOURCE() _q,
     }
 
     // set source gain
-    QSOURCE(_set_gain)(_q->sources[_id], _gain);
+    QSOURCE(_set_gain)(_q->sources[_id], _gain_dB);
 }
 
 // set carrier offset to signal
@@ -320,7 +331,7 @@ QSOURCE() QSOURCE(_create_noise)(float _bandwidth)
 
     q->type = QSOURCE_NOISE;
 
-    unsigned int order = 11;
+    unsigned int order = 7;
     q->source.noise.filter = IIRFILT(_create_prototype)(LIQUID_IIRDES_ELLIP,
                                                         LIQUID_IIRDES_LOWPASS,
                                                         LIQUID_IIRDES_SOS,
@@ -400,10 +411,10 @@ void QSOURCE(_reset)(QSOURCE() _q)
 }
 
 void QSOURCE(_set_gain)(QSOURCE() _q,
-                        float     _gain)
+                        float     _gain_dB)
 {
-    // TODO: convert from dB?
-    _q->gain = _gain;
+    // convert from dB
+    _q->gain = powf(10.0f, _gain_dB/20.0f);
 }
 
 void QSOURCE(_set_frequency)(QSOURCE() _q,
@@ -426,17 +437,17 @@ void QSOURCE(_gen_sample)(QSOURCE() _q,
         IIRFILT(_execute)(_q->source.noise.filter, (randnf() + _Complex_I*randnf())*M_SQRT1_2, &sample);
         break;
     case QSOURCE_MODEM:
-        sample = _q->buf[_q->buf_index];
-        _q->buf_index++;
-        if (_q->buf_index == _q->buf_len) {
+        if (_q->buf_index == 0) {
             // generate more samples if necessary
             //MODEM    (_destroy)(_q->source.linmod.mod);
             //FIRINTERP(_destroy)(_q->source.linmod.interp);
             FIRINTERP(_execute)(_q->source.linmod.interp,
                                 rand() % 2 ? 1.0f : -1.0f, 
                                 _q->buf);
-            _q->buf_index = 0;
         }
+        sample = _q->buf[_q->buf_index];
+        _q->buf_index++;
+        _q->buf_index %= _q->buf_len;
         break;
     default:
         fprintf(stderr,"error: qsource%s_gen_sample(), internal logic error\n", EXTENSION);

@@ -23,8 +23,8 @@ int main()
 
     // spectral periodogram options
     unsigned int nfft        =   2400;  // spectral periodogram FFT size
-    unsigned int num_samples =   8000;  // number of samples
-    float        alpha       =   0.01f; // PSD estimate bandwidth
+    unsigned int num_samples =  48000;  // number of samples
+    float        alpha       =   0.05f; // PSD estimate bandwidth
 
     unsigned int i;
 

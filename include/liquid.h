@@ -4185,7 +4185,7 @@ void MSOURCE(_disable)(MSOURCE() _q, int _id);                  \
 /*  _gain   :   signal gain                                 */  \
 void MSOURCE(_set_gain)(MSOURCE() _q,                           \
                         int       _id,                          \
-                        float     _gain);                       \
+                        float     _gain_dB);                    \
                                                                 \
 /* set carrier offset to signal                             */  \
 /*  _q      :   msource object                              */  \

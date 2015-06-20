@@ -418,6 +418,10 @@ This directory contains all the examples for interfacing the liquid modules.
 
     SEE ALSO: `bsequence_example.c`
 
+ * `msourcecf_example.c`:
+    This example demonstrates generating multiple signal sources simultaneously
+    for testing using the msource (multi-source) family of objects.
+
  * `msresamp_crcf_example.c`:
     Demonstration of the multi-stage arbitrary resampler.
 
