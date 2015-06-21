@@ -99,9 +99,10 @@ void CHANNEL(_destroy)(CHANNEL() _q)
 void CHANNEL(_print)(CHANNEL() _q)
 {
     printf("channel\n");
-    if (_q->enabled_awgn) {
-        printf("  AWGN:\n");
-    }
+    if (_q->enabled_resamp)     printf("  resamp:    m=%u, rate=%.6f\n", _q->resamp_m, _q->resamp_rate);
+    if (_q->enabled_awgn)       printf("  AWGN:      SNR=%.3f dB, gamma=%.3f, std=%.6f\n", _q->SNRdB, _q->gamma, _q->nstd);
+    if (_q->enabled_carrier)    printf("  carrier:   dphi=%.3f, phi=%.3f\n", _q->dphi, _q->phi);
+    if (_q->enabled_multipath)  printf("  multipath: h_len=%u\n", _q->h_len);
 }
 
 // apply additive white Gausss noise impairment
