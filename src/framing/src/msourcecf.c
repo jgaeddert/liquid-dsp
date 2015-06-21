@@ -39,10 +39,9 @@
 #define QSOURCE(name)       LIQUID_CONCAT(qsourcecf,name)
 #define MSOURCE(name)       LIQUID_CONCAT(msourcecf,name)
 
-#define FIRINTERP(name)     LIQUID_CONCAT(firinterp_crcf,name)
 #define IIRFILT(name)       LIQUID_CONCAT(iirfilt_crcf,name)
-#define MODEM(name)         LIQUID_CONCAT(modem,name)
 #define NCO(name)           LIQUID_CONCAT(nco_crcf,name)
+#define SYMSTREAM(name)     LIQUID_CONCAT(symstreamcf,name)
 
 // source files
 #include "msource.c"

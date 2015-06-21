@@ -282,9 +282,7 @@ struct QSOURCE(_s) {
 
         // linear modulation
         struct {
-            MODEM()      mod;
-            FIRINTERP()  interp;
-            unsigned int k;
+            SYMSTREAM() symstream;
         } linmod;
     } source;
     
@@ -293,10 +291,6 @@ struct QSOURCE(_s) {
         QSOURCE_NOISE,
         QSOURCE_MODEM,
     } type;
-
-    unsigned int    buf_len;
-    float complex * buf;
-    unsigned int    buf_index;
 
     nco_crcf mixer;
     float    gain;
@@ -308,11 +302,6 @@ QSOURCE() QSOURCE(_create_tone)()
     QSOURCE() q = (QSOURCE()) malloc( sizeof(struct QSOURCE(_s)) );
 
     q->type = QSOURCE_TONE;
-
-    // sample buffer
-    q->buf_len = 0;
-    q->buf = NULL;
-    q->buf_index = 0;
 
     q->mixer = NCO(_create)(LIQUID_VCO);
     q->gain  = 1;
@@ -339,11 +328,6 @@ QSOURCE() QSOURCE(_create_noise)(float _bandwidth)
                                                         0.5*_bandwidth, 0.0f,
                                                         0.1f, 80.0f);
 
-    // sample buffer
-    q->buf_len = 0;
-    q->buf = NULL;
-    q->buf_index = 0;
-
     q->mixer = NCO(_create)(LIQUID_VCO);
     q->gain  = 1;
 
@@ -362,14 +346,7 @@ QSOURCE() QSOURCE(_create_modem)(int          _ms,
 
     q->type = QSOURCE_MODEM;
 
-    q->source.linmod.mod    = MODEM(_create)(_ms);
-    q->source.linmod.interp = FIRINTERP(_create_rnyquist)(LIQUID_FIRFILT_ARKAISER, _k, _m, _beta, 0.0f);
-    q->source.linmod.k      = _k;
-
-    // sample buffer
-    q->buf_len = _k;
-    q->buf = (TO*) malloc(_k*sizeof(TO));
-    q->buf_index = 0;
+    q->source.linmod.symstream=SYMSTREAM(_create_linear)(LIQUID_FIRFILT_ARKAISER,_k,_m,_beta,_ms);
 
     q->mixer = NCO(_create)(LIQUID_VCO);
     q->gain  = 1;
@@ -388,10 +365,7 @@ void QSOURCE(_destroy)(QSOURCE() _q)
         IIRFILT(_destroy)(_q->source.noise.filter);
         break;
     case QSOURCE_MODEM:
-        MODEM    (_destroy)(_q->source.linmod.mod);
-        FIRINTERP(_destroy)(_q->source.linmod.interp);
-        // free buffer
-        free(_q->buf);
+        SYMSTREAM(_destroy)(_q->source.linmod.symstream);
         break;
     default:
         fprintf(stderr,"error: qsource%s_destroy(), internal logic error\n", EXTENSION);
@@ -407,7 +381,6 @@ void QSOURCE(_destroy)(QSOURCE() _q)
 
 void QSOURCE(_reset)(QSOURCE() _q)
 {
-    _q->buf_index = 0;
 }
 
 void QSOURCE(_set_gain)(QSOURCE() _q,
@@ -437,17 +410,7 @@ void QSOURCE(_gen_sample)(QSOURCE() _q,
         IIRFILT(_execute)(_q->source.noise.filter, (randnf() + _Complex_I*randnf())*M_SQRT1_2, &sample);
         break;
     case QSOURCE_MODEM:
-        if (_q->buf_index == 0) {
-            // generate more samples if necessary
-            //MODEM    (_destroy)(_q->source.linmod.mod);
-            //FIRINTERP(_destroy)(_q->source.linmod.interp);
-            FIRINTERP(_execute)(_q->source.linmod.interp,
-                                rand() % 2 ? 1.0f : -1.0f, 
-                                _q->buf);
-        }
-        sample = _q->buf[_q->buf_index];
-        _q->buf_index++;
-        _q->buf_index %= _q->buf_len;
+        SYMSTREAM(_write_samples)(_q->source.linmod.symstream, &sample, 1);
         break;
     default:
         fprintf(stderr,"error: qsource%s_gen_sample(), internal logic error\n", EXTENSION);
