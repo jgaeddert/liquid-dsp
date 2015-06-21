@@ -19,12 +19,13 @@ void usage()
 {
     printf("channel_cccf_example [options]\n");
     printf("  h     : print this help file\n");
-    printf("  k     : filter samples/symbol,   default: 2\n");
-    printf("  m     : filter delay (symbols),  default: 3\n");
-    printf("  b     : filter excess bandwidth, default: 0.5\n");
-    printf("  s     : signal-to-noise ratio,   default: 30 dB\n");
-    printf("  w     : timing pll bandwidth,    default: 0.02\n");
-    printf("  n     : number of symbols,       default: 4000\n");
+    printf("  k     : filter samples/symbol,     default: 2\n");
+    printf("  m     : filter delay (symbols),    default: 3\n");
+    printf("  b     : filter excess bandwidth,   default: 0.5\n");
+    printf("  H     : multi-path channel length, default: 4000\n");
+    printf("  n     : number of symbols,         default: 4000\n");
+    printf("  s     : signal-to-noise ratio,     default: 30 dB\n");
+    printf("  w     : timing pll bandwidth,      default: 0.02\n");
     printf("  t     : timing phase offset [%% symbol], t in [-0.5,0.5], default: -0.2\n");
 }
 
@@ -37,7 +38,7 @@ int main(int argc, char*argv[]) {
     unsigned int m           = 7;       // filter delay (symbols)
     float        beta        = 0.25f;   // filter excess bandwidth factor
     unsigned int num_symbols = 4000;    // number of data symbols
-    unsigned int hc_len      =   3;     // channel filter length
+    unsigned int hc_len      = 5;       // channel filter length
     float        noise_floor = -60.0f;  // noise floor [dB]
     float        SNRdB       = 30.0f;   // signal-to-noise ratio [dB]
     float        bandwidth   =  0.02f;  // loop filter bandwidth
@@ -45,17 +46,19 @@ int main(int argc, char*argv[]) {
     float        rate        = 1.001f;  // sample rate offset
     float        dphi        =  0.00f;  // carrier frequency offset [radians/sample]
     float        phi         =  2.1f;   // carrier phase offset [radians]
+    modulation_scheme ms     = LIQUID_MODEM_QPSK;
 
     int dopt;
-    while ((dopt = getopt(argc,argv,"hk:m:b:s:w:n:t:r:")) != EOF) {
+    while ((dopt = getopt(argc,argv,"hk:m:b:H:n:s:w:t:r:")) != EOF) {
         switch (dopt) {
         case 'h':   usage();                        return 0;
         case 'k':   k           = atoi(optarg);     break;
         case 'm':   m           = atoi(optarg);     break;
         case 'b':   beta        = atof(optarg);     break;
+        case 'H':   hc_len      = atoi(optarg);     break;
+        case 'n':   num_symbols = atoi(optarg);     break;
         case 's':   SNRdB       = atof(optarg);     break;
         case 'w':   bandwidth   = atof(optarg);     break;
-        case 'n':   num_symbols = atoi(optarg);     break;
         case 't':   tau         = atof(optarg);     break;
         case 'r':   rate        = atof(optarg);     break;
         default:
@@ -90,30 +93,19 @@ int main(int argc, char*argv[]) {
     unsigned int i;
 
     // derived/fixed values
-    unsigned int nx =   num_symbols*k;
+    unsigned int nx = num_symbols*k;
     unsigned int ny = (unsigned int) ceilf(rate * nx) + 64;
 
-    printf("        nx  : %u\n", nx);
-    printf("        ny  : %u\n", ny);
-
-    float complex x[nx];    // interpolated samples
-    float complex y[ny];    //
+    float complex x[nx];    // input (interpolated) samples
+    float complex y[ny];    // channel output samples
     float complex sym_out[num_symbols + 64];// synchronized symbols
 
     // 
-    // generate input sequence
+    // generate input sequence using symbol stream generator
     //
-
-    // design interpolating filter
-    firinterp_crcf interp = firinterp_crcf_create_rnyquist(LIQUID_FIRFILT_RRC,k,m,beta,tau);
-    for (i=0; i<num_symbols; i++) {
-        // generate random QPSK symbol
-        float complex s = cexpf(_Complex_I*0.5f*M_PI*((rand() % 4) + 0.5f));
-
-        // interpolate
-        firinterp_crcf_execute(interp, s, &x[i*k]);
-    }
-    firinterp_crcf_destroy(interp);
+    symstreamcf gen = symstreamcf_create_linear(LIQUID_FIRFILT_ARKAISER,k,m,beta,ms);
+    symstreamcf_write_samples(gen, x, nx);
+    symstreamcf_destroy(gen);
 
     // create channel
     channel_cccf channel = channel_cccf_create();
@@ -124,7 +116,10 @@ int main(int argc, char*argv[]) {
     channel_cccf_add_multipath     (channel, NULL, hc_len);
     channel_cccf_add_resamp        (channel, 0.0f, rate);
 
-    // apply channel
+    // print channel internals
+    channel_cccf_print(channel);
+
+    // apply channel to input signal
     channel_cccf_execute(channel, x, nx, y, &ny);
 
     // destroy channel
@@ -134,10 +129,9 @@ int main(int argc, char*argv[]) {
     // create and run symbol synchronizer
     //
 
-    symtrack_cccf symtrack = symtrack_cccf_create(LIQUID_FIRFILT_RRC,
-                                            k, m, beta, LIQUID_MODEM_QPSK);
+    symtrack_cccf symtrack = symtrack_cccf_create(LIQUID_FIRFILT_RRC,k,m,beta,ms);
     
-    //
+    // set tracking bandwidth
     symtrack_cccf_set_bandwidth(symtrack,0.05f);
 
     unsigned int num_symbols_sync = 0;
