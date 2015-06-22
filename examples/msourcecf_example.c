@@ -62,6 +62,9 @@ int main()
     msourcecf_add_modem(gen,ms,k,m,beta);
     //msourcecf_set_frequency(gen, id, -0.2*2*M_PI);
     //msourcecf_set_gain(gen, id, 0.1f);
+    
+    // print source generator object
+    msourcecf_print(gen);
 
     unsigned int total_samples = 0;
     while (total_samples < num_samples) {

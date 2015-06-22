@@ -4160,6 +4160,9 @@ MSOURCE() MSOURCE(_create)(void);                               \
 /* destroy msource object                                   */  \
 void MSOURCE(_destroy)(MSOURCE() _q);                           \
                                                                 \
+/* print msrouce object                                     */  \
+void MSOURCE(_print)(MSOURCE() _q);                             \
+                                                                \
 /* reset msrouce object                                     */  \
 void MSOURCE(_reset)(MSOURCE() _q);                             \
                                                                 \

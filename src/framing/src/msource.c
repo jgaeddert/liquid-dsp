@@ -31,16 +31,52 @@
 
 // forward declaration of internal single source object and methods
 typedef struct QSOURCE(_s) * QSOURCE();
-QSOURCE() QSOURCE(_create_tone)();
 
-QSOURCE() QSOURCE(_create_noise)(float _bandwidth);
+// internal structure (single source)
+struct QSOURCE(_s) {
+    int id; // unique id
 
-QSOURCE() QSOURCE(_create_modem)(int          _ms,
+    union {
+        // tone
+        struct {
+            int x;
+        } tone;
+
+        // wide-band noise
+        struct {
+            IIRFILT() filter;
+        } noise;
+
+        // linear modulation
+        struct {
+            SYMSTREAM() symstream;
+        } linmod;
+    } source;
+    
+    enum {
+        QSOURCE_TONE,
+        QSOURCE_NOISE,
+        QSOURCE_MODEM,
+    } type;
+
+    nco_crcf mixer;
+    float    gain;
+    //int      enabled;
+};
+
+QSOURCE() QSOURCE(_create_tone)(int _id);
+
+QSOURCE() QSOURCE(_create_noise)(int _id, float _bandwidth);
+
+QSOURCE() QSOURCE(_create_modem)(int          _id,
+                                 int          _ms,
                                  unsigned int _k,
                                  unsigned int _m,
                                  float        _beta);
 
 void QSOURCE(_destroy)(QSOURCE() _q);
+
+void QSOURCE(_print)(QSOURCE() _q);
 
 void QSOURCE(_reset)(QSOURCE() _q);
 
@@ -58,6 +94,8 @@ struct MSOURCE(_s)
 {
     QSOURCE() *  sources;
     unsigned int num_sources;
+
+    int id_counter;
 };
 
 //
@@ -77,6 +115,7 @@ MSOURCE() MSOURCE(_create)(void)
     //
     q->sources = NULL;
     q->num_sources = 0;
+    q->id_counter  = 0;
 
     // reset and return main object
     MSOURCE(_reset)(q);
@@ -98,10 +137,26 @@ void MSOURCE(_destroy)(MSOURCE() _q)
     free(_q);
 }
 
+// reset msource internal state
+void MSOURCE(_reset)(MSOURCE() _q)
+{
+}
+
+// print
+void MSOURCE(_print)(MSOURCE() _q)
+{
+    printf("msource%s:\n", EXTENSION);
+    unsigned int i;
+    for (i=0; i<_q->num_sources; i++)
+        QSOURCE(_print)(_q->sources[i]);
+}
+
 // add tone source
 int MSOURCE(_add_tone)(MSOURCE() _q)
 {
-    QSOURCE() s = QSOURCE(_create_tone)();
+    int id = _q->id_counter;
+    _q->id_counter++;
+    QSOURCE() s = QSOURCE(_create_tone)(id);
     return MSOURCE(_add_source)(_q, s);
 }
 
@@ -117,7 +172,9 @@ int MSOURCE(_add_noise)(MSOURCE() _q,
         _bandwidth = 0.9995f;
     }
 
-    QSOURCE() s = QSOURCE(_create_noise)(_bandwidth);
+    int id = _q->id_counter;
+    _q->id_counter++;
+    QSOURCE() s = QSOURCE(_create_noise)(id, _bandwidth);
     return MSOURCE(_add_source)(_q, s);
 }
 
@@ -143,24 +200,43 @@ int MSOURCE(_add_modem)(MSOURCE()    _q,
         exit(1);
     }
 
-    QSOURCE() s = QSOURCE(_create_modem)(_ms, _k, _m, _beta);
+    int id = _q->id_counter;
+    _q->id_counter++;
+    QSOURCE() s = QSOURCE(_create_modem)(id, _ms, _k, _m, _beta);
     return MSOURCE(_add_source)(_q, s);
-}
-// print msource object's parameters
-void MSOURCE(_print)(MSOURCE() _q)
-{
-    printf("msource_%s:\n", EXTENSION);
-}
-
-// reset msource internal state
-void MSOURCE(_reset)(MSOURCE() _q)
-{
 }
 
 // remove signal
 void MSOURCE(_remove)(MSOURCE() _q,
                       int       _id)
 {
+    // find source object matching id
+    unsigned int i;
+    int id_found = 0;
+    for (i=0; i<_q->num_sources; i++) {
+        if (_q->sources[i]->id == _id) {
+            id_found = 1;
+            break;
+        }
+    }
+
+    // check to see if id was found
+    if (!id_found) {
+        fprintf(stderr,"error: qsource%s_remove(), signal id (%d) not found\n",
+                EXTENSION, _id);
+        exit(1);
+    }
+
+    // delete source
+    //printf("deleting source with id %d (requested %d)\n", _q->sources[i]->id, _id);
+    QSOURCE(_destroy)(_q->sources[i]);
+
+    //
+    _q->num_sources--;
+
+    // shift sources down
+    for (i; i<_q->num_sources; i++)
+        _q->sources[i] = _q->sources[i+1];
 }
 
 // enable/disable signal
@@ -265,42 +341,29 @@ int MSOURCE(_add_source)(MSOURCE() _q,
     return _q->num_sources-1;
 }
 
+// get source by id
+QSOURCE() MSOURCE(_get_source)(MSOURCE() _q,
+                               int       _id)
+{
+    unsigned int i;
+    for (i=0; i<_q->num_sources; i++) {
+        if (_q->sources[i]->id == _id)
+            return _q->sources[i];
+    }
+
+    return NULL;
+}
+
+
 //
-// internal structure (single source)
+// internal qsource
 //
-struct QSOURCE(_s) {
-    union {
-        // tone
-        struct {
-            int x;
-        } tone;
-
-        // wide-band noise
-        struct {
-            IIRFILT() filter;
-        } noise;
-
-        // linear modulation
-        struct {
-            SYMSTREAM() symstream;
-        } linmod;
-    } source;
-    
-    enum {
-        QSOURCE_TONE,
-        QSOURCE_NOISE,
-        QSOURCE_MODEM,
-    } type;
-
-    nco_crcf mixer;
-    float    gain;
-};
-
-QSOURCE() QSOURCE(_create_tone)()
+QSOURCE() QSOURCE(_create_tone)(int _id)
 {
     // allocate memory for main object
     QSOURCE() q = (QSOURCE()) malloc( sizeof(struct QSOURCE(_s)) );
 
+    q->id   = _id;
     q->type = QSOURCE_TONE;
 
     q->mixer = NCO(_create)(LIQUID_VCO);
@@ -311,13 +374,15 @@ QSOURCE() QSOURCE(_create_tone)()
     return q;
 }
 
-QSOURCE() QSOURCE(_create_noise)(float _bandwidth)
+QSOURCE() QSOURCE(_create_noise)(int   _id,
+                                 float _bandwidth)
 {
     // TODO: validate input
 
     // allocate memory for main object
     QSOURCE() q = (QSOURCE()) malloc( sizeof(struct QSOURCE(_s)) );
 
+    q->id   = _id;
     q->type = QSOURCE_NOISE;
 
     unsigned int order = 7;
@@ -336,7 +401,8 @@ QSOURCE() QSOURCE(_create_noise)(float _bandwidth)
     return q;
 }
 
-QSOURCE() QSOURCE(_create_modem)(int          _ms,
+QSOURCE() QSOURCE(_create_modem)(int          _id,
+                                 int          _ms,
                                  unsigned int _k,
                                  unsigned int _m,
                                  float        _beta)
@@ -344,6 +410,7 @@ QSOURCE() QSOURCE(_create_modem)(int          _ms,
     // allocate memory for main object
     QSOURCE() q = (QSOURCE()) malloc( sizeof(struct QSOURCE(_s)) );
 
+    q->id   = _id;
     q->type = QSOURCE_MODEM;
 
     q->source.linmod.symstream=SYMSTREAM(_create_linear)(LIQUID_FIRFILT_ARKAISER,_k,_m,_beta,_ms);
@@ -354,6 +421,20 @@ QSOURCE() QSOURCE(_create_modem)(int          _ms,
     // reset and return main object
     QSOURCE(_reset)(q);
     return q;
+}
+
+void QSOURCE(_print)(QSOURCE() _q)
+{
+    printf("  qsource%s[%3d] : ", EXTENSION, _q->id);
+    // print type-specific parameters
+    switch (_q->type) {
+    case QSOURCE_TONE:  printf("tone\n");   break;
+    case QSOURCE_NOISE: printf("noise\n");  break;
+    case QSOURCE_MODEM: printf("modem\n");  break;
+    default:
+        fprintf(stderr,"error: qsource%s_print(), internal logic error\n", EXTENSION);
+        exit(1);
+    }
 }
 
 void QSOURCE(_destroy)(QSOURCE() _q)
