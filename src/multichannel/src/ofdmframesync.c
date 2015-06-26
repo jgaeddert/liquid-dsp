@@ -1133,7 +1133,7 @@ void ofdmframesync_debug_disable(ofdmframesync _q)
 #if DEBUG_OFDMFRAMESYNC
     _q->debug_enabled = 0;
 #else
-    fprintf(stderr,"ofdmframesync_debug_enable(): compile-time debugging disabled\n");
+    fprintf(stderr,"ofdmframesync_debug_disable(): compile-time debugging disabled\n");
 #endif
 }
 
