@@ -102,6 +102,7 @@ struct ofdmflexframesync_s {
     unsigned int payload_enc_len;       // length of encoded payload
     unsigned int payload_mod_len;       // number of payload modem symbols
     int payload_valid;                  // valid payload flag
+    float complex * payload_syms;       // received payload symbols
 
     // callback
     framesync_callback callback;        // user-defined callback function
@@ -196,6 +197,7 @@ ofdmflexframesync ofdmflexframesync_create(unsigned int       _M,
     q->payload_enc_len = packetizer_get_enc_msg_len(q->p_payload);
     q->payload_enc = (unsigned char*) malloc(q->payload_enc_len*sizeof(unsigned char));
     q->payload_dec = (unsigned char*) malloc(q->payload_len*sizeof(unsigned char));
+    q->payload_syms = (float complex *) malloc(q->payload_len*sizeof(float complex));
     q->payload_mod_len = 0;
 
     // reset state
@@ -218,6 +220,7 @@ void ofdmflexframesync_destroy(ofdmflexframesync _q)
     free(_q->p);
     free(_q->payload_enc);
     free(_q->payload_dec);
+    free(_q->payload_syms);
 
     // free main object memory
     free(_q);
@@ -279,7 +282,6 @@ float ofdmflexframesync_get_cfo(ofdmflexframesync _q)
 {
     return ofdmframesync_get_cfo(_q->fs);
 }
-
 
 // 
 // debugging methods
@@ -567,6 +569,7 @@ void ofdmflexframesync_decode_header(ofdmflexframesync _q)
         // re-compute number of modulated payload symbols
         div_t d = div(8*_q->payload_enc_len, _q->bps_payload);
         _q->payload_mod_len = d.quot + (d.rem ? 1 : 0);
+        _q->payload_syms = (float complex*) realloc(_q->payload_syms, _q->payload_mod_len*sizeof(float complex));
 #if DEBUG_OFDMFLEXFRAMESYNC
         printf("      * payload mod syms:   %u symbols\n", _q->payload_mod_len);
 #endif
@@ -589,6 +592,9 @@ void ofdmflexframesync_rxpayload(ofdmflexframesync _q,
             // unload payload symbols
             unsigned int sym;
             modem_demodulate(_q->mod_payload, _X[i], &sym);
+
+            // store received symbol
+            _q->payload_syms[_q->payload_symbol_index] = _X[i];
 
             // pack decoded symbol into array
             liquid_pack_array(_q->payload_enc,
@@ -621,8 +627,8 @@ void ofdmflexframesync_rxpayload(ofdmflexframesync _q,
                 // set framestats internals
                 _q->framestats.rssi             = ofdmframesync_get_rssi(_q->fs);
                 _q->framestats.cfo              = ofdmframesync_get_cfo(_q->fs);
-                _q->framestats.framesyms        = NULL;
-                _q->framestats.num_framesyms    = 0;
+                _q->framestats.framesyms        = _q->payload_syms;
+                _q->framestats.num_framesyms    = _q->payload_mod_len;
                 _q->framestats.mod_scheme       = _q->ms_payload;
                 _q->framestats.mod_bps          = _q->bps_payload;
                 _q->framestats.check            = _q->check;
