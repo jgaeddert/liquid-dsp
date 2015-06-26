@@ -173,7 +173,7 @@ void CHANNEL(_add_carrier_offset)(CHANNEL() _q,
     NCO(_set_phase)    (_q->nco, _q->phi);
 }
 
-// apply mulit-path channel impairment
+// apply multi-path channel impairment
 //  _q          : channel object
 //  _h          : channel coefficients (NULL for random)
 //  _h_len      : number of channel coefficients

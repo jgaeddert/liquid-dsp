@@ -447,7 +447,7 @@ void CHANNEL(_add_carrier_offset)(CHANNEL() _q,                 \
                                   float     _frequency,         \
                                   float     _phase);            \
                                                                 \
-/* apply mulit-path channel impairment                      */  \
+/* apply multi-path channel impairment                      */  \
 /*  _q          : channel object                            */  \
 /*  _h          : channel coefficients (NULL for random)    */  \
 /*  _h_len      : number of channel coefficients            */  \
