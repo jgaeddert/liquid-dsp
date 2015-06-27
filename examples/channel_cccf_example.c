@@ -114,6 +114,7 @@ int main(int argc, char*argv[]) {
     channel_cccf_add_awgn          (channel, noise_floor, SNRdB);
     channel_cccf_add_carrier_offset(channel, dphi, phi);
     channel_cccf_add_multipath     (channel, NULL, hc_len);
+    channel_cccf_add_shadowing     (channel, 1.0f, 0.1f);
     channel_cccf_add_resamp        (channel, 0.0f, rate);
 
     // print channel internals

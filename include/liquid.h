@@ -455,6 +455,14 @@ void CHANNEL(_add_multipath)(CHANNEL()    _q,                   \
                              TC *         _h,                   \
                              unsigned int _h_len);              \
                                                                 \
+/* apply slowly-varying shadowing impairment                */  \
+/*  _q          : channel object                            */  \
+/*  _sigma      : std. deviation for log-normal shadowing   */  \
+/*  _fd         : Doppler frequency, _fd in (0,0.5)         */  \
+void CHANNEL(_add_shadowing)(CHANNEL()    _q,                   \
+                             float        _sigma,               \
+                             float        _fd);                 \
+                                                                \
 /* apply channel impairments on input array                 */  \
 /*  _q      : channel object                                */  \
 /*  _x      : input array [size: _nx x 1]                   */  \
