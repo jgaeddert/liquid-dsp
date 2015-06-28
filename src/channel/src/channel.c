@@ -256,8 +256,8 @@ void CHANNEL(_add_shadowing)(CHANNEL() _q,
     _q->enabled_shadowing = 1;
 
     // TODO: set values appropriately
-    _q->shadowing_std = 1.0f;
-    _q->shadowing_fd  = 0.05f;
+    _q->shadowing_std = _sigma;
+    _q->shadowing_fd  = _fd;
 
     // re-create channel filter
     // TODO: adjust gain
