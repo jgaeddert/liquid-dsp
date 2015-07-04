@@ -17,10 +17,10 @@
 
 int main() {
     // options
-    unsigned int num_channels=8;    // number of channels
-    unsigned int m=4;               // filter delay
-    float As=60;                    // stop-band attenuation
-    unsigned int num_frames=25;     // number of frames
+    unsigned int num_channels =  8;     // number of channels
+    unsigned int m            =  4;     // filter delay
+    float        As           = 60;     // stop-band attenuation
+    unsigned int num_frames   = 25;     // number of frames
 
     //
     unsigned int i;

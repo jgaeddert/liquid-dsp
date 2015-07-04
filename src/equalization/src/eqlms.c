@@ -1,20 +1,23 @@
 /*
- * Copyright (c) 2007 - 2014 Joseph Gaeddert
+ * Copyright (c) 2007 - 2015 Joseph Gaeddert
  *
- * This file is part of liquid.
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
  *
- * liquid is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
+ * The above copyright notice and this permission notice shall be included in
+ * all copies or substantial portions of the Software.
  *
- * liquid is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with liquid.  If not, see <http://www.gnu.org/licenses/>.
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+ * THE SOFTWARE.
  */
 
 //
@@ -123,6 +126,35 @@ EQLMS() EQLMS(_create_rnyquist)(int          _type,
     return EQLMS(_create)(hc, h_len);
 }
 
+// create LMS EQ initialized with low-pass filter
+//  _h_len  : filter length
+//  _fc     : filter cut-off, _fc in (0,0.5]
+EQLMS() EQLMS(_create_lowpass)(unsigned int _h_len,
+                               float        _fc)
+{
+    // validate input
+    if (_h_len == 0) {
+        fprintf(stderr,"error: eqlms_%s_create_lowpass(), filter length must be greater than 0\n", EXTENSION_FULL);
+        exit(1);
+    } else if (_fc <= 0.0f || _fc > 0.5f) {
+        fprintf(stderr,"error: eqlms_%s_create_rnyquist(), filter cutoff must be in (0,0.5]\n", EXTENSION_FULL);
+        exit(1);
+    }
+
+    // generate low-pass filter prototype
+    float h[_h_len];
+    liquid_firdes_kaiser(_h_len, _fc, 40.0f, 0.0f, h);
+
+    // copy coefficients to type-specific array (e.g. float complex)
+    unsigned int i;
+    T hc[_h_len];
+    for (i=0; i<_h_len; i++)
+        hc[i] = h[i];
+
+    // return equalizer object
+    return EQLMS(_create)(hc, _h_len);
+}
+
 // re-create least mean-squares (LMS) equalizer object
 //  _q      :   old equalizer object
 //  _h      :   initial coefficients [size: _p x 1], default if NULL
@@ -220,6 +252,19 @@ void EQLMS(_push)(EQLMS() _q,
 
     // decrement timer
     if (_q->timer) _q->timer--;
+}
+
+// push sample into equalizer internal buffer as block
+//  _q      :   equalizer object
+//  _x      :   input sample array
+//  _n      :   input sample array length
+void EQLMS(_push_block)(EQLMS()      _q,
+                        T *          _x,
+                        unsigned int _n)
+{
+    unsigned int i;
+    for (i=0; i<_n; i++)
+        EQLMS(_push)(_q, _x[i]);
 }
 
 // execute internal dot product

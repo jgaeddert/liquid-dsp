@@ -192,11 +192,9 @@ int main(int argc, char*argv[]) {
     // equalizer/decimator
     //
 
-    // create equalizer (zeros with impulse in center)
+    // create equalizer as low-pass filter
     float complex hp[hp_len];
-    for (i=0; i<hp_len; i++)
-        hp[i] = (i==k*p) ? 1.0f : 0.0f;
-    eqlms_cccf eq = eqlms_cccf_create(hp, hp_len);
+    eqlms_cccf eq = eqlms_cccf_create_lowpass(hp_len, 0.4f);
     eqlms_cccf_set_bw(eq, mu);
 
     // push through equalizer and decimate
@@ -289,17 +287,22 @@ int main(int argc, char*argv[]) {
     fprintf(fid,"legend('output time series','optimim timing',1);\n");
 #endif
 
+    // compute composite response
+    fprintf(fid,"hd = real(conv(ht/k,conv(hc,hp)));\n");
+
     // plot frequency response
     fprintf(fid,"nfft = 1024;\n");
     fprintf(fid,"f = [0:(nfft-1)]/nfft - 0.5;\n");
     fprintf(fid,"Ht = 20*log10(abs(fftshift(fft(ht/k,nfft))));\n");
     fprintf(fid,"Hc = 20*log10(abs(fftshift(fft(hc,  nfft))));\n");
     fprintf(fid,"Hp = 20*log10(abs(fftshift(fft(hp,  nfft))));\n");
+    fprintf(fid,"Hd = 20*log10(abs(fftshift(fft(hd,  nfft))));\n");
     fprintf(fid,"figure;\n");
-    fprintf(fid,"plot(f,Ht, f,Hc, f,Hp);\n");
+    fprintf(fid,"plot(f,Ht, f,Hc, f,Hp, f,Hd,'-k','LineWidth',2);\n");
     fprintf(fid,"axis([-0.5 0.5 -20 10]);\n");
+    fprintf(fid,"axis([-0.5 0.5 -6  6 ]);\n");
     fprintf(fid,"grid on;\n");
-    fprintf(fid,"legend('transmit','channel','equalizer',1);\n");
+    fprintf(fid,"legend('transmit','channel','equalizer','composite','location','northeast');\n");
 
     fprintf(fid,"i0 = [1:round(length(sym_out)/2)];\n");
     fprintf(fid,"i1 = [round(length(sym_out)/2):length(sym_out)];\n");
@@ -311,7 +314,7 @@ int main(int argc, char*argv[]) {
     fprintf(fid,"axis([-1 1 -1 1]*1.2);\n");
     fprintf(fid,"xlabel('In-phase');\n");
     fprintf(fid,"ylabel('Quadrature');\n");
-    fprintf(fid,"legend(['first 50%%'],['last 50%%'],1);\n");
+    fprintf(fid,"legend(['first 50%%'],['last 50%%'],'location','northeast');\n");
 
     fclose(fid);
 

@@ -106,6 +106,8 @@ Available Modules
   * _agc_: automatic gain control, received signal strength
   * _audio_: source audio encoders/decoders: cvsd, filterbanks
   * _buffer_: internal buffering, circular/static, ports (threaded)
+  * _channel_: additive noise, multi-path fading, carrier phase/frequency
+        offsets, timing phase/rate offsets
   * _dotprod_: inner dot products (real, complex), vector sum of squares
   * _equalization_: adaptive equalizers: least mean-squares, recursive
         least squares, semi-blind
@@ -142,4 +144,13 @@ Available Modules
   * _utility_: useful miscellany, mostly bit manipulation (shifting,
         packing, and unpacking of arrays)
   * _vector_: generic vector operations
+
+### License ###
+
+liquid projects are released under the X11/MIT license.
+Short version: this code is copyrighted to me (Joseph D. Gaeddert),
+I give you permission to do wantever you want with it except remove my name
+from the credits. See the LICENSE file or
+[http://opensource.org/licenses/MIT](http://opensource.org/licenses/MIT)
+for specific terms.
 

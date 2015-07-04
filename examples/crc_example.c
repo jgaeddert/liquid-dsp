@@ -30,8 +30,8 @@ void usage()
 int main(int argc, char*argv[])
 {
     // options
-    unsigned int n = 32;                // data length (bytes)
-    crc_scheme check = LIQUID_CRC_32;   // error-detection scheme
+    unsigned int n     = 32;            // data length (bytes)
+    crc_scheme   check = LIQUID_CRC_32; // error-detection scheme
 
     int dopt;
     while((dopt = getopt(argc,argv,"uhn:v:")) != EOF){
@@ -55,27 +55,20 @@ int main(int argc, char*argv[])
 
     unsigned int i;
 
-    // initialize data arra
-    unsigned char data[n];
+    // initialize data array, leaving space for key at the end
+    unsigned char data[n+4];
     for (i=0; i<n; i++)
-        data[i] = rand() % 256;
+        data[i] = rand() & 0xff;
 
-    // compute key on original data
-    unsigned int key = crc_generate_key(check, data, n);
-    printf("key: 0x%.8x\n", (unsigned int) key);
+    // append key to data message
+    crc_append_key(check, data, n);
 
-    printf("testing uncorrupted data... ");
-    if (crc_validate_message(check, data, n, key))
-        printf("  pass\n");
-    else
-        printf("  FAIL\n");
+    // check uncorrupted data
+    printf("testing uncorrupted data... %s\n", crc_check_key(check, data, n) ? "pass" : "FAIL");
 
-    printf("testing corrupted data...   ");
+    // corrupt message and check data again
     data[0]++;
-    if (crc_validate_message(check, data, n, key))
-        printf("  pass\n");
-    else
-        printf("  FAIL\n");
+    printf("testing corrupted data...   %s\n", crc_check_key(check, data, n) ? "pass" : "FAIL (ok)");
 
     printf("done.\n");
     return 0;
