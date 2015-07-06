@@ -37,17 +37,17 @@ void usage()
 int main(int argc, char*argv[])
 {
     // options
-    unsigned int bps= 1;            // number of bits/symbol
-    float h         = 0.5f;         // modulation index (h=1/2 for MSK)
-    unsigned int k  = 4;            // filter samples/symbol
-    unsigned int m  = 3;            // filter delay (symbols)
-    float beta      = 0.35f;        // GMSK bandwidth-time factor
-    unsigned int num_symbols = 20;  // number of data symbols
-    float SNRdB     = 40.0f;        // signal-to-noise ratio [dB]
-    float cfo       = 0.0f;         // carrier frequency offset
-    float cpo       = 0.0f;         // carrier phase offset
-    float tau       = 0.0f;         // fractional symbol timing offset
-    int filter_type = LIQUID_CPFSK_SQUARE;
+    unsigned int    bps         = 1;        // number of bits/symbol
+    float           h           = 0.5f;     // modulation index (h=1/2 for MSK)
+    unsigned int    k           = 4;        // filter samples/symbol
+    unsigned int    m           = 3;        // filter delay (symbols)
+    float           beta        = 0.35f;    // GMSK bandwidth-time factor
+    unsigned int    num_symbols = 20;       // number of data symbols
+    float           SNRdB       = 40.0f;    // signal-to-noise ratio [dB]
+    float           cfo         = 0.0f;     // carrier frequency offset
+    float           cpo         = 0.0f;     // carrier phase offset
+    float           tau         = 0.0f;     // fractional symbol timing offset
+    int             filter_type = LIQUID_CPFSK_SQUARE;
 
     int dopt;
     while ((dopt = getopt(argc,argv,"ht:p:H:k:m:b:n:s:F:P:T:")) != EOF) {
