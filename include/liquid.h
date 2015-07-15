@@ -3786,6 +3786,7 @@ void gmskframesync_debug_disable(gmskframesync _q);
 void gmskframesync_debug_print(gmskframesync _q, const char * _filename);
 
 
+
 // 
 // OFDM flexframe generator
 //
@@ -5251,6 +5252,161 @@ void FREQMOD(_modulate_block)(FREQMOD()    _q,                  \
 // define freqmod APIs
 LIQUID_FREQMOD_DEFINE_API(LIQUID_FREQMOD_MANGLE_FLOAT,float,liquid_float_complex)
 
+//
+// continuous phase frequency-shift keying (CP-FSK) modems
+//
+
+// CP-FSK filter prototypes
+typedef enum {
+    LIQUID_CPFSK_SQUARE=0,      // square pulse
+    LIQUID_CPFSK_RCOS_FULL,     // raised-cosine (full response)
+    LIQUID_CPFSK_RCOS_PARTIAL,  // raised-cosine (partial response)
+    LIQUID_CPFSK_GMSK,          // Gauss minimum-shift keying pulse
+} liquid_cpfsk_filter;
+
+// CP-FSK modulator
+typedef struct cpfskmod_s * cpfskmod;
+
+// create cpfskmod object (frequency modulator)
+//  _bps    :   bits per symbol, _bps > 0
+//  _h      :   modulation index, _h > 0
+//  _k      :   samples/symbol, _k > 1, _k even
+//  _m      :   filter delay (symbols), _m > 0
+//  _beta   :   filter bandwidth parameter, _beta > 0
+//  _type   :   filter type (e.g. LIQUID_CPFSK_SQUARE)
+cpfskmod cpfskmod_create(unsigned int _bps,
+                         float        _h,
+                         unsigned int _k,
+                         unsigned int _m,
+                         float        _beta,
+                         int          _type);
+//cpfskmod cpfskmod_create_msk(unsigned int _k);
+//cpfskmod cpfskmod_create_gmsk(unsigned int _k, float _BT);
+
+// destroy cpfskmod object
+void cpfskmod_destroy(cpfskmod _q);
+
+// print cpfskmod object internals
+void cpfskmod_print(cpfskmod _q);
+
+// reset state
+void cpfskmod_reset(cpfskmod _q);
+
+// modulate sample
+//  _q      :   frequency modulator object
+//  _s      :   input symbol
+//  _y      :   output sample array [size: _k x 1]
+void cpfskmod_modulate(cpfskmod               _q,
+                       unsigned int           _s,
+                       liquid_float_complex * _y);
+
+
+
+// CP-FSK demodulator
+typedef struct cpfskdem_s * cpfskdem;
+
+// create cpfskdem object (frequency modulator)
+//  _bps    :   bits per symbol, _bps > 0
+//  _h      :   modulation index, _h > 0
+//  _k      :   samples/symbol, _k > 1, _k even
+//  _m      :   filter delay (symbols), _m > 0
+//  _beta   :   filter bandwidth parameter, _beta > 0
+//  _type   :   filter type (e.g. LIQUID_CPFSK_SQUARE)
+cpfskdem cpfskdem_create(unsigned int _bps,
+                         float        _h,
+                         unsigned int _k,
+                         unsigned int _m,
+                         float        _beta,
+                         int          _type);
+//cpfskdem cpfskdem_create_msk(unsigned int _k);
+//cpfskdem cpfskdem_create_gmsk(unsigned int _k, float _BT);
+
+// destroy cpfskdem object
+void cpfskdem_destroy(cpfskdem _q);
+
+// print cpfskdem object internals
+void cpfskdem_print(cpfskdem _q);
+
+// reset state
+void cpfskdem_reset(cpfskdem _q);
+
+// demodulate array of samples
+//  _q      :   continuous-phase frequency demodulator object
+//  _y      :   input sample array [size: _n x 1]
+//  _n      :   input sample array length
+//  _s      :   output symbol array
+//  _nw     :   number of output symbols written
+void cpfskdem_demodulate(cpfskdem               _q,
+                         liquid_float_complex * _y,
+                         unsigned int           _n,
+                         unsigned int         * _s,
+                         unsigned int         * _nw);
+
+
+
+
+//
+// M-ary frequency-shift keying (MFSK) modems
+//
+
+// FSK modulator
+typedef struct fskmod_s * fskmod;
+
+// create fskmod object (frequency modulator)
+//  _m          :   bits per symbol, _bps > 0
+//  _k          :   samples/symbol, _k >= 2^_m
+//  _bandwidth  :   total signal bandwidth, (0,0.5)
+fskmod fskmod_create(unsigned int _m,
+                     unsigned int _k,
+                     float        _bandwidth);
+
+// destroy fskmod object
+void fskmod_destroy(fskmod _q);
+
+// print fskmod object internals
+void fskmod_print(fskmod _q);
+
+// reset state
+void fskmod_reset(fskmod _q);
+
+// modulate sample
+//  _q      :   frequency modulator object
+//  _s      :   input symbol
+//  _y      :   output sample array [size: _k x 1]
+void fskmod_modulate(fskmod                 _q,
+                     unsigned int           _s,
+                     liquid_float_complex * _y);
+
+
+
+// CP-FSK demodulator
+typedef struct fskdem_s * fskdem;
+
+// create fskdem object (frequency demodulator)
+//  _m          :   bits per symbol, _bps > 0
+//  _k          :   samples/symbol, _k >= 2^_m
+//  _bandwidth  :   total signal bandwidth, (0,0.5)
+fskdem fskdem_create(unsigned int _m,
+                     unsigned int _k,
+                     float        _bandwidth);
+
+// destroy fskdem object
+void fskdem_destroy(fskdem _q);
+
+// print fskdem object internals
+void fskdem_print(fskdem _q);
+
+// reset state
+void fskdem_reset(fskdem _q);
+
+// demodulate symbol, assuming perfect symbol timing
+//  _q      :   fskdem object
+//  _y      :   input sample array [size: _k x 1]
+unsigned int fskdem_demodulate(fskdem                 _q,
+                               liquid_float_complex * _y);
+
+// get demodulator frequency error
+float fskdem_get_frequency_error(fskdem _q);
 
 
 // 

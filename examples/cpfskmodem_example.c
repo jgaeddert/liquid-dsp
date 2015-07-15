@@ -1,0 +1,219 @@
+// 
+// cpfskmodem_example.c
+//
+// This example demostrates the continuous phase frequency-shift keying
+// (CP-FSK) modem in liquid. A message signal is modulated and the
+// resulting signal is recovered using a demodulator object.
+//
+
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <getopt.h>
+#include <math.h>
+#include "liquid.h"
+
+#define OUTPUT_FILENAME "cpfskmodem_example.m"
+
+// print usage/help message
+void usage()
+{
+    printf("cpfskmodem_example -- continuous-phase frequency-shift keying example\n");
+    printf("options:\n");
+    printf("  h     : print help\n");
+    printf("  t     : filter type: [square], rcos-full, rcos-half, gmsk\n");
+    printf("  p     : bits/symbol,              default:  1\n");
+    printf("  H     : modulation index,         default:  0.5\n");
+    printf("  k     : samples/symbol,           default:  8\n");
+    printf("  m     : filter delay (symbols),   default:  3\n");
+    printf("  b     : filter roll-off,          default:  0.35\n");
+    printf("  n     : number of data symbols,   default: 80\n");
+    printf("  s     : SNR [dB],                 default: 40\n");
+    printf("  F     : carrier frequency offset, default:  0\n");
+    printf("  P     : carrier phase offset,     default:  0\n");
+    printf("  T     : fractional symbol offset, default:  0\n");
+}
+
+int main(int argc, char*argv[])
+{
+    // options
+    unsigned int    bps         = 1;        // number of bits/symbol
+    float           h           = 0.5f;     // modulation index (h=1/2 for MSK)
+    unsigned int    k           = 4;        // filter samples/symbol
+    unsigned int    m           = 3;        // filter delay (symbols)
+    float           beta        = 0.35f;    // GMSK bandwidth-time factor
+    unsigned int    num_symbols = 20;       // number of data symbols
+    float           SNRdB       = 40.0f;    // signal-to-noise ratio [dB]
+    float           cfo         = 0.0f;     // carrier frequency offset
+    float           cpo         = 0.0f;     // carrier phase offset
+    float           tau         = 0.0f;     // fractional symbol timing offset
+    int             filter_type = LIQUID_CPFSK_SQUARE;
+
+    int dopt;
+    while ((dopt = getopt(argc,argv,"ht:p:H:k:m:b:n:s:F:P:T:")) != EOF) {
+        switch (dopt) {
+        case 'h': usage();                      return 0;
+        case 't':
+            if (strcmp(optarg,"square")==0) {
+                filter_type = LIQUID_CPFSK_SQUARE;
+            } else if (strcmp(optarg,"rcos-full")==0) {
+                filter_type = LIQUID_CPFSK_RCOS_FULL;
+            } else if (strcmp(optarg,"rcos-half")==0) {
+                filter_type = LIQUID_CPFSK_RCOS_PARTIAL;
+            } else if (strcmp(optarg,"gmsk")==0) {
+                filter_type = LIQUID_CPFSK_GMSK;
+            } else {
+                fprintf(stderr,"error: %s, unknown filter type '%s'\n", argv[0], optarg);
+                exit(1);
+            }
+            break;
+        case 'p': bps   = atoi(optarg);         break;
+        case 'H': h     = atof(optarg);         break;
+        case 'k': k     = atoi(optarg);         break;
+        case 'm': m     = atoi(optarg);         break;
+        case 'b': beta  = atof(optarg);         break;
+        case 'n': num_symbols = atoi(optarg);   break;
+        case 's': SNRdB = atof(optarg);         break;
+        case 'F': cfo    = atof(optarg);        break;
+        case 'P': cpo    = atof(optarg);        break;
+        case 'T': tau    = atof(optarg);        break;
+        default:
+            exit(1);
+        }
+    }
+
+    unsigned int i;
+
+    // derived values
+    unsigned int num_samples = k*num_symbols;
+    unsigned int M = 1 << bps;              // constellation size
+    float nstd = powf(10.0f, -SNRdB/20.0f);
+
+    // arrays
+    unsigned int sym_in[num_symbols];       // input symbols
+    float complex x[num_samples];           // transmitted signal
+    float complex y[num_samples];           // received signal
+    unsigned int sym_out[num_symbols];      // output symbols
+
+    // create modem objects
+    cpfskmod mod = cpfskmod_create(bps, h, k, m, beta, filter_type);
+    cpfskdem dem = cpfskdem_create(bps, h, k, m, beta, filter_type);
+
+    // print modulator
+    cpfskmod_print(mod);
+
+    // generate message signal
+    for (i=0; i<num_symbols; i++)
+        sym_in[i] = rand() % M;
+
+    // modulate signal
+    for (i=0; i<num_symbols; i++)
+        cpfskmod_modulate(mod, sym_in[i], &x[k*i]);
+
+    // push through channel
+    float sample_offset = -tau * k;
+    int   sample_delay  = (int)roundf(sample_offset);
+    float dt            = sample_offset - (float)sample_delay;
+    printf("symbol delay    :   %f\n", tau);
+    printf("sample delay    :   %f = %d + %f\n", sample_offset, sample_delay, dt);
+    firfilt_crcf fchannel = firfilt_crcf_create_kaiser(8*k+2*sample_delay+1, 0.45f, 40.0f, dt);
+    for (i=0; i<num_samples; i++) {
+        // push through channel delay
+        firfilt_crcf_push(fchannel, x[i]);
+        firfilt_crcf_execute(fchannel, &y[i]);
+
+        // add carrier frequency/phase offset
+        y[i] *= cexpf(_Complex_I*(cfo*i + cpo));
+
+        // add noise
+        y[i] += nstd*(randnf() + _Complex_I*randnf())*M_SQRT1_2;
+    }
+    firfilt_crcf_destroy(fchannel);
+
+    // demodulate signal
+    unsigned int nw=0;
+    cpfskdem_demodulate(dem, y, num_samples, sym_out, &nw);
+    printf("demodulator wrote %u symbols\n", nw);
+
+    // destroy modem objects
+    cpfskmod_destroy(mod);
+    cpfskdem_destroy(dem);
+
+    // compute power spectral density of transmitted signal
+    unsigned int nfft = 1024;
+    float psd[nfft];
+    spgramcf periodogram = spgramcf_create_kaiser(nfft, nfft/2, 8.0f);
+    spgramcf_estimate_psd(periodogram, x, num_samples, psd);
+    spgramcf_destroy(periodogram);
+
+    // 
+    // export results
+    //
+    FILE * fid = fopen(OUTPUT_FILENAME,"w");
+    fprintf(fid,"%% %s : auto-generated file\n", OUTPUT_FILENAME);
+    fprintf(fid,"clear all\n");
+    fprintf(fid,"close all\n");
+    fprintf(fid,"k = %u;\n", k);
+    fprintf(fid,"h = %f;\n", h);
+    fprintf(fid,"num_symbols = %u;\n", num_symbols);
+    fprintf(fid,"num_samples = %u;\n", num_samples);
+    fprintf(fid,"nfft        = %u;\n", nfft);
+    fprintf(fid,"delay       = %u; %% receive filter delay\n", m);
+
+    fprintf(fid,"x   = zeros(1,num_samples);\n");
+    fprintf(fid,"y   = zeros(1,num_samples);\n");
+    for (i=0; i<num_samples; i++) {
+        fprintf(fid,"x(%4u) = %12.8f + j*%12.8f;\n", i+1, crealf(x[i]), cimagf(x[i]));
+        fprintf(fid,"y(%4u) = %12.8f + j*%12.8f;\n", i+1, crealf(y[i]), cimagf(y[i]));
+    }
+    // save power spectral density
+    fprintf(fid,"psd = zeros(1,nfft);\n");
+    for (i=0; i<nfft; i++)
+        fprintf(fid,"psd(%4u) = %12.8f;\n", i+1, psd[i]);
+
+    fprintf(fid,"t=[0:(num_samples-1)]/k;\n");
+    fprintf(fid,"i = 1:k:num_samples;\n");
+    fprintf(fid,"figure;\n");
+    fprintf(fid,"subplot(3,4,1:3);\n");
+    fprintf(fid,"  plot(t,real(x),'-', t(i),real(x(i)),'ob',...\n");
+    fprintf(fid,"       t,imag(x),'-', t(i),imag(x(i)),'og');\n");
+    fprintf(fid,"  axis([0 num_symbols -1.2 1.2]);\n");
+    fprintf(fid,"  xlabel('time');\n");
+    fprintf(fid,"  ylabel('x(t)');\n");
+    fprintf(fid,"  grid on;\n");
+    fprintf(fid,"subplot(3,4,5:7);\n");
+    fprintf(fid,"  plot(t,real(y),'-', t(i),real(y(i)),'ob',...\n");
+    fprintf(fid,"       t,imag(y),'-', t(i),imag(y(i)),'og');\n");
+    fprintf(fid,"  axis([0 num_symbols -1.2 1.2]);\n");
+    fprintf(fid,"  xlabel('time');\n");
+    fprintf(fid,"  ylabel('y(t)');\n");
+    fprintf(fid,"  grid on;\n");
+    // plot I/Q constellations
+    fprintf(fid,"subplot(3,4,4);\n");
+    fprintf(fid,"  plot(real(x),imag(x),'-',real(x(i)),imag(x(i)),'rs','MarkerSize',4);\n");
+    fprintf(fid,"  xlabel('I');\n");
+    fprintf(fid,"  ylabel('Q');\n");
+    fprintf(fid,"  axis([-1 1 -1 1]*1.2);\n");
+    fprintf(fid,"  axis square;\n");
+    fprintf(fid,"  grid on;\n");
+    fprintf(fid,"subplot(3,4,8);\n");
+    fprintf(fid,"  plot(real(y),imag(y),'-',real(y(i)),imag(y(i)),'rs','MarkerSize',4);\n");
+    fprintf(fid,"  xlabel('I');\n");
+    fprintf(fid,"  ylabel('Q');\n");
+    fprintf(fid,"  axis([-1 1 -1 1]*1.2);\n");
+    fprintf(fid,"  axis square;\n");
+    fprintf(fid,"  grid on;\n");
+    // plot PSD
+    fprintf(fid,"f = [0:(nfft-1)]/nfft - 0.5;\n");
+    fprintf(fid,"subplot(3,4,9:12);\n");
+    fprintf(fid,"  plot(f,psd,'LineWidth',1.5);\n");
+    fprintf(fid,"  axis([-0.5 0.5 -60 20]);\n");
+    fprintf(fid,"  xlabel('Normalized Frequency [f/F_s]');\n");
+    fprintf(fid,"  ylabel('PSD [dB]');\n");
+    fprintf(fid,"  grid on;\n");
+
+    fclose(fid);
+    printf("results written to '%s'\n", OUTPUT_FILENAME);
+
+    return 0;
+}
