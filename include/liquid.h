@@ -22,6 +22,12 @@
 #ifndef __LIQUID_H__
 #define __LIQUID_H__
 
+#ifdef _MSC_VER
+#pragma warning( push )
+#pragma warning( disable : 4003 )
+#endif
+
+
 #ifdef __cplusplus
 extern "C" {
 #   define LIQUID_USE_COMPLEX_H 0
@@ -6617,6 +6623,11 @@ void liquid_vectorf_add(float *      _a,
 #ifdef __cplusplus
 } //extern "C"
 #endif // __cplusplus
+
+#ifdef _MSC_VER
+#pragma warning( pop )
+#endif
+
 
 #endif // __LIQUID_H__
 
