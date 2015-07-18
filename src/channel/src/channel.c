@@ -268,6 +268,12 @@ void CHANNEL(_add_shadowing)(CHANNEL() _q,
     _q->shadowing_filter = IIRFILT(_create)(b,2,a,2);
 }
 
+// get nominal channel delay [samples]
+unsigned int CHANNEL(_get_delay)(CHANNEL() _q)
+{
+    return 2*RESAMP(_get_delay)(_q->resamp) + 1;
+}
+
 // apply channel impairments on input array
 //  _q      : channel object
 //  _x      : input array [size: _nx x 1]

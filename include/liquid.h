@@ -463,6 +463,9 @@ void CHANNEL(_add_shadowing)(CHANNEL()    _q,                   \
                              float        _sigma,               \
                              float        _fd);                 \
                                                                 \
+/* get nominal delay [samples]                              */  \
+unsigned int CHANNEL(_get_delay)(CHANNEL() _q);                 \
+                                                                \
 /* apply channel impairments on input array                 */  \
 /*  _q      : channel object                                */  \
 /*  _x      : input array [size: _nx x 1]                   */  \
