@@ -160,8 +160,8 @@ void CHANNEL(_add_resamp)(CHANNEL() _q,
 
     // TODO: set delay appropriately
     
-    //
-    RESAMP(_setrate)(_q->resamp, _q->resamp_rate);
+    // set resampling rate
+    RESAMP(_set_rate)(_q->resamp, _q->resamp_rate);
 }
 
 // apply carrier offset impairment

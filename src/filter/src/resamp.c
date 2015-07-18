@@ -105,7 +105,7 @@ RESAMP() RESAMP(_create)(float        _rate,
 
     // set rate using formal method (specifies output stride
     // value 'del')
-    RESAMP(_setrate)(q, _rate);
+    RESAMP(_set_rate)(q, _rate);
 
     // set properties
     q->m    = _m;       // prototype filter semi-length
@@ -201,11 +201,11 @@ unsigned int RESAMP(_get_delay)(RESAMP() _q)
 }
 
 // set resampling rate
-void RESAMP(_setrate)(RESAMP() _q,
-                      float    _rate)
+void RESAMP(_set_rate)(RESAMP() _q,
+                       float    _rate)
 {
     if (_rate <= 0) {
-        fprintf(stderr,"error: resamp_%s_setrate(), resampling rate must be greater than zero\n", EXTENSION_FULL);
+        fprintf(stderr,"error: resamp_%s_set_rate(), resampling rate must be greater than zero\n", EXTENSION_FULL);
         exit(1);
     }
 

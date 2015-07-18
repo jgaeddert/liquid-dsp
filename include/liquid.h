@@ -2958,7 +2958,7 @@ void RESAMP(_reset)(RESAMP() _q);                               \
 unsigned int RESAMP(_get_delay)(RESAMP() _q);                   \
                                                                 \
 /* set rate of arbitrary resampler                          */  \
-void RESAMP(_setrate)(RESAMP() _q, float _rate);                \
+void RESAMP(_set_rate)(RESAMP() _q, float _rate);               \
                                                                 \
 /* execute arbitrary resampler                              */  \
 /*  _q              :   resamp object                       */  \
