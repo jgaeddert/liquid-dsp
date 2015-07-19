@@ -5493,11 +5493,20 @@ void ampmodem_modulate(ampmodem _fm,
                        float _x,
                        liquid_float_complex *_y);
 
+void ampmodem_modulate_block(ampmodem _q,
+                             float * _m,
+                             unsigned int _n,
+                             liquid_float_complex *_s);
+
 // demodulate sample
 void ampmodem_demodulate(ampmodem _fm,
                          liquid_float_complex _y,
                          float *_x);
 
+void ampmodem_demodulate_block(ampmodem _q,
+                               liquid_float_complex * _r,
+                               unsigned int _n,
+                               float * _m);
 
 //
 // MODULE : multichannel
