@@ -294,7 +294,7 @@ void ofdmflexframesync_debug_enable(ofdmflexframesync _q)
 // disable debugging for internal ofdm frame synchronizer
 void ofdmflexframesync_debug_disable(ofdmflexframesync _q)
 {
-    ofdmframesync_debug_enable(_q->fs);
+    ofdmframesync_debug_disable(_q->fs);
 }
 
 // print debugging file for internal ofdm frame synchronizer
