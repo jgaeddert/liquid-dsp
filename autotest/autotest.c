@@ -48,6 +48,7 @@ void usage()
     printf("  -s <string>   run all tests matching search string\n");
     printf("  -v            verbose\n");
     printf("  -q            quiet\n");
+    printf("  -o <filename> output file (json)\n");
 }
 
 // define autotest function pointer
@@ -114,6 +115,9 @@ void print_test_list(void);
 // print list of packages
 void print_package_list(void);
 
+// print basic autotest results to stdout
+int export_results(char * _filename);
+
 // main function
 int main(int argc, char *argv[])
 {
@@ -132,12 +136,13 @@ int main(int argc, char *argv[])
     int          stop_on_fail       = 0;
     int          rseed              = 0;
     char         search_string[128] = "";
+    char         filename[256]      = "";
 
     unsigned int i;
 
     // get input options
     int d;
-    while((d = getopt(argc,argv,"ht:p:rLlxs:vq")) != EOF){
+    while((d = getopt(argc,argv,"ht:p:rLlxs:vqo:")) != EOF){
         switch (d) {
         case 'h':
             usage();
@@ -176,6 +181,10 @@ int main(int argc, char *argv[])
         case 'q':
             verbose = 0;
             liquid_autotest_verbose = 0;
+            break;
+        case 'o':
+            strncpy(filename,optarg,255);
+            filename[255] = '\0';
             break;
         default:
             return 1;
@@ -261,6 +270,11 @@ int main(int argc, char *argv[])
         print_unstable_tests();
 
     autotest_print_results();
+
+    // export results
+    if (strcmp(filename,"")!=0)
+        export_results(filename);
+
     return 0;
 }
 
@@ -407,5 +421,44 @@ void print_package_list(void)
     unsigned int i;
     for (i=0; i<NUM_PACKAGES; i++)
         printf("%u: %s\n", packages[i].id, packages[i].name);
+}
+
+// print basic autotest results to stdout
+int export_results(char * _filename)
+{
+    // try to open file for writing
+    FILE * fid = fopen(_filename,"w");
+    if (!fid) {
+        fprintf(stderr,"error: export_results(), could not open '%s' for writing\n", _filename);
+        return -1;
+    }
+
+    // print header
+    fprintf(fid,"{\n");
+    fprintf(fid,"  \"build-info\" : {\n");
+    fprintf(fid,"  },\n");
+    fprintf(fid,"  \"tests\" : [\n");
+
+    // print each individual test as opposed to package
+    unsigned int i;
+    for (i=0; i<NUM_AUTOSCRIPTS; i++) {
+        fprintf(fid,"    {\"id\":%3u, \"pass\":%s, \"num_checks\":%4u, \"num_passed\":%4u, \"name\":\"%s\"}%s\n",
+                scripts[i].id,
+                scripts[i].num_failed == 0 ? "true" : "false",
+                scripts[i].num_checks,
+                scripts[i].num_passed,
+                scripts[i].name,
+                i==NUM_AUTOSCRIPTS-1 ? "" : ",");
+    }
+
+    fprintf(fid,"  ]\n");
+    fprintf(fid,"}\n");
+    fclose(fid);
+
+    if (liquid_autotest_verbose)
+        printf("output .json results written to %s\n", _filename);
+
+    // everything is fine
+    return 0;
 }
 

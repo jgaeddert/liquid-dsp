@@ -85,6 +85,10 @@ void liquid_autotest_failed_msg(const char * _file,
 // print basic autotest results to stdout
 void autotest_print_results(void);
 
+// export results to .json file
+int autotest_export_results(char * _filename);
+
+
 // print warning to stderr
 // increment liquid_autotest_num_warnings
 //  _file       :   filename (string)
