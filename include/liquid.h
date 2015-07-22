@@ -2000,6 +2000,9 @@ FIRFILT() FIRFILT(_create_rnyquist)(int          _type,         \
                                     float        _beta,         \
                                     float        _mu);          \
                                                                 \
+/* create rectangular filter prototype                      */  \
+FIRFILT() FIRFILT(_create_rect)(unsigned int _n);               \
+                                                                \
 /* re-create filter                                         */  \
 /*  _q      : original filter object                        */  \
 /*  _h      : pointer to filter coefficients [size: _n x 1] */  \

@@ -166,8 +166,32 @@ FIRFILT() FIRFILT(_create_rnyquist)(int          _type,
     for (i=0; i<h_len; i++)
         hc[i] = hf[i];
 
-    // return filterbank object
+    // return filter object and return
     return FIRFILT(_create)(hc, h_len);
+}
+
+// create rectangular filter prototype
+FIRFILT() FIRFILT(_create_rect)(unsigned int _n)
+{
+    // validate input
+    if (_n == 0 || _n > 1024) {
+        fprintf(stderr,"error: firfilt_%s_create_rect(), filter length must be in [1,1024]\n", EXTENSION_FULL);
+        exit(1);
+    }
+
+    // create float array coefficients
+    float hf[_n];
+    unsigned int i;
+    for (i=0; i<_n; i++)
+        hf[i] = 1.0f;
+
+    // copy coefficients to type-specific array
+    TC h[_n];
+    for (i=0; i<_n; i++)
+        h[i] = (TC) hf[i];
+
+    // return filter object and return
+    return FIRFILT(_create)(h, _n);
 }
 
 // re-create firfilt object
