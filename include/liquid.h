@@ -414,8 +414,12 @@ LIQUID_WDELAY_DEFINE_API(WDELAY_MANGLE_CFLOAT, liquid_float_complex)
                                                                 \
 typedef struct CHANNEL(_s) * CHANNEL();                         \
                                                                 \
-/* create channel object                                    */  \
+/* create channel object with default parameters            */  \
 CHANNEL() CHANNEL(_create)(void);                               \
+                                                                \
+/* create channel object with particular delay              */  \
+/*  _m  :   resampling filter semi-length                   */  \
+CHANNEL() CHANNEL(_create_delay)(unsigned int _m);              \
                                                                 \
 /* destroy channel object, freeing all internal memory      */  \
 void CHANNEL(_destroy)(CHANNEL() _q);                           \

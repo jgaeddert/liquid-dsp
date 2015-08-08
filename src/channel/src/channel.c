@@ -64,9 +64,22 @@ struct CHANNEL(_s) {
     float           shadowing_fd;       // shadowing Doppler frequency
 };
 
-// create structured channel object
+// create structured channel object with default parameters
 CHANNEL() CHANNEL(_create)(void)
 {
+    // return object
+    return CHANNEL(_create_delay)(7);
+}
+
+// create structured channel object with a particular resampling filter delay
+CHANNEL() CHANNEL(_create_delay)(unsigned int _m)
+{
+    // validate input
+    if (_m < 2 || _m > 30) {
+        fprintf(stderr,"error: channel_%s_create_delay(m), delay out of range\n", EXTENSION_FULL);
+        exit(1);
+    }
+
     CHANNEL() q = (CHANNEL()) malloc(sizeof(struct CHANNEL(_s)));
 
     // initialize all options as off
@@ -78,7 +91,7 @@ CHANNEL() CHANNEL(_create)(void)
 
     // create internal objects
     q->resamp_rate      = 1.0f;
-    q->resamp_m         = 17;
+    q->resamp_m         = _m;
     q->resamp           = RESAMP(_create)(q->resamp_rate, q->resamp_m, 0.45f, 50.0f, 64);
     q->nco              = NCO(_create)(LIQUID_VCO);
     q->h_len            = 1;
