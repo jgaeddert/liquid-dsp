@@ -666,6 +666,12 @@ void EQLMS(_step)(EQLMS() _q,                                   \
                   T       _d,                                   \
                   T       _d_hat);                              \
                                                                 \
+/* step through one cycle of equalizer training (blind)     */  \
+/*  _q      :   equalizer object                            */  \
+/*  _d_hat  :   actual output                               */  \
+void EQLMS(_step_blind)(EQLMS() _q,                             \
+                        T       _d_hat);                        \
+                                                                \
 /* get equalizer's internal coefficients                    */  \
 /*  _q      :   equalizer object                            */  \
 /*  _w      :   weights [size: _p x 1]                      */  \

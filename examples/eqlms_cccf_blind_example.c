@@ -188,7 +188,7 @@ int main(int argc, char*argv[])
 
         // update equalizer independent of the signal: estimate error
         // assuming constant modulus signal
-        eqlms_cccf_step(eq, d_hat/cabsf(d_hat), d_hat);
+        eqlms_cccf_step_blind(eq, d_hat);
 
         // apply carrier recovery
         float complex v;

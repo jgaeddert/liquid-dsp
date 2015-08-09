@@ -328,14 +328,7 @@ void EQLMS(_execute_block)(EQLMS()      _q,
         if ( ((_q->count+_k-1) % _k) == 0 ) {
             // update equalizer independent of the signal: estimate error
             // assuming constant modulus signal
-#if T_COMPLEX
-            T d = d_hat / cabsf(d_hat);
-            //printf("count: %6u : %12.8f %12.8f\n", _q->count, crealf(d_hat), cimagf(d_hat));
-#else
-            T d = d_hat / fabsf(d_hat);
-            //printf("count: %6u : %12.8f\n", _q->count, d_hat);
-#endif
-            EQLMS(_step)(_q, d, d_hat);
+            EQLMS(_step_blind)(_q, d_hat);
         }
     }
 }
@@ -385,6 +378,21 @@ void EQLMS(_step)(EQLMS() _q,
 
     // copy old values
     memmove(_q->w0, _q->w1, _q->h_len*sizeof(T));
+}
+
+// step through one cycle of equalizer training
+//  _q      :   equalizer object
+//  _d_hat  :   filtered output
+void EQLMS(_step_blind)(EQLMS() _q,
+                        T       _d_hat)
+{
+    // update equalizer using constant modulus method
+#if T_COMPLEX
+    T d = _d_hat / cabsf(_d_hat);
+#else
+    T d = _d_hat > 0 ? 1 : -1;
+#endif
+    EQLMS(_step)(_q, d, _d_hat);
 }
 
 // retrieve internal filter coefficients
