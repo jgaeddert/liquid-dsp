@@ -1,20 +1,23 @@
 /*
  * Copyright (c) 2007 - 2015 Joseph Gaeddert
  *
- * This file is part of liquid.
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
  *
- * liquid is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
+ * The above copyright notice and this permission notice shall be included in
+ * all copies or substantial portions of the Software.
  *
- * liquid is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with liquid.  If not, see <http://www.gnu.org/licenses/>.
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+ * THE SOFTWARE.
  */
 
 //
@@ -47,6 +50,10 @@ struct qpilotsync_s {
     float complex * buf_time;       // FFT time buffer
     float complex * buf_freq;       // FFT freq buffer
     fftplan         fft;            // transform object
+
+    float           dphi_hat;       // carrier frequency offset estimate
+    float           phi_hat;        // carrier phase offset estimate
+    float           g_hat;          // gain correction estimate
 };
 
 // create packet encoder
@@ -139,6 +146,11 @@ void qpilotsync_reset(qpilotsync _q)
     unsigned int i;
     for (i=0; i<_q->nfft; i++)
         _q->buf_time[i] = 0.0f;
+    
+    // reset estimates
+    _q->dphi_hat = 0.0f;
+    _q->phi_hat  = 0.0f;
+    _q->g_hat    = 1.0f;
 }
 
 void qpilotsync_print(qpilotsync _q)
@@ -205,10 +217,10 @@ void qpilotsync_execute(qpilotsync      _q,
     float        yneg = cabsf(_q->buf_freq[ineg]);
     float        a    =  0.5f*(ypos + yneg) - y0;
     float        b    =  0.5f*(ypos - yneg);
-    float        c    =  y0;
+    //float        c    =  y0;
     float        idx  = -b / (2.0f*a); //-0.5f*(ypos - yneg) / (ypos + yneg - 2*y0);
     float index = (float)i0 + idx;
-    float dphi_hat = (i0 > _q->nfft/2 ? index-(float)_q->nfft : index) * 2*M_PI / (float)(_q->nfft * _q->pilot_spacing);
+    _q->dphi_hat = (i0 > _q->nfft/2 ? index-(float)_q->nfft : index) * 2*M_PI / (float)(_q->nfft * _q->pilot_spacing);
 #if DEBUG_QPILOTSYNC
     printf("X[%3u] = %12.8f <%12.8f>\n", ineg, yneg, cargf(_q->buf_freq[ineg]));
     printf("X[%3u] = %12.8f <%12.8f>\n", i0,   y0,   cargf(_q->buf_freq[i0]));
@@ -237,28 +249,28 @@ void qpilotsync_execute(qpilotsync      _q,
     //       be more computationally complex
     float complex metric = 0;
     for (i=0; i<_q->num_pilots; i++)
-        metric += _q->buf_time[i] * cexpf(-_Complex_I*dphi_hat*i*(float)(_q->pilot_spacing));
+        metric += _q->buf_time[i] * cexpf(-_Complex_I*_q->dphi_hat*i*(float)(_q->pilot_spacing));
     //printf("metric : %12.8f <%12.8f>\n", cabsf(metric), cargf(metric));
-    float phi_hat = cargf(metric);
-    float g_hat   = cabsf(metric) / (float)(_q->num_pilots);
+    _q->phi_hat = cargf(metric);
+    _q->g_hat   = cabsf(metric) / (float)(_q->num_pilots);
 #endif
 
 #if DEBUG_QPILOTSYNC
     // print estimates of carrier frequency, phase, gain
-    printf("dphi-hat    :   %12.8f\n", dphi_hat);
-    printf(" phi-hat    :   %12.8f\n",  phi_hat);
-    printf("   g-hat    :   %12.8f\n",    g_hat);
+    printf("dphi-hat    :   %12.8f\n", _q->dphi_hat);
+    printf(" phi-hat    :   %12.8f\n",  _q->phi_hat);
+    printf("   g-hat    :   %12.8f\n",    _q->g_hat);
 #endif
 
     // frequency correction
-    float g = 1.0f / g_hat;
+    float g = 1.0f / _q->g_hat;
 
     // recover frame symbols
     for (i=0; i<_q->frame_len; i++) {
         if ( (i % _q->pilot_spacing)==0 )
             p++;
         else
-            _payload[n++] = g * _frame[i] * cexpf(-_Complex_I*(dphi_hat*i + phi_hat));
+            _payload[n++] = g * _frame[i] * cexpf(-_Complex_I*(_q->dphi_hat*i + _q->phi_hat));
     }
 #if DEBUG_QPILOTSYNC
     printf("n = %u (expected %u)\n", n, _q->payload_len);
@@ -267,4 +279,21 @@ void qpilotsync_execute(qpilotsync      _q,
     assert(p == _q->num_pilots);
 #endif
 }
+
+// get estimates
+float qpilotsync_get_dphi(qpilotsync _q)
+{
+    return _q->dphi_hat;
+}
+
+float qpilotsync_get_phi(qpilotsync _q)
+{
+    return _q->phi_hat;
+}
+
+float qpilotsync_get_gain(qpilotsync _q)
+{
+    return _q->g_hat;
+}
+
 

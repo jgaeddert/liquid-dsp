@@ -1,20 +1,23 @@
 /*
- * Copyright (c) 2007 - 2014 Joseph Gaeddert
+ * Copyright (c) 2007 - 2015 Joseph Gaeddert
  *
- * This file is part of liquid.
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
  *
- * liquid is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
+ * The above copyright notice and this permission notice shall be included in
+ * all copies or substantial portions of the Software.
  *
- * liquid is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with liquid.  If not, see <http://www.gnu.org/licenses/>.
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+ * THE SOFTWARE.
  */
 
 // autotest.c
@@ -45,6 +48,7 @@ void usage()
     printf("  -s <string>   run all tests matching search string\n");
     printf("  -v            verbose\n");
     printf("  -q            quiet\n");
+    printf("  -o <filename> output file (json)\n");
 }
 
 // define autotest function pointer
@@ -111,6 +115,9 @@ void print_test_list(void);
 // print list of packages
 void print_package_list(void);
 
+// print basic autotest results to stdout
+int export_results(char * _filename);
+
 // main function
 int main(int argc, char *argv[])
 {
@@ -129,12 +136,13 @@ int main(int argc, char *argv[])
     int          stop_on_fail       = 0;
     int          rseed              = 0;
     char         search_string[128] = "";
+    char         filename[256]      = "";
 
     unsigned int i;
 
     // get input options
     int d;
-    while((d = getopt(argc,argv,"ht:p:rLlxs:vq")) != EOF){
+    while((d = getopt(argc,argv,"ht:p:rLlxs:vqo:")) != EOF){
         switch (d) {
         case 'h':
             usage();
@@ -173,6 +181,10 @@ int main(int argc, char *argv[])
         case 'q':
             verbose = 0;
             liquid_autotest_verbose = 0;
+            break;
+        case 'o':
+            strncpy(filename,optarg,255);
+            filename[255] = '\0';
             break;
         default:
             return 1;
@@ -258,6 +270,11 @@ int main(int argc, char *argv[])
         print_unstable_tests();
 
     autotest_print_results();
+
+    // export results
+    if (strcmp(filename,"")!=0)
+        export_results(filename);
+
     return 0;
 }
 
@@ -404,5 +421,44 @@ void print_package_list(void)
     unsigned int i;
     for (i=0; i<NUM_PACKAGES; i++)
         printf("%u: %s\n", packages[i].id, packages[i].name);
+}
+
+// print basic autotest results to stdout
+int export_results(char * _filename)
+{
+    // try to open file for writing
+    FILE * fid = fopen(_filename,"w");
+    if (!fid) {
+        fprintf(stderr,"error: export_results(), could not open '%s' for writing\n", _filename);
+        return -1;
+    }
+
+    // print header
+    fprintf(fid,"{\n");
+    fprintf(fid,"  \"build-info\" : {\n");
+    fprintf(fid,"  },\n");
+    fprintf(fid,"  \"tests\" : [\n");
+
+    // print each individual test as opposed to package
+    unsigned int i;
+    for (i=0; i<NUM_AUTOSCRIPTS; i++) {
+        fprintf(fid,"    {\"id\":%3u, \"pass\":%s, \"num_checks\":%4u, \"num_passed\":%4u, \"name\":\"%s\"}%s\n",
+                scripts[i].id,
+                scripts[i].num_failed == 0 ? "true" : "false",
+                scripts[i].num_checks,
+                scripts[i].num_passed,
+                scripts[i].name,
+                i==NUM_AUTOSCRIPTS-1 ? "" : ",");
+    }
+
+    fprintf(fid,"  ]\n");
+    fprintf(fid,"}\n");
+    fclose(fid);
+
+    if (liquid_autotest_verbose)
+        printf("output .json results written to %s\n", _filename);
+
+    // everything is fine
+    return 0;
 }
 

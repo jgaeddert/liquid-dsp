@@ -1,20 +1,23 @@
 /*
- * Copyright (c) 2007 - 2014 Joseph Gaeddert
+ * Copyright (c) 2007 - 2015 Joseph Gaeddert
  *
- * This file is part of liquid.
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
  *
- * liquid is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
+ * The above copyright notice and this permission notice shall be included in
+ * all copies or substantial portions of the Software.
  *
- * liquid is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with liquid.  If not, see <http://www.gnu.org/licenses/>.
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+ * THE SOFTWARE.
  */
 
 //
@@ -176,6 +179,23 @@ void ampmodem_modulate(ampmodem _q,
     nco_crcf_step(_q->oscillator);
 }
 
+// modulate block of samples
+//  _q      :   ampmodem object
+//  _m      :   message signal m(t), [size: _n x 1]
+//  _n      :   number of input, output samples
+//  _s      :   complex baseband signal s(t) [size: _n x 1]
+void ampmodem_modulate_block(ampmodem        _q,
+                             float *         _m,
+                             unsigned int    _n,
+                             float complex * _s)
+{
+    // TODO: implement more efficient method
+    unsigned int i;
+    for (i=0; i<_n; i++)
+        ampmodem_modulate(_q, _m[i], &_s[i]);
+}
+
+
 void ampmodem_demodulate(ampmodem _q,
                          float complex _y,
                          float *_x)
@@ -220,6 +240,22 @@ void ampmodem_demodulate(ampmodem _q,
                         (1 - _q->ssb_alpha)*_q->ssb_q_hat;
         *_x = 2.0f*(t - _q->ssb_q_hat);
     }
+}
+
+// demodulate block of samples
+//  _q      :   frequency demodulator object
+//  _r      :   received signal r(t) [size: _n x 1]
+//  _n      :   number of input, output samples
+//  _m      :   message signal m(t), [size: _n x 1]
+void ampmodem_demodulate_block(ampmodem        _q,
+                               float complex * _r,
+                               unsigned int    _n,
+                               float *         _m)
+{
+    // TODO: implement more efficient method
+    unsigned int i;
+    for (i=0; i<_n; i++)
+        ampmodem_demodulate(_q, _r[i], &_m[i]);
 }
 
 // export debugging file

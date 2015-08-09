@@ -1,20 +1,23 @@
 /*
- * Copyright (c) 2007 - 2014 Joseph Gaeddert
+ * Copyright (c) 2007 - 2015 Joseph Gaeddert
  *
- * This file is part of liquid.
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
  *
- * liquid is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
+ * The above copyright notice and this permission notice shall be included in
+ * all copies or substantial portions of the Software.
  *
- * liquid is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with liquid.  If not, see <http://www.gnu.org/licenses/>.
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+ * THE SOFTWARE.
  */
 
 //
@@ -34,6 +37,28 @@
 #define DEBUG_OFDMFLEXFRAMESYNC 0
 
 #define OFDMFLEXFRAME_H_SOFT (0)
+
+// 
+// ofdmflexframesync
+//
+
+// internal callback
+int ofdmflexframesync_internal_callback(float complex * _X,
+                                        unsigned char * _p,
+                                        unsigned int    _M,
+                                        void * _userdata);
+
+// receive header data
+void ofdmflexframesync_rxheader(ofdmflexframesync _q,
+                                float complex * _X);
+
+// decode header
+void ofdmflexframesync_decode_header(ofdmflexframesync _q);
+
+// receive payload data
+void ofdmflexframesync_rxpayload(ofdmflexframesync _q,
+                                float complex * _X);
+
 
 struct ofdmflexframesync_s {
     unsigned int M;         // number of subcarriers
@@ -77,6 +102,7 @@ struct ofdmflexframesync_s {
     unsigned int payload_enc_len;       // length of encoded payload
     unsigned int payload_mod_len;       // number of payload modem symbols
     int payload_valid;                  // valid payload flag
+    float complex * payload_syms;       // received payload symbols
 
     // callback
     framesync_callback callback;        // user-defined callback function
@@ -171,6 +197,7 @@ ofdmflexframesync ofdmflexframesync_create(unsigned int       _M,
     q->payload_enc_len = packetizer_get_enc_msg_len(q->p_payload);
     q->payload_enc = (unsigned char*) malloc(q->payload_enc_len*sizeof(unsigned char));
     q->payload_dec = (unsigned char*) malloc(q->payload_len*sizeof(unsigned char));
+    q->payload_syms = (float complex *) malloc(q->payload_len*sizeof(float complex));
     q->payload_mod_len = 0;
 
     // reset state
@@ -193,6 +220,7 @@ void ofdmflexframesync_destroy(ofdmflexframesync _q)
     free(_q->p);
     free(_q->payload_enc);
     free(_q->payload_dec);
+    free(_q->payload_syms);
 
     // free main object memory
     free(_q);
@@ -255,7 +283,6 @@ float ofdmflexframesync_get_cfo(ofdmflexframesync _q)
     return ofdmframesync_get_cfo(_q->fs);
 }
 
-
 // 
 // debugging methods
 //
@@ -269,7 +296,7 @@ void ofdmflexframesync_debug_enable(ofdmflexframesync _q)
 // disable debugging for internal ofdm frame synchronizer
 void ofdmflexframesync_debug_disable(ofdmflexframesync _q)
 {
-    ofdmframesync_debug_enable(_q->fs);
+    ofdmframesync_debug_disable(_q->fs);
 }
 
 // print debugging file for internal ofdm frame synchronizer
@@ -453,7 +480,7 @@ void ofdmflexframesync_decode_header(ofdmflexframesync _q)
     unsigned int n = OFDMFLEXFRAME_H_USER;
 
     // first byte is for expansion/version validation
-    if (_q->header[n+0] != OFDMFLEXFRAME_VERSION) {
+    if (_q->header[n+0] != OFDMFLEXFRAME_PROTOCOL) {
         fprintf(stderr,"warning: ofdmflexframesync_decode_header(), invalid framing version\n");
         _q->header_valid = 0;
     }
@@ -542,6 +569,7 @@ void ofdmflexframesync_decode_header(ofdmflexframesync _q)
         // re-compute number of modulated payload symbols
         div_t d = div(8*_q->payload_enc_len, _q->bps_payload);
         _q->payload_mod_len = d.quot + (d.rem ? 1 : 0);
+        _q->payload_syms = (float complex*) realloc(_q->payload_syms, _q->payload_mod_len*sizeof(float complex));
 #if DEBUG_OFDMFLEXFRAMESYNC
         printf("      * payload mod syms:   %u symbols\n", _q->payload_mod_len);
 #endif
@@ -564,6 +592,9 @@ void ofdmflexframesync_rxpayload(ofdmflexframesync _q,
             // unload payload symbols
             unsigned int sym;
             modem_demodulate(_q->mod_payload, _X[i], &sym);
+
+            // store received symbol
+            _q->payload_syms[_q->payload_symbol_index] = _X[i];
 
             // pack decoded symbol into array
             liquid_pack_array(_q->payload_enc,
@@ -596,8 +627,8 @@ void ofdmflexframesync_rxpayload(ofdmflexframesync _q,
                 // set framestats internals
                 _q->framestats.rssi             = ofdmframesync_get_rssi(_q->fs);
                 _q->framestats.cfo              = ofdmframesync_get_cfo(_q->fs);
-                _q->framestats.framesyms        = NULL;
-                _q->framestats.num_framesyms    = 0;
+                _q->framestats.framesyms        = _q->payload_syms;
+                _q->framestats.num_framesyms    = _q->payload_mod_len;
                 _q->framestats.mod_scheme       = _q->ms_payload;
                 _q->framestats.mod_bps          = _q->bps_payload;
                 _q->framestats.check            = _q->check;

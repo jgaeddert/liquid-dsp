@@ -1,20 +1,23 @@
 /*
  * Copyright (c) 2007 - 2015 Joseph Gaeddert
  *
- * This file is part of liquid.
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
  *
- * liquid is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
+ * The above copyright notice and this permission notice shall be included in
+ * all copies or substantial portions of the Software.
  *
- * liquid is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with liquid.  If not, see <http://www.gnu.org/licenses/>.
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+ * THE SOFTWARE.
  */
 
 #include <stdio.h>
@@ -22,27 +25,6 @@
 #include <math.h>
 #include "autotest/autotest.h"
 #include "liquid.h"
-
-static int callback(unsigned char *  _header,
-                    int              _header_valid,
-                    unsigned char *  _payload,
-                    unsigned int     _payload_len,
-                    int              _payload_valid,
-                    framesyncstats_s _stats,
-                    void *           _userdata)
-{
-    if (liquid_autotest_verbose)
-        printf("*** flexframesync callback invoked, payload valid: %s ***\n", _payload_valid ? "yes" : "no");
-
-    int * frame_recovered = (int*) _userdata;
-
-    if (_header_valid && _payload_valid)
-        *frame_recovered = 1;
-    else
-        *frame_recovered = 0;
-    
-    return 0;
-}
 
 // 
 // AUTOTEST : test simple recovery of frame in noise
@@ -67,8 +49,7 @@ void autotest_flexframesync()
     flexframegen fg = flexframegen_create(&fgprops);
 
     // create flexframesync object
-    int frame_recovered = 0;
-    flexframesync fs = flexframesync_create(callback,(void*)&frame_recovered);
+    flexframesync fs = flexframesync_create(NULL,NULL);
     
     // initialize header and payload
     unsigned char header[14] = {0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13};
@@ -86,14 +67,22 @@ void autotest_flexframesync()
     float complex buf[2];
     while (!frame_complete) {
         // write samples to buffer
-        frame_complete = flexframegen_write_samples(fg, buf);
+        frame_complete = flexframegen_write_samples(fg, buf, 2);
 
         // run through frame synchronizer
         flexframesync_execute(fs, buf, 2);
     }
 
+    // get frame data statistics
+    framedatastats_s stats = flexframesync_get_framedatastats(fs);
+    if (liquid_autotest_verbose)
+        flexframesync_print(fs);
+
     // check to see that frame was recovered
-    CONTEND_EQUALITY( frame_recovered, 1 );
+    CONTEND_EQUALITY( stats.num_frames_detected, 1 );
+    CONTEND_EQUALITY( stats.num_headers_valid,   1 );
+    CONTEND_EQUALITY( stats.num_payloads_valid,  1 );
+    CONTEND_EQUALITY( stats.num_bytes_received,  _payload_len );
 
     // destroy objects
     flexframegen_destroy(fg);

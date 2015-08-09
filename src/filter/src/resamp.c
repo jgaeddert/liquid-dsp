@@ -1,20 +1,23 @@
 /*
- * Copyright (c) 2007 - 2014 Joseph Gaeddert
+ * Copyright (c) 2007 - 2015 Joseph Gaeddert
  *
- * This file is part of liquid.
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
  *
- * liquid is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
+ * The above copyright notice and this permission notice shall be included in
+ * all copies or substantial portions of the Software.
  *
- * liquid is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with liquid.  If not, see <http://www.gnu.org/licenses/>.
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+ * THE SOFTWARE.
  */
 
 //
@@ -102,7 +105,7 @@ RESAMP() RESAMP(_create)(float        _rate,
 
     // set rate using formal method (specifies output stride
     // value 'del')
-    RESAMP(_setrate)(q, _rate);
+    RESAMP(_set_rate)(q, _rate);
 
     // set properties
     q->m    = _m;       // prototype filter semi-length
@@ -198,16 +201,36 @@ unsigned int RESAMP(_get_delay)(RESAMP() _q)
 }
 
 // set resampling rate
-void RESAMP(_setrate)(RESAMP() _q,
-                      float    _rate)
+void RESAMP(_set_rate)(RESAMP() _q,
+                       float    _rate)
 {
     if (_rate <= 0) {
-        fprintf(stderr,"error: resamp_%s_setrate(), resampling rate must be greater than zero\n", EXTENSION_FULL);
+        fprintf(stderr,"error: resamp_%s_set_rate(), resampling rate must be greater than zero\n", EXTENSION_FULL);
         exit(1);
     }
 
     // set internal rate
     _q->rate = _rate;
+
+    // set output stride
+    _q->del = 1.0f / _q->rate;
+}
+
+// adjust resampling rate
+void RESAMP(_adjust_rate)(RESAMP() _q,
+                          float    _delta)
+{
+    if (_delta > 0.1f || _delta < -0.1f) {
+        fprintf(stderr,"error: resamp_%s_adjust_rate(), resampling rate must be in [-0.1,0.1]\n", EXTENSION_FULL);
+        exit(1);
+    }
+
+    // adjust internal rate
+    _q->rate += _delta;
+
+    // clip rate
+    if (_q->rate >  0.5f) _q->rate =  0.5f;
+    if (_q->rate < -0.5f) _q->rate = -0.5f;
 
     // set output stride
     _q->del = 1.0f / _q->rate;

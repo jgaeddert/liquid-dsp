@@ -90,7 +90,6 @@ int main(int argc, char *argv[])
     qpilotgen_execute(pg, payload_tx, frame_tx);
 
     // add channel impairments
-    // TODO: add carrier offset
     for (i=0; i<frame_len; i++) {
         frame_rx[i]  = frame_tx[i] * cexpf(_Complex_I*dphi*i + _Complex_I*phi);
         frame_rx[i] += nstd*(randnf() + _Complex_I*randnf())*M_SQRT1_2;
@@ -116,6 +115,9 @@ int main(int argc, char *argv[])
     // destroy allocated objects
     qpilotgen_destroy(pg);
     qpilotsync_destroy(ps);
+    modem_destroy(mod);
+    modem_destroy(dem);
+
 
     // write symbols to output file for plotting
     FILE * fid = fopen(filename,"w");

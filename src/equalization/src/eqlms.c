@@ -1,26 +1,30 @@
 /*
- * Copyright (c) 2007 - 2014 Joseph Gaeddert
+ * Copyright (c) 2007 - 2015 Joseph Gaeddert
  *
- * This file is part of liquid.
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
  *
- * liquid is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
+ * The above copyright notice and this permission notice shall be included in
+ * all copies or substantial portions of the Software.
  *
- * liquid is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with liquid.  If not, see <http://www.gnu.org/licenses/>.
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+ * THE SOFTWARE.
  */
 
 //
 // Least mean-squares (LMS) equalizer
 //
 
+#include <math.h>
 #include <stdlib.h>
 #include <string.h>
 #include <stdio.h>
@@ -28,17 +32,19 @@
 //#define DEBUG
 
 struct EQLMS(_s) {
-    unsigned int h_len; // filter length
-    float mu;           // LMS step size
+    unsigned int h_len;     // filter length
+    float        mu;        // LMS step size
 
     // internal matrices
-    T * h0;             // initial coefficients
-    T * w0, * w1;       // weights [px1]
+    T *          h0;        // initial coefficients
+    T *          w0;        // weights [px1]
+    T *          w1;        // weights [px1]
 
-    unsigned int timer; // input sample timer
-    WINDOW() buffer;    // input buffer
-    wdelayf x2;         // buffer of |x|^2 values
-    float x2_sum;       // sum{ |x|^2 }
+    unsigned int count;     // input sample count
+    int          buf_full;  // input buffer full flag
+    WINDOW()     buffer;    // input buffer
+    wdelayf      x2;        // buffer of |x|^2 values
+    float        x2_sum;    // sum{ |x|^2 }
 };
 
 // update sum{|x|^2}
@@ -198,8 +204,9 @@ void EQLMS(_reset)(EQLMS() _q)
     WINDOW(_clear)(_q->buffer);
     wdelayf_clear(_q->x2);
 
-    // reset input timer
-    _q->timer = _q->h_len;
+    // reset input count
+    _q->count = 0;
+    _q->buf_full = 0;
 
     // reset squared magnitude sum
     _q->x2_sum = 0;
@@ -247,8 +254,21 @@ void EQLMS(_push)(EQLMS() _q,
     // update sum{|x|^2}
     EQLMS(_update_sumsq)(_q, _x);
 
-    // decrement timer
-    if (_q->timer) _q->timer--;
+    // increment count
+    _q->count++;
+}
+
+// push sample into equalizer internal buffer as block
+//  _q      :   equalizer object
+//  _x      :   input sample array
+//  _n      :   input sample array length
+void EQLMS(_push_block)(EQLMS()      _q,
+                        T *          _x,
+                        unsigned int _n)
+{
+    unsigned int i;
+    for (i=0; i<_n; i++)
+        EQLMS(_push)(_q, _x[i]);
 }
 
 // execute internal dot product
@@ -273,6 +293,46 @@ void EQLMS(_execute)(EQLMS() _q,
     *_y = y;
 }
 
+// execute equalizer with block of samples using constant
+// modulus algorithm, operating on a decimation rate of _k
+// samples.
+//  _q      :   equalizer object
+//  _k      :   down-sampling rate
+//  _x      :   input sample array [size: _n x 1]
+//  _n      :   input sample array length
+//  _y      :   output sample array [size: _n x 1]
+void EQLMS(_execute_block)(EQLMS()      _q,
+                           unsigned int _k,
+                           T *          _x,
+                           unsigned int _n,
+                           T *          _y)
+{
+    if (_k == 0) {
+        fprintf(stderr,"error: eqlms_%s_execute_block(), down-sampling rate 'k' must be greater than 0\n", EXTENSION_FULL);
+        exit(-1);
+    }
+
+    unsigned int i;
+    T d_hat;
+    for (i=0; i<_n; i++) {
+        // push input sample
+        EQLMS(_push)(_q, _x[i]);
+
+        // compute output sample
+        EQLMS(_execute)(_q, &d_hat);
+
+        // store result in output
+        _y[i] = d_hat;
+
+        // decimate by _k
+        if ( ((_q->count+_k-1) % _k) == 0 ) {
+            // update equalizer independent of the signal: estimate error
+            // assuming constant modulus signal
+            EQLMS(_step_blind)(_q, d_hat);
+        }
+    }
+}
+
 // step through one cycle of equalizer training
 //  _q      :   equalizer object
 //  _d      :   desired output
@@ -281,9 +341,13 @@ void EQLMS(_step)(EQLMS() _q,
                   T       _d,
                   T       _d_hat)
 {
-    // check timer; only run step when buffer is full
-    if (_q->timer)
-        return;
+    // check count; only run step when buffer is full
+    if (!_q->buf_full) {
+        if (_q->count < _q->h_len)
+            return;
+        else
+            _q->buf_full = 1;
+    }
 
     unsigned int i;
 
@@ -314,6 +378,21 @@ void EQLMS(_step)(EQLMS() _q,
 
     // copy old values
     memmove(_q->w0, _q->w1, _q->h_len*sizeof(T));
+}
+
+// step through one cycle of equalizer training
+//  _q      :   equalizer object
+//  _d_hat  :   filtered output
+void EQLMS(_step_blind)(EQLMS() _q,
+                        T       _d_hat)
+{
+    // update equalizer using constant modulus method
+#if T_COMPLEX
+    T d = _d_hat / cabsf(_d_hat);
+#else
+    T d = _d_hat > 0 ? 1 : -1;
+#endif
+    EQLMS(_step)(_q, d, _d_hat);
 }
 
 // retrieve internal filter coefficients
