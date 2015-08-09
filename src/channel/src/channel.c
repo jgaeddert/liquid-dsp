@@ -347,6 +347,7 @@ void CHANNEL(_execute)(CHANNEL()      _q,
     }
 
     // set output sample length
-    *_ny = n;
+    if (_ny != NULL)
+        *_ny = n;
 }
 

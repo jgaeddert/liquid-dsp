@@ -139,6 +139,12 @@ This directory contains all the examples for interfacing the liquid modules.
     constant modulus linear modulation scheme. This works surprisingly
     well even more amplitude-modulated signals, e.g. 'qam16'.
 
+ * `eqlms_cccf_block_example.c`:
+    This example tests the least mean-squares (LMS) equalizer (EQ) on a
+    signal with an unknown modulation and carrier frequency offset.
+    Equalization is performed blind on a block of samples and the reulting
+    constellation is output to a file for plotting.
+
  * `eqlms_cccf_decisiondirected_example.c`:
     Tests least mean-squares (LMS) equalizer (EQ) on a signal with a known
     linear modulation scheme, but unknown data. The equalizer is updated

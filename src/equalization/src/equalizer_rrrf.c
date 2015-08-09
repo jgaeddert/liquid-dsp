@@ -37,6 +37,7 @@
 #define WINDOW(name)    LIQUID_CONCAT(windowf,name)
 #define MATRIX(name)    LIQUID_CONCAT(matrixf,name)
 
+#define T_COMPLEX       0
 #define T               float
 
 #define PRINTVAL(V)     printf("%5.2f ", V);

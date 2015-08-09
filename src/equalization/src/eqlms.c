@@ -24,6 +24,7 @@
 // Least mean-squares (LMS) equalizer
 //
 
+#include <math.h>
 #include <stdlib.h>
 #include <string.h>
 #include <stdio.h>
@@ -31,17 +32,19 @@
 //#define DEBUG
 
 struct EQLMS(_s) {
-    unsigned int h_len; // filter length
-    float mu;           // LMS step size
+    unsigned int h_len;     // filter length
+    float        mu;        // LMS step size
 
     // internal matrices
-    T * h0;             // initial coefficients
-    T * w0, * w1;       // weights [px1]
+    T *          h0;        // initial coefficients
+    T *          w0;        // weights [px1]
+    T *          w1;        // weights [px1]
 
-    unsigned int timer; // input sample timer
-    WINDOW() buffer;    // input buffer
-    wdelayf x2;         // buffer of |x|^2 values
-    float x2_sum;       // sum{ |x|^2 }
+    unsigned int count;     // input sample count
+    int          buf_full;  // input buffer full flag
+    WINDOW()     buffer;    // input buffer
+    wdelayf      x2;        // buffer of |x|^2 values
+    float        x2_sum;    // sum{ |x|^2 }
 };
 
 // update sum{|x|^2}
@@ -201,8 +204,9 @@ void EQLMS(_reset)(EQLMS() _q)
     WINDOW(_clear)(_q->buffer);
     wdelayf_clear(_q->x2);
 
-    // reset input timer
-    _q->timer = _q->h_len;
+    // reset input count
+    _q->count = 0;
+    _q->buf_full = 0;
 
     // reset squared magnitude sum
     _q->x2_sum = 0;
@@ -250,8 +254,8 @@ void EQLMS(_push)(EQLMS() _q,
     // update sum{|x|^2}
     EQLMS(_update_sumsq)(_q, _x);
 
-    // decrement timer
-    if (_q->timer) _q->timer--;
+    // increment count
+    _q->count++;
 }
 
 // push sample into equalizer internal buffer as block
@@ -289,6 +293,53 @@ void EQLMS(_execute)(EQLMS() _q,
     *_y = y;
 }
 
+// execute equalizer with block of samples using constant
+// modulus algorithm, operating on a decimation rate of _k
+// samples.
+//  _q      :   equalizer object
+//  _k      :   down-sampling rate
+//  _x      :   input sample array [size: _n x 1]
+//  _n      :   input sample array length
+//  _y      :   output sample array [size: _n x 1]
+void EQLMS(_execute_block)(EQLMS()      _q,
+                           unsigned int _k,
+                           T *          _x,
+                           unsigned int _n,
+                           T *          _y)
+{
+    if (_k == 0) {
+        fprintf(stderr,"error: eqlms_%s_execute_block(), down-sampling rate 'k' must be greater than 0\n", EXTENSION_FULL);
+        exit(-1);
+    }
+
+    unsigned int i;
+    T d_hat;
+    for (i=0; i<_n; i++) {
+        // push input sample
+        EQLMS(_push)(_q, _x[i]);
+
+        // compute output sample
+        EQLMS(_execute)(_q, &d_hat);
+
+        // store result in output
+        _y[i] = d_hat;
+
+        // decimate by _k
+        if ( ((_q->count+_k-1) % _k) == 0 ) {
+            // update equalizer independent of the signal: estimate error
+            // assuming constant modulus signal
+#if T_COMPLEX
+            T d = d_hat / cabsf(d_hat);
+            //printf("count: %6u : %12.8f %12.8f\n", _q->count, crealf(d_hat), cimagf(d_hat));
+#else
+            T d = d_hat / fabsf(d_hat);
+            //printf("count: %6u : %12.8f\n", _q->count, d_hat);
+#endif
+            EQLMS(_step)(_q, d, d_hat);
+        }
+    }
+}
+
 // step through one cycle of equalizer training
 //  _q      :   equalizer object
 //  _d      :   desired output
@@ -297,9 +348,13 @@ void EQLMS(_step)(EQLMS() _q,
                   T       _d,
                   T       _d_hat)
 {
-    // check timer; only run step when buffer is full
-    if (_q->timer)
-        return;
+    // check count; only run step when buffer is full
+    if (!_q->buf_full) {
+        if (_q->count < _q->h_len)
+            return;
+        else
+            _q->buf_full = 1;
+    }
 
     unsigned int i;
 

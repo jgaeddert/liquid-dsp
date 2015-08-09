@@ -644,6 +644,20 @@ void EQLMS(_push_block)(EQLMS()      _q,                        \
 void EQLMS(_execute)(EQLMS() _q,                                \
                      T *     _y);                               \
                                                                 \
+/* execute equalizer with block of samples using constant   */  \
+/* modulus algorithm, operating on a decimation rate of _k  */  \
+/* samples.                                                 */  \
+/*  _q      :   equalizer object                            */  \
+/*  _k      :   down-sampling rate                          */  \
+/*  _x      :   input sample array [size: _n x 1]           */  \
+/*  _n      :   input sample array length                   */  \
+/*  _y      :   output sample array [size: _n x 1]          */  \
+void EQLMS(_execute_block)(EQLMS()      _q,                     \
+                           unsigned int _k,                     \
+                           T *          _x,                     \
+                           unsigned int _n,                     \
+                           T *          _y);                    \
+                                                                \
 /* step through one cycle of equalizer training             */  \
 /*  _q      :   equalizer object                            */  \
 /*  _d      :   desired output                              */  \
