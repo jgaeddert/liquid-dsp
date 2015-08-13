@@ -185,6 +185,7 @@ int main(int argc, char*argv[])
     fprintf(fid,"m=%u;\n", m);
     fprintf(fid,"npfb=%u;\n",  npfb);
     fprintf(fid,"r=%12.8f;\n", r);
+    fprintf(fid,"n=%u;\n", n);
 
     fprintf(fid,"nx = %u;\n", nx);
     fprintf(fid,"x = zeros(1,nx);\n");
@@ -197,6 +198,26 @@ int main(int argc, char*argv[])
         fprintf(fid,"y(%3u) = %12.4e + j*%12.4e;\n", i+1, crealf(y[i]), cimagf(y[i]));
 
     fprintf(fid,"\n\n");
+    fprintf(fid,"%% plot time-domain result\n");
+    fprintf(fid,"tx=[0:(length(x)-1)];\n");
+    fprintf(fid,"ty=[0:(length(y)-1)]/r-m;\n");
+    fprintf(fid,"figure('Color','white','position',[500 500 500 900]);\n");
+    fprintf(fid,"subplot(4,1,1);\n");
+    fprintf(fid,"  plot(tx,real(x),'-s','Color',[0.5 0.5 0.5],'MarkerSize',1,...\n");
+    fprintf(fid,"       ty,real(y),'-s','Color',[0.5 0 0],    'MarkerSize',1);\n");
+    fprintf(fid,"  legend('original','resampled','location','northeast');");
+    fprintf(fid,"  xlabel('time');\n");
+    fprintf(fid,"  ylabel('real');\n");
+    fprintf(fid,"  axis([0 n -1.2 1.2]);\n");
+    fprintf(fid,"  grid on;\n");
+    fprintf(fid,"subplot(4,1,2);\n");
+    fprintf(fid,"  plot(tx,imag(x),'-s','Color',[0.5 0.5 0.5],'MarkerSize',1,...\n");
+    fprintf(fid,"       ty,imag(y),'-s','Color',[0 0.5 0],    'MarkerSize',1);\n");
+    fprintf(fid,"  legend('original','resampled','location','northeast');");
+    fprintf(fid,"  xlabel('time');\n");
+    fprintf(fid,"  ylabel('imag');\n");
+    fprintf(fid,"  axis([0 n -1.2 1.2]);\n");
+    fprintf(fid,"  grid on;\n");
     fprintf(fid,"%% plot frequency-domain result\n");
     fprintf(fid,"nfft=2^nextpow2(max(nx,ny));\n");
     fprintf(fid,"%% estimate PSD, normalize by array length\n");
@@ -206,34 +227,16 @@ int main(int argc, char*argv[])
     fprintf(fid,"X=X-G;\n");
     fprintf(fid,"Y=Y-G;\n");
     fprintf(fid,"f=[0:(nfft-1)]/nfft-0.5;\n");
-    fprintf(fid,"figure;\n");
     fprintf(fid,"if r>1, fx = f/r; fy = f;   %% interpolated\n");
     fprintf(fid,"else,   fx = f;   fy = f*r; %% decimated\n");
     fprintf(fid,"end;\n");
-    fprintf(fid,"plot(fx,X,'Color',[0.5 0.5 0.5],fy,Y,'LineWidth',2);\n");
-    fprintf(fid,"grid on;\n");
-    fprintf(fid,"xlabel('normalized frequency');\n");
-    fprintf(fid,"ylabel('PSD [dB]');\n");
-    fprintf(fid,"legend('original','resampled','location','northeast');");
-    fprintf(fid,"axis([-0.5 0.5 -120 20]);\n");
-
-    fprintf(fid,"\n\n");
-    fprintf(fid,"%% plot time-domain result\n");
-    fprintf(fid,"tx=[0:(length(x)-1)];\n");
-    fprintf(fid,"ty=[0:(length(y)-1)]/r-m;\n");
-    fprintf(fid,"figure;\n");
-    fprintf(fid,"subplot(2,1,1);\n");
-    fprintf(fid,"  plot(tx,real(x),'-s','Color',[0.5 0.5 0.5],'MarkerSize',1,...\n");
-    fprintf(fid,"       ty,real(y),'-s','Color',[0.5 0 0],    'MarkerSize',1);\n");
+    fprintf(fid,"subplot(4,1,3:4);\n");
+    fprintf(fid,"  plot(fx,X,'Color',[0.5 0.5 0.5],fy,Y,'LineWidth',2);\n");
+    fprintf(fid,"  grid on;\n");
+    fprintf(fid,"  xlabel('normalized frequency');\n");
+    fprintf(fid,"  ylabel('PSD [dB]');\n");
     fprintf(fid,"  legend('original','resampled','location','northeast');");
-    fprintf(fid,"  xlabel('time');\n");
-    fprintf(fid,"  ylabel('real');\n");
-    fprintf(fid,"subplot(2,1,2);\n");
-    fprintf(fid,"  plot(tx,imag(x),'-s','Color',[0.5 0.5 0.5],'MarkerSize',1,...\n");
-    fprintf(fid,"       ty,imag(y),'-s','Color',[0 0.5 0],    'MarkerSize',1);\n");
-    fprintf(fid,"  legend('original','resampled','location','northeast');");
-    fprintf(fid,"  xlabel('time');\n");
-    fprintf(fid,"  ylabel('imag');\n");
+    fprintf(fid,"  axis([-0.5 0.5 -120 20]);\n");
 
     fclose(fid);
     printf("results written to %s\n",OUTPUT_FILENAME);

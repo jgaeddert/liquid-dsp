@@ -400,6 +400,90 @@ LIQUID_WDELAY_DEFINE_API(WDELAY_MANGLE_CFLOAT, liquid_float_complex)
 
 
 //
+// MODULE : channel
+//
+
+#define CHANNEL_MANGLE_CCCF(name)   LIQUID_CONCAT(channel_cccf,name)
+
+// large macro
+//   CHANNEL    : name-mangling macro
+//   TO         : output data type
+//   TC         : coefficients data type
+//   TI         : input data type
+#define LIQUID_CHANNEL_DEFINE_API(CHANNEL,TO,TC,TI)             \
+                                                                \
+typedef struct CHANNEL(_s) * CHANNEL();                         \
+                                                                \
+/* create channel object                                    */  \
+CHANNEL() CHANNEL(_create)(void);                               \
+                                                                \
+/* destroy channel object, freeing all internal memory      */  \
+void CHANNEL(_destroy)(CHANNEL() _q);                           \
+                                                                \
+/* print channel object internals to standard output        */  \
+void CHANNEL(_print)(CHANNEL() _q);                             \
+                                                                \
+/* apply additive white Gausss noise impairment             */  \
+/*  _q              : channel object                        */  \
+/*  _noise_floor_dB : noise floor power spectral density    */  \
+/*  _SNR_dB         : signal-to-noise ratio [dB]            */  \
+void CHANNEL(_add_awgn)(CHANNEL() _q,                           \
+                        float     _noise_floor_dB,              \
+                        float     _SNRdB);                      \
+                                                                \
+/* apply additive white Gausss noise impairment             */  \
+/*  _q              : channel object                        */  \
+/*  _delay          : resampling delay                      */  \
+/*  _rate           : resampling rate                       */  \
+void CHANNEL(_add_resamp)(CHANNEL() _q,                         \
+                          float     _delay,                     \
+                          float     _rate);                     \
+                                                                \
+/* apply carrier offset impairment                          */  \
+/*  _q          : channel object                            */  \
+/*  _frequency  : carrier frequency offse [radians/sample   */  \
+/*  _phase      : carrier phase offset    [radians]         */  \
+void CHANNEL(_add_carrier_offset)(CHANNEL() _q,                 \
+                                  float     _frequency,         \
+                                  float     _phase);            \
+                                                                \
+/* apply multi-path channel impairment                      */  \
+/*  _q          : channel object                            */  \
+/*  _h          : channel coefficients (NULL for random)    */  \
+/*  _h_len      : number of channel coefficients            */  \
+void CHANNEL(_add_multipath)(CHANNEL()    _q,                   \
+                             TC *         _h,                   \
+                             unsigned int _h_len);              \
+                                                                \
+/* apply slowly-varying shadowing impairment                */  \
+/*  _q          : channel object                            */  \
+/*  _sigma      : std. deviation for log-normal shadowing   */  \
+/*  _fd         : Doppler frequency, _fd in (0,0.5)         */  \
+void CHANNEL(_add_shadowing)(CHANNEL()    _q,                   \
+                             float        _sigma,               \
+                             float        _fd);                 \
+                                                                \
+/* get nominal delay [samples]                              */  \
+unsigned int CHANNEL(_get_delay)(CHANNEL() _q);                 \
+                                                                \
+/* apply channel impairments on input array                 */  \
+/*  _q      : channel object                                */  \
+/*  _x      : input array [size: _nx x 1]                   */  \
+/*  _nx     : input array length                            */  \
+/*  _y      : output array                                  */  \
+/*  _ny     : output array length                           */  \
+void CHANNEL(_execute)(CHANNEL()      _q,                       \
+                       TI *           _x,                       \
+                       unsigned int   _nx,                      \
+                       TO *           _y,                       \
+                       unsigned int * _ny);                     \
+
+LIQUID_CHANNEL_DEFINE_API(CHANNEL_MANGLE_CCCF,
+                          liquid_float_complex,
+                          liquid_float_complex,
+                          liquid_float_complex)
+
+//
 // MODULE : dotprod (vector dot product)
 //
 
@@ -696,24 +780,41 @@ crc_scheme liquid_getopt_str2crc(const char * _str);
 unsigned int crc_get_length(crc_scheme _scheme);
 
 // generate error-detection key
-//
 //  _scheme     :   error-detection scheme
 //  _msg        :   input data message, [size: _n x 1]
 //  _n          :   input data message size
-unsigned int crc_generate_key(crc_scheme _scheme,
+unsigned int crc_generate_key(crc_scheme      _scheme,
                               unsigned char * _msg,
-                              unsigned int _n);
+                              unsigned int    _n);
+
+// generate error-detection key and append to end of message
+//  _scheme     :   error-detection scheme (resulting in 'p' bytes)
+//  _msg        :   input data message, [size: _n+p x 1]
+//  _n          :   input data message size (excluding key at end)
+void crc_append_key(crc_scheme      _scheme,
+                    unsigned char * _msg,
+                    unsigned int    _n);
 
 // validate message using error-detection key
-//
 //  _scheme     :   error-detection scheme
 //  _msg        :   input data message, [size: _n x 1]
 //  _n          :   input data message size
 //  _key        :   error-detection key
-int crc_validate_message(crc_scheme _scheme,
+int crc_validate_message(crc_scheme      _scheme,
                          unsigned char * _msg,
-                         unsigned int _n,
-                         unsigned int _key);
+                         unsigned int    _n,
+                         unsigned int    _key);
+
+// check message with key appended to end of array
+//  _scheme     :   error-detection scheme (resulting in 'p' bytes)
+//  _msg        :   input data message, [size: _n+p x 1]
+//  _n          :   input data message size (excluding key at end)
+int crc_check_key(crc_scheme      _scheme,
+                  unsigned char * _msg,
+                  unsigned int    _n);
+
+// get size of key (bytes)
+unsigned int crc_sizeof_key(crc_scheme _scheme);
 
 
 // available FEC schemes
@@ -1129,6 +1230,9 @@ SPGRAM() SPGRAM(_create)(unsigned int _nfft,                    \
 SPGRAM() SPGRAM(_create_kaiser)(unsigned int _nfft,             \
                                 unsigned int _window_len,       \
                                 float        _beta);            \
+                                                                \
+/* create default spgram object (Kaiser-Bessel window)      */  \
+SPGRAM() SPGRAM(_create_default)(unsigned int _nfft);           \
                                                                 \
 /* destroy spgram object                                    */  \
 void SPGRAM(_destroy)(SPGRAM() _q);                             \
@@ -1895,6 +1999,9 @@ FIRFILT() FIRFILT(_create_rnyquist)(int          _type,         \
                                     unsigned int _m,            \
                                     float        _beta,         \
                                     float        _mu);          \
+                                                                \
+/* create rectangular filter prototype                      */  \
+FIRFILT() FIRFILT(_create_rect)(unsigned int _n);               \
                                                                 \
 /* re-create filter                                         */  \
 /*  _q      : original filter object                        */  \
@@ -2857,7 +2964,10 @@ void RESAMP(_reset)(RESAMP() _q);                               \
 unsigned int RESAMP(_get_delay)(RESAMP() _q);                   \
                                                                 \
 /* set rate of arbitrary resampler                          */  \
-void RESAMP(_setrate)(RESAMP() _q, float _rate);                \
+void RESAMP(_set_rate)(RESAMP() _q, float _rate);               \
+                                                                \
+/* adjust rate of arbitrary resampler                       */  \
+void RESAMP(_adjust_rate)(RESAMP() _q, float _delta);           \
                                                                 \
 /* execute arbitrary resampler                              */  \
 /*  _q              :   resamp object                       */  \
@@ -3685,6 +3795,7 @@ void gmskframesync_debug_disable(gmskframesync _q);
 void gmskframesync_debug_print(gmskframesync _q, const char * _filename);
 
 
+
 // 
 // OFDM flexframe generator
 //
@@ -4004,6 +4115,136 @@ int detector_cccf_correlate(detector_cccf        _q,
                             float *              _tau_hat,
                             float *              _dphi_hat,
                             float *              _gamma_hat);
+
+
+// 
+// symbol streaming for testing (no meaningful data, just symbols)
+//
+#define SYMSTREAM_MANGLE_CFLOAT(name) LIQUID_CONCAT(symstreamcf,name)
+
+#define LIQUID_SYMSTREAM_DEFINE_API(SYMSTREAM,TO)               \
+                                                                \
+typedef struct SYMSTREAM(_s) * SYMSTREAM();                     \
+                                                                \
+/* create default symstream object                          */  \
+/* (LIQUID_RNYQUIST_ARKAISER, k=2, m=7, beta=0.3, QPSK)     */  \
+SYMSTREAM() SYMSTREAM(_create)(void);                           \
+                                                                \
+/* create symstream object with linear modulation           */  \
+/*  _ftype  : filter type (e.g. LIQUID_RNYQUIST_RRC)        */  \
+/*  _k      : samples per symbol                            */  \
+/*  _m      : filter delay (symbols)                        */  \
+/*  _beta   : filter excess bandwidth                       */  \
+/*  _ms     : modulation scheme (e.g. LIQUID_MODEM_QPSK)    */  \
+SYMSTREAM() SYMSTREAM(_create_linear)(int          _ftype,      \
+                                      unsigned int _k,          \
+                                      unsigned int _m,          \
+                                      float        _beta,       \
+                                      int          _ms);        \
+                                                                \
+/* destroy symstream object, freeing all internal memory    */  \
+void SYMSTREAM(_destroy)(SYMSTREAM() _q);                       \
+                                                                \
+/* print symstream object's parameters                      */  \
+void SYMSTREAM(_print)(SYMSTREAM() _q);                         \
+                                                                \
+/* reset symstream internal state                           */  \
+void SYMSTREAM(_reset)(SYMSTREAM() _q);                         \
+                                                                \
+/* write block of samples to output buffer                  */  \
+/*  _q      : synchronizer object                           */  \
+/*  _buf    : output buffer [size: _buf_len x 1]            */  \
+/*  _buf_len: output buffer size                            */  \
+void SYMSTREAM(_write_samples)(SYMSTREAM()  _q,                 \
+                               TO *         _buf,               \
+                               unsigned int _buf_len);          \
+    
+LIQUID_SYMSTREAM_DEFINE_API(SYMSTREAM_MANGLE_CFLOAT, liquid_float_complex)
+
+
+// 
+// Symbol tracking: AGC > symsync > EQ > carrier recovery
+//
+#define SYMTRACK_MANGLE_RRRF(name) LIQUID_CONCAT(symtrack_rrrf,name)
+#define SYMTRACK_MANGLE_CCCF(name) LIQUID_CONCAT(symtrack_cccf,name)
+
+// large macro
+//   SYMTRACK   : name-mangling macro
+//   T          : data type, primitive
+//   TO         : data type, output
+//   TC         : data type, coefficients
+//   TI         : data type, input
+#define LIQUID_SYMTRACK_DEFINE_API(SYMTRACK,T,TO,TC,TI)         \
+                                                                \
+typedef struct SYMTRACK(_s) * SYMTRACK();                       \
+                                                                \
+/* create symtrack object with default parameters           */  \
+/*  _ftype  : filter type (e.g. LIQUID_RNYQUIST_RRC)        */  \
+/*  _k      : samples per symbol                            */  \
+/*  _m      : filter delay (symbols)                        */  \
+/*  _beta   : filter excess bandwidth                       */  \
+/*  _ms     : modulation scheme (e.g. LIQUID_MODEM_QPSK)    */  \
+SYMTRACK() SYMTRACK(_create)(int          _ftype,               \
+                             unsigned int _k,                   \
+                             unsigned int _m,                   \
+                             float        _beta,                \
+                             int          _ms);                 \
+                                                                \
+/* create symtrack object using default parameters          */  \
+SYMTRACK() SYMTRACK(_create_default)();                         \
+                                                                \
+/* destroy symtrack object, freeing all internal memory     */  \
+void SYMTRACK(_destroy)(SYMTRACK() _q);                         \
+                                                                \
+/* print symtrack object's parameters                       */  \
+void SYMTRACK(_print)(SYMTRACK() _q);                           \
+                                                                \
+/* reset symtrack internal state                            */  \
+void SYMTRACK(_reset)(SYMTRACK() _q);                           \
+                                                                \
+/* set symtrack modulation scheme                           */  \
+void SYMTRACK(_set_modscheme)(SYMTRACK() _q, int _ms);          \
+                                                                \
+/* set symtrack internal bandwidth                          */  \
+void SYMTRACK(_set_bandwidth)(SYMTRACK() _q, float _bw);        \
+                                                                \
+/* adjust internal nco by requested phase                   */  \
+void SYMTRACK(_adjust_phase)(SYMTRACK() _q, T _dphi);           \
+                                                                \
+/* execute synchronizer on single input sample              */  \
+/*  _q      : synchronizer object                           */  \
+/*  _x      : input data sample                             */  \
+/*  _y      : output data array                             */  \
+/*  _ny     : number of samples written to output buffer    */  \
+void SYMTRACK(_execute)(SYMTRACK()     _q,                      \
+                        TI             _x,                      \
+                        TO *           _y,                      \
+                        unsigned int * _ny);                    \
+                                                                \
+/* execute synchronizer on input data array                 */  \
+/*  _q      : synchronizer object                           */  \
+/*  _x      : input data array                              */  \
+/*  _nx     : number of input samples                       */  \
+/*  _y      : output data array                             */  \
+/*  _ny     : number of samples written to output buffer    */  \
+void SYMTRACK(_execute_block)(SYMTRACK()     _q,                \
+                              TI *           _x,                \
+                              unsigned int   _nx,               \
+                              TO *           _y,                \
+                              unsigned int * _ny);              \
+    
+LIQUID_SYMTRACK_DEFINE_API(SYMTRACK_MANGLE_RRRF,
+                           float,
+                           float,
+                           float,
+                           float)
+
+LIQUID_SYMTRACK_DEFINE_API(SYMTRACK_MANGLE_CCCF,
+                           float,
+                           liquid_float_complex,
+                           liquid_float_complex,
+                           liquid_float_complex)
+
 
 
 //
@@ -5020,6 +5261,161 @@ void FREQMOD(_modulate_block)(FREQMOD()    _q,                  \
 // define freqmod APIs
 LIQUID_FREQMOD_DEFINE_API(LIQUID_FREQMOD_MANGLE_FLOAT,float,liquid_float_complex)
 
+//
+// continuous phase frequency-shift keying (CP-FSK) modems
+//
+
+// CP-FSK filter prototypes
+typedef enum {
+    LIQUID_CPFSK_SQUARE=0,      // square pulse
+    LIQUID_CPFSK_RCOS_FULL,     // raised-cosine (full response)
+    LIQUID_CPFSK_RCOS_PARTIAL,  // raised-cosine (partial response)
+    LIQUID_CPFSK_GMSK,          // Gauss minimum-shift keying pulse
+} liquid_cpfsk_filter;
+
+// CP-FSK modulator
+typedef struct cpfskmod_s * cpfskmod;
+
+// create cpfskmod object (frequency modulator)
+//  _bps    :   bits per symbol, _bps > 0
+//  _h      :   modulation index, _h > 0
+//  _k      :   samples/symbol, _k > 1, _k even
+//  _m      :   filter delay (symbols), _m > 0
+//  _beta   :   filter bandwidth parameter, _beta > 0
+//  _type   :   filter type (e.g. LIQUID_CPFSK_SQUARE)
+cpfskmod cpfskmod_create(unsigned int _bps,
+                         float        _h,
+                         unsigned int _k,
+                         unsigned int _m,
+                         float        _beta,
+                         int          _type);
+//cpfskmod cpfskmod_create_msk(unsigned int _k);
+//cpfskmod cpfskmod_create_gmsk(unsigned int _k, float _BT);
+
+// destroy cpfskmod object
+void cpfskmod_destroy(cpfskmod _q);
+
+// print cpfskmod object internals
+void cpfskmod_print(cpfskmod _q);
+
+// reset state
+void cpfskmod_reset(cpfskmod _q);
+
+// modulate sample
+//  _q      :   frequency modulator object
+//  _s      :   input symbol
+//  _y      :   output sample array [size: _k x 1]
+void cpfskmod_modulate(cpfskmod               _q,
+                       unsigned int           _s,
+                       liquid_float_complex * _y);
+
+
+
+// CP-FSK demodulator
+typedef struct cpfskdem_s * cpfskdem;
+
+// create cpfskdem object (frequency modulator)
+//  _bps    :   bits per symbol, _bps > 0
+//  _h      :   modulation index, _h > 0
+//  _k      :   samples/symbol, _k > 1, _k even
+//  _m      :   filter delay (symbols), _m > 0
+//  _beta   :   filter bandwidth parameter, _beta > 0
+//  _type   :   filter type (e.g. LIQUID_CPFSK_SQUARE)
+cpfskdem cpfskdem_create(unsigned int _bps,
+                         float        _h,
+                         unsigned int _k,
+                         unsigned int _m,
+                         float        _beta,
+                         int          _type);
+//cpfskdem cpfskdem_create_msk(unsigned int _k);
+//cpfskdem cpfskdem_create_gmsk(unsigned int _k, float _BT);
+
+// destroy cpfskdem object
+void cpfskdem_destroy(cpfskdem _q);
+
+// print cpfskdem object internals
+void cpfskdem_print(cpfskdem _q);
+
+// reset state
+void cpfskdem_reset(cpfskdem _q);
+
+// demodulate array of samples
+//  _q      :   continuous-phase frequency demodulator object
+//  _y      :   input sample array [size: _n x 1]
+//  _n      :   input sample array length
+//  _s      :   output symbol array
+//  _nw     :   number of output symbols written
+void cpfskdem_demodulate(cpfskdem               _q,
+                         liquid_float_complex * _y,
+                         unsigned int           _n,
+                         unsigned int         * _s,
+                         unsigned int         * _nw);
+
+
+
+
+//
+// M-ary frequency-shift keying (MFSK) modems
+//
+
+// FSK modulator
+typedef struct fskmod_s * fskmod;
+
+// create fskmod object (frequency modulator)
+//  _m          :   bits per symbol, _bps > 0
+//  _k          :   samples/symbol, _k >= 2^_m
+//  _bandwidth  :   total signal bandwidth, (0,0.5)
+fskmod fskmod_create(unsigned int _m,
+                     unsigned int _k,
+                     float        _bandwidth);
+
+// destroy fskmod object
+void fskmod_destroy(fskmod _q);
+
+// print fskmod object internals
+void fskmod_print(fskmod _q);
+
+// reset state
+void fskmod_reset(fskmod _q);
+
+// modulate sample
+//  _q      :   frequency modulator object
+//  _s      :   input symbol
+//  _y      :   output sample array [size: _k x 1]
+void fskmod_modulate(fskmod                 _q,
+                     unsigned int           _s,
+                     liquid_float_complex * _y);
+
+
+
+// CP-FSK demodulator
+typedef struct fskdem_s * fskdem;
+
+// create fskdem object (frequency demodulator)
+//  _m          :   bits per symbol, _bps > 0
+//  _k          :   samples/symbol, _k >= 2^_m
+//  _bandwidth  :   total signal bandwidth, (0,0.5)
+fskdem fskdem_create(unsigned int _m,
+                     unsigned int _k,
+                     float        _bandwidth);
+
+// destroy fskdem object
+void fskdem_destroy(fskdem _q);
+
+// print fskdem object internals
+void fskdem_print(fskdem _q);
+
+// reset state
+void fskdem_reset(fskdem _q);
+
+// demodulate symbol, assuming perfect symbol timing
+//  _q      :   fskdem object
+//  _y      :   input sample array [size: _k x 1]
+unsigned int fskdem_demodulate(fskdem                 _q,
+                               liquid_float_complex * _y);
+
+// get demodulator frequency error
+float fskdem_get_frequency_error(fskdem _q);
 
 
 // 
@@ -5106,11 +5502,20 @@ void ampmodem_modulate(ampmodem _fm,
                        float _x,
                        liquid_float_complex *_y);
 
+void ampmodem_modulate_block(ampmodem _q,
+                             float * _m,
+                             unsigned int _n,
+                             liquid_float_complex *_s);
+
 // demodulate sample
 void ampmodem_demodulate(ampmodem _fm,
                          liquid_float_complex _y,
                          float *_x);
 
+void ampmodem_demodulate_block(ampmodem _q,
+                               liquid_float_complex * _r,
+                               unsigned int _n,
+                               float * _m);
 
 //
 // MODULE : multichannel

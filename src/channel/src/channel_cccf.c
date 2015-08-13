@@ -20,45 +20,27 @@
  * THE SOFTWARE.
  */
 
-//
-// modemf.c : linear modem API, floating-point (single precision)
+// 
+// Complex floating-point channel
 //
 
-#include <math.h>
-#include <stdint.h>
+#include <complex.h>
 #include "liquid.internal.h"
 
-// Macro definitions
-#define MODEM(name)         LIQUID_CONCAT(modem,name)
-#define FREQMOD(name)       LIQUID_CONCAT(freqmod,name)
-#define FREQDEM(name)       LIQUID_CONCAT(freqdem,name)
+// naming extensions (useful for print statements)
+#define EXTENSION_SHORT "f"
+#define EXTENSION_FULL  "cccf"
 
-#define T                   float           /* primitive type */
-#define TC                  float complex   /* primitive type (complex) */
+#define CHANNEL(name)   LIQUID_CONCAT(channel_cccf,name)
+#define FIRFILT(name)   LIQUID_CONCAT(firfilt_cccf,name)
+#define IIRFILT(name)   LIQUID_CONCAT(iirfilt_rrrf,name)
+#define NCO(name)       LIQUID_CONCAT(nco_crcf,name)
+#define RESAMP(name)    LIQUID_CONCAT(resamp_crcf,name)
 
-#define PRINTVAL_T(X,F)     PRINTVAL_FLOAT(X,F)
-#define PRINTVAL_TC(X,F)    PRINTVAL_CFLOAT(X,F)
+#define TO              float complex   // output type
+#define TC              float complex   // coefficients type
+#define TI              float complex   // input type
+#define T               float           // primitive type
 
-// common source must come first (object definition)
-#include "modem_common.c"
+#include "channel.c"
 
-// generic modem specifications
-#include "modem_psk.c"
-#include "modem_dpsk.c"
-#include "modem_ask.c"
-#include "modem_qam.c"
-#include "modem_apsk.c"
-
-// specific modems
-#include "modem_bpsk.c"
-#include "modem_qpsk.c"
-#include "modem_ook.c"
-#include "modem_sqam32.c"
-#include "modem_sqam128.c"
-
-// arbitary modems
-#include "modem_arb.c"
-
-// analog modems
-#include "freqmod.c"
-#include "freqdem.c"

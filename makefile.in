@@ -67,7 +67,7 @@ INCLUDE_CFLAGS	= $(addprefix -I ,$(include_dirs))
 CONFIG_CFLAGS	= @CFLAGS@ @DEBUG_OPTION@ @ARCH_OPTION@
 # -g : debugging info
 CFLAGS		+= $(INCLUDE_CFLAGS) -Wall -fPIC $(CONFIG_CFLAGS)
-LDFLAGS		+= @LIBS@
+LDFLAGS		+= @LDFLAGS@ @LIBS@
 ARFLAGS		= r
 PATHSEP		= /
 
@@ -164,6 +164,23 @@ buffer_benchmarks :=						\
 	src/buffer/bench/cbuffercf_benchmark.c			\
 	src/buffer/bench/window_push_benchmark.c		\
 	src/buffer/bench/window_read_benchmark.c		\
+
+# 
+# MODULE : channel
+#
+
+channel_objects :=						\
+	src/channel/src/channel_cccf.o				\
+
+src/channel/src/channel_cccf.o : %.o : %.c $(include_headers) src/channel/src/channel.c
+
+channel_autotests :=						\
+	
+#src/channel/tests/channel_cccf_autotest.c
+
+channel_benchmarks :=						\
+
+#src/channel/bench/channel_cccf_benchmark.c
 
 # 
 # MODULE : dotprod
@@ -605,6 +622,8 @@ framing_objects :=						\
 	src/framing/src/ofdmflexframegen.o			\
 	src/framing/src/ofdmflexframesync.o			\
 	src/framing/src/presync_cccf.o				\
+	src/framing/src/symstreamcf.o				\
+	src/framing/src/symtrack_cccf.o				\
 	src/framing/src/qdetector_cccf.o			\
 	src/framing/src/qpacketmodem.o				\
 	src/framing/src/qpilotgen.o				\
@@ -644,6 +663,10 @@ src/framing/src/ofdmflexframegen.o : %.o : %.c $(include_headers)
 src/framing/src/ofdmflexframesync.o : %.o : %.c $(include_headers)
 
 src/framing/src/presync_cccf.o : %.o : %.c $(include_headers) src/framing/src/presync.c
+
+src/framing/src/symstreamcf.o : %.o : %.c $(include_headers) src/framing/src/symstream.c
+
+src/framing/src/symtrack_cccf.o : %.o : %.c $(include_headers) src/framing/src/symtrack.c
 
 
 framing_autotests :=						\
@@ -811,6 +834,10 @@ matrix_benchmarks :=						\
 
 modem_objects :=						\
 	src/modem/src/ampmodem.o				\
+	src/modem/src/cpfskdem.o				\
+	src/modem/src/cpfskmod.o				\
+	src/modem/src/fskdem.o					\
+	src/modem/src/fskmod.o					\
 	src/modem/src/gmskdem.o					\
 	src/modem/src/gmskmod.o					\
 	src/modem/src/modemf.o					\
@@ -857,6 +884,7 @@ src/modem/src/modem_arb_const.o: %.o : %.c $(include_headers)
 
 modem_autotests :=						\
 	src/modem/tests/freqmodem_autotest.c			\
+	src/modem/tests/fskmodem_autotest.c			\
 	src/modem/tests/modem_autotest.c			\
 	src/modem/tests/modem_demodsoft_autotest.c		\
 	src/modem/tests/modem_demodstats_autotest.c		\
@@ -865,6 +893,8 @@ modem_autotests :=						\
 modem_benchmarks :=						\
 	src/modem/bench/freqdem_benchmark.c			\
 	src/modem/bench/freqmod_benchmark.c			\
+	src/modem/bench/fskdem_benchmark.c			\
+	src/modem/bench/fskmod_benchmark.c			\
 	src/modem/bench/gmskmodem_benchmark.c			\
 	src/modem/bench/modem_modulate_benchmark.c		\
 	src/modem/bench/modem_demodulate_benchmark.c		\
@@ -1109,6 +1139,7 @@ objects :=							\
 	$(agc_objects)						\
 	$(audio_objects)					\
 	$(buffer_objects)					\
+	$(channel_objects)					\
 	$(dotprod_objects)					\
 	$(equalization_objects)					\
 	$(fec_objects)						\
@@ -1133,6 +1164,7 @@ autotest_sources :=						\
 	$(agc_autotests)					\
 	$(audio_autotests)					\
 	$(buffer_autotests)					\
+	$(channel_autotests)					\
 	$(dotprod_autotests)					\
 	$(equalization_autotests)				\
 	$(fec_autotests)					\
@@ -1157,6 +1189,7 @@ benchmark_sources :=						\
 	$(agc_benchmarks)					\
 	$(audio_benchmarks)					\
 	$(buffer_benchmarks)					\
+	$(channel_benchmarks)					\
 	$(dotprod_benchmarks)					\
 	$(equalization_benchmarks)				\
 	$(fec_benchmarks)					\
@@ -1391,12 +1424,16 @@ example_programs :=						\
 	examples/bpresync_example				\
 	examples/bsequence_example				\
 	examples/cbufferf_example				\
+	examples/cgsolve_example				\
+	examples/channel_cccf_example				\
 	examples/chromosome_example				\
 	examples/compand_example				\
 	examples/compand_cf_example				\
 	examples/complementary_codes_example			\
+	examples/conversion_example				\
 	examples/crc_example					\
-	examples/cgsolve_example				\
+	examples/cpfskmodem_example				\
+	examples/cpfsk_psd_example				\
 	examples/cvsd_example					\
 	examples/detector_cccf_example				\
 	examples/dotprod_rrrf_example				\
@@ -1428,6 +1465,7 @@ example_programs :=						\
 	examples/flexframesync_reconfig_example			\
 	examples/framesync64_example				\
 	examples/freqmodem_example				\
+	examples/fskmodem_example				\
 	examples/gasearch_example				\
 	examples/gasearch_knapsack_example			\
 	examples/gmskframesync_example				\
@@ -1492,6 +1530,8 @@ example_programs :=						\
 	examples/symsync_crcf_example				\
 	examples/symsync_crcf_full_example			\
 	examples/symsync_crcf_kaiser_example			\
+	examples/symstreamcf_example				\
+	examples/symtrack_cccf_example				\
 	examples/wdelayf_example				\
 	examples/windowf_example				\
 
@@ -1552,6 +1592,7 @@ sandbox_programs =						\
 	sandbox/fecsoft_hamming128_gentab			\
 	sandbox/fecsoft_ldpc_test				\
 	sandbox/fec_sumproduct_test				\
+	sandbox/fskmodem_test					\
 	sandbox/fft_dual_radix_test				\
 	sandbox/fft_mixed_radix_test				\
 	sandbox/fft_recursive_plan_test				\
@@ -1570,6 +1611,8 @@ sandbox_programs =						\
 	sandbox/firpfbch_analysis_equivalence_test		\
 	sandbox/firpfbch_synthesis_equivalence_test		\
 	sandbox/gmskmodem_test					\
+	sandbox/gmskmodem_coherent_test				\
+	sandbox/gmskmodem_equalizer_test			\
 	sandbox/householder_test				\
 	sandbox/iirdes_example					\
 	sandbox/iirfilt_intdiff_test				\
@@ -1590,6 +1633,7 @@ sandbox_programs =						\
 	sandbox/modem_demodulate_arb_gentab			\
 	sandbox/modem_demodulate_soft_test			\
 	sandbox/modem_demodulate_soft_gentab			\
+	sandbox/mskmodem_test					\
 	sandbox/msresamp_crcf_test				\
 	sandbox/ofdmoqam_firpfbch_test				\
 	sandbox/ofdm_ber_test					\
@@ -1602,6 +1646,7 @@ sandbox_programs =						\
 	sandbox/resamp2_crcf_interp_recreate_test		\
 	sandbox/reverse_byte_gentab				\
 	sandbox/rkaiser2_test					\
+	sandbox/shadowing_test					\
 	sandbox/simplex_test					\
 	sandbox/symsync_crcf_test				\
 	sandbox/symsync_eqlms_test				\
@@ -1648,6 +1693,7 @@ clean-modules:
 	$(RM) src/agc/src/*.o          src/agc/bench/*.o          src/agc/tests/*.o
 	$(RM) src/audio/src/*.o        src/audio/bench/*.o        src/audio/tests/*.o
 	$(RM) src/buffer/src/*.o       src/buffer/bench/*.o       src/buffer/tests/*.o
+	$(RM) src/channel/src/*.o      src/channel/bench/*.o      src/channel/tests/*.o
 	$(RM) src/dotprod/src/*.o      src/dotprod/bench/*.o      src/dotprod/tests/*.o
 	$(RM) src/equalization/src/*.o src/equalization/bench/*.o src/equalization/tests/*.o
 	$(RM) src/fec/src/*.o          src/fec/bench/*.o          src/fec/tests/*.o

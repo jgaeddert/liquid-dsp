@@ -84,6 +84,30 @@ This directory contains all the examples for interfacing the liquid modules.
     SEE ALSO: `bsequence_example.c`
               `msequence_example.c`
 
+ * `cpfskmodem_example.c`:
+
+ * `conversion_example.c`:
+    
+    This example demonstrates conversion from complex baseband to a real-valued
+    signal, and then down-conversion back to complex baseband while removing the
+    negative image.
+    
+     STEP 1: A signal is generated at complex baseband consisting of narrow-band
+             filtered noise and an offset tone (to show asymmetry in the transmit
+             spectrum).
+    
+     STEP 2: The signal is mixed up to a carrier 'fc' (relative to the sampling
+             frequency) and the real-component of the result is retained. This is
+             the DAC output. The spectrum of this signal has two images: one at
+             +fc, the other at -fc.
+    
+     STEP 3: The DAC output is mixed back down to complex baseband and the lower
+             image is (mostly) filtered off. Reminants of the lower frequency
+             component are still visible due to the wide-band and low-order
+             filter on the receiver. The received complex baseband signal also
+             has a reduction in power by 2 because half the signal's energy (the
+             negative image) is filtered off.
+    
  * `crc_example.c`:
     Cyclic redundancy check (CRC) example.  This example demonstrates how a
     CRC can be used to validate data received through un-reliable means (e.g.
@@ -282,6 +306,11 @@ This directory contains all the examples for interfacing the liquid modules.
     SEE ALSO: `flexframesync_example.c`
 
  * `freqmodem_example.c`:
+
+ * `fskmodem_example.c`:
+    This example demostrates the M-ary frequency-shift keying
+    (MFSK) modem in liquid. A message signal is modulated and the
+    resulting signal is recovered using a demodulator object.
 
  * `gasearch_example.c`:
 
@@ -573,6 +602,15 @@ This directory contains all the examples for interfacing the liquid modules.
  * `symsync_crcf_kaiser_example.c`:
     This is a simplified example of the symync family of objects to show how
     symbol timing can be recovered after the matched filter output.
+
+  * `symtrack_cccf_example.c`:
+    
+    This example demonstrates how to recover data symbols using the symtrack
+    object. A stream of modulated and interpolated symbols are generated using
+    the symstream object. The resulting samples are passed through a channel
+    to add various impairments. The symtrack object recovers timing, carrier,
+    and other information imparted by the channel and returns data symbols
+    ready for demodulation.
 
  * `wdelayf_example.c`:
 

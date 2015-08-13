@@ -21,44 +21,35 @@
  */
 
 //
-// modemf.c : linear modem API, floating-point (single precision)
+// Framing API: floating-point
 //
 
-#include <math.h>
-#include <stdint.h>
 #include "liquid.internal.h"
 
-// Macro definitions
+// naming extensions (useful for print statements)
+#define EXTENSION_SHORT     "f"
+#define EXTENSION_FULL      "cccf"
+
+#define PRINTVAL(x)         printf("%12.4e + j%12.4e", crealf(x), cimagf(x))
+
+#define T                   float
+#define TO                  float complex
+#define TC                  float complex
+#define TI                  float complex
+#define ABS(X)              cabsf(X)
+
+// object references
+#define SYMTRACK(name)      LIQUID_CONCAT(symtrack_cccf,name)
+#define AGC(name)           LIQUID_CONCAT(agc_crcf,name)
+#define SYMSYNC(name)       LIQUID_CONCAT(symsync_crcf,name)
+#define EQLMS(name)         LIQUID_CONCAT(eqlms_cccf,name)
+#define NCO(name)           LIQUID_CONCAT(nco_crcf,name)
 #define MODEM(name)         LIQUID_CONCAT(modem,name)
-#define FREQMOD(name)       LIQUID_CONCAT(freqmod,name)
-#define FREQDEM(name)       LIQUID_CONCAT(freqdem,name)
 
-#define T                   float           /* primitive type */
-#define TC                  float complex   /* primitive type (complex) */
+#define TO_COMPLEX          1
+#define TC_COMPLEX          1
+#define TI_COMPLEX          1
 
-#define PRINTVAL_T(X,F)     PRINTVAL_FLOAT(X,F)
-#define PRINTVAL_TC(X,F)    PRINTVAL_CFLOAT(X,F)
+// source files
+#include "symtrack.c"
 
-// common source must come first (object definition)
-#include "modem_common.c"
-
-// generic modem specifications
-#include "modem_psk.c"
-#include "modem_dpsk.c"
-#include "modem_ask.c"
-#include "modem_qam.c"
-#include "modem_apsk.c"
-
-// specific modems
-#include "modem_bpsk.c"
-#include "modem_qpsk.c"
-#include "modem_ook.c"
-#include "modem_sqam32.c"
-#include "modem_sqam128.c"
-
-// arbitary modems
-#include "modem_arb.c"
-
-// analog modems
-#include "freqmod.c"
-#include "freqdem.c"

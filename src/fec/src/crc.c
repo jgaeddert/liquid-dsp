@@ -102,13 +102,12 @@ unsigned int crc_get_length(crc_scheme _scheme)
 }
 
 // generate error-detection key
-//
 //  _scheme     :   error-detection scheme
 //  _msg        :   input data message, [size: _n x 1]
 //  _n          :   input data message size
-unsigned int crc_generate_key(crc_scheme _scheme,
+unsigned int crc_generate_key(crc_scheme      _scheme,
                               unsigned char * _msg,
-                              unsigned int _n)
+                              unsigned int    _n)
 {
     switch (_scheme) {
     case LIQUID_CRC_UNKNOWN:
@@ -128,17 +127,35 @@ unsigned int crc_generate_key(crc_scheme _scheme,
     return 0;
 }
 
+// generate error-detection key and append to end of message
+//  _scheme     :   error-detection scheme (resulting in 'p' bytes)
+//  _msg        :   input data message, [size: _n+p x 1]
+//  _n          :   input data message size (excluding key at end)
+void crc_append_key(crc_scheme      _scheme,
+                    unsigned char * _msg,
+                    unsigned int    _n)
+{
+    // get key size
+    unsigned int len = crc_sizeof_key(_scheme);
+
+    // generate key
+    unsigned int key = crc_generate_key(_scheme, _msg, _n);
+
+    // append key to end of message
+    unsigned int i;
+    for (i=0; i<len; i++)
+        _msg[_n+i] = (key >> (len - i - 1)*8) & 0xff;
+}
 
 // validate message using error-detection key
-//
 //  _scheme     :   error-detection scheme
 //  _msg        :   input data message, [size: _n x 1]
 //  _n          :   input data message size
 //  _key        :   error-detection key
-int crc_validate_message(crc_scheme _scheme,
+int crc_validate_message(crc_scheme      _scheme,
                          unsigned char * _msg,
-                         unsigned int _n,
-                         unsigned int _key)
+                         unsigned int    _n,
+                         unsigned int    _key)
 {
     if (_scheme == LIQUID_CRC_UNKNOWN) {
         fprintf(stderr,"error: crc_validate_message(), cannot validate with CRC type \"UNKNOWN\"\n");
@@ -149,6 +166,51 @@ int crc_validate_message(crc_scheme _scheme,
 
     return crc_generate_key(_scheme, _msg, _n) == _key;
 }
+
+// check message with key appended to end of array
+//  _scheme     :   error-detection scheme (resulting in 'p' bytes)
+//  _msg        :   input data message, [size: _n+p x 1]
+//  _n          :   input data message size (excluding key at end)
+int crc_check_key(crc_scheme      _scheme,
+                  unsigned char * _msg,
+                  unsigned int    _n)
+{
+    // get key size
+    unsigned int len = crc_sizeof_key(_scheme);
+
+    // extract key from end of message
+    unsigned int key = 0;
+    unsigned int i;
+    for (i=0; i<len; i++) {
+        key <<= 8;
+        key |= _msg[_n+i];
+    }
+
+    // validate message against key
+    return crc_validate_message(_scheme, _msg, _n, key);
+}
+
+// get size of key (bytes)
+unsigned int crc_sizeof_key(crc_scheme _scheme)
+{
+    switch (_scheme) {
+    case LIQUID_CRC_UNKNOWN:
+        fprintf(stderr,"error: crc_sizeof_key(), cannot get size of type 'LIQUID_CRC_UNKNOWN'\n");
+        exit(-1);
+    case LIQUID_CRC_NONE:      return 0;
+    case LIQUID_CRC_CHECKSUM:  return 1;
+    case LIQUID_CRC_8:         return 1;
+    case LIQUID_CRC_16:        return 2;
+    case LIQUID_CRC_24:        return 3;
+    case LIQUID_CRC_32:        return 4;
+    default:
+        fprintf(stderr,"error: crc_sizeof_key(), unknown/unsupported scheme: %d\n", _scheme);
+        exit(1);
+    }
+
+    return 0;
+}
+
 
 
 //
