@@ -61,6 +61,7 @@ struct qdetector_cccf_s {
 
     unsigned int    counter;        // sample counter for determining when to compute FFTs
     float           threshold;      // detection threshold
+    int             range;          // carrier offset search range (subcarriers)
     unsigned int    num_transforms; // number of transforms taken (debugging)
 
     float           x2_sum_0;       // sum{ |x|^2 } of first half of buffer
@@ -133,6 +134,7 @@ qdetector_cccf qdetector_cccf_create(float complex * _s,
     q->phi_hat   = 0.0f;
 
     qdetector_cccf_set_threshold(q,0.5f);
+    qdetector_cccf_set_range    (q,0.3f); // set initial range for higher detection
 
     // return object
     return q;
@@ -305,6 +307,21 @@ void qdetector_cccf_set_threshold(qdetector_cccf _q,
     _q->threshold = _threshold;
 }
 
+// set carrier offset search range
+void qdetector_cccf_set_range(qdetector_cccf _q,
+                              float          _dphi_max)
+{
+    if (_dphi_max < 0.0f || _dphi_max > 0.5f) {
+        fprintf(stderr,"warning: carrier offset search range (%12.4e) out of range; ignoring\n", _dphi_max);
+        return;
+    }
+
+    // set internal search range
+    _q->range = (int)(_dphi_max * _q->nfft / (2*M_PI));
+    _q->range = _q->range < 0 ? 0 : _q->range;
+    //printf("range: %d / %u\n", _q->range, _q->nfft);
+}
+
 // get sequence length
 unsigned int qdetector_cccf_get_seq_len(qdetector_cccf _q)
 {
@@ -382,7 +399,7 @@ void qdetector_cccf_execute_seek(qdetector_cccf _q,
     unsigned int rxy_index  = 0;
     int          rxy_offset = 0;
     // NOTE: this offset may be coarse as a fine carrier estimate is computed later
-    for (offset=-2; offset<=2; offset++) {
+    for (offset=-_q->range; offset<=_q->range; offset++) {
 
         // cross-multiply, aligning appropriately
         for (i=0; i<_q->nfft; i++) {

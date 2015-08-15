@@ -4068,19 +4068,6 @@ qdetector_cccf qdetector_cccf_create_gmsk(unsigned char * _sequence,
                                           unsigned int    _m,
                                           float           _beta);
 
-// create detector from sequence of symbols using internal linear interpolator
-//  _sequence       :   symbol sequence
-//  _sequence_len   :   length of symbol sequence
-//  _k              :   samples/symbol
-//  _m              :   filter delay
-//  _beta           :   excess bandwidth factor
-//  _type           :   filter prototype (e.g. LIQUID_FIRFILT_RRC)
-qdetector_cccf qdetector_cccf_create_gmsk(unsigned char * _sequence,
-                                          unsigned int    _sequence_len,
-                                          unsigned int    _k,
-                                          unsigned int    _m,
-                                          float           _beta);
-
 void qdetector_cccf_destroy(qdetector_cccf _q);
 void qdetector_cccf_print  (qdetector_cccf _q);
 void qdetector_cccf_reset  (qdetector_cccf _q);
@@ -4092,6 +4079,10 @@ void * qdetector_cccf_execute(qdetector_cccf       _q,
 // set detection threshold (should be between 0 and 1, good starting point is 0.5)
 void qdetector_cccf_set_threshold(qdetector_cccf _q,
                                   float          _threshold);
+
+// set carrier offset search range
+void qdetector_cccf_set_range(qdetector_cccf _q,
+                              float          _dphi_max);
 
 // access methods
 unsigned int qdetector_cccf_get_seq_len (qdetector_cccf _q); // sequence length

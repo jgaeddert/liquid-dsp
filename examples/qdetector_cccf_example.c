@@ -22,14 +22,15 @@ void usage()
     printf("qdetector_cccf_example\n");
     printf("options:\n");
     printf("  h     : print usage/help\n");
-    printf("  n     : number of sync symbols,   default: 80\n");
-    printf("  k     : samples/symbol,           default:  2\n");
-    printf("  m     : filter delay,             default:  7 sybmols\n");
-    printf("  b     : excess bandwidth factor,  default:  0.3\n");
-    printf("  F     : carrier frequency offset, default: 0.02\n");
-    printf("  T     : fractional sample offset, dt in [-0.5, 0.5], default: 0\n");
-    printf("  S     : SNR [dB],                 default: 20 dB\n");
-    printf("  t     : detection threshold,      default: 0.3\n");
+    printf("  n     : number of sync symbols,     default:  80\n");
+    printf("  k     : samples/symbol,             default:  2\n");
+    printf("  m     : filter delay,               default:  7 sybmols\n");
+    printf("  b     : excess bandwidth factor,    default:  0.3\n");
+    printf("  F     : carrier frequency offset,   default: -0.01\n");
+    printf("  T     : fractional sample offset,   default:  0\n");
+    printf("  S     : SNR [dB],                   default:  20 dB\n");
+    printf("  t     : detection threshold,        default:  0.3\n");
+    printf("  r     : carrier offset search range,default:  0.05\n");
 }
 
 int main(int argc, char*argv[])
@@ -46,9 +47,10 @@ int main(int argc, char*argv[])
     float        phi          =  0.5f;  // carrier phase offset
     float        SNRdB        = 20.0f;  // signal-to-noise ratio [dB]
     float        threshold    =  0.5f;  // detection threshold
+    float        range        =  0.05f; // carrier offset search range [radians/sample]
 
     int dopt;
-    while ((dopt = getopt(argc,argv,"hn:k:m:b:F:T:S:t:")) != EOF) {
+    while ((dopt = getopt(argc,argv,"hn:k:m:b:F:T:S:t:r:")) != EOF) {
         switch (dopt) {
         case 'h': usage();                      return 0;
         case 'n': sequence_len  = atoi(optarg); break;
@@ -59,6 +61,7 @@ int main(int argc, char*argv[])
         case 'T': tau           = atof(optarg); break;
         case 'S': SNRdB         = atof(optarg); break;
         case 't': threshold     = atof(optarg); break;
+        case 'r': range         = atof(optarg); break;
         default:
             exit(1);
         }
@@ -89,6 +92,7 @@ int main(int argc, char*argv[])
     // create detector
     qdetector_cccf q = qdetector_cccf_create_linear(sequence, sequence_len, ftype, k, m, beta);
     qdetector_cccf_set_threshold(q, threshold);
+    qdetector_cccf_set_range    (q, range);
     qdetector_cccf_print(q);
 
     //
@@ -173,11 +177,13 @@ int main(int argc, char*argv[])
     // print results
     printf("\n");
     printf("frame detected  :   %s\n", frame_detected ? "yes" : "no");
-    printf("  gamma hat     : %8.3f, actual=%8.3f (error=%8.3f)\n",            gamma_hat, gamma, gamma_hat - gamma);
-    printf("  tau hat       : %8.3f, actual=%8.3f (error=%8.3f) samples\n",    tau_hat,   tau,   tau_hat   - tau  );
-    printf("  dphi hat      : %8.5f, actual=%8.5f (error=%8.5f) rad/sample\n", dphi_hat,  dphi,  dphi_hat  - dphi );
-    printf("  phi hat       : %8.5f, actual=%8.5f (error=%8.5f) radians\n",    phi_hat,   phi,   phi_hat   - phi  );
-    printf("  symbols rx    : %u\n", num_syms_rx);
+    if (frame_detected) {
+        printf("  gamma hat     : %8.3f, actual=%8.3f (error=%8.3f)\n",            gamma_hat, gamma, gamma_hat - gamma);
+        printf("  tau hat       : %8.3f, actual=%8.3f (error=%8.3f) samples\n",    tau_hat,   tau,   tau_hat   - tau  );
+        printf("  dphi hat      : %8.5f, actual=%8.5f (error=%8.5f) rad/sample\n", dphi_hat,  dphi,  dphi_hat  - dphi );
+        printf("  phi hat       : %8.5f, actual=%8.5f (error=%8.5f) radians\n",    phi_hat,   phi,   phi_hat   - phi  );
+        printf("  symbols rx    : %u\n", num_syms_rx);
+    }
     printf("\n");
 
     // 
