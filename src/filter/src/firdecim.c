@@ -81,23 +81,23 @@ FIRDECIM() FIRDECIM(_create)(unsigned int _M,
     return q;
 }
 
-// create decimator from prototype
+// create decimator from Kaiser prototype
 //  _M      :   decimolation factor
 //  _m      :   symbol delay
 //  _As     :   stop-band attenuation [dB]
-FIRDECIM() FIRDECIM(_create_prototype)(unsigned int _M,
-                                       unsigned int _m,
-                                       float        _As)
+FIRDECIM() FIRDECIM(_create_kaiser)(unsigned int _M,
+                                    unsigned int _m,
+                                    float        _As)
 {
     // validate input
     if (_M < 2) {
-        fprintf(stderr,"error: decim_%s_create_prototype(), decim factor must be greater than 1\n", EXTENSION_FULL);
+        fprintf(stderr,"error: decim_%s_create_kaiser(), decim factor must be greater than 1\n", EXTENSION_FULL);
         exit(1);
     } else if (_m == 0) {
-        fprintf(stderr,"error: decim_%s_create_prototype(), filter delay must be greater than 0\n", EXTENSION_FULL);
+        fprintf(stderr,"error: decim_%s_create_kaiser(), filter delay must be greater than 0\n", EXTENSION_FULL);
         exit(1);
     } else if (_As < 0.0f) {
-        fprintf(stderr,"error: decim_%s_create_prototype(), stop-band attenuation must be positive\n", EXTENSION_FULL);
+        fprintf(stderr,"error: decim_%s_create_kaiser(), stop-band attenuation must be positive\n", EXTENSION_FULL);
         exit(1);
     }
 

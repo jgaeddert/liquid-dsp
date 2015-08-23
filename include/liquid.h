@@ -2684,13 +2684,13 @@ FIRDECIM() FIRDECIM(_create)(unsigned int _M,                   \
                              TC *         _h,                   \
                              unsigned int _h_len);              \
                                                                 \
-/* create decimator from prototype                          */  \
+/* create decimator from Kaiser prototype                   */  \
 /*  _M      : decimation factor                             */  \
 /*  _m      : filter delay (symbols)                        */  \
 /*  _As     : stop-band attenuation [dB]                    */  \
-FIRDECIM() FIRDECIM(_create_prototype)(unsigned int _M,         \
-                                       unsigned int _m,         \
-                                       float        _As);       \
+FIRDECIM() FIRDECIM(_create_kaiser)(unsigned int _M,            \
+                                    unsigned int _m,            \
+                                    float        _As);          \
                                                                 \
 /* create square-root Nyquist decimator                     */  \
 /*  _type   : filter type (e.g. LIQUID_FIRFILT_RRC)         */  \
