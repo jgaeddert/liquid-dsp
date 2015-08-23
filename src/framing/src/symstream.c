@@ -93,7 +93,7 @@ SYMSTREAM() SYMSTREAM(_create_linear)(int          _ftype,
     q->mod = MODEM(_create)(q->mod_scheme);
 
     // interpolator
-    q->interp = FIRINTERP(_create_rnyquist)(q->filter_type, q->k, q->m, q->beta, 0);
+    q->interp = FIRINTERP(_create_prototype)(q->filter_type, q->k, q->m, q->beta, 0);
 
     // sample buffer
     q->buf = (TO*) malloc(q->k*sizeof(TO));

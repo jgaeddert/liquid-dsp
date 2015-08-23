@@ -41,7 +41,7 @@ void autotest_eqlms_cccf_blind()
     msequence ms = msequence_create_default(12);
 
     // create interpolating filter
-    firinterp_crcf interp = firinterp_crcf_create_rnyquist(LIQUID_FIRFILT_ARKAISER,k,m,beta,0);
+    firinterp_crcf interp = firinterp_crcf_create_prototype(LIQUID_FIRFILT_ARKAISER,k,m,beta,0);
 
     // create equalizer
     eqlms_cccf eq = eqlms_cccf_create_rnyquist(LIQUID_FIRFILT_ARKAISER,k,p,beta,0);
@@ -136,7 +136,7 @@ void autotest_eqlms_cccf_decisiondirected()
     msequence ms = msequence_create_default(12);
 
     // create interpolating filter
-    firinterp_crcf interp = firinterp_crcf_create_rnyquist(LIQUID_FIRFILT_ARKAISER,k,m,beta,0);
+    firinterp_crcf interp = firinterp_crcf_create_prototype(LIQUID_FIRFILT_ARKAISER,k,m,beta,0);
 
     // create equalizer
     eqlms_cccf eq = eqlms_cccf_create_rnyquist(LIQUID_FIRFILT_ARKAISER,k,p,beta,0);

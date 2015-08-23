@@ -94,7 +94,7 @@ int main(int argc, char*argv[])
     }
 
     // create interpolated sequence, compensating for filter delay
-    firinterp_crcf interp_seq = firinterp_crcf_create_rnyquist(LIQUID_FIRFILT_RRC,k,m,beta,0.0f);
+    firinterp_crcf interp_seq = firinterp_crcf_create_prototype(LIQUID_FIRFILT_RRC,k,m,beta,0.0f);
     for (i=0; i<num_sync_symbols+m; i++) {
         if      (i < m)                firinterp_crcf_execute(interp_seq, seq[i], &s0[0]);
         else if (i < num_sync_symbols) firinterp_crcf_execute(interp_seq, seq[i], &s0[k*(i-m)]);
@@ -108,7 +108,7 @@ int main(int argc, char*argv[])
         g += crealf( s0[i]*conjf(s0[i]) );
 
     // create transmit interpolator and generate sequence
-    firinterp_crcf interp_tx = firinterp_crcf_create_rnyquist(LIQUID_FIRFILT_RRC,k,m,beta,dt);
+    firinterp_crcf interp_tx = firinterp_crcf_create_prototype(LIQUID_FIRFILT_RRC,k,m,beta,dt);
     unsigned int n=0;
     for (i=0; i<num_delay_symbols; i++) {
         firinterp_crcf_execute(interp_tx, 0, &x[k*n]);

@@ -101,7 +101,7 @@ int main(int argc, char*argv[])
     float complex sym_out[num_symbols + 64];// synchronized symbols
 
     // create sequence of Nyquist-interpolated QPSK symbols
-    firinterp_crcf interp = firinterp_crcf_create_nyquist(ftype,k,m,beta,tau);
+    firinterp_crcf interp = firinterp_crcf_create_prototype(ftype,k,m,beta,tau);
     for (i=0; i<num_symbols; i++) {
         // generate random QPSK symbol
         float complex s = ( rand() % 2 ? M_SQRT1_2 : -M_SQRT1_2 ) +

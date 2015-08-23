@@ -173,7 +173,7 @@ qdetector_cccf qdetector_cccf_create_linear(float complex * _sequence,
     // create time-domain template
     unsigned int    s_len = _k * (_sequence_len + 2*_m);
     float complex * s     = (float complex*) malloc(s_len * sizeof(float complex));
-    firinterp_crcf interp = firinterp_crcf_create_rnyquist(_ftype, _k, _m, _beta, 0);
+    firinterp_crcf interp = firinterp_crcf_create_prototype(_ftype, _k, _m, _beta, 0);
     unsigned int i;
     for (i=0; i<_sequence_len + 2*_m; i++)
         firinterp_crcf_execute(interp, i < _sequence_len ? _sequence[i] : 0, &s[_k*i]);

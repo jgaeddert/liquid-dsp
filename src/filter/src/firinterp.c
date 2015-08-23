@@ -115,76 +115,34 @@ FIRINTERP() FIRINTERP(_create_kaiser)(unsigned int _M,
     return FIRINTERP(_create)(_M, hc, 2*_M*_m);
 }
 
-// create Nyquist interpolator
+// create prototype (root-)Nyquist interpolator
 //  _type   :   filter type (e.g. LIQUID_NYQUIST_RCOS)
 //  _k      :   samples/symbol,          _k > 1
 //  _m      :   filter delay (symbols),  _m > 0
 //  _beta   :   excess bandwidth factor, _beta < 1
 //  _dt     :   fractional sample delay, _dt in (-1, 1)
-FIRINTERP() FIRINTERP(_create_nyquist)(int          _type,
-                                       unsigned int _k,
-                                       unsigned int _m,
-                                       float        _beta,
-                                       float        _dt)
+FIRINTERP() FIRINTERP(_create_prototype)(int          _type,
+                                         unsigned int _k,
+                                         unsigned int _m,
+                                         float        _beta,
+                                         float        _dt)
 {
     // validate input
     if (_k < 2) {
-        fprintf(stderr,"error: firinterp_%s_create_nyquist(), interp factor must be greater than 1\n", EXTENSION_FULL);
+        fprintf(stderr,"error: firinterp_%s_create_prototype(), interp factor must be greater than 1\n", EXTENSION_FULL);
         exit(1);
     } else if (_m == 0) {
-        fprintf(stderr,"error: firinterp_%s_create_nyquist(), filter delay must be greater than 0\n", EXTENSION_FULL);
+        fprintf(stderr,"error: firinterp_%s_create_prototype(), filter delay must be greater than 0\n", EXTENSION_FULL);
         exit(1);
     } else if (_beta < 0.0f || _beta > 1.0f) {
-        fprintf(stderr,"error: firinterp_%s_create_nyquist(), filter excess bandwidth factor must be in [0,1]\n", EXTENSION_FULL);
+        fprintf(stderr,"error: firinterp_%s_create_prototype(), filter excess bandwidth factor must be in [0,1]\n", EXTENSION_FULL);
         exit(1);
     } else if (_dt < -1.0f || _dt > 1.0f) {
-        fprintf(stderr,"error: firinterp_%s_create_nyquist(), filter fractional sample delay must be in [-1,1]\n", EXTENSION_FULL);
+        fprintf(stderr,"error: firinterp_%s_create_prototype(), filter fractional sample delay must be in [-1,1]\n", EXTENSION_FULL);
         exit(1);
     }
 
     // generate Nyquist filter
-    unsigned int h_len = 2*_k*_m + 1;
-    float h[h_len];
-    liquid_firdes_prototype(_type,_k,_m,_beta,_dt,h);
-
-    // copy coefficients to type-specific array (e.g. float complex)
-    unsigned int i;
-    TC hc[h_len];
-    for (i=0; i<h_len; i++)
-        hc[i] = h[i];
-
-    // return interpolator object
-    return FIRINTERP(_create)(_k, hc, h_len);
-}
-
-// create square-root Nyquist interpolator
-//  _type   :   filter type (e.g. LIQUID_RNYQUIST_RRC)
-//  _k      :   samples/symbol _k > 1
-//  _m      :   filter delay (symbols), _m > 0
-//  _beta   :   excess bandwidth factor, 0 < _beta < 1
-//  _dt     :   fractional sample delay, 0 <= _dt < 1
-FIRINTERP() FIRINTERP(_create_rnyquist)(int          _type,
-                                        unsigned int _k,
-                                        unsigned int _m,
-                                        float        _beta,
-                                        float        _dt)
-{
-    // validate input
-    if (_k < 2) {
-        fprintf(stderr,"error: firinterp_%s_create_rnyquist(), interp factor must be greater than 1\n", EXTENSION_FULL);
-        exit(1);
-    } else if (_m == 0) {
-        fprintf(stderr,"error: firinterp_%s_create_rnyquist(), filter delay must be greater than 0\n", EXTENSION_FULL);
-        exit(1);
-    } else if (_beta < 0.0f || _beta > 1.0f) {
-        fprintf(stderr,"error: firinterp_%s_create_rnyquist(), filter excess bandwidth factor must be in [0,1]\n", EXTENSION_FULL);
-        exit(1);
-    } else if (_dt < -1.0f || _dt > 1.0f) {
-        fprintf(stderr,"error: firinterp_%s_create_rnyquist(), filter fractional sample delay must be in [-1,1]\n", EXTENSION_FULL);
-        exit(1);
-    }
-
-    // generate square-root Nyquist filter
     unsigned int h_len = 2*_k*_m + 1;
     float h[h_len];
     liquid_firdes_prototype(_type,_k,_m,_beta,_dt,h);

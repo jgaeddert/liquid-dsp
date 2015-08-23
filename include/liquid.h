@@ -2513,29 +2513,17 @@ FIRINTERP() FIRINTERP(_create_kaiser)(unsigned int _M,          \
                                       unsigned int _m,          \
                                       float        _As);        \
                                                                 \
-/* create Nyquist interpolator                              */  \
+/* create prorotype (root-)Nyquist interpolator             */  \
 /*  _type   : filter type (e.g. LIQUID_FIRFILT_RCOS)        */  \
 /*  _k      :   samples/symbol,          _k > 1             */  \
 /*  _m      :   filter delay (symbols),  _m > 0             */  \
 /*  _beta   :   excess bandwidth factor, _beta < 1          */  \
 /*  _dt     :   fractional sample delay, _dt in (-1, 1)     */  \
-FIRINTERP() FIRINTERP(_create_nyquist)(int          _type,      \
-                                       unsigned int _k,         \
-                                       unsigned int _m,         \
-                                       float        _beta,      \
-                                       float        _dt);       \
-                                                                \
-/* create square-root Nyquist interpolator                  */  \
-/*  _type   : filter type (e.g. LIQUID_FIRFILT_RRC)         */  \
-/*  _k      :   samples/symbol,          _k > 1             */  \
-/*  _m      :   filter delay (symbols),  _m > 0             */  \
-/*  _beta   :   excess bandwidth factor, _beta < 1          */  \
-/*  _dt     :   fractional sample delay, _dt in (-1, 1)     */  \
-FIRINTERP() FIRINTERP(_create_rnyquist)(int          _type,     \
-                                        unsigned int _k,        \
-                                        unsigned int _m,        \
-                                        float        _beta,     \
-                                        float        _dt);      \
+FIRINTERP() FIRINTERP(_create_prototype)(int          _type,    \
+                                         unsigned int _k,       \
+                                         unsigned int _m,       \
+                                         float        _beta,    \
+                                         float        _dt);     \
                                                                 \
 /* destroy firinterp object, freeing all internal memory    */  \
 void FIRINTERP(_destroy)(FIRINTERP() _q);                       \

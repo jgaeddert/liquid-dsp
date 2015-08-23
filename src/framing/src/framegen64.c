@@ -79,7 +79,7 @@ framegen64 framegen64_create()
     assert( qpilotgen_get_frame_len(q->pilotgen)==630 );
 
     // create pulse-shaping filter (k=2)
-    q->interp = firinterp_crcf_create_rnyquist(LIQUID_FIRFILT_ARKAISER,2,q->m,q->beta,0);
+    q->interp = firinterp_crcf_create_prototype(LIQUID_FIRFILT_ARKAISER,2,q->m,q->beta,0);
 
     // return main object
     return q;
