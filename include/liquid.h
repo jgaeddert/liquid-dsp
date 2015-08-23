@@ -2416,6 +2416,16 @@ FIRPFB() FIRPFB(_create)(unsigned int _M,                       \
                          TC *         _h,                       \
                          unsigned int _h_len);                  \
                                                                 \
+/* create firpfb from external coefficients                 */  \
+/*  _M      : number of filters in the bank                 */  \
+/*  _m      : filter semi-length [samples]                  */  \
+/*  _fc     : filter cut-off frequency 0 < _fc < 0.5        */  \
+/*  _As     : filter stop-band suppression [dB]             */  \
+FIRPFB() FIRPFB(_create_kaiser)(unsigned int _M,                \
+                                unsigned int _m,                \
+                                float        _fc,               \
+                                float        _As);              \
+                                                                \
 /* create firpfb from square-root Nyquist prototype         */  \
 /*  _type   : filter type (e.g. LIQUID_FIRFILT_RRC)         */  \
 /*  _npfb   : number of filters in the bank                 */  \
