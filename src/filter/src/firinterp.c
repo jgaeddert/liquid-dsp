@@ -79,23 +79,23 @@ FIRINTERP() FIRINTERP(_create)(unsigned int _M,
     return q;
 }
 
-// create interpolator from prototype
+// create interpolator from Kaiser prototype
 //  _M      :   interpolation factor
 //  _m      :   symbol delay
 //  _As     :   stop-band attenuation [dB]
-FIRINTERP() FIRINTERP(_create_prototype)(unsigned int _M,
-                                         unsigned int _m,
-                                         float        _As)
+FIRINTERP() FIRINTERP(_create_kaiser)(unsigned int _M,
+                                      unsigned int _m,
+                                      float        _As)
 {
     // validate input
     if (_M < 2) {
-        fprintf(stderr,"error: firinterp_%s_create_prototype(), interp factor must be greater than 1\n", EXTENSION_FULL);
+        fprintf(stderr,"error: firinterp_%s_create_kaiser(), interp factor must be greater than 1\n", EXTENSION_FULL);
         exit(1);
     } else if (_m == 0) {
-        fprintf(stderr,"error: firinterp_%s_create_prototype(), filter delay must be greater than 0\n", EXTENSION_FULL);
+        fprintf(stderr,"error: firinterp_%s_create_kaiser(), filter delay must be greater than 0\n", EXTENSION_FULL);
         exit(1);
     } else if (_As < 0.0f) {
-        fprintf(stderr,"error: firinterp_%s_create_prototype(), stop-band attenuation must be positive\n", EXTENSION_FULL);
+        fprintf(stderr,"error: firinterp_%s_create_kaiser(), stop-band attenuation must be positive\n", EXTENSION_FULL);
         exit(1);
     }
 

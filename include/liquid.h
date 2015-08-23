@@ -2505,13 +2505,13 @@ FIRINTERP() FIRINTERP(_create)(unsigned int _M,                 \
                                TC *         _h,                 \
                                unsigned int _h_len);            \
                                                                 \
-/* create interpolator from prototype                       */  \
+/* create interpolator from Kaiser prototype                */  \
 /*  _M      : interpolation factor                          */  \
 /*  _m      : filter delay (symbols)                        */  \
 /*  _As     : stop-band attenuation [dB]                    */  \
-FIRINTERP() FIRINTERP(_create_prototype)(unsigned int _M,       \
-                                         unsigned int _m,       \
-                                         float        _As);     \
+FIRINTERP() FIRINTERP(_create_kaiser)(unsigned int _M,          \
+                                      unsigned int _m,          \
+                                      float        _As);        \
                                                                 \
 /* create Nyquist interpolator                              */  \
 /*  _type   : filter type (e.g. LIQUID_FIRFILT_RCOS)        */  \
