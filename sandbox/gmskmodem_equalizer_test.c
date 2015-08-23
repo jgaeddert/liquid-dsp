@@ -96,7 +96,7 @@ int main(int argc, char*argv[])
     unsigned int i;
 
     // generate matched filter response
-    liquid_firdes_rnyquist(LIQUID_FIRFILT_GMSKTX, k, m, beta, 0.0f, hm);
+    liquid_firdes_prototype(LIQUID_FIRFILT_GMSKTX, k, m, beta, 0.0f, hm);
 
     // create the modem objects
     modem demod = modem_create(LIQUID_MODEM_QPSK);

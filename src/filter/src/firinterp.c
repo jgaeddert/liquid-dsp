@@ -145,7 +145,7 @@ FIRINTERP() FIRINTERP(_create_nyquist)(int          _type,
     // generate Nyquist filter
     unsigned int h_len = 2*_k*_m + 1;
     float h[h_len];
-    liquid_firdes_nyquist(_type,_k,_m,_beta,_dt,h);
+    liquid_firdes_prototype(_type,_k,_m,_beta,_dt,h);
 
     // copy coefficients to type-specific array (e.g. float complex)
     unsigned int i;
@@ -187,7 +187,7 @@ FIRINTERP() FIRINTERP(_create_rnyquist)(int          _type,
     // generate square-root Nyquist filter
     unsigned int h_len = 2*_k*_m + 1;
     float h[h_len];
-    liquid_firdes_rnyquist(_type,_k,_m,_beta,_dt,h);
+    liquid_firdes_prototype(_type,_k,_m,_beta,_dt,h);
 
     // copy coefficients to type-specific array (e.g. float complex)
     unsigned int i;

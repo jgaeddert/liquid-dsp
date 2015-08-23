@@ -158,7 +158,7 @@ FIRFILT() FIRFILT(_create_rnyquist)(int          _type,
     // generate square-root Nyquist filter
     unsigned int h_len = 2*_k*_m + 1;
     float hf[h_len];
-    liquid_firdes_rnyquist(_type,_k,_m,_beta,_mu,hf);
+    liquid_firdes_prototype(_type,_k,_m,_beta,_mu,hf);
 
     // copy coefficients to type-specific array (e.g. float complex)
     unsigned int i;

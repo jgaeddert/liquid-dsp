@@ -167,7 +167,7 @@ FIRPFB() FIRPFB(_create_rnyquist)(int          _type,
     // generate square-root Nyquist filter
     unsigned int H_len = 2*_M*_k*_m + 1;
     float Hf[H_len];
-    liquid_firdes_rnyquist(_type,_M*_k,_m,_beta,0,Hf);
+    liquid_firdes_prototype(_type,_M*_k,_m,_beta,0,Hf);
 
     // copy coefficients to type-specific array (e.g. float complex)
     unsigned int i;
@@ -209,7 +209,7 @@ FIRPFB() FIRPFB(_create_drnyquist)(int          _type,
     // generate square-root Nyquist filter
     unsigned int H_len = 2*_M*_k*_m + 1;
     float Hf[H_len];
-    liquid_firdes_rnyquist(_type,_M*_k,_m,_beta,0,Hf);
+    liquid_firdes_prototype(_type,_M*_k,_m,_beta,0,Hf);
     
     // compute derivative filter
     float dHf[H_len];

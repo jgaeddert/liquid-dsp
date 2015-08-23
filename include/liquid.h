@@ -1434,6 +1434,20 @@ typedef enum {
     LIQUID_FIRFILT_RFARCSECH,   // flipped arc-hyperbolic secant
 } liquid_firfilt_type;
 
+// Design (root-)Nyquist filter from prototype
+//  _type   : filter type (e.g. LIQUID_FIRFILT_RRC)
+//  _k      : samples/symbol,          _k > 1
+//  _m      : symbol delay,            _m > 0
+//  _beta   : excess bandwidth factor, _beta in [0,1)
+//  _dt     : fractional sample delay, _dt in [-1,1]
+//  _h      : output coefficient buffer (length: 2*_k*_m+1)
+void liquid_firdes_prototype(liquid_firfilt_type _type,
+                             unsigned int        _k,
+                             unsigned int        _m,
+                             float               _beta,
+                             float               _dt,
+                             float *             _h);
+
 // returns filter type based on input string
 int liquid_getopt_str2firfilt(const char * _str);
 
@@ -1460,21 +1474,6 @@ float estimate_req_filter_df(float        _As,
 // stop-band attenuation (As) [Vaidyanathan:1993]
 //  _As     :   target filter's stop-band attenuation [dB], _As > 0
 float kaiser_beta_As(float _As);
-
-
-// Design Nyquist filter
-//  _type   : filter type (e.g. LIQUID_FIRFILT_RCOS)
-//  _k      : samples/symbol
-//  _m      : symbol delay
-//  _beta   : excess bandwidth factor, _beta in [0,1]
-//  _dt     : fractional sample delay
-//  _h      : output coefficient buffer (length: 2*k*m+1)
-void liquid_firdes_nyquist(liquid_firfilt_type _type,
-                           unsigned int        _k,
-                           unsigned int        _m,
-                           float               _beta,
-                           float               _dt,
-                           float *             _h);
 
 
 // Design FIR filter using Parks-McClellan algorithm
@@ -1576,20 +1575,6 @@ void liquid_firdes_rcos(unsigned int _k,
                         float _beta,
                         float _dt,
                         float * _h);
-
-// Design root-Nyquist filter
-//  _type   : filter type (e.g. LIQUID_FIRFILT_RRC)
-//  _k      : samples/symbol,          _k > 1
-//  _m      : symbol delay,            _m > 0
-//  _beta   : excess bandwidth factor, _beta in [0,1)
-//  _dt     : fractional sample delay, _dt in [-1,1]
-//  _h      : output coefficient buffer (length: 2*_k*_m+1)
-void liquid_firdes_rnyquist(liquid_firfilt_type _type,
-                            unsigned int        _k,
-                            unsigned int        _m,
-                            float               _beta,
-                            float               _dt,
-                            float *             _h);
 
 // Design root-Nyquist raised-cosine filter
 void liquid_firdes_rrcos(unsigned int _k, unsigned int _m, float _beta, float _dt, float * _h);

@@ -80,7 +80,7 @@ int main(int argc, char*argv[]) {
     float h[h_len];
 
     // design the filter
-    liquid_firdes_nyquist(ftype,k,m,beta,0,h);
+    liquid_firdes_prototype(ftype,k,m,beta,0,h);
 
     // print the coefficients to the screen
     unsigned int i;

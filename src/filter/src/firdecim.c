@@ -147,7 +147,7 @@ FIRDECIM() FIRDECIM(_create_rnyquist)(int          _type,
     // generate square-root Nyquist filter
     unsigned int h_len = 2*_M*_m + 1;
     float h[h_len];
-    liquid_firdes_rnyquist(_type,_M,_m,_beta,_dt,h);
+    liquid_firdes_prototype(_type,_M,_m,_beta,_dt,h);
 
     // copy coefficients to type-specific array (e.g. float complex)
     unsigned int i;
