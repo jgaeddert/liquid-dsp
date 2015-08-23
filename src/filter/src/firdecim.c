@@ -123,24 +123,24 @@ FIRDECIM() FIRDECIM(_create_kaiser)(unsigned int _M,
 //  _m      :   filter delay (symbols), _m > 0
 //  _beta   :   excess bandwidth factor, 0 < _beta < 1
 //  _dt     :   fractional sample delay, 0 <= _dt < 1
-FIRDECIM() FIRDECIM(_create_rnyquist)(int          _type,
-                                      unsigned int _M,
-                                      unsigned int _m,
-                                      float        _beta,
-                                      float        _dt)
+FIRDECIM() FIRDECIM(_create_prototype)(int          _type,
+                                       unsigned int _M,
+                                       unsigned int _m,
+                                       float        _beta,
+                                       float        _dt)
 {
     // validate input
     if (_M < 2) {
-        fprintf(stderr,"error: decim_%s_create_rnyquist(), decimation factor must be greater than 1\n", EXTENSION_FULL);
+        fprintf(stderr,"error: decim_%s_create_prototype(), decimation factor must be greater than 1\n", EXTENSION_FULL);
         exit(1);
     } else if (_m == 0) {
-        fprintf(stderr,"error: decim_%s_create_rnyquist(), filter delay must be greater than 0\n", EXTENSION_FULL);
+        fprintf(stderr,"error: decim_%s_create_prototype(), filter delay must be greater than 0\n", EXTENSION_FULL);
         exit(1);
     } else if (_beta < 0.0f || _beta > 1.0f) {
-        fprintf(stderr,"error: decim_%s_create_rnyquist(), filter excess bandwidth factor must be in [0,1]\n", EXTENSION_FULL);
+        fprintf(stderr,"error: decim_%s_create_prototype(), filter excess bandwidth factor must be in [0,1]\n", EXTENSION_FULL);
         exit(1);
     } else if (_dt < -1.0f || _dt > 1.0f) {
-        fprintf(stderr,"error: decim_%s_create_rnyquist(), filter fractional sample delay must be in [-1,1]\n", EXTENSION_FULL);
+        fprintf(stderr,"error: decim_%s_create_prototype(), filter fractional sample delay must be in [-1,1]\n", EXTENSION_FULL);
         exit(1);
     }
 

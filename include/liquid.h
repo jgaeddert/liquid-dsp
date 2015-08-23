@@ -2686,11 +2686,11 @@ FIRDECIM() FIRDECIM(_create_kaiser)(unsigned int _M,            \
 /*  _m      : filter delay (symbols)                        */  \
 /*  _beta   : rolloff factor (0 < beta <= 1)                */  \
 /*  _dt     : fractional sample delay                       */  \
-FIRDECIM() FIRDECIM(_create_rnyquist)(int          _type,       \
-                                      unsigned int _M,          \
-                                      unsigned int _m,          \
-                                      float        _beta,       \
-                                      float        _dt);        \
+FIRDECIM() FIRDECIM(_create_prototype)(int          _type,      \
+                                       unsigned int _M,         \
+                                       unsigned int _m,         \
+                                       float        _beta,      \
+                                       float        _dt);       \
                                                                 \
 /* destroy decimator object                                 */  \
 void FIRDECIM(_destroy)(FIRDECIM() _q);                         \
