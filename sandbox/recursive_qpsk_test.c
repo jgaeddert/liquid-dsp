@@ -118,24 +118,25 @@ int main(int argc, char*argv[])
             num_bit_errors_0 += count_bit_errors(sym_tx_0, sym_rx_0);
             num_bit_errors_1 += count_bit_errors(sym_tx_1, sym_rx_1);
         }
-        float BER_0 = num_bit_errors_0 / (float)(2*num_trials);
-        float BER_1 = num_bit_errors_1 / (float)(2*num_trials);
+        float BER_QPSK = 0.5f*erfcf(powf(10.0f,SNRdB/20.0f)*M_SQRT1_2);
+        float BER_0    = num_bit_errors_0 / (float)(2*num_trials);
+        float BER_1    = num_bit_errors_1 / (float)(2*num_trials);
 
         // print results to screen
-        printf("%3u : SNR = %6.3f dB, {%8u %8u} / %8u, BER : {%12.4e %12.4e}\n",
-                n, SNRdB, num_bit_errors_0, num_bit_errors_1, 2*num_trials, BER_0, BER_1);
+        printf("%3u : SNR = %6.3f dB, {%8u %8u} / %8u, QPSK: %12.4e, BER : {%12.4e %12.4e}\n",
+                n, SNRdB, num_bit_errors_0, num_bit_errors_1, 2*num_trials, BER_QPSK, BER_0, BER_1);
 
         // print results to file
-        fprintf(fid,"SNRdB(%3u) = %8.3f; BER_0(%3u) = %12.4e; BER_1(%3u) = %12.4e;\n",
-                n+1, SNRdB, n+1, BER_0, n+1, BER_1);
+        fprintf(fid,"SNRdB(%3u)=%6.3f; BER_QPSK(%3u)=%12.4e; BER_0(%3u)=%12.4e; BER_1(%3u)=%12.4e;\n",
+                n+1, SNRdB, n+1, BER_QPSK, n+1, BER_0, n+1, BER_1);
     }
     fprintf(fid,"figure;\n");
-    fprintf(fid,"semilogy(SNRdB,BER_0+1e-12,SNRdB,BER_1+1e-12);\n");
+    fprintf(fid,"semilogy(SNRdB,BER_QPSK+1e-12,SNRdB,BER_0+1e-12,SNRdB,BER_1+1e-12);\n");
     fprintf(fid,"axis([%.3f %.3f 1e-5 1]);\n", SNRdB_min, SNRdB_max);
     fprintf(fid,"grid on;\n");
     fprintf(fid,"xlabel('SNR [dB]');\n");
     fprintf(fid,"ylabel('BER');\n");
-    fprintf(fid,"legend('stream 0  ', 'stream 1  ', 'location', 'northeast');\n");
+    fprintf(fid,"legend('qpsk  ', 'stream 0  ', 'stream 1  ', 'location', 'northeast');\n");
 
     fclose(fid);
     printf("results written to '%s'\n", OUTPUT_FILENAME);
