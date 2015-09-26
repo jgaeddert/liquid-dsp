@@ -339,4 +339,29 @@ float blackmanharris(unsigned int _n, unsigned int _N)
     return a0 - a1*cosf(t) + a2*cosf(2*t) - a3*cosf(3*t);
 }
 
+// raised-cosine tapering window
+//  _n      :   window index
+//  _t      :   taper length
+//  _N      :   full window length
+float liquid_rcostaper_windowf(unsigned int _n,
+                               unsigned int _t,
+                               unsigned int _N)
+{
+    // validate input
+    if (_n > _N) {
+        fprintf(stderr,"error: liquid_rcostaper_windowf(), sample index must not exceed window length\n");
+        exit(1);
+    } else if (_t > _N/2) {
+        fprintf(stderr,"error: liquid_rcostaper_windowf(), taper length cannot exceed half window length\n");
+        exit(1);
+    }
+
+    // reverse time for ramp-down section
+    if (_n > _N - _t - 1)
+        _n = _N - _n - 1;
+
+    // return ramp or flat component
+    return (_n < _t) ? 0.5f - 0.5f*cosf(M_PI*((float)_n + 0.5f) / (float)_t) : 1.0f;
+}
+
 

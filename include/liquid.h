@@ -4350,6 +4350,14 @@ float hann(unsigned int _n, unsigned int _N);
 //  _N      :   full window length
 float blackmanharris(unsigned int _n, unsigned int _N);
 
+// raised-cosine tapering window
+//  _n      :   window index
+//  _t      :   taper length
+//  _N      :   full window length
+float liquid_rcostaper_windowf(unsigned int _n,
+                               unsigned int _t,
+                               unsigned int _N);
+
 
 // polynomials
 
