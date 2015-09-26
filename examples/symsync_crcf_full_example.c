@@ -156,7 +156,7 @@ int main(int argc, char*argv[]) {
     // design interpolating filter
     unsigned int h_len = 2*k*m+1;
     float h[h_len];
-    liquid_firdes_rnyquist(ftype_tx,k,m,beta,dt,h);
+    liquid_firdes_prototype(ftype_tx,k,m,beta,dt,h);
     firinterp_crcf q = firinterp_crcf_create(k,h,h_len);
     for (i=0; i<num_symbols; i++) {
         firinterp_crcf_execute(q, s[i], &x[n]);

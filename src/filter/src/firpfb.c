@@ -97,6 +97,46 @@ FIRPFB() FIRPFB(_create)(unsigned int _M,
     return q;
 }
 
+// create firpfb from external coefficients
+//  _M      : number of filters in the bank
+//  _m      : filter semi-length [samples]
+//  _fc     : filter cut-off frequency 0 < _fc < 0.5
+//  _As     : filter stop-band suppression [dB]
+FIRPFB() FIRPFB(_create_kaiser)(unsigned int _M,
+                                unsigned int _m,
+                                float        _fc,
+                                float        _As)
+{
+    // validate input
+    if (_M == 0) {
+        fprintf(stderr,"error: firpfb_%s_create_kaiser(), number of filters must be greater than zero\n", EXTENSION_FULL);
+        exit(1);
+    } else if (_m == 0) {
+        fprintf(stderr,"error: firpfb_%s_create_kaiser(), filter delay must be greater than 0\n", EXTENSION_FULL);
+        exit(1);
+    } else if (_fc < 0.0f || _fc > 0.5f) {
+        fprintf(stderr,"error: firpfb_%s_create_kaiser(), filter cut-off frequence must be in (0,0.5)\n", EXTENSION_FULL);
+        exit(1);
+    } else if (_As < 0.0f) {
+        fprintf(stderr,"error: firpfb_%s_create_kaiser(), filter excess bandwidth factor must be in [0,1]\n", EXTENSION_FULL);
+        exit(1);
+    }
+
+    // generate square-root Nyquist filter
+    unsigned int H_len = 2*_M*_m + 1;
+    float Hf[H_len];
+    liquid_firdes_kaiser(H_len, _fc/(float)_M, _As, 0.0f, Hf);
+
+    // copy coefficients to type-specific array (e.g. float complex)
+    unsigned int i;
+    TC Hc[H_len];
+    for (i=0; i<H_len; i++)
+        Hc[i] = Hf[i];
+
+    // return filterbank object
+    return FIRPFB(_create)(_M, Hc, H_len);
+}
+
 // create square-root Nyquist filterbank
 //  _type   :   filter type (e.g. LIQUID_RNYQUIST_RRC)
 //  _M      :   number of filters in the bank
@@ -127,7 +167,7 @@ FIRPFB() FIRPFB(_create_rnyquist)(int          _type,
     // generate square-root Nyquist filter
     unsigned int H_len = 2*_M*_k*_m + 1;
     float Hf[H_len];
-    liquid_firdes_rnyquist(_type,_M*_k,_m,_beta,0,Hf);
+    liquid_firdes_prototype(_type,_M*_k,_m,_beta,0,Hf);
 
     // copy coefficients to type-specific array (e.g. float complex)
     unsigned int i;
@@ -169,7 +209,7 @@ FIRPFB() FIRPFB(_create_drnyquist)(int          _type,
     // generate square-root Nyquist filter
     unsigned int H_len = 2*_M*_k*_m + 1;
     float Hf[H_len];
-    liquid_firdes_rnyquist(_type,_M*_k,_m,_beta,0,Hf);
+    liquid_firdes_prototype(_type,_M*_k,_m,_beta,0,Hf);
     
     // compute derivative filter
     float dHf[H_len];

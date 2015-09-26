@@ -89,7 +89,7 @@ void qdetector_cccf_runtest_linear(unsigned int _sequence_len)
     }
 
     // generate transmitted signal
-    firinterp_crcf interp = firinterp_crcf_create_rnyquist(ftype, k, m, beta, -tau);
+    firinterp_crcf interp = firinterp_crcf_create_prototype(ftype, k, m, beta, -tau);
     unsigned int n = 0;
     for (i=0; i<num_symbols; i++) {
         // original sequence, then random symbols

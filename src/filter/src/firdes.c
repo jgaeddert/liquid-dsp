@@ -280,19 +280,19 @@ void liquid_firdes_kaiser(unsigned int _n,
     }
 }
 
-// Design Nyquist filter
-//  _type   : filter type (e.g. LIQUID_FIRFILT_RCOS)
+// Design (root-)Nyquist filter from prototype
+//  _type   : filter type (e.g. LIQUID_FIRFILT_RRRC)
 //  _k      : samples/symbol
 //  _m      : symbol delay
 //  _beta   : excess bandwidth factor, _beta in [0,1]
 //  _dt     : fractional sample delay
 //  _h      : output coefficient buffer (length: 2*k*m+1)
-void liquid_firdes_nyquist(liquid_firfilt_type _type,
-                           unsigned int        _k,
-                           unsigned int        _m,
-                           float               _beta,
-                           float               _dt,
-                           float *             _h)
+void liquid_firdes_prototype(liquid_firfilt_type _type,
+                             unsigned int        _k,
+                             unsigned int        _m,
+                             float               _beta,
+                             float               _dt,
+                             float *             _h)
 {
     // compute filter parameters
     unsigned int h_len = 2*_k*_m + 1;   // length
@@ -311,6 +311,9 @@ void liquid_firdes_nyquist(liquid_firfilt_type _type,
                                         LIQUID_FIRDESPM_FLATWEIGHT};
 
     switch (_type) {
+    
+    // Nyquist filter prototypes
+
     case LIQUID_FIRFILT_KAISER:
         liquid_firdes_kaiser(h_len, fc, As, _dt, _h);
         break;
@@ -330,28 +333,9 @@ void liquid_firdes_nyquist(liquid_firfilt_type _type,
     case LIQUID_FIRFILT_FARCSECH:
         liquid_firdes_farcsech(_k, _m, _beta, _dt, _h);
         break;
-    default:
-        fprintf(stderr,"error: liquid_firdes_nyquist(), invalid filter type '%d'\n", _type);
-        exit(1);
-    }
-}
 
+    // root-Nyquist filter prototypes
 
-// Design root-Nyquist filter
-//  _type   : filter type (e.g. LIQUID_FIRFILT_RRRC)
-//  _k      : samples/symbol
-//  _m      : symbol delay
-//  _beta   : excess bandwidth factor, _beta in [0,1]
-//  _dt     : fractional sample delay
-//  _h      : output coefficient buffer (length: 2*k*m+1)
-void liquid_firdes_rnyquist(liquid_firfilt_type _type,
-                            unsigned int        _k,
-                            unsigned int        _m,
-                            float               _beta,
-                            float               _dt,
-                            float *             _h)
-{
-    switch (_type) {
     case LIQUID_FIRFILT_ARKAISER:
         liquid_firdes_arkaiser(_k, _m, _beta, _dt, _h);
         break;
@@ -380,7 +364,7 @@ void liquid_firdes_rnyquist(liquid_firfilt_type _type,
         liquid_firdes_rfarcsech(_k, _m, _beta, _dt, _h);
         break;
     default:
-        fprintf(stderr,"error: liquid_firdes_rnyquist(), invalid root-Nyquist filter type '%d'\n", _type);
+        fprintf(stderr,"error: liquid_firdes_prototype(), invalid root-Nyquist filter type '%d'\n", _type);
         exit(1);
     }
 }

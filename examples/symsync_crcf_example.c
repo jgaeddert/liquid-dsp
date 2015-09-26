@@ -96,7 +96,7 @@ int main(int argc, char*argv[]) {
     }
 
     // design interpolating filter with 'dt' samples of delay
-    firinterp_crcf interp = firinterp_crcf_create_rnyquist(ftype,k,m,beta,dt);
+    firinterp_crcf interp = firinterp_crcf_create_prototype(ftype,k,m,beta,dt);
 
     // run interpolator
     firinterp_crcf_execute_block(interp, s, num_symbols, x);

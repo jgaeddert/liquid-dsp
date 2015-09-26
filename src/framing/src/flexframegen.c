@@ -108,7 +108,7 @@ flexframegen flexframegen_create(flexframegenprops_s * _fgprops)
     q->k      = 2;
     q->m      = 7;
     q->beta   = 0.25f;
-    q->interp = firinterp_crcf_create_rnyquist(LIQUID_FIRFILT_ARKAISER,q->k,q->m,q->beta,0);
+    q->interp = firinterp_crcf_create_prototype(LIQUID_FIRFILT_ARKAISER,q->k,q->m,q->beta,0);
 
     // generate pn sequence
     q->preamble_pn = (float complex *) malloc(64*sizeof(float complex));

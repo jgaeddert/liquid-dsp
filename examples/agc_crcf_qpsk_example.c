@@ -41,7 +41,7 @@ int main(int argc, char*argv[])
 
     // create objects
     modem mod = modem_create(LIQUID_MODEM_QPSK);
-    firinterp_crcf interp = firinterp_crcf_create_rnyquist(LIQUID_FIRFILT_RRC,k,m,beta,dt);
+    firinterp_crcf interp = firinterp_crcf_create_prototype(LIQUID_FIRFILT_RRC,k,m,beta,dt);
     agc_crcf p = agc_crcf_create();
     agc_crcf_set_bandwidth(p, bt);
 

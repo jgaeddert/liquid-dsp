@@ -33,6 +33,7 @@
 
 #define CHANNEL(name)   LIQUID_CONCAT(channel_cccf,name)
 #define FIRFILT(name)   LIQUID_CONCAT(firfilt_cccf,name)
+#define IIRFILT(name)   LIQUID_CONCAT(iirfilt_rrrf,name)
 #define NCO(name)       LIQUID_CONCAT(nco_crcf,name)
 #define RESAMP(name)    LIQUID_CONCAT(resamp_crcf,name)
 

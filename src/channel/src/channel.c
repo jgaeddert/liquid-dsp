@@ -56,11 +56,30 @@ struct CHANNEL(_s) {
     FIRFILT()       channel_filter;     // multi-path channel filter object
     TC *            h;                  // multi-path channel filter coefficients
     unsigned int    h_len;              // multi-path channel filter length
+
+    // shadowing channel
+    int             enabled_shadowing;  // enable shadowing?
+    IIRFILT()       shadowing_filter;   // shadowing filter object
+    float           shadowing_std;      // shadowing standard deviation
+    float           shadowing_fd;       // shadowing Doppler frequency
 };
 
-// create structured channel object
+// create structured channel object with default parameters
 CHANNEL() CHANNEL(_create)(void)
 {
+    // return object
+    return CHANNEL(_create_delay)(7);
+}
+
+// create structured channel object with a particular resampling filter delay
+CHANNEL() CHANNEL(_create_delay)(unsigned int _m)
+{
+    // validate input
+    if (_m < 2 || _m > 30) {
+        fprintf(stderr,"error: channel_%s_create_delay(m), delay out of range\n", EXTENSION_FULL);
+        exit(1);
+    }
+
     CHANNEL() q = (CHANNEL()) malloc(sizeof(struct CHANNEL(_s)));
 
     // initialize all options as off
@@ -68,16 +87,18 @@ CHANNEL() CHANNEL(_create)(void)
     q->enabled_awgn      = 0;
     q->enabled_carrier   = 0;
     q->enabled_multipath = 0;
+    q->enabled_shadowing = 0;
 
     // create internal objects
-    q->resamp_rate    = 1.0f;
-    q->resamp_m       = 17;
-    q->resamp         = RESAMP(_create)(q->resamp_rate, q->resamp_m, 0.45f, 50.0f, 64);
-    q->nco            = NCO(_create)(LIQUID_VCO);
-    q->h_len          = 1;
-    q->h              = (TC*) malloc(q->h_len*sizeof(TC));
-    q->h[0]           = 1.0f;
-    q->channel_filter = FIRFILT(_create)(q->h, q->h_len);
+    q->resamp_rate      = 1.0f;
+    q->resamp_m         = _m;
+    q->resamp           = RESAMP(_create)(q->resamp_rate, q->resamp_m, 0.45f, 50.0f, 64);
+    q->nco              = NCO(_create)(LIQUID_VCO);
+    q->h_len            = 1;
+    q->h                = (TC*) malloc(q->h_len*sizeof(TC));
+    q->h[0]             = 1.0f;
+    q->channel_filter   = FIRFILT(_create)(q->h, q->h_len);
+    q->shadowing_filter = NULL;
 
     // return object
     return q;
@@ -89,6 +110,8 @@ void CHANNEL(_destroy)(CHANNEL() _q)
     // destroy internal objects
     NCO(_destroy)(_q->nco);
     FIRFILT(_destroy)(_q->channel_filter);
+    if (_q->shadowing_filter != NULL)
+        IIRFILT(_destroy)(_q->shadowing_filter);
     free(_q->h);
 
     // free main object memory
@@ -103,6 +126,7 @@ void CHANNEL(_print)(CHANNEL() _q)
     if (_q->enabled_awgn)       printf("  AWGN:      SNR=%.3f dB, gamma=%.3f, std=%.6f\n", _q->SNRdB, _q->gamma, _q->nstd);
     if (_q->enabled_carrier)    printf("  carrier:   dphi=%.3f, phi=%.3f\n", _q->dphi, _q->phi);
     if (_q->enabled_multipath)  printf("  multipath: h_len=%u\n", _q->h_len);
+    if (_q->enabled_shadowing)  printf("  shadowing: std=%.3fdB, fd=%.3f\n", _q->shadowing_std, _q->shadowing_fd);
 }
 
 // apply additive white Gausss noise impairment
@@ -149,8 +173,8 @@ void CHANNEL(_add_resamp)(CHANNEL() _q,
 
     // TODO: set delay appropriately
     
-    //
-    RESAMP(_setrate)(_q->resamp, _q->resamp_rate);
+    // set resampling rate
+    RESAMP(_set_rate)(_q->resamp, _q->resamp_rate);
 }
 
 // apply carrier offset impairment
@@ -173,7 +197,7 @@ void CHANNEL(_add_carrier_offset)(CHANNEL() _q,
     NCO(_set_phase)    (_q->nco, _q->phi);
 }
 
-// apply mulit-path channel impairment
+// apply multi-path channel impairment
 //  _q          : channel object
 //  _h          : channel coefficients (NULL for random)
 //  _h_len      : number of channel coefficients
@@ -222,6 +246,47 @@ void CHANNEL(_add_multipath)(CHANNEL()    _q,
     _q->channel_filter = FIRFILT(_recreate)(_q->channel_filter, _q->h, _q->h_len);
 }
 
+// apply slowly-varying shadowing impairment
+//  _q          : channel object
+//  _sigma      : std. deviation for log-normal shadowing
+//  _fd         : Doppler frequency, _fd in (0,0.5)
+void CHANNEL(_add_shadowing)(CHANNEL() _q,
+                             float     _sigma,
+                             float     _fd)
+{
+    if (_q->enabled_shadowing) {
+        fprintf(stderr,"warning: channel_%s_add_shadowing(), shadowing already enabled\n", EXTENSION_FULL);
+        return;
+    } else if (_sigma <= 0) {
+        fprintf(stderr,"warning: channel_%s_add_shadowing(), standard deviation less than or equal to zero\n", EXTENSION_FULL);
+        exit(1);
+    } else if (_fd <= 0 || _fd >= 0.5) {
+        fprintf(stderr,"warning: channel_%s_add_shadowing(), Doppler frequency must be in (0,0.5)\n", EXTENSION_FULL);
+        exit(1);
+    }
+
+    // enable module
+    _q->enabled_shadowing = 1;
+
+    // TODO: set values appropriately
+    _q->shadowing_std = _sigma;
+    _q->shadowing_fd  = _fd;
+
+    // re-create channel filter
+    // TODO: adjust gain
+    //_q->shadowing_filter = IIRFILT(_create_lowpass)(11, _q->shadowing_fd);
+    float alpha = _q->shadowing_fd;
+    float a[2] = {1.0f, alpha-1.0f};
+    float b[2] = {alpha, 0};
+    _q->shadowing_filter = IIRFILT(_create)(b,2,a,2);
+}
+
+// get nominal channel delay [samples]
+unsigned int CHANNEL(_get_delay)(CHANNEL() _q)
+{
+    return 2*RESAMP(_get_delay)(_q->resamp) + 1;
+}
+
 // apply channel impairments on input array
 //  _q      : channel object
 //  _x      : input array [size: _nx x 1]
@@ -254,6 +319,16 @@ void CHANNEL(_execute)(CHANNEL()      _q,
             } else
                 _y[n] = _q->resamp_buf[j];
 
+            // apply shadowing if enabled
+            if (_q->enabled_shadowing) {
+                // TODO: use type-specific value other than float
+                float g = 0;
+                IIRFILT(_execute)(_q->shadowing_filter, randnf()*_q->shadowing_std, &g);
+                g /= _q->shadowing_fd * 6.9f;
+                g = powf(10.0f, g/20.0f);
+                _y[n] *= g;
+            }
+
             // apply carrier if enabled
             if (_q->enabled_carrier) {
                 NCO(_mix_up)(_q->nco, _y[n], &_y[n]);
@@ -272,6 +347,7 @@ void CHANNEL(_execute)(CHANNEL()      _q,
     }
 
     // set output sample length
-    *_ny = n;
+    if (_ny != NULL)
+        *_ny = n;
 }
 

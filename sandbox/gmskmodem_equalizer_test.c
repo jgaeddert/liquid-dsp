@@ -1,9 +1,9 @@
 // 
-// eqlms_cccf_decisiondirected_example.c
+// gmskmodem_equalizer_test.c
 //
-// Tests least mean-squares (LMS) equalizer (EQ) on a signal with a known
-// linear modulation scheme, but unknown data. The equalizer is updated
-// using decision-directed demodulator output samples.
+// Tests least mean-squares (LMS) equalizer (EQ) on a received GMSK
+// signal. The equalizer is updated using decision-directed demodulator
+// output samples.
 //
 
 #include <stdio.h>
@@ -15,23 +15,19 @@
 #include <time.h>
 #include "liquid.h"
 
-#define OUTPUT_FILENAME "eqlms_cccf_decisiondirected_example.m"
+#define OUTPUT_FILENAME "gmskmodem_equalizer_test.m"
 
 // print usage/help message
 void usage()
 {
-    printf("Usage: eqlms_cccf_decisiondirected_example [OPTION]\n");
+    printf("Usage: gmskmodem_equalizer_test [OPTION]\n");
     printf("  h     : print help\n");
     printf("  n     : number of symbols, default: 500\n");
-    printf("  s     : SNR [dB], default: 30\n");
-    printf("  c     : number of channel filter taps (minimum: 1), default: 5\n");
     printf("  k     : samples/symbol, default: 2\n");
     printf("  m     : filter semi-length (symbols), default: 4\n");
     printf("  b     : filter excess bandwidth factor, default: 0.3\n");
     printf("  p     : equalizer semi-length (symbols), default: 3\n");
     printf("  u     : equalizer learning rate, default; 0.05\n");
-    printf("  M     : modulation scheme (qpsk default)\n");
-    liquid_print_modulation_schemes();
 }
 
 int main(int argc, char*argv[])
@@ -39,37 +35,26 @@ int main(int argc, char*argv[])
     srand(time(NULL));
 
     // options
-    unsigned int num_symbols=500;   // number of symbols to observe
-    float SNRdB = 30.0f;            // signal-to-noise ratio [dB]
-    unsigned int hc_len=5;          // channel filter length
-    unsigned int k=2;               // matched filter samples/symbol
-    unsigned int m=3;               // matched filter delay (symbols)
-    float beta=0.3f;                // matched filter excess bandwidth factor
-    unsigned int p=3;               // equalizer length (symbols, hp_len = 2*k*p+1)
-    float mu = 0.08f;               // learning rate
-
-    // modulation type/depth
-    modulation_scheme ms = LIQUID_MODEM_QPSK;
+    unsigned int num_symbols = 1200;    // number of symbols to observe
+    unsigned int k           = 2;       // matched filter samples/symbol
+    unsigned int m           = 3;       // matched filter delay (symbols)
+    float        beta        = 0.30f;   // GMSK bandwidth-time factor
+    unsigned int p           = 3;       // equalizer length (symbols, hp_len = 2*k*p+1)
+    float        mu          = 0.10f;   // learning rate
+    
+    unsigned int nfft        = 1200;    // spectrum estimate FFT size
+    float        alpha       = 0.001f;  // spectrum averaging bandwidth
 
     int dopt;
-    while ((dopt = getopt(argc,argv,"hn:s:c:k:m:b:p:u:M:")) != EOF) {
+    while ((dopt = getopt(argc,argv,"hn:k:m:b:p:u:")) != EOF) {
         switch (dopt) {
-        case 'h': usage();                      return 0;
-        case 'n': num_symbols   = atoi(optarg); break;
-        case 's': SNRdB         = atof(optarg); break;
-        case 'c': hc_len        = atoi(optarg); break;
-        case 'k': k             = atoi(optarg); break;
-        case 'm': m             = atoi(optarg); break;
-        case 'b': beta          = atof(optarg); break;
-        case 'p': p             = atoi(optarg); break;
-        case 'u': mu            = atof(optarg); break;
-        case 'M':
-            ms = liquid_getopt_str2mod(optarg);
-            if (ms == LIQUID_MODEM_UNKNOWN) {
-                fprintf(stderr,"error: %s, unknown/unsupported modulation scheme '%s'\n", argv[0], optarg);
-                return 1;
-            }
-            break;
+        case 'h': usage();                    return 0;
+        case 'n': num_symbols = atoi(optarg); break;
+        case 'k': k           = atoi(optarg); break;
+        case 'm': m           = atoi(optarg); break;
+        case 'b': beta        = atof(optarg); break;
+        case 'p': p           = atoi(optarg); break;
+        case 'u': mu          = atof(optarg); break;
         default:
             exit(1);
         }
@@ -78,9 +63,6 @@ int main(int argc, char*argv[])
     // validate input
     if (num_symbols == 0) {
         fprintf(stderr,"error: %s, number of symbols must be greater than zero\n", argv[0]);
-        exit(1);
-    } else if (hc_len == 0) {
-        fprintf(stderr,"error: %s, channel must have at least 1 tap\n", argv[0]);
         exit(1);
     } else if (k < 2) {
         fprintf(stderr,"error: %s, samples/symbol must be at least 2\n", argv[0]);
@@ -105,50 +87,24 @@ int main(int argc, char*argv[])
     unsigned int num_samples = k*num_symbols;
 
     // bookkeeping variables
-    float complex sym_tx[num_symbols];  // transmitted data sequence
     float complex x[num_samples];       // interpolated time series
-    float complex y[num_samples];       // channel output
-    float complex z[num_samples];       // equalized output
+    float complex y[num_samples];       // equalized output
 
     float hm[hm_len];                   // matched filter response
-    float complex hc[hc_len];           // channel filter coefficients
     float complex hp[hp_len];           // equalizer filter coefficients
 
     unsigned int i;
 
     // generate matched filter response
-    liquid_firdes_prototype(LIQUID_FIRFILT_RRC, k, m, beta, 0.0f, hm);
-    firinterp_crcf interp = firinterp_crcf_create(k, hm, hm_len);
+    liquid_firdes_prototype(LIQUID_FIRFILT_GMSKTX, k, m, beta, 0.0f, hm);
 
     // create the modem objects
-    modem mod   = modem_create(ms);
-    modem demod = modem_create(ms);
-    unsigned int M = 1 << modem_get_bps(mod);
+    modem demod = modem_create(LIQUID_MODEM_QPSK);
 
-    // generate channel impulse response, filter
-    hc[0] = 1.0f;
-    for (i=1; i<hc_len; i++)
-        hc[i] = 0.09f*(randnf() + randnf()*_Complex_I);
-    firfilt_cccf fchannel = firfilt_cccf_create(hc, hc_len);
-
-    // generate random symbols
+    gmskmod gmod = gmskmod_create(k,m,beta);
     for (i=0; i<num_symbols; i++)
-        modem_modulate(mod, rand()%M, &sym_tx[i]);
-
-    // interpolate
-    for (i=0; i<num_symbols; i++)
-        firinterp_crcf_execute(interp, sym_tx[i], &x[i*k]);
+        gmskmod_modulate(gmod, rand()%2, &x[i*k]);
     
-    // push through channel
-    float nstd = powf(10.0f, -SNRdB/20.0f);
-    for (i=0; i<num_samples; i++) {
-        firfilt_cccf_push(fchannel, x[i]);
-        firfilt_cccf_execute(fchannel, &y[i]);
-
-        // add noise
-        y[i] += nstd*(randnf() + randnf()*_Complex_I)*M_SQRT1_2;
-    }
-
     // push through equalizer
     // create equalizer, intialized with square-root Nyquist filter
     eqlms_cccf eq = eqlms_cccf_create_rnyquist(LIQUID_FIRFILT_RRC, k, p, beta, 0.0f);
@@ -166,11 +122,11 @@ int main(int argc, char*argv[])
         if ( ((i+1)%50)==0 )
             printf("%4u : rms error = %12.8f dB\n", i+1, 10*log10(evm_hat));
 
-        eqlms_cccf_push(eq, y[i]);
+        eqlms_cccf_push(eq, x[i]);
         eqlms_cccf_execute(eq, &d_hat);
 
         // store output
-        z[i] = d_hat;
+        y[i] = d_hat;
 
         // decimate by k
         if ( (i%k) != 0 ) continue;
@@ -192,12 +148,44 @@ int main(int argc, char*argv[])
     // get equalizer weights
     eqlms_cccf_get_weights(eq, hp);
 
+    //
+    // run many trials get get average spectrum
+    //
+    spgramcf periodogram_tx = spgramcf_create_kaiser(nfft, nfft/2, 8.0f);
+    spgramcf periodogram_rx = spgramcf_create_kaiser(nfft, nfft/2, 8.0f);
+
+    firfilt_cccf mf = firfilt_cccf_create(hp, hp_len);
+
+    float complex buf_tx[k];
+    float complex buf_rx[k];
+    for (i=0; i<500e3; i++) {
+        // generate random symbol
+        gmskmod_modulate(gmod, rand()%2, buf_tx);
+
+        // run matched filter on result
+        firfilt_cccf_execute_block(mf, buf_tx, k, buf_rx);
+
+        // accumulate spectrum average
+        spgramcf_accumulate_psd(periodogram_tx, buf_tx, alpha, k);
+        spgramcf_accumulate_psd(periodogram_rx, buf_rx, alpha, k);
+    }
+    firfilt_cccf_destroy(mf);
+
+    // write accumulated output PSD
+    float X[nfft];
+    float Y[nfft];
+    spgramcf_write_accumulation(periodogram_tx, X);
+    spgramcf_write_accumulation(periodogram_rx, Y);
+
+    // destroy periodogram objects
+    spgramcf_destroy(periodogram_tx);
+    spgramcf_destroy(periodogram_rx);
+
+
     // destroy objects
     eqlms_cccf_destroy(eq);
-    firinterp_crcf_destroy(interp);
-    firfilt_cccf_destroy(fchannel);
-    modem_destroy(mod);
     modem_destroy(demod);
+    gmskmod_destroy(gmod);
 
     // 
     // export output
@@ -218,64 +206,61 @@ int main(int argc, char*argv[])
     for (i=0; i<hm_len; i++)
         fprintf(fid,"hm(%4u) = %12.4e;\n", i+1, hm[i]);
 
-    // save channel impulse response
-    fprintf(fid,"hc_len = %u;\n", hc_len);
-    fprintf(fid,"hc = zeros(1,hc_len);\n");
-    for (i=0; i<hc_len; i++)
-        fprintf(fid,"hc(%4u) = %12.4e + j*%12.4e;\n", i+1, crealf(hc[i]), cimagf(hc[i]));
-
     // save equalizer response
     fprintf(fid,"hp_len = %u;\n", hp_len);
     fprintf(fid,"hp = zeros(1,hp_len);\n");
     for (i=0; i<hp_len; i++)
         fprintf(fid,"hp(%4u) = %12.4e + j*%12.4e;\n", i+1, crealf(hp[i]), cimagf(hp[i]));
 
+    // save input/output spectrum
+    fprintf(fid,"nfft = %u;\n", nfft);
+    fprintf(fid,"X = zeros(1,nfft);\n");
+    fprintf(fid,"Y = zeros(1,nfft);\n");
+    for (i=0; i<nfft; i++) {
+        fprintf(fid,"X(%4u) = %12.4e;\n", i+1, X[i]);
+        fprintf(fid,"Y(%4u) = %12.4e;\n", i+1, Y[i]);
+    }
+
     // save sample sets
     fprintf(fid,"x = zeros(1,num_samples);\n");
     fprintf(fid,"y = zeros(1,num_samples);\n");
-    fprintf(fid,"z = zeros(1,num_samples);\n");
     for (i=0; i<num_samples; i++) {
         fprintf(fid,"x(%4u) = %12.4e + j*%12.4e;\n", i+1, crealf(x[i]), cimagf(x[i]));
         fprintf(fid,"y(%4u) = %12.4e + j*%12.4e;\n", i+1, crealf(y[i]), cimagf(y[i]));
-        fprintf(fid,"z(%4u) = %12.4e + j*%12.4e;\n", i+1, crealf(z[i]), cimagf(z[i]));
     }
 
     // plot time response
     fprintf(fid,"t = 0:(num_samples-1);\n");
     fprintf(fid,"tsym = 1:k:num_samples;\n");
     fprintf(fid,"figure;\n");
-    fprintf(fid,"plot(t,real(z),...\n");
-    fprintf(fid,"     t(tsym),real(z(tsym)),'x');\n");
+    fprintf(fid,"plot(t,real(y),...\n");
+    fprintf(fid,"     t(tsym),real(y(tsym)),'x');\n");
 
     // plot constellation
     fprintf(fid,"tsym0 = tsym(1:(length(tsym)/2));\n");
     fprintf(fid,"tsym1 = tsym((length(tsym)/2):end);\n");
     fprintf(fid,"figure;\n");
-    fprintf(fid,"plot(real(z(tsym0)),imag(z(tsym0)),'x','Color',[1 1 1]*0.7,...\n");
-    fprintf(fid,"     real(z(tsym1)),imag(z(tsym1)),'x','Color',[1 1 1]*0.0);\n");
+    fprintf(fid,"plot(real(y(tsym1)),imag(y(tsym1)),'x','Color',[1 1 1]*0.0);\n");
     fprintf(fid,"xlabel('In-Phase');\n");
     fprintf(fid,"ylabel('Quadrature');\n");
     fprintf(fid,"axis([-1 1 -1 1]*1.5);\n");
     fprintf(fid,"axis square;\n");
     fprintf(fid,"grid on;\n");
 
-    // compute composite response
-    fprintf(fid,"g  = real(conv(conv(hm,hc),hp));\n");
-
     // plot responses
-    fprintf(fid,"nfft = 1024;\n");
+    //fprintf(fid,"nfft = 1024;\n");
     fprintf(fid,"f = [0:(nfft-1)]/nfft - 0.5;\n");
-    fprintf(fid,"Hm = 20*log10(abs(fftshift(fft(hm/k,nfft))));\n");
-    fprintf(fid,"Hc = 20*log10(abs(fftshift(fft(hc,  nfft))));\n");
-    fprintf(fid,"Hp = 20*log10(abs(fftshift(fft(hp,  nfft))));\n");
-    fprintf(fid,"G  = 20*log10(abs(fftshift(fft(g/k, nfft))));\n");
+    fprintf(fid,"X  = X - 20*log10(k);\n");
+    fprintf(fid,"Y  = Y - 20*log10(k);\n");
+    fprintf(fid,"Hp = 20*log10(abs(fftshift(fft(hp,nfft))));\n");
 
     fprintf(fid,"figure;\n");
-    fprintf(fid,"plot(f,Hm, f,Hc, f,Hp, f,G,'-k','LineWidth',2, [-0.5/k 0.5/k],[-6.026 -6.026],'or');\n");
+    fprintf(fid,"plot(f,X, f,Hp, f,Y, '-k','LineWidth',2, [-0.5/k 0.5/k],[-6.026 -6.026],'or');\n");
     fprintf(fid,"xlabel('Normalized Frequency');\n");
     fprintf(fid,"ylabel('Power Spectral Density');\n");
-    fprintf(fid,"legend('transmit','channel','equalizer','composite','half-power points',1);\n");
-    fprintf(fid,"axis([-0.5 0.5 -12 8]);\n");
+    fprintf(fid,"legend('transmit','equalizer','composite','half-power points','location','south');\n");
+    //fprintf(fid,"axis([-0.5 0.5 -12 8]);\n");
+    fprintf(fid,"axis([-0.5 0.5 -50 10]);\n");
     fprintf(fid,"grid on;\n");
     
     fclose(fid);

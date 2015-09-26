@@ -92,7 +92,7 @@ void symsync_crcf_test(unsigned int _k,
     //
 
     // design interpolating filter
-    firinterp_crcf interp = firinterp_crcf_create_rnyquist(ftype_tx,k,m,beta,dt);
+    firinterp_crcf interp = firinterp_crcf_create_prototype(ftype_tx,k,m,beta,dt);
 
     // interpolate block of samples
     firinterp_crcf_execute_block(interp, s, num_symbols, x);

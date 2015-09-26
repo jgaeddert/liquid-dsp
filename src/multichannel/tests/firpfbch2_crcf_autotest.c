@@ -64,7 +64,7 @@ void firpfbch2_crcf_runtest(unsigned int _M,
         firpfbch2_crcf_execute(qs, Y, &y[i]);
     }
 
-    // destroy fiterbank objects
+    // destroy filterbank objects
     firpfbch2_crcf_destroy(qa); // analysis fitlerbank
     firpfbch2_crcf_destroy(qs); // synthesis filterbank
 

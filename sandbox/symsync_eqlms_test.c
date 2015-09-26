@@ -140,7 +140,7 @@ int main(int argc, char*argv[]) {
 
     // design interpolating filter
     float ht[ht_len];
-    liquid_firdes_rnyquist(ftype,k,m,beta,dt,ht);
+    liquid_firdes_prototype(ftype,k,m,beta,dt,ht);
     firinterp_crcf q = firinterp_crcf_create(k, ht, ht_len);
     for (i=0; i<num_symbols; i++)
         firinterp_crcf_execute(q, s[i], &x[i*k]);

@@ -84,6 +84,8 @@ This directory contains all the examples for interfacing the liquid modules.
     SEE ALSO: `bsequence_example.c`
               `msequence_example.c`
 
+ * `cpfskmodem_example.c`:
+
  * `conversion_example.c`:
     
     This example demonstrates conversion from complex baseband to a real-valued
@@ -136,6 +138,12 @@ This directory contains all the examples for interfacing the liquid modules.
     scheme or its underlying data set. The error estimate assumes a
     constant modulus linear modulation scheme. This works surprisingly
     well even more amplitude-modulated signals, e.g. 'qam16'.
+
+ * `eqlms_cccf_block_example.c`:
+    This example tests the least mean-squares (LMS) equalizer (EQ) on a
+    signal with an unknown modulation and carrier frequency offset.
+    Equalization is performed blind on a block of samples and the reulting
+    constellation is output to a file for plotting.
 
  * `eqlms_cccf_decisiondirected_example.c`:
     Tests least mean-squares (LMS) equalizer (EQ) on a signal with a known
@@ -304,6 +312,11 @@ This directory contains all the examples for interfacing the liquid modules.
     SEE ALSO: `flexframesync_example.c`
 
  * `freqmodem_example.c`:
+
+ * `fskmodem_example.c`:
+    This example demostrates the M-ary frequency-shift keying
+    (MFSK) modem in liquid. A message signal is modulated and the
+    resulting signal is recovered using a demodulator object.
 
  * `gasearch_example.c`:
 

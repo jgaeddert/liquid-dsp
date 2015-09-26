@@ -75,7 +75,7 @@ int main(int argc, char*argv[]) {
     liquid_firdes_gmsktx(k,m,BT,0.0f,ht);
     firfilt_rrrf ft = firfilt_rrrf_create(ht,h_len);
 #else
-    firinterp_rrrf interp_tx = firinterp_rrrf_create_rnyquist(LIQUID_FIRFILT_GMSKTX,k,m,BT,0);
+    firinterp_rrrf interp_tx = firinterp_rrrf_create_prototype(LIQUID_FIRFILT_GMSKTX,k,m,BT,0);
 #endif
     float hr[h_len];    // receive filter coefficients
     liquid_firdes_gmskrx(k,m,BT,0.0f,hr);

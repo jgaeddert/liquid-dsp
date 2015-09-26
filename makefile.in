@@ -67,7 +67,7 @@ INCLUDE_CFLAGS	= $(addprefix -I ,$(include_dirs))
 CONFIG_CFLAGS	= @CFLAGS@ @DEBUG_OPTION@ @ARCH_OPTION@
 # -g : debugging info
 CFLAGS		+= $(INCLUDE_CFLAGS) -Wall -fPIC $(CONFIG_CFLAGS)
-LDFLAGS		+= @LIBS@
+LDFLAGS		+= @LDFLAGS@ @LIBS@
 ARFLAGS		= r
 PATHSEP		= /
 
@@ -837,6 +837,10 @@ matrix_benchmarks :=						\
 
 modem_objects :=						\
 	src/modem/src/ampmodem.o				\
+	src/modem/src/cpfskdem.o				\
+	src/modem/src/cpfskmod.o				\
+	src/modem/src/fskdem.o					\
+	src/modem/src/fskmod.o					\
 	src/modem/src/gmskdem.o					\
 	src/modem/src/gmskmod.o					\
 	src/modem/src/modemf.o					\
@@ -883,6 +887,7 @@ src/modem/src/modem_arb_const.o: %.o : %.c $(include_headers)
 
 modem_autotests :=						\
 	src/modem/tests/freqmodem_autotest.c			\
+	src/modem/tests/fskmodem_autotest.c			\
 	src/modem/tests/modem_autotest.c			\
 	src/modem/tests/modem_demodsoft_autotest.c		\
 	src/modem/tests/modem_demodstats_autotest.c		\
@@ -891,6 +896,8 @@ modem_autotests :=						\
 modem_benchmarks :=						\
 	src/modem/bench/freqdem_benchmark.c			\
 	src/modem/bench/freqmod_benchmark.c			\
+	src/modem/bench/fskdem_benchmark.c			\
+	src/modem/bench/fskmod_benchmark.c			\
 	src/modem/bench/gmskmodem_benchmark.c			\
 	src/modem/bench/modem_modulate_benchmark.c		\
 	src/modem/bench/modem_demodulate_benchmark.c		\
@@ -1420,6 +1427,7 @@ example_programs :=						\
 	examples/bpresync_example				\
 	examples/bsequence_example				\
 	examples/cbufferf_example				\
+	examples/cgsolve_example				\
 	examples/channel_cccf_example				\
 	examples/chromosome_example				\
 	examples/compand_example				\
@@ -1427,11 +1435,13 @@ example_programs :=						\
 	examples/complementary_codes_example			\
 	examples/conversion_example				\
 	examples/crc_example					\
-	examples/cgsolve_example				\
+	examples/cpfskmodem_example				\
+	examples/cpfsk_psd_example				\
 	examples/cvsd_example					\
 	examples/detector_cccf_example				\
 	examples/dotprod_rrrf_example				\
 	examples/dotprod_cccf_example				\
+	examples/eqlms_cccf_block_example			\
 	examples/eqlms_cccf_blind_example			\
 	examples/eqlms_cccf_decisiondirected_example		\
 	examples/eqlms_cccf_example				\
@@ -1459,6 +1469,7 @@ example_programs :=						\
 	examples/flexframesync_reconfig_example			\
 	examples/framesync64_example				\
 	examples/freqmodem_example				\
+	examples/fskmodem_example				\
 	examples/gasearch_example				\
 	examples/gasearch_knapsack_example			\
 	examples/gmskframesync_example				\
@@ -1586,6 +1597,7 @@ sandbox_programs =						\
 	sandbox/fecsoft_hamming128_gentab			\
 	sandbox/fecsoft_ldpc_test				\
 	sandbox/fec_sumproduct_test				\
+	sandbox/fskmodem_test					\
 	sandbox/fft_dual_radix_test				\
 	sandbox/fft_mixed_radix_test				\
 	sandbox/fft_recursive_plan_test				\
@@ -1604,6 +1616,8 @@ sandbox_programs =						\
 	sandbox/firpfbch_analysis_equivalence_test		\
 	sandbox/firpfbch_synthesis_equivalence_test		\
 	sandbox/gmskmodem_test					\
+	sandbox/gmskmodem_coherent_test				\
+	sandbox/gmskmodem_equalizer_test			\
 	sandbox/householder_test				\
 	sandbox/iirdes_example					\
 	sandbox/iirfilt_intdiff_test				\
@@ -1624,6 +1638,7 @@ sandbox_programs =						\
 	sandbox/modem_demodulate_arb_gentab			\
 	sandbox/modem_demodulate_soft_test			\
 	sandbox/modem_demodulate_soft_gentab			\
+	sandbox/mskmodem_test					\
 	sandbox/msresamp_crcf_test				\
 	sandbox/ofdmoqam_firpfbch_test				\
 	sandbox/ofdm_ber_test					\
@@ -1632,10 +1647,12 @@ sandbox_programs =						\
 	sandbox/pll_design_test					\
 	sandbox/predemod_sync_test				\
 	sandbox/quasinewton_test				\
+	sandbox/recursive_qpsk_test				\
 	sandbox/resamp2_crcf_filterbank_test			\
 	sandbox/resamp2_crcf_interp_recreate_test		\
 	sandbox/reverse_byte_gentab				\
 	sandbox/rkaiser2_test					\
+	sandbox/shadowing_test					\
 	sandbox/simplex_test					\
 	sandbox/symsync_crcf_test				\
 	sandbox/symsync_eqlms_test				\

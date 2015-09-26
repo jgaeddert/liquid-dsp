@@ -81,23 +81,23 @@ FIRDECIM() FIRDECIM(_create)(unsigned int _M,
     return q;
 }
 
-// create decimator from prototype
+// create decimator from Kaiser prototype
 //  _M      :   decimolation factor
 //  _m      :   symbol delay
 //  _As     :   stop-band attenuation [dB]
-FIRDECIM() FIRDECIM(_create_prototype)(unsigned int _M,
-                                       unsigned int _m,
-                                       float        _As)
+FIRDECIM() FIRDECIM(_create_kaiser)(unsigned int _M,
+                                    unsigned int _m,
+                                    float        _As)
 {
     // validate input
     if (_M < 2) {
-        fprintf(stderr,"error: decim_%s_create_prototype(), decim factor must be greater than 1\n", EXTENSION_FULL);
+        fprintf(stderr,"error: decim_%s_create_kaiser(), decim factor must be greater than 1\n", EXTENSION_FULL);
         exit(1);
     } else if (_m == 0) {
-        fprintf(stderr,"error: decim_%s_create_prototype(), filter delay must be greater than 0\n", EXTENSION_FULL);
+        fprintf(stderr,"error: decim_%s_create_kaiser(), filter delay must be greater than 0\n", EXTENSION_FULL);
         exit(1);
     } else if (_As < 0.0f) {
-        fprintf(stderr,"error: decim_%s_create_prototype(), stop-band attenuation must be positive\n", EXTENSION_FULL);
+        fprintf(stderr,"error: decim_%s_create_kaiser(), stop-band attenuation must be positive\n", EXTENSION_FULL);
         exit(1);
     }
 
@@ -123,31 +123,31 @@ FIRDECIM() FIRDECIM(_create_prototype)(unsigned int _M,
 //  _m      :   filter delay (symbols), _m > 0
 //  _beta   :   excess bandwidth factor, 0 < _beta < 1
 //  _dt     :   fractional sample delay, 0 <= _dt < 1
-FIRDECIM() FIRDECIM(_create_rnyquist)(int          _type,
-                                      unsigned int _M,
-                                      unsigned int _m,
-                                      float        _beta,
-                                      float        _dt)
+FIRDECIM() FIRDECIM(_create_prototype)(int          _type,
+                                       unsigned int _M,
+                                       unsigned int _m,
+                                       float        _beta,
+                                       float        _dt)
 {
     // validate input
     if (_M < 2) {
-        fprintf(stderr,"error: decim_%s_create_rnyquist(), decimation factor must be greater than 1\n", EXTENSION_FULL);
+        fprintf(stderr,"error: decim_%s_create_prototype(), decimation factor must be greater than 1\n", EXTENSION_FULL);
         exit(1);
     } else if (_m == 0) {
-        fprintf(stderr,"error: decim_%s_create_rnyquist(), filter delay must be greater than 0\n", EXTENSION_FULL);
+        fprintf(stderr,"error: decim_%s_create_prototype(), filter delay must be greater than 0\n", EXTENSION_FULL);
         exit(1);
     } else if (_beta < 0.0f || _beta > 1.0f) {
-        fprintf(stderr,"error: decim_%s_create_rnyquist(), filter excess bandwidth factor must be in [0,1]\n", EXTENSION_FULL);
+        fprintf(stderr,"error: decim_%s_create_prototype(), filter excess bandwidth factor must be in [0,1]\n", EXTENSION_FULL);
         exit(1);
     } else if (_dt < -1.0f || _dt > 1.0f) {
-        fprintf(stderr,"error: decim_%s_create_rnyquist(), filter fractional sample delay must be in [-1,1]\n", EXTENSION_FULL);
+        fprintf(stderr,"error: decim_%s_create_prototype(), filter fractional sample delay must be in [-1,1]\n", EXTENSION_FULL);
         exit(1);
     }
 
     // generate square-root Nyquist filter
     unsigned int h_len = 2*_M*_m + 1;
     float h[h_len];
-    liquid_firdes_rnyquist(_type,_M,_m,_beta,_dt,h);
+    liquid_firdes_prototype(_type,_M,_m,_beta,_dt,h);
 
     // copy coefficients to type-specific array (e.g. float complex)
     unsigned int i;

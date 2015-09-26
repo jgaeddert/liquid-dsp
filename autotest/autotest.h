@@ -85,6 +85,10 @@ void liquid_autotest_failed_msg(const char * _file,
 // print basic autotest results to stdout
 void autotest_print_results(void);
 
+// export results to .json file
+int autotest_export_results(char * _filename);
+
+
 // print warning to stderr
 // increment liquid_autotest_num_warnings
 //  _file       :   filename (string)
@@ -110,76 +114,114 @@ void liquid_autotest_print_array(unsigned char * _x,
                                  unsigned int _n);
 
 // CONTEND_EQUALITY
-#  define TEST_EQUALITY(F,L,EX,X,EY,Y)                              \
-     if ((X)!=(Y)) liquid_autotest_failed_expr(F,L,EX,X,"==",EY,Y); \
-     else liquid_autotest_passed();
-#  define CONTEND_EQUALITY_FL(F,L,X,Y)      TEST_EQUALITY(F,L,#X,(X),#Y,(Y))
-#  define CONTEND_EQUALITY(X,Y)             CONTEND_EQUALITY_FL(__FILE__,__LINE__,X,Y)
+#define TEST_EQUALITY(F,L,EX,X,EY,Y)                                \
+{                                                                   \
+    if ((X)!=(Y))                                                   \
+    {                                                               \
+        liquid_autotest_failed_expr(F,L,EX,X,"==",EY,Y);            \
+    } else {                                                        \
+         liquid_autotest_passed();                                  \
+    }                                                               \
+}
+#define CONTEND_EQUALITY_FL(F,L,X,Y)      TEST_EQUALITY(F,L,#X,(X),#Y,(Y))
+#define CONTEND_EQUALITY(X,Y)             CONTEND_EQUALITY_FL(__FILE__,__LINE__,X,Y)
 
 // CONTEND_INEQUALITY
-#  define TEST_INEQUALITY(F,L,EX,X,EY,Y)                            \
-     if ((X)==(Y)) liquid_autotest_failed_expr(F,L,EX,X,"!=",EY,Y); \
-     else liquid_autotest_passed();
-#  define CONTEND_INEQUALITY_FL(F,L,X,Y)    TEST_INEQUALITY(F,L,#X,(X),#Y,(Y))
-#  define CONTEND_INEQUALITY(X,Y)           CONTEND_INEQUALITY_FL(__FILE__,__LINE__,X,Y)
+#define TEST_INEQUALITY(F,L,EX,X,EY,Y)                              \
+{                                                                   \
+    if ((X)==(Y))                                                   \
+    {                                                               \
+        liquid_autotest_failed_expr(F,L,EX,X,"!=",EY,Y);            \
+    } else {                                                        \
+        liquid_autotest_passed();                                   \
+    }                                                               \
+}
+#define CONTEND_INEQUALITY_FL(F,L,X,Y)    TEST_INEQUALITY(F,L,#X,(X),#Y,(Y))
+#define CONTEND_INEQUALITY(X,Y)           CONTEND_INEQUALITY_FL(__FILE__,__LINE__,X,Y)
 
 // CONTEND_GREATER_THAN
-#  define TEST_GREATER_THAN(F,L,EX,X,EY,Y)                          \
-     if ((X)<=(Y)) liquid_autotest_failed_expr(F,L,EX,X,">",EY,Y);  \
-     else liquid_autotest_passed();
-#  define CONTEND_GREATER_THAN_FL(F,L,X,Y)  TEST_GREATER_THAN(F,L,#X,(X),#Y,(Y))
-#  define CONTEND_GREATER_THAN(X,Y)         CONTEND_GREATER_THAN_FL(__FILE__,__LINE__,X,Y)
+#define TEST_GREATER_THAN(F,L,EX,X,EY,Y)                            \
+{                                                                   \
+    if ((X)<=(Y))                                                   \
+    {                                                               \
+        liquid_autotest_failed_expr(F,L,EX,X,">",EY,Y);             \
+    } else {                                                        \
+        liquid_autotest_passed();                                   \
+    }                                                               \
+}
+#define CONTEND_GREATER_THAN_FL(F,L,X,Y)  TEST_GREATER_THAN(F,L,#X,(X),#Y,(Y))
+#define CONTEND_GREATER_THAN(X,Y)         CONTEND_GREATER_THAN_FL(__FILE__,__LINE__,X,Y)
 
 // CONTEND_LESS_THAN
-#  define TEST_LESS_THAN(F,L,EX,X,EY,Y)                             \
-     if ((X)>=(Y)) liquid_autotest_failed_expr(F,L,EX,X,">",EY,Y);  \
-     else liquid_autotest_passed();
-#  define CONTEND_LESS_THAN_FL(F,L,X,Y)     TEST_LESS_THAN(F,L,#X,(X),#Y,(Y))
-#  define CONTEND_LESS_THAN(X,Y)            CONTEND_LESS_THAN_FL(__FILE__,__LINE__,X,Y)
+#define TEST_LESS_THAN(F,L,EX,X,EY,Y)                               \
+{                                                                   \
+    if ((X)>=(Y))                                                   \
+    {                                                               \
+        liquid_autotest_failed_expr(F,L,EX,X,">",EY,Y);             \
+    } else {                                                        \
+        liquid_autotest_passed();                                   \
+    }                                                               \
+}
+#define CONTEND_LESS_THAN_FL(F,L,X,Y)     TEST_LESS_THAN(F,L,#X,(X),#Y,(Y))
+#define CONTEND_LESS_THAN(X,Y)            CONTEND_LESS_THAN_FL(__FILE__,__LINE__,X,Y)
 
 // CONTEND_DELTA
-#  define TEST_DELTA(F,L,EX,X,EY,Y,ED,D)                            \
-    if (fabs((X)-(Y))>D)                                            \
+#define TEST_DELTA(F,L,EX,X,EY,Y,ED,D)                              \
+{                                                                   \
+    if (fabs((X)-(Y))>(D))                                          \
+    {                                                               \
         liquid_autotest_failed_expr(F,L,"abs(" #X "-" #Y ")",       \
                                     fabs(X-Y),"<",ED,D);            \
-    else                                                            \
-        liquid_autotest_passed();
-#  define CONTEND_DELTA_FL(F,L,X,Y,D)       TEST_DELTA(F,L,#X,(X),#Y,(Y),#D,(D))
-#  define CONTEND_DELTA(X,Y,D)              CONTEND_DELTA_FL(__FILE__,__LINE__,X,Y,D)
+    } else {                                                        \
+        liquid_autotest_passed();                                   \
+    }                                                               \
+}
+#define CONTEND_DELTA_FL(F,L,X,Y,D)       TEST_DELTA(F,L,#X,(X),#Y,(Y),#D,(D))
+#define CONTEND_DELTA(X,Y,D)              CONTEND_DELTA_FL(__FILE__,__LINE__,X,Y,D)
 
 // CONTEND_EXPRESSION
-#  define TEST_EXPRESSION(F,L,EX,X)                                 \
-     if (!X) liquid_autotest_failed_expr(F,L,#X,(X),"is","1",1);    \
-     else liquid_autotest_passed();
-#  define CONTEND_EXPRESSION_FL(F,L,X)      TEST_EXPRESSION(F,L,#X,(X))
-#  define CONTEND_EXPRESSION(X)             CONTEND_EXPRESSION_FL(__FILE__,__LINE__,X)
+#define TEST_EXPRESSION(F,L,EX,X)                                   \
+{                                                                   \
+    if (!X)                                                         \
+    {                                                               \
+        liquid_autotest_failed_expr(F,L,#X,(X),"is","1",1);         \
+    } else {                                                        \
+        liquid_autotest_passed();                                   \
+    }                                                               \
+}
+#define CONTEND_EXPRESSION_FL(F,L,X)      TEST_EXPRESSION(F,L,#X,(X))
+#define CONTEND_EXPRESSION(X)             CONTEND_EXPRESSION_FL(__FILE__,__LINE__,X)
 
 // CONTEND_SAME_DATA
-#  define TEST_SAME_DATA(F,L,EX,X,EY,Y,EN,N)                                    \
-    if (!liquid_autotest_same_data((uint8_t*)(X),(uint8_t*)(Y),(N))) {          \
+#define TEST_SAME_DATA(F,L,EX,X,EY,Y,EN,N)                                      \
+{                                                                               \
+    if (!liquid_autotest_same_data((uint8_t*)(X),(uint8_t*)(Y),(N)))            \
+    {                                                                           \
         liquid_autotest_failed_msg(F,L,EX "[] != " EY "[] for " EN " bytes");   \
-        if (liquid_autotest_verbose) {                                          \
+        if (liquid_autotest_verbose)                                            \
+        {                                                                       \
             liquid_autotest_print_array((uint8_t*)(X),N);                       \
             liquid_autotest_print_array((uint8_t*)(Y),N);                       \
         }                                                                       \
     } else {                                                                    \
         liquid_autotest_passed();                                               \
-    }
-#  define CONTEND_SAME_DATA_FL(F,L,X,Y,N)  TEST_SAME_DATA(F,L,#X,(X),#Y,(Y),#N,(N))
-#  define CONTEND_SAME_DATA(X,Y,N)         CONTEND_SAME_DATA_FL(__FILE__,__LINE__,X,Y,N)
+    }                                                                           \
+}
+#define CONTEND_SAME_DATA_FL(F,L,X,Y,N)  TEST_SAME_DATA(F,L,#X,(X),#Y,(Y),#N,(N))
+#define CONTEND_SAME_DATA(X,Y,N)         CONTEND_SAME_DATA_FL(__FILE__,__LINE__,X,Y,N)
 
 
 // AUTOTEST WARN
-#  define AUTOTEST_WARN_FL(F,L,MSG)      liquid_autotest_warn(F,L,#MSG)
-#  define AUTOTEST_WARN(MSG)             AUTOTEST_WARN_FL(__FILE__,__LINE__,MSG)
+#define AUTOTEST_WARN_FL(F,L,MSG)      liquid_autotest_warn(F,L,#MSG)
+#define AUTOTEST_WARN(MSG)             AUTOTEST_WARN_FL(__FILE__,__LINE__,MSG)
 
 // AUTOTEST PASS
-#  define AUTOTEST_PASS_FL(F,L)          liquid_autotest_passed()
-#  define AUTOTEST_PASS()                AUTOTEST_PASS_FL(__FILE__,__LINE__)
+#define AUTOTEST_PASS_FL(F,L)          liquid_autotest_passed()
+#define AUTOTEST_PASS()                AUTOTEST_PASS_FL(__FILE__,__LINE__)
 
 // AUTOTEST FAIL
-#  define AUTOTEST_FAIL_FL(F,L,MSG)      liquid_autotest_failed_msg(F,L,MSG)
-#  define AUTOTEST_FAIL(MSG)             AUTOTEST_FAIL_FL(__FILE__,__LINE__,MSG)
+#define AUTOTEST_FAIL_FL(F,L,MSG)      liquid_autotest_failed_msg(F,L,MSG)
+#define AUTOTEST_FAIL(MSG)             AUTOTEST_FAIL_FL(__FILE__,__LINE__,MSG)
 
 #endif // __LIQUID_AUTOTEST_H__
 

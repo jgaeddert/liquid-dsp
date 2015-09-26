@@ -66,7 +66,7 @@ int main(int argc, char*argv[]) {
     unsigned int num_samples = k*num_symbols;
 
     // create interpolator from prototype
-    firinterp_crcf q = firinterp_crcf_create_prototype(k,m,As);
+    firinterp_crcf q = firinterp_crcf_create_kaiser(k,m,As);
 
     // generate input signal and interpolate
     float complex x[num_symbols];   // input symbols
