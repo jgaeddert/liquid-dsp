@@ -87,8 +87,8 @@ MSRESAMP2() MSRESAMP2(_create)(int          _type,
                                float        _As)
 {
     // validate input
-    if (_num_stages > 10) {
-        fprintf(stderr,"error: msresamp2_%s_create(), number of stages should not exceed 10\n", EXTENSION_FULL);
+    if (_num_stages > 16) {
+        fprintf(stderr,"error: msresamp2_%s_create(), number of stages should not exceed 16\n", EXTENSION_FULL);
         exit(1);
     }
 
