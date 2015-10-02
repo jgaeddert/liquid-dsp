@@ -330,7 +330,6 @@ float hann(unsigned int _n, unsigned int _N)
     return a0 - a0*cosf(_wn);
 }
 
-
 // Flat Top window
 float flattop(unsigned int _n, unsigned int _N){
 	// TODO test this function
