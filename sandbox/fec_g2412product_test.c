@@ -32,14 +32,22 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include "liquid.h"
+#include "liquid.internal.h"
 
 typedef struct g2412p_s * g2412p;
-g2412p g2412p_create ();
-void   g2412p_destroy(g2412p _q);
-void   g2412p_print  (g2412p _q);
-void   g2412p_encode (g2412p _q, unsigned char * _msg_org, unsigned char * _msg_enc);
-void   g2412p_decode (g2412p _q, unsigned char * _msg_rec, unsigned char * _msg_dec);
+g2412p g2412p_create  ();
+void   g2412p_destroy (g2412p _q);
+void   g2412p_print   (g2412p _q);
+void   g2412p_encode  (g2412p _q, unsigned char * _msg_org, unsigned char * _msg_enc);
+void   g2412p_decode  (g2412p _q, unsigned char * _msg_rec, unsigned char * _msg_dec);
+
+void   g2412p_iterate (g2412p _q);
+void   g2412p_step    (g2412p _q);
+
+void   g2412p_load_row(g2412p _q, unsigned int _row);
+void   g2412p_save_row(g2412p _q, unsigned int _row);
+void   g2412p_load_col(g2412p _q, unsigned int _col);
+void   g2412p_save_col(g2412p _q, unsigned int _col);
 
 void print_bitstring(unsigned int _x,
                      unsigned int _n)
@@ -95,8 +103,7 @@ int main(int argc, char*argv[])
 
 struct g2412p_s {
     unsigned char msg_buf[576];
-    unsigned char b0[24];
-    unsigned char b1[24];
+    unsigned char reg0[24];
     unsigned int  r;
     unsigned int  d;
 };
@@ -119,6 +126,7 @@ void g2412p_print(g2412p _q)
     unsigned int i;
 #if 1
     unsigned int j;
+    printf("msg_buf:\n");
     for (i=0; i<24; i++) {
         if (i==12)
             printf("------\n");
@@ -146,15 +154,110 @@ void g2412p_decode(g2412p          _q,
                    unsigned char * _msg_rec,
                    unsigned char * _msg_dec)
 {
+    unsigned int i;
+
     // copy received message to internal buffer
     memmove(_q->msg_buf, _msg_rec, 576*sizeof(unsigned char));
 
     // print
     g2412p_print(_q);
+
+    // iterate
+    // while...
+    for (i=0; i<4; i++)
+        g2412p_iterate(_q);
     
-    // copy output
-    unsigned int i;
+    // print
+    g2412p_print(_q);
+
+    // copy resulting output
     for (i=0; i<12; i++)
-        memmove(&_msg_dec[12*i], &_msg_rec[24*i], 12*sizeof(unsigned char));
+        memmove(&_msg_rec[24*i], &_q->msg_buf[12*i], 12*sizeof(unsigned char));
+}
+
+// run single iteration
+void g2412p_iterate(g2412p _q)
+{
+    unsigned int i;
+
+    // decode columns
+    for (i=0; i<24; i++) {
+        g2412p_load_col(_q, i);
+        g2412p_step    (_q   );
+        g2412p_save_col(_q, i);
+    }
+
+#if 0
+    // decode rows
+    for (i=0; i<12; i++) {
+        g2412p_load_row(_q, i);
+        g2412p_step    (_q   );
+        g2412p_save_row(_q, i);
+    }
+#endif
+}
+
+// 
+void g2412p_step(g2412p _q)
+{
+    // TODO: determine if parity check passed
+
+    // run hard-decision decoding
+    unsigned int sym_rec = 0;
+    unsigned int i;
+    for (i=0; i<24; i++) {
+        sym_rec <<= 1;
+        sym_rec |= _q->reg0[i] > 127 ? 1 : 0;
+    }
+
+    // decode to 12-bit symbol
+    unsigned int sym_dec = fec_golay2412_decode_symbol(sym_rec);
+
+    // re-encode 24-bit symbol
+    unsigned int sym_enc = fec_golay2412_encode_symbol(sym_dec);
+
+    // update register
+    // TODO: this is the crux of the algorithm and should be adjusted to
+    //       produce maximum performance.
+    for (i=0; i<24; i++) {
+#if 0
+        int v = (int)(_q->reg0[i]) + ((sym_enc >> i) & 1 ? 16 : -16);
+#else
+        int p = (sym_enc >> i) & 1 ? LIQUID_SOFTBIT_1 : LIQUID_SOFTBIT_0;
+        int v = ((int)(_q->reg0[i]) + p) / 2;
+#endif
+
+        if      (v <   0) _q->reg0[i] = 0;
+        else if (v > 255) _q->reg0[i] = 255;
+        else              _q->reg0[i] = (unsigned char)v;
+    }
+}
+
+void g2412p_load_row(g2412p       _q,
+                     unsigned int _row)
+{
+    memmove(_q->reg0, &_q->msg_buf[_row*24], 24*sizeof(unsigned char));
+}
+
+void g2412p_save_row(g2412p       _q,
+                     unsigned int _row)
+{
+    memmove(&_q->msg_buf[_row*24], _q->reg0, 24*sizeof(unsigned char));
+}
+
+void g2412p_load_col(g2412p       _q,
+                     unsigned int _col)
+{
+    unsigned int i;
+    for (i=0; i<24; i++)
+        _q->reg0[i] = _q->msg_buf[24*i + _col];
+}
+
+void g2412p_save_col(g2412p       _q,
+                     unsigned int _col)
+{
+    unsigned int i;
+    for (i=0; i<24; i++)
+        _q->msg_buf[24*i + _col] = _q->reg0[i];
 }
 
