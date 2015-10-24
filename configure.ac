@@ -25,6 +25,7 @@
 
 AC_INIT([liquid-dsp],[1.2.0],[support@liquidsdr.org])
 AC_CONFIG_SRCDIR([src/libliquid.c])
+AC_CONFIG_MACRO_DIR([scripts])
 
 # permit auxiliary scripts directory (e.g. config.sub, config.guess, install-sh)
 AC_CONFIG_AUX_DIR(scripts/)
