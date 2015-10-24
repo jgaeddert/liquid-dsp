@@ -27,7 +27,7 @@
 #
 
 rm -f config.cache aclocal.m4
-aclocal -I./scripts
+aclocal
 autoconf
 autoheader
 #automake --foreign --add-missing
