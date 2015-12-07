@@ -35,7 +35,7 @@
 
 #define LIQUID_DEBUG_NCO            (0)
 
-#define DEFAULT_SINTAB_SIZE         2 << 13
+#define DEFAULT_SINTAB_SIZE         256
 
 struct NCO(_s) {
     liquid_ncotype type;
