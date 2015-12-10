@@ -620,8 +620,8 @@ void ofdmflexframegen_write_header(ofdmflexframegen _q,
             } else {
                 //printf("  random header symbol\n");
                 // load random symbol
-                unsigned int sym = modem_gen_rand_sym(_q->mod_payload);
-                modem_modulate(_q->mod_payload, sym, &_q->X[i]);
+                unsigned int sym = modem_gen_rand_sym(_q->mod_header);
+                modem_modulate(_q->mod_header, sym, &_q->X[i]);
             }
         } else {
             // ignore subcarrier (ofdmframegen handles nulls and pilots)
