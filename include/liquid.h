@@ -6464,17 +6464,29 @@ void msequence_set_state(msequence    _ms,
 // MODULE : utility
 //
 
-// pack binary array with symbol(s)
-//  _src        :   source array [size: _n x 1]
-//  _n          :   input source array length
+// pack binary array with a symbol
+//  _src        :   destination array [size: _n x 1]
+//  _n          :   output source array length
 //  _k          :   bit index to write in _src
 //  _b          :   number of bits in input symbol
 //  _sym_in     :   input symbol
-void liquid_pack_array(unsigned char * _src,
+void liquid_pack_array(unsigned char * _dest,
                        unsigned int _n,
                        unsigned int _k,
                        unsigned int _b,
-                       unsigned char _sym_in);
+                       unsigned int _sym_in);
+
+// pack binary array with block of equally-sized symbols
+//  _dest       :   destination array [size: _n x 1]
+//  _n          :   output source array length
+//  _b          :   number of bits in input symbol
+//  _m          :   input symbol array length
+//  _syms_in    :   input symbol array [size: _m x 1]
+void liquid_pack_array_block(unsigned char * _dest,
+                             unsigned int _n,
+                             unsigned int _b,
+                             unsigned int _m,
+                             unsigned int * _syms_in);
 
 // unpack symbols from binary array
 //  _src        :   source array [size: _n x 1]
@@ -6486,7 +6498,19 @@ void liquid_unpack_array(unsigned char * _src,
                          unsigned int _n,
                          unsigned int _k,
                          unsigned int _b,
-                         unsigned char * _sym_out);
+                         unsigned int * _sym_out);
+
+// unpack symbols from binary array
+//  _src        :   source array [size: _n x 1]
+//  _n          :   input source array length
+//  _b          :   number of bits in output symbol
+//  _m          :   output symbol array length
+//  _syms_out   :   output symbol array [size: _m x 1]
+void liquid_pack_array_block(unsigned char * _src,
+                             unsigned int _n,
+                             unsigned int _b,
+                             unsigned int _m,
+                             unsigned int * _syms_out);
 
 // pack one-bit symbols into bytes (8-bit symbols)
 //  _sym_in             :   input symbols array [size: _sym_in_len x 1]
