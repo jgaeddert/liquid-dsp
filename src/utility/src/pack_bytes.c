@@ -48,10 +48,6 @@ void liquid_pack_array(unsigned char * _dest,
         fprintf(stderr,"error: liquid_pack_array(), bit index exceeds array length\n");
         exit(1);
     }
-    if (_b + _k > 8*_n) {
-        fprintf(stderr,"error: liquid_pack_array(), _sym_in does not fit in array\n");
-        exit(1);
-    }
 
     // find base index
     unsigned int i0 = _k / 8;       // byte index
@@ -60,7 +56,7 @@ void liquid_pack_array(unsigned char * _dest,
 
     // take chunks of bits from _sym_in until it is depleted
     // we'll first fill what's left of (8 - b0) and then go one byte at a time
-    while (_b > 0) {
+    while (_b > 0 && i0 < _n) {
         unsigned int n = 8 - b0;
         // clamp at the smaller of (8 - b0, _b)
         if (_b < n) {
@@ -111,12 +107,6 @@ void liquid_pack_array_block(unsigned char * _dest,
                              unsigned int _m,
                              unsigned int * _syms_in)
 {
-    // validate input
-    if (_b * _m > 8*_n) {
-        fprintf(stderr,"error: liquid_pack_array_block(), input symbols exceed array length\n");
-        exit(1);
-    }
-
     unsigned int k = 0;
     unsigned int i;
     for (i = 0; i < _m; i++, k += _b) {
@@ -142,10 +132,6 @@ void liquid_unpack_array(unsigned char * _src,
         fprintf(stderr,"error: liquid_unpack_array(), bit index exceeds array length\n");
         exit(1);
     }
-    if (_b + _k > 8*_n) {
-        fprintf(stderr,"error: liquid_unpack_array(), _sym_out does not fit in array\n");
-        exit(1);
-    }
 
     // find base index
     unsigned int i0 = _k / 8;       // byte index
@@ -156,7 +142,7 @@ void liquid_unpack_array(unsigned char * _src,
 
     // take chunks of bits from _src until _sym_out is big enough
     // we'll first fill what's left of (8 - b0) and then go one byte at a time
-    while (_b > 0) {
+    while (_b > 0 && i0 < _n) {
         unsigned int n = 8 - b0;
         // clamp at the smaller of (8 - b0, _b)
         if (_b < n) {
@@ -188,6 +174,7 @@ void liquid_unpack_array(unsigned char * _src,
         _b -= n;
 
     }
+    out <<= _b;
     *_sym_out = out;
 }
 
@@ -203,15 +190,8 @@ void liquid_unpack_array_block(unsigned char * _src,
                                unsigned int _m,
                                unsigned int * _syms_out)
 {
-    // validate input
-    if (_b * _m > 8*_n) {
-        fprintf(stderr,"error: liquid_unpack_array_block(), output symbol array length exceeds _src length\n");
-        exit(1);
-    }
-
-    unsigned int k = 0;
-    unsigned int i;
-    for (i = 0; i < _m; i++, k += _b) {
+    unsigned int i, k;
+    for (i = 0, k = 0; i < _m && k < 8*_n; i++, k += _b) {
         liquid_unpack_array(_src, _n, k, _b, &_syms_out[i]);
     }
 }

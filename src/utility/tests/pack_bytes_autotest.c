@@ -29,8 +29,8 @@
 //
 void autotest_pack_array() {
     // input symbols
-    unsigned int sym_size[10] = {8, 2, 3, 6, 1, 3, 3, 4, 2, 12};
-    unsigned int input[10] = {
+    unsigned int sym_size[11] = {8, 2, 3, 6, 1, 3, 3, 4, 2, 12, 6};
+    unsigned int input[11] = {
         0x81,   //           1000 0001
         0x03,   //                  11
         0x05,   //                 101
@@ -40,17 +40,18 @@ void autotest_pack_array() {
         0x06,   //                 110
         0x0a,   //                1010
         0x02,   //                  10
-        0x0a14  // 0000 0101 0001 0100
+        0x0a14, // 0000 0101 0001 0100
+        0x20,   //           10 00[00] (implied)
     };
 
-    // output       : 1000 0001 1110 1111 0101 1111 1010 1010 0101 0001 0100 1111
-    // symbol       : 0000 0000 1122 2333 3334 5556 6677 7788 9999 9999 9999
-    unsigned char output_test[6] = {0x81, 0xEF, 0x5F, 0xAA, 0xA1, 0x4F};
+    // output       : 1000 0001 1110 1111 0101 1111 1010 1010 0101 0001 0100 1000
+    // symbol       : 0000 0000 1122 2333 3334 5556 6677 7788 9999 9999 9999 AAAA
+    unsigned char output_test[6] = {0x81, 0xEF, 0x5F, 0xAA, 0xA1, 0x48};
     unsigned char output[6]      = {0xff, 0xff, 0xff, 0xff, 0xff, 0xff};
 
     unsigned int k=0;
     unsigned int i;
-    for (i=0; i<10; i++) {
+    for (i=0; i<11; i++) {
         liquid_pack_array(output, 6, k, sym_size[i], input[i]);
         k += sym_size[i];
     }
@@ -64,19 +65,20 @@ void autotest_pack_array() {
 void autotest_pack_array_block() {
     // input symbols
     unsigned int sym_size = 6;
-    unsigned int input[5] = {
+    unsigned int input[6] = {
         0x21,   //   10 0001
         0x37,   //   11 0111
         0x01,   //   00 0001
         0x3a,   //   11 1010
         0x18,   //   01 1000
+        0x30,   //   11 [0000]
     };
 
     // output       : 1000 0111 0111 0000 0111 1010 0110 0011
     unsigned char output_test[4] = {0x87, 0x70, 0x7A, 0x63};
     unsigned char output[4]      = {0xff, 0xff, 0xff, 0xff};
 
-    liquid_pack_array_block(output, 4, sym_size, 5, input);
+    liquid_pack_array_block(output, 4, sym_size, 6, input);
     
     CONTEND_SAME_DATA( output, output_test, 4 );
 }
@@ -86,13 +88,13 @@ void autotest_pack_array_block() {
 // AUTOTEST : unpack_array
 //
 void autotest_unpack_array() {
-    // input        : 1000 0001 1110 1111 0101 1111 1010 1010 0101 0001 0100 1111
-    // symbol       : 0000 0000 1122 2333 3334 5556 6677 7788 9999 9999 9999
-    unsigned char input[6] = {0x81, 0xEF, 0x5F, 0xAA, 0xA1, 0x4F};
-    unsigned int sym_size[10] = {8, 2, 3, 6, 1, 3, 3, 4, 2, 12};
+    // input        : 1000 0001 1110 1111 0101 1111 1010 1010 0101 0001 0100 1000
+    // symbol       : 0000 0000 1122 2333 3334 5556 6677 7788 9999 9999 9999 AAAA
+    unsigned char input[6] = {0x81, 0xEF, 0x5F, 0xAA, 0xA1, 0x48};
+    unsigned int sym_size[11] = {8, 2, 3, 6, 1, 3, 3, 4, 2, 12, 6};
 
     // output syms
-    unsigned int output_test[10] = {
+    unsigned int output_test[11] = {
         0x81,   //           1000 0001
         0x03,   //                  11
         0x05,   //                 101
@@ -102,19 +104,20 @@ void autotest_unpack_array() {
         0x06,   //                 110
         0x0a,   //                1010
         0x02,   //                  10
-        0x0a14  // 0000 0101 0001 0100
+        0x0a14, // 0000 0101 0001 0100
+        0x20,   //           10 00[00] (implied)
     };
 
-    unsigned int output[10];
+    unsigned int output[11];
 
     unsigned int k=0;
     unsigned int i;
-    for (i=0; i<10; i++) {
+    for (i=0; i<11; i++) {
         liquid_unpack_array(input, 6, k, sym_size[i], &output[i]);
         k += sym_size[i];
     }
     
-    CONTEND_SAME_DATA( output, output_test, 10 * sizeof(unsigned int) );
+    CONTEND_SAME_DATA( output, output_test, 11 * sizeof(unsigned int) );
 }
 
 //
@@ -126,19 +129,20 @@ void autotest_unpack_array_block() {
     unsigned char input[4] = {0x87, 0x70, 0x7A, 0x63};
 
     // output syms
-    unsigned int output_test[5] = {
+    unsigned int output_test[6] = {
         0x21,   //   10 0001
         0x37,   //   11 0111
         0x01,   //   00 0001
         0x3a,   //   11 1010
         0x18,   //   01 1000
+        0x30,   //   11 [0000]
     };
 
-    unsigned int output[5];
+    unsigned int output[6];
 
-    liquid_unpack_array_block(input, 4, sym_size, 5, output);
+    liquid_unpack_array_block(input, 4, sym_size, 6, output);
     
-    CONTEND_SAME_DATA( output, output_test, 5 * sizeof(unsigned int) );
+    CONTEND_SAME_DATA( output, output_test, 6 * sizeof(unsigned int) );
 }
 
 //
