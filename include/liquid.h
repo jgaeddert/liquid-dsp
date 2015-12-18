@@ -6506,11 +6506,11 @@ void liquid_unpack_array(unsigned char * _src,
 //  _b          :   number of bits in output symbol
 //  _m          :   output symbol array length
 //  _syms_out   :   output symbol array [size: _m x 1]
-void liquid_pack_array_block(unsigned char * _src,
-                             unsigned int _n,
-                             unsigned int _b,
-                             unsigned int _m,
-                             unsigned int * _syms_out);
+void liquid_unpack_array_block(unsigned char * _src,
+                               unsigned int _n,
+                               unsigned int _b,
+                               unsigned int _m,
+                               unsigned int * _syms_out);
 
 // pack one-bit symbols into bytes (8-bit symbols)
 //  _sym_in             :   input symbols array [size: _sym_in_len x 1]
