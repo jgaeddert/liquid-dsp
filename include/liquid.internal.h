@@ -1259,19 +1259,27 @@ unsigned short int smatrix_indexsearch(unsigned short int * _list,
 #define QAM256_ALPHA    (1./sqrt(170))
 #define QAM1024_ALPHA   (1./sqrt(682))
 #define QAM4096_ALPHA   (1./sqrt(2730))
+#define QAM8192_ALPHA   (1./sqrt(5460))
+#define QAM16384_ALPHA  (1./sqrt(10922))
+#define QAM32768_ALPHA  (1./sqrt(21844))
+#define QAM65536_ALPHA  (1./sqrt(43690))
 
 // Rectangular QAM
-#define RQAM4_ALPHA     QAM4_ALPHA
-#define RQAM8_ALPHA     QAM8_ALPHA
-#define RQAM16_ALPHA    QAM16_ALPHA
-#define RQAM32_ALPHA    (1./sqrt(26))
-#define RQAM64_ALPHA    QAM64_ALPHA
-#define RQAM128_ALPHA   (1./sqrt(106))
-#define RQAM256_ALPHA   QAM256_ALPHA
-#define RQAM512_ALPHA   (1./sqrt(426))
-#define RQAM1024_ALPHA  QAM1024_ALPHA
-#define RQAM2048_ALPHA  (1./sqrt(1706))
-#define RQAM4096_ALPHA  QAM4096_ALPHA
+#define RQAM4_ALPHA      QAM4_ALPHA
+#define RQAM8_ALPHA      QAM8_ALPHA
+#define RQAM16_ALPHA     QAM16_ALPHA
+#define RQAM32_ALPHA     (1./sqrt(26))
+#define RQAM64_ALPHA     QAM64_ALPHA
+#define RQAM128_ALPHA    (1./sqrt(106))
+#define RQAM256_ALPHA    QAM256_ALPHA
+#define RQAM512_ALPHA    (1./sqrt(426))
+#define RQAM1024_ALPHA   QAM1024_ALPHA
+#define RQAM2048_ALPHA   (1./sqrt(1706))
+#define RQAM4096_ALPHA   QAM4096_ALPHA
+#define RQAM8192_ALPHA   (1./sqrt(6826))
+#define RQAM16384_ALPHA  QAM16384_ALPHA
+#define RQAM32768_ALPHA  (1./sqrt(27306))
+#define RQAM65536_ALPHA  QAM65536_ALPHA
 
 // ASK
 #define ASK2_ALPHA      (1.)

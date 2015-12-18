@@ -175,6 +175,14 @@ MODEM() MODEM(_create)(modulation_scheme _scheme)
     case LIQUID_MODEM_QAM64:    return MODEM(_create_qam)(6);
     case LIQUID_MODEM_QAM128:   return MODEM(_create_qam)(7);
     case LIQUID_MODEM_QAM256:   return MODEM(_create_qam)(8);
+    case LIQUID_MODEM_QAM512:   return MODEM(_create_qam)(9);
+    case LIQUID_MODEM_QAM1024:  return MODEM(_create_qam)(10);
+    case LIQUID_MODEM_QAM2048:  return MODEM(_create_qam)(11);
+    case LIQUID_MODEM_QAM4096:  return MODEM(_create_qam)(12);
+    case LIQUID_MODEM_QAM8192:  return MODEM(_create_qam)(13);
+    case LIQUID_MODEM_QAM16384: return MODEM(_create_qam)(14);
+    case LIQUID_MODEM_QAM32768: return MODEM(_create_qam)(15);
+    case LIQUID_MODEM_QAM65536: return MODEM(_create_qam)(16);
 
     // amplitude phase-shift keying (APSK)
     case LIQUID_MODEM_APSK4:    return MODEM(_create_apsk)(2);

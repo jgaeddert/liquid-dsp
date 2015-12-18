@@ -55,29 +55,32 @@ MODEM() MODEM(_create_qam)(unsigned int _bits_per_symbol)
     assert(q->data.qam.M_i * q->data.qam.M_q == q->M);
 
     switch (q->M) {
-    case 4:    q->data.qam.alpha = RQAM4_ALPHA;    q->scheme = LIQUID_MODEM_QAM4;   break;
-    case 8:    q->data.qam.alpha = RQAM8_ALPHA;    q->scheme = LIQUID_MODEM_QAM8;   break;
-    case 16:   q->data.qam.alpha = RQAM16_ALPHA;   q->scheme = LIQUID_MODEM_QAM16;  break;
-    case 32:   q->data.qam.alpha = RQAM32_ALPHA;   q->scheme = LIQUID_MODEM_QAM32;  break;
-    case 64:   q->data.qam.alpha = RQAM64_ALPHA;   q->scheme = LIQUID_MODEM_QAM64;  break;
-    case 128:  q->data.qam.alpha = RQAM128_ALPHA;  q->scheme = LIQUID_MODEM_QAM128; break;
-    case 256:  q->data.qam.alpha = RQAM256_ALPHA;  q->scheme = LIQUID_MODEM_QAM256; break;
+    case 4:     q->data.qam.alpha = RQAM4_ALPHA;     q->scheme = LIQUID_MODEM_QAM4;      break;
+    case 8:     q->data.qam.alpha = RQAM8_ALPHA;     q->scheme = LIQUID_MODEM_QAM8;      break;
+    case 16:    q->data.qam.alpha = RQAM16_ALPHA;    q->scheme = LIQUID_MODEM_QAM16;     break;
+    case 32:    q->data.qam.alpha = RQAM32_ALPHA;    q->scheme = LIQUID_MODEM_QAM32;     break;
+    case 64:    q->data.qam.alpha = RQAM64_ALPHA;    q->scheme = LIQUID_MODEM_QAM64;     break;
+    case 128:   q->data.qam.alpha = RQAM128_ALPHA;   q->scheme = LIQUID_MODEM_QAM128;    break;
+    case 256:   q->data.qam.alpha = RQAM256_ALPHA;   q->scheme = LIQUID_MODEM_QAM256;    break;
+    case 512:   q->data.qam.alpha = RQAM512_ALPHA;   q->scheme = LIQUID_MODEM_QAM512;    break;
+    case 1024:  q->data.qam.alpha = RQAM1024_ALPHA;  q->scheme = LIQUID_MODEM_QAM1024;   break;
+    case 2048:  q->data.qam.alpha = RQAM2048_ALPHA;  q->scheme = LIQUID_MODEM_QAM2048;   break;
+    case 4096:  q->data.qam.alpha = RQAM4096_ALPHA;  q->scheme = LIQUID_MODEM_QAM4096;   break;
+    case 8192:  q->data.qam.alpha = RQAM8192_ALPHA;  q->scheme = LIQUID_MODEM_QAM8192;   break;
+    case 16384: q->data.qam.alpha = RQAM16384_ALPHA; q->scheme = LIQUID_MODEM_QAM16384;  break;
+    case 32768: q->data.qam.alpha = RQAM32768_ALPHA; q->scheme = LIQUID_MODEM_QAM32768;  break;
+    case 65536: q->data.qam.alpha = RQAM65536_ALPHA; q->scheme = LIQUID_MODEM_QAM65536;  break;
 #if 0
-    case 512:  q->data.qam.alpha = RQAM512_ALPHA;     break;
-    case 1024: q->data.qam.alpha = RQAM1024_ALPHA;    break;
-    case 2048: q->data.qam.alpha = RQAM2048_ALPHA;    break;
-    case 4096: q->data.qam.alpha = RQAM4096_ALPHA;    break;
     default:
         // calculate alpha dynamically
         // NOTE: this is only an approximation
         q->data.qam.alpha = sqrtf(2.0f / (T)(q->M) );
 #else
     default:
-        fprintf(stderr,"error: modem_create_qam(), cannot support QAM with m > 8\n");
+        fprintf(stderr,"error: modem_create_qam(), cannot support QAM with m > 16\n");
         exit(1);
-#endif
     }
-
+#endif
     unsigned int k;
     for (k=0; k<(q->m); k++)
         q->ref[k] = (1<<k) * q->data.qam.alpha;

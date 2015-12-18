@@ -5048,10 +5048,10 @@ void smatrixb_vmulf(smatrixb _q,
 //
 
 // Maximum number of allowed bits per symbol
-#define MAX_MOD_BITS_PER_SYMBOL 8
+#define MAX_MOD_BITS_PER_SYMBOL 16
 
 // Modulation schemes available
-#define LIQUID_MODEM_NUM_SCHEMES      (52)
+#define LIQUID_MODEM_NUM_SCHEMES      (60)
 
 typedef enum {
     LIQUID_MODEM_UNKNOWN=0, // Unknown modulation scheme
@@ -5079,6 +5079,10 @@ typedef enum {
     LIQUID_MODEM_QAM8,      LIQUID_MODEM_QAM16,
     LIQUID_MODEM_QAM32,     LIQUID_MODEM_QAM64,
     LIQUID_MODEM_QAM128,    LIQUID_MODEM_QAM256,
+    LIQUID_MODEM_QAM512,    LIQUID_MODEM_QAM1024,
+    LIQUID_MODEM_QAM2048,   LIQUID_MODEM_QAM4096,
+    LIQUID_MODEM_QAM8192,   LIQUID_MODEM_QAM16384,
+    LIQUID_MODEM_QAM32768,  LIQUID_MODEM_QAM65536,
 
     // amplitude phase-shift keying (APSK)
     LIQUID_MODEM_APSK4,
