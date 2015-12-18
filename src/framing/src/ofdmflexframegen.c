@@ -114,7 +114,7 @@ struct ofdmflexframegen_s {
     unsigned int payload_dec_len;       // payload length (num un-encoded bytes)
     modem mod_payload;                  // payload modulator
     unsigned char * payload_enc;        // payload data (encoded bytes)
-    unsigned char * payload_mod;        // payload data (modulated symbols)
+    unsigned int * payload_mod;        // payload data (modulated symbols)
     unsigned int payload_enc_len;       // length of encoded payload
     unsigned int payload_mod_len;       // number of modulated symbols in payload
 
@@ -203,7 +203,7 @@ ofdmflexframegen ofdmflexframegen_create(unsigned int              _M,
     q->payload_enc = (unsigned char*) malloc(q->payload_enc_len*sizeof(unsigned char));
 
     q->payload_mod_len = 1;
-    q->payload_mod = (unsigned char*) malloc(q->payload_mod_len*sizeof(unsigned char));
+    q->payload_mod = (unsigned int*) malloc(q->payload_mod_len*sizeof(unsigned int));
 
     // create payload modem (initially QPSK, overridden by properties)
     q->mod_payload = modem_create(LIQUID_MODEM_QPSK);
@@ -381,17 +381,12 @@ void ofdmflexframegen_assemble(ofdmflexframegen _q,
     //
 
     // clear payload
-    memset(_q->payload_mod, 0x00, _q->payload_mod_len);
+    memset(_q->payload_mod, 0x00, _q->payload_mod_len * sizeof(unsigned int));
 
     // repack 8-bit payload bytes into 'bps'-bit payload symbols
     unsigned int bps = modulation_types[_q->props.mod_scheme].bps;
-    unsigned int num_written;
-    liquid_repack_bytes(_q->payload_enc,  8,  _q->payload_enc_len,
-                        _q->payload_mod, bps, _q->payload_mod_len,
-                        &num_written);
-#if DEBUG_OFDMFLEXFRAMEGEN
-    printf("wrote %u symbols (expected %u)\n", num_written, _q->payload_mod_len);
-#endif
+    liquid_unpack_array_block(_q->payload_enc, _q->payload_enc_len,
+                              bps, _q->payload_mod_len, _q->payload_mod);
 }
 
 // write symbols of assembled frame
@@ -484,8 +479,8 @@ void ofdmflexframegen_reconfigure(ofdmflexframegen _q)
     unsigned int bps = modulation_types[_q->props.mod_scheme].bps;
     div_t d = div(8*_q->payload_enc_len, bps);
     _q->payload_mod_len = d.quot + (d.rem ? 1 : 0);
-    _q->payload_mod = (unsigned char*)realloc(_q->payload_mod,
-                                              _q->payload_mod_len*sizeof(unsigned char));
+    _q->payload_mod = (unsigned int*)realloc(_q->payload_mod,
+                                              _q->payload_mod_len*sizeof(unsigned int));
 
     // re-compute number of payload OFDM symbols
     d = div(_q->payload_mod_len, _q->M_data);
