@@ -28,11 +28,14 @@
 // output   : 24 x 24 bits = 576 bits = 72 bytes
 //
 
+#include <math.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 
 #include "liquid.internal.h"
+
+#define DEBUG (0)
 
 typedef struct g2412p_s * g2412p;
 g2412p g2412p_create  ();
@@ -41,8 +44,8 @@ void   g2412p_print   (g2412p _q);
 void   g2412p_encode  (g2412p _q, unsigned char * _msg_org, unsigned char * _msg_enc);
 void   g2412p_decode  (g2412p _q, unsigned char * _msg_rec, unsigned char * _msg_dec);
 
-void   g2412p_iterate (g2412p _q);
-void   g2412p_step    (g2412p _q);
+int    g2412p_iterate (g2412p _q);
+int    g2412p_step    (g2412p _q);
 
 void   g2412p_load_row(g2412p _q, unsigned int _row);
 void   g2412p_save_row(g2412p _q, unsigned int _row);
@@ -86,14 +89,13 @@ int main(int argc, char*argv[])
     for (i=0; i<144; i++) {
         //msg_org[i] = i % 2;
 
-        //msg_org[i] = p & 1;
-        //p = ((p << 1) & 0xfe) | liquid_bdotprod(p,0xad);
-
+        msg_org[i] = p & 1;
+        p = ((p << 1) & 0xfe) | liquid_bdotprod(p,0xad);
+        
         msg_org[i] = 0;
     }
-    for (i=0; i<12; i++)
-        msg_org[12*i+i] = 1;
 
+#if DEBUG
     // print original message
     printf("msg_org:\n");
     for (i=0; i<12; i++) {
@@ -102,10 +104,12 @@ int main(int argc, char*argv[])
             printf("%2u", msg_org[12*i+j]);
         printf("\n");
     }
+#endif
 
     // encode message
     g2412p_encode(q, msg_org, msg_enc);
 
+#if DEBUG
     // print encoded message
     printf("msg_enc:\n");
     for (i=0; i<24; i++) {
@@ -114,7 +118,9 @@ int main(int argc, char*argv[])
             printf("%2u", msg_enc[24*i+j]);
         printf("\n");
     }
+#endif
 
+#if 0
     // corrupt message
     for (i=0; i<576; i++)
         msg_rec[i] = msg_enc[i] ? LIQUID_SOFTBIT_1 : LIQUID_SOFTBIT_0;
@@ -124,6 +130,20 @@ int main(int argc, char*argv[])
     msg_rec[ 72] = 255 - msg_rec[ 72];
     msg_rec[ 96] = 255 - msg_rec[ 96];
     msg_rec[120] = 255 - msg_rec[120];
+#else
+    // modulate, add noise, demodulate soft
+    float SNRdB = -4.0f;
+    float nstd  = powf(10.0f, -SNRdB/20.0f);
+    modem mod = modem_create(LIQUID_MODEM_BPSK);
+    for (i=0; i<576; i++) {
+        float complex v;
+        unsigned int  s;
+        modem_modulate(mod, msg_enc[i], &v);
+        v += nstd*(randnf() + randnf()*_Complex_I) * M_SQRT1_2;
+        modem_demodulate_soft(mod, v, &s, &msg_rec[i]);
+    }
+    modem_destroy(mod);
+#endif
 
     // decode message
     g2412p_decode(q, msg_rec, msg_dec);
@@ -198,7 +218,9 @@ void g2412p_encode(g2412p          _q,
     unsigned int c;
 
     // encode rows
+#if DEBUG
     printf("rows:\n");
+#endif
     for (r=0; r<12; r++) {
         unsigned int sym_org = 0;
         for (c=0; c<12; c++) {
@@ -208,7 +230,9 @@ void g2412p_encode(g2412p          _q,
         unsigned int sym_enc = fec_golay2412_encode_symbol(sym_org);
         // make systematic (swap upper and lower 12 bit chunks)
         sym_enc = ((sym_enc >> 12) & 0xfff) | ((sym_enc << 12) & 0xfff000);
+#if DEBUG
         printf(" %2u: 0x%.3x > 0x%.6x\n", r, sym_org, sym_enc);
+#endif
         
         //
         for (c=0; c<24; c++) {
@@ -218,7 +242,9 @@ void g2412p_encode(g2412p          _q,
     }
 
     // encode columns
+#if DEBUG
     printf("cols:\n");
+#endif
     for (c=0; c<24; c++) {
         unsigned int sym_org = 0;
         for (r=0; r<12; r++) {
@@ -228,7 +254,9 @@ void g2412p_encode(g2412p          _q,
         unsigned int sym_enc = fec_golay2412_encode_symbol(sym_org);
         // make systematic (swap upper and lower 12 bit chunks)
         sym_enc = ((sym_enc >> 12) & 0xfff) | ((sym_enc << 12) & 0xfff000);
+#if DEBUG
         printf(" %2u: 0x%.3x > 0x%.6x\n", c, sym_org, sym_enc);
+#endif
         
         // append only parity bits (no need to overwrite original bits)
         for (r=12; r<24; r++) {
@@ -249,15 +277,26 @@ void g2412p_decode(g2412p          _q,
     memmove(_q->msg_buf, _msg_rec, 576*sizeof(unsigned char));
 
     // print
+#if DEBUG
     g2412p_print(_q);
+#endif
 
+#if 1
     // iterate
     // while...
-    for (i=0; i<1; i++)
-        g2412p_iterate(_q);
+    for (i=0; i<30; i++) {
+        int rc = g2412p_iterate(_q);
+
+        if (rc == 0)
+            break;
+    }
+    printf("steps: %u\n", i);
+#endif
     
     // print
+#if DEBUG
     g2412p_print(_q);
+#endif
 
     // copy resulting output
 #if 0
@@ -276,27 +315,31 @@ void g2412p_decode(g2412p          _q,
 }
 
 // run single iteration
-void g2412p_iterate(g2412p _q)
+int g2412p_iterate(g2412p _q)
 {
     unsigned int i;
 
+    int rc = 0;
+
     // decode columns
     for (i=0; i<24; i++) {
-        g2412p_load_col(_q, i);
-        g2412p_step    (_q   );
-        g2412p_save_col(_q, i);
+        g2412p_load_col     (_q, i);
+        rc += g2412p_step   (_q   );
+        g2412p_save_col     (_q, i);
     }
 
     // decode rows
     for (i=0; i<12; i++) {
-        g2412p_load_row(_q, i);
-        g2412p_step    (_q   );
-        g2412p_save_row(_q, i);
+        g2412p_load_row     (_q, i);
+        rc += g2412p_step   (_q   );
+        g2412p_save_row     (_q, i);
     }
+
+    return rc;
 }
 
 // 
-void g2412p_step(g2412p _q)
+int g2412p_step(g2412p _q)
 {
     // TODO: determine if parity check passed
 
@@ -309,7 +352,7 @@ void g2412p_step(g2412p _q)
     }
 
     // flip...
-    printf("  0x%.6x > ", sym_rec);
+    //printf("  0x%.6x > ", sym_rec);
     sym_rec = ((sym_rec >> 12) & 0xfff) | ((sym_rec << 12) & 0xfff000);
 
     // decode to 12-bit symbol
@@ -318,22 +361,28 @@ void g2412p_step(g2412p _q)
     // re-encode 24-bit symbol
     unsigned int sym_enc = fec_golay2412_encode_symbol(sym_dec);
 
+    int rc = (sym_rec == sym_enc) ? 0 : 1;
+
     // flip...
     sym_enc = ((sym_enc >> 12) & 0xfff) | ((sym_enc << 12) & 0xfff000);
-    printf("0x%.6x\n", sym_enc);
+    //printf("0x%.6x\n", sym_enc);
 
     // update register
     // TODO: this is the crux of the algorithm and should be adjusted to
     //       produce maximum performance.
+    float alpha = 0.9f;         // percentage of old value to retain
+    float beta  = 1.0f - alpha; // percentage of new value to retain
     for (i=0; i<24; i++) {
         //int v = (int)(_q->reg0[i]) + ((sym_enc >> i) & 1 ? 16 : -16);
         int p = (sym_enc >> (24-i-1)) & 1 ? LIQUID_SOFTBIT_1 : LIQUID_SOFTBIT_0;
-        int v = ((int)(0.4*_q->reg0[i]) + 0.6*p);
+        int v = ((int)(alpha*_q->reg0[i]) + beta*p);
 
         if      (v <   0) _q->reg0[i] = 0;
         else if (v > 255) _q->reg0[i] = 255;
         else              _q->reg0[i] = (unsigned char)v;
     }
+
+    return rc;
 }
 
 // load 24-bit row into register
