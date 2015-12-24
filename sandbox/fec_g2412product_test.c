@@ -49,6 +49,15 @@ void   g2412p_save_row(g2412p _q, unsigned int _row);
 void   g2412p_load_col(g2412p _q, unsigned int _col);
 void   g2412p_save_col(g2412p _q, unsigned int _col);
 
+// pack 24-value soft-bit message into integer
+unsigned int g2412p_pack_symbol(unsigned char * _msg_soft);
+
+// unpack 24-bit integer into soft array
+void g2412p_unpack_symbol(unsigned int    _msg_hard,
+                          unsigned char * _msg_soft);
+
+unsigned int liquid_hard_decision(unsigned char _soft_bit);
+
 void print_bitstring(unsigned int _x,
                      unsigned int _n)
 {
@@ -62,6 +71,7 @@ void print_bitstring(unsigned int _x,
 int main(int argc, char*argv[])
 {
     unsigned int i;
+    unsigned int j;
 
     unsigned char msg_org[144];
     unsigned char msg_enc[576];
@@ -72,21 +82,60 @@ int main(int argc, char*argv[])
     g2412p q = g2412p_create();
 
     // initialize input array
+    unsigned char p = 0x01;
     for (i=0; i<144; i++) {
         //msg_org[i] = i % 2;
+
+        //msg_org[i] = p & 1;
+        //p = ((p << 1) & 0xfe) | liquid_bdotprod(p,0xad);
+
         msg_org[i] = 0;
+    }
+    for (i=0; i<12; i++)
+        msg_org[12*i+i] = 1;
+
+    // print original message
+    printf("msg_org:\n");
+    for (i=0; i<12; i++) {
+        printf("%3u: ", i);
+        for (j=0; j<12; j++)
+            printf("%2u", msg_org[12*i+j]);
+        printf("\n");
     }
 
     // encode message
     g2412p_encode(q, msg_org, msg_enc);
 
+    // print encoded message
+    printf("msg_enc:\n");
+    for (i=0; i<24; i++) {
+        printf("%3u: ", i);
+        for (j=0; j<24; j++)
+            printf("%2u", msg_enc[24*i+j]);
+        printf("\n");
+    }
+
     // corrupt message
     for (i=0; i<576; i++)
         msg_rec[i] = msg_enc[i] ? LIQUID_SOFTBIT_1 : LIQUID_SOFTBIT_0;
     msg_rec[  0] = 255 - msg_rec[  0];
+    msg_rec[ 24] = 255 - msg_rec[ 24];
+    msg_rec[ 48] = 255 - msg_rec[ 48];
+    msg_rec[ 72] = 255 - msg_rec[ 72];
+    msg_rec[ 96] = 255 - msg_rec[ 96];
+    msg_rec[120] = 255 - msg_rec[120];
 
     // decode message
     g2412p_decode(q, msg_rec, msg_dec);
+
+    // print decoded message
+    printf("msg_org:\n");
+    for (i=0; i<12; i++) {
+        printf("%3u: ", i);
+        for (j=0; j<12; j++)
+            printf("%2u", msg_dec[12*i+j]);
+        printf("\n");
+    }
 
     // count errors
     unsigned int num_errors = 0;
@@ -102,8 +151,8 @@ int main(int argc, char*argv[])
 }
 
 struct g2412p_s {
-    unsigned char msg_buf[576];
-    unsigned char reg0[24];
+    unsigned char msg_buf[576]; // 24 x 24 message array
+    unsigned char reg0[24];     // 24 value register
     unsigned int  r;
     unsigned int  d;
 };
@@ -145,9 +194,49 @@ void g2412p_encode(g2412p          _q,
                    unsigned char * _msg_org,
                    unsigned char * _msg_enc)
 {
-    unsigned int i;
-    for (i=0; i<576; i++)
-        _msg_enc[i] = 0;
+    unsigned int r;
+    unsigned int c;
+
+    // encode rows
+    printf("rows:\n");
+    for (r=0; r<12; r++) {
+        unsigned int sym_org = 0;
+        for (c=0; c<12; c++) {
+            sym_org <<= 1;
+            sym_org |= _msg_org[12*r+c] ? 1 : 0;
+        }
+        unsigned int sym_enc = fec_golay2412_encode_symbol(sym_org);
+        // make systematic (swap upper and lower 12 bit chunks)
+        sym_enc = ((sym_enc >> 12) & 0xfff) | ((sym_enc << 12) & 0xfff000);
+        printf(" %2u: 0x%.3x > 0x%.6x\n", r, sym_org, sym_enc);
+        
+        //
+        for (c=0; c<24; c++) {
+            unsigned int bit = (sym_enc >> (24-c-1)) & 1;
+            _msg_enc[24*r+c] = bit;
+        }
+    }
+
+    // encode columns
+    printf("cols:\n");
+    for (c=0; c<24; c++) {
+        unsigned int sym_org = 0;
+        for (r=0; r<12; r++) {
+            sym_org <<= 1;
+            sym_org |= _msg_enc[c+24*r] ? 1 : 0;
+        }
+        unsigned int sym_enc = fec_golay2412_encode_symbol(sym_org);
+        // make systematic (swap upper and lower 12 bit chunks)
+        sym_enc = ((sym_enc >> 12) & 0xfff) | ((sym_enc << 12) & 0xfff000);
+        printf(" %2u: 0x%.3x > 0x%.6x\n", c, sym_org, sym_enc);
+        
+        // append only parity bits (no need to overwrite original bits)
+        for (r=12; r<24; r++) {
+            unsigned int bit = (sym_enc >> (24-r-1)) & 1;
+            _msg_enc[c+24*r] = bit;
+        }
+    }
+
 }
 
 void g2412p_decode(g2412p          _q,
@@ -164,15 +253,26 @@ void g2412p_decode(g2412p          _q,
 
     // iterate
     // while...
-    for (i=0; i<4; i++)
+    for (i=0; i<1; i++)
         g2412p_iterate(_q);
     
     // print
     g2412p_print(_q);
 
     // copy resulting output
+#if 0
     for (i=0; i<12; i++)
-        memmove(&_msg_rec[24*i], &_q->msg_buf[12*i], 12*sizeof(unsigned char));
+        memmove(&_msg_dec[24*i], &_q->msg_buf[12*i], 12*sizeof(unsigned char));
+#else
+    unsigned int r;
+    unsigned int c;
+    unsigned int n = 0;
+    for (r=0; r<12; r++) {
+        for (c=0; c<12; c++) {
+            _msg_dec[n++] = _q->msg_buf[24*r+c] > LIQUID_SOFTBIT_ERASURE ? 1 : 0;
+        }
+    }
+#endif
 }
 
 // run single iteration
@@ -187,14 +287,12 @@ void g2412p_iterate(g2412p _q)
         g2412p_save_col(_q, i);
     }
 
-#if 0
     // decode rows
     for (i=0; i<12; i++) {
         g2412p_load_row(_q, i);
         g2412p_step    (_q   );
         g2412p_save_row(_q, i);
     }
-#endif
 }
 
 // 
@@ -210,22 +308,27 @@ void g2412p_step(g2412p _q)
         sym_rec |= _q->reg0[i] > 127 ? 1 : 0;
     }
 
+    // flip...
+    printf("  0x%.6x > ", sym_rec);
+    sym_rec = ((sym_rec >> 12) & 0xfff) | ((sym_rec << 12) & 0xfff000);
+
     // decode to 12-bit symbol
     unsigned int sym_dec = fec_golay2412_decode_symbol(sym_rec);
 
     // re-encode 24-bit symbol
     unsigned int sym_enc = fec_golay2412_encode_symbol(sym_dec);
 
+    // flip...
+    sym_enc = ((sym_enc >> 12) & 0xfff) | ((sym_enc << 12) & 0xfff000);
+    printf("0x%.6x\n", sym_enc);
+
     // update register
     // TODO: this is the crux of the algorithm and should be adjusted to
     //       produce maximum performance.
     for (i=0; i<24; i++) {
-#if 0
-        int v = (int)(_q->reg0[i]) + ((sym_enc >> i) & 1 ? 16 : -16);
-#else
-        int p = (sym_enc >> i) & 1 ? LIQUID_SOFTBIT_1 : LIQUID_SOFTBIT_0;
-        int v = ((int)(_q->reg0[i]) + p) / 2;
-#endif
+        //int v = (int)(_q->reg0[i]) + ((sym_enc >> i) & 1 ? 16 : -16);
+        int p = (sym_enc >> (24-i-1)) & 1 ? LIQUID_SOFTBIT_1 : LIQUID_SOFTBIT_0;
+        int v = ((int)(0.4*_q->reg0[i]) + 0.6*p);
 
         if      (v <   0) _q->reg0[i] = 0;
         else if (v > 255) _q->reg0[i] = 255;
@@ -233,31 +336,66 @@ void g2412p_step(g2412p _q)
     }
 }
 
+// load 24-bit row into register
 void g2412p_load_row(g2412p       _q,
                      unsigned int _row)
 {
-    memmove(_q->reg0, &_q->msg_buf[_row*24], 24*sizeof(unsigned char));
+    //memmove(_q->reg0, &_q->msg_buf[_row*24], 24*sizeof(unsigned char));
+    unsigned int c;
+    for (c=0; c<24; c++)
+        _q->reg0[c] = _q->msg_buf[24*_row + c];
 }
 
 void g2412p_save_row(g2412p       _q,
                      unsigned int _row)
 {
-    memmove(&_q->msg_buf[_row*24], _q->reg0, 24*sizeof(unsigned char));
+    //memmove(&_q->msg_buf[_row*24], _q->reg0, 24*sizeof(unsigned char));
+    unsigned int c;
+    for (c=0; c<24; c++)
+        _q->msg_buf[24*_row + c] = _q->reg0[c];
 }
 
 void g2412p_load_col(g2412p       _q,
                      unsigned int _col)
 {
-    unsigned int i;
-    for (i=0; i<24; i++)
-        _q->reg0[i] = _q->msg_buf[24*i + _col];
+    unsigned int r;
+    for (r=0; r<24; r++)
+        _q->reg0[r] = _q->msg_buf[24*r + _col];
 }
 
 void g2412p_save_col(g2412p       _q,
                      unsigned int _col)
 {
-    unsigned int i;
-    for (i=0; i<24; i++)
-        _q->msg_buf[24*i + _col] = _q->reg0[i];
+    unsigned int r;
+    for (r=0; r<24; r++)
+        _q->msg_buf[24*r + _col] = _q->reg0[r];
 }
 
+// pack 24-value soft-bit message into integer
+unsigned int g2412p_pack_symbol(unsigned char * _msg_soft)
+{
+    unsigned int i;
+    unsigned int sym = 0;
+    for (i=0; i<24; i++) {
+        sym <<= 1;
+        sym |= liquid_hard_decision(_msg_soft[i]);
+    }
+
+    return sym;
+}
+
+// unpack 24-bit integer into soft array
+void g2412p_unpack_symbol(unsigned int    _msg_hard,
+                          unsigned char * _msg_soft)
+{
+    unsigned int i;
+    for (i=0; i<24; i++) {
+        _msg_soft[i] = _msg_hard & 1 ? LIQUID_SOFTBIT_1 : LIQUID_SOFTBIT_0;
+        _msg_hard >>= 1;
+    }
+}
+
+unsigned int liquid_hard_decision(unsigned char _soft_bit)
+{
+    return _soft_bit > LIQUID_SOFTBIT_ERASURE ? LIQUID_SOFTBIT_1 : LIQUID_SOFTBIT_0;
+}
