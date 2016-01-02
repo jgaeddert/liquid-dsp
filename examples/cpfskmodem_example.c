@@ -103,8 +103,10 @@ int main(int argc, char*argv[])
     cpfskmod_print(mod);
 
     // generate message signal
-    for (i=0; i<num_symbols; i++)
+    for (i=0; i<num_symbols; i++) {
         sym_in[i] = rand() % M;
+        printf("sym_in(%3u) = %2u\n", i, sym_in[i]);
+    }
 
     // modulate signal
     for (i=0; i<num_symbols; i++)
