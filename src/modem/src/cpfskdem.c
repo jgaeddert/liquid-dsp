@@ -42,6 +42,7 @@ void cpfskdem_init_coherent(cpfskdem _q);
 // initialize non-coherent demodulator
 void cpfskdem_init_noncoherent(cpfskdem _q);
 
+#if 0
 // demodulate array of samples (coherent)
 void cpfskdem_demodulate_coherent(cpfskdem        _q,
                                   float complex   _y,
@@ -53,6 +54,15 @@ void cpfskdem_demodulate_noncoherent(cpfskdem        _q,
                                      float complex   _y,
                                      unsigned int  * _s,
                                      unsigned int  * _nw);
+#else
+// demodulate array of samples (coherent)
+unsigned int cpfskdem_demodulate_coherent(cpfskdem        _q,
+                                          float complex * _y);
+
+// demodulate array of samples (non-coherent)
+unsigned int cpfskdem_demodulate_noncoherent(cpfskdem        _q,
+                                             float complex * _y);
+#endif
 
 // cpfskdem
 struct cpfskdem_s {
@@ -73,10 +83,15 @@ struct cpfskdem_s {
     } demod_type;
 
     // demodulation function pointer
+#if 0
     void (*demodulate)(cpfskdem        _q,
                        float complex   _y,
                        unsigned int  * _s,
                        unsigned int  * _nw);
+#else
+    unsigned int (*demodulate)(cpfskdem        _q,
+                               float complex * _y);
+#endif
 
     // common data structure shared between coherent and non-coherent
     // demodulator receivers
@@ -288,6 +303,7 @@ unsigned int cpfskdem_get_delay(cpfskdem _q)
     return _q->symbol_delay;
 }
 
+#if 0
 // demodulate array of samples
 //  _q      :   continuous-phase frequency demodulator object
 //  _y      :   input sample array [size: _n x 1]
@@ -376,4 +392,69 @@ void cpfskdem_demodulate_noncoherent(cpfskdem        _q,
 {
     *_nw = 0;
 }
+
+#else
+
+// demodulate array of samples
+//  _q      :   continuous-phase frequency demodulator object
+//  _y      :   input sample array [size: _k x 1]
+unsigned int cpfskdem_demodulate(cpfskdem        _q,
+                                 float complex * _y)
+{
+    return _q->demodulate(_q, _y);
+}
+
+// demodulate array of samples (coherent)
+unsigned int cpfskdem_demodulate_coherent(cpfskdem        _q,
+                                          float complex * _y)
+{
+    unsigned int i;
+    unsigned int sym_out = 0;
+
+    for (i=0; i<_q->k; i++) {
+        // push input sample through filter
+        firfilt_crcf_push(_q->data.coherent.mf, _y[i]);
+
+#if DEBUG_CPFSKDEM
+        // compute output sample
+        float complex zp;
+        firfilt_crcf_execute(_q->data.coherent.mf, &zp);
+        printf("y(end+1) = %12.8f + 1i*%12.8f;\n", crealf(_y), cimagf(_y));
+        printf("z(end+1) = %12.8f + 1i*%12.8f;\n", crealf(zp), cimagf(zp));
+#endif
+
+        // decimate output
+        if ( i == 0 ) {
+            // compute output sample
+            float complex z;
+            firfilt_crcf_execute(_q->data.coherent.mf, &z);
+
+            // compute instantaneous frequency scaled by modulation index
+            // TODO: pre-compute scaling factor
+            float phi_hat = cargf(conjf(_q->z_prime) * z) / (_q->h * M_PI);
+
+            // estimate transmitted symbol
+            float v = (phi_hat + (_q->M-1.0))*0.5f;
+            sym_out = ((int) roundf(v)) % _q->M;
+
+            // save current point
+            _q->z_prime = z;
+
+#if 1
+            // print result to screen
+            printf("  %3u : %12.8f + j%12.8f, <f=%8.4f : %8.4f> (%1u)\n",
+                    _q->index++, crealf(z), cimagf(z), phi_hat, v, sym_out);
+#endif
+        }
+    }
+    return sym_out;
+}
+
+// demodulate array of samples (non-coherent)
+unsigned int cpfskdem_demodulate_noncoherent(cpfskdem        _q,
+                                             float complex * _y)
+{
+    return 0;
+}
+#endif
 

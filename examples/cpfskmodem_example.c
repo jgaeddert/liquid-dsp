@@ -141,9 +141,14 @@ int main(int argc, char*argv[])
     firfilt_crcf_destroy(fchannel);
 
     // demodulate signal
+#if 0
     unsigned int nw=0;
     cpfskdem_demodulate(dem, y, num_samples, sym_out, &nw);
     printf("demodulator wrote %u symbols\n", nw);
+#else
+    for (i=0; i<num_symbols; i++)
+        sym_out[i] = cpfskdem_demodulate(dem, &y[i*k]);
+#endif
 
     // print/count errors
     unsigned int num_errors = 0;

@@ -5418,6 +5418,7 @@ void cpfskdem_reset(cpfskdem _q);
 // get receive delay [symbols]
 unsigned int cpfskdem_get_delay(cpfskdem _q);
 
+#if 0
 // demodulate array of samples
 //  _q      :   continuous-phase frequency demodulator object
 //  _y      :   input sample array [size: _n x 1]
@@ -5429,7 +5430,13 @@ void cpfskdem_demodulate(cpfskdem               _q,
                          unsigned int           _n,
                          unsigned int         * _s,
                          unsigned int         * _nw);
-
+#else
+// demodulate array of samples, assuming perfect timing
+//  _q      :   continuous-phase frequency demodulator object
+//  _y      :   input sample array [size: _k x 1]
+unsigned int cpfskdem_demodulate(cpfskdem               _q,
+                                 liquid_float_complex * _y);
+#endif
 
 
 
