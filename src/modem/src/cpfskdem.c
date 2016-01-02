@@ -63,9 +63,8 @@ struct cpfskdem_s {
     float        beta;          // filter bandwidth parameter
     float        h;             // modulation index
     int          type;          // filter type (e.g. LIQUID_CPFSK_GMSK)
-
-    // constellation size
-    unsigned int M;
+    unsigned int M;             // constellation size
+    unsigned int symbol_delay;  // receiver filter delay [symbols]
 
     // demodulator type
     enum {
@@ -102,6 +101,7 @@ struct cpfskdem_s {
     } data;
 
     // state variables
+    unsigned int  index;    // debug
     unsigned int  counter;  // sample counter
     float complex z_prime;  // (coherent only)
 };
@@ -182,6 +182,7 @@ void cpfskdem_init_coherent(cpfskdem _q)
     case LIQUID_CPFSK_SQUARE:
         //bw = 0.9f / (float)k;
         bw = 0.4f;
+        _q->symbol_delay = _q->m;
         _q->data.coherent.mf = firfilt_crcf_create_kaiser(2*_q->k*_q->m+1, bw, 60.0f, 0.0f);
         firfilt_crcf_set_scale(_q->data.coherent.mf, 2.0f * bw);
         break;
@@ -189,18 +190,22 @@ void cpfskdem_init_coherent(cpfskdem _q)
         if (_q->M==2) {
             _q->data.coherent.mf = firfilt_crcf_create_rnyquist(LIQUID_FIRFILT_GMSKRX,_q->k,_q->m,0.5f,0);
             firfilt_crcf_set_scale(_q->data.coherent.mf, 1.33f / (float)_q->k);
+            _q->symbol_delay = _q->m;
         } else {
             _q->data.coherent.mf = firfilt_crcf_create_rnyquist(LIQUID_FIRFILT_GMSKRX,_q->k/2,2*_q->m,0.9f,0);
             firfilt_crcf_set_scale(_q->data.coherent.mf, 3.25f / (float)_q->k);
+            _q->symbol_delay = 0; // TODO: fix this value
         }
         break;
     case LIQUID_CPFSK_RCOS_PARTIAL:
         if (_q->M==2) {
             _q->data.coherent.mf = firfilt_crcf_create_rnyquist(LIQUID_FIRFILT_GMSKRX,_q->k,_q->m,0.3f,0);
             firfilt_crcf_set_scale(_q->data.coherent.mf, 1.10f / (float)_q->k);
+            _q->symbol_delay = _q->m;
         } else {
             _q->data.coherent.mf = firfilt_crcf_create_rnyquist(LIQUID_FIRFILT_GMSKRX,_q->k/2,2*_q->m,0.27f,0);
             firfilt_crcf_set_scale(_q->data.coherent.mf, 2.90f / (float)_q->k);
+            _q->symbol_delay = 0; // TODO: fix this value
         }
         break;
     case LIQUID_CPFSK_GMSK:
@@ -209,6 +214,7 @@ void cpfskdem_init_coherent(cpfskdem _q)
         beta = (_q->M == 2) ? 0.8*gmsk_bt : 1.0*gmsk_bt;
         _q->data.coherent.mf = firfilt_crcf_create_rnyquist(LIQUID_FIRFILT_GMSKRX,_q->k,_q->m,_q->beta,0);
         firfilt_crcf_set_scale(_q->data.coherent.mf, 2.0f * bw);
+        _q->symbol_delay = _q->m;
         break;
     default:
         fprintf(stderr,"error: cpfskdem_init_coherent(), invalid tx filter type\n");
@@ -271,8 +277,15 @@ void cpfskdem_reset(cpfskdem _q)
         break;
     }
 
+    _q->index   = 0;
     _q->counter = _q->k-1;
     _q->z_prime = 0;
+}
+
+// get transmit delay [symbols]
+unsigned int cpfskdem_get_delay(cpfskdem _q)
+{
+    return _q->symbol_delay;
 }
 
 // demodulate array of samples
@@ -345,8 +358,8 @@ void cpfskdem_demodulate_coherent(cpfskdem        _q,
 
 #if 1
         // print result to screen
-        printf("  %12.8f + j%12.8f, <f=%8.4f : %8.4f> (%1u)\n",
-                crealf(z), cimagf(z), phi_hat, v, sym_out);
+        printf("  %3u : %12.8f + j%12.8f, <f=%8.4f : %8.4f> (%1u)\n",
+                _q->index++, crealf(z), cimagf(z), phi_hat, v, sym_out);
 #endif
 
         // save output

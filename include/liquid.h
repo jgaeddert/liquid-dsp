@@ -5374,6 +5374,9 @@ void cpfskmod_print(cpfskmod _q);
 // reset state
 void cpfskmod_reset(cpfskmod _q);
 
+// get transmit delay [symbols]
+unsigned int cpfskmod_get_delay(cpfskmod _q);
+
 // modulate sample
 //  _q      :   frequency modulator object
 //  _s      :   input symbol
@@ -5411,6 +5414,9 @@ void cpfskdem_print(cpfskdem _q);
 
 // reset state
 void cpfskdem_reset(cpfskdem _q);
+
+// get receive delay [symbols]
+unsigned int cpfskdem_get_delay(cpfskdem _q);
 
 // demodulate array of samples
 //  _q      :   continuous-phase frequency demodulator object
