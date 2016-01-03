@@ -1437,7 +1437,7 @@ example_programs :=						\
 	examples/conversion_example				\
 	examples/crc_example					\
 	examples/cpfskmodem_example				\
-	examples/cpfsk_psd_example				\
+	examples/cpfskmodem_psd_example				\
 	examples/cvsd_example					\
 	examples/detector_cccf_example				\
 	examples/dotprod_rrrf_example				\
