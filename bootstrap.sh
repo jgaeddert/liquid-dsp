@@ -1,5 +1,5 @@
 #!/bin/sh
-# Copyright (c) 2007 - 2015 Joseph Gaeddert
+# Copyright (c) 2007 - 2016 Joseph Gaeddert
 # 
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -27,7 +27,7 @@
 #
 
 rm -f config.cache aclocal.m4
-aclocal -I./scripts
+aclocal
 autoconf
 autoheader
 #automake --foreign --add-missing

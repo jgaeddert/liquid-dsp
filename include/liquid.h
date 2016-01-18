@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2015 Joseph Gaeddert
+ * Copyright (c) 2007 - 2016 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -5374,6 +5374,9 @@ void cpfskmod_print(cpfskmod _q);
 // reset state
 void cpfskmod_reset(cpfskmod _q);
 
+// get transmit delay [symbols]
+unsigned int cpfskmod_get_delay(cpfskmod _q);
+
 // modulate sample
 //  _q      :   frequency modulator object
 //  _s      :   input symbol
@@ -5412,6 +5415,10 @@ void cpfskdem_print(cpfskdem _q);
 // reset state
 void cpfskdem_reset(cpfskdem _q);
 
+// get receive delay [symbols]
+unsigned int cpfskdem_get_delay(cpfskdem _q);
+
+#if 0
 // demodulate array of samples
 //  _q      :   continuous-phase frequency demodulator object
 //  _y      :   input sample array [size: _n x 1]
@@ -5423,7 +5430,13 @@ void cpfskdem_demodulate(cpfskdem               _q,
                          unsigned int           _n,
                          unsigned int         * _s,
                          unsigned int         * _nw);
-
+#else
+// demodulate array of samples, assuming perfect timing
+//  _q      :   continuous-phase frequency demodulator object
+//  _y      :   input sample array [size: _k x 1]
+unsigned int cpfskdem_demodulate(cpfskdem               _q,
+                                 liquid_float_complex * _y);
+#endif
 
 
 

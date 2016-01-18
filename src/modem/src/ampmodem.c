@@ -205,6 +205,12 @@ void ampmodem_demodulate(ampmodem _q,
 #endif
 
     if (_q->suppressed_carrier) {
+        // single side-band suppressed carrier
+        if (_q->type != LIQUID_AMPMODEM_DSB) {
+            *_x = crealf(_y);
+            return;
+        }
+
         // coherent demodulation
         
         // mix signal down
