@@ -45,7 +45,7 @@ struct qpacketmodem_s {
     unsigned int    bits_per_symbol;    // modulator bits/symbol
     unsigned int    payload_dec_len;    // number of decoded payload bytes
     unsigned char * payload_enc;        // payload data (encoded bytes)
-    unsigned char * payload_mod;        // payload symbols (modulator output, demod input)
+    unsigned int  * payload_mod;        // payload symbols (modulator output, demod input)
     unsigned int    payload_enc_len;    // number of encoded payload bytes
     unsigned int    payload_bit_len;    // number of bits in encoded payload
     unsigned int    payload_mod_len;    // number of symbols in encoded payload
@@ -88,7 +88,7 @@ qpacketmodem qpacketmodem_create()
 
     // set symbol length appropriately
     q->payload_mod_len = q->payload_enc_len * 4;    // for QPSK
-    q->payload_mod = (unsigned char*) malloc(q->payload_mod_len*sizeof(unsigned char));
+    q->payload_mod = (unsigned int*) malloc(q->payload_mod_len*sizeof(unsigned int));
 
     // return pointer to main object
     return q;
@@ -161,8 +161,8 @@ int qpacketmodem_configure(qpacketmodem _q,
 #endif
 
     // reallocate memory for modem symbols
-    _q->payload_mod = (unsigned char*) realloc(_q->payload_mod,
-                                               _q->payload_mod_len*sizeof(unsigned char));
+    _q->payload_mod = (unsigned int*) realloc(_q->payload_mod,
+                                              _q->payload_mod_len*sizeof(unsigned int));
 
     return 0;
 }
@@ -213,15 +213,12 @@ void qpacketmodem_encode(qpacketmodem    _q,
     packetizer_encode(_q->p, _payload, _q->payload_enc);
 
     // clear payload
-    memset(_q->payload_mod, 0x00, _q->payload_mod_len);
+    memset(_q->payload_mod, 0x00, _q->payload_mod_len * sizeof(unsigned int));
 
     // repack 8-bit payload bytes into 'bps'-bit payload symbols
     unsigned int bps = _q->bits_per_symbol;
-    unsigned int num_written;
-    liquid_repack_bytes(_q->payload_enc,  8,  _q->payload_enc_len,
-                        _q->payload_mod, bps, _q->payload_mod_len,
-                        &num_written);
-    assert(num_written == _q->payload_mod_len);
+    liquid_unpack_array_block(_q->payload_enc, _q->payload_enc_len,
+                              bps, _q->payload_mod_len, _q->payload_mod);
 
     for (i=0; i<_q->payload_mod_len; i++)
         modem_modulate(_q->mod_payload, _q->payload_mod[i], &_frame[i]);

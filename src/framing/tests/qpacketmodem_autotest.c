@@ -82,4 +82,4 @@ void autotest_qpacketmodem_sqam32() { qpacketmodem_test(400,LIQUID_CRC_32,LIQUID
 void autotest_qpacketmodem_qam64()  { qpacketmodem_test(400,LIQUID_CRC_32,LIQUID_FEC_NONE,LIQUID_FEC_NONE, LIQUID_MODEM_QAM64);   }
 void autotest_qpacketmodem_sqam128(){ qpacketmodem_test(400,LIQUID_CRC_32,LIQUID_FEC_NONE,LIQUID_FEC_NONE, LIQUID_MODEM_SQAM128); }
 void autotest_qpacketmodem_qam256() { qpacketmodem_test(400,LIQUID_CRC_32,LIQUID_FEC_NONE,LIQUID_FEC_NONE, LIQUID_MODEM_QAM256);  }
-
+void autotest_qpacketmodem_qam512() { qpacketmodem_test(400,LIQUID_CRC_32,LIQUID_FEC_NONE,LIQUID_FEC_NONE, LIQUID_MODEM_QAM512);  }
