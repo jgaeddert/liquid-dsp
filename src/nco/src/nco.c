@@ -385,19 +385,12 @@ void NCO(_compute_sincos_nco)(NCO() _q)
     // NOTE : add 2 * sintab_size to ensure positive value, add 0.5 for rounding precision
     // TODO : move away from floating-point specific code
     unsigned int index = (unsigned int)((_q->theta)*(float)(_q->sintab_size)/(2.0f*M_PI) + (float)(2 * _q->sintab_size) + 0.5f);
-    if (index >= _q->sintab_size) {
-        index -= _q->sintab_size;
-    }
-    if (index >= _q->sintab_size) {
-        index -= _q->sintab_size;
-    }
+    index %= _q->sintab_size;
     assert(index < _q->sintab_size);
     
     _q->sine = _q->sintab[index];
-    unsigned int cos_index = index+(_q->sintab_size/4);
-    if (cos_index > _q->sintab_size) {
-        cos_index -= _q->sintab_size;
-    }
+    unsigned int cos_index = (index+(_q->sintab_size/4)) % _q->sintab_size;
+    assert(cos_index < _q->sintab_size);
     _q->cosine = _q->sintab[cos_index];
 }
 
