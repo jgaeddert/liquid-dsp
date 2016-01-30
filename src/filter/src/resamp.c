@@ -342,6 +342,111 @@ void RESAMP(_execute_block)(RESAMP()       _q,
     *_ny = ny;
 }
 
+// execute arbitrary resampler into specified output size
+// will fill up to but not more than requested size _ny
+// returns true if more samples can be fetched without more inputs
+// false otherwise
+//  _q              :   resamp object
+//  _x              :   input buffer [size: _nx x 1]
+//  _nx             :   input buffer size
+//  _ux             :   number of input samples read
+//  _y              :   output sample array
+//  _ny             :   capacity of output sample array
+//  _uy             :   number of output samples written
+int RESAMP(_execute_output_block)(RESAMP() _q,
+                                   TI * _x,
+                                   unsigned int _nx,
+                                   unsigned int * _ux,
+                                   TO * _y,
+                                   unsigned int _ny,
+                                   unsigned int * _uy)
+{
+
+    unsigned int num_read=0;
+    unsigned int num_written=0;
+    // loop through filling one output sample at a time
+    while (num_written < _ny) {
+        if (_q->b == 0 && _q->mu == 0) {
+            // very beginning of filter -- we need an input to get started
+            // this case seems strange, but we can't get here after things are moving
+            // if later we land exactly on _q->b = npfb and _q->mu = 0 then
+            //    we will get into the next, case, it will reset us to (0, 0),
+            //    but then immediately after we write a new output that put us
+            //    on some other b, mu
+            if (num_read == _nx) {
+                // ran out of input samples
+                break;
+            }
+            // push input sample into filterbank
+            FIRPFB(_push)(_q->f, _x[num_read]);
+            num_read++;
+        } else if (_q->b >= _q->npfb) {
+            // we have stepped through the filter so we need a new input
+            if (num_read == _nx) {
+                // ran out of input samples
+                break;
+            }
+            // decrement timing phase by one sample
+            _q->tau -= 1.0f;
+            _q->bf  -= (float)(_q->npfb);
+            _q->b   -= _q->npfb;
+            // push input sample into filterbank
+            FIRPFB(_push)(_q->f, _x[num_read]);
+            num_read++;
+        }
+
+        switch (_q->state) {
+        case RESAMP_STATE_BOUNDARY:
+            // compute filterbank output
+            FIRPFB(_execute)(_q->f, 0, &_q->y1);
+
+            // interpolate
+            _y[num_written++] = (1.0f - _q->mu)*_q->y0 + _q->mu*_q->y1;
+
+            // update timing state
+            RESAMP(_update_timing_state)(_q);
+
+            _q->state = RESAMP_STATE_INTERP;
+            break;
+
+        case RESAMP_STATE_INTERP:
+            // compute output at base index
+            FIRPFB(_execute)(_q->f, _q->b, &_q->y0);
+
+            // check to see if base index is last filter in the bank, in
+            // which case the resampler needs an additional input sample
+            // to finish the linear interpolation process
+            if (_q->b == _q->npfb-1) {
+                // last filter: need additional input sample
+                _q->state = RESAMP_STATE_BOUNDARY;
+
+                // set index to indicate new sample is needed
+                _q->b = _q->npfb;
+            } else {
+                // do not need additional input sample; compute
+                // output at incremented base index
+                FIRPFB(_execute)(_q->f, _q->b+1, &_q->y1);
+
+                // perform linear interpolation between filterbank outputs
+                _y[num_written++] = (1.0f - _q->mu)*_q->y0 + _q->mu*_q->y1;
+
+                // update timing state
+                RESAMP(_update_timing_state)(_q);
+            }
+            break;
+        default:
+            fprintf(stderr,"error: resamp_%s_execute(), invalid/unknown state\n", EXTENSION_FULL);
+            exit(1);
+        }
+    }
+
+    // specify number of samples used
+    *_ux = num_read;
+    *_uy = num_written;
+
+    return _q->b >= _q->npfb;
+}
+
 
 //
 // internal methods

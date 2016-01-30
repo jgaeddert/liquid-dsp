@@ -165,3 +165,124 @@ void autotest_resamp_crcf()
     printf("results written to %s\n",filename);
 #endif
 }
+
+//
+// AUTOTEST : test arbitrary resampler fixed output mode
+//
+void autotest_resamp_crcf_output_block()
+{
+    // options
+    unsigned int m = 13;        // filter semi-length (filter delay)
+    float r=1.27115323f;        // resampling rate (output/input)
+    float bw=0.45f;             // resampling filter bandwidth
+    float As=60.0f;             // resampling filter stop-band attenuation [dB]
+    unsigned int npfb=64;       // number of filters in bank (timing resolution)
+    unsigned int n=400;         // number of input samples
+    float fx=0.254230646f;      // complex input sinusoid frequency (0.2*r)
+    complex float magic = 123456 + _Complex_I * 7890123;
+
+    unsigned int i;
+
+    // number of input samples (zero-padded)
+    unsigned int nx = n + m;
+
+    // output buffer with a) 1 added to fit nx and b) 1 added for a magic value
+    unsigned int y_len = nx * r + 1 + 1;
+    // ny is the number of output samples we'll ask for
+    unsigned int ny = y_len - 1;
+
+    // arrays
+    float complex x[nx];
+    float complex y[y_len];
+
+    // set magic value
+    y[y_len - 1] = magic;
+
+    // create resampler
+    resamp_crcf q = resamp_crcf_create(r,m,bw,As,npfb);
+
+    // generate input signal
+    float wsum = 0.0f;
+    for (i=0; i<nx; i++) {
+        // compute window
+        float w = i < n ? kaiser(i, n, 10.0f, 0.0f) : 0.0f;
+
+        // apply window to complex sinusoid
+        x[i] = cexpf(_Complex_I*2*M_PI*fx*i) * w;
+
+        // accumulate window
+        wsum += w;
+    }
+
+    // resample
+    unsigned int ux;
+    unsigned int uy;
+    // execute resampler, storing in output buffer
+    resamp_crcf_execute_output_block(q, x, nx, &ux, y, ny, &uy);
+
+    // clean up allocated objects
+    resamp_crcf_destroy(q);
+
+    //
+    // analyze resulting signal
+    //
+
+    // check that the actual resampling rate is close to the target
+    float r_actual = (float)uy / (float)ux;
+    float fy = fx / r;      // expected output frequency
+
+    // run FFT and ensure that carrier has moved and that image
+    // frequencies and distortion have been adequately suppressed
+    unsigned int nfft = 1 << liquid_nextpow2(uy);
+    float complex yfft[nfft];   // fft input
+    float complex Yfft[nfft];   // fft output
+    for (i=0; i<nfft; i++)
+        yfft[i] = i < uy ? y[i] : 0.0f;
+    fft_run(nfft, yfft, Yfft, LIQUID_FFT_FORWARD, 0);
+    fft_shift(Yfft, nfft);  // run FFT shift
+
+    // find peak frequency
+    float Ypeak = 0.0f;
+    float fpeak = 0.0f;
+    float max_sidelobe = -1e9f;     // maximum side-lobe [dB]
+    float main_lobe_width = 0.07f;  // TODO: figure this out from Kaiser's equations
+    for (i=0; i<nfft; i++) {
+        // normalized output frequency
+        float f = (float)i/(float)nfft - 0.5f;
+
+        // scale FFT output appropriately
+        Yfft[i] /= (r * wsum);
+        float Ymag = 20*log10f( cabsf(Yfft[i]) );
+
+        // find frequency location of maximum magnitude
+        if (Ymag > Ypeak || i==0) {
+            Ypeak = Ymag;
+            fpeak = f;
+        }
+
+        // find peak side-lobe value, ignoring frequencies
+        // within a certain range of signal frequency
+        if ( fabsf(f-fy) > main_lobe_width )
+            max_sidelobe = Ymag > max_sidelobe ? Ymag : max_sidelobe;
+    }
+
+    if (liquid_autotest_verbose) {
+        // print results
+        printf("  desired resampling rate   :   %12.8f\n", r);
+        printf("  measured resampling rate  :   %12.8f    (%u/%u)\n", r_actual, uy, ux);
+        printf("  peak spectrum             :   %12.8f dB (expected 0.0 dB)\n", Ypeak);
+        printf("  peak frequency            :   %12.8f    (expected %-12.8f)\n", fpeak, fy);
+        printf("  max sidelobe              :   %12.8f dB (expected at least %.2f dB)\n", max_sidelobe, -As);
+    }
+    CONTEND_DELTA(     r_actual, r,    0.01f ); // check actual output sample rate
+    CONTEND_DELTA(     Ypeak,    0.0f, 0.25f ); // peak should be about 0 dB
+    CONTEND_DELTA(     fpeak,    fy,   0.01f ); // peak frequency should be nearly 0.2
+    CONTEND_LESS_THAN( max_sidelobe, -As );     // maximum side-lobe should be sufficiently low
+
+    // make sure our magic value is still there
+    CONTEND_DELTA(y[y_len - 1], magic, 0.0001f);
+
+    // did we use the right number of samples?
+    CONTEND_EQUALITY(ux, nx);
+    CONTEND_EQUALITY(uy, ny);
+}
