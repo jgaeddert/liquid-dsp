@@ -444,7 +444,7 @@ int RESAMP(_execute_output_block)(RESAMP() _q,
     *_ux = num_read;
     *_uy = num_written;
 
-    return _q->b >= _q->npfb;
+    return _q->b < _q->npfb;
 }
 
 
