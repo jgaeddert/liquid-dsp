@@ -380,10 +380,13 @@ int RESAMP(_execute_output_block)(RESAMP() _q,
             // push input sample into filterbank
             FIRPFB(_push)(_q->f, _x[num_read]);
             num_read++;
-        } else if (_q->b >= _q->npfb) {
+        }
+        int done = 0;
+        while (_q->b >= _q->npfb) {
             // we have stepped through the filter so we need a new input
             if (num_read == _nx) {
                 // ran out of input samples
+                done = 1;
                 break;
             }
             // decrement timing phase by one sample
@@ -393,6 +396,9 @@ int RESAMP(_execute_output_block)(RESAMP() _q,
             // push input sample into filterbank
             FIRPFB(_push)(_q->f, _x[num_read]);
             num_read++;
+        }
+        if (done) {
+            break;
         }
 
         switch (_q->state) {
