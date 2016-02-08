@@ -3419,10 +3419,10 @@ int qpacketmodem_configure(qpacketmodem _q,
                            fec_scheme   _fec1,
                            int          _ms);
 
-// get length of frame in symbols
+// get length of encoded frame in symbols
 unsigned int qpacketmodem_get_frame_len(qpacketmodem _q);
 
-// get payload length (bytes)
+// get unencoded/decoded payload length (bytes)
 unsigned int qpacketmodem_get_payload_len(qpacketmodem _q);
 
 // regular access methods
@@ -3431,19 +3431,55 @@ unsigned int qpacketmodem_get_fec0     (qpacketmodem _q);
 unsigned int qpacketmodem_get_fec1     (qpacketmodem _q);
 unsigned int qpacketmodem_get_modscheme(qpacketmodem _q);
 
-// encode packet into modulated frame samples
-// TODO: include method with just symbol indices? would be useful for
-//       non-linear modulation types
+// encode packet into un-modulated frame symbol indices
+//  _q          :   qpacketmodem object
+//  _payload    :   unencoded payload bytes
+//  _syms       :   encoded but un-modulated payload symbol indices
+void qpacketmodem_encode_syms(qpacketmodem    _q,
+                              unsigned char * _payload,
+                              unsigned char * _syms);
+
+// decode packet from demodulated frame symbol indices (hard-decision decoding)
+//  _q          :   qpacketmodem object
+//  _syms       :   received hard-decision symbol indices [size: frame_len x 1]
+//  _payload    :   recovered decoded payload bytes
+int qpacketmodem_decode_syms(qpacketmodem    _q,
+                             unsigned char * _syms,
+                             unsigned char * _payload);
+
+// decode packet from demodulated frame bits (soft-decision decoding)
+//  _q          :   qpacketmodem object
+//  _bits       :   received soft-decision bits, [size: bps*frame_len x 1]
+//  _payload    :   recovered decoded payload bytes
+int qpacketmodem_decode_bits(qpacketmodem    _q,
+                             unsigned char * _bits,
+                             unsigned char * _payload);
+
+// encode and modulate packet into modulated frame samples
+//  _q          :   qpacketmodem object
+//  _payload    :   unencoded payload bytes
+//  _frame      :   encoded/modulated payload symbols
 void qpacketmodem_encode(qpacketmodem           _q,
                          unsigned char *        _payload,
                          liquid_float_complex * _frame);
 
-// decode packet into modulated frame samples
-// TODO: include method with just symbol indices? would be useful for
-//       non-linear modulation types
+// decode packet from modulated frame samples, returning flag if CRC passed
+// NOTE: hard-decision decoding
+//  _q          :   qpacketmodem object
+//  _frame      :   encoded/modulated payload symbols
+//  _payload    :   recovered decoded payload bytes
 int qpacketmodem_decode(qpacketmodem           _q,
                         liquid_float_complex * _frame,
                         unsigned char *        _payload);
+
+// decode packet from modulated frame samples, returning flag if CRC passed
+// NOTE: soft-decision decoding
+//  _q          :   qpacketmodem object
+//  _frame      :   encoded/modulated payload symbols
+//  _payload    :   recovered decoded payload bytes
+int qpacketmodem_decode_soft(qpacketmodem           _q,
+                             liquid_float_complex * _frame,
+                             unsigned char *        _payload);
 
 //
 // pilot generator for streaming applications
