@@ -398,14 +398,20 @@ void fskframesync_execute_detectframe(fskframesync  _q,
     // compute LLR value
     float LLR = logf( (v1+1e-9f)/(v0+1e-9f) );
 
+    // TODO: come up with better detector
+    LLR = LLR > 0.0f ? 1.0f : -1.0f;
+
     // push result into detector
     float v;
     firfilt_rrrf_push(   _q->detector, LLR);
     firfilt_rrrf_execute(_q->detector, &v);
-    printf("LLR(end+1) = %12.8f; v(end+1) = %12.8f;\n", LLR, v);
+    //printf("LLR(end+1) = %12.8f; v(end+1) = %12.8f;\n", LLR, v);
+
+    // scale by sequence length
+    v /= (float)(2*64);
 
     // push LLR sample into frame detector
-    int detected = 0;
+    int detected = v > 0.5f;
 
     // check if frame has been detected
     if (detected) {

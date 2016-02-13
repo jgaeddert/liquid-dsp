@@ -10,7 +10,6 @@
 
 #include <stdio.h>
 #include <stdlib.h>
-#include <string.h>
 #include <math.h>
 #include <getopt.h>
 #include <time.h>
@@ -49,7 +48,7 @@ int main(int argc, char*argv[])
 
     // options
     float SNRdB       =  20.0f; // signal-to-noise ratio
-    float noise_floor = -40.0f; // noise floor
+    float noise_floor = -30.0f; // noise floor
     float dphi        =  0.01f; // carrier frequency offset
     float theta       =  0.0f;  // carrier phase offset
     float dt          =  -0.2f;  // fractional sample timing offset
@@ -108,7 +107,7 @@ int main(int argc, char*argv[])
 
     // spectral periodogram
     unsigned int nfft  = 4200;
-    float        alpha = 0.02f;
+    float        alpha = 0.10f;
     spgramcf periodogram = spgramcf_create_kaiser(nfft, nfft/2, 8.0f);
 
     // write frame in blocks
@@ -117,8 +116,9 @@ int main(int argc, char*argv[])
     {
         frame_complete = fskframegen_write_samples(fg, buf_tx, buf_len);
 
-        // TODO: add noise, etc.
-        memmove(buf_rx, buf_tx, buf_len*sizeof(float complex));
+        // add noise, channel gain
+        for (i=0; i<buf_len; i++)
+            buf_rx[i] = buf_tx[i]*gamma + nstd*(randnf() + randnf()*_Complex_I)*M_SQRT1_2;
 
         // synchronize/receive the frame
         fskframesync_execute_block(fs, buf_rx, buf_len);
