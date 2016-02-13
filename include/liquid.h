@@ -3811,7 +3811,8 @@ void fskframegen_assemble(fskframegen     _fg,
                           fec_scheme      _fec1);
 unsigned int fskframegen_getframelen(fskframegen _q);
 int fskframegen_write_samples(fskframegen            _fg,
-                              liquid_float_complex * _y);
+                              liquid_float_complex * _buf,
+                              unsigned int           _buf_len);
 
 
 //

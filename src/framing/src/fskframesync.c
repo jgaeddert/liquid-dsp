@@ -137,7 +137,7 @@ fskframesync fskframesync_create(framesync_callback _callback,
     q->m         = 4;
     q->M         = 1 << q->m;
     q->k         = 2 << q->m;
-    q->bandwidth = 0.4f;
+    q->bandwidth = 0.25f;
 
     // create demodulator
     q->dem = fskdem_create(q->m, q->k, q->bandwidth);
@@ -188,7 +188,7 @@ fskframesync fskframesync_create(framesync_callback _callback,
                            LIQUID_CRC_32,
                            LIQUID_FEC_NONE,
                            LIQUID_FEC_GOLAY2412,
-                           LIQUID_MODEM_QPSK);  // TODO: set bits/sym appropriately
+                           LIQUID_MODEM_QAM16);  // TODO: set bits/sym appropriately
     q->header_sym_len   = qpacketmodem_get_frame_len(q->header_encoder);
     q->header_sym       = (unsigned char*)malloc(q->header_sym_len*sizeof(unsigned char));
 #endif
@@ -207,17 +207,17 @@ fskframesync fskframesync_create(framesync_callback _callback,
     q->payload_enc      = (unsigned char*)malloc(q->payload_enc_len*sizeof(unsigned char));
     q->payload_sym_len  = 0;    // TODO: set this appropriately
 #else
-    q->payload_dec_len  = 10;
+    q->payload_dec_len  = 200;
     q->payload_crc      = LIQUID_CRC_32;
     q->payload_fec0     = LIQUID_FEC_NONE;
-    q->payload_fec1     = LIQUID_FEC_GOLAY2412;
+    q->payload_fec1     = LIQUID_FEC_HAMMING128;
     q->payload_encoder  = qpacketmodem_create();
     qpacketmodem_configure(q->payload_encoder,
                            q->payload_dec_len,
                            q->payload_crc,
                            q->payload_fec0,
                            q->payload_fec1,
-                           LIQUID_MODEM_QPSK);  // TODO: set bits/sym appropriately
+                           LIQUID_MODEM_QAM16);  // TODO: set bits/sym appropriately
     q->payload_sym_len  = qpacketmodem_get_frame_len(q->payload_encoder);
     q->payload_sym      = (unsigned char*)malloc(q->payload_sym_len*sizeof(unsigned char));
 #endif
