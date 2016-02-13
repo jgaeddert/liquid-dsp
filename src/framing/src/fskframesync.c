@@ -158,8 +158,11 @@ fskframesync fskframesync_create(framesync_callback _callback,
     float * preamble = (float*) malloc( 2*preamble_sym_len*sizeof(float) );
     unsigned int i;
     for (i=0; i<preamble_sym_len; i++) {
-        preamble[2*i+0] = msequence_advance(preamble_ms) ? 1.0f : -1.0f;
-        preamble[2*i+1] = preamble[2*i+0];
+        float v = msequence_advance(preamble_ms) ? 1.0f : -1.0f;
+
+        // reverse direction for filter
+        preamble[2*preamble_sym_len - (2*i+0) - 1] = v;
+        preamble[2*preamble_sym_len - (2*i+1) - 1] = v;
     }
     q->detector = firfilt_rrrf_create(preamble, 2*preamble_sym_len);
     free(preamble);
@@ -312,45 +315,50 @@ void fskframesync_reset(fskframesync _q)
     _q->state            = STATE_DETECTFRAME;
     _q->sample_counter   = 0;
     _q->symbol_counter   = 0;
-    _q->timer            = 0;
+    _q->timer            = _q->k;
 }
 
 // execute frame synchronizer
 //  _q      :   frame synchronizer object
-//  _x      :   input sample array [size: _n x 1]
-//  _n      :   number of input samples
-void fskframesync_execute(fskframesync    _q,
-                          float complex * _x,
-                          unsigned int    _n)
+//  _x      :   input sample
+void fskframesync_execute(fskframesync  _q,
+                          float complex _x)
 {
     // push through synchronizer
-    unsigned int i;
-    for (i=0; i<_n; i++) {
-        float complex xf;   // input sample
-        xf = _x[i];
-
 #if DEBUG_FSKFRAMESYNC
-        if (_q->debug_enabled)
-            windowcf_push(_q->debug_x, xf);
+    if (_q->debug_enabled)
+        windowcf_push(_q->debug_x, _x);
 #endif
 
-        switch (_q->state) {
-        case STATE_DETECTFRAME:
-            // look for p/n sequence
-            fskframesync_execute_detectframe(_q, xf);
-            break;
+    switch (_q->state) {
+    case STATE_DETECTFRAME:
+        // look for p/n sequence
+        fskframesync_execute_detectframe(_q, _x);
+        break;
 
-        case STATE_RXHEADER:
-            // receive header
-            fskframesync_execute_rxheader(_q, xf);
-            break;
+    case STATE_RXHEADER:
+        // receive header
+        fskframesync_execute_rxheader(_q, _x);
+        break;
 
-        case STATE_RXPAYLOAD:
-            // receive payload
-            fskframesync_execute_rxpayload(_q, xf);
-            break;
-        }
+    case STATE_RXPAYLOAD:
+        // receive payload
+        fskframesync_execute_rxpayload(_q, _x);
+        break;
     }
+}
+
+// execute frame synchronizer on a block of samples
+//  _q      :   frame synchronizer object
+//  _x      :   input sample array [size: _n x 1]
+//  _n      :   number of input samples
+void fskframesync_execute_block(fskframesync    _q,
+                                float complex * _x,
+                                unsigned int    _n)
+{
+    unsigned int i;
+    for (i=0; i<_n; i++)
+        fskframesync_execute(_q, _x[i]);
 }
 
 // 
@@ -360,6 +368,7 @@ void fskframesync_execute(fskframesync    _q,
 void fskframesync_execute_detectframe(fskframesync  _q,
                                       float complex _x)
 {
+#if 0
     // push sample through timing recovery and compute output
     float complex y;
     firpfb_crcf_push(_q->pfb, _x);
@@ -367,6 +376,9 @@ void fskframesync_execute_detectframe(fskframesync  _q,
 
     // push sample into pre-demod p/n sequence buffer
     windowcf_push(_q->buf_rx, y);
+#else
+    windowcf_push(_q->buf_rx, _x);
+#endif
 
     // decrement timer and determine if symbol output is ready
     _q->timer--;
@@ -377,6 +389,20 @@ void fskframesync_execute_detectframe(fskframesync  _q,
     _q->timer = _q->k;
 
     // run demodulator and retrieve FFT result, computing LLR sample output
+    float complex * r;
+    windowcf_read(_q->buf_rx, &r);
+    fskdem_demodulate(_q->dem, r);
+    float v0 = fskdem_get_symbol_energy(_q->dem,       0, 0);
+    float v1 = fskdem_get_symbol_energy(_q->dem, _q->M-1, 0);
+
+    // compute LLR value
+    float LLR = logf( (v1+1e-9f)/(v0+1e-9f) );
+
+    // push result into detector
+    float v;
+    firfilt_rrrf_push(   _q->detector, LLR);
+    firfilt_rrrf_execute(_q->detector, &v);
+    printf("LLR(end+1) = %12.8f; v(end+1) = %12.8f;\n", LLR, v);
 
     // push LLR sample into frame detector
     int detected = 0;

@@ -121,7 +121,7 @@ int main(int argc, char*argv[])
         memmove(buf_rx, buf_tx, buf_len*sizeof(float complex));
 
         // synchronize/receive the frame
-        fskframesync_execute(fs, buf_rx, buf_len);
+        fskframesync_execute_block(fs, buf_rx, buf_len);
         
         // estimate power spectral density
         spgramcf_accumulate_psd(periodogram, buf_rx, alpha, buf_len);

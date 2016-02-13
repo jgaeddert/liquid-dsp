@@ -243,7 +243,7 @@ void fskframegen_reset(fskframegen _q)
     _q->frame_assembled = 0;
     _q->frame_complete  = 0;
     _q->symbol_counter  = 0;
-    _q->sample_counter  = 0;
+    _q->sample_counter  = _q->k;    // indicate we are ready for a new symbol
 }
 
 // print fskframegen object internals
@@ -349,13 +349,13 @@ int fskframegen_write_samples(fskframegen     _q,
 {
     unsigned int i;
     for (i=0; i<_buf_len; i++) {
-        _buf[i] = _q->buf[_q->sample_counter++];
-
         // buffer emptied; generate new symbol
         if (_q->sample_counter == _q->k) {
             fskframegen_generate_symbol(_q);
             _q->sample_counter = 0;
         }
+
+        _buf[i] = _q->buf[_q->sample_counter++];
     }
 
     return _q->frame_assembled ? 0 : 1;
