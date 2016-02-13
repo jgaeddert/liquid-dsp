@@ -3829,9 +3829,11 @@ fskframesync fskframesync_create(framesync_callback _callback,
 void fskframesync_destroy(fskframesync _q);
 void fskframesync_print  (fskframesync _q);
 void fskframesync_reset  (fskframesync _q);
-void fskframesync_execute(fskframesync           _q,
-                          liquid_float_complex * _x,
-                          unsigned int           _n);
+void fskframesync_execute(fskframesync         _q,
+                          liquid_float_complex _x);
+void fskframesync_execute_block(fskframesync           _q,
+                                liquid_float_complex * _x,
+                                unsigned int           _n);
 
 // debugging
 void fskframesync_debug_enable (fskframesync _q);
@@ -5586,6 +5588,11 @@ unsigned int fskdem_demodulate(fskdem                 _q,
 
 // get demodulator frequency error
 float fskdem_get_frequency_error(fskdem _q);
+
+// get energy for a particular symbol within a certain range
+float fskdem_get_symbol_energy(fskdem       _q,
+                               unsigned int _s,
+                               unsigned int _range);
 
 
 // 
