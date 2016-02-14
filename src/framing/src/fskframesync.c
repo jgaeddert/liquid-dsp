@@ -63,7 +63,9 @@ struct fskframesync_s {
     firpfb_crcf     pfb;                // timing recovery
     nco_crcf        nco;                // coarse carrier frequency recovery
     firfilt_rrrf    detector;           // frame correlator detector
-    windowcf        buf_rx;             // pre-demod buffered samples, size: k*(pn_len+m)
+    windowcf        buf_rx;             // pre-demod buffered samples, size: k
+    windowf         buf_LLR2;           // detector signal level
+    float           rxy[3];             // detector output for timing recovery
 
     // header
 #if 0
@@ -111,7 +113,7 @@ struct fskframesync_s {
                     STATE_RXPAYLOAD,    // payload (frame)
     }               state;
     int             frame_assembled;    // frame assembled flag
-    int             frame_complete;     // frame completed flag
+    int             frame_detected;     // frame detected flag
     unsigned int    sample_counter;     // output sample counter
     unsigned int    symbol_counter;     // output symbol counter
     unsigned int    timer;              // sample timer
@@ -167,6 +169,9 @@ fskframesync fskframesync_create(framesync_callback _callback,
     q->detector = firfilt_rrrf_create(preamble, 2*preamble_sym_len);
     free(preamble);
     msequence_destroy(preamble_ms);
+
+    // create buffer for 
+    q->buf_LLR2 = windowf_create(2*preamble_sym_len);
 
     // header objects/arrays
 #if 0
@@ -265,6 +270,7 @@ void fskframesync_destroy(fskframesync _q)
 
     // reset internal objects
     firfilt_rrrf_destroy(_q->detector);
+    windowf_destroy(_q->buf_LLR2);
 
     // destroy/free header objects/arrays
 #if 0
@@ -313,6 +319,7 @@ void fskframesync_reset(fskframesync _q)
 
     // reset state and counters
     _q->state            = STATE_DETECTFRAME;
+    _q->frame_detected   = 0;
     _q->sample_counter   = 0;
     _q->symbol_counter   = 0;
     _q->timer            = _q->k;
@@ -392,33 +399,65 @@ void fskframesync_execute_detectframe(fskframesync  _q,
     float complex * r;
     windowcf_read(_q->buf_rx, &r);
     fskdem_demodulate(_q->dem, r);
-    float v0 = fskdem_get_symbol_energy(_q->dem,       0, 0);
-    float v1 = fskdem_get_symbol_energy(_q->dem, _q->M-1, 0);
+    float v0 = fskdem_get_symbol_energy(_q->dem,       0, 2);
+    float v1 = fskdem_get_symbol_energy(_q->dem, _q->M-1, 2);
 
     // compute LLR value
     float LLR = logf( (v1+1e-9f)/(v0+1e-9f) );
-
-    // TODO: come up with better detector
-    LLR = LLR > 0.0f ? 1.0f : -1.0f;
 
     // push result into detector
     float v;
     firfilt_rrrf_push(   _q->detector, LLR);
     firfilt_rrrf_execute(_q->detector, &v);
-    //printf("LLR(end+1) = %12.8f; v(end+1) = %12.8f;\n", LLR, v);
 
-    // scale by sequence length
-    v /= (float)(2*64);
+    // scale by signal level
+    windowf_push(_q->buf_LLR2, LLR*LLR);
+    float * rf;
+    windowf_read(_q->buf_LLR2, &rf);
+    float g = 0.0f;
+    unsigned int i;
+    // sum squares
+    for (i=0; i<128; i++)
+        g += rf[i];
+    float rxy = v / (128.0f * (1e-6f + sqrtf(g/128.0f)));
+    
+    //printf("LLR(end+1) = %12.4e; v(end+1) = %12.4e; g(end+1) = %12.4e;\n", LLR, rxy, g);
 
-    // push LLR sample into frame detector
-    int detected = v > 0.5f;
+    // shift correlator values
+    _q->rxy[0] = _q->rxy[1];
+    _q->rxy[1] = _q->rxy[2];
+    _q->rxy[2] = rxy;
 
-    // check if frame has been detected
-    if (detected) {
-        printf("### fskframe detected! ###\n");
+    // check state; we are waiting for correlator to peak here
+    if (!_q->frame_detected) {
+        // frame not yet detected; check cross-correlator output
+        // NOTE: because this is a ratio of energies in frequency, we don't need
+        //       to take the absolute value here; only positive values should work
+        if (rxy > 0.5f) {
+            printf("### fskframe detected! ###\n");
+            _q->frame_detected = 1;
+        }
+    } else {
+        // frame has already been detected; wait for signal to peak
+        if (_q->rxy[1] > _q->rxy[2]) {
+            printf("signal peaked! %12.8f %12.8f %12.8f\n",
+                    _q->rxy[0], _q->rxy[1], _q->rxy[2]);
 
-        // update state...
-        //_q->state = STATE_RXHEADER;
+            // compute estimate, apply bias compensation
+            float gamma = (_q->rxy[2] - _q->rxy[0]) / _q->rxy[1];
+            float p2 = 9.54907046918287e-01f;
+            float p1 = 8.87465224972323e-02;
+            float xf      = fabsf(gamma);
+            float tau_hat = copysignf(p2*xf*xf + p1*xf, gamma);
+            int   num_samples = round(tau_hat * _q->k);
+            printf("timing offset estimate  : %12.8f -> %12.8f (%d samples)\n",
+                    gamma, tau_hat, num_samples);
+
+            // update state...
+            _q->state = STATE_RXHEADER;
+        } else {
+            printf("signal not yet peaked...\n");
+        }
     }
 }
 

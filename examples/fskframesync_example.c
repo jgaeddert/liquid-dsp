@@ -47,7 +47,7 @@ int main(int argc, char*argv[])
     srand( time(NULL) );
 
     // options
-    float SNRdB       =  20.0f; // signal-to-noise ratio
+    float SNRdB       =  40.0f; // signal-to-noise ratio
     float noise_floor = -30.0f; // noise floor
     float dphi        =  0.01f; // carrier frequency offset
     float theta       =  0.0f;  // carrier phase offset
@@ -81,11 +81,11 @@ int main(int argc, char*argv[])
 
     // create frame generator
     fskframegen fg = fskframegen_create();
-    fskframegen_print(fg);
+    //fskframegen_print(fg);
 
     // create frame synchronizer using default properties
     fskframesync fs = fskframesync_create(callback,NULL);
-    fskframesync_print(fs);
+    //fskframesync_print(fs);
     if (debug_enabled)
         fskframesync_debug_enable(fs);
 
@@ -118,7 +118,7 @@ int main(int argc, char*argv[])
 
         // add noise, channel gain
         for (i=0; i<buf_len; i++)
-            buf_rx[i] = buf_tx[i]*gamma + nstd*(randnf() + randnf()*_Complex_I)*M_SQRT1_2;
+            buf_rx[i] = buf_tx[i]*gamma + 0.0f*nstd*(randnf() + randnf()*_Complex_I)*M_SQRT1_2;
 
         // synchronize/receive the frame
         fskframesync_execute_block(fs, buf_rx, buf_len);
@@ -167,9 +167,9 @@ int main(int argc, char*argv[])
     fprintf(fid,"grid on;\n");
 
     fclose(fid);
-    printf("results written to '%s'\n", OUTPUT_FILENAME);
+    //printf("results written to '%s'\n", OUTPUT_FILENAME);
 
-    printf("done.\n");
+    //printf("done.\n");
     return 0;
 }
 
