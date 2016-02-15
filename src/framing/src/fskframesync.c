@@ -472,8 +472,8 @@ void fskframesync_execute_detectframe(fskframesync  _q,
     }
 }
 
-void fskframesync_execute_rxheader(fskframesync _q,
-                                    float complex _x)
+void fskframesync_execute_rxheader(fskframesync  _q,
+                                   float complex _x)
 {
 #if 0
     // push sample through timing recovery and compute output
@@ -518,9 +518,40 @@ void fskframesync_execute_rxheader(fskframesync _q,
                                                     _q->header_dec);
         printf("header: %s\n", header_valid ? "valid" : "INVALID");
 
-        // update state
-        _q->symbol_counter = 0;
-        _q->state = STATE_RXPAYLOAD;
+        if (header_valid) {
+            // continue on to decoding payload
+            _q->symbol_counter = 0;
+            _q->state = STATE_RXPAYLOAD;
+            return;
+        }
+
+        // update statistics
+        //_q->framedatastats.num_frames_detected++;
+
+        // header invalid: invoke callback
+        if (_q->callback != NULL) {
+            // set framestats internals
+            _q->framestats.evm           = 0.0f; //20*log10f(sqrtf(_q->framestats.evm / 600));
+            _q->framestats.rssi          = 0.0f; //20*log10f(_q->gamma_hat);
+            _q->framestats.cfo           = 0.0f; //nco_crcf_get_frequency(_q->mixer);
+            _q->framestats.framesyms     = NULL;
+            _q->framestats.num_framesyms = 0;
+            _q->framestats.mod_scheme    = LIQUID_MODEM_UNKNOWN;
+            _q->framestats.mod_bps       = 0;
+            _q->framestats.check         = LIQUID_CRC_UNKNOWN;
+            _q->framestats.fec0          = LIQUID_FEC_UNKNOWN;
+            _q->framestats.fec1          = LIQUID_FEC_UNKNOWN;
+
+            // invoke callback method
+            _q->callback(_q->header_dec,
+                         0,     // header valid
+                         NULL,  // payload
+                         0,     // payload length
+                         0,     // payload valid,
+                         _q->framestats,
+                         _q->userdata);
+        }
+
     }
 }
 
@@ -569,9 +600,34 @@ void fskframesync_execute_rxpayload(fskframesync  _q,
                                                      _q->payload_sym,
                                                      _q->payload_dec);
         printf("payload: %s\n", payload_valid ? "valid" : "INVALID");
+        
+        // invoke callback
+        if (_q->callback != NULL) {
+            // set framestats internals
+            _q->framestats.evm           = 0.0f; //20*log10f(sqrtf(_q->framestats.evm / 600));
+            _q->framestats.rssi          = 0.0f; //20*log10f(_q->gamma_hat);
+            _q->framestats.cfo           = 0.0f; //nco_crcf_get_frequency(_q->mixer);
+            _q->framestats.framesyms     = NULL;
+            _q->framestats.num_framesyms = 0;
+            _q->framestats.mod_scheme    = LIQUID_MODEM_UNKNOWN;
+            _q->framestats.mod_bps       = 0;
+            _q->framestats.check         = _q->payload_crc;
+            _q->framestats.fec0          = _q->payload_fec0;
+            _q->framestats.fec1          = _q->payload_fec1;
 
-        // update state
-        _q->state = STATE_DETECTFRAME;
+            // invoke callback method
+            _q->callback(_q->header_dec,        // decoded header
+                         1,                     // header valid
+                         _q->payload_dec,       // payload
+                         _q->payload_dec_len,   // payload length
+                         payload_valid,         // payload valid,
+                         _q->framestats,
+                         _q->userdata);
+        }
+
+        // reset frame synchronizer
+        fskframesync_reset(_q);
+        return;
     }
 }
 
