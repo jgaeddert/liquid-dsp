@@ -3604,6 +3604,9 @@ void flexframegen_getprops(flexframegen _q, flexframegenprops_s * _props);
 // set frame properties
 int flexframegen_setprops(flexframegen _q, flexframegenprops_s * _props);
 
+// set length of user-defined portion of header
+void flexframegen_set_header_len(flexframegen _q, unsigned int _len);
+
 // get length of assembled frame (samples)
 unsigned int flexframegen_getframelen(flexframegen _q);
 
@@ -3645,6 +3648,10 @@ void flexframesync_print(flexframesync _q);
 
 // reset frame synchronizer internal state
 void flexframesync_reset(flexframesync _q);
+
+// change length of user-defined region in header
+void flexframesync_set_header_len(flexframesync _q,
+                                  unsigned int  _len);
 
 // push samples through frame synchronizer
 //  _q      :   frame synchronizer object

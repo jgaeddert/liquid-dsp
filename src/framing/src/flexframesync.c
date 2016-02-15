@@ -108,6 +108,8 @@ struct flexframesync_s {
     float complex * header_mod;         // header symbols (received)
     unsigned int    header_mod_len;     // header symbols (length)
     qpacketmodem    header_decoder;     // header demodulator/decoder
+    unsigned int    header_user_len;    // length of user-defined array
+    unsigned int    header_dec_len;     // length of header (decoded)
     unsigned char * header_dec;         // header bytes (decoded)
     int             header_valid;       // header CRC flag
     
@@ -184,22 +186,13 @@ flexframesync flexframesync_create(framesync_callback _callback,
     nco_crcf_pll_set_bandwidth(q->pll, 1e-4f); // very low bandwidth
     
     // header demodulator/decoder
-    q->header_dec     = (unsigned char *) malloc(FLEXFRAME_H_DEC*sizeof(unsigned char));
-    q->header_decoder = qpacketmodem_create();
-    qpacketmodem_configure(q->header_decoder,
-                           FLEXFRAME_H_DEC,
-                           FLEXFRAME_H_CRC,
-                           FLEXFRAME_H_FEC0,
-                           FLEXFRAME_H_FEC1,
-                           LIQUID_MODEM_QPSK);
-    q->header_mod_len = qpacketmodem_get_frame_len(q->header_decoder);
-    q->header_mod     = (float complex*) malloc(q->header_mod_len*sizeof(float complex));
+    q->header_sym = NULL;
+    q->header_mod = NULL;
+    q->header_dec = NULL;
+    q->header_pilotsync = NULL;
+    q->header_decoder = NULL;
+    flexframesync_set_header_len(q, FLEXFRAME_H_USER_DEFAULT);
 
-    // header pilot synchronizer
-    q->header_pilotsync = qpilotsync_create(q->header_mod_len, 16);
-    q->header_sym_len   = qpilotsync_get_frame_len(q->header_pilotsync);
-    q->header_sym       = (float complex*) malloc(q->header_sym_len*sizeof(float complex));
-    
     // payload demodulator for phase recovery
     q->payload_demod = modem_create(LIQUID_MODEM_QPSK);
 
@@ -297,6 +290,34 @@ void flexframesync_reset(flexframesync _q)
     
     // reset frame statistics
     _q->framesyncstats.evm = 0.0f;
+}
+
+void flexframesync_set_header_len(flexframesync _q,
+                                  unsigned int  _len)
+{
+    _q->header_user_len = _len;
+    _q->header_dec_len = FLEXFRAME_H_DEC + _q->header_user_len;
+    _q->header_dec     = (unsigned char *) realloc(_q->header_dec, _q->header_dec_len*sizeof(unsigned char));
+    if (_q->header_decoder) {
+        qpacketmodem_destroy(_q->header_decoder);
+    }
+    _q->header_decoder = qpacketmodem_create();
+    qpacketmodem_configure(_q->header_decoder,
+                           _q->header_dec_len,
+                           FLEXFRAME_H_CRC,
+                           FLEXFRAME_H_FEC0,
+                           FLEXFRAME_H_FEC1,
+                           LIQUID_MODEM_QPSK);
+    _q->header_mod_len = qpacketmodem_get_frame_len(_q->header_decoder);
+    _q->header_mod     = (float complex*) realloc(_q->header_mod, _q->header_mod_len*sizeof(float complex));
+
+    // header pilot synchronizer
+    if (_q->header_pilotsync) {
+        qpilotsync_destroy(_q->header_pilotsync);
+    }
+    _q->header_pilotsync = qpilotsync_create(_q->header_mod_len, 16);
+    _q->header_sym_len   = qpilotsync_get_frame_len(_q->header_pilotsync);
+    _q->header_sym       = (float complex*) realloc(_q->header_sym, _q->header_sym_len*sizeof(float complex));
 }
 
 // execute frame synchronizer
@@ -568,7 +589,7 @@ void flexframesync_decode_header(flexframesync _q)
     nco_crcf_set_phase    (_q->pll, phi_hat + dphi_hat * _q->header_sym_len);
 
     // first several bytes of header are user-defined
-    unsigned int n = FLEXFRAME_H_USER;
+    unsigned int n = _q->header_user_len;
 
     // first byte is for expansion/version validation
     unsigned int protocol = _q->header_dec[n+0];
@@ -644,7 +665,7 @@ void flexframesync_decode_header(flexframesync _q)
     printf("    payload dec len : %u\n", _q->payload_dec_len);
     printf("    user data       :");
     unsigned int i;
-    for (i=0; i<FLEXFRAME_H_USER; i++)
+    for (i=0; i<_q->header_user_len; i++)
         printf(" %.2x", _q->header_dec[i]);
     printf("\n");
 #endif
