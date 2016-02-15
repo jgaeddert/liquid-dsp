@@ -109,3 +109,12 @@ void autotest_cpfskmodem_bps1_h0p0250_k4_m3_gmsk()      { cpfskmodem_test_mod_de
 void autotest_cpfskmodem_bps1_h0p1250_k4_m3_gmsk()      { cpfskmodem_test_mod_demod( 1, 0.1250f, 4, 3, 0.25f, LIQUID_CPFSK_GMSK ); }
 void autotest_cpfskmodem_bps1_h0p0625_k4_m3_gmsk()      { cpfskmodem_test_mod_demod( 1, 0.0625f, 4, 3, 0.25f, LIQUID_CPFSK_GMSK ); }
 
+//
+// AUTOTESTS: check different bits per symbol
+//
+
+// square pulse shape
+void autotest_cpfskmodem_bps2_h0p0250_k4_m3_square()    { cpfskmodem_test_mod_demod( 2, 0.2500f, 4, 3, 0.25f, LIQUID_CPFSK_SQUARE ); }
+void autotest_cpfskmodem_bps3_h0p1250_k4_m3_square()    { cpfskmodem_test_mod_demod( 3, 0.1250f, 4, 3, 0.25f, LIQUID_CPFSK_SQUARE ); }
+void autotest_cpfskmodem_bps4_h0p0625_k4_m3_square()    { cpfskmodem_test_mod_demod( 4, 0.0625f, 4, 3, 0.25f, LIQUID_CPFSK_SQUARE ); }
+
