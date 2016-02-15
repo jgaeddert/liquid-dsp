@@ -103,11 +103,15 @@ struct ofdmflexframegen_s {
     unsigned int num_symbols_payload;   // number of payload OFDM symbols
 
     // header
-    modem mod_header;                   // header modulator
-    packetizer p_header;                // header packetizer
-    unsigned char header[OFDMFLEXFRAME_H_DEC];      // header data (uncoded)
-    unsigned char header_enc[OFDMFLEXFRAME_H_ENC];  // header data (encoded)
-    unsigned char header_mod[OFDMFLEXFRAME_H_SYM];  // header symbols
+    modem mod_header;             // header modulator
+    packetizer p_header;          // header packetizer
+    unsigned char * header;       // header data (uncoded)
+    unsigned char * header_enc;   // header data (encoded)
+    unsigned char * header_mod;   // header symbols
+    unsigned int header_user_len; // header length (user)
+    unsigned int header_dec_len;  // header length (decoded)
+    unsigned int header_enc_len;  // header length (encoded)
+    unsigned int header_sym_len;  // header length (mod symbols)
 
     // payload
     packetizer p_payload;               // payload packetizer
@@ -182,16 +186,12 @@ ofdmflexframegen ofdmflexframegen_create(unsigned int              _M,
     q->fg = ofdmframegen_create(q->M, q->cp_len, q->taper_len, q->p);
 
     // create header objects
-    q->mod_header = modem_create(OFDMFLEXFRAME_H_MOD);
-    q->p_header   = packetizer_create(OFDMFLEXFRAME_H_DEC,
-                                      OFDMFLEXFRAME_H_CRC,
-                                      OFDMFLEXFRAME_H_FEC,
-                                      LIQUID_FEC_NONE);
-    assert(packetizer_get_enc_msg_len(q->p_header)==OFDMFLEXFRAME_H_ENC);
-
-    // compute number of header symbols
-    div_t d = div(OFDMFLEXFRAME_H_SYM, q->M_data);
-    q->num_symbols_header = d.quot + (d.rem ? 1 : 0);
+    q->header = NULL;
+    q->p_header = NULL;
+    q->header_enc = NULL;
+    q->header_mod = NULL;
+    q->mod_header = NULL;
+    ofdmflexframegen_set_header_len(q, OFDMFLEXFRAME_H_USER_DEFAULT);
 
     // initial memory allocation for payload
     q->payload_dec_len = 1;
@@ -331,6 +331,38 @@ void ofdmflexframegen_setprops(ofdmflexframegen _q,
     ofdmflexframegen_reconfigure(_q);
 }
 
+void ofdmflexframegen_set_header_len(ofdmflexframegen _q,
+                                     unsigned int     _len)
+{
+    _q->header_user_len = _len;
+    _q->header_dec_len = OFDMFLEXFRAME_H_DEC + _q->header_user_len;
+    _q->header = realloc(_q->header, _q->header_dec_len*sizeof(unsigned char));
+
+    if (_q->p_header) {
+        packetizer_destroy(_q->p_header);
+    }
+    _q->p_header = packetizer_create(_q->header_dec_len,
+                                     OFDMFLEXFRAME_H_CRC,
+                                     OFDMFLEXFRAME_H_FEC,
+                                     LIQUID_FEC_NONE);
+    _q->header_enc_len = packetizer_get_enc_msg_len(_q->p_header);
+    _q->header_enc = realloc(_q->header_enc, _q->header_enc_len*sizeof(unsigned char));
+
+    unsigned int bps = modulation_types[OFDMFLEXFRAME_H_MOD].bps;
+    div_t bps_d = div(_q->header_enc_len*8, bps);
+    _q->header_sym_len = bps_d.quot + (bps_d.rem ? 1 : 0);
+    _q->header_mod = realloc(_q->header_mod, _q->header_sym_len*sizeof(unsigned char));
+    // create header objects
+    if (_q->mod_header) {
+        modem_destroy(_q->mod_header);
+    }
+    _q->mod_header = modem_create(OFDMFLEXFRAME_H_MOD);
+
+    // compute number of header symbols
+    div_t d = div(_q->header_sym_len, _q->M_data);
+    _q->num_symbols_header = d.quot + (d.rem ? 1 : 0);
+}
+
 // get length of frame (symbols)
 //  _q              :   OFDM frame generator object
 unsigned int ofdmflexframegen_getframelen(ofdmflexframegen _q)
@@ -365,7 +397,7 @@ void ofdmflexframegen_assemble(ofdmflexframegen _q,
     _q->frame_assembled = 1;
 
     // copy user-defined header data
-    memmove(_q->header, _header, OFDMFLEXFRAME_H_USER*sizeof(unsigned char));
+    memmove(_q->header, _header, _q->header_user_len*sizeof(unsigned char));
 
     // encode full header
     ofdmflexframegen_encode_header(_q);
@@ -496,7 +528,7 @@ void ofdmflexframegen_reconfigure(ofdmflexframegen _q)
 void ofdmflexframegen_encode_header(ofdmflexframegen _q)
 {
     // first 'n' bytes user data
-    unsigned int n = OFDMFLEXFRAME_H_USER;
+    unsigned int n = _q->header_user_len;
 
     // first byte is for expansion/version validation
     _q->header[n+0] = OFDMFLEXFRAME_PROTOCOL;
@@ -520,7 +552,7 @@ void ofdmflexframegen_encode_header(ofdmflexframegen _q)
     packetizer_encode(_q->p_header, _q->header, _q->header_enc);
 
     // scramble header
-    scramble_data(_q->header_enc, OFDMFLEXFRAME_H_ENC);
+    scramble_data(_q->header_enc, _q->header_enc_len);
 
 #if 0
     // print header (decoded)
@@ -544,8 +576,8 @@ void ofdmflexframegen_modulate_header(ofdmflexframegen _q)
     // repack 8-bit header bytes into 'bps'-bit payload symbols
     unsigned int bps = modulation_types[OFDMFLEXFRAME_H_MOD].bps;
     unsigned int num_written;
-    liquid_repack_bytes(_q->header_enc, 8,   OFDMFLEXFRAME_H_ENC,
-                        _q->header_mod, bps, OFDMFLEXFRAME_H_SYM,
+    liquid_repack_bytes(_q->header_enc, 8,   _q->header_enc_len,
+                        _q->header_mod, bps, _q->header_sym_len,
                         &num_written);
 }
 
@@ -613,7 +645,7 @@ void ofdmflexframegen_write_header(ofdmflexframegen _q,
         // 
         if (sctype == OFDMFRAME_SCTYPE_DATA) {
             // load...
-            if (_q->header_symbol_index < OFDMFLEXFRAME_H_SYM) {
+            if (_q->header_symbol_index < _q->header_sym_len) {
                 // modulate header symbol onto data subcarrier
                 modem_modulate(_q->mod_header, _q->header_mod[_q->header_symbol_index++], &_q->X[i]);
                 //printf("  writing symbol %3u / %3u (x = %8.5f + j%8.5f)\n", _q->header_symbol_index, OFDMFLEXFRAME_H_SYM, crealf(_q->X[i]), cimagf(_q->X[i]));

@@ -1153,14 +1153,11 @@ void bpacketsync_reconfig(bpacketsync _q);
 #define OFDMFLEXFRAME_PROTOCOL  (104)
 
 // header description
-#define OFDMFLEXFRAME_H_USER    (8)                         // user-defined array
-#define OFDMFLEXFRAME_H_DEC     (OFDMFLEXFRAME_H_USER+6)    // decoded length
-#define OFDMFLEXFRAME_H_CRC     (LIQUID_CRC_32)             // header CRC
-#define OFDMFLEXFRAME_H_FEC     (LIQUID_FEC_GOLAY2412)      // header FEC
-#define OFDMFLEXFRAME_H_ENC     (36)                        // encoded length
-#define OFDMFLEXFRAME_H_MOD     (LIQUID_MODEM_BPSK)         // modulation scheme
-#define OFDMFLEXFRAME_H_BPS     (1)                         // modulation depth
-#define OFDMFLEXFRAME_H_SYM     (288)                       // number of symbols
+#define OFDMFLEXFRAME_H_USER_DEFAULT (8)                         // default length for user-defined array
+#define OFDMFLEXFRAME_H_DEC          (6)                         // decoded length
+#define OFDMFLEXFRAME_H_CRC          (LIQUID_CRC_32)             // header CRC
+#define OFDMFLEXFRAME_H_FEC          (LIQUID_FEC_GOLAY2412)      // header FEC
+#define OFDMFLEXFRAME_H_MOD          (LIQUID_MODEM_BPSK)         // modulation scheme
 
 //
 // MODULE : math

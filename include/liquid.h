@@ -3858,6 +3858,10 @@ void ofdmflexframegen_getprops(ofdmflexframegen _q,
 void ofdmflexframegen_setprops(ofdmflexframegen _q,
                                ofdmflexframegenprops_s * _props);
 
+// set user-defined header length
+void ofdmflexframegen_set_header_len(ofdmflexframegen _q,
+                                     unsigned int     _len);
+
 // get length of frame (symbols)
 //  _q              :   OFDM frame generator object
 unsigned int ofdmflexframegen_getframelen(ofdmflexframegen _q);
@@ -3900,6 +3904,10 @@ ofdmflexframesync ofdmflexframesync_create(unsigned int       _M,
 
 void ofdmflexframesync_destroy(ofdmflexframesync _q);
 void ofdmflexframesync_print(ofdmflexframesync _q);
+// set user-defined header length
+void ofdmflexframesync_set_header_len(ofdmflexframesync _q,
+                                      unsigned int      _len);
+
 void ofdmflexframesync_reset(ofdmflexframesync _q);
 void ofdmflexframesync_execute(ofdmflexframesync _q,
                                liquid_float_complex * _x,
