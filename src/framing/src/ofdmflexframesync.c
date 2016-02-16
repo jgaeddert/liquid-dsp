@@ -220,6 +220,9 @@ void ofdmflexframesync_destroy(ofdmflexframesync _q)
     free(_q->payload_enc);
     free(_q->payload_dec);
     free(_q->payload_syms);
+    free(_q->header);
+    free(_q->header_enc);
+    free(_q->header_mod);
 
     // free main object memory
     free(_q);

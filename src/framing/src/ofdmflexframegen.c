@@ -232,6 +232,9 @@ void ofdmflexframegen_destroy(ofdmflexframegen _q)
     free(_q->payload_mod);              // modulated payload symbols
     free(_q->X);                        // frequency-domain buffer
     free(_q->p);                        // subcarrier allocation
+    free(_q->header);                   // decoded header
+    free(_q->header_enc);               // encoded header
+    free(_q->header_mod);               // modulated header
 
     // free main object memory
     free(_q);
