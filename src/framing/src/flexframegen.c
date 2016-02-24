@@ -157,6 +157,7 @@ void flexframegen_destroy(flexframegen _q)
     free(_q->preamble_pn);  // preamble symbols
     free(_q->header);       // header bytes
     free(_q->header_mod);   // encoded/modulated header symbols 
+    free(_q->header_sym);
     free(_q->payload_sym);  // encoded/modulated payload symbols
 
     // destroy frame generator
