@@ -312,8 +312,8 @@ void ellip_azpkf(unsigned int _n,
 #endif
 
     float Nexact = (K1p/K1)/(Kp/K); // 4.69604063
-    float N = ceilf(Nexact);        // 5
-    N = _n;
+    float N = ceilf(Nexact);        // 5 TODO: dead initialization,
+    N = _n;                         //         which one is correct?
 #if LIQUID_DEBUG_ELLIP_PRINT
     printf("N (exact)   : %12.8f\n", Nexact);
     printf("N           : %12.8f\n", N);
