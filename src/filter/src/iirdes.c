@@ -380,9 +380,6 @@ void iirdes_dzpk2sosf(float complex * _zd,
 
     // add remaining zero/pole pair if order is odd
     if (r) {
-        p0 = -pp[_n-1];
-        z0 = -zp[_n-1];
-        
         _A[3*i+0] =  1.0;
         _A[3*i+1] = -pp[_n-1];
         _A[3*i+2] =  0.0;
@@ -620,8 +617,10 @@ void liquid_iirdes(liquid_iirdes_filtertype _ftype,
         memmove(pd, pd1, 2*_n*sizeof(float complex));
 
         // update paramters : n -> 2*n
+#if LIQUID_IIRDES_DEBUG_PRINT
         r = 0;
         L = _n;
+#endif
         _n = 2*_n;
     }
 

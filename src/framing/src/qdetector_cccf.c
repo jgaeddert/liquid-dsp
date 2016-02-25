@@ -554,7 +554,6 @@ void qdetector_cccf_execute_align(qdetector_cccf _q,
     float        vpos = cabsf(_q->buf_freq_0[ipos]);
     a            =  0.5f*(vpos + vneg) - v0;
     b            =  0.5f*(vpos - vneg);
-    c            =  v0;
     float idx    = -b / (2.0f*a); //-0.5f*(vpos - vneg) / (vpos + vneg - 2*v0);
     float index  = (float)i0 + idx;
     _q->dphi_hat = (i0 > _q->nfft/2 ? index-(float)_q->nfft : index) * 2*M_PI / (float)(_q->nfft);
