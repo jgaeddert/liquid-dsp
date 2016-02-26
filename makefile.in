@@ -324,6 +324,7 @@ fft_objects :=							\
 	src/fft/src/spgramcf.o					\
 	src/fft/src/spgramf.o					\
 	src/fft/src/fft_utilities.o				\
+	src/fft/src/kiss.o						\
 
 # explicit targets and dependencies
 fft_includes :=							\
@@ -350,6 +351,8 @@ src/fft/src/mdct.o : %.o : %.c $(include_headers)
 src/fft/src/spgramcf.o : %.o : %.c $(include_headers) src/fft/src/asgram.c src/fft/src/spgram.c
 
 src/fft/src/spgramf.o : %.o : %.c $(include_headers) src/fft/src/asgram.c src/fft/src/spgram.c
+
+src/fft/src/kiss.o : %.o : %.c $(include_headers)
 
 # fft autotest scripts
 fft_autotests :=						\

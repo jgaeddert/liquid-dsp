@@ -754,6 +754,42 @@ unsigned int fft_reverse_index(unsigned int _i, unsigned int _n);
 
 LIQUID_FFT_DEFINE_INTERNAL_API(LIQUID_FFT_MANGLE_FLOAT, float, liquid_float_complex)
 
+
+#if HAVE_LIBKISSFFT
+typedef enum {
+    KISS_FFT_FORWARD=1,
+    KISS_FFT_BACKWARD=-1
+} kiss_fft_direction;
+
+#define LIQUID_KISS_FFT_MANGLE_FLOAT(name)   LIQUID_CONCAT(kiss_fft,name)
+
+#define LIQUID_KISS_FFT_DEFINE_INTERNAL_API(KISS_FFT,T,TC)      \
+typedef struct KISS_FFT(_plan_s) * KISS_FFT(_plan);             \
+                                                                \
+/* create regular complex one-dimensional transform         */  \
+/*  _n      :   transform size                              */  \
+/*  _x      :   pointer to input array  [size: _n x 1]      */  \
+/*  _y      :   pointer to output array [size: _n x 1]      */  \
+/*  _dir    :   direction (e.g. LIQUID_FFT_FORWARD)         */  \
+/*  _flags  :   options, optimization                       */  \
+KISS_FFT(_plan) KISS_FFT(_create_plan)(unsigned int _n,        \
+                                   TC * _x,                     \
+                                   TC *         _y,             \
+                                   int          _dir,           \
+                                   int          _flags);        \
+                                                                \
+/* destroy transform                                        */  \
+void KISS_FFT(_destroy_plan)(KISS_FFT(_plan) _p);               \
+                                                                \
+/* run the transform                                        */  \
+void KISS_FFT(_execute)(KISS_FFT(_plan) _p);                    \
+
+
+LIQUID_KISS_FFT_DEFINE_INTERNAL_API(LIQUID_KISS_FFT_MANGLE_FLOAT, float, liquid_float_complex)
+
+
+#endif  // HAVE_KISSFFT
+
 // Use fftw library if installed (and not overridden with configuration),
 // otherwise use internal (less efficient) fft library.
 #if HAVE_FFTW3_H && !defined LIQUID_FFTOVERRIDE
@@ -765,6 +801,15 @@ LIQUID_FFT_DEFINE_INTERNAL_API(LIQUID_FFT_MANGLE_FLOAT, float, liquid_float_comp
 #   define FFT_DIR_FORWARD      FFTW_FORWARD
 #   define FFT_DIR_BACKWARD     FFTW_BACKWARD
 #   define FFT_METHOD           FFTW_ESTIMATE
+#elif HAVE_LIBKISSFFT && !defined LIQUID_FFTOVERRIDE
+#   include <kiss_fft.h>
+#   define FFT_PLAN             kiss_fft_plan
+#   define FFT_CREATE_PLAN      kiss_fft_create_plan
+#   define FFT_DESTROY_PLAN     kiss_fft_destroy_plan
+#   define FFT_EXECUTE          kiss_fft_execute
+#   define FFT_DIR_FORWARD      KISS_FFT_FORWARD
+#   define FFT_DIR_BACKWARD     KISS_FFT_BACKWARD
+#   define FFT_METHOD           0
 #else
 #   define FFT_PLAN             fftplan
 #   define FFT_CREATE_PLAN      fft_create_plan

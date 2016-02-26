@@ -56,8 +56,8 @@ struct qdetector_cccf_s {
     float complex * buf_freq_1;     // frequence-domain buffer (IFFT)
     float complex * buf_time_1;     // time-domain buffer (IFFT)
     unsigned int    nfft;           // fft size
-    fftplan         fft;            // FFT object:  buf_time_0 > buf_freq_0
-    fftplan         ifft;           // IFFT object: buf_freq_1 > buf_freq_1
+    FFT_PLAN         fft;            // FFT object:  buf_time_0 > buf_freq_0
+    FFT_PLAN         ifft;           // IFFT object: buf_freq_1 > buf_freq_1
 
     unsigned int    counter;        // sample counter for determining when to compute FFTs
     float           threshold;      // detection threshold
@@ -108,14 +108,14 @@ qdetector_cccf qdetector_cccf_create(float complex * _s,
     q->buf_freq_1 = (float complex*) malloc(q->nfft * sizeof(float complex));
     q->buf_time_1 = (float complex*) malloc(q->nfft * sizeof(float complex));
 
-    q->fft  = fft_create_plan(q->nfft, q->buf_time_0, q->buf_freq_0, LIQUID_FFT_FORWARD,  0);
-    q->ifft = fft_create_plan(q->nfft, q->buf_freq_1, q->buf_time_1, LIQUID_FFT_BACKWARD, 0);
+    q->fft  = FFT_CREATE_PLAN(q->nfft, q->buf_time_0, q->buf_freq_0, LIQUID_FFT_FORWARD,  0);
+    q->ifft = FFT_CREATE_PLAN(q->nfft, q->buf_freq_1, q->buf_time_1, LIQUID_FFT_BACKWARD, 0);
 
     // create frequency-domain template by taking nfft-point transform on 's', storing in 'S'
     q->S = (float complex*) malloc(q->nfft * sizeof(float complex));
     memset(q->buf_time_0, 0x00, q->nfft*sizeof(float complex));
     memmove(q->buf_time_0, q->s, q->s_len*sizeof(float complex));
-    fft_execute(q->fft);
+    FFT_EXECUTE(q->fft);
     memmove(q->S, q->buf_freq_0, q->nfft*sizeof(float complex));
 
     // reset state variables
@@ -246,8 +246,8 @@ void qdetector_cccf_destroy(qdetector_cccf _q)
     free(_q->buf_time_1);
 
     // destroy objects
-    fft_destroy_plan(_q->fft);
-    fft_destroy_plan(_q->ifft);
+    FFT_DESTROY_PLAN(_q->fft);
+    FFT_DESTROY_PLAN(_q->ifft);
 
     // free main object memory
     free(_q);
@@ -386,7 +386,7 @@ void qdetector_cccf_execute_seek(qdetector_cccf _q,
     _q->counter = _q->nfft/2;
 
     // run forward transform
-    fft_execute(_q->fft);
+    FFT_EXECUTE(_q->fft);
 
     // compute scaling factor (TODO: use median rather than mean signal level)
     float g0 = sqrtf(_q->x2_sum_0 + _q->x2_sum_1) * sqrtf((float)(_q->s_len) / (float)(_q->nfft));
@@ -410,7 +410,7 @@ void qdetector_cccf_execute_seek(qdetector_cccf _q,
         }
 
         // run inverse transform
-        fft_execute(_q->ifft);
+        FFT_EXECUTE(_q->ifft);
         
         // scale output appropriately
         liquid_vectorcf_mulscalar(_q->buf_time_1, _q->nfft, g, _q->buf_time_1);
@@ -489,7 +489,7 @@ void qdetector_cccf_execute_align(qdetector_cccf _q,
     //printf("signal is aligned!\n");
 
     // estimate timing offset
-    fft_execute(_q->fft);
+    FFT_EXECUTE(_q->fft);
     // cross-multiply frequency-domain components, aligning appropriately with
     // estimated FFT offset index due to carrier frequency offset in received signal
     unsigned int i;
@@ -498,7 +498,7 @@ void qdetector_cccf_execute_align(qdetector_cccf _q,
         unsigned int j = (i + _q->nfft - _q->offset) % _q->nfft;
         _q->buf_freq_1[i] = _q->buf_freq_0[i] * conjf(_q->S[j]);
     }
-    fft_execute(_q->ifft);
+    FFT_EXECUTE(_q->ifft);
     // time aligned to index 0
     // NOTE: taking the sqrt removes bias in the timing estimate, but messes up gamma estimate
     float yneg = cabsf(_q->buf_time_1[_q->nfft-1]);  yneg = sqrtf(yneg);
@@ -518,7 +518,7 @@ void qdetector_cccf_execute_align(qdetector_cccf _q,
     // estimate carrier frequency offset
     for (i=0; i<_q->nfft; i++)
         _q->buf_time_0[i] *= i < _q->s_len ? conjf(_q->s[i]) : 0.0f;
-    fft_execute(_q->fft);
+    FFT_EXECUTE(_q->fft);
 #if DEBUG_QDETECTOR
     // debug output
     char filename[64];

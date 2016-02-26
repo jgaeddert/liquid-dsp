@@ -49,7 +49,7 @@ struct qpilotsync_s {
     unsigned int    nfft;           // FFT size
     float complex * buf_time;       // FFT time buffer
     float complex * buf_freq;       // FFT freq buffer
-    fftplan         fft;            // transform object
+    FFT_PLAN         fft;            // transform object
 
     float           dphi_hat;       // carrier frequency offset estimate
     float           phi_hat;        // carrier phase offset estimate
@@ -104,7 +104,7 @@ qpilotsync qpilotsync_create(unsigned int _payload_len,
     q->nfft = 1 << liquid_nextpow2(q->num_pilots + (q->num_pilots>>1));
     q->buf_time = (float complex*) malloc(q->nfft*sizeof(float complex));
     q->buf_freq = (float complex*) malloc(q->nfft*sizeof(float complex));
-    q->fft      = fft_create_plan(q->nfft, q->buf_time, q->buf_freq, LIQUID_FFT_FORWARD, 0);
+    q->fft      = FFT_CREATE_PLAN(q->nfft, q->buf_time, q->buf_freq, LIQUID_FFT_FORWARD, 0);
 
     // reset and return pointer to main object
     qpilotsync_reset(q);
@@ -134,7 +134,7 @@ void qpilotsync_destroy(qpilotsync _q)
     free(_q->buf_freq);
 
     // destroy objects
-    fft_destroy_plan(_q->fft);
+    FFT_DESTROY_PLAN(_q->fft);
     
     // free main object memory
     free(_q);
@@ -196,7 +196,7 @@ void qpilotsync_execute(qpilotsync      _q,
     }
 
     // compute frequency offset by computing transform and finding peak
-    fft_execute(_q->fft);
+    FFT_EXECUTE(_q->fft);
     unsigned int i0 = 0;
     float        y0 = 0;
     for (i=0; i<_q->nfft; i++) {

@@ -106,13 +106,15 @@ then
 fi
 
 # Check for optional header files, libraries, programs
-AC_CHECK_HEADERS(fec.h fftw3.h)
+AC_CHECK_HEADERS(fec.h fftw3.h kiss_fft.h)
 AC_CHECK_LIB([fftw3f], [fftwf_plan_dft_1d], [],
              [AC_MSG_WARN(fftw3 library useful but not required)],
              [])
 AC_CHECK_LIB([fec], [create_viterbi27], [],
              [AC_MSG_WARN(fec library useful but not required)],
              [])
+AC_CHECK_LIB([kissfft], [kiss_fft_alloc], [],
+             [], [])
 
 # Checks for typedefs, structures, and compiler characteristics.
 AC_C_INLINE
