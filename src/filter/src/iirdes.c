@@ -380,16 +380,17 @@ void iirdes_dzpk2sosf(float complex * _zd,
 
     // add remaining zero/pole pair if order is odd
     if (r) {
+        // keep these two lines for when poles and zeros get grouped
         p0 = -pp[_n-1];
         z0 = -zp[_n-1];
         
-        _A[3*i+0] =  1.0;
-        _A[3*i+1] = -pp[_n-1];
-        _A[3*i+2] =  0.0;
+        _A[3*i+0] = 1.0;
+        _A[3*i+1] = p0;
+        _A[3*i+2] = 0.0;
 
-        _B[3*i+0] =  1.0;
-        _B[3*i+1] = -zp[_n-1];
-        _B[3*i+2] =  0.0;
+        _B[3*i+0] = 1.0;
+        _B[3*i+1] = z0;
+        _B[3*i+2] = 0.0;
     }
 
     // distribute gain equally amongst all feed-forward
