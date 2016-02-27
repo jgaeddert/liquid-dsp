@@ -261,9 +261,6 @@ void liquid_firdes_rkaiser_bisection(unsigned int _k,
     float y1 = liquid_firdes_rkaiser_internal_isi(_k,_m,_beta,_dt,x1,_h);
     float y2 = liquid_firdes_rkaiser_internal_isi(_k,_m,_beta,_dt,x2,_h);
 
-    if (y1 > y0 || y1 > y2)
-        fprintf(stderr,"warning: liquid_firdes_rkaiser_bisection(): bounding region is ill-conditioned\n");
-
     // run parabolic search to find bandwidth adjustment x_hat which
     // minimizes the inter-symbol interference of the filter
     unsigned int p, pmax=14;
@@ -278,6 +275,10 @@ void liquid_firdes_rkaiser_bisection(unsigned int _k,
     fprintf(fid,"y = [%12.4e %12.4e %12.4e];\n", y0, y1, y2);
 #endif
     for (p=0; p<pmax; p++) {
+        // check bounding conditions: y1 should be less than y0 and y2
+        if (y1 > y0 || y1 > y2)
+            fprintf(stderr,"warning: liquid_firdes_rkaiser_bisection(): bounding region is ill-conditioned\n");
+
         // choose midway points xa, xb and compute ISI
         xa = 0.5f*(x0 + x1);    // bisect [x0,x1]
         xb = 0.5f*(x1 + x2);    // bisect [x1,x2]
