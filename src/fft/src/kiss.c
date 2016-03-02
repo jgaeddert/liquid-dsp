@@ -23,6 +23,7 @@
 //
 // kiss.c : wrapper for kiss fft lib
 //
+#include <assert.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include "liquid.internal.h"
@@ -36,16 +37,15 @@
 typedef union {
     kiss_fft_cpx * cpx;
     TC * c;
-} foo;
+} kiss_complex;
 
 struct KISS_FFT(_plan_s)
 {
     // common data
     kiss_fft_cfg kiss_cfg;
-    foo x;             // input array pointer
-    foo y;             // output array pointer
+    kiss_complex x;             // input array pointer
+    kiss_complex y;             // output array pointer
 };
-
 
 // create KISS_FFT plan, regular complex one-dimensional transform
 //  _nfft   :   FFT size
@@ -63,6 +63,22 @@ KISS_FFT(_plan) KISS_FFT(_create_plan)(unsigned int _nfft,
     KISS_FFT(_plan) q = (KISS_FFT(_plan)) malloc(sizeof(struct KISS_FFT(_plan_s)));
 
     q->kiss_cfg = kiss_fft_alloc(_nfft, is_inverse, NULL, NULL);
+
+    // because kiss_complex relies on potentially underspecified behavior, make sure it works here
+    TC test_complex[2];
+    kiss_fft_cpx test_kiss_cpx[2];
+    kiss_complex test_container;
+
+    test_container.c = test_complex;
+    test_container.cpx = test_kiss_cpx;
+
+    test_complex[0] = 0.5f - _Complex_I * 0.5f;
+    test_complex[1] = -0.75f + _Complex_I * 0.25f;
+
+    assert(test_container.cpx[0].r == crealf(test_container.c[0]));
+    assert(test_container.cpx[0].i == cimagf(test_container.c[0]));
+    assert(test_container.cpx[1].r == crealf(test_container.c[1]));
+    assert(test_container.cpx[1].i == cimagf(test_container.c[1]));
 
     q->x.c = _x;
     q->y.c = _y;
