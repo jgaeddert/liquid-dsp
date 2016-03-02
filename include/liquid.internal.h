@@ -802,6 +802,7 @@ LIQUID_KISS_FFT_DEFINE_INTERNAL_API(LIQUID_KISS_FFT_MANGLE_FLOAT, float, liquid_
 #   define FFT_DIR_BACKWARD     FFTW_BACKWARD
 #   define FFT_METHOD           FFTW_ESTIMATE
 #elif HAVE_LIBKISSFFT && !defined LIQUID_FFTOVERRIDE
+#   define USING_LIBKISSFFT
 #   include <kiss_fft.h>
 #   define FFT_PLAN             kiss_fft_plan
 #   define FFT_CREATE_PLAN      kiss_fft_create_plan

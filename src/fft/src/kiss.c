@@ -27,7 +27,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include "liquid.internal.h"
-#ifdef HAVE_LIBKISSFFT
+#ifdef USING_LIBKISSFFT
 
 #define KISS_FFT(name)           LIQUID_CONCAT(kiss_fft,name)
 
@@ -97,4 +97,4 @@ void KISS_FFT(_execute)(KISS_FFT(_plan) _q)
 {
     kiss_fft(_q->kiss_cfg, _q->x.cpx, _q->y.cpx);
 }
-#endif // HAVE_LIBKISSFFT
+#endif // USING_LIBKISSFFT
