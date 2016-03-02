@@ -175,6 +175,12 @@ void gmskframegen_reset(gmskframegen _q)
     _q->symbol_counter  = 0;
 }
 
+// is frame assembled?
+int gmskframegen_is_assembled(gmskframegen _q)
+{
+    return _q->frame_assembled;
+}
+
 // print gmskframegen object internals
 void gmskframegen_print(gmskframegen _q)
 {
