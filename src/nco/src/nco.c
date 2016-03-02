@@ -35,14 +35,12 @@
 
 #define LIQUID_DEBUG_NCO            (0)
 
-#define DEFAULT_SINTAB_SIZE         256
-
 struct NCO(_s) {
     liquid_ncotype type;
     T theta;            // NCO phase
     T d_theta;          // NCO frequency
-    T *sintab;      // sine table
-    unsigned int sintab_size;
+    T sintab[256];      // sine table
+    unsigned int index; // table index
     T sine;
     T cosine;
     void (*compute_sincos)(NCO() _q);
@@ -59,11 +57,9 @@ NCO() NCO(_create)(liquid_ncotype _type)
     q->type = _type;
 
     // initialize sine table
-    q->sintab_size = DEFAULT_SINTAB_SIZE;
-    q->sintab = malloc(q->sintab_size * sizeof(T));
     unsigned int i;
-    for (i=0; i<q->sintab_size; i++)
-        q->sintab[i] = SIN(2.0f*M_PI*(float)(i)/(float)(q->sintab_size));
+    for (i=0; i<256; i++)
+        q->sintab[i] = SIN(2.0f*M_PI*(float)(i)/256.0f);
 
     // set default pll bandwidth
     NCO(_pll_set_bandwidth)(q, NCO_PLL_BANDWIDTH_DEFAULT);
@@ -86,7 +82,6 @@ NCO() NCO(_create)(liquid_ncotype _type)
 // destroy nco object
 void NCO(_destroy)(NCO() _q)
 {
-    free(_q->sintab);
     free(_q);
 }
 
@@ -95,6 +90,9 @@ void NCO(_reset)(NCO() _q)
 {
     _q->theta = 0;
     _q->d_theta = 0;
+
+    // reset sine table index
+    _q->index = 0;
 
     // set internal sine, cosine values
     _q->sine = 0;
@@ -362,36 +360,20 @@ void NCO(_constrain_phase)(NCO() _q)
         _q->theta += 2*M_PI;
 }
 
-void NCO(_set_sintab_size)(NCO() _q,
-                           unsigned int _size)
-{
-    if (_q->sintab_size < _size) {
-        _q->sintab = realloc(_q->sintab, _size * sizeof(T));
-    }
-
-    unsigned int i;
-    for (i=0; i<_size; i++)
-        _q->sintab[i] = SIN(2.0f*M_PI*(float)(i)/(float)(_size));
-
-    _q->sintab_size = _size;
-}
-
 // compute sin, cos of internal phase of nco
 void NCO(_compute_sincos_nco)(NCO() _q)
 {
     // assume phase is constrained to be in (-pi,pi)
 
     // compute index
-    // NOTE : add 2 * sintab_size to ensure positive value, add 0.5 for rounding precision
+    // NOTE : 40.743665 ~ 256 / (2*pi)
+    // NOTE : add 512 to ensure positive value, add 0.5 for rounding precision
     // TODO : move away from floating-point specific code
-    unsigned int index = (unsigned int)((_q->theta)*(float)(_q->sintab_size)/(2.0f*M_PI) + (float)(2 * _q->sintab_size) + 0.5f);
-    index %= _q->sintab_size;
-    assert(index < _q->sintab_size);
+    _q->index = ((unsigned int)((_q->theta)*40.743665f + 512.0f + 0.5f))&0xff;
+    assert(_q->index < 256);
     
-    _q->sine = _q->sintab[index];
-    unsigned int cos_index = (index+(_q->sintab_size/4)) % _q->sintab_size;
-    assert(cos_index < _q->sintab_size);
-    _q->cosine = _q->sintab[cos_index];
+    _q->sine = _q->sintab[_q->index];
+    _q->cosine = _q->sintab[(_q->index+64)&0xff];
 }
 
 // compute sin, cos of internal phase of vco
@@ -400,3 +382,4 @@ void NCO(_compute_sincos_vco)(NCO() _q)
     _q->sine   = SIN(_q->theta);
     _q->cosine = COS(_q->theta);
 }
+

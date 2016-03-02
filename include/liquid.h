@@ -5949,7 +5949,6 @@ void NCO(_adjust_frequency)(NCO() _q, T _df);                   \
 T    NCO(_get_phase)(       NCO() _q);                          \
 void NCO(_set_phase)(       NCO() _q, T _phi);                  \
 void NCO(_adjust_phase)(    NCO() _q, T _dphi);                 \
-void NCO(_set_sintab_size)(NCO() _q, unsigned int _size);       \
                                                                 \
 /* increment phase by internal phase step (frequency)   */      \
 void NCO(_step)(NCO() _q);                                      \
