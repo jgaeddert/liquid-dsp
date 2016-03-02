@@ -166,28 +166,28 @@ float rkaiser_approximate_rho(unsigned int _m,
     // compute bandwidth adjustment estimate
     float c0=0.0f, c1=0.0f, c2=0.0f;
     switch (_m) {
-    case 1:     c0=0.75749731;  c1=0.06134303;  c2=-0.08729663;
-    case 2:     c0=0.81151861;  c1=0.07437658;  c2=-0.01427088;
-    case 3:     c0=0.84249538;  c1=0.07684185;  c2=-0.00536879;
-    case 4:     c0=0.86140782;  c1=0.07144126;  c2=-0.00558652;
-    case 5:     c0=0.87457740;  c1=0.06578694;  c2=-0.00650447;
-    case 6:     c0=0.88438797;  c1=0.06074265;  c2=-0.00736405;
-    case 7:     c0=0.89216620;  c1=0.05669236;  c2=-0.00791222;
-    case 8:     c0=0.89874983;  c1=0.05361696;  c2=-0.00815301;
-    case 9:     c0=0.90460032;  c1=0.05167952;  c2=-0.00807893;
-    case 10:    c0=0.91034430;  c1=0.05130753;  c2=-0.00746192;
-    case 11:    c0=0.91587675;  c1=0.05180436;  c2=-0.00670711;
-    case 12:    c0=0.92121875;  c1=0.05273801;  c2=-0.00588351;
-    case 13:    c0=0.92638195;  c1=0.05400764;  c2=-0.00508452;
-    case 14:    c0=0.93123555;  c1=0.05516163;  c2=-0.00437306;
-    case 15:    c0=0.93564993;  c1=0.05596561;  c2=-0.00388152;
-    case 16:    c0=0.93976742;  c1=0.05662274;  c2=-0.00348280;
-    case 17:    c0=0.94351703;  c1=0.05694120;  c2=-0.00318821;
-    case 18:    c0=0.94557273;  c1=0.05227591;  c2=-0.00400676;
-    case 19:    c0=0.95001614;  c1=0.05681641;  c2=-0.00300628;
-    case 20:    c0=0.95281708;  c1=0.05637607;  c2=-0.00304790;
-    case 21:    c0=0.95536256;  c1=0.05575880;  c2=-0.00312988;
-    case 22:    c0=0.95754206;  c1=0.05426060;  c2=-0.00385945;
+    case 1:     c0=0.75749731;  c1=0.06134303;  c2=-0.08729663; break;
+    case 2:     c0=0.81151861;  c1=0.07437658;  c2=-0.01427088; break;
+    case 3:     c0=0.84249538;  c1=0.07684185;  c2=-0.00536879; break;
+    case 4:     c0=0.86140782;  c1=0.07144126;  c2=-0.00558652; break;
+    case 5:     c0=0.87457740;  c1=0.06578694;  c2=-0.00650447; break;
+    case 6:     c0=0.88438797;  c1=0.06074265;  c2=-0.00736405; break;
+    case 7:     c0=0.89216620;  c1=0.05669236;  c2=-0.00791222; break;
+    case 8:     c0=0.89874983;  c1=0.05361696;  c2=-0.00815301; break;
+    case 9:     c0=0.90460032;  c1=0.05167952;  c2=-0.00807893; break;
+    case 10:    c0=0.91034430;  c1=0.05130753;  c2=-0.00746192; break;
+    case 11:    c0=0.91587675;  c1=0.05180436;  c2=-0.00670711; break;
+    case 12:    c0=0.92121875;  c1=0.05273801;  c2=-0.00588351; break;
+    case 13:    c0=0.92638195;  c1=0.05400764;  c2=-0.00508452; break;
+    case 14:    c0=0.93123555;  c1=0.05516163;  c2=-0.00437306; break;
+    case 15:    c0=0.93564993;  c1=0.05596561;  c2=-0.00388152; break;
+    case 16:    c0=0.93976742;  c1=0.05662274;  c2=-0.00348280; break;
+    case 17:    c0=0.94351703;  c1=0.05694120;  c2=-0.00318821; break;
+    case 18:    c0=0.94557273;  c1=0.05227591;  c2=-0.00400676; break;
+    case 19:    c0=0.95001614;  c1=0.05681641;  c2=-0.00300628; break;
+    case 20:    c0=0.95281708;  c1=0.05637607;  c2=-0.00304790; break;
+    case 21:    c0=0.95536256;  c1=0.05575880;  c2=-0.00312988; break;
+    case 22:    c0=0.95754206;  c1=0.05426060;  c2=-0.00385945; break;
     default:
         c0 =  0.056873*logf(_m+1e-3f) + 0.781388;
         c1 =  0.05426f;
@@ -261,9 +261,6 @@ void liquid_firdes_rkaiser_bisection(unsigned int _k,
     float y1 = liquid_firdes_rkaiser_internal_isi(_k,_m,_beta,_dt,x1,_h);
     float y2 = liquid_firdes_rkaiser_internal_isi(_k,_m,_beta,_dt,x2,_h);
 
-    if (y1 > y0 || y1 > y2)
-        fprintf(stderr,"warning: liquid_firdes_rkaiser_bisection(): bounding region is ill-conditioned\n");
-
     // run parabolic search to find bandwidth adjustment x_hat which
     // minimizes the inter-symbol interference of the filter
     unsigned int p, pmax=14;
@@ -278,6 +275,10 @@ void liquid_firdes_rkaiser_bisection(unsigned int _k,
     fprintf(fid,"y = [%12.4e %12.4e %12.4e];\n", y0, y1, y2);
 #endif
     for (p=0; p<pmax; p++) {
+        // check bounding conditions: y1 should be less than y0 and y2
+        if (y1 > y0 || y1 > y2)
+            fprintf(stderr,"warning: liquid_firdes_rkaiser_bisection(): bounding region is ill-conditioned\n");
+
         // choose midway points xa, xb and compute ISI
         xa = 0.5f*(x0 + x1);    // bisect [x0,x1]
         xb = 0.5f*(x1 + x2);    // bisect [x1,x2]
