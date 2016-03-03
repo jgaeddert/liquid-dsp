@@ -380,16 +380,17 @@ void iirdes_dzpk2sosf(float complex * _zd,
 
     // add remaining zero/pole pair if order is odd
     if (r) {
+        // keep these two lines for when poles and zeros get grouped
         p0 = -pp[_n-1];
         z0 = -zp[_n-1];
         
-        _A[3*i+0] =  1.0;
-        _A[3*i+1] = -pp[_n-1];
-        _A[3*i+2] =  0.0;
+        _A[3*i+0] = 1.0;
+        _A[3*i+1] = p0;
+        _A[3*i+2] = 0.0;
 
-        _B[3*i+0] =  1.0;
-        _B[3*i+1] = -zp[_n-1];
-        _B[3*i+2] =  0.0;
+        _B[3*i+0] = 1.0;
+        _B[3*i+1] = z0;
+        _B[3*i+2] = 0.0;
     }
 
     // distribute gain equally amongst all feed-forward
@@ -619,10 +620,14 @@ void liquid_iirdes(liquid_iirdes_filtertype _ftype,
         memmove(zd, zd1, 2*_n*sizeof(float complex));
         memmove(pd, pd1, 2*_n*sizeof(float complex));
 
-        // update paramters : n -> 2*n
-        r = 0;
-        L = _n;
-        _n = 2*_n;
+        // update paramters; filter order doubles which changes the
+        // number of second-order sections and forces there to never
+        // be any remainder (r=0 always).
+        _n =  2*_n;     // _n is now even
+#if LIQUID_IIRDES_DEBUG_PRINT
+        r  = _n % 2;    //  r is now zero
+        L  = (_n-r)/2;  //  L is now the original value of _n
+#endif
     }
 
     if (_format == LIQUID_IIRDES_TF) {

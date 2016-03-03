@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2015 Joseph Gaeddert
+ * Copyright (c) 2007 - 2016 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -3419,10 +3419,10 @@ int qpacketmodem_configure(qpacketmodem _q,
                            fec_scheme   _fec1,
                            int          _ms);
 
-// get length of frame in symbols
+// get length of encoded frame in symbols
 unsigned int qpacketmodem_get_frame_len(qpacketmodem _q);
 
-// get payload length (bytes)
+// get unencoded/decoded payload length (bytes)
 unsigned int qpacketmodem_get_payload_len(qpacketmodem _q);
 
 // regular access methods
@@ -3431,19 +3431,55 @@ unsigned int qpacketmodem_get_fec0     (qpacketmodem _q);
 unsigned int qpacketmodem_get_fec1     (qpacketmodem _q);
 unsigned int qpacketmodem_get_modscheme(qpacketmodem _q);
 
-// encode packet into modulated frame samples
-// TODO: include method with just symbol indices? would be useful for
-//       non-linear modulation types
+// encode packet into un-modulated frame symbol indices
+//  _q          :   qpacketmodem object
+//  _payload    :   unencoded payload bytes
+//  _syms       :   encoded but un-modulated payload symbol indices
+void qpacketmodem_encode_syms(qpacketmodem    _q,
+                              unsigned char * _payload,
+                              unsigned char * _syms);
+
+// decode packet from demodulated frame symbol indices (hard-decision decoding)
+//  _q          :   qpacketmodem object
+//  _syms       :   received hard-decision symbol indices [size: frame_len x 1]
+//  _payload    :   recovered decoded payload bytes
+int qpacketmodem_decode_syms(qpacketmodem    _q,
+                             unsigned char * _syms,
+                             unsigned char * _payload);
+
+// decode packet from demodulated frame bits (soft-decision decoding)
+//  _q          :   qpacketmodem object
+//  _bits       :   received soft-decision bits, [size: bps*frame_len x 1]
+//  _payload    :   recovered decoded payload bytes
+int qpacketmodem_decode_bits(qpacketmodem    _q,
+                             unsigned char * _bits,
+                             unsigned char * _payload);
+
+// encode and modulate packet into modulated frame samples
+//  _q          :   qpacketmodem object
+//  _payload    :   unencoded payload bytes
+//  _frame      :   encoded/modulated payload symbols
 void qpacketmodem_encode(qpacketmodem           _q,
                          unsigned char *        _payload,
                          liquid_float_complex * _frame);
 
-// decode packet into modulated frame samples
-// TODO: include method with just symbol indices? would be useful for
-//       non-linear modulation types
+// decode packet from modulated frame samples, returning flag if CRC passed
+// NOTE: hard-decision decoding
+//  _q          :   qpacketmodem object
+//  _frame      :   encoded/modulated payload symbols
+//  _payload    :   recovered decoded payload bytes
 int qpacketmodem_decode(qpacketmodem           _q,
                         liquid_float_complex * _frame,
                         unsigned char *        _payload);
+
+// decode packet from modulated frame samples, returning flag if CRC passed
+// NOTE: soft-decision decoding
+//  _q          :   qpacketmodem object
+//  _frame      :   encoded/modulated payload symbols
+//  _payload    :   recovered decoded payload bytes
+int qpacketmodem_decode_soft(qpacketmodem           _q,
+                             liquid_float_complex * _frame,
+                             unsigned char *        _payload);
 
 //
 // pilot generator for streaming applications
@@ -3613,8 +3649,8 @@ unsigned int flexframegen_getframelen(flexframegen _q);
 //  _payload        :   payload data [size: _payload_len x 1]
 //  _payload_len    :   payload data length
 void flexframegen_assemble(flexframegen    _q,
-                           unsigned char * _header,
-                           unsigned char * _payload,
+                           const unsigned char * _header,
+                           const unsigned char * _payload,
                            unsigned int    _payload_len);
 
 // write samples of assembled frame, two samples at a time, returning
@@ -3862,8 +3898,8 @@ unsigned int ofdmflexframegen_getframelen(ofdmflexframegen _q);
 //  _payload        :   payload data [size: _payload_len x 1]
 //  _payload_len    :   payload data length
 void ofdmflexframegen_assemble(ofdmflexframegen _q,
-                               unsigned char * _header,
-                               unsigned char * _payload,
+                               const unsigned char * _header,
+                               const unsigned char * _payload,
                                unsigned int    _payload_len);
 
 // write symbols of assembled frame
@@ -5375,6 +5411,9 @@ void cpfskmod_print(cpfskmod _q);
 // reset state
 void cpfskmod_reset(cpfskmod _q);
 
+// get transmit delay [symbols]
+unsigned int cpfskmod_get_delay(cpfskmod _q);
+
 // modulate sample
 //  _q      :   frequency modulator object
 //  _s      :   input symbol
@@ -5413,6 +5452,10 @@ void cpfskdem_print(cpfskdem _q);
 // reset state
 void cpfskdem_reset(cpfskdem _q);
 
+// get receive delay [symbols]
+unsigned int cpfskdem_get_delay(cpfskdem _q);
+
+#if 0
 // demodulate array of samples
 //  _q      :   continuous-phase frequency demodulator object
 //  _y      :   input sample array [size: _n x 1]
@@ -5424,7 +5467,13 @@ void cpfskdem_demodulate(cpfskdem               _q,
                          unsigned int           _n,
                          unsigned int         * _s,
                          unsigned int         * _nw);
-
+#else
+// demodulate array of samples, assuming perfect timing
+//  _q      :   continuous-phase frequency demodulator object
+//  _y      :   input sample array [size: _k x 1]
+unsigned int cpfskdem_demodulate(cpfskdem               _q,
+                                 liquid_float_complex * _y);
+#endif
 
 
 

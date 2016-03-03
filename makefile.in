@@ -1,4 +1,4 @@
-# Copyright (c) 2007 - 2015 Joseph Gaeddert
+# Copyright (c) 2007 - 2016 Joseph Gaeddert
 # 
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -886,6 +886,7 @@ src/modem/src/modem_arb_const.o: %.o : %.c $(include_headers)
 
 
 modem_autotests :=						\
+	src/modem/tests/cpfskmodem_autotest.c			\
 	src/modem/tests/freqmodem_autotest.c			\
 	src/modem/tests/fskmodem_autotest.c			\
 	src/modem/tests/modem_autotest.c			\
@@ -1576,6 +1577,7 @@ sandbox_programs =						\
 	sandbox/ellip_test					\
 	sandbox/eqlms_cccf_test					\
 	sandbox/fecsoft_ber_test				\
+	sandbox/fec_g2412product_test				\
 	sandbox/fec_golay2412_test				\
 	sandbox/fec_golay_test					\
 	sandbox/fec_hamming3126_example				\

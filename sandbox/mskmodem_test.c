@@ -2,6 +2,35 @@
 // mskmodem_test.c
 //
 
+#if 0
+ NOTES
+
+  mod.    signal median(|z|)
+  index                             (GMSK)
+  (h)     (rcos-full)   (rcos-half) BT=0.35
+  0.1     0.84078       0.72392     0.66000
+  0.15    0.84900       0.73578     0.66909
+  0.2     0.86020       0.75219     0.68140
+  0.25    0.87410       0.77380     0.69923
+  0.3     0.89051       0.80083     0.72071
+  0.35    0.90936       0.83370     0.75068
+  0.4     0.93050       0.87366     0.78479
+  0.45    0.95379       0.92185     0.81376
+  0.5     0.97901       0.97473     0.85897
+  0.55    1.0055        1.0301      0.91067
+  0.6     1.0324        1.0915      0.96746
+  0.65    1.0582        1.1631      1.0117
+  0.7     1.0813        1.2295      1.0777
+  0.75    1.0998        1.3012      1.1524
+  0.8     1.1116        1.3691      1.2040
+  0.85    1.1146        1.4171      1.2628
+  0.9     1.1074        1.4333      1.3158
+ 
+ rcos-full: median(|z|) ~ 0.34146  * h^2  +   0.14371  * h  +  0.81937
+ rcos-half: median(|z|) ~ 1.143219 * h^2  +  -0.064886 * h  +  0.718770
+ GMSK:      median(|z|) ~ 0.967978 * h^2  +  -0.077964 * h  +  0.658288
+#endif
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -181,30 +210,33 @@ int main(int argc, char*argv[]) {
     unsigned int m = 3;
     float bw = 0.0f;
     float beta = 0.0f;
+    float scale = 1.0f;
     firfilt_crcf decim_rx = NULL;
     switch (tx_filter_type) {
     case TXFILT_SQUARE:
         //bw = 0.9f / (float)k;
         bw = 0.4f;
         decim_rx = firfilt_crcf_create_kaiser(2*k*m+1, bw, 60.0f, 0.0f);
-        firfilt_crcf_set_scale(decim_rx, 2.0f * bw);
+        scale = 2.0f * bw;
         break;
     case TXFILT_RCOS_FULL:
         if (M==2) {
             decim_rx = firfilt_crcf_create_rnyquist(LIQUID_FIRFILT_GMSKRX,k,m,0.5f,0);
-            firfilt_crcf_set_scale(decim_rx, 1.33f / (float)k);
+            scale = 1.33f / (float)k;
         } else {
             decim_rx = firfilt_crcf_create_rnyquist(LIQUID_FIRFILT_GMSKRX,k/2,2*m,0.9f,0);
-            firfilt_crcf_set_scale(decim_rx, 3.25f / (float)k);
+            scale = 3.25f / (float)k;
         }
         break;
     case TXFILT_RCOS_HALF:
         if (M==2) {
+            // rcos-half:               
             decim_rx = firfilt_crcf_create_rnyquist(LIQUID_FIRFILT_GMSKRX,k,m,0.3f,0);
-            firfilt_crcf_set_scale(decim_rx, 1.10f / (float)k);
+            scale = 1.1f / (float)k;
+            //scale = 1.1f / (float)k * 1.0f / ( 1.24887*h*h  -0.16103*h +  0.73256 );
         } else {
             decim_rx = firfilt_crcf_create_rnyquist(LIQUID_FIRFILT_GMSKRX,k/2,2*m,0.27f,0);
-            firfilt_crcf_set_scale(decim_rx, 2.90f / (float)k);
+            scale = 2.90f / (float)k;
         }
         break;
     case TXFILT_GMSK:
@@ -212,12 +244,14 @@ int main(int argc, char*argv[]) {
         // TODO: figure out beta value here
         beta = (M == 2) ? 0.8*gmsk_bt : 1.0*gmsk_bt;
         decim_rx = firfilt_crcf_create_rnyquist(LIQUID_FIRFILT_GMSKRX,k,m,beta,0);
-        firfilt_crcf_set_scale(decim_rx, 2.0f * bw);
+        // compensate gain for modulation index
+        scale = 2.0f * bw / (0.967978*h*h + -0.077964*h + 0.658288);
         break;
     default:
         fprintf(stderr,"error: %s, invalid tx filter type\n", argv[0]);
         exit(1);
     }
+    firfilt_crcf_set_scale(decim_rx, scale);
     printf("bw = %f\n", bw);
 
     // run receiver
