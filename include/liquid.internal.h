@@ -1138,12 +1138,10 @@ void bpacketsync_reconfig(bpacketsync _q);
 #define GMSKFRAME_VERSION   (3)
 
 // header description
-#define GMSKFRAME_H_USER    (8)                     // user-defined array
-#define GMSKFRAME_H_DEC     (GMSKFRAME_H_USER+5)    // decoded length
-#define GMSKFRAME_H_CRC     (LIQUID_CRC_32)         // header CRC
-#define GMSKFRAME_H_FEC     (LIQUID_FEC_HAMMING128) // header FEC
-#define GMSKFRAME_H_ENC     (26)                    // encoded length (bytes)
-#define GMSKFRAME_H_SYM     (208)                   // number of encoded bits
+#define GMSKFRAME_H_USER_DEFAULT   (8)                     // user-defined array
+#define GMSKFRAME_H_DEC            (5)                     // decoded length
+#define GMSKFRAME_H_CRC            (LIQUID_CRC_32)         // header CRC
+#define GMSKFRAME_H_FEC            (LIQUID_FEC_HAMMING128) // header FEC
 
 
 // 

@@ -3772,6 +3772,7 @@ typedef struct gmskframegen_s * gmskframegen;
 gmskframegen gmskframegen_create();
 void gmskframegen_destroy(gmskframegen _fg);
 void gmskframegen_print(gmskframegen _fg);
+void gmskframegen_set_header_len(gmskframegen _fg, unsigned int _len);
 void gmskframegen_reset(gmskframegen _fg);
 void gmskframegen_assemble(gmskframegen    _fg,
                            unsigned char * _header,
@@ -3798,6 +3799,7 @@ gmskframesync gmskframesync_create(framesync_callback _callback,
                                    void *             _userdata);
 void gmskframesync_destroy(gmskframesync _q);
 void gmskframesync_print(gmskframesync _q);
+void gmskframesync_set_header_len(gmskframesync _q, unsigned int _len);
 void gmskframesync_reset(gmskframesync _q);
 void gmskframesync_execute(gmskframesync _q,
                            liquid_float_complex * _x,
