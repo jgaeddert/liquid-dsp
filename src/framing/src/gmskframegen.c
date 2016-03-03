@@ -109,6 +109,9 @@ gmskframegen gmskframegen_create()
     // preamble objects/arrays
     q->ms_preamble = msequence_create(6, 0x6d, 1);
 
+    // reset framing object
+    gmskframegen_reset(q);
+
     q->header_dec = NULL;
     q->header_enc = NULL;
     q->p_header   = NULL;
@@ -129,9 +132,6 @@ gmskframegen gmskframegen_create()
 
     // allocate memory for encoded packet
     q->payload_enc = (unsigned char*) malloc(q->enc_msg_len*sizeof(unsigned char));
-
-    // reset framing object
-    gmskframegen_reset(q);
 
     // return object
     return q;
