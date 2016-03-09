@@ -377,6 +377,9 @@ void detector_cccf_compute_dotprods(detector_cccf _q)
         // TODO: compute scaled squared magnitude so as not to have
         //       to compute square root
         _q->rxy[k] = cabsf(rxy) * _q->n_inv / sqrtf(_q->x2_hat);
+        if (_q->rxy[k] != _q->rxy[k]) {
+            _q->rxy[k] = 0;
+        }
 #if DEBUG_DETECTOR_PRINT
         printf("%6.4f (%6.4f) ", _q->rxy[k], _q->dphi[k]);
 #endif
@@ -449,8 +452,8 @@ void detector_cccf_estimate_offsets(detector_cccf _q,
     *_tau_hat  =  0.5f*(rp0 - rm0) / (rp0 + rm0 - 2*r00);
 
     // force result to be in proper range
-    if (!(*_tau_hat >= -0.499f)) *_tau_hat = -0.499f;
-    if (!(*_tau_hat <=  0.499f)) *_tau_hat =  0.499f;
+    if (*_tau_hat < -0.499f) *_tau_hat = -0.499f;
+    if (*_tau_hat >  0.499f) *_tau_hat =  0.499f;
 }
 
 #if 0
