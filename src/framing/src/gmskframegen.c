@@ -36,7 +36,7 @@
 #define DEBUG_GMSKFRAMEGEN    0
 
 // gmskframegen
-void gmskframegen_encode_header( gmskframegen _q, unsigned char * _header);
+void gmskframegen_encode_header( gmskframegen _q, const unsigned char * _header);
 void gmskframegen_write_preamble(gmskframegen _q, float complex * _y);
 void gmskframegen_write_header(  gmskframegen _q, float complex * _y);
 void gmskframegen_write_payload( gmskframegen _q, float complex * _y);
@@ -316,7 +316,7 @@ int gmskframegen_write_samples(gmskframegen _q,
 //
 
 void gmskframegen_encode_header(gmskframegen    _q,
-                                unsigned char * _header)
+                                const unsigned char * _header)
 {
     // first 'n' bytes user data
     memmove(_q->header_dec, _header, GMSKFRAME_H_USER);

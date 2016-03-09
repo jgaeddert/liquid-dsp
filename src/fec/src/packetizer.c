@@ -245,7 +245,7 @@ fec_scheme packetizer_get_fec1(packetizer _p)
 //  _msg    :   input message (uncoded bytes)
 //  _pkt    :   encoded output message
 void packetizer_encode(packetizer _p,
-                       unsigned char * _msg,
+                       const unsigned char * _msg,
                        unsigned char * _pkt)
 {
     unsigned int i;

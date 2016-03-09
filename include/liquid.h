@@ -1029,7 +1029,7 @@ fec_scheme   packetizer_get_fec1       (packetizer _p);
 //  _msg    :   input message (uncoded bytes)
 //  _pkt    :   encoded output message
 void packetizer_encode(packetizer _p,
-                       unsigned char * _msg,
+                       const unsigned char * _msg,
                        unsigned char * _pkt);
 
 // packetizer_decode()
@@ -3436,7 +3436,7 @@ unsigned int qpacketmodem_get_modscheme(qpacketmodem _q);
 //  _payload    :   unencoded payload bytes
 //  _syms       :   encoded but un-modulated payload symbol indices
 void qpacketmodem_encode_syms(qpacketmodem    _q,
-                              unsigned char * _payload,
+                              const unsigned char * _payload,
                               unsigned char * _syms);
 
 // decode packet from demodulated frame symbol indices (hard-decision decoding)
@@ -3460,7 +3460,7 @@ int qpacketmodem_decode_bits(qpacketmodem    _q,
 //  _payload    :   unencoded payload bytes
 //  _frame      :   encoded/modulated payload symbols
 void qpacketmodem_encode(qpacketmodem           _q,
-                         unsigned char *        _payload,
+                         const unsigned char *        _payload,
                          liquid_float_complex * _frame);
 
 // decode packet from modulated frame samples, returning flag if CRC passed
