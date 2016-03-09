@@ -354,7 +354,7 @@ void RESAMP(_execute_block)(RESAMP()       _q,
 //  _ny             :   capacity of output sample array
 //  _uy             :   number of output samples written
 int RESAMP(_execute_output_block)(RESAMP() _q,
-                                   TI * _x,
+                                   const TI * _x,
                                    unsigned int _nx,
                                    unsigned int * _ux,
                                    TO * _y,
