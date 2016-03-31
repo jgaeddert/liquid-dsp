@@ -128,7 +128,7 @@ AC_CHECK_SIZEOF(unsigned int)
 # Try to guess the "native" architecture of the target to use with gcc's
 # -march or -mtune flags. Default success action adds $ax_cv_gcc_archflag to
 # $CFLAGS (sets to "unknown" on failure).
-AX_GCC_ARCHFLAG([no],[],[])
+#AX_GCC_ARCHFLAG([no],[],[])
 
 # override SIMD
 if test "${enable_simdoverride+set}" = set; then
