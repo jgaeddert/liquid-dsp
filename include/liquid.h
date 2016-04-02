@@ -3800,11 +3800,12 @@ typedef struct gmskframegen_s * gmskframegen;
 // create GMSK frame generator
 gmskframegen gmskframegen_create();
 void gmskframegen_destroy(gmskframegen _fg);
+int  gmskframegen_is_assembled(gmskframegen _fg);
 void gmskframegen_print(gmskframegen _fg);
 void gmskframegen_reset(gmskframegen _fg);
 void gmskframegen_assemble(gmskframegen    _fg,
-                           unsigned char * _header,
-                           unsigned char * _payload,
+                           const unsigned char * _header,
+                           const unsigned char * _payload,
                            unsigned int    _payload_len,
                            crc_scheme      _check,
                            fec_scheme      _fec0,

@@ -175,6 +175,12 @@ void gmskframegen_reset(gmskframegen _q)
     _q->symbol_counter  = 0;
 }
 
+// is frame assembled?
+int gmskframegen_is_assembled(gmskframegen _q)
+{
+    return _q->frame_assembled;
+}
+
 // print gmskframegen object internals
 void gmskframegen_print(gmskframegen _q)
 {
@@ -205,8 +211,8 @@ void gmskframegen_print(gmskframegen _q)
 //  _fec0           :   inner forward error correction
 //  _fec1           :   outer forward error correction
 void gmskframegen_assemble(gmskframegen    _q,
-                           unsigned char * _header,
-                           unsigned char * _payload,
+                           const unsigned char * _header,
+                           const unsigned char * _payload,
                            unsigned int    _payload_len,
                            crc_scheme      _check,
                            fec_scheme      _fec0,
