@@ -690,8 +690,8 @@ void EQLMS(_train)(EQLMS()      _q,                             \
                    T *          _d,                             \
                    unsigned int _n);                            \
 
-LIQUID_EQLMS_DEFINE_API(EQLMS_MANGLE_RRRF, float);
-LIQUID_EQLMS_DEFINE_API(EQLMS_MANGLE_CCCF, liquid_float_complex);
+LIQUID_EQLMS_DEFINE_API(EQLMS_MANGLE_RRRF, float)
+LIQUID_EQLMS_DEFINE_API(EQLMS_MANGLE_CCCF, liquid_float_complex)
 
 
 // recursive least-squares (RLS)
@@ -764,8 +764,8 @@ void EQRLS(_train)(EQRLS()      _q,                             \
                    T *          _d,                             \
                    unsigned int _n);
 
-LIQUID_EQRLS_DEFINE_API(EQRLS_MANGLE_RRRF, float);
-LIQUID_EQRLS_DEFINE_API(EQRLS_MANGLE_CCCF, liquid_float_complex);
+LIQUID_EQRLS_DEFINE_API(EQRLS_MANGLE_RRRF, float)
+LIQUID_EQRLS_DEFINE_API(EQRLS_MANGLE_CCCF, liquid_float_complex)
 
 
 
@@ -6742,8 +6742,8 @@ void VECTOR(_normalize)(T *          _x,                        \
                         unsigned int _n,                        \
                         T *          _y);                       \
 
-LIQUID_VECTOR_DEFINE_API(VECTOR_MANGLE_RF, float,                float);
-LIQUID_VECTOR_DEFINE_API(VECTOR_MANGLE_CF, liquid_float_complex, float);
+LIQUID_VECTOR_DEFINE_API(VECTOR_MANGLE_RF, float,                float)
+LIQUID_VECTOR_DEFINE_API(VECTOR_MANGLE_CF, liquid_float_complex, float)
 
 // 
 // mixed types
