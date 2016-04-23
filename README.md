@@ -61,6 +61,14 @@ run
 
     $ sudo make uninstall
 
+Alternatively, you can build with CMake (in example, with Ninja):
+
+    $ mkdir build
+    $ cd build
+    $ cmake -G Ninja ..
+    $ ninja
+    $ sudo ninja install
+
 ### Run all test scripts ###
 
 Source code validation is a critical step in any software library,
