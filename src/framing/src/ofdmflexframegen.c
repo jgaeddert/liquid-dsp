@@ -351,8 +351,8 @@ unsigned int ofdmflexframegen_getframelen(ofdmflexframegen _q)
 //  _payload        :   payload data [size: _payload_len x 1]
 //  _payload_len    :   payload data length
 void ofdmflexframegen_assemble(ofdmflexframegen _q,
-                               unsigned char *  _header,
-                               unsigned char *  _payload,
+                               const unsigned char *  _header,
+                               const unsigned char *  _payload,
                                unsigned int     _payload_len)
 {
     // check payload length and reconfigure if necessary
@@ -620,8 +620,8 @@ void ofdmflexframegen_write_header(ofdmflexframegen _q,
             } else {
                 //printf("  random header symbol\n");
                 // load random symbol
-                unsigned int sym = modem_gen_rand_sym(_q->mod_payload);
-                modem_modulate(_q->mod_payload, sym, &_q->X[i]);
+                unsigned int sym = modem_gen_rand_sym(_q->mod_header);
+                modem_modulate(_q->mod_header, sym, &_q->X[i]);
             }
         } else {
             // ignore subcarrier (ofdmframegen handles nulls and pilots)
