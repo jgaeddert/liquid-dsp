@@ -1251,7 +1251,7 @@ help:
 ## TARGET : install   - installs the libraries and header files in the host system
 ##
 
-install:
+install: all
 	@echo "installing..."
 	@echo ""
 	mkdir -p $(DESTDIR)$(exec_prefix)$(libdir)
