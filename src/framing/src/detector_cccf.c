@@ -31,6 +31,7 @@
 #include <string.h>
 #include <math.h>
 #include <assert.h>
+#include <float.h>
 
 #include "liquid.internal.h"
 
@@ -343,6 +344,9 @@ void detector_cccf_update_sumsq(detector_cccf _q,
     wdelayf_read(_q->x2, &x2_0);            // read oldest sample
     wdelayf_push(_q->x2, x2_n);             // push newest sample
     _q->x2_sum = _q->x2_sum + x2_n - x2_0;  // update sum( |x|^2 ) of last 'n' input samples
+    if (_q->x2_sum < FLT_EPSILON) {
+        _q->x2_sum = FLT_EPSILON;
+    }
 #if 0
     // filtered estimate of E{ |x|^2 }
     _q->x2_hat = 0.8f*_q->x2_hat + 0.2f*_q->x2_sum*_q->n_inv;
@@ -377,9 +381,6 @@ void detector_cccf_compute_dotprods(detector_cccf _q)
         // TODO: compute scaled squared magnitude so as not to have
         //       to compute square root
         _q->rxy[k] = cabsf(rxy) * _q->n_inv / sqrtf(_q->x2_hat);
-        if (_q->rxy[k] != _q->rxy[k]) {
-            _q->rxy[k] = 0;
-        }
 #if DEBUG_DETECTOR_PRINT
         printf("%6.4f (%6.4f) ", _q->rxy[k], _q->dphi[k]);
 #endif
