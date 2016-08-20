@@ -620,6 +620,7 @@ src/framing/src/msourcecf.o         : %.o : %.c $(include_headers) src/framing/s
 src/framing/src/ofdmflexframegen.o  : %.o : %.c $(include_headers)
 src/framing/src/ofdmflexframesync.o : %.o : %.c $(include_headers)
 src/framing/src/presync_cccf.o      : %.o : %.c $(include_headers) src/framing/src/presync.c
+src/framing/src/qpacketmodem.o      : %.o : %.c $(include_headers)
 src/framing/src/symstreamcf.o       : %.o : %.c $(include_headers) src/framing/src/symstream.c
 src/framing/src/symtrack_cccf.o     : %.o : %.c $(include_headers) src/framing/src/symtrack.c
 
