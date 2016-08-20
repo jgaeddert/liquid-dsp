@@ -235,7 +235,7 @@ void MSOURCE(_remove)(MSOURCE() _q,
     _q->num_sources--;
 
     // shift sources down
-    for (i; i<_q->num_sources; i++)
+    for (; i<_q->num_sources; i++)
         _q->sources[i] = _q->sources[i+1];
 }
 

@@ -1021,28 +1021,24 @@ fec_scheme   packetizer_get_fec0       (packetizer _p);
 fec_scheme   packetizer_get_fec1       (packetizer _p);
 
 
-// packetizer_encode()
-//
 // Execute the packetizer on an input message
 //
 //  _p      :   packetizer object
 //  _msg    :   input message (uncoded bytes)
 //  _pkt    :   encoded output message
-void packetizer_encode(packetizer _p,
-                       unsigned char * _msg,
-                       unsigned char * _pkt);
+void packetizer_encode(packetizer            _p,
+                       const unsigned char * _msg,
+                       unsigned char *       _pkt);
 
-// packetizer_decode()
-//
 // Execute the packetizer to decode an input message, return validity
 // check of resulting data
 //
 //  _p      :   packetizer object
 //  _pkt    :   input message (coded bytes)
 //  _msg    :   decoded output message
-int  packetizer_decode(packetizer _p,
-                       unsigned char * _pkt,
-                       unsigned char * _msg);
+int  packetizer_decode(packetizer            _p,
+                       const unsigned char * _pkt,
+                       unsigned char *       _msg);
 
 // Execute the packetizer to decode an input message, return validity
 // check of resulting data
@@ -1050,9 +1046,9 @@ int  packetizer_decode(packetizer _p,
 //  _p      :   packetizer object
 //  _pkt    :   input message (coded soft bits)
 //  _msg    :   decoded output message
-int  packetizer_decode_soft(packetizer _p,
-                            unsigned char * _pkt,
-                            unsigned char * _msg);
+int packetizer_decode_soft(packetizer            _p,
+                           const unsigned char * _pkt,
+                           unsigned char *       _msg);
 
 
 //
@@ -3435,9 +3431,9 @@ unsigned int qpacketmodem_get_modscheme(qpacketmodem _q);
 //  _q          :   qpacketmodem object
 //  _payload    :   unencoded payload bytes
 //  _syms       :   encoded but un-modulated payload symbol indices
-void qpacketmodem_encode_syms(qpacketmodem    _q,
-                              unsigned char * _payload,
-                              unsigned char * _syms);
+void qpacketmodem_encode_syms(qpacketmodem          _q,
+                              const unsigned char * _payload,
+                              unsigned char *       _syms);
 
 // decode packet from demodulated frame symbol indices (hard-decision decoding)
 //  _q          :   qpacketmodem object
@@ -3460,7 +3456,7 @@ int qpacketmodem_decode_bits(qpacketmodem    _q,
 //  _payload    :   unencoded payload bytes
 //  _frame      :   encoded/modulated payload symbols
 void qpacketmodem_encode(qpacketmodem           _q,
-                         unsigned char *        _payload,
+                         const unsigned char *  _payload,
                          liquid_float_complex * _frame);
 
 // decode packet from modulated frame samples, returning flag if CRC passed
@@ -3648,10 +3644,10 @@ unsigned int flexframegen_getframelen(flexframegen _q);
 //  _header         :   frame header
 //  _payload        :   payload data [size: _payload_len x 1]
 //  _payload_len    :   payload data length
-void flexframegen_assemble(flexframegen    _q,
+void flexframegen_assemble(flexframegen          _q,
                            const unsigned char * _header,
                            const unsigned char * _payload,
-                           unsigned int    _payload_len);
+                           unsigned int          _payload_len);
 
 // write samples of assembled frame, two samples at a time, returning
 // '1' when frame is complete, '0' otherwise. Zeros will be written
@@ -3799,19 +3795,19 @@ typedef struct gmskframegen_s * gmskframegen;
 
 // create GMSK frame generator
 gmskframegen gmskframegen_create();
-void gmskframegen_destroy(gmskframegen _fg);
-int  gmskframegen_is_assembled(gmskframegen _fg);
-void gmskframegen_print(gmskframegen _fg);
-void gmskframegen_reset(gmskframegen _fg);
-void gmskframegen_assemble(gmskframegen    _fg,
-                           const unsigned char * _header,
-                           const unsigned char * _payload,
-                           unsigned int    _payload_len,
-                           crc_scheme      _check,
-                           fec_scheme      _fec0,
-                           fec_scheme      _fec1);
+void gmskframegen_destroy       (gmskframegen _q);
+int  gmskframegen_is_assembled  (gmskframegen _q);
+void gmskframegen_print         (gmskframegen _q);
+void gmskframegen_reset         (gmskframegen _q);
+void gmskframegen_assemble      (gmskframegen          _q,
+                                 const unsigned char * _header,
+                                 const unsigned char * _payload,
+                                 unsigned int          _payload_len,
+                                 crc_scheme            _check,
+                                 fec_scheme            _fec0,
+                                 fec_scheme            _fec1);
 unsigned int gmskframegen_getframelen(gmskframegen _q);
-int gmskframegen_write_samples(gmskframegen _fg,
+int gmskframegen_write_samples(gmskframegen _q,
                                liquid_float_complex * _y);
 
 
@@ -3897,15 +3893,15 @@ unsigned int ofdmflexframegen_getframelen(ofdmflexframegen _q);
 //  _header         :   frame header [8 bytes]
 //  _payload        :   payload data [size: _payload_len x 1]
 //  _payload_len    :   payload data length
-void ofdmflexframegen_assemble(ofdmflexframegen _q,
+void ofdmflexframegen_assemble(ofdmflexframegen      _q,
                                const unsigned char * _header,
                                const unsigned char * _payload,
-                               unsigned int    _payload_len);
+                               unsigned int          _payload_len);
 
 // write symbols of assembled frame
 //  _q              :   OFDM frame generator object
 //  _buffer         :   output buffer [size: M+cp_len x 1]
-int ofdmflexframegen_writesymbol(ofdmflexframegen _q,
+int ofdmflexframegen_writesymbol(ofdmflexframegen       _q,
                                  liquid_float_complex * _buffer);
 
 // 

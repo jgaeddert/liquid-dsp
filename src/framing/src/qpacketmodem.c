@@ -192,9 +192,9 @@ unsigned int qpacketmodem_get_modscheme(qpacketmodem _q)
 //  _q          :   qpacketmodem object
 //  _payload    :   unencoded payload bytes
 //  _syms       :   encoded but un-modulated payload symbol indices
-void qpacketmodem_encode_syms(qpacketmodem    _q,
-                              unsigned char * _payload,
-                              unsigned char * _syms)
+void qpacketmodem_encode_syms(qpacketmodem          _q,
+                              const unsigned char * _payload,
+                              unsigned char *       _syms)
 {
     // encode payload
     packetizer_encode(_q->p, _payload, _q->payload_enc);
@@ -248,9 +248,9 @@ int qpacketmodem_decode_bits(qpacketmodem    _q,
 //  _q          :   qpacketmodem object
 //  _payload    :   unencoded payload bytes
 //  _frame      :   encoded/modulated payload symbols
-void qpacketmodem_encode(qpacketmodem    _q,
-                         unsigned char * _payload,
-                         float complex * _frame)
+void qpacketmodem_encode(qpacketmodem          _q,
+                         const unsigned char * _payload,
+                         float complex *       _frame)
 {
     // encode payload symbols into internal buffer
     qpacketmodem_encode_syms(_q, _payload, _q->payload_mod);
