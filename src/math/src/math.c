@@ -339,6 +339,43 @@ float blackmanharris(unsigned int _n, unsigned int _N)
     return a0 - a1*cosf(t) + a2*cosf(2*t) - a3*cosf(3*t);
 }
 
+// 7th order Blackman-harris window
+float blackmanharris7th(unsigned int _n, unsigned int _N)
+{
+	float a0 = 0.27105;
+	float a1 = 0.43329;
+	float a2 = 0.21812;
+	float a3 = 0.06592;
+	float a4 = 0.01081;
+	float a5 = 0.00077;
+	float a6 = 0.00001;
+	float t = 2*M_PI*(float)_n / ((float)(_N-1));
+
+	return a0 - a1*cosf(t) + a2*cosf(2*t) - a3*cosf(3*t)
+			+ a4*cosf(4*t) - a5*cosf(5*t) + a6*cosf(6*t);
+}
+
+// Flat-top window
+float flattop(unsigned int _n, unsigned int _N)
+{
+	float a0 = 1.0;
+	float a1 = 1.93;
+	float a2 = 1.29;
+	float a3 = 0.388;
+	float a4 = 0.028;
+	float t = 2*M_PI*(float)_n / ((float)(_N-1));
+
+	return a0 - a1*cosf(t) + a2*cosf(2*t) - a3*cosf(3*t) + a4*cosf(4*t);
+}
+
+// Triangular window
+float triangular(unsigned int _n, unsigned int _N, unsigned int _L)
+{
+	float _num = (float)_n - (float)((_N-1)/2);
+	float _denum = (float)_L/2;
+	return 1.0 - _num / _denum;
+}
+
 // raised-cosine tapering window
 //  _n      :   window index
 //  _t      :   taper length
