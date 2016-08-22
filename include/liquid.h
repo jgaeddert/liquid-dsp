@@ -4511,7 +4511,12 @@ float hann(unsigned int _n, unsigned int _N);
 //  _N      :   full window length
 float blackmanharris(unsigned int _n, unsigned int _N);
 
-// FlatTop window
+// 7th order Blackman-harris window
+// _n			:	window index
+// _N			:	full window length
+float blackmanharris7th(unsigned int _n, unsigned int _N);
+
+// Flat-top window
 // _n			:	window index
 // _N			:	full window length
 float flattop(unsigned int _n, unsigned int _N);
