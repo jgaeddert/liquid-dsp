@@ -4521,6 +4521,12 @@ float blackmanharris7th(unsigned int _n, unsigned int _N);
 // _N			:	full window length
 float flattop(unsigned int _n, unsigned int _N);
 
+// Triangular window
+// _n			:	window index
+// _N			:	full window length
+// _L			:	triangle length should be _N, _N+1 or _N-1
+float triangular(unsigned int _n, unsigned int _N, unsigned int _L);
+
 // raised-cosine tapering window
 //  _n      :   window index
 //  _t      :   taper length
