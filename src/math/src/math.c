@@ -368,6 +368,14 @@ float flattop(unsigned int _n, unsigned int _N)
 	return a0 - a1*cosf(t) + a2*cosf(2*t) - a3*cosf(3*t) + a4*cosf(4*t);
 }
 
+// Triangular window
+float triangular(unsigned int _n, unsigned int _N, unsigned int _L)
+{
+	float _num = (float)_n - (float)((_N-1)/2);
+	float _denum = (float)_L/2;
+	return 1.0 - _num / _denum;
+}
+
 // raised-cosine tapering window
 //  _n      :   window index
 //  _t      :   taper length
