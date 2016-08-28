@@ -1457,6 +1457,7 @@ example_programs :=						\
 	examples/scramble_example				\
 	examples/smatrix_example				\
 	examples/spgramcf_example				\
+	examples/spgramcf_waterfall_example			\
 	examples/spgramf_example				\
 	examples/symsync_crcf_example				\
 	examples/symsync_crcf_full_example			\
