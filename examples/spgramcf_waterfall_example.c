@@ -27,6 +27,13 @@ int main()
     unsigned int window_size = nfft/2;  // spgramcf window size
     spgramcf periodogram = spgramcf_create_kaiser(nfft, window_size, 10.0f);
 
+    // create time-varying multi-path channel object
+    unsigned int c_len = 17;
+    float        std   = 0.1f;
+    float        tau   = 1e-4f;
+    tvmpch_cccf channel = tvmpch_cccf_create(c_len, std, tau);
+    tvmpch_cccf_print(channel);
+
     unsigned int buf_len = 1024;
     float complex buf[buf_len];
 
@@ -38,10 +45,11 @@ int main()
     msourcecf_set_gain(gen, id_noise1, -80.0f);
 
     // add noise source (narrow-band)
-    int id_noise2 = msourcecf_add_noise(gen, 0.10f);
-    msourcecf_set_frequency(gen, id_noise2, 0.4*2*M_PI);
+    int id_noise2 = msourcecf_add_noise(gen, 1.00f);
+    //msourcecf_set_frequency(gen, id_noise2, 0.4*2*M_PI);
     msourcecf_set_gain     (gen, id_noise2, -20.0f);
 
+#if 0
     // add tone
     int id_tone = msourcecf_add_tone(gen);
     msourcecf_set_frequency(gen, id_tone, -0.4*2*M_PI);
@@ -50,7 +58,8 @@ int main()
     // add modulated data
     int id_modem = msourcecf_add_modem(gen,ms,k,m,beta);
     msourcecf_set_gain     (gen, id_modem, 0.0f);
-    
+#endif
+
     // print source generator object
     msourcecf_print(gen);
 
@@ -71,6 +80,9 @@ int main()
         // write samples to buffer
         msourcecf_write_samples(gen, buf, buf_len);
 
+        // run through channel
+        tvmpch_cccf_execute_block(channel, buf, buf_len, buf);
+
         // push resulting sample through periodogram
         spgramcf_accumulate_psd(periodogram, buf, alpha, buf_len);
         
@@ -87,6 +99,7 @@ int main()
         total_samples += buf_len;
 
     }
+    tvmpch_cccf_print(channel);
     printf("total samples:    %u\n", total_samples);
     printf("total transforms: %u\n", num_transforms);
     fclose(fid);
@@ -94,6 +107,7 @@ int main()
     // destroy objects
     msourcecf_destroy(gen);
     spgramcf_destroy(periodogram);
+    tvmpch_cccf_destroy(channel);
 
     // export output file
     fid = fopen(OUTPUT_FILENAME,"w");
