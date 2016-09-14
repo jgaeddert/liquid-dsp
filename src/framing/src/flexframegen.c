@@ -285,10 +285,10 @@ unsigned int flexframegen_getframelen(flexframegen _q)
 //  _header         :   user-defined header
 //  _payload        :   variable payload buffer (configured by setprops method)
 //  _payload_dec_len:   length of payload
-void flexframegen_assemble(flexframegen    _q,
+void flexframegen_assemble(flexframegen          _q,
                            const unsigned char * _header,
                            const unsigned char * _payload,
-                           unsigned int    _payload_dec_len)
+                           unsigned int          _payload_dec_len)
 {
     // reset object
     flexframegen_reset(_q);
