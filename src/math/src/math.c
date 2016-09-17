@@ -288,8 +288,8 @@ void liquid_kbd_window(unsigned int _n,
 //  _mu     :   fractional sample offset
 float kaiser(unsigned int _n,
              unsigned int _N,
-             float _beta,
-             float _mu)
+             float        _beta,
+             float        _mu)
 {
     // validate input
     if (_n > _N) {
@@ -311,32 +311,116 @@ float kaiser(unsigned int _n,
 }
 
 // Hamming window
-float hamming(unsigned int _n, unsigned int _N)
+float hamming(unsigned int _n,
+              unsigned int _N)
 {
+    // validate input
+    if (_n > _N) {
+        fprintf(stderr,"error: hamming(), sample index must not exceed window length\n");
+        exit(1);
+    }
+
     // TODO add reference
     return 0.53836 - 0.46164*cosf( (2*M_PI*(float)_n) / ((float)(_N-1)) );
 }
 
 // Hann window
-float hann(unsigned int _n, unsigned int _N)
+float hann(unsigned int _n,
+           unsigned int _N)
 {
+    // validate input
+    if (_n > _N) {
+        fprintf(stderr,"error: hann(), sample index must not exceed window length\n");
+        exit(1);
+    }
+
     // TODO test this function
     // TODO add reference
     return 0.5f - 0.5f*cosf( (2*M_PI*(float)_n) / ((float)(_N-1)) );
 }
 
 // Blackman-harris window [harris:1978]
-float blackmanharris(unsigned int _n, unsigned int _N)
+float blackmanharris(unsigned int _n,
+                     unsigned int _N)
 {
+    // validate input
+    if (_n > _N) {
+        fprintf(stderr,"error: blackmanharris(), sample index must not exceed window length\n");
+        exit(1);
+    }
+
     // TODO test this function
     // TODO add reference
-    float a0 = 0.35875;
-    float a1 = 0.48829;
-    float a2 = 0.14128;
-    float a3 = 0.01168;
+    float a0 = 0.35875f;
+    float a1 = 0.48829f;
+    float a2 = 0.14128f;
+    float a3 = 0.01168f;
     float t = 2*M_PI*(float)_n / ((float)(_N-1));
 
     return a0 - a1*cosf(t) + a2*cosf(2*t) - a3*cosf(3*t);
+}
+
+// 7th-order Blackman-harris window
+float blackmanharris7(unsigned int _n, unsigned int _N)
+{
+    // validate input
+    if (_n > _N) {
+        fprintf(stderr,"error: blackmanharris7(), sample index must not exceed window length\n");
+        exit(1);
+    }
+
+	float a0 = 0.27105f;
+	float a1 = 0.43329f;
+	float a2 = 0.21812f;
+	float a3 = 0.06592f;
+	float a4 = 0.01081f;
+	float a5 = 0.00077f;
+	float a6 = 0.00001f;
+	float t = 2*M_PI*(float)_n / ((float)(_N-1));
+
+	return a0 - a1*cosf(  t) + a2*cosf(2*t) - a3*cosf(3*t)
+			  + a4*cosf(4*t) - a5*cosf(5*t) + a6*cosf(6*t);
+}
+
+// Flat-top window
+float flattop(unsigned int _n, unsigned int _N)
+{
+    // validate input
+    if (_n > _N) {
+        fprintf(stderr,"error: flattop(), sample index must not exceed window length\n");
+        exit(1);
+    }
+
+	float a0 = 1.000f;
+	float a1 = 1.930f;
+	float a2 = 1.290f;
+	float a3 = 0.388f;
+	float a4 = 0.028f;
+	float t = 2*M_PI*(float)_n / ((float)(_N-1));
+
+	return a0 - a1*cosf(t) + a2*cosf(2*t) - a3*cosf(3*t) + a4*cosf(4*t);
+}
+
+// Triangular window
+float triangular(unsigned int _n,
+                 unsigned int _N,
+                 unsigned int _L)
+{
+    // validate input
+    if (_n > _N) {
+        fprintf(stderr,"error: triangular(), sample index must not exceed window length\n");
+        exit(1);
+    } else if (_L != _N-1 && _L != _N && _L != _N+1) {
+        fprintf(stderr,"error: triangular(), sub-length must be in _N+{-1,0,1}\n");
+        exit(1);
+    } else if (_L == 0) {
+        fprintf(stderr,"error: triangular(), sub-length must be greater than zero\n");
+        exit(1);
+    }
+
+	float _num   = (float)_n - (float)((_N-1)/2.0f);
+	float _denom = ((float)_L)/2.0f;
+	return 1.0 - fabsf(_num / _denom);
 }
 
 // raised-cosine tapering window

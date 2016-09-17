@@ -4493,23 +4493,46 @@ void liquid_kbd_window(unsigned int _n, float _beta, float * _w);
 //  _dt     :   fractional sample offset
 float kaiser(unsigned int _n,
              unsigned int _N,
-             float _beta,
-             float _dt);
+             float        _beta,
+             float        _dt);
 
 // Hamming window
 //  _n      :   window index
 //  _N      :   full window length
-float hamming(unsigned int _n, unsigned int _N);
+float hamming(unsigned int _n,
+              unsigned int _N);
 
 // Hann window
 //  _n      :   window index
 //  _N      :   full window length
-float hann(unsigned int _n, unsigned int _N);
+float hann(unsigned int _n,
+           unsigned int _N);
 
 // Blackman-harris window
 //  _n      :   window index
 //  _N      :   full window length
-float blackmanharris(unsigned int _n, unsigned int _N);
+float blackmanharris(unsigned int _n,
+                     unsigned int _N);
+
+// 7th order Blackman-harris window
+// _n			:	window index
+// _N			:	full window length
+float blackmanharris7(unsigned int _n,
+                      unsigned int _N);
+
+// Flat-top window
+// _n			:	window index
+// _N			:	full window length
+float flattop(unsigned int _n,
+              unsigned int _N);
+
+// Triangular window
+// _n			:	window index
+// _N			:	full window length
+// _L			:	triangle length, _L in {_N, _N+1, _N-1}
+float triangular(unsigned int _n,
+                 unsigned int _N,
+                 unsigned int _L);
 
 // raised-cosine tapering window
 //  _n      :   window index
