@@ -48,7 +48,7 @@ void fskdem_bench(struct rusage *     _start,
     // initialize demodulator
     fskdem dem = fskdem_create(_m,_k,_bandwidth);
 
-    unsigned int M = 1 << _m;   // constellation size
+    //unsigned int M = 1 << _m;   // constellation size
     
     unsigned long int i;
 
