@@ -179,6 +179,20 @@ void liquid_autotest_print_array(unsigned char * _x,
 #define CONTEND_DELTA_FL(F,L,X,Y,D)       TEST_DELTA(F,L,#X,(X),#Y,(Y),#D,(D))
 #define CONTEND_DELTA(X,Y,D)              CONTEND_DELTA_FL(__FILE__,__LINE__,X,Y,D)
 
+// CONTEND_DELTA_COMPLEX
+#define TEST_DELTA_COMPLEX(F,L,EX,X,EY,Y,ED,D)                      \
+{                                                                   \
+    if (cabs((X)-(Y))>(D))                                          \
+    {                                                               \
+        liquid_autotest_failed_expr(F,L,"abs(" #X "-" #Y ")",       \
+                                    cabs(X-Y),"<",ED,D);            \
+    } else {                                                        \
+        liquid_autotest_passed();                                   \
+    }                                                               \
+}
+#define CONTEND_DELTA_COMPLEX_FL(F,L,X,Y,D)       TEST_DELTA_COMPLEX(F,L,#X,(X),#Y,(Y),#D,(D))
+#define CONTEND_DELTA_COMPLEX(X,Y,D)              CONTEND_DELTA_COMPLEX_FL(__FILE__,__LINE__,X,Y,D)
+
 // CONTEND_EXPRESSION
 #define TEST_EXPRESSION(F,L,EX,X)                                   \
 {                                                                   \

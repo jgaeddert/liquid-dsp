@@ -425,7 +425,7 @@ int gmskframesync_update_symsync(gmskframesync _q,
         // compute actual filterbank index
         _q->pfb_index = roundf(_q->pfb_soft);
 
-        // contrain index to be in [0, npfb-1]
+        // constrain index to be in [0, npfb-1]
         while (_q->pfb_index < 0) {
             _q->pfb_index += _q->npfb;
             _q->pfb_soft  += _q->npfb;
@@ -433,7 +433,7 @@ int gmskframesync_update_symsync(gmskframesync _q,
             // adjust pfb output timer
             _q->pfb_timer--;
         }
-        while (_q->pfb_index > _q->npfb-1) {
+        while ((unsigned int)_q->pfb_index > _q->npfb-1) {
             _q->pfb_index -= _q->npfb;
             _q->pfb_soft  -= _q->npfb;
 

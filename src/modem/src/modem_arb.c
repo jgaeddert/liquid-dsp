@@ -30,7 +30,7 @@ MODEM() MODEM(_create_arbitrary)(TC * _table,
 {
     // strip out bits/symbol
     unsigned int m = liquid_nextpow2(_M);
-    if ( (1<<m) != _M ) {
+    if ( (1u<<m) != _M ) {
         // TODO : eventually support non radix-2 constellation sizes
         fprintf(stderr,"error: modem_create_arbitrary(), input constellation size must be power of 2\n");
         exit(1);

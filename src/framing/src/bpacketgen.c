@@ -75,9 +75,9 @@ struct bpacketgen_s {
 //  _fec1           :   outer forward error-correction code scheme
 bpacketgen bpacketgen_create(unsigned int _m,
                              unsigned int _dec_msg_len,
-                             int _crc,
-                             int _fec0,
-                             int _fec1)
+                             crc_scheme _crc,
+                             fec_scheme _fec0,
+                             fec_scheme _fec1)
 {
     // validate input
 
@@ -134,9 +134,9 @@ bpacketgen bpacketgen_create(unsigned int _m,
 bpacketgen bpacketgen_recreate(bpacketgen _q,
                                unsigned int _m,
                                unsigned int _dec_msg_len,
-                               int _crc,
-                               int _fec0,
-                               int _fec1)
+                               crc_scheme _crc,
+                               fec_scheme _fec0,
+                               fec_scheme _fec1)
 {
     // validate input
 

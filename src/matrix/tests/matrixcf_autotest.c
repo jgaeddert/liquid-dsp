@@ -333,7 +333,7 @@ void autotest_matrixcf_qrdecomp()
     float complex I4[16];
     matrixcf_eye(I4,4);
     for (i=0; i<16; i++)
-        CONTEND_DELTA( QQT_test[i], I4[i], tol );
+        CONTEND_DELTA_COMPLEX( QQT_test[i], I4[i], tol );
 
     // ensure Q and R are correct
     for (i=0; i<16; i++) {

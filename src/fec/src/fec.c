@@ -642,6 +642,8 @@ void fec_decode_soft(fec _q,
     } else {
         // pack bytes and use hard-decision decoding
         unsigned enc_msg_len = fec_get_enc_msg_length(_q->scheme, _dec_msg_len);
+        if (enc_msg_len == 0)
+            return;
         unsigned char msg_enc_hard[enc_msg_len];
         unsigned int i;
         for (i=0; i<enc_msg_len; i++) {

@@ -1027,9 +1027,9 @@ void fec_decode_soft(fec _q,
 //  _fec0   :   inner forward error-correction code
 //  _fec1   :   outer forward error-correction code
 unsigned int packetizer_compute_enc_msg_len(unsigned int _n,
-                                            int _crc,
-                                            int _fec0,
-                                            int _fec1);
+                                            crc_scheme _crc,
+                                            fec_scheme _fec0,
+                                            fec_scheme _fec1);
 
 // computes the number of decoded bytes before packetizing
 //
@@ -1038,9 +1038,9 @@ unsigned int packetizer_compute_enc_msg_len(unsigned int _n,
 //  _fec0   :   inner forward error-correction code
 //  _fec1   :   outer forward error-correction code
 unsigned int packetizer_compute_dec_msg_len(unsigned int _k,
-                                            int _crc,
-                                            int _fec0,
-                                            int _fec1);
+                                            crc_scheme _crc,
+                                            fec_scheme _fec0,
+                                            fec_scheme _fec1);
 
 typedef struct packetizer_s * packetizer;
 
@@ -1051,9 +1051,9 @@ typedef struct packetizer_s * packetizer;
 //  _fec0   :   inner forward error-correction code
 //  _fec1   :   outer forward error-correction code
 packetizer packetizer_create(unsigned int _dec_msg_len,
-                             int _crc,
-                             int _fec0,
-                             int _fec1);
+                             crc_scheme _crc,
+                             fec_scheme _fec0,
+                             fec_scheme _fec1);
 
 // re-create packetizer object
 //
@@ -1064,9 +1064,9 @@ packetizer packetizer_create(unsigned int _dec_msg_len,
 //  _fec1   :   outer forward error-correction code
 packetizer packetizer_recreate(packetizer _p,
                                unsigned int _dec_msg_len,
-                               int _crc,
-                               int _fec0,
-                               int _fec1);
+                               crc_scheme _crc,
+                               fec_scheme _fec0,
+                               fec_scheme _fec1);
 
 // destroy packetizer object
 void packetizer_destroy(packetizer _p);
@@ -3774,9 +3774,9 @@ typedef struct bpacketgen_s * bpacketgen;
 //  _fec1           :   outer forward error-correction code scheme
 bpacketgen bpacketgen_create(unsigned int _m,
                              unsigned int _dec_msg_len,
-                             int _crc,
-                             int _fec0,
-                             int _fec1);
+                             crc_scheme _crc,
+                             fec_scheme _fec0,
+                             fec_scheme _fec1);
 
 // re-create bpacketgen object from old object
 //  _q              :   old bpacketgen object
@@ -3788,9 +3788,9 @@ bpacketgen bpacketgen_create(unsigned int _m,
 bpacketgen bpacketgen_recreate(bpacketgen _q,
                                unsigned int _m,
                                unsigned int _dec_msg_len,
-                               int _crc,
-                               int _fec0,
-                               int _fec1);
+                               crc_scheme _crc,
+                               fec_scheme _fec0,
+                               fec_scheme _fec1);
 
 // destroy bpacketgen object, freeing all internally-allocated memory
 void bpacketgen_destroy(bpacketgen _q);

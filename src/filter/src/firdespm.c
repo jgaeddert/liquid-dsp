@@ -724,11 +724,11 @@ void firdespm_compute_taps(firdespm _q, float * _h)
     // TODO : flesh out computation for other filter types
     unsigned int j;
     if (_q->btype == LIQUID_FIRDESPM_BANDPASS) {
-        // odd filter length, even symmetry
+        // even/odd filter length, even symmetry
         for (i=0; i<_q->h_len; i++) {
             double v = G[0];
             double f = ((double)i - (double)(p-1) + 0.5*(1-_q->s)) / (double)(_q->h_len);
-            for (j=1; j<_q->r; j++)
+            for (j=1; j<p; j++)
                 v += 2.0 * G[j] * cos(2*M_PI*f*j);
             _h[i] = v / (double)(_q->h_len);
         }

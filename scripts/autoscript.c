@@ -307,7 +307,7 @@ void autoscript_parsefile(autoscript _q,
     char basename[1024];    // base script name
     char * cptr = NULL;     // readline return value
     char * sptr = NULL;     // tag string pointer
-    int cterm;              // terminating character
+    unsigned int cterm;     // terminating character
     unsigned int n=0;       // line number
     do {
         // increment line number

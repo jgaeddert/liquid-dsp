@@ -40,9 +40,9 @@ void packetizer_realloc_buffers(packetizer _p, unsigned int _len);
 //  _fec0   :   inner forward error-correction code
 //  _fec1   :   outer forward error-correction code
 unsigned int packetizer_compute_enc_msg_len(unsigned int _n,
-                                            int _crc,
-                                            int _fec0,
-                                            int _fec1)
+                                            crc_scheme _crc,
+                                            fec_scheme _fec0,
+                                            fec_scheme _fec1)
 {
     unsigned int k = _n + crc_get_length(_crc);
     unsigned int n0 = fec_get_enc_msg_length(_fec0, k);
@@ -58,9 +58,9 @@ unsigned int packetizer_compute_enc_msg_len(unsigned int _n,
 //  _fec0   :   inner forward error-correction code
 //  _fec1   :   outer forward error-correction code
 unsigned int packetizer_compute_dec_msg_len(unsigned int _k,
-                                            int _crc,
-                                            int _fec0,
-                                            int _fec1)
+                                            crc_scheme _crc,
+                                            fec_scheme _fec0,
+                                            fec_scheme _fec1)
 {
     unsigned int n_hat = 0;
     unsigned int k_hat = 0;
@@ -91,9 +91,9 @@ unsigned int packetizer_compute_dec_msg_len(unsigned int _k,
 //  _fec0   :   inner forward error-correction code
 //  _fec1   :   outer forward error-correction code
 packetizer packetizer_create(unsigned int _n,
-                             int _crc,
-                             int _fec0,
-                             int _fec1)
+                             crc_scheme _crc,
+                             fec_scheme _fec0,
+                             fec_scheme _fec1)
 {
     packetizer p = (packetizer) malloc(sizeof(struct packetizer_s));
 
@@ -148,9 +148,9 @@ packetizer packetizer_create(unsigned int _n,
 //  _fec1   :   outer forward error-correction code
 packetizer packetizer_recreate(packetizer _p,
                                unsigned int _n,
-                               int _crc,
-                               int _fec0,
-                               int _fec1)
+                               crc_scheme _crc,
+                               fec_scheme _fec0,
+                               fec_scheme _fec1)
 {
     if (_p == NULL) {
         // packetizer was never created
@@ -389,7 +389,7 @@ int packetizer_decode_soft(packetizer            _p,
                                 key);
 }
 
-void packetizer_set_scheme(packetizer _p, int _fec0, int _fec1)
+void packetizer_set_scheme(packetizer _p, fec_scheme _fec0, fec_scheme _fec1)
 {
     //
 }

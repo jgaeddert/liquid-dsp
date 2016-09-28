@@ -212,24 +212,24 @@ unsigned char liquid_reverse_byte(unsigned char _x)
 // reverse integer with 16 bits of data
 unsigned int liquid_reverse_uint16(unsigned int _x)
 {
-    return (liquid_reverse_byte_gentab[(_x     ) & 0xff] << 8) |
-           (liquid_reverse_byte_gentab[(_x >> 8) & 0xff]     );
+    return ((unsigned int) liquid_reverse_byte_gentab[(_x     ) & 0xff] << 8) |
+           ((unsigned int) liquid_reverse_byte_gentab[(_x >> 8) & 0xff]     );
 }
 
 // reverse integer with 24 bits of data
 unsigned int liquid_reverse_uint24(unsigned int _x)
 {
-    return (liquid_reverse_byte_gentab[(_x      ) & 0xff] << 16) |
-           (liquid_reverse_byte_gentab[(_x >>  8) & 0xff] <<  8) |
-           (liquid_reverse_byte_gentab[(_x >> 16) & 0xff]      );
+    return ((unsigned int) liquid_reverse_byte_gentab[(_x      ) & 0xff] << 16) |
+           ((unsigned int) liquid_reverse_byte_gentab[(_x >>  8) & 0xff] <<  8) |
+           ((unsigned int) liquid_reverse_byte_gentab[(_x >> 16) & 0xff]      );
 }
 
 // reverse integer with 32 bits of data
 unsigned int liquid_reverse_uint32(unsigned int _x)
 {
-    return (liquid_reverse_byte_gentab[(_x      ) & 0xff] << 24) |
-           (liquid_reverse_byte_gentab[(_x >>  8) & 0xff] << 16) |
-           (liquid_reverse_byte_gentab[(_x >> 16) & 0xff] <<  8) |
-           (liquid_reverse_byte_gentab[(_x >> 24) & 0xff]      );
+    return ((unsigned int) liquid_reverse_byte_gentab[(_x      ) & 0xff] << 24) |
+           ((unsigned int) liquid_reverse_byte_gentab[(_x >>  8) & 0xff] << 16) |
+           ((unsigned int) liquid_reverse_byte_gentab[(_x >> 16) & 0xff] <<  8) |
+           ((unsigned int) liquid_reverse_byte_gentab[(_x >> 24) & 0xff]      );
 }
 

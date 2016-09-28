@@ -256,14 +256,14 @@ void POLY(_findroots_bairstow_recursion)(T *          _p,
     b[n] = b[n-1] = 0;
     f[n] = f[n-1] = 0;
 
-    int i;
+    unsigned int i;
     unsigned int k=0;
     unsigned int max_num_iterations=50;
     int continue_iterating = 1;
 
     while (continue_iterating) {
         // update reduced polynomial coefficients
-        for (i=n-2; i>=0; i--) {
+        for (i=n-2; i < n; i--) {
             b[i] = _p[i+2] - u*b[i+1] - v*b[i+2];
             f[i] =  b[i+2] - u*f[i+1] - v*f[i+2];
         }

@@ -88,7 +88,7 @@ struct SYMSYNC(_s) {
     float tau;                  // accumulated timing phase (0 <= tau <= 1)
     float tau_decim;            // timing phase, retained for get_tau() method
     float bf;                   // soft filterbank index
-    int   b;                    // filterbank index
+    unsigned int b;             // filterbank index
 
     // loop filter
     float q;                    // instantaneous timing error
@@ -504,7 +504,7 @@ void SYMSYNC(_step)(SYMSYNC()      _q,
         // update states
         _q->tau += _q->del;                     // instantaneous fractional offset
         _q->bf  = _q->tau * (float)(_q->npfb);  // filterbank index (soft)
-        _q->b   = (int)roundf(_q->bf);          // filterbank index
+        _q->b   = (unsigned int)roundf(_q->bf); // filterbank index
         n++;                                    // number of output samples
     }
 

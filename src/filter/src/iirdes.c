@@ -324,7 +324,7 @@ void iirdes_dzpk2sosf(float complex * _zd,
                       float * _B,
                       float * _A)
 {
-    int i;
+    unsigned int i;
     float tol=1e-6f; // tolerance for conjuate pair computation
 
     // find/group complex conjugate pairs (poles)

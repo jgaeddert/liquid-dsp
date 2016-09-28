@@ -52,7 +52,7 @@ void complementary_codes_test(unsigned int _n)
         raa = 2*bsequence_correlate(a,ax) - _n;
         rbb = 2*bsequence_correlate(b,bx) - _n;
 
-        if (i==0) { CONTEND_EQUALITY(raa+rbb,2*_n); }
+        if (i==0) { CONTEND_EQUALITY((unsigned int)(raa+rbb),2*_n); }
         else      { CONTEND_EQUALITY(raa+rbb,0);    }
 
         bsequence_circshift(ax);
