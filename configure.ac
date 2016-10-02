@@ -79,7 +79,6 @@ AC_FUNC_MALLOC
 AC_FUNC_REALLOC
 
 # AC_CHECK_LIB (library, function, [action-if-found], [action-if-not-found], [other-libraries])
-AC_CHECK_LIB([c],[main], [],[AC_MSG_ERROR(Could not use standard C library)],   [])
 AC_CHECK_LIB([m],[main], [],[AC_MSG_ERROR(Could not use standard math library)],[])
 
 # AC_CHECK_FUNC(function, [action-if-found], [action-if-not-found])
@@ -222,6 +221,10 @@ case $target_os in
 darwin*)
     SH_LIB=libliquid.dylib
     REBIND=""
+    ;;
+mingw*)
+    SH_LIB=libliquid.dll
+    REBIND=ldconfig
     ;;
 *)
     SH_LIB=libliquid.so
