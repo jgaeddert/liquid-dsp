@@ -52,7 +52,14 @@ AC_DEFUN([AX_EXT],
   AX_GCC_X86_CPUID(0x00000001)
   ecx=`echo $ax_cv_gcc_x86_cpuid_0x00000001 | cut -d ":" -f 3`
   edx=`echo $ax_cv_gcc_x86_cpuid_0x00000001 | cut -d ":" -f 4`
- 
+  ecx=0
+  edx=0
+  if test "$ax_cv_gcc_x86_cpuid_0x00000001" != "unknown";
+  then
+     ecx=`echo $ax_cv_gcc_x86_cpuid_0x00000001 | cut -d ":" -f 3`
+     edx=`echo $ax_cv_gcc_x86_cpuid_0x00000001 | cut -d ":" -f 4`
+  fi
+
  AC_CHECK_HEADERS(mmintrin.h xmmintrin.h emmintrin.h pmmintrin.h tmmintrin.h smmintrin.h immintrin.h)
 
  AC_CACHE_CHECK([whether mmx is supported], [ax_cv_have_mmx_ext],
