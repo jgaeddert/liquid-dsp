@@ -398,3 +398,45 @@ void SPGRAM(_estimate_psd)(SPGRAM()     _q,
         _psd[i] = 10*log10f( _psd[i] / (float)(num_transforms) );
 }
 
+// export gnuplot file
+//  _q        : spgram object
+//  _filename : input buffer [size: _n x 1]
+int SPGRAM(_export_gnuplot)(SPGRAM()     _q,
+                            const char * _filename)
+{
+    FILE * fid = fopen(_filename,"w");
+    if (fid == NULL) {
+        fprintf(stderr,"error: spgram%s_export_gnuplot(), could not open '%s' for writing\n",
+                EXTENSION, _filename);
+        return -1;
+    }
+    fprintf(fid,"# %s : auto-generated file\n", _filename);
+    fprintf(fid,"reset\n");
+    fprintf(fid,"set terminal png size 1200,800 enhanced font 'Verdana,10'\n");
+    fprintf(fid,"set output '%s.png'\n", _filename);
+    fprintf(fid,"set xrange [-0.5:0.5]\n");
+    fprintf(fid,"set autoscale y\n");
+    fprintf(fid,"set xlabel 'Noramlized Frequency'\n");
+    fprintf(fid,"set ylabel 'Power Spectral Density'\n");
+    fprintf(fid,"set style line 12 lc rgb '#404040' lt 0 lw 1\n");
+    fprintf(fid,"set grid xtics ytics\n");
+    fprintf(fid,"set grid front ls 12\n");
+    fprintf(fid,"set style fill transparent solid 0.2\n");
+    fprintf(fid,"set nokey\n");
+    fprintf(fid,"plot '-' w filledcurves x1 lt 1 lw 2 lc rgb '#004080'\n");
+
+    // export spectrum data
+    T * psd = (T*) malloc(_q->nfft * sizeof(T));
+    SPGRAM(_execute_psd)(_q, psd);
+    unsigned int i;
+    for (i=0; i<_q->nfft; i++)
+        fprintf(fid,"  %12.8f %12.8f\n", (float)i/(float)(_q->nfft)-0.5f, (float)(psd[i]));
+    free(psd);
+    fprintf(fid,"e\n");
+
+    // close it up
+    fclose(fid);
+
+    return 0;
+}
+

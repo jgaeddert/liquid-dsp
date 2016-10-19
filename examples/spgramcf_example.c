@@ -60,6 +60,9 @@ int main() {
         spgramcf_accumulate_psd(q, &y, alpha, 1);
     }
 
+    // explort to gnuplot
+    spgramcf_export_gnuplot(q,"spgramcf_example.gnu");
+
     // compute power spectral density output
     float psd[nfft];
     spgramcf_write_accumulation(q, psd);

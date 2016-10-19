@@ -1375,6 +1375,12 @@ void SPGRAM(_estimate_psd)(SPGRAM()     _q,                     \
                            TI *         _x,                     \
                            unsigned int _n,                     \
                            T *          _psd);                  \
+                                                                \
+/* export gnuplot file                                      */  \
+/*  _q        : spgram object                               */  \
+/*  _filename : input buffer [size: _n x 1]                 */  \
+int SPGRAM(_export_gnuplot)(SPGRAM()     _q,                    \
+                            const char * _filename);            \
 
 LIQUID_SPGRAM_DEFINE_API(LIQUID_SPGRAM_MANGLE_CFLOAT,
                          float,
