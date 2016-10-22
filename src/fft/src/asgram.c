@@ -160,6 +160,7 @@ void ASGRAM(_execute)(ASGRAM()  _q,
                       float *   _peakval,
                       float *   _peakfreq)
 {
+#if 0
     // execute spectral periodogram
     SPGRAM(_execute)(_q->periodogram, _q->X);
 
@@ -167,6 +168,11 @@ void ASGRAM(_execute)(ASGRAM()  _q,
     unsigned int i;
     for (i=0; i<_q->nfft; i++)
         _q->psd[i] = 10*log10f(cabsf(_q->X[(i + _q->nfft/2)%_q->nfft]));
+#else
+    unsigned int i;
+    for (i=0; i<_q->nfft; i++)
+        _q->psd[i] = 0.0f;
+#endif
 
     unsigned int j;
     for (i=0; i<_q->nfft; i++) {

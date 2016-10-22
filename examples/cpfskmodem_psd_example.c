@@ -41,7 +41,6 @@ int main(int argc, char*argv[])
     float           beta        = 0.35f;    // GMSK bandwidth-time factor
     unsigned int    num_symbols = 48000;    // number of data symbols
     unsigned int    nfft        = 2400;     // spectral periodogram FFT size
-    float           alpha       = 0.200f;   // PSD estimate bandwidth
 
     int dopt;
     while ((dopt = getopt(argc,argv,"hp:H:k:m:b:n:")) != EOF) {
@@ -97,19 +96,17 @@ int main(int argc, char*argv[])
         cpfskmod_modulate(mod_3, sym, buf_3);
         
         // estimate PSD
-        spgramcf_accumulate_psd(spgram_0, buf_0, alpha, k);
-        spgramcf_accumulate_psd(spgram_1, buf_1, alpha, k);
-        spgramcf_accumulate_psd(spgram_2, buf_2, alpha, k);
-        spgramcf_accumulate_psd(spgram_3, buf_3, alpha, k);
-        if (alpha > 1e-6f)
-            alpha *= 0.9999f;
+        spgramcf_write(spgram_0, buf_0, k);
+        spgramcf_write(spgram_1, buf_1, k);
+        spgramcf_write(spgram_2, buf_2, k);
+        spgramcf_write(spgram_3, buf_3, k);
     }
     
     // compute power spectral density estimate output
-    float psd_0[nfft]; spgramcf_write_accumulation(spgram_0, psd_0);
-    float psd_1[nfft]; spgramcf_write_accumulation(spgram_1, psd_1);
-    float psd_2[nfft]; spgramcf_write_accumulation(spgram_2, psd_2);
-    float psd_3[nfft]; spgramcf_write_accumulation(spgram_3, psd_3);
+    float psd_0[nfft]; spgramcf_get_psd(spgram_0, psd_0);
+    float psd_1[nfft]; spgramcf_get_psd(spgram_1, psd_1);
+    float psd_2[nfft]; spgramcf_get_psd(spgram_2, psd_2);
+    float psd_3[nfft]; spgramcf_get_psd(spgram_3, psd_3);
 
     // destroy modulators
     cpfskmod_destroy(mod_0);

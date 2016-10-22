@@ -29,6 +29,9 @@ extern "C" {
 #   define LIQUID_USE_COMPLEX_H 1
 #endif // __cplusplus
 
+// common headers
+#include <inttypes.h>
+
 //
 // Make sure the version and version number macros weren't defined by
 // some prevoiusly included header file.
@@ -1321,6 +1324,19 @@ void SPGRAM(_destroy)(SPGRAM() _q);                             \
 /* resets the internal state of the spgram object           */  \
 void SPGRAM(_reset)(SPGRAM() _q);                               \
                                                                 \
+/* set methods                                              */  \
+int          SPGRAM(_set_alpha)(SPGRAM() _q, float _alpha);     \
+                                                                \
+/* access methods                                           */  \
+unsigned int SPGRAM(_get_nfft)                (SPGRAM() _q);    \
+unsigned int SPGRAM(_get_window_len)          (SPGRAM() _q);    \
+unsigned int SPGRAM(_get_delay)               (SPGRAM() _q);    \
+uint64_t     SPGRAM(_get_num_samples)         (SPGRAM() _q);    \
+uint64_t     SPGRAM(_get_num_samples_total)   (SPGRAM() _q);    \
+uint64_t     SPGRAM(_get_num_transforms)      (SPGRAM() _q);    \
+uint64_t     SPGRAM(_get_num_transforms_total)(SPGRAM() _q);    \
+float        SPGRAM(_get_alpha)               (SPGRAM() _q);    \
+                                                                \
 /* push a single sample into the spgram object              */  \
 /*  _q      :   spgram object                               */  \
 /*  _x      :   input sample                                */  \
@@ -1335,52 +1351,30 @@ void SPGRAM(_write)(SPGRAM()     _q,                            \
                     TI *         _x,                            \
                     unsigned int _n);                           \
                                                                 \
-/* compute spectral periodogram output (complex values)     */  \
-/* from current buffer contents                             */  \
-/*  _q      :   spgram object                               */  \
-/*  _X      :   output complex spectrum [size: _nfft x 1]   */  \
-void SPGRAM(_execute)(SPGRAM() _q,                              \
-                      TC *     _X);                             \
-                                                                \
 /* compute spectral periodogram output (fft-shifted values  */  \
 /* in dB) from current buffer contents                      */  \
 /*  _q      :   spgram object                               */  \
-/*  _X      :   output spectrum [size: _nfft x 1]           */  \
-void SPGRAM(_execute_psd)(SPGRAM() _q,                          \
-                          T *      _X);                         \
-                                                                \
-/* accumulate power spectral density                        */  \
-/*  _q      :   spgram object                               */  \
-/*  _x      :   input buffer [size: _n x 1]                 */  \
-/*  _alpha  :   auto-regressive memory factor, [0,1]        */  \
-/*  _n      :   input buffer length                         */  \
-void SPGRAM(_accumulate_psd)(SPGRAM()       _q,                 \
-                             TI *           _x,                 \
-                             float          _alpha,             \
-                             unsigned int   _n);                \
-                                                                \
-/* write accumulated psd                                    */  \
-/*  _q      :   spgram object                               */  \
-/*  _x      :   input buffer [size: _n x 1]                 */  \
-/*  _n      :   input buffer length [size: _nfft x 1]       */  \
-void SPGRAM(_write_accumulation)(SPGRAM() _q,                   \
-                                 T *      _x);                  \
-                                                                \
-/* estimate spectrum on input signal                        */  \
-/*  _q      :   spgram object                               */  \
-/*  _x      :   input signal [size: _n x 1]                 */  \
-/*  _n      :   input signal length                         */  \
-/*  _psd    :   output spectrum, [size: _nfft x 1]          */  \
-void SPGRAM(_estimate_psd)(SPGRAM()     _q,                     \
-                           TI *         _x,                     \
-                           unsigned int _n,                     \
-                           T *          _psd);                  \
+/*  _X      :   output spectrum (dB) [size: _nfft x 1]      */  \
+void SPGRAM(_get_psd)(SPGRAM() _q,                              \
+                      T *      _X);                             \
                                                                 \
 /* export gnuplot file                                      */  \
 /*  _q        : spgram object                               */  \
 /*  _filename : input buffer [size: _n x 1]                 */  \
 int SPGRAM(_export_gnuplot)(SPGRAM()     _q,                    \
                             const char * _filename);            \
+                                                                \
+/* object-independent methods */                                \
+                                                                \
+/* estimate spectrum on input signal                        */  \
+/*  _nfft   :   FFT size                                    */  \
+/*  _x      :   input signal [size: _n x 1]                 */  \
+/*  _n      :   input signal length                         */  \
+/*  _psd    :   output spectrum, [size: _nfft x 1]          */  \
+void SPGRAM(_estimate_psd)(unsigned int _nfft,                  \
+                           TI *         _x,                     \
+                           unsigned int _n,                     \
+                           T *          _psd);                  \
 
 LIQUID_SPGRAM_DEFINE_API(LIQUID_SPGRAM_MANGLE_CFLOAT,
                          float,

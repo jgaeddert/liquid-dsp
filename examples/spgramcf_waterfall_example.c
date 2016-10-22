@@ -19,13 +19,12 @@ int main()
     // spectral periodogram options
     unsigned int nfft        =   2400;  // spectral periodogram FFT size
     unsigned int num_samples = 248000;  // number of samples
-    float        alpha       =   0.50f; // PSD estimate bandwidth
 
     unsigned int i;
 
     // create spectral periodogram
-    unsigned int window_size = nfft/2;  // spgramcf window size
-    spgramcf periodogram = spgramcf_create_kaiser(nfft, window_size, 10.0f);
+    spgramcf periodogram = spgramcf_create_default(nfft);
+    spgramcf_set_alpha(periodogram, 0.5f);
 
     // create time-varying multi-path channel object
     unsigned int c_len = 17;
@@ -84,10 +83,10 @@ int main()
         tvmpch_cccf_execute_block(channel, buf, buf_len, buf);
 
         // push resulting sample through periodogram
-        spgramcf_accumulate_psd(periodogram, buf, alpha, buf_len);
-        
+        spgramcf_write(periodogram, buf, buf_len);
+
         // compute power spectral density output
-        spgramcf_write_accumulation(periodogram, psd);
+        spgramcf_get_psd(periodogram, psd);
 
         // write output
         float n = (float)num_transforms;

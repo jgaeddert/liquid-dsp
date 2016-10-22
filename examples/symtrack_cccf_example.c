@@ -55,7 +55,6 @@ int main(int argc, char*argv[])
 
     unsigned int nfft        =   2400;  // spectral periodogram FFT size
     unsigned int num_samples = 200000;  // number of samples
-    float        alpha       =   0.01f; // PSD estimate bandwidth
 
     int dopt;
     while ((dopt = getopt(argc,argv,"hk:m:b:s:w:n:t:r:")) != EOF) {
@@ -137,7 +136,7 @@ int main(int argc, char*argv[])
         channel_cccf_execute(channel, x, buf_len, y, &ny);
 
         // push resulting sample through periodogram
-        spgramcf_accumulate_psd(periodogram, y, alpha, ny);
+        spgramcf_write(periodogram, y, ny);
 
         // run resulting stream through synchronizer
         unsigned int num_symbols_sync;
@@ -155,7 +154,7 @@ int main(int argc, char*argv[])
 
     // write accumulated power spectral density estimate
     float psd[nfft];
-    spgramcf_write_accumulation(periodogram, psd);
+    spgramcf_get_psd(periodogram, psd);
 
     //
     // export output file

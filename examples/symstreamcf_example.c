@@ -22,13 +22,11 @@ int main()
     // spectral periodogram options
     unsigned int nfft        =   2400;  // spectral periodogram FFT size
     unsigned int num_samples =  80000;  // number of samples
-    float        alpha       =   0.01f; // PSD estimate bandwidth
 
     unsigned int i;
 
     // create spectral periodogram
-    unsigned int window_size = nfft/2;  // spgramcf window size
-    spgramcf periodogram = spgramcf_create_kaiser(nfft, window_size, 10.0f);
+    spgramcf periodogram = spgramcf_create_default(nfft);
 
     unsigned int buf_len = 1024;
     float complex buf[buf_len];
@@ -42,7 +40,7 @@ int main()
         symstreamcf_write_samples(gen, buf, buf_len);
 
         // push resulting sample through periodogram
-        spgramcf_accumulate_psd(periodogram, buf, alpha, buf_len);
+        spgramcf_write(periodogram, buf, buf_len);
         
         // accumulated samples
         total_samples += buf_len;
@@ -51,7 +49,7 @@ int main()
 
     // compute power spectral density output
     float psd[nfft];
-    spgramcf_write_accumulation(periodogram, psd);
+    spgramcf_get_psd(periodogram, psd);
 
     // destroy objects
     symstreamcf_destroy(gen);
