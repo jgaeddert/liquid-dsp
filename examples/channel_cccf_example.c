@@ -146,9 +146,7 @@ int main(int argc, char*argv[]) {
     // estimate spectrum
     unsigned int nfft = 1200;
     float        psd[nfft];
-    spgramcf periodogram = spgramcf_create_kaiser(nfft, nfft/2, 8.0f);
-    spgramcf_estimate_psd(periodogram, y, ny, psd);
-    spgramcf_destroy(periodogram);
+    spgramcf_estimate_psd(nfft, y, ny, psd);
 
     //
     // export output file

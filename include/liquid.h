@@ -1304,16 +1304,8 @@ typedef struct SPGRAM(_s) * SPGRAM();                           \
 /*  _window     :   window [size: _window_len x 1]          */  \
 /*  _window_len :   window length                           */  \
 SPGRAM() SPGRAM(_create)(unsigned int _nfft,                    \
-                         float *      _window,                  \
+                         int          _wtype,                   \
                          unsigned int _window_len);             \
-                                                                \
-/* create spgram object with Kaiser-Bessel window           */  \
-/*  _nfft       :   FFT size                                */  \
-/*  _window_len :   window length                           */  \
-/*  _beta       :   Kaiser-Bessel parameter (_beta > 0)     */  \
-SPGRAM() SPGRAM(_create_kaiser)(unsigned int _nfft,             \
-                                unsigned int _window_len,       \
-                                float        _beta);            \
                                                                 \
 /* create default spgram object (Kaiser-Bessel window)      */  \
 SPGRAM() SPGRAM(_create_default)(unsigned int _nfft);           \

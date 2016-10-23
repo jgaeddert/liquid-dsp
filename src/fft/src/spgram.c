@@ -36,6 +36,7 @@
 struct SPGRAM(_s) {
     // options
     unsigned int    nfft;           // FFT length
+    int             wtype;          // window type
     unsigned int    window_len;     // window length
     unsigned int    delay;          // delay between transforms [samples]
     float           alpha;          // spectrum smoothing filter: feedforward parameter
@@ -70,7 +71,7 @@ void SPGRAM(_step)(SPGRAM() _q);
 //  _window     :   window coefficients [size: _window_len x 1]
 //  _window_len :   window length
 SPGRAM() SPGRAM(_create)(unsigned int _nfft,
-                         float *      _window,
+                         int          _wtype,
                          unsigned int _window_len)
 {
     // validate input
@@ -83,6 +84,9 @@ SPGRAM() SPGRAM(_create)(unsigned int _nfft,
     } else if (_window_len == 0) {
         fprintf(stderr,"error: spgram%s_create(), window size must be greater than zero\n", EXTENSION);
         exit(1);
+    } else if (_wtype == LIQUID_WINDOW_KBD && _window_len % 2) {
+        fprintf(stderr,"error: spgram%s_create(), KBD window length must be even\n", EXTENSION);
+        exit(1);
     }
 
     // allocate memory for main object
@@ -90,6 +94,7 @@ SPGRAM() SPGRAM(_create)(unsigned int _nfft,
 
     // set input parameters
     q->nfft       = _nfft;
+    q->wtype      = _wtype;
     q->window_len = _window_len;
     q->delay      = (_window_len/2) == 0 ? 1 : _window_len/2;
 
@@ -105,63 +110,43 @@ SPGRAM() SPGRAM(_create)(unsigned int _nfft,
     // create buffer
     q->buffer = WINDOW(_create)(q->window_len);
 
-    // allocate memory for window
+    // create window
     q->w = (T*) malloc((q->window_len)*sizeof(T));
+    unsigned int i;
+    unsigned int n = q->window_len;
+    float beta = 10.0f;
+    float zeta =  3.0f;
+    for (i=0; i<n; i++) {
+        switch (q->wtype) {
+        case LIQUID_WINDOW_HAMMING:         q->w[i] = hamming(i,n);         break;
+        case LIQUID_WINDOW_HANN:            q->w[i] = hann(i,n);            break;
+        case LIQUID_WINDOW_BLACKMANHARRIS:  q->w[i] = blackmanharris(i,n);  break;
+        case LIQUID_WINDOW_BLACKMANHARRIS7: q->w[i] = blackmanharris7(i,n); break;
+        case LIQUID_WINDOW_KAISER:          q->w[i] = kaiser(i,n,beta,0);   break;
+        case LIQUID_WINDOW_FLATTOP:         q->w[i] = flattop(i,n);         break;
+        case LIQUID_WINDOW_TRIANGULAR:      q->w[i] = triangular(i,n,n);    break;
+        case LIQUID_WINDOW_RCOSTAPER:       q->w[i] = liquid_rcostaper_windowf(i,n/3,n); break;
+        case LIQUID_WINDOW_KBD:             q->w[i] = liquid_kbd(i,n,zeta); break;
+        default:
+            fprintf(stderr,"error: spgram%s_create(), invalid window\n", EXTENSION);
+            exit(1);
+        }
+    }
 
     // scale by window magnitude, FFT size
-    unsigned int i;
     float g = 0.0f;
     for (i=0; i<q->window_len; i++)
-        g += _window[i] * _window[i];
+        g += q->w[i] * q->w[i];
     g = M_SQRT2 / ( sqrtf(g / q->window_len) * sqrtf((float)(q->nfft)) );
 
     // scale window and copy
     for (i=0; i<q->window_len; i++)
-        q->w[i] = g * _window[i];
+        q->w[i] = g * q->w[i];
     
     // reset the spgram object
     q->num_samples_total    = 0;
     q->num_transforms_total = 0;
     SPGRAM(_reset)(q);
-
-    // return new object
-    return q;
-}
-
-// create spgram object using Kaiser-Bessel window
-//  _nfft       :   FFT size
-//  _window_len :   window length
-SPGRAM() SPGRAM(_create_kaiser)(unsigned int _nfft,
-                                unsigned int _window_len,
-                                float        _beta)
-{
-    // validate input
-    if (_nfft < 2) {
-        fprintf(stderr,"error: spgram%s_create_kaiser(), fft size must be at least 2\n", EXTENSION);
-        exit(1);
-    } else if (_window_len > _nfft) {
-        fprintf(stderr,"error: spgram%s_create_kaiser(), window size cannot exceed fft size\n", EXTENSION);
-        exit(1);
-    } else if (_window_len == 0) {
-        fprintf(stderr,"error: spgram%s_create_kaiser(), window size must be greater than zero\n", EXTENSION);
-        exit(1);
-    } else if (_beta <= 0.0f) {
-        fprintf(stderr,"error: spgram%s_create_kaiser(), beta must be greater than zero\n", EXTENSION);
-        exit(1);
-    }
-
-    // initialize tapering window, scaled by window length size
-    float * w = (float*) malloc((_window_len)*sizeof(float));
-    unsigned int i;
-    float mu = 0.0f;
-    for (i=0; i<_window_len; i++)
-        w[i] = kaiser(i, _window_len, _beta, mu);
-
-    // create spgram object
-    SPGRAM() q = SPGRAM(_create)(_nfft, w, _window_len);
-
-    // free window buffer
-    free(w);
 
     // return new object
     return q;
@@ -176,10 +161,7 @@ SPGRAM() SPGRAM(_create_default)(unsigned int _nfft)
         exit(1);
     }
 
-    // return object
-    unsigned int window_size = _nfft/2;
-    float        beta        = 10.0f;
-    return SPGRAM(_create_kaiser)(_nfft, window_size, beta);
+    return SPGRAM(_create)(_nfft, LIQUID_WINDOW_KAISER, _nfft/2);
 }
 
 // destroy spgram object
