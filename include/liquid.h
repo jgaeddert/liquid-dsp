@@ -4477,6 +4477,33 @@ float liquid_nchoosek(unsigned int _n, unsigned int _k);
 // Windowing functions
 //
 
+// Modulation schemes available
+#define LIQUID_WINDOW_NUM_FUNCTIONS (10)
+
+// prototypes
+typedef enum {
+    LIQUID_WINDOW_UNKNOWN=0,        // unknown/unsupported scheme
+
+    LIQUID_WINDOW_HAMMING,          // Hamming
+    LIQUID_WINDOW_HANN,             // Hann
+    LIQUID_WINDOW_BLACKMANHARRIS,   // Blackman-harris (4-term)
+    LIQUID_WINDOW_BLACKMANHARRIS7,  // Blackman-harris (7-term)
+    LIQUID_WINDOW_KAISER,           // Kaiser (beta factor unspecified)
+    LIQUID_WINDOW_FLATTOP,          // flat top (includes negative values)
+    LIQUID_WINDOW_TRIANGULAR,       // triangular
+    LIQUID_WINDOW_RCOSTAPER,        // raised-cosine taper (taper size unspecified)
+    LIQUID_WINDOW_KBD,              // Kaiser-Bessel derived window (beta factor unspecified)
+} liquid_window_type;
+
+// pretty names for window
+extern const char * liquid_window_str[LIQUID_WINDOW_NUM_FUNCTIONS][2];
+
+// Print compact list of existing and available windowing functions
+void liquid_print_windows();
+
+// returns modulation_scheme based on input string
+liquid_window_type liquid_getopt_str2window(const char * _str);
+
 // Kaiser-Bessel derived window (single sample)
 //  _n      :   index (0 <= _n < _N)
 //  _N      :   length of filter (must be even)
