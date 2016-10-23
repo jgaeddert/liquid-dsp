@@ -16,7 +16,6 @@ int main() {
     // spectral periodogram options
     unsigned int nfft        =   1024;  // spectral periodogram FFT size
     unsigned int num_samples =    2e6;  // number of samples
-    float        beta        =  10.0f;  // Kaiser-Bessel window parameter
     float        noise_floor = -60.0f;  // noise floor [dB]
 
     unsigned int i;
@@ -26,23 +25,27 @@ int main() {
 
     // create spectral periodogram
     spgramcf q = spgramcf_create_default(nfft);
+    spgramcf_print(q);
 
-    // generate signal (filter with frequency offset)
-    unsigned int  h_len = 91;       // filter length
-    float         fc    = 0.07f;    // filter cut-off frequency
-    float         f0    = 0.20f;    // filter center frequency
-    float         As    = 60.0f;    // filter stop-band attenuation
-    firfilt_cccf filter = firfilt_cccf_create_kaiser(h_len, fc, As, 0.0f);
-    firfilt_cccf_set_scale(filter, 2*fc);
+    // generate signal (band-pass filter with Hilbert transform)
+    iirfilt_rrrf filter = iirfilt_rrrf_create_prototype(
+            LIQUID_IIRDES_BUTTER,
+            LIQUID_IIRDES_BANDPASS,
+            LIQUID_IIRDES_SOS,
+            9, 0.17f, 0.20f, 0.1f, 60.0f);
+    firhilbf ht = firhilbf_create(13,60.0f);
 
     for (i=0; i<num_samples; i++) {
-        // filter random sample
-        float complex y = 0;
-        firfilt_cccf_push(filter, (randnf() + _Complex_I*randnf())*M_SQRT1_2);
-        firfilt_cccf_execute(filter, &y);
+        // filter input noise signal
+        float v = 0;
+        iirfilt_rrrf_execute(filter, randnf(), &v);
 
-        // add noise
-        y += nstd * ( randnf() + _Complex_I*randnf() ) * M_SQRT1_2;
+        // filter off negative image (gain of 2)
+        float complex y = 0;
+        firhilbf_r2c_execute(ht, v, &y);
+
+        // scale and add noise
+        y = 0.5f*y + nstd * ( randnf() + _Complex_I*randnf() ) * M_SQRT1_2;
 
         // push resulting sample through periodogram
         spgramcf_push(q, y);
@@ -56,7 +59,8 @@ int main() {
     spgramcf_get_psd(q, psd);
 
     // destroy objects
-    firfilt_cccf_destroy(filter);
+    iirfilt_rrrf_destroy(filter);
+    firhilbf_destroy(ht);
     spgramcf_destroy(q);
 
     // 

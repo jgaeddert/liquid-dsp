@@ -218,6 +218,13 @@ void SPGRAM(_reset)(SPGRAM() _q)
         _q->psd[i] = 0.0f;
 }
 
+// prints the spgram object's parameters
+void SPGRAM(_print)(SPGRAM() _q)
+{
+    printf("spgram%s: nfft=%u, window=%u, delay=%u\n",
+            EXTENSION, _q->nfft, _q->window_len, _q->delay);
+}
+
 // set forgetting factor
 int SPGRAM(_set_alpha)(SPGRAM() _q,
                        float    _alpha)

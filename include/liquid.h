@@ -1324,6 +1324,9 @@ void SPGRAM(_destroy)(SPGRAM() _q);                             \
 /* resets the internal state of the spgram object           */  \
 void SPGRAM(_reset)(SPGRAM() _q);                               \
                                                                 \
+/* print internal state of the spgram object                */  \
+void SPGRAM(_print)(SPGRAM() _q);                               \
+                                                                \
 /* set methods                                              */  \
 int          SPGRAM(_set_alpha)(SPGRAM() _q, float _alpha);     \
                                                                 \

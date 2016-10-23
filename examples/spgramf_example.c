@@ -16,7 +16,6 @@ int main() {
     // spectral periodogram options
     unsigned int nfft        =   1024;  // spectral periodogram FFT size
     unsigned int num_samples =    1e6;  // number of samples
-    float        beta        =  10.0f;  // Kaiser-Bessel window parameter
     float        noise_floor = -60.0f;  // noise floor [dB]
 
     unsigned int i;
@@ -26,8 +25,9 @@ int main() {
 
     // create spectral periodogram
     spgramf q = spgramf_create_default(nfft);
+    spgramf_print(q);
 
-    // generate signal (filter with frequency offset)
+    // generate signal (band-pass filter)
     iirfilt_rrrf filter = iirfilt_rrrf_create_prototype(
             LIQUID_IIRDES_BUTTER,
             LIQUID_IIRDES_BANDPASS,
@@ -35,7 +35,7 @@ int main() {
             9, 0.17f, 0.20f, 0.1f, 60.0f);
 
     for (i=0; i<num_samples; i++) {
-        // filter
+        // filter input noise signal
         float y = 0;
         iirfilt_rrrf_execute(filter, randnf(), &y);
 
