@@ -1300,12 +1300,14 @@ LIQUID_FFT_DEFINE_API(LIQUID_FFT_MANGLE_FLOAT,float,liquid_float_complex)
 typedef struct SPGRAM(_s) * SPGRAM();                           \
                                                                 \
 /* create spgram object                                     */  \
-/*  _nfft       :   FFT size                                */  \
-/*  _window     :   window [size: _window_len x 1]          */  \
-/*  _window_len :   window length                           */  \
+/*  _nfft       : FFT size                                  */  \
+/*  _window     : window [size: _window_len x 1]            */  \
+/*  _window_len : window length, _window_len in [1,_nfft]   */  \
+/*  _delay      : delay between transforms, _delay > 0      */  \
 SPGRAM() SPGRAM(_create)(unsigned int _nfft,                    \
                          int          _wtype,                   \
-                         unsigned int _window_len);             \
+                         unsigned int _window_len,              \
+                         unsigned int _delay);                  \
                                                                 \
 /* create default spgram object (Kaiser-Bessel window)      */  \
 SPGRAM() SPGRAM(_create_default)(unsigned int _nfft);           \

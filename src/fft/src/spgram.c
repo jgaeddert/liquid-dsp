@@ -67,12 +67,14 @@ struct SPGRAM(_s) {
 void SPGRAM(_step)(SPGRAM() _q);
 
 // create spgram object
-//  _nfft       :   FFT size
-//  _window     :   window coefficients [size: _window_len x 1]
-//  _window_len :   window length
+//  _nfft       : FFT size
+//  _window     : window coefficients [size: _window_len x 1]
+//  _window_len : window length
+//  _delay      : delay between transforms, _delay > 0
 SPGRAM() SPGRAM(_create)(unsigned int _nfft,
                          int          _wtype,
-                         unsigned int _window_len)
+                         unsigned int _window_len,
+                         unsigned int _delay)
 {
     // validate input
     if (_nfft < 2) {
@@ -87,6 +89,9 @@ SPGRAM() SPGRAM(_create)(unsigned int _nfft,
     } else if (_wtype == LIQUID_WINDOW_KBD && _window_len % 2) {
         fprintf(stderr,"error: spgram%s_create(), KBD window length must be even\n", EXTENSION);
         exit(1);
+    } else if (_delay == 0) {
+        fprintf(stderr,"error: spgram%s_create(), delay must be greater than 0\n", EXTENSION);
+        exit(1);
     }
 
     // allocate memory for main object
@@ -96,7 +101,7 @@ SPGRAM() SPGRAM(_create)(unsigned int _nfft,
     q->nfft       = _nfft;
     q->wtype      = _wtype;
     q->window_len = _window_len;
-    q->delay      = (_window_len/2) == 0 ? 1 : _window_len/2;
+    q->delay      = _delay;
 
     // set object for full accumulation
     SPGRAM(_set_alpha)(q, -1.0f);
@@ -161,7 +166,7 @@ SPGRAM() SPGRAM(_create_default)(unsigned int _nfft)
         exit(1);
     }
 
-    return SPGRAM(_create)(_nfft, LIQUID_WINDOW_KAISER, _nfft/2);
+    return SPGRAM(_create)(_nfft, LIQUID_WINDOW_KAISER, _nfft/2, _nfft/4);
 }
 
 // destroy spgram object
