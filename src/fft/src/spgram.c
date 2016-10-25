@@ -188,7 +188,7 @@ void SPGRAM(_destroy)(SPGRAM() _q)
 void SPGRAM(_reset)(SPGRAM() _q)
 {
     // clear the window buffer
-    WINDOW(_clear)(_q->buffer);
+    //WINDOW(_clear)(_q->buffer);
 
     // clear FFT input
     unsigned int i;

@@ -18,13 +18,9 @@ int main()
 
     // spectral periodogram options
     unsigned int nfft        =   2400;  // spectral periodogram FFT size
-    unsigned int num_samples = 248000;  // number of samples
+    unsigned int num_samples = 250000;  // number of samples
 
     unsigned int i;
-
-    // create spectral periodogram
-    spgramcf periodogram = spgramcf_create_default(nfft);
-    spgramcf_set_alpha(periodogram, 0.5f);
 
     // create time-varying multi-path channel object
     unsigned int c_len = 17;
@@ -33,31 +29,30 @@ int main()
     tvmpch_cccf channel = tvmpch_cccf_create(c_len, std, tau);
     tvmpch_cccf_print(channel);
 
-    unsigned int buf_len = 1024;
+    unsigned int buf_len = 64;
     float complex buf[buf_len];
+
+    // create spectral periodogram
+    spgramcf periodogram = spgramcf_create(nfft, LIQUID_WINDOW_KAISER, nfft/2, buf_len);
+    spgramcf_set_alpha(periodogram, 0.5f);
 
     // create stream generator
     msourcecf gen = msourcecf_create();
     
-    // add noise source (wide-band)
-    int id_noise1 = msourcecf_add_noise(gen, 1.00f);
-    msourcecf_set_gain(gen, id_noise1, -80.0f);
-
     // add noise source (narrow-band)
-    int id_noise2 = msourcecf_add_noise(gen, 1.00f);
-    //msourcecf_set_frequency(gen, id_noise2, 0.4*2*M_PI);
-    msourcecf_set_gain     (gen, id_noise2, -20.0f);
+    int id_noise = msourcecf_add_noise(gen, 0.10f);
+    msourcecf_set_frequency(gen, id_noise, 0.4*2*M_PI);
+    msourcecf_set_gain     (gen, id_noise, -20.0f);
 
-#if 0
     // add tone
     int id_tone = msourcecf_add_tone(gen);
     msourcecf_set_frequency(gen, id_tone, -0.4*2*M_PI);
-    msourcecf_set_gain     (gen, id_tone, -40.0f);
+    msourcecf_set_gain     (gen, id_tone, -10.0f);
 
     // add modulated data
     int id_modem = msourcecf_add_modem(gen,ms,k,m,beta);
+    msourcecf_set_frequency(gen, id_modem, -0.1*2*M_PI);
     msourcecf_set_gain     (gen, id_modem, 0.0f);
-#endif
 
     // print source generator object
     msourcecf_print(gen);
@@ -89,7 +84,7 @@ int main()
         spgramcf_get_psd(periodogram, psd);
 
         // write output
-        float n = (float)num_transforms;
+        float n = (float)total_samples;
         fwrite(&n, sizeof(float), 1, fid);
         fwrite(psd, sizeof(float), nfft, fid);
         num_transforms++;
@@ -113,13 +108,17 @@ int main()
     fprintf(fid,"#!/usr/bin/gnuplot\n");
     fprintf(fid,"reset\n");
     fprintf(fid,"set terminal png size 800,800 enhanced font 'Verdana,10'\n");
-    fprintf(fid,"set output 'waterfall.png'\n");
+    fprintf(fid,"set output '%s.png'\n", OUTPUT_FILENAME);
     fprintf(fid,"unset key\n");
     fprintf(fid,"set style line 11 lc rgb '#808080' lt 1\n");
     fprintf(fid,"set border 3 front ls 11\n");
+    fprintf(fid,"set style line 12 lc rgb '#888888' lt 0 lw 1\n");
+    fprintf(fid,"set grid front ls 12\n");
     fprintf(fid,"set tics nomirror out scale 0.75\n");
     fprintf(fid,"set xrange [-0.5:0.5]\n");
-    fprintf(fid,"set yrange [0:%u]\n", num_transforms-1);
+    fprintf(fid,"set yrange [0:%u]\n", num_samples-1);
+    fprintf(fid,"set xlabel 'Normalized Frequency [f/F_s]'\n");
+    fprintf(fid,"set ylabel 'Sample Index'\n");
     fprintf(fid,"# disable colorbar tics\n");
     fprintf(fid,"set cbtics scale 0\n");
     fprintf(fid,"set palette negative defined ( \\\n");
