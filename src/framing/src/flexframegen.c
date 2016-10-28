@@ -53,6 +53,13 @@ static flexframegenprops_s flexframegenprops_default = {
     LIQUID_MODEM_BPSK,  // mod_scheme
 };
 
+static flexframegenprops_s flexframegenprops_header_default = {
+   FLEXFRAME_H_CRC,
+   FLEXFRAME_H_FEC0,
+   FLEXFRAME_H_FEC1,
+   FLEXFRAME_H_MOD,
+};
+
 void flexframegenprops_init_default(flexframegenprops_s * _props)
 {
     memmove(_props, &flexframegenprops_default, sizeof(flexframegenprops_s));
@@ -67,6 +74,7 @@ struct flexframegen_s {
     float complex   buf_interp[2];      // output interpolator buffer [size: k x 1]
 
     flexframegenprops_s props;          // payload properties
+    flexframegenprops_s header_props;   // header properties
 
     // preamble
     float complex * preamble_pn;        // p/n sequence
@@ -130,7 +138,7 @@ flexframegen flexframegen_create(flexframegenprops_s * _fgprops)
     q->header_sym = NULL;
     q->header_encoder = NULL;
     q->header_pilotgen = NULL;
-    flexframegen_set_header_len(q, FLEXFRAME_H_USER_DEFAULT);
+    q->header_user_len = FLEXFRAME_H_USER_DEFAULT;
 
     // payload encoder/modulator (initialize with default parameters to be reconfigured later)
     q->payload_encoder = qpacketmodem_create();
@@ -140,6 +148,7 @@ flexframegen flexframegen_create(flexframegenprops_s * _fgprops)
 
     // set payload properties
     flexframegen_setprops(q, _fgprops);
+    flexframegen_set_header_props(q, NULL);
 
     // return pointer to main object
     return q;
@@ -276,10 +285,10 @@ void flexframegen_set_header_len(flexframegen   _q,
     _q->header_encoder = qpacketmodem_create();
     qpacketmodem_configure(_q->header_encoder,
                            _q->header_dec_len,
-                           FLEXFRAME_H_CRC,
-                           FLEXFRAME_H_FEC0,
-                           FLEXFRAME_H_FEC1,
-                           LIQUID_MODEM_QPSK);
+                           _q->header_props.check,
+                           _q->header_props.fec0,
+                           _q->header_props.fec1,
+                           _q->header_props.mod_scheme);
     _q->header_mod_len = qpacketmodem_get_frame_len(_q->header_encoder);
     _q->header_mod     = (float complex *) realloc(_q->header_mod, _q->header_mod_len*sizeof(float complex));
 
@@ -291,6 +300,40 @@ void flexframegen_set_header_len(flexframegen   _q,
     _q->header_sym_len  = qpilotgen_get_frame_len(_q->header_pilotgen);
     _q->header_sym      = (float complex *) realloc(_q->header_sym, _q->header_sym_len*sizeof(float complex));
     //printf("header: %u bytes > %u mod > %u sym\n", 64, _q->header_mod_len, _q->header_sym_len);
+}
+
+int flexframegen_set_header_props(flexframegen          _q,
+                                  flexframegenprops_s * _props)
+{
+    // if frame is already assembled, give warning
+    if (_q->frame_assembled) {
+        fprintf(stderr, "warning: flexframegen_set_header_props(), frame is already assembled; must reset() first\n");
+        return -1;
+    }
+
+    if (_props == NULL) {
+        _props = &flexframegenprops_header_default;
+    }
+
+    // validate input
+    if (_props->check == LIQUID_CRC_UNKNOWN || _props->check >= LIQUID_CRC_NUM_SCHEMES) {
+        fprintf(stderr, "error: flexframegen_set_header_props(), invalid/unsupported CRC scheme\n");
+        exit(1);
+    } else if (_props->fec0 == LIQUID_FEC_UNKNOWN || _props->fec1 == LIQUID_FEC_UNKNOWN) {
+        fprintf(stderr, "error: flexframegen_set_header_props(), invalid/unsupported FEC scheme\n");
+        exit(1);
+    } else if (_props->mod_scheme == LIQUID_MODEM_UNKNOWN ) {
+        fprintf(stderr, "error: flexframegen_set_header_props(), invalid/unsupported modulation scheme\n");
+        exit(1);
+    }
+
+    // copy properties to internal structure
+    memmove(&_q->header_props, _props, sizeof(flexframegenprops_s));
+
+    // reconfigure payload buffers (reallocate as necessary)
+    flexframegen_set_header_len(_q, _q->header_user_len);
+
+    return 0;
 }
 
 // get frame length (number of samples)

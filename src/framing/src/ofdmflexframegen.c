@@ -74,6 +74,13 @@ static ofdmflexframegenprops_s ofdmflexframegenprops_default = {
     //64                // block_size
 };
 
+static ofdmflexframegenprops_s ofdmflexframegenprops_header_default = {
+    OFDMFLEXFRAME_H_CRC,
+    OFDMFLEXFRAME_H_FEC0,
+    OFDMFLEXFRAME_H_FEC1,
+    OFDMFLEXFRAME_H_MOD,
+};
+
 void ofdmflexframegenprops_init_default(ofdmflexframegenprops_s * _props)
 {
     memmove(_props, &ofdmflexframegenprops_default, sizeof(ofdmflexframegenprops_s));
@@ -138,6 +145,7 @@ struct ofdmflexframegen_s {
 
     // properties
     ofdmflexframegenprops_s props;
+    ofdmflexframegenprops_s header_props;
 };
 
 // create OFDM flexible framing generator object
@@ -191,7 +199,8 @@ ofdmflexframegen ofdmflexframegen_create(unsigned int              _M,
     q->header_enc = NULL;
     q->header_mod = NULL;
     q->mod_header = NULL;
-    ofdmflexframegen_set_header_len(q, OFDMFLEXFRAME_H_USER_DEFAULT);
+    q->header_user_len = OFDMFLEXFRAME_H_USER_DEFAULT;
+    ofdmflexframegen_set_header_props(q, NULL);
 
     // initial memory allocation for payload
     q->payload_dec_len = 1;
@@ -345,13 +354,13 @@ void ofdmflexframegen_set_header_len(ofdmflexframegen _q,
         packetizer_destroy(_q->p_header);
     }
     _q->p_header = packetizer_create(_q->header_dec_len,
-                                     OFDMFLEXFRAME_H_CRC,
-                                     OFDMFLEXFRAME_H_FEC,
-                                     LIQUID_FEC_NONE);
+                                     _q->header_props.check,
+                                     _q->header_props.fec0,
+                                     _q->header_props.fec1);
     _q->header_enc_len = packetizer_get_enc_msg_len(_q->p_header);
     _q->header_enc = realloc(_q->header_enc, _q->header_enc_len*sizeof(unsigned char));
 
-    unsigned int bps = modulation_types[OFDMFLEXFRAME_H_MOD].bps;
+    unsigned int bps = modulation_types[_q->header_props.mod_scheme].bps;
     div_t bps_d = div(_q->header_enc_len*8, bps);
     _q->header_sym_len = bps_d.quot + (bps_d.rem ? 1 : 0);
     _q->header_mod = realloc(_q->header_mod, _q->header_sym_len*sizeof(unsigned char));
@@ -359,11 +368,38 @@ void ofdmflexframegen_set_header_len(ofdmflexframegen _q,
     if (_q->mod_header) {
         modem_destroy(_q->mod_header);
     }
-    _q->mod_header = modem_create(OFDMFLEXFRAME_H_MOD);
+    _q->mod_header = modem_create(_q->header_props.mod_scheme);
 
     // compute number of header symbols
     div_t d = div(_q->header_sym_len, _q->M_data);
     _q->num_symbols_header = d.quot + (d.rem ? 1 : 0);
+}
+
+void ofdmflexframegen_set_header_props(ofdmflexframegen _q,
+                                       ofdmflexframegenprops_s * _props)
+{
+    // if properties object is NULL, initialize with defaults
+    if (_props == NULL) {
+        _props = &ofdmflexframegenprops_header_default;
+    }
+
+    // validate input
+    if (_props->check == LIQUID_CRC_UNKNOWN || _props->check >= LIQUID_CRC_NUM_SCHEMES) {
+        fprintf(stderr, "error: ofdmflexframegen_setprops(), invalid/unsupported CRC scheme\n");
+        exit(1);
+    } else if (_props->fec0 == LIQUID_FEC_UNKNOWN || _props->fec1 == LIQUID_FEC_UNKNOWN) {
+        fprintf(stderr, "error: ofdmflexframegen_setprops(), invalid/unsupported FEC scheme\n");
+        exit(1);
+    } else if (_props->mod_scheme == LIQUID_MODEM_UNKNOWN ) {
+        fprintf(stderr, "error: ofdmflexframegen_setprops(), invalid/unsupported modulation scheme\n");
+        exit(1);
+    }
+
+    // copy properties to internal structure
+    memmove(&_q->header_props, _props, sizeof(ofdmflexframegenprops_s));
+
+    // reconfigure internal buffers, objects, etc.
+    ofdmflexframegen_set_header_len(_q, _q->header_user_len);
 }
 
 // get length of frame (symbols)
@@ -577,7 +613,7 @@ void ofdmflexframegen_encode_header(ofdmflexframegen _q)
 void ofdmflexframegen_modulate_header(ofdmflexframegen _q)
 {
     // repack 8-bit header bytes into 'bps'-bit payload symbols
-    unsigned int bps = modulation_types[OFDMFLEXFRAME_H_MOD].bps;
+    unsigned int bps = modulation_types[_q->header_props.mod_scheme].bps;
     unsigned int num_written;
     liquid_repack_bytes(_q->header_enc, 8,   _q->header_enc_len,
                         _q->header_mod, bps, _q->header_sym_len,

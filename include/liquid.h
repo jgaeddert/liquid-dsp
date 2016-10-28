@@ -3700,6 +3700,10 @@ int flexframegen_setprops(flexframegen _q, flexframegenprops_s * _props);
 // set length of user-defined portion of header
 void flexframegen_set_header_len(flexframegen _q, unsigned int _len);
 
+// set properties for header section
+int flexframegen_set_header_props(flexframegen          _q,
+                                  flexframegenprops_s * _props);
+
 // get length of assembled frame (samples)
 unsigned int flexframegen_getframelen(flexframegen _q);
 
@@ -3745,6 +3749,18 @@ void flexframesync_reset(flexframesync _q);
 // change length of user-defined region in header
 void flexframesync_set_header_len(flexframesync _q,
                                   unsigned int  _len);
+
+// enable or disable soft decoding of header
+void flexframesync_decode_header_soft(flexframesync _q,
+                                      int           _soft);
+
+// enable or disable soft decoding of payload
+void flexframesync_decode_payload_soft(flexframesync _q,
+                                       int           _soft);
+
+// set properties for header section
+int flexframesync_set_header_props(flexframesync          _q,
+                                   flexframegenprops_s * _props);
 
 // push samples through frame synchronizer
 //  _q      :   frame synchronizer object
@@ -3958,6 +3974,9 @@ void ofdmflexframegen_setprops(ofdmflexframegen _q,
 void ofdmflexframegen_set_header_len(ofdmflexframegen _q,
                                      unsigned int     _len);
 
+void ofdmflexframegen_set_header_props(ofdmflexframegen _q,
+                                       ofdmflexframegenprops_s * _props);
+
 // get length of frame (symbols)
 //  _q              :   OFDM frame generator object
 unsigned int ofdmflexframegen_getframelen(ofdmflexframegen _q);
@@ -4003,6 +4022,15 @@ void ofdmflexframesync_print(ofdmflexframesync _q);
 // set user-defined header length
 void ofdmflexframesync_set_header_len(ofdmflexframesync _q,
                                       unsigned int      _len);
+
+void ofdmflexframesync_decode_header_soft(ofdmflexframesync _q,
+                                           int _soft);
+
+void ofdmflexframesync_decode_payload_soft(ofdmflexframesync _q,
+                                           int _soft);
+
+void ofdmflexframesync_set_header_props(ofdmflexframesync _q,
+                                        ofdmflexframegenprops_s * _props);
 
 void ofdmflexframesync_reset(ofdmflexframesync _q);
 void ofdmflexframesync_execute(ofdmflexframesync _q,

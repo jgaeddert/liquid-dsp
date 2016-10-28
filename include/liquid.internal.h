@@ -1129,6 +1129,7 @@ void bpacketsync_reconfig(bpacketsync _q);
 #define FLEXFRAME_H_CRC          (LIQUID_CRC_32)         // header CRC
 #define FLEXFRAME_H_FEC0         (LIQUID_FEC_SECDED7264) // header FEC (inner)
 #define FLEXFRAME_H_FEC1         (LIQUID_FEC_HAMMING84)  // header FEC (outer)
+#define FLEXFRAME_H_MOD          (LIQUID_MODEM_QPSK)     // modulation scheme
 
 
 // 
@@ -1154,7 +1155,8 @@ void bpacketsync_reconfig(bpacketsync _q);
 #define OFDMFLEXFRAME_H_USER_DEFAULT (8)                         // default length for user-defined array
 #define OFDMFLEXFRAME_H_DEC          (6)                         // decoded length
 #define OFDMFLEXFRAME_H_CRC          (LIQUID_CRC_32)             // header CRC
-#define OFDMFLEXFRAME_H_FEC          (LIQUID_FEC_GOLAY2412)      // header FEC
+#define OFDMFLEXFRAME_H_FEC0         (LIQUID_FEC_GOLAY2412)      // header FEC (inner)
+#define OFDMFLEXFRAME_H_FEC1         (LIQUID_FEC_NONE)           // header FEC (outer)
 #define OFDMFLEXFRAME_H_MOD          (LIQUID_MODEM_BPSK)         // modulation scheme
 
 //
