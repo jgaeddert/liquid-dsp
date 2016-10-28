@@ -79,7 +79,7 @@ int main() {
             y2 = y1;
         }
 
-        if (fabsf(del) < tol)
+        if (fabs(del) < tol)
             break;
     }
 

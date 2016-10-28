@@ -487,6 +487,67 @@ LIQUID_CHANNEL_DEFINE_API(CHANNEL_MANGLE_CCCF,
                           liquid_float_complex,
                           liquid_float_complex)
 
+
+//
+// time-varying multi-path channel
+//
+#define TVMPCH_MANGLE_CCCF(name)    LIQUID_CONCAT(tvmpch_cccf,name)
+
+// large macro
+//   TVMPCH    : name-mangling macro
+//   TO         : output data type
+//   TC         : coefficients data type
+//   TI         : input data type
+#define LIQUID_TVMPCH_DEFINE_API(TVMPCH,TO,TC,TI)               \
+                                                                \
+typedef struct TVMPCH(_s) * TVMPCH();                           \
+                                                                \
+/* create channel object with default parameters            */  \
+/* create time-varying multi-path channel emulator object   */  \
+/*  _n      :   number of coefficients, _n > 0              */  \
+/*  _std    :   standard deviation                          */  \
+/*  _tau    :   coherence time                              */  \
+TVMPCH() TVMPCH(_create)(unsigned int _n,                       \
+                         float        _std,                     \
+                         float        _tau);                    \
+                                                                \
+/* destroy channel object, freeing all internal memory      */  \
+void TVMPCH(_destroy)(TVMPCH() _q);                             \
+                                                                \
+/* reset object                                             */  \
+void TVMPCH(_reset)(TVMPCH() _q);                               \
+                                                                \
+/* print channel object internals to standard output        */  \
+void TVMPCH(_print)(TVMPCH() _q);                               \
+                                                                \
+/* push sample into emulator                                */  \
+/*  _q      : channel object                                */  \
+/*  _x      : input sample                                  */  \
+void TVMPCH(_push)(TVMPCH() _q,                                 \
+                   TI       _x);                                \
+                                                                \
+/* compute output sample                                    */  \
+/*  _q      : channel object                                */  \
+/*  _y      : output sample                                 */  \
+void TVMPCH(_execute)(TVMPCH()      _q,                         \
+                      TO *          _y);                        \
+                                                                \
+/* apply channel impairments on a block of samples          */  \
+/*  _q      : channel object                                */  \
+/*  _x      : input array [size: _nx x 1]                   */  \
+/*  _nx     : input array length                            */  \
+/*  _y      : output array                                  */  \
+void TVMPCH(_execute_block)(TVMPCH()     _q,                    \
+                            TI *         _x,                    \
+                            unsigned int _nx,                   \
+                            TO *         _y);                   \
+
+LIQUID_TVMPCH_DEFINE_API(TVMPCH_MANGLE_CCCF,
+                         liquid_float_complex,
+                         liquid_float_complex,
+                         liquid_float_complex)
+
+
 //
 // MODULE : dotprod (vector dot product)
 //
@@ -1021,28 +1082,24 @@ fec_scheme   packetizer_get_fec0       (packetizer _p);
 fec_scheme   packetizer_get_fec1       (packetizer _p);
 
 
-// packetizer_encode()
-//
 // Execute the packetizer on an input message
 //
 //  _p      :   packetizer object
 //  _msg    :   input message (uncoded bytes)
 //  _pkt    :   encoded output message
-void packetizer_encode(packetizer _p,
-                       unsigned char * _msg,
-                       unsigned char * _pkt);
+void packetizer_encode(packetizer            _p,
+                       const unsigned char * _msg,
+                       unsigned char *       _pkt);
 
-// packetizer_decode()
-//
 // Execute the packetizer to decode an input message, return validity
 // check of resulting data
 //
 //  _p      :   packetizer object
 //  _pkt    :   input message (coded bytes)
 //  _msg    :   decoded output message
-int  packetizer_decode(packetizer _p,
-                       unsigned char * _pkt,
-                       unsigned char * _msg);
+int  packetizer_decode(packetizer            _p,
+                       const unsigned char * _pkt,
+                       unsigned char *       _msg);
 
 // Execute the packetizer to decode an input message, return validity
 // check of resulting data
@@ -1050,9 +1107,9 @@ int  packetizer_decode(packetizer _p,
 //  _p      :   packetizer object
 //  _pkt    :   input message (coded soft bits)
 //  _msg    :   decoded output message
-int  packetizer_decode_soft(packetizer _p,
-                            unsigned char * _pkt,
-                            unsigned char * _msg);
+int packetizer_decode_soft(packetizer            _p,
+                           const unsigned char * _pkt,
+                           unsigned char *       _msg);
 
 
 //
@@ -3436,7 +3493,7 @@ unsigned int qpacketmodem_get_modscheme(qpacketmodem _q);
 //  _payload    :   unencoded payload bytes
 //  _syms       :   encoded but un-modulated payload symbol indices
 void qpacketmodem_encode_syms(qpacketmodem    _q,
-                              unsigned char * _payload,
+                              const unsigned char * _payload,
                               unsigned int  * _syms);
 
 // decode packet from demodulated frame symbol indices (hard-decision decoding)
@@ -3460,7 +3517,7 @@ int qpacketmodem_decode_bits(qpacketmodem    _q,
 //  _payload    :   unencoded payload bytes
 //  _frame      :   encoded/modulated payload symbols
 void qpacketmodem_encode(qpacketmodem           _q,
-                         unsigned char *        _payload,
+                         const unsigned char *  _payload,
                          liquid_float_complex * _frame);
 
 // decode packet from modulated frame samples, returning flag if CRC passed
@@ -3648,10 +3705,10 @@ unsigned int flexframegen_getframelen(flexframegen _q);
 //  _header         :   frame header
 //  _payload        :   payload data [size: _payload_len x 1]
 //  _payload_len    :   payload data length
-void flexframegen_assemble(flexframegen    _q,
+void flexframegen_assemble(flexframegen          _q,
                            const unsigned char * _header,
                            const unsigned char * _payload,
-                           unsigned int    _payload_len);
+                           unsigned int          _payload_len);
 
 // write samples of assembled frame, two samples at a time, returning
 // '1' when frame is complete, '0' otherwise. Zeros will be written
@@ -3799,18 +3856,19 @@ typedef struct gmskframegen_s * gmskframegen;
 
 // create GMSK frame generator
 gmskframegen gmskframegen_create();
-void gmskframegen_destroy(gmskframegen _fg);
-void gmskframegen_print(gmskframegen _fg);
-void gmskframegen_reset(gmskframegen _fg);
-void gmskframegen_assemble(gmskframegen    _fg,
-                           unsigned char * _header,
-                           unsigned char * _payload,
-                           unsigned int    _payload_len,
-                           crc_scheme      _check,
-                           fec_scheme      _fec0,
-                           fec_scheme      _fec1);
+void gmskframegen_destroy       (gmskframegen _q);
+int  gmskframegen_is_assembled  (gmskframegen _q);
+void gmskframegen_print         (gmskframegen _q);
+void gmskframegen_reset         (gmskframegen _q);
+void gmskframegen_assemble      (gmskframegen          _q,
+                                 const unsigned char * _header,
+                                 const unsigned char * _payload,
+                                 unsigned int          _payload_len,
+                                 crc_scheme            _check,
+                                 fec_scheme            _fec0,
+                                 fec_scheme            _fec1);
 unsigned int gmskframegen_getframelen(gmskframegen _q);
-int gmskframegen_write_samples(gmskframegen _fg,
+int gmskframegen_write_samples(gmskframegen _q,
                                liquid_float_complex * _y);
 
 
@@ -3896,15 +3954,15 @@ unsigned int ofdmflexframegen_getframelen(ofdmflexframegen _q);
 //  _header         :   frame header [8 bytes]
 //  _payload        :   payload data [size: _payload_len x 1]
 //  _payload_len    :   payload data length
-void ofdmflexframegen_assemble(ofdmflexframegen _q,
+void ofdmflexframegen_assemble(ofdmflexframegen      _q,
                                const unsigned char * _header,
                                const unsigned char * _payload,
-                               unsigned int    _payload_len);
+                               unsigned int          _payload_len);
 
 // write symbols of assembled frame
 //  _q              :   OFDM frame generator object
 //  _buffer         :   output buffer [size: M+cp_len x 1]
-int ofdmflexframegen_writesymbol(ofdmflexframegen _q,
+int ofdmflexframegen_writesymbol(ofdmflexframegen       _q,
                                  liquid_float_complex * _buffer);
 
 // 
@@ -4435,23 +4493,46 @@ void liquid_kbd_window(unsigned int _n, float _beta, float * _w);
 //  _dt     :   fractional sample offset
 float kaiser(unsigned int _n,
              unsigned int _N,
-             float _beta,
-             float _dt);
+             float        _beta,
+             float        _dt);
 
 // Hamming window
 //  _n      :   window index
 //  _N      :   full window length
-float hamming(unsigned int _n, unsigned int _N);
+float hamming(unsigned int _n,
+              unsigned int _N);
 
 // Hann window
 //  _n      :   window index
 //  _N      :   full window length
-float hann(unsigned int _n, unsigned int _N);
+float hann(unsigned int _n,
+           unsigned int _N);
 
 // Blackman-harris window
 //  _n      :   window index
 //  _N      :   full window length
-float blackmanharris(unsigned int _n, unsigned int _N);
+float blackmanharris(unsigned int _n,
+                     unsigned int _N);
+
+// 7th order Blackman-harris window
+// _n			:	window index
+// _N			:	full window length
+float blackmanharris7(unsigned int _n,
+                      unsigned int _N);
+
+// Flat-top window
+// _n			:	window index
+// _N			:	full window length
+float flattop(unsigned int _n,
+              unsigned int _N);
+
+// Triangular window
+// _n			:	window index
+// _N			:	full window length
+// _L			:	triangle length, _L in {_N, _N+1, _N-1}
+float triangular(unsigned int _n,
+                 unsigned int _N,
+                 unsigned int _L);
 
 // raised-cosine tapering window
 //  _n      :   window index

@@ -98,8 +98,8 @@ IIRFILT() IIRFILT(_create)(TC *         _b,
     q->type = IIRFILT_TYPE_NORM;
 
     // allocate memory for numerator, denominator
-    q->b = (TC *) malloc((q->na)*sizeof(TC));
-    q->a = (TC *) malloc((q->nb)*sizeof(TC));
+    q->a = (TC *) malloc((q->na)*sizeof(TC));
+    q->b = (TC *) malloc((q->nb)*sizeof(TC));
 
     // normalize coefficients to _a[0]
     TC a0 = _a[0];

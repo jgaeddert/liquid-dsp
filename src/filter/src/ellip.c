@@ -311,9 +311,9 @@ void ellip_azpkf(unsigned int _n,
     printf("K1, K1p     : %12.8f, %12.8f\n", K1, K1p);
 #endif
 
-    float Nexact = (K1p/K1)/(Kp/K); // 4.69604063
     float N      = (float)_n;       // ceilf(Nexact) = 5
 #if LIQUID_DEBUG_ELLIP_PRINT
+    float Nexact = (K1p/K1)/(Kp/K); // 4.69604063
     printf("N (exact)   : %12.8f\n", Nexact);
     printf("N           : %12.8f\n", N);
 #endif

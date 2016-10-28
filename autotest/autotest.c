@@ -442,7 +442,7 @@ int export_results(char * _filename)
     // print each individual test as opposed to package
     unsigned int i;
     for (i=0; i<NUM_AUTOSCRIPTS; i++) {
-        fprintf(fid,"    {\"id\":%3u, \"pass\":%s, \"num_checks\":%4u, \"num_passed\":%4u, \"name\":\"%s\"}%s\n",
+        fprintf(fid,"    {\"id\":%3u, \"pass\":%s, \"num_checks\":%4lu, \"num_passed\":%4lu, \"name\":\"%s\"}%s\n",
                 scripts[i].id,
                 scripts[i].num_failed == 0 ? "true" : "false",
                 scripts[i].num_checks,
