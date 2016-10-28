@@ -32,15 +32,21 @@
 #define EXTENSION_FULL  "cccf"
 
 #define CHANNEL(name)   LIQUID_CONCAT(channel_cccf,name)
+#define DOTPROD(name)   LIQUID_CONCAT(dotprod_cccf,name)
 #define FIRFILT(name)   LIQUID_CONCAT(firfilt_cccf,name)
 #define IIRFILT(name)   LIQUID_CONCAT(iirfilt_rrrf,name)
 #define NCO(name)       LIQUID_CONCAT(nco_crcf,name)
 #define RESAMP(name)    LIQUID_CONCAT(resamp_crcf,name)
+#define TVMPCH(name)    LIQUID_CONCAT(tvmpch_cccf,name)
+#define WINDOW(name)    LIQUID_CONCAT(windowcf,name)
 
 #define TO              float complex   // output type
 #define TC              float complex   // coefficients type
 #define TI              float complex   // input type
 #define T               float           // primitive type
 
+#define PRINTVAL_TC(X,F) PRINTVAL_CFLOAT(X,F)
+
 #include "channel.c"
+#include "tvmpch.c"
 

@@ -51,13 +51,8 @@ struct cpfskmod_s {
     float        beta;          // filter bandwidth parameter
     float        h;             // modulation index
     int          type;          // filter type (e.g. LIQUID_CPFSK_SQUARE)
-
-    // constellation size
-    unsigned int M;
-
-    // transmit filter delay (symbols)
-    // TODO: coordinate this value with 'm'
-    unsigned int tx_delay;
+    unsigned int M;             // constellation size
+    unsigned int symbol_delay;  // transmit filter delay [symbols]
 
     // pulse-shaping filter
     float * ht;                 // filter coefficients
@@ -124,18 +119,22 @@ cpfskmod cpfskmod_create(unsigned int _bps,
     switch(q->type) {
     case LIQUID_CPFSK_SQUARE:
         q->ht_len = q->k;
+        q->symbol_delay = 1;
         // modify integrator
         b[0] = 0.0f;
         b[1] = 1.0f;
         break;
     case LIQUID_CPFSK_RCOS_FULL:
         q->ht_len = q->k;
+        q->symbol_delay = 1;
         break;
     case LIQUID_CPFSK_RCOS_PARTIAL:
         // TODO: adjust reponse based on 'm'
         q->ht_len = 3*q->k;
+        q->symbol_delay = 2;
         break;
     case LIQUID_CPFSK_GMSK:
+        q->symbol_delay = q->m + 1;
         q->ht_len = 2*(q->k)*(q->m) + (q->k) + 1;
         break;
     default:
@@ -207,6 +206,12 @@ void cpfskmod_reset(cpfskmod _q)
 
     // reset phase integrator
     iirfilt_rrrf_reset(_q->integrator);
+}
+
+// get transmit delay [symbols]
+unsigned int cpfskmod_get_delay(cpfskmod _q)
+{
+    return _q->symbol_delay;
 }
 
 // modulate sample

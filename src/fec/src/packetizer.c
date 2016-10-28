@@ -244,9 +244,9 @@ fec_scheme packetizer_get_fec1(packetizer _p)
 //  _p      :   packetizer object
 //  _msg    :   input message (uncoded bytes)
 //  _pkt    :   encoded output message
-void packetizer_encode(packetizer _p,
-                       unsigned char * _msg,
-                       unsigned char * _pkt)
+void packetizer_encode(packetizer            _p,
+                       const unsigned char * _msg,
+                       unsigned char *       _pkt)
 {
     unsigned int i;
 
@@ -287,9 +287,9 @@ void packetizer_encode(packetizer _p,
 //  _p      :   packetizer object
 //  _pkt    :   input message (coded bytes)
 //  _msg    :   decoded output message
-int packetizer_decode(packetizer _p,
-                      unsigned char * _pkt,
-                      unsigned char * _msg)
+int packetizer_decode(packetizer            _p,
+                      const unsigned char * _pkt,
+                      unsigned char *       _msg)
 {
     // copy coded message to internal buffer[0]
     memmove(_p->buffer_0, _pkt, _p->packet_len);
@@ -333,9 +333,9 @@ int packetizer_decode(packetizer _p,
 //  _p      :   packetizer object
 //  _pkt    :   input message (coded soft bits)
 //  _msg    :   decoded output message
-int packetizer_decode_soft(packetizer _p,
-                           unsigned char * _pkt,
-                           unsigned char * _msg)
+int packetizer_decode_soft(packetizer            _p,
+                           const unsigned char * _pkt,
+                           unsigned char *       _msg)
 {
     // copy coded message to internal buffer[0]
     memmove(_p->buffer_0, _pkt, 8*_p->packet_len);

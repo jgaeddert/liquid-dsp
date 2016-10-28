@@ -85,7 +85,7 @@ int main() {
         x0 = x_hat - dx;
         x2 = x_hat + dx;
 
-        if (fabsf(del) < tol)
+        if (fabs(del) < tol)
             break;
     }
 

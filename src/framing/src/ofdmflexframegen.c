@@ -386,8 +386,8 @@ unsigned int ofdmflexframegen_getframelen(ofdmflexframegen _q)
 //  _payload        :   payload data [size: _payload_len x 1]
 //  _payload_len    :   payload data length
 void ofdmflexframegen_assemble(ofdmflexframegen _q,
-                               unsigned char *  _header,
-                               unsigned char *  _payload,
+                               const unsigned char *  _header,
+                               const unsigned char *  _payload,
                                unsigned int     _payload_len)
 {
     // check payload length and reconfigure if necessary

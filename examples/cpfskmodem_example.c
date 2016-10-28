@@ -85,15 +85,15 @@ int main(int argc, char*argv[])
     unsigned int i;
 
     // derived values
-    unsigned int num_samples = k*num_symbols;
-    unsigned int M = 1 << bps;              // constellation size
-    float nstd = powf(10.0f, -SNRdB/20.0f);
+    unsigned int  num_samples = k*num_symbols;
+    unsigned int  M           = 1 << bps;
+    float         nstd        = powf(10.0f, -SNRdB/20.0f);
 
     // arrays
-    unsigned int sym_in[num_symbols];       // input symbols
-    float complex x[num_samples];           // transmitted signal
-    float complex y[num_samples];           // received signal
-    unsigned int sym_out[num_symbols];      // output symbols
+    unsigned int  sym_in [num_symbols]; // input symbols
+    float complex x      [num_samples]; // transmitted signal
+    float complex y      [num_samples]; // received signal
+    unsigned int  sym_out[num_symbols]; // output symbols
 
     // create modem objects
     cpfskmod mod = cpfskmod_create(bps, h, k, m, beta, filter_type);
@@ -101,6 +101,10 @@ int main(int argc, char*argv[])
 
     // print modulator
     cpfskmod_print(mod);
+    
+    // get full symbol delay
+    unsigned int delay = cpfskmod_get_delay(mod) + cpfskdem_get_delay(dem);
+    printf("delay: %u samples\n", delay);
 
     // generate message signal
     for (i=0; i<num_symbols; i++)
@@ -110,30 +114,22 @@ int main(int argc, char*argv[])
     for (i=0; i<num_symbols; i++)
         cpfskmod_modulate(mod, sym_in[i], &x[k*i]);
 
-    // push through channel
-    float sample_offset = -tau * k;
-    int   sample_delay  = (int)roundf(sample_offset);
-    float dt            = sample_offset - (float)sample_delay;
-    printf("symbol delay    :   %f\n", tau);
-    printf("sample delay    :   %f = %d + %f\n", sample_offset, sample_delay, dt);
-    firfilt_crcf fchannel = firfilt_crcf_create_kaiser(8*k+2*sample_delay+1, 0.45f, 40.0f, dt);
-    for (i=0; i<num_samples; i++) {
-        // push through channel delay
-        firfilt_crcf_push(fchannel, x[i]);
-        firfilt_crcf_execute(fchannel, &y[i]);
-
-        // add carrier frequency/phase offset
-        y[i] *= cexpf(_Complex_I*(cfo*i + cpo));
-
-        // add noise
-        y[i] += nstd*(randnf() + _Complex_I*randnf())*M_SQRT1_2;
-    }
-    firfilt_crcf_destroy(fchannel);
+    // push through channel (add noise)
+    for (i=0; i<num_samples; i++)
+        y[i] = x[i] + nstd*(randnf() + _Complex_I*randnf())*M_SQRT1_2;
 
     // demodulate signal
-    unsigned int nw=0;
-    cpfskdem_demodulate(dem, y, num_samples, sym_out, &nw);
-    printf("demodulator wrote %u symbols\n", nw);
+    for (i=0; i<num_symbols; i++)
+        sym_out[i] = cpfskdem_demodulate(dem, &y[i*k]);
+
+    // print/count errors
+    unsigned int num_errors = 0;
+    for (i=delay; i<num_symbols; i++) {
+        int is_err = (sym_in[i-delay] == sym_out[i]) ? 0 : 1;
+        printf("  %3u : %2u %2u %s\n", i, sym_in[i-delay], sym_out[i], is_err ? "*" : "");
+        num_errors += is_err;
+    }
+    printf("symbol errors: %u / %u\n", num_errors, num_symbols-delay);
 
     // destroy modem objects
     cpfskmod_destroy(mod);

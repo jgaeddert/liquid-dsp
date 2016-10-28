@@ -302,7 +302,7 @@ void POLY(_findroots_bairstow_recursion)(T *          _p,
 #endif
 
         // adjust u, v
-        if (isnan(du) || isnan(dv)) {
+        if (isnan(T_ABS(du)) || isnan(T_ABS(dv))) {
             u *= 0.5f;
             v *= 0.5f;
         } else {
