@@ -286,6 +286,10 @@ void SPGRAM(_push)(SPGRAM() _q,
     // push sample into internal window
     WINDOW(_push)(_q->buffer, _x);
 
+    // update counters
+    _q->num_samples++;
+    _q->num_samples_total++;
+
     // adjust timer
     _q->sample_timer--;
 
