@@ -116,9 +116,10 @@ int main()
     fprintf(fid,"set grid front ls 12\n");
     fprintf(fid,"set tics nomirror out scale 0.75\n");
     fprintf(fid,"set xrange [-0.5:0.5]\n");
-    fprintf(fid,"set yrange [0:%u]\n", num_samples-1);
+    fprintf(fid,"set yrange [0:%f]\n", (float)(num_samples-1)*1e-3f);
     fprintf(fid,"set xlabel 'Normalized Frequency [f/F_s]'\n");
     fprintf(fid,"set ylabel 'Sample Index'\n");
+    fprintf(fid,"set format y '%%.0f k'\n");
     fprintf(fid,"# disable colorbar tics\n");
     fprintf(fid,"set cbtics scale 0\n");
     fprintf(fid,"set palette negative defined ( \\\n");
@@ -131,7 +132,7 @@ int main()
     fprintf(fid,"    6 '#66C2A5',\\\n");
     fprintf(fid,"    7 '#3288BD' )\n");
     fprintf(fid,"\n");
-    fprintf(fid,"plot 'waterfall.bin' u 1:2:3 binary matrix with image\n");
+    fprintf(fid,"plot 'waterfall.bin' u 1:($2*1e-3):3 binary matrix with image\n");
     fclose(fid);
     printf("results written to %s.\n", "waterfall.bin");
     printf("results written to %s.\n", OUTPUT_FILENAME);
