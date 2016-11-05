@@ -10,15 +10,13 @@
 
 int main()
 {
-    // msource parameters
-    int          ms          = LIQUID_MODEM_QPSK;
-    unsigned int k           =     4;
-    unsigned int m           =    12;
-    float        beta        = 0.30f;
-
     // spectral periodogram options
-    unsigned int nfft        =   2400;  // spectral periodogram FFT size
-    unsigned int num_samples = 250000;  // number of samples
+    unsigned int nfft        =    1200; // spectral periodogram FFT size
+    unsigned int num_samples = 2000000; // number of samples
+
+    // derived values
+    unsigned int num_estimates = 800;  // target number of PSD estimates
+    unsigned int samples_per_estimate = (unsigned int)(num_samples/num_estimates);
 
     unsigned int i;
 
@@ -27,14 +25,12 @@ int main()
     float        std   = 0.1f;
     float        tau   = 1e-4f;
     tvmpch_cccf channel = tvmpch_cccf_create(c_len, std, tau);
-    tvmpch_cccf_print(channel);
 
     unsigned int buf_len = 64;
     float complex buf[buf_len];
 
     // create spectral periodogram
-    spgramcf periodogram = spgramcf_create(nfft, LIQUID_WINDOW_KAISER, nfft/2, buf_len);
-    spgramcf_set_alpha(periodogram, 0.5f);
+    spgramcf periodogram = spgramcf_create_default(nfft);
 
     // create stream generator
     msourcecf gen = msourcecf_create();
@@ -50,14 +46,9 @@ int main()
     msourcecf_set_gain     (gen, id_tone, -10.0f);
 
     // add modulated data
-    int id_modem = msourcecf_add_modem(gen,ms,k,m,beta);
+    int id_modem = msourcecf_add_modem(gen,LIQUID_MODEM_QPSK,4,12,0.30f);
     msourcecf_set_frequency(gen, id_modem, -0.1*2*M_PI);
     msourcecf_set_gain     (gen, id_modem, 0.0f);
-
-    // print source generator object
-    msourcecf_print(gen);
-
-    unsigned int num_transforms = 0;
 
     FILE * fid = fopen("waterfall.bin","wb");
     // write header
@@ -69,7 +60,9 @@ int main()
     }
 
     float psd[nfft];
-    unsigned int total_samples = 0;
+    unsigned int total_samples   = 0;
+    unsigned int total_estimates = 0;
+    int state = 1;
     while (total_samples < num_samples) {
         // write samples to buffer
         msourcecf_write_samples(gen, buf, buf_len);
@@ -80,22 +73,37 @@ int main()
         // push resulting sample through periodogram
         spgramcf_write(periodogram, buf, buf_len);
 
-        // compute power spectral density output
-        spgramcf_get_psd(periodogram, psd);
+        if (spgramcf_get_num_samples(periodogram) > samples_per_estimate) {
+            // compute power spectral density output
+            spgramcf_get_psd(periodogram, psd);
 
-        // write output
-        float n = (float)total_samples;
-        fwrite(&n, sizeof(float), 1, fid);
-        fwrite(psd, sizeof(float), nfft, fid);
-        num_transforms++;
+            // write output
+            float n = (float)total_samples;
+            fwrite(&n, sizeof(float), 1, fid);
+            fwrite(psd, sizeof(float), nfft, fid);
+
+            // soft reset of internal state, counters
+            spgramcf_reset(periodogram);
+
+            // update counter for total number of PSD estimates taken
+            total_estimates++;
+        }
 
         // accumulated samples
         total_samples += buf_len;
 
+        // update state for noise source
+        if (state == 0 && randf() < 0.01f) {
+            state = 1;
+            msourcecf_enable(gen, id_noise);
+        } else if (state == 1 && randf() < 0.01f) {
+            state = 0;
+            msourcecf_disable(gen, id_noise);
+        }
     }
-    tvmpch_cccf_print(channel);
-    printf("total samples:    %u\n", total_samples);
-    printf("total transforms: %u\n", num_transforms);
+    printf("samples per PSD estimate : %u\n", samples_per_estimate);
+    printf("total samples            : %u (%u)\n", total_samples,   num_samples);
+    printf("total estimates          : %u (%u)\n", total_estimates, num_estimates);
     fclose(fid);
 
     // destroy objects

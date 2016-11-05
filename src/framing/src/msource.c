@@ -61,7 +61,7 @@ struct QSOURCE(_s) {
 
     nco_crcf mixer;
     float    gain;
-    //int      enabled;
+    int      enabled;
 };
 
 QSOURCE() QSOURCE(_create_tone)(int _id);
@@ -79,6 +79,9 @@ void QSOURCE(_destroy)(QSOURCE() _q);
 void QSOURCE(_print)(QSOURCE() _q);
 
 void QSOURCE(_reset)(QSOURCE() _q);
+
+void QSOURCE(_enable)(QSOURCE() _q);
+void QSOURCE(_disable)(QSOURCE() _q);
 
 void QSOURCE(_set_gain)(QSOURCE() _q,
                         float     _gain_dB);
@@ -243,11 +246,29 @@ void MSOURCE(_remove)(MSOURCE() _q,
 void MSOURCE(_enable)(MSOURCE() _q,
                       int       _id)
 {
+    // validate input
+    if (_id > _q->num_sources) {
+        fprintf(stderr,"error: qsource%s_enable(), signal id (%d) out of range (%u)\n",
+                EXTENSION, _id, _q->num_sources);
+        exit(1);
+    }
+
+    // set source gain
+    QSOURCE(_enable)(_q->sources[_id]);
 }
 
 void MSOURCE(_disable)(MSOURCE() _q,
                        int       _id)
 {
+    // validate input
+    if (_id > _q->num_sources) {
+        fprintf(stderr,"error: qsource%s_disable(), signal id (%d) out of range (%u)\n",
+                EXTENSION, _id, _q->num_sources);
+        exit(1);
+    }
+
+    // set source gain
+    QSOURCE(_disable)(_q->sources[_id]);
 }
 
 // set signal gain
@@ -366,8 +387,9 @@ QSOURCE() QSOURCE(_create_tone)(int _id)
     q->id   = _id;
     q->type = QSOURCE_TONE;
 
-    q->mixer = NCO(_create)(LIQUID_VCO);
-    q->gain  = 1;
+    q->mixer   = NCO(_create)(LIQUID_VCO);
+    q->gain    = 1;
+    q->enabled = 1;
 
     // reset and return main object
     QSOURCE(_reset)(q);
@@ -393,8 +415,9 @@ QSOURCE() QSOURCE(_create_noise)(int   _id,
                                                         0.5*_bandwidth, 0.0f,
                                                         0.1f, 80.0f);
 
-    q->mixer = NCO(_create)(LIQUID_VCO);
-    q->gain  = 1;
+    q->mixer   = NCO(_create)(LIQUID_VCO);
+    q->gain    = 1;
+    q->enabled = 1;
 
     // reset and return main object
     QSOURCE(_reset)(q);
@@ -415,8 +438,9 @@ QSOURCE() QSOURCE(_create_modem)(int          _id,
 
     q->source.linmod.symstream=SYMSTREAM(_create_linear)(LIQUID_FIRFILT_ARKAISER,_k,_m,_beta,_ms);
 
-    q->mixer = NCO(_create)(LIQUID_VCO);
-    q->gain  = 1;
+    q->mixer   = NCO(_create)(LIQUID_VCO);
+    q->gain    = 1;
+    q->enabled = 1;
 
     // reset and return main object
     QSOURCE(_reset)(q);
@@ -464,6 +488,16 @@ void QSOURCE(_reset)(QSOURCE() _q)
 {
 }
 
+void QSOURCE(_enable)(QSOURCE() _q)
+{
+    _q->enabled = 1;
+}
+
+void QSOURCE(_disable)(QSOURCE() _q)
+{
+    _q->enabled = 0;
+}
+
 void QSOURCE(_set_gain)(QSOURCE() _q,
                         float     _gain_dB)
 {
@@ -497,6 +531,9 @@ void QSOURCE(_gen_sample)(QSOURCE() _q,
         fprintf(stderr,"error: qsource%s_gen_sample(), internal logic error\n", EXTENSION);
         exit(1);
     }
+    
+    if (!_q->enabled)
+        sample = 0.0f;
 
     // apply gain
     sample *= _q->gain;
