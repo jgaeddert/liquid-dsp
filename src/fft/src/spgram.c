@@ -347,6 +347,7 @@ void SPGRAM(_step)(SPGRAM() _q)
     }
 
     _q->num_transforms++;
+    _q->num_transforms_total++;
 }
 
 // compute spectral periodogram output (fft-shifted values
