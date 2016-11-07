@@ -640,7 +640,8 @@ void ofdmflexframesync_decode_header(ofdmflexframesync _q)
         // re-compute payload encoded message length
         if (_q->payload_soft) {
             _q->payload_enc_len = 8*packetizer_get_enc_msg_len(_q->p_payload);
-            _q->payload_mod_len = _q->payload_enc_len;
+            div_t d = div(_q->payload_enc_len, _q->bps_payload);
+            _q->payload_mod_len = d.quot + (d.rem ? 1 : 0);
         } else {
             _q->payload_enc_len = packetizer_get_enc_msg_len(_q->p_payload);
             // re-compute number of modulated payload symbols
@@ -681,8 +682,7 @@ void ofdmflexframesync_rxpayload(ofdmflexframesync _q,
             _q->payload_syms[_q->payload_symbol_index] = _X[i];
 
             if (_q->payload_soft) {
-                unsigned int bps = modem_get_bps(_q->mod_payload);
-                modem_demodulate_soft(_q->mod_payload, _X[i], &sym, &_q->payload_enc[bps*_q->payload_symbol_index]);
+                modem_demodulate_soft(_q->mod_payload, _X[i], &sym, &_q->payload_enc[_q->bps_payload*_q->payload_symbol_index]);
             } else {
                 modem_demodulate(_q->mod_payload, _X[i], &sym);
 
