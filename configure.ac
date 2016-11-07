@@ -130,6 +130,9 @@ AC_CHECK_SIZEOF(unsigned int)
 # $CFLAGS (sets to "unknown" on failure).
 #AX_GCC_ARCHFLAG([no],[],[])
 
+# get canonical target architecture
+AC_CANONICAL_TARGET
+
 # override SIMD
 if test "${enable_simdoverride+set}" = set; then
     # portable C version
@@ -140,7 +143,6 @@ if test "${enable_simdoverride+set}" = set; then
     ARCH_OPTION=""
 else
     # Check canonical system
-    AC_CANONICAL_TARGET
     case $target_cpu in
     i386|i486|i586|i686|x86|x86_64)
         # check for MMX/SSE/AVX CPU extensions and intrinsics headers
