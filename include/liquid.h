@@ -3879,20 +3879,20 @@ typedef struct gmskframegen_s * gmskframegen;
 
 // create GMSK frame generator
 gmskframegen gmskframegen_create();
-void gmskframegen_destroy       (gmskframegen _fg);
-int  gmskframegen_is_assembled  (gmskframegen _fg);
-void gmskframegen_print         (gmskframegen _fg);
-void gmskframegen_set_header_len(gmskframegen _fg, unsigned int _len);
-void gmskframegen_reset         (gmskframegen _fg);
-void gmskframegen_assemble      (gmskframegen          _fg,
+void gmskframegen_destroy       (gmskframegen _q);
+int  gmskframegen_is_assembled  (gmskframegen _q);
+void gmskframegen_print         (gmskframegen _q);
+void gmskframegen_set_header_len(gmskframegen _q, unsigned int _len);
+void gmskframegen_reset         (gmskframegen _q);
+void gmskframegen_assemble      (gmskframegen          _q,
                                  const unsigned char * _header,
                                  const unsigned char * _payload,
                                  unsigned int          _payload_len,
                                  crc_scheme            _check,
                                  fec_scheme            _fec0,
                                  fec_scheme            _fec1);
-unsigned int gmskframegen_getframelen(gmskframegen _fg);
-int gmskframegen_write_samples(gmskframegen _fg,
+unsigned int gmskframegen_getframelen(gmskframegen _q);
+int gmskframegen_write_samples(gmskframegen _q,
                                liquid_float_complex * _y);
 
 
