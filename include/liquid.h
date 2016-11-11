@@ -5904,8 +5904,18 @@ LIQUID_FIRPFBCH2_DEFINE_API(FIRPFBCH2_MANGLE_CRCF,
 // initialize default subcarrier allocation
 //  _M      :   number of subcarriers
 //  _p      :   output subcarrier allocation array, [size: _M x 1]
-void ofdmframe_init_default_sctype(unsigned int _M,
+void ofdmframe_init_default_sctype(unsigned int    _M,
                                    unsigned char * _p);
+
+// initialize default subcarrier allocation
+//  _M      :   number of subcarriers
+//  _f0     :   lower frequency band, _f0 in [-0.5,0.5]
+//  _f1     :   upper frequency band, _f1 in [-0.5,0.5]
+//  _p      :   output subcarrier allocation array, [size: _M x 1]
+void ofdmframe_init_sctype_range(unsigned int    _M,
+                                 float           _f0,
+                                 float           _f1,
+                                 unsigned char * _p);
 
 // validate subcarrier type (count number of null, pilot, and data
 // subcarriers in the allocation)
