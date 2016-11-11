@@ -31,7 +31,7 @@ void usage()
     printf("  u/h   : print usage\n");
     printf("  s     : signal-to-noise ratio [dB], default: 20\n");
     printf("  F     : carrier frequency offset, default: 0.01\n");
-    printf("  n     : payload length [bytes], default: 120\n");
+    printf("  n     : payload length [bytes], default: 480\n");
     printf("  m     : modulation scheme (qpsk default)\n");
     liquid_print_modulation_schemes();
     printf("  v     : data integrity check: crc32 default\n");
@@ -60,7 +60,7 @@ int main(int argc, char *argv[])
     crc_scheme check         =  LIQUID_CRC_32;     // data validity check
     fec_scheme fec0          =  LIQUID_FEC_NONE;   // fec (inner)
     fec_scheme fec1          =  LIQUID_FEC_NONE;   // fec (outer)
-    unsigned int payload_len =  120;               // payload length
+    unsigned int payload_len =  480;               // payload length
     int debug_enabled        =  0;                 // enable debugging?
     float noise_floor        = -60.0f;             // noise floor
     float SNRdB              =  20.0f;             // signal-to-noise ratio
@@ -99,23 +99,13 @@ int main(int argc, char *argv[])
     fgprops.fec1        = fec1;
     flexframegen fg = flexframegen_create(&fgprops);
 
-    // frame data (header and payload)
-    unsigned char header[14];
-    unsigned char payload[payload_len];
-
     // create flexframesync object
     flexframesync fs = flexframesync_create(callback,NULL);
     if (debug_enabled)
         flexframesync_debug_enable(fs);
 
-    // initialize header, payload
-    for (i=0; i<14; i++)
-        header[i] = i;
-    for (i=0; i<payload_len; i++)
-        payload[i] = rand() & 0xff;
-
-    // assemble the frame
-    flexframegen_assemble(fg, header, payload, payload_len);
+    // assemble the frame (NULL pointers for default values)
+    flexframegen_assemble(fg, NULL, NULL, payload_len);
     flexframegen_print(fg);
 
     // generate the frame in blocks
@@ -166,10 +156,17 @@ static int callback(unsigned char *  _header,
 {
     printf("******** callback invoked\n");
 
+    // count bit errors (assuming all-zero message)
+    unsigned int bit_errors = 0;
+    unsigned int i;
+    for (i=0; i<_payload_len; i++)
+        bit_errors += liquid_count_ones(_payload[i]);
+
     framesyncstats_print(&_stats);
     printf("    header crc          :   %s\n", _header_valid ?  "pass" : "FAIL");
     printf("    payload length      :   %u\n", _payload_len);
     printf("    payload crc         :   %s\n", _payload_valid ?  "pass" : "FAIL");
+    printf("    payload bit errors  :   %u / %u\n", bit_errors, 8*_payload_len);
 
     return 0;
 }

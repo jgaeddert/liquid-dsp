@@ -297,7 +297,10 @@ void flexframegen_assemble(flexframegen          _q,
     _q->payload_dec_len = _payload_dec_len;
 
     // copy user-defined header to internal
-    memmove(_q->header, _header, FLEXFRAME_H_USER*sizeof(unsigned char));
+    if (_header == NULL)
+        memset(_q->header, 0x00, FLEXFRAME_H_USER*sizeof(unsigned char));
+    else
+        memmove(_q->header, _header, FLEXFRAME_H_USER*sizeof(unsigned char));
 
     // first several bytes of header are user-defined
     unsigned int n = FLEXFRAME_H_USER;
