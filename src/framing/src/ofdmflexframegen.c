@@ -679,6 +679,7 @@ void ofdmflexframegen_gen_tail(ofdmflexframegen _q)
 
     // mark frame as complete
     _q->frame_complete = 1;
+    _q->frame_assembled = 0;
     _q->state = OFDMFLEXFRAMEGEN_STATE_ZEROS;
 }
 
