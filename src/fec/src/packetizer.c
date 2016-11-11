@@ -251,10 +251,13 @@ void packetizer_encode(packetizer            _p,
     unsigned int i;
 
     // copy input message to internal buffer[0] (or initialize to zeros)
-    if (_msg == NULL)
-        memset(_p->buffer_0, 0x00, _p->msg_len);
-    else
+    if (_msg != NULL) {
+        // copy user-defined input
         memmove(_p->buffer_0, _msg, _p->msg_len);
+    } else {
+        // initialize with zeros
+        memset(_p->buffer_0, 0x00, _p->msg_len);
+    }
 
     // compute crc, append to buffer
     unsigned int key = crc_generate_key(_p->check, _p->buffer_0, _p->msg_len);
@@ -265,6 +268,9 @@ void packetizer_encode(packetizer            _p,
         // shift key by 8 bits
         key >>= 8;
     }
+
+    // whiten input sequence
+    scramble_data(_p->buffer_0, _p->msg_len + _p->crc_length);
 
     // execute fec/interleaver plans
     for (i=0; i<_p->plan_len; i++) {
@@ -311,6 +317,9 @@ int packetizer_decode(packetizer            _p,
                    _p->buffer_1,
                    _p->buffer_0);
     }
+
+    // remove sequence whitening
+    unscramble_data(_p->buffer_0, _p->msg_len + _p->crc_length);
 
     // strip crc, validate message
     unsigned int key = 0;
@@ -372,6 +381,9 @@ int packetizer_decode_soft(packetizer            _p,
                _p->plan[0].dec_msg_len,
                _p->buffer_1,
                _p->buffer_0);
+
+    // remove sequence whitening
+    unscramble_data(_p->buffer_0, _p->msg_len + _p->crc_length);
 
     // strip crc, validate message
     unsigned int key = 0;
