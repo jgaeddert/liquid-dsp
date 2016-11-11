@@ -3947,11 +3947,13 @@ void ofdmflexframegen_assemble(ofdmflexframegen      _q,
                                const unsigned char * _payload,
                                unsigned int          _payload_len);
 
-// write symbols of assembled frame
+// write samples of assembled frame
 //  _q              :   OFDM frame generator object
-//  _buffer         :   output buffer [size: M+cp_len x 1]
-int ofdmflexframegen_writesymbol(ofdmflexframegen       _q,
-                                 liquid_float_complex * _buffer);
+//  _buf            :   output buffer [size: _buf_len x 1]
+//  _buf_len        :   output buffer length
+int ofdmflexframegen_write(ofdmflexframegen       _q,
+                          liquid_float_complex * _buf,
+                          unsigned int           _buf_len);
 
 // 
 // OFDM flex frame synchronizer
