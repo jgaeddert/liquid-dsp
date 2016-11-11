@@ -420,10 +420,6 @@ typedef struct CHANNEL(_s) * CHANNEL();                         \
 /* create channel object with default parameters            */  \
 CHANNEL() CHANNEL(_create)(void);                               \
                                                                 \
-/* create channel object with particular delay              */  \
-/*  _m  :   resampling filter semi-length                   */  \
-CHANNEL() CHANNEL(_create_delay)(unsigned int _m);              \
-                                                                \
 /* destroy channel object, freeing all internal memory      */  \
 void CHANNEL(_destroy)(CHANNEL() _q);                           \
                                                                 \
@@ -437,14 +433,6 @@ void CHANNEL(_print)(CHANNEL() _q);                             \
 void CHANNEL(_add_awgn)(CHANNEL() _q,                           \
                         float     _noise_floor_dB,              \
                         float     _SNRdB);                      \
-                                                                \
-/* apply additive white Gausss noise impairment             */  \
-/*  _q              : channel object                        */  \
-/*  _delay          : resampling delay                      */  \
-/*  _rate           : resampling rate                       */  \
-void CHANNEL(_add_resamp)(CHANNEL() _q,                         \
-                          float     _delay,                     \
-                          float     _rate);                     \
                                                                 \
 /* apply carrier offset impairment                          */  \
 /*  _q          : channel object                            */  \
@@ -470,20 +458,23 @@ void CHANNEL(_add_shadowing)(CHANNEL()    _q,                   \
                              float        _sigma,               \
                              float        _fd);                 \
                                                                 \
-/* get nominal delay [samples]                              */  \
-unsigned int CHANNEL(_get_delay)(CHANNEL() _q);                 \
-                                                                \
-/* apply channel impairments on input array                 */  \
+/* apply channel impairments on single input sample         */  \
 /*  _q      : channel object                                */  \
-/*  _x      : input array [size: _nx x 1]                   */  \
-/*  _nx     : input array length                            */  \
-/*  _y      : output array                                  */  \
-/*  _ny     : output array length                           */  \
+/*  _x      : input sample                                  */  \
+/*  _y      : pointer to output sample                      */  \
 void CHANNEL(_execute)(CHANNEL()      _q,                       \
-                       TI *           _x,                       \
-                       unsigned int   _nx,                      \
-                       TO *           _y,                       \
-                       unsigned int * _ny);                     \
+                       TI             _x,                       \
+                       TO *           _y);                      \
+                                                                \
+/* apply channel impairments on block of samples            */  \
+/*  _q      : channel object                                */  \
+/*  _x      : input array [size: _n x 1]                    */  \
+/*  _n      : input array length                            */  \
+/*  _y      : output array [size: _n x 1]                   */  \
+void CHANNEL(_execute_block)(CHANNEL()      _q,                 \
+                             TI *           _x,                 \
+                             unsigned int   _n,                 \
+                             TO *           _y);                \
 
 LIQUID_CHANNEL_DEFINE_API(CHANNEL_MANGLE_CCCF,
                           liquid_float_complex,

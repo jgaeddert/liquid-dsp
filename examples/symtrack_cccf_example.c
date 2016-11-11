@@ -102,7 +102,7 @@ int main(int argc, char*argv[])
     // buffers
     unsigned int    buf_len = 400;      // buffer size
     float complex   x   [buf_len];      // original signal
-    float complex   y   [buf_len*2];    // channel output (larger to accommodate resampler)
+    float complex   y   [buf_len];      // channel output
     float complex   syms[buf_len];      // recovered symbols
     // window for saving last few symbols
     windowcf sym_buf = windowcf_create(buf_len);
@@ -115,7 +115,6 @@ int main(int argc, char*argv[])
     channel_cccf_add_awgn          (channel, noise_floor, SNRdB);
     channel_cccf_add_carrier_offset(channel, dphi, phi);
     channel_cccf_add_multipath     (channel, NULL, hc_len);
-    channel_cccf_add_resamp        (channel, 0.0f, rate);
 
     // create symbol tracking synchronizer
     symtrack_cccf symtrack = symtrack_cccf_create(ftype,k,m,beta,ms);
@@ -125,7 +124,6 @@ int main(int argc, char*argv[])
     spgramcf periodogram = spgramcf_create_default(nfft);
 
     unsigned int total_samples = 0;
-    unsigned int ny;
     unsigned int total_symbols = 0;
     while (total_samples < num_samples)
     {
@@ -133,14 +131,14 @@ int main(int argc, char*argv[])
         symstreamcf_write_samples(gen, x, buf_len);
 
         // apply channel
-        channel_cccf_execute(channel, x, buf_len, y, &ny);
+        channel_cccf_execute_block(channel, x, buf_len, y);
 
         // push resulting sample through periodogram
-        spgramcf_write(periodogram, y, ny);
+        spgramcf_write(periodogram, y, buf_len);
 
         // run resulting stream through synchronizer
         unsigned int num_symbols_sync;
-        symtrack_cccf_execute_block(symtrack, y, ny, syms, &num_symbols_sync);
+        symtrack_cccf_execute_block(symtrack, y, buf_len, syms, &num_symbols_sync);
         total_symbols += num_symbols_sync;
 
         // write resulting symbols to window buffer for plotting
