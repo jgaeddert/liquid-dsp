@@ -250,8 +250,11 @@ void packetizer_encode(packetizer            _p,
 {
     unsigned int i;
 
-    // copy input message to internal buffer[0]
-    memmove(_p->buffer_0, _msg, _p->msg_len);
+    // copy input message to internal buffer[0] (or initialize to zeros)
+    if (_msg == NULL)
+        memset(_p->buffer_0, 0x00, _p->msg_len);
+    else
+        memmove(_p->buffer_0, _msg, _p->msg_len);
 
     // compute crc, append to buffer
     unsigned int key = crc_generate_key(_p->check, _p->buffer_0, _p->msg_len);

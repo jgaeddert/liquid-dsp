@@ -345,15 +345,15 @@ unsigned int ofdmflexframegen_getframelen(ofdmflexframegen _q)
             _q->num_symbols_payload;
 }
 
-// assemble a frame from an array of data
+// assemble a frame from an array of data (NULL pointers will use random data)
 //  _q              :   OFDM frame generator object
 //  _header         :   frame header
 //  _payload        :   payload data [size: _payload_len x 1]
 //  _payload_len    :   payload data length
-void ofdmflexframegen_assemble(ofdmflexframegen _q,
-                               const unsigned char *  _header,
-                               const unsigned char *  _payload,
-                               unsigned int     _payload_len)
+void ofdmflexframegen_assemble(ofdmflexframegen      _q,
+                               const unsigned char * _header,
+                               const unsigned char * _payload,
+                               unsigned int          _payload_len)
 {
     // reset state
     ofdmflexframegen_reset(_q);
@@ -368,7 +368,10 @@ void ofdmflexframegen_assemble(ofdmflexframegen _q,
     _q->frame_assembled = 1;
 
     // copy user-defined header data
-    memmove(_q->header, _header, OFDMFLEXFRAME_H_USER*sizeof(unsigned char));
+    if (_header == NULL)
+        memset(_q->header, 0x00, OFDMFLEXFRAME_H_USER*sizeof(unsigned char));
+    else
+        memmove(_q->header, _header, OFDMFLEXFRAME_H_USER*sizeof(unsigned char));
 
     // encode full header
     ofdmflexframegen_encode_header(_q);

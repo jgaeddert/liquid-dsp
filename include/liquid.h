@@ -3937,7 +3937,7 @@ void ofdmflexframegen_setprops(ofdmflexframegen _q,
 //  _q              :   OFDM frame generator object
 unsigned int ofdmflexframegen_getframelen(ofdmflexframegen _q);
 
-// assemble a frame from an array of data
+// assemble a frame from an array of data (NULL pointers will use random data)
 //  _q              :   OFDM frame generator object
 //  _header         :   frame header [8 bytes]
 //  _payload        :   payload data [size: _payload_len x 1]
