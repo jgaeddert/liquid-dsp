@@ -72,7 +72,7 @@ int main() {
 
     unsigned int i;
     for (i=0; i<24; i++) {
-        chromosome_clear(c);
+        chromosome_reset(c);
         chromosome_mutate(c,i);
         // 0000 01000000 00000000 0000
         chromosome_print(c);

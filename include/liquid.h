@@ -6250,7 +6250,7 @@ void chromosome_print(chromosome _c);
 void chromosome_printf(chromosome _c);
 
 // clear chromosome (set traits to zero)
-void chromosome_clear(chromosome _c);
+void chromosome_reset(chromosome _c);
 
 // initialize chromosome on integer values
 void chromosome_init(chromosome _c,
