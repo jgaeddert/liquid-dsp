@@ -381,7 +381,7 @@ void WDELAY(_destroy)(WDELAY() _q);                             \
 void WDELAY(_print)(WDELAY() _q);                               \
                                                                 \
 /* clear/reset state of object                              */  \
-void WDELAY(_clear)(WDELAY() _q);                               \
+void WDELAY(_reset)(WDELAY() _q);                               \
                                                                 \
 /* read delayed sample from delay buffer object             */  \
 /*  _q  :   delay buffer object                             */  \

@@ -202,7 +202,7 @@ void EQLMS(_reset)(EQLMS() _q)
     memmove(_q->w0, _q->h0, (_q->h_len)*sizeof(T));
 
     WINDOW(_reset)(_q->buffer);
-    wdelayf_clear(_q->x2);
+    wdelayf_reset(_q->x2);
 
     // reset input count
     _q->count = 0;
