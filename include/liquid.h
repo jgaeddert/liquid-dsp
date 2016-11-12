@@ -232,7 +232,7 @@ void CBUFFER(_print)(CBUFFER() _q);                             \
 void CBUFFER(_debug_print)(CBUFFER() _q);                       \
                                                                 \
 /* clear internal buffer                                    */  \
-void CBUFFER(_clear)(CBUFFER() _q);                             \
+void CBUFFER(_reset)(CBUFFER() _q);                             \
                                                                 \
 /* get the number of elements currently in the buffer       */  \
 unsigned int CBUFFER(_size)(CBUFFER() _q);                      \
