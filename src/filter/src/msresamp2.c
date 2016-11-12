@@ -218,7 +218,7 @@ void MSRESAMP2(_reset)(MSRESAMP2() _q)
     // reset half-band resampler objects
     unsigned int i;
     for (i=0; i<_q->num_stages; i++)
-        RESAMP2(_clear)(_q->resamp2[i]);
+        RESAMP2(_reset)(_q->resamp2[i]);
 
     // reset buffer write pointer
     _q->buffer_index = 0;

@@ -2910,7 +2910,7 @@ void RESAMP2(_destroy)(RESAMP2() _q);                           \
 void RESAMP2(_print)(RESAMP2() _q);                             \
                                                                 \
 /* reset internal buffer                                    */  \
-void RESAMP2(_clear)(RESAMP2() _q);                             \
+void RESAMP2(_reset)(RESAMP2() _q);                             \
                                                                 \
 /* get resampler filter delay (semi-length m)               */  \
 unsigned int RESAMP2(_get_delay)(RESAMP2() _q);                 \
