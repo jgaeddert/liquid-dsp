@@ -2744,7 +2744,7 @@ void FIRDECIM(_destroy)(FIRDECIM() _q);                         \
 void FIRDECIM(_print)(FIRDECIM() _q);                           \
                                                                 \
 /* reset decimator object internal state                    */  \
-void FIRDECIM(_clear)(FIRDECIM() _q);                           \
+void FIRDECIM(_reset)(FIRDECIM() _q);                           \
                                                                 \
 /* execute decimator on _M input samples                    */  \
 /*  _q      : decimator object                              */  \
