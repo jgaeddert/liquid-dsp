@@ -97,7 +97,7 @@ void TVMPCH(_destroy)(TVMPCH() _q)
 // reset internal state of filter object
 void TVMPCH(_reset)(TVMPCH() _q)
 {
-    WINDOW(_clear)(_q->w);
+    WINDOW(_reset)(_q->w);
 }
 
 // print filter object internals (taps, buffer)

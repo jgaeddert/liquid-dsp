@@ -208,8 +208,8 @@ void RESAMP2(_print)(RESAMP2() _q)
 // clear internal buffer
 void RESAMP2(_clear)(RESAMP2() _q)
 {
-    WINDOW(_clear)(_q->w0);
-    WINDOW(_clear)(_q->w1);
+    WINDOW(_reset)(_q->w0);
+    WINDOW(_reset)(_q->w1);
 
     _q->toggle = 0;
 }

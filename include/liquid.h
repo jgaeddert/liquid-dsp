@@ -317,8 +317,8 @@ void WINDOW(_print)(WINDOW() _q);                               \
 /* print window object to stdout (with extra information)   */  \
 void WINDOW(_debug_print)(WINDOW() _q);                         \
                                                                 \
-/* clear/reset window object (initialize to zeros)          */  \
-void WINDOW(_clear)(WINDOW() _q);                               \
+/* reset window object (initialize to zeros)                */  \
+void WINDOW(_reset)(WINDOW() _q);                               \
                                                                 \
 /* read window buffer contents                              */  \
 /*  _q      : window object                                 */  \

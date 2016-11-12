@@ -145,8 +145,8 @@ void PRESYNC(_print)(PRESYNC() _q)
 
 void PRESYNC(_reset)(PRESYNC() _q)
 {
-    WINDOW(_clear)(_q->rx_i);
-    WINDOW(_clear)(_q->rx_q);
+    WINDOW(_reset)(_q->rx_i);
+    WINDOW(_reset)(_q->rx_q);
 }
 
 // correlate input sequence with particular 

@@ -221,7 +221,7 @@ void detector_cccf_print(detector_cccf _q)
 void detector_cccf_reset(detector_cccf _q)
 {
     // reset internal state
-    windowcf_clear(_q->buffer);
+    windowcf_reset(_q->buffer);
     wdelayf_clear(_q->x2);
 
     // reset internal state

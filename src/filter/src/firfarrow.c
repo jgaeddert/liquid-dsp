@@ -160,7 +160,7 @@ void FIRFARROW(_print)(FIRFARROW() _q)
 void FIRFARROW(_reset)(FIRFARROW() _q)
 {
 #if FIRFARROW_USE_DOTPROD
-    WINDOW(_clear)(_q->w);
+    WINDOW(_reset)(_q->w);
 #else
     unsigned int i;
     for (i=0; i<_q->h_len; i++)

@@ -179,7 +179,7 @@ void FIRDECIM(_print)(FIRDECIM() _q)
 // clear decimator object
 void FIRDECIM(_clear)(FIRDECIM() _q)
 {
-    WINDOW(_clear)(_q->w);
+    WINDOW(_reset)(_q->w);
 }
 
 // execute decimator

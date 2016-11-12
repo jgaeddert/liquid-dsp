@@ -253,7 +253,7 @@ void FIRFILT(_destroy)(FIRFILT() _q)
 void FIRFILT(_reset)(FIRFILT() _q)
 {
 #if LIQUID_FIRFILT_USE_WINDOW
-    WINDOW(_clear)(_q->w);
+    WINDOW(_reset)(_q->w);
 #else
     unsigned int i;
     for (i=0; i<_q->w_len; i++)
