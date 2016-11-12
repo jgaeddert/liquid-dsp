@@ -188,7 +188,7 @@ void bpacketsync_print(bpacketsync _q)
 void bpacketsync_reset(bpacketsync _q)
 {
     // clear received sequence buffer
-    bsequence_clear(_q->brx);
+    bsequence_reset(_q->brx);
 
     // reset counters
     _q->num_bytes_received  = 0;

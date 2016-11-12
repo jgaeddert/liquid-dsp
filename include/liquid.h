@@ -6502,7 +6502,7 @@ bsequence bsequence_create(unsigned int num_bits);
 void bsequence_destroy(bsequence _bs);
 
 // Clear binary sequence (set to 0's)
-void bsequence_clear(bsequence _bs);
+void bsequence_reset(bsequence _bs);
 
 // initialize sequence on external array
 void bsequence_init(bsequence _bs,
