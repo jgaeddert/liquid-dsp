@@ -354,48 +354,49 @@ void flexframesync_execute_seekpn(flexframesync _q,
     float complex * v = qdetector_cccf_execute(_q->detector, _x);
 
     // check if frame has been detected
-    if (v != NULL) {
-        // get estimates
-        _q->tau_hat   = qdetector_cccf_get_tau  (_q->detector);
-        _q->gamma_hat = qdetector_cccf_get_gamma(_q->detector);
-        _q->dphi_hat  = qdetector_cccf_get_dphi (_q->detector);
-        _q->phi_hat   = qdetector_cccf_get_phi  (_q->detector);
+    if (v == NULL)
+        return;
+
+    // get estimates
+    _q->tau_hat   = qdetector_cccf_get_tau  (_q->detector);
+    _q->gamma_hat = qdetector_cccf_get_gamma(_q->detector);
+    _q->dphi_hat  = qdetector_cccf_get_dphi (_q->detector);
+    _q->phi_hat   = qdetector_cccf_get_phi  (_q->detector);
 
 #if DEBUG_FLEXFRAMESYNC_PRINT
-        printf("***** frame detected! tau-hat:%8.4f, dphi-hat:%8.4f, gamma:%8.2f dB\n",
-                _q->tau_hat, _q->dphi_hat, 20*log10f(_q->gamma_hat));
+    printf("***** frame detected! tau-hat:%8.4f, dphi-hat:%8.4f, gamma:%8.2f dB\n",
+            _q->tau_hat, _q->dphi_hat, 20*log10f(_q->gamma_hat));
 #endif
 
-        // set appropriate filterbank index
-        if (_q->tau_hat > 0) {
-            _q->pfb_index = (unsigned int)(      _q->tau_hat  * _q->npfb) % _q->npfb;
-            _q->mf_counter = 0;
-        } else {
-            _q->pfb_index = (unsigned int)((1.0f+_q->tau_hat) * _q->npfb) % _q->npfb;
-            _q->mf_counter = 1;
-        }
-        
-        // output filter scale (gain estimate, scaled by 1/2 for k=2 samples/symbol)
-        firpfb_crcf_set_scale(_q->mf, 0.5f / _q->gamma_hat);
-
-        // set frequency/phase of mixer
-        nco_crcf_set_frequency(_q->mixer, _q->dphi_hat);
-        nco_crcf_set_phase    (_q->mixer, _q->phi_hat );
-
-        // update state
-        _q->state = FLEXFRAMESYNC_STATE_RXPREAMBLE;
-
-#if DEBUG_FLEXFRAMESYNC
-        // the debug_qdetector_flush prevents samples from being written twice
-        _q->debug_qdetector_flush = 1;
-#endif
-        // run buffered samples through synchronizer
-        unsigned int buf_len = qdetector_cccf_get_buf_len(_q->detector);
-        flexframesync_execute(_q, v, buf_len);
-#if DEBUG_FLEXFRAMESYNC
-        _q->debug_qdetector_flush = 0;
-#endif
+    // set appropriate filterbank index
+    if (_q->tau_hat > 0) {
+        _q->pfb_index = (unsigned int)(      _q->tau_hat  * _q->npfb) % _q->npfb;
+        _q->mf_counter = 0;
+    } else {
+        _q->pfb_index = (unsigned int)((1.0f+_q->tau_hat) * _q->npfb) % _q->npfb;
+        _q->mf_counter = 1;
     }
+    
+    // output filter scale (gain estimate, scaled by 1/2 for k=2 samples/symbol)
+    firpfb_crcf_set_scale(_q->mf, 0.5f / _q->gamma_hat);
+
+    // set frequency/phase of mixer
+    nco_crcf_set_frequency(_q->mixer, _q->dphi_hat);
+    nco_crcf_set_phase    (_q->mixer, _q->phi_hat );
+
+    // update state
+    _q->state = FLEXFRAMESYNC_STATE_RXPREAMBLE;
+
+#if DEBUG_FLEXFRAMESYNC
+    // the debug_qdetector_flush prevents samples from being written twice
+    _q->debug_qdetector_flush = 1;
+#endif
+    // run buffered samples through synchronizer
+    unsigned int buf_len = qdetector_cccf_get_buf_len(_q->detector);
+    flexframesync_execute(_q, v, buf_len);
+#if DEBUG_FLEXFRAMESYNC
+    _q->debug_qdetector_flush = 0;
+#endif
 }
 
 // step receiver mixer, matched filter, decimator
