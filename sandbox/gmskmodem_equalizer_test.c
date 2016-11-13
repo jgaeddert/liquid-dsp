@@ -41,9 +41,7 @@ int main(int argc, char*argv[])
     float        beta        = 0.30f;   // GMSK bandwidth-time factor
     unsigned int p           = 3;       // equalizer length (symbols, hp_len = 2*k*p+1)
     float        mu          = 0.10f;   // learning rate
-    
     unsigned int nfft        = 1200;    // spectrum estimate FFT size
-    float        alpha       = 0.001f;  // spectrum averaging bandwidth
 
     int dopt;
     while ((dopt = getopt(argc,argv,"hn:k:m:b:p:u:")) != EOF) {
@@ -151,8 +149,8 @@ int main(int argc, char*argv[])
     //
     // run many trials get get average spectrum
     //
-    spgramcf periodogram_tx = spgramcf_create_kaiser(nfft, nfft/2, 8.0f);
-    spgramcf periodogram_rx = spgramcf_create_kaiser(nfft, nfft/2, 8.0f);
+    spgramcf periodogram_tx = spgramcf_create_default(nfft);
+    spgramcf periodogram_rx = spgramcf_create_default(nfft);
 
     firfilt_cccf mf = firfilt_cccf_create(hp, hp_len);
 
@@ -166,16 +164,16 @@ int main(int argc, char*argv[])
         firfilt_cccf_execute_block(mf, buf_tx, k, buf_rx);
 
         // accumulate spectrum average
-        spgramcf_accumulate_psd(periodogram_tx, buf_tx, alpha, k);
-        spgramcf_accumulate_psd(periodogram_rx, buf_rx, alpha, k);
+        spgramcf_write(periodogram_tx, buf_tx, k);
+        spgramcf_write(periodogram_rx, buf_rx, k);
     }
     firfilt_cccf_destroy(mf);
 
     // write accumulated output PSD
     float X[nfft];
     float Y[nfft];
-    spgramcf_write_accumulation(periodogram_tx, X);
-    spgramcf_write_accumulation(periodogram_rx, Y);
+    spgramcf_get_psd(periodogram_tx, X);
+    spgramcf_get_psd(periodogram_rx, Y);
 
     // destroy periodogram objects
     spgramcf_destroy(periodogram_tx);

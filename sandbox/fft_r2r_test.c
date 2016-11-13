@@ -31,6 +31,8 @@
 #include <getopt.h>
 #include <complex.h>
 
+#include "liquid.internal.h"
+
 #ifdef HAVE_FFTW3_H
 #  include <fftw3.h>
 #else
