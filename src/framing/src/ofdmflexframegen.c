@@ -245,7 +245,7 @@ void ofdmflexframegen_reset(ofdmflexframegen _q)
     _q->frame_complete       = 0;
     _q->header_symbol_index  = 0;
     _q->payload_symbol_index = 0;
-    _q->buf_index            = 0;
+    _q->buf_index            = _q->frame_len;
 
     // reset internal OFDM frame generator object
     // NOTE: this is important for appropriately setting the pilot phases
