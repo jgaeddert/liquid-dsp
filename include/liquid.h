@@ -2513,6 +2513,19 @@ void FIRPFB(_push)(FIRPFB() _q, TI _x);                         \
 void FIRPFB(_execute)(FIRPFB()     _q,                          \
                       unsigned int _i,                          \
                       TO *         _y);                         \
+                                                                \
+/* execute the filter on a block of input samples; the      */  \
+/* input and output buffers may be the same                 */  \
+/*  _q      : firpfb object                                 */  \
+/*  _i      : index of filter to use                        */  \
+/*  _x      : pointer to input array [size: _n x 1]         */  \
+/*  _n      : number of input, output samples               */  \
+/*  _y      : pointer to output array [size: _n x 1]        */  \
+void FIRPFB(_execute_block)(FIRPFB()     _q,                    \
+                            unsigned int _i,                    \
+                            TI *         _x,                    \
+                            unsigned int _n,                    \
+                            TO *         _y);                   \
 
 LIQUID_FIRPFB_DEFINE_API(FIRPFB_MANGLE_RRRF,
                          float,

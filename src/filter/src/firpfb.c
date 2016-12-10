@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2015 Joseph Gaeddert
+ * Copyright (c) 2007 - 2016 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -342,5 +342,28 @@ void FIRPFB(_execute)(FIRPFB()     _q,
 
     // apply scaling factor
     *_y *= _q->scale;
+}
+
+// execute the filter on a block of input samples; the
+// input and output buffers may be the same
+//  _q      : firpfb object
+//  _i      : index of filter to use
+//  _x      : pointer to input array [size: _n x 1]
+//  _n      : number of input, output samples
+//  _y      : pointer to output array [size: _n x 1]
+void FIRPFB(_execute_block)(FIRPFB()     _q,
+                            unsigned int _i,
+                            TI *         _x,
+                            unsigned int _n,
+                            TO *         _y)
+{
+    unsigned int i;
+    for (i=0; i<_n; i++) {
+        // push sample into filter
+        FIRPFB(_push)(_q, _x[i]);
+
+        // compute output at appropriate index
+        FIRPFB(_execute)(_q, _i, &_y[i]);
+    }
 }
 
