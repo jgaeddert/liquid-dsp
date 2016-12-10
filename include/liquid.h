@@ -5573,7 +5573,7 @@ void fskmod_modulate(fskmod                 _q,
 
 
 
-// CP-FSK demodulator
+// FSK demodulator
 typedef struct fskdem_s * fskdem;
 
 // create fskdem object (frequency demodulator)
