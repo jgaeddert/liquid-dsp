@@ -3179,6 +3179,42 @@ LIQUID_MSRESAMP_DEFINE_API(MSRESAMP_MANGLE_CCCF,
                            liquid_float_complex,
                            liquid_float_complex)
 
+//
+// Direct digital [up/down] synthesizer
+//
+
+#define DDS_MANGLE_CCCF(name)  LIQUID_CONCAT(dds_cccf,name)
+
+#define LIQUID_DDS_DEFINE_API(DDS,TO,TC,TI)                     \
+typedef struct DDS(_s) * DDS();                                 \
+                                                                \
+/* create digital synthesizer object                        */  \
+DDS() DDS(_create)(unsigned int _num_stages,                    \
+                   float _fc,                                   \
+                   float _bw,                                   \
+                   float _As);                                  \
+                                                                \
+/* destroy digital synthesizer object                       */  \
+void DDS(_destroy)(DDS() _q);                                   \
+                                                                \
+/* print synthesizer object internals to stdout             */  \
+void DDS(_print)(DDS() _q);                                     \
+                                                                \
+/* reset synthesizer object internals                       */  \
+void DDS(_reset)(DDS() _q);                                     \
+                                                                \
+void DDS(_decim_execute)(DDS() _q,                              \
+                         TI * _x,                               \
+                         TO * _y);                              \
+void DDS(_interp_execute)(DDS() _q,                             \
+                          TI _x,                                \
+                          TO * _y);                             \
+
+LIQUID_DDS_DEFINE_API(DDS_MANGLE_CCCF,
+                      liquid_float_complex,
+                      liquid_float_complex,
+                      liquid_float_complex)
+
 
 // 
 // Symbol timing recovery (symbol synchronizer)

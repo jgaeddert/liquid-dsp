@@ -123,6 +123,14 @@ This directory contains all the examples for interfacing the liquid modules.
     sinusoidal input.  The output distortion ratio is computed, and the
     time-domain results are written to a file.
 
+ * `dds_cccf_example.c`:
+    Direct digital synthesizer example.  This example demonstrates
+    the interface to the direct digital synthesizer.  A baseband
+    pulse is generated and then efficiently up-converted
+    (interpolated and mixed up) using the DDS object.  The resulting
+    signal is then down-converted (mixed down and decimated) using
+    the same DDS object.  Results are written to a file.
+
  * `dotprod_cccf_example.c`:
     This example demonstrates the interface to the complex
     floating-point dot product object (dotprod_cccf).

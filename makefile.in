@@ -432,6 +432,7 @@ filter_objects :=						\
 
 # list explicit targets and dependencies here
 filter_includes :=						\
+	src/filter/src/dds.c					\
 	src/filter/src/fftfilt.c				\
 	src/filter/src/firdecim.c				\
 	src/filter/src/firfarrow.c				\
@@ -1371,6 +1372,7 @@ example_programs :=						\
 	examples/cpfskmodem_psd_example				\
 	examples/cvsd_example					\
 	examples/detector_cccf_example				\
+	examples/dds_cccf_example				\
 	examples/dotprod_rrrf_example				\
 	examples/dotprod_cccf_example				\
 	examples/eqlms_cccf_block_example			\

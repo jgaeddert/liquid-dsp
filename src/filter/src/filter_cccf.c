@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2015 Joseph Gaeddert
+ * Copyright (c) 2007 - 2016 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -32,6 +32,7 @@
 
 // 
 #define AUTOCORR(name)      LIQUID_CONCAT(autocorr_cccf,name)
+#define DDS(name)           LIQUID_CONCAT(dds_cccf,name)
 #define FFTFILT(name)       LIQUID_CONCAT(fftfilt_cccf,name)
 #define FIRDECIM(name)      LIQUID_CONCAT(firdecim_cccf,name)
 #define FIRFILT(name)       LIQUID_CONCAT(firfilt_cccf,name)
@@ -66,6 +67,7 @@
 
 // source files
 #include "autocorr.c"
+#include "dds.c"
 #include "fftfilt.c"
 #include "firdecim.c"
 #include "firfilt.c"
