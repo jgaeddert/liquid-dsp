@@ -120,9 +120,9 @@ void autotest_windowf()
     windowf_read(w,&r);
     CONTEND_SAME_DATA(r,test7,10*sizeof(float));
 
-    // clear
+    // reset
     // 0 0 0 0 0 0 0 0 0 0
-    windowf_clear(w);
+    windowf_reset(w);
 
     windowf_read(w, &r);
     CONTEND_SAME_DATA(r,test8,10*sizeof(float));

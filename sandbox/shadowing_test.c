@@ -48,18 +48,9 @@ int main(int argc, char*argv[])
     // destroy filter
     iirfilt_rrrf_destroy(filter);
 
-    // create spectral periodogram for estimating
-    spgramf q = spgramf_create_default(nfft);
-
-    // push resulting sample through periodogram
-    spgramf_accumulate_psd(q, G, 0.01, num_samples);
-
-    // compute power spectral density output
+    // estimate power spectral density output
     float psd[nfft];
-    spgramf_write_accumulation(q, psd);
-
-    // destroy objects
-    spgramf_destroy(q);
+    spgramf_estimate_psd(nfft, G, num_samples, psd);
 
     //
     // export output file

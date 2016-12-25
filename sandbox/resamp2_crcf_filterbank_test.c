@@ -59,7 +59,7 @@ int main() {
         resamp2_crcf_analyzer_execute(q, &x[2*i], &y[i][0]);
 
     // clear resampler
-    resamp2_crcf_clear(q);
+    resamp2_crcf_reset(q);
 
     // run the resampler as a two-channel synthesis filterbank
     for (i=0; i<n; i++)

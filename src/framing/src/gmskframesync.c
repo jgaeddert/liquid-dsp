@@ -307,7 +307,7 @@ void gmskframesync_reset(gmskframesync _q)
     _q->payload_counter  = 0;
     
     // clear pre-demod buffer
-    windowcf_clear(_q->buffer);
+    windowcf_reset(_q->buffer);
 
     // reset internal objects
     detector_cccf_reset(_q->frame_detector);

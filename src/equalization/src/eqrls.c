@@ -198,7 +198,7 @@ void EQRLS(_reset)(EQRLS() _q)
     memmove(_q->w0, _q->h0, (_q->p)*sizeof(T));
 
     // clear window object
-    WINDOW(_clear)(_q->buffer);
+    WINDOW(_reset)(_q->buffer);
 }
 
 // get learning rate of equalizer

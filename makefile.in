@@ -432,6 +432,7 @@ filter_objects :=						\
 
 # list explicit targets and dependencies here
 filter_includes :=						\
+	src/filter/src/autocorr.c				\
 	src/filter/src/fftfilt.c				\
 	src/filter/src/firdecim.c				\
 	src/filter/src/firfarrow.c				\

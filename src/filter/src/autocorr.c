@@ -95,8 +95,8 @@ void AUTOCORR(_destroy)(AUTOCORR() _q)
 void AUTOCORR(_reset)(AUTOCORR() _q)
 {
     // clear/reset internal window buffers
-    WINDOW(_clear)(_q->w);
-    WINDOW(_clear)(_q->wdelay);
+    WINDOW(_reset)(_q->w);
+    WINDOW(_reset)(_q->wdelay);
     
     // reset internal squared energy buffer
     _q->e2_sum = 0.0;

@@ -106,8 +106,6 @@ FIRHILB() FIRHILB(_create)(unsigned int _m,
     // create windows for upper and lower polyphase filter branches
     q->w1 = WINDOW(_create)(2*(q->m));
     q->w0 = WINDOW(_create)(2*(q->m));
-    WINDOW(_clear)(q->w0);
-    WINDOW(_clear)(q->w1);
 
     // create internal dot product object
     q->dpq = DOTPROD(_create)(q->hq, q->hq_len);
@@ -158,8 +156,8 @@ void FIRHILB(_print)(FIRHILB() _q)
 void FIRHILB(_reset)(FIRHILB() _q)
 {
     // clear window buffers
-    WINDOW(_clear)(_q->w0);
-    WINDOW(_clear)(_q->w1);
+    WINDOW(_reset)(_q->w0);
+    WINDOW(_reset)(_q->w1);
 
     // reset toggle flag
     _q->toggle = 0;

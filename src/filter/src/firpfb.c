@@ -301,7 +301,7 @@ void FIRPFB(_print)(FIRPFB() _q)
 // clear/reset firpfb object internal state
 void FIRPFB(_reset)(FIRPFB() _q)
 {
-    WINDOW(_clear)(_q->w);
+    WINDOW(_reset)(_q->w);
 }
 
 // set output scaling for filter

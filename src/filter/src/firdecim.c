@@ -76,7 +76,7 @@ FIRDECIM() FIRDECIM(_create)(unsigned int _M,
     q->dp = DOTPROD(_create)(q->h, q->h_len);
 
     // reset filter state (clear buffer)
-    FIRDECIM(_clear)(q);
+    FIRDECIM(_reset)(q);
 
     return q;
 }
@@ -177,9 +177,9 @@ void FIRDECIM(_print)(FIRDECIM() _q)
 }
 
 // clear decimator object
-void FIRDECIM(_clear)(FIRDECIM() _q)
+void FIRDECIM(_reset)(FIRDECIM() _q)
 {
-    WINDOW(_clear)(_q->w);
+    WINDOW(_reset)(_q->w);
 }
 
 // execute decimator

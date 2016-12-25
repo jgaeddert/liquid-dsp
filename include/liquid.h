@@ -232,7 +232,7 @@ void CBUFFER(_print)(CBUFFER() _q);                             \
 void CBUFFER(_debug_print)(CBUFFER() _q);                       \
                                                                 \
 /* clear internal buffer                                    */  \
-void CBUFFER(_clear)(CBUFFER() _q);                             \
+void CBUFFER(_reset)(CBUFFER() _q);                             \
                                                                 \
 /* get the number of elements currently in the buffer       */  \
 unsigned int CBUFFER(_size)(CBUFFER() _q);                      \
@@ -317,8 +317,8 @@ void WINDOW(_print)(WINDOW() _q);                               \
 /* print window object to stdout (with extra information)   */  \
 void WINDOW(_debug_print)(WINDOW() _q);                         \
                                                                 \
-/* clear/reset window object (initialize to zeros)          */  \
-void WINDOW(_clear)(WINDOW() _q);                               \
+/* reset window object (initialize to zeros)                */  \
+void WINDOW(_reset)(WINDOW() _q);                               \
                                                                 \
 /* read window buffer contents                              */  \
 /*  _q      : window object                                 */  \
@@ -381,7 +381,7 @@ void WDELAY(_destroy)(WDELAY() _q);                             \
 void WDELAY(_print)(WDELAY() _q);                               \
                                                                 \
 /* clear/reset state of object                              */  \
-void WDELAY(_clear)(WDELAY() _q);                               \
+void WDELAY(_reset)(WDELAY() _q);                               \
                                                                 \
 /* read delayed sample from delay buffer object             */  \
 /*  _q  :   delay buffer object                             */  \
@@ -2648,9 +2648,8 @@ IIRINTERP() IIRINTERP(_create)(unsigned int _M,                 \
 /* create decimator with default Butterworth prototype      */  \
 /*  _M      : decimation factor                             */  \
 /*  _order  : filter order                                  */  \
-IIRINTERP() IIRINTERP(_create_default)(                         \
-                unsigned int _M,                                \
-                unsigned int _order);                           \
+IIRINTERP() IIRINTERP(_create_default)(unsigned int _M,         \
+                                       unsigned int _order);    \
                                                                 \
 /* create interpolator from prototype                       */  \
 /*  _M      : interpolation factor                          */  \
@@ -2757,7 +2756,7 @@ void FIRDECIM(_destroy)(FIRDECIM() _q);                         \
 void FIRDECIM(_print)(FIRDECIM() _q);                           \
                                                                 \
 /* reset decimator object internal state                    */  \
-void FIRDECIM(_clear)(FIRDECIM() _q);                           \
+void FIRDECIM(_reset)(FIRDECIM() _q);                           \
                                                                 \
 /* execute decimator on _M input samples                    */  \
 /*  _q      : decimator object                              */  \
@@ -2816,9 +2815,8 @@ IIRDECIM() IIRDECIM(_create)(unsigned int _M,                   \
 /* create decimator with default Butterworth prototype      */  \
 /*  _M      : decimation factor                             */  \
 /*  _order  : filter order                                  */  \
-IIRDECIM() IIRDECIM(_create_default)(                           \
-                unsigned int _M,                                \
-                unsigned int _order);                           \
+IIRDECIM() IIRDECIM(_create_default)(unsigned int _M,           \
+                                     unsigned int _order);      \
                                                                 \
 /* create decimator from prototype                          */  \
 /*  _M      : decimation factor                             */  \
@@ -2923,7 +2921,7 @@ void RESAMP2(_destroy)(RESAMP2() _q);                           \
 void RESAMP2(_print)(RESAMP2() _q);                             \
                                                                 \
 /* reset internal buffer                                    */  \
-void RESAMP2(_clear)(RESAMP2() _q);                             \
+void RESAMP2(_reset)(RESAMP2() _q);                             \
                                                                 \
 /* get resampler filter delay (semi-length m)               */  \
 unsigned int RESAMP2(_get_delay)(RESAMP2() _q);                 \
@@ -6263,7 +6261,7 @@ void chromosome_print(chromosome _c);
 void chromosome_printf(chromosome _c);
 
 // clear chromosome (set traits to zero)
-void chromosome_clear(chromosome _c);
+void chromosome_reset(chromosome _c);
 
 // initialize chromosome on integer values
 void chromosome_init(chromosome _c,
@@ -6515,7 +6513,7 @@ bsequence bsequence_create(unsigned int num_bits);
 void bsequence_destroy(bsequence _bs);
 
 // Clear binary sequence (set to 0's)
-void bsequence_clear(bsequence _bs);
+void bsequence_reset(bsequence _bs);
 
 // initialize sequence on external array
 void bsequence_init(bsequence _bs,

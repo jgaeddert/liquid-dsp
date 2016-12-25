@@ -237,9 +237,7 @@ int main(int argc, char*argv[])
     // compute power spectral density of received signal
     unsigned int nfft = 1200;
     float psd[nfft];
-    spgramcf periodogram = spgramcf_create_kaiser(nfft, nfft/2, 8.0f);
-    spgramcf_estimate_psd(periodogram, y, num_samples, psd);
-    spgramcf_destroy(periodogram);
+    spgramcf_estimate_psd(nfft, y, num_samples, psd);
 
     // 
     // export results

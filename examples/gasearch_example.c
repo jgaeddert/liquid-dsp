@@ -104,7 +104,7 @@ float utility_callback(void * _userdata, chromosome _c)
         u += v;
     }
 
-    return sqrtf(fabsf(u-1.0));
+    return sqrtf(fabsf(u-1.0f));
 }
 
 // peak callback function; value nearest {0.5, 0.5, 0.5, ...}
