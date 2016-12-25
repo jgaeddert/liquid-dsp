@@ -835,7 +835,7 @@ struct IIRFILTSOS(_s) {                                         \
     TO v[3];    /* Direct form II buffer                    */  \
 };                                                              \
                                                                 \
-/* create 2nd-ordr infinite impulse reponse filter          */  \
+/* create 2nd-order infinite impulse reponse filter         */  \
 /*  _b      : feed-forward coefficients [size: _3 x 1]      */  \
 /*  _a      : feed-back coefficients    [size: _3 x 1]      */  \
 IIRFILTSOS() IIRFILTSOS(_create)(TC * _b,                       \
