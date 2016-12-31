@@ -50,8 +50,6 @@ AC_DEFUN([AX_EXT],
   AC_REQUIRE([AX_GCC_X86_CPUID])
 
   AX_GCC_X86_CPUID(0x00000001)
-  ecx=`echo $ax_cv_gcc_x86_cpuid_0x00000001 | cut -d ":" -f 3`
-  edx=`echo $ax_cv_gcc_x86_cpuid_0x00000001 | cut -d ":" -f 4`
   ecx=0
   edx=0
   if test "$ax_cv_gcc_x86_cpuid_0x00000001" != "unknown";
