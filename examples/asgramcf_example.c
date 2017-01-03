@@ -33,8 +33,6 @@ int main() {
     float dphi   = 0.003f;  // frequency of sinusoidal frequency drift
 
     float complex x[nfft];
-    float maxval;
-    float maxfreq;
     char ascii[nfft+1];
     ascii[nfft] = '\0'; // append null character to end of string
     float nstd = powf(10.0f,noise_floor/20.0f);  // noise standard deviation
@@ -56,20 +54,8 @@ int main() {
         // write block of samples to the spectrogram object
         asgramcf_write(q, x, nfft);
 
-        // execute the spectrogram
-        asgramcf_execute(q, ascii, &maxval, &maxfreq);
-
-        // print the spectrogram to stdout
-        printf(" > %s < pk%5.1f dB [%5.2f]\n", ascii, maxval, maxfreq);
-
-        // optional: find peak and print arrow pointing to peak
-        int peak_index = (int)( (maxfreq+0.5) * nfft );
-        peak_index = peak_index < 0      ? 0      : peak_index;
-        peak_index = peak_index > nfft-1 ? nfft-1 : peak_index;
-        memset(ascii, ' ', nfft);   // clear ascii array with spaces
-        ascii[peak_index] = '^';    // set peak index to caret character
-        printf(" > %s < peak location\r", ascii);
-        fflush(stdout);
+        // print result to screen
+        asgramcf_print(q);
 
         // sleep for some time before generating the next frame
         usleep(msdelay*1000);

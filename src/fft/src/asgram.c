@@ -158,20 +158,11 @@ void ASGRAM(_execute)(ASGRAM()  _q,
                       float *   _peakval,
                       float *   _peakfreq)
 {
-#if 0
     // execute spectral periodogram
-    SPGRAM(_execute)(_q->periodogram, _q->X);
+    SPGRAM(_get_psd)(_q->periodogram, _q->psd);
+    SPGRAM(_reset)(_q->periodogram);
 
-    // compute PSD magnitude and apply FFT shift
     unsigned int i;
-    for (i=0; i<_q->nfft; i++)
-        _q->psd[i] = 10*log10f(cabsf(_q->X[(i + _q->nfft/2)%_q->nfft]));
-#else
-    unsigned int i;
-    for (i=0; i<_q->nfft; i++)
-        _q->psd[i] = 0.0f;
-#endif
-
     unsigned int j;
     for (i=0; i<_q->nfft; i++) {
         // find peak
@@ -181,19 +172,11 @@ void ASGRAM(_execute)(ASGRAM()  _q,
         }
 
         // determine ascii level (which character to use)
-#if 0
-        for (j=0; j<_q->num_levels-1; j++) {
-            if ( _q->psd[i] > ( _q->offset - j*(_q->scale)) )
-                break;
-        }
-        _ascii[i] = _q->levelchar[j];
-#else
         _ascii[i] = _q->levelchar[0];
         for (j=0; j<_q->num_levels; j++) {
             if ( _q->psd[i] > _q->levels[j] )
                 _ascii[i] = _q->levelchar[j];
         }
-#endif
     }
 
     // append null character to end of string
