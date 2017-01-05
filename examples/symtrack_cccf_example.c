@@ -39,7 +39,7 @@ int main(int argc, char*argv[])
 {
     // options
     int          ftype       = LIQUID_FIRFILT_ARKAISER;
-    int          ms          = LIQUID_MODEM_QPSK;
+    int          ms          = LIQUID_MODEM_QAM16;
     unsigned int k           = 2;       // samples per symbol
     unsigned int m           = 7;       // filter delay (symbols)
     float        beta        = 0.20f;   // filter excess bandwidth factor
@@ -47,10 +47,10 @@ int main(int argc, char*argv[])
     unsigned int hc_len      =   4;     // channel filter length
     float        noise_floor = -60.0f;  // noise floor [dB]
     float        SNRdB       = 30.0f;   // signal-to-noise ratio [dB]
-    float        bandwidth   =  0.02f;  // loop filter bandwidth
+    float        bandwidth   =  0.10f;  // loop filter bandwidth
     float        tau         = -0.2f;   // fractional symbol offset
     float        rate        = 1.001f;  // sample rate offset
-    float        dphi        =  0.01f;  // carrier frequency offset [radians/sample]
+    float        dphi        =  0.02f;  // carrier frequency offset [radians/sample]
     float        phi         =  2.1f;   // carrier phase offset [radians]
 
     unsigned int nfft        =   2400;  // spectral periodogram FFT size
@@ -100,7 +100,7 @@ int main(int argc, char*argv[])
     unsigned int i;
 
     // buffers
-    unsigned int    buf_len = 400;      // buffer size
+    unsigned int    buf_len = 800;      // buffer size
     float complex   x   [buf_len];      // original signal
     float complex   y   [buf_len];      // channel output
     float complex   syms[buf_len];      // recovered symbols
@@ -118,7 +118,7 @@ int main(int argc, char*argv[])
 
     // create symbol tracking synchronizer
     symtrack_cccf symtrack = symtrack_cccf_create(ftype,k,m,beta,ms);
-    symtrack_cccf_set_bandwidth(symtrack,0.05f);
+    symtrack_cccf_set_bandwidth(symtrack,bandwidth);
 
     // create spectral periodogram for estimating spectrum
     spgramcf periodogram = spgramcf_create_default(nfft);
