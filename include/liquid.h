@@ -1401,11 +1401,11 @@ void ASGRAM(_reset)(ASGRAM() _q);                               \
                                                                 \
 /* set scale and offset for spectrogram                     */  \
 /*  _q      :   asgram object                               */  \
-/*  _offset :   signal offset level [dB]                    */  \
-/*  _scale  :   signal scale [dB]                           */  \
+/*  _ref    :   signal reference level [dB]                 */  \
+/*  _div    :   signal division [dB]                        */  \
 void ASGRAM(_set_scale)(ASGRAM() _q,                            \
-                        float    _offset,                       \
-                        float    _scale);                       \
+                        float    _ref,                          \
+                        float    _div);                         \
                                                                 \
 /* push a single sample into the asgram object              */  \
 /*  _q      :   asgram object                               */  \

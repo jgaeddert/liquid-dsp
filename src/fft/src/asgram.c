@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2015 Joseph Gaeddert
+ * Copyright (c) 2007 - 2017 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -41,8 +41,8 @@ struct ASGRAM(_s) {
     float        levels[10];    // threshold for signal levels
     char         levelchar[10]; // characters representing levels
     unsigned int num_levels;    // number of levels
-    float        scale;         // dB per division
-    float        offset;        // dB offset (max)
+    float        div;           // dB per division
+    float        ref;           // dB reference value
 };
 
 // create asgram object with size _nfft
@@ -106,23 +106,23 @@ void ASGRAM(_reset)(ASGRAM() _q)
 
 // set scale and offset for spectrogram
 //  _q      :   asgram object
-//  _offset :   signal offset level [dB]
-//  _scale  :   signal scale [dB]
+//  _ref    :   signal reference level [dB]
+//  _div    :   signal division [dB]
 void ASGRAM(_set_scale)(ASGRAM() _q,
-                        float    _offset,
-                        float    _scale)
+                        float    _ref,
+                        float    _div)
 {
-    if (_scale <= 0.0f) {
-        fprintf(stderr,"ASGRAM(_set_scale)(), scale must be greater than zero\n");
+    if (_div <= 0.0f) {
+        fprintf(stderr,"ASGRAM(_set_scale)(), div must be greater than zero\n");
         exit(1);
     }
 
-    _q->offset = _offset;
-    _q->scale  = _scale;
+    _q->ref = _ref;
+    _q->div  = _div;
 
     unsigned int i;
     for (i=0; i<_q->num_levels; i++)
-        _q->levels[i] = _q->offset + i*_q->scale;
+        _q->levels[i] = _q->ref + i*_q->div;
 }
 
 // push a single sample into the asgram object
