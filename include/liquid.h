@@ -1407,6 +1407,12 @@ void ASGRAM(_set_scale)(ASGRAM() _q,                            \
                         float    _ref,                          \
                         float    _div);                         \
                                                                 \
+/* set display characters for output string                 */  \
+/*  _q      :   asgram object                               */  \
+/*  _ascii  :   10-character display, default: " .,-+*&NM#" */  \
+void ASGRAM(_set_display)(ASGRAM()     _q,                      \
+                          const char * _ascii);                 \
+                                                                \
 /* push a single sample into the asgram object              */  \
 /*  _q      :   asgram object                               */  \
 /*  _x      :   input sample                                */  \

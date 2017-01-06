@@ -74,17 +74,7 @@ ASGRAM() ASGRAM(_create)(unsigned int _nfft)
 
     // power spectral density levels
     q->num_levels = 10;
-    q->levelchar[9] = '#';
-    q->levelchar[8] = 'M';
-    q->levelchar[7] = 'N';
-    q->levelchar[6] = '&';
-    q->levelchar[5] = '*';
-    q->levelchar[4] = '+';
-    q->levelchar[3] = '-';
-    q->levelchar[2] = ',';
-    q->levelchar[1] = '.';
-    q->levelchar[0] = ' ';
-
+    ASGRAM(_set_display)(q," .,-+*&NM#");
     ASGRAM(_set_scale)(q, 0.0f, 10.0f);
 
     return q;
@@ -129,6 +119,23 @@ void ASGRAM(_set_scale)(ASGRAM() _q,
     unsigned int i;
     for (i=0; i<_q->num_levels; i++)
         _q->levels[i] = _q->ref + i*_q->div;
+}
+
+// set display characters for output string
+//  _q      :   asgram object
+//  _ascii  :   10-character display, default: " .,-+*&NM#"
+void ASGRAM(_set_display)(ASGRAM()     _q,
+                          const char * _ascii)
+{
+    unsigned int i;
+    for (i=0; i<10; i++) {
+        if (_ascii[i] == '\0') {
+            fprintf(stderr,"warning: asgram%s_set_display(), invalid use of null character\n", EXTENSION);
+            _q->levelchar[i] = '?';
+        } else {
+            _q->levelchar[i] = _ascii[i];
+        }
+    }
 }
 
 // push a single sample into the asgram object
@@ -189,19 +196,19 @@ void ASGRAM(_execute)(ASGRAM() _q,
     // down-sample from nfft*p frequency bins to just nfft by retaining
     // one value (e.g. maximum or average) over range.
     for (i=0; i<_q->nfft; i++) {
-#if 1
-        // find average
-        float psd_val = 0.0f;
-        for (j=0; j<_q->p; j++)
-            psd_val += _q->psd[(_q->p*i) + j];
-        psd_val /= (float)(_q->p);
-#else
+#if 0
         // find maximum within 'p' samples
         float psd_val = 0.0f;
         for (j=0; j<_q->p; j++) {
             unsigned int index = (_q->p*i) + j;
             psd_val = (j==0 || _q->psd[index] > psd_val) ? _q->psd[index] : psd_val;
         }
+#else
+        // find average over 'p' samples
+        float psd_val = 0.0f;
+        for (j=0; j<_q->p; j++)
+            psd_val += _q->psd[(_q->p*i) + j];
+        psd_val /= (float)(_q->p);
 #endif
 
         // determine ascii level (which character to use)
