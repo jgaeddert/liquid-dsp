@@ -1292,7 +1292,7 @@ typedef struct SPGRAM(_s) * SPGRAM();                           \
                                                                 \
 /* create spgram object                                     */  \
 /*  _nfft       : FFT size                                  */  \
-/*  _window     : window [size: _window_len x 1]            */  \
+/*  _wtype      : window type, e.g. LIQUID_WINDOW_HAMMING   */  \
 /*  _window_len : window length, _window_len in [1,_nfft]   */  \
 /*  _delay      : delay between transforms, _delay > 0      */  \
 SPGRAM() SPGRAM(_create)(unsigned int _nfft,                    \
