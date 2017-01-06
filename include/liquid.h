@@ -1292,7 +1292,7 @@ typedef struct SPGRAM(_s) * SPGRAM();                           \
                                                                 \
 /* create spgram object                                     */  \
 /*  _nfft       : FFT size                                  */  \
-/*  _window     : window [size: _window_len x 1]            */  \
+/*  _wtype      : window type, e.g. LIQUID_WINDOW_HAMMING   */  \
 /*  _window_len : window length, _window_len in [1,_nfft]   */  \
 /*  _delay      : delay between transforms, _delay > 0      */  \
 SPGRAM() SPGRAM(_create)(unsigned int _nfft,                    \
@@ -1401,11 +1401,17 @@ void ASGRAM(_reset)(ASGRAM() _q);                               \
                                                                 \
 /* set scale and offset for spectrogram                     */  \
 /*  _q      :   asgram object                               */  \
-/*  _offset :   signal offset level [dB]                    */  \
-/*  _scale  :   signal scale [dB]                           */  \
+/*  _ref    :   signal reference level [dB]                 */  \
+/*  _div    :   signal division [dB]                        */  \
 void ASGRAM(_set_scale)(ASGRAM() _q,                            \
-                        float    _offset,                       \
-                        float    _scale);                       \
+                        float    _ref,                          \
+                        float    _div);                         \
+                                                                \
+/* set display characters for output string                 */  \
+/*  _q      :   asgram object                               */  \
+/*  _ascii  :   10-character display, default: " .,-+*&NM#" */  \
+void ASGRAM(_set_display)(ASGRAM()     _q,                      \
+                          const char * _ascii);                 \
                                                                 \
 /* push a single sample into the asgram object              */  \
 /*  _q      :   asgram object                               */  \

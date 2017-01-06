@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2015 Joseph Gaeddert
+ * Copyright (c) 2007 - 2017 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -68,7 +68,7 @@ void SPGRAM(_step)(SPGRAM() _q);
 
 // create spgram object
 //  _nfft       : FFT size
-//  _window     : window coefficients [size: _window_len x 1]
+//  _wtype      : window type, e.g. LIQUID_WINDOW_HAMMING
 //  _window_len : window length
 //  _delay      : delay between transforms, _delay > 0
 SPGRAM() SPGRAM(_create)(unsigned int _nfft,
