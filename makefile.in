@@ -650,6 +650,7 @@ framing_benchmarks :=						\
 	src/framing/bench/flexframesync_benchmark.c		\
 	src/framing/bench/framesync64_benchmark.c		\
 	src/framing/bench/gmskframesync_benchmark.c		\
+	src/framing/bench/qdetector_benchmark.c			\
 
 
 # 
