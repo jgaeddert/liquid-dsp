@@ -59,8 +59,8 @@ MV		:= mv -f
 RM		:= rm -f
 SED		:= @SED@
 GREP		:= @GREP@
-AR		:= ar
-RANLIB		:= ranlib
+AR		:= @AR@
+RANLIB		:= @RANLIB@
 
 # flags
 INCLUDE_CFLAGS	= $(addprefix -I ,$(include_dirs))
