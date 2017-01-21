@@ -72,6 +72,10 @@ AC_PROG_SED
 AC_PROG_GREP
 AC_PROG_INSTALL
 AC_PROG_RANLIB
+AN_MAKEVAR([AR], [AC_PROG_AR])
+AN_PROGRAM([ar], [AC_PROG_AR])
+AC_DEFUN([AC_PROG_AR], [AC_CHECK_TOOL(AR, ar, :)])
+AC_PROG_AR
 
 # Check for necessary libraries, library functions
 AC_FUNC_ERROR_AT_LINE
