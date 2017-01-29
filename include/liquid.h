@@ -3744,6 +3744,7 @@ void flexframesync_print(flexframesync _q);
 // reset frame synchronizer internal state
 void flexframesync_reset(flexframesync _q);
 
+// has frame been detected?
 int flexframesync_is_frame_open(flexframesync _q);
 
 // push samples through frame synchronizer
@@ -3893,7 +3894,7 @@ gmskframesync gmskframesync_create(framesync_callback _callback,
 void gmskframesync_destroy(gmskframesync _q);
 void gmskframesync_print(gmskframesync _q);
 void gmskframesync_reset(gmskframesync _q);
-int gmskframesync_is_frame_open(gmskframesync _q);
+int  gmskframesync_is_frame_open(gmskframesync _q);
 void gmskframesync_execute(gmskframesync _q,
                            liquid_float_complex * _x,
                            unsigned int _n);
@@ -3998,7 +3999,7 @@ ofdmflexframesync ofdmflexframesync_create(unsigned int       _M,
 void ofdmflexframesync_destroy(ofdmflexframesync _q);
 void ofdmflexframesync_print(ofdmflexframesync _q);
 void ofdmflexframesync_reset(ofdmflexframesync _q);
-int ofdmflexframesync_is_frame_open(ofdmflexframesync _q);
+int  ofdmflexframesync_is_frame_open(ofdmflexframesync _q);
 void ofdmflexframesync_execute(ofdmflexframesync _q,
                                liquid_float_complex * _x,
                                unsigned int _n);
@@ -6025,7 +6026,7 @@ ofdmframesync ofdmframesync_create(unsigned int           _M,
 void ofdmframesync_destroy(ofdmframesync _q);
 void ofdmframesync_print(ofdmframesync _q);
 void ofdmframesync_reset(ofdmframesync _q);
-int ofdmframesync_is_frame_open(ofdmframesync _q);
+int  ofdmframesync_is_frame_open(ofdmframesync _q);
 void ofdmframesync_execute(ofdmframesync _q,
                            liquid_float_complex * _x,
                            unsigned int _n);
