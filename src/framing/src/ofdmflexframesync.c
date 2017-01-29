@@ -258,6 +258,11 @@ void ofdmflexframesync_reset(ofdmflexframesync _q)
     ofdmframesync_reset(_q->fs);
 }
 
+int ofdmflexframesync_is_frame_open(ofdmflexframesync _q)
+{
+    return ofdmframesync_is_frame_open(_q->fs);
+}
+
 // execute synchronizer object on buffer of samples
 void ofdmflexframesync_execute(ofdmflexframesync _q,
                                float complex * _x,

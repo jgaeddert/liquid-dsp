@@ -326,6 +326,11 @@ void gmskframesync_reset(gmskframesync _q)
         
 }
 
+int gmskframesync_is_frame_open(gmskframesync _q)
+{
+    return (_q->state == STATE_DETECTFRAME) ? 0 : 1;
+}
+
 // execute frame synchronizer
 //  _q      :   frame synchronizer object
 //  _x      :   input sample array [size: _n x 1]

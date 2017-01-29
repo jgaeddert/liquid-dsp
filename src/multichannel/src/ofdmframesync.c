@@ -350,6 +350,11 @@ void ofdmframesync_reset(ofdmframesync _q)
     _q->state = OFDMFRAMESYNC_STATE_SEEKPLCP;
 }
 
+int ofdmframesync_is_frame_open(ofdmframesync _q)
+{
+    return (_q->state == OFDMFRAMESYNC_STATE_SEEKPLCP) ? 0 : 1;
+}
+
 void ofdmframesync_execute(ofdmframesync _q,
                            float complex * _x,
                            unsigned int _n)
