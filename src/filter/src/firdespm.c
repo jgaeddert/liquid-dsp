@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2015 Joseph Gaeddert
+ * Copyright (c) 2007 - 2017 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -129,6 +129,50 @@ void firdespm_run(unsigned int _h_len,
 
     // destroy
     firdespm_destroy(q);
+}
+
+// run filter design for basic low-pass filter
+//  _n      : filter length, _n > 0
+//  _fc     : cutoff frequency, 0 < _fc < 0.5
+//  _As     : stop-band attenuation [dB], _As > 0
+//  _mu     : fractional sample offset, -0.5 < _mu < 0.5 [ignored]
+//  _h      : output coefficient buffer, [size: _n x 1]
+void firdespm_lowpass(unsigned int _n,
+                      float        _fc,
+                      float        _As,
+                      float        _mu,
+                      float *      _h)
+{
+    // validate inputs
+    if (_mu < -0.5f || _mu > 0.5f) {
+        fprintf(stderr,"error: firdespm_lowpass(), _mu (%12.4e) out of range [-0.5,0.5]\n", _mu);
+        exit(1);
+    } else if (_fc < 0.0f || _fc > 0.5f) {
+        fprintf(stderr,"error: firdespm_lowpass(), cutoff frequency (%12.4e) out of range (0, 0.5)\n", _fc);
+        exit(1);
+    } else if (_n == 0) {
+        fprintf(stderr,"error: firdespm_lowpass(), filter length must be greater than zero\n");
+        exit(1);
+    }
+
+    // estimate transition band
+    float ft = estimate_req_filter_df(_As, _n);
+
+    // derived values
+    float fp = _fc - 0.5*ft;     // pass-band cutoff frequency
+    float fs = _fc + 0.5*ft;     // stop-band cutoff frequency
+    liquid_firdespm_btype btype = LIQUID_FIRDESPM_BANDPASS;
+
+    // derived values
+    unsigned int num_bands = 2;
+    float bands[4]   = {0.0f, fp, fs, 0.5f};
+    float des[2]     = {1.0f, 0.0f};
+    float weights[2] = {1.0f, 1.0f};
+    liquid_firdespm_wtype wtype[2] = {LIQUID_FIRDESPM_FLATWEIGHT,
+                                      LIQUID_FIRDESPM_EXPWEIGHT};
+
+    // design filter
+    firdespm_run(_n,num_bands,bands,des,weights,wtype,btype,_h);
 }
 
 // create firdespm object

@@ -1552,14 +1552,26 @@ typedef enum {
 //  _wtype      :   weight types (e.g. LIQUID_FIRDESPM_FLATWEIGHT) [size: _num_bands x 1]
 //  _btype      :   band type (e.g. LIQUID_FIRDESPM_BANDPASS)
 //  _h          :   output coefficients array [size: _h_len x 1]
-void firdespm_run(unsigned int _h_len,
-                  unsigned int _num_bands,
-                  float * _bands,
-                  float * _des,
-                  float * _weights,
+void firdespm_run(unsigned int            _h_len,
+                  unsigned int            _num_bands,
+                  float *                 _bands,
+                  float *                 _des,
+                  float *                 _weights,
                   liquid_firdespm_wtype * _wtype,
-                  liquid_firdespm_btype _btype,
-                  float * _h);
+                  liquid_firdespm_btype   _btype,
+                  float *                 _h);
+
+// run filter design for basic low-pass filter
+//  _n      : filter length, _n > 0
+//  _fc     : cutoff frequency, 0 < _fc < 0.5
+//  _As     : stop-band attenuation [dB], _As > 0
+//  _mu     : fractional sample offset, -0.5 < _mu < 0.5 [ignored]
+//  _h      : output coefficient buffer, [size: _n x 1]
+void firdespm_lowpass(unsigned int _n,
+                      float        _fc,
+                      float        _As,
+                      float        _mu,
+                      float *      _h);
 
 // structured object
 typedef struct firdespm_s * firdespm;
@@ -1572,13 +1584,13 @@ typedef struct firdespm_s * firdespm;
 //  _weights    :   response weighting [size: _num_bands x 1]
 //  _wtype      :   weight types (e.g. LIQUID_FIRDESPM_FLATWEIGHT) [size: _num_bands x 1]
 //  _btype      :   band type (e.g. LIQUID_FIRDESPM_BANDPASS)
-firdespm firdespm_create(unsigned int _h_len,
-                         unsigned int _num_bands,
-                         float * _bands,
-                         float * _des,
-                         float * _weights,
+firdespm firdespm_create(unsigned int            _h_len,
+                         unsigned int            _num_bands,
+                         float *                 _bands,
+                         float *                 _des,
+                         float *                 _weights,
                          liquid_firdespm_wtype * _wtype,
-                         liquid_firdespm_btype _btype);
+                         liquid_firdespm_btype   _btype);
 
 // destroy firdespm object
 void firdespm_destroy(firdespm _q);
