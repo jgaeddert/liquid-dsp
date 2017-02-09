@@ -97,7 +97,7 @@ int main(int argc, char*argv[]) {
     fprintf(fid,"grid on;\n");
     fprintf(fid,"xlabel('normalized frequency');\n");
     fprintf(fid,"ylabel('PSD [dB]');\n");
-    fprintf(fid,"title(['Filter design/Kaiser window f_c: %f, S_L: %f, h: %u']);\n",
+    fprintf(fid,"title(['Filter design (firdespm) window f_c: %f, S_L: %f, h: %u']);\n",
             fc, -As, h_len);
     fprintf(fid,"axis([-0.5 0.5 -As-40 10]);\n");
 
