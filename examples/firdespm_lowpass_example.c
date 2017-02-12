@@ -51,9 +51,11 @@ int main(int argc, char*argv[]) {
     float h[n];
     firdespm_lowpass(n,fc,As,0,h);
 
+#if 0
     // print coefficients
     for (i=0; i<n; i++)
         printf("h(%4u) = %16.12f;\n", i+1, h[i]);
+#endif
 
     // open output file
     FILE*fid = fopen(OUTPUT_FILENAME,"w");

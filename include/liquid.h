@@ -1573,6 +1573,16 @@ void firdespm_lowpass(unsigned int _n,
                       float        _mu,
                       float *      _h);
 
+// firdespm response callback function
+//  _frequency  : normalized frequency
+//  _userdata   : pointer to userdata
+//  _desired    : (return) desired response
+//  _weight     : (return) weight
+typedef int (*firdespm_callback)(double   _frequency,
+                                 void   * _userdata,
+                                 double * _desired,
+                                 double * _weight);
+
 // structured object
 typedef struct firdespm_s * firdespm;
 
@@ -1591,6 +1601,20 @@ firdespm firdespm_create(unsigned int            _h_len,
                          float *                 _weights,
                          liquid_firdespm_wtype * _wtype,
                          liquid_firdespm_btype   _btype);
+
+// create firdespm object with user-defined callback
+//  _h_len      :   length of filter (number of taps)
+//  _num_bands  :   number of frequency bands
+//  _bands      :   band edges, f in [0,0.5], [size: _num_bands x 2]
+//  _btype      :   band type (e.g. LIQUID_FIRDESPM_BANDPASS)
+//  _callback   :   user-defined callback for specifying desired response & weights
+//  _userdata   :   user-defined data structure for callback function
+firdespm firdespm_create_callback(unsigned int          _h_len,
+                                  unsigned int          _num_bands,
+                                  float *               _bands,
+                                  liquid_firdespm_btype _btype,
+                                  firdespm_callback     _callback,
+                                  void *                _userdata);
 
 // destroy firdespm object
 void firdespm_destroy(firdespm _q);

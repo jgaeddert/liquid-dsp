@@ -1390,6 +1390,7 @@ example_programs :=						\
 	examples/firfilt_crcf_example				\
 	examples/firfilt_rrrf_example				\
 	examples/firdes_kaiser_example				\
+	examples/firdespm_callback_example			\
 	examples/firdespm_example				\
 	examples/firdespm_lowpass_example			\
 	examples/firhilb_example				\
