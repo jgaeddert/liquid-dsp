@@ -133,8 +133,8 @@ framesync64 framesync64_create(framesync_callback _callback,
     // generate p/n sequence
     msequence ms = msequence_create(7, 0x0089, 1);
     for (i=0; i<64; i++) {
-        q->preamble_pn[i] = (msequence_advance(ms) ? M_SQRT1_2 : -M_SQRT1_2) +
-                            (msequence_advance(ms) ? M_SQRT1_2 : -M_SQRT1_2)*_Complex_I;
+        q->preamble_pn[i]  = (msequence_advance(ms) ? M_SQRT1_2 : -M_SQRT1_2);
+        q->preamble_pn[i] += (msequence_advance(ms) ? M_SQRT1_2 : -M_SQRT1_2)*_Complex_I;
     }
     msequence_destroy(ms);
 
