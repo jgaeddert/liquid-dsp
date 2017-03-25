@@ -157,8 +157,8 @@ flexframesync flexframesync_create(framesync_callback _callback,
     q->preamble_rx = (float complex*) malloc(64*sizeof(float complex));
     msequence ms = msequence_create(7, 0x0089, 1);
     for (i=0; i<64; i++) {
-        q->preamble_pn[i] = (msequence_advance(ms) ? M_SQRT1_2 : -M_SQRT1_2) +
-                            (msequence_advance(ms) ? M_SQRT1_2 : -M_SQRT1_2)*_Complex_I;
+        q->preamble_pn[i] = (msequence_advance(ms) ? M_SQRT1_2 : -M_SQRT1_2);
+        q->preamble_pn[i] += (msequence_advance(ms) ? M_SQRT1_2 : -M_SQRT1_2) * _Complex_I;
     }
     msequence_destroy(ms);
 
@@ -297,6 +297,11 @@ void flexframesync_reset(flexframesync _q)
     
     // reset frame statistics
     _q->framesyncstats.evm = 0.0f;
+}
+
+int flexframesync_is_frame_open(flexframesync _q)
+{
+    return (_q->state == FLEXFRAMESYNC_STATE_DETECTFRAME) ? 0 : 1;
 }
 
 // execute frame synchronizer

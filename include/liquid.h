@@ -49,8 +49,8 @@ extern "C" {
 // LIQUID_VERSION = "X.Y.Z"
 // LIQUID_VERSION_NUMBER = (X*1000000 + Y*1000 + Z)
 //
-#define LIQUID_VERSION          "1.2.0"
-#define LIQUID_VERSION_NUMBER   1002000
+#define LIQUID_VERSION          "1.3.0"
+#define LIQUID_VERSION_NUMBER   1003000
 
 //
 // Run-time library version numbers
@@ -1552,14 +1552,36 @@ typedef enum {
 //  _wtype      :   weight types (e.g. LIQUID_FIRDESPM_FLATWEIGHT) [size: _num_bands x 1]
 //  _btype      :   band type (e.g. LIQUID_FIRDESPM_BANDPASS)
 //  _h          :   output coefficients array [size: _h_len x 1]
-void firdespm_run(unsigned int _h_len,
-                  unsigned int _num_bands,
-                  float * _bands,
-                  float * _des,
-                  float * _weights,
+void firdespm_run(unsigned int            _h_len,
+                  unsigned int            _num_bands,
+                  float *                 _bands,
+                  float *                 _des,
+                  float *                 _weights,
                   liquid_firdespm_wtype * _wtype,
-                  liquid_firdespm_btype _btype,
-                  float * _h);
+                  liquid_firdespm_btype   _btype,
+                  float *                 _h);
+
+// run filter design for basic low-pass filter
+//  _n      : filter length, _n > 0
+//  _fc     : cutoff frequency, 0 < _fc < 0.5
+//  _As     : stop-band attenuation [dB], _As > 0
+//  _mu     : fractional sample offset, -0.5 < _mu < 0.5 [ignored]
+//  _h      : output coefficient buffer, [size: _n x 1]
+void firdespm_lowpass(unsigned int _n,
+                      float        _fc,
+                      float        _As,
+                      float        _mu,
+                      float *      _h);
+
+// firdespm response callback function
+//  _frequency  : normalized frequency
+//  _userdata   : pointer to userdata
+//  _desired    : (return) desired response
+//  _weight     : (return) weight
+typedef int (*firdespm_callback)(double   _frequency,
+                                 void   * _userdata,
+                                 double * _desired,
+                                 double * _weight);
 
 // structured object
 typedef struct firdespm_s * firdespm;
@@ -1572,13 +1594,27 @@ typedef struct firdespm_s * firdespm;
 //  _weights    :   response weighting [size: _num_bands x 1]
 //  _wtype      :   weight types (e.g. LIQUID_FIRDESPM_FLATWEIGHT) [size: _num_bands x 1]
 //  _btype      :   band type (e.g. LIQUID_FIRDESPM_BANDPASS)
-firdespm firdespm_create(unsigned int _h_len,
-                         unsigned int _num_bands,
-                         float * _bands,
-                         float * _des,
-                         float * _weights,
+firdespm firdespm_create(unsigned int            _h_len,
+                         unsigned int            _num_bands,
+                         float *                 _bands,
+                         float *                 _des,
+                         float *                 _weights,
                          liquid_firdespm_wtype * _wtype,
-                         liquid_firdespm_btype _btype);
+                         liquid_firdespm_btype   _btype);
+
+// create firdespm object with user-defined callback
+//  _h_len      :   length of filter (number of taps)
+//  _num_bands  :   number of frequency bands
+//  _bands      :   band edges, f in [0,0.5], [size: _num_bands x 2]
+//  _btype      :   band type (e.g. LIQUID_FIRDESPM_BANDPASS)
+//  _callback   :   user-defined callback for specifying desired response & weights
+//  _userdata   :   user-defined data structure for callback function
+firdespm firdespm_create_callback(unsigned int          _h_len,
+                                  unsigned int          _num_bands,
+                                  float *               _bands,
+                                  liquid_firdespm_btype _btype,
+                                  firdespm_callback     _callback,
+                                  void *                _userdata);
 
 // destroy firdespm object
 void firdespm_destroy(firdespm _q);
@@ -3744,6 +3780,9 @@ void flexframesync_print(flexframesync _q);
 // reset frame synchronizer internal state
 void flexframesync_reset(flexframesync _q);
 
+// has frame been detected?
+int flexframesync_is_frame_open(flexframesync _q);
+
 // push samples through frame synchronizer
 //  _q      :   frame synchronizer object
 //  _x      :   input samples [size: _n x 1]
@@ -3891,6 +3930,7 @@ gmskframesync gmskframesync_create(framesync_callback _callback,
 void gmskframesync_destroy(gmskframesync _q);
 void gmskframesync_print(gmskframesync _q);
 void gmskframesync_reset(gmskframesync _q);
+int  gmskframesync_is_frame_open(gmskframesync _q);
 void gmskframesync_execute(gmskframesync _q,
                            liquid_float_complex * _x,
                            unsigned int _n);
@@ -3995,6 +4035,7 @@ ofdmflexframesync ofdmflexframesync_create(unsigned int       _M,
 void ofdmflexframesync_destroy(ofdmflexframesync _q);
 void ofdmflexframesync_print(ofdmflexframesync _q);
 void ofdmflexframesync_reset(ofdmflexframesync _q);
+int  ofdmflexframesync_is_frame_open(ofdmflexframesync _q);
 void ofdmflexframesync_execute(ofdmflexframesync _q,
                                liquid_float_complex * _x,
                                unsigned int _n);
@@ -6021,6 +6062,7 @@ ofdmframesync ofdmframesync_create(unsigned int           _M,
 void ofdmframesync_destroy(ofdmframesync _q);
 void ofdmframesync_print(ofdmframesync _q);
 void ofdmframesync_reset(ofdmframesync _q);
+int  ofdmframesync_is_frame_open(ofdmframesync _q);
 void ofdmframesync_execute(ofdmframesync _q,
                            liquid_float_complex * _x,
                            unsigned int _n);
