@@ -1,4 +1,4 @@
-# Copyright (c) 2007 - 2016 Joseph Gaeddert
+# Copyright (c) 2007 - 2017 Joseph Gaeddert
 # 
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -33,6 +33,9 @@ AC_CONFIG_AUX_DIR(scripts/)
 # Specify 'C' language
 AC_LANG(C)
 
+# uncomment the following line to reset "CFLAGS" variable; it defaults to '-g -O2'
+#: ${CFLAGS=""}
+
 # Autoheader
 AH_TEMPLATE([LIQUID_FFTOVERRIDE],  [Force internal FFT even if libfftw is available])
 AH_TEMPLATE([LIQUID_SIMDOVERRIDE], [Force overriding of SIMD (use portable C code)])
@@ -48,10 +51,10 @@ AH_BOTTOM([
 
 # Configure options
 
-AC_ARG_ENABLE(debug,
-    AS_HELP_STRING([--enable-debug],[debug]),
-    [DEBUG_OPTION="-DDEBUG"],
-    [DEBUG_OPTION=""]
+AC_ARG_ENABLE(debug-messages,
+    AS_HELP_STRING([--enable-debug-messages],[enable verbose debug messages (-DDEBUG)]),
+    [DEBUG_MSG_OPTION="-DDEBUG"],
+    [DEBUG_MSG_OPTION=""]
 )
 
 AC_ARG_ENABLE(simdoverride,
@@ -255,7 +258,7 @@ AC_SUBST(SH_LIB)                    # output shared library target
 AC_SUBST(REBIND)                    # rebinding tool (e.g. ldconfig)
 AC_SUBST(ARCH_OPTION)               # compiler architecture option
 
-AC_SUBST(DEBUG_OPTION)              # debug option
+AC_SUBST(DEBUG_MSG_OPTION)          # debug messages option (.e.g -DDEBUG)
 AC_SUBST(CLIB)                      # C library linkage (e.g. '-lc')
 
 AC_CONFIG_FILES([makefile])
