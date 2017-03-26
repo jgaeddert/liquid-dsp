@@ -41,6 +41,10 @@
 // enable pre-demodulation filter (remove out-of-band noise)
 #define GMSKFRAMESYNC_PREFILTER         1
 
+// execute a single, post-filtered sample
+void gmskframesync_execute_sample(gmskframesync _q,
+                                  float complex _x);
+
 // push buffered p/n sequence through synchronizer
 void gmskframesync_pushpn(gmskframesync _q);
 
@@ -100,6 +104,7 @@ struct gmskframesync_s {
     float dphi_hat;                 // carrier frequency offset estimate
     float gamma_hat;                // channel gain estimate
     windowcf buffer;                // pre-demod buffered samples, size: k*(pn_len+m)
+    int buffer_index;               // pre-demod buffer read index
     nco_crcf nco_coarse;            // coarse carrier frequency recovery
     
     // preamble
@@ -331,6 +336,32 @@ int gmskframesync_is_frame_open(gmskframesync _q)
     return (_q->state == STATE_DETECTFRAME) ? 0 : 1;
 }
 
+void gmskframesync_execute_sample(gmskframesync _q,
+                                  float complex _x)
+{
+    switch (_q->state) {
+    case STATE_DETECTFRAME:
+        // look for p/n sequence
+        gmskframesync_execute_detectframe(_q, _x);
+        break;
+
+    case STATE_RXPREAMBLE:
+        // receive p/n sequence symbols
+        gmskframesync_execute_rxpreamble(_q, _x);
+        break;
+
+    case STATE_RXHEADER:
+        // receive header
+        gmskframesync_execute_rxheader(_q, _x);
+        break;
+
+    case STATE_RXPAYLOAD:
+        // receive payload
+        gmskframesync_execute_rxpayload(_q, _x);
+        break;
+    }
+}
+
 // execute frame synchronizer
 //  _q      :   frame synchronizer object
 //  _x      :   input sample array [size: _n x 1]
@@ -354,27 +385,8 @@ void gmskframesync_execute(gmskframesync   _q,
             windowcf_push(_q->debug_x, xf);
 #endif
 
-        switch (_q->state) {
-        case STATE_DETECTFRAME:
-            // look for p/n sequence
-            gmskframesync_execute_detectframe(_q, xf);
-            break;
+        gmskframesync_execute_sample(_q, xf);
 
-        case STATE_RXPREAMBLE:
-            // receive p/n sequence symbols
-            gmskframesync_execute_rxpreamble(_q, xf);
-            break;
-
-        case STATE_RXHEADER:
-            // receive header
-            gmskframesync_execute_rxheader(_q, xf);
-            break;
-
-        case STATE_RXPAYLOAD:
-            // receive payload
-            gmskframesync_execute_rxpayload(_q, xf);
-            break;
-        }
     }
 }
 
@@ -488,27 +500,28 @@ void gmskframesync_pushpn(gmskframesync _q)
     nco_crcf_set_frequency(_q->nco_coarse, _q->dphi_hat);
     
     unsigned int buffer_len = (_q->preamble_len + _q->m) * _q->k;
-    for (i=0; i<buffer_len; i++) {
-        if (i < delay) {
-            float complex y;
-            nco_crcf_mix_down(_q->nco_coarse, rc[i], &y);
-            nco_crcf_step(_q->nco_coarse);
+    for (i=0; i<delay; i++) {
+        float complex y;
+        nco_crcf_mix_down(_q->nco_coarse, rc[i], &y);
+        nco_crcf_step(_q->nco_coarse);
 
-            // update instantanenous frequency estimate
-            gmskframesync_update_fi(_q, y);
+        // update instantanenous frequency estimate
+        gmskframesync_update_fi(_q, y);
 
-            // push initial samples into filterbanks
-            firpfb_rrrf_push(_q->mf,  _q->fi_hat);
-            firpfb_rrrf_push(_q->dmf, _q->fi_hat);
-        } else {
-            // run remaining samples through p/n sequence recovery
-            gmskframesync_execute_rxpreamble(_q, rc[i]);
-        }
+        // push initial samples into filterbanks
+        firpfb_rrrf_push(_q->mf,  _q->fi_hat);
+        firpfb_rrrf_push(_q->dmf, _q->fi_hat);
     }
 
     // set state (still need a few more samples before entire p/n
     // sequence has been received)
     _q->state = STATE_RXPREAMBLE;
+
+    for (i=delay; i<buffer_len; i++) {
+        // run remaining samples through sample state machine
+        gmskframesync_execute_sample(_q, rc[i]);
+    }
+
 }
 
 // 
