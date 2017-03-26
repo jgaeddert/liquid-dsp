@@ -66,7 +66,7 @@ RANLIB		:= @RANLIB@
 INCLUDE_CFLAGS	= $(addprefix -I ,$(include_dirs))
 CONFIG_CFLAGS	= @CFLAGS@ @DEBUG_OPTION@ @ARCH_OPTION@
 # -g : debugging info
-CFLAGS		+= $(INCLUDE_CFLAGS) -Wall -fPIC $(CONFIG_CFLAGS)
+CFLAGS		+= $(INCLUDE_CFLAGS) -Wall -fPIC -msse3 $(CONFIG_CFLAGS)
 LDFLAGS		+= @LDFLAGS@ @LIBS@
 ARFLAGS		= r
 PATHSEP		= /
