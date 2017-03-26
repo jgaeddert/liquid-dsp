@@ -104,7 +104,6 @@ struct gmskframesync_s {
     float dphi_hat;                 // carrier frequency offset estimate
     float gamma_hat;                // channel gain estimate
     windowcf buffer;                // pre-demod buffered samples, size: k*(pn_len+m)
-    int buffer_index;               // pre-demod buffer read index
     nco_crcf nco_coarse;            // coarse carrier frequency recovery
     
     // preamble
