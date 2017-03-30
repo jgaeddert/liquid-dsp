@@ -3050,10 +3050,10 @@ RESAMP() RESAMP(_create)(float        _rate,                    \
                                                                 \
 /* create arbitrary resampler object with a specified input */  \
 /* resampling rate and default parameters                   */  \
-/*  m (filter semi-length) = 7                              */  \
-/*  fc (filter cutoff frequency) = 0.25                     */  \
-/*  As (filter stop-band attenuation) = 60 dB               */  \
-/*  npfb (number of filters in the bank) = 64               */  \
+/*  m    : (filter semi-length) = 7                         */  \
+/*  fc   : (filter cutoff frequency) = 0.25                 */  \
+/*  As   : (filter stop-band attenuation) = 60 dB           */  \
+/*  npfb : (number of filters in the bank) = 64             */  \
 RESAMP() RESAMP(_create_default)(float _rate);                  \
                                                                 \
 /* destroy arbitrary resampler object                       */  \
@@ -3069,13 +3069,28 @@ void RESAMP(_reset)(RESAMP() _q);                               \
 unsigned int RESAMP(_get_delay)(RESAMP() _q);                   \
                                                                 \
 /* set rate of arbitrary resampler                          */  \
-void RESAMP(_set_rate)(RESAMP() _q, float _rate);               \
+/*  _q      : resampling object                             */  \
+/*  _rate   : new sampling rate, _rate > 0                  */  \
+void RESAMP(_set_rate)(RESAMP() _q,                             \
+                       float    _rate);                         \
                                                                 \
 /* adjust rate of arbitrary resampler                       */  \
-void RESAMP(_adjust_rate)(RESAMP() _q, float _delta);           \
+/*  _q      : resampling object                             */  \
+/*  _delta  : rate adjustment; _rate <- _rate + _delta      */  \
+void RESAMP(_adjust_rate)(RESAMP() _q,                          \
+                          float    _delta);                     \
+                                                                \
+/* set resampling timing phase                              */  \
+/*  _q      : resampling object                             */  \
+/*  _tau    : sample timing                                 */  \
+void RESAMP(_set_timing_phase)(RESAMP() _q,                     \
+                               float    _tau);                  \
                                                                 \
 /* adjust resampling timing phase                           */  \
-void RESAMP(_adjust_timing_phase)(RESAMP() _q, float _delta);   \
+/*  _q      : resampling object                             */  \
+/*  _delta  : sample timing adjustment                      */  \
+void RESAMP(_adjust_timing_phase)(RESAMP() _q,                  \
+                                  float    _delta);             \
                                                                 \
 /* execute arbitrary resampler                              */  \
 /*  _q              :   resamp object                       */  \
