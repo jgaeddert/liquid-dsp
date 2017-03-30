@@ -200,7 +200,9 @@ unsigned int RESAMP(_get_delay)(RESAMP() _q)
     return _q->m;
 }
 
-// set resampling rate
+// set rate of arbitrary resampler
+//  _q      : resampling object
+//  _rate   : new sampling rate, _rate > 0
 void RESAMP(_set_rate)(RESAMP() _q,
                        float    _rate)
 {
@@ -236,6 +238,38 @@ void RESAMP(_adjust_rate)(RESAMP() _q,
     _q->del = 1.0f / _q->rate;
 }
 
+
+// set resampling timing phase
+//  _q      : resampling object
+//  _tau    : sample timing
+void RESAMP(_set_timing_phase)(RESAMP() _q,
+                               float    _tau)
+{
+    if (_tau > 1.0f || _tau < -1.0f) {
+        fprintf(stderr,"error: resamp_%s_set_timing_phase(), timing phase must be in [-1,1], is %f\n.",
+                EXTENSION_FULL, _tau);
+        exit(1);
+    }
+
+    // set internal timing phase
+    _q->tau = _tau;
+}
+
+// adjust resampling timing phase
+//  _q      : resampling object
+//  _delta  : sample timing adjustment
+void RESAMP(_adjust_timing_phase)(RESAMP() _q,
+                                  float    _delta)
+{
+    if (_delta > 1.0f || _delta < -1.0f) {
+        fprintf(stderr,"error: resamp_%s_adjust_timing_phase(), timing phase adjustment must be in [-1,1], is %f\n.",
+                EXTENSION_FULL, _delta);
+        exit(1);
+    }
+
+    // adjust internal timing phase
+    _q->tau += _delta;
+}
 
 // run arbitrary resampler
 //  _q          :   resampling object
