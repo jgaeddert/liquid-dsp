@@ -237,6 +237,19 @@ void RESAMP(_adjust_rate)(RESAMP() _q,
 }
 
 
+// adjust resampling timing phase
+void RESAMP(_adjust_timing_phase)(RESAMP() _q,
+                                  float    _delta)
+{
+    if (_delta > 1.0f || _delta < -1.0f) {
+        fprintf(stderr,"error: resamp_%s_adjust_timing_phase(), timing phase must be in [-1,1], is %f\n.", EXTENSION_FULL, _delta);
+        exit(1);
+    }
+
+    // adjust internal timing phase
+    _q->tau += _delta;
+}
+
 // run arbitrary resampler
 //  _q          :   resampling object
 //  _x          :   single input sample
