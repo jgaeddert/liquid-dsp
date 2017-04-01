@@ -515,7 +515,7 @@ void IIRFILT(_execute_norm)(IIRFILT() _q,
 #if LIQUID_IIRFILT_USE_DOTPROD
     // compute new v
     TI v0;
-    DOTPROD(_execute)(_q->dpa, _q->v+1, & v0);
+    DOTPROD(_execute)(_q->dpa, _q->v+1, &v0);
     v0 = _x - v0;
     _q->v[0] = v0;
 

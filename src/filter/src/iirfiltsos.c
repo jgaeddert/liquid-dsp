@@ -35,6 +35,9 @@
 //  TI              input type
 //  PRINTVAL()      print macro(s)
 
+// use structured dot product? 0:no, 1:yes
+#define LIQUID_IIRFILTSOS_USE_DOTPROD   (0)
+
 struct IIRFILTSOS(_s) {
     TC b[3];    // feed-forward coefficients
     TC a[3];    // feed-back coefficients
@@ -43,6 +46,11 @@ struct IIRFILTSOS(_s) {
     TI x[3];    // Direct form I  buffer (input)
     TO y[3];    // Direct form I  buffer (output)
     TO v[3];    // Direct form II buffer
+
+#if LIQUID_IIRFILTSOS_USE_DOTPROD
+    DOTPROD() dpb;  // numerator dot product
+    DOTPROD() dpa;  // denominator dot product
+#endif
 };
 
 // create iirfiltsos object
@@ -81,14 +89,23 @@ void IIRFILTSOS(_set_coefficients)(IIRFILTSOS() _q,
     _q->b[2] = _b[2] / a0;
 
     // copy feed-back coefficients (denominator)
-    _q->a[0] = _a[0] / a0;
+    _q->a[0] = _a[0] / a0;  // unity
     _q->a[1] = _a[1] / a0;
     _q->a[2] = _a[2] / a0;
+
+#if LIQUID_IIRFILTSOS_USE_DOTPROD
+    _q->dpa = DOTPROD(_create)(_q->a+1, 2);
+    _q->dpb = DOTPROD(_create)(_q->b,   3);
+#endif
 }
 
 // destroy iirfiltsos object, freeing all internal memory
 void IIRFILTSOS(_destroy)(IIRFILTSOS() _q)
 {
+#if LIQUID_IIRFILTSOS_USE_DOTPROD
+    DOTPROD(_destroy)(_q->dpa);
+    DOTPROD(_destroy)(_q->dpb);
+#endif
     free(_q);
 }
 
@@ -156,6 +173,17 @@ void IIRFILTSOS(_execute_df1)(IIRFILTSOS() _q,
     _q->y[2] = _q->y[1];
     _q->y[1] = _q->y[0];
 
+#if LIQUID_IIRFILTSOS_USE_DOTPROD
+    // NOTE: this is actually slower than the non-dotprod version
+    // compute new v
+    TI v;
+    DOTPROD(_execute)(_q->dpb, _q->x, &v);
+
+    // compute new y[0]
+    TI y0;
+    DOTPROD(_execute)(_q->dpa, _q->y+1, &y0);
+    _q->y[0] = v - y0;
+#else
     // compute new v
     TI v = _q->x[0] * _q->b[0] +
            _q->x[1] * _q->b[1] +
@@ -165,6 +193,7 @@ void IIRFILTSOS(_execute_df1)(IIRFILTSOS() _q,
     _q->y[0] = v -
                _q->y[1] * _q->a[1] -
                _q->y[2] * _q->a[2];
+#endif
 
     // set output
     *_y = _q->y[0];
@@ -182,6 +211,17 @@ void IIRFILTSOS(_execute_df2)(IIRFILTSOS() _q,
     _q->v[2] = _q->v[1];
     _q->v[1] = _q->v[0];
 
+#if LIQUID_IIRFILTSOS_USE_DOTPROD
+    // NOTE: this is actually slower than the non-dotprod version
+    // compute new v
+    TI v0;
+    DOTPROD(_execute)(_q->dpa, _q->v+1, &v0);
+    v0 = _x - v0;
+    _q->v[0] = v0;
+
+    // compute new y
+    DOTPROD(_execute)(_q->dpb, _q->v, _y);
+#else
     // compute new v[0]
     _q->v[0] = _x - 
                _q->a[1]*_q->v[1] -
@@ -191,6 +231,7 @@ void IIRFILTSOS(_execute_df2)(IIRFILTSOS() _q,
     *_y = _q->b[0]*_q->v[0] +
           _q->b[1]*_q->v[1] +
           _q->b[2]*_q->v[2];
+#endif
 }
 
 // compute group delay in samples
