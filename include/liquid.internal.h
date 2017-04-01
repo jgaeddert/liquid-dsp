@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2016 Joseph Gaeddert
+ * Copyright (c) 2007 - 2017 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -823,17 +823,6 @@ LIQUID_FIRFARROW_DEFINE_INTERNAL_API(FIRFARROW_MANGLE_CRCF,
 
 #define LIQUID_IIRFILTSOS_DEFINE_INTERNAL_API(IIRFILTSOS,TO,TC,TI)  \
 typedef struct IIRFILTSOS(_s) * IIRFILTSOS();                   \
-                                                                \
-/* filter structure */                                          \
-struct IIRFILTSOS(_s) {                                         \
-    TC b[3];    /* feed-forward coefficients                */  \
-    TC a[3];    /* feed-back coefficients                   */  \
-                                                                \
-    /* internal buffering                                   */  \
-    TI x[3];    /* Direct form I  buffer (input)            */  \
-    TO y[3];    /* Direct form I  buffer (output)           */  \
-    TO v[3];    /* Direct form II buffer                    */  \
-};                                                              \
                                                                 \
 /* create 2nd-order infinite impulse reponse filter         */  \
 /*  _b      : feed-forward coefficients [size: _3 x 1]      */  \

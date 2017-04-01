@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2015 Joseph Gaeddert
+ * Copyright (c) 2007 - 2017 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -34,6 +34,16 @@
 //  TC              coefficients type
 //  TI              input type
 //  PRINTVAL()      print macro(s)
+
+struct IIRFILTSOS(_s) {
+    TC b[3];    // feed-forward coefficients
+    TC a[3];    // feed-back coefficients
+
+    // internal buffering
+    TI x[3];    // Direct form I  buffer (input)
+    TO y[3];    // Direct form I  buffer (output)
+    TO v[3];    // Direct form II buffer
+};
 
 // create iirfiltsos object
 IIRFILTSOS() IIRFILTSOS(_create)(TC * _b,
