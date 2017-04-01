@@ -44,7 +44,7 @@
 //  PRINTVAL()      print macro
 
 // use structured dot product? 0:no, 1:yes
-#define LIQUID_IIRFILT_USE_DOTPROD   (0)
+#define LIQUID_IIRFILT_USE_DOTPROD   (1)
 
 struct IIRFILT(_s) {
     TC * b;             // numerator (feed-forward coefficients)
