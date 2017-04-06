@@ -97,7 +97,7 @@ FIRPFB() FIRPFB(_create)(unsigned int _M,
     return q;
 }
 
-// create firpfb from external coefficients
+// create firpfb using kaiser window
 //  _M      : number of filters in the bank
 //  _m      : filter semi-length [samples]
 //  _fc     : filter cut-off frequency 0 < _fc < 0.5
@@ -122,7 +122,7 @@ FIRPFB() FIRPFB(_create_kaiser)(unsigned int _M,
         exit(1);
     }
 
-    // generate square-root Nyquist filter
+    // design filter using kaiser window
     unsigned int H_len = 2*_M*_m + 1;
     float Hf[H_len];
     liquid_firdes_kaiser(H_len, _fc/(float)_M, _As, 0.0f, Hf);

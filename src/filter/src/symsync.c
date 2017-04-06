@@ -44,7 +44,7 @@
 #define DEBUG_SYMSYNC_FILENAME  "symsync_internal_debug.m"
 #define DEBUG_BUFFER_LEN        (1024)
 
-// 
+//
 // forward declaration of internal methods
 //
 
@@ -149,7 +149,7 @@ SYMSYNC() SYMSYNC(_create)(unsigned int _k,
 
     // set internal sub-filter length
     q->h_len = (_h_len-1)/q->npfb;
-    
+
     // compute derivative filter
     TC dh[_h_len];
     float hdh_max = 0.0f;
@@ -171,7 +171,7 @@ SYMSYNC() SYMSYNC(_create)(unsigned int _k,
     // apply scaling factor for normalized response
     for (i=0; i<_h_len; i++)
         dh[i] *= 0.06f / hdh_max;
-    
+
     q->mf  = FIRPFB(_create)(q->npfb, _h, _h_len);
     q->dmf = FIRPFB(_create)(q->npfb, dh, _h_len);
 
@@ -182,9 +182,6 @@ SYMSYNC() SYMSYNC(_create)(unsigned int _k,
     q->pll = iirfiltsos_rrrf_create(q->B, q->A);
     SYMSYNC(_reset)(q);
     SYMSYNC(_set_lf_bw)(q, 0.01f);
-
-    // set output rate nominally at 1 sample/symbol (full decimation)
-    SYMSYNC(_set_output_rate)(q, 1);
 
     // unlock loop control
     SYMSYNC(_unlock)(q);
@@ -402,7 +399,7 @@ void SYMSYNC(_set_lf_bw)(SYMSYNC() _q,
 
     // set internal parameters of 2nd-order IIR filter
     iirfiltsos_rrrf_set_coefficients(_q->pll, _q->B, _q->A);
-    
+
     // update rate adjustment factor
     _q->rate_adjustment = 0.5*_bt;
 }
@@ -451,13 +448,13 @@ void SYMSYNC(_step)(SYMSYNC()      _q,
     // push sample into MF and dMF filterbanks
     FIRPFB(_push)(_q->mf,  _x);
     FIRPFB(_push)(_q->dmf, _x);
-    
+
     // matched and derivative matched-filter outputs
     TO  mf; // matched filter output
     TO dmf; // derivative matched filter output
 
     unsigned int n=0;
-    
+
     // continue loop until filterbank index rolls over
     while (_q->b < _q->npfb) {
 
@@ -492,7 +489,7 @@ void SYMSYNC(_step)(SYMSYNC()      _q,
 
             // compute dMF output
             FIRPFB(_execute)(_q->dmf, _q->b, &dmf);
-            
+
             // update internal state
             SYMSYNC(_advance_internal_loop)(_q, mf, dmf);
             _q->tau_decim = _q->tau;    // save return value
@@ -694,5 +691,3 @@ void SYMSYNC(_output_debug_file)(SYMSYNC()    _q,
     fclose(fid);
     printf("symsync: internal results written to '%s'\n", _filename);
 }
-
-
