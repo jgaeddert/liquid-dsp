@@ -803,12 +803,12 @@ float estimate_req_filter_len_Herrmann(float _df,
 #define LIQUID_FIRFARROW_DEFINE_INTERNAL_API(FIRFARROW,TO,TC,TI)  \
 void FIRFARROW(_genpoly)(FIRFARROW() _q);
 
-LIQUID_FIRFARROW_DEFINE_INTERNAL_API(FIRFARROW_MANGLE_RRRF,
+LIQUID_FIRFARROW_DEFINE_INTERNAL_API(LIQUID_FIRFARROW_MANGLE_RRRF,
                                      float,
                                      float,
                                      float)
 
-LIQUID_FIRFARROW_DEFINE_INTERNAL_API(FIRFARROW_MANGLE_CRCF,
+LIQUID_FIRFARROW_DEFINE_INTERNAL_API(LIQUID_FIRFARROW_MANGLE_CRCF,
                                      liquid_float_complex,
                                      float,
                                      liquid_float_complex)
@@ -818,9 +818,9 @@ LIQUID_FIRFARROW_DEFINE_INTERNAL_API(FIRFARROW_MANGLE_CRCF,
 // 
 // iirfiltsos : infinite impulse respone filter (second-order sections)
 //
-#define IIRFILTSOS_MANGLE_RRRF(name)  LIQUID_CONCAT(iirfiltsos_rrrf,name)
-#define IIRFILTSOS_MANGLE_CRCF(name)  LIQUID_CONCAT(iirfiltsos_crcf,name)
-#define IIRFILTSOS_MANGLE_CCCF(name)  LIQUID_CONCAT(iirfiltsos_cccf,name)
+#define LIQUID_IIRFILTSOS_MANGLE_RRRF(name)  LIQUID_CONCAT(iirfiltsos_rrrf,name)
+#define LIQUID_IIRFILTSOS_MANGLE_CRCF(name)  LIQUID_CONCAT(iirfiltsos_crcf,name)
+#define LIQUID_IIRFILTSOS_MANGLE_CCCF(name)  LIQUID_CONCAT(iirfiltsos_cccf,name)
 
 #define LIQUID_IIRFILTSOS_DEFINE_INTERNAL_API(IIRFILTSOS,TO,TC,TI)  \
 typedef struct IIRFILTSOS(_s) * IIRFILTSOS();                   \
@@ -878,17 +878,17 @@ void IIRFILTSOS(_execute_df2)(IIRFILTSOS() _q,                  \
 float IIRFILTSOS(_groupdelay)(IIRFILTSOS() _q,                  \
                               float        _fc);                \
 
-LIQUID_IIRFILTSOS_DEFINE_INTERNAL_API(IIRFILTSOS_MANGLE_RRRF,
+LIQUID_IIRFILTSOS_DEFINE_INTERNAL_API(LIQUID_IIRFILTSOS_MANGLE_RRRF,
                                       float,
                                       float,
                                       float)
 
-LIQUID_IIRFILTSOS_DEFINE_INTERNAL_API(IIRFILTSOS_MANGLE_CRCF,
+LIQUID_IIRFILTSOS_DEFINE_INTERNAL_API(LIQUID_IIRFILTSOS_MANGLE_CRCF,
                                       liquid_float_complex,
                                       float,
                                       liquid_float_complex)
 
-LIQUID_IIRFILTSOS_DEFINE_INTERNAL_API(IIRFILTSOS_MANGLE_CCCF,
+LIQUID_IIRFILTSOS_DEFINE_INTERNAL_API(LIQUID_IIRFILTSOS_MANGLE_CCCF,
                                       liquid_float_complex,
                                       liquid_float_complex,
                                       liquid_float_complex)
@@ -1187,11 +1187,11 @@ T    MATRIX(_det2x2)(T * _x,                                    \
                      unsigned int _cx);
 
 
-LIQUID_MATRIX_DEFINE_INTERNAL_API(MATRIX_MANGLE_FLOAT,   float)
-LIQUID_MATRIX_DEFINE_INTERNAL_API(MATRIX_MANGLE_DOUBLE,  double)
+LIQUID_MATRIX_DEFINE_INTERNAL_API(LIQUID_MATRIX_MANGLE_FLOAT,   float)
+LIQUID_MATRIX_DEFINE_INTERNAL_API(LIQUID_MATRIX_MANGLE_DOUBLE,  double)
 
-LIQUID_MATRIX_DEFINE_INTERNAL_API(MATRIX_MANGLE_CFLOAT,  liquid_float_complex)
-LIQUID_MATRIX_DEFINE_INTERNAL_API(MATRIX_MANGLE_CDOUBLE, liquid_double_complex)
+LIQUID_MATRIX_DEFINE_INTERNAL_API(LIQUID_MATRIX_MANGLE_CFLOAT,  liquid_float_complex)
+LIQUID_MATRIX_DEFINE_INTERNAL_API(LIQUID_MATRIX_MANGLE_CDOUBLE, liquid_double_complex)
 
 
 // sparse 'alist' matrix type (similar to MacKay, Davey Lafferty convention)
@@ -1203,9 +1203,9 @@ LIQUID_MATRIX_DEFINE_INTERNAL_API(MATRIX_MANGLE_CDOUBLE, liquid_double_complex)
 void SMATRIX(_reset_max_mlist)(SMATRIX() _q);                   \
 void SMATRIX(_reset_max_nlist)(SMATRIX() _q);                   \
 
-LIQUID_SMATRIX_DEFINE_INTERNAL_API(SMATRIX_MANGLE_BOOL,  unsigned char)
-LIQUID_SMATRIX_DEFINE_INTERNAL_API(SMATRIX_MANGLE_FLOAT, float)
-LIQUID_SMATRIX_DEFINE_INTERNAL_API(SMATRIX_MANGLE_INT,   short int)
+LIQUID_SMATRIX_DEFINE_INTERNAL_API(LIQUID_SMATRIX_MANGLE_BOOL,  unsigned char)
+LIQUID_SMATRIX_DEFINE_INTERNAL_API(LIQUID_SMATRIX_MANGLE_FLOAT, float)
+LIQUID_SMATRIX_DEFINE_INTERNAL_API(LIQUID_SMATRIX_MANGLE_INT,   short int)
 
 // search for index placement in list
 unsigned short int smatrix_indexsearch(unsigned short int * _list,
@@ -1527,7 +1527,7 @@ void NCO(_compute_sincos_vco)(NCO() _q);                        \
 void NCO(_pll_reset)(NCO() _q);                                 \
 
 // Define nco internal APIs
-LIQUID_NCO_DEFINE_INTERNAL_API(NCO_MANGLE_FLOAT,
+LIQUID_NCO_DEFINE_INTERNAL_API(LIQUID_NCO_MANGLE_FLOAT,
                                float,
                                float complex)
 
