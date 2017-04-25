@@ -817,7 +817,7 @@ void EQRLS(_train)(EQRLS()      _q,                             \
                    T *          _w,                             \
                    T *          _x,                             \
                    T *          _d,                             \
-                   unsigned int _n);
+                   unsigned int _n);                            \
 
 LIQUID_EQRLS_DEFINE_API(LIQUID_EQRLS_MANGLE_RRRF, float);
 LIQUID_EQRLS_DEFINE_API(LIQUID_EQRLS_MANGLE_CCCF, liquid_float_complex);
@@ -5181,9 +5181,11 @@ void SMATRIX(_size)(SMATRIX()      _q,                          \
                     unsigned int * _m,                          \
                     unsigned int * _n);                         \
                                                                 \
-/* zero all elements */                                         \
-void SMATRIX(_clear)(SMATRIX() _q); /* zero and keep memory  */ \
-void SMATRIX(_reset)(SMATRIX() _q); /* zero and clear memory */ \
+/* zero all elements and keep memory                        */  \
+void SMATRIX(_clear)(SMATRIX() _q);                             \
+                                                                \
+/* zero all elements and clear memory                       */  \
+void SMATRIX(_reset)(SMATRIX() _q);                             \
                                                                 \
 /* determine if value has been set (allocated memory) */        \
 int SMATRIX(_isset)(SMATRIX()    _q,                            \
@@ -5386,8 +5388,6 @@ void liquid_unpack_soft_bits(unsigned int _sym_in,
 //  T       :   primitive data type
 //  TC      :   primitive data type (complex)
 #define LIQUID_MODEM_DEFINE_API(MODEM,T,TC)                     \
-                                                                \
-/* define struct pointer */                                     \
 typedef struct MODEM(_s) * MODEM();                             \
                                                                 \
 /* create digital modem object                              */  \
@@ -5676,8 +5676,6 @@ float fskdem_get_frequency_error(fskdem _q);
 //  T       :   primitive data type
 //  TC      :   primitive data type (complex)
 #define LIQUID_FREQMOD_DEFINE_API(FREQMOD,T,TC)                 \
-                                                                \
-/* define struct pointer */                                     \
 typedef struct FREQMOD(_s) * FREQMOD();                         \
                                                                 \
 /* create freqmod object (frequency modulator)              */  \
@@ -5725,8 +5723,6 @@ LIQUID_FREQMOD_DEFINE_API(LIQUID_FREQMOD_MANGLE_FLOAT,float,liquid_float_complex
 //  T       :   primitive data type
 //  TC      :   primitive data type (complex)
 #define LIQUID_FREQDEM_DEFINE_API(FREQDEM,T,TC)                 \
-                                                                \
-/* define struct pointer */                                     \
 typedef struct FREQDEM(_s) * FREQDEM();                         \
                                                                 \
 /* create freqdem object (frequency modulator)              */  \
@@ -6470,7 +6466,7 @@ void QUANTIZER(_execute_adc)(QUANTIZER() _q,                    \
                              unsigned int * _sample);           \
 void QUANTIZER(_execute_dac)(QUANTIZER() _q,                    \
                              unsigned int _sample,              \
-                             T * _x);
+                             T * _x);                           \
 
 LIQUID_QUANTIZER_DEFINE_API(LIQUID_QUANTIZER_MANGLE_FLOAT,  float)
 LIQUID_QUANTIZER_DEFINE_API(LIQUID_QUANTIZER_MANGLE_CFLOAT, liquid_float_complex)
