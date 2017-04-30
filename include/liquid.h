@@ -214,11 +214,14 @@ void cvsd_decode8(cvsd _q, unsigned char _data, float * _audio);
 typedef struct CBUFFER(_s) * CBUFFER();                         \
                                                                 \
 /* create circular buffer object of a particular size       */  \
+/*  _max_size  : maximum buffer size, _max_size > 0         */  \
 CBUFFER() CBUFFER(_create)(unsigned int _max_size);             \
                                                                 \
 /* create circular buffer object of a particular size and   */  \
 /* specify the maximum number of elements that can be read  */  \
 /* at any given time.                                       */  \
+/*  _max_size  : maximum buffer size, _max_size > 0         */  \
+/*  _max_read  : maximum size that will be read from buffer */  \
 CBUFFER() CBUFFER(_create_max)(unsigned int _max_size,          \
                                unsigned int _max_read);         \
                                                                 \
@@ -273,13 +276,15 @@ void CBUFFER(_pop)(CBUFFER() _q,                                \
 /*  _q              : circular buffer object                */  \
 /*  _num_requested  : number of elements requested          */  \
 /*  _v              : output pointer                        */  \
-/*  _nr             : number of elements referenced by _v   */  \
+/*  _num_read       : number of elements referenced by _v   */  \
 void CBUFFER(_read)(CBUFFER()      _q,                          \
                     unsigned int   _num_requested,              \
                     T **           _v,                          \
                     unsigned int * _num_read);                  \
                                                                 \
 /* release _n samples from the buffer                       */  \
+/*  _q : circular buffer object                             */  \
+/*  _n : number of elements to release                      */  \
 void CBUFFER(_release)(CBUFFER()    _q,                         \
                        unsigned int _n);                        \
 
