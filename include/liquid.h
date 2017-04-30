@@ -357,7 +357,7 @@ LIQUID_WINDOW_DEFINE_API(LIQUID_WINDOW_MANGLE_CFLOAT, liquid_float_complex)
 // Implements an efficient z^-k delay with minimal memory
 #define LIQUID_WDELAY_MANGLE_FLOAT(name)  LIQUID_CONCAT(wdelayf,  name)
 #define LIQUID_WDELAY_MANGLE_CFLOAT(name) LIQUID_CONCAT(wdelaycf, name)
-#define LIQUID_WDELAY_MANGLE_UINT(name)   LIQUID_CONCAT(wdelayui, name)
+//#define LIQUID_WDELAY_MANGLE_UINT(name)   LIQUID_CONCAT(wdelayui, name)
 
 // large macro
 //   WDELAY : name-mangling macro
@@ -745,8 +745,8 @@ void EQLMS(_train)(EQLMS()      _q,                             \
                    T *          _d,                             \
                    unsigned int _n);                            \
 
-LIQUID_EQLMS_DEFINE_API(LIQUID_EQLMS_MANGLE_RRRF, float);
-LIQUID_EQLMS_DEFINE_API(LIQUID_EQLMS_MANGLE_CCCF, liquid_float_complex);
+LIQUID_EQLMS_DEFINE_API(LIQUID_EQLMS_MANGLE_RRRF, float)
+LIQUID_EQLMS_DEFINE_API(LIQUID_EQLMS_MANGLE_CCCF, liquid_float_complex)
 
 
 // recursive least-squares (RLS)
@@ -819,8 +819,8 @@ void EQRLS(_train)(EQRLS()      _q,                             \
                    T *          _d,                             \
                    unsigned int _n);                            \
 
-LIQUID_EQRLS_DEFINE_API(LIQUID_EQRLS_MANGLE_RRRF, float);
-LIQUID_EQRLS_DEFINE_API(LIQUID_EQRLS_MANGLE_CCCF, liquid_float_complex);
+LIQUID_EQRLS_DEFINE_API(LIQUID_EQRLS_MANGLE_RRRF, float)
+LIQUID_EQRLS_DEFINE_API(LIQUID_EQRLS_MANGLE_CCCF, liquid_float_complex)
 
 
 
@@ -6922,8 +6922,8 @@ void VECTOR(_normalize)(T *          _x,                        \
                         unsigned int _n,                        \
                         T *          _y);                       \
 
-LIQUID_VECTOR_DEFINE_API(LIQUID_VECTOR_MANGLE_RF, float,                float);
-LIQUID_VECTOR_DEFINE_API(LIQUID_VECTOR_MANGLE_CF, liquid_float_complex, float);
+LIQUID_VECTOR_DEFINE_API(LIQUID_VECTOR_MANGLE_RF, float,                float)
+LIQUID_VECTOR_DEFINE_API(LIQUID_VECTOR_MANGLE_CF, liquid_float_complex, float)
 
 // 
 // mixed types
