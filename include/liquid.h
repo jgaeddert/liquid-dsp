@@ -432,11 +432,11 @@ void CHANNEL(_destroy)(CHANNEL() _q);                           \
 void CHANNEL(_print)(CHANNEL() _q);                             \
                                                                 \
 /* apply additive white Gausss noise impairment             */  \
-/*  _q              : channel object                        */  \
-/*  _noise_floor_dB : noise floor power spectral density    */  \
-/*  _SNR_dB         : signal-to-noise ratio [dB]            */  \
+/*  _q          : channel object                            */  \
+/*  _N0dB       : noise floor power spectral density [dB]   */  \
+/*  _SNRdB      : signal-to-noise ratio [dB]                */  \
 void CHANNEL(_add_awgn)(CHANNEL() _q,                           \
-                        float     _noise_floor_dB,              \
+                        float     _N0dB,                        \
                         float     _SNRdB);                      \
                                                                 \
 /* apply carrier offset impairment                          */  \
@@ -473,9 +473,9 @@ void CHANNEL(_execute)(CHANNEL()      _q,                       \
                                                                 \
 /* apply channel impairments on block of samples            */  \
 /*  _q      : channel object                                */  \
-/*  _x      : input array [size: _n x 1]                    */  \
-/*  _n      : input array length                            */  \
-/*  _y      : output array [size: _n x 1]                   */  \
+/*  _x      : input array, [size: _n x 1]                   */  \
+/*  _n      : input array, length                           */  \
+/*  _y      : output array, [size: _n x 1]                  */  \
 void CHANNEL(_execute_block)(CHANNEL()      _q,                 \
                              TI *           _x,                 \
                              unsigned int   _n,                 \
