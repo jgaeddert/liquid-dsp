@@ -199,7 +199,7 @@ void IIRFILTSOS(_execute_df1)(IIRFILTSOS() _q,
     *_y = _q->y[0];
 }
 
-// compute filter output, direct form I method
+// compute filter output, direct form II method
 //  _q      : iirfiltsos object
 //  _x      : input sample
 //  _y      : output sample pointer
@@ -223,7 +223,7 @@ void IIRFILTSOS(_execute_df2)(IIRFILTSOS() _q,
     DOTPROD(_execute)(_q->dpb, _q->v, _y);
 #else
     // compute new v[0]
-    _q->v[0] = _x - 
+    _q->v[0] = _x -
                _q->a[1]*_q->v[1] -
                _q->a[2]*_q->v[2];
 
@@ -250,4 +250,3 @@ float IIRFILTSOS(_groupdelay)(IIRFILTSOS() _q,
     }
     return iir_group_delay(b, 3, a, 3, _fc) + 2.0;
 }
-
