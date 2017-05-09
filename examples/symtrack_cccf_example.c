@@ -32,7 +32,6 @@ void usage()
     printf("  s     : signal-to-noise ratio,   default: 30 dB\n");
     printf("  w     : timing pll bandwidth,    default: 0.02\n");
     printf("  n     : number of symbols,       default: 4000\n");
-    printf("  t     : timing phase offset [%% symbol], t in [-0.5,0.5], default: -0.2\n");
 }
 
 int main(int argc, char*argv[])
@@ -48,8 +47,6 @@ int main(int argc, char*argv[])
     float        noise_floor = -60.0f;  // noise floor [dB]
     float        SNRdB       = 30.0f;   // signal-to-noise ratio [dB]
     float        bandwidth   =  0.10f;  // loop filter bandwidth
-    float        tau         = -0.2f;   // fractional symbol offset
-    float        rate        = 1.001f;  // sample rate offset
     float        dphi        =  0.02f;  // carrier frequency offset [radians/sample]
     float        phi         =  2.1f;   // carrier phase offset [radians]
 
@@ -88,12 +85,6 @@ int main(int argc, char*argv[])
         exit(1);
     } else if (num_symbols == 0) {
         fprintf(stderr,"error: number of symbols must be greater than 0\n");
-        exit(1);
-    } else if (tau < -1.0f || tau > 1.0f) {
-        fprintf(stderr,"error: timing phase offset must be in [-1,1]\n");
-        exit(1);
-    } else if (rate > 1.02f || rate < 0.98f) {
-        fprintf(stderr,"error: timing rate offset must be in [1.02,0.98]\n");
         exit(1);
     }
 
