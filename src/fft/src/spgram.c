@@ -147,7 +147,7 @@ SPGRAM() SPGRAM(_create)(unsigned int _nfft,
     // scale window and copy
     for (i=0; i<q->window_len; i++)
         q->w[i] = g * q->w[i];
-    
+
     // reset the spgram object
     q->num_samples_total    = 0;
     q->num_transforms_total = 0;
@@ -184,7 +184,7 @@ void SPGRAM(_destroy)(SPGRAM() _q)
     free(_q);
 }
 
-// resets the internal state of the spgram object
+// resets the internal state of the spgram object except for the window buffer
 void SPGRAM(_reset)(SPGRAM() _q)
 {
     // clear the window buffer
@@ -203,6 +203,15 @@ void SPGRAM(_reset)(SPGRAM() _q)
     // clear PSD accumulation
     for (i=0; i<_q->nfft; i++)
         _q->psd[i] = 0.0f;
+}
+
+// completely resets the internal state of the spgram object
+void SPGRAM(_reset_all)(SPGRAM() _q)
+{
+    // reset spgram object except for the window buffer
+    SPGRAM(_reset)(_q);
+    // clear the window buffer
+    WINDOW(_reset)(_q->buffer);
 }
 
 // prints the spgram object's parameters
@@ -436,4 +445,3 @@ void SPGRAM(_estimate_psd)(unsigned int _nfft,
     // destroy object
     SPGRAM(_destroy)(q);
 }
-
