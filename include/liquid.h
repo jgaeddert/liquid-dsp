@@ -1311,7 +1311,11 @@ SPGRAM() SPGRAM(_create_default)(unsigned int _nfft);           \
 /* destroy spgram object                                    */  \
 void SPGRAM(_destroy)(SPGRAM() _q);                             \
                                                                 \
-/* resets the internal state of the spgram object           */  \
+/* clears the internal state of the spgram object, but not  */  \
+/* the internal buffer                                      */  \
+void SPGRAM(_clear)(SPGRAM() _q);                               \
+                                                                \
+/* reset the spgram object to its original state completely */  \
 void SPGRAM(_reset)(SPGRAM() _q);                               \
                                                                 \
 /* print internal state of the spgram object                */  \
