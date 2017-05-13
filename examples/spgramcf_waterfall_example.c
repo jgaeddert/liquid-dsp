@@ -83,7 +83,7 @@ int main()
             fwrite(psd, sizeof(float), nfft, fid);
 
             // soft reset of internal state, counters
-            spgramcf_reset(periodogram);
+            spgramcf_clear(periodogram);
 
             // update counter for total number of PSD estimates taken
             total_estimates++;
