@@ -31,7 +31,7 @@ void usage()
     printf("  b     : filter excess bandwidth, default: 0.5\n");
     printf("  s     : signal-to-noise ratio,   default: 30 dB\n");
     printf("  w     : timing pll bandwidth,    default: 0.02\n");
-    printf("  n     : number of symbols,       default: 4000\n");
+    printf("  n     : number of samples,       default: 200000\n");
 }
 
 int main(int argc, char*argv[])
@@ -42,7 +42,6 @@ int main(int argc, char*argv[])
     unsigned int k           = 2;       // samples per symbol
     unsigned int m           = 7;       // filter delay (symbols)
     float        beta        = 0.20f;   // filter excess bandwidth factor
-    unsigned int num_symbols = 4000;    // number of data symbols
     unsigned int hc_len      =   4;     // channel filter length
     float        noise_floor = -60.0f;  // noise floor [dB]
     float        SNRdB       = 30.0f;   // signal-to-noise ratio [dB]
@@ -62,7 +61,7 @@ int main(int argc, char*argv[])
         case 'b':   beta        = atof(optarg);     break;
         case 's':   SNRdB       = atof(optarg);     break;
         case 'w':   bandwidth   = atof(optarg);     break;
-        case 'n':   num_symbols = atoi(optarg);     break;
+        case 'n':   num_samples = atoi(optarg);     break;
         default:
             exit(1);
         }
@@ -81,8 +80,8 @@ int main(int argc, char*argv[])
     } else if (bandwidth <= 0.0f) {
         fprintf(stderr,"error: timing PLL bandwidth must be greater than 0\n");
         exit(1);
-    } else if (num_symbols == 0) {
-        fprintf(stderr,"error: number of symbols must be greater than 0\n");
+    } else if (num_samples == 0) {
+        fprintf(stderr,"error: number of samples must be greater than 0\n");
         exit(1);
     }
 
