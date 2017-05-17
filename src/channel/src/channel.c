@@ -170,7 +170,7 @@ void CHANNEL(_add_multipath)(CHANNEL()    _q,
 
     // update length
     _q->h_len = _h_len;
-    
+
     // copy coefficients internally
     if (_h == NULL) {
         // generate random coefficients using m-sequence generator
@@ -271,7 +271,7 @@ void CHANNEL(_execute)(CHANNEL() _q,
     *_y = r;
 }
 
-// apply channel impairments on single input sample
+// apply channel impairments on input array
 //  _q      : channel object
 //  _x      : input array [size: _n x 1]
 //  _n      : input array length
@@ -287,4 +287,3 @@ void CHANNEL(_execute_block)(CHANNEL()    _q,
     for (i=0; i<_n; i++)
         CHANNEL(_execute)(_q, _x[i], &_y[i]);
 }
-

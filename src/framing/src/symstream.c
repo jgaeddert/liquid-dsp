@@ -35,7 +35,7 @@ struct SYMSTREAM(_s) {
     unsigned int    k;              // samples/symbol
     unsigned int    m;              // filter semi-length
     float           beta;           // filter excess bandwidth
-    int             mod_scheme;     // demodulator
+    int             mod_scheme;     // modulation scheme (e.g. LIQUID_MODEM_QPSK)
     MODEM()         mod;            // modulator
     FIRINTERP()     interp;         // interpolator
     TO *            buf;            // output buffer
@@ -166,4 +166,3 @@ void SYMSTREAM(_write_samples)(SYMSTREAM()  _q,
         _q->buf_index = (_q->buf_index + 1) % _q->k;
     }
 }
-
