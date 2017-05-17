@@ -41,7 +41,7 @@
 // internal structure
 struct SYMTRACK(_s) {
     // parameters
-    int             filter_type;        // filter type (e.g. LIQUID_RNYQUIST_RKAISER)
+    int             filter_type;        // filter type (e.g. LIQUID_FIRFILT_RKAISER)
     unsigned int    k;                  // samples/symbol
     unsigned int    m;                  // filter semi-length
     float           beta;               // filter excess bandwidth
@@ -74,7 +74,7 @@ struct SYMTRACK(_s) {
 };
 
 // create symtrack object with basic parameters
-//  _ftype  : filter type (e.g. LIQUID_RNYQUIST_RRC)
+//  _ftype  : filter type (e.g. LIQUID_FIRFILT_RRC)
 //  _k      : samples per symbol
 //  _m      : filter delay (symbols)
 //  _beta   : filter excess bandwidth
@@ -109,7 +109,7 @@ SYMTRACK() SYMTRACK(_create)(int          _ftype,
 
     // create automatic gain control
     q->agc = AGC(_create)();
-    
+
     // create symbol synchronizer (output rate: 2 samples per symbol)
     if (q->filter_type == LIQUID_FIRFILT_UNKNOWN)
         q->symsync = SYMSYNC(_create_kaiser)(q->k, q->m, 0.9f, 16);
@@ -218,7 +218,7 @@ void SYMTRACK(_set_bandwidth)(SYMTRACK() _q,
 
     // equalizer
     EQLMS(_set_bw)(_q->eq, eq_bandwidth);
-    
+
     // phase-locked loop
     NCO(_pll_set_bandwidth)(_q->nco, pll_bandwidth);
 }
@@ -327,4 +327,3 @@ void SYMTRACK(_execute_block)(SYMTRACK()     _q,
     //
     *_ny = num_written;
 }
-

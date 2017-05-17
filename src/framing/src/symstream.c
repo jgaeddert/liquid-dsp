@@ -31,7 +31,7 @@
 
 // internal structure
 struct SYMSTREAM(_s) {
-    int             filter_type;    // filter type (e.g. LIQUID_RNYQUIST_RKAISER)
+    int             filter_type;    // filter type (e.g. LIQUID_FIRFILT_RKAISER)
     unsigned int    k;              // samples/symbol
     unsigned int    m;              // filter semi-length
     float           beta;           // filter excess bandwidth
@@ -53,7 +53,7 @@ SYMSTREAM() SYMSTREAM(_create)()
 }
 
 // create symstream object with linear modulation
-//  _ftype  : filter type (e.g. LIQUID_RNYQUIST_RRC)
+//  _ftype  : filter type (e.g. LIQUID_FIRFILT_RRC)
 //  _k      : samples per symbol
 //  _m      : filter delay (symbols)
 //  _beta   : filter excess bandwidth

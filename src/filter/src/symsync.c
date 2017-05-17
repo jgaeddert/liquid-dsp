@@ -200,7 +200,7 @@ SYMSYNC() SYMSYNC(_create)(unsigned int _k,
 }
 
 // create square-root Nyquist symbol synchronizer
-//  _type   : filter type (e.g. LIQUID_RNYQUIST_RRC)
+//  _type   : filter type (e.g. LIQUID_FIRFILT_RRC)
 //  _k      : samples/symbol
 //  _m      : symbol delay
 //  _beta   : rolloff factor (0 < beta <= 1)
