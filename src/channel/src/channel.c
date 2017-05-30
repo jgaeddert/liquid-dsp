@@ -40,8 +40,8 @@ struct CHANNEL(_s) {
 
     // carrier offset
     int             enabled_carrier;    // carrier offset enabled?
-    float           dphi;               // channel gain
-    float           phi;                // noise standard deviation
+    float           dphi;               // carrier frequency offset [radians/sample]
+    float           phi;                // carrier phase offset [radians]
     NCO()           nco;                // oscillator
 
     // multi-path channel
