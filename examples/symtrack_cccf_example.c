@@ -63,8 +63,6 @@ int main(int argc, char*argv[])
         case 's':   SNRdB       = atof(optarg);     break;
         case 'w':   bandwidth   = atof(optarg);     break;
         case 'n':   num_symbols = atoi(optarg);     break;
-        case 't':   tau         = atof(optarg);     break;
-        case 'r':   rate        = atof(optarg);     break;
         default:
             exit(1);
         }
