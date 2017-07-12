@@ -441,7 +441,7 @@ void CHANNEL(_add_awgn)(CHANNEL() _q,                           \
                                                                 \
 /* apply carrier offset impairment                          */  \
 /*  _q          : channel object                            */  \
-/*  _frequency  : carrier frequency offse [radians/sample   */  \
+/*  _frequency  : carrier frequency offset [radians/sample] */  \
 /*  _phase      : carrier phase offset    [radians]         */  \
 void CHANNEL(_add_carrier_offset)(CHANNEL() _q,                 \
                                   float     _frequency,         \
