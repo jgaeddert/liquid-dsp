@@ -54,7 +54,7 @@ int main(int argc, char*argv[])
     unsigned int num_samples = 200000;  // number of samples
 
     int dopt;
-    while ((dopt = getopt(argc,argv,"hk:m:b:s:w:n:t:r:")) != EOF) {
+    while ((dopt = getopt(argc,argv,"hk:m:b:s:w:n:")) != EOF) {
         switch (dopt) {
         case 'h':   usage();                        return 0;
         case 'k':   k           = atoi(optarg);     break;
@@ -63,8 +63,6 @@ int main(int argc, char*argv[])
         case 's':   SNRdB       = atof(optarg);     break;
         case 'w':   bandwidth   = atof(optarg);     break;
         case 'n':   num_symbols = atoi(optarg);     break;
-        case 't':   tau         = atof(optarg);     break;
-        case 'r':   rate        = atof(optarg);     break;
         default:
             exit(1);
         }
