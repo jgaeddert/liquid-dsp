@@ -31,6 +31,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <getopt.h>
+#include <time.h>
 #include "autotest/autotest.h"
 
 void usage()
