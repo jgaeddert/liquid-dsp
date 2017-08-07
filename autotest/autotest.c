@@ -121,6 +121,7 @@ int export_results(char * _filename);
 // main function
 int main(int argc, char *argv[])
 {
+    srand(time(NULL));
     // options
     enum {RUN_ALL,              // run all tests
           RUN_ALL_RANDOM,       // run all tests (random order)
@@ -274,6 +275,10 @@ int main(int argc, char *argv[])
     // export results
     if (strcmp(filename,"")!=0)
         export_results(filename);
+
+    if (liquid_autotest_num_failed > 0) {
+        return 1;
+    }
 
     return 0;
 }
