@@ -40,7 +40,7 @@ struct SPWATERFALL(_s) {
     SPGRAM()        periodogram;    // spectral periodogram object
 
     // buffers
-    T *             psd;            // time/frequency buffer [nfft x 3*time]
+    T *             psd;            // time/frequency buffer [nfft x 2*time]
     unsigned int    index_time;     // time index for writing to buffer
     unsigned int    rollover;       // number of FFTs to take before writing to output
 };
@@ -52,7 +52,7 @@ struct SPWATERFALL(_s) {
 // compute spectral periodogram output (complex values) from internal periodogram object
 void SPWATERFALL(_step)(SPWATERFALL() _q);
 
-// consolidate buffer by taking median of three separate spectral estimates in time
+// consolidate buffer by taking log-average of two separate spectral estimates in time
 void SPWATERFALL(_consolidate_buffer)(SPWATERFALL() _q);
 
 // export files
@@ -99,17 +99,15 @@ SPWATERFALL() SPWATERFALL(_create)(unsigned int _nfft,
     q->time = _time;
 
     // create buffer to hold aggregated power spectral density
-    // NOTE: the buffer is two-dimensional time/frequency grid that is three times
-    //       'nfft' and 'time' to account for median consolidation each time the
-    //       buffer gets filled
-    q->psd = (T*) malloc( 3 * q->nfft * q->time * sizeof(T));
+    // NOTE: the buffer is two-dimensional time/frequency grid that is two times
+    //       'nfft' and 'time' to account for log-average consolidation each time
+    //       the buffer gets filled
+    q->psd = (T*) malloc( 2 * q->nfft * q->time * sizeof(T));
 
     // create spectral periodogram object
     q->periodogram = SPGRAM(_create)(_nfft, _wtype, _window_len, _delay);
 
     // reset the object
-    q->index_time = 0;
-    q->rollover   = 1;
     SPWATERFALL(_reset)(q);
 
     // return new object
@@ -149,7 +147,7 @@ void SPWATERFALL(_destroy)(SPWATERFALL() _q)
 // the internal buffer
 void SPWATERFALL(_clear)(SPWATERFALL() _q)
 {
-    memset(_q->psd, 0x00, 3*_q->nfft*_q->time*sizeof(T));
+    memset(_q->psd, 0x00, 2*_q->nfft*_q->time*sizeof(T));
     _q->index_time = 0;
 }
 
@@ -157,7 +155,7 @@ void SPWATERFALL(_clear)(SPWATERFALL() _q)
 void SPWATERFALL(_reset)(SPWATERFALL() _q)
 {
     SPWATERFALL(_clear)(_q);
-    //_q->rollover = 1;
+    _q->rollover = 1;
 }
 
 // prints the spwaterfall object's parameters
@@ -219,16 +217,16 @@ void SPWATERFALL(_step)(SPWATERFALL() _q)
         _q->index_time++;
 
         // determine if buffer is full and we need to consolidate buffer
-        if (_q->index_time == 3*_q->time)
+        if (_q->index_time == 2*_q->time)
             SPWATERFALL(_consolidate_buffer)(_q);
     }
 }
 
-// consolidate buffer by taking median of three separate spectral estimates in time
+// consolidate buffer by taking log-average of two separate spectral estimates in time
 //  _q : spwaterfall object
 void SPWATERFALL(_consolidate_buffer)(SPWATERFALL() _q)
 {
-    // assert(_q->index_time == 3*_q->time);
+    // assert(_q->index_time == 2*_q->time);
     printf("consolidating... (rollover = %10u, total samples : %16llu, index : %u)\n",
             _q->rollover, SPGRAM(_get_num_samples_total)(_q->periodogram), _q->index_time);
     unsigned int i; // time index
@@ -236,20 +234,11 @@ void SPWATERFALL(_consolidate_buffer)(SPWATERFALL() _q)
     for (i=0; i<_q->time; i++) {
         for (k=0; k<_q->nfft; k++) {
             // compute median
-            T v0  = _q->psd[ (3*i + 0)*_q->nfft + k ];
-            T v1  = _q->psd[ (3*i + 1)*_q->nfft + k ];
-            T v2  = _q->psd[ (3*i + 2)*_q->nfft + k ];
-
-            // keep median
-            if      (v2 < v0 && v0 < v1) { _q->psd[ i*_q->nfft + k ] = v0; }
-            else if (v0 < v1 && v1 < v2) { _q->psd[ i*_q->nfft + k ] = v1; }
-            else                         { _q->psd[ i*_q->nfft + k ] = v2; }
-
-            // keep average
-            //_q->psd[ i*_q->nfft + k ] = (v0 + v1 + v2)/3.0f;
+            T v0  = _q->psd[ (2*i + 0)*_q->nfft + k ];
+            T v1  = _q->psd[ (2*i + 1)*_q->nfft + k ];
 
             // keep log average (only need double buffer for this, not triple buffer)
-            _q->psd[ i*_q->nfft + k ] = logf((expf(v0) + expf(v1) + expf(v2))/3.0f);
+            _q->psd[ i*_q->nfft + k ] = logf(0.5f*(expf(v0) + expf(v1)));
         }
     }
 
@@ -257,7 +246,7 @@ void SPWATERFALL(_consolidate_buffer)(SPWATERFALL() _q)
     _q->index_time = _q->time;
 
     // update rollover counter
-    _q->rollover *= 3;
+    _q->rollover *= 2;
 }
 
 // export gnuplot file
