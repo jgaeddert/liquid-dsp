@@ -1461,6 +1461,83 @@ LIQUID_ASGRAM_DEFINE_API(LIQUID_ASGRAM_MANGLE_FLOAT,
                          liquid_float_complex,
                          float)
 
+// 
+// spectral periodogram waterfall
+//
+
+#define LIQUID_SPWATERFALL_MANGLE_CFLOAT(name) LIQUID_CONCAT(spwaterfallcf,name)
+#define LIQUID_SPWATERFALL_MANGLE_FLOAT(name)  LIQUID_CONCAT(spwaterfallf, name)
+
+// Macro        :   SPWATERFALL
+//  SPWATERFALL :   name-mangling macro
+//  T           :   primitive data type
+//  TC          :   primitive data type (complex)
+//  TI          :   primitive data type (input)
+#define LIQUID_SPWATERFALL_DEFINE_API(SPWATERFALL,T,TC,TI)      \
+                                                                \
+typedef struct SPWATERFALL(_s) * SPWATERFALL();                 \
+                                                                \
+/* create spgram object                                     */  \
+/*  _nfft       : FFT size                                  */  \
+/*  _wtype      : window type, e.g. LIQUID_WINDOW_HAMMING   */  \
+/*  _window_len : window length, _window_len in [1,_nfft]   */  \
+/*  _delay      : delay between transforms, _delay > 0      */  \
+/*  _time       : number of aggregated transforms, _time > 0*/  \
+SPWATERFALL() SPWATERFALL(_create)(unsigned int _nfft,          \
+                                   int          _wtype,         \
+                                   unsigned int _window_len,    \
+                                   unsigned int _delay,         \
+                                   unsigned int _time);         \
+                                                                \
+/* create default spgram object (Kaiser-Bessel window)      */  \
+SPWATERFALL() SPWATERFALL(_create_default)(unsigned int _nfft,  \
+                                           unsigned int _time); \
+                                                                \
+/* destroy spgram object                                    */  \
+void SPWATERFALL(_destroy)(SPWATERFALL() _q);                   \
+                                                                \
+/* clears the internal state of the spgram object, but not  */  \
+/* the internal buffer                                      */  \
+void SPWATERFALL(_clear)(SPWATERFALL() _q);                     \
+                                                                \
+/* reset the spgram object to its original state completely */  \
+void SPWATERFALL(_reset)(SPWATERFALL() _q);                     \
+                                                                \
+/* print internal state of the spgram object                */  \
+void SPWATERFALL(_print)(SPWATERFALL() _q);                     \
+                                                                \
+/* push a single sample into the spgram object              */  \
+/*  _q      :   spgram object                               */  \
+/*  _x      :   input sample                                */  \
+void SPWATERFALL(_push)(SPWATERFALL() _q,                       \
+                        TI            _x);                      \
+                                                                \
+/* write a block of samples to the spgram object            */  \
+/*  _q      :   spgram object                               */  \
+/*  _x      :   input buffer [size: _n x 1]                 */  \
+/*  _n      :   input buffer length                         */  \
+void SPWATERFALL(_write)(SPWATERFALL() _q,                      \
+                         TI *          _x,                      \
+                         unsigned int  _n);                     \
+                                                                \
+/* export files for plotting                                */  \
+/*  _q             : spgram object                          */  \
+/*  _filename_base : base filename (will export files with  */  \
+/*                   .gnu, .bin, and .png extensions)       */  \
+int SPWATERFALL(_export)(SPWATERFALL() _q,                      \
+                         const char *  _filename_base);         \
+
+
+LIQUID_SPWATERFALL_DEFINE_API(LIQUID_SPWATERFALL_MANGLE_CFLOAT,
+                              float,
+                              liquid_float_complex,
+                              liquid_float_complex)
+
+LIQUID_SPWATERFALL_DEFINE_API(LIQUID_SPWATERFALL_MANGLE_FLOAT,
+                              float,
+                              liquid_float_complex,
+                              float)
+
 
 //
 // MODULE : filter

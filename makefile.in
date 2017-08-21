@@ -341,8 +341,8 @@ src/fft/src/dct.o           : %.o : %.c $(include_headers)
 src/fft/src/fftf.o          : %.o : %.c $(include_headers)
 src/fft/src/fft_utilities.o : %.o : %.c $(include_headers)
 src/fft/src/mdct.o          : %.o : %.c $(include_headers)
-src/fft/src/spgramcf.o      : %.o : %.c $(include_headers) src/fft/src/asgram.c src/fft/src/spgram.c
-src/fft/src/spgramf.o       : %.o : %.c $(include_headers) src/fft/src/asgram.c src/fft/src/spgram.c
+src/fft/src/spgramcf.o      : %.o : %.c $(include_headers) src/fft/src/asgram.c src/fft/src/spgram.c src/fft/src/spwaterfall.c
+src/fft/src/spgramf.o       : %.o : %.c $(include_headers) src/fft/src/asgram.c src/fft/src/spgram.c src/fft/src/spwaterfall.c
 
 # fft autotest scripts
 fft_autotests :=						\
@@ -1472,6 +1472,7 @@ example_programs :=						\
 	examples/spgramcf_example				\
 	examples/spgramcf_waterfall_example			\
 	examples/spgramf_example				\
+	examples/spwaterfallcf_example				\
 	examples/symsync_crcf_example				\
 	examples/symsync_crcf_full_example			\
 	examples/symsync_crcf_kaiser_example			\
