@@ -441,7 +441,7 @@ void CHANNEL(_add_awgn)(CHANNEL() _q,                           \
                                                                 \
 /* apply carrier offset impairment                          */  \
 /*  _q          : channel object                            */  \
-/*  _frequency  : carrier frequency offse [radians/sample   */  \
+/*  _frequency  : carrier frequency offset [radians/sample] */  \
 /*  _phase      : carrier phase offset    [radians]         */  \
 void CHANNEL(_add_carrier_offset)(CHANNEL() _q,                 \
                                   float     _frequency,         \
@@ -2451,7 +2451,7 @@ IIRFILT() IIRFILT(_create_sos)(TC *         _B,                 \
 /*  _ftype  : filter type (e.g. LIQUID_IIRDES_BUTTER)       */  \
 /*  _btype  : band type (e.g. LIQUID_IIRDES_BANDPASS)       */  \
 /*  _format : coefficients format (e.g. LIQUID_IIRDES_SOS)  */  \
-/*  _n      : filter order                                  */  \
+/*  _order  : filter order                                  */  \
 /*  _fc     : low-pass prototype cut-off frequency          */  \
 /*  _f0     : center frequency (band-pass, band-stop)       */  \
 /*  _Ap     : pass-band ripple in dB                        */  \
@@ -2467,7 +2467,7 @@ IIRFILT() IIRFILT(_create_prototype)(                           \
             float _As);                                         \
                                                                 \
 /* create simplified low-pass Butterworth IIR filter */         \
-/*  _n      : filter order                                  */  \
+/*  _order  : filter order                                  */  \
 /*  _fc     : low-pass prototype cut-off frequency          */  \
 IIRFILT() IIRFILT(_create_lowpass)(                             \
             unsigned int _order,                                \
