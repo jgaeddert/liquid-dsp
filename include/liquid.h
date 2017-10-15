@@ -94,6 +94,18 @@ LIQUID_DEFINE_COMPLEX(double, liquid_double_complex);
 // MODULE : agc (automatic gain control)
 //
 
+// available squelch modes
+typedef enum {
+    LIQUID_AGC_SQUELCH_UNKNOWN=0,   // unknown/unavailable squelch mode
+    LIQUID_AGC_SQUELCH_ENABLED,     // squelch enabled but signal not detected
+    LIQUID_AGC_SQUELCH_RISE,        // signal first hit/exceeded threshold
+    LIQUID_AGC_SQUELCH_SIGNALHI,    // signal level high (above threshold)
+    LIQUID_AGC_SQUELCH_FALL,        // signal first dropped below threshold
+    LIQUID_AGC_SQUELCH_SIGNALLO,    // signal level low (below threshold)
+    LIQUID_AGC_SQUELCH_TIMEOUT,     // signal level low (below threshold for a certain time)
+    LIQUID_AGC_SQUELCH_DISABLED,    // squelch not enabled
+} agc_squelch_mode;
+
 #define LIQUID_AGC_MANGLE_CRCF(name) LIQUID_CONCAT(agc_crcf, name)
 #define LIQUID_AGC_MANGLE_RRRF(name) LIQUID_CONCAT(agc_rrrf, name)
 
@@ -161,6 +173,36 @@ void  AGC(_set_gain)(AGC() _q, float _gain);                    \
 void AGC(_init)(AGC()        _q,                                \
                 TC *         _x,                                \
                 unsigned int _n);                               \
+                                                                \
+/* enable squelch mode                                      */  \
+void AGC(_squelch_enable)(AGC() _q);                            \
+                                                                \
+/* disable squelch mode                                     */  \
+void AGC(_squelch_disable)(AGC() _q);                           \
+                                                                \
+/* is squelch enabled?                                      */  \
+int  AGC(_squelch_is_enabled)(AGC() _q);                        \
+                                                                \
+/* set squelch threshold                                    */  \
+/*  _q          :   automatic gain control object           */  \
+/*  _thresh_dB  :   threshold for enabling squelch [dB]     */  \
+void AGC(_squelch_set_threshold)(AGC() _q,                      \
+                                 T     _threshold);             \
+                                                                \
+/* get squelch threshold [dB]                               */  \
+T    AGC(_squelch_get_threshold)(AGC() _q);                     \
+                                                                \
+/* set squelch timeout                                      */  \
+/*  _q       : automatic gain control object                */  \
+/*  _timeout : timeout before enabling squelch [samples]    */  \
+void AGC(_squelch_set_timeout)(AGC()        _q,                 \
+                               unsigned int _timeout);          \
+                                                                \
+/* get squelch timeout [samples]                            */  \
+unsigned int AGC(_squelch_get_timeout)(AGC() _q);               \
+                                                                \
+/* get squelch status                                       */  \
+int AGC(_squelch_get_status)(AGC() _q);                         \
 
 // Define agc APIs
 LIQUID_AGC_DEFINE_API(LIQUID_AGC_MANGLE_CRCF, float, liquid_float_complex)
