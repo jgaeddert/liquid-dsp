@@ -89,9 +89,21 @@ int main(int argc, char*argv[])
         // get squelch mode
         mode[i] = agc_crcf_squelch_get_status(q);
 
-        // print status
-        if ( (i % 100)==0 || i==num_samples-1)
-            agc_crcf_print(q);
+        // print status every so often
+        if ( (i % 100)==0 || i==num_samples-1 || mode[i] == LIQUID_AGC_SQUELCH_RISE || mode[i] == LIQUID_AGC_SQUELCH_FALL) {
+            char mode_str[20] = "";
+            switch (mode[i]) {
+            case LIQUID_AGC_SQUELCH_ENABLED:  sprintf(mode_str,"squelch enabled");  break;
+            case LIQUID_AGC_SQUELCH_RISE:     sprintf(mode_str,"signal detected");  break;
+            case LIQUID_AGC_SQUELCH_SIGNALHI: sprintf(mode_str,"signal high");      break;
+            case LIQUID_AGC_SQUELCH_FALL:     sprintf(mode_str,"signal falling");   break;
+            case LIQUID_AGC_SQUELCH_SIGNALLO: sprintf(mode_str,"signal low");       break;
+            case LIQUID_AGC_SQUELCH_TIMEOUT:  sprintf(mode_str,"signal timed out"); break;
+            case LIQUID_AGC_SQUELCH_DISABLED: sprintf(mode_str,"squelch disabled"); break;
+            default:                          sprintf(mode_str,"(unknown)");        break;
+            }
+            printf("%4u : %18s (%1u), rssi = %8.2f dB\n", i, mode_str, mode[i], rssi[i]);
+        }
     }
 
     // destroy AGC object
@@ -142,7 +154,7 @@ int main(int argc, char*argv[])
     fprintf(fid,"  plot(t,mode,'-s','LineWidth',1.2,'MarkerSize',4,'Color',[0.5 0 0]);\n");
     fprintf(fid,"  grid on;\n");
     fprintf(fid,"  xlabel('sample index');\n");
-    fprintf(fid,"  ylabel('rssi [dB]');\n");
+    fprintf(fid,"  ylabel('squelch mode');\n");
     fprintf(fid,"  axis([0 %u 0 8]);\n", num_samples);
 
     fclose(fid);
