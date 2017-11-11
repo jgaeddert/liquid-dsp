@@ -1,4 +1,22 @@
 
+## Latest improvements ##
+
+## Improvements for v1.3.1 ##
+
+  * improved selection of SSE/MMX extension flags for gcc
+  * agc
+    - adding squelch functionality back into gain control object
+  * filter
+    - adding callback function for Parks-McClellan algorithm to allow generic 
+      filter prototyping
+    - fixed double-free bug in iirfilt
+  * fft
+    - adding new spwaterfall family of objects for generating waterfall plot
+      and automatically down-size as input sample size grows
+  * sequence
+    - fixed issue with order of operations causing inconsitent behavior across
+      different platforms
+
 ## Major improvements for v1.3.0 ##
 
   * New MIT/X11 license (https://opensource.org/licenses/MIT)
@@ -90,6 +108,7 @@
     - consistent naming of reset() methods for most objects
 
 ## Major improvements for v1.2.0 ##
+
   * dotprod
     - leveraging SIMD extensions for vector operations (SSE2, SSE3)
   * fft
