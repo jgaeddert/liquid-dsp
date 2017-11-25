@@ -639,9 +639,10 @@ void ofdmflexframesync_decode_header(ofdmflexframesync _q)
 
         // re-compute payload encoded message length
         if (_q->payload_soft) {
-            _q->payload_enc_len = 8*packetizer_get_enc_msg_len(_q->p_payload);
-            div_t d = div(_q->payload_enc_len, _q->bps_payload);
+            int packetizer_msg_len = packetizer_get_enc_msg_len(_q->p_payload);
+            div_t d = div((int)8*packetizer_msg_len, (int)_q->bps_payload);
             _q->payload_mod_len = d.quot + (d.rem ? 1 : 0);
+            _q->payload_enc_len = _q->bps_payload*_q->payload_mod_len;
         } else {
             _q->payload_enc_len = packetizer_get_enc_msg_len(_q->p_payload);
             // re-compute number of modulated payload symbols
