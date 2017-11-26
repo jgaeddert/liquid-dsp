@@ -96,6 +96,8 @@ void qpacketmodem_destroy(qpacketmodem _q)
     // free arrays
     free(_q->payload_enc);
     free(_q->payload_mod);
+
+    free(_q);
 }
 
 // reset object

@@ -69,6 +69,13 @@ void flexframesync_execute_rxheader(flexframesync _q,
 void flexframesync_execute_rxpayload(flexframesync _q,
                                      float complex _x);
 
+static flexframegenprops_s flexframesyncprops_header_default = {
+   FLEXFRAME_H_CRC,
+   FLEXFRAME_H_FEC0,
+   FLEXFRAME_H_FEC1,
+   FLEXFRAME_H_MOD,
+};
+
 // flexframesync object structure
 struct flexframesync_s {
     // callback
@@ -102,16 +109,22 @@ struct flexframesync_s {
     float complex * preamble_rx;        // received p/n symbols
     
     // header
+    int             header_soft;        // header performs soft demod
     float complex * header_sym;         // header symbols with pilots (received)
     unsigned int    header_sym_len;     // header symbols with pilots (length)
     qpilotsync      header_pilotsync;   // header demodulator/decoder
     float complex * header_mod;         // header symbols (received)
     unsigned int    header_mod_len;     // header symbols (length)
     qpacketmodem    header_decoder;     // header demodulator/decoder
+    unsigned int    header_user_len;    // length of user-defined array
+    unsigned int    header_dec_len;     // length of header (decoded)
     unsigned char * header_dec;         // header bytes (decoded)
     int             header_valid;       // header CRC flag
-    
+
+    flexframegenprops_s header_props;   // header properties
+
     // payload
+    int             payload_soft;       // payload performs soft demod
     modem           payload_demod;      // payload demod (for phase recovery only)
     float complex * payload_sym;        // payload symbols (received)
     unsigned int    payload_sym_len;    // payload symbols (length)
@@ -184,22 +197,15 @@ flexframesync flexframesync_create(framesync_callback _callback,
     nco_crcf_pll_set_bandwidth(q->pll, 1e-4f); // very low bandwidth
     
     // header demodulator/decoder
-    q->header_dec     = (unsigned char *) malloc(FLEXFRAME_H_DEC*sizeof(unsigned char));
-    q->header_decoder = qpacketmodem_create();
-    qpacketmodem_configure(q->header_decoder,
-                           FLEXFRAME_H_DEC,
-                           FLEXFRAME_H_CRC,
-                           FLEXFRAME_H_FEC0,
-                           FLEXFRAME_H_FEC1,
-                           LIQUID_MODEM_QPSK);
-    q->header_mod_len = qpacketmodem_get_frame_len(q->header_decoder);
-    q->header_mod     = (float complex*) malloc(q->header_mod_len*sizeof(float complex));
+    q->header_sym = NULL;
+    q->header_mod = NULL;
+    q->header_dec = NULL;
+    q->header_pilotsync = NULL;
+    q->header_decoder = NULL;
+    q->header_user_len = FLEXFRAME_H_USER_DEFAULT;
+    q->header_soft = 0;
+    flexframesync_set_header_props(q, NULL);
 
-    // header pilot synchronizer
-    q->header_pilotsync = qpilotsync_create(q->header_mod_len, 16);
-    q->header_sym_len   = qpilotsync_get_frame_len(q->header_pilotsync);
-    q->header_sym       = (float complex*) malloc(q->header_sym_len*sizeof(float complex));
-    
     // payload demodulator for phase recovery
     q->payload_demod = modem_create(LIQUID_MODEM_QPSK);
 
@@ -208,7 +214,7 @@ flexframesync flexframesync_create(framesync_callback _callback,
     int check      = LIQUID_CRC_24;
     int fec0       = LIQUID_FEC_NONE;
     int fec1       = LIQUID_FEC_GOLAY2412;
-    int mod_scheme = LIQUID_MODEM_QPSK;
+    int mod_scheme = LIQUID_MODEM_BPSK;
     q->payload_decoder = qpacketmodem_create();
     qpacketmodem_configure(q->payload_decoder, q->payload_dec_len, check, fec0, fec1, mod_scheme);
     //qpacketmodem_print(q->payload_decoder);
@@ -218,6 +224,7 @@ flexframesync flexframesync_create(framesync_callback _callback,
     // allocate memory for payload symbols and recovered data bytes
     q->payload_sym = (float complex*) malloc(q->payload_sym_len*sizeof(float complex));
     q->payload_dec = (unsigned char*) malloc(q->payload_dec_len*sizeof(unsigned char));
+    q->payload_soft = 0;
 
     // reset global data counters
     flexframesync_reset_framedatastats(q);
@@ -302,6 +309,74 @@ void flexframesync_reset(flexframesync _q)
 int flexframesync_is_frame_open(flexframesync _q)
 {
     return (_q->state == FLEXFRAMESYNC_STATE_DETECTFRAME) ? 0 : 1;
+}
+
+void flexframesync_set_header_len(flexframesync _q,
+                                  unsigned int  _len)
+{
+    _q->header_user_len = _len;
+    _q->header_dec_len = FLEXFRAME_H_DEC + _q->header_user_len;
+    _q->header_dec     = (unsigned char *) realloc(_q->header_dec, _q->header_dec_len*sizeof(unsigned char));
+    if (_q->header_decoder) {
+        qpacketmodem_destroy(_q->header_decoder);
+    }
+    _q->header_decoder = qpacketmodem_create();
+    qpacketmodem_configure(_q->header_decoder,
+                           _q->header_dec_len,
+                           _q->header_props.check,
+                           _q->header_props.fec0,
+                           _q->header_props.fec1,
+                           _q->header_props.mod_scheme);
+    _q->header_mod_len = qpacketmodem_get_frame_len(_q->header_decoder);
+    _q->header_mod     = (float complex*) realloc(_q->header_mod, _q->header_mod_len*sizeof(float complex));
+
+    // header pilot synchronizer
+    if (_q->header_pilotsync) {
+        qpilotsync_destroy(_q->header_pilotsync);
+    }
+    _q->header_pilotsync = qpilotsync_create(_q->header_mod_len, 16);
+    _q->header_sym_len   = qpilotsync_get_frame_len(_q->header_pilotsync);
+    _q->header_sym       = (float complex*) realloc(_q->header_sym, _q->header_sym_len*sizeof(float complex));
+}
+
+void flexframesync_decode_header_soft(flexframesync _q,
+                                      int           _soft)
+{
+    _q->header_soft = _soft;
+}
+
+void flexframesync_decode_payload_soft(flexframesync _q,
+                                       int           _soft)
+{
+    _q->payload_soft = _soft;
+}
+
+int flexframesync_set_header_props(flexframesync          _q,
+                                   flexframegenprops_s * _props)
+{
+    if (_props == NULL) {
+        _props = &flexframesyncprops_header_default;
+    }
+
+    // validate input
+    if (_props->check == LIQUID_CRC_UNKNOWN || _props->check >= LIQUID_CRC_NUM_SCHEMES) {
+        fprintf(stderr, "error: flexframesync_set_header_props(), invalid/unsupported CRC scheme\n");
+        exit(1);
+    } else if (_props->fec0 == LIQUID_FEC_UNKNOWN || _props->fec1 == LIQUID_FEC_UNKNOWN) {
+        fprintf(stderr, "error: flexframesync_set_header_props(), invalid/unsupported FEC scheme\n");
+        exit(1);
+    } else if (_props->mod_scheme == LIQUID_MODEM_UNKNOWN ) {
+        fprintf(stderr, "error: flexframesync_set_header_props(), invalid/unsupported modulation scheme\n");
+        exit(1);
+    }
+
+    // copy properties to internal structure
+    memmove(&_q->header_props, _props, sizeof(flexframegenprops_s));
+
+    // reconfigure payload buffers (reallocate as necessary)
+    flexframesync_set_header_len(_q, _q->header_user_len);
+
+    return 0;
 }
 
 // execute frame synchronizer
@@ -559,9 +634,15 @@ void flexframesync_decode_header(flexframesync _q)
     qpilotsync_execute(_q->header_pilotsync, _q->header_sym, _q->header_mod);
 
     // decode payload
-    _q->header_valid = qpacketmodem_decode(_q->header_decoder,
-                                           _q->header_mod,
-                                           _q->header_dec);
+    if (_q->header_soft) {
+        _q->header_valid = qpacketmodem_decode_soft(_q->header_decoder,
+                                                    _q->header_mod,
+                                                    _q->header_dec);
+    } else {
+        _q->header_valid = qpacketmodem_decode(_q->header_decoder,
+                                               _q->header_mod,
+                                               _q->header_dec);
+    }
 
     if (!_q->header_valid)
         return;
@@ -574,7 +655,7 @@ void flexframesync_decode_header(flexframesync _q)
     nco_crcf_set_phase    (_q->pll, phi_hat + dphi_hat * _q->header_sym_len);
 
     // first several bytes of header are user-defined
-    unsigned int n = FLEXFRAME_H_USER;
+    unsigned int n = _q->header_user_len;
 
     // first byte is for expansion/version validation
     unsigned int protocol = _q->header_dec[n+0];
@@ -650,7 +731,7 @@ void flexframesync_decode_header(flexframesync _q)
     printf("    payload dec len : %u\n", _q->payload_dec_len);
     printf("    user data       :");
     unsigned int i;
-    for (i=0; i<FLEXFRAME_H_USER; i++)
+    for (i=0; i<_q->header_user_len; i++)
         printf(" %.2x", _q->header_dec[i]);
     printf("\n");
 #endif
@@ -690,9 +771,15 @@ void flexframesync_execute_rxpayload(flexframesync _q,
 
         if (_q->symbol_counter == _q->payload_sym_len) {
             // decode payload
-            _q->payload_valid = qpacketmodem_decode(_q->payload_decoder,
-                                                    _q->payload_sym,
-                                                    _q->payload_dec);
+            if (_q->payload_soft) {
+                _q->payload_valid = qpacketmodem_decode_soft(_q->payload_decoder,
+                                                             _q->payload_sym,
+                                                             _q->payload_dec);
+            } else {
+                _q->payload_valid = qpacketmodem_decode(_q->payload_decoder,
+                                                        _q->payload_sym,
+                                                        _q->payload_dec);
+            }
 
             // update statistics
             _q->framedatastats.num_frames_detected++;

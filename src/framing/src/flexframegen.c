@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2015 Joseph Gaeddert
+ * Copyright (c) 2007 - 2017 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -53,6 +53,13 @@ static flexframegenprops_s flexframegenprops_default = {
     LIQUID_MODEM_BPSK,  // mod_scheme
 };
 
+static flexframegenprops_s flexframegenprops_header_default = {
+   FLEXFRAME_H_CRC,
+   FLEXFRAME_H_FEC0,
+   FLEXFRAME_H_FEC1,
+   FLEXFRAME_H_MOD,
+};
+
 void flexframegenprops_init_default(flexframegenprops_s * _props)
 {
     memmove(_props, &flexframegenprops_default, sizeof(flexframegenprops_s));
@@ -67,12 +74,15 @@ struct flexframegen_s {
     float complex   buf_interp[2];      // output interpolator buffer [size: k x 1]
 
     flexframegenprops_s props;          // payload properties
+    flexframegenprops_s header_props;   // header properties
 
     // preamble
     float complex * preamble_pn;        // p/n sequence
 
     // header
     unsigned char * header;             // header data
+    unsigned int    header_user_len;    // header user section length
+    unsigned int    header_dec_len;     // header length (decoded)
     qpacketmodem    header_encoder;     // header encoder/modulator
     unsigned int    header_mod_len;     // header length (encoded/modulated)
     float complex * header_mod;         // header symbols (encoded/modulated)
@@ -119,23 +129,16 @@ flexframegen flexframegen_create(flexframegenprops_s * _fgprops)
     }
     msequence_destroy(ms);
 
-    // create header encoder/modulator
-    q->header     = (unsigned char *) malloc(FLEXFRAME_H_DEC*sizeof(unsigned char));
-    q->header_encoder = qpacketmodem_create();
-    qpacketmodem_configure(q->header_encoder,
-                           FLEXFRAME_H_DEC,
-                           FLEXFRAME_H_CRC,
-                           FLEXFRAME_H_FEC0,
-                           FLEXFRAME_H_FEC1,
-                           LIQUID_MODEM_QPSK);
-    q->header_mod_len = qpacketmodem_get_frame_len(q->header_encoder);
-    q->header_mod     = (float complex *) malloc(q->header_mod_len*sizeof(float complex));
+    // reset object
+    flexframegen_reset(q);
 
-    // create header pilot sequence generator
-    q->header_pilotgen = qpilotgen_create(q->header_mod_len, 16);
-    q->header_sym_len  = qpilotgen_get_frame_len(q->header_pilotgen);
-    q->header_sym      = (float complex *) malloc(q->header_sym_len*sizeof(float complex));
-    //printf("header: %u bytes > %u mod > %u sym\n", 64, q->header_mod_len, q->header_sym_len);
+    // create header encoder/modulator
+    q->header = NULL;
+    q->header_mod = NULL;
+    q->header_sym = NULL;
+    q->header_encoder = NULL;
+    q->header_pilotgen = NULL;
+    q->header_user_len = FLEXFRAME_H_USER_DEFAULT;
 
     // payload encoder/modulator (initialize with default parameters to be reconfigured later)
     q->payload_encoder = qpacketmodem_create();
@@ -143,11 +146,9 @@ flexframegen flexframegen_create(flexframegenprops_s * _fgprops)
     q->payload_sym_len = qpacketmodem_get_frame_len(q->payload_encoder);
     q->payload_sym     = (float complex *) malloc( q->payload_sym_len*sizeof(float complex));
 
-    // reset object
-    flexframegen_reset(q);
-
     // set payload properties
     flexframegen_setprops(q, _fgprops);
+    flexframegen_set_header_props(q, NULL);
 
     // return pointer to main object
     return q;
@@ -165,6 +166,7 @@ void flexframegen_destroy(flexframegen _q)
     free(_q->preamble_pn);  // preamble symbols
     free(_q->header);       // header bytes
     free(_q->header_mod);   // encoded/modulated header symbols 
+    free(_q->header_sym);
     free(_q->payload_sym);  // encoded/modulated payload symbols
 
     // destroy frame generator
@@ -185,7 +187,7 @@ void flexframegen_print(flexframegen _q)
     printf("flexframegen:\n");
     printf("  head          : %u symbols\n", _q->m);
     printf("  preamble      : %u\n", 64);
-    printf("  header        : %u symbols (%u bytes)\n", _q->header_sym_len, FLEXFRAME_H_DEC);
+    printf("  header        : %u symbols (%u bytes)\n", _q->header_sym_len, _q->header_dec_len);
     printf("  payload       : %u symbols (%u bytes)\n", _q->payload_sym_len, _q->payload_dec_len);
     printf("    payload crc : %s\n", crc_scheme_str[_q->props.check][1]);
     printf("    fec (inner) : %s\n", fec_scheme_str[_q->props.fec0][1]);
@@ -264,6 +266,76 @@ int flexframegen_setprops(flexframegen          _q,
     return 0;
 }
 
+void flexframegen_set_header_len(flexframegen   _q,
+                                 unsigned int   _len)
+{
+    // if frame is already assembled, give warning
+    if (_q->frame_assembled) {
+        fprintf(stderr, "warning: flexframegen_setprops(), frame is already assembled; must reset() first\n");
+        return;
+    }
+
+    _q->header_user_len = _len;
+    _q->header_dec_len = FLEXFRAME_H_DEC + _q->header_user_len;
+    _q->header     = (unsigned char *) realloc(_q->header, _q->header_dec_len*sizeof(unsigned char));
+
+    if (_q->header_encoder) {
+        qpacketmodem_destroy(_q->header_encoder);
+    }
+    _q->header_encoder = qpacketmodem_create();
+    qpacketmodem_configure(_q->header_encoder,
+                           _q->header_dec_len,
+                           _q->header_props.check,
+                           _q->header_props.fec0,
+                           _q->header_props.fec1,
+                           _q->header_props.mod_scheme);
+    _q->header_mod_len = qpacketmodem_get_frame_len(_q->header_encoder);
+    _q->header_mod     = (float complex *) realloc(_q->header_mod, _q->header_mod_len*sizeof(float complex));
+
+    // create header pilot sequence generator
+    if (_q->header_pilotgen) {
+        qpilotgen_destroy(_q->header_pilotgen);
+    }
+    _q->header_pilotgen = qpilotgen_create(_q->header_mod_len, 16);
+    _q->header_sym_len  = qpilotgen_get_frame_len(_q->header_pilotgen);
+    _q->header_sym      = (float complex *) realloc(_q->header_sym, _q->header_sym_len*sizeof(float complex));
+    //printf("header: %u bytes > %u mod > %u sym\n", 64, _q->header_mod_len, _q->header_sym_len);
+}
+
+int flexframegen_set_header_props(flexframegen          _q,
+                                  flexframegenprops_s * _props)
+{
+    // if frame is already assembled, give warning
+    if (_q->frame_assembled) {
+        fprintf(stderr, "warning: flexframegen_set_header_props(), frame is already assembled; must reset() first\n");
+        return -1;
+    }
+
+    if (_props == NULL) {
+        _props = &flexframegenprops_header_default;
+    }
+
+    // validate input
+    if (_props->check == LIQUID_CRC_UNKNOWN || _props->check >= LIQUID_CRC_NUM_SCHEMES) {
+        fprintf(stderr, "error: flexframegen_set_header_props(), invalid/unsupported CRC scheme\n");
+        exit(1);
+    } else if (_props->fec0 == LIQUID_FEC_UNKNOWN || _props->fec1 == LIQUID_FEC_UNKNOWN) {
+        fprintf(stderr, "error: flexframegen_set_header_props(), invalid/unsupported FEC scheme\n");
+        exit(1);
+    } else if (_props->mod_scheme == LIQUID_MODEM_UNKNOWN ) {
+        fprintf(stderr, "error: flexframegen_set_header_props(), invalid/unsupported modulation scheme\n");
+        exit(1);
+    }
+
+    // copy properties to internal structure
+    memmove(&_q->header_props, _props, sizeof(flexframegenprops_s));
+
+    // reconfigure payload buffers (reallocate as necessary)
+    flexframegen_set_header_len(_q, _q->header_user_len);
+
+    return 0;
+}
+
 // get frame length (number of samples)
 unsigned int flexframegen_getframelen(flexframegen _q)
 {
@@ -298,12 +370,12 @@ void flexframegen_assemble(flexframegen          _q,
 
     // copy user-defined header to internal
     if (_header == NULL)
-        memset(_q->header, 0x00, FLEXFRAME_H_USER*sizeof(unsigned char));
+        memset(_q->header, 0x00, _q->header_user_len*sizeof(unsigned char));
     else
-        memmove(_q->header, _header, FLEXFRAME_H_USER*sizeof(unsigned char));
+        memmove(_q->header, _header, _q->header_user_len*sizeof(unsigned char));
 
     // first several bytes of header are user-defined
-    unsigned int n = FLEXFRAME_H_USER;
+    unsigned int n = _q->header_user_len;
 
     // add FLEXFRAME_PROTOCOL
     _q->header[n+0] = FLEXFRAME_PROTOCOL;
