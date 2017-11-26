@@ -112,6 +112,9 @@ struct gmskframesync_s {
     float * preamble_rx;            // preamble p/n sequence (received)
 
     // header
+    unsigned int header_user_len;
+    unsigned int header_enc_len;
+    unsigned int header_mod_len;
     unsigned char * header_mod;
     unsigned char * header_enc;
     unsigned char * header_dec;
@@ -214,13 +217,11 @@ gmskframesync gmskframesync_create(framesync_callback _callback,
     q->nco_coarse = nco_crcf_create(LIQUID_NCO);
 
     // create/allocate header objects/arrays
-    q->header_mod = (unsigned char*)malloc(GMSKFRAME_H_SYM*sizeof(unsigned char));
-    q->header_enc = (unsigned char*)malloc(GMSKFRAME_H_ENC*sizeof(unsigned char));
-    q->header_dec = (unsigned char*)malloc(GMSKFRAME_H_DEC*sizeof(unsigned char));
-    q->p_header   = packetizer_create(GMSKFRAME_H_DEC,
-                                      GMSKFRAME_H_CRC,
-                                      GMSKFRAME_H_FEC,
-                                      LIQUID_FEC_NONE);
+    q->header_mod = NULL;
+    q->header_enc = NULL;
+    q->header_dec = NULL;
+    q->p_header = NULL;
+    gmskframesync_set_header_len(q, GMSKFRAME_H_USER_DEFAULT);
 
     // create/allocate payload objects/arrays
     q->payload_dec_len = 1;
@@ -299,6 +300,30 @@ void gmskframesync_destroy(gmskframesync _q)
 void gmskframesync_print(gmskframesync _q)
 {
     printf("gmskframesync:\n");
+}
+
+void gmskframesync_set_header_len(gmskframesync _q,
+                                  unsigned int _len)
+{
+
+    _q->header_user_len = _len;
+    unsigned int header_dec_len = GMSKFRAME_H_DEC + _q->header_user_len;
+    _q->header_dec = (unsigned char*)realloc(_q->header_dec, header_dec_len*sizeof(unsigned char));
+
+    if (_q->p_header) {
+        packetizer_destroy(_q->p_header);
+    }
+
+    _q->p_header = packetizer_create(header_dec_len,
+                                     GMSKFRAME_H_CRC,
+                                     GMSKFRAME_H_FEC,
+                                     LIQUID_FEC_NONE);
+
+    _q->header_enc_len = packetizer_get_enc_msg_len(_q->p_header);
+    _q->header_enc = (unsigned char*)realloc(_q->header_enc, _q->header_enc_len*sizeof(unsigned char));
+
+    _q->header_mod_len = _q->header_enc_len * 8;
+    _q->header_mod = (unsigned char*)realloc(_q->header_mod, _q->header_mod_len*sizeof(unsigned char));
 }
 
 // reset frame synchronizer object
@@ -632,7 +657,7 @@ void gmskframesync_execute_rxheader(gmskframesync _q,
 
         // increment header counter
         _q->header_counter++;
-        if (_q->header_counter == GMSKFRAME_H_SYM) {
+        if (_q->header_counter == _q->header_mod_len) {
             // decode header
             gmskframesync_decode_header(_q);
 
@@ -743,13 +768,13 @@ void gmskframesync_decode_header(gmskframesync _q)
 {
     // pack each 1-bit header symbols into 8-bit bytes
     unsigned int num_written;
-    liquid_pack_bytes(_q->header_mod, GMSKFRAME_H_SYM,
-                      _q->header_enc, GMSKFRAME_H_ENC,
+    liquid_pack_bytes(_q->header_mod, _q->header_mod_len,
+                      _q->header_enc, _q->header_enc_len,
                       &num_written);
-    assert(num_written==GMSKFRAME_H_ENC);
+    assert(num_written==_q->header_enc_len);
 
     // unscramble data
-    unscramble_data(_q->header_enc, GMSKFRAME_H_ENC);
+    unscramble_data(_q->header_enc, _q->header_enc_len);
 
     // run packet decoder
     _q->header_valid = packetizer_decode(_q->p_header, _q->header_enc, _q->header_dec);
@@ -761,7 +786,7 @@ void gmskframesync_decode_header(gmskframesync _q)
     if (!_q->header_valid)
         return;
 
-    unsigned int n = GMSKFRAME_H_USER;
+    unsigned int n = _q->header_user_len;
 
     // first byte is for expansion/version validation
     if (_q->header_dec[n+0] != GMSKFRAME_VERSION) {

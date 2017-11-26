@@ -1090,15 +1090,12 @@ void bpacketsync_reconfig(bpacketsync _q);
 #define FLEXFRAME_PROTOCOL  (101+PACKETIZER_VERSION)
 
 // header description
-// NOTE: The flexframe header can be improved with crc24, secded7264, v29
-//       which also generates a 54-byte frame. Improves header decoding
-//       by about 1 dB (99% probability of decoding with SNR = -1 dB);
-//       however this requires that the 'libfec' libraries are installed.
-#define FLEXFRAME_H_USER    (14)                    // user-defined array
-#define FLEXFRAME_H_DEC     (FLEXFRAME_H_USER+6)    // decoded length
-#define FLEXFRAME_H_CRC     (LIQUID_CRC_32)         // header CRC
-#define FLEXFRAME_H_FEC0    (LIQUID_FEC_SECDED7264) // header FEC (inner)
-#define FLEXFRAME_H_FEC1    (LIQUID_FEC_HAMMING84)  // header FEC (outer)
+#define FLEXFRAME_H_USER_DEFAULT (14)                    // default length for user-defined array
+#define FLEXFRAME_H_DEC          (6)                     // decoded length
+#define FLEXFRAME_H_CRC          (LIQUID_CRC_32)         // header CRC
+#define FLEXFRAME_H_FEC0         (LIQUID_FEC_SECDED7264) // header FEC (inner)
+#define FLEXFRAME_H_FEC1         (LIQUID_FEC_HAMMING84)  // header FEC (outer)
+#define FLEXFRAME_H_MOD          (LIQUID_MODEM_QPSK)     // modulation scheme
 
 
 // 
@@ -1108,12 +1105,10 @@ void bpacketsync_reconfig(bpacketsync _q);
 #define GMSKFRAME_VERSION (3+PACKETIZER_VERSION)
 
 // header description
-#define GMSKFRAME_H_USER    (8)                     // user-defined array
-#define GMSKFRAME_H_DEC     (GMSKFRAME_H_USER+5)    // decoded length
-#define GMSKFRAME_H_CRC     (LIQUID_CRC_32)         // header CRC
-#define GMSKFRAME_H_FEC     (LIQUID_FEC_HAMMING128) // header FEC
-#define GMSKFRAME_H_ENC     (26)                    // encoded length (bytes)
-#define GMSKFRAME_H_SYM     (208)                   // number of encoded bits
+#define GMSKFRAME_H_USER_DEFAULT   (8)                     // user-defined array
+#define GMSKFRAME_H_DEC            (5)                     // decoded length
+#define GMSKFRAME_H_CRC            (LIQUID_CRC_32)         // header CRC
+#define GMSKFRAME_H_FEC            (LIQUID_FEC_HAMMING128) // header FEC
 
 
 // 
@@ -1123,14 +1118,12 @@ void bpacketsync_reconfig(bpacketsync _q);
 #define OFDMFLEXFRAME_PROTOCOL  (104+PACKETIZER_VERSION)
 
 // header description
-#define OFDMFLEXFRAME_H_USER    (8)                         // user-defined array
-#define OFDMFLEXFRAME_H_DEC     (OFDMFLEXFRAME_H_USER+6)    // decoded length
-#define OFDMFLEXFRAME_H_CRC     (LIQUID_CRC_32)             // header CRC
-#define OFDMFLEXFRAME_H_FEC     (LIQUID_FEC_GOLAY2412)      // header FEC
-#define OFDMFLEXFRAME_H_ENC     (36)                        // encoded length
-#define OFDMFLEXFRAME_H_MOD     (LIQUID_MODEM_BPSK)         // modulation scheme
-#define OFDMFLEXFRAME_H_BPS     (1)                         // modulation depth
-#define OFDMFLEXFRAME_H_SYM     (288)                       // number of symbols
+#define OFDMFLEXFRAME_H_USER_DEFAULT (8)                         // default length for user-defined array
+#define OFDMFLEXFRAME_H_DEC          (6)                         // decoded length
+#define OFDMFLEXFRAME_H_CRC          (LIQUID_CRC_32)             // header CRC
+#define OFDMFLEXFRAME_H_FEC0         (LIQUID_FEC_GOLAY2412)      // header FEC (inner)
+#define OFDMFLEXFRAME_H_FEC1         (LIQUID_FEC_NONE)           // header FEC (outer)
+#define OFDMFLEXFRAME_H_MOD          (LIQUID_MODEM_BPSK)         // modulation scheme
 
 //
 // MODULE : math
