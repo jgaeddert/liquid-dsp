@@ -81,7 +81,7 @@ void autotest_prime_small()
 		0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,1,0,0,0,0,0,1,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,};
 
 	unsigned int n;
-    for (n=2; n<2500; n++)
+    for (n=0; n<2500; n++)
         CONTEND_EQUALITY(is_prime_array[n], liquid_is_prime(n));
 }
 

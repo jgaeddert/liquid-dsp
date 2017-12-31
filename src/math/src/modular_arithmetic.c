@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2015 Joseph Gaeddert
+ * Copyright (c) 2007 - 2017 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -30,16 +30,22 @@
 #include "liquid.h"
 
 // determine if number is prime (slow, simple method)
+// https://en.ikipedia.org/wiki/Primality_test#Pseudocode
+// (thanks to K. Rosenberg for the tip)
 int liquid_is_prime(unsigned int _n)
 {
-    if (_n < 4) return 1;
+    // check base cases (0, 1, 2, 3, divisible by 2, divisible by 3)
+    if      ( _n <= 1)  return 0;
+    else if ( _n <= 3)  return 1;
+    else if (!(_n & 1)) return 0; // divisible by 2
+    else if (!(_n % 3)) return 0; // divisible by 3
 
-    unsigned int i;
-    for (i=2; i<_n; i++) {
-        if ( (_n % i) == 0)
+    unsigned int r=5;
+    while ( r*r <= _n ) {
+        if ( (_n % r) == 0 || (_n % (r+2)) == 0 )
             return 0;
+        r += 6;
     }
-
     return 1;
 }
 
