@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2017 Joseph Gaeddert
+ * Copyright (c) 2007 - 2018 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -93,7 +93,11 @@ void AGC(_destroy)(AGC() _q)
 // print agc object internals
 void AGC(_print)(AGC() _q)
 {
-    printf("agc [rssi: %12.4f dB]:\n", AGC(_get_rssi)(_q));
+    printf("agc [rssi: %12.4f dB, bandwidth: %12.4e, locked: %s, squelch: %s]:\n",
+            AGC(_get_rssi)(_q),
+            _q->bandwidth,
+            _q->is_locked ? "yes" : "no",
+            _q->squelch_mode == LIQUID_AGC_SQUELCH_DISABLED ? "disabled" : "enabled");
 }
 
 // reset agc object's internal state
@@ -209,16 +213,16 @@ float AGC(_get_signal_level)(AGC() _q)
 
 // set estimated signal level (linear)
 void AGC(_set_signal_level)(AGC() _q,
-                            float _signal_level)
+                            float _x2)
 {
     // check to ensure signal level is reasonable
-    if ( _signal_level <= 0 ) {
+    if ( _x2 <= 0 ) {
         fprintf(stderr,"error: agc_%s_set_signal_level(), bandwidth must be greater than zero\n", EXTENSION_FULL);
         exit(-1);
     }
 
     // set internal gain appropriately
-    _q->g = 1.0f / _signal_level;
+    _q->g = 1.0f / _x2;
 
     // reset internal output signal level
     _q->y2_prime = 1.0f;
