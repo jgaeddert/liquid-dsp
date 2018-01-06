@@ -647,6 +647,8 @@ LIQUID_TVMPCH_DEFINE_API(LIQUID_TVMPCH_MANGLE_CCCF,
 //   TI         : input data type
 #define LIQUID_DOTPROD_DEFINE_API(DOTPROD,TO,TC,TI)             \
                                                                 \
+typedef struct DOTPROD(_s) * DOTPROD();                         \
+                                                                \
 /* run dot product without creating object [unrolled loop]  */  \
 /*  _v      : coefficients array [size: _n x 1]             */  \
 /*  _x      : input array [size: _n x 1]                    */  \
@@ -654,8 +656,6 @@ LIQUID_TVMPCH_DEFINE_API(LIQUID_TVMPCH_MANGLE_CCCF,
 /*  _y      : output sample pointer                         */  \
 void DOTPROD(_run)( TC *_v, TI *_x, unsigned int _n, TO *_y);   \
 void DOTPROD(_run4)(TC *_v, TI *_x, unsigned int _n, TO *_y);   \
-                                                                \
-typedef struct DOTPROD(_s) * DOTPROD();                         \
                                                                 \
 /* create dot product object                                */  \
 /*  _v      : coefficients array [size: _n x 1]             */  \
