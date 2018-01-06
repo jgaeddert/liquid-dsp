@@ -60,12 +60,12 @@ const char * liquid_libversion(void);
 int liquid_libversion_number(void);
 
 // run-time library validation
-#define LIQUID_VALIDATE_LIBVERSION                              \
-  if (LIQUID_VERSION_NUMBER != liquid_libversion_number()) {    \
-    fprintf(stderr,"%s:%u: ", __FILE__,__LINE__);               \
-    fprintf(stderr,"error: invalid liquid runtime library\n");  \
-    exit(1);                                                    \
-  }                                                             \
+#define LIQUID_VALIDATE_LIBVERSION                                          \
+  if (LIQUID_VERSION_NUMBER != liquid_libversion_number()) {                \
+    fprintf(stderr,"%s:%u: ", __FILE__,__LINE__);                           \
+    fprintf(stderr,"error: invalid liquid runtime library\n");              \
+    exit(1);                                                                \
+  }                                                                         \
 
 #define LIQUID_CONCAT(prefix, name) prefix ## name
 #define LIQUID_VALIDATE_INPUT
@@ -113,144 +113,139 @@ typedef enum {
 //   AGC    : name-mangling macro
 //   T      : primitive data type
 //   TC     : input/output data type
-#define LIQUID_AGC_DEFINE_API(AGC,T,TC)                         \
-typedef struct AGC(_s) * AGC();                                 \
-                                                                \
-/* Create automatic gain control object.                    */  \
-AGC() AGC(_create)(void);                                       \
-                                                                \
-/* Destroy object, freeing all internally-allocated memory. */  \
-void AGC(_destroy)(AGC() _q);                                   \
-                                                                \
-/* Print object properties to stdout, including received    */  \
-/* signal strength indication (RSSI), loop bandwidth, lock  */  \
-/* status, and squelch status.                              */  \
-void AGC(_print)(AGC() _q);                                     \
-                                                                \
-/* Reset internal state of agc object, including gain       */  \
-/* estimate, input signal level estimate, lock status, and  */  \
-/* squelch mode.                                            */  \
-/* If the squelch mode is disabled, it stays disabled, but  */  \
-/* all enabled modes (e.g. LIQUID_AGC_SQUELCH_TIMEOUT)      */  \
-/* resets to just LIQUID_AGC_SQUELCH_ENABLED.               */  \
-void AGC(_reset)(AGC() _q);                                     \
-                                                                \
-/* Execute automatic gain control on an single input sample */  \
-/*  _q      : automatic gain control object                 */  \
-/*  _x      : input sample                                  */  \
-/*  _y      : output sample                                 */  \
-void AGC(_execute)(AGC() _q,                                    \
-                   TC    _x,                                    \
-                   TC *  _y);                                   \
-                                                                \
-/* Execute automatic gain control on block of samples       */  \
-/* pointed to by _x and store the result in the array of    */  \
-/* the same length _y.                                      */  \
-/*  _q      : automatic gain control object                 */  \
-/*  _x      : input data array, [size: _n x 1]              */  \
-/*  _n      : number of input, output samples               */  \
-/*  _y      : output data array, [size: _n x 1]             */  \
-void AGC(_execute_block)(AGC()        _q,                       \
-                         TC *         _x,                       \
-                         unsigned int _n,                       \
-                         TC *         _y);                      \
-                                                                \
-/* Lock agc object. When locked, the agc object still makes */  \
-/* an estimate of the signal level, but the gain setting is */  \
-/* fixed and does not change.                               */  \
-/* This is useful for providing coarse input signal level   */  \
-/* correction and quickly detecting a packet burst but not  */  \
-/* distorting signals with amplitude variation due to       */  \
-/* modulation.                                              */  \
-void AGC(_lock)(AGC() _q);                                      \
-                                                                \
-/* Unlock agc object, and allow amplitude correction to     */  \
-/* resume.                                                  */  \
-void AGC(_unlock)(AGC() _q);                                    \
-                                                                \
-/* Set loop filter bandwidth: attack/release time.          */  \
-/*  _q      : automatic gain control object                 */  \
-/*  _bt     : bandwidth-time constant, _bt > 0              */  \
-void AGC(_set_bandwidth)(AGC() _q, float _bt);                  \
-                                                                \
-/* Get the agc object's loop filter bandwidth.              */  \
-float AGC(_get_bandwidth)(AGC() _q);                            \
-                                                                \
-/* Get the input signal's estimated energy level, relative  */  \
-/* to unity. The result is a linear value.                  */  \
-float AGC(_get_signal_level)(AGC() _q);                         \
-                                                                \
-/* Set the agc object's estimate of the input signal by     */  \
-/* specifying an explicit linear value. This is useful for  */  \
-/* initializing the agc object with a preliminary estimate  */  \
-/* of the signal level to help gain convergence.            */  \
-/*  _q      : automatic gain control object                 */  \
-/*  _x2     : signal level of input, _x2 > 0                */  \
-void  AGC(_set_signal_level)(AGC() _q,                          \
-                             float _x2);                        \
-                                                                \
-/* Get the agc object's estimated received signal strength  */  \
-/* indication (RSSI) on the input signal.                   */  \
-/* This is similar to getting the signal level (above), but */  \
-/* returns the result in dB rather than on a linear scale.  */  \
-float AGC(_get_rssi)(AGC() _q);                                 \
-                                                                \
-/* Set the agc object's estimated received signal strength  */  \
-/* indication (RSSI) on the input signal by specifying an   */  \
-/* explicity value in dB.                                   */  \
-/*  _q      : automatic gain control object                 */  \
-/*  _rssi   : signal level of input [dB]                    */  \
-void  AGC(_set_rssi)(AGC() _q, float _rssi);                    \
-                                                                \
-/* Get the gain value currently being applied to the input  */  \
-/* signal (linear).                                         */  \
-float AGC(_get_gain)(AGC() _q);                                 \
-                                                                \
-/* Set the agc object's internal gain by specifying an      */  \
-/* explicit linear value.                                   */  \
-/*  _q      : automatic gain control object                 */  \
-/*  _gain   : gain to apply to input signal, _gain > 0      */  \
-void  AGC(_set_gain)(AGC() _q,                                  \
-                     float _gain);                              \
-                                                                \
-/* Estimate signal level and initialize internal gain on an */  \
-/* input array.                                             */  \
-/*  _q      : automatic gain control object                 */  \
-/*  _x      : input data array, [size: _n x 1]              */  \
-/*  _n      : number of input, output samples               */  \
-void AGC(_init)(AGC()        _q,                                \
-                TC *         _x,                                \
-                unsigned int _n);                               \
-                                                                \
-/* Enable squelch mode.                                     */  \
-void AGC(_squelch_enable)(AGC() _q);                            \
-                                                                \
-/* Disable squelch mode.                                    */  \
-void AGC(_squelch_disable)(AGC() _q);                           \
-                                                                \
-/* Return flag indicating if squelch is enabled or not.     */  \
-int  AGC(_squelch_is_enabled)(AGC() _q);                        \
-                                                                \
-/* Set threshold for enabling/disabling squelch.            */  \
-/*  _q          :   automatic gain control object           */  \
-/*  _thresh_dB  :   threshold for enabling squelch [dB]     */  \
-void AGC(_squelch_set_threshold)(AGC() _q,                      \
-                                 T     _threshold);             \
-                                                                \
-/* Get squelch threshold [dB]                               */  \
-T    AGC(_squelch_get_threshold)(AGC() _q);                     \
-                                                                \
-/* Set timeout before enabling squelch.                     */  \
-/*  _q       : automatic gain control object                */  \
-/*  _timeout : timeout before enabling squelch [samples]    */  \
-void AGC(_squelch_set_timeout)(AGC()        _q,                 \
-                               unsigned int _timeout);          \
-                                                                \
-/* Get squelch timeout [samples]                            */  \
-unsigned int AGC(_squelch_get_timeout)(AGC() _q);               \
-                                                                \
-/* Get squelch status (e.g. LIQUID_AGC_SQUELCH_TIMEOUT).    */  \
-int AGC(_squelch_get_status)(AGC() _q);                         \
+#define LIQUID_AGC_DEFINE_API(AGC,T,TC)                                     \
+typedef struct AGC(_s) * AGC();                                             \
+                                                                            \
+/* Create automatic gain control object.                                */  \
+AGC() AGC(_create)(void);                                                   \
+                                                                            \
+/* Destroy object, freeing all internally-allocated memory.             */  \
+void AGC(_destroy)(AGC() _q);                                               \
+                                                                            \
+/* Print object properties to stdout, including received signal         */  \
+/* strength indication (RSSI), loop bandwidth, lock status, and squelch */  \
+/* status.                                                              */  \
+void AGC(_print)(AGC() _q);                                                 \
+                                                                            \
+/* Reset internal state of agc object, including gain estimate, input   */  \
+/* signal level estimate, lock status, and squelch mode                 */  \
+/* If the squelch mode is disabled, it stays disabled, but all enabled  */  \
+/* modes (e.g. LIQUID_AGC_SQUELCH_TIMEOUT) resets to just               */  \
+/* LIQUID_AGC_SQUELCH_ENABLED.                                          */  \
+void AGC(_reset)(AGC() _q);                                                 \
+                                                                            \
+/* Execute automatic gain control on an single input sample             */  \
+/*  _q      : automatic gain control object                             */  \
+/*  _x      : input sample                                              */  \
+/*  _y      : output sample                                             */  \
+void AGC(_execute)(AGC() _q,                                                \
+                   TC    _x,                                                \
+                   TC *  _y);                                               \
+                                                                            \
+/* Execute automatic gain control on block of samples pointed to by _x  */  \
+/* and store the result in the array of the same length _y.             */  \
+/*  _q      : automatic gain control object                             */  \
+/*  _x      : input data array, [size: _n x 1]                          */  \
+/*  _n      : number of input, output samples                           */  \
+/*  _y      : output data array, [size: _n x 1]                         */  \
+void AGC(_execute_block)(AGC()        _q,                                   \
+                         TC *         _x,                                   \
+                         unsigned int _n,                                   \
+                         TC *         _y);                                  \
+                                                                            \
+/* Lock agc object. When locked, the agc object still makes an estimate */  \
+/* of the signal level, but the gain setting is fixed and does not      */  \
+/* change.                                                              */  \
+/* This is useful for providing coarse input signal level correction    */  \
+/* and quickly detecting a packet burst but not distorting signals with */  \
+/* amplitude variation due to modulation.                               */  \
+void AGC(_lock)(AGC() _q);                                                  \
+                                                                            \
+/* Unlock agc object, and allow amplitude correction to resume.         */  \
+void AGC(_unlock)(AGC() _q);                                                \
+                                                                            \
+/* Set loop filter bandwidth: attack/release time.                      */  \
+/*  _q      : automatic gain control object                             */  \
+/*  _bt     : bandwidth-time constant, _bt > 0                          */  \
+void AGC(_set_bandwidth)(AGC() _q, float _bt);                              \
+                                                                            \
+/* Get the agc object's loop filter bandwidth.                          */  \
+float AGC(_get_bandwidth)(AGC() _q);                                        \
+                                                                            \
+/* Get the input signal's estimated energy level, relative to unity.    */  \
+/* The result is a linear value.                                        */  \
+float AGC(_get_signal_level)(AGC() _q);                                     \
+                                                                            \
+/* Set the agc object's estimate of the input signal by specifying an   */  \
+/* explicit linear value. This is useful for initializing the agc       */  \
+/* object with a preliminary estimate of the signal level to help gain  */  \
+/* convergence.                                                         */  \
+/*  _q      : automatic gain control object                             */  \
+/*  _x2     : signal level of input, _x2 > 0                            */  \
+void  AGC(_set_signal_level)(AGC() _q,                                      \
+                             float _x2);                                    \
+                                                                            \
+/* Get the agc object's estimated received signal strength indication   */  \
+/* (RSSI) on the input signal.                                          */  \
+/* This is similar to getting the signal level (above), but returns the */  \
+/* result in dB rather than on a linear scale.                          */  \
+float AGC(_get_rssi)(AGC() _q);                                             \
+                                                                            \
+/* Set the agc object's estimated received signal strength indication   */  \
+/* (RSSI) on the input signal by specifying an explicit value in dB.    */  \
+/*  _q      : automatic gain control object                             */  \
+/*  _rssi   : signal level of input [dB]                                */  \
+void  AGC(_set_rssi)(AGC() _q, float _rssi);                                \
+                                                                            \
+/* Get the gain value currently being applied to the input signal       */  \
+/* (linear).                                                            */  \
+float AGC(_get_gain)(AGC() _q);                                             \
+                                                                            \
+/* Set the agc object's internal gain by specifying an explicit linear  */  \
+/* value.                                                               */  \
+/*  _q      : automatic gain control object                             */  \
+/*  _gain   : gain to apply to input signal, _gain > 0                  */  \
+void  AGC(_set_gain)(AGC() _q,                                              \
+                     float _gain);                                          \
+                                                                            \
+/* Estimate signal level and initialize internal gain on an input       */  \
+/* array.                                                               */  \
+/*  _q      : automatic gain control object                             */  \
+/*  _x      : input data array, [size: _n x 1]                          */  \
+/*  _n      : number of input, output samples                           */  \
+void AGC(_init)(AGC()        _q,                                            \
+                TC *         _x,                                            \
+                unsigned int _n);                                           \
+                                                                            \
+/* Enable squelch mode.                                                 */  \
+void AGC(_squelch_enable)(AGC() _q);                                        \
+                                                                            \
+/* Disable squelch mode.                                                */  \
+void AGC(_squelch_disable)(AGC() _q);                                       \
+                                                                            \
+/* Return flag indicating if squelch is enabled or not.                 */  \
+int  AGC(_squelch_is_enabled)(AGC() _q);                                    \
+                                                                            \
+/* Set threshold for enabling/disabling squelch.                        */  \
+/*  _q          :   automatic gain control object                       */  \
+/*  _thresh_dB  :   threshold for enabling squelch [dB]                 */  \
+void AGC(_squelch_set_threshold)(AGC() _q,                                  \
+                                 T     _threshold);                         \
+                                                                            \
+/* Get squelch threshold [dB]                                           */  \
+T    AGC(_squelch_get_threshold)(AGC() _q);                                 \
+                                                                            \
+/* Set timeout before enabling squelch.                                 */  \
+/*  _q       : automatic gain control object                            */  \
+/*  _timeout : timeout before enabling squelch [samples]                */  \
+void AGC(_squelch_set_timeout)(AGC()        _q,                             \
+                               unsigned int _timeout);                      \
+                                                                            \
+/* Get squelch timeout [samples]                                        */  \
+unsigned int AGC(_squelch_get_timeout)(AGC() _q);                           \
+                                                                            \
+/* Get squelch status (e.g. LIQUID_AGC_SQUELCH_TIMEOUT).                */  \
+int AGC(_squelch_get_status)(AGC() _q);                                     \
 
 // Define agc APIs
 LIQUID_AGC_DEFINE_API(LIQUID_AGC_MANGLE_CRCF, float, liquid_float_complex)
