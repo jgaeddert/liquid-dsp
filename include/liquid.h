@@ -4935,9 +4935,9 @@ T POLY(_val_lagrange_barycentric)(T *          _x,                          \
                                   unsigned int _n);                         \
                                                                             \
 /* Perform binomial expansion on the polynomial                         */  \
-/*  "P_n(x) = (1+x)^n"                                                  */  \
+/*  \( P_n(x) = (1+x)^n \)                                              */  \
 /* as                                                                   */  \
-/*  "P_n(x) = p[0] + p[1]*x + p[2]*x^2 + ... + p[n]x^n"                 */  \
+/*  \( P_n(x) = p[0] + p[1]x + p[2]x^2 + ... + p[n]x^n \)               */  \
 /* NOTE: _p has order n (coefficients has length n+1)                   */  \
 /*  _n      : polynomial order                                          */  \
 /*  _p      : polynomial coefficients [size: _n+1 x 1]                  */  \
@@ -4945,9 +4945,9 @@ void POLY(_expandbinomial)(unsigned int _n,                                 \
                            T *          _p);                                \
                                                                             \
 /* Perform positive/negative binomial expansion on the polynomial       */  \
-/*  "P_n(x) = (1+x)^m * (1-x)^k"                                        */  \
+/*  \( P_n(x) = (1+x)^m (1-x)^k \)                                      */  \
 /* as                                                                   */  \
-/*  "P_n(x) = p[0] + p[1]*x + p[2]*x^2 + ... + p[n]x^n"                 */  \
+/*  \( P_n(x) = p[0] + p[1]x + p[2]x^2 + ... + p[n]x^n \)               */  \
 /* NOTE: _p has order n=m+k (array is length n+1)                       */  \
 /*  _m      : number of '1+x' terms                                     */  \
 /*  _k      : number of '1-x' terms                                     */  \
@@ -4957,10 +4957,10 @@ void POLY(_expandbinomial_pm)(unsigned int _m,                              \
                               T *          _p);                             \
                                                                             \
 /* Perform root expansion on the polynomial                             */  \
-/*  "P_n(x) = (x-r[0]) * (x-r[1]) * ... * (x-r[n-1])"                   */  \
+/*  \( P_n(x) = (x-r[0]) (x-r[1]) ... (x-r[n-1]) \)                     */  \
 /* as                                                                   */  \
-/*  "P_n(x) = p[0] + p[1]*x + ... + p[n]*x^n"                           */  \
-/* where r[0],r[1],...,r[n-1] are the roots of P_n(x)                   */  \
+/*  \( P_n(x) = p[0] + p[1]x + ... + p[n]x^n \)                         */  \
+/* where \( r[0],r[1],...,r[n-1]\) are the roots of \( P_n(x) \).       */  \
 /* NOTE: _p has order _n (array is length _n+1)                         */  \
 /*  _r      : roots of polynomial [size: _n x 1]                        */  \
 /*  _n      : number of roots in polynomial                             */  \
@@ -4970,9 +4970,9 @@ void POLY(_expandroots)(T *          _r,                                    \
                         T *          _p);                                   \
                                                                             \
 /* Perform root expansion on the polynomial                             */  \
-/*  "P_n(x) = (x*b[0]-a[0]) * (x*b[1]-a[1]) * ... * (x*b[n-1]-a[n-1])"  */  \
+/*  \( P_n(x) = (xb[0]-a[0]) (xb[1]-a[1])...(xb[n-1]-a[n-1]) \)         */  \
 /* as                                                                   */  \
-/*  "P_n(x) = p[0] + p[1]*x + ... + p[n]*x^n"                           */  \
+/*  \( P_n(x) = p[0] + p[1]x + ... + p[n]x^n \)                         */  \
 /* NOTE: _p has order _n (array is length _n+1)                         */  \
 /*  _a      : subtractant of polynomial rotos [size: _n x 1]            */  \
 /*  _b      : multiplicant of polynomial roots [size: _n x 1]           */  \
@@ -5009,9 +5009,9 @@ void POLY(_findroots_bairstow)(T *          _p,                             \
                                TC *         _roots);                        \
                                                                             \
 /* Expand the multiplication of two polynomials                         */  \
-/*  "(a[0] + a[1]*x + a[2]*x^2 + ...)*(b[0] + b[1]*x + b[]*x^2 + ...)"  */  \
+/*  \( ( a[0] + a[1]x + a[2]x^2 + ...) (b[0] + b[1]x + b[]x^2 + ...) \) */  \
 /* as                                                                   */  \
-/*  "c[0] + c[1]*x + c[2]*x^2 + ... + c[n]*x^n"                         */  \
+/*  \( c[0] + c[1]x + c[2]x^2 + ... + c[n]x^n \)                        */  \
 /* where order(c)  = order(a)  + order(b) + 1                           */  \
 /* and  therefore length(c) = length(a) + length(b) - 1                 */  \
 /*  _a          : 1st polynomial coefficients (length is _order_a+1)    */  \
