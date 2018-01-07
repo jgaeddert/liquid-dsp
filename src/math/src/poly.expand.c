@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2015 Joseph Gaeddert
+ * Copyright (c) 2007 - 2018 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -135,51 +135,54 @@ void POLY(_expandbinomial)(T * _a,
 }
 #endif
 
-
-// expands the polynomial:
-//  P_n(x) = (x-r[0]) * (x-r[1]) * ... * (x-r[n-1])
+// Perform root expansion on the polynomial
+//  "P_n(x) = (x-r[0]) * (x-r[1]) * ... * (x-r[n-1])"
 // as
-//  P_n(x) = c[0] + c[1]*x + ... + c[n]*x^n
+//  "P_n(x) = p[0] + p[1]*x + ... + p[n]*x^n"
 // where r[0],r[1],...,r[n-1] are the roots of P_n(x)
-//
-// c has order _n (array is length _n+1)
-void POLY(_expandroots)(T * _a,
+// NOTE: _p has order _n (array is length _n+1)
+//  _r      : roots of polynomial [size: _n x 1]
+//  _n      : number of roots in polynomial
+//  _p      : polynomial coefficients [size: _n+1 x 1]
+void POLY(_expandroots)(T *          _r,
                         unsigned int _n,
-                        T * _c)
+                        T *          _p)
 {
     // no roots; return zero
     if (_n == 0) {
-        _c[0] = 0.;
+        _p[0] = 0.;
         return;
     }
 
     int i, j;
     // initialize coefficients array to [1,0,0,....0]
     for (i=0; i<=_n; i++)
-        _c[i] = (i==0) ? 1 : 0;
+        _p[i] = (i==0) ? 1 : 0;
 
     // iterative polynomial multiplication
     for (i=0; i<_n; i++) {
         for (j=i+1; j>0; j--)
-            _c[j] = -_a[i]*_c[j] + _c[j-1];
+            _p[j] = -_r[i]*_p[j] + _p[j-1];
 
-        _c[j] *= -_a[i];
+        _p[j] *= -_r[i];
     }
 
     // assert(c[_n]==1.0f)
 }
 
-// expands the polynomial:
-//  P_n(x) =
-//    (x*b[0]-a[0]) * (x*b[1]-a[1]) * ... * (x*b[n-1]-a[n-1])
+// Perform root expansion on the polynomial
+//  "P_n(x) = (x*b[0]-a[0]) * (x*b[1]-a[1]) * ... * (x*b[n-1]-a[n-1])"
 // as
-//  P_n(x) = c[0] + c[1]*x + ... + c[n]*x^n
-//
-// c has order _n (array is length _n+1)
-void POLY(_expandroots2)(T * _a,
-                         T * _b,
+//  "P_n(x) = p[0] + p[1]*x + ... + p[n]*x^n"
+// NOTE: _p has order _n (array is length _n+1)
+//  _a      : subtractant of polynomial rotos [size: _n x 1]
+//  _b      : multiplicant of polynomial roots [size: _n x 1]
+//  _n      : number of roots in polynomial
+//  _p      : polynomial coefficients [size: _n+1 x 1]
+void POLY(_expandroots2)(T *          _a,
+                         T *          _b,
                          unsigned int _n,
-                         T * _c)
+                         T *          _p)
 {
     unsigned int i;
 
@@ -192,16 +195,16 @@ void POLY(_expandroots2)(T * _a,
     }
 
     // expand new root set
-    POLY(_expandroots)(r, _n, _c);
+    POLY(_expandroots)(r, _n, _p);
 
     // multiply by gain
     for (i=0; i<_n+1; i++)
-        _c[i] *= g;
+        _p[i] *= g;
 }
 
 // expands the multiplication of two polynomials
 //
-//  (a[0] + a[1]*x + a[2]*x^2 + ...) * (b[0] + b[1]*x + b[]*x^2 + ...2 + ...)
+//  (a[0] + a[1]*x + a[2]*x^2 + ...) * (b[0] + b[1]*x + b[]*x^2 + ...)
 // as
 //  c[0] + c[1]*x + c[2]*x^2 + ... + c[n]*x^n
 //

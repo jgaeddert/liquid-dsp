@@ -4870,109 +4870,160 @@ float liquid_rcostaper_windowf(unsigned int _n,
 //   POLY   : name-mangling macro
 //   T      : data type
 //   TC     : data type (complex)
-#define LIQUID_POLY_DEFINE_API(POLY,T,TC)                       \
-/* evaluate polynomial _p (order _k-1) at value _x  */          \
-T POLY(_val)(T * _p, unsigned int _k, T _x);                    \
-                                                                \
-/* least-squares polynomial fit (order _k-1) */                 \
-void POLY(_fit)(T * _x,                                         \
-                T * _y,                                         \
-                unsigned int _n,                                \
-                T * _p,                                         \
-                unsigned int _k);                               \
-                                                                \
-/* Lagrange polynomial exact fit (order _n-1) */                \
-void POLY(_fit_lagrange)(T * _x,                                \
-                         T * _y,                                \
-                         unsigned int _n,                       \
-                         T * _p);                               \
-                                                                \
-/* Lagrange polynomial interpolation */                         \
-T POLY(_interp_lagrange)(T * _x,                                \
-                         T * _y,                                \
-                         unsigned int _n,                       \
-                         T   _x0);                              \
-                                                                \
-/* Lagrange polynomial fit (barycentric form) */                \
-void POLY(_fit_lagrange_barycentric)(T * _x,                    \
-                                     unsigned int _n,           \
-                                     T * _w);                   \
-                                                                \
-/* Lagrange polynomial interpolation (barycentric form) */      \
-T POLY(_val_lagrange_barycentric)(T * _x,                       \
-                                  T * _y,                       \
-                                  T * _w,                       \
-                                  T   _x0,                      \
-                                  unsigned int _n);             \
-                                                                \
-/* expands the polynomial:                                      \
- *  P_n(x) = (1+x)^n                                            \
- * as                                                           \
- *  P_n(x) = p[0] + p[1]*x + p[2]*x^2 + ... + p[n]x^n           \
- * NOTE: _p has order n=m+k (array is length n+1)               \
- */                                                             \
-void POLY(_expandbinomial)(unsigned int _n,                     \
-                           T * _p);                             \
-                                                                \
-/* expands the polynomial:                                      \
- *  P_n(x) = (1+x)^m * (1-x)^k                                  \
- * as                                                           \
- *  P_n(x) = p[0] + p[1]*x + p[2]*x^2 + ... + p[n]x^n           \
- * NOTE: _p has order n=m+k (array is length n+1)               \
- */                                                             \
-void POLY(_expandbinomial_pm)(unsigned int _m,                  \
-                              unsigned int _k,                  \
-                              T * _p);                          \
-                                                                \
-/* expands the polynomial:                                      \
- *  P_n(x) = (x-r[0]) * (x-r[1]) * ... * (x-r[n-1])             \
- * as                                                           \
- *  P_n(x) = c[0] + c[1]*x + ... + c[n]*x^n                     \
- * where r[0],r[1],...,r[n-1] are the roots of P_n(x)           \
- * NOTE: _c has order _n (array is length _n+1)                 \
- */                                                             \
-void POLY(_expandroots)(T * _a,                                 \
-                        unsigned int _n,                        \
-                        T * _c);                                \
-                                                                \
-/* expands the polynomial:                                      \
- *  P_n(x) =                                                    \
- *    (x*b[0]-a[0]) * (x*b[1]-a[1]) * ... * (x*b[n-1]-a[n-1])   \
- * as                                                           \
- *  P_n(x) = c[0] + c[1]*x + ... + c[n]*x^n                     \
- * NOTE: _c has order _n (array is length _n+1)                 \
- */                                                             \
-void POLY(_expandroots2)(T * _a,                                \
-                         T * _b,                                \
-                         unsigned int _n,                       \
-                         T * _c);                               \
-                                                                \
-/* find roots of the polynomial (complex)                   */  \
-/*  _poly   : poly array, ascending powers [size: _k x 1]   */  \
-/*  _k      : poly length (poly order = _k - 1)             */  \
-/*  _roots  : resulting complex roots [size: _k-1 x 1]      */  \
-void POLY(_findroots)(T *          _poly,                       \
-                      unsigned int _n,                          \
-                      TC *         _roots);                     \
-                                                                \
-/* find the complex roots of the polynomial using the       */  \
-/* Durand-Kerner method                                     */  \
-void POLY(_findroots_durandkerner)(T *          _poly,          \
-                                   unsigned int _k,             \
-                                   TC *         _roots);        \
-                                                                \
-/* find the complex roots of the polynomial using           */  \
-/* Bairstow's method                                        */  \
-void POLY(_findroots_bairstow)(T *          _poly,              \
-                               unsigned int _k,                 \
-                               TC *         _roots);            \
-                                                                \
-/* expands the multiplication of two polynomials */             \
-void POLY(_mul)(T *          _a,                                \
-                unsigned int _order_a,                          \
-                T *          _b,                                \
-                unsigned int _order_b,                          \
-                T *          _c);                               \
+#define LIQUID_POLY_DEFINE_API(POLY,T,TC)                                   \
+                                                                            \
+/* Evaluate polynomial _p at value _x                                   */  \
+/*  _p      : polynomial coefficients [size _k x 1]                     */  \
+/*  _k      : polynomial coefficients length, order is _k - 1           */  \
+/*  _x      : input to evaluate polynomial                              */  \
+T POLY(_val)(T *          _p,                                               \
+             unsigned int _k,                                               \
+             T            _x);                                              \
+                                                                            \
+/* Perform least-squares polynomial fit on data set                     */  \
+/*  _x      : x-value sample set [size: _n x 1]                         */  \
+/*  _y      : y-value sample set [size: _n x 1]                         */  \
+/*  _n      : number of samples in _x and _y                            */  \
+/*  _p      : polynomial coefficients output [size _k x 1]              */  \
+/*  _k      : polynomial coefficients length, order is _k - 1           */  \
+void POLY(_fit)(T *          _x,                                            \
+                T *          _y,                                            \
+                unsigned int _n,                                            \
+                T *          _p,                                            \
+                unsigned int _k);                                           \
+                                                                            \
+/* Perform Lagrange polynomial exact fit on data set                    */  \
+/*  _x      : x-value sample set, size [_n x 1]                         */  \
+/*  _y      : y-value sample set, size [_n x 1]                         */  \
+/*  _n      : number of samples in _x and _y                            */  \
+/*  _p      : polynomial coefficients output [size _n x 1]              */  \
+void POLY(_fit_lagrange)(T *          _x,                                   \
+                         T *          _y,                                   \
+                         unsigned int _n,                                   \
+                         T *          _p);                                  \
+                                                                            \
+/* Perform Lagrange polynomial interpolation on data set without        */  \
+/* computing coefficients as an intermediate step.                      */  \
+/*  _x      : x-value sample set [size: _n x 1]                         */  \
+/*  _y      : y-value sample set [size: _n x 1]                         */  \
+/*  _n      : number of samples in _x and _y                            */  \
+/*  _x0     : x-value to evaluate and compute interpolant               */  \
+T POLY(_interp_lagrange)(T *          _x,                                   \
+                         T *          _y,                                   \
+                         unsigned int _n,                                   \
+                         T           _x0);                                  \
+                                                                            \
+/* Compute Lagrange polynomial fit in the barycentric form.             */  \
+/*  _x      : x-value sample set, size [_n x 1]                         */  \
+/*  _n      : number of samples in _x                                   */  \
+/*  _w      : barycentric weights normalized so _w[0]=1, size [_n x 1]  */  \
+void POLY(_fit_lagrange_barycentric)(T *          _x,                       \
+                                     unsigned int _n,                       \
+                                     T *          _w);                      \
+                                                                            \
+/* Perform Lagrange polynomial interpolation using the barycentric form */  \
+/* of the weights.                                                      */  \
+/*  _x      : x-value sample set [size: _n x 1]                         */  \
+/*  _y      : y-value sample set [size: _n x 1]                         */  \
+/*  _w      : barycentric weights [size: _n x 1]                        */  \
+/*  _x0     : x-value to evaluate and compute interpolant               */  \
+/*  _n      : number of samples in _x, _y, and _w                       */  \
+T POLY(_val_lagrange_barycentric)(T *          _x,                          \
+                                  T *          _y,                          \
+                                  T *          _w,                          \
+                                  T            _x0,                         \
+                                  unsigned int _n);                         \
+                                                                            \
+/* Perform binomial expansion on the polynomial                         */  \
+/*  "P_n(x) = (1+x)^n"                                                  */  \
+/* as                                                                   */  \
+/*  "P_n(x) = p[0] + p[1]*x + p[2]*x^2 + ... + p[n]x^n"                 */  \
+/* NOTE: _p has order n (coefficients has length n+1)                   */  \
+/*  _n      : polynomial order                                          */  \
+/*  _p      : polynomial coefficients [size: _n+1 x 1]                  */  \
+void POLY(_expandbinomial)(unsigned int _n,                                 \
+                           T *          _p);                                \
+                                                                            \
+/* Perform positive/negative binomial expansion on the polynomial       */  \
+/*  "P_n(x) = (1+x)^m * (1-x)^k"                                        */  \
+/* as                                                                   */  \
+/*  "P_n(x) = p[0] + p[1]*x + p[2]*x^2 + ... + p[n]x^n"                 */  \
+/* NOTE: _p has order n=m+k (array is length n+1)                       */  \
+/*  _m      : number of '1+x' terms                                     */  \
+/*  _k      : number of '1-x' terms                                     */  \
+/*  _p      : polynomial coefficients [size: _m+_k+1 x 1]               */  \
+void POLY(_expandbinomial_pm)(unsigned int _m,                              \
+                              unsigned int _k,                              \
+                              T *          _p);                             \
+                                                                            \
+/* Perform root expansion on the polynomial                             */  \
+/*  "P_n(x) = (x-r[0]) * (x-r[1]) * ... * (x-r[n-1])"                   */  \
+/* as                                                                   */  \
+/*  "P_n(x) = p[0] + p[1]*x + ... + p[n]*x^n"                           */  \
+/* where r[0],r[1],...,r[n-1] are the roots of P_n(x)                   */  \
+/* NOTE: _p has order _n (array is length _n+1)                         */  \
+/*  _r      : roots of polynomial [size: _n x 1]                        */  \
+/*  _n      : number of roots in polynomial                             */  \
+/*  _p      : polynomial coefficients [size: _n+1 x 1]                  */  \
+void POLY(_expandroots)(T *          _r,                                    \
+                        unsigned int _n,                                    \
+                        T *          _p);                                   \
+                                                                            \
+/* Perform root expansion on the polynomial                             */  \
+/*  "P_n(x) = (x*b[0]-a[0]) * (x*b[1]-a[1]) * ... * (x*b[n-1]-a[n-1])"  */  \
+/* as                                                                   */  \
+/*  "P_n(x) = p[0] + p[1]*x + ... + p[n]*x^n"                           */  \
+/* NOTE: _p has order _n (array is length _n+1)                         */  \
+/*  _a      : subtractant of polynomial rotos [size: _n x 1]            */  \
+/*  _b      : multiplicant of polynomial roots [size: _n x 1]           */  \
+/*  _n      : number of roots in polynomial                             */  \
+/*  _p      : polynomial coefficients [size: _n+1 x 1]                  */  \
+void POLY(_expandroots2)(T *          _a,                                   \
+                         T *          _b,                                   \
+                         unsigned int _n,                                   \
+                         T *          _p);                                  \
+                                                                            \
+/* Find the complex roots of a polynomial.                              */  \
+/*  _p      : polynomial coefficients [size: _n x 1]                    */  \
+/*  _k      : polynomial length                                         */  \
+/*  _roots  : resulting complex roots [size: _k-1 x 1]                  */  \
+void POLY(_findroots)(T *          _poly,                                   \
+                      unsigned int _n,                                      \
+                      TC *         _roots);                                 \
+                                                                            \
+/* Find the complex roots of the polynomial using the Durand-Kerner     */  \
+/* method                                                               */  \
+/*  _p      : polynomial coefficients [size: _n x 1]                    */  \
+/*  _k      : polynomial length                                         */  \
+/*  _roots  : resulting complex roots [size: _k-1 x 1]                  */  \
+void POLY(_findroots_durandkerner)(T *          _p,                         \
+                                   unsigned int _k,                         \
+                                   TC *         _roots);                    \
+                                                                            \
+/* Find the complex roots of the polynomial using Bairstow's method.    */  \
+/*  _p      : polynomial coefficients [size: _n x 1]                    */  \
+/*  _k      : polynomial length                                         */  \
+/*  _roots  : resulting complex roots [size: _k-1 x 1]                  */  \
+void POLY(_findroots_bairstow)(T *          _p,                             \
+                               unsigned int _k,                             \
+                               TC *         _roots);                        \
+                                                                            \
+/* Expand the multiplication of two polynomials                         */  \
+/*  "(a[0] + a[1]*x + a[2]*x^2 + ...)*(b[0] + b[1]*x + b[]*x^2 + ...)"  */  \
+/* as                                                                   */  \
+/*  "c[0] + c[1]*x + c[2]*x^2 + ... + c[n]*x^n"                         */  \
+/* where order(c)  = order(a)  + order(b) + 1                           */  \
+/* and  therefore length(c) = length(a) + length(b) - 1                 */  \
+/*  _a          : 1st polynomial coefficients (length is _order_a+1)    */  \
+/*  _order_a    : 1st polynomial order                                  */  \
+/*  _b          : 2nd polynomial coefficients (length is _order_b+1)    */  \
+/*  _order_b    : 2nd polynomial order                                  */  \
+/*  _c          : output polynomial [size: _order_a+_order_b+1 x 1]     */  \
+void POLY(_mul)(T *          _a,                                            \
+                unsigned int _order_a,                                      \
+                T *          _b,                                            \
+                unsigned int _order_b,                                      \
+                T *          _c);                                           \
 
 LIQUID_POLY_DEFINE_API(LIQUID_POLY_MANGLE_DOUBLE,
                        double,
