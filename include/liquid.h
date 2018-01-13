@@ -2208,6 +2208,14 @@ void AUTOCORR(_print)(AUTOCORR() _q);                                       \
 void AUTOCORR(_push)(AUTOCORR() _q,                                         \
                      TI         _x);                                        \
                                                                             \
+/* Write block of samples to auto-correlator object                     */  \
+/*  _q      :   auto-correlation object                                 */  \
+/*  _x      :   input array [size: _n x 1]                              */  \
+/*  _n      :   number of input samples                                 */  \
+void AUTOCORR(_write)(AUTOCORR()   _q,                                      \
+                      TI *         _x,                                      \
+                      unsigned int _n);                                     \
+                                                                            \
 /* Compute single auto-correlation output                               */  \
 /*  _q      : auto-correlator object                                    */  \
 /*  _rxx    : auto-correlated output                                    */  \
