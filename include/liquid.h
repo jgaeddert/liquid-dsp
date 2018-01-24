@@ -4328,19 +4328,38 @@ void ofdmflexframesync_debug_print(ofdmflexframesync _q,
 //   TO     : output data type
 //   TC     : coefficients data type
 //   TI     : input data type
-#define LIQUID_BSYNC_DEFINE_API(BSYNC,TO,TC,TI)                 \
-typedef struct BSYNC(_s) * BSYNC();                             \
-                                                                \
-BSYNC() BSYNC(_create)(unsigned int _n, TC * _v);               \
-                                                                \
-/* create binary synchronizer from m-sequence               */  \
-/*  _g      :   m-sequence generator polynomial             */  \
-/*  _k      :   samples/symbol (over-sampling factor)       */  \
-BSYNC() BSYNC(_create_msequence)(unsigned int _g,               \
-                                 unsigned int _k);              \
-void BSYNC(_destroy)(BSYNC() _fs);                              \
-void BSYNC(_print)(BSYNC() _fs);                                \
-void BSYNC(_correlate)(BSYNC() _fs, TI _sym, TO * _y);
+#define LIQUID_BSYNC_DEFINE_API(BSYNC,TO,TC,TI)                             \
+                                                                            \
+/* Binary P/N synchronizer                                              */  \
+typedef struct BSYNC(_s) * BSYNC();                                         \
+                                                                            \
+/* Create bsync object                                                  */  \
+/*  _n  : sequence length                                               */  \
+/*  _v  : correlation sequence [size: _n x 1]                           */  \
+BSYNC() BSYNC(_create)(unsigned int _n,                                     \
+                       TC *         _v);                                    \
+                                                                            \
+/* Create binary synchronizer from m-sequence                           */  \
+/*  _g  :   m-sequence generator polynomial                             */  \
+/*  _k  :   samples/symbol (over-sampling factor)                       */  \
+BSYNC() BSYNC(_create_msequence)(unsigned int _g,                           \
+                                 unsigned int _k);                          \
+                                                                            \
+/* Destroy binary synchronizer object, freeing all internal memory      */  \
+/*  _q  :   bsync object                                                */  \
+void BSYNC(_destroy)(BSYNC() _q);                                           \
+                                                                            \
+/* Print object internals to stdout                                     */  \
+/*  _q  :   bsync object                                                */  \
+void BSYNC(_print)(BSYNC() _q);                                             \
+                                                                            \
+/* Correlate input signal against internal sequence                     */  \
+/*  _q  :   bsync object                                                */  \
+/*  _x  :   input sample                                                */  \
+/*  _y  :   pointer to output sample                                    */  \
+void BSYNC(_correlate)(BSYNC() _q,                                          \
+                       TI      _x,                                          \
+                       TO *    _y);                                         \
 
 LIQUID_BSYNC_DEFINE_API(LIQUID_BSYNC_MANGLE_RRRF,
                         float,
