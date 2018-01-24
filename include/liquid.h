@@ -114,6 +114,9 @@ typedef enum {
 //   T      : primitive data type
 //   TC     : input/output data type
 #define LIQUID_AGC_DEFINE_API(AGC,T,TC)                                     \
+                                                                            \
+/* Automatic gain control (agc) for level correction and signal         */  \
+/* detection                                                            */  \
 typedef struct AGC(_s) * AGC();                                             \
                                                                             \
 /* Create automatic gain control object.                                */  \
