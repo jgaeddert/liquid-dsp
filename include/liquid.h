@@ -3241,6 +3241,27 @@ void RESAMP(_execute_block)(RESAMP()       _q,                  \
                             unsigned int   _nx,                 \
                             TO *           _y,                  \
                             unsigned int * _ny);                \
+                                                                \
+/* execute arbitrary resampler into specified output size   */  \
+/* will fill up to but not more than requested size _ny     */  \
+/* returns true if more samples can be fetched without      */  \
+/*    more inputs                                           */  \
+/* false otherwise                                          */  \
+/*  _q              :   resamp object                       */  \
+/*  _x              :   input buffer [size: _nx x 1]        */  \
+/*  _nx             :   input buffer size                   */  \
+/*  _ux             :   number of input samples read        */  \
+/*  _y              :   output sample array                 */  \
+/*  _ny             :   capacity of output sample array     */  \
+/*  _uy             :   number of output samples written    */  \
+int RESAMP(_execute_output_block)(RESAMP() _q,                  \
+                                  const TI * _x,                \
+                                  unsigned int _nx,             \
+                                  unsigned int * _ux,           \
+                                  TO * _y,                      \
+                                  unsigned int _ny,             \
+                                  unsigned int * _uy);          \
+
 
 LIQUID_RESAMP_DEFINE_API(LIQUID_RESAMP_MANGLE_RRRF,
                          float,
