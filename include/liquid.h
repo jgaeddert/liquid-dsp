@@ -1413,6 +1413,8 @@ void SPGRAM(_print)(SPGRAM() _q);                               \
                                                                 \
 /* set methods                                              */  \
 int          SPGRAM(_set_alpha)(SPGRAM() _q, float _alpha);     \
+int          SPGRAM(_set_freq) (SPGRAM() _q, float _freq);      \
+int          SPGRAM(_set_rate) (SPGRAM() _q, float _rate);      \
                                                                 \
 /* access methods                                           */  \
 unsigned int SPGRAM(_get_nfft)                (SPGRAM() _q);    \
