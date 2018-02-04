@@ -424,12 +424,13 @@ int SPGRAM(_export_gnuplot)(SPGRAM()     _q,
     fprintf(fid,"set style line 12 lc rgb '#404040' lt 0 lw 1\n");
     fprintf(fid,"set grid xtics ytics\n");
     fprintf(fid,"set grid front ls 12\n");
-    fprintf(fid,"set style fill transparent solid 0.2\n");
+    //fprintf(fid,"set style fill transparent solid 0.2\n");
+    const char plot_with[] = "lines"; // "filledcurves x1"
     fprintf(fid,"set nokey\n");
     if (_q->sample_rate < 0) {
         fprintf(fid,"set xrange [-0.5:0.5]\n");
         fprintf(fid,"set xlabel 'Noramlized Frequency'\n");
-        fprintf(fid,"plot '-' w filledcurves x1 lt 1 lw 2 lc rgb '#004080'\n");
+        fprintf(fid,"plot '-' w %s lt 1 lw 2 lc rgb '#004080'\n", plot_with);
     } else {
         char unit;
         float g = 1.0f;
@@ -444,8 +445,8 @@ int SPGRAM(_export_gnuplot)(SPGRAM()     _q,
         else                           { g = 1e-12; unit = 'T'; }
         fprintf(fid,"set xlabel 'Frequency [%cHz]'\n", unit);
         fprintf(fid,"set xrange [%f:%f]\n", g*(_q->frequency-0.5*_q->sample_rate), g*(_q->frequency+0.5*_q->sample_rate));
-        fprintf(fid,"plot '-' u ($1*%f+%f):2 w filledcurves x1 lt 1 lw 2 lc rgb '#004080'\n",
-                g*(_q->sample_rate < 0 ? 1 : _q->sample_rate), g*_q->frequency);
+        fprintf(fid,"plot '-' u ($1*%f+%f):2 w %s lt 1 lw 2 lc rgb '#004080'\n",
+                plot_with, g*(_q->sample_rate < 0 ? 1 : _q->sample_rate), g*_q->frequency);
     }
 
     // export spectrum data
