@@ -32,6 +32,9 @@
 //  [harris:1978] frederic j. harris, "On the Use of Windows for Harmonic
 //      Analysis with the Discrete Fourier Transform," Proceedings of the
 //      IEEE, vol. 66, no. 1, January, 1978.
+//  [Nuttall:1981] Albert H. Nuttall, "Some Windows with Very Good Sidelobe
+//      Behavior,"  IEEE Transactions on Acoustics, Speech, and Signal
+//      Processing, vol. ASSP-29, no. 1, pp. 84-91, February, 1981.
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -208,7 +211,7 @@ float kaiser(unsigned int _n,
     return a / b;
 }
 
-// Hamming window
+// Hamming window [Nuttall:1981]
 float hamming(unsigned int _n,
               unsigned int _N)
 {
@@ -218,7 +221,6 @@ float hamming(unsigned int _n,
         exit(1);
     }
 
-    // TODO add reference
     return 0.53836 - 0.46164*cosf( (2*M_PI*(float)_n) / ((float)(_N-1)) );
 }
 
