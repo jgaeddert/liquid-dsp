@@ -395,56 +395,80 @@ LIQUID_CBUFFER_DEFINE_API(LIQUID_CBUFFER_MANGLE_CFLOAT, liquid_float_complex)
 // large macro
 //   WINDOW : name-mangling macro
 //   T      : data type
-#define LIQUID_WINDOW_DEFINE_API(WINDOW,T)                      \
-                                                                \
-typedef struct WINDOW(_s) * WINDOW();                           \
-                                                                \
-/* create window buffer object of length _n                 */  \
-WINDOW() WINDOW(_create)(unsigned int _n);                      \
-                                                                \
-/* recreate window buffer object with new length            */  \
-/*  _q      : old window object                             */  \
-/*  _n      : new window length                             */  \
-WINDOW() WINDOW(_recreate)(WINDOW() _q, unsigned int _n);       \
-                                                                \
-/* destroy window object, freeing all internally memory     */  \
-void WINDOW(_destroy)(WINDOW() _q);                             \
-                                                                \
-/* print window object to stdout                            */  \
-void WINDOW(_print)(WINDOW() _q);                               \
-                                                                \
-/* print window object to stdout (with extra information)   */  \
-void WINDOW(_debug_print)(WINDOW() _q);                         \
-                                                                \
-/* reset window object (initialize to zeros)                */  \
-void WINDOW(_reset)(WINDOW() _q);                               \
-                                                                \
-/* read window buffer contents                              */  \
-/*  _q      : window object                                 */  \
-/*  _v      : output pointer (set to internal array)        */  \
-void WINDOW(_read)(WINDOW() _q, T ** _v);                       \
-                                                                \
-/* index single element in buffer at a particular index     */  \
-/*  _q      : window object                                 */  \
-/*  _i      : index of element to read                      */  \
-/*  _v      : output value pointer                          */  \
-void WINDOW(_index)(WINDOW()     _q,                            \
-                    unsigned int _i,                            \
-                    T *          _v);                           \
-                                                                \
-/* push single element onto window buffer                   */  \
-/*  _q      : window object                                 */  \
-/*  _v      : single input element                          */  \
-void WINDOW(_push)(WINDOW() _q,                                 \
-                   T        _v);                                \
-                                                                \
-/* write array of elements onto window buffer               */  \
-/*  _q      : window object                                 */  \
-/*  _v      : input array of values to write                */  \
-/*  _n      : number of input values to write               */  \
-void WINDOW(_write)(WINDOW()     _q,                            \
-                    T *          _v,                            \
-                    unsigned int _n);                           \
+#define LIQUID_WINDOW_DEFINE_API(WINDOW,T)                                  \
+                                                                            \
+/* Sliding window first-in/first-out buffer with a fixed size           */  \
+typedef struct WINDOW(_s) * WINDOW();                                       \
+                                                                            \
+/* Create window buffer object of a fixed length                        */  \
+WINDOW() WINDOW(_create)(unsigned int _n);                                  \
+                                                                            \
+/* Recreate window buffer object with new length.                       */  \
+/* This extends an existing window's size, similar to the standard C    */  \
+/* library's realloc() to n samples.                                    */  \
+/* If the size of the new window is larger than the old one, the newest */  \
+/* values are retained at the beginning of the buffer and the oldest    */  \
+/* values are truncated. If the size of the new window is smaller than  */  \
+/* the old one, the oldest values are truncated.                        */  \
+/*  _q      : old window object                                         */  \
+/*  _n      : new window length                                         */  \
+WINDOW() WINDOW(_recreate)(WINDOW() _q, unsigned int _n);                   \
+                                                                            \
+/* Destroy window object, freeing all internally memory                 */  \
+void WINDOW(_destroy)(WINDOW() _q);                                         \
+                                                                            \
+/* Print window object to stdout                                        */  \
+void WINDOW(_print)(WINDOW() _q);                                           \
+                                                                            \
+/* Print window object to stdout (with extra information)               */  \
+void WINDOW(_debug_print)(WINDOW() _q);                                     \
+                                                                            \
+/* Reset window object (initialize to zeros)                            */  \
+void WINDOW(_reset)(WINDOW() _q);                                           \
+                                                                            \
+/* Read the contents of the window by returning a pointer to the        */  \
+/* aligned internal memory array. This method guarantees that the       */  \
+/* elements are linearized. This method should only be used for         */  \
+/* reading; writing values to the buffer has unspecified results.       */  \
+/* Note that the returned pointer is only valid until another operation */  \
+/* is performed on the window buffer object                             */  \
+/*  _q      : window object                                             */  \
+/*  _v      : output pointer (set to internal array)                    */  \
+void WINDOW(_read)(WINDOW() _q,                                             \
+                   T **     _v);                                            \
+                                                                            \
+/* Index single element in buffer at a particular index                 */  \
+/* This retrieves the \(i^{th}\) sample in the window, storing the      */  \
+/* output value in _v.                                                  */  \
+/* This is equivalent to first invoking read() and then indexing on the */  \
+/* resulting pointer; however the result is obtained much faster.       */  \
+/* Therefore setting the index to 0 returns the oldest value in the     */  \
+/* window.                                                              */  \
+/*  _q      : window object                                             */  \
+/*  _i      : index of element to read                                  */  \
+/*  _v      : output value pointer                                      */  \
+void WINDOW(_index)(WINDOW()     _q,                                        \
+                    unsigned int _i,                                        \
+                    T *          _v);                                       \
+                                                                            \
+/* Shifts a single sample into the right side of the window, pushing    */  \
+/* the oldest (left-most) sample out of the end. Unlike stacks, the     */  \
+/* window object has no equivalent "pop" method, as values are retained */  \
+/* in memory until they are overwritten.                                */  \
+/*  _q      : window object                                             */  \
+/*  _v      : single input element                                      */  \
+void WINDOW(_push)(WINDOW() _q,                                             \
+                   T        _v);                                            \
+                                                                            \
+/* Write array of elements onto window buffer                           */  \
+/* Effectively, this is equivalent to pushing each sample one at a      */  \
+/* time, but executes much faster.                                      */  \
+/*  _q      : window object                                             */  \
+/*  _v      : input array of values to write                            */  \
+/*  _n      : number of input values to write                           */  \
+void WINDOW(_write)(WINDOW()     _q,                                        \
+                    T *          _v,                                        \
+                    unsigned int _n);                                       \
 
 // Define window APIs
 LIQUID_WINDOW_DEFINE_API(LIQUID_WINDOW_MANGLE_FLOAT,  float)
