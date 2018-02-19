@@ -542,68 +542,69 @@ LIQUID_WDELAY_DEFINE_API(LIQUID_WDELAY_MANGLE_CFLOAT, liquid_float_complex)
 //   TO         : output data type
 //   TC         : coefficients data type
 //   TI         : input data type
-#define LIQUID_CHANNEL_DEFINE_API(CHANNEL,TO,TC,TI)             \
-                                                                \
-typedef struct CHANNEL(_s) * CHANNEL();                         \
-                                                                \
-/* create channel object with default parameters            */  \
-CHANNEL() CHANNEL(_create)(void);                               \
-                                                                \
-/* destroy channel object, freeing all internal memory      */  \
-void CHANNEL(_destroy)(CHANNEL() _q);                           \
-                                                                \
-/* print channel object internals to standard output        */  \
-void CHANNEL(_print)(CHANNEL() _q);                             \
-                                                                \
-/* apply additive white Gausss noise impairment             */  \
-/*  _q          : channel object                            */  \
-/*  _N0dB       : noise floor power spectral density [dB]   */  \
-/*  _SNRdB      : signal-to-noise ratio [dB]                */  \
-void CHANNEL(_add_awgn)(CHANNEL() _q,                           \
-                        float     _N0dB,                        \
-                        float     _SNRdB);                      \
-                                                                \
-/* apply carrier offset impairment                          */  \
-/*  _q          : channel object                            */  \
-/*  _frequency  : carrier frequency offset [radians/sample] */  \
-/*  _phase      : carrier phase offset    [radians]         */  \
-void CHANNEL(_add_carrier_offset)(CHANNEL() _q,                 \
-                                  float     _frequency,         \
-                                  float     _phase);            \
-                                                                \
-/* apply multi-path channel impairment                      */  \
-/*  _q          : channel object                            */  \
-/*  _h          : channel coefficients (NULL for random)    */  \
-/*  _h_len      : number of channel coefficients            */  \
-void CHANNEL(_add_multipath)(CHANNEL()    _q,                   \
-                             TC *         _h,                   \
-                             unsigned int _h_len);              \
-                                                                \
-/* apply slowly-varying shadowing impairment                */  \
-/*  _q          : channel object                            */  \
-/*  _sigma      : std. deviation for log-normal shadowing   */  \
-/*  _fd         : Doppler frequency, _fd in (0,0.5)         */  \
-void CHANNEL(_add_shadowing)(CHANNEL()    _q,                   \
-                             float        _sigma,               \
-                             float        _fd);                 \
-                                                                \
-/* apply channel impairments on single input sample         */  \
-/*  _q      : channel object                                */  \
-/*  _x      : input sample                                  */  \
-/*  _y      : pointer to output sample                      */  \
-void CHANNEL(_execute)(CHANNEL()      _q,                       \
-                       TI             _x,                       \
-                       TO *           _y);                      \
-                                                                \
-/* apply channel impairments on block of samples            */  \
-/*  _q      : channel object                                */  \
-/*  _x      : input array, [size: _n x 1]                   */  \
-/*  _n      : input array, length                           */  \
-/*  _y      : output array, [size: _n x 1]                  */  \
-void CHANNEL(_execute_block)(CHANNEL()      _q,                 \
-                             TI *           _x,                 \
-                             unsigned int   _n,                 \
-                             TO *           _y);                \
+#define LIQUID_CHANNEL_DEFINE_API(CHANNEL,TO,TC,TI)                         \
+                                                                            \
+/* Channel emulation                                                    */  \
+typedef struct CHANNEL(_s) * CHANNEL();                                     \
+                                                                            \
+/* Create channel object with default parameters                        */  \
+CHANNEL() CHANNEL(_create)(void);                                           \
+                                                                            \
+/* Destroy channel object, freeing all internal memory                  */  \
+void CHANNEL(_destroy)(CHANNEL() _q);                                       \
+                                                                            \
+/* Print channel object internals to standard output                    */  \
+void CHANNEL(_print)(CHANNEL() _q);                                         \
+                                                                            \
+/* Include additive white Gausss noise impairment                       */  \
+/*  _q          : channel object                                        */  \
+/*  _N0dB       : noise floor power spectral density [dB]               */  \
+/*  _SNRdB      : signal-to-noise ratio [dB]                            */  \
+void CHANNEL(_add_awgn)(CHANNEL() _q,                                       \
+                        float     _N0dB,                                    \
+                        float     _SNRdB);                                  \
+                                                                            \
+/* Include carrier offset impairment                                    */  \
+/*  _q          : channel object                                        */  \
+/*  _frequency  : carrier frequency offset [radians/sample]             */  \
+/*  _phase      : carrier phase offset [radians]                        */  \
+void CHANNEL(_add_carrier_offset)(CHANNEL() _q,                             \
+                                  float     _frequency,                     \
+                                  float     _phase);                        \
+                                                                            \
+/* Include multi-path channel impairment                                */  \
+/*  _q          : channel object                                        */  \
+/*  _h          : channel coefficients (NULL for random)                */  \
+/*  _h_len      : number of channel coefficients                        */  \
+void CHANNEL(_add_multipath)(CHANNEL()    _q,                               \
+                             TC *         _h,                               \
+                             unsigned int _h_len);                          \
+                                                                            \
+/* Include slowly-varying shadowing impairment                          */  \
+/*  _q          : channel object                                        */  \
+/*  _sigma      : standard deviation for log-normal shadowing           */  \
+/*  _fd         : Doppler frequency, 0 <= _fd < 0.5                     */  \
+void CHANNEL(_add_shadowing)(CHANNEL()    _q,                               \
+                             float        _sigma,                           \
+                             float        _fd);                             \
+                                                                            \
+/* Apply channel impairments on single input sample                     */  \
+/*  _q      : channel object                                            */  \
+/*  _x      : input sample                                              */  \
+/*  _y      : pointer to output sample                                  */  \
+void CHANNEL(_execute)(CHANNEL()      _q,                                   \
+                       TI             _x,                                   \
+                       TO *           _y);                                  \
+                                                                            \
+/* Apply channel impairments on block of samples                        */  \
+/*  _q      : channel object                                            */  \
+/*  _x      : input array, [size: _n x 1]                               */  \
+/*  _n      : input array, length                                       */  \
+/*  _y      : output array, [size: _n x 1]                              */  \
+void CHANNEL(_execute_block)(CHANNEL()      _q,                             \
+                             TI *           _x,                             \
+                             unsigned int   _n,                             \
+                             TO *           _y);                            \
 
 LIQUID_CHANNEL_DEFINE_API(LIQUID_CHANNEL_MANGLE_CCCF,
                           liquid_float_complex,
