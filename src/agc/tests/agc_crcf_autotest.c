@@ -136,7 +136,7 @@ void autotest_agc_crcf_rssi_noise()
     // set paramaters
     float gamma = -30.0f;   // nominal signal level [dB]
     float bt    =  0.01f;   // agc bandwidth
-    float tol   =  0.2f;    // error tolerance [dB]
+    float tol   =  1.0f;    // error tolerance [dB]
 
     // signal properties
     float nstd = powf(10.0f, gamma/20);
