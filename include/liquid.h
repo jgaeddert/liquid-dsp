@@ -622,49 +622,53 @@ LIQUID_CHANNEL_DEFINE_API(LIQUID_CHANNEL_MANGLE_CCCF,
 //   TO         : output data type
 //   TC         : coefficients data type
 //   TI         : input data type
-#define LIQUID_TVMPCH_DEFINE_API(TVMPCH,TO,TC,TI)               \
-                                                                \
-typedef struct TVMPCH(_s) * TVMPCH();                           \
-                                                                \
-/* create channel object with default parameters            */  \
-/* create time-varying multi-path channel emulator object   */  \
-/*  _n      :   number of coefficients, _n > 0              */  \
-/*  _std    :   standard deviation                          */  \
-/*  _tau    :   coherence time                              */  \
-TVMPCH() TVMPCH(_create)(unsigned int _n,                       \
-                         float        _std,                     \
-                         float        _tau);                    \
-                                                                \
-/* destroy channel object, freeing all internal memory      */  \
-void TVMPCH(_destroy)(TVMPCH() _q);                             \
-                                                                \
-/* reset object                                             */  \
-void TVMPCH(_reset)(TVMPCH() _q);                               \
-                                                                \
-/* print channel object internals to standard output        */  \
-void TVMPCH(_print)(TVMPCH() _q);                               \
-                                                                \
-/* push sample into emulator                                */  \
-/*  _q      : channel object                                */  \
-/*  _x      : input sample                                  */  \
-void TVMPCH(_push)(TVMPCH() _q,                                 \
-                   TI       _x);                                \
-                                                                \
-/* compute output sample                                    */  \
-/*  _q      : channel object                                */  \
-/*  _y      : output sample                                 */  \
-void TVMPCH(_execute)(TVMPCH()      _q,                         \
-                      TO *          _y);                        \
-                                                                \
-/* apply channel impairments on a block of samples          */  \
-/*  _q      : channel object                                */  \
-/*  _x      : input array [size: _nx x 1]                   */  \
-/*  _nx     : input array length                            */  \
-/*  _y      : output array                                  */  \
-void TVMPCH(_execute_block)(TVMPCH()     _q,                    \
-                            TI *         _x,                    \
-                            unsigned int _nx,                   \
-                            TO *         _y);                   \
+#define LIQUID_TVMPCH_DEFINE_API(TVMPCH,TO,TC,TI)                           \
+                                                                            \
+/* Time-varying multipath channel emulation                             */  \
+typedef struct TVMPCH(_s) * TVMPCH();                                       \
+                                                                            \
+/* Create time-varying multi-path channel emulator object, specifying   */  \
+/* the number of coefficients, the standard deviation of coefficients,  */  \
+/* and the coherence time. The larger the standard deviation, the more  */  \
+/* dramatic the frequency response of the channel. The shorter the      */  \
+/* coeherent time, the faster the channel effects.                      */  \
+/*  _n      :   number of coefficients, _n > 0                          */  \
+/*  _std    :   standard deviation, _std >= 0                           */  \
+/*  _tau    :   normalized coherence time, 0 < _tau < 1                 */  \
+TVMPCH() TVMPCH(_create)(unsigned int _n,                                   \
+                         float        _std,                                 \
+                         float        _tau);                                \
+                                                                            \
+/* Destroy channel object, freeing all internal memory                  */  \
+void TVMPCH(_destroy)(TVMPCH() _q);                                         \
+                                                                            \
+/* Reset object                                                         */  \
+void TVMPCH(_reset)(TVMPCH() _q);                                           \
+                                                                            \
+/* Print channel object internals to standard output                    */  \
+void TVMPCH(_print)(TVMPCH() _q);                                           \
+                                                                            \
+/* Push sample into emulator                                            */  \
+/*  _q      : channel object                                            */  \
+/*  _x      : input sample                                              */  \
+void TVMPCH(_push)(TVMPCH() _q,                                             \
+                   TI       _x);                                            \
+                                                                            \
+/* Compute output sample                                                */  \
+/*  _q      : channel object                                            */  \
+/*  _y      : output sample                                             */  \
+void TVMPCH(_execute)(TVMPCH() _q,                                          \
+                      TO *     _y);                                         \
+                                                                            \
+/* Apply channel impairments on a block of samples                      */  \
+/*  _q      : channel object                                            */  \
+/*  _x      : input array, [size: _n x 1]                               */  \
+/*  _n      : input array length                                        */  \
+/*  _y      : output array, [size: _n x 1]                              */  \
+void TVMPCH(_execute_block)(TVMPCH()     _q,                                \
+                            TI *         _x,                                \
+                            unsigned int _n,                                \
+                            TO *         _y);                               \
 
 LIQUID_TVMPCH_DEFINE_API(LIQUID_TVMPCH_MANGLE_CCCF,
                          liquid_float_complex,
