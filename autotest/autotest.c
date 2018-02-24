@@ -323,7 +323,7 @@ int main(int argc, char *argv[])
     fclose(fid);
 
     if (liquid_autotest_verbose)
-        printf("output .json results written to %s\n", filename);
+        printf("output JSON results written to %s\n", filename);
 
     return rc;
 }
