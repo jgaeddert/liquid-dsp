@@ -230,12 +230,12 @@ void AGC(_squelch_disable)(AGC() _q);                                       \
 int  AGC(_squelch_is_enabled)(AGC() _q);                                    \
                                                                             \
 /* Set threshold for enabling/disabling squelch.                        */  \
-/*  _q          :   automatic gain control object                       */  \
-/*  _thresh_dB  :   threshold for enabling squelch [dB]                 */  \
+/*  _q      :   automatic gain control object                           */  \
+/*  _thresh :   threshold for enabling squelch [dB]                     */  \
 void AGC(_squelch_set_threshold)(AGC() _q,                                  \
-                                 T     _threshold);                         \
+                                 T     _thresh);                            \
                                                                             \
-/* Get squelch threshold [dB]                                           */  \
+/* Get squelch threshold (value in dB)                                  */  \
 T    AGC(_squelch_get_threshold)(AGC() _q);                                 \
                                                                             \
 /* Set timeout before enabling squelch.                                 */  \
@@ -244,10 +244,10 @@ T    AGC(_squelch_get_threshold)(AGC() _q);                                 \
 void AGC(_squelch_set_timeout)(AGC()        _q,                             \
                                unsigned int _timeout);                      \
                                                                             \
-/* Get squelch timeout [samples]                                        */  \
+/* Get squelch timeout (number of samples)                              */  \
 unsigned int AGC(_squelch_get_timeout)(AGC() _q);                           \
                                                                             \
-/* Get squelch status (e.g. LIQUID_AGC_SQUELCH_TIMEOUT).                */  \
+/* Get squelch status (e.g. LIQUID_AGC_SQUELCH_TIMEOUT)                 */  \
 int AGC(_squelch_get_status)(AGC() _q);                                     \
 
 // Define agc APIs
