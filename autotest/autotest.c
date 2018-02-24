@@ -43,7 +43,7 @@ void usage()
     printf("  -t <id>       run specific test\n");
     printf("  -p <id>       run specific package\n");
     printf("  -r            run all tests, random order\n");
-    printf("  -R <seed>     specify random seed value, or 'time' for time(NULL)\n");
+    printf("  -R <seed>     specify random seed value\n");
     printf("  -L            lists all scripts\n");
     printf("  -l            lists all packages\n");
     printf("  -x            stop on fail\n");
@@ -133,7 +133,7 @@ int main(int argc, char *argv[])
     unsigned int package_id         = 0;
     int          verbose            = 1;
     int          stop_on_fail       = 0;
-    unsigned int rseed              = 0;
+    unsigned int rseed              = time(NULL);
     char         search_string[128] = "";
     char         filename[256]      = "";
 
@@ -158,7 +158,7 @@ int main(int argc, char *argv[])
             mode = RUN_ALL_RANDOM;
             break;
         case 'R':
-            rseed = strcmp(optarg,"time")==0 ? time(NULL) : atoi(optarg);
+            rseed = atoi(optarg);
             break;
         case 'L':
             // list packages, scripts and exit
