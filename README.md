@@ -3,7 +3,7 @@ liquid-dsp
 ==========
 
 Software-Defined Radio Digital Signal Processing Library -
-[](http://liquidsr.org)
+[http://liquidsdr.org](http://liquidsr.org)
 
 [![Build Status](https://travis-ci.org/jgaeddert/liquid-dsp.svg?branch=master)](https://travis-ci.org/jgaeddert/liquid-dsp)
 
