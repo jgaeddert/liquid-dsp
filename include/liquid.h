@@ -230,12 +230,12 @@ void AGC(_squelch_disable)(AGC() _q);                                       \
 int  AGC(_squelch_is_enabled)(AGC() _q);                                    \
                                                                             \
 /* Set threshold for enabling/disabling squelch.                        */  \
-/*  _q          :   automatic gain control object                       */  \
-/*  _thresh_dB  :   threshold for enabling squelch [dB]                 */  \
+/*  _q      :   automatic gain control object                           */  \
+/*  _thresh :   threshold for enabling squelch [dB]                     */  \
 void AGC(_squelch_set_threshold)(AGC() _q,                                  \
-                                 T     _threshold);                         \
+                                 T     _thresh);                            \
                                                                             \
-/* Get squelch threshold [dB]                                           */  \
+/* Get squelch threshold (value in dB)                                  */  \
 T    AGC(_squelch_get_threshold)(AGC() _q);                                 \
                                                                             \
 /* Set timeout before enabling squelch.                                 */  \
@@ -244,10 +244,10 @@ T    AGC(_squelch_get_threshold)(AGC() _q);                                 \
 void AGC(_squelch_set_timeout)(AGC()        _q,                             \
                                unsigned int _timeout);                      \
                                                                             \
-/* Get squelch timeout [samples]                                        */  \
+/* Get squelch timeout (number of samples)                              */  \
 unsigned int AGC(_squelch_get_timeout)(AGC() _q);                           \
                                                                             \
-/* Get squelch status (e.g. LIQUID_AGC_SQUELCH_TIMEOUT).                */  \
+/* Get squelch status (e.g. LIQUID_AGC_SQUELCH_TIMEOUT)                 */  \
 int AGC(_squelch_get_status)(AGC() _q);                                     \
 
 // Define agc APIs
@@ -300,16 +300,17 @@ void cvsd_decode8(cvsd _q, unsigned char _data, float * _audio);
 //   T       : data type
 #define LIQUID_CBUFFER_DEFINE_API(CBUFFER,T)                                \
                                                                             \
-/* The cbuffer object implements a an efficient first-in/first-out      */  \
-/* circular buffer using a minimal amount of memory                     */  \
+/* Circular buffer object for storing and retrieving samples in a       */  \
+/* first-in/first-out (FIFO) manner using a minimal amount of memory    */  \
 typedef struct CBUFFER(_s) * CBUFFER();                                     \
                                                                             \
-/* Create circular buffer object of a particular size                   */  \
+/* Create circular buffer object of a particular maximum storage length */  \
 /*  _max_size  : maximum buffer size, _max_size > 0                     */  \
 CBUFFER() CBUFFER(_create)(unsigned int _max_size);                         \
                                                                             \
-/* Create circular buffer object of a particular size and specify the   */  \
-/* maximum number of elements that can be read at any given time.       */  \
+/* Create circular buffer object of a particular maximum storage size   */  \
+/* and specify the maximum number of elements that can be read at any   */  \
+/* any given time                                                       */  \
 /*  _max_size  : maximum buffer size, _max_size > 0                     */  \
 /*  _max_read  : maximum size that will be read from buffer             */  \
 CBUFFER() CBUFFER(_create_max)(unsigned int _max_size,                      \
@@ -339,7 +340,7 @@ unsigned int CBUFFER(_max_read)(CBUFFER() _q);                              \
 /* Get the number of available slots (max_size - size)                  */  \
 unsigned int CBUFFER(_space_available)(CBUFFER() _q);                       \
                                                                             \
-/* Return flag indicating if the buffer is full or now                  */  \
+/* Return flag indicating if the buffer is full or not                  */  \
 int CBUFFER(_is_full)(CBUFFER() _q);                                        \
                                                                             \
 /* Write a single sample into the buffer                                */  \
@@ -350,19 +351,22 @@ void CBUFFER(_push)(CBUFFER() _q,                                           \
                                                                             \
 /* Write a block of samples to the buffer                               */  \
 /*  _q  : circular buffer object                                        */  \
-/*  _v  : output array                                                  */  \
+/*  _v  : array of samples to write to buffer                           */  \
 /*  _n  : number of samples to write                                    */  \
 void CBUFFER(_write)(CBUFFER()    _q,                                       \
                      T *          _v,                                       \
                      unsigned int _n);                                      \
                                                                             \
-/* Remove and return a single element from the buffer                   */  \
+/* Remove and return a single element from the buffer by setting the    */  \
+/* value of the output sample pointed to by _v                          */  \
 /*  _q  : circular buffer object                                        */  \
 /*  _v  : pointer to sample output                                      */  \
 void CBUFFER(_pop)(CBUFFER() _q,                                            \
                    T *       _v);                                           \
                                                                             \
-/* Read buffer contents                                                 */  \
+/* Read buffer contents by returning a pointer to the linearized array; */  \
+/* note that the returned pointer is only valid until another operation */  \
+/* is performed on the circular buffer object                           */  \
 /*  _q              : circular buffer object                            */  \
 /*  _num_requested  : number of elements requested                      */  \
 /*  _v              : output pointer                                    */  \
@@ -391,56 +395,80 @@ LIQUID_CBUFFER_DEFINE_API(LIQUID_CBUFFER_MANGLE_CFLOAT, liquid_float_complex)
 // large macro
 //   WINDOW : name-mangling macro
 //   T      : data type
-#define LIQUID_WINDOW_DEFINE_API(WINDOW,T)                      \
-                                                                \
-typedef struct WINDOW(_s) * WINDOW();                           \
-                                                                \
-/* create window buffer object of length _n                 */  \
-WINDOW() WINDOW(_create)(unsigned int _n);                      \
-                                                                \
-/* recreate window buffer object with new length            */  \
-/*  _q      : old window object                             */  \
-/*  _n      : new window length                             */  \
-WINDOW() WINDOW(_recreate)(WINDOW() _q, unsigned int _n);       \
-                                                                \
-/* destroy window object, freeing all internally memory     */  \
-void WINDOW(_destroy)(WINDOW() _q);                             \
-                                                                \
-/* print window object to stdout                            */  \
-void WINDOW(_print)(WINDOW() _q);                               \
-                                                                \
-/* print window object to stdout (with extra information)   */  \
-void WINDOW(_debug_print)(WINDOW() _q);                         \
-                                                                \
-/* reset window object (initialize to zeros)                */  \
-void WINDOW(_reset)(WINDOW() _q);                               \
-                                                                \
-/* read window buffer contents                              */  \
-/*  _q      : window object                                 */  \
-/*  _v      : output pointer (set to internal array)        */  \
-void WINDOW(_read)(WINDOW() _q, T ** _v);                       \
-                                                                \
-/* index single element in buffer at a particular index     */  \
-/*  _q      : window object                                 */  \
-/*  _i      : index of element to read                      */  \
-/*  _v      : output value pointer                          */  \
-void WINDOW(_index)(WINDOW()     _q,                            \
-                    unsigned int _i,                            \
-                    T *          _v);                           \
-                                                                \
-/* push single element onto window buffer                   */  \
-/*  _q      : window object                                 */  \
-/*  _v      : single input element                          */  \
-void WINDOW(_push)(WINDOW() _q,                                 \
-                   T        _v);                                \
-                                                                \
-/* write array of elements onto window buffer               */  \
-/*  _q      : window object                                 */  \
-/*  _v      : input array of values to write                */  \
-/*  _n      : number of input values to write               */  \
-void WINDOW(_write)(WINDOW()     _q,                            \
-                    T *          _v,                            \
-                    unsigned int _n);                           \
+#define LIQUID_WINDOW_DEFINE_API(WINDOW,T)                                  \
+                                                                            \
+/* Sliding window first-in/first-out buffer with a fixed size           */  \
+typedef struct WINDOW(_s) * WINDOW();                                       \
+                                                                            \
+/* Create window buffer object of a fixed length                        */  \
+WINDOW() WINDOW(_create)(unsigned int _n);                                  \
+                                                                            \
+/* Recreate window buffer object with new length.                       */  \
+/* This extends an existing window's size, similar to the standard C    */  \
+/* library's realloc() to n samples.                                    */  \
+/* If the size of the new window is larger than the old one, the newest */  \
+/* values are retained at the beginning of the buffer and the oldest    */  \
+/* values are truncated. If the size of the new window is smaller than  */  \
+/* the old one, the oldest values are truncated.                        */  \
+/*  _q      : old window object                                         */  \
+/*  _n      : new window length                                         */  \
+WINDOW() WINDOW(_recreate)(WINDOW() _q, unsigned int _n);                   \
+                                                                            \
+/* Destroy window object, freeing all internally memory                 */  \
+void WINDOW(_destroy)(WINDOW() _q);                                         \
+                                                                            \
+/* Print window object to stdout                                        */  \
+void WINDOW(_print)(WINDOW() _q);                                           \
+                                                                            \
+/* Print window object to stdout (with extra information)               */  \
+void WINDOW(_debug_print)(WINDOW() _q);                                     \
+                                                                            \
+/* Reset window object (initialize to zeros)                            */  \
+void WINDOW(_reset)(WINDOW() _q);                                           \
+                                                                            \
+/* Read the contents of the window by returning a pointer to the        */  \
+/* aligned internal memory array. This method guarantees that the       */  \
+/* elements are linearized. This method should only be used for         */  \
+/* reading; writing values to the buffer has unspecified results.       */  \
+/* Note that the returned pointer is only valid until another operation */  \
+/* is performed on the window buffer object                             */  \
+/*  _q      : window object                                             */  \
+/*  _v      : output pointer (set to internal array)                    */  \
+void WINDOW(_read)(WINDOW() _q,                                             \
+                   T **     _v);                                            \
+                                                                            \
+/* Index single element in buffer at a particular index                 */  \
+/* This retrieves the \(i^{th}\) sample in the window, storing the      */  \
+/* output value in _v.                                                  */  \
+/* This is equivalent to first invoking read() and then indexing on the */  \
+/* resulting pointer; however the result is obtained much faster.       */  \
+/* Therefore setting the index to 0 returns the oldest value in the     */  \
+/* window.                                                              */  \
+/*  _q      : window object                                             */  \
+/*  _i      : index of element to read                                  */  \
+/*  _v      : output value pointer                                      */  \
+void WINDOW(_index)(WINDOW()     _q,                                        \
+                    unsigned int _i,                                        \
+                    T *          _v);                                       \
+                                                                            \
+/* Shifts a single sample into the right side of the window, pushing    */  \
+/* the oldest (left-most) sample out of the end. Unlike stacks, the     */  \
+/* window object has no equivalent "pop" method, as values are retained */  \
+/* in memory until they are overwritten.                                */  \
+/*  _q      : window object                                             */  \
+/*  _v      : single input element                                      */  \
+void WINDOW(_push)(WINDOW() _q,                                             \
+                   T        _v);                                            \
+                                                                            \
+/* Write array of elements onto window buffer                           */  \
+/* Effectively, this is equivalent to pushing each sample one at a      */  \
+/* time, but executes much faster.                                      */  \
+/*  _q      : window object                                             */  \
+/*  _v      : input array of values to write                            */  \
+/*  _n      : number of input values to write                           */  \
+void WINDOW(_write)(WINDOW()     _q,                                        \
+                    T *          _v,                                        \
+                    unsigned int _n);                                       \
 
 // Define window APIs
 LIQUID_WINDOW_DEFINE_API(LIQUID_WINDOW_MANGLE_FLOAT,  float)
@@ -457,38 +485,44 @@ LIQUID_WINDOW_DEFINE_API(LIQUID_WINDOW_MANGLE_CFLOAT, liquid_float_complex)
 // large macro
 //   WDELAY : name-mangling macro
 //   T      : data type
-#define LIQUID_WDELAY_DEFINE_API(WDELAY,T)                      \
-typedef struct WDELAY(_s) * WDELAY();                           \
-                                                                \
-/* create delay buffer object with '_delay' samples         */  \
-WDELAY() WDELAY(_create)(unsigned int _delay);                  \
-                                                                \
-/* re-create delay buffer object with '_delay' samples      */  \
-/*  _q      :   old delay buffer object                     */  \
-/*  _delay  :   delay for new object                        */  \
-WDELAY() WDELAY(_recreate)(WDELAY()     _q,                     \
-                           unsigned int _delay);                \
-                                                                \
-/* destroy delay buffer object, freeing internal memory     */  \
-void WDELAY(_destroy)(WDELAY() _q);                             \
-                                                                \
-/* print delay buffer object's state to stdout              */  \
-void WDELAY(_print)(WDELAY() _q);                               \
-                                                                \
-/* clear/reset state of object                              */  \
-void WDELAY(_reset)(WDELAY() _q);                               \
-                                                                \
-/* read delayed sample from delay buffer object             */  \
-/*  _q  :   delay buffer object                             */  \
-/*  _v  :   value of delayed element                        */  \
-void WDELAY(_read)(WDELAY() _q,                                 \
-                   T *      _v);                                \
-                                                                \
-/* push new sample into delay buffer object                 */  \
-/*  _q  :   delay buffer object                             */  \
-/*  _v  :   new value to be added to buffer                 */  \
-void WDELAY(_push)(WDELAY() _q,                                 \
-                   T        _v);                                \
+#define LIQUID_WDELAY_DEFINE_API(WDELAY,T)                                  \
+                                                                            \
+/* Efficient digital delay line using a minimal amount of memory        */  \
+typedef struct WDELAY(_s) * WDELAY();                                       \
+                                                                            \
+/* Create delay buffer object with a particular number of samples of    */  \
+/* delay                                                                */  \
+/*  _delay  :   number of samples of delay in the wdelay object         */  \
+WDELAY() WDELAY(_create)(unsigned int _delay);                              \
+                                                                            \
+/* Re-create delay buffer object, adjusting the delay size, preserving  */  \
+/* the internal state of the object                                     */  \
+/*  _q      :   old delay buffer object                                 */  \
+/*  _delay  :   delay for new object                                    */  \
+WDELAY() WDELAY(_recreate)(WDELAY()     _q,                                 \
+                           unsigned int _delay);                            \
+                                                                            \
+/* Destroy delay buffer object, freeing internal memory                 */  \
+void WDELAY(_destroy)(WDELAY() _q);                                         \
+                                                                            \
+/* Print delay buffer object's state to stdout                          */  \
+void WDELAY(_print)(WDELAY() _q);                                           \
+                                                                            \
+/* Clear/reset state of object                                          */  \
+void WDELAY(_reset)(WDELAY() _q);                                           \
+                                                                            \
+/* Read delayed sample at the head of the buffer and store it to the    */  \
+/* output pointer                                                       */  \
+/*  _q  :   delay buffer object                                         */  \
+/*  _v  :   value of delayed element                                    */  \
+void WDELAY(_read)(WDELAY() _q,                                             \
+                   T *      _v);                                            \
+                                                                            \
+/* Push new sample into delay buffer object                             */  \
+/*  _q  :   delay buffer object                                         */  \
+/*  _v  :   new value to be added to buffer                             */  \
+void WDELAY(_push)(WDELAY() _q,                                             \
+                   T        _v);                                            \
 
 // Define wdelay APIs
 LIQUID_WDELAY_DEFINE_API(LIQUID_WDELAY_MANGLE_FLOAT,  float)
@@ -508,68 +542,69 @@ LIQUID_WDELAY_DEFINE_API(LIQUID_WDELAY_MANGLE_CFLOAT, liquid_float_complex)
 //   TO         : output data type
 //   TC         : coefficients data type
 //   TI         : input data type
-#define LIQUID_CHANNEL_DEFINE_API(CHANNEL,TO,TC,TI)             \
-                                                                \
-typedef struct CHANNEL(_s) * CHANNEL();                         \
-                                                                \
-/* create channel object with default parameters            */  \
-CHANNEL() CHANNEL(_create)(void);                               \
-                                                                \
-/* destroy channel object, freeing all internal memory      */  \
-void CHANNEL(_destroy)(CHANNEL() _q);                           \
-                                                                \
-/* print channel object internals to standard output        */  \
-void CHANNEL(_print)(CHANNEL() _q);                             \
-                                                                \
-/* apply additive white Gausss noise impairment             */  \
-/*  _q          : channel object                            */  \
-/*  _N0dB       : noise floor power spectral density [dB]   */  \
-/*  _SNRdB      : signal-to-noise ratio [dB]                */  \
-void CHANNEL(_add_awgn)(CHANNEL() _q,                           \
-                        float     _N0dB,                        \
-                        float     _SNRdB);                      \
-                                                                \
-/* apply carrier offset impairment                          */  \
-/*  _q          : channel object                            */  \
-/*  _frequency  : carrier frequency offset [radians/sample] */  \
-/*  _phase      : carrier phase offset    [radians]         */  \
-void CHANNEL(_add_carrier_offset)(CHANNEL() _q,                 \
-                                  float     _frequency,         \
-                                  float     _phase);            \
-                                                                \
-/* apply multi-path channel impairment                      */  \
-/*  _q          : channel object                            */  \
-/*  _h          : channel coefficients (NULL for random)    */  \
-/*  _h_len      : number of channel coefficients            */  \
-void CHANNEL(_add_multipath)(CHANNEL()    _q,                   \
-                             TC *         _h,                   \
-                             unsigned int _h_len);              \
-                                                                \
-/* apply slowly-varying shadowing impairment                */  \
-/*  _q          : channel object                            */  \
-/*  _sigma      : std. deviation for log-normal shadowing   */  \
-/*  _fd         : Doppler frequency, _fd in (0,0.5)         */  \
-void CHANNEL(_add_shadowing)(CHANNEL()    _q,                   \
-                             float        _sigma,               \
-                             float        _fd);                 \
-                                                                \
-/* apply channel impairments on single input sample         */  \
-/*  _q      : channel object                                */  \
-/*  _x      : input sample                                  */  \
-/*  _y      : pointer to output sample                      */  \
-void CHANNEL(_execute)(CHANNEL()      _q,                       \
-                       TI             _x,                       \
-                       TO *           _y);                      \
-                                                                \
-/* apply channel impairments on block of samples            */  \
-/*  _q      : channel object                                */  \
-/*  _x      : input array, [size: _n x 1]                   */  \
-/*  _n      : input array, length                           */  \
-/*  _y      : output array, [size: _n x 1]                  */  \
-void CHANNEL(_execute_block)(CHANNEL()      _q,                 \
-                             TI *           _x,                 \
-                             unsigned int   _n,                 \
-                             TO *           _y);                \
+#define LIQUID_CHANNEL_DEFINE_API(CHANNEL,TO,TC,TI)                         \
+                                                                            \
+/* Channel emulation                                                    */  \
+typedef struct CHANNEL(_s) * CHANNEL();                                     \
+                                                                            \
+/* Create channel object with default parameters                        */  \
+CHANNEL() CHANNEL(_create)(void);                                           \
+                                                                            \
+/* Destroy channel object, freeing all internal memory                  */  \
+void CHANNEL(_destroy)(CHANNEL() _q);                                       \
+                                                                            \
+/* Print channel object internals to standard output                    */  \
+void CHANNEL(_print)(CHANNEL() _q);                                         \
+                                                                            \
+/* Include additive white Gausss noise impairment                       */  \
+/*  _q          : channel object                                        */  \
+/*  _N0dB       : noise floor power spectral density [dB]               */  \
+/*  _SNRdB      : signal-to-noise ratio [dB]                            */  \
+void CHANNEL(_add_awgn)(CHANNEL() _q,                                       \
+                        float     _N0dB,                                    \
+                        float     _SNRdB);                                  \
+                                                                            \
+/* Include carrier offset impairment                                    */  \
+/*  _q          : channel object                                        */  \
+/*  _frequency  : carrier frequency offset [radians/sample]             */  \
+/*  _phase      : carrier phase offset [radians]                        */  \
+void CHANNEL(_add_carrier_offset)(CHANNEL() _q,                             \
+                                  float     _frequency,                     \
+                                  float     _phase);                        \
+                                                                            \
+/* Include multi-path channel impairment                                */  \
+/*  _q          : channel object                                        */  \
+/*  _h          : channel coefficients (NULL for random)                */  \
+/*  _h_len      : number of channel coefficients                        */  \
+void CHANNEL(_add_multipath)(CHANNEL()    _q,                               \
+                             TC *         _h,                               \
+                             unsigned int _h_len);                          \
+                                                                            \
+/* Include slowly-varying shadowing impairment                          */  \
+/*  _q          : channel object                                        */  \
+/*  _sigma      : standard deviation for log-normal shadowing           */  \
+/*  _fd         : Doppler frequency, 0 <= _fd < 0.5                     */  \
+void CHANNEL(_add_shadowing)(CHANNEL()    _q,                               \
+                             float        _sigma,                           \
+                             float        _fd);                             \
+                                                                            \
+/* Apply channel impairments on single input sample                     */  \
+/*  _q      : channel object                                            */  \
+/*  _x      : input sample                                              */  \
+/*  _y      : pointer to output sample                                  */  \
+void CHANNEL(_execute)(CHANNEL()      _q,                                   \
+                       TI             _x,                                   \
+                       TO *           _y);                                  \
+                                                                            \
+/* Apply channel impairments on block of samples                        */  \
+/*  _q      : channel object                                            */  \
+/*  _x      : input array, [size: _n x 1]                               */  \
+/*  _n      : input array, length                                       */  \
+/*  _y      : output array, [size: _n x 1]                              */  \
+void CHANNEL(_execute_block)(CHANNEL()      _q,                             \
+                             TI *           _x,                             \
+                             unsigned int   _n,                             \
+                             TO *           _y);                            \
 
 LIQUID_CHANNEL_DEFINE_API(LIQUID_CHANNEL_MANGLE_CCCF,
                           liquid_float_complex,
@@ -587,49 +622,53 @@ LIQUID_CHANNEL_DEFINE_API(LIQUID_CHANNEL_MANGLE_CCCF,
 //   TO         : output data type
 //   TC         : coefficients data type
 //   TI         : input data type
-#define LIQUID_TVMPCH_DEFINE_API(TVMPCH,TO,TC,TI)               \
-                                                                \
-typedef struct TVMPCH(_s) * TVMPCH();                           \
-                                                                \
-/* create channel object with default parameters            */  \
-/* create time-varying multi-path channel emulator object   */  \
-/*  _n      :   number of coefficients, _n > 0              */  \
-/*  _std    :   standard deviation                          */  \
-/*  _tau    :   coherence time                              */  \
-TVMPCH() TVMPCH(_create)(unsigned int _n,                       \
-                         float        _std,                     \
-                         float        _tau);                    \
-                                                                \
-/* destroy channel object, freeing all internal memory      */  \
-void TVMPCH(_destroy)(TVMPCH() _q);                             \
-                                                                \
-/* reset object                                             */  \
-void TVMPCH(_reset)(TVMPCH() _q);                               \
-                                                                \
-/* print channel object internals to standard output        */  \
-void TVMPCH(_print)(TVMPCH() _q);                               \
-                                                                \
-/* push sample into emulator                                */  \
-/*  _q      : channel object                                */  \
-/*  _x      : input sample                                  */  \
-void TVMPCH(_push)(TVMPCH() _q,                                 \
-                   TI       _x);                                \
-                                                                \
-/* compute output sample                                    */  \
-/*  _q      : channel object                                */  \
-/*  _y      : output sample                                 */  \
-void TVMPCH(_execute)(TVMPCH()      _q,                         \
-                      TO *          _y);                        \
-                                                                \
-/* apply channel impairments on a block of samples          */  \
-/*  _q      : channel object                                */  \
-/*  _x      : input array [size: _nx x 1]                   */  \
-/*  _nx     : input array length                            */  \
-/*  _y      : output array                                  */  \
-void TVMPCH(_execute_block)(TVMPCH()     _q,                    \
-                            TI *         _x,                    \
-                            unsigned int _nx,                   \
-                            TO *         _y);                   \
+#define LIQUID_TVMPCH_DEFINE_API(TVMPCH,TO,TC,TI)                           \
+                                                                            \
+/* Time-varying multipath channel emulation                             */  \
+typedef struct TVMPCH(_s) * TVMPCH();                                       \
+                                                                            \
+/* Create time-varying multi-path channel emulator object, specifying   */  \
+/* the number of coefficients, the standard deviation of coefficients,  */  \
+/* and the coherence time. The larger the standard deviation, the more  */  \
+/* dramatic the frequency response of the channel. The shorter the      */  \
+/* coeherent time, the faster the channel effects.                      */  \
+/*  _n      :   number of coefficients, _n > 0                          */  \
+/*  _std    :   standard deviation, _std >= 0                           */  \
+/*  _tau    :   normalized coherence time, 0 < _tau < 1                 */  \
+TVMPCH() TVMPCH(_create)(unsigned int _n,                                   \
+                         float        _std,                                 \
+                         float        _tau);                                \
+                                                                            \
+/* Destroy channel object, freeing all internal memory                  */  \
+void TVMPCH(_destroy)(TVMPCH() _q);                                         \
+                                                                            \
+/* Reset object                                                         */  \
+void TVMPCH(_reset)(TVMPCH() _q);                                           \
+                                                                            \
+/* Print channel object internals to standard output                    */  \
+void TVMPCH(_print)(TVMPCH() _q);                                           \
+                                                                            \
+/* Push sample into emulator                                            */  \
+/*  _q      : channel object                                            */  \
+/*  _x      : input sample                                              */  \
+void TVMPCH(_push)(TVMPCH() _q,                                             \
+                   TI       _x);                                            \
+                                                                            \
+/* Compute output sample                                                */  \
+/*  _q      : channel object                                            */  \
+/*  _y      : output sample                                             */  \
+void TVMPCH(_execute)(TVMPCH() _q,                                          \
+                      TO *     _y);                                         \
+                                                                            \
+/* Apply channel impairments on a block of samples                      */  \
+/*  _q      : channel object                                            */  \
+/*  _x      : input array, [size: _n x 1]                               */  \
+/*  _n      : input array length                                        */  \
+/*  _y      : output array, [size: _n x 1]                              */  \
+void TVMPCH(_execute_block)(TVMPCH()     _q,                                \
+                            TI *         _x,                                \
+                            unsigned int _n,                                \
+                            TO *         _y);                               \
 
 LIQUID_TVMPCH_DEFINE_API(LIQUID_TVMPCH_MANGLE_CCCF,
                          liquid_float_complex,
@@ -650,45 +689,67 @@ LIQUID_TVMPCH_DEFINE_API(LIQUID_TVMPCH_MANGLE_CCCF,
 //   TO         : output data type
 //   TC         : coefficients data type
 //   TI         : input data type
-#define LIQUID_DOTPROD_DEFINE_API(DOTPROD,TO,TC,TI)             \
-                                                                \
-typedef struct DOTPROD(_s) * DOTPROD();                         \
-                                                                \
-/* run dot product without creating object [unrolled loop]  */  \
-/*  _v      : coefficients array [size: _n x 1]             */  \
-/*  _x      : input array [size: _n x 1]                    */  \
-/*  _n      : dotprod length, _n > 0                        */  \
-/*  _y      : output sample pointer                         */  \
-void DOTPROD(_run)( TC *_v, TI *_x, unsigned int _n, TO *_y);   \
-void DOTPROD(_run4)(TC *_v, TI *_x, unsigned int _n, TO *_y);   \
-                                                                \
-/* create dot product object                                */  \
-/*  _v      : coefficients array [size: _n x 1]             */  \
-/*  _n      : dotprod length, _n > 0                        */  \
-DOTPROD() DOTPROD(_create)(TC *         _v,                     \
-                           unsigned int _n);                    \
-                                                                \
-/* re-create dot product object                             */  \
-/*  _q      : old dotprod object                            */  \
-/*  _v      : coefficients array [size: _n x 1]             */  \
-/*  _n      : dotprod length, _n > 0                        */  \
-DOTPROD() DOTPROD(_recreate)(DOTPROD()    _q,                   \
-                             TC *         _v,                   \
-                             unsigned int _n);                  \
-                                                                \
-/* destroy dotprod object, freeing all internal memory      */  \
-void DOTPROD(_destroy)(DOTPROD() _q);                           \
-                                                                \
-/* print dotprod object internals to standard output        */  \
-void DOTPROD(_print)(DOTPROD() _q);                             \
-                                                                \
-/* execute dot product                                      */  \
-/*  _q      : dotprod object                                */  \
-/*  _x      : input array [size: _n x 1]                    */  \
-/*  _y      : output sample pointer                         */  \
-void DOTPROD(_execute)(DOTPROD() _q,                            \
-                       TI *      _x,                            \
-                       TO *      _y);                           \
+#define LIQUID_DOTPROD_DEFINE_API(DOTPROD,TO,TC,TI)                         \
+                                                                            \
+/* Vector dot product operation                                         */  \
+typedef struct DOTPROD(_s) * DOTPROD();                                     \
+                                                                            \
+/* Run dot product without creating object. This is less efficient than */  \
+/* creating the object as it is an unoptimized portable implementation  */  \
+/* that doesn't take advantage of processor extensions. It is meant to  */  \
+/* provide a baseline for performance comparison and a convenient way   */  \
+/* to invoke a dot product operation when fast operation is not         */  \
+/* necessary.                                                           */  \
+/*  _v      : coefficients array [size: _n x 1]                         */  \
+/*  _x      : input array [size: _n x 1]                                */  \
+/*  _n      : dotprod length, _n > 0                                    */  \
+/*  _y      : output sample pointer                                     */  \
+void DOTPROD(_run)( TC *         _v,                                        \
+                    TI *         _x,                                        \
+                    unsigned int _n,                                        \
+                    TO *         _y);                                       \
+                                                                            \
+/* This provides the same unoptimized operation as the 'run()' method   */  \
+/* above, but with the loop unrolled by a factor of 4. It is marginally */  \
+/* faster than 'run()' without unrolling the loop.                      */  \
+/*  _v      : coefficients array [size: _n x 1]                         */  \
+/*  _x      : input array [size: _n x 1]                                */  \
+/*  _n      : dotprod length, _n > 0                                    */  \
+/*  _y      : output sample pointer                                     */  \
+void DOTPROD(_run4)( TC *         _v,                                       \
+                     TI *         _x,                                       \
+                     unsigned int _n,                                       \
+                     TO *         _y);                                      \
+                                                                            \
+/* Create vector dot product object                                     */  \
+/*  _v      : coefficients array [size: _n x 1]                         */  \
+/*  _n      : dotprod length, _n > 0                                    */  \
+DOTPROD() DOTPROD(_create)(TC *         _v,                                 \
+                           unsigned int _n);                                \
+                                                                            \
+/* Re-create dot product object of potentially a different length with  */  \
+/* different coefficients. If the length of the dot product object does */  \
+/* not change, not memory reallocation is invoked.                      */  \
+/*  _q      : old dotprod object                                        */  \
+/*  _v      : coefficients array [size: _n x 1]                         */  \
+/*  _n      : dotprod length, _n > 0                                    */  \
+DOTPROD() DOTPROD(_recreate)(DOTPROD()    _q,                               \
+                             TC *         _v,                               \
+                             unsigned int _n);                              \
+                                                                            \
+/* Destroy dotprod object, freeing all internal memory                  */  \
+void DOTPROD(_destroy)(DOTPROD() _q);                                       \
+                                                                            \
+/* Print dotprod object internals to standard output                    */  \
+void DOTPROD(_print)(DOTPROD() _q);                                         \
+                                                                            \
+/* Execute dot product on an input array                                */  \
+/*  _q      : dotprod object                                            */  \
+/*  _x      : input array [size: _n x 1]                                */  \
+/*  _y      : output sample pointer                                     */  \
+void DOTPROD(_execute)(DOTPROD() _q,                                        \
+                       TI *      _x,                                        \
+                       TO *      _y);                                       \
 
 LIQUID_DOTPROD_DEFINE_API(LIQUID_DOTPROD_MANGLE_RRRF,
                           float,
