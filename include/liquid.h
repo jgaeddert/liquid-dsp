@@ -301,7 +301,7 @@ void cvsd_decode8(cvsd _q, unsigned char _data, float * _audio);
 #define LIQUID_CBUFFER_DEFINE_API(CBUFFER,T)                                \
                                                                             \
 /* Circular buffer object for storing and retrieving samples in a       */  \
-/* first-in/first-out (FIFO) manner                                     */  \
+/* first-in/first-out (FIFO) manner using a minimal amount of memory    */  \
 typedef struct CBUFFER(_s) * CBUFFER();                                     \
                                                                             \
 /* Create circular buffer object of a particular maximum storage length */  \
@@ -319,7 +319,7 @@ CBUFFER() CBUFFER(_create_max)(unsigned int _max_size,                      \
 /* Destroy cbuffer object, freeing all internal memory                  */  \
 void CBUFFER(_destroy)(CBUFFER() _q);                                       \
                                                                             \
-/* Print cbuffer object properties                                      */  \
+/* Print cbuffer object properties to stdout                            */  \
 void CBUFFER(_print)(CBUFFER() _q);                                         \
                                                                             \
 /* Print cbuffer object properties and internal state                   */  \
@@ -340,7 +340,7 @@ unsigned int CBUFFER(_max_read)(CBUFFER() _q);                              \
 /* Get the number of available slots (max_size - size)                  */  \
 unsigned int CBUFFER(_space_available)(CBUFFER() _q);                       \
                                                                             \
-/* Return flag indicating if buffer is full                             */  \
+/* Return flag indicating if the buffer is full or not                  */  \
 int CBUFFER(_is_full)(CBUFFER() _q);                                        \
                                                                             \
 /* Write a single sample into the buffer                                */  \
@@ -1559,61 +1559,67 @@ LIQUID_SPGRAM_DEFINE_API(LIQUID_SPGRAM_MANGLE_FLOAT,
 //  T       :   primitive data type
 //  TC      :   primitive data type (complex)
 //  TI      :   primitive data type (input)
-#define LIQUID_ASGRAM_DEFINE_API(ASGRAM,T,TC,TI)                \
-                                                                \
-typedef struct ASGRAM(_s) * ASGRAM();                           \
-                                                                \
-/* create asgram object with size _nfft                     */  \
-ASGRAM() ASGRAM(_create)(unsigned int _nfft);                   \
-                                                                \
-/* destroy asgram object                                    */  \
-void ASGRAM(_destroy)(ASGRAM() _q);                             \
-                                                                \
-/* resets the internal state of the asgram object           */  \
-void ASGRAM(_reset)(ASGRAM() _q);                               \
-                                                                \
-/* set scale and offset for spectrogram                     */  \
-/*  _q      :   asgram object                               */  \
-/*  _ref    :   signal reference level [dB]                 */  \
-/*  _div    :   signal division [dB]                        */  \
-void ASGRAM(_set_scale)(ASGRAM() _q,                            \
-                        float    _ref,                          \
-                        float    _div);                         \
-                                                                \
-/* set display characters for output string                 */  \
-/*  _q      :   asgram object                               */  \
-/*  _ascii  :   10-character display, default: " .,-+*&NM#" */  \
-void ASGRAM(_set_display)(ASGRAM()     _q,                      \
-                          const char * _ascii);                 \
-                                                                \
-/* push a single sample into the asgram object              */  \
-/*  _q      :   asgram object                               */  \
-/*  _x      :   input sample                                */  \
-void ASGRAM(_push)(ASGRAM() _q,                                 \
-                   TI       _x);                                \
-                                                                \
-/* write a block of samples to the asgram object            */  \
-/*  _q      :   asgram object                               */  \
-/*  _x      :   input buffer [size: _n x 1]                 */  \
-/*  _n      :   input buffer length                         */  \
-void ASGRAM(_write)(ASGRAM()     _q,                            \
-                    TI *         _x,                            \
-                    unsigned int _n);                           \
-                                                                \
-/* compute spectral periodogram output from current buffer  */  \
-/* contents                                                 */  \
-/*  _q          :   spgram object                           */  \
-/*  _ascii      :   output ASCII string [size: _nfft x 1]   */  \
-/*  _peakval    :   peak power spectral density value [dB]  */  \
-/*  _peakfreq   :   peak power spectral density frequency   */  \
-void ASGRAM(_execute)(ASGRAM() _q,                              \
-                      char *  _ascii,                           \
-                      float * _peakval,                         \
-                      float * _peakfreq);                       \
-                                                                \
-/* compute spectral periodogram output from current buffer  */  \
-/* contents and print standard format to stdout             */  \
-void ASGRAM(_print)(ASGRAM() _q);                               \
+#define LIQUID_ASGRAM_DEFINE_API(ASGRAM,T,TC,TI)                            \
+                                                                            \
+/* ASCII spectral periodogram (asgram)                                  */  \
+typedef struct ASGRAM(_s) * ASGRAM();                                       \
+                                                                            \
+/* Create asgram object with size _nfft                                 */  \
+/*  _nfft   :   size of FFT taken for each transform (character width)  */  \
+ASGRAM() ASGRAM(_create)(unsigned int _nfft);                               \
+                                                                            \
+/* Destroy asgram object                                                */  \
+/*  _q      :   asgram object                                           */  \
+void ASGRAM(_destroy)(ASGRAM() _q);                                         \
+                                                                            \
+/* Reset the internal state of the asgram object                        */  \
+/*  _q      :   asgram object                                           */  \
+void ASGRAM(_reset)(ASGRAM() _q);                                           \
+                                                                            \
+/* Set the scale and offset for spectrogram                             */  \
+/*  _q      :   asgram object                                           */  \
+/*  _ref    :   signal reference level [dB]                             */  \
+/*  _div    :   signal division [dB]                                    */  \
+void ASGRAM(_set_scale)(ASGRAM() _q,                                        \
+                        float    _ref,                                      \
+                        float    _div);                                     \
+                                                                            \
+/* Set the display characters for output string                         */  \
+/*  _q      :   asgram object                                           */  \
+/*  _ascii  :   10-character display, default: " .,-+*&NM#"             */  \
+void ASGRAM(_set_display)(ASGRAM()     _q,                                  \
+                          const char * _ascii);                             \
+                                                                            \
+/* Push a single sample into the asgram object                          */  \
+/*  _q      :   asgram object                                           */  \
+/*  _x      :   input sample                                            */  \
+void ASGRAM(_push)(ASGRAM() _q,                                             \
+                   TI       _x);                                            \
+                                                                            \
+/* Write a block of samples to the asgram object                        */  \
+/*  _q      :   asgram object                                           */  \
+/*  _x      :   input buffer [size: _n x 1]                             */  \
+/*  _n      :   input buffer length                                     */  \
+void ASGRAM(_write)(ASGRAM()     _q,                                        \
+                    TI *         _x,                                        \
+                    unsigned int _n);                                       \
+                                                                            \
+/* Compute spectral periodogram output from current buffer contents     */  \
+/* and return the ascii character string to display along with the peak */  \
+/* value and its frequency location                                     */  \
+/*  _q          :   spgram object                                       */  \
+/*  _ascii      :   output ASCII string [size: _nfft x 1]               */  \
+/*  _peakval    :   peak power spectral density value [dB]              */  \
+/*  _peakfreq   :   peak power spectral density frequency               */  \
+void ASGRAM(_execute)(ASGRAM() _q,                                          \
+                      char *  _ascii,                                       \
+                      float * _peakval,                                     \
+                      float * _peakfreq);                                   \
+                                                                            \
+/* Compute spectral periodogram output from current buffer contents and */  \
+/* print standard format to stdout                                      */  \
+/*  _q          :   spgram object                                       */  \
+void ASGRAM(_print)(ASGRAM() _q);                                           \
 
 LIQUID_ASGRAM_DEFINE_API(LIQUID_ASGRAM_MANGLE_CFLOAT,
                          float,
@@ -2254,46 +2260,60 @@ void liquid_levinson(float * _r,
 //   TO         : output data type
 //   TC         : coefficients data type
 //   TI         : input data type
-#define LIQUID_AUTOCORR_DEFINE_API(AUTOCORR,TO,TC,TI)           \
-                                                                \
-typedef struct AUTOCORR(_s) * AUTOCORR();                       \
-                                                                \
-/* create auto-correlator object                            */  \
-/*  _window_size    : size of the correlator window         */  \
-/*  _delay          : correlator delay [samples]            */  \
-AUTOCORR() AUTOCORR(_create)(unsigned int _window_size,         \
-                             unsigned int _delay);              \
-                                                                \
-/* destroy auto-correlator object, freeing internal memory  */  \
-void AUTOCORR(_destroy)(AUTOCORR() _q);                         \
-                                                                \
-/* reset auto-correlator object's internals                 */  \
-void AUTOCORR(_reset)(AUTOCORR() _q);                           \
-                                                                \
-/* print auto-correlator parameters to stdout               */  \
-void AUTOCORR(_print)(AUTOCORR() _q);                           \
-                                                                \
-/* push sample into auto-correlator object                  */  \
-void AUTOCORR(_push)(AUTOCORR() _q,                             \
-                     TI         _x);                            \
-                                                                \
-/* compute single auto-correlation output                   */  \
-void AUTOCORR(_execute)(AUTOCORR() _q,                          \
-                        TO *       _rxx);                       \
-                                                                \
-/* compute auto-correlation on block of samples; the input  */  \
-/* and output arrays may have the same pointer              */  \
-/*  _q      :   auto-correlation object                     */  \
-/*  _x      :   input array [size: _n x 1]                  */  \
-/*  _n      :   number of input, output samples             */  \
-/*  _rxx    :   input array [size: _n x 1]                  */  \
-void AUTOCORR(_execute_block)(AUTOCORR()   _q,                  \
-                              TI *         _x,                  \
-                              unsigned int _n,                  \
-                              TO *         _rxx);               \
-                                                                \
-/* return sum of squares of buffered samples                */  \
-float AUTOCORR(_get_energy)(AUTOCORR() _q);                     \
+#define LIQUID_AUTOCORR_DEFINE_API(AUTOCORR,TO,TC,TI)                       \
+                                                                            \
+/* Computes auto-correlation with a fixed lag on input signals          */  \
+typedef struct AUTOCORR(_s) * AUTOCORR();                                   \
+                                                                            \
+/* Create auto-correlator object with a particular window length and    */  \
+/* delay                                                                */  \
+/*  _window_size    : size of the correlator window                     */  \
+/*  _delay          : correlator delay [samples]                        */  \
+AUTOCORR() AUTOCORR(_create)(unsigned int _window_size,                     \
+                             unsigned int _delay);                          \
+                                                                            \
+/* Destroy auto-correlator object, freeing internal memory              */  \
+void AUTOCORR(_destroy)(AUTOCORR() _q);                                     \
+                                                                            \
+/* Reset auto-correlator object's internals                             */  \
+void AUTOCORR(_reset)(AUTOCORR() _q);                                       \
+                                                                            \
+/* Print auto-correlator parameters to stdout                           */  \
+void AUTOCORR(_print)(AUTOCORR() _q);                                       \
+                                                                            \
+/* Push sample into auto-correlator object                              */  \
+/*  _q      : auto-correlator object                                    */  \
+/*  _x      : single input sample                                       */  \
+void AUTOCORR(_push)(AUTOCORR() _q,                                         \
+                     TI         _x);                                        \
+                                                                            \
+/* Write block of samples to auto-correlator object                     */  \
+/*  _q      :   auto-correlation object                                 */  \
+/*  _x      :   input array [size: _n x 1]                              */  \
+/*  _n      :   number of input samples                                 */  \
+void AUTOCORR(_write)(AUTOCORR()   _q,                                      \
+                      TI *         _x,                                      \
+                      unsigned int _n);                                     \
+                                                                            \
+/* Compute single auto-correlation output                               */  \
+/*  _q      : auto-correlator object                                    */  \
+/*  _rxx    : auto-correlated output                                    */  \
+void AUTOCORR(_execute)(AUTOCORR() _q,                                      \
+                        TO *       _rxx);                                   \
+                                                                            \
+/* Compute auto-correlation on block of samples; the input and output   */  \
+/* arrays may have the same pointer                                     */  \
+/*  _q      :   auto-correlation object                                 */  \
+/*  _x      :   input array [size: _n x 1]                              */  \
+/*  _n      :   number of input, output samples                         */  \
+/*  _rxx    :   input array [size: _n x 1]                              */  \
+void AUTOCORR(_execute_block)(AUTOCORR()   _q,                              \
+                              TI *         _x,                              \
+                              unsigned int _n,                              \
+                              TO *         _rxx);                           \
+                                                                            \
+/* return sum of squares of buffered samples                            */  \
+float AUTOCORR(_get_energy)(AUTOCORR() _q);                                 \
 
 LIQUID_AUTOCORR_DEFINE_API(LIQUID_AUTOCORR_MANGLE_CCCF,
                            liquid_float_complex,
@@ -4384,19 +4404,38 @@ void ofdmflexframesync_debug_print(ofdmflexframesync _q,
 //   TO     : output data type
 //   TC     : coefficients data type
 //   TI     : input data type
-#define LIQUID_BSYNC_DEFINE_API(BSYNC,TO,TC,TI)                 \
-typedef struct BSYNC(_s) * BSYNC();                             \
-                                                                \
-BSYNC() BSYNC(_create)(unsigned int _n, TC * _v);               \
-                                                                \
-/* create binary synchronizer from m-sequence               */  \
-/*  _g      :   m-sequence generator polynomial             */  \
-/*  _k      :   samples/symbol (over-sampling factor)       */  \
-BSYNC() BSYNC(_create_msequence)(unsigned int _g,               \
-                                 unsigned int _k);              \
-void BSYNC(_destroy)(BSYNC() _fs);                              \
-void BSYNC(_print)(BSYNC() _fs);                                \
-void BSYNC(_correlate)(BSYNC() _fs, TI _sym, TO * _y);
+#define LIQUID_BSYNC_DEFINE_API(BSYNC,TO,TC,TI)                             \
+                                                                            \
+/* Binary P/N synchronizer                                              */  \
+typedef struct BSYNC(_s) * BSYNC();                                         \
+                                                                            \
+/* Create bsync object                                                  */  \
+/*  _n  : sequence length                                               */  \
+/*  _v  : correlation sequence [size: _n x 1]                           */  \
+BSYNC() BSYNC(_create)(unsigned int _n,                                     \
+                       TC *         _v);                                    \
+                                                                            \
+/* Create binary synchronizer from m-sequence                           */  \
+/*  _g  :   m-sequence generator polynomial                             */  \
+/*  _k  :   samples/symbol (over-sampling factor)                       */  \
+BSYNC() BSYNC(_create_msequence)(unsigned int _g,                           \
+                                 unsigned int _k);                          \
+                                                                            \
+/* Destroy binary synchronizer object, freeing all internal memory      */  \
+/*  _q  :   bsync object                                                */  \
+void BSYNC(_destroy)(BSYNC() _q);                                           \
+                                                                            \
+/* Print object internals to stdout                                     */  \
+/*  _q  :   bsync object                                                */  \
+void BSYNC(_print)(BSYNC() _q);                                             \
+                                                                            \
+/* Correlate input signal against internal sequence                     */  \
+/*  _q  :   bsync object                                                */  \
+/*  _x  :   input sample                                                */  \
+/*  _y  :   pointer to output sample                                    */  \
+void BSYNC(_correlate)(BSYNC() _q,                                          \
+                       TI      _x,                                          \
+                       TO *    _y);                                         \
 
 LIQUID_BSYNC_DEFINE_API(LIQUID_BSYNC_MANGLE_RRRF,
                         float,
