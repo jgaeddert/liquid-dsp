@@ -824,7 +824,7 @@ EQLMS() EQLMS(_create_lowpass)(unsigned int _n,                             \
                                                                             \
 /* Re-create EQ initialized with external coefficients                  */  \
 /*  _q      :   equalizer object                                        */  \
-/*  _h      :   filter coefficients (NULL for {1,0,0...})               */  \
+/*  _h :   filter coefficients (NULL for {1,0,0...}), [size: _n x 1]    */  \
 /*  _h_len  :   filter length                                           */  \
 EQLMS() EQLMS(_recreate)(EQLMS()      _q,                                   \
                          T *          _h,                                   \
@@ -925,68 +925,76 @@ LIQUID_EQLMS_DEFINE_API(LIQUID_EQLMS_MANGLE_CCCF, liquid_float_complex)
 // large macro
 //   EQRLS  : name-mangling macro
 //   T      : data type
-#define LIQUID_EQRLS_DEFINE_API(EQRLS,T)                        \
-typedef struct EQRLS(_s) * EQRLS();                             \
-                                                                \
-/* create RLS EQ initialized with external coefficients     */  \
-/*  _h  : filter coefficients (NULL for {1,0,0...})         */  \
-/*  _p  : filter length                                     */  \
-EQRLS() EQRLS(_create)(T *          _h,                         \
-                       unsigned int _p);                        \
-                                                                \
-/* re-create RLS EQ initialized with external coefficients  */  \
-/*  _q  : initial equalizer object                          */  \
-/*  _h  : filter coefficients (NULL for {1,0,0...})         */  \
-/*  _p  : filter length                                     */  \
-EQRLS() EQRLS(_recreate)(EQRLS()      _q,                       \
-                         T *          _h,                       \
-                         unsigned int _p);                      \
-                                                                \
-/* destroy equalizer object, freeing all internal memory    */  \
-void EQRLS(_destroy)(EQRLS() _q);                               \
-                                                                \
-/* print equalizer internal state                           */  \
-void EQRLS(_print)(EQRLS() _q);                                 \
-                                                                \
-/* reset equalizer object, clearing internal state          */  \
-void EQRLS(_reset)(EQRLS() _q);                                 \
-                                                                \
-/* get/set equalizer learning rate                          */  \
-float EQRLS(_get_bw)(EQRLS() _q);                               \
-void  EQRLS(_set_bw)(EQRLS() _q,                                \
-                     float   _mu);                              \
-                                                                \
-/* push sample into equalizer internal buffer               */  \
-void EQRLS(_push)(EQRLS() _q, T _x);                            \
-                                                                \
-/* execute internal dot product and return result           */  \
-/*  _q      :   equalizer object                            */  \
-/*  _y      :   output sample                               */  \
-void EQRLS(_execute)(EQRLS() _q, T * _y);                       \
-                                                                \
-/* step through one cycle of equalizer training             */  \
-/*  _q      :   equalizer object                            */  \
-/*  _d      :   desired output                              */  \
-/*  _d_hat  :   actual output                               */  \
-void EQRLS(_step)(EQRLS() _q, T _d, T _d_hat);                  \
-                                                                \
-/* retrieve internal filter coefficients                    */  \
-/*  _q      :   equalizer object                            */  \
-/*  _w      :   weights [size: _p x 1]                      */  \
-void EQRLS(_get_weights)(EQRLS() _q,                            \
-                         T *     _w);                           \
-                                                                \
-/* train equalizer object on group of samples               */  \
-/*  _q      :   equalizer object                            */  \
-/*  _w      :   input/output weights   [size: _p x 1]       */  \
-/*  _x      :   received sample vector [size: _n x 1]       */  \
-/*  _d      :   desired output vector  [size: _n x 1]       */  \
-/*  _n      :   input, output vector length                 */  \
-void EQRLS(_train)(EQRLS()      _q,                             \
-                   T *          _w,                             \
-                   T *          _x,                             \
-                   T *          _d,                             \
-                   unsigned int _n);                            \
+#define LIQUID_EQRLS_DEFINE_API(EQRLS,T)                                    \
+                                                                            \
+/* Recursive least mean-squares equalization object                     */  \
+typedef struct EQRLS(_s) * EQRLS();                                         \
+                                                                            \
+/* Create RLS EQ initialized with external coefficients                 */  \
+/*  _h : filter coefficients; set to NULL for {1,0,0...},[size: _n x 1] */  \
+/*  _n : filter length                                                  */  \
+EQRLS() EQRLS(_create)(T *          _h,                                     \
+                       unsigned int _n);                                    \
+                                                                            \
+/* Re-create EQ initialized with external coefficients                  */  \
+/*  _q :   equalizer object                                             */  \
+/*  _h :   filter coefficients (NULL for {1,0,0...}), [size: _n x 1]    */  \
+/*  _n :   filter length                                                */  \
+EQRLS() EQRLS(_recreate)(EQRLS()      _q,                                   \
+                         T *          _h,                                   \
+                         unsigned int _n);                                  \
+                                                                            \
+/* Destroy equalizer object, freeing all internal memory                */  \
+void EQRLS(_destroy)(EQRLS() _q);                                           \
+                                                                            \
+/* Reset equalizer object, clearing internal state                      */  \
+void EQRLS(_reset)(EQRLS() _q);                                             \
+                                                                            \
+/* Print equalizer internal state                                       */  \
+void EQRLS(_print)(EQRLS() _q);                                             \
+                                                                            \
+/* Get equalizer learning rate                                          */  \
+float EQRLS(_get_bw)(EQRLS() _q);                                           \
+                                                                            \
+/* Set equalizer learning rate                                          */  \
+/*  _q  :   equalizer object                                            */  \
+/*  _mu :   learning rate, _mu > 0                                      */  \
+void  EQRLS(_set_bw)(EQRLS() _q,                                            \
+                     float   _mu);                                          \
+                                                                            \
+/* Push sample into equalizer internal buffer                           */  \
+/*  _q      :   equalizer object                                        */  \
+/*  _x      :   input sample                                            */  \
+void EQRLS(_push)(EQRLS() _q, T _x);                                        \
+                                                                            \
+/* Execute internal dot product and return result                       */  \
+/*  _q      :   equalizer object                                        */  \
+/*  _y      :   output sample                                           */  \
+void EQRLS(_execute)(EQRLS() _q, T * _y);                                   \
+                                                                            \
+/* Step through one cycle of equalizer training                         */  \
+/*  _q      :   equalizer object                                        */  \
+/*  _d      :   desired output                                          */  \
+/*  _d_hat  :   actual output                                           */  \
+void EQRLS(_step)(EQRLS() _q, T _d, T _d_hat);                              \
+                                                                            \
+/* Get equalizer's internal coefficients                                */  \
+/*  _q      :   equalizer object                                        */  \
+/*  _w      :   weights, [size: _p x 1]                                 */  \
+void EQRLS(_get_weights)(EQRLS() _q,                                        \
+                         T *     _w);                                       \
+                                                                            \
+/* Train equalizer object on group of samples                           */  \
+/*  _q      :   equalizer object                                        */  \
+/*  _w      :   input/output weights,  [size: _p x 1]                   */  \
+/*  _x      :   received sample vector,[size: _n x 1]                   */  \
+/*  _d      :   desired output vector, [size: _n x 1]                   */  \
+/*  _n      :   input, output vector length                             */  \
+void EQRLS(_train)(EQRLS()      _q,                                         \
+                   T *          _w,                                         \
+                   T *          _x,                                         \
+                   T *          _d,                                         \
+                   unsigned int _n);                                        \
 
 LIQUID_EQRLS_DEFINE_API(LIQUID_EQRLS_MANGLE_RRRF, float)
 LIQUID_EQRLS_DEFINE_API(LIQUID_EQRLS_MANGLE_CCCF, liquid_float_complex)
