@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2017 Joseph Gaeddert
+ * Copyright (c) 2007 - 2018 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -346,6 +346,7 @@ void SPGRAM(_step)(SPGRAM() _q)
     FFT_EXECUTE(_q->fft);
 
     // accumulate output
+    // TODO: vectorize this operation
     for (i=0; i<_q->nfft; i++) {
         T v = crealf( _q->buf_freq[i] * conjf(_q->buf_freq[i]) );
         if (_q->num_transforms == 0)

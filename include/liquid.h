@@ -1466,87 +1466,125 @@ LIQUID_FFT_DEFINE_API(LIQUID_FFT_MANGLE_FLOAT,float,liquid_float_complex)
 //  T       :   primitive data type
 //  TC      :   primitive data type (complex)
 //  TI      :   primitive data type (input)
-#define LIQUID_SPGRAM_DEFINE_API(SPGRAM,T,TC,TI)                \
-                                                                \
-typedef struct SPGRAM(_s) * SPGRAM();                           \
-                                                                \
-/* create spgram object                                     */  \
-/*  _nfft       : FFT size                                  */  \
-/*  _wtype      : window type, e.g. LIQUID_WINDOW_HAMMING   */  \
-/*  _window_len : window length, _window_len in [1,_nfft]   */  \
-/*  _delay      : delay between transforms, _delay > 0      */  \
-SPGRAM() SPGRAM(_create)(unsigned int _nfft,                    \
-                         int          _wtype,                   \
-                         unsigned int _window_len,              \
-                         unsigned int _delay);                  \
-                                                                \
-/* create default spgram object (Kaiser-Bessel window)      */  \
-SPGRAM() SPGRAM(_create_default)(unsigned int _nfft);           \
-                                                                \
-/* destroy spgram object                                    */  \
-void SPGRAM(_destroy)(SPGRAM() _q);                             \
-                                                                \
-/* clears the internal state of the spgram object, but not  */  \
-/* the internal buffer                                      */  \
-void SPGRAM(_clear)(SPGRAM() _q);                               \
-                                                                \
-/* reset the spgram object to its original state completely */  \
-void SPGRAM(_reset)(SPGRAM() _q);                               \
-                                                                \
-/* print internal state of the spgram object                */  \
-void SPGRAM(_print)(SPGRAM() _q);                               \
-                                                                \
-/* set methods                                              */  \
-int          SPGRAM(_set_alpha)(SPGRAM() _q, float _alpha);     \
-                                                                \
-/* access methods                                           */  \
-unsigned int SPGRAM(_get_nfft)                (SPGRAM() _q);    \
-unsigned int SPGRAM(_get_window_len)          (SPGRAM() _q);    \
-unsigned int SPGRAM(_get_delay)               (SPGRAM() _q);    \
-uint64_t     SPGRAM(_get_num_samples)         (SPGRAM() _q);    \
-uint64_t     SPGRAM(_get_num_samples_total)   (SPGRAM() _q);    \
-uint64_t     SPGRAM(_get_num_transforms)      (SPGRAM() _q);    \
-uint64_t     SPGRAM(_get_num_transforms_total)(SPGRAM() _q);    \
-float        SPGRAM(_get_alpha)               (SPGRAM() _q);    \
-                                                                \
-/* push a single sample into the spgram object              */  \
-/*  _q      :   spgram object                               */  \
-/*  _x      :   input sample                                */  \
-void SPGRAM(_push)(SPGRAM() _q,                                 \
-                   TI       _x);                                \
-                                                                \
-/* write a block of samples to the spgram object            */  \
-/*  _q      :   spgram object                               */  \
-/*  _x      :   input buffer [size: _n x 1]                 */  \
-/*  _n      :   input buffer length                         */  \
-void SPGRAM(_write)(SPGRAM()     _q,                            \
-                    TI *         _x,                            \
-                    unsigned int _n);                           \
-                                                                \
-/* compute spectral periodogram output (fft-shifted values  */  \
-/* in dB) from current buffer contents                      */  \
-/*  _q      :   spgram object                               */  \
-/*  _X      :   output spectrum (dB) [size: _nfft x 1]      */  \
-void SPGRAM(_get_psd)(SPGRAM() _q,                              \
-                      T *      _X);                             \
-                                                                \
-/* export gnuplot file                                      */  \
-/*  _q        : spgram object                               */  \
-/*  _filename : input buffer [size: _n x 1]                 */  \
-int SPGRAM(_export_gnuplot)(SPGRAM()     _q,                    \
-                            const char * _filename);            \
-                                                                \
-/* object-independent methods */                                \
-                                                                \
-/* estimate spectrum on input signal                        */  \
-/*  _nfft   :   FFT size                                    */  \
-/*  _x      :   input signal [size: _n x 1]                 */  \
-/*  _n      :   input signal length                         */  \
-/*  _psd    :   output spectrum, [size: _nfft x 1]          */  \
-void SPGRAM(_estimate_psd)(unsigned int _nfft,                  \
-                           TI *         _x,                     \
-                           unsigned int _n,                     \
-                           T *          _psd);                  \
+#define LIQUID_SPGRAM_DEFINE_API(SPGRAM,T,TC,TI)                            \
+                                                                            \
+/* Spectral periodogram object for computing power spectral density     */  \
+/* estimates of various signals                                         */  \
+typedef struct SPGRAM(_s) * SPGRAM();                                       \
+                                                                            \
+/* Create spgram object, fully defined                                  */  \
+/*  _nfft       : FFT size, _nfft >= 2                                  */  \
+/*  _wtype      : window type, e.g. LIQUID_WINDOW_HAMMING               */  \
+/*  _window_len : window length, _window_len in [1,_nfft]               */  \
+/*  _delay      : delay between transforms, _delay > 0                  */  \
+SPGRAM() SPGRAM(_create)(unsigned int _nfft,                                \
+                         int          _wtype,                               \
+                         unsigned int _window_len,                          \
+                         unsigned int _delay);                              \
+                                                                            \
+/* Create default spgram object of a particular transform size using    */  \
+/* the Kaiser-Bessel window (LIQUID_WINDOW_KAISER), a window length     */  \
+/* equal to _nfft/2, and a delay of _nfft/4                             */  \
+/*  _nfft       : FFT size, _nfft >= 2                                  */  \
+SPGRAM() SPGRAM(_create_default)(unsigned int _nfft);                       \
+                                                                            \
+/* Destroy spgram object, freeing all internally-allocated memory       */  \
+void SPGRAM(_destroy)(SPGRAM() _q);                                         \
+                                                                            \
+/* Clears the internal state of the spgram object, but not the internal */  \
+/* buffer                                                               */  \
+void SPGRAM(_clear)(SPGRAM() _q);                                           \
+                                                                            \
+/* Reset the spgram object to its original state completely. This       */  \
+/* effectively executes the clear() method and then resets the internal */  \
+/* window buffer                                                        */  \
+void SPGRAM(_reset)(SPGRAM() _q);                                           \
+                                                                            \
+/* print internal state of the spgram object                            */  \
+void SPGRAM(_print)(SPGRAM() _q);                                           \
+                                                                            \
+/* Set the forgetting factor (filter bandwidth) for accumulating        */  \
+/* independent transform squared magnitude outputs.                     */  \
+/* This is used to compute a running time-average power spectral        */  \
+/* density output.                                                      */  \
+/* The value of _alpha determines how the power spectral estimate is    */  \
+/* accumulated across transforms and can range from 0 to 1 with a       */  \
+/* special case of -1 to accumulate infinitely.                         */  \
+/* Setting _alpha to 0 minimizes the bandwidth and the PSD estimate     */  \
+/* will never update.                                                   */  \
+/* Setting _alpha to 1 forces the object to always use the most recent  */  \
+/* spectral estimate.                                                   */  \
+/* Setting _alpha to -1 is a special case to enable infinite spectral   */  \
+/* accumulation.                                                        */  \
+/*  _q      : spectral periodogram object                               */  \
+/*  _alpha  : forgetting factor, set to -1 for infinite, 0<=_alpha<=1   */  \
+int SPGRAM(_set_alpha)(SPGRAM() _q,                                         \
+                       float    _alpha);                                    \
+                                                                            \
+/* Get FFT size                                                         */  \
+unsigned int SPGRAM(_get_nfft)(SPGRAM() _q);                                \
+                                                                            \
+/* Get window length                                                    */  \
+unsigned int SPGRAM(_get_window_len)(SPGRAM() _q);                          \
+                                                                            \
+/* Get delay between transforms                                         */  \
+unsigned int SPGRAM(_get_delay)(SPGRAM() _q);                               \
+                                                                            \
+/* Get number of samples processed since reset                          */  \
+uint64_t SPGRAM(_get_num_samples)(SPGRAM() _q);                             \
+                                                                            \
+/* Get number of samples processed since object was created             */  \
+uint64_t SPGRAM(_get_num_samples_total)(SPGRAM() _q);                       \
+                                                                            \
+/* Get number of transforms processed since reset                       */  \
+uint64_t SPGRAM(_get_num_transforms)(SPGRAM() _q);                          \
+                                                                            \
+/* Get number of transforms processed since object was created          */  \
+uint64_t SPGRAM(_get_num_transforms_total)(SPGRAM() _q);                    \
+                                                                            \
+/* Get forgetting factor (filter bandwidth)                             */  \
+float SPGRAM(_get_alpha)(SPGRAM() _q);                                      \
+                                                                            \
+/* Push a single sample into the spgram object, executing internal      */  \
+/* transform as necessary.                                              */  \
+/*  _q  : spgram object                                                 */  \
+/*  _x  : input sample                                                  */  \
+void SPGRAM(_push)(SPGRAM() _q,                                             \
+                   TI       _x);                                            \
+                                                                            \
+/* Write a block of samples to the spgram object, executing internal    */  \
+/* transform as necessary.                                              */  \
+/*  _q  : spgram object                                                 */  \
+/*  _x  : input buffer [size: _n x 1]                                   */  \
+/*  _n  : input buffer length                                           */  \
+void SPGRAM(_write)(SPGRAM()     _q,                                        \
+                    TI *         _x,                                        \
+                    unsigned int _n);                                       \
+                                                                            \
+/* Compute spectral periodogram output (fft-shifted values in dB) from  */  \
+/* current buffer contents                                              */  \
+/*  _q  : spgram object                                                 */  \
+/*  _X  : output spectrum (dB), [size: _nfft x 1]                       */  \
+void SPGRAM(_get_psd)(SPGRAM() _q,                                          \
+                      T *      _X);                                         \
+                                                                            \
+/* Export stand-alone gnuplot file for plotting output spectrum,        */  \
+/* returning 0 on sucess, anything other than 0 for failure             */  \
+/*  _q        : spgram object                                           */  \
+/*  _filename : input buffer [size: _n x 1]                             */  \
+int SPGRAM(_export_gnuplot)(SPGRAM()     _q,                                \
+                            const char * _filename);                        \
+                                                                            \
+/* Estimate spectrum on input signal (create temporary object for       */  \
+/* convenience                                                          */  \
+/*  _nfft   : FFT size                                                  */  \
+/*  _x      : input signal [size: _n x 1]                               */  \
+/*  _n      : input signal length                                       */  \
+/*  _psd    : output spectrum, [size: _nfft x 1]                        */  \
+void SPGRAM(_estimate_psd)(unsigned int _nfft,                              \
+                           TI *         _x,                                 \
+                           unsigned int _n,                                 \
+                           T *          _psd);                              \
 
 LIQUID_SPGRAM_DEFINE_API(LIQUID_SPGRAM_MANGLE_CFLOAT,
                          float,
