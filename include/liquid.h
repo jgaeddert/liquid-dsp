@@ -1603,52 +1603,55 @@ LIQUID_SPGRAM_DEFINE_API(LIQUID_SPGRAM_MANGLE_FLOAT,
 #define LIQUID_ASGRAM_MANGLE_CFLOAT(name) LIQUID_CONCAT(asgramcf,name)
 #define LIQUID_ASGRAM_MANGLE_FLOAT(name)  LIQUID_CONCAT(asgramf, name)
 
-// Macro    :   ASGRAM
-//  ASGRAM  :   name-mangling macro
-//  T       :   primitive data type
-//  TC      :   primitive data type (complex)
-//  TI      :   primitive data type (input)
+// Macro    : ASGRAM
+//  ASGRAM  : name-mangling macro
+//  T       : primitive data type
+//  TC      : primitive data type (complex)
+//  TI      : primitive data type (input)
 #define LIQUID_ASGRAM_DEFINE_API(ASGRAM,T,TC,TI)                            \
                                                                             \
-/* ASCII spectral periodogram (asgram)                                  */  \
+/* ASCII spectral periodogram for computing and displaying an estimate  */  \
+/* of a signal's power spectrum with ASCII characters                   */  \
 typedef struct ASGRAM(_s) * ASGRAM();                                       \
                                                                             \
 /* Create asgram object with size _nfft                                 */  \
-/*  _nfft   :   size of FFT taken for each transform (character width)  */  \
+/*  _nfft   : size of FFT taken for each transform (character width)    */  \
 ASGRAM() ASGRAM(_create)(unsigned int _nfft);                               \
                                                                             \
-/* Destroy asgram object                                                */  \
-/*  _q      :   asgram object                                           */  \
+/* Destroy asgram object, freeing all internally-allocated memory       */  \
 void ASGRAM(_destroy)(ASGRAM() _q);                                         \
                                                                             \
 /* Reset the internal state of the asgram object                        */  \
-/*  _q      :   asgram object                                           */  \
 void ASGRAM(_reset)(ASGRAM() _q);                                           \
                                                                             \
-/* Set the scale and offset for spectrogram                             */  \
-/*  _q      :   asgram object                                           */  \
-/*  _ref    :   signal reference level [dB]                             */  \
-/*  _div    :   signal division [dB]                                    */  \
+/* Set the scale and offset for spectrogram in terms of dB for display  */  \
+/* purposes                                                             */  \
+/*  _q      : asgram object                                             */  \
+/*  _ref    : signal reference level [dB]                               */  \
+/*  _div    : signal division [dB]                                      */  \
 void ASGRAM(_set_scale)(ASGRAM() _q,                                        \
                         float    _ref,                                      \
                         float    _div);                                     \
                                                                             \
-/* Set the display characters for output string                         */  \
-/*  _q      :   asgram object                                           */  \
-/*  _ascii  :   10-character display, default: " .,-+*&NM#"             */  \
+/* Set the display's 10 characters for output string starting from the  */  \
+/* weakest and ending with the strongest                                */  \
+/*  _q      : asgram object                                             */  \
+/*  _ascii  : 10-character display, default: " .,-+*&NM#"               */  \
 void ASGRAM(_set_display)(ASGRAM()     _q,                                  \
                           const char * _ascii);                             \
                                                                             \
-/* Push a single sample into the asgram object                          */  \
-/*  _q      :   asgram object                                           */  \
-/*  _x      :   input sample                                            */  \
+/* Push a single sample into the asgram object, executing internal      */  \
+/* transform as necessary.                                              */  \
+/*  _q  : asgram object                                                 */  \
+/*  _x  : input sample                                                  */  \
 void ASGRAM(_push)(ASGRAM() _q,                                             \
                    TI       _x);                                            \
                                                                             \
-/* Write a block of samples to the asgram object                        */  \
-/*  _q      :   asgram object                                           */  \
-/*  _x      :   input buffer [size: _n x 1]                             */  \
-/*  _n      :   input buffer length                                     */  \
+/* Write a block of samples to the asgram object, executing internal    */  \
+/* transforms as necessary.                                             */  \
+/*  _q  : asgram object                                                 */  \
+/*  _x  : input buffer [size: _n x 1]                                   */  \
+/*  _n  : input buffer length                                           */  \
 void ASGRAM(_write)(ASGRAM()     _q,                                        \
                     TI *         _x,                                        \
                     unsigned int _n);                                       \
@@ -1656,10 +1659,10 @@ void ASGRAM(_write)(ASGRAM()     _q,                                        \
 /* Compute spectral periodogram output from current buffer contents     */  \
 /* and return the ascii character string to display along with the peak */  \
 /* value and its frequency location                                     */  \
-/*  _q          :   spgram object                                       */  \
-/*  _ascii      :   output ASCII string [size: _nfft x 1]               */  \
-/*  _peakval    :   peak power spectral density value [dB]              */  \
-/*  _peakfreq   :   peak power spectral density frequency               */  \
+/*  _q          : asgram object                                         */  \
+/*  _ascii      : output ASCII string [size: _nfft x 1]                 */  \
+/*  _peakval    : peak power spectral density value [dB]                */  \
+/*  _peakfreq   : peak power spectral density frequency                 */  \
 void ASGRAM(_execute)(ASGRAM() _q,                                          \
                       char *  _ascii,                                       \
                       float * _peakval,                                     \
@@ -1667,7 +1670,6 @@ void ASGRAM(_execute)(ASGRAM() _q,                                          \
                                                                             \
 /* Compute spectral periodogram output from current buffer contents and */  \
 /* print standard format to stdout                                      */  \
-/*  _q          :   spgram object                                       */  \
 void ASGRAM(_print)(ASGRAM() _q);                                           \
 
 LIQUID_ASGRAM_DEFINE_API(LIQUID_ASGRAM_MANGLE_CFLOAT,
