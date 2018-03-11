@@ -1569,7 +1569,7 @@ LIQUID_ASGRAM_DEFINE_API(LIQUID_ASGRAM_MANGLE_FLOAT,
                                                                 \
 typedef struct SPWATERFALL(_s) * SPWATERFALL();                 \
                                                                 \
-/* create spgram object                                     */  \
+/* create spwaterfall object                                */  \
 /*  _nfft       : FFT size                                  */  \
 /*  _wtype      : window type, e.g. LIQUID_WINDOW_HAMMING   */  \
 /*  _window_len : window length, _window_len in [1,_nfft]   */  \
@@ -1581,39 +1581,42 @@ SPWATERFALL() SPWATERFALL(_create)(unsigned int _nfft,          \
                                    unsigned int _delay,         \
                                    unsigned int _time);         \
                                                                 \
-/* create default spgram object (Kaiser-Bessel window)      */  \
+/* Create default spwatefall object (Kaiser-Bessel window)  */  \
+/*  _nfft   : transform size, _nfft >= 2                    */  \
+/*  _time   : delay between transforms, _delay > 0          */  \
 SPWATERFALL() SPWATERFALL(_create_default)(unsigned int _nfft,  \
                                            unsigned int _time); \
                                                                 \
-/* destroy spgram object                                    */  \
+/* Destroy spwaterfall object                               */  \
 void SPWATERFALL(_destroy)(SPWATERFALL() _q);                   \
                                                                 \
-/* clears the internal state of the spgram object, but not  */  \
-/* the internal buffer                                      */  \
+/* Clear the internal state of the spwaterfall object, but  */  \
+/* not the internal buffer                                  */  \
 void SPWATERFALL(_clear)(SPWATERFALL() _q);                     \
                                                                 \
-/* reset the spgram object to its original state completely */  \
+/* Reset the spwaterfall object to its original state       */  \
+/* completely                                               */  \
 void SPWATERFALL(_reset)(SPWATERFALL() _q);                     \
                                                                 \
-/* print internal state of the spgram object                */  \
+/* Print internal state of the spwaterfall object           */  \
 void SPWATERFALL(_print)(SPWATERFALL() _q);                     \
                                                                 \
-/* push a single sample into the spgram object              */  \
-/*  _q      :   spgram object                               */  \
-/*  _x      :   input sample                                */  \
+/* Push a single sample into the spwaterfall object         */  \
+/*  _q  : spwaterfall object                                */  \
+/*  _x  : input sample                                      */  \
 void SPWATERFALL(_push)(SPWATERFALL() _q,                       \
                         TI            _x);                      \
                                                                 \
-/* write a block of samples to the spgram object            */  \
-/*  _q      :   spgram object                               */  \
-/*  _x      :   input buffer [size: _n x 1]                 */  \
-/*  _n      :   input buffer length                         */  \
+/* Write a block of samples to the spwaterfall object       */  \
+/*  _q  : spwaterfall object                                */  \
+/*  _x  : input buffer, [size: _n x 1]                      */  \
+/*  _n  : input buffer length                               */  \
 void SPWATERFALL(_write)(SPWATERFALL() _q,                      \
                          TI *          _x,                      \
                          unsigned int  _n);                     \
                                                                 \
 /* export files for plotting                                */  \
-/*  _q             : spgram object                          */  \
+/*  _q             : spwaterfall object                     */  \
 /*  _filename_base : base filename (will export files with  */  \
 /*                   .gnu, .bin, and .png extensions)       */  \
 int SPWATERFALL(_export)(SPWATERFALL() _q,                      \
