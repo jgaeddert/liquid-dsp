@@ -1475,7 +1475,7 @@ typedef struct SPGRAM(_s) * SPGRAM();                                       \
 /* Create spgram object, fully defined                                  */  \
 /*  _nfft       : transform (FFT) size, _nfft >= 2                      */  \
 /*  _wtype      : window type, e.g. LIQUID_WINDOW_HAMMING               */  \
-/*  _window_len : window length, _window_len in [1,_nfft]               */  \
+/*  _window_len : window length, 1 <= _window_len <= _nfft              */  \
 /*  _delay      : delay between transforms, _delay > 0                  */  \
 SPGRAM() SPGRAM(_create)(unsigned int _nfft,                                \
                          int          _wtype,                               \
@@ -1491,16 +1491,14 @@ SPGRAM() SPGRAM(_create_default)(unsigned int _nfft);                       \
 /* Destroy spgram object, freeing all internally-allocated memory       */  \
 void SPGRAM(_destroy)(SPGRAM() _q);                                         \
                                                                             \
-/* Clears the internal state of the spgram object, but not the internal */  \
-/* buffer                                                               */  \
+/* Clears the internal state of the object, but not the internal buffer */  \
 void SPGRAM(_clear)(SPGRAM() _q);                                           \
                                                                             \
-/* Reset the spgram object to its original state completely. This       */  \
-/* effectively executes the clear() method and then resets the internal */  \
-/* window buffer                                                        */  \
+/* Reset the object to its original state completely. This effectively  */  \
+/* executes the clear() method and then resets the internal buffer      */  \
 void SPGRAM(_reset)(SPGRAM() _q);                                           \
                                                                             \
-/* print internal state of the spgram object                            */  \
+/* Print internal state of the object to stdout                         */  \
 void SPGRAM(_print)(SPGRAM() _q);                                           \
                                                                             \
 /* Set the forgetting factor (filter bandwidth) for accumulating        */  \
@@ -1559,14 +1557,14 @@ uint64_t SPGRAM(_get_num_transforms_total)(SPGRAM() _q);                    \
 /* Get forgetting factor (filter bandwidth)                             */  \
 float SPGRAM(_get_alpha)(SPGRAM() _q);                                      \
                                                                             \
-/* Push a single sample into the spgram object, executing internal      */  \
-/* transform as necessary.                                              */  \
+/* Push a single sample into the object, executing internal transform   */  \
+/* as necessary.                                                        */  \
 /*  _q  : spgram object                                                 */  \
 /*  _x  : input sample                                                  */  \
 void SPGRAM(_push)(SPGRAM() _q,                                             \
                    TI       _x);                                            \
                                                                             \
-/* Write a block of samples to the spgram object, executing internal    */  \
+/* Write a block of samples to the object, executing internal           */  \
 /* transform as necessary.                                              */  \
 /*  _q  : spgram object                                                 */  \
 /*  _x  : input buffer [size: _n x 1]                                   */  \
@@ -1708,62 +1706,64 @@ LIQUID_ASGRAM_DEFINE_API(LIQUID_ASGRAM_MANGLE_FLOAT,
 //  T           :   primitive data type
 //  TC          :   primitive data type (complex)
 //  TI          :   primitive data type (input)
-#define LIQUID_SPWATERFALL_DEFINE_API(SPWATERFALL,T,TC,TI)      \
-                                                                \
-typedef struct SPWATERFALL(_s) * SPWATERFALL();                 \
-                                                                \
-/* create spwaterfall object                                */  \
-/*  _nfft       : FFT size                                  */  \
-/*  _wtype      : window type, e.g. LIQUID_WINDOW_HAMMING   */  \
-/*  _window_len : window length, _window_len in [1,_nfft]   */  \
-/*  _delay      : delay between transforms, _delay > 0      */  \
-/*  _time       : number of aggregated transforms, _time > 0*/  \
-SPWATERFALL() SPWATERFALL(_create)(unsigned int _nfft,          \
-                                   int          _wtype,         \
-                                   unsigned int _window_len,    \
-                                   unsigned int _delay,         \
-                                   unsigned int _time);         \
-                                                                \
-/* Create default spwatefall object (Kaiser-Bessel window)  */  \
-/*  _nfft   : transform size, _nfft >= 2                    */  \
-/*  _time   : delay between transforms, _delay > 0          */  \
-SPWATERFALL() SPWATERFALL(_create_default)(unsigned int _nfft,  \
-                                           unsigned int _time); \
-                                                                \
-/* Destroy spwaterfall object                               */  \
-void SPWATERFALL(_destroy)(SPWATERFALL() _q);                   \
-                                                                \
-/* Clear the internal state of the spwaterfall object, but  */  \
-/* not the internal buffer                                  */  \
-void SPWATERFALL(_clear)(SPWATERFALL() _q);                     \
-                                                                \
-/* Reset the spwaterfall object to its original state       */  \
-/* completely                                               */  \
-void SPWATERFALL(_reset)(SPWATERFALL() _q);                     \
-                                                                \
-/* Print internal state of the spwaterfall object           */  \
-void SPWATERFALL(_print)(SPWATERFALL() _q);                     \
-                                                                \
-/* Push a single sample into the spwaterfall object         */  \
-/*  _q  : spwaterfall object                                */  \
-/*  _x  : input sample                                      */  \
-void SPWATERFALL(_push)(SPWATERFALL() _q,                       \
-                        TI            _x);                      \
-                                                                \
-/* Write a block of samples to the spwaterfall object       */  \
-/*  _q  : spwaterfall object                                */  \
-/*  _x  : input buffer, [size: _n x 1]                      */  \
-/*  _n  : input buffer length                               */  \
-void SPWATERFALL(_write)(SPWATERFALL() _q,                      \
-                         TI *          _x,                      \
-                         unsigned int  _n);                     \
-                                                                \
-/* export files for plotting                                */  \
-/*  _q             : spwaterfall object                     */  \
-/*  _filename_base : base filename (will export files with  */  \
-/*                   .gnu, .bin, and .png extensions)       */  \
-int SPWATERFALL(_export)(SPWATERFALL() _q,                      \
-                         const char *  _filename_base);         \
+#define LIQUID_SPWATERFALL_DEFINE_API(SPWATERFALL,T,TC,TI)                  \
+                                                                            \
+/* Spectral periodogram waterfall object for computing time-varying     */  \
+/* power spectral density estimates                                     */  \
+typedef struct SPWATERFALL(_s) * SPWATERFALL();                             \
+                                                                            \
+/* Create spwaterfall object, fully defined                             */  \
+/*  _nfft       : transform (FFT) size, _nfft >= 2                      */  \
+/*  _wtype      : window type, e.g. LIQUID_WINDOW_HAMMING               */  \
+/*  _window_len : window length, 1 <= _window_len <= _nfft              */  \
+/*  _delay      : delay between transforms, _delay > 0                  */  \
+/*  _time       : number of aggregated transforms, _time > 0            */  \
+SPWATERFALL() SPWATERFALL(_create)(unsigned int _nfft,                      \
+                                   int          _wtype,                     \
+                                   unsigned int _window_len,                \
+                                   unsigned int _delay,                     \
+                                   unsigned int _time);                     \
+                                                                            \
+/* Create default spwatefall object (Kaiser-Bessel window)              */  \
+/*  _nfft   : transform size, _nfft >= 2                                */  \
+/*  _time   : delay between transforms, _delay > 0                      */  \
+SPWATERFALL() SPWATERFALL(_create_default)(unsigned int _nfft,              \
+                                           unsigned int _time);             \
+                                                                            \
+/* Destroy spwaterfall object, freeing all internally-allocated memory  */  \
+void SPWATERFALL(_destroy)(SPWATERFALL() _q);                               \
+                                                                            \
+/* Clears the internal state of the object, but not the internal buffer */  \
+void SPWATERFALL(_clear)(SPWATERFALL() _q);                                 \
+                                                                            \
+/* Reset the object to its original state completely. This effectively  */  \
+/* executes the clear() method and then resets the internal buffer      */  \
+void SPWATERFALL(_reset)(SPWATERFALL() _q);                                 \
+                                                                            \
+/* Print internal state of the object to stdout                         */  \
+void SPWATERFALL(_print)(SPWATERFALL() _q);                                 \
+                                                                            \
+/* Push a single sample into the object, executing internal transform   */  \
+/* as necessary.                                                        */  \
+/*  _q  : spgram object                                                 */  \
+/*  _x  : input sample                                                  */  \
+void SPWATERFALL(_push)(SPWATERFALL() _q,                                   \
+                        TI            _x);                                  \
+                                                                            \
+/* Write a block of samples to the object, executing internal           */  \
+/* transform as necessary.                                              */  \
+/*  _q  : spwaterfall object                                            */  \
+/*  _x  : input buffer, [size: _n x 1]                                  */  \
+/*  _n  : input buffer length                                           */  \
+void SPWATERFALL(_write)(SPWATERFALL() _q,                                  \
+                         TI *          _x,                                  \
+                         unsigned int  _n);                                 \
+                                                                            \
+/* Export set of files for plotting                                     */  \
+/*  _q    : spwaterfall object                                          */  \
+/*  _base : base filename (will export .gnu, .bin, and .png files)      */  \
+int SPWATERFALL(_export)(SPWATERFALL() _q,                                  \
+                         const char *  _base);                              \
 
 
 LIQUID_SPWATERFALL_DEFINE_API(LIQUID_SPWATERFALL_MANGLE_CFLOAT,

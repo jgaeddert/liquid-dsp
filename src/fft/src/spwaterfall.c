@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2017 Joseph Gaeddert
+ * Copyright (c) 2007 - 2018 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -56,8 +56,8 @@ void SPWATERFALL(_step)(SPWATERFALL() _q);
 void SPWATERFALL(_consolidate_buffer)(SPWATERFALL() _q);
 
 // export files
-int SPWATERFALL(_export_bin)(SPWATERFALL() _q, const char * _filename_base);
-int SPWATERFALL(_export_gnu)(SPWATERFALL() _q, const char * _filename_base);
+int SPWATERFALL(_export_bin)(SPWATERFALL() _q, const char * _base);
+int SPWATERFALL(_export_gnu)(SPWATERFALL() _q, const char * _base);
 
 // create spwaterfall object
 //  _nfft       : FFT size
@@ -189,14 +189,14 @@ void SPWATERFALL(_write)(SPWATERFALL() _q,
 }
 
 // export output files
-//  _q             : spwaterfall object
-//  _filename_base : base filename
+//  _q    : spwaterfall object
+//  _base : base filename
 int SPWATERFALL(_export)(SPWATERFALL() _q,
-                         const char *  _filename_base)
+                         const char *  _base)
 {
     return
-    SPWATERFALL(_export_bin)(_q, _filename_base) +
-    SPWATERFALL(_export_gnu)(_q, _filename_base);
+    SPWATERFALL(_export_bin)(_q, _base) +
+    SPWATERFALL(_export_gnu)(_q, _base);
 }
 
 // compute spectral periodogram output from current buffer contents
@@ -253,12 +253,12 @@ void SPWATERFALL(_consolidate_buffer)(SPWATERFALL() _q)
 //  _q        : spwaterfall object
 //  _filename : input buffer [size: _n x 1]
 int SPWATERFALL(_export_bin)(SPWATERFALL() _q,
-                             const char *  _filename_base)
+                             const char *  _base)
 {
     // add '.bin' extension to base
-    int n = strlen(_filename_base);
+    int n = strlen(_base);
     char filename[n+5];
-    sprintf(filename,"%s.bin", _filename_base);
+    sprintf(filename,"%s.bin", _base);
 
     // open output file for writing
     FILE * fid = fopen(filename,"w");
@@ -297,12 +297,12 @@ int SPWATERFALL(_export_bin)(SPWATERFALL() _q,
 //  _q        : spwaterfall object
 //  _filename : input buffer [size: _n x 1]
 int SPWATERFALL(_export_gnu)(SPWATERFALL() _q,
-                             const char *  _filename_base)
+                             const char *  _base)
 {
     // add '.bin' extension to base
-    int n = strlen(_filename_base);
+    int n = strlen(_base);
     char filename[n+5];
-    sprintf(filename,"%s.gnu", _filename_base);
+    sprintf(filename,"%s.gnu", _base);
 
     // open output file for writing
     FILE * fid = fopen(filename,"w");
@@ -326,7 +326,7 @@ int SPWATERFALL(_export_gnu)(SPWATERFALL() _q,
     fprintf(fid,"#!/usr/bin/gnuplot\n");
     fprintf(fid,"reset\n");
     fprintf(fid,"set terminal png size 800,800 enhanced font 'Verdana,10'\n");
-    fprintf(fid,"set output '%s.png'\n", _filename_base);
+    fprintf(fid,"set output '%s.png'\n", _base);
     fprintf(fid,"unset key\n");
     fprintf(fid,"set style line 11 lc rgb '#808080' lt 1\n");
     fprintf(fid,"set border 3 front ls 11\n");
@@ -350,7 +350,7 @@ int SPWATERFALL(_export_gnu)(SPWATERFALL() _q,
     fprintf(fid,"    6 '#66C2A5',\\\n");
     fprintf(fid,"    7 '#3288BD' )\n");
     fprintf(fid,"\n");
-    fprintf(fid,"plot '%s.bin' u 1:($2*%e):3 binary matrix with image\n", _filename_base, scale);
+    fprintf(fid,"plot '%s.bin' u 1:($2*%e):3 binary matrix with image\n", _base, scale);
     fclose(fid);
 
     // close it up
