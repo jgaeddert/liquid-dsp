@@ -24,5 +24,7 @@ script:
     - ./bootstrap.sh
     - ./configure
     - make
+    - make examples
+    - make benchmark
     - make xautotest
     - ./xautotest -R 0
