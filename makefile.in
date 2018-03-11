@@ -1274,7 +1274,7 @@ $(autotest_prog): $(autotest_prog).o $(autotest_obj) $(autotest_extra_obj) autot
 
 # run the autotest program
 check: $(autotest_prog)
-	./$(autotest_prog) -v
+	./$(autotest_prog) -v -o autotest.json
 
 # let 'make test' be an alias for 'make check'
 test: check
@@ -1285,6 +1285,7 @@ clean-check:
 	$(RM) autotest/autotestlib.o
 	$(RM) $(autotest_obj)
 	$(RM) $(autotest_extra_obj)
+	$(RM) autotest.json
 
 
 ##
