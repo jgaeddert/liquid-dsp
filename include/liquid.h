@@ -2667,6 +2667,10 @@ void FFTFILT(_print)(FFTFILT() _q);                             \
 void FFTFILT(_set_scale)(FFTFILT() _q,                          \
                          TC        _scale);                     \
                                                                 \
+/* get output scaling for filter                            */  \
+void FFTFILT(_get_scale)(FFTFILT() _q,                          \
+                         TC *      _scale);                     \
+                                                                \
 /* execute the filter on internal buffer and coefficients   */  \
 /*  _q      : filter object                                 */  \
 /*  _x      : pointer to input data array  [size: _n x 1]   */  \
