@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2015 Joseph Gaeddert
+ * Copyright (c) 2007 - 2018 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -229,9 +229,8 @@ FIRFILT() FIRFILT(_recreate)(FIRFILT() _q,
     for (i=_n; i>0; i--)
         _q->h[i-1] = _h[_n-i];
 
-    // re-create dot product object
-    DOTPROD(_destroy)(_q->dp);
-    _q->dp = DOTPROD(_create)(_q->h, _q->h_len);
+    // re-create internal dot product object
+    _q->dp = DOTPROD(_recreate)(_q->dp, _q->h, _q->h_len);
 
     return _q;
 }
@@ -289,6 +288,13 @@ void FIRFILT(_set_scale)(FIRFILT() _q,
                          TC        _scale)
 {
     _q->scale = _scale;
+}
+
+// get output scaling for filter
+void FIRFILT(_get_scale)(FIRFILT() _q,
+                         TC *      _scale)
+{
+    *_scale = _q->scale;
 }
 
 // push sample into filter object's internal buffer
