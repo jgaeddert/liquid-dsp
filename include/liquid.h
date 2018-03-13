@@ -2463,6 +2463,10 @@ void FIRFILT(_print)(FIRFILT() _q);                             \
 void FIRFILT(_set_scale)(FIRFILT() _q,                          \
                          TC        _scale);                     \
                                                                 \
+/* get output scaling for filter                            */  \
+void FIRFILT(_get_scale)(FIRFILT() _q,                          \
+                         TC *      _scale);                     \
+                                                                \
 /* push sample into filter object's internal buffer         */  \
 /*  _q      : filter object                                 */  \
 /*  _x      : single input sample                           */  \
