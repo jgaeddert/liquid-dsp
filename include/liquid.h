@@ -2643,44 +2643,48 @@ LIQUID_FIRHILB_DEFINE_API(LIQUID_FIRHILB_MANGLE_FLOAT, float, liquid_float_compl
 //   TO         : output data type
 //   TC         : coefficients data type
 //   TI         : input data type
-#define LIQUID_FFTFILT_DEFINE_API(FFTFILT,TO,TC,TI)             \
-typedef struct FFTFILT(_s) * FFTFILT();                         \
-                                                                \
-/* create FFT-based FIR filter using external coefficients  */  \
-/*  _h      : filter coefficients [size: _h_len x 1]        */  \
-/*  _h_len  : filter length, _h_len > 0                     */  \
-/*  _n      : block size = nfft/2, at least _h_len-1        */  \
-FFTFILT() FFTFILT(_create)(TC *         _h,                     \
-                           unsigned int _h_len,                 \
-                           unsigned int _n);                    \
-                                                                \
-/* destroy filter object and free all internal memory       */  \
-void FFTFILT(_destroy)(FFTFILT() _q);                           \
-                                                                \
-/* reset filter object's internal buffer                    */  \
-void FFTFILT(_reset)(FFTFILT() _q);                             \
-                                                                \
-/* print filter object information                          */  \
-void FFTFILT(_print)(FFTFILT() _q);                             \
-                                                                \
-/* set output scaling for filter                            */  \
-void FFTFILT(_set_scale)(FFTFILT() _q,                          \
-                         TC        _scale);                     \
-                                                                \
-/* get output scaling for filter                            */  \
-void FFTFILT(_get_scale)(FFTFILT() _q,                          \
-                         TC *      _scale);                     \
-                                                                \
-/* execute the filter on internal buffer and coefficients   */  \
-/*  _q      : filter object                                 */  \
-/*  _x      : pointer to input data array  [size: _n x 1]   */  \
-/*  _y      : pointer to output data array [size: _n x 1]   */  \
-void FFTFILT(_execute)(FFTFILT() _q,                            \
-                       TI *      _x,                            \
-                       TO *      _y);                           \
-                                                                \
-/* return length of filter object's internal coefficients   */  \
-unsigned int FFTFILT(_get_length)(FFTFILT() _q);                \
+#define LIQUID_FFTFILT_DEFINE_API(FFTFILT,TO,TC,TI)                         \
+                                                                            \
+/* Fast Fourier transform (FFT) finite impulse response filter          */  \
+typedef struct FFTFILT(_s) * FFTFILT();                                     \
+                                                                            \
+/* Create FFT-based FIR filter using external coefficients              */  \
+/*  _h      : filter coefficients, [size: _h_len x 1]                   */  \
+/*  _h_len  : filter length, _h_len > 0                                 */  \
+/*  _n      : block size = nfft/2, _n >= _h_len-1                       */  \
+FFTFILT() FFTFILT(_create)(TC *         _h,                                 \
+                           unsigned int _h_len,                             \
+                           unsigned int _n);                                \
+                                                                            \
+/* Destroy filter object and free all internal memory                   */  \
+void FFTFILT(_destroy)(FFTFILT() _q);                                       \
+                                                                            \
+/* Reset filter object's internal buffer                                */  \
+void FFTFILT(_reset)(FFTFILT() _q);                                         \
+                                                                            \
+/* Print filter object information to stdout                            */  \
+void FFTFILT(_print)(FFTFILT() _q);                                         \
+                                                                            \
+/* Set output scaling for filter                                        */  \
+void FFTFILT(_set_scale)(FFTFILT() _q,                                      \
+                         TC        _scale);                                 \
+                                                                            \
+/* Get output scaling for filter                                        */  \
+void FFTFILT(_get_scale)(FFTFILT() _q,                                      \
+                         TC *      _scale);                                 \
+                                                                            \
+/* Execute the filter on internal buffer and coefficients given a block */  \
+/* of input samples; in-place operation is permitted (_x and _y may     */  \
+/* point to the same place in memory)                                   */  \
+/*  _q      : filter object                                             */  \
+/*  _x      : pointer to input data array,  [size: _n x 1]              */  \
+/*  _y      : pointer to output data array, [size: _n x 1]              */  \
+void FFTFILT(_execute)(FFTFILT() _q,                                        \
+                       TI *      _x,                                        \
+                       TO *      _y);                                       \
+                                                                            \
+/* Get length of filter object's internal coefficients                  */  \
+unsigned int FFTFILT(_get_length)(FFTFILT() _q);                            \
 
 LIQUID_FFTFILT_DEFINE_API(LIQUID_FFTFILT_MANGLE_RRRF,
                           float,
