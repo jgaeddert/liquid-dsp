@@ -447,7 +447,7 @@ int SPGRAM(_export_gnuplot)(SPGRAM()     _q,
         fprintf(fid,"set xlabel 'Frequency [%cHz]'\n", unit);
         fprintf(fid,"set xrange [%f:%f]\n", g*(_q->frequency-0.5*_q->sample_rate), g*(_q->frequency+0.5*_q->sample_rate));
         fprintf(fid,"plot '-' u ($1*%f+%f):2 w %s lt 1 lw 2 lc rgb '#004080'\n",
-                plot_with, g*(_q->sample_rate < 0 ? 1 : _q->sample_rate), g*_q->frequency);
+                g*(_q->sample_rate < 0 ? 1 : _q->sample_rate), g*_q->frequency, plot_with);
     }
 
     // export spectrum data

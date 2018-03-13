@@ -24,5 +24,8 @@ script:
     - ./bootstrap.sh
     - ./configure
     - make
+    - make examples
+    - make benchmark
     - make xautotest
-    - ./xautotest -R 0
+    - ./xautotest -R 0 # execute with a specific random seed
+    - ./xautotest      # execute with a random seed based on time
