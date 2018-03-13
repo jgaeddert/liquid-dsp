@@ -290,6 +290,13 @@ void FIRFILT(_set_scale)(FIRFILT() _q,
     _q->scale = _scale;
 }
 
+// get output scaling for filter
+void FIRFILT(_get_scale)(FIRFILT() _q,
+                         TC *      _scale)
+{
+    *_scale = _q->scale;
+}
+
 // push sample into filter object's internal buffer
 //  _q      :   filter object
 //  _x      :   input sample
