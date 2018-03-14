@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2017 Joseph Gaeddert
+ * Copyright (c) 2007 - 2018 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -381,6 +381,11 @@ IIRFILT() IIRFILT(_create_differentiator)()
 //          1 - (1-alpha)z^-1
 IIRFILT() IIRFILT(_create_dc_blocker)(float _alpha)
 {
+    // validate input
+    if (_alpha <= 0.0f) {
+        fprintf(stderr,"error: iirfilt_%s_create_dc_blocker(), filter bandwidth must be greater than zero\n", EXTENSION_FULL);
+        exit(1);
+    }
     // compute DC-blocking filter coefficients
     float bf[2] = {1.0f, -1.0f  };
     float af[2] = {1.0f, -1.0f + _alpha};

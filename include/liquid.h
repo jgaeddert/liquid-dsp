@@ -2514,7 +2514,7 @@ void FIRFILT(_freqresponse)(FIRFILT()              _q,                      \
                             float                  _fc,                     \
                             liquid_float_complex * _H);                     \
                                                                             \
-/* compute and return group delay of filter object                      */  \
+/* Compute and return group delay of filter object                      */  \
 /*  _q      : filter object                                             */  \
 /*  _fc     : frequency to evaluate                                     */  \
 float FIRFILT(_groupdelay)(FIRFILT() _q,                                    \
@@ -2715,113 +2715,120 @@ LIQUID_FFTFILT_DEFINE_API(LIQUID_FFTFILT_MANGLE_CCCF,
 //   TO         : output data type
 //   TC         : coefficients data type
 //   TI         : input data type
-#define LIQUID_IIRFILT_DEFINE_API(IIRFILT,TO,TC,TI)             \
-                                                                \
-typedef struct IIRFILT(_s) * IIRFILT();                         \
-                                                                \
-/* create infinite impulse reponse filter                   */  \
-/*  _b      : feed-forward coefficients [size: _nb x 1]     */  \
-/*  _nb     : number of feed-forward coefficients           */  \
-/*  _a      : feed-back coefficients [size: _na x 1]        */  \
-/*  _na     : number of feed-back coefficients              */  \
-IIRFILT() IIRFILT(_create)(TC *         _b,                     \
-                           unsigned int _nb,                    \
-                           TC *         _a,                     \
-                           unsigned int _na);                   \
-                                                                \
-/* create IIR filter using 2nd-order secitons               */  \
-/*  _B      : feed-forward coefficients [size: _nsos x 3]   */  \
-/*  _A      : feed-back coefficients    [size: _nsos x 3]   */  \
-IIRFILT() IIRFILT(_create_sos)(TC *         _B,                 \
-                               TC *         _A,                 \
-                               unsigned int _nsos);             \
-                                                                \
-/* create IIR filter from design template                   */  \
-/*  _ftype  : filter type (e.g. LIQUID_IIRDES_BUTTER)       */  \
-/*  _btype  : band type (e.g. LIQUID_IIRDES_BANDPASS)       */  \
-/*  _format : coefficients format (e.g. LIQUID_IIRDES_SOS)  */  \
-/*  _order  : filter order                                  */  \
-/*  _fc     : low-pass prototype cut-off frequency          */  \
-/*  _f0     : center frequency (band-pass, band-stop)       */  \
-/*  _Ap     : pass-band ripple in dB                        */  \
-/*  _As     : stop-band ripple in dB                        */  \
-IIRFILT() IIRFILT(_create_prototype)(                           \
-            liquid_iirdes_filtertype _ftype,                    \
-            liquid_iirdes_bandtype   _btype,                    \
-            liquid_iirdes_format     _format,                   \
-            unsigned int             _order,                    \
-            float _fc,                                          \
-            float _f0,                                          \
-            float _Ap,                                          \
-            float _As);                                         \
-                                                                \
-/* create simplified low-pass Butterworth IIR filter */         \
-/*  _order  : filter order                                  */  \
-/*  _fc     : low-pass prototype cut-off frequency          */  \
-IIRFILT() IIRFILT(_create_lowpass)(                             \
-            unsigned int _order,                                \
-            float        _fc);                                  \
-                                                                \
-/* create 8th-order integrator filter                       */  \
-IIRFILT() IIRFILT(_create_integrator)();                        \
-                                                                \
-/* create 8th-order differentiator filter                   */  \
-IIRFILT() IIRFILT(_create_differentiator)();                    \
-                                                                \
-/* create simple DC-blocking filter                         */  \
-IIRFILT() IIRFILT(_create_dc_blocker)(float _alpha);            \
-                                                                \
-/* create phase-locked loop iirfilt object                  */  \
-/*  _w      : filter bandwidth                              */  \
-/*  _zeta   : damping factor (1/sqrt(2) suggested)          */  \
-/*  _K      : loop gain (1000 suggested)                    */  \
-IIRFILT() IIRFILT(_create_pll)(float _w,                        \
-                               float _zeta,                     \
-                               float _K);                       \
-                                                                \
-/* destroy iirfilt object, freeing all internal memory      */  \
-void IIRFILT(_destroy)(IIRFILT() _q);                           \
-                                                                \
-/* print iirfilt object properties to stdout                */  \
-void IIRFILT(_print)(IIRFILT() _q);                             \
-                                                                \
-/* clear/reset iirfilt object internals                     */  \
-void IIRFILT(_reset)(IIRFILT() _q);                             \
-                                                                \
-/* compute filter output                                    */  \
-/*  _q      : iirfilt object                                */  \
-/*  _x      : input sample                                  */  \
-/*  _y      : output sample pointer                         */  \
-void IIRFILT(_execute)(IIRFILT() _q,                            \
-                       TI        _x,                            \
-                       TO *      _y);                           \
-                                                                \
-/* execute the filter on a block of input samples; the      */  \
-/* input and output buffers may be the same                 */  \
-/*  _q      : filter object                                 */  \
-/*  _x      : pointer to input array [size: _n x 1]         */  \
-/*  _n      : number of input, output samples               */  \
-/*  _y      : pointer to output array [size: _n x 1]        */  \
-void IIRFILT(_execute_block)(IIRFILT()    _q,                   \
-                             TI *         _x,                   \
-                             unsigned int _n,                   \
-                             TO *         _y);                  \
-                                                                \
-/* return iirfilt object's filter length (order + 1)        */  \
-unsigned int IIRFILT(_get_length)(IIRFILT() _q);                \
-                                                                \
-/* compute complex frequency response of filter object      */  \
-/*  _q      : filter object                                 */  \
-/*  _fc     : frequency to evaluate                         */  \
-/*  _H      : pointer to output complex frequency response  */  \
-void IIRFILT(_freqresponse)(IIRFILT()              _q,          \
-                            float                  _fc,         \
-                            liquid_float_complex * _H);         \
-                                                                \
-/* compute and return group delay of filter object          */  \
-/*  _q      : filter object                                 */  \
-/*  _fc     : frequency to evaluate                         */  \
-float IIRFILT(_groupdelay)(IIRFILT() _q, float _fc);            \
+#define LIQUID_IIRFILT_DEFINE_API(IIRFILT,TO,TC,TI)                         \
+                                                                            \
+/* Infinite impulse response (IIR) filter                               */  \
+typedef struct IIRFILT(_s) * IIRFILT();                                     \
+                                                                            \
+/* Create infinite impulse reponse filter from external coefficients    */  \
+/*  _b      : feed-forward coefficients, [size: _nb x 1]                */  \
+/*  _nb     : number of feed-forward coefficients                       */  \
+/*  _a      : feed-back coefficients, [size: _na x 1]                   */  \
+/*  _na     : number of feed-back coefficients                          */  \
+IIRFILT() IIRFILT(_create)(TC *         _b,                                 \
+                           unsigned int _nb,                                \
+                           TC *         _a,                                 \
+                           unsigned int _na);                               \
+                                                                            \
+/* Create IIR filter using 2nd-order secitons from external             */  \
+/* coefficients                                                         */  \
+/*  _B      : feed-forward coefficients [size: _nsos x 3]               */  \
+/*  _A      : feed-back coefficients    [size: _nsos x 3]               */  \
+IIRFILT() IIRFILT(_create_sos)(TC *         _B,                             \
+                               TC *         _A,                             \
+                               unsigned int _nsos);                         \
+                                                                            \
+/* Create IIR filter from design template                               */  \
+/*  _ftype  : filter type (e.g. LIQUID_IIRDES_BUTTER)                   */  \
+/*  _btype  : band type (e.g. LIQUID_IIRDES_BANDPASS)                   */  \
+/*  _format : coefficients format (e.g. LIQUID_IIRDES_SOS)              */  \
+/*  _order  : filter order, _order > 0                                  */  \
+/*  _fc     : low-pass prototype cut-off frequency, 0 <= _fc <= 0.5     */  \
+/*  _f0     : center frequency (band-pass, band-stop), 0 <= _f0 <= 0.5  */  \
+/*  _Ap     : pass-band ripple in dB, _Ap > 0                           */  \
+/*  _As     : stop-band ripple in dB, _As > 0                           */  \
+IIRFILT() IIRFILT(_create_prototype)(                                       \
+            liquid_iirdes_filtertype _ftype,                                \
+            liquid_iirdes_bandtype   _btype,                                \
+            liquid_iirdes_format     _format,                               \
+            unsigned int             _order,                                \
+            float                    _fc,                                   \
+            float                    _f0,                                   \
+            float                    _Ap,                                   \
+            float                    _As);                                  \
+                                                                            \
+/* Create simplified low-pass Butterworth IIR filter                    */  \
+/*  _order  : filter order, _order > 0                                  */  \
+/*  _fc     : low-pass prototype cut-off frequency                      */  \
+IIRFILT() IIRFILT(_create_lowpass)(unsigned int _order,                     \
+                                   float        _fc);                       \
+                                                                            \
+/* Create 8th-order integrator filter                                   */  \
+IIRFILT() IIRFILT(_create_integrator)(void);                                \
+                                                                            \
+/* Create 8th-order differentiator filter                               */  \
+IIRFILT() IIRFILT(_create_differentiator)(void);                            \
+                                                                            \
+/* Create simple first-order DC-blocking filter with transfer function  */  \
+/* \( H(z) = \frac{1 - z^{-1}}{1 - (1-\alpha)z^{-1}} \)                 */  \
+/*  _alpha  : normalized filter bandwidth, _alpha > 0                   */  \
+IIRFILT() IIRFILT(_create_dc_blocker)(float _alpha);                        \
+                                                                            \
+/* Create filter to operate as second-order integrating phase-locked    */  \
+/* loop (active lag design)                                             */  \
+/*  _w      : filter bandwidth, 0 < _w < 1                              */  \
+/*  _zeta   : damping factor, \( 1/\sqrt{2} \) suggested, 0 < _zeta < 1 */  \
+/*  _K      : loop gain, 1000 suggested, _K > 0                         */  \
+IIRFILT() IIRFILT(_create_pll)(float _w,                                    \
+                               float _zeta,                                 \
+                               float _K);                                   \
+                                                                            \
+/* Destroy iirfilt object, freeing all internal memory                  */  \
+void IIRFILT(_destroy)(IIRFILT() _q);                                       \
+                                                                            \
+/* Print iirfilt object properties to stdout                            */  \
+void IIRFILT(_print)(IIRFILT() _q);                                         \
+                                                                            \
+/* Reset iirfilt object internals                                       */  \
+void IIRFILT(_reset)(IIRFILT() _q);                                         \
+                                                                            \
+/* Compute filter output given a signle input sample                    */  \
+/*  _q      : iirfilt object                                            */  \
+/*  _x      : input sample                                              */  \
+/*  _y      : output sample pointer                                     */  \
+void IIRFILT(_execute)(IIRFILT() _q,                                        \
+                       TI        _x,                                        \
+                       TO *      _y);                                       \
+                                                                            \
+/* Execute the filter on a block of input samples;                      */  \
+/* in-place operation is permitted (the input and output buffers may be */  \
+/* the same)                                                            */  \
+/*  _q      : filter object                                             */  \
+/*  _x      : pointer to input array, [size: _n x 1]                    */  \
+/*  _n      : number of input, output samples, _n > 0                   */  \
+/*  _y      : pointer to output array, [size: _n x 1]                   */  \
+void IIRFILT(_execute_block)(IIRFILT()    _q,                               \
+                             TI *         _x,                               \
+                             unsigned int _n,                               \
+                             TO *         _y);                              \
+                                                                            \
+/* Return number of coefficients for iirfilt object (maximum between    */  \
+/* the feed-forward and feed-back coefficients). Note that the filter   */  \
+/* length = filter order + 1                                            */  \
+unsigned int IIRFILT(_get_length)(IIRFILT() _q);                            \
+                                                                            \
+/* Compute complex frequency response of filter object                  */  \
+/*  _q      : filter object                                             */  \
+/*  _fc     : normalized frequency for evaluation                       */  \
+/*  _H      : pointer to output complex frequency response              */  \
+void IIRFILT(_freqresponse)(IIRFILT()              _q,                      \
+                            float                  _fc,                     \
+                            liquid_float_complex * _H);                     \
+                                                                            \
+/* Compute and return group delay of filter object                      */  \
+/*  _q      : filter object                                             */  \
+/*  _fc     : frequency to evaluate                                     */  \
+float IIRFILT(_groupdelay)(IIRFILT() _q, float _fc);                        \
 
 LIQUID_IIRFILT_DEFINE_API(LIQUID_IIRFILT_MANGLE_RRRF,
                           float,
