@@ -2858,98 +2858,111 @@ LIQUID_IIRFILT_DEFINE_API(LIQUID_IIRFILT_MANGLE_CCCF,
 //   TO     : output data type
 //   TC     : coefficients data type
 //   TI     : input data type
-#define LIQUID_FIRPFB_DEFINE_API(FIRPFB,TO,TC,TI)               \
-                                                                \
-typedef struct FIRPFB(_s) * FIRPFB();                           \
-                                                                \
-/* create firpfb from external coefficients                 */  \
-/*  _M      : number of filters in the bank                 */  \
-/*  _h      : coefficients [size: _M*_h_len x 1]            */  \
-/*  _h_len  : filter delay (symbols)                        */  \
-FIRPFB() FIRPFB(_create)(unsigned int _M,                       \
-                         TC *         _h,                       \
-                         unsigned int _h_len);                  \
-                                                                \
-/* create firpfb from external coefficients                 */  \
-/*  _M      : number of filters in the bank                 */  \
-/*  _m      : filter semi-length [samples]                  */  \
-/*  _fc     : filter cut-off frequency 0 < _fc < 0.5        */  \
-/*  _As     : filter stop-band suppression [dB]             */  \
-FIRPFB() FIRPFB(_create_kaiser)(unsigned int _M,                \
-                                unsigned int _m,                \
-                                float        _fc,               \
-                                float        _As);              \
-                                                                \
-/* create firpfb from square-root Nyquist prototype         */  \
-/*  _type   : filter type (e.g. LIQUID_FIRFILT_RRC)         */  \
-/*  _npfb   : number of filters in the bank                 */  \
-/*  _k      : nominal samples/symbol                        */  \
-/*  _m      : filter delay (symbols)                        */  \
-/*  _beta   : rolloff factor (0 < beta <= 1)                */  \
-FIRPFB() FIRPFB(_create_rnyquist)(int          _type,           \
-                                  unsigned int _npfb,           \
-                                  unsigned int _k,              \
-                                  unsigned int _m,              \
-                                  float        _beta);          \
-                                                                \
-/* create from square-root derivative Nyquist prototype     */  \
-/*  _type   : filter type (e.g. LIQUID_FIRFILT_RRC)         */  \
-/*  _npfb   : number of filters in the bank                 */  \
-/*  _k      : nominal samples/symbol                        */  \
-/*  _m      : filter delay (symbols)                        */  \
-/*  _beta   : rolloff factor (0 < beta <= 1)                */  \
-FIRPFB() FIRPFB(_create_drnyquist)(int          _type,          \
-                                   unsigned int _npfb,          \
-                                   unsigned int _k,             \
-                                   unsigned int _m,             \
-                                   float        _beta);         \
-                                                                \
-/* re-create filterbank object                              */  \
-/*  _q      : original firpfb object                        */  \
-/*  _M      : number of filters in the bank                 */  \
-/*  _h      : coefficients [size: _M x _h_len]              */  \
-/*  _h_len  : length of each filter                         */  \
-FIRPFB() FIRPFB(_recreate)(FIRPFB()     _q,                     \
-                           unsigned int _M,                     \
-                           TC *         _h,                     \
-                           unsigned int _h_len);                \
-                                                                \
-/* destroy firpfb object, freeing all internal memory       */  \
-void FIRPFB(_destroy)(FIRPFB() _q);                             \
-                                                                \
-/* print firpfb object's parameters                         */  \
-void FIRPFB(_print)(FIRPFB() _q);                               \
-                                                                \
-/* set output scaling for filter                            */  \
-void FIRPFB(_set_scale)(FIRPFB() _q,                            \
-                        TC       _g);                           \
-                                                                \
-/* clear/reset firpfb object internal state                 */  \
-void FIRPFB(_reset)(FIRPFB() _q);                               \
-                                                                \
-/* push sample into firpfb internal buffer                  */  \
-void FIRPFB(_push)(FIRPFB() _q, TI _x);                         \
-                                                                \
-/* execute the filter on internal buffer and coefficients   */  \
-/*  _q      : firpfb object                                 */  \
-/*  _i      : index of filter to use                        */  \
-/*  _y      : pointer to output sample                      */  \
-void FIRPFB(_execute)(FIRPFB()     _q,                          \
-                      unsigned int _i,                          \
-                      TO *         _y);                         \
-                                                                \
-/* execute the filter on a block of input samples; the      */  \
-/* input and output buffers may be the same                 */  \
-/*  _q      : firpfb object                                 */  \
-/*  _i      : index of filter to use                        */  \
-/*  _x      : pointer to input array [size: _n x 1]         */  \
-/*  _n      : number of input, output samples               */  \
-/*  _y      : pointer to output array [size: _n x 1]        */  \
-void FIRPFB(_execute_block)(FIRPFB()     _q,                    \
-                            unsigned int _i,                    \
-                            TI *         _x,                    \
-                            unsigned int _n,                    \
-                            TO *         _y);                   \
+#define LIQUID_FIRPFB_DEFINE_API(FIRPFB,TO,TC,TI)                           \
+                                                                            \
+/* Finite impulse response (FIR) polyphase filter bank (PFB)            */  \
+typedef struct FIRPFB(_s) * FIRPFB();                                       \
+                                                                            \
+/* Create firpfb object with _M sub-filter each of length _h_len/_M     */  \
+/* from an external array of coefficients                               */  \
+/*  _M      : number of filters in the bank, _M > 1                     */  \
+/*  _h      : coefficients, [size: _h_len x 1]                          */  \
+/*  _h_len  : filter length (multiple of _M), _h_len >= _M              */  \
+FIRPFB() FIRPFB(_create)(unsigned int _M,                                   \
+                         TC *         _h,                                   \
+                         unsigned int _h_len);                              \
+                                                                            \
+/* Create firpfb object using Kaiser-Bessel windowed sinc filter design */  \
+/* method                                                               */  \
+/*  _M      : number of filters in the bank, _M > 0                     */  \
+/*  _m      : filter semi-length [samples], _m > 0                      */  \
+/*  _fc     : filter normalized cut-off frequency, 0 < _fc < 0.5        */  \
+/*  _As     : filter stop-band suppression [dB], _As > 0                */  \
+FIRPFB() FIRPFB(_create_kaiser)(unsigned int _M,                            \
+                                unsigned int _m,                            \
+                                float        _fc,                           \
+                                float        _As);                          \
+                                                                            \
+/* Create firpfb from square-root Nyquist prototype                     */  \
+/*  _type   : filter type (e.g. LIQUID_FIRFILT_RRC)                     */  \
+/*  _M      : number of filters in the bank, _M > 0                     */  \
+/*  _k      : nominal samples/symbol, _k > 1                            */  \
+/*  _m      : filter delay [symbols], _m > 0                            */  \
+/*  _beta   : rolloff factor, 0 < _beta <= 1                            */  \
+FIRPFB() FIRPFB(_create_rnyquist)(int          _type,                       \
+                                  unsigned int _M,                          \
+                                  unsigned int _k,                          \
+                                  unsigned int _m,                          \
+                                  float        _beta);                      \
+                                                                            \
+/* Create from square-root derivative Nyquist prototype                 */  \
+/*  _type   : filter type (e.g. LIQUID_FIRFILT_RRC)                     */  \
+/*  _M      : number of filters in the bank, _M > 0                     */  \
+/*  _k      : nominal samples/symbol, _k > 1                            */  \
+/*  _m      : filter delay [symbols], _m > 0                            */  \
+/*  _beta   : rolloff factor, 0 < _beta <= 1                            */  \
+FIRPFB() FIRPFB(_create_drnyquist)(int          _type,                      \
+                                   unsigned int _M,                         \
+                                   unsigned int _k,                         \
+                                   unsigned int _m,                         \
+                                   float        _beta);                     \
+                                                                            \
+/* Re-create firpfb object of potentially a different length with       */  \
+/* different coefficients. If the length of the filter does not change, */  \
+/* not memory reallocation is invoked.                                  */  \
+/*  _q      : original firpfb object                                    */  \
+/*  _M      : number of filters in the bank, _M > 1                     */  \
+/*  _h      : coefficients, [size: _h_len x 1]                          */  \
+/*  _h_len  : filter length (multiple of _M), _h_len >= _M              */  \
+FIRPFB() FIRPFB(_recreate)(FIRPFB()     _q,                                 \
+                           unsigned int _M,                                 \
+                           TC *         _h,                                 \
+                           unsigned int _h_len);                            \
+                                                                            \
+/* Destroy firpfb object, freeing all internal memory and destroying    */  \
+/* all internal objects                                                 */  \
+void FIRPFB(_destroy)(FIRPFB() _q);                                         \
+                                                                            \
+/* Print firpfb object's parameters to stdout                           */  \
+void FIRPFB(_print)(FIRPFB() _q);                                           \
+                                                                            \
+/* Set output scaling for filter                                        */  \
+/*  _q      : filter object                                             */  \
+/*  _scale  : scaling factor to apply to each output sample             */  \
+void FIRPFB(_set_scale)(FIRPFB() _q,                                        \
+                        TC       _scale);                                   \
+                                                                            \
+/* Reset firpfb object's internal buffer                                */  \
+void FIRPFB(_reset)(FIRPFB() _q);                                           \
+                                                                            \
+/* Push sample into filter object's internal buffer                     */  \
+/*  _q      : filter object                                             */  \
+/*  _x      : single input sample                                       */  \
+void FIRPFB(_push)(FIRPFB() _q,                                             \
+                    TI      _x);                                            \
+                                                                            \
+/* Execute vector dot product on the filter's internal buffer and       */  \
+/* coefficients using the coefficients from sub-filter at index _i      */  \
+/*  _q      : firpfb object                                             */  \
+/*  _i      : index of filter to use                                    */  \
+/*  _y      : pointer to output sample                                  */  \
+void FIRPFB(_execute)(FIRPFB()     _q,                                      \
+                      unsigned int _i,                                      \
+                      TO *         _y);                                     \
+                                                                            \
+/* Execute the filter on a block of input samples, all using index _i.  */  \
+/* In-place operation is permitted (_x and _y may point to the same     */  \
+/* place in memory)                                                     */  \
+/*  _q      : firpfb object                                             */  \
+/*  _i      : index of filter to use                                    */  \
+/*  _x      : pointer to input array [size: _n x 1]                     */  \
+/*  _n      : number of input, output samples                           */  \
+/*  _y      : pointer to output array [size: _n x 1]                    */  \
+void FIRPFB(_execute_block)(FIRPFB()     _q,                                \
+                            unsigned int _i,                                \
+                            TI *         _x,                                \
+                            unsigned int _n,                                \
+                            TO *         _y);                               \
 
 LIQUID_FIRPFB_DEFINE_API(LIQUID_FIRPFB_MANGLE_RRRF,
                          float,
