@@ -3190,63 +3190,66 @@ LIQUID_IIRINTERP_DEFINE_API(LIQUID_IIRINTERP_MANGLE_CCCF,
 #define LIQUID_FIRDECIM_MANGLE_CRCF(name) LIQUID_CONCAT(firdecim_crcf,name)
 #define LIQUID_FIRDECIM_MANGLE_CCCF(name) LIQUID_CONCAT(firdecim_cccf,name)
 
-#define LIQUID_FIRDECIM_DEFINE_API(FIRDECIM,TO,TC,TI)           \
-typedef struct FIRDECIM(_s) * FIRDECIM();                       \
-                                                                \
-/* create decimator from external coefficients              */  \
-/*  _M      : decimation factor                             */  \
-/*  _h      : filter coefficients [size: _h_len x 1]        */  \
-/*  _h_len  : filter coefficients length                    */  \
-FIRDECIM() FIRDECIM(_create)(unsigned int _M,                   \
-                             TC *         _h,                   \
-                             unsigned int _h_len);              \
-                                                                \
-/* create decimator from Kaiser prototype                   */  \
-/*  _M      : decimation factor                             */  \
-/*  _m      : filter delay (symbols)                        */  \
-/*  _As     : stop-band attenuation [dB]                    */  \
-FIRDECIM() FIRDECIM(_create_kaiser)(unsigned int _M,            \
-                                    unsigned int _m,            \
-                                    float        _As);          \
-                                                                \
-/* create square-root Nyquist decimator                     */  \
-/*  _type   : filter type (e.g. LIQUID_FIRFILT_RRC)         */  \
-/*  _M      : samples/symbol (decimation factor)            */  \
-/*  _m      : filter delay (symbols)                        */  \
-/*  _beta   : rolloff factor (0 < beta <= 1)                */  \
-/*  _dt     : fractional sample delay                       */  \
-FIRDECIM() FIRDECIM(_create_prototype)(int          _type,      \
-                                       unsigned int _M,         \
-                                       unsigned int _m,         \
-                                       float        _beta,      \
-                                       float        _dt);       \
-                                                                \
-/* destroy decimator object                                 */  \
-void FIRDECIM(_destroy)(FIRDECIM() _q);                         \
-                                                                \
-/* print decimator object propreties to stdout              */  \
-void FIRDECIM(_print)(FIRDECIM() _q);                           \
-                                                                \
-/* reset decimator object internal state                    */  \
-void FIRDECIM(_reset)(FIRDECIM() _q);                           \
-                                                                \
-/* execute decimator on _M input samples                    */  \
-/*  _q      : decimator object                              */  \
-/*  _x      : input samples [size: _M x 1]                  */  \
-/*  _y      : output sample pointer                         */  \
-void FIRDECIM(_execute)(FIRDECIM() _q,                          \
-                        TI *       _x,                          \
-                        TO *       _y);                         \
-                                                                \
-/* execute decimator on block of _n*_M input samples        */  \
-/*  _q      : decimator object                              */  \
-/*  _x      : input array [size: _n*_M x 1]                 */  \
-/*  _n      : number of _output_ samples                    */  \
-/*  _y      : output array [_size: _n x 1]                  */  \
-void FIRDECIM(_execute_block)(FIRDECIM()   _q,                  \
-                              TI *         _x,                  \
-                              unsigned int _n,                  \
-                              TO *         _y);                 \
+#define LIQUID_FIRDECIM_DEFINE_API(FIRDECIM,TO,TC,TI)                       \
+                                                                            \
+/* Finite impulse response (FIR) decimator                              */  \
+typedef struct FIRDECIM(_s) * FIRDECIM();                                   \
+                                                                            \
+/* Create decimator from external coefficients                          */  \
+/*  _M      : decimation factor, _M >= 2                                */  \
+/*  _h      : filter coefficients, [size: _h_len x 1]                   */  \
+/*  _h_len  : filter length, _h_len >= _M                               */  \
+FIRDECIM() FIRDECIM(_create)(unsigned int _M,                               \
+                             TC *         _h,                               \
+                             unsigned int _h_len);                          \
+                                                                            \
+/* Create decimator from filter prototype prototype (Kaiser-Bessel      */  \
+/* windowed-sinc function)                                              */  \
+/*  _M      : decimation factor, _M >= 2                                */  \
+/*  _m      : filter delay [symbols], _m >= 1                           */  \
+/*  _As     : stop-band attenuation [dB], _As >= 0                      */  \
+FIRDECIM() FIRDECIM(_create_kaiser)(unsigned int _M,                        \
+                                    unsigned int _m,                        \
+                                    float        _As);                      \
+                                                                            \
+/* Create decimator object from filter prototype                        */  \
+/*  _type   : filter type (e.g. LIQUID_FIRFILT_RCOS)                    */  \
+/*  _M      : interpolation factor,    _M > 1                           */  \
+/*  _m      : filter delay (symbols),  _m > 0                           */  \
+/*  _beta   : excess bandwidth factor, 0 <= _beta <= 1                  */  \
+/*  _dt     : fractional sample delay, -1 <= _dt <= 1                   */  \
+FIRDECIM() FIRDECIM(_create_prototype)(int          _type,                  \
+                                       unsigned int _M,                     \
+                                       unsigned int _m,                     \
+                                       float        _beta,                  \
+                                       float        _dt);                   \
+                                                                            \
+/* Destroy decimator object, freeing all internal memory                */  \
+void FIRDECIM(_destroy)(FIRDECIM() _q);                                     \
+                                                                            \
+/* Print decimator object propreties to stdout                          */  \
+void FIRDECIM(_print)(FIRDECIM() _q);                                       \
+                                                                            \
+/* Reset decimator object internal state                                */  \
+void FIRDECIM(_reset)(FIRDECIM() _q);                                       \
+                                                                            \
+/* Execute decimator on _M input samples                                */  \
+/*  _q      : decimator object                                          */  \
+/*  _x      : input samples, [size: _M x 1]                             */  \
+/*  _y      : output sample pointer                                     */  \
+void FIRDECIM(_execute)(FIRDECIM() _q,                                      \
+                        TI *       _x,                                      \
+                        TO *       _y);                                     \
+                                                                            \
+/* Execute decimator on block of _n*_M input samples                    */  \
+/*  _q      : decimator object                                          */  \
+/*  _x      : input array, [size: _n*_M x 1]                            */  \
+/*  _n      : number of _output_ samples                                */  \
+/*  _y      : output array, [_size: _n x 1]                             */  \
+void FIRDECIM(_execute_block)(FIRDECIM()   _q,                              \
+                              TI *         _x,                              \
+                              unsigned int _n,                              \
+                              TO *         _y);                             \
 
 LIQUID_FIRDECIM_DEFINE_API(LIQUID_FIRDECIM_MANGLE_RRRF,
                            float,
