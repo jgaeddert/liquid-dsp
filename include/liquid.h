@@ -2720,20 +2720,28 @@ LIQUID_FFTFILT_DEFINE_API(LIQUID_FFTFILT_MANGLE_CCCF,
 /* Infinite impulse response (IIR) filter                               */  \
 typedef struct IIRFILT(_s) * IIRFILT();                                     \
                                                                             \
-/* Create infinite impulse reponse filter from external coefficients    */  \
-/*  _b      : feed-forward coefficients, [size: _nb x 1]                */  \
-/*  _nb     : number of feed-forward coefficients                       */  \
-/*  _a      : feed-back coefficients, [size: _na x 1]                   */  \
-/*  _na     : number of feed-back coefficients                          */  \
+/* Create infinite impulse reponse filter from external coefficients.   */  \
+/* Note that the number of feed-forward and feed-back coefficients do   */  \
+/* not need to be equal, but they do need to be non-zero.               */  \
+/* Furthermore, the first feed-back coefficient \(a_0\) cannot be       */  \
+/* equal to zero, otherwise the filter will be invalid as this value is */  \
+/* factored out from all coefficients.                                  */  \
+/* For stability reasons the number of coefficients should reasonably   */  \
+/* not exceed about 8 for single-precision floating-point.              */  \
+/*  _b      : feed-forward coefficients (numerator), [size: _nb x 1]    */  \
+/*  _nb     : number of feed-forward coefficients, _nb > 0              */  \
+/*  _a      : feed-back coefficients (denominator), [size: _na x 1]     */  \
+/*  _na     : number of feed-back coefficients, _na > 0                 */  \
 IIRFILT() IIRFILT(_create)(TC *         _b,                                 \
                            unsigned int _nb,                                \
                            TC *         _a,                                 \
                            unsigned int _na);                               \
                                                                             \
 /* Create IIR filter using 2nd-order secitons from external             */  \
-/* coefficients                                                         */  \
+/* coefficients.                                                        */  \
 /*  _B      : feed-forward coefficients [size: _nsos x 3]               */  \
 /*  _A      : feed-back coefficients    [size: _nsos x 3]               */  \
+/*  _nsos   : number of second-order sections (sos), _nsos > 0          */  \
 IIRFILT() IIRFILT(_create_sos)(TC *         _B,                             \
                                TC *         _A,                             \
                                unsigned int _nsos);                         \
