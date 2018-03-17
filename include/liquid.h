@@ -2988,64 +2988,72 @@ LIQUID_FIRPFB_DEFINE_API(LIQUID_FIRPFB_MANGLE_CCCF,
 #define LIQUID_FIRINTERP_MANGLE_CRCF(name) LIQUID_CONCAT(firinterp_crcf,name)
 #define LIQUID_FIRINTERP_MANGLE_CCCF(name) LIQUID_CONCAT(firinterp_cccf,name)
 
-#define LIQUID_FIRINTERP_DEFINE_API(FIRINTERP,TO,TC,TI)         \
-                                                                \
-typedef struct FIRINTERP(_s) * FIRINTERP();                     \
-                                                                \
-/* create interpolator from external coefficients           */  \
-/*  _M      : interpolation factor                          */  \
-/*  _h      : filter coefficients [size: _h_len x 1]        */  \
-/*  _h_len  : filter length                                 */  \
-FIRINTERP() FIRINTERP(_create)(unsigned int _M,                 \
-                               TC *         _h,                 \
-                               unsigned int _h_len);            \
-                                                                \
-/* create interpolator from Kaiser prototype                */  \
-/*  _M      : interpolation factor                          */  \
-/*  _m      : filter delay (symbols)                        */  \
-/*  _As     : stop-band attenuation [dB]                    */  \
-FIRINTERP() FIRINTERP(_create_kaiser)(unsigned int _M,          \
-                                      unsigned int _m,          \
-                                      float        _As);        \
-                                                                \
-/* create prorotype (root-)Nyquist interpolator             */  \
-/*  _type   : filter type (e.g. LIQUID_FIRFILT_RCOS)        */  \
-/*  _k      :   samples/symbol,          _k > 1             */  \
-/*  _m      :   filter delay (symbols),  _m > 0             */  \
-/*  _beta   :   excess bandwidth factor, _beta < 1          */  \
-/*  _dt     :   fractional sample delay, _dt in (-1, 1)     */  \
-FIRINTERP() FIRINTERP(_create_prototype)(int          _type,    \
-                                         unsigned int _k,       \
-                                         unsigned int _m,       \
-                                         float        _beta,    \
-                                         float        _dt);     \
-                                                                \
-/* destroy firinterp object, freeing all internal memory    */  \
-void FIRINTERP(_destroy)(FIRINTERP() _q);                       \
-                                                                \
-/* print firinterp object's internal properties to stdout   */  \
-void FIRINTERP(_print)(FIRINTERP() _q);                         \
-                                                                \
-/* reset internal state                                     */  \
-void FIRINTERP(_reset)(FIRINTERP() _q);                         \
-                                                                \
-/* execute interpolation on single input sample             */  \
-/*  _q      : firinterp object                              */  \
-/*  _x      : input sample                                  */  \
-/*  _y      : output sample array [size: _M x 1]            */  \
-void FIRINTERP(_execute)(FIRINTERP() _q,                        \
-                         TI          _x,                        \
-                         TO *        _y);                       \
-                                                                \
-/* execute interpolation on block of input samples          */  \
-/*  _q      : firinterp object                              */  \
-/*  _x      : input array [size: _n x 1]                    */  \
-/*  _n      : size of input array                           */  \
-/*  _y      : output sample array [size: _M*_n x 1]         */  \
-void FIRINTERP(_execute_block)(FIRINTERP()  _q,                 \
-                               TI *         _x,                 \
-                               unsigned int _n,                 \
-                               TO *         _y);                \
+#define LIQUID_FIRINTERP_DEFINE_API(FIRINTERP,TO,TC,TI)                     \
+                                                                            \
+/* Finite impulse response (FIR) interpolator                           */  \
+typedef struct FIRINTERP(_s) * FIRINTERP();                                 \
+                                                                            \
+/* Create interpolator from external coefficients. Internally the       */  \
+/* interpolator creates a polyphase filter bank to efficiently realize  */  \
+/* resampling of the input signal.                                      */  \
+/* If the input filter length is not a multiple of the interpolation    */  \
+/* factor, the object internally pads the coefficients with zeros to    */  \
+/* compensate.                                                          */  \
+/*  _M      : interpolation factor, _M >= 2                             */  \
+/*  _h      : filter coefficients, [size: _h_len x 1]                   */  \
+/*  _h_len  : filter length, _h_len >= _M                               */  \
+FIRINTERP() FIRINTERP(_create)(unsigned int _M,                             \
+                               TC *         _h,                             \
+                               unsigned int _h_len);                        \
+                                                                            \
+/* Create interpolator from filter prototype prototype (Kaiser-Bessel   */  \
+/* windowed-sinc function)                                              */  \
+/*  _M      : interpolation factor, _M >= 2                             */  \
+/*  _m      : filter delay [symbols], _m >= 1                           */  \
+/*  _As     : stop-band attenuation [dB], _As >= 0                      */  \
+FIRINTERP() FIRINTERP(_create_kaiser)(unsigned int _M,                      \
+                                      unsigned int _m,                      \
+                                      float        _As);                    \
+                                                                            \
+/* Create interpolator object from filter prototype                     */  \
+/*  _type   : filter type (e.g. LIQUID_FIRFILT_RCOS)                    */  \
+/*  _M      : interpolation factor,    _M > 1                           */  \
+/*  _m      : filter delay (symbols),  _m > 0                           */  \
+/*  _beta   : excess bandwidth factor, 0 <= _beta <= 1                  */  \
+/*  _dt     : fractional sample delay, -1 <= _dt <= 1                   */  \
+FIRINTERP() FIRINTERP(_create_prototype)(int          _type,                \
+                                         unsigned int _M,                   \
+                                         unsigned int _m,                   \
+                                         float        _beta,                \
+                                         float        _dt);                 \
+                                                                            \
+/* Destroy firinterp object, freeing all internal memory                */  \
+void FIRINTERP(_destroy)(FIRINTERP() _q);                                   \
+                                                                            \
+/* Print firinterp object's internal properties to stdout               */  \
+void FIRINTERP(_print)(FIRINTERP() _q);                                     \
+                                                                            \
+/* Reset internal state                                                 */  \
+void FIRINTERP(_reset)(FIRINTERP() _q);                                     \
+                                                                            \
+/* Execute interpolation on single input sample and write \(M\) output  */  \
+/* samples (\(M\) is the interpolation factor)                          */  \
+/*  _q      : firinterp object                                          */  \
+/*  _x      : input sample                                              */  \
+/*  _y      : output sample array, [size: _M x 1]                       */  \
+void FIRINTERP(_execute)(FIRINTERP() _q,                                    \
+                         TI          _x,                                    \
+                         TO *        _y);                                   \
+                                                                            \
+/* Execute interpolation on block of input samples                      */  \
+/*  _q      : firinterp object                                          */  \
+/*  _x      : input array, [size: _n x 1]                               */  \
+/*  _n      : size of input array                                       */  \
+/*  _y      : output sample array, [size: _M*_n x 1]                    */  \
+void FIRINTERP(_execute_block)(FIRINTERP()  _q,                             \
+                               TI *         _x,                             \
+                               unsigned int _n,                             \
+                               TO *         _y);                            \
 
 LIQUID_FIRINTERP_DEFINE_API(LIQUID_FIRINTERP_MANGLE_RRRF,
                             float,
