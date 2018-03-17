@@ -3083,69 +3083,88 @@ LIQUID_FIRINTERP_DEFINE_API(LIQUID_FIRINTERP_MANGLE_CCCF,
 #define LIQUID_IIRINTERP_MANGLE_CRCF(name) LIQUID_CONCAT(iirinterp_crcf,name)
 #define LIQUID_IIRINTERP_MANGLE_CCCF(name) LIQUID_CONCAT(iirinterp_cccf,name)
 
-#define LIQUID_IIRINTERP_DEFINE_API(IIRINTERP,TO,TC,TI)         \
-typedef struct IIRINTERP(_s) * IIRINTERP();                     \
-                                                                \
-/* create interpolator from external coefficients           */  \
-/*  _M      : interpolation factor                          */  \
-/*  _b      : feed-back coefficients [size: _nb x 1]        */  \
-/*  _nb     : feed-back coefficients length                 */  \
-/*  _a      : feed-forward coefficients [size: _na x 1]     */  \
-/*  _na     : feed-forward coefficients length              */  \
-IIRINTERP() IIRINTERP(_create)(unsigned int _M,                 \
-                               TC *         _b,                 \
-                               unsigned int _nb,                \
-                               TC *         _a,                 \
-                               unsigned int _na);               \
-                                                                \
-/* create decimator with default Butterworth prototype      */  \
-/*  _M      : decimation factor                             */  \
-/*  _order  : filter order                                  */  \
-IIRINTERP() IIRINTERP(_create_default)(unsigned int _M,         \
-                                       unsigned int _order);    \
-                                                                \
-/* create interpolator from prototype                       */  \
-/*  _M      : interpolation factor                          */  \
-IIRINTERP() IIRINTERP(_create_prototype)(                       \
-                unsigned int _M,                                \
-                liquid_iirdes_filtertype _ftype,                \
-                liquid_iirdes_bandtype   _btype,                \
-                liquid_iirdes_format     _format,               \
-                unsigned int _order,                            \
-                float _fc,                                      \
-                float _f0,                                      \
-                float _Ap,                                      \
-                float _As);                                     \
-                                                                \
-/* destroy interpolator object and free internal memory     */  \
-void IIRINTERP(_destroy)(IIRINTERP() _q);                       \
-                                                                \
-/* print interpolator object internals                      */  \
-void IIRINTERP(_print)(IIRINTERP() _q);                         \
-                                                                \
-/* reset interpolator object                                */  \
-void IIRINTERP(_reset)(IIRINTERP() _q);                         \
-                                                                \
-/* execute interpolation on single input sample             */  \
-/*  _q      : iirinterp object                              */  \
-/*  _x      : input sample                                  */  \
-/*  _y      : output sample array [size: _M x 1]            */  \
-void IIRINTERP(_execute)(IIRINTERP() _q,                        \
-                         TI          _x,                        \
-                         TO *        _y);                       \
-                                                                \
-/* execute interpolation on block of input samples          */  \
-/*  _q      : iirinterp object                              */  \
-/*  _x      : input array [size: _n x 1]                    */  \
-/*  _n      : size of input array                           */  \
-/*  _y      : output sample array [size: _M*_n x 1]         */  \
-void IIRINTERP(_execute_block)(IIRINTERP()  _q,                 \
-                               TI *         _x,                 \
-                               unsigned int _n,                 \
-                               TO *         _y);                \
-                                                                \
-/* get system group delay at frequency _fc                  */  \
-float IIRINTERP(_groupdelay)(IIRINTERP() _q, float _fc);        \
+#define LIQUID_IIRINTERP_DEFINE_API(IIRINTERP,TO,TC,TI)                     \
+                                                                            \
+/* Infinite impulse response (IIR) interpolator                         */  \
+typedef struct IIRINTERP(_s) * IIRINTERP();                                 \
+                                                                            \
+/* Create infinite impulse reponse interpolator from external           */  \
+/* coefficients.                                                        */  \
+/* Note that the number of feed-forward and feed-back coefficients do   */  \
+/* not need to be equal, but they do need to be non-zero.               */  \
+/* Furthermore, the first feed-back coefficient \(a_0\) cannot be       */  \
+/* equal to zero, otherwise the filter will be invalid as this value is */  \
+/* factored out from all coefficients.                                  */  \
+/* For stability reasons the number of coefficients should reasonably   */  \
+/* not exceed about 8 for single-precision floating-point.              */  \
+/*  _M      : interpolation factor, _M >= 2                             */  \
+/*  _b      : feed-forward coefficients (numerator), [size: _nb x 1]    */  \
+/*  _nb     : number of feed-forward coefficients, _nb > 0              */  \
+/*  _a      : feed-back coefficients (denominator), [size: _na x 1]     */  \
+/*  _na     : number of feed-back coefficients, _na > 0                 */  \
+IIRINTERP() IIRINTERP(_create)(unsigned int _M,                             \
+                               TC *         _b,                             \
+                               unsigned int _nb,                            \
+                               TC *         _a,                             \
+                               unsigned int _na);                           \
+                                                                            \
+/* Create interpolator object with default Butterworth prototype        */  \
+/*  _M      : interpolation factor, _M >= 2                             */  \
+/*  _order  : filter order, _order > 0                                  */  \
+IIRINTERP() IIRINTERP(_create_default)(unsigned int _M,                     \
+                                       unsigned int _order);                \
+                                                                            \
+/* Create IIR interpolator from prototype                               */  \
+/*  _M      : interpolation factor, _M >= 2                             */  \
+/*  _ftype  : filter type (e.g. LIQUID_IIRDES_BUTTER)                   */  \
+/*  _btype  : band type (e.g. LIQUID_IIRDES_BANDPASS)                   */  \
+/*  _format : coefficients format (e.g. LIQUID_IIRDES_SOS)              */  \
+/*  _order  : filter order, _order > 0                                  */  \
+/*  _fc     : low-pass prototype cut-off frequency, 0 <= _fc <= 0.5     */  \
+/*  _f0     : center frequency (band-pass, band-stop), 0 <= _f0 <= 0.5  */  \
+/*  _Ap     : pass-band ripple in dB, _Ap > 0                           */  \
+/*  _As     : stop-band ripple in dB, _As > 0                           */  \
+IIRINTERP() IIRINTERP(_create_prototype)(                                   \
+            unsigned int             _M,                                    \
+            liquid_iirdes_filtertype _ftype,                                \
+            liquid_iirdes_bandtype   _btype,                                \
+            liquid_iirdes_format     _format,                               \
+            unsigned int             _order,                                \
+            float                    _fc,                                   \
+            float                    _f0,                                   \
+            float                    _Ap,                                   \
+            float                    _As);                                  \
+                                                                            \
+/* Destroy interpolator object and free internal memory                 */  \
+void IIRINTERP(_destroy)(IIRINTERP() _q);                                   \
+                                                                            \
+/* Print interpolator object internals to stdout                        */  \
+void IIRINTERP(_print)(IIRINTERP() _q);                                     \
+                                                                            \
+/* reset interpolator object                                            */  \
+void IIRINTERP(_reset)(IIRINTERP() _q);                                     \
+                                                                            \
+/* Execute interpolation on single input sample and write \(M\) output  */  \
+/* samples (\(M\) is the interpolation factor)                          */  \
+/*  _q      : iirinterp object                                          */  \
+/*  _x      : input sample                                              */  \
+/*  _y      : output sample array, [size: _M x 1]                       */  \
+void IIRINTERP(_execute)(IIRINTERP() _q,                                    \
+                         TI          _x,                                    \
+                         TO *        _y);                                   \
+                                                                            \
+/* Execute interpolation on block of input samples                      */  \
+/*  _q      : iirinterp object                                          */  \
+/*  _x      : input array, [size: _n x 1]                               */  \
+/*  _n      : size of input array                                       */  \
+/*  _y      : output sample array, [size: _M*_n x 1]                    */  \
+void IIRINTERP(_execute_block)(IIRINTERP()  _q,                             \
+                               TI *         _x,                             \
+                               unsigned int _n,                             \
+                               TO *         _y);                            \
+                                                                            \
+/* get system group delay at frequency _fc                              */  \
+float IIRINTERP(_groupdelay)(IIRINTERP() _q, float _fc);                    \
 
 LIQUID_IIRINTERP_DEFINE_API(LIQUID_IIRINTERP_MANGLE_RRRF,
                             float,
