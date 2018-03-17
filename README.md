@@ -26,6 +26,12 @@ liquid-dsp only relies on `libc` and `libm` (standard C and math)
 libraries to run; however liquid will take advantage of other packages
 (such as [FFTW](http://www.fftw.org)) if they are available.
 
+If you build from the Git repository you will also need to install autotools
+for generating the `configure.sh` script (e.g.
+`brew install autoconf automake` on macOS,
+`sudo apt-get install automake autoconf` on Debian variants).
+
+
 ### Getting the source code ###
 
 There are two primary ways of obtaining the source code:
