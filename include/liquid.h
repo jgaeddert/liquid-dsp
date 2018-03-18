@@ -3705,6 +3705,9 @@ void MSRESAMP(_reset)(MSRESAMP() _q);                           \
 /* get filter delay (output samples)                        */  \
 float MSRESAMP(_get_delay)(MSRESAMP() _q);                      \
                                                                 \
+/* get overall resampling rate                              */  \
+float MSRESAMP(_get_rate)(MSRESAMP() _q);                       \
+                                                                \
 /* execute multi-stage resampler                            */  \
 /*  _q      :   msresamp object                             */  \
 /*  _x      :   input sample array  [size: _nx x 1]         */  \

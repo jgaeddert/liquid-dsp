@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2015 Joseph Gaeddert
+ * Copyright (c) 2007 - 2018 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -241,6 +241,12 @@ float MSRESAMP(_get_delay)(MSRESAMP() _q)
     }
 
     return 0.0f;
+}
+
+// get resampling rate
+float MSRESAMP(_get_rate)(MSRESAMP() _q)
+{
+    return _q->rate;
 }
 
 // execute multi-stage resampler
