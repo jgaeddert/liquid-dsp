@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2015 Joseph Gaeddert
+ * Copyright (c) 2007 - 2018 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -220,19 +220,15 @@ void RESAMP(_set_rate)(RESAMP() _q,
 
 // adjust resampling rate
 void RESAMP(_adjust_rate)(RESAMP() _q,
-                          float    _delta)
+                          float    _gamma)
 {
-    if (_delta > 0.1f || _delta < -0.1f) {
-        fprintf(stderr,"error: resamp_%s_adjust_rate(), resampling rate must be in [-0.1,0.1]\n", EXTENSION_FULL);
+    if (_gamma <= 0) {
+        fprintf(stderr,"error: resamp_%s_adjust_rate(), resampling adjustment (%12.4e) must be greater than zero\n", EXTENSION_FULL, _gamma);
         exit(1);
     }
 
     // adjust internal rate
-    _q->rate += _delta;
-
-    // clip rate
-    if (_q->rate >  0.5f) _q->rate =  0.5f;
-    if (_q->rate < -0.5f) _q->rate = -0.5f;
+    _q->rate *= _gamma;
 
     // set output stride
     _q->del = 1.0f / _q->rate;

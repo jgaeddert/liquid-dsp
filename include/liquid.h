@@ -3537,9 +3537,9 @@ void RESAMP(_set_rate)(RESAMP() _q,                             \
                                                                 \
 /* adjust rate of arbitrary resampler                       */  \
 /*  _q      : resampling object                             */  \
-/*  _delta  : rate adjustment; _rate <- _rate + _delta      */  \
+/*  _gamma  : rate adjustment factor: rate <- rate * gamma  */  \
 void RESAMP(_adjust_rate)(RESAMP() _q,                          \
-                          float    _delta);                     \
+                          float    _gamma);                     \
                                                                 \
 /* set resampling timing phase                              */  \
 /*  _q      : resampling object                             */  \
