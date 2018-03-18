@@ -218,6 +218,12 @@ void RESAMP(_set_rate)(RESAMP() _q,
     _q->del = 1.0f / _q->rate;
 }
 
+// get rate of arbitrary resampler
+float RESAMP(_get_rate)(RESAMP() _q)
+{
+    return _q->rate;
+}
+
 // adjust resampling rate
 void RESAMP(_adjust_rate)(RESAMP() _q,
                           float    _gamma)
