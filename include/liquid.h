@@ -3620,42 +3620,46 @@ typedef enum {
 #define LIQUID_MSRESAMP2_MANGLE_CRCF(name) LIQUID_CONCAT(msresamp2_crcf,name)
 #define LIQUID_MSRESAMP2_MANGLE_CCCF(name) LIQUID_CONCAT(msresamp2_cccf,name)
 
-#define LIQUID_MSRESAMP2_DEFINE_API(MSRESAMP2,TO,TC,TI)         \
-typedef struct MSRESAMP2(_s) * MSRESAMP2();                     \
-                                                                \
-/* create multi-stage half-band resampler                   */  \
-/*  _type       : resampler type (e.g. LIQUID_RESAMP_DECIM) */  \
-/*  _num_stages : number of resampling stages               */  \
-/*  _fc         : filter cut-off frequency 0 < _fc < 0.5    */  \
-/*  _f0         : filter center frequency                   */  \
-/*  _As         : stop-band attenuation [dB]                */  \
-MSRESAMP2() MSRESAMP2(_create)(int          _type,              \
-                               unsigned int _num_stages,        \
-                               float        _fc,                \
-                               float        _f0,                \
-                               float        _As);               \
-                                                                \
-/* destroy multi-stage half-bandresampler                   */  \
-void MSRESAMP2(_destroy)(MSRESAMP2() _q);                       \
-                                                                \
-/* print msresamp object internals to stdout                */  \
-void MSRESAMP2(_print)(MSRESAMP2() _q);                         \
-                                                                \
-/* reset msresamp object internal state                     */  \
-void MSRESAMP2(_reset)(MSRESAMP2() _q);                         \
-                                                                \
-/* get group delay (number of output samples)               */  \
-float MSRESAMP2(_get_delay)(MSRESAMP2() _q);                    \
-                                                                \
-/* execute multi-stage resampler, M = 2^num_stages          */  \
-/*  LIQUID_RESAMP_INTERP:   input: 1,   output: M           */  \
-/*  LIQUID_RESAMP_DECIM:    input: M,   output: 1           */  \
-/*  _q      : msresamp object                               */  \
-/*  _x      : input sample array                            */  \
-/*  _y      : output sample array                           */  \
-void MSRESAMP2(_execute)(MSRESAMP2() _q,                        \
-                         TI *        _x,                        \
-                         TO *        _y);                       \
+#define LIQUID_MSRESAMP2_DEFINE_API(MSRESAMP2,TO,TC,TI)                     \
+                                                                            \
+/* Multi-stage half-band resampler, implemented as cascaded dyadic      */  \
+/* (half-band) polyphase filter banks for interpolation and decimation. */  \
+typedef struct MSRESAMP2(_s) * MSRESAMP2();                                 \
+                                                                            \
+/* Create multi-stage half-band resampler as either decimator or        */  \
+/* interpolator.                                                        */  \
+/*  _type       : resampler type (e.g. LIQUID_RESAMP_DECIM)             */  \
+/*  _num_stages : number of resampling stages, _num_stages <= 16        */  \
+/*  _fc         : filter cut-off frequency, 0 < _fc < 0.5               */  \
+/*  _f0         : filter center frequency (set to zero)                 */  \
+/*  _As         : stop-band attenuation [dB], _As > 0                   */  \
+MSRESAMP2() MSRESAMP2(_create)(int          _type,                          \
+                               unsigned int _num_stages,                    \
+                               float        _fc,                            \
+                               float        _f0,                            \
+                               float        _As);                           \
+                                                                            \
+/* Destroy multi-stage half-bandresampler, freeing all internal memory  */  \
+void MSRESAMP2(_destroy)(MSRESAMP2() _q);                                   \
+                                                                            \
+/* Print msresamp object internals to stdout                            */  \
+void MSRESAMP2(_print)(MSRESAMP2() _q);                                     \
+                                                                            \
+/* Reset msresamp object internal state                                 */  \
+void MSRESAMP2(_reset)(MSRESAMP2() _q);                                     \
+                                                                            \
+/* Get group delay (number of output samples)                           */  \
+float MSRESAMP2(_get_delay)(MSRESAMP2() _q);                                \
+                                                                            \
+/* Execute multi-stage resampler, M = 2^num_stages                      */  \
+/*  LIQUID_RESAMP_INTERP:   input: 1,   output: M                       */  \
+/*  LIQUID_RESAMP_DECIM:    input: M,   output: 1                       */  \
+/*  _q      : msresamp object                                           */  \
+/*  _x      : input sample array                                        */  \
+/*  _y      : output sample array                                       */  \
+void MSRESAMP2(_execute)(MSRESAMP2() _q,                                    \
+                         TI *        _x,                                    \
+                         TO *        _y);                                   \
 
 LIQUID_MSRESAMP2_DEFINE_API(LIQUID_MSRESAMP2_MANGLE_RRRF,
                             float,
