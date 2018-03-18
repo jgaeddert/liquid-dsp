@@ -89,14 +89,14 @@ RESAMP() RESAMP(_create)(float        _rate,
     } else if (_m == 0) {
         fprintf(stderr,"error: resamp_%s_create(), filter semi-length must be greater than zero\n", EXTENSION_FULL);
         exit(1);
-    } else if (_npfb == 0) {
-        fprintf(stderr,"error: resamp_%s_create(), number of filter banks must be greater than zero\n", EXTENSION_FULL);
-        exit(1);
     } else if (_fc <= 0.0f || _fc >= 0.5f) {
         fprintf(stderr,"error: resamp_%s_create(), filter cutoff must be in (0,0.5)\n", EXTENSION_FULL);
         exit(1);
     } else if (_As <= 0.0f) {
         fprintf(stderr,"error: resamp_%s_create(), filter stop-band suppression must be greater than zero\n", EXTENSION_FULL);
+        exit(1);
+    } else if (_npfb == 0) {
+        fprintf(stderr,"error: resamp_%s_create(), number of filter banks must be greater than zero\n", EXTENSION_FULL);
         exit(1);
     }
 
@@ -247,7 +247,7 @@ void RESAMP(_adjust_rate)(RESAMP() _q,
 void RESAMP(_set_timing_phase)(RESAMP() _q,
                                float    _tau)
 {
-    if (_tau > 1.0f || _tau < -1.0f) {
+    if (_tau < -1.0f || _tau > 1.0f) {
         fprintf(stderr,"error: resamp_%s_set_timing_phase(), timing phase must be in [-1,1], is %f\n.",
                 EXTENSION_FULL, _tau);
         exit(1);
@@ -263,7 +263,7 @@ void RESAMP(_set_timing_phase)(RESAMP() _q,
 void RESAMP(_adjust_timing_phase)(RESAMP() _q,
                                   float    _delta)
 {
-    if (_delta > 1.0f || _delta < -1.0f) {
+    if (_delta < -1.0f || _delta > 1.0f) {
         fprintf(stderr,"error: resamp_%s_adjust_timing_phase(), timing phase adjustment must be in [-1,1], is %f\n.",
                 EXTENSION_FULL, _delta);
         exit(1);

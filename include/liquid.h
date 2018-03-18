@@ -3494,89 +3494,101 @@ LIQUID_RESAMP2_DEFINE_API(LIQUID_RESAMP2_MANGLE_CCCF,
 #define LIQUID_RESAMP_MANGLE_CRCF(name) LIQUID_CONCAT(resamp_crcf,name)
 #define LIQUID_RESAMP_MANGLE_CCCF(name) LIQUID_CONCAT(resamp_cccf,name)
 
-#define LIQUID_RESAMP_DEFINE_API(RESAMP,TO,TC,TI)               \
-typedef struct RESAMP(_s) * RESAMP();                           \
-                                                                \
-/* create arbitrary resampler object                        */  \
-/*  _rate   : arbitrary resampling rate                     */  \
-/*  _m      : filter semi-length (delay)                    */  \
-/*  _fc     : filter cutoff frequency, 0 < _fc < 0.5        */  \
-/*  _As     : filter stop-band attenuation [dB]             */  \
-/*  _npfb   : number of filters in the bank                 */  \
-RESAMP() RESAMP(_create)(float        _rate,                    \
-                         unsigned int _m,                       \
-                         float        _fc,                      \
-                         float        _As,                      \
-                         unsigned int _npfb);                   \
-                                                                \
-/* create arbitrary resampler object with a specified input */  \
-/* resampling rate and default parameters                   */  \
-/*  m    : (filter semi-length) = 7                         */  \
-/*  fc   : (filter cutoff frequency) = 0.25                 */  \
-/*  As   : (filter stop-band attenuation) = 60 dB           */  \
-/*  npfb : (number of filters in the bank) = 64             */  \
-RESAMP() RESAMP(_create_default)(float _rate);                  \
-                                                                \
-/* destroy arbitrary resampler object                       */  \
-void RESAMP(_destroy)(RESAMP() _q);                             \
-                                                                \
-/* print resamp object internals to stdout                  */  \
-void RESAMP(_print)(RESAMP() _q);                               \
-                                                                \
-/* reset resamp object internals                            */  \
-void RESAMP(_reset)(RESAMP() _q);                               \
-                                                                \
-/* get resampler delay (output samples)                     */  \
-unsigned int RESAMP(_get_delay)(RESAMP() _q);                   \
-                                                                \
-/* set rate of arbitrary resampler                          */  \
-/*  _q      : resampling object                             */  \
-/*  _rate   : new sampling rate, _rate > 0                  */  \
-void RESAMP(_set_rate)(RESAMP() _q,                             \
-                       float    _rate);                         \
-                                                                \
-/* Get rate of arbitrary resampler                          */  \
-float RESAMP(_get_rate)(RESAMP() _q);                           \
-                                                                \
-/* adjust rate of arbitrary resampler                       */  \
-/*  _q      : resampling object                             */  \
-/*  _gamma  : rate adjustment factor: rate <- rate * gamma  */  \
-void RESAMP(_adjust_rate)(RESAMP() _q,                          \
-                          float    _gamma);                     \
-                                                                \
-/* set resampling timing phase                              */  \
-/*  _q      : resampling object                             */  \
-/*  _tau    : sample timing                                 */  \
-void RESAMP(_set_timing_phase)(RESAMP() _q,                     \
-                               float    _tau);                  \
-                                                                \
-/* adjust resampling timing phase                           */  \
-/*  _q      : resampling object                             */  \
-/*  _delta  : sample timing adjustment                      */  \
-void RESAMP(_adjust_timing_phase)(RESAMP() _q,                  \
-                                  float    _delta);             \
-                                                                \
-/* execute arbitrary resampler                              */  \
-/*  _q              :   resamp object                       */  \
-/*  _x              :   single input sample                 */  \
-/*  _y              :   output sample array (pointer)       */  \
-/*  _num_written    :   number of samples written to _y     */  \
-void RESAMP(_execute)(RESAMP()       _q,                        \
-                      TI             _x,                        \
-                      TO *           _y,                        \
-                      unsigned int * _num_written);             \
-                                                                \
-/* execute arbitrary resampler on a block of samples        */  \
-/*  _q              :   resamp object                       */  \
-/*  _x              :   input buffer [size: _nx x 1]        */  \
-/*  _nx             :   input buffer                        */  \
-/*  _y              :   output sample array (pointer)       */  \
-/*  _ny             :   number of samples written to _y     */  \
-void RESAMP(_execute_block)(RESAMP()       _q,                  \
-                            TI *           _x,                  \
-                            unsigned int   _nx,                 \
-                            TO *           _y,                  \
-                            unsigned int * _ny);                \
+#define LIQUID_RESAMP_DEFINE_API(RESAMP,TO,TC,TI)                           \
+                                                                            \
+/* Arbitrary rate resampler, implemented as a polyphase filterbank      */  \
+typedef struct RESAMP(_s) * RESAMP();                                       \
+                                                                            \
+/* Create arbitrary resampler object from filter prototype              */  \
+/*  _rate   : arbitrary resampling rate,         0 < _rate              */  \
+/*  _m      : filter semi-length (delay),        0 < _m                 */  \
+/*  _fc     : filter cutoff frequency,           0 < _fc < 0.5          */  \
+/*  _As     : filter stop-band attenuation [dB], 0 < _As                */  \
+/*  _npfb   : number of filters in the bank,     0 < _npfb              */  \
+RESAMP() RESAMP(_create)(float        _rate,                                \
+                         unsigned int _m,                                   \
+                         float        _fc,                                  \
+                         float        _As,                                  \
+                         unsigned int _npfb);                               \
+                                                                            \
+/* Create arbitrary resampler object with a specified input resampling  */  \
+/* rate and default parameters. This is a simplified method to provide  */  \
+/* a basic resampler with a baseline set of parameters, abstracting     */  \
+/* away some of the complexities with the filterbank design.            */  \
+/* The default parameters are                                           */  \
+/*  m    = 7     (filter semi-length),                                  */  \
+/*  fc   = 0.25  (filter cutoff frequency),                             */  \
+/*  As   = 60 dB (filter stop-band attenuation), and                    */  \
+/*  npfb = 64    (number of filters in the bank).                       */  \
+/*  _rate   : arbitrary resampling rate,         0 < _rate              */  \
+RESAMP() RESAMP(_create_default)(float _rate);                              \
+                                                                            \
+/* Destroy arbitrary resampler object, freeing all internal memory      */  \
+void RESAMP(_destroy)(RESAMP() _q);                                         \
+                                                                            \
+/* Print resamp object internals to stdout                              */  \
+void RESAMP(_print)(RESAMP() _q);                                           \
+                                                                            \
+/* Reset resamp object internals                                        */  \
+void RESAMP(_reset)(RESAMP() _q);                                           \
+                                                                            \
+/* Get resampler delay (filter semi-length \(m\))                       */  \
+unsigned int RESAMP(_get_delay)(RESAMP() _q);                               \
+                                                                            \
+/* Set rate of arbitrary resampler                                      */  \
+/*  _q      : resampling object                                         */  \
+/*  _rate   : new sampling rate, _rate > 0                              */  \
+void RESAMP(_set_rate)(RESAMP() _q,                                         \
+                       float    _rate);                                     \
+                                                                            \
+/* Get rate of arbitrary resampler                                      */  \
+float RESAMP(_get_rate)(RESAMP() _q);                                       \
+                                                                            \
+/* adjust rate of arbitrary resampler                                   */  \
+/*  _q      : resampling object                                         */  \
+/*  _gamma  : rate adjustment factor: rate <- rate * gamma, _gamma > 0  */  \
+void RESAMP(_adjust_rate)(RESAMP() _q,                                      \
+                          float    _gamma);                                 \
+                                                                            \
+/* Set resampling timing phase                                          */  \
+/*  _q      : resampling object                                         */  \
+/*  _tau    : sample timing phase, -1 <= _tau <= 1                      */  \
+void RESAMP(_set_timing_phase)(RESAMP() _q,                                 \
+                               float    _tau);                              \
+                                                                            \
+/* Adjust resampling timing phase                                       */  \
+/*  _q      : resampling object                                         */  \
+/*  _delta  : sample timing adjustment, -1 <= _delta <= 1               */  \
+void RESAMP(_adjust_timing_phase)(RESAMP() _q,                              \
+                                  float    _delta);                         \
+                                                                            \
+/* Execute arbitrary resampler on a single input sample and store the   */  \
+/* resulting samples in the output array. The number of output samples  */  \
+/* is depenent upon the resampling rate but will be at most             */  \
+/* \( \lceil{ r \rceil} \) samples.                                     */  \
+/*  _q              : resamp object                                     */  \
+/*  _x              : single input sample                               */  \
+/*  _y              : output sample array (pointer)                     */  \
+/*  _num_written    : number of samples written to _y                   */  \
+void RESAMP(_execute)(RESAMP()       _q,                                    \
+                      TI             _x,                                    \
+                      TO *           _y,                                    \
+                      unsigned int * _num_written);                         \
+                                                                            \
+/* Execute arbitrary resampler on a block of input samples and store    */  \
+/* the resulting samples in the output array. The number of output      */  \
+/* samples is depenent upon the resampling rate and the number of input */  \
+/* samples but will be at most \( \lceil{ r n_x \rceil} \) samples.     */  \
+/*  _q              : resamp object                                     */  \
+/*  _x              : input buffer, [size: _nx x 1]                     */  \
+/*  _nx             : input buffer                                      */  \
+/*  _y              : output sample array (pointer)                     */  \
+/*  _ny             : number of samples written to _y                   */  \
+void RESAMP(_execute_block)(RESAMP()       _q,                              \
+                            TI *           _x,                              \
+                            unsigned int   _nx,                             \
+                            TO *           _y,                              \
+                            unsigned int * _ny);                            \
 
 LIQUID_RESAMP_DEFINE_API(LIQUID_RESAMP_MANGLE_RRRF,
                          float,
