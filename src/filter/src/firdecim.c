@@ -118,7 +118,7 @@ FIRDECIM() FIRDECIM(_create_kaiser)(unsigned int _M,
 }
 
 // create square-root Nyquist decimator
-//  _type   :   filter type (e.g. LIQUID_RNYQUIST_RRC)
+//  _type   :   filter type (e.g. LIQUID_FIRFILT_RRC)
 //  _M      :   samples/symbol _M > 1
 //  _m      :   filter delay (symbols), _m > 0
 //  _beta   :   excess bandwidth factor, 0 < _beta < 1

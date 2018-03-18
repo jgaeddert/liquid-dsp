@@ -4532,11 +4532,11 @@ int detector_cccf_correlate(detector_cccf        _q,
 typedef struct SYMSTREAM(_s) * SYMSTREAM();                     \
                                                                 \
 /* create default symstream object                          */  \
-/* (LIQUID_RNYQUIST_ARKAISER, k=2, m=7, beta=0.3, QPSK)     */  \
+/* (LIQUID_FIRFILT_ARKAISER, k=2, m=7, beta=0.3, QPSK)     */  \
 SYMSTREAM() SYMSTREAM(_create)(void);                           \
                                                                 \
 /* create symstream object with linear modulation           */  \
-/*  _ftype  : filter type (e.g. LIQUID_RNYQUIST_RRC)        */  \
+/*  _ftype  : filter type (e.g. LIQUID_FIRFILT_RRC)        */  \
 /*  _k      : samples per symbol                            */  \
 /*  _m      : filter delay (symbols)                        */  \
 /*  _beta   : filter excess bandwidth                       */  \
@@ -4651,7 +4651,7 @@ LIQUID_MSOURCE_DEFINE_API(LIQUID_MSOURCE_MANGLE_CFLOAT, liquid_float_complex)
 typedef struct SYMTRACK(_s) * SYMTRACK();                       \
                                                                 \
 /* create symtrack object with default parameters           */  \
-/*  _ftype  : filter type (e.g. LIQUID_RNYQUIST_RRC)        */  \
+/*  _ftype  : filter type (e.g. LIQUID_FIRFILT_RRC)        */  \
 /*  _k      : samples per symbol                            */  \
 /*  _m      : filter delay (symbols)                        */  \
 /*  _beta   : filter excess bandwidth                       */  \
