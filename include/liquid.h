@@ -3684,41 +3684,49 @@ LIQUID_MSRESAMP2_DEFINE_API(LIQUID_MSRESAMP2_MANGLE_CCCF,
 #define LIQUID_MSRESAMP_MANGLE_CRCF(name) LIQUID_CONCAT(msresamp_crcf,name)
 #define LIQUID_MSRESAMP_MANGLE_CCCF(name) LIQUID_CONCAT(msresamp_cccf,name)
 
-#define LIQUID_MSRESAMP_DEFINE_API(MSRESAMP,TO,TC,TI)           \
-typedef struct MSRESAMP(_s) * MSRESAMP();                       \
-                                                                \
-/* create multi-stage arbitrary resampler                   */  \
-/*  _r      :   resampling rate [output/input]              */  \
-/*  _As     :   stop-band attenuation [dB]                  */  \
-MSRESAMP() MSRESAMP(_create)(float _r,                          \
-                             float _As);                        \
-                                                                \
-/* destroy multi-stage arbitrary resampler                  */  \
-void MSRESAMP(_destroy)(MSRESAMP() _q);                         \
-                                                                \
-/* print msresamp object internals to stdout                */  \
-void MSRESAMP(_print)(MSRESAMP() _q);                           \
-                                                                \
-/* reset msresamp object internal state                     */  \
-void MSRESAMP(_reset)(MSRESAMP() _q);                           \
-                                                                \
-/* get filter delay (output samples)                        */  \
-float MSRESAMP(_get_delay)(MSRESAMP() _q);                      \
-                                                                \
-/* get overall resampling rate                              */  \
-float MSRESAMP(_get_rate)(MSRESAMP() _q);                       \
-                                                                \
-/* execute multi-stage resampler                            */  \
-/*  _q      :   msresamp object                             */  \
-/*  _x      :   input sample array  [size: _nx x 1]         */  \
-/*  _nx     :   input sample array size                     */  \
-/*  _y      :   output sample array [size: variable]        */  \
-/*  _ny     :   number of samples written to _y             */  \
-void MSRESAMP(_execute)(MSRESAMP()     _q,                      \
-                        TI *           _x,                      \
-                        unsigned int   _nx,                     \
-                        TO *           _y,                      \
-                        unsigned int * _ny);                    \
+#define LIQUID_MSRESAMP_DEFINE_API(MSRESAMP,TO,TC,TI)                       \
+                                                                            \
+/* Multi-stage half-band resampler, implemented as cascaded dyadic      */  \
+/* (half-band) polyphase filter banks followed by an arbitrary rate     */  \
+/* resampler for interpolation and decimation.                          */  \
+typedef struct MSRESAMP(_s) * MSRESAMP();                                   \
+                                                                            \
+/* Create multi-stage arbitrary resampler                               */  \
+/*  _r      :   resampling rate (output/input), _r > 0                  */  \
+/*  _As     :   stop-band attenuation [dB], _As > 0                     */  \
+MSRESAMP() MSRESAMP(_create)(float _r,                                      \
+                             float _As);                                    \
+                                                                            \
+/* Destroy multi-stage arbitrary resampler                              */  \
+void MSRESAMP(_destroy)(MSRESAMP() _q);                                     \
+                                                                            \
+/* Print msresamp object internals to stdout                            */  \
+void MSRESAMP(_print)(MSRESAMP() _q);                                       \
+                                                                            \
+/* Reset msresamp object internal state                                 */  \
+void MSRESAMP(_reset)(MSRESAMP() _q);                                       \
+                                                                            \
+/* Get filter delay (output samples)                                    */  \
+float MSRESAMP(_get_delay)(MSRESAMP() _q);                                  \
+                                                                            \
+/* get overall resampling rate                                          */  \
+float MSRESAMP(_get_rate)(MSRESAMP() _q);                                   \
+                                                                            \
+/* Execute multi-stage resampler on one or more input samples.          */  \
+/* The number of output samples is dependent upon the resampling rate   */  \
+/* and the number of input samples. In general it is good practice to   */  \
+/* allocate at least \( \lceil{ 1 + 2 r n_x \rceil} \) samples in the   */  \
+/* output array to avoid overflows.                                     */  \
+/*  _q  : msresamp object                                               */  \
+/*  _x  : input sample array, [size: _nx x 1]                           */  \
+/*  _nx : input sample array size                                       */  \
+/*  _y  : pointer to output array for storing result                    */  \
+/*  _ny : number of samples written to _y                               */  \
+void MSRESAMP(_execute)(MSRESAMP()     _q,                                  \
+                        TI *           _x,                                  \
+                        unsigned int   _nx,                                 \
+                        TO *           _y,                                  \
+                        unsigned int * _ny);                                \
 
 LIQUID_MSRESAMP_DEFINE_API(LIQUID_MSRESAMP_MANGLE_RRRF,
                            float,
