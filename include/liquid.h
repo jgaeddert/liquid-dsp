@@ -3535,6 +3535,9 @@ unsigned int RESAMP(_get_delay)(RESAMP() _q);                   \
 void RESAMP(_set_rate)(RESAMP() _q,                             \
                        float    _rate);                         \
                                                                 \
+/* Get rate of arbitrary resampler                          */  \
+float RESAMP(_get_rate)(RESAMP() _q);                           \
+                                                                \
 /* adjust rate of arbitrary resampler                       */  \
 /*  _q      : resampling object                             */  \
 /*  _gamma  : rate adjustment factor: rate <- rate * gamma  */  \
