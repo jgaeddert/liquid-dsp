@@ -3854,80 +3854,82 @@ LIQUID_SYMSYNC_DEFINE_API(LIQUID_SYMSYNC_MANGLE_CRCF,
 //   TO         : output data type
 //   TC         : coefficients data type
 //   TI         : input data type
-#define LIQUID_FIRFARROW_DEFINE_API(FIRFARROW,TO,TC,TI)         \
-                                                                \
-typedef struct FIRFARROW(_s) * FIRFARROW();                     \
-                                                                \
-/* create firfarrow object                                  */  \
-/*  _h_len      : filter length                             */  \
-/*  _p          : polynomial order                          */  \
-/*  _fc         : filter cutoff frequency                   */  \
-/*  _As         : stopband attenuation [dB]                 */  \
-FIRFARROW() FIRFARROW(_create)(unsigned int _h_len,             \
-                               unsigned int _p,                 \
-                               float        _fc,                \
-                               float        _As);               \
-                                                                \
-/* destroy firfarrow object, freeing all internal memory    */  \
-void FIRFARROW(_destroy)(FIRFARROW() _q);                       \
-                                                                \
-/* print firfarrow object's internal properties             */  \
-void FIRFARROW(_print)(FIRFARROW() _q);                         \
-                                                                \
-/* reset firfarrow object's internal state                  */  \
-void FIRFARROW(_reset)(FIRFARROW() _q);                         \
-                                                                \
-/* push sample into firfarrow object                        */  \
-/*  _q      : firfarrow object                              */  \
-/*  _x      : input sample                                  */  \
-void FIRFARROW(_push)(FIRFARROW() _q,                           \
-                      TI          _x);                          \
-                                                                \
-/* set fractional delay of firfarrow object                 */  \
-/*  _q      : firfarrow object                              */  \
-/*  _mu     : fractional sample delay                       */  \
-void FIRFARROW(_set_delay)(FIRFARROW() _q,                      \
-                           float       _mu);                    \
-                                                                \
-/* execute firfarrow internal dot product                   */  \
-/*  _q      : firfarrow object                              */  \
-/*  _y      : output sample pointer                         */  \
-void FIRFARROW(_execute)(FIRFARROW() _q,                        \
-                         TO *        _y);                       \
-                                                                \
-/* compute firfarrow filter on block of samples; the input  */  \
-/* and output arrays may have the same pointer              */  \
-/*  _q      : firfarrow object                              */  \
-/*  _x      : input array [size: _n x 1]                    */  \
-/*  _n      : input, output array size                      */  \
-/*  _y      : output array [size: _n x 1]                   */  \
-void FIRFARROW(_execute_block)(FIRFARROW()  _q,                 \
-                               TI *         _x,                 \
-                               unsigned int _n,                 \
-                               TO *         _y);                \
-                                                                \
-/* get length of firfarrow object (number of filter taps)   */  \
-unsigned int FIRFARROW(_get_length)(FIRFARROW() _q);            \
-                                                                \
-/* get coefficients of firfarrow object                     */  \
-/*  _q      : firfarrow object                              */  \
-/*  _h      : output coefficients pointer                   */  \
-void FIRFARROW(_get_coefficients)(FIRFARROW() _q,               \
-                                  float *     _h);              \
-                                                                \
-/* compute complex frequency response                       */  \
-/*  _q      : filter object                                 */  \
-/*  _fc     : frequency                                     */  \
-/*  _H      : output frequency response                     */  \
-void FIRFARROW(_freqresponse)(FIRFARROW()            _q,        \
-                              float                  _fc,       \
-                              liquid_float_complex * _H);       \
-                                                                \
-/* compute group delay [samples]                            */  \
-/*  _q      :   filter object                               */  \
-/*  _fc     :   frequency                                   */  \
-float FIRFARROW(_groupdelay)(FIRFARROW() _q,                    \
-                             float       _fc);                  \
+#define LIQUID_FIRFARROW_DEFINE_API(FIRFARROW,TO,TC,TI)                     \
+                                                                            \
+/* Finite impulse response (FIR) Farrow filter for timing delay         */  \
+typedef struct FIRFARROW(_s) * FIRFARROW();                                 \
+                                                                            \
+/* Create firfarrow object                                              */  \
+/*  _h_len      : filter length, _h_len >= 2                            */  \
+/*  _p          : polynomial order, _p >= 1                             */  \
+/*  _fc         : filter cutoff frequency, 0 <= _fc <= 0.5              */  \
+/*  _As         : stopband attenuation [dB], _As > 0                    */  \
+FIRFARROW() FIRFARROW(_create)(unsigned int _h_len,                         \
+                               unsigned int _p,                             \
+                               float        _fc,                            \
+                               float        _As);                           \
+                                                                            \
+/* Destroy firfarrow object, freeing all internal memory                */  \
+void FIRFARROW(_destroy)(FIRFARROW() _q);                                   \
+                                                                            \
+/* Print firfarrow object's internal properties                         */  \
+void FIRFARROW(_print)(FIRFARROW() _q);                                     \
+                                                                            \
+/* Reset firfarrow object's internal state                              */  \
+void FIRFARROW(_reset)(FIRFARROW() _q);                                     \
+                                                                            \
+/* Push sample into firfarrow object                                    */  \
+/*  _q      : firfarrow object                                          */  \
+/*  _x      : input sample                                              */  \
+void FIRFARROW(_push)(FIRFARROW() _q,                                       \
+                      TI          _x);                                      \
+                                                                            \
+/* Set fractional delay of firfarrow object                             */  \
+/*  _q      : firfarrow object                                          */  \
+/*  _mu     : fractional sample delay, -1 <= _mu <= 1                   */  \
+void FIRFARROW(_set_delay)(FIRFARROW() _q,                                  \
+                           float       _mu);                                \
+                                                                            \
+/* Execute firfarrow internal dot product                               */  \
+/*  _q      : firfarrow object                                          */  \
+/*  _y      : output sample pointer                                     */  \
+void FIRFARROW(_execute)(FIRFARROW() _q,                                    \
+                         TO *        _y);                                   \
+                                                                            \
+/* Execute firfarrow filter on block of samples.                        */  \
+/* In-place operation is permitted (the input and output arrays may     */  \
+/* share the same pointer)                                              */  \
+/*  _q      : firfarrow object                                          */  \
+/*  _x      : input array, [size: _n x 1]                               */  \
+/*  _n      : input, output array size                                  */  \
+/*  _y      : output array, [size: _n x 1]                              */  \
+void FIRFARROW(_execute_block)(FIRFARROW()  _q,                             \
+                               TI *         _x,                             \
+                               unsigned int _n,                             \
+                               TO *         _y);                            \
+                                                                            \
+/* Get length of firfarrow object (number of filter taps)               */  \
+unsigned int FIRFARROW(_get_length)(FIRFARROW() _q);                        \
+                                                                            \
+/* Get coefficients of firfarrow object                                 */  \
+/*  _q      : firfarrow object                                          */  \
+/*  _h      : output coefficients pointer, [size: _h_len x 1]           */  \
+void FIRFARROW(_get_coefficients)(FIRFARROW() _q,                           \
+                                  float *     _h);                          \
+                                                                            \
+/* Compute complex frequency response                                   */  \
+/*  _q      : filter object                                             */  \
+/*  _fc     : frequency                                                 */  \
+/*  _H      : output frequency response                                 */  \
+void FIRFARROW(_freqresponse)(FIRFARROW()            _q,                    \
+                              float                  _fc,                   \
+                              liquid_float_complex * _H);                   \
+                                                                            \
+/* Compute group delay [samples]                                        */  \
+/*  _q      :   filter object                                           */  \
+/*  _fc     :   frequency                                               */  \
+float FIRFARROW(_groupdelay)(FIRFARROW() _q,                                \
+                             float       _fc);                              \
 
 LIQUID_FIRFARROW_DEFINE_API(LIQUID_FIRFARROW_MANGLE_RRRF,
                             float,
