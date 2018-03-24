@@ -26,7 +26,7 @@ void usage()
     printf("nco_pll_modem_example [options]\n");
     printf("  u/h   : print usage\n");
     printf("  s     : signal-to-noise ratio, default: 30dB\n");
-    printf("  b     : pll bandwidth, default: 1e-3\n");
+    printf("  b     : pll bandwidth, default: 20e-3\n");
     printf("  n     : number of symbols, default: 256\n");
     printf("  P     : phase offset (radians), default: pi/10 ~ 0.3146\n");
     printf("  F     : frequency offset (radians), default: 0.001\n");
