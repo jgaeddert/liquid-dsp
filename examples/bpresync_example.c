@@ -128,7 +128,7 @@ int main(int argc, char*argv[])
         
         // correlate
         bpresync_cccf_push(sync, y[i]);
-        bpresync_cccf_correlate(sync, &rxy[i], &dphi_hat[i]);
+        bpresync_cccf_execute(sync, &rxy[i], &dphi_hat[i]);
 
         // detect...
         if (cabsf(rxy[i]) > 0.6f) {

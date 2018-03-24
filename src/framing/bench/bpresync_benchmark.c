@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2015 Joseph Gaeddert
+ * Copyright (c) 2007 - 2018 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -64,13 +64,13 @@ void bpresync_cccf_bench(struct rusage *     _start,
     getrusage(RUSAGE_SELF, _start);
     for (i=0; i<(*_num_iterations); i++) {
         // push input sequence through synchronizer
-        bpresync_cccf_push(q, x[0]);  bpresync_cccf_correlate(q, &rxy, &dphi_hat);
-        bpresync_cccf_push(q, x[1]);  bpresync_cccf_correlate(q, &rxy, &dphi_hat);
-        bpresync_cccf_push(q, x[2]);  bpresync_cccf_correlate(q, &rxy, &dphi_hat);
-        bpresync_cccf_push(q, x[3]);  bpresync_cccf_correlate(q, &rxy, &dphi_hat);
-        bpresync_cccf_push(q, x[4]);  bpresync_cccf_correlate(q, &rxy, &dphi_hat);
-        bpresync_cccf_push(q, x[5]);  bpresync_cccf_correlate(q, &rxy, &dphi_hat);
-        bpresync_cccf_push(q, x[6]);  bpresync_cccf_correlate(q, &rxy, &dphi_hat);
+        bpresync_cccf_push(q, x[0]);  bpresync_cccf_execute(q, &rxy, &dphi_hat);
+        bpresync_cccf_push(q, x[1]);  bpresync_cccf_execute(q, &rxy, &dphi_hat);
+        bpresync_cccf_push(q, x[2]);  bpresync_cccf_execute(q, &rxy, &dphi_hat);
+        bpresync_cccf_push(q, x[3]);  bpresync_cccf_execute(q, &rxy, &dphi_hat);
+        bpresync_cccf_push(q, x[4]);  bpresync_cccf_execute(q, &rxy, &dphi_hat);
+        bpresync_cccf_push(q, x[5]);  bpresync_cccf_execute(q, &rxy, &dphi_hat);
+        bpresync_cccf_push(q, x[6]);  bpresync_cccf_execute(q, &rxy, &dphi_hat);
     }
     getrusage(RUSAGE_SELF, _finish);
     *_num_iterations *= 7;
