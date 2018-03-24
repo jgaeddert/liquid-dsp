@@ -4685,41 +4685,43 @@ LIQUID_BSYNC_DEFINE_API(LIQUID_BSYNC_MANGLE_CCCF,
 //   TO         : output data type
 //   TC         : coefficients data type
 //   TI         : input data type
-#define LIQUID_PRESYNC_DEFINE_API(PRESYNC,TO,TC,TI)             \
-typedef struct PRESYNC(_s) * PRESYNC();                         \
-                                                                \
-/* create pre-demod synchronizer                            */  \
-/*  _v          :   baseband sequence                       */  \
-/*  _n          :   baseband sequence length                */  \
-/*  _dphi_max   :   maximum absolute frequency deviation    */  \
-/*  _m          :   number of correlators                   */  \
-PRESYNC() PRESYNC(_create)(TC *         _v,                     \
-                           unsigned int _n,                     \
-                           float        _dphi_max,              \
-                           unsigned int _m);                    \
-                                                                \
-/* destroy pre-demod synchronizer                           */  \
-void PRESYNC(_destroy)(PRESYNC() _q);                           \
-                                                                \
-/* print pre-demod synchronizer internal state              */  \
-void PRESYNC(_print)(PRESYNC() _q);                             \
-                                                                \
-/* reset pre-demod synchronizer internal state              */  \
-void PRESYNC(_reset)(PRESYNC() _q);                             \
-                                                                \
-/* push input sample into pre-demod synchronizer            */  \
-/*  _q          :   pre-demod synchronizer object           */  \
-/*  _x          :   input sample                            */  \
-void PRESYNC(_push)(PRESYNC() _q,                               \
-                    TI        _x);                              \
-                                                                \
-/* correlate input sequence                                 */  \
-/*  _q          :   pre-demod synchronizer object           */  \
-/*  _rxy        :   output cross correlation                */  \
-/*  _dphi_hat   :   output frequency offset estiamte        */  \
-void PRESYNC(_correlate)(PRESYNC() _q,                          \
-                         TO *      _rxy,                        \
-                         float *   _dphi_hat);                  \
+#define LIQUID_PRESYNC_DEFINE_API(PRESYNC,TO,TC,TI)                         \
+                                                                            \
+/* Pre-demodulation signal synchronizer                                 */  \
+typedef struct PRESYNC(_s) * PRESYNC();                                     \
+                                                                            \
+/* Create pre-demod synchronizer from external sequence                 */  \
+/*  _v          : baseband sequence, [size: _n x 1]                     */  \
+/*  _n          : baseband sequence length, _n > 0                      */  \
+/*  _dphi_max   : maximum absolute frequency deviation for detection    */  \
+/*  _m          : number of correlators, _m > 0                         */  \
+PRESYNC() PRESYNC(_create)(TC *         _v,                                 \
+                           unsigned int _n,                                 \
+                           float        _dphi_max,                          \
+                           unsigned int _m);                                \
+                                                                            \
+/* Destroy pre-demod synchronizer, freeing all internal memory          */  \
+void PRESYNC(_destroy)(PRESYNC() _q);                                       \
+                                                                            \
+/* Print pre-demod synchronizer internal state                          */  \
+void PRESYNC(_print)(PRESYNC() _q);                                         \
+                                                                            \
+/* Reset pre-demod synchronizer internal state                          */  \
+void PRESYNC(_reset)(PRESYNC() _q);                                         \
+                                                                            \
+/* Push input sample into pre-demod synchronizer                        */  \
+/*  _q          : pre-demod synchronizer object                         */  \
+/*  _x          : input sample                                          */  \
+void PRESYNC(_push)(PRESYNC() _q,                                           \
+                    TI        _x);                                          \
+                                                                            \
+/* Correlate original sequence with internal input buffer               */  \
+/*  _q          : pre-demod synchronizer object                         */  \
+/*  _rxy        : output cross correlation                              */  \
+/*  _dphi_hat   : output frequency offset estiamte                      */  \
+void PRESYNC(_correlate)(PRESYNC() _q,                                      \
+                         TO *      _rxy,                                    \
+                         float *   _dphi_hat);                              \
 
 // non-binary pre-demodulation synchronizer
 LIQUID_PRESYNC_DEFINE_API(LIQUID_PRESYNC_MANGLE_CCCF,
