@@ -4719,9 +4719,9 @@ void PRESYNC(_push)(PRESYNC() _q,                                           \
 /*  _q          : pre-demod synchronizer object                         */  \
 /*  _rxy        : output cross correlation                              */  \
 /*  _dphi_hat   : output frequency offset estiamte                      */  \
-void PRESYNC(_correlate)(PRESYNC() _q,                                      \
-                         TO *      _rxy,                                    \
-                         float *   _dphi_hat);                              \
+void PRESYNC(_execute)(PRESYNC() _q,                                        \
+                       TO *      _rxy,                                      \
+                       float *   _dphi_hat);                                \
 
 // non-binary pre-demodulation synchronizer
 LIQUID_PRESYNC_DEFINE_API(LIQUID_PRESYNC_MANGLE_CCCF,
