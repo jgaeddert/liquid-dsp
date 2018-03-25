@@ -4891,61 +4891,81 @@ LIQUID_SYMSTREAM_DEFINE_API(LIQUID_SYMSTREAM_MANGLE_CFLOAT, liquid_float_complex
 //
 #define LIQUID_MSOURCE_MANGLE_CFLOAT(name) LIQUID_CONCAT(msourcecf,name)
 
-#define LIQUID_MSOURCE_DEFINE_API(MSOURCE,TO)                   \
-                                                                \
-typedef struct MSOURCE(_s) * MSOURCE();                         \
-                                                                \
-/* create default msource object                            */  \
-MSOURCE() MSOURCE(_create)(void);                               \
-                                                                \
-/* destroy msource object                                   */  \
-void MSOURCE(_destroy)(MSOURCE() _q);                           \
-                                                                \
-/* print msrouce object                                     */  \
-void MSOURCE(_print)(MSOURCE() _q);                             \
-                                                                \
-/* reset msrouce object                                     */  \
-void MSOURCE(_reset)(MSOURCE() _q);                             \
-                                                                \
-/* add signal sources                                       */  \
-int MSOURCE(_add_tone) (MSOURCE() _q);                          \
-int MSOURCE(_add_noise)(MSOURCE() _q, float _bandwidth);        \
-int MSOURCE(_add_modem)(MSOURCE()    _q,                        \
-                        int          _ms,                       \
-                        unsigned int _k,                        \
-                        unsigned int _m,                        \
-                        float        _beta);                    \
-                                                                \
-/* remove signal                                            */  \
-int MSOURCE(_remove)(MSOURCE() _q, int _id);                    \
-                                                                \
-/* enable/disable signal                                    */  \
-void MSOURCE(_enable) (MSOURCE() _q, int _id);                  \
-void MSOURCE(_disable)(MSOURCE() _q, int _id);                  \
-                                                                \
-/* set signal gain                                          */  \
-/*  _q      :   msource object                              */  \
-/*  _id     :   source id                                   */  \
-/*  _gain   :   signal gain                                 */  \
-void MSOURCE(_set_gain)(MSOURCE() _q,                           \
-                        int       _id,                          \
-                        float     _gain_dB);                    \
-                                                                \
-/* set carrier offset to signal                             */  \
-/*  _q      :   msource object                              */  \
-/*  _id     :   source id                                   */  \
-/*  _fc     :   carrier offset, fc in [-0.5,0.5]            */  \
-void MSOURCE(_set_frequency)(MSOURCE() _q,                      \
-                             int       _id,                     \
-                             float     _dphi);                  \
-                                                                \
-/* write block of samples to output buffer                  */  \
-/*  _q      : synchronizer object                           */  \
-/*  _buf    : output buffer [size: _buf_len x 1]            */  \
-/*  _buf_len: output buffer size                            */  \
-void MSOURCE(_write_samples)(MSOURCE()    _q,                   \
-                             TO *         _buf,                 \
-                             unsigned int _buf_len);            \
+#define LIQUID_MSOURCE_DEFINE_API(MSOURCE,TO)                               \
+                                                                            \
+/* Multi-signal source generator object                                 */  \
+typedef struct MSOURCE(_s) * MSOURCE();                                     \
+                                                                            \
+/* Create default msource object                                        */  \
+MSOURCE() MSOURCE(_create)(void);                                           \
+                                                                            \
+/* Destroy msource object                                               */  \
+void MSOURCE(_destroy)(MSOURCE() _q);                                       \
+                                                                            \
+/* Print msrouce object                                                 */  \
+void MSOURCE(_print)(MSOURCE() _q);                                         \
+                                                                            \
+/* Reset msrouce object                                                 */  \
+void MSOURCE(_reset)(MSOURCE() _q);                                         \
+                                                                            \
+/* Add tone to signal generator, returning id of signal                 */  \
+int MSOURCE(_add_tone) (MSOURCE() _q);                                      \
+                                                                            \
+/* Add noise source to signal generator, returning id of signal         */  \
+/*  _q          : multi-signal source object                            */  \
+/*  _bandwidth  : normalized noise bandiwidth, 0 < _bandwidth <= 1.0    */  \
+int MSOURCE(_add_noise)(MSOURCE() _q,                                       \
+                        float     _bandwidth);                              \
+                                                                            \
+/* Add modem signal source, returning id of signal                      */  \
+/*  _q      : multi-signal source object                                */  \
+/*  _ms     : modulation scheme, e.g. LIQUID_MODEM_QPSK                 */  \
+/*  _k      : samples per symbol, _k >= 2                               */  \
+/*  _m      : filter delay (symbols), _m > 0                            */  \
+/*  _beta   : filter excess bandwidth, 0 < _beta <= 1                   */  \
+int MSOURCE(_add_modem)(MSOURCE()    _q,                                    \
+                        int          _ms,                                   \
+                        unsigned int _k,                                    \
+                        unsigned int _m,                                    \
+                        float        _beta);                                \
+                                                                            \
+/* Remove signal with a particular id, returning 0 upon success         */  \
+/*  _q  : multi-signal source object                                    */  \
+/*  _id : signal source id                                              */  \
+int MSOURCE(_remove)(MSOURCE() _q,                                          \
+                     int       _id);                                        \
+                                                                            \
+/* Enable signal source with a particular id                            */  \
+void MSOURCE(_enable)(MSOURCE() _q,                                         \
+                      int       _id);                                       \
+                                                                            \
+/* Disable signal source with a particular id                           */  \
+void MSOURCE(_disable)(MSOURCE() _q,                                        \
+                       int       _id);                                      \
+                                                                            \
+/* Set gain in decibels on signal                                       */  \
+/*  _q      :   msource object                                          */  \
+/*  _id     :   source id                                               */  \
+/*  _gain   :   signal gain [dB]                                        */  \
+void MSOURCE(_set_gain)(MSOURCE() _q,                                       \
+                        int       _id,                                      \
+                        float     _gain);                                   \
+                                                                            \
+/* Set carrier offset to signal                                         */  \
+/*  _q      : msource object                                            */  \
+/*  _id     : source id                                                 */  \
+/*  _fc     : normalize carrier frequency offset, -0.5 <= _fc <= 0.5    */  \
+void MSOURCE(_set_frequency)(MSOURCE() _q,                                  \
+                             int       _id,                                 \
+                             float     _dphi);                              \
+                                                                            \
+/* Write block of samples to output buffer                              */  \
+/*  _q      : synchronizer object                                       */  \
+/*  _buf    : output buffer, [size: _buf_len x 1]                       */  \
+/*  _buf_len: output buffer size                                        */  \
+void MSOURCE(_write_samples)(MSOURCE()    _q,                               \
+                             TO *         _buf,                             \
+                             unsigned int _buf_len);                        \
     
 LIQUID_MSOURCE_DEFINE_API(LIQUID_MSOURCE_MANGLE_CFLOAT, liquid_float_complex)
 
