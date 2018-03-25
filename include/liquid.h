@@ -4605,7 +4605,7 @@ int MSOURCE(_add_modem)(MSOURCE()    _q,                        \
                         float        _beta);                    \
                                                                 \
 /* remove signal                                            */  \
-void MSOURCE(_remove)(MSOURCE() _q, int _id);                   \
+int MSOURCE(_remove)(MSOURCE() _q, int _id);                    \
                                                                 \
 /* enable/disable signal                                    */  \
 void MSOURCE(_enable) (MSOURCE() _q, int _id);                  \

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2015 Joseph Gaeddert
+ * Copyright (c) 2007 - 2018 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -210,8 +210,8 @@ int MSOURCE(_add_modem)(MSOURCE()    _q,
 }
 
 // remove signal
-void MSOURCE(_remove)(MSOURCE() _q,
-                      int       _id)
+int MSOURCE(_remove)(MSOURCE() _q,
+                     int       _id)
 {
     // find source object matching id
     unsigned int i;
@@ -225,9 +225,9 @@ void MSOURCE(_remove)(MSOURCE() _q,
 
     // check to see if id was found
     if (!id_found) {
-        fprintf(stderr,"error: qsource%s_remove(), signal id (%d) not found\n",
+        fprintf(stderr,"warning: qsource%s_remove(), signal id (%d) not found\n",
                 EXTENSION, _id);
-        exit(1);
+        return -1;
     }
 
     // delete source
@@ -240,6 +240,9 @@ void MSOURCE(_remove)(MSOURCE() _q,
     // shift sources down
     for (; i<_q->num_sources; i++)
         _q->sources[i] = _q->sources[i+1];
+
+    // everything ok
+    return 0;
 }
 
 // enable/disable signal
