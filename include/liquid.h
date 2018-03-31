@@ -4936,28 +4936,44 @@ int MSOURCE(_remove)(MSOURCE() _q,                                          \
                      int       _id);                                        \
                                                                             \
 /* Enable signal source with a particular id                            */  \
-void MSOURCE(_enable)(MSOURCE() _q,                                         \
-                      int       _id);                                       \
+int MSOURCE(_enable)(MSOURCE() _q,                                          \
+                     int       _id);                                        \
                                                                             \
 /* Disable signal source with a particular id                           */  \
-void MSOURCE(_disable)(MSOURCE() _q,                                        \
-                       int       _id);                                      \
+int MSOURCE(_disable)(MSOURCE() _q,                                         \
+                      int       _id);                                       \
                                                                             \
 /* Set gain in decibels on signal                                       */  \
-/*  _q      :   msource object                                          */  \
-/*  _id     :   source id                                               */  \
-/*  _gain   :   signal gain [dB]                                        */  \
-void MSOURCE(_set_gain)(MSOURCE() _q,                                       \
-                        int       _id,                                      \
-                        float     _gain);                                   \
+/*  _q      : msource object                                            */  \
+/*  _id     : source id                                                 */  \
+/*  _gain   : signal gain [dB]                                          */  \
+int MSOURCE(_set_gain)(MSOURCE() _q,                                        \
+                       int       _id,                                       \
+                       float     _gain);                                    \
+                                                                            \
+/* Get gain in decibels on signal                                       */  \
+/*  _q      : msource object                                            */  \
+/*  _id     : source id                                                 */  \
+/*  _gain   : signal gain output [dB]                                   */  \
+int MSOURCE(_get_gain)(MSOURCE() _q,                                        \
+                       int       _id,                                       \
+                       float *   _gain);                                    \
                                                                             \
 /* Set carrier offset to signal                                         */  \
 /*  _q      : msource object                                            */  \
 /*  _id     : source id                                                 */  \
-/*  _fc     : normalize carrier frequency offset, -0.5 <= _fc <= 0.5    */  \
-void MSOURCE(_set_frequency)(MSOURCE() _q,                                  \
-                             int       _id,                                 \
-                             float     _dphi);                              \
+/*  _fc     : normalized carrier frequency offset, -0.5 <= _fc <= 0.5   */  \
+int MSOURCE(_set_frequency)(MSOURCE() _q,                                   \
+                            int       _id,                                  \
+                            float     _dphi);                               \
+                                                                            \
+/* Get carrier offset to signal                                         */  \
+/*  _q      : msource object                                            */  \
+/*  _id     : source id                                                 */  \
+/*  _fc     : normalized carrier frequency offset                       */  \
+int MSOURCE(_get_frequency)(MSOURCE() _q,                                   \
+                            int       _id,                                  \
+                            float *   _dphi);                               \
                                                                             \
 /* Write block of samples to output buffer                              */  \
 /*  _q      : synchronizer object                                       */  \
