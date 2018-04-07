@@ -5807,76 +5807,110 @@ LIQUID_MATRIX_DEFINE_API(LIQUID_MATRIX_MANGLE_CDOUBLE, liquid_double_complex)
 // large macro
 //   SMATRIX    : name-mangling macro
 //   T          : primitive data type
-#define LIQUID_SMATRIX_DEFINE_API(SMATRIX,T)                    \
-typedef struct SMATRIX(_s) * SMATRIX();                         \
-                                                                \
-/* create _M x _N matrix, initialized with zeros */             \
-SMATRIX() SMATRIX(_create)(unsigned int _M,                     \
-                           unsigned int _N);                    \
-                                                                \
-/* create _M x _N matrix, initialized on array */               \
-SMATRIX() SMATRIX(_create_array)(T *          _x,               \
-                                 unsigned int _m,               \
-                                 unsigned int _n);              \
-                                                                \
-/* destroy object */                                            \
-void SMATRIX(_destroy)(SMATRIX() _q);                           \
-                                                                \
-/* print compact form */                                        \
-void SMATRIX(_print)(SMATRIX() _q);                             \
-                                                                \
-/* print expanded form */                                       \
-void SMATRIX(_print_expanded)(SMATRIX() _q);                    \
-                                                                \
-/* query properties methods */                                  \
-void SMATRIX(_size)(SMATRIX()      _q,                          \
-                    unsigned int * _m,                          \
-                    unsigned int * _n);                         \
-                                                                \
-/* zero all elements and keep memory                        */  \
-void SMATRIX(_clear)(SMATRIX() _q);                             \
-                                                                \
-/* zero all elements and clear memory                       */  \
-void SMATRIX(_reset)(SMATRIX() _q);                             \
-                                                                \
-/* determine if value has been set (allocated memory) */        \
-int SMATRIX(_isset)(SMATRIX()    _q,                            \
-                    unsigned int _m,                            \
-                    unsigned int _n);                           \
-                                                                \
-/* inserts/deletes element at index (memory allocation) */      \
-void SMATRIX(_insert)(SMATRIX()    _q,                          \
-                      unsigned int _m,                          \
-                      unsigned int _n,                          \
-                      T            _v);                         \
-void SMATRIX(_delete)(SMATRIX()    _q,                          \
-                      unsigned int _m,                          \
-                      unsigned int _n);                         \
-                                                                \
-/* sets/gets the value (with memory allocation if needed) */    \
-void SMATRIX(_set)(SMATRIX()    _q,                             \
-                   unsigned int _m,                             \
-                   unsigned int _n,                             \
-                   T            _v);                            \
-T SMATRIX(_get)(SMATRIX()    _q,                                \
-                unsigned int _m,                                \
-                unsigned int _n);                               \
-                                                                \
-/* initialize to identity matrix */                             \
-void SMATRIX(_eye)(SMATRIX() _q);                               \
-                                                                \
-/* multiply two sparse binary matrices */                       \
-void SMATRIX(_mul)(SMATRIX() _x,                                \
-                   SMATRIX() _y,                                \
-                   SMATRIX() _z);                               \
-                                                                \
-/* multiply sparse matrix by vector         */                  \
-/*  _q  :   sparse matrix                   */                  \
-/*  _x  :   input vector [size: _N x 1]     */                  \
-/*  _y  :   output vector [size: _M x 1]    */                  \
-void SMATRIX(_vmul)(SMATRIX() _q,                               \
-                    T *       _x,                               \
-                    T *       _y);                              \
+#define LIQUID_SMATRIX_DEFINE_API(SMATRIX,T)                                \
+                                                                            \
+/* Sparse matrix object (similar to MacKay, Davey, Lafferty convention) */  \
+typedef struct SMATRIX(_s) * SMATRIX();                                     \
+                                                                            \
+/* Create _M x _N sparse matrix, initialized with zeros                 */  \
+SMATRIX() SMATRIX(_create)(unsigned int _M,                                 \
+                           unsigned int _N);                                \
+                                                                            \
+/* Create _M x _N sparse matrix, initialized on array                   */  \
+/*  _x  : input matrix, [size: _m x _n]                                 */  \
+/*  _m  : number of rows in input matrix                                */  \
+/*  _n  : number of columns in input matrix                             */  \
+SMATRIX() SMATRIX(_create_array)(T *          _x,                           \
+                                 unsigned int _m,                           \
+                                 unsigned int _n);                          \
+                                                                            \
+/* Destroy object, freeing all internal memory                          */  \
+void SMATRIX(_destroy)(SMATRIX() _q);                                       \
+                                                                            \
+/* Print sparse matrix in compact form to stdout                        */  \
+void SMATRIX(_print)(SMATRIX() _q);                                         \
+                                                                            \
+/* Print sparse matrix in expanded form to stdout                       */  \
+void SMATRIX(_print_expanded)(SMATRIX() _q);                                \
+                                                                            \
+/* Get size of sparse matrix (number of rows and columns)               */  \
+/*  _q  : sparse matrix object                                          */  \
+/*  _m  : number of rows in matrix                                      */  \
+/*  _n  : number of columns in matrix                                   */  \
+void SMATRIX(_size)(SMATRIX()      _q,                                      \
+                    unsigned int * _m,                                      \
+                    unsigned int * _n);                                     \
+                                                                            \
+/* Zero all elements and retain allocated memory                        */  \
+void SMATRIX(_clear)(SMATRIX() _q);                                         \
+                                                                            \
+/* Zero all elements and clear memory                                   */  \
+void SMATRIX(_reset)(SMATRIX() _q);                                         \
+                                                                            \
+/* Determine if value has been set (allocated memory)                   */  \
+/*  _q  : sparse matrix object                                          */  \
+/*  _m  : row index of value to query                                   */  \
+/*  _n  : column index of value to query                                */  \
+int SMATRIX(_isset)(SMATRIX()    _q,                                        \
+                    unsigned int _m,                                        \
+                    unsigned int _n);                                       \
+                                                                            \
+/* Insert an element at index, allocating memory as necessary           */  \
+/*  _q  : sparse matrix object                                          */  \
+/*  _m  : row index of value to insert                                  */  \
+/*  _n  : column index of value to insert                               */  \
+/*  _v  : value to insert                                               */  \
+void SMATRIX(_insert)(SMATRIX()    _q,                                      \
+                      unsigned int _m,                                      \
+                      unsigned int _n,                                      \
+                      T            _v);                                     \
+                                                                            \
+/* Delete an element at index, freeing memory                           */  \
+/*  _q  : sparse matrix object                                          */  \
+/*  _m  : row index of value to delete                                  */  \
+/*  _n  : column index of value to delete                               */  \
+void SMATRIX(_delete)(SMATRIX()    _q,                                      \
+                      unsigned int _m,                                      \
+                      unsigned int _n);                                     \
+                                                                            \
+/* Set the value  in matrix at specified row and column, allocating     */  \
+/* memory if needed                                                     */  \
+/*  _q  : sparse matrix object                                          */  \
+/*  _m  : row index of value to set                                     */  \
+/*  _n  : column index of value to set                                  */  \
+/*  _v  : value to set in matrix                                        */  \
+void SMATRIX(_set)(SMATRIX()    _q,                                         \
+                   unsigned int _m,                                         \
+                   unsigned int _n,                                         \
+                   T            _v);                                        \
+                                                                            \
+/* Get the value from matrix at specified row and column                */  \
+/*  _q  : sparse matrix object                                          */  \
+/*  _m  : row index of value to get                                     */  \
+/*  _n  : column index of value to get                                  */  \
+T SMATRIX(_get)(SMATRIX()    _q,                                            \
+                unsigned int _m,                                            \
+                unsigned int _n);                                           \
+                                                                            \
+/* Initialize to identity matrix; set all diagonal elements to 1, all   */  \
+/* others to 0. This is done with both square and non-square matrices.  */  \
+void SMATRIX(_eye)(SMATRIX() _q);                                           \
+                                                                            \
+/* Multiply two sparse matrices, \( \vec{Z} = \vec{X} \vec{Y} \)        */  \
+/*  _x  : sparse matrix object (input)                                  */  \
+/*  _y  : sparse matrix object (input)                                  */  \
+/*  _z  : sparse matrix object (output)                                 */  \
+void SMATRIX(_mul)(SMATRIX() _x,                                            \
+                   SMATRIX() _y,                                            \
+                   SMATRIX() _z);                                           \
+                                                                            \
+/* Multiply sparse matrix by vector                                     */  \
+/*  _q  : sparse matrix                                                 */  \
+/*  _x  : input vector, [size: _n x 1]                                  */  \
+/*  _y  : output vector, [size: _m x 1]                                 */  \
+void SMATRIX(_vmul)(SMATRIX() _q,                                           \
+                    T *       _x,                                           \
+                    T *       _y);                                          \
 
 LIQUID_SMATRIX_DEFINE_API(LIQUID_SMATRIX_MANGLE_BOOL,  unsigned char)
 LIQUID_SMATRIX_DEFINE_API(LIQUID_SMATRIX_MANGLE_FLOAT, float)
