@@ -6119,70 +6119,97 @@ void liquid_unpack_soft_bits(unsigned int _sym_in,
 //  MODEM   :   name-mangling macro
 //  T       :   primitive data type
 //  TC      :   primitive data type (complex)
-#define LIQUID_MODEM_DEFINE_API(MODEM,T,TC)                     \
-typedef struct MODEM(_s) * MODEM();                             \
-                                                                \
-/* create digital modem object                              */  \
-MODEM() MODEM(_create)(modulation_scheme _scheme);              \
-                                                                \
-/* create arbitrary digital modem object                    */  \
-/*  _table  :   array of complex constellation points       */  \
-/*  _M      :   modulation order and table size             */  \
-MODEM() MODEM(_create_arbitrary)(TC *         _table,           \
-                                 unsigned int _M);              \
-                                                                \
-/* recreate modulation scheme, re-allocating memory as      */  \
-/* necessary                                                */  \
-MODEM() MODEM(_recreate)(MODEM()           _q,                  \
-                         modulation_scheme _scheme);            \
-                                                                \
-void MODEM(_destroy)(MODEM() _q);                               \
-void MODEM(_print)(  MODEM() _q);                               \
-void MODEM(_reset)(  MODEM() _q);                               \
-                                                                \
-/* generate random symbol                                   */  \
-unsigned int MODEM(_gen_rand_sym)(MODEM() _q);                  \
-                                                                \
-/* Accessor functions */                                        \
-unsigned int      MODEM(_get_bps)   (MODEM() _q);               \
-modulation_scheme MODEM(_get_scheme)(MODEM() _q);               \
-                                                                \
-/* generic modulate function; simply queries modem scheme   */  \
-/* and calls appropriate subroutine                         */  \
-/*  _q  :   modem object                                    */  \
-/*  _s  :   input symbol                                    */  \
-/*  _x  :   output sample                                   */  \
-void MODEM(_modulate)(MODEM()      _q,                          \
-                      unsigned int _s,                          \
-                      TC *         _y);                         \
-                                                                \
-/* generic hard-decision demodulation function              */  \
-/*  _q  :   modem object                                    */  \
-/*  _x  :   input sample                                    */  \
-/*  _s  :   output symbol                                   */  \
-void MODEM(_demodulate)(MODEM()        _q,                      \
-                        TC             _x,                      \
-                        unsigned int * _s);                     \
-                                                                \
-/* generic soft-decision demodulation function              */  \
-/*  _q          :   modem object                            */  \
-/*  _x          :   input sample                            */  \
-/*  _s          :   output hard symbol                      */  \
-/*  _soft_bits  :   output soft bits                        */  \
-void MODEM(_demodulate_soft)(MODEM()         _q,                \
-                             TC              _x,                \
-                             unsigned int  * _s,                \
-                             unsigned char * _soft_bits);       \
-                                                                \
-/* get demodulator's estimated transmit sample */               \
-void MODEM(_get_demodulator_sample)(MODEM() _q,                 \
-                                    TC *    _x_hat);            \
-                                                                \
-/* get demodulator phase error */                               \
-float MODEM(_get_demodulator_phase_error)(MODEM() _q);          \
-                                                                \
-/* get demodulator error vector magnitude */                    \
-float MODEM(_get_demodulator_evm)(MODEM() _q);                  \
+#define LIQUID_MODEM_DEFINE_API(MODEM,T,TC)                                 \
+                                                                            \
+/* Linear modulator/demodulator (modem) object                          */  \
+typedef struct MODEM(_s) * MODEM();                                         \
+                                                                            \
+/* Create digital modem object with a particular scheme                 */  \
+/*  _scheme : linear modulation scheme (e.g. LIQUID_MODEM_QPSK)         */  \
+MODEM() MODEM(_create)(modulation_scheme _scheme);                          \
+                                                                            \
+/* Create linear digital modem object with arbitrary constellation      */  \
+/* points defined by an external table of symbols.                      */  \
+/*  _table  : array of complex constellation points, [size: _M x 1]     */  \
+/*  _M      : modulation order and table size, _M must be power of 2    */  \
+MODEM() MODEM(_create_arbitrary)(TC *         _table,                       \
+                                 unsigned int _M);                          \
+                                                                            \
+/* Recreate modulation scheme, re-allocating memory as necessary        */  \
+/*  _q      : modem object                                              */  \
+/*  _scheme : linear modulation scheme (e.g. LIQUID_MODEM_QPSK)         */  \
+MODEM() MODEM(_recreate)(MODEM()           _q,                              \
+                         modulation_scheme _scheme);                        \
+                                                                            \
+/* Destroy modem object, freeing all allocated memory                   */  \
+void MODEM(_destroy)(MODEM() _q);                                           \
+                                                                            \
+/* Print modem status to stdout                                         */  \
+void MODEM(_print)(MODEM() _q);                                             \
+                                                                            \
+/* Reset internal state of modem object; note that this is only         */  \
+/* relevant for modulation types that retain an internal state such as  */  \
+/* LIQUID_MODEM_DPSK4 as most linear modulation types are stateless     */  \
+void MODEM(_reset)(MODEM() _q);                                             \
+                                                                            \
+/* Generate random symbol for modulation                                */  \
+unsigned int MODEM(_gen_rand_sym)(MODEM() _q);                              \
+                                                                            \
+/* Get number of bits per symbol (bps) of modem object                  */  \
+unsigned int MODEM(_get_bps)(MODEM() _q);                                   \
+                                                                            \
+/* Get modulation scheme of modem object                                */  \
+modulation_scheme MODEM(_get_scheme)(MODEM() _q);                           \
+                                                                            \
+/* Modulate input symbol (bits) and generate output complex sample      */  \
+/*  _q  : modem object                                                  */  \
+/*  _s  : input symbol, 0 <= _s <= M-1                                  */  \
+/*  _y  : output complex sample                                         */  \
+void MODEM(_modulate)(MODEM()      _q,                                      \
+                      unsigned int _s,                                      \
+                      TC *         _y);                                     \
+                                                                            \
+/* Demodulate input sample and provide maximum-likelihood estimate of   */  \
+/* symbol that would have generated it.                                 */  \
+/* The output is a hard decision value on the input sample.             */  \
+/* This is performed efficiently by taking advantage of symmetry on     */  \
+/* most modulation types.                                               */  \
+/* For example, square and rectangular quadrature amplitude modulation  */  \
+/* with gray coding can use a bisection search indepdently on its       */  \
+/* in-phase and quadrature channels.                                    */  \
+/* Arbitrary modulation schemes are relatively slow, however, for large */  \
+/* modulation types as the demodulator must compute the distance        */  \
+/* between the received sample and all possible symbols to derive the   */  \
+/* optimal symbol.                                                      */  \
+/*  _q  :   modem object                                                */  \
+/*  _x  :   input sample                                                */  \
+/*  _s  : output hard symbol, 0 <= _s <= M-1                            */  \
+void MODEM(_demodulate)(MODEM()        _q,                                  \
+                        TC             _x,                                  \
+                        unsigned int * _s);                                 \
+                                                                            \
+/* Demodulate input sample and provide (approximate) log-likelihood     */  \
+/* ratio (LLR, soft bits) as an output.                                 */  \
+/* Similarly to the hard-decision demodulation method, this is computed */  \
+/* efficiently for most modulation types.                               */  \
+/*  _q          : modem object                                          */  \
+/*  _x          : input sample                                          */  \
+/*  _s          : output hard symbol, 0 <= _s <= M-1                    */  \
+/*  _soft_bits  : output soft bits, [size: log2(M) x 1]                 */  \
+void MODEM(_demodulate_soft)(MODEM()         _q,                            \
+                             TC              _x,                            \
+                             unsigned int  * _s,                            \
+                             unsigned char * _soft_bits);                   \
+                                                                            \
+/* Get demodulator's estimated transmit sample                          */  \
+void MODEM(_get_demodulator_sample)(MODEM() _q,                             \
+                                    TC *    _x_hat);                        \
+                                                                            \
+/* Get demodulator phase error                                          */  \
+float MODEM(_get_demodulator_phase_error)(MODEM() _q);                      \
+                                                                            \
+/* Get demodulator error vector magnitude                               */  \
+float MODEM(_get_demodulator_evm)(MODEM() _q);                              \
 
 // define modem APIs
 LIQUID_MODEM_DEFINE_API(LIQUID_MODEM_MANGLE_FLOAT,float,liquid_float_complex)
