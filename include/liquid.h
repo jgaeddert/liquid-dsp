@@ -6434,39 +6434,42 @@ float fskdem_get_frequency_error(fskdem _q);
 //  FREQMOD :   name-mangling macro
 //  T       :   primitive data type
 //  TC      :   primitive data type (complex)
-#define LIQUID_FREQMOD_DEFINE_API(FREQMOD,T,TC)                 \
-typedef struct FREQMOD(_s) * FREQMOD();                         \
-                                                                \
-/* create freqmod object (frequency modulator)              */  \
-/*  _kf     :   modulation factor                           */  \
-FREQMOD() FREQMOD(_create)(float _kf);                          \
-                                                                \
-/* destroy freqmod object                                   */  \
-void FREQMOD(_destroy)(FREQMOD() _q);                           \
-                                                                \
-/* print freqmod object internals                           */  \
-void FREQMOD(_print)(FREQMOD() _q);                             \
-                                                                \
-/* reset state                                              */  \
-void FREQMOD(_reset)(FREQMOD() _q);                             \
-                                                                \
-/* modulate single sample                                   */  \
-/*  _q      :   frequency modulator object                  */  \
-/*  _m      :   message signal m(t)                         */  \
-/*  _s      :   complex baseband signal s(t)                */  \
-void FREQMOD(_modulate)(FREQMOD() _q,                           \
-                        T         _m,                           \
-                        TC *      _s);                          \
-                                                                \
-/* modulate block of samples                                */  \
-/*  _q      :   frequency modulator object                  */  \
-/*  _m      :   message signal m(t), [size: _n x 1]         */  \
-/*  _n      :   number of input, output samples             */  \
-/*  _s      :   complex baseband signal s(t) [size: _n x 1] */  \
-void FREQMOD(_modulate_block)(FREQMOD()    _q,                  \
-                              T *          _m,                  \
-                              unsigned int _n,                  \
-                              TC *         _s);                 \
+#define LIQUID_FREQMOD_DEFINE_API(FREQMOD,T,TC)                             \
+                                                                            \
+/* Analog frequency modulation object                                   */  \
+typedef struct FREQMOD(_s) * FREQMOD();                                     \
+                                                                            \
+/* Create freqmod object with a particular modulation factor            */  \
+/*  _kf :   modulation factor                                           */  \
+FREQMOD() FREQMOD(_create)(float _kf);                                      \
+                                                                            \
+/* Destroy freqmod object, freeing all internal memory                  */  \
+void FREQMOD(_destroy)(FREQMOD() _q);                                       \
+                                                                            \
+/* Print freqmod object internals to stdout                             */  \
+void FREQMOD(_print)(FREQMOD() _q);                                         \
+                                                                            \
+/* Reset state                                                          */  \
+void FREQMOD(_reset)(FREQMOD() _q);                                         \
+                                                                            \
+/* Modulate single sample, producing single output sample at complex    */  \
+/* baseband.                                                            */  \
+/*  _q  : frequency modulator object                                    */  \
+/*  _m  : message signal \( m(t) \)                                     */  \
+/*  _s  : complex baseband signal \( s(t) \)                            */  \
+void FREQMOD(_modulate)(FREQMOD() _q,                                       \
+                        T         _m,                                       \
+                        TC *      _s);                                      \
+                                                                            \
+/* Modulate block of samples                                            */  \
+/*  _q  : frequency modulator object                                    */  \
+/*  _m  : message signal \( m(t) \), [size: _n x 1]                     */  \
+/*  _n  : number of input, output samples                               */  \
+/*  _s  : complex baseband signal \( s(t) \),  [size: _n x 1]           */  \
+void FREQMOD(_modulate_block)(FREQMOD()    _q,                              \
+                              T *          _m,                              \
+                              unsigned int _n,                              \
+                              TC *         _s);                             \
 
 // define freqmod APIs
 LIQUID_FREQMOD_DEFINE_API(LIQUID_FREQMOD_MANGLE_FLOAT,float,liquid_float_complex)
