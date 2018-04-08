@@ -5000,64 +5000,80 @@ LIQUID_MSOURCE_DEFINE_API(LIQUID_MSOURCE_MANGLE_CFLOAT, liquid_float_complex)
 //   TO         : data type, output
 //   TC         : data type, coefficients
 //   TI         : data type, input
-#define LIQUID_SYMTRACK_DEFINE_API(SYMTRACK,T,TO,TC,TI)         \
-                                                                \
-typedef struct SYMTRACK(_s) * SYMTRACK();                       \
-                                                                \
-/* create symtrack object with default parameters           */  \
-/*  _ftype  : filter type (e.g. LIQUID_RNYQUIST_RRC)        */  \
-/*  _k      : samples per symbol                            */  \
-/*  _m      : filter delay (symbols)                        */  \
-/*  _beta   : filter excess bandwidth                       */  \
-/*  _ms     : modulation scheme (e.g. LIQUID_MODEM_QPSK)    */  \
-SYMTRACK() SYMTRACK(_create)(int          _ftype,               \
-                             unsigned int _k,                   \
-                             unsigned int _m,                   \
-                             float        _beta,                \
-                             int          _ms);                 \
-                                                                \
-/* create symtrack object using default parameters          */  \
-SYMTRACK() SYMTRACK(_create_default)();                         \
-                                                                \
-/* destroy symtrack object, freeing all internal memory     */  \
-void SYMTRACK(_destroy)(SYMTRACK() _q);                         \
-                                                                \
-/* print symtrack object's parameters                       */  \
-void SYMTRACK(_print)(SYMTRACK() _q);                           \
-                                                                \
-/* reset symtrack internal state                            */  \
-void SYMTRACK(_reset)(SYMTRACK() _q);                           \
-                                                                \
-/* set symtrack modulation scheme                           */  \
-void SYMTRACK(_set_modscheme)(SYMTRACK() _q, int _ms);          \
-                                                                \
-/* set symtrack internal bandwidth                          */  \
-void SYMTRACK(_set_bandwidth)(SYMTRACK() _q, float _bw);        \
-                                                                \
-/* adjust internal nco by requested phase                   */  \
-void SYMTRACK(_adjust_phase)(SYMTRACK() _q, T _dphi);           \
-                                                                \
-/* execute synchronizer on single input sample              */  \
-/*  _q      : synchronizer object                           */  \
-/*  _x      : input data sample                             */  \
-/*  _y      : output data array                             */  \
-/*  _ny     : number of samples written to output buffer    */  \
-void SYMTRACK(_execute)(SYMTRACK()     _q,                      \
-                        TI             _x,                      \
-                        TO *           _y,                      \
-                        unsigned int * _ny);                    \
-                                                                \
-/* execute synchronizer on input data array                 */  \
-/*  _q      : synchronizer object                           */  \
-/*  _x      : input data array                              */  \
-/*  _nx     : number of input samples                       */  \
-/*  _y      : output data array                             */  \
-/*  _ny     : number of samples written to output buffer    */  \
-void SYMTRACK(_execute_block)(SYMTRACK()     _q,                \
-                              TI *           _x,                \
-                              unsigned int   _nx,               \
-                              TO *           _y,                \
-                              unsigned int * _ny);              \
+#define LIQUID_SYMTRACK_DEFINE_API(SYMTRACK,T,TO,TC,TI)                     \
+                                                                            \
+/* Symbol synchronizer and tracking object                              */  \
+typedef struct SYMTRACK(_s) * SYMTRACK();                                   \
+                                                                            \
+/* Create symtrack object, specifying parameters for operation          */  \
+/*  _ftype  : filter type (e.g. LIQUID_RNYQUIST_RRC)                    */  \
+/*  _k      : samples per symbol, _k >= 2                               */  \
+/*  _m      : filter delay [symbols], _m > 0                            */  \
+/*  _beta   : excess bandwidth factor, 0 <= _beta <= 1                  */  \
+/*  _ms     : modulation scheme, _ms(LIQUID_MODEM_BPSK)                 */  \
+SYMTRACK() SYMTRACK(_create)(int          _ftype,                           \
+                             unsigned int _k,                               \
+                             unsigned int _m,                               \
+                             float        _beta,                            \
+                             int          _ms);                             \
+                                                                            \
+/* Create symtrack object using default parameters.                     */  \
+/* The default parameters are                                           */  \
+/* ftype  = LIQUID_FIRFILT_ARKAISER (filter type),                      */  \
+/* k      = 2 (samples per symbol),                                     */  \
+/* m      = 7 (filter delay),                                           */  \
+/* beta   = 0.3 (excess bandwidth factor), and                          */  \
+/* ms     = LIQUID_MODEM_QPSK (modulation scheme)                       */  \
+SYMTRACK() SYMTRACK(_create_default)();                                     \
+                                                                            \
+/* Destroy symtrack object, freeing all internal memory                 */  \
+void SYMTRACK(_destroy)(SYMTRACK() _q);                                     \
+                                                                            \
+/* Print symtrack object's parameters                                   */  \
+void SYMTRACK(_print)(SYMTRACK() _q);                                       \
+                                                                            \
+/* Reset symtrack internal state                                        */  \
+void SYMTRACK(_reset)(SYMTRACK() _q);                                       \
+                                                                            \
+/* Set symtrack modulation scheme                                       */  \
+/*  _q      : symtrack object                                           */  \
+/*  _ms     : modulation scheme, _ms(LIQUID_MODEM_BPSK)                 */  \
+void SYMTRACK(_set_modscheme)(SYMTRACK() _q,                                \
+                             int         _ms);                              \
+                                                                            \
+/* Set symtrack internal bandwidth                                      */  \
+/*  _q      : symtrack object                                           */  \
+/*  _bw     : tracking bandwidth, _bw > 0                               */  \
+void SYMTRACK(_set_bandwidth)(SYMTRACK() _q,                                \
+                              float _bw);                                   \
+                                                                            \
+/* Adjust internal NCO by requested phase                               */  \
+/*  _q      : symtrack object                                           */  \
+/*  _dphi   : NCO phase adjustment [radians]                            */  \
+void SYMTRACK(_adjust_phase)(SYMTRACK() _q,                                 \
+                             T          _dphi);                             \
+                                                                            \
+/* Execute synchronizer on single input sample                          */  \
+/*  _q      : synchronizer object                                       */  \
+/*  _x      : input data sample                                         */  \
+/*  _y      : output data array, [size: 2 x 1]                          */  \
+/*  _ny     : number of samples written to output buffer (0, 1, or 2)   */  \
+void SYMTRACK(_execute)(SYMTRACK()     _q,                                  \
+                        TI             _x,                                  \
+                        TO *           _y,                                  \
+                        unsigned int * _ny);                                \
+                                                                            \
+/* execute synchronizer on input data array                             */  \
+/*  _q      : synchronizer object                                       */  \
+/*  _x      : input data array                                          */  \
+/*  _nx     : number of input samples                                   */  \
+/*  _y      : output data array, [size: 2 _nx x 1]                      */  \
+/*  _ny     : number of samples written to output buffer                */  \
+void SYMTRACK(_execute_block)(SYMTRACK()     _q,                            \
+                              TI *           _x,                            \
+                              unsigned int   _nx,                           \
+                              TO *           _y,                            \
+                              unsigned int * _ny);                          \
     
 LIQUID_SYMTRACK_DEFINE_API(LIQUID_SYMTRACK_MANGLE_RRRF,
                            float,
