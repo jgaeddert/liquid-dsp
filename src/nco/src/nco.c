@@ -82,6 +82,10 @@ NCO() NCO(_create)(liquid_ncotype _type)
 // destroy nco object
 void NCO(_destroy)(NCO() _q)
 {
+    if (!_q) {
+        return;
+    }
+
     free(_q);
 }
 

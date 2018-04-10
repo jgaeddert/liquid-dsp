@@ -587,6 +587,8 @@ framing_objects :=						\
 	src/framing/src/bsync_crcf.o				\
 	src/framing/src/bsync_cccf.o				\
 	src/framing/src/detector_cccf.o				\
+	src/framing/src/dsssframegen.o				\
+	src/framing/src/dsssframesync.o				\
 	src/framing/src/framedatastats.o			\
 	src/framing/src/framesyncstats.o			\
 	src/framing/src/framegen64.o				\
@@ -616,6 +618,8 @@ src/framing/src/bsync_rrrf.o        : %.o : %.c $(include_headers) src/framing/s
 src/framing/src/bsync_crcf.o        : %.o : %.c $(include_headers) src/framing/src/bsync.c
 src/framing/src/bsync_cccf.o        : %.o : %.c $(include_headers) src/framing/src/bsync.c
 src/framing/src/detector_cccf.o     : %.o : %.c $(include_headers)
+src/framing/src/dsssframegen.o      : %.o : %.c $(include_headers)
+src/framing/src/dsssframesync.o     : %.o : %.c $(include_headers)
 src/framing/src/framedatastats.o    : %.o : %.c $(include_headers)
 src/framing/src/framesyncstats.o    : %.o : %.c $(include_headers)
 src/framing/src/framegen64.o        : %.o : %.c $(include_headers)
@@ -886,10 +890,12 @@ multichannel_benchmarks :=					\
 nco_objects :=							\
 	src/nco/src/nco_crcf.o					\
 	src/nco/src/nco.utilities.o				\
+	src/nco/src/synth_crcf.o				\
 
 
 src/nco/src/nco_crcf.o      : %.o : %.c $(include_headers) src/nco/src/nco.c
 src/nco/src/nco.utilities.o : %.o : %.c $(include_headers)
+src/nco/src/synth_crcf.o	: %.o : %.c $(include_headers) src/nco/src/synth.c
 
 
 # autotests
@@ -1379,6 +1385,7 @@ example_programs :=						\
 	examples/cpfskmodem_psd_example				\
 	examples/cvsd_example					\
 	examples/detector_cccf_example				\
+	examples/dsssframesync_example				\
 	examples/dotprod_rrrf_example				\
 	examples/dotprod_cccf_example				\
 	examples/eqlms_cccf_block_example			\
@@ -1626,6 +1633,22 @@ clean-sandbox:
 	$(RM) $(sandbox_programs)
 
 
+.PHONY: tools
+tools_programs =						\
+	tools/msequence_generator			\
+
+tools_objects	= $(patsubst %,%.o,$(tools_programs))
+tools: $(tools_programs)
+
+$(tools_objects): %.o: %.c
+
+$(tools_programs): % : %.o libliquid.a
+	$(CC) $(CFLAGS) $^ -o $@ $(LDFLAGS)
+
+clean-tools:
+	$(RM) tools/*.o
+	$(RM) $(tools_programs)
+
 ##
 ## TARGET : world     - build absolutely everything
 ##
@@ -1662,7 +1685,7 @@ clean-modules:
 	$(RM) src/vector/src/*.o       src/vector/bench/*.o       src/vector/tests/*.o
 	$(RM) src/libliquid.o
 
-clean: clean-modules clean-autoscript clean-check clean-bench clean-examples clean-sandbox
+clean: clean-modules clean-autoscript clean-check clean-bench clean-examples clean-sandbox clean-tools
 	$(RM) $(extra_clean)
 	$(RM) libliquid.a
 	$(RM) $(SHARED_LIB)
