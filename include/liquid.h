@@ -6902,7 +6902,8 @@ void NCO(_set_frequency)(NCO() _q,                                          \
 /* Adjust frequency of nco object by a step size in radians per sample  */  \
 /*  _q      : nco object                                                */  \
 /*  _step   : input frequency step [radians/sample]                     */  \
-void NCO(_adjust_frequency)(NCO() _q, T _df);                               \
+void NCO(_adjust_frequency)(NCO() _q,                                       \
+                            T     _step);                                   \
                                                                             \
 /* Get phase of nco object in radians                                   */  \
 T NCO(_get_phase)(NCO() _q);                                                \
@@ -6917,7 +6918,7 @@ void NCO(_set_phase)(NCO() _q,                                              \
 /*  _q      : nco object                                                */  \
 /*  _dphi   : input nco object phase adjustment [radians]               */  \
 void NCO(_adjust_phase)(NCO() _q,                                           \
-                        T     _phi);                                        \
+                        T     _dphi);                                       \
                                                                             \
 /* Increment phase by internal phase step (frequency)                   */  \
 void NCO(_step)(NCO() _q);                                                  \
