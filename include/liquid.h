@@ -7286,19 +7286,44 @@ typedef enum {
 // large macro
 //   QUANTIZER  : name-mangling macro
 //   T          : data type
-#define LIQUID_QUANTIZER_DEFINE_API(QUANTIZER,T)                \
-typedef struct QUANTIZER(_s) * QUANTIZER();                     \
-QUANTIZER() QUANTIZER(_create)(liquid_compander_type _ctype,    \
-                               float _range,                    \
-                               unsigned int _num_bits);         \
-void QUANTIZER(_destroy)(QUANTIZER() _q);                       \
-void QUANTIZER(_print)(QUANTIZER() _q);                         \
-void QUANTIZER(_execute_adc)(QUANTIZER() _q,                    \
-                             T _x,                              \
-                             unsigned int * _sample);           \
-void QUANTIZER(_execute_dac)(QUANTIZER() _q,                    \
-                             unsigned int _sample,              \
-                             T * _x);                           \
+#define LIQUID_QUANTIZER_DEFINE_API(QUANTIZER,T)                            \
+                                                                            \
+/* Amplitude quantization object                                        */  \
+typedef struct QUANTIZER(_s) * QUANTIZER();                                 \
+                                                                            \
+/* Create quantizer object given compander type, input range, and the   */  \
+/* number of bits to represent the output                               */  \
+/*  _ctype      : compander type (linear, mulaw, alaw)                  */  \
+/*  _range      : maximum abosolute input range (ignored for now)       */  \
+/*  _num_bits   : number of bits per sample                             */  \
+QUANTIZER() QUANTIZER(_create)(liquid_compander_type _ctype,                \
+                               float                 _range,                \
+                               unsigned int          _num_bits);            \
+                                                                            \
+/* Destroy object, freeing all internally-allocated memory.             */  \
+void QUANTIZER(_destroy)(QUANTIZER() _q);                                   \
+                                                                            \
+/* Print object properties to stdout, including compander type and      */  \
+/* number of bits per sample                                            */  \
+void QUANTIZER(_print)(QUANTIZER() _q);                                     \
+                                                                            \
+/* Execute quantizer as analog-to-digital converter, accepting input    */  \
+/* sample and returning digitized output bits                           */  \
+/*  _q  : quantizer object                                              */  \
+/*  _x  : input sample                                                  */  \
+/*  _y  : output bits                                                   */  \
+void QUANTIZER(_execute_adc)(QUANTIZER()    _q,                             \
+                             T              _x,                             \
+                             unsigned int * _s);                            \
+                                                                            \
+/* Execute quantizer as digital-to-analog converter, accepting input    */  \
+/* bits and returning representation of original input sample           */  \
+/*  _q  : quantizer object                                              */  \
+/*  _y  : input bits                                                    */  \
+/*  _x  : output sample                                                 */  \
+void QUANTIZER(_execute_dac)(QUANTIZER()  _q,                               \
+                             unsigned int _s,                               \
+                             T *          _x);                              \
 
 LIQUID_QUANTIZER_DEFINE_API(LIQUID_QUANTIZER_MANGLE_FLOAT,  float)
 LIQUID_QUANTIZER_DEFINE_API(LIQUID_QUANTIZER_MANGLE_CFLOAT, liquid_float_complex)
