@@ -7311,7 +7311,7 @@ void QUANTIZER(_print)(QUANTIZER() _q);                                     \
 /* sample and returning digitized output bits                           */  \
 /*  _q  : quantizer object                                              */  \
 /*  _x  : input sample                                                  */  \
-/*  _y  : output bits                                                   */  \
+/*  _s  : output bits                                                   */  \
 void QUANTIZER(_execute_adc)(QUANTIZER()    _q,                             \
                              T              _x,                             \
                              unsigned int * _s);                            \
@@ -7319,7 +7319,7 @@ void QUANTIZER(_execute_adc)(QUANTIZER()    _q,                             \
 /* Execute quantizer as digital-to-analog converter, accepting input    */  \
 /* bits and returning representation of original input sample           */  \
 /*  _q  : quantizer object                                              */  \
-/*  _y  : input bits                                                    */  \
+/*  _s  : input bits                                                    */  \
 /*  _x  : output sample                                                 */  \
 void QUANTIZER(_execute_dac)(QUANTIZER()  _q,                               \
                              unsigned int _s,                               \
