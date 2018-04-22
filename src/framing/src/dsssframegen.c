@@ -325,8 +325,8 @@ int dsssframegen_write_samples(dsssframegen           _q,
                                liquid_float_complex * _buffer,
                                unsigned int           _buffer_len)
 {
-
-    for (unsigned int i = 0; i < _buffer_len; ++i) {
+    unsigned int i;
+    for (i = 0; i < _buffer_len; ++i) {
         if (_q->sample_counter == 0) {
             liquid_float_complex sym = dsssframegen_generate_symbol(_q);
 

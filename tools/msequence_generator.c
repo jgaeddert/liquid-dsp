@@ -31,11 +31,13 @@ int main(int argc, char *argv[])
 
     unsigned int maxpoly = (1 << degree) - 1;
     unsigned int expected_sum = ((maxpoly + 1) / 2) * maxpoly;
-    for (unsigned int poly = 0; poly <= maxpoly; ++poly) {
+    unsigned int i;
+    unsigned int poly;
+    for (poly = 0; poly <= maxpoly; ++poly) {
         unsigned int g = (poly << 1) + 1;
         msequence seq = msequence_create(degree, g, 1);
         unsigned int sum = 0;
-        for (unsigned int i = 0; i < maxpoly; ++i) {
+        for (i = 0; i < maxpoly; ++i) {
             sum += msequence_get_state(seq);
             msequence_advance(seq);
         }

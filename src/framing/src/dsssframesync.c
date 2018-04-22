@@ -122,10 +122,11 @@ dsssframesync dsssframesync_create(framesync_callback _callback, void * _userdat
     q->m    = 7;
     q->beta = 0.3f;
 
+    unsigned int i;
     q->preamble_pn = (liquid_float_complex *)calloc(64, sizeof(liquid_float_complex));
     q->preamble_rx = (liquid_float_complex *)calloc(64, sizeof(liquid_float_complex));
     msequence ms   = msequence_create(7, 0x0089, 1);
-    for (unsigned int i = 0; i < 64; i++) {
+    for (i = 0; i < 64; i++) {
         q->preamble_pn[i] = (msequence_advance(ms) ? M_SQRT1_2 : -M_SQRT1_2);
         q->preamble_pn[i] += (msequence_advance(ms) ? M_SQRT1_2 : -M_SQRT1_2) * _Complex_I;
     }
@@ -133,7 +134,7 @@ dsssframesync dsssframesync_create(framesync_callback _callback, void * _userdat
 
     liquid_float_complex * pn = (liquid_float_complex *)calloc(64, sizeof(liquid_float_complex));
     ms                        = msequence_create(7, 0x00cb, 0x53);
-    for (unsigned int i = 0; i < 64; i++) {
+    for (i = 0; i < 64; i++) {
         pn[i] = (msequence_advance(ms) ? M_SQRT1_2 : -M_SQRT1_2);
         pn[i] += (msequence_advance(ms) ? M_SQRT1_2 : -M_SQRT1_2) * _Complex_I;
     }
@@ -277,7 +278,8 @@ int dsssframesync_set_header_props(dsssframesync _q, dsssframegenprops_s * _prop
 
 void dsssframesync_execute(dsssframesync _q, liquid_float_complex * _x, unsigned int _n)
 {
-    for (unsigned int i = 0; i < _n; i++) {
+    unsigned int i;
+    for (i = 0; i < _n; i++) {
         switch (_q->state) {
         case DSSSFRAMESYNC_STATE_DETECTFRAME:
             // detect frame (look for p/n sequence)

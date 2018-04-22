@@ -228,7 +228,8 @@ void SYNTH(_mix_block_down)(SYNTH() _q, TC * _x, TC * _y, unsigned int _n)
 
 void SYNTH(_spread)(SYNTH() _q, TC _x, TC * _y)
 {
-    for (unsigned int i = 0; i < _q->length; i++) {
+    unsigned int i;
+    for (i = 0; i < _q->length; i++) {
         SYNTH(_mix_up)(_q, _x, &_y[i]);
 
         SYNTH(_step)(_q);
@@ -239,7 +240,8 @@ void SYNTH(_despread)(SYNTH() _q, TC * _x, TC * _y)
 {
     TC despread = 0;
     T  sum      = 0;
-    for (unsigned int i = 0; i < _q->length; i++) {
+    unsigned int i;
+    for (i = 0; i < _q->length; i++) {
         TC temp;
         SYNTH(_mix_down)(_q, _x[i], &temp);
 
@@ -261,7 +263,8 @@ void SYNTH(_despread_triple)(SYNTH() _q, TC * _x, TC * _early, TC * _punctual, T
     T sum_punctual = 0;
     T sum_late     = 0;
 
-    for (unsigned int i = 0; i < _q->length; i++) {
+    unsigned int i;
+    for (i = 0; i < _q->length; i++) {
         despread_early += _x[i] * conjf(_q->prev_half);
         despread_punctual += _x[i] * conjf(_q->current);
         despread_late += _x[i] * conjf(_q->next_half);
