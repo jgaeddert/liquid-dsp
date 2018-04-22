@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2015 Joseph Gaeddert
+ * Copyright (c) 2007 - 2018 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -36,18 +36,18 @@
 #define LIQUID_DEBUG_NCO            (0)
 
 struct NCO(_s) {
-    liquid_ncotype type;
-    T theta;            // NCO phase
-    T d_theta;          // NCO frequency
-    T sintab[256];      // sine table
-    unsigned int index; // table index
-    T sine;
-    T cosine;
-    void (*compute_sincos)(NCO() _q);
+    liquid_ncotype  type;           // NCO type (e.g. LIQUID_VCO)
+    T               theta;          // NCO phase [radians]
+    T               d_theta;        // NCO frequency [radians/sample]
+    T               sintab[256];    // sine table
+    unsigned int    index;          // table index
+    T               sine;           // output sine component
+    T               cosine;         // output cosine component
+    void (*compute_sincos)(NCO() _q); // function pointer to computing sine/cosine
 
     // phase-locked loop
-    T alpha;
-    T beta;
+    T               alpha;          // frequency proportion
+    T               beta;           // phase proportion
 };
 
 // create nco/vco object
@@ -104,9 +104,9 @@ void NCO(_reset)(NCO() _q)
 
 // set frequency of nco object
 void NCO(_set_frequency)(NCO() _q,
-                         T _f)
+                         T     _dtheta)
 {
-    _q->d_theta = _f;
+    _q->d_theta = _dtheta;
 }
 
 // adjust frequency of nco object
@@ -170,7 +170,9 @@ T NCO(_cos)(NCO() _q)
 }
 
 // compute sin, cos of internal phase
-void NCO(_sincos)(NCO() _q, T* _s, T* _c)
+void NCO(_sincos)(NCO() _q,
+                  T *   _s,
+                  T *   _c)
 {
     // compute sine, cosine internally, calling implementation-
     // specific function (nco, vco)
@@ -202,15 +204,15 @@ void NCO(_pll_reset)(NCO() _q)
 
 // set pll bandwidth
 void NCO(_pll_set_bandwidth)(NCO() _q,
-                             T     _bandwidth)
+                             T     _bw)
 {
     // validate input
-    if (_bandwidth < 0.0f) {
+    if (_bw < 0.0f) {
         fprintf(stderr,"error: nco_pll_set_bandwidth(), bandwidth must be positive\n");
         exit(1);
     }
 
-    _q->alpha = _bandwidth;         // frequency proportion
+    _q->alpha = _bw;                // frequency proportion
     _q->beta  = sqrtf(_q->alpha);   // phase proportion
 }
 

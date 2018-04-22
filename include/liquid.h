@@ -6871,62 +6871,132 @@ typedef enum {
 //   NCO    : name-mangling macro
 //   T      : primitive data type
 //   TC     : input/output data type
-#define LIQUID_NCO_DEFINE_API(NCO,T,TC)                         \
-typedef struct NCO(_s) * NCO();                                 \
-                                                                \
-NCO() NCO(_create)(liquid_ncotype _type);                       \
-void NCO(_destroy)(NCO() _q);                                   \
-void NCO(_print)(NCO() _q);                                     \
-                                                                \
-/* set phase/frequency to zero, reset pll filter        */      \
-void NCO(_reset)(NCO() _q);                                     \
-                                                                \
-/* get/set/adjust internal frequency/phase              */      \
-T    NCO(_get_frequency)(   NCO() _q);                          \
-void NCO(_set_frequency)(   NCO() _q, T _f);                    \
-void NCO(_adjust_frequency)(NCO() _q, T _df);                   \
-T    NCO(_get_phase)(       NCO() _q);                          \
-void NCO(_set_phase)(       NCO() _q, T _phi);                  \
-void NCO(_adjust_phase)(    NCO() _q, T _dphi);                 \
-                                                                \
-/* increment phase by internal phase step (frequency)   */      \
-void NCO(_step)(NCO() _q);                                      \
-                                                                \
-/* compute trigonometric functions                      */      \
-T NCO(_sin)(NCO() _q);                                          \
-T NCO(_cos)(NCO() _q);                                          \
-void NCO(_sincos)(NCO() _q, T* _s, T* _c);                      \
-void NCO(_cexpf)(NCO() _q, TC * _y);                            \
-                                                                \
-/* pll : phase-locked loop                              */      \
-void NCO(_pll_set_bandwidth)(NCO() _q, T _bandwidth);           \
-void NCO(_pll_step)(NCO() _q, T _dphi);                         \
-                                                                \
-/* Rotate input sample up by NCO angle (no stepping)    */      \
-void NCO(_mix_up)(NCO() _q, TC _x, TC *_y);                     \
-                                                                \
-/* Rotate input sample down by NCO angle (no stepping)  */      \
-void NCO(_mix_down)(NCO() _q, TC _x, TC *_y);                   \
-                                                                \
-/* Rotate input vector up by NCO angle (stepping)       */      \
-/*  _q      :   nco object                              */      \
-/*  _x      :   input vector [size: _N x 1]             */      \
-/*  _y      :   output vector [size: _N x 1]            */      \
-/*  _N      :   vector size                             */      \
-void NCO(_mix_block_up)(NCO() _q,                               \
-                        TC *_x,                                 \
-                        TC *_y,                                 \
-                        unsigned int _N);                       \
-                                                                \
-/* Rotate input vector down by NCO angle (stepping)     */      \
-/*  _q      :   nco object                              */      \
-/*  _x      :   input vector [size: _N x 1]             */      \
-/*  _y      :   output vector [size: _N x 1]            */      \
-/*  _N      :   vector size                             */      \
-void NCO(_mix_block_down)(NCO() _q,                             \
-                          TC *_x,                               \
-                          TC *_y,                               \
-                          unsigned int _N);                     \
+#define LIQUID_NCO_DEFINE_API(NCO,T,TC)                                     \
+                                                                            \
+/* Numerically-controlled oscillator object                             */  \
+typedef struct NCO(_s) * NCO();                                             \
+                                                                            \
+/* Create nco object with either fixed-point or floating-point phase    */  \
+/*  _type   : oscillator type, _type in {LIQUID_NCO, LIQUID_VCO}        */  \
+NCO() NCO(_create)(liquid_ncotype _type);                                   \
+                                                                            \
+/* Destroy nco object, freeing all internally allocated memory          */  \
+void NCO(_destroy)(NCO() _q);                                               \
+                                                                            \
+/* Print nco object internals to stdout                                 */  \
+void NCO(_print)(NCO() _q);                                                 \
+                                                                            \
+/* Set phase/frequency to zero and reset the phase-locked loop filter   */  \
+/* state                                                                */  \
+void NCO(_reset)(NCO() _q);                                                 \
+                                                                            \
+/* Get frequency of nco object in radians per sample                    */  \
+T NCO(_get_frequency)(NCO() _q);                                            \
+                                                                            \
+/* Set frequency of nco object in radians per sample                    */  \
+/*  _q      : nco object                                                */  \
+/*  _dtheta : input frequency [radians/sample]                          */  \
+void NCO(_set_frequency)(NCO() _q,                                          \
+                        T      _dtheta);                                    \
+                                                                            \
+/* Adjust frequency of nco object by a step size in radians per sample  */  \
+/*  _q      : nco object                                                */  \
+/*  _step   : input frequency step [radians/sample]                     */  \
+void NCO(_adjust_frequency)(NCO() _q, T _df);                               \
+                                                                            \
+/* Get phase of nco object in radians                                   */  \
+T NCO(_get_phase)(NCO() _q);                                                \
+                                                                            \
+/* Set phase of nco object in radians                                   */  \
+/*  _q      : nco object                                                */  \
+/*  _phi    : input phase of nco object [radians]                       */  \
+void NCO(_set_phase)(NCO() _q,                                              \
+                     T     _phi);                                           \
+                                                                            \
+/* Adjust phase of nco object by a step of \(\Delta \phi\) radians      */  \
+/*  _q      : nco object                                                */  \
+/*  _dphi   : input nco object phase adjustment [radians]               */  \
+void NCO(_adjust_phase)(NCO() _q,                                           \
+                        T     _phi);                                        \
+                                                                            \
+/* Increment phase by internal phase step (frequency)                   */  \
+void NCO(_step)(NCO() _q);                                                  \
+                                                                            \
+/* Compute sine output given internal phase                             */  \
+T NCO(_sin)(NCO() _q);                                                      \
+                                                                            \
+/* Compute cosine output given internal phase                           */  \
+T NCO(_cos)(NCO() _q);                                                      \
+                                                                            \
+/* Compute sine and cosine outputs given internal phase                 */  \
+/*  _q      : nco object                                                */  \
+/*  _s      : output sine component of phase                            */  \
+/*  _c      : output cosine component of phase                          */  \
+void NCO(_sincos)(NCO() _q,                                                 \
+                  T *   _s,                                                 \
+                  T *   _c);                                                \
+                                                                            \
+/* Compute complex exponential output given internal phase              */  \
+/*  _q      : nco object                                                */  \
+/*  _y      : output complex exponential                                */  \
+void NCO(_cexpf)(NCO() _q,                                                  \
+                 TC *  _y);                                                 \
+                                                                            \
+/* Set bandwidth of internal phase-locked loop                          */  \
+/*  _q      : nco object                                                */  \
+/*  _bw     : input phase-locked loop bandwidth, _bw >= 0               */  \
+void NCO(_pll_set_bandwidth)(NCO() _q,                                      \
+                             T     _bw);                                    \
+                                                                            \
+/* Step internal phase-locked loop given input phase error, adjusting   */  \
+/* internal phase and frequency proportional to coefficients defined by */  \
+/* internal PLL bandwidth                                               */  \
+/*  _q      : nco object                                                */  \
+/*  _dphi   : input phase-locked loop phase error                       */  \
+void NCO(_pll_step)(NCO() _q,                                               \
+                    T     _dphi);                                           \
+                                                                            \
+/* Rotate input sample up by nco angle.                                 */  \
+/* Note that this does not adjust the internal phase or frequency.      */  \
+/*  _q      : nco object                                                */  \
+/*  _x      : input complex sample                                      */  \
+/*  _y      : pointer to output sample location                         */  \
+void NCO(_mix_up)(NCO() _q,                                                 \
+                  TC    _x,                                                 \
+                  TC *  _y);                                                \
+                                                                            \
+/* Rotate input sample down by nco angle.                               */  \
+/* Note that this does not adjust the internal phase or frequency.      */  \
+/*  _q      : nco object                                                */  \
+/*  _x      : input complex sample                                      */  \
+/*  _y      : pointer to output sample location                         */  \
+void NCO(_mix_down)(NCO() _q,                                               \
+                    TC    _x,                                               \
+                    TC *  _y);                                              \
+                                                                            \
+/* Rotate input vector up by NCO angle (stepping)                       */  \
+/* Note that this *does* adjust the internal phase as the signal steps  */  \
+/* through each input sample.                                           */  \
+/*  _q      : nco object                                                */  \
+/*  _x      : array of input samples,  [size: _n x 1]                   */  \
+/*  _y      : array of output samples, [size: _n x 1]                   */  \
+/*  _n      : number of input (and output) samples                      */  \
+void NCO(_mix_block_up)(NCO()        _q,                                    \
+                        TC *         _x,                                    \
+                        TC *         _y,                                    \
+                        unsigned int _n);                                   \
+                                                                            \
+/* Rotate input vector down by NCO angle (stepping)                     */  \
+/* Note that this *does* adjust the internal phase as the signal steps  */  \
+/* through each input sample.                                           */  \
+/*  _q      : nco object                                                */  \
+/*  _x      : array of input samples,  [size: _n x 1]                   */  \
+/*  _y      : array of output samples, [size: _n x 1]                   */  \
+/*  _n      : number of input (and output) samples                      */  \
+void NCO(_mix_block_down)(NCO()        _q,                                  \
+                          TC *         _x,                                  \
+                          TC *         _y,                                  \
+                          unsigned int _n);                                 \
 
 // Define nco APIs
 LIQUID_NCO_DEFINE_API(LIQUID_NCO_MANGLE_FLOAT, float, liquid_float_complex)
