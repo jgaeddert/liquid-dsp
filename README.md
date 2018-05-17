@@ -85,7 +85,7 @@ make target `check`, viz.
 
     make check
 
-There are currently more than 80,000 checks to verify funcional correctness.
+There are currently more than 80,000 checks to verify functional correctness.
 
 ### Examples ###
 
