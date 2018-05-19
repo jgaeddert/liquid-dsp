@@ -176,6 +176,10 @@ packetizer packetizer_recreate(packetizer _p,
 // destroy packetizer object
 void packetizer_destroy(packetizer _p)
 {
+    if (!_p) {
+        return;
+    }
+
     // free fec, interleaver objects
     unsigned int i;
     for (i=0; i<_p->plan_len; i++) {

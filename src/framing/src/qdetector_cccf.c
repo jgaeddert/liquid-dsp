@@ -389,8 +389,23 @@ void qdetector_cccf_execute_seek(qdetector_cccf _q,
     fft_execute(_q->fft);
 
     // compute scaling factor (TODO: use median rather than mean signal level)
-    float g0 = sqrtf(_q->x2_sum_0 + _q->x2_sum_1) * sqrtf((float)(_q->s_len) / (float)(_q->nfft));
-    float g = 1.0f / ( (float)(_q->nfft) * g0 * sqrtf(_q->s2_sum) );
+    float g0;
+    if (_q->x2_sum_0 == 0.f) {
+        g0 = sqrtf(_q->x2_sum_1) * sqrtf((float)(_q->s_len) / (float)(_q->nfft / 2));
+    } else {
+        g0 = sqrtf(_q->x2_sum_0 + _q->x2_sum_1) * sqrtf((float)(_q->s_len) / (float)(_q->nfft));
+    }
+    if (g0 < 1e-10) {
+        memmove(_q->buf_time_0,
+                _q->buf_time_0 + _q->nfft / 2,
+                (_q->nfft / 2) * sizeof(liquid_float_complex));
+
+        // swap accumulated signal levels
+        _q->x2_sum_0 = _q->x2_sum_1;
+        _q->x2_sum_1 = 0.0f;
+        return;
+    }
+    float g = 1.0f / ((float)(_q->nfft) * g0 * sqrtf(_q->s2_sum));
     
     // sweep over carrier frequency offset range
     int offset;

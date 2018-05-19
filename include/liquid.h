@@ -4043,6 +4043,9 @@ unsigned int qpacketmodem_get_fec0     (qpacketmodem _q);
 unsigned int qpacketmodem_get_fec1     (qpacketmodem _q);
 unsigned int qpacketmodem_get_modscheme(qpacketmodem _q);
 
+float qpacketmodem_get_demodulator_phase_error(qpacketmodem _q);
+float qpacketmodem_get_demodulator_evm(qpacketmodem _q);
+
 // encode packet into un-modulated frame symbol indices
 //  _q          :   qpacketmodem object
 //  _payload    :   unencoded payload bytes
@@ -4092,6 +4095,12 @@ int qpacketmodem_decode(qpacketmodem           _q,
 int qpacketmodem_decode_soft(qpacketmodem           _q,
                              liquid_float_complex * _frame,
                              unsigned char *        _payload);
+
+int qpacketmodem_decode_soft_sym(qpacketmodem  _q,
+                                 float complex _symbol);
+
+int qpacketmodem_decode_soft_payload(qpacketmodem    _q,
+                                     unsigned char * _payload);
 
 //
 // pilot generator for streaming applications
@@ -4480,6 +4489,72 @@ void gmskframesync_debug_disable(gmskframesync _q);
 void gmskframesync_debug_print(gmskframesync _q, const char * _filename);
 
 
+//
+// DSSS frame generator
+//
+
+typedef struct {
+    unsigned int check;
+    unsigned int fec0;
+    unsigned int fec1;
+} dsssframegenprops_s;
+
+typedef struct dsssframegen_s * dsssframegen;
+
+dsssframegen dsssframegen_create(dsssframegenprops_s * _props);
+void dsssframegen_destroy(dsssframegen _q);
+void dsssframegen_reset(dsssframegen _q);
+int dsssframegen_is_assembled(dsssframegen _q);
+void dsssframegen_getprops(dsssframegen _q, dsssframegenprops_s * _props);
+int dsssframegen_setprops(dsssframegen _q, dsssframegenprops_s * _props);
+void dsssframegen_set_header_len(dsssframegen _q, unsigned int _len);
+int dsssframegen_set_header_props(dsssframegen          _q,
+                                  dsssframegenprops_s * _props);
+unsigned int dsssframegen_getframelen(dsssframegen _q);
+
+// assemble a frame from an array of data
+//  _q              :   frame generator object
+//  _header         :   frame header
+//  _payload        :   payload data [size: _payload_len x 1]
+//  _payload_len    :   payload data length
+void dsssframegen_assemble(dsssframegen          _q,
+                           const unsigned char * _header,
+                           const unsigned char * _payload,
+                           unsigned int          _payload_len);
+
+int dsssframegen_write_samples(dsssframegen           _q,
+                               liquid_float_complex * _buffer,
+                               unsigned int           _buffer_len);
+
+
+//
+// DSSS frame synchronizer
+//
+
+typedef struct dsssframesync_s * dsssframesync;
+
+dsssframesync dsssframesync_create(framesync_callback _callback, void * _userdata);
+void dsssframesync_destroy(dsssframesync _q);
+void dsssframesync_print(dsssframesync _q);
+void dsssframesync_reset(dsssframesync _q);
+int dsssframesync_is_frame_open(dsssframesync _q);
+void dsssframesync_set_header_len(dsssframesync _q,
+                                  unsigned int  _len);
+void dsssframesync_decode_header_soft(dsssframesync _q,
+                                      int           _soft);
+void dsssframesync_decode_payload_soft(dsssframesync _q,
+                                       int           _soft);
+int dsssframesync_set_header_props(dsssframesync          _q,
+                                   dsssframegenprops_s * _props);
+void dsssframesync_execute(dsssframesync          _q,
+                           liquid_float_complex * _x,
+                           unsigned int           _n);
+void             dsssframesync_reset_framedatastats(dsssframesync _q);
+framedatastats_s dsssframesync_get_framedatastats  (dsssframesync _q);
+
+void dsssframesync_debug_enable(dsssframesync _q);
+void dsssframesync_debug_disable(dsssframesync _q);
+void dsssframesync_debug_print(dsssframesync _q, const char * _filename);
 
 // 
 // OFDM flexframe generator
@@ -7010,6 +7085,74 @@ void liquid_unwrap_phase(float * _theta, unsigned int _n);
 
 // unwrap phase of array (advanced)
 void liquid_unwrap_phase2(float * _theta, unsigned int _n);
+
+#define SYNTH_MANGLE_FLOAT(name)  LIQUID_CONCAT(synth_crcf, name)
+
+// large macro
+//   SYNTH  : name-mangling macro
+//   T      : primitive data type
+//   TC     : input/output data type
+#define LIQUID_SYNTH_DEFINE_API(SYNTH,T,TC)                     \
+typedef struct SYNTH(_s) * SYNTH();                             \
+                                                                \
+SYNTH() SYNTH(_create)(const TC *_table, unsigned int _length); \
+void SYNTH(_destroy)(SYNTH() _q);                               \
+                                                                \
+void SYNTH(_reset)(SYNTH() _q);                                 \
+                                                                \
+/* get/set/adjust internal frequency/phase              */      \
+T    SYNTH(_get_frequency)(   SYNTH() _q);                      \
+void SYNTH(_set_frequency)(   SYNTH() _q, T _f);                \
+void SYNTH(_adjust_frequency)(SYNTH() _q, T _df);               \
+T    SYNTH(_get_phase)(       SYNTH() _q);                      \
+void SYNTH(_set_phase)(       SYNTH() _q, T _phi);              \
+void SYNTH(_adjust_phase)(    SYNTH() _q, T _dphi);             \
+                                                                \
+unsigned int SYNTH(_get_length)(SYNTH() _q);                    \
+TC SYNTH(_get_current)(SYNTH() _q);                             \
+TC SYNTH(_get_half_previous)(SYNTH() _q);                       \
+TC SYNTH(_get_half_next)(SYNTH() _q);                           \
+                                                                \
+void SYNTH(_step)(SYNTH() _q);                                  \
+                                                                \
+/* pll : phase-locked loop                              */      \
+void SYNTH(_pll_set_bandwidth)(SYNTH() _q, T _bandwidth);       \
+void SYNTH(_pll_step)(SYNTH() _q, T _dphi);                     \
+                                                                \
+/* Rotate input sample up by SYNTH angle (no stepping)    */    \
+void SYNTH(_mix_up)(SYNTH() _q, TC _x, TC *_y);                 \
+                                                                \
+/* Rotate input sample down by SYNTH angle (no stepping)  */    \
+void SYNTH(_mix_down)(SYNTH() _q, TC _x, TC *_y);               \
+                                                                \
+/* Rotate input vector up by SYNTH angle (stepping)       */    \
+void SYNTH(_mix_block_up)(SYNTH() _q,                           \
+                          TC *_x,                               \
+                          TC *_y,                               \
+                          unsigned int _N);                     \
+                                                                \
+/* Rotate input vector down by SYNTH angle (stepping)     */    \
+void SYNTH(_mix_block_down)(SYNTH() _q,                         \
+                            TC *_x,                             \
+                            TC *_y,                             \
+                            unsigned int _N);                   \
+                                                                \
+void SYNTH(_spread)(SYNTH() _q,                                 \
+                    TC _x,                                      \
+                    TC *_y);                                    \
+                                                                \
+void SYNTH(_despread)(SYNTH() _q,                               \
+                      TC *_x,                                   \
+                      TC *_y);                                  \
+                                                                \
+void SYNTH(_despread_triple)(SYNTH() _q,                        \
+                             TC *_x,                            \
+                             TC *_early,                        \
+                             TC *_punctual,                     \
+                             TC *_late);                        \
+
+// Define synth APIs
+LIQUID_SYNTH_DEFINE_API(SYNTH_MANGLE_FLOAT, float, liquid_float_complex)
 
 
 

@@ -1125,6 +1125,18 @@ void bpacketsync_reconfig(bpacketsync _q);
 #define OFDMFLEXFRAME_H_FEC1         (LIQUID_FEC_NONE)           // header FEC (outer)
 #define OFDMFLEXFRAME_H_MOD          (LIQUID_MODEM_BPSK)         // modulation scheme
 
+
+//
+// dsssframe
+//
+
+#define DSSSFRAME_PROTOCOL (101 + PACKETIZER_VERSION)
+#define DSSSFRAME_H_USER_DEFAULT (8)
+#define DSSSFRAME_H_DEC          (5)
+#define DSSSFRAME_H_CRC          (LIQUID_CRC_32)
+#define DSSSFRAME_H_FEC0         (LIQUID_FEC_GOLAY2412)
+#define DSSSFRAME_H_FEC1         (LIQUID_FEC_NONE)
+
 //
 // MODULE : math
 //
@@ -1524,6 +1536,21 @@ LIQUID_NCO_DEFINE_INTERNAL_API(LIQUID_NCO_MANGLE_FLOAT,
                                float,
                                float complex)
 
+// Numerically-controlled synthesizer (direct digital synthesis)
+#define LIQUID_SYNTH_DEFINE_INTERNAL_API(SYNTH,T,TC)            \
+                                                                \
+/* constrain phase/frequency to be in [-pi,pi)          */      \
+void SYNTH(_constrain_phase)(SYNTH() _q);                       \
+void SYNTH(_constrain_frequency)(SYNTH() _q);                   \
+void SYNTH(_compute_synth)(SYNTH() _q);                         \
+                                                                \
+/* reset internal phase-locked loop filter              */      \
+void SYNTH(_pll_reset)(SYNTH() _q);                             \
+
+// Define nco internal APIs
+LIQUID_SYNTH_DEFINE_INTERNAL_API(SYNTH_MANGLE_FLOAT,
+                                 float,
+                                 liquid_float_complex)
 // 
 // MODULE : optim (non-linear optimization)
 //
