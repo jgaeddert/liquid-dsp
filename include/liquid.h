@@ -4097,7 +4097,7 @@ int qpacketmodem_decode_soft(qpacketmodem           _q,
                              unsigned char *        _payload);
 
 int qpacketmodem_decode_soft_sym(qpacketmodem  _q,
-                                 float complex _symbol);
+                                 liquid_float_complex _symbol);
 
 int qpacketmodem_decode_soft_payload(qpacketmodem    _q,
                                      unsigned char * _payload);
