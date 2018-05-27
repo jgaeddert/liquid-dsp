@@ -49,6 +49,7 @@ struct fskframegen_s {
     unsigned int    k;                  // modulator samples/symbol
     float           bandwidth;          // modulator bandwidth
     unsigned int    M;                  // modulator constellation size, M=2^m
+    fskmod          mod_header;         // modulator object for the header (BFSK)
     fskmod          mod;                // modulator object (M-FSK)
     float complex * buf;                // modulator transmit buffer [size: k x 1]
 
@@ -114,14 +115,15 @@ fskframegen fskframegen_create()
     fskframegen q = (fskframegen) malloc(sizeof(struct fskframegen_s));
 
     // set static values
-    q->m         = 4;
-    q->M         = 1 << q->m;
-    q->k         = 2 << q->m;
-    q->bandwidth = 0.25f;
+    q->m         = 4;           // modulation bits/symbol
+    q->M         = 1 << q->m;   // modulation constellation size
+    q->k         = 2 << q->m;   // samples per symbol
+    q->bandwidth = 0.25f;       // occupied one-sided bandwidth (normalized to sample rate)
 
-    // create modulator
-    q->mod = fskmod_create(q->m, q->k, q->bandwidth);
-    q->buf = (float complex*) malloc( q->k * sizeof(float complex) );
+    // create modulators
+    q->mod_header = fskmod_create(   1, q->k, q->bandwidth);
+    q->mod        = fskmod_create(q->m, q->k, q->bandwidth);
+    q->buf        = (float complex*) malloc( q->k * sizeof(float complex) );
 
     // preamble symbols (over-sampled by 2)
     msequence preamble_ms = msequence_create(6, 0x6d, 1);
@@ -129,7 +131,7 @@ fskframegen fskframegen_create()
     q->preamble_sym = (unsigned char*)malloc(2*q->preamble_sym_len*sizeof(unsigned char));
     unsigned int i;
     for (i=0; i<q->preamble_sym_len; i++) {
-        q->preamble_sym[2*i+0] = msequence_advance(preamble_ms) ? q->M-1 : 0;
+        q->preamble_sym[2*i+0] = msequence_advance(preamble_ms) ? 1 : 0;
         q->preamble_sym[2*i+1] = q->preamble_sym[2*i+0];
     }
     msequence_destroy(preamble_ms);
@@ -157,7 +159,7 @@ fskframegen fskframegen_create()
                            LIQUID_CRC_32,
                            LIQUID_FEC_NONE,
                            LIQUID_FEC_GOLAY2412,
-                           LIQUID_MODEM_QAM16);  // TODO: set bits/sym appropriately
+                           LIQUID_MODEM_BPSK);
     q->header_sym_len   = qpacketmodem_get_frame_len(q->header_encoder);
     q->header_sym       = (unsigned char*)malloc(q->header_sym_len*sizeof(unsigned char));
 #endif
@@ -201,7 +203,8 @@ fskframegen fskframegen_create()
 // destroy fskframegen object
 void fskframegen_destroy(fskframegen _q)
 {
-    // destroy modulator
+    // destroy modulators
+    fskmod_destroy(_q->mod_header);
     fskmod_destroy(_q->mod);
     free(_q->buf);
 
@@ -236,6 +239,7 @@ void fskframegen_destroy(fskframegen _q)
 void fskframegen_reset(fskframegen _q)
 {
     // reset modulator
+    fskmod_reset(_q->mod_header);
     fskmod_reset(_q->mod);
 
     // reset states
@@ -452,7 +456,7 @@ void fskframegen_generate_zeros(fskframegen _q)
 void fskframegen_generate_preamble(fskframegen _q)
 {
     unsigned char s = _q->preamble_sym[_q->symbol_counter];
-    fskmod_modulate(_q->mod, s, _q->buf);
+    fskmod_modulate(_q->mod_header, s, _q->buf);
 
     // TODO: apply ramping for first symbol?
 
@@ -469,7 +473,7 @@ void fskframegen_generate_header(fskframegen _q)
 {
     unsigned int s = _q->header_sym[_q->symbol_counter];
 
-    fskmod_modulate(_q->mod, s, _q->buf);
+    fskmod_modulate(_q->mod_header, s, _q->buf);
 
     _q->symbol_counter++;
     

@@ -52,6 +52,7 @@ struct fskframesync_s {
     unsigned int    k;                  // demodulator samples/symbol
     float           bandwidth;          // demodulator bandwidth
     unsigned int    M;                  // demodulator constellation size, M=2^m
+    fskdem          dem_header;         // demodulator object for the header (BFSK)
     fskdem          dem;                // demodulator object (M-FSK)
     float complex * buf;                // demodulator transmit buffer [size: k x 1]
 
@@ -99,11 +100,11 @@ struct fskframesync_s {
     unsigned char * payload_enc;        // paylaod encoded [size: payload_enc_len x 1]
     unsigned int    payload_sym_len;    // payload symbols length
 #else
-    unsigned int    payload_dec_len;    //
+    unsigned int    payload_dec_len;    // payload decoded message length
     crc_scheme      payload_crc;        // payload validity check
     fec_scheme      payload_fec0;       // payload inner code
     fec_scheme      payload_fec1;       // payload outer code
-    unsigned int    payload_sym_len;    //
+    unsigned int    payload_sym_len;    // payload symbols length
     unsigned char * payload_sym;        //
     unsigned char * payload_dec;        // payload decoded [size: payload_dec_len x 1]
     qpacketmodem    payload_decoder;    //
@@ -144,9 +145,10 @@ fskframesync fskframesync_create(framesync_callback _callback,
     q->k         = 2 << q->m;
     q->bandwidth = 0.25f;
 
-    // create demodulator
-    q->dem = fskdem_create(q->m, q->k, q->bandwidth);
-    q->buf = (float complex*) malloc( q->k * sizeof(float complex) );
+    // create demodulators
+    q->dem_header = fskdem_create(   1, q->k, q->bandwidth);
+    q->dem        = fskdem_create(q->m, q->k, q->bandwidth);
+    q->buf        = (float complex*) malloc( q->k * sizeof(float complex) );
 
     // create polyphase filterbank for timing recovery
     q->npfb = 64;
@@ -174,7 +176,7 @@ fskframesync fskframesync_create(framesync_callback _callback,
     free(preamble);
     msequence_destroy(preamble_ms);
 
-    // create buffer for 
+    // create buffer for detection
     q->buf_LLR2 = windowf_create(2*preamble_sym_len);
 
     // header objects/arrays
@@ -200,7 +202,7 @@ fskframesync fskframesync_create(framesync_callback _callback,
                            LIQUID_CRC_32,
                            LIQUID_FEC_NONE,
                            LIQUID_FEC_GOLAY2412,
-                           LIQUID_MODEM_QAM16);  // TODO: set bits/sym appropriately
+                           LIQUID_MODEM_BPSK);
     q->header_sym_len   = qpacketmodem_get_frame_len(q->header_decoder);
     q->header_sym       = (unsigned char*)malloc(q->header_sym_len*sizeof(unsigned char));
 #endif
@@ -260,7 +262,8 @@ void fskframesync_destroy(fskframesync _q)
     }
 #endif
 
-    // destroy modulator
+    // destroy modulators
+    fskdem_destroy(_q->dem_header);
     fskdem_destroy(_q->dem);
     free(_q->buf);
 
@@ -418,9 +421,10 @@ void fskframesync_execute_detectframe(fskframesync  _q,
     // run demodulator and retrieve FFT result, computing LLR sample output
     float complex * r;
     windowcf_read(_q->buf_rx, &r);
-    fskdem_demodulate(_q->dem, r);
-    float v0 = fskdem_get_symbol_energy(_q->dem,       0, 2);
-    float v1 = fskdem_get_symbol_energy(_q->dem, _q->M-1, 2);
+    fskdem_demodulate(_q->dem_header, r);
+    int fft_bin_range = 2;
+    float v0 = fskdem_get_symbol_energy(_q->dem_header, 0, fft_bin_range); // energy for '0' symbol
+    float v1 = fskdem_get_symbol_energy(_q->dem_header, 1, fft_bin_range); // energy for '1' symbol
 
     // compute LLR value
     float LLR = logf( (v1+1e-9f)/(v0+1e-9f) );
@@ -511,7 +515,7 @@ void fskframesync_execute_rxheader(fskframesync  _q,
     // run demodulator
     float complex * r;
     windowcf_read(_q->buf_rx, &r);
-    unsigned char sym = fskdem_demodulate(_q->dem, r);
+    unsigned char sym = fskdem_demodulate(_q->dem_header, r);
 
     // add symbol to header buffer
     _q->header_sym[_q->symbol_counter++] = sym;
