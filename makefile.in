@@ -1686,9 +1686,7 @@ clean-modules:
 	$(RM) src/libliquid.o
 
 clean: clean-modules clean-autoscript clean-check clean-bench clean-examples clean-sandbox clean-tools
-	$(RM) $(extra_clean)
-	$(RM) libliquid.a
-	$(RM) $(SHARED_LIB)
+	$(RM) libliquid.a ${SHARED_LIB} $(extra_clean)
 
 ##
 ## TARGET : distclean - removes everything except the originally distributed files
