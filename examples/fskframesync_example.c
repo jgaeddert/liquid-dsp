@@ -81,11 +81,11 @@ int main(int argc, char*argv[])
 
     // create frame generator
     fskframegen fg = fskframegen_create();
-    //fskframegen_print(fg);
+    fskframegen_print(fg);
 
     // create frame synchronizer using default properties
     fskframesync fs = fskframesync_create(callback,NULL);
-    //fskframesync_print(fs);
+    fskframesync_print(fs);
     if (debug_enabled)
         fskframesync_debug_enable(fs);
 

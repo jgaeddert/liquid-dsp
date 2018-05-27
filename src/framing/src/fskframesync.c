@@ -81,8 +81,8 @@ struct fskframesync_s {
     unsigned char * header_enc;         // header encoded [size: header_enc_len x 1]
     unsigned int    header_sym_len;     // header symbols length
 #else
-    unsigned int    header_dec_len;     //
-    unsigned int    header_sym_len;     //
+    unsigned int    header_dec_len;     // header length (decoded bytes)
+    unsigned int    header_sym_len;     // header length (number of modulated symbols)
     unsigned char * header_dec;         // header uncoded [size: header_dec_len x 1]
     unsigned char * header_sym;         // header: unmodulated symbols
     qpacketmodem    header_decoder;     //
@@ -306,6 +306,19 @@ void fskframesync_destroy(fskframesync _q)
 void fskframesync_print(fskframesync _q)
 {
     printf("fskframesync:\n");
+    printf("  physical properties\n");
+    printf("    bits/symbol     :   %u\n", _q->m);
+    printf("    samples/symbol  :   %u\n", _q->k);
+    printf("    bandwidth       :   %-8.3f\n", _q->bandwidth);
+    printf("  framing properties\n");
+    printf("    preamble        :   %-4u symbols\n", 0); //_q->preamble_sym_len);
+    printf("    header          :   %-4u symbols, %-4u bytes\n", _q->header_sym_len, _q->header_dec_len);
+    printf("    payload         :   %-4u symbols, %-4u bytes\n", _q->payload_sym_len, _q->payload_dec_len);
+    printf("  packet properties\n");
+    printf("    crc             :   %s\n", crc_scheme_str[_q->payload_crc ][1]);
+    printf("    fec (inner)     :   %s\n", fec_scheme_str[_q->payload_fec0][1]);
+    printf("    fec (outer)     :   %s\n", fec_scheme_str[_q->payload_fec1][1]);
+    printf("  total samples     :   %-4u samples\n", 0);
 }
 
 // reset frame synchronizer object
@@ -506,17 +519,23 @@ void fskframesync_execute_rxheader(fskframesync  _q,
     // decode header if appropriate
     if (_q->symbol_counter == _q->header_sym_len) {
         // decode header
+        int header_valid = qpacketmodem_decode_syms(_q->header_decoder,
+                                                    _q->header_sym,
+                                                    _q->header_dec);
 #if 1
         printf("rx header symbols (%u):\n", _q->header_sym_len);
         unsigned int i;
         for (i=0; i<_q->header_sym_len; i++)
             printf("%1x", _q->header_sym[i]);
         printf("\n");
-#endif
-        int header_valid = qpacketmodem_decode_syms(_q->header_decoder,
-                                                    _q->header_sym,
-                                                    _q->header_dec);
+
+        printf("rx header decoded (%u):\n", _q->header_dec_len);
+        for (i=0; i<_q->header_dec_len; i++)
+            printf(" %.2x", _q->header_dec[i]);
+        printf("\n");
+
         printf("header: %s\n", header_valid ? "valid" : "INVALID");
+#endif
 
         if (header_valid) {
             // continue on to decoding payload

@@ -249,7 +249,6 @@ void fskframegen_reset(fskframegen _q)
 // print fskframegen object internals
 void fskframegen_print(fskframegen _q)
 {
-    // plot
     printf("fskframegen:\n");
     printf("  physical properties\n");
     printf("    bits/symbol     :   %u\n", _q->m);
@@ -257,8 +256,8 @@ void fskframegen_print(fskframegen _q)
     printf("    bandwidth       :   %-8.3f\n", _q->bandwidth);
     printf("  framing properties\n");
     printf("    preamble        :   %-4u symbols\n", _q->preamble_sym_len);
-    printf("    header          :   %-4u symbols\n", _q->header_sym_len);
-    printf("    payload         :   %-4u symbols\n", _q->payload_sym_len);
+    printf("    header          :   %-4u symbols, %-4u bytes\n", _q->header_sym_len, _q->header_dec_len);
+    printf("    payload         :   %-4u symbols, %-4u bytes\n", _q->payload_sym_len, _q->payload_dec_len);
     printf("  packet properties\n");
     printf("    crc             :   %s\n", crc_scheme_str[_q->payload_crc ][1]);
     printf("    fec (inner)     :   %s\n", fec_scheme_str[_q->payload_fec0][1]);
@@ -370,11 +369,11 @@ int fskframegen_write_samples(fskframegen     _q,
 void fskframegen_encode_header(fskframegen     _q,
                                unsigned char * _header)
 {
-#if 0
-    // first 'n' bytes user data
-    //memmove(_q->header_dec, _header, ...);
-    unsigned int n = 0;
+    // first 8 bytes user data
+    memmove(_q->header_dec, _header, 8);
+    unsigned int n = 8;
 
+#if 0
     // first byte is for expansion/version validation
     _q->header_dec[n+0] = 0;    // version
 
@@ -389,6 +388,9 @@ void fskframegen_encode_header(fskframegen     _q,
     _q->header_dec[n+3]  = (_q->payload_crc & 0x07) << 5;
     _q->header_dec[n+3] |= (_q->payload_fec0      ) & 0x1f;
     _q->header_dec[n+4]  = (_q->payload_fec1      ) & 0x1f;
+#else
+    while (n < _q->header_dec_len)
+        _q->header_dec[n++] = 0xff;
 #endif
 
     // run packet encoder, encoding into symbols
@@ -400,8 +402,13 @@ void fskframegen_encode_header(fskframegen     _q,
     for (i=0; i<_q->header_sym_len; i++)
         printf("%1x", _q->header_sym[i]);
     printf("\n");
-#endif
 
+
+    printf("tx header decoded (%u):\n", _q->header_dec_len);
+    for (i=0; i<_q->header_dec_len; i++)
+        printf(" %2x", _q->header_dec[i]);
+    printf("\n");
+#endif
     // TODO: scramble header
 }
 
