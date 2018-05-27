@@ -122,9 +122,9 @@ bpacketsync bpacketsync_create(unsigned int _m,
     q->header_len = packetizer_compute_enc_msg_len(6, LIQUID_CRC_16, LIQUID_FEC_NONE, LIQUID_FEC_HAMMING128);
 
     // arrays
-    q->pnsequence  = (unsigned char*) malloc((q->pnsequence_len)*sizeof(unsigned char*));
-    q->payload_enc = (unsigned char*) malloc((q->enc_msg_len)*sizeof(unsigned char*));
-    q->payload_dec = (unsigned char*) malloc((q->dec_msg_len)*sizeof(unsigned char*));
+    q->pnsequence  = (unsigned char*) malloc((q->pnsequence_len)*sizeof(unsigned char));
+    q->payload_enc = (unsigned char*) malloc((q->enc_msg_len)*sizeof(unsigned char));
+    q->payload_dec = (unsigned char*) malloc((q->dec_msg_len)*sizeof(unsigned char));
 
     // create m-sequence generator
     // TODO : configure sequence from generator polynomial
@@ -188,7 +188,7 @@ void bpacketsync_print(bpacketsync _q)
 void bpacketsync_reset(bpacketsync _q)
 {
     // clear received sequence buffer
-    bsequence_clear(_q->brx);
+    bsequence_reset(_q->brx);
 
     // reset counters
     _q->num_bytes_received  = 0;

@@ -1,4 +1,4 @@
-# Copyright (c) 2007 - 2016 Joseph Gaeddert
+# Copyright (c) 2007 - 2017 Joseph Gaeddert
 # 
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -59,15 +59,16 @@ MV		:= mv -f
 RM		:= rm -f
 SED		:= @SED@
 GREP		:= @GREP@
-AR		:= ar
-RANLIB		:= ranlib
+AR		:= @AR@
+RANLIB		:= @RANLIB@
 
 # flags
-INCLUDE_CFLAGS	= $(addprefix -I ,$(include_dirs))
-CONFIG_CFLAGS	= @CFLAGS@ @DEBUG_OPTION@ @ARCH_OPTION@
-# -g : debugging info
-CFLAGS		+= $(INCLUDE_CFLAGS) -Wall -fPIC $(CONFIG_CFLAGS)
-LDFLAGS		+= @LDFLAGS@ @LIBS@
+INCLUDE_CFLAGS	= $(addprefix -I,$(include_dirs))
+CONFIG_CFLAGS	= @CFLAGS@ @DEBUG_MSG_OPTION@ @ARCH_OPTION@
+CPPFLAGS	= @CPPFLAGS@ $(INCLUDE_CFLAGS)
+CFLAGS		= $(CONFIG_CFLAGS) -Wall -fPIC
+LDFLAGS		= @LDFLAGS@
+LIBS		= @LIBS@
 ARFLAGS		= r
 PATHSEP		= /
 
@@ -104,9 +105,7 @@ agc_objects =							\
 	src/agc/src/agc_rrrf.o					\
 
 # explicit targets and dependencies
-
 src/agc/src/agc_crcf.o : %.o : %.c src/agc/src/agc.c $(include_headers)
-
 src/agc/src/agc_rrrf.o : %.o : %.c src/agc/src/agc.c $(include_headers)
 
 # autotests
@@ -172,7 +171,11 @@ buffer_benchmarks :=						\
 channel_objects :=						\
 	src/channel/src/channel_cccf.o				\
 
-src/channel/src/channel_cccf.o : %.o : %.c $(include_headers) src/channel/src/channel.c
+channel_includes :=						\
+	src/channel/src/channel.c				\
+	src/channel/src/tvmpch.c				\
+
+src/channel/src/channel_cccf.o : %.o : %.c $(include_headers) $(channel_includes)
 
 channel_autotests :=						\
 	
@@ -189,11 +192,8 @@ dotprod_objects :=						\
 	@MLIBS_DOTPROD@						\
 
 src/dotprod/src/dotprod_cccf.o : %.o : %.c $(include_headers) src/dotprod/src/dotprod.c
-
 src/dotprod/src/dotprod_crcf.o : %.o : %.c $(include_headers) src/dotprod/src/dotprod.c
-
 src/dotprod/src/dotprod_rrrf.o : %.o : %.c $(include_headers) src/dotprod/src/dotprod.c
-
 src/dotprod/src/sumsq.o : %.o : %.c $(include_headers)
 
 # specific machine architectures
@@ -335,21 +335,14 @@ fft_includes :=							\
 	src/fft/src/fft_rader2.c				\
 	src/fft/src/fft_r2r_1d.c				\
 
-src/fft/src/fftf.o : %.o : %.c $(include_headers) $(fft_includes)
-
-src/fft/src/asgram.o : %.o : %.c $(include_headers)
-
-src/fft/src/dct.o : %.o : %.c $(include_headers)
-
-src/fft/src/fftf.o : %.o : %.c $(include_headers)
-
+src/fft/src/fftf.o          : %.o : %.c $(include_headers) $(fft_includes)
+src/fft/src/asgram.o        : %.o : %.c $(include_headers)
+src/fft/src/dct.o           : %.o : %.c $(include_headers)
+src/fft/src/fftf.o          : %.o : %.c $(include_headers)
 src/fft/src/fft_utilities.o : %.o : %.c $(include_headers)
-
-src/fft/src/mdct.o : %.o : %.c $(include_headers)
-
-src/fft/src/spgramcf.o : %.o : %.c $(include_headers) src/fft/src/asgram.c src/fft/src/spgram.c
-
-src/fft/src/spgramf.o : %.o : %.c $(include_headers) src/fft/src/asgram.c src/fft/src/spgram.c
+src/fft/src/mdct.o          : %.o : %.c $(include_headers)
+src/fft/src/spgramcf.o      : %.o : %.c $(include_headers) src/fft/src/asgram.c src/fft/src/spgram.c src/fft/src/spwaterfall.c
+src/fft/src/spgramf.o       : %.o : %.c $(include_headers) src/fft/src/asgram.c src/fft/src/spgram.c src/fft/src/spwaterfall.c
 
 # fft autotest scripts
 fft_autotests :=						\
@@ -440,6 +433,7 @@ filter_objects :=						\
 
 # list explicit targets and dependencies here
 filter_includes :=						\
+	src/filter/src/autocorr.c				\
 	src/filter/src/fftfilt.c				\
 	src/filter/src/firdecim.c				\
 	src/filter/src/firfarrow.c				\
@@ -457,43 +451,25 @@ filter_includes :=						\
 	src/filter/src/resamp2.c				\
 	src/filter/src/symsync.c				\
 
-src/filter/src/bessel.o : %.o : %.c $(include_headers)
-
-src/filter/src/bessel.o : %.o : %.c $(include_headers)
-
-src/filter/src/butter.o : %.o : %.c $(include_headers)
-
-src/filter/src/cheby1.o : %.o : %.c $(include_headers)
-
-src/filter/src/cheby2.o : %.o : %.c $(include_headers)
-
-src/filter/src/ellip.o : %.o : %.c $(include_headers)
-
+src/filter/src/bessel.o      : %.o : %.c $(include_headers)
+src/filter/src/bessel.o      : %.o : %.c $(include_headers)
+src/filter/src/butter.o      : %.o : %.c $(include_headers)
+src/filter/src/cheby1.o      : %.o : %.c $(include_headers)
+src/filter/src/cheby2.o      : %.o : %.c $(include_headers)
+src/filter/src/ellip.o       : %.o : %.c $(include_headers)
 src/filter/src/filter_rrrf.o : %.o : %.c $(include_headers) $(filter_includes)
-
 src/filter/src/filter_crcf.o : %.o : %.c $(include_headers) $(filter_includes)
-
 src/filter/src/filter_cccf.o : %.o : %.c $(include_headers) $(filter_includes)
-
-src/filter/src/firdes.o : %.o : %.c $(include_headers)
-
-src/filter/src/firdespm.o : %.o : %.c $(include_headers)
-
+src/filter/src/firdes.o      : %.o : %.c $(include_headers)
+src/filter/src/firdespm.o    : %.o : %.c $(include_headers)
 src/filter/src/group_delay.o : %.o : %.c $(include_headers)
-
-src/filter/src/hM3.o : %.o : %.c $(include_headers)
-
-src/filter/src/iirdes.pll.o : %.o : %.c $(include_headers)
-
-src/filter/src/iirdes.o : %.o : %.c $(include_headers)
-
-src/filter/src/lpc.o : %.o : %.c $(include_headers)
-
-src/filter/src/rcos.o : %.o : %.c $(include_headers)
-
-src/filter/src/rkaiser.o : %.o : %.c $(include_headers)
-
-src/filter/src/rrcos.o : %.o : %.c $(include_headers)
+src/filter/src/hM3.o         : %.o : %.c $(include_headers)
+src/filter/src/iirdes.pll.o  : %.o : %.c $(include_headers)
+src/filter/src/iirdes.o      : %.o : %.c $(include_headers)
+src/filter/src/lpc.o         : %.o : %.c $(include_headers)
+src/filter/src/rcos.o        : %.o : %.c $(include_headers)
+src/filter/src/rkaiser.o     : %.o : %.c $(include_headers)
+src/filter/src/rrcos.o       : %.o : %.c $(include_headers)
 
 
 filter_autotests :=						\
@@ -611,6 +587,8 @@ framing_objects :=						\
 	src/framing/src/bsync_crcf.o				\
 	src/framing/src/bsync_cccf.o				\
 	src/framing/src/detector_cccf.o				\
+	src/framing/src/dsssframegen.o				\
+	src/framing/src/dsssframesync.o				\
 	src/framing/src/framedatastats.o			\
 	src/framing/src/framesyncstats.o			\
 	src/framing/src/framegen64.o				\
@@ -635,43 +613,28 @@ framing_objects :=						\
 
 # list explicit targets and dependencies here
 
-src/framing/src/bpacketgen.o : %.o : %.c $(include_headers)
-
-src/framing/src/bpacketsync.o : %.o : %.c $(include_headers)
-
-src/framing/src/bpresync_cccf.o : %.o : %.c $(include_headers) src/framing/src/bpresync.c
-
-src/framing/src/bsync_rrrf.o : %.o : %.c $(include_headers) src/framing/src/bsync.c
-
-src/framing/src/bsync_crcf.o : %.o : %.c $(include_headers) src/framing/src/bsync.c
-
-src/framing/src/bsync_cccf.o : %.o : %.c $(include_headers) src/framing/src/bsync.c
-
-src/framing/src/detector_cccf.o : %.o : %.c $(include_headers)
-
-src/framing/src/framedatastats.o : %.o : %.c $(include_headers)
-
-src/framing/src/framesyncstats.o : %.o : %.c $(include_headers)
-
-src/framing/src/framegen64.o : %.o : %.c $(include_headers)
-
-src/framing/src/framesync64.o : %.o : %.c $(include_headers)
-
-src/framing/src/flexframegen.o : %.o : %.c $(include_headers)
-
-src/framing/src/flexframesync.o : %.o : %.c $(include_headers)
-
-src/framing/src/msourcecf.o : %.o : %.c $(include_headers) src/framing/src/msource.c
-
-src/framing/src/ofdmflexframegen.o : %.o : %.c $(include_headers)
-
+src/framing/src/bpacketgen.o        : %.o : %.c $(include_headers)
+src/framing/src/bpacketsync.o       : %.o : %.c $(include_headers)
+src/framing/src/bpresync_cccf.o     : %.o : %.c $(include_headers) src/framing/src/bpresync.c
+src/framing/src/bsync_rrrf.o        : %.o : %.c $(include_headers) src/framing/src/bsync.c
+src/framing/src/bsync_crcf.o        : %.o : %.c $(include_headers) src/framing/src/bsync.c
+src/framing/src/bsync_cccf.o        : %.o : %.c $(include_headers) src/framing/src/bsync.c
+src/framing/src/detector_cccf.o     : %.o : %.c $(include_headers)
+src/framing/src/dsssframegen.o      : %.o : %.c $(include_headers)
+src/framing/src/dsssframesync.o     : %.o : %.c $(include_headers)
+src/framing/src/framedatastats.o    : %.o : %.c $(include_headers)
+src/framing/src/framesyncstats.o    : %.o : %.c $(include_headers)
+src/framing/src/framegen64.o        : %.o : %.c $(include_headers)
+src/framing/src/framesync64.o       : %.o : %.c $(include_headers)
+src/framing/src/flexframegen.o      : %.o : %.c $(include_headers)
+src/framing/src/flexframesync.o     : %.o : %.c $(include_headers)
+src/framing/src/msourcecf.o         : %.o : %.c $(include_headers) src/framing/src/msource.c
+src/framing/src/ofdmflexframegen.o  : %.o : %.c $(include_headers)
 src/framing/src/ofdmflexframesync.o : %.o : %.c $(include_headers)
-
-src/framing/src/presync_cccf.o : %.o : %.c $(include_headers) src/framing/src/presync.c
-
-src/framing/src/symstreamcf.o : %.o : %.c $(include_headers) src/framing/src/symstream.c
-
-src/framing/src/symtrack_cccf.o : %.o : %.c $(include_headers) src/framing/src/symtrack.c
+src/framing/src/presync_cccf.o      : %.o : %.c $(include_headers) src/framing/src/presync.c
+src/framing/src/qpacketmodem.o      : %.o : %.c $(include_headers)
+src/framing/src/symstreamcf.o       : %.o : %.c $(include_headers) src/framing/src/symstream.c
+src/framing/src/symtrack_cccf.o     : %.o : %.c $(include_headers) src/framing/src/symtrack.c
 
 
 framing_autotests :=						\
@@ -694,6 +657,7 @@ framing_benchmarks :=						\
 	src/framing/bench/flexframesync_benchmark.c		\
 	src/framing/bench/framesync64_benchmark.c		\
 	src/framing/bench/gmskframesync_benchmark.c		\
+	src/framing/bench/qdetector_benchmark.c			\
 
 
 # 
@@ -711,6 +675,7 @@ math_objects :=							\
 	src/math/src/math.complex.o				\
 	src/math/src/math.trig.o				\
 	src/math/src/modular_arithmetic.o			\
+	src/math/src/windows.o					\
 
 
 poly_includes :=						\
@@ -719,25 +684,17 @@ poly_includes :=						\
 	src/math/src/poly.findroots.c				\
 	src/math/src/poly.lagrange.c				\
 
-src/math/src/poly.o : %.o : %.c $(include_headers) $(poly_includes)
-
-src/math/src/polyc.o : %.o : %.c $(include_headers) $(poly_includes)
-
-src/math/src/polyf.o : %.o : %.c $(include_headers) $(poly_includes)
-
-src/math/src/polycf.o : %.o : %.c $(include_headers) $(poly_includes)
-
-src/math/src/math.o : %.o : %.c $(include_headers)
-
-src/math/src/math.bessel.o : %.o : %.c $(include_headers)
-
-src/math/src/math.gamma.o : %.o : %.c $(include_headers)
-
-src/math/src/math.complex.o : %.o : %.c $(include_headers)
-
-src/math/src/math.trig.o : %.o : %.c $(include_headers)
-
+src/math/src/poly.o               : %.o : %.c $(include_headers) $(poly_includes)
+src/math/src/polyc.o              : %.o : %.c $(include_headers) $(poly_includes)
+src/math/src/polyf.o              : %.o : %.c $(include_headers) $(poly_includes)
+src/math/src/polycf.o             : %.o : %.c $(include_headers) $(poly_includes)
+src/math/src/math.o               : %.o : %.c $(include_headers)
+src/math/src/math.bessel.o        : %.o : %.c $(include_headers)
+src/math/src/math.gamma.o         : %.o : %.c $(include_headers)
+src/math/src/math.complex.o       : %.o : %.c $(include_headers)
+src/math/src/math.trig.o          : %.o : %.c $(include_headers)
 src/math/src/modular_arithmetic.o : %.o : %.c $(include_headers)
+src/math/src/windows.o            : %.o : %.c $(include_headers)
 
 
 math_autotests :=						\
@@ -747,6 +704,7 @@ math_autotests :=						\
 	src/math/tests/math_gamma_autotest.c			\
 	src/math/tests/math_complex_autotest.c			\
 	src/math/tests/polynomial_autotest.c			\
+	src/math/tests/prime_autotest.c				\
 
 
 math_benchmarks :=						\
@@ -779,19 +737,13 @@ matrix_includes :=						\
 	src/matrix/src/matrix.qrdecomp.c			\
 	src/matrix/src/matrix.math.c				\
 
-src/matrix/src/matrix.o : %.o : %.c $(include_headers) $(matrix_includes)
-
-src/matrix/src/matrixc.o : %.o : %.c $(include_headers) $(matrix_includes)
-
-src/matrix/src/matrixf.o : %.o : %.c $(include_headers) $(matrix_includes)
-
+src/matrix/src/matrix.o   : %.o : %.c $(include_headers) $(matrix_includes)
+src/matrix/src/matrixc.o  : %.o : %.c $(include_headers) $(matrix_includes)
+src/matrix/src/matrixf.o  : %.o : %.c $(include_headers) $(matrix_includes)
 src/matrix/src/matrixcf.o : %.o : %.c $(include_headers) $(matrix_includes)
-
-src/matrix/src/smatrixb.o: %.o : %.c $(include_headers) src/matrix/src/smatrix.c
-
-src/matrix/src/smatrixf.o: %.o : %.c $(include_headers) src/matrix/src/smatrix.c
-
-src/matrix/src/smatrixi.o: %.o : %.c $(include_headers) src/matrix/src/smatrix.c
+src/matrix/src/smatrixb.o : %.o : %.c $(include_headers) src/matrix/src/smatrix.c
+src/matrix/src/smatrixf.o : %.o : %.c $(include_headers) src/matrix/src/smatrix.c
+src/matrix/src/smatrixi.o : %.o : %.c $(include_headers) src/matrix/src/smatrix.c
 
 
 # matrix autotest scripts
@@ -869,22 +821,14 @@ modem_includes :=						\
 	
 #src/modem/src/modem_demod_soft_const.c
 
-# main modem object
-src/modem/src/modemf.o : %.o : %.c $(include_headers) $(modem_includes)
-
-src/modem/src/gmskmod.o: %.o : %.c $(include_headers)
-
-src/modem/src/gmskdem.o: %.o : %.c $(include_headers)
-
-src/modem/src/ampmodem.o: %.o : %.c $(include_headers)
-
-src/modem/src/freqmodem.o: %.o : %.c $(include_headers)
-
-src/modem/src/modem_utilities.o: %.o : %.c $(include_headers)
-
-src/modem/src/modem_apsk_const.o: %.o : %.c $(include_headers)
-
-src/modem/src/modem_arb_const.o: %.o : %.c $(include_headers)
+src/modem/src/modemf.o           : %.o : %.c $(include_headers) $(modem_includes)
+src/modem/src/gmskmod.o          : %.o : %.c $(include_headers)
+src/modem/src/gmskdem.o          : %.o : %.c $(include_headers)
+src/modem/src/ampmodem.o         : %.o : %.c $(include_headers)
+src/modem/src/freqmodem.o        : %.o : %.c $(include_headers)
+src/modem/src/modem_utilities.o  : %.o : %.c $(include_headers)
+src/modem/src/modem_apsk_const.o : %.o : %.c $(include_headers)
+src/modem/src/modem_arb_const.o  : %.o : %.c $(include_headers)
 
 
 modem_autotests :=						\
@@ -948,11 +892,12 @@ multichannel_benchmarks :=					\
 nco_objects :=							\
 	src/nco/src/nco_crcf.o					\
 	src/nco/src/nco.utilities.o				\
+	src/nco/src/synth_crcf.o				\
 
 
-src/nco/src/nco_crcf.o: %.o : %.c $(include_headers) src/nco/src/nco.c
-
-src/nco/src/nco.utilities.o: %.o : %.c $(include_headers)
+src/nco/src/nco_crcf.o      : %.o : %.c $(include_headers) src/nco/src/nco.c
+src/nco/src/nco.utilities.o : %.o : %.c $(include_headers)
+src/nco/src/synth_crcf.o	: %.o : %.c $(include_headers) src/nco/src/synth.c
 
 
 # autotests
@@ -1007,13 +952,10 @@ quantization_objects :=						\
 	src/quantization/src/quantizer.inline.o			\
 
 
-src/quantization/src/compand.o: %.o : %.c $(include_headers)
-
-src/quantization/src/quantizercf.o: %.o : %.c $(include_headers) src/quantization/src/quantizer.c
-
-src/quantization/src/quantizerf.o: %.o : %.c $(include_headers) src/quantization/src/quantizer.c
-
-src/quantization/src/quantizer.inline.o: %.o : %.c $(include_headers)
+src/quantization/src/compand.o          : %.o : %.c $(include_headers)
+src/quantization/src/quantizercf.o      : %.o : %.c $(include_headers) src/quantization/src/quantizer.c
+src/quantization/src/quantizerf.o       : %.o : %.c $(include_headers) src/quantization/src/quantizer.c
+src/quantization/src/quantizer.inline.o : %.o : %.c $(include_headers)
 
 
 # autotests
@@ -1112,11 +1054,10 @@ vector_objects :=						\
 	@MLIBS_VECTOR@						\
 
 # portable builds
-src/vector/src/vectorf_add.port.o  : %.o : %.c $(include_headers) src/vector/src/vector_add.c
-src/vector/src/vectorf_norm.port.o : %.o : %.c $(include_headers) src/vector/src/vector_norm.c
-src/vector/src/vectorf_mul.port.o  : %.o : %.c $(include_headers) src/vector/src/vector_mul.c
-src/vector/src/vectorf_trig.port.o : %.o : %.c $(include_headers) src/vector/src/vector_trig.c
-
+src/vector/src/vectorf_add.port.o   : %.o : %.c $(include_headers) src/vector/src/vector_add.c
+src/vector/src/vectorf_norm.port.o  : %.o : %.c $(include_headers) src/vector/src/vector_norm.c
+src/vector/src/vectorf_mul.port.o   : %.o : %.c $(include_headers) src/vector/src/vector_mul.c
+src/vector/src/vectorf_trig.port.o  : %.o : %.c $(include_headers) src/vector/src/vector_trig.c
 src/vector/src/vectorcf_add.port.o  : %.o : %.c $(include_headers) src/vector/src/vector_add.c
 src/vector/src/vectorcf_norm.port.o : %.o : %.c $(include_headers) src/vector/src/vector_norm.c
 src/vector/src/vectorcf_mul.port.o  : %.o : %.c $(include_headers) src/vector/src/vector_mul.c
@@ -1232,11 +1173,11 @@ libliquid.a: $(objects)
 #
 # gcc -dynamiclib -install_name libliquid.dylib -o libliquid.dylib libmodem.a libutility.a 
 libliquid.dylib: $(objects)
-	$(CC) -dynamiclib -install_name $@ -o $@ $^ $(LDFLAGS)
+	$(CC) -dynamiclib -install_name $@ -o $@ $^ $(LDFLAGS) $(LIBS)
 
 # linux, et al
 libliquid.so: libliquid.a
-	$(CC) -shared -Xlinker -soname=$@ -o $@ -Wl,-whole-archive $^ -Wl,-no-whole-archive $(LDFLAGS)
+	$(CC) $(CFLAGS) $(LDFLAGS) -shared -Xlinker -soname=$@ -o $@ -Wl,-whole-archive $^ -Wl,-no-whole-archive $(LIBS)
 
 all: libliquid.a $(SHARED_LIB)
 
@@ -1253,7 +1194,7 @@ help:
 ## TARGET : install   - installs the libraries and header files in the host system
 ##
 
-install:
+install: all
 	@echo "installing..."
 	@echo ""
 	mkdir -p $(DESTDIR)$(exec_prefix)$(libdir)
@@ -1292,10 +1233,10 @@ uninstall:
 autoscript : scripts/autoscript
 
 scripts/autoscript.o scripts/main.o : %.o : %.c
-	$(CC) $(CFLAGS) -c -o $@ $<
+	$(CC) $(CPPFLAGS) $(CFLAGS) -c -o $@ $<
 
 scripts/autoscript : scripts/autoscript.o scripts/main.o
-	$(CC) $(CFLAGS) -o $@ $^ $(LDFLAGS)
+	$(CC) $(CFLAGS) $(LDFLAGS) -o $@ $^ $(LIBS)
 
 clean-autoscript :
 	$(RM) scripts/autoscript.o scripts/main.o scripts/autoscript
@@ -1321,27 +1262,27 @@ autotest_include.h : scripts/autoscript $(autotest_sources) $(include_headers)
 #       the '-x c' flag
 autotest_obj = $(patsubst %.c,%.o,$(autotest_sources))
 $(autotest_obj) : %.o : %.c $(include_headers)
-	$(CC) $(CFLAGS) $< -c -o $@
+	$(CC) $(CPPFLAGS) $(CFLAGS) $< -c -o $@
 
 # additional autotest objects
 $(autotest_extra_obj) : %.o : %.c $(include_headers)
 
 # compile the autotest internal library functions without linking
 autotest/autotestlib.o : autotest/autotestlib.c autotest/autotest.h
-	$(CC) $(CFLAGS) $< -c -o $@
+	$(CC) $(CPPFLAGS) $(CFLAGS) $< -c -o $@
 
 # compile the autotest program without linking
 $(autotest_prog).o : autotest/autotest.c autotest/autotest.h autotest_include.h
-	$(CC) $(CFLAGS) $< -c -o $@
+	$(CC) $(CPPFLAGS) $(CFLAGS) $< -c -o $@
 
 # link the autotest program with the objects
 # NOTE: linked libraries must come _after_ the target program
 $(autotest_prog): $(autotest_prog).o $(autotest_obj) $(autotest_extra_obj) autotest/autotestlib.o libliquid.a
-	$(CC) $^ -o $@ $(LDFLAGS)
+	$(CC) $(CFLAGS) $(LDFLAGS) $^ -o $@ $(LIBS)
 
 # run the autotest program
 check: $(autotest_prog)
-	./$(autotest_prog) -v
+	./$(autotest_prog) -v -o autotest.json
 
 # let 'make test' be an alias for 'make check'
 test: check
@@ -1352,6 +1293,7 @@ clean-check:
 	$(RM) autotest/autotestlib.o
 	$(RM) $(autotest_obj)
 	$(RM) $(autotest_extra_obj)
+	$(RM) autotest.json
 
 
 ##
@@ -1362,8 +1304,10 @@ clean-check:
 # on the target platform.
 .PHONY: bench
 bench_prog	= benchmark
-BENCH_CFLAGS	= -Wall $(INCLUDE_CFLAGS) $(CONFIG_CFLAGS)
+BENCH_CPPFLAGS	= $(CPPFLAGS)
+BENCH_CFLAGS	= -Wall $(CFLAGS)
 BENCH_LDFLAGS	= $(LDFLAGS)
+BENCH_LIBS	= $(LIBS)
 
 # run the benchmark generator script to create benchmark_include.h
 benchmark_include.h : scripts/autoscript $(benchmark_sources) $(include_headers)
@@ -1375,19 +1319,19 @@ benchmark_include.h : scripts/autoscript $(benchmark_sources) $(include_headers)
 #       the '-x c' flag
 benchmark_obj = $(patsubst %.c,%.o,$(benchmark_sources))
 $(benchmark_obj) : %.o : %.c $(include_headers)
-	$(CC) $(BENCH_CFLAGS) $< -c -o $@
+	$(CC) $(BENCH_CPPFLAGS) $(BENCH_CFLAGS) $< -c -o $@
 
 # additional benchmark objects
 $(benchmark_extra_obj) : %.o : %.c $(include_headers)
 
 # compile the benchmark program without linking
 $(bench_prog).o: bench/bench.c benchmark_include.h bench/bench.c
-	$(CC) $(BENCH_CFLAGS) $< -c -o $(bench_prog).o
+	$(CC) $(BENCH_CPPFLAGS) $(BENCH_CFLAGS) $< -c -o $(bench_prog).o
 
 # link the benchmark program with the library objects
 # NOTE: linked libraries must come _after_ the target program
 $(bench_prog): $(bench_prog).o $(benchmark_obj) $(benchmark_extra_obj) libliquid.a
-	$(CC) $^ -o $(bench_prog) $(BENCH_LDFLAGS)
+	$(CC) $(BENCH_CFLAGS) $(BENCH_LDFLAGS) $^ -o $(bench_prog) $(BENCH_LIBS)
 
 # run the benchmark program
 bench: $(bench_prog)
@@ -1395,14 +1339,14 @@ bench: $(bench_prog)
 
 # benchmark compare script
 scripts/benchmark_compare : % : %.c
-	$(CC) $(CFLAGS) -o $@ $< $(LDFLAGS)
+	$(CC) $(CPPFLAGS) $(CFLAGS) $(LDFLAGS) -o $@ $< $(LIBS)
 
 # fftbench program
 bench/fftbench.o : %.o : %.c
-	$(CC) $(BENCH_CFLAGS) $< -c -o $@
+	$(CC) $(BENCH_CPPFLAGS) $(BENCH_CFLAGS) $< -c -o $@
 
 bench/fftbench : % : %.o libliquid.a
-	$(CC) $^ -o $@ $(BENCH_LDFLAGS)
+	$(CC) $(BENCH_CFLAGS) $(BENCH_LDFLAGS) $^ -o $@ $(BENCH_LIBS)
 
 # clean up the generated files
 clean-bench:
@@ -1420,6 +1364,7 @@ clean-bench:
 .PHONY: examples
 example_programs :=						\
 	examples/agc_crcf_example				\
+	examples/agc_crcf_squelch_example			\
 	examples/agc_crcf_qpsk_example				\
 	examples/agc_rrrf_example				\
 	examples/ampmodem_example				\
@@ -1439,9 +1384,10 @@ example_programs :=						\
 	examples/conversion_example				\
 	examples/crc_example					\
 	examples/cpfskmodem_example				\
-	examples/cpfsk_psd_example				\
+	examples/cpfskmodem_psd_example				\
 	examples/cvsd_example					\
 	examples/detector_cccf_example				\
+	examples/dsssframesync_example				\
 	examples/dotprod_rrrf_example				\
 	examples/dotprod_cccf_example				\
 	examples/eqlms_cccf_block_example			\
@@ -1459,7 +1405,9 @@ example_programs :=						\
 	examples/firfilt_crcf_example				\
 	examples/firfilt_rrrf_example				\
 	examples/firdes_kaiser_example				\
+	examples/firdespm_callback_example			\
 	examples/firdespm_example				\
+	examples/firdespm_lowpass_example			\
 	examples/firhilb_example				\
 	examples/firhilb_decim_example				\
 	examples/firhilb_interp_example				\
@@ -1535,7 +1483,9 @@ example_programs :=						\
 	examples/scramble_example				\
 	examples/smatrix_example				\
 	examples/spgramcf_example				\
+	examples/spgramcf_waterfall_example			\
 	examples/spgramf_example				\
+	examples/spwaterfallcf_example				\
 	examples/symsync_crcf_example				\
 	examples/symsync_crcf_full_example			\
 	examples/symsync_crcf_kaiser_example			\
@@ -1552,13 +1502,11 @@ example_programs :=						\
 example_objects	= $(patsubst %,%.o,$(example_programs))
 examples: $(example_programs)
 
-EXAMPLES_LDFLAGS = $(LDFLAGS)
-
 # NOTE: linked libraries must come _after_ the target program
 $(example_objects): %.o : %.c
 
 $(example_programs): % : %.o libliquid.a
-	$(CC) $(CFLAGS) $^ -o $@ $(LDFLAGS)
+	$(CC) $(CFLAGS) $(LDFLAGS) $^ -o $@ $(LIBS)
 
 # clean examples
 clean-examples:
@@ -1680,13 +1628,29 @@ SANDBOX_LDFLAGS = $(LDFLAGS) -lfftw3f
 $(sandbox_objects): %.o : %.c
 
 $(sandbox_programs): % : %.o libliquid.a
-	$(CC) $(CFLAGS) $^ -o $@ $(LDFLAGS)
+	$(CC) $(CFLAGS) $^ -o $@ $(LDFLAGS) $(LIBS)
 
 # clean sandbox
 clean-sandbox:
 	$(RM) sandbox/*.o
 	$(RM) $(sandbox_programs)
 
+
+.PHONY: tools
+tools_programs =						\
+	tools/msequence_generator			\
+
+tools_objects	= $(patsubst %,%.o,$(tools_programs))
+tools: $(tools_programs)
+
+$(tools_objects): %.o: %.c
+
+$(tools_programs): % : %.o libliquid.a
+	$(CC) $(CFLAGS) $^ -o $@ $(LDFLAGS)
+
+clean-tools:
+	$(RM) tools/*.o
+	$(RM) $(tools_programs)
 
 ##
 ## TARGET : world     - build absolutely everything
@@ -1724,7 +1688,7 @@ clean-modules:
 	$(RM) src/vector/src/*.o       src/vector/bench/*.o       src/vector/tests/*.o
 	$(RM) src/libliquid.o
 
-clean: clean-modules clean-autoscript clean-check clean-bench clean-examples clean-sandbox
+clean: clean-modules clean-autoscript clean-check clean-bench clean-examples clean-sandbox clean-tools
 	$(RM) $(extra_clean)
 	$(RM) libliquid.a
 	$(RM) $(SHARED_LIB)

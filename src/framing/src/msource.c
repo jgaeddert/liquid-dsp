@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2015 Joseph Gaeddert
+ * Copyright (c) 2007 - 2018 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -61,7 +61,7 @@ struct QSOURCE(_s) {
 
     nco_crcf mixer;
     float    gain;
-    //int      enabled;
+    int      enabled;
 };
 
 QSOURCE() QSOURCE(_create_tone)(int _id);
@@ -80,11 +80,18 @@ void QSOURCE(_print)(QSOURCE() _q);
 
 void QSOURCE(_reset)(QSOURCE() _q);
 
+void QSOURCE(_enable)(QSOURCE() _q);
+void QSOURCE(_disable)(QSOURCE() _q);
+
 void QSOURCE(_set_gain)(QSOURCE() _q,
                         float     _gain_dB);
 
+float QSOURCE(_get_gain)(QSOURCE() _q);
+
 void QSOURCE(_set_frequency)(QSOURCE() _q,
                              float     _dphi);
+
+float QSOURCE(_get_frequency)(QSOURCE() _q);
 
 void QSOURCE(_gen_sample)(QSOURCE() _q,
                           TO *      _v);
@@ -207,8 +214,8 @@ int MSOURCE(_add_modem)(MSOURCE()    _q,
 }
 
 // remove signal
-void MSOURCE(_remove)(MSOURCE() _q,
-                      int       _id)
+int MSOURCE(_remove)(MSOURCE() _q,
+                     int       _id)
 {
     // find source object matching id
     unsigned int i;
@@ -222,9 +229,9 @@ void MSOURCE(_remove)(MSOURCE() _q,
 
     // check to see if id was found
     if (!id_found) {
-        fprintf(stderr,"error: qsource%s_remove(), signal id (%d) not found\n",
+        fprintf(stderr,"warning: qsource%s_remove(), signal id (%d) not found\n",
                 EXTENSION, _id);
-        exit(1);
+        return -1;
     }
 
     // delete source
@@ -235,57 +242,134 @@ void MSOURCE(_remove)(MSOURCE() _q,
     _q->num_sources--;
 
     // shift sources down
-    for (i; i<_q->num_sources; i++)
+    for (; i<_q->num_sources; i++)
         _q->sources[i] = _q->sources[i+1];
+
+    // everything ok
+    return 0;
 }
 
 // enable/disable signal
-void MSOURCE(_enable)(MSOURCE() _q,
-                      int       _id)
+int MSOURCE(_enable)(MSOURCE() _q,
+                     int       _id)
 {
+    // validate input
+    if (_id > _q->num_sources) {
+        fprintf(stderr,"warning: qsource%s_enable(), signal id (%d) out of range (%u)\n",
+                EXTENSION, _id, _q->num_sources);
+        return -1;
+    }
+
+    // set source gain
+    QSOURCE(_enable)(_q->sources[_id]);
+
+    // everything ok
+    return 0;
 }
 
-void MSOURCE(_disable)(MSOURCE() _q,
-                       int       _id)
+int MSOURCE(_disable)(MSOURCE() _q,
+                      int       _id)
 {
+    // validate input
+    if (_id > _q->num_sources) {
+        fprintf(stderr,"warning: qsource%s_disable(), signal id (%d) out of range (%u)\n",
+                EXTENSION, _id, _q->num_sources);
+        return -1;
+    }
+
+    // set source gain
+    QSOURCE(_disable)(_q->sources[_id]);
+
+    // everything ok
+    return 0;
 }
 
 // set signal gain
 //  _q      :   msource object
 //  _id     :   source id
 //  _gain_dB:   signal gain in dB
-void MSOURCE(_set_gain)(MSOURCE() _q,
-                        int       _id,
-                        float     _gain_dB)
+int MSOURCE(_set_gain)(MSOURCE() _q,
+                       int       _id,
+                       float     _gain_dB)
 {
     // validate input
     if (_id > _q->num_sources) {
         fprintf(stderr,"error: qsource%s_set_gain(), signal id (%d) out of range (%u)\n",
                 EXTENSION, _id, _q->num_sources);
-        exit(1);
+        return -1;
     }
 
     // set source gain
     QSOURCE(_set_gain)(_q->sources[_id], _gain_dB);
+
+    // everything ok
+    return 0;
+}
+
+// set signal gain
+//  _q      :   msource object
+//  _id     :   source id
+//  _gain_dB:   signal gain in dB
+int MSOURCE(_get_gain)(MSOURCE() _q,
+                       int       _id,
+                       float *   _gain_dB)
+{
+    // validate input
+    if (_id > _q->num_sources) {
+        fprintf(stderr,"error: qsource%s_get_gain(), signal id (%d) out of range (%u)\n",
+                EXTENSION, _id, _q->num_sources);
+        return -1;
+    }
+
+    // set source gain
+    *_gain_dB = QSOURCE(_get_gain)(_q->sources[_id]);
+
+    // everything ok
+    return 0;
 }
 
 // set carrier offset to signal
 //  _q      :   msource object
 //  _id     :   source id
 //  _fc     :   carrier offset, fc in [-0.5,0.5]
-void MSOURCE(_set_frequency)(MSOURCE() _q,
-                             int       _id,
-                             float     _dphi)
+int MSOURCE(_set_frequency)(MSOURCE() _q,
+                            int       _id,
+                            float     _dphi)
 {
     // validate input
     if (_id > _q->num_sources) {
         fprintf(stderr,"error: qsource%s_set_frequency(), signal id (%d) out of range (%u)\n",
                 EXTENSION, _id, _q->num_sources);
-        exit(1);
+        return -1;
     
     }
     // set source frequency
     QSOURCE(_set_frequency)(_q->sources[_id], _dphi);
+
+    // everything ok
+    return 0;
+}
+
+// set carrier offset to signal
+//  _q      :   msource object
+//  _id     :   source id
+//  _fc     :   carrier offset, fc in [-0.5,0.5]
+int MSOURCE(_get_frequency)(MSOURCE() _q,
+                            int       _id,
+                            float *   _dphi)
+{
+    // validate input
+    if (_id > _q->num_sources) {
+        fprintf(stderr,"error: qsource%s_get_frequency(), signal id (%d) out of range (%u)\n",
+                EXTENSION, _id, _q->num_sources);
+        return -1;
+    
+    }
+    // set source frequency
+    *_dphi = QSOURCE(_get_frequency)(_q->sources[_id]);
+
+    // everything ok
+    return 0;
 }
 
 // write block of samples to output buffer
@@ -366,8 +450,9 @@ QSOURCE() QSOURCE(_create_tone)(int _id)
     q->id   = _id;
     q->type = QSOURCE_TONE;
 
-    q->mixer = NCO(_create)(LIQUID_VCO);
-    q->gain  = 1;
+    q->mixer   = NCO(_create)(LIQUID_VCO);
+    q->gain    = 1;
+    q->enabled = 1;
 
     // reset and return main object
     QSOURCE(_reset)(q);
@@ -393,8 +478,9 @@ QSOURCE() QSOURCE(_create_noise)(int   _id,
                                                         0.5*_bandwidth, 0.0f,
                                                         0.1f, 80.0f);
 
-    q->mixer = NCO(_create)(LIQUID_VCO);
-    q->gain  = 1;
+    q->mixer   = NCO(_create)(LIQUID_VCO);
+    q->gain    = 1;
+    q->enabled = 1;
 
     // reset and return main object
     QSOURCE(_reset)(q);
@@ -415,8 +501,9 @@ QSOURCE() QSOURCE(_create_modem)(int          _id,
 
     q->source.linmod.symstream=SYMSTREAM(_create_linear)(LIQUID_FIRFILT_ARKAISER,_k,_m,_beta,_ms);
 
-    q->mixer = NCO(_create)(LIQUID_VCO);
-    q->gain  = 1;
+    q->mixer   = NCO(_create)(LIQUID_VCO);
+    q->gain    = 1;
+    q->enabled = 1;
 
     // reset and return main object
     QSOURCE(_reset)(q);
@@ -464,6 +551,16 @@ void QSOURCE(_reset)(QSOURCE() _q)
 {
 }
 
+void QSOURCE(_enable)(QSOURCE() _q)
+{
+    _q->enabled = 1;
+}
+
+void QSOURCE(_disable)(QSOURCE() _q)
+{
+    _q->enabled = 0;
+}
+
 void QSOURCE(_set_gain)(QSOURCE() _q,
                         float     _gain_dB)
 {
@@ -471,10 +568,20 @@ void QSOURCE(_set_gain)(QSOURCE() _q,
     _q->gain = powf(10.0f, _gain_dB/20.0f);
 }
 
+float QSOURCE(_get_gain)(QSOURCE() _q)
+{
+    return 20*log10f(_q->gain);
+}
+
 void QSOURCE(_set_frequency)(QSOURCE() _q,
                              float     _dphi)
 {
     NCO(_set_frequency)(_q->mixer, _dphi);
+}
+
+float QSOURCE(_get_frequency)(QSOURCE() _q)
+{
+    return NCO(_get_frequency)(_q->mixer);
 }
 
 void QSOURCE(_gen_sample)(QSOURCE() _q,
@@ -497,6 +604,9 @@ void QSOURCE(_gen_sample)(QSOURCE() _q,
         fprintf(stderr,"error: qsource%s_gen_sample(), internal logic error\n", EXTENSION);
         exit(1);
     }
+    
+    if (!_q->enabled)
+        sample = 0.0f;
 
     // apply gain
     sample *= _q->gain;

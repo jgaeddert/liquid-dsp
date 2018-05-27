@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2015 Joseph Gaeddert
+ * Copyright (c) 2007 - 2018 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -44,7 +44,7 @@
 //  PRINTVAL()      print macro
 
 // use structured dot product? 0:no, 1:yes
-#define LIQUID_IIRFILT_USE_DOTPROD   (0)
+#define LIQUID_IIRFILT_USE_DOTPROD   (1)
 
 struct IIRFILT(_s) {
     TC * b;             // numerator (feed-forward coefficients)
@@ -71,6 +71,20 @@ struct IIRFILT(_s) {
     unsigned int nsos;      // number of second-order sections
 };
 
+// initialize internal objects/arrays
+void IIRFILT(_init)(IIRFILT() _q)
+{
+    _q->b    = NULL;
+    _q->a    = NULL;
+    _q->v    = NULL;
+    _q->qsos = NULL;
+    _q->nsos = 0;
+#if LIQUID_IIRFILT_USE_DOTPROD
+    _q->dpb  = NULL;
+    _q->dpa  = NULL;
+#endif
+}
+
 // create iirfilt (infinite impulse response filter) object
 //  _b      :   numerator, feed-forward coefficients [size: _nb x 1]
 //  _nb     :   length of numerator
@@ -92,14 +106,15 @@ IIRFILT() IIRFILT(_create)(TC *         _b,
 
     // create structure and initialize
     IIRFILT() q = (IIRFILT()) malloc(sizeof(struct IIRFILT(_s)));
+    IIRFILT(_init)(q);
     q->nb = _nb;
     q->na = _na;
     q->n = (q->na > q->nb) ? q->na : q->nb;
     q->type = IIRFILT_TYPE_NORM;
 
     // allocate memory for numerator, denominator
-    q->b = (TC *) malloc((q->na)*sizeof(TC));
-    q->a = (TC *) malloc((q->nb)*sizeof(TC));
+    q->a = (TC *) malloc((q->na)*sizeof(TC));
+    q->b = (TC *) malloc((q->nb)*sizeof(TC));
 
     // normalize coefficients to _a[0]
     TC a0 = _a[0];
@@ -158,6 +173,7 @@ IIRFILT() IIRFILT(_create_sos)(TC *         _B,
 
     // create structure and initialize
     IIRFILT() q = (IIRFILT()) malloc(sizeof(struct IIRFILT(_s)));
+    IIRFILT(_init)(q);
     q->type = IIRFILT_TYPE_SOS;
     q->nsos = _nsos;
     q->qsos = (IIRFILTSOS()*) malloc( (q->nsos)*sizeof(IIRFILTSOS()) );
@@ -365,6 +381,11 @@ IIRFILT() IIRFILT(_create_differentiator)()
 //          1 - (1-alpha)z^-1
 IIRFILT() IIRFILT(_create_dc_blocker)(float _alpha)
 {
+    // validate input
+    if (_alpha <= 0.0f) {
+        fprintf(stderr,"error: iirfilt_%s_create_dc_blocker(), filter bandwidth must be greater than zero\n", EXTENSION_FULL);
+        exit(1);
+    }
     // compute DC-blocking filter coefficients
     float bf[2] = {1.0f, -1.0f  };
     float af[2] = {1.0f, -1.0f + _alpha};
@@ -414,22 +435,23 @@ IIRFILT() IIRFILT(_create_pll)(float _w,
 void IIRFILT(_destroy)(IIRFILT() _q)
 {
 #if LIQUID_IIRFILT_USE_DOTPROD
-    DOTPROD(_destroy)(_q->dpa);
-    DOTPROD(_destroy)(_q->dpb);
+    if (_q->dpa != NULL) DOTPROD(_destroy)(_q->dpa);
+    if (_q->dpb != NULL) DOTPROD(_destroy)(_q->dpb);
 #endif
-    free(_q->b);
-    free(_q->a);
+    if (_q->b   != NULL) free(_q->b);
+    if (_q->a   != NULL) free(_q->a);
+    if (_q->v   != NULL) free(_q->v);
+
     // if filter is comprised of cascaded second-order sections,
     // delete sub-filters separately
-    if (_q->type == IIRFILT_TYPE_SOS) {
+    if (_q->qsos != NULL) {
         unsigned int i;
         for (i=0; i<_q->nsos; i++)
             IIRFILTSOS(_destroy)(_q->qsos[i]);
         free(_q->qsos);
-    } else {
-        free(_q->v);
     }
 
+    // free main object memory
     free(_q);
 }
 
@@ -498,7 +520,7 @@ void IIRFILT(_execute_norm)(IIRFILT() _q,
 #if LIQUID_IIRFILT_USE_DOTPROD
     // compute new v
     TI v0;
-    DOTPROD(_execute)(_q->dpa, _q->v+1, & v0);
+    DOTPROD(_execute)(_q->dpa, _q->v+1, &v0);
     v0 = _x - v0;
     _q->v[0] = v0;
 

@@ -33,6 +33,8 @@
 
 #include "liquid.internal.h"
 
+#define LIQUID_LEVINSON_MAXORDER (256)
+
 // compute the linear prediction coefficients for an input signal _x
 //  _x      :   input signal [size: _n x 1]
 //  _p      :   prediction filter order
@@ -82,6 +84,14 @@ void liquid_levinson(float * _r,
                      float * _a,
                      float * _e)
 {
+    // check allocation length
+    if (_p > LIQUID_LEVINSON_MAXORDER) {
+        fprintf(stderr,"error: liquid_levinson(), filter order (%u) exceeds maximum (%u)\n",
+            _p, LIQUID_LEVINSON_MAXORDER);
+        exit(1);
+    }
+
+    // allocate arrays
     float a0[_p+1]; // temporary coefficients array, index [n]
     float a1[_p+1]; // temporary coefficients array, index [n-1]
     float e[_p+1];  // prediction error

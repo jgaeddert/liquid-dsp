@@ -35,7 +35,7 @@ int main() {
     float R[p*p];
     for (i=0; i<p; i++) {
         for (j=0; j<p; j++)
-            matrix_access(R,p,p,i,j) = r[abs(i-j)];
+            matrix_access(R,p,p,i,j) = r[(i>j) ? (i-j) : (j-i)]; // abs(i-j)
     }
 
     // invert matrix (using Gauss-Jordan elimination)

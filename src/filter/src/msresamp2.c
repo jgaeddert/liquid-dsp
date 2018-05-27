@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2015 Joseph Gaeddert
+ * Copyright (c) 2007 - 2018 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -37,25 +37,25 @@
 
 struct MSRESAMP2(_s) {
     // user-defined parameters
-    liquid_resamp_type type;    // resampler type (e.g. LIQUID_RESAMP_INTERP)
-    unsigned int num_stages;    // number of half-band stages
-    float        fc;            // initial cut-off frequency
-    float        f0;            // initial center frequency
-    float        As;            // stop-band attenuation
+    liquid_resamp_type type;    // resampler type (LIQUID_RESAMP_INTERP, LIQUID_RESAMP_DECIM)
+    unsigned int    num_stages; // number of half-band stages
+    float           fc;         // initial cut-off frequency
+    float           f0;         // initial center frequency
+    float           As;         // stop-band attenuation
 
     // derived values
-    unsigned int M;             // integer resampling rate: 2^num_stages
+    unsigned int    M;          // integer resampling rate: 2^num_stages
 
     // half-band resamplers
-    float * fc_stage;           // cut-off frequency for each stage
-    float * f0_stage;           // center frequency for each stage
-    float * As_stage;           // stop-band attenuation for each stage
-    unsigned int * m_stage;     // filter semi-length for each stage
-    RESAMP2() * resamp2;        // array of half-band resamplers
-    T * buffer0;                // buffer[0]
-    T * buffer1;                // buffer[1]
-    unsigned int buffer_index;  // index of buffer
-    float zeta;                 // scaling factor
+    float *         fc_stage;   // cut-off frequency for each stage
+    float *         f0_stage;   // center frequency for each stage
+    float *         As_stage;   // stop-band attenuation for each stage
+    unsigned int *  m_stage;    // filter semi-length for each stage
+    RESAMP2() *     resamp2;    // array of half-band resamplers
+    T *             buffer0;    // buffer[0]
+    T *             buffer1;    // buffer[1]
+    unsigned int    buffer_index;  // index of buffer
+    float           zeta;       // scaling factor
 };
 
 // execute multi-stage resampler as interpolator
@@ -218,7 +218,7 @@ void MSRESAMP2(_reset)(MSRESAMP2() _q)
     // reset half-band resampler objects
     unsigned int i;
     for (i=0; i<_q->num_stages; i++)
-        RESAMP2(_clear)(_q->resamp2[i]);
+        RESAMP2(_reset)(_q->resamp2[i]);
 
     // reset buffer write pointer
     _q->buffer_index = 0;

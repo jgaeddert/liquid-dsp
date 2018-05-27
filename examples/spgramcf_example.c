@@ -15,11 +15,8 @@
 int main() {
     // spectral periodogram options
     unsigned int nfft        =   1024;  // spectral periodogram FFT size
-    unsigned int num_samples =   4000;  // number of samples
-    float        beta        =  10.0f;  // Kaiser-Bessel window parameter
+    unsigned int num_samples =    2e6;  // number of samples
     float        noise_floor = -60.0f;  // noise floor [dB]
-    float        alpha       =   0.1f;  // PSD estimate bandwidth
-
 
     unsigned int i;
 
@@ -27,45 +24,43 @@ int main() {
     float nstd = powf(10.0f, noise_floor/20.0f);
 
     // create spectral periodogram
-    unsigned int window_size = nfft/2;  // spgramcf window size
-    spgramcf q = spgramcf_create_kaiser(nfft, window_size, beta);
+    spgramcf q = spgramcf_create_default(nfft);
+    spgramcf_print(q);
 
-    // generate signal (filter with frequency offset)
-    unsigned int  h_len = 91;       // filter length
-    float         fc    = 0.07f;    // filter cut-off frequency
-    float         f0    = 0.20f;    // filter center frequency
-    float         As    = 60.0f;    // filter stop-band attenuation
-    float         h[h_len];         // filter coefficients (prototype)
-    float complex hc[h_len];        // filter coefficients (complex, offset)
-    liquid_firdes_kaiser(h_len, fc, As, 0, h);
-    // convert to complex coefficients with frequency offset
-    for (i=0; i<h_len; i++)
-        hc[i] = h[i] * cexpf(_Complex_I*2*M_PI*f0*i);
-    firfilt_cccf filter = firfilt_cccf_create(hc, h_len);
-    firfilt_cccf_set_scale(filter, fc);
+    // generate signal (band-pass filter with Hilbert transform)
+    iirfilt_rrrf filter = iirfilt_rrrf_create_prototype(
+            LIQUID_IIRDES_BUTTER,
+            LIQUID_IIRDES_BANDPASS,
+            LIQUID_IIRDES_SOS,
+            9, 0.17f, 0.20f, 0.1f, 60.0f);
+    firhilbf ht = firhilbf_create(13,60.0f);
 
     for (i=0; i<num_samples; i++) {
-        // generate random sample
-        float complex x = randnf() + _Complex_I*randnf();
+        // filter input noise signal
+        float v = 0;
+        iirfilt_rrrf_execute(filter, randnf(), &v);
 
-        // filter
+        // filter off negative image (gain of 2)
         float complex y = 0;
-        firfilt_cccf_push(filter, x);
-        firfilt_cccf_execute(filter, &y);
+        firhilbf_r2c_execute(ht, v, &y);
 
-        // add noise
-        y += nstd * ( randnf() + _Complex_I*randnf() ) * M_SQRT1_2;
+        // scale and add noise
+        y = 0.5f*y + nstd * ( randnf() + _Complex_I*randnf() ) * M_SQRT1_2;
 
         // push resulting sample through periodogram
-        spgramcf_accumulate_psd(q, &y, alpha, 1);
+        spgramcf_push(q, y);
     }
+
+    // explort to gnuplot
+    spgramcf_export_gnuplot(q,"spgramcf_example.gnu");
 
     // compute power spectral density output
     float psd[nfft];
-    spgramcf_write_accumulation(q, psd);
+    spgramcf_get_psd(q, psd);
 
     // destroy objects
-    firfilt_cccf_destroy(filter);
+    iirfilt_rrrf_destroy(filter);
+    firhilbf_destroy(ht);
     spgramcf_destroy(q);
 
     // 
@@ -77,14 +72,14 @@ int main() {
     fprintf(fid,"close all;\n\n");
     fprintf(fid,"nfft = %u;\n", nfft);
     fprintf(fid,"f    = [0:(nfft-1)]/nfft - 0.5;\n");
-    fprintf(fid,"H    = zeros(1,nfft);\n");
+    fprintf(fid,"psd  = zeros(1,nfft);\n");
     fprintf(fid,"noise_floor = %12.6f;\n", noise_floor);
     
     for (i=0; i<nfft; i++)
-        fprintf(fid,"H(%6u) = %12.4e;\n", i+1, psd[i]);
+        fprintf(fid,"psd(%6u) = %12.4e;\n", i+1, psd[i]);
 
     fprintf(fid,"figure;\n");
-    fprintf(fid,"plot(f, H, '-', 'LineWidth',1.5);\n");
+    fprintf(fid,"plot(f, psd, '-', 'LineWidth',1.5);\n");
     fprintf(fid,"xlabel('Normalized Frequency [f/F_s]');\n");
     fprintf(fid,"ylabel('Power Spectral Density [dB]');\n");
     fprintf(fid,"grid on;\n");

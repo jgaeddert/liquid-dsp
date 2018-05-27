@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2016 Joseph Gaeddert
+ * Copyright (c) 2007 - 2018 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -318,7 +318,7 @@ void fskframesync_reset(fskframesync _q)
     nco_crcf_reset(_q->nco);
 
     // clear pre-demod buffer
-    windowcf_clear(_q->buf_rx);
+    windowcf_reset(_q->buf_rx);
 
     // reset internal objects
     firfilt_rrrf_reset(_q->detector);

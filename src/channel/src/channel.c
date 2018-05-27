@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2015 Joseph Gaeddert
+ * Copyright (c) 2007 - 2016 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -31,13 +31,6 @@
 
 // portable structured channel object
 struct CHANNEL(_s) {
-    // sample rate
-    int             enabled_resamp;     // resampler enabled?
-    unsigned int    resamp_m;           // resampling filter semi-length
-    float           resamp_rate;        // resampling rate
-    TO              resamp_buf[8];      // resampling buffer
-    RESAMP()        resamp;             // resampling filter
-
     // additive white Gauss noise
     int             enabled_awgn;       // AWGN enabled?
     T               gamma;              // channel gain
@@ -67,32 +60,15 @@ struct CHANNEL(_s) {
 // create structured channel object with default parameters
 CHANNEL() CHANNEL(_create)(void)
 {
-    // return object
-    return CHANNEL(_create_delay)(7);
-}
-
-// create structured channel object with a particular resampling filter delay
-CHANNEL() CHANNEL(_create_delay)(unsigned int _m)
-{
-    // validate input
-    if (_m < 2 || _m > 30) {
-        fprintf(stderr,"error: channel_%s_create_delay(m), delay out of range\n", EXTENSION_FULL);
-        exit(1);
-    }
-
     CHANNEL() q = (CHANNEL()) malloc(sizeof(struct CHANNEL(_s)));
 
     // initialize all options as off
-    q->enabled_resamp    = 0;
     q->enabled_awgn      = 0;
     q->enabled_carrier   = 0;
     q->enabled_multipath = 0;
     q->enabled_shadowing = 0;
 
     // create internal objects
-    q->resamp_rate      = 1.0f;
-    q->resamp_m         = _m;
-    q->resamp           = RESAMP(_create)(q->resamp_rate, q->resamp_m, 0.45f, 50.0f, 64);
     q->nco              = NCO(_create)(LIQUID_VCO);
     q->h_len            = 1;
     q->h                = (TC*) malloc(q->h_len*sizeof(TC));
@@ -122,7 +98,6 @@ void CHANNEL(_destroy)(CHANNEL() _q)
 void CHANNEL(_print)(CHANNEL() _q)
 {
     printf("channel\n");
-    if (_q->enabled_resamp)     printf("  resamp:    m=%u, rate=%.6f\n", _q->resamp_m, _q->resamp_rate);
     if (_q->enabled_awgn)       printf("  AWGN:      SNR=%.3f dB, gamma=%.3f, std=%.6f\n", _q->SNRdB, _q->gamma, _q->nstd);
     if (_q->enabled_carrier)    printf("  carrier:   dphi=%.3f, phi=%.3f\n", _q->dphi, _q->phi);
     if (_q->enabled_multipath)  printf("  multipath: h_len=%u\n", _q->h_len);
@@ -147,34 +122,6 @@ void CHANNEL(_add_awgn)(CHANNEL() _q,
     // set values appropriately
     _q->nstd  = powf(10.0f, _noise_floor_dB/20.0f);
     _q->gamma = powf(10.0f, (_q->SNRdB+_q->noise_floor_dB)/20.0f);
-}
-
-// apply additive white Gausss noise impairment
-//  _q              : channel object
-//  _delay          : resampling delay
-//  _rate           : resampling rate
-void CHANNEL(_add_resamp)(CHANNEL() _q,
-                          float     _delay,
-                          float     _rate)
-{
-    if (_delay < -0.5f || _delay > 0.5f) {
-        fprintf(stderr,"warning: channel_%s_add_resamp(), delay must be in [-0.5,0.5]; ignoring\n", EXTENSION_FULL);
-        return;
-    } else if (_rate < 0.95f || _rate > 1.05f) {
-        fprintf(stderr,"warning: channel_%s_add_resamp(), rate must be in [0.95,1.05]; ignoring\n", EXTENSION_FULL);
-        return;
-    }
-
-    // enable module
-    _q->enabled_resamp = 1;
-
-    // set parameters
-    _q->resamp_rate = _rate;
-
-    // TODO: set delay appropriately
-    
-    // set resampling rate
-    RESAMP(_set_rate)(_q->resamp, _q->resamp_rate);
 }
 
 // apply carrier offset impairment
@@ -281,73 +228,63 @@ void CHANNEL(_add_shadowing)(CHANNEL() _q,
     _q->shadowing_filter = IIRFILT(_create)(b,2,a,2);
 }
 
-// get nominal channel delay [samples]
-unsigned int CHANNEL(_get_delay)(CHANNEL() _q)
-{
-    return 2*RESAMP(_get_delay)(_q->resamp) + 1;
-}
-
-// apply channel impairments on input array
+// apply channel impairments on single input sample
 //  _q      : channel object
-//  _x      : input array [size: _nx x 1]
-//  _nx     : input array length
-//  _y      : output array
-//  _ny     : output array length
-void CHANNEL(_execute)(CHANNEL()      _q,
-                       TI *           _x,
-                       unsigned int   _nx,
-                       TO *           _y,
-                       unsigned int * _ny)
+//  _x      : input sample
+//  _y      : output sample pointer
+void CHANNEL(_execute)(CHANNEL() _q,
+                       TI        _x,
+                       TO *      _y)
 {
-    unsigned int i;
-    unsigned int j;
-    unsigned int num_resamp;    // resampler output length
-    unsigned int n=0;           // number of output samples
-
-    // apply channel effects on each input sample
-    for (i=0; i<_nx; i++) {
-
-        // apply resampler (always push through resampling filter)
-        RESAMP(_execute)(_q->resamp, _x[i], _q->resamp_buf, &num_resamp);
-
-        // run resulting resampled result through remaining channel objects
-        for (j=0; j<num_resamp; j++) {
-            // apply filter
-            if (_q->enabled_multipath) {
-                FIRFILT(_push)(   _q->channel_filter,  _q->resamp_buf[j]);
-                FIRFILT(_execute)(_q->channel_filter, &_y[n]);
-            } else
-                _y[n] = _q->resamp_buf[j];
-
-            // apply shadowing if enabled
-            if (_q->enabled_shadowing) {
-                // TODO: use type-specific value other than float
-                float g = 0;
-                IIRFILT(_execute)(_q->shadowing_filter, randnf()*_q->shadowing_std, &g);
-                g /= _q->shadowing_fd * 6.9f;
-                g = powf(10.0f, g/20.0f);
-                _y[n] *= g;
-            }
-
-            // apply carrier if enabled
-            if (_q->enabled_carrier) {
-                NCO(_mix_up)(_q->nco, _y[n], &_y[n]);
-                NCO(_step)  (_q->nco);
-            }
-
-            // apply AWGN if enabled
-            if (_q->enabled_awgn) {
-                _y[n] *= _q->gamma;
-                _y[n] += _q->nstd * ( randnf() + _Complex_I*randnf() ) * M_SQRT1_2;
-            }
-
-            // increment output sample counter
-            n++;
-        }
+    float complex r;
+    // apply filter
+    if (_q->enabled_multipath) {
+        FIRFILT(_push)(   _q->channel_filter, _x);
+        FIRFILT(_execute)(_q->channel_filter, &r);
+    } else {
+        r = _x;
     }
 
-    // set output sample length
-    if (_ny != NULL)
-        *_ny = n;
+    // apply shadowing if enabled
+    if (_q->enabled_shadowing) {
+        // TODO: use type-specific value other than float
+        float g = 0;
+        IIRFILT(_execute)(_q->shadowing_filter, randnf()*_q->shadowing_std, &g);
+        g /= _q->shadowing_fd * 6.9f;
+        g = powf(10.0f, g/20.0f);
+        r *= g;
+    }
+
+    // apply carrier if enabled
+    if (_q->enabled_carrier) {
+        NCO(_mix_up)(_q->nco, r, &r);
+        NCO(_step)  (_q->nco);
+    }
+
+    // apply AWGN if enabled
+    if (_q->enabled_awgn) {
+        r *= _q->gamma;
+        r += _q->nstd * ( randnf() + _Complex_I*randnf() ) * M_SQRT1_2;
+    }
+
+    // set output value
+    *_y = r;
+}
+
+// apply channel impairments on single input sample
+//  _q      : channel object
+//  _x      : input array [size: _n x 1]
+//  _n      : input array length
+//  _y      : output array [size: _n x 1]
+void CHANNEL(_execute_block)(CHANNEL()    _q,
+                             TI *         _x,
+                             unsigned int _n,
+                             TO *         _y)
+{
+    // apply channel effects on each input sample
+    // TODO: apply in blocks
+    unsigned int i;
+    for (i=0; i<_n; i++)
+        CHANNEL(_execute)(_q, _x[i], &_y[i]);
 }
 

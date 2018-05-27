@@ -216,8 +216,8 @@ void FIRPFBCH2(_reset)(FIRPFBCH2() _q)
 
     // clear window buffers
     for (i=0; i<_q->M; i++) {
-        WINDOW(_clear)(_q->w0[i]);
-        WINDOW(_clear)(_q->w1[i]);
+        WINDOW(_reset)(_q->w0[i]);
+        WINDOW(_reset)(_q->w1[i]);
     }
 
     // reset filter/buffer alignment flag

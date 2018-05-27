@@ -73,7 +73,7 @@ bsequence bsequence_create(unsigned int _num_bits)
 
     // initialze array with zeros
     bs->s = (unsigned int*) malloc( bs->s_len * sizeof(unsigned int) );
-    bsequence_clear(bs);
+    bsequence_reset(bs);
 
     return bs;
 }
@@ -85,7 +85,7 @@ void bsequence_destroy(bsequence _bs)
     free( _bs );
 }
 
-void bsequence_clear(bsequence _bs)
+void bsequence_reset(bsequence _bs)
 {
     memset( _bs->s, 0x00, (_bs->s_len)*sizeof(unsigned int) );
 }

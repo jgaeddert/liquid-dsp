@@ -201,8 +201,8 @@ void EQLMS(_reset)(EQLMS() _q)
     // copy default coefficients
     memmove(_q->w0, _q->h0, (_q->h_len)*sizeof(T));
 
-    WINDOW(_clear)(_q->buffer);
-    wdelayf_clear(_q->x2);
+    WINDOW(_reset)(_q->buffer);
+    wdelayf_reset(_q->x2);
 
     // reset input count
     _q->count = 0;

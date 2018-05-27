@@ -73,7 +73,9 @@ fec fec_rs_create(fec_scheme _fs)
 void fec_rs_destroy(fec _q)
 {
     // delete internal Reed-Solomon decoder object
-    free_rs_char(_q->rs);
+    if (_q->rs != NULL) {
+        free_rs_char(_q->rs);
+    }
 
     // delete internal memory arrays
     free(_q->tblock);

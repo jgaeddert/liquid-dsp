@@ -101,7 +101,7 @@ bpacketgen bpacketgen_create(unsigned int _m,
     bpacketgen_compute_packet_len(q);
 
     // arrays
-    q->pnsequence = (unsigned char*) malloc((q->pnsequence_len)*sizeof(unsigned char*));
+    q->pnsequence = (unsigned char*) malloc((q->pnsequence_len)*sizeof(unsigned char));
 
     // create m-sequence generator
     // TODO : configure sequence from generator polynomial
@@ -157,7 +157,7 @@ bpacketgen bpacketgen_recreate(bpacketgen _q,
     // arrays
     _q->g = 0;
     _q->pnsequence_len = 8;
-    _q->pnsequence = (unsigned char*) realloc(_q->pnsequence, (_q->pnsequence_len)*sizeof(unsigned char*));
+    _q->pnsequence = (unsigned char*) realloc(_q->pnsequence, (_q->pnsequence_len)*sizeof(unsigned char));
 
     // re-create m-sequence generator
     // TODO : configure sequence from generator polynomial

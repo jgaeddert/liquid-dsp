@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2015 Joseph Gaeddert
+ * Copyright (c) 2007 - 2018 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -33,6 +33,9 @@
 // default AGC loop bandwidth
 #define AGC_DEFAULT_BW   (1e-2f)
 
+// internal method definition
+void AGC(_squelch_update_mode)(AGC() _q);
+
 // agc structure object
 struct AGC(_s) {
     // gain variables
@@ -47,6 +50,16 @@ struct AGC(_s) {
 
     // AGC locked flag
     int is_locked;
+
+    // squelch mode
+    agc_squelch_mode squelch_mode;
+
+    // squelch threshold
+    T squelch_threshold;
+
+    // squelch timeout
+    unsigned int squelch_timeout;
+    unsigned int squelch_timer;
 };
 
 // create agc object
@@ -60,6 +73,11 @@ AGC() AGC(_create)(void)
 
     // reset object
     AGC(_reset)(_q);
+
+    // squelch
+    AGC(_squelch_disable)(_q);
+    AGC(_squelch_set_threshold)(_q, 0.0f);
+    AGC(_squelch_set_timeout  )(_q, 100);
 
     // return object
     return _q;
@@ -75,7 +93,11 @@ void AGC(_destroy)(AGC() _q)
 // print agc object internals
 void AGC(_print)(AGC() _q)
 {
-    printf("agc [rssi: %12.4fdB]:\n", AGC(_get_rssi)(_q));
+    printf("agc [rssi: %12.4f dB, bandwidth: %12.4e, locked: %s, squelch: %s]:\n",
+            AGC(_get_rssi)(_q),
+            _q->bandwidth,
+            _q->is_locked ? "yes" : "no",
+            _q->squelch_mode == LIQUID_AGC_SQUELCH_DISABLED ? "disabled" : "enabled");
 }
 
 // reset agc object's internal state
@@ -89,6 +111,10 @@ void AGC(_reset)(AGC() _q)
 
     // unlock gain control
     AGC(_unlock)(_q);
+
+    // reset squelch state
+    _q->squelch_mode = (_q->squelch_mode == LIQUID_AGC_SQUELCH_DISABLED) ?
+        LIQUID_AGC_SQUELCH_DISABLED : LIQUID_AGC_SQUELCH_ENABLED;
 }
 
 // execute automatic gain control loop
@@ -119,6 +145,9 @@ void AGC(_execute)(AGC() _q,
     // clamp to 120 dB gain
     if (_q->g > 1e6f)
         _q->g = 1e6f;
+
+    // udpate squelch mode appropriately
+    AGC(_squelch_update_mode)(_q);
 }
 
 // execute automatic gain control on block of samples
@@ -184,16 +213,16 @@ float AGC(_get_signal_level)(AGC() _q)
 
 // set estimated signal level (linear)
 void AGC(_set_signal_level)(AGC() _q,
-                            float _signal_level)
+                            float _x2)
 {
     // check to ensure signal level is reasonable
-    if ( _signal_level <= 0 ) {
+    if ( _x2 <= 0 ) {
         fprintf(stderr,"error: agc_%s_set_signal_level(), bandwidth must be greater than zero\n", EXTENSION_FULL);
         exit(-1);
     }
 
     // set internal gain appropriately
-    _q->g = 1.0f / _signal_level;
+    _q->g = 1.0f / _x2;
 
     // reset internal output signal level
     _q->y2_prime = 1.0f;
@@ -266,5 +295,103 @@ void AGC(_init)(AGC()        _q,
 
     // set internal gain based on estimated signal level
     AGC(_set_signal_level)(_q, x2);
+}
+
+// enable squelch mode
+void AGC(_squelch_enable)(AGC() _q)
+{
+    _q->squelch_mode = LIQUID_AGC_SQUELCH_ENABLED;
+}
+
+// disable squelch mode
+void AGC(_squelch_disable)(AGC() _q)
+{
+    _q->squelch_mode = LIQUID_AGC_SQUELCH_DISABLED;
+}
+
+// is squelch enabled?
+int  AGC(_squelch_is_enabled)(AGC() _q)
+{
+    return _q->squelch_mode == LIQUID_AGC_SQUELCH_DISABLED ? 0 : 1;
+}
+
+// set squelch threshold
+//  _q          :   automatic gain control object
+//  _thresh_dB  :   threshold for enabling squelch [dB]
+void AGC(_squelch_set_threshold)(AGC() _q,
+                                 T     _threshold)
+{
+    _q->squelch_threshold = _threshold;
+}
+
+// get squelch threshold [dB]
+T AGC(_squelch_get_threshold)(AGC() _q)
+{
+    return _q->squelch_threshold;
+}
+
+// set squelch timeout
+//  _q       : automatic gain control object
+//  _timeout : timeout before enabling squelch [samples]
+void AGC(_squelch_set_timeout)(AGC()        _q,
+                               unsigned int _timeout)
+{
+    _q->squelch_timeout = _timeout;
+}
+
+// get squelch timeout [samples]
+unsigned int AGC(_squelch_get_timeout)(AGC() _q)
+{
+    return _q->squelch_timeout;
+}
+
+// get squelch mode
+int AGC(_squelch_get_status)(AGC() _q)
+{
+    return _q->squelch_mode;
+}
+
+//
+// internal methods
+//
+
+// update squelch mode appropriately
+void AGC(_squelch_update_mode)(AGC() _q)
+{
+    //
+    int threshold_exceeded = (AGC(_get_rssi)(_q) > _q->squelch_threshold);
+
+    // update state
+    switch (_q->squelch_mode) {
+    case LIQUID_AGC_SQUELCH_ENABLED:
+        _q->squelch_mode = threshold_exceeded ? LIQUID_AGC_SQUELCH_RISE : LIQUID_AGC_SQUELCH_ENABLED;
+        break;
+    case LIQUID_AGC_SQUELCH_RISE:
+        _q->squelch_mode = threshold_exceeded ? LIQUID_AGC_SQUELCH_SIGNALHI : LIQUID_AGC_SQUELCH_FALL;
+        break;
+    case LIQUID_AGC_SQUELCH_SIGNALHI:
+        _q->squelch_mode = threshold_exceeded ? LIQUID_AGC_SQUELCH_SIGNALHI : LIQUID_AGC_SQUELCH_FALL;
+        break;
+    case LIQUID_AGC_SQUELCH_FALL:
+        _q->squelch_mode = threshold_exceeded ? LIQUID_AGC_SQUELCH_SIGNALHI : LIQUID_AGC_SQUELCH_SIGNALLO;
+        _q->squelch_timer = _q->squelch_timeout;
+        break;
+    case LIQUID_AGC_SQUELCH_SIGNALLO:
+        _q->squelch_timer--;
+        if (_q->squelch_timer == 0)
+            _q->squelch_mode = LIQUID_AGC_SQUELCH_TIMEOUT;
+        else if (threshold_exceeded)
+            _q->squelch_mode = LIQUID_AGC_SQUELCH_SIGNALHI;
+        break;
+    case LIQUID_AGC_SQUELCH_TIMEOUT:
+        _q->squelch_mode = LIQUID_AGC_SQUELCH_ENABLED;
+        break;
+    case LIQUID_AGC_SQUELCH_DISABLED:
+        break;
+    case LIQUID_AGC_SQUELCH_UNKNOWN:
+    default:
+        fprintf(stderr,"warning: agc_%s_execute(), invalid squelch mode: %d\n",
+                EXTENSION_FULL, _q->squelch_mode);
+    }
 }
 

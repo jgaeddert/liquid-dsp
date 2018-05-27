@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2015 Joseph Gaeddert
+ * Copyright (c) 2007 - 2016 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -67,8 +67,8 @@ WINDOW() WINDOW(_create)(unsigned int _n)
     q->v = (T*) malloc((q->num_allocated)*sizeof(T));
     q->read_index = 0;
 
-    // clear window
-    WINDOW(_clear)(q);
+    // reset window
+    WINDOW(_reset)(q);
 
     // return object
     return q;
@@ -157,8 +157,8 @@ void WINDOW(_debug_print)(WINDOW() _q)
     }
 }
 
-// clear/reset window object (initialize to zeros)
-void WINDOW(_clear)(WINDOW() _q)
+// reset window object (initialize to zeros)
+void WINDOW(_reset)(WINDOW() _q)
 {
     // reset read index
     _q->read_index = 0;

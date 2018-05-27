@@ -2,7 +2,10 @@
 liquid-dsp
 ==========
 
-Software-Defined Radio Digital Signal Processing Library
+Software-Defined Radio Digital Signal Processing Library -
+[http://liquidsdr.org](http://liquidsdr.org)
+
+[![Build Status](https://travis-ci.org/jgaeddert/liquid-dsp.svg?branch=master)](https://travis-ci.org/jgaeddert/liquid-dsp)
 
 liquid-dsp is a free and open-source digital signal processing (DSP)
 library designed specifically for software-defined radios on embedded
@@ -10,12 +13,11 @@ platforms. The aim is to provide a lightweight DSP library that does not
 rely on a myriad of external dependencies or proprietary and otherwise
 cumbersome frameworks. All signal processing elements are designed to be
 flexible, scalable, and dynamic, including filters, filter design,
-oscillators, modems, synchronizers, and complex mathematical operations.
+oscillators, modems, synchronizers, complex mathematical operations, and
+much more.
 
-For more information, please refer to the documentation:
-
-  * online HTML version: [http://liquidsdr.org/doc](http://liquidsdr.org/doc)
-  * pre-compiled `.pdf` version: [liquid.pdf](http://liquidsdr.org/downloads/liquid.pdf) (4.4 MB).
+For more information, please refer to the
+[documentation](http://liquidsdr.org/doc) online.
 
 Installation and Dependencies
 -----------------------------
@@ -24,6 +26,12 @@ liquid-dsp only relies on `libc` and `libm` (standard C and math)
 libraries to run; however liquid will take advantage of other packages
 (such as [FFTW](http://www.fftw.org)) if they are available.
 
+If you build from the Git repository you will also need to install autotools
+for generating the `configure.sh` script (e.g.
+`brew install autoconf automake` on macOS,
+`sudo apt-get install automake autoconf` on Debian variants).
+
+
 ### Getting the source code ###
 
 There are two primary ways of obtaining the source code:
@@ -31,15 +39,15 @@ There are two primary ways of obtaining the source code:
 1. Clone the entire [repository](http://github.com/jgaeddert/liquid-dsp)
    (recommended)
         
-        $ git clone git://github.com/jgaeddert/liquid-dsp.git
+    git clone git://github.com/jgaeddert/liquid-dsp.git
 
-2. or download the [tarball](http://liquidsdr.org/downloads/liquid-dsp-1.2.0.tar.gz)
-   (2.6 MB), validate the checksum, and unpack 
+2. or download the [tarball](http://liquidsdr.org/downloads/liquid-dsp-1.3.1.tar.gz)
+   (1023 kB), unpack, and validate the checksum:
 
-        $ wget http://liquidsdr.org/downloads/liquid-dsp-1.2.0.tar.gz
-        $ wget http://liquidsdr.org/downloads/liquid-dsp.md5
-        $ md5sum --check liquid-dsp.md5
-        $ tar -xf liquid-dsp-1.2.0.tar.gz
+    wget http://liquidsdr.org/downloads/liquid-dsp-1.3.1.tar.gz
+    wget http://liquidsdr.org/downloads/liquid-dsp.md5
+    md5sum --check --ignore-missing liquid-dsp.md5
+    tar -xf liquid-dsp-1.3.1.tar.gz
 
 ### Installation ###
 
@@ -47,19 +55,22 @@ Once you have obtained a copy of the source code, you can now build the
 DSP library (NOTE: if you chose to clone the repository, you will need
 to also run the additional `./bootstrap.sh` script before configuring):
 
-    $ ./bootstrap.sh     # <- only if you cloned the Git repo
-    $ ./configure
-    $ make
-    $ sudo make install
+    ./bootstrap.sh     # <- only if you cloned the Git repo
+    ./configure
+    make
+    sudo make install
 
 If you are installing on Linux for the first time, you will also need
 to rebind your dynamic libraries with `sudo ldconfig` to make the
 shared object available.
+This is not necessary on macOS.
 
 If you decide that you want to remove the installed DSP library, simply
 run
 
-    $ sudo make uninstall
+    sudo make uninstall
+
+Seriously, I won't be offended.
 
 ### Run all test scripts ###
 
@@ -72,7 +83,9 @@ take the form of a C source file. liquid includes a framework for
 compiling, linking, and running the tests, and can be invoked with the
 make target `check`, viz.
 
-    $ make check
+    make check
+
+There are currently more than 80,000 checks to verify functional correctness.
 
 ### Examples ###
 
@@ -82,7 +95,7 @@ the `examples/` directory.  Most example scripts generate an output
 All examples are built as stand-alone programs and can be compiled with
 the make target `examples`:
 
-    $ make examples
+    make examples
 
 Sometimes, however, it is useful to build one example individually.
 This can be accomplished by directly targeting its binary
@@ -98,7 +111,7 @@ the number of trials so that each benchmark will take between 50 and
 500 ms to run. You can build and run the benchmark program with the
 following command:
 
-    $ make bench
+    make bench
 
 Available Modules
 -----------------
@@ -149,8 +162,10 @@ Available Modules
 
 liquid projects are released under the X11/MIT license.
 Short version: this code is copyrighted to me (Joseph D. Gaeddert),
-I give you permission to do wantever you want with it except remove my name
-from the credits. See the LICENSE file or
+I give you full permission to do wantever you want with it except remove my
+name from the credits.
+Seriously, go nuts.
+See the LICENSE file or
 [http://opensource.org/licenses/MIT](http://opensource.org/licenses/MIT)
 for specific terms.
 

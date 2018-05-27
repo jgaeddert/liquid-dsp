@@ -230,7 +230,7 @@ void bpresync_test(bpresync_cccf   _q,
             float complex rxy;
             float         dphi_est;
             bpresync_cccf_push(_q, y[i]);
-            bpresync_cccf_correlate(_q, &rxy, &dphi_est);
+            bpresync_cccf_execute(_q, &rxy, &dphi_est);
 
             // retain maximum
             if ( cabsf(rxy) > _rxy_max[t] ) {

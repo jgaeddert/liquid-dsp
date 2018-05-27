@@ -285,7 +285,7 @@ void FIRPFBCH(_reset)(FIRPFBCH() _q)
 {
     unsigned int i;
     for (i=0; i<_q->num_channels; i++) {
-        WINDOW(_clear)(_q->w[i]);
+        WINDOW(_reset)(_q->w[i]);
         _q->x[i] = 0;
         _q->X[i] = 0;
     }

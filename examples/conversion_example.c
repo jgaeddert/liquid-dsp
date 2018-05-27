@@ -35,7 +35,6 @@ int main()
     // spectral periodogram options
     unsigned int nfft        =   1200;  // spectral periodogram FFT size
     unsigned int num_samples =  64000;  // number of samples
-    float        alpha       =   0.02f; // bandwidth factor for estimating PSD
     float        fc          =   0.20f; // carrier (relative to sampling rate)
 
     // create objects
@@ -61,7 +60,7 @@ int main()
         iirfilt_crcf_execute(filter_tx, v1, &v1);
 
         // save spectrum
-        spgramcf_accumulate_psd(spgram_tx, &v1, alpha, 1);
+        spgramcf_push(spgram_tx, v1);
 
         // STEP 2: mix signal up and save real part (DAC output)
         nco_crcf_mix_up(mixer_tx, v1, &v1);
@@ -69,7 +68,7 @@ int main()
         nco_crcf_step(mixer_tx);
 
         // save spectrum
-        spgramf_accumulate_psd(spgram_dac, &v2, alpha, 1);
+        spgramf_push(spgram_dac, v2);
 
         // STEP 3: mix signal down and filter off image
         float complex v3;
@@ -78,16 +77,16 @@ int main()
         nco_crcf_step(mixer_rx);
 
         // save spectrum
-        spgramcf_accumulate_psd(spgram_rx, &v3, alpha, 1);
+        spgramcf_push(spgram_rx, v3);
     }
 
     // compute power spectral density output
     float   psd_tx  [nfft];
     float   psd_dac [nfft];
     float   psd_rx  [nfft];
-    spgramcf_write_accumulation(spgram_tx,  psd_tx);
-    spgramf_write_accumulation( spgram_dac, psd_dac);
-    spgramcf_write_accumulation(spgram_rx,  psd_rx);
+    spgramcf_get_psd(spgram_tx,  psd_tx);
+    spgramf_get_psd( spgram_dac, psd_dac);
+    spgramcf_get_psd(spgram_rx,  psd_rx);
 
     // destroy objects
     spgramcf_destroy(spgram_tx);

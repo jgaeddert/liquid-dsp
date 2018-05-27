@@ -107,8 +107,7 @@ int main(int argc, char*argv[])
 
     // spectral periodogram
     unsigned int nfft  = 4200;
-    float        alpha = 0.10f;
-    spgramcf periodogram = spgramcf_create_kaiser(nfft, nfft/2, 8.0f);
+    spgramcf periodogram = spgramcf_create_default(nfft);
 
     // write frame in blocks
     int frame_complete = 0;
@@ -124,18 +123,12 @@ int main(int argc, char*argv[])
         fskframesync_execute_block(fs, buf_rx, buf_len);
         
         // estimate power spectral density
-        spgramcf_accumulate_psd(periodogram, buf_rx, alpha, buf_len);
+        spgramcf_write(periodogram, buf_rx, buf_len);
     }
-
-#if 0
-    // export debugging file
-    if (debug_enabled)
-        fskframesync_debug_print(fs, "fskframesync_debug.m");
-#endif
 
     // compute power spectral density of received signal
     float psd[nfft];
-    spgramcf_write_accumulation(periodogram, psd);
+    spgramcf_get_psd(periodogram, psd);
 
     // clean up allocated objects
     spgramcf_destroy(periodogram);
@@ -145,7 +138,6 @@ int main(int argc, char*argv[])
     // 
     // export results
     //
-    
     FILE * fid = fopen(OUTPUT_FILENAME,"w");
     fprintf(fid,"%% %s : auto-generated file\n", OUTPUT_FILENAME);
     fprintf(fid,"clear all\n");
@@ -161,15 +153,15 @@ int main(int argc, char*argv[])
     fprintf(fid,"figure('Color','white');\n");
     fprintf(fid,"f = [0:(nfft-1)]/nfft - 0.5;\n");
     fprintf(fid,"plot(f,psd,'LineWidth',1.5,'Color',[0.5 0 0]);\n");
-    fprintf(fid,"axis([-0.5 0.5 -40 20]);\n");
+    fprintf(fid,"axis([-0.5 0.5 -30 30]);\n");
     fprintf(fid,"xlabel('Normalized Frequency [f/F_s]');\n");
     fprintf(fid,"ylabel('PSD [dB]');\n");
     fprintf(fid,"grid on;\n");
 
     fclose(fid);
-    //printf("results written to '%s'\n", OUTPUT_FILENAME);
+    printf("results written to '%s'\n", OUTPUT_FILENAME);
 
-    //printf("done.\n");
+    printf("done.\n");
     return 0;
 }
 

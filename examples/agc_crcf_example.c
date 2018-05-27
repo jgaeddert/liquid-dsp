@@ -62,7 +62,7 @@ int main(int argc, char*argv[])
     float rssi[num_samples];        // received signal strength
 
     // print info
-    printf("automatic gain control // loop bandwidth: %4.2e\n",bt);
+    agc_crcf_print(q);
 
     // generate signal
     for (i=0; i<num_samples; i++)
