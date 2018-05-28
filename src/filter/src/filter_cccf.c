@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2015 Joseph Gaeddert
+ * Copyright (c) 2007 - 2018 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -44,6 +44,7 @@
 #define NCO(name)           LIQUID_CONCAT(nco_crcf,name)
 #define MSRESAMP(name)      LIQUID_CONCAT(msresamp_cccf,name)
 #define MSRESAMP2(name)     LIQUID_CONCAT(msresamp2_cccf,name)
+#define RRESAMP(name)       LIQUID_CONCAT(rresamp_cccf,name)
 #define RESAMP(name)        LIQUID_CONCAT(resamp_cccf,name)
 #define RESAMP2(name)       LIQUID_CONCAT(resamp2_cccf,name)
 //#define SYMSYNC(name)       LIQUID_CONCAT(symsync_cccf,name)
@@ -78,6 +79,7 @@
 //#include "qmfb.c"
 #include "msresamp.c"
 #include "msresamp2.c"
+#include "rresamp.c"
 #include "resamp.c"
 #include "resamp2.c"
 //#include "symsync.c"

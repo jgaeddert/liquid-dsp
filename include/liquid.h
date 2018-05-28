@@ -3488,6 +3488,80 @@ LIQUID_RESAMP2_DEFINE_API(LIQUID_RESAMP2_MANGLE_CCCF,
 
 
 // 
+// Rational resampler
+//
+#define LIQUID_RRESAMP_MANGLE_RRRF(name) LIQUID_CONCAT(rresamp_rrrf,name)
+#define LIQUID_RRESAMP_MANGLE_CRCF(name) LIQUID_CONCAT(rresamp_crcf,name)
+#define LIQUID_RRESAMP_MANGLE_CCCF(name) LIQUID_CONCAT(rresamp_cccf,name)
+
+#define LIQUID_RRESAMP_DEFINE_API(RRESAMP,TO,TC,TI)                         \
+                                                                            \
+/* Rational rate resampler, implemented as a polyphase filterbank       */  \
+typedef struct RRESAMP(_s) * RRESAMP();                                     \
+                                                                            \
+/* Create rational-rate resampler object from filter prototype          */  \
+/*  _P      : interpolation factor,              P > 0                  */  \
+/*  _Q      : decimation factor,                 Q > 0                  */  \
+/*  _m      : filter semi-length (delay),        0 < _m                 */  \
+/*  _As     : filter stop-band attenuation [dB], 0 < _As                */  \
+RRESAMP() RRESAMP(_create)(unsigned int _P,                                 \
+                           unsigned int _Q,                                 \
+                           unsigned int _m,                                 \
+                           float        _As);                               \
+                                                                            \
+/* Create rational resampler object with a specified input resampling   */  \
+/* rate and default parameters. This is a simplified method to provide  */  \
+/* a basic resampler with a baseline set of parameters, abstracting     */  \
+/* away some of the complexities with the filterbank design.            */  \
+/* The default parameters are                                           */  \
+/*  m    = 12    (filter semi-length) and                               */  \
+/*  As   = 60 dB (filter stop-band attenuation)                         */  \
+/*  _P      : interpolation factor, P > 0                               */  \
+/*  _Q      : decimation factor,    Q > 0                               */  \
+RRESAMP() RRESAMP(_create_default)(unsigned int _P,                         \
+                                   unsigned int _Q);                        \
+                                                                            \
+/* Destroy resampler object, freeing all internal memory                */  \
+void RRESAMP(_destroy)(RRESAMP() _q);                                       \
+                                                                            \
+/* Print resampler object internals to stdout                           */  \
+void RRESAMP(_print)(RRESAMP() _q);                                         \
+                                                                            \
+/* Reset resampler object internals                                     */  \
+void RRESAMP(_reset)(RRESAMP() _q);                                         \
+                                                                            \
+/* Get resampler delay (filter semi-length \(m\))                       */  \
+unsigned int RRESAMP(_get_delay)(RRESAMP() _q);                             \
+                                                                            \
+/* Get rate of resampler, \(r = Q/P\)                                   */  \
+float RRESAMP(_get_rate)(RRESAMP() _q);                                     \
+                                                                            \
+/* Execute rational-rate resampler on a block of input samples and      */  \
+/* store the resulting samples in the output array.                     */  \
+/*  _q  : resamp object                                                 */  \
+/*  _x  : input sample array, [size: P x 1]                             */  \
+/*  _y  : output sample array [size: Q x 1]                             */  \
+void RRESAMP(_execute)(RRESAMP()       _q,                                  \
+                        TI *           _x,                                  \
+                        TO *           _y);                                 \
+
+LIQUID_RRESAMP_DEFINE_API(LIQUID_RRESAMP_MANGLE_RRRF,
+                          float,
+                          float,
+                          float)
+
+LIQUID_RRESAMP_DEFINE_API(LIQUID_RRESAMP_MANGLE_CRCF,
+                          liquid_float_complex,
+                          float,
+                          liquid_float_complex)
+
+LIQUID_RRESAMP_DEFINE_API(LIQUID_RRESAMP_MANGLE_CCCF,
+                          liquid_float_complex,
+                          liquid_float_complex,
+                          liquid_float_complex)
+
+
+// 
 // Arbitrary resampler
 //
 #define LIQUID_RESAMP_MANGLE_RRRF(name) LIQUID_CONCAT(resamp_rrrf,name)
