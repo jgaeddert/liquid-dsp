@@ -699,6 +699,7 @@ src/math/src/windows.o            : %.o : %.c $(include_headers)
 
 
 math_autotests :=						\
+	src/math/tests/gcd_autotest.c				\
 	src/math/tests/kbd_autotest.c				\
 	src/math/tests/math_autotest.c				\
 	src/math/tests/math_bessel_autotest.c			\

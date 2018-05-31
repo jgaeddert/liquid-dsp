@@ -5622,6 +5622,10 @@ void liquid_unique_factor(unsigned int   _n,
                           unsigned int * _factors,
                           unsigned int * _num_factors);
 
+// compute greatest common divisor between to numbers P and Q
+unsigned int liquid_gcd(unsigned int _P,
+                        unsigned int _Q);
+
 // compute c = base^exp (mod n)
 unsigned int liquid_modpow(unsigned int _base,
                            unsigned int _exp,
