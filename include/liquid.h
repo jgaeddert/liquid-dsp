@@ -3533,6 +3533,14 @@ void RRESAMP(_reset)(RRESAMP() _q);                                         \
 /* Get resampler delay (filter semi-length \(m\))                       */  \
 unsigned int RRESAMP(_get_delay)(RRESAMP() _q);                             \
                                                                             \
+/* Get interpolation factor of resampler, \(Q\), after removing         */  \
+/* greatest common divisor                                              */  \
+unsigned int RRESAMP(_get_interp)(RRESAMP() _q);                            \
+                                                                            \
+/* Get decimation factor of resampler, \(Q\), after removing            */  \
+/* greatest common divisor                                              */  \
+unsigned int RRESAMP(_get_decim)(RRESAMP() _q);                             \
+                                                                            \
 /* Get rate of resampler, \(r = Q/P\)                                   */  \
 float RRESAMP(_get_rate)(RRESAMP() _q);                                     \
                                                                             \

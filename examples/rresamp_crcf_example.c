@@ -67,10 +67,6 @@ int main(int argc, char*argv[])
 
     unsigned int i;
 
-    // arrays
-    float complex buf_x[P];
-    float complex buf_y[Q];
-
     // create spectral periodogram objects
     unsigned int nfft = 2400;
     spgramcf px = spgramcf_create_default(nfft);
@@ -78,7 +74,14 @@ int main(int argc, char*argv[])
 
     // create resampler object
     rresamp_crcf q = rresamp_crcf_create(P,Q,m,As);
+    rresamp_crcf_print(q);
     float rate = rresamp_crcf_get_rate(q);
+    P          = rresamp_crcf_get_decim(q);
+    Q          = rresamp_crcf_get_interp(q);
+
+    // arrays
+    float complex buf_x[P];
+    float complex buf_y[Q];
 
     // create signal generator
     msourcecf gen = msourcecf_create();

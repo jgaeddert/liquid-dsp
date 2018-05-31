@@ -66,16 +66,16 @@ RRESAMP() RRESAMP(_create)(unsigned int _P,
         exit(1);
     }
 
-    // TODO: reduce P and Q by gcd(P,Q)
-
     // allocate memory for resampler
     RRESAMP() q = (RRESAMP()) malloc(sizeof(struct RRESAMP(_s)));
 
-    // set properties
-    q->P    = _P;
-    q->Q    = _Q;
-    q->m    = _m;
-    q->As   = _As;
+    // set properties, scaling interpolation and decimation factors by their
+    // greatest common divisor
+    unsigned int gcd = liquid_gcd(_P, _Q);
+    q->P  = _P / gcd;
+    q->Q  = _Q / gcd;
+    q->m  = _m;
+    q->As = _As;
 
     // design filter
     q->bw = 0.40f;
@@ -146,6 +146,20 @@ unsigned int RRESAMP(_get_delay)(RRESAMP() _q)
 float RRESAMP(_get_rate)(RRESAMP() _q)
 {
     return (float)(_q->Q) / (float)(_q->P);
+}
+
+// Get interpolation factor of resampler, \(Q\), after removing
+// greatest common divisor
+unsigned int RRESAMP(_get_interp)(RRESAMP() _q)
+{
+    return _q->Q;
+}
+
+// Get decimator factor of resampler, \(Q\), after removing
+// greatest common divisor
+unsigned int RRESAMP(_get_decim)(RRESAMP() _q)
+{
+    return _q->P;
 }
 
 // Execute rational-rate resampler on a block of input samples and
