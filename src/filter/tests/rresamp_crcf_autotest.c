@@ -23,41 +23,39 @@
 #include "autotest/autotest.h"
 #include "liquid.h"
 
+// convenience methods
+#define min(a,b) ((a)<(b)?(a):(b))
+#define max(a,b) ((a)>(b)?(a):(b))
+
 // 
 // AUTOTEST : test rational-rate resampler
 //
-void autotest_rresamp_crcf()
+void test_harness_rresamp_crcf(unsigned int _P,
+                               unsigned int _Q,
+                               unsigned int _m,
+                               float        _As)
 {
-#if 0
-    // options
-    unsigned int m = 13;        // filter semi-length (filter delay)
-    float r=1.27115323f;        // resampling rate (output/input)
-    float bw=0.45f;             // resampling filter bandwidth
-    float As=60.0f;             // resampling filter stop-band attenuation [dB]
-    unsigned int npfb=64;       // number of filters in bank (timing resolution)
-    unsigned int n=400;         // number of input samples
-    float fx=0.254230646f;      // complex input sinusoid frequency (0.2*r)
+    // target about 1500 max samples
+    unsigned int  n  = 1500 / max(_P,_Q);
+    unsigned int  nx = n * _P;  // number of input samples
+    unsigned int  ny = n * _Q;  // number of output samples
 
-    unsigned int i;
-
-    // number of input samples (zero-padded)
-    unsigned int nx = n + m;
-
-    // output buffer with extra padding for good measure
-    unsigned int y_len = (unsigned int) ceilf(1.1 * nx * r) + 4;
-
-    // arrays
-    float complex x[nx];
-    float complex y[y_len];
+    // buffers
+    float complex x[nx];        // input sample buffer
+    float complex y[ny];        // output sample buffer
 
     // create resampler
-    resamp_crcf q = resamp_crcf_create(r,m,bw,As,npfb);
+    rresamp_crcf q = rresamp_crcf_create(_P, _Q, _m, _As);
+    float r = rresamp_crcf_get_rate(q);
 
-    // generate input signal
-    float wsum = 0.0f;
+    // generate input signal (windowed sinusoid)
+    unsigned int i;
+    float        wsum = 0.0f;
+    unsigned int wlen = (n - _m)*_P;
+    float        fx = min(0.5*M_SQRT1_2, 0.1*r/sqrt(5.0f)); // input tone frequency
     for (i=0; i<nx; i++) {
         // compute window
-        float w = i < n ? kaiser(i, n, 10.0f, 0.0f) : 0.0f;
+        float w = i < wlen ? kaiser(i, wlen, 10.0f, 0.0f) : 0.0f;
 
         // apply window to complex sinusoid
         x[i] = cexpf(_Complex_I*2*M_PI*fx*i) * w;
@@ -66,35 +64,27 @@ void autotest_rresamp_crcf()
         wsum += w;
     }
 
-    // resample
-    unsigned int ny=0;
-    unsigned int nw;
-    for (i=0; i<nx; i++) {
-        // execute resampler, storing in output buffer
-        resamp_crcf_execute(q, x[i], &y[ny], &nw);
-
-        // increment output size
-        ny += nw;
-    }
+    // resample input in blocks
+    for (i=0; i<n; i++)
+        rresamp_crcf_execute(q, &x[i*_P], &y[i*_Q]);
 
     // clean up allocated objects
-    resamp_crcf_destroy(q);
+    rresamp_crcf_destroy(q);
 
     // 
     // analyze resulting signal
     //
 
     // check that the actual resampling rate is close to the target
-    float r_actual = (float)ny / (float)nx;
     float fy = fx / r;      // expected output frequency
 
     // run FFT and ensure that carrier has moved and that image
     // frequencies and distortion have been adequately suppressed
-    unsigned int nfft = 1 << liquid_nextpow2(ny);
+    unsigned int nfft = 8192;   // about 1500 max samples
     float complex yfft[nfft];   // fft input
     float complex Yfft[nfft];   // fft output
     for (i=0; i<nfft; i++)
-        yfft[i] = i < ny ? y[i] : 0.0f;
+        yfft[i] = i < ny ? y[i]/(wsum*sqrt(r)) : 0.0f;
     fft_run(nfft, yfft, Yfft, LIQUID_FFT_FORWARD, 0);
     fft_shift(Yfft, nfft);  // run FFT shift
 
@@ -108,7 +98,6 @@ void autotest_rresamp_crcf()
         float f = (float)i/(float)nfft - 0.5f;
 
         // scale FFT output appropriately
-        Yfft[i] /= (r * wsum);
         float Ymag = 20*log10f( cabsf(Yfft[i]) );
 
         // find frequency location of maximum magnitude
@@ -125,46 +114,79 @@ void autotest_rresamp_crcf()
 
     if (liquid_autotest_verbose) {
         // print results
-        printf("  desired resampling rate   :   %12.8f\n", r);
-        printf("  measured resampling rate  :   %12.8f    (%u/%u)\n", r_actual, ny, nx);
+        printf("  desired resampling rate   :   %12.8f = %u / %u\n", r, _Q, _P);
+        printf("  frequency (input)         :   %12.8f / Fs\n", fx);
         printf("  peak spectrum             :   %12.8f dB (expected 0.0 dB)\n", Ypeak);
         printf("  peak frequency            :   %12.8f    (expected %-12.8f)\n", fpeak, fy);
-        printf("  max sidelobe              :   %12.8f dB (expected at least %.2f dB)\n", max_sidelobe, -As);
+        printf("  max sidelobe              :   %12.8f dB (expected at least %.2f dB)\n", max_sidelobe, -_As);
     }
-    CONTEND_DELTA(     r_actual, r,    0.01f ); // check actual output sample rate
     CONTEND_DELTA(     Ypeak,    0.0f, 0.25f ); // peak should be about 0 dB
     CONTEND_DELTA(     fpeak,    fy,   0.01f ); // peak frequency should be nearly 0.2
-    CONTEND_LESS_THAN( max_sidelobe, -As );     // maximum side-lobe should be sufficiently low
+    CONTEND_LESS_THAN( max_sidelobe, -_As );    // maximum side-lobe should be sufficiently low
 
 #if 0
     // export results for debugging
-    char filename[] = "resamp_crcf_autotest.m";
+    char filename[256] = "";
+    sprintf(filename,"rresamp_crcf_autotest_P%u_Q%u.m", _P, _Q);
     FILE*fid = fopen(filename,"w");
     fprintf(fid,"%% %s: auto-generated file\n",filename);
     fprintf(fid,"clear all;\n");
     fprintf(fid,"close all;\n");
     fprintf(fid,"r    = %12.8f;\n", r);
+    fprintf(fid,"fx   = %.4e;\n", fx);
     fprintf(fid,"nx   = %u;\n", nx);
     fprintf(fid,"ny   = %u;\n", ny);
+    fprintf(fid,"wsum = %.4e;\n", wsum);
     fprintf(fid,"nfft = %u;\n", nfft);
 
-    fprintf(fid,"Y = zeros(1,nfft);\n");
-    for (i=0; i<nfft; i++)
-        fprintf(fid,"Y(%3u) = %12.4e + j*%12.4e;\n", i+1, crealf(Yfft[i]), cimagf(Yfft[i]));
+    fprintf(fid,"x = zeros(1,nx);\n");
+    for (i=0; i<nx; i++)
+        fprintf(fid,"x(%3u) = %12.4e + j*%12.4e;\n", i+1, crealf(x[i]), cimagf(x[i]));
+
+    fprintf(fid,"y = zeros(1,ny);\n");
+    for (i=0; i<ny; i++)
+        fprintf(fid,"y(%3u) = %12.4e + j*%12.4e;\n", i+1, crealf(y[i]), cimagf(y[i]));
 
     fprintf(fid,"\n\n");
     fprintf(fid,"%% plot frequency-domain result\n");
+    fprintf(fid,"X = 20*log10(abs(fftshift(fft(x / (wsum        ), nfft))));\n");
+    fprintf(fid,"Y = 20*log10(abs(fftshift(fft(y / (wsum*sqrt(r)), nfft))));\n");
     fprintf(fid,"f=[0:(nfft-1)]/nfft-0.5;\n");
-    fprintf(fid,"figure;\n");
-    fprintf(fid,"plot(f,20*log10(abs(Y)),'Color',[0.25 0.5 0.0],'LineWidth',2);\n");
-    fprintf(fid,"grid on;\n");
-    fprintf(fid,"xlabel('normalized frequency');\n");
-    fprintf(fid,"ylabel('PSD [dB]');\n");
-    fprintf(fid,"axis([-0.5 0.5 -120 20]);\n");
+    fprintf(fid,"figure('color','white','position',[100 100 800 800]);\n");
+    fprintf(fid,"subplot(2,1,1);\n");
+    fprintf(fid,"  hold on;\n");
+    fprintf(fid,"    plot(f,  X,'Color',[0.5 0.5 0.5],'LineWidth',2);\n");
+    fprintf(fid,"    plot(f*r,Y,'Color',[0.0 0.3 0.5],'LineWidth',2);\n");
+    fprintf(fid,"    plot(fx, 0, 'or');\n");
+    fprintf(fid,"  hold off;\n");
+    fprintf(fid,"  grid on;\n");
+    fprintf(fid,"  xlabel('normalized frequency');\n");
+    fprintf(fid,"  ylabel('PSD [dB]');\n");
+    fprintf(fid,"  fmax = max(0.5,0.5*r);\n");
+    fprintf(fid,"  axis([-fmax fmax -140 20]);\n");
+    fprintf(fid,"  legend('original','resampled','location','northeast');\n");
+    fprintf(fid,"subplot(2,1,2);\n");
+    fprintf(fid,"  hold on;\n");
+    fprintf(fid,"    plot(f,  X,'Color',[0.5 0.5 0.5],'LineWidth',2);\n");
+    fprintf(fid,"    plot(f*r,Y,'Color',[0.0 0.3 0.5],'LineWidth',2);\n");
+    fprintf(fid,"    plot(fx, 0, 'or');\n");
+    fprintf(fid,"  hold off;\n");
+    fprintf(fid,"  grid on;\n");
+    fprintf(fid,"  xlabel('normalized frequency');\n");
+    fprintf(fid,"  ylabel('PSD [dB]');\n");
+    fprintf(fid,"  axis([0.98*fx 1.02*fx -3 0.5]);\n");
+    fprintf(fid,"  legend('original','resampled','location','northeast');\n");
 
     fclose(fid);
     printf("results written to %s\n",filename);
 #endif
-
-#endif
 }
+
+// actual tests
+void autotest_rresamp_crcf_P1_Q5() { test_harness_rresamp_crcf( 1, 5, 15, 60.0f); }
+void autotest_rresamp_crcf_P2_Q5() { test_harness_rresamp_crcf( 2, 5, 15, 60.0f); }
+void autotest_rresamp_crcf_P3_Q5() { test_harness_rresamp_crcf( 3, 5, 15, 60.0f); }
+void autotest_rresamp_crcf_P6_Q5() { test_harness_rresamp_crcf( 6, 5, 15, 60.0f); }
+void autotest_rresamp_crcf_P8_Q5() { test_harness_rresamp_crcf( 8, 5, 15, 60.0f); }
+void autotest_rresamp_crcf_P9_Q5() { test_harness_rresamp_crcf( 9, 5, 15, 60.0f); }
+
