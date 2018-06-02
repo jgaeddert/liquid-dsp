@@ -25,7 +25,6 @@ void usage()
     printf("  -m <len>      : filter semi-length (delay),        default: 12\n");
     printf("  -w <bandwidth>: filter bandwidth,                  default: 0.5f\n");
     printf("  -s <atten>    : filter stop-band attenuation [dB], default: 60\n");
-    printf("  -n <num>      : number of input sample blocks,     default: 120,000\n");
 }
 
 int main(int argc, char*argv[])
@@ -36,10 +35,9 @@ int main(int argc, char*argv[])
     unsigned int    m   = 12;       // resampling filter semi-length (filter delay)
     float           bw  = 0.5f;     // resampling filter bandwidth
     float           As  = 60.0f;    // resampling filter stop-band attenuation [dB]
-    unsigned int    n   = 120e3;    // number of input sample blocks
 
     int dopt;
-    while ((dopt = getopt(argc,argv,"hP:Q:m:s:w:n:")) != EOF) {
+    while ((dopt = getopt(argc,argv,"hP:Q:m:s:w:")) != EOF) {
         switch (dopt) {
         case 'h':   usage();            return 0;
         case 'P':   P    = atoi(optarg); break;
@@ -47,7 +45,6 @@ int main(int argc, char*argv[])
         case 'm':   m    = atoi(optarg); break;
         case 'w':   bw   = atof(optarg); break;
         case 's':   As   = atof(optarg); break;
-        case 'n':   n    = atoi(optarg); break;
         default:
             exit(1);
         }
@@ -60,9 +57,6 @@ int main(int argc, char*argv[])
     } else if (Q == 0 || Q > 1000) {
         fprintf(stderr,"error: %s, output rate Q must be in [1,1000]\n", argv[0]);
         exit(1);
-    } else if (n == 0) {
-        fprintf(stderr,"error: %s, number of input samples must be greater than zero\n", argv[0]);
-        exit(1);
     }
 
     // create resampler object
@@ -71,6 +65,9 @@ int main(int argc, char*argv[])
     float rate = rresamp_crcf_get_rate(q);
     P          = rresamp_crcf_get_decim(q);
     Q          = rresamp_crcf_get_interp(q);
+
+    // number of sample blocks
+    unsigned int n = 120e3 / (P > Q ? P : Q);
 
     // arrays
     float complex buf_x[P];
