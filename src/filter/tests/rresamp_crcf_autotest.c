@@ -114,6 +114,7 @@ void test_harness_rresamp_crcf(unsigned int _P,
 
     if (liquid_autotest_verbose) {
         // print results
+        printf("test_harness_rresamp_crcf(P=%u, Q=%u, m=%u, A=%.3f)\n", _P, _Q, _m, _As);
         printf("  desired resampling rate   :   %12.8f = %u / %u\n", r, _Q, _P);
         printf("  frequency (input)         :   %12.8f / Fs\n", fx);
         printf("  peak spectrum             :   %12.8f dB (expected 0.0 dB)\n", Ypeak);
