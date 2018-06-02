@@ -3536,6 +3536,18 @@ void RRESAMP(_print)(RRESAMP() _q);                                         \
 /* Reset resampler object internals                                     */  \
 void RRESAMP(_reset)(RRESAMP() _q);                                         \
                                                                             \
+/* Set output scaling for filter, default: \( 2 w \sqrt{P/Q} \)         */  \
+/*  _q      : resampler object                                          */  \
+/*  _scale  : scaling factor to apply to each output sample             */  \
+void RRESAMP(_set_scale)(RRESAMP() _q,                                      \
+                         TC        _scale);                                 \
+                                                                            \
+/* Get output scaling for filter                                        */  \
+/*  _q      : resampler object                                          */  \
+/*  _scale  : scaling factor to apply to each output sample             */  \
+void RRESAMP(_get_scale)(RRESAMP() _q,                                      \
+                         TC *      _scale);                                 \
+                                                                            \
 /* Get resampler delay (filter semi-length \(m\))                       */  \
 unsigned int RRESAMP(_get_delay)(RRESAMP() _q);                             \
                                                                             \

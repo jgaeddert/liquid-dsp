@@ -80,7 +80,7 @@ RRESAMP() RRESAMP(_create)(unsigned int _P,
     // design filter
     q->bw = 0.40f;
     q->pfb = FIRPFB(_create_kaiser)(q->Q,q->m,q->bw,q->As);
-    FIRPFB(_set_scale)(q->pfb, 2.0f*q->bw*sqrtf((float)(q->P)/(float)(q->Q)));
+    RRESAMP(_set_scale)(q, 2.0f*q->bw*sqrtf((float)(q->P)/(float)(q->Q)));
 
     // reset object and return
     RRESAMP(_reset)(q);
@@ -134,6 +134,24 @@ void RRESAMP(_reset)(RRESAMP() _q)
 {
     // clear filterbank
     FIRPFB(_reset)(_q->pfb);
+}
+
+// Set output scaling for filter, default: \( 2 w \sqrt{P/Q} \)
+//  _q      : resampler object
+//  _scale  : scaling factor to apply to each output sample
+void RRESAMP(_set_scale)(RRESAMP() _q,
+                         TC        _scale)
+{
+    FIRPFB(_set_scale)(_q->pfb, _scale);
+}
+
+// Get output scaling for filter
+//  _q      : resampler object
+//  _scale  : scaling factor to apply to each output sample
+void RRESAMP(_get_scale)(RRESAMP() _q,
+                         TC *      _scale)
+{
+    FIRPFB(_get_scale)(_q->pfb, _scale);
 }
 
 // get resampler filter delay (semi-length m)
