@@ -2,7 +2,7 @@
 // rresamp_crcf_example.c
 //
 // Demonstration of rresamp object whereby an input signal
-// is resampled at a rational rate.
+// is resampled at a rational rate Q/P.
 //
 
 #include <stdio.h>
@@ -20,11 +20,11 @@ void usage()
 {
     printf("Usage: %s [OPTION]\n", __FILE__);
     printf("  -h            : print help\n");
-    printf("  -P <interp>   : resampling rate (output/input),    default: 1.1\n");
-    printf("  -Q <decim>    : resampling rate (output/input),    default: 1.1\n");
-    printf("  -m <len>      : filter semi-length (delay),        default: 13\n");
+    printf("  -P <decim>    : resampling rate (decimation),      default: 3\n");
+    printf("  -Q <interp>   : resampling rate (interpolation),   default: 5\n");
+    printf("  -m <len>      : filter semi-length (delay),        default: 12\n");
     printf("  -s <atten>    : filter stop-band attenuation [dB], default: 60\n");
-    printf("  -n <num>      : number of input sample blocks,     default: 40,000\n");
+    printf("  -n <num>      : number of input sample blocks,     default: 120,000\n");
 }
 
 int main(int argc, char*argv[])
@@ -65,13 +65,6 @@ int main(int argc, char*argv[])
         exit(1);
     }
 
-    unsigned int i;
-
-    // create spectral periodogram objects
-    unsigned int nfft = 2400;
-    spgramcf px = spgramcf_create_default(nfft);
-    spgramcf py = spgramcf_create_default(nfft);
-
     // create resampler object
     rresamp_crcf q = rresamp_crcf_create(P,Q,m,As);
     rresamp_crcf_print(q);
@@ -83,19 +76,25 @@ int main(int argc, char*argv[])
     float complex buf_x[P];
     float complex buf_y[Q];
 
-    // create signal generator
+    // create signal generator (wide-band noise)
     msourcecf gen = msourcecf_create();
     msourcecf_add_noise(gen, 0.7f * (rate > 1.0 ? 1.0 : rate));
 
+    // create spectral periodogram objects
+    unsigned int nfft = 2400;
+    spgramcf px = spgramcf_create_default(nfft);
+    spgramcf py = spgramcf_create_default(nfft);
+
     // generate input signal (filtered noise)
+    unsigned int i;
     for (i=0; i<n; i++) {
         // write samples to buffer
         msourcecf_write_samples(gen, buf_x, P);
 
-        //
+        // run resampler in blocks
         rresamp_crcf_execute(q, buf_x, buf_y);
 
-        //
+        // write input and output to respective spectral periodogram estimate
         spgramcf_write(px, buf_x, P);
         spgramcf_write(py, buf_y, Q);
     }
@@ -111,9 +110,7 @@ int main(int argc, char*argv[])
     spgramcf_get_psd(px, X);
     spgramcf_get_psd(py, Y);
 
-    // 
-    // export results
-    //
+    // export results to file for plotting
     FILE * fid = fopen(OUTPUT_FILENAME,"w");
     fprintf(fid,"%% %s: auto-generated file\n",OUTPUT_FILENAME);
     fprintf(fid,"clear all;\n");
@@ -128,14 +125,13 @@ int main(int argc, char*argv[])
         fprintf(fid,"X(%3u) = %12.4e;\n", i+1, X[i]);
         fprintf(fid,"Y(%3u) = %12.4e;\n", i+1, Y[i]);
     }
-
     fprintf(fid,"\n\n");
     fprintf(fid,"%% plot time-domain result\n");
     fprintf(fid,"fx=[0:(nfft-1)]/nfft-0.5;\n");
     fprintf(fid,"fy=fx/r;\n");
     fprintf(fid,"figure('Color','white','position',[500 500 800 600]);\n");
-    fprintf(fid,"plot(fx,X,'-s','Color',[0.5 0.5 0.5],'MarkerSize',1,...\n");
-    fprintf(fid,"     fy,Y,'-s','Color',[0.5 0 0],    'MarkerSize',1);\n");
+    fprintf(fid,"plot(fx,X,'-','LineWidth',2,'Color',[0.5 0.5 0.5],'MarkerSize',1,...\n");
+    fprintf(fid,"     fy,Y,'-','LineWidth',2,'Color',[0.5 0 0],    'MarkerSize',1);\n");
     fprintf(fid,"legend('original','resampled','location','northeast');");
     fprintf(fid,"xlabel('Normalized Frequency [f/F_s]');\n");
     fprintf(fid,"ylabel('Power Spectral Density [dB]');\n");
@@ -145,7 +141,5 @@ int main(int argc, char*argv[])
     fprintf(fid,"grid on;\n");
     fclose(fid);
     printf("results written to %s\n",OUTPUT_FILENAME);
-
-    printf("done.\n");
     return 0;
 }
