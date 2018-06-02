@@ -23,6 +23,7 @@ void usage()
     printf("  -P <decim>    : resampling rate (decimation),      default: 3\n");
     printf("  -Q <interp>   : resampling rate (interpolation),   default: 5\n");
     printf("  -m <len>      : filter semi-length (delay),        default: 12\n");
+    printf("  -w <bandwidth>: filter bandwidth,                  default: 0.5f\n");
     printf("  -s <atten>    : filter stop-band attenuation [dB], default: 60\n");
     printf("  -n <num>      : number of input sample blocks,     default: 120,000\n");
 }
@@ -33,16 +34,18 @@ int main(int argc, char*argv[])
     unsigned int    P   = 3;        // input rate (interpolation factor)
     unsigned int    Q   = 5;        // output rate (decimation factor)
     unsigned int    m   = 12;       // resampling filter semi-length (filter delay)
+    float           bw  = 0.5f;     // resampling filter bandwidth
     float           As  = 60.0f;    // resampling filter stop-band attenuation [dB]
     unsigned int    n   = 120e3;    // number of input sample blocks
 
     int dopt;
-    while ((dopt = getopt(argc,argv,"hP:Q:m:s:n:")) != EOF) {
+    while ((dopt = getopt(argc,argv,"hP:Q:m:s:w:n:")) != EOF) {
         switch (dopt) {
         case 'h':   usage();            return 0;
         case 'P':   P    = atoi(optarg); break;
         case 'Q':   Q    = atoi(optarg); break;
         case 'm':   m    = atoi(optarg); break;
+        case 'w':   bw   = atof(optarg); break;
         case 's':   As   = atof(optarg); break;
         case 'n':   n    = atoi(optarg); break;
         default:
@@ -57,16 +60,13 @@ int main(int argc, char*argv[])
     } else if (Q == 0 || Q > 1000) {
         fprintf(stderr,"error: %s, output rate Q must be in [1,1000]\n", argv[0]);
         exit(1);
-    } else if (As < 0.0f) {
-        fprintf(stderr,"error: %s, filter stop-band attenuation must be greater than zero\n", argv[0]);
-        exit(1);
     } else if (n == 0) {
         fprintf(stderr,"error: %s, number of input samples must be greater than zero\n", argv[0]);
         exit(1);
     }
 
     // create resampler object
-    rresamp_crcf q = rresamp_crcf_create(P,Q,m,As);
+    rresamp_crcf q = rresamp_crcf_create(P,Q,m,bw,As);
     rresamp_crcf_print(q);
     float rate = rresamp_crcf_get_rate(q);
     P          = rresamp_crcf_get_decim(q);

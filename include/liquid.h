@@ -3506,13 +3506,15 @@ LIQUID_RESAMP2_DEFINE_API(LIQUID_RESAMP2_MANGLE_CCCF,
 typedef struct RRESAMP(_s) * RRESAMP();                                     \
                                                                             \
 /* Create rational-rate resampler object from filter prototype          */  \
-/*  _P      : interpolation factor,              P > 0                  */  \
-/*  _Q      : decimation factor,                 Q > 0                  */  \
-/*  _m      : filter semi-length (delay),        0 < _m                 */  \
-/*  _As     : filter stop-band attenuation [dB], 0 < _As                */  \
+/*  _P      : interpolation factor,                     P > 0           */  \
+/*  _Q      : decimation factor,                        Q > 0           */  \
+/*  _m      : filter semi-length (delay),               0 < _m          */  \
+/*  _bw     : filter bandwidth relative to sample rate, 0 < _bw <= 0.5  */  \
+/*  _As     : filter stop-band attenuation [dB],        0 < _As         */  \
 RRESAMP() RRESAMP(_create)(unsigned int _P,                                 \
                            unsigned int _Q,                                 \
                            unsigned int _m,                                 \
+                           float        _bw,                                \
                            float        _As);                               \
                                                                             \
 /* Create rational resampler object with a specified input resampling   */  \
@@ -3520,7 +3522,8 @@ RRESAMP() RRESAMP(_create)(unsigned int _P,                                 \
 /* a basic resampler with a baseline set of parameters, abstracting     */  \
 /* away some of the complexities with the filterbank design.            */  \
 /* The default parameters are                                           */  \
-/*  m    = 12    (filter semi-length) and                               */  \
+/*  m    = 12    (filter semi-length),                                  */  \
+/*  bw   = 0.5   (filter bandwidth), and                                */  \
 /*  As   = 60 dB (filter stop-band attenuation)                         */  \
 /*  _P      : interpolation factor, P > 0                               */  \
 /*  _Q      : decimation factor,    Q > 0                               */  \

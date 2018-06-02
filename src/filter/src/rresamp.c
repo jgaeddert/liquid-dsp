@@ -42,13 +42,15 @@ struct RRESAMP(_s) {
 };
 
 // Create rational-rate resampler object from filter prototype
-//  _P      : interpolation factor,              P > 0
-//  _Q      : decimation factor,                 Q > 0
-//  _m      : filter semi-length (delay),        0 < _m
-//  _As     : filter stop-band attenuation [dB], 0 < _As
+//  _P      : interpolation factor,                     P > 0
+//  _Q      : decimation factor,                        Q > 0
+//  _m      : filter semi-length (delay),               0 < _m
+//  _bw     : filter bandwidth relative to sample rate, 0 < _bw= < 0.5
+//  _As     : filter stop-band attenuation [dB],        0 < _As
 RRESAMP() RRESAMP(_create)(unsigned int _P,
                            unsigned int _Q,
                            unsigned int _m,
+                           float        _bw,
                            float        _As)
 {
     // validate input
@@ -60,6 +62,9 @@ RRESAMP() RRESAMP(_create)(unsigned int _P,
         exit(1);
     } else if (_m == 0) {
         fprintf(stderr,"error: rresamp_%s_create(), filter semi-length must be greater than zero\n", EXTENSION_FULL);
+        exit(1);
+    } else if (_bw <= 0.0f || _bw > 0.5f) {
+        fprintf(stderr,"error: rresamp_%s_create(), filter bandwidth must be in (0,0.5]\n", EXTENSION_FULL);
         exit(1);
     } else if (_As <= 0.0f) {
         fprintf(stderr,"error: rresamp_%s_create(), filter stop-band suppression must be greater than zero\n", EXTENSION_FULL);
@@ -75,10 +80,10 @@ RRESAMP() RRESAMP(_create)(unsigned int _P,
     q->P  = _P / gcd;
     q->Q  = _Q / gcd;
     q->m  = _m;
+    q->bw = _bw;
     q->As = _As;
 
     // design filter
-    q->bw = 0.40f;
     q->pfb = FIRPFB(_create_kaiser)(q->Q,q->m,q->bw,q->As);
     RRESAMP(_set_scale)(q, 2.0f*q->bw*sqrtf((float)(q->P)/(float)(q->Q)));
 
@@ -105,10 +110,11 @@ RRESAMP() RRESAMP(_create_default)(unsigned int _P,
 
     // det default parameters
     unsigned int m  = 12;
+    float        bw = 0.5f;
     float        As = 60.0f;
 
     // create and return resamp object
-    return RRESAMP(_create)(_P, _Q, m, As);
+    return RRESAMP(_create)(_P, _Q, m, bw, As);
 }
 
 // free resampler object

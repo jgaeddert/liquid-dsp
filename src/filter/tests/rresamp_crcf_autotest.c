@@ -33,6 +33,7 @@
 void test_harness_rresamp_crcf(unsigned int _P,
                                unsigned int _Q,
                                unsigned int _m,
+                               float        _bw,
                                float        _As)
 {
     // target about 1500 max samples
@@ -45,7 +46,7 @@ void test_harness_rresamp_crcf(unsigned int _P,
     float complex y[ny];        // output sample buffer
 
     // create resampler
-    rresamp_crcf q = rresamp_crcf_create(_P, _Q, _m, _As);
+    rresamp_crcf q = rresamp_crcf_create(_P, _Q, _m, _bw, _As);
     float r = rresamp_crcf_get_rate(q);
 
     // generate input signal (windowed sinusoid)
@@ -184,10 +185,10 @@ void test_harness_rresamp_crcf(unsigned int _P,
 }
 
 // actual tests
-void autotest_rresamp_crcf_P1_Q5() { test_harness_rresamp_crcf( 1, 5, 15, 60.0f); }
-void autotest_rresamp_crcf_P2_Q5() { test_harness_rresamp_crcf( 2, 5, 15, 60.0f); }
-void autotest_rresamp_crcf_P3_Q5() { test_harness_rresamp_crcf( 3, 5, 15, 60.0f); }
-void autotest_rresamp_crcf_P6_Q5() { test_harness_rresamp_crcf( 6, 5, 15, 60.0f); }
-void autotest_rresamp_crcf_P8_Q5() { test_harness_rresamp_crcf( 8, 5, 15, 60.0f); }
-void autotest_rresamp_crcf_P9_Q5() { test_harness_rresamp_crcf( 9, 5, 15, 60.0f); }
+void autotest_rresamp_crcf_P1_Q5() { test_harness_rresamp_crcf( 1, 5, 15, 0.4f, 60.0f); }
+void autotest_rresamp_crcf_P2_Q5() { test_harness_rresamp_crcf( 2, 5, 15, 0.4f, 60.0f); }
+void autotest_rresamp_crcf_P3_Q5() { test_harness_rresamp_crcf( 3, 5, 15, 0.4f, 60.0f); }
+void autotest_rresamp_crcf_P6_Q5() { test_harness_rresamp_crcf( 6, 5, 15, 0.4f, 60.0f); }
+void autotest_rresamp_crcf_P8_Q5() { test_harness_rresamp_crcf( 8, 5, 15, 0.4f, 60.0f); }
+void autotest_rresamp_crcf_P9_Q5() { test_harness_rresamp_crcf( 9, 5, 15, 0.4f, 60.0f); }
 
