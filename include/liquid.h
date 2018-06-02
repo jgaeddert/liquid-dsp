@@ -2940,6 +2940,12 @@ void FIRPFB(_print)(FIRPFB() _q);                                           \
 void FIRPFB(_set_scale)(FIRPFB() _q,                                        \
                         TC       _scale);                                   \
                                                                             \
+/* Get output scaling for filter                                        */  \
+/*  _q      : filter object                                             */  \
+/*  _scale  : scaling factor applied to each output sample              */  \
+void FIRPFB(_get_scale)(FIRPFB() _q,                                        \
+                        TC *     _scale);                                   \
+                                                                            \
 /* Reset firpfb object's internal buffer                                */  \
 void FIRPFB(_reset)(FIRPFB() _q);                                           \
                                                                             \

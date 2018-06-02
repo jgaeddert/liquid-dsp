@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2016 Joseph Gaeddert
+ * Copyright (c) 2007 - 2018 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -309,6 +309,13 @@ void FIRPFB(_set_scale)(FIRPFB() _q,
                          TC      _scale)
 {
     _q->scale = _scale;
+}
+
+// get output scaling for filter
+void FIRPFB(_get_scale)(FIRPFB() _q,
+                         TC *    _scale)
+{
+    *_scale = _q->scale;
 }
 
 // push sample into firpfb internal buffer
