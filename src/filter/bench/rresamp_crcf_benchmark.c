@@ -50,6 +50,7 @@ void rresamp_crcf_bench(struct rusage *     _start,
         rresamp_crcf_execute(q, buf, buf);
         rresamp_crcf_execute(q, buf, buf);
         rresamp_crcf_execute(q, buf, buf);
+        buf[0] = 1.0f;
     }
     getrusage(RUSAGE_SELF, _finish);
     *_num_iterations *= 4;
