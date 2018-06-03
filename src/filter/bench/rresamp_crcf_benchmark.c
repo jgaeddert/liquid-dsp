@@ -31,7 +31,8 @@ void rresamp_crcf_bench(struct rusage *     _start,
                         unsigned int        _P,
                         unsigned int        _Q)
 {
-    unsigned long int i;
+    // adjust number of iterations: cycles/trial ~ 160 + 50 Q
+    *_num_iterations /= (160 + 50*_Q);
 
     rresamp_crcf q = rresamp_crcf_create_default(_P,_Q);
 
@@ -40,6 +41,7 @@ void rresamp_crcf_bench(struct rusage *     _start,
     float complex * buf = (float complex*) malloc(buf_len*sizeof(float complex));
 
     // initialize buffer
+    unsigned long int i;
     for (i=0; i<buf_len; i++)
         buf[i] = i==0 ? 1.0 : 0.0;
 
@@ -68,11 +70,13 @@ void rresamp_crcf_bench(struct rusage *     _start,
 //
 // Rational-rate resampler benchmark prototypes
 //
-void benchmark_rresamp_crcf_P17_Q1  RRESAMP_CRCF_BENCHMARK_API(17,  1)
-void benchmark_rresamp_crcf_P17_Q2  RRESAMP_CRCF_BENCHMARK_API(17,  2)
-void benchmark_rresamp_crcf_P17_Q4  RRESAMP_CRCF_BENCHMARK_API(17,  4)
-void benchmark_rresamp_crcf_P17_Q8  RRESAMP_CRCF_BENCHMARK_API(17,  8)
-void benchmark_rresamp_crcf_P17_Q16 RRESAMP_CRCF_BENCHMARK_API(17, 16)
-void benchmark_rresamp_crcf_P17_Q32 RRESAMP_CRCF_BENCHMARK_API(17, 32)
-void benchmark_rresamp_crcf_P17_Q64 RRESAMP_CRCF_BENCHMARK_API(17, 64)
+void benchmark_rresamp_crcf_P17_Q1   RRESAMP_CRCF_BENCHMARK_API(17,   1)
+void benchmark_rresamp_crcf_P17_Q2   RRESAMP_CRCF_BENCHMARK_API(17,   2)
+void benchmark_rresamp_crcf_P17_Q4   RRESAMP_CRCF_BENCHMARK_API(17,   4)
+void benchmark_rresamp_crcf_P17_Q8   RRESAMP_CRCF_BENCHMARK_API(17,   8)
+void benchmark_rresamp_crcf_P17_Q16  RRESAMP_CRCF_BENCHMARK_API(17,  16)
+void benchmark_rresamp_crcf_P17_Q32  RRESAMP_CRCF_BENCHMARK_API(17,  32)
+void benchmark_rresamp_crcf_P17_Q64  RRESAMP_CRCF_BENCHMARK_API(17,  64)
+void benchmark_rresamp_crcf_P17_Q128 RRESAMP_CRCF_BENCHMARK_API(17, 128)
+void benchmark_rresamp_crcf_P17_Q256 RRESAMP_CRCF_BENCHMARK_API(17, 256)
 
