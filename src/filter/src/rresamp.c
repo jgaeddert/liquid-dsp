@@ -130,9 +130,9 @@ void RRESAMP(_destroy)(RRESAMP() _q)
 // print resampler object
 void RRESAMP(_print)(RRESAMP() _q)
 {
-    float rate = (float)(_q->P) / (float)(_q->Q);
-    printf("resampler [rate: %u/%u=%f]\n", _q->P, _q->Q, rate);
-    FIRPFB(_print)(_q->pfb);
+    printf("resampler [rate: %u/%u=%.6f], m=%u, bw=%.3f/Fs, As=%.3f dB\n",
+            _q->P, _q->Q, (float)(_q->P) / (float)(_q->Q),
+            _q->m, _q->bw, _q->As);
 }
 
 // reset resampler object
