@@ -34,7 +34,11 @@ void rresamp_crcf_bench(struct rusage *     _start,
     // adjust number of iterations: cycles/trial ~ 160 + 50 Q
     *_num_iterations /= (160 + 50*_Q);
 
-    rresamp_crcf q = rresamp_crcf_create_default(_P,_Q);
+    // create resampling object
+    unsigned int m  = 12;
+    float        bw = 0.45f;
+    float        As = 60.0f;
+    rresamp_crcf q = rresamp_crcf_create(_P,_Q,m,bw,As);
 
     // input/output buffers
     unsigned int buf_len = _P > _Q ? _P : _Q; // max(_P,_Q)
@@ -68,7 +72,7 @@ void rresamp_crcf_bench(struct rusage *     _start,
 { rresamp_crcf_bench(_start, _finish, _num_iterations, P, Q); }
 
 //
-// Rational-rate resampler benchmark prototypes
+// Rational-rate resampler benchmark prototypes; compare to arbitrary rate resampler
 //
 void benchmark_rresamp_crcf_P17_Q1   RRESAMP_CRCF_BENCHMARK_API(17,   1)
 void benchmark_rresamp_crcf_P17_Q2   RRESAMP_CRCF_BENCHMARK_API(17,   2)
