@@ -447,7 +447,7 @@ filter_includes :=						\
 	src/filter/src/msresamp.c				\
 	src/filter/src/msresamp2.c				\
 	src/filter/src/rresamp.c				\
-	src/filter/src/resamp.c					\
+	src/filter/src/resamp.fixed.c				\
 	src/filter/src/resamp2.c				\
 	src/filter/src/symsync.c				\
 
