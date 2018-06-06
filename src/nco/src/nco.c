@@ -348,9 +348,7 @@ uint32_t NCO(_constrain)(float _theta)
 // compute index for sine look-up table
 unsigned int NCO(_index)(NCO() _q)
 {
-    // TODO: round appropriately
-    unsigned int index = (_q->theta >> 22);
-    assert(index < 1024);
-    return index;
+    //return (_q->theta >> 22) & 0x3ff; // round down
+    return ((_q->theta + (1<<21)) >> 22) & 0x3ff; // round appropriately
 }
 
