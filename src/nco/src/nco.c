@@ -89,6 +89,12 @@ void NCO(_destroy)(NCO() _q)
     free(_q);
 }
 
+// Print nco object internals to stdout
+void NCO(_print)(NCO() _q)
+{
+    printf("nco:\n");
+}
+
 // reset internal state of nco object
 void NCO(_reset)(NCO() _q)
 {
