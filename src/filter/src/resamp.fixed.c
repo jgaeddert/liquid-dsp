@@ -256,8 +256,8 @@ void RESAMP(_execute)(RESAMP()       _q,
 
     // continue to produce output
     unsigned int n=0;
-    while (_q->phase < (1<<24)) {
-        //unsigned int index = (_q->phase + (1<<15)) >> 16;
+    while (_q->phase <= 0x00ffffff) {
+        //unsigned int index = (_q->phase + 0x00008000) >> 16;
         unsigned int index = _q->phase >> 16; // round down
         FIRPFB(_execute)(_q->pfb, index, &_y[n++]);
         _q->phase += _q->step;
