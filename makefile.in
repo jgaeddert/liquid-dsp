@@ -904,6 +904,7 @@ src/nco/src/synth_crcf.o	: %.o : %.c $(include_headers) src/nco/src/synth.c
 # autotests
 nco_autotests :=						\
 	src/nco/tests/nco_crcf_frequency_autotest.c		\
+	src/nco/tests/nco_crcf_mix_autotest.c			\
 	src/nco/tests/nco_crcf_phase_autotest.c			\
 	src/nco/tests/nco_crcf_pll_autotest.c			\
 	src/nco/tests/unwrap_phase_autotest.c			\
