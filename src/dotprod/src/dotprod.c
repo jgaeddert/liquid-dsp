@@ -60,6 +60,9 @@ void DOTPROD(_run)(TC *         _h,
 //  _x      :   input array [size: 1 x _n]
 //  _n      :   input lengths
 //  _y      :   output dot product
+#if defined(LIQUID_FMV) && (__GNUC__ >= 6)
+__attribute__((target_clones("sse", "mmx", "avx", "default")))
+#endif
 void DOTPROD(_run4)(TC *         _h,
                     TI *         _x,
                     unsigned int _n,
