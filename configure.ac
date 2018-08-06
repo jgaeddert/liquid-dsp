@@ -39,6 +39,7 @@ AC_LANG(C)
 # Autoheader
 AH_TEMPLATE([LIQUID_FFTOVERRIDE],  [Force internal FFT even if libfftw is available])
 AH_TEMPLATE([LIQUID_SIMDOVERRIDE], [Force overriding of SIMD (use portable C code)])
+AH_TEMPLATE([LIQUID_FMV], [Force usage of compiler multiversioning feature])
 
 AC_CONFIG_HEADER(config.h)
 AH_TOP([
@@ -60,6 +61,12 @@ AC_ARG_ENABLE(debug-messages,
 AC_ARG_ENABLE(simdoverride,
     AS_HELP_STRING([--enable-simdoverride],[use portable C code for dotprod, etc. even if SIMD extensions are available]),
     [AC_DEFINE(LIQUID_SIMDOVERRIDE)],
+    [],
+)
+
+AC_ARG_ENABLE(fmv,
+              AS_HELP_STRING([--enable-fmv],[Leave it to compiler to choose the best SIMD version for dotprod etc]),
+    [AC_DEFINE(LIQUID_FMV)],
     [],
 )
 
@@ -140,8 +147,8 @@ AC_CHECK_SIZEOF(unsigned int)
 # get canonical target architecture
 AC_CANONICAL_TARGET
 
-# override SIMD
-if test "${enable_simdoverride+set}" = set; then
+# override SIMD or defer the selection to compiler when multiversion feature is available
+if test "${enable_simdoverride+set}" = set || test "${enable_fmv+set}" = set; then
     # portable C version
     MLIBS_DOTPROD="src/dotprod/src/dotprod_cccf.o \
                    src/dotprod/src/dotprod_crcf.o \
