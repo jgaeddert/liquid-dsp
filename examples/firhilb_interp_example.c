@@ -43,7 +43,7 @@ int main() {
     firhilbf_destroy(q);
 
     printf("firhilb interpolated %u complex samples to %u real samples\n",
-            2*num_samples, num_samples);
+            num_samples, 2*num_samples);
 
     // 
     // export results to file
