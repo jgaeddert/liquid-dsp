@@ -44,7 +44,7 @@ int main() {
     firhilbf_destroy(q);
 
     printf("firhilb decimated %u real samples to %u complex samples\n",
-            num_samples, 2*num_samples);
+            2*num_samples, num_samples);
 
     // 
     // export results to file
