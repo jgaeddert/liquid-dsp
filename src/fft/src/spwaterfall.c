@@ -47,6 +47,8 @@ struct SPWATERFALL(_s) {
     // parameters for display purposes only
     float           frequency;      // center frequency [Hz]
     float           sample_rate;    // sample rate [Hz]
+    unsigned int    width;          // image width [pixels]
+    unsigned int    height;         // image height [pixels]
 };
 
 //
@@ -103,6 +105,8 @@ SPWATERFALL() SPWATERFALL(_create)(unsigned int _nfft,
     q->time         = _time;
     q->frequency    =  0;
     q->sample_rate  = -1;
+    q->width        = 800;
+    q->height       = 800;
 
     // create buffer to hold aggregated power spectral density
     // NOTE: the buffer is two-dimensional time/frequency grid that is two times
@@ -188,6 +192,16 @@ int SPWATERFALL(_set_rate)(SPWATERFALL() _q,
         return -1;
     }
     _q->sample_rate = _rate;
+    return 0;
+}
+
+// set image dimensions
+int SPWATERFALL(_set_dims)(SPWATERFALL() _q,
+                           unsigned int  _width,
+                           unsigned int  _height)
+{
+    _q->width  = _width;
+    _q->height = _height;
     return 0;
 }
 
@@ -352,7 +366,7 @@ int SPWATERFALL(_export_gnu)(SPWATERFALL() _q,
 
     fprintf(fid,"#!/usr/bin/gnuplot\n");
     fprintf(fid,"reset\n");
-    fprintf(fid,"set terminal png size 800,800 enhanced font 'Verdana,10'\n");
+    fprintf(fid,"set terminal png size %u,%u enhanced font 'Verdana,10'\n", _q->width, _q->height);
     fprintf(fid,"set output '%s.png'\n", _base);
     fprintf(fid,"unset key\n");
     fprintf(fid,"set style line 11 lc rgb '#808080' lt 1\n");

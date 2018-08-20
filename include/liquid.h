@@ -1757,6 +1757,15 @@ int SPWATERFALL(_set_freq)(SPWATERFALL() _q,                                \
 int SPWATERFALL(_set_rate)(SPWATERFALL() _q,                                \
                            float         _rate);                            \
                                                                             \
+/* Set the canvas size.                                                 */  \
+/* This is for display purposes only when generating the output image.  */  \
+/*  _q      : spectral periodogram waterfall object                     */  \
+/*  _width  : image width [pixels]                                      */  \
+/*  _hieght : image hieght [pixels]                                     */  \
+int SPWATERFALL(_set_dims)(SPWATERFALL() _q,                                \
+                           unsigned int  _width,                            \
+                           unsigned int  _hieght);                          \
+                                                                            \
 /* Push a single sample into the object, executing internal transform   */  \
 /* as necessary.                                                        */  \
 /*  _q  : spgram object                                                 */  \
