@@ -65,6 +65,8 @@ int main()
         }
     }
     // export output files
+    spwaterfallcf_set_rate(periodogram,100e6);
+    spwaterfallcf_set_freq(periodogram,750e6);
     spwaterfallcf_export(periodogram,"spwaterfallcf_example");
 
     // destroy objects

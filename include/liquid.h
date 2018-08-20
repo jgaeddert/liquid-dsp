@@ -1743,6 +1743,20 @@ void SPWATERFALL(_reset)(SPWATERFALL() _q);                                 \
 /* Print internal state of the object to stdout                         */  \
 void SPWATERFALL(_print)(SPWATERFALL() _q);                                 \
                                                                             \
+/* Set the center frequency of the received signal.                     */  \
+/* This is for display purposes only when generating the output image.  */  \
+/*  _q      : spectral periodogram waterfall object                     */  \
+/*  _freq   : center frequency [Hz]                                     */  \
+int SPWATERFALL(_set_freq)(SPWATERFALL() _q,                                \
+                           float         _freq);                            \
+                                                                            \
+/* Set the sample rate (frequency) of the received signal.              */  \
+/* This is for display purposes only when generating the output image.  */  \
+/*  _q      : spectral periodogram waterfall object                     */  \
+/*  _rate   : sample rate [Hz]                                          */  \
+int SPWATERFALL(_set_rate)(SPWATERFALL() _q,                                \
+                           float         _rate);                            \
+                                                                            \
 /* Push a single sample into the object, executing internal transform   */  \
 /* as necessary.                                                        */  \
 /*  _q  : spgram object                                                 */  \

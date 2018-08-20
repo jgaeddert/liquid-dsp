@@ -43,6 +43,10 @@ struct SPWATERFALL(_s) {
     T *             psd;            // time/frequency buffer [nfft x 2*time]
     unsigned int    index_time;     // time index for writing to buffer
     unsigned int    rollover;       // number of FFTs to take before writing to output
+
+    // parameters for display purposes only
+    float           frequency;      // center frequency [Hz]
+    float           sample_rate;    // sample rate [Hz]
 };
 
 //
@@ -95,8 +99,10 @@ SPWATERFALL() SPWATERFALL(_create)(unsigned int _nfft,
     SPWATERFALL() q = (SPWATERFALL()) malloc(sizeof(struct SPWATERFALL(_s)));
 
     // set input parameters
-    q->nfft = _nfft;
-    q->time = _time;
+    q->nfft         = _nfft;
+    q->time         = _time;
+    q->frequency    =  0;
+    q->sample_rate  = -1;
 
     // create buffer to hold aggregated power spectral density
     // NOTE: the buffer is two-dimensional time/frequency grid that is two times
@@ -162,6 +168,27 @@ void SPWATERFALL(_reset)(SPWATERFALL() _q)
 void SPWATERFALL(_print)(SPWATERFALL() _q)
 {
     printf("spwaterfall%s: nfft=%u, time=%u\n", EXTENSION, _q->nfft, _q->time);
+}
+
+// set center freuqncy
+int SPWATERFALL(_set_freq)(SPWATERFALL() _q,
+                           float         _freq)
+{
+    _q->frequency = _freq;
+    return 0;
+}
+
+// set sample rate
+int SPWATERFALL(_set_rate)(SPWATERFALL() _q,
+                           float         _rate)
+{
+    // validate input
+    if (_rate <= 0.0f) {
+        fprintf(stderr,"error: spwaterfall%s_set_rate(), sample rate must be greater than zero\n", EXTENSION);
+        return -1;
+    }
+    _q->sample_rate = _rate;
+    return 0;
 }
 
 // push a single sample into the spwaterfall object
@@ -333,9 +360,7 @@ int SPWATERFALL(_export_gnu)(SPWATERFALL() _q,
     fprintf(fid,"set style line 12 lc rgb '#888888' lt 0 lw 1\n");
     fprintf(fid,"set grid front ls 12\n");
     fprintf(fid,"set tics nomirror out scale 0.75\n");
-    fprintf(fid,"set xrange [-0.5:0.5]\n");
     fprintf(fid,"set yrange [0:%f]\n", (float)(total_samples-1)*scale);
-    fprintf(fid,"set xlabel 'Normalized Frequency [f/F_s]'\n");
     fprintf(fid,"set ylabel 'Sample Index'\n");
     fprintf(fid,"set format y '%%.0f %c'\n", units);
     fprintf(fid,"# disable colorbar tics\n");
@@ -350,7 +375,32 @@ int SPWATERFALL(_export_gnu)(SPWATERFALL() _q,
     fprintf(fid,"    6 '#66C2A5',\\\n");
     fprintf(fid,"    7 '#3288BD' )\n");
     fprintf(fid,"\n");
-    fprintf(fid,"plot '%s.bin' u 1:($2*%e):3 binary matrix with image\n", _base, scale);
+    if (_q->sample_rate < 0) {
+        fprintf(fid,"set xrange [-0.5:0.5]\n");
+        fprintf(fid,"set xlabel 'Normalized Frequency [f/F_s]'\n");
+        fprintf(fid,"plot '%s.bin' u 1:($2*%e):3 binary matrix with image\n", _base, scale);
+    } else {
+        char unit;
+        float g = 1.0f;
+        if      (_q->frequency < 1e-9) { g = 1e12;  unit = 'p'; }
+        else if (_q->frequency < 1e-6) { g = 1e9 ;  unit = 'n'; }
+        else if (_q->frequency < 1e-3) { g = 1e6 ;  unit = 'u'; }
+        else if (_q->frequency < 1e+0) { g = 1e3 ;  unit = 'm'; }
+        else if (_q->frequency < 1e3)  { g = 1e0 ;  unit = ' '; }
+        else if (_q->frequency < 1e6)  { g = 1e-3;  unit = 'k'; }
+        else if (_q->frequency < 1e9)  { g = 1e-6;  unit = 'M'; }
+        else if (_q->frequency < 1e12) { g = 1e-9;  unit = 'G'; }
+        else                           { g = 1e-12; unit = 'T'; }
+        fprintf(fid,"set xlabel 'Frequency [%cHz]'\n", unit);
+        fprintf(fid,"set xrange [%f:%f]\n", g*(_q->frequency-0.5*_q->sample_rate), g*(_q->frequency+0.5*_q->sample_rate));
+        //fprintf(fid,"plot '-' u ($1*%f+%f):2 w %s lt 1 lw 2 lc rgb '#004080'\n",
+        //        g*(_q->sample_rate < 0 ? 1 : _q->sample_rate), g*_q->frequency, plot_with);
+        fprintf(fid,"plot '%s.bin' u ($1*%f+%f):($2*%e):3 binary matrix with image\n",
+                _base,
+                g*(_q->sample_rate < 0 ? 1 : _q->sample_rate),
+                g*_q->frequency,
+                scale);
+    }
     fclose(fid);
 
     // close it up
