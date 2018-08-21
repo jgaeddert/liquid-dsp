@@ -391,24 +391,41 @@ int SPWATERFALL(_export_gnu)(SPWATERFALL() _q,
     fprintf(fid,"\n");
     if (_q->sample_rate < 0) {
         fprintf(fid,"set xrange [-0.5:0.5]\n");
+        float xtics = 0.1f;
+        fprintf(fid,"set xtics %f\n", xtics);
         fprintf(fid,"set xlabel 'Normalized Frequency [f/F_s]'\n");
         fprintf(fid,"plot '%s.bin' u 1:($2*%e):3 binary matrix with image\n", _base, scale);
     } else {
         char unit;
         float g = 1.0f;
-        if      (_q->frequency < 1e-9) { g = 1e12;  unit = 'p'; }
-        else if (_q->frequency < 1e-6) { g = 1e9 ;  unit = 'n'; }
-        else if (_q->frequency < 1e-3) { g = 1e6 ;  unit = 'u'; }
-        else if (_q->frequency < 1e+0) { g = 1e3 ;  unit = 'm'; }
-        else if (_q->frequency < 1e3)  { g = 1e0 ;  unit = ' '; }
-        else if (_q->frequency < 1e6)  { g = 1e-3;  unit = 'k'; }
-        else if (_q->frequency < 1e9)  { g = 1e-6;  unit = 'M'; }
-        else if (_q->frequency < 1e12) { g = 1e-9;  unit = 'G'; }
-        else                           { g = 1e-12; unit = 'T'; }
+        float f_hi = _q->frequency + 0.5f*_q->sample_rate; // highest frequency
+        if      (f_hi < 2e-9) { g = 1e12;  unit = 'p'; }
+        else if (f_hi < 2e-6) { g = 1e9 ;  unit = 'n'; }
+        else if (f_hi < 2e-3) { g = 1e6 ;  unit = 'u'; }
+        else if (f_hi < 2e+0) { g = 1e3 ;  unit = 'm'; }
+        else if (f_hi < 2e3)  { g = 1e0 ;  unit = ' '; }
+        else if (f_hi < 2e6)  { g = 1e-3;  unit = 'k'; }
+        else if (f_hi < 2e9)  { g = 1e-6;  unit = 'M'; }
+        else if (f_hi < 2e12) { g = 1e-9;  unit = 'G'; }
+        else                  { g = 1e-12; unit = 'T'; }
         fprintf(fid,"set xlabel 'Frequency [%cHz]'\n", unit);
+        // target xtics spacing roughly every 60-80 pixels
+        float xn = ((float) _q->width * 0.8f) / 70.0f;  // rough number of tics
+        float xs = _q->sample_rate * g / xn;            // normalized spacing
+        float xt = 1.0f;                                // round to nearest 1, 2, 5, or 10
+        // potential xtic spacings
+        float spacing[] = {0.01,0.02,0.05,0.1,0.2,0.5,1.0,2.0,5.0,10.0,20.0,50.0,100.0,200.0,500.0,-1.0f};
+        unsigned int i=0;
+        while (spacing[i] > 0) {
+            if (_q->sample_rate*g/spacing[i] < 1.2f*xn) {
+                xt = spacing[i];
+                break;
+            }
+            i++;
+        }
+        //printf("xn:%f, xs:%f, xt:%f\n", xn, xs, xt);
         fprintf(fid,"set xrange [%f:%f]\n", g*(_q->frequency-0.5*_q->sample_rate), g*(_q->frequency+0.5*_q->sample_rate));
-        //fprintf(fid,"plot '-' u ($1*%f+%f):2 w %s lt 1 lw 2 lc rgb '#004080'\n",
-        //        g*(_q->sample_rate < 0 ? 1 : _q->sample_rate), g*_q->frequency, plot_with);
+        fprintf(fid,"set xtics %f\n", xt);
         fprintf(fid,"plot '%s.bin' u ($1*%f+%f):($2*%e):3 binary matrix with image\n",
                 _base,
                 g*(_q->sample_rate < 0 ? 1 : _q->sample_rate),
