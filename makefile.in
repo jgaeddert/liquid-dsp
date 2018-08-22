@@ -446,6 +446,7 @@ filter_includes :=						\
 	src/filter/src/iirinterp.c				\
 	src/filter/src/msresamp.c				\
 	src/filter/src/msresamp2.c				\
+	src/filter/src/ordfilt.c				\
 	src/filter/src/rresamp.c				\
 	src/filter/src/resamp.fixed.c				\
 	src/filter/src/resamp2.c				\
@@ -1460,6 +1461,7 @@ example_programs :=						\
 	examples/nyquist_filter_example				\
 	examples/ofdmflexframesync_example			\
 	examples/ofdmframesync_example				\
+	examples/ordfilt_rrrf_example				\
 	examples/packetizer_example				\
 	examples/packetizer_soft_example			\
 	examples/pll_example					\

@@ -45,6 +45,7 @@
 #define IIRINTERP(name)     LIQUID_CONCAT(iirinterp_rrrf,name)
 #define MSRESAMP(name)      LIQUID_CONCAT(msresamp_rrrf,name)
 #define MSRESAMP2(name)     LIQUID_CONCAT(msresamp2_rrrf,name)
+#define ORDFILT(name)       LIQUID_CONCAT(ordfilt_rrrf,name)
 #define RRESAMP(name)       LIQUID_CONCAT(rresamp_rrrf,name)
 #define RESAMP(name)        LIQUID_CONCAT(resamp_rrrf,name)
 #define RESAMP2(name)       LIQUID_CONCAT(resamp2_rrrf,name)
@@ -81,6 +82,7 @@
 #include "iirinterp.c"
 #include "msresamp.c"
 #include "msresamp2.c"
+#include "ordfilt.c"
 #include "rresamp.c"
 //#include "resamp.c"         // floating-point phase version
 #include "resamp.fixed.c" // fixed-point phase version

@@ -44,6 +44,7 @@
 #define NCO(name)           LIQUID_CONCAT(nco_crcf,name)
 #define MSRESAMP(name)      LIQUID_CONCAT(msresamp_cccf,name)
 #define MSRESAMP2(name)     LIQUID_CONCAT(msresamp2_cccf,name)
+// ordfilt
 #define RRESAMP(name)       LIQUID_CONCAT(rresamp_cccf,name)
 #define RESAMP(name)        LIQUID_CONCAT(resamp_cccf,name)
 #define RESAMP2(name)       LIQUID_CONCAT(resamp2_cccf,name)
@@ -77,6 +78,7 @@
 #include "iirfiltsos.c"
 #include "iirinterp.c"
 //#include "qmfb.c"
+// ordfilt
 #include "msresamp.c"
 #include "msresamp2.c"
 #include "rresamp.c"
