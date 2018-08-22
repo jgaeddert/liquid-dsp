@@ -1768,7 +1768,7 @@ int SPWATERFALL(_set_dims)(SPWATERFALL() _q,                                \
                                                                             \
 /* Push a single sample into the object, executing internal transform   */  \
 /* as necessary.                                                        */  \
-/*  _q  : spgram object                                                 */  \
+/*  _q  : spwaterfall object                                            */  \
 /*  _x  : input sample                                                  */  \
 void SPWATERFALL(_push)(SPWATERFALL() _q,                                   \
                         TI            _x);                                  \
