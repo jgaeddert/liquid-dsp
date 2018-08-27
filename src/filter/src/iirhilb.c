@@ -182,7 +182,35 @@ void IIRHILB(_c2r_execute)(IIRHILB() _q,
                            T complex _x,
                            T *       _y)
 {
-    *_y = crealf(_x);
+    // compute relevant output depending on state
+    T yi = 0;
+    T yq = 0;
+    switch ( _q->state ) {
+    case 0:
+        IIRFILT(_execute)(_q->filt_0,  crealf(_x), &yi);
+        IIRFILT(_execute)(_q->filt_1,  cimagf(_x), &yq);
+        *_y = yi;
+        break;
+    case 1:
+        IIRFILT(_execute)(_q->filt_0,  cimagf(_x), &yi);
+        IIRFILT(_execute)(_q->filt_1, -crealf(_x), &yq);
+        *_y = -yq;
+        break;
+    case 2:
+        IIRFILT(_execute)(_q->filt_0, -crealf(_x), &yi);
+        IIRFILT(_execute)(_q->filt_1, -cimagf(_x), &yq);
+        *_y = -yi;
+        break;
+    case 3:
+        IIRFILT(_execute)(_q->filt_0, -cimagf(_x), &yi);
+        IIRFILT(_execute)(_q->filt_1,  crealf(_x), &yq);
+        *_y = yq;
+        break;
+    default:;
+    }
+
+    // cycle through state
+    _q->state = (_q->state + 1) & 0x3;
 }
 
 // execute Hilbert transform decimator (real to complex)
