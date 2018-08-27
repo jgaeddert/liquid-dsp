@@ -2654,6 +2654,106 @@ LIQUID_FIRHILB_DEFINE_API(LIQUID_FIRHILB_MANGLE_FLOAT, float, liquid_float_compl
 
 
 //
+// Infinite impulse response (IIR) Hilbert transform
+//  2:1 real-to-complex decimator
+//  1:2 complex-to-real interpolator
+//
+
+#define LIQUID_IIRHILB_MANGLE_FLOAT(name)  LIQUID_CONCAT(iirhilbf, name)
+//#define LIQUID_IIRHILB_MANGLE_DOUBLE(name) LIQUID_CONCAT(iirhilb, name)
+
+// NOTES:
+//   Although iirhilb is a placeholder for both decimation and
+//   interpolation, separate objects should be used for each task.
+#define LIQUID_IIRHILB_DEFINE_API(IIRHILB,T,TC)                             \
+                                                                            \
+/* Infinite impulse response (IIR) Hilbert transform                    */  \
+typedef struct IIRHILB(_s) * IIRHILB();                                     \
+                                                                            \
+/* Create a iirhilb object with a particular filter type, order, and    */  \
+/* desired pass- and stop-band attenuation.                             */  \
+/*  _ftype  : filter type (e.g. LIQUID_IIRDES_BUTTER)                   */  \
+/*  _n      : filter order, _n > 0                                      */  \
+/*  _Ap     : pass-band ripple [dB], _Ap > 0                            */  \
+/*  _As     : stop-band ripple [dB], _Ap > 0                            */  \
+IIRHILB() IIRHILB(_create)(liquid_iirdes_filtertype _ftype,                 \
+                           unsigned int             _n,                     \
+                           float                    _Ap,                    \
+                           float                    _As);                   \
+                                                                            \
+/* Create a default iirhilb object with a particular filter order.      */  \
+/*  _n      : filter order, _n > 0                                      */  \
+IIRHILB() IIRHILB(_create_default)(unsigned int _n);                        \
+                                                                            \
+/* Destroy finite impulse response Hilbert transform, freeing all       */  \
+/* internally-allocted memory and objects.                              */  \
+void IIRHILB(_destroy)(IIRHILB() _q);                                       \
+                                                                            \
+/* Print iirhilb object internals to stdout                             */  \
+void IIRHILB(_print)(IIRHILB() _q);                                         \
+                                                                            \
+/* Reset iirhilb object internal state                                  */  \
+void IIRHILB(_reset)(IIRHILB() _q);                                         \
+                                                                            \
+/* Execute Hilbert transform (real to complex)                          */  \
+/*  _q      : Hilbert transform object                                  */  \
+/*  _x      : real-valued input sample                                  */  \
+/*  _y      : complex-valued output sample                              */  \
+void IIRHILB(_r2c_execute)(IIRHILB() _q,                                    \
+                           T         _x,                                    \
+                           TC *      _y);                                   \
+                                                                            \
+/* Execute Hilbert transform (complex to real)                          */  \
+/*  _q      : Hilbert transform object                                  */  \
+/*  _x      : complex-valued input sample                               */  \
+/*  _y      : real-valued output sample                                 */  \
+void IIRHILB(_c2r_execute)(IIRHILB() _q,                                    \
+                           TC        _x,                                    \
+                           T *       _y);                                   \
+                                                                            \
+/* Execute Hilbert transform decimator (real to complex)                */  \
+/*  _q      : Hilbert transform object                                  */  \
+/*  _x      : real-valued input array, [size: 2 x 1]                    */  \
+/*  _y      : complex-valued output sample                              */  \
+void IIRHILB(_decim_execute)(IIRHILB() _q,                                  \
+                             T *       _x,                                  \
+                             TC *      _y);                                 \
+                                                                            \
+/* Execute Hilbert transform decimator (real to complex) on a block of  */  \
+/* samples                                                              */  \
+/*  _q      : Hilbert transform object                                  */  \
+/*  _x      : real-valued input array, [size: 2*_n x 1]                 */  \
+/*  _n      : number of output samples                                  */  \
+/*  _y      : complex-valued output array, [size: _n x 1]               */  \
+void IIRHILB(_decim_execute_block)(IIRHILB()    _q,                         \
+                                   T *          _x,                         \
+                                   unsigned int _n,                         \
+                                   TC *         _y);                        \
+                                                                            \
+/* Execute Hilbert transform interpolator (real to complex)             */  \
+/*  _q      : Hilbert transform object                                  */  \
+/*  _x      : complex-valued input sample                               */  \
+/*  _y      : real-valued output array, [size: 2 x 1]                   */  \
+void IIRHILB(_interp_execute)(IIRHILB() _q,                                 \
+                              TC        _x,                                 \
+                              T *       _y);                                \
+                                                                            \
+/* Execute Hilbert transform interpolator (complex to real) on a block  */  \
+/* of samples                                                           */  \
+/*  _q      : Hilbert transform object                                  */  \
+/*  _x      : complex-valued input array, [size: _n x 1]                */  \
+/*  _n      : number of *input* samples                                 */  \
+/*  _y      : real-valued output array, [size: 2*_n x 1]                */  \
+void IIRHILB(_interp_execute_block)(IIRHILB()    _q,                        \
+                                    TC *         _x,                        \
+                                    unsigned int _n,                        \
+                                    T *          _y);                       \
+
+LIQUID_IIRHILB_DEFINE_API(LIQUID_IIRHILB_MANGLE_FLOAT, float, liquid_float_complex)
+//LIQUID_IIRHILB_DEFINE_API(LIQUID_IIRHILB_MANGLE_DOUBLE, double, liquid_double_complex)
+
+
+//
 // FFT-based finite impulse response filter
 //
 

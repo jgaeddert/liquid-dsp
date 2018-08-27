@@ -42,6 +42,7 @@
 #define IIRDECIM(name)      LIQUID_CONCAT(iirdecim_rrrf,name)
 #define IIRFILT(name)       LIQUID_CONCAT(iirfilt_rrrf,name)
 #define IIRFILTSOS(name)    LIQUID_CONCAT(iirfiltsos_rrrf,name)
+#define IIRHILB(name)       LIQUID_CONCAT(iirhilbf,name)
 #define IIRINTERP(name)     LIQUID_CONCAT(iirinterp_rrrf,name)
 #define MSRESAMP(name)      LIQUID_CONCAT(msresamp_rrrf,name)
 #define MSRESAMP2(name)     LIQUID_CONCAT(msresamp2_rrrf,name)
@@ -79,6 +80,7 @@
 #include "iirdecim.c"
 #include "iirfilt.c"
 #include "iirfiltsos.c"
+#include "iirhilb.c"
 #include "iirinterp.c"
 #include "msresamp.c"
 #include "msresamp2.c"

@@ -1,12 +1,12 @@
 //
-// firhilb_example.c
+// iirhilb_example.c
 //
 // Hilbert transform example.  This example demonstrates the
-// functionality of firhilbf (finite impulse response Hilbert transform)
+// functionality of iirhilbf (finite impulse response Hilbert transform)
 // which converts a complex time series into a real one and then back.
 //
-// SEE ALSO: firhilb_interp_example.c
-//           firhilb_example.c
+// SEE ALSO: iirhilb_interp_example.c
+//           iirhilb_example.c
 //
 
 #include <stdio.h>
@@ -15,22 +15,23 @@
 
 #include "liquid.h"
 
-#define OUTPUT_FILENAME "firhilb_example.m"
+#define OUTPUT_FILENAME "iirhilb_example.m"
 
 int main() {
-    unsigned int m = 7;                     // Hilbert filter semi-length
-    float As       = 60.0f;                 // stop-band attenuation [dB]
-    float fc       = 0.123456;              // signal center frequency
-    unsigned int num_input_samples=128;     // number of samples
+    int             ftype   = LIQUID_IIRDES_BUTTER; // filter prototype
+    unsigned int    n       =     7;                // Hilbert filter order
+    float           Ap      =  0.1f;                // pass-band ripple [dB]
+    float           As      = 60.0f;                // stop-band attenuation [dB]
+    float           fc      = 0.123456;             // signal center frequency
+    unsigned int num_input_samples=180;             // number of samples
 
     // derived values
-    unsigned int h_len = 4*m+1;             // filter length
-    unsigned int num_total_samples = num_input_samples + h_len;
+    unsigned int num_total_samples = num_input_samples + 50; // allow for filter settling
 
     // create Hilbert transform object
-    firhilbf qi = firhilbf_create(m,As);    // interpolator
-    firhilbf qd = firhilbf_create(m,As);    // decimator
-    firhilbf_print(qi);
+    iirhilbf qi = iirhilbf_create(ftype,n,Ap,As);    // interpolator
+    iirhilbf qd = iirhilbf_create(ftype,n,Ap,As);    // decimator
+    iirhilbf_print(qi);
 
     // data arrays
     float complex x[  num_total_samples];   // complex input
@@ -46,14 +47,14 @@ int main() {
     }
 
     // execute interpolator (complex to real conversion)
-    firhilbf_interp_execute_block(qi, x, num_total_samples, y);
+    iirhilbf_interp_execute_block(qi, x, num_total_samples, y);
     
     // execute decimator (real to complex conversion)
-    firhilbf_decim_execute_block(qd, y, num_total_samples, z);
+    iirhilbf_decim_execute_block(qd, y, num_total_samples, z);
 
     // destroy Hilbert transform object
-    firhilbf_destroy(qi);
-    firhilbf_destroy(qd);
+    iirhilbf_destroy(qi);
+    iirhilbf_destroy(qd);
 
     // 
     // export results to file
@@ -62,7 +63,6 @@ int main() {
     fprintf(fid,"%% %s : auto-generated file\n", OUTPUT_FILENAME);
     fprintf(fid,"clear all;\n");
     fprintf(fid,"close all;\n");
-    fprintf(fid,"h_len=%u;\n", 4*m+1);
     fprintf(fid,"num_input_samples=%u;\n", num_input_samples);
     fprintf(fid,"num_total_samples=%u;\n", num_total_samples);
     fprintf(fid,"tx = 0:(num_total_samples-1);\n");
