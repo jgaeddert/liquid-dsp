@@ -1414,6 +1414,7 @@ example_programs :=						\
 	examples/firdespm_lowpass_example			\
 	examples/firhilb_example				\
 	examples/firhilb_decim_example				\
+	examples/firhilb_filter_example				\
 	examples/firhilb_interp_example				\
 	examples/firpfbch2_crcf_example				\
 	examples/firinterp_crcf_example				\
