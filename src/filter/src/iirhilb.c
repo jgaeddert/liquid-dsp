@@ -43,8 +43,7 @@ struct IIRHILB(_s) {
     IIRFILT()       filt_0; // upper filter branch
     IIRFILT()       filt_1; // lower filter branch
 
-    // regular real-to-complex/complex-to-real operation
-    unsigned int toggle;
+    unsigned int    state;  // bookkeeping state
 };
 
 // create iirhilb object
@@ -132,8 +131,8 @@ void IIRHILB(_reset)(IIRHILB() _q)
     IIRFILT(_reset)(_q->filt_0);
     IIRFILT(_reset)(_q->filt_1);
 
-    // reset toggle flag
-    _q->toggle = 0;
+    // reset state flag
+    _q->state = 0;
 }
 
 // execute Hilbert transform (real to complex)
@@ -144,43 +143,35 @@ void IIRHILB(_r2c_execute)(IIRHILB()   _q,
                            T           _x,
                            T complex * _y)
 {
-#if 0
-    T * r;  // buffer read pointer
-    T yi;   // in-phase component
-    T yq;   // quadrature component
-
-    if ( _q->toggle == 0 ) {
-        // push sample into upper branch
-        WINDOW(_push)(_q->w0, _x);
-
-        // upper branch (delay)
-        WINDOW(_index)(_q->w0, _q->m-1, &yi);
-
-        // lower branch (filter)
-        WINDOW(_read)(_q->w1, &r);
-        
-        // execute dotprod
-        DOTPROD(_execute)(_q->dpq, r, &yq);
-    } else {
-        // push sample into lower branch
-        WINDOW(_push)(_q->w1, _x);
-
-        // upper branch (delay)
-        WINDOW(_index)(_q->w1, _q->m-1, &yi);
-
-        // lower branch (filter)
-        WINDOW(_read)(_q->w0, &r);
-
-        // execute dotprod
-        DOTPROD(_execute)(_q->dpq, r, &yq);
+    // compute relevant output depending on state
+    T yi = 0;
+    T yq = 0;
+    switch ( _q->state ) {
+    case 0:
+        IIRFILT(_execute)(_q->filt_0,  _x, &yi);
+        IIRFILT(_execute)(_q->filt_1,   0, &yq);
+        *_y = 2*(yi + _Complex_I*yq);
+        break;
+    case 1:
+        IIRFILT(_execute)(_q->filt_0,   0, &yi);
+        IIRFILT(_execute)(_q->filt_1, -_x, &yq);
+        *_y = 2*(-yq + _Complex_I*yi);
+        break;
+    case 2:
+        IIRFILT(_execute)(_q->filt_0, -_x, &yi);
+        IIRFILT(_execute)(_q->filt_1,   0, &yq);
+        *_y = 2*(-yi - _Complex_I*yq);
+        break;
+    case 3:
+        IIRFILT(_execute)(_q->filt_0,   0, &yi);
+        IIRFILT(_execute)(_q->filt_1,  _x, &yq);
+        *_y = 2*( yq - _Complex_I*yi);
+        break;
+    default:;
     }
 
-    // toggle flag
-    _q->toggle = 1 - _q->toggle;
-
-    // set return value
-    *_y = yi + _Complex_I * yq;
-#endif
+    // cycle through state
+    _q->state = (_q->state + 1) & 0x3;
 }
 
 // execute Hilbert transform (complex to real)
@@ -203,8 +194,8 @@ void IIRHILB(_decim_execute)(IIRHILB()   _q,
                              T complex * _y)
 {
     // mix down by Fs/4
-    T xi = _q->toggle ? -_x[0] :  _x[0];
-    T xq = _q->toggle ?  _x[1] : -_x[1];
+    T xi = _q->state ? -_x[0] :  _x[0];
+    T xq = _q->state ?  _x[1] : -_x[1];
 
     // upper branch
     T yi0, yi1;
@@ -219,8 +210,8 @@ void IIRHILB(_decim_execute)(IIRHILB()   _q,
     // set return value
     *_y = 2*(yi0 + _Complex_I*yq0);
 
-    // toggle flag
-    _q->toggle = 1 - _q->toggle;
+    // toggle state flag
+    _q->state = 1 - _q->state;
 }
 
 // execute Hilbert transform decimator (real to complex) on
@@ -262,11 +253,11 @@ void IIRHILB(_interp_execute)(IIRHILB() _q,
     //     {yi0 + j yq0, yi1 + j yq1}
     // 0: Re{+1 (yi0 + j yq0), +j (yi1 + j yq1)} = Re{ yi0 + j yq0, -yq1 + j yi1} = { yi0, -yq1}
     // 1: Re{-1 (yi0 + j yq0), -j (yi1 + j yq1)} = Re{-yi0 - j yq0,  yq1 - j yi1} = {-yi0,  yq1}
-    _y[0] = 2*(_q->toggle ? -yi0 :  yi0);
-    _y[1] = 2*(_q->toggle ?  yq1 : -yq1);
+    _y[0] = 2*(_q->state ? -yi0 :  yi0);
+    _y[1] = 2*(_q->state ?  yq1 : -yq1);
 
-    // toggle flag
-    _q->toggle = 1 - _q->toggle;
+    // toggle state flag
+    _q->state = 1 - _q->state;
 }
 
 // execute Hilbert transform interpolator (complex to real)
