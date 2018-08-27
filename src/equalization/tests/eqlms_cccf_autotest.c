@@ -49,11 +49,11 @@ void autotest_eqlms_cccf_blind()
 
     // create channel filter
     float complex h[5] = {
-        { 1.00f,  0.00f},
-        { 0.00f, -0.01f},
-        {-0.11f,  0.02f},
-        { 0.02f,  0.01f},
-        {-0.09f, -0.04f} };
+         1.00f +  0.00f*_Complex_I,
+         0.00f + -0.01f*_Complex_I,
+        -0.11f +  0.02f*_Complex_I,
+         0.02f +  0.01f*_Complex_I,
+        -0.09f + -0.04f*_Complex_I };
     firfilt_cccf fchannel = firfilt_cccf_create(h,5);
 
     // arrays
