@@ -28,7 +28,7 @@ int main() {
     // derived values
     unsigned int num_total_samples = num_input_samples + 50; // allow for filter settling
 
-    // create Hilbert transform object
+    // create Hilbert transform objects
     iirhilbf qi = iirhilbf_create(ftype,n,Ap,As);    // interpolator
     iirhilbf qd = iirhilbf_create(ftype,n,Ap,As);    // decimator
     iirhilbf_print(qi);
