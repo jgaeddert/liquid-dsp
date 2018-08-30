@@ -433,17 +433,9 @@ int SPGRAM(_export_gnuplot)(SPGRAM()     _q,
         fprintf(fid,"set xlabel 'Noramlized Frequency'\n");
         fprintf(fid,"plot '-' w %s lt 1 lw 2 lc rgb '#004080'\n", plot_with);
     } else {
-        char unit;
-        float g = 1.0f;
-        if      (_q->frequency < 1e-9) { g = 1e12;  unit = 'p'; }
-        else if (_q->frequency < 1e-6) { g = 1e9 ;  unit = 'n'; }
-        else if (_q->frequency < 1e-3) { g = 1e6 ;  unit = 'u'; }
-        else if (_q->frequency < 1e+0) { g = 1e3 ;  unit = 'm'; }
-        else if (_q->frequency < 1e3)  { g = 1e0 ;  unit = ' '; }
-        else if (_q->frequency < 1e6)  { g = 1e-3;  unit = 'k'; }
-        else if (_q->frequency < 1e9)  { g = 1e-6;  unit = 'M'; }
-        else if (_q->frequency < 1e12) { g = 1e-9;  unit = 'G'; }
-        else                           { g = 1e-12; unit = 'T'; }
+        char unit = ' ';
+        float g   = 1.0f;
+        liquid_get_scale(_q->frequency, &unit, &g);
         fprintf(fid,"set xlabel 'Frequency [%cHz]'\n", unit);
         fprintf(fid,"set xrange [%f:%f]\n", g*(_q->frequency-0.5*_q->sample_rate), g*(_q->frequency+0.5*_q->sample_rate));
         fprintf(fid,"plot '-' u ($1*%f+%f):2 w %s lt 1 lw 2 lc rgb '#004080'\n",
