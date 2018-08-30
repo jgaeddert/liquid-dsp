@@ -398,7 +398,7 @@ int SPWATERFALL(_export_gnu)(SPWATERFALL() _q,
         fprintf(fid,"set xlabel 'Frequency [%cHz]'\n", unit);
         // target xtics spacing roughly every 60-80 pixels
         float xn = ((float) _q->width * 0.8f) / 70.0f;  // rough number of tics
-        float xs = _q->sample_rate * g / xn;            // normalized spacing
+        //float xs = _q->sample_rate * g / xn;            // normalized spacing
         float xt = 1.0f;                                // round to nearest 1, 2, 5, or 10
         // potential xtic spacings
         float spacing[] = {0.01,0.02,0.05,0.1,0.2,0.5,1.0,2.0,5.0,10.0,20.0,50.0,100.0,200.0,500.0,-1.0f};
