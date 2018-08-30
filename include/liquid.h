@@ -8155,6 +8155,14 @@ unsigned int  liquid_reverse_uint16(unsigned int  _x);
 unsigned int  liquid_reverse_uint24(unsigned int  _x);
 unsigned int  liquid_reverse_uint32(unsigned int  _x);
 
+// get scale for constant, particularly for plotting purposes
+//  _val    : input value (e.g. 100e6)
+//  _unit   : output unit character (e.g. 'M')
+//  _scale  : output scale (e.g. 1e-6)
+void liquid_get_scale(float   _val,
+                      char *  _unit,
+                      float * _scale);
+
 // 
 // MODULE : vector
 //

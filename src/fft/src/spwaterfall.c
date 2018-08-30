@@ -357,12 +357,7 @@ int SPWATERFALL(_export_gnu)(SPWATERFALL() _q,
     uint64_t total_samples = SPGRAM(_get_num_samples_total)(_q->periodogram);
     char units  = ' ';
     float scale = 1.0f;
-    if      (total_samples < 4e3 ) { units = ' '; scale = 1e-0f;  }
-    else if (total_samples < 4e6 ) { units = 'k'; scale = 1e-3f;  }
-    else if (total_samples < 4e9 ) { units = 'M'; scale = 1e-6f;  }
-    else if (total_samples < 4e12) { units = 'G'; scale = 1e-9f;  }
-    else if (total_samples < 4e15) { units = 'T'; scale = 1e-12f; }
-    else                           { units = 'P'; scale = 1e-15f; }
+    liquid_get_scale((float)total_samples/4, &units, &scale);
 
     fprintf(fid,"#!/usr/bin/gnuplot\n");
     fprintf(fid,"reset\n");
@@ -399,15 +394,7 @@ int SPWATERFALL(_export_gnu)(SPWATERFALL() _q,
         char unit;
         float g = 1.0f;
         float f_hi = _q->frequency + 0.5f*_q->sample_rate; // highest frequency
-        if      (f_hi < 2e-9) { g = 1e12;  unit = 'p'; }
-        else if (f_hi < 2e-6) { g = 1e9 ;  unit = 'n'; }
-        else if (f_hi < 2e-3) { g = 1e6 ;  unit = 'u'; }
-        else if (f_hi < 2e+0) { g = 1e3 ;  unit = 'm'; }
-        else if (f_hi < 2e3)  { g = 1e0 ;  unit = ' '; }
-        else if (f_hi < 2e6)  { g = 1e-3;  unit = 'k'; }
-        else if (f_hi < 2e9)  { g = 1e-6;  unit = 'M'; }
-        else if (f_hi < 2e12) { g = 1e-9;  unit = 'G'; }
-        else                  { g = 1e-12; unit = 'T'; }
+        liquid_get_scale(f_hi/2, &unit, &g);
         fprintf(fid,"set xlabel 'Frequency [%cHz]'\n", unit);
         // target xtics spacing roughly every 60-80 pixels
         float xn = ((float) _q->width * 0.8f) / 70.0f;  // rough number of tics

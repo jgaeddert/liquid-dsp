@@ -1034,6 +1034,7 @@ utility_objects :=						\
 	src/utility/src/msb_index.o				\
 	src/utility/src/pack_bytes.o				\
 	src/utility/src/shift_array.o				\
+	src/utility/src/utility.o				\
 
 $(utility_objects) : %.o : %.c $(include_headers)
 
