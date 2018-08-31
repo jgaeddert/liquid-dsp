@@ -5223,7 +5223,7 @@ typedef struct SYMSTREAM(_s) * SYMSTREAM();                                 \
                                                                             \
 /* Create symstream object with default parameters.                     */  \
 /* This is equivalent to invoking the create_linear() method            */  \
-/* with _ftype=LIQUID_RNYQUIST_ARKAISER, _k=2, _m=7, _beta=0.3, and     */  \
+/* with _ftype=LIQUID_FIRFILT_ARKAISER, _k=2, _m=7, _beta=0.3, and      */  \
 /* with _ms=LIQUID_MODEM_QPSK                                           */  \
 SYMSTREAM() SYMSTREAM(_create)(void);                                       \
                                                                             \
