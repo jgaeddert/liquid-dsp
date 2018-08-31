@@ -26,6 +26,7 @@
 // Useful generic utilities
 //
 
+#include <math.h>
 #include <stdio.h>
 #include <stdlib.h>
 
