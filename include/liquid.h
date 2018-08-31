@@ -2508,6 +2508,14 @@ void FIRFILT(_get_scale)(FIRFILT() _q,                                      \
 void FIRFILT(_push)(FIRFILT() _q,                                           \
                     TI        _x);                                          \
                                                                             \
+/* Write block of samples into filter object's internal buffer          */  \
+/*  _q      : filter object                                             */  \
+/*  _x      : buffer of input samples, [size: _n x 1]                   */  \
+/*  _n      : number of input samples                                   */  \
+void FIRFILT(_write)(FIRFILT()    _q,                                       \
+                     TI *         _x,                                       \
+                     unsigned int _n);                                      \
+                                                                            \
 /* Execute vector dot product on the filter's internal buffer and       */  \
 /* coefficients                                                         */  \
 /*  _q      : filter object                                             */  \

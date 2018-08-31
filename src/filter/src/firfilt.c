@@ -321,6 +321,24 @@ void FIRFILT(_push)(FIRFILT() _q,
 #endif
 }
 
+// Write block of samples into filter object's internal buffer
+//  _q      : filter object
+//  _x      : buffer of input samples, [size: _n x 1]
+//  _n      : number of input samples
+void FIRFILT(_write)(FIRFILT()    _q,
+                     TI *         _x,
+                     unsigned int _n)
+{
+#if LIQUID_FIRFILT_USE_WINDOW
+    WINDOW(_write)(_q->w, _x, _n);
+#else
+    // TODO: be smarter about this
+    unsigned int i;
+    for (i=0; i<_n; i++)
+        FIRFILT(_push)(_q, _x[i]);
+#endif
+}
+
 // compute output sample (dot product between internal
 // filter coefficients and internal buffer)
 //  _q      :   filter object
