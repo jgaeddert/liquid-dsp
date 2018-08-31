@@ -150,7 +150,7 @@ MSRESAMP2() MSRESAMP2(_create)(int          _type,
         q->fc_stage[i] = fc;            // filter cut-of
         q->f0_stage[i] = f0;            // filter center frequency
         q->As_stage[i] = q->As;         // filter stop-band attenuation
-        q->m_stage[i]  = m < 3 ? 3 : m; // minimum 2
+        q->m_stage[i]  = m < 3 ? 3 : m; // minimum 3
     }
 
     // create half-band resampler objects
