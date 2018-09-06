@@ -19,7 +19,7 @@ int main()
     unsigned int buf_len = 64;
     float complex buf[buf_len];
 
-    // create spectral periodogram
+    // create spectral waterfall object
     spwaterfallcf periodogram = spwaterfallcf_create_default(nfft,time);
     spwaterfallcf_print(periodogram);
 

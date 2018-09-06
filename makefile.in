@@ -1427,6 +1427,7 @@ example_programs :=						\
 	examples/framesync64_example				\
 	examples/freqmodem_example				\
 	examples/fskmodem_example				\
+	examples/fskmodem_waterfall_example			\
 	examples/gasearch_example				\
 	examples/gasearch_knapsack_example			\
 	examples/gmskframesync_example				\
