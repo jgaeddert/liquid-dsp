@@ -112,6 +112,10 @@ int main(int argc, char*argv[])
         spgramcf_write(periodogram, buf_rx, k);
     }
 
+    // destroy modulator/demodulator pair
+    fskmod_destroy(mod);
+    fskdem_destroy(dem);
+
     printf("symbol errors: %u / %u\n", num_symbol_errors, num_symbols);
 
     // compute power spectral density of received signal
