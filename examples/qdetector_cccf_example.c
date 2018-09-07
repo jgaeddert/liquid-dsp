@@ -41,11 +41,11 @@ int main(int argc, char*argv[])
     unsigned int m            =    7;   // filter delay [symbols]
     float        beta         = 0.3f;   // excess bandwidth factor
     int          ftype        = LIQUID_FIRFILT_ARKAISER;
-    float        gamma        = 10.0f;  // channel gain
     float        tau          = -0.3f;  // fractional sample timing offset
     float        dphi         = -0.01f; // carrier frequency offset
     float        phi          =  0.5f;  // carrier phase offset
-    float        SNRdB        = 20.0f;  // signal-to-noise ratio [dB]
+    float        noise_floor  = -20.0f; // noise floor [dB]
+    float        SNRdB        = 40.0f;  // signal-to-noise ratio [dB]
     float        threshold    =  0.5f;  // detection threshold
     float        range        =  0.05f; // carrier offset search range [radians/sample]
 
@@ -82,6 +82,10 @@ int main(int argc, char*argv[])
                       (rand() % 2 ? 1.0f : -1.0f) * M_SQRT1_2 * _Complex_I;
     }
 
+    // derived values
+    float nstd = powf(10.0f, noise_floor/20.0f);
+    float gamma = powf(10.0f, (SNRdB + noise_floor)/20.0f);
+
     //
     float tau_hat   = 0.0f;
     float gamma_hat = 0.0f;
@@ -109,7 +113,6 @@ int main(int argc, char*argv[])
     float complex * v = (float complex*) qdetector_cccf_get_sequence(q);
     unsigned int filter_delay = 15;
     firfilt_crcf filter = firfilt_crcf_create_kaiser(2*filter_delay+1, 0.4f, 60.0f, -tau);
-    float        nstd        = 0.1f;
     for (i=0; i<num_samples; i++) {
         // add delay
         firfilt_crcf_push(filter, i < seq_len ? v[i] : 0);
