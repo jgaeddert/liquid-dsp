@@ -1138,6 +1138,62 @@ void bpacketsync_reconfig(bpacketsync _q);
 #define DSSSFRAME_H_FEC1         (LIQUID_FEC_NONE)
 
 //
+// multi-signal source for testing (no meaningful data, just signals)
+//
+#define LIQUID_QSOURCE_MANGLE_CFLOAT(name) LIQUID_CONCAT(qsourcecf,name)
+
+#define LIQUID_QSOURCE_DEFINE_API(QSOURCE,TO)                               \
+                                                                            \
+/* Multi-signal source generator object                                 */  \
+typedef struct QSOURCE(_s) * QSOURCE();                                     \
+                                                                            \
+/* Create default qsource object                                        */  \
+QSOURCE() QSOURCE(_create)(int _id);                                        \
+                                                                            \
+/* Create default qsource object                                        */  \
+QSOURCE() QSOURCE(_create_tone)(int _id);                                   \
+                                                                            \
+/* Create default qsource object                                        */  \
+QSOURCE() QSOURCE(_create_noise)(int _id, float _bandwidth);                \
+                                                                            \
+/* Create default qsource object                                        */  \
+QSOURCE() QSOURCE(_create_modem)(int          _id,                          \
+                                 int          _ms,                          \
+                                 unsigned int _k,                           \
+                                 unsigned int _m,                           \
+                                 float        _beta);                       \
+                                                                            \
+/* Destroy qsource object                                               */  \
+void QSOURCE(_destroy)(QSOURCE() _q);                                       \
+                                                                            \
+/* Print qsource object                                                 */  \
+void QSOURCE(_print)(QSOURCE() _q);                                         \
+                                                                            \
+/* Reset qsource object                                                 */  \
+void QSOURCE(_reset)(QSOURCE() _q);                                         \
+                                                                            \
+/* Get source id                                                        */  \
+int QSOURCE(_get_id)(QSOURCE() _q);                                         \
+                                                                            \
+void QSOURCE(_enable)(QSOURCE() _q);                                        \
+void QSOURCE(_disable)(QSOURCE() _q);                                       \
+                                                                            \
+void QSOURCE(_set_gain)(QSOURCE() _q,                                       \
+                        float     _gain_dB);                                \
+                                                                            \
+float QSOURCE(_get_gain)(QSOURCE() _q);                                     \
+                                                                            \
+void QSOURCE(_set_frequency)(QSOURCE() _q,                                  \
+                             float     _dphi);                              \
+                                                                            \
+float QSOURCE(_get_frequency)(QSOURCE() _q);                                \
+                                                                            \
+void QSOURCE(_gen_sample)(QSOURCE() _q,                                     \
+                          TO *      _v);                                    \
+    
+LIQUID_QSOURCE_DEFINE_API(LIQUID_QSOURCE_MANGLE_CFLOAT, liquid_float_complex)
+
+//
 // MODULE : math
 //
 

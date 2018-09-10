@@ -630,7 +630,7 @@ src/framing/src/framegen64.o        : %.o : %.c $(include_headers)
 src/framing/src/framesync64.o       : %.o : %.c $(include_headers)
 src/framing/src/flexframegen.o      : %.o : %.c $(include_headers)
 src/framing/src/flexframesync.o     : %.o : %.c $(include_headers)
-src/framing/src/msourcecf.o         : %.o : %.c $(include_headers) src/framing/src/msource.c
+src/framing/src/msourcecf.o         : %.o : %.c $(include_headers) src/framing/src/msource.c src/framing/src/qsource.c
 src/framing/src/ofdmflexframegen.o  : %.o : %.c $(include_headers)
 src/framing/src/ofdmflexframesync.o : %.o : %.c $(include_headers)
 src/framing/src/presync_cccf.o      : %.o : %.c $(include_headers) src/framing/src/presync.c
