@@ -5284,10 +5284,10 @@ MSOURCE() MSOURCE(_create)(void);                                           \
 /* Destroy msource object                                               */  \
 void MSOURCE(_destroy)(MSOURCE() _q);                                       \
                                                                             \
-/* Print msrouce object                                                 */  \
+/* Print msource object                                                 */  \
 void MSOURCE(_print)(MSOURCE() _q);                                         \
                                                                             \
-/* Reset msrouce object                                                 */  \
+/* Reset msource object                                                 */  \
 void MSOURCE(_reset)(MSOURCE() _q);                                         \
                                                                             \
 /* Add tone to signal generator, returning id of signal                 */  \
