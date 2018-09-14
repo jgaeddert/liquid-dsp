@@ -3181,6 +3181,18 @@ void FIRINTERP(_print)(FIRINTERP() _q);                                     \
 /* Reset internal state                                                 */  \
 void FIRINTERP(_reset)(FIRINTERP() _q);                                     \
                                                                             \
+/* Set output scaling for interpolator                                  */  \
+/*  _q      : interpolator object                                       */  \
+/*  _scale  : scaling factor to apply to each output sample             */  \
+void FIRINTERP(_set_scale)(FIRINTERP() _q,                                  \
+                           TC          _scale);                             \
+                                                                            \
+/* Get output scaling for interpolator                                  */  \
+/*  _q      : interpolator object                                       */  \
+/*  _scale  : scaling factor to apply to each output sample             */  \
+void FIRINTERP(_get_scale)(FIRINTERP() _q,                                  \
+                           TC *        _scale);                             \
+                                                                            \
 /* Execute interpolation on single input sample and write \(M\) output  */  \
 /* samples (\(M\) is the interpolation factor)                          */  \
 /*  _q      : firinterp object                                          */  \
