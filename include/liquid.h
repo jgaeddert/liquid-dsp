@@ -3373,6 +3373,18 @@ void FIRDECIM(_print)(FIRDECIM() _q);                                       \
 /* Reset decimator object internal state                                */  \
 void FIRDECIM(_reset)(FIRDECIM() _q);                                       \
                                                                             \
+/* Set output scaling for decimator                                     */  \
+/*  _q      : decimator object                                          */  \
+/*  _scale  : scaling factor to apply to each output sample             */  \
+void FIRDECIM(_set_scale)(FIRDECIM() _q,                                    \
+                          TC         _scale);                               \
+                                                                            \
+/* Get output scaling for decimator                                     */  \
+/*  _q      : decimator object                                          */  \
+/*  _scale  : scaling factor to apply to each output sample             */  \
+void FIRDECIM(_get_scale)(FIRDECIM() _q,                                    \
+                          TC *       _scale);                               \
+                                                                            \
 /* Execute decimator on _M input samples                                */  \
 /*  _q      : decimator object                                          */  \
 /*  _x      : input samples, [size: _M x 1]                             */  \
