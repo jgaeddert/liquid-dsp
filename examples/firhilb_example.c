@@ -40,7 +40,8 @@ int main() {
     // initialize input array
     unsigned int i;
     for (i=0; i<num_total_samples; i++) {
-        x[i]  = cexpf(_Complex_I*2*M_PI*fc*i);
+        x[i]  = cexpf(_Complex_I*2*M_PI*fc*i) +
+                cexpf(_Complex_I*2*M_PI*fc*i*1.3f)*0.1f;
         x[i] *= (i < num_input_samples) ? 1.855f*hamming(i,num_input_samples) : 0.0f;
     }
 
@@ -104,9 +105,9 @@ int main() {
     fprintf(fid,"Y=20*log10(abs(fftshift(fft(y/num_input_samples,nfft))));\n");
     fprintf(fid,"Z=20*log10(abs(fftshift(fft(z/num_input_samples,nfft))));\n");
     fprintf(fid,"f =[0:(nfft-1)]/nfft-0.5;\n");
-    fprintf(fid,"figure; plot(f,  X,'LineWidth',1,'Color',[0.50 0.50 0.50],...\n");
-    fprintf(fid,"             f*2,Y,'LineWidth',2,'Color',[0.00 0.50 0.25],...\n");
-    fprintf(fid,"             f,  Z,'LineWidth',1,'Color',[0.00 0.25 0.50]);\n");
+    fprintf(fid,"figure; plot(f+0.5,X,'LineWidth',1,'Color',[0.50 0.50 0.50],...\n");
+    fprintf(fid,"             f*2,  Y,'LineWidth',2,'Color',[0.00 0.50 0.25],...\n");
+    fprintf(fid,"             f+0.5,Z,'LineWidth',1,'Color',[0.00 0.25 0.50]);\n");
     fprintf(fid,"grid on;\n");
     fprintf(fid,"axis([-1.0 1.0 -80 20]);\n");
     fprintf(fid,"xlabel('normalized frequency');\n");

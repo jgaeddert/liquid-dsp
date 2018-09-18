@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2015 Joseph Gaeddert
+ * Copyright (c) 2007 - 2018 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -56,6 +56,10 @@ struct SPGRAM(_s) {
     uint64_t        num_samples_total;      // total number of samples since start
     uint64_t        num_transforms;         // total number of transforms since reset
     uint64_t        num_transforms_total;   // total number of transforms since start
+
+    // parameters for display purposes only
+    float           frequency;      // center frequency [Hz]
+    float           sample_rate;    // sample rate [Hz]
 };
 
 //
@@ -68,7 +72,7 @@ void SPGRAM(_step)(SPGRAM() _q);
 
 // create spgram object
 //  _nfft       : FFT size
-//  _window     : window coefficients [size: _window_len x 1]
+//  _wtype      : window type, e.g. LIQUID_WINDOW_HAMMING
 //  _window_len : window length
 //  _delay      : delay between transforms, _delay > 0
 SPGRAM() SPGRAM(_create)(unsigned int _nfft,
@@ -102,6 +106,8 @@ SPGRAM() SPGRAM(_create)(unsigned int _nfft,
     q->wtype      = _wtype;
     q->window_len = _window_len;
     q->delay      = _delay;
+    q->frequency  =  0;
+    q->sample_rate= -1;
 
     // set object for full accumulation
     SPGRAM(_set_alpha)(q, -1.0f);
@@ -147,7 +153,7 @@ SPGRAM() SPGRAM(_create)(unsigned int _nfft,
     // scale window and copy
     for (i=0; i<q->window_len; i++)
         q->w[i] = g * q->w[i];
-    
+
     // reset the spgram object
     q->num_samples_total    = 0;
     q->num_transforms_total = 0;
@@ -184,12 +190,10 @@ void SPGRAM(_destroy)(SPGRAM() _q)
     free(_q);
 }
 
-// resets the internal state of the spgram object
-void SPGRAM(_reset)(SPGRAM() _q)
+// clears the internal state of the spgram object, but not
+// the internal buffer
+void SPGRAM(_clear)(SPGRAM() _q)
 {
-    // clear the window buffer
-    //WINDOW(_clear)(_q->buffer);
-
     // clear FFT input
     unsigned int i;
     for (i=0; i<_q->nfft; i++)
@@ -203,6 +207,16 @@ void SPGRAM(_reset)(SPGRAM() _q)
     // clear PSD accumulation
     for (i=0; i<_q->nfft; i++)
         _q->psd[i] = 0.0f;
+}
+
+// reset the spgram object to its original state completely
+void SPGRAM(_reset)(SPGRAM() _q)
+{
+    // reset spgram object except for the window buffer
+    SPGRAM(_clear)(_q);
+
+    // clear the window buffer
+    WINDOW(_reset)(_q->buffer);
 }
 
 // prints the spgram object's parameters
@@ -232,6 +246,27 @@ int SPGRAM(_set_alpha)(SPGRAM() _q,
         _q->alpha = _alpha;
         _q->gamma = 1.0f - _q->alpha;
     }
+    return 0;
+}
+
+// set center freuqncy
+int SPGRAM(_set_freq)(SPGRAM() _q,
+                      float    _freq)
+{
+    _q->frequency = _freq;
+    return 0;
+}
+
+// set sample rate
+int SPGRAM(_set_rate)(SPGRAM() _q,
+                      float    _rate)
+{
+    // validate input
+    if (_rate <= 0.0f) {
+        fprintf(stderr,"error: spgram%s_set_rate(), sample rate must be greater than zero\n", EXTENSION);
+        return -1;
+    }
+    _q->sample_rate = _rate;
     return 0;
 }
 
@@ -338,6 +373,7 @@ void SPGRAM(_step)(SPGRAM() _q)
     FFT_EXECUTE(_q->fft);
 
     // accumulate output
+    // TODO: vectorize this operation
     for (i=0; i<_q->nfft; i++) {
         T v = crealf( _q->buf_freq[i] * conjf(_q->buf_freq[i]) );
         if (_q->num_transforms == 0)
@@ -384,16 +420,27 @@ int SPGRAM(_export_gnuplot)(SPGRAM()     _q,
     fprintf(fid,"reset\n");
     fprintf(fid,"set terminal png size 1200,800 enhanced font 'Verdana,10'\n");
     fprintf(fid,"set output '%s.png'\n", _filename);
-    fprintf(fid,"set xrange [-0.5:0.5]\n");
     fprintf(fid,"set autoscale y\n");
-    fprintf(fid,"set xlabel 'Noramlized Frequency'\n");
     fprintf(fid,"set ylabel 'Power Spectral Density'\n");
     fprintf(fid,"set style line 12 lc rgb '#404040' lt 0 lw 1\n");
     fprintf(fid,"set grid xtics ytics\n");
     fprintf(fid,"set grid front ls 12\n");
-    fprintf(fid,"set style fill transparent solid 0.2\n");
+    //fprintf(fid,"set style fill transparent solid 0.2\n");
+    const char plot_with[] = "lines"; // "filledcurves x1"
     fprintf(fid,"set nokey\n");
-    fprintf(fid,"plot '-' w filledcurves x1 lt 1 lw 2 lc rgb '#004080'\n");
+    if (_q->sample_rate < 0) {
+        fprintf(fid,"set xrange [-0.5:0.5]\n");
+        fprintf(fid,"set xlabel 'Noramlized Frequency'\n");
+        fprintf(fid,"plot '-' w %s lt 1 lw 2 lc rgb '#004080'\n", plot_with);
+    } else {
+        char unit = ' ';
+        float g   = 1.0f;
+        liquid_get_scale(_q->frequency, &unit, &g);
+        fprintf(fid,"set xlabel 'Frequency [%cHz]'\n", unit);
+        fprintf(fid,"set xrange [%f:%f]\n", g*(_q->frequency-0.5*_q->sample_rate), g*(_q->frequency+0.5*_q->sample_rate));
+        fprintf(fid,"plot '-' u ($1*%f+%f):2 w %s lt 1 lw 2 lc rgb '#004080'\n",
+                g*(_q->sample_rate < 0 ? 1 : _q->sample_rate), g*_q->frequency, plot_with);
+    }
 
     // export spectrum data
     T * psd = (T*) malloc(_q->nfft * sizeof(T));
@@ -436,4 +483,3 @@ void SPGRAM(_estimate_psd)(unsigned int _nfft,
     // destroy object
     SPGRAM(_destroy)(q);
 }
-

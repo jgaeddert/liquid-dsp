@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2015 Joseph Gaeddert
+ * Copyright (c) 2007 - 2017 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,7 +23,7 @@
 // bench.c
 //
 // This file is used in conjunction with benchinclude.h (generated with
-// benchmarkgen.py) to produce an executable for benchmarking the various
+// scripts/autoscript) to produce an executable for benchmarking the various
 // signal processing algorithms in liquid.
 //
 
@@ -95,19 +95,19 @@ void usage()
     // help
     printf("Usage: benchmark [OPTION]\n");
     printf("Execute benchmark scripts for liquid-dsp library.\n");
-    printf("  -h,-u         display this help and exit\n");
-    printf("  -v            verbose\n");
-    printf("  -q            quiet\n");
-    printf("  -e            estimate cpu clock frequency and exit\n");
-    printf("  -c            set cpu clock frequency (Hz)\n");
-    printf("  -n[COUNT]     set number of base trials\n");
-    printf("  -p[ID]        run specific package\n");
-    printf("  -b[ID]        run specific benchmark\n");
-    printf("  -t[SECONDS]   set minimum execution time (s)\n");
-    printf("  -l            list available packages\n");
-    printf("  -L            list all available scripts\n");
-    printf("  -s[STRING]    run all packages/benchmarks matching search string\n");
-    printf("  -o[FILENAME]  export output\n");
+    printf("  -h           : display this help and exit\n");
+    printf("  -v           : verbose\n");
+    printf("  -q           : quiet\n");
+    printf("  -e           : estimate cpu clock frequency and exit\n");
+    printf("  -c           : set cpu clock frequency (Hz)\n");
+    printf("  -n <trials>  : set number of base trials\n");
+    printf("  -p <package> : run specific package\n");
+    printf("  -b <bench>   : run specific benchmark\n");
+    printf("  -t <seconds> : set minimum execution time (s)\n");
+    printf("  -l           : list available packages\n");
+    printf("  -L           : list all available scripts\n");
+    printf("  -s <search>  : run all packages/benchmarks matching search string\n");
+    printf("  -o <file>    : export output\n");
 }
 
 // main function
@@ -133,9 +133,8 @@ int main(int argc, char *argv[])
 
     // get input options
     int d;
-    while((d = getopt(argc,argv,"uhvqec:n:b:p:t:lLs:o:")) != EOF){
+    while((d = getopt(argc,argv,"hvqec:n:b:p:t:lLs:o:")) != EOF){
         switch (d) {
-        case 'u':
         case 'h':   usage();        return 0;
         case 'v':   verbose = 1;    break;
         case 'q':   verbose = 0;    break;

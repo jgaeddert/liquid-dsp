@@ -1,4 +1,4 @@
-# Copyright (c) 2007 - 2016 Joseph Gaeddert
+# Copyright (c) 2007 - 2018 Joseph Gaeddert
 # 
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -23,7 +23,7 @@
 # Process with autoconf to generate configure script
 #
 
-AC_INIT([liquid-dsp],[1.2.0],[support@liquidsdr.org])
+AC_INIT([liquid-dsp],[1.3.1],[support@liquidsdr.org])
 AC_CONFIG_SRCDIR([src/libliquid.c])
 AC_CONFIG_MACRO_DIR([scripts])
 
@@ -32,6 +32,9 @@ AC_CONFIG_AUX_DIR(scripts/)
 
 # Specify 'C' language
 AC_LANG(C)
+
+# uncomment the following line to reset "CFLAGS" variable; it defaults to '-g -O2'
+#: ${CFLAGS=""}
 
 # Autoheader
 AH_TEMPLATE([LIQUID_FFTOVERRIDE],  [Force internal FFT even if libfftw is available])
@@ -48,10 +51,10 @@ AH_BOTTOM([
 
 # Configure options
 
-AC_ARG_ENABLE(debug,
-    AS_HELP_STRING([--enable-debug],[debug]),
-    [DEBUG_OPTION="-DDEBUG"],
-    [DEBUG_OPTION=""]
+AC_ARG_ENABLE(debug-messages,
+    AS_HELP_STRING([--enable-debug-messages],[enable verbose debug messages (-DDEBUG)]),
+    [DEBUG_MSG_OPTION="-DDEBUG"],
+    [DEBUG_MSG_OPTION=""]
 )
 
 AC_ARG_ENABLE(simdoverride,
@@ -72,6 +75,10 @@ AC_PROG_SED
 AC_PROG_GREP
 AC_PROG_INSTALL
 AC_PROG_RANLIB
+AN_MAKEVAR([AR], [AC_PROG_AR])
+AN_PROGRAM([ar], [AC_PROG_AR])
+AC_DEFUN([AC_PROG_AR], [AC_CHECK_TOOL(AR, ar, :)])
+AC_PROG_AR
 
 # Check for necessary libraries, library functions
 AC_FUNC_ERROR_AT_LINE
@@ -161,12 +168,21 @@ else
                            src/dotprod/src/dotprod_crcf.mmx.o \
                            src/dotprod/src/dotprod_rrrf.mmx.o \
                            src/dotprod/src/sumsq.mmx.o"
+            ARCH_OPTION='-msse4.1'
+        elif [ test "$ax_cv_have_sse3_ext" = yes && test "$ac_cv_header_pmmintrin_h" = yes ]; then
+            # SSE3 extensions
+            MLIBS_DOTPROD="src/dotprod/src/dotprod_cccf.mmx.o \
+                           src/dotprod/src/dotprod_crcf.mmx.o \
+                           src/dotprod/src/dotprod_rrrf.mmx.o \
+                           src/dotprod/src/sumsq.mmx.o"
+            ARCH_OPTION='-msse3'
         elif [ test "$ax_cv_have_sse2_ext" = yes && test "$ac_cv_header_emmintrin_h" = yes ]; then
             # SSE2 extensions
             MLIBS_DOTPROD="src/dotprod/src/dotprod_cccf.mmx.o \
                            src/dotprod/src/dotprod_crcf.mmx.o \
                            src/dotprod/src/dotprod_rrrf.mmx.o \
                            src/dotprod/src/sumsq.mmx.o"
+            ARCH_OPTION='-msse2'
         else
             # portable C version
             MLIBS_DOTPROD="src/dotprod/src/dotprod_cccf.o \
@@ -242,7 +258,7 @@ AC_SUBST(SH_LIB)                    # output shared library target
 AC_SUBST(REBIND)                    # rebinding tool (e.g. ldconfig)
 AC_SUBST(ARCH_OPTION)               # compiler architecture option
 
-AC_SUBST(DEBUG_OPTION)              # debug option
+AC_SUBST(DEBUG_MSG_OPTION)          # debug messages option (.e.g -DDEBUG)
 AC_SUBST(CLIB)                      # C library linkage (e.g. '-lc')
 
 AC_CONFIG_FILES([makefile])

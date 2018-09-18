@@ -587,7 +587,105 @@ fec fec_recreate(fec _q,
 // destroy fec object
 void fec_destroy(fec _q)
 {
-    free(_q);
+    switch (_q->scheme) {
+    case LIQUID_FEC_UNKNOWN:
+        printf("error: fec_destroy(), cannot destroy fec object of type \"UNKNOWN\"\n");
+        exit(-1);
+    case LIQUID_FEC_NONE:
+        fec_pass_destroy(_q);
+        return;
+    case LIQUID_FEC_REP3:
+        fec_rep3_destroy(_q);
+        return;
+    case LIQUID_FEC_REP5:
+        fec_rep5_destroy(_q);
+        return;
+    case LIQUID_FEC_HAMMING74:
+        fec_hamming74_destroy(_q);
+        return;
+    case LIQUID_FEC_HAMMING84:
+        fec_hamming84_destroy(_q);
+        return;
+    case LIQUID_FEC_HAMMING128:
+        fec_hamming128_destroy(_q);
+        return;
+
+    case LIQUID_FEC_GOLAY2412:
+        fec_golay2412_destroy(_q);
+        return;
+
+    // SEC-DED codecs (single error correction, double error detection)
+    case LIQUID_FEC_SECDED2216:
+        fec_secded2216_destroy(_q);
+        return;
+    case LIQUID_FEC_SECDED3932:
+        fec_secded3932_destroy(_q);
+        return;
+    case LIQUID_FEC_SECDED7264:
+        fec_secded7264_destroy(_q);
+        return;
+
+    // convolutional codes
+#if LIBFEC_ENABLED
+    case LIQUID_FEC_CONV_V27:
+    case LIQUID_FEC_CONV_V29:
+    case LIQUID_FEC_CONV_V39:
+    case LIQUID_FEC_CONV_V615:
+        fec_conv_destroy(_q);
+        return;
+
+    // punctured
+    case LIQUID_FEC_CONV_V27P23:
+    case LIQUID_FEC_CONV_V27P34:
+    case LIQUID_FEC_CONV_V27P45:
+    case LIQUID_FEC_CONV_V27P56:
+    case LIQUID_FEC_CONV_V27P67:
+    case LIQUID_FEC_CONV_V27P78:
+
+    case LIQUID_FEC_CONV_V29P23:
+    case LIQUID_FEC_CONV_V29P34:
+    case LIQUID_FEC_CONV_V29P45:
+    case LIQUID_FEC_CONV_V29P56:
+    case LIQUID_FEC_CONV_V29P67:
+    case LIQUID_FEC_CONV_V29P78:
+        fec_conv_punctured_destroy(_q);
+        return;
+
+    // Reed-Solomon codes
+    case LIQUID_FEC_RS_M8:
+        fec_rs_destroy(_q);
+        return;
+#else
+    case LIQUID_FEC_CONV_V27:
+    case LIQUID_FEC_CONV_V29:
+    case LIQUID_FEC_CONV_V39:
+    case LIQUID_FEC_CONV_V615:
+
+    case LIQUID_FEC_CONV_V27P23:
+    case LIQUID_FEC_CONV_V27P34:
+    case LIQUID_FEC_CONV_V27P45:
+    case LIQUID_FEC_CONV_V27P56:
+    case LIQUID_FEC_CONV_V27P67:
+    case LIQUID_FEC_CONV_V27P78:
+
+    case LIQUID_FEC_CONV_V29P23:
+    case LIQUID_FEC_CONV_V29P34:
+    case LIQUID_FEC_CONV_V29P45:
+    case LIQUID_FEC_CONV_V29P56:
+    case LIQUID_FEC_CONV_V29P67:
+    case LIQUID_FEC_CONV_V29P78:
+        fprintf(stderr,"error: fec_destroy(), convolutional codes unavailable (install libfec)\n");
+        exit(-1);
+
+    case LIQUID_FEC_RS_M8:
+        fprintf(stderr,"error: fec_destroy(), Reed-Solomon codes unavailable (install libfec)\n");
+        exit(-1);
+#endif
+
+    default:
+        printf("error: fec_destroy(), unknown/unsupported scheme: %d\n", _q->scheme);
+        exit(-1);
+    }
 }
 
 // print basic fec object internals

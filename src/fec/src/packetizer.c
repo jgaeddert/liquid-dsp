@@ -165,17 +165,21 @@ packetizer packetizer_recreate(packetizer _p,
     {
         // no change; return input pointer
         return _p;
-    } else {
-        // something has changed; destroy old object and create new one
-        // TODO : rather than completely destroying object, only change values that are necessary
-        packetizer_destroy(_p);
-        return packetizer_create(_n,_crc,_fec0,_fec1);
     }
+
+    // something has changed; destroy old object and create new one
+    // TODO : rather than completely destroying object, only change values that are necessary
+    packetizer_destroy(_p);
+    return packetizer_create(_n,_crc,_fec0,_fec1);
 }
 
 // destroy packetizer object
 void packetizer_destroy(packetizer _p)
 {
+    if (!_p) {
+        return;
+    }
+
     // free fec, interleaver objects
     unsigned int i;
     for (i=0; i<_p->plan_len; i++) {

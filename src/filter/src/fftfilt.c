@@ -186,6 +186,14 @@ void FFTFILT(_set_scale)(FFTFILT() _q,
     _q->scale = _scale / (float)(2*_q->n);
 }
 
+// get output scaling for filter
+void FFTFILT(_get_scale)(FFTFILT() _q,
+                         TC *      _scale)
+{
+    // get scale, normalized by fft size
+    *_scale = _q->scale * (float)(2*_q->n);
+}
+
 // execute the filter on internal buffer and coefficients
 //  _q      : filter object
 //  _x      : pointer to input data array  [size: _n x 1]
