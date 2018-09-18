@@ -16,18 +16,17 @@
 #include <stdio.h>
 #include <complex.h>
 #include <math.h>
-
-#include "liquid.experimental.h"
+#include "liquid.h"
 
 #define OUTPUT_FILENAME "dds_cccf_example.m"
 
 int main() {
     // options
-    float fc=-0.0f;                 // input (output) decim (interp) frequency
-    unsigned int num_stages=3;      // number of halfband interp/decim stages
-    unsigned int num_samples=64;    // number of input samples
-    float As=60.0f;                 // DDS stop-band attenuation [dB]
-    float bw=0.25f;                 // signal bandwidth
+    float           fc          = -0.2f;    // input (output) decim (interp) frequency
+    unsigned int    num_stages  = 3;        // number of halfband interp/decim stages
+    unsigned int    num_samples = 64;       // number of input samples
+    float           As          = 60.0f;    // DDS stop-band attenuation [dB]
+    float           bw          = 0.25f;    // signal bandwidth
 
     // derived values
     unsigned int r=1<<num_stages;   // resampling rate (output/input)
@@ -55,7 +54,7 @@ int main() {
     float h[h_len];
     liquid_firdes_kaiser(h_len,bw,60.0f,0.0f,h);
     for (i=0; i<num_samples; i++)
-        x[i] = i < h_len ? h[i]*bw : 0.0f;
+        x[i] = i < h_len ? 2*h[i]*bw : 0.0f;
 
     // run interpolation (up-conversion) stage
     for (i=0; i<num_samples; i++) {
