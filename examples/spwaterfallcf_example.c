@@ -15,10 +15,6 @@ int main()
     unsigned int time        =  250;    // minimum time buffer
     unsigned int num_samples = 20e6;    // number of samples
 
-    // create time-varying multi-path channel object
-    unsigned int buf_len = 64;
-    float complex buf[buf_len];
-
     // create spectral waterfall object
     spwaterfallcf periodogram = spwaterfallcf_create_default(nfft,time);
     spwaterfallcf_print(periodogram);
@@ -41,6 +37,11 @@ int main()
     msourcecf_set_frequency(gen, id_modem, -0.1*2*M_PI);
     msourcecf_set_gain     (gen, id_modem, 0.0f);
 
+    // create buffers
+    unsigned int  buf_len = 64;
+    float complex buf[buf_len];
+
+    // generate signals and push through spwaterfall object
     unsigned int total_samples   = 0;
     int state = 1;
     while (total_samples < num_samples) {
