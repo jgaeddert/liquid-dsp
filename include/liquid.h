@@ -5280,6 +5280,13 @@ void SYMSTREAM(_print)(SYMSTREAM() _q);                                     \
 /* Reset symstream internal state                                       */  \
 void SYMSTREAM(_reset)(SYMSTREAM() _q);                                     \
                                                                             \
+/* Set internal linear gain (before interpolation)                      */  \
+void SYMSTREAM(_set_gain)(SYMSTREAM() _q,                                   \
+                          float       _gain);                               \
+                                                                            \
+/* Get internal linear gain (before interpolation)                      */  \
+float SYMSTREAM(_get_gain)(SYMSTREAM() _q);                                 \
+                                                                            \
 /* Write block of samples to output buffer                              */  \
 /*  _q      : synchronizer object                                       */  \
 /*  _buf    : output buffer [size: _buf_len x 1]                        */  \
