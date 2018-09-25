@@ -5594,7 +5594,7 @@ extern const char * liquid_window_str[LIQUID_WINDOW_NUM_FUNCTIONS][2];
 // Print compact list of existing and available windowing functions
 void liquid_print_windows();
 
-// returns modulation_scheme based on input string
+// returns window type based on input string
 liquid_window_type liquid_getopt_str2window(const char * _str);
 
 // Kaiser-Bessel derived window (single sample)
