@@ -66,9 +66,10 @@ int main()
         }
     }
     // export output files
-    spwaterfallcf_set_rate(periodogram,100e6);
-    spwaterfallcf_set_freq(periodogram,750e6);
-    spwaterfallcf_set_dims(periodogram,1200, 800);
+    spwaterfallcf_set_rate    (periodogram,100e6);
+    spwaterfallcf_set_freq    (periodogram,750e6);
+    spwaterfallcf_set_dims    (periodogram,1200, 800);
+    spwaterfallcf_set_commands(periodogram,"set cbrange [-55:25]; set title 'waterfall'");
     spwaterfallcf_export(periodogram,"spwaterfallcf_example");
 
     // destroy objects

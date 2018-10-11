@@ -1766,6 +1766,12 @@ int SPWATERFALL(_set_dims)(SPWATERFALL() _q,                                \
                            unsigned int  _width,                            \
                            unsigned int  _height);                          \
                                                                             \
+/* Set commands for executing directly before 'plot' statement.         */  \
+/*  _q          : spectral periodogram waterfall object                 */  \
+/*  _commands   : gnuplot commands separated by semicolons              */  \
+int SPWATERFALL(_set_commands)(SPWATERFALL() _q,                            \
+                               const char *  _commands);                    \
+                                                                            \
 /* Push a single sample into the object, executing internal transform   */  \
 /* as necessary.                                                        */  \
 /*  _q  : spwaterfall object                                            */  \
