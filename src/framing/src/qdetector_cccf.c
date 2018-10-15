@@ -258,6 +258,7 @@ void qdetector_cccf_print(qdetector_cccf _q)
     printf("qdetector_cccf:\n");
     printf("  template length (time):   %-u\n",   _q->s_len);
     printf("  FFT size              :   %-u\n",   _q->nfft);
+    printf("  search range (bins)   :   %-d\n",   _q->range);
     printf("  detection threshold   :   %6.4f\n", _q->threshold);
     printf("  sum{ s^2 }            :   %.2f\n",  _q->s2_sum);
 }
