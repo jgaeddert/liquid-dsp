@@ -67,6 +67,7 @@ struct qdetector_cccf_s {
     float           x2_sum_0;       // sum{ |x|^2 } of first half of buffer
     float           x2_sum_1;       // sum{ |x|^2 } of second half of buffer
 
+    float           rxy;            // peak correlation output
     int             offset;         // FFT offset index for peak correlation (coarse carrier estimate)
     float           tau_hat;        // timing offset estimate
     float           gamma_hat;      // signal level estimate (channel gain)
@@ -128,6 +129,7 @@ qdetector_cccf qdetector_cccf_create(float complex * _s,
     memset(q->buf_time_0, 0x00, q->nfft*sizeof(float complex));
     
     // reset estimates
+    q->rxy       = 0.0f;
     q->tau_hat   = 0.0f;
     q->gamma_hat = 0.0f;
     q->dphi_hat  = 0.0f;
@@ -341,6 +343,12 @@ unsigned int qdetector_cccf_get_buf_len(qdetector_cccf _q)
     return _q->nfft;
 }
 
+// correlator output
+float qdetector_cccf_get_rxy(qdetector_cccf _q)
+{
+    return _q->rxy;
+}
+
 // fractional timing offset estimate
 float qdetector_cccf_get_tau(qdetector_cccf _q)
 {
@@ -472,6 +480,7 @@ void qdetector_cccf_execute_seek(qdetector_cccf _q,
         // update state, reset counter, copy buffer appropriately
         _q->state = QDETECTOR_STATE_ALIGN;
         _q->offset = rxy_offset;
+        _q->rxy    = rxy_peak; // note that this is a coarse estimate
         // TODO: check for edge case where rxy_index is zero (signal already aligned)
 
         // copy last part of fft input buffer to front
@@ -528,6 +537,7 @@ void qdetector_cccf_execute_align(qdetector_cccf _q,
     _q->tau_hat = -b / (2.0f*a); //-0.5f*(ypos - yneg) / (ypos + yneg - 2*y0);
     float g_hat   = (a*_q->tau_hat*_q->tau_hat + b*_q->tau_hat + c);
     _q->gamma_hat = g_hat * g_hat / ((float)(_q->nfft) * _q->s2_sum); // g_hat^2 because of sqrt for yneg/y0/ypos
+    // TODO: revise estimate of rxy here
 
     // copy buffer to preserve data integrity
     memmove(_q->buf_time_1, _q->buf_time_0, _q->nfft*sizeof(float complex));

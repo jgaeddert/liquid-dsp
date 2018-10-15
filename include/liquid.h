@@ -5205,6 +5205,7 @@ void qdetector_cccf_set_range(qdetector_cccf _q,
 unsigned int qdetector_cccf_get_seq_len (qdetector_cccf _q); // sequence length
 const void * qdetector_cccf_get_sequence(qdetector_cccf _q); // pointer to sequence
 unsigned int qdetector_cccf_get_buf_len (qdetector_cccf _q); // buffer length
+float        qdetector_cccf_get_rxy     (qdetector_cccf _q); // correlator output
 float        qdetector_cccf_get_tau     (qdetector_cccf _q); // fractional timing offset estimate
 float        qdetector_cccf_get_gamma   (qdetector_cccf _q); // channel gain
 float        qdetector_cccf_get_dphi    (qdetector_cccf _q); // carrier frequency offset estimate
