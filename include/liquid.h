@@ -3780,10 +3780,10 @@ RESAMP() RESAMP(_create)(float        _rate,                                \
 /* a basic resampler with a baseline set of parameters, abstracting     */  \
 /* away some of the complexities with the filterbank design.            */  \
 /* The default parameters are                                           */  \
-/*  m    = 7     (filter semi-length),                                  */  \
-/*  fc   = 0.25  (filter cutoff frequency),                             */  \
-/*  As   = 60 dB (filter stop-band attenuation), and                    */  \
-/*  npfb = 64    (number of filters in the bank).                       */  \
+/*  m    = 7                    (filter semi-length),                   */  \
+/*  fc   = min(0.49,_rate/2)    (filter cutoff frequency),              */  \
+/*  As   = 60 dB                (filter stop-band attenuation), and     */  \
+/*  npfb = 64                   (number of filters in the bank).        */  \
 /*  _rate   : arbitrary resampling rate,         0 < _rate              */  \
 RESAMP() RESAMP(_create_default)(float _rate);                              \
                                                                             \
