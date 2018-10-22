@@ -7835,7 +7835,7 @@ LIQUID_QUANTIZER_DEFINE_API(LIQUID_QUANTIZER_MANGLE_CFLOAT, liquid_float_complex
 //
 
 
-// Uniform random number generator, (0,1]
+// Uniform random number generator, [0,1)
 float randf();
 float randf_pdf(float _x);
 float randf_cdf(float _x);
