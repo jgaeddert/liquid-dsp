@@ -5267,7 +5267,7 @@ typedef struct SYMSTREAM(_s) * SYMSTREAM();                                 \
 SYMSTREAM() SYMSTREAM(_create)(void);                                       \
                                                                             \
 /* Create symstream object with linear modulation                       */  \
-/*  _ftype  : filter type (e.g. LIQUID_RNYQUIST_RRC)                    */  \
+/*  _ftype  : filter type (e.g. LIQUID_FIRFILT_RRC)                     */  \
 /*  _k      : samples per symbol, _k >= 2                               */  \
 /*  _m      : filter delay (symbols), _m > 0                            */  \
 /*  _beta   : filter excess bandwidth, 0 < _beta <= 1                   */  \
@@ -5426,7 +5426,7 @@ LIQUID_MSOURCE_DEFINE_API(LIQUID_MSOURCE_MANGLE_CFLOAT, liquid_float_complex)
 typedef struct SYMTRACK(_s) * SYMTRACK();                                   \
                                                                             \
 /* Create symtrack object, specifying parameters for operation          */  \
-/*  _ftype  : filter type (e.g. LIQUID_RNYQUIST_RRC)                    */  \
+/*  _ftype  : filter type (e.g. LIQUID_FIRFILT_RRC)                     */  \
 /*  _k      : samples per symbol, _k >= 2                               */  \
 /*  _m      : filter delay [symbols], _m > 0                            */  \
 /*  _beta   : excess bandwidth factor, 0 <= _beta <= 1                  */  \
