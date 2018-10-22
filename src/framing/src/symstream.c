@@ -133,6 +133,20 @@ void SYMSTREAM(_reset)(SYMSTREAM() _q)
     _q->buf_index = 0;
 }
 
+// Set internal linear modulation scheme, leaving the filter parameters
+// (interpolator) unmodified
+void SYMSTREAM(_set_scheme)(SYMSTREAM() _q,
+                            int         _ms)
+{
+    _q->mod = MODEM(_recreate)(_q->mod, _ms);
+}
+
+// Get internal linear modulation scheme
+int SYMSTREAM(_get_scheme)(SYMSTREAM() _q)
+{
+    return MODEM(_get_scheme)(_q->mod);
+}
+
 // Set internal linear gain (before interpolation)
 void SYMSTREAM(_set_gain)(SYMSTREAM() _q,
                           float       _gain)

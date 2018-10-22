@@ -5287,6 +5287,14 @@ void SYMSTREAM(_print)(SYMSTREAM() _q);                                     \
 /* Reset symstream internal state                                       */  \
 void SYMSTREAM(_reset)(SYMSTREAM() _q);                                     \
                                                                             \
+/* Set internal linear modulation scheme, leaving the filter parameters */  \
+/* (interpolator) unmodified                                            */  \
+void SYMSTREAM(_set_scheme)(SYMSTREAM() _q,                                 \
+                            int         _ms);                               \
+                                                                            \
+/* Get internal linear modulation scheme                                */  \
+int SYMSTREAM(_get_scheme)(SYMSTREAM() _q);                                 \
+                                                                            \
 /* Set internal linear gain (before interpolation)                      */  \
 void SYMSTREAM(_set_gain)(SYMSTREAM() _q,                                   \
                           float       _gain);                               \
