@@ -7840,6 +7840,11 @@ float randf();
 float randf_pdf(float _x);
 float randf_cdf(float _x);
 
+// Uniform random number generator with arbitrary bounds, [a,b)
+float randuf(float _a, float _b);
+float randuf_pdf(float _x, float _a, float _b);
+float randuf_cdf(float _x, float _a, float _b);
+
 // Gauss random number generator, N(0,1)
 //   f(x) = 1/sqrt(2*pi*sigma^2) * exp{-(x-eta)^2/(2*sigma^2)}
 //
