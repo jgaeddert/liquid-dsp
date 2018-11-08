@@ -7118,20 +7118,20 @@ LIQUID_FIRPFBCH_DEFINE_API(LIQUID_FIRPFBCH_MANGLE_CCCF,
 typedef struct FIRPFBCH2(_s) * FIRPFBCH2();                     \
                                                                 \
 /* create firpfbch2 object                                  */  \
-/*  _type   :   channelizer type (e.g. LIQUID_ANALYZER)     */  \
-/*  _M      :   number of channels (must be even)           */  \
-/*  _m      :   prototype filter semi-lenth, length=2*M*m   */  \
-/*  _h      :   prototype filter coefficient array          */  \
+/*  _type   : channelizer type (e.g. LIQUID_ANALYZER)       */  \
+/*  _M      : number of channels (must be even)             */  \
+/*  _m      : prototype filter semi-length, length=2*M*m    */  \
+/*  _h      : prototype filter coefficient array            */  \
 FIRPFBCH2() FIRPFBCH2(_create)(int          _type,              \
                                unsigned int _M,                 \
                                unsigned int _m,                 \
                                TC *         _h);                \
                                                                 \
 /* create firpfbch2 object using Kaiser window prototype    */  \
-/*  _type   :   channelizer type (e.g. LIQUID_ANALYZER)     */  \
-/*  _M      :   number of channels (must be even)           */  \
-/*  _m      :   prototype filter semi-lenth, length=2*M*m+1 */  \
-/*  _As     :   filter stop-band attenuation [dB]           */  \
+/*  _type   : channelizer type (e.g. LIQUID_ANALYZER)       */  \
+/*  _M      : number of channels (must be even)             */  \
+/*  _m      : prototype filter semi-length, length=2*M*m+1  */  \
+/*  _As     : filter stop-band attenuation [dB]             */  \
 FIRPFBCH2() FIRPFBCH2(_create_kaiser)(int          _type,       \
                                       unsigned int _M,          \
                                       unsigned int _m,          \
