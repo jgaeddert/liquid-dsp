@@ -870,6 +870,7 @@ $(multichannel_objects) : %.o : %.c $(include_headers)
 multichannel_includes :=					\
 	src/multichannel/src/firpfbch.c				\
 	src/multichannel/src/firpfbch2.c			\
+	src/multichannel/src/firpfbchr.c			\
 
 src/multichannel/src/firpfbch_crcf.o : %.o : %.c $(include_headers) $(multichannel_includes)
 src/multichannel/src/firpfbch_cccf.o : %.o : %.c $(include_headers) $(multichannel_includes)
@@ -1418,6 +1419,7 @@ example_programs :=						\
 	examples/firhilb_filter_example				\
 	examples/firhilb_interp_example				\
 	examples/firpfbch2_crcf_example				\
+	examples/firpfbchr_crcf_example				\
 	examples/firinterp_crcf_example				\
 	examples/firinterp_firdecim_crcf_example		\
 	examples/firpfbch_crcf_example				\

@@ -7161,6 +7161,61 @@ LIQUID_FIRPFBCH2_DEFINE_API(LIQUID_FIRPFBCH2_MANGLE_CRCF,
                             float,
                             liquid_float_complex)
 
+//
+// Finite impulse response polyphase filterbank channelizer
+// with output rate Fs * P / M
+//
+
+#define LIQUID_FIRPFBCHR_MANGLE_CRCF(name) LIQUID_CONCAT(firpfbchr_crcf,name)
+
+#define LIQUID_FIRPFBCHR_DEFINE_API(FIRPFBCHR,TO,TC,TI)         \
+typedef struct FIRPFBCHR(_s) * FIRPFBCHR();                     \
+                                                                \
+/* create firpfbchr object                                  */  \
+/*  _M      : number of input channels (must be even)       */  \
+/*  _P      : number of output channels (must be even)      */  \
+/*  _m      : prototype filter semi-length, length=2*M*m    */  \
+/*  _h      : prototype filter coefficient array            */  \
+FIRPFBCHR() FIRPFBCHR(_create)(unsigned int _M,                 \
+                               unsigned int _P,                 \
+                               unsigned int _m,                 \
+                               TC *         _h);                \
+                                                                \
+/* create firpfbchr object using Kaiser window prototype    */  \
+/*  _M      : number of input channels (must be even)       */  \
+/*  _P      : number of output channels (must be even)      */  \
+/*  _m      : prototype filter semi-length, length=2*M*m    */  \
+/*  _As     : filter stop-band attenuation [dB]             */  \
+FIRPFBCHR() FIRPFBCHR(_create_kaiser)(unsigned int _M,          \
+                                      unsigned int _P,          \
+                                      unsigned int _m,          \
+                                      float        _As);        \
+                                                                \
+/* destroy firpfbchr object, freeing internal memory        */  \
+void FIRPFBCHR(_destroy)(FIRPFBCHR() _q);                       \
+                                                                \
+/* reset firpfbchr object internals                         */  \
+void FIRPFBCHR(_reset)(FIRPFBCHR() _q);                         \
+                                                                \
+/* print firpfbchr object internals                         */  \
+void FIRPFBCHR(_print)(FIRPFBCHR() _q);                         \
+                                                                \
+/* push samples into filter bank                            */  \
+/*  _x      : channelizer input [size: P x 1]               */  \
+void FIRPFBCHR(_push)(FIRPFBCHR() _q,                           \
+                      TI *        _x);                          \
+                                                                \
+/* execute filterbank channelizer                           */  \
+/*  _y      : channelizer output [size: _M x 1]             */  \
+void FIRPFBCHR(_execute)(FIRPFBCHR() _q,                        \
+                         TO *        _y);                       \
+
+
+LIQUID_FIRPFBCHR_DEFINE_API(LIQUID_FIRPFBCHR_MANGLE_CRCF,
+                            liquid_float_complex,
+                            float,
+                            liquid_float_complex)
+
 
 
 #define OFDMFRAME_SCTYPE_NULL   0
