@@ -3666,7 +3666,8 @@ LIQUID_RESAMP2_DEFINE_API(LIQUID_RESAMP2_MANGLE_CCCF,
 /* Rational rate resampler, implemented as a polyphase filterbank       */  \
 typedef struct RRESAMP(_s) * RRESAMP();                                     \
                                                                             \
-/* Create rational-rate resampler object from filter prototype          */  \
+/* Create rational-rate resampler object from filter prototype to       */  \
+/* resample at an exact rate P/Q                                        */  \
 /*  _P      : interpolation factor,                     P > 0           */  \
 /*  _Q      : decimation factor,                        Q > 0           */  \
 /*  _m      : filter semi-length (delay),               0 < _m          */  \
@@ -3678,10 +3679,11 @@ RRESAMP() RRESAMP(_create)(unsigned int _P,                                 \
                            float        _bw,                                \
                            float        _As);                               \
                                                                             \
-/* Create rational resampler object with a specified input resampling   */  \
-/* rate and default parameters. This is a simplified method to provide  */  \
-/* a basic resampler with a baseline set of parameters, abstracting     */  \
-/* away some of the complexities with the filterbank design.            */  \
+/* Create rational resampler object with a specified resampling rate of */  \
+/* exactly P/Q with default parameters. This is a simplified method to  */  \
+/* provide a basic resampler with a baseline set of parameters,         */  \
+/* abstracting away some of the complexities with the filterbank        */  \
+/* design.                                                              */  \
 /* The default parameters are                                           */  \
 /*  m    = 12    (filter semi-length),                                  */  \
 /*  bw   = 0.5   (filter bandwidth), and                                */  \
@@ -3715,7 +3717,7 @@ void RRESAMP(_get_scale)(RRESAMP() _q,                                      \
 /* Get resampler delay (filter semi-length \(m\))                       */  \
 unsigned int RRESAMP(_get_delay)(RRESAMP() _q);                             \
                                                                             \
-/* Get interpolation factor of resampler, \(Q\), after removing         */  \
+/* Get interpolation factor of resampler, \(P\), after removing         */  \
 /* greatest common divisor                                              */  \
 unsigned int RRESAMP(_get_interp)(RRESAMP() _q);                            \
                                                                             \
@@ -3723,14 +3725,14 @@ unsigned int RRESAMP(_get_interp)(RRESAMP() _q);                            \
 /* greatest common divisor                                              */  \
 unsigned int RRESAMP(_get_decim)(RRESAMP() _q);                             \
                                                                             \
-/* Get rate of resampler, \(r = Q/P\)                                   */  \
+/* Get rate of resampler, \(r = P/Q\)                                   */  \
 float RRESAMP(_get_rate)(RRESAMP() _q);                                     \
                                                                             \
 /* Execute rational-rate resampler on a block of input samples and      */  \
 /* store the resulting samples in the output array.                     */  \
 /*  _q  : resamp object                                                 */  \
-/*  _x  : input sample array, [size: P x 1]                             */  \
-/*  _y  : output sample array [size: Q x 1]                             */  \
+/*  _x  : input sample array, [size: Q x 1]                             */  \
+/*  _y  : output sample array [size: P x 1]                             */  \
 void RRESAMP(_execute)(RRESAMP()       _q,                                  \
                         TI *           _x,                                  \
                         TO *           _y);                                 \

@@ -38,8 +38,8 @@ void test_harness_rresamp_crcf(unsigned int _P,
 {
     // target about 1500 max samples
     unsigned int  n  = 1500 / max(_P,_Q);
-    unsigned int  nx = n * _P;  // number of input samples
-    unsigned int  ny = n * _Q;  // number of output samples
+    unsigned int  ny = n * _P;  // number of output samples
+    unsigned int  nx = n * _Q;  // number of input samples
 
     // buffers
     float complex x[nx];        // input sample buffer
@@ -52,8 +52,8 @@ void test_harness_rresamp_crcf(unsigned int _P,
     // generate input signal (windowed sinusoid)
     unsigned int i;
     float        wsum = 0.0f;
-    unsigned int wlen = (n - _m)*_P;
-    float        fx = min(0.5*M_SQRT1_2, 0.1*r/sqrt(5.0f)); // input tone frequency
+    unsigned int wlen = (n - _m)*_Q;
+    float        fx = 0.25f*(r > 1.0f ? 1.0f : r);   // input tone frequency
     for (i=0; i<nx; i++) {
         // compute window
         float w = i < wlen ? kaiser(i, wlen, 10.0f, 0.0f) : 0.0f;
@@ -67,7 +67,7 @@ void test_harness_rresamp_crcf(unsigned int _P,
 
     // resample input in blocks
     for (i=0; i<n; i++)
-        rresamp_crcf_execute(q, &x[i*_P], &y[i*_Q]);
+        rresamp_crcf_execute(q, &x[i*_Q], &y[i*_P]);
 
     // clean up allocated objects
     rresamp_crcf_destroy(q);
@@ -116,7 +116,7 @@ void test_harness_rresamp_crcf(unsigned int _P,
     if (liquid_autotest_verbose) {
         // print results
         printf("test_harness_rresamp_crcf(P=%u, Q=%u, m=%u, A=%.3f)\n", _P, _Q, _m, _As);
-        printf("  desired resampling rate   :   %12.8f = %u / %u\n", r, _Q, _P);
+        printf("  desired resampling rate   :   %12.8f = %u / %u\n", r, _P, _Q);
         printf("  frequency (input)         :   %12.8f / Fs\n", fx);
         printf("  peak spectrum             :   %12.8f dB (expected 0.0 dB)\n", Ypeak);
         printf("  peak frequency            :   %12.8f    (expected %-12.8f)\n", fpeak, fy);
