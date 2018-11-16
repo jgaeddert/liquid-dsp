@@ -34,19 +34,19 @@
 // include proper SIMD extensions for x86 platforms
 // NOTE: these pre-processor macros are defined in config.h
 
-#if HAVE_MMINTRIN_H
+#if HAVE_MMX && HAVE_MMINTRIN_H
 #include <mmintrin.h>   // MMX
 #endif
 
-#if HAVE_XMMINTRIN_H
+#if HAVE_SSE && HAVE_XMMINTRIN_H
 #include <xmmintrin.h>  // SSE
 #endif
 
-#if HAVE_EMMINTRIN_H
+#if HAVE_SSE2 && HAVE_EMMINTRIN_H
 #include <emmintrin.h>  // SSE2
 #endif
 
-#if HAVE_PMMINTRIN_H
+#if HAVE_SSE3 && HAVE_PMMINTRIN_H
 #include <pmmintrin.h>  // SSE3
 #endif
 
@@ -197,7 +197,7 @@ void dotprod_rrrf_execute_mmx(dotprod_rrrf _q,
     // aligned output array
     float w[4] __attribute__((aligned(16)));
 
-#if HAVE_PMMINTRIN_H
+#if HAVE_SSE3 && HAVE_PMMINTRIN_H
     // fold down into single value
     __m128 z = _mm_setzero_ps();
     sum = _mm_hadd_ps(sum, z);
@@ -275,7 +275,7 @@ void dotprod_rrrf_execute_mmx4(dotprod_rrrf _q,
     // aligned output array
     float w[4] __attribute__((aligned(16)));
 
-#if HAVE_PMMINTRIN_H
+#if HAVE_SSE3 && HAVE_PMMINTRIN_H
     // SSE3: fold down to single value using _mm_hadd_ps()
     __m128 z = _mm_setzero_ps();
     sum0 = _mm_hadd_ps(sum0, z);
