@@ -5132,7 +5132,7 @@ void PRESYNC(_push)(PRESYNC() _q,                                           \
 /* Correlate original sequence with internal input buffer               */  \
 /*  _q          : pre-demod synchronizer object                         */  \
 /*  _rxy        : output cross correlation                              */  \
-/*  _dphi_hat   : output frequency offset estiamte                      */  \
+/*  _dphi_hat   : output frequency offset estimate                      */  \
 void PRESYNC(_execute)(PRESYNC() _q,                                        \
                        TO *      _rxy,                                      \
                        float *   _dphi_hat);                                \

@@ -142,7 +142,7 @@ MSRESAMP2() MSRESAMP2(_create)(int          _type,
         f0 = 0.5f*f0;   // update center frequency
         fc = 0.5f*fc;   // update cutoff frequency
 
-        // estiamte required filter length
+        // estimate required filter length
         float ft = (0.5f - fc)/2.0f;
         unsigned int h_len = estimate_req_filter_len(ft, q->As);
         unsigned int m = ceilf( (float)(h_len-1) / 4.0f );
