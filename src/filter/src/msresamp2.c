@@ -209,8 +209,12 @@ void MSRESAMP2(_print)(MSRESAMP2() _q)
     // print each stage
     unsigned int i;
     for (i=0; i<_q->num_stages; i++) {
+        // get index of stage (reversed for decimator)
+        unsigned int g = _q->type == LIQUID_RESAMP_INTERP ? i : _q->num_stages-i-1;
+
+        // print stage information
         printf("    stage[%2u]  {m=%3u, As=%6.2f dB, fc=%6.3f, f0=%6.3f}\n",
-                    i, _q->m_stage[i], _q->As_stage[i], _q->fc_stage[i], _q->f0_stage[i]);
+                    i, _q->m_stage[g], _q->As_stage[g], _q->fc_stage[g], _q->f0_stage[g]);
     }
 }
 
@@ -330,9 +334,8 @@ void MSRESAMP2(_interp_execute)(MSRESAMP2() _q,
 
         // run half-band stages as interpolators
         unsigned int i;
-        unsigned int g = s; //_q->num_stages-s-1;    // reversed resampler index
         for (i=0; i<k; i++)
-            RESAMP2(_interp_execute)(_q->resamp2[g], b0[i], &b1[2*i]);
+            RESAMP2(_interp_execute)(_q->resamp2[i], b0[i], &b1[2*i]);
 
         // toggle output buffer pointers
         b0 = (s % 2) == 0 ? _q->buffer1 : _q->buffer0;
