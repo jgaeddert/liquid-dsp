@@ -335,7 +335,7 @@ void MSRESAMP2(_interp_execute)(MSRESAMP2() _q,
         // run half-band stages as interpolators
         unsigned int i;
         for (i=0; i<k; i++)
-            RESAMP2(_interp_execute)(_q->resamp2[i], b0[i], &b1[2*i]);
+            RESAMP2(_interp_execute)(_q->resamp2[s], b0[i], &b1[2*i]);
 
         // toggle output buffer pointers
         b0 = (s % 2) == 0 ? _q->buffer1 : _q->buffer0;
