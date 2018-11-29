@@ -3905,7 +3905,7 @@ MSRESAMP2() MSRESAMP2(_create)(int          _type,                          \
                                float        _f0,                            \
                                float        _As);                           \
                                                                             \
-/* Destroy multi-stage half-bandresampler, freeing all internal memory  */  \
+/* Destroy multi-stage half-band resampler, freeing all internal memory */  \
 void MSRESAMP2(_destroy)(MSRESAMP2() _q);                                   \
                                                                             \
 /* Print msresamp object internals to stdout                            */  \
