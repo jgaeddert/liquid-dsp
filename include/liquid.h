@@ -3914,6 +3914,15 @@ void MSRESAMP2(_print)(MSRESAMP2() _q);                                     \
 /* Reset msresamp object internal state                                 */  \
 void MSRESAMP2(_reset)(MSRESAMP2() _q);                                     \
                                                                             \
+/* Get multi-stage half-band resampling rate                            */  \
+float MSRESAMP2(_get_rate)(MSRESAMP2() _q);                                 \
+                                                                            \
+/* Get number of half-band resampling stages in object                  */  \
+unsigned int MSRESAMP2(_get_num_stages)(MSRESAMP2() _q);                    \
+                                                                            \
+/* Get resampling type (LIQUID_RESAMP_DECIM, LIQUID_RESAMP_INTERP)      */  \
+int MSRESAMP2(_get_type)(MSRESAMP2() _q);                                   \
+                                                                            \
 /* Get group delay (number of output samples)                           */  \
 float MSRESAMP2(_get_delay)(MSRESAMP2() _q);                                \
                                                                             \
