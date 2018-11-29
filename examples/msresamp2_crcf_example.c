@@ -32,7 +32,7 @@ int main(int argc, char*argv[])
     float r=0.25f;          // resampling rate (output/input)
     float As=60.0f;         // resampling filter stop-band attenuation [dB]
     unsigned int n=120;     // number of low-rate samples
-    float fc=0.1f;          // complex sinusoid frequency
+    float fc=0.4f;          // complex sinusoid frequency (relative to lower sample rate)
     float f0=0.f;           // center frequency
 
     int dopt;
@@ -95,7 +95,7 @@ int main(int argc, char*argv[])
         float w = i < wlen ? kaiser(i, wlen, 10.0f, 0.0f) : 0.0f;
 
         // apply window to complex sinusoid
-        x[i] = cexpf(_Complex_I*2*M_PI*0.37021f*fc*i) * w;
+        x[i] = cexpf(_Complex_I*2*M_PI*0.1237021f*fc*i) * w;
 
         // accumulate window
         wsum += w;

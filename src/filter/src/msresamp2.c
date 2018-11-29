@@ -96,10 +96,10 @@ MSRESAMP2() MSRESAMP2(_create)(int          _type,
     if ( _fc <= 0.0f || _fc >= 0.5f ) {
         fprintf(stderr,"error: msresamp2_%s_create(), cut-off frequency must be in (0,0.5)\n", EXTENSION_FULL);
         exit(1);
-    } else if ( _fc > 0.45f ) {
-        fprintf(stderr,"warning: msresamp2_%s_create(), cut-off frequency greater than 0.45\n", EXTENSION_FULL);
-        fprintf(stderr,"    >> truncating to 0.45\n");
-        _fc = 0.45f;
+    } else if ( _fc > 0.499f ) {
+        fprintf(stderr,"warning: msresamp2_%s_create(), cut-off frequency greater than 0.499\n", EXTENSION_FULL);
+        fprintf(stderr,"    >> truncating to 0.499\n");
+        _fc = 0.499f;
     }
 
     // check center frequency
@@ -135,19 +135,20 @@ MSRESAMP2() MSRESAMP2(_create)(int          _type,
     q->m_stage  = (unsigned int*) malloc(q->num_stages*sizeof(unsigned int));
 
     // determine half-band resampler parameters
-    float fc = q->fc;
-    float f0 = q->f0;
+    float fc = q->fc;   // cut-off frequency
+    float f0 = q->f0;   // center frequency
     for (i=0; i<q->num_stages; i++) {
         // compute parameters based on filter requirements;
-        f0 = 0.5f*f0;   // update center frequency
-        fc = 0.5f*fc;   // update cutoff frequency
+        fc = (i==1) ? (0.5-fc)/2.0f : 0.5f*fc;  // cut-off frequency
+        f0 = 0.5f*f0;                           // center frequency
+        float ft = 2*(0.25f - fc);              // two-sided transition bandwidth
 
         // estimate required filter length
-        float ft = (0.5f - fc)/2.0f;
         unsigned int h_len = estimate_req_filter_len(ft, q->As);
         unsigned int m = ceilf( (float)(h_len-1) / 4.0f );
 
-        q->fc_stage[i] = fc;            // filter cut-of
+        //printf(" >>> fc: %8.6f, ft: %8.6f, h_len : %u (m=%u)\n", fc, ft, h_len, m);
+        q->fc_stage[i] = fc;            // filter pass-band
         q->f0_stage[i] = f0;            // filter center frequency
         q->As_stage[i] = q->As;         // filter stop-band attenuation
         q->m_stage[i]  = m < 3 ? 3 : m; // minimum 3
@@ -203,6 +204,7 @@ void MSRESAMP2(_print)(MSRESAMP2() _q)
     printf("    cut-off frequency, fc   : %12.8f Fs\n",  _q->fc);
     printf("    center frequency, f0    : %12.8f Fs\n",  _q->f0);
     printf("    stop-band attenuation   : %.2f dB\n",    _q->As);
+    printf("    delay (total)           : %.3f samples\n", MSRESAMP2(_get_delay)(_q));
 
     // print each stage
     unsigned int i;
@@ -238,7 +240,7 @@ float MSRESAMP2(_get_delay)(MSRESAMP2() _q)
         // interpolator
         for (i=0; i<_q->num_stages; i++) {
             // filter semi-length
-            unsigned int m = _q->m_stage[i];
+            unsigned int m = _q->m_stage[_q->num_stages-i-1];
 
             delay *= 0.5f;
             delay += m;
@@ -247,7 +249,7 @@ float MSRESAMP2(_get_delay)(MSRESAMP2() _q)
         // decimator
         for (i=0; i<_q->num_stages; i++) {
             // filter semi-length
-            unsigned int m = _q->m_stage[_q->num_stages-i-1];
+            unsigned int m = _q->m_stage[i];
 
             delay *= 2;
             delay += 2*m - 1;
@@ -310,7 +312,7 @@ void MSRESAMP2(_interp_execute)(MSRESAMP2() _q,
 
         // run half-band stages as interpolators
         unsigned int i;
-        unsigned int g = _q->num_stages-s-1;    // reversed resampler index
+        unsigned int g = s; //_q->num_stages-s-1;    // reversed resampler index
         for (i=0; i<k; i++)
             RESAMP2(_interp_execute)(_q->resamp2[g], b0[i], &b1[2*i]);
 
@@ -340,8 +342,9 @@ void MSRESAMP2(_decim_execute)(MSRESAMP2() _q,
 
         // run half-band stages as decimators
         unsigned int i;
+        unsigned int g = _q->num_stages-s-1;    // reversed resampler index
         for (i=0; i<k; i++)
-            RESAMP2(_decim_execute)(_q->resamp2[s], &b0[2*i], &b1[i]);
+            RESAMP2(_decim_execute)(_q->resamp2[g], &b0[2*i], &b1[i]);
 
         // toggle output buffer pointers
         b0 = (s % 2) == 0 ? _q->buffer1 : _q->buffer0;
