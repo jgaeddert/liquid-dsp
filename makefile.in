@@ -58,7 +58,7 @@ MV		:= mv -f
 RM		:= rm -f
 SED		:= @SED@
 GREP		:= @GREP@
-AR		:= @AR@
+LIBTOOL		:= @LIBTOOL@
 RANLIB		:= @RANLIB@
 
 # flags
@@ -68,7 +68,7 @@ CPPFLAGS	= @CPPFLAGS@ $(INCLUDE_CFLAGS)
 CFLAGS		= $(CONFIG_CFLAGS) -Wall -fPIC
 LDFLAGS		= @LDFLAGS@
 LIBS		= @LIBS@
-ARFLAGS		= r
+LIBTOOL_FLAGS	= -static
 PATHSEP		= /
 
 # 
@@ -1171,8 +1171,7 @@ SHARED_LIB	= @SH_LIB@
 
 # liquid library definition
 libliquid.a: $(objects)
-	$(AR) $(ARFLAGS) $@ $^
-	$(RANLIB) $@
+	$(LIBTOOL) $(LIBTOOL_FLAGS) -o $@ $^
 
 # darwin
 #
