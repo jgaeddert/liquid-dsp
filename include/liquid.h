@@ -3905,7 +3905,7 @@ MSRESAMP2() MSRESAMP2(_create)(int          _type,                          \
                                float        _f0,                            \
                                float        _As);                           \
                                                                             \
-/* Destroy multi-stage half-bandresampler, freeing all internal memory  */  \
+/* Destroy multi-stage half-band resampler, freeing all internal memory */  \
 void MSRESAMP2(_destroy)(MSRESAMP2() _q);                                   \
                                                                             \
 /* Print msresamp object internals to stdout                            */  \
@@ -3913,6 +3913,15 @@ void MSRESAMP2(_print)(MSRESAMP2() _q);                                     \
                                                                             \
 /* Reset msresamp object internal state                                 */  \
 void MSRESAMP2(_reset)(MSRESAMP2() _q);                                     \
+                                                                            \
+/* Get multi-stage half-band resampling rate                            */  \
+float MSRESAMP2(_get_rate)(MSRESAMP2() _q);                                 \
+                                                                            \
+/* Get number of half-band resampling stages in object                  */  \
+unsigned int MSRESAMP2(_get_num_stages)(MSRESAMP2() _q);                    \
+                                                                            \
+/* Get resampling type (LIQUID_RESAMP_DECIM, LIQUID_RESAMP_INTERP)      */  \
+int MSRESAMP2(_get_type)(MSRESAMP2() _q);                                   \
                                                                             \
 /* Get group delay (number of output samples)                           */  \
 float MSRESAMP2(_get_delay)(MSRESAMP2() _q);                                \
@@ -5132,7 +5141,7 @@ void PRESYNC(_push)(PRESYNC() _q,                                           \
 /* Correlate original sequence with internal input buffer               */  \
 /*  _q          : pre-demod synchronizer object                         */  \
 /*  _rxy        : output cross correlation                              */  \
-/*  _dphi_hat   : output frequency offset estiamte                      */  \
+/*  _dphi_hat   : output frequency offset estimate                      */  \
 void PRESYNC(_execute)(PRESYNC() _q,                                        \
                        TO *      _rxy,                                      \
                        float *   _dphi_hat);                                \

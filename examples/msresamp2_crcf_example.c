@@ -18,22 +18,20 @@
 void usage()
 {
     printf("Usage: %s [OPTION]\n", __FILE__);
-    printf("  h     : print help\n");
-    printf("  r     : resampling rate (output/input), default: 0.25\n");
-    printf("  s     : stop-band attenuation [dB],     default: 60\n");
-    printf("  n     : number of low-rate samples,     default: 120\n");
-    printf("  f     : pass-band cut-off frequency,    default: 0.1\n");
-    printf("  c     : center frequency of filter,     default: 0\n");
+    printf(" -h         : print help\n");
+    printf(" -r <rate>  : resampling rate (output/input), default: 0.25\n");
+    printf(" -s <atten> : stop-band attenuation [dB],     default: 60\n");
+    printf(" -n <num>   : number of low-rate samples,     default: 256\n");
+    printf(" -f <freq>  : pass-band cut-off frequency,    default: 0.45\n");
 }
 
 int main(int argc, char*argv[])
 {
     // options
-    float r=0.25f;          // resampling rate (output/input)
-    float As=60.0f;         // resampling filter stop-band attenuation [dB]
-    unsigned int n=120;     // number of low-rate samples
-    float fc=0.1f;          // complex sinusoid frequency
-    float f0=0.f;           // center frequency
+    float        r  = 0.25f;    // resampling rate (output/input)
+    float        As = 60.0f;    // resampling filter stop-band attenuation [dB]
+    unsigned int n  =   128;    // number of low-rate samples
+    float        fc = 0.45f;    // filter pass-band cut-off frequency
 
     int dopt;
     while ((dopt = getopt(argc,argv,"hr:s:n:f:")) != EOF) {
@@ -43,7 +41,6 @@ int main(int argc, char*argv[])
         case 's': As      = atof(optarg); break;
         case 'n': n       = atoi(optarg); break;
         case 'f': fc      = atof(optarg); break;
-        case 'c': f0      = atof(optarg); break;
         default:
             exit(1);
         }
@@ -74,9 +71,10 @@ int main(int argc, char*argv[])
     unsigned int i;
 
     // create multi-stage arbitrary resampler object
-    msresamp2_crcf q = msresamp2_crcf_create(type, num_stages, fc, f0, As);
+    msresamp2_crcf q = msresamp2_crcf_create(type, num_stages, fc, 0.0f, As);
     msresamp2_crcf_print(q);
     float delay = msresamp2_crcf_get_delay(q);
+    r           = msresamp2_crcf_get_rate(q);
 
     // number of input samples (zero-padded)
     unsigned int M  = (1 << num_stages);    // integer resampling rate
@@ -88,14 +86,15 @@ int main(int argc, char*argv[])
     float complex x[nx];
     float complex y[ny];
 
-    // generate input signal
-    float wsum = 0.0f;
+    // generate input signal: tone just before the edge of filter band
+    float ftone = 0.95 * fc * ((type == LIQUID_RESAMP_DECIM) ? r : 1);
+    float wsum  = 0.0f;
     for (i=0; i<nx; i++) {
         // compute window
         float w = i < wlen ? kaiser(i, wlen, 10.0f, 0.0f) : 0.0f;
 
         // apply window to complex sinusoid
-        x[i] = cexpf(_Complex_I*2*M_PI*0.37021f*fc*i) * w;
+        x[i] = cexpf(_Complex_I*2*M_PI*ftone*i) * w;
 
         // accumulate window
         wsum += w;
@@ -116,11 +115,11 @@ int main(int argc, char*argv[])
 
     // check that the actual resampling rate is close to the target
     float r_actual = (float)ny / (float)nx;
-    float fy = fc / r;      // expected output frequency
+    float fy = ftone / r;      // expected output frequency
 
     // run FFT and ensure that carrier has moved and that image
     // frequencies and distortion have been adequately suppressed
-    unsigned int nfft = 1 << liquid_nextpow2(n*M);
+    unsigned int nfft = 4 << liquid_nextpow2(n*M);
     float complex yfft[nfft];   // fft input
     float complex Yfft[nfft];   // fft output
     for (i=0; i<nfft; i++)
@@ -225,7 +224,7 @@ int main(int argc, char*argv[])
     fprintf(fid,"plot(fx,X,'LineWidth',1,  'Color',[0.5 0.5 0.5],...\n");
     fprintf(fid,"     fy,Y,'LineWidth',1.5,'Color',[0.1 0.3 0.5]);\n");
     fprintf(fid,"grid on;\n");
-    fprintf(fid,"xlabel('normalized frequency');\n");
+    fprintf(fid,"xlabel('Frequency (normalized to original sample rate)');\n");
     fprintf(fid,"ylabel('PSD [dB]');\n");
     fprintf(fid,"legend('original','resampled','location','northeast');");
     fprintf(fid,"axis([-0.5 0.5 -120 20]);\n");
