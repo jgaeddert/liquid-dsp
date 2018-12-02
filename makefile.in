@@ -58,7 +58,7 @@ MV		:= mv -f
 RM		:= rm -f
 SED		:= @SED@
 GREP		:= @GREP@
-ARTOOL		:= @ARTOOL@
+AR		:= @AR@
 LIBTOOL		:= @LIBTOOL@
 RANLIB		:= @RANLIB@
 
@@ -1184,7 +1184,8 @@ libliquid.dylib: $(objects)
 # linux, et al
 #
 libliquid.a: $(objects)
-	$(AR) r $@ $^
+	${AR} r $@ $^
+	${RANLIB} $@
 
 libliquid.so: libliquid.a
 	$(CC) $(CFLAGS) $(LDFLAGS) -shared -Xlinker -soname=$@ -o $@ -Wl,-whole-archive $^ -Wl,-no-whole-archive $(LIBS)
