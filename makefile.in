@@ -58,6 +58,7 @@ MV		:= mv -f
 RM		:= rm -f
 SED		:= @SED@
 GREP		:= @GREP@
+ARTOOL		:= @ARTOOL@
 LIBTOOL		:= @LIBTOOL@
 RANLIB		:= @RANLIB@
 
@@ -68,7 +69,6 @@ CPPFLAGS	= @CPPFLAGS@ $(INCLUDE_CFLAGS)
 CFLAGS		= $(CONFIG_CFLAGS) -Wall -fPIC
 LDFLAGS		= @LDFLAGS@
 LIBS		= @LIBS@
-LIBTOOL_FLAGS	= -static
 PATHSEP		= /
 
 # 
@@ -1167,23 +1167,30 @@ benchmark_sources :=						\
 .PHONY: all
 
 # Shared library
+ARCHIVE_LIB	= @AR_LIB@
 SHARED_LIB	= @SH_LIB@
 
-# liquid library definition
-libliquid.a: $(objects)
-	$(LIBTOOL) $(LIBTOOL_FLAGS) -o $@ $^
-
+#
 # darwin
 #
+libliquid.ar: $(objects)
+	${LIBTOOL} -static -o $@ $^
+
 # gcc -dynamiclib -install_name libliquid.dylib -o libliquid.dylib libmodem.a libutility.a 
 libliquid.dylib: $(objects)
 	$(CC) -dynamiclib -install_name $@ -o $@ $^ $(LDFLAGS) $(LIBS)
 
+#
 # linux, et al
+#
+libliquid.a: $(objects)
+	$(AR) r $@ $^
+
 libliquid.so: libliquid.a
 	$(CC) $(CFLAGS) $(LDFLAGS) -shared -Xlinker -soname=$@ -o $@ -Wl,-whole-archive $^ -Wl,-no-whole-archive $(LIBS)
 
-all: libliquid.a $(SHARED_LIB)
+# static archive and library objects
+all: ${ARCHIVE_LIB} ${SHARED_LIB}
 
 ##
 ## TARGET : help      - print list of targets
@@ -1203,7 +1210,7 @@ install: all
 	@echo ""
 	mkdir -p $(DESTDIR)$(exec_prefix)$(libdir)
 	mkdir -p $(DESTDIR)$(prefix)/include/liquid
-	install -m 644 -p $(SHARED_LIB) libliquid.a $(DESTDIR)$(exec_prefix)$(libdir)
+	install -m 644 -p ${ARCHIVE_LIB} ${SHARED_LIB} $(DESTDIR)$(exec_prefix)$(libdir)
 	install -m 644 -p $(addprefix include/,$(headers_install)) $(DESTDIR)$(prefix)/include/liquid
 	@echo ""
 	@echo "---------------------------------------------------------"
@@ -1226,8 +1233,8 @@ install: all
 uninstall:
 	@echo "uninstalling..."
 	$(RM) $(addprefix $(DESTDIR)$(prefix)/include/liquid/, $(headers_install))
-	$(RM) $(DESTDIR)$(exec_prefix)$(libdir)/libliquid.a
-	$(RM) $(DESTDIR)$(exec_prefix)$(libdir)/$(SHARED_LIB)
+	$(RM) $(DESTDIR)$(exec_prefix)$(libdir)/${ARCHIVE_LIB}
+	$(RM) $(DESTDIR)$(exec_prefix)$(libdir)/${SHARED_LIB}
 	@echo "done."
 
 ##
@@ -1281,7 +1288,7 @@ $(autotest_prog).o : autotest/autotest.c autotest/autotest.h autotest_include.h
 
 # link the autotest program with the objects
 # NOTE: linked libraries must come _after_ the target program
-$(autotest_prog): $(autotest_prog).o $(autotest_obj) $(autotest_extra_obj) autotest/autotestlib.o libliquid.a
+$(autotest_prog): $(autotest_prog).o $(autotest_obj) $(autotest_extra_obj) autotest/autotestlib.o ${ARCHIVE_LIB}
 	$(CC) $(CFLAGS) $(LDFLAGS) $^ -o $@ $(LIBS)
 
 # run the autotest program
@@ -1334,7 +1341,7 @@ $(bench_prog).o: bench/bench.c benchmark_include.h bench/bench.c
 
 # link the benchmark program with the library objects
 # NOTE: linked libraries must come _after_ the target program
-$(bench_prog): $(bench_prog).o $(benchmark_obj) $(benchmark_extra_obj) libliquid.a
+$(bench_prog): $(bench_prog).o $(benchmark_obj) $(benchmark_extra_obj) ${ARCHIVE_LIB}
 	$(CC) $(BENCH_CFLAGS) $(BENCH_LDFLAGS) $^ -o $(bench_prog) $(BENCH_LIBS)
 
 # run the benchmark program
@@ -1349,7 +1356,7 @@ scripts/benchmark_compare : % : %.c
 bench/fftbench.o : %.o : %.c
 	$(CC) $(BENCH_CPPFLAGS) $(BENCH_CFLAGS) $< -c -o $@
 
-bench/fftbench : % : %.o libliquid.a
+bench/fftbench : % : %.o ${ARCHIVE_LIB}
 	$(CC) $(BENCH_CFLAGS) $(BENCH_LDFLAGS) $^ -o $@ $(BENCH_LIBS)
 
 # clean up the generated files
@@ -1517,7 +1524,7 @@ examples: $(example_programs)
 # NOTE: linked libraries must come _after_ the target program
 $(example_objects): %.o : %.c
 
-$(example_programs): % : %.o libliquid.a
+$(example_programs): % : %.o ${ARCHIVE_LIB}
 	$(CC) $(CFLAGS) $(LDFLAGS) $^ -o $@ $(LIBS)
 
 # clean examples
@@ -1640,7 +1647,7 @@ SANDBOX_LDFLAGS = $(LDFLAGS) -lfftw3f
 # NOTE: linked libraries must come _after_ the target program
 $(sandbox_objects): %.o : %.c
 
-$(sandbox_programs): % : %.o libliquid.a
+$(sandbox_programs): % : %.o ${ARCHIVE_LIB}
 	$(CC) $(CFLAGS) $^ -o $@ $(LDFLAGS) $(LIBS)
 
 # clean sandbox
@@ -1658,7 +1665,7 @@ tools: $(tools_programs)
 
 $(tools_objects): %.o: %.c
 
-$(tools_programs): % : %.o libliquid.a
+$(tools_programs): % : %.o ${ARCHIVE_LIB}
 	$(CC) $(CFLAGS) $^ -o $@ $(LDFLAGS)
 
 clean-tools:
@@ -1702,7 +1709,7 @@ clean-modules:
 	$(RM) src/libliquid.o
 
 clean: clean-modules clean-autoscript clean-check clean-bench clean-examples clean-sandbox clean-tools
-	$(RM) libliquid.a ${SHARED_LIB} $(extra_clean)
+	$(RM) ${ARCHIVE_LIB} ${SHARED_LIB} $(extra_clean)
 
 ##
 ## TARGET : distclean - removes everything except the originally distributed files

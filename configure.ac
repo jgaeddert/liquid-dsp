@@ -75,10 +75,6 @@ AC_PROG_SED
 AC_PROG_GREP
 AC_PROG_INSTALL
 AC_PROG_RANLIB
-AN_MAKEVAR([LIBTOOL], [AC_PROG_LIBTOOL])
-AN_PROGRAM([libtool], [AC_PROG_LIBTOOL])
-AC_DEFUN([AC_PROG_LIBTOOL], [AC_CHECK_TOOL(LIBTOOL, libtool, :)])
-AC_PROG_LIBTOOL
 
 # Check for necessary libraries, library functions
 AC_FUNC_ERROR_AT_LINE
@@ -238,10 +234,22 @@ MLIBS_VECTOR="src/vector/src/vectorf_add.port.o   \
 
 case $target_os in
 darwin*)
+    AN_MAKEVAR([LIBTOOL], [AC_PROG_LIBTOOL])
+    AN_PROGRAM([libtool], [AC_PROG_LIBTOOL])
+    AC_DEFUN([AC_PROG_LIBTOOL], [AC_CHECK_TOOL(LIBTOOL, libtool, :)])
+    AC_PROG_LIBTOOL
+
+    AR_LIB=libliquid.ar
     SH_LIB=libliquid.dylib
     REBIND=""
     ;;
 *)
+    AN_MAKEVAR([AR], [AC_PROG_AR])
+    AN_PROGRAM([ar], [AC_PROG_AR])
+    AC_DEFUN([AC_PROG_AR], [AC_CHECK_TOOL(AR, ar, :)])
+    AC_PROG_AR
+
+    AR_LIB=libliquid.a
     SH_LIB=libliquid.so
     REBIND=ldconfig
     ;;
@@ -254,6 +262,7 @@ AC_SUBST(LIBS)                      # shared libraries (-lc, -lm, etc.)
 AC_SUBST(MLIBS_DOTPROD)             # 
 AC_SUBST(MLIBS_VECTOR)              #
 
+AC_SUBST(AR_LIB)                    # archive library
 AC_SUBST(SH_LIB)                    # output shared library target
 AC_SUBST(REBIND)                    # rebinding tool (e.g. ldconfig)
 AC_SUBST(ARCH_OPTION)               # compiler architecture option
