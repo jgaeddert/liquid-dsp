@@ -1045,9 +1045,9 @@ utility_autotests :=						\
 	src/utility/tests/pack_bytes_autotest.c			\
 	src/utility/tests/shift_array_autotest.c		\
 
-
 # benchmarks
-utility_benchmarks :=
+utility_benchmarks :=						\
+	src/utility/bench/byte_utilities_benchmark.c		\
 
 
 #
