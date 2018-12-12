@@ -118,7 +118,7 @@ FIRDECIM() FIRDECIM(_create_kaiser)(unsigned int _M,
         hc[i] = hf[i];
     
     // return decimator object
-    return FIRDECIM(_create)(_M, hc, 2*_M*_m);
+    return FIRDECIM(_create)(_M, hc, h_len);
 }
 
 // create square-root Nyquist decimator
