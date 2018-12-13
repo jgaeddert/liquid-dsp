@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2015 Joseph Gaeddert
+ * Copyright (c) 2007 - 2018 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -31,6 +31,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <getopt.h>
+#include <time.h>
 #include "autotest/autotest.h"
 
 void usage()
@@ -42,6 +43,7 @@ void usage()
     printf("  -t <id>       run specific test\n");
     printf("  -p <id>       run specific package\n");
     printf("  -r            run all tests, random order\n");
+    printf("  -R <seed>     specify random seed value\n");
     printf("  -L            lists all scripts\n");
     printf("  -l            lists all packages\n");
     printf("  -x            stop on fail\n");
@@ -115,9 +117,6 @@ void print_test_list(void);
 // print list of packages
 void print_package_list(void);
 
-// print basic autotest results to stdout
-int export_results(char * _filename);
-
 // main function
 int main(int argc, char *argv[])
 {
@@ -134,7 +133,7 @@ int main(int argc, char *argv[])
     unsigned int package_id         = 0;
     int          verbose            = 1;
     int          stop_on_fail       = 0;
-    int          rseed              = 0;
+    unsigned int rseed              = time(NULL);
     char         search_string[128] = "";
     char         filename[256]      = "";
 
@@ -142,7 +141,7 @@ int main(int argc, char *argv[])
 
     // get input options
     int d;
-    while((d = getopt(argc,argv,"ht:p:rLlxs:vqo:")) != EOF){
+    while((d = getopt(argc,argv,"ht:p:rR:Llxs:vqo:")) != EOF){
         switch (d) {
         case 'h':
             usage();
@@ -157,6 +156,9 @@ int main(int argc, char *argv[])
             break;
         case 'r':
             mode = RUN_ALL_RANDOM;
+            break;
+        case 'R':
+            rseed = atoi(optarg);
             break;
         case 'L':
             // list packages, scripts and exit
@@ -190,6 +192,9 @@ int main(int argc, char *argv[])
             return 1;
         }
     }
+
+    // set random seed for repeatability
+    srand(rseed);
 
     // validate results
     if (autotest_id >= NUM_AUTOSCRIPTS) {
@@ -269,13 +274,62 @@ int main(int argc, char *argv[])
     if (liquid_autotest_verbose)
         print_unstable_tests();
 
+    printf("autotetst seed: %u\n", rseed);
     autotest_print_results();
 
-    // export results
-    if (strcmp(filename,"")!=0)
-        export_results(filename);
+    // program return value
+    int rc = liquid_autotest_num_failed > 0 ? 1 : 0;
 
-    return 0;
+    if (strcmp(filename,"")==0)
+        return rc;
+
+    // export results to output .json file; try to open file for writing
+    FILE * fid = fopen(filename,"w");
+    if (!fid) {
+        fprintf(stderr,"error: export_results(), could not open '%s' for writing\n", filename);
+        return -1;
+    }
+
+    // print header
+    fprintf(fid,"{\n");
+    fprintf(fid,"  \"build-info\" : {},\n");
+    fprintf(fid,"  \"pass\" : %s,\n", liquid_autotest_num_failed==0 ? "true" : "false");
+    fprintf(fid,"  \"num_failed\" : %lu,\n", liquid_autotest_num_failed);
+    fprintf(fid,"  \"num_checks\" : %lu,\n", liquid_autotest_num_checks);
+    fprintf(fid,"  \"num_warnings\" : %lu,\n", liquid_autotest_num_warnings);
+    fprintf(fid,"  \"command-line\" : \"");
+    for (i=0; i<(unsigned int)argc; i++)
+        fprintf(fid," %s", argv[i]);
+    fprintf(fid,"\",\n");
+    fprintf(fid,"  \"run-mode\" : ");
+    switch (mode) {
+    case RUN_ALL:            fprintf(fid,"\"RUN_ALL\",\n");            break;
+    case RUN_ALL_RANDOM:     fprintf(fid,"\"RUN_RANDOM\",\n");         break;
+    case RUN_SINGLE_TEST:    fprintf(fid,"\"RUN_SINGLE_TEST\",\n");    break;
+    case RUN_SINGLE_PACKAGE: fprintf(fid,"\"RUN_SINGLE_PACKAGE\",\n"); break;
+    case RUN_SEARCH:         fprintf(fid,"\"RUN_SEARCH\",\n");         break;
+    default:                 fprintf(fid,"\"(unknown)\",\n");
+    }
+    fprintf(fid,"  \"rseed\" : %u,\n", rseed);
+    fprintf(fid,"  \"stop-on-fail\" : %s,\n", stop_on_fail ? "true" : "false");
+    fprintf(fid,"  \"tests\" : [\n");
+    for (i=0; i<NUM_AUTOSCRIPTS; i++) {
+        fprintf(fid,"    {\"id\":%3u, \"pass\":%s, \"num_checks\":%4lu, \"num_passed\":%4lu, \"name\":\"%s\"}%s\n",
+                scripts[i].id,
+                scripts[i].num_failed == 0 ? "true" : "false",
+                scripts[i].num_checks,
+                scripts[i].num_passed,
+                scripts[i].name,
+                i==NUM_AUTOSCRIPTS-1 ? "" : ",");
+    }
+    fprintf(fid,"  ]\n");
+    fprintf(fid,"}\n");
+    fclose(fid);
+
+    if (liquid_autotest_verbose)
+        printf("output JSON results written to %s\n", filename);
+
+    return rc;
 }
 
 // execute a specific autotest
@@ -423,42 +477,4 @@ void print_package_list(void)
         printf("%u: %s\n", packages[i].id, packages[i].name);
 }
 
-// print basic autotest results to stdout
-int export_results(char * _filename)
-{
-    // try to open file for writing
-    FILE * fid = fopen(_filename,"w");
-    if (!fid) {
-        fprintf(stderr,"error: export_results(), could not open '%s' for writing\n", _filename);
-        return -1;
-    }
-
-    // print header
-    fprintf(fid,"{\n");
-    fprintf(fid,"  \"build-info\" : {\n");
-    fprintf(fid,"  },\n");
-    fprintf(fid,"  \"tests\" : [\n");
-
-    // print each individual test as opposed to package
-    unsigned int i;
-    for (i=0; i<NUM_AUTOSCRIPTS; i++) {
-        fprintf(fid,"    {\"id\":%3u, \"pass\":%s, \"num_checks\":%4u, \"num_passed\":%4u, \"name\":\"%s\"}%s\n",
-                scripts[i].id,
-                scripts[i].num_failed == 0 ? "true" : "false",
-                scripts[i].num_checks,
-                scripts[i].num_passed,
-                scripts[i].name,
-                i==NUM_AUTOSCRIPTS-1 ? "" : ",");
-    }
-
-    fprintf(fid,"  ]\n");
-    fprintf(fid,"}\n");
-    fclose(fid);
-
-    if (liquid_autotest_verbose)
-        printf("output .json results written to %s\n", _filename);
-
-    // everything is fine
-    return 0;
-}
 

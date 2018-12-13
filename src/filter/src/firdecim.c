@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2015 Joseph Gaeddert
+ * Copyright (c) 2007 - 2018 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -32,12 +32,13 @@
 
 // decimator structure
 struct FIRDECIM(_s) {
-    TC * h;             // coefficients array
-    unsigned int h_len; // number of coefficients
-    unsigned int M;     // decimation factor
+    TC *            h;      // coefficients array
+    unsigned int    h_len;  // number of coefficients
+    unsigned int    M;      // decimation factor
 
-    WINDOW() w;         // buffer
-    DOTPROD() dp;       // vector dot product
+    WINDOW()        w;      // buffer
+    DOTPROD()       dp;     // vector dot product
+    TC              scale;  // output scaling factor
 };
 
 // create decimator object
@@ -75,8 +76,11 @@ FIRDECIM() FIRDECIM(_create)(unsigned int _M,
     // create dot product object
     q->dp = DOTPROD(_create)(q->h, q->h_len);
 
+    // set default scaling
+    q->scale = 1;
+
     // reset filter state (clear buffer)
-    FIRDECIM(_clear)(q);
+    FIRDECIM(_reset)(q);
 
     return q;
 }
@@ -118,7 +122,7 @@ FIRDECIM() FIRDECIM(_create_kaiser)(unsigned int _M,
 }
 
 // create square-root Nyquist decimator
-//  _type   :   filter type (e.g. LIQUID_RNYQUIST_RRC)
+//  _type   :   filter type (e.g. LIQUID_FIRFILT_RRC)
 //  _M      :   samples/symbol _M > 1
 //  _m      :   filter delay (symbols), _m > 0
 //  _beta   :   excess bandwidth factor, 0 < _beta < 1
@@ -174,12 +178,34 @@ void FIRDECIM(_print)(FIRDECIM() _q)
     printf("FIRDECIM() [%u] :\n", _q->M);
     printf("  window:\n");
     WINDOW(_print)(_q->w);
+    // print scaling
+    printf("  scale = ");
+    PRINTVAL_TC(_q->scale,%12.8f);
+    printf("\n");
 }
 
-// clear decimator object
-void FIRDECIM(_clear)(FIRDECIM() _q)
+// reset decimator object
+void FIRDECIM(_reset)(FIRDECIM() _q)
 {
-    WINDOW(_clear)(_q->w);
+    WINDOW(_reset)(_q->w);
+}
+
+// Set output scaling for decimator
+//  _q      : decimator object
+//  _scale  : scaling factor to apply to each output sample
+void FIRDECIM(_set_scale)(FIRDECIM() _q,
+                          TC         _scale)
+{
+    _q->scale = _scale;
+}
+
+// Get output scaling for decimator
+//  _q      : decimator object
+//  _scale  : scaling factor to apply to each output sample
+void FIRDECIM(_get_scale)(FIRDECIM() _q,
+                          TC *       _scale)
+{
+    *_scale = _q->scale;
 }
 
 // execute decimator
@@ -201,6 +227,9 @@ void FIRDECIM(_execute)(FIRDECIM() _q,
 
             // execute dot product
             DOTPROD(_execute)(_q->dp, r, _y);
+
+            // apply scaling factor
+            *_y *= _q->scale;
         }
     }
 }

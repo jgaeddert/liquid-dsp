@@ -70,6 +70,9 @@ void fec_conv_destroy(fec _q)
     if (_q->vp != NULL)
         _q->delete_viterbi(_q->vp);
 
+    if (_q->enc_bits != NULL)
+        free(_q->enc_bits);
+
     free(_q);
 }
 

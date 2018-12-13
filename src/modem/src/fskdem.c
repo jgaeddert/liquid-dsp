@@ -224,12 +224,12 @@ unsigned int fskdem_demodulate(fskdem          _q,
 float fskdem_get_frequency_error(fskdem _q)
 {
     // get index of peak bin
-    unsigned int index = _q->buf_freq[ _q->s_demod ];
+    //unsigned int index = _q->buf_freq[ _q->s_demod ];
 
     // extract peak value of previous, post FFT index
-    float vm = cabsf( (_q->s_demod + _q->K - 1) % _q->K );  // previous
-    float v0 = cabsf(  _q->s_demod                      );  // peak
-    float vp = cabsf( (_q->s_demod +         1) % _q->K );  // post
+    float vm = cabsf(_q->buf_freq[(_q->s_demod+_q->K-1)%_q->K]);  // previous
+    float v0 = cabsf(_q->buf_freq[ _q->s_demod               ]);  // peak
+    float vp = cabsf(_q->buf_freq[(_q->s_demod+      1)%_q->K]);  // post
 
     // compute derivative
     // TODO: compensate for bin spacing

@@ -168,9 +168,7 @@ int main(int argc, char*argv[])
     // estimate power spectral density of received signal
     unsigned int nfft = 1024;   // FFT size
     float        psd[nfft];     // PSD estimate output array
-    spgramcf periodogram = spgramcf_create_kaiser(nfft, nfft/2, 10.0f);
-    spgramcf_estimate_psd(periodogram, y, num_samples, psd);
-    spgramcf_destroy(periodogram);
+    spgramcf_estimate_psd(nfft, y, num_samples, psd);
 
     // 
     // export output file

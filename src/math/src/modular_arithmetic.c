@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2015 Joseph Gaeddert
+ * Copyright (c) 2007 - 2018 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -30,16 +30,22 @@
 #include "liquid.h"
 
 // determine if number is prime (slow, simple method)
+// https://en.ikipedia.org/wiki/Primality_test#Pseudocode
+// (thanks to K. Rosenberg for the tip)
 int liquid_is_prime(unsigned int _n)
 {
-    if (_n < 4) return 1;
+    // check base cases (0, 1, 2, 3, divisible by 2, divisible by 3)
+    if      ( _n <= 1)  return 0;
+    else if ( _n <= 3)  return 1;
+    else if (!(_n & 1)) return 0; // divisible by 2
+    else if (!(_n % 3)) return 0; // divisible by 3
 
-    unsigned int i;
-    for (i=2; i<_n; i++) {
-        if ( (_n % i) == 0)
+    unsigned int r=5;
+    while ( r*r <= _n ) {
+        if ( (_n % r) == 0 || (_n % (r+2)) == 0 )
             return 0;
+        r += 6;
     }
-
     return 1;
 }
 
@@ -109,6 +115,50 @@ void liquid_unique_factor(unsigned int   _n,
     *_num_factors = num_factors;
 }
 
+// compute greatest common divisor between to numbers P and Q
+unsigned int liquid_gcd(unsigned int _P,
+                        unsigned int _Q)
+{
+    // check base cases
+    if (_P == 0 || _Q == 0) {
+        fprintf(stderr,"error: liquid_gcd(%u,%u), input cannot be zero\n", _P, _Q);
+        exit(-1);
+    } else if (_P == 1 || _Q == 1) {
+        return 1;
+    } else if (_P == _Q) {
+        return _P;
+    } else if (_P < _Q) {
+        return liquid_gcd(_Q, _P);
+    }
+
+    // dumb, slow method
+    unsigned int gcd = 1;
+    unsigned int r   = 2; // root
+    while ( r*r <= _P ) {
+        while ((_P % r)==0 && (_Q % r) == 0) {
+            _P /= r;
+            _Q /= r;
+            gcd *= r;
+        }
+        r += (r == 2) ? 1 : 2;
+    }
+    
+    return gcd;
+}
+
+// compute c = base^exp (mod n)
+unsigned int liquid_modpow(unsigned int _base,
+                           unsigned int _exp,
+                           unsigned int _n)
+{
+    unsigned int c = 1;
+    unsigned int i;
+    for (i=0; i<_exp; i++)
+        c = (c * _base) % _n;
+
+    return c;
+}
+
 // find smallest primitive root of _n
 unsigned int liquid_primitive_root(unsigned int _n)
 {
@@ -172,19 +222,6 @@ unsigned int liquid_primitive_root_prime(unsigned int _n)
     }
 
     return g;
-}
-
-// compute c = base^exp (mod n)
-unsigned int liquid_modpow(unsigned int _base,
-                           unsigned int _exp,
-                           unsigned int _n)
-{
-    unsigned int c = 1;
-    unsigned int i;
-    for (i=0; i<_exp; i++)
-        c = (c * _base) % _n;
-
-    return c;
 }
 
 // Euler's totient function

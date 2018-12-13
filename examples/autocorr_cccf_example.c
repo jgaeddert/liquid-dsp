@@ -131,26 +131,20 @@ int main(int argc, char*argv[]) {
 
     // write signal to output file
     for (i=0; i<num_samples; i++) {
-        fprintf(fid,"x(%4u) = %12.4e + j*%12.4e;\n",i+1,crealf(x[i]),cimagf(x[i]));
-
+        fprintf(fid,"x  (%4u) = %12.4e + j*%12.4e;\n", i+1, crealf(x[i]  ), cimagf(x[i]  ));
         fprintf(fid,"rxx(%4u) = %12.4e + j*%12.4e;\n", i+1, crealf(rxx[i]), cimagf(rxx[i]));
     }
-
-    fprintf(fid,"\n\n");
     fprintf(fid,"t=1:num_samples;\n");
-    fprintf(fid,"figure;\n");
-    fprintf(fid,"plot(t,real(x),t,imag(x));\n");
-    fprintf(fid,"xlabel('sample index');\n");
-    fprintf(fid,"ylabel('received signal');\n");
-    fprintf(fid,"legend('real','imag',0);\n");
-
-    fprintf(fid,"\n\n");
-    fprintf(fid,"figure;\n");
-    fprintf(fid,"plot(t,abs(rxx));\n");
-    fprintf(fid,"xlabel('sample index');\n");
-    fprintf(fid,"ylabel('auto-correlation magnitude');\n");
-
-    fprintf(fid,"\n\n");
+    fprintf(fid,"figure('position',[100 100 800 600]);\n");
+    fprintf(fid,"subplot(2,1,1);\n");
+    fprintf(fid,"  plot(t,real(x),t,imag(x));\n");
+    fprintf(fid,"  xlabel('sample index');\n");
+    fprintf(fid,"  ylabel('received signal');\n");
+    fprintf(fid,"  legend('real','imag');\n");
+    fprintf(fid,"subplot(2,1,2);\n");
+    fprintf(fid,"  plot(t,abs(rxx));\n");
+    fprintf(fid,"  xlabel('sample index');\n");
+    fprintf(fid,"  ylabel('auto-correlation magnitude');\n");
     fclose(fid);
     printf("data written to %s\n", OUTPUT_FILENAME);
 

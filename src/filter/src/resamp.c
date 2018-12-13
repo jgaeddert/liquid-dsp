@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2015 Joseph Gaeddert
+ * Copyright (c) 2007 - 2018 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -89,14 +89,14 @@ RESAMP() RESAMP(_create)(float        _rate,
     } else if (_m == 0) {
         fprintf(stderr,"error: resamp_%s_create(), filter semi-length must be greater than zero\n", EXTENSION_FULL);
         exit(1);
-    } else if (_npfb == 0) {
-        fprintf(stderr,"error: resamp_%s_create(), number of filter banks must be greater than zero\n", EXTENSION_FULL);
-        exit(1);
     } else if (_fc <= 0.0f || _fc >= 0.5f) {
         fprintf(stderr,"error: resamp_%s_create(), filter cutoff must be in (0,0.5)\n", EXTENSION_FULL);
         exit(1);
     } else if (_As <= 0.0f) {
         fprintf(stderr,"error: resamp_%s_create(), filter stop-band suppression must be greater than zero\n", EXTENSION_FULL);
+        exit(1);
+    } else if (_npfb == 0) {
+        fprintf(stderr,"error: resamp_%s_create(), number of filter banks must be greater than zero\n", EXTENSION_FULL);
         exit(1);
     }
 
@@ -152,7 +152,7 @@ RESAMP() RESAMP(_create_default)(float _rate)
 
     // det default parameters
     unsigned int m    = 7;
-    float        fc   = 0.25f;
+    float        fc   = 0.5f*_rate > 0.49f ? 0.49f : 0.5f*_rate;
     float        As   = 60.0f;
     unsigned int npfb = 64;
 
@@ -200,7 +200,9 @@ unsigned int RESAMP(_get_delay)(RESAMP() _q)
     return _q->m;
 }
 
-// set resampling rate
+// set rate of arbitrary resampler
+//  _q      : resampling object
+//  _rate   : new sampling rate, _rate > 0
 void RESAMP(_set_rate)(RESAMP() _q,
                        float    _rate)
 {
@@ -216,26 +218,60 @@ void RESAMP(_set_rate)(RESAMP() _q,
     _q->del = 1.0f / _q->rate;
 }
 
+// get rate of arbitrary resampler
+float RESAMP(_get_rate)(RESAMP() _q)
+{
+    return _q->rate;
+}
+
 // adjust resampling rate
 void RESAMP(_adjust_rate)(RESAMP() _q,
-                          float    _delta)
+                          float    _gamma)
 {
-    if (_delta > 0.1f || _delta < -0.1f) {
-        fprintf(stderr,"error: resamp_%s_adjust_rate(), resampling rate must be in [-0.1,0.1]\n", EXTENSION_FULL);
+    if (_gamma <= 0) {
+        fprintf(stderr,"error: resamp_%s_adjust_rate(), resampling adjustment (%12.4e) must be greater than zero\n", EXTENSION_FULL, _gamma);
         exit(1);
     }
 
     // adjust internal rate
-    _q->rate += _delta;
-
-    // clip rate
-    if (_q->rate >  0.5f) _q->rate =  0.5f;
-    if (_q->rate < -0.5f) _q->rate = -0.5f;
+    _q->rate *= _gamma;
 
     // set output stride
     _q->del = 1.0f / _q->rate;
 }
 
+
+// set resampling timing phase
+//  _q      : resampling object
+//  _tau    : sample timing
+void RESAMP(_set_timing_phase)(RESAMP() _q,
+                               float    _tau)
+{
+    if (_tau < -1.0f || _tau > 1.0f) {
+        fprintf(stderr,"error: resamp_%s_set_timing_phase(), timing phase must be in [-1,1], is %f\n.",
+                EXTENSION_FULL, _tau);
+        exit(1);
+    }
+
+    // set internal timing phase
+    _q->tau = _tau;
+}
+
+// adjust resampling timing phase
+//  _q      : resampling object
+//  _delta  : sample timing adjustment
+void RESAMP(_adjust_timing_phase)(RESAMP() _q,
+                                  float    _delta)
+{
+    if (_delta < -1.0f || _delta > 1.0f) {
+        fprintf(stderr,"error: resamp_%s_adjust_timing_phase(), timing phase adjustment must be in [-1,1], is %f\n.",
+                EXTENSION_FULL, _delta);
+        exit(1);
+    }
+
+    // adjust internal timing phase
+    _q->tau += _delta;
+}
 
 // run arbitrary resampler
 //  _q          :   resampling object

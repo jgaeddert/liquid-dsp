@@ -1,6 +1,14 @@
 //
 // channel_cccf_example.c
 //
+// This example demonstrates how the channel_cccf object can be used to
+// emulate a multi-path fading, log-normal shadowing, and AWGN channel.
+// A stream of modulated and interpolated symbols are generated using the
+// symstream object. The resulting samples are passed through a channel
+// to add various impairments. The symtrack object recovers timing,
+// carrier, and other information imparted by the channel and returns
+// data symbols ready for demodulation.
+//
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -26,13 +34,10 @@ void usage()
     printf("  n     : number of symbols,         default: 4000\n");
     printf("  s     : signal-to-noise ratio,     default: 30 dB\n");
     printf("  w     : timing pll bandwidth,      default: 0.02\n");
-    printf("  t     : timing phase offset [%% symbol], t in [-0.5,0.5], default: -0.2\n");
 }
 
-
-int main(int argc, char*argv[]) {
-    srand(time(NULL));
-
+int main(int argc, char*argv[])
+{
     // options
     unsigned int k           = 2;       // samples per symbol
     unsigned int m           = 7;       // filter delay (symbols)
@@ -42,14 +47,12 @@ int main(int argc, char*argv[]) {
     float        noise_floor = -60.0f;  // noise floor [dB]
     float        SNRdB       = 30.0f;   // signal-to-noise ratio [dB]
     float        bandwidth   =  0.02f;  // loop filter bandwidth
-    float        tau         = -0.2f;   // fractional symbol offset
-    float        rate        = 1.001f;  // sample rate offset
     float        dphi        =  0.00f;  // carrier frequency offset [radians/sample]
     float        phi         =  2.1f;   // carrier phase offset [radians]
     modulation_scheme ms     = LIQUID_MODEM_QPSK;
 
     int dopt;
-    while ((dopt = getopt(argc,argv,"hk:m:b:H:n:s:w:t:r:")) != EOF) {
+    while ((dopt = getopt(argc,argv,"hk:m:b:H:n:s:w:")) != EOF) {
         switch (dopt) {
         case 'h':   usage();                        return 0;
         case 'k':   k           = atoi(optarg);     break;
@@ -59,8 +62,6 @@ int main(int argc, char*argv[]) {
         case 'n':   num_symbols = atoi(optarg);     break;
         case 's':   SNRdB       = atof(optarg);     break;
         case 'w':   bandwidth   = atof(optarg);     break;
-        case 't':   tau         = atof(optarg);     break;
-        case 'r':   rate        = atof(optarg);     break;
         default:
             exit(1);
         }
@@ -82,29 +83,22 @@ int main(int argc, char*argv[]) {
     } else if (num_symbols == 0) {
         fprintf(stderr,"error: number of symbols must be greater than 0\n");
         exit(1);
-    } else if (tau < -1.0f || tau > 1.0f) {
-        fprintf(stderr,"error: timing phase offset must be in [-1,1]\n");
-        exit(1);
-    } else if (rate > 1.02f || rate < 0.98f) {
-        fprintf(stderr,"error: timing rate offset must be in [1.02,0.98]\n");
-        exit(1);
     }
 
     unsigned int i;
 
     // derived/fixed values
-    unsigned int nx = num_symbols*k;
-    unsigned int ny = (unsigned int) ceilf(rate * nx) + 64;
+    unsigned int num_samples = num_symbols*k;
 
-    float complex x[nx];    // input (interpolated) samples
-    float complex y[ny];    // channel output samples
+    float complex x[num_samples];    // input (interpolated) samples
+    float complex y[num_samples];    // channel output samples
     float complex sym_out[num_symbols + 64];// synchronized symbols
 
     // 
     // generate input sequence using symbol stream generator
     //
     symstreamcf gen = symstreamcf_create_linear(LIQUID_FIRFILT_ARKAISER,k,m,beta,ms);
-    symstreamcf_write_samples(gen, x, nx);
+    symstreamcf_write_samples(gen, x, num_samples);
     symstreamcf_destroy(gen);
 
     // create channel
@@ -115,13 +109,12 @@ int main(int argc, char*argv[]) {
     channel_cccf_add_carrier_offset(channel, dphi, phi);
     channel_cccf_add_multipath     (channel, NULL, hc_len);
     channel_cccf_add_shadowing     (channel, 1.0f, 0.1f);
-    channel_cccf_add_resamp        (channel, 0.0f, rate);
 
     // print channel internals
     channel_cccf_print(channel);
 
     // apply channel to input signal
-    channel_cccf_execute(channel, x, nx, y, &ny);
+    channel_cccf_execute_block(channel, x, num_samples, y);
 
     // destroy channel
     channel_cccf_destroy(channel);
@@ -129,14 +122,13 @@ int main(int argc, char*argv[]) {
     // 
     // create and run symbol synchronizer
     //
-
     symtrack_cccf symtrack = symtrack_cccf_create(LIQUID_FIRFILT_RRC,k,m,beta,ms);
     
     // set tracking bandwidth
     symtrack_cccf_set_bandwidth(symtrack,0.05f);
 
     unsigned int num_symbols_sync = 0;
-    symtrack_cccf_execute_block(symtrack, y, ny, sym_out, &num_symbols_sync);
+    symtrack_cccf_execute_block(symtrack, y, num_samples, sym_out, &num_symbols_sync);
     symtrack_cccf_destroy(symtrack);
 
     // print results
@@ -146,18 +138,14 @@ int main(int argc, char*argv[]) {
     // estimate spectrum
     unsigned int nfft = 1200;
     float        psd[nfft];
-    spgramcf periodogram = spgramcf_create_kaiser(nfft, nfft/2, 8.0f);
-    spgramcf_estimate_psd(periodogram, y, ny, psd);
-    spgramcf_destroy(periodogram);
+    spgramcf_estimate_psd(nfft, y, num_samples, psd);
 
     //
     // export output file
     //
-
     FILE * fid = fopen(OUTPUT_FILENAME,"w");
     fprintf(fid,"%% %s, auto-generated file\n\n", OUTPUT_FILENAME);
     fprintf(fid,"close all;\nclear all;\n\n");
-
     fprintf(fid,"num_symbols=%u;\n",num_symbols_sync);
 
     for (i=0; i<num_symbols_sync; i++)

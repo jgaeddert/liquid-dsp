@@ -1,43 +1,114 @@
 
-Major improvements since v1.2.0
-  * documentation
-    - added script to auto-generate code listings when pygmentize
-      is unavailable (not as good, but still functional)
+## Latest improvements ##
+
+## Improvements for v1.3.1 ##
+
+  * improved selection of SSE/MMX extension flags for gcc
+  * agc
+    - adding squelch functionality back into gain control object
+  * filter
+    - adding callback function for Parks-McClellan algorithm to allow generic 
+      filter prototyping
+    - fixed double-free bug in iirfilt
+  * fft
+    - adding new spwaterfall family of objects for generating waterfall plot
+      and automatically down-size as input sample size grows
+  * sequence
+    - fixed issue with order of operations causing inconsitent behavior across
+      different platforms
+
+## Major improvements for v1.3.0 ##
+
+  * New MIT/X11 license (https://opensource.org/licenses/MIT)
+  * agc (automatic gain control)
+    - major code scrub, improved reliability, simplified interface
+    - block-level operation
+  * buffer
+    - new cbuffer objects for dynamic-sized circular buffering
+  * channel
+    - new module to define certain channel emulation objects
+    - new functionality includes carrier frequency/phase offsets,
+      (time-varying) multi-path, shadowing, and additive noise
   * dotprod
     - adding method to compute x^T * x of a vector (sum of squares)
-  * fft
+  * equalization
+    - improved interface for LMS and RLS equalizers
+    - simplified methods to support blind operation
+  * fec (forward error correctino)
+    - interleaver and packetizer moved from the framing to the fec module
+    - packetizer now includes data whitening
+  * fft (fast Fourier transform)
     - general speed improvements for one-dimensional FFTs
+    - completely reimplemented spgram (spectral periodogram) objects to
+      include both complex and real-values amples with simpler interface
+    - reimplemented asgram (ASCII spectral periodogram) objects
   * filter
-    - add linear interpolation for arbitrary resamp output
-    - added autotests for validating performance of both the
-      resamp and msresamp objects
+    - additional prototype create methods, block execution
     - added new fftfilt family of objects to realize linear filter
       with fast Fourier transforms
+    - interp family renamed to firinterp, new iirinterp family
+    - decim family renamed to firdecim, new iirdecim family
+    - add linear interpolation for arbitrary resamp output
+    - new multi-stage half-band resampler family
+    - symsync: improved stability, added rate adjustment to help pull in
+      sample rate offsets
+    - added autotests for validating performance of both the
+      resamp and msresamp objects
   * framing
+    - added `framedatastats` object for counting statistics across different
+      framing objects (e.g. number of total bytes received)
     - adding generic callback function definition for all framing
       structures
-    - adding pre-demodulator synchronizer/detector
+    - qpacketmodem: new object to easily combine modulating and encoding;
+      buffer of data in, modulated and encoded samples out
+    - qpilotgen/qpilotsync: new objects to add and synchronize pilot symbols
+      to modulated symbols to recover carrier frequency/phase, and gain
+    - framing objects: frame64, flexframe now use qpacketmodem, qpilotgen, and
+      qpilotsync objects for unified interface and vastly improved performance
+    - flexframe: vastly simplified interface
+    - qdetector: new family for pre-demodulator synchronizion and detection
     - moved interleaver and packetizer objects to `fec` module
-    - restructuring frame[gen|sync]64 and flexframe[gen|sync]
-      objects with vastly improved performance and reliability
+    - symstream: new family for generating random stream of modulated samples
+    - msource: new family for generating multiple signals for a single source,
+      including tones, noise, modulated symbols
+    - symtrack: new family for tracking a stream of symbols and recovering
+      signal level, timing, carrier frequency/phase without pilots
+  * math
+    - new windowing methods (e.g. 7-term Blackman-harris window)
   * matrix
     - adding smatrix family of objects (sparse matrices)
     - improving linear solver methods (roughly doubled speed)
   * modem
-    - re-organizing internal modem code (no interface change)
+    - re-organizing internal linear modem code (no interface change)
+    - freqmod/freqdem: new interface, block-level execution for analog FM
+    - cpfskmod/cpfskdem: new family for generic non-linear continuous-phase
+      frequency-shift modulation (e.g. minimum-shift keying)
+    - fskmod/fskdem: new family for non-coherent frequency-shift keying
+      modulation, often with many samples per symbol (e.g. 256-FSK)
   * multicarrier
     - adding OFDM framing option for window tapering
     - simplfying OFDM framing for generating preamble symbols (all
       generated OFDM symbols are the same length)
     - adding run-time option for debugging ofdmframesync
+    - adding method for initializing subcarriers with frequency range
+  * nco (numerically-controlled oscillator)
+    - general performance improvements, adding block-level execution
   * optim
     - gradsearch (gradient search) uses internal linesearch for
       significant speed increase and better reliability
     - gradsearch interface greatly simplified
+  * utility
+    - build no longer auto-generates tables at compile time (helps with cross
+      compilation)
   * vector
     - new module to simplify basic vector operations
+  * miscellany
+    - documentation moved from core repository to website
+    - global header file (`liquid.h`) include more structured source
+    - consistent naming of reset() methods for most objects
 
-Major improvements for v1.2.0
+## Major improvements for v1.2.0 ##
+
   * dotprod
     - leveraging SIMD extensions for vector operations (SSE2, SSE3)
   * fft
@@ -51,7 +122,8 @@ Major improvements for v1.2.0
       LIQUID_MODEM_QAM16
     - new type definitions for analog modems
 
-Major improvements for v1.1.0
+## Major improvements for v1.1.0 ##
+
   * build
     - simplifying build environment by explicitly defining object
       dependencies (no longer auto-generated; much faster now)

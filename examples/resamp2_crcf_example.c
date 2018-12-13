@@ -49,7 +49,7 @@ int main() {
         resamp2_crcf_interp_execute(q, x[i], &y[2*i]);
 
     // clear resamp2 object
-    resamp2_crcf_clear(q);
+    resamp2_crcf_reset(q);
 
     // execute decimation stage
     for (i=0; i<n; i++)

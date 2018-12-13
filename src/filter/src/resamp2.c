@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2015 Joseph Gaeddert
+ * Copyright (c) 2007 - 2018 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -70,16 +70,18 @@ RESAMP2() RESAMP2(_create)(unsigned int _m,
     if (_m < 2) {
         fprintf(stderr,"error: resamp2_%s_create(), filter semi-length must be at least 2\n", EXTENSION_FULL);
         exit(1);
+    } else if (_f0 < -0.5f || _f0 > 0.5f) {
+        fprintf(stderr,"error: resamp2_%s_create(), f0 (%12.4e) must be in [-0.5,0.5]\n", EXTENSION_FULL, _f0);
+        exit(1);
+    } else if (_As < 0.0f) {
+        fprintf(stderr,"error: resamp2_%s_create(), As (%12.4e) must be greater than zero\n", EXTENSION_FULL, _As);
+        exit(1);
     }
 
     RESAMP2() q = (RESAMP2()) malloc(sizeof(struct RESAMP2(_s)));
     q->m  = _m;
     q->f0 = _f0;
     q->As = _As;
-    if ( q->f0 < -0.5f || q->f0 > 0.5f ) {
-        fprintf(stderr,"error: resamp2_%s_create(), f0 (%12.4e) must be in (-1,1)\n", EXTENSION_FULL, q->f0);
-        exit(1);
-    }
 
     // change filter length as necessary
     q->h_len = 4*(q->m) + 1;
@@ -117,7 +119,7 @@ RESAMP2() RESAMP2(_create)(unsigned int _m,
     q->w0 = WINDOW(_create)(2*(q->m));
     q->w1 = WINDOW(_create)(2*(q->m));
 
-    RESAMP2(_clear)(q);
+    RESAMP2(_reset)(q);
 
     return q;
 }
@@ -206,10 +208,10 @@ void RESAMP2(_print)(RESAMP2() _q)
 }
 
 // clear internal buffer
-void RESAMP2(_clear)(RESAMP2() _q)
+void RESAMP2(_reset)(RESAMP2() _q)
 {
-    WINDOW(_clear)(_q->w0);
-    WINDOW(_clear)(_q->w1);
+    WINDOW(_reset)(_q->w0);
+    WINDOW(_reset)(_q->w1);
 
     _q->toggle = 0;
 }

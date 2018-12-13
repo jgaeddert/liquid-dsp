@@ -16,20 +16,20 @@
 void usage()
 {
     printf("ofdmflexframesync_example [options]\n");
-    printf("  u/h   : print usage\n");
-    printf("  s     : signal-to-noise ratio [dB], default: 20\n");
-    printf("  F     : carrier frequency offset, default: 0.002\n");
-    printf("  M     : number of subcarriers (must be even), default: 64\n");
-    printf("  C     : cyclic prefix length, default: 16\n");
-    printf("  n     : payload length [bytes], default: 120\n");
-    printf("  m     : modulation scheme (qpsk default)\n");
+    printf(" -h        : print usage\n");
+    printf(" -s  <snr> : signal-to-noise ratio [dB], default: 20\n");
+    printf(" -F <freq> : carrier frequency offset, default: 0.002\n");
+    printf(" -M  <num> : number of subcarriers (must be even), default: 64\n");
+    printf(" -C  <len> : cyclic prefix length, default: 16\n");
+    printf(" -n  <len> : payload length [bytes], default: 120\n");
+    printf(" -m  <mod> : modulation scheme (qpsk default)\n");
     liquid_print_modulation_schemes();
-    printf("  v     : data integrity check: crc32 default\n");
+    printf(" -v  <crc> : data integrity check: crc32 default\n");
     liquid_print_crc_schemes();
-    printf("  c     : coding scheme (inner): h74 default\n");
-    printf("  k     : coding scheme (outer): none default\n");
+    printf(" -c  <fec> : coding scheme (inner): h74 default\n");
+    printf(" -k  <fec> : coding scheme (outer): none default\n");
     liquid_print_fec_schemes();
-    printf("  d     : enable debugging\n");
+    printf(" -d       : enable debugging\n");
 }
 
 // callback function
@@ -43,65 +43,38 @@ int callback(unsigned char *  _header,
 
 int main(int argc, char*argv[])
 {
-    srand(time(NULL));
+    //srand(time(NULL));
 
     // options
-    unsigned int M = 64;                // number of subcarriers
-    unsigned int cp_len = 16;           // cyclic prefix length
-    unsigned int taper_len = 4;         // taper length
-    unsigned int payload_len = 120;     // length of payload (bytes)
-    modulation_scheme ms = LIQUID_MODEM_QPSK;
-    fec_scheme fec0  = LIQUID_FEC_NONE;
-    fec_scheme fec1  = LIQUID_FEC_HAMMING128;
-    crc_scheme check = LIQUID_CRC_32;
-    float noise_floor = -30.0f;         // noise floor [dB]
-    float SNRdB = 20.0f;                // signal-to-noise ratio [dB]
-    float dphi = 0.02f;                 // carrier frequency offset
-    int debug_enabled =  0;             // enable debugging?
+    unsigned int      M           = 64;                 // number of subcarriers
+    unsigned int      cp_len      = 16;                 // cyclic prefix length
+    unsigned int      taper_len   = 4;                  // taper length
+    unsigned int      payload_len = 120;                // length of payload (bytes)
+    modulation_scheme ms          = LIQUID_MODEM_QPSK;  // modulation scheme
+    fec_scheme        fec0        = LIQUID_FEC_NONE;    // inner code
+    fec_scheme        fec1        = LIQUID_FEC_HAMMING128; // outer code
+    crc_scheme        check       = LIQUID_CRC_32;      // validity check
+    float             noise_floor = -80.0f;             // noise floor [dB]
+    float             SNRdB       = 20.0f;              // signal-to-noise ratio [dB]
+    float             dphi        = 0.02f;              // carrier frequency offset
+    int               debug       =  0;                 // enable debugging?
 
     // get options
     int dopt;
     while((dopt = getopt(argc,argv,"uhds:F:M:C:n:m:v:c:k:")) != EOF){
         switch (dopt) {
         case 'u':
-        case 'h': usage();                      return 0;
-        case 'd': debug_enabled = 1;            break;
-        case 's': SNRdB         = atof(optarg); break;
-        case 'F': dphi          = atof(optarg); break;
-        case 'M': M             = atoi(optarg); break;
-        case 'C': cp_len        = atoi(optarg); break;
-        case 'n': payload_len   = atol(optarg); break;
-        case 'm':
-            ms = liquid_getopt_str2mod(optarg);
-            if (ms == LIQUID_MODEM_UNKNOWN) {
-                fprintf(stderr,"error: %s, unknown/unsupported mod. scheme: %s\n", argv[0], optarg);
-                exit(-1);
-            }
-            break;
-        case 'v':
-            // data integrity check
-            check = liquid_getopt_str2crc(optarg);
-            if (check == LIQUID_CRC_UNKNOWN) {
-                fprintf(stderr,"error: unknown/unsupported CRC scheme \"%s\"\n\n",optarg);
-                exit(1);
-            }
-            break;
-        case 'c':
-            // inner FEC scheme
-            fec0 = liquid_getopt_str2fec(optarg);
-            if (fec0 == LIQUID_FEC_UNKNOWN) {
-                fprintf(stderr,"error: unknown/unsupported inner FEC scheme \"%s\"\n\n",optarg);
-                exit(1);
-            }
-            break;
-        case 'k':
-            // outer FEC scheme
-            fec1 = liquid_getopt_str2fec(optarg);
-            if (fec1 == LIQUID_FEC_UNKNOWN) {
-                fprintf(stderr,"error: unknown/unsupported outer FEC scheme \"%s\"\n\n",optarg);
-                exit(1);
-            }
-            break;
+        case 'h': usage();                    return 0;
+        case 'd': debug       = 1;            break;
+        case 's': SNRdB       = atof(optarg); break;
+        case 'F': dphi        = atof(optarg); break;
+        case 'M': M           = atoi(optarg); break;
+        case 'C': cp_len      = atoi(optarg); break;
+        case 'n': payload_len = atol(optarg); break;
+        case 'm': ms          = liquid_getopt_str2mod(optarg); break;
+        case 'v': check       = liquid_getopt_str2crc(optarg); break;
+        case 'c': fec0        = liquid_getopt_str2fec(optarg); break;
+        case 'k': fec1        = liquid_getopt_str2fec(optarg); break;
         default:
             exit(-1);
         }
@@ -112,18 +85,12 @@ int main(int argc, char*argv[])
     // TODO : validate options
 
     // derived values
-    unsigned int frame_len = M + cp_len;
-    float complex buffer[frame_len]; // time-domain buffer
-    float nstd = powf(10.0f, noise_floor/20.0f);
-    float gamma = powf(10.0f, (SNRdB + noise_floor)/20.0f);
+    unsigned int  buf_len = 256;
+    float complex buf[buf_len]; // time-domain buffer
 
     // allocate memory for header, payload
     unsigned char header[8];
     unsigned char payload[payload_len];
-
-    // initialize subcarrier allocation
-    unsigned char p[M];
-    ofdmframe_init_default_sctype(M, p);
 
     // create frame generator
     ofdmflexframegenprops_s fgprops;
@@ -132,11 +99,11 @@ int main(int argc, char*argv[])
     fgprops.fec0            = fec0;
     fgprops.fec1            = fec1;
     fgprops.mod_scheme      = ms;
-    ofdmflexframegen fg = ofdmflexframegen_create(M, cp_len, taper_len, p, &fgprops);
+    ofdmflexframegen fg = ofdmflexframegen_create(M, cp_len, taper_len, NULL, &fgprops);
 
     // create frame synchronizer
-    ofdmflexframesync fs = ofdmflexframesync_create(M, cp_len, taper_len, p, callback, (void*)payload);
-    if (debug_enabled)
+    ofdmflexframesync fs = ofdmflexframesync_create(M, cp_len, taper_len, NULL, callback, (void*)payload);
+    if (debug)
         ofdmflexframesync_debug_enable(fs);
 
     // initialize header/payload and assemble frame
@@ -148,42 +115,32 @@ int main(int argc, char*argv[])
     ofdmflexframegen_print(fg);
     ofdmflexframesync_print(fs);
 
-    // initialize frame synchronizer with noise
-    for (i=0; i<1000; i++) {
-        float complex noise = nstd*( randnf() + _Complex_I*randnf())*M_SQRT1_2;
-        ofdmflexframesync_execute(fs, &noise, 1);
-    }
+    // create channel and add impairments
+    channel_cccf channel = channel_cccf_create();
+    channel_cccf_add_awgn(channel, noise_floor, SNRdB);
+    channel_cccf_add_carrier_offset(channel, dphi, 0.0f);
 
     // generate frame, push through channel
     int last_symbol=0;
-    nco_crcf nco = nco_crcf_create(LIQUID_VCO);
-    nco_crcf_set_frequency(nco, dphi);
     while (!last_symbol) {
         // generate symbol
-        last_symbol = ofdmflexframegen_writesymbol(fg, buffer);
+        last_symbol = ofdmflexframegen_write(fg, buf, buf_len);
 
-        // apply channel
-        for (i=0; i<frame_len; i++) {
-            float complex noise = nstd*( randnf() + _Complex_I*randnf())*M_SQRT1_2;
-            buffer[i] *= gamma;
-            buffer[i] += noise;
-            
-            nco_crcf_mix_up(nco, buffer[i], &buffer[i]);
-            nco_crcf_step(nco);
-        }
+        // apply channel to buffer (in place)
+        channel_cccf_execute_block(channel, buf, buf_len, buf);
 
-        // receive symbol
-        ofdmflexframesync_execute(fs, buffer, frame_len);
+        // push samples through synchronizer
+        ofdmflexframesync_execute(fs, buf, buf_len);
     }
-    nco_crcf_destroy(nco);
 
     // export debugging file
-    if (debug_enabled)
+    if (debug)
         ofdmflexframesync_debug_print(fs, "ofdmflexframesync_debug.m");
 
     // destroy objects
     ofdmflexframegen_destroy(fg);
     ofdmflexframesync_destroy(fs);
+    channel_cccf_destroy(channel);
 
     printf("done.\n");
     return 0;

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2015 Joseph Gaeddert
+ * Copyright (c) 2007 - 2018 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -42,9 +42,12 @@
 #define IIRDECIM(name)      LIQUID_CONCAT(iirdecim_rrrf,name)
 #define IIRFILT(name)       LIQUID_CONCAT(iirfilt_rrrf,name)
 #define IIRFILTSOS(name)    LIQUID_CONCAT(iirfiltsos_rrrf,name)
+#define IIRHILB(name)       LIQUID_CONCAT(iirhilbf,name)
 #define IIRINTERP(name)     LIQUID_CONCAT(iirinterp_rrrf,name)
 #define MSRESAMP(name)      LIQUID_CONCAT(msresamp_rrrf,name)
 #define MSRESAMP2(name)     LIQUID_CONCAT(msresamp2_rrrf,name)
+#define ORDFILT(name)       LIQUID_CONCAT(ordfilt_rrrf,name)
+#define RRESAMP(name)       LIQUID_CONCAT(rresamp_rrrf,name)
 #define RESAMP(name)        LIQUID_CONCAT(resamp_rrrf,name)
 #define RESAMP2(name)       LIQUID_CONCAT(resamp2_rrrf,name)
 #define SYMSYNC(name)       LIQUID_CONCAT(symsync_rrrf,name)
@@ -77,9 +80,13 @@
 #include "iirdecim.c"
 #include "iirfilt.c"
 #include "iirfiltsos.c"
+#include "iirhilb.c"
 #include "iirinterp.c"
 #include "msresamp.c"
 #include "msresamp2.c"
-#include "resamp.c"
+#include "ordfilt.c"
+#include "rresamp.c"
+//#include "resamp.c"         // floating-point phase version
+#include "resamp.fixed.c" // fixed-point phase version
 #include "resamp2.c"
 #include "symsync.c"

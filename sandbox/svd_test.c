@@ -116,7 +116,7 @@ int main() {
             } // for j
         } // if (s < tol)
 
-        y = abs(q[i]) + abs(e[i]);
+        y = fabsf(q[i]) + fabsf(e[i]);
         if (y > x)
             x = y;
     }

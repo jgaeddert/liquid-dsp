@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2015 Joseph Gaeddert
+ * Copyright (c) 2007 - 2018 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -37,25 +37,25 @@
 
 struct MSRESAMP2(_s) {
     // user-defined parameters
-    liquid_resamp_type type;    // resampler type (e.g. LIQUID_RESAMP_INTERP)
-    unsigned int num_stages;    // number of half-band stages
-    float        fc;            // initial cut-off frequency
-    float        f0;            // initial center frequency
-    float        As;            // stop-band attenuation
+    liquid_resamp_type type;    // resampler type (LIQUID_RESAMP_INTERP, LIQUID_RESAMP_DECIM)
+    unsigned int    num_stages; // number of half-band stages
+    float           fc;         // initial cut-off frequency
+    float           f0;         // initial center frequency
+    float           As;         // stop-band attenuation
 
     // derived values
-    unsigned int M;             // integer resampling rate: 2^num_stages
+    unsigned int    M;          // integer resampling rate: 2^num_stages
 
     // half-band resamplers
-    float * fc_stage;           // cut-off frequency for each stage
-    float * f0_stage;           // center frequency for each stage
-    float * As_stage;           // stop-band attenuation for each stage
-    unsigned int * m_stage;     // filter semi-length for each stage
-    RESAMP2() * resamp2;        // array of half-band resamplers
-    T * buffer0;                // buffer[0]
-    T * buffer1;                // buffer[1]
-    unsigned int buffer_index;  // index of buffer
-    float zeta;                 // scaling factor
+    float *         fc_stage;   // cut-off frequency for each stage
+    float *         f0_stage;   // center frequency for each stage
+    float *         As_stage;   // stop-band attenuation for each stage
+    unsigned int *  m_stage;    // filter semi-length for each stage
+    RESAMP2() *     resamp2;    // array of half-band resamplers
+    T *             buffer0;    // buffer[0]
+    T *             buffer1;    // buffer[1]
+    unsigned int    buffer_index;  // index of buffer
+    float           zeta;       // scaling factor
 };
 
 // execute multi-stage resampler as interpolator
@@ -96,10 +96,10 @@ MSRESAMP2() MSRESAMP2(_create)(int          _type,
     if ( _fc <= 0.0f || _fc >= 0.5f ) {
         fprintf(stderr,"error: msresamp2_%s_create(), cut-off frequency must be in (0,0.5)\n", EXTENSION_FULL);
         exit(1);
-    } else if ( _fc > 0.45f ) {
-        fprintf(stderr,"warning: msresamp2_%s_create(), cut-off frequency greater than 0.45\n", EXTENSION_FULL);
-        fprintf(stderr,"    >> truncating to 0.45\n");
-        _fc = 0.45f;
+    } else if ( _fc > 0.499f ) {
+        fprintf(stderr,"warning: msresamp2_%s_create(), cut-off frequency greater than 0.499\n", EXTENSION_FULL);
+        fprintf(stderr,"    >> truncating to 0.499\n");
+        _fc = 0.499f;
     }
 
     // check center frequency
@@ -135,22 +135,23 @@ MSRESAMP2() MSRESAMP2(_create)(int          _type,
     q->m_stage  = (unsigned int*) malloc(q->num_stages*sizeof(unsigned int));
 
     // determine half-band resampler parameters
-    float fc = q->fc;
-    float f0 = q->f0;
+    float fc = q->fc;   // cut-off frequency
+    float f0 = q->f0;   // center frequency
     for (i=0; i<q->num_stages; i++) {
         // compute parameters based on filter requirements;
-        f0 = 0.5f*f0;   // update center frequency
-        fc = 0.5f*fc;   // update cutoff frequency
+        fc = (i==1) ? (0.5-fc)/2.0f : 0.5f*fc;  // cut-off frequency
+        f0 = 0.5f*f0;                           // center frequency
+        float ft = 2*(0.25f - fc);              // two-sided transition bandwidth
 
-        // estiamte required filter length
-        float ft = (0.5f - fc)/2.0f;
+        // estimate required filter length
         unsigned int h_len = estimate_req_filter_len(ft, q->As);
         unsigned int m = ceilf( (float)(h_len-1) / 4.0f );
 
-        q->fc_stage[i] = fc;            // filter cut-of
+        //printf(" >>> fc: %8.6f, ft: %8.6f, h_len : %u (m=%u)\n", fc, ft, h_len, m);
+        q->fc_stage[i] = fc;            // filter pass-band
         q->f0_stage[i] = f0;            // filter center frequency
         q->As_stage[i] = q->As;         // filter stop-band attenuation
-        q->m_stage[i]  = m < 3 ? 3 : m; // minimum 2
+        q->m_stage[i]  = m < 3 ? 3 : m; // minimum 3
     }
 
     // create half-band resampler objects
@@ -203,12 +204,17 @@ void MSRESAMP2(_print)(MSRESAMP2() _q)
     printf("    cut-off frequency, fc   : %12.8f Fs\n",  _q->fc);
     printf("    center frequency, f0    : %12.8f Fs\n",  _q->f0);
     printf("    stop-band attenuation   : %.2f dB\n",    _q->As);
+    printf("    delay (total)           : %.3f samples\n", MSRESAMP2(_get_delay)(_q));
 
     // print each stage
     unsigned int i;
     for (i=0; i<_q->num_stages; i++) {
+        // get index of stage (reversed for decimator)
+        unsigned int g = _q->type == LIQUID_RESAMP_INTERP ? i : _q->num_stages-i-1;
+
+        // print stage information
         printf("    stage[%2u]  {m=%3u, As=%6.2f dB, fc=%6.3f, f0=%6.3f}\n",
-                    i, _q->m_stage[i], _q->As_stage[i], _q->fc_stage[i], _q->f0_stage[i]);
+                    i, _q->m_stage[g], _q->As_stage[g], _q->fc_stage[g], _q->f0_stage[g]);
     }
 }
 
@@ -218,12 +224,30 @@ void MSRESAMP2(_reset)(MSRESAMP2() _q)
     // reset half-band resampler objects
     unsigned int i;
     for (i=0; i<_q->num_stages; i++)
-        RESAMP2(_clear)(_q->resamp2[i]);
+        RESAMP2(_reset)(_q->resamp2[i]);
 
     // reset buffer write pointer
     _q->buffer_index = 0;
     
     // NOTE: not necessary to clear internal buffers
+}
+
+// Get multi-stage half-band resampling rate
+float MSRESAMP2(_get_rate)(MSRESAMP2() _q)
+{
+    return _q->type == LIQUID_RESAMP_INTERP ? (float)(_q->M) : 1.0f/(float)(_q->M);
+}
+
+// Get number of half-band resampling stages in object
+unsigned int MSRESAMP2(_get_num_stages)(MSRESAMP2() _q)
+{
+    return _q->num_stages;
+}
+
+// Get resampling type (LIQUID_RESAMP_DECIM, LIQUID_RESAMP_INTERP)
+int MSRESAMP2(_get_type)(MSRESAMP2() _q)
+{
+    return _q->type;
 }
 
 // get group delay (number of output samples)
@@ -238,7 +262,7 @@ float MSRESAMP2(_get_delay)(MSRESAMP2() _q)
         // interpolator
         for (i=0; i<_q->num_stages; i++) {
             // filter semi-length
-            unsigned int m = _q->m_stage[i];
+            unsigned int m = _q->m_stage[_q->num_stages-i-1];
 
             delay *= 0.5f;
             delay += m;
@@ -247,7 +271,7 @@ float MSRESAMP2(_get_delay)(MSRESAMP2() _q)
         // decimator
         for (i=0; i<_q->num_stages; i++) {
             // filter semi-length
-            unsigned int m = _q->m_stage[_q->num_stages-i-1];
+            unsigned int m = _q->m_stage[i];
 
             delay *= 2;
             delay += 2*m - 1;
@@ -310,9 +334,8 @@ void MSRESAMP2(_interp_execute)(MSRESAMP2() _q,
 
         // run half-band stages as interpolators
         unsigned int i;
-        unsigned int g = _q->num_stages-s-1;    // reversed resampler index
         for (i=0; i<k; i++)
-            RESAMP2(_interp_execute)(_q->resamp2[g], b0[i], &b1[2*i]);
+            RESAMP2(_interp_execute)(_q->resamp2[s], b0[i], &b1[2*i]);
 
         // toggle output buffer pointers
         b0 = (s % 2) == 0 ? _q->buffer1 : _q->buffer0;
@@ -340,8 +363,9 @@ void MSRESAMP2(_decim_execute)(MSRESAMP2() _q,
 
         // run half-band stages as decimators
         unsigned int i;
+        unsigned int g = _q->num_stages-s-1;    // reversed resampler index
         for (i=0; i<k; i++)
-            RESAMP2(_decim_execute)(_q->resamp2[s], &b0[2*i], &b1[i]);
+            RESAMP2(_decim_execute)(_q->resamp2[g], &b0[2*i], &b1[i]);
 
         // toggle output buffer pointers
         b0 = (s % 2) == 0 ? _q->buffer1 : _q->buffer0;

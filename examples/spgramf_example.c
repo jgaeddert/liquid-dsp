@@ -15,10 +15,8 @@
 int main() {
     // spectral periodogram options
     unsigned int nfft        =   1024;  // spectral periodogram FFT size
-    unsigned int num_samples =   4000;  // number of samples
-    float        beta        =  10.0f;  // Kaiser-Bessel window parameter
+    unsigned int num_samples =    1e6;  // number of samples
     float        noise_floor = -60.0f;  // noise floor [dB]
-    float        alpha       =   0.1f;  // PSD estimate bandwidth
 
     unsigned int i;
 
@@ -26,44 +24,34 @@ int main() {
     float nstd = powf(10.0f, noise_floor/20.0f);
 
     // create spectral periodogram
-    unsigned int window_size = nfft/2;  // spgramf window size
-    spgramf q = spgramf_create_kaiser(nfft, window_size, beta);
+    spgramf q = spgramf_create_default(nfft);
+    spgramf_print(q);
 
-    // generate signal (filter with frequency offset)
-    unsigned int  h_len = 91;       // filter length
-    float         fc    = 0.07f;    // filter cut-off frequency
-    float         f0    = 0.20f;    // filter center frequency
-    float         As    = 60.0f;    // filter stop-band attenuation
-    float         h[h_len];         // filter coefficients
-    liquid_firdes_kaiser(h_len, fc, As, 0, h);
-    // add frequency offset
-    for (i=0; i<h_len; i++)
-        h[i] *= cosf(2*M_PI*f0*i);
-    firfilt_rrrf filter = firfilt_rrrf_create(h, h_len);
-    firfilt_rrrf_set_scale(filter, 2.0f*fc);
+    // generate signal (band-pass filter)
+    iirfilt_rrrf filter = iirfilt_rrrf_create_prototype(
+            LIQUID_IIRDES_BUTTER,
+            LIQUID_IIRDES_BANDPASS,
+            LIQUID_IIRDES_SOS,
+            9, 0.17f, 0.20f, 0.1f, 60.0f);
 
     for (i=0; i<num_samples; i++) {
-        // generate random sample
-        float x = randnf();
-
-        // filter
+        // filter input noise signal
         float y = 0;
-        firfilt_rrrf_push(filter, x);
-        firfilt_rrrf_execute(filter, &y);
+        iirfilt_rrrf_execute(filter, randnf(), &y);
 
         // add noise
         y += nstd * randnf();
 
         // push resulting sample through periodogram
-        spgramf_accumulate_psd(q, &y, alpha, 1);
+        spgramf_push(q, y);
     }
 
     // compute power spectral density output
     float psd[nfft];
-    spgramf_write_accumulation(q, psd);
+    spgramf_get_psd(q, psd);
 
     // destroy objects
-    firfilt_rrrf_destroy(filter);
+    iirfilt_rrrf_destroy(filter);
     spgramf_destroy(q);
 
     // 

@@ -440,7 +440,7 @@ unsigned int cpfskdem_demodulate_coherent(cpfskdem        _q,
             // save current point
             _q->z_prime = z;
 
-#if 1
+#if DEBUG_CPFSKDEM
             // print result to screen
             printf("  %3u : %12.8f + j%12.8f, <f=%8.4f : %8.4f> (%1u)\n",
                     _q->index++, crealf(z), cimagf(z), phi_hat, v, sym_out);

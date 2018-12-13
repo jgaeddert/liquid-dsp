@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2015 Joseph Gaeddert
+ * Copyright (c) 2007 - 2018 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -30,6 +30,8 @@
 #include <math.h>
 
 #include "liquid.internal.h"
+
+#define min(a,b) ((a)<(b)?(a):(b))
 
 // 
 // forward declaration of internal methods
@@ -131,7 +133,11 @@ MSRESAMP() MSRESAMP(_create)(float _r,
 
     // create arbitrary resampler object
     // TODO: compute appropriate parameters
-    q->arbitrary_resamp = RESAMP(_create)(q->rate_arbitrary, 7, 0.4f, q->As, 64);
+    q->arbitrary_resamp = RESAMP(_create)(q->rate_arbitrary,
+                                          7,
+                                          min(0.515f*q->rate_arbitrary,0.49f),
+                                          q->As,
+                                          64);
 
     // reset object
     MSRESAMP(_reset)(q);
@@ -241,6 +247,12 @@ float MSRESAMP(_get_delay)(MSRESAMP() _q)
     }
 
     return 0.0f;
+}
+
+// get resampling rate
+float MSRESAMP(_get_rate)(MSRESAMP() _q)
+{
+    return _q->rate;
 }
 
 // execute multi-stage resampler

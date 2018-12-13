@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2015 Joseph Gaeddert
+ * Copyright (c) 2007 - 2018 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -132,7 +132,7 @@ FIRFILT() FIRFILT(_create_kaiser)(unsigned int _n,
 }
 
 // create from square-root Nyquist prototype
-//  _type   : filter type (e.g. LIQUID_RNYQUIST_RRC)
+//  _type   : filter type (e.g. LIQUID_FIRFILT_RRC)
 //  _k      : nominal samples/symbol, _k > 1
 //  _m      : filter delay [symbols], _m > 0
 //  _beta   : rolloff factor, 0 < beta <= 1
@@ -229,9 +229,8 @@ FIRFILT() FIRFILT(_recreate)(FIRFILT() _q,
     for (i=_n; i>0; i--)
         _q->h[i-1] = _h[_n-i];
 
-    // re-create dot product object
-    DOTPROD(_destroy)(_q->dp);
-    _q->dp = DOTPROD(_create)(_q->h, _q->h_len);
+    // re-create internal dot product object
+    _q->dp = DOTPROD(_recreate)(_q->dp, _q->h, _q->h_len);
 
     return _q;
 }
@@ -253,7 +252,7 @@ void FIRFILT(_destroy)(FIRFILT() _q)
 void FIRFILT(_reset)(FIRFILT() _q)
 {
 #if LIQUID_FIRFILT_USE_WINDOW
-    WINDOW(_clear)(_q->w);
+    WINDOW(_reset)(_q->w);
 #else
     unsigned int i;
     for (i=0; i<_q->w_len; i++)
@@ -291,6 +290,13 @@ void FIRFILT(_set_scale)(FIRFILT() _q,
     _q->scale = _scale;
 }
 
+// get output scaling for filter
+void FIRFILT(_get_scale)(FIRFILT() _q,
+                         TC *      _scale)
+{
+    *_scale = _q->scale;
+}
+
 // push sample into filter object's internal buffer
 //  _q      :   filter object
 //  _x      :   input sample
@@ -312,6 +318,24 @@ void FIRFILT(_push)(FIRFILT() _q,
 
     // append value to end of buffer
     _q->w[_q->w_index + _q->h_len - 1] = _x;
+#endif
+}
+
+// Write block of samples into filter object's internal buffer
+//  _q      : filter object
+//  _x      : buffer of input samples, [size: _n x 1]
+//  _n      : number of input samples
+void FIRFILT(_write)(FIRFILT()    _q,
+                     TI *         _x,
+                     unsigned int _n)
+{
+#if LIQUID_FIRFILT_USE_WINDOW
+    WINDOW(_write)(_q->w, _x, _n);
+#else
+    // TODO: be smarter about this
+    unsigned int i;
+    for (i=0; i<_n; i++)
+        FIRFILT(_push)(_q, _x[i]);
 #endif
 }
 

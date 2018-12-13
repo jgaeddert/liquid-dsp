@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2015 Joseph Gaeddert
+ * Copyright (c) 2007 - 2018 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -87,7 +87,7 @@ EQLMS() EQLMS(_create)(T *          _h,
 }
 
 // create square-root Nyquist interpolator
-//  _type   :   filter type (e.g. LIQUID_RNYQUIST_RRC)
+//  _type   :   filter type (e.g. LIQUID_FIRFILT_RRC)
 //  _k      :   samples/symbol _k > 1
 //  _m      :   filter delay (symbols), _m > 0
 //  _beta   :   excess bandwidth factor, 0 < _beta < 1
@@ -201,8 +201,8 @@ void EQLMS(_reset)(EQLMS() _q)
     // copy default coefficients
     memmove(_q->w0, _q->h0, (_q->h_len)*sizeof(T));
 
-    WINDOW(_clear)(_q->buffer);
-    wdelayf_clear(_q->x2);
+    WINDOW(_reset)(_q->buffer);
+    wdelayf_reset(_q->x2);
 
     // reset input count
     _q->count = 0;

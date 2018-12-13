@@ -22,7 +22,7 @@ void usage()
     printf("fskmodem_example -- frequency-shift keying example\n");
     printf("options:\n");
     printf("  h     : print help\n");
-    printf("  m     : bits/symbol,              default:  1\n");
+    printf("  m     : bits/symbol,              default:  3\n");
     printf("  k     : samples/symbol,           default:  2*2^m\n");
     printf("  b     : signal bandwidth          default:  0.2\n");
     printf("  n     : number of data symbols,   default: 80\n");
@@ -38,7 +38,6 @@ int main(int argc, char*argv[])
     float        SNRdB       = 40.0f;   // signal-to-noise ratio [dB]
     float        bandwidth   = 0.20;    // frequency spacing
     unsigned int nfft        = 1200;    // FFT size for compute spectrum
-    float        alpha       = 0.01f;   // PSD accumulation constant
 
     int dopt;
     while ((dopt = getopt(argc,argv,"hm:k:b:n:s:")) != EOF) {
@@ -88,7 +87,7 @@ int main(int argc, char*argv[])
     float complex buf_rx[k];    // transmit buffer
     
     // spectral periodogram
-    spgramcf periodogram = spgramcf_create_kaiser(nfft, nfft/2, 8.0f);
+    spgramcf periodogram = spgramcf_create_default(nfft);
 
     // modulate, demodulate, count errors
     unsigned int num_symbol_errors = 0;
@@ -110,14 +109,18 @@ int main(int argc, char*argv[])
         num_symbol_errors += (sym_in == sym_out) ? 0 : 1;
 
         // estimate power spectral density
-        spgramcf_accumulate_psd(periodogram, buf_rx, alpha, k);
+        spgramcf_write(periodogram, buf_rx, k);
     }
+
+    // destroy modulator/demodulator pair
+    fskmod_destroy(mod);
+    fskdem_destroy(dem);
 
     printf("symbol errors: %u / %u\n", num_symbol_errors, num_symbols);
 
     // compute power spectral density of received signal
     float psd[nfft];
-    spgramcf_write_accumulation(periodogram, psd);
+    spgramcf_get_psd(periodogram, psd);
     spgramcf_destroy(periodogram);
 
     // 

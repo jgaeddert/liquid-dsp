@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2015 Joseph Gaeddert
+ * Copyright (c) 2007 - 2018 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -36,19 +36,21 @@
 #define LIQUID_DEBUG_NCO            (0)
 
 struct NCO(_s) {
-    liquid_ncotype type;
-    T theta;            // NCO phase
-    T d_theta;          // NCO frequency
-    T sintab[256];      // sine table
-    unsigned int index; // table index
-    T sine;
-    T cosine;
-    void (*compute_sincos)(NCO() _q);
+    liquid_ncotype  type;           // NCO type (e.g. LIQUID_VCO)
+    T               sintab[1024];   // sine look-up table
+    uint32_t        theta;          // 32-bit phase     [radians]
+    uint32_t        d_theta;        // 32-bit frequency [radians/sample]
 
     // phase-locked loop
-    T alpha;
-    T beta;
+    T               alpha;          // frequency proportion
+    T               beta;           // phase proportion
 };
+
+// constrain phase (or frequency) and convert to fixed-point
+uint32_t NCO(_constrain)(float _theta);
+
+// compute index for sine look-up table
+unsigned int NCO(_index)(NCO() _q);
 
 // create nco/vco object
 NCO() NCO(_create)(liquid_ncotype _type)
@@ -58,21 +60,11 @@ NCO() NCO(_create)(liquid_ncotype _type)
 
     // initialize sine table
     unsigned int i;
-    for (i=0; i<256; i++)
-        q->sintab[i] = SIN(2.0f*M_PI*(float)(i)/256.0f);
+    for (i=0; i<1024; i++)
+        q->sintab[i] = SIN(2.0f*M_PI*(float)(i)/1024.0f);
 
     // set default pll bandwidth
     NCO(_pll_set_bandwidth)(q, NCO_PLL_BANDWIDTH_DEFAULT);
-
-    // set internal method
-    if (q->type == LIQUID_NCO) {
-        q->compute_sincos = &NCO(_compute_sincos_nco);
-    } else if (q->type == LIQUID_VCO) {
-        q->compute_sincos = &NCO(_compute_sincos_vco);
-    } else {
-        fprintf(stderr,"error: NCO(_create)(), unknown type : %u\n", q->type);
-        exit(1);
-    }
 
     // reset object and return
     NCO(_reset)(q);
@@ -82,21 +74,26 @@ NCO() NCO(_create)(liquid_ncotype _type)
 // destroy nco object
 void NCO(_destroy)(NCO() _q)
 {
+    if (!_q) {
+        return;
+    }
+
     free(_q);
+}
+
+// Print nco object internals to stdout
+void NCO(_print)(NCO() _q)
+{
+    printf("nco [phase: 0x%.8x rad, freq: 0x%.8x rad/sample]\n",
+            _q->theta, _q->d_theta);
 }
 
 // reset internal state of nco object
 void NCO(_reset)(NCO() _q)
 {
-    _q->theta = 0;
+    // reset phase and frequency states
+    _q->theta   = 0;
     _q->d_theta = 0;
-
-    // reset sine table index
-    _q->index = 0;
-
-    // set internal sine, cosine values
-    _q->sine = 0;
-    _q->cosine = 1;
 
     // reset pll filter state
     NCO(_pll_reset)(_q);
@@ -104,93 +101,86 @@ void NCO(_reset)(NCO() _q)
 
 // set frequency of nco object
 void NCO(_set_frequency)(NCO() _q,
-                         T _f)
+                         T     _dtheta)
 {
-    _q->d_theta = _f;
+    _q->d_theta = NCO(_constrain)(_dtheta);
 }
 
 // adjust frequency of nco object
 void NCO(_adjust_frequency)(NCO() _q,
-                            T _df)
+                            T     _df)
 {
-    _q->d_theta += _df;
+    _q->d_theta += NCO(_constrain)(_df);
 }
 
 // set phase of nco object, constraining phase
-void NCO(_set_phase)(NCO() _q, T _phi)
+void NCO(_set_phase)(NCO() _q,
+                     T     _phi)
 {
-    _q->theta = _phi;
-    NCO(_constrain_phase)(_q);
+    _q->theta = NCO(_constrain)(_phi);
 }
 
 // adjust phase of nco object, constraining phase
-void NCO(_adjust_phase)(NCO() _q, T _dphi)
+void NCO(_adjust_phase)(NCO() _q,
+                        T     _dphi)
 {
-    _q->theta += _dphi;
-    NCO(_constrain_phase)(_q);
+    _q->theta += NCO(_constrain)(_dphi);
 }
 
 // increment internal phase of nco object
 void NCO(_step)(NCO() _q)
 {
     _q->theta += _q->d_theta;
-    NCO(_constrain_phase)(_q);
 }
 
-// get phase
+// get phase [radians]
 T NCO(_get_phase)(NCO() _q)
 {
-    return _q->theta;
+    return 2.0f*M_PI*(float)_q->theta / (float)(1LLU<<32);
 }
 
-// ge frequency
+// get frequency [radians/sample]
 T NCO(_get_frequency)(NCO() _q)
 {
-    return _q->d_theta;
+    float d_theta = 2.0f*M_PI*(float)_q->d_theta / (float)(1LLU<<32);
+    return d_theta > M_PI ? d_theta - 2*M_PI : d_theta;
 }
 
-
-// TODO : compute sine, cosine internally
+// compute sine, cosine internally
 T NCO(_sin)(NCO() _q)
 {
-    // compute internal sin, cos
-    _q->compute_sincos(_q);
-
-    // return resulting cosine component
-    return _q->sine;
+    unsigned int index = NCO(_index)(_q);
+    return _q->sintab[index];
 }
 
 T NCO(_cos)(NCO() _q)
 {
-    // compute internal sin, cos
-    _q->compute_sincos(_q);
-
-    // return resulting cosine component
-    return _q->cosine;
+    // add pi/2 phase shift
+    unsigned int index = (NCO(_index)(_q) + 256) & 0x3ff;
+    return _q->sintab[index];
 }
 
 // compute sin, cos of internal phase
-void NCO(_sincos)(NCO() _q, T* _s, T* _c)
+void NCO(_sincos)(NCO() _q,
+                  T *   _s,
+                  T *   _c)
 {
-    // compute sine, cosine internally, calling implementation-
-    // specific function (nco, vco)
-    _q->compute_sincos(_q);
+    // add pi/2 phase shift
+    unsigned int index = NCO(_index)(_q);
 
     // return result
-    *_s = _q->sine;
-    *_c = _q->cosine;
+    *_s = _q->sintab[(index    )        ];
+    *_c = _q->sintab[(index+256) & 0x3ff];
 }
 
 // compute complex exponential of internal phase
 void NCO(_cexpf)(NCO() _q,
-                 TC * _y)
+                 TC *  _y)
 {
-    // compute sine, cosine internally, calling implementation-
-    // specific function (nco, vco)
-    _q->compute_sincos(_q);
-
-    // set _y[0] to [cos(theta) + _Complex_I*sin(theta)]
-    *_y = _q->cosine + _Complex_I*(_q->sine);
+    float vsin;
+    float vcos;
+    NCO(_sincos)(_q, &vsin, &vcos);
+    *_y = vcos + _Complex_I*vsin;
 }
 
 // pll methods
@@ -202,15 +192,15 @@ void NCO(_pll_reset)(NCO() _q)
 
 // set pll bandwidth
 void NCO(_pll_set_bandwidth)(NCO() _q,
-                             T     _bandwidth)
+                             T     _bw)
 {
     // validate input
-    if (_bandwidth < 0.0f) {
+    if (_bw < 0.0f) {
         fprintf(stderr,"error: nco_pll_set_bandwidth(), bandwidth must be positive\n");
         exit(1);
     }
 
-    _q->alpha = _bandwidth;         // frequency proportion
+    _q->alpha = _bw;                // frequency proportion
     _q->beta  = sqrtf(_q->alpha);   // phase proportion
 }
 
@@ -237,15 +227,15 @@ void NCO(_pll_step)(NCO() _q,
 //  _x      :   input sample
 //  _y      :   output sample
 void NCO(_mix_up)(NCO() _q,
-                  TC _x,
-                  TC *_y)
+                  TC    _x,
+                  TC *  _y)
 {
-    // compute sine, cosine internally, calling implementation-
-    // specific function (nco, vco)
-    _q->compute_sincos(_q);
+    // compute complex phasor
+    TC v;
+    NCO(_cexpf)(_q, &v);
 
-    // multiply _x by [cos(theta) + _Complex_I*sin(theta)]
-    *_y = _x * (_q->cosine + _Complex_I*(_q->sine));
+    // rotate input
+    *_y = _x * v;
 }
 
 // Rotate input vector down by NCO angle, y = x exp{-j theta}
@@ -256,11 +246,12 @@ void NCO(_mix_down)(NCO() _q,
                     TC _x,
                     TC *_y)
 {
-    // compute sine, cosine internally
-    _q->compute_sincos(_q);
+    // compute complex phasor
+    TC v;
+    NCO(_cexpf)(_q, &v);
 
-    // multiply _x by [cos(-theta) + _Complex_I*sin(-theta)]
-    *_y = _x * (_q->cosine - _Complex_I*(_q->sine));
+    // rotate input (negative direction)
+    *_y = _x * conj(v);
 }
 
 
@@ -342,44 +333,22 @@ void NCO(_mix_block_down)(NCO() _q,
 // internal methods
 //
 
-// constrain frequency of NCO object to be in (-pi,pi)
-void NCO(_constrain_frequency)(NCO() _q)
+// constrain phase (or frequency) and convert to fixed-point
+uint32_t NCO(_constrain)(float _theta)
 {
-    if (_q->d_theta > M_PI)
-        _q->d_theta -= 2*M_PI;
-    else if (_q->d_theta < -M_PI)
-        _q->d_theta += 2*M_PI;
-}
-
-// constrain phase of NCO object to be in (-pi,pi)
-void NCO(_constrain_phase)(NCO() _q)
-{
-    if (_q->theta > M_PI)
-        _q->theta -= 2*M_PI;
-    else if (_q->theta < -M_PI)
-        _q->theta += 2*M_PI;
-}
-
-// compute sin, cos of internal phase of nco
-void NCO(_compute_sincos_nco)(NCO() _q)
-{
-    // assume phase is constrained to be in (-pi,pi)
-
-    // compute index
-    // NOTE : 40.743665 ~ 256 / (2*pi)
-    // NOTE : add 512 to ensure positive value, add 0.5 for rounding precision
-    // TODO : move away from floating-point specific code
-    _q->index = ((unsigned int)((_q->theta)*40.743665f + 512.0f + 0.5f))&0xff;
-    assert(_q->index < 256);
+    // constrain to be in [0,2pi)
+    // TODO: make more computationally efficient
+    while (_theta >=  2*M_PI) _theta -= 2*M_PI;
+    while (_theta <= -2*M_PI) _theta += 2*M_PI;
     
-    _q->sine = _q->sintab[_q->index];
-    _q->cosine = _q->sintab[(_q->index+64)&0xff];
+    // 1/(2 pi) ~ 0.159154943091895
+    return (uint32_t)round(_theta * (1LLU<<32) * 0.159154943091895);
 }
 
-// compute sin, cos of internal phase of vco
-void NCO(_compute_sincos_vco)(NCO() _q)
+// compute index for sine look-up table
+unsigned int NCO(_index)(NCO() _q)
 {
-    _q->sine   = SIN(_q->theta);
-    _q->cosine = COS(_q->theta);
+    //return (_q->theta >> 22) & 0x3ff; // round down
+    return ((_q->theta + (1<<21)) >> 22) & 0x3ff; // round appropriately
 }
 

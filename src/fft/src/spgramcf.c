@@ -32,6 +32,7 @@
 // name-mangling macros
 #define ASGRAM(name)        LIQUID_CONCAT(asgramcf,name)
 #define SPGRAM(name)        LIQUID_CONCAT(spgramcf,name)
+#define SPWATERFALL(name)   LIQUID_CONCAT(spwaterfallcf,name)
 #define WINDOW(name)        LIQUID_CONCAT(windowcf,name)
 #define FFT(name)           LIQUID_CONCAT(fft,name)
 
@@ -48,4 +49,5 @@
 // source files
 #include "asgram.c"
 #include "spgram.c"
+#include "spwaterfall.c"
 

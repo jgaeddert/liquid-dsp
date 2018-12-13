@@ -31,6 +31,7 @@
 #include <string.h>
 #include <math.h>
 #include <assert.h>
+#include <float.h>
 
 #include "liquid.internal.h"
 
@@ -221,8 +222,8 @@ void detector_cccf_print(detector_cccf _q)
 void detector_cccf_reset(detector_cccf _q)
 {
     // reset internal state
-    windowcf_clear(_q->buffer);
-    wdelayf_clear(_q->x2);
+    windowcf_reset(_q->buffer);
+    wdelayf_reset(_q->x2);
 
     // reset internal state
     _q->timer   = _q->n;                // reset timer
@@ -343,6 +344,9 @@ void detector_cccf_update_sumsq(detector_cccf _q,
     wdelayf_read(_q->x2, &x2_0);            // read oldest sample
     wdelayf_push(_q->x2, x2_n);             // push newest sample
     _q->x2_sum = _q->x2_sum + x2_n - x2_0;  // update sum( |x|^2 ) of last 'n' input samples
+    if (_q->x2_sum < FLT_EPSILON) {
+        _q->x2_sum = FLT_EPSILON;
+    }
 #if 0
     // filtered estimate of E{ |x|^2 }
     _q->x2_hat = 0.8f*_q->x2_hat + 0.2f*_q->x2_sum*_q->n_inv;

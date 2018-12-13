@@ -107,8 +107,7 @@ int main(int argc, char*argv[])
 
     // spectral periodogram
     unsigned int nfft  = 4200;
-    float        alpha = 0.10f;
-    spgramcf periodogram = spgramcf_create_kaiser(nfft, nfft/2, 8.0f);
+    spgramcf periodogram = spgramcf_create_default(nfft);
 
     // write frame in blocks
     int frame_complete = 0;
@@ -124,7 +123,7 @@ int main(int argc, char*argv[])
         fskframesync_execute_block(fs, buf_rx, buf_len);
         
         // estimate power spectral density
-        spgramcf_accumulate_psd(periodogram, buf_rx, alpha, buf_len);
+        spgramcf_write(periodogram, buf_rx, buf_len);
     }
 
 #if 0
@@ -135,7 +134,7 @@ int main(int argc, char*argv[])
 
     // compute power spectral density of received signal
     float psd[nfft];
-    spgramcf_write_accumulation(periodogram, psd);
+    spgramcf_get_psd(periodogram, psd);
 
     // clean up allocated objects
     spgramcf_destroy(periodogram);

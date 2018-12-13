@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2015 Joseph Gaeddert
+ * Copyright (c) 2007 - 2018 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -106,8 +106,6 @@ FIRHILB() FIRHILB(_create)(unsigned int _m,
     // create windows for upper and lower polyphase filter branches
     q->w1 = WINDOW(_create)(2*(q->m));
     q->w0 = WINDOW(_create)(2*(q->m));
-    WINDOW(_clear)(q->w0);
-    WINDOW(_clear)(q->w1);
 
     // create internal dot product object
     q->dpq = DOTPROD(_create)(q->hq, q->hq_len);
@@ -158,8 +156,8 @@ void FIRHILB(_print)(FIRHILB() _q)
 void FIRHILB(_reset)(FIRHILB() _q)
 {
     // clear window buffers
-    WINDOW(_clear)(_q->w0);
-    WINDOW(_clear)(_q->w1);
+    WINDOW(_reset)(_q->w0);
+    WINDOW(_reset)(_q->w1);
 
     // reset toggle flag
     _q->toggle = 0;
@@ -242,7 +240,11 @@ void FIRHILB(_decim_execute)(FIRHILB()   _q,
     WINDOW(_index)(_q->w0, _q->m-1, &yi);
 
     // set return value
-    *_y = yi + _Complex_I * yq;
+    T complex v = yi + _Complex_I * yq;
+    *_y = _q->toggle ? -v : v;
+
+    // toggle flag
+    _q->toggle = 1 - _q->toggle;
 }
 
 // execute Hilbert transform decimator (real to complex) on
@@ -273,14 +275,20 @@ void FIRHILB(_interp_execute)(FIRHILB() _q,
     T * r;  // buffer read pointer
 
     // TODO macro for crealf, cimagf?
-    
-    WINDOW(_push)(_q->w0, cimagf(_x));
+    T vi = _q->toggle ? -crealf(_x) : crealf(_x);
+    T vq = _q->toggle ? -cimagf(_x) : cimagf(_x);
+
+    // compute delay branch
+    WINDOW(_push)(_q->w0, vq);
     WINDOW(_index)(_q->w0, _q->m-1, &_y[0]);
 
     // compute second branch (filter)
-    WINDOW(_push)(_q->w1, crealf(_x));
+    WINDOW(_push)(_q->w1, vi);
     WINDOW(_read)(_q->w1, &r);
     DOTPROD(_execute)(_q->dpq, r, &_y[1]);
+
+    // toggle flag
+    _q->toggle = 1 - _q->toggle;
 }
 
 // execute Hilbert transform interpolator (complex to real)

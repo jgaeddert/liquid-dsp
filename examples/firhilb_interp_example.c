@@ -21,7 +21,7 @@
 int main() {
     unsigned int m=5;               // Hilbert filter semi-length
     float As=60.0f;                 // stop-band attenuation [dB]
-    float fc=0.37f;                 // signal center frequency
+    float fc=0.31f;                 // signal center frequency
     unsigned int num_samples=128;   // number of samples
 
     // data arrays
@@ -31,7 +31,7 @@ int main() {
     // initialize input array
     unsigned int i;
     for (i=0; i<num_samples; i++)
-        x[i] = cexpf(_Complex_I*2*M_PI*fc*i);
+        x[i] = cexpf(_Complex_I*2*M_PI*fc*i) + 0.6f*cexpf(_Complex_I*2*M_PI*1.1*fc*i);
 
     // create Hilbert transform object
     firhilbf q = firhilbf_create(m,As);
@@ -43,7 +43,7 @@ int main() {
     firhilbf_destroy(q);
 
     printf("firhilb interpolated %u complex samples to %u real samples\n",
-            2*num_samples, num_samples);
+            num_samples, 2*num_samples);
 
     // 
     // export results to file
@@ -67,7 +67,7 @@ int main() {
     fprintf(fid,"%% compute normalized windowing functions\n");
     fprintf(fid,"wx = 1.8534/num_samples*hamming(length(x)).'; %% x window\n");
     fprintf(fid,"wy = 1.8534/num_samples*hamming(length(y)).'; %% y window\n");
-    fprintf(fid,"X=20*log10(abs(        (fft(x.*wx,nfft))));\n");
+    fprintf(fid,"X=20*log10(abs(fftshift(fft(x.*wx,nfft))));\n");
     fprintf(fid,"Y=20*log10(abs(fftshift(fft(y.*wy,nfft))));\n");
     fprintf(fid,"f =[0:(nfft-1)]/nfft-0.5;\n");
     fprintf(fid,"fi=[0:(nfft-1)]/(2*nfft);\n");

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2015 Joseph Gaeddert
+ * Copyright (c) 2007 - 2018 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -97,7 +97,7 @@ FIRPFB() FIRPFB(_create)(unsigned int _M,
     return q;
 }
 
-// create firpfb from external coefficients
+// create firpfb using kaiser window
 //  _M      : number of filters in the bank
 //  _m      : filter semi-length [samples]
 //  _fc     : filter cut-off frequency 0 < _fc < 0.5
@@ -122,7 +122,7 @@ FIRPFB() FIRPFB(_create_kaiser)(unsigned int _M,
         exit(1);
     }
 
-    // generate square-root Nyquist filter
+    // design filter using kaiser window
     unsigned int H_len = 2*_M*_m + 1;
     float Hf[H_len];
     liquid_firdes_kaiser(H_len, _fc/(float)_M, _As, 0.0f, Hf);
@@ -138,7 +138,7 @@ FIRPFB() FIRPFB(_create_kaiser)(unsigned int _M,
 }
 
 // create square-root Nyquist filterbank
-//  _type   :   filter type (e.g. LIQUID_RNYQUIST_RRC)
+//  _type   :   filter type (e.g. LIQUID_FIRFILT_RRC)
 //  _M      :   number of filters in the bank
 //  _k      :   samples/symbol _k > 1
 //  _m      :   filter delay (symbols), _m > 0
@@ -180,7 +180,7 @@ FIRPFB() FIRPFB(_create_rnyquist)(int          _type,
 }
 
 // create firpfb derivative square-root Nyquist filterbank
-//  _type   :   filter type (e.g. LIQUID_RNYQUIST_RRC)
+//  _type   :   filter type (e.g. LIQUID_FIRFILT_RRC)
 //  _M      :   number of filters in the bank
 //  _k      :   samples/symbol _k > 1
 //  _m      :   filter delay (symbols), _m > 0
@@ -301,7 +301,7 @@ void FIRPFB(_print)(FIRPFB() _q)
 // clear/reset firpfb object internal state
 void FIRPFB(_reset)(FIRPFB() _q)
 {
-    WINDOW(_clear)(_q->w);
+    WINDOW(_reset)(_q->w);
 }
 
 // set output scaling for filter
@@ -309,6 +309,13 @@ void FIRPFB(_set_scale)(FIRPFB() _q,
                          TC      _scale)
 {
     _q->scale = _scale;
+}
+
+// get output scaling for filter
+void FIRPFB(_get_scale)(FIRPFB() _q,
+                         TC *    _scale)
+{
+    *_scale = _q->scale;
 }
 
 // push sample into firpfb internal buffer
@@ -342,5 +349,28 @@ void FIRPFB(_execute)(FIRPFB()     _q,
 
     // apply scaling factor
     *_y *= _q->scale;
+}
+
+// execute the filter on a block of input samples; the
+// input and output buffers may be the same
+//  _q      : firpfb object
+//  _i      : index of filter to use
+//  _x      : pointer to input array [size: _n x 1]
+//  _n      : number of input, output samples
+//  _y      : pointer to output array [size: _n x 1]
+void FIRPFB(_execute_block)(FIRPFB()     _q,
+                            unsigned int _i,
+                            TI *         _x,
+                            unsigned int _n,
+                            TO *         _y)
+{
+    unsigned int i;
+    for (i=0; i<_n; i++) {
+        // push sample into filter
+        FIRPFB(_push)(_q, _x[i]);
+
+        // compute output at appropriate index
+        FIRPFB(_execute)(_q, _i, &_y[i]);
+    }
 }
 

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2015 Joseph Gaeddert
+ * Copyright (c) 2007 - 2018 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -41,7 +41,7 @@
 // internal structure
 struct SYMTRACK(_s) {
     // parameters
-    int             filter_type;        // filter type (e.g. LIQUID_RNYQUIST_RKAISER)
+    int             filter_type;        // filter type (e.g. LIQUID_FIRFILT_RRC)
     unsigned int    k;                  // samples/symbol
     unsigned int    m;                  // filter semi-length
     float           beta;               // filter excess bandwidth
@@ -74,7 +74,7 @@ struct SYMTRACK(_s) {
 };
 
 // create symtrack object with basic parameters
-//  _ftype  : filter type (e.g. LIQUID_RNYQUIST_RRC)
+//  _ftype  : filter type (e.g. LIQUID_FIRFILT_RRC)
 //  _k      : samples per symbol
 //  _m      : filter delay (symbols)
 //  _beta   : filter excess bandwidth
@@ -86,7 +86,10 @@ SYMTRACK() SYMTRACK(_create)(int          _ftype,
                              int          _ms)
 {
     // validate input
-    if (_m == 0) {
+    if (_k < 2) {
+        fprintf(stderr,"error: symtrack_%s_create(), filter samples/symbol must be at least 2\n", EXTENSION_FULL);
+        exit(1);
+    } else if (_m == 0) {
         fprintf(stderr,"error: symtrack_%s_create(), filter delay must be greater than zero\n", EXTENSION_FULL);
         exit(1);
     } else if (_beta <= 0.0f || _beta > 1.0f) {
@@ -128,7 +131,7 @@ SYMTRACK() SYMTRACK(_create)(int          _ftype,
     q->demod = MODEM(_create)(q->mod_scheme);
 
     // set default bandwidth
-    SYMTRACK(_set_bandwidth)(q, 0.1f);
+    SYMTRACK(_set_bandwidth)(q, 0.9f);
 
     // reset and return main object
     SYMTRACK(_reset)(q);
@@ -181,13 +184,13 @@ void SYMTRACK(_set_modscheme)(SYMTRACK() _q,
                               int        _ms)
 {
     // validate input
-    if (_ms == LIQUID_MODEM_UNKNOWN || _ms >= LIQUID_MODEM_NUM_SCHEMES) {
+    if (_ms >= LIQUID_MODEM_NUM_SCHEMES) {
         fprintf(stderr,"error: symtrack_%s_set_modscheme(), invalid/unsupported modulation scheme\n", EXTENSION_FULL);
         exit(1);
     }
 
     // set internal modulation scheme
-    _q->mod_scheme = _ms;
+    _q->mod_scheme = _ms == LIQUID_MODEM_UNKNOWN ? LIQUID_MODEM_BPSK : _ms;
 
     // re-create modem
     _q->demod = MODEM(_recreate)(_q->demod, _q->mod_scheme);
@@ -204,11 +207,10 @@ void SYMTRACK(_set_bandwidth)(SYMTRACK() _q,
     }
 
     // set bandwidths accordingly
-    // TODO: set bandwidths based on input bandwidth
-    float agc_bandwidth     = 0.02f;
-    float symsync_bandwidth = 0.001f;
-    float eq_bandwidth      = 0.02f;
-    float pll_bandwidth     = 0.001f;
+    float agc_bandwidth     = 0.02f  * _bw;
+    float symsync_bandwidth = 0.001f * _bw;
+    float eq_bandwidth      = 0.02f  * _bw;
+    float pll_bandwidth     = 0.001f * _bw;
 
     // automatic gain control
     AGC(_set_bandwidth)(_q->agc, agc_bandwidth);

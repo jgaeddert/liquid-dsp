@@ -49,11 +49,11 @@ void autotest_eqlms_cccf_blind()
 
     // create channel filter
     float complex h[5] = {
-        { 1.00f,  0.00f},
-        { 0.00f, -0.01f},
-        {-0.11f,  0.02f},
-        { 0.02f,  0.01f},
-        {-0.09f, -0.04f} };
+         1.00f +  0.00f*_Complex_I,
+         0.00f + -0.01f*_Complex_I,
+        -0.11f +  0.02f*_Complex_I,
+         0.02f +  0.01f*_Complex_I,
+        -0.09f + -0.04f*_Complex_I };
     firfilt_cccf fchannel = firfilt_cccf_create(h,5);
 
     // arrays
@@ -66,8 +66,8 @@ void autotest_eqlms_cccf_blind()
     unsigned int j;
     for (i=0; i<num_symbols; i++) {
         // generate input symbol
-        sym_in[i] = ( msequence_advance(ms) ? M_SQRT1_2 : -M_SQRT1_2 ) +
-                    ( msequence_advance(ms) ? M_SQRT1_2 : -M_SQRT1_2 ) * _Complex_I;
+        sym_in[i]  = ( msequence_advance(ms) ? M_SQRT1_2 : -M_SQRT1_2 );
+        sym_in[i] += ( msequence_advance(ms) ? M_SQRT1_2 : -M_SQRT1_2 )*_Complex_I;
 
         // interpolate
         firinterp_crcf_execute(interp, sym_in[i], buf);
@@ -157,8 +157,8 @@ void autotest_eqlms_cccf_decisiondirected()
     unsigned int j;
     for (i=0; i<num_symbols; i++) {
         // generate input symbol
-        sym_in[i] = ( msequence_advance(ms) ? M_SQRT1_2 : -M_SQRT1_2 ) +
-                    ( msequence_advance(ms) ? M_SQRT1_2 : -M_SQRT1_2 ) * _Complex_I;
+        sym_in[i]  = ( msequence_advance(ms) ? M_SQRT1_2 : -M_SQRT1_2 );
+        sym_in[i] += ( msequence_advance(ms) ? M_SQRT1_2 : -M_SQRT1_2 )*_Complex_I;
 
         // interpolate
         firinterp_crcf_execute(interp, sym_in[i], buf);

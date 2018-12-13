@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2015 Joseph Gaeddert
+ * Copyright (c) 2007 - 2018 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -81,6 +81,9 @@ FIRFARROW() FIRFARROW(_create)(unsigned int _h_len,
     } else if (_fc < 0.0f || _fc > 0.5f) {
         fprintf(stderr,"error: firfarrow_%s_create(), filter cutoff must be in [0,0.5]\n", EXTENSION_FULL);
         exit(1);
+    } else if (_As < 0.0f) {
+        fprintf(stderr,"error: firfarrow_%s_create(), filter stop-band attenuation must be greater than zero\n", EXTENSION_FULL);
+        exit(1);
     }
 
     // create main object
@@ -160,7 +163,7 @@ void FIRFARROW(_print)(FIRFARROW() _q)
 void FIRFARROW(_reset)(FIRFARROW() _q)
 {
 #if FIRFARROW_USE_DOTPROD
-    WINDOW(_clear)(_q->w);
+    WINDOW(_reset)(_q->w);
 #else
     unsigned int i;
     for (i=0; i<_q->h_len; i++)
@@ -188,11 +191,11 @@ void FIRFARROW(_push)(FIRFARROW() _q,
 //  _q      : firfarrow object
 //  _mu     : fractional sample delay
 void FIRFARROW(_set_delay)(FIRFARROW() _q,
-                           float _mu)
+                           float       _mu)
 {
     // validate input
     if (_mu < -1.0f || _mu > 1.0f) {
-        fprintf(stderr,"warning: firfarrow_%s_set_delay(), delay out of range\n", EXTENSION_FULL);
+        fprintf(stderr,"warning: firfarrow_%s_set_delay(), delay must be in [-1,1]\n", EXTENSION_FULL);
     }
 
     unsigned int i, n=0;

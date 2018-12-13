@@ -67,6 +67,7 @@ struct qdetector_cccf_s {
     float           x2_sum_0;       // sum{ |x|^2 } of first half of buffer
     float           x2_sum_1;       // sum{ |x|^2 } of second half of buffer
 
+    float           rxy;            // peak correlation output
     int             offset;         // FFT offset index for peak correlation (coarse carrier estimate)
     float           tau_hat;        // timing offset estimate
     float           gamma_hat;      // signal level estimate (channel gain)
@@ -128,6 +129,7 @@ qdetector_cccf qdetector_cccf_create(float complex * _s,
     memset(q->buf_time_0, 0x00, q->nfft*sizeof(float complex));
     
     // reset estimates
+    q->rxy       = 0.0f;
     q->tau_hat   = 0.0f;
     q->gamma_hat = 0.0f;
     q->dphi_hat  = 0.0f;
@@ -258,6 +260,7 @@ void qdetector_cccf_print(qdetector_cccf _q)
     printf("qdetector_cccf:\n");
     printf("  template length (time):   %-u\n",   _q->s_len);
     printf("  FFT size              :   %-u\n",   _q->nfft);
+    printf("  search range (bins)   :   %-d\n",   _q->range);
     printf("  detection threshold   :   %6.4f\n", _q->threshold);
     printf("  sum{ s^2 }            :   %.2f\n",  _q->s2_sum);
 }
@@ -340,6 +343,12 @@ unsigned int qdetector_cccf_get_buf_len(qdetector_cccf _q)
     return _q->nfft;
 }
 
+// correlator output
+float qdetector_cccf_get_rxy(qdetector_cccf _q)
+{
+    return _q->rxy;
+}
+
 // fractional timing offset estimate
 float qdetector_cccf_get_tau(qdetector_cccf _q)
 {
@@ -389,8 +398,23 @@ void qdetector_cccf_execute_seek(qdetector_cccf _q,
     fft_execute(_q->fft);
 
     // compute scaling factor (TODO: use median rather than mean signal level)
-    float g0 = sqrtf(_q->x2_sum_0 + _q->x2_sum_1) * sqrtf((float)(_q->s_len) / (float)(_q->nfft));
-    float g = 1.0f / ( (float)(_q->nfft) * g0 * sqrtf(_q->s2_sum) );
+    float g0;
+    if (_q->x2_sum_0 == 0.f) {
+        g0 = sqrtf(_q->x2_sum_1) * sqrtf((float)(_q->s_len) / (float)(_q->nfft / 2));
+    } else {
+        g0 = sqrtf(_q->x2_sum_0 + _q->x2_sum_1) * sqrtf((float)(_q->s_len) / (float)(_q->nfft));
+    }
+    if (g0 < 1e-10) {
+        memmove(_q->buf_time_0,
+                _q->buf_time_0 + _q->nfft / 2,
+                (_q->nfft / 2) * sizeof(liquid_float_complex));
+
+        // swap accumulated signal levels
+        _q->x2_sum_0 = _q->x2_sum_1;
+        _q->x2_sum_1 = 0.0f;
+        return;
+    }
+    float g = 1.0f / ((float)(_q->nfft) * g0 * sqrtf(_q->s2_sum));
     
     // sweep over carrier frequency offset range
     int offset;
@@ -456,6 +480,7 @@ void qdetector_cccf_execute_seek(qdetector_cccf _q,
         // update state, reset counter, copy buffer appropriately
         _q->state = QDETECTOR_STATE_ALIGN;
         _q->offset = rxy_offset;
+        _q->rxy    = rxy_peak; // note that this is a coarse estimate
         // TODO: check for edge case where rxy_index is zero (signal already aligned)
 
         // copy last part of fft input buffer to front
@@ -504,13 +529,15 @@ void qdetector_cccf_execute_align(qdetector_cccf _q,
     float yneg = cabsf(_q->buf_time_1[_q->nfft-1]);  yneg = sqrtf(yneg);
     float y0   = cabsf(_q->buf_time_1[         0]);  y0   = sqrtf(y0  );
     float ypos = cabsf(_q->buf_time_1[         1]);  ypos = sqrtf(ypos);
-    // TODO: compute timing offset estimate from these values
+    // compute timing offset estimate from quadratic polynomial fit
+    //  y = a x^2 + b x + c, [xneg = -1, x0 = 0, xpos = +1]
     float a     =  0.5f*(ypos + yneg) - y0;
     float b     =  0.5f*(ypos - yneg);
     float c     =  y0;
     _q->tau_hat = -b / (2.0f*a); //-0.5f*(ypos - yneg) / (ypos + yneg - 2*y0);
     float g_hat   = (a*_q->tau_hat*_q->tau_hat + b*_q->tau_hat + c);
     _q->gamma_hat = g_hat * g_hat / ((float)(_q->nfft) * _q->s2_sum); // g_hat^2 because of sqrt for yneg/y0/ypos
+    // TODO: revise estimate of rxy here
 
     // copy buffer to preserve data integrity
     memmove(_q->buf_time_1, _q->buf_time_0, _q->nfft*sizeof(float complex));
@@ -548,13 +575,14 @@ void qdetector_cccf_execute_align(qdetector_cccf _q,
             i0 = i;
         }
     }
+    // interpolate using quadratic polynomial for carrier frequency estimate
     unsigned int ineg = (i0 + _q->nfft - 1)%_q->nfft;
     unsigned int ipos = (i0            + 1)%_q->nfft;
     float        vneg = cabsf(_q->buf_freq_0[ineg]);
     float        vpos = cabsf(_q->buf_freq_0[ipos]);
     a            =  0.5f*(vpos + vneg) - v0;
     b            =  0.5f*(vpos - vneg);
-    c            =  v0;
+    //c            =  v0;
     float idx    = -b / (2.0f*a); //-0.5f*(vpos - vneg) / (vpos + vneg - 2*v0);
     float index  = (float)i0 + idx;
     _q->dphi_hat = (i0 > _q->nfft/2 ? index-(float)_q->nfft : index) * 2*M_PI / (float)(_q->nfft);

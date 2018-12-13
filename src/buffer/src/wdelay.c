@@ -50,7 +50,7 @@ WDELAY() WDELAY(_create)(unsigned int _delay)
     q->read_index = 0;
 
     // clear window
-    WDELAY(_clear)(q);
+    WDELAY(_reset)(q);
 
     return q;
 }
@@ -107,7 +107,7 @@ void WDELAY(_print)(WDELAY() _q)
 }
 
 // clear/reset state of object
-void WDELAY(_clear)(WDELAY() _q)
+void WDELAY(_reset)(WDELAY() _q)
 {
     _q->read_index = 0;
     memset(_q->v, 0, (_q->delay)*sizeof(T));
