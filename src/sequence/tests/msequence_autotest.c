@@ -64,7 +64,7 @@ void msequence_test_autocorrelation(unsigned int _m)
     // when sequences are aligned, autocorrelation is equal to length
     signed int rxy;
     rxy = bsequence_correlate(bs1, bs2);
-    CONTEND_EQUALITY( rxy, n )
+    CONTEND_EQUALITY( (unsigned int)rxy, n )
 
     // when sequences are misaligned, autocorrelation is equal to -1
     unsigned int i;

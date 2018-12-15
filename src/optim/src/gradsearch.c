@@ -315,6 +315,9 @@ float gradsearch_norm(float *      _v,
     for (i=0; i<_n; i++)
         vnorm += _v[i]*_v[i];
 
+    if (vnorm == 0.0f)
+        return vnorm;
+
     vnorm = sqrtf(vnorm);
 
     for (i=0; i<_n; i++)

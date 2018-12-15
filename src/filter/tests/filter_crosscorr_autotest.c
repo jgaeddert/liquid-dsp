@@ -58,7 +58,7 @@ void autotest_filter_crosscorr_rrrf()
         printf("testing corr(x,y):\n");
 
     // corr(x,y)
-    int i;
+    unsigned int i;
     for (i=0; i<rxy_len; i++) {
         int lag = i - y_len + 1;
         rxy[i] = liquid_filter_crosscorr(x,x_len, y,y_len, lag);

@@ -71,8 +71,8 @@ gasearch gasearch_create_advanced(gasearch_utility _utility,
     gasearch ga;
     ga = (gasearch) malloc( sizeof(struct gasearch_s) );
 
-    if (_population_size > LIQUID_GA_SEARCH_MAX_POPULATION_SIZE) {
-        fprintf(stderr,"error: gasearch_create(), population size exceeds maximum\n");
+    if (_population_size == 0 || _population_size > LIQUID_GA_SEARCH_MAX_POPULATION_SIZE) {
+        fprintf(stderr,"error: gasearch_create(), population size is invalid\n");
         exit(1);
     } else if (_mutation_rate < 0.0f || _mutation_rate > 1.0f) {
         fprintf(stderr,"error: gasearch_create(), mutation rate must be in [0,1]\n");

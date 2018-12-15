@@ -422,16 +422,16 @@ float liquid_filter_autocorr(float *      _h,
                              int          _lag)
 {
     // auto-correlation is even symmetric
-    _lag = abs(_lag);
+    unsigned int _ulag = abs(_lag);
 
     // lag outside of filter length is zero
-    if (_lag >= _h_len) return 0.0f;
+    if (_ulag >= _h_len) return 0.0f;
 
     // compute auto-correlation
     float rxx=0.0f; // initialize auto-correlation to zero
     unsigned int i;
-    for (i=_lag; i<_h_len; i++)
-        rxx += _h[i] * _h[i-_lag];
+    for (i=_ulag; i<_h_len; i++)
+        rxx += _h[i] * _h[i-_ulag];
 
     return rxx;
 }
@@ -476,7 +476,7 @@ float liquid_filter_crosscorr(float *      _h,
     int n;
     if (_lag < 0)
         n = (int)_g_len + _lag;
-    else if (_lag < (_h_len-_g_len))
+    else if ((unsigned int)_lag < (_h_len-_g_len))
         n = _g_len;
     else
         n = _h_len - _lag;

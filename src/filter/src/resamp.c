@@ -55,7 +55,7 @@ struct RESAMP(_s) {
     // floating-point phase
     float tau;          // accumulated timing phase, 0 <= tau < 1
     float bf;           // soft filterbank index, bf = tau*npfb = b + mu
-    int b;              // base filterbank index, 0 <= b < npfb
+    unsigned int b;     // base filterbank index, 0 <= b < npfb
     float mu;           // fractional filterbank interpolation value, 0 <= mu < 1
     TO y0;              // filterbank output at index b
     TO y1;              // filterbank output at index b+1
@@ -394,7 +394,7 @@ void RESAMP(_update_timing_state)(RESAMP() _q)
     _q->bf  = _q->tau * (float)(_q->npfb);
 
     // split into integer filterbank index and fractional interpolation
-    _q->b   = (int)floorf(_q->bf);      // base index
+    _q->b   = (unsigned int)floorf(_q->bf);      // base index
     _q->mu  = _q->bf - (float)(_q->b);  // fractional index
 }
 

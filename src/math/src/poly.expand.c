@@ -44,7 +44,7 @@ void POLY(_expandbinomial)(unsigned int _n,
         return;
     }
 
-    int i, j;
+    unsigned int i, j;
     // initialize coefficients array to [1,0,0,....0]
     for (i=0; i<=_n; i++)
         _c[i] = (i==0) ? 1 : 0;
@@ -74,7 +74,7 @@ void POLY(_expandbinomial_pm)(unsigned int _m,
         return;
     }
 
-    int i, j;
+    unsigned int i, j;
     // initialize coefficients array to [1,0,0,....0]
     for (i=0; i<=n; i++)
         _c[i] = (i==0) ? 1 : 0;
@@ -154,7 +154,7 @@ void POLY(_expandroots)(T *          _r,
         return;
     }
 
-    int i, j;
+    unsigned int i, j;
     // initialize coefficients array to [1,0,0,....0]
     for (i=0; i<=_n; i++)
         _p[i] = (i==0) ? 1 : 0;
