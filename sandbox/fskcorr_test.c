@@ -49,11 +49,9 @@ int main(int argc, char*argv[])
         firinterp_rrrf_execute(interp, 2.0f*(float)seq[i] - 1.0f, buf_mf + i*p);
     firinterp_rrrf_destroy(interp);
     //for (i=0; i<n*p; i++) printf("mf(%3u) = %8.3f;\n", i+1, buf_mf[i]);
-    float h[n*p];
-    // reverse coefficients
-    for (i=0; i<n*p; i++)
-        h[i] = buf_mf[n*p-i-1];
-    firfilt_rrrf xcorr = firfilt_rrrf_create(h, n*p);
+    // generate buffer and dot product objects for cross-correlation
+    dotprod_rrrf xcorr     = dotprod_rrrf_create(buf_mf, n*p);
+    windowf      buf_xcorr = windowf_create(p*n);
 
     // allocate memory arrays
     float complex * buf_0 = (float complex*) malloc(M*sizeof(float complex));
@@ -110,8 +108,10 @@ int main(int argc, char*argv[])
 
                 // run through cross-correlator
                 float rxy = 0;
-                firfilt_rrrf_push(xcorr, llr);
-                firfilt_rrrf_execute(xcorr, &rxy);
+                windowf_push(buf_xcorr, llr);
+                float * rf;
+                windowf_read(buf_xcorr, &rf);
+                dotprod_rrrf_execute(xcorr, rf, &rxy);
                 fprintf(fid,"rxy(end+1) = %12.4e;\n", rxy);
                 
                 printf(" %12.4e { %12.6f, %12.6f } : llr:%12.6f, rxy:%10.1f\n", r2, v0, v1, llr, rxy);
@@ -136,7 +136,8 @@ int main(int argc, char*argv[])
     fft_destroy_plan(fft);
     fft_destroy_plan(ifft);
     windowcf_destroy(buf_rx);
-    firfilt_rrrf_destroy(xcorr);
+    dotprod_rrrf_destroy(xcorr);
+    windowf_destroy(buf_xcorr);
 
     printf("done.\n");
     return 0;
