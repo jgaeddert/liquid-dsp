@@ -52,6 +52,7 @@ int main(int argc, char*argv[])
     // generate buffer and dot product objects for cross-correlation
     dotprod_rrrf xcorr     = dotprod_rrrf_create(buf_mf, n*p);
     windowf      buf_xcorr = windowf_create(p*n);
+    float xcorr_norm = liquid_sumsqf(buf_mf, p*n);
 
     // allocate memory arrays
     float complex * buf_0 = (float complex*) malloc(M*sizeof(float complex));
@@ -112,9 +113,11 @@ int main(int argc, char*argv[])
                 float * rf;
                 windowf_read(buf_xcorr, &rf);
                 dotprod_rrrf_execute(xcorr, rf, &rxy);
+                float y2 = liquid_sumsqf(rf, p*n);
+                rxy /= sqrtf(xcorr_norm*y2);
                 fprintf(fid,"rxy(end+1) = %12.4e;\n", rxy);
-                
-                printf(" %12.4e { %12.6f, %12.6f } : llr:%12.6f, rxy:%10.1f\n", r2, v0, v1, llr, rxy);
+               
+                printf(" %12.4e { %12.6f, %12.6f } : llr:%12.6f, rxy:%10.6f\n", r2, v0, v1, llr, rxy);
             }
             windowcf_push(buf_rx,buf_1[j]);
             timer--;
