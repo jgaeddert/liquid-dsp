@@ -27,7 +27,7 @@ int main(int argc, char*argv[])
     unsigned int j;
 
     // derived values
-    float nstd = 0;
+    float nstd = 1.0f;
     float gain = 1.0f;
     unsigned int i1  = (unsigned int)round(fc*M);
     unsigned int i0  = M - (i1 - 1);
@@ -69,6 +69,10 @@ int main(int argc, char*argv[])
     for (i=0; i<M; i++)
         windowcf_push(buf_rx, nstd*(randnf() + _Complex_I*randnf())*M_SQRT1_2);
 
+    // create spectral periodogram
+    unsigned int nfft = 2400;
+    spgramcf periodogram = spgramcf_create_default(nfft);
+
     //
     FILE * fid = fopen("fskcorr_test.m","w");
     fprintf(fid,"clear all;\n");
@@ -86,11 +90,16 @@ int main(int argc, char*argv[])
         memset(buf_0, 0x0, M*sizeof(float complex));
         if (i < n)
             buf_0[ seq[i] ? i1 : i0 ] = gain;
+        else
+            buf_0[ rand() & 1 ? i1 : i0 ] = gain;
         fft_execute(ifft); // buf_0 -> buf_1
 
         // add noise
         for (j=0; j<M; j++)
             buf_1[j] += nstd*(randnf() + _Complex_I*randnf())*M_SQRT1_2;
+
+        // update spectral periodogram
+        spgramcf_write(periodogram, buf_1, M);
 
         // execute...
         for (j=0; j<M; j++) {
@@ -126,13 +135,27 @@ int main(int argc, char*argv[])
     for (i=0; i<n*p; i++) {
         fprintf(fid,"buf_mf(%4u) = %12.4e;\n", i+1, buf_mf[i]);
     }
+    // compute power spectral density output
+    float psd[nfft];
+    spgramcf_get_psd(periodogram, psd);
+    for (i=0; i<nfft; i++) {
+        fprintf(fid,"psd(%4u) = %12.4e;\n", i+1, psd[i]);
+    }
     fprintf(fid,"num_samples = length(llr);\n");
     fprintf(fid,"txy         = [0:(num_samples-1)] - p*n + 1;\n");
     fprintf(fid,"S = fft(s,  num_samples);\n");
     fprintf(fid,"L = fft(llr,num_samples);\n");
-    fprintf(fid,"plot(txy,rxy,'-x');\n");
-    fprintf(fid,"axis([-200 200 -0.2 1.2]);\n");
-    fprintf(fid,"grid on;\n");
+    fprintf(fid,"figure('position',[1 1 800 800]);\n");
+    fprintf(fid,"subplot(2,1,1);\n");
+    fprintf(fid,"  plot(txy,rxy,'-x');\n");
+    fprintf(fid,"  axis([-200 200 -0.2 1.2]);\n");
+    fprintf(fid,"  grid on;\n");
+    fprintf(fid,"subplot(2,1,2);\n");
+    fprintf(fid,"  nfft=length(psd);\n");
+    fprintf(fid,"  f = [0:(nfft-1)]/nfft - 0.5;\n");
+    fprintf(fid,"  plot(f,psd);\n");
+    fprintf(fid,"  axis([-0.5 0.5 -10 40]);\n");
+    fprintf(fid,"  grid on;\n");
     fclose(fid);
     printf("results written to fskcorr_test.m\n");
 
@@ -145,6 +168,7 @@ int main(int argc, char*argv[])
     windowcf_destroy(buf_rx);
     dotprod_rrrf_destroy(xcorr);
     windowf_destroy(buf_xcorr);
+    spgramcf_destroy(periodogram);
 
     printf("done.\n");
     return 0;
