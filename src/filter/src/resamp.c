@@ -152,7 +152,7 @@ RESAMP() RESAMP(_create_default)(float _rate)
 
     // det default parameters
     unsigned int m    = 7;
-    float        fc   = 0.25f;
+    float        fc   = 0.5f*_rate > 0.49f ? 0.49f : 0.5f*_rate;
     float        As   = 60.0f;
     unsigned int npfb = 64;
 

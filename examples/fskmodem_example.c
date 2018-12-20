@@ -22,7 +22,7 @@ void usage()
     printf("fskmodem_example -- frequency-shift keying example\n");
     printf("options:\n");
     printf("  h     : print help\n");
-    printf("  m     : bits/symbol,              default:  1\n");
+    printf("  m     : bits/symbol,              default:  3\n");
     printf("  k     : samples/symbol,           default:  2*2^m\n");
     printf("  b     : signal bandwidth          default:  0.2\n");
     printf("  n     : number of data symbols,   default: 80\n");
@@ -111,6 +111,10 @@ int main(int argc, char*argv[])
         // estimate power spectral density
         spgramcf_write(periodogram, buf_rx, k);
     }
+
+    // destroy modulator/demodulator pair
+    fskmod_destroy(mod);
+    fskdem_destroy(dem);
 
     printf("symbol errors: %u / %u\n", num_symbol_errors, num_symbols);
 

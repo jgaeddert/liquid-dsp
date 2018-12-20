@@ -19,26 +19,26 @@
 void usage()
 {
     printf("Usage: %s [OPTION]\n", __FILE__);
-    printf("  h     : print help\n");
-    printf("  r     : resampling rate (output/input),    default: 1.1\n");
-    printf("  m     : filter semi-length (delay),        default: 13\n");
-    printf("  b     : filter bandwidth, 0 < b < 0.5,     default: 0.4\n");
-    printf("  s     : filter stop-band attenuation [dB], default: 60\n");
-    printf("  p     : filter bank size,                  default: 64\n");
-    printf("  n     : number of input samples,           default: 400\n");
-    printf("  f     : input signal frequency,            default: 0.044\n");
+    printf("  -h            : print help\n");
+    printf("  -r <rate>     : resampling rate (output/input),    default: 1.1\n");
+    printf("  -m <delay>    : filter semi-length (delay),        default: 13\n");
+    printf("  -b <bandwidth>: filter bandwidth, 0 < b < 0.5,     default: 0.4\n");
+    printf("  -s <atten>    : filter stop-band attenuation [dB], default: 60\n");
+    printf("  -p <npfb>     : filter bank size,                  default: 64\n");
+    printf("  -n <num>      : number of input samples,           default: 400\n");
+    printf("  -f <frequency>: input signal frequency,            default: 0.044\n");
 }
 
 int main(int argc, char*argv[])
 {
     // options
-    float r           = 1.1f;   // resampling rate (output/input)
+    float        r    = 1.1f;   // resampling rate (output/input)
     unsigned int m    = 13;     // resampling filter semi-length (filter delay)
-    float As          = 60.0f;  // resampling filter stop-band attenuation [dB]
-    float bw          = 0.45f;  // resampling filter bandwidth
+    float        As   = 60.0f;  // resampling filter stop-band attenuation [dB]
+    float        bw   = 0.45f;  // resampling filter bandwidth
     unsigned int npfb = 64;     // number of filters in bank (timing resolution)
     unsigned int n    = 400;    // number of input samples
-    float fc          = 0.044f; // complex sinusoid frequency
+    float        fc   = 0.044f; // complex sinusoid frequency
 
     int dopt;
     while ((dopt = getopt(argc,argv,"hr:m:b:s:p:n:f:")) != EOF) {
@@ -107,20 +107,8 @@ int main(int argc, char*argv[])
 
     // resample
     unsigned int ny=0;
-#if 0
-    // execute one sample at a time
-    unsigned int nw;
-    for (i=0; i<nx; i++) {
-        // execute resampler, storing in output buffer
-        resamp_crcf_execute(q, x[i], &y[ny], &nw);
-
-        // increment output size
-        ny += nw;
-    }
-#else
     // execute on block of samples
     resamp_crcf_execute_block(q, x, nx, y, &ny);
-#endif
 
     // clean up allocated objects
     resamp_crcf_destroy(q);
@@ -175,9 +163,7 @@ int main(int argc, char*argv[])
     printf("  max sidelobe              :   %12.8f dB (expected at least %.2f dB)\n", max_sidelobe, -As);
 
 
-    // 
     // export results
-    //
     FILE * fid = fopen(OUTPUT_FILENAME,"w");
     fprintf(fid,"%% %s: auto-generated file\n",OUTPUT_FILENAME);
     fprintf(fid,"clear all;\n");

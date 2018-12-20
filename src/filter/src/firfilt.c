@@ -132,7 +132,7 @@ FIRFILT() FIRFILT(_create_kaiser)(unsigned int _n,
 }
 
 // create from square-root Nyquist prototype
-//  _type   : filter type (e.g. LIQUID_RNYQUIST_RRC)
+//  _type   : filter type (e.g. LIQUID_FIRFILT_RRC)
 //  _k      : nominal samples/symbol, _k > 1
 //  _m      : filter delay [symbols], _m > 0
 //  _beta   : rolloff factor, 0 < beta <= 1
@@ -318,6 +318,24 @@ void FIRFILT(_push)(FIRFILT() _q,
 
     // append value to end of buffer
     _q->w[_q->w_index + _q->h_len - 1] = _x;
+#endif
+}
+
+// Write block of samples into filter object's internal buffer
+//  _q      : filter object
+//  _x      : buffer of input samples, [size: _n x 1]
+//  _n      : number of input samples
+void FIRFILT(_write)(FIRFILT()    _q,
+                     TI *         _x,
+                     unsigned int _n)
+{
+#if LIQUID_FIRFILT_USE_WINDOW
+    WINDOW(_write)(_q->w, _x, _n);
+#else
+    // TODO: be smarter about this
+    unsigned int i;
+    for (i=0; i<_n; i++)
+        FIRFILT(_push)(_q, _x[i]);
 #endif
 }
 

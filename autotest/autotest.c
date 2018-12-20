@@ -294,9 +294,9 @@ int main(int argc, char *argv[])
     fprintf(fid,"{\n");
     fprintf(fid,"  \"build-info\" : {},\n");
     fprintf(fid,"  \"pass\" : %s,\n", liquid_autotest_num_failed==0 ? "true" : "false");
-    fprintf(fid,"  \"num_failed\" : %u,\n", liquid_autotest_num_failed);
-    fprintf(fid,"  \"num_checks\" : %u,\n", liquid_autotest_num_checks);
-    fprintf(fid,"  \"num_warnings\" : %u,\n", liquid_autotest_num_warnings);
+    fprintf(fid,"  \"num_failed\" : %lu,\n", liquid_autotest_num_failed);
+    fprintf(fid,"  \"num_checks\" : %lu,\n", liquid_autotest_num_checks);
+    fprintf(fid,"  \"num_warnings\" : %lu,\n", liquid_autotest_num_warnings);
     fprintf(fid,"  \"command-line\" : \"");
     for (i=0; i<(unsigned int)argc; i++)
         fprintf(fid," %s", argv[i]);

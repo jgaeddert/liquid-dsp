@@ -1,4 +1,4 @@
-# Copyright (c) 2007 - 2017 Joseph Gaeddert
+# Copyright (c) 2007 - 2018 Joseph Gaeddert
 # 
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -22,23 +22,22 @@
 # Makefile for liquid-dsp libraries
 #
 # Targets:
-#    all                 :   dynamic shared-library object (e.g. libliquid.so)
-#    install             :   install the dynamic shared library object and
-#                            header file(s)
-#    uninstall           :   uninstall the library and header file(s)
-#    clean               :   clean all targets (bench, check, examples, etc)
-#    distclean           :   removes everything except the originally distributed files
-#    check               :   build and run autotest program
-#    bench               :   build and run benchmarking program
-#    examples            :   build all examples
-#    sandbox             :   build all sandbox examples
-#    world               :   build absolutely everything (but don't install)
+#    all            : dynamic shared-library object (e.g. libliquid.so)
+#    install        : install the dynamic shared library object and headers
+#    uninstall      : uninstall the library and header file(s)
+#    clean          : clean all targets (bench, check, examples, etc)
+#    distclean      : removes everything except the originally distributed files
+#    check          : build and run autotest program
+#    bench          : build and run benchmarking program
+#    examples       : build all examples
+#    sandbox        : build all sandbox examples
+#    world          : build absolutely everything (but don't install)
 #
-#    clean-modules       :   clean all modules
-#    clean-examples      :   clean examples programs
-#    clean-sandbox       :   clean sandbox programs
-#    clean-check         :   clean autotest program
-#    clean-bench         :   clean benchmark program
+#    clean-modules  : clean all modules
+#    clean-examples : clean examples programs
+#    clean-sandbox  : clean sandbox programs
+#    clean-check    : clean autotest program
+#    clean-bench    : clean benchmark program
 #
 
 # autoconf initialization macros
@@ -60,6 +59,7 @@ RM		:= rm -f
 SED		:= @SED@
 GREP		:= @GREP@
 AR		:= @AR@
+LIBTOOL		:= @LIBTOOL@
 RANLIB		:= @RANLIB@
 
 # flags
@@ -69,7 +69,6 @@ CPPFLAGS	= @CPPFLAGS@ $(INCLUDE_CFLAGS)
 CFLAGS		= $(CONFIG_CFLAGS) -Wall -fPIC
 LDFLAGS		= @LDFLAGS@
 LIBS		= @LIBS@
-ARFLAGS		= r
 PATHSEP		= /
 
 # 
@@ -444,10 +443,13 @@ filter_includes :=						\
 	src/filter/src/iirdecim.c				\
 	src/filter/src/iirfilt.c				\
 	src/filter/src/iirfiltsos.c				\
+	src/filter/src/iirhilb.c				\
 	src/filter/src/iirinterp.c				\
 	src/filter/src/msresamp.c				\
 	src/filter/src/msresamp2.c				\
-	src/filter/src/resamp.c					\
+	src/filter/src/ordfilt.c				\
+	src/filter/src/rresamp.c				\
+	src/filter/src/resamp.fixed.c				\
 	src/filter/src/resamp2.c				\
 	src/filter/src/symsync.c				\
 
@@ -487,6 +489,7 @@ filter_autotests :=						\
 	src/filter/tests/iirfilt_xxxf_autotest.c		\
 	src/filter/tests/iirfiltsos_rrrf_autotest.c		\
 	src/filter/tests/msresamp_crcf_autotest.c		\
+	src/filter/tests/rresamp_crcf_autotest.c		\
 	src/filter/tests/resamp_crcf_autotest.c			\
 	src/filter/tests/resamp2_crcf_autotest.c		\
 	src/filter/tests/symsync_crcf_autotest.c		\
@@ -571,6 +574,7 @@ filter_benchmarks :=						\
 	src/filter/bench/iirdecim_crcf_benchmark.c		\
 	src/filter/bench/iirfilt_crcf_benchmark.c		\
 	src/filter/bench/iirinterp_crcf_benchmark.c		\
+	src/filter/bench/rresamp_crcf_benchmark.c		\
 	src/filter/bench/resamp_crcf_benchmark.c		\
 	src/filter/bench/resamp2_crcf_benchmark.c		\
 	src/filter/bench/symsync_crcf_benchmark.c		\
@@ -698,6 +702,7 @@ src/math/src/windows.o            : %.o : %.c $(include_headers)
 
 
 math_autotests :=						\
+	src/math/tests/gcd_autotest.c				\
 	src/math/tests/kbd_autotest.c				\
 	src/math/tests/math_autotest.c				\
 	src/math/tests/math_bessel_autotest.c			\
@@ -903,6 +908,7 @@ src/nco/src/synth_crcf.o	: %.o : %.c $(include_headers) src/nco/src/synth.c
 # autotests
 nco_autotests :=						\
 	src/nco/tests/nco_crcf_frequency_autotest.c		\
+	src/nco/tests/nco_crcf_mix_autotest.c			\
 	src/nco/tests/nco_crcf_phase_autotest.c			\
 	src/nco/tests/nco_crcf_pll_autotest.c			\
 	src/nco/tests/unwrap_phase_autotest.c			\
@@ -1030,6 +1036,7 @@ utility_objects :=						\
 	src/utility/src/msb_index.o				\
 	src/utility/src/pack_bytes.o				\
 	src/utility/src/shift_array.o				\
+	src/utility/src/utility.o				\
 
 $(utility_objects) : %.o : %.c $(include_headers)
 
@@ -1162,24 +1169,31 @@ benchmark_sources :=						\
 .PHONY: all
 
 # Shared library
+ARCHIVE_LIB	= @AR_LIB@
 SHARED_LIB	= @SH_LIB@
 
-# liquid library definition
-libliquid.a: $(objects)
-	$(AR) $(ARFLAGS) $@ $^
-	$(RANLIB) $@
-
+#
 # darwin
 #
+libliquid.ar: $(objects)
+	${LIBTOOL} -static -o $@ $^
+
 # gcc -dynamiclib -install_name libliquid.dylib -o libliquid.dylib libmodem.a libutility.a 
 libliquid.dylib: $(objects)
 	$(CC) -dynamiclib -install_name $@ -o $@ $^ $(LDFLAGS) $(LIBS)
 
+#
 # linux, et al
+#
+libliquid.a: $(objects)
+	${AR} r $@ $^
+	${RANLIB} $@
+
 libliquid.so: libliquid.a
 	$(CC) $(CFLAGS) $(LDFLAGS) -shared -Xlinker -soname=$@ -o $@ -Wl,-whole-archive $^ -Wl,-no-whole-archive $(LIBS)
 
-all: libliquid.a $(SHARED_LIB)
+# static archive and library objects
+all: ${ARCHIVE_LIB} ${SHARED_LIB}
 
 ##
 ## TARGET : help      - print list of targets
@@ -1199,7 +1213,7 @@ install: all
 	@echo ""
 	mkdir -p $(DESTDIR)$(exec_prefix)$(libdir)
 	mkdir -p $(DESTDIR)$(prefix)/include/liquid
-	install -m 644 -p $(SHARED_LIB) libliquid.a $(DESTDIR)$(exec_prefix)$(libdir)
+	install -m 644 -p ${ARCHIVE_LIB} ${SHARED_LIB} $(DESTDIR)$(exec_prefix)$(libdir)
 	install -m 644 -p $(addprefix include/,$(headers_install)) $(DESTDIR)$(prefix)/include/liquid
 	@echo ""
 	@echo "---------------------------------------------------------"
@@ -1222,8 +1236,8 @@ install: all
 uninstall:
 	@echo "uninstalling..."
 	$(RM) $(addprefix $(DESTDIR)$(prefix)/include/liquid/, $(headers_install))
-	$(RM) $(DESTDIR)$(exec_prefix)$(libdir)/libliquid.a
-	$(RM) $(DESTDIR)$(exec_prefix)$(libdir)/$(SHARED_LIB)
+	$(RM) $(DESTDIR)$(exec_prefix)$(libdir)/${ARCHIVE_LIB}
+	$(RM) $(DESTDIR)$(exec_prefix)$(libdir)/${SHARED_LIB}
 	@echo "done."
 
 ##
@@ -1277,7 +1291,7 @@ $(autotest_prog).o : autotest/autotest.c autotest/autotest.h autotest_include.h
 
 # link the autotest program with the objects
 # NOTE: linked libraries must come _after_ the target program
-$(autotest_prog): $(autotest_prog).o $(autotest_obj) $(autotest_extra_obj) autotest/autotestlib.o libliquid.a
+$(autotest_prog): $(autotest_prog).o $(autotest_obj) $(autotest_extra_obj) autotest/autotestlib.o ${ARCHIVE_LIB}
 	$(CC) $(CFLAGS) $(LDFLAGS) $^ -o $@ $(LIBS)
 
 # run the autotest program
@@ -1330,7 +1344,7 @@ $(bench_prog).o: bench/bench.c benchmark_include.h bench/bench.c
 
 # link the benchmark program with the library objects
 # NOTE: linked libraries must come _after_ the target program
-$(bench_prog): $(bench_prog).o $(benchmark_obj) $(benchmark_extra_obj) libliquid.a
+$(bench_prog): $(bench_prog).o $(benchmark_obj) $(benchmark_extra_obj) ${ARCHIVE_LIB}
 	$(CC) $(BENCH_CFLAGS) $(BENCH_LDFLAGS) $^ -o $(bench_prog) $(BENCH_LIBS)
 
 # run the benchmark program
@@ -1345,7 +1359,7 @@ scripts/benchmark_compare : % : %.c
 bench/fftbench.o : %.o : %.c
 	$(CC) $(BENCH_CPPFLAGS) $(BENCH_CFLAGS) $< -c -o $@
 
-bench/fftbench : % : %.o libliquid.a
+bench/fftbench : % : %.o ${ARCHIVE_LIB}
 	$(CC) $(BENCH_CFLAGS) $(BENCH_LDFLAGS) $^ -o $@ $(BENCH_LIBS)
 
 # clean up the generated files
@@ -1410,9 +1424,11 @@ example_programs :=						\
 	examples/firdespm_lowpass_example			\
 	examples/firhilb_example				\
 	examples/firhilb_decim_example				\
+	examples/firhilb_filter_example				\
 	examples/firhilb_interp_example				\
 	examples/firpfbch2_crcf_example				\
 	examples/firinterp_crcf_example				\
+	examples/firinterp_firdecim_crcf_example		\
 	examples/firpfbch_crcf_example				\
 	examples/firpfbch_crcf_analysis_example			\
 	examples/firpfbch_crcf_synthesis_example		\
@@ -1422,6 +1438,7 @@ example_programs :=						\
 	examples/freqmodem_example				\
 	examples/fskframesync_example				\
 	examples/fskmodem_example				\
+	examples/fskmodem_waterfall_example			\
 	examples/gasearch_example				\
 	examples/gasearch_knapsack_example			\
 	examples/gmskframesync_example				\
@@ -1438,6 +1455,8 @@ example_programs :=						\
 	examples/iirfilt_cccf_example				\
 	examples/iirfilt_crcf_example				\
 	examples/iirfilt_crcf_dcblocker_example			\
+	examples/iirhilb_example				\
+	examples/iirhilb_filter_example				\
 	examples/iirinterp_crcf_example				\
 	examples/kbd_window_example				\
 	examples/lpc_example					\
@@ -1452,13 +1471,16 @@ example_programs :=						\
 	examples/msequence_example				\
 	examples/msourcecf_example				\
 	examples/msresamp_crcf_example				\
+	examples/msresamp_crcf_noise_example			\
 	examples/msresamp2_crcf_example				\
+	examples/nco_crcf_mix_example				\
 	examples/nco_example					\
 	examples/nco_pll_example				\
 	examples/nco_pll_modem_example				\
 	examples/nyquist_filter_example				\
 	examples/ofdmflexframesync_example			\
 	examples/ofdmframesync_example				\
+	examples/ordfilt_rrrf_example				\
 	examples/packetizer_example				\
 	examples/packetizer_soft_example			\
 	examples/pll_example					\
@@ -1473,7 +1495,9 @@ example_programs :=						\
 	examples/quantize_example				\
 	examples/random_histogram_example			\
 	examples/repack_bytes_example				\
+	examples/rresamp_crcf_example				\
 	examples/resamp_crcf_example				\
+	examples/resamp_crcf_noise_example			\
 	examples/resamp2_cccf_example				\
 	examples/resamp2_crcf_example				\
 	examples/resamp2_crcf_decim_example			\
@@ -1483,7 +1507,6 @@ example_programs :=						\
 	examples/scramble_example				\
 	examples/smatrix_example				\
 	examples/spgramcf_example				\
-	examples/spgramcf_waterfall_example			\
 	examples/spgramf_example				\
 	examples/spwaterfallcf_example				\
 	examples/symsync_crcf_example				\
@@ -1505,7 +1528,7 @@ examples: $(example_programs)
 # NOTE: linked libraries must come _after_ the target program
 $(example_objects): %.o : %.c
 
-$(example_programs): % : %.o libliquid.a
+$(example_programs): % : %.o ${ARCHIVE_LIB}
 	$(CC) $(CFLAGS) $(LDFLAGS) $^ -o $@ $(LIBS)
 
 # clean examples
@@ -1550,6 +1573,7 @@ sandbox_programs =						\
 	sandbox/fecsoft_hamming128_gentab			\
 	sandbox/fecsoft_ldpc_test				\
 	sandbox/fec_sumproduct_test				\
+	sandbox/fskcorr_test					\
 	sandbox/fskmodem_test					\
 	sandbox/fft_dual_radix_test				\
 	sandbox/fft_mixed_radix_test				\
@@ -1611,6 +1635,7 @@ sandbox_programs =						\
 	sandbox/symsync_eqlms_test				\
 	sandbox/svd_test					\
 	sandbox/thiran_allpass_iir_test				\
+	sandbox/throttle_test					\
 	sandbox/vectorcf_test					\
 
 #	sandbox/packetizer_persistent_ber_test
@@ -1627,7 +1652,7 @@ SANDBOX_LDFLAGS = $(LDFLAGS) -lfftw3f
 # NOTE: linked libraries must come _after_ the target program
 $(sandbox_objects): %.o : %.c
 
-$(sandbox_programs): % : %.o libliquid.a
+$(sandbox_programs): % : %.o ${ARCHIVE_LIB}
 	$(CC) $(CFLAGS) $^ -o $@ $(LDFLAGS) $(LIBS)
 
 # clean sandbox
@@ -1645,7 +1670,7 @@ tools: $(tools_programs)
 
 $(tools_objects): %.o: %.c
 
-$(tools_programs): % : %.o libliquid.a
+$(tools_programs): % : %.o ${ARCHIVE_LIB}
 	$(CC) $(CFLAGS) $^ -o $@ $(LDFLAGS)
 
 clean-tools:
@@ -1689,9 +1714,7 @@ clean-modules:
 	$(RM) src/libliquid.o
 
 clean: clean-modules clean-autoscript clean-check clean-bench clean-examples clean-sandbox clean-tools
-	$(RM) $(extra_clean)
-	$(RM) libliquid.a
-	$(RM) $(SHARED_LIB)
+	$(RM) ${ARCHIVE_LIB} ${SHARED_LIB} $(extra_clean)
 
 ##
 ## TARGET : distclean - removes everything except the originally distributed files

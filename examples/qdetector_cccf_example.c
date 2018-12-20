@@ -83,6 +83,7 @@ int main(int argc, char*argv[])
     }
 
     //
+    float rxy       = 0.0f;
     float tau_hat   = 0.0f;
     float gamma_hat = 0.0f;
     float dphi_hat  = 0.0f;
@@ -109,7 +110,7 @@ int main(int argc, char*argv[])
     float complex * v = (float complex*) qdetector_cccf_get_sequence(q);
     unsigned int filter_delay = 15;
     firfilt_crcf filter = firfilt_crcf_create_kaiser(2*filter_delay+1, 0.4f, 60.0f, -tau);
-    float        nstd        = 0.1f;
+    float        nstd        = powf(10.0f, -SNRdB/20.0f);
     for (i=0; i<num_samples; i++) {
         // add delay
         firfilt_crcf_push(filter, i < seq_len ? v[i] : 0);
@@ -135,6 +136,7 @@ int main(int argc, char*argv[])
             frame_detected = 1;
 
             // get statistics
+            rxy       = qdetector_cccf_get_rxy(q);
             tau_hat   = qdetector_cccf_get_tau(q);
             gamma_hat = qdetector_cccf_get_gamma(q);
             dphi_hat  = qdetector_cccf_get_dphi(q);
@@ -178,6 +180,7 @@ int main(int argc, char*argv[])
     printf("\n");
     printf("frame detected  :   %s\n", frame_detected ? "yes" : "no");
     if (frame_detected) {
+        printf("  rxy           : %8.3f\n", rxy);
         printf("  gamma hat     : %8.3f, actual=%8.3f (error=%8.3f)\n",            gamma_hat, gamma, gamma_hat - gamma);
         printf("  tau hat       : %8.3f, actual=%8.3f (error=%8.3f) samples\n",    tau_hat,   tau,   tau_hat   - tau  );
         printf("  dphi hat      : %8.5f, actual=%8.5f (error=%8.5f) rad/sample\n", dphi_hat,  dphi,  dphi_hat  - dphi );

@@ -32,7 +32,7 @@ int main() {
     // initialize input array
     unsigned int i;
     for (i=0; i<2*num_samples; i++)
-        x[i] = cosf(2*M_PI*fc*i);
+        x[i] = cosf(2*M_PI*fc*i) + 0.6f*sinf(2*M_PI*1.1*fc*i);
 
     // create Hilbert transform object
     firhilbf q = firhilbf_create(m,As);
@@ -44,7 +44,7 @@ int main() {
     firhilbf_destroy(q);
 
     printf("firhilb decimated %u real samples to %u complex samples\n",
-            num_samples, 2*num_samples);
+            2*num_samples, num_samples);
 
     // 
     // export results to file
@@ -69,9 +69,9 @@ int main() {
     fprintf(fid,"wx = 1.8534/num_samples*hamming(length(x)).'; %% x window\n");
     fprintf(fid,"wy = 1.8534/num_samples*hamming(length(y)).'; %% y window\n");
     fprintf(fid,"X=20*log10(abs(fftshift(fft(x.*wx,nfft))));\n");
-    fprintf(fid,"Y=20*log10(abs(        (fft(y.*wy,nfft))));\n");
+    fprintf(fid,"Y=20*log10(abs(fftshift(fft(y.*wy,nfft))));\n");
     fprintf(fid,"f =[0:(nfft-1)]/nfft-0.5;\n");
-    fprintf(fid,"fd=[0:(nfft-1)]/(2*nfft);\n");
+    fprintf(fid,"fd=0.5*f + 0.25;\n");
     fprintf(fid,"figure; plot(f,X,'Color',[0.5 0.5 0.5],fd,Y,'LineWidth',2);\n");
     fprintf(fid,"grid on;\n");
     fprintf(fid,"axis([-0.5 0.5 -80 20]);\n");

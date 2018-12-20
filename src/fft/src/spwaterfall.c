@@ -43,6 +43,13 @@ struct SPWATERFALL(_s) {
     T *             psd;            // time/frequency buffer [nfft x 2*time]
     unsigned int    index_time;     // time index for writing to buffer
     unsigned int    rollover;       // number of FFTs to take before writing to output
+
+    // parameters for display purposes only
+    float           frequency;      // center frequency [Hz]
+    float           sample_rate;    // sample rate [Hz]
+    unsigned int    width;          // image width [pixels]
+    unsigned int    height;         // image height [pixels]
+    char *          commands;       // commands to execute directly before 'plot'
 };
 
 //
@@ -95,8 +102,13 @@ SPWATERFALL() SPWATERFALL(_create)(unsigned int _nfft,
     SPWATERFALL() q = (SPWATERFALL()) malloc(sizeof(struct SPWATERFALL(_s)));
 
     // set input parameters
-    q->nfft = _nfft;
-    q->time = _time;
+    q->nfft         = _nfft;
+    q->time         = _time;
+    q->frequency    =  0;
+    q->sample_rate  = -1;
+    q->width        = 800;
+    q->height       = 800;
+    q->commands     = NULL;
 
     // create buffer to hold aggregated power spectral density
     // NOTE: the buffer is two-dimensional time/frequency grid that is two times
@@ -135,6 +147,7 @@ void SPWATERFALL(_destroy)(SPWATERFALL() _q)
 {
     // free allocated memory
     free(_q->psd);
+    free(_q->commands);
 
     // destroy internal spectral periodogram object
     SPGRAM(_destroy)(_q->periodogram);
@@ -162,6 +175,63 @@ void SPWATERFALL(_reset)(SPWATERFALL() _q)
 void SPWATERFALL(_print)(SPWATERFALL() _q)
 {
     printf("spwaterfall%s: nfft=%u, time=%u\n", EXTENSION, _q->nfft, _q->time);
+}
+
+// set center freuqncy
+int SPWATERFALL(_set_freq)(SPWATERFALL() _q,
+                           float         _freq)
+{
+    _q->frequency = _freq;
+    return 0;
+}
+
+// set sample rate
+int SPWATERFALL(_set_rate)(SPWATERFALL() _q,
+                           float         _rate)
+{
+    // validate input
+    if (_rate <= 0.0f) {
+        fprintf(stderr,"error: spwaterfall%s_set_rate(), sample rate must be greater than zero\n", EXTENSION);
+        return -1;
+    }
+    _q->sample_rate = _rate;
+    return 0;
+}
+
+// set image dimensions
+int SPWATERFALL(_set_dims)(SPWATERFALL() _q,
+                           unsigned int  _width,
+                           unsigned int  _height)
+{
+    _q->width  = _width;
+    _q->height = _height;
+    return 0;
+}
+
+// set image dimensions
+int SPWATERFALL(_set_commands)(SPWATERFALL() _q,
+                               const char *  _commands)
+{
+    // clear memory with NULL pointer
+    if (_commands == NULL) {
+        free(_q->commands);
+        _q->commands = NULL;
+        return 0;
+    }
+
+    // sanity check
+    unsigned int n = strlen(_commands);
+    if (n > 1<<14) {
+        fprintf(stderr,"error: spwaterfall%s_set_commands(), input string size exceeds reasonable limits\n",EXTENSION);
+        SPWATERFALL(_set_commands)(_q, "# error: input string size limit exceeded");
+        return -1;
+    }
+
+    // reallocate memory, copy input, and return
+    _q->commands = (char*) realloc(_q->commands, n+1);
+    memmove(_q->commands, _commands, n);
+    _q->commands[n] = '\0';
+    return 0;
 }
 
 // push a single sample into the spwaterfall object
@@ -233,12 +303,12 @@ void SPWATERFALL(_consolidate_buffer)(SPWATERFALL() _q)
     unsigned int k; // freq index
     for (i=0; i<_q->time; i++) {
         for (k=0; k<_q->nfft; k++) {
-            // compute median
-            T v0  = _q->psd[ (2*i + 0)*_q->nfft + k ];
-            T v1  = _q->psd[ (2*i + 1)*_q->nfft + k ];
+            // convert to linear, compute average, convert back to log
+            T v0 = powf(10.0f, _q->psd[ (2*i + 0)*_q->nfft + k ]*0.1f);
+            T v1 = powf(10.0f, _q->psd[ (2*i + 1)*_q->nfft + k ]*0.1f);
 
-            // keep log average (only need double buffer for this, not triple buffer)
-            _q->psd[ i*_q->nfft + k ] = logf(0.5f*(expf(v0) + expf(v1)));
+            // save result
+            _q->psd[ i*_q->nfft + k ] = 10.0f*log10f(0.5f*(v0+v1));
         }
     }
 
@@ -316,16 +386,11 @@ int SPWATERFALL(_export_gnu)(SPWATERFALL() _q,
     uint64_t total_samples = SPGRAM(_get_num_samples_total)(_q->periodogram);
     char units  = ' ';
     float scale = 1.0f;
-    if      (total_samples < 4e3 ) { units = ' '; scale = 1e-0f;  }
-    else if (total_samples < 4e6 ) { units = 'k'; scale = 1e-3f;  }
-    else if (total_samples < 4e9 ) { units = 'M'; scale = 1e-6f;  }
-    else if (total_samples < 4e12) { units = 'G'; scale = 1e-9f;  }
-    else if (total_samples < 4e15) { units = 'T'; scale = 1e-12f; }
-    else                           { units = 'P'; scale = 1e-15f; }
+    liquid_get_scale((float)total_samples/4, &units, &scale);
 
     fprintf(fid,"#!/usr/bin/gnuplot\n");
     fprintf(fid,"reset\n");
-    fprintf(fid,"set terminal png size 800,800 enhanced font 'Verdana,10'\n");
+    fprintf(fid,"set terminal png size %u,%u enhanced font 'Verdana,10'\n", _q->width, _q->height);
     fprintf(fid,"set output '%s.png'\n", _base);
     fprintf(fid,"unset key\n");
     fprintf(fid,"set style line 11 lc rgb '#808080' lt 1\n");
@@ -333,9 +398,7 @@ int SPWATERFALL(_export_gnu)(SPWATERFALL() _q,
     fprintf(fid,"set style line 12 lc rgb '#888888' lt 0 lw 1\n");
     fprintf(fid,"set grid front ls 12\n");
     fprintf(fid,"set tics nomirror out scale 0.75\n");
-    fprintf(fid,"set xrange [-0.5:0.5]\n");
     fprintf(fid,"set yrange [0:%f]\n", (float)(total_samples-1)*scale);
-    fprintf(fid,"set xlabel 'Normalized Frequency [f/F_s]'\n");
     fprintf(fid,"set ylabel 'Sample Index'\n");
     fprintf(fid,"set format y '%%.0f %c'\n", units);
     fprintf(fid,"# disable colorbar tics\n");
@@ -350,7 +413,45 @@ int SPWATERFALL(_export_gnu)(SPWATERFALL() _q,
     fprintf(fid,"    6 '#66C2A5',\\\n");
     fprintf(fid,"    7 '#3288BD' )\n");
     fprintf(fid,"\n");
-    fprintf(fid,"plot '%s.bin' u 1:($2*%e):3 binary matrix with image\n", _base, scale);
+    if (_q->sample_rate < 0) {
+        fprintf(fid,"set xrange [-0.5:0.5]\n");
+        float xtics = 0.1f;
+        fprintf(fid,"set xtics %f\n", xtics);
+        fprintf(fid,"set xlabel 'Normalized Frequency [f/F_s]'\n");
+        if (_q->commands != NULL)
+            fprintf(fid,"%s\n", _q->commands);
+        fprintf(fid,"plot '%s.bin' u 1:($2*%e):3 binary matrix with image\n", _base, scale);
+    } else {
+        char unit;
+        float g = 1.0f;
+        float f_hi = _q->frequency + 0.5f*_q->sample_rate; // highest frequency
+        liquid_get_scale(f_hi/2, &unit, &g);
+        fprintf(fid,"set xlabel 'Frequency [%cHz]'\n", unit);
+        // target xtics spacing roughly every 60-80 pixels
+        float xn = ((float) _q->width * 0.8f) / 70.0f;  // rough number of tics
+        //float xs = _q->sample_rate * g / xn;            // normalized spacing
+        float xt = 1.0f;                                // round to nearest 1, 2, 5, or 10
+        // potential xtic spacings
+        float spacing[] = {0.01,0.02,0.05,0.1,0.2,0.5,1.0,2.0,5.0,10.0,20.0,50.0,100.0,200.0,500.0,-1.0f};
+        unsigned int i=0;
+        while (spacing[i] > 0) {
+            if (_q->sample_rate*g/spacing[i] < 1.2f*xn) {
+                xt = spacing[i];
+                break;
+            }
+            i++;
+        }
+        //printf("xn:%f, xs:%f, xt:%f\n", xn, xs, xt);
+        fprintf(fid,"set xrange [%f:%f]\n", g*(_q->frequency-0.5*_q->sample_rate), g*(_q->frequency+0.5*_q->sample_rate));
+        fprintf(fid,"set xtics %f\n", xt);
+        if (_q->commands != NULL)
+            fprintf(fid,"%s\n", _q->commands);
+        fprintf(fid,"plot '%s.bin' u ($1*%f+%f):($2*%e):3 binary matrix with image\n",
+                _base,
+                g*(_q->sample_rate < 0 ? 1 : _q->sample_rate),
+                g*_q->frequency,
+                scale);
+    }
     fclose(fid);
 
     // close it up

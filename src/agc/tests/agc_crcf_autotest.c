@@ -135,7 +135,7 @@ void autotest_agc_crcf_rssi_noise()
 {
     // set paramaters
     float gamma = -30.0f;   // nominal signal level [dB]
-    float bt    =  0.01f;   // agc bandwidth
+    float bt    =  2e-3f;   // agc bandwidth
     float tol   =  1.0f;    // error tolerance [dB]
 
     // signal properties
@@ -147,7 +147,7 @@ void autotest_agc_crcf_rssi_noise()
 
     unsigned int i;
     float complex x, y;
-    for (i=0; i<3000; i++) {
+    for (i=0; i<8000; i++) {
         // generate sample (circular complex noise)
         x = nstd*(randnf() + _Complex_I*randnf())*M_SQRT1_2;
 

@@ -20,22 +20,24 @@
 void usage()
 {
     printf("random_histogram_example [options]\n");
-    printf("  u/h   : print usage\n");
-    printf("  N     : number of trials\n");
-    printf("  n     : number of histogram bins\n");
-    printf("  d     : distribution: {uniform, normal, exp, weib, gamma, nak, rice}\n");
-    printf("  e     : eta    NORMAL: mean\n");
-    printf("  s     : sigma  NORMAL: standard deviation\n");
-    printf("  l     : lambda EXPONENTIAL: decay factor\n");
-    printf("  a     : alpha  WEIBULL: shape\n");
-    printf("  b     : beta   WEIBULL: spread\n");
-    printf("  g     : gamma  WEIBULL: threshold\n");
-    printf("  A     : alpha  GAMMA: shape\n");
-    printf("  B     : beta   GAMMA: spread\n");
-    printf("  m     : m      NAKAGAMI: shape\n");
-    printf("  o     : omega  NAKAGAMI: spread\n");
-    printf("  K     : K      RICE-K: spread\n");
-    printf("  O     : omega  RICE-K: spread\n");
+    printf("  -h    : print usage\n");
+    printf("  -N     : number of trials\n");
+    printf("  -n     : number of histogram bins\n");
+    printf("  -d     : distribution: {uniform, normal, exp, weib, gamma, nak, rice}\n");
+    printf("  -u     : u      UNIFORM: lower edge\n");
+    printf("  -v     : v      UNIFORM: upper edge\n");
+    printf("  -e     : eta    NORMAL: mean\n");
+    printf("  -s     : sigma  NORMAL: standard deviation\n");
+    printf("  -l     : lambda EXPONENTIAL: decay factor\n");
+    printf("  -a     : alpha  WEIBULL: shape\n");
+    printf("  -b     : beta   WEIBULL: spread\n");
+    printf("  -g     : gamma  WEIBULL: threshold\n");
+    printf("  -A     : alpha  GAMMA: shape\n");
+    printf("  -B     : beta   GAMMA: spread\n");
+    printf("  -m     : m      NAKAGAMI: shape\n");
+    printf("  -o     : omega  NAKAGAMI: spread\n");
+    printf("  -K     : K      RICE-K: spread\n");
+    printf("  -O     : omega  RICE-K: spread\n");
 }
 
 int main(int argc, char*argv[])
@@ -54,23 +56,24 @@ int main(int argc, char*argv[])
     } distribution=NORMAL;
 
     // distribution parameters
-    float eta = 0.0f;       // NORMAL: mean
-    float sigma = 1.0f;     // NORMAL: standard deviation
-    float lambda = 3.0f;    // EXPONENTIAL: decay factor
-    float alphaw = 1.0f;    // WEIBULL: shape
-    float betaw = 1.0f;     // WEIBULL: spread
-    float gammaw = 1.0f;    // WEIBULL: threshold
-    float alphag = 4.5f;    // GAMMA: shape
-    float betag = 1.0f;     // GAMMA: spread
-    float m = 4.5f;         // NAKAGAMI: shape factor
-    float omeganak = 1.0f;  // NAKAGMAI: spread factor
-    float K = 4.0f;         // RICE-K: K-factor (shape)
+    float u         = 0.0f; // UNIFORM: lower edge
+    float v         = 1.0f; // UNIFORM: upper edge
+    float eta       = 0.0f; // NORMAL: mean
+    float sigma     = 1.0f; // NORMAL: standard deviation
+    float lambda    = 3.0f; // EXPONENTIAL: decay factor
+    float alphaw    = 1.0f; // WEIBULL: shape
+    float betaw     = 1.0f; // WEIBULL: spread
+    float gammaw    = 1.0f; // WEIBULL: threshold
+    float alphag    = 4.5f; // GAMMA: shape
+    float betag     = 1.0f; // GAMMA: spread
+    float m         = 4.5f; // NAKAGAMI: shape factor
+    float omeganak  = 1.0f; // NAKAGMAI: spread factor
+    float K         = 4.0f; // RICE-K: K-factor (shape)
     float omegarice = 1.0f; // RICE-K: spread factor
 
     int dopt;
-    while ((dopt = getopt(argc,argv,"uhN:n:d:e:s:l:a:b:g:A:B:m:o:K:O:")) != EOF) {
+    while ((dopt = getopt(argc,argv,"hN:n:d:u:v:e:s:l:a:b:g:A:B:m:o:K:O:")) != EOF) {
         switch (dopt) {
-        case 'u':
         case 'h':
             usage();
             return 0;
@@ -88,6 +91,8 @@ int main(int argc, char*argv[])
                 fprintf(stderr,"error: %s, unknown/unsupported distribution '%s'\n", argv[0], optarg);
                 exit(1);
             }
+        case 'u': u         = atof(optarg); break;
+        case 'v': v         = atof(optarg); break;
         case 'e': eta       = atof(optarg); break;
         case 's': sigma     = atof(optarg); break;
         case 'l': lambda    = atof(optarg); break;
@@ -122,8 +127,8 @@ int main(int argc, char*argv[])
     // make a guess at the histogram range so we don't need to
     // store all the generated random variables in a giant array.
     if (distribution == UNIFORM) {
-        xmin =  0.0f;
-        xmax =  1.0f;
+        xmin = u - 0.08*(v-u); // lower edge less 8% range
+        xmax = v + 0.08*(v-u); // upper edge plus 8% range
     } else if (distribution == NORMAL) {
         xmin = eta - 4.0f*sigma;
         xmax = eta + 4.0f*sigma;
@@ -162,7 +167,7 @@ int main(int argc, char*argv[])
     float m2 = 0.0f;    // second moment
     for (i=0; i<num_trials; i++) {
         switch (distribution) {
-        case UNIFORM:     x = randf();                          break;
+        case UNIFORM:     x = randuf(u,v);                      break;
         case NORMAL:      x = sigma*randnf() + eta;             break;
         case EXPONENTIAL: x = randexpf(lambda);                 break;
         case WEIBULL:     x = randweibf(alphaw,betaw,gammaw);   break;
@@ -205,8 +210,8 @@ int main(int argc, char*argv[])
         x = xmin + i*xstep;
         switch (distribution) {
         case UNIFORM:
-            f[i] = randf_pdf(x);
-            F[i] = randf_cdf(x);
+            f[i] = randuf_pdf(x,u,v);
+            F[i] = randuf_cdf(x,u,v);
             break;
         case NORMAL:
             f[i] = randnf_pdf(x,eta,sigma);
@@ -260,6 +265,8 @@ int main(int argc, char*argv[])
     switch (distribution) {
     case UNIFORM:
         printf("    distribution            :   %s\n", "uniform");
+        printf("    u                       :   %f\n", u);
+        printf("    v                       :   %f\n", v);
         break;
     case NORMAL:
         printf("    distribution            :   %s\n", "normal (Gauss)");

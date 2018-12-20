@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2016 Joseph Gaeddert
+ * Copyright (c) 2007 - 2018 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -138,7 +138,7 @@ FIRPFB() FIRPFB(_create_kaiser)(unsigned int _M,
 }
 
 // create square-root Nyquist filterbank
-//  _type   :   filter type (e.g. LIQUID_RNYQUIST_RRC)
+//  _type   :   filter type (e.g. LIQUID_FIRFILT_RRC)
 //  _M      :   number of filters in the bank
 //  _k      :   samples/symbol _k > 1
 //  _m      :   filter delay (symbols), _m > 0
@@ -180,7 +180,7 @@ FIRPFB() FIRPFB(_create_rnyquist)(int          _type,
 }
 
 // create firpfb derivative square-root Nyquist filterbank
-//  _type   :   filter type (e.g. LIQUID_RNYQUIST_RRC)
+//  _type   :   filter type (e.g. LIQUID_FIRFILT_RRC)
 //  _M      :   number of filters in the bank
 //  _k      :   samples/symbol _k > 1
 //  _m      :   filter delay (symbols), _m > 0
@@ -309,6 +309,13 @@ void FIRPFB(_set_scale)(FIRPFB() _q,
                          TC      _scale)
 {
     _q->scale = _scale;
+}
+
+// get output scaling for filter
+void FIRPFB(_get_scale)(FIRPFB() _q,
+                         TC *    _scale)
+{
+    *_scale = _q->scale;
 }
 
 // push sample into firpfb internal buffer
