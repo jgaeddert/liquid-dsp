@@ -27,8 +27,8 @@ int main(int argc, char*argv[])
     unsigned int j;
 
     // derived values
-    float nstd = 1e-3f;
-    float gain = 0.3125f;
+    float nstd = 0;
+    float gain = 1.0f;
     unsigned int i1  = (unsigned int)round(fc*M);
     unsigned int i0  = M - (i1 - 1);
     printf("M = %u, fc = %.3f {%u,%u}\n", M, fc, i0, i1);
@@ -81,7 +81,7 @@ int main(int argc, char*argv[])
     fprintf(fid,"%%s = reshape([(2*seq(:)-1) zeros(n,p-1)]',1,[]);\n");
     fprintf(fid,"s = []; for i=1:p, s=[s seq(:)]; end; s=reshape(s',1,[]);\n");
     fprintf(fid,"llr = [];\n");
-    for (i=0; i<n+10; i++) {
+    for (i=0; i<n+200; i++) {
         // clear input, generate symbol
         memset(buf_0, 0x0, M*sizeof(float complex));
         if (i < n)
@@ -101,9 +101,9 @@ int main(int argc, char*argv[])
                 memmove(buf_2, r, M*sizeof(float complex));
                 fft_execute(fft);
                 float r2 = liquid_sumsqcf(buf_3, M);
-                float g  = 1.0f / sqrtf(r2);
-                float v0 = cabsf(buf_3[i0]) * g;
-                float v1 = cabsf(buf_3[i1]) * g;
+                float g  = 1.0f / (sqrtf(r2) + 1e-6f);
+                float v0 = cabsf(buf_3[i0]) * g + 1e-6f;
+                float v1 = cabsf(buf_3[i1]) * g + 1e-6f;
                 float llr = log10f( v1 / v0 );
                 fprintf(fid,"llr(end+1) = %12.4e;\n", llr);
 
@@ -114,7 +114,7 @@ int main(int argc, char*argv[])
                 windowf_read(buf_xcorr, &rf);
                 dotprod_rrrf_execute(xcorr, rf, &rxy);
                 float y2 = liquid_sumsqf(rf, p*n);
-                rxy /= sqrtf(xcorr_norm*y2);
+                rxy /= sqrtf(xcorr_norm*y2) + 1e-6f;
                 fprintf(fid,"rxy(end+1) = %12.4e;\n", rxy);
                
                 printf(" %12.4e { %12.6f, %12.6f } : llr:%12.6f, rxy:%10.6f\n", r2, v0, v1, llr, rxy);
@@ -123,12 +123,16 @@ int main(int argc, char*argv[])
             timer--;
         }
     }
+    for (i=0; i<n*p; i++) {
+        fprintf(fid,"buf_mf(%4u) = %12.4e;\n", i+1, buf_mf[i]);
+    }
     fprintf(fid,"num_samples = length(llr);\n");
-    fprintf(fid,"txy         = [0:(num_samples-1)] - num_samples/2;\n");
+    fprintf(fid,"txy         = [0:(num_samples-1)] - p*n + 1;\n");
     fprintf(fid,"S = fft(s,  num_samples);\n");
     fprintf(fid,"L = fft(llr,num_samples);\n");
-    fprintf(fid,"%%rxy = fftshift(ifft(L.*conj(S)));\n");
-    fprintf(fid,"plot(rxy);\n");
+    fprintf(fid,"plot(txy,rxy,'-x');\n");
+    fprintf(fid,"axis([-200 200 -0.2 1.2]);\n");
+    fprintf(fid,"grid on;\n");
     fclose(fid);
     printf("results written to fskcorr_test.m\n");
 
