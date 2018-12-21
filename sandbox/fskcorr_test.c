@@ -16,21 +16,22 @@
 
 int main(int argc, char*argv[])
 {
-    unsigned int    M       = 1000; // samples per symbol
-    unsigned int    n       =  256; // sequence length (number of symbols)
-    unsigned int    p       = 4;    // over-sampling rate for output
-    //float           SNRdB   =   20; //
-    unsigned int    timer   = 0;
-    float           fc      = 0.2f; // tone frequency
+    unsigned int    M           = 1024;     // samples per symbol
+    unsigned int    n           =  256;     // sequence length (number of symbols)
+    unsigned int    p           =  4;       // over-sampling rate for output
+    float           SNRdB       = -10.0f;   // SNR (so to speak)
+    float           noise_floor = -60.0f;   // noise floor [dB-Hz]
+    unsigned int    timer       =   0;      // correlator/FFT alignment
+    float           fc          = 0.2f;     // nominal tone frequency
 
     unsigned int i;
     unsigned int j;
 
     // derived values
-    float nstd = 1.0f;
-    float gain = 1.0f;
+    float nstd = powf(10.0f, noise_floor/20.0f);
+    float gain = powf(10.0f, (SNRdB + noise_floor)/20.0f);
     unsigned int i1  = (unsigned int)round(fc*M);
-    unsigned int i0  = M - (i1 - 1);
+    unsigned int i0  = M - i1;
     printf("M = %u, fc = %.3f {%u,%u}\n", M, fc, i0, i1);
 
     // generate sequence
@@ -142,20 +143,24 @@ int main(int argc, char*argv[])
         fprintf(fid,"psd(%4u) = %12.4e;\n", i+1, psd[i]);
     }
     fprintf(fid,"num_samples = length(llr);\n");
-    fprintf(fid,"txy         = [0:(num_samples-1)] - p*n + 1;\n");
+    fprintf(fid,"txy         = ([0:(num_samples-1)] - p*n + 1)/p;\n");
     fprintf(fid,"S = fft(s,  num_samples);\n");
     fprintf(fid,"L = fft(llr,num_samples);\n");
     fprintf(fid,"figure('position',[1 1 800 800]);\n");
     fprintf(fid,"subplot(2,1,1);\n");
     fprintf(fid,"  plot(txy,rxy,'-x');\n");
-    fprintf(fid,"  axis([-200 200 -0.2 1.2]);\n");
+    fprintf(fid,"  axis([-20 20 -0.2 1.2]);\n");
     fprintf(fid,"  grid on;\n");
+    fprintf(fid,"  xlabel('lag [symbols]');\n");
+    fprintf(fid,"  ylabel('cross-correlation output');\n");
     fprintf(fid,"subplot(2,1,2);\n");
     fprintf(fid,"  nfft=length(psd);\n");
     fprintf(fid,"  f = [0:(nfft-1)]/nfft - 0.5;\n");
     fprintf(fid,"  plot(f,psd);\n");
-    fprintf(fid,"  axis([-0.5 0.5 -10 40]);\n");
+    fprintf(fid,"  axis([-0.5 0.5 %f %f]);\n", noise_floor-10, noise_floor+30);
     fprintf(fid,"  grid on;\n");
+    fprintf(fid,"  xlabel('normalized frequency [f/F_s]');\n");
+    fprintf(fid,"  ylabel('power spectral density [dB]');\n");
     fclose(fid);
     printf("results written to fskcorr_test.m\n");
 
