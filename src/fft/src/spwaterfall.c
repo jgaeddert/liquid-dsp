@@ -303,12 +303,12 @@ void SPWATERFALL(_consolidate_buffer)(SPWATERFALL() _q)
     unsigned int k; // freq index
     for (i=0; i<_q->time; i++) {
         for (k=0; k<_q->nfft; k++) {
-            // compute median
-            T v0  = _q->psd[ (2*i + 0)*_q->nfft + k ];
-            T v1  = _q->psd[ (2*i + 1)*_q->nfft + k ];
+            // convert to linear, compute average, convert back to log
+            T v0 = powf(10.0f, _q->psd[ (2*i + 0)*_q->nfft + k ]*0.1f);
+            T v1 = powf(10.0f, _q->psd[ (2*i + 1)*_q->nfft + k ]*0.1f);
 
-            // keep log average (only need double buffer for this, not triple buffer)
-            _q->psd[ i*_q->nfft + k ] = logf(0.5f*(expf(v0) + expf(v1)));
+            // save result
+            _q->psd[ i*_q->nfft + k ] = 10.0f*log10f(0.5f*(v0+v1));
         }
     }
 

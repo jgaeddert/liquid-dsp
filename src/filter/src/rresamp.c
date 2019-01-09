@@ -84,8 +84,8 @@ RRESAMP() RRESAMP(_create)(unsigned int _P,
     q->As = _As;
 
     // design filter
-    q->pfb = FIRPFB(_create_kaiser)(q->Q,q->m,q->bw,q->As);
-    RRESAMP(_set_scale)(q, 2.0f*q->bw*sqrtf((float)(q->P)/(float)(q->Q)));
+    q->pfb = FIRPFB(_create_kaiser)(q->P,q->m,q->bw,q->As);
+    RRESAMP(_set_scale)(q, 2.0f*q->bw*sqrtf((float)(q->Q)/(float)(q->P)));
 
     // reset object and return
     RRESAMP(_reset)(q);
@@ -169,50 +169,50 @@ unsigned int RRESAMP(_get_delay)(RRESAMP() _q)
 // Get rate of resampler, r = P/Q
 float RRESAMP(_get_rate)(RRESAMP() _q)
 {
-    return (float)(_q->Q) / (float)(_q->P);
+    return (float)(_q->P) / (float)(_q->Q);
 }
 
-// Get interpolation factor of resampler, \(Q\), after removing
+// Get interpolation factor of resampler, \(P\), after removing
 // greatest common divisor
 unsigned int RRESAMP(_get_interp)(RRESAMP() _q)
 {
-    return _q->Q;
+    return _q->P;
 }
 
 // Get decimator factor of resampler, \(Q\), after removing
 // greatest common divisor
 unsigned int RRESAMP(_get_decim)(RRESAMP() _q)
 {
-    return _q->P;
+    return _q->Q;
 }
 
 // Execute rational-rate resampler on a block of input samples and
 // store the resulting samples in the output array.
 //  _q  : resamp object
-//  _x  : input sample array, [size: P x 1]
-//  _y  : output sample array [size: Q x 1]
+//  _x  : input sample array, [size: Q x 1]
+//  _y  : output sample array [size: P x 1]
 void RRESAMP(_execute)(RRESAMP() _q,
                        TI *      _x,
                        TO *      _y)
 {
     unsigned int index = 0; // filterbank index
     unsigned int i, n=0;
-    for (i=0; i<_q->P; i++) {
+    for (i=0; i<_q->Q; i++) {
         // push input
         FIRPFB(_push)(_q->pfb, _x[i]);
 
         // continue to produce output
-        while (index < _q->Q) {
+        while (index < _q->P) {
             FIRPFB(_execute)(_q->pfb, index, &_y[n++]);
-            index += _q->P;
+            index += _q->Q;
         }
 
         // decrement filter-bank index by output rate
-        index -= _q->Q;
+        index -= _q->P;
     }
 
     // error checking for now
     assert(index == 0);
-    assert(n == _q->Q);
+    assert(n == _q->P);
 }
 
