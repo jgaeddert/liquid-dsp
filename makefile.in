@@ -886,6 +886,7 @@ multichannel_autotests :=					\
 multichannel_benchmarks :=					\
 	src/multichannel/bench/firpfbch_crcf_benchmark.c	\
 	src/multichannel/bench/firpfbch2_crcf_benchmark.c	\
+	src/multichannel/bench/firpfbchr_crcf_benchmark.c	\
 	src/multichannel/bench/ofdmframesync_acquire_benchmark.c	\
 	src/multichannel/bench/ofdmframesync_rxsymbol_benchmark.c	\
 
