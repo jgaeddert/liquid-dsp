@@ -78,7 +78,7 @@ void usage()
 // returns number of samples that were read
 size_t get_sound_data(float* data_f, char* filename)
 {
-    uint64_t samples_read = OCT_ERROR_CODE;
+    size_t samples_read = OCT_ERROR_CODE;
     if (filename) {
         FILE* fid = fopen(filename, "r");
         if (fid != NULL) {
@@ -344,8 +344,8 @@ int main(int argc, char*argv[]) {
         fclose(fid);
         exit(1);
     }
-    // IIR filter used for decimation is an 8th order CHEBY-I which the default version
-    // in corresponding GNU octave
+    // IIR filter used for decimation is an 8th order CHEBY-I which is the default version
+    // in GNU octave's signal package
     iirdecim_rrrf decim = iirdecim_rrrf_create_prototype(OCT_DECIMATION_FACTOR,
                                                          LIQUID_IIRDES_CHEBY1,
                                                          LIQUID_IIRDES_LOWPASS,
@@ -459,7 +459,7 @@ int main(int argc, char*argv[]) {
         fprintf(fid, "x=load('%s');\n",input_file);
         fprintf(fid, "[P,F]=filtbank(x, %12.4e, %12.4e, '%s');\n",fs, data_read/fs, "extended");
     }
-    // Add the followin the output GNU octave file
+    // Commands for output GNU octave file to plot and label RMS power
     fprintf(fid, "bar(rms_power)\n");
     fprintf(fid, "axis([0 %d 0 100])\n", OCT_EDGE_FREQS);
     fprintf(fid, "set(gca, 'XTickLabel', F)\n");
