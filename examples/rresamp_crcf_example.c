@@ -19,9 +19,10 @@
 void usage()
 {
     printf("Usage: %s [OPTION]\n", __FILE__);
+    printf("Resample a signal at a rate P/Q\n");
     printf("  -h            : print help\n");
-    printf("  -P <decim>    : resampling rate (decimation),      default: 3\n");
-    printf("  -Q <interp>   : resampling rate (interpolation),   default: 5\n");
+    printf("  -P <decim>    : decimation (output) rate,          default: 3\n");
+    printf("  -Q <interp>   : interpolation (input) rate,        default: 5\n");
     printf("  -m <len>      : filter semi-length (delay),        default: 12\n");
     printf("  -w <bandwidth>: filter bandwidth,                  default: 0.5f\n");
     printf("  -s <atten>    : filter stop-band attenuation [dB], default: 60\n");
