@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2018 Joseph Gaeddert
+ * Copyright (c) 2007 - 2019 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -31,6 +31,7 @@
 
 struct RRESAMP(_s) {
     // filter design parameters
+    unsigned int    gcd;    // greatest common divisor between inputs P and Q
     unsigned int    P;      // interpolation factor
     unsigned int    Q;      // decimation factor
     unsigned int    m;      // filter semi-length, h_len = 2*m + 1
@@ -76,9 +77,9 @@ RRESAMP() RRESAMP(_create)(unsigned int _P,
 
     // set properties, scaling interpolation and decimation factors by their
     // greatest common divisor
-    unsigned int gcd = liquid_gcd(_P, _Q);
-    q->P  = _P / gcd;
-    q->Q  = _Q / gcd;
+    q->gcd= liquid_gcd(_P, _Q);
+    q->P  = _P / q->gcd;
+    q->Q  = _Q / q->gcd;
     q->m  = _m;
     q->bw = _bw;
     q->As = _As;
@@ -130,8 +131,8 @@ void RRESAMP(_destroy)(RRESAMP() _q)
 // print resampler object
 void RRESAMP(_print)(RRESAMP() _q)
 {
-    printf("resampler [rate: %u/%u=%.6f], m=%u, bw=%.3f/Fs, As=%.3f dB\n",
-            _q->P, _q->Q, (float)(_q->P) / (float)(_q->Q),
+    printf("resampler [rate: %u/%u=%.6f, gcd=%u], m=%u, bw=%.3f/Fs, As=%.3f dB\n",
+            _q->P, _q->Q, (float)(_q->P) / (float)(_q->Q), _q->gcd,
             _q->m, _q->bw, _q->As);
 }
 
