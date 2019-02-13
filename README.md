@@ -6,6 +6,7 @@ Software-Defined Radio Digital Signal Processing Library -
 [http://liquidsdr.org](http://liquidsdr.org)
 
 [![Build Status](https://travis-ci.org/jgaeddert/liquid-dsp.svg?branch=master)](https://travis-ci.org/jgaeddert/liquid-dsp)
+[![MIT License](https://img.shields.io/badge/license-MIT-blue.svg?style=flat)](http://choosealicense.com/licenses/mit/)
 
 liquid-dsp is a free and open-source digital signal processing (DSP)
 library designed specifically for software-defined radios on embedded
