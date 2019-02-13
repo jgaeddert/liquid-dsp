@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2018 Joseph Gaeddert
+ * Copyright (c) 2007 - 2019 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -5195,6 +5195,24 @@ qdetector_cccf qdetector_cccf_create_gmsk(unsigned char * _sequence,
                                           unsigned int    _k,
                                           unsigned int    _m,
                                           float           _beta);
+
+// create detector from sequence of CP-FSK symbols (assuming one bit/symbol)
+//  _sequence       :   bit sequence
+//  _sequence_len   :   length of bit sequence
+//  _bps            :   bits per symbol, 0 < _bps <= 8
+//  _h              :   modulation index, _h > 0
+//  _k              :   samples/symbol
+//  _m              :   filter delay
+//  _beta           :   filter bandwidth parameter, _beta > 0
+//  _type           :   filter type (e.g. LIQUID_CPFSK_SQUARE)
+qdetector_cccf qdetector_cccf_create_cpfsk(unsigned char * _sequence,
+                                           unsigned int    _sequence_len,
+                                           unsigned int    _bps,
+                                           float           _h,
+                                           unsigned int    _k,
+                                           unsigned int    _m,
+                                           float           _beta,
+                                           int             _type);
 
 void qdetector_cccf_destroy(qdetector_cccf _q);
 void qdetector_cccf_print  (qdetector_cccf _q);
