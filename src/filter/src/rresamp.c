@@ -173,10 +173,22 @@ unsigned int RRESAMP(_get_delay)(RRESAMP() _q)
     return _q->m;
 }
 
+// Get greatest common divisor (g.c.d.) between original P and Q values
+unsigned int RRESAMP(_get_gcd)(RRESAMP() _q)
+{
+    return _q->gcd;
+}
+
 // Get rate of resampler, r = P/Q
 float RRESAMP(_get_rate)(RRESAMP() _q)
 {
     return (float)(_q->P) / (float)(_q->Q);
+}
+
+// Get original interpolation factor of resampler, P
+unsigned int RRESAMP(_get_P)(RRESAMP() _q)
+{
+    return _q->P * _q->gcd;
 }
 
 // Get interpolation factor of resampler, \(P\), after removing
@@ -184,6 +196,12 @@ float RRESAMP(_get_rate)(RRESAMP() _q)
 unsigned int RRESAMP(_get_interp)(RRESAMP() _q)
 {
     return _q->P;
+}
+
+// Get original decimation factor of resampler, Q
+unsigned int RRESAMP(_get_Q)(RRESAMP() _q)
+{
+    return _q->Q * _q->gcd;
 }
 
 // Get decimator factor of resampler, \(Q\), after removing

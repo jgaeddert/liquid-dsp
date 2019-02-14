@@ -3717,13 +3717,24 @@ void RRESAMP(_get_scale)(RRESAMP() _q,                                      \
 /* Get resampler delay (filter semi-length \(m\))                       */  \
 unsigned int RRESAMP(_get_delay)(RRESAMP() _q);                             \
                                                                             \
+/* Get original interpolation factor \(P\) when object was created      */  \
+/* before removing greatest common divisor                              */  \
+unsigned int RRESAMP(_get_P)(RRESAMP() _q);                                 \
+                                                                            \
 /* Get interpolation factor of resampler, \(P\), after removing         */  \
 /* greatest common divisor                                              */  \
 unsigned int RRESAMP(_get_interp)(RRESAMP() _q);                            \
                                                                             \
+/* Get original decimation factor \(Q\) when object was created         */  \
+/* before removing greatest common divisor                              */  \
+unsigned int RRESAMP(_get_Q)(RRESAMP() _q);                                 \
+                                                                            \
 /* Get decimation factor of resampler, \(Q\), after removing            */  \
 /* greatest common divisor                                              */  \
 unsigned int RRESAMP(_get_decim)(RRESAMP() _q);                             \
+                                                                            \
+/* Get greatest common divisor (g.c.d.) between original P and Q values */  \
+unsigned int RRESAMP(_get_gcd)(RRESAMP() _q);                               \
                                                                             \
 /* Get rate of resampler, \(r = P/Q\)                                   */  \
 float RRESAMP(_get_rate)(RRESAMP() _q);                                     \
