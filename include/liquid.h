@@ -3730,6 +3730,16 @@ float RRESAMP(_get_rate)(RRESAMP() _q);                                     \
                                                                             \
 /* Execute rational-rate resampler on a block of input samples and      */  \
 /* store the resulting samples in the output array.                     */  \
+/* Note that the size of the input and output buffers correspond to the */  \
+/* values of P and Q passed when the object was created, even if they   */  \
+/* share a common divisor. Internally the rational resampler reduces P  */  \
+/* and Q by their greatest commmon denominator to reduce processing;    */  \
+/* however sometimes it is convenienct to create the object based on    */  \
+/* expected output/input block sizes. This expectation is preserved. So */  \
+/* if an object is created with P=80 and Q=72, the object will          */  \
+/* internally set P=10 and Q=9 (with a g.c.d of 8); however when        */  \
+/* "execute" is called the resampler will still expect an input buffer  */  \
+/* of 72 and an output buffer of 80.                                    */  \
 /*  _q  : resamp object                                                 */  \
 /*  _x  : input sample array, [size: Q x 1]                             */  \
 /*  _y  : output sample array [size: P x 1]                             */  \

@@ -42,6 +42,12 @@ struct RRESAMP(_s) {
     FIRPFB()        pfb;    // filterbank object (interpolator), Q filters in bank
 };
 
+// internal: execute rational-rate resampler on a primitive-length block of
+// input samples and store the resulting samples in the output array.
+void RRESAMP(_execute_primitive)(RRESAMP() _q,
+                                 TI *      _x,
+                                 TO *      _y);
+
 // Create rational-rate resampler object from filter prototype
 //  _P      : interpolation factor,                     P > 0
 //  _Q      : decimation factor,                        Q > 0
@@ -196,6 +202,23 @@ void RRESAMP(_execute)(RRESAMP() _q,
                        TI *      _x,
                        TO *      _y)
 {
+    // run in blocks
+    unsigned int i;
+    for (i=0; i<_q->gcd; i++) {
+        // compute P outputs for Q inputs
+        RRESAMP(_execute_primitive)(_q, _x, _y);
+
+        // update input pointers accordingly
+        _x += _q->Q;
+        _y += _q->P;
+    }
+}
+
+// internal
+void RRESAMP(_execute_primitive)(RRESAMP() _q,
+                                 TI *      _x,
+                                 TO *      _y)
+{
     unsigned int index = 0; // filterbank index
     unsigned int i, n=0;
     for (i=0; i<_q->Q; i++) {
@@ -212,8 +235,10 @@ void RRESAMP(_execute)(RRESAMP() _q,
         index -= _q->P;
     }
 
+#if 0
     // error checking for now
     assert(index == 0);
     assert(n == _q->P);
+#endif
 }
 

@@ -64,8 +64,6 @@ int main(int argc, char*argv[])
     rresamp_crcf q = rresamp_crcf_create(P,Q,m,bw,As);
     rresamp_crcf_print(q);
     float rate = rresamp_crcf_get_rate(q);
-    Q          = rresamp_crcf_get_decim(q); // get decim factor (after gcd removal)
-    P          = rresamp_crcf_get_interp(q);// get interp factor (after gcd removal)
 
     // number of sample blocks (limit by large interp/decim rates)
     unsigned int n = 120e3 / (P > Q ? P : Q);
