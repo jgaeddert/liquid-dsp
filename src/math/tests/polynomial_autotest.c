@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2015 Joseph Gaeddert
+ * Copyright (c) 2007 - 2019 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -328,7 +328,7 @@ void autotest_polyf_findroots()
     if (liquid_autotest_verbose) {
         printf("poly:\n");
         for (i=0; i<6; i++)
-            printf("  p[%3u] = %12.8f + j*%12.8f\n", i, crealf(p[i]), cimagf(p[i]));
+            printf("  p[%3u] = %12.8f\n", i, p[i]);
 
         printf("roots:\n");
         for (i=0; i<5; i++)
