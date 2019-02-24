@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2015 Joseph Gaeddert
+ * Copyright (c) 2007 - 2019 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -46,6 +46,11 @@ void POLY(_findroots_bairstow_recursion)(T *          _p,
                                          T *          _u,
                                          T *          _v);
 
+// sort roots in ascending order of real component; complex pairs order
+// root with positive imaginary component before root with negative
+// imaginary component.
+int POLY(_sort_roots_compare)(const void * _a,
+                              const void * _b);
 
 // finds the complex roots of the polynomial
 //  _p      :   polynomial array, ascending powers [size: _k x 1]
@@ -58,6 +63,9 @@ void POLY(_findroots)(T *          _p,
     // find roots of polynomial using Bairstow's method (more
     // accurate and reliable than Durand-Kerner)
     POLY(_findroots_bairstow)(_p,_k,_roots);
+
+    // sort roots for consistent ordering
+    qsort(_roots, _k-1, sizeof(TC), &POLY(_sort_roots_compare));
 }
 
 // finds the complex roots of the polynomial using the Durand-Kerner method
@@ -326,5 +334,18 @@ void POLY(_findroots_bairstow_recursion)(T *          _p,
     *_u = u;
     *_v = v;
 
+}
+
+// compare roots for sorting
+int POLY(_sort_roots_compare)(const void * _a,
+                              const void * _b)
+{
+    double ar = (double) creal( *((TC*)_a) );
+    double br = (double) creal( *((TC*)_b) );
+
+    double ai = (double) cimag( *((TC*)_a) );
+    double bi = (double) cimag( *((TC*)_b) );
+
+    return ar == br ? (ai > bi ? -1 : 1) : (ar > br ? 1 : -1);
 }
 

@@ -314,6 +314,10 @@ void autotest_poly_expandbinomial_pm_m5_k2()
 // 
 // AUTOTEST: polyf_findroots
 //
+
+//  _p      : polynomial,     [size: _order+1 x 1]
+//  _r      : roots (sorted), [size: _order   x 1]
+//  _ordre  : polynomial order
 void polyf_findroots_testbench(float *         _p,
                                float complex * _r,
                                unsigned int    _order)
@@ -330,37 +334,26 @@ void polyf_findroots_testbench(float *         _p,
             printf("  p[%3u] = %12.8f\n", i, _p[i]);
 
         printf("roots:\n");
-        for (i=0; i<_order; i++)
-            printf("  r[%3u] = %12.8f + j*%12.8f\n", i, crealf(roots[i]), cimagf(roots[i]));
-    }
-
-    int r_used[_order];
-    memset(r_used, 0, sizeof(r_used));
-
-    unsigned int j,k=0;
-    for (i=0; i<_order; i++) {
-        for (j=0; j<_order; j++) {
-            // check to see if this root has been used already
-            if (r_used[j]) continue;
-
-            // check to see if roots match within relative tolerance
-            if (cabsf(roots[i]-_r[j]) < tol) {
-                r_used[j] = 1;
-                CONTEND_DELTA(crealf(roots[i]), crealf(_r[j]), tol);
-                CONTEND_DELTA(cimagf(roots[i]), cimagf(_r[j]), tol);
-                k++;
-                continue;
-            }
+        for (i=0; i<_order; i++) {
+            printf("  r[%3u] = %12.8f + %12.8fj (%12.8f + %12.8fj)\n",
+                    i,
+                    crealf(roots[i]), cimagf(roots[i]),
+                    crealf(   _r[i]), cimagf(   _r[i]));
         }
     }
-    CONTEND_EQUALITY(k,_order);
+
+    // check to see if roots match within relative tolerance
+    for (i=0; i<_order; i++) {
+        CONTEND_DELTA(crealf(roots[i]), crealf(_r[i]), tol);
+        CONTEND_DELTA(cimagf(roots[i]), cimagf(_r[i]), tol);
+    }
 }
 
 void autotest_polyf_findroots_real()
 {
     // basic roots, no complex values
     float         p[6] = {6,11,-33,-33,11,6};
-    float complex r[5] = {-3,2,-1,0.5,-1./3.};
+    float complex r[5] = {-3, -1, -1./3., 0.5, 2.};
     polyf_findroots_testbench(p, r, 5);
 }
 
@@ -383,9 +376,9 @@ void autotest_polyf_findroots_mix()
 		-1.544928106217380,
 		-0.8438580445415772 + 1.251293921227189*_Complex_I,
 		-0.8438580445415772 - 1.251293921227189*_Complex_I,
+		 0.1464465720078399,
 		 0.5430988116463471 + 1.282747429218130*_Complex_I,
-		 0.5430988116463471 - 1.282747429218130*_Complex_I,
-		 0.1464465720078399};
+		 0.5430988116463471 - 1.282747429218130*_Complex_I};
     polyf_findroots_testbench(p, r, 6);
 }
 
