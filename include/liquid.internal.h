@@ -1137,6 +1137,22 @@ void bpacketsync_reconfig(bpacketsync _q);
 #define DSSSFRAME_H_FEC0         (LIQUID_FEC_GOLAY2412)
 #define DSSSFRAME_H_FEC1         (LIQUID_FEC_NONE)
 
+
+//
+// fskframe
+//
+
+#define FSKFRAME_PROTOCOL             (107 + PACKETIZER_VERSION)
+#define FSKFRAME_PRE_K                (4)
+#define FSKFRAME_H_USER_DEFAULT       (8)
+#define FSKFRAME_H_DEC                (6)
+#define FSKFRAME_H_CRC                (LIQUID_CRC_32)
+#define FSKFRAME_H_FEC0               (LIQUID_FEC_GOLAY2412)
+#define FSKFRAME_H_FEC1               (LIQUID_FEC_NONE)
+#define FSKFRAME_H_BITS_PER_SYMBOL    (1)
+#define FSKFRAME_H_SAMPLES_PER_SYMBOL (4)
+
+
 //
 // MODULE : math
 //
