@@ -707,6 +707,7 @@ math_autotests :=						\
 	src/math/tests/math_gamma_autotest.c			\
 	src/math/tests/math_complex_autotest.c			\
 	src/math/tests/polynomial_autotest.c			\
+	src/math/tests/polynomial_findroots_autotest.c		\
 	src/math/tests/prime_autotest.c				\
 
 
