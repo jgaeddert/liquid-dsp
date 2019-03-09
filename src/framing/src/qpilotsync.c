@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2015 Joseph Gaeddert
+ * Copyright (c) 2007 - 2019 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -78,9 +78,9 @@ qpilotsync qpilotsync_create(unsigned int _payload_len,
     q->pilot_spacing = _pilot_spacing;
 
     // derived values
-    div_t d = div(q->payload_len,(q->pilot_spacing - 1));
-    q->num_pilots = d.quot + (d.rem ? 1 : 0);
+    q->num_pilots = qpilot_num_pilots(q->payload_len, q->pilot_spacing);
     q->frame_len  = q->payload_len + q->num_pilots;
+
 
     // allocate memory for pilots
     q->pilots = (float complex*) malloc(q->num_pilots*sizeof(float complex));

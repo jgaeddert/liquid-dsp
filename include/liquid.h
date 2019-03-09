@@ -4472,8 +4472,21 @@ int qpacketmodem_decode_soft_payload(qpacketmodem    _q,
                                      unsigned char * _payload);
 
 //
-// pilot generator for streaming applications
+// pilot generator/synchronizer for packet burst recovery
 //
+
+// get number of pilots in frame
+unsigned int qpilot_num_pilots(unsigned int _payload_len,
+                               unsigned int _pilot_spacing);
+
+// get length of frame with a particular payload length and pilot spacing
+unsigned int qpilot_frame_len(unsigned int _payload_len,
+                              unsigned int _pilot_spacing);
+
+//
+// pilot generator for packet burst recovery
+//
+
 typedef struct qpilotgen_s * qpilotgen;
 
 // create packet encoder
@@ -4496,7 +4509,7 @@ void qpilotgen_execute(qpilotgen              _q,
                        liquid_float_complex * _frame);
 
 //
-// pilot synchronizer for streaming applications
+// pilot synchronizer for packet burst recovery
 //
 typedef struct qpilotsync_s * qpilotsync;
 
