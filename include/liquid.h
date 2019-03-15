@@ -8296,65 +8296,69 @@ void liquid_get_scale(float   _val,
 //   VECTOR     : name-mangling macro
 //   T          : data type
 //   TP         : data type (primitive)
-#define LIQUID_VECTOR_DEFINE_API(VECTOR,T,TP)                   \
-                                                                \
-/* initialize vector with scalar: x[i] = c (scalar)         */  \
-void VECTOR(_init)(T            _c,                             \
-                   T *          _x,                             \
-                   unsigned int _n);                            \
-                                                                \
-/* add each element: z[i] = x[i] + y[i]                     */  \
-void VECTOR(_add)(T *          _x,                              \
-                  T *          _y,                              \
-                  unsigned int _n,                              \
-                  T *          _z);                             \
-/* add scalar to each element: y[i] = x[i] + c              */  \
-void VECTOR(_addscalar)(T *          _x,                        \
-                        unsigned int _n,                        \
-                        T            _c,                        \
-                        T *          _y);                       \
-                                                                \
-/* multiply each element: z[i] = x[i] * y[i]                */  \
-void VECTOR(_mul)(T *          _x,                              \
-                  T *          _y,                              \
-                  unsigned int _n,                              \
-                  T *          _z);                             \
-/* multiply each element with scalar: y[i] = x[i] * c       */  \
-void VECTOR(_mulscalar)(T *          _x,                        \
-                        unsigned int _n,                        \
-                        T            _c,                        \
-                        T *          _y);                       \
-                                                                \
-/* compute complex phase rotation: x[i] = exp{j theta[i]}   */  \
-void VECTOR(_cexpj)(TP *         _theta,                        \
-                    unsigned int _n,                            \
-                    T *          _x);                           \
-/* compute angle of each element: theta[i] = arg{ x[i] }    */  \
-void VECTOR(_carg)(T *          _x,                             \
-                   unsigned int _n,                             \
-                   TP *         _theta);                        \
-/* compute absolute value of each element: y[i] = |x[i]|    */  \
-void VECTOR(_abs)(T *          _x,                              \
-                  unsigned int _n,                              \
-                  TP *         _y);                             \
-                                                                \
-/* compute sum of squares: sum{ |x|^2 }                     */  \
-TP VECTOR(_sumsq)(T *          _x,                              \
-                  unsigned int _n);                             \
-                                                                \
-/* compute l-2 norm: sqrt{ sum{ |x|^2 } }                   */  \
-TP VECTOR(_norm)(T *          _x,                               \
-                 unsigned int _n);                              \
-                                                                \
-/* compute l-p norm: { sum{ |x|^p } }^(1/p)                 */  \
-TP VECTOR(_pnorm)(T *          _x,                              \
-                  unsigned int _n,                              \
-                  TP           _p);                             \
-                                                                \
-/* scale vector elements by l-2 norm: y[i] = x[i]/norm(x)   */  \
-void VECTOR(_normalize)(T *          _x,                        \
-                        unsigned int _n,                        \
-                        T *          _y);                       \
+#define LIQUID_VECTOR_DEFINE_API(VECTOR,T,TP)                               \
+                                                                            \
+/* Initialize vector with scalar: x[i] = c (scalar)                     */  \
+void VECTOR(_init)(T            _c,                                         \
+                   T *          _x,                                         \
+                   unsigned int _n);                                        \
+                                                                            \
+/* Add each element pointwise: z[i] = x[i] + y[i]                       */  \
+void VECTOR(_add)(T *          _x,                                          \
+                  T *          _y,                                          \
+                  unsigned int _n,                                          \
+                  T *          _z);                                         \
+                                                                            \
+/* Add scalar to each element: y[i] = x[i] + c                          */  \
+void VECTOR(_addscalar)(T *          _x,                                    \
+                        unsigned int _n,                                    \
+                        T            _c,                                    \
+                        T *          _y);                                   \
+                                                                            \
+/* Multiply each element pointwise: z[i] = x[i] * y[i]                  */  \
+void VECTOR(_mul)(T *          _x,                                          \
+                  T *          _y,                                          \
+                  unsigned int _n,                                          \
+                  T *          _z);                                         \
+                                                                            \
+/* Multiply each element with scalar: y[i] = x[i] * c                   */  \
+void VECTOR(_mulscalar)(T *          _x,                                    \
+                        unsigned int _n,                                    \
+                        T            _c,                                    \
+                        T *          _y);                                   \
+                                                                            \
+/* Compute complex phase rotation: x[i] = exp{j theta[i]}               */  \
+void VECTOR(_cexpj)(TP *         _theta,                                    \
+                    unsigned int _n,                                        \
+                    T *          _x);                                       \
+                                                                            \
+/* Compute angle of each element: theta[i] = arg{ x[i] }                */  \
+void VECTOR(_carg)(T *          _x,                                         \
+                   unsigned int _n,                                         \
+                   TP *         _theta);                                    \
+                                                                            \
+/* Compute absolute value of each element: y[i] = |x[i]|                */  \
+void VECTOR(_abs)(T *          _x,                                          \
+                  unsigned int _n,                                          \
+                  TP *         _y);                                         \
+                                                                            \
+/* Compute sum of squares: sum{ |x|^2 }                                 */  \
+TP VECTOR(_sumsq)(T *          _x,                                          \
+                  unsigned int _n);                                         \
+                                                                            \
+/* Compute l-2 norm: sqrt{ sum{ |x|^2 } }                               */  \
+TP VECTOR(_norm)(T *          _x,                                           \
+                 unsigned int _n);                                          \
+                                                                            \
+/* Compute l-p norm: { sum{ |x|^p } }^(1/p)                             */  \
+TP VECTOR(_pnorm)(T *          _x,                                          \
+                  unsigned int _n,                                          \
+                  TP           _p);                                         \
+                                                                            \
+/* Scale vector elements by l-2 norm: y[i] = x[i]/norm(x)               */  \
+void VECTOR(_normalize)(T *          _x,                                    \
+                        unsigned int _n,                                    \
+                        T *          _y);                                   \
 
 LIQUID_VECTOR_DEFINE_API(LIQUID_VECTOR_MANGLE_RF, float,                float)
 LIQUID_VECTOR_DEFINE_API(LIQUID_VECTOR_MANGLE_CF, liquid_float_complex, float)
