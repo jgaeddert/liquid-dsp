@@ -346,15 +346,9 @@ int POLY(_findroots_bairstow_recursion)(T *          _p,
 
         printf("  step : %12.4e + j*%12.4e\n", crealf(du+dv), cimagf(du+dv));
 #endif
-
-        // adjust u, v
-        if (isnan(T_ABS(du)) || isnan(T_ABS(dv))) {
-            u *= 0.5f;
-            v *= 0.5f;
-        } else {
-            u += du;
-            v += dv;
-        }
+        // adjust u, v by step size
+        u += du;
+        v += dv;
 
         // exit conditions
         if (step < 1e-12f)
