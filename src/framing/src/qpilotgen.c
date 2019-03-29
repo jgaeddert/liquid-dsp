@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2015 Joseph Gaeddert
+ * Copyright (c) 2007 - 2019 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -36,6 +36,23 @@
 
 #include "liquid.internal.h"
 
+// get number of pilots in frame
+unsigned int qpilot_num_pilots(unsigned int _payload_len,
+                               unsigned int _pilot_spacing)
+{
+    if (_payload_len == 0 || _pilot_spacing < 2)
+        return 0;
+    div_t d = div(_payload_len,(_pilot_spacing - 1));
+    return d.quot + (d.rem ? 1 : 0);
+}
+
+// get length of frame with a particular payload length and pilot spacing
+unsigned int qpilot_frame_len(unsigned int _payload_len,
+                              unsigned int _pilot_spacing)
+{
+    return _payload_len + qpilot_num_pilots(_payload_len, _pilot_spacing);
+}
+
 struct qpilotgen_s {
     // properties
     unsigned int    payload_len;    // number of samples in payload
@@ -67,8 +84,7 @@ qpilotgen qpilotgen_create(unsigned int _payload_len,
     q->pilot_spacing = _pilot_spacing;
 
     // derived values
-    div_t d = div(q->payload_len,(q->pilot_spacing - 1));
-    q->num_pilots = d.quot + (d.rem ? 1 : 0);
+    q->num_pilots = qpilot_num_pilots(q->payload_len, q->pilot_spacing);
     q->frame_len  = q->payload_len + q->num_pilots;
 
     // allocate memory for pilots

@@ -1,5 +1,5 @@
 //
-// rresamp_crcf_example.c
+// rresamp_rrrf_example.c
 //
 // Demonstration of rresamp object whereby an input signal
 // is resampled at a rational rate Q/P.
@@ -7,13 +7,12 @@
 
 #include <stdio.h>
 #include <stdlib.h>
-#include <complex.h>
 #include <math.h>
 #include <getopt.h>
 
 #include "liquid.h"
 
-#define OUTPUT_FILENAME "rresamp_crcf_example.m"
+#define OUTPUT_FILENAME "rresamp_rrrf_example.m"
 
 // print usage/help message
 void usage()
@@ -61,50 +60,51 @@ int main(int argc, char*argv[])
     }
 
     // create resampler object
-    rresamp_crcf q = rresamp_crcf_create(P,Q,m,bw,As);
-    rresamp_crcf_print(q);
-    float rate = rresamp_crcf_get_rate(q);
+    rresamp_rrrf q = rresamp_rrrf_create(P,Q,m,bw,As);
+    rresamp_rrrf_print(q);
+    float rate = rresamp_rrrf_get_rate(q);
 
     // number of sample blocks (limit by large interp/decim rates)
     unsigned int n = 120e3 / (P > Q ? P : Q);
 
     // input/output buffers
-    float complex buf_x[Q]; // input
-    float complex buf_y[P]; // output
+    float buf_x[Q]; // input
+    float buf_y[P]; // output
 
-    // create signal generator (wide-band noise)
-    msourcecf gen = msourcecf_create();
-    msourcecf_add_noise(gen, 0.7f * (rate > 1.0 ? 1.0 : rate));
+    // create wide-band noise source with one-sided cut-off frequency
+    iirfilt_rrrf lowpass = iirfilt_rrrf_create_lowpass(15, 0.7f*0.5f*(rate > 1.0 ? 1.0 : rate));
 
     // create spectral periodogram objects
     unsigned int nfft = 2400;
-    spgramcf px = spgramcf_create_default(nfft);
-    spgramcf py = spgramcf_create_default(nfft);
+    spgramf px = spgramf_create_default(nfft);
+    spgramf py = spgramf_create_default(nfft);
 
     // generate input signal (filtered noise)
-    unsigned int i;
+    unsigned int i, j;
     for (i=0; i<n; i++) {
         // write Q input samples to buffer
-        msourcecf_write_samples(gen, buf_x, Q);
+        for (j=0; j<Q; j++)
+            iirfilt_rrrf_execute(lowpass, randnf(), &buf_x[j]);
 
         // run resampler and write P output samples
-        rresamp_crcf_execute(q, buf_x, buf_y);
+        rresamp_rrrf_execute(q, buf_x, buf_y);
 
         // write input and output to respective spectral periodogram estimate
-        spgramcf_write(px, buf_x, Q);
-        spgramcf_write(py, buf_y, P);
+        spgramf_write(px, buf_x, Q);
+        spgramf_write(py, buf_y, P);
     }
-    printf("num samples out : %llu\n", spgramcf_get_num_samples_total(py));
-    printf("num samples in  : %llu\n", spgramcf_get_num_samples_total(px));
+    printf("num samples out : %llu\n", spgramf_get_num_samples_total(py));
+    printf("num samples in  : %llu\n", spgramf_get_num_samples_total(px));
 
     // clean up allocated objects
-    rresamp_crcf_destroy(q);
+    rresamp_rrrf_destroy(q);
+    iirfilt_rrrf_destroy(lowpass);
 
     // compute power spectral density output
     float X[nfft];
     float Y[nfft];
-    spgramcf_get_psd(px, X);
-    spgramcf_get_psd(py, Y);
+    spgramf_get_psd(px, X);
+    spgramf_get_psd(py, Y);
 
     // export results to file for plotting
     FILE * fid = fopen(OUTPUT_FILENAME,"w");

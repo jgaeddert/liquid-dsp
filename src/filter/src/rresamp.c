@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2018 Joseph Gaeddert
+ * Copyright (c) 2007 - 2019 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -31,6 +31,7 @@
 
 struct RRESAMP(_s) {
     // filter design parameters
+    unsigned int    gcd;    // greatest common divisor between inputs P and Q
     unsigned int    P;      // interpolation factor
     unsigned int    Q;      // decimation factor
     unsigned int    m;      // filter semi-length, h_len = 2*m + 1
@@ -40,6 +41,12 @@ struct RRESAMP(_s) {
     // polyphase filterbank properties/object
     FIRPFB()        pfb;    // filterbank object (interpolator), Q filters in bank
 };
+
+// internal: execute rational-rate resampler on a primitive-length block of
+// input samples and store the resulting samples in the output array.
+void RRESAMP(_execute_primitive)(RRESAMP() _q,
+                                 TI *      _x,
+                                 TO *      _y);
 
 // Create rational-rate resampler object from filter prototype
 //  _P      : interpolation factor,                     P > 0
@@ -76,9 +83,9 @@ RRESAMP() RRESAMP(_create)(unsigned int _P,
 
     // set properties, scaling interpolation and decimation factors by their
     // greatest common divisor
-    unsigned int gcd = liquid_gcd(_P, _Q);
-    q->P  = _P / gcd;
-    q->Q  = _Q / gcd;
+    q->gcd= liquid_gcd(_P, _Q);
+    q->P  = _P / q->gcd;
+    q->Q  = _Q / q->gcd;
     q->m  = _m;
     q->bw = _bw;
     q->As = _As;
@@ -130,8 +137,8 @@ void RRESAMP(_destroy)(RRESAMP() _q)
 // print resampler object
 void RRESAMP(_print)(RRESAMP() _q)
 {
-    printf("resampler [rate: %u/%u=%.6f], m=%u, bw=%.3f/Fs, As=%.3f dB\n",
-            _q->P, _q->Q, (float)(_q->P) / (float)(_q->Q),
+    printf("resampler [rate: %u/%u=%.6f, gcd=%u], m=%u, bw=%.3f/Fs, As=%.3f dB\n",
+            _q->P, _q->Q, (float)(_q->P) / (float)(_q->Q), _q->gcd,
             _q->m, _q->bw, _q->As);
 }
 
@@ -166,10 +173,22 @@ unsigned int RRESAMP(_get_delay)(RRESAMP() _q)
     return _q->m;
 }
 
+// Get greatest common divisor (g.c.d.) between original P and Q values
+unsigned int RRESAMP(_get_gcd)(RRESAMP() _q)
+{
+    return _q->gcd;
+}
+
 // Get rate of resampler, r = P/Q
 float RRESAMP(_get_rate)(RRESAMP() _q)
 {
     return (float)(_q->P) / (float)(_q->Q);
+}
+
+// Get original interpolation factor of resampler, P
+unsigned int RRESAMP(_get_P)(RRESAMP() _q)
+{
+    return _q->P * _q->gcd;
 }
 
 // Get interpolation factor of resampler, \(P\), after removing
@@ -177,6 +196,12 @@ float RRESAMP(_get_rate)(RRESAMP() _q)
 unsigned int RRESAMP(_get_interp)(RRESAMP() _q)
 {
     return _q->P;
+}
+
+// Get original decimation factor of resampler, Q
+unsigned int RRESAMP(_get_Q)(RRESAMP() _q)
+{
+    return _q->Q * _q->gcd;
 }
 
 // Get decimator factor of resampler, \(Q\), after removing
@@ -195,6 +220,23 @@ void RRESAMP(_execute)(RRESAMP() _q,
                        TI *      _x,
                        TO *      _y)
 {
+    // run in blocks
+    unsigned int i;
+    for (i=0; i<_q->gcd; i++) {
+        // compute P outputs for Q inputs
+        RRESAMP(_execute_primitive)(_q, _x, _y);
+
+        // update input pointers accordingly
+        _x += _q->Q;
+        _y += _q->P;
+    }
+}
+
+// internal
+void RRESAMP(_execute_primitive)(RRESAMP() _q,
+                                 TI *      _x,
+                                 TO *      _y)
+{
     unsigned int index = 0; // filterbank index
     unsigned int i, n=0;
     for (i=0; i<_q->Q; i++) {
@@ -211,8 +253,10 @@ void RRESAMP(_execute)(RRESAMP() _q,
         index -= _q->P;
     }
 
+#if 0
     // error checking for now
     assert(index == 0);
     assert(n == _q->P);
+#endif
 }
 
