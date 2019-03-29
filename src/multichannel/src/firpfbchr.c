@@ -24,7 +24,7 @@
 // firpfbchr.c
 //
 // finite impulse response polyphase filterbank channelizer with output
-// rate 2 Fs / M
+// rate Fs / P
 //
 
 #include <stdlib.h>
@@ -35,7 +35,7 @@
 // firpfbchr object structure definition
 struct FIRPFBCHR(_s) {
     unsigned int M;     // number of channels
-    unsigned int P;     //
+    unsigned int P;     // decimation factor
     unsigned int m;     // filter semi-length
 
     // filter
@@ -55,11 +55,12 @@ struct FIRPFBCHR(_s) {
     unsigned int base_index;
 };
 
-// create firpfbchr object
-//  _M      : number of input channels (must be even)
-//  _P      : number of output channels (must be even)
+// create rational rate resampling channelizer (firpfbchr) object by
+// specifying filter coefficients directly
+//  _M      : number of output channels in chanelizer
+//  _P      : output decimation factor (output rate is 1/P the input)
 //  _m      : prototype filter semi-length, length=2*M*m
-//  _h      : prototype filter coefficient array
+//  _h      : prototype filter coefficient array, [size: 2*M*m x 1]
 FIRPFBCHR() FIRPFBCHR(_create)(unsigned int _M,
                                unsigned int _P,
                                unsigned int _m,
@@ -117,9 +118,10 @@ FIRPFBCHR() FIRPFBCHR(_create)(unsigned int _M,
     return q;
 }
 
-// create firpfbchr object using Kaiser window prototype
-//  _M      : number of input channels (must be even)
-//  _P      : number of output channels (must be even)
+// create rational rate resampling channelizer (firpfbchr) object by
+// specifying filter design parameters for Kaiser prototype
+//  _M      : number of output channels in chanelizer
+//  _P      : output decimation factor (output rate is 1/P the input)
 //  _m      : prototype filter semi-length, length=2*M*m
 //  _As     : filter stop-band attenuation [dB]
 FIRPFBCHR() FIRPFBCHR(_create_kaiser)(unsigned int _M,
@@ -215,13 +217,13 @@ void FIRPFBCHR(_print)(FIRPFBCHR() _q)
     printf("    semi-length :   %u\n", _q->m);
 }
 
-// get number of input channels to channelizer
+// get number of output channels to channelizer
 unsigned int FIRPFBCHR(_get_M)(FIRPFBCHR() _q)
 {
     return _q->M;
 }
 
-// get number of output channels to channelizer
+// get decimation rate
 unsigned int FIRPFBCHR(_get_P)(FIRPFBCHR() _q)
 {
     return _q->P;
@@ -234,6 +236,7 @@ unsigned int FIRPFBCHR(_get_m)(FIRPFBCHR() _q)
 }
 
 // push samples into filter bank
+//  _q      : channelizer object
 //  _x      : channelizer input, [size: P x 1]
 void FIRPFBCHR(_push)(FIRPFBCHR() _q,
                       TI *        _x)
@@ -250,6 +253,7 @@ void FIRPFBCHR(_push)(FIRPFBCHR() _q,
 }
 
 // execute filterbank channelizer (synthesizer)
+//  _q      : channelizer object
 //  _y      : channelizer output, [size: M x 1]
 void FIRPFBCHR(_execute)(FIRPFBCHR() _q,
                          TO *        _y)
