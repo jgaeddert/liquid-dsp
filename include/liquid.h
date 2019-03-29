@@ -7263,6 +7263,15 @@ void FIRPFBCHR(_reset)(FIRPFBCHR() _q);                         \
 /* print firpfbchr object internals                         */  \
 void FIRPFBCHR(_print)(FIRPFBCHR() _q);                         \
                                                                 \
+/* get number of input channels to channelizer              */  \
+unsigned int FIRPFBCHR(_get_M)(FIRPFBCHR() _q);                 \
+                                                                \
+/* get number of output channels to channelizer             */  \
+unsigned int FIRPFBCHR(_get_P)(FIRPFBCHR() _q);                 \
+                                                                \
+/* get semi-length to channelizer filter prototype          */  \
+unsigned int FIRPFBCHR(_get_m)(FIRPFBCHR() _q);                 \
+                                                                \
 /* push samples into filter bank                            */  \
 /*  _x      : channelizer input [size: P x 1]               */  \
 void FIRPFBCHR(_push)(FIRPFBCHR() _q,                           \

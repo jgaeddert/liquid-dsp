@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2018 Joseph Gaeddert
+ * Copyright (c) 2007 - 2019 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -213,6 +213,24 @@ void FIRPFBCHR(_print)(FIRPFBCHR() _q)
     printf("    decim (P)   :   %u\n", _q->P);
     printf("    h_len       :   %u\n", _q->h_len);
     printf("    semi-length :   %u\n", _q->m);
+}
+
+// get number of input channels to channelizer
+unsigned int FIRPFBCHR(_get_M)(FIRPFBCHR() _q)
+{
+    return _q->M;
+}
+
+// get number of output channels to channelizer
+unsigned int FIRPFBCHR(_get_P)(FIRPFBCHR() _q)
+{
+    return _q->P;
+}
+
+// get semi-length to channelizer filter prototype
+unsigned int FIRPFBCHR(_get_m)(FIRPFBCHR() _q)
+{
+    return _q->m;
 }
 
 // push samples into filter bank
