@@ -60,7 +60,7 @@ int main(int argc, char*argv[])
     }
 
     // create resampler object
-    rresamp_rrrf q = rresamp_rrrf_create(P,Q,m,bw,As);
+    rresamp_rrrf q = rresamp_rrrf_create_kaiser(P,Q,m,bw,As);
     rresamp_rrrf_print(q);
     float rate = rresamp_rrrf_get_rate(q);
 

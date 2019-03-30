@@ -35,8 +35,6 @@ struct RRESAMP(_s) {
     unsigned int    P;      // interpolation factor
     unsigned int    Q;      // decimation factor
     unsigned int    m;      // filter semi-length, h_len = 2*m + 1
-    float           As;     // filter stop-band attenuation
-    float           bw;     // filter bandwidth
 
     // polyphase filterbank properties/object
     FIRPFB()        pfb;    // filterbank object (interpolator), Q filters in bank
@@ -48,17 +46,15 @@ void RRESAMP(_execute_primitive)(RRESAMP() _q,
                                  TI *      _x,
                                  TO *      _y);
 
-// Create rational-rate resampler object from filter prototype
+// Create rational-rate resampler object from external coefficients
 //  _P      : interpolation factor,                     P > 0
 //  _Q      : decimation factor,                        Q > 0
 //  _m      : filter semi-length (delay),               0 < _m
-//  _bw     : filter bandwidth relative to sample rate, 0 < _bw= < 0.5
-//  _As     : filter stop-band attenuation [dB],        0 < _As
+//  _h      : filter coefficients, [size: 2*_P*_m x 1], 0 < _bw= < 0.5
 RRESAMP() RRESAMP(_create)(unsigned int _P,
                            unsigned int _Q,
                            unsigned int _m,
-                           float        _bw,
-                           float        _As)
+                           TC *         _h)
 {
     // validate input
     if (_P == 0) {
@@ -69,12 +65,6 @@ RRESAMP() RRESAMP(_create)(unsigned int _P,
         exit(1);
     } else if (_m == 0) {
         fprintf(stderr,"error: rresamp_%s_create(), filter semi-length must be greater than zero\n", EXTENSION_FULL);
-        exit(1);
-    } else if (_bw <= 0.0f || _bw > 0.5f) {
-        fprintf(stderr,"error: rresamp_%s_create(), filter bandwidth must be in (0,0.5]\n", EXTENSION_FULL);
-        exit(1);
-    } else if (_As <= 0.0f) {
-        fprintf(stderr,"error: rresamp_%s_create(), filter stop-band suppression must be greater than zero\n", EXTENSION_FULL);
         exit(1);
     }
 
@@ -87,15 +77,45 @@ RRESAMP() RRESAMP(_create)(unsigned int _P,
     q->P  = _P / q->gcd;
     q->Q  = _Q / q->gcd;
     q->m  = _m;
-    q->bw = _bw;
-    q->As = _As;
 
-    // design filter
-    q->pfb = FIRPFB(_create_kaiser)(q->P,q->m,q->bw,q->As);
-    RRESAMP(_set_scale)(q, 2.0f*q->bw*sqrtf((float)(q->Q)/(float)(q->P)));
+    // create poly-phase filter bank
+    q->pfb = FIRPFB(_create)(q->P, _h, 2*q->P*q->m);
 
     // reset object and return
     RRESAMP(_reset)(q);
+    return q;
+}
+
+// Create rational-rate resampler object from filter prototype
+//  _P      : interpolation factor,                     P > 0
+//  _Q      : decimation factor,                        Q > 0
+//  _m      : filter semi-length (delay),               0 < _m
+//  _bw     : filter bandwidth relative to sample rate, 0 < _bw= < 0.5
+//  _As     : filter stop-band attenuation [dB],        0 < _As
+RRESAMP() RRESAMP(_create_kaiser)(unsigned int _P,
+                                  unsigned int _Q,
+                                  unsigned int _m,
+                                  float        _bw,
+                                  float        _As)
+{
+    // design filter
+    unsigned int h_len = 2*_P*_m + 1;
+    float * hf = (float*) malloc(h_len*sizeof(float));
+    TC    * h  = (TC*)    malloc(h_len*sizeof(TC)   );
+    liquid_firdes_kaiser(h_len, _bw/(float)_P, _As, 0.0f, hf);
+
+    // convert to type-specific coefficients
+    unsigned int i;
+    for (i=0; i<h_len; i++)
+        h[i] = (TC) hf[i];
+
+    // create object and set parameters
+    RRESAMP() q = RRESAMP(_create)(_P, _Q, _m, h);
+    RRESAMP(_set_scale)(q, 2.0f*_bw*sqrtf((float)(q->Q)/(float)(q->P)));
+
+    // free allocated memory and return object
+    free(hf);
+    free(h);
     return q;
 }
 
@@ -121,7 +141,7 @@ RRESAMP() RRESAMP(_create_default)(unsigned int _P,
     float        As = 60.0f;
 
     // create and return resamp object
-    return RRESAMP(_create)(_P, _Q, m, bw, As);
+    return RRESAMP(_create_kaiser)(_P, _Q, m, bw, As);
 }
 
 // free resampler object
@@ -137,9 +157,8 @@ void RRESAMP(_destroy)(RRESAMP() _q)
 // print resampler object
 void RRESAMP(_print)(RRESAMP() _q)
 {
-    printf("resampler [rate: %u/%u=%.6f, gcd=%u], m=%u, bw=%.3f/Fs, As=%.3f dB\n",
-            _q->P, _q->Q, (float)(_q->P) / (float)(_q->Q), _q->gcd,
-            _q->m, _q->bw, _q->As);
+    printf("resampler [rate: %u/%u=%.6f, gcd=%u], m=%u\n",
+            _q->P, _q->Q, (float)(_q->P) / (float)(_q->Q), _q->gcd, _q->m);
 }
 
 // reset resampler object

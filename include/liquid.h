@@ -3666,6 +3666,17 @@ LIQUID_RESAMP2_DEFINE_API(LIQUID_RESAMP2_MANGLE_CCCF,
 /* Rational rate resampler, implemented as a polyphase filterbank       */  \
 typedef struct RRESAMP(_s) * RRESAMP();                                     \
                                                                             \
+/* Create rational-rate resampler object from external coeffcients to   */  \
+/* resample at an exact rate P/Q                                        */  \
+/*  _P      : interpolation factor,                     P > 0           */  \
+/*  _Q      : decimation factor,                        Q > 0           */  \
+/*  _m      : filter semi-length (delay),               0 < _m          */  \
+/*  _h      : filter coefficients, [size: 2*_P*_m x 1]                  */  \
+RRESAMP() RRESAMP(_create)(unsigned int _P,                                 \
+                           unsigned int _Q,                                 \
+                           unsigned int _m,                                 \
+                           TC *         _h);                                \
+                                                                            \
 /* Create rational-rate resampler object from filter prototype to       */  \
 /* resample at an exact rate P/Q                                        */  \
 /*  _P      : interpolation factor,                     P > 0           */  \
@@ -3673,11 +3684,11 @@ typedef struct RRESAMP(_s) * RRESAMP();                                     \
 /*  _m      : filter semi-length (delay),               0 < _m          */  \
 /*  _bw     : filter bandwidth relative to sample rate, 0 < _bw <= 0.5  */  \
 /*  _As     : filter stop-band attenuation [dB],        0 < _As         */  \
-RRESAMP() RRESAMP(_create)(unsigned int _P,                                 \
-                           unsigned int _Q,                                 \
-                           unsigned int _m,                                 \
-                           float        _bw,                                \
-                           float        _As);                               \
+RRESAMP() RRESAMP(_create_kaiser)(unsigned int _P,                          \
+                                  unsigned int _Q,                          \
+                                  unsigned int _m,                          \
+                                  float        _bw,                         \
+                                  float        _As);                        \
                                                                             \
 /* Create rational resampler object with a specified resampling rate of */  \
 /* exactly P/Q with default parameters. This is a simplified method to  */  \
