@@ -3690,6 +3690,13 @@ RRESAMP() RRESAMP(_create_kaiser)(unsigned int _P,                          \
                                   float        _bw,                         \
                                   float        _As);                        \
                                                                             \
+/* Create rational-rate resampler object from filter prototype to...    */  \
+RRESAMP() RRESAMP(_create_prototype)(int          _type,                    \
+                                     unsigned int _P,                       \
+                                     unsigned int _Q,                       \
+                                     unsigned int _m,                       \
+                                     float        _beta);                   \
+                                                                            \
 /* Create rational resampler object with a specified resampling rate of */  \
 /* exactly P/Q with default parameters. This is a simplified method to  */  \
 /* provide a basic resampler with a baseline set of parameters,         */  \

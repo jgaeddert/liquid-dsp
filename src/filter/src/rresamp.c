@@ -119,6 +119,39 @@ RRESAMP() RRESAMP(_create_kaiser)(unsigned int _P,
     return q;
 }
 
+// create rational-rate resampler object...
+RRESAMP() RRESAMP(_create_prototype)(int          _type,
+                                     unsigned int _P,
+                                     unsigned int _Q,
+                                     unsigned int _m,
+                                     float        _beta)
+{
+    // design filter
+    int          decim = _P < _Q;           // interpolator? or decimator
+    unsigned int k     = decim ? _Q : _P;   // prototype samples per symbol
+    unsigned int h_len = 2*k*_m + 1;        // filter length
+    float * hf = (float*) malloc(h_len*sizeof(float));
+    TC    * h  = (TC*)    malloc(h_len*sizeof(TC)   );
+    liquid_firdes_prototype(_type, k, _m, _beta, 0, hf);
+
+    // convert to type-specific coefficients
+    unsigned int i;
+    for (i=0; i<h_len; i++)
+        h[i] = (TC) hf[i];
+
+    // create object
+    RRESAMP() q = RRESAMP(_create)(_P, _Q, _m, h);
+
+    // adjust gain for decimator
+    if (decim)
+        RRESAMP(_set_scale)(q, (float)(q->P)/(float)(q->Q));
+
+    // free allocated memory and return object
+    free(hf);
+    free(h);
+    return q;
+}
+
 // create rational-rate resampler object with a specified input
 // resampling rate and default parameters
 //  m (filter semi-length) = 12
