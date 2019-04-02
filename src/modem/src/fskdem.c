@@ -155,6 +155,10 @@ fskdem fskdem_create(unsigned int _m,
 // destroy fskdem object
 void fskdem_destroy(fskdem _q)
 {
+    if (!_q) {
+        return;
+    }
+
     // free allocated arrays
     free(_q->demod_map);
     free(_q->buf_time);

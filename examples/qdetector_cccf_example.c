@@ -47,7 +47,7 @@ int main(int argc, char*argv[])
     float        phi          =  0.5f;  // carrier phase offset
     float        SNRdB        = 20.0f;  // signal-to-noise ratio [dB]
     float        threshold    =  0.5f;  // detection threshold
-    float        range        =  0.05f; // carrier offset search range [radians/sample]
+    float        range        =  0.3f; // carrier offset search range [radians/sample]
 
     int dopt;
     while ((dopt = getopt(argc,argv,"hn:k:m:b:F:T:S:t:r:")) != EOF) {

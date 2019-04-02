@@ -28,8 +28,130 @@
 
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 
 #include "liquid.internal.h"
+
+struct symbolreader_s {
+    unsigned char * src;
+    unsigned int src_len;    // in bits
+    unsigned int src_index;  // in bits
+};
+
+symbolreader symbolreader_create()
+{
+    struct symbolreader_s * reader = (struct symbolreader_s *)calloc(1, sizeof(struct symbolreader_s));
+
+    reader->src = NULL;
+    reader->src_len = 0;
+    reader->src_index = 0;
+
+    return reader;
+}
+
+void symbolreader_reset(symbolreader          _r,
+                        const unsigned char * _src,
+                        unsigned int          _src_len)
+{
+    _r->src = _src;
+    _r->src_len = _src_len;
+    _r->src_index = 0;
+}
+
+void symbolreader_destroy(symbolreader _r)
+{
+    if (!_r) {
+        return;
+    }
+
+    free(_r);
+}
+
+int symbolreader_read(symbolreader   _r,
+                      unsigned int   _len,
+                      unsigned int * _out)
+{
+    if (_r->src_index + _len > _r->src_len) {
+        return -1;
+    }
+
+    liquid_unpack_array(_r->src, _r->src_len, _r->src_index, _len, _out);
+    _r->src_index += _len;
+
+    return _r->src_index != _r->src_len;
+}
+
+unsigned int symbolreader_length(symbolreader _r)
+{
+    return _r->src_len;
+}
+
+struct symbolwriter_s {
+    unsigned char * dst;
+    unsigned int    dst_len;
+    unsigned int    dst_index;
+};
+
+symbolwriter symbolwriter_create()
+{
+    struct symbolwriter_s * writer = (struct symbolwriter_s *)calloc(1, sizeof(struct symbolwriter_s));
+
+    writer->dst = NULL;
+    writer->dst_len = 0;
+    writer->dst_index = 0;
+
+    return writer;
+}
+
+void symbolwriter_reset(symbolwriter _w,
+                        unsigned int _len)
+{
+    unsigned int n = _len / 8;
+    if (_len % 8 != 0) {
+        n++;
+    }
+
+    _w->dst = (unsigned char *)realloc(_w->dst, n);
+    memset(_w->dst, 0, n);
+    _w->dst_len = _len;
+    _w->dst_index = 0;
+}
+
+void symbolwriter_destroy(symbolwriter _w)
+{
+    if (!_w) {
+        return;
+    }
+
+    free(_w->dst);
+    free(_w);
+}
+
+int symbolwriter_write(symbolwriter _w,
+                       unsigned int _len,
+                       unsigned int _symbol)
+{
+    if (_w->dst_index + _len > _w->dst_len) {
+        return -1;
+    }
+
+    liquid_pack_array(_w->dst, _w->dst_len, _w->dst_index, _len, _symbol);
+    _w->dst_index += _len;
+
+    return _w->dst_index != _w->dst_len;
+}
+
+// caller must not access this pointer after destroy()
+const unsigned char * symbolwriter_bytes(symbolwriter _w)
+{
+    return _w->dst;
+}
+
+// in bits
+unsigned int symbolwriter_length(symbolwriter _w)
+{
+    return _w->dst_len;
+}
 
 // pack binary array with symbol(s)
 //  _src        :   source array [size: _n x 1]

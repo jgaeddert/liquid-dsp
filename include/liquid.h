@@ -4904,6 +4904,77 @@ void dsssframesync_debug_enable(dsssframesync _q);
 void dsssframesync_debug_disable(dsssframesync _q);
 void dsssframesync_debug_print(dsssframesync _q, const char * _filename);
 
+//
+// FSK frame generator
+//
+
+typedef struct {
+    unsigned int check;
+    unsigned int fec0;
+    unsigned int fec1;
+    unsigned int bits_per_symbol;
+    unsigned int samples_per_symbol;
+} fskframegenprops_s;
+
+typedef struct fskframegen_s * fskframegen;
+
+fskframegen fskframegen_create(fskframegenprops_s * _props,
+                               float _bandwidth);
+void fskframegen_destroy(fskframegen _q);
+void fskframegen_reset(fskframegen _q);
+int fskframegen_is_assembled(fskframegen _q);
+void fskframegen_getprops(fskframegen _q, fskframegenprops_s * _props);
+int fskframegen_setprops(fskframegen _q, fskframegenprops_s * _props);
+void fskframegen_set_header_len(fskframegen _q, unsigned int _len);
+int fskframegen_set_header_props(fskframegen          _q,
+                                  fskframegenprops_s * _props);
+unsigned int fskframegen_getframelen(fskframegen _q);
+
+// assemble a frame from an array of data
+//  _q              :   frame generator object
+//  _header         :   frame header
+//  _payload        :   payload data [size: _payload_len x 1]
+//  _payload_len    :   payload data length
+void fskframegen_assemble(fskframegen          _q,
+                           const unsigned char * _header,
+                           const unsigned char * _payload,
+                           unsigned int          _payload_len);
+
+int fskframegen_write_samples(fskframegen           _q,
+                               liquid_float_complex * _buffer,
+                               unsigned int           _buffer_len);
+
+
+//
+// FSK frame synchronizer
+//
+
+typedef struct fskframesync_s * fskframesync;
+
+fskframesync fskframesync_create(framesync_callback _callback, void * _userdata);
+void fskframesync_destroy(fskframesync _q);
+void fskframesync_print(fskframesync _q);
+void fskframesync_reset(fskframesync _q);
+int fskframesync_is_frame_open(fskframesync _q);
+void fskframesync_set_bandwidth(fskframesync _q, float _bw);
+void fskframesync_set_header_len(fskframesync _q,
+                                  unsigned int  _len);
+void fskframesync_decode_header_soft(fskframesync _q,
+                                      int           _soft);
+void fskframesync_decode_payload_soft(fskframesync _q,
+                                       int           _soft);
+int fskframesync_set_header_props(fskframesync          _q,
+                                   fskframegenprops_s * _props);
+void fskframesync_execute(fskframesync          _q,
+                           liquid_float_complex * _x,
+                           unsigned int           _n);
+void             fskframesync_reset_framedatastats(fskframesync _q);
+framedatastats_s fskframesync_get_framedatastats  (fskframesync _q);
+
+void fskframesync_debug_enable(fskframesync _q);
+void fskframesync_debug_disable(fskframesync _q);
+void fskframesync_debug_print(fskframesync _q, const char * _filename);
+
 // 
 // OFDM flexframe generator
 //

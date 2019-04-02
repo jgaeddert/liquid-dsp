@@ -600,6 +600,7 @@ framing_objects :=						\
 	src/framing/src/flexframegen.o				\
 	src/framing/src/flexframesync.o				\
 	src/framing/src/fskframegen.o				\
+	src/framing/src/fskframesync.o				\
 	src/framing/src/gmskframegen.o				\
 	src/framing/src/gmskframesync.o				\
 	src/framing/src/msourcecf.o				\
@@ -632,6 +633,7 @@ src/framing/src/framesync64.o       : %.o : %.c $(include_headers)
 src/framing/src/flexframegen.o      : %.o : %.c $(include_headers)
 src/framing/src/flexframesync.o     : %.o : %.c $(include_headers)
 src/framing/src/fskframegen.o       : %.o : %.c $(include_headers)
+src/framing/src/fskframesync.o      : %.o : %.c $(include_headers)
 src/framing/src/msourcecf.o         : %.o : %.c $(include_headers) src/framing/src/msource.c
 src/framing/src/ofdmflexframegen.o  : %.o : %.c $(include_headers)
 src/framing/src/ofdmflexframesync.o : %.o : %.c $(include_headers)
@@ -1436,6 +1438,7 @@ example_programs :=						\
 	examples/flexframesync_reconfig_example			\
 	examples/framesync64_example				\
 	examples/freqmodem_example				\
+	examples/fskframesync_example				\
 	examples/fskmodem_example				\
 	examples/fskmodem_waterfall_example			\
 	examples/gasearch_example				\

@@ -7,74 +7,6 @@
 
 #include "liquid.internal.h"
 
-struct bitreader_s {
-    unsigned char * buffer;
-    unsigned int buffer_index;
-    unsigned int buffer_len;
-    unsigned char current;
-    unsigned int current_len;
-};
-
-struct bitreader_s * bitreader_create()
-{
-    struct bitreader_s * r = (struct bitreader_s *)calloc(1, sizeof(struct bitreader_s));
-
-    return r;
-}
-
-void bitreader_set_source(struct bitreader_s * _r,
-                          unsigned char      * _buffer,
-                          unsigned int         _buffer_len)
-{
-
-    _r->buffer = _buffer;
-    _r->buffer_len = _buffer_len;
-    _r->buffer_index = 0;
-    _r->current = _buffer[0];
-    _r->current_len = 8;
-}
-
-void bitreader_destroy(struct bitreader_s * _r)
-{
-    free(_r);
-}
-
-unsigned char bitreader_read(struct bitreader_s * _r,
-                              unsigned int          _len)
-{
-    // we will only read up to 8 bits, so we will only read
-    // one or two bytes of _r->buffer
-
-    unsigned char res = 0;
-
-    if (_r->current_len < _len) {
-        // take the rest of the current byte
-        res = _r->current & ((1 << _r->current_len) - 1);
-
-        _r->buffer_index += 1;
-        _r->current = _r->buffer[_r->buffer_index];
-
-        _len -= _r->current_len;
-        _r->current_len = 8;
-
-        // make space for the rest of the read
-        res <<= _len;
-    }
-
-    unsigned int shift = _r->current_len - _len;
-    unsigned char mask = ((1 << _len) - 1) << shift;
-
-    res |= (_r->current & mask) >> (_r->current_len - _len);
-    _r->current_len -= _len;
-
-    return res;
-}
-
-unsigned int bitreader_length(struct bitreader_s * _r)
-{
-    return _r->buffer_len;
-}
-
 // fskframegen
 unsigned int fskframegen_write_preamble(fskframegen _q, liquid_float_complex * _y, unsigned int _len);
 unsigned int fskframegen_write_header(  fskframegen _q, liquid_float_complex * _y, unsigned int _len);
@@ -116,29 +48,29 @@ struct fskframegen_s {
     unsigned int preamble_len;  // length of preamble in samples
 
     // header
-    unsigned int header_user_len;  // unencoded header user length
-    unsigned int header_enc_len;  // encoded header length (user + reserved)
-    unsigned char * header_dec; // uncoded header [header_user_len + FSKFRAME_H_DEC]
-    unsigned char * header_enc; // encoded header [header_enc_len]
-    struct bitreader_s * header_reader;  // encoded header reader
-    fskframegenprops_s header_props;
-    packetizer header_packetizer;        // header packetizer
-    fskmod header_mod;
+    unsigned int           header_user_len;  // unencoded header user length
+    unsigned int           header_enc_len;  // encoded header length (user + reserved)
+    unsigned char *        header_dec; // uncoded header [header_user_len + FSKFRAME_H_DEC]
+    unsigned char *        header_enc; // encoded header [header_enc_len]
+    symbolreader           header_reader;
+    fskframegenprops_s     header_props;
+    packetizer             header_packetizer;        // header packetizer
+    fskmod                 header_mod;
     liquid_float_complex * header_samples;  // modulated header symbol [header_props.samples_per_symbol]
-    unsigned int header_len;  // length of header in samples
+    unsigned int           header_len;  // length of header in samples
 
     // payload
-    unsigned int payload_msg_len;  // unencoded payload length
-    unsigned int payload_enc_len;  // encoded payload length
-    unsigned char * payload_enc;  // encoded payload
-    struct bitreader_s * payload_reader;  // encoded payload reader
-    fskframegenprops_s payload_props;
-    packetizer payload_packetizer;       // payload packetizer
-    fskmod payload_mod;
+    unsigned int           payload_msg_len;  // unencoded payload length
+    unsigned int           payload_enc_len;  // encoded payload length
+    unsigned char *        payload_enc;  // encoded payload
+    symbolreader           payload_reader;
+    fskframegenprops_s     payload_props;
+    packetizer             payload_packetizer;       // payload packetizer
+    fskmod                 payload_mod;
     liquid_float_complex * payload_samples;  // modulated payload symbol [payload_k]
-    unsigned int payload_k;  // samples/symbol of payload
-    unsigned int payload_m;  // bits/symbol of payload
-    unsigned int payload_len;  // length of payload in samples
+    unsigned int           payload_k;  // samples/symbol of payload
+    unsigned int           payload_m;  // bits/symbol of payload
+    unsigned int           payload_len;  // length of payload in samples
 
     // framing state
     enum state state;
@@ -164,7 +96,7 @@ fskframegen fskframegen_create(fskframegenprops_s * _props,
     q->preamble_samples = (liquid_float_complex *)malloc(FSKFRAME_PRE_K * sizeof(liquid_float_complex));
     q->preamble_len = 63 * FSKFRAME_PRE_K;
 
-    q->header_reader = bitreader_create();
+    q->header_reader = symbolreader_create();
     q->header_mod = NULL;
     q->header_dec = NULL;
     q->header_enc = NULL;
@@ -174,7 +106,7 @@ fskframegen fskframegen_create(fskframegenprops_s * _props,
     fskframegen_set_header_props(q, NULL);
     fskframegen_set_header_len(q, FSKFRAME_H_USER_DEFAULT);
 
-    q->payload_reader = bitreader_create();
+    q->payload_reader = symbolreader_create();
     q->payload_enc = NULL;
     q->payload_packetizer = NULL;
     q->payload_mod = NULL;
@@ -197,13 +129,13 @@ void fskframegen_destroy(fskframegen _q)
 
     free(_q->header_dec);
     free(_q->header_enc);
-    bitreader_destroy(_q->header_reader);
+    symbolreader_destroy(_q->header_reader);
     packetizer_destroy(_q->header_packetizer);
     fskmod_destroy(_q->header_mod);
     free(_q->header_samples);
 
     free(_q->payload_enc);
-    bitreader_destroy(_q->payload_reader);
+    symbolreader_destroy(_q->payload_reader);
     packetizer_destroy(_q->payload_packetizer);
     fskmod_destroy(_q->payload_mod);
     free(_q->payload_samples);
@@ -353,12 +285,12 @@ void fskframegen_reconfigure(fskframegen _q)
 
     _q->payload_enc_len = packetizer_get_enc_msg_len(_q->payload_packetizer);
     _q->payload_enc = (unsigned char *)realloc(_q->payload_enc, _q->payload_enc_len * sizeof(unsigned char));
-    bitreader_set_source(_q->payload_reader, _q->payload_enc, _q->payload_enc_len);
+    symbolreader_reset(_q->payload_reader, _q->payload_enc, 8*_q->payload_enc_len);
 
     _q->payload_samples = (liquid_float_complex *)realloc(_q->payload_samples,
                                                           _q->payload_props.samples_per_symbol * sizeof(liquid_float_complex));
 
-    unsigned int num_payload_symbols = _q->payload_enc_len / _q->payload_props.bits_per_symbol;
+    unsigned int num_payload_symbols = (8 * _q->payload_enc_len) / _q->payload_props.bits_per_symbol;
     if (_q->payload_enc_len % _q->payload_props.bits_per_symbol) {
         num_payload_symbols++;
     }
@@ -381,11 +313,11 @@ void fskframegen_reconfigure_header(fskframegen _q)
 
     _q->header_enc_len = packetizer_get_enc_msg_len(_q->header_packetizer);
     _q->header_enc = (unsigned char *)realloc(_q->header_enc, _q->header_enc_len * sizeof(unsigned char));
-    bitreader_set_source(_q->header_reader, _q->header_enc, _q->header_enc_len);
+    symbolreader_reset(_q->header_reader, _q->header_enc, 8*_q->header_enc_len);
 
     _q->header_samples = (liquid_float_complex *)realloc(_q->header_samples,
                                                          _q->header_props.samples_per_symbol * sizeof(liquid_float_complex));
-    unsigned int num_header_symbols = _q->header_enc_len / _q->header_props.bits_per_symbol;
+    unsigned int num_header_symbols = (8 * _q->header_enc_len) / _q->header_props.bits_per_symbol;
     if (_q->header_enc_len % _q->header_props.bits_per_symbol) {
         num_header_symbols++;
     }
@@ -420,11 +352,21 @@ void fskframegen_assemble(fskframegen           _q,
 
     packetizer_encode(_q->header_packetizer, _q->header_dec, _q->header_enc);
 
+    /*
+    printf("gen encoded:");
+    unsigned int i;
+    for (i = 0; i < _q->header_enc_len; i++) {
+        printf(" %02x", _q->header_enc[i]);
+    }
+    printf("\n");
+    */
+
     fskframegen_reconfigure(_q);
 
     packetizer_encode(_q->payload_packetizer, _payload, _q->payload_enc);
 
     _q->frame_assembled = 1;
+    /*
     printf("frame assembled\n");
     printf("bandwidth %.2f\n", _q->bandwidth);
     printf("header bits/symbol %d\n", _q->header_props.bits_per_symbol);
@@ -434,6 +376,7 @@ void fskframegen_assemble(fskframegen           _q,
     printf("preamble length %d\n", _q->preamble_len);
     printf("header length %d\n", _q->header_len);
     printf("payload length %d\n", _q->payload_len);
+    */
 }
 
 int fskframegen_write_samples(fskframegen           _q,
@@ -442,6 +385,10 @@ int fskframegen_write_samples(fskframegen           _q,
 {
     unsigned int i;
     for (i = 0; i < _buffer_len; ) {
+        if (!_q->frame_assembled) {
+            memset(_buffer, 0, _buffer_len);
+            break;
+        }
         unsigned int written;
         switch (_q->state) {
         case STATE_PREAMBLE:
@@ -474,10 +421,16 @@ unsigned int fskframegen_write_preamble(fskframegen            _q,
         num_samples = _buffer_len;
     }
 
+    /*
+    printf("preamble_samples:");
+    */
     for (i = 0; i < num_samples; i++) {
         if (_q->sample_counter % FSKFRAME_PRE_K == 0) {
             unsigned int symbol = msequence_advance(_q->preamble_ms);
             fskmod_modulate(_q->preamble_mod, symbol, _q->preamble_samples);
+            /*
+        printf(" %.4f %.4f %.4f %.4f", _q->preamble_samples[0], _q->preamble_samples[1], _q->preamble_samples[2], _q->preamble_samples[3]);
+        */
         }
 
         _buffer[i] = _q->preamble_samples[_q->sample_counter % FSKFRAME_PRE_K];
@@ -490,6 +443,7 @@ unsigned int fskframegen_write_preamble(fskframegen            _q,
     }
 
     if (_q->sample_counter == _q->preamble_len) {
+        // printf("\n");
         msequence_reset(_q->preamble_ms);
         _q->sample_counter = 0;
         _q->state = STATE_HEADER;
@@ -510,7 +464,8 @@ unsigned int fskframegen_write_header(fskframegen            _q,
 
     for (i = 0; i < num_samples; i++) {
         if (_q->sample_counter % _q->header_props.samples_per_symbol == 0) {
-            unsigned int symbol = bitreader_read(_q->header_reader, _q->header_props.bits_per_symbol);
+            unsigned int symbol;
+            symbolreader_read(_q->header_reader, _q->header_props.bits_per_symbol, &symbol);
             fskmod_modulate(_q->header_mod, symbol, _q->header_samples);
         }
 
@@ -539,7 +494,8 @@ unsigned int fskframegen_write_payload(fskframegen            _q,
 
     for (i = 0; i < num_samples; i++) {
         if (_q->sample_counter % _q->payload_props.samples_per_symbol == 0) {
-            unsigned int symbol = bitreader_read(_q->payload_reader, _q->payload_props.bits_per_symbol);
+            unsigned int symbol;
+            symbolreader_read(_q->payload_reader, _q->payload_props.bits_per_symbol, &symbol);
             fskmod_modulate(_q->payload_mod, symbol, _q->payload_samples);
         }
 
