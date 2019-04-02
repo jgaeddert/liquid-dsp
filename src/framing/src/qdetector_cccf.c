@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2015 Joseph Gaeddert
+ * Copyright (c) 2007 - 2019 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -226,6 +226,58 @@ qdetector_cccf qdetector_cccf_create_gmsk(unsigned char * _sequence,
     for (i=0; i<_sequence_len + 2*_m; i++)
         gmskmod_modulate(mod, i < _sequence_len ? _sequence[i] : 0, &s[_k*i]);
     gmskmod_destroy(mod);
+
+    // create main object
+    qdetector_cccf q = qdetector_cccf_create(s, s_len);
+
+    // free allocated temporary array
+    free(s);
+
+    // return object
+    return q;
+}
+
+// create detector from sequence of CP-FSK symbols (assuming one bit/symbol)
+//  _sequence       :   bit sequence
+//  _sequence_len   :   length of bit sequence
+//  _bps            :   bits per symbol, 0 < _bps <= 8
+//  _h              :   modulation index, _h > 0
+//  _k              :   samples/symbol
+//  _m              :   filter delay
+//  _beta           :   filter bandwidth parameter, _beta > 0
+//  _type           :   filter type (e.g. LIQUID_CPFSK_SQUARE)
+qdetector_cccf qdetector_cccf_create_cpfsk(unsigned char * _sequence,
+                                           unsigned int    _sequence_len,
+                                           unsigned int    _bps,
+                                           float           _h,
+                                           unsigned int    _k,
+                                           unsigned int    _m,
+                                           float           _beta,
+                                           int             _type)
+{
+    // validate input
+    if (_sequence_len == 0) {
+        fprintf(stderr,"error: qdetector_cccf_create_cpfsk(), sequence length cannot be zero\n");
+        exit(1);
+    } else if (_k < 2 || _k > 80) {
+        fprintf(stderr,"error: qdetector_cccf_create_cpfsk(), samples per symbol must be in [2,80]\n");
+        exit(1);
+    } else if (_m < 1 || _m > 100) {
+        fprintf(stderr,"error: qdetector_cccf_create_cpfsk(), filter delay must be in [1,100]\n");
+        exit(1);
+    } else if (_beta < 0.0f || _beta > 1.0f) {
+        fprintf(stderr,"error: qdetector_cccf_create_cpfsk(), excess bandwidth factor must be in [0,1]\n");
+        exit(1);
+    }
+
+    // create time-domain template using GMSK modem
+    unsigned int    s_len = _k * (_sequence_len + 2*_m);
+    float complex * s     = (float complex*) malloc(s_len * sizeof(float complex));
+    cpfskmod mod = cpfskmod_create(_bps, _h, _k, _m, _beta, _type);
+    unsigned int i;
+    for (i=0; i<_sequence_len + 2*_m; i++)
+        cpfskmod_modulate(mod, i < _sequence_len ? _sequence[i] : 0, &s[_k*i]);
+    cpfskmod_destroy(mod);
 
     // create main object
     qdetector_cccf q = qdetector_cccf_create(s, s_len);

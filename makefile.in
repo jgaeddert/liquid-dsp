@@ -709,6 +709,7 @@ math_autotests :=						\
 	src/math/tests/math_gamma_autotest.c			\
 	src/math/tests/math_complex_autotest.c			\
 	src/math/tests/polynomial_autotest.c			\
+	src/math/tests/polynomial_findroots_autotest.c		\
 	src/math/tests/prime_autotest.c				\
 
 
@@ -872,6 +873,7 @@ $(multichannel_objects) : %.o : %.c $(include_headers)
 multichannel_includes :=					\
 	src/multichannel/src/firpfbch.c				\
 	src/multichannel/src/firpfbch2.c			\
+	src/multichannel/src/firpfbchr.c			\
 
 src/multichannel/src/firpfbch_crcf.o : %.o : %.c $(include_headers) $(multichannel_includes)
 src/multichannel/src/firpfbch_cccf.o : %.o : %.c $(include_headers) $(multichannel_includes)
@@ -887,6 +889,7 @@ multichannel_autotests :=					\
 multichannel_benchmarks :=					\
 	src/multichannel/bench/firpfbch_crcf_benchmark.c	\
 	src/multichannel/bench/firpfbch2_crcf_benchmark.c	\
+	src/multichannel/bench/firpfbchr_crcf_benchmark.c	\
 	src/multichannel/bench/ofdmframesync_acquire_benchmark.c	\
 	src/multichannel/bench/ofdmframesync_rxsymbol_benchmark.c	\
 
@@ -1047,9 +1050,9 @@ utility_autotests :=						\
 	src/utility/tests/pack_bytes_autotest.c			\
 	src/utility/tests/shift_array_autotest.c		\
 
-
 # benchmarks
-utility_benchmarks :=
+utility_benchmarks :=						\
+	src/utility/bench/byte_utilities_benchmark.c		\
 
 
 #
@@ -1427,6 +1430,7 @@ example_programs :=						\
 	examples/firhilb_filter_example				\
 	examples/firhilb_interp_example				\
 	examples/firpfbch2_crcf_example				\
+	examples/firpfbchr_crcf_example				\
 	examples/firinterp_crcf_example				\
 	examples/firinterp_firdecim_crcf_example		\
 	examples/firpfbch_crcf_example				\
@@ -1496,6 +1500,8 @@ example_programs :=						\
 	examples/random_histogram_example			\
 	examples/repack_bytes_example				\
 	examples/rresamp_crcf_example				\
+	examples/rresamp_crcf_rnyquist_example			\
+	examples/rresamp_rrrf_example				\
 	examples/resamp_crcf_example				\
 	examples/resamp_crcf_noise_example			\
 	examples/resamp2_cccf_example				\

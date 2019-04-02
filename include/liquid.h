@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2018 Joseph Gaeddert
+ * Copyright (c) 2007 - 2019 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -3666,6 +3666,17 @@ LIQUID_RESAMP2_DEFINE_API(LIQUID_RESAMP2_MANGLE_CCCF,
 /* Rational rate resampler, implemented as a polyphase filterbank       */  \
 typedef struct RRESAMP(_s) * RRESAMP();                                     \
                                                                             \
+/* Create rational-rate resampler object from external coeffcients to   */  \
+/* resample at an exact rate P/Q                                        */  \
+/*  _P      : interpolation factor,                     P > 0           */  \
+/*  _Q      : decimation factor,                        Q > 0           */  \
+/*  _m      : filter semi-length (delay),               0 < _m          */  \
+/*  _h      : filter coefficients, [size: 2*_P*_m x 1]                  */  \
+RRESAMP() RRESAMP(_create)(unsigned int _P,                                 \
+                           unsigned int _Q,                                 \
+                           unsigned int _m,                                 \
+                           TC *         _h);                                \
+                                                                            \
 /* Create rational-rate resampler object from filter prototype to       */  \
 /* resample at an exact rate P/Q                                        */  \
 /*  _P      : interpolation factor,                     P > 0           */  \
@@ -3673,11 +3684,18 @@ typedef struct RRESAMP(_s) * RRESAMP();                                     \
 /*  _m      : filter semi-length (delay),               0 < _m          */  \
 /*  _bw     : filter bandwidth relative to sample rate, 0 < _bw <= 0.5  */  \
 /*  _As     : filter stop-band attenuation [dB],        0 < _As         */  \
-RRESAMP() RRESAMP(_create)(unsigned int _P,                                 \
-                           unsigned int _Q,                                 \
-                           unsigned int _m,                                 \
-                           float        _bw,                                \
-                           float        _As);                               \
+RRESAMP() RRESAMP(_create_kaiser)(unsigned int _P,                          \
+                                  unsigned int _Q,                          \
+                                  unsigned int _m,                          \
+                                  float        _bw,                         \
+                                  float        _As);                        \
+                                                                            \
+/* Create rational-rate resampler object from filter prototype to...    */  \
+RRESAMP() RRESAMP(_create_prototype)(int          _type,                    \
+                                     unsigned int _P,                       \
+                                     unsigned int _Q,                       \
+                                     unsigned int _m,                       \
+                                     float        _beta);                   \
                                                                             \
 /* Create rational resampler object with a specified resampling rate of */  \
 /* exactly P/Q with default parameters. This is a simplified method to  */  \
@@ -3717,19 +3735,40 @@ void RRESAMP(_get_scale)(RRESAMP() _q,                                      \
 /* Get resampler delay (filter semi-length \(m\))                       */  \
 unsigned int RRESAMP(_get_delay)(RRESAMP() _q);                             \
                                                                             \
+/* Get original interpolation factor \(P\) when object was created      */  \
+/* before removing greatest common divisor                              */  \
+unsigned int RRESAMP(_get_P)(RRESAMP() _q);                                 \
+                                                                            \
 /* Get interpolation factor of resampler, \(P\), after removing         */  \
 /* greatest common divisor                                              */  \
 unsigned int RRESAMP(_get_interp)(RRESAMP() _q);                            \
                                                                             \
+/* Get original decimation factor \(Q\) when object was created         */  \
+/* before removing greatest common divisor                              */  \
+unsigned int RRESAMP(_get_Q)(RRESAMP() _q);                                 \
+                                                                            \
 /* Get decimation factor of resampler, \(Q\), after removing            */  \
 /* greatest common divisor                                              */  \
 unsigned int RRESAMP(_get_decim)(RRESAMP() _q);                             \
+                                                                            \
+/* Get greatest common divisor (g.c.d.) between original P and Q values */  \
+unsigned int RRESAMP(_get_gcd)(RRESAMP() _q);                               \
                                                                             \
 /* Get rate of resampler, \(r = P/Q\)                                   */  \
 float RRESAMP(_get_rate)(RRESAMP() _q);                                     \
                                                                             \
 /* Execute rational-rate resampler on a block of input samples and      */  \
 /* store the resulting samples in the output array.                     */  \
+/* Note that the size of the input and output buffers correspond to the */  \
+/* values of P and Q passed when the object was created, even if they   */  \
+/* share a common divisor. Internally the rational resampler reduces P  */  \
+/* and Q by their greatest commmon denominator to reduce processing;    */  \
+/* however sometimes it is convenienct to create the object based on    */  \
+/* expected output/input block sizes. This expectation is preserved. So */  \
+/* if an object is created with P=80 and Q=72, the object will          */  \
+/* internally set P=10 and Q=9 (with a g.c.d of 8); however when        */  \
+/* "execute" is called the resampler will still expect an input buffer  */  \
+/* of 72 and an output buffer of 80.                                    */  \
 /*  _q  : resamp object                                                 */  \
 /*  _x  : input sample array, [size: Q x 1]                             */  \
 /*  _y  : output sample array [size: P x 1]                             */  \
@@ -4451,8 +4490,21 @@ int qpacketmodem_decode_soft_payload(qpacketmodem    _q,
                                      unsigned char * _payload);
 
 //
-// pilot generator for streaming applications
+// pilot generator/synchronizer for packet burst recovery
 //
+
+// get number of pilots in frame
+unsigned int qpilot_num_pilots(unsigned int _payload_len,
+                               unsigned int _pilot_spacing);
+
+// get length of frame with a particular payload length and pilot spacing
+unsigned int qpilot_frame_len(unsigned int _payload_len,
+                              unsigned int _pilot_spacing);
+
+//
+// pilot generator for packet burst recovery
+//
+
 typedef struct qpilotgen_s * qpilotgen;
 
 // create packet encoder
@@ -4475,7 +4527,7 @@ void qpilotgen_execute(qpilotgen              _q,
                        liquid_float_complex * _frame);
 
 //
-// pilot synchronizer for streaming applications
+// pilot synchronizer for packet burst recovery
 //
 typedef struct qpilotsync_s * qpilotsync;
 
@@ -5245,6 +5297,24 @@ qdetector_cccf qdetector_cccf_create_gmsk(unsigned char * _sequence,
                                           unsigned int    _k,
                                           unsigned int    _m,
                                           float           _beta);
+
+// create detector from sequence of CP-FSK symbols (assuming one bit/symbol)
+//  _sequence       :   bit sequence
+//  _sequence_len   :   length of bit sequence
+//  _bps            :   bits per symbol, 0 < _bps <= 8
+//  _h              :   modulation index, _h > 0
+//  _k              :   samples/symbol
+//  _m              :   filter delay
+//  _beta           :   filter bandwidth parameter, _beta > 0
+//  _type           :   filter type (e.g. LIQUID_CPFSK_SQUARE)
+qdetector_cccf qdetector_cccf_create_cpfsk(unsigned char * _sequence,
+                                           unsigned int    _sequence_len,
+                                           unsigned int    _bps,
+                                           float           _h,
+                                           unsigned int    _k,
+                                           unsigned int    _m,
+                                           float           _beta,
+                                           int             _type);
 
 void qdetector_cccf_destroy(qdetector_cccf _q);
 void qdetector_cccf_print  (qdetector_cccf _q);
@@ -7227,6 +7297,75 @@ LIQUID_FIRPFBCH2_DEFINE_API(LIQUID_FIRPFBCH2_MANGLE_CRCF,
                             float,
                             liquid_float_complex)
 
+//
+// Finite impulse response polyphase filterbank channelizer
+// with output rate Fs * P / M
+//
+
+#define LIQUID_FIRPFBCHR_MANGLE_CRCF(name) LIQUID_CONCAT(firpfbchr_crcf,name)
+
+#define LIQUID_FIRPFBCHR_DEFINE_API(FIRPFBCHR,TO,TC,TI)                     \
+typedef struct FIRPFBCHR(_s) * FIRPFBCHR();                                 \
+                                                                            \
+/* create rational rate resampling channelizer (firpfbchr) object by    */  \
+/* specifying filter coefficients directly                              */  \
+/*  _M      : number of output channels in chanelizer                   */  \
+/*  _P      : output decimation factor (output rate is 1/P the input)   */  \
+/*  _m      : prototype filter semi-length, length=2*M*m                */  \
+/*  _h      : prototype filter coefficient array, [size: 2*M*m x 1]     */  \
+FIRPFBCHR() FIRPFBCHR(_create)(unsigned int _M,                             \
+                               unsigned int _P,                             \
+                               unsigned int _m,                             \
+                               TC *         _h);                            \
+                                                                            \
+/* create rational rate resampling channelizer (firpfbchr) object by    */  \
+/* specifying filter design parameters for Kaiser prototype             */  \
+/*  _M      : number of output channels in chanelizer                   */  \
+/*  _P      : output decimation factor (output rate is 1/P the input)   */  \
+/*  _m      : prototype filter semi-length, length=2*M*m                */  \
+/*  _As     : filter stop-band attenuation [dB]                         */  \
+FIRPFBCHR() FIRPFBCHR(_create_kaiser)(unsigned int _M,                      \
+                                      unsigned int _P,                      \
+                                      unsigned int _m,                      \
+                                      float        _As);                    \
+                                                                            \
+/* destroy firpfbchr object, freeing internal memory                    */  \
+void FIRPFBCHR(_destroy)(FIRPFBCHR() _q);                                   \
+                                                                            \
+/* reset firpfbchr object internal state and buffers                    */  \
+void FIRPFBCHR(_reset)(FIRPFBCHR() _q);                                     \
+                                                                            \
+/* print firpfbchr object internals to stdout                           */  \
+void FIRPFBCHR(_print)(FIRPFBCHR() _q);                                     \
+                                                                            \
+/* get number of output channels to channelizer                         */  \
+unsigned int FIRPFBCHR(_get_M)(FIRPFBCHR() _q);                             \
+                                                                            \
+/* get decimation factor for channelizer                                */  \
+unsigned int FIRPFBCHR(_get_P)(FIRPFBCHR() _q);                             \
+                                                                            \
+/* get semi-length to channelizer filter prototype                      */  \
+unsigned int FIRPFBCHR(_get_m)(FIRPFBCHR() _q);                             \
+                                                                            \
+/* push buffer of samples into filter bank                              */  \
+/*  _q      : channelizer object                                        */  \
+/*  _x      : channelizer input [size: P x 1]                           */  \
+void FIRPFBCHR(_push)(FIRPFBCHR() _q,                                       \
+                      TI *        _x);                                      \
+                                                                            \
+/* execute filterbank channelizer, writing complex baseband samples for */  \
+/* each channel into output array                                       */  \
+/*  _q      : channelizer object                                        */  \
+/*  _y      : channelizer output [size: _M x 1]                         */  \
+void FIRPFBCHR(_execute)(FIRPFBCHR() _q,                                    \
+                         TO *        _y);                                   \
+
+
+LIQUID_FIRPFBCHR_DEFINE_API(LIQUID_FIRPFBCHR_MANGLE_CRCF,
+                            liquid_float_complex,
+                            float,
+                            liquid_float_complex)
+
 
 
 #define OFDMFRAME_SCTYPE_NULL   0
@@ -8299,65 +8438,69 @@ void liquid_get_scale(float   _val,
 //   VECTOR     : name-mangling macro
 //   T          : data type
 //   TP         : data type (primitive)
-#define LIQUID_VECTOR_DEFINE_API(VECTOR,T,TP)                   \
-                                                                \
-/* initialize vector with scalar: x[i] = c (scalar)         */  \
-void VECTOR(_init)(T            _c,                             \
-                   T *          _x,                             \
-                   unsigned int _n);                            \
-                                                                \
-/* add each element: z[i] = x[i] + y[i]                     */  \
-void VECTOR(_add)(T *          _x,                              \
-                  T *          _y,                              \
-                  unsigned int _n,                              \
-                  T *          _z);                             \
-/* add scalar to each element: y[i] = x[i] + c              */  \
-void VECTOR(_addscalar)(T *          _x,                        \
-                        unsigned int _n,                        \
-                        T            _c,                        \
-                        T *          _y);                       \
-                                                                \
-/* multiply each element: z[i] = x[i] * y[i]                */  \
-void VECTOR(_mul)(T *          _x,                              \
-                  T *          _y,                              \
-                  unsigned int _n,                              \
-                  T *          _z);                             \
-/* multiply each element with scalar: y[i] = x[i] * c       */  \
-void VECTOR(_mulscalar)(T *          _x,                        \
-                        unsigned int _n,                        \
-                        T            _c,                        \
-                        T *          _y);                       \
-                                                                \
-/* compute complex phase rotation: x[i] = exp{j theta[i]}   */  \
-void VECTOR(_cexpj)(TP *         _theta,                        \
-                    unsigned int _n,                            \
-                    T *          _x);                           \
-/* compute angle of each element: theta[i] = arg{ x[i] }    */  \
-void VECTOR(_carg)(T *          _x,                             \
-                   unsigned int _n,                             \
-                   TP *         _theta);                        \
-/* compute absolute value of each element: y[i] = |x[i]|    */  \
-void VECTOR(_abs)(T *          _x,                              \
-                  unsigned int _n,                              \
-                  TP *         _y);                             \
-                                                                \
-/* compute sum of squares: sum{ |x|^2 }                     */  \
-TP VECTOR(_sumsq)(T *          _x,                              \
-                  unsigned int _n);                             \
-                                                                \
-/* compute l-2 norm: sqrt{ sum{ |x|^2 } }                   */  \
-TP VECTOR(_norm)(T *          _x,                               \
-                 unsigned int _n);                              \
-                                                                \
-/* compute l-p norm: { sum{ |x|^p } }^(1/p)                 */  \
-TP VECTOR(_pnorm)(T *          _x,                              \
-                  unsigned int _n,                              \
-                  TP           _p);                             \
-                                                                \
-/* scale vector elements by l-2 norm: y[i] = x[i]/norm(x)   */  \
-void VECTOR(_normalize)(T *          _x,                        \
-                        unsigned int _n,                        \
-                        T *          _y);                       \
+#define LIQUID_VECTOR_DEFINE_API(VECTOR,T,TP)                               \
+                                                                            \
+/* Initialize vector with scalar: x[i] = c (scalar)                     */  \
+void VECTOR(_init)(T            _c,                                         \
+                   T *          _x,                                         \
+                   unsigned int _n);                                        \
+                                                                            \
+/* Add each element pointwise: z[i] = x[i] + y[i]                       */  \
+void VECTOR(_add)(T *          _x,                                          \
+                  T *          _y,                                          \
+                  unsigned int _n,                                          \
+                  T *          _z);                                         \
+                                                                            \
+/* Add scalar to each element: y[i] = x[i] + c                          */  \
+void VECTOR(_addscalar)(T *          _x,                                    \
+                        unsigned int _n,                                    \
+                        T            _c,                                    \
+                        T *          _y);                                   \
+                                                                            \
+/* Multiply each element pointwise: z[i] = x[i] * y[i]                  */  \
+void VECTOR(_mul)(T *          _x,                                          \
+                  T *          _y,                                          \
+                  unsigned int _n,                                          \
+                  T *          _z);                                         \
+                                                                            \
+/* Multiply each element with scalar: y[i] = x[i] * c                   */  \
+void VECTOR(_mulscalar)(T *          _x,                                    \
+                        unsigned int _n,                                    \
+                        T            _c,                                    \
+                        T *          _y);                                   \
+                                                                            \
+/* Compute complex phase rotation: x[i] = exp{j theta[i]}               */  \
+void VECTOR(_cexpj)(TP *         _theta,                                    \
+                    unsigned int _n,                                        \
+                    T *          _x);                                       \
+                                                                            \
+/* Compute angle of each element: theta[i] = arg{ x[i] }                */  \
+void VECTOR(_carg)(T *          _x,                                         \
+                   unsigned int _n,                                         \
+                   TP *         _theta);                                    \
+                                                                            \
+/* Compute absolute value of each element: y[i] = |x[i]|                */  \
+void VECTOR(_abs)(T *          _x,                                          \
+                  unsigned int _n,                                          \
+                  TP *         _y);                                         \
+                                                                            \
+/* Compute sum of squares: sum{ |x|^2 }                                 */  \
+TP VECTOR(_sumsq)(T *          _x,                                          \
+                  unsigned int _n);                                         \
+                                                                            \
+/* Compute l-2 norm: sqrt{ sum{ |x|^2 } }                               */  \
+TP VECTOR(_norm)(T *          _x,                                           \
+                 unsigned int _n);                                          \
+                                                                            \
+/* Compute l-p norm: { sum{ |x|^p } }^(1/p)                             */  \
+TP VECTOR(_pnorm)(T *          _x,                                          \
+                  unsigned int _n,                                          \
+                  TP           _p);                                         \
+                                                                            \
+/* Scale vector elements by l-2 norm: y[i] = x[i]/norm(x)               */  \
+void VECTOR(_normalize)(T *          _x,                                    \
+                        unsigned int _n,                                    \
+                        T *          _y);                                   \
 
 LIQUID_VECTOR_DEFINE_API(LIQUID_VECTOR_MANGLE_RF, float,                float)
 LIQUID_VECTOR_DEFINE_API(LIQUID_VECTOR_MANGLE_CF, liquid_float_complex, float)

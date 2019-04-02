@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2018 Joseph Gaeddert
+ * Copyright (c) 2007 - 2019 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -46,7 +46,7 @@ void test_harness_rresamp_crcf(unsigned int _P,
     float complex y[ny];        // output sample buffer
 
     // create resampler
-    rresamp_crcf q = rresamp_crcf_create(_P, _Q, _m, _bw, _As);
+    rresamp_crcf q = rresamp_crcf_create_kaiser(_P, _Q, _m, _bw, _As);
     float r = rresamp_crcf_get_rate(q);
 
     // generate input signal (windowed sinusoid)
