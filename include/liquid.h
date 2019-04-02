@@ -211,6 +211,16 @@ float AGC(_get_gain)(AGC() _q);                                             \
 void  AGC(_set_gain)(AGC() _q,                                              \
                      float _gain);                                          \
                                                                             \
+/* Get the ouput scaling applied to each sample (linear).               */  \
+float AGC(_get_scale)(AGC() _q);                                            \
+                                                                            \
+/* Set the agc object's output scaling (linear). Note that this does    */  \
+/* affect the response of the AGC.                                      */  \
+/*  _q      : automatic gain control object                             */  \
+/*  _gain   : gain to apply to input signal, _gain > 0                  */  \
+void AGC(_set_scale)(AGC() _q,                                              \
+                     float _scale);                                         \
+                                                                            \
 /* Estimate signal level and initialize internal gain on an input       */  \
 /* array.                                                               */  \
 /*  _q      : automatic gain control object                             */  \

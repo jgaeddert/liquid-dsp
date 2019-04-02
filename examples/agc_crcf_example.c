@@ -56,6 +56,7 @@ int main(int argc, char*argv[])
     // create objects
     agc_crcf q = agc_crcf_create();
     agc_crcf_set_bandwidth(q, bt);
+    //agc_crcf_set_scale(q, 0.5f);
 
     float complex x[num_samples];   // input
     float complex y[num_samples];   // output
