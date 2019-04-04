@@ -1550,6 +1550,7 @@ clean-examples:
 .PHONY: sandbox
 sandbox_programs =						\
 	sandbox/am_demod_dsb_pll_carrier_test			\
+	sandbox/am_demod_dsb_pll_costas_test			\
 	sandbox/bpresync_test					\
 	sandbox/cpmodem_test					\
 	sandbox/count_ones_gentab				\

@@ -1,5 +1,6 @@
 // Test double side-band (DSB) amplitude modulation (AM) using
-// phase-locked loop (PLL) on carrier
+// phase-locked loop (PLL) with Costas phase error detector
+// without carrier transmission
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
@@ -11,18 +12,19 @@
 int main(int argc, char*argv[])
 {
     // options
-    float        mod_index   = 0.5f;    // modulation index (bandwidth)
+    float        mod_index   = 1.0f;    // modulation index
     float        phi         = 0.8f;    // carrier phase offset [radians]
     float        dphi        = 0.10f;   // carrier frequency offset [radians/sample]
     float        SNRdB       = 30.0f;   // signal-to-noise ratio (set very high for testing)
     unsigned int num_samples = 2400;    // number of samples
-    const char * filename    = "am_demod_dsb_pll_carrier_test.m";
+    const char * filename    = "am_demod_dsb_pll_costas_test.m";
 
     // buffers
     unsigned int i;
     float         x[num_samples];
     float complex y[num_samples];
     float         z[num_samples];
+    float         p[num_samples]; // phase error
 
     // generate 'audio' signal (simple windowed sum of tones)
     unsigned int nw = (unsigned int)(0.90*num_samples); // window length
@@ -33,9 +35,9 @@ int main(int argc, char*argv[])
         x[i] *= i < nw ? liquid_rcostaper_windowf(i,nt,nw) : 0;
     }
 
-    // modulate signal (DSB with carrier)
+    // modulate signal (DSB without carrier)
     for (i=0; i<num_samples; i++)
-        y[i] = 1.0f + mod_index*x[i];
+        y[i] = mod_index*x[i];
 
     // add channel impairments
     float nstd = powf(10.0f,-SNRdB/20.0f);
@@ -53,14 +55,14 @@ int main(int argc, char*argv[])
     float delay = 0;
     nco_crcf mixer = nco_crcf_create(LIQUID_VCO);
     nco_crcf_pll_set_bandwidth(mixer,0.01f);
-    iirfilt_crcf dcblock = iirfilt_crcf_create_dc_blocker(0.02f);
     for (i=0; i<num_samples; i++) {
         // mix signal down
         float complex v;
         nco_crcf_mix_down(mixer, y[i], &v);
 
         // compute phase error
-        float phase_error = carg(v);
+        float phase_error = crealf(v)*cimagf(v);//carg(v);
+        p[i] = phase_error;
 
         // adjust nco, pll objects
         nco_crcf_pll_step(mixer, phase_error);
@@ -68,14 +70,10 @@ int main(int argc, char*argv[])
         // step NCO
         nco_crcf_step(mixer);
 
-        // apply DC block
-        iirfilt_crcf_execute(dcblock, v, &v);
-
         // set output
         z[i] = crealf(v) / mod_index;
     }
     nco_crcf_destroy(mixer);
-    iirfilt_crcf_destroy(dcblock);
 
     // export results
     FILE * fid = fopen(filename,"w");
@@ -87,6 +85,7 @@ int main(int argc, char*argv[])
         fprintf(fid,"x(%3u) = %12.4e;\n",            i+1, x[i]);
         fprintf(fid,"y(%3u) = %12.4e + j*%12.4e;\n", i+1, crealf(y[i]), cimagf(y[i]));
         fprintf(fid,"z(%3u) = %12.4e;\n",            i+1, z[i]);
+        fprintf(fid,"p(%3u) = %12.4e;\n",            i+1, p[i]);
     }
     // plot results
     fprintf(fid,"t=0:(n-1);\n");
