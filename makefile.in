@@ -1552,6 +1552,7 @@ sandbox_programs =						\
 	sandbox/am_demod_dsb_peak_detect_test			\
 	sandbox/am_demod_dsb_pll_carrier_test			\
 	sandbox/am_demod_dsb_pll_costas_test			\
+	sandbox/am_demod_ssb_pll_carrier_test			\
 	sandbox/bpresync_test					\
 	sandbox/cpmodem_test					\
 	sandbox/count_ones_gentab				\
