@@ -45,7 +45,7 @@ int main(int argc, char*argv[])
 
         // add signal in opposite side-band to demonstrate side-band rejection
         // in firhilbf_c2r_execute() in demod
-        y[i] += 0.2f*cexpf(_Complex_I*2*M_PI*0.00722f*i*(usb ? -1 : 1));
+        y[i] += 0.2f*cexpf(_Complex_I*2*M_PI*0.0321f*i*(usb ? -1 : 1));
     }
 
     // add channel impairments
@@ -61,9 +61,9 @@ int main(int argc, char*argv[])
     }
 
     // demodulate signal
-    float delay = 2*m;
+    float delay = 4*m;
     nco_crcf mixer = nco_crcf_create(LIQUID_VCO);
-    nco_crcf_pll_set_bandwidth(mixer,0.01f);
+    nco_crcf_pll_set_bandwidth(mixer,0.001f);
     iirfilt_crcf dcblock = iirfilt_crcf_create_dc_blocker(0.02f);
     firhilbf_reset(hilbert);
     for (i=0; i<num_samples; i++) {
@@ -83,12 +83,12 @@ int main(int argc, char*argv[])
         // apply DC block
         iirfilt_crcf_execute(dcblock, v, &v);
 
-        // apply hilbert transform
-        float mf;
-        firhilbf_c2r_execute(hilbert, v, &mf);
+        // apply hilbert transform and retrieve both upper and lower side-bands
+        float m_lsb, m_usb;
+        firhilbf_c2r_execute(hilbert, v, &m_lsb, &m_usb);
 
         // set output
-        z[i] = mf / mod_index;
+        z[i] = 0.5f * (usb ? m_usb : m_lsb) / mod_index;
     }
     nco_crcf_destroy(mixer);
     iirfilt_crcf_destroy(dcblock);
