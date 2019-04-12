@@ -28,7 +28,7 @@ int main(int argc, char*argv[])
     float         z[num_samples];
 
     // generate 'audio' signal (simple windowed sum of tones)
-    unsigned int nw = (unsigned int)(0.90*num_samples); // window length
+    unsigned int nw = (unsigned int)(0.80*num_samples); // window length
     unsigned int nt = (unsigned int)(0.05*num_samples); // taper length
     for (i=0; i<num_samples; i++) {
         x[i] =  0.6f*cos(2*M_PI*0.0202*i);
@@ -42,6 +42,10 @@ int main(int argc, char*argv[])
         float complex mp;
         firhilbf_r2c_execute(hilbert, mod_index*x[i], &mp);
         y[i] = 1.0f + (usb ? mp : conjf(mp));
+
+        // add signal in opposite side-band to demonstrate side-band rejection
+        // in firhilbf_c2r_execute() in demod
+        y[i] += 0.2f*cexpf(_Complex_I*2*M_PI*0.00722f*i*(usb ? -1 : 1));
     }
 
     // add channel impairments
