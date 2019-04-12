@@ -2630,10 +2630,12 @@ void FIRHILB(_r2c_execute)(FIRHILB() _q,                                    \
 /* Execute Hilbert transform (complex to real)                          */  \
 /*  _q      :   Hilbert transform object                                */  \
 /*  _x      :   complex-valued input sample                             */  \
-/*  _y      :   real-valued output sample                               */  \
+/*  _y0     :   real-valued output sample, lower side-band retained     */  \
+/*  _y1     :   real-valued output sample, upper side-band retained     */  \
 void FIRHILB(_c2r_execute)(FIRHILB() _q,                                    \
                            TC        _x,                                    \
-                           T *       _y);                                   \
+                           T *       _y0,                                   \
+                           T *       _y1);                                  \
                                                                             \
 /* Execute Hilbert transform decimator (real to complex)                */  \
 /*  _q      :   Hilbert transform object                                */  \
