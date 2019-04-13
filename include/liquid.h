@@ -5140,6 +5140,9 @@ float ofdmflexframesync_get_rssi(ofdmflexframesync _q);
 // query the received carrier offset estimate
 float ofdmflexframesync_get_cfo(ofdmflexframesync _q);
 
+// set the received carrier offset estimate
+void ofdmflexframesync_set_cfo(ofdmflexframesync _q, float _cfo);
+
 // enable/disable debugging
 void ofdmflexframesync_debug_enable(ofdmflexframesync _q);
 void ofdmflexframesync_debug_disable(ofdmflexframesync _q);
@@ -7493,6 +7496,9 @@ void ofdmframesync_execute(ofdmframesync _q,
 // query methods
 float ofdmframesync_get_rssi(ofdmframesync _q); // received signal strength indication
 float ofdmframesync_get_cfo(ofdmframesync _q);  // carrier offset estimate
+
+// set methods
+void ofdmframesync_set_cfo(ofdmframesync _q, float _cfo);  // set carrier offset estimate
 
 // debugging
 void ofdmframesync_debug_enable(ofdmframesync _q);
