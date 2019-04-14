@@ -60,7 +60,7 @@ int main(int argc, char*argv[])
         iirfilt_rrrf_execute(dcblock, v, &v);
 
         // set output
-        z[i] = crealf(v) / mod_index;
+        z[i] = v / mod_index;
     }
     iirfilt_rrrf_destroy(dcblock);
 

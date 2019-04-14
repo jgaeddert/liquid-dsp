@@ -7114,42 +7114,44 @@ typedef struct ampmodem_s * ampmodem;
 
 // create ampmodem object
 //  _m                  :   modulation index
-//  _fc                 :   carrier frequency, range: [-0.5,0.5]
 //  _type               :   AM type (e.g. LIQUID_AMPMODEM_DSB)
 //  _suppressed_carrier :   carrier suppression flag
-ampmodem ampmodem_create(float _m,
-                         float _fc,
+ampmodem ampmodem_create(float                _mod_index,
                          liquid_ampmodem_type _type,
-                         int _suppressed_carrier);
+                         int                  _suppressed_carrier);
 
 // destroy ampmodem object
-void ampmodem_destroy(ampmodem _fm);
+void ampmodem_destroy(ampmodem _q);
 
 // print ampmodem object internals
-void ampmodem_print(ampmodem _fm);
+void ampmodem_print(ampmodem _q);
 
 // reset ampmodem object state
-void ampmodem_reset(ampmodem _fm);
+void ampmodem_reset(ampmodem _q);
+
+// accessor methods
+unsigned int ampmodem_get_delay_mod  (ampmodem _q);
+unsigned int ampmodem_get_delay_demod(ampmodem _q);
 
 // modulate sample
-void ampmodem_modulate(ampmodem _fm,
-                       float _x,
-                       liquid_float_complex *_y);
+void ampmodem_modulate(ampmodem               _q,
+                       float                  _x,
+                       liquid_float_complex * _y);
 
-void ampmodem_modulate_block(ampmodem _q,
-                             float * _m,
-                             unsigned int _n,
-                             liquid_float_complex *_s);
+void ampmodem_modulate_block(ampmodem               _q,
+                             float *                _m,
+                             unsigned int           _n,
+                             liquid_float_complex * _s);
 
 // demodulate sample
-void ampmodem_demodulate(ampmodem _fm,
+void ampmodem_demodulate(ampmodem             _q,
                          liquid_float_complex _y,
-                         float *_x);
+                         float *              _x);
 
-void ampmodem_demodulate_block(ampmodem _q,
+void ampmodem_demodulate_block(ampmodem               _q,
                                liquid_float_complex * _r,
-                               unsigned int _n,
-                               float * _m);
+                               unsigned int           _n,
+                               float *                _m);
 
 //
 // MODULE : multichannel
