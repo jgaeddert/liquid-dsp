@@ -2495,6 +2495,12 @@ FIRFILT() FIRFILT(_create_rnyquist)(int          _type,                     \
 /*  _n  : length of filter [samples], 0 < _n <= 1024                    */  \
 FIRFILT() FIRFILT(_create_rect)(unsigned int _n);                           \
                                                                             \
+/* Create DC blocking filter from prototype                             */  \
+/*  _m  : prototype filter semi-length such that filter length is 2*m+1 */  \
+/*  _As : prototype filter stop-band attenuation [dB], _As > 0          */  \
+FIRFILT() FIRFILT(_create_dc_blocker)(unsigned int _m,                      \
+                                      float        _As);                    \
+                                                                            \
 /* Re-create filter object of potentially a different length with       */  \
 /* different coefficients. If the length of the filter does not change, */  \
 /* not memory reallocation is invoked.                                  */  \
