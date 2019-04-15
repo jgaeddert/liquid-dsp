@@ -34,9 +34,9 @@ void usage()
 int main(int argc, char*argv[])
 {
     // options
-    float        mod_index          = 0.5f;     // modulation index (bandwidth)
-    float        phi                = 0.8f;     // carrier phase offset [radians]
-    float        dphi               = 0.10f;    // carrier frequency offset [radians/sample]
+    float        mod_index          = 0.8f;     // modulation index (bandwidth)
+    float        phi                = 2.8f;     // carrier phase offset [radians]
+    float        dphi               = 0.05f;    // carrier frequency offset [radians/sample]
     float        SNRdB              = 30.0f;    // signal-to-noise ratio (set very high for testing)
     unsigned int num_samples        = 2400;     // number of samples
     liquid_ampmodem_type type       = LIQUID_AMPMODEM_USB;
@@ -145,7 +145,7 @@ int main(int argc, char*argv[])
     // rf signal
     fprintf(fid,"subplot(3,1,2);\n");
     fprintf(fid,"  plot(t,real(y),t,imag(y));\n");
-    fprintf(fid,"  axis([-delay n -1.2 1.2]);\n");
+    fprintf(fid,"  axis([-delay n -1.8 1.8]);\n");
     fprintf(fid,"  xlabel('Time [sample index]');\n");
     fprintf(fid,"  ylabel('RF Signal');\n");
     fprintf(fid,"  legend('real','imag');\n");

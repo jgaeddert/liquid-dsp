@@ -49,7 +49,7 @@ struct ampmodem_s {
 
     // demod objects
     nco_crcf        mixer;      // mixer and phase-locked loop
-    iirfilt_rrrf    dcblock;    // carrier suppression filter
+    firfilt_rrrf    dcblock;    // carrier suppression filter
     unsigned int    m;          // hilbert transform filter semi-length
     firhilbf        hilbert;    // hilbert transform (single side-band)
 
@@ -83,16 +83,16 @@ ampmodem ampmodem_create(float                _mod_index,
     q->type      = _type;
     q->mod_index = _mod_index;
     q->suppressed_carrier = (_suppressed_carrier != 0);
+    q->m         = 25;
 
     // create nco, pll objects
     q->mixer = nco_crcf_create(LIQUID_NCO);
     nco_crcf_pll_set_bandwidth(q->mixer,0.005f);
 
     // carrier suppression filter
-    q->dcblock = iirfilt_rrrf_create_dc_blocker(0.005f);
+    q->dcblock = firfilt_rrrf_create_dc_blocker(q->m, 30.0f);
 
     // Hilbert transform for single side-band recovery
-    q->m       = 25;
     q->hilbert = firhilbf_create(q->m, 60.0f);
 
     // set appropriate demod function pointer
@@ -117,7 +117,7 @@ void ampmodem_destroy(ampmodem _q)
 {
     // destroy objects
     nco_crcf_destroy    (_q->mixer);
-    iirfilt_rrrf_destroy(_q->dcblock);
+    firfilt_rrrf_destroy(_q->dcblock);
     firhilbf_destroy    (_q->hilbert);
 
     // free main object memory
@@ -142,7 +142,7 @@ void ampmodem_print(ampmodem _q)
 void ampmodem_reset(ampmodem _q)
 {
     nco_crcf_reset    (_q->mixer);
-    iirfilt_rrrf_reset(_q->dcblock);
+    firfilt_rrrf_reset(_q->dcblock);
     firhilbf_reset    (_q->hilbert);
 }
 
@@ -165,10 +165,10 @@ unsigned int ampmodem_get_delay_demod(ampmodem _q)
 {
     switch (_q->type) {
     case LIQUID_AMPMODEM_DSB:
-        return 0;
+        return _q->suppressed_carrier ? 0 : _q->m;
     case LIQUID_AMPMODEM_USB:
     case LIQUID_AMPMODEM_LSB:
-        return 2*_q->m;
+        return _q->suppressed_carrier ? 2*_q->m : 3*_q->m;
     default:
         fprintf(stderr,"error: %s:%u, internal error, invalid mod type\n", __FILE__, __LINE__);
     }
@@ -252,7 +252,8 @@ void ampmodem_demod_dsb_peak_detect(ampmodem      _q,
     float v = cabsf(_x);
 
     // apply DC blocking filter
-    iirfilt_rrrf_execute(_q->dcblock, v, &v);
+    firfilt_rrrf_push   (_q->dcblock, v);
+    firfilt_rrrf_execute(_q->dcblock, &v);
 
     // set output
     *_y = v / _q->mod_index;
@@ -279,7 +280,8 @@ void ampmodem_demod_dsb_pll_carrier(ampmodem      _q,
     float m = crealf(v) / _q->mod_index;
 
     // apply DC block, writing directly to output
-    iirfilt_rrrf_execute(_q->dcblock, m, _y);
+    firfilt_rrrf_push   (_q->dcblock, m);
+    firfilt_rrrf_execute(_q->dcblock, _y);
 }
 
 void ampmodem_demod_dsb_pll_costas(ampmodem      _q,
@@ -328,7 +330,8 @@ void ampmodem_demod_ssb_pll_carrier(ampmodem      _q,
     float m = 0.5f * (_q->type == LIQUID_AMPMODEM_USB ? m_usb : m_lsb) / _q->mod_index;
 
     // apply DC block, writing directly to output
-    iirfilt_rrrf_execute(_q->dcblock, m, _y);
+    firfilt_rrrf_push   (_q->dcblock, m);
+    firfilt_rrrf_execute(_q->dcblock, _y);
 }
 
 void ampmodem_demod_ssb(ampmodem      _q,
