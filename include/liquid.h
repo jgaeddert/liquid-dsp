@@ -2001,6 +2001,14 @@ void liquid_firdes_kaiser(unsigned int _n,
                           float _mu,
                           float *_h);
 
+// Design finite impulse response DC-blocking filter
+//  _m      : filter semi-length, m in [1,1000]
+//  _As     : stop-band attenuation [dB], _As > 0
+//  _h      : output coefficient buffer, [size: 2*_m+1 x 1]
+void liquid_firdes_dcblocker(unsigned int _m,
+                             float        _As,
+                             float *      _h);
+
 // Design FIR doppler filter
 //  _n      : filter length
 //  _fd     : normalized doppler frequency (0 < _fd < 0.5)
