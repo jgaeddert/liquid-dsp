@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2015 Joseph Gaeddert
+ * Copyright (c) 2007 - 2019 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -31,9 +31,9 @@
 #include <stdlib.h>
 
 struct WDELAY(_s) {
-    T * v;                      // allocated array pointer
+    T *          v;             // allocated array pointer
     unsigned int delay;         // length of window
-    unsigned int read_index;
+    unsigned int read_index;    // index for reading
 };
 
 // create delay buffer object with '_delay' samples
@@ -46,7 +46,7 @@ WDELAY() WDELAY(_create)(unsigned int _delay)
     q->delay = _delay;
 
     // allocte memory
-    q->v = (T*) malloc((q->delay)*sizeof(T));
+    q->v = (T*) malloc((q->delay+1)*sizeof(T));
     q->read_index = 0;
 
     // clear window
@@ -62,11 +62,11 @@ WDELAY() WDELAY(_recreate)(WDELAY()     _q,
                            unsigned int _delay)
 {
     // copy internal buffer, re-aligned
-    unsigned int ktmp = _q->delay;
-    T * vtmp = (T*) malloc(_q->delay * sizeof(T));
+    unsigned int ktmp = _q->delay+1;
+    T * vtmp = (T*) malloc((_q->delay+1) * sizeof(T));
     unsigned int i;
-    for (i=0; i<_q->delay; i++)
-        vtmp[i] = _q->v[ (i + _q->read_index) % _q->delay ];
+    for (i=0; i<_q->delay+1; i++)
+        vtmp[i] = _q->v[ (i + _q->read_index) % (_q->delay+1) ];
     
     // destroy object and re-create it
     WDELAY(_destroy)(_q);
@@ -96,10 +96,10 @@ void WDELAY(_destroy)(WDELAY() _q)
 // print delay buffer object's state to stdout
 void WDELAY(_print)(WDELAY() _q)
 {
-    printf("wdelay [%u elements] :\n", _q->delay);
+    printf("wdelay [%u elements] :\n", _q->delay+1);
     unsigned int i, j;
-    for (i=0; i<_q->delay; i++) {
-        j = (i + _q->read_index) % _q->delay;
+    for (i=0; i<_q->delay+1; i++) {
+        j = (i + _q->read_index) % (_q->delay+1);
         printf("%4u", i);
         BUFFER_PRINT_VALUE(_q->v[j]);
         printf("\n");
@@ -110,7 +110,7 @@ void WDELAY(_print)(WDELAY() _q)
 void WDELAY(_reset)(WDELAY() _q)
 {
     _q->read_index = 0;
-    memset(_q->v, 0, (_q->delay)*sizeof(T));
+    memset(_q->v, 0, (_q->delay+1)*sizeof(T));
 }
 
 // read delayed sample from delay buffer object
@@ -136,6 +136,6 @@ void WDELAY(_push)(WDELAY() _q,
     _q->read_index++;
 
     // wrap around pointer
-    _q->read_index %= _q->delay;
+    _q->read_index %= (_q->delay+1);
 }
 

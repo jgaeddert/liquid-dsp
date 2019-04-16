@@ -460,11 +460,11 @@ void EQLMS(_update_sumsq)(EQLMS() _q, T _x)
     // |x[0]  |^2 (oldest sample)
     float x2_0;
 
-    // read oldest sample
-    wdelayf_read(_q->x2, &x2_0);
-
     // push newest sample
     wdelayf_push(_q->x2, x2_n);
+
+    // read oldest sample
+    wdelayf_read(_q->x2, &x2_0);
 
     // update sum( |x|^2 ) of last 'n' input samples
     _q->x2_sum = _q->x2_sum + x2_n - x2_0;
