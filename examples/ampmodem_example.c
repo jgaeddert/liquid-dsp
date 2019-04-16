@@ -22,21 +22,21 @@ void usage()
 {
     printf("ampmodem_example [options]\n");
     printf("  -h         : print usage\n");
-    printf("  -m <index> : modulation index, default: 0.5\n");
-    printf("  -f <freq>  : frequency offset [rad/sample], default: 0.02\n");
-    printf("  -p <phase> : phase offset,          default: -pi/4\n");
-    printf("  -n <num>   : number of samples,     default: 256\n");
-    printf("  -S <snr>   : SNR [dB],              default: 20\n");
-    printf("  -t <type>  : AM type (dsb/usb/lsb), default: dsb\n");
-    printf("  -s         : suppress the carrier,  default: off\n");
+    printf("  -m <index> : modulation index,          default: 0.8\n");
+    printf("  -f <freq>  : freq. offset [rad/sample], default: 0.05\n");
+    printf("  -p <phase> : phase offset,              default: 2.8\n");
+    printf("  -n <num>   : number of samples,         default: 2400\n");
+    printf("  -S <snr>   : SNR [dB],                  default: 30\n");
+    printf("  -t <type>  : AM type (dsb/usb/lsb),     default: dsb\n");
+    printf("  -s         : suppress the carrier,      default: off (carrier enabled)\n");
 }
 
 int main(int argc, char*argv[])
 {
     // options
     float        mod_index          = 0.8f;     // modulation index (bandwidth)
-    float        phi                = 2.8f;     // carrier phase offset [radians]
     float        dphi               = 0.05f;    // carrier frequency offset [radians/sample]
+    float        phi                = 2.8f;     // carrier phase offset [radians]
     float        SNRdB              = 30.0f;    // signal-to-noise ratio (set very high for testing)
     unsigned int num_samples        = 2400;     // number of samples
     liquid_ampmodem_type type       = LIQUID_AMPMODEM_USB;
@@ -46,11 +46,11 @@ int main(int argc, char*argv[])
     while ((dopt = getopt(argc,argv,"hm:f:p:n:S:t:s")) != EOF) {
         switch (dopt) {
         case 'h': usage();                    return 0;
-        case 'm': mod_index= atof(optarg);    break;
-        case 'f': dphi= atof(optarg);         break;
-        case 'p': phi = atof(optarg);         break;
+        case 'm': mod_index   = atof(optarg); break;
+        case 'f': dphi        = atof(optarg); break;
+        case 'p': phi         = atof(optarg); break;
         case 'n': num_samples = atoi(optarg); break;
-        case 'S': SNRdB = atof(optarg);       break;
+        case 'S': SNRdB       = atof(optarg); break;
         case 't':
             if (strcmp(optarg,"dsb")==0) {
                 type = LIQUID_AMPMODEM_DSB;
