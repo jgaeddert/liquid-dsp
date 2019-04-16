@@ -374,6 +374,16 @@ float ofdmflexframesync_get_cfo(ofdmflexframesync _q)
     return ofdmframesync_get_cfo(_q->fs);
 }
 
+//
+// set methods
+//
+
+// received carrier frequency offset
+void ofdmflexframesync_set_cfo(ofdmflexframesync _q, float _cfo)
+{
+    return ofdmframesync_set_cfo(_q->fs, _cfo);
+}
+
 // 
 // debugging methods
 //

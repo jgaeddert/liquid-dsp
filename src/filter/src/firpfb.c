@@ -138,7 +138,7 @@ FIRPFB() FIRPFB(_create_kaiser)(unsigned int _M,
 }
 
 // create square-root Nyquist filterbank
-//  _type   :   filter type (e.g. LIQUID_RNYQUIST_RRC)
+//  _type   :   filter type (e.g. LIQUID_FIRFILT_RRC)
 //  _M      :   number of filters in the bank
 //  _k      :   samples/symbol _k > 1
 //  _m      :   filter delay (symbols), _m > 0
@@ -180,7 +180,7 @@ FIRPFB() FIRPFB(_create_rnyquist)(int          _type,
 }
 
 // create firpfb derivative square-root Nyquist filterbank
-//  _type   :   filter type (e.g. LIQUID_RNYQUIST_RRC)
+//  _type   :   filter type (e.g. LIQUID_FIRFILT_RRC)
 //  _M      :   number of filters in the bank
 //  _k      :   samples/symbol _k > 1
 //  _m      :   filter delay (symbols), _m > 0

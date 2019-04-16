@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2015 Joseph Gaeddert
+ * Copyright (c) 2007 - 2019 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -30,101 +30,105 @@
 
 #include "liquid.internal.h"
 
-#define DEBUG_AMPMODEM             0
-#define DEBUG_AMPMODEM_FILENAME    "ampmodem_internal_debug.m"
-#define DEBUG_AMPMODEM_BUFFER_LEN  (400)
-
-#if DEBUG_AMPMODEM
-void ampmodem_debug_print(ampmodem _q, const char * _filename);
-#endif
+// internal methods for specific demodulation methods
+void ampmodem_demod_dsb_peak_detect(ampmodem _q, float complex _x, float * _m);
+void ampmodem_demod_dsb_pll_carrier(ampmodem _q, float complex _x, float * _m);
+void ampmodem_demod_dsb_pll_costas (ampmodem _q, float complex _x, float * _m);
+void ampmodem_demod_ssb_pll_carrier(ampmodem _q, float complex _x, float * _m);
+void ampmodem_demod_ssb            (ampmodem _q, float complex _x, float * _m);
 
 struct ampmodem_s {
-    float m;                    // modulation index
-    liquid_ampmodem_type type;  // modulation type
-    int suppressed_carrier;     // suppressed carrier flag
-    float fc;                   // carrier frequency
+    // modulation index
+    float mod_index;
 
-    // demod objects
-    nco_crcf oscillator;
+    // modulation type (e.g. LIQUID_AMPMODEM_DSB)
+    liquid_ampmodem_type type;
 
-    // suppressed carrier
-    // TODO : replace DC bias removal with iir filter object
-    float ssb_alpha;    // dc bias removal
-    float ssb_q_hat;
+    // suppressed carrier flag
+    int suppressed_carrier;
 
-    // single side-band
-    firhilbf hilbert;   // hilbert transform
+    // demod and helper objects
+    unsigned int    m;          // filter semi-length for all objects
+    nco_crcf        mixer;      // mixer and phase-locked loop
+    firfilt_rrrf    dcblock;    // carrier suppression filter
+    firhilbf        hilbert;    // hilbert transform (single side-band)
+    firfilt_crcf    lowpass;    // low-pass filter for SSB PLL
+    wdelaycf        delay;      // delay buffer to align to low-pass filter delay
 
-    // double side-band
-
-    // debugging
-#if DEBUG_AMPMODEM
-    windowcf debug_x;
-    windowf  debug_phase_error;
-    windowf  debug_freq_error;
-#endif
+    // demodulation function pointer
+    void (*demod)(ampmodem _q, float complex _x, float * _m);
 };
 
 // create ampmodem object
-//  _m                  :   modulation index
-//  _fc                 :   carrier frequency
+//  _mod_index          :   modulation index
 //  _type               :   AM type (e.g. LIQUID_AMPMODEM_DSB)
 //  _suppressed_carrier :   carrier suppression flag
-ampmodem ampmodem_create(float _m,
-                         float _fc,
+ampmodem ampmodem_create(float                _mod_index,
                          liquid_ampmodem_type _type,
-                         int _suppressed_carrier)
+                         int                  _suppressed_carrier)
 {
+    // validate input
+    switch (_type) {
+    case LIQUID_AMPMODEM_DSB:
+    case LIQUID_AMPMODEM_USB:
+    case LIQUID_AMPMODEM_LSB:
+        break;
+    default:
+        fprintf(stderr,"error: %s:%u, invalid modem type: %d\n", __FILE__, __LINE__, (int)_type);
+        exit(1);
+    }
+
+    // create main object
     ampmodem q = (ampmodem) malloc(sizeof(struct ampmodem_s));
-    q->type = _type;
-    q->m    = _m;
-    q->fc   = _fc;
-    q->suppressed_carrier = (_suppressed_carrier == 0) ? 0 : 1;
+
+    // set internal properties
+    q->type      = _type;
+    q->mod_index = _mod_index;
+    q->suppressed_carrier = (_suppressed_carrier != 0);
+    q->m         = 25;
 
     // create nco, pll objects
-    q->oscillator = nco_crcf_create(LIQUID_NCO);
-    nco_crcf_set_frequency(q->oscillator, 2*M_PI*q->fc);
-    
-    nco_crcf_pll_set_bandwidth(q->oscillator,0.05f);
+    q->mixer = nco_crcf_create(LIQUID_NCO);
+    nco_crcf_pll_set_bandwidth(q->mixer,0.001f);
 
-    // suppressed carrier
-    q->ssb_alpha = 0.01f;
-    q->ssb_q_hat = 0.0f;
+    // carrier suppression filter
+    q->dcblock = firfilt_rrrf_create_dc_blocker(q->m, 20.0f);
 
-    // single side-band
-    q->hilbert = firhilbf_create(9, 60.0f);
+    // Hilbert transform for single side-band recovery
+    q->hilbert = firhilbf_create(q->m, 60.0f);
 
-    // double side-band
+    // carrier admittance filter for phase-locked loop
+    q->lowpass = firfilt_crcf_create_kaiser(2*q->m+1, 0.01f, 40.0f, 0.0f);
 
+    // delay buffer
+    q->delay = wdelaycf_create(q->m);
+
+    // set appropriate demod function pointer
+    q->demod = NULL;
+    if (q->type == LIQUID_AMPMODEM_DSB) {
+        // double side-band
+        q->demod = q->suppressed_carrier ?
+            ampmodem_demod_dsb_pll_costas :
+            //ampmodem_demod_dsb_peak_detect;
+            ampmodem_demod_dsb_pll_carrier;
+    } else {
+        // single side-band
+        q->demod = q->suppressed_carrier ? ampmodem_demod_ssb : ampmodem_demod_ssb_pll_carrier;
+    }
+
+    // reset object and return
     ampmodem_reset(q);
-
-    // debugging
-#if DEBUG_AMPMODEM
-    q->debug_x =           windowcf_create(DEBUG_AMPMODEM_BUFFER_LEN);
-    q->debug_phase_error =  windowf_create(DEBUG_AMPMODEM_BUFFER_LEN);
-    q->debug_freq_error =   windowf_create(DEBUG_AMPMODEM_BUFFER_LEN);
-#endif
-
     return q;
 }
 
 void ampmodem_destroy(ampmodem _q)
 {
-#if DEBUG_AMPMODEM
-    // export output debugging file
-    ampmodem_debug_print(_q, DEBUG_AMPMODEM_FILENAME);
-
-    // destroy debugging objects
-    windowcf_destroy(_q->debug_x);
-    windowf_destroy(_q->debug_phase_error);
-    windowf_destroy(_q->debug_freq_error);
-#endif
-
-    // destroy nco object
-    nco_crcf_destroy(_q->oscillator);
-
-    // destroy hilbert transform
-    firhilbf_destroy(_q->hilbert);
+    // destroy objects
+    nco_crcf_destroy    (_q->mixer);
+    firfilt_rrrf_destroy(_q->dcblock);
+    firhilbf_destroy    (_q->hilbert);
+    firfilt_crcf_destroy(_q->lowpass);
+    wdelaycf_destroy    (_q->delay);
 
     // free main object memory
     free(_q);
@@ -141,21 +145,53 @@ void ampmodem_print(ampmodem _q)
     default:                  printf("unknown\n");
     }
     printf("    supp. carrier   :   %s\n", _q->suppressed_carrier ? "yes" : "no");
-    printf("    mod. index      :   %-8.4f\n", _q->m);
+    printf("    mod. index      :   %-8.4f\n", _q->mod_index);
 }
 
+// reset all internal objects
 void ampmodem_reset(ampmodem _q)
 {
-    // single side-band
-    _q->ssb_q_hat = 0.5f;
+    nco_crcf_reset    (_q->mixer);
+    firfilt_rrrf_reset(_q->dcblock);
+    firhilbf_reset    (_q->hilbert);
+    firfilt_crcf_reset(_q->lowpass);
+    wdelaycf_reset    (_q->delay);
 }
 
-void ampmodem_modulate(ampmodem _q,
-                       float _x,
-                       float complex *_y)
+// accessor methods
+unsigned int ampmodem_get_delay_mod(ampmodem _q)
+{
+    switch (_q->type) {
+    case LIQUID_AMPMODEM_DSB:
+        return 0;
+    case LIQUID_AMPMODEM_USB:
+    case LIQUID_AMPMODEM_LSB:
+        return 2*_q->m;
+    default:
+        fprintf(stderr,"error: %s:%u, internal error, invalid mod type\n", __FILE__, __LINE__);
+    }
+    return 0;
+}
+
+unsigned int ampmodem_get_delay_demod(ampmodem _q)
+{
+    switch (_q->type) {
+    case LIQUID_AMPMODEM_DSB:
+        return _q->suppressed_carrier ? 0 : 2*_q->m;
+    case LIQUID_AMPMODEM_USB:
+    case LIQUID_AMPMODEM_LSB:
+        return _q->suppressed_carrier ? 2*_q->m : 4*_q->m;
+    default:
+        fprintf(stderr,"error: %s:%u, internal error, invalid mod type\n", __FILE__, __LINE__);
+    }
+    return 0;
+}
+
+void ampmodem_modulate(ampmodem        _q,
+                       float           _x,
+                       float complex * _y)
 {
     float complex x_hat = 0.0f;
-    float complex y_hat;
 
     if (_q->type == LIQUID_AMPMODEM_DSB) {
         x_hat = _x;
@@ -169,14 +205,8 @@ void ampmodem_modulate(ampmodem _q,
             x_hat = conjf(x_hat);
     }
 
-    if (_q->suppressed_carrier)
-        y_hat = x_hat;
-    else
-        y_hat = 0.5f*(x_hat + 1.0f);
-    
-    // mix up
-    nco_crcf_mix_up(_q->oscillator, y_hat, _y);
-    nco_crcf_step(_q->oscillator);
+    // save result
+    *_y = x_hat * _q->mod_index + (_q->suppressed_carrier ? 0.0f : 1.0f);
 }
 
 // modulate block of samples
@@ -195,130 +225,157 @@ void ampmodem_modulate_block(ampmodem        _q,
         ampmodem_modulate(_q, _m[i], &_s[i]);
 }
 
-
-void ampmodem_demodulate(ampmodem _q,
+// demodulate
+void ampmodem_demodulate(ampmodem      _q,
                          float complex _y,
-                         float *_x)
+                         float *       _x)
 {
-#if DEBUG_AMPMODEM
-    windowcf_push(_q->debug_x, _y);
-#endif
-
-    if (_q->suppressed_carrier) {
-        // single side-band suppressed carrier
-        if (_q->type != LIQUID_AMPMODEM_DSB) {
-            *_x = crealf(_y);
-            return;
-        }
-
-        // coherent demodulation
-        
-        // mix signal down
-        float complex y_hat;
-        nco_crcf_mix_down(_q->oscillator, _y, &y_hat);
-
-        // compute phase error
-        float phase_error = tanhf( crealf(y_hat) * cimagf(y_hat) );
-#if DEBUG_AMPMODEM
-        // compute frequency error
-        float nco_freq   = nco_crcf_get_frequency(_q->oscillator);
-        float freq_error = nco_freq/(2*M_PI) - _q->fc/(2*M_PI);
-
-        // retain phase and frequency errors
-        windowf_push(_q->debug_phase_error, phase_error);
-        windowf_push(_q->debug_freq_error, freq_error);
-#endif
-
-        // adjust nco, pll objects
-        nco_crcf_pll_step(_q->oscillator, phase_error);
-
-        // step NCO
-        nco_crcf_step(_q->oscillator);
-
-        // set output
-        *_x = crealf(y_hat);
-    } else {
-        // non-coherent demodulation (peak detector)
-        float t = cabsf(_y);
-
-        // remove DC bias
-        _q->ssb_q_hat = (    _q->ssb_alpha)*t +
-                        (1 - _q->ssb_alpha)*_q->ssb_q_hat;
-        *_x = 2.0f*(t - _q->ssb_q_hat);
-    }
+    // invoke internal type-specific method
+    _q->demod(_q, _y, _x);
 }
 
 // demodulate block of samples
 //  _q      :   frequency demodulator object
-//  _r      :   received signal r(t) [size: _n x 1]
+//  _y      :   received signal r(t) [size: _n x 1]
 //  _n      :   number of input, output samples
-//  _m      :   message signal m(t), [size: _n x 1]
+//  _x      :   message signal m(t), [size: _n x 1]
 void ampmodem_demodulate_block(ampmodem        _q,
-                               float complex * _r,
+                               float complex * _y,
                                unsigned int    _n,
-                               float *         _m)
+                               float *         _x)
 {
-    // TODO: implement more efficient method
     unsigned int i;
-    for (i=0; i<_n; i++)
-        ampmodem_demodulate(_q, _r[i], &_m[i]);
-}
-
-// export debugging file
-void ampmodem_debug_print(ampmodem _q,
-                          const char * _filename)
-{
-    FILE * fid = fopen(_filename,"w");
-    if (!fid) {
-        fprintf(stderr,"error: ofdmframe_debug_print(), could not open '%s' for writing\n", _filename);
-        return;
+    for (i=0; i<_n; i++) {
+        // invoke internal type-specific method
+        //ampmodem_demodulate(_q, _y[i], &_x[i]);
+        _q->demod(_q, _y[i], &_x[i]);
     }
-    fprintf(fid,"%% %s : auto-generated file\n", DEBUG_AMPMODEM_FILENAME);
-#if DEBUG_AMPMODEM
-    fprintf(fid,"close all;\n");
-    fprintf(fid,"clear all;\n");
-    fprintf(fid,"n = %u;\n", DEBUG_AMPMODEM_BUFFER_LEN);
-    unsigned int i;
-    float complex * rc;
-    float * r;
-
-    // plot received signal
-    fprintf(fid,"x = zeros(1,n);\n");
-    windowcf_read(_q->debug_x, &rc);
-    for (i=0; i<DEBUG_AMPMODEM_BUFFER_LEN; i++)
-        fprintf(fid,"x(%4u) = %12.4e + j*%12.4e;\n", i+1, crealf(rc[i]), cimagf(rc[i]));
-    fprintf(fid,"figure;\n");
-    fprintf(fid,"plot(0:(n-1),real(x),0:(n-1),imag(x));\n");
-    fprintf(fid,"xlabel('sample index');\n");
-    fprintf(fid,"ylabel('received signal, x');\n");
-
-    // plot phase/freq error
-    fprintf(fid,"phase_error = zeros(1,n);\n");
-    windowf_read(_q->debug_phase_error, &r);
-    for (i=0; i<DEBUG_AMPMODEM_BUFFER_LEN; i++)
-        fprintf(fid,"phase_error(%4u) = %12.4e;\n", i+1, r[i]);
-
-    fprintf(fid,"freq_error = zeros(1,n);\n");
-    windowf_read(_q->debug_freq_error, &r);
-    for (i=0; i<DEBUG_AMPMODEM_BUFFER_LEN; i++)
-        fprintf(fid,"freq_error(%4u) = %12.4e;\n", i+1, r[i]);
-
-    fprintf(fid,"figure;\n");
-    fprintf(fid,"subplot(2,1,1),\n");
-    fprintf(fid,"  plot(0:(n-1),phase_error);\n");
-    fprintf(fid,"  xlabel('sample index');\n");
-    fprintf(fid,"  ylabel('phase error');\n");
-    fprintf(fid,"subplot(2,1,2),\n");
-    fprintf(fid,"  plot(0:(n-1),freq_error);\n");
-    fprintf(fid,"  xlabel('sample index');\n");
-    fprintf(fid,"  ylabel('freq error');\n");
-
-#else
-    fprintf(fid,"disp('no debugging info available');\n");
-#endif
-
-    fclose(fid);
-    printf("ampmodem/debug: results written to '%s'\n", _filename);
 }
 
+//
+// internal methods
+//
+
+void ampmodem_demod_dsb_peak_detect(ampmodem      _q,
+                                    float complex _x,
+                                    float *       _y)
+{
+    // compute signal magnitude
+    float v = cabsf(_x);
+
+    // apply DC blocking filter
+    firfilt_rrrf_push   (_q->dcblock, v);
+    firfilt_rrrf_execute(_q->dcblock, &v);
+
+    // set output
+    *_y = v / _q->mod_index;
+}
+
+void ampmodem_demod_dsb_pll_carrier(ampmodem      _q,
+                                    float complex _x,
+                                    float *       _y)
+{
+    // split signal into two branches:
+    //   0. low-pass filter for carrier recovery and
+    //   1. delay to align signal output
+    float complex x0, x1;
+    firfilt_crcf_push   (_q->lowpass, _x);
+    firfilt_crcf_execute(_q->lowpass, &x0);
+    wdelaycf_push       (_q->delay,   _x);
+    wdelaycf_read       (_q->delay,   &x1);
+
+    // mix each signal down
+    float complex v0, v1;
+    nco_crcf_mix_down(_q->mixer, x0, &v0);
+    nco_crcf_mix_down(_q->mixer, x1, &v1);
+
+    // compute phase error
+    float phase_error = carg(v0);
+
+    // adjust nco, pll objects
+    nco_crcf_pll_step(_q->mixer, phase_error);
+
+    // step nco
+    nco_crcf_step(_q->mixer);
+
+    // keep in-phase component
+    float m = crealf(v1) / _q->mod_index;
+
+    // apply DC block, writing directly to output
+    firfilt_rrrf_push   (_q->dcblock, m);
+    firfilt_rrrf_execute(_q->dcblock, _y);
+}
+
+void ampmodem_demod_dsb_pll_costas(ampmodem      _q,
+                                   float complex _x,
+                                   float *       _y)
+{
+    // mix signal down
+    float complex v;
+    nco_crcf_mix_down(_q->mixer, _x, &v);
+
+    // compute phase error
+    //float phase_error = crealf(v)*cimagf(v);
+    float phase_error = cimagf(v) * (crealf(v) > 0 ? 1 : -1);
+
+    // adjust nco, pll objects
+    nco_crcf_pll_step(_q->mixer, phase_error);
+
+    // step nco
+    nco_crcf_step(_q->mixer);
+
+    // keep in-phase component (ignore modulation index)
+    *_y = crealf(v) / _q->mod_index;
+}
+
+void ampmodem_demod_ssb_pll_carrier(ampmodem      _q,
+                                    float complex _x,
+                                    float *       _y)
+{
+    // split signal into two branches:
+    //   0. low-pass filter for carrier recovery and
+    //   1. delay to align signal output
+    float complex x0, x1;
+    firfilt_crcf_push   (_q->lowpass, _x);
+    firfilt_crcf_execute(_q->lowpass, &x0);
+    wdelaycf_push       (_q->delay,   _x);
+    wdelaycf_read       (_q->delay,   &x1);
+
+    // mix each signal down
+    float complex v0, v1;
+    nco_crcf_mix_down(_q->mixer, x0, &v0);
+    nco_crcf_mix_down(_q->mixer, x1, &v1);
+
+    // compute phase error
+    float phase_error = cimagf(v0);
+
+    // adjust nco, pll objects
+    nco_crcf_pll_step(_q->mixer, phase_error);
+
+    // step nco
+    nco_crcf_step(_q->mixer);
+
+    // apply hilbert transform and retrieve both upper and lower side-bands
+    float m_lsb, m_usb;
+    firhilbf_c2r_execute(_q->hilbert, v1, &m_lsb, &m_usb);
+
+    // recover message
+    float m = 0.5f * (_q->type == LIQUID_AMPMODEM_USB ? m_usb : m_lsb) / _q->mod_index;
+
+    // apply DC block, writing directly to output
+    firfilt_rrrf_push   (_q->dcblock, m);
+    firfilt_rrrf_execute(_q->dcblock, _y);
+}
+
+void ampmodem_demod_ssb(ampmodem      _q,
+                        float complex _x,
+                        float *       _y)
+{
+    // apply hilbert transform and retrieve both upper and lower side-bands
+    float m_lsb, m_usb;
+    firhilbf_c2r_execute(_q->hilbert, _x, &m_lsb, &m_usb);
+
+    // recover message
+    *_y = 0.5f * (_q->type == LIQUID_AMPMODEM_USB ? m_usb : m_lsb) / _q->mod_index;
+}
 

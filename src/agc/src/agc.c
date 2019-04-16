@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2018 Joseph Gaeddert
+ * Copyright (c) 2007 - 2019 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -40,6 +40,7 @@ void AGC(_squelch_update_mode)(AGC() _q);
 struct AGC(_s) {
     // gain variables
     T g;            // current gain value
+    T scale;        // output scale value
 
     // gain control loop filter parameters
     float bandwidth;// bandwidth-time constant
@@ -79,6 +80,9 @@ AGC() AGC(_create)(void)
     AGC(_squelch_set_threshold)(_q, 0.0f);
     AGC(_squelch_set_timeout  )(_q, 100);
 
+    // set default output gain
+    _q->scale = 1;
+
     // return object
     return _q;
 }
@@ -93,8 +97,9 @@ void AGC(_destroy)(AGC() _q)
 // print agc object internals
 void AGC(_print)(AGC() _q)
 {
-    printf("agc [rssi: %12.4f dB, bandwidth: %12.4e, locked: %s, squelch: %s]:\n",
+    printf("agc [rssi: %12.4f dB, output gain: %.3f dB, bw: %12.4e, locked: %s, squelch: %s]:\n",
             AGC(_get_rssi)(_q),
+            _q->scale > 0 ? 10.*log10f(_q->scale) : -100.0f,
             _q->bandwidth,
             _q->is_locked ? "yes" : "no",
             _q->squelch_mode == LIQUID_AGC_SQUELCH_DISABLED ? "disabled" : "enabled");
@@ -148,6 +153,9 @@ void AGC(_execute)(AGC() _q,
 
     // udpate squelch mode appropriately
     AGC(_squelch_update_mode)(_q);
+
+    // apply output scale
+    *_y *= _q->scale;
 }
 
 // execute automatic gain control on block of samples
@@ -267,6 +275,26 @@ void AGC(_set_gain)(AGC() _q,
 
     // set internal gain appropriately
     _q->g = _gain;
+}
+
+// get scale
+float AGC(_get_scale)(AGC() _q)
+{
+    return _q->scale;
+}
+
+// set scale
+void AGC(_set_scale)(AGC() _q,
+                     float _scale)
+{
+    // check to ensure gain is reasonable
+    if ( _scale <= 0 ) {
+        fprintf(stderr,"error: agc_%s_set_scale(), scale must be greater than zero\n", EXTENSION_FULL);
+        exit(-1);
+    }
+
+    // set internal gain appropriately
+    _q->scale = _scale;
 }
 
 // initialize internal gain on input array

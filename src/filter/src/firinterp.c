@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2015 Joseph Gaeddert
+ * Copyright (c) 2007 - 2018 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -29,11 +29,11 @@
 #include <string.h>
 
 struct FIRINTERP(_s) {
-    TC * h;                 // prototype filter coefficients
-    unsigned int h_len;     // prototype filter length
-    unsigned int h_sub_len; // sub-filter length
-    unsigned int M;         // interpolation factor
-    FIRPFB() filterbank;    // polyphase filterbank object
+    TC *            h;          // prototype filter coefficients
+    unsigned int    h_len;      // prototype filter length
+    unsigned int    h_sub_len;  // sub-filter length
+    unsigned int    M;          // interpolation factor
+    FIRPFB()        filterbank; // polyphase filterbank object
 };
 
 // create interpolator
@@ -178,6 +178,24 @@ void FIRINTERP(_print)(FIRINTERP() _q)
 void FIRINTERP(_reset)(FIRINTERP() _q)
 {
     FIRPFB(_reset)(_q->filterbank);
+}
+
+// Set output scaling for interpolator
+//  _q      : interpolator object
+//  _scale  : scaling factor to apply to each output sample
+void FIRINTERP(_set_scale)(FIRINTERP() _q,
+                           TC          _scale)
+{
+    FIRPFB(_set_scale)(_q->filterbank, _scale);
+}
+
+// Get output scaling for interpolator
+//  _q      : interpolator object
+//  _scale  : scaling factor to apply to each output sample
+void FIRINTERP(_get_scale)(FIRINTERP() _q,
+                           TC *        _scale)
+{
+    FIRPFB(_get_scale)(_q->filterbank, _scale);
 }
 
 // execute interpolator

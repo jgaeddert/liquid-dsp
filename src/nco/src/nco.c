@@ -136,13 +136,13 @@ void NCO(_step)(NCO() _q)
 // get phase [radians]
 T NCO(_get_phase)(NCO() _q)
 {
-    return 2.0f*M_PI*(float)_q->theta / (float)(1L<<32);
+    return 2.0f*M_PI*(float)_q->theta / (float)(1LLU<<32);
 }
 
 // get frequency [radians/sample]
 T NCO(_get_frequency)(NCO() _q)
 {
-    float d_theta = 2.0f*M_PI*(float)_q->d_theta / (float)(1L<<32);
+    float d_theta = 2.0f*M_PI*(float)_q->d_theta / (float)(1LLU<<32);
     return d_theta > M_PI ? d_theta - 2*M_PI : d_theta;
 }
 
@@ -342,7 +342,7 @@ uint32_t NCO(_constrain)(float _theta)
     while (_theta <= -2*M_PI) _theta += 2*M_PI;
     
     // 1/(2 pi) ~ 0.159154943091895
-    return (uint32_t)round(_theta * (1L<<32) * 0.159154943091895);
+    return (uint32_t)round(_theta * (1LLU<<32) * 0.159154943091895);
 }
 
 // compute index for sine look-up table

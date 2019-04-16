@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2018 Joseph Gaeddert
+ * Copyright (c) 2007 - 2019 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -38,7 +38,7 @@ void rresamp_crcf_bench(struct rusage *     _start,
     unsigned int m  = 12;
     float        bw = 0.45f;
     float        As = 60.0f;
-    rresamp_crcf q = rresamp_crcf_create(_P,_Q,m,bw,As);
+    rresamp_crcf q = rresamp_crcf_create_kaiser(_P,_Q,m,bw,As);
 
     // input/output buffers
     unsigned int buf_len = _P > _Q ? _P : _Q; // max(_P,_Q)

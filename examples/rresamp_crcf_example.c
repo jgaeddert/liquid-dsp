@@ -19,9 +19,10 @@
 void usage()
 {
     printf("Usage: %s [OPTION]\n", __FILE__);
+    printf("Resample a signal at a rate P/Q\n");
     printf("  -h            : print help\n");
-    printf("  -P <decim>    : resampling rate (decimation),      default: 3\n");
-    printf("  -Q <interp>   : resampling rate (interpolation),   default: 5\n");
+    printf("  -P <decim>    : decimation (output) rate,          default: 3\n");
+    printf("  -Q <interp>   : interpolation (input) rate,        default: 5\n");
     printf("  -m <len>      : filter semi-length (delay),        default: 12\n");
     printf("  -w <bandwidth>: filter bandwidth,                  default: 0.5f\n");
     printf("  -s <atten>    : filter stop-band attenuation [dB], default: 60\n");
@@ -30,8 +31,8 @@ void usage()
 int main(int argc, char*argv[])
 {
     // options
-    unsigned int    P   = 3;        // input rate (interpolation factor)
-    unsigned int    Q   = 5;        // output rate (decimation factor)
+    unsigned int    P   = 3;        // output rate (interpolation factor)
+    unsigned int    Q   = 5;        // input rate (decimation factor)
     unsigned int    m   = 12;       // resampling filter semi-length (filter delay)
     float           bw  = 0.5f;     // resampling filter bandwidth
     float           As  = 60.0f;    // resampling filter stop-band attenuation [dB]
@@ -60,18 +61,16 @@ int main(int argc, char*argv[])
     }
 
     // create resampler object
-    rresamp_crcf q = rresamp_crcf_create(P,Q,m,bw,As);
+    rresamp_crcf q = rresamp_crcf_create_kaiser(P,Q,m,bw,As);
     rresamp_crcf_print(q);
     float rate = rresamp_crcf_get_rate(q);
-    P          = rresamp_crcf_get_decim(q);
-    Q          = rresamp_crcf_get_interp(q);
 
-    // number of sample blocks
+    // number of sample blocks (limit by large interp/decim rates)
     unsigned int n = 120e3 / (P > Q ? P : Q);
 
-    // arrays
-    float complex buf_x[P];
-    float complex buf_y[Q];
+    // input/output buffers
+    float complex buf_x[Q]; // input
+    float complex buf_y[P]; // output
 
     // create signal generator (wide-band noise)
     msourcecf gen = msourcecf_create();
@@ -85,18 +84,18 @@ int main(int argc, char*argv[])
     // generate input signal (filtered noise)
     unsigned int i;
     for (i=0; i<n; i++) {
-        // write samples to buffer
-        msourcecf_write_samples(gen, buf_x, P);
+        // write Q input samples to buffer
+        msourcecf_write_samples(gen, buf_x, Q);
 
-        // run resampler in blocks
+        // run resampler and write P output samples
         rresamp_crcf_execute(q, buf_x, buf_y);
 
         // write input and output to respective spectral periodogram estimate
-        spgramcf_write(px, buf_x, P);
-        spgramcf_write(py, buf_y, Q);
+        spgramcf_write(px, buf_x, Q);
+        spgramcf_write(py, buf_y, P);
     }
-    printf("num samples in  : %llu\n", spgramcf_get_num_samples_total(px));
     printf("num samples out : %llu\n", spgramcf_get_num_samples_total(py));
+    printf("num samples in  : %llu\n", spgramcf_get_num_samples_total(px));
 
     // clean up allocated objects
     rresamp_crcf_destroy(q);
@@ -125,7 +124,7 @@ int main(int argc, char*argv[])
     fprintf(fid,"\n\n");
     fprintf(fid,"%% plot time-domain result\n");
     fprintf(fid,"fx=[0:(nfft-1)]/nfft-0.5;\n");
-    fprintf(fid,"fy=fx/r;\n");
+    fprintf(fid,"fy=fx*r;\n");
     fprintf(fid,"figure('Color','white','position',[500 500 800 600]);\n");
     fprintf(fid,"plot(fx,X,'-','LineWidth',2,'Color',[0.5 0.5 0.5],'MarkerSize',1,...\n");
     fprintf(fid,"     fy,Y,'-','LineWidth',2,'Color',[0.5 0 0],    'MarkerSize',1);\n");

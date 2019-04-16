@@ -92,7 +92,7 @@ int main(int argc, char*argv[])
     }
 
     // destroy filterbank objects
-    firpfbch2_crcf_destroy(qa); // analysis fitlerbank
+    firpfbch2_crcf_destroy(qa); // analysis filterbank
     firpfbch2_crcf_destroy(qs); // synthesis filterbank
 
     // print output

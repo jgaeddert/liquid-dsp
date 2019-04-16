@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2018 Joseph Gaeddert
+ * Copyright (c) 2007 - 2019 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -132,7 +132,7 @@ FIRFILT() FIRFILT(_create_kaiser)(unsigned int _n,
 }
 
 // create from square-root Nyquist prototype
-//  _type   : filter type (e.g. LIQUID_RNYQUIST_RRC)
+//  _type   : filter type (e.g. LIQUID_FIRFILT_RRC)
 //  _k      : nominal samples/symbol, _k > 1
 //  _m      : filter delay [symbols], _m > 0
 //  _beta   : rolloff factor, 0 < beta <= 1
@@ -192,6 +192,36 @@ FIRFILT() FIRFILT(_create_rect)(unsigned int _n)
 
     // return filter object and return
     return FIRFILT(_create)(h, _n);
+}
+
+// create DC blocking filter
+FIRFILT() FIRFILT(_create_dc_blocker)(unsigned int _m,
+                                      float        _As)
+{
+    // validate input
+    if (_m < 1 || _m > 1000) {
+        fprintf(stderr,"error: %s:%u, firfilt_%s_create_dc_blocker(), filter semi-length (%u) must be in [1,1000]\n",
+                __FILE__, __LINE__, EXTENSION_FULL, _m);
+        exit(1);
+    } else if (_As <= 0.0f) {
+        fprintf(stderr,"error: %s:%u, firfilt_%s_create_dc_blocker(), prototype stop-band suppression (%12.4e) must be greater than zero\n",
+                __FILE__, __LINE__, EXTENSION_FULL, _As);
+        exit(1);
+    }
+
+    // create float array coefficients and design filter
+    unsigned int h_len = 2*_m+1;
+    float hf[h_len];
+    liquid_firdes_dcblocker(_m, _As, hf);
+
+    // copy coefficients to type-specific array
+    TC h[h_len];
+    unsigned int i;
+    for (i=0; i<h_len; i++)
+        h[i] = (TC) hf[i];
+
+    // return filter object and return
+    return FIRFILT(_create)(h, h_len);
 }
 
 // re-create firfilt object

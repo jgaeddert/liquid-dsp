@@ -49,6 +49,7 @@ struct SPWATERFALL(_s) {
     float           sample_rate;    // sample rate [Hz]
     unsigned int    width;          // image width [pixels]
     unsigned int    height;         // image height [pixels]
+    char *          commands;       // commands to execute directly before 'plot'
 };
 
 //
@@ -107,6 +108,7 @@ SPWATERFALL() SPWATERFALL(_create)(unsigned int _nfft,
     q->sample_rate  = -1;
     q->width        = 800;
     q->height       = 800;
+    q->commands     = NULL;
 
     // create buffer to hold aggregated power spectral density
     // NOTE: the buffer is two-dimensional time/frequency grid that is two times
@@ -145,6 +147,7 @@ void SPWATERFALL(_destroy)(SPWATERFALL() _q)
 {
     // free allocated memory
     free(_q->psd);
+    free(_q->commands);
 
     // destroy internal spectral periodogram object
     SPGRAM(_destroy)(_q->periodogram);
@@ -202,6 +205,32 @@ int SPWATERFALL(_set_dims)(SPWATERFALL() _q,
 {
     _q->width  = _width;
     _q->height = _height;
+    return 0;
+}
+
+// set image dimensions
+int SPWATERFALL(_set_commands)(SPWATERFALL() _q,
+                               const char *  _commands)
+{
+    // clear memory with NULL pointer
+    if (_commands == NULL) {
+        free(_q->commands);
+        _q->commands = NULL;
+        return 0;
+    }
+
+    // sanity check
+    unsigned int n = strlen(_commands);
+    if (n > 1<<14) {
+        fprintf(stderr,"error: spwaterfall%s_set_commands(), input string size exceeds reasonable limits\n",EXTENSION);
+        SPWATERFALL(_set_commands)(_q, "# error: input string size limit exceeded");
+        return -1;
+    }
+
+    // reallocate memory, copy input, and return
+    _q->commands = (char*) realloc(_q->commands, n+1);
+    memmove(_q->commands, _commands, n);
+    _q->commands[n] = '\0';
     return 0;
 }
 
@@ -274,12 +303,12 @@ void SPWATERFALL(_consolidate_buffer)(SPWATERFALL() _q)
     unsigned int k; // freq index
     for (i=0; i<_q->time; i++) {
         for (k=0; k<_q->nfft; k++) {
-            // compute median
-            T v0  = _q->psd[ (2*i + 0)*_q->nfft + k ];
-            T v1  = _q->psd[ (2*i + 1)*_q->nfft + k ];
+            // convert to linear, compute average, convert back to log
+            T v0 = powf(10.0f, _q->psd[ (2*i + 0)*_q->nfft + k ]*0.1f);
+            T v1 = powf(10.0f, _q->psd[ (2*i + 1)*_q->nfft + k ]*0.1f);
 
-            // keep log average (only need double buffer for this, not triple buffer)
-            _q->psd[ i*_q->nfft + k ] = logf(0.5f*(expf(v0) + expf(v1)));
+            // save result
+            _q->psd[ i*_q->nfft + k ] = 10.0f*log10f(0.5f*(v0+v1));
         }
     }
 
@@ -389,6 +418,8 @@ int SPWATERFALL(_export_gnu)(SPWATERFALL() _q,
         float xtics = 0.1f;
         fprintf(fid,"set xtics %f\n", xtics);
         fprintf(fid,"set xlabel 'Normalized Frequency [f/F_s]'\n");
+        if (_q->commands != NULL)
+            fprintf(fid,"%s\n", _q->commands);
         fprintf(fid,"plot '%s.bin' u 1:($2*%e):3 binary matrix with image\n", _base, scale);
     } else {
         char unit;
@@ -413,6 +444,8 @@ int SPWATERFALL(_export_gnu)(SPWATERFALL() _q,
         //printf("xn:%f, xs:%f, xt:%f\n", xn, xs, xt);
         fprintf(fid,"set xrange [%f:%f]\n", g*(_q->frequency-0.5*_q->sample_rate), g*(_q->frequency+0.5*_q->sample_rate));
         fprintf(fid,"set xtics %f\n", xt);
+        if (_q->commands != NULL)
+            fprintf(fid,"%s\n", _q->commands);
         fprintf(fid,"plot '%s.bin' u ($1*%f+%f):($2*%e):3 binary matrix with image\n",
                 _base,
                 g*(_q->sample_rate < 0 ? 1 : _q->sample_rate),

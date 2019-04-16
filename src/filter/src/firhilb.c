@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2018 Joseph Gaeddert
+ * Copyright (c) 2007 - 2019 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -54,6 +54,10 @@ struct FIRHILB(_s) {
     WINDOW() w0;            // input buffer (even samples)
     WINDOW() w1;            // input buffer (odd samples)
 
+    // additional buffers needed exclusively for real-to-complex filter operations
+    WINDOW() w2;
+    WINDOW() w3;
+
     // vector dot product
     DOTPROD() dpq;
 
@@ -106,6 +110,8 @@ FIRHILB() FIRHILB(_create)(unsigned int _m,
     // create windows for upper and lower polyphase filter branches
     q->w1 = WINDOW(_create)(2*(q->m));
     q->w0 = WINDOW(_create)(2*(q->m));
+    q->w2 = WINDOW(_create)(2*(q->m));
+    q->w3 = WINDOW(_create)(2*(q->m));
 
     // create internal dot product object
     q->dpq = DOTPROD(_create)(q->hq, q->hq_len);
@@ -121,6 +127,8 @@ void FIRHILB(_destroy)(FIRHILB() _q)
     // destroy window buffers
     WINDOW(_destroy)(_q->w0);
     WINDOW(_destroy)(_q->w1);
+    WINDOW(_destroy)(_q->w2);
+    WINDOW(_destroy)(_q->w3);
     
     // destroy internal dot product object
     DOTPROD(_destroy)(_q->dpq);
@@ -158,6 +166,8 @@ void FIRHILB(_reset)(FIRHILB() _q)
     // clear window buffers
     WINDOW(_reset)(_q->w0);
     WINDOW(_reset)(_q->w1);
+    WINDOW(_reset)(_q->w2);
+    WINDOW(_reset)(_q->w3);
 
     // reset toggle flag
     _q->toggle = 0;
@@ -210,13 +220,48 @@ void FIRHILB(_r2c_execute)(FIRHILB()   _q,
 
 // execute Hilbert transform (complex to real)
 //  _q      :   firhilb object
-//  _y      :   complex-valued input sample
-//  _x      :   real-valued output sample
+//  _x      :   complex-valued input sample
+//  _y0     :   real-valued output sample, lower side-band retained
+//  _y1     :   real-valued output sample, upper side-band retained
 void FIRHILB(_c2r_execute)(FIRHILB() _q,
                            T complex _x,
-                           T *       _y)
+                           T *       _y0,
+                           T *       _y1)
 {
-    *_y = crealf(_x);
+    T * r;  // buffer read pointer
+    T yi;   //
+    T yq;   //
+
+    if (_q->toggle == 0) {
+        // push samples into appropriate buffers
+        WINDOW(_push)(_q->w0, crealf(_x));
+        WINDOW(_push)(_q->w1, cimagf(_x));
+
+        // compute delay branch
+        WINDOW(_index)(_q->w0, _q->m-1, &yi);
+
+        // compute filter branch
+        WINDOW(_read)(_q->w3, &r);
+        DOTPROD(_execute)(_q->dpq, r, &yq);
+    } else {
+        // push samples into appropriate buffers
+        WINDOW(_push)(_q->w2, crealf(_x));
+        WINDOW(_push)(_q->w3, cimagf(_x));
+
+        // compute delay branch
+        WINDOW(_index)(_q->w2, _q->m-1, &yi);
+
+        // compute filter branch
+        WINDOW(_read)(_q->w1, &r);
+        DOTPROD(_execute)(_q->dpq, r, &yq);
+    }
+
+    // adjust state
+    _q->toggle = 1 - _q->toggle;
+
+    // set return value
+    *_y0 = yi + yq; // lower side-band
+    *_y1 = yi - yq; // upper side-band
 }
 
 // execute Hilbert transform decimator (real to complex)
@@ -236,6 +281,7 @@ void FIRHILB(_decim_execute)(FIRHILB()   _q,
     WINDOW(_read)(_q->w1, &r);
     DOTPROD(_execute)(_q->dpq, r, &yq);
 
+    // delay branch
     WINDOW(_push)(_q->w0, _x[1]);
     WINDOW(_index)(_q->w0, _q->m-1, &yi);
 
