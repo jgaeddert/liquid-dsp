@@ -838,6 +838,7 @@ src/modem/src/modem_arb_const.o  : %.o : %.c $(include_headers)
 
 
 modem_autotests :=						\
+	src/modem/tests/ampmodem_autotest.c			\
 	src/modem/tests/cpfskmodem_autotest.c			\
 	src/modem/tests/freqmodem_autotest.c			\
 	src/modem/tests/fskmodem_autotest.c			\
