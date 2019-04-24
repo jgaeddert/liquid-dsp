@@ -2501,6 +2501,14 @@ FIRFILT() FIRFILT(_create_rect)(unsigned int _n);                           \
 FIRFILT() FIRFILT(_create_dc_blocker)(unsigned int _m,                      \
                                       float        _As);                    \
                                                                             \
+/* Create notch filter from prototype                                   */  \
+/*  _m  : prototype filter semi-length such that filter length is 2*m+1 */  \
+/*  _As : prototype filter stop-band attenuation [dB], _As > 0          */  \
+/*  _f0 : center frequency for notch, _fc in [-0.5, 0.5]                */  \
+FIRFILT() FIRFILT(_create_notch)(unsigned int _m,                           \
+                                 float        _As,                          \
+                                 float        _f0);                         \
+                                                                            \
 /* Re-create filter object of potentially a different length with       */  \
 /* different coefficients. If the length of the filter does not change, */  \
 /* not memory reallocation is invoked.                                  */  \

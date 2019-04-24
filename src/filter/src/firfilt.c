@@ -224,6 +224,47 @@ FIRFILT() FIRFILT(_create_dc_blocker)(unsigned int _m,
     return FIRFILT(_create)(h, h_len);
 }
 
+// create notch filter
+FIRFILT() FIRFILT(_create_notch)(unsigned int _m,
+                                 float        _As,
+                                 float        _f0)
+{
+    // validate input
+    if (_m < 1 || _m > 1000) {
+        fprintf(stderr,"error: %s:%u, firfilt_%s_create_notch(), filter semi-length (%u) must be in [1,1000]\n",
+                __FILE__, __LINE__, EXTENSION_FULL, _m);
+        exit(1);
+    } else if (_As <= 0.0f) {
+        fprintf(stderr,"error: %s:%u, firfilt_%s_create_notch(), prototype stop-band suppression (%12.4e) must be greater than zero\n",
+                __FILE__, __LINE__, EXTENSION_FULL, _As);
+        exit(1);
+    } else if (_f0 < -0.5f || _f0 > 0.5f) {
+        fprintf(stderr,"error: %s:%u, firfilt_%s_create_notch(), notch frequency must be in [-0.5,0.5]\n",
+                __FILE__, __LINE__, EXTENSION_FULL, _As);
+        exit(1);
+    }
+
+    // create float array coefficients and design filter
+    unsigned int h_len = 2*_m+1;
+    float hf[h_len];
+    liquid_firdes_dcblocker(_m, _As, hf);
+
+    // copy coefficients to type-specific array and mix to appropriate frequency
+    TC h[h_len];
+    unsigned int i;
+    for (i=0; i<h_len; i++) {
+        float phi = 2.0f * M_PI * _f0 * ((float)i - (float)_m);
+#if TC_COMPLEX
+        h[i] = cexpf(_Complex_I*phi) * (TC) hf[i];
+#else
+        h[i] = cosf(phi) * (TC) hf[i];
+#endif
+    }
+
+    // return filter object and return
+    return FIRFILT(_create)(h, h_len);
+}
+
 // re-create firfilt object
 //  _q      :   original firfilt object
 //  _h      :   new coefficients [size: _n x 1]
