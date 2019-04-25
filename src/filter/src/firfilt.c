@@ -211,8 +211,8 @@ FIRFILT() FIRFILT(_create_dc_blocker)(unsigned int _m,
 
     // create float array coefficients and design filter
     unsigned int h_len = 2*_m+1;
-    float hf[h_len];
-    liquid_firdes_dcblocker(_m, _As, hf);
+    float        hf[h_len];
+    liquid_firdes_notch(_m, 0, _As, hf);
 
     // copy coefficients to type-specific array
     TC h[h_len];
@@ -245,21 +245,23 @@ FIRFILT() FIRFILT(_create_notch)(unsigned int _m,
     }
 
     // create float array coefficients and design filter
-    unsigned int h_len = 2*_m+1;
-    float hf[h_len];
-    liquid_firdes_dcblocker(_m, _As, hf);
-
-    // copy coefficients to type-specific array and mix to appropriate frequency
-    TC h[h_len];
     unsigned int i;
+    unsigned int h_len = 2*_m+1;    // filter length
+    float        hf[h_len];         // prototype filter with float coefficients
+    TC           h [h_len];         // output filter with type-specific coefficients
+#if TC_COMPLEX
+    // design notch filter as DC blocker, then mix to appropriate frequency
+    liquid_firdes_notch(_m, 0, _As, hf);
     for (i=0; i<h_len; i++) {
         float phi = 2.0f * M_PI * _f0 * ((float)i - (float)_m);
-#if TC_COMPLEX
         h[i] = cexpf(_Complex_I*phi) * (TC) hf[i];
-#else
-        h[i] = cosf(phi) * (TC) hf[i];
-#endif
     }
+#else
+    // design notch filter for real-valued coefficients directly
+    liquid_firdes_notch(_m, _f0, _As, hf);
+    for (i=0; i<h_len; i++)
+        h[i] = hf[i];
+#endif
 
     // return filter object and return
     return FIRFILT(_create)(h, h_len);
