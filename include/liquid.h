@@ -5497,13 +5497,20 @@ void MSOURCE(_print)(MSOURCE() _q);                                         \
 void MSOURCE(_reset)(MSOURCE() _q);                                         \
                                                                             \
 /* Add tone to signal generator, returning id of signal                 */  \
-int MSOURCE(_add_tone) (MSOURCE() _q);                                      \
+int MSOURCE(_add_tone)(MSOURCE() _q,                                        \
+                       float     _fc,                                       \
+                       float     _bw,                                       \
+                       float     _gain);                                    \
                                                                             \
 /* Add noise source to signal generator, returning id of signal         */  \
 /*  _q          : multi-signal source object                            */  \
-/*  _bandwidth  : normalized noise bandiwidth, 0 < _bandwidth <= 1.0    */  \
+/*  _fc         : ...                                                   */  \
+/*  _bw         : ...                                                   */  \
+/*  _nstd       : ...                                                   */  \
 int MSOURCE(_add_noise)(MSOURCE() _q,                                       \
-                        float     _bandwidth);                              \
+                        float     _fc,                                      \
+                        float     _bw,                                      \
+                        float     _gain);                                   \
                                                                             \
 /* Add modem signal source, returning id of signal                      */  \
 /*  _q      : multi-signal source object                                */  \
@@ -5512,8 +5519,10 @@ int MSOURCE(_add_noise)(MSOURCE() _q,                                       \
 /*  _m      : filter delay (symbols), _m > 0                            */  \
 /*  _beta   : filter excess bandwidth, 0 < _beta <= 1                   */  \
 int MSOURCE(_add_modem)(MSOURCE()    _q,                                    \
+                        float        _fc,                                   \
+                        float        _bw,                                   \
+                        float        _gain,                                 \
                         int          _ms,                                   \
-                        unsigned int _k,                                    \
                         unsigned int _m,                                    \
                         float        _beta);                                \
                                                                             \

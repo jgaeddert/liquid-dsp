@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2017 Joseph Gaeddert
+ * Copyright (c) 2007 - 2019 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -1147,21 +1147,27 @@ void bpacketsync_reconfig(bpacketsync _q);
 /* Multi-signal source generator object                                 */  \
 typedef struct QSOURCE(_s) * QSOURCE();                                     \
                                                                             \
-/* Create default qsource object                                        */  \
-QSOURCE() QSOURCE(_create)(int _id);                                        \
+/* Create default qsource object, type uninitialized                    */  \
+QSOURCE() QSOURCE(_create)(unsigned int _M,                                 \
+                           unsigned int _m,                                 \
+                           float        _fc,                                \
+                           float        _bw,                                \
+                           float        _gain);                             \
                                                                             \
 /* Create default qsource object                                        */  \
-QSOURCE() QSOURCE(_create_tone)(int _id);                                   \
+void QSOURCE(_init_tone)(QSOURCE() _q,                                      \
+                         int       _id);                                    \
                                                                             \
 /* Create default qsource object                                        */  \
-QSOURCE() QSOURCE(_create_noise)(int _id, float _bandwidth);                \
+void QSOURCE(_init_noise)(QSOURCE() _q,                                     \
+                          int       _id);                                   \
                                                                             \
 /* Create default qsource object                                        */  \
-QSOURCE() QSOURCE(_create_modem)(int          _id,                          \
-                                 int          _ms,                          \
-                                 unsigned int _k,                           \
-                                 unsigned int _m,                           \
-                                 float        _beta);                       \
+void QSOURCE(_init_modem)(QSOURCE()    _q,                                  \
+                          int          _id,                                 \
+                          int          _ms,                                 \
+                          unsigned int _m,                                  \
+                          float        _beta);                              \
                                                                             \
 /* Destroy qsource object                                               */  \
 void QSOURCE(_destroy)(QSOURCE() _q);                                       \
@@ -1172,7 +1178,8 @@ void QSOURCE(_print)(QSOURCE() _q);                                         \
 /* Reset qsource object                                                 */  \
 void QSOURCE(_reset)(QSOURCE() _q);                                         \
                                                                             \
-/* Get source id                                                        */  \
+/* Get/set source id                                                    */  \
+int QSOURCE(_set_id)(QSOURCE() _q, int _id);                                \
 int QSOURCE(_get_id)(QSOURCE() _q);                                         \
                                                                             \
 void QSOURCE(_enable)(QSOURCE() _q);                                        \
@@ -1188,8 +1195,11 @@ void QSOURCE(_set_frequency)(QSOURCE() _q,                                  \
                                                                             \
 float QSOURCE(_get_frequency)(QSOURCE() _q);                                \
                                                                             \
-void QSOURCE(_gen_sample)(QSOURCE() _q,                                     \
-                          TO *      _v);                                    \
+void QSOURCE(_generate)(QSOURCE() _q,                                       \
+                        TO *      _v);                                      \
+                                                                            \
+void QSOURCE(_generate_into)(QSOURCE() _q,                                  \
+                             TO *      _buf);                               \
     
 LIQUID_QSOURCE_DEFINE_API(LIQUID_QSOURCE_MANGLE_CFLOAT, liquid_float_complex)
 

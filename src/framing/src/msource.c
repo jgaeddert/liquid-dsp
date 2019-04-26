@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2018 Joseph Gaeddert
+ * Copyright (c) 2007 - 2019 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -36,6 +36,16 @@ struct MSOURCE(_s)
     unsigned int num_sources;
 
     int id_counter;
+
+    unsigned int M;
+    unsigned int m;
+
+    firpfbch2_crcf ch;
+
+    float complex * buf_freq;   // [size: M   x 1]
+    float complex * buf_time;   // [size: M/2 x 1]
+    unsigned int    read_index; // output buffer read index
+    unsigned int    num_blocks; // output buffer read index
 };
 
 //
@@ -46,6 +56,9 @@ struct MSOURCE(_s)
 int MSOURCE(_add_source)(MSOURCE() _q,
                          QSOURCE() _s);
 
+// generate samples internally
+void MSOURCE(_generate)(MSOURCE() _q);
+
 // create msource object with linear modulation
 MSOURCE() MSOURCE(_create)(void)
 {
@@ -53,9 +66,19 @@ MSOURCE() MSOURCE(_create)(void)
     MSOURCE() q = (MSOURCE()) malloc( sizeof(struct MSOURCE(_s)) );
 
     //
-    q->sources = NULL;
+    q->sources     = NULL;
     q->num_sources = 0;
     q->id_counter  = 0;
+    q->M           = 400;
+    q->m           = 4;
+
+    q->ch = firpfbch2_crcf_create_kaiser(LIQUID_SYNTHESIZER, q->M, q->m, 60.0f);
+
+    q->buf_freq = (float complex*) malloc(q->M   * sizeof(float complex)); 
+    q->buf_time = (float complex*) malloc(q->M/2 * sizeof(float complex)); 
+
+    q->read_index = q->M/2; // indicate buffer is empty
+    q->num_blocks = 0;
 
     // reset and return main object
     MSOURCE(_reset)(q);
@@ -73,6 +96,13 @@ void MSOURCE(_destroy)(MSOURCE() _q)
     // free list of sources
     free(_q->sources);
 
+    // destroy channelizer
+    firpfbch2_crcf_destroy(_q->ch);
+
+    // free buffers
+    free(_q->buf_freq);
+    free(_q->buf_time);
+
     // free main object
     free(_q);
 }
@@ -80,6 +110,8 @@ void MSOURCE(_destroy)(MSOURCE() _q)
 // reset msource internal state
 void MSOURCE(_reset)(MSOURCE() _q)
 {
+    // reset all internal objects
+    _q->read_index = _q->M/2;
 }
 
 // print
@@ -92,57 +124,41 @@ void MSOURCE(_print)(MSOURCE() _q)
 }
 
 // add tone source
-int MSOURCE(_add_tone)(MSOURCE() _q)
+int MSOURCE(_add_tone)(MSOURCE() _q,
+                       float     _fc,
+                       float     _bw,
+                       float     _gain)
 {
-    int id = _q->id_counter;
     _q->id_counter++;
-    QSOURCE() s = QSOURCE(_create_tone)(id);
+    QSOURCE() s = QSOURCE(_create)(_q->M, _q->m, _fc, _bw, _gain);
+    QSOURCE(_init_tone)(s, _q->id_counter);
     return MSOURCE(_add_source)(_q, s);
 }
 
 // add noise source
 int MSOURCE(_add_noise)(MSOURCE() _q,
-                        float     _bandwidth)
+                        float     _fc,
+                        float     _bw,
+                        float     _gain)
 {
-    // validate input
-    if (_bandwidth <= 0.0f || _bandwidth > 1.0f) {
-        fprintf(stderr,"error: msource%s_add_noise(), noise bandwidth must be in (0,1.0]\n", EXTENSION);
-        exit(1);
-    } else if (_bandwidth >= 0.9995f) {
-        _bandwidth = 0.9995f;
-    }
-
-    int id = _q->id_counter;
     _q->id_counter++;
-    QSOURCE() s = QSOURCE(_create_noise)(id, _bandwidth);
+    QSOURCE() s = QSOURCE(_create)(_q->M, _q->m, _fc, _bw, _gain);
+    QSOURCE(_init_noise)(s, _q->id_counter);
     return MSOURCE(_add_source)(_q, s);
 }
 
 // add modem source
 int MSOURCE(_add_modem)(MSOURCE()    _q,
+                        float        _fc,
+                        float        _bw,
+                        float        _gain,
                         int          _ms,
-                        unsigned int _k,
                         unsigned int _m,
                         float        _beta)
 {
-    // validate input
-    if (_k < 2) {
-        fprintf(stderr,"error: msource%s_create(), samples/symbol must be at least 2\n", EXTENSION);
-        exit(1);
-    } else if (_m == 0) {
-        fprintf(stderr,"error: msource%s_create(), filter delay must be greater than zero\n", EXTENSION);
-        exit(1);
-    } else if (_beta <= 0.0f || _beta > 1.0f) {
-        fprintf(stderr,"error: msource%s_create(), filter excess bandwidth must be in (0,1]\n", EXTENSION);
-        exit(1);
-    } else if (_ms == LIQUID_MODEM_UNKNOWN || _ms >= LIQUID_MODEM_NUM_SCHEMES) {
-        fprintf(stderr,"error: msource%s_create(), invalid modulation scheme\n", EXTENSION);
-        exit(1);
-    }
-
-    int id = _q->id_counter;
     _q->id_counter++;
-    QSOURCE() s = QSOURCE(_create_modem)(id, _ms, _k, _m, _beta);
+    QSOURCE() s = QSOURCE(_create)(_q->M, _q->m, _fc, _bw, _gain);
+    QSOURCE(_init_modem)(s, _q->id_counter, _ms, _m, _beta);
     return MSOURCE(_add_source)(_q, s);
 }
 
@@ -313,19 +329,15 @@ void MSOURCE(_write_samples)(MSOURCE()    _q,
                              TO *         _buf,
                              unsigned int _buf_len)
 {
-    TO sample;
-    TO accumulation;
     unsigned int i;
-    unsigned int j;
     for (i=0; i<_buf_len; i++) {
-        accumulation = 0;
-
-        for (j=0; j<_q->num_sources; j++) {
-            QSOURCE(_gen_sample)(_q->sources[j], &sample);
-            accumulation += sample;
+        // generate more samples if needed
+        if (_q->read_index >= _q->M/2) {
+            MSOURCE(_generate)(_q);
         }
 
-        _buf[i] = accumulation;
+        // write output sample and update counter
+        _buf[i] = _q->buf_time[_q->read_index++];
     }
 }
 
@@ -370,6 +382,25 @@ QSOURCE() MSOURCE(_get_source)(MSOURCE() _q,
     }
 
     return NULL;
+}
+
+// generate samples internally
+void MSOURCE(_generate)(MSOURCE() _q)
+{
+    // clear buffer
+    memset(_q->buf_freq, 0, _q->M*sizeof(float complex));
+
+    // add sources into main frequency buffer
+    unsigned int i;
+    for (i=0; i<_q->num_sources; i++)
+        QSOURCE(_generate_into)(_q->sources[i], _q->buf_freq);
+
+    // run synthesis channelizer
+    firpfbch2_crcf_execute(_q->ch, _q->buf_freq, _q->buf_time);
+
+    // update state
+    _q->read_index = 0;
+    _q->num_blocks++;
 }
 
 
