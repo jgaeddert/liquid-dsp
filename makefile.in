@@ -1636,6 +1636,7 @@ sandbox_programs =						\
 	sandbox/ofdm_ber_test					\
 	sandbox/ofdmframe_papr_test				\
 	sandbox/ofdmframesync_cfo_test				\
+	sandbox/pll_3rd_order_test				\
 	sandbox/pll_design_test					\
 	sandbox/predemod_sync_test				\
 	sandbox/quasinewton_test				\
