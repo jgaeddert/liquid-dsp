@@ -14,8 +14,8 @@ int main()
     float        phase_in      =  3.0f;    // carrier phase offset
     float        frequency_in  = -0.20;    // carrier frequency offset
     float        alpha         =  0.08f;   // phase adjustment factor
-    unsigned int n             =  400;     // number of samples
-    float        df_in         =  0.10 /(float)n;
+    unsigned int n             = 1200;     // number of samples
+    float        df_in         =  0.30 /(float)n;
 
     // initialize states
     float beta          = 0.5*alpha*alpha;      // frequency adjustment factor
