@@ -1,4 +1,4 @@
-# Copyright (c) 2007 - 2018 Joseph Gaeddert
+# Copyright (c) 2007 - 2019 Joseph Gaeddert
 # 
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -489,6 +489,7 @@ filter_autotests :=						\
 	src/filter/tests/iirdes_autotest.c			\
 	src/filter/tests/iirfilt_xxxf_autotest.c		\
 	src/filter/tests/iirfiltsos_rrrf_autotest.c		\
+	src/filter/tests/lpc_autotest.c				\
 	src/filter/tests/msresamp_crcf_autotest.c		\
 	src/filter/tests/rresamp_crcf_autotest.c		\
 	src/filter/tests/resamp_crcf_autotest.c			\
