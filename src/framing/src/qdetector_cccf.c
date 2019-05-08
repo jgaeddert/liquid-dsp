@@ -422,6 +422,27 @@ void qdetector_cccf_execute_seek(qdetector_cccf _q,
     float        rxy_peak   = 0.0f;
     unsigned int rxy_index  = 0;
     int          rxy_offset = 0;
+#if DEBUG_QDETECTOR
+    // debug output
+    char filename[64];
+    sprintf(filename,"qdetector_out_%d.txt", _q->num_transforms);
+    FILE * fid = fopen(filename, "w");
+    fprintf(fid, "#\n#\n");
+    fprintf(fid, "# name: nfft\n# type: scalar\n%u\n\n", _q->nfft);
+    fprintf(fid, "# name: pn_len\n# type: scalar\n%u\n\n", _q->s_len);
+    fprintf(fid, "# name: pn\n# type: complex matrix\n# rows: 1\n# columns: %u\n", _q->nfft);
+    for (i=0; i<_q->s_len; i++)
+        fprintf(fid, " (%12.4e,%12.4e)", crealf(_q->s[i]), cimagf(_q->s[i]));
+    for (i=_q->s_len; i<_q->nfft; i++)
+        fprintf(fid, " (0,0)");
+    fprintf(fid, "\n\n");
+    fprintf(fid, "# name: x\n# type: complex matrix\n# rows: 1\n# columns: %u\n", _q->nfft);
+    for (i=0; i<_q->nfft; i++)
+        fprintf(fid," (%12.4e,%12.4e)", crealf(_q->buf_time_0[i]), cimagf(_q->buf_time_0[i]));
+    fprintf(fid, "\n\n");
+    fprintf(fid, "# name: rxy\n# type: complex matrix\n# rows: %u\n# columns: %u\n", 2 * _q->range + 1, _q->nfft);
+#endif
+
     // NOTE: this offset may be coarse as a fine carrier estimate is computed later
     for (offset=-_q->range; offset<=_q->range; offset++) {
 
@@ -441,22 +462,9 @@ void qdetector_cccf_execute_seek(qdetector_cccf _q,
 
 #if DEBUG_QDETECTOR
         // debug output
-        char filename[64];
-        sprintf(filename,"qdetector_out_%u_%d.m", _q->num_transforms, offset+2);
-        FILE * fid = fopen(filename, "w");
-        fprintf(fid,"clear all; close all;\n");
-        fprintf(fid,"nfft = %u;\n", _q->nfft);
         for (i=0; i<_q->nfft; i++)
-            fprintf(fid,"rxy(%6u) = %12.4e + 1i*%12.4e;\n", i+1, crealf(_q->buf_time_1[i]), cimagf(_q->buf_time_1[i]));
-        fprintf(fid,"figure;\n");
-        fprintf(fid,"t=[0:(nfft-1)];\n");
-        fprintf(fid,"plot(t,abs(rxy));\n");
-        fprintf(fid,"grid on;\n");
-        fprintf(fid,"axis([0 %u 0 1.5]);\n", _q->nfft);
-        fprintf(fid,"[v i] = max(abs(rxy));\n");
-        fprintf(fid,"title(sprintf('peak of %%12.8f at index %%u', v, i));\n");
-        fclose(fid);
-        printf("debug: %s\n", filename);
+            fprintf(fid," (%12.4e, %12.4e)", crealf(_q->buf_time_1[i]), cimagf(_q->buf_time_1[i]));
+        fprintf(fid, "\n");
 #endif
         // search for peak
         // TODO: only search over range [-nfft/2, nfft/2)
@@ -469,6 +477,13 @@ void qdetector_cccf_execute_seek(qdetector_cccf _q,
             }
         }
     }
+
+#if DEBUG_QDETECTOR
+    fprintf(fid, "\n");
+    fprintf(fid, "# name: peak\n# type: scalar\n%12.4e\n\n", rxy_peak);
+    fprintf(fid, "# name: peak_offset\n# type: scalar\n%u\n\n", rxy_offset + _q->range + 1);
+    fclose(fid);
+#endif
 
     // increment number of transforms (debugging)
     _q->num_transforms++;
