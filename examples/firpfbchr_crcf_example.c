@@ -2,7 +2,7 @@
 // firpfbchr_crcf_example.c
 //
 // Example of the finite impulse response (FIR) polyphase filterbank
-// (PFB) channelizer with an output rate of ...
+// (PFB) channelizer with an output rate independent of channel spacing.
 //
 
 #include <stdio.h>
@@ -18,8 +18,8 @@
 int main(int argc, char*argv[])
 {
     // options
-    unsigned int M = 16;            //
-    unsigned int P =  6;            // filter semi-length (symbols)
+    unsigned int M = 16;            // number of channels
+    unsigned int P =  6;            // output decimation rate
     unsigned int m =  5;            // filter semi-length (symbols)
     unsigned int num_blocks=1<<16;  // number of symbols
     float As = 60.0f;               // filter stop-band attenuation
@@ -31,28 +31,22 @@ int main(int argc, char*argv[])
     firpfbchr_crcf qa = firpfbchr_crcf_create_kaiser(M, P, m, As);
     firpfbchr_crcf_print(qa);
 
-    //
+    // create multi-signal source generator
     msourcecf gen = msourcecf_create();
+
+    // add signals          (gen,  fc,    bw,    gain, {options})
     int id;
-
-    // add wide-band noise (wide-band)
-    id = msourcecf_add_noise(gen, 1.00f);
-    msourcecf_set_gain( gen, id, -60.0f);
-
-    // add noise source (narrow-band)
-    id = msourcecf_add_noise(gen, 0.10f);
-    msourcecf_set_frequency( gen, id, -0.3*2*M_PI);
-    msourcecf_set_gain( gen, id, -20.0f);
-
-    // add tone
-    id = msourcecf_add_tone(gen);
-    msourcecf_set_frequency(gen, id, 0.08*2*M_PI);
-    msourcecf_set_gain( gen, id, -40.0f);
-
-    // add modulated data
-    id = msourcecf_add_modem(gen, LIQUID_MODEM_QPSK,32,5,0.3f);
-    msourcecf_set_frequency(gen, id, 2*M_PI*(float)channel_id/(float)M);
-    msourcecf_set_gain( gen, id, -40.0f);
+    id = msourcecf_add_noise(gen,  0.00f, 1.0f, 0.1f);  // wide-band noise
+    id = msourcecf_add_noise(gen, -0.30f, 0.1f, 0.2f);  // narrow-band noise
+    id = msourcecf_add_tone (gen,  0.08f, 0.0f, 0.1f);  // tone
+    // modulated data
+    id = msourcecf_add_modem(gen,
+            (float)channel_id/(float)M, // center frequency
+            0.125f,                     // bandwidth (symbol rate)
+            0.2f,                       // gain
+            LIQUID_MODEM_QPSK,          // modulation scheme
+            12,                         // filter semi-length
+            0.3f);                      // modem parameters
 
     // create spectral periodogoram
     unsigned int nfft = 2400;

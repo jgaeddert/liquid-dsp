@@ -55,7 +55,7 @@ int main(int argc, char*argv[])
 
     // set default bandwidth if not otherwise specified
     if (bw < 0)
-        bw = 0.515f*rate;
+        bw = 0.35f*rate;
 
     // create resampler object
     resamp_crcf q = resamp_crcf_create(rate,m,bw,As,256);
@@ -71,16 +71,12 @@ int main(int argc, char*argv[])
 
     // create signal generator (wide-band noise)
     msourcecf gen = msourcecf_create();
-    msourcecf_add_noise(gen, 1.0f);
 
     // in-band signal
-    int id = msourcecf_add_noise(gen, 0.5f*rate);
-    msourcecf_set_gain(gen, id, +20.0f);
+    msourcecf_add_noise(gen, 0.0f, 0.5f*rate, 1.0f);
 
     // high-power signal just out of band
-    id = msourcecf_add_noise(gen, 0.02f);
-    msourcecf_set_gain(gen, id, +40.0f);
-    msourcecf_set_frequency(gen, id, 2*M_PI*(0.5*rate + 0.04f));
+    msourcecf_add_noise(gen, (0.5f*rate+0.04f), 0.02f, 1.0f);
 
     // create spectral periodogram objects
     unsigned int nfft = 2400;
@@ -139,7 +135,7 @@ int main(int argc, char*argv[])
     fprintf(fid,"ylabel('Power Spectral Density [dB]');\n");
     fprintf(fid,"fmin = min(fx(   1),fy(   1));\n");
     fprintf(fid,"fmax = max(fx(nfft),fy(nfft));\n");
-    fprintf(fid,"axis([fmin fmax -10 50]);\n");
+    fprintf(fid,"axis([fmin fmax -100 20]);\n");
     fprintf(fid,"grid on;\n");
     fclose(fid);
     printf("results written to %s\n",OUTPUT_FILENAME);

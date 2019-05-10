@@ -62,18 +62,17 @@ int main(int argc, char*argv[])
     float complex buf_x[  buf_len];
     float complex buf_y[2*buf_len];
 
-    // create signal generator (wide-band noise)
+    // create multi-signal source generator
     msourcecf gen = msourcecf_create();
-    msourcecf_add_noise(gen, 1.0f);
+
+    // wide-band noise
+    msourcecf_add_noise(gen,  0.0f, 1.00f, 1.0f);
 
     // in-band signal
-    int id = msourcecf_add_noise(gen, 0.5f*rate);
-    msourcecf_set_gain(gen, id, +20.0f);
+    msourcecf_add_noise(gen, 0.0f, 0.5f*rate, 3.0f);
 
     // high-power signal just out of band
-    id = msourcecf_add_noise(gen, 0.02f);
-    msourcecf_set_gain(gen, id, +40.0f);
-    msourcecf_set_frequency(gen, id, 2*M_PI*(0.5*rate + 0.04f));
+    msourcecf_add_noise(gen, (0.5*rate + 0.12f), 0.10f, 5.0f);
 
     // create spectral periodogram objects
     unsigned int nfft = 2400;

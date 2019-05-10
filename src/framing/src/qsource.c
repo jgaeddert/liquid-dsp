@@ -108,7 +108,7 @@ QSOURCE() QSOURCE(_create)(unsigned int _M,
 
     // set channelizer values appropriately
     q->M = _M;
-    q->P = (unsigned int)roundf( _bw * _M );
+    q->P = 2*(unsigned int)ceilf( 0.5 * _bw * _M );
     q->P = max(2,    q->P);
     q->P = min(q->M, q->P);
     q->m = _m;

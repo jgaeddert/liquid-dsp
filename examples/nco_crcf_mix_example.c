@@ -22,17 +22,12 @@ int main()
     unsigned int num_samples =     240000;  // number of samples to run
     unsigned int nfft        =       1200;  // spectral periodogram FFT size
 
-    // create stream generator
+    // create stream generator and add some sources
     msourcecf gen = msourcecf_create();
-    // add noise source (wide-band)
-    int id =
-    msourcecf_add_noise(gen, 1.00f);
-    msourcecf_set_gain(gen, id, -55.0f);
-    // add modulated data with carrier offset
-    id =
-    msourcecf_add_modem(gen,LIQUID_MODEM_QPSK,16,7,0.2f);
-    msourcecf_set_frequency(gen, id, 2*M_PI*fc);
-    msourcecf_set_gain(gen, id, -20.0f);
+    msourcecf_add_noise(gen,  0.0f, 1.00f, 0.1f);              // wide-band noise
+    msourcecf_add_noise(gen,  0.0f, 0.20f, 0.2f);              // narrow-band noise
+    msourcecf_add_tone (gen, -0.4f, 0.0f,  0.1f);              // tone
+    msourcecf_add_modem(gen,  0.2f, 0.1f,  0.2f, LIQUID_MODEM_QPSK, 12, 0.25f); // modem
 
     // create the NCO object
     nco_crcf q = nco_crcf_create(type);

@@ -23,19 +23,13 @@ int main()
     msourcecf gen = msourcecf_create();
     
     // add noise source (narrow-band)
-    int id_noise = msourcecf_add_noise(gen, 0.10f);
-    msourcecf_set_frequency(gen, id_noise, 0.4*2*M_PI);
-    msourcecf_set_gain     (gen, id_noise, -20.0f);
+    int id_noise = msourcecf_add_noise(gen, 0.4f, 0.10f, 0.1f);
 
     // add tone
-    int id_tone = msourcecf_add_tone(gen);
-    msourcecf_set_frequency(gen, id_tone, -0.4*2*M_PI);
-    msourcecf_set_gain     (gen, id_tone, -10.0f);
+    msourcecf_add_tone(gen, -0.4f, 0.0f, 0.5f);
 
     // add modulated data
-    int id_modem = msourcecf_add_modem(gen,LIQUID_MODEM_QPSK,4,12,0.30f);
-    msourcecf_set_frequency(gen, id_modem, -0.1*2*M_PI);
-    msourcecf_set_gain     (gen, id_modem, 0.0f);
+    msourcecf_add_modem(gen,-0.1f, 0.25f, 0.1f, LIQUID_MODEM_QPSK,12,0.30f);
 
     // create buffers
     unsigned int  buf_len = 64;

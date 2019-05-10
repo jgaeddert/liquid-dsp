@@ -30,23 +30,15 @@ int main()
     unsigned int buf_len = 1024;
     float complex buf[buf_len];
 
-    // create stream generator
+    // create multi-signal source generator
     msourcecf gen = msourcecf_create();
 
+    // add signals          (gen,  fc,   bw,    gain, {options})
     int id;
-    float gain = 1.0f;
-
-    // add noise source (wide-band)
-    id = msourcecf_add_noise(gen, 0.0f, 1.00f, 0.1f);
-
-    // add noise source (narrow-band)
-    id = msourcecf_add_noise(gen, 0.0f, 0.20f, gain);
-
-    // add tone
-    id = msourcecf_add_tone(gen, -0.4f, 0.0f, gain);
-
-    // add modulated data
-    id = msourcecf_add_modem(gen, 0.2f, 0.1f, gain, ms, m, beta);
+    id = msourcecf_add_noise(gen,  0.0f, 1.00f, 0.1f);              // wide-band noise
+    id = msourcecf_add_noise(gen,  0.0f, 0.20f, 1.0f);              // narrow-band noise
+    id = msourcecf_add_tone (gen, -0.4f, 0.0f,  1.0f);              // tone
+    id = msourcecf_add_modem(gen,  0.2f, 0.1f,  1.0f, ms, m, beta); // modulated data
 
     // print source generator object
     msourcecf_print(gen);
