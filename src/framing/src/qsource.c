@@ -167,9 +167,6 @@ void QSOURCE(_init_tone)(QSOURCE() _q,
 {
     _q->id   = _id;
     _q->type = QSOURCE_TONE;
-
-    _q->mixer   = NCO(_create)(LIQUID_VCO);
-    _q->enabled = 1;
 }
 
 void QSOURCE(_init_noise)(QSOURCE() _q,
