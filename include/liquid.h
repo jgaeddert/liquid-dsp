@@ -5477,6 +5477,7 @@ LIQUID_SYMSTREAM_DEFINE_API(LIQUID_SYMSTREAM_MANGLE_CFLOAT, liquid_float_complex
 //
 // multi-signal source for testing (no meaningful data, just signals)
 //
+
 #define LIQUID_MSOURCE_MANGLE_CFLOAT(name) LIQUID_CONCAT(msourcecf,name)
 
 #define LIQUID_MSOURCE_DEFINE_API(MSOURCE,TO)                               \
@@ -5495,6 +5496,19 @@ void MSOURCE(_print)(MSOURCE() _q);                                         \
                                                                             \
 /* Reset msource object                                                 */  \
 void MSOURCE(_reset)(MSOURCE() _q);                                         \
+                                                                            \
+/* user-defined callback for generating samples                         */  \
+typedef int (*MSOURCE(_callback))(void *       _userdata,                   \
+                                  TO *         _v,                          \
+                                  unsigned int _n);                         \
+                                                                            \
+/* Add user-defined signal generator                                    */  \
+int MSOURCE(_add_user)(MSOURCE()          _q,                               \
+                       float              _fc,                              \
+                       float              _bw,                              \
+                       float              _gain,                            \
+                       void *             _userdata,                        \
+                       MSOURCE(_callback) _callback);                       \
                                                                             \
 /* Add tone to signal generator, returning id of signal                 */  \
 int MSOURCE(_add_tone)(MSOURCE() _q,                                        \
@@ -5515,7 +5529,6 @@ int MSOURCE(_add_noise)(MSOURCE() _q,                                       \
 /* Add modem signal source, returning id of signal                      */  \
 /*  _q      : multi-signal source object                                */  \
 /*  _ms     : modulation scheme, e.g. LIQUID_MODEM_QPSK                 */  \
-/*  _k      : samples per symbol, _k >= 2                               */  \
 /*  _m      : filter delay (symbols), _m > 0                            */  \
 /*  _beta   : filter excess bandwidth, 0 < _beta <= 1                   */  \
 int MSOURCE(_add_modem)(MSOURCE()    _q,                                    \

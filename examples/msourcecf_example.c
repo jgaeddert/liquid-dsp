@@ -13,6 +13,20 @@
 
 #define OUTPUT_FILENAME "msourcecf_example.m"
 
+// user-defined callback; generate tones
+int callback(void *          _userdata,
+             float complex * _v,
+             unsigned int    _n)
+{
+    unsigned int * counter = (unsigned int*)_userdata;
+    unsigned int i;
+    for (i=0; i<_n; i++) {
+        _v[i] = *counter==0 ? 1 : 0;
+        *counter = (*counter+1) % 8;
+    }
+    return 0;
+}
+
 int main()
 {
     // msource parameters
@@ -33,12 +47,13 @@ int main()
     // create multi-signal source generator
     msourcecf gen = msourcecf_create();
 
-    // add signals          (gen,  fc,   bw,    gain, {options})
-    int id;
-    id = msourcecf_add_noise(gen,  0.0f, 1.00f, -40);               // wide-band noise
-    id = msourcecf_add_noise(gen,  0.0f, 0.20f,   0);               // narrow-band noise
-    id = msourcecf_add_tone (gen, -0.4f, 0.0f,   20);               // tone
-    id = msourcecf_add_modem(gen,  0.2f, 0.1f,    0, ms, m, beta);  // modulated data
+    // add signals     (gen,  fc,   bw,    gain, {options})
+    msourcecf_add_noise(gen,  0.0f, 1.00f, -40);               // wide-band noise
+    msourcecf_add_noise(gen,  0.0f, 0.20f,   0);               // narrow-band noise
+    msourcecf_add_tone (gen, -0.4f, 0.00f,  20);               // tone
+    msourcecf_add_modem(gen,  0.2f, 0.10f,   0, ms, m, beta);  // modulated data
+    unsigned int counter = 0;
+    msourcecf_add_user (gen,  0.4f, 0.15f, -10, (void*)&counter, callback); // tones
 
     // print source generator object
     msourcecf_print(gen);

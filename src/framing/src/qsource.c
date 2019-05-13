@@ -54,12 +54,14 @@ struct QSOURCE(_s)
 
     enum {
         QSOURCE_UNKNOWN=0,
+        QSOURCE_USER,
         QSOURCE_TONE,
         QSOURCE_NOISE,
         QSOURCE_MODEM,
     } type;
 
     union {
+        struct { void * userdata; MSOURCE(_callback) callback; } user;
         struct { } tone;
         struct { } noise;
         struct { SYMSTREAM() symstream; } linmod;
@@ -139,6 +141,7 @@ void QSOURCE(_destroy)(QSOURCE() _q)
     // free internal type-specific objects
     switch (_q->type) {
     case QSOURCE_UNKNOWN:   break;
+    case QSOURCE_USER:      break;
     case QSOURCE_TONE:      break;
     case QSOURCE_NOISE:     break;
     case QSOURCE_MODEM:
@@ -160,6 +163,17 @@ void QSOURCE(_destroy)(QSOURCE() _q)
 
     // free main object memory
     free(_q);
+}
+
+void QSOURCE(_init_user)(QSOURCE() _q,
+                         int       _id,
+                         void *    _userdata,
+                         void *    _callback)
+{
+    _q->id   = _id;
+    _q->type = QSOURCE_USER;
+    _q->source.user.userdata = _userdata;
+    _q->source.user.callback = (MSOURCE(_callback))_callback;
 }
 
 void QSOURCE(_init_tone)(QSOURCE() _q,
@@ -190,9 +204,11 @@ void QSOURCE(_init_modem)(QSOURCE()    _q,
 
 void QSOURCE(_print)(QSOURCE() _q)
 {
+    // TODO: print generic parameters
     printf("  qsource%s[%3d] : ", EXTENSION, _q->id);
     // print type-specific parameters
     switch (_q->type) {
+    case QSOURCE_USER:  printf("user\n");   break;
     case QSOURCE_TONE:  printf("tone\n");   break;
     case QSOURCE_NOISE: printf("noise\n");  break;
     case QSOURCE_MODEM: printf("modem\n");  break;
@@ -250,6 +266,9 @@ void QSOURCE(_generate)(QSOURCE() _q,
     // generate type-specific sample
     TO sample;
     switch (_q->type) {
+    case QSOURCE_USER:
+        _q->source.user.callback(_q->source.user.userdata, &sample, 1);
+        break;
     case QSOURCE_TONE:
         sample = 1.0f;
         break;

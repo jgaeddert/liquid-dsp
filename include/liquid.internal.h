@@ -1154,6 +1154,12 @@ QSOURCE() QSOURCE(_create)(unsigned int _M,                                 \
                            float        _bw,                                \
                            float        _gain);                             \
                                                                             \
+/* Create user-defined qsource object                                   */  \
+void QSOURCE(_init_user)(QSOURCE() _q,                                      \
+                         int       _id,                                     \
+                         void *    _userdata,                               \
+                         void *    _callback);                              \
+                                                                            \
 /* Create default qsource object                                        */  \
 void QSOURCE(_init_tone)(QSOURCE() _q,                                      \
                          int       _id);                                    \

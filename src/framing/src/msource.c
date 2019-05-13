@@ -123,6 +123,20 @@ void MSOURCE(_print)(MSOURCE() _q)
         QSOURCE(_print)(_q->sources[i]);
 }
 
+// add user-defined source
+int MSOURCE(_add_user)(MSOURCE()          _q,
+                       float              _fc,
+                       float              _bw,
+                       float              _gain,
+                       void *             _userdata,
+                       MSOURCE(_callback) _callback)
+{
+    _q->id_counter++;
+    QSOURCE() s = QSOURCE(_create)(_q->M, _q->m, _fc, _bw, _gain);
+    QSOURCE(_init_user)(s, _q->id_counter, _userdata, (void*)_callback);
+    return MSOURCE(_add_source)(_q, s);
+}
+
 // add tone source
 int MSOURCE(_add_tone)(MSOURCE() _q,
                        float     _fc,
