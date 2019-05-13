@@ -36,14 +36,14 @@ int main(int argc, char*argv[])
 
     // add signals          (gen,  fc,    bw,    gain, {options})
     int id;
-    id = msourcecf_add_noise(gen,  0.00f, 1.0f, 0.1f);  // wide-band noise
-    id = msourcecf_add_noise(gen, -0.30f, 0.1f, 0.2f);  // narrow-band noise
-    id = msourcecf_add_tone (gen,  0.08f, 0.0f, 0.1f);  // tone
+    id = msourcecf_add_noise(gen,  0.00f, 1.0f, -60);   // wide-band noise
+    id = msourcecf_add_noise(gen, -0.30f, 0.1f, -20);   // narrow-band noise
+    id = msourcecf_add_tone (gen,  0.08f, 0.0f,   0);   // tone
     // modulated data
     id = msourcecf_add_modem(gen,
             (float)channel_id/(float)M, // center frequency
             0.125f,                     // bandwidth (symbol rate)
-            0.2f,                       // gain
+            -20,                        // gain
             LIQUID_MODEM_QPSK,          // modulation scheme
             12,                         // filter semi-length
             0.3f);                      // modem parameters

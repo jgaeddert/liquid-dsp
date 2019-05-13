@@ -73,10 +73,10 @@ int main(int argc, char*argv[])
     msourcecf gen = msourcecf_create();
 
     // in-band signal
-    msourcecf_add_noise(gen, 0.0f, 0.5f*rate, 1.0f);
+    msourcecf_add_noise(gen, 0.0f, 0.5f*rate, 0);
 
     // high-power signal just out of band
-    msourcecf_add_noise(gen, (0.5f*rate+0.04f), 0.02f, 1.0f);
+    msourcecf_add_noise(gen, (0.5f*rate+0.04f), 0.02f, 10);
 
     // create spectral periodogram objects
     unsigned int nfft = 2400;

@@ -35,10 +35,10 @@ int main()
 
     // add signals          (gen,  fc,   bw,    gain, {options})
     int id;
-    id = msourcecf_add_noise(gen,  0.0f, 1.00f, 0.1f);              // wide-band noise
-    id = msourcecf_add_noise(gen,  0.0f, 0.20f, 1.0f);              // narrow-band noise
-    id = msourcecf_add_tone (gen, -0.4f, 0.0f,  1.0f);              // tone
-    id = msourcecf_add_modem(gen,  0.2f, 0.1f,  1.0f, ms, m, beta); // modulated data
+    id = msourcecf_add_noise(gen,  0.0f, 1.00f, -40);               // wide-band noise
+    id = msourcecf_add_noise(gen,  0.0f, 0.20f,   0);               // narrow-band noise
+    id = msourcecf_add_tone (gen, -0.4f, 0.0f,   20);               // tone
+    id = msourcecf_add_modem(gen,  0.2f, 0.1f,    0, ms, m, beta);  // modulated data
 
     // print source generator object
     msourcecf_print(gen);
@@ -84,7 +84,8 @@ int main()
     fprintf(fid,"xlabel('Normalized Frequency [f/F_s]');\n");
     fprintf(fid,"ylabel('Power Spectral Density [dB]');\n");
     fprintf(fid,"grid on;\n");
-    fprintf(fid,"axis([-0.5 0.5 -60 40]);\n");
+    //fprintf(fid,"axis([-0.5 0.5 -60 40]);\n");
+    fprintf(fid,"axis([-0.5 0.5 -80 40]);\n");
 
     fclose(fid);
     printf("results written to %s.\n", OUTPUT_FILENAME);

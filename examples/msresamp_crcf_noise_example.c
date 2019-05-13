@@ -66,13 +66,13 @@ int main(int argc, char*argv[])
     msourcecf gen = msourcecf_create();
 
     // wide-band noise
-    msourcecf_add_noise(gen,  0.0f, 1.00f, 1.0f);
+    msourcecf_add_noise(gen,  0.0f, 1.00f, -60);
 
     // in-band signal
-    msourcecf_add_noise(gen, 0.0f, 0.5f*rate, 3.0f);
+    msourcecf_add_noise(gen, 0.0f, 0.5f*rate, 0);
 
     // high-power signal just out of band
-    msourcecf_add_noise(gen, (0.5*rate + 0.12f), 0.10f, 5.0f);
+    msourcecf_add_noise(gen, (0.5*rate + 0.12f), 0.10f, 10);
 
     // create spectral periodogram objects
     unsigned int nfft = 2400;
@@ -131,7 +131,7 @@ int main(int argc, char*argv[])
     fprintf(fid,"ylabel('Power Spectral Density [dB]');\n");
     fprintf(fid,"fmin = min(fx(   1),fy(   1));\n");
     fprintf(fid,"fmax = max(fx(nfft),fy(nfft));\n");
-    fprintf(fid,"axis([fmin fmax -10 50]);\n");
+    fprintf(fid,"axis([fmin fmax -80 20]);\n");
     fprintf(fid,"grid on;\n");
     fclose(fid);
     printf("results written to %s\n",OUTPUT_FILENAME);

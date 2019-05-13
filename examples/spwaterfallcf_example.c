@@ -22,14 +22,17 @@ int main()
     // create stream generator
     msourcecf gen = msourcecf_create();
     
-    // add noise source (narrow-band)
-    int id_noise = msourcecf_add_noise(gen, 0.4f, 0.10f, 0.1f);
+    // add noise source (wide band)
+    msourcecf_add_noise(gen, 0.0f, 1.00f, -40);
+
+    // add noise source (narrow-band, pulsed)
+    int id_noise = msourcecf_add_noise(gen, 0.4f, 0.10f, -20);
 
     // add tone
-    msourcecf_add_tone(gen, -0.4f, 0.0f, 0.5f);
+    msourcecf_add_tone(gen, -0.4f, 0.0f, 0);
 
     // add modulated data
-    msourcecf_add_modem(gen,-0.1f, 0.25f, 0.1f, LIQUID_MODEM_QPSK,12,0.30f);
+    msourcecf_add_modem(gen, -0.1f, 0.15f, -10, LIQUID_MODEM_QPSK, 12, 0.25);
 
     // create buffers
     unsigned int  buf_len = 64;
@@ -63,7 +66,7 @@ int main()
     spwaterfallcf_set_rate    (periodogram,100e6);
     spwaterfallcf_set_freq    (periodogram,750e6);
     spwaterfallcf_set_dims    (periodogram,1200, 800);
-    spwaterfallcf_set_commands(periodogram,"set cbrange [-55:25]; set title 'waterfall'");
+    spwaterfallcf_set_commands(periodogram,"set cbrange [-45:25]; set title 'waterfall'");
     spwaterfallcf_export(periodogram,"spwaterfallcf_example");
 
     // destroy objects

@@ -43,7 +43,8 @@ struct QSOURCE(_s)
     unsigned int    index;      // base index
     resamp_crcf     resamp;     // arbitrary rate resampler
     nco_crcf        mixer;      // fine frequency adjustment
-    float           gain;       // signal gain
+    float           gain;       // signal gain (user defined)
+    float           gain_ch;    // channelizer gain
     unsigned int    buf_len;    // temporary buffer for resampler output
     float complex * buf;        // sample buffer (resamp output), [size: buf_len x 1]
     float complex * buf_time;   // channelizer input buffer, [size: P/2 x 1]
@@ -59,20 +60,9 @@ struct QSOURCE(_s)
     } type;
 
     union {
-        // tone
-        struct {
-            int x;
-        } tone;
-
-        // wide-band noise
-        struct {
-            float nstd;
-        } noise;
-
-        // linear modulation
-        struct {
-            SYMSTREAM() symstream;
-        } linmod;
+        struct { } tone;
+        struct { } noise;
+        struct { SYMSTREAM() symstream; } linmod;
     } source;
 };
 
@@ -103,7 +93,7 @@ QSOURCE() QSOURCE(_create)(unsigned int _M,
     // initialize state
     q->id      = -1;
     q->type    = QSOURCE_UNKNOWN;
-    q->gain    = _gain;
+    q->gain    = powf(10.0f, _gain/20.0f);
     q->enabled = 1;
 
     // set channelizer values appropriately
@@ -134,6 +124,10 @@ QSOURCE() QSOURCE(_create)(unsigned int _M,
 
     // create channelizer
     q->ch = firpfbch2_crcf_create_kaiser(LIQUID_ANALYZER, q->P, q->m, 60.0f);
+
+    // channelizer gain correction
+    // TODO: adjust this appropriately
+    q->gain_ch = sqrtf((float)(q->P)/(float)(q->M));
 
     // reset and return main object
     QSOURCE(_reset)(q);
@@ -175,7 +169,6 @@ void QSOURCE(_init_tone)(QSOURCE() _q,
     _q->type = QSOURCE_TONE;
 
     _q->mixer   = NCO(_create)(LIQUID_VCO);
-    _q->gain    = 1;
     _q->enabled = 1;
 }
 
@@ -277,9 +270,6 @@ void QSOURCE(_generate)(QSOURCE() _q,
     if (!_q->enabled)
         sample = 0.0f;
 
-    // apply gain
-    sample *= _q->gain;
-
     // TODO: push through resampler
 
     // mix sample up
@@ -303,10 +293,13 @@ void QSOURCE(_generate_into)(QSOURCE() _q,
     // run analysis channelizer
     firpfbch2_crcf_execute(_q->ch, _q->buf_time, _q->buf_freq);
 
+    // aggregate gain
+    float g = _q->gain * _q->gain_ch;
+
     // copy upper frequency band (base index = _q->index)
     unsigned int base_index = _q->index;
     for (i=0; i<P2; i++)
-        _buf[ (base_index+i) % _q->M ] += _q->buf_freq[i] * _q->gain;
+        _buf[ (base_index+i) % _q->M ] += _q->buf_freq[i] * g;
 
     // copy lower frequency band (base index = _q->index-P/2)
     base_index = _q->index;
@@ -314,6 +307,6 @@ void QSOURCE(_generate_into)(QSOURCE() _q,
         base_index += _q->M;
     base_index -= P2;
     for (i=0; i<P2; i++)
-        _buf[ (base_index+i) % _q->M ] += _q->buf_freq[i+P2] * _q->gain;
+        _buf[ (base_index+i) % _q->M ] += _q->buf_freq[i+P2] * g;
 }
 
