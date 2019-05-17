@@ -1156,21 +1156,17 @@ QSOURCE() QSOURCE(_create)(unsigned int _M,                                 \
                                                                             \
 /* Create user-defined qsource object                                   */  \
 void QSOURCE(_init_user)(QSOURCE() _q,                                      \
-                         int       _id,                                     \
                          void *    _userdata,                               \
                          void *    _callback);                              \
                                                                             \
 /* Create default qsource object                                        */  \
-void QSOURCE(_init_tone)(QSOURCE() _q,                                      \
-                         int       _id);                                    \
+void QSOURCE(_init_tone)(QSOURCE() _q);                                     \
                                                                             \
 /* Create default qsource object                                        */  \
-void QSOURCE(_init_noise)(QSOURCE() _q,                                     \
-                          int       _id);                                   \
+void QSOURCE(_init_noise)(QSOURCE() _q);                                    \
                                                                             \
 /* Create default qsource object                                        */  \
 void QSOURCE(_init_modem)(QSOURCE()    _q,                                  \
-                          int          _id,                                 \
                           int          _ms,                                 \
                           unsigned int _m,                                  \
                           float        _beta);                              \
@@ -1185,8 +1181,8 @@ void QSOURCE(_print)(QSOURCE() _q);                                         \
 void QSOURCE(_reset)(QSOURCE() _q);                                         \
                                                                             \
 /* Get/set source id                                                    */  \
-int QSOURCE(_set_id)(QSOURCE() _q, int _id);                                \
-int QSOURCE(_get_id)(QSOURCE() _q);                                         \
+void QSOURCE(_set_id)(QSOURCE() _q, int _id);                               \
+int  QSOURCE(_get_id)(QSOURCE() _q);                                        \
                                                                             \
 void QSOURCE(_enable)(QSOURCE() _q);                                        \
 void QSOURCE(_disable)(QSOURCE() _q);                                       \

@@ -166,37 +166,29 @@ void QSOURCE(_destroy)(QSOURCE() _q)
 }
 
 void QSOURCE(_init_user)(QSOURCE() _q,
-                         int       _id,
                          void *    _userdata,
                          void *    _callback)
 {
-    _q->id   = _id;
     _q->type = QSOURCE_USER;
     _q->source.user.userdata = _userdata;
     _q->source.user.callback = (MSOURCE(_callback))_callback;
 }
 
-void QSOURCE(_init_tone)(QSOURCE() _q,
-                         int       _id)
+void QSOURCE(_init_tone)(QSOURCE() _q)
 {
-    _q->id   = _id;
     _q->type = QSOURCE_TONE;
 }
 
-void QSOURCE(_init_noise)(QSOURCE() _q,
-                          int       _id)
+void QSOURCE(_init_noise)(QSOURCE() _q)
 {
-    _q->id   = _id;
     _q->type = QSOURCE_NOISE;
 }
 
 void QSOURCE(_init_modem)(QSOURCE()    _q,
-                          int          _id,
                           int          _ms,
                           unsigned int _m,
                           float        _beta)
 {
-    _q->id   = _id;
     _q->type = QSOURCE_MODEM;
     _q->source.linmod.symstream=SYMSTREAM(_create_linear)(LIQUID_FIRFILT_ARKAISER,2,_m,_beta,_ms);
     // TODO: adjust rate
@@ -220,6 +212,12 @@ void QSOURCE(_print)(QSOURCE() _q)
 
 void QSOURCE(_reset)(QSOURCE() _q)
 {
+}
+
+void QSOURCE(_set_id)(QSOURCE() _q,
+                      int       _id)
+{
+    _q->id = _id;
 }
 
 int QSOURCE(_get_id)(QSOURCE() _q)

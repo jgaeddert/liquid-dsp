@@ -131,9 +131,8 @@ int MSOURCE(_add_user)(MSOURCE()          _q,
                        void *             _userdata,
                        MSOURCE(_callback) _callback)
 {
-    _q->id_counter++;
     QSOURCE() s = QSOURCE(_create)(_q->M, _q->m, _fc, _bw, _gain);
-    QSOURCE(_init_user)(s, _q->id_counter, _userdata, (void*)_callback);
+    QSOURCE(_init_user)(s, _userdata, (void*)_callback);
     return MSOURCE(_add_source)(_q, s);
 }
 
@@ -143,9 +142,8 @@ int MSOURCE(_add_tone)(MSOURCE() _q,
                        float     _bw,
                        float     _gain)
 {
-    _q->id_counter++;
     QSOURCE() s = QSOURCE(_create)(_q->M, _q->m, _fc, _bw, _gain);
-    QSOURCE(_init_tone)(s, _q->id_counter);
+    QSOURCE(_init_tone)(s);
     return MSOURCE(_add_source)(_q, s);
 }
 
@@ -155,9 +153,8 @@ int MSOURCE(_add_noise)(MSOURCE() _q,
                         float     _bw,
                         float     _gain)
 {
-    _q->id_counter++;
     QSOURCE() s = QSOURCE(_create)(_q->M, _q->m, _fc, _bw, _gain);
-    QSOURCE(_init_noise)(s, _q->id_counter);
+    QSOURCE(_init_noise)(s);
     return MSOURCE(_add_source)(_q, s);
 }
 
@@ -170,9 +167,8 @@ int MSOURCE(_add_modem)(MSOURCE()    _q,
                         unsigned int _m,
                         float        _beta)
 {
-    _q->id_counter++;
     QSOURCE() s = QSOURCE(_create)(_q->M, _q->m, _fc, _bw, _gain);
-    QSOURCE(_init_modem)(s, _q->id_counter, _ms, _m, _beta);
+    QSOURCE(_init_modem)(s, _ms, _m, _beta);
     return MSOURCE(_add_source)(_q, s);
 }
 
@@ -376,12 +372,15 @@ int MSOURCE(_add_source)(MSOURCE() _q,
 
     // append new object to end of list
     _q->sources[_q->num_sources] = _s;
-
-    //
     _q->num_sources++;
 
-    //
-    return _q->num_sources-1;
+    // set id and increment internal counter
+    int id = _q->id_counter;
+    QSOURCE(_set_id)(_s, id);
+    _q->id_counter++;
+
+    // return id to user
+    return id;
 }
 
 // get source by id
