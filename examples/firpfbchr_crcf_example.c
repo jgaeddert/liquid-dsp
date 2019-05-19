@@ -42,7 +42,7 @@ int main(int argc, char*argv[])
     // modulated data
     id = msourcecf_add_modem(gen,
             (float)channel_id/(float)M, // center frequency
-            0.125f,                     // bandwidth (symbol rate)
+            0.080f,                     // bandwidth (symbol rate)
             -20,                        // gain
             LIQUID_MODEM_QPSK,          // modulation scheme
             12,                         // filter semi-length

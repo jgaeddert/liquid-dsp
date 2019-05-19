@@ -83,10 +83,6 @@ QSOURCE() QSOURCE(_create)(unsigned int _M,
         fprintf(stderr,"error: %s:%u, qsource%s_create(), invalid frequency offset (%f); must be in [-0.5,0.5]\n",
                 __FILE__,__LINE__,EXTENSION,_fc);
         exit(1);
-    } else if (_bw < 0 || _bw > 1.0f) {
-        fprintf(stderr,"error: %s:%u, qsource%s_create(), invalid bandwidth (%f); must be in (0,1]\n",
-                __FILE__,__LINE__,EXTENSION,_bw);
-        exit(1);
     }
 
     // allocate memory for main object
@@ -101,8 +97,8 @@ QSOURCE() QSOURCE(_create)(unsigned int _M,
     // set channelizer values appropriately
     q->M = _M;
     q->P = 2*(unsigned int)ceilf( 0.5 * _bw * _M );
-    q->P = max(2,    q->P);
-    q->P = min(q->M, q->P);
+    q->P = max(2, q->P);
+    // allow P to exceed M for cases where wider bandwidth is needed (e.g. modem)
     q->m = _m;
 
     // create resampler to correct for rate offset
@@ -275,6 +271,7 @@ void QSOURCE(_generate)(QSOURCE() _q,
         break;
     case QSOURCE_MODEM:
         SYMSTREAM(_write_samples)(_q->source.linmod.symstream, &sample, 1);
+        sample *= M_SQRT1_2; // compensate for 2 samples/symbol
         break;
     default:
         fprintf(stderr,"error: qsource%s_generate(), internal logic error\n", EXTENSION);

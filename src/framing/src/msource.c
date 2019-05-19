@@ -167,7 +167,8 @@ int MSOURCE(_add_modem)(MSOURCE()    _q,
                         unsigned int _m,
                         float        _beta)
 {
-    QSOURCE() s = QSOURCE(_create)(_q->M, _q->m, _fc, _bw, _gain);
+    // create object with double the bandwidth to account for 2 samples/symbol
+    QSOURCE() s = QSOURCE(_create)(_q->M, _q->m, _fc, 2*_bw, _gain);
     QSOURCE(_init_modem)(s, _ms, _m, _beta);
     return MSOURCE(_add_source)(_q, s);
 }
