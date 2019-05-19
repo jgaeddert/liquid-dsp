@@ -20,7 +20,7 @@ int main()
     spwaterfallcf_print(periodogram);
 
     // create stream generator
-    msourcecf gen = msourcecf_create();
+    msourcecf gen = msourcecf_create_default();
     
     // add noise source (wide band)
     msourcecf_add_noise(gen, 0.0f, 1.00f, -40);

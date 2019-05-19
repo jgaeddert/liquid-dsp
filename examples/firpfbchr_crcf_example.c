@@ -32,7 +32,7 @@ int main(int argc, char*argv[])
     firpfbchr_crcf_print(qa);
 
     // create multi-signal source generator
-    msourcecf gen = msourcecf_create();
+    msourcecf gen = msourcecf_create_default();
 
     // add signals          (gen,  fc,    bw,    gain, {options})
     int id;

@@ -40,6 +40,7 @@ struct QSOURCE(_s)
     unsigned int    M;          // number of channels in parent object's synthesis channelizer
     unsigned int    P;          // number of channels in this object's analysis channelizer
     unsigned int    m;          // channelizer filter semi-length
+    float           As;         // channelizer filter stop-band suppression (dB)
     unsigned int    index;      // base index
     resamp_crcf     resamp;     // arbitrary rate resampler
     nco_crcf        mixer;      // fine frequency adjustment
@@ -71,6 +72,7 @@ struct QSOURCE(_s)
 
 QSOURCE() QSOURCE(_create)(unsigned int _M,
                            unsigned int _m,
+                           float        _As,
                            float        _fc,
                            float        _bw,
                            float        _gain)
@@ -102,10 +104,11 @@ QSOURCE() QSOURCE(_create)(unsigned int _M,
     q->P = max(2, q->P);
     // allow P to exceed M for cases where wider bandwidth is needed (e.g. modem)
     q->m = _m;
+    q->As= _As;
 
     // create resampler to correct for rate offset
     float rate = _bw == 0 ? 1.0f : _bw * (float)(q->M) / (float)(q->P);
-    q->resamp = resamp_crcf_create(rate, 12, 0.45f, 60.0f, 64);
+    q->resamp = resamp_crcf_create(rate, 12, 0.45f, q->As, 64);
 
     // create mixer for frequency offset correction
     q->index = (unsigned int)roundf((_fc < 0.0f ? _fc + 1.0f : _fc) * q->M) % q->M;
@@ -123,7 +126,7 @@ QSOURCE() QSOURCE(_create)(unsigned int _M,
     q->buf_freq = (float complex*) malloc(q->P       * sizeof(float complex));
 
     // create channelizer
-    q->ch = firpfbch2_crcf_create_kaiser(LIQUID_ANALYZER, q->P, q->m, 60.0f);
+    q->ch = firpfbch2_crcf_create_kaiser(LIQUID_ANALYZER, q->P, q->m, q->As);
 
     // channelizer gain correction
     // TODO: adjust this appropriately

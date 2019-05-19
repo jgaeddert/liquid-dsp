@@ -40,6 +40,7 @@ struct MSOURCE(_s)
     // channelizer description
     unsigned int    M;              // channelizer size
     unsigned int    m;              // channelizer filter semi-length
+    float           As;             // channelizer filter stop-band suppression (dB)
     firpfbch2_crcf  ch;             // analysis channelizer object
 
     // buffers
@@ -64,7 +65,9 @@ int MSOURCE(_add_source)(MSOURCE() _q,
 void MSOURCE(_generate)(MSOURCE() _q);
 
 // create msource object with linear modulation
-MSOURCE() MSOURCE(_create)(void)
+MSOURCE() MSOURCE(_create)(unsigned int _M,
+                           unsigned int _m,
+                           float        _As)
 {
     // allocate memory for main object
     MSOURCE() q = (MSOURCE()) malloc( sizeof(struct MSOURCE(_s)) );
@@ -73,11 +76,12 @@ MSOURCE() MSOURCE(_create)(void)
     q->sources     = NULL;
     q->num_sources = 0;
     q->id_counter  = 0;
-    q->M           = 400;
-    q->m           = 4;
+    q->M           = _M;
+    q->m           = _m;
+    q->As          = _As;
     q->num_samples = 0;
 
-    q->ch = firpfbch2_crcf_create_kaiser(LIQUID_SYNTHESIZER, q->M, q->m, 60.0f);
+    q->ch = firpfbch2_crcf_create_kaiser(LIQUID_SYNTHESIZER, q->M, q->m, q->As);
 
     q->buf_freq = (float complex*) malloc(q->M   * sizeof(float complex)); 
     q->buf_time = (float complex*) malloc(q->M/2 * sizeof(float complex)); 
@@ -88,6 +92,12 @@ MSOURCE() MSOURCE(_create)(void)
     // reset and return main object
     MSOURCE(_reset)(q);
     return q;
+}
+
+// create msource object with linear modulation
+MSOURCE() MSOURCE(_create_default)(void)
+{
+    return MSOURCE(_create)(1200, 4, 60);
 }
 
 // destroy msource object, freeing all internal memory
@@ -136,7 +146,7 @@ int MSOURCE(_add_user)(MSOURCE()          _q,
                        void *             _userdata,
                        MSOURCE(_callback) _callback)
 {
-    QSOURCE() s = QSOURCE(_create)(_q->M, _q->m, _fc, _bw, _gain);
+    QSOURCE() s = QSOURCE(_create)(_q->M, _q->m, _q->As, _fc, _bw, _gain);
     QSOURCE(_init_user)(s, _userdata, (void*)_callback);
     return MSOURCE(_add_source)(_q, s);
 }
@@ -147,7 +157,7 @@ int MSOURCE(_add_tone)(MSOURCE() _q,
                        float     _bw,
                        float     _gain)
 {
-    QSOURCE() s = QSOURCE(_create)(_q->M, _q->m, _fc, _bw, _gain);
+    QSOURCE() s = QSOURCE(_create)(_q->M, _q->m, _q->As, _fc, _bw, _gain);
     QSOURCE(_init_tone)(s);
     return MSOURCE(_add_source)(_q, s);
 }
@@ -158,7 +168,7 @@ int MSOURCE(_add_noise)(MSOURCE() _q,
                         float     _bw,
                         float     _gain)
 {
-    QSOURCE() s = QSOURCE(_create)(_q->M, _q->m, _fc, _bw, _gain);
+    QSOURCE() s = QSOURCE(_create)(_q->M, _q->m, _q->As, _fc, _bw, _gain);
     QSOURCE(_init_noise)(s);
     return MSOURCE(_add_source)(_q, s);
 }
@@ -173,7 +183,7 @@ int MSOURCE(_add_modem)(MSOURCE()    _q,
                         float        _beta)
 {
     // create object with double the bandwidth to account for 2 samples/symbol
-    QSOURCE() s = QSOURCE(_create)(_q->M, _q->m, _fc, 2*_bw, _gain);
+    QSOURCE() s = QSOURCE(_create)(_q->M, _q->m, _q->As, _fc, 2*_bw, _gain);
     QSOURCE(_init_modem)(s, _ms, _m, _beta);
     return MSOURCE(_add_source)(_q, s);
 }

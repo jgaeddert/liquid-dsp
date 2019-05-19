@@ -23,7 +23,7 @@ int main()
     unsigned int nfft        =       1200;  // spectral periodogram FFT size
 
     // create stream generator and add some sources
-    msourcecf gen = msourcecf_create();
+    msourcecf gen = msourcecf_create_default();
     msourcecf_add_noise(gen,  0.0f, 1.00f, -60);               // wide-band noise
     msourcecf_add_noise(gen,  0.0f, 0.20f, -40);               // narrow-band noise
     msourcecf_add_tone (gen, -0.4f, 0.0f,  -20);               // tone

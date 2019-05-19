@@ -5486,7 +5486,16 @@ LIQUID_SYMSTREAM_DEFINE_API(LIQUID_SYMSTREAM_MANGLE_CFLOAT, liquid_float_complex
 typedef struct MSOURCE(_s) * MSOURCE();                                     \
                                                                             \
 /* Create default msource object                                        */  \
-MSOURCE() MSOURCE(_create)(void);                                           \
+/*  _M  :   number of channels in analysis channelizer object           */  \
+/*  _m  :   prototype channelizer filter semi-length                    */  \
+/*  _As :   prototype channelizer filter stop-band suppression (dB)     */  \
+MSOURCE() MSOURCE(_create)(unsigned int _M,                                 \
+                           unsigned int _m,                                 \
+                           float        _As);                               \
+                                                                            \
+/* Create default msource object with default parameters:               */  \
+/* M = 1200, m = 4, As = 60                                             */  \
+MSOURCE() MSOURCE(_create_default)(void);                                   \
                                                                             \
 /* Destroy msource object                                               */  \
 void MSOURCE(_destroy)(MSOURCE() _q);                                       \

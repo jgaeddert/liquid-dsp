@@ -70,7 +70,7 @@ int main(int argc, char*argv[])
     float complex buf_y[2*buf_len];
 
     // create signal generator (wide-band noise)
-    msourcecf gen = msourcecf_create();
+    msourcecf gen = msourcecf_create_default();
 
     // in-band signal
     msourcecf_add_noise(gen, 0.0f, 0.5f*rate, 0);

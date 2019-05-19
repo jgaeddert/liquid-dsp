@@ -1150,6 +1150,7 @@ typedef struct QSOURCE(_s) * QSOURCE();                                     \
 /* Create default qsource object, type uninitialized                    */  \
 QSOURCE() QSOURCE(_create)(unsigned int _M,                                 \
                            unsigned int _m,                                 \
+                           float        _As,                                \
                            float        _fc,                                \
                            float        _bw,                                \
                            float        _gain);                             \
