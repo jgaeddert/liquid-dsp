@@ -41,6 +41,8 @@ struct QSOURCE(_s)
     unsigned int    P;          // number of channels in this object's analysis channelizer
     unsigned int    m;          // channelizer filter semi-length
     float           As;         // channelizer filter stop-band suppression (dB)
+    float           fc;         // signal normalized center frequency
+    float           bw;         // signal normalized bandwidth
     unsigned int    index;      // base index
     resamp_crcf     resamp;     // arbitrary rate resampler
     nco_crcf        mixer;      // fine frequency adjustment
@@ -92,11 +94,13 @@ QSOURCE() QSOURCE(_create)(unsigned int _M,
     QSOURCE() q = (QSOURCE()) malloc( sizeof(struct QSOURCE(_s)) );
 
     // initialize state
-    q->id      = -1;
-    q->type    = QSOURCE_UNKNOWN;
-    q->gain    = powf(10.0f, _gain/20.0f);
-    q->enabled = 1;
+    q->id          = -1;
+    q->type        = QSOURCE_UNKNOWN;
+    q->gain        = powf(10.0f, _gain/20.0f);
+    q->enabled     = 1;
     q->num_samples = 0;
+    q->fc          = _fc;   // center frequency
+    q->bw          = _bw;   // bandwidth
 
     // set channelizer values appropriately
     q->M = _M;
@@ -200,15 +204,18 @@ void QSOURCE(_print)(QSOURCE() _q)
     // TODO: print generic parameters
     printf("  qsource%s[%3d] : ", EXTENSION, _q->id);
     // print type-specific parameters
+    float bw = _q->bw;
     switch (_q->type) {
-    case QSOURCE_USER:  printf("user\n");   break;
-    case QSOURCE_TONE:  printf("tone\n");   break;
-    case QSOURCE_NOISE: printf("noise\n");  break;
-    case QSOURCE_MODEM: printf("modem\n");  break;
+    case QSOURCE_USER:  printf("user ");             break;
+    case QSOURCE_TONE:  printf("tone ");             break;
+    case QSOURCE_NOISE: printf("noise");             break;
+    case QSOURCE_MODEM: printf("modem"); bw *= 0.5f; break;
     default:
         fprintf(stderr,"error: qsource%s_print(), internal logic error\n", EXTENSION);
         exit(1);
     }
+    printf(" : fc=%6.3f, bw=%5.3f, P=%4u, m=%2u, As=%5.1f dB, gain=%5.1f dB %c\n",
+            _q->fc, bw, _q->P, _q->m, _q->As, QSOURCE(_get_gain)(_q), _q->enabled ? '*' : ' ');
 }
 
 void QSOURCE(_reset)(QSOURCE() _q)

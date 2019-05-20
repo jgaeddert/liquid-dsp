@@ -132,7 +132,8 @@ void MSOURCE(_reset)(MSOURCE() _q)
 // print
 void MSOURCE(_print)(MSOURCE() _q)
 {
-    printf("msource%s:\n", EXTENSION);
+    printf("msource%s, M=%u, m=%u, As=%.1f dB, %llu samples:\n",
+            EXTENSION, _q->M, _q->m, _q->As, _q->num_samples);
     unsigned int i;
     for (i=0; i<_q->num_sources; i++)
         QSOURCE(_print)(_q->sources[i]);
