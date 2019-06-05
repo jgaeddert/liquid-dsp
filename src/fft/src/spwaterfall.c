@@ -297,8 +297,8 @@ void SPWATERFALL(_step)(SPWATERFALL() _q)
 void SPWATERFALL(_consolidate_buffer)(SPWATERFALL() _q)
 {
     // assert(_q->index_time == 2*_q->time);
-    printf("consolidating... (rollover = %10u, total samples : %16llu, index : %u)\n",
-            _q->rollover, SPGRAM(_get_num_samples_total)(_q->periodogram), _q->index_time);
+    //printf("consolidating... (rollover = %10u, total samples : %16llu, index : %u)\n",
+    //        _q->rollover, SPGRAM(_get_num_samples_total)(_q->periodogram), _q->index_time);
     unsigned int i; // time index
     unsigned int k; // freq index
     for (i=0; i<_q->time; i++) {
@@ -359,7 +359,7 @@ int SPWATERFALL(_export_bin)(SPWATERFALL() _q,
 
     // close it up
     fclose(fid);
-    printf("results written to %s\n", filename);
+    //printf("results written to %s\n", filename);
     return 0;
 }
 
@@ -455,10 +455,12 @@ int SPWATERFALL(_export_gnu)(SPWATERFALL() _q,
     fclose(fid);
 
     // close it up
+#if 0
     printf("results written to %s\n", filename);
     printf("index time       : %u\n", _q->index_time);
     printf("rollover         : %u\n", _q->rollover);
     printf("total transforms : %llu\n", SPGRAM(_get_num_transforms_total)(_q->periodogram));
+#endif
     return 0;
 }
 

@@ -280,96 +280,55 @@ void liquid_firdes_kaiser(unsigned int _n,
     }
 }
 
-// initialize DC blocker filter
+// Design finite impulse response notch filter
 //  _m      : filter semi-length, m in [1,1000]
-//  _fc     : filter prototype cut-off frequency, 0 < _fc <= 0.5
-//  _As     : filter prototype stop-band attenuation [dB], _As > 0
-//  _h      : output coefficient buffer, [size: 2*_m+1 x 1]
-// returns DC suppression in dB
-float liquid_firfilt_dcblocker_init(unsigned int _m,
-                                    float        _fc,
-                                    float        _As,
-                                    float *      _h)
-{
-    // design filter
-    unsigned int h_len = 2*_m+1;
-    liquid_firdes_kaiser(h_len, _fc, _As, 0.0f, _h);
-
-    // mix by Fs/2 and evaluate DC term
-    float dc = 0.0f;
-    unsigned int i;
-    for (i=0; i<h_len; i++) {
-        _h[i] *= ((i + _m) % 2) == 0 ? 1.0f : -1.0f;
-        dc += _h[i];
-    }
-    return 20*log10(fabsf(dc));
-}
-
-// Design finite impulse response DC-blocking filter
-//  _m      : filter semi-length, m in [1,1000]
+//  _f0     : filter notch frequency (normalized), -0.5 <= _fc <= 0.5
 //  _As     : stop-band attenuation [dB], _As > 0
 //  _h      : output coefficient buffer, [size: 2*_m+1 x 1]
-void liquid_firdes_dcblocker(unsigned int _m,
-                             float        _As,
-                             float *      _h)
+void liquid_firdes_notch(unsigned int _m,
+                         float        _f0,
+                         float        _As,
+                         float *      _h)
 {
     // validate inputs
     if (_m < 1 || _m > 1000) {
-        fprintf(stderr,"error: liquid_firdes_dcblocker(), _m (%12u) out of range [1,1000]\n", _m);
+        fprintf(stderr,"error: liquid_firdes_notch(), _m (%12u) out of range [1,1000]\n", _m);
+        exit(1);
+    } else if (_f0 < -0.5f || _f0 > 0.5f) {
+        fprintf(stderr,"error: liquid_firdes_notch(), notch frequency (%12.4e) must be in [-0.5,0.5]\n", _f0);
         exit(1);
     } else if (_As <= 0.0f) {
-        fprintf(stderr,"error: liquid_firdes_dcblocker(), prototype stop-band suppression (%12.4e) must be greater than zero\n", _As);
+        fprintf(stderr,"error: liquid_firdes_notch(), stop-band suppression (%12.4e) must be greater than zero\n", _As);
         exit(1);
     }
 
-    // initialize starting conditions
-    float p  = 0.1f / fabsf(_m * _As); // initial spacing
-    float g0 = 0, g1 = p, g2 = 2*p;
-    float u0 = liquid_firfilt_dcblocker_init(_m, 0.5f-g0, _As, _h);
-    float u1 = liquid_firfilt_dcblocker_init(_m, 0.5f-g1, _As, _h);
-    float u2 = liquid_firfilt_dcblocker_init(_m, 0.5f-g2, _As, _h);
-    // assert u0 > u1 > u2
+    // choose kaiser beta parameter (approximate)
+    float beta = kaiser_beta_As(_As);
 
-    // perform initial search while dc value continues to drop
-    float g_prime = 3*p;
-    while (g_prime < 0.25f) {
-        // design filter
-        float u_prime = liquid_firfilt_dcblocker_init(_m, 0.5f-g_prime, _As, _h);
-
-        // shift values and update estimate
-        g0 = g1;      u0 = u1;
-        g1 = g2;      u1 = u2;
-        g2 = g_prime; u2 = u_prime;
-        g_prime *= 1.10f;
-
-        // break if utility starts to increase
-        if (u2 > u1) break;
-    }
-
-    // perform bisection search
+    // design filter
+    unsigned int h_len = 2*_m+1;
     unsigned int i;
-    for (i=0; i<10; i++) {
-        // assert u0 > u1 > u2
-        float gm = 0.5f*(g0 + g1);
-        float gp = 0.5f*(g1 + g2);
-        float um = liquid_firfilt_dcblocker_init(_m, 0.5f-gm, _As, _h);
-        float up = liquid_firfilt_dcblocker_init(_m, 0.5f-gp, _As, _h);
+    float scale = 0.0f;
+    for (i=0; i<h_len; i++) {
+        // tone at carrier frequency
+        float p = -cosf(2.0f*M_PI*_f0*((float)(i) - (float)_m));
 
-        // save best: should be gm, g1, or gp
-        if (um < u1 && um < up) { // gm is best
-            g2 = g1; u2 = u1;
-            g1 = gm; u1 = um;
-        } else if (u1 < um && u1 < up) { // g1 is best
-            g0 = gm; u0 = um;
-            g2 = gp; u2 = up;
-        } else {  // gp is best
-            g0 = g1; u0 = u1;
-            g1 = gp; u1 = up;
-        }
+        // window
+        float w = kaiser(i,h_len,beta,0);
+
+        // save un-normalized filter
+        _h[i] = p*w;
+
+        // accumulate scale
+        scale += _h[i] * p;
     }
 
-    // re-design optimum filter and copy coefficients to type-specific array
-    liquid_firfilt_dcblocker_init(_m, 0.5-g1, _As, _h);
+    // normalize
+    for (i=0; i<h_len; i++)
+        _h[i] /= scale;
+
+    // add impulse
+    _h[_m] += 1.0f;
 }
 
 // Design (root-)Nyquist filter from prototype

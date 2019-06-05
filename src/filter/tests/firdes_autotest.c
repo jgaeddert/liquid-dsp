@@ -117,4 +117,65 @@ void autotest_liquid_firdes_rkaiser()
     CONTEND_LESS_THAN(isi_rms, isi_test);
 }
 
+void autotest_liquid_firdes_dcblock()
+{
+    // options
+    unsigned int m   = 20;      // filter semi-length
+    float        As  = 60.0f;   // stop-band suppression/pass-band ripple
+
+    // Create filter
+    unsigned int h_len = 2*m+1;
+    float h[h_len];
+    liquid_firdes_notch(m,0,As,h);
+
+    // compute filter response and evaluate at several frequencies
+    unsigned int  nfft = 1200;
+    float complex buf_time[nfft];
+    float complex buf_freq[nfft];
+    unsigned int i;
+    for (i=0; i<nfft; i++)
+        buf_time[i] = i < h_len ? h[i] : 0;
+    fft_run(nfft, buf_time, buf_freq, LIQUID_FFT_FORWARD, 0);
+
+    // evaluate at several points
+    float tol = 2*powf(10.0f, -As/20.0f); // generous
+    CONTEND_DELTA(cabsf(buf_freq[       0]), 0.0f, tol);   // notch at DC
+    CONTEND_DELTA(cabsf(buf_freq[  nfft/4]), 1.0f, tol);   // pass at  Fs/4
+    CONTEND_DELTA(cabsf(buf_freq[2*nfft/4]), 1.0f, tol);   // pass at  Fs/2
+    CONTEND_DELTA(cabsf(buf_freq[3*nfft/4]), 1.0f, tol);   // pass at -Fs/4
+}
+
+void autotest_liquid_firdes_notch()
+{
+    // options
+    unsigned int m   = 20;      // filter semi-length
+    float        As  = 60.0f;   // stop-band suppression/pass-band ripple
+    float        f0  = 0.2f;    // notch frequency (must be greater than zero here)
+
+    // Create filter
+    unsigned int h_len = 2*m+1;
+    float h[h_len];
+    liquid_firdes_notch(m,f0,As,h);
+
+    // compute filter response and evaluate at several frequencies
+    unsigned int  nfft = 1200;
+    float complex buf_time[nfft];
+    float complex buf_freq[nfft];
+    unsigned int i;
+    for (i=0; i<nfft; i++)
+        buf_time[i] = i < h_len ? h[i] : 0;
+    fft_run(nfft, buf_time, buf_freq, LIQUID_FFT_FORWARD, 0);
+
+    // indices to evaluate
+    unsigned int i0 = (unsigned int)roundf(f0*nfft); // positive
+    unsigned int i1 = nfft - i0;                     // negative
+
+    // evaluate at several points
+    float tol = 2*powf(10.0f, -As/20.0f); // generous
+    CONTEND_DELTA(cabsf(buf_freq[    i0]), 0.0f, tol);   // notch at +f0
+    CONTEND_DELTA(cabsf(buf_freq[    i1]), 0.0f, tol);   // notch at -f0
+    CONTEND_DELTA(cabsf(buf_freq[     0]), 1.0f, tol);   // pass at  0
+    CONTEND_DELTA(cabsf(buf_freq[nfft/2]), 1.0f, tol);   // pass at  Fs/2
+}
+
 

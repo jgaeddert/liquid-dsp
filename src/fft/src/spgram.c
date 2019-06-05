@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2018 Joseph Gaeddert
+ * Copyright (c) 2007 - 2019 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -400,7 +400,7 @@ void SPGRAM(_get_psd)(SPGRAM() _q,
     // TODO: adjust scale if infinite integration
     for (i=0; i<_q->nfft; i++) {
         unsigned int k = (i + nfft_2) % _q->nfft;
-        _X[i] = 10*log10f(_q->psd[k]+1e-6f) + scale;
+        _X[i] = 10*log10f(_q->psd[k]+1e-12f) + scale;
     }
 }
 

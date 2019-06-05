@@ -1,4 +1,4 @@
-# Copyright (c) 2007 - 2018 Joseph Gaeddert
+# Copyright (c) 2007 - 2019 Joseph Gaeddert
 # 
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -480,6 +480,7 @@ filter_autotests :=						\
 	src/filter/tests/firdecim_xxxf_autotest.c		\
 	src/filter/tests/firdes_autotest.c			\
 	src/filter/tests/firdespm_autotest.c			\
+	src/filter/tests/firfilt_cccf_notch_autotest.c		\
 	src/filter/tests/firfilt_xxxf_autotest.c		\
 	src/filter/tests/firhilb_autotest.c			\
 	src/filter/tests/firinterp_autotest.c			\
@@ -488,6 +489,7 @@ filter_autotests :=						\
 	src/filter/tests/iirdes_autotest.c			\
 	src/filter/tests/iirfilt_xxxf_autotest.c		\
 	src/filter/tests/iirfiltsos_rrrf_autotest.c		\
+	src/filter/tests/lpc_autotest.c				\
 	src/filter/tests/msresamp_crcf_autotest.c		\
 	src/filter/tests/rresamp_crcf_autotest.c		\
 	src/filter/tests/resamp_crcf_autotest.c			\
@@ -1420,6 +1422,7 @@ example_programs :=						\
 	examples/firdecim_crcf_example				\
 	examples/firfarrow_rrrf_example				\
 	examples/firfilt_cccf_example				\
+	examples/firfilt_cccf_notch_example			\
 	examples/firfilt_crcf_example				\
 	examples/firfilt_crcf_dcblocker_example			\
 	examples/firfilt_rrrf_example				\
@@ -1634,6 +1637,7 @@ sandbox_programs =						\
 	sandbox/ofdm_ber_test					\
 	sandbox/ofdmframe_papr_test				\
 	sandbox/ofdmframesync_cfo_test				\
+	sandbox/pll_3rd_order_test				\
 	sandbox/pll_design_test					\
 	sandbox/predemod_sync_test				\
 	sandbox/quasinewton_test				\
