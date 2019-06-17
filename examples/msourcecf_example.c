@@ -30,9 +30,10 @@ int callback(void *          _userdata,
 int main()
 {
     // msource parameters
-    int          ms          = LIQUID_MODEM_QPSK;
-    unsigned int m           =    12;
-    float        beta        = 0.30f;
+    int          ms     = LIQUID_MODEM_QPSK;    // linear modulation scheme
+    unsigned int m      =    12;                // modulation filter semi-length
+    float        beta   = 0.30f;                // modulation filter excess bandwidth factor
+    float        bt     = 0.35f;                // GMSK filter bandwidth-time factor
 
     // spectral periodogram options
     unsigned int nfft        =   2400;  // spectral periodogram FFT size
@@ -51,7 +52,8 @@ int main()
     msourcecf_add_noise(gen,  0.0f, 1.00f, -40);               // wide-band noise
     msourcecf_add_noise(gen,  0.0f, 0.20f,   0);               // narrow-band noise
     msourcecf_add_tone (gen, -0.4f, 0.00f,  20);               // tone
-    msourcecf_add_modem(gen,  0.2f, 0.10f,   0, ms, m, beta);  // modulated data
+    msourcecf_add_modem(gen,  0.2f, 0.10f,   0, ms, m, beta);  // modulated data (linear)
+    msourcecf_add_gmsk (gen, -0.2f, 0.05f,   0, m, bt);        // modulated data (GMSK)
     unsigned int counter = 0;
     msourcecf_add_user (gen,  0.4f, 0.15f, -10, (void*)&counter, callback); // tones
 

@@ -174,7 +174,7 @@ int MSOURCE(_add_noise)(MSOURCE() _q,
     return MSOURCE(_add_source)(_q, s);
 }
 
-// add modem source
+// add linear modem source
 int MSOURCE(_add_modem)(MSOURCE()    _q,
                         float        _fc,
                         float        _bw,
@@ -186,6 +186,20 @@ int MSOURCE(_add_modem)(MSOURCE()    _q,
     // create object with double the bandwidth to account for 2 samples/symbol
     QSOURCE() s = QSOURCE(_create)(_q->M, _q->m, _q->As, _fc, 2*_bw, _gain);
     QSOURCE(_init_modem)(s, _ms, _m, _beta);
+    return MSOURCE(_add_source)(_q, s);
+}
+
+// add GMSK modem source
+int MSOURCE(_add_gmsk)(MSOURCE()    _q,
+                       float        _fc,
+                       float        _bw,
+                       float        _gain,
+                       unsigned int _m,
+                       float        _bt)
+{
+    // create object with double the bandwidth to account for 2 samples/symbol
+    QSOURCE() s = QSOURCE(_create)(_q->M, _q->m, _q->As, _fc, 2*_bw, _gain);
+    QSOURCE(_init_gmsk)(s, _m, _bt);
     return MSOURCE(_add_source)(_q, s);
 }
 

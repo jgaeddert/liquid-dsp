@@ -1155,22 +1155,27 @@ QSOURCE() QSOURCE(_create)(unsigned int _M,                                 \
                            float        _bw,                                \
                            float        _gain);                             \
                                                                             \
-/* Create user-defined qsource object                                   */  \
+/* Initialize user-defined qsource object                               */  \
 void QSOURCE(_init_user)(QSOURCE() _q,                                      \
                          void *    _userdata,                               \
                          void *    _callback);                              \
                                                                             \
-/* Create default qsource object                                        */  \
+/* Initialize qsource tone object                                       */  \
 void QSOURCE(_init_tone)(QSOURCE() _q);                                     \
                                                                             \
-/* Create default qsource object                                        */  \
+/* Initialize qsource noise object                                      */  \
 void QSOURCE(_init_noise)(QSOURCE() _q);                                    \
                                                                             \
-/* Create default qsource object                                        */  \
+/* Initialize qsource linear modem object                               */  \
 void QSOURCE(_init_modem)(QSOURCE()    _q,                                  \
                           int          _ms,                                 \
                           unsigned int _m,                                  \
                           float        _beta);                              \
+                                                                            \
+/* Initialize qsource GMSK modem object                                 */  \
+void QSOURCE(_init_gmsk)(QSOURCE()    _q,                                   \
+                         unsigned int _m,                                   \
+                         float        _bt);                                 \
                                                                             \
 /* Destroy qsource object                                               */  \
 void QSOURCE(_destroy)(QSOURCE() _q);                                       \

@@ -62,6 +62,7 @@ struct QSOURCE(_s)
         QSOURCE_TONE,
         QSOURCE_NOISE,
         QSOURCE_MODEM,
+        QSOURCE_GMSK,
     } type;
 
     union {
@@ -69,6 +70,7 @@ struct QSOURCE(_s)
         struct { } tone;
         struct { } noise;
         struct { SYMSTREAM() symstream; } linmod;
+        struct { gmskmod mod; float complex buf[2]; int index; } gmsk;
     } source;
 };
 
@@ -152,6 +154,9 @@ void QSOURCE(_destroy)(QSOURCE() _q)
     case QSOURCE_MODEM:
         SYMSTREAM(_destroy)(_q->source.linmod.symstream);
         break;
+    case QSOURCE_GMSK:
+        gmskmod_destroy(_q->source.gmsk.mod);
+        break;
     default:
         fprintf(stderr,"error: qsource%s_destroy(), internal logic error\n", EXTENSION);
         exit(1);
@@ -196,7 +201,15 @@ void QSOURCE(_init_modem)(QSOURCE()    _q,
 {
     _q->type = QSOURCE_MODEM;
     _q->source.linmod.symstream=SYMSTREAM(_create_linear)(LIQUID_FIRFILT_ARKAISER,2,_m,_beta,_ms);
-    // TODO: adjust rate
+}
+
+void QSOURCE(_init_gmsk)(QSOURCE()    _q,
+                         unsigned int _m,
+                         float        _bt)
+{
+    _q->type = QSOURCE_GMSK;
+    _q->source.gmsk.mod = gmskmod_create(2,_m,_bt);
+    _q->source.gmsk.index = 0;
 }
 
 void QSOURCE(_print)(QSOURCE() _q)
@@ -210,6 +223,7 @@ void QSOURCE(_print)(QSOURCE() _q)
     case QSOURCE_TONE:  printf("tone ");             break;
     case QSOURCE_NOISE: printf("noise");             break;
     case QSOURCE_MODEM: printf("modem"); bw *= 0.5f; break;
+    case QSOURCE_GMSK:  printf("gmsk "); bw *= 0.5f; break;
     default:
         fprintf(stderr,"error: qsource%s_print(), internal logic error\n", EXTENSION);
         exit(1);
@@ -290,6 +304,15 @@ void QSOURCE(_generate)(QSOURCE() _q,
     case QSOURCE_MODEM:
         SYMSTREAM(_write_samples)(_q->source.linmod.symstream, &sample, 1);
         sample *= M_SQRT1_2; // compensate for 2 samples/symbol
+        break;
+    case QSOURCE_GMSK:
+        // fill buffer when necessary
+        if (_q->source.gmsk.index==0)
+            gmskmod_modulate(_q->source.gmsk.mod, rand() & 1, _q->source.gmsk.buf);
+
+        // compensate for 2 samples/symbol
+        sample = _q->source.gmsk.buf[ _q->source.gmsk.index++ ] *  M_SQRT1_2;
+        _q->source.gmsk.index &= 1; // reset index every 2 samples
         break;
     default:
         fprintf(stderr,"error: qsource%s_generate(), internal logic error\n", EXTENSION);

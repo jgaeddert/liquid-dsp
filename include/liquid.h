@@ -5558,6 +5558,17 @@ int MSOURCE(_add_modem)(MSOURCE()    _q,                                    \
                         unsigned int _m,                                    \
                         float        _beta);                                \
                                                                             \
+/* Add GMSK modem signal source, returning id of signal                 */  \
+/*  _q      : multi-signal source object                                */  \
+/*  _m      : filter delay (symbols), _m > 0                            */  \
+/*  _bt     : filter bandwidth-time factor, 0 < _bt <= 1                */  \
+int MSOURCE(_add_gmsk)(MSOURCE()    _q,                                     \
+                       float        _fc,                                    \
+                       float        _bw,                                    \
+                       float        _gain,                                  \
+                       unsigned int _m,                                     \
+                       float        _bt);                                   \
+                                                                            \
 /* Remove signal with a particular id, returning 0 upon success         */  \
 /*  _q  : multi-signal source object                                    */  \
 /*  _id : signal source id                                              */  \
