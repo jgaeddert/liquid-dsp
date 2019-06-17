@@ -5495,7 +5495,7 @@ LIQUID_SYMSTREAM_DEFINE_API(LIQUID_SYMSTREAM_MANGLE_CFLOAT, liquid_float_complex
 /* Multi-signal source generator object                                 */  \
 typedef struct MSOURCE(_s) * MSOURCE();                                     \
                                                                             \
-/* Create default msource object                                        */  \
+/* Create msource object by specifying channelizer parameters           */  \
 /*  _M  :   number of channels in analysis channelizer object           */  \
 /*  _m  :   prototype channelizer filter semi-length                    */  \
 /*  _As :   prototype channelizer filter stop-band suppression (dB)     */  \

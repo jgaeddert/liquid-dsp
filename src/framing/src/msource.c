@@ -64,7 +64,7 @@ int MSOURCE(_add_source)(MSOURCE() _q,
 // generate samples internally
 void MSOURCE(_generate)(MSOURCE() _q);
 
-// create msource object with linear modulation
+// create msource object
 MSOURCE() MSOURCE(_create)(unsigned int _M,
                            unsigned int _m,
                            float        _As)
@@ -94,7 +94,7 @@ MSOURCE() MSOURCE(_create)(unsigned int _M,
     return q;
 }
 
-// create msource object with linear modulation
+// create msource object with default parameters
 MSOURCE() MSOURCE(_create_default)(void)
 {
     return MSOURCE(_create)(1200, 4, 60);
@@ -211,7 +211,6 @@ int MSOURCE(_remove)(MSOURCE() _q,
     }
 
     // delete source
-    //printf("deleting source with id %d (requested %d)\n", _q->sources[i]->id, _id);
     QSOURCE(_destroy)(_q->sources[i]);
 
     //
