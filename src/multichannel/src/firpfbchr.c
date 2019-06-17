@@ -204,7 +204,7 @@ void FIRPFBCHR(_reset)(FIRPFBCHR() _q)
         WINDOW(_reset)(_q->w[i]);
 
     // reset filter/buffer alignment flag
-    _q->base_index = _q->P - 1;
+    _q->base_index = _q->M - 1;
 }
 
 // print firpfbchr object internals
