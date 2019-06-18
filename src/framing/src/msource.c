@@ -163,6 +163,20 @@ int MSOURCE(_add_tone)(MSOURCE() _q,
     return MSOURCE(_add_source)(_q, s);
 }
 
+// add chirp source
+int MSOURCE(_add_chirp)(MSOURCE() _q,
+                        float     _fc,
+                        float     _bw,
+                        float     _gain,
+                        float     _duration,
+                        int       _negate,
+                        int       _single)
+{
+    QSOURCE() s = QSOURCE(_create)(_q->M, _q->m, _q->As, _fc, _bw, _gain);
+    QSOURCE(_init_chirp)(s, _duration, _negate, _single);
+    return MSOURCE(_add_source)(_q, s);
+}
+
 // add noise source
 int MSOURCE(_add_noise)(MSOURCE() _q,
                         float     _fc,

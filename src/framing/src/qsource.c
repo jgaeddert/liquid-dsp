@@ -60,6 +60,7 @@ struct QSOURCE(_s)
         QSOURCE_UNKNOWN=0,
         QSOURCE_USER,
         QSOURCE_TONE,
+        QSOURCE_CHIRP,
         QSOURCE_NOISE,
         QSOURCE_MODEM,
         QSOURCE_GMSK,
@@ -68,6 +69,7 @@ struct QSOURCE(_s)
     union {
         struct { void * userdata; MSOURCE(_callback) callback; } user;
         struct { } tone;
+        struct { NCO() nco; float df; int negate, single; uint64_t num, timer; } chirp;
         struct { } noise;
         struct { SYMSTREAM() symstream; } linmod;
         struct { gmskmod mod; float complex buf[2]; int index; } gmsk;
@@ -150,6 +152,9 @@ void QSOURCE(_destroy)(QSOURCE() _q)
     case QSOURCE_UNKNOWN:   break;
     case QSOURCE_USER:      break;
     case QSOURCE_TONE:      break;
+    case QSOURCE_CHIRP:
+        NCO(_destroy)(_q->source.chirp.nco);
+        break;
     case QSOURCE_NOISE:     break;
     case QSOURCE_MODEM:
         SYMSTREAM(_destroy)(_q->source.linmod.symstream);
@@ -189,6 +194,28 @@ void QSOURCE(_init_tone)(QSOURCE() _q)
     _q->type = QSOURCE_TONE;
 }
 
+// Add chirp to signal generator, returning id of signal
+//  _q          : signal source object
+//  _duration   : duration of chirp [samples]
+//  _negate     : negate frequency direction
+//  _single     : run single chirp? or repeatedly
+void QSOURCE(_init_chirp)(QSOURCE() _q,
+                          float     _duration,
+                          int       _negate,
+                          int       _single)
+{
+    _q->type                = QSOURCE_CHIRP;
+    _q->source.chirp.nco    = NCO(_create)(LIQUID_VCO);
+    _q->source.chirp.negate = _negate ? 1 : 0;
+    _q->source.chirp.single = _single ? 1 : 0;
+    _q->source.chirp.num    = (uint64_t) roundf(_duration * _q->bw);
+    _q->source.chirp.df     = 2*M_PI / (float)(_q->source.chirp.num) * (_q->source.chirp.negate ? -1 : 1);
+
+    // initialize properties
+    NCO(_set_frequency)(_q->source.chirp.nco, _q->source.chirp.negate ? M_PI : -M_PI);
+    _q->source.chirp.timer = _q->source.chirp.num;
+}
+
 void QSOURCE(_init_noise)(QSOURCE() _q)
 {
     _q->type = QSOURCE_NOISE;
@@ -221,6 +248,7 @@ void QSOURCE(_print)(QSOURCE() _q)
     switch (_q->type) {
     case QSOURCE_USER:  printf("user ");             break;
     case QSOURCE_TONE:  printf("tone ");             break;
+    case QSOURCE_CHIRP: printf("chirp");             break;
     case QSOURCE_NOISE: printf("noise");             break;
     case QSOURCE_MODEM: printf("modem"); bw *= 0.5f; break;
     case QSOURCE_GMSK:  printf("gmsk "); bw *= 0.5f; break;
@@ -297,6 +325,20 @@ void QSOURCE(_generate)(QSOURCE() _q,
         break;
     case QSOURCE_TONE:
         sample = 1.0f;
+        break;
+    case QSOURCE_CHIRP:
+        NCO(_cexpf)           (_q->source.chirp.nco, &sample);
+        NCO(_adjust_frequency)(_q->source.chirp.nco, _q->source.chirp.df);
+        NCO(_step)            (_q->source.chirp.nco);
+        _q->source.chirp.timer--;
+        if (_q->source.chirp.timer==0) {
+            _q->source.chirp.timer = _q->source.chirp.num;  // reset timer
+            // disable for just one instance
+            if (_q->source.chirp.single)
+                QSOURCE(_disable)(_q);
+            // reset NCO frequency
+            NCO(_set_frequency)(_q->source.chirp.nco, _q->source.chirp.negate ? M_PI : -M_PI);
+        }
         break;
     case QSOURCE_NOISE:
         sample = (randnf() + _Complex_I*randnf()) * M_SQRT1_2;

@@ -31,6 +31,9 @@ int main()
     // add tone
     msourcecf_add_tone(gen, -0.4f, 0.0f, 0);
 
+    // add chirp signal
+    msourcecf_add_chirp(gen, 0.17f, 0.10f, -50, 5e6, 0, 0);
+
     // add modulated data
     msourcecf_add_modem(gen, -0.1f, 0.15f, -10, LIQUID_MODEM_QPSK, 12, 0.25);
 

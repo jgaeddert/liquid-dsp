@@ -5535,6 +5535,19 @@ int MSOURCE(_add_tone)(MSOURCE() _q,                                        \
                        float     _bw,                                       \
                        float     _gain);                                    \
                                                                             \
+/* Add chirp to signal generator, returning id of signal                */  \
+/*  _q          : multi-signal source object                            */  \
+/*  _duration   : duration of chirp [samples]                           */  \
+/*  _negate     : negate frequency direction                            */  \
+/*  _single     : run single chirp? or repeatedly                       */  \
+int MSOURCE(_add_chirp)(MSOURCE() _q,                                       \
+                        float     _fc,                                      \
+                        float     _bw,                                      \
+                        float     _gain,                                    \
+                        float     _duration,                                \
+                        int       _negate,                                  \
+                        int       _repeat);                                 \
+                                                                            \
 /* Add noise source to signal generator, returning id of signal         */  \
 /*  _q          : multi-signal source object                            */  \
 /*  _fc         : ...                                                   */  \

@@ -1163,6 +1163,16 @@ void QSOURCE(_init_user)(QSOURCE() _q,                                      \
 /* Initialize qsource tone object                                       */  \
 void QSOURCE(_init_tone)(QSOURCE() _q);                                     \
                                                                             \
+/* Add chirp to signal generator, returning id of signal                */  \
+/*  _q          : signal source object                                  */  \
+/*  _duration   : duration of chirp [samples]                           */  \
+/*  _negate     : negate frequency direction                            */  \
+/*  _repeat     : repeat signal? or just run once                       */  \
+void QSOURCE(_init_chirp)(QSOURCE() _q,                                     \
+                          float     _duration,                              \
+                          int       _negate,                                \
+                          int       _repeat);                               \
+                                                                            \
 /* Initialize qsource noise object                                      */  \
 void QSOURCE(_init_noise)(QSOURCE() _q);                                    \
                                                                             \
