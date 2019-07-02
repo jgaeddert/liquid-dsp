@@ -1753,6 +1753,18 @@ void SPWATERFALL(_reset)(SPWATERFALL() _q);                                 \
 /* Print internal state of the object to stdout                         */  \
 void SPWATERFALL(_print)(SPWATERFALL() _q);                                 \
                                                                             \
+/* Get number of samples processed since object was created             */  \
+uint64_t SPWATERFALL(_get_num_samples_total)(SPWATERFALL() _q);             \
+                                                                            \
+/* Get FFT size (columns in PSD output)                                 */  \
+unsigned int SPWATERFALL(_get_num_freq)(SPWATERFALL() _q);                  \
+                                                                            \
+/* Get number of accumulated FFTs (rows in PSD output)                  */  \
+unsigned int SPWATERFALL(_get_num_time)(SPWATERFALL() _q);                  \
+                                                                            \
+/* Get power spectral density (PSD), size: nfft x time                  */  \
+const T * SPWATERFALL(_get_psd)(SPWATERFALL() _q);                          \
+                                                                            \
 /* Set the center frequency of the received signal.                     */  \
 /* This is for display purposes only when generating the output image.  */  \
 /*  _q      : spectral periodogram waterfall object                     */  \

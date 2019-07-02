@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2018 Joseph Gaeddert
+ * Copyright (c) 2007 - 2019 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -175,6 +175,30 @@ void SPWATERFALL(_reset)(SPWATERFALL() _q)
 void SPWATERFALL(_print)(SPWATERFALL() _q)
 {
     printf("spwaterfall%s: nfft=%u, time=%u\n", EXTENSION, _q->nfft, _q->time);
+}
+
+// Get number of samples processed since object was created
+uint64_t SPWATERFALL(_get_num_samples_total)(SPWATERFALL() _q)
+{
+    return SPGRAM(_get_num_samples_total)(_q->periodogram);
+}
+
+// Get FFT size (columns in PSD output)
+unsigned int SPWATERFALL(_get_num_freq)(SPWATERFALL() _q)
+{
+    return _q->nfft;
+}
+
+// Get number of accumulated FFTs (rows in PSD output)
+unsigned int SPWATERFALL(_get_num_time)(SPWATERFALL() _q)
+{
+    return _q->index_time;
+}
+
+// Get power spectral density (PSD), size: nfft x time
+const float * SPWATERFALL(_get_psd)(SPWATERFALL() _q)
+{
+    return (const T *) _q->psd;
 }
 
 // set center freuqncy
