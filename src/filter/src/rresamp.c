@@ -31,10 +31,10 @@
 
 struct RRESAMP(_s) {
     // filter design parameters
-    unsigned int    gcd;    // greatest common divisor between inputs P and Q
-    unsigned int    P;      // interpolation factor
-    unsigned int    Q;      // decimation factor
-    unsigned int    m;      // filter semi-length, h_len = 2*m + 1
+    unsigned int    P;          // interpolation factor
+    unsigned int    Q;          // decimation factor
+    unsigned int    m;          // filter semi-length, h_len = 2*m + 1
+    unsigned int    block_len;  // number of blocks to run in execute()
 
     // polyphase filterbank properties/object
     FIRPFB()        pfb;    // filterbank object (interpolator), Q filters in bank
@@ -71,12 +71,11 @@ RRESAMP() RRESAMP(_create)(unsigned int _P,
     // allocate memory for resampler
     RRESAMP() q = (RRESAMP()) malloc(sizeof(struct RRESAMP(_s)));
 
-    // set properties, scaling interpolation and decimation factors by their
-    // greatest common divisor
-    q->gcd= liquid_gcd(_P, _Q);
-    q->P  = _P / q->gcd;
-    q->Q  = _Q / q->gcd;
-    q->m  = _m;
+    // set properties
+    q->P         = _P;
+    q->Q         = _Q;
+    q->m         = _m;
+    q->block_len =  1;
 
     // create poly-phase filter bank
     q->pfb = FIRPFB(_create)(q->P, _h, 2*q->P*q->m);
@@ -98,6 +97,11 @@ RRESAMP() RRESAMP(_create_kaiser)(unsigned int _P,
                                   float        _bw,
                                   float        _As)
 {
+    // scale interpolation and decimation factors by their greatest common divisor
+    unsigned int gcd = liquid_gcd(_P, _Q);
+    _P /= gcd;
+    _Q /= gcd;
+
     // design filter
     unsigned int h_len = 2*_P*_m + 1;
     float * hf = (float*) malloc(h_len*sizeof(float));
@@ -112,6 +116,7 @@ RRESAMP() RRESAMP(_create_kaiser)(unsigned int _P,
     // create object and set parameters
     RRESAMP() q = RRESAMP(_create)(_P, _Q, _m, h);
     RRESAMP(_set_scale)(q, 2.0f*_bw*sqrtf((float)(q->Q)/(float)(q->P)));
+    q->block_len = gcd;
 
     // free allocated memory and return object
     free(hf);
@@ -126,6 +131,11 @@ RRESAMP() RRESAMP(_create_prototype)(int          _type,
                                      unsigned int _m,
                                      float        _beta)
 {
+    // scale interpolation and decimation factors by their greatest common divisor
+    unsigned int gcd = liquid_gcd(_P, _Q);
+    _P /= gcd;
+    _Q /= gcd;
+
     // design filter
     int          decim = _P < _Q;           // interpolator? or decimator
     unsigned int k     = decim ? _Q : _P;   // prototype samples per symbol
@@ -141,6 +151,7 @@ RRESAMP() RRESAMP(_create_prototype)(int          _type,
 
     // create object
     RRESAMP() q = RRESAMP(_create)(_P, _Q, _m, h);
+    q->block_len = gcd;
 
     // adjust gain for decimator
     if (decim)
@@ -190,8 +201,8 @@ void RRESAMP(_destroy)(RRESAMP() _q)
 // print resampler object
 void RRESAMP(_print)(RRESAMP() _q)
 {
-    printf("resampler [rate: %u/%u=%.6f, gcd=%u], m=%u\n",
-            _q->P, _q->Q, (float)(_q->P) / (float)(_q->Q), _q->gcd, _q->m);
+    printf("resampler [rate: %u/%u=%.6f, block length=%u], m=%u\n",
+            _q->P, _q->Q, (float)(_q->P) / (float)(_q->Q), _q->block_len, _q->m);
 }
 
 // reset resampler object
@@ -225,10 +236,10 @@ unsigned int RRESAMP(_get_delay)(RRESAMP() _q)
     return _q->m;
 }
 
-// Get greatest common divisor (g.c.d.) between original P and Q values
-unsigned int RRESAMP(_get_gcd)(RRESAMP() _q)
+// get block length
+unsigned int RRESAMP(_get_block_len)(RRESAMP() _q)
 {
-    return _q->gcd;
+    return _q->block_len;
 }
 
 // Get rate of resampler, r = P/Q
@@ -240,11 +251,10 @@ float RRESAMP(_get_rate)(RRESAMP() _q)
 // Get original interpolation factor of resampler, P
 unsigned int RRESAMP(_get_P)(RRESAMP() _q)
 {
-    return _q->P * _q->gcd;
+    return _q->P * _q->block_len;
 }
 
-// Get interpolation factor of resampler, \(P\), after removing
-// greatest common divisor
+// Get internal interpolation factor of resampler, \(P\), after removing gcd
 unsigned int RRESAMP(_get_interp)(RRESAMP() _q)
 {
     return _q->P;
@@ -253,11 +263,10 @@ unsigned int RRESAMP(_get_interp)(RRESAMP() _q)
 // Get original decimation factor of resampler, Q
 unsigned int RRESAMP(_get_Q)(RRESAMP() _q)
 {
-    return _q->Q * _q->gcd;
+    return _q->Q * _q->block_len;
 }
 
-// Get decimator factor of resampler, \(Q\), after removing
-// greatest common divisor
+// Get internal decimator factor of resampler, \(Q\), after removing gcd
 unsigned int RRESAMP(_get_decim)(RRESAMP() _q)
 {
     return _q->Q;
@@ -274,7 +283,7 @@ void RRESAMP(_execute)(RRESAMP() _q,
 {
     // run in blocks
     unsigned int i;
-    for (i=0; i<_q->gcd; i++) {
+    for (i=0; i<_q->block_len; i++) {
         // compute P outputs for Q inputs
         RRESAMP(_execute_primitive)(_q, _x, _y);
 
