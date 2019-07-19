@@ -29,8 +29,6 @@ void usage()
     printf(" -b <rolloff>   : filter roll-off,          default:  0.35\n");
     printf(" -n <num>       : number of data symbols,   default: 80\n");
     printf(" -s <snr>       : SNR [dB],                 default: 40\n");
-    printf(" -F <freq>      : carrier frequency offset, default:  0\n");
-    printf(" -P <phase>     : carrier phase offset,     default:  0\n");
 }
 
 int main(int argc, char*argv[])
@@ -43,12 +41,10 @@ int main(int argc, char*argv[])
     float           beta        = 0.35f;    // GMSK bandwidth-time factor
     unsigned int    num_symbols = 20;       // number of data symbols
     float           SNRdB       = 40.0f;    // signal-to-noise ratio [dB]
-    float           cfo         = 0.0f;     // carrier frequency offset
-    float           cpo         = 0.0f;     // carrier phase offset
     int             filter_type = LIQUID_CPFSK_SQUARE;
 
     int dopt;
-    while ((dopt = getopt(argc,argv,"ht:p:H:k:m:b:n:s:F:P:")) != EOF) {
+    while ((dopt = getopt(argc,argv,"ht:p:H:k:m:b:n:s:")) != EOF) {
         switch (dopt) {
         case 'h': usage();                      return 0;
         case 't':
@@ -72,8 +68,6 @@ int main(int argc, char*argv[])
         case 'b': beta  = atof(optarg);         break;
         case 'n': num_symbols = atoi(optarg);   break;
         case 's': SNRdB = atof(optarg);         break;
-        case 'F': cfo    = atof(optarg);        break;
-        case 'P': cpo    = atof(optarg);        break;
         default:
             exit(1);
         }
