@@ -239,8 +239,8 @@ FIRFILT() FIRFILT(_create_notch)(unsigned int _m,
                 __FILE__, __LINE__, EXTENSION_FULL, _As);
         exit(1);
     } else if (_f0 < -0.5f || _f0 > 0.5f) {
-        fprintf(stderr,"error: %s:%u, firfilt_%s_create_notch(), notch frequency must be in [-0.5,0.5]\n",
-                __FILE__, __LINE__, EXTENSION_FULL, _As);
+        fprintf(stderr,"error: %s:%u, firfilt_%s_create_notch(), notch frequency (%e) must be in [-0.5,0.5]\n",
+                __FILE__, __LINE__, EXTENSION_FULL, _f0);
         exit(1);
     }
 
