@@ -74,6 +74,7 @@ int main(int argc, char*argv[])
             exit(-1);
         }
     }
+    printf("channel offsets: dt=%.3f, dphi=%.3f, theta=%.3f\n", dt, dphi, theta);
 
     // derived values
     float nstd  = powf(10.0f, noise_floor/20.0f);         // noise std. dev.
