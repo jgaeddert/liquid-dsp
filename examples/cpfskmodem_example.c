@@ -20,18 +20,17 @@ void usage()
 {
     printf("cpfskmodem_example -- continuous-phase frequency-shift keying example\n");
     printf("options:\n");
-    printf("  h     : print help\n");
-    printf("  t     : filter type: [square], rcos-full, rcos-half, gmsk\n");
-    printf("  p     : bits/symbol,              default:  1\n");
-    printf("  H     : modulation index,         default:  0.5\n");
-    printf("  k     : samples/symbol,           default:  8\n");
-    printf("  m     : filter delay (symbols),   default:  3\n");
-    printf("  b     : filter roll-off,          default:  0.35\n");
-    printf("  n     : number of data symbols,   default: 80\n");
-    printf("  s     : SNR [dB],                 default: 40\n");
-    printf("  F     : carrier frequency offset, default:  0\n");
-    printf("  P     : carrier phase offset,     default:  0\n");
-    printf("  T     : fractional symbol offset, default:  0\n");
+    printf(" -h             : print help\n");
+    printf(" -t <type>      : filter type: [square], rcos-full, rcos-half, gmsk\n");
+    printf(" -p <b/s>       : bits/symbol,              default:  1\n");
+    printf(" -H <index>     : modulation index,         default:  0.5\n");
+    printf(" -k <s/sym>     : samples/symbol,           default:  8\n");
+    printf(" -m <delay>     : filter delay (symbols),   default:  3\n");
+    printf(" -b <rolloff>   : filter roll-off,          default:  0.35\n");
+    printf(" -n <num>       : number of data symbols,   default: 80\n");
+    printf(" -s <snr>       : SNR [dB],                 default: 40\n");
+    printf(" -F <freq>      : carrier frequency offset, default:  0\n");
+    printf(" -P <phase>     : carrier phase offset,     default:  0\n");
 }
 
 int main(int argc, char*argv[])
@@ -46,11 +45,10 @@ int main(int argc, char*argv[])
     float           SNRdB       = 40.0f;    // signal-to-noise ratio [dB]
     float           cfo         = 0.0f;     // carrier frequency offset
     float           cpo         = 0.0f;     // carrier phase offset
-    float           tau         = 0.0f;     // fractional symbol timing offset
     int             filter_type = LIQUID_CPFSK_SQUARE;
 
     int dopt;
-    while ((dopt = getopt(argc,argv,"ht:p:H:k:m:b:n:s:F:P:T:")) != EOF) {
+    while ((dopt = getopt(argc,argv,"ht:p:H:k:m:b:n:s:F:P:")) != EOF) {
         switch (dopt) {
         case 'h': usage();                      return 0;
         case 't':
@@ -76,7 +74,6 @@ int main(int argc, char*argv[])
         case 's': SNRdB = atof(optarg);         break;
         case 'F': cfo    = atof(optarg);        break;
         case 'P': cpo    = atof(optarg);        break;
-        case 'T': tau    = atof(optarg);        break;
         default:
             exit(1);
         }
