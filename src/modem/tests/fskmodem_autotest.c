@@ -28,6 +28,9 @@ void fskmodem_test_mod_demod(unsigned int _m,
                              unsigned int _k,
                              float        _bandwidth)
 {
+    if (liquid_autotest_verbose)
+        printf("fskmodem_test_mod_demod(m=%u, k=%u, bandwidth=%g)\n", _m, _k, _bandwidth);
+
     // create modulator/demodulator pair
     fskmod mod = fskmod_create(_m,_k,_bandwidth);
     fskdem dem = fskdem_create(_m,_k,_bandwidth);
