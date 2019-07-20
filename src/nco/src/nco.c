@@ -86,6 +86,12 @@ void NCO(_print)(NCO() _q)
 {
     printf("nco [phase: 0x%.8x rad, freq: 0x%.8x rad/sample]\n",
             _q->theta, _q->d_theta);
+#if LIQUID_DEBUG_NCO
+    // print entire table
+    unsigned int i;
+    for (i=0; i<1024; i++)
+        printf("  sintab[%4u] = %16.12f\n", i, _q->sintab[i]);
+#endif
 }
 
 // reset internal state of nco object
