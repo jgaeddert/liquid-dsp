@@ -109,7 +109,7 @@ void ampmodem_test_harness(float                _mod_index,
     rmse_1 = 10*log10f( rmse_1 / (float)num_samples_compare );  // 180-degree out of phase
     float rmse = (_type == LIQUID_AMPMODEM_DSB && _suppressed_carrier ) ? (rmse_0 < rmse_1 ? rmse_0 : rmse_1) : rmse_0;
     if (liquid_autotest_verbose)
-        printf("rms error : %.3f (%.3f, %.3f) dB\n", rmse, rmse_0, rmse_1);
+        printf("rms error : %.3f (in-phase: %.3f, 180 phase: %.3f) dB\n", rmse, rmse_0, rmse_1);
     CONTEND_LESS_THAN( rmse, -18.0f );
 }
 
