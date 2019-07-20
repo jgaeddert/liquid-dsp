@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2018 Joseph Gaeddert
+ * Copyright (c) 2007 - 2019 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -342,13 +342,17 @@ void NCO(_mix_block_down)(NCO() _q,
 // constrain phase (or frequency) and convert to fixed-point
 uint32_t NCO(_constrain)(float _theta)
 {
-    // constrain to be in [0,2pi)
-    // TODO: make more computationally efficient
-    while (_theta >=  2*M_PI) _theta -= 2*M_PI;
-    while (_theta <= -2*M_PI) _theta += 2*M_PI;
-    
-    // 1/(2 pi) ~ 0.159154943091895
-    return (uint32_t)round(_theta * (1LLU<<32) * 0.159154943091895);
+    // divide value by 2*pi and compute modulo
+    float p = _theta * 0.159154943091895;   // 1/(2 pi) ~ 0.159154943091895
+
+    // extract fractional part of p
+    float fpart = p - ((long)p);    // fpart is in (-1,1)
+
+    // ensure fpart is in [0,1)
+    if (fpart < 0.) fpart += 1.;
+
+    // map to range of precision needed
+    return (uint32_t)(fpart * 0xffffffff);
 }
 
 // compute index for sine look-up table
