@@ -125,10 +125,15 @@ QSOURCE() QSOURCE(_create)(unsigned int _M,
     // create mixer for frequency offset correction
     q->index = (unsigned int)roundf((_fc < 0.0f ? _fc + 1.0f : _fc) * q->M) % q->M;
     q->mixer = NCO(_create)(LIQUID_VCO);
-    // TODO: set frequency correction
+    // compute frequency applied by channelizer alignment
+    float fc_index = (float)(q->index) / (float)(q->M) + (q->index < q->M/2 ? 0 : -1);
+    // compute residual frequency needed by mixer
+    float fc_mixer = _fc - fc_index;
+    // apply mixer frequency (in radians), scaled by resampling ratio
+    NCO(_set_frequency)(q->mixer, 2*M_PI*fc_mixer * (float)(q->M) / (float)(q->P));
 #if 0
-    float fc_prime = roundf(_fc * (float)(q->M)) / (float)(q->M);
-    NCO(_set_frequency)(q->mixer, 2*M_PI*(_fc-fc_prime));
+    printf("fc : %12.8f (index: %4u, P:%4u, M:%4u), actual : %12.8f = %12.8f + %12.8f, e : %12.8f\n",
+            _fc, q->index, q->P, q->M, fc_index+fc_mixer, fc_index, fc_mixer, _fc-(fc_index+fc_mixer));
 #endif
 
     // create buffers
