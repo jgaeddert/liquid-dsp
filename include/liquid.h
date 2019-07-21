@@ -1753,6 +1753,18 @@ void SPWATERFALL(_reset)(SPWATERFALL() _q);                                 \
 /* Print internal state of the object to stdout                         */  \
 void SPWATERFALL(_print)(SPWATERFALL() _q);                                 \
                                                                             \
+/* Get number of samples processed since object was created             */  \
+uint64_t SPWATERFALL(_get_num_samples_total)(SPWATERFALL() _q);             \
+                                                                            \
+/* Get FFT size (columns in PSD output)                                 */  \
+unsigned int SPWATERFALL(_get_num_freq)(SPWATERFALL() _q);                  \
+                                                                            \
+/* Get number of accumulated FFTs (rows in PSD output)                  */  \
+unsigned int SPWATERFALL(_get_num_time)(SPWATERFALL() _q);                  \
+                                                                            \
+/* Get power spectral density (PSD), size: nfft x time                  */  \
+const T * SPWATERFALL(_get_psd)(SPWATERFALL() _q);                          \
+                                                                            \
 /* Set the center frequency of the received signal.                     */  \
 /* This is for display purposes only when generating the output image.  */  \
 /*  _q      : spectral periodogram waterfall object                     */  \
@@ -3703,7 +3715,10 @@ LIQUID_RESAMP2_DEFINE_API(LIQUID_RESAMP2_MANGLE_CCCF,
 typedef struct RRESAMP(_s) * RRESAMP();                                     \
                                                                             \
 /* Create rational-rate resampler object from external coeffcients to   */  \
-/* resample at an exact rate P/Q                                        */  \
+/* resample at an exact rate P/Q.                                       */  \
+/* Note that to preserve the input filter coefficients, the greatest    */  \
+/* common divisor (gcd) is not removed internally from _P and _Q when   */  \
+/* this method is called.                                               */  \
 /*  _P      : interpolation factor,                     P > 0           */  \
 /*  _Q      : decimation factor,                        Q > 0           */  \
 /*  _m      : filter semi-length (delay),               0 < _m          */  \
@@ -3714,7 +3729,10 @@ RRESAMP() RRESAMP(_create)(unsigned int _P,                                 \
                            TC *         _h);                                \
                                                                             \
 /* Create rational-rate resampler object from filter prototype to       */  \
-/* resample at an exact rate P/Q                                        */  \
+/* resample at an exact rate P/Q.                                       */  \
+/* Note that because the filter coefficients are computed internally    */  \
+/* here, the greatest common divisor (gcd) from _P and _Q is internally */  \
+/* removed to improve speed.                                            */  \
 /*  _P      : interpolation factor,                     P > 0           */  \
 /*  _Q      : decimation factor,                        Q > 0           */  \
 /*  _m      : filter semi-length (delay),               0 < _m          */  \
@@ -3726,7 +3744,11 @@ RRESAMP() RRESAMP(_create_kaiser)(unsigned int _P,                          \
                                   float        _bw,                         \
                                   float        _As);                        \
                                                                             \
-/* Create rational-rate resampler object from filter prototype to...    */  \
+/* Create rational-rate resampler object from filter prototype to       */  \
+/* resample at an exact rate P/Q.                                       */  \
+/* Note that because the filter coefficients are computed internally    */  \
+/* here, the greatest common divisor (gcd) from _P and _Q is internally */  \
+/* removed to improve speed.                                            */  \
 RRESAMP() RRESAMP(_create_prototype)(int          _type,                    \
                                      unsigned int _P,                       \
                                      unsigned int _Q,                       \
@@ -3775,20 +3797,21 @@ unsigned int RRESAMP(_get_delay)(RRESAMP() _q);                             \
 /* before removing greatest common divisor                              */  \
 unsigned int RRESAMP(_get_P)(RRESAMP() _q);                                 \
                                                                             \
-/* Get interpolation factor of resampler, \(P\), after removing         */  \
-/* greatest common divisor                                              */  \
+/* Get internal interpolation factor of resampler, \(P\), after         */  \
+/* removing greatest common divisor                                     */  \
 unsigned int RRESAMP(_get_interp)(RRESAMP() _q);                            \
                                                                             \
 /* Get original decimation factor \(Q\) when object was created         */  \
 /* before removing greatest common divisor                              */  \
 unsigned int RRESAMP(_get_Q)(RRESAMP() _q);                                 \
                                                                             \
-/* Get decimation factor of resampler, \(Q\), after removing            */  \
+/* Get internal decimation factor of resampler, \(Q\), after removing   */  \
 /* greatest common divisor                                              */  \
 unsigned int RRESAMP(_get_decim)(RRESAMP() _q);                             \
                                                                             \
-/* Get greatest common divisor (g.c.d.) between original P and Q values */  \
-unsigned int RRESAMP(_get_gcd)(RRESAMP() _q);                               \
+/* Get block length (e.g. greatest common divisor) between original P   */  \
+/* and Q values                                                         */  \
+unsigned int RRESAMP(_get_block_len)(RRESAMP() _q);                         \
                                                                             \
 /* Get rate of resampler, \(r = P/Q\)                                   */  \
 float RRESAMP(_get_rate)(RRESAMP() _q);                                     \

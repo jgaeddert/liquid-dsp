@@ -1,4 +1,4 @@
-# Copyright (c) 2007 - 2018 Joseph Gaeddert
+# Copyright (c) 2007 - 2019 Joseph Gaeddert
 # 
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -82,31 +82,18 @@ AC_FUNC_MALLOC
 AC_FUNC_REALLOC
 
 # AC_CHECK_LIB (library, function, [action-if-found], [action-if-not-found], [other-libraries])
-AC_CHECK_LIB([c],[main], [],[AC_MSG_ERROR(Could not use standard C library)],   [])
-AC_CHECK_LIB([m],[main], [],[AC_MSG_ERROR(Could not use standard math library)],[])
+AC_CHECK_LIB([c],[main],[],[AC_MSG_ERROR(Could not use standard C library)],   [])
+AC_CHECK_LIB([m],[main],[],[AC_MSG_ERROR(Could not use standard math library)],[])
 
 # AC_CHECK_FUNC(function, [action-if-found], [action-if-not-found])
-AC_CHECK_FUNC([malloc],  [],[AC_MSG_ERROR(Could not use malloc())])
-AC_CHECK_FUNC([realloc], [],[AC_MSG_ERROR(Could not use realloc())],)
-AC_CHECK_FUNC([free],    [],[AC_MSG_ERROR(Could not use free())],)
-AC_CHECK_FUNC([memset],  [],[AC_MSG_ERROR(Could not use memset())],)
-AC_CHECK_FUNC([memmove], [],[AC_MSG_ERROR(Could not use memove())],)
-
-AC_CHECK_FUNC([sinf],    [],[AC_MSG_ERROR(Could not use sinf())],)
-AC_CHECK_FUNC([cosf],    [],[AC_MSG_ERROR(Could not use cosf())],)
-AC_CHECK_FUNC([expf],    [],[AC_MSG_ERROR(Could not use expf())],)
-AC_CHECK_FUNC([cargf],   [],[AC_MSG_ERROR(Could not use cargf())],)
-AC_CHECK_FUNC([cexpf],   [],[AC_MSG_ERROR(Could not use cexpf())],)
-AC_CHECK_FUNC([crealf],  [],[AC_MSG_ERROR(Could not use crealf())],)
-AC_CHECK_FUNC([cimagf],  [],[AC_MSG_ERROR(Could not use cimagf())],)
-AC_CHECK_FUNC([sqrtf],   [],[AC_MSG_ERROR(Could not use sqrtf())],)
+AC_CHECK_FUNCS([malloc realloc free memset memmove],[],
+               [AC_MSG_ERROR(Could not use memory allocation functions)])
+AC_CHECK_FUNCS([sinf cosf expf cargf cexpf crealf cimagf sqrtf],[],
+               [AC_MSG_ERROR(Could not use special math functions)],)
 
 # Check for necessary header files
-AC_CHECK_HEADERS([stdio.h stdlib.h complex.h string.h getopt.h sys/resource.h float.h inttypes.h limits.h stdlib.h string.h unistd.h])
-if test -z "$HAVE_stdio.h"
-then
-    AC_MSG_ERROR([Need stdio.h!])
-fi
+AC_CHECK_HEADERS([stdio.h stdlib.h complex.h string.h getopt.h sys/resource.h float.h inttypes.h limits.h stdlib.h string.h unistd.h],[],
+                 [AC_MSG_ERROR(Could not use standard headers)])
 
 # Check for optional header files, libraries, programs
 AC_CHECK_HEADERS(fec.h fftw3.h)

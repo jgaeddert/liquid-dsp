@@ -34,10 +34,9 @@
 //  _ordre  : polynomial order
 void polyf_findroots_testbench(float *         _p,
                                float complex * _r,
-                               unsigned int    _order)
+                               unsigned int    _order,
+                               float           _tol)
 {
-    float tol=1e-6f;
-
     float complex roots[_order];
     polyf_findroots(_p,_order+1,roots);
 
@@ -54,15 +53,13 @@ void polyf_findroots_testbench(float *         _p,
                     i,
                     crealf(roots[i]), cimagf(roots[i]),
                     crealf(   _r[i]), cimagf(   _r[i]),
-                    e, e < tol ? "" : " *");
+                    e, e < _tol ? "" : " *");
         }
     }
 
     // check to see if roots match within relative tolerance
-    for (i=0; i<_order; i++) {
-        CONTEND_DELTA(crealf(roots[i]), crealf(_r[i]), tol);
-        CONTEND_DELTA(cimagf(roots[i]), cimagf(_r[i]), tol);
-    }
+    for (i=0; i<_order; i++)
+        CONTEND_DELTA(roots[i], _r[i], _tol);
 }
 
 void autotest_polyf_findroots_real()
@@ -70,7 +67,7 @@ void autotest_polyf_findroots_real()
     // basic roots, no complex values
     float         p[6] = {6,11,-33,-33,11,6};
     float complex r[5] = {-3, -1, -1./3., 0.5, 2.};
-    polyf_findroots_testbench(p, r, 5);
+    polyf_findroots_testbench(p, r, 5, 1e-6f);
 }
 
 void autotest_polyf_findroots_complex()
@@ -80,7 +77,7 @@ void autotest_polyf_findroots_complex()
     float         p[3] = {3,2,1};
     float complex r[2] = {-1 + _Complex_I*M_SQRT2,
                           -1 - _Complex_I*M_SQRT2};
-    polyf_findroots_testbench(p, r, 2);
+    polyf_findroots_testbench(p, r, 2, 1e-6f);
 }
 
 void autotest_polyf_findroots_mix()
@@ -95,7 +92,7 @@ void autotest_polyf_findroots_mix()
 		 0.1464465720078399,
 		 0.5430988116463471 + 1.282747429218130*_Complex_I,
 		 0.5430988116463471 - 1.282747429218130*_Complex_I};
-    polyf_findroots_testbench(p, r, 6);
+    polyf_findroots_testbench(p, r, 6, 1e-6f);
 }
 
 void autotest_polyf_findroots_mix2()
@@ -126,7 +123,7 @@ void autotest_polyf_findroots_mix2()
          2.556937242081334  + 1.448576080447611 *_Complex_I,
          2.556937242081334  - 1.448576080447611 *_Complex_I};
 
-    polyf_findroots_testbench(p, r, 10);
+    polyf_findroots_testbench(p, r, 10, 4e-6f);
 }
 
 // 
