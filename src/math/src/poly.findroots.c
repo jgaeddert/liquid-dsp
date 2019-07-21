@@ -254,6 +254,9 @@ int POLY(_findroots_bairstow_recursion)(T *          _p,
                                         T *          _u,
                                         T *          _v)
 {
+    float        tol                = 1e-12;    // tolerance before stopping
+    unsigned int num_iterations_max =    50;    // maximum iteration count
+
     // validate length
     if (_k < 3) {
         fprintf(stderr,"findroots_bairstow_recursion(), invalid polynomial length: %u\n", _k);
@@ -278,9 +281,8 @@ int POLY(_findroots_bairstow_recursion)(T *          _p,
     f[n] = f[n-1] = 0;
 
     int i;
-    unsigned int num_iterations     =   0;  // current iteration count
-    unsigned int num_iterations_max =  50;  // maximum iteration count
-    int          rc                 =   0;  //
+    unsigned int num_iterations = 0;  // current iteration count
+    int          rc             = 0;  //
     while (1) {
         // check iteration count
         if (num_iterations == num_iterations_max) {
@@ -304,7 +306,7 @@ int POLY(_findroots_bairstow_recursion)(T *          _p,
         q0 = v*g*g;
         q1 = h*(h-u*g);
         double metric = T_ABS(q0+q1);
-        if ( metric < 1e-12 ) {
+        if ( metric < tol ) {
             q = 0;
             u *= 0.5;
             v *= 0.5;
@@ -351,7 +353,7 @@ int POLY(_findroots_bairstow_recursion)(T *          _p,
         v += dv;
 
         // exit conditions
-        if (step < 1e-12f)
+        if (step < tol)
             break;
     }
 
