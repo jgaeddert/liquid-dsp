@@ -203,6 +203,20 @@ int MSOURCE(_add_modem)(MSOURCE()    _q,
     return MSOURCE(_add_source)(_q, s);
 }
 
+// add frequency-shift keying modem source
+int MSOURCE(_add_fsk)(MSOURCE()    _q,
+                      float        _fc,
+                      float        _bw,
+                      float        _gain,
+                      unsigned int _m,
+                      unsigned int _k)
+{
+    // create object with double the bandwidth to account for 2 samples/symbol
+    QSOURCE() s = QSOURCE(_create)(_q->M, _q->m, _q->As, _fc, 2*_bw, _gain);
+    QSOURCE(_init_fsk)(s, _m, _k);
+    return MSOURCE(_add_source)(_q, s);
+}
+
 // add GMSK modem source
 int MSOURCE(_add_gmsk)(MSOURCE()    _q,
                        float        _fc,

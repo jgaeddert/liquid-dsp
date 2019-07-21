@@ -5571,6 +5571,18 @@ int MSOURCE(_add_modem)(MSOURCE()    _q,                                    \
                         unsigned int _m,                                    \
                         float        _beta);                                \
                                                                             \
+/* Add frequency-shift keying modem signal source, returning id of      */  \
+/* signal                                                               */  \
+/*  _q      : multi-signal source object                                */  \
+/*  _m      : bits per symbol, _bps > 0                                 */  \
+/*  _k      : samples/symbol, _k >= 2^_m                                */  \
+int MSOURCE(_add_fsk)(MSOURCE()    _q,                                      \
+                      float        _fc,                                     \
+                      float        _bw,                                     \
+                      float        _gain,                                   \
+                      unsigned int _m,                                      \
+                      unsigned int _k);                                     \
+                                                                            \
 /* Add GMSK modem signal source, returning id of signal                 */  \
 /*  _q      : multi-signal source object                                */  \
 /*  _m      : filter delay (symbols), _m > 0                            */  \

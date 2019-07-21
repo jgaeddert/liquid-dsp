@@ -1182,6 +1182,14 @@ void QSOURCE(_init_modem)(QSOURCE()    _q,                                  \
                           unsigned int _m,                                  \
                           float        _beta);                              \
                                                                             \
+/* Initialize frequency-shift keying modem signal source                */  \
+/*  _q      : signal source object                                      */  \
+/*  _m      : bits per symbol, _bps > 0                                 */  \
+/*  _k      : samples/symbol, _k >= 2^_m                                */  \
+void QSOURCE(_init_fsk)(QSOURCE()    _q,                                    \
+                        unsigned int _m,                                    \
+                        unsigned int _k);                                   \
+                                                                            \
 /* Initialize qsource GMSK modem object                                 */  \
 void QSOURCE(_init_gmsk)(QSOURCE()    _q,                                   \
                          unsigned int _m,                                   \

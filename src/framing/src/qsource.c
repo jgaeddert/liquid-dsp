@@ -64,6 +64,7 @@ struct QSOURCE(_s)
         QSOURCE_CHIRP,
         QSOURCE_NOISE,
         QSOURCE_MODEM,
+        QSOURCE_FSK,
         QSOURCE_GMSK,
     } type;
 
@@ -74,6 +75,7 @@ struct QSOURCE(_s)
         struct { NCO() nco; float df; int negate, single; uint64_t num, timer; } chirp;
         struct { } noise;
         struct { SYMSTREAM() symstream; } linmod;
+        struct { fskmod mod; float complex * buf; unsigned int len, index, mask; } fsk;
         struct { gmskmod mod; float complex buf[2]; int index; } gmsk;
     } source;
 };
@@ -160,6 +162,10 @@ void QSOURCE(_destroy)(QSOURCE() _q)
     case QSOURCE_MODEM:
         SYMSTREAM(_destroy)(_q->source.linmod.symstream);
         break;
+    case QSOURCE_FSK:
+        fskmod_destroy(_q->source.fsk.mod);
+        free(_q->source.fsk.buf);
+        break;
     case QSOURCE_GMSK:
         gmskmod_destroy(_q->source.gmsk.mod);
         break;
@@ -235,6 +241,19 @@ void QSOURCE(_init_modem)(QSOURCE()    _q,
     _q->source.linmod.symstream=SYMSTREAM(_create_linear)(LIQUID_FIRFILT_ARKAISER,2,_m,_beta,_ms);
 }
 
+// initialize source with frequency-shift keying modem
+void QSOURCE(_init_fsk)(QSOURCE()    _q,
+                        unsigned int _m,
+                        unsigned int _k)
+{
+    _q->type            = QSOURCE_FSK;
+    _q->source.fsk.mod  = fskmod_create(_m, _k, 0.25f);
+    _q->source.fsk.len  = _k;   // buffer length
+    _q->source.fsk.buf  = (float complex*)malloc(_k*sizeof(float complex));
+    _q->source.fsk.mask = (1 << _m) - 1;
+    _q->source.fsk.index= 0;
+}
+
 // initialize source with Gauss minimum-shift keying modem
 void QSOURCE(_init_gmsk)(QSOURCE()    _q,
                          unsigned int _m,
@@ -258,6 +277,7 @@ void QSOURCE(_print)(QSOURCE() _q)
     case QSOURCE_CHIRP: printf("chirp");             break;
     case QSOURCE_NOISE: printf("noise");             break;
     case QSOURCE_MODEM: printf("modem"); bw *= 0.5f; break;
+    case QSOURCE_FSK:   printf("fsk  "); bw *= 0.5f; break;
     case QSOURCE_GMSK:  printf("gmsk "); bw *= 0.5f; break;
     default:
         fprintf(stderr,"error: qsource%s_print(), internal logic error\n", EXTENSION);
@@ -364,6 +384,15 @@ void QSOURCE(_generate)(QSOURCE() _q,
     case QSOURCE_MODEM:
         SYMSTREAM(_write_samples)(_q->source.linmod.symstream, &sample, 1);
         sample *= M_SQRT1_2; // compensate for 2 samples/symbol
+        break;
+    case QSOURCE_FSK:
+        // fill buffer when necessary
+        if (_q->source.fsk.index==0)
+            fskmod_modulate(_q->source.fsk.mod, rand() & _q->source.fsk.mask, _q->source.fsk.buf);
+
+        // compensate for k samples/symbol
+        sample = _q->source.fsk.buf[ _q->source.fsk.index++ ]; // *  M_SQRT1_2;
+        _q->source.fsk.index %= _q->source.fsk.len; // reset index every k samples
         break;
     case QSOURCE_GMSK:
         // fill buffer when necessary

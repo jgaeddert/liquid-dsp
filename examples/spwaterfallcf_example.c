@@ -11,8 +11,8 @@
 int main()
 {
     // spectral periodogram options
-    unsigned int nfft        = 1200;    // spectral periodogram FFT size
-    unsigned int time        =  250;    // minimum time buffer
+    unsigned int nfft        = 1800;    // spectral periodogram FFT size
+    unsigned int time        = 1000;    // minimum time buffer
     unsigned int num_samples = 20e6;    // number of samples
 
     // create spectral waterfall object
@@ -30,6 +30,9 @@ int main()
 
     // add tone
     msourcecf_add_tone(gen, -0.4f, 0.0f, 0);
+
+    // add fsk modem
+    msourcecf_add_fsk(gen, -0.35f, 0.03f, -30.0f, 2, 2000);
 
     // add chirp signal
     msourcecf_add_chirp(gen, 0.17f, 0.10f, -50, 5e6, 0, 0);
