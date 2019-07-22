@@ -62,16 +62,13 @@ int main(int argc, char*argv[])
     float complex x      [num_samples];     // transmitted signal
     float complex y      [num_samples];     // received signal
     float complex z      [num_samples];     // received signal
-    unsigned int  sym_out[num_symbols];     // output symbols
 
     // create modem objects
     gmskmod mod = gmskmod_create(k, m, beta);
 
     // generate message signal
-    for (i=0; i<num_symbols; i++) {
+    for (i=0; i<num_symbols; i++)
         sym_in[i] = rand() % 2;
-        sym_out[i] = 0;
-    }
 
     // modulate signal
     for (i=0; i<num_symbols; i++)
