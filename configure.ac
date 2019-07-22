@@ -111,8 +111,10 @@ AC_TYPE_UINT32_T
 AC_TYPE_UINT8_T
 
 # Check size of certain variables
+AC_CHECK_SIZEOF(short int)
 AC_CHECK_SIZEOF(int)
-AC_CHECK_SIZEOF(unsigned int)
+AC_CHECK_SIZEOF(long int)
+AC_CHECK_SIZEOF(long long int)
 
 # AX_GCC_ARCHFLAG([PORTABLE?], [ACTION-SUCCESS], [ACTION-FAILURE])
 # Try to guess the "native" architecture of the target to use with gcc's

@@ -50,12 +50,12 @@ struct SPGRAM(_s) {
     FFT_PLAN        fft;            // FFT plan
 
     // psd accumulation
-    T *             psd;                    // accumulated power spectral density estimate (linear)
-    unsigned int    sample_timer;           // countdown to transform
-    uint64_t        num_samples;            // total number of samples since reset
-    uint64_t        num_samples_total;      // total number of samples since start
-    uint64_t        num_transforms;         // total number of transforms since reset
-    uint64_t        num_transforms_total;   // total number of transforms since start
+    T *                 psd;                    // accumulated power spectral density estimate (linear)
+    unsigned int        sample_timer;           // countdown to transform
+    unsigned long int   num_samples;            // total number of samples since reset
+    unsigned long int   num_samples_total;      // total number of samples since start
+    unsigned long int   num_transforms;         // total number of transforms since reset
+    unsigned long int   num_transforms_total;   // total number of transforms since start
 
     // parameters for display purposes only
     float           frequency;      // center frequency [Hz]
@@ -289,25 +289,25 @@ unsigned int SPGRAM(_get_delay)(SPGRAM() _q)
 }
 
 // get number of samples processed since reset
-uint64_t SPGRAM(_get_num_samples)(SPGRAM() _q)
+unsigned long int SPGRAM(_get_num_samples)(SPGRAM() _q)
 {
     return _q->num_samples;
 }
 
 // get number of samples processed since start
-uint64_t SPGRAM(_get_num_samples_total)(SPGRAM() _q)
+unsigned long int SPGRAM(_get_num_samples_total)(SPGRAM() _q)
 {
     return _q->num_samples_total;
 }
 
 // get number of transforms processed since reset
-uint64_t SPGRAM(_get_num_transforms)(SPGRAM() _q)
+unsigned long int SPGRAM(_get_num_transforms)(SPGRAM() _q)
 {
     return _q->num_transforms;
 }
 
 // get number of transforms processed since start
-uint64_t SPGRAM(_get_num_transforms_total)(SPGRAM() _q)
+unsigned long int SPGRAM(_get_num_transforms_total)(SPGRAM() _q)
 {
     return _q->num_transforms_total;
 }

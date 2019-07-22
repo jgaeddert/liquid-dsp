@@ -1553,16 +1553,16 @@ unsigned int SPGRAM(_get_window_len)(SPGRAM() _q);                          \
 unsigned int SPGRAM(_get_delay)(SPGRAM() _q);                               \
                                                                             \
 /* Get number of samples processed since reset                          */  \
-uint64_t SPGRAM(_get_num_samples)(SPGRAM() _q);                             \
+unsigned long int SPGRAM(_get_num_samples)(SPGRAM() _q);                    \
                                                                             \
 /* Get number of samples processed since object was created             */  \
-uint64_t SPGRAM(_get_num_samples_total)(SPGRAM() _q);                       \
+unsigned long int SPGRAM(_get_num_samples_total)(SPGRAM() _q);              \
                                                                             \
 /* Get number of transforms processed since reset                       */  \
-uint64_t SPGRAM(_get_num_transforms)(SPGRAM() _q);                          \
+unsigned long int SPGRAM(_get_num_transforms)(SPGRAM() _q);                 \
                                                                             \
 /* Get number of transforms processed since object was created          */  \
-uint64_t SPGRAM(_get_num_transforms_total)(SPGRAM() _q);                    \
+unsigned long int SPGRAM(_get_num_transforms_total)(SPGRAM() _q);           \
                                                                             \
 /* Get forgetting factor (filter bandwidth)                             */  \
 float SPGRAM(_get_alpha)(SPGRAM() _q);                                      \
