@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2017 Joseph Gaeddert
+ * Copyright (c) 2007 - 2019 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -1136,6 +1136,103 @@ void bpacketsync_reconfig(bpacketsync _q);
 #define DSSSFRAME_H_CRC          (LIQUID_CRC_32)
 #define DSSSFRAME_H_FEC0         (LIQUID_FEC_GOLAY2412)
 #define DSSSFRAME_H_FEC1         (LIQUID_FEC_NONE)
+
+//
+// multi-signal source for testing (no meaningful data, just signals)
+//
+#define LIQUID_QSOURCE_MANGLE_CFLOAT(name) LIQUID_CONCAT(qsourcecf,name)
+
+#define LIQUID_QSOURCE_DEFINE_API(QSOURCE,TO)                               \
+                                                                            \
+/* Multi-signal source generator object                                 */  \
+typedef struct QSOURCE(_s) * QSOURCE();                                     \
+                                                                            \
+/* Create default qsource object, type uninitialized                    */  \
+QSOURCE() QSOURCE(_create)(unsigned int _M,                                 \
+                           unsigned int _m,                                 \
+                           float        _As,                                \
+                           float        _fc,                                \
+                           float        _bw,                                \
+                           float        _gain);                             \
+                                                                            \
+/* Initialize user-defined qsource object                               */  \
+void QSOURCE(_init_user)(QSOURCE() _q,                                      \
+                         void *    _userdata,                               \
+                         void *    _callback);                              \
+                                                                            \
+/* Initialize qsource tone object                                       */  \
+void QSOURCE(_init_tone)(QSOURCE() _q);                                     \
+                                                                            \
+/* Add chirp to signal generator, returning id of signal                */  \
+/*  _q          : signal source object                                  */  \
+/*  _duration   : duration of chirp [samples]                           */  \
+/*  _negate     : negate frequency direction                            */  \
+/*  _repeat     : repeat signal? or just run once                       */  \
+void QSOURCE(_init_chirp)(QSOURCE() _q,                                     \
+                          float     _duration,                              \
+                          int       _negate,                                \
+                          int       _repeat);                               \
+                                                                            \
+/* Initialize qsource noise object                                      */  \
+void QSOURCE(_init_noise)(QSOURCE() _q);                                    \
+                                                                            \
+/* Initialize qsource linear modem object                               */  \
+void QSOURCE(_init_modem)(QSOURCE()    _q,                                  \
+                          int          _ms,                                 \
+                          unsigned int _m,                                  \
+                          float        _beta);                              \
+                                                                            \
+/* Initialize frequency-shift keying modem signal source                */  \
+/*  _q      : signal source object                                      */  \
+/*  _m      : bits per symbol, _bps > 0                                 */  \
+/*  _k      : samples/symbol, _k >= 2^_m                                */  \
+void QSOURCE(_init_fsk)(QSOURCE()    _q,                                    \
+                        unsigned int _m,                                    \
+                        unsigned int _k);                                   \
+                                                                            \
+/* Initialize qsource GMSK modem object                                 */  \
+void QSOURCE(_init_gmsk)(QSOURCE()    _q,                                   \
+                         unsigned int _m,                                   \
+                         float        _bt);                                 \
+                                                                            \
+/* Destroy qsource object                                               */  \
+void QSOURCE(_destroy)(QSOURCE() _q);                                       \
+                                                                            \
+/* Print qsource object                                                 */  \
+void QSOURCE(_print)(QSOURCE() _q);                                         \
+                                                                            \
+/* Reset qsource object                                                 */  \
+void QSOURCE(_reset)(QSOURCE() _q);                                         \
+                                                                            \
+/* Get/set source id                                                    */  \
+void QSOURCE(_set_id)(QSOURCE() _q, int _id);                               \
+int  QSOURCE(_get_id)(QSOURCE() _q);                                        \
+                                                                            \
+void QSOURCE(_enable)(QSOURCE() _q);                                        \
+void QSOURCE(_disable)(QSOURCE() _q);                                       \
+                                                                            \
+void QSOURCE(_set_gain)(QSOURCE() _q,                                       \
+                        float     _gain_dB);                                \
+                                                                            \
+float QSOURCE(_get_gain)(QSOURCE() _q);                                     \
+                                                                            \
+/* Get number of samples generated by the object so far                 */  \
+/*  _q      : msource object                                            */  \
+/*  _gain   : signal gain output [dB]                                   */  \
+uint64_t QSOURCE(_get_num_samples)(QSOURCE() _q);                           \
+                                                                            \
+void QSOURCE(_set_frequency)(QSOURCE() _q,                                  \
+                             float     _dphi);                              \
+                                                                            \
+float QSOURCE(_get_frequency)(QSOURCE() _q);                                \
+                                                                            \
+void QSOURCE(_generate)(QSOURCE() _q,                                       \
+                        TO *      _v);                                      \
+                                                                            \
+void QSOURCE(_generate_into)(QSOURCE() _q,                                  \
+                             TO *      _buf);                               \
+    
+LIQUID_QSOURCE_DEFINE_API(LIQUID_QSOURCE_MANGLE_CFLOAT, liquid_float_complex)
 
 //
 // MODULE : math

@@ -18,21 +18,16 @@ int main()
 {
     // options
     int          type        = LIQUID_NCO;  // nco type
-    float        fc          =       0.2f;  // signal offset frequency
+    float        fc          =      0.05f;  // signal offset frequency
     unsigned int num_samples =     240000;  // number of samples to run
     unsigned int nfft        =       1200;  // spectral periodogram FFT size
 
-    // create stream generator
-    msourcecf gen = msourcecf_create();
-    // add noise source (wide-band)
-    int id =
-    msourcecf_add_noise(gen, 1.00f);
-    msourcecf_set_gain(gen, id, -55.0f);
-    // add modulated data with carrier offset
-    id =
-    msourcecf_add_modem(gen,LIQUID_MODEM_QPSK,16,7,0.2f);
-    msourcecf_set_frequency(gen, id, 2*M_PI*fc);
-    msourcecf_set_gain(gen, id, -20.0f);
+    // create stream generator and add some sources
+    msourcecf gen = msourcecf_create_default();
+    msourcecf_add_noise(gen,  0.0f, 1.00f, -60);               // wide-band noise
+    msourcecf_add_noise(gen,  0.0f, 0.20f, -40);               // narrow-band noise
+    msourcecf_add_tone (gen, -0.4f, 0.0f,  -20);               // tone
+    msourcecf_add_modem(gen,  0.2f, 0.1f,  -30, LIQUID_MODEM_QPSK, 12, 0.25f); // modem
 
     // create the NCO object
     nco_crcf q = nco_crcf_create(type);
@@ -98,7 +93,7 @@ int main()
     fprintf(fid,"ylabel('Power Spectral Density [dB]');\n");
     fprintf(fid,"legend('Before mixing','After mixing');\n");
     fprintf(fid,"grid on;\n");
-    fprintf(fid,"axis([-0.5 0.5 -60 0]);\n");
+    fprintf(fid,"axis([-0.5 0.5 -70 -10]);\n");
 
     fclose(fid);
     printf("results written to %s.\n", OUTPUT_FILENAME);

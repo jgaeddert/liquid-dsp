@@ -5510,6 +5510,7 @@ LIQUID_SYMSTREAM_DEFINE_API(LIQUID_SYMSTREAM_MANGLE_CFLOAT, liquid_float_complex
 //
 // multi-signal source for testing (no meaningful data, just signals)
 //
+
 #define LIQUID_MSOURCE_MANGLE_CFLOAT(name) LIQUID_CONCAT(msourcecf,name)
 
 #define LIQUID_MSOURCE_DEFINE_API(MSOURCE,TO)                               \
@@ -5517,8 +5518,17 @@ LIQUID_SYMSTREAM_DEFINE_API(LIQUID_SYMSTREAM_MANGLE_CFLOAT, liquid_float_complex
 /* Multi-signal source generator object                                 */  \
 typedef struct MSOURCE(_s) * MSOURCE();                                     \
                                                                             \
-/* Create default msource object                                        */  \
-MSOURCE() MSOURCE(_create)(void);                                           \
+/* Create msource object by specifying channelizer parameters           */  \
+/*  _M  :   number of channels in analysis channelizer object           */  \
+/*  _m  :   prototype channelizer filter semi-length                    */  \
+/*  _As :   prototype channelizer filter stop-band suppression (dB)     */  \
+MSOURCE() MSOURCE(_create)(unsigned int _M,                                 \
+                           unsigned int _m,                                 \
+                           float        _As);                               \
+                                                                            \
+/* Create default msource object with default parameters:               */  \
+/* M = 1200, m = 4, As = 60                                             */  \
+MSOURCE() MSOURCE(_create_default)(void);                                   \
                                                                             \
 /* Destroy msource object                                               */  \
 void MSOURCE(_destroy)(MSOURCE() _q);                                       \
@@ -5529,26 +5539,83 @@ void MSOURCE(_print)(MSOURCE() _q);                                         \
 /* Reset msource object                                                 */  \
 void MSOURCE(_reset)(MSOURCE() _q);                                         \
                                                                             \
+/* user-defined callback for generating samples                         */  \
+typedef int (*MSOURCE(_callback))(void *       _userdata,                   \
+                                  TO *         _v,                          \
+                                  unsigned int _n);                         \
+                                                                            \
+/* Add user-defined signal generator                                    */  \
+int MSOURCE(_add_user)(MSOURCE()          _q,                               \
+                       float              _fc,                              \
+                       float              _bw,                              \
+                       float              _gain,                            \
+                       void *             _userdata,                        \
+                       MSOURCE(_callback) _callback);                       \
+                                                                            \
 /* Add tone to signal generator, returning id of signal                 */  \
-int MSOURCE(_add_tone) (MSOURCE() _q);                                      \
+int MSOURCE(_add_tone)(MSOURCE() _q,                                        \
+                       float     _fc,                                       \
+                       float     _bw,                                       \
+                       float     _gain);                                    \
+                                                                            \
+/* Add chirp to signal generator, returning id of signal                */  \
+/*  _q          : multi-signal source object                            */  \
+/*  _duration   : duration of chirp [samples]                           */  \
+/*  _negate     : negate frequency direction                            */  \
+/*  _single     : run single chirp? or repeatedly                       */  \
+int MSOURCE(_add_chirp)(MSOURCE() _q,                                       \
+                        float     _fc,                                      \
+                        float     _bw,                                      \
+                        float     _gain,                                    \
+                        float     _duration,                                \
+                        int       _negate,                                  \
+                        int       _repeat);                                 \
                                                                             \
 /* Add noise source to signal generator, returning id of signal         */  \
 /*  _q          : multi-signal source object                            */  \
-/*  _bandwidth  : normalized noise bandiwidth, 0 < _bandwidth <= 1.0    */  \
+/*  _fc         : ...                                                   */  \
+/*  _bw         : ...                                                   */  \
+/*  _nstd       : ...                                                   */  \
 int MSOURCE(_add_noise)(MSOURCE() _q,                                       \
-                        float     _bandwidth);                              \
+                        float     _fc,                                      \
+                        float     _bw,                                      \
+                        float     _gain);                                   \
                                                                             \
 /* Add modem signal source, returning id of signal                      */  \
 /*  _q      : multi-signal source object                                */  \
 /*  _ms     : modulation scheme, e.g. LIQUID_MODEM_QPSK                 */  \
-/*  _k      : samples per symbol, _k >= 2                               */  \
 /*  _m      : filter delay (symbols), _m > 0                            */  \
 /*  _beta   : filter excess bandwidth, 0 < _beta <= 1                   */  \
 int MSOURCE(_add_modem)(MSOURCE()    _q,                                    \
+                        float        _fc,                                   \
+                        float        _bw,                                   \
+                        float        _gain,                                 \
                         int          _ms,                                   \
-                        unsigned int _k,                                    \
                         unsigned int _m,                                    \
                         float        _beta);                                \
+                                                                            \
+/* Add frequency-shift keying modem signal source, returning id of      */  \
+/* signal                                                               */  \
+/*  _q      : multi-signal source object                                */  \
+/*  _m      : bits per symbol, _bps > 0                                 */  \
+/*  _k      : samples/symbol, _k >= 2^_m                                */  \
+int MSOURCE(_add_fsk)(MSOURCE()    _q,                                      \
+                      float        _fc,                                     \
+                      float        _bw,                                     \
+                      float        _gain,                                   \
+                      unsigned int _m,                                      \
+                      unsigned int _k);                                     \
+                                                                            \
+/* Add GMSK modem signal source, returning id of signal                 */  \
+/*  _q      : multi-signal source object                                */  \
+/*  _m      : filter delay (symbols), _m > 0                            */  \
+/*  _bt     : filter bandwidth-time factor, 0 < _bt <= 1                */  \
+int MSOURCE(_add_gmsk)(MSOURCE()    _q,                                     \
+                       float        _fc,                                    \
+                       float        _bw,                                    \
+                       float        _gain,                                  \
+                       unsigned int _m,                                     \
+                       float        _bt);                                   \
                                                                             \
 /* Remove signal with a particular id, returning 0 upon success         */  \
 /*  _q  : multi-signal source object                                    */  \
@@ -5579,6 +5646,11 @@ int MSOURCE(_set_gain)(MSOURCE() _q,                                        \
 int MSOURCE(_get_gain)(MSOURCE() _q,                                        \
                        int       _id,                                       \
                        float *   _gain);                                    \
+                                                                            \
+/* Get number of samples generated by the object so far                 */  \
+/*  _q      : msource object                                            */  \
+/*  _return : number of time-domain samples generated                   */  \
+uint64_t MSOURCE(_get_num_samples)(MSOURCE() _q);                           \
                                                                             \
 /* Set carrier offset to signal                                         */  \
 /*  _q      : msource object                                            */  \

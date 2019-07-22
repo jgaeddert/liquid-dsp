@@ -73,8 +73,8 @@ int main(int argc, char*argv[])
     float complex buf_y[P]; // output
 
     // create signal generator (wide-band noise)
-    msourcecf gen = msourcecf_create();
-    msourcecf_add_noise(gen, 0.7f * (rate > 1.0 ? 1.0 : rate));
+    msourcecf gen = msourcecf_create_default();
+    msourcecf_add_noise(gen, 0.0f, 0.7f * (rate > 1.0 ? 1.0 : rate), 0);
 
     // create spectral periodogram objects
     unsigned int nfft = 2400;
