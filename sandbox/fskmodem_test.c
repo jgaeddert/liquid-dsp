@@ -60,6 +60,7 @@ int main(int argc, char*argv[])
             exit(1);
         }
     }
+    printf("channel offsets: tau=%.3f, cfo=%.3f, cpo=%.3f\n", tau, cfo, cpo);
 
     unsigned int i;
     unsigned int j;
