@@ -21,23 +21,20 @@ void usage()
     printf("Usage: %s [OPTION]\n", __FILE__);
     printf("  -h         : print help\n");
     printf("  -r <rate>  : resampling rate,                   default: 0.3\n");
-    printf("  -m <len>   : filter semi-length (delay),        default: 25\n");
     printf("  -s <atten> : filter stop-band attenuation [dB], default: 60\n");
 }
 
 int main(int argc, char*argv[])
 {
     // options
-    float           rate= 0.30f;    // resampling rate
-    unsigned int    m   = 25;       // resampling filter semi-length (filter delay)
-    float           As  = 60.0f;    // resampling filter stop-band attenuation [dB]
+    float   rate= 0.30f;    // resampling rate
+    float   As  = 60.0f;    // resampling filter stop-band attenuation [dB]
 
     int dopt;
-    while ((dopt = getopt(argc,argv,"hr:m:s:")) != EOF) {
+    while ((dopt = getopt(argc,argv,"hr:s:")) != EOF) {
         switch (dopt) {
-        case 'h':   usage();            return 0;
+        case 'h':   usage();             return 0;
         case 'r':   rate = atof(optarg); break;
-        case 'm':   m    = atoi(optarg); break;
         case 's':   As   = atof(optarg); break;
         default:
             exit(1);
@@ -73,7 +70,7 @@ int main(int argc, char*argv[])
     // high-power signal just out of band
     id = msourcecf_add_noise(gen, 0.02f);
     msourcecf_set_gain(gen, id, +40.0f);
-    msourcecf_set_frequency(gen, id, 2*M_PI*(0.5*rate + 0.04f));
+    msourcecf_set_frequency(gen, id, 2*M_PI*(0.5*rate + 0.05f));
 
     // create spectral periodogram objects
     unsigned int nfft = 2400;
