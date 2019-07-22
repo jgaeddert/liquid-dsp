@@ -93,8 +93,8 @@ int main(int argc, char*argv[])
         spgramf_write(px, buf_x, Q);
         spgramf_write(py, buf_y, P);
     }
-    printf("num samples out : %llu\n", spgramf_get_num_samples_total(py));
-    printf("num samples in  : %llu\n", spgramf_get_num_samples_total(px));
+    printf("num samples out : %lu\n", spgramf_get_num_samples_total(py));
+    printf("num samples in  : %lu\n", spgramf_get_num_samples_total(px));
 
     // clean up allocated objects
     rresamp_rrrf_destroy(q);

@@ -94,8 +94,8 @@ int main(int argc, char*argv[])
         spgramcf_write(px, buf_x, Q);
         spgramcf_write(py, buf_y, P);
     }
-    printf("num samples out : %llu\n", spgramcf_get_num_samples_total(py));
-    printf("num samples in  : %llu\n", spgramcf_get_num_samples_total(px));
+    printf("num samples out : %lu\n", spgramcf_get_num_samples_total(py));
+    printf("num samples in  : %lu\n", spgramcf_get_num_samples_total(px));
 
     // clean up allocated objects
     rresamp_crcf_destroy(q);
