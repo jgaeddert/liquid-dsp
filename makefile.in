@@ -31,6 +31,7 @@
 #    bench          : build and run benchmarking program
 #    examples       : build all examples
 #    sandbox        : build all sandbox examples
+#    programs       : build all programs, but don't run anything
 #    world          : build absolutely everything (but don't install)
 #
 #    clean-modules  : clean all modules
@@ -1693,6 +1694,11 @@ $(tools_programs): % : %.o ${ARCHIVE_LIB}
 clean-tools:
 	$(RM) tools/*.o
 	$(RM) $(tools_programs)
+
+##
+## TARGET : programs  - build all programs, but don't run anything
+##
+programs: all xautotest benchmark examples sandbox
 
 ##
 ## TARGET : world     - build absolutely everything
