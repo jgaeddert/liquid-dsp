@@ -1,3 +1,7 @@
+// msequence_generator_example.c
+//
+// This example demonstrates finding maximal-length sequence
+// (m-sequence) generator polynomials of a certain length.
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -7,11 +11,10 @@
 
 void usage()
 {
-    printf("dsssframesync_example [options]\n");
-    printf("  u/h   : print usage\n");
-    printf("  d     : degree of polynomial, default: 2\n");
+    printf("msequence_generator_example [options]\n");
+    printf(" -h          : print usage\n");
+    printf(" -d <degree> : degree of polynomial, default: 2\n");
 }
-
 
 int main(int argc, char *argv[])
 {
@@ -21,9 +24,8 @@ int main(int argc, char *argv[])
     int dopt;
     while((dopt = getopt(argc,argv,"uhd:")) != EOF){
         switch (dopt) {
-        case 'u':
-        case 'h': usage();                                       return 0;
-        case 'd': degree        = atol(optarg);                  break;
+        case 'h': usage();               return 0;
+        case 'd': degree = atol(optarg); break;
         default:
             exit(-1);
         }

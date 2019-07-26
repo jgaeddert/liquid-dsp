@@ -1478,6 +1478,7 @@ example_programs :=						\
 	examples/modem_example					\
 	examples/modem_soft_example				\
 	examples/modular_arithmetic_example			\
+	examples/msequence_generator_example			\
 	examples/msequence_example				\
 	examples/msourcecf_example				\
 	examples/msresamp_crcf_example				\
@@ -1677,23 +1678,6 @@ $(sandbox_programs): % : %.o ${ARCHIVE_LIB}
 clean-sandbox:
 	$(RM) sandbox/*.o
 	$(RM) $(sandbox_programs)
-
-
-.PHONY: tools
-tools_programs =						\
-	tools/msequence_generator			\
-
-tools_objects	= $(patsubst %,%.o,$(tools_programs))
-tools: $(tools_programs)
-
-$(tools_objects): %.o: %.c
-
-$(tools_programs): % : %.o ${ARCHIVE_LIB}
-	$(CC) $(CFLAGS) $^ -o $@ $(LDFLAGS)
-
-clean-tools:
-	$(RM) tools/*.o
-	$(RM) $(tools_programs)
 
 ##
 ## TARGET : programs  - build all programs, but don't run anything
