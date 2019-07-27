@@ -52,10 +52,10 @@ struct SPGRAM(_s) {
     // psd accumulation
     T *                 psd;                    // accumulated power spectral density estimate (linear)
     unsigned int        sample_timer;           // countdown to transform
-    unsigned long int   num_samples;            // total number of samples since reset
-    unsigned long int   num_samples_total;      // total number of samples since start
-    unsigned long int   num_transforms;         // total number of transforms since reset
-    unsigned long int   num_transforms_total;   // total number of transforms since start
+    unsigned long long int num_samples;         // total number of samples since reset
+    unsigned long long int num_samples_total;   // total number of samples since start
+    unsigned long long int num_transforms;      // total number of transforms since reset
+    unsigned long long int num_transforms_total;// total number of transforms since start
 
     // parameters for display purposes only
     float           frequency;      // center frequency [Hz]
@@ -289,25 +289,25 @@ unsigned int SPGRAM(_get_delay)(SPGRAM() _q)
 }
 
 // get number of samples processed since reset
-unsigned long int SPGRAM(_get_num_samples)(SPGRAM() _q)
+unsigned long long int SPGRAM(_get_num_samples)(SPGRAM() _q)
 {
     return _q->num_samples;
 }
 
 // get number of samples processed since start
-unsigned long int SPGRAM(_get_num_samples_total)(SPGRAM() _q)
+unsigned long long int SPGRAM(_get_num_samples_total)(SPGRAM() _q)
 {
     return _q->num_samples_total;
 }
 
 // get number of transforms processed since reset
-unsigned long int SPGRAM(_get_num_transforms)(SPGRAM() _q)
+unsigned long long int SPGRAM(_get_num_transforms)(SPGRAM() _q)
 {
     return _q->num_transforms;
 }
 
 // get number of transforms processed since start
-unsigned long int SPGRAM(_get_num_transforms_total)(SPGRAM() _q)
+unsigned long long int SPGRAM(_get_num_transforms_total)(SPGRAM() _q)
 {
     return _q->num_transforms_total;
 }
