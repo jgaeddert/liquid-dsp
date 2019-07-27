@@ -1654,7 +1654,6 @@ sandbox_programs =						\
 	sandbox/symsync_eqlms_test				\
 	sandbox/svd_test					\
 	sandbox/thiran_allpass_iir_test				\
-	sandbox/throttle_test					\
 	sandbox/vectorcf_test					\
 
 #	sandbox/packetizer_persistent_ber_test
@@ -1662,6 +1661,7 @@ sandbox_programs =						\
 #	sandbox/ofdmoqam_firpfbch_cfo_test
 #	sandbox/mdct_test
 #	sandbox/fct_test
+#	sandbox/throttle_test # needs -lrt for certain gcc versions, rpi3
 
 
 sandbox_objects	= $(patsubst %,%.o,$(sandbox_programs))
