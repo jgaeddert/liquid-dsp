@@ -23,7 +23,7 @@
 # Process with autoconf to generate configure script
 #
 
-AC_INIT([liquid-dsp],[1.3.1],[support@liquidsdr.org])
+AC_INIT([liquid-dsp],[1.3.2],[joseph@liquidsdr.org])
 AC_CONFIG_SRCDIR([src/libliquid.c])
 AC_CONFIG_MACRO_DIR([scripts])
 

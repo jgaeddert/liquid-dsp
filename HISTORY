@@ -1,6 +1,8 @@
 
 ## Latest improvements ##
 
+## Improvements for v1.3.2 ##
+
   * autotest
     - runs with random seeds (based on time) for diveristy
     - output .json file for post-analysis
