@@ -3,10 +3,10 @@ liquid-dsp
 ==========
 
 Software-Defined Radio Digital Signal Processing Library -
-[http://liquidsdr.org](http://liquidsdr.org)
+[https://liquidsdr.org](https://liquidsdr.org)
 
 [![Build Status](https://travis-ci.org/jgaeddert/liquid-dsp.svg?branch=master)](https://travis-ci.org/jgaeddert/liquid-dsp)
-[![MIT License](https://img.shields.io/badge/license-MIT-blue.svg?style=flat)](http://choosealicense.com/licenses/mit/)
+[![MIT License](https://img.shields.io/badge/license-MIT-blue.svg?style=flat)](https://choosealicense.com/licenses/mit/)
 
 liquid-dsp is a free and open-source digital signal processing (DSP)
 library designed specifically for software-defined radios on embedded
@@ -18,13 +18,13 @@ oscillators, modems, synchronizers, complex mathematical operations, and
 much more.
 
 For more information, please refer to the
-[documentation](http://liquidsdr.org/doc) online.
+[documentation](https://liquidsdr.org/doc) online.
 
 Installation and Dependencies
 -----------------------------
 
 liquid-dsp only relies on `libc` and `libm` (standard C and math)
-libraries to run; however liquid will take advantage of other packages
+libraries to run; however liquid will take advantage of other libraries
 (such as [FFTW](http://www.fftw.org)) if they are available.
 
 If you build from the Git repository you will also need to install autotools
@@ -32,31 +32,17 @@ for generating the `configure.sh` script (e.g.
 `brew install autoconf automake` on macOS,
 `sudo apt-get install automake autoconf` on Debian variants).
 
+### Installation ###
 
-### Getting the source code ###
-
-There are two primary ways of obtaining the source code:
-
-1. Clone the entire [repository](http://github.com/jgaeddert/liquid-dsp)
-   (recommended)
+The recommended way to obtain the source code is to clone the entire
+[repository](https://github.com/jgaeddert/liquid-dsp) from
+[GitHub](https://github.com):
         
     git clone git://github.com/jgaeddert/liquid-dsp.git
 
-2. or download the [tarball](http://liquidsdr.org/downloads/liquid-dsp-1.3.1.tar.gz)
-   (1023 kB), unpack, and validate the checksum:
+Building and installing the main library is a simple as
 
-    wget http://liquidsdr.org/downloads/liquid-dsp-1.3.1.tar.gz
-    wget http://liquidsdr.org/downloads/liquid-dsp.md5
-    md5sum --check --ignore-missing liquid-dsp.md5
-    tar -xf liquid-dsp-1.3.1.tar.gz
-
-### Installation ###
-
-Once you have obtained a copy of the source code, you can now build the
-DSP library (NOTE: if you chose to clone the repository, you will need
-to also run the additional `./bootstrap.sh` script before configuring):
-
-    ./bootstrap.sh     # <- only if you cloned the Git repo
+    ./bootstrap.sh
     ./configure
     make
     sudo make install
@@ -86,13 +72,14 @@ make target `check`, viz.
 
     make check
 
-There are currently more than 80,000 checks to verify functional correctness.
+There are currently more than 90,000 checks to verify functional correctness.
+Drop me a line if these aren't running on your platform.
 
 ### Examples ###
 
 Nearly all signal processing elements have a corresponding example in
 the `examples/` directory.  Most example scripts generate an output
-`.m` file for plotting with [GNU octave](http://www.gnu.org/software/octave/)
+`.m` file for plotting with [GNU octave](https://www.gnu.org/software/octave/)
 All examples are built as stand-alone programs and can be compiled with
 the make target `examples`:
 
@@ -167,6 +154,6 @@ I give you full permission to do wantever you want with it except remove my
 name from the credits.
 Seriously, go nuts.
 See the LICENSE file or
-[http://opensource.org/licenses/MIT](http://opensource.org/licenses/MIT)
+[https://opensource.org/licenses/MIT](https://opensource.org/licenses/MIT)
 for specific terms.
 
