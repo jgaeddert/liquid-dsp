@@ -274,7 +274,7 @@ int main(int argc, char *argv[])
     if (liquid_autotest_verbose)
         print_unstable_tests();
 
-    printf("autotetst seed: %u\n", rseed);
+    printf("autotest seed: %u\n", rseed);
     autotest_print_results();
 
     // program return value
