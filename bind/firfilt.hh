@@ -4,6 +4,7 @@
 
 #include <complex>
 #include <liquid/liquid.h>
+#include "liquid.python.hh"
 
 class firfilt
 {
@@ -14,6 +15,8 @@ class firfilt
 
     ~firfilt();
 
+    void reset() { firfilt_crcf_reset(q); }
+
     std::complex<float> execute(std::complex<float> _x)
     {
         std::complex<float> y;
@@ -21,6 +24,10 @@ class firfilt
         firfilt_crcf_execute(q, &y);
         return y;
     }
+
+#ifdef PYTHONLIB
+    void py_execute(py::array_t<std::complex<float>> & _buf);
+#endif
 
   private:
     firfilt_crcf q;
