@@ -33,6 +33,10 @@ pythonlib := liquid${PYBIND11_SUFFIX}
 ${pythonlib} : ${libs_python} bind/liquid.python.o
 	g++ ${PYBIND11_FLAGS} -o $@ $^ ${LIBS}
 
+test:
+	g++ -O3 -Wall -shared -std=c++11 -fPIC -undefined dynamic_lookup -D PYTHONLIB `python3 -m pybind11 --includes` bind/firfilt.cc bind/liquid.python.cc -o liquid`python3-config --extension-suffix` -lm -lc -lliquid
+
+
 all: bind/main ${pythonlib}
 
 clean:
