@@ -1,6 +1,6 @@
 #include "liquid.python.hh"
 
-PYBIND11_MODULE(LIQUID, m) {
+PYBIND11_MODULE(liquid, m) {
     init_firfilt(m);
 }
 
