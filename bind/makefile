@@ -13,20 +13,14 @@ PYBIND11_FLAGS    := -shared -fPIC -undefined dynamic_lookup
 #PYBIND11_LIBS     := $(shell python3-config --libs)
 #PYBIND11_LDFLAGS  := $(shell python3-config --ldflags)
 
-bind/firfilt.o : %.o : %.hh %.cc
-	g++ ${CXXFLAGS} -c -o bind/firfilt.o bind/firfilt.cc
-
 bind/main.o : %.o : %.cc bind/firfilt.hh
 	g++ ${CXXFLAGS} -c -o bind/main.o bind/main.cc
 
-bind/main : % : %.o bind/firfilt.o
+bind/main : % : %.o 
 	g++ ${CXXFLAGS} -o bind/main $^ ${LIBS}
 
 # python
-libs_python := bind/firfilt.python.o
-${libs_python} : %.python.o : %.cc %.hh bind/liquid.python.hh
-	g++ ${CXXFLAGS} -D PYTHONLIB ${PYBIND11_INCLUDES} -c -o $@ $<
-bind/liquid.python.o : %.o : %.cc %.hh
+bind/liquid.python.o : %.o : %.cc %.hh bind/firfilt.hh
 	g++ ${CXXFLAGS} -D PYTHONLIB ${PYBIND11_INCLUDES} -c -o $@ $<
 
 pythonlib := liquid${PYBIND11_SUFFIX}
@@ -34,7 +28,7 @@ ${pythonlib} : ${libs_python} bind/liquid.python.o
 	g++ ${PYBIND11_FLAGS} -o $@ $^ ${LIBS}
 
 test:
-	g++ -O3 -Wall -shared -std=c++11 -fPIC -undefined dynamic_lookup -D PYTHONLIB `python3 -m pybind11 --includes` bind/firfilt.cc bind/liquid.python.cc -o liquid`python3-config --extension-suffix` -lm -lc -lliquid
+	g++ -O3 -Wall -shared -std=c++11 -fPIC -undefined dynamic_lookup -D PYTHONLIB `python3 -m pybind11 --includes` bind/liquid.python.cc -o liquid`python3-config --extension-suffix` -lm -lc -lliquid
 
 
 all: bind/main ${pythonlib}
