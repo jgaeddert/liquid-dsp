@@ -1,4 +1,4 @@
-// 
+//
 // qdetector_example.c
 //
 // This example demonstrates the functionality of the qdetector object
@@ -41,10 +41,10 @@ int main(int argc, char*argv[])
     unsigned int m            =    7;   // filter delay [symbols]
     float        beta         = 0.3f;   // excess bandwidth factor
     int          ftype        = LIQUID_FIRFILT_ARKAISER;
-    float        gamma        = 10.0f;  // channel gain
     float        tau          = -0.3f;  // fractional sample timing offset
     float        dphi         = -0.01f; // carrier frequency offset
     float        phi          =  0.5f;  // carrier phase offset
+    float        noise_floor  = -30.0f; // noise floor [dB]
     float        SNRdB        = 20.0f;  // signal-to-noise ratio [dB]
     float        threshold    =  0.5f;  // detection threshold
     float        range        =  0.05f; // carrier offset search range [radians/sample]
@@ -74,6 +74,10 @@ int main(int argc, char*argv[])
         fprintf(stderr,"error: %s, fractional sample offset must be in [-0.5,0.5]\n", argv[0]);
         exit(1);
     }
+
+    // derived values
+    float nstd = powf(10.0f, noise_floor/20.0f);
+    float gamma = powf(10.0f, (SNRdB + noise_floor)/20.0f);
 
     // generate synchronization sequence (QPSK symbols)
     float complex sequence[sequence_len];
@@ -110,7 +114,6 @@ int main(int argc, char*argv[])
     float complex * v = (float complex*) qdetector_cccf_get_sequence(q);
     unsigned int filter_delay = 15;
     firfilt_crcf filter = firfilt_crcf_create_kaiser(2*filter_delay+1, 0.4f, 60.0f, -tau);
-    float        nstd        = powf(10.0f, -SNRdB/20.0f);
     for (i=0; i<num_samples; i++) {
         // add delay
         firfilt_crcf_push(filter, i < seq_len ? v[i] : 0);
@@ -121,7 +124,7 @@ int main(int argc, char*argv[])
 
         // carrier offset
         y[i] *= cexpf(_Complex_I*(dphi*i + phi));
-        
+
         // noise
         y[i] += nstd*(randnf() + _Complex_I*randnf())*M_SQRT1_2;
     }
@@ -156,7 +159,7 @@ int main(int argc, char*argv[])
         nco_crcf_set_phase    (nco,  phi_hat);
 
         for (i=0; i<buf_len; i++) {
-            // 
+            //
             float complex sample;
             nco_crcf_mix_down(nco, v[i], &sample);
             nco_crcf_step(nco);
@@ -189,7 +192,7 @@ int main(int argc, char*argv[])
     }
     printf("\n");
 
-    // 
+    //
     // export results
     //
     FILE * fid = fopen(OUTPUT_FILENAME,"w");
