@@ -1468,6 +1468,7 @@ example_programs :=						\
 	examples/iirhilb_example				\
 	examples/iirhilb_filter_example				\
 	examples/iirinterp_crcf_example				\
+	examples/kaiser_window_example				\
 	examples/kbd_window_example				\
 	examples/lpc_example					\
 	examples/libliquid_example				\
