@@ -98,7 +98,7 @@ RESAMP2() RESAMP2(_create)(unsigned int _m,
     for (i=0; i<q->h_len; i++) {
         t = (float)i - (float)(q->h_len-1)/2.0f;
         h1 = sincf(t/2.0f);
-        h2 = kaiser(i,q->h_len,beta,0);
+        h2 = kaiser(i,q->h_len,beta);
 #if TC_COMPLEX == 1
         h3 = cosf(2.0f*M_PI*t*q->f0) + _Complex_I*sinf(2.0f*M_PI*t*q->f0);
 #else
@@ -149,7 +149,7 @@ RESAMP2() RESAMP2(_recreate)(RESAMP2()    _q,
         for (i=0; i<_q->h_len; i++) {
             t = (float)i - (float)(_q->h_len-1)/2.0f;
             h1 = sincf(t/2.0f);
-            h2 = kaiser(i,_q->h_len,beta,0);
+            h2 = kaiser(i,_q->h_len,beta);
 #if TC_COMPLEX == 1
             h3 = cosf(2.0f*M_PI*t*_q->f0) + _Complex_I*sinf(2.0f*M_PI*t*_q->f0);
 #else

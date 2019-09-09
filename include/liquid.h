@@ -5890,14 +5890,12 @@ float liquid_kbd(unsigned int _n, unsigned int _N, float _beta);
 void liquid_kbd_window(unsigned int _n, float _beta, float * _w);
 
 // Kaiser window
-//  _n      :   window index
-//  _N      :   full window length
+//  _i      :   window index
+//  _wlen   :   full window length
 //  _beta   :   Kaiser-Bessel window shape parameter
-//  _dt     :   fractional sample offset
 float kaiser(unsigned int _n,
              unsigned int _N,
-             float        _beta,
-             float        _dt);
+             float        _beta);
 
 // Hamming window
 //  _n      :   window index

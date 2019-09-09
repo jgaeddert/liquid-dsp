@@ -328,7 +328,7 @@ void FIRFARROW(_genpoly)(FIRFARROW() _q)
             mu = ((float)j - (float)_q->Q)/((float)_q->Q) + 0.5f;
 
             h0 = sincf(2.0f*(_q->fc)*(x + mu));
-            h1 = kaiser(i,_q->h_len,beta,mu);
+            h1 = kaiser(i,_q->h_len,beta);
 #if FIRFARROW_DEBUG
             printf("  %3u : x=%12.8f, mu=%12.8f, h0=%12.8f, h1=%12.8f, hp=%12.8f\n",
                     j, x, mu, h0, h1, h0*h1);

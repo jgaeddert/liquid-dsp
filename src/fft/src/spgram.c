@@ -133,7 +133,7 @@ SPGRAM() SPGRAM(_create)(unsigned int _nfft,
         case LIQUID_WINDOW_HANN:            q->w[i] = hann(i,n);            break;
         case LIQUID_WINDOW_BLACKMANHARRIS:  q->w[i] = blackmanharris(i,n);  break;
         case LIQUID_WINDOW_BLACKMANHARRIS7: q->w[i] = blackmanharris7(i,n); break;
-        case LIQUID_WINDOW_KAISER:          q->w[i] = kaiser(i,n,beta,0);   break;
+        case LIQUID_WINDOW_KAISER:          q->w[i] = kaiser(i,n,beta);     break;
         case LIQUID_WINDOW_FLATTOP:         q->w[i] = flattop(i,n);         break;
         case LIQUID_WINDOW_TRIANGULAR:      q->w[i] = triangular(i,n,n);    break;
         case LIQUID_WINDOW_RCOSTAPER:       q->w[i] = liquid_rcostaper_windowf(i,n/3,n); break;

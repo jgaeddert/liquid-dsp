@@ -124,7 +124,7 @@ float liquid_kbd(unsigned int _n,
     unsigned int i;
     for (i=0; i<=M; i++) {
         // compute Kaiser window
-        w = kaiser(i,M+1,_beta,0.0f);
+        w = kaiser(i,M+1,_beta);
 
         // accumulate window sums
         w1 += w;
@@ -162,7 +162,7 @@ void liquid_kbd_window(unsigned int _n,
     // generate regular Kaiser window, length M+1
     float w_kaiser[M+1];
     for (i=0; i<=M; i++)
-        w_kaiser[i] = kaiser(i,M+1,_beta,0.0f);
+        w_kaiser[i] = kaiser(i,M+1,_beta);
 
     // compute sum(wk[])
     float w_sum = 0.0f;
@@ -183,31 +183,27 @@ void liquid_kbd_window(unsigned int _n,
 
 
 // Kaiser window [Kaiser:1980]
-//  _n      :   sample index
-//  _N      :   window length (samples)
+//  _i      :   sample index
+//  _wlen   :   window length (samples)
 //  _beta   :   window taper parameter
-//  _mu     :   fractional sample offset
-float kaiser(unsigned int _n,
-             unsigned int _N,
-             float        _beta,
-             float        _mu)
+float kaiser(unsigned int _i,
+             unsigned int _wlen,
+             float        _beta)
 {
     // validate input
-    if (_n > _N) {
+    if (_i >= _wlen) {
         fprintf(stderr,"error: kaiser(), sample index must not exceed window length\n");
         exit(1);
     } else if (_beta < 0) {
         fprintf(stderr,"error: kaiser(), beta must be greater than or equal to zero\n");
         exit(1);
-    } else if (_mu < -0.5 || _mu > 0.5) {
-        fprintf(stderr,"error: kaiser(), fractional sample offset must be in [-0.5,0.5]\n");
-        exit(1);
     }
 
-    float t = (float)_n - (float)(_N-1)/2 + _mu;
-    float r = 2.0f*t/(float)(_N);
+    float t = (float)_i - (float)(_wlen-1)/2;
+    float r = 2.0f*t/(float)(_wlen-1);
     float a = liquid_besseli0f(_beta*sqrtf(1-r*r));
     float b = liquid_besseli0f(_beta);
+    //printf("kaiser(%3u,%u3,%6.3f) t:%8.3f, r:%8.3f, a:%8.3f, b:%8.3f\n", _i,_wlen,_beta,t,r,a,b);
     return a / b;
 }
 
