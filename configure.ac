@@ -259,5 +259,5 @@ AC_SUBST(ARCH_OPTION)               # compiler architecture option
 AC_SUBST(DEBUG_MSG_OPTION)          # debug messages option (.e.g -DDEBUG)
 AC_SUBST(CLIB)                      # C library linkage (e.g. '-lc')
 
-AC_CONFIG_FILES([makefile])
+AC_CONFIG_FILES([makefile liquid.pc])
 AC_OUTPUT
