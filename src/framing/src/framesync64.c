@@ -435,7 +435,7 @@ void framesync64_execute_rxpayload(framesync64   _q,
             // invoke callback
             if (_q->callback != NULL) {
                 // set framestats internals
-                _q->framestats.evm           = 0.0f; //20*log10f(sqrtf(_q->framestats.evm / 600));
+                _q->framestats.evm           = qpilotsync_get_evm(_q->pilotsync);
                 _q->framestats.rssi          = 20*log10f(_q->gamma_hat);
                 _q->framestats.cfo           = nco_crcf_get_frequency(_q->mixer);
                 _q->framestats.framesyms     = _q->payload_sym;
