@@ -4613,6 +4613,7 @@ void qpilotsync_execute(qpilotsync             _q,
 float qpilotsync_get_dphi(qpilotsync _q);
 float qpilotsync_get_phi (qpilotsync _q);
 float qpilotsync_get_gain(qpilotsync _q);
+float qpilotsync_get_evm (qpilotsync _q);
 
 
 //
