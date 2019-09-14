@@ -110,7 +110,7 @@ int main(int argc, char*argv[])
     float complex * v = (float complex*) qdetector_cccf_get_sequence(q);
     unsigned int filter_delay = 15;
     firfilt_crcf filter = firfilt_crcf_create_kaiser(2*filter_delay+1, 0.4f, 60.0f, -tau);
-    float        nstd        = powf(10.0f, -SNRdB/20.0f);
+    float        nstd        = powf(10.0f, -SNRdB/20.0f) * gamma;
     for (i=0; i<num_samples; i++) {
         // add delay
         firfilt_crcf_push(filter, i < seq_len ? v[i] : 0);
