@@ -17,7 +17,7 @@ int main() {
     float w[n];
     unsigned int i;
     for (i=0; i<n; i++)
-        w[i] = kaiser(i,n,beta);
+        w[i] = liquid_kaiser(i,n,beta);
 
     FILE*fid = fopen(OUTPUT_FILENAME,"w");
     fprintf(fid,"%% %s: auto-generated file\n\n", OUTPUT_FILENAME);

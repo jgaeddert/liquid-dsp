@@ -107,7 +107,7 @@ int main(int argc, char*argv[])
     for (i=0; i<n; i++) {
         // input signal (windowed noise)
         x[i]  = randnf() + _Complex_I*randnf();
-        x[i] *= i < wlen ? hamming(i,wlen) : 0.0f;
+        x[i] *= i < wlen ? liquid_hamming(i,wlen) : 0.0f;
 
         // run filter
         iirfilt_cccf_execute(q, x[i], &y[i]);

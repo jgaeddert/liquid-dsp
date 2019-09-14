@@ -66,7 +66,7 @@ int main(int argc, char*argv[]) {
         x[i] = cexpf(_Complex_I*(-0.17f*i + 0.9*i*i/(float)num_samples));
 
         // apply window
-        x[i] *= (i < num_samples-5) ? hamming(i,num_samples) : 0.0f;
+        x[i] *= (i < num_samples-5) ? liquid_hamming(i,num_samples) : 0.0f;
 
         // push through interpolator
         iirinterp_crcf_execute(q, x[i], &y[k*i]);

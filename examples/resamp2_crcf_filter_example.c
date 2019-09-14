@@ -34,7 +34,7 @@ int main() {
     for (i=0; i<N; i++) {
         //x[i] = randnf() * cexpf(_Complex_I*M_PI*randf());
         x[i] = cexpf(_Complex_I*2*M_PI*0.072f*i) + 0.6f*cexpf(_Complex_I*2*M_PI*0.37f*i);
-        x[i] *= (i < num_samples) ? hamming(i,num_samples) : 0.0f;
+        x[i] *= (i < num_samples) ? liquid_hamming(i,num_samples) : 0.0f;
     }
 
     // create/print the half-band filter with a specified
