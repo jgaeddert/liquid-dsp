@@ -43,7 +43,7 @@ int main() {
     for (i=0; i<num_total_samples; i++) {
         x[i]  = cexpf(_Complex_I*2*M_PI*fc*i) +
                 cexpf(_Complex_I*2*M_PI*fc*i*1.3f)*0.1f;
-        x[i] *= (i < num_input_samples) ? 1.855f*hamming(i,num_input_samples) : 0.0f;
+        x[i] *= (i < num_input_samples) ? 1.855f*liquid_hamming(i,num_input_samples) : 0.0f;
     }
 
     // execute interpolator (complex to real conversion)

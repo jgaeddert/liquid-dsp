@@ -5878,72 +5878,74 @@ void liquid_print_windows();
 liquid_window_type liquid_getopt_str2window(const char * _str);
 
 // Kaiser-Bessel derived window (single sample)
-//  _n      :   index (0 <= _n < _N)
-//  _N      :   length of filter (must be even)
+//  _i      :   window index, _i in [0,_wlen-1]
+//  _wlen   :   length of filter (must be even)
 //  _beta   :   Kaiser window parameter (_beta > 0)
-float liquid_kbd(unsigned int _n, unsigned int _N, float _beta);
+float liquid_kbd(unsigned int _i,
+                 unsigned int _wlen,
+                 float        _beta);
 
 // Kaiser-Bessel derived window (full window)
-//  _n      :   length of filter (must be even)
+//  _wlen   :   full window length (must be even)
 //  _beta   :   Kaiser window parameter (_beta > 0)
-//  _w      :   resulting window
-void liquid_kbd_window(unsigned int _n, float _beta, float * _w);
+//  _w      :   window output buffer, [size: _wlen x 1]
+void liquid_kbd_window(unsigned int _wlen,
+                       float        _beta,
+                       float *      _w);
 
 // Kaiser window
-//  _n      :   window index
-//  _N      :   full window length
+//  _i      :   window index, _i in [0,_wlen-1]
+//  _wlen   :   full window length
 //  _beta   :   Kaiser-Bessel window shape parameter
-//  _dt     :   fractional sample offset
-float kaiser(unsigned int _n,
-             unsigned int _N,
-             float        _beta,
-             float        _dt);
+float liquid_kaiser(unsigned int _i,
+                    unsigned int _wlen,
+                    float        _beta);
 
 // Hamming window
-//  _n      :   window index
-//  _N      :   full window length
-float hamming(unsigned int _n,
-              unsigned int _N);
+//  _i      :   window index, _i in [0,_wlen-1]
+//  _wlen   :   full window length
+float liquid_hamming(unsigned int _i,
+                     unsigned int _wlen);
 
 // Hann window
-//  _n      :   window index
-//  _N      :   full window length
-float hann(unsigned int _n,
-           unsigned int _N);
+//  _i      :   window index, _i in [0,_wlen-1]
+//  _wlen   :   full window length
+float liquid_hann(unsigned int _i,
+                  unsigned int _wlen);
 
 // Blackman-harris window
-//  _n      :   window index
-//  _N      :   full window length
-float blackmanharris(unsigned int _n,
-                     unsigned int _N);
+//  _i      :   window index, _i in [0,_wlen-1]
+//  _wlen   :   full window length
+float liquid_blackmanharris(unsigned int _i,
+                            unsigned int _wlen);
 
 // 7th order Blackman-harris window
-// _n			:	window index
-// _N			:	full window length
-float blackmanharris7(unsigned int _n,
-                      unsigned int _N);
+//  _i      :   window index, _i in [0,_wlen-1]
+//  _wlen   :   full window length
+float liquid_blackmanharris7(unsigned int _i,
+                             unsigned int _wlen);
 
 // Flat-top window
-// _n			:	window index
-// _N			:	full window length
-float flattop(unsigned int _n,
-              unsigned int _N);
+//  _i      :   window index, _i in [0,_wlen-1]
+//  _wlen   :   full window length
+float liquid_flattop(unsigned int _i,
+                     unsigned int _wlen);
 
 // Triangular window
-// _n			:	window index
-// _N			:	full window length
-// _L			:	triangle length, _L in {_N, _N+1, _N-1}
-float triangular(unsigned int _n,
-                 unsigned int _N,
-                 unsigned int _L);
+//  _i      :   window index, _i in [0,_wlen-1]
+//  _wlen   :   full window length
+// _L		:	triangle length, _L in {_wlen-1, _wlen, _wlen+1}
+float liquid_triangular(unsigned int _i,
+                        unsigned int _wlen,
+                        unsigned int _L);
 
 // raised-cosine tapering window
-//  _n      :   window index
-//  _t      :   taper length
-//  _N      :   full window length
-float liquid_rcostaper_windowf(unsigned int _n,
-                               unsigned int _t,
-                               unsigned int _N);
+//  _i      :   window index
+//  _wlen   :   full window length
+//  _t      :   taper length, _t in [0,_wlen/2]
+float liquid_rcostaper_window(unsigned int _i,
+                              unsigned int _wlen,
+                              unsigned int _t);
 
 
 // polynomials

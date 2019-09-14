@@ -65,7 +65,7 @@ int main(int argc, char*argv[]) {
     for (i=0; i<num_samples; i++) {
         // generate windowed pulse
         x[i] = 0.5f*cosf(2.0f*M_PI*phi) + 0.5f*cosf(2.0f*M_PI*phi*0.57f);
-        x[i] *= 0.5f * kaiser(i, num_samples, 10.0f, 0.0f);
+        x[i] *= 0.5f * liquid_kaiser(i, num_samples, 10.0f);
         phi += dphi;
 
         // compress sample

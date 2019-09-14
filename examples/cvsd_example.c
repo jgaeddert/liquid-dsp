@@ -68,7 +68,7 @@ int main(int argc, char*argv[])
 
     // generate input time series
     for (i=0; i<n; i++)
-        x[i] = sinf(2.0f*M_PI*fc*i) * hamming(i,n);
+        x[i] = sinf(2.0f*M_PI*fc*i) * liquid_hamming(i,n);
 
     // encode time series
     for (i=0; i<n; i++)

@@ -76,7 +76,7 @@ int main(int argc, char*argv[]) {
     for (i=0; i<M*num_samples; i++) {
         x[i]  = 0.6f*cexpf(_Complex_I*2*M_PI*f0*i);
         x[i] += 0.4f*cexpf(_Complex_I*2*M_PI*f1*i);
-        x[i] *= (i < w_len) ? hamming(i,w_len) : 0;
+        x[i] *= (i < w_len) ? liquid_hamming(i,w_len) : 0;
     }
 
     // create deimator object adn set scale

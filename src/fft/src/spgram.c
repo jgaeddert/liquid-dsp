@@ -129,14 +129,14 @@ SPGRAM() SPGRAM(_create)(unsigned int _nfft,
     float zeta =  3.0f;
     for (i=0; i<n; i++) {
         switch (q->wtype) {
-        case LIQUID_WINDOW_HAMMING:         q->w[i] = hamming(i,n);         break;
-        case LIQUID_WINDOW_HANN:            q->w[i] = hann(i,n);            break;
-        case LIQUID_WINDOW_BLACKMANHARRIS:  q->w[i] = blackmanharris(i,n);  break;
-        case LIQUID_WINDOW_BLACKMANHARRIS7: q->w[i] = blackmanharris7(i,n); break;
-        case LIQUID_WINDOW_KAISER:          q->w[i] = kaiser(i,n,beta,0);   break;
-        case LIQUID_WINDOW_FLATTOP:         q->w[i] = flattop(i,n);         break;
-        case LIQUID_WINDOW_TRIANGULAR:      q->w[i] = triangular(i,n,n);    break;
-        case LIQUID_WINDOW_RCOSTAPER:       q->w[i] = liquid_rcostaper_windowf(i,n/3,n); break;
+        case LIQUID_WINDOW_HAMMING:         q->w[i] = liquid_hamming(i,n);         break;
+        case LIQUID_WINDOW_HANN:            q->w[i] = liquid_hann(i,n);            break;
+        case LIQUID_WINDOW_BLACKMANHARRIS:  q->w[i] = liquid_blackmanharris(i,n);  break;
+        case LIQUID_WINDOW_BLACKMANHARRIS7: q->w[i] = liquid_blackmanharris7(i,n); break;
+        case LIQUID_WINDOW_KAISER:          q->w[i] = liquid_kaiser(i,n,beta);     break;
+        case LIQUID_WINDOW_FLATTOP:         q->w[i] = liquid_flattop(i,n);         break;
+        case LIQUID_WINDOW_TRIANGULAR:      q->w[i] = liquid_triangular(i,n,n);    break;
+        case LIQUID_WINDOW_RCOSTAPER:       q->w[i] = liquid_rcostaper_window(i,n/3,n); break;
         case LIQUID_WINDOW_KBD:             q->w[i] = liquid_kbd(i,n,zeta); break;
         default:
             fprintf(stderr,"error: spgram%s_create(), invalid window\n", EXTENSION);
