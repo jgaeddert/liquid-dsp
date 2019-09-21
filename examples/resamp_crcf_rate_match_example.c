@@ -9,10 +9,11 @@
 int main(int argc, char*argv[])
 {
     // options
-    float        r          = 1.712f;   // true resampling rate (output/input) offset
-    unsigned int num_blocks = 400;      // number of blocks
+    float        r          = 1.618034; // true resampling rate (output/input) offset
+    unsigned int num_blocks = 400;      // number of blocks to simulate
     unsigned int block_len  = 256;      // number of samples in block
     float        alpha      = 0.1f;     // loop bandwidth factor
+    const char   filename[] = "resamp_crcf_rate_match_example.m";   // output filename
 
     // buffers
     float complex buf_0[2*block_len];   // original
@@ -28,6 +29,10 @@ int main(int argc, char*argv[])
     unsigned int i;
     float log_error = 0.0f; // accumulated log error
     float rate      = 1.0f;
+    char  buf_str[200];
+    FILE * fid = fopen(filename,"w");
+    fprintf(fid,"clear all; close all;\nv=[\n");
+    printf("# %8s %8s %8s %12s %12s %12s\n", "blk len", "num in", "num out", "rate in", "rate out", "rate all");
     for (i=0; i<num_blocks; i++) {
         // initial offset
         unsigned int n1=0;
@@ -43,9 +48,13 @@ int main(int argc, char*argv[])
         rate = resamp_crcf_get_rate(resamp_1);
 
         // print results
-        printf("  %6u %6u %6u %12.9f %12.9f %12.9f\n", block_len, n1, n2, r, rate, r*rate);
+        sprintf(buf_str,"  %8u %8u %8u %12.9f %12.9f %12.9f\n", block_len, n1, n2, r, rate, r*rate);
+        fprintf(fid,"%s",buf_str);
+        printf("%s",buf_str);
     }
     printf("# true rate: %12.9f, recovered: %12.9f\n", r, r*rate);
+    fprintf(fid,"];\nfigure; plot(v(:,6),'LineWidth',2); grid on;\n");
+    fprintf(fid,"xlabel('block index'); ylabel('resampling error');\n");
 
     // clean up allocated objects
     resamp_crcf_destroy(resamp_0);
