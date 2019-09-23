@@ -136,7 +136,7 @@ SPGRAM() SPGRAM(_create)(unsigned int _nfft,
         case LIQUID_WINDOW_KAISER:          q->w[i] = liquid_kaiser(i,n,beta);     break;
         case LIQUID_WINDOW_FLATTOP:         q->w[i] = liquid_flattop(i,n);         break;
         case LIQUID_WINDOW_TRIANGULAR:      q->w[i] = liquid_triangular(i,n,n);    break;
-        case LIQUID_WINDOW_RCOSTAPER:       q->w[i] = liquid_rcostaper_window(i,n/3,n); break;
+        case LIQUID_WINDOW_RCOSTAPER:       q->w[i] = liquid_rcostaper_window(i,n,n/3); break;
         case LIQUID_WINDOW_KBD:             q->w[i] = liquid_kbd(i,n,zeta); break;
         default:
             fprintf(stderr,"error: spgram%s_create(), invalid window\n", EXTENSION);

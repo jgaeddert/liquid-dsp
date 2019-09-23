@@ -33,7 +33,7 @@ int main(int argc, char*argv[])
     for (i=0; i<num_samples; i++) {
         x[i] =  0.6f*cos(2*M_PI*0.0202*i);
         x[i] += 0.4f*cos(2*M_PI*0.0271*i);
-        x[i] *= i < nw ? liquid_rcostaper_window(i,nt,nw) : 0;
+        x[i] *= i < nw ? liquid_rcostaper_window(i,nw,nt) : 0;
     }
 
     // modulate signal (SSB with carrier)
