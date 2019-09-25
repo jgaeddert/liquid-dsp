@@ -52,7 +52,7 @@ class firfilt
         std::complex<float> * ptr = (std::complex<float>*) info.ptr;
 
         // run filter (in place)
-        for (auto i=0; i<num_samples; i++)
+        for (auto i=0U; i<num_samples; i++)
             ptr[i*stride] = execute(ptr[i*stride]);
     }
 #endif
