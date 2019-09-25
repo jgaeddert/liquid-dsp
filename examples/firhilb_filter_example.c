@@ -44,7 +44,7 @@ int main() {
         x[i]  = 1.0f*cexpf( 0.12f*_Complex_I*2*M_PI*i) + // primary tone
                 0.1f*cexpf( 0.17f*_Complex_I*2*M_PI*i) + // secondary tone
                 0.2f*cexpf(-0.40f*_Complex_I*2*M_PI*i);  // tone in negative spectrum
-        x[i] *= (i < n) ? 1.855f*hamming(i,n) : 0.0f;
+        x[i] *= (i < n) ? 1.855f*liquid_hamming(i,n) : 0.0f;
 
         // convert to real
         float y0, y1;

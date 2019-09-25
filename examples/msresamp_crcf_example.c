@@ -79,7 +79,7 @@ int main(int argc, char*argv[])
     float wsum = 0.0f;
     for (i=0; i<nx; i++) {
         // compute window
-        float w = i < n ? kaiser(i, n, 10.0f, 0.0f) : 0.0f;
+        float w = i < n ? liquid_kaiser(i, n, 10.0f) : 0.0f;
 
         // apply window to complex sinusoid
         x[i] = cexpf(_Complex_I*2*M_PI*fc*i) * w;

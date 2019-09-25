@@ -61,7 +61,7 @@ int main(int argc, char*argv[])
     float w_sum = 0.0f;                         // gain due to window
     for (i=0; i<2*num_samples; i++) {
         // compute windowing function and keep track of gain
-        float w = (i < w_len ? kaiser(i,w_len,beta,0) : 0.0f);
+        float w = (i < w_len ? liquid_kaiser(i,w_len,beta) : 0.0f);
         w_sum += w;
 
         // compute windowed complex sinusoid

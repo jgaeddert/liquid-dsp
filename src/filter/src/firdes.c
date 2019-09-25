@@ -271,7 +271,7 @@ void liquid_firdes_kaiser(unsigned int _n,
         h1 = sincf(2.0f*_fc*t);
 
         // kaiser window
-        h2 = kaiser(i,_n,beta,_mu);
+        h2 = liquid_kaiser(i,_n,beta);
 
         //printf("t = %f, h1 = %f, h2 = %f\n", t, h1, h2);
 
@@ -314,7 +314,7 @@ void liquid_firdes_notch(unsigned int _m,
         float p = -cosf(2.0f*M_PI*_f0*((float)(i) - (float)_m));
 
         // window
-        float w = kaiser(i,h_len,beta,0);
+        float w = liquid_kaiser(i,h_len,beta);
 
         // save un-normalized filter
         _h[i] = p*w;
@@ -447,7 +447,7 @@ void liquid_firdes_doppler(unsigned int _n,
         r = 1.5*_K/(_K+1)*cosf(2*M_PI*_fd*t*cosf(_theta));
 
         // Window
-        w = kaiser(i, _n, beta, 0);
+        w = liquid_kaiser(i, _n, beta);
 
         // composite
         _h[i] = (J+r)*w;

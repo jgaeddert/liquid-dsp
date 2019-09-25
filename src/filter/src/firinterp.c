@@ -108,8 +108,10 @@ FIRINTERP() FIRINTERP(_create_kaiser)(unsigned int _M,
     // copy coefficients to type-specific array (e.g. float complex)
     TC hc[h_len];
     unsigned int i;
-    for (i=0; i<h_len; i++)
+    for (i=0; i<h_len; i++) {
+        printf("%3u : %12.6f\n", i, hf[i]);
         hc[i] = hf[i];
+    }
     
     // return interpolator object
     return FIRINTERP(_create)(_M, hc, 2*_M*_m);

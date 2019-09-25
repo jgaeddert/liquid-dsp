@@ -56,7 +56,7 @@ void test_harness_rresamp_crcf(unsigned int _P,
     float        fx = 0.25f*(r > 1.0f ? 1.0f : r);   // input tone frequency
     for (i=0; i<nx; i++) {
         // compute window
-        float w = i < wlen ? kaiser(i, wlen, 10.0f, 0.0f) : 0.0f;
+        float w = i < wlen ? liquid_kaiser(i, wlen, 10.0f) : 0.0f;
 
         // apply window to complex sinusoid
         x[i] = cexpf(_Complex_I*2*M_PI*fx*i) * w;

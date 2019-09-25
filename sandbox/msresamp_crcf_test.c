@@ -68,7 +68,7 @@ int main(int argc, char*argv[])
     // generate input
     unsigned int window_len = (3*nx)/4;
     for (i=0; i<nx; i++)
-        x[i] = i < window_len ? cexpf(_Complex_I*2*M_PI*fc*i) * kaiser(i,window_len,10.0f,0.0f) : 0.0f;
+        x[i] = i < window_len ? cexpf(_Complex_I*2*M_PI*fc*i) * liquid_kaiser(i,window_len,10.0f) : 0.0f;
 
     // create multi-stage arbitrary resampler object
     msresamp_crcf q = msresamp_crcf_create(r,As);
