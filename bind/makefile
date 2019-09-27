@@ -2,7 +2,8 @@
 all:
 
 CXX_INCLUDES := -I./ -I ./include -I ./bind/
-CXXFLAGS := -Wall -O3 -std=c++11 -shared -fPIC ${CXX_INCLUDES}
+#CXXFLAGS := -Wall -O3 -std=c++11 -shared -fPIC ${CXX_INCLUDES}
+CXXFLAGS := -Wall -O3 -std=c++11 -shared -fPIC -undefined dynamic_lookup
 LIBS := -lm -lc -lliquid
 
 # the "-undefined dynamic_lookup" is needed on macOS
@@ -28,8 +29,8 @@ ${pythonlib} : ${libs_python} bind/liquid.python.o
 	g++ ${PYBIND11_FLAGS} -o $@ $^ ${LIBS}
 
 test:
-	#g++ -O3 -Wall -shared -std=c++11 -fPIC -undefined dynamic_lookup -D PYTHONLIB `python3 -m pybind11 --includes` bind/liquid.python.cc -o liquid`python3-config --extension-suffix` -lm -lc -lliquid
-	g++ -O3 -Wall -shared -std=c++11 -fPIC -undefined dynamic_lookup ${CXX_INCLUDES} -D PYTHONLIB -I/usr/include/python3.5m/ `python3 -m pybind11 --includes` bind/liquid.python.cc -o liquid`python3-config --extension-suffix` -lm -lc -lliquid -lfftw3f
+	g++ ${CXXFLAGS} `python3 -m pybind11 --includes` -D PYTHONLIB bind/liquid.python.cc -o liquid`python3-config --extension-suffix` -lliquid
+	./bind/example.py
 
 all: bind/main ${pythonlib}
 
