@@ -72,9 +72,9 @@ class firfilt
 #ifdef PYTHONLIB
 void init_firfilt(py::module &m)
 {
-    py::class_<firfilt> f(m, "firfilt");
-        f.def(py::init<unsigned int,float,float,float>(),
-             py::arg("n")=51, py::arg("fc")=0.25, py::arg("As")=60, py::arg("mu")=0)
+    py::class_<firfilt>(m, "firfilt")
+        .def(py::init<unsigned int,float,float,float>(),
+            py::arg("n")=51, py::arg("fc")=0.25, py::arg("As")=60, py::arg("mu")=0)
         .def("reset",   &firfilt::reset,      "reset object's internal state")
         .def("display", &firfilt::display,    "print object properties to stdout")
         .def("execute", &firfilt::py_execute, "execute on a block of samples")
