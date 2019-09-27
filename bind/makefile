@@ -29,7 +29,7 @@ ${pythonlib} : ${libs_python} bind/liquid.python.o
 
 test:
 	#g++ -O3 -Wall -shared -std=c++11 -fPIC -undefined dynamic_lookup -D PYTHONLIB `python3 -m pybind11 --includes` bind/liquid.python.cc -o liquid`python3-config --extension-suffix` -lm -lc -lliquid
-	g++ -O3 -Wall -shared -std=c++11 -fPIC ${CXX_INCLUDES} -D PYTHONLIB -I/usr/include/python3.5m/ `python3 -m pybind11 --includes` bind/liquid.python.cc -o liquid`python3-config --extension-suffix` -lm -lc -lliquid -lfftw3f
+	g++ -O3 -Wall -shared -std=c++11 -fPIC -undefined dynamic_lookup ${CXX_INCLUDES} -D PYTHONLIB -I/usr/include/python3.5m/ `python3 -m pybind11 --includes` bind/liquid.python.cc -o liquid`python3-config --extension-suffix` -lm -lc -lliquid -lfftw3f
 
 all: bind/main ${pythonlib}
 
