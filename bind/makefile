@@ -29,7 +29,7 @@ ${pythonlib} : ${libs_python} bind/liquid.python.o
 	g++ ${PYBIND11_FLAGS} -o $@ $^ ${LIBS}
 
 test:
-	g++ ${CXXFLAGS} `python3 -m pybind11 --includes` -D PYTHONLIB bind/liquid.python.cc -o liquid`python3-config --extension-suffix` -lliquid
+	g++ ${CXXFLAGS} `python3 -m pybind11 --includes` -D PYTHONLIB bind/liquid.python.cc -o liquid`python3-config --extension-suffix` -lliquid `python3-config --ldflags`
 	./bind/example.py
 
 all: bind/main ${pythonlib}

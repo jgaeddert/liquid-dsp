@@ -147,6 +147,13 @@ Available Modules
         packing, and unpacking of arrays)
   * _vector_: generic vector operations
 
+### C++ and Python Bindings###
+
+On MacOS
+
+    brew install pybind11
+    sudo pip3 install pybind11 numpy
+
 ### License ###
 
 liquid projects are released under the X11/MIT license.
