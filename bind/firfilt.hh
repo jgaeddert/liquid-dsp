@@ -93,8 +93,10 @@ class firfilt
         std::complex<float> * ptr = (std::complex<float>*) info.ptr;
 
         // run filter (in place)
-        for (auto i=0U; i<num_samples; i++)
-            ptr[i*stride] = step(ptr[i*stride]);
+        for (auto i=0U; i<num_samples; i++) {
+            firfilt_crcf_push   (q, ptr[i*stride]);
+            firfilt_crcf_execute(q, ptr+i*stride );
+        }
     }
 #endif
 };
