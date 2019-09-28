@@ -33,8 +33,7 @@ class firfilt
     void push(std::complex<float> _x) { firfilt_crcf_push(q,_x); }
 
     // write block of samples
-    void execute(std::complex<float> * _x,
-                 unsigned int          _n)
+    void write(std::complex<float> * _x, unsigned int _n)
         { firfilt_crcf_write(q,_x,_n); }
 
     // execute vector dot product on filter's internal buffer
