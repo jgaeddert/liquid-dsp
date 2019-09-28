@@ -26,17 +26,34 @@ class firfilt
     // reset object
     void reset() { firfilt_crcf_reset(q); }
 
-    //
+    // print
     void display() { firfilt_crcf_print(q); }
 
-    // push/execute one sample at a time
-    std::complex<float> execute(std::complex<float> _x)
+    // push one sample
+    void push(std::complex<float> _x) { firfilt_crcf_push(q,_x); }
+
+    // write block of samples
+    void execute(std::complex<float> * _x,
+                 unsigned int          _n)
+        { firfilt_crcf_write(q,_x,_n); }
+
+    // execute vector dot product on filter's internal buffer
+    std::complex<float> execute()
     {
         std::complex<float> y;
-        firfilt_crcf_push(q, _x);
         firfilt_crcf_execute(q, &y);
         return y;
     }
+
+    // execute on block of samples
+    void execute(std::complex<float> * _x,
+                 unsigned int          _n,
+                 std::complex<float> * _y)
+    { firfilt_crcf_execute_block(q, _x, _n, _y); }
+
+    // [c++ exclusive] push/execute one sample at a time
+    std::complex<float> step(std::complex<float> _x)
+        { push(_x); return execute(); }
 
   private:
     firfilt_crcf q;
@@ -77,7 +94,7 @@ class firfilt
 
         // run filter (in place)
         for (auto i=0U; i<num_samples; i++)
-            ptr[i*stride] = execute(ptr[i*stride]);
+            ptr[i*stride] = step(ptr[i*stride]);
     }
 #endif
 };
