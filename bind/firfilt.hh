@@ -43,6 +43,19 @@ class firfilt
 
 #ifdef PYTHONLIB
   public:
+    // external coefficients using numpy array
+    firfilt(py::array_t<float> _h) {
+        // get buffer info and verify parameters
+        py::buffer_info info = _h.request();
+        if (info.itemsize != sizeof(float))
+            throw std::runtime_error("invalid input numpy size, use dtype=np.single");
+        if (info.ndim != 1)
+            throw std::runtime_error("invalid number of input dimensions, must be 1-D array");
+
+        // create object
+        q = firfilt_crcf_create((float*)info.ptr, info.shape[0]);
+    }
+
     void py_execute(py::array_t<std::complex<float>> & _buf)
     {
         // get buffer info
@@ -73,6 +86,8 @@ class firfilt
 void init_firfilt(py::module &m)
 {
     py::class_<firfilt>(m, "firfilt")
+        .def(py::init<py::array_t<float>>(),
+             py::arg("h"))
         .def(py::init<unsigned int,float,float,float>(),
              py::arg("n")=51, py::arg("fc")=0.25, py::arg("As")=60, py::arg("mu")=0)
         .def(py::init<int,unsigned int,unsigned int,float,float>(),
