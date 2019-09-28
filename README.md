@@ -149,10 +149,10 @@ Available Modules
 
 ### C++ and Python Bindings###
 
-On MacOS
+On MacOS (note that `matplotlib` is optional and just needed for plotting)
 
     brew install pybind11
-    sudo pip3 install pybind11 numpy
+    sudo pip3 install pybind11 numpy # matplotlib
 
 ### License ###
 
