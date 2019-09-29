@@ -107,7 +107,7 @@ void init_firfilt(py::module &m)
         .def(py::init<py::array_t<float>>(),
              py::arg("h"))
         .def(py::init<unsigned int,float,float,float>(),
-             py::arg("n")=51, py::arg("fc")=0.25, py::arg("As")=60, py::arg("mu")=0)
+             py::arg("h_len")=51, py::arg("fc")=0.25, py::arg("As")=60, py::arg("mu")=0)
         .def(py::init<int,unsigned int,unsigned int,float,float>(),
              py::arg("ftype")=7, py::arg("k")=2, py::arg("m")=5, py::arg("beta")=0.25, py::arg("mu")=0)
         .def("reset",   &firfilt::reset,      "reset object's internal state")

@@ -8,7 +8,7 @@ import matplotlib.pyplot as plt
 m = 100 # filter semi-length
 
 #filt = dsp.firfilt(np.arange(10,dtype=np.single)) # create filter from coefficients array
-filt = dsp.firfilt(n=2*m+1, fc=0.03)                  # create prototype low-pass Kaiser filter
+filt = dsp.firfilt(h_len=2*m+1, fc=0.03)                  # create prototype low-pass Kaiser filter
 #filt = dsp.firfilt(ftype=7, k=2, m=3)             # create prototype (root) Nyquist filter
 #filt.display()
 
