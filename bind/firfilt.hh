@@ -59,6 +59,17 @@ class firfilt
 
 #ifdef PYTHONLIB
   public:
+    // python-specific constructor with keyword arguments
+    // filt = dsp.firfilt("lowpass", n=2*m+1, fc=0.03)
+    // filt = dsp.firfilt("dcblock",m=7, As=60.0)
+    // filt = dsp.firfilt("rrc", k=4, m=12, beta=0.3)
+    // filt = dsp.firfilt("arkaiser", k=4, m=12, beta=0.3)
+    /*
+    firfilt(std::string _ftype, py::args _args) {
+        if (_ftype == "lowpass") q = firfilt_crcf_create_kaiser...
+    }
+    */
+
     // external coefficients using numpy array
     firfilt(py::array_t<float> _h) {
         // get buffer info and verify parameters
