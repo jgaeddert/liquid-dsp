@@ -9,6 +9,8 @@
 #include <liquid/liquid.h>
 namespace py = pybind11;
 
+void print_object(py::object o);
+
 void init_firfilt(py::module &);
 #endif // PYTHONLIB
 
