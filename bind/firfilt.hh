@@ -68,11 +68,9 @@ class firfilt
     // filt = dsp.firfilt("arkaiser", k=4, m=12, beta=0.3)
     firfilt(py::kwargs _kwargs) {
         std::string ftype = _kwargs.contains("ftype") ? py::cast<std::string>(_kwargs["ftype"]) : "lowpass";
-        // lambda update dictionary...
         auto lupdate = [](py::dict a, py::dict b) { for (auto p: b) a[p.first]=p.second; };
         if (ftype == "lowpass") {
-            // TODO: use dict constructor
-            py::dict v; v["n"]=21; v["fc"]=0.25f; v["As"]=60.0f; v["mu"]=0.0f;
+            auto v = py::dict("n"_a=21, "fc"_a=0.25f, "As"_a=60.0f, "mu"_a=0.0f);
             lupdate(v,_kwargs);
             q = firfilt_crcf_create_kaiser(int(  py::int_  (v["n"]) ),
                                            float(py::float_(v["fc"])),
