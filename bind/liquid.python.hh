@@ -9,6 +9,7 @@
 #include <liquid/liquid.h>
 namespace py = pybind11;
 
+void dict_update(py::dict & a, py::dict & b);
 void print_object(py::object o);
 
 void init_firfilt(py::module &);

@@ -3,6 +3,8 @@
 #define __FIRFILT_HH__
 
 #include <complex>
+#include <iostream>
+#include <string>
 #include <liquid/liquid.h>
 #include "liquid.python.hh"
 
@@ -64,11 +66,22 @@ class firfilt
     // filt = dsp.firfilt("dcblock",m=7, As=60.0)
     // filt = dsp.firfilt("rrc", k=4, m=12, beta=0.3)
     // filt = dsp.firfilt("arkaiser", k=4, m=12, beta=0.3)
-    /*
-    firfilt(std::string _ftype, py::args _args) {
-        if (_ftype == "lowpass") q = firfilt_crcf_create_kaiser...
+    firfilt(py::kwargs _kwargs) {
+        std::string ftype = _kwargs.contains("ftype") ? py::cast<std::string>(_kwargs["ftype"]) : "lowpass";
+        // lambda update dictionary...
+        auto lupdate = [](py::dict a, py::dict b) { for (auto p: b) a[p.first]=p.second; };
+        if (ftype == "lowpass") {
+            // TODO: use dict constructor
+            py::dict v; v["n"]=21; v["fc"]=0.25f; v["As"]=60.0f; v["mu"]=0.0f;
+            lupdate(v,_kwargs);
+            q = firfilt_crcf_create_kaiser(int(  py::int_  (v["n"]) ),
+                                           float(py::float_(v["fc"])),
+                                           float(py::float_(v["As"])),
+                                           float(py::float_(v["mu"])));
+        } else {
+            throw std::runtime_error("invalid/unsupported filter type: " + ftype);
+        }
     }
-    */
 
     // external coefficients using numpy array
     firfilt(py::array_t<float> _h) {
@@ -115,12 +128,15 @@ class firfilt
 void init_firfilt(py::module &m)
 {
     py::class_<firfilt>(m, "firfilt")
+        /*
         .def(py::init<py::array_t<float>>(),
              py::arg("h"))
         .def(py::init<unsigned int,float,float,float>(),
              py::arg("h_len")=51, py::arg("fc")=0.25, py::arg("As")=60, py::arg("mu")=0)
         .def(py::init<int,unsigned int,unsigned int,float,float>(),
              py::arg("ftype")=7, py::arg("k")=2, py::arg("m")=5, py::arg("beta")=0.25, py::arg("mu")=0)
+        */
+        .def(py::init<py::kwargs>())
         .def("reset",   &firfilt::reset,      "reset object's internal state")
         .def("display", &firfilt::display,    "print object properties to stdout")
         .def("execute", &firfilt::py_execute, "execute on a block of samples")

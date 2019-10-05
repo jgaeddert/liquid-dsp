@@ -38,9 +38,17 @@ void print_object(py::object o)
     }
 }
 
+// shallow dictionary update
+void dict_update(py::dict & a, py::dict & b)
+{
+    for (auto o: b)
+        a[o.first] = o.second;
+}
+
 PYBIND11_MODULE(liquid, m) {
     m.doc() = "software-defined radio signal processing library";
     m.def("print_object", &print_object, "a function to recursively print a python object");
+    m.def("dict_update", &dict_update, "update dictionary objects");
     init_firfilt(m);
 }
 
