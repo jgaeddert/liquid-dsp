@@ -8,8 +8,8 @@ import matplotlib.pyplot as plt
 m    = 100 # filter semi-length
 nfft = 2400
 
-filt = dsp.firfilt(ftype="lowpass", n=2*m+1, fc=0.05)
-#filt = dsp.firfilt(ftype="dcblock", m=m, As=40)
+filt = dsp.firfilt("lowpass", n=2*m+1, fc=0.05)
+#filt = dsp.firfilt("dcblock", m=m, As=40)
 filt.display()
 
 n = filt.get_length()

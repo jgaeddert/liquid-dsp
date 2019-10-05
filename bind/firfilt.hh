@@ -69,23 +69,22 @@ class firfilt
     // filt = dsp.firfilt("dcblock",m=7, As=60.0)
     // filt = dsp.firfilt("rrc", k=4, m=12, beta=0.3)
     // filt = dsp.firfilt("arkaiser", k=4, m=12, beta=0.3)
-    firfilt(py::kwargs _kwargs) {
-        std::string ftype = _kwargs.contains("ftype") ? py::cast<std::string>(_kwargs["ftype"]) : "lowpass";
+    firfilt(std::string _ftype, py::kwargs _kwargs) {
         auto lupdate = [](py::dict a, py::dict b) { for (auto p: b) a[p.first]=p.second; };
-        if (ftype == "lowpass") {
+        if (_ftype == "lowpass") {
             auto v = py::dict("n"_a=21, "fc"_a=0.25f, "As"_a=60.0f, "mu"_a=0.0f);
             lupdate(v,_kwargs);
             q = firfilt_crcf_create_kaiser(int(  py::int_  (v["n"]) ),
                                            float(py::float_(v["fc"])),
                                            float(py::float_(v["As"])),
                                            float(py::float_(v["mu"])));
-        } else if (ftype == "dcblock") {
+        } else if (_ftype == "dcblock") {
             auto v = py::dict("m"_a=7, "As"_a=60.0f);
             lupdate(v,_kwargs);
             q = firfilt_crcf_create_dc_blocker(int  (py::int_  (v["m"])),
                                                float(py::float_(v["As"])));
         } else {
-            throw std::runtime_error("invalid/unsupported filter type: " + ftype);
+            throw std::runtime_error("invalid/unsupported filter type: " + _ftype);
         }
     }
 
@@ -142,7 +141,7 @@ void init_firfilt(py::module &m)
         .def(py::init<int,unsigned int,unsigned int,float,float>(),
              py::arg("ftype")=7, py::arg("k")=2, py::arg("m")=5, py::arg("beta")=0.25, py::arg("mu")=0)
         */
-        .def(py::init<py::kwargs>())
+        .def(py::init<std::string, py::kwargs>())
         .def("reset",      &firfilt::reset,      "reset object's internal state")
         .def("display",    &firfilt::display,    "print object properties to stdout")
         .def("execute",    &firfilt::py_execute, "execute on a block of samples")
