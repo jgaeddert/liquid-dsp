@@ -76,6 +76,11 @@ class firfilt
                                            float(py::float_(v["fc"])),
                                            float(py::float_(v["As"])),
                                            float(py::float_(v["mu"])));
+        } else if (ftype == "dcblock") {
+            auto v = py::dict("m"_a=7, "As"_a=60.0f);
+            lupdate(v,_kwargs);
+            q = firfilt_crcf_create_dc_blocker(int  (py::int_  (v["m"])),
+                                               float(py::float_(v["As"])));
         } else {
             throw std::runtime_error("invalid/unsupported filter type: " + ftype);
         }
