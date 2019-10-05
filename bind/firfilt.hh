@@ -71,7 +71,16 @@ class firfilt
     // filt = dsp.firfilt("arkaiser", k=4, m=12, beta=0.3)
     firfilt(std::string _ftype, py::kwargs _kwargs) {
         auto lupdate = [](py::dict a, py::dict b) { for (auto p: b) a[p.first]=p.second; };
-        if (_ftype == "lowpass") {
+        int  prototype = liquid_getopt_str2firfilt(_ftype.c_str());
+        if (prototype != LIQUID_FIRFILT_UNKNOWN) {
+            auto v = py::dict("k"_a=2, "m"_a=5, "beta"_a=0.2f, "mu"_a=0.0f);
+            lupdate(v,_kwargs);
+            q = firfilt_crcf_create_rnyquist(prototype,
+                                             int  (py::int_  (v["k"]) ),
+                                             int  (py::int_  (v["m"])),
+                                             float(py::float_(v["beta"])),
+                                             float(py::float_(v["mu"])));
+        } else if (_ftype == "lowpass") {
             auto v = py::dict("n"_a=21, "fc"_a=0.25f, "As"_a=60.0f, "mu"_a=0.0f);
             lupdate(v,_kwargs);
             q = firfilt_crcf_create_kaiser(int(  py::int_  (v["n"]) ),
