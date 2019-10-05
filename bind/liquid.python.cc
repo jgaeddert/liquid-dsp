@@ -39,7 +39,7 @@ void print_object(py::object o)
 }
 
 // shallow dictionary update
-void dict_update(py::dict & a, py::dict & b)
+void dict_update(py::dict & a, py::dict b)
 {
     for (auto o: b)
         a[o.first] = o.second;

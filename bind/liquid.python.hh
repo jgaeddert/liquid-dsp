@@ -10,7 +10,7 @@
 namespace py = pybind11;
 using namespace pybind11::literals;
 
-void dict_update(py::dict & a, py::dict & b);
+void dict_update(py::dict & a, py::dict b);
 void print_object(py::object o);
 
 void init_firfilt(py::module &);

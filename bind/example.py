@@ -5,26 +5,32 @@ import numpy as np
 import liquid as dsp
 import matplotlib.pyplot as plt
 
-m = 100 # filter semi-length
-
-#filt = dsp.firfilt(np.arange(10,dtype=np.single)) # create filter from coefficients array
-#filt = dsp.firfilt(h_len=2*m+1, fc=0.03)                  # create prototype low-pass Kaiser filter
-#filt = dsp.firfilt(ftype=7, k=2, m=3)             # create prototype (root) Nyquist filter
+m    = 100 # filter semi-length
+nfft = 2400
 
 filt = dsp.firfilt(ftype="lowpass", n=2*m+1, fc=0.05)
 #filt = dsp.firfilt(ftype="dcblock", m=m, As=40)
 filt.display()
 
+n = filt.get_length()
+
 # compute impulse response
-buf = np.zeros((2*m+1,), dtype=np.csingle)
+buf = np.zeros((n,), dtype=np.csingle)
 buf[0] = 1.
 filt.execute(buf)
 
-# plot response
-fig, ax = plt.subplots()
-ax.plot(np.linspace(-m,m,2*m+1), buf)
-ax.set_xlabel('Delay [samples]')
-ax.set_ylabel('Impulse Response')
-ax.grid(True, zorder=5)
+# compute filter response in dB
+psd = 20*np.log10(np.abs(np.fft.fftshift(np.fft.fft(buf, nfft))))
+
+# plot impulse and spectral responses
+fig, ax = plt.subplots(2,figsize=(8,8))
+ax[0].plot(np.linspace(-m,m,2*m+1), buf)
+ax[0].set_xlabel('Delay [samples]')
+ax[0].set_ylabel('Impulse Response')
+ax[0].grid(True, zorder=5)
+ax[1].plot(np.arange(nfft)/nfft-0.5, psd)
+ax[1].set_xlabel('Normalized Frequency [f/F_s]')
+ax[1].set_ylabel('Power Spectral Density [dB]')
+ax[1].grid(True, zorder=5)
 plt.show()
 

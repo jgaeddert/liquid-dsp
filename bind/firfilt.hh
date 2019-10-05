@@ -52,6 +52,9 @@ class firfilt
                  std::complex<float> * _y)
     { firfilt_crcf_execute_block(q, _x, _n, _y); }
 
+    // get length of filter
+    unsigned int get_length() { return firfilt_crcf_get_length(q); }
+
     // [c++ exclusive] push/execute one sample at a time
     std::complex<float> step(std::complex<float> _x)
         { push(_x); return execute(); }
@@ -140,9 +143,10 @@ void init_firfilt(py::module &m)
              py::arg("ftype")=7, py::arg("k")=2, py::arg("m")=5, py::arg("beta")=0.25, py::arg("mu")=0)
         */
         .def(py::init<py::kwargs>())
-        .def("reset",   &firfilt::reset,      "reset object's internal state")
-        .def("display", &firfilt::display,    "print object properties to stdout")
-        .def("execute", &firfilt::py_execute, "execute on a block of samples")
+        .def("reset",      &firfilt::reset,      "reset object's internal state")
+        .def("display",    &firfilt::display,    "print object properties to stdout")
+        .def("execute",    &firfilt::py_execute, "execute on a block of samples")
+        .def("get_length", &firfilt::get_length, "get length of filter")
         ;
 }
 #endif
