@@ -65,10 +65,6 @@ class firfilt
 #ifdef PYTHONLIB
   public:
     // python-specific constructor with keyword arguments
-    // filt = dsp.firfilt("lowpass", n=2*m+1, fc=0.03)
-    // filt = dsp.firfilt("dcblock",m=7, As=60.0)
-    // filt = dsp.firfilt("rrc", k=4, m=12, beta=0.3)
-    // filt = dsp.firfilt("arkaiser", k=4, m=12, beta=0.3)
     firfilt(std::string _ftype, py::kwargs _kwargs) {
         auto lupdate = [](py::dict a, py::dict b) { for (auto p: b) a[p.first]=p.second; };
         int  prototype = liquid_getopt_str2firfilt(_ftype.c_str());
@@ -87,6 +83,8 @@ class firfilt
                                            float(py::float_(v["fc"])),
                                            float(py::float_(v["As"])),
                                            float(py::float_(v["mu"])));
+        } else if (_ftype == "rect") {
+            q = firfilt_crcf_create_rect(_kwargs.contains("n") ? int(py::int_(_kwargs["n"])) : 5);
         } else if (_ftype == "dcblock") {
             auto v = py::dict("m"_a=7, "As"_a=60.0f);
             lupdate(v,_kwargs);
