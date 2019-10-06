@@ -7,8 +7,9 @@ import matplotlib.pyplot as plt
 
 filt = dsp.firfilt("lowpass", n=151, fc=0.07)
 #filt = dsp.firfilt("rkaiser", k=8, m=12, beta=0.25)
-#filt = dsp.firfilt("rect", n=21)
+#filt = dsp.firfilt("rect", n=5)
 #filt = dsp.firfilt("dcblock", m=20, As=40)
+#filt = dsp.firfilt("notch", m=20, As=40, f0=0.1)
 filt.display()
 
 # compute impulse response

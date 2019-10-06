@@ -65,34 +65,25 @@ class firfilt
 #ifdef PYTHONLIB
   public:
     // python-specific constructor with keyword arguments
-    firfilt(std::string _ftype, py::kwargs _kwargs) {
-        auto lupdate = [](py::dict a, py::dict b) { for (auto p: b) a[p.first]=p.second; };
-        int  prototype = liquid_getopt_str2firfilt(_ftype.c_str());
+    firfilt(std::string ftype, py::kwargs o) {
+        auto lupdate = [](py::dict o, py::dict d) {auto r(d);for (auto p: o){r[p.first]=p.second;} return r;};
+        int  prototype = liquid_getopt_str2firfilt(ftype.c_str());
         if (prototype != LIQUID_FIRFILT_UNKNOWN) {
-            auto v = py::dict("k"_a=2, "m"_a=5, "beta"_a=0.2f, "mu"_a=0.0f);
-            lupdate(v,_kwargs);
+            auto v = lupdate(o, py::dict("k"_a=2, "m"_a=5, "beta"_a=0.2f, "mu"_a=0.0f));
             q = firfilt_crcf_create_rnyquist(prototype,
-                                             int  (py::int_  (v["k"]) ),
-                                             int  (py::int_  (v["m"])),
-                                             float(py::float_(v["beta"])),
-                                             float(py::float_(v["mu"])));
-        } else if (_ftype == "lowpass") {
-            auto v = py::dict("n"_a=21, "fc"_a=0.25f, "As"_a=60.0f, "mu"_a=0.0f);
-            lupdate(v,_kwargs);
-            q = firfilt_crcf_create_kaiser(int(  py::int_  (v["n"]) ),
-                                           float(py::float_(v["fc"])),
-                                           float(py::float_(v["As"])),
-                                           float(py::float_(v["mu"])));
-        } else if (_ftype == "rect") {
-            q = firfilt_crcf_create_rect(_kwargs.contains("n") ? int(py::int_(_kwargs["n"])) : 5);
-        } else if (_ftype == "dcblock" || _ftype == "notch") {
-            auto v = py::dict("m"_a=7, "As"_a=60.0f, "f0"_a=0.0f);
-            lupdate(v,_kwargs);
-            q = firfilt_crcf_create_notch(int  (py::int_  (v["m" ])),
-                                          float(py::float_(v["As"])),
-                                          float(py::float_(v["f0"])));
+                py::int_(v["k"]), py::int_(v["m"]), py::float_(v["beta"]), py::float_(v["mu"]));
+        } else if (ftype == "lowpass") {
+            auto v = lupdate(o, py::dict("n"_a=21, "fc"_a=0.25f, "As"_a=60.0f, "mu"_a=0.0f));
+            q = firfilt_crcf_create_kaiser(
+                py::int_(v["n"]), py::float_(v["fc"]), py::float_(v["As"]), py::float_(v["mu"]));
+        } else if (ftype == "rect") {
+            q = firfilt_crcf_create_rect(o.contains("n") ? int(py::int_(o["n"])) : 5);
+        } else if (ftype == "dcblock" || ftype == "notch") {
+            auto v = lupdate(o, py::dict("m"_a=7, "As"_a=60.0f, "f0"_a=0.0f));
+            q = firfilt_crcf_create_notch(
+                py::int_(v["m" ]), py::float_(v["As"]), py::float_(v["f0"]));
         } else {
-            throw std::runtime_error("invalid/unsupported filter type: " + _ftype);
+            throw std::runtime_error("invalid/unsupported filter type: " + ftype);
         }
     }
 
