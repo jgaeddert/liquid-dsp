@@ -85,11 +85,12 @@ class firfilt
                                            float(py::float_(v["mu"])));
         } else if (_ftype == "rect") {
             q = firfilt_crcf_create_rect(_kwargs.contains("n") ? int(py::int_(_kwargs["n"])) : 5);
-        } else if (_ftype == "dcblock") {
-            auto v = py::dict("m"_a=7, "As"_a=60.0f);
+        } else if (_ftype == "dcblock" || _ftype == "notch") {
+            auto v = py::dict("m"_a=7, "As"_a=60.0f, "f0"_a=0.0f);
             lupdate(v,_kwargs);
-            q = firfilt_crcf_create_dc_blocker(int  (py::int_  (v["m"])),
-                                               float(py::float_(v["As"])));
+            q = firfilt_crcf_create_notch(int  (py::int_  (v["m" ])),
+                                          float(py::float_(v["As"])),
+                                          float(py::float_(v["f0"])));
         } else {
             throw std::runtime_error("invalid/unsupported filter type: " + _ftype);
         }
