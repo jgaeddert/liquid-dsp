@@ -5,7 +5,15 @@ import numpy as np
 import liquid as dsp
 import matplotlib.pyplot as plt
 
-filt = dsp.firfilt("lowpass", n=151, fc=0.07)
+# generate coefficients and pass them to filter object
+m = 40      # filter semi-length
+fc= 0.1     # filter cut-off frequency
+t = np.arange(2*m+1) - m
+h = np.sinc(fc*t) * np.cos(0.5*np.pi*t/m)**2
+filt = dsp.firfilt(h)
+
+# design prototype filter
+#filt = dsp.firfilt("lowpass", n=151, fc=0.07)
 #filt = dsp.firfilt("rkaiser", k=8, m=12, beta=0.25)
 #filt = dsp.firfilt("rect", n=5)
 #filt = dsp.firfilt("dcblock", m=20, As=40)
