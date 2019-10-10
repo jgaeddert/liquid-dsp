@@ -15,8 +15,8 @@ def callback(header,payload,stats):
 # generate a frame
 fg      = dsp.fg64()
 n       = fg.get_frame_length()
-header  = np.arange( 8).astype(np.uint8)
-payload = np.arange(64).astype(np.uint8)
+header  = np.random.randint(256, size= 8)
+payload = np.random.randint(256, size=64)
 frame   = np.zeros(( n,), dtype=np.csingle)
 fg.execute(header, payload, frame)
 

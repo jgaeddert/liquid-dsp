@@ -24,7 +24,7 @@ int py_callback_wrapper(
         int              _payload_valid,
         framesyncstats_s _stats,
         void *           _userdata);
-typedef std::function<int(py::array_t<char>,py::array_t<char>,py::dict)> py_framesync_callback;
+typedef std::function<int(py::array_t<uint8_t>,py::array_t<uint8_t>,py::dict)> py_framesync_callback;
 //typedef std::function<int(py::dict)> py_framesync_callback;
 #endif
 
@@ -106,8 +106,8 @@ int py_callback_wrapper(
     std::cout << "python callback wrapper invoked!" << std::endl;
     fs64 * obj = (fs64*) _userdata;
     // TODO: check for none type as return
-    py::array_t<char> header ({8,},{1,},(char*)_header);
-    py::array_t<char> payload({_payload_len,},{1,},(char*)_payload);
+    py::array_t<uint8_t> header ({8,           },{1,},(uint8_t*)_header);
+    py::array_t<uint8_t> payload({_payload_len,},{1,},(uint8_t*)_payload);
     py::dict stats =  framesyncstats_to_dict(_stats, _header_valid, _payload_valid);
     return obj->py_callback(header,payload,stats);
 }
