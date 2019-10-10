@@ -2,6 +2,12 @@
 #ifndef __FS64_HH__
 #define __FS64_HH__
 
+/* TODO
+ *  - check python callback and handle if it returns anything other than an int
+ *  - simplify wrapper declaration (use function definition type)
+ *  - check header and payload lengths in frame generator execute method
+ */
+
 #include <complex>
 #include <iostream>
 #include <string>
@@ -11,17 +17,16 @@
 namespace liquid {
 
 #ifdef PYTHONLIB
-int fscb(unsigned char *  _header,
-         int              _header_valid,
-         unsigned char *  _payload,
-         unsigned int     _payload_len,
-         int              _payload_valid,
-         framesyncstats_s _stats,
-         void *           _userdata)
-{
-    std::cout << "python callback invoked!" << std::endl;
-    return 0;
-}
+int py_callback_wrapper(
+        unsigned char *  _header,
+        int              _header_valid,
+        unsigned char *  _payload,
+        unsigned int     _payload_len,
+        int              _payload_valid,
+        framesyncstats_s _stats,
+        void *           _userdata);
+typedef std::function<int(py::array_t<char>,py::array_t<char>,py::dict)> py_framesync_callback;
+//typedef std::function<int(py::dict)> py_framesync_callback;
 #endif
 
 class fs64
@@ -41,11 +46,22 @@ class fs64
     framesync64 q;
 
 #ifdef PYTHONLIB
+  private:
+    py_framesync_callback py_callback;
+    friend int py_callback_wrapper(
+            unsigned char *  _header,
+            int              _header_valid,
+            unsigned char *  _payload,
+            unsigned int     _payload_len,
+            int              _payload_valid,
+            framesyncstats_s _stats,
+            void *           _userdata);
   public:
     // python-specific constructor with keyword arguments
-    fs64()
+    fs64(py_framesync_callback _callback)
     {
-        q = framesync64_create(fscb, NULL);
+        q = framesync64_create(py_callback_wrapper, this);
+        py_callback = _callback;
     }
 
     void py_execute(py::array_t<std::complex<float>> & _buf)
@@ -67,10 +83,39 @@ class fs64
 };
 
 #ifdef PYTHONLIB
+py::dict framesyncstats_to_dict(framesyncstats_s _stats,
+                                bool             _header_valid=true,
+                                bool             _payload_valid=true)
+{
+    return py::dict(
+        "header"_a  = _header_valid,
+        "payload"_a = _payload_valid,
+        "evm"_a     = _stats.evm,
+        "rssi"_a    = _stats.rssi,
+        "cfo"_a     = _stats.cfo);
+}
+
+int py_callback_wrapper(
+        unsigned char *  _header,
+        int              _header_valid,
+        unsigned char *  _payload,
+        unsigned int     _payload_len,
+        int              _payload_valid,
+        framesyncstats_s _stats,
+        void *           _userdata)
+{
+    std::cout << "python callback wrapper invoked!" << std::endl;
+    fs64 * obj = (fs64*) _userdata;
+    // TODO: check for none type as return
+    py::array_t<char> header ({8,},{1,},(char*)_header);
+    py::array_t<char> payload({_payload_len,},{1,},(char*)_payload);
+    py::dict stats =  framesyncstats_to_dict(_stats, _header_valid, _payload_valid);
+    return obj->py_callback(header,payload,stats);
+}
 void init_fs64(py::module &m)
 {
     py::class_<fs64>(m, "fs64")
-        .def(py::init<>())
+        .def(py::init<py_framesync_callback>())
         .def("display", &fs64::display,    "print object properties to stdout")
         .def("execute", &fs64::py_execute, "execute on a block of samples")
         ;

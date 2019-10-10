@@ -5,16 +5,23 @@ import numpy as np
 import liquid as dsp
 import matplotlib.pyplot as plt
 
+def callback(header,payload,stats):
+    print('python callback invoked!')
+    print(header)
+    print(payload)
+    print(stats)
+    return 0
+
 # generate a frame
 fg      = dsp.fg64()
 n       = fg.get_frame_length()
-header  = np.zeros(( 8,), dtype=np.int8)
-payload = np.zeros((64,), dtype=np.int8)
+header  = np.arange( 8).astype(np.uint8)
+payload = np.arange(64).astype(np.uint8)
 frame   = np.zeros(( n,), dtype=np.csingle)
 fg.execute(header, payload, frame)
 
 # receive frame (TODO: pass callback)
-fs      = dsp.fs64()
+fs      = dsp.fs64(callback)
 fs.execute(frame)
 
 # compute spectral response
