@@ -6,11 +6,7 @@ import liquid as dsp
 import matplotlib.pyplot as plt
 
 def callback(header,payload,stats):
-    print('python callback invoked!')
-    print(header)
-    print(payload)
-    print(stats)
-    return 0
+    print('frame detected!')
 
 # generate a frame
 fg      = dsp.fg64()
@@ -20,7 +16,7 @@ payload = np.random.randint(256, size=64)
 frame   = np.zeros(( n,), dtype=np.csingle)
 fg.execute(header, payload, frame)
 
-# receive frame (TODO: pass callback)
+# create frame synchronizer and receive frame
 fs      = dsp.fs64(callback)
 fs.execute(frame)
 

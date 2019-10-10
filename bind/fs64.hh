@@ -3,7 +3,6 @@
 #define __FS64_HH__
 
 /* TODO
- *  - check python callback and handle if it returns anything other than an int
  *  - simplify wrapper declaration (use function definition type)
  */
 
@@ -24,7 +23,7 @@ int py_callback_wrapper(
         int              _payload_valid,
         framesyncstats_s _stats,
         void *           _userdata);
-typedef std::function<int(py::array_t<uint8_t>,py::array_t<uint8_t>,py::dict)> py_framesync_callback;
+typedef std::function<py::object(py::array_t<uint8_t>,py::array_t<uint8_t>,py::dict)> py_framesync_callback;
 //typedef std::function<int(py::dict)> py_framesync_callback;
 #endif
 
@@ -103,13 +102,22 @@ int py_callback_wrapper(
         framesyncstats_s _stats,
         void *           _userdata)
 {
-    std::cout << "python callback wrapper invoked!" << std::endl;
-    fs64 * obj = (fs64*) _userdata;
-    // TODO: check for none type as return
+    // type cast user data as frame synchronizer
+    fs64 * fs = (fs64*) _userdata;
+
+    // wrap C-style callback and invoke python callback
     py::array_t<uint8_t> header ({8,           },{1,},(uint8_t*)_header);
     py::array_t<uint8_t> payload({_payload_len,},{1,},(uint8_t*)_payload);
     py::dict stats =  framesyncstats_to_dict(_stats, _header_valid, _payload_valid);
-    return obj->py_callback(header,payload,stats);
+    py::object o = fs->py_callback(header,payload,stats);
+
+    // interpret return value
+    if (py::isinstance<py::bool_>(o)) {
+        return bool(py::bool_(o)) ? 0 : 1;
+    } else if (py::isinstance<py::int_>(o)) {
+        return int(py::int_(o));
+    }
+    return 0;
 }
 void init_fs64(py::module &m)
 {
