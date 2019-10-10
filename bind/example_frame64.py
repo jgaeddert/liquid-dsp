@@ -5,9 +5,6 @@ import numpy as np
 import liquid as dsp
 import matplotlib.pyplot as plt
 
-def callback(header,payload,stats):
-    print('frame detected!')
-
 # generate a frame
 fg      = dsp.fg64()
 n       = fg.get_frame_length()
@@ -17,7 +14,7 @@ frame   = np.zeros(( n,), dtype=np.csingle)
 fg.execute(header, payload, frame)
 
 # create frame synchronizer and receive frame
-fs      = dsp.fs64(callback)
+fs = dsp.fs64(lambda h,p,s: print('frame detected'))
 fs.execute(frame)
 
 # compute spectral response
