@@ -8,6 +8,8 @@
 #include <liquid/liquid.h>
 #include "liquid.python.hh"
 
+namespace liquid {
+
 class firfilt
 {
   public:
@@ -141,5 +143,7 @@ void init_firfilt(py::module &m)
         ;
 }
 #endif
+
+} // namespace liquid
 
 #endif //__FIRFILT_HH__

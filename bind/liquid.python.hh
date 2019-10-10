@@ -13,7 +13,6 @@ using namespace pybind11::literals;
 void dict_update(py::dict & a, py::dict b);
 void print_object(py::object o);
 
-void init_firfilt(py::module &);
 #endif // PYTHONLIB
 
 #endif // __LIQUID_PYTHON_HH__
