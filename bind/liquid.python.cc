@@ -1,6 +1,8 @@
 #include "liquid.python.hh"
 
 #include "firfilt.hh"
+#include "fg64.hh"
+#include "fs64.hh"
 
 void print_object(py::object o)
 {
@@ -49,6 +51,8 @@ PYBIND11_MODULE(liquid, m) {
     m.doc() = "software-defined radio signal processing library";
     m.def("print_object", &print_object, "a function to recursively print a python object");
     m.def("dict_update", &dict_update, "update dictionary objects");
-    liquid::init_firfilt(m);
+    liquid::init_firfilt    (m);
+    liquid::init_fg64(m);
+    liquid::init_fs64(m);
 }
 
