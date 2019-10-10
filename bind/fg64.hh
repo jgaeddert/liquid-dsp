@@ -32,10 +32,26 @@ class fg64
                     py::array_t<uint8_t>             & _payload,
                     py::array_t<std::complex<float>> & _buf)
     {
-        // get buffer info
-        py::buffer_info info = _buf.request();
+        // get output info and validate size/shape
+        py::buffer_info header = _header.request();
+        if (header.itemsize != sizeof(uint8_t))
+            throw std::runtime_error("invalid header input numpy size, use dtype=np.uint8");
+        if (header.ndim != 1)
+            throw std::runtime_error("invalid header number of input dimensions, must be 1-D array");
+        if (header.shape[0] != 8)
+            throw std::runtime_error("invalid header length; expected 8");
 
-        // verify input size and dimensions
+        // get output info and validate size/shape
+        py::buffer_info payload = _payload.request();
+        if (payload.itemsize != sizeof(uint8_t))
+            throw std::runtime_error("invalid payload input numpy size, use dtype=np.uint8");
+        if (payload.ndim != 1)
+            throw std::runtime_error("invalid payload number of input dimensions, must be 1-D array");
+        if (payload.shape[0] != 64)
+            throw std::runtime_error("invalid payload length; expected 64");
+
+        // get output info and validate size/shape
+        py::buffer_info info = _buf.request();
         if (info.itemsize != sizeof(std::complex<float>))
             throw std::runtime_error("invalid input numpy size, use dtype=np.csingle");
         if (info.ndim != 1)
@@ -43,9 +59,9 @@ class fg64
         if (info.shape[0] != get_frame_length())
             throw std::runtime_error("invalid frame length; expected " + std::to_string(get_frame_length()));
 
-        // TODO: validate header and payload size as well...
-        execute((unsigned char*)       _header.request().ptr,
-                (unsigned char*)       _payload.request().ptr,
+        // pass to top-level execute method
+        execute((unsigned char*)       header.ptr,
+                (unsigned char*)       payload.ptr,
                 (std::complex<float>*) info.ptr);
     }
 #endif

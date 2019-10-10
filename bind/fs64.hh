@@ -5,7 +5,6 @@
 /* TODO
  *  - check python callback and handle if it returns anything other than an int
  *  - simplify wrapper declaration (use function definition type)
- *  - check header and payload lengths in frame generator execute method
  */
 
 #include <complex>
