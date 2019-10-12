@@ -4636,8 +4636,8 @@ void framegen64_print(framegen64 _q);
 
 // generate frame
 //  _q          :   frame generator object
-//  _header     :   8-byte header data
-//  _payload    :   64-byte payload data
+//  _header     :   8-byte header data, NULL for random
+//  _payload    :   64-byte payload data, NULL for random
 //  _frame      :   output frame samples [size: LIQUID_FRAME64_LEN x 1]
 void framegen64_execute(framegen64             _q,
                         unsigned char *        _header,
