@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2018 Joseph Gaeddert
+ * Copyright (c) 2007 - 2019 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -575,6 +575,8 @@ void fskframesync_execute_rxheader(fskframesync  _q,
                          _q->userdata);
         }
 
+        // reset frame synchronizer
+        fskframesync_reset(_q);
     }
 }
 
