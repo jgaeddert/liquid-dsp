@@ -27,6 +27,10 @@ typedef std::function<py::object(py::array_t<uint8_t>,py::array_t<uint8_t>,py::d
 //typedef std::function<int(py::dict)> py_framesync_callback;
 #endif
 
+// suppress "declared with greater visibility than the type of its field" warnings
+// see: https://stackoverflow.com/questions/2828738/c-warning-declared-with-greater-visibility-than-the-type-of-its-field#3170163
+// see: https://gcc.gnu.org/wiki/Visibility
+#pragma GCC visibility push(hidden)
 class fs64
 {
   public:
@@ -80,6 +84,7 @@ class fs64
     }
 #endif
 };
+#pragma GCC visibility pop
 
 #ifdef PYTHONLIB
 py::dict framesyncstats_to_dict(framesyncstats_s _stats,
@@ -120,6 +125,7 @@ int py_callback_wrapper(
     }
     return 0;
 }
+
 void init_fs64(py::module &m)
 {
     py::class_<fs64>(m, "fs64")
