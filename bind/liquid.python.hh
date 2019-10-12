@@ -2,6 +2,7 @@
 #define __LIQUID_PYTHON_HH__
 
 #ifdef PYTHONLIB
+
 #include <complex>
 #include <pybind11/pybind11.h>
 #include <pybind11/complex.h>
@@ -12,9 +13,15 @@
 namespace py = pybind11;
 using namespace pybind11::literals;
 
-void dict_update(py::dict & a, py::dict b);
 void print_object(py::object o);
 
-#endif // PYTHONLIB
+// forward declaration of object initialization methods
+namespace liquid {
+void init_firfilt(py::module &m);
+void init_fs64   (py::module &m);
+void init_fg64   (py::module &m);
+} // namespace liquid
 
 #endif // __LIQUID_PYTHON_HH__
+
+#endif // PYTHONLIB

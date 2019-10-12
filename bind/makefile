@@ -3,7 +3,7 @@ all:
 
 CXX_INCLUDES := -I./ -I ./include -I ./bind/
 #CXXFLAGS := -Wall -O3 -std=c++11 -shared -fPIC ${CXX_INCLUDES}
-CXXFLAGS := -Wall -O3 -std=c++11 # -undefined dynamic_lookup
+CXXFLAGS := -Wall -O3 -std=c++14 # -undefined dynamic_lookup
 LIBS := -lm -lc -lliquid
 
 bind_headers :=					\
@@ -26,12 +26,21 @@ bind/main : % : %.o
 	g++ ${CXXFLAGS} -o bind/main $^ ${LIBS}
 
 # python
+py_objects := $(patsubst %.hh, %.python.o, ${bind_headers})
+
+${py_objects} : %.python.o : %.hh
+	g++ ${PYBIND11_FLAGS} ${CXXFLAGS} -D PYTHONLIB ${PYBIND11_INCLUDES} -c -o $@ $<
+
+bind/liquid.python.o : %.o : %.cc %.hh
+	g++ ${PYBIND11_FLAGS} ${CXXFLAGS} -D PYTHONLIB ${PYBIND11_INCLUDES} -c -o $@ $<
+
+# python
 bind/liquid.python.o : %.o : %.cc %.hh ${bind_headers}
-	g++ ${PYBIND11_FLAGS} -D PYTHONLIB ${PYBIND11_INCLUDES} -c -o $@ $<
+	g++ ${PYBIND11_FLAGS} ${CXXFLAGS} -D PYTHONLIB ${PYBIND11_INCLUDES} -c -o $@ $<
 
 pythonlib := liquid${PYBIND11_SUFFIX}
 
-${pythonlib} : bind/liquid.python.o
+${pythonlib} : bind/liquid.python.o ${py_objects}
 	g++ ${CXXFLAGS}  -shared -fPIC -o $@ $^ ${LIBS} ${PYBIND11_LDFLAGS} ${PYBIND11_LIBS}
 #${pythonlib} :
 #	g++ ${CXXFLAGS} `python3 -m pybind11 --includes` -D PYTHONLIB bind/liquid.python.cc -o liquid`python3-config --extension-suffix` -lliquid `python3-config --ldflags`
@@ -43,5 +52,6 @@ all: bind/main ${pythonlib}
 
 clean:
 	rm -f bind/*.o bind/main
+	rm -f ${py_objects}
 	rm -f ${pythonlib}
 
