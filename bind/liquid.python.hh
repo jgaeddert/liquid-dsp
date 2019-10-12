@@ -15,13 +15,6 @@ using namespace pybind11::literals;
 
 void print_object(py::object o);
 
-// forward declaration of object initialization methods
-namespace liquid {
-void init_firfilt(py::module &m);
-void init_fs64   (py::module &m);
-void init_fg64   (py::module &m);
-} // namespace liquid
-
 #endif // __LIQUID_PYTHON_HH__
 
 #endif // PYTHONLIB

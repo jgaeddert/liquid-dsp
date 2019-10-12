@@ -26,11 +26,6 @@ bind/main : % : %.o
 	g++ ${CXXFLAGS} -o bind/main $^ ${LIBS}
 
 # python
-py_objects := $(patsubst %.hh, %.python.o, ${bind_headers})
-
-${py_objects} : %.python.o : %.hh
-	g++ ${PYBIND11_FLAGS} ${CXXFLAGS} -D PYTHONLIB ${PYBIND11_INCLUDES} -c -o $@ $<
-
 bind/liquid.python.o : %.o : %.cc %.hh
 	g++ ${PYBIND11_FLAGS} ${CXXFLAGS} -D PYTHONLIB ${PYBIND11_INCLUDES} -c -o $@ $<
 
@@ -40,7 +35,7 @@ bind/liquid.python.o : %.o : %.cc %.hh ${bind_headers}
 
 pythonlib := liquid${PYBIND11_SUFFIX}
 
-${pythonlib} : bind/liquid.python.o ${py_objects}
+${pythonlib} : bind/liquid.python.o
 	g++ ${CXXFLAGS}  -shared -fPIC -o $@ $^ ${LIBS} ${PYBIND11_LDFLAGS} ${PYBIND11_LIBS}
 #${pythonlib} :
 #	g++ ${CXXFLAGS} `python3 -m pybind11 --includes` -D PYTHONLIB bind/liquid.python.cc -o liquid`python3-config --extension-suffix` -lliquid `python3-config --ldflags`
@@ -52,6 +47,5 @@ all: bind/main ${pythonlib}
 
 clean:
 	rm -f bind/*.o bind/main
-	rm -f ${py_objects}
 	rm -f ${pythonlib}
 
