@@ -37,6 +37,8 @@ class fs64
 
     void display() { framesync64_print(q); }
 
+    void reset() { framesync64_reset(q); }
+
     void execute(std::complex<float> * _buf, unsigned int _buf_len)
         { framesync64_execute(q, _buf, _buf_len); }
 
@@ -74,7 +76,6 @@ class fs64
             throw std::runtime_error("invalid number of input dimensions, must be 1-D array");
 
         // execute on input
-        std::cout << "running on " + std::to_string(info.shape[0]) + " samples" << std::endl;
         execute((std::complex<float>*) info.ptr, info.shape[0]);
     }
 #endif
@@ -124,6 +125,7 @@ void init_fs64(py::module &m)
     py::class_<fs64>(m, "fs64")
         .def(py::init<py_framesync_callback>())
         .def("display", &fs64::display,    "print object properties to stdout")
+        .def("reset",   &fs64::reset,      "reset frame synchronizer object")
         .def("execute", &fs64::py_execute, "execute on a block of samples")
         ;
 }
