@@ -46,6 +46,11 @@ class fs64
     void execute(std::complex<float> * _buf, unsigned int _buf_len)
         { framesync64_execute(q, _buf, _buf_len); }
 
+    void reset_framedatastats() { framesync64_reset_framedatastats(q); }
+
+    framedatastats_s get_framedatastats()
+        { return framesync64_get_framedatastats(q); }
+
   private:
     framesync64 q;
 
@@ -81,6 +86,13 @@ class fs64
 
         // execute on input
         execute((std::complex<float>*) info.ptr, info.shape[0]);
+    }
+
+    py::tuple py_get_framedatastats()
+    {
+        framedatastats_s v = framesync64_get_framedatastats(q);
+        return py::make_tuple(v.num_frames_detected,
+            v.num_headers_valid, v.num_payloads_valid, v.num_bytes_received);
     }
 #endif
 };
@@ -132,6 +144,8 @@ void init_fs64(py::module &m)
         .def(py::init<py_framesync_callback>())
         .def("display", &fs64::display,    "print object properties to stdout")
         .def("reset",   &fs64::reset,      "reset frame synchronizer object")
+        .def("reset_framedatastats", &fs64::reset_framedatastats, "reset frame statistics data")
+        .def("get_framedatastats", &fs64::py_get_framedatastats, "get frame statistics data")
         .def("execute", &fs64::py_execute, "execute on a block of samples")
         ;
 }
