@@ -26,10 +26,6 @@ bind/main : % : %.o
 	g++ ${CXXFLAGS} -o bind/main $^ ${LIBS}
 
 # python
-bind/liquid.python.o : %.o : %.cc %.hh
-	g++ ${PYBIND11_FLAGS} ${CXXFLAGS} -D PYTHONLIB ${PYBIND11_INCLUDES} -c -o $@ $<
-
-# python
 bind/liquid.python.o : %.o : %.cc %.hh ${bind_headers}
 	g++ ${PYBIND11_FLAGS} ${CXXFLAGS} -D PYTHONLIB ${PYBIND11_INCLUDES} -c -o $@ $<
 
