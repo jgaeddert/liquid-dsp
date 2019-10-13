@@ -1,9 +1,8 @@
 
 all:
 
-CXX_INCLUDES := -I./ -I ./include -I ./bind/
-#CXXFLAGS := -Wall -O3 -std=c++11 -shared -fPIC ${CXX_INCLUDES}
-CXXFLAGS := -Wall -O3 -std=c++14 # -undefined dynamic_lookup
+#CXXFLAGS := -Wall -O3 -std=c++11 -shared -fPIC
+CXXFLAGS := -Wall -O3 -std=c++14 -I./include -I./bind/ # -undefined dynamic_lookup
 LIBS := -lm -lc -lliquid
 
 bind_headers :=					\

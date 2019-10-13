@@ -9,7 +9,7 @@
 #include <complex>
 #include <iostream>
 #include <string>
-#include <liquid/liquid.h>
+#include "liquid.h"
 #include "liquid.python.hh"
 
 namespace liquid {
