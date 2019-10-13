@@ -82,11 +82,9 @@ int main(int argc, char*argv[])
 
     // create frame generator
     framegen64 fg = framegen64_create();
-    framegen64_print(fg);
 
     // create frame synchronizer using default properties
     framesync64 fs = framesync64_create(callback,NULL);
-    framesync64_print(fs);
     if (debug_enabled)
         framesync64_debug_enable(fs);
 
@@ -128,6 +126,7 @@ int main(int argc, char*argv[])
 
     // synchronize/receive the frame
     framesync64_execute(fs, y, num_samples);
+    framesync64_print(fs);
 
     // export debugging file
     if (debug_enabled)

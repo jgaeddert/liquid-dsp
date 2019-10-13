@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2015 Joseph Gaeddert
+ * Copyright (c) 2007 - 2019 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -82,7 +82,7 @@ struct flexframesync_s {
     framesync_callback  callback;       // user-defined callback function
     void *              userdata;       // user-defined data structure
     framesyncstats_s    framesyncstats; // frame statistic object (synchronizer)
-    framedatastats_s    framedatastats; // frame statistic object (synchronizer)
+    framedatastats_s    framedatastats; // frame statistic object (packet statistics)
     
     // synchronizer objects
     unsigned int    m;                  // filter delay (symbols)
