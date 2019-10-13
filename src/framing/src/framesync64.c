@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2015 Joseph Gaeddert
+ * Copyright (c) 2007 - 2019 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -67,7 +67,8 @@ struct framesync64_s {
     // callback
     framesync_callback  callback;   // user-defined callback function
     void *              userdata;   // user-defined data structure
-    framesyncstats_s    framestats; // frame statistic object
+    framesyncstats_s    framesyncstats; // frame statistic object (synchronizer)
+    framedatastats_s    framedatastats; // frame statistic object (packet statistics)
     
     // synchronizer objects
     unsigned int        m;          // filter delay (symbols)
@@ -169,7 +170,10 @@ framesync64 framesync64_create(framesync_callback _callback,
 
     // create pilot synchronizer
     q->pilotsync   = qpilotsync_create(600, 21);
-    assert( qpilotsync_get_frame_len(q->pilotsync)==630 );
+    assert( qpilotsync_get_frame_len(q->pilotsync)==630);
+ 
+    // reset global data counters
+    framesync64_reset_framedatastats(q);
 
 #if DEBUG_FRAMESYNC64
     // set debugging flags, objects to NULL
@@ -211,6 +215,7 @@ void framesync64_destroy(framesync64 _q)
 void framesync64_print(framesync64 _q)
 {
     printf("framesync64:\n");
+    framedatastats_print(&_q->framedatastats);
 }
 
 // reset frame synchronizer object
@@ -231,7 +236,7 @@ void framesync64_reset(framesync64 _q)
     _q->payload_counter = 0;
     
     // reset frame statistics
-    _q->framestats.evm = 0.0f;
+    _q->framesyncstats.evm = 0.0f;
 }
 
 // execute frame synchronizer
@@ -432,19 +437,25 @@ void framesync64_execute_rxpayload(framesync64   _q,
                                                     _q->payload_sym,
                                                     _q->payload_dec);
 
+            // update statistics
+            _q->framedatastats.num_frames_detected++;
+            _q->framedatastats.num_headers_valid  += _q->payload_valid;
+            _q->framedatastats.num_payloads_valid += _q->payload_valid;
+            _q->framedatastats.num_bytes_received += _q->payload_valid ? 64 : 0;
+
             // invoke callback
             if (_q->callback != NULL) {
-                // set framestats internals
-                _q->framestats.evm           = qpilotsync_get_evm(_q->pilotsync);
-                _q->framestats.rssi          = 20*log10f(_q->gamma_hat);
-                _q->framestats.cfo           = nco_crcf_get_frequency(_q->mixer);
-                _q->framestats.framesyms     = _q->payload_sym;
-                _q->framestats.num_framesyms = 600;
-                _q->framestats.mod_scheme    = LIQUID_MODEM_QPSK;
-                _q->framestats.mod_bps       = 2;
-                _q->framestats.check         = LIQUID_CRC_24;
-                _q->framestats.fec0          = LIQUID_FEC_NONE;
-                _q->framestats.fec1          = LIQUID_FEC_GOLAY2412;
+                // set framesyncstats internals
+                _q->framesyncstats.evm           = qpilotsync_get_evm(_q->pilotsync);
+                _q->framesyncstats.rssi          = 20*log10f(_q->gamma_hat);
+                _q->framesyncstats.cfo           = nco_crcf_get_frequency(_q->mixer);
+                _q->framesyncstats.framesyms     = _q->payload_sym;
+                _q->framesyncstats.num_framesyms = 600;
+                _q->framesyncstats.mod_scheme    = LIQUID_MODEM_QPSK;
+                _q->framesyncstats.mod_bps       = 2;
+                _q->framesyncstats.check         = LIQUID_CRC_24;
+                _q->framesyncstats.fec0          = LIQUID_FEC_NONE;
+                _q->framesyncstats.fec1          = LIQUID_FEC_GOLAY2412;
 
                 // invoke callback method
                 _q->callback(&_q->payload_dec[0],   // header is first 8 bytes
@@ -452,7 +463,7 @@ void framesync64_execute_rxpayload(framesync64   _q,
                              &_q->payload_dec[8],   // payload is last 64 bytes
                              64,
                              _q->payload_valid,
-                             _q->framestats,
+                             _q->framesyncstats,
                              _q->userdata);
             }
 
@@ -561,5 +572,17 @@ void framesync64_debug_print(framesync64  _q,
 #else
     fprintf(stderr,"framesync64_debug_print(): compile-time debugging disabled\n");
 #endif
+}
+
+// reset frame data statistics
+void framesync64_reset_framedatastats(framesync64 _q)
+{
+    framedatastats_reset(&_q->framedatastats);
+}
+
+// retrieve frame data statistics
+framedatastats_s framesync64_get_framedatastats(framesync64 _q)
+{
+    return _q->framedatastats;
 }
 

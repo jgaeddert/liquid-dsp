@@ -4674,6 +4674,10 @@ void framesync64_debug_enable(framesync64 _q);
 void framesync64_debug_disable(framesync64 _q);
 void framesync64_debug_print(framesync64 _q, const char * _filename);
 
+// frame data statistics
+void             framesync64_reset_framedatastats(framesync64 _q);
+framedatastats_s framesync64_get_framedatastats  (framesync64 _q);
+
 #if 0
 // advanced modes
 void framesync64_set_csma_callbacks(framesync64             _q,
