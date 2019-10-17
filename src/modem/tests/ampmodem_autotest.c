@@ -32,7 +32,7 @@ void ampmodem_test_harness(float                _mod_index,
 {
     // options
     float   SNRdB   = 40.0f;    // signal-to-noise ratio (set very high for testing)
-    int     debug   = 1;        // enable debugging
+    int     debug   = 0;        // enable debugging
     const char * filename_debug = "ampmodem_autotest_debug.dat";
 
     // derived values
