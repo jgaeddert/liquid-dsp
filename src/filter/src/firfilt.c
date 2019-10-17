@@ -170,6 +170,38 @@ FIRFILT() FIRFILT(_create_rnyquist)(int          _type,
     return FIRFILT(_create)(hc, h_len);
 }
 
+// Create object from Parks-McClellan algorithm prototype
+//  _h_len  : filter length, _h_len > 0
+//  _fc     : cutoff frequency, 0 < _fc < 0.5
+//  _As     : stop-band attenuation [dB], _As > 0
+FIRFILT() FIRFILT(_create_firdespm)(unsigned int _h_len,
+                                    float        _fc,
+                                    float        _As)
+{
+    // validate input
+    if (_h_len < 1) {
+        fprintf(stderr,"error: firfilt_%s_create_firdespm(), filter samples/symbol must be greater than 1\n", EXTENSION_FULL);
+        exit(1);
+    } else if (_fc < 0.0f || _fc > 0.5f) {
+        fprintf(stderr,"error: firfilt_%s_create_firdespm(), filter cutoff frequency must be in (0,0.5]\n", EXTENSION_FULL);
+        exit(1);
+    }
+
+    // generate square-root Nyquist filter
+    float hf[_h_len];
+    firdespm_lowpass(_h_len,_fc,_As,0,hf);
+
+    // copy coefficients to type-specific array (e.g. float complex)
+    // and scale by filter bandwidth to be consistent with other lowpass prototypes
+    unsigned int i;
+    TC hc[_h_len];
+    for (i=0; i<_h_len; i++)
+        hc[i] = hf[i] * 0.5f / _fc;
+
+    // return filter object and return
+    return FIRFILT(_create)(hc, _h_len);
+}
+
 // create rectangular filter prototype
 FIRFILT() FIRFILT(_create_rect)(unsigned int _n)
 {
