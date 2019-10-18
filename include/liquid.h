@@ -2490,7 +2490,7 @@ FIRFILT() FIRFILT(_create_kaiser)(unsigned int _n,                          \
                                   float        _As,                         \
                                   float        _mu);                        \
                                                                             \
-/* Create object from square-root Nyquist prototype                     */  \
+/* Create object from square-root Nyquist prototype.                    */  \
 /* The filter length will be \(2 k m + 1 \) samples long with a delay   */  \
 /* of \( k m + 1 \) samples.                                            */  \
 /*  _type   : filter type (e.g. LIQUID_FIRFILT_RRC)                     */  \
@@ -2503,6 +2503,14 @@ FIRFILT() FIRFILT(_create_rnyquist)(int          _type,                     \
                                     unsigned int _m,                        \
                                     float        _beta,                     \
                                     float        _mu);                      \
+                                                                            \
+/* Create object from Parks-McClellan algorithm prototype               */  \
+/*  _h_len  : filter length, _h_len > 0                                 */  \
+/*  _fc     : cutoff frequency, 0 < _fc < 0.5                           */  \
+/*  _As     : stop-band attenuation [dB], _As > 0                       */  \
+FIRFILT() FIRFILT(_create_firdespm)(unsigned int _h_len,                    \
+                                    float        _fc,                       \
+                                    float        _As);                      \
                                                                             \
 /* Create rectangular filter prototype; that is                         */  \
 /* \( \vec{h} = \{ 1, 1, 1, \ldots 1 \} \)                              */  \
