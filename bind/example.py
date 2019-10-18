@@ -14,6 +14,7 @@ filt = dsp.firfilt(h)
 
 # design prototype filter
 #filt = dsp.firfilt("lowpass", n=151, fc=0.07)
+#filt = dsp.firfilt("firdespm", n=151, fc=0.07)
 #filt = dsp.firfilt("rkaiser", k=8, m=12, beta=0.25)
 #filt = dsp.firfilt("rect", n=5)
 #filt = dsp.firfilt("dcblock", m=20, As=40)

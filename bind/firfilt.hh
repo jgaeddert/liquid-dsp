@@ -78,6 +78,9 @@ class firfilt
             auto v = lupdate(o, py::dict("n"_a=21, "fc"_a=0.25f, "As"_a=60.0f, "mu"_a=0.0f));
             q = firfilt_crcf_create_kaiser(
                 py::int_(v["n"]), py::float_(v["fc"]), py::float_(v["As"]), py::float_(v["mu"]));
+        } else if (ftype == "firdespm") {
+            auto v = lupdate(o, py::dict("n"_a=21, "fc"_a=0.25f, "As"_a=60.0f));
+            q = firfilt_crcf_create_firdespm(py::int_(v["n"]), py::float_(v["fc"]), py::float_(v["As"]));
         } else if (ftype == "rect") {
             q = firfilt_crcf_create_rect(o.contains("n") ? int(py::int_(o["n"])) : 5);
         } else if (ftype == "dcblock" || ftype == "notch") {
