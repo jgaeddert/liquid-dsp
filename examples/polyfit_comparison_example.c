@@ -40,7 +40,7 @@ int main()
     fprintf(fid,"y1= zeros(1,n);\n");
     for (i=0; i<n; i++)
         fprintf(fid,"xeval(%u)=%g;y0(%u)=%g;y1(%u)=%g;\n", i+1,x_eval[i],i+1,y0[i],i+1,y1[i]);
-    fprintf(fid,"plot(x,y,'s',xeval,y0,'-',xeval,y1,'-');\n");
+    fprintf(fid,"plot(x,y,'s',xeval,y0,'-x',xeval,y1,'-o');\n");
     fprintf(fid,"legend('data','conventional','lagrange');\n");
     fprintf(fid,"grid on;\n");
     //fprintf(fid,"axis([-1.1 1.1 1.5*min(y) 1.5*max(y)]);\n");
