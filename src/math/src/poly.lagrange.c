@@ -51,7 +51,7 @@ void POLY(_fit_lagrange)(T * _x,
         g=1.0f;
         for (j=0; j<_n; j++) {
             if (j!=i) {
-                roots[n++] = - _x[j];
+                roots[n++] =  _x[j];
                 g *= (_x[i] - _x[j]);
             }
         }
