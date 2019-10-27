@@ -7,7 +7,7 @@
 #include "liquid.h"
 
 #define OUTPUT_FILENAME "iirdes_gradsearch_test.m"
-#define DEBUG 1
+#define DEBUG 0
 
 typedef struct gs_s * gs;
 struct gs_s {
@@ -21,30 +21,36 @@ struct gs_s {
 };
 gs    gs_create  (unsigned int _order);
 void  gs_destroy (gs _q);
-void  gs_unpack  (gs _q, float * _v);
-void  gs_expand  (gs _q);
+void  gs_unpack  (gs _q, float * _v, int _debug);
+void  gs_expand  (gs _q, int _debug);
 float gs_evaluate(gs _q);
 float gs_callback(void * _q, float * _v, unsigned int _n);
 
 int main()
 {
-    //srand(time(NULL));
+    srand(time(NULL));
     gs q = gs_create(2);
 
     unsigned int n = q->vlen;
     float v[n]; // search vector
     unsigned int i;
     for (i=0; i<q->n; i++)
-        v[i] = 0.1f*i;
+        v[i] = 0.0f;
     /*
-    v[0] = 10;     v[1] = M_PI;
+    v[0] = 10;     v[1] = 2;
     v[2] =  0.633; v[3] = 1.6283;
     v[4] = 0.307;
     */
-    gs_unpack(q,v);
-    gs_expand(q);
+#if 0
+    v[0] = -1.0f;  v[1] = 0.0f;
+    v[2] = -0.03;  v[3] = 0.56;
+    v[4] = 0.307;
+#endif
+    gs_unpack(q,v,1);
+    gs_expand(q,1);
+    //gs_destroy(q); return -1;
 
-    unsigned int num_iterations = 100;
+    unsigned int num_iterations = 250;
 
     // open output file
     FILE*fid = fopen(OUTPUT_FILENAME,"w");
@@ -80,7 +86,7 @@ int main()
     gradsearch_print(gs);
 
     fprintf(fid,"figure;\n");
-    fprintf(fid,"semilogy(u);\n");
+    fprintf(fid,"semilogy(u,'-x');\n");
     fprintf(fid,"xlabel('iteration');\n");
     fprintf(fid,"ylabel('utility');\n");
     fprintf(fid,"title('gradient search results');\n");
@@ -121,39 +127,49 @@ void gs_destroy(gs _q)
 
 // unpack poles, zeros, and gain
 // format: [{z-mag, z-phase, p-mag, p-phase}*L, k, {z-real, p-real}*r]
-void gs_unpack(gs _q, float * _v)
+void gs_unpack(gs _q, float * _v, int _debug)
 {
     unsigned int i;
+    float x, y, r, t;
+    float p = 4.0f;
     for (i=0; i<_q->L; i++) {
-        _q->zeros[i] = tanhf(_v[4*i+0])*cexpf(_Complex_I*_v[4*i+1]);
-        _q->poles[i] = tanhf(_v[4*i+2])*cexpf(_Complex_I*_v[4*i+3]);
+        x = _v[4*i+0]; y = _v[4*i+1];
+        r = powf(tanhf(powf(sqrtf(x*x+y*y),p)),1.0f/p);
+        t = atan2f(y,x);
+        _q->zeros[i] = r * cexpf(_Complex_I*t);
+        x = _v[4*i+2]; y = _v[4*i+3];
+        r = powf(tanhf(powf(sqrtf(x*x+y*y),p)),1.0f/p);
+        t = atan2f(y,x);
+        _q->poles[i] = r * cexpf(_Complex_I*t);
+        //_q->zeros[i] = tanhf(_v[4*i+0])*cexpf(_Complex_I*_v[4*i+1]);
+        //_q->poles[i] = tanhf(_v[4*i+2])*cexpf(_Complex_I*_v[4*i+3]);
     }
     _q->k = _v[4*_q->L]; // unpack gain
     if (_q->r) {
         _q->z0 = tanhf(_v[4*_q->L+1]);
         _q->p0 = tanhf(_v[4*_q->L+2]);
     }
-#if DEBUG
     // debug: print values
-    printf("v : [");
-    for (i=0; i<_q->vlen; i++)
-        printf("%8.5f,", _v[i]);
-    printf("]\n");
-    printf("k : %12.10f\n", _q->k);
-    for (i=0; i<_q->L; i++) {
-        printf("[%2u] z:{%12.8f,%12.8f} p:{%12.8f,%12.8f}\n", i,
-                crealf(_q->zeros[i]), cimagf(_q->zeros[i]),
-                crealf(_q->poles[i]), cimagf(_q->poles[i]));
+    if (_debug) {
+        printf("v : [");
+        for (i=0; i<_q->vlen; i++)
+            printf("%8.5f,", _v[i]);
+        printf("]\n");
+        printf("k : %12.10f\n", _q->k);
+        for (i=0; i<_q->L; i++) {
+            printf("[%2u] z:{%12.8f,%12.8f} p:{%12.8f,%12.8f}\n", i,
+                    crealf(_q->zeros[i]), cimagf(_q->zeros[i]),
+                    crealf(_q->poles[i]), cimagf(_q->poles[i]));
+        }
+        if (_q->r) {
+            printf("[%2u] z:{%12.8f %12s} p:{%12.8f %12s}\n", _q->L,
+                    _q->z0, "", _q->p0, "");
+        }
     }
-    if (_q->r) {
-        printf("[%2u] z:{%12.8f %12s} p:{%12.8f %12s}\n", _q->L,
-                _q->z0, "", _q->p0, "");
-    }
-#endif
 }
 
 // expand second-order sections
-void gs_expand(gs _q)
+void gs_expand(gs _q, int _debug)
 {
     // distribute gain across all numerator second-order sections
     float g = powf(_q->k, 1.0f/(float)_q->nsos);
@@ -181,15 +197,15 @@ void gs_expand(gs _q)
         _q->a[3*_q->L+1] = -_q->p0;
         _q->a[3*_q->L+2] = 0.0f;
     }
-#if DEBUG
     // debug: print second-order sections
-    printf("B [%u x 3]:\n", _q->nsos);
-    for (i=0; i<_q->nsos; i++)
-        printf("    %12.8f %12.8f %12.8f\n", _q->b[3*i+0], _q->b[3*i+1], _q->b[3*i+2]);
-    printf("A [%u x 3]:\n", _q->nsos);
-    for (i=0; i<_q->nsos; i++)
-        printf("    %12.8f %12.8f %12.8f\n", _q->a[3*i+0], _q->a[3*i+1], _q->a[3*i+2]);
-#endif
+    if (_debug) {
+        printf("B [%u x 3]:\n", _q->nsos);
+        for (i=0; i<_q->nsos; i++)
+            printf("    %12.8f %12.8f %12.8f\n", _q->b[3*i+0], _q->b[3*i+1], _q->b[3*i+2]);
+        printf("A [%u x 3]:\n", _q->nsos);
+        for (i=0; i<_q->nsos; i++)
+            printf("    %12.8f %12.8f %12.8f\n", _q->a[3*i+0], _q->a[3*i+1], _q->a[3*i+2]);
+    }
 }
 
 float gs_evaluate(gs _q)
@@ -207,8 +223,8 @@ float gs_callback(void * _context,
         fprintf(stderr,"search vector length mismatch\n");
         exit(1);
     }
-    gs_unpack(_q, _v);
-    gs_expand(_q);
+    gs_unpack(_q, _v, DEBUG);
+    gs_expand(_q, DEBUG);
 
     if (_q->nsos != 1)
         return 1e3f;
@@ -244,4 +260,17 @@ b[  1] =   0.61379653;
 b[  2] =   0.30749798;
 results written to iirdes_example.m.
 done.
+
+a = [1.00000000   0.06440119   0.31432679];
+b = [0.30749798   0.61379653   0.30749798];
+
+roots(a)
+  -0.03220 + 0.55972i
+  -0.03220 - 0.55972i
+
+roots(b)
+  -0.99805 + 0.06242i
+  -0.99805 - 0.06242i
+
+
 #endif
