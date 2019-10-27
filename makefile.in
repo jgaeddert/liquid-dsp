@@ -1617,7 +1617,8 @@ sandbox_programs =						\
 	sandbox/gmskmodem_coherent_test				\
 	sandbox/gmskmodem_equalizer_test			\
 	sandbox/householder_test				\
-	sandbox/iirdes_example					\
+	sandbox/iirdes_test					\
+	sandbox/iirdes_gradsearch_test				\
 	sandbox/iirfilt_intdiff_test				\
 	sandbox/levinson_test					\
 	sandbox/matched_filter_test				\

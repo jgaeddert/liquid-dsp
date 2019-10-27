@@ -10,7 +10,7 @@
 #include <math.h>
 #include "liquid.h"
 
-#define OUTPUT_FILENAME "iirdes_example.m"
+#define OUTPUT_FILENAME "iirdes_test.m"
 
 // print usage/help message
 void usage()

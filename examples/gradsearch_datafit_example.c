@@ -73,7 +73,7 @@ int main() {
     fprintf(fid,"clear all;\n");
     fprintf(fid,"close all;\n");
 
-   // execute search one iteration at a time
+    // execute search one iteration at a time
     fprintf(fid,"u = zeros(1,%u);\n", num_iterations);
     for (i=0; i<num_iterations; i++) {
         rmse = gserror((void*)&q,v,3);
