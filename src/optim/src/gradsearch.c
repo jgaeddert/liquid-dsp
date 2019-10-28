@@ -26,6 +26,8 @@
 #include <math.h>
 #include "liquid.internal.h"
 
+#define DEBUG_GRADSEARCH 0
+
 // gradient search algorithm (steepest descent) object
 struct gradsearch_s {
     float * v;                  // vector to optimize (externally allocated)
@@ -256,7 +258,7 @@ float gradsearch_linesearch(utility_function _utility,
                             float *          _p,
                             float            _alpha)
 {
-#if 0
+#if DEBUG_GRADSEARCH
     unsigned int i;
     // print vector operating point
     printf("  linesearch v: {");
@@ -297,7 +299,9 @@ float gradsearch_linesearch(utility_function _utility,
         
         // compute utility for line search step
         float uls = _utility(_userdata, x_prime, _n);
-        //printf("  linesearch %6u : alpha=%12.6f, u0=%12.8f, uls=%12.8f\n", num_iterations, alpha, u0, uls);
+#if DEBUG_GRADSEARCH
+        printf("  linesearch %6u : alpha=%12.6f, u0=%12.8f, uls=%12.8f\n", num_iterations, alpha, u0, uls);
+#endif
 
         // check exit criteria
         if ( (_direction == LIQUID_OPTIM_MINIMIZE && uls > u0) ||

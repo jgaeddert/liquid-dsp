@@ -44,7 +44,7 @@ int main()
     unsigned int n = q->vlen;
     float v[n]; // search vector
     unsigned int i;
-    for (i=0; i<q->n; i++)
+    for (i=0; i<n; i++)
         v[i] = 0.0f;
 
 #if 0
