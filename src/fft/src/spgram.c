@@ -155,8 +155,6 @@ SPGRAM() SPGRAM(_create)(unsigned int _nfft,
         q->w[i] = g * q->w[i];
 
     // reset the spgram object
-    q->num_samples_total    = 0;
-    q->num_transforms_total = 0;
     SPGRAM(_reset)(q);
 
     // return new object
@@ -217,6 +215,10 @@ void SPGRAM(_reset)(SPGRAM() _q)
 
     // clear the window buffer
     WINDOW(_reset)(_q->buffer);
+
+    // reset counters
+    _q->num_samples_total    = 0;
+    _q->num_transforms_total = 0;
 }
 
 // prints the spgram object's parameters
