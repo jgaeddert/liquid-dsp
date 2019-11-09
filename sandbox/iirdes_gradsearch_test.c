@@ -9,6 +9,11 @@
 #define OUTPUT_FILENAME "iirdes_gradsearch_test.m"
 #define DEBUG 0
 
+// highly compressed linear activation function (like tanh but
+// hugs lower bound between y=x and y=1 much more closely)
+float activation(float _x)
+    { float p=4.0f; return copysign(powf(tanhf(powf(fabsf(_x),p)),1./p),_x); }
+
 typedef struct gs_s * gs;
 struct gs_s {
     unsigned int n, L, r, nsos;     // filter order, etc.
@@ -131,14 +136,13 @@ void gs_unpack(gs _q, float * _v, int _debug)
 {
     unsigned int i;
     float x, y, r, t;
-    float p = 4.0f;
     for (i=0; i<_q->L; i++) {
         x = _v[4*i+0]; y = _v[4*i+1];
-        r = powf(tanhf(powf(sqrtf(x*x+y*y),p)),1.0f/p);
+        r = activation(sqrtf(x*x+y*y));
         t = atan2f(y,x);
         _q->zeros[i] = r * cexpf(_Complex_I*t);
         x = _v[4*i+2]; y = _v[4*i+3];
-        r = powf(tanhf(powf(sqrtf(x*x+y*y),p)),1.0f/p);
+        r = activation(sqrtf(x*x+y*y));
         t = atan2f(y,x);
         _q->poles[i] = r * cexpf(_Complex_I*t);
         //_q->zeros[i] = tanhf(_v[4*i+0])*cexpf(_Complex_I*_v[4*i+1]);
