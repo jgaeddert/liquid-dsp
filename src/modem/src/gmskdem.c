@@ -181,7 +181,7 @@ void gmskdem_set_eq_bw(gmskdem _q,
 {
     // validate input
     if (_bw < 0.0f || _bw > 0.5f) {
-        fprintf(stderr,"error: gmskdem_set_eq_bw(), bandwith must be in [0,0.5]\n");
+        fprintf(stderr,"error: gmskdem_set_eq_bw(), bandwidth must be in [0,0.5]\n");
         exit(1);
     }
 
