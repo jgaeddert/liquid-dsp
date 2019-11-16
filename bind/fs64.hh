@@ -23,7 +23,7 @@ int py_callback_wrapper(
         int              _payload_valid,
         framesyncstats_s _stats,
         void *           _userdata);
-typedef std::function<py::object(py::array_t<uint8_t>,py::array_t<uint8_t>,py::dict)> py_framesync_callback;
+typedef std::function<py::object(py::object,py::array_t<uint8_t>,py::array_t<uint8_t>,py::dict)> py_framesync_callback;
 //typedef std::function<int(py::dict)> py_framesync_callback;
 #endif
 
@@ -67,10 +67,12 @@ class fs64
             void *           _userdata);
   public:
     // python-specific constructor with keyword arguments
-    fs64(py_framesync_callback _callback)
+    fs64(py_framesync_callback _callback,
+         py::object            _context)
     {
         q = framesync64_create(py_callback_wrapper, this);
         py_callback = _callback;
+        context     = _context;
     }
 
     void py_execute(py::array_t<std::complex<float>> & _buf)
@@ -94,6 +96,8 @@ class fs64
         return py::make_tuple(v.num_frames_detected,
             v.num_headers_valid, v.num_payloads_valid, v.num_bytes_received);
     }
+  protected:
+    py::object context;
 #endif
 };
 #pragma GCC visibility pop
@@ -127,7 +131,7 @@ int py_callback_wrapper(
     py::array_t<uint8_t> header ({8,           },{1,},(uint8_t*)_header);
     py::array_t<uint8_t> payload({_payload_len,},{1,},(uint8_t*)_payload);
     py::dict stats =  framesyncstats_to_dict(_stats, _header_valid, _payload_valid);
-    py::object o = fs->py_callback(header,payload,stats);
+    py::object o = fs->py_callback(fs->context,header,payload,stats);
 
     // interpret return value
     if (py::isinstance<py::bool_>(o)) {
@@ -141,7 +145,7 @@ int py_callback_wrapper(
 void init_fs64(py::module &m)
 {
     py::class_<fs64>(m, "fs64")
-        .def(py::init<py_framesync_callback>())
+        .def(py::init<py_framesync_callback,py::object>())
         .def("display", &fs64::display,    "print object properties to stdout")
         .def("reset",   &fs64::reset,      "reset frame synchronizer object")
         .def("reset_framedatastats", &fs64::reset_framedatastats, "reset frame statistics data")

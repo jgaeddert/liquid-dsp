@@ -13,10 +13,10 @@ payload = np.random.randint(256, size=64)
 frame   = np.zeros(( n,), dtype=np.csingle)
 fg.execute(header, payload, frame)
 
-def callback(h,p,s):
+def callback(context,header,payload,stats):
     print('frame detected!')
     fig, ax = plt.subplots(1,figsize=(8,8))
-    ax.plot(np.real(s['syms']),np.imag(s['syms']),'x')
+    ax.plot(np.real(stats['syms']),np.imag(stats['syms']),'x')
     ax.set_xlabel('real')
     ax.set_ylabel('imag')
     plt.xlim((-1.2,1.2))
@@ -24,7 +24,7 @@ def callback(h,p,s):
     ax.grid(True)
 
 # create frame synchronizer and receive frame
-fs = dsp.fs64(callback)
+fs = dsp.fs64(callback,None)
 fs.execute(frame)
 
 # compute spectral response
