@@ -145,7 +145,9 @@ int py_callback_wrapper(
 void init_fs64(py::module &m)
 {
     py::class_<fs64>(m, "fs64")
-        .def(py::init<py_framesync_callback,py::object>())
+        .def(py::init<py_framesync_callback,py::object>(),
+             py::arg("callback"), // TODO: make default callback
+             py::arg("context") = py::none())
         .def("display", &fs64::display,    "print object properties to stdout")
         .def("reset",   &fs64::reset,      "reset frame synchronizer object")
         .def("reset_framedatastats", &fs64::reset_framedatastats, "reset frame statistics data")

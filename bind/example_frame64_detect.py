@@ -10,7 +10,7 @@ class performance:
     def __init__(self):
         self.fg = dsp.fg64()
         #self.fs = dsp.fs64(self.callback)
-        self.fs = dsp.fs64(lambda c,h,p,s: None, None)
+        self.fs = dsp.fs64(lambda c,h,p,s: None)
 
     def run(self, snr, num_trials):
         n     = self.fg.get_frame_length()
