@@ -10,7 +10,7 @@ class performance:
     def __init__(self):
         self.fg = dsp.fg64()
         #self.fs = dsp.fs64(self.callback)
-        self.fs = dsp.fs64(lambda h,p,i: None)
+        self.fs = dsp.fs64(lambda c,h,p,s: None, None)
 
     def run(self, snr, num_trials):
         n     = self.fg.get_frame_length()
@@ -26,7 +26,7 @@ class performance:
 
         return self.fs.get_framedatastats()
 
-    #def callback(self,header,payload,info):
+    #def callback(self,context,header,payload,stats):
     #    pass
 
 # sweep performance over snr
