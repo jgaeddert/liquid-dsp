@@ -19,7 +19,7 @@ def benchmark_firfilt(h_len,runtime=1.0):
 
     # print results
     t = time.time() - tic
-    print("%12u samples in %6.3f seconds (%8.3f M samples/second)" % (n,t,n/t*1e-6))
+    print("%6u: %12u samples in %6.3f seconds (%8.3f Ms/s)" % (h_len,n,t,n/t*1e-6))
 
 # run batch of benchmarks
 for h_len in (4,8,16,32,64,128,256,512,1024,):
