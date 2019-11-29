@@ -16,11 +16,11 @@ float activation(float _x)
 
 typedef struct gs_s * gs;
 struct gs_s {
-    unsigned int n, L, r, nsos;     // filter order, etc.
-    unsigned int vlen;              // search vector length
-    float complex * zeros, * poles; // [size: L x 1]
-    float           k, z0, p0;      // gain, additional zero/pole for odd-length order
-    float * a, * b;         // second-order sections, [size: L+r x 3]
+    unsigned int n, L, r, nsos; // filter order, etc.
+    unsigned int vlen;          // search vector length
+    float complex * zd, * pd;   // digital zeros/poles [size: L x 1]
+    float           kd, z0, p0; // gain, additional zero/pole for odd-length order
+    float * A, * B;             // second-order sections, [size: L+r x 3]
     // fft object, buffers
     // design parameters
 };
@@ -28,7 +28,7 @@ gs    gs_create  (unsigned int _order);
 void  gs_destroy (gs _q);
 void  gs_unpack  (gs _q, float * _v, int _debug);
 void  gs_expand  (gs _q, int _debug);
-float gs_evaluate(gs _q);
+float gs_evaluate(gs _q, int _debug);
 float gs_callback(void * _q, float * _v, unsigned int _n);
 
 int main()
@@ -41,19 +41,15 @@ int main()
     unsigned int i;
     for (i=0; i<q->n; i++)
         v[i] = 0.0f;
-    /*
-    v[0] = 10;     v[1] = 2;
-    v[2] =  0.633; v[3] = 1.6283;
-    v[4] = 0.307;
-    */
-#if 0
-    v[0] = -1.0f;  v[1] = 0.0f;
-    v[2] = -0.03;  v[3] = 0.56;
-    v[4] = 0.307;
+
+#if 1
+    v[0] = -0.99805f; v[1] = 0.06242f;  // zd[0] = -0.99805 +/- 0.06242i
+    v[2] = -0.03220f; v[3] = 0.55972f;  // pd[0] = -0.03220 +/- 0.55972i
+    v[4] =  0.307f;                     // kd    =  0.30749798
 #endif
     gs_unpack(q,v,1);
     gs_expand(q,1);
-    //gs_destroy(q); return -1;
+    gs_destroy(q); return -1;
 
     unsigned int num_iterations = 250;
 
@@ -111,22 +107,22 @@ gs gs_create(unsigned int _order)
     q->n    = _order;
     q->r    = (q->n) % 2;
     q->L    = (q->n - q->r)/2;
-    q->vlen = 4*q->L + 1 + 2*q->r; // optimum vector length
+    q->vlen = 4*q->L + 2*q->r + 1; // optimum vector length
     q->nsos = q->L + q->r;
-    q->zeros= (float complex*)malloc(q->L*sizeof(float complex));
-    q->poles= (float complex*)malloc(q->L*sizeof(float complex));
-    q->b    = (float        *)malloc(3*q->nsos*sizeof(float));
-    q->a    = (float        *)malloc(3*q->nsos*sizeof(float));
+    q->zd   = (float complex*)malloc(q->n*sizeof(float complex));
+    q->pd   = (float complex*)malloc(q->n*sizeof(float complex));
+    q->B    = (float        *)malloc(3*q->nsos*sizeof(float));
+    q->A    = (float        *)malloc(3*q->nsos*sizeof(float));
     return q;
 }
 
 void gs_destroy(gs _q)
 {
     // free allocated memory
-    free(_q->zeros);
-    free(_q->poles);
-    free(_q->b);
-    free(_q->a);
+    free(_q->zd);
+    free(_q->pd);
+    free(_q->B);
+    free(_q->A);
     free(_q);
 }
 
@@ -140,80 +136,105 @@ void gs_unpack(gs _q, float * _v, int _debug)
         x = _v[4*i+0]; y = _v[4*i+1];
         r = activation(sqrtf(x*x+y*y));
         t = atan2f(y,x);
-        _q->zeros[i] = r * cexpf(_Complex_I*t);
+        _q->zd[2*i+0] = r * cexpf(-_Complex_I*t);
+        _q->zd[2*i+1] = r * cexpf(+_Complex_I*t);
+
         x = _v[4*i+2]; y = _v[4*i+3];
         r = activation(sqrtf(x*x+y*y));
         t = atan2f(y,x);
-        _q->poles[i] = r * cexpf(_Complex_I*t);
-        //_q->zeros[i] = tanhf(_v[4*i+0])*cexpf(_Complex_I*_v[4*i+1]);
-        //_q->poles[i] = tanhf(_v[4*i+2])*cexpf(_Complex_I*_v[4*i+3]);
+        _q->pd[2*i+0] = r * cexpf(-_Complex_I*t);
+        _q->pd[2*i+1] = r * cexpf(+_Complex_I*t);
     }
-    _q->k = _v[4*_q->L]; // unpack gain
+    // unpack real-valued zero/pole
     if (_q->r) {
-        _q->z0 = tanhf(_v[4*_q->L+1]);
-        _q->p0 = tanhf(_v[4*_q->L+2]);
+        _q->zd[2*_q->L] = tanhf(_v[4*_q->L  ]);
+        _q->pd[2*_q->L] = tanhf(_v[4*_q->L+1]);
     }
+    _q->kd = _v[4*_q->L + 2*_q->r]; // unpack gain
+
     // debug: print values
     if (_debug) {
+        printf("gs_unpack:\n");
         printf("v : [");
         for (i=0; i<_q->vlen; i++)
             printf("%8.5f,", _v[i]);
         printf("]\n");
-        printf("k : %12.10f\n", _q->k);
-        for (i=0; i<_q->L; i++) {
-            printf("[%2u] z:{%12.8f,%12.8f} p:{%12.8f,%12.8f}\n", i,
-                    crealf(_q->zeros[i]), cimagf(_q->zeros[i]),
-                    crealf(_q->poles[i]), cimagf(_q->poles[i]));
-        }
-        if (_q->r) {
-            printf("[%2u] z:{%12.8f %12s} p:{%12.8f %12s}\n", _q->L,
-                    _q->z0, "", _q->p0, "");
-        }
+        // print digital z/p/k
+        printf("zeros (digital):\n");
+        for (i=0; i<_q->n; i++)
+            printf("  zd[%3u] = %12.4e + j*%12.4e;\n", i, crealf(_q->zd[i]), cimagf(_q->zd[i]));
+        printf("poles (digital):\n");
+        for (i=0; i<_q->n; i++)
+            printf("  pd[%3u] = %12.4e + j*%12.4e;\n", i, crealf(_q->pd[i]), cimagf(_q->pd[i]));
+        printf("gain (digital):\n");
+        printf("  kd : %12.8f + j*%12.8f\n", crealf(_q->kd), cimagf(_q->kd));
     }
 }
 
 // expand second-order sections
 void gs_expand(gs _q, int _debug)
 {
+#if 0
     // distribute gain across all numerator second-order sections
-    float g = powf(_q->k, 1.0f/(float)_q->nsos);
+    float g = powf(_q->kd, 1.0f/(float)_q->nsos);
     unsigned int i;
     for (i=0; i<_q->L; i++) {
         // expand zeros
-        float complex z = _q->zeros[i];
-        _q->b[3*i+0] = g*1.0f;
-        _q->b[3*i+1] = g*-2.0f*crealf(z);
-        _q->b[3*i+2] = g*crealf(z*conjf(z));
+        float complex z = _q->zd[i];
+        _q->B[3*i+0] = g*1.0f;
+        _q->B[3*i+1] = g*-2.0f*crealf(z);
+        _q->B[3*i+2] = g*crealf(z*conjf(z));
         // expand poles
-        float complex p = _q->poles[i];
-        _q->a[3*i+0] = 1.0f;
-        _q->a[3*i+1] = -2.0f*crealf(p);
-        _q->a[3*i+2] = crealf(p*conjf(p));
+        float complex p = _q->pd[i];
+        _q->A[3*i+0] = 1.0f;
+        _q->A[3*i+1] = -2.0f*crealf(p);
+        _q->A[3*i+2] = crealf(p*conjf(p));
     }
     // handle odd-order filters
     if (_q->r) {
         // expand zero
-        _q->b[3*_q->L+0] = g*_q->z0;
-        _q->b[3*_q->L+1] = g*_q->z0;
-        _q->b[3*_q->L+2] = 0.0f;
+        _q->B[3*_q->L+0] = g*_q->z0;
+        _q->B[3*_q->L+1] = g*_q->z0;
+        _q->B[3*_q->L+2] = 0.0f;
         // expand pole
-        _q->a[3*_q->L+0] = 1.0f;
-        _q->a[3*_q->L+1] = -_q->p0;
-        _q->a[3*_q->L+2] = 0.0f;
+        _q->A[3*_q->L+0] = 1.0f;
+        _q->A[3*_q->L+1] = -_q->p0;
+        _q->A[3*_q->L+2] = 0.0f;
     }
     // debug: print second-order sections
     if (_debug) {
         printf("B [%u x 3]:\n", _q->nsos);
         for (i=0; i<_q->nsos; i++)
-            printf("    %12.8f %12.8f %12.8f\n", _q->b[3*i+0], _q->b[3*i+1], _q->b[3*i+2]);
+            printf("    %12.8f %12.8f %12.8f\n", _q->B[3*i+0], _q->B[3*i+1], _q->B[3*i+2]);
         printf("A [%u x 3]:\n", _q->nsos);
         for (i=0; i<_q->nsos; i++)
-            printf("    %12.8f %12.8f %12.8f\n", _q->a[3*i+0], _q->a[3*i+1], _q->a[3*i+2]);
+            printf("    %12.8f %12.8f %12.8f\n", _q->A[3*i+0], _q->A[3*i+1], _q->A[3*i+2]);
     }
+#else
+    // second-order sections
+    //float A[3*(L+r)];
+    //float B[3*(L+r)];
+
+    // convert complex digital poles/zeros/gain into second-
+    // order sections form
+    iirdes_dzpk2sosf(_q->zd,_q->pd,_q->n,_q->kd,_q->B,_q->A);
+
+    // print coefficients
+    if (_debug) {
+        unsigned int i;
+        printf("B [%u x 3] :\n", _q->L+_q->r);
+        for (i=0; i<_q->L+_q->r; i++)
+            printf("  %12.8f %12.8f %12.8f\n", _q->B[3*i+0], _q->B[3*i+1], _q->B[3*i+2]);
+        printf("A [%u x 3] :\n", _q->L+_q->r);
+        for (i=0; i<_q->L+_q->r; i++)
+            printf("  %12.8f %12.8f %12.8f\n", _q->A[3*i+0], _q->A[3*i+1], _q->A[3*i+2]);
+    }
+#endif
 }
 
-float gs_evaluate(gs _q)
+float gs_evaluate(gs _q, int _debug)
 {
+    // compare response to ideal...
     return 0;
 }
 
@@ -229,18 +250,7 @@ float gs_callback(void * _context,
     }
     gs_unpack(_q, _v, DEBUG);
     gs_expand(_q, DEBUG);
-
-    if (_q->nsos != 1)
-        return 1e3f;
-
-    float p = 2.0f;
-    return
-        powf(fabsf(0.30749798f - _q->b[0]), p)+
-        powf(fabsf(0.61379653f - _q->b[1]), p)+
-        powf(fabsf(0.30749798f - _q->b[2]), p)+
-        powf(fabsf(1.00000000f - _q->a[0]), p)+
-        powf(fabsf(0.06440119f - _q->a[1]), p)+
-        powf(fabsf(0.31432679f - _q->a[2]), p);
+    return gs_evaluate(_q, DEBUG);
 }
 
 #if 0
@@ -268,11 +278,11 @@ done.
 a = [1.00000000   0.06440119   0.31432679];
 b = [0.30749798   0.61379653   0.30749798];
 
-roots(a)
+roots(a) - poles
   -0.03220 + 0.55972i
   -0.03220 - 0.55972i
 
-roots(b)
+roots(b) - zeros
   -0.99805 + 0.06242i
   -0.99805 - 0.06242i
 
