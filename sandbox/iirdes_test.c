@@ -220,15 +220,17 @@ int main(int argc, char*argv[]) {
     fprintf(fid,"clear all;\n");
     fprintf(fid,"close all;\n");
 
-#if 0
     // print analog z/p/k
+    fprintf(fid,"nza = %u;\n", nza);
+    fprintf(fid,"npa = %u;\n", npa);
     fprintf(fid,"za = zeros(1,nza);\n");
     for (i=0; i<nza; i++)
         fprintf(fid,"  za(%3u) = %12.4e + j*%12.4e;\n", i+1, crealf(za[i]), cimagf(za[i]));
     fprintf(fid,"pa = zeros(1,npa);\n");
-    for (i=0; i<nza; i++)
+    for (i=0; i<npa; i++)
         fprintf(fid,"  pa(%3u) = %12.4e + j*%12.4e;\n", i+1, crealf(pa[i]), cimagf(pa[i]));
-#endif
+
+    // print digital z/p/k
     printf("zeros (digital, low-pass prototype):\n");
     for (i=0; i<n; i++)
         printf("  zd[%3u] = %12.4e + j*%12.4e;\n", i, crealf(zd[i]), cimagf(zd[i]));
