@@ -17,18 +17,18 @@ void usage()
 {
     printf("iirdes_example -- infinite impulse response filter design\n");
     printf("options (default values in []):\n");
-    printf("  u/h   : print usage/help\n");
-    printf("  t     : filter type: [butter], cheby1, cheby2, ellip, bessel\n");
-    printf("  b     : filter transformation: [LP], HP, BP, BS\n");
-    printf("  n     : filter order, n > 0 [5]\n");
-    printf("  r     : passband ripple in dB (cheby1, ellip), r > 0 [1.0]\n");
-    printf("  s     : stopband attenuation in dB (cheby2, ellip), s > 0 [60.0]\n");
-    printf("  f     : passband cut-off, 0 < f < 0.5 [0.2]\n");
-    printf("  c     : center frequency (BP, BS cases), 0 < c < 0.5 [0.25]\n");
-    printf("  o     : format [sos], tf\n");
-    printf("          sos   : second-order sections form\n");
-    printf("          tf    : regular transfer function form (potentially\n");
-    printf("                  unstable for large orders\n");
+    printf("  -h          : print usage/help\n");
+    printf("  -t <type>   : filter type: [butter], cheby1, cheby2, ellip, bessel\n");
+    printf("  -b <type>   : filter transformation: [LP], HP, BP, BS\n");
+    printf("  -n <order>  : filter order, n > 0 [5]\n");
+    printf("  -r <ripple> : passband ripple in dB (cheby1, ellip), r > 0 [1.0]\n");
+    printf("  -s <atten>  : stopband attenuation in dB (cheby2, ellip), s > 0 [60.0]\n");
+    printf("  -f <freq>   : passband cut-off, 0 < f < 0.5 [0.2]\n");
+    printf("  -c <freq>   : center frequency (BP, BS cases), 0 < c < 0.5 [0.25]\n");
+    printf("  -o <format> : format [sos], tf\n");
+    printf("      sos - second-order sections form\n");
+    printf("      tf  - regular transfer function form (potentially\n");
+    printf("            unstable for large orders\n");
 }
 
 
