@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2018 Joseph Gaeddert
+ * Copyright (c) 2007 - 2019 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -157,6 +157,26 @@ FIRINTERP() FIRINTERP(_create_prototype)(int          _type,
 
     // return interpolator object
     return FIRINTERP(_create)(_k, hc, h_len);
+}
+
+// create linear interpolator object
+//  _M      :   interpolation factor, _M > 1
+FIRINTERP() FIRINTERP(_create_linear)(unsigned int _M)
+{
+    // validate input
+    if (_M < 1) {
+        fprintf(stderr,"error: firinterp_%s_create_linear(), interp factor must be greater than 1\n", EXTENSION_FULL);
+        exit(1);
+    }
+
+    // generate coefficients
+    unsigned int i;
+    TC hc[2*_M];
+    for (i=0; i<_M; i++) hc[   i] = (float)i / (float)_M;
+    for (i=0; i<_M; i++) hc[_M+i] = 1.0f - (float)i / (float)_M;
+
+    // return interpolator object
+    return FIRINTERP(_create)(_M, hc, 2*_M);
 }
 
 // destroy interpolator object

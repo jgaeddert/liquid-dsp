@@ -3234,6 +3234,10 @@ FIRINTERP() FIRINTERP(_create_prototype)(int          _type,                \
                                          float        _beta,                \
                                          float        _dt);                 \
                                                                             \
+/* Create linear interpolator object                                    */  \
+/*  _M      : interpolation factor,    _M > 1                           */  \
+FIRINTERP() FIRINTERP(_create_linear)(unsigned int _M);                     \
+                                                                            \
 /* Destroy firinterp object, freeing all internal memory                */  \
 void FIRINTERP(_destroy)(FIRINTERP() _q);                                   \
                                                                             \
