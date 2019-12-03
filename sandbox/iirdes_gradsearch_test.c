@@ -23,12 +23,17 @@ struct gs_s {
     float * A, * B;             // second-order sections, [size: L+r x 3]
     // fft object, buffers
     // design parameters
+    unsigned int nfft;          //
+    float * H;                  // frequency response
+    float fp, fs;               // pass and stop bands
+    float utility;              // utility value
 };
 gs    gs_create  (unsigned int _order);
 void  gs_destroy (gs _q);
 void  gs_unpack  (gs _q, float * _v, int _debug);
 void  gs_expand  (gs _q, int _debug);
 float gs_evaluate(gs _q, int _debug);
+void  gs_print   (gs _q, int _debug);
 float gs_callback(void * _q, float * _v, unsigned int _n);
 
 int main()
@@ -42,14 +47,15 @@ int main()
     for (i=0; i<q->n; i++)
         v[i] = 0.0f;
 
-#if 1
+#if 0
     v[0] = -0.99805f; v[1] = 0.06242f;  // zd[0] = -0.99805 +/- 0.06242i
     v[2] = -0.03220f; v[3] = 0.55972f;  // pd[0] = -0.03220 +/- 0.55972i
     v[4] =  0.307f;                     // kd    =  0.30749798
 #endif
     gs_unpack(q,v,1);
     gs_expand(q,1);
-    gs_destroy(q); return -1;
+    gs_evaluate(q,1);
+    //gs_destroy(q); return -1;
 
     unsigned int num_iterations = 250;
 
@@ -86,14 +92,31 @@ int main()
     printf("%5u: ", num_iterations);
     gradsearch_print(gs);
 
+    // save frequency response
+    fprintf(fid,"nfft = %u;\n", q->nfft);
+    fprintf(fid,"f = 0.5*[0:(nfft-1)]/nfft;\n");
+    for (i=0; i<q->nfft; i++)
+        fprintf(fid,"H(%4u) = %16.8e;\n", i+1, q->H[i]);
+
+    // plot utility over time
     fprintf(fid,"figure;\n");
     fprintf(fid,"semilogy(u,'-x');\n");
     fprintf(fid,"xlabel('iteration');\n");
     fprintf(fid,"ylabel('utility');\n");
     fprintf(fid,"title('gradient search results');\n");
     fprintf(fid,"grid on;\n");
+
+    // plot frequency response
+    fprintf(fid,"figure;\n");
+    fprintf(fid,"plot(f,20*log10(H));\n");
+    fprintf(fid,"xlabel('Normalized Frequency');\n");
+    fprintf(fid,"ylabel('PSD [dB[');\n");
+    fprintf(fid,"grid on;\n");
+
     fclose(fid);
     printf("results written to %s.\n", OUTPUT_FILENAME);
+
+    gs_print(q,1);
 
     gradsearch_destroy(gs);
     gs_destroy(q);
@@ -109,10 +132,14 @@ gs gs_create(unsigned int _order)
     q->L    = (q->n - q->r)/2;
     q->vlen = 4*q->L + 2*q->r + 1; // optimum vector length
     q->nsos = q->L + q->r;
+    q->nfft = 1024;
     q->zd   = (float complex*)malloc(q->n*sizeof(float complex));
     q->pd   = (float complex*)malloc(q->n*sizeof(float complex));
     q->B    = (float        *)malloc(3*q->nsos*sizeof(float));
     q->A    = (float        *)malloc(3*q->nsos*sizeof(float));
+    q->H    = (float        *)malloc(q->nfft*sizeof(float));
+    q->fp   = 0.2f;
+    q->fs   = 0.3f;
     return q;
 }
 
@@ -123,6 +150,7 @@ void gs_destroy(gs _q)
     free(_q->pd);
     free(_q->B);
     free(_q->A);
+    free(_q->H);
     free(_q);
 }
 
@@ -159,62 +187,13 @@ void gs_unpack(gs _q, float * _v, int _debug)
         for (i=0; i<_q->vlen; i++)
             printf("%8.5f,", _v[i]);
         printf("]\n");
-        // print digital z/p/k
-        printf("zeros (digital):\n");
-        for (i=0; i<_q->n; i++)
-            printf("  zd[%3u] = %12.4e + j*%12.4e;\n", i, crealf(_q->zd[i]), cimagf(_q->zd[i]));
-        printf("poles (digital):\n");
-        for (i=0; i<_q->n; i++)
-            printf("  pd[%3u] = %12.4e + j*%12.4e;\n", i, crealf(_q->pd[i]), cimagf(_q->pd[i]));
-        printf("gain (digital):\n");
-        printf("  kd : %12.8f + j*%12.8f\n", crealf(_q->kd), cimagf(_q->kd));
+        gs_print(_q, _debug);
     }
 }
 
 // expand second-order sections
 void gs_expand(gs _q, int _debug)
 {
-#if 0
-    // distribute gain across all numerator second-order sections
-    float g = powf(_q->kd, 1.0f/(float)_q->nsos);
-    unsigned int i;
-    for (i=0; i<_q->L; i++) {
-        // expand zeros
-        float complex z = _q->zd[i];
-        _q->B[3*i+0] = g*1.0f;
-        _q->B[3*i+1] = g*-2.0f*crealf(z);
-        _q->B[3*i+2] = g*crealf(z*conjf(z));
-        // expand poles
-        float complex p = _q->pd[i];
-        _q->A[3*i+0] = 1.0f;
-        _q->A[3*i+1] = -2.0f*crealf(p);
-        _q->A[3*i+2] = crealf(p*conjf(p));
-    }
-    // handle odd-order filters
-    if (_q->r) {
-        // expand zero
-        _q->B[3*_q->L+0] = g*_q->z0;
-        _q->B[3*_q->L+1] = g*_q->z0;
-        _q->B[3*_q->L+2] = 0.0f;
-        // expand pole
-        _q->A[3*_q->L+0] = 1.0f;
-        _q->A[3*_q->L+1] = -_q->p0;
-        _q->A[3*_q->L+2] = 0.0f;
-    }
-    // debug: print second-order sections
-    if (_debug) {
-        printf("B [%u x 3]:\n", _q->nsos);
-        for (i=0; i<_q->nsos; i++)
-            printf("    %12.8f %12.8f %12.8f\n", _q->B[3*i+0], _q->B[3*i+1], _q->B[3*i+2]);
-        printf("A [%u x 3]:\n", _q->nsos);
-        for (i=0; i<_q->nsos; i++)
-            printf("    %12.8f %12.8f %12.8f\n", _q->A[3*i+0], _q->A[3*i+1], _q->A[3*i+2]);
-    }
-#else
-    // second-order sections
-    //float A[3*(L+r)];
-    //float B[3*(L+r)];
-
     // convert complex digital poles/zeros/gain into second-
     // order sections form
     iirdes_dzpk2sosf(_q->zd,_q->pd,_q->n,_q->kd,_q->B,_q->A);
@@ -229,13 +208,68 @@ void gs_expand(gs _q, int _debug)
         for (i=0; i<_q->L+_q->r; i++)
             printf("  %12.8f %12.8f %12.8f\n", _q->A[3*i+0], _q->A[3*i+1], _q->A[3*i+2]);
     }
-#endif
 }
 
 float gs_evaluate(gs _q, int _debug)
 {
-    // compare response to ideal...
-    return 0;
+    float u = 0.0f;
+    unsigned int n;
+    for (n=0; n<_q->nfft; n++) {
+        float f = 0.5f * (float)n / (float)_q->nfft;
+        float D = 0.0f;
+        float W = 1.0f;
+        if (f < _q->fp) { // pass band
+            D = 1.0f; W = 1.0f;
+        } else if (f > _q->fs) { // stop band
+            D = 0.0f; W = 1.0f;
+        } else { // transition band (don't care)
+            D = 0.0f; W = 0.0f;
+        }
+
+        // compute 3-point DFT for each second-order section
+        float complex H = 1.0f;
+        unsigned int i;
+        for (i=0; i<_q->nsos; i++) {
+            float complex Hb =  _q->B[3*i+0] * cexpf(_Complex_I*2*M_PI*f*0) +
+                                _q->B[3*i+1] * cexpf(_Complex_I*2*M_PI*f*1) +
+                                _q->B[3*i+2] * cexpf(_Complex_I*2*M_PI*f*2);
+
+            float complex Ha =  _q->A[3*i+0] * cexpf(_Complex_I*2*M_PI*f*0) +
+                                _q->A[3*i+1] * cexpf(_Complex_I*2*M_PI*f*1) +
+                                _q->A[3*i+2] * cexpf(_Complex_I*2*M_PI*f*2);
+
+            // consolidate
+            H *= Hb / Ha;
+        }
+        // compare to ideal
+        float H_abs = crealf(H)*crealf(H) + cimagf(H)*cimagf(H);
+        float e = W * (D-H_abs)*(D-H_abs);
+        if (_debug)
+            printf(" %5u %8.6f %5.3f %16.13f %16.13f\n", n, f, D, H_abs, e);
+        u += e*e;
+        _q->H[n] = H_abs; // save response
+    }
+    //u /= (float)(_q->nfft);
+    if (_debug) printf("u = %12.8f\n", u);
+    _q->utility = u;
+    return _q->utility;
+}
+
+void gs_print(gs _q, int _debug)
+{
+    // print digital z/p/k
+    unsigned int i;
+    printf("zeros (digital):\n");
+    for (i=0; i<_q->n; i++)
+        printf("  zd[%3u] = %12.4e + j*%12.4e;\n", i, crealf(_q->zd[i]), cimagf(_q->zd[i]));
+    printf("poles (digital):\n");
+    for (i=0; i<_q->n; i++)
+        printf("  pd[%3u] = %12.4e + j*%12.4e;\n", i, crealf(_q->pd[i]), cimagf(_q->pd[i]));
+    printf("gain (digital):\n");
+    printf("  kd : %12.8f + j*%12.8f\n", crealf(_q->kd), cimagf(_q->kd));
+    // print response...
+    printf("  u  : %12.8f\n", _q->utility);
+    gs_evaluate(_q, 1);
 }
 
 // gradient search error
