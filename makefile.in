@@ -1535,6 +1535,7 @@ example_programs :=						\
 	examples/symtrack_cccf_example				\
 	examples/wdelayf_example				\
 	examples/windowf_example				\
+	examples/window_enbw_example				\
 
 #	examples/metadata_example
 #	examples/ofdmframegen_example
