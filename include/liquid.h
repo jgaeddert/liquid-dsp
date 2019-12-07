@@ -5900,21 +5900,15 @@ void liquid_print_windows();
 // returns window type based on input string
 liquid_window_type liquid_getopt_str2window(const char * _str);
 
-// Kaiser-Bessel derived window (single sample)
+// generic window function given type
+//  _type   :   window type, e.g. LIQUID_WINDOW_KAISER
 //  _i      :   window index, _i in [0,_wlen-1]
-//  _wlen   :   length of filter (must be even)
-//  _beta   :   Kaiser window parameter (_beta > 0)
-float liquid_kbd(unsigned int _i,
-                 unsigned int _wlen,
-                 float        _beta);
-
-// Kaiser-Bessel derived window (full window)
-//  _wlen   :   full window length (must be even)
-//  _beta   :   Kaiser window parameter (_beta > 0)
-//  _w      :   window output buffer, [size: _wlen x 1]
-void liquid_kbd_window(unsigned int _wlen,
-                       float        _beta,
-                       float *      _w);
+//  _wlen   :   length of window
+//  _arg    :   window-specific argument, if required
+float liquid_windowf(liquid_window_type _type,
+                     unsigned int       _i,
+                     unsigned int       _wlen,
+                     float              _arg);
 
 // Kaiser window
 //  _i      :   window index, _i in [0,_wlen-1]
@@ -5969,6 +5963,22 @@ float liquid_triangular(unsigned int _i,
 float liquid_rcostaper_window(unsigned int _i,
                               unsigned int _wlen,
                               unsigned int _t);
+
+// Kaiser-Bessel derived window (single sample)
+//  _i      :   window index, _i in [0,_wlen-1]
+//  _wlen   :   length of filter (must be even)
+//  _beta   :   Kaiser window parameter (_beta > 0)
+float liquid_kbd(unsigned int _i,
+                 unsigned int _wlen,
+                 float        _beta);
+
+// Kaiser-Bessel derived window (full window)
+//  _wlen   :   full window length (must be even)
+//  _beta   :   Kaiser window parameter (_beta > 0)
+//  _w      :   window output buffer, [size: _wlen x 1]
+void liquid_kbd_window(unsigned int _wlen,
+                       float        _beta,
+                       float *      _w);
 
 
 // polynomials
