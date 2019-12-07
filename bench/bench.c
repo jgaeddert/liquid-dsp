@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2017 Joseph Gaeddert
+ * Copyright (c) 2007 - 2019 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -98,6 +98,7 @@ void usage()
     printf("  -h           : display this help and exit\n");
     printf("  -v           : verbose\n");
     printf("  -q           : quiet\n");
+    printf("  -f           : run fast version\n");
     printf("  -e           : estimate cpu clock frequency and exit\n");
     printf("  -c           : set cpu clock frequency (Hz)\n");
     printf("  -n <trials>  : set number of base trials\n");
@@ -133,11 +134,15 @@ int main(int argc, char *argv[])
 
     // get input options
     int d;
-    while((d = getopt(argc,argv,"hvqec:n:b:p:t:lLs:o:")) != EOF){
+    while((d = getopt(argc,argv,"hvqfec:n:b:p:t:lLs:o:")) != EOF){
         switch (d) {
         case 'h':   usage();        return 0;
         case 'v':   verbose = 1;    break;
         case 'q':   verbose = 0;    break;
+        case 'f':
+            num_base_trials = 100;
+            runtime = 0.5e-3f;
+            break;
         case 'e':
             estimate_cpu_clock();
             return 0;
