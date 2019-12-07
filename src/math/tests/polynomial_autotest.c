@@ -59,7 +59,7 @@ void autotest_polyf_fit_q3n3()
 void autotest_polyf_lagrange_issue165()
 {
     // Inputs taken from issue#165
-    unsigned int Q=2;   // polynomial order
+    //unsigned int Q=2;   // polynomial order
     unsigned int n=3;   // input vector size
     float x[3] = {-1.0f, 0.0f, 1.0f};
     float y[3] = {7.059105f, 24.998369f, 14.365907f};
