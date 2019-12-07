@@ -179,6 +179,31 @@ FIRINTERP() FIRINTERP(_create_linear)(unsigned int _M)
     return FIRINTERP(_create)(_M, hc, 2*_M);
 }
 
+// create window interpolator object
+//  _M      :   interpolation factor, _M > 1
+//  _m      :   filter semi-length, _m > 0
+FIRINTERP() FIRINTERP(_create_window)(unsigned int _M,
+                                      unsigned int _m)
+{
+    // validate input
+    if (_M < 1) {
+        fprintf(stderr,"error: firinterp_%s_create_spline(), interp factor must be greater than 1\n", EXTENSION_FULL);
+        exit(1);
+    } else if (_m < 1) {
+        fprintf(stderr,"error: firinterp_%s_create_spline(), interp factor must be greater than 1\n", EXTENSION_FULL);
+        exit(1);
+    }
+
+    // generate coefficients
+    unsigned int i;
+    TC hc[2*_m*_M];
+    for (i=0; i<2*_m*_M; i++)
+        hc[i] = powf(sinf(M_PI*(float)i/(float)(2*_m*_M)), 2.0f);
+
+    // return interpolator object
+    return FIRINTERP(_create)(_M, hc, 2*_m*_M);
+}
+
 // destroy interpolator object
 void FIRINTERP(_destroy)(FIRINTERP() _q)
 {

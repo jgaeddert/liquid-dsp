@@ -3238,6 +3238,12 @@ FIRINTERP() FIRINTERP(_create_prototype)(int          _type,                \
 /*  _M      : interpolation factor,    _M > 1                           */  \
 FIRINTERP() FIRINTERP(_create_linear)(unsigned int _M);                     \
                                                                             \
+/* Create window interpolator object                                    */  \
+/*  _M      : interpolation factor, _M > 1                              */  \
+/*  _m      : filter semi-length, _m > 0                                */  \
+FIRINTERP() FIRINTERP(_create_window)(unsigned int _M,                      \
+                                      unsigned int _m);                     \
+                                                                            \
 /* Destroy firinterp object, freeing all internal memory                */  \
 void FIRINTERP(_destroy)(FIRINTERP() _q);                                   \
                                                                             \

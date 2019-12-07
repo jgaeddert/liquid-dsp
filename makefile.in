@@ -1440,6 +1440,7 @@ example_programs :=						\
 	examples/firinterp_crcf_example				\
 	examples/firinterp_firdecim_crcf_example		\
 	examples/firinterp_rrrf_linear_example			\
+	examples/firinterp_rrrf_window_example			\
 	examples/firpfbch_crcf_example				\
 	examples/firpfbch_crcf_analysis_example			\
 	examples/firpfbch_crcf_synthesis_example		\
