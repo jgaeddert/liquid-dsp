@@ -207,8 +207,8 @@ void firdespm_lowpass(unsigned int _n,
 //  _num_bands  :   number of frequency bands
 //  _bands      :   band edges, f in [0,0.5], [size: _num_bands x 2]
 //  _des        :   desired response [size: _num_bands x 1]
-//  _weights    :   response weighting [size: _num_bands x 1]
-//  _wtype      :   weight types (e.g. LIQUID_FIRDESPM_FLATWEIGHT) [size: _num_bands x 1]
+//  _weights    :   response weighting [size: _num_bands x 1], NULL for default 1.0
+//  _wtype      :   weight types [size: _num_bands x 1], NULL for default LIQUID_FIRDESPM_FLATWEIGHT
 //  _btype      :   band type (e.g. LIQUID_FIRDESPM_BANDPASS)
 firdespm firdespm_create(unsigned int            _h_len,
                          unsigned int            _num_bands,
@@ -229,10 +229,11 @@ firdespm firdespm_create(unsigned int            _h_len,
     // ensure bands are non-decreasing
     for (i=1; i<2*_num_bands; i++)
         bands_valid &= _bands[i] >= _bands[i-1];
-    // ensure weights are greater than 0
-    // TODO: ignore weights if pointer is NULL
-    for (i=0; i<_num_bands; i++)
-        weights_valid &= _weights[i] > 0;
+    if (_weights) {
+        // ensure weights are greater than 0
+        for (i=0; i<_num_bands; i++)
+            weights_valid &= _weights[i] > 0;
+    }
 
     if (!bands_valid) {
         fprintf(stderr,"error: firdespm_create(), invalid bands\n");
