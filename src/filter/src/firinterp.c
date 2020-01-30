@@ -114,7 +114,7 @@ FIRINTERP() FIRINTERP(_create_kaiser)(unsigned int _M,
     }
     
     // return interpolator object
-    return FIRINTERP(_create)(_M, hc, 2*_M*_m);
+    return FIRINTERP(_create)(_M, hc, h_len);
 }
 
 // create prototype (root-)Nyquist interpolator
