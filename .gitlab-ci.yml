@@ -14,3 +14,15 @@ autotest:
       - autotest.json
     expire_in: 1 month
 
+benchmark:
+  stage: test
+  script:
+    - ./bootstrap.sh
+    - ./configure
+    - make -j4 benchmark
+    - ./benchmark -o benchmark.out
+  artifacts:
+    paths:
+      - benchmark.out
+    expire_in: 1 month
+
