@@ -1,0 +1,15 @@
+
+stages:
+  - test
+
+autotest:
+  stage: test
+  script:
+    - ./bootstrap.sh
+    - ./configure
+    - make -j4 check
+  artifacts:
+    paths:
+      - autotest.json
+    expire_in: 1 month
+
