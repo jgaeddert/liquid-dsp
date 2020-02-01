@@ -1,24 +1,35 @@
 image: gcc
 
 stages:
+  - build
   - test
 
-autotest:
-  stage: test
+compile:
+  stage: build
   script:
     - ./bootstrap.sh
     - ./configure
+    - make -j4
+  artifacts:
+    paths:
+      - makefile
+      - configure
+      - config.h
+      - libliquid*
+      - src/*/src/*.o
+
+check:
+  stage: test
+  script:
     - make -j4 check
   artifacts:
     paths:
       - autotest.json
     expire_in: 1 month
 
-benchmark:
+bench:
   stage: test
   script:
-    - ./bootstrap.sh
-    - ./configure
     - make -j4 bench
   artifacts:
     paths:
