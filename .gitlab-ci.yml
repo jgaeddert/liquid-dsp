@@ -19,10 +19,9 @@ benchmark:
   script:
     - ./bootstrap.sh
     - ./configure
-    - make -j4 benchmark
-    - ./benchmark -o benchmark.out
+    - make -j4 bench
   artifacts:
     paths:
-      - benchmark.out
+      - benchmark.json
     expire_in: 1 month
 
