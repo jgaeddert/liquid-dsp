@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2019 Joseph Gaeddert
+ * Copyright (c) 2007 - 2020 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -108,7 +108,7 @@ void usage()
     printf("  -l           : list available packages\n");
     printf("  -L           : list all available scripts\n");
     printf("  -s <search>  : run all packages/benchmarks matching search string\n");
-    printf("  -o <file>    : export output\n");
+    printf("  -o <file>    : output file (json)\n");
 }
 
 // main function
@@ -128,8 +128,7 @@ int main(int argc, char *argv[])
     int verbose = 1;
     int autoscale = 1;
     int cpu_clock_detect = 1;
-    int output_to_file = 0;
-    char filename[128];
+    char filename[256];
     char search_string[128];
 
     // get input options
@@ -201,8 +200,8 @@ int main(int argc, char *argv[])
             search_string[127] = '\0';
             break;
         case 'o':
-            output_to_file = 1;
-            strcpy(filename, optarg);
+            strncpy(filename,optarg,255);
+            filename[255] = '\0';
             break;
         default:
             usage();
@@ -262,43 +261,45 @@ int main(int argc, char *argv[])
         exit(1);
     }
 
-    if (output_to_file) {
-        fid = fopen(filename,"w");
-        if (!fid) {
-            printf("error: could not open file %s for writing\n", filename);
-            return 1;
-        }
+    if (strcmp(filename,"")==0)
+        return 0;
 
-        // print header
-        fprintf(fid,"# %s : auto-generated file (autoscript version %s)\n", filename, AUTOSCRIPT_VERSION);
-        fprintf(fid,"#\n");
-        fprintf(fid,"# invoked as:\n");
-        fprintf(fid,"#   ");
-        for (i=0; i<argc; i++)
-            fprintf(fid," %s", argv[i]);
-        fprintf(fid,"\n");
-        fprintf(fid,"#\n");
-        fprintf(fid,"# properties:\n");
-        fprintf(fid,"#  verbose             :   %s\n", verbose ? "true" : "false");
-        fprintf(fid,"#  autoscale           :   %s\n", autoscale ? "true" : "false");
-        fprintf(fid,"#  cpu_clock_detect    :   %s\n", cpu_clock_detect ? "true" : "false");
-        fprintf(fid,"#  search string       :   '%s'\n", mode == RUN_SEARCH ? search_string : "");
-        fprintf(fid,"#  runtime             :   %12.8f s\n", runtime);
-        fprintf(fid,"#  cpu_clock           :   %e Hz\n", cpu_clock);
-        fprintf(fid,"#  cpu_clock determined:   %s\n", cpu_clock_detect ? "estimated" : "specified");
-        fprintf(fid,"#  num_trials          :   %lu\n", num_base_trials);
-        fprintf(fid,"#\n");
-        fprintf(fid,"# %-5s %-30s %12s %12s %12s %12s\n",
-                "id", "name", "num trials", "ex.time [s]", "rate [t/s]", "[cycles/t]");
-
-        for (i=0; i<NUM_AUTOSCRIPTS; i++) {
-            if (scripts[i].num_trials > 0)
-                output_benchmark_to_file(fid, &scripts[i]);
-        }
-
-        fclose(fid);
-        printf("results written to %s\n", filename);
+    // export results to output .json file; try to open file for writing
+    FILE * fid = fopen(filename,"w");
+    if (!fid) {
+        fprintf(stderr,"error: %s, could not open '%s' for writing\n", __FILE__, filename);
+        return -1;
     }
+
+    // print header
+    fprintf(fid,"{\n");
+    fprintf(fid,"  \"build-info\" : {},\n");
+    fprintf(fid,"  \"command-line\" : \"");
+    for (i=0; i<(unsigned int)argc; i++)
+        fprintf(fid," %s", argv[i]);
+    fprintf(fid,"\",\n");
+    fprintf(fid,"  \"cpu_clock_detect\":%s,\n", cpu_clock_detect ? "true" : "false");
+    fprintf(fid,"  \"search string\"       : \"%s\",\n", mode == RUN_SEARCH ? search_string : "");
+    fprintf(fid,"  \"runtime\"             : %12.8f,\n", runtime);
+    fprintf(fid,"  \"cpu_clock\"           : %e,\n", cpu_clock);
+    fprintf(fid,"  \"cpu_clock_determined\": \"%s\",\n", cpu_clock_detect ? "estimated" : "specified");
+    fprintf(fid,"  \"num_trials\"          : %lu,\n", num_base_trials);
+    fprintf(fid,"  \"benchmarks\"          : [\n");
+    for (i=0; i<NUM_AUTOSCRIPTS; i++) {
+        fprintf(fid,"    {\"id\":%5u, \"trials\":%12u, \"extime\":%12.4e, \"rate\":%12.4e, \"cycles_per_trial\":%12.4e, \"name\":\"%s\"}%s\n",
+                scripts[i].id,
+                scripts[i].num_trials,
+                scripts[i].extime,
+                scripts[i].rate,
+                scripts[i].cycles_per_trial,
+                scripts[i].name,
+                i==NUM_AUTOSCRIPTS-1 ? "" : ",");
+    }
+    fprintf(fid,"  ]\n");
+    fprintf(fid,"}\n");
+    fclose(fid);
+    if (verbose)
+        printf("output JSON results written to %s\n", filename);
 
     return 0;
 }
@@ -466,15 +467,3 @@ double calculate_execution_time(struct rusage _start, struct rusage _finish)
         + _finish.ru_stime.tv_sec - _start.ru_stime.tv_sec
         + 1e-6*(_finish.ru_stime.tv_usec - _start.ru_stime.tv_usec);
 }
-
-void output_benchmark_to_file(FILE * _fid, benchmark_t * _benchmark)
-{
-    fprintf(_fid,"  %-5u %-30s %12u %12.4e %12.4e %12.4e\n",
-                 _benchmark->id,
-                 _benchmark->name,
-                 _benchmark->num_trials,
-                 _benchmark->extime,
-                 _benchmark->rate,
-                 _benchmark->cycles_per_trial);
-}
-

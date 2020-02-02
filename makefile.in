@@ -1,4 +1,4 @@
-# Copyright (c) 2007 - 2019 Joseph Gaeddert
+# Copyright (c) 2007 - 2020 Joseph Gaeddert
 # 
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -1356,7 +1356,7 @@ $(bench_prog): $(bench_prog).o $(benchmark_obj) $(benchmark_extra_obj) ${ARCHIVE
 
 # run the benchmark program
 bench: $(bench_prog)
-	./$(bench_prog)
+	./$(bench_prog) -o benchmark.json
 
 # benchmark compare script
 scripts/benchmark_compare : % : %.c
