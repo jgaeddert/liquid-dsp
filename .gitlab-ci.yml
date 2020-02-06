@@ -36,3 +36,14 @@ bench:
       - benchmark.json
     expire_in: 1 month
 
+examples:
+  stage: test
+  script:
+    - make -j4 examples
+    - ls examples/*_example | sed "s#examples#./examples#g" > run_examples.sh
+    - /bin/sh run_examples.sh
+  artifacts:
+    paths:
+      - run_examples.sh
+    expire_in: 1 month
+
