@@ -1322,8 +1322,10 @@ clean-check:
 ##
 coverage: coverage.out
 
-coverage.out: ${autotest_prog}
-	./$(autotest_prog)
+${autotest_prog}.gcda : %.gcda : %
+	./${autotest_prog}
+
+coverage.out : ${autotest_prog}.gcda
 	gcovr -r . > $@
 
 clean-coverage:
