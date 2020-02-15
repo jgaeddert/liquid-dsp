@@ -65,7 +65,8 @@ RANLIB		:= @RANLIB@
 
 # flags
 INCLUDE_CFLAGS	= $(addprefix -I,$(include_dirs))
-CONFIG_CFLAGS	= @CFLAGS@ @DEBUG_MSG_OPTION@ @ARCH_OPTION@
+COVERAGE_FLAGS  = @COVERAGE_OPTION@
+CONFIG_CFLAGS	= @CFLAGS@ @DEBUG_MSG_OPTION@ @ARCH_OPTION@ ${COVERAGE_FLAGS}
 CPPFLAGS	= @CPPFLAGS@ $(INCLUDE_CFLAGS)
 CFLAGS		= $(CONFIG_CFLAGS) -Wall -fPIC
 LDFLAGS		= @LDFLAGS@
@@ -1187,7 +1188,7 @@ libliquid.ar: $(objects)
 
 # gcc -dynamiclib -install_name libliquid.dylib -o libliquid.dylib libmodem.a libutility.a 
 libliquid.dylib: $(objects)
-	$(CC) -dynamiclib -install_name $@ -o $@ $^ $(LDFLAGS) $(LIBS)
+	$(CC) -dynamiclib ${COVERAGE_FLAGS} -install_name $@ -o $@ $^ $(LDFLAGS) $(LIBS)
 
 #
 # linux, et al
@@ -1315,6 +1316,19 @@ clean-check:
 	$(RM) $(autotest_obj)
 	$(RM) $(autotest_extra_obj)
 	$(RM) autotest.json
+
+##
+## TARGET : coverage  - run coverage test and produce report
+##
+coverage: coverage.out
+
+coverage.out: ${autotest_prog}
+	./$(autotest_prog)
+	gcovr -r . > $@
+
+clean-coverage:
+	$(RM) src/*/src/*.gcda src/*/src/*.gcno
+	$(RM) *.gcda *.gcno coverage.out
 
 
 ##
@@ -1729,7 +1743,7 @@ clean-modules:
 	$(RM) src/vector/src/*.o       src/vector/bench/*.o       src/vector/tests/*.o
 	$(RM) src/libliquid.o
 
-clean: clean-modules clean-autoscript clean-check clean-bench clean-examples clean-sandbox
+clean: clean-modules clean-autoscript clean-check clean-coverage clean-bench clean-examples clean-sandbox
 	$(RM) ${ARCHIVE_LIB} ${SHARED_LIB} $(extra_clean)
 
 ##
