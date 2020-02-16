@@ -69,10 +69,15 @@ AC_ARG_ENABLE(fftoverride,
     [],
 )
 
+# code coverage
 AC_ARG_ENABLE(coverage,
     AS_HELP_STRING([--enable-coverage],[enable flags to test code coverage]),
-    [COVERAGE_OPTION="--coverage"],
-    [COVERAGE_OPTION=""],
+    [   # check that gcovr program is installed
+        AC_CHECK_PROG(HAVE_GCOVR,gcovr,yes)
+        AS_IF([test x"$HAVE_GCOVR" != x"yes"],
+              [AC_MSG_ERROR(Need gcovr with coverage option)],
+              [COVERAGE_OPTION="--coverage"])],
+    [COVERAGE_OPTION=""]
 )
 
 # Check for necessary programs

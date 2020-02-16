@@ -65,7 +65,7 @@ RANLIB		:= @RANLIB@
 
 # flags
 INCLUDE_CFLAGS	= $(addprefix -I,$(include_dirs))
-COVERAGE_FLAGS  = @COVERAGE_OPTION@
+COVERAGE_FLAGS  = @COVERAGE_OPTION@ # dynamic library linker needs separate flag
 CONFIG_CFLAGS	= @CFLAGS@ @DEBUG_MSG_OPTION@ @ARCH_OPTION@ ${COVERAGE_FLAGS}
 CPPFLAGS	= @CPPFLAGS@ $(INCLUDE_CFLAGS)
 CFLAGS		= $(CONFIG_CFLAGS) -Wall -fPIC
@@ -1321,15 +1321,17 @@ clean-check:
 ## TARGET : coverage  - run coverage test and produce report
 ##
 coverage: coverage.out
+	tail -n3 $<
 
 ${autotest_prog}.gcda : %.gcda : %
 	./${autotest_prog}
 
 coverage.out : ${autotest_prog}.gcda
-	gcovr -r . > $@
+	gcovr --root=src --exclude-directories=src/.*/tests > $@
 
 clean-coverage:
-	$(RM) src/*/src/*.gcda src/*/src/*.gcno
+	$(RM) src/*.gcda src/*/src/*.gcda src/*/tests/*.gcda src/*/tests/data/*.gcda autotest/*.gcda scripts/*.gcda
+	$(RM) src/*.gcno src/*/src/*.gcno src/*/tests/*.gcno src/*/tests/data/*.gcno autotest/*.gcno scripts/*.gcno
 	$(RM) *.gcda *.gcno coverage.out
 
 
