@@ -1,9 +1,8 @@
 # base configuration
 image: debian
 stages: [build, test]
-
 before_script:
-  - apt-get -qq update && apt-get -qq install -y automake autoconf gcc make
+  - apt-get -qq update && apt-get -qq install -y automake autoconf gcc gcovr make
 
 # build from scratch
 compile:
@@ -40,4 +39,16 @@ examples:
     - /bin/sh run_examples.sh
   artifacts:
     paths: [run_examples.sh]
+
+# build from scratch
+coverage:
+  stage: test
+  script:
+    - make distclean
+    - ./bootstrap.sh
+    - ./configure --enable-coverage
+    - make -j4 coverage
+  coverage: '/lines: \d+\.\d+%/'
+  artifacts:
+    paths: [coverage.out]
 
