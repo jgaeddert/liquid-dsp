@@ -1321,13 +1321,13 @@ clean-check:
 ## TARGET : coverage  - run coverage test and produce report
 ##
 coverage: coverage.out
-	tail -n3 $<
+	tail -n5 $<
 
 ${autotest_prog}.gcda : %.gcda : %
 	./${autotest_prog}
 
 coverage.out : ${autotest_prog}.gcda
-	gcovr --root=src --exclude-directories=src/.*/tests > $@
+	gcovr --root=src --exclude-directories=src/.*/tests --print-summary > $@
 
 clean-coverage:
 	$(RM) src/*.gcda src/*/src/*.gcda src/*/tests/*.gcda src/*/tests/data/*.gcda autotest/*.gcda scripts/*.gcda
