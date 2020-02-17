@@ -1,6 +1,9 @@
 # base configuration
-image: gcc
+image: debian
 stages: [build, test]
+
+before_script:
+  - apt-get -qq update && apt-get -qq install -y automake autoconf gcc make
 
 # build from scratch
 compile:
