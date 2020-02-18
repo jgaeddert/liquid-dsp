@@ -1123,6 +1123,7 @@ objects :=							\
 
 autotest_sources :=						\
 	autotest/null_autotest.c				\
+	autotest/libliquid_autotest.c				\
 	$(agc_autotests)					\
 	$(audio_autotests)					\
 	$(buffer_autotests)					\
