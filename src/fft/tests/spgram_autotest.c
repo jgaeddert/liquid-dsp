@@ -39,6 +39,10 @@ void testbench_spgramcf_noise(unsigned int _nfft,
     for (i=0; i<num_samples; i++)
         spgramcf_push(q, nstd*( randnf() + _Complex_I*randnf() ) * M_SQRT1_2);
 
+    // verify number of samples processed
+    CONTEND_EQUALITY(spgramcf_get_num_samples(q),       num_samples);
+    CONTEND_EQUALITY(spgramcf_get_num_samples_total(q), num_samples);
+
     // compute power spectral density output
     float psd[_nfft];
     spgramcf_get_psd(q, psd);
