@@ -28,7 +28,7 @@
 void testbench_spgramcf_noise(unsigned int _nfft,
                               float        _noise_floor)
 {
-    unsigned int num_samples = 2e6;  // number of samples to generate
+    unsigned int num_samples = 2000*_nfft;  // number of samples to generate
     float        nstd        = powf(10.0f,_noise_floor/20.0f); // noise std. dev.
     float        tol         = 0.5f; // error tolerance [dB]
 
@@ -55,5 +55,8 @@ void testbench_spgramcf_noise(unsigned int _nfft,
     spgramcf_destroy(q);
 }
 
+void autotest_spgramcf_noise_400()  { testbench_spgramcf_noise( 440, -80.0); }
 void autotest_spgramcf_noise_1024() { testbench_spgramcf_noise(1024, -80.0); }
+void autotest_spgramcf_noise_1200() { testbench_spgramcf_noise(1200, -80.0); }
+void autotest_spgramcf_noise_8400() { testbench_spgramcf_noise(8400, -80.0); }
 
