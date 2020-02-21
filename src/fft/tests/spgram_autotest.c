@@ -60,3 +60,54 @@ void autotest_spgramcf_noise_1024() { testbench_spgramcf_noise(1024, -80.0); }
 void autotest_spgramcf_noise_1200() { testbench_spgramcf_noise(1200, -80.0); }
 void autotest_spgramcf_noise_8400() { testbench_spgramcf_noise(8400, -80.0); }
 
+void autotest_spgramcf_counters()
+{
+    // create spectral periodogram with specific parameters
+    unsigned int nfft=1200, wlen=400, delay=200;
+    int wtype = LIQUID_WINDOW_HAMMING;
+    float alpha = 0.0123456f;
+    spgramcf q = spgramcf_create(nfft, wtype, wlen, delay);
+    spgramcf_set_alpha(q, alpha);
+
+    // check parameters
+    CONTEND_EQUALITY( spgramcf_get_nfft(q),       nfft );
+    CONTEND_EQUALITY( spgramcf_get_window_len(q), wlen );
+    CONTEND_EQUALITY( spgramcf_get_delay(q),      delay);
+    CONTEND_EQUALITY( spgramcf_get_alpha(q),      alpha);
+
+    unsigned int block_len = 1117, num_blocks = 1123;
+    unsigned int i, num_samples = block_len * num_blocks;
+    unsigned int num_transforms = num_samples / delay;
+    for (i=0; i<num_samples; i++)
+        spgramcf_push(q, randnf() + _Complex_I*randnf());
+
+    // verify number of samples and transforms processed
+    CONTEND_EQUALITY(spgramcf_get_num_samples(q),          num_samples);
+    CONTEND_EQUALITY(spgramcf_get_num_samples_total(q),    num_samples);
+    CONTEND_EQUALITY(spgramcf_get_num_transforms(q),       num_transforms);
+    CONTEND_EQUALITY(spgramcf_get_num_transforms_total(q), num_transforms);
+
+    // clear object and run in blocks
+    spgramcf_clear(q);
+    float complex block[block_len];
+    for (i=0; i<block_len; i++)
+        block[i] = randnf() + _Complex_I*randnf();
+    for (i=0; i<num_blocks; i++)
+        spgramcf_write(q, block, block_len);
+
+    // re-verify number of samples and transforms processed
+    CONTEND_EQUALITY(spgramcf_get_num_samples(q),          num_samples);
+    CONTEND_EQUALITY(spgramcf_get_num_samples_total(q),    num_samples * 2);
+    CONTEND_EQUALITY(spgramcf_get_num_transforms(q),       num_transforms);
+    CONTEND_EQUALITY(spgramcf_get_num_transforms_total(q), num_transforms * 2);
+
+    // reset object and ensure counters are zero
+    spgramcf_reset(q);
+    CONTEND_EQUALITY(spgramcf_get_num_samples(q),          0);
+    CONTEND_EQUALITY(spgramcf_get_num_samples_total(q),    0);
+    CONTEND_EQUALITY(spgramcf_get_num_transforms(q),       0);
+    CONTEND_EQUALITY(spgramcf_get_num_transforms_total(q), 0);
+
+    // destroy object(s)
+    spgramcf_destroy(q);
+}
