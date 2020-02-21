@@ -353,6 +353,7 @@ fft_autotests :=						\
 	src/fft/tests/fft_prime_autotest.c			\
 	src/fft/tests/fft_r2r_autotest.c			\
 	src/fft/tests/fft_shift_autotest.c			\
+	src/fft/tests/spgram_autotest.c				\
 
 # additional autotest objects
 autotest_extra_obj +=						\
@@ -1123,6 +1124,7 @@ objects :=							\
 
 autotest_sources :=						\
 	autotest/null_autotest.c				\
+	autotest/libliquid_autotest.c				\
 	$(agc_autotests)					\
 	$(audio_autotests)					\
 	$(buffer_autotests)					\
