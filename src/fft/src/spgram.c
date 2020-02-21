@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2019 Joseph Gaeddert
+ * Copyright (c) 2007 - 2020 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -312,6 +312,12 @@ unsigned long long int SPGRAM(_get_num_transforms)(SPGRAM() _q)
 unsigned long long int SPGRAM(_get_num_transforms_total)(SPGRAM() _q)
 {
     return _q->num_transforms_total;
+}
+
+// get forgetting factor (filer bandwidth)
+float SPGRAM(_get_alpha)(SPGRAM() _q)
+{
+    return _q->alpha;
 }
 
 // push a single sample into the spgram object
