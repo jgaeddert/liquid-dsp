@@ -26,6 +26,7 @@
 #include "liquid.h"
 
 void testbench_spgramcf_noise(unsigned int _nfft,
+                              int          _wtype,
                               float        _noise_floor)
 {
     unsigned int num_samples = 2000*_nfft;  // number of samples to generate
@@ -33,7 +34,8 @@ void testbench_spgramcf_noise(unsigned int _nfft,
     float        tol         = 0.5f; // error tolerance [dB]
 
     // create spectral periodogram
-    spgramcf q = spgramcf_create_default(_nfft);
+    spgramcf q = _wtype == LIQUID_WINDOW_UNKNOWN ? spgramcf_create_default(_nfft) :
+                 spgramcf_create(_nfft, _wtype, _nfft/2, _nfft/4);
 
     unsigned int i;
     for (i=0; i<num_samples; i++)
@@ -55,10 +57,22 @@ void testbench_spgramcf_noise(unsigned int _nfft,
     spgramcf_destroy(q);
 }
 
-void autotest_spgramcf_noise_400()  { testbench_spgramcf_noise( 440, -80.0); }
-void autotest_spgramcf_noise_1024() { testbench_spgramcf_noise(1024, -80.0); }
-void autotest_spgramcf_noise_1200() { testbench_spgramcf_noise(1200, -80.0); }
-void autotest_spgramcf_noise_8400() { testbench_spgramcf_noise(8400, -80.0); }
+// test different transform sizes
+void autotest_spgramcf_noise_400()  { testbench_spgramcf_noise( 440, 0, -80.0); }
+void autotest_spgramcf_noise_1024() { testbench_spgramcf_noise(1024, 0, -80.0); }
+void autotest_spgramcf_noise_1200() { testbench_spgramcf_noise(1200, 0, -80.0); }
+void autotest_spgramcf_noise_8400() { testbench_spgramcf_noise(8400, 0, -80.0); }
+
+// test different window types
+void autotest_spgramcf_noise_hamming        () { testbench_spgramcf_noise(800, LIQUID_WINDOW_HAMMING,        -80.0); }
+void autotest_spgramcf_noise_hann           () { testbench_spgramcf_noise(800, LIQUID_WINDOW_HANN,           -80.0); }
+void autotest_spgramcf_noise_blackmanharris () { testbench_spgramcf_noise(800, LIQUID_WINDOW_BLACKMANHARRIS, -80.0); }
+void autotest_spgramcf_noise_blackmanharris7() { testbench_spgramcf_noise(800, LIQUID_WINDOW_BLACKMANHARRIS7,-80.0); }
+void autotest_spgramcf_noise_kaiser         () { testbench_spgramcf_noise(800, LIQUID_WINDOW_KAISER,         -80.0); }
+void autotest_spgramcf_noise_flattop        () { testbench_spgramcf_noise(800, LIQUID_WINDOW_FLATTOP,        -80.0); }
+void autotest_spgramcf_noise_triangular     () { testbench_spgramcf_noise(800, LIQUID_WINDOW_TRIANGULAR,     -80.0); }
+void autotest_spgramcf_noise_rcostaper      () { testbench_spgramcf_noise(800, LIQUID_WINDOW_RCOSTAPER,      -80.0); }
+void autotest_spgramcf_noise_kbd            () { testbench_spgramcf_noise(800, LIQUID_WINDOW_KBD,            -80.0); }
 
 void autotest_spgramcf_counters()
 {
