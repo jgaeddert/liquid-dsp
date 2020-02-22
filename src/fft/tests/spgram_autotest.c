@@ -111,3 +111,22 @@ void autotest_spgramcf_counters()
     // destroy object(s)
     spgramcf_destroy(q);
 }
+
+void autotest_spgramcf_config_errors()
+{
+    // check that object returns NULL for invalid configurations
+    fprintf(stderr,"warning: ignore potential errors here; checking for invalid configurations\n");
+    CONTEND_EQUALITY(spgramcf_create(  0, LIQUID_WINDOW_HAMMING,       200, 200)==NULL,1); // nfft too small
+    CONTEND_EQUALITY(spgramcf_create(  1, LIQUID_WINDOW_HAMMING,       200, 200)==NULL,1); // nfft too small
+    CONTEND_EQUALITY(spgramcf_create(  2, LIQUID_WINDOW_HAMMING,       200, 200)==NULL,1); // window length too large
+    CONTEND_EQUALITY(spgramcf_create(400, LIQUID_WINDOW_HAMMING,         0, 200)==NULL,1); // window length too small
+    CONTEND_EQUALITY(spgramcf_create(400, LIQUID_WINDOW_UNKNOWN,       200, 200)==NULL,1); // invalid window type
+    CONTEND_EQUALITY(spgramcf_create(400, LIQUID_WINDOW_NUM_FUNCTIONS, 200, 200)==NULL,1); // invalid window type
+    CONTEND_EQUALITY(spgramcf_create(400, LIQUID_WINDOW_KBD,           201, 200)==NULL,1); // KBD must be even
+    CONTEND_EQUALITY(spgramcf_create(400, LIQUID_WINDOW_HAMMING,       200,   0)==NULL,1); // delay too small
+
+    // check that object returns NULL for invalid configurations (default)
+    CONTEND_EQUALITY(spgramcf_create_default(0)==NULL,1); // nfft too small
+    CONTEND_EQUALITY(spgramcf_create_default(1)==NULL,1); // nfft too small
+}
+

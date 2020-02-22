@@ -83,19 +83,19 @@ SPGRAM() SPGRAM(_create)(unsigned int _nfft,
     // validate input
     if (_nfft < 2) {
         fprintf(stderr,"error: spgram%s_create(), fft size must be at least 2\n", EXTENSION);
-        exit(1);
+        return NULL;
     } else if (_window_len > _nfft) {
         fprintf(stderr,"error: spgram%s_create(), window size cannot exceed fft size\n", EXTENSION);
-        exit(1);
+        return NULL;
     } else if (_window_len == 0) {
         fprintf(stderr,"error: spgram%s_create(), window size must be greater than zero\n", EXTENSION);
-        exit(1);
+        return NULL;
     } else if (_wtype == LIQUID_WINDOW_KBD && _window_len % 2) {
         fprintf(stderr,"error: spgram%s_create(), KBD window length must be even\n", EXTENSION);
-        exit(1);
+        return NULL;
     } else if (_delay == 0) {
         fprintf(stderr,"error: spgram%s_create(), delay must be greater than 0\n", EXTENSION);
-        exit(1);
+        return NULL;
     }
 
     // allocate memory for main object
@@ -140,7 +140,8 @@ SPGRAM() SPGRAM(_create)(unsigned int _nfft,
         case LIQUID_WINDOW_KBD:             q->w[i] = liquid_kbd(i,n,zeta); break;
         default:
             fprintf(stderr,"error: spgram%s_create(), invalid window\n", EXTENSION);
-            exit(1);
+            SPGRAM(_destroy)(q);
+            return NULL;
         }
     }
 
@@ -167,7 +168,7 @@ SPGRAM() SPGRAM(_create_default)(unsigned int _nfft)
     // validate input
     if (_nfft < 2) {
         fprintf(stderr,"error: spgram%s_create_default(), fft size must be at least 2\n", EXTENSION);
-        exit(1);
+        return NULL;
     }
 
     return SPGRAM(_create)(_nfft, LIQUID_WINDOW_KAISER, _nfft/2, _nfft/4);
@@ -176,6 +177,9 @@ SPGRAM() SPGRAM(_create_default)(unsigned int _nfft)
 // destroy spgram object
 void SPGRAM(_destroy)(SPGRAM() _q)
 {
+    if (_q == NULL)
+        return;
+
     // free allocated memory
     free(_q->buf_time);
     free(_q->buf_freq);

@@ -5873,7 +5873,7 @@ float liquid_nchoosek(unsigned int _n, unsigned int _k);
 // Windowing functions
 //
 
-// Modulation schemes available
+// number of window functions available, including "unknown" type
 #define LIQUID_WINDOW_NUM_FUNCTIONS (10)
 
 // prototypes
