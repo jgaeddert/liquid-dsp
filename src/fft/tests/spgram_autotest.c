@@ -32,6 +32,8 @@ void testbench_spgramcf_noise(unsigned int _nfft,
     unsigned int num_samples = 2000*_nfft;  // number of samples to generate
     float        nstd        = powf(10.0f,_noise_floor/20.0f); // noise std. dev.
     float        tol         = 0.5f; // error tolerance [dB]
+    if (liquid_autotest_verbose)
+        printf("  spgramcf test  (noise): nfft=%6u, wtype=%24s, noise floor=%6.1f\n", _nfft, liquid_window_str[_wtype][1], _noise_floor);
 
     // create spectral periodogram
     spgramcf q = _wtype == LIQUID_WINDOW_UNKNOWN ? spgramcf_create_default(_nfft) :
@@ -74,14 +76,12 @@ void autotest_spgramcf_noise_triangular     () { testbench_spgramcf_noise(800, L
 void autotest_spgramcf_noise_rcostaper      () { testbench_spgramcf_noise(800, LIQUID_WINDOW_RCOSTAPER,      -80.0); }
 void autotest_spgramcf_noise_kbd            () { testbench_spgramcf_noise(800, LIQUID_WINDOW_KBD,            -80.0); }
 
-void testbench_spgramcf_signal(unsigned int _nfft,
-                               int          _wtype,
-                               float        _fc,
-                               float        _SNRdB)
+void testbench_spgramcf_signal(unsigned int _nfft, int _wtype, float _fc, float _SNRdB)
 {
-    float noise_floor = -80.0f, tol = 0.5f; // error tolerance [dB]
     unsigned int k = 4, m = 12;
-    float        beta       = 0.2f;
+    float beta = 0.2f, noise_floor = -80.0f, tol = 0.5f;
+    if (liquid_autotest_verbose)
+        printf("  spgramcf test (signal): nfft=%6u, wtype=%24s, fc=%6.2f Fs, snr=%6.1f dB\n", _nfft, liquid_window_str[_wtype][1], _fc, _SNRdB);
 
     // create objects
     spgramcf     q     =  spgramcf_create(_nfft, _wtype, _nfft/2, _nfft/4);
