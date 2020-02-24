@@ -74,6 +74,70 @@ void autotest_spgramcf_noise_triangular     () { testbench_spgramcf_noise(800, L
 void autotest_spgramcf_noise_rcostaper      () { testbench_spgramcf_noise(800, LIQUID_WINDOW_RCOSTAPER,      -80.0); }
 void autotest_spgramcf_noise_kbd            () { testbench_spgramcf_noise(800, LIQUID_WINDOW_KBD,            -80.0); }
 
+void testbench_spgramcf_signal(unsigned int _nfft,
+                               int          _wtype,
+                               float        _fc,
+                               float        _SNRdB)
+{
+    float noise_floor = -80.0f, tol = 0.5f; // error tolerance [dB]
+    unsigned int k = 4, m = 12;
+    float        beta       = 0.2f;
+
+    // create objects
+    spgramcf     q     =  spgramcf_create(_nfft, _wtype, _nfft/2, _nfft/4);
+    symstreamcf  gen   = symstreamcf_create_linear(LIQUID_FIRFILT_KAISER,k,m,beta,LIQUID_MODEM_QPSK);
+    nco_crcf     mixer = nco_crcf_create(LIQUID_VCO);
+
+    // set parameters
+    float nstd = powf(10.0f,noise_floor/20.0f); // noise std. dev.
+    symstreamcf_set_gain(gen, powf(10.0f, (noise_floor + _SNRdB - 10*log10f(k))/20.0f));
+    nco_crcf_set_frequency(mixer, 2*M_PI*_fc);
+
+    // generate samples and push through spgram object
+    unsigned int i, buf_len = 256, num_samples = 0;
+    float complex buf[buf_len];
+    while (num_samples < 2000*_nfft) {
+        // generate block of samples
+        symstreamcf_write_samples(gen, buf, buf_len);
+
+        // mix to desired frequency and add noise
+        nco_crcf_mix_block_up(mixer, buf, buf, buf_len);
+        for (i=0; i<buf_len; i++)
+            buf[i] += nstd*(randnf()+_Complex_I*randnf())*M_SQRT1_2;
+
+        // run samples through the spgram object
+        spgramcf_write(q, buf, buf_len);
+        num_samples += buf_len;
+    }
+
+    // determine appropriate indices
+    unsigned int i0 = ((unsigned int)roundf((_fc+0.5f)*_nfft)) % _nfft;
+    unsigned int ns = (unsigned int)roundf(_nfft*(1.0f-beta)/(float)k); // numer of samples to observe
+    float psd_target = 10*log10f(powf(10.0f,noise_floor/10.0f) + powf(10.0f,(noise_floor+_SNRdB)/10.0f));
+    //printf("i0=%u, ns=%u (nfft=%u), target=%.3f dB\n", i0, ns, _nfft, psd_target);
+
+    // verify result
+    float psd[_nfft];
+    spgramcf_get_psd(q, psd);
+    //for (i=0; i<_nfft; i++) { printf("%6u %8.2f\n", i, psd[i]); }
+    for (i=0; i<ns; i++) {
+        unsigned int index = (i0 + i + _nfft - ns/2) % _nfft;
+        CONTEND_DELTA(psd[index], psd_target, tol)
+    }
+
+    // destroy objects
+    spgramcf_destroy(q);
+    symstreamcf_destroy(gen);
+    nco_crcf_destroy(mixer);
+}
+
+void autotest_spgramcf_signal_00() { testbench_spgramcf_signal(800,LIQUID_WINDOW_HAMMING, 0.0f,30.0f); }
+void autotest_spgramcf_signal_01() { testbench_spgramcf_signal(800,LIQUID_WINDOW_HAMMING, 0.2f,10.0f); }
+void autotest_spgramcf_signal_02() { testbench_spgramcf_signal(800,LIQUID_WINDOW_HANN,    0.2f,10.0f); }
+void autotest_spgramcf_signal_03() { testbench_spgramcf_signal(400,LIQUID_WINDOW_KAISER, -0.3f,50.0f); }
+void autotest_spgramcf_signal_04() { testbench_spgramcf_signal(640,LIQUID_WINDOW_HAMMING,-0.5f, 0.0f); }
+void autotest_spgramcf_signal_05() { testbench_spgramcf_signal(640,LIQUID_WINDOW_HAMMING, 0.1f,-3.0f); }
+
 void autotest_spgramcf_counters()
 {
     // create spectral periodogram with specific parameters
