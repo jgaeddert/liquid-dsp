@@ -22,6 +22,7 @@
 
 // test spectral periodogram (spgram) objects
 
+#include <stdlib.h>
 #include "autotest/autotest.h"
 #include "liquid.h"
 
@@ -214,5 +215,34 @@ void autotest_spgramcf_config_errors()
     // check that object returns NULL for invalid configurations (default)
     CONTEND_EQUALITY(spgramcf_create_default(0)==NULL,1); // nfft too small
     CONTEND_EQUALITY(spgramcf_create_default(1)==NULL,1); // nfft too small
+}
+
+void autotest_spgramcf_standalone()
+{
+    unsigned int nfft        = 1200;
+    unsigned int num_samples = 20*nfft;  // number of samples to generate
+    float        noise_floor = -20.0f;
+    float        nstd        = powf(10.0f,noise_floor/20.0f); // noise std. dev.
+
+    float complex * buf = (float complex*)malloc(num_samples*sizeof(float complex));
+    unsigned int i;
+    for (i=0; i<num_samples; i++)
+        buf[i] = 0.1f + nstd*(randnf()+_Complex_I*randnf())*M_SQRT1_2;
+
+    float psd[nfft];
+    spgramcf_estimate_psd(nfft, buf, num_samples, psd);
+
+    // check mask
+    for (i=0; i<nfft; i++) {
+        float mask_lo = i ==nfft/2                     ? 2.0f : noise_floor - 3.0f;
+        float mask_hi = i > nfft/2-10 && i < nfft/2+10 ? 8.0f : noise_floor + 3.0f;
+        if (liquid_autotest_verbose)
+            printf("%6u : %8.2f < %8.2f < %8.2f\n", i, mask_lo, psd[i], mask_hi);
+        CONTEND_GREATER_THAN( psd[i], mask_lo );
+        CONTEND_LESS_THAN   ( psd[i], mask_hi );
+    }
+
+    // free memory
+    free(buf);
 }
 
