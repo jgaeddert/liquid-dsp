@@ -145,7 +145,15 @@ void autotest_spgramcf_counters()
     int wtype = LIQUID_WINDOW_HAMMING;
     float alpha = 0.0123456f;
     spgramcf q = spgramcf_create(nfft, wtype, wlen, delay);
-    spgramcf_set_alpha(q, alpha);
+
+    // check setting bandwidth
+    CONTEND_EQUALITY ( spgramcf_set_alpha(q, 0.1),  0 ); // valid
+    CONTEND_DELTA    ( spgramcf_get_alpha(q), 0.1, 1e-6f);
+    CONTEND_EQUALITY ( spgramcf_set_alpha(q,-7.0), -1 ); // invalid
+    CONTEND_DELTA    ( spgramcf_get_alpha(q), 0.1, 1e-6f);
+    CONTEND_EQUALITY ( spgramcf_set_alpha(q,alpha),  0); // valid
+    CONTEND_DELTA    ( spgramcf_get_alpha(q), alpha, 1e-6f);
+    spgramcf_print(q); // test for code coverage
 
     // check parameters
     CONTEND_EQUALITY( spgramcf_get_nfft(q),       nfft );
