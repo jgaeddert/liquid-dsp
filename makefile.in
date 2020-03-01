@@ -1320,6 +1320,24 @@ clean-check:
 	$(RM) autotest.json
 
 ##
+## TARGET : doc-check - build and run basic documentation checks
+##
+
+readme.example.c : README.md
+	${SED} -n '22,42p' $< | ${SED} "s/<liquid\/liquid.h>/\"liquid.h\"/g" > $@
+
+readme.example.o : %.o : %.c ${include_headers}
+	${CC} ${CPPFLAGS} ${CFLAGS} $< -c -o $@
+
+readme.example : % : %.o ${ARCHIVE_LIB}
+	${CC} ${CFLAGS} ${LDFLAGS} $^ -o $@ ${LIBS}
+
+doc-check : readme.example ; ./readme.example
+
+clean-doc-check:
+	${RM} readme.example*
+
+##
 ## TARGET : coverage  - run coverage test and produce report
 ##
 coverage: coverage.out
