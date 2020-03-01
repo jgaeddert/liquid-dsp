@@ -1334,6 +1334,8 @@ coverage.out : ${autotest_prog}.gcda
 clean-coverage:
 	$(RM) src/*.gcda src/*/src/*.gcda src/*/tests/*.gcda src/*/tests/data/*.gcda autotest/*.gcda scripts/*.gcda
 	$(RM) src/*.gcno src/*/src/*.gcno src/*/tests/*.gcno src/*/tests/data/*.gcno autotest/*.gcno scripts/*.gcno
+	$(RM) autotest/*.gcda bench/*.gcda examples/*.gcda sandbox/*.gcda
+	$(RM) autotest/*.gcno bench/*.gcno examples/*.gcno sandbox/*.gcno
 	$(RM) *.gcda *.gcno coverage.out
 
 
@@ -1726,27 +1728,7 @@ world : all check bench examples sandbox
 
 clean-modules:
 	@echo "cleaning modules..."
-	$(RM) src/agc/src/*.o          src/agc/bench/*.o          src/agc/tests/*.o
-	$(RM) src/audio/src/*.o        src/audio/bench/*.o        src/audio/tests/*.o
-	$(RM) src/buffer/src/*.o       src/buffer/bench/*.o       src/buffer/tests/*.o
-	$(RM) src/channel/src/*.o      src/channel/bench/*.o      src/channel/tests/*.o
-	$(RM) src/dotprod/src/*.o      src/dotprod/bench/*.o      src/dotprod/tests/*.o
-	$(RM) src/equalization/src/*.o src/equalization/bench/*.o src/equalization/tests/*.o
-	$(RM) src/fec/src/*.o          src/fec/bench/*.o          src/fec/tests/*.o
-	$(RM) src/fft/src/*.o          src/fft/bench/*.o          src/fft/tests/*.o
-	$(RM) src/filter/src/*.o       src/filter/bench/*.o       src/filter/tests/*.o
-	$(RM) src/framing/src/*.o      src/framing/bench/*.o      src/framing/tests/*.o
-	$(RM) src/math/src/*.o         src/math/bench/*.o         src/math/tests/*.o
-	$(RM) src/matrix/src/*.o       src/matrix/bench/*.o       src/matrix/tests/*.o
-	$(RM) src/modem/src/*.o        src/modem/bench/*.o        src/modem/tests/*.o
-	$(RM) src/multichannel/src/*.o src/multichannel/bench/*.o src/multichannel/tests/*.o
-	$(RM) src/nco/src/*.o          src/nco/bench/*.o          src/nco/tests/*.o
-	$(RM) src/optim/src/*.o        src/optim/bench/*.o        src/optim/tests/*.o
-	$(RM) src/quantization/src/*.o src/quantization/bench/*.o src/quantization/tests/*.o
-	$(RM) src/random/src/*.o       src/random/bench/*.o       src/random/tests/*.o
-	$(RM) src/sequence/src/*.o     src/sequence/bench/*.o     src/sequence/tests/*.o
-	$(RM) src/utility/src/*.o      src/utility/bench/*.o      src/utility/tests/*.o
-	$(RM) src/vector/src/*.o       src/vector/bench/*.o       src/vector/tests/*.o
+	$(RM) src/*/src/*.o src/*/bench/*.o src/*/tests/*.o
 	$(RM) src/libliquid.o
 
 clean: clean-modules clean-autoscript clean-check clean-coverage clean-bench clean-examples clean-sandbox
