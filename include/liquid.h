@@ -1511,8 +1511,8 @@ void SPGRAM(_reset)(SPGRAM() _q);                                           \
 /* Print internal state of the object to stdout                         */  \
 void SPGRAM(_print)(SPGRAM() _q);                                           \
                                                                             \
-/* Set the forgetting factor (filter bandwidth) for accumulating        */  \
-/* independent transform squared magnitude outputs.                     */  \
+/* Set the filter bandwidth for accumulating independent transform      */  \
+/* squared magnitude outputs.                                           */  \
 /* This is used to compute a running time-average power spectral        */  \
 /* density output.                                                      */  \
 /* The value of _alpha determines how the power spectral estimate is    */  \
@@ -1528,6 +1528,10 @@ void SPGRAM(_print)(SPGRAM() _q);                                           \
 /*  _alpha  : forgetting factor, set to -1 for infinite, 0<=_alpha<=1   */  \
 int SPGRAM(_set_alpha)(SPGRAM() _q,                                         \
                        float    _alpha);                                    \
+                                                                            \
+/* Get the filter bandwidth for accumulating independent transform      */  \
+/* squared magnitude outputs.                                           */  \
+float SPGRAM(_get_alpha)(SPGRAM() _q);                                      \
                                                                             \
 /* Set the center frequency of the received signal.                     */  \
 /* This is for display purposes only when generating the output image.  */  \
@@ -1563,9 +1567,6 @@ unsigned long long int SPGRAM(_get_num_transforms)(SPGRAM() _q);            \
                                                                             \
 /* Get number of transforms processed since object was created          */  \
 unsigned long long int SPGRAM(_get_num_transforms_total)(SPGRAM() _q);      \
-                                                                            \
-/* Get forgetting factor (filter bandwidth)                             */  \
-float SPGRAM(_get_alpha)(SPGRAM() _q);                                      \
                                                                             \
 /* Push a single sample into the object, executing internal transform   */  \
 /* as necessary.                                                        */  \
