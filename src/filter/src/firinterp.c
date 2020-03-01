@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2019 Joseph Gaeddert
+ * Copyright (c) 2007 - 2020 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -108,10 +108,8 @@ FIRINTERP() FIRINTERP(_create_kaiser)(unsigned int _M,
     // copy coefficients to type-specific array (e.g. float complex)
     TC hc[h_len];
     unsigned int i;
-    for (i=0; i<h_len; i++) {
-        printf("%3u : %12.6f\n", i, hf[i]);
+    for (i=0; i<h_len; i++)
         hc[i] = hf[i];
-    }
     
     // return interpolator object
     return FIRINTERP(_create)(_M, hc, h_len);
