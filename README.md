@@ -18,27 +18,29 @@ flexible, scalable, and dynamic, including filters, filter design,
 oscillators, modems, synchronizers, complex mathematical operations, and
 much more.
 
-    // get in, manipulate data, get out
-    #include <liquid/liquid.h>
-    int main() {
-        unsigned int M  = 4;     // samples/symbol
-        unsigned int m  = 12;    // filter delay [symbols]
-        float        As = 60.0f; // filter stop-band attenuation
+```c
+// get in, manipulate data, get out
+#include <liquid/liquid.h>
+int main() {
+    unsigned int M  = 4;     // interpolation factor
+    unsigned int m  = 12;    // filter delay [symbols]
+    float        As = 60.0f; // filter stop-band attenuation [dB]
 
-        // create interpolator from prototype
-        firinterp_crcf interp = firinterp_crcf_create_kaiser(M,m,As);
-        float complex x = 1.0f;  // input sample
-        float complex y[M];      // interpolated output buffer
+    // create interpolator from prototype
+    firinterp_crcf interp = firinterp_crcf_create_kaiser(M,m,As);
+    float complex x = 1.0f;  // input sample
+    float complex y[M];      // interpolated output buffer
 
-        // repeat on input sample data as needed
-        {
-            firinterp_crcf_execute(interp, x, y);
-        }
-
-        // destroy interpolator object
-        firinterp_crcf_destroy(interp);
-        return 0;
+    // repeat on input sample data as needed
+    {
+        firinterp_crcf_execute(interp, x, y);
     }
+
+    // destroy interpolator object
+    firinterp_crcf_destroy(interp);
+    return 0;
+}
+```
 
 For more information, please refer to the
 [documentation](https://liquidsdr.org/doc) online.

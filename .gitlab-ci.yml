@@ -34,7 +34,7 @@ bench:
 #examples:
 #  stage: test
 #  script:
-#    - sed -n '21,41p' README.md | sed "s/<liquid\/liquid.h>/\"liquid.h\"/g" | sed "s/^    //g" > readme.example.c
+#    - sed -n '22,42p' README.md | sed "s/<liquid\/liquid.h>/\"liquid.h\"/g" | sed "s/^    //g" > readme.example.c
 #    - gcc -Wall -Werror -O2 -fPIC -I./include -c -o readme.example.o readme.example.c
 #    - gcc -Wall -Werror -O2 -fPIC -I./include -lm -lc -lfftw3f libliquid.ar -o readme.example readme.example.o
 #    - ./readme.example
