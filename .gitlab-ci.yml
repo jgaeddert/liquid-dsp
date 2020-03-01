@@ -30,6 +30,15 @@ bench:
   artifacts:
     paths: [benchmark.json]
 
+# compile and run example in README.md
+#examples:
+#  stage: test
+#  script:
+#    - sed -n '21,41p' README.md | sed "s/<liquid\/liquid.h>/\"liquid.h\"/g" | sed "s/^    //g" > readme.example.c
+#    - gcc -Wall -Werror -O2 -fPIC -I./include -c -o readme.example.o readme.example.c
+#    - gcc -Wall -Werror -O2 -fPIC -I./include -lm -lc -lfftw3f libliquid.ar -o readme.example readme.example.o
+#    - ./readme.example
+
 # compile and run all example programs
 examples:
   stage: test
