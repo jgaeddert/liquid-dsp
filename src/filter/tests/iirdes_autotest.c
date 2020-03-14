@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2015 Joseph Gaeddert
+ * Copyright (c) 2007 - 2020 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -29,10 +29,8 @@
 #include "autotest/autotest.h"
 #include "liquid.internal.h"
 
-// 
-// AUTOTEST : design 2nd-order butterworth filter (design comes
-//            from [Ziemer:1998] Example 9-7, pp. 440--442)
-//
+// design 2nd-order butterworth filter (design comes from [Ziemer:1998],
+// Example 9-7, pp. 440--442)
 void autotest_iirdes_butter_2()
 {
     // initialize variables
@@ -76,10 +74,7 @@ void autotest_iirdes_butter_2()
     }
 }
 
-// 
-// AUTOTEST : complex pair, n=6
-//
-
+// complex pair, n=6
 void autotest_iirdes_cplxpair_n6()
 {
     float tol = 1e-8f;
@@ -128,10 +123,7 @@ void autotest_iirdes_cplxpair_n6()
 }
 
 
-// 
-// AUTOTEST : complex pair, n=20
-//
-
+// complex pair, n=20
 void autotest_iirdes_cplxpair_n20()
 {
     float tol = 1e-8f;
@@ -207,9 +199,7 @@ void autotest_iirdes_cplxpair_n20()
     }
 }
 
-// 
-// AUTOTEST : 
-//
+// digital zeros/poles/gain to second-order sections
 void autotest_iirdes_dzpk2sosf()
 {
     unsigned int n=4;
@@ -257,9 +247,7 @@ void autotest_iirdes_dzpk2sosf()
     }
 }
 
-// 
-// AUTOTEST : iirdes_isstable
-//
+// iirdes_isstable
 void autotest_iirdes_isstable_n2_yes()
 {
     // initialize pre-determined coefficient array
@@ -279,9 +267,7 @@ void autotest_iirdes_isstable_n2_yes()
 }
 
 
-// 
-// AUTOTEST : iirdes_isstable
-//
+// iirdes_isstable
 void autotest_iirdes_isstable_n2_no()
 {
     // initialize unstable filter
