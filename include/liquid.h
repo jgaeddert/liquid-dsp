@@ -5213,6 +5213,10 @@ float ofdmflexframesync_get_rssi(ofdmflexframesync _q);
 // query the received carrier offset estimate
 float ofdmflexframesync_get_cfo(ofdmflexframesync _q);
 
+// frame data statistics
+void             ofdmflexframesync_reset_framedatastats(ofdmflexframesync _q);
+framedatastats_s ofdmflexframesync_get_framedatastats  (ofdmflexframesync _q);
+
 // set the received carrier offset estimate
 void ofdmflexframesync_set_cfo(ofdmflexframesync _q, float _cfo);
 
