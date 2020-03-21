@@ -22,7 +22,7 @@
 
 #include <stdio.h>
 #include <stdlib.h>
-#include <math.h>
+#include <string.h>
 #include "autotest/autotest.h"
 #include "liquid.h"
 
@@ -43,31 +43,31 @@ void testbench_ofdmflexframe(unsigned int      _M,
     ofdmflexframegen  fg = ofdmflexframegen_create( _M, _cp_len, _taper_len, NULL, &fgprops);
     ofdmflexframesync fs = ofdmflexframesync_create(_M, _cp_len, _taper_len, NULL, NULL, NULL);
 
-    unsigned int i;
-
     // initialize header and payload
     unsigned char header[8] = {0, 1, 2, 3, 4, 5, 6, 7};
     unsigned char payload[_payload_len];
-    for (i=0; i<_payload_len; i++)
-        payload[i] = rand() & 0xff;
-    
+    memset(payload, 0x00, _payload_len);
+
     // assemble the frame
     ofdmflexframegen_assemble(fg, header, payload, _payload_len);
     if (liquid_autotest_verbose)
         ofdmflexframegen_print(fg);
 
     // generate the frame
-    unsigned int  buf_len = _M + _cp_len;
+    unsigned int  buf_len = 1024;
     float complex buf[buf_len];
-    while (!ofdmflexframegen_write(fg, buf, buf_len))
+    int frame_complete = 0;
+    while (!frame_complete) {
+        frame_complete = ofdmflexframegen_write(fg, buf, buf_len);
         ofdmflexframesync_execute(fs, buf, buf_len);
+    }
 
     // get frame data statistics
-    framedatastats_s stats = ofdmflexframesync_get_framedatastats(fs);
     if (liquid_autotest_verbose)
         ofdmflexframesync_print(fs);
 
-    // check to see that frame was recovered
+    // verify frame data statistics
+    framedatastats_s stats = ofdmflexframesync_get_framedatastats(fs);
     CONTEND_EQUALITY( stats.num_frames_detected, 1 );
     CONTEND_EQUALITY( stats.num_headers_valid,   1 );
     CONTEND_EQUALITY( stats.num_payloads_valid,  1 );
@@ -78,5 +78,15 @@ void testbench_ofdmflexframe(unsigned int      _M,
     ofdmflexframesync_destroy(fs);
 }
 
-void autotest_ofdmflexframe_00() { testbench_ofdmflexframe(1200, 40, 20, 800, LIQUID_MODEM_QPSK); }
+//                          ID                                M  CP  TP  PAYL  modulation scheme
+void autotest_ofdmflexframe_00() { testbench_ofdmflexframe(  32,  8,  4,  800, LIQUID_MODEM_QPSK); }
+void autotest_ofdmflexframe_01() { testbench_ofdmflexframe(  64,  8,  4,  800, LIQUID_MODEM_QPSK); }
+void autotest_ofdmflexframe_02() { testbench_ofdmflexframe( 256,  8,  4,  800, LIQUID_MODEM_QPSK); }
+void autotest_ofdmflexframe_03() { testbench_ofdmflexframe(1024, 16,  8,  800, LIQUID_MODEM_QPSK); }
+void autotest_ofdmflexframe_04() { testbench_ofdmflexframe(2048, 32, 16,  800, LIQUID_MODEM_QPSK); }
+void autotest_ofdmflexframe_05() { testbench_ofdmflexframe(4096, 64, 32,  800, LIQUID_MODEM_QPSK); }
+void autotest_ofdmflexframe_06() { testbench_ofdmflexframe(8192, 80, 40,  800, LIQUID_MODEM_QPSK); }
+void autotest_ofdmflexframe_07() { testbench_ofdmflexframe(1200, 40, 20,    1, LIQUID_MODEM_QPSK); }
+void autotest_ofdmflexframe_08() { testbench_ofdmflexframe(1200,  0,  0,  800, LIQUID_MODEM_QPSK); }
+void autotest_ofdmflexframe_09() { testbench_ofdmflexframe(1200, 40, 20, 8217, LIQUID_MODEM_QPSK); }
 
