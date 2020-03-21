@@ -652,6 +652,7 @@ framing_autotests :=						\
 	src/framing/tests/detector_autotest.c			\
 	src/framing/tests/flexframesync_autotest.c		\
 	src/framing/tests/framesync64_autotest.c		\
+	src/framing/tests/ofdmflexframe_autotest.c		\
 	src/framing/tests/qdetector_cccf_autotest.c		\
 	src/framing/tests/qpacketmodem_autotest.c		\
 	src/framing/tests/qpilotsync_autotest.c			\
