@@ -282,3 +282,17 @@ void autotest_spgramcf_short()
     free(buf);
 }
 
+// check spectral periodogram behavior on null input (zero samples)
+void autotest_spgramcf_null()
+{
+    unsigned int nfft = 1200;   // transform size
+    float psd[nfft];
+    spgramcf_estimate_psd(nfft, NULL, 0, psd);
+
+    // value should be exactly minimum
+    float psd_val = 10*log10f(LIQUID_SPGRAM_PSD_MIN);
+    unsigned int i;
+    for (i=0; i<nfft; i++)
+        CONTEND_EQUALITY(psd[i], psd_val);
+}
+

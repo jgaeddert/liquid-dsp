@@ -1471,6 +1471,8 @@ LIQUID_FFT_DEFINE_API(LIQUID_FFT_MANGLE_FLOAT,float,liquid_float_complex)
 #define LIQUID_SPGRAM_MANGLE_CFLOAT(name) LIQUID_CONCAT(spgramcf,name)
 #define LIQUID_SPGRAM_MANGLE_FLOAT(name)  LIQUID_CONCAT(spgramf, name)
 
+#define LIQUID_SPGRAM_PSD_MIN (1e-12)
+
 // Macro    :   SPGRAM
 //  SPGRAM  :   name-mangling macro
 //  T       :   primitive data type

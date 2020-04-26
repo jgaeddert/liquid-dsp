@@ -36,8 +36,6 @@
 #define min(a,b) ((a)<(b)?(a):(b))
 #define max(a,b) ((a)>(b)?(a):(b))
 
-#define LIQUID_SPGRAM_PSD_MIN 1e-12
-
 struct SPGRAM(_s) {
     // options
     unsigned int    nfft;           // FFT length
