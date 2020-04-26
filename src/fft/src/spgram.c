@@ -33,6 +33,11 @@
 #include <complex.h>
 #include "liquid.internal.h"
 
+#define min(a,b) ((a)<(b)?(a):(b))
+#define max(a,b) ((a)>(b)?(a):(b))
+
+#define LIQUID_SPGRAM_PSD_MIN 1e-12
+
 struct SPGRAM(_s) {
     // options
     unsigned int    nfft;           // FFT length
@@ -408,11 +413,11 @@ void SPGRAM(_get_psd)(SPGRAM() _q,
     // compute magnitude in dB and run FFT shift
     unsigned int i;
     unsigned int nfft_2 = _q->nfft / 2;
-    T scale = _q->accumulate ? -10*log10f(_q->num_transforms) : 0.0f;
+    T scale = _q->accumulate ? -10*log10f(max(1,_q->num_transforms)) : 0.0f;
     // TODO: adjust scale if infinite integration
     for (i=0; i<_q->nfft; i++) {
         unsigned int k = (i + nfft_2) % _q->nfft;
-        _X[i] = 10*log10f(_q->psd[k]+1e-12f) + scale;
+        _X[i] = 10*log10f( max(LIQUID_SPGRAM_PSD_MIN,_q->psd[k]) ) + scale;
     }
 }
 
@@ -488,6 +493,10 @@ void SPGRAM(_estimate_psd)(unsigned int _nfft,
 
     // run spectral estimate on entire sequence
     SPGRAM(_write)(q, _x, _n);
+
+    // force step if no transforms have been taken
+    if (q->num_transforms == 0)
+        SPGRAM(_step)(q);
 
     // get PSD estimate
     SPGRAM(_get_psd)(q, _psd);

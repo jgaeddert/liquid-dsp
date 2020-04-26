@@ -246,3 +246,39 @@ void autotest_spgramcf_standalone()
     free(buf);
 }
 
+// check spectral periodogram operation where the input size is much shorter
+// than the transform size
+void autotest_spgramcf_short()
+{
+    unsigned int nfft        = 1200;    // transform size
+    unsigned int num_samples =  200;    // number of samples to generate
+    float        noise_floor = -20.0f;
+    float        nstd        = powf(10.0f,noise_floor/20.0f); // noise std. dev.
+
+    float complex * buf = (float complex*)malloc(num_samples*sizeof(float complex));
+    unsigned int i;
+    for (i=0; i<num_samples; i++)
+        buf[i] = 1.0f + nstd*(randnf()+_Complex_I*randnf())*M_SQRT1_2;
+
+    float psd[nfft];
+    spgramcf_estimate_psd(nfft, buf, num_samples, psd);
+
+    // use a very loose upper mask as we have only computed a few hundred samples
+    for (i=0; i<nfft; i++) {
+        float f       = (float)i / (float)nfft - 0.5f;
+        float mask_hi = fabsf(f) < 0.2f ? 15.0f - 30*fabsf(f)/0.2f : -15.0f;
+        if (liquid_autotest_verbose)
+            printf("%6u : f=%6.3f, %8.2f < %8.2f\n", i, f, psd[i], mask_hi);
+        CONTEND_LESS_THAN( psd[i], mask_hi );
+    }
+    // consider lower mask only for DC term
+    float mask_lo = 0.0f;
+    unsigned int nfft_2 = nfft/2;
+    if (liquid_autotest_verbose)
+        printf("    DC : f=%6.3f, %8.2f > %8.2f\n", 0.0f, psd[nfft_2], mask_lo);
+    CONTEND_GREATER_THAN( psd[nfft_2], mask_lo );
+
+    // free memory
+    free(buf);
+}
+
