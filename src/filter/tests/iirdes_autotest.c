@@ -31,40 +31,27 @@
 // Example 9-7, pp. 440--442)
 void autotest_iirdes_butter_2()
 {
-    // initialize variables
-    unsigned int order = 2; // filter order
-    float fc = 0.25f;       // normalized cutoff frequency
-    float f0 = 0.0f;        // center frequency (ignored for low-pass filter)
-    float Ap = 1.0f;        // pass-band ripple (ignored for Butterworth)
-    float As = 40.0f;       // stop-band attenuation (ignored for Butterworth)
-    float tol = 1e-6f;      // error tolerance
+    // design butterworth filter
+    float a[3];
+    float b[3];
+    liquid_iirdes(LIQUID_IIRDES_BUTTER,
+                  LIQUID_IIRDES_LOWPASS,
+                  LIQUID_IIRDES_TF,
+                  2,        // order
+                  0.25f,    // fc, normalized cut-off frequency
+                  0.0f,     // f0,center frequency (ignored for low-pass filter)
+                  1.0f,     // Ap, pass-band ripple (ignored for Butterworth)
+                  40.0f,    // As, stop-band attenuation (ignored for Butterworth)
+                  b, a);    // output coefficients
 
     // initialize pre-determined coefficient array
     // for 2^nd-order low-pass Butterworth filter
     // with cutoff frequency 0.25
-    float a_test[3] = {
-        1.0f,
-        0.0f,
-        0.171572875253810f};
-    float b_test[3] = {
-        0.292893218813452f,
-        0.585786437626905f,
-        0.292893218813452f};
-
-    // output coefficients
-    float a[3];
-    float b[3];
-
-    // design butterworth filter
-    liquid_iirdes(LIQUID_IIRDES_BUTTER,
-                  LIQUID_IIRDES_LOWPASS,
-                  LIQUID_IIRDES_TF,
-                  order,
-                  fc, f0,
-                  Ap, As,
-                  b, a);
+    float a_test[3] = {1.0f,               0.0f,               0.171572875253810f};
+    float b_test[3] = {0.292893218813452f, 0.585786437626905f, 0.292893218813452f};
 
     // Ensure data are equal to within tolerance
+    float tol = 1e-6f;      // error tolerance
     unsigned int i;
     for (i=0; i<3; i++) {
         CONTEND_DELTA( b[i], b_test[i], tol );
