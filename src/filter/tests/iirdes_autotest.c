@@ -27,8 +27,70 @@
 #include "autotest/autotest.h"
 #include "liquid.internal.h"
 
-// design 2nd-order butterworth filter (design comes from [Ziemer:1998],
-// Example 9-7, pp. 440--442)
+// check low-pass elliptical filter design
+void testbench_iirdes_ellip_lowpass(unsigned int _n,    // filter order
+                                    float        _fc,   // filter cut-off
+                                    float        _fs,   // empirical stop-band frequency
+                                    float        _Ap,   // pass-band ripple
+                                    float        _As)   // stop-band suppression
+{
+    float        tol  = 1e-3f;  // error tolerance [dB], yes, that's dB
+    unsigned int nfft = 200;    // number of points to evaluate
+
+    // design filter from prototype
+    iirfilt_crcf q = iirfilt_crcf_create_prototype(
+        LIQUID_IIRDES_ELLIP, LIQUID_IIRDES_LOWPASS, LIQUID_IIRDES_SOS,
+        _n,_fc,0.0f,_Ap,_As);
+    if (liquid_autotest_verbose)
+        iirfilt_crcf_print(q);
+
+    // |**************  . . . . . . . . H0
+    // |/\/\/\/\/\/\  *
+    // |************\  *. . . . . . . . H1
+    // |           * \  *
+    // |           *  \  *
+    // |           *   \  ************* H2
+    // |           *    \ /^\ /^\ /^\ /
+    // |           *     |   |   |   |
+    // 0           fc    fs
+    float H0 = 0.0f, H1 = -_Ap, H2 = -_As;
+
+    // compute response and compare to expected or mask
+    unsigned int i;
+    for (i=0; i<nfft; i++) {
+        float f = 0.5f * (float)i / (float)nfft;
+        float complex h;
+        iirfilt_crcf_freqresponse(q, f, &h);
+        float H = 10.*log10f(crealf(h*conjf(h)));
+
+        // determine what portion of the band this is
+        if (f < _fc) {
+            float mask_hi = H0 + tol;
+            float mask_lo = H1 - tol;
+            if (liquid_autotest_verbose)
+                printf("%6u, f=%6.3f (pass       band): %10.6f < %10.6f < %10.6f\n", i, f, mask_lo, H, mask_hi);
+            CONTEND_GREATER_THAN(H, mask_lo);
+            CONTEND_LESS_THAN   (H, mask_hi);
+        } else if (f < _fs) {
+            float mask_hi = H2 + (H2 - H0) / (_fs - _fc) * (f - _fs);
+            if (liquid_autotest_verbose)
+                printf("%6u, f=%6.3f (transition band):              %10.6f < %10.6f\n", i, f, H, mask_hi);
+            CONTEND_LESS_THAN(H, mask_hi);
+        } else {
+            float mask_hi = H2 + tol;
+            if (liquid_autotest_verbose)
+                printf("%6u, f=%6.3f (stop       band):              %10.6f < %10.6f\n", i, f, H, mask_hi);
+            CONTEND_LESS_THAN(H, mask_hi);
+        }
+    }
+    iirfilt_crcf_destroy(q);    // destroy filter object
+}
+
+// test different transform sizes
+void autotest_iirdes_ellip_lowpass_0(){ testbench_iirdes_ellip_lowpass( 5,0.20f,0.30f,1.0f,60.0f); }
+
+// design specific 2nd-order butterworth filter and compare to known coefficients;
+// design comes from [Ziemer:1998], Example 9-7, pp. 440--442
 void autotest_iirdes_butter_2()
 {
     // design butterworth filter
