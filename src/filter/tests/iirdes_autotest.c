@@ -44,6 +44,8 @@ void testbench_iirdes_ellip_lowpass(unsigned int _n,    // filter order
     if (liquid_autotest_verbose)
         iirfilt_crcf_print(q);
 
+    //            fc fr  fs
+    //             | |   |
     // |**************  . . . . . . . . H0
     // |/\/\/\/\/\/\  *
     // |************\  *. . . . . . . . H1
@@ -53,6 +55,7 @@ void testbench_iirdes_ellip_lowpass(unsigned int _n,    // filter order
     // |           *    \ /^\ /^\ /^\ /
     // |           *     |   |   |   |
     // 0           fc    fs
+    float gamma = 0.1, fr = _fc + gamma*(_fs - _fc);
     float H0 = 0.0f, H1 = -_Ap, H2 = -_As;
 
     // compute response and compare to expected or mask
@@ -68,26 +71,30 @@ void testbench_iirdes_ellip_lowpass(unsigned int _n,    // filter order
             float mask_hi = H0 + tol;
             float mask_lo = H1 - tol;
             if (liquid_autotest_verbose)
-                printf("%6u, f=%6.3f (pass       band): %10.6f < %10.6f < %10.6f\n", i, f, mask_lo, H, mask_hi);
+                printf("%6u, f=%6.3f (pass       band): %12.6f < %12.6f < %12.6f\n", i, f, mask_lo, H, mask_hi);
             CONTEND_GREATER_THAN(H, mask_lo);
             CONTEND_LESS_THAN   (H, mask_hi);
         } else if (f < _fs) {
-            float mask_hi = H2 + (H2 - H0) / (_fs - _fc) * (f - _fs);
+            float mask_hi = (f < fr) ? H0 : H2 + (H2 - H0) / (_fs - fr) * (f - _fs);
             if (liquid_autotest_verbose)
-                printf("%6u, f=%6.3f (transition band):              %10.6f < %10.6f\n", i, f, H, mask_hi);
+                printf("%6u, f=%6.3f (transition band):                %12.6f < %12.6f\n", i, f, H, mask_hi);
             CONTEND_LESS_THAN(H, mask_hi);
         } else {
             float mask_hi = H2 + tol;
             if (liquid_autotest_verbose)
-                printf("%6u, f=%6.3f (stop       band):              %10.6f < %10.6f\n", i, f, H, mask_hi);
+                printf("%6u, f=%6.3f (stop       band):                %12.6f < %12.6f\n", i, f, H, mask_hi);
             CONTEND_LESS_THAN(H, mask_hi);
         }
     }
     iirfilt_crcf_destroy(q);    // destroy filter object
 }
 
-// test different transform sizes
-void autotest_iirdes_ellip_lowpass_0(){ testbench_iirdes_ellip_lowpass( 5,0.20f,0.30f,1.0f,60.0f); }
+// test different filter designs
+void autotest_iirdes_ellip_lowpass_0(){ testbench_iirdes_ellip_lowpass( 5,0.20f,0.30f,1.0f, 60.0f); }
+void autotest_iirdes_ellip_lowpass_1(){ testbench_iirdes_ellip_lowpass( 5,0.05f,0.09f,1.0f, 60.0f); }
+void autotest_iirdes_ellip_lowpass_2(){ testbench_iirdes_ellip_lowpass( 5,0.20f,0.43f,1.0f,100.0f); }
+void autotest_iirdes_ellip_lowpass_3(){ testbench_iirdes_ellip_lowpass( 5,0.20f,0.40f,0.1f, 60.0f); }
+void autotest_iirdes_ellip_lowpass_4(){ testbench_iirdes_ellip_lowpass(15,0.35f,0.37f,0.1f,120.0f); }
 
 // design specific 2nd-order butterworth filter and compare to known coefficients;
 // design comes from [Ziemer:1998], Example 9-7, pp. 440--442
