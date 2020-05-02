@@ -1840,6 +1840,7 @@ LIQUID_SPWATERFALL_DEFINE_API(LIQUID_SPWATERFALL_MANGLE_FLOAT,
 //
 
 // prototypes
+#define LIQUID_FIRFILT_NUM_TYPES (16)
 typedef enum {
     LIQUID_FIRFILT_UNKNOWN=0,   // unknown filter type
 
@@ -1876,6 +1877,9 @@ void liquid_firdes_prototype(liquid_firfilt_type _type,
                              float               _beta,
                              float               _dt,
                              float *             _h);
+
+// pretty names for filter design types
+extern const char * liquid_firfilt_type_str[LIQUID_FIRFILT_NUM_TYPES][2];
 
 // returns filter type based on input string
 int liquid_getopt_str2firfilt(const char * _str);

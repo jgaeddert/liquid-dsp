@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2019 Joseph Gaeddert
+ * Copyright (c) 2007 - 2020 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -44,6 +44,30 @@
 
 // select filter estimate method
 #define ESTIMATE_REQ_FILTER_LEN_METHOD          (0)
+
+const char * liquid_firfilt_type_str[LIQUID_FIRFILT_NUM_TYPES][2] = {
+    // short,    long name
+    {"unknown",  "unknown"},
+
+    // Nyquist filter prototypes
+    {"kaiser",   "Nyquist Kaiser filter"},
+    {"pm",       "Parks-McClellan filter"},
+    {"rcos",     "raised-cosine filter"},
+    {"fexp",     "flipped exponential"},
+    {"fsech",    "flipped hyperbolic secant"},
+    {"farcsech", "flipped arc-hyperbolic secant"},
+
+    // root-Nyquist filter prototypes
+    {"arkaiser", "root-Nyquist Kaiser (approximate optimum)"},
+    {"rkaiser",  "root-Nyquist Kaiser (true optimum)"},
+    {"rrcos",    "root raised-cosine"},
+    {"hm3",      "harris-Moerder-3 filter"},
+    {"gmsktx",   "GMSK transmit filter"},
+    {"gmskrx",   "GMSK receive filter"},
+    {"rfexp",    "root flipped exponential"},
+    {"rfsech",   "root flipped hyperbolic secant"},
+    {"rfarcsech","root flipped arc-hyperbolic secant"},
+};
 
 // esimate required filter length given transition bandwidth and
 // stop-band attenuation
@@ -644,30 +668,15 @@ float liquid_filter_energy(float *      _h,
 // returns filter type based on input string
 int liquid_getopt_str2firfilt(const char * _str)
 {
-    // Generic filter designs
-    if      (strcmp(_str,"kaiser")   ==0) return LIQUID_FIRFILT_KAISER;
-    else if (strcmp(_str,"pm")       ==0) return LIQUID_FIRFILT_PM;
-    
-    // Nyquist filter designs
-    else if (strcmp(_str,"rcos")     ==0) return LIQUID_FIRFILT_RCOS;
-    else if (strcmp(_str,"fexp")     ==0) return LIQUID_FIRFILT_FEXP;
-    else if (strcmp(_str,"fsech")    ==0) return LIQUID_FIRFILT_FSECH;
-    else if (strcmp(_str,"farcsech") ==0) return LIQUID_FIRFILT_FARCSECH;
+    // compare each string to short name
+    unsigned int i;
+    for (i=0; i<LIQUID_FIRFILT_NUM_TYPES; i++) {
+        if (strcmp(_str,liquid_firfilt_type_str[i][0])==0) {
+            return i;
+        }
+    }
 
-    // root-Nyquist filter designs
-    else if (strcmp(_str,"arkaiser") ==0) return LIQUID_FIRFILT_ARKAISER;
-    else if (strcmp(_str,"rkaiser")  ==0) return LIQUID_FIRFILT_RKAISER;
-    else if (strcmp(_str,"rrcos")    ==0) return LIQUID_FIRFILT_RRC;
-    else if (strcmp(_str,"hM3")      ==0) return LIQUID_FIRFILT_hM3;
-    else if (strcmp(_str,"gmsktx")   ==0) return LIQUID_FIRFILT_GMSKTX;
-    else if (strcmp(_str,"gmskrx")   ==0) return LIQUID_FIRFILT_GMSKRX;
-    else if (strcmp(_str,"rfexp")    ==0) return LIQUID_FIRFILT_RFEXP;
-    else if (strcmp(_str,"rfsech")   ==0) return LIQUID_FIRFILT_RFSECH;
-    else if (strcmp(_str,"rfarcsech")==0) return LIQUID_FIRFILT_RFARCSECH;
-
-    // filter type unknown
+    fprintf(stderr,"warning: liquid_getopt_str2firfilt(), unknown/unsupported type: %s\n", _str);
     return LIQUID_FIRFILT_UNKNOWN;
 }
-
-
 
