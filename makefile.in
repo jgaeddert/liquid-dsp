@@ -484,6 +484,7 @@ filter_autotests :=						\
 	src/filter/tests/firdes_autotest.c			\
 	src/filter/tests/firdespm_autotest.c			\
 	src/filter/tests/firfilt_cccf_notch_autotest.c		\
+	src/filter/tests/firfilt_rnyquist_autotest.c		\
 	src/filter/tests/firfilt_xxxf_autotest.c		\
 	src/filter/tests/firhilb_autotest.c			\
 	src/filter/tests/firinterp_autotest.c			\
