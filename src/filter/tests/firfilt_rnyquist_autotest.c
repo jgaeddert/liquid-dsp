@@ -73,11 +73,13 @@ void testbench_firfilt_rnyquist(int          _ftype,// filter type
 
     if (liquid_autotest_verbose) {
         printf("ftype: %d, k: %u, m: %u, beta: %.3f, dt: %.3f\n", _ftype, _k, _m, _beta, _dt);
+#if 0
         for (i=0; i<h_len; i++)
             printf("  %3d: ht = %12.8f, hr = %12.8f\n", (int)i - 2*(int)_m, ht[i], hr[i]);
         printf("composite:\n");
         for (i=0; i<hc_len; i++)
             printf("  %3d: hc = %12.8f%s\n", (int)i - 4*(int)_m, hc[i], i%_k ? "" : " *");
+#endif
         printf("  rxx[0]    : %12.8f (expected %u)\n", rxx0, _k);
         printf("  isi (rms) : %12.8f dB\n", isi_rms);
         printf("  As        : %12.8f dB\n", As);
@@ -96,4 +98,16 @@ void autotest_firfilt_rnyquist_baseline_gmsktxrx (){ testbench_firfilt_rnyquist(
 void autotest_firfilt_rnyquist_baseline_rfexp    (){ testbench_firfilt_rnyquist(LIQUID_FIRFILT_RFEXP,    2,9,0.3f,0.0f); }
 void autotest_firfilt_rnyquist_baseline_rfsech   (){ testbench_firfilt_rnyquist(LIQUID_FIRFILT_RFSECH,   2,9,0.3f,0.0f); }
 void autotest_firfilt_rnyquist_baseline_rfarcsech(){ testbench_firfilt_rnyquist(LIQUID_FIRFILT_RFARCSECH,2,9,0.3f,0.0f); }
+
+// test different parameters
+void autotest_firfilt_rnyquist_0(){ testbench_firfilt_rnyquist(LIQUID_FIRFILT_ARKAISER, 2, 4,0.33f,0.0f); } // short length
+void autotest_firfilt_rnyquist_1(){ testbench_firfilt_rnyquist(LIQUID_FIRFILT_ARKAISER, 2,12,0.20f,0.0f); } // longer length
+void autotest_firfilt_rnyquist_2(){ testbench_firfilt_rnyquist(LIQUID_FIRFILT_ARKAISER, 2,40,0.20f,0.0f); } // very long length
+void autotest_firfilt_rnyquist_3(){ testbench_firfilt_rnyquist(LIQUID_FIRFILT_ARKAISER, 3,12,0.20f,0.0f); } // k=3
+void autotest_firfilt_rnyquist_4(){ testbench_firfilt_rnyquist(LIQUID_FIRFILT_ARKAISER, 4,12,0.20f,0.0f); } // k=4
+void autotest_firfilt_rnyquist_5(){ testbench_firfilt_rnyquist(LIQUID_FIRFILT_ARKAISER, 5,12,0.20f,0.0f); } // k=5
+void autotest_firfilt_rnyquist_6(){ testbench_firfilt_rnyquist(LIQUID_FIRFILT_ARKAISER,20,12,0.20f,0.0f); } // k=20
+void autotest_firfilt_rnyquist_7(){ testbench_firfilt_rnyquist(LIQUID_FIRFILT_ARKAISER, 2,12,0.80f,0.0f); } // large excess bandwidth
+void autotest_firfilt_rnyquist_8(){ testbench_firfilt_rnyquist(LIQUID_FIRFILT_RKAISER,  2,12,0.20f,0.5f); } // iterative design, typical
+void autotest_firfilt_rnyquist_9(){ testbench_firfilt_rnyquist(LIQUID_FIRFILT_RKAISER, 20,40,0.20f,0.5f); } // iterative design, stressed
 
