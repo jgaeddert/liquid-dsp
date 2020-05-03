@@ -5111,6 +5111,14 @@ unsigned int gmskframegen_getframelen(gmskframegen _q);
 int gmskframegen_write_samples(gmskframegen _q,
                                liquid_float_complex * _y);
 
+// write samples of assembled frame
+//  _q              :   frame generator object
+//  _buf            :   output buffer [size: _buf_len x 1]
+//  _buf_len        :   output buffer length
+int gmskframegen_write(gmskframegen          _q,
+                      liquid_float_complex * _buf,
+                      unsigned int           _buf_len);
+
 
 //
 // GMSK frame synchronizer

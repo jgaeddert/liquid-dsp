@@ -320,6 +320,20 @@ int gmskframegen_write_samples(gmskframegen _q,
     return 0;
 }
 
+// write samples of assembled frame
+//  _q              :   frame generator object
+//  _buf            :   output buffer [size: _buf_len x 1]
+//  _buf_len        :   output buffer length
+int gmskframegen_write(gmskframegen   _q,
+                      float complex * _buf,
+                      unsigned int    _buf_len)
+{
+    unsigned int i;
+    for (i=0; i<_buf_len; i++)
+        gmskframegen_write_samples(_q, _buf+i);
+    return _q->frame_complete;
+}
+
 
 // 
 // internal methods
