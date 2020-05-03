@@ -28,6 +28,7 @@ config.log
 config.status
 makefile
 xautotest
+liquid.pc
 *.m
 
 # miscellany

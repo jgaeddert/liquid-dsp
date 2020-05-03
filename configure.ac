@@ -271,5 +271,5 @@ AC_SUBST(DEBUG_MSG_OPTION)          # debug messages option (.e.g -DDEBUG)
 AC_SUBST(COVERAGE_OPTION)           # source code coverage option (e.g. -fprofile-arcs -ftest-coverage)
 AC_SUBST(CLIB)                      # C library linkage (e.g. '-lc')
 
-AC_CONFIG_FILES([makefile])
+AC_CONFIG_FILES([makefile liquid.pc])
 AC_OUTPUT

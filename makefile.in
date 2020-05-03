@@ -1224,9 +1224,11 @@ install: all
 	@echo "installing..."
 	@echo ""
 	mkdir -p $(DESTDIR)$(exec_prefix)$(libdir)
+	mkdir -p $(DESTDIR)$(exec_prefix)$(libdir)/pkgconfig
 	mkdir -p $(DESTDIR)$(prefix)/include/liquid
 	install -m 644 -p ${ARCHIVE_LIB} ${SHARED_LIB} $(DESTDIR)$(exec_prefix)$(libdir)
 	install -m 644 -p $(addprefix include/,$(headers_install)) $(DESTDIR)$(prefix)/include/liquid
+	install -m 644 -p liquid.pc $(DESTDIR)$(exec_prefix)$(libdir)/pkgconfig
 	@echo ""
 	@echo "---------------------------------------------------------"
 	@echo "  liquid-dsp was successfully installed.     "
