@@ -72,7 +72,8 @@ void testbench_firfilt_rnyquist(int          _ftype,// filter type
     float As = 20*log10f( liquid_filter_energy(ht, h_len, 0.5f*(1.0f + _beta)/(float)_k, nfft) );
 
     if (liquid_autotest_verbose) {
-        printf("ftype: %d, k: %u, m: %u, beta: %.3f, dt: %.3f\n", _ftype, _k, _m, _beta, _dt);
+        printf("ftype: %s, k: %u, m: %u, beta: %.3f, dt: %.3f\n",
+            liquid_firfilt_type_str[_ftype][0], _k, _m, _beta, _dt);
 #if 0
         for (i=0; i<h_len; i++)
             printf("  %3d: ht = %12.8f, hr = %12.8f\n", (int)i - 2*(int)_m, ht[i], hr[i]);
