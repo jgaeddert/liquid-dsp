@@ -199,7 +199,7 @@ int gmskframegen_print(gmskframegen _q)
     printf("    crc             :   %s\n", crc_scheme_str[_q->check][1]);
     printf("    fec (inner)     :   %s\n", fec_scheme_str[_q->fec0][1]);
     printf("    fec (outer)     :   %s\n", fec_scheme_str[_q->fec1][1]);
-    printf("  total samples     :   %-4u sampels\n", gmskframegen_getframelen(_q));
+    printf("  total samples     :   %-4u samples\n", gmskframegen_getframelen(_q));
     return LIQUID_OK;
 }
 
