@@ -1654,6 +1654,7 @@ sandbox_programs =						\
 	sandbox/firdes_energy_test				\
 	sandbox/firdes_fexp_test				\
 	sandbox/firdes_gmskrx_test				\
+	sandbox/firdes_group_delay_test				\
 	sandbox/firdes_length_test				\
 	sandbox/firfarrow_rrrf_test				\
 	sandbox/firfilt_dcblocker_test				\
