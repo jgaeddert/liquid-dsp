@@ -3081,6 +3081,16 @@ FIRPFB() FIRPFB(_create)(unsigned int _M,                                   \
                          unsigned int _h_len);                              \
                                                                             \
 /* Create firpfb object using Kaiser-Bessel windowed sinc filter design */  \
+/* method, using default values for cut-off frequency and stop-band     */  \
+/* attenuation. This is equivalent to:                                  */  \
+/*   FIRPFB(_create_kaiser)(_M, _m, 0.5, 60.0)                          */  \
+/* which creates a Nyquist filter at the appropriate cut-off frequency. */  \
+/*  _M      : number of filters in the bank, _M > 0                     */  \
+/*  _m      : filter semi-length [samples], _m > 0                      */  \
+FIRPFB() FIRPFB(_create_default)(unsigned int _M,                           \
+                                 unsigned int _m);                          \
+                                                                            \
+/* Create firpfb object using Kaiser-Bessel windowed sinc filter design */  \
 /* method                                                               */  \
 /*  _M      : number of filters in the bank, _M > 0                     */  \
 /*  _m      : filter semi-length [samples], _m > 0                      */  \

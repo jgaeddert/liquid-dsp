@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2018 Joseph Gaeddert
+ * Copyright (c) 2007 - 2020 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -95,6 +95,13 @@ FIRPFB() FIRPFB(_create)(unsigned int _M,
     // reset object and return
     FIRPFB(_reset)(q);
     return q;
+}
+
+// create default firpfb
+FIRPFB() FIRPFB(_create_default)(unsigned int _M,
+                                 unsigned int _m)
+{
+    return FIRPFB(_create_kaiser)(_M, _m, 0.5f, 60.0f);
 }
 
 // create firpfb using kaiser window
