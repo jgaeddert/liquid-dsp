@@ -1,4 +1,4 @@
-// firpf_rrrf_example.c - demonstrate poly-phase filter-bank as interpolator
+// test group delay for windowed filter design
 #include <stdlib.h>
 #include <stdio.h>
 #include "liquid.h"
