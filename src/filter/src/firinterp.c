@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2018 Joseph Gaeddert
+ * Copyright (c) 2007 - 2020 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -108,13 +108,11 @@ FIRINTERP() FIRINTERP(_create_kaiser)(unsigned int _M,
     // copy coefficients to type-specific array (e.g. float complex)
     TC hc[h_len];
     unsigned int i;
-    for (i=0; i<h_len; i++) {
-        printf("%3u : %12.6f\n", i, hf[i]);
+    for (i=0; i<h_len; i++)
         hc[i] = hf[i];
-    }
     
     // return interpolator object
-    return FIRINTERP(_create)(_M, hc, 2*_M*_m);
+    return FIRINTERP(_create)(_M, hc, h_len);
 }
 
 // create prototype (root-)Nyquist interpolator
@@ -157,6 +155,51 @@ FIRINTERP() FIRINTERP(_create_prototype)(int          _type,
 
     // return interpolator object
     return FIRINTERP(_create)(_k, hc, h_len);
+}
+
+// create linear interpolator object
+//  _M      :   interpolation factor, _M > 1
+FIRINTERP() FIRINTERP(_create_linear)(unsigned int _M)
+{
+    // validate input
+    if (_M < 1) {
+        fprintf(stderr,"error: firinterp_%s_create_linear(), interp factor must be greater than 1\n", EXTENSION_FULL);
+        exit(1);
+    }
+
+    // generate coefficients
+    unsigned int i;
+    TC hc[2*_M];
+    for (i=0; i<_M; i++) hc[   i] = (float)i / (float)_M;
+    for (i=0; i<_M; i++) hc[_M+i] = 1.0f - (float)i / (float)_M;
+
+    // return interpolator object
+    return FIRINTERP(_create)(_M, hc, 2*_M);
+}
+
+// create window interpolator object
+//  _M      :   interpolation factor, _M > 1
+//  _m      :   filter semi-length, _m > 0
+FIRINTERP() FIRINTERP(_create_window)(unsigned int _M,
+                                      unsigned int _m)
+{
+    // validate input
+    if (_M < 1) {
+        fprintf(stderr,"error: firinterp_%s_create_spline(), interp factor must be greater than 1\n", EXTENSION_FULL);
+        exit(1);
+    } else if (_m < 1) {
+        fprintf(stderr,"error: firinterp_%s_create_spline(), interp factor must be greater than 1\n", EXTENSION_FULL);
+        exit(1);
+    }
+
+    // generate coefficients
+    unsigned int i;
+    TC hc[2*_m*_M];
+    for (i=0; i<2*_m*_M; i++)
+        hc[i] = powf(sinf(M_PI*(float)i/(float)(2*_m*_M)), 2.0f);
+
+    // return interpolator object
+    return FIRINTERP(_create)(_M, hc, 2*_m*_M);
 }
 
 // destroy interpolator object

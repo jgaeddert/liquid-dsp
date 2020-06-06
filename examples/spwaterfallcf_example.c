@@ -51,7 +51,7 @@ int main()
         // write samples to buffer
         msourcecf_write_samples(gen, buf, buf_len);
 
-        // push resulting sample through periodogram
+        // push resulting sample through waterfall object
         spwaterfallcf_write(periodogram, buf, buf_len);
 
         // accumulated samples

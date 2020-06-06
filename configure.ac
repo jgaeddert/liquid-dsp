@@ -69,6 +69,17 @@ AC_ARG_ENABLE(fftoverride,
     [],
 )
 
+# code coverage
+AC_ARG_ENABLE(coverage,
+    AS_HELP_STRING([--enable-coverage],[enable flags to test code coverage]),
+    [   # check that gcovr program is installed
+        AC_CHECK_PROG(HAVE_GCOVR,gcovr,yes)
+        AS_IF([test x"$HAVE_GCOVR" != x"yes"],
+              [AC_MSG_ERROR(Need gcovr with coverage option)],
+              [COVERAGE_OPTION="--coverage"])],
+    [COVERAGE_OPTION=""]
+)
+
 # Check for necessary programs
 AC_PROG_CC
 AC_PROG_SED
@@ -257,6 +268,7 @@ AC_SUBST(REBIND)                    # rebinding tool (e.g. ldconfig)
 AC_SUBST(ARCH_OPTION)               # compiler architecture option
 
 AC_SUBST(DEBUG_MSG_OPTION)          # debug messages option (.e.g -DDEBUG)
+AC_SUBST(COVERAGE_OPTION)           # source code coverage option (e.g. -fprofile-arcs -ftest-coverage)
 AC_SUBST(CLIB)                      # C library linkage (e.g. '-lc')
 
 AC_CONFIG_FILES([makefile])

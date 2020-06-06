@@ -1,9 +1,11 @@
 # ignore all object files
-*.o
+*.a
 *.d
 *.dylib
 *.dSYM
-*.a
+*.gcda
+*.gcno
+*.o
 *.so
 
 # ignore swap files for vim editing

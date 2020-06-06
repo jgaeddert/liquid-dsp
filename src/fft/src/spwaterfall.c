@@ -160,6 +160,7 @@ void SPWATERFALL(_destroy)(SPWATERFALL() _q)
 // the internal buffer
 void SPWATERFALL(_clear)(SPWATERFALL() _q)
 {
+    SPGRAM(_clear)(_q->periodogram);
     memset(_q->psd, 0x00, 2*_q->nfft*_q->time*sizeof(T));
     _q->index_time = 0;
 }
@@ -168,6 +169,7 @@ void SPWATERFALL(_clear)(SPWATERFALL() _q)
 void SPWATERFALL(_reset)(SPWATERFALL() _q)
 {
     SPWATERFALL(_clear)(_q);
+    SPGRAM(_reset)(_q->periodogram);
     _q->rollover = 1;
 }
 

@@ -1,0 +1,60 @@
+# base configuration
+image: debian
+stages: [build, test]
+before_script:
+  - apt-get -qq update && apt-get -qq install -y automake autoconf gcc gcovr make
+
+# build from scratch
+compile:
+  stage: build
+  script:
+    - ./bootstrap.sh
+    - ./configure
+    - make -j4
+  artifacts: # save output objects for test stages
+    paths: [makefile, configure, config.h, libliquid*, src/*/src/*.o]
+
+# run all test programs
+check:
+  stage: test
+  script:
+    - make -j4 check
+  artifacts:
+    paths: [autotest.json]
+
+# compile and run benchmark program
+bench:
+  stage: test
+  script:
+    - make -j4 bench
+  artifacts:
+    paths: [benchmark.json]
+
+# compile and run documenation checks (e.g. example code in README.md)
+doc-check:
+  stage: test
+  script:
+    - make doc-check
+
+# compile and run all example programs
+examples:
+  stage: test
+  script:
+    - make -j4 examples
+    - ls examples/*_example | sed "s#examples#./examples#g" > run_examples.sh
+    - /bin/sh run_examples.sh
+  artifacts:
+    paths: [run_examples.sh]
+
+# build from scratch
+coverage:
+  stage: test
+  script:
+    - make distclean
+    - ./bootstrap.sh
+    - ./configure --enable-coverage
+    - make -j4 coverage
+  coverage: '/lines: \d+\.\d+%/'
+  artifacts:
+    paths: [coverage.out]
+

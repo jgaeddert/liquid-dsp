@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2015 Joseph Gaeddert
+ * Copyright (c) 2007 - 2020 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -178,4 +178,23 @@ void autotest_liquid_firdes_notch()
     CONTEND_DELTA(cabsf(buf_freq[nfft/2]), 1.0f, tol);   // pass at  Fs/2
 }
 
+void autotest_liquid_getopt_str2firfilt()
+{
+    CONTEND_EQUALITY( liquid_getopt_str2firfilt("unknown"   ), LIQUID_FIRFILT_UNKNOWN   );
+    CONTEND_EQUALITY( liquid_getopt_str2firfilt("kaiser"    ), LIQUID_FIRFILT_KAISER    );
+    CONTEND_EQUALITY( liquid_getopt_str2firfilt("pm"        ), LIQUID_FIRFILT_PM        );
+    CONTEND_EQUALITY( liquid_getopt_str2firfilt("rcos"      ), LIQUID_FIRFILT_RCOS      );
+    CONTEND_EQUALITY( liquid_getopt_str2firfilt("fexp"      ), LIQUID_FIRFILT_FEXP      );
+    CONTEND_EQUALITY( liquid_getopt_str2firfilt("fsech"     ), LIQUID_FIRFILT_FSECH     );
+    CONTEND_EQUALITY( liquid_getopt_str2firfilt("farcsech"  ), LIQUID_FIRFILT_FARCSECH  );
+    CONTEND_EQUALITY( liquid_getopt_str2firfilt("arkaiser"  ), LIQUID_FIRFILT_ARKAISER  );
+    CONTEND_EQUALITY( liquid_getopt_str2firfilt("rkaiser"   ), LIQUID_FIRFILT_RKAISER   );
+    CONTEND_EQUALITY( liquid_getopt_str2firfilt("rrcos"     ), LIQUID_FIRFILT_RRC       );
+    CONTEND_EQUALITY( liquid_getopt_str2firfilt("hm3"       ), LIQUID_FIRFILT_hM3       );
+    CONTEND_EQUALITY( liquid_getopt_str2firfilt("gmsktx"    ), LIQUID_FIRFILT_GMSKTX    );
+    CONTEND_EQUALITY( liquid_getopt_str2firfilt("gmskrx"    ), LIQUID_FIRFILT_GMSKRX    );
+    CONTEND_EQUALITY( liquid_getopt_str2firfilt("rfexp"     ), LIQUID_FIRFILT_RFEXP     );
+    CONTEND_EQUALITY( liquid_getopt_str2firfilt("rfsech"    ), LIQUID_FIRFILT_RFSECH    );
+    CONTEND_EQUALITY( liquid_getopt_str2firfilt("rfarcsech" ), LIQUID_FIRFILT_RFARCSECH );
+}
 

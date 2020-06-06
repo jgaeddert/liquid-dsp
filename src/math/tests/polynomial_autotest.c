@@ -56,6 +56,65 @@ void autotest_polyf_fit_q3n3()
     //CONTEND_DELTA(p[3], p_test[3], tol);
 }
 
+void autotest_polyf_lagrange_issue165()
+{
+    // Inputs taken from issue#165
+    //unsigned int Q=2;   // polynomial order
+    unsigned int n=3;   // input vector size
+    float x[3] = {-1.0f, 0.0f, 1.0f};
+    float y[3] = {7.059105f, 24.998369f, 14.365907f};
+    float p[3];
+    float tol = 1e-3f;
+
+    polyf_fit_lagrange(x,y,n,p);
+    unsigned int j;
+    for (j=0; j<n; j++)
+        printf("%3u : %12.8f > %12.8f\n", j, x[j], y[j]);
+    for (j=0; j<n; j++)
+        printf("p[%3u] = %12.8f\n", j, p[j]);
+
+    float y_out[3];
+    for (j=0; j<n; j++) {
+        y_out[j] = polyf_val(p, n, x[j]);
+        printf("y_out[%3u] = %12.8f exp=%12.8f\n", j, y_out[j], y[j]);
+        CONTEND_DELTA(y[j], y_out[j], tol);
+    }
+
+    polyf_fit(x,y,n,p,n);
+    for (j=0; j<n; j++)
+        printf("p_least_sq[%3u] = %12.8f\n", j, p[j]);
+
+    float y_least_sq[3];
+    for (j=0; j<n; j++) {
+        y_least_sq[j] = polyf_val(p, n, x[j]);
+        printf("y_least_sq[%3u] = %12.8f exp=%12.8f\n", j, y_least_sq[j], y[j]);
+        CONTEND_DELTA(y_least_sq[j], y_out[j], tol);
+    }
+}
+
+
+// Taken from wiki page for lagrange polynomial
+// for y=x^3
+void autotest_polyf_lagrange()
+{
+
+    unsigned int n=3; // input vector size
+
+    float x[3] = {1.0f, 2.0f, 3.0f};
+    float y[3] = {1.0f, 8.0f, 27.0f};
+    float p[3];
+    float tol = 1e-3;
+    polyf_fit_lagrange(x,y,n,p);
+    unsigned int j;
+    for (j=0; j<n; j++)
+        printf("p[%3u] = %12.8f\n", j, p[j]);
+    float y_out[3];
+    for (j=0; j<n; j++) {
+        y_out[j] = polyf_val(p, n, x[j]);
+        printf("y_out[%3u] = %12.8f exp=%12.8f\n", j, y_out[j], y[j]);
+        CONTEND_DELTA(y[j], y_out[j], tol);
+    }
+}
 #if 0
 // 
 // AUTOTEST: poly_expandbinomial

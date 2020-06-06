@@ -95,6 +95,34 @@ liquid_window_type liquid_getopt_str2window(const char * _str)
     return LIQUID_WINDOW_UNKNOWN;
 }
 
+// generic window function given type
+//  _type   :   window type, e.g. LIQUID_WINDOW_KAISER
+//  _i      :   window index, _i in [0,_wlen-1]
+//  _wlen   :   length of window
+//  _arg    :   window-specific argument, if required
+float liquid_windowf(liquid_window_type _type,
+                     unsigned int       _i,
+                     unsigned int       _wlen,
+                     float              _arg)
+{
+    switch (_type) {
+    case LIQUID_WINDOW_HAMMING:         return liquid_hamming         (_i, _wlen);
+    case LIQUID_WINDOW_HANN:            return liquid_hann            (_i, _wlen);
+    case LIQUID_WINDOW_BLACKMANHARRIS:  return liquid_blackmanharris  (_i, _wlen);
+    case LIQUID_WINDOW_BLACKMANHARRIS7: return liquid_blackmanharris7 (_i, _wlen);
+    case LIQUID_WINDOW_KAISER:          return liquid_kaiser          (_i, _wlen, _arg);
+    case LIQUID_WINDOW_FLATTOP:         return liquid_flattop         (_i, _wlen);
+    case LIQUID_WINDOW_TRIANGULAR:      return liquid_triangular      (_i, _wlen, (unsigned int)_arg);
+    case LIQUID_WINDOW_RCOSTAPER:       return liquid_rcostaper_window(_i, _wlen, (unsigned int)_arg);
+    case LIQUID_WINDOW_KBD:             return liquid_kbd             (_i, _wlen, _arg);
+    case LIQUID_WINDOW_UNKNOWN:
+    default:
+        fprintf(stderr,"error: liquid_windowf(), invalid type: %d\n", _type);
+        exit(1);
+    }
+    return 0.0f;
+}
+
 // Kaiser-Bessel derived window
 float liquid_kbd(unsigned int _i,
                  unsigned int _wlen,

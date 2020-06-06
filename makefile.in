@@ -1,4 +1,4 @@
-# Copyright (c) 2007 - 2019 Joseph Gaeddert
+# Copyright (c) 2007 - 2020 Joseph Gaeddert
 # 
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -65,7 +65,8 @@ RANLIB		:= @RANLIB@
 
 # flags
 INCLUDE_CFLAGS	= $(addprefix -I,$(include_dirs))
-CONFIG_CFLAGS	= @CFLAGS@ @DEBUG_MSG_OPTION@ @ARCH_OPTION@
+COVERAGE_FLAGS  = @COVERAGE_OPTION@ # dynamic library linker needs separate flag
+CONFIG_CFLAGS	= @CFLAGS@ @DEBUG_MSG_OPTION@ @ARCH_OPTION@ ${COVERAGE_FLAGS}
 CPPFLAGS	= @CPPFLAGS@ $(INCLUDE_CFLAGS)
 CFLAGS		= $(CONFIG_CFLAGS) -Wall -fPIC
 LDFLAGS		= @LDFLAGS@
@@ -352,6 +353,7 @@ fft_autotests :=						\
 	src/fft/tests/fft_prime_autotest.c			\
 	src/fft/tests/fft_r2r_autotest.c			\
 	src/fft/tests/fft_shift_autotest.c			\
+	src/fft/tests/spgram_autotest.c				\
 
 # additional autotest objects
 autotest_extra_obj +=						\
@@ -482,12 +484,14 @@ filter_autotests :=						\
 	src/filter/tests/firdes_autotest.c			\
 	src/filter/tests/firdespm_autotest.c			\
 	src/filter/tests/firfilt_cccf_notch_autotest.c		\
+	src/filter/tests/firfilt_rnyquist_autotest.c		\
 	src/filter/tests/firfilt_xxxf_autotest.c		\
 	src/filter/tests/firhilb_autotest.c			\
 	src/filter/tests/firinterp_autotest.c			\
 	src/filter/tests/firpfb_autotest.c			\
 	src/filter/tests/groupdelay_autotest.c			\
 	src/filter/tests/iirdes_autotest.c			\
+	src/filter/tests/iirdes_support_autotest.c		\
 	src/filter/tests/iirfilt_xxxf_autotest.c		\
 	src/filter/tests/iirfiltsos_rrrf_autotest.c		\
 	src/filter/tests/lpc_autotest.c				\
@@ -650,6 +654,7 @@ framing_autotests :=						\
 	src/framing/tests/detector_autotest.c			\
 	src/framing/tests/flexframesync_autotest.c		\
 	src/framing/tests/framesync64_autotest.c		\
+	src/framing/tests/ofdmflexframe_autotest.c		\
 	src/framing/tests/qdetector_cccf_autotest.c		\
 	src/framing/tests/qpacketmodem_autotest.c		\
 	src/framing/tests/qpilotsync_autotest.c			\
@@ -1122,6 +1127,7 @@ objects :=							\
 
 autotest_sources :=						\
 	autotest/null_autotest.c				\
+	autotest/libliquid_autotest.c				\
 	$(agc_autotests)					\
 	$(audio_autotests)					\
 	$(buffer_autotests)					\
@@ -1187,7 +1193,7 @@ libliquid.ar: $(objects)
 
 # gcc -dynamiclib -install_name libliquid.dylib -o libliquid.dylib libmodem.a libutility.a 
 libliquid.dylib: $(objects)
-	$(CC) -dynamiclib -install_name $@ -o $@ $^ $(LDFLAGS) $(LIBS)
+	$(CC) -dynamiclib ${COVERAGE_FLAGS} -install_name $@ -o $@ $^ $(LDFLAGS) $(LIBS)
 
 #
 # linux, et al
@@ -1316,6 +1322,43 @@ clean-check:
 	$(RM) $(autotest_extra_obj)
 	$(RM) autotest.json
 
+##
+## TARGET : doc-check - build and run basic documentation checks
+##
+
+readme.example.c : README.md
+	${SED} -n '22,42p' $< | ${SED} "s/<liquid\/liquid.h>/\"liquid.h\"/g" > $@
+
+readme.example.o : %.o : %.c ${include_headers}
+	${CC} ${CPPFLAGS} ${CFLAGS} $< -c -o $@
+
+readme.example : % : %.o ${ARCHIVE_LIB}
+	${CC} ${CFLAGS} ${LDFLAGS} $^ -o $@ ${LIBS}
+
+doc-check : readme.example ; ./readme.example
+
+clean-doc-check:
+	${RM} readme.example*
+
+##
+## TARGET : coverage  - run coverage test and produce report
+##
+coverage: coverage.out
+	tail -n5 $<
+
+${autotest_prog}.gcda : %.gcda : %
+	./${autotest_prog}
+
+coverage.out : ${autotest_prog}.gcda
+	gcovr --root=src --exclude-directories=src/.*/tests --print-summary > $@
+
+clean-coverage:
+	$(RM) src/*.gcda src/*/src/*.gcda src/*/tests/*.gcda src/*/tests/data/*.gcda autotest/*.gcda scripts/*.gcda
+	$(RM) src/*.gcno src/*/src/*.gcno src/*/tests/*.gcno src/*/tests/data/*.gcno autotest/*.gcno scripts/*.gcno
+	$(RM) autotest/*.gcda bench/*.gcda examples/*.gcda sandbox/*.gcda
+	$(RM) autotest/*.gcno bench/*.gcno examples/*.gcno sandbox/*.gcno
+	$(RM) *.gcda *.gcno coverage.out
+
 
 ##
 ## TARGET : bench     - build and run all benchmarks
@@ -1356,7 +1399,7 @@ $(bench_prog): $(bench_prog).o $(benchmark_obj) $(benchmark_extra_obj) ${ARCHIVE
 
 # run the benchmark program
 bench: $(bench_prog)
-	./$(bench_prog)
+	./$(bench_prog) -o benchmark.json
 
 # benchmark compare script
 scripts/benchmark_compare : % : %.c
@@ -1435,16 +1478,20 @@ example_programs :=						\
 	examples/firhilb_decim_example				\
 	examples/firhilb_filter_example				\
 	examples/firhilb_interp_example				\
+	examples/firpfb_rrrf_example				\
 	examples/firpfbch2_crcf_example				\
 	examples/firpfbchr_crcf_example				\
 	examples/firinterp_crcf_example				\
 	examples/firinterp_firdecim_crcf_example		\
+	examples/firinterp_rrrf_linear_example			\
+	examples/firinterp_rrrf_window_example			\
 	examples/firpfbch_crcf_example				\
 	examples/firpfbch_crcf_analysis_example			\
 	examples/firpfbch_crcf_synthesis_example		\
 	examples/flexframesync_example				\
 	examples/flexframesync_reconfig_example			\
 	examples/framesync64_example				\
+	examples/framesync64_performance_example		\
 	examples/freqmodem_example				\
 	examples/fskframesync_example				\
 	examples/fskmodem_example				\
@@ -1486,6 +1533,7 @@ example_programs :=						\
 	examples/msresamp_crcf_noise_example			\
 	examples/msresamp2_crcf_example				\
 	examples/nco_crcf_mix_example				\
+	examples/nco_crcf_tone_example				\
 	examples/nco_example					\
 	examples/nco_pll_example				\
 	examples/nco_pll_modem_example				\
@@ -1496,6 +1544,7 @@ example_programs :=						\
 	examples/packetizer_example				\
 	examples/packetizer_soft_example			\
 	examples/pll_example					\
+	examples/polyfit_comparison_example			\
 	examples/polyfit_example				\
 	examples/polyfit_lagrange_example			\
 	examples/poly_findroots_example				\
@@ -1531,6 +1580,8 @@ example_programs :=						\
 	examples/symtrack_cccf_example				\
 	examples/wdelayf_example				\
 	examples/windowf_example				\
+	examples/window_enbw_example				\
+	examples/windowing_example				\
 
 #	examples/metadata_example
 #	examples/ofdmframegen_example
@@ -1604,6 +1655,7 @@ sandbox_programs =						\
 	sandbox/firdes_energy_test				\
 	sandbox/firdes_fexp_test				\
 	sandbox/firdes_gmskrx_test				\
+	sandbox/firdes_group_delay_test				\
 	sandbox/firdes_length_test				\
 	sandbox/firfarrow_rrrf_test				\
 	sandbox/firfilt_dcblocker_test				\
@@ -1616,7 +1668,8 @@ sandbox_programs =						\
 	sandbox/gmskmodem_coherent_test				\
 	sandbox/gmskmodem_equalizer_test			\
 	sandbox/householder_test				\
-	sandbox/iirdes_example					\
+	sandbox/iirdes_test					\
+	sandbox/iirdes_gradsearch_test				\
 	sandbox/iirfilt_intdiff_test				\
 	sandbox/levinson_test					\
 	sandbox/matched_filter_test				\
@@ -1699,30 +1752,10 @@ world : all check bench examples sandbox
 
 clean-modules:
 	@echo "cleaning modules..."
-	$(RM) src/agc/src/*.o          src/agc/bench/*.o          src/agc/tests/*.o
-	$(RM) src/audio/src/*.o        src/audio/bench/*.o        src/audio/tests/*.o
-	$(RM) src/buffer/src/*.o       src/buffer/bench/*.o       src/buffer/tests/*.o
-	$(RM) src/channel/src/*.o      src/channel/bench/*.o      src/channel/tests/*.o
-	$(RM) src/dotprod/src/*.o      src/dotprod/bench/*.o      src/dotprod/tests/*.o
-	$(RM) src/equalization/src/*.o src/equalization/bench/*.o src/equalization/tests/*.o
-	$(RM) src/fec/src/*.o          src/fec/bench/*.o          src/fec/tests/*.o
-	$(RM) src/fft/src/*.o          src/fft/bench/*.o          src/fft/tests/*.o
-	$(RM) src/filter/src/*.o       src/filter/bench/*.o       src/filter/tests/*.o
-	$(RM) src/framing/src/*.o      src/framing/bench/*.o      src/framing/tests/*.o
-	$(RM) src/math/src/*.o         src/math/bench/*.o         src/math/tests/*.o
-	$(RM) src/matrix/src/*.o       src/matrix/bench/*.o       src/matrix/tests/*.o
-	$(RM) src/modem/src/*.o        src/modem/bench/*.o        src/modem/tests/*.o
-	$(RM) src/multichannel/src/*.o src/multichannel/bench/*.o src/multichannel/tests/*.o
-	$(RM) src/nco/src/*.o          src/nco/bench/*.o          src/nco/tests/*.o
-	$(RM) src/optim/src/*.o        src/optim/bench/*.o        src/optim/tests/*.o
-	$(RM) src/quantization/src/*.o src/quantization/bench/*.o src/quantization/tests/*.o
-	$(RM) src/random/src/*.o       src/random/bench/*.o       src/random/tests/*.o
-	$(RM) src/sequence/src/*.o     src/sequence/bench/*.o     src/sequence/tests/*.o
-	$(RM) src/utility/src/*.o      src/utility/bench/*.o      src/utility/tests/*.o
-	$(RM) src/vector/src/*.o       src/vector/bench/*.o       src/vector/tests/*.o
+	$(RM) src/*/src/*.o src/*/bench/*.o src/*/tests/*.o
 	$(RM) src/libliquid.o
 
-clean: clean-modules clean-autoscript clean-check clean-bench clean-examples clean-sandbox
+clean: clean-modules clean-autoscript clean-check clean-coverage clean-bench clean-examples clean-sandbox
 	$(RM) ${ARCHIVE_LIB} ${SHARED_LIB} $(extra_clean)
 
 ##
