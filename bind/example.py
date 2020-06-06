@@ -32,14 +32,14 @@ nfft = 2400
 psd = 20*np.log10(np.abs(np.fft.fftshift(np.fft.fft(buf, nfft))))
 
 # plot impulse and spectral responses
-fig, ax = plt.subplots(2,figsize=(8,8))
-ax[0].plot(np.arange(n)-n//2, np.real(buf))
-ax[0].set_xlabel('Delay [samples]')
-ax[0].set_ylabel('Impulse Response')
-ax[0].grid(True, zorder=5)
-ax[1].plot(np.arange(nfft)/nfft-0.5, psd)
-ax[1].set_xlabel('Normalized Frequency [f/F_s]')
-ax[1].set_ylabel('Power Spectral Density [dB]')
-ax[1].grid(True, zorder=5)
+fig, (ax1, ax2) = plt.subplots(2,figsize=(8,8))
+ax1.plot(np.arange(n)-n//2, np.real(buf))
+ax1.set_xlabel('Delay [samples]')
+ax1.set_ylabel('Impulse Response')
+ax1.grid(True, zorder=5)
+ax2.plot(np.arange(nfft)/nfft-0.5, psd)
+ax2.set_xlabel('Normalized Frequency [f/F_s]')
+ax2.set_ylabel('Power Spectral Density [dB]')
+ax2.grid(True, zorder=5)
 plt.show()
 
