@@ -7,6 +7,7 @@ LIBS := -lm -lc -lliquid
 
 bind_headers :=					\
 	bind/firfilt.hh				\
+	bind/firinterp.hh			\
 	bind/fg64.hh				\
 	bind/fs64.hh				\
 
