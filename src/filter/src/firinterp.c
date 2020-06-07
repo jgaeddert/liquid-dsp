@@ -225,6 +225,12 @@ void FIRINTERP(_reset)(FIRINTERP() _q)
     FIRPFB(_reset)(_q->filterbank);
 }
 
+// Get interpolation rate
+unsigned int FIRINTERP(_get_interp_rate)(FIRINTERP() _q)
+{
+    return _q->M;
+}
+
 // Set output scaling for interpolator
 //  _q      : interpolator object
 //  _scale  : scaling factor to apply to each output sample

@@ -3270,6 +3270,9 @@ void FIRINTERP(_print)(FIRINTERP() _q);                                     \
 /* Reset internal state                                                 */  \
 void FIRINTERP(_reset)(FIRINTERP() _q);                                     \
                                                                             \
+/* Get interpolation rate                                               */  \
+unsigned int FIRINTERP(_get_interp_rate)(FIRINTERP() _q);                   \
+                                                                            \
 /* Set output scaling for interpolator                                  */  \
 /*  _q      : interpolator object                                       */  \
 /*  _scale  : scaling factor to apply to each output sample             */  \
@@ -3473,6 +3476,9 @@ void FIRDECIM(_print)(FIRDECIM() _q);                                       \
                                                                             \
 /* Reset decimator object internal state                                */  \
 void FIRDECIM(_reset)(FIRDECIM() _q);                                       \
+                                                                            \
+/* Get decimation rate                                                  */  \
+unsigned int FIRDECIM(_get_decim_rate)(FIRDECIM() _q);                      \
                                                                             \
 /* Set output scaling for decimator                                     */  \
 /*  _q      : decimator object                                          */  \

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2015 Joseph Gaeddert
+ * Copyright (c) 2007 - 2020 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -22,6 +22,20 @@
 
 #include "autotest/autotest.h"
 #include "liquid.h"
+
+void autotest_firinterp_rrrf_common()
+{
+    firinterp_rrrf interp = firinterp_rrrf_create_kaiser(17, 4, 60.0f);
+    CONTEND_EQUALITY(firinterp_rrrf_get_interp_rate(interp), 17);
+    firinterp_rrrf_destroy(interp);
+}
+
+void autotest_firinterp_crcf_common()
+{
+    firinterp_crcf interp = firinterp_crcf_create_kaiser(7, 4, 60.0f);
+    CONTEND_EQUALITY(firinterp_crcf_get_interp_rate(interp), 7);
+    firinterp_crcf_destroy(interp);
+}
 
 //
 // AUTOTEST: 
