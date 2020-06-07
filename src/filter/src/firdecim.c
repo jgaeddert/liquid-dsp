@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2018 Joseph Gaeddert
+ * Copyright (c) 2007 - 2020 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -188,6 +188,12 @@ void FIRDECIM(_print)(FIRDECIM() _q)
 void FIRDECIM(_reset)(FIRDECIM() _q)
 {
     WINDOW(_reset)(_q->w);
+}
+
+// Get decimation rate
+unsigned int FIRDECIM(_get_decim_rate)(FIRDECIM() _q)
+{
+    return _q->M;
 }
 
 // Set output scaling for decimator
