@@ -1500,6 +1500,7 @@ example_programs :=						\
 	examples/gasearch_knapsack_example			\
 	examples/gmskframesync_example				\
 	examples/gmskmodem_example				\
+	examples/gmsk_eqlms_example				\
 	examples/gradsearch_datafit_example			\
 	examples/gradsearch_example				\
 	examples/interleaver_example				\
