@@ -814,24 +814,6 @@ LIQUID_FIRFARROW_DEFINE_INTERNAL_API(LIQUID_FIRFARROW_MANGLE_CRCF,
                                      liquid_float_complex)
 
 
-
-
-LIQUID_IIRFILTSOS_DEFINE_INTERNAL_API(LIQUID_IIRFILTSOS_MANGLE_RRRF,
-                                      float,
-                                      float,
-                                      float)
-
-LIQUID_IIRFILTSOS_DEFINE_INTERNAL_API(LIQUID_IIRFILTSOS_MANGLE_CRCF,
-                                      liquid_float_complex,
-                                      float,
-                                      liquid_float_complex)
-
-LIQUID_IIRFILTSOS_DEFINE_INTERNAL_API(LIQUID_IIRFILTSOS_MANGLE_CCCF,
-                                      liquid_float_complex,
-                                      liquid_float_complex,
-                                      liquid_float_complex)
-
-
 // firdes : finite impulse response filter design
 
 // Find approximate bandwidth adjustment factor rho based on

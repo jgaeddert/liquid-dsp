@@ -3060,7 +3060,7 @@ LIQUID_IIRFILT_DEFINE_API(LIQUID_IIRFILT_MANGLE_CCCF,
 #define LIQUID_IIRFILTSOS_MANGLE_CRCF(name)  LIQUID_CONCAT(iirfiltsos_crcf,name)
 #define LIQUID_IIRFILTSOS_MANGLE_CCCF(name)  LIQUID_CONCAT(iirfiltsos_cccf,name)
 
-#define LIQUID_IIRFILTSOS_DEFINE_INTERNAL_API(IIRFILTSOS,TO,TC,TI)  \
+#define LIQUID_IIRFILTSOS_DEFINE_API(IIRFILTSOS,TO,TC,TI)  \
 typedef struct IIRFILTSOS(_s) * IIRFILTSOS();                   \
                                                                 \
 /* create 2nd-order infinite impulse reponse filter         */  \
@@ -3116,17 +3116,17 @@ void IIRFILTSOS(_execute_df2)(IIRFILTSOS() _q,                  \
 float IIRFILTSOS(_groupdelay)(IIRFILTSOS() _q,                  \
                               float        _fc);                \
 
-LIQUID_IIRFILTSOS_DEFINE_INTERNAL_API(LIQUID_IIRFILTSOS_MANGLE_RRRF,
+LIQUID_IIRFILTSOS_DEFINE_API(LIQUID_IIRFILTSOS_MANGLE_RRRF,
                                       float,
                                       float,
                                       float)
 
-LIQUID_IIRFILTSOS_DEFINE_INTERNAL_API(LIQUID_IIRFILTSOS_MANGLE_CRCF,
+LIQUID_IIRFILTSOS_DEFINE_API(LIQUID_IIRFILTSOS_MANGLE_CRCF,
                                       liquid_float_complex,
                                       float,
                                       liquid_float_complex)
 
-LIQUID_IIRFILTSOS_DEFINE_INTERNAL_API(LIQUID_IIRFILTSOS_MANGLE_CCCF,
+LIQUID_IIRFILTSOS_DEFINE_API(LIQUID_IIRFILTSOS_MANGLE_CCCF,
                                       liquid_float_complex,
                                       liquid_float_complex,
                                       liquid_float_complex)
