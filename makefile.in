@@ -1669,6 +1669,7 @@ sandbox_programs =						\
 	sandbox/gmskmodem_test					\
 	sandbox/gmskmodem_coherent_test				\
 	sandbox/gmskmodem_equalizer_test			\
+	sandbox/gmskmodem_psd_filter_compare_test		\
 	sandbox/householder_test				\
 	sandbox/iirdes_test					\
 	sandbox/iirdes_gradsearch_test				\
