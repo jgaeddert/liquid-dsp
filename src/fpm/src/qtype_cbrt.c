@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2015 Joseph Gaeddert
+ * Copyright (c) 2007 - 2020 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -43,7 +43,7 @@ Q(_t) Q(_cbrt_newton)( Q(_t) _x, unsigned int _n)
         return 0;
     }
 
-#if 0
+#if 1
     // initial guess: x0 = _x
     Q(_t) x0 = _x;
 #else
