@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2015 Joseph Gaeddert
+ * Copyright (c) 2007 - 2020 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -57,6 +57,7 @@ Q(_t) Q(_sqrt_newton)( Q(_t) _x, unsigned int _n)
 #if DEBUG_SQRT_NEWTON
         printf("%4u : %18.14f\n", i, Q(_fixed_to_float)(x0));
 #endif
+        x0 += (x0 == 0);    // ensure no division by zero
         x1 = (x0 + Q(_div)(_x,x0)) / 2;
 
         // break if change in this iteration is negligible

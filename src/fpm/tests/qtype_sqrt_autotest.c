@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2014 Joseph Gaeddert
+ * Copyright (c) 2007 - 2020 Joseph Gaeddert
  *
  * This file is part of liquid-fpm.
  *
@@ -123,6 +123,11 @@ void autotest_q16_sqrt_newton()
         // increment input parameter
         x += dx;
     }
+    // test a few specific small values
+    q16_test_sqrt_newton(q16_fixed_to_float(  1), precision, tol);
+    q16_test_sqrt_newton(q16_fixed_to_float(  2), precision, tol);
+    q16_test_sqrt_newton(q16_fixed_to_float(  9), precision, tol);
+    q16_test_sqrt_newton(q16_fixed_to_float(141), precision, tol);
 }
 
 void autotest_q16_sqrt_logexp_frac()
