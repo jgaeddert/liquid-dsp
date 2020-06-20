@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2015 Joseph Gaeddert
+ * Copyright (c) 2007 - 2020 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -88,15 +88,20 @@ void MODEM(_demodulate_arb)(MODEM()        _q,
     // search for symbol nearest to received sample
     unsigned int i;
     unsigned int s=0;
-    T d;            // distance
-    T d_min = 0.0f; // minimum distance
+#if LIQUID_FPM
+    int64_t d_min = 0;
+#else
+    T d_min = 0;
+#endif
 
     for (i=0; i<_q->M; i++) {
         // compute distance from received symbol to constellation point
 #if LIQUID_FPM
-        d = CQ(_cabs)( CQ(_sub)(_x, _q->symbol_map[i]) );
+        int64_t di = _x.real - _q->symbol_map[i].real;
+        int64_t dq = _x.imag - _q->symbol_map[i].imag;
+        int64_t d = di*di + dq*dq;
 #else
-        d = cabsf(_x - _q->symbol_map[i]);
+        T d = cabsf(_x - _q->symbol_map[i]);
 #endif
 
         // retain symbol with minimum distance
