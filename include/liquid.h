@@ -2072,16 +2072,16 @@ void liquid_firdes_gmsktx(unsigned int _k, unsigned int _m, float _beta, float _
 void liquid_firdes_gmskrx(unsigned int _k, unsigned int _m, float _beta, float _dt, float * _h);
 
 // Design flipped exponential Nyquist/root-Nyquist filters
-void liquid_firdes_fexp( unsigned int _k, unsigned int _m, float _beta, float _dt, float * _h);
-void liquid_firdes_rfexp(unsigned int _k, unsigned int _m, float _beta, float _dt, float * _h);
+void liquid_firdes_fexp( unsigned int _k, unsigned int _m, float _beta, float * _h);
+void liquid_firdes_rfexp(unsigned int _k, unsigned int _m, float _beta, float * _h);
 
 // Design flipped hyperbolic secand Nyquist/root-Nyquist filters
-void liquid_firdes_fsech( unsigned int _k, unsigned int _m, float _beta, float _dt, float * _h);
-void liquid_firdes_rfsech(unsigned int _k, unsigned int _m, float _beta, float _dt, float * _h);
+void liquid_firdes_fsech( unsigned int _k, unsigned int _m, float _beta, float * _h);
+void liquid_firdes_rfsech(unsigned int _k, unsigned int _m, float _beta, float * _h);
 
 // Design flipped arc-hyperbolic secand Nyquist/root-Nyquist filters
-void liquid_firdes_farcsech( unsigned int _k, unsigned int _m, float _beta, float _dt, float * _h);
-void liquid_firdes_rfarcsech(unsigned int _k, unsigned int _m, float _beta, float _dt, float * _h);
+void liquid_firdes_farcsech( unsigned int _k, unsigned int _m, float _beta, float * _h);
+void liquid_firdes_rfarcsech(unsigned int _k, unsigned int _m, float _beta, float * _h);
 
 // Compute group delay for an FIR filter
 //  _h      : filter coefficients array

@@ -400,13 +400,13 @@ void liquid_firdes_prototype(liquid_firfilt_type _type,
         liquid_firdes_rcos(_k, _m, _beta, _dt, _h);
         break;
     case LIQUID_FIRFILT_FEXP:
-        liquid_firdes_fexp(_k, _m, _beta, _dt, _h);
+        liquid_firdes_fexp(_k, _m, _beta, _h);
         break;
     case LIQUID_FIRFILT_FSECH:
-        liquid_firdes_fsech(_k, _m, _beta, _dt, _h);
+        liquid_firdes_fsech(_k, _m, _beta, _h);
         break;
     case LIQUID_FIRFILT_FARCSECH:
-        liquid_firdes_farcsech(_k, _m, _beta, _dt, _h);
+        liquid_firdes_farcsech(_k, _m, _beta, _h);
         break;
 
     // root-Nyquist filter prototypes
@@ -430,13 +430,13 @@ void liquid_firdes_prototype(liquid_firfilt_type _type,
         liquid_firdes_gmskrx(_k, _m, _beta, _dt, _h);
         break;
     case LIQUID_FIRFILT_RFEXP:
-        liquid_firdes_rfexp(_k, _m, _beta, _dt, _h);
+        liquid_firdes_rfexp(_k, _m, _beta, _h);
         break;
     case LIQUID_FIRFILT_RFSECH:
-        liquid_firdes_rfsech(_k, _m, _beta, _dt, _h);
+        liquid_firdes_rfsech(_k, _m, _beta, _h);
         break;
     case LIQUID_FIRFILT_RFARCSECH:
-        liquid_firdes_rfarcsech(_k, _m, _beta, _dt, _h);
+        liquid_firdes_rfarcsech(_k, _m, _beta, _h);
         break;
     default:
         fprintf(stderr,"error: liquid_firdes_prototype(), invalid root-Nyquist filter type '%d'\n", _type);

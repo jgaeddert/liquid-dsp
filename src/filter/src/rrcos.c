@@ -49,6 +49,9 @@ void liquid_firdes_rrcos(unsigned int _k,
     } else if ( (_beta < 0.0f) || (_beta > 1.0f) ) {
         fprintf(stderr,"error: liquid_firdes_rrcos(): beta must be in [0,1]\n");
         exit(1);
+    } else if ( (_dt < -0.5f) || (_dt > 0.5f) ) {
+        fprintf(stderr, "error: liquid_firdes_rrcos(): fractional delay must be in [-0.5, 0.5]\n");
+        exit(1);
     } else;
 
     unsigned int n;

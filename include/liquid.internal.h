@@ -957,7 +957,6 @@ void liquid_firdes_fnyquist(liquid_firfilt_type _type,
                             unsigned int        _k,
                             unsigned int        _m,
                             float               _beta,
-                            float               _dt,
                             float *             _h);
 
 // flipped exponential frequency response
