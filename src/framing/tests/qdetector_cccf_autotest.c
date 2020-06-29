@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2015 Joseph Gaeddert
+ * Copyright (c) 2007 - 2018 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -92,7 +92,7 @@ void qdetector_cccf_runtest_linear(unsigned int _sequence_len)
     }
 
     // generate transmitted signal
-    firinterp_crcf interp = firinterp_crcf_create_rnyquist(ftype, k, m, beta, -tau);
+    firinterp_crcf interp = firinterp_crcf_create_prototype(ftype, k, m, beta, -tau);
     unsigned int n = 0;
     for (i=0; i<num_symbols; i++) {
         // original sequence, then random symbols
@@ -181,7 +181,7 @@ void qdetector_cccf_runtest_linear(unsigned int _sequence_len)
         CONTEND_DELTA( dphi_hat, dphi, 0.01f );
 
         // check carrier phase offset estimate
-        CONTEND_DELTA( phi_hat, phi, 0.15f );
+        CONTEND_DELTA( phi_hat, phi, 0.25f );
     }
 }
 

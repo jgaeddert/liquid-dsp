@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2015 Joseph Gaeddert
+ * Copyright (c) 2007 - 2019 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -25,6 +25,8 @@
 #include <string.h>
 #include <math.h>
 #include "liquid.internal.h"
+
+#define DEBUG_GRADSEARCH 0
 
 // gradient search algorithm (steepest descent) object
 struct gradsearch_s {
@@ -256,6 +258,19 @@ float gradsearch_linesearch(utility_function _utility,
                             float *          _p,
                             float            _alpha)
 {
+#if DEBUG_GRADSEARCH
+    unsigned int i;
+    // print vector operating point
+    printf("  linesearch v: {");
+    for (i=0; i<_n; i++)
+        printf("%8.4f", _x[i]);
+    printf("}\n");
+    // print gradient
+    printf("  linesearch g: {");
+    for (i=0; i<_n; i++)
+        printf("%8.4f", _p[i]);
+    printf("}\n");
+#endif
     // evaluate utility at base point
     float u0 = _utility(_userdata, _x, _n);
 
@@ -271,6 +286,8 @@ float gradsearch_linesearch(utility_function _utility,
     // run line search
     int continue_running = 1;
     unsigned int num_iterations = 0;
+    unsigned int max_iterations = 250;
+    float gamma = 2.00;
     while (continue_running) {
         // increment iteration counter
         num_iterations++;
@@ -282,7 +299,9 @@ float gradsearch_linesearch(utility_function _utility,
         
         // compute utility for line search step
         float uls = _utility(_userdata, x_prime, _n);
-        //printf("  linesearch %6u : alpha=%12.6f, u0=%12.8f, uls=%12.8f\n", num_iterations, alpha, u0, uls);
+#if DEBUG_GRADSEARCH
+        printf("  linesearch %6u : alpha=%12.6f, u0=%12.8f, uls=%12.8f\n", num_iterations, alpha, u0, uls);
+#endif
 
         // check exit criteria
         if ( (_direction == LIQUID_OPTIM_MINIMIZE && uls > u0) ||
@@ -290,15 +309,15 @@ float gradsearch_linesearch(utility_function _utility,
         {
             // compared this utility to previous; went too far.
             // backtrack step size and stop line search
-            alpha *= 0.5f;
+            alpha *= 1.0f/gamma;
             continue_running = 0;
-        } else if ( num_iterations >= 20 ) {
+        } else if ( num_iterations >= max_iterations ) {
             // maximum number of iterations met: stop line search
             continue_running = 0;
         } else {
             // save new best estimate, increase step size, and continue
             u0 = uls;
-            alpha *= 2.0f;
+            alpha *= gamma;
         }
     }
 

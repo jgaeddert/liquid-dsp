@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2015 Joseph Gaeddert
+ * Copyright (c) 2007 - 2019 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -39,13 +39,27 @@
 // forward declaration of internal methods
 //
 
-// iterate over Bairstow's method, finding quadratic factor x^2 + u*x + v
-void POLY(_findroots_bairstow_recursion)(T *          _p,
+// iterate over Bairstow's method, finding quadratic factor x^2 + u*x + v and
+// return flag indicating success/failure
+int POLY(_findroots_bairstow_recursion)(T *          _p,
+                                        unsigned int _k,
+                                        T *          _p1,
+                                        T *          _u,
+                                        T *          _v);
+
+// run multiple iterations of Bairstow's method with different starting
+// conditions looking for convergence
+int POLY(_findroots_bairstow_persistent)(T *          _p,
                                          unsigned int _k,
                                          T *          _p1,
                                          T *          _u,
                                          T *          _v);
 
+// sort roots in ascending order of real component; complex pairs order
+// root with positive imaginary component before root with negative
+// imaginary component.
+int POLY(_sort_roots_compare)(const void * _a,
+                              const void * _b);
 
 // finds the complex roots of the polynomial
 //  _p      :   polynomial array, ascending powers [size: _k x 1]
@@ -58,6 +72,9 @@ void POLY(_findroots)(T *          _p,
     // find roots of polynomial using Bairstow's method (more
     // accurate and reliable than Durand-Kerner)
     POLY(_findroots_bairstow)(_p,_k,_roots);
+
+    // sort roots for consistent ordering
+    qsort(_roots, _k-1, sizeof(TC), &POLY(_sort_roots_compare));
 }
 
 // finds the complex roots of the polynomial using the Durand-Kerner method
@@ -172,7 +189,6 @@ void POLY(_findroots_bairstow)(T *          _p,
         pr = (i % 2) == 0 ? p1 : p0;
 
         // initial estimates for u, v
-        // TODO : ensure no division by zero
         if (p[n-1] == 0) {
             fprintf(stderr,"warning: poly_findroots_bairstow(), irreducible polynomial");
             p[n-1] = 1e-12;
@@ -181,11 +197,14 @@ void POLY(_findroots_bairstow)(T *          _p,
         v = p[n-3] / p[n-1];
 
         // compute factor using Bairstow's recursion
-        POLY(_findroots_bairstow_recursion)(p,n,pr,&u,&v);
+        if (n > 3)
+            POLY(_findroots_bairstow_persistent)(p,n,pr,&u,&v);
 
         // compute complex roots of x^2 + u*x + v
         TC r0 = 0.5f*(-u + csqrtf(u*u - 4.0*v));
         TC r1 = 0.5f*(-u - csqrtf(u*u - 4.0*v));
+        //printf("roots: r0=%12.8f + j*%12.8f, r1=%12.8f + j*%12.8f\n\n",
+        //        crealf(r0), cimagf(r0), crealf(r1), cimagf(r1));
 
         // append result to output
         _roots[k++] = r0;
@@ -229,12 +248,15 @@ void POLY(_findroots_bairstow)(T *          _p,
 //  _p1     :   reduced polynomial (output) [size: _k-2 x 1]
 //  _u      :   input: initial estimate for u; output: resulting u
 //  _v      :   input: initial estimate for v; output: resulting v
-void POLY(_findroots_bairstow_recursion)(T *          _p,
-                                         unsigned int _k,
-                                         T *          _p1,
-                                         T *          _u,
-                                         T *          _v)
+int POLY(_findroots_bairstow_recursion)(T *          _p,
+                                        unsigned int _k,
+                                        T *          _p1,
+                                        T *          _u,
+                                        T *          _v)
 {
+    float        tol                = 1e-12;    // tolerance before stopping
+    unsigned int num_iterations_max =    50;    // maximum iteration count
+
     // validate length
     if (_k < 3) {
         fprintf(stderr,"findroots_bairstow_recursion(), invalid polynomial length: %u\n", _k);
@@ -244,10 +266,12 @@ void POLY(_findroots_bairstow_recursion)(T *          _p,
     // initial estimates for u, v
     T u = *_u;
     T v = *_v;
+    //printf("bairstow recursion, u=%12.4e + j*%12.4e, v=%12.4e + j*%12.4e\n",
+    //        crealf(u), cimagf(u), crealf(v), cimagf(v));
     
     unsigned int n = _k-1;
     T c,d,g,h;
-    T q;
+    T q0, q1, q;
     T du, dv;
 
     // reduced polynomials
@@ -257,11 +281,17 @@ void POLY(_findroots_bairstow_recursion)(T *          _p,
     f[n] = f[n-1] = 0;
 
     int i;
-    unsigned int k=0;
-    unsigned int max_num_iterations=50;
-    int continue_iterating = 1;
+    unsigned int num_iterations = 0;  // current iteration count
+    int          rc             = 0;  //
+    while (1) {
+        // check iteration count
+        if (num_iterations == num_iterations_max) {
+            // failed to converge
+            rc = 1;
+            break;
+        }
+        num_iterations++;
 
-    while (continue_iterating) {
         // update reduced polynomial coefficients
         for (i=n-2; i>=0; i--) {
             b[i] = _p[i+2] - u*b[i+1] - v*b[i+2];
@@ -273,15 +303,33 @@ void POLY(_findroots_bairstow_recursion)(T *          _p,
         h =  b[0] - v*f[0];
 
         // compute scaling factor
-        q  = 1/(v*g*g + h*(h-u*g));
-
+        q0 = v*g*g;
+        q1 = h*(h-u*g);
+        double metric = T_ABS(q0+q1);
+        if ( metric < tol ) {
+            q = 0;
+            u *= 0.5;
+            v *= 0.5;
+            continue;
+        } else {
+            q  = 1/(v*g*g + h*(h-u*g));
+        }
         // compute u, v steps
         du = - q*(-h*c   + g*d);
         dv = - q*(-g*v*c + (g*u-h)*d);
 
+        double step = T_ABS(du)+T_ABS(dv);
+
+#if 0
+        printf(" %3u : q0=%12.4e, q1=%12.4e, q=%12.4e, metric=%12.4e, u=%8.3f, v=%8.3f, step=%12.4e\n",
+                num_iterations, T_ABS(q0), T_ABS(q1), T_ABS(q), metric,
+                crealf(u), crealf(v),
+                step);
+#endif
+
 #if LIQUID_POLY_FINDROOTS_DEBUG
         // print debugging info
-        printf("bairstow [%u] :\n", k);
+        printf("bairstow [%u] :\n", num_iterations);
         printf("  u     : %12.4e + j*%12.4e\n", crealf(u), cimagf(u));
         printf("  v     : %12.4e + j*%12.4e\n", crealf(v), cimagf(v));
         printf("  b     : \n");
@@ -300,22 +348,13 @@ void POLY(_findroots_bairstow_recursion)(T *          _p,
 
         printf("  step : %12.4e + j*%12.4e\n", crealf(du+dv), cimagf(du+dv));
 #endif
-
-        // adjust u, v
-        if (isnan(T_ABS(du)) || isnan(T_ABS(dv))) {
-            u *= 0.5f;
-            v *= 0.5f;
-        } else {
-            u += du;
-            v += dv;
-        }
-
-        // increment iteration counter
-        k++;
+        // adjust u, v by step size
+        u += du;
+        v += dv;
 
         // exit conditions
-        if (T_ABS(du+dv) < 1e-6f || k == max_num_iterations)
-            continue_iterating = 0;
+        if (step < tol)
+            break;
     }
 
     // set resulting reduced polynomial
@@ -325,6 +364,46 @@ void POLY(_findroots_bairstow_recursion)(T *          _p,
     // set output pairs
     *_u = u;
     *_v = v;
+    return rc;
+}
 
+// run multiple iterations of Bairstow's method with different starting
+// conditions looking for convergence
+int POLY(_findroots_bairstow_persistent)(T *          _p,
+                                         unsigned int _k,
+                                         T *          _p1,
+                                         T *          _u,
+                                         T *          _v)
+{
+    unsigned int i, num_iterations_max = 10;
+    for (i=0; i<num_iterations_max; i++) {
+        //printf("#\n# persistence %u\n#\n", i);
+        if (POLY(_findroots_bairstow_recursion)(_p, _k, _p1, _u, _v)==0) {
+            // success
+            return 0;
+        } else if (i < num_iterations_max-1) {
+            // didn't converge; adjust starting point using consistent and
+            // reproduceable starting point
+            *_u = cosf((float)i * 1.1f) * expf((float)i * 0.2f);
+            *_v = sinf((float)i * 1.1f) * expf((float)i * 0.2f);
+        }
+    }
+
+    // could not converge
+    //printf("# persistence failed to converge, u=%12.8f, v=%12.8f\n", crealf(*_u), cimagf(*_v));
+    return 1;
+}
+
+// compare roots for sorting
+int POLY(_sort_roots_compare)(const void * _a,
+                              const void * _b)
+{
+    double ar = (double) creal( *((TC*)_a) );
+    double br = (double) creal( *((TC*)_b) );
+
+    double ai = (double) cimag( *((TC*)_a) );
+    double bi = (double) cimag( *((TC*)_b) );
+
+    return ar == br ? (ai > bi ? -1 : 1) : (ar > br ? 1 : -1);
 }
 

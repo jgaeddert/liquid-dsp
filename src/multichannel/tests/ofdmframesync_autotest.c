@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2015 Joseph Gaeddert
+ * Copyright (c) 2007 - 2019 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -128,7 +128,7 @@ void ofdmframesync_acquire_test(unsigned int _num_subcarriers,
     for (i=0; i<M; i++) {
         if (p[i] == OFDMFRAME_SCTYPE_DATA) {
             float e = crealf( (X[i] - X_test[i])*conjf(X[i] - X_test[i]) );
-            CONTEND_DELTA( cabsf(e), 0.0f, tol );
+            CONTEND_DELTA( fabsf(e), 0.0f, tol );
         }
     }
 

@@ -91,8 +91,8 @@ int main(int argc, char*argv[])
         firpfbch2_crcf_execute(qs, Y, &y[i]);
     }
 
-    // destroy fiterbank objects
-    firpfbch2_crcf_destroy(qa); // analysis fitlerbank
+    // destroy filterbank objects
+    firpfbch2_crcf_destroy(qa); // analysis filterbank
     firpfbch2_crcf_destroy(qs); // synthesis filterbank
 
     // print output

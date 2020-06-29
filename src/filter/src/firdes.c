@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2015 Joseph Gaeddert
+ * Copyright (c) 2007 - 2020 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -44,6 +44,30 @@
 
 // select filter estimate method
 #define ESTIMATE_REQ_FILTER_LEN_METHOD          (0)
+
+const char * liquid_firfilt_type_str[LIQUID_FIRFILT_NUM_TYPES][2] = {
+    // short,    long name
+    {"unknown",  "unknown"},
+
+    // Nyquist filter prototypes
+    {"kaiser",   "Nyquist Kaiser filter"},
+    {"pm",       "Parks-McClellan filter"},
+    {"rcos",     "raised-cosine filter"},
+    {"fexp",     "flipped exponential"},
+    {"fsech",    "flipped hyperbolic secant"},
+    {"farcsech", "flipped arc-hyperbolic secant"},
+
+    // root-Nyquist filter prototypes
+    {"arkaiser", "root-Nyquist Kaiser (approximate optimum)"},
+    {"rkaiser",  "root-Nyquist Kaiser (true optimum)"},
+    {"rrcos",    "root raised-cosine"},
+    {"hm3",      "harris-Moerder-3 filter"},
+    {"gmsktx",   "GMSK transmit filter"},
+    {"gmskrx",   "GMSK receive filter"},
+    {"rfexp",    "root flipped exponential"},
+    {"rfsech",   "root flipped hyperbolic secant"},
+    {"rfarcsech","root flipped arc-hyperbolic secant"},
+};
 
 // esimate required filter length given transition bandwidth and
 // stop-band attenuation
@@ -271,7 +295,7 @@ void liquid_firdes_kaiser(unsigned int _n,
         h1 = sincf(2.0f*_fc*t);
 
         // kaiser window
-        h2 = kaiser(i,_n,beta,_mu);
+        h2 = liquid_kaiser(i,_n,beta);
 
         //printf("t = %f, h1 = %f, h2 = %f\n", t, h1, h2);
 
@@ -280,19 +304,70 @@ void liquid_firdes_kaiser(unsigned int _n,
     }
 }
 
-// Design Nyquist filter
-//  _type   : filter type (e.g. LIQUID_FIRFILT_RCOS)
+// Design finite impulse response notch filter
+//  _m      : filter semi-length, m in [1,1000]
+//  _f0     : filter notch frequency (normalized), -0.5 <= _fc <= 0.5
+//  _As     : stop-band attenuation [dB], _As > 0
+//  _h      : output coefficient buffer, [size: 2*_m+1 x 1]
+void liquid_firdes_notch(unsigned int _m,
+                         float        _f0,
+                         float        _As,
+                         float *      _h)
+{
+    // validate inputs
+    if (_m < 1 || _m > 1000) {
+        fprintf(stderr,"error: liquid_firdes_notch(), _m (%12u) out of range [1,1000]\n", _m);
+        exit(1);
+    } else if (_f0 < -0.5f || _f0 > 0.5f) {
+        fprintf(stderr,"error: liquid_firdes_notch(), notch frequency (%12.4e) must be in [-0.5,0.5]\n", _f0);
+        exit(1);
+    } else if (_As <= 0.0f) {
+        fprintf(stderr,"error: liquid_firdes_notch(), stop-band suppression (%12.4e) must be greater than zero\n", _As);
+        exit(1);
+    }
+
+    // choose kaiser beta parameter (approximate)
+    float beta = kaiser_beta_As(_As);
+
+    // design filter
+    unsigned int h_len = 2*_m+1;
+    unsigned int i;
+    float scale = 0.0f;
+    for (i=0; i<h_len; i++) {
+        // tone at carrier frequency
+        float p = -cosf(2.0f*M_PI*_f0*((float)(i) - (float)_m));
+
+        // window
+        float w = liquid_kaiser(i,h_len,beta);
+
+        // save un-normalized filter
+        _h[i] = p*w;
+
+        // accumulate scale
+        scale += _h[i] * p;
+    }
+
+    // normalize
+    for (i=0; i<h_len; i++)
+        _h[i] /= scale;
+
+    // add impulse
+    _h[_m] += 1.0f;
+}
+
+// Design (root-)Nyquist filter from prototype
+//  _type   : filter type (e.g. LIQUID_FIRFILT_RRRC)
 //  _k      : samples/symbol
 //  _m      : symbol delay
 //  _beta   : excess bandwidth factor, _beta in [0,1]
 //  _dt     : fractional sample delay
 //  _h      : output coefficient buffer (length: 2*k*m+1)
-void liquid_firdes_nyquist(liquid_firfilt_type _type,
-                           unsigned int        _k,
-                           unsigned int        _m,
-                           float               _beta,
-                           float               _dt,
-                           float *             _h)
+void liquid_firdes_prototype(liquid_firfilt_type _type,
+                             unsigned int        _k,
+                             unsigned int        _m,
+                             float               _beta,
+                             float               _dt,
+                             float *             _h)
 {
     // compute filter parameters
     unsigned int h_len = 2*_k*_m + 1;   // length
@@ -311,6 +386,9 @@ void liquid_firdes_nyquist(liquid_firfilt_type _type,
                                         LIQUID_FIRDESPM_FLATWEIGHT};
 
     switch (_type) {
+    
+    // Nyquist filter prototypes
+
     case LIQUID_FIRFILT_KAISER:
         liquid_firdes_kaiser(h_len, fc, As, _dt, _h);
         break;
@@ -330,28 +408,9 @@ void liquid_firdes_nyquist(liquid_firfilt_type _type,
     case LIQUID_FIRFILT_FARCSECH:
         liquid_firdes_farcsech(_k, _m, _beta, _dt, _h);
         break;
-    default:
-        fprintf(stderr,"error: liquid_firdes_nyquist(), invalid filter type '%d'\n", _type);
-        exit(1);
-    }
-}
 
+    // root-Nyquist filter prototypes
 
-// Design root-Nyquist filter
-//  _type   : filter type (e.g. LIQUID_FIRFILT_RRRC)
-//  _k      : samples/symbol
-//  _m      : symbol delay
-//  _beta   : excess bandwidth factor, _beta in [0,1]
-//  _dt     : fractional sample delay
-//  _h      : output coefficient buffer (length: 2*k*m+1)
-void liquid_firdes_rnyquist(liquid_firfilt_type _type,
-                            unsigned int        _k,
-                            unsigned int        _m,
-                            float               _beta,
-                            float               _dt,
-                            float *             _h)
-{
-    switch (_type) {
     case LIQUID_FIRFILT_ARKAISER:
         liquid_firdes_arkaiser(_k, _m, _beta, _dt, _h);
         break;
@@ -380,7 +439,7 @@ void liquid_firdes_rnyquist(liquid_firfilt_type _type,
         liquid_firdes_rfarcsech(_k, _m, _beta, _dt, _h);
         break;
     default:
-        fprintf(stderr,"error: liquid_firdes_rnyquist(), invalid root-Nyquist filter type '%d'\n", _type);
+        fprintf(stderr,"error: liquid_firdes_prototype(), invalid root-Nyquist filter type '%d'\n", _type);
         exit(1);
     }
 }
@@ -412,7 +471,7 @@ void liquid_firdes_doppler(unsigned int _n,
         r = 1.5*_K/(_K+1)*cosf(2*M_PI*_fd*t*cosf(_theta));
 
         // Window
-        w = kaiser(i, _n, beta, 0);
+        w = liquid_kaiser(i, _n, beta);
 
         // composite
         _h[i] = (J+r)*w;
@@ -609,30 +668,15 @@ float liquid_filter_energy(float *      _h,
 // returns filter type based on input string
 int liquid_getopt_str2firfilt(const char * _str)
 {
-    // Generic filter designs
-    if      (strcmp(_str,"kaiser")   ==0) return LIQUID_FIRFILT_KAISER;
-    else if (strcmp(_str,"pm")       ==0) return LIQUID_FIRFILT_PM;
-    
-    // Nyquist filter designs
-    else if (strcmp(_str,"rcos")     ==0) return LIQUID_FIRFILT_RCOS;
-    else if (strcmp(_str,"fexp")     ==0) return LIQUID_FIRFILT_FEXP;
-    else if (strcmp(_str,"fsech")    ==0) return LIQUID_FIRFILT_FSECH;
-    else if (strcmp(_str,"farcsech") ==0) return LIQUID_FIRFILT_FARCSECH;
+    // compare each string to short name
+    unsigned int i;
+    for (i=0; i<LIQUID_FIRFILT_NUM_TYPES; i++) {
+        if (strcmp(_str,liquid_firfilt_type_str[i][0])==0) {
+            return i;
+        }
+    }
 
-    // root-Nyquist filter designs
-    else if (strcmp(_str,"arkaiser") ==0) return LIQUID_FIRFILT_ARKAISER;
-    else if (strcmp(_str,"rkaiser")  ==0) return LIQUID_FIRFILT_RKAISER;
-    else if (strcmp(_str,"rrcos")    ==0) return LIQUID_FIRFILT_RRC;
-    else if (strcmp(_str,"hM3")      ==0) return LIQUID_FIRFILT_hM3;
-    else if (strcmp(_str,"gmsktx")   ==0) return LIQUID_FIRFILT_GMSKTX;
-    else if (strcmp(_str,"gmskrx")   ==0) return LIQUID_FIRFILT_GMSKRX;
-    else if (strcmp(_str,"rfexp")    ==0) return LIQUID_FIRFILT_RFEXP;
-    else if (strcmp(_str,"rfsech")   ==0) return LIQUID_FIRFILT_RFSECH;
-    else if (strcmp(_str,"rfarcsech")==0) return LIQUID_FIRFILT_RFARCSECH;
-
-    // filter type unknown
+    fprintf(stderr,"warning: liquid_getopt_str2firfilt(), unknown/unsupported type: %s\n", _str);
     return LIQUID_FIRFILT_UNKNOWN;
 }
-
-
 

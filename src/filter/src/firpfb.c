@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2015 Joseph Gaeddert
+ * Copyright (c) 2007 - 2020 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -104,8 +104,63 @@ FIRPFB() FIRPFB(_create)(unsigned int _M,
     return q;
 }
 
+// create default firpfb
+FIRPFB() FIRPFB(_create_default)(unsigned int _M,
+                                 unsigned int _m)
+{
+    return FIRPFB(_create_kaiser)(_M, _m, 0.5f, 60.0f);
+}
+
+// create firpfb using kaiser window
+//  _M      : number of filters in the bank
+//  _m      : filter semi-length [samples]
+//  _fc     : filter cut-off frequency 0 < _fc < 0.5
+//  _As     : filter stop-band suppression [dB]
+FIRPFB() FIRPFB(_create_kaiser)(unsigned int _M,
+                                unsigned int _m,
+                                float        _fc,
+                                float        _As)
+{
+    // validate input
+    if (_M == 0) {
+        fprintf(stderr,"error: firpfb_%s_create_kaiser(), number of filters must be greater than zero\n", EXTENSION_FULL);
+        exit(1);
+    } else if (_m == 0) {
+        fprintf(stderr,"error: firpfb_%s_create_kaiser(), filter delay must be greater than 0\n", EXTENSION_FULL);
+        exit(1);
+    } else if (_fc < 0.0f || _fc > 0.5f) {
+        fprintf(stderr,"error: firpfb_%s_create_kaiser(), filter cut-off frequence must be in (0,0.5)\n", EXTENSION_FULL);
+        exit(1);
+    } else if (_As < 0.0f) {
+        fprintf(stderr,"error: firpfb_%s_create_kaiser(), filter excess bandwidth factor must be in [0,1]\n", EXTENSION_FULL);
+        exit(1);
+    }
+
+    // design filter using kaiser window
+    unsigned int H_len = 2*_M*_m + 1;
+    float Hf[H_len];
+    liquid_firdes_kaiser(H_len, _fc/(float)_M, _As, 0.0f, Hf);
+
+    // copy coefficients to type-specific array (e.g. float complex)
+    unsigned int i;
+    TC Hc[H_len];
+    for (i=0; i<H_len; i++) {
+#if defined LIQUID_FIXED && TC_COMPLEX == 1
+        Hc[i].real = Q(_float_to_fixed)(Hf[i]);
+        Hc[i].imag = 0;
+#elif defined LIQUID_FIXED && TC_COMPLEX == 0
+        Hc[i] = Q(_float_to_fixed)(Hf[i]);
+#else
+        Hc[i] = Hf[i];
+#endif
+    }
+
+    // return filterbank object
+    return FIRPFB(_create)(_M, Hc, H_len);
+}
+
 // create square-root Nyquist filterbank
-//  _type   :   filter type (e.g. LIQUID_RNYQUIST_RRC)
+//  _type   :   filter type (e.g. LIQUID_FIRFILT_RRC)
 //  _M      :   number of filters in the bank
 //  _k      :   samples/symbol _k > 1
 //  _m      :   filter delay (symbols), _m > 0
@@ -134,14 +189,14 @@ FIRPFB() FIRPFB(_create_rnyquist)(int          _type,
     // generate square-root Nyquist filter
     unsigned int H_len = 2*_M*_k*_m + 1;
     float Hf[H_len];
-    liquid_firdes_rnyquist(_type,_M*_k,_m,_beta,0,Hf);
+    liquid_firdes_prototype(_type,_M*_k,_m,_beta,0,Hf);
 
     // copy coefficients to type-specific array (e.g. float complex)
     unsigned int i;
     TC Hc[H_len];
     for (i=0; i<H_len; i++) {
 #if defined LIQUID_FIXED && TC_COMPLEX==1
-        Hc[i].real = Hf[i];
+        Hc[i].real = Q(_float_to_fixed)(Hf[i]);
         Hc[i].imag = 0;
 #elif defined LIQUID_FIXED && TC_COMPLEX == 0
         Hc[i] = Q(_float_to_fixed)( Hf[i] );
@@ -155,7 +210,7 @@ FIRPFB() FIRPFB(_create_rnyquist)(int          _type,
 }
 
 // create firpfb derivative square-root Nyquist filterbank
-//  _type   :   filter type (e.g. LIQUID_RNYQUIST_RRC)
+//  _type   :   filter type (e.g. LIQUID_FIRFILT_RRC)
 //  _M      :   number of filters in the bank
 //  _k      :   samples/symbol _k > 1
 //  _m      :   filter delay (symbols), _m > 0
@@ -184,7 +239,7 @@ FIRPFB() FIRPFB(_create_drnyquist)(int          _type,
     // generate square-root Nyquist filter
     unsigned int H_len = 2*_M*_k*_m + 1;
     float Hf[H_len];
-    liquid_firdes_rnyquist(_type,_M*_k,_m,_beta,0,Hf);
+    liquid_firdes_prototype(_type,_M*_k,_m,_beta,0,Hf);
     
     // compute derivative filter
     float dHf[H_len];
@@ -287,7 +342,7 @@ void FIRPFB(_print)(FIRPFB() _q)
 // clear/reset firpfb object internal state
 void FIRPFB(_reset)(FIRPFB() _q)
 {
-    WINDOW(_clear)(_q->w);
+    WINDOW(_reset)(_q->w);
 }
 
 // set output scaling for filter
@@ -295,6 +350,13 @@ void FIRPFB(_set_scale)(FIRPFB() _q,
                          TC      _scale)
 {
     _q->scale = _scale;
+}
+
+// get output scaling for filter
+void FIRPFB(_get_scale)(FIRPFB() _q,
+                         TC *    _scale)
+{
+    *_scale = _q->scale;
 }
 
 // push sample into firpfb internal buffer
@@ -333,5 +395,28 @@ void FIRPFB(_execute)(FIRPFB()     _q,
 #else
     *_y *= _q->scale;
 #endif
+}
+
+// execute the filter on a block of input samples; the
+// input and output buffers may be the same
+//  _q      : firpfb object
+//  _i      : index of filter to use
+//  _x      : pointer to input array [size: _n x 1]
+//  _n      : number of input, output samples
+//  _y      : pointer to output array [size: _n x 1]
+void FIRPFB(_execute_block)(FIRPFB()     _q,
+                            unsigned int _i,
+                            TI *         _x,
+                            unsigned int _n,
+                            TO *         _y)
+{
+    unsigned int i;
+    for (i=0; i<_n; i++) {
+        // push sample into filter
+        FIRPFB(_push)(_q, _x[i]);
+
+        // compute output at appropriate index
+        FIRPFB(_execute)(_q, _i, &_y[i]);
+    }
 }
 

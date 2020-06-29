@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2015 Joseph Gaeddert
+ * Copyright (c) 2007 - 2020 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -29,11 +29,11 @@
 #include <string.h>
 
 struct FIRINTERP(_s) {
-    TC * h;                 // prototype filter coefficients
-    unsigned int h_len;     // prototype filter length
-    unsigned int h_sub_len; // sub-filter length
-    unsigned int M;         // interpolation factor
-    FIRPFB() filterbank;    // polyphase filterbank object
+    TC *            h;          // prototype filter coefficients
+    unsigned int    h_len;      // prototype filter length
+    unsigned int    h_sub_len;  // sub-filter length
+    unsigned int    M;          // interpolation factor
+    FIRPFB()        filterbank; // polyphase filterbank object
 };
 
 // create interpolator
@@ -91,19 +91,19 @@ FIRINTERP() FIRINTERP(_create)(unsigned int _M,
 //  _M      :   interpolation factor
 //  _m      :   symbol delay
 //  _As     :   stop-band attenuation [dB]
-FIRINTERP() FIRINTERP(_create_prototype)(unsigned int _M,
-                                         unsigned int _m,
-                                         float        _As)
+FIRINTERP() FIRINTERP(_create_kaiser)(unsigned int _M,
+                                      unsigned int _m,
+                                      float        _As)
 {
     // validate input
     if (_M < 2) {
-        fprintf(stderr,"error: firinterp_%s_create_prototype(), interp factor must be greater than 1\n", EXTENSION_FULL);
+        fprintf(stderr,"error: firinterp_%s_create_kaiser(), interp factor must be greater than 1\n", EXTENSION_FULL);
         exit(1);
     } else if (_m == 0) {
-        fprintf(stderr,"error: firinterp_%s_create_prototype(), filter delay must be greater than 0\n", EXTENSION_FULL);
+        fprintf(stderr,"error: firinterp_%s_create_kaiser(), filter delay must be greater than 0\n", EXTENSION_FULL);
         exit(1);
     } else if (_As < 0.0f) {
-        fprintf(stderr,"error: firinterp_%s_create_prototype(), stop-band attenuation must be positive\n", EXTENSION_FULL);
+        fprintf(stderr,"error: firinterp_%s_create_kaiser(), stop-band attenuation must be positive\n", EXTENSION_FULL);
         exit(1);
     }
 
@@ -128,40 +128,40 @@ FIRINTERP() FIRINTERP(_create_prototype)(unsigned int _M,
     }
     
     // return interpolator object
-    return FIRINTERP(_create)(_M, hc, 2*_M*_m);
+    return FIRINTERP(_create)(_M, hc, h_len);
 }
 
-// create Nyquist interpolator
+// create prototype (root-)Nyquist interpolator
 //  _type   :   filter type (e.g. LIQUID_NYQUIST_RCOS)
 //  _k      :   samples/symbol,          _k > 1
 //  _m      :   filter delay (symbols),  _m > 0
 //  _beta   :   excess bandwidth factor, _beta < 1
 //  _dt     :   fractional sample delay, _dt in (-1, 1)
-FIRINTERP() FIRINTERP(_create_nyquist)(int          _type,
-                                       unsigned int _k,
-                                       unsigned int _m,
-                                       float        _beta,
-                                       float        _dt)
+FIRINTERP() FIRINTERP(_create_prototype)(int          _type,
+                                         unsigned int _k,
+                                         unsigned int _m,
+                                         float        _beta,
+                                         float        _dt)
 {
     // validate input
     if (_k < 2) {
-        fprintf(stderr,"error: firinterp_%s_create_nyquist(), interp factor must be greater than 1\n", EXTENSION_FULL);
+        fprintf(stderr,"error: firinterp_%s_create_prototype(), interp factor must be greater than 1\n", EXTENSION_FULL);
         exit(1);
     } else if (_m == 0) {
-        fprintf(stderr,"error: firinterp_%s_create_nyquist(), filter delay must be greater than 0\n", EXTENSION_FULL);
+        fprintf(stderr,"error: firinterp_%s_create_prototype(), filter delay must be greater than 0\n", EXTENSION_FULL);
         exit(1);
     } else if (_beta < 0.0f || _beta > 1.0f) {
-        fprintf(stderr,"error: firinterp_%s_create_nyquist(), filter excess bandwidth factor must be in [0,1]\n", EXTENSION_FULL);
+        fprintf(stderr,"error: firinterp_%s_create_prototype(), filter excess bandwidth factor must be in [0,1]\n", EXTENSION_FULL);
         exit(1);
     } else if (_dt < -1.0f || _dt > 1.0f) {
-        fprintf(stderr,"error: firinterp_%s_create_nyquist(), filter fractional sample delay must be in [-1,1]\n", EXTENSION_FULL);
+        fprintf(stderr,"error: firinterp_%s_create_prototype(), filter fractional sample delay must be in [-1,1]\n", EXTENSION_FULL);
         exit(1);
     }
 
     // generate Nyquist filter
     unsigned int h_len = 2*_k*_m + 1;
     float h[h_len];
-    liquid_firdes_nyquist(_type,_k,_m,_beta,_dt,h);
+    liquid_firdes_prototype(_type,_k,_m,_beta,_dt,h);
 
     // copy coefficients to type-specific array (e.g. float complex)
     unsigned int i;
@@ -181,54 +181,71 @@ FIRINTERP() FIRINTERP(_create_nyquist)(int          _type,
     return FIRINTERP(_create)(_k, hc, h_len);
 }
 
-// create square-root Nyquist interpolator
-//  _type   :   filter type (e.g. LIQUID_RNYQUIST_RRC)
-//  _k      :   samples/symbol _k > 1
-//  _m      :   filter delay (symbols), _m > 0
-//  _beta   :   excess bandwidth factor, 0 < _beta < 1
-//  _dt     :   fractional sample delay, 0 <= _dt < 1
-FIRINTERP() FIRINTERP(_create_rnyquist)(int          _type,
-                                        unsigned int _k,
-                                        unsigned int _m,
-                                        float        _beta,
-                                        float        _dt)
+// create linear interpolator object
+//  _M      :   interpolation factor, _M > 1
+FIRINTERP() FIRINTERP(_create_linear)(unsigned int _M)
 {
     // validate input
-    if (_k < 2) {
-        fprintf(stderr,"error: firinterp_%s_create_rnyquist(), interp factor must be greater than 1\n", EXTENSION_FULL);
-        exit(1);
-    } else if (_m == 0) {
-        fprintf(stderr,"error: firinterp_%s_create_rnyquist(), filter delay must be greater than 0\n", EXTENSION_FULL);
-        exit(1);
-    } else if (_beta < 0.0f || _beta > 1.0f) {
-        fprintf(stderr,"error: firinterp_%s_create_rnyquist(), filter excess bandwidth factor must be in [0,1]\n", EXTENSION_FULL);
-        exit(1);
-    } else if (_dt < -1.0f || _dt > 1.0f) {
-        fprintf(stderr,"error: firinterp_%s_create_rnyquist(), filter fractional sample delay must be in [-1,1]\n", EXTENSION_FULL);
+    if (_M < 1) {
+        fprintf(stderr,"error: firinterp_%s_create_linear(), interp factor must be greater than 1\n", EXTENSION_FULL);
         exit(1);
     }
 
-    // generate square-root Nyquist filter
-    unsigned int h_len = 2*_k*_m + 1;
-    float hf[h_len];
-    liquid_firdes_rnyquist(_type,_k,_m,_beta,_dt,hf);
-
-    // copy coefficients to type-specific array (e.g. float complex)
+    // generate coefficients
     unsigned int i;
+    float hf[2*_M];
+    for (i=0; i<_M; i++) hf[   i] = (float)i / (float)_M;
+    for (i=0; i<_M; i++) hf[_M+i] = 1.0f - (float)i / (float)_M;
+
+    unsigned int h_len = 2*_M;
     TC hc[h_len];
     for (i=0; i<h_len; i++) {
 #if defined LIQUID_FIXED && TC_COMPLEX == 1
-        hc[i].real = Q(_float_to_fixed)(hf[i]);
-        hc[i].imag = 0;
+        hc[i].real = Q(_float_to_fixed)( crealf(hf[i]) );
+        hc[i].imag = Q(_float_to_fixed)( cimagf(hf[i]) );
 #elif defined LIQUID_FIXED && TC_COMPLEX == 0
-        hc[i] = Q(_float_to_fixed)(hf[i]);
+        hc[i] = Q(_float_to_fixed)( hf[i] );
 #else
         hc[i] = hf[i];
 #endif
     }
 
     // return interpolator object
-    return FIRINTERP(_create)(_k, hc, h_len);
+    return FIRINTERP(_create)(_M, hc, 2*_M);
+}
+
+// create window interpolator object
+//  _M      :   interpolation factor, _M > 1
+//  _m      :   filter semi-length, _m > 0
+FIRINTERP() FIRINTERP(_create_window)(unsigned int _M,
+                                      unsigned int _m)
+{
+    // validate input
+    if (_M < 1) {
+        fprintf(stderr,"error: firinterp_%s_create_spline(), interp factor must be greater than 1\n", EXTENSION_FULL);
+        exit(1);
+    } else if (_m < 1) {
+        fprintf(stderr,"error: firinterp_%s_create_spline(), interp factor must be greater than 1\n", EXTENSION_FULL);
+        exit(1);
+    }
+
+    // generate coefficients
+    unsigned int i;
+    TC hc[2*_m*_M];
+    for (i=0; i<2*_m*_M; i++) {
+        float hf = powf(sinf(M_PI*(float)i/(float)(2*_m*_M)), 2.0f);
+#if defined LIQUID_FIXED && TC_COMPLEX == 1
+        hc[i].real = Q(_float_to_fixed)(hf);
+        hc[i].imag = 0;
+#elif defined LIQUID_FIXED && TC_COMPLEX == 0
+        hc[i] = Q(_float_to_fixed)(hf);
+#else
+        hc[i] = hf;
+#endif
+    }
+
+    // return interpolator object
+    return FIRINTERP(_create)(_M, hc, 2*_m*_M);
 }
 
 // destroy interpolator object
@@ -252,6 +269,30 @@ void FIRINTERP(_print)(FIRINTERP() _q)
 void FIRINTERP(_reset)(FIRINTERP() _q)
 {
     FIRPFB(_reset)(_q->filterbank);
+}
+
+// Get interpolation rate
+unsigned int FIRINTERP(_get_interp_rate)(FIRINTERP() _q)
+{
+    return _q->M;
+}
+
+// Set output scaling for interpolator
+//  _q      : interpolator object
+//  _scale  : scaling factor to apply to each output sample
+void FIRINTERP(_set_scale)(FIRINTERP() _q,
+                           TC          _scale)
+{
+    FIRPFB(_set_scale)(_q->filterbank, _scale);
+}
+
+// Get output scaling for interpolator
+//  _q      : interpolator object
+//  _scale  : scaling factor to apply to each output sample
+void FIRINTERP(_get_scale)(FIRINTERP() _q,
+                           TC *        _scale)
+{
+    FIRPFB(_get_scale)(_q->filterbank, _scale);
 }
 
 // execute interpolator

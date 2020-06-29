@@ -98,7 +98,7 @@ int main(int argc, char*argv[]) {
 
     // create 'prototype' matched filter
     // for now use raised-cosine
-    liquid_firdes_nyquist(LIQUID_FIRFILT_RCOS,k,m,beta,0.0f,h_primef);
+    liquid_firdes_prototype(LIQUID_FIRFILT_RCOS,k,m,beta,0.0f,h_primef);
 
     // create 'gain' filter to improve stop-band rejection
     float fc = (0.7f + 0.1*beta) / (float)k;

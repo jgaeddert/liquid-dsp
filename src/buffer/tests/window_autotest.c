@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2015 Joseph Gaeddert
+ * Copyright (c) 2007 - 2020 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -120,9 +120,9 @@ void autotest_windowf()
     windowf_read(w,&r);
     CONTEND_SAME_DATA(r,test7,10*sizeof(float));
 
-    // clear
+    // reset
     // 0 0 0 0 0 0 0 0 0 0
-    windowf_clear(w);
+    windowf_reset(w);
 
     windowf_read(w, &r);
     CONTEND_SAME_DATA(r,test8,10*sizeof(float));
@@ -240,7 +240,7 @@ void autotest_windowq16()
 
     // clear
     // 0 0 0 0 0 0 0 0 0 0
-    windowq16_clear(w);
+    windowq16_reset(w);
 
     windowq16_read(w, &r);
     CONTEND_SAME_DATA(r,test8,10*sizeof(q16_t));

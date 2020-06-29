@@ -87,7 +87,7 @@ int main(int argc, char*argv[])
     float dphi_hat[num_samples];            // carrier offset estimate
 
     // create transmit/receive interpolator/decimator
-    firinterp_crcf interp = firinterp_crcf_create_rnyquist(LIQUID_FIRFILT_RRC,k,m,beta,dt);
+    firinterp_crcf interp = firinterp_crcf_create_prototype(LIQUID_FIRFILT_RRC,k,m,beta,dt);
 
     // generate synchronization pattern (BPSK) and interpolate
     for (i=0; i<num_sync_symbols + 2*m; i++) {
@@ -128,7 +128,7 @@ int main(int argc, char*argv[])
         
         // correlate
         bpresync_cccf_push(sync, y[i]);
-        bpresync_cccf_correlate(sync, &rxy[i], &dphi_hat[i]);
+        bpresync_cccf_execute(sync, &rxy[i], &dphi_hat[i]);
 
         // detect...
         if (cabsf(rxy[i]) > 0.6f) {

@@ -236,6 +236,9 @@ float gasearch_run(gasearch _g,
 // iterate over one evolution of the search algorithm
 void gasearch_evolve(gasearch _g)
 {
+    // Inject random chromosome at end
+    chromosome_init_random(_g->population[_g->population_size-1]);
+
     // Crossover
     gasearch_crossover(_g);
 

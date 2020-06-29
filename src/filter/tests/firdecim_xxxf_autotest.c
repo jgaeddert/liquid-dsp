@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2015 Joseph Gaeddert
+ * Copyright (c) 2007 - 2020 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -29,6 +29,20 @@
 
 // autotest data definitions
 #include "src/filter/tests/firdecim_autotest.h"
+
+void autotest_firdecim_rrrf_common()
+{
+    firdecim_rrrf decim = firdecim_rrrf_create_kaiser(17, 4, 60.0f);
+    CONTEND_EQUALITY(firdecim_rrrf_get_decim_rate(decim), 17);
+    firdecim_rrrf_destroy(decim);
+}
+
+void autotest_firdecim_crcf_common()
+{
+    firdecim_crcf decim = firdecim_crcf_create_kaiser(7, 4, 60.0f);
+    CONTEND_EQUALITY(firdecim_crcf_get_decim_rate(decim), 7);
+    firdecim_crcf_destroy(decim);
+}
 
 // 
 // AUTOTEST: firdecim_rrrf tests

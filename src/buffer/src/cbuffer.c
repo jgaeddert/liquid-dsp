@@ -87,7 +87,7 @@ CBUFFER() CBUFFER(_create_max)(unsigned int _max_size,
     q->v = (T*) malloc((q->num_allocated)*sizeof(T));
 
     // reset object
-    CBUFFER(_clear)(q);
+    CBUFFER(_reset)(q);
 
     // return main object
     return q;
@@ -158,7 +158,7 @@ void CBUFFER(_debug_print)(CBUFFER() _q)
 }
 
 // clear internal buffer
-void CBUFFER(_clear)(CBUFFER() _q)
+void CBUFFER(_reset)(CBUFFER() _q)
 {
     _q->read_index   = 0;
     _q->write_index  = 0;

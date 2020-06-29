@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2015 Joseph Gaeddert
+ * Copyright (c) 2007 - 2018 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -95,8 +95,8 @@ void AUTOCORR(_destroy)(AUTOCORR() _q)
 void AUTOCORR(_reset)(AUTOCORR() _q)
 {
     // clear/reset internal window buffers
-    WINDOW(_clear)(_q->w);
-    WINDOW(_clear)(_q->wdelay);
+    WINDOW(_reset)(_q->w);
+    WINDOW(_reset)(_q->wdelay);
     
     // reset internal squared energy buffer
     _q->e2_sum = 0.0;
@@ -125,6 +125,19 @@ void AUTOCORR(_push)(AUTOCORR() _q, TI _x)
     _q->e2_sum += e2;
     _q->we2[ _q->ie2 ] = e2;
     _q->ie2 = (_q->ie2+1) % _q->window_size;
+}
+
+// Write block of samples into auto-correlator object
+//  _q      :   auto-correlation object
+//  _x      :   input array [size: _n x 1]
+//  _n      :   number of input samples
+void AUTOCORR(_write)(AUTOCORR()   _q,
+                      TI *         _x,
+                      unsigned int _n)
+{
+    unsigned int i;
+    for (i=0; i<_n; i++)
+        AUTOCORR(_push)(_q, _x[i]);
 }
 
 // compute auto-correlation output

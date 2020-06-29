@@ -88,7 +88,7 @@ void symsync_rrrf_test(unsigned int _k,
     //
 
     // design interpolating filter
-    firinterp_rrrf interp = firinterp_rrrf_create_rnyquist(ftype_tx,k,m,beta,dt);
+    firinterp_rrrf interp = firinterp_rrrf_create_prototype(ftype_tx,k,m,beta,dt);
 
     // interpolate block of samples
     firinterp_rrrf_execute_block(interp, s, num_symbols, x);

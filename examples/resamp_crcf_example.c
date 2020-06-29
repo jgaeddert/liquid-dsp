@@ -19,26 +19,26 @@
 void usage()
 {
     printf("Usage: %s [OPTION]\n", __FILE__);
-    printf("  h     : print help\n");
-    printf("  r     : resampling rate (output/input),    default: 1.1\n");
-    printf("  m     : filter semi-length (delay),        default: 13\n");
-    printf("  b     : filter bandwidth, 0 < b < 0.5,     default: 0.4\n");
-    printf("  s     : filter stop-band attenuation [dB], default: 60\n");
-    printf("  p     : filter bank size,                  default: 64\n");
-    printf("  n     : number of input samples,           default: 400\n");
-    printf("  f     : input signal frequency,            default: 0.044\n");
+    printf("  -h            : print help\n");
+    printf("  -r <rate>     : resampling rate (output/input),    default: 1.1\n");
+    printf("  -m <delay>    : filter semi-length (delay),        default: 13\n");
+    printf("  -b <bandwidth>: filter bandwidth, 0 < b < 0.5,     default: 0.4\n");
+    printf("  -s <atten>    : filter stop-band attenuation [dB], default: 60\n");
+    printf("  -p <npfb>     : filter bank size,                  default: 64\n");
+    printf("  -n <num>      : number of input samples,           default: 400\n");
+    printf("  -f <frequency>: input signal frequency,            default: 0.044\n");
 }
 
 int main(int argc, char*argv[])
 {
     // options
-    float r           = 1.1f;   // resampling rate (output/input)
+    float        r    = 1.1f;   // resampling rate (output/input)
     unsigned int m    = 13;     // resampling filter semi-length (filter delay)
-    float As          = 60.0f;  // resampling filter stop-band attenuation [dB]
-    float bw          = 0.45f;  // resampling filter bandwidth
+    float        As   = 60.0f;  // resampling filter stop-band attenuation [dB]
+    float        bw   = 0.45f;  // resampling filter bandwidth
     unsigned int npfb = 64;     // number of filters in bank (timing resolution)
     unsigned int n    = 400;    // number of input samples
-    float fc          = 0.044f; // complex sinusoid frequency
+    float        fc   = 0.044f; // complex sinusoid frequency
 
     int dopt;
     while ((dopt = getopt(argc,argv,"hr:m:b:s:p:n:f:")) != EOF) {
@@ -96,7 +96,7 @@ int main(int argc, char*argv[])
     float wsum = 0.0f;
     for (i=0; i<nx; i++) {
         // compute window
-        float w = i < n ? kaiser(i, n, 10.0f, 0.0f) : 0.0f;
+        float w = i < n ? liquid_kaiser(i, n, 10.0f) : 0.0f;
 
         // apply window to complex sinusoid
         x[i] = cexpf(_Complex_I*2*M_PI*fc*i) * w;
@@ -107,20 +107,8 @@ int main(int argc, char*argv[])
 
     // resample
     unsigned int ny=0;
-#if 0
-    // execute one sample at a time
-    unsigned int nw;
-    for (i=0; i<nx; i++) {
-        // execute resampler, storing in output buffer
-        resamp_crcf_execute(q, x[i], &y[ny], &nw);
-
-        // increment output size
-        ny += nw;
-    }
-#else
     // execute on block of samples
     resamp_crcf_execute_block(q, x, nx, y, &ny);
-#endif
 
     // clean up allocated objects
     resamp_crcf_destroy(q);
@@ -175,9 +163,7 @@ int main(int argc, char*argv[])
     printf("  max sidelobe              :   %12.8f dB (expected at least %.2f dB)\n", max_sidelobe, -As);
 
 
-    // 
     // export results
-    //
     FILE * fid = fopen(OUTPUT_FILENAME,"w");
     fprintf(fid,"%% %s: auto-generated file\n",OUTPUT_FILENAME);
     fprintf(fid,"clear all;\n");
@@ -185,6 +171,7 @@ int main(int argc, char*argv[])
     fprintf(fid,"m=%u;\n", m);
     fprintf(fid,"npfb=%u;\n",  npfb);
     fprintf(fid,"r=%12.8f;\n", r);
+    fprintf(fid,"n=%u;\n", n);
 
     fprintf(fid,"nx = %u;\n", nx);
     fprintf(fid,"x = zeros(1,nx);\n");
@@ -197,6 +184,26 @@ int main(int argc, char*argv[])
         fprintf(fid,"y(%3u) = %12.4e + j*%12.4e;\n", i+1, crealf(y[i]), cimagf(y[i]));
 
     fprintf(fid,"\n\n");
+    fprintf(fid,"%% plot time-domain result\n");
+    fprintf(fid,"tx=[0:(length(x)-1)];\n");
+    fprintf(fid,"ty=[0:(length(y)-1)]/r-m;\n");
+    fprintf(fid,"figure('Color','white','position',[500 500 500 900]);\n");
+    fprintf(fid,"subplot(4,1,1);\n");
+    fprintf(fid,"  plot(tx,real(x),'-s','Color',[0.5 0.5 0.5],'MarkerSize',1,...\n");
+    fprintf(fid,"       ty,real(y),'-s','Color',[0.5 0 0],    'MarkerSize',1);\n");
+    fprintf(fid,"  legend('original','resampled','location','northeast');");
+    fprintf(fid,"  xlabel('time');\n");
+    fprintf(fid,"  ylabel('real');\n");
+    fprintf(fid,"  axis([0 n -1.2 1.2]);\n");
+    fprintf(fid,"  grid on;\n");
+    fprintf(fid,"subplot(4,1,2);\n");
+    fprintf(fid,"  plot(tx,imag(x),'-s','Color',[0.5 0.5 0.5],'MarkerSize',1,...\n");
+    fprintf(fid,"       ty,imag(y),'-s','Color',[0 0.5 0],    'MarkerSize',1);\n");
+    fprintf(fid,"  legend('original','resampled','location','northeast');");
+    fprintf(fid,"  xlabel('time');\n");
+    fprintf(fid,"  ylabel('imag');\n");
+    fprintf(fid,"  axis([0 n -1.2 1.2]);\n");
+    fprintf(fid,"  grid on;\n");
     fprintf(fid,"%% plot frequency-domain result\n");
     fprintf(fid,"nfft=2^nextpow2(max(nx,ny));\n");
     fprintf(fid,"%% estimate PSD, normalize by array length\n");
@@ -206,34 +213,16 @@ int main(int argc, char*argv[])
     fprintf(fid,"X=X-G;\n");
     fprintf(fid,"Y=Y-G;\n");
     fprintf(fid,"f=[0:(nfft-1)]/nfft-0.5;\n");
-    fprintf(fid,"figure;\n");
     fprintf(fid,"if r>1, fx = f/r; fy = f;   %% interpolated\n");
     fprintf(fid,"else,   fx = f;   fy = f*r; %% decimated\n");
     fprintf(fid,"end;\n");
-    fprintf(fid,"plot(fx,X,'Color',[0.5 0.5 0.5],fy,Y,'LineWidth',2);\n");
-    fprintf(fid,"grid on;\n");
-    fprintf(fid,"xlabel('normalized frequency');\n");
-    fprintf(fid,"ylabel('PSD [dB]');\n");
-    fprintf(fid,"legend('original','resampled','location','northeast');");
-    fprintf(fid,"axis([-0.5 0.5 -120 20]);\n");
-
-    fprintf(fid,"\n\n");
-    fprintf(fid,"%% plot time-domain result\n");
-    fprintf(fid,"tx=[0:(length(x)-1)];\n");
-    fprintf(fid,"ty=[0:(length(y)-1)]/r-m;\n");
-    fprintf(fid,"figure;\n");
-    fprintf(fid,"subplot(2,1,1);\n");
-    fprintf(fid,"  plot(tx,real(x),'-s','Color',[0.5 0.5 0.5],'MarkerSize',1,...\n");
-    fprintf(fid,"       ty,real(y),'-s','Color',[0.5 0 0],    'MarkerSize',1);\n");
+    fprintf(fid,"subplot(4,1,3:4);\n");
+    fprintf(fid,"  plot(fx,X,'Color',[0.5 0.5 0.5],fy,Y,'LineWidth',2);\n");
+    fprintf(fid,"  grid on;\n");
+    fprintf(fid,"  xlabel('normalized frequency');\n");
+    fprintf(fid,"  ylabel('PSD [dB]');\n");
     fprintf(fid,"  legend('original','resampled','location','northeast');");
-    fprintf(fid,"  xlabel('time');\n");
-    fprintf(fid,"  ylabel('real');\n");
-    fprintf(fid,"subplot(2,1,2);\n");
-    fprintf(fid,"  plot(tx,imag(x),'-s','Color',[0.5 0.5 0.5],'MarkerSize',1,...\n");
-    fprintf(fid,"       ty,imag(y),'-s','Color',[0 0.5 0],    'MarkerSize',1);\n");
-    fprintf(fid,"  legend('original','resampled','location','northeast');");
-    fprintf(fid,"  xlabel('time');\n");
-    fprintf(fid,"  ylabel('imag');\n");
+    fprintf(fid,"  axis([-0.5 0.5 -120 20]);\n");
 
     fclose(fid);
     printf("results written to %s\n",OUTPUT_FILENAME);

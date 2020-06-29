@@ -122,7 +122,7 @@ int main(int argc, char*argv[])
     unsigned int i;
 
     // generate matched filter response
-    liquid_firdes_rnyquist(LIQUID_FIRFILT_RRC, k, m, beta, 0.0f, hm);
+    liquid_firdes_prototype(LIQUID_FIRFILT_RRC, k, m, beta, 0.0f, hm);
     firinterp_crcf interp = firinterp_crcf_create(k, hm, hm_len);
 
     // create the modem objects
@@ -188,7 +188,7 @@ int main(int argc, char*argv[])
 
         // update equalizer independent of the signal: estimate error
         // assuming constant modulus signal
-        eqlms_cccf_step(eq, d_hat/cabsf(d_hat), d_hat);
+        eqlms_cccf_step_blind(eq, d_hat);
 
         // apply carrier recovery
         float complex v;

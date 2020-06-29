@@ -66,16 +66,16 @@ unsigned int liquid_count_leading_zeros(unsigned int _x)
 
     int i, B, clz=0;
 
-    for (i=(SIZEOF_UNSIGNED_INT-1)*8; i>=0; i-=8) {
+    for (i=(SIZEOF_INT-1)*8; i>=0; i-=8) {
         B = (_x >> i) & 0xff;
         if ( B ) // B != 0
             return clz + leading_zeros[B];
         else
             clz += 8;
     }   
-    return (SIZEOF_UNSIGNED_INT*8);
+    return (SIZEOF_INT*8);
 #else
-    return SIZEOF_UNSIGNED_INT*8 - liquid_msb_index(_x);
+    return SIZEOF_INT*8 - liquid_msb_index(_x);
 #endif
 }
 
@@ -126,8 +126,8 @@ unsigned int liquid_msb_index(unsigned int _x)
 #else
     // look for first non-zero byte
     unsigned int i, b;
-    bits = 8*SIZEOF_UNSIGNED_INT;
-    for (i=SIZEOF_UNSIGNED_INT*8; i>0; i-=8) {
+    bits = 8*SIZEOF_INT;
+    for (i=SIZEOF_INT*8; i>0; i-=8) {
         b = (_x >> (i-8)) & 0xff;
         if ( b )
             return bits - liquid_c_leading_zeros[b];

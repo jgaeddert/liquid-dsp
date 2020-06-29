@@ -178,7 +178,7 @@ void ofdmframe_init_default_sctype(unsigned int _M,
 {
     // validate input
     if (_M < 6) {
-        fprintf(stderr,"warning: ofdmframe_init_default_sctype(), less than 4 subcarriers\n");
+        fprintf(stderr,"warning: ofdmframe_init_default_sctype(), less than 6 subcarriers\n");
     }
 
     unsigned int i;
@@ -211,6 +211,60 @@ void ofdmframe_init_default_sctype(unsigned int _M,
             _p[k] = OFDMFRAME_SCTYPE_PILOT;
         else
             _p[k] = OFDMFRAME_SCTYPE_DATA;
+    }
+}
+
+// initialize default subcarrier allocation
+//  _M      :   number of subcarriers
+//  _f0     :   lower frequency band, _f0 in [-0.5,0.5]
+//  _f1     :   upper frequency band, _f1 in [-0.5,0.5]
+//  _p      :   output subcarrier allocation array, [size: _M x 1]
+void ofdmframe_init_sctype_range(unsigned int    _M,
+                                 float           _f0,
+                                 float           _f1,
+                                 unsigned char * _p)
+{
+    // validate input
+    if (_M < 6) {
+        fprintf(stderr,"warning: ofdmframe_init_sctype_range(), less than 6 subcarriers\n");
+    } else if (_f0 < -0.5f || _f0 > 0.5f) {
+        fprintf(stderr,"error: ofdmframe_init_sctype_range(), lower frequency edge must be in [-0.5,0.5]\n");
+        exit(1);
+    } else if (_f1 < -0.5f || _f1 > 0.5f) {
+        fprintf(stderr,"error: ofdmframe_init_sctype_range(), upper frequency edge must be in [-0.5,0.5]\n");
+        exit(1);
+    } else if (_f0 >= _f1) {
+        fprintf(stderr,"error: ofdmframe_init_sctype_range(), lower frequency edge must be below upper edge\n");
+        exit(1);
+    }
+
+    // get relative edges
+    int M0 = (int)((_f0 + 0.5f) * _M); // lower subcarrier index
+    int M1 = (int)((_f1 + 0.5f) * _M); // upper subcarrier index
+    int Mp = M1 - M0;
+    if (Mp > (int)_M) {
+        Mp = (int)_M;
+    } else if (Mp < 6) {
+        fprintf(stderr,"warning: ofdmframe_init_sctype_range(), less than 6 subcarriers (effectively)\n");
+        exit(1);
+    }
+
+    // designate pilot spacing
+    unsigned int P = (Mp > 34) ? 8 : 4;
+
+    // upper band
+    int i;
+    for (i=0; i<(int)_M; i++) {
+        // shift
+        unsigned int k = ((unsigned int)i + _M/2) % _M;
+        if (i < M0 || i > M1) {
+            // guard band
+            _p[k] = OFDMFRAME_SCTYPE_NULL;
+        } else if ( (k%P)==0 ) {
+            _p[k] = OFDMFRAME_SCTYPE_PILOT;
+        } else {
+            _p[k] = OFDMFRAME_SCTYPE_DATA;
+        }
     }
 }
 

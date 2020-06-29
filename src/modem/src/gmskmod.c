@@ -82,7 +82,7 @@ gmskmod gmskmod_create(unsigned int _k,
     liquid_firdes_gmsktx(q->k, q->m, q->BT, 0.0f, q->h);
 
     // create interpolator object
-    q->interp_tx = firinterp_rrrf_create_rnyquist(LIQUID_FIRFILT_GMSKTX, q->k, q->m, q->BT, 0);
+    q->interp_tx = firinterp_rrrf_create_prototype(LIQUID_FIRFILT_GMSKTX, q->k, q->m, q->BT, 0);
 
     // reset modem state
     gmskmod_reset(q);

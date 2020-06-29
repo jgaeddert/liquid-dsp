@@ -2,7 +2,12 @@
 liquid-dsp
 ==========
 
-Software-Defined Radio Digital Signal Processing Library
+Software-Defined Radio Digital Signal Processing Library -
+[https://liquidsdr.org](https://liquidsdr.org)
+
+[![Build Status](https://travis-ci.org/jgaeddert/liquid-dsp.svg?branch=master)](https://travis-ci.org/jgaeddert/liquid-dsp)
+[![MIT License](https://img.shields.io/badge/license-MIT-blue.svg?style=flat)](https://choosealicense.com/licenses/mit/)
+[![Packaging status](https://repology.org/badge/tiny-repos/liquid-dsp.svg)](https://repology.org/project/liquid-dsp/versions)
 
 liquid-dsp is a free and open-source digital signal processing (DSP)
 library designed specifically for software-defined radios on embedded
@@ -10,56 +15,73 @@ platforms. The aim is to provide a lightweight DSP library that does not
 rely on a myriad of external dependencies or proprietary and otherwise
 cumbersome frameworks. All signal processing elements are designed to be
 flexible, scalable, and dynamic, including filters, filter design,
-oscillators, modems, synchronizers, and complex mathematical operations.
+oscillators, modems, synchronizers, complex mathematical operations, and
+much more.
 
-For more information, please refer to the documentation:
+```c
+// get in, manipulate data, get out
+#include <liquid/liquid.h>
+int main() {
+    unsigned int M  = 4;     // interpolation factor
+    unsigned int m  = 12;    // filter delay [symbols]
+    float        As = 60.0f; // filter stop-band attenuation [dB]
 
-  * online HTML version: [http://liquidsdr.org/doc](http://liquidsdr.org/doc)
-  * pre-compiled `.pdf` version: [liquid.pdf](http://liquidsdr.org/downloads/liquid.pdf) (4.4 MB).
+    // create interpolator from prototype
+    firinterp_crcf interp = firinterp_crcf_create_kaiser(M,m,As);
+    float complex x = 1.0f;  // input sample
+    float complex y[M];      // interpolated output buffer
 
-Installation and Dependencies
------------------------------
+    // repeat on input sample data as needed
+    {
+        firinterp_crcf_execute(interp, x, y);
+    }
+
+    // destroy interpolator object
+    firinterp_crcf_destroy(interp);
+    return 0;
+}
+```
+
+For more information, please refer to the
+[documentation](https://liquidsdr.org/doc) online.
+
+## Installation and Dependencies ##
 
 liquid-dsp only relies on `libc` and `libm` (standard C and math)
-libraries to run; however liquid will take advantage of other packages
+libraries to run; however liquid will take advantage of other libraries
 (such as [FFTW](http://www.fftw.org)) if they are available.
 
-### Getting the source code ###
-
-There are two primary ways of obtaining the source code:
-
-1. Clone the entire [repository](http://github.com/jgaeddert/liquid-dsp)
-   (recommended)
-        
-        $ git clone git://github.com/jgaeddert/liquid-dsp.git
-
-2. or download the [tarball](http://liquidsdr.org/downloads/liquid-dsp-1.2.0.tar.gz)
-   (2.6 MB), validate the checksum, and unpack 
-
-        $ wget http://liquidsdr.org/downloads/liquid-dsp-1.2.0.tar.gz
-        $ wget http://liquidsdr.org/downloads/liquid-dsp.md5
-        $ md5sum --check liquid-dsp.md5
-        $ tar -xf liquid-dsp-1.2.0.tar.gz
+If you build from the Git repository you will also need to install autotools
+for generating the `configure.sh` script (e.g.
+`brew install autoconf automake` on macOS,
+`sudo apt-get install automake autoconf` on Debian variants).
 
 ### Installation ###
 
-Once you have obtained a copy of the source code, you can now build the
-DSP library (NOTE: if you chose to clone the repository, you will need
-to also run the additional `./bootstrap.sh` script before configuring):
+The recommended way to obtain the source code is to clone the entire
+[repository](https://github.com/jgaeddert/liquid-dsp) from
+[GitHub](https://github.com):
 
-    $ ./bootstrap.sh     # <- only if you cloned the Git repo
-    $ ./configure
-    $ make
-    $ sudo make install
+    git clone git://github.com/jgaeddert/liquid-dsp.git
+
+Building and installing the main library is a simple as
+
+    ./bootstrap.sh
+    ./configure
+    make
+    sudo make install
 
 If you are installing on Linux for the first time, you will also need
 to rebind your dynamic libraries with `sudo ldconfig` to make the
 shared object available.
+This is not necessary on macOS.
 
 If you decide that you want to remove the installed DSP library, simply
 run
 
-    $ sudo make uninstall
+    sudo make uninstall
+
+Seriously, I won't be offended.
 
 ### Run all test scripts ###
 
@@ -72,17 +94,35 @@ take the form of a C source file. liquid includes a framework for
 compiling, linking, and running the tests, and can be invoked with the
 make target `check`, viz.
 
-    $ make check
+    make check
+
+There are currently more than 110,000 checks to verify functional correctness.
+Drop me a line if these aren't running on your platform.
+
+### Testing Code Coverage ###
+
+In addition to the full test suite, you can configure `gcc` to export symbol
+files to check for code coverage and then use `gcovr` to generate a full
+report of precisely which lines are covered in the autotests. These symbol
+files aren't generated by default and need to be enabled at compile-time
+through a configure flag:
+
+    ./configure --enable-coverage
+
+Running the tests and generating the report through `gcovr` can be invoked
+with the `coverage` make target:
+
+    make coverage
 
 ### Examples ###
 
 Nearly all signal processing elements have a corresponding example in
 the `examples/` directory.  Most example scripts generate an output
-`.m` file for plotting with [GNU octave](http://www.gnu.org/software/octave/)
+`.m` file for plotting with [GNU octave](https://www.gnu.org/software/octave/)
 All examples are built as stand-alone programs and can be compiled with
 the make target `examples`:
 
-    $ make examples
+    make examples
 
 Sometimes, however, it is useful to build one example individually.
 This can be accomplished by directly targeting its binary
@@ -98,14 +138,15 @@ the number of trials so that each benchmark will take between 50 and
 500 ms to run. You can build and run the benchmark program with the
 following command:
 
-    $ make bench
+    make bench
 
-Available Modules
------------------
+## Available Modules ##
 
   * _agc_: automatic gain control, received signal strength
   * _audio_: source audio encoders/decoders: cvsd, filterbanks
   * _buffer_: internal buffering, circular/static, ports (threaded)
+  * _channel_: additive noise, multi-path fading, carrier phase/frequency
+        offsets, timing phase/rate offsets
   * _dotprod_: inner dot products (real, complex), vector sum of squares
   * _equalization_: adaptive equalizers: least mean-squares, recursive
         least squares, semi-blind
@@ -146,8 +187,12 @@ Available Modules
 
 ### License ###
 
-liquid projects are released under the MIT license.
-Short version: this code is copyrighted to me (Joseph D. Gaeddert), I give you
-permission to do what you want with it except remove my name from the credits.
-See the LICENSE file for specific terms.
+liquid projects are released under the X11/MIT license.
+Short version: this code is copyrighted to me (Joseph D. Gaeddert),
+I give you full permission to do wantever you want with it except remove my
+name from the credits.
+Seriously, go nuts.
+See the LICENSE file or
+[https://opensource.org/licenses/MIT](https://opensource.org/licenses/MIT)
+for specific terms.
 

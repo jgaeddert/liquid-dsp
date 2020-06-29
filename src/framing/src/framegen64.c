@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2015 Joseph Gaeddert
+ * Copyright (c) 2007 - 2019 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -59,8 +59,8 @@ framegen64 framegen64_create()
     // generate pn sequence
     msequence ms = msequence_create(7, 0x0089, 1);
     for (i=0; i<64; i++) {
-        q->pn_sequence[i] = (msequence_advance(ms) ? M_SQRT1_2 : -M_SQRT1_2) +
-                            (msequence_advance(ms) ? M_SQRT1_2 : -M_SQRT1_2)*_Complex_I;
+        q->pn_sequence[i]  = (msequence_advance(ms) ? M_SQRT1_2 : -M_SQRT1_2);
+        q->pn_sequence[i] += (msequence_advance(ms) ? M_SQRT1_2 : -M_SQRT1_2)*_Complex_I;
     }
     msequence_destroy(ms);
 
@@ -79,7 +79,7 @@ framegen64 framegen64_create()
     assert( qpilotgen_get_frame_len(q->pilotgen)==630 );
 
     // create pulse-shaping filter (k=2)
-    q->interp = firinterp_crcf_create_rnyquist(LIQUID_FIRFILT_ARKAISER,2,q->m,q->beta,0);
+    q->interp = firinterp_crcf_create_prototype(LIQUID_FIRFILT_ARKAISER,2,q->m,q->beta,0);
 
     // return main object
     return q;
@@ -124,8 +124,8 @@ void framegen64_print(framegen64 _q)
 
 // execute frame generator (creates a frame)
 //  _q          :   frame generator object
-//  _header     :   8-byte header data
-//  _payload    :   64-byte payload data
+//  _header     :   8-byte header data, NULL for random
+//  _payload    :   64-byte payload data, NULL for random
 //  _frame      :   output frame samples [size: LIQUID_FRAME64_LEN x 1]
 void framegen64_execute(framegen64      _q,
                         unsigned char * _header,
@@ -135,8 +135,10 @@ void framegen64_execute(framegen64      _q,
     unsigned int i;
 
     // concatenate header and payload
-    memmove(&_q->payload_dec[0], _header,   8*sizeof(unsigned char));
-    memmove(&_q->payload_dec[8], _payload, 64*sizeof(unsigned char));
+    for (i=0; i<8; i++)
+        _q->payload_dec[i] = _header==NULL ? rand() & 0xff : _header[i];
+    for (i=0; i<64; i++)
+        _q->payload_dec[i+8] = _payload==NULL ? rand() & 0xff : _payload[i];
 
     // run packet encoder and modulator
     qpacketmodem_encode(_q->enc, _q->payload_dec, _q->payload_sym);

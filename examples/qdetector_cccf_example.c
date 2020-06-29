@@ -1,4 +1,4 @@
-// 
+//
 // qdetector_example.c
 //
 // This example demonstrates the functionality of the qdetector object
@@ -22,14 +22,15 @@ void usage()
     printf("qdetector_cccf_example\n");
     printf("options:\n");
     printf("  h     : print usage/help\n");
-    printf("  n     : number of sync symbols,   default: 80\n");
-    printf("  k     : samples/symbol,           default:  2\n");
-    printf("  m     : filter delay,             default:  7 sybmols\n");
-    printf("  b     : excess bandwidth factor,  default:  0.3\n");
-    printf("  F     : carrier frequency offset, default: 0.02\n");
-    printf("  T     : fractional sample offset, dt in [-0.5, 0.5], default: 0\n");
-    printf("  S     : SNR [dB],                 default: 20 dB\n");
-    printf("  t     : detection threshold,      default: 0.3\n");
+    printf("  n     : number of sync symbols,     default:  80\n");
+    printf("  k     : samples/symbol,             default:  2\n");
+    printf("  m     : filter delay,               default:  7 sybmols\n");
+    printf("  b     : excess bandwidth factor,    default:  0.3\n");
+    printf("  F     : carrier frequency offset,   default: -0.01\n");
+    printf("  T     : fractional sample offset,   default:  0\n");
+    printf("  S     : SNR [dB],                   default:  20 dB\n");
+    printf("  t     : detection threshold,        default:  0.3\n");
+    printf("  r     : carrier offset search range,default:  0.05\n");
 }
 
 int main(int argc, char*argv[])
@@ -40,15 +41,16 @@ int main(int argc, char*argv[])
     unsigned int m            =    7;   // filter delay [symbols]
     float        beta         = 0.3f;   // excess bandwidth factor
     int          ftype        = LIQUID_FIRFILT_ARKAISER;
-    float        gamma        = 10.0f;  // channel gain
     float        tau          = -0.3f;  // fractional sample timing offset
     float        dphi         = -0.01f; // carrier frequency offset
     float        phi          =  0.5f;  // carrier phase offset
+    float        noise_floor  = -30.0f; // noise floor [dB]
     float        SNRdB        = 20.0f;  // signal-to-noise ratio [dB]
     float        threshold    =  0.5f;  // detection threshold
+    float        range        =  0.05f; // carrier offset search range [radians/sample]
 
     int dopt;
-    while ((dopt = getopt(argc,argv,"hn:k:m:b:F:T:S:t:")) != EOF) {
+    while ((dopt = getopt(argc,argv,"hn:k:m:b:F:T:S:t:r:")) != EOF) {
         switch (dopt) {
         case 'h': usage();                      return 0;
         case 'n': sequence_len  = atoi(optarg); break;
@@ -59,6 +61,7 @@ int main(int argc, char*argv[])
         case 'T': tau           = atof(optarg); break;
         case 'S': SNRdB         = atof(optarg); break;
         case 't': threshold     = atof(optarg); break;
+        case 'r': range         = atof(optarg); break;
         default:
             exit(1);
         }
@@ -72,6 +75,10 @@ int main(int argc, char*argv[])
         exit(1);
     }
 
+    // derived values
+    float nstd = powf(10.0f, noise_floor/20.0f);
+    float gamma = powf(10.0f, (SNRdB + noise_floor)/20.0f);
+
     // generate synchronization sequence (QPSK symbols)
     float complex sequence[sequence_len];
     for (i=0; i<sequence_len; i++) {
@@ -80,6 +87,7 @@ int main(int argc, char*argv[])
     }
 
     //
+    float rxy       = 0.0f;
     float tau_hat   = 0.0f;
     float gamma_hat = 0.0f;
     float dphi_hat  = 0.0f;
@@ -89,6 +97,7 @@ int main(int argc, char*argv[])
     // create detector
     qdetector_cccf q = qdetector_cccf_create_linear(sequence, sequence_len, ftype, k, m, beta);
     qdetector_cccf_set_threshold(q, threshold);
+    qdetector_cccf_set_range    (q, range);
     qdetector_cccf_print(q);
 
     //
@@ -105,7 +114,6 @@ int main(int argc, char*argv[])
     float complex * v = (float complex*) qdetector_cccf_get_sequence(q);
     unsigned int filter_delay = 15;
     firfilt_crcf filter = firfilt_crcf_create_kaiser(2*filter_delay+1, 0.4f, 60.0f, -tau);
-    float        nstd        = 0.1f;
     for (i=0; i<num_samples; i++) {
         // add delay
         firfilt_crcf_push(filter, i < seq_len ? v[i] : 0);
@@ -116,7 +124,7 @@ int main(int argc, char*argv[])
 
         // carrier offset
         y[i] *= cexpf(_Complex_I*(dphi*i + phi));
-        
+
         // noise
         y[i] += nstd*(randnf() + _Complex_I*randnf())*M_SQRT1_2;
     }
@@ -131,6 +139,7 @@ int main(int argc, char*argv[])
             frame_detected = 1;
 
             // get statistics
+            rxy       = qdetector_cccf_get_rxy(q);
             tau_hat   = qdetector_cccf_get_tau(q);
             gamma_hat = qdetector_cccf_get_gamma(q);
             dphi_hat  = qdetector_cccf_get_dphi(q);
@@ -150,7 +159,7 @@ int main(int argc, char*argv[])
         nco_crcf_set_phase    (nco,  phi_hat);
 
         for (i=0; i<buf_len; i++) {
-            // 
+            //
             float complex sample;
             nco_crcf_mix_down(nco, v[i], &sample);
             nco_crcf_step(nco);
@@ -173,14 +182,17 @@ int main(int argc, char*argv[])
     // print results
     printf("\n");
     printf("frame detected  :   %s\n", frame_detected ? "yes" : "no");
-    printf("  gamma hat     : %8.3f, actual=%8.3f (error=%8.3f)\n",            gamma_hat, gamma, gamma_hat - gamma);
-    printf("  tau hat       : %8.3f, actual=%8.3f (error=%8.3f) samples\n",    tau_hat,   tau,   tau_hat   - tau  );
-    printf("  dphi hat      : %8.5f, actual=%8.5f (error=%8.5f) rad/sample\n", dphi_hat,  dphi,  dphi_hat  - dphi );
-    printf("  phi hat       : %8.5f, actual=%8.5f (error=%8.5f) radians\n",    phi_hat,   phi,   phi_hat   - phi  );
-    printf("  symbols rx    : %u\n", num_syms_rx);
+    if (frame_detected) {
+        printf("  rxy           : %8.3f\n", rxy);
+        printf("  gamma hat     : %8.3f, actual=%8.3f (error=%8.3f)\n",            gamma_hat, gamma, gamma_hat - gamma);
+        printf("  tau hat       : %8.3f, actual=%8.3f (error=%8.3f) samples\n",    tau_hat,   tau,   tau_hat   - tau  );
+        printf("  dphi hat      : %8.5f, actual=%8.5f (error=%8.5f) rad/sample\n", dphi_hat,  dphi,  dphi_hat  - dphi );
+        printf("  phi hat       : %8.5f, actual=%8.5f (error=%8.5f) radians\n",    phi_hat,   phi,   phi_hat   - phi  );
+        printf("  symbols rx    : %u\n", num_syms_rx);
+    }
     printf("\n");
 
-    // 
+    //
     // export results
     //
     FILE * fid = fopen(OUTPUT_FILENAME,"w");

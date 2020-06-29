@@ -85,8 +85,8 @@ int main(int argc, char*argv[]) {
     float hc[hc_len];   // composite filter
 
     // design the filter(s)
-    liquid_firdes_rnyquist(ftype_tx, k, m, beta, 0, ht);
-    liquid_firdes_rnyquist(ftype_rx, k, m, beta, 0, hr);
+    liquid_firdes_prototype(ftype_tx, k, m, beta, 0, ht);
+    liquid_firdes_prototype(ftype_rx, k, m, beta, 0, hr);
 
     for (i=0; i<h_len; i++) printf("ht(%3u) = %12.8f;\n", i+1, ht[i]);
     for (i=0; i<h_len; i++) printf("hr(%3u) = %12.8f;\n", i+1, hr[i]);

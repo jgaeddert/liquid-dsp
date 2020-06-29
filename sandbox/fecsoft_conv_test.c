@@ -232,7 +232,6 @@ int main(int argc, char *argv[]) {
 }
 
 #if !LIBFEC_ENABLED
-#warning "libfec not installed; this sandbox program won't run"
 //
 // libfec is not installed; need to define internal methods used in this
 // program, even though they don't do anything
@@ -242,6 +241,7 @@ void fec_conv_encode(fec _q,
                      unsigned char * _msg_dec,
                      unsigned char * _msg_enc)
 {
+    printf("fec_conv_encode(): libfec not installed; this sandbox program won't run\n");
 }
 
 void fec_conv_decode_soft(fec _q,
@@ -249,6 +249,7 @@ void fec_conv_decode_soft(fec _q,
                           unsigned char * _msg_enc,
                           unsigned char * _msg_dec)
 {
+    printf("fec_conv_decode_soft(): libfec not installed; this sandbox program won't run\n");
 }
 
 void fec_conv_punctured_decode_soft(fec _q,
@@ -256,6 +257,7 @@ void fec_conv_punctured_decode_soft(fec _q,
                                     unsigned char * _msg_enc,
                                     unsigned char * _msg_dec)
 {
+    printf("fec_conv_punctured_decode_soft(): libfec not installed; this sandbox program won't run\n");
 }
 #endif
 

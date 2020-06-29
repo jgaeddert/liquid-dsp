@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2015 Joseph Gaeddert
+ * Copyright (c) 2007 - 2018 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -44,11 +44,58 @@ float randf_pdf(float _x)
 // uniform random number cumulative distribution function
 float randf_cdf(float _x)
 {
-    if (_x < 0.0f)
+    if (_x < 0.0f) {
         return 0.0f;
-    else if (_x > 1.0f)
+    } else if (_x > 1.0f) {
         return 1.0f;
+    }
 
     return _x;
+}
+
+// uniform random number generator with arbitrary bounds
+float randuf(float _a, float _b)
+{
+    // check bounds
+    if (_a >= _b) {
+        fprintf(stderr,"error: %s:%u, randuf() has invalid range\n", __FILE__, __LINE__);
+        return 0;
+    }
+
+    return _a + (_b - _a)*randf_inline();
+}
+
+// uniform random number probability distribution function
+float randuf_pdf(float _x,
+                 float _a,
+                 float _b)
+{
+    // check bounds
+    if (_a >= _b) {
+        fprintf(stderr,"error: %s:%u, randuf_pdf() has invalid range\n", __FILE__, __LINE__);
+        return 0;
+    }
+
+    return (_x < _a || _x > _b) ? 0.0f : 1.0f / (_b - _a);
+}
+
+// uniform random number cumulative distribution function
+float randuf_cdf(float _x,
+                 float _a,
+                 float _b)
+{
+    // check bounds
+    if (_a >= _b) {
+        fprintf(stderr,"error: %s:%u, randuf_cdf() has invalid range\n", __FILE__, __LINE__);
+        return 0;
+    }
+
+    if (_x < _a) {
+        return 0.0f;
+    } else if (_x > _b) {
+        return 1.0f;
+    }
+
+    return (_x - _a) / (_b - _a);
 }
 

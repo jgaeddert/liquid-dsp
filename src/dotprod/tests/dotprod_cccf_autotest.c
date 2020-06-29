@@ -80,7 +80,7 @@ void autotest_dotprod_cccf_rand16()
 //
 void autotest_dotprod_cccf_struct_lengths()
 {
-    float tol = 2e-6;
+    float tol = 4e-6;
     float complex y;
 
     float complex h[35] = {

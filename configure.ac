@@ -1,4 +1,4 @@
-# Copyright (c) 2007 - 2015 Joseph Gaeddert
+# Copyright (c) 2007 - 2020 Joseph Gaeddert
 # 
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -23,14 +23,18 @@
 # Process with autoconf to generate configure script
 #
 
-AC_INIT([liquid-dsp],[1.2.0],[support@liquidsdr.org])
+AC_INIT([liquid-dsp],[1.3.2],[joseph@liquidsdr.org])
 AC_CONFIG_SRCDIR([src/libliquid.c])
+AC_CONFIG_MACRO_DIR([scripts])
 
 # permit auxiliary scripts directory (e.g. config.sub, config.guess, install-sh)
 AC_CONFIG_AUX_DIR(scripts/)
 
 # Specify 'C' language
 AC_LANG(C)
+
+# uncomment the following line to reset "CFLAGS" variable; it defaults to '-g -O2'
+#: ${CFLAGS=""}
 
 # Autoheader
 AH_TEMPLATE([LIQUID_FFTOVERRIDE],  [Force internal FFT even if libfftw is available])
@@ -47,10 +51,10 @@ AH_BOTTOM([
 
 # Configure options
 
-AC_ARG_ENABLE(debug,
-    AS_HELP_STRING([--enable-debug],[debug]),
-    [DEBUG_OPTION="-DDEBUG"],
-    [DEBUG_OPTION=""]
+AC_ARG_ENABLE(debug-messages,
+    AS_HELP_STRING([--enable-debug-messages],[enable verbose debug messages (-DDEBUG)]),
+    [DEBUG_MSG_OPTION="-DDEBUG"],
+    [DEBUG_MSG_OPTION=""]
 )
 
 AC_ARG_ENABLE(simdoverride,
@@ -63,6 +67,17 @@ AC_ARG_ENABLE(fftoverride,
     AS_HELP_STRING([--enable-fftoverride],[use internal fft even if libfftw is available]),
     [AC_DEFINE(LIQUID_FFTOVERRIDE)],
     [],
+)
+
+# code coverage
+AC_ARG_ENABLE(coverage,
+    AS_HELP_STRING([--enable-coverage],[enable flags to test code coverage]),
+    [   # check that gcovr program is installed
+        AC_CHECK_PROG(HAVE_GCOVR,gcovr,yes)
+        AS_IF([test x"$HAVE_GCOVR" != x"yes"],
+              [AC_MSG_ERROR(Need gcovr with coverage option)],
+              [COVERAGE_OPTION="--coverage"])],
+    [COVERAGE_OPTION=""]
 )
 
 # Check for necessary programs
@@ -78,31 +93,18 @@ AC_FUNC_MALLOC
 AC_FUNC_REALLOC
 
 # AC_CHECK_LIB (library, function, [action-if-found], [action-if-not-found], [other-libraries])
-AC_CHECK_LIB([c],[main], [],[AC_MSG_ERROR(Could not use standard C library)],   [])
-AC_CHECK_LIB([m],[main], [],[AC_MSG_ERROR(Could not use standard math library)],[])
+AC_CHECK_LIB([c],[main],[],[AC_MSG_ERROR(Could not use standard C library)],   [])
+AC_CHECK_LIB([m],[main],[],[AC_MSG_ERROR(Could not use standard math library)],[])
 
 # AC_CHECK_FUNC(function, [action-if-found], [action-if-not-found])
-AC_CHECK_FUNC([malloc],  [],[AC_MSG_ERROR(Could not use malloc())])
-AC_CHECK_FUNC([realloc], [],[AC_MSG_ERROR(Could not use realloc())],)
-AC_CHECK_FUNC([free],    [],[AC_MSG_ERROR(Could not use free())],)
-AC_CHECK_FUNC([memset],  [],[AC_MSG_ERROR(Could not use memset())],)
-AC_CHECK_FUNC([memmove], [],[AC_MSG_ERROR(Could not use memove())],)
-
-AC_CHECK_FUNC([sinf],    [],[AC_MSG_ERROR(Could not use sinf())],)
-AC_CHECK_FUNC([cosf],    [],[AC_MSG_ERROR(Could not use cosf())],)
-AC_CHECK_FUNC([expf],    [],[AC_MSG_ERROR(Could not use expf())],)
-AC_CHECK_FUNC([cargf],   [],[AC_MSG_ERROR(Could not use cargf())],)
-AC_CHECK_FUNC([cexpf],   [],[AC_MSG_ERROR(Could not use cexpf())],)
-AC_CHECK_FUNC([crealf],  [],[AC_MSG_ERROR(Could not use crealf())],)
-AC_CHECK_FUNC([cimagf],  [],[AC_MSG_ERROR(Could not use cimagf())],)
-AC_CHECK_FUNC([sqrtf],   [],[AC_MSG_ERROR(Could not use sqrtf())],)
+AC_CHECK_FUNCS([malloc realloc free memset memmove],[],
+               [AC_MSG_ERROR(Could not use memory allocation functions)])
+AC_CHECK_FUNCS([sinf cosf expf cargf cexpf crealf cimagf sqrtf],[],
+               [AC_MSG_ERROR(Could not use special math functions)],)
 
 # Check for necessary header files
-AC_CHECK_HEADERS([stdio.h stdlib.h complex.h string.h getopt.h sys/resource.h float.h inttypes.h limits.h stdlib.h string.h unistd.h])
-if test -z "$HAVE_stdio.h"
-then
-    AC_MSG_ERROR([Need stdio.h!])
-fi
+AC_CHECK_HEADERS([stdio.h stdlib.h complex.h string.h getopt.h sys/resource.h float.h inttypes.h limits.h stdlib.h string.h unistd.h],[],
+                 [AC_MSG_ERROR(Could not use standard headers)])
 
 # Check for optional header files, libraries, programs
 AC_CHECK_HEADERS(fec.h fftw3.h)
@@ -120,14 +122,19 @@ AC_TYPE_UINT32_T
 AC_TYPE_UINT8_T
 
 # Check size of certain variables
+AC_CHECK_SIZEOF(short int)
 AC_CHECK_SIZEOF(int)
-AC_CHECK_SIZEOF(unsigned int)
+AC_CHECK_SIZEOF(long int)
+AC_CHECK_SIZEOF(long long int)
 
 # AX_GCC_ARCHFLAG([PORTABLE?], [ACTION-SUCCESS], [ACTION-FAILURE])
 # Try to guess the "native" architecture of the target to use with gcc's
 # -march or -mtune flags. Default success action adds $ax_cv_gcc_archflag to
 # $CFLAGS (sets to "unknown" on failure).
-AX_GCC_ARCHFLAG([no],[],[])
+#AX_GCC_ARCHFLAG([no],[],[])
+
+# get canonical target architecture
+AC_CANONICAL_TARGET
 
 # override SIMD
 if test "${enable_simdoverride+set}" = set; then
@@ -145,7 +152,6 @@ if test "${enable_simdoverride+set}" = set; then
                    src/dotprod/src/sumsqq16.o"
 else
     # Check canonical system
-    AC_CANONICAL_TARGET
     case $target_cpu in
     i386|i486|i586|i686|x86|x86_64)
         # check for MMX/SSE/AVX CPU extensions and intrinsics headers
@@ -164,26 +170,42 @@ else
                            src/dotprod/src/dotprod_crcf.mmx.o \
                            src/dotprod/src/dotprod_rrrf.mmx.o \
                            src/dotprod/src/sumsq.mmx.o \
-                           src/dotprod/src/dotprod_cccq16.o \
-                           src/dotprod/src/dotprod_crcq16.o \
-                           src/dotprod/src/dotprod_rrrq16.o \
-                           src/dotprod/src/dotprod_cccq32.o \
-                           src/dotprod/src/dotprod_crcq32.o \
-                           src/dotprod/src/dotprod_rrrq32.o \
+                           src/dotprod/src/dotprod_cccq16.mmx.o \
+                           src/dotprod/src/dotprod_crcq16.mmx.o \
+                           src/dotprod/src/dotprod_rrrq16.mmx.o \
+                           src/dotprod/src/dotprod_cccq32.mmx.o \
+                           src/dotprod/src/dotprod_crcq32.mmx.o \
+                           src/dotprod/src/dotprod_rrrq32.mmx.o \
                            src/dotprod/src/sumsqq16.o"
+            ARCH_OPTION='-msse4.1'
+        elif [ test "$ax_cv_have_sse3_ext" = yes && test "$ac_cv_header_pmmintrin_h" = yes ]; then
+            # SSE3 extensions
+            MLIBS_DOTPROD="src/dotprod/src/dotprod_cccf.mmx.o \
+                           src/dotprod/src/dotprod_crcf.mmx.o \
+                           src/dotprod/src/dotprod_rrrf.mmx.o \
+                           src/dotprod/src/sumsq.mmx.o \
+                           src/dotprod/src/dotprod_cccq16.mmx.o \
+                           src/dotprod/src/dotprod_crcq16.mmx.o \
+                           src/dotprod/src/dotprod_rrrq16.mmx.o \
+                           src/dotprod/src/dotprod_cccq32.mmx.o \
+                           src/dotprod/src/dotprod_crcq32.mmx.o \
+                           src/dotprod/src/dotprod_rrrq32.mmx.o \
+                           src/dotprod/src/sumsqq16.o"
+            ARCH_OPTION='-msse3'
         elif [ test "$ax_cv_have_sse2_ext" = yes && test "$ac_cv_header_emmintrin_h" = yes ]; then
             # SSE2 extensions
             MLIBS_DOTPROD="src/dotprod/src/dotprod_cccf.mmx.o \
                            src/dotprod/src/dotprod_crcf.mmx.o \
                            src/dotprod/src/dotprod_rrrf.mmx.o \
                            src/dotprod/src/sumsq.mmx.o \
-                           src/dotprod/src/dotprod_cccq16.o \
-                           src/dotprod/src/dotprod_crcq16.o \
-                           src/dotprod/src/dotprod_rrrq16.o \
-                           src/dotprod/src/dotprod_cccq32.o \
-                           src/dotprod/src/dotprod_crcq32.o \
-                           src/dotprod/src/dotprod_rrrq32.o \
+                           src/dotprod/src/dotprod_cccq16.mmx.o \
+                           src/dotprod/src/dotprod_crcq16.mmx.o \
+                           src/dotprod/src/dotprod_rrrq16.mmx.o \
+                           src/dotprod/src/dotprod_cccq32.mmx.o \
+                           src/dotprod/src/dotprod_crcq32.mmx.o \
+                           src/dotprod/src/dotprod_rrrq32.mmx.o \
                            src/dotprod/src/sumsqq16.o"
+            ARCH_OPTION='-msse2'
         else
             # portable C version
             MLIBS_DOTPROD="src/dotprod/src/dotprod_cccf.o \
@@ -235,7 +257,8 @@ else
                        src/dotprod/src/dotprod_rrrq32.o \
                        src/dotprod/src/sumsqq16.o"
         # TODO: check these flags
-        ARCH_OPTION="-ffast-math -mcpu=cortex-a8 -mfloat-abi=softfp -mfpu=neon";;
+        #ARCH_OPTION="-ffast-math -mcpu=cortex-a8 -mfloat-abi=softfp -mfpu=neon";;
+        ARCH_OPTION="-ffast-math -mcpu=cortex-a7 -mfloat-abi=hard -mfpu=neon-vfpv4";;
     *)
         # unknown architecture : use portable C version
         MLIBS_DOTPROD="src/dotprod/src/dotprod_cccf.o \
@@ -265,10 +288,22 @@ MLIBS_VECTOR="src/vector/src/vectorf_add.port.o   \
 
 case $target_os in
 darwin*)
+    AN_MAKEVAR([LIBTOOL], [AC_PROG_LIBTOOL])
+    AN_PROGRAM([libtool], [AC_PROG_LIBTOOL])
+    AC_DEFUN([AC_PROG_LIBTOOL], [AC_CHECK_TOOL(LIBTOOL, libtool, :)])
+    AC_PROG_LIBTOOL
+
+    AR_LIB=libliquid.ar
     SH_LIB=libliquid.dylib
     REBIND=""
     ;;
 *)
+    AN_MAKEVAR([AR], [AC_PROG_AR])
+    AN_PROGRAM([ar], [AC_PROG_AR])
+    AC_DEFUN([AC_PROG_AR], [AC_CHECK_TOOL(AR, ar, :)])
+    AC_PROG_AR
+
+    AR_LIB=libliquid.a
     SH_LIB=libliquid.so
     REBIND=ldconfig
     ;;
@@ -281,11 +316,13 @@ AC_SUBST(LIBS)                      # shared libraries (-lc, -lm, etc.)
 AC_SUBST(MLIBS_DOTPROD)             # 
 AC_SUBST(MLIBS_VECTOR)              #
 
+AC_SUBST(AR_LIB)                    # archive library
 AC_SUBST(SH_LIB)                    # output shared library target
 AC_SUBST(REBIND)                    # rebinding tool (e.g. ldconfig)
 AC_SUBST(ARCH_OPTION)               # compiler architecture option
 
-AC_SUBST(DEBUG_OPTION)              # debug option
+AC_SUBST(DEBUG_MSG_OPTION)          # debug messages option (.e.g -DDEBUG)
+AC_SUBST(COVERAGE_OPTION)           # source code coverage option (e.g. -fprofile-arcs -ftest-coverage)
 AC_SUBST(CLIB)                      # C library linkage (e.g. '-lc')
 
 AC_CONFIG_FILES([makefile])

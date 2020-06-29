@@ -125,7 +125,7 @@ int main(int argc, char*argv[]) {
     }
 
     // interpolate symbols
-    firinterp_crcf q = firinterp_crcf_create_rnyquist(ftype_tx, k, m, beta, tau);
+    firinterp_crcf q = firinterp_crcf_create_prototype(ftype_tx, k, m, beta, tau);
     for (i=0; i<num_symbols; i++) {
         firinterp_crcf_execute(q, sym_in[i], &x[i*k]);
     }

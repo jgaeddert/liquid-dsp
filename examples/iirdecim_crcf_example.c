@@ -68,7 +68,7 @@ int main(int argc, char*argv[]) {
     unsigned int w_len = num_samples > 4*delay ? num_samples - 4*delay : num_samples;
     for (i=0; i<num_samples; i++) {
         x[i] =  cexpf(_Complex_I*(2*M_PI*0.03*i - 0.3*i*i/(float)num_samples));
-        x[i] *= i < w_len ? hamming(i,w_len) : 0.0f;
+        x[i] *= i < w_len ? liquid_hamming(i,w_len) : 0.0f;
     }
 
     // decimate input

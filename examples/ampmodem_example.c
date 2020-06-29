@@ -21,38 +21,36 @@
 void usage()
 {
     printf("ampmodem_example [options]\n");
-    printf("  u/h   : print usage\n");
-    printf("  f     : frequency offset, default: 0.02\n");
-    printf("  p     : phase offset, default: -pi/4\n");
-    printf("  n     : number of samples, default: 256\n");
-    printf("  S     : SNR [dB], default: 20\n");
-    printf("  t     : AM type (dsb/usb/lsb), default: dsb\n");
-    printf("  s     : suppress the carrier, default: off\n");
+    printf("  -h         : print usage\n");
+    printf("  -m <index> : modulation index,          default: 0.8\n");
+    printf("  -f <freq>  : freq. offset [rad/sample], default: 0.05\n");
+    printf("  -p <phase> : phase offset,              default: 2.8\n");
+    printf("  -n <num>   : number of samples,         default: 2400\n");
+    printf("  -S <snr>   : SNR [dB],                  default: 30\n");
+    printf("  -t <type>  : AM type (dsb/usb/lsb),     default: usb\n");
+    printf("  -s         : suppress the carrier,      default: off (carrier enabled)\n");
 }
 
 int main(int argc, char*argv[])
 {
     // options
-    float mod_index = 0.1f;         // modulation index (bandwidth)
-    float fc = 0.0f;                // AM carrier
-    float cfo = 0.02f;              // carrier frequency offset
-    float cpo = -M_PI / 4.0f;       // carrier phase offset
-    unsigned int num_samples = 256; // number of samples
-    float SNRdB = 30.0f;            // signal-to-noise ratio [dB]
-    liquid_ampmodem_type type = LIQUID_AMPMODEM_USB;
-    int suppressed_carrier = 0;
+    float        mod_index          = 0.8f;     // modulation index (bandwidth)
+    float        dphi               = 0.05f;    // carrier frequency offset [radians/sample]
+    float        phi                = 2.8f;     // carrier phase offset [radians]
+    float        SNRdB              = 30.0f;    // signal-to-noise ratio (set very high for testing)
+    unsigned int num_samples        = 2400;     // number of samples
+    liquid_ampmodem_type type       = LIQUID_AMPMODEM_USB;
+    int          suppressed_carrier = 0;
 
     int dopt;
-    while ((dopt = getopt(argc,argv,"uhf:p:n:S:t:s")) != EOF) {
+    while ((dopt = getopt(argc,argv,"hm:f:p:n:S:t:s")) != EOF) {
         switch (dopt) {
-        case 'u':
-        case 'h':
-            usage();
-            return 0;
-        case 'f':   cfo = atof(optarg); break;
-        case 'p':   cpo = atof(optarg); break;
-        case 'n':   num_samples = atoi(optarg); break;
-        case 'S':   SNRdB = atof(optarg);       break;
+        case 'h': usage();                    return 0;
+        case 'm': mod_index   = atof(optarg); break;
+        case 'f': dphi        = atof(optarg); break;
+        case 'p': phi         = atof(optarg); break;
+        case 'n': num_samples = atoi(optarg); break;
+        case 'S': SNRdB       = atof(optarg); break;
         case 't':
             if (strcmp(optarg,"dsb")==0) {
                 type = LIQUID_AMPMODEM_DSB;
@@ -65,43 +63,30 @@ int main(int argc, char*argv[])
                 return 1;
             }
             break;
-        case 's':   suppressed_carrier = 1; break;
-        default:
-            usage();
-            return 1;
+        case 's': suppressed_carrier = 1;     break;
+        default:                              return 1;
         }
     }
 
     // create mod/demod objects
-    ampmodem mod   = ampmodem_create(mod_index, fc, type, suppressed_carrier);
-    ampmodem demod = ampmodem_create(mod_index, fc, type, suppressed_carrier);
+    ampmodem mod   = ampmodem_create(mod_index, type, suppressed_carrier);
+    ampmodem demod = ampmodem_create(mod_index, type, suppressed_carrier);
+    unsigned int delay = ampmodem_get_delay_mod(mod) + ampmodem_get_delay_demod(demod);
     ampmodem_print(mod);
 
     unsigned int i;
-    float x[num_samples];
+    float         x[num_samples];
     float complex y[num_samples];
-    float z[num_samples];
+    float         z[num_samples];
 
-    // generate 'audio' signal
-    unsigned int h_len = 21;
-    float h[h_len];
-    liquid_firdes_kaiser(h_len, 0.03f, -40.0f, 0.0f, h);
-    firfilt_rrrf faudio = firfilt_rrrf_create(h,h_len);
+    // generate 'audio' signal (simple windowed sum of tones)
+    unsigned int nw = (unsigned int)(0.90*num_samples); // window length
+    unsigned int nt = (unsigned int)(0.05*num_samples); // taper length
     for (i=0; i<num_samples; i++) {
-        // push random sample
-        firfilt_rrrf_push(faudio, 0.3f*randnf());
-        firfilt_rrrf_execute(faudio, &x[i]);
-
-        // clip
-        x[i] = tanhf(x[i]);
-
-        // add frequency offset (not centered at zero)
-        //x[i] *= sinf(2*M_PI*i*0.13f);
-
-        // apply window
-        //x[i] *= hamming(i,num_samples);
+        x[i] =  0.6f*cos(2*M_PI*0.0202*i);
+        x[i] += 0.4f*cos(2*M_PI*0.0271*i);
+        x[i] *= i < nw ? liquid_rcostaper_window(i,nw,nt) : 0;
     }
-    firfilt_rrrf_destroy(faudio);
 
     // modulate signal
     for (i=0; i<num_samples; i++)
@@ -110,8 +95,13 @@ int main(int argc, char*argv[])
     // add channel impairments
     float nstd = powf(10.0f,-SNRdB/20.0f);
     for (i=0; i<num_samples; i++) {
-        y[i] *= cexpf(_Complex_I*(2*M_PI*cfo*i + cpo));
+        y[i] *= cexpf(_Complex_I*phi);
         y[i] += nstd*(randnf() + _Complex_I*randnf())*M_SQRT1_2;
+
+        // update phase
+        phi += dphi;
+        while (phi >  M_PI) phi -= 2*M_PI;
+        while (phi < -M_PI) phi += 2*M_PI;
     }
 
     // demodulate signal
@@ -123,17 +113,13 @@ int main(int argc, char*argv[])
     ampmodem_destroy(demod);
 
     // compute demodulation error
-    unsigned int delay = (type == LIQUID_AMPMODEM_DSB) ? 0 : 18; // fixed delay
     float rmse = 0.0f;
     for (i=delay; i<num_samples; i++)
         rmse += (x[i-delay] - z[i]) * (x[i-delay] - z[i]);
-    rmse = sqrtf( rmse / (float)(num_samples-delay) );
-    printf("rms error : %12.8f dB\n", 10*log10f(rmse));
+    rmse = 10*log10( rmse / (float)(num_samples-delay) );
+    printf("rms error : %.3f dB\n", rmse);
 
-
-    // 
     // export results
-    //
     FILE * fid = fopen(OUTPUT_FILENAME,"w");
     fprintf(fid,"%% %s : auto-generated file\n", OUTPUT_FILENAME);
     fprintf(fid,"clear all\n");
@@ -147,24 +133,35 @@ int main(int argc, char*argv[])
     }
     // plot results
     fprintf(fid,"t=0:(n-1);\n");
-    fprintf(fid,"figure;\n");
-    fprintf(fid,"plot(t,x,t-delay,z);\n");
-    fprintf(fid,"axis([-delay n -1.2 1.2]);\n");
-    fprintf(fid,"xlabel('time');\n");
-    fprintf(fid,"ylabel('signal');\n");
-    fprintf(fid,"legend('original','demodulated',1);\n");
-    fprintf(fid,"grid on;\n");
+    fprintf(fid,"figure('position',[100 100 800 600]);\n");
+    // message signals
+    fprintf(fid,"subplot(3,1,1);\n");
+    fprintf(fid,"  plot(t,x,t-delay,z);\n");
+    fprintf(fid,"  axis([-delay n -1.2 1.2]);\n");
+    fprintf(fid,"  xlabel('Time [sample index]');\n");
+    fprintf(fid,"  ylabel('Message Signal');\n");
+    fprintf(fid,"  legend('original','demodulated');\n");
+    fprintf(fid,"  grid on;\n");
+    // rf signal
+    fprintf(fid,"subplot(3,1,2);\n");
+    fprintf(fid,"  plot(t,real(y),t,imag(y));\n");
+    fprintf(fid,"  axis([-delay n -1.8 1.8]);\n");
+    fprintf(fid,"  xlabel('Time [sample index]');\n");
+    fprintf(fid,"  ylabel('RF Signal');\n");
+    fprintf(fid,"  legend('real','imag');\n");
+    fprintf(fid,"  grid on;\n");
     // spectrum
-    fprintf(fid,"nfft=1024;\n");
-    fprintf(fid,"f=[0:(nfft-1)]/nfft - 0.5;\n");
-    fprintf(fid,"Y = 20*log10(abs(fftshift(fft(y,nfft))));\n");
-    fprintf(fid,"Y = Y - max(Y);\n");
-    fprintf(fid,"figure;\n");
-    fprintf(fid,"plot(f,Y);\n");
-    fprintf(fid,"axis([-0.5 0.5 -60 10]);\n");
-    fprintf(fid,"grid on;\n");
+    fprintf(fid,"subplot(3,1,3);\n");
+    fprintf(fid,"  nfft=2^nextpow2(n);\n");
+    fprintf(fid,"  f=[0:(nfft-1)]/nfft - 0.5;\n");
+    fprintf(fid,"  Y = 20*log10(abs(fftshift(fft(y,nfft))));\n");
+    fprintf(fid,"  Y = Y - max(Y);\n");
+    fprintf(fid,"  plot(f,Y);\n");
+    fprintf(fid,"  axis([-0.1 0.1 -60 10]);\n");
+    fprintf(fid,"  xlabel('Normalized Frequency [f/F_s]');\n");
+    fprintf(fid,"  ylabel('Received PSD [dB]');\n");
+    fprintf(fid,"  grid on;\n");
     fclose(fid);
     printf("results written to %s\n", OUTPUT_FILENAME);
-
     return 0;
 }

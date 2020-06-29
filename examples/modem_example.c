@@ -22,7 +22,7 @@ void usage()
     printf("modem_example [options]\n");
     printf("  h     : print help\n");
     printf("  v/q   : verbose/quiet\n");
-    printf("  m     : modulation scheme (qpsk default)\n");
+    printf("  m     : modulation scheme (qam16 default)\n");
     liquid_print_modulation_schemes();
 }
 
@@ -30,7 +30,7 @@ void usage()
 int main(int argc, char*argv[])
 {
     // create mod/demod objects
-    modulation_scheme ms = LIQUID_MODEM_QPSK;
+    modulation_scheme ms = LIQUID_MODEM_QAM16;
     int verbose = 1;
 
     int dopt;

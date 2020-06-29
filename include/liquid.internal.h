@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2015 Joseph Gaeddert
+ * Copyright (c) 2007 - 2020 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -573,6 +573,7 @@ unsigned int fec_rs_get_enc_msg_len(unsigned int _dec_msg_len,
 
 
 fec fec_rs_create(fec_scheme _fs);
+void fec_rs_destroy(fec _q);
 void fec_rs_init_p8(fec _q);
 void fec_rs_setlength(fec _q,
                       unsigned int _dec_msg_len);
@@ -641,6 +642,8 @@ struct fecintlv_plan {
     // interleaver
     interleaver q;
 };
+
+#define PACKETIZER_VERSION (1)
 
 // packetizer object
 struct packetizer_s {
@@ -807,12 +810,12 @@ float estimate_req_filter_len_Herrmann(float _df,
 #define LIQUID_FIRFARROW_DEFINE_INTERNAL_API(FIRFARROW,TO,TC,TI)  \
 void FIRFARROW(_genpoly)(FIRFARROW() _q);
 
-LIQUID_FIRFARROW_DEFINE_INTERNAL_API(FIRFARROW_MANGLE_RRRF,
+LIQUID_FIRFARROW_DEFINE_INTERNAL_API(LIQUID_FIRFARROW_MANGLE_RRRF,
                                      float,
                                      float,
                                      float)
 
-LIQUID_FIRFARROW_DEFINE_INTERNAL_API(FIRFARROW_MANGLE_CRCF,
+LIQUID_FIRFARROW_DEFINE_INTERNAL_API(LIQUID_FIRFARROW_MANGLE_CRCF,
                                      liquid_float_complex,
                                      float,
                                      liquid_float_complex)
@@ -865,9 +868,9 @@ LIQUID_IIRFILT_DEFINE_INTERNAL_API(IIRFILT_MANGLE_CCCQ16, cq16_t, cq16_t, cq16_t
 // 
 // iirfiltsos : infinite impulse respone filter (second-order sections)
 //
-#define IIRFILTSOS_MANGLE_RRRF(name)  LIQUID_CONCAT(iirfiltsos_rrrf,name)
-#define IIRFILTSOS_MANGLE_CRCF(name)  LIQUID_CONCAT(iirfiltsos_crcf,name)
-#define IIRFILTSOS_MANGLE_CCCF(name)  LIQUID_CONCAT(iirfiltsos_cccf,name)
+#define LIQUID_IIRFILTSOS_MANGLE_RRRF(name)  LIQUID_CONCAT(iirfiltsos_rrrf,name)
+#define LIQUID_IIRFILTSOS_MANGLE_CRCF(name)  LIQUID_CONCAT(iirfiltsos_crcf,name)
+#define LIQUID_IIRFILTSOS_MANGLE_CCCF(name)  LIQUID_CONCAT(iirfiltsos_cccf,name)
 
 // fixed-point
 #define IIRFILTSOS_MANGLE_RRRQ16(name)  LIQUID_CONCAT(iirfiltsos_rrrq16,name)
@@ -877,18 +880,7 @@ LIQUID_IIRFILT_DEFINE_INTERNAL_API(IIRFILT_MANGLE_CCCQ16, cq16_t, cq16_t, cq16_t
 #define LIQUID_IIRFILTSOS_DEFINE_INTERNAL_API(IIRFILTSOS,TO,TC,TI)  \
 typedef struct IIRFILTSOS(_s) * IIRFILTSOS();                   \
                                                                 \
-/* filter structure */                                          \
-struct IIRFILTSOS(_s) {                                         \
-    TC b[3];    /* feed-forward coefficients                */  \
-    TC a[3];    /* feed-back coefficients                   */  \
-                                                                \
-    /* internal buffering                                   */  \
-    TI x[3];    /* Direct form I  buffer (input)            */  \
-    TO y[3];    /* Direct form I  buffer (output)           */  \
-    TO v[3];    /* Direct form II buffer                    */  \
-};                                                              \
-                                                                \
-/* create 2nd-ordr infinite impulse reponse filter          */  \
+/* create 2nd-order infinite impulse reponse filter         */  \
 /*  _b      : feed-forward coefficients [size: _3 x 1]      */  \
 /*  _a      : feed-back coefficients    [size: _3 x 1]      */  \
 IIRFILTSOS() IIRFILTSOS(_create)(TC * _b,                       \
@@ -941,17 +933,17 @@ void IIRFILTSOS(_execute_df2)(IIRFILTSOS() _q,                  \
 float IIRFILTSOS(_groupdelay)(IIRFILTSOS() _q,                  \
                               float        _fc);                \
 
-LIQUID_IIRFILTSOS_DEFINE_INTERNAL_API(IIRFILTSOS_MANGLE_RRRF,
+LIQUID_IIRFILTSOS_DEFINE_INTERNAL_API(LIQUID_IIRFILTSOS_MANGLE_RRRF,
                                       float,
                                       float,
                                       float)
 
-LIQUID_IIRFILTSOS_DEFINE_INTERNAL_API(IIRFILTSOS_MANGLE_CRCF,
+LIQUID_IIRFILTSOS_DEFINE_INTERNAL_API(LIQUID_IIRFILTSOS_MANGLE_CRCF,
                                       liquid_float_complex,
                                       float,
                                       liquid_float_complex)
 
-LIQUID_IIRFILTSOS_DEFINE_INTERNAL_API(IIRFILTSOS_MANGLE_CCCF,
+LIQUID_IIRFILTSOS_DEFINE_INTERNAL_API(LIQUID_IIRFILTSOS_MANGLE_CCCF,
                                       liquid_float_complex,
                                       liquid_float_complex,
                                       liquid_float_complex)
@@ -1046,28 +1038,6 @@ void liquid_firdes_farcsech_freqresponse(unsigned int _k,
                                          float        _beta,
                                          float *      _H);
 
-
-
-// initialize the frequency grid on the disjoint bounded set
-void firdespm_init_grid(firdespm _q);
-
-// compute interpolating polynomial
-void firdespm_compute_interp(firdespm _q);
-
-// compute error signal from actual response (interpolator
-// output), desired response, and weights
-void firdespm_compute_error(firdespm _q);
-
-// search error curve for _r+1 extremal indices
-void firdespm_iext_search(firdespm _q);
-
-// evaluates result to determine if Remez exchange algorithm
-// has converged
-int firdespm_is_search_complete(firdespm _q);
-
-// compute filter taps (coefficients) from result
-void firdespm_compute_taps(firdespm _q, float * _h);
-
 // iirdes : infinite impulse response filter design
 
 // Sorts array _z of complex numbers into complex conjugate pairs to
@@ -1155,7 +1125,7 @@ float complex ellip_asnf(float complex _u,
 // bpacket
 //
 
-#define BPACKET_VERSION 101
+#define BPACKET_VERSION (101+PACKETIZER_VERSION)
 
 // generator
 void bpacketgen_compute_packet_len(bpacketgen _q);
@@ -1177,50 +1147,152 @@ void bpacketsync_reconfig(bpacketsync _q);
 //
 
 // flexframe protocol
-#define FLEXFRAME_PROTOCOL  (101)
+#define FLEXFRAME_PROTOCOL  (101+PACKETIZER_VERSION)
 
 // header description
-// NOTE: The flexframe header can be improved with crc24, secded7264, v29
-//       which also generates a 54-byte frame. Improves header decoding
-//       by about 1 dB (99% probability of decoding with SNR = -1 dB);
-//       however this requires that the 'libfec' libraries are installed.
-#define FLEXFRAME_H_USER    (14)                    // user-defined array
-#define FLEXFRAME_H_DEC     (FLEXFRAME_H_USER+6)    // decoded length
-#define FLEXFRAME_H_CRC     (LIQUID_CRC_32)         // header CRC
-#define FLEXFRAME_H_FEC0    (LIQUID_FEC_SECDED7264) // header FEC (inner)
-#define FLEXFRAME_H_FEC1    (LIQUID_FEC_HAMMING84)  // header FEC (outer)
+#define FLEXFRAME_H_USER_DEFAULT (14)                    // default length for user-defined array
+#define FLEXFRAME_H_DEC          (6)                     // decoded length
+#define FLEXFRAME_H_CRC          (LIQUID_CRC_32)         // header CRC
+#define FLEXFRAME_H_FEC0         (LIQUID_FEC_SECDED7264) // header FEC (inner)
+#define FLEXFRAME_H_FEC1         (LIQUID_FEC_HAMMING84)  // header FEC (outer)
+#define FLEXFRAME_H_MOD          (LIQUID_MODEM_QPSK)     // modulation scheme
 
 
 // 
 // gmskframe
 //
 
-#define GMSKFRAME_VERSION   (3)
+#define GMSKFRAME_VERSION (3+PACKETIZER_VERSION)
 
 // header description
-#define GMSKFRAME_H_USER    (8)                     // user-defined array
-#define GMSKFRAME_H_DEC     (GMSKFRAME_H_USER+5)    // decoded length
-#define GMSKFRAME_H_CRC     (LIQUID_CRC_32)         // header CRC
-#define GMSKFRAME_H_FEC     (LIQUID_FEC_HAMMING128) // header FEC
-#define GMSKFRAME_H_ENC     (26)                    // encoded length (bytes)
-#define GMSKFRAME_H_SYM     (208)                   // number of encoded bits
+#define GMSKFRAME_H_USER_DEFAULT   (8)                     // user-defined array
+#define GMSKFRAME_H_DEC            (5)                     // decoded length
+#define GMSKFRAME_H_CRC            (LIQUID_CRC_32)         // header CRC
+#define GMSKFRAME_H_FEC            (LIQUID_FEC_HAMMING128) // header FEC
 
 
 // 
 // ofdmflexframe
 //
 
-#define OFDMFLEXFRAME_PROTOCOL  (104)
+#define OFDMFLEXFRAME_PROTOCOL  (104+PACKETIZER_VERSION)
 
 // header description
-#define OFDMFLEXFRAME_H_USER    (8)                         // user-defined array
-#define OFDMFLEXFRAME_H_DEC     (OFDMFLEXFRAME_H_USER+6)    // decoded length
-#define OFDMFLEXFRAME_H_CRC     (LIQUID_CRC_32)             // header CRC
-#define OFDMFLEXFRAME_H_FEC     (LIQUID_FEC_GOLAY2412)      // header FEC
-#define OFDMFLEXFRAME_H_ENC     (36)                        // encoded length
-#define OFDMFLEXFRAME_H_MOD     (LIQUID_MODEM_BPSK)         // modulation scheme
-#define OFDMFLEXFRAME_H_BPS     (1)                         // modulation depth
-#define OFDMFLEXFRAME_H_SYM     (288)                       // number of symbols
+#define OFDMFLEXFRAME_H_USER_DEFAULT (8)                         // default length for user-defined array
+#define OFDMFLEXFRAME_H_DEC          (6)                         // decoded length
+#define OFDMFLEXFRAME_H_CRC          (LIQUID_CRC_32)             // header CRC
+#define OFDMFLEXFRAME_H_FEC0         (LIQUID_FEC_GOLAY2412)      // header FEC (inner)
+#define OFDMFLEXFRAME_H_FEC1         (LIQUID_FEC_NONE)           // header FEC (outer)
+#define OFDMFLEXFRAME_H_MOD          (LIQUID_MODEM_BPSK)         // modulation scheme
+
+
+//
+// dsssframe
+//
+
+#define DSSSFRAME_PROTOCOL (101 + PACKETIZER_VERSION)
+#define DSSSFRAME_H_USER_DEFAULT (8)
+#define DSSSFRAME_H_DEC          (5)
+#define DSSSFRAME_H_CRC          (LIQUID_CRC_32)
+#define DSSSFRAME_H_FEC0         (LIQUID_FEC_GOLAY2412)
+#define DSSSFRAME_H_FEC1         (LIQUID_FEC_NONE)
+
+//
+// multi-signal source for testing (no meaningful data, just signals)
+//
+#define LIQUID_QSOURCE_MANGLE_CFLOAT(name) LIQUID_CONCAT(qsourcecf,name)
+
+#define LIQUID_QSOURCE_DEFINE_API(QSOURCE,TO)                               \
+                                                                            \
+/* Multi-signal source generator object                                 */  \
+typedef struct QSOURCE(_s) * QSOURCE();                                     \
+                                                                            \
+/* Create default qsource object, type uninitialized                    */  \
+QSOURCE() QSOURCE(_create)(unsigned int _M,                                 \
+                           unsigned int _m,                                 \
+                           float        _As,                                \
+                           float        _fc,                                \
+                           float        _bw,                                \
+                           float        _gain);                             \
+                                                                            \
+/* Initialize user-defined qsource object                               */  \
+void QSOURCE(_init_user)(QSOURCE() _q,                                      \
+                         void *    _userdata,                               \
+                         void *    _callback);                              \
+                                                                            \
+/* Initialize qsource tone object                                       */  \
+void QSOURCE(_init_tone)(QSOURCE() _q);                                     \
+                                                                            \
+/* Add chirp to signal generator, returning id of signal                */  \
+/*  _q          : signal source object                                  */  \
+/*  _duration   : duration of chirp [samples]                           */  \
+/*  _negate     : negate frequency direction                            */  \
+/*  _repeat     : repeat signal? or just run once                       */  \
+void QSOURCE(_init_chirp)(QSOURCE() _q,                                     \
+                          float     _duration,                              \
+                          int       _negate,                                \
+                          int       _repeat);                               \
+                                                                            \
+/* Initialize qsource noise object                                      */  \
+void QSOURCE(_init_noise)(QSOURCE() _q);                                    \
+                                                                            \
+/* Initialize qsource linear modem object                               */  \
+void QSOURCE(_init_modem)(QSOURCE()    _q,                                  \
+                          int          _ms,                                 \
+                          unsigned int _m,                                  \
+                          float        _beta);                              \
+                                                                            \
+/* Initialize frequency-shift keying modem signal source                */  \
+/*  _q      : signal source object                                      */  \
+/*  _m      : bits per symbol, _bps > 0                                 */  \
+/*  _k      : samples/symbol, _k >= 2^_m                                */  \
+void QSOURCE(_init_fsk)(QSOURCE()    _q,                                    \
+                        unsigned int _m,                                    \
+                        unsigned int _k);                                   \
+                                                                            \
+/* Initialize qsource GMSK modem object                                 */  \
+void QSOURCE(_init_gmsk)(QSOURCE()    _q,                                   \
+                         unsigned int _m,                                   \
+                         float        _bt);                                 \
+                                                                            \
+/* Destroy qsource object                                               */  \
+void QSOURCE(_destroy)(QSOURCE() _q);                                       \
+                                                                            \
+/* Print qsource object                                                 */  \
+void QSOURCE(_print)(QSOURCE() _q);                                         \
+                                                                            \
+/* Reset qsource object                                                 */  \
+void QSOURCE(_reset)(QSOURCE() _q);                                         \
+                                                                            \
+/* Get/set source id                                                    */  \
+void QSOURCE(_set_id)(QSOURCE() _q, int _id);                               \
+int  QSOURCE(_get_id)(QSOURCE() _q);                                        \
+                                                                            \
+void QSOURCE(_enable)(QSOURCE() _q);                                        \
+void QSOURCE(_disable)(QSOURCE() _q);                                       \
+                                                                            \
+void QSOURCE(_set_gain)(QSOURCE() _q,                                       \
+                        float     _gain_dB);                                \
+                                                                            \
+float QSOURCE(_get_gain)(QSOURCE() _q);                                     \
+                                                                            \
+/* Get number of samples generated by the object so far                 */  \
+/*  _q      : msource object                                            */  \
+/*  _gain   : signal gain output [dB]                                   */  \
+uint64_t QSOURCE(_get_num_samples)(QSOURCE() _q);                           \
+                                                                            \
+void QSOURCE(_set_frequency)(QSOURCE() _q,                                  \
+                             float     _dphi);                              \
+                                                                            \
+float QSOURCE(_get_frequency)(QSOURCE() _q);                                \
+                                                                            \
+void QSOURCE(_generate)(QSOURCE() _q,                                       \
+                        TO *      _v);                                      \
+                                                                            \
+void QSOURCE(_generate_into)(QSOURCE() _q,                                  \
+                             TO *      _buf);                               \
+    
+LIQUID_QSOURCE_DEFINE_API(LIQUID_QSOURCE_MANGLE_CFLOAT, liquid_float_complex)
 
 //
 // MODULE : math
@@ -1277,11 +1349,11 @@ T    MATRIX(_det2x2)(T * _x,                                    \
                      unsigned int _cx);
 
 
-LIQUID_MATRIX_DEFINE_INTERNAL_API(MATRIX_MANGLE_FLOAT,   float)
-LIQUID_MATRIX_DEFINE_INTERNAL_API(MATRIX_MANGLE_DOUBLE,  double)
+LIQUID_MATRIX_DEFINE_INTERNAL_API(LIQUID_MATRIX_MANGLE_FLOAT,   float)
+LIQUID_MATRIX_DEFINE_INTERNAL_API(LIQUID_MATRIX_MANGLE_DOUBLE,  double)
 
-LIQUID_MATRIX_DEFINE_INTERNAL_API(MATRIX_MANGLE_CFLOAT,  liquid_float_complex)
-LIQUID_MATRIX_DEFINE_INTERNAL_API(MATRIX_MANGLE_CDOUBLE, liquid_double_complex)
+LIQUID_MATRIX_DEFINE_INTERNAL_API(LIQUID_MATRIX_MANGLE_CFLOAT,  liquid_float_complex)
+LIQUID_MATRIX_DEFINE_INTERNAL_API(LIQUID_MATRIX_MANGLE_CDOUBLE, liquid_double_complex)
 
 
 // sparse 'alist' matrix type (similar to MacKay, Davey Lafferty convention)
@@ -1293,9 +1365,9 @@ LIQUID_MATRIX_DEFINE_INTERNAL_API(MATRIX_MANGLE_CDOUBLE, liquid_double_complex)
 void SMATRIX(_reset_max_mlist)(SMATRIX() _q);                   \
 void SMATRIX(_reset_max_nlist)(SMATRIX() _q);                   \
 
-LIQUID_SMATRIX_DEFINE_INTERNAL_API(SMATRIX_MANGLE_BOOL,  unsigned char)
-LIQUID_SMATRIX_DEFINE_INTERNAL_API(SMATRIX_MANGLE_FLOAT, float)
-LIQUID_SMATRIX_DEFINE_INTERNAL_API(SMATRIX_MANGLE_INT,   short int)
+LIQUID_SMATRIX_DEFINE_INTERNAL_API(LIQUID_SMATRIX_MANGLE_BOOL,  unsigned char)
+LIQUID_SMATRIX_DEFINE_INTERNAL_API(LIQUID_SMATRIX_MANGLE_FLOAT, float)
+LIQUID_SMATRIX_DEFINE_INTERNAL_API(LIQUID_SMATRIX_MANGLE_INT,   short int)
 
 // search for index placement in list
 unsigned short int smatrix_indexsearch(unsigned short int * _list,
@@ -1574,6 +1646,40 @@ void ofdmframesync_rxsymbol(ofdmframesync _q);
 //
 
 
+// Numerically-controlled oscillator, floating point phase precision
+#define LIQUID_NCO_DEFINE_INTERNAL_API(NCO,T,TC)                \
+                                                                \
+/* constrain phase/frequency to be in [-pi,pi)          */      \
+void NCO(_constrain_phase)(NCO() _q);                           \
+void NCO(_constrain_frequency)(NCO() _q);                       \
+                                                                \
+/* compute trigonometric functions for nco/vco type     */      \
+void NCO(_compute_sincos_nco)(NCO() _q);                        \
+void NCO(_compute_sincos_vco)(NCO() _q);                        \
+                                                                \
+/* reset internal phase-locked loop filter              */      \
+void NCO(_pll_reset)(NCO() _q);                                 \
+
+// Define nco internal APIs
+LIQUID_NCO_DEFINE_INTERNAL_API(LIQUID_NCO_MANGLE_FLOAT,
+                               float,
+                               liquid_float_complex)
+
+// Numerically-controlled synthesizer (direct digital synthesis)
+#define LIQUID_SYNTH_DEFINE_INTERNAL_API(SYNTH,T,TC)            \
+                                                                \
+/* constrain phase/frequency to be in [-pi,pi)          */      \
+void SYNTH(_constrain_phase)(SYNTH() _q);                       \
+void SYNTH(_constrain_frequency)(SYNTH() _q);                   \
+void SYNTH(_compute_synth)(SYNTH() _q);                         \
+                                                                \
+/* reset internal phase-locked loop filter              */      \
+void SYNTH(_pll_reset)(SYNTH() _q);                             \
+
+// Define nco internal APIs
+LIQUID_SYNTH_DEFINE_INTERNAL_API(SYNTH_MANGLE_FLOAT,
+                                 float,
+                                 liquid_float_complex)
 // 
 // MODULE : optim (non-linear optimization)
 //
