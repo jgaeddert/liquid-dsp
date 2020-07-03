@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2015 Joseph Gaeddert
+ * Copyright (c) 2007 - 2020 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -25,8 +25,8 @@
 //
 
 // create arbitrary digital modem object
-MODEM() MODEM(_create_arbitrary)(TC * _table,
-                               unsigned int _M)
+MODEM() MODEM(_create_arbitrary)(float complex * _table,
+                                 unsigned int    _M)
 {
     // strip out bits/symbol
     unsigned int m = liquid_nextpow2(_M);
@@ -184,9 +184,9 @@ MODEM() MODEM(_create_arb64vt)()
 //  _mod        :   modem object
 //  _symbol_map :   arbitrary modem symbol map
 //  _len        :   number of symbols in the map
-void MODEM(_arb_init)(MODEM()      _q,
-                      TC *         _symbol_map,
-                      unsigned int _len)
+void MODEM(_arb_init)(MODEM()         _q,
+                      float complex * _symbol_map,
+                      unsigned int    _len)
 {
 #ifdef LIQUID_VALIDATE_INPUT
     if (_q->scheme != LIQUID_MODEM_ARB) {

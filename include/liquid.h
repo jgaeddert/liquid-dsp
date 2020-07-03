@@ -6888,11 +6888,12 @@ typedef struct MODEM(_s) * MODEM();                                         \
 MODEM() MODEM(_create)(modulation_scheme _scheme);                          \
                                                                             \
 /* Create linear digital modem object with arbitrary constellation      */  \
-/* points defined by an external table of symbols.                      */  \
+/* points defined by an external table of symbols. Sample points are    */  \
+/* provided as complex float pairs and converted internally if needed.  */  \
 /*  _table  : array of complex constellation points, [size: _M x 1]     */  \
 /*  _M      : modulation order and table size, _M must be power of 2    */  \
-MODEM() MODEM(_create_arbitrary)(TC *         _table,                       \
-                                 unsigned int _M);                          \
+MODEM() MODEM(_create_arbitrary)(liquid_float_complex * _table,             \
+                                 unsigned int           _M);                \
                                                                             \
 /* Recreate modulation scheme, re-allocating memory as necessary        */  \
 /*  _q      : modem object                                              */  \
