@@ -120,7 +120,21 @@ void testbench_spgramcf_signal(unsigned int _nfft, int _wtype, float _fc, float 
     // verify result
     float psd[_nfft];
     spgramcf_get_psd(q, psd);
-    //for (i=0; i<_nfft; i++) { printf("%6u %8.2f\n", i, psd[i]); }
+#if 0
+    // debug
+    const char filename[] = "testbench_spgramcf_signal.m";
+    FILE * fid = fopen(filename,"w");
+    fprintf(fid,"clear all; close all; nfft=%u; f=[0:(nfft-1)]/nfft-0.5; psd=zeros(1,nfft);\n", _nfft);
+    fprintf(fid,"i0=%u; ns=%u; target=%f; tol=%f; idx=mod(round([1:ns]-1+i0-ns/2),nfft)+1;\n", i0, ns, psd_target, tol);
+    for (i=0; i<_nfft; i++) { fprintf(fid,"psd(%6u) = %8.2f;\n", i+1, psd[i]); }
+    fprintf(fid,"figure; xlabel('f/F_s'); ylabel('PSD [dB]'); hold on;\n");
+    fprintf(fid,"  plot(f(idx),target*ones(1,ns)+tol,'Color',[0.5 0 0]);\n");
+    fprintf(fid,"  plot(f(idx),target*ones(1,ns)-tol,'Color',[0.5 0 0]);\n");
+    fprintf(fid,"  plot(f,psd,'LineWidth',2,'Color',[0 0.3 0.5]);\n");
+    fprintf(fid,"hold off; grid on; axis([-0.5 0.5 %f %f]);\n", noise_floor-5, noise_floor+_SNRdB+5);
+    fclose(fid);
+    printf("debug file written to %s\n", filename);
+#endif
     for (i=0; i<ns; i++) {
         unsigned int index = (i0 + i + _nfft - ns/2) % _nfft;
         CONTEND_DELTA(psd[index], psd_target, tol)

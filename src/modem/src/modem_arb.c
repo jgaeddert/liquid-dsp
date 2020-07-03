@@ -25,8 +25,8 @@
 //
 
 // create arbitrary digital modem object from floating-point array
-MODEM() MODEM(_create_arbitrary)(TC *         _table,
-                                 unsigned int _M)
+MODEM() MODEM(_create_arbitrary)(float complex * _table,
+                                 unsigned int    _M)
 {
     // strip out bits/symbol
     unsigned int m = liquid_nextpow2(_M);
