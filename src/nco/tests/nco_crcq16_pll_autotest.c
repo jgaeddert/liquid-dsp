@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2015 Joseph Gaeddert
+ * Copyright (c) 2007 - 2020 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -25,6 +25,8 @@
 
 #include "liquidfpm.h"
 #include "liquid.h"
+
+#define DEBUG_NCO_CRCQ16_PLL_TEST 0
 
 //
 // test phase-locked loop
@@ -54,6 +56,11 @@ void nco_crcq16_pll_test(int          _type,
     unsigned int i;
     q16_t phase_error;
     cq16_t r, v;
+#if DEBUG_NCO_CRCQ16_PLL_TEST
+    const char filename[] = "nco_crcq16_pll_test.m";
+    FILE * fid = fopen(filename,"w");
+    fprintf(fid,"n=%u; r=zeros(1,n); v=zeros(1,n);\n", _num_iterations);
+#endif
     for (i=0; i<_num_iterations; i++) {
         // received complex signal
         nco_crcq16_cexpf(nco_tx,&r);
@@ -68,7 +75,18 @@ void nco_crcq16_pll_test(int          _type,
         // update nco objects
         nco_crcq16_step(nco_tx);
         nco_crcq16_step(nco_rx);
+#if DEBUG_NCO_CRCQ16_PLL_TEST
+        fprintf(fid,"p(%3u)=%12.8f; r(%3u)=%12.8f+%12.8fj; v(%3u)=%12.8f+%12.8fj;\n",
+                i+1, q16_fixed_to_float(phase_error),
+                i+1, q16_fixed_to_float(r.real), q16_fixed_to_float(r.real),
+                i+1, q16_fixed_to_float(v.real), q16_fixed_to_float(v.real));
+#endif
     }
+#if DEBUG_NCO_CRCQ16_PLL_TEST
+    fprintf(fid,"t=0:(n-1); figure; plot(t,real(r),t,real(v)); xlabel('time'); ylabel('phase error'); grid on;\n");
+    fclose(fid);
+    printf("debug results written to %s\n", filename);
+#endif
 
     // ensure phase of oscillators is locked
     float nco_tx_phase = q16_angle_fixed_to_float( nco_crcq16_get_phase(nco_tx) );
@@ -90,7 +108,7 @@ void nco_crcq16_pll_test(int          _type,
 //
 void autotest_vco_crcq16_pll_phase()
 {
-    float tol = 0.02f;
+    float tol = 0.03f;
 
     // test various phase offsets
     nco_crcq16_pll_test(LIQUID_NCO, -M_PI/1.1f,  0.0f, 0.1f, 256, tol);
@@ -118,7 +136,7 @@ void autotest_vco_crcq16_pll_phase()
 //
 void autotest_nco_crcq16_pll_phase()
 {
-    float tol = 0.02f;
+    float tol = 0.03f;
 
     // test various phase offsets
     nco_crcq16_pll_test(LIQUID_VCO, -M_PI/1.1f,  0.0f, 0.1f, 256, tol);
