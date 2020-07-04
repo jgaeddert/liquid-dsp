@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2019 Joseph Gaeddert
+ * Copyright (c) 2007 - 2020 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -288,10 +288,7 @@ void NCO(_mix_block_up)(NCO()        _q,
                         unsigned int _n)
 {
     unsigned int i;
-#if LIQUID_FPM
-    for (i=0; i<_n; i++)
-        NCO(_mix_up)(_q, _x[i], &_y[i]);
-#else
+#if 0
     T theta =   _q->theta;
     T d_theta = _q->d_theta;
     for (i=0; i<_n; i++) {
@@ -302,6 +299,14 @@ void NCO(_mix_block_up)(NCO()        _q,
     }
 
     NCO(_set_phase)(_q, theta);
+#else
+    for (i=0; i<_n; i++) {
+        // mix single sample up
+        NCO(_mix_up)(_q, _x[i], &_y[i]);
+
+        // step internal phase
+        NCO(_step)(_q);
+    }
 #endif
 }
 
@@ -318,10 +323,7 @@ void NCO(_mix_block_down)(NCO() _q,
                           unsigned int _n)
 {
     unsigned int i;
-#if LIQUID_FPM
-    for (i=0; i<_n; i++)
-        NCO(_mix_down)(_q, _x[i], &_y[i]);
-#else
+#if 0
     T theta =   _q->theta;
     T d_theta = _q->d_theta;
     for (i=0; i<_n; i++) {
@@ -332,6 +334,14 @@ void NCO(_mix_block_down)(NCO() _q,
     }
 
     NCO(_set_phase)(_q, theta);
+#else
+    for (i=0; i<_n; i++) {
+        // mix single sample up
+        NCO(_mix_down)(_q, _x[i], &_y[i]);
+
+        // step internal phase
+        NCO(_step)(_q);
+    }
 #endif
 }
 
