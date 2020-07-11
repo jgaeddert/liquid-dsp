@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2015 Joseph Gaeddert
+ * Copyright (c) 2007 - 2019 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -54,6 +54,7 @@ struct qpilotsync_s {
     float           dphi_hat;       // carrier frequency offset estimate
     float           phi_hat;        // carrier phase offset estimate
     float           g_hat;          // gain correction estimate
+    float           evm_hat;        // error-vector magnitude estimate (from pilots)
 };
 
 // create packet encoder
@@ -78,9 +79,9 @@ qpilotsync qpilotsync_create(unsigned int _payload_len,
     q->pilot_spacing = _pilot_spacing;
 
     // derived values
-    div_t d = div(q->payload_len,(q->pilot_spacing - 1));
-    q->num_pilots = d.quot + (d.rem ? 1 : 0);
+    q->num_pilots = qpilot_num_pilots(q->payload_len, q->pilot_spacing);
     q->frame_len  = q->payload_len + q->num_pilots;
+
 
     // allocate memory for pilots
     q->pilots = (float complex*) malloc(q->num_pilots*sizeof(float complex));
@@ -255,23 +256,32 @@ void qpilotsync_execute(qpilotsync      _q,
     _q->g_hat   = cabsf(metric) / (float)(_q->num_pilots);
 #endif
 
+    // frequency correction
+    float g = 1.0f / _q->g_hat;
+
+    // recover frame symbols
+    _q->evm_hat = 0.0f;
+    for (i=0; i<_q->frame_len; i++) {
+        float complex v = g * _frame[i] * cexpf(-_Complex_I*(_q->dphi_hat*i + _q->phi_hat));
+        if ( (i % _q->pilot_spacing)==0 ) {
+            // pilot symbol
+            float complex e = _q->pilots[p] - v;
+            _q->evm_hat += crealf( e * conjf(e) );
+            p++;
+        } else {
+            // data symbol
+            _payload[n++] = v;
+        }
+    }
+    _q->evm_hat = 10*log10f( _q->evm_hat / (float)(_q->num_pilots) );
 #if DEBUG_QPILOTSYNC
     // print estimates of carrier frequency, phase, gain
     printf("dphi-hat    :   %12.8f\n", _q->dphi_hat);
     printf(" phi-hat    :   %12.8f\n",  _q->phi_hat);
     printf("   g-hat    :   %12.8f\n",    _q->g_hat);
+    printf(" evm-hat    :   %12.8f\n",  _q->evm_hat);
 #endif
 
-    // frequency correction
-    float g = 1.0f / _q->g_hat;
-
-    // recover frame symbols
-    for (i=0; i<_q->frame_len; i++) {
-        if ( (i % _q->pilot_spacing)==0 )
-            p++;
-        else
-            _payload[n++] = g * _frame[i] * cexpf(-_Complex_I*(_q->dphi_hat*i + _q->phi_hat));
-    }
 #if DEBUG_QPILOTSYNC
     printf("n = %u (expected %u)\n", n, _q->payload_len);
     printf("p = %u (expected %u)\n", p, _q->num_pilots);
@@ -294,6 +304,11 @@ float qpilotsync_get_phi(qpilotsync _q)
 float qpilotsync_get_gain(qpilotsync _q)
 {
     return _q->g_hat;
+}
+
+float qpilotsync_get_evm(qpilotsync _q)
+{
+    return _q->evm_hat;
 }
 
 

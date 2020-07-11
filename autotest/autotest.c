@@ -274,7 +274,7 @@ int main(int argc, char *argv[])
     if (liquid_autotest_verbose)
         print_unstable_tests();
 
-    printf("autotetst seed: %u\n", rseed);
+    printf("autotest seed: %u\n", rseed);
     autotest_print_results();
 
     // program return value
@@ -286,7 +286,7 @@ int main(int argc, char *argv[])
     // export results to output .json file; try to open file for writing
     FILE * fid = fopen(filename,"w");
     if (!fid) {
-        fprintf(stderr,"error: export_results(), could not open '%s' for writing\n", filename);
+        fprintf(stderr,"error: %s, could not open '%s' for writing\n", __FILE__, filename);
         return -1;
     }
 

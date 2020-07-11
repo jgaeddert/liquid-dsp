@@ -1,6 +1,43 @@
 
 ## Latest improvements ##
 
+## Improvements for v1.3.2 ##
+
+  * autotest
+    - runs with random seeds (based on time) for diveristy
+    - output .json file for post-analysis
+  * build
+    - cleaned up compiler warnings across most platforms
+    - incorporated continuous integration script
+    - compact header APIs across all interfaces in liquid.h
+    - consistent build across Linux and macOS
+  * agc
+    - added more convenience methods, improved autotest stability
+  * fft
+    - spwaterfall less verbose with more convenience methods
+  * filter
+    - new rresamp family of objects to implement rational rate
+      resampling; very useful for fixed buffer sizes
+    - resamp now uses fixed-point phase for faster computation
+    - fixed issues with msresamp2 ordering to have expected roll-off
+      performance
+    - added notch filter design option for firfilt (with autotest)
+  * framing
+    - completely reworked msource family of objects to use firpfbch2
+      family of objects for computationally efficient
+    - added preliminary fskframe generator and synchronizer objects
+  * math
+    - improved functions for speed, is_prime()
+    - improved stability and consistency of root-finding algorithms
+  * multichannel
+    - added new firpfbchr family of objects for arbitrarily setting
+      number of channels and down-sampling rates
+  * modem
+    - refactored objects for amplitude modulation/demodulation to use
+      Hilbert transform, added autotest scripts
+  * nco
+    - improving consistency across platforms
+
 ## Improvements for v1.3.1 ##
 
   * improved selection of SSE/MMX extension flags for gcc

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2015 Joseph Gaeddert
+ * Copyright (c) 2007 - 2019 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -113,6 +113,9 @@ int liquid_autotest_same_data(unsigned char * _x,
 void liquid_autotest_print_array(unsigned char * _x,
                                  unsigned int _n);
 
+// Compute magnitude of (possibly) complex number
+#define LIQUID_AUTOTEST_VMAG(V) (sqrt(creal(V)*creal(V)+cimag(V)*cimag(V)))
+
 // CONTEND_EQUALITY
 #define TEST_EQUALITY(F,L,EX,X,EY,Y)                                \
 {                                                                   \
@@ -166,15 +169,18 @@ void liquid_autotest_print_array(unsigned char * _x,
 #define CONTEND_LESS_THAN(X,Y)            CONTEND_LESS_THAN_FL(__FILE__,__LINE__,X,Y)
 
 // CONTEND_DELTA
-#define TEST_DELTA(F,L,EX,X,EY,Y,ED,D)                              \
-{                                                                   \
-    if (fabs((X)-(Y))>(D))                                          \
-    {                                                               \
-        liquid_autotest_failed_expr(F,L,"abs(" #X "-" #Y ")",       \
-                                    fabs(X-Y),"<",ED,D);            \
-    } else {                                                        \
-        liquid_autotest_passed();                                   \
-    }                                                               \
+// Test delta between two (possibly complex numbers) is within tolerance. Use the
+// expanded macro for computing magnitude of difference to account for both real
+// as well as complex numbers
+#define TEST_DELTA(F,L,EX,X,EY,Y,ED,D)                                          \
+{                                                                               \
+    if (LIQUID_AUTOTEST_VMAG((X)-(Y)) > (D))                                    \
+    {                                                                           \
+        liquid_autotest_failed_expr(F,L,"abs(" #X "-" #Y ")",                   \
+            LIQUID_AUTOTEST_VMAG((X)-(Y)),"<",ED,D);                            \
+    } else {                                                                    \
+        liquid_autotest_passed();                                               \
+    }                                                                           \
 }
 #define CONTEND_DELTA_FL(F,L,X,Y,D)       TEST_DELTA(F,L,#X,(X),#Y,(Y),#D,(D))
 #define CONTEND_DELTA(X,Y,D)              CONTEND_DELTA_FL(__FILE__,__LINE__,X,Y,D)

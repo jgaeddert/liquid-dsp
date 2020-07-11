@@ -137,6 +137,7 @@ int main(int argc, char*argv[])
     if (debug)
         ofdmflexframesync_debug_print(fs, "ofdmflexframesync_debug.m");
 
+    ofdmflexframesync_print(fs);
     // destroy objects
     ofdmflexframegen_destroy(fg);
     ofdmflexframesync_destroy(fs);

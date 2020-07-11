@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2018 Joseph Gaeddert
+ * Copyright (c) 2007 - 2019 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -49,6 +49,7 @@ struct SPWATERFALL(_s) {
     float           sample_rate;    // sample rate [Hz]
     unsigned int    width;          // image width [pixels]
     unsigned int    height;         // image height [pixels]
+    char *          commands;       // commands to execute directly before 'plot'
 };
 
 //
@@ -107,6 +108,7 @@ SPWATERFALL() SPWATERFALL(_create)(unsigned int _nfft,
     q->sample_rate  = -1;
     q->width        = 800;
     q->height       = 800;
+    q->commands     = NULL;
 
     // create buffer to hold aggregated power spectral density
     // NOTE: the buffer is two-dimensional time/frequency grid that is two times
@@ -145,6 +147,7 @@ void SPWATERFALL(_destroy)(SPWATERFALL() _q)
 {
     // free allocated memory
     free(_q->psd);
+    free(_q->commands);
 
     // destroy internal spectral periodogram object
     SPGRAM(_destroy)(_q->periodogram);
@@ -157,6 +160,7 @@ void SPWATERFALL(_destroy)(SPWATERFALL() _q)
 // the internal buffer
 void SPWATERFALL(_clear)(SPWATERFALL() _q)
 {
+    SPGRAM(_clear)(_q->periodogram);
     memset(_q->psd, 0x00, 2*_q->nfft*_q->time*sizeof(T));
     _q->index_time = 0;
 }
@@ -165,6 +169,7 @@ void SPWATERFALL(_clear)(SPWATERFALL() _q)
 void SPWATERFALL(_reset)(SPWATERFALL() _q)
 {
     SPWATERFALL(_clear)(_q);
+    SPGRAM(_reset)(_q->periodogram);
     _q->rollover = 1;
 }
 
@@ -172,6 +177,30 @@ void SPWATERFALL(_reset)(SPWATERFALL() _q)
 void SPWATERFALL(_print)(SPWATERFALL() _q)
 {
     printf("spwaterfall%s: nfft=%u, time=%u\n", EXTENSION, _q->nfft, _q->time);
+}
+
+// Get number of samples processed since object was created
+uint64_t SPWATERFALL(_get_num_samples_total)(SPWATERFALL() _q)
+{
+    return SPGRAM(_get_num_samples_total)(_q->periodogram);
+}
+
+// Get FFT size (columns in PSD output)
+unsigned int SPWATERFALL(_get_num_freq)(SPWATERFALL() _q)
+{
+    return _q->nfft;
+}
+
+// Get number of accumulated FFTs (rows in PSD output)
+unsigned int SPWATERFALL(_get_num_time)(SPWATERFALL() _q)
+{
+    return _q->index_time;
+}
+
+// Get power spectral density (PSD), size: nfft x time
+const float * SPWATERFALL(_get_psd)(SPWATERFALL() _q)
+{
+    return (const T *) _q->psd;
 }
 
 // set center freuqncy
@@ -202,6 +231,32 @@ int SPWATERFALL(_set_dims)(SPWATERFALL() _q,
 {
     _q->width  = _width;
     _q->height = _height;
+    return 0;
+}
+
+// set image dimensions
+int SPWATERFALL(_set_commands)(SPWATERFALL() _q,
+                               const char *  _commands)
+{
+    // clear memory with NULL pointer
+    if (_commands == NULL) {
+        free(_q->commands);
+        _q->commands = NULL;
+        return 0;
+    }
+
+    // sanity check
+    unsigned int n = strlen(_commands);
+    if (n > 1<<14) {
+        fprintf(stderr,"error: spwaterfall%s_set_commands(), input string size exceeds reasonable limits\n",EXTENSION);
+        SPWATERFALL(_set_commands)(_q, "# error: input string size limit exceeded");
+        return -1;
+    }
+
+    // reallocate memory, copy input, and return
+    _q->commands = (char*) realloc(_q->commands, n+1);
+    memmove(_q->commands, _commands, n);
+    _q->commands[n] = '\0';
     return 0;
 }
 
@@ -268,18 +323,18 @@ void SPWATERFALL(_step)(SPWATERFALL() _q)
 void SPWATERFALL(_consolidate_buffer)(SPWATERFALL() _q)
 {
     // assert(_q->index_time == 2*_q->time);
-    printf("consolidating... (rollover = %10u, total samples : %16llu, index : %u)\n",
-            _q->rollover, SPGRAM(_get_num_samples_total)(_q->periodogram), _q->index_time);
+    //printf("consolidating... (rollover = %10u, total samples : %16llu, index : %u)\n",
+    //        _q->rollover, SPGRAM(_get_num_samples_total)(_q->periodogram), _q->index_time);
     unsigned int i; // time index
     unsigned int k; // freq index
     for (i=0; i<_q->time; i++) {
         for (k=0; k<_q->nfft; k++) {
-            // compute median
-            T v0  = _q->psd[ (2*i + 0)*_q->nfft + k ];
-            T v1  = _q->psd[ (2*i + 1)*_q->nfft + k ];
+            // convert to linear, compute average, convert back to log
+            T v0 = powf(10.0f, _q->psd[ (2*i + 0)*_q->nfft + k ]*0.1f);
+            T v1 = powf(10.0f, _q->psd[ (2*i + 1)*_q->nfft + k ]*0.1f);
 
-            // keep log average (only need double buffer for this, not triple buffer)
-            _q->psd[ i*_q->nfft + k ] = logf(0.5f*(expf(v0) + expf(v1)));
+            // save result
+            _q->psd[ i*_q->nfft + k ] = 10.0f*log10f(0.5f*(v0+v1));
         }
     }
 
@@ -330,7 +385,7 @@ int SPWATERFALL(_export_bin)(SPWATERFALL() _q,
 
     // close it up
     fclose(fid);
-    printf("results written to %s\n", filename);
+    //printf("results written to %s\n", filename);
     return 0;
 }
 
@@ -389,6 +444,8 @@ int SPWATERFALL(_export_gnu)(SPWATERFALL() _q,
         float xtics = 0.1f;
         fprintf(fid,"set xtics %f\n", xtics);
         fprintf(fid,"set xlabel 'Normalized Frequency [f/F_s]'\n");
+        if (_q->commands != NULL)
+            fprintf(fid,"%s\n", _q->commands);
         fprintf(fid,"plot '%s.bin' u 1:($2*%e):3 binary matrix with image\n", _base, scale);
     } else {
         char unit;
@@ -413,6 +470,8 @@ int SPWATERFALL(_export_gnu)(SPWATERFALL() _q,
         //printf("xn:%f, xs:%f, xt:%f\n", xn, xs, xt);
         fprintf(fid,"set xrange [%f:%f]\n", g*(_q->frequency-0.5*_q->sample_rate), g*(_q->frequency+0.5*_q->sample_rate));
         fprintf(fid,"set xtics %f\n", xt);
+        if (_q->commands != NULL)
+            fprintf(fid,"%s\n", _q->commands);
         fprintf(fid,"plot '%s.bin' u ($1*%f+%f):($2*%e):3 binary matrix with image\n",
                 _base,
                 g*(_q->sample_rate < 0 ? 1 : _q->sample_rate),
@@ -422,10 +481,12 @@ int SPWATERFALL(_export_gnu)(SPWATERFALL() _q,
     fclose(fid);
 
     // close it up
+#if 0
     printf("results written to %s\n", filename);
     printf("index time       : %u\n", _q->index_time);
     printf("rollover         : %u\n", _q->rollover);
     printf("total transforms : %llu\n", SPGRAM(_get_num_transforms_total)(_q->periodogram));
+#endif
     return 0;
 }
 

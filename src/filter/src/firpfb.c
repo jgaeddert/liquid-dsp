@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2018 Joseph Gaeddert
+ * Copyright (c) 2007 - 2020 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -97,6 +97,13 @@ FIRPFB() FIRPFB(_create)(unsigned int _M,
     return q;
 }
 
+// create default firpfb
+FIRPFB() FIRPFB(_create_default)(unsigned int _M,
+                                 unsigned int _m)
+{
+    return FIRPFB(_create_kaiser)(_M, _m, 0.5f, 60.0f);
+}
+
 // create firpfb using kaiser window
 //  _M      : number of filters in the bank
 //  _m      : filter semi-length [samples]
@@ -138,7 +145,7 @@ FIRPFB() FIRPFB(_create_kaiser)(unsigned int _M,
 }
 
 // create square-root Nyquist filterbank
-//  _type   :   filter type (e.g. LIQUID_RNYQUIST_RRC)
+//  _type   :   filter type (e.g. LIQUID_FIRFILT_RRC)
 //  _M      :   number of filters in the bank
 //  _k      :   samples/symbol _k > 1
 //  _m      :   filter delay (symbols), _m > 0
@@ -180,7 +187,7 @@ FIRPFB() FIRPFB(_create_rnyquist)(int          _type,
 }
 
 // create firpfb derivative square-root Nyquist filterbank
-//  _type   :   filter type (e.g. LIQUID_RNYQUIST_RRC)
+//  _type   :   filter type (e.g. LIQUID_FIRFILT_RRC)
 //  _M      :   number of filters in the bank
 //  _k      :   samples/symbol _k > 1
 //  _m      :   filter delay (symbols), _m > 0

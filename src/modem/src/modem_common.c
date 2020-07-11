@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2015 Joseph Gaeddert
+ * Copyright (c) 2007 - 2019 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -370,7 +370,7 @@ void MODEM(_modulate_map)(MODEM() _q,
     if (_symbol_in >= _q->M) {
         fprintf(stderr,"error: modem_modulate_table(), input symbol exceeds maximum\n");
         exit(1);
-    } else if (_q == NULL) {
+    } else if (_q->symbol_map == NULL) {
         fprintf(stderr,"error: modem_modulate_table(), symbol table not initialized\n");
         exit(1);
     }

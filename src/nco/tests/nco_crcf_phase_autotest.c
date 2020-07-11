@@ -47,6 +47,11 @@ void nco_crcf_phase_test(float _theta,
     float c = nco_crcf_cos(nco);
     float s = nco_crcf_sin(nco);
 
+    if (liquid_autotest_verbose) {
+        printf("cos(%8.5f) = %8.5f (%8.5f) e:%8.5f, sin(%8.5f) = %8.5f (%8.5f) e:%8.5f\n",
+                _theta, _cos, c, _cos-c, _theta, _sin, s, _sin-s);
+    }
+
     // run tests
     CONTEND_DELTA( c, _cos, _tol );
     CONTEND_DELTA( s, _sin, _tol );

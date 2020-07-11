@@ -45,4 +45,5 @@
 
 // source files
 #include "msource.c"
+#include "qsource.c"
 

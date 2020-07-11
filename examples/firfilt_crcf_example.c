@@ -42,7 +42,7 @@ int main() {
                0.3f*cexpf(2*M_PI*0.357f*_Complex_I*i);
 
         // apply window
-        x[i] *= i < wlen ? hamming(i,wlen) : 0;
+        x[i] *= i < wlen ? liquid_hamming(i,wlen) : 0;
 
         // run filter
         firfilt_crcf_push(q, x[i]);

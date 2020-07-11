@@ -45,17 +45,16 @@ void usage()
 {
     printf("mskmodem_test -- minimum-shift keying modem example\n");
     printf("options:\n");
-    printf("  h     : print help\n");
-    printf("  t     : filter type: [square], rcos-full, rcos-half, gmsk\n");
-    printf("  k     : samples/symbol,           default:  8\n");
-    printf("  b     : bits/symbol,              default:  1\n");
-    printf("  H     : modulation index,         default:  0.5\n");
-    printf("  B     : filter roll-off,          default:  0.35\n");
-    printf("  n     : number of data symbols,   default: 20\n");
-    printf("  s     : SNR [dB],                 default: 80\n");
-    printf("  F     : carrier freq. offset,     default:  0.0\n");
-    printf("  P     : carrier phase offset,     default:  0.0\n");
-    printf("  T     : fractional symbol offset, default:  0.0\n");
+    printf(" -h         : print help\n");
+    printf(" -t <type>  : filter type: [square], rcos-full, rcos-half, gmsk\n");
+    printf(" -k <sps>   : samples/symbol,         default:  8\n");
+    printf(" -b <bps>   : bits/symbol,            default:  1\n");
+    printf(" -H <index> : modulation index,       default:  0.5\n");
+    printf(" -B <beta>  : filter roll-off,        default:  0.35\n");
+    printf(" -n <num>   : number of data symbols, default: 20\n");
+    printf(" -s <snr>   : SNR [dB],               default: 80\n");
+    printf(" -F <freq>  : carrier freq. offset,   default:  0.0\n");
+    printf(" -P <phase> : carrier phase offset,   default:  0.0\n");
 }
 
 int main(int argc, char*argv[]) {
@@ -67,7 +66,6 @@ int main(int argc, char*argv[]) {
     float SNRdB     = 80.0f;    // signal-to-noise ratio [dB]
     float cfo       = 0.0f;     // carrier frequency offset
     float cpo       = 0.0f;     // carrier phase offset
-    float tau       = 0.0f;     // fractional symbol offset
     enum {
         TXFILT_SQUARE=0,
         TXFILT_RCOS_FULL,
@@ -77,7 +75,7 @@ int main(int argc, char*argv[]) {
     float gmsk_bt = 0.35f;              // GMSK bandwidth-time factor
 
     int dopt;
-    while ((dopt = getopt(argc,argv,"ht:k:b:H:B:n:s:F:P:T:")) != EOF) {
+    while ((dopt = getopt(argc,argv,"ht:k:b:H:B:n:s:F:P:")) != EOF) {
         switch (dopt) {
         case 'h': usage();                         return 0;
         case 't':
@@ -102,7 +100,6 @@ int main(int argc, char*argv[]) {
         case 's': SNRdB = atof(optarg);            break;
         case 'F': cfo   = atof(optarg);            break;
         case 'P': cpo   = atof(optarg);            break;
-        case 'T': tau   = atof(optarg);            break;
         default:
             exit(1);
         }

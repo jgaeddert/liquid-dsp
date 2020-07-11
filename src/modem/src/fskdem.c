@@ -237,3 +237,40 @@ float fskdem_get_frequency_error(fskdem _q)
     return (vp - vm) / v0;
 }
 
+// get energy for a particular symbol within a certain range
+float fskdem_get_symbol_energy(fskdem       _q,
+                               unsigned int _s,
+                               unsigned int _range)
+{
+    // validate input
+    if (_s >= _q->M) {
+        fprintf(stderr,"warning: fskdem_get_symbol_energy(), input symbol (%u) exceeds maximum (%u)\n",
+                _s, _q->M);
+        _s = 0;
+    }
+
+    if (_range > _q->K)
+        _range = _q->K;
+
+    // map input symbol to FFT bin
+    unsigned int index = _q->demod_map[_s];
+
+    // compute energy around FFT bin
+    float complex v = _q->buf_freq[index];
+    float energy = crealf(v)*crealf(v) + cimagf(v)*cimagf(v);
+    int i;
+    for (i=0; i<_range; i++) {
+        // positive negative indices
+        unsigned int i0 = (index         + i) % _q->K;
+        unsigned int i1 = (index + _q->K - i) % _q->K;
+
+        float complex v0 = _q->buf_freq[i0];
+        float complex v1 = _q->buf_freq[i1];
+
+        energy += crealf(v0)*crealf(v0) + cimagf(v0)*cimagf(v0);
+        energy += crealf(v1)*crealf(v1) + cimagf(v1)*cimagf(v1);
+    }
+
+    return energy;
+}
+

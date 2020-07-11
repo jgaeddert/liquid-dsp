@@ -21,6 +21,7 @@ int main() {
     unsigned int    m   = 7;        // Hilbert filter semi-length
     float           As  = 60.0f;    // stop-band attenuation [dB]
     unsigned int    n   = 128;      // number of input samples
+    int             usb = 1;        // keep upper (or lower) side-band
 
     // derived values
     unsigned int h_len = 4*m+1;             // filter length
@@ -43,10 +44,12 @@ int main() {
         x[i]  = 1.0f*cexpf( 0.12f*_Complex_I*2*M_PI*i) + // primary tone
                 0.1f*cexpf( 0.17f*_Complex_I*2*M_PI*i) + // secondary tone
                 0.2f*cexpf(-0.40f*_Complex_I*2*M_PI*i);  // tone in negative spectrum
-        x[i] *= (i < n) ? 1.855f*hamming(i,n) : 0.0f;
+        x[i] *= (i < n) ? 1.855f*liquid_hamming(i,n) : 0.0f;
 
         // convert to real
-        firhilbf_c2r_execute(q0, x[i], &y[i]);
+        float y0, y1;
+        firhilbf_c2r_execute(q0, x[i], &y0, &y1);
+        y[i] = usb ? y1 : y0;
 
         // convert back to complex
         firhilbf_r2c_execute(q1, y[i], &z[i]);
@@ -84,13 +87,13 @@ int main() {
     fprintf(fid,"  axis([0 num_samples -2 2]);\n");
     fprintf(fid,"  grid on;\n");
     fprintf(fid,"subplot(3,1,2);\n");
-    fprintf(fid,"  plot(t,y,'Color',[0.00 0.25 0.50],'LineWidth',1.3);\n");
+    fprintf(fid,"  plot(t,y/2,'Color',[0.00 0.25 0.50],'LineWidth',1.3);\n");
     fprintf(fid,"  ylabel('original/real');\n");
     fprintf(fid,"  axis([0 num_samples -2 2]);\n");
     fprintf(fid,"  grid on;\n");
     fprintf(fid,"subplot(3,1,3);\n");
-    fprintf(fid,"  plot(t,real(z),'Color',[0.00 0.25 0.50],'LineWidth',1.3,...\n");
-    fprintf(fid,"       t,imag(z),'Color',[0.00 0.50 0.25],'LineWidth',1.3);\n");
+    fprintf(fid,"  plot(t,real(z)/2,'Color',[0.00 0.25 0.50],'LineWidth',1.3,...\n");
+    fprintf(fid,"       t,imag(z)/2,'Color',[0.00 0.50 0.25],'LineWidth',1.3);\n");
     fprintf(fid,"  legend('real','imag','location','northeast');\n");
     fprintf(fid,"  ylabel('transformed/complex');\n");
     fprintf(fid,"  axis([0 num_samples -2 2]);\n");
@@ -99,9 +102,9 @@ int main() {
     // plot results
     fprintf(fid,"nfft=4096;\n");
     fprintf(fid,"%% compute normalized windowing functions\n");
-    fprintf(fid,"X=20*log10(abs(fftshift(fft(x/n,nfft))));\n");
-    fprintf(fid,"Y=20*log10(abs(fftshift(fft(y/n,nfft))));\n");
-    fprintf(fid,"Z=20*log10(abs(fftshift(fft(z/n,nfft))));\n");
+    fprintf(fid,"X=20*log10(abs(fftshift(fft(    x/n,nfft))));\n");
+    fprintf(fid,"Y=20*log10(abs(fftshift(fft(    y/n,nfft))));\n");
+    fprintf(fid,"Z=20*log10(abs(fftshift(fft(0.5*z/n,nfft))));\n");
     fprintf(fid,"f =[0:(nfft-1)]/nfft-0.5;\n");
     fprintf(fid,"figure('position',[100 100 600 800]);\n");
     fprintf(fid,"subplot(3,1,1),\n");

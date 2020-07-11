@@ -338,7 +338,7 @@ int dsssframegen_write_samples(dsssframegen           _q,
         // apply ramping window to first 'm' symbols
         if (_q->symbol_counter < _q->m && _q->state == STATE_PREAMBLE) {
             _buffer[i]
-                *= hamming(_q->symbol_counter * _q->k + _q->sample_counter, 2 * _q->m * _q->k);
+                *= liquid_hamming(_q->symbol_counter * _q->k + _q->sample_counter, 2 * _q->m * _q->k);
         }
 
         _q->sample_counter = (_q->sample_counter + 1) % _q->k;

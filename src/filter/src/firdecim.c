@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2018 Joseph Gaeddert
+ * Copyright (c) 2007 - 2020 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -118,11 +118,11 @@ FIRDECIM() FIRDECIM(_create_kaiser)(unsigned int _M,
         hc[i] = hf[i];
     
     // return decimator object
-    return FIRDECIM(_create)(_M, hc, 2*_M*_m);
+    return FIRDECIM(_create)(_M, hc, h_len);
 }
 
 // create square-root Nyquist decimator
-//  _type   :   filter type (e.g. LIQUID_RNYQUIST_RRC)
+//  _type   :   filter type (e.g. LIQUID_FIRFILT_RRC)
 //  _M      :   samples/symbol _M > 1
 //  _m      :   filter delay (symbols), _m > 0
 //  _beta   :   excess bandwidth factor, 0 < _beta < 1
@@ -188,6 +188,12 @@ void FIRDECIM(_print)(FIRDECIM() _q)
 void FIRDECIM(_reset)(FIRDECIM() _q)
 {
     WINDOW(_reset)(_q->w);
+}
+
+// Get decimation rate
+unsigned int FIRDECIM(_get_decim_rate)(FIRDECIM() _q)
+{
+    return _q->M;
 }
 
 // Set output scaling for decimator

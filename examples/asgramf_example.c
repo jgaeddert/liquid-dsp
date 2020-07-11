@@ -44,7 +44,7 @@ int main() {
 
             // adjust frequency and phase
             theta  += dtheta;
-            dtheta =  0.5f*M_PI + 0.4f*M_PI*sinf(phi) * hamming(n, num_frames);
+            dtheta =  0.5f*M_PI + 0.4f*M_PI*sinf(phi) * liquid_hamming(n, num_frames);
             phi    += dphi;
         }
 

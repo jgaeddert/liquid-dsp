@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2015 Joseph Gaeddert
+ * Copyright (c) 2007 - 2019 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -67,6 +67,7 @@ struct qdetector_cccf_s {
     float           x2_sum_0;       // sum{ |x|^2 } of first half of buffer
     float           x2_sum_1;       // sum{ |x|^2 } of second half of buffer
 
+    float           rxy;            // peak correlation output
     int             offset;         // FFT offset index for peak correlation (coarse carrier estimate)
     float           tau_hat;        // timing offset estimate
     float           gamma_hat;      // signal level estimate (channel gain)
@@ -128,6 +129,7 @@ qdetector_cccf qdetector_cccf_create(float complex * _s,
     memset(q->buf_time_0, 0x00, q->nfft*sizeof(float complex));
     
     // reset estimates
+    q->rxy       = 0.0f;
     q->tau_hat   = 0.0f;
     q->gamma_hat = 0.0f;
     q->dphi_hat  = 0.0f;
@@ -235,6 +237,58 @@ qdetector_cccf qdetector_cccf_create_gmsk(unsigned char * _sequence,
     return q;
 }
 
+// create detector from sequence of CP-FSK symbols (assuming one bit/symbol)
+//  _sequence       :   bit sequence
+//  _sequence_len   :   length of bit sequence
+//  _bps            :   bits per symbol, 0 < _bps <= 8
+//  _h              :   modulation index, _h > 0
+//  _k              :   samples/symbol
+//  _m              :   filter delay
+//  _beta           :   filter bandwidth parameter, _beta > 0
+//  _type           :   filter type (e.g. LIQUID_CPFSK_SQUARE)
+qdetector_cccf qdetector_cccf_create_cpfsk(unsigned char * _sequence,
+                                           unsigned int    _sequence_len,
+                                           unsigned int    _bps,
+                                           float           _h,
+                                           unsigned int    _k,
+                                           unsigned int    _m,
+                                           float           _beta,
+                                           int             _type)
+{
+    // validate input
+    if (_sequence_len == 0) {
+        fprintf(stderr,"error: qdetector_cccf_create_cpfsk(), sequence length cannot be zero\n");
+        exit(1);
+    } else if (_k < 2 || _k > 80) {
+        fprintf(stderr,"error: qdetector_cccf_create_cpfsk(), samples per symbol must be in [2,80]\n");
+        exit(1);
+    } else if (_m < 1 || _m > 100) {
+        fprintf(stderr,"error: qdetector_cccf_create_cpfsk(), filter delay must be in [1,100]\n");
+        exit(1);
+    } else if (_beta < 0.0f || _beta > 1.0f) {
+        fprintf(stderr,"error: qdetector_cccf_create_cpfsk(), excess bandwidth factor must be in [0,1]\n");
+        exit(1);
+    }
+
+    // create time-domain template using GMSK modem
+    unsigned int    s_len = _k * (_sequence_len + 2*_m);
+    float complex * s     = (float complex*) malloc(s_len * sizeof(float complex));
+    cpfskmod mod = cpfskmod_create(_bps, _h, _k, _m, _beta, _type);
+    unsigned int i;
+    for (i=0; i<_sequence_len + 2*_m; i++)
+        cpfskmod_modulate(mod, i < _sequence_len ? _sequence[i] : 0, &s[_k*i]);
+    cpfskmod_destroy(mod);
+
+    // create main object
+    qdetector_cccf q = qdetector_cccf_create(s, s_len);
+
+    // free allocated temporary array
+    free(s);
+
+    // return object
+    return q;
+}
+
 void qdetector_cccf_destroy(qdetector_cccf _q)
 {
     // free allocated arrays
@@ -258,6 +312,7 @@ void qdetector_cccf_print(qdetector_cccf _q)
     printf("qdetector_cccf:\n");
     printf("  template length (time):   %-u\n",   _q->s_len);
     printf("  FFT size              :   %-u\n",   _q->nfft);
+    printf("  search range (bins)   :   %-d\n",   _q->range);
     printf("  detection threshold   :   %6.4f\n", _q->threshold);
     printf("  sum{ s^2 }            :   %.2f\n",  _q->s2_sum);
 }
@@ -338,6 +393,12 @@ const void * qdetector_cccf_get_sequence(qdetector_cccf _q)
 unsigned int qdetector_cccf_get_buf_len(qdetector_cccf _q)
 {
     return _q->nfft;
+}
+
+// correlator output
+float qdetector_cccf_get_rxy(qdetector_cccf _q)
+{
+    return _q->rxy;
 }
 
 // fractional timing offset estimate
@@ -471,6 +532,7 @@ void qdetector_cccf_execute_seek(qdetector_cccf _q,
         // update state, reset counter, copy buffer appropriately
         _q->state = QDETECTOR_STATE_ALIGN;
         _q->offset = rxy_offset;
+        _q->rxy    = rxy_peak; // note that this is a coarse estimate
         // TODO: check for edge case where rxy_index is zero (signal already aligned)
 
         // copy last part of fft input buffer to front
@@ -527,6 +589,7 @@ void qdetector_cccf_execute_align(qdetector_cccf _q,
     _q->tau_hat = -b / (2.0f*a); //-0.5f*(ypos - yneg) / (ypos + yneg - 2*y0);
     float g_hat   = (a*_q->tau_hat*_q->tau_hat + b*_q->tau_hat + c);
     _q->gamma_hat = g_hat * g_hat / ((float)(_q->nfft) * _q->s2_sum); // g_hat^2 because of sqrt for yneg/y0/ypos
+    // TODO: revise estimate of rxy here
 
     // copy buffer to preserve data integrity
     memmove(_q->buf_time_1, _q->buf_time_0, _q->nfft*sizeof(float complex));

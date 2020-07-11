@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2015 Joseph Gaeddert
+ * Copyright (c) 2007 - 2018 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -31,12 +31,13 @@
 
 // internal structure
 struct SYMSTREAM(_s) {
-    int             filter_type;    // filter type (e.g. LIQUID_RNYQUIST_RKAISER)
+    int             filter_type;    // filter type (e.g. LIQUID_FIRFILT_RRC)
     unsigned int    k;              // samples/symbol
     unsigned int    m;              // filter semi-length
     float           beta;           // filter excess bandwidth
     int             mod_scheme;     // demodulator
     MODEM()         mod;            // modulator
+    float           gain;           // gain before interpolation
     FIRINTERP()     interp;         // interpolator
     TO *            buf;            // output buffer
     unsigned int    buf_index;      // output buffer sample index
@@ -53,7 +54,7 @@ SYMSTREAM() SYMSTREAM(_create)()
 }
 
 // create symstream object with linear modulation
-//  _ftype  : filter type (e.g. LIQUID_RNYQUIST_RRC)
+//  _ftype  : filter type (e.g. LIQUID_FIRFILT_RRC)
 //  _k      : samples per symbol
 //  _m      : filter delay (symbols)
 //  _beta   : filter excess bandwidth
@@ -88,6 +89,7 @@ SYMSTREAM() SYMSTREAM(_create_linear)(int          _ftype,
     q->m           = _m;
     q->beta        = _beta;
     q->mod_scheme  = _ms;
+    q->gain        = 1.0f;
 
     // modulator
     q->mod = MODEM(_create)(q->mod_scheme);
@@ -131,6 +133,33 @@ void SYMSTREAM(_reset)(SYMSTREAM() _q)
     _q->buf_index = 0;
 }
 
+// Set internal linear modulation scheme, leaving the filter parameters
+// (interpolator) unmodified
+void SYMSTREAM(_set_scheme)(SYMSTREAM() _q,
+                            int         _ms)
+{
+    _q->mod = MODEM(_recreate)(_q->mod, _ms);
+}
+
+// Get internal linear modulation scheme
+int SYMSTREAM(_get_scheme)(SYMSTREAM() _q)
+{
+    return MODEM(_get_scheme)(_q->mod);
+}
+
+// Set internal linear gain (before interpolation)
+void SYMSTREAM(_set_gain)(SYMSTREAM() _q,
+                          float       _gain)
+{
+    _q->gain = _gain;
+}
+
+// Get internal linear gain (before interpolation)
+float SYMSTREAM(_get_gain)(SYMSTREAM() _q)
+{
+    return _q->gain;
+}
+
 // fill buffer with samples
 void SYMSTREAM(_fill_buffer)(SYMSTREAM() _q)
 {
@@ -140,6 +169,9 @@ void SYMSTREAM(_fill_buffer)(SYMSTREAM() _q)
     // modulate
     TO v;
     MODEM(_modulate)(_q->mod, sym, &v);
+
+    // apply gain
+    v *= _q->gain;
 
     // interpolate
     FIRINTERP(_execute)(_q->interp, v, _q->buf);

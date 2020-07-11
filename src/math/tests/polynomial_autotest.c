@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2015 Joseph Gaeddert
+ * Copyright (c) 2007 - 2019 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -56,6 +56,65 @@ void autotest_polyf_fit_q3n3()
     //CONTEND_DELTA(p[3], p_test[3], tol);
 }
 
+void autotest_polyf_lagrange_issue165()
+{
+    // Inputs taken from issue#165
+    //unsigned int Q=2;   // polynomial order
+    unsigned int n=3;   // input vector size
+    float x[3] = {-1.0f, 0.0f, 1.0f};
+    float y[3] = {7.059105f, 24.998369f, 14.365907f};
+    float p[3];
+    float tol = 1e-3f;
+
+    polyf_fit_lagrange(x,y,n,p);
+    unsigned int j;
+    for (j=0; j<n; j++)
+        printf("%3u : %12.8f > %12.8f\n", j, x[j], y[j]);
+    for (j=0; j<n; j++)
+        printf("p[%3u] = %12.8f\n", j, p[j]);
+
+    float y_out[3];
+    for (j=0; j<n; j++) {
+        y_out[j] = polyf_val(p, n, x[j]);
+        printf("y_out[%3u] = %12.8f exp=%12.8f\n", j, y_out[j], y[j]);
+        CONTEND_DELTA(y[j], y_out[j], tol);
+    }
+
+    polyf_fit(x,y,n,p,n);
+    for (j=0; j<n; j++)
+        printf("p_least_sq[%3u] = %12.8f\n", j, p[j]);
+
+    float y_least_sq[3];
+    for (j=0; j<n; j++) {
+        y_least_sq[j] = polyf_val(p, n, x[j]);
+        printf("y_least_sq[%3u] = %12.8f exp=%12.8f\n", j, y_least_sq[j], y[j]);
+        CONTEND_DELTA(y_least_sq[j], y_out[j], tol);
+    }
+}
+
+
+// Taken from wiki page for lagrange polynomial
+// for y=x^3
+void autotest_polyf_lagrange()
+{
+
+    unsigned int n=3; // input vector size
+
+    float x[3] = {1.0f, 2.0f, 3.0f};
+    float y[3] = {1.0f, 8.0f, 27.0f};
+    float p[3];
+    float tol = 1e-3;
+    polyf_fit_lagrange(x,y,n,p);
+    unsigned int j;
+    for (j=0; j<n; j++)
+        printf("p[%3u] = %12.8f\n", j, p[j]);
+    float y_out[3];
+    for (j=0; j<n; j++) {
+        y_out[j] = polyf_val(p, n, x[j]);
+        printf("y_out[%3u] = %12.8f exp=%12.8f\n", j, y_out[j], y[j]);
+        CONTEND_DELTA(y[j], y_out[j], tol);
+    }
+}
 #if 0
 // 
 // AUTOTEST: poly_expandbinomial
@@ -311,96 +370,4 @@ void autotest_poly_expandbinomial_pm_m5_k2()
         CONTEND_DELTA(c[i], c_test[i], 1e-3f);
 }
 
-// 
-// AUTOTEST: polyf_findroots
-//
-void autotest_polyf_findroots()
-{
-    float tol=1e-6f;
-
-    float p[6] = {6,11,-33,-33,11,6};
-    float complex roots[5];
-    float complex rtest[5] = {-3,2,-1,0.5,-1./3.};
-
-    polyf_findroots(p,6,roots);
-
-    unsigned int i;
-    if (liquid_autotest_verbose) {
-        printf("poly:\n");
-        for (i=0; i<6; i++)
-            printf("  p[%3u] = %12.8f + j*%12.8f\n", i, crealf(p[i]), cimagf(p[i]));
-
-        printf("roots:\n");
-        for (i=0; i<5; i++)
-            printf("  r[%3u] = %12.8f + j*%12.8f\n", i, crealf(roots[i]), cimagf(roots[i]));
-    }
-
-    int rtest_used[5];
-    memset(rtest_used, 0, sizeof(rtest_used));
-
-    unsigned int j,k=0;
-    for (i=0; i<5; i++) {
-        for (j=0; j<5; j++) {
-            // check to see if this root has been used already
-            if (rtest_used[j]) continue;
-
-            // check to see if roots match within relative tolerance
-            if (cabsf(roots[i]-rtest[j]) < tol) {
-                rtest_used[j] = 1;
-                CONTEND_DELTA(crealf(roots[i]), crealf(rtest[j]), tol);
-                CONTEND_DELTA(cimagf(roots[i]), cimagf(rtest[j]), tol);
-                k++;
-                continue;
-            }
-        }
-    }
-    CONTEND_EQUALITY(k,5);
-}
-
-
-// 
-// AUTOTEST: polycf_findroots (random roots)
-//
-void xautotest_polycf_findroots_rand()
-{
-    unsigned int n=5;
-    float tol=1e-4f;
-
-    float complex p[n];
-    float complex roots[n-1];
-
-    float complex p_hat[n];
-
-    unsigned int i;
-    for (i=0; i<n; i++)
-        p[i] = i == n-1 ? 1 : 3.0f * randnf();
-
-    polycf_findroots(p,n,roots);
-
-    float complex roots_hat[n-1];
-    // convert form...
-    for (i=0; i<n-1; i++)
-        roots_hat[i] = -roots[i];
-
-    polycf_expandroots(roots_hat,n-1,p_hat);
-
-    if (liquid_autotest_verbose) {
-        printf("poly:\n");
-        for (i=0; i<n; i++)
-            printf("  p[%3u] = %12.8f + j*%12.8f\n", i, crealf(p[i]), cimagf(p[i]));
-
-        printf("roots:\n");
-        for (i=0; i<n-1; i++)
-            printf("  r[%3u] = %12.8f + j*%12.8f\n", i, crealf(roots[i]), cimagf(roots[i]));
-
-        printf("poly (expanded roots):\n");
-        for (i=0; i<n; i++)
-            printf("  p[%3u] = %12.8f + j*%12.8f\n", i, crealf(p_hat[i]), cimagf(p_hat[i]));
-    }
-
-    for (i=0; i<n; i++) {
-        CONTEND_DELTA(crealf(p[i]), crealf(p_hat[i]), tol);
-        CONTEND_DELTA(cimagf(p[i]), cimagf(p_hat[i]), tol);
-    }
-}
 

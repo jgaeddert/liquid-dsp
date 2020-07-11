@@ -385,7 +385,7 @@ void gmskframegen_write_preamble(gmskframegen    _q,
     if (_q->symbol_counter < _q->m) {
         unsigned int i;
         for (i=0; i<_q->k; i++)
-            _y[i] *= hamming(_q->symbol_counter*_q->k + i, 2*_q->m*_q->k);
+            _y[i] *= liquid_hamming(_q->symbol_counter*_q->k + i, 2*_q->m*_q->k);
     }
 
     _q->symbol_counter++;
@@ -445,7 +445,7 @@ void gmskframegen_write_tail(gmskframegen    _q,
     if (_q->symbol_counter >= _q->m) {
         unsigned int i;
         for (i=0; i<_q->k; i++)
-            _y[i] *= hamming(_q->m*_q->k + (_q->symbol_counter-_q->m)*_q->k + i, 2*_q->m*_q->k);
+            _y[i] *= liquid_hamming(_q->m*_q->k + (_q->symbol_counter-_q->m)*_q->k + i, 2*_q->m*_q->k);
     }
 
     _q->symbol_counter++;

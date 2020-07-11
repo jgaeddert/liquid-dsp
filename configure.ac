@@ -1,4 +1,4 @@
-# Copyright (c) 2007 - 2018 Joseph Gaeddert
+# Copyright (c) 2007 - 2019 Joseph Gaeddert
 # 
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -23,7 +23,7 @@
 # Process with autoconf to generate configure script
 #
 
-AC_INIT([liquid-dsp],[1.3.1],[support@liquidsdr.org])
+AC_INIT([liquid-dsp],[1.3.2],[joseph@liquidsdr.org])
 AC_CONFIG_SRCDIR([src/libliquid.c])
 AC_CONFIG_MACRO_DIR([scripts])
 
@@ -69,16 +69,23 @@ AC_ARG_ENABLE(fftoverride,
     [],
 )
 
+# code coverage
+AC_ARG_ENABLE(coverage,
+    AS_HELP_STRING([--enable-coverage],[enable flags to test code coverage]),
+    [   # check that gcovr program is installed
+        AC_CHECK_PROG(HAVE_GCOVR,gcovr,yes)
+        AS_IF([test x"$HAVE_GCOVR" != x"yes"],
+              [AC_MSG_ERROR(Need gcovr with coverage option)],
+              [COVERAGE_OPTION="--coverage"])],
+    [COVERAGE_OPTION=""]
+)
+
 # Check for necessary programs
 AC_PROG_CC
 AC_PROG_SED
 AC_PROG_GREP
 AC_PROG_INSTALL
 AC_PROG_RANLIB
-AN_MAKEVAR([AR], [AC_PROG_AR])
-AN_PROGRAM([ar], [AC_PROG_AR])
-AC_DEFUN([AC_PROG_AR], [AC_CHECK_TOOL(AR, ar, :)])
-AC_PROG_AR
 
 # Check for necessary libraries, library functions
 AC_FUNC_ERROR_AT_LINE
@@ -86,31 +93,18 @@ AC_FUNC_MALLOC
 AC_FUNC_REALLOC
 
 # AC_CHECK_LIB (library, function, [action-if-found], [action-if-not-found], [other-libraries])
-AC_CHECK_LIB([c],[main], [],[AC_MSG_ERROR(Could not use standard C library)],   [])
-AC_CHECK_LIB([m],[main], [],[AC_MSG_ERROR(Could not use standard math library)],[])
+AC_CHECK_LIB([c],[main],[],[AC_MSG_ERROR(Could not use standard C library)],   [])
+AC_CHECK_LIB([m],[main],[],[AC_MSG_ERROR(Could not use standard math library)],[])
 
 # AC_CHECK_FUNC(function, [action-if-found], [action-if-not-found])
-AC_CHECK_FUNC([malloc],  [],[AC_MSG_ERROR(Could not use malloc())])
-AC_CHECK_FUNC([realloc], [],[AC_MSG_ERROR(Could not use realloc())],)
-AC_CHECK_FUNC([free],    [],[AC_MSG_ERROR(Could not use free())],)
-AC_CHECK_FUNC([memset],  [],[AC_MSG_ERROR(Could not use memset())],)
-AC_CHECK_FUNC([memmove], [],[AC_MSG_ERROR(Could not use memove())],)
-
-AC_CHECK_FUNC([sinf],    [],[AC_MSG_ERROR(Could not use sinf())],)
-AC_CHECK_FUNC([cosf],    [],[AC_MSG_ERROR(Could not use cosf())],)
-AC_CHECK_FUNC([expf],    [],[AC_MSG_ERROR(Could not use expf())],)
-AC_CHECK_FUNC([cargf],   [],[AC_MSG_ERROR(Could not use cargf())],)
-AC_CHECK_FUNC([cexpf],   [],[AC_MSG_ERROR(Could not use cexpf())],)
-AC_CHECK_FUNC([crealf],  [],[AC_MSG_ERROR(Could not use crealf())],)
-AC_CHECK_FUNC([cimagf],  [],[AC_MSG_ERROR(Could not use cimagf())],)
-AC_CHECK_FUNC([sqrtf],   [],[AC_MSG_ERROR(Could not use sqrtf())],)
+AC_CHECK_FUNCS([malloc realloc free memset memmove],[],
+               [AC_MSG_ERROR(Could not use memory allocation functions)])
+AC_CHECK_FUNCS([sinf cosf expf cargf cexpf crealf cimagf sqrtf],[],
+               [AC_MSG_ERROR(Could not use special math functions)],)
 
 # Check for necessary header files
-AC_CHECK_HEADERS([stdio.h stdlib.h complex.h string.h getopt.h sys/resource.h float.h inttypes.h limits.h stdlib.h string.h unistd.h])
-if test -z "$HAVE_stdio.h"
-then
-    AC_MSG_ERROR([Need stdio.h!])
-fi
+AC_CHECK_HEADERS([stdio.h stdlib.h complex.h string.h getopt.h sys/resource.h float.h inttypes.h limits.h stdlib.h string.h unistd.h],[],
+                 [AC_MSG_ERROR(Could not use standard headers)])
 
 # Check for optional header files, libraries, programs
 AC_CHECK_HEADERS(fec.h fftw3.h)
@@ -128,8 +122,10 @@ AC_TYPE_UINT32_T
 AC_TYPE_UINT8_T
 
 # Check size of certain variables
+AC_CHECK_SIZEOF(short int)
 AC_CHECK_SIZEOF(int)
-AC_CHECK_SIZEOF(unsigned int)
+AC_CHECK_SIZEOF(long int)
+AC_CHECK_SIZEOF(long long int)
 
 # AX_GCC_ARCHFLAG([PORTABLE?], [ACTION-SUCCESS], [ACTION-FAILURE])
 # Try to guess the "native" architecture of the target to use with gcc's
@@ -238,10 +234,22 @@ MLIBS_VECTOR="src/vector/src/vectorf_add.port.o   \
 
 case $target_os in
 darwin*)
+    AN_MAKEVAR([LIBTOOL], [AC_PROG_LIBTOOL])
+    AN_PROGRAM([libtool], [AC_PROG_LIBTOOL])
+    AC_DEFUN([AC_PROG_LIBTOOL], [AC_CHECK_TOOL(LIBTOOL, libtool, :)])
+    AC_PROG_LIBTOOL
+
+    AR_LIB=libliquid.ar
     SH_LIB=libliquid.dylib
     REBIND=""
     ;;
 *)
+    AN_MAKEVAR([AR], [AC_PROG_AR])
+    AN_PROGRAM([ar], [AC_PROG_AR])
+    AC_DEFUN([AC_PROG_AR], [AC_CHECK_TOOL(AR, ar, :)])
+    AC_PROG_AR
+
+    AR_LIB=libliquid.a
     SH_LIB=libliquid.so
     REBIND=ldconfig
     ;;
@@ -254,11 +262,13 @@ AC_SUBST(LIBS)                      # shared libraries (-lc, -lm, etc.)
 AC_SUBST(MLIBS_DOTPROD)             # 
 AC_SUBST(MLIBS_VECTOR)              #
 
+AC_SUBST(AR_LIB)                    # archive library
 AC_SUBST(SH_LIB)                    # output shared library target
 AC_SUBST(REBIND)                    # rebinding tool (e.g. ldconfig)
 AC_SUBST(ARCH_OPTION)               # compiler architecture option
 
 AC_SUBST(DEBUG_MSG_OPTION)          # debug messages option (.e.g -DDEBUG)
+AC_SUBST(COVERAGE_OPTION)           # source code coverage option (e.g. -fprofile-arcs -ftest-coverage)
 AC_SUBST(CLIB)                      # C library linkage (e.g. '-lc')
 
 AC_CONFIG_FILES([makefile])

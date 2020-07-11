@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2015 Joseph Gaeddert
+ * Copyright (c) 2007 - 2019 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -63,7 +63,7 @@ void liquid_print_windows()
     unsigned int i;
     unsigned int len = 10;
 
-    // print all available MOD schemes
+    // print all available window functions
     printf("          ");
     for (i=0; i<LIQUID_WINDOW_NUM_FUNCTIONS; i++) {
         printf("%s", liquid_window_str[i][0]);
@@ -95,28 +95,56 @@ liquid_window_type liquid_getopt_str2window(const char * _str)
     return LIQUID_WINDOW_UNKNOWN;
 }
 
+// generic window function given type
+//  _type   :   window type, e.g. LIQUID_WINDOW_KAISER
+//  _i      :   window index, _i in [0,_wlen-1]
+//  _wlen   :   length of window
+//  _arg    :   window-specific argument, if required
+float liquid_windowf(liquid_window_type _type,
+                     unsigned int       _i,
+                     unsigned int       _wlen,
+                     float              _arg)
+{
+    switch (_type) {
+    case LIQUID_WINDOW_HAMMING:         return liquid_hamming         (_i, _wlen);
+    case LIQUID_WINDOW_HANN:            return liquid_hann            (_i, _wlen);
+    case LIQUID_WINDOW_BLACKMANHARRIS:  return liquid_blackmanharris  (_i, _wlen);
+    case LIQUID_WINDOW_BLACKMANHARRIS7: return liquid_blackmanharris7 (_i, _wlen);
+    case LIQUID_WINDOW_KAISER:          return liquid_kaiser          (_i, _wlen, _arg);
+    case LIQUID_WINDOW_FLATTOP:         return liquid_flattop         (_i, _wlen);
+    case LIQUID_WINDOW_TRIANGULAR:      return liquid_triangular      (_i, _wlen, (unsigned int)_arg);
+    case LIQUID_WINDOW_RCOSTAPER:       return liquid_rcostaper_window(_i, _wlen, (unsigned int)_arg);
+    case LIQUID_WINDOW_KBD:             return liquid_kbd             (_i, _wlen, _arg);
+    case LIQUID_WINDOW_UNKNOWN:
+    default:
+        fprintf(stderr,"error: liquid_windowf(), invalid type: %d\n", _type);
+        exit(1);
+    }
+    return 0.0f;
+}
+
 // Kaiser-Bessel derived window
-float liquid_kbd(unsigned int _n,
-                 unsigned int _N,
-                 float _beta)
+float liquid_kbd(unsigned int _i,
+                 unsigned int _wlen,
+                 float        _beta)
 {
     // TODO add reference
 
     // validate input
-    if (_n >= _N) {
+    if (_i >= _wlen) {
         fprintf(stderr,"error: liquid_kbd(), index exceeds maximum\n");
         exit(1);
-    } else if (_N == 0) {
+    } else if (_wlen == 0) {
         fprintf(stderr,"error: liquid_kbd(), window length must be greater than zero\n");
         exit(1);
-    } else if ( _N % 2 ) {
+    } else if ( _wlen % 2 ) {
         fprintf(stderr,"error: liquid_kbd(), window length must be odd\n");
         exit(1);
     }
 
-    unsigned int M = _N / 2;
-    if (_n >= M)
-        return liquid_kbd(_N-_n-1,_N,_beta);
+    unsigned int M = _wlen / 2;
+    if (_i >= M)
+        return liquid_kbd(_wlen-_i-1,_wlen,_beta);
 
     float w0 = 0.0f;
     float w1 = 0.0f;
@@ -124,11 +152,11 @@ float liquid_kbd(unsigned int _n,
     unsigned int i;
     for (i=0; i<=M; i++) {
         // compute Kaiser window
-        w = kaiser(i,M+1,_beta,0.0f);
+        w = liquid_kaiser(i,M+1,_beta);
 
         // accumulate window sums
         w1 += w;
-        if (i <= _n) w0 += w;
+        if (i <= _i) w0 += w;
     }
     //printf("%12.8f / %12.8f = %12.8f\n", w0, w1, w0/w1);
 
@@ -137,18 +165,18 @@ float liquid_kbd(unsigned int _n,
 
 
 // Kaiser-Bessel derived window (full window function)
-void liquid_kbd_window(unsigned int _n,
-                       float _beta,
-                       float * _w)
+void liquid_kbd_window(unsigned int _i,
+                       float        _beta,
+                       float *      _w)
 {
     unsigned int i;
     // TODO add reference
 
     // validate input
-    if (_n == 0) {
+    if (_i == 0) {
         fprintf(stderr,"error: liquid_kbd_window(), window length must be greater than zero\n");
         exit(1);
-    } else if ( _n % 2 ) {
+    } else if ( _i % 2 ) {
         fprintf(stderr,"error: liquid_kbd_window(), window length must be odd\n");
         exit(1);
     } else if ( _beta < 0.0f ) {
@@ -157,12 +185,12 @@ void liquid_kbd_window(unsigned int _n,
     }
 
     // compute half length
-    unsigned int M = _n / 2;
+    unsigned int M = _i / 2;
 
     // generate regular Kaiser window, length M+1
     float w_kaiser[M+1];
     for (i=0; i<=M; i++)
-        w_kaiser[i] = kaiser(i,M+1,_beta,0.0f);
+        w_kaiser[i] = liquid_kaiser(i,M+1,_beta);
 
     // compute sum(wk[])
     float w_sum = 0.0f;
@@ -178,74 +206,70 @@ void liquid_kbd_window(unsigned int _n,
 
     // window has even symmetry; flip around index M
     for (i=0; i<M; i++)
-        _w[_n-i-1] = _w[i];
+        _w[_i-i-1] = _w[i];
 }
 
 
 // Kaiser window [Kaiser:1980]
-//  _n      :   sample index
-//  _N      :   window length (samples)
+//  _i      :   sample index
+//  _wlen   :   window length (samples)
 //  _beta   :   window taper parameter
-//  _mu     :   fractional sample offset
-float kaiser(unsigned int _n,
-             unsigned int _N,
-             float        _beta,
-             float        _mu)
+float liquid_kaiser(unsigned int _i,
+                    unsigned int _wlen,
+                    float        _beta)
 {
     // validate input
-    if (_n > _N) {
-        fprintf(stderr,"error: kaiser(), sample index must not exceed window length\n");
+    if (_i >= _wlen) {
+        fprintf(stderr,"error: liquid_kaiser(), sample index must not exceed window length\n");
         exit(1);
     } else if (_beta < 0) {
-        fprintf(stderr,"error: kaiser(), beta must be greater than or equal to zero\n");
-        exit(1);
-    } else if (_mu < -0.5 || _mu > 0.5) {
-        fprintf(stderr,"error: kaiser(), fractional sample offset must be in [-0.5,0.5]\n");
+        fprintf(stderr,"error: liquid_kaiser(), beta must be greater than or equal to zero\n");
         exit(1);
     }
 
-    float t = (float)_n - (float)(_N-1)/2 + _mu;
-    float r = 2.0f*t/(float)(_N);
+    float t = (float)_i - (float)(_wlen-1)/2;
+    float r = 2.0f*t/(float)(_wlen-1);
     float a = liquid_besseli0f(_beta*sqrtf(1-r*r));
     float b = liquid_besseli0f(_beta);
+    //printf("kaiser(%3u,%u3,%6.3f) t:%8.3f, r:%8.3f, a:%8.3f, b:%8.3f\n", _i,_wlen,_beta,t,r,a,b);
     return a / b;
 }
 
 // Hamming window [Nuttall:1981]
-float hamming(unsigned int _n,
-              unsigned int _N)
+float liquid_hamming(unsigned int _i,
+                     unsigned int _wlen)
 {
     // validate input
-    if (_n > _N) {
-        fprintf(stderr,"error: hamming(), sample index must not exceed window length\n");
+    if (_i > _wlen) {
+        fprintf(stderr,"error: liquid_hamming(), sample index must not exceed window length\n");
         exit(1);
     }
 
-    return 0.53836 - 0.46164*cosf( (2*M_PI*(float)_n) / ((float)(_N-1)) );
+    return 0.53836 - 0.46164*cosf( (2*M_PI*(float)_i) / ((float)(_wlen-1)) );
 }
 
 // Hann window
-float hann(unsigned int _n,
-           unsigned int _N)
+float liquid_hann(unsigned int _i,
+                  unsigned int _wlen)
 {
     // validate input
-    if (_n > _N) {
-        fprintf(stderr,"error: hann(), sample index must not exceed window length\n");
+    if (_i > _wlen) {
+        fprintf(stderr,"error: liquid_hann(), sample index must not exceed window length\n");
         exit(1);
     }
 
     // TODO test this function
     // TODO add reference
-    return 0.5f - 0.5f*cosf( (2*M_PI*(float)_n) / ((float)(_N-1)) );
+    return 0.5f - 0.5f*cosf( (2*M_PI*(float)_i) / ((float)(_wlen-1)) );
 }
 
 // Blackman-harris window [harris:1978]
-float blackmanharris(unsigned int _n,
-                     unsigned int _N)
+float liquid_blackmanharris(unsigned int _i,
+                            unsigned int _wlen)
 {
     // validate input
-    if (_n > _N) {
-        fprintf(stderr,"error: blackmanharris(), sample index must not exceed window length\n");
+    if (_i > _wlen) {
+        fprintf(stderr,"error: liquid_blackmanharris(), sample index must not exceed window length\n");
         exit(1);
     }
 
@@ -255,17 +279,18 @@ float blackmanharris(unsigned int _n,
     float a1 = 0.48829f;
     float a2 = 0.14128f;
     float a3 = 0.01168f;
-    float t = 2*M_PI*(float)_n / ((float)(_N-1));
+    float t = 2*M_PI*(float)_i / ((float)(_wlen-1));
 
     return a0 - a1*cosf(t) + a2*cosf(2*t) - a3*cosf(3*t);
 }
 
 // 7th-order Blackman-harris window
-float blackmanharris7(unsigned int _n, unsigned int _N)
+float liquid_blackmanharris7(unsigned int _i,
+                             unsigned int _wlen)
 {
     // validate input
-    if (_n > _N) {
-        fprintf(stderr,"error: blackmanharris7(), sample index must not exceed window length\n");
+    if (_i > _wlen) {
+        fprintf(stderr,"error: liquid_blackmanharris7(), sample index must not exceed window length\n");
         exit(1);
     }
 
@@ -276,18 +301,19 @@ float blackmanharris7(unsigned int _n, unsigned int _N)
 	float a4 = 0.01081f;
 	float a5 = 0.00077f;
 	float a6 = 0.00001f;
-	float t = 2*M_PI*(float)_n / ((float)(_N-1));
+	float t = 2*M_PI*(float)_i / ((float)(_wlen-1));
 
 	return a0 - a1*cosf(  t) + a2*cosf(2*t) - a3*cosf(3*t)
 			  + a4*cosf(4*t) - a5*cosf(5*t) + a6*cosf(6*t);
 }
 
 // Flat-top window
-float flattop(unsigned int _n, unsigned int _N)
+float liquid_flattop(unsigned int _i,
+                     unsigned int _wlen)
 {
     // validate input
-    if (_n > _N) {
-        fprintf(stderr,"error: flattop(), sample index must not exceed window length\n");
+    if (_i > _wlen) {
+        fprintf(stderr,"error: liquid_flattop(), sample index must not exceed window length\n");
         exit(1);
     }
 
@@ -296,56 +322,55 @@ float flattop(unsigned int _n, unsigned int _N)
 	float a2 = 1.290f;
 	float a3 = 0.388f;
 	float a4 = 0.028f;
-	float t = 2*M_PI*(float)_n / ((float)(_N-1));
+	float t = 2*M_PI*(float)_i / ((float)(_wlen-1));
 
 	return a0 - a1*cosf(t) + a2*cosf(2*t) - a3*cosf(3*t) + a4*cosf(4*t);
 }
 
 // Triangular window
-float triangular(unsigned int _n,
-                 unsigned int _N,
-                 unsigned int _L)
+float liquid_triangular(unsigned int _i,
+                        unsigned int _wlen,
+                        unsigned int _L)
 {
     // validate input
-    if (_n > _N) {
-        fprintf(stderr,"error: triangular(), sample index must not exceed window length\n");
+    if (_i > _wlen) {
+        fprintf(stderr,"error: liquid_triangular(), sample index must not exceed window length\n");
         exit(1);
-    } else if (_L != _N-1 && _L != _N && _L != _N+1) {
-        fprintf(stderr,"error: triangular(), sub-length must be in _N+{-1,0,1}\n");
+    } else if (_L != _wlen-1 && _L != _wlen && _L != _wlen+1) {
+        fprintf(stderr,"error: liquid_triangular(), sub-length must be in _wlen+{-1,0,1}\n");
         exit(1);
     } else if (_L == 0) {
-        fprintf(stderr,"error: triangular(), sub-length must be greater than zero\n");
+        fprintf(stderr,"error: liquid_triangular(), sub-length must be greater than zero\n");
         exit(1);
     }
 
-	float _num   = (float)_n - (float)((_N-1)/2.0f);
-	float _denom = ((float)_L)/2.0f;
-	return 1.0 - fabsf(_num / _denom);
+	float v0 = (float)_i - (float)((_wlen-1)/2.0f);
+	float v1 = ((float)_L)/2.0f;
+	return 1.0 - fabsf(v0 / v1);
 }
 
 // raised-cosine tapering window
-//  _n      :   window index
+//  _i      :   window index
+//  _wlen   :   full window length
 //  _t      :   taper length
-//  _N      :   full window length
-float liquid_rcostaper_windowf(unsigned int _n,
-                               unsigned int _t,
-                               unsigned int _N)
+float liquid_rcostaper_window(unsigned int _i,
+                              unsigned int _wlen,
+                              unsigned int _t)
 {
     // validate input
-    if (_n > _N) {
-        fprintf(stderr,"error: liquid_rcostaper_windowf(), sample index must not exceed window length\n");
+    if (_i > _wlen) {
+        fprintf(stderr,"error: liquid_rcostaper_window(), sample index must not exceed window length\n");
         exit(1);
-    } else if (_t > _N/2) {
-        fprintf(stderr,"error: liquid_rcostaper_windowf(), taper length cannot exceed half window length\n");
+    } else if (_t > _wlen/2) {
+        fprintf(stderr,"error: liquid_rcostaper_window(), taper length cannot exceed half window length\n");
         exit(1);
     }
 
     // reverse time for ramp-down section
-    if (_n > _N - _t - 1)
-        _n = _N - _n - 1;
+    if (_i > _wlen - _t - 1)
+        _i = _wlen - _i - 1;
 
     // return ramp or flat component
-    return (_n < _t) ? 0.5f - 0.5f*cosf(M_PI*((float)_n + 0.5f) / (float)_t) : 1.0f;
+    return (_i < _t) ? 0.5f - 0.5f*cosf(M_PI*((float)_i + 0.5f) / (float)_t) : 1.0f;
 }
-
 

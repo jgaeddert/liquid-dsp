@@ -31,6 +31,8 @@
 
 #include "liquid.internal.h"
 
+#define min(a,b) ((a)<(b)?(a):(b))
+
 // 
 // forward declaration of internal methods
 //
@@ -131,7 +133,11 @@ MSRESAMP() MSRESAMP(_create)(float _r,
 
     // create arbitrary resampler object
     // TODO: compute appropriate parameters
-    q->arbitrary_resamp = RESAMP(_create)(q->rate_arbitrary, 7, 0.4f, q->As, 64);
+    q->arbitrary_resamp = RESAMP(_create)(q->rate_arbitrary,
+                                          7,
+                                          min(0.515f*q->rate_arbitrary,0.49f),
+                                          q->As,
+                                          64);
 
     // reset object
     MSRESAMP(_reset)(q);

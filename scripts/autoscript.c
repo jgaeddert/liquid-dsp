@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2015 Joseph Gaeddert
+ * Copyright (c) 2007 - 2019 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -62,7 +62,8 @@ autoscript autoscript_create(char * _type,
     autoscript q = (autoscript) malloc(sizeof(struct autoscript_s));
 
     // copy type and delimiter (path separator)
-    strncpy(q->type, _type, NAME_LEN);
+    strncpy(q->type, _type, NAME_LEN-1);
+    q->type[NAME_LEN-1] = '\0';
     q->delim = _delim;
 
     q->num_packages = 0;
@@ -361,14 +362,12 @@ void autoscript_addpackage(autoscript _q,
                                                 _q->num_packages*sizeof(struct package_s));
 
     // initialize new package
-    strncpy(_q->packages[_q->num_packages-1].name,
-            _package_name,
-            NAME_LEN);
+    strncpy(_q->packages[_q->num_packages-1].name, _package_name, NAME_LEN-1);
+    _q->packages[_q->num_packages-1].name[NAME_LEN-1] = '\0';
 
     // initialize new package
-    strncpy(_q->packages[_q->num_packages-1].filename,
-            _filename,
-            NAME_LEN);
+    strncpy(_q->packages[_q->num_packages-1].filename, _filename, NAME_LEN-1);
+    _q->packages[_q->num_packages-1].filename[NAME_LEN-1] = '\0';
 
     // initialize number of scripts
     _q->packages[_q->num_packages-1].num_scripts = 0;
@@ -406,9 +405,8 @@ void autoscript_addscript(autoscript _q,
                                              p->num_scripts*sizeof(struct script_s));
 
     // initialize new script
-    strncpy(p->scripts[p->num_scripts-1].name,
-            _script_name,
-            NAME_LEN);
+    strncpy(p->scripts[p->num_scripts-1].name, _script_name, NAME_LEN-1);
+    p->scripts[p->num_scripts-1].name[NAME_LEN-1] = '\0';
 
     // associate script with package
     //_q->scripts[_q->num_scripts-1].package = &_q->packages[i];

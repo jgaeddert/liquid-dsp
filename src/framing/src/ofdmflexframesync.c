@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2015 Joseph Gaeddert
+ * Copyright (c) 2007 - 2020 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -116,7 +116,8 @@ struct ofdmflexframesync_s {
     // callback
     framesync_callback callback;        // user-defined callback function
     void * userdata;                    // user-defined data structure
-    framesyncstats_s framestats;        // frame statistic object
+    framesyncstats_s    framesyncstats; // frame statistic object (synchronizer, evm, etc.)
+    framedatastats_s    framedatastats; // frame statistic object (packet statistics)
     float evm_hat;                      // average error vector magnitude
 
     // internal synchronizer objects
@@ -213,6 +214,7 @@ ofdmflexframesync ofdmflexframesync_create(unsigned int       _M,
     q->payload_mod_len = 0;
 
     // reset state
+    ofdmflexframesync_reset_framedatastats(q);
     ofdmflexframesync_reset(q);
 
     // return object
@@ -250,6 +252,7 @@ void ofdmflexframesync_print(ofdmflexframesync _q)
     printf("      * data            :   %-u\n", _q->M_data);
     printf("    cyclic prefix len   :   %-u\n", _q->cp_len);
     printf("    taper len           :   %-u\n", _q->taper_len);
+    framedatastats_print(&_q->framedatastats);
 }
 
 void ofdmflexframesync_set_header_len(ofdmflexframesync _q,
@@ -337,8 +340,8 @@ void ofdmflexframesync_reset(ofdmflexframesync _q)
     // reset error vector magnitude estimate
     _q->evm_hat = 1e-12f;   // slight offset to ensure no log(0)
 
-    // reset framestats object
-    framesyncstats_init_default(&_q->framestats);
+    // reset global data counters
+    framesyncstats_init_default(&_q->framesyncstats);
 
     // reset internal OFDM frame synchronizer object
     ofdmframesync_reset(_q->fs);
@@ -372,6 +375,28 @@ float ofdmflexframesync_get_rssi(ofdmflexframesync _q)
 float ofdmflexframesync_get_cfo(ofdmflexframesync _q)
 {
     return ofdmframesync_get_cfo(_q->fs);
+}
+
+// reset frame data statistics
+void ofdmflexframesync_reset_framedatastats(ofdmflexframesync _q)
+{
+    framedatastats_reset(&_q->framedatastats);
+}
+
+// retrieve frame data statistics
+framedatastats_s ofdmflexframesync_get_framedatastats(ofdmflexframesync _q)
+{
+    return _q->framedatastats;
+}
+
+//
+// set methods
+//
+
+// received carrier frequency offset
+void ofdmflexframesync_set_cfo(ofdmflexframesync _q, float _cfo)
+{
+    return ofdmframesync_set_cfo(_q->fs, _cfo);
 }
 
 // 
@@ -479,24 +504,26 @@ void ofdmflexframesync_rxheader(ofdmflexframesync _q,
                 // decode header
                 ofdmflexframesync_decode_header(_q);
             
-                // compute error vector magnitude estimate
-                _q->framestats.evm = 10*log10f( _q->evm_hat/_q->header_sym_len );
+                // update statistics
+                _q->framesyncstats.evm = 10*log10f( _q->evm_hat/_q->header_sym_len );
+                _q->framedatastats.num_frames_detected++;
 
                 // invoke callback if header is invalid
-                if (_q->header_valid)
+                if (_q->header_valid) {
                     _q->state = OFDMFLEXFRAMESYNC_STATE_PAYLOAD;
-                else {
+                    _q->framedatastats.num_headers_valid++;
+                } else {
                     //printf("**** header invalid!\n");
-                    // set framestats internals
-                    _q->framestats.rssi             = ofdmframesync_get_rssi(_q->fs);
-                    _q->framestats.cfo              = ofdmframesync_get_cfo(_q->fs);
-                    _q->framestats.framesyms        = NULL;
-                    _q->framestats.num_framesyms    = 0;
-                    _q->framestats.mod_scheme       = LIQUID_MODEM_UNKNOWN;
-                    _q->framestats.mod_bps          = 0;
-                    _q->framestats.check            = LIQUID_CRC_UNKNOWN;
-                    _q->framestats.fec0             = LIQUID_FEC_UNKNOWN;
-                    _q->framestats.fec1             = LIQUID_FEC_UNKNOWN;
+                    // set framesyncstats internals
+                    _q->framesyncstats.rssi          = ofdmframesync_get_rssi(_q->fs);
+                    _q->framesyncstats.cfo           = ofdmframesync_get_cfo(_q->fs);
+                    _q->framesyncstats.framesyms     = NULL;
+                    _q->framesyncstats.num_framesyms = 0;
+                    _q->framesyncstats.mod_scheme    = LIQUID_MODEM_UNKNOWN;
+                    _q->framesyncstats.mod_bps       = 0;
+                    _q->framesyncstats.check         = LIQUID_CRC_UNKNOWN;
+                    _q->framesyncstats.fec0          = LIQUID_FEC_UNKNOWN;
+                    _q->framesyncstats.fec1          = LIQUID_FEC_UNKNOWN;
 
                     // invoke callback method
                     _q->callback(_q->header,
@@ -504,7 +531,7 @@ void ofdmflexframesync_rxheader(ofdmflexframesync _q,
                                  NULL,
                                  0,
                                  0,
-                                 _q->framestats,
+                                 _q->framesyncstats,
                                  _q->userdata);
 
                     ofdmflexframesync_reset(_q);
@@ -717,6 +744,20 @@ void ofdmflexframesync_rxpayload(ofdmflexframesync _q,
 #if DEBUG_OFDMFLEXFRAMESYNC
                 printf("****** payload extracted [%s]\n", _q->payload_valid ? "valid" : "INVALID!");
 #endif
+                // update statistics
+                _q->framedatastats.num_payloads_valid += _q->payload_valid;
+                _q->framedatastats.num_bytes_received += _q->payload_len;
+
+                // set framesyncstats internals
+                _q->framesyncstats.rssi          = ofdmframesync_get_rssi(_q->fs);
+                _q->framesyncstats.cfo           = ofdmframesync_get_cfo(_q->fs);
+                _q->framesyncstats.framesyms     = _q->payload_syms;
+                _q->framesyncstats.num_framesyms = _q->payload_mod_len;
+                _q->framesyncstats.mod_scheme    = _q->ms_payload;
+                _q->framesyncstats.mod_bps       = _q->bps_payload;
+                _q->framesyncstats.check         = _q->check;
+                _q->framesyncstats.fec0          = _q->fec0;
+                _q->framesyncstats.fec1          = _q->fec1;
 
                 // ignore callback if set to NULL
                 if (_q->callback == NULL) {
@@ -724,24 +765,13 @@ void ofdmflexframesync_rxpayload(ofdmflexframesync _q,
                     break;
                 }
 
-                // set framestats internals
-                _q->framestats.rssi             = ofdmframesync_get_rssi(_q->fs);
-                _q->framestats.cfo              = ofdmframesync_get_cfo(_q->fs);
-                _q->framestats.framesyms        = _q->payload_syms;
-                _q->framestats.num_framesyms    = _q->payload_mod_len;
-                _q->framestats.mod_scheme       = _q->ms_payload;
-                _q->framestats.mod_bps          = _q->bps_payload;
-                _q->framestats.check            = _q->check;
-                _q->framestats.fec0             = _q->fec0;
-                _q->framestats.fec1             = _q->fec1;
-
                 // invoke callback method
                 _q->callback(_q->header,
                              _q->header_valid,
                              _q->payload_dec,
                              _q->payload_len,
                              _q->payload_valid,
-                             _q->framestats,
+                             _q->framesyncstats,
                              _q->userdata);
 
 

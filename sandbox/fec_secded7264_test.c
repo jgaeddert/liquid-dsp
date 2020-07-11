@@ -241,7 +241,7 @@ int main(int argc, char*argv[])
     printf("decoding errors (encoded)  : %2u / 72\n", num_errors_encoded);
 
     // compute estimated original message: (last 64 bits of encoded message)
-    for (i=0; i<9; i++)
+    for (i=0; i<8; i++)
         m_hat[i] = v_hat[i+1];
     printf("m-hat (estimated original vector):\n         ");
     print_bitstring(m_hat,64);

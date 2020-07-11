@@ -341,8 +341,8 @@ void detector_cccf_update_sumsq(detector_cccf _q,
     // update estimate of signal magnitude
     float x2_n = crealf(_x * conjf(_x));    // |x[n-1]|^2 (input sample)
     float x2_0;                             // |x[0]  |^2 (oldest sample)
-    wdelayf_read(_q->x2, &x2_0);            // read oldest sample
     wdelayf_push(_q->x2, x2_n);             // push newest sample
+    wdelayf_read(_q->x2, &x2_0);            // read oldest sample
     _q->x2_sum = _q->x2_sum + x2_n - x2_0;  // update sum( |x|^2 ) of last 'n' input samples
     if (_q->x2_sum < FLT_EPSILON) {
         _q->x2_sum = FLT_EPSILON;
