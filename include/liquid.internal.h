@@ -35,8 +35,12 @@
 // Configuration file
 #include "config.h"
 
+#include <stdarg.h>
 #include <complex.h>
 #include "liquid.h"
+
+// report error
+void * liquid_error(int _code, char * _format, ...);
 
 #if defined HAVE_FEC_H && defined HAVE_LIBFEC
 #  define LIBFEC_ENABLED 1

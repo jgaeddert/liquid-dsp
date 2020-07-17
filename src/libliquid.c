@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2015 Joseph Gaeddert
+ * Copyright (c) 2007 - 2020 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -20,11 +20,9 @@
  * THE SOFTWARE.
  */
 
-//
-// Run-time library version numbers
-//
+// Run-time library version numbers, error handling
 
-#include "liquid.h"
+#include "liquid.internal.h"
 
 const char liquid_version[] = LIQUID_VERSION;
 
@@ -36,5 +34,19 @@ const char * liquid_libversion(void)
 int liquid_libversion_number(void)
 {
     return LIQUID_VERSION_NUMBER;
+}
+
+void * liquid_error(int _code, char * _format, ...)
+{
+    va_list argptr;
+    va_start(argptr, _format);
+    fprintf(stderr,"error %d: ", _code);
+    vfprintf(stderr, _format, argptr);
+    fprintf(stderr,"\n");
+    va_end(argptr);
+#if LIQUID_STRICT_EXIT
+    exit(_code);
+#endif
+    return NULL;
 }
 

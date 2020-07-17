@@ -199,11 +199,11 @@ void AGC(_set_bandwidth)(AGC() _q,
 {
     // check to ensure bandwidth is reasonable
     if ( _bt < 0 ) {
-        fprintf(stderr,"error: agc_%s_set_bandwidth(), bandwidth must be positive\n", EXTENSION_FULL);
-        exit(-1);
+        liquid_error(-1,"agc_%s_set_bandwidth(), bandwidth must be positive", EXTENSION_FULL);
+        return;
     } else if ( _bt > 1.0f ) {
-        fprintf(stderr,"error: agc_%s_set_bandwidth(), bandwidth must less than 1.0\n", EXTENSION_FULL);
-        exit(-1);
+        liquid_error(-1,"agc_%s_set_bandwidth(), bandwidth must less than 1.0", EXTENSION_FULL);
+        return;
     }
 
     // set internal bandwidth
@@ -225,8 +225,8 @@ void AGC(_set_signal_level)(AGC() _q,
 {
     // check to ensure signal level is reasonable
     if ( _x2 <= 0 ) {
-        fprintf(stderr,"error: agc_%s_set_signal_level(), bandwidth must be greater than zero\n", EXTENSION_FULL);
-        exit(-1);
+        liquid_error(-1,"error: agc_%s_set_signal_level(), bandwidth must be greater than zero", EXTENSION_FULL);
+        return;
     }
 
     // set internal gain appropriately
@@ -269,8 +269,8 @@ void AGC(_set_gain)(AGC() _q,
 {
     // check to ensure gain is reasonable
     if ( _gain <= 0 ) {
-        fprintf(stderr,"error: agc_%s_set_gain(), gain must be greater than zero\n", EXTENSION_FULL);
-        exit(-1);
+        liquid_error(-1,"error: agc_%s_set_gain(), gain must be greater than zero", EXTENSION_FULL);
+        return;
     }
 
     // set internal gain appropriately
@@ -289,8 +289,8 @@ void AGC(_set_scale)(AGC() _q,
 {
     // check to ensure gain is reasonable
     if ( _scale <= 0 ) {
-        fprintf(stderr,"error: agc_%s_set_scale(), scale must be greater than zero\n", EXTENSION_FULL);
-        exit(-1);
+        liquid_error(-1,"error: agc_%s_set_scale(), scale must be greater than zero", EXTENSION_FULL);
+        return;
     }
 
     // set internal gain appropriately
@@ -307,8 +307,8 @@ void AGC(_init)(AGC()        _q,
 {
     // ensure number of samples is greater than zero
     if ( _n == 0 ) {
-        fprintf(stderr,"error: agc_%s_init(), number of samples must be greater than zero\n", EXTENSION_FULL);
-        exit(-1);
+        liquid_error(-1,"error: agc_%s_init(), number of samples must be greater than zero", EXTENSION_FULL);
+        return;
     }
 
     // compute sum squares on input

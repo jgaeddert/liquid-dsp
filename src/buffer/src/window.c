@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2016 Joseph Gaeddert
+ * Copyright (c) 2007 - 2020 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -45,11 +45,8 @@ struct WINDOW(_s) {
 WINDOW() WINDOW(_create)(unsigned int _n)
 {
     // validate input
-    if (_n == 0) {
-        fprintf(stderr,"error: window%s_create(), window size must be greater than zero\n",
-                EXTENSION);
-        exit(1);
-    }
+    if (_n == 0)
+        return liquid_error(-1,"error: window%s_create(), window size must be greater than zero", EXTENSION);
 
     // create initial object
     WINDOW() q = (WINDOW()) malloc(sizeof(struct WINDOW(_s)));
@@ -186,8 +183,8 @@ void WINDOW(_index)(WINDOW()     _q,
 {
     // validate input
     if (_i >= _q->len) {
-        fprintf(stderr,"error: window_index(), index value out of range\n");
-        exit(1);
+        liquid_error(-1,"error: window_index(), index value out of range");
+        return;
     }
 
     // return value at index
