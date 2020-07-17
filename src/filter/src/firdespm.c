@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2017 Joseph Gaeddert
+ * Copyright (c) 2007 - 2020 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -172,14 +172,14 @@ void firdespm_lowpass(unsigned int _n,
 {
     // validate inputs
     if (_mu < -0.5f || _mu > 0.5f) {
-        fprintf(stderr,"error: firdespm_lowpass(), _mu (%12.4e) out of range [-0.5,0.5]\n", _mu);
-        exit(1);
+        liquid_error(1,"firdespm_lowpass(), _mu (%12.4e) out of range [-0.5,0.5]", _mu);
+        return;
     } else if (_fc < 0.0f || _fc > 0.5f) {
-        fprintf(stderr,"error: firdespm_lowpass(), cutoff frequency (%12.4e) out of range (0, 0.5)\n", _fc);
-        exit(1);
+        liquid_error(1,"firdespm_lowpass(), cutoff frequency (%12.4e) out of range (0, 0.5)", _fc);
+        return;
     } else if (_n == 0) {
-        fprintf(stderr,"error: firdespm_lowpass(), filter length must be greater than zero\n");
-        exit(1);
+        liquid_error(1,"firdespm_lowpass(), filter length must be greater than zero");
+        return;
     }
 
     // estimate transition band
@@ -234,16 +234,12 @@ firdespm firdespm_create(unsigned int            _h_len,
     for (i=0; i<_num_bands; i++)
         weights_valid &= _weights[i] > 0;
 
-    if (!bands_valid) {
-        fprintf(stderr,"error: firdespm_create(), invalid bands\n");
-        exit(1);
-    } else if (!weights_valid) {
-        fprintf(stderr,"error: firdespm_create(), invalid weights (must be positive)\n");
-        exit(1);
-    } else if (_num_bands == 0) {
-        fprintf(stderr,"error: firdespm_create(), number of bands must be > 0\n");
-        exit(1);
-    }
+    if (!bands_valid)
+        return liquid_error(1,"firdespm_create(), invalid bands");
+    if (!weights_valid)
+        return liquid_error(1,"firdespm_create(), invalid weights (must be positive)");
+    if (_num_bands == 0)
+        return liquid_error(1,"firdespm_create(), number of bands must be > 0");
 
     // create object
     firdespm q = (firdespm) malloc(sizeof(struct firdespm_s));
@@ -337,13 +333,10 @@ firdespm firdespm_create_callback(unsigned int          _h_len,
     for (i=1; i<2*_num_bands; i++)
         bands_valid &= _bands[i] >= _bands[i-1];
 
-    if (!bands_valid) {
-        fprintf(stderr,"error: firdespm_create(), invalid bands\n");
-        exit(1);
-    } else if (_num_bands == 0) {
-        fprintf(stderr,"error: firdespm_create(), number of bands must be > 0\n");
-        exit(1);
-    }
+    if (!bands_valid)
+        return liquid_error(1,"firdespm_create(), invalid bands");
+    if (_num_bands == 0)
+        return liquid_error(1,"firdespm_create(), number of bands must be > 0");
 
     // create object
     firdespm q = (firdespm) malloc(sizeof(struct firdespm_s));
@@ -577,8 +570,8 @@ void firdespm_init_grid(firdespm _q)
                 case LIQUID_FIRDESPM_EXPWEIGHT:  fw = expf(2.0f*j*df);  break;
                 case LIQUID_FIRDESPM_LINWEIGHT:  fw = 1.0f + 2.7f*j*df; break;
                 default:
-                    fprintf(stderr,"error: firdespm_init_grid(), invalid weighting specifyer: %d\n", _q->wtype[i]);
-                    exit(1);
+                    liquid_error(1,"firdespm_init_grid(), invalid weighting specifier: %d", _q->wtype[i]);
+                    return;
                 }
                 _q->W[n] = _q->weights[i] * fw;
             }

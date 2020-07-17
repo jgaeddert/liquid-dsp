@@ -77,11 +77,11 @@ unsigned int estimate_req_filter_len(float _df,
                                      float _As)
 {
     if (_df > 0.5f || _df <= 0.0f) {
-        fprintf(stderr,"error: estimate_req_filter_len(), invalid bandwidth : %f\n", _df);
-        exit(1);
+        liquid_error(1,"estimate_req_filter_len(), invalid bandwidth : %f", _df);
+        return 0;
     } else if (_As <= 0.0f) {
-        fprintf(stderr,"error: estimate_req_filter_len(), invalid stopband level : %f\n", _As);
-        exit(1);
+        liquid_error(1,"estimate_req_filter_len(), invalid stopband level : %f", _As);
+        return 0;
     }
 
     // compute filter length estimate
@@ -188,11 +188,11 @@ float estimate_req_filter_len_Kaiser(float _df,
                                      float _As)
 {
     if (_df > 0.5f || _df <= 0.0f) {
-        fprintf(stderr,"error: estimate_req_filter_len_Kaiser(), invalid bandwidth : %f\n", _df);
-        exit(1);
+        liquid_error(1,"estimate_req_filter_len_Kaiser(), invalid bandwidth : %f", _df);
+        return 0.0f;
     } else if (_As <= 0.0f) {
-        fprintf(stderr,"error: estimate_req_filter_len(), invalid stopband level : %f\n", _As);
-        exit(1);
+        liquid_error(1,"estimate_req_filter_len(), invalid stopband level : %f", _As);
+        return 0.0f;
     }
 
     // compute filter length estimate
@@ -208,11 +208,11 @@ float estimate_req_filter_len_Herrmann(float _df,
                                        float _As)
 {
     if (_df > 0.5f || _df <= 0.0f) {
-        fprintf(stderr,"error: estimate_req_filter_len_Herrmann(), invalid bandwidth : %f\n", _df);
-        exit(1);
+        liquid_error(1,"estimate_req_filter_len_Herrmann(), invalid bandwidth : %f", _df);
+        return 0.0f;
     } else if (_As <= 0.0f) {
-        fprintf(stderr,"error: estimate_req_filter_len(), invalid stopband level : %f\n", _As);
-        exit(1);
+        liquid_error(1,"estimate_req_filter_len(), invalid stopband level : %f", _As);
+        return 0.0f;
     }
 
     // Gaeddert's revisions:
@@ -273,14 +273,14 @@ void liquid_firdes_kaiser(unsigned int _n,
 {
     // validate inputs
     if (_mu < -0.5f || _mu > 0.5f) {
-        fprintf(stderr,"error: liquid_firdes_kaiser(), _mu (%12.4e) out of range [-0.5,0.5]\n", _mu);
-        exit(1);
+        liquid_error(1,"liquid_firdes_kaiser(), _mu (%12.4e) out of range [-0.5,0.5]", _mu);
+        return;
     } else if (_fc < 0.0f || _fc > 0.5f) {
-        fprintf(stderr,"error: liquid_firdes_kaiser(), cutoff frequency (%12.4e) out of range (0, 0.5)\n", _fc);
-        exit(1);
+        liquid_error(1,"liquid_firdes_kaiser(), cutoff frequency (%12.4e) out of range (0, 0.5)", _fc);
+        return;
     } else if (_n == 0) {
-        fprintf(stderr,"error: liquid_firdes_kaiser(), filter length must be greater than zero\n");
-        exit(1);
+        liquid_error(1,"liquid_firdes_kaiser(), filter length must be greater than zero");
+        return;
     }
 
     // choose kaiser beta parameter (approximate)
@@ -316,14 +316,14 @@ void liquid_firdes_notch(unsigned int _m,
 {
     // validate inputs
     if (_m < 1 || _m > 1000) {
-        fprintf(stderr,"error: liquid_firdes_notch(), _m (%12u) out of range [1,1000]\n", _m);
-        exit(1);
+        liquid_error(1,"liquid_firdes_notch(), _m (%12u) out of range [1,1000]", _m);
+        return;
     } else if (_f0 < -0.5f || _f0 > 0.5f) {
-        fprintf(stderr,"error: liquid_firdes_notch(), notch frequency (%12.4e) must be in [-0.5,0.5]\n", _f0);
-        exit(1);
+        liquid_error(1,"liquid_firdes_notch(), notch frequency (%12.4e) must be in [-0.5,0.5]", _f0);
+        return;
     } else if (_As <= 0.0f) {
-        fprintf(stderr,"error: liquid_firdes_notch(), stop-band suppression (%12.4e) must be greater than zero\n", _As);
-        exit(1);
+        liquid_error(1,"liquid_firdes_notch(), stop-band suppression (%12.4e) must be greater than zero", _As);
+        return;
     }
 
     // choose kaiser beta parameter (approximate)
@@ -439,8 +439,7 @@ void liquid_firdes_prototype(liquid_firfilt_type _type,
         liquid_firdes_rfarcsech(_k, _m, _beta, _dt, _h);
         break;
     default:
-        fprintf(stderr,"error: liquid_firdes_prototype(), invalid root-Nyquist filter type '%d'\n", _type);
-        exit(1);
+        liquid_error(1,"liquid_firdes_prototype(), invalid root-Nyquist filter type '%d'", _type);
     }
 }
 
@@ -586,7 +585,6 @@ void liquid_filter_isi(float *      _h,
     // compute zero-lag auto-correlation
     float rxx0 = liquid_filter_autocorr(_h,h_len,0);
     //printf("rxx0 = %12.8f\n", rxx0);
-    //exit(1);
 
     unsigned int i;
     float isi_rms = 0.0f;
@@ -619,14 +617,14 @@ float liquid_filter_energy(float *      _h,
 {
     // validate input
     if (_fc < 0.0f || _fc > 0.5f) {
-        fprintf(stderr,"error: liquid_filter_energy(), cut-off frequency must be in [0,0.5]\n");
-        exit(1);
+        liquid_error(1,"liquid_filter_energy(), cut-off frequency must be in [0,0.5]");
+        return 0.0f;
     } else if (_h_len == 0) {
-        fprintf(stderr,"error: liquid_filter_energy(), filter length must be greater than zero\n");
-        exit(1);
+        liquid_error(1,"liquid_filter_energy(), filter length must be greater than zero");
+        return 0.0f;
     } else if (_nfft == 0) {
-        fprintf(stderr,"error: liquid_filter_energy(), fft size must be greater than zero\n");
-        exit(1);
+        liquid_error(1,"liquid_filter_energy(), fft size must be greater than zero");
+        return 0.0f;
     }
 
     // allocate memory for complex phasor

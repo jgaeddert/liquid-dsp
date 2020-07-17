@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2016 Joseph Gaeddert
+ * Copyright (c) 2007 - 2020 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -76,6 +76,10 @@ DDS() DDS(_create)(unsigned int _num_stages,
                    float _bw,
                    float _As)
 {
+    // error checking
+    if (_fc > 0.5f || _fc < -0.5f)
+        return liquid_error(1,"dds_xxxf_create(), frequency %12.4e is out of range [-0.5,0.5]", _fc);
+
     // create object
     DDS() q = (DDS()) malloc(sizeof(struct DDS(_s)));
     q->num_stages = _num_stages;
@@ -83,12 +87,6 @@ DDS() DDS(_create)(unsigned int _num_stages,
     q->fc0 = _fc;
     q->bw0 = _bw;
     q->As0 = _As;
-
-    // error checking
-    if (q->fc0 > 0.5f || q->fc0 < -0.5f) {
-        fprintf(stderr,"error: dds_xxxf_create(), frequency %12.4e is out of range [-0.5,0.5]\n", q->fc0);
-        exit(1);
-    }
 
     // allocate memory for filter properties
     q->fc    = (float*) malloc((q->num_stages)*sizeof(float));
