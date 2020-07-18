@@ -52,13 +52,13 @@ void iirdes_pll_active_lag(float _w,
 {
     // validate input
     if (_w <= 0.0f) {
-        liquid_error(1,"iirdes_pll_active_lag(), bandwidth must be greater than 0");
+        liquid_error(LIQUID_EICONFIG,"iirdes_pll_active_lag(), bandwidth must be greater than 0");
         return;
     } else if (_zeta <= 0.0f) {
-        liquid_error(1,"iirdes_pll_active_lag(), damping factor must be greater than 0");
+        liquid_error(LIQUID_EICONFIG,"iirdes_pll_active_lag(), damping factor must be greater than 0");
         return;
     } else if (_K <= 0.0f) {
-        liquid_error(1,"iirdes_pll_active_lag(), gain must be greater than 0");
+        liquid_error(LIQUID_EICONFIG,"iirdes_pll_active_lag(), gain must be greater than 0");
         return;
     }
 
@@ -93,13 +93,13 @@ void iirdes_pll_active_PI(float _w,
 {
     // validate input
     if (_w <= 0.0f) {
-        liquid_error(1,"iirdes_pll_active_PI(), bandwidth must be greater than 0");
+        liquid_error(LIQUID_EICONFIG,"iirdes_pll_active_PI(), bandwidth must be greater than 0");
         return;
     } else if (_zeta <= 0.0f) {
-        liquid_error(1,"iirdes_pll_active_PI(), damping factor must be greater than 0");
+        liquid_error(LIQUID_EICONFIG,"iirdes_pll_active_PI(), damping factor must be greater than 0");
         return;
     } else if (_K <= 0.0f) {
-        liquid_error(1,"iirdes_pll_active_PI(), gain must be greater than 0");
+        liquid_error(LIQUID_EICONFIG,"iirdes_pll_active_PI(), gain must be greater than 0");
         return;
     }
 

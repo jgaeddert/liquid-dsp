@@ -125,7 +125,7 @@ void bilinear_nd(float complex * _b,
                  float complex * _ad)
 {
     if (_b_order > _a_order) {
-        liquid_error(1,"bilinear_nd(), numerator order cannot be higher than denominator");
+        liquid_error(LIQUID_EICONFIG,"bilinear_nd(), numerator order cannot be higher than denominator");
         return;
     }
 

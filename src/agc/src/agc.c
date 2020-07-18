@@ -240,7 +240,7 @@ int AGC(_set_signal_level)(AGC() _q,
 {
     // check to ensure signal level is reasonable
     if ( _x2 <= 0 )
-        return liquid_error(-1,"error: agc_%s_set_signal_level(), bandwidth must be greater than zero", EXTENSION_FULL);
+        return liquid_error(LIQUID_EICONFIG,"error: agc_%s_set_signal_level(), bandwidth must be greater than zero", EXTENSION_FULL);
 
     // set internal gain appropriately
     _q->g = 1.0f / _x2;
@@ -306,7 +306,7 @@ int AGC(_set_scale)(AGC() _q,
 {
     // check to ensure gain is reasonable
     if ( _scale <= 0 )
-        return liquid_error(-1,"error: agc_%s_set_scale(), scale must be greater than zero", EXTENSION_FULL);
+        return liquid_error(LIQUID_EICONFIG,"error: agc_%s_set_scale(), scale must be greater than zero", EXTENSION_FULL);
 
     // set internal gain appropriately
     _q->scale = _scale;

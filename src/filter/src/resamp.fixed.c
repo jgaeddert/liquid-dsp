@@ -170,7 +170,7 @@ void RESAMP(_set_rate)(RESAMP() _q,
                        float    _rate)
 {
     if (_rate <= 0) {
-        liquid_error(1,"resamp_%s_set_rate(), resampling rate must be greater than zero", EXTENSION_FULL);
+        liquid_error(LIQUID_EICONFIG,"resamp_%s_set_rate(), resampling rate must be greater than zero", EXTENSION_FULL);
         return;
     }
 
@@ -192,7 +192,7 @@ void RESAMP(_adjust_rate)(RESAMP() _q,
                           float    _gamma)
 {
     if (_gamma <= 0) {
-        liquid_error(1,"resamp_%s_adjust_rate(), resampling adjustment (%12.4e) must be greater than zero", EXTENSION_FULL, _gamma);
+        liquid_error(LIQUID_EICONFIG,"resamp_%s_adjust_rate(), resampling adjustment (%12.4e) must be greater than zero", EXTENSION_FULL, _gamma);
         return;
     }
 
@@ -208,7 +208,7 @@ void RESAMP(_set_timing_phase)(RESAMP() _q,
                                float    _tau)
 {
     if (_tau < -1.0f || _tau > 1.0f) {
-        liquid_error(1,"resamp_%s_set_timing_phase(), timing phase must be in [-1,1], is %f.",EXTENSION_FULL,_tau);
+        liquid_error(LIQUID_EICONFIG,"resamp_%s_set_timing_phase(), timing phase must be in [-1,1], is %f.",EXTENSION_FULL,_tau);
         return;
     }
 
@@ -223,7 +223,7 @@ void RESAMP(_adjust_timing_phase)(RESAMP() _q,
                                   float    _delta)
 {
     if (_delta < -1.0f || _delta > 1.0f) {
-        liquid_error(1,"resamp_%s_adjust_timing_phase(), timing phase adjustment must be in [-1,1], is %f.",EXTENSION_FULL,_delta);
+        liquid_error(LIQUID_EICONFIG,"resamp_%s_adjust_timing_phase(), timing phase adjustment must be in [-1,1], is %f.",EXTENSION_FULL,_delta);
         return;
     }
 

@@ -351,7 +351,7 @@ void SYMSYNC(_set_output_rate)(SYMSYNC()    _q,
 {
     // validate input
     if (_k_out == 0) {
-        liquid_error(1,"symsync_%s_output_rate(), output rate must be greater than 0", EXTENSION_FULL);
+        liquid_error(LIQUID_EICONFIG,"symsync_%s_output_rate(), output rate must be greater than 0", EXTENSION_FULL);
         return;
     }
 
@@ -370,7 +370,7 @@ void SYMSYNC(_set_lf_bw)(SYMSYNC() _q,
 {
     // validate input
     if (_bt < 0.0f || _bt > 1.0f) {
-        liquid_error(1,"symsync_%s_set_lf_bt(), bandwidth must be in [0,1]", EXTENSION_FULL);
+        liquid_error(LIQUID_EICONFIG,"symsync_%s_set_lf_bt(), bandwidth must be in [0,1]", EXTENSION_FULL);
         return;
     }
 
@@ -545,7 +545,7 @@ void SYMSYNC(_output_debug_file)(SYMSYNC()    _q,
 {
     FILE * fid = fopen(_filename, "w");
     if (!fid) {
-        liquid_error(1,"symsync_%s_output_debug_file(), could not open '%s' for writing", EXTENSION_FULL, _filename);
+        liquid_error(LIQUID_EICONFIG,"symsync_%s_output_debug_file(), could not open '%s' for writing", EXTENSION_FULL, _filename);
         return;
     }
     fprintf(fid,"%% %s, auto-generated file\n\n", DEBUG_SYMSYNC_FILENAME);

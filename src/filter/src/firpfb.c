@@ -322,7 +322,7 @@ void FIRPFB(_execute)(FIRPFB()     _q,
 {
     // validate input
     if (_i >= _q->num_filters) {
-        liquid_error(1,"firpfb_execute(), filterbank index (%u) exceeds maximum (%u)",_i,_q->num_filters);
+        liquid_error(LIQUID_EICONFIG,"firpfb_execute(), filterbank index (%u) exceeds maximum (%u)",_i,_q->num_filters);
         return;
     }
 

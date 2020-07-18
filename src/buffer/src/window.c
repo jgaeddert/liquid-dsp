@@ -183,7 +183,7 @@ void WINDOW(_index)(WINDOW()     _q,
 {
     // validate input
     if (_i >= _q->len) {
-        liquid_error(-1,"error: window_index(), index value out of range");
+        liquid_error(LIQUID_EIRANGE,"error: window_index(), index value out of range");
         return;
     }
 

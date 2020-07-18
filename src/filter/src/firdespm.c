@@ -172,13 +172,13 @@ void firdespm_lowpass(unsigned int _n,
 {
     // validate inputs
     if (_mu < -0.5f || _mu > 0.5f) {
-        liquid_error(1,"firdespm_lowpass(), _mu (%12.4e) out of range [-0.5,0.5]", _mu);
+        liquid_error(LIQUID_EICONFIG,"firdespm_lowpass(), _mu (%12.4e) out of range [-0.5,0.5]", _mu);
         return;
     } else if (_fc < 0.0f || _fc > 0.5f) {
-        liquid_error(1,"firdespm_lowpass(), cutoff frequency (%12.4e) out of range (0, 0.5)", _fc);
+        liquid_error(LIQUID_EICONFIG,"firdespm_lowpass(), cutoff frequency (%12.4e) out of range (0, 0.5)", _fc);
         return;
     } else if (_n == 0) {
-        liquid_error(1,"firdespm_lowpass(), filter length must be greater than zero");
+        liquid_error(LIQUID_EICONFIG,"firdespm_lowpass(), filter length must be greater than zero");
         return;
     }
 
@@ -570,7 +570,7 @@ void firdespm_init_grid(firdespm _q)
                 case LIQUID_FIRDESPM_EXPWEIGHT:  fw = expf(2.0f*j*df);  break;
                 case LIQUID_FIRDESPM_LINWEIGHT:  fw = 1.0f + 2.7f*j*df; break;
                 default:
-                    liquid_error(1,"firdespm_init_grid(), invalid weighting specifier: %d", _q->wtype[i]);
+                    liquid_error(LIQUID_EICONFIG,"firdespm_init_grid(), invalid weighting specifier: %d", _q->wtype[i]);
                     return;
                 }
                 _q->W[n] = _q->weights[i] * fw;

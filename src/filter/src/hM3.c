@@ -53,13 +53,13 @@ void liquid_firdes_hM3(unsigned int _k,
                        float * _h)
 {
     if ( _k < 2 ) {
-        liquid_error(1,"liquid_firdes_hM3(): k must be greater than 1");
+        liquid_error(LIQUID_EICONFIG,"liquid_firdes_hM3(): k must be greater than 1");
         return;
     } else if ( _m < 1 ) {
-        liquid_error(1,"liquid_firdes_hM3(): m must be greater than 0");
+        liquid_error(LIQUID_EICONFIG,"liquid_firdes_hM3(): m must be greater than 0");
         return;
     } else if ( (_beta < 0.0f) || (_beta > 1.0f) ) {
-        liquid_error(1,"liquid_firdes_hM3(): beta must be in [0,1]");
+        liquid_error(LIQUID_EICONFIG,"liquid_firdes_hM3(): beta must be in [0,1]");
         return;
     }
 

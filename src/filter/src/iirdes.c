@@ -64,7 +64,7 @@ void liquid_cplxpair(float complex * _z,
 {
     // validate input
     if (_tol < 0) {
-        liquid_error(1,"liquid_cplxpair(), tolerance must be positive");
+        liquid_error(LIQUID_EICONFIG,"liquid_cplxpair(), tolerance must be positive");
         return;
     }
 
@@ -480,19 +480,19 @@ void liquid_iirdes(liquid_iirdes_filtertype _ftype,
 {
     // validate input
     if (_fc <= 0 || _fc >= 0.5) {
-        liquid_error(1,"liquid_iirdes(), cutoff frequency out of range");
+        liquid_error(LIQUID_EICONFIG,"liquid_iirdes(), cutoff frequency out of range");
         return;
     } else if (_f0 < 0 || _f0 > 0.5) {
-        liquid_error(1,"liquid_iirdes(), center frequency out of range");
+        liquid_error(LIQUID_EICONFIG,"liquid_iirdes(), center frequency out of range");
         return;
     } else if (_Ap <= 0) {
-        liquid_error(1,"liquid_iirdes(), pass-band ripple out of range");
+        liquid_error(LIQUID_EICONFIG,"liquid_iirdes(), pass-band ripple out of range");
         return;
     } else if (_As <= 0) {
-        liquid_error(1,"liquid_iirdes(), stop-band ripple out of range");
+        liquid_error(LIQUID_EICONFIG,"liquid_iirdes(), stop-band ripple out of range");
         return;
     } else if (_n == 0) {
-        liquid_error(1,"liquid_iirdes(), filter order must be > 0");
+        liquid_error(LIQUID_EICONFIG,"liquid_iirdes(), filter order must be > 0");
         return;
     }
 
@@ -552,7 +552,7 @@ void liquid_iirdes(liquid_iirdes_filtertype _ftype,
         bessel_azpkf(_n,za,pa,&ka);
         break;
     default:
-        liquid_error(1,"liquid_iirdes(), unknown filter type");
+        liquid_error(LIQUID_EICONFIG,"liquid_iirdes(), unknown filter type");
         return;
     }
 
@@ -672,7 +672,7 @@ int iirdes_isstable(float * _b,
 {
     // validate input
     if (_n < 2) {
-        liquid_error(1,"iirdes_isstable(), filter order too low");
+        liquid_error(LIQUID_EICONFIG,"iirdes_isstable(), filter order too low");
         return 0;
     }
     unsigned int i;

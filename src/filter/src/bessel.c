@@ -206,7 +206,7 @@ void fpoly_bessel_roots_orchard_recursion(unsigned int _n,
                                           float * _y_hat)
 {
     if (_n < 2) {
-        liquid_error(1,"fpoly_bessel_roots_orchard_recursion(), n < 2");
+        liquid_error(LIQUID_EICONFIG,"fpoly_bessel_roots_orchard_recursion(), n < 2");
         return;
     }
 

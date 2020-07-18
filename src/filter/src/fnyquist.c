@@ -53,13 +53,13 @@ void liquid_firdes_fnyquist(liquid_firfilt_type _type,
 {
     // validate input
     if ( _k < 1 ) {
-        liquid_error(1,"liquid_firdes_fnyquist(): k must be greater than 0");
+        liquid_error(LIQUID_EICONFIG,"liquid_firdes_fnyquist(): k must be greater than 0");
         return;
     } else if ( _m < 1 ) {
-        liquid_error(1,"liquid_firdes_fnyquist(): m must be greater than 0");
+        liquid_error(LIQUID_EICONFIG,"liquid_firdes_fnyquist(): m must be greater than 0");
         return;
     } else if ( (_beta < 0.0f) || (_beta > 1.0f) ) {
-        liquid_error(1,"liquid_firdes_fnyquist(): beta must be in [0,1]");
+        liquid_error(LIQUID_EICONFIG,"liquid_firdes_fnyquist(): beta must be in [0,1]");
         return;
     } else;
 
@@ -84,7 +84,7 @@ void liquid_firdes_fnyquist(liquid_firfilt_type _type,
         liquid_firdes_farcsech_freqresponse(_k, _m, _beta, H_prime);
         break;
     default:
-        liquid_error(1,"liquid_firdes_fnyquist(), unknown/unsupported filter type");
+        liquid_error(LIQUID_EICONFIG,"liquid_firdes_fnyquist(), unknown/unsupported filter type");
         return;
     }
 

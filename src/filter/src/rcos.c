@@ -43,11 +43,11 @@ void liquid_firdes_rcos(unsigned int _k,
                         float * _h)
 {
     if ( _k < 1 )
-        liquid_error(1,"liquid_firdes_rcos(): k must be greater than 0");
+        liquid_error(LIQUID_EICONFIG,"liquid_firdes_rcos(): k must be greater than 0");
     if ( _m < 1 )
-        liquid_error(1,"liquid_firdes_rcos(): m must be greater than 0");
+        liquid_error(LIQUID_EICONFIG,"liquid_firdes_rcos(): m must be greater than 0");
     if ( (_beta < 0.0f) || (_beta > 1.0f) )
-        liquid_error(1,"liquid_firdes_rcos(): beta must be in [0,1]");
+        liquid_error(LIQUID_EICONFIG,"liquid_firdes_rcos(): beta must be in [0,1]");
 
     unsigned int n;
     float z, t1, t2, t3;

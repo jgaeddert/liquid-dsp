@@ -37,10 +37,10 @@ float fir_group_delay(float *      _h,
 {
     // validate input
     if (_n == 0) {
-        liquid_error(1,"fir_group_delay(), length must be greater than zero");
+        liquid_error(LIQUID_EICONFIG,"fir_group_delay(), length must be greater than zero");
         return 0.0f;
     } else if (_fc < -0.5 || _fc > 0.5) {
-        liquid_error(1,"fir_group_delay(), _fc must be in [-0.5,0.5]");
+        liquid_error(LIQUID_EICONFIG,"fir_group_delay(), _fc must be in [-0.5,0.5]");
         return 0.0f;
     }
 
@@ -69,13 +69,13 @@ float iir_group_delay(float *      _b,
 {
     // validate input
     if (_nb == 0) {
-        liquid_error(1,"iir_group_delay(), numerator length must be greater than zero");
+        liquid_error(LIQUID_EICONFIG,"iir_group_delay(), numerator length must be greater than zero");
         return 0.0f;
     } else if (_na == 0) {
-        liquid_error(1,"iir_group_delay(), denominator length must be greater than zero");
+        liquid_error(LIQUID_EICONFIG,"iir_group_delay(), denominator length must be greater than zero");
         return 0.0f;
     } else if (_fc < -0.5 || _fc > 0.5) {
-        liquid_error(1,"iir_group_delay(), _fc must be in [-0.5,0.5]");
+        liquid_error(LIQUID_EICONFIG,"iir_group_delay(), _fc must be in [-0.5,0.5]");
         return 0.0f;
     }
 

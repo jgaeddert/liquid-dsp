@@ -45,13 +45,13 @@ void liquid_firdes_gmsktx(unsigned int _k,
 {
     // validate input
     if ( _k < 1 ) {
-        liquid_error(1,"liquid_firdes_gmsktx(): k must be greater than 0");
+        liquid_error(LIQUID_EICONFIG,"liquid_firdes_gmsktx(): k must be greater than 0");
         return;
     } else if ( _m < 1 ) {
-        liquid_error(1,"liquid_firdes_gmsktx(): m must be greater than 0");
+        liquid_error(LIQUID_EICONFIG,"liquid_firdes_gmsktx(): m must be greater than 0");
         return;
     } else if ( (_beta < 0.0f) || (_beta > 1.0f) ) {
-        liquid_error(1,"liquid_firdes_gmsktx(): beta must be in [0,1]");
+        liquid_error(LIQUID_EICONFIG,"liquid_firdes_gmsktx(): beta must be in [0,1]");
         return;
     } else;
 
@@ -94,13 +94,13 @@ void liquid_firdes_gmskrx(unsigned int _k,
 {
     // validate input
     if ( _k < 1 ) {
-        liquid_error(1,"liquid_firdes_gmskrx(): k must be greater than 0");
+        liquid_error(LIQUID_EICONFIG,"liquid_firdes_gmskrx(): k must be greater than 0");
         return;
     } else if ( _m < 1 ) {
-        liquid_error(1,"liquid_firdes_gmskrx(): m must be greater than 0");
+        liquid_error(LIQUID_EICONFIG,"liquid_firdes_gmskrx(): m must be greater than 0");
         return;
     } else if ( (_beta < 0.0f) || (_beta > 1.0f) ) {
-        liquid_error(1,"liquid_firdes_gmskrx(): beta must be in [0,1]");
+        liquid_error(LIQUID_EICONFIG,"liquid_firdes_gmskrx(): beta must be in [0,1]");
         return;
     }
 
