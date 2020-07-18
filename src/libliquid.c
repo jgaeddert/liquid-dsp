@@ -22,6 +22,7 @@
 
 // Run-time library version numbers, error handling
 
+#include <stdlib.h>
 #include "liquid.internal.h"
 
 const char liquid_version[] = LIQUID_VERSION;
