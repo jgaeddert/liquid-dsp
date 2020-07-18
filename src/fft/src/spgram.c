@@ -84,22 +84,16 @@ SPGRAM() SPGRAM(_create)(unsigned int _nfft,
                          unsigned int _delay)
 {
     // validate input
-    if (_nfft < 2) {
-        fprintf(stderr,"error: spgram%s_create(), fft size must be at least 2\n", EXTENSION);
-        return NULL;
-    } else if (_window_len > _nfft) {
-        fprintf(stderr,"error: spgram%s_create(), window size cannot exceed fft size\n", EXTENSION);
-        return NULL;
-    } else if (_window_len == 0) {
-        fprintf(stderr,"error: spgram%s_create(), window size must be greater than zero\n", EXTENSION);
-        return NULL;
-    } else if (_wtype == LIQUID_WINDOW_KBD && _window_len % 2) {
-        fprintf(stderr,"error: spgram%s_create(), KBD window length must be even\n", EXTENSION);
-        return NULL;
-    } else if (_delay == 0) {
-        fprintf(stderr,"error: spgram%s_create(), delay must be greater than 0\n", EXTENSION);
-        return NULL;
-    }
+    if (_nfft < 2)
+        return liquid_error_config("spgram%s_create(), fft size must be at least 2", EXTENSION);
+    if (_window_len > _nfft)
+        return liquid_error_config("spgram%s_create(), window size cannot exceed fft size", EXTENSION);
+    if (_window_len == 0)
+        return liquid_error_config("spgram%s_create(), window size must be greater than zero", EXTENSION);
+    if (_wtype == LIQUID_WINDOW_KBD && _window_len % 2)
+        return liquid_error_config("spgram%s_create(), KBD window length must be even", EXTENSION);
+    if (_delay == 0)
+        return liquid_error_config("spgram%s_create(), delay must be greater than 0", EXTENSION);
 
     // allocate memory for main object
     SPGRAM() q = (SPGRAM()) malloc(sizeof(struct SPGRAM(_s)));
@@ -142,7 +136,7 @@ SPGRAM() SPGRAM(_create)(unsigned int _nfft,
         case LIQUID_WINDOW_RCOSTAPER:       q->w[i] = liquid_rcostaper_window(i,n,n/3); break;
         case LIQUID_WINDOW_KBD:             q->w[i] = liquid_kbd(i,n,zeta); break;
         default:
-            fprintf(stderr,"error: spgram%s_create(), invalid window\n", EXTENSION);
+            liquid_error_config("spgram%s_create(), invalid window", EXTENSION);
             SPGRAM(_destroy)(q);
             return NULL;
         }
@@ -169,10 +163,8 @@ SPGRAM() SPGRAM(_create)(unsigned int _nfft,
 SPGRAM() SPGRAM(_create_default)(unsigned int _nfft)
 {
     // validate input
-    if (_nfft < 2) {
-        fprintf(stderr,"error: spgram%s_create_default(), fft size must be at least 2\n", EXTENSION);
-        return NULL;
-    }
+    if (_nfft < 2)
+        return liquid_error_config("spgram%s_create_default(), fft size must be at least 2", EXTENSION);
 
     return SPGRAM(_create)(_nfft, LIQUID_WINDOW_KAISER, _nfft/2, _nfft/4);
 }
@@ -255,7 +247,7 @@ int SPGRAM(_set_alpha)(SPGRAM() _q,
         _q->alpha = _alpha;
         _q->gamma = 1.0f - _q->alpha;
     }
-    return 0;
+    return LIQUID_OK;
 }
 
 // set center freuqncy
@@ -263,7 +255,7 @@ int SPGRAM(_set_freq)(SPGRAM() _q,
                       float    _freq)
 {
     _q->frequency = _freq;
-    return 0;
+    return LIQUID_OK;
 }
 
 // set sample rate
@@ -271,12 +263,11 @@ int SPGRAM(_set_rate)(SPGRAM() _q,
                       float    _rate)
 {
     // validate input
-    if (_rate <= 0.0f) {
-        fprintf(stderr,"error: spgram%s_set_rate(), sample rate must be greater than zero\n", EXTENSION);
-        return -1;
-    }
+    if (_rate <= 0.0f)
+        return liquid_error(LIQUID_EICONFIG,"spgram%s_set_rate(), sample rate must be greater than zero", EXTENSION);
+
     _q->sample_rate = _rate;
-    return 0;
+    return LIQUID_OK;
 }
 
 // get FFT size
@@ -426,11 +417,9 @@ int SPGRAM(_export_gnuplot)(SPGRAM()     _q,
                             const char * _filename)
 {
     FILE * fid = fopen(_filename,"w");
-    if (fid == NULL) {
-        fprintf(stderr,"error: spgram%s_export_gnuplot(), could not open '%s' for writing\n",
-                EXTENSION, _filename);
-        return -1;
-    }
+    if (fid == NULL)
+        return liquid_error(LIQUID_EIO,"spgram%s_export_gnuplot(), could not open '%s' for writing",EXTENSION,_filename);
+
     fprintf(fid,"# %s : auto-generated file\n", _filename);
     fprintf(fid,"reset\n");
     fprintf(fid,"set terminal png size 1200,800 enhanced font 'Verdana,10'\n");
@@ -468,8 +457,7 @@ int SPGRAM(_export_gnuplot)(SPGRAM()     _q,
 
     // close it up
     fclose(fid);
-
-    return 0;
+    return LIQUID_OK;
 }
 
 //
