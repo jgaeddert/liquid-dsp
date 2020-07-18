@@ -24,7 +24,7 @@
 
 #include <stdlib.h>
 #include "autotest/autotest.h"
-#include "liquid.h"
+#include "liquid.internal.h"
 
 void testbench_spgramcf_noise(unsigned int _nfft,
                               int          _wtype,
@@ -215,6 +215,10 @@ void autotest_spgramcf_counters()
 
 void autotest_spgramcf_config_errors()
 {
+#if LIQUID_STRICT_EXIT
+    AUTOTEST_WARN("skipping spgram config test with strict exit enabled\n");
+    return;
+#else
     // check that object returns NULL for invalid configurations
     fprintf(stderr,"warning: ignore potential errors here; checking for invalid configurations\n");
     CONTEND_EQUALITY(spgramcf_create(  0, LIQUID_WINDOW_HAMMING,       200, 200)==NULL,1); // nfft too small
@@ -229,6 +233,7 @@ void autotest_spgramcf_config_errors()
     // check that object returns NULL for invalid configurations (default)
     CONTEND_EQUALITY(spgramcf_create_default(0)==NULL,1); // nfft too small
     CONTEND_EQUALITY(spgramcf_create_default(1)==NULL,1); // nfft too small
+#endif
 }
 
 void autotest_spgramcf_standalone()

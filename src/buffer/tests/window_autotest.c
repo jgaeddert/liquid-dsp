@@ -23,7 +23,7 @@
 #include "autotest/autotest.h"
 #include "liquid.internal.h"
 
-void autotest_window_config()
+void autotest_window_config_errors()
 {
 #if LIQUID_STRICT_EXIT
     AUTOTEST_WARN("skipping window config test with strict exit enabled\n");
