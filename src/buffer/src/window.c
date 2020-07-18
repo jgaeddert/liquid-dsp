@@ -46,7 +46,7 @@ WINDOW() WINDOW(_create)(unsigned int _n)
 {
     // validate input
     if (_n == 0)
-        return liquid_error(-1,"error: window%s_create(), window size must be greater than zero", EXTENSION);
+        return liquid_error_config("error: window%s_create(), window size must be greater than zero", EXTENSION);
 
     // create initial object
     WINDOW() q = (WINDOW()) malloc(sizeof(struct WINDOW(_s)));

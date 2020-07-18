@@ -36,17 +36,67 @@ int liquid_libversion_number(void)
     return LIQUID_VERSION_NUMBER;
 }
 
-void * liquid_error(int _code, char * _format, ...)
+// report error
+int liquid_error_fl(int          _code,
+                    const char * _file,
+                    int          _line,
+                    const char * _format,
+                    ...)
 {
     va_list argptr;
     va_start(argptr, _format);
-    fprintf(stderr,"error %d: ", _code);
+    fprintf(stderr,"error [%d]: %s\n", _code, liquid_error_info(_code));
+    fprintf(stderr,"  %s:%u\n", _file, _line);
     vfprintf(stderr, _format, argptr);
     fprintf(stderr,"\n");
     va_end(argptr);
 #if LIQUID_STRICT_EXIT
     exit(_code);
 #endif
+    return _code;
+}
+
+// report error
+void * liquid_error_config_fl(const char * _file,
+                              int          _line,
+                              const char * _format,
+                              ...)
+{
+    int code = LIQUID_EICONFIG;
+    va_list argptr;
+    va_start(argptr, _format);
+    fprintf(stderr,"error [%d]: %s\n", code, liquid_error_info(code));
+    fprintf(stderr,"  %s:%u\n", _file, _line);
+    vfprintf(stderr, _format, argptr);
+    fprintf(stderr,"\n");
+    va_end(argptr);
+#if LIQUID_STRICT_EXIT
+    exit(code);
+#endif
     return NULL;
+}
+
+const char * liquid_error_str[LIQUID_NUM_ERRORS] = {
+    "ok",                                                   // LIQUID_OK
+    "internal logic error",                                 // LIQUID_EINT
+    "invalid parameter or configuration",                   // LIQUID_EICONFIG
+    "input out of range",                                   // LIQUID_EIVAL
+    "invalid vector length or dimension",                   // LIQUID_EIRANGE
+    "invalid mode",                                         // LIQUID_EIMODE
+    "unsupported mode",                                     // LIQUID_EUMODE
+    "object has not been created or properly initialized",  // LIQUID_ENOINIT
+    "not enough memory allocated for operation",            // LIQUID_EIMEM
+    "file input/output",                                    // LIQUID_EIO
+};
+
+// get error string given code
+const char * liquid_error_info(liquid_error_code _code)
+{
+    if (_code < 0 || _code >= LIQUID_NUM_ERRORS) {
+        liquid_error(LIQUID_EIMODE,"error code %d is out of range", _code);
+        return NULL;
+    }
+
+    return liquid_error_str[_code];
 }
 

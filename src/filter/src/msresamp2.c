@@ -88,11 +88,11 @@ MSRESAMP2() MSRESAMP2(_create)(int          _type,
 {
     // validate input
     if (_num_stages > 16)
-        return liquid_error(1,"msresamp2_%s_create(), number of stages should not exceed 16", EXTENSION_FULL);
+        return liquid_error_config("msresamp2_%s_create(), number of stages should not exceed 16", EXTENSION_FULL);
 
     // ensure cut-off frequency is valid
     if ( _fc <= 0.0f || _fc >= 0.5f ) {
-        return liquid_error(1,"msresamp2_%s_create(), cut-off frequency must be in (0,0.5)", EXTENSION_FULL);
+        return liquid_error_config("msresamp2_%s_create(), cut-off frequency must be in (0,0.5)", EXTENSION_FULL);
     } else if ( _fc > 0.499f ) {
         fprintf(stderr,"warning: msresamp2_%s_create(), cut-off frequency greater than 0.499\n", EXTENSION_FULL);
         fprintf(stderr,"    >> truncating to 0.499\n");

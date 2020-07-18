@@ -85,7 +85,7 @@ MSRESAMP() MSRESAMP(_create)(float _r,
 {
     // validate input
     if (_r <= 0.0f)
-        return liquid_error(1,"msresamp_%s_create(), resampling rate must be greater than zero", EXTENSION_FULL);
+        return liquid_error_config("msresamp_%s_create(), resampling rate must be greater than zero", EXTENSION_FULL);
 
     // create object
     MSRESAMP() q = (MSRESAMP()) malloc(sizeof(struct MSRESAMP(_s)));

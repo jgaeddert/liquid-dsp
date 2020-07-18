@@ -97,9 +97,9 @@ IIRFILT() IIRFILT(_create)(TC *         _b,
 {
     // validate input
     if (_nb == 0)
-        return liquid_error(1,"iirfilt_%s_create(), numerator length cannot be zero", EXTENSION_FULL);
+        return liquid_error_config("iirfilt_%s_create(), numerator length cannot be zero", EXTENSION_FULL);
     if (_na == 0)
-        return liquid_error(1,"iirfilt_%s_create(), denominator length cannot be zero", EXTENSION_FULL);
+        return liquid_error_config("iirfilt_%s_create(), denominator length cannot be zero", EXTENSION_FULL);
 
     // create structure and initialize
     IIRFILT() q = (IIRFILT()) malloc(sizeof(struct IIRFILT(_s)));
@@ -164,7 +164,7 @@ IIRFILT() IIRFILT(_create_sos)(TC *         _B,
 {
     // validate input
     if (_nsos == 0)
-        return liquid_error(1,"iirfilt_%s_create_sos(), filter must have at least one 2nd-order section", EXTENSION_FULL);
+        return liquid_error_config("iirfilt_%s_create_sos(), filter must have at least one 2nd-order section", EXTENSION_FULL);
 
     // create structure and initialize
     IIRFILT() q = (IIRFILT()) malloc(sizeof(struct IIRFILT(_s)));
@@ -378,7 +378,7 @@ IIRFILT() IIRFILT(_create_dc_blocker)(float _alpha)
 {
     // validate input
     if (_alpha <= 0.0f)
-        return liquid_error(1,"iirfilt_%s_create_dc_blocker(), filter bandwidth must be greater than zero", EXTENSION_FULL);
+        return liquid_error_config("iirfilt_%s_create_dc_blocker(), filter bandwidth must be greater than zero", EXTENSION_FULL);
 
     // compute DC-blocking filter coefficients
     float bf[2] = {1.0f, -1.0f  };
@@ -400,11 +400,11 @@ IIRFILT() IIRFILT(_create_pll)(float _w,
 {
     // validate input
     if (_w <= 0.0f || _w >= 1.0f)
-        return liquid_error(1,"iirfilt_%s_create_pll(), bandwidth must be in (0,1)", EXTENSION_FULL);
+        return liquid_error_config("iirfilt_%s_create_pll(), bandwidth must be in (0,1)", EXTENSION_FULL);
     if (_zeta <= 0.0f || _zeta >= 1.0f)
-        return liquid_error(1,"iirfilt_%s_create_pll(), damping factor must be in (0,1)", EXTENSION_FULL);
+        return liquid_error_config("iirfilt_%s_create_pll(), damping factor must be in (0,1)", EXTENSION_FULL);
     if (_K <= 0.0f)
-        return liquid_error(1,"iirfilt_%s_create_pll(), loop gain must be greater than zero", EXTENSION_FULL);
+        return liquid_error_config("iirfilt_%s_create_pll(), loop gain must be greater than zero", EXTENSION_FULL);
 
     // compute loop filter coefficients
     float bf[3];

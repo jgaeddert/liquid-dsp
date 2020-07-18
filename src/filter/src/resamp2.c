@@ -68,11 +68,11 @@ RESAMP2() RESAMP2(_create)(unsigned int _m,
 {
     // validate input
     if (_m < 2)
-        return liquid_error(1,"resamp2_%s_create(), filter semi-length must be at least 2", EXTENSION_FULL);
+        return liquid_error_config("resamp2_%s_create(), filter semi-length must be at least 2", EXTENSION_FULL);
     if (_f0 < -0.5f || _f0 > 0.5f)
-        return liquid_error(1,"resamp2_%s_create(), f0 (%12.4e) must be in [-0.5,0.5]", EXTENSION_FULL, _f0);
+        return liquid_error_config("resamp2_%s_create(), f0 (%12.4e) must be in [-0.5,0.5]", EXTENSION_FULL, _f0);
     if (_As < 0.0f)
-        return liquid_error(1,"resamp2_%s_create(), As (%12.4e) must be greater than zero", EXTENSION_FULL, _As);
+        return liquid_error_config("resamp2_%s_create(), As (%12.4e) must be greater than zero", EXTENSION_FULL, _As);
 
     RESAMP2() q = (RESAMP2()) malloc(sizeof(struct RESAMP2(_s)));
     q->m  = _m;

@@ -124,13 +124,13 @@ SYMSYNC() SYMSYNC(_create)(unsigned int _k,
 {
     // validate input
     if (_k < 2)
-        return liquid_error(1,"symsync_%s_create(), input sample rate must be at least 2", EXTENSION_FULL);
+        return liquid_error_config("symsync_%s_create(), input sample rate must be at least 2", EXTENSION_FULL);
     if (_M == 0)
-        return liquid_error(1,"symsync_%s_create(), number of filter banks must be greater than zero", EXTENSION_FULL);
+        return liquid_error_config("symsync_%s_create(), number of filter banks must be greater than zero", EXTENSION_FULL);
     if (_h_len == 0)
-        return liquid_error(1,"symsync_%s_create(), filter length must be greater than zero", EXTENSION_FULL);
+        return liquid_error_config("symsync_%s_create(), filter length must be greater than zero", EXTENSION_FULL);
     if ( (_h_len-1) % _M )
-        return liquid_error(1,"symsync_%s_create(), filter length must be of the form: h_len = m*_k*_M + 1 ", EXTENSION_FULL);
+        return liquid_error_config("symsync_%s_create(), filter length must be of the form: h_len = m*_k*_M + 1 ", EXTENSION_FULL);
 
     // create main object
     SYMSYNC() q = (SYMSYNC()) malloc(sizeof(struct SYMSYNC(_s)));
@@ -208,13 +208,13 @@ SYMSYNC() SYMSYNC(_create_rnyquist)(int          _type,
 {
     // validate input
     if (_k < 2)
-        return liquid_error(1,"symsync_%s_create_rnyquist(), samples/symbol must be at least 2", EXTENSION_FULL);
+        return liquid_error_config("symsync_%s_create_rnyquist(), samples/symbol must be at least 2", EXTENSION_FULL);
     if (_m == 0)
-        return liquid_error(1,"symsync_%s_create_rnyquist(), filter delay (m) must be greater than zero", EXTENSION_FULL);
+        return liquid_error_config("symsync_%s_create_rnyquist(), filter delay (m) must be greater than zero", EXTENSION_FULL);
     if (_beta < 0.0f || _beta > 1.0f)
-        return liquid_error(1,"symsync_%s_create_rnyquist(), filter excess bandwidth must be in [0,1]", EXTENSION_FULL);
+        return liquid_error_config("symsync_%s_create_rnyquist(), filter excess bandwidth must be in [0,1]", EXTENSION_FULL);
     if (_M == 0)
-        return liquid_error(1,"symsync_%s_create_rnyquist(), number of filters in bnak must be greater than zero", EXTENSION_FULL);
+        return liquid_error_config("symsync_%s_create_rnyquist(), number of filters in bnak must be greater than zero", EXTENSION_FULL);
 
     // allocate memory for filter coefficients
     unsigned int H_len = 2*_M*_k*_m + 1;
@@ -246,13 +246,13 @@ SYMSYNC() SYMSYNC(_create_kaiser)(unsigned int _k,
 {
     // validate input
     if (_k < 2)
-        return liquid_error(1,"symsync_%s_create_kaiser(), samples/symbol must be at least 2", EXTENSION_FULL);
+        return liquid_error_config("symsync_%s_create_kaiser(), samples/symbol must be at least 2", EXTENSION_FULL);
     if (_m == 0)
-        return liquid_error(1,"symsync_%s_create_kaiser(), filter delay (m) must be greater than zero", EXTENSION_FULL);
+        return liquid_error_config("symsync_%s_create_kaiser(), filter delay (m) must be greater than zero", EXTENSION_FULL);
     if (_beta < 0.0f || _beta > 1.0f)
-        return liquid_error(1,"symsync_%s_create_kaiser(), filter excess bandwidth must be in [0,1]", EXTENSION_FULL);
+        return liquid_error_config("symsync_%s_create_kaiser(), filter excess bandwidth must be in [0,1]", EXTENSION_FULL);
     if (_M == 0)
-        return liquid_error(1,"symsync_%s_create_kaiser(), number of filters in bnak must be greater than zero", EXTENSION_FULL);
+        return liquid_error_config("symsync_%s_create_kaiser(), number of filters in bnak must be greater than zero", EXTENSION_FULL);
 
     // allocate memory for filter coefficients
     unsigned int H_len = 2*_M*_k*_m + 1;

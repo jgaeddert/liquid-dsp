@@ -50,7 +50,7 @@ IIRINTERP() IIRINTERP(_create)(unsigned int _M,
 {
     // validate input
     if (_M < 2)
-        return liquid_error(1,"iirinterp_%s_create(), interp factor must be greater than 1", EXTENSION_FULL);
+        return liquid_error_config("iirinterp_%s_create(), interp factor must be greater than 1", EXTENSION_FULL);
 
     // allocate main object memory and set internal parameters
     IIRINTERP() q = (IIRINTERP()) malloc(sizeof(struct IIRINTERP(_s)));
@@ -94,7 +94,7 @@ IIRINTERP() IIRINTERP(_create_prototype)(unsigned int _M,
 {
     // validate input
     if (_M < 2)
-        return liquid_error(1,"iirinterp_%s_create_prototype(), interp factor must be greater than 1", EXTENSION_FULL);
+        return liquid_error_config("iirinterp_%s_create_prototype(), interp factor must be greater than 1", EXTENSION_FULL);
 
     // allocate main object memory and set internal parameters
     IIRINTERP() q = (IIRINTERP()) malloc(sizeof(struct IIRINTERP(_s)));

@@ -46,9 +46,9 @@ FIRINTERP() FIRINTERP(_create)(unsigned int _M,
 {
     // validate input
     if (_M < 2)
-        return liquid_error(1,"firinterp_%s_create(), interp factor must be greater than 1", EXTENSION_FULL);
-    else if (_h_len < _M)
-        return liquid_error(1,"firinterp_%s_create(), filter length cannot be less than interp factor", EXTENSION_FULL);
+        return liquid_error_config("firinterp_%s_create(), interp factor must be greater than 1", EXTENSION_FULL);
+    if (_h_len < _M)
+        return liquid_error_config("firinterp_%s_create(), filter length cannot be less than interp factor", EXTENSION_FULL);
 
     // allocate main object memory and set internal parameters
     FIRINTERP() q = (FIRINTERP()) malloc(sizeof(struct FIRINTERP(_s)));
@@ -86,11 +86,11 @@ FIRINTERP() FIRINTERP(_create_kaiser)(unsigned int _M,
 {
     // validate input
     if (_M < 2)
-        return liquid_error(1,"firinterp_%s_create_kaiser(), interp factor must be greater than 1", EXTENSION_FULL);
+        return liquid_error_config("firinterp_%s_create_kaiser(), interp factor must be greater than 1", EXTENSION_FULL);
     if (_m == 0)
-        return liquid_error(1,"firinterp_%s_create_kaiser(), filter delay must be greater than 0", EXTENSION_FULL);
+        return liquid_error_config("firinterp_%s_create_kaiser(), filter delay must be greater than 0", EXTENSION_FULL);
     if (_As < 0.0f)
-        return liquid_error(1,"firinterp_%s_create_kaiser(), stop-band attenuation must be positive", EXTENSION_FULL);
+        return liquid_error_config("firinterp_%s_create_kaiser(), stop-band attenuation must be positive", EXTENSION_FULL);
 
     // compute filter coefficients (floating point precision)
     unsigned int h_len = 2*_M*_m + 1;
@@ -122,13 +122,13 @@ FIRINTERP() FIRINTERP(_create_prototype)(int          _type,
 {
     // validate input
     if (_k < 2)
-        return liquid_error(1,"firinterp_%s_create_prototype(), interp factor must be greater than 1", EXTENSION_FULL);
+        return liquid_error_config("firinterp_%s_create_prototype(), interp factor must be greater than 1", EXTENSION_FULL);
     if (_m == 0)
-        return liquid_error(1,"firinterp_%s_create_prototype(), filter delay must be greater than 0", EXTENSION_FULL);
+        return liquid_error_config("firinterp_%s_create_prototype(), filter delay must be greater than 0", EXTENSION_FULL);
     if (_beta < 0.0f || _beta > 1.0f)
-        return liquid_error(1,"firinterp_%s_create_prototype(), filter excess bandwidth factor must be in [0,1]", EXTENSION_FULL);
+        return liquid_error_config("firinterp_%s_create_prototype(), filter excess bandwidth factor must be in [0,1]", EXTENSION_FULL);
     if (_dt < -1.0f || _dt > 1.0f)
-        return liquid_error(1,"firinterp_%s_create_prototype(), filter fractional sample delay must be in [-1,1]", EXTENSION_FULL);
+        return liquid_error_config("firinterp_%s_create_prototype(), filter fractional sample delay must be in [-1,1]", EXTENSION_FULL);
 
     // generate Nyquist filter
     unsigned int h_len = 2*_k*_m + 1;
@@ -151,7 +151,7 @@ FIRINTERP() FIRINTERP(_create_linear)(unsigned int _M)
 {
     // validate input
     if (_M < 1)
-        return liquid_error(1,"firinterp_%s_create_linear(), interp factor must be greater than 1", EXTENSION_FULL);
+        return liquid_error_config("firinterp_%s_create_linear(), interp factor must be greater than 1", EXTENSION_FULL);
 
     // generate coefficients
     unsigned int i;
@@ -171,9 +171,9 @@ FIRINTERP() FIRINTERP(_create_window)(unsigned int _M,
 {
     // validate input
     if (_M < 1)
-        return liquid_error(1,"firinterp_%s_create_spline(), interp factor must be greater than 1", EXTENSION_FULL);
-    else if (_m < 1)
-        return liquid_error(1,"firinterp_%s_create_spline(), interp factor must be greater than 1", EXTENSION_FULL);
+        return liquid_error_config("firinterp_%s_create_spline(), interp factor must be greater than 1", EXTENSION_FULL);
+    if (_m < 1)
+        return liquid_error_config("firinterp_%s_create_spline(), interp factor must be greater than 1", EXTENSION_FULL);
 
     // generate coefficients
     unsigned int i;

@@ -58,11 +58,11 @@ RRESAMP() RRESAMP(_create)(unsigned int _P,
 {
     // validate input
     if (_P == 0)
-        return liquid_error(1,"rresamp_%s_create(), interpolation rate must be greater than zero", EXTENSION_FULL);
+        return liquid_error_config("rresamp_%s_create(), interpolation rate must be greater than zero", EXTENSION_FULL);
     if (_Q == 0)
-        return liquid_error(1,"rresamp_%s_create(), decimation rate must be greater than zero", EXTENSION_FULL);
+        return liquid_error_config("rresamp_%s_create(), decimation rate must be greater than zero", EXTENSION_FULL);
     if (_m == 0)
-        return liquid_error(1,"rresamp_%s_create(), filter semi-length must be greater than zero", EXTENSION_FULL);
+        return liquid_error_config("rresamp_%s_create(), filter semi-length must be greater than zero", EXTENSION_FULL);
 
     // allocate memory for resampler
     RRESAMP() q = (RRESAMP()) malloc(sizeof(struct RRESAMP(_s)));
@@ -168,9 +168,9 @@ RRESAMP() RRESAMP(_create_default)(unsigned int _P,
 {
     // validate input
     if (_P == 0)
-        return liquid_error(1,"rresamp_%s_create(), interpolation rate must be greater than zero", EXTENSION_FULL);
+        return liquid_error_config("rresamp_%s_create(), interpolation rate must be greater than zero", EXTENSION_FULL);
     if (_Q == 0)
-        return liquid_error(1,"rresamp_%s_create(), decimation rate must be greater than zero", EXTENSION_FULL);
+        return liquid_error_config("rresamp_%s_create(), decimation rate must be greater than zero", EXTENSION_FULL);
 
     // det default parameters
     unsigned int m  = 12;

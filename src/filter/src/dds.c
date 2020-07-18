@@ -78,7 +78,7 @@ DDS() DDS(_create)(unsigned int _num_stages,
 {
     // error checking
     if (_fc > 0.5f || _fc < -0.5f)
-        return liquid_error(1,"dds_xxxf_create(), frequency %12.4e is out of range [-0.5,0.5]", _fc);
+        return liquid_error_config("dds_xxxf_create(), frequency %12.4e is out of range [-0.5,0.5]", _fc);
 
     // create object
     DDS() q = (DDS()) malloc(sizeof(struct DDS(_s)));

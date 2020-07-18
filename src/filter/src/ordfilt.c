@@ -68,9 +68,9 @@ ORDFILT() ORDFILT(_create)(unsigned int _n,
 {
     // validate input
     if (_n == 0)
-        return liquid_error(1,"ordfilt_%s_create(), filter length must be greater than zero", EXTENSION_FULL);
+        return liquid_error_config("ordfilt_%s_create(), filter length must be greater than zero", EXTENSION_FULL);
     if (_k >= _n)
-        return liquid_error(1,"ordfilt_%s_create(), filter index must be in [0,n-1]", EXTENSION_FULL);
+        return liquid_error_config("ordfilt_%s_create(), filter index must be in [0,n-1]", EXTENSION_FULL);
 
     // create filter object and initialize
     ORDFILT() q = (ORDFILT()) malloc(sizeof(struct ORDFILT(_s)));

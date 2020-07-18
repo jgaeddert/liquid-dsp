@@ -60,16 +60,16 @@ RESAMP() RESAMP(_create)(float        _rate,
 {
     // validate input
     if (_rate <= 0)
-        return liquid_error(1,"resamp_%s_create(), resampling rate must be greater than zero", EXTENSION_FULL);
+        return liquid_error_config("resamp_%s_create(), resampling rate must be greater than zero", EXTENSION_FULL);
     if (_m == 0)
-        return liquid_error(1,"resamp_%s_create(), filter semi-length must be greater than zero", EXTENSION_FULL);
+        return liquid_error_config("resamp_%s_create(), filter semi-length must be greater than zero", EXTENSION_FULL);
     if (_fc <= 0.0f || _fc >= 0.5f)
-        return liquid_error(1,"resamp_%s_create(), filter cutoff must be in (0,0.5)", EXTENSION_FULL);
+        return liquid_error_config("resamp_%s_create(), filter cutoff must be in (0,0.5)", EXTENSION_FULL);
     if (_As <= 0.0f)
-        return liquid_error(1,"resamp_%s_create(), filter stop-band suppression must be greater than zero", EXTENSION_FULL);
+        return liquid_error_config("resamp_%s_create(), filter stop-band suppression must be greater than zero", EXTENSION_FULL);
 #if 0
     if (_npfb == 0)
-        return liquid_error(1,"resamp_%s_create(), number of filter banks must be greater than zero", EXTENSION_FULL);
+        return liquid_error_config("resamp_%s_create(), number of filter banks must be greater than zero", EXTENSION_FULL);
 #endif
 
     // allocate memory for resampler
@@ -118,7 +118,7 @@ RESAMP() RESAMP(_create_default)(float _rate)
 {
     // validate input
     if (_rate <= 0)
-        return liquid_error(1,"resamp_%s_create_default(), resampling rate must be greater than zero", EXTENSION_FULL);
+        return liquid_error_config("resamp_%s_create_default(), resampling rate must be greater than zero", EXTENSION_FULL);
 
     // det default parameters
     unsigned int m    = 7;

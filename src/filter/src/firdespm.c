@@ -235,11 +235,11 @@ firdespm firdespm_create(unsigned int            _h_len,
         weights_valid &= _weights[i] > 0;
 
     if (!bands_valid)
-        return liquid_error(1,"firdespm_create(), invalid bands");
+        return liquid_error_config("firdespm_create(), invalid bands");
     if (!weights_valid)
-        return liquid_error(1,"firdespm_create(), invalid weights (must be positive)");
+        return liquid_error_config("firdespm_create(), invalid weights (must be positive)");
     if (_num_bands == 0)
-        return liquid_error(1,"firdespm_create(), number of bands must be > 0");
+        return liquid_error_config("firdespm_create(), number of bands must be > 0");
 
     // create object
     firdespm q = (firdespm) malloc(sizeof(struct firdespm_s));
@@ -334,9 +334,9 @@ firdespm firdespm_create_callback(unsigned int          _h_len,
         bands_valid &= _bands[i] >= _bands[i-1];
 
     if (!bands_valid)
-        return liquid_error(1,"firdespm_create(), invalid bands");
+        return liquid_error_config("firdespm_create(), invalid bands");
     if (_num_bands == 0)
-        return liquid_error(1,"firdespm_create(), number of bands must be > 0");
+        return liquid_error_config("firdespm_create(), number of bands must be > 0");
 
     // create object
     firdespm q = (firdespm) malloc(sizeof(struct firdespm_s));

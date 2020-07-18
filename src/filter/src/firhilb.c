@@ -73,7 +73,7 @@ FIRHILB() FIRHILB(_create)(unsigned int _m,
 {
     // validate firhilb inputs
     if (_m < 2)
-        return liquid_error(1,"firhilb_create(), filter semi-length (m) must be at least 2");
+        return liquid_error_config("firhilb_create(), filter semi-length (m) must be at least 2");
 
     // allocate memory for main object
     FIRHILB() q = (FIRHILB()) malloc(sizeof(struct FIRHILB(_s)));

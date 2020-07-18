@@ -72,9 +72,9 @@ FFTFILT() FFTFILT(_create)(TC *         _h,
 {
     // validate input
     if (_h_len == 0)
-        return liquid_error(1,"fftfilt_%s_create(), filter length must be greater than zero",EXTENSION_FULL);
+        return liquid_error_config("fftfilt_%s_create(), filter length must be greater than zero",EXTENSION_FULL);
     if (_n < _h_len-1)
-        return liquid_error(1,"fftfilt_%s_create(), block length must be greater than _h_len-1 (%u)",EXTENSION_FULL,_h_len-1);
+        return liquid_error_config("fftfilt_%s_create(), block length must be greater than _h_len-1 (%u)",EXTENSION_FULL,_h_len-1);
 
     // create filter object and initialize
     FFTFILT() q = (FFTFILT()) malloc(sizeof(struct FFTFILT(_s)));

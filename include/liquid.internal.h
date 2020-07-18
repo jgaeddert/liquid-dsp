@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2019 Joseph Gaeddert
+ * Copyright (c) 2007 - 2020 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -39,13 +39,23 @@
 #include <complex.h>
 #include "liquid.h"
 
-// report error
-void * liquid_error(int _code, char * _format, ...);
-
 #if defined HAVE_FEC_H && defined HAVE_LIBFEC
 #  define LIBFEC_ENABLED 1
 #endif
 
+// report error
+int liquid_error_fl(int _code, const char * _file, int _line, const char * _format, ...);
+
+// report error specifically for invalid object configuration 
+void * liquid_error_config_fl(const char * _file, int _line, const char * _format, ...);
+
+// macro to get file name and line number for source of error
+#define liquid_error(code, format, ...) \
+    liquid_error_fl(code, __FILE__, __LINE__, format, ##__VA_ARGS__);
+
+// macro to get file name and line number for source of error (invalid object)
+#define liquid_error_config(format, ...) \
+    liquid_error_config_fl(__FILE__, __LINE__, format, ##__VA_ARGS__);
 
 //
 // Debugging macros
