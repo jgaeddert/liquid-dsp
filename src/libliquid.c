@@ -46,7 +46,7 @@ int liquid_error_fl(int          _code,
     va_list argptr;
     va_start(argptr, _format);
     fprintf(stderr,"error [%d]: %s\n", _code, liquid_error_info(_code));
-    fprintf(stderr,"  %s:%u\n", _file, _line);
+    fprintf(stderr,"  %s:%u: ", _file, _line);
     vfprintf(stderr, _format, argptr);
     fprintf(stderr,"\n");
     va_end(argptr);
@@ -66,7 +66,7 @@ void * liquid_error_config_fl(const char * _file,
     va_list argptr;
     va_start(argptr, _format);
     fprintf(stderr,"error [%d]: %s\n", code, liquid_error_info(code));
-    fprintf(stderr,"  %s:%u\n", _file, _line);
+    fprintf(stderr,"  %s:%u: ", _file, _line);
     vfprintf(stderr, _format, argptr);
     fprintf(stderr,"\n");
     va_end(argptr);
