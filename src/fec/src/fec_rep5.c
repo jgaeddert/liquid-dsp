@@ -45,15 +45,17 @@ fec fec_rep5_create(void * _opts)
 }
 
 // destroy rep5 object
-void fec_rep5_destroy(fec _q)
+int fec_rep5_destroy(fec _q)
 {
     free(_q);
+    return LIQUID_OK;
 }
 
 // print rep5 object
-void fec_rep5_print(fec _q)
+int fec_rep5_print(fec _q)
 {
     printf("fec_rep5 [r: %3.2f]\n", _q->rate);
+    return LIQUID_OK;
 }
 
 // encode block of data using rep5 encoder
@@ -62,15 +64,16 @@ void fec_rep5_print(fec _q)
 //  _dec_msg_len    :   decoded message length (number of bytes)
 //  _msg_dec        :   decoded message [size: 1 x _dec_msg_len]
 //  _msg_enc        :   encoded message [size: 1 x 5*_dec_msg_len]
-void fec_rep5_encode(fec _q,
-                     unsigned int _dec_msg_len,
-                     unsigned char *_msg_dec,
-                     unsigned char *_msg_enc)
+int fec_rep5_encode(fec             _q,
+                    unsigned int    _dec_msg_len,
+                    unsigned char * _msg_dec,
+                    unsigned char * _msg_enc)
 {
     unsigned int i;
     for (i=0; i<5; i++) {
         memcpy(&_msg_enc[i*_dec_msg_len], _msg_dec, _dec_msg_len);
     }
+    return LIQUID_OK;
 }
 
 // decode block of data using rep5 decoder
@@ -79,10 +82,10 @@ void fec_rep5_encode(fec _q,
 //  _dec_msg_len    :   decoded message length (number of bytes)
 //  _msg_enc        :   encoded message [size: 1 x 5*_dec_msg_len]
 //  _msg_dec        :   decoded message [size: 1 x _dec_msg_len]
-void fec_rep5_decode(fec _q,
-                     unsigned int _dec_msg_len,
-                     unsigned char *_msg_enc,
-                     unsigned char *_msg_dec)
+int fec_rep5_decode(fec             _q,
+                    unsigned int    _dec_msg_len,
+                    unsigned char * _msg_enc,
+                    unsigned char * _msg_dec)
 {
     unsigned char s0, s1, s2, s3, s4;
     unsigned int i, num_errors=0;
@@ -108,7 +111,7 @@ void fec_rep5_decode(fec _q,
         //num_errors += (s0 ^ s1) | (s0 ^ s2) | (s1 ^ s2) ? 1 : 0;
         num_errors += 0;
     }
-    //return num_errors;
+    return LIQUID_OK;
 }
 
 // decode block of data using rep5 decoder (soft metrics)
@@ -117,10 +120,10 @@ void fec_rep5_decode(fec _q,
 //  _dec_msg_len    :   decoded message length (number of bytes)
 //  _msg_enc        :   encoded message [size: 1 x 5*_dec_msg_len]
 //  _msg_dec        :   decoded message [size: 1 x _dec_msg_len]
-void fec_rep5_decode_soft(fec _q,
-                          unsigned int _dec_msg_len,
-                          unsigned char * _msg_enc,
-                          unsigned char * _msg_dec)
+int fec_rep5_decode_soft(fec             _q,
+                         unsigned int    _dec_msg_len,
+                         unsigned char * _msg_enc,
+                         unsigned char * _msg_dec)
 {
     unsigned char s0, s1, s2, s3, s4;
     unsigned int i;
@@ -145,6 +148,6 @@ void fec_rep5_decode_soft(fec _q,
             _msg_dec[i] |= (s_hat > LIQUID_SOFTBIT_ERASURE) ? (1 << (8-j-1)) : 0x00;
             
         }
-
     }
+    return LIQUID_OK;
 }

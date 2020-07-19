@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2015 Joseph Gaeddert
+ * Copyright (c) 2007 - 2020 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -43,23 +43,27 @@ fec fec_pass_create(void * _opts)
     return q;
 }
 
-void fec_pass_destroy(fec _q)
+int fec_pass_destroy(fec _q)
 {
     free(_q);
+    return LIQUID_OK;
 }
 
-void fec_pass_print(fec _q)
+int fec_pass_print(fec _q)
 {
     printf("fec_pass [r: %3.2f]\n", _q->rate);
+    return LIQUID_OK;
 }
 
-void fec_pass_encode(fec _q, unsigned int _dec_msg_len, unsigned char *_msg_dec, unsigned char *_msg_enc)
+int fec_pass_encode(fec _q, unsigned int _dec_msg_len, unsigned char *_msg_dec, unsigned char *_msg_enc)
 {
     memmove(_msg_enc, _msg_dec, _dec_msg_len);
+    return LIQUID_OK;
 }
 
-void fec_pass_decode(fec _q, unsigned int _dec_msg_len, unsigned char *_msg_enc, unsigned char *_msg_dec)
+int fec_pass_decode(fec _q, unsigned int _dec_msg_len, unsigned char *_msg_enc, unsigned char *_msg_dec)
 {
     memmove(_msg_dec, _msg_enc, _dec_msg_len);
+    return LIQUID_OK;
 }
 

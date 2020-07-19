@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2015 Joseph Gaeddert
+ * Copyright (c) 2007 - 2020 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -70,7 +70,7 @@ fec fec_rs_create(fec_scheme _fs)
     return q;
 }
 
-void fec_rs_destroy(fec _q)
+int fec_rs_destroy(fec _q)
 {
     // delete internal Reed-Solomon decoder object
     if (_q->rs != NULL) {
@@ -84,12 +84,13 @@ void fec_rs_destroy(fec _q)
 
     // delete fec object
     free(_q);
+    return LIQUID_OK;
 }
 
-void fec_rs_encode(fec _q,
-                   unsigned int _dec_msg_len,
-                   unsigned char *_msg_dec,
-                   unsigned char *_msg_enc)
+int fec_rs_encode(fec             _q,
+                  unsigned int    _dec_msg_len,
+                  unsigned char * _msg_dec,
+                  unsigned char * _msg_enc)
 {
     // validate input
     if (_dec_msg_len == 0) {
@@ -130,13 +131,14 @@ void fec_rs_encode(fec _q,
     // sanity check
     assert( n0 == _q->num_dec_bytes );
     assert( n1 == _q->num_enc_bytes );
+    return LIQUID_OK;
 }
 
 //unsigned int
-void fec_rs_decode(fec _q,
-                   unsigned int _dec_msg_len,
-                   unsigned char *_msg_enc,
-                   unsigned char *_msg_dec)
+int fec_rs_decode(fec             _q,
+                  unsigned int    _dec_msg_len,
+                  unsigned char * _msg_enc,
+                  unsigned char * _msg_dec)
 {
     // validate input
     if (_dec_msg_len == 0) {
@@ -184,6 +186,7 @@ void fec_rs_decode(fec _q,
     // sanity check
     assert( n0 == _q->num_enc_bytes );
     assert( n1 == _q->num_dec_bytes );
+    return LIQUID_OK;
 }
 
 // Set dec_msg_len, re-allocating resources as necessary.  Effectively, it
@@ -217,12 +220,11 @@ void fec_rs_decode(fec _q,
 // parity symbols, so each block is extended to 237 bytes. libfec auto-
 // matically extends the internal data to 255 bytes by padding with 18
 // symbols.  Therefore, the final output length is 237 * 5 = 1185 symbols.
-void fec_rs_setlength(fec _q,
-                      unsigned int _dec_msg_len)
+int fec_rs_setlength(fec _q, unsigned int _dec_msg_len)
 {
     // return if length has not changed
     if (_dec_msg_len == _q->num_dec_bytes)
-        return;
+        return LIQUID_OK;
 
     // reset lengths
     _q->num_dec_bytes = _dec_msg_len;
@@ -271,45 +273,50 @@ void fec_rs_setlength(fec _q,
                           _q->prim,
                           _q->nroots,
                           _q->pad);
+    return LIQUID_OK;
 }
 
 // 
 // internal
 //
 
-void fec_rs_init_p8(fec _q)
+int fec_rs_init_p8(fec _q)
 {
     _q->symsize = 8;
     _q->genpoly = 0x11d;
     _q->fcs = 1;
     _q->prim = 1;
     _q->nroots = 32;
+    return LIQUID_OK;
 }
 
 #else   // LIBFEC_ENABLED
 
 fec fec_rs_create(fec_scheme _fs)
 {
-    return NULL;
+    return liquid_error_config("fec_rs_create(), libfec not installed");
 }
 
-void fec_rs_destroy(fec _q)
+int fec_rs_destroy(fec _q)
 {
+    return liquid_error(LIQUID_EUMODE,"fec_rs_destroy(), libfec not installed");
 }
 
-void fec_rs_encode(fec _q,
+int fec_rs_encode(fec _q,
                    unsigned int _dec_msg_len,
                    unsigned char *_msg_dec,
                    unsigned char *_msg_enc)
 {
+    return liquid_error(LIQUID_EUMODE,"fec_rs_encode(), libfec not installed");
 }
 
 //unsigned int
-void fec_rs_decode(fec _q,
+int fec_rs_decode(fec _q,
                    unsigned int _dec_msg_len,
                    unsigned char *_msg_enc,
                    unsigned char *_msg_dec)
 {
+    return liquid_error(LIQUID_EUMODE,"fec_rs_decode(), libfec not installed");
 }
 
 #endif  // LIBFEC_ENABLED

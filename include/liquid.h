@@ -1215,40 +1215,40 @@ fec fec_recreate(fec _q,
                  void *_opts);
 
 // destroy fec object
-void fec_destroy(fec _q);
+int fec_destroy(fec _q);
 
 // print fec object internals
-void fec_print(fec _q);
+int fec_print(fec _q);
 
 // encode a block of data using a fec scheme
 //  _q              :   fec object
 //  _dec_msg_len    :   decoded message length
 //  _msg_dec        :   decoded message
 //  _msg_enc        :   encoded message
-void fec_encode(fec _q,
-                unsigned int _dec_msg_len,
-                unsigned char * _msg_dec,
-                unsigned char * _msg_enc);
+int fec_encode(fec _q,
+               unsigned int _dec_msg_len,
+               unsigned char * _msg_dec,
+               unsigned char * _msg_enc);
 
 // decode a block of data using a fec scheme
 //  _q              :   fec object
 //  _dec_msg_len    :   decoded message length
 //  _msg_enc        :   encoded message
 //  _msg_dec        :   decoded message
-void fec_decode(fec _q,
-                unsigned int _dec_msg_len,
-                unsigned char * _msg_enc,
-                unsigned char * _msg_dec);
+int fec_decode(fec _q,
+               unsigned int _dec_msg_len,
+               unsigned char * _msg_enc,
+               unsigned char * _msg_dec);
 
 // decode a block of data using a fec scheme (soft decision)
 //  _q              :   fec object
 //  _dec_msg_len    :   decoded message length
 //  _msg_enc        :   encoded message (soft bits)
 //  _msg_dec        :   decoded message
-void fec_decode_soft(fec _q,
-                     unsigned int _dec_msg_len,
-                     unsigned char * _msg_enc,
-                     unsigned char * _msg_dec);
+int fec_decode_soft(fec _q,
+                    unsigned int _dec_msg_len,
+                    unsigned char * _msg_enc,
+                    unsigned char * _msg_dec);
 
 //
 // Packetizer

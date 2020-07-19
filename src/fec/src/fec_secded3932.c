@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2015 Joseph Gaeddert
+ * Copyright (c) 2007 - 2020 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -115,8 +115,8 @@ unsigned char fec_secded3932_compute_syndrome(unsigned char * _v)
 // encode symbol
 //  _sym_dec    :   decoded symbol [size: 4 x 1]
 //  _sym_enc    :   encoded symbol [size: 5 x 1], _sym_enc[0] has only 7 bits
-void fec_secded3932_encode_symbol(unsigned char * _sym_dec,
-                                  unsigned char * _sym_enc)
+int fec_secded3932_encode_symbol(unsigned char * _sym_dec,
+                                 unsigned char * _sym_enc)
 {
     // first six bits is parity block
     _sym_enc[0] = fec_secded3932_compute_parity(_sym_dec);
@@ -126,6 +126,7 @@ void fec_secded3932_encode_symbol(unsigned char * _sym_dec,
     _sym_enc[2] = _sym_dec[1];
     _sym_enc[3] = _sym_dec[2];
     _sym_enc[4] = _sym_dec[3];
+    return LIQUID_OK;
 }
 
 // decode symbol, returning 0/1/2 for zero/one/multiple errors detected
@@ -228,9 +229,10 @@ fec fec_secded3932_create(void * _opts)
 }
 
 // destroy SEC-DEC (39,32) object
-void fec_secded3932_destroy(fec _q)
+int fec_secded3932_destroy(fec _q)
 {
     free(_q);
+    return LIQUID_OK;
 }
 
 // encode block of data using SEC-DEC (39,32) encoder
@@ -239,10 +241,10 @@ void fec_secded3932_destroy(fec _q)
 //  _dec_msg_len    :   decoded message length (number of bytes)
 //  _msg_dec        :   decoded message [size: 1 x _dec_msg_len]
 //  _msg_enc        :   encoded message [size: 1 x 2*_dec_msg_len]
-void fec_secded3932_encode(fec _q,
-                           unsigned int _dec_msg_len,
-                           unsigned char *_msg_dec,
-                           unsigned char *_msg_enc)
+int fec_secded3932_encode(fec             _q,
+                          unsigned int    _dec_msg_len,
+                          unsigned char * _msg_dec,
+                          unsigned char * _msg_enc)
 {
     unsigned int i=0;       // decoded byte counter
     unsigned int j=0;       // encoded byte counter
@@ -295,6 +297,7 @@ void fec_secded3932_encode(fec _q,
 
     assert( j == fec_get_enc_msg_length(LIQUID_FEC_SECDED3932,_dec_msg_len) );
     assert( i == _dec_msg_len);
+    return LIQUID_OK;
 }
 
 // decode block of data using SEC-DEC (39,32) decoder
@@ -305,10 +308,10 @@ void fec_secded3932_encode(fec _q,
 //  _msg_dec        :   decoded message [size: 1 x _dec_msg_len]
 //
 //unsigned int
-void fec_secded3932_decode(fec _q,
-                           unsigned int _dec_msg_len,
-                           unsigned char *_msg_enc,
-                           unsigned char *_msg_dec)
+int fec_secded3932_decode(fec             _q,
+                          unsigned int    _dec_msg_len,
+                          unsigned char * _msg_enc,
+                          unsigned char * _msg_dec)
 {
     unsigned int i=0;       // decoded byte counter
     unsigned int j=0;       // encoded byte counter
@@ -348,6 +351,6 @@ void fec_secded3932_decode(fec _q,
 
     assert( j == fec_get_enc_msg_length(LIQUID_FEC_SECDED3932,_dec_msg_len) );
     assert( i == _dec_msg_len);
-
-    //return num_errors;
+    return LIQUID_OK;
 }
+

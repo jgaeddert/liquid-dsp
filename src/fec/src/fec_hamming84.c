@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2015 Joseph Gaeddert
+ * Copyright (c) 2007 - 2020 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -88,9 +88,10 @@ fec fec_hamming84_create(void * _opts)
 }
 
 // destroy Hamming(8,4) object
-void fec_hamming84_destroy(fec _q)
+int fec_hamming84_destroy(fec _q)
 {
     free(_q);
+    return LIQUID_OK;
 }
 
 // encode block of data using Hamming(8,4) encoder
@@ -99,10 +100,10 @@ void fec_hamming84_destroy(fec _q)
 //  _dec_msg_len    :   decoded message length (number of bytes)
 //  _msg_dec        :   decoded message [size: 1 x _dec_msg_len]
 //  _msg_enc        :   encoded message [size: 1 x 2*_dec_msg_len]
-void fec_hamming84_encode(fec _q,
-                          unsigned int _dec_msg_len,
-                          unsigned char *_msg_dec,
-                          unsigned char *_msg_enc)
+int fec_hamming84_encode(fec              _q,
+                          unsigned int    _dec_msg_len,
+                          unsigned char * _msg_dec,
+                          unsigned char * _msg_enc)
 {
     unsigned int i, j=0;
     unsigned char s0, s1;
@@ -113,6 +114,7 @@ void fec_hamming84_encode(fec _q,
         _msg_enc[j+1] = hamming84_enc_gentab[s1];
         j+=2;
     }
+    return LIQUID_OK;
 }
 
 // decode block of data using Hamming(8,4) decoder
@@ -123,10 +125,10 @@ void fec_hamming84_encode(fec _q,
 //  _msg_dec        :   decoded message [size: 1 x _dec_msg_len]
 //
 //unsigned int
-void fec_hamming84_decode(fec _q,
-                          unsigned int _dec_msg_len,
-                          unsigned char *_msg_enc,
-                          unsigned char *_msg_dec)
+int fec_hamming84_decode(fec             _q,
+                         unsigned int    _dec_msg_len,
+                         unsigned char * _msg_enc,
+                         unsigned char * _msg_dec)
 {
     unsigned int i;
     unsigned char r0, r1;   // received 8-bit symbols
@@ -141,7 +143,7 @@ void fec_hamming84_decode(fec _q,
 
         _msg_dec[i] = (s0 << 4) | s1;
     }
-    //return num_errors;
+    return LIQUID_OK;
 }
 
 // decode block of data using Hamming(8,4) soft decoder
@@ -152,10 +154,10 @@ void fec_hamming84_decode(fec _q,
 //  _msg_dec        :   decoded message [size: _dec_msg_len x 1]
 //
 //unsigned int
-void fec_hamming84_decode_soft(fec _q,
-                               unsigned int _dec_msg_len,
-                               unsigned char *_msg_enc,
-                               unsigned char *_msg_dec)
+int fec_hamming84_decode_soft(fec             _q,
+                              unsigned int    _dec_msg_len,
+                              unsigned char * _msg_enc,
+                              unsigned char * _msg_dec)
 {
     unsigned int i;
     unsigned int k=0;       // array bit index
@@ -179,7 +181,7 @@ void fec_hamming84_decode_soft(fec _q,
         //printf("  %3u : 0x%.2x > 0x%.2x,  0x%.2x > 0x%.2x (k=%u)\n", i, r0, s0, r1, s1, k);
     }
     assert(k == 8*enc_msg_len);
-    //return num_errors;
+    return LIQUID_OK;
 }
 
 // 
