@@ -94,8 +94,8 @@ unsigned int fec_golay2412_encode_symbol(unsigned int _sym_dec)
 {
     // validate input
     if (_sym_dec >= (1<<12)) {
-        fprintf(stderr,"error, fec_golay2412_encode_symbol(), input symbol too large\n");
-        exit(1);
+        liquid_error(LIQUID_EICONFIG,"fec_golay2412_encode_symbol(), input symbol too large");
+        return 0;
     }
 
     // compute encoded/transmitted message: v = m*G
@@ -131,8 +131,8 @@ unsigned int fec_golay2412_decode_symbol(unsigned int _sym_enc)
 {
     // validate input
     if (_sym_enc >= (1<<24)) {
-        fprintf(stderr,"error, fec_golay2412_decode_symbol(), input symbol too large\n");
-        exit(1);
+        liquid_error(LIQUID_EICONFIG,"fec_golay2412_decode_symbol(), input symbol too large");
+        return 0;
     }
 
     // state variables

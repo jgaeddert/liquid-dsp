@@ -204,7 +204,7 @@ int fec_scheme_is_repeat(fec_scheme _scheme)
 // correction scheme (object-independent method)
 //  _scheme     :   forward error-correction scheme
 //  _msg_len    :   raw, uncoded message length
-unsigned int fec_get_enc_msg_length(fec_scheme _scheme,
+unsigned int fec_get_enc_msg_length(fec_scheme   _scheme,
                                     unsigned int _msg_len)
 {
     switch (_scheme) {
@@ -261,12 +261,12 @@ unsigned int fec_get_enc_msg_length(fec_scheme _scheme,
     case LIQUID_FEC_CONV_V29P56:
     case LIQUID_FEC_CONV_V29P67:
     case LIQUID_FEC_CONV_V29P78:
-        liquid_error("fec_get_enc_msg_length(), convolutional codes unavailable (install libfec)");
+        liquid_error(LIQUID_EUMODE,"fec_get_enc_msg_length(), convolutional codes unavailable (install libfec)");
     case LIQUID_FEC_RS_M8:
-        liquid_error("fec_get_enc_msg_length(), Reed-Solomon codes unavailable (install libfec)");
+        liquid_error(LIQUID_EUMODE,"fec_get_enc_msg_length(), Reed-Solomon codes unavailable (install libfec)");
 #endif
     default:
-        liquid_error("fec_get_enc_msg_length(), unknown/unsupported scheme: %d\n", _scheme);
+        liquid_error(LIQUID_EIMODE,"fec_get_enc_msg_length(), unknown/unsupported scheme: %d\n", _scheme);
     }
     return 0;
 }
@@ -471,31 +471,19 @@ fec fec_create(fec_scheme _scheme, void *_opts)
 {
     switch (_scheme) {
     case LIQUID_FEC_UNKNOWN:
-        printf("error: fec_create(), cannot create fec object of type \"UNKNOWN\"\n");
-        exit(-1);
-    case LIQUID_FEC_NONE:
-        return fec_pass_create(NULL);
-    case LIQUID_FEC_REP3:
-        return fec_rep3_create(_opts);
-    case LIQUID_FEC_REP5:
-        return fec_rep5_create(_opts);
-    case LIQUID_FEC_HAMMING74:
-        return fec_hamming74_create(_opts);
-    case LIQUID_FEC_HAMMING84:
-        return fec_hamming84_create(_opts);
-    case LIQUID_FEC_HAMMING128:
-        return fec_hamming128_create(_opts);
-
-    case LIQUID_FEC_GOLAY2412:
-        return fec_golay2412_create(_opts);
+        return liquid_error_config("fec_create(), cannot create fec object of unknown type\n");
+    case LIQUID_FEC_NONE:       return fec_pass_create(NULL);
+    case LIQUID_FEC_REP3:       return fec_rep3_create(_opts);
+    case LIQUID_FEC_REP5:       return fec_rep5_create(_opts);
+    case LIQUID_FEC_HAMMING74:  return fec_hamming74_create(_opts);
+    case LIQUID_FEC_HAMMING84:  return fec_hamming84_create(_opts);
+    case LIQUID_FEC_HAMMING128: return fec_hamming128_create(_opts);
+    case LIQUID_FEC_GOLAY2412:  return fec_golay2412_create(_opts);
 
     // SEC-DED codecs (single error correction, double error detection)
-    case LIQUID_FEC_SECDED2216:
-        return fec_secded2216_create(_opts);
-    case LIQUID_FEC_SECDED3932:
-        return fec_secded3932_create(_opts);
-    case LIQUID_FEC_SECDED7264:
-        return fec_secded7264_create(_opts);
+    case LIQUID_FEC_SECDED2216: return fec_secded2216_create(_opts);
+    case LIQUID_FEC_SECDED3932: return fec_secded3932_create(_opts);
+    case LIQUID_FEC_SECDED7264: return fec_secded7264_create(_opts);
 
     // convolutional codes
 #if LIBFEC_ENABLED
@@ -543,21 +531,20 @@ fec fec_create(fec_scheme _scheme, void *_opts)
     case LIQUID_FEC_CONV_V29P56:
     case LIQUID_FEC_CONV_V29P67:
     case LIQUID_FEC_CONV_V29P78:
-        return liquid_error("fec_create(), convolutional codes unavailable (install libfec)");
-        exit(-1);
-
+        liquid_error(LIQUID_EUMODE,"fec_create(), convolutional codes unavailable (install libfec)");
+        return NULL;
     case LIQUID_FEC_RS_M8:
-        return liquid_error("fec_create(), Reed-Solomon codes unavailable (install libfec)");
-        exit(-1);
+        liquid_error(LIQUID_EUMODE,"fec_create(), Reed-Solomon codes unavailable (install libfec)");
+        return NULL;
 #endif
-
     default:
-        printf("error: fec_create(), unknown/unsupported scheme: %d\n", _scheme);
-        exit(-1);
+        liquid_error(LIQUID_EIMODE,"fec_create(), unknown/unsupported scheme: %d", _scheme);
+        return NULL;
     }
 
     // should never get to this point, but return NULL to keep
     // compiler happy
+    liquid_error(LIQUID_EINT,"internal error");
     return NULL;
 }
 

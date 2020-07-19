@@ -48,10 +48,8 @@ fec fec_rs_create(fec_scheme _fs)
     q->decode_soft_func = NULL;
 
     switch (q->scheme) {
-    case LIQUID_FEC_RS_M8: fec_rs_init_p8(q);   break;
-    default:
-        fprintf(stderr,"error: fec_rs_create(), invalid type\n");
-        exit(1);
+    case LIQUID_FEC_RS_M8: fec_rs_init_p8(q); break;
+    default: return liquid_error_config("fec_rs_create(), invalid type");
     }
 
     // initialize basic parameters
@@ -93,10 +91,8 @@ int fec_rs_encode(fec             _q,
                   unsigned char * _msg_enc)
 {
     // validate input
-    if (_dec_msg_len == 0) {
-        fprintf(stderr,"error: fec_rs_encode(), input lenght must be > 0\n");
-        exit(1);
-    }
+    if (_dec_msg_len == 0)
+        return liquid_error(LIQUID_EICONFIG,"fec_rs_encode(), input lenght must be > 0");
 
     // re-allocate resources if necessary
     fec_rs_setlength(_q, _dec_msg_len);
@@ -141,10 +137,8 @@ int fec_rs_decode(fec             _q,
                   unsigned char * _msg_dec)
 {
     // validate input
-    if (_dec_msg_len == 0) {
-        fprintf(stderr,"error: fec_rs_encode(), input lenght must be > 0\n");
-        exit(1);
-    }
+    if (_dec_msg_len == 0)
+        return liquid_error(LIQUID_EICONFIG,"fec_rs_encode(), input lenght must be > 0");
 
     // re-allocate resources if necessary
     fec_rs_setlength(_q, _dec_msg_len);
