@@ -68,13 +68,17 @@ int liquid_libversion_number(void);
   }                                                                         \
 
 // basic error types
-#define LIQUID_NUM_ERRORS 10
+#define LIQUID_NUM_ERRORS 11
 typedef enum {
     // everything ok
     LIQUID_OK=0,
 
     // internal logic error; this is a bug with liquid and should be reported immediately
     LIQUID_EINT,
+
+    // invalid object, examples:
+    //  - destroy() method called on NULL pointer
+    LIQUID_EIOBJ,
 
     // invalid parameter, or configuration; examples:
     //  - setting bandwidth of a filter to a negative number

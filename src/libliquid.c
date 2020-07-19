@@ -80,6 +80,7 @@ void * liquid_error_config_fl(const char * _file,
 const char * liquid_error_str[LIQUID_NUM_ERRORS] = {
     "ok",                                                   // LIQUID_OK
     "internal logic error",                                 // LIQUID_EINT
+    "invalid object",                                       // LIQUID_EIOBJ,
     "invalid parameter or configuration",                   // LIQUID_EICONFIG
     "input out of range",                                   // LIQUID_EIVAL
     "invalid vector length or dimension",                   // LIQUID_EIRANGE
