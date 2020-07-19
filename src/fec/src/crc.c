@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2015 Joseph Gaeddert
+ * Copyright (c) 2007 - 2020 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -131,9 +131,9 @@ unsigned int crc_generate_key(crc_scheme      _scheme,
 //  _scheme     :   error-detection scheme (resulting in 'p' bytes)
 //  _msg        :   input data message, [size: _n+p x 1]
 //  _n          :   input data message size (excluding key at end)
-void crc_append_key(crc_scheme      _scheme,
-                    unsigned char * _msg,
-                    unsigned int    _n)
+int crc_append_key(crc_scheme      _scheme,
+                   unsigned char * _msg,
+                   unsigned int    _n)
 {
     // get key size
     unsigned int len = crc_sizeof_key(_scheme);
@@ -145,6 +145,7 @@ void crc_append_key(crc_scheme      _scheme,
     unsigned int i;
     for (i=0; i<len; i++)
         _msg[_n+i] = (key >> (len - i - 1)*8) & 0xff;
+    return LIQUID_OK;
 }
 
 // validate message using error-detection key
@@ -349,15 +350,16 @@ unsigned int crc32_generate_key(unsigned char *_msg,
 }
 
 #if 0
-void crc32_generate_key(unsigned char *_msg,
-                        unsigned int _n,
-                        unsigned char *_key)
+int crc32_generate_key(unsigned char *_msg,
+                       unsigned int _n,
+                       unsigned char *_key)
 {
     unsigned int key32 = crc32_generate_key32(_msg,_n);
     _key[0] = (key32 & 0xFF000000) >> 24;
     _key[1] = (key32 & 0x00FF0000) >> 16;
     _key[2] = (key32 & 0x0000FF00) >> 8;
     _key[3] = (key32 & 0x000000FF);
+    return LIQUID_OK;
 }
 #endif
 

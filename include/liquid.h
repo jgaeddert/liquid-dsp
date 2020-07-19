@@ -1110,9 +1110,9 @@ unsigned int crc_generate_key(crc_scheme      _scheme,
 //  _scheme     :   error-detection scheme (resulting in 'p' bytes)
 //  _msg        :   input data message, [size: _n+p x 1]
 //  _n          :   input data message size (excluding key at end)
-void crc_append_key(crc_scheme      _scheme,
-                    unsigned char * _msg,
-                    unsigned int    _n);
+int crc_append_key(crc_scheme      _scheme,
+                   unsigned char * _msg,
+                   unsigned int    _n);
 
 // validate message using error-detection key
 //  _scheme     :   error-detection scheme
