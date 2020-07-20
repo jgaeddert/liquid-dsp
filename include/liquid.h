@@ -5514,21 +5514,21 @@ qdetector_cccf qdetector_cccf_create_cpfsk(unsigned char * _sequence,
                                            float           _beta,
                                            int             _type);
 
-void qdetector_cccf_destroy(qdetector_cccf _q);
-void qdetector_cccf_print  (qdetector_cccf _q);
-void qdetector_cccf_reset  (qdetector_cccf _q);
+int qdetector_cccf_destroy(qdetector_cccf _q);
+int qdetector_cccf_print  (qdetector_cccf _q);
+int qdetector_cccf_reset  (qdetector_cccf _q);
 
 // run detector, looking for sequence; return pointer to aligned, buffered samples
 void * qdetector_cccf_execute(qdetector_cccf       _q,
                               liquid_float_complex _x);
 
 // set detection threshold (should be between 0 and 1, good starting point is 0.5)
-void qdetector_cccf_set_threshold(qdetector_cccf _q,
-                                  float          _threshold);
+int qdetector_cccf_set_threshold(qdetector_cccf _q,
+                                 float          _threshold);
 
 // set carrier offset search range
-void qdetector_cccf_set_range(qdetector_cccf _q,
-                              float          _dphi_max);
+int qdetector_cccf_set_range(qdetector_cccf _q,
+                             float          _dphi_max);
 
 // access methods
 unsigned int qdetector_cccf_get_seq_len (qdetector_cccf _q); // sequence length

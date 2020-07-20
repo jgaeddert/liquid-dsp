@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2019 Joseph Gaeddert
+ * Copyright (c) 2007 - 2020 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -37,12 +37,10 @@
 #define DEBUG_QDETECTOR_FILENAME     "qdetector_cccf_debug.m"
 
 // seek signal (initial detection)
-void qdetector_cccf_execute_seek(qdetector_cccf _q,
-                                 float complex  _x);
+int qdetector_cccf_execute_seek(qdetector_cccf _q, float complex  _x);
 
 // align signal in time, compute offset estimates
-void qdetector_cccf_execute_align(qdetector_cccf _q,
-                                  float complex  _x);
+int qdetector_cccf_execute_align(qdetector_cccf _q, float complex  _x);
 
 // main object definition
 struct qdetector_cccf_s {
@@ -289,7 +287,7 @@ qdetector_cccf qdetector_cccf_create_cpfsk(unsigned char * _sequence,
     return q;
 }
 
-void qdetector_cccf_destroy(qdetector_cccf _q)
+int qdetector_cccf_destroy(qdetector_cccf _q)
 {
     // free allocated arrays
     free(_q->s         );
@@ -305,9 +303,10 @@ void qdetector_cccf_destroy(qdetector_cccf _q)
 
     // free main object memory
     free(_q);
+    return LIQUID_OK;
 }
 
-void qdetector_cccf_print(qdetector_cccf _q)
+int qdetector_cccf_print(qdetector_cccf _q)
 {
     printf("qdetector_cccf:\n");
     printf("  template length (time):   %-u\n",   _q->s_len);
@@ -315,10 +314,12 @@ void qdetector_cccf_print(qdetector_cccf _q)
     printf("  search range (bins)   :   %-d\n",   _q->range);
     printf("  detection threshold   :   %6.4f\n", _q->threshold);
     printf("  sum{ s^2 }            :   %.2f\n",  _q->s2_sum);
+    return LIQUID_OK;
 }
 
-void qdetector_cccf_reset(qdetector_cccf _q)
+int qdetector_cccf_reset(qdetector_cccf _q)
 {
+    return LIQUID_OK;
 }
 
 void * qdetector_cccf_execute(qdetector_cccf _q,
@@ -350,31 +351,29 @@ void * qdetector_cccf_execute(qdetector_cccf _q,
 }
 
 // set detection threshold (should be between 0 and 1, good starting point is 0.5)
-void qdetector_cccf_set_threshold(qdetector_cccf _q,
-                                  float          _threshold)
+int qdetector_cccf_set_threshold(qdetector_cccf _q,
+                                 float          _threshold)
 {
-    if (_threshold <= 0.0f || _threshold > 2.0f) {
-        fprintf(stderr,"warning: threshold (%12.4e) out of range; ignoring\n", _threshold);
-        return;
-    }
+    if (_threshold <= 0.0f || _threshold > 2.0f)
+        return liquid_error(LIQUID_EICONFIG,"threshold (%12.4e) out of range; ignoring", _threshold);
 
     // set internal threshold value
     _q->threshold = _threshold;
+    return LIQUID_OK;
 }
 
 // set carrier offset search range
-void qdetector_cccf_set_range(qdetector_cccf _q,
-                              float          _dphi_max)
+int qdetector_cccf_set_range(qdetector_cccf _q,
+                             float          _dphi_max)
 {
-    if (_dphi_max < 0.0f || _dphi_max > 0.5f) {
-        fprintf(stderr,"warning: carrier offset search range (%12.4e) out of range; ignoring\n", _dphi_max);
-        return;
-    }
+    if (_dphi_max < 0.0f || _dphi_max > 0.5f)
+        return liquid_error(LIQUID_EICONFIG,"carrier offset search range (%12.4e) out of range; ignoring", _dphi_max);
 
     // set internal search range
     _q->range = (int)(_dphi_max * _q->nfft / (2*M_PI));
     _q->range = _q->range < 0 ? 0 : _q->range;
     //printf("range: %d / %u\n", _q->range, _q->nfft);
+    return LIQUID_OK;
 }
 
 // get sequence length
@@ -431,8 +430,8 @@ float qdetector_cccf_get_phi(qdetector_cccf _q)
 //
 
 // seek signal (initial detection)
-void qdetector_cccf_execute_seek(qdetector_cccf _q,
-                                 float complex  _x)
+int qdetector_cccf_execute_seek(qdetector_cccf _q,
+                                float complex  _x)
 {
     // write sample to buffer and increment counter
     _q->buf_time_0[_q->counter++] = _x;
@@ -441,7 +440,7 @@ void qdetector_cccf_execute_seek(qdetector_cccf _q,
     _q->x2_sum_1 += crealf(_x)*crealf(_x) + cimagf(_x)*cimagf(_x);
 
     if (_q->counter < _q->nfft)
-        return;
+        return LIQUID_OK;
     
     // reset counter (last half of time buffer)
     _q->counter = _q->nfft/2;
@@ -464,7 +463,7 @@ void qdetector_cccf_execute_seek(qdetector_cccf _q,
         // swap accumulated signal levels
         _q->x2_sum_0 = _q->x2_sum_1;
         _q->x2_sum_1 = 0.0f;
-        return;
+        return LIQUID_OK;
     }
     float g = 1.0f / ((float)(_q->nfft) * g0 * sqrtf(_q->s2_sum));
     
@@ -539,7 +538,7 @@ void qdetector_cccf_execute_seek(qdetector_cccf _q,
         memmove(_q->buf_time_0, _q->buf_time_0 + rxy_index, (_q->nfft - rxy_index)*sizeof(float complex));
         _q->counter = _q->nfft - rxy_index;
 
-        return;
+        return LIQUID_OK;
     }
 #if DEBUG_QDETECTOR_PRINT
     printf(" no detect, rxy = %12.8f, time index=%u, freq. offset=%d\n", rxy_peak, rxy_index, rxy_offset);
@@ -551,17 +550,18 @@ void qdetector_cccf_execute_seek(qdetector_cccf _q,
     // swap accumulated signal levels
     _q->x2_sum_0 = _q->x2_sum_1;
     _q->x2_sum_1 = 0.0f;
+    return LIQUID_OK;
 }
 
 // align signal in time, compute offset estimates
-void qdetector_cccf_execute_align(qdetector_cccf _q,
-                                  float complex  _x)
+int qdetector_cccf_execute_align(qdetector_cccf _q,
+                                 float complex  _x)
 {
     // write sample to buffer and increment counter
     _q->buf_time_0[_q->counter++] = _x;
 
     if (_q->counter < _q->nfft)
-        return;
+        return LIQUID_OK;
 
     //printf("signal is aligned!\n");
 
@@ -682,5 +682,6 @@ void qdetector_cccf_execute_align(qdetector_cccf _q,
     _q->x2_sum_0 = liquid_sumsqcf(_q->buf_time_0, _q->nfft/2);
     _q->x2_sum_1 = 0;
     _q->counter = _q->nfft/2;
+    return LIQUID_OK;
 }
 
