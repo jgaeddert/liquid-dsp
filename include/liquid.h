@@ -4566,10 +4566,10 @@ typedef struct {
 } framedatastats_s;
 
 // reset framedatastats object
-void framedatastats_reset(framedatastats_s * _stats);
+int framedatastats_reset(framedatastats_s * _stats);
 
 // print framedatastats object
-void framedatastats_print(framedatastats_s * _stats);
+int framedatastats_print(framedatastats_s * _stats);
 
 
 // Generic frame synchronizer callback function type
@@ -5150,12 +5150,12 @@ typedef struct {
 typedef struct dsssframegen_s * dsssframegen;
 
 dsssframegen dsssframegen_create(dsssframegenprops_s * _props);
-void dsssframegen_destroy(dsssframegen _q);
-void dsssframegen_reset(dsssframegen _q);
+int dsssframegen_destroy(dsssframegen _q);
+int dsssframegen_reset(dsssframegen _q);
 int dsssframegen_is_assembled(dsssframegen _q);
-void dsssframegen_getprops(dsssframegen _q, dsssframegenprops_s * _props);
+int dsssframegen_getprops(dsssframegen _q, dsssframegenprops_s * _props);
 int dsssframegen_setprops(dsssframegen _q, dsssframegenprops_s * _props);
-void dsssframegen_set_header_len(dsssframegen _q, unsigned int _len);
+int dsssframegen_set_header_len(dsssframegen _q, unsigned int _len);
 int dsssframegen_set_header_props(dsssframegen          _q,
                                   dsssframegenprops_s * _props);
 unsigned int dsssframegen_getframelen(dsssframegen _q);
@@ -5165,10 +5165,10 @@ unsigned int dsssframegen_getframelen(dsssframegen _q);
 //  _header         :   frame header
 //  _payload        :   payload data [size: _payload_len x 1]
 //  _payload_len    :   payload data length
-void dsssframegen_assemble(dsssframegen          _q,
-                           const unsigned char * _header,
-                           const unsigned char * _payload,
-                           unsigned int          _payload_len);
+int dsssframegen_assemble(dsssframegen          _q,
+                          const unsigned char * _header,
+                          const unsigned char * _payload,
+                          unsigned int          _payload_len);
 
 int dsssframegen_write_samples(dsssframegen           _q,
                                liquid_float_complex * _buffer,
@@ -5182,27 +5182,20 @@ int dsssframegen_write_samples(dsssframegen           _q,
 typedef struct dsssframesync_s * dsssframesync;
 
 dsssframesync dsssframesync_create(framesync_callback _callback, void * _userdata);
-void dsssframesync_destroy(dsssframesync _q);
-void dsssframesync_print(dsssframesync _q);
-void dsssframesync_reset(dsssframesync _q);
-int dsssframesync_is_frame_open(dsssframesync _q);
-void dsssframesync_set_header_len(dsssframesync _q,
-                                  unsigned int  _len);
-void dsssframesync_decode_header_soft(dsssframesync _q,
-                                      int           _soft);
-void dsssframesync_decode_payload_soft(dsssframesync _q,
-                                       int           _soft);
-int dsssframesync_set_header_props(dsssframesync          _q,
-                                   dsssframegenprops_s * _props);
-void dsssframesync_execute(dsssframesync          _q,
-                           liquid_float_complex * _x,
-                           unsigned int           _n);
-void             dsssframesync_reset_framedatastats(dsssframesync _q);
+int dsssframesync_destroy             (dsssframesync _q);
+int dsssframesync_print               (dsssframesync _q);
+int dsssframesync_reset               (dsssframesync _q);
+int dsssframesync_is_frame_open       (dsssframesync _q);
+int dsssframesync_set_header_len      (dsssframesync _q, unsigned int  _len);
+int dsssframesync_decode_header_soft  (dsssframesync _q, int _soft);
+int dsssframesync_decode_payload_soft (dsssframesync _q, int _soft);
+int dsssframesync_set_header_props    (dsssframesync _q, dsssframegenprops_s * _props);
+int dsssframesync_execute             (dsssframesync _q, liquid_float_complex * _x, unsigned int _n);
+int dsssframesync_reset_framedatastats(dsssframesync _q);
+int dsssframesync_debug_enable        (dsssframesync _q);
+int dsssframesync_debug_disable       (dsssframesync _q);
+int dsssframesync_debug_print         (dsssframesync _q, const char * _filename);
 framedatastats_s dsssframesync_get_framedatastats  (dsssframesync _q);
-
-void dsssframesync_debug_enable(dsssframesync _q);
-void dsssframesync_debug_disable(dsssframesync _q);
-void dsssframesync_debug_print(dsssframesync _q, const char * _filename);
 
 //
 // OFDM flexframe generator
@@ -5431,25 +5424,25 @@ PRESYNC() PRESYNC(_create)(TC *         _v,                                 \
                            unsigned int _m);                                \
                                                                             \
 /* Destroy pre-demod synchronizer, freeing all internal memory          */  \
-void PRESYNC(_destroy)(PRESYNC() _q);                                       \
+int PRESYNC(_destroy)(PRESYNC() _q);                                        \
                                                                             \
 /* Print pre-demod synchronizer internal state                          */  \
-void PRESYNC(_print)(PRESYNC() _q);                                         \
+int PRESYNC(_print)(PRESYNC() _q);                                          \
                                                                             \
 /* Reset pre-demod synchronizer internal state                          */  \
-void PRESYNC(_reset)(PRESYNC() _q);                                         \
+int PRESYNC(_reset)(PRESYNC() _q);                                          \
                                                                             \
 /* Push input sample into pre-demod synchronizer                        */  \
 /*  _q          : pre-demod synchronizer object                         */  \
 /*  _x          : input sample                                          */  \
-void PRESYNC(_push)(PRESYNC() _q,                                           \
+int PRESYNC(_push)(PRESYNC() _q,                                            \
                     TI        _x);                                          \
                                                                             \
 /* Correlate original sequence with internal input buffer               */  \
 /*  _q          : pre-demod synchronizer object                         */  \
 /*  _rxy        : output cross correlation                              */  \
 /*  _dphi_hat   : output frequency offset estimate                      */  \
-void PRESYNC(_execute)(PRESYNC() _q,                                        \
+int PRESYNC(_execute)(PRESYNC() _q,                                         \
                        TO *      _rxy,                                      \
                        float *   _dphi_hat);                                \
 

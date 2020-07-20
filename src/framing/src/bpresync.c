@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2018 Joseph Gaeddert
+ * Copyright (c) 2007 - 2020 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -52,10 +52,10 @@ struct BPRESYNC(_s) {
 //  _id     : sequence index
 //  _rxy0   : positive frequency correlation output (non-conjugated)
 //  _rxy1   : negative frequency correlation output (conjugated)
-void BPRESYNC(_correlatex)(BPRESYNC()      _q,
-                           unsigned int    _id,
-                           float complex * _rxy0,
-                           float complex * _rxy1);
+int BPRESYNC(_correlatex)(BPRESYNC()      _q,
+                          unsigned int    _id,
+                          float complex * _rxy0,
+                          float complex * _rxy1);
 
 // create binary pre-demod synchronizer
 //  _v          :   baseband sequence
@@ -68,13 +68,10 @@ BPRESYNC() BPRESYNC(_create)(TC *         _v,
                              unsigned int _m)
 {
     // validate input
-    if (_n < 1) {
-        fprintf(stderr, "error: bpresync_%s_create(), invalid input length\n", EXTENSION_FULL);
-        exit(1);
-    } else if (_m == 0) {
-        fprintf(stderr, "error: bpresync_%s_create(), number of correlators must be at least 1\n", EXTENSION_FULL);
-        exit(1);
-    }
+    if (_n < 1)
+        return liquid_error_config("bpresync_%s_create(), invalid input length", EXTENSION_FULL);
+    if (_m == 0)
+        return liquid_error_config("bpresync_%s_create(), number of correlators must be at least 1", EXTENSION_FULL);
 
     // allocate main object memory and initialize
     BPRESYNC() _q = (BPRESYNC()) malloc(sizeof(struct BPRESYNC(_s)));
@@ -120,7 +117,7 @@ BPRESYNC() BPRESYNC(_create)(TC *         _v,
     return _q;
 }
 
-void BPRESYNC(_destroy)(BPRESYNC() _q)
+int BPRESYNC(_destroy)(BPRESYNC() _q)
 {
     unsigned int i;
 
@@ -144,40 +141,44 @@ void BPRESYNC(_destroy)(BPRESYNC() _q)
 
     // free main object memory
     free(_q);
+    return LIQUID_OK;
 }
 
-void BPRESYNC(_print)(BPRESYNC() _q)
+int BPRESYNC(_print)(BPRESYNC() _q)
 {
     printf("bpresync_%s: %u samples\n", EXTENSION_FULL, _q->n);
+    return LIQUID_OK;
 }
 
-void BPRESYNC(_reset)(BPRESYNC() _q)
+int BPRESYNC(_reset)(BPRESYNC() _q)
 {
     unsigned int i;
     for (i=0; i<_q->n; i++) {
         bsequence_push(_q->rx_i, (i+0) % 2);
         bsequence_push(_q->rx_q, (i+1) % 2);
     }
+    return LIQUID_OK;
 }
 
 /* push input sample into pre-demod synchronizer            */
 /*  _q          :   pre-demod synchronizer object           */
 /*  _x          :   input sample                            */
-void BPRESYNC(_push)(BPRESYNC() _q,
-                     TI         _x)
+int BPRESYNC(_push)(BPRESYNC() _q,
+                    TI         _x)
 {
     // push symbol into buffers
     bsequence_push(_q->rx_i, REAL(_x)>0);
     bsequence_push(_q->rx_q, IMAG(_x)>0);
+    return LIQUID_OK;
 }
 
 /* correlate input sequence                                 */
 /*  _q          :   pre-demod synchronizer object           */
 /*  _rxy        :   output cross correlation                */
 /*  _dphi_hat   :   output frequency offset estimate        */
-void BPRESYNC(_execute)(BPRESYNC() _q,
-                        TO *       _rxy,
-                        float *    _dphi_hat)
+int BPRESYNC(_execute)(BPRESYNC() _q,
+                       TO *       _rxy,
+                       float *    _dphi_hat)
 {
     unsigned int i;
     float complex rxy_max = 0;  // maximum cross-correlation
@@ -206,6 +207,7 @@ void BPRESYNC(_execute)(BPRESYNC() _q,
 
     *_rxy      = rxy_max;
     *_dphi_hat = dphi_hat;
+    return LIQUID_OK;
 }
 
 //
@@ -217,16 +219,14 @@ void BPRESYNC(_execute)(BPRESYNC() _q,
 //  _id     : sequence index
 //  _rxy0   : positive frequency correlation output (non-conjugated)
 //  _rxy1   : negative frequency correlation output (conjugated)
-void BPRESYNC(_correlatex)(BPRESYNC()      _q,
-                           unsigned int    _id,
-                           float complex * _rxy0,
-                           float complex * _rxy1)
+int BPRESYNC(_correlatex)(BPRESYNC()      _q,
+                          unsigned int    _id,
+                          float complex * _rxy0,
+                          float complex * _rxy1)
 {
     // validate input...
-    if (_id >= _q->m) {
-        fprintf(stderr,"error: bpresync_%s_correlatex(), invalid id\n", EXTENSION_FULL);
-        exit(1);
-    }
+    if (_id >= _q->m)
+        return liquid_error(LIQUID_EICONFIG,"bpresync_%s_correlatex(), invalid id", EXTENSION_FULL);
 
     // compute correlations
     int rxy_ii = 2*bsequence_correlate(_q->sync_i[_id], _q->rx_i) - (int)(_q->n);
@@ -243,5 +243,6 @@ void BPRESYNC(_correlatex)(BPRESYNC()      _q,
     int rxy_i1 = rxy_ii + rxy_qq;
     int rxy_q1 = rxy_iq - rxy_qi;
     *_rxy1 = (rxy_i1 + rxy_q1 * _Complex_I) * _q->n_inv;
+    return LIQUID_OK;
 }
 
