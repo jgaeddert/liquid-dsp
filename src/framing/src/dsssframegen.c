@@ -361,14 +361,12 @@ float complex dsssframegen_generate_symbol(dsssframegen _q)
     }
 
     switch (_q->state) {
-    case STATE_PREAMBLE: return dsssframegen_generate_preamble(_q); break;
-    case STATE_HEADER: return dsssframegen_generate_header(_q); break;
-    case STATE_PAYLOAD: return dsssframegen_generate_payload(_q); break;
-    case STATE_TAIL: return dsssframegen_generate_tail(_q); break;
+    case STATE_PREAMBLE: return dsssframegen_generate_preamble(_q);
+    case STATE_HEADER:   return dsssframegen_generate_header(_q);
+    case STATE_PAYLOAD:  return dsssframegen_generate_payload(_q);
+    case STATE_TAIL:     return dsssframegen_generate_tail(_q);
     default:
-        fprintf(
-            stderr, "error: dsssframegen_generate_symbol(), unknown/unsupported internal state\n");
-        exit(1);
+        liquid_error(LIQUID_EINT,"dsssframegen_generate_symbol(), unknown/unsupported internal state");
     }
 
     return 0.f;
