@@ -230,7 +230,7 @@ int dsssframegen_set_header_len(dsssframegen _q, unsigned int _len)
     _q->header_dec_len  = DSSSFRAME_H_DEC + _q->header_user_len;
     _q->header = (unsigned char *)realloc(_q->header, _q->header_dec_len * sizeof(unsigned char));
 
-    dsssframegen_reconfigure_header(_q);
+    return dsssframegen_reconfigure_header(_q);
 }
 
 int dsssframegen_set_header_props(dsssframegen _q, dsssframegenprops_s * _props)
