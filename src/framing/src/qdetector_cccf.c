@@ -86,10 +86,8 @@ qdetector_cccf qdetector_cccf_create(float complex * _s,
                                      unsigned int    _s_len)
 {
     // validate input
-    if (_s_len == 0) {
-        fprintf(stderr,"error: qdetector_cccf_create(), sequence length cannot be zero\n");
-        exit(1);
-    }
+    if (_s_len == 0)
+        return liquid_error_config("qdetector_cccf_create(), sequence length cannot be zero");
     
     // allocate memory for main object and set internal properties
     qdetector_cccf q = (qdetector_cccf) malloc(sizeof(struct qdetector_cccf_s));
@@ -156,19 +154,14 @@ qdetector_cccf qdetector_cccf_create_linear(float complex * _sequence,
                                             float           _beta)
 {
     // validate input
-    if (_sequence_len == 0) {
-        fprintf(stderr,"error: qdetector_cccf_create_linear(), sequence length cannot be zero\n");
-        exit(1);
-    } else if (_k < 2 || _k > 80) {
-        fprintf(stderr,"error: qdetector_cccf_create_linear(), samples per symbol must be in [2,80]\n");
-        exit(1);
-    } else if (_m < 1 || _m > 100) {
-        fprintf(stderr,"error: qdetector_cccf_create_linear(), filter delay must be in [1,100]\n");
-        exit(1);
-    } else if (_beta < 0.0f || _beta > 1.0f) {
-        fprintf(stderr,"error: qdetector_cccf_create_linear(), excess bandwidth factor must be in [0,1]\n");
-        exit(1);
-    }
+    if (_sequence_len == 0)
+        return liquid_error_config("qdetector_cccf_create_linear(), sequence length cannot be zero");
+    if (_k < 2 || _k > 80)
+        return liquid_error_config("qdetector_cccf_create_linear(), samples per symbol must be in [2,80]");
+    if (_m < 1 || _m > 100)
+        return liquid_error_config("qdetector_cccf_create_linear(), filter delay must be in [1,100]");
+    if (_beta < 0.0f || _beta > 1.0f)
+        return liquid_error_config("qdetector_cccf_create_linear(), excess bandwidth factor must be in [0,1]");
     
     // create time-domain template
     unsigned int    s_len = _k * (_sequence_len + 2*_m);
@@ -202,19 +195,14 @@ qdetector_cccf qdetector_cccf_create_gmsk(unsigned char * _sequence,
                                           float           _beta)
 {
     // validate input
-    if (_sequence_len == 0) {
-        fprintf(stderr,"error: qdetector_cccf_create_gmsk(), sequence length cannot be zero\n");
-        exit(1);
-    } else if (_k < 2 || _k > 80) {
-        fprintf(stderr,"error: qdetector_cccf_create_gmsk(), samples per symbol must be in [2,80]\n");
-        exit(1);
-    } else if (_m < 1 || _m > 100) {
-        fprintf(stderr,"error: qdetector_cccf_create_gmsk(), filter delay must be in [1,100]\n");
-        exit(1);
-    } else if (_beta < 0.0f || _beta > 1.0f) {
-        fprintf(stderr,"error: qdetector_cccf_create_gmsk(), excess bandwidth factor must be in [0,1]\n");
-        exit(1);
-    }
+    if (_sequence_len == 0)
+        return liquid_error_config("qdetector_cccf_create_gmsk(), sequence length cannot be zero");
+    if (_k < 2 || _k > 80)
+        return liquid_error_config("qdetector_cccf_create_gmsk(), samples per symbol must be in [2,80]");
+    if (_m < 1 || _m > 100)
+        return liquid_error_config("qdetector_cccf_create_gmsk(), filter delay must be in [1,100]");
+    if (_beta < 0.0f || _beta > 1.0f)
+        return liquid_error_config("qdetector_cccf_create_gmsk(), excess bandwidth factor must be in [0,1]");
     
     // create time-domain template using GMSK modem
     unsigned int    s_len = _k * (_sequence_len + 2*_m);
@@ -254,19 +242,14 @@ qdetector_cccf qdetector_cccf_create_cpfsk(unsigned char * _sequence,
                                            int             _type)
 {
     // validate input
-    if (_sequence_len == 0) {
-        fprintf(stderr,"error: qdetector_cccf_create_cpfsk(), sequence length cannot be zero\n");
-        exit(1);
-    } else if (_k < 2 || _k > 80) {
-        fprintf(stderr,"error: qdetector_cccf_create_cpfsk(), samples per symbol must be in [2,80]\n");
-        exit(1);
-    } else if (_m < 1 || _m > 100) {
-        fprintf(stderr,"error: qdetector_cccf_create_cpfsk(), filter delay must be in [1,100]\n");
-        exit(1);
-    } else if (_beta < 0.0f || _beta > 1.0f) {
-        fprintf(stderr,"error: qdetector_cccf_create_cpfsk(), excess bandwidth factor must be in [0,1]\n");
-        exit(1);
-    }
+    if (_sequence_len == 0)
+        return liquid_error_config("qdetector_cccf_create_cpfsk(), sequence length cannot be zero");
+    if (_k < 2 || _k > 80)
+        return liquid_error_config("qdetector_cccf_create_cpfsk(), samples per symbol must be in [2,80]");
+    if (_m < 1 || _m > 100)
+        return liquid_error_config("qdetector_cccf_create_cpfsk(), filter delay must be in [1,100]");
+    if (_beta < 0.0f || _beta > 1.0f)
+        return liquid_error_config("qdetector_cccf_create_cpfsk(), excess bandwidth factor must be in [0,1]");
 
     // create time-domain template using GMSK modem
     unsigned int    s_len = _k * (_sequence_len + 2*_m);
