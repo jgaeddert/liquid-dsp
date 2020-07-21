@@ -4551,10 +4551,10 @@ typedef struct {
 extern framesyncstats_s framesyncstats_default;
 
 // initialize framesyncstats object on default
-void framesyncstats_init_default(framesyncstats_s * _stats);
+int framesyncstats_init_default(framesyncstats_s * _stats);
 
 // print framesyncstats object
-void framesyncstats_print(framesyncstats_s * _stats);
+int framesyncstats_print(framesyncstats_s * _stats);
 
 
 // framedatastats : gather frame data
@@ -4833,7 +4833,7 @@ typedef struct {
     unsigned int mod_scheme;    // modulation scheme
 } flexframegenprops_s;
 
-void flexframegenprops_init_default(flexframegenprops_s * _fgprops);
+int flexframegenprops_init_default(flexframegenprops_s * _fgprops);
 
 typedef struct flexframegen_s * flexframegen;
 
@@ -4842,25 +4842,25 @@ typedef struct flexframegen_s * flexframegen;
 flexframegen flexframegen_create(flexframegenprops_s * _props);
 
 // destroy flexframegen object
-void flexframegen_destroy(flexframegen _q);
+int flexframegen_destroy(flexframegen _q);
 
 // print flexframegen object internals
-void flexframegen_print(flexframegen _q);
+int flexframegen_print(flexframegen _q);
 
 // reset flexframegen object internals
-void flexframegen_reset(flexframegen _q);
+int flexframegen_reset(flexframegen _q);
 
 // is frame assembled?
 int flexframegen_is_assembled(flexframegen _q);
 
 // get frame properties
-void flexframegen_getprops(flexframegen _q, flexframegenprops_s * _props);
+int flexframegen_getprops(flexframegen _q, flexframegenprops_s * _props);
 
 // set frame properties
 int flexframegen_setprops(flexframegen _q, flexframegenprops_s * _props);
 
 // set length of user-defined portion of header
-void flexframegen_set_header_len(flexframegen _q, unsigned int _len);
+int flexframegen_set_header_len(flexframegen _q, unsigned int _len);
 
 // set properties for header section
 int flexframegen_set_header_props(flexframegen          _q,
@@ -4874,10 +4874,10 @@ unsigned int flexframegen_getframelen(flexframegen _q);
 //  _header         :   frame header
 //  _payload        :   payload data [size: _payload_len x 1]
 //  _payload_len    :   payload data length
-void flexframegen_assemble(flexframegen          _q,
-                           const unsigned char * _header,
-                           const unsigned char * _payload,
-                           unsigned int          _payload_len);
+int flexframegen_assemble(flexframegen          _q,
+                          const unsigned char * _header,
+                          const unsigned char * _payload,
+                          unsigned int          _payload_len);
 
 // write samples of assembled frame, two samples at a time, returning
 // '1' when frame is complete, '0' otherwise. Zeros will be written
@@ -4900,28 +4900,28 @@ flexframesync flexframesync_create(framesync_callback _callback,
                                    void *             _userdata);
 
 // destroy frame synchronizer
-void flexframesync_destroy(flexframesync _q);
+int flexframesync_destroy(flexframesync _q);
 
 // print frame synchronizer internal properties
-void flexframesync_print(flexframesync _q);
+int flexframesync_print(flexframesync _q);
 
 // reset frame synchronizer internal state
-void flexframesync_reset(flexframesync _q);
+int flexframesync_reset(flexframesync _q);
 
 // has frame been detected?
 int flexframesync_is_frame_open(flexframesync _q);
 
 // change length of user-defined region in header
-void flexframesync_set_header_len(flexframesync _q,
-                                  unsigned int  _len);
+int flexframesync_set_header_len(flexframesync _q,
+                                 unsigned int  _len);
 
 // enable or disable soft decoding of header
-void flexframesync_decode_header_soft(flexframesync _q,
-                                      int           _soft);
+int flexframesync_decode_header_soft(flexframesync _q,
+                                     int           _soft);
 
 // enable or disable soft decoding of payload
-void flexframesync_decode_payload_soft(flexframesync _q,
-                                       int           _soft);
+int flexframesync_decode_payload_soft(flexframesync _q,
+                                      int           _soft);
 
 // set properties for header section
 int flexframesync_set_header_props(flexframesync          _q,
@@ -4931,18 +4931,18 @@ int flexframesync_set_header_props(flexframesync          _q,
 //  _q      :   frame synchronizer object
 //  _x      :   input samples [size: _n x 1]
 //  _n      :   number of input samples
-void flexframesync_execute(flexframesync          _q,
-                           liquid_float_complex * _x,
-                           unsigned int           _n);
+int flexframesync_execute(flexframesync          _q,
+                          liquid_float_complex * _x,
+                          unsigned int           _n);
 
 // frame data statistics
-void             flexframesync_reset_framedatastats(flexframesync _q);
+int              flexframesync_reset_framedatastats(flexframesync _q);
 framedatastats_s flexframesync_get_framedatastats  (flexframesync _q);
 
 // enable/disable debugging
-void flexframesync_debug_enable(flexframesync _q);
-void flexframesync_debug_disable(flexframesync _q);
-void flexframesync_debug_print(flexframesync _q,
+int flexframesync_debug_enable(flexframesync _q);
+int flexframesync_debug_disable(flexframesync _q);
+int flexframesync_debug_print(flexframesync _q,
                                const char *  _filename);
 
 //
