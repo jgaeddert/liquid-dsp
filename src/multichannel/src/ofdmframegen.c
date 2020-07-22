@@ -88,19 +88,14 @@ ofdmframegen ofdmframegen_create(unsigned int    _M,
                                  unsigned char * _p)
 {
     // validate input
-    if (_M < 2) {
-        fprintf(stderr,"error: ofdmframegen_create(), number of subcarriers must be at least 2\n");
-        exit(1);
-    } else if (_M % 2) {
-        fprintf(stderr,"error: ofdmframegen_create(), number of subcarriers must be even\n");
-        exit(1);
-    } else if (_cp_len > _M) {
-        fprintf(stderr,"error: ofdmframegen_create(), cyclic prefix cannot exceed symbol length\n");
-        exit(1);
-    } else if (_taper_len > _cp_len) {
-        fprintf(stderr,"error: ofdmframegen_create(), taper length cannot exceed cyclic prefix\n");
-        exit(1);
-    }
+    if (_M < 2)
+        return liquid_error_config("ofdmframegen_create(), number of subcarriers must be at least 2");
+    if (_M % 2)
+        return liquid_error_config("ofdmframegen_create(), number of subcarriers must be even");
+    if (_cp_len > _M)
+        return liquid_error_config("ofdmframegen_create(), cyclic prefix cannot exceed symbol length");
+    if (_taper_len > _cp_len)
+        return liquid_error_config("ofdmframegen_create(), taper length cannot exceed cyclic prefix");
 
     ofdmframegen q = (ofdmframegen) malloc(sizeof(struct ofdmframegen_s));
     q->M         = _M;
@@ -118,17 +113,14 @@ ofdmframegen ofdmframegen_create(unsigned int    _M,
     }
 
     // validate and count subcarrier allocation
-    ofdmframe_validate_sctype(q->p, q->M, &q->M_null, &q->M_pilot, &q->M_data);
-    if ( (q->M_pilot + q->M_data) == 0) {
-        fprintf(stderr,"error: ofdmframegen_create(), must have at least one enabled subcarrier\n");
-        exit(1);
-    } else if (q->M_data == 0) {
-        fprintf(stderr,"error: ofdmframegen_create(), must have at least one data subcarriers\n");
-        exit(1);
-    } else if (q->M_pilot < 2) {
-        fprintf(stderr,"error: ofdmframegen_create(), must have at least two pilot subcarriers\n");
-        exit(1);
-    }
+    if (ofdmframe_validate_sctype(q->p, q->M, &q->M_null, &q->M_pilot, &q->M_data))
+        return liquid_error_config("ofdmframegen_create(), invalid subcarrier allocation");
+    if ( (q->M_pilot + q->M_data) == 0)
+        return liquid_error_config("ofdmframegen_create(), must have at least one enabled subcarrier");
+    if (q->M_data == 0)
+        return liquid_error_config("ofdmframegen_create(), must have at least one data subcarriers");
+    if (q->M_pilot < 2)
+        return liquid_error_config("ofdmframegen_create(), must have at least two pilot subcarriers");
 
     unsigned int i;
 
