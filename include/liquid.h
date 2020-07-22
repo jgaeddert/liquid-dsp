@@ -5667,13 +5667,13 @@ MSOURCE() MSOURCE(_create)(unsigned int _M,                                 \
 MSOURCE() MSOURCE(_create_default)(void);                                   \
                                                                             \
 /* Destroy msource object                                               */  \
-void MSOURCE(_destroy)(MSOURCE() _q);                                       \
+int MSOURCE(_destroy)(MSOURCE() _q);                                        \
                                                                             \
 /* Print msource object                                                 */  \
-void MSOURCE(_print)(MSOURCE() _q);                                         \
+int MSOURCE(_print)(MSOURCE() _q);                                          \
                                                                             \
 /* Reset msource object                                                 */  \
-void MSOURCE(_reset)(MSOURCE() _q);                                         \
+int MSOURCE(_reset)(MSOURCE() _q);                                          \
                                                                             \
 /* user-defined callback for generating samples                         */  \
 typedef int (*MSOURCE(_callback))(void *       _userdata,                   \
@@ -5808,9 +5808,9 @@ int MSOURCE(_get_frequency)(MSOURCE() _q,                                   \
 /*  _q      : synchronizer object                                       */  \
 /*  _buf    : output buffer, [size: _buf_len x 1]                       */  \
 /*  _buf_len: output buffer size                                        */  \
-void MSOURCE(_write_samples)(MSOURCE()    _q,                               \
-                             TO *         _buf,                             \
-                             unsigned int _buf_len);                        \
+int MSOURCE(_write_samples)(MSOURCE()    _q,                                \
+                            TO *         _buf,                              \
+                            unsigned int _buf_len);                         \
 
 LIQUID_MSOURCE_DEFINE_API(LIQUID_MSOURCE_MANGLE_CFLOAT, liquid_float_complex)
 

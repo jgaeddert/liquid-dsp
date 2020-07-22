@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2019 Joseph Gaeddert
+ * Copyright (c) 2007 - 2020 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -88,15 +88,10 @@ QSOURCE() QSOURCE(_create)(unsigned int _M,
                            float        _gain)
 {
     // validate input
-    if (_M < 2 || (_M%2)) {
-        fprintf(stderr,"error: %s:%u, qsource%s_create(), invalid channelizer size (%u); must be even and greater than 1\n",
-                __FILE__,__LINE__,EXTENSION,_M);
-        exit(1);
-    } else if (_fc < -0.5f || _fc > 0.5f) {
-        fprintf(stderr,"error: %s:%u, qsource%s_create(), invalid frequency offset (%f); must be in [-0.5,0.5]\n",
-                __FILE__,__LINE__,EXTENSION,_fc);
-        exit(1);
-    }
+    if (_M < 2 || (_M % 2))
+        return liquid_error_config("qsource%s_create(), invalid channelizer size (%u); must be even and greater than 1",EXTENSION,_M);
+    if (_fc < -0.5f || _fc > 0.5f)
+        return liquid_error_config("qsource%s_create(), invalid frequency offset (%f); must be in [-0.5,0.5]",EXTENSION,_fc);
 
     // allocate memory for main object
     QSOURCE() q = (QSOURCE()) malloc( sizeof(struct QSOURCE(_s)) );
@@ -153,7 +148,7 @@ QSOURCE() QSOURCE(_create)(unsigned int _M,
     return q;
 }
 
-void QSOURCE(_destroy)(QSOURCE() _q)
+int QSOURCE(_destroy)(QSOURCE() _q)
 {
     // free internal type-specific objects
     switch (_q->type) {
@@ -175,8 +170,7 @@ void QSOURCE(_destroy)(QSOURCE() _q)
         gmskmod_destroy(_q->source.gmsk.mod);
         break;
     default:
-        fprintf(stderr,"error: qsource%s_destroy(), internal logic error\n", EXTENSION);
-        exit(1);
+        return liquid_error(LIQUID_EINT,"qsource%s_destroy(), invalid internal state",EXTENSION);
     }
     // free buffers
     free(_q->buf);
@@ -190,22 +184,25 @@ void QSOURCE(_destroy)(QSOURCE() _q)
 
     // free main object memory
     free(_q);
+    return LIQUID_OK;
 }
 
 // initialize source with user-defined callback for generating samples
-void QSOURCE(_init_user)(QSOURCE() _q,
-                         void *    _userdata,
-                         void *    _callback)
+int QSOURCE(_init_user)(QSOURCE() _q,
+                        void *    _userdata,
+                        void *    _callback)
 {
     _q->type = QSOURCE_USER;
     _q->source.user.userdata = _userdata;
     _q->source.user.callback = (MSOURCE(_callback))_callback;
+    return LIQUID_OK;
 }
 
 // initialize source with tone source
-void QSOURCE(_init_tone)(QSOURCE() _q)
+int QSOURCE(_init_tone)(QSOURCE() _q)
 {
     _q->type = QSOURCE_TONE;
+    return LIQUID_OK;
 }
 
 // Add chirp to signal generator, returning id of signal
@@ -213,10 +210,10 @@ void QSOURCE(_init_tone)(QSOURCE() _q)
 //  _duration   : duration of chirp [samples]
 //  _negate     : negate frequency direction
 //  _single     : run single chirp? or repeatedly
-void QSOURCE(_init_chirp)(QSOURCE() _q,
-                          float     _duration,
-                          int       _negate,
-                          int       _single)
+int QSOURCE(_init_chirp)(QSOURCE() _q,
+                         float     _duration,
+                         int       _negate,
+                         int       _single)
 {
     _q->type                = QSOURCE_CHIRP;
     _q->source.chirp.nco    = NCO(_create)(LIQUID_VCO);
@@ -228,28 +225,31 @@ void QSOURCE(_init_chirp)(QSOURCE() _q,
     // initialize properties
     NCO(_set_frequency)(_q->source.chirp.nco, _q->source.chirp.negate ? M_PI : -M_PI);
     _q->source.chirp.timer = _q->source.chirp.num;
+    return LIQUID_OK;
 }
 
 // initialize source with noise source
-void QSOURCE(_init_noise)(QSOURCE() _q)
+int QSOURCE(_init_noise)(QSOURCE() _q)
 {
     _q->type = QSOURCE_NOISE;
+    return LIQUID_OK;
 }
 
 // initialize source with linear modulation generator
-void QSOURCE(_init_modem)(QSOURCE()    _q,
-                          int          _ms,
-                          unsigned int _m,
-                          float        _beta)
+int QSOURCE(_init_modem)(QSOURCE()    _q,
+                         int          _ms,
+                         unsigned int _m,
+                         float        _beta)
 {
     _q->type = QSOURCE_MODEM;
     _q->source.linmod.symstream=SYMSTREAM(_create_linear)(LIQUID_FIRFILT_ARKAISER,2,_m,_beta,_ms);
+    return LIQUID_OK;
 }
 
 // initialize source with frequency-shift keying modem
-void QSOURCE(_init_fsk)(QSOURCE()    _q,
-                        unsigned int _m,
-                        unsigned int _k)
+int QSOURCE(_init_fsk)(QSOURCE()    _q,
+                       unsigned int _m,
+                       unsigned int _k)
 {
     _q->type            = QSOURCE_FSK;
     _q->source.fsk.mod  = fskmod_create(_m, _k, 0.25f);
@@ -257,20 +257,22 @@ void QSOURCE(_init_fsk)(QSOURCE()    _q,
     _q->source.fsk.buf  = (float complex*)malloc(_k*sizeof(float complex));
     _q->source.fsk.mask = (1 << _m) - 1;
     _q->source.fsk.index= 0;
+    return LIQUID_OK;
 }
 
 // initialize source with Gauss minimum-shift keying modem
-void QSOURCE(_init_gmsk)(QSOURCE()    _q,
-                         unsigned int _m,
-                         float        _bt)
+int QSOURCE(_init_gmsk)(QSOURCE()    _q,
+                        unsigned int _m,
+                        float        _bt)
 {
     _q->type = QSOURCE_GMSK;
     _q->source.gmsk.mod = gmskmod_create(2,_m,_bt);
     _q->source.gmsk.index = 0;
+    return LIQUID_OK;
 }
 
 // print basic info to stdout
-void QSOURCE(_print)(QSOURCE() _q)
+int QSOURCE(_print)(QSOURCE() _q)
 {
     // TODO: print generic parameters
     printf("  qsource%s[%3d] : ", EXTENSION, _q->id);
@@ -285,24 +287,26 @@ void QSOURCE(_print)(QSOURCE() _q)
     case QSOURCE_FSK:   printf("fsk  "); bw *= 0.5f; break;
     case QSOURCE_GMSK:  printf("gmsk "); bw *= 0.5f; break;
     default:
-        fprintf(stderr,"error: qsource%s_print(), internal logic error\n", EXTENSION);
-        exit(1);
+        return liquid_error(LIQUID_EINT,"qsource%s_print(), invalid internal state",EXTENSION);
     }
     printf(" : fc=%6.3f, bw=%5.3f, P=%4u, m=%2u, As=%5.1f dB, gain=%5.1f dB %c\n",
             _q->fc, bw, _q->P, _q->m, _q->As, QSOURCE(_get_gain)(_q), _q->enabled ? '*' : ' ');
+    return LIQUID_OK;
 }
 
 // reset object internals
 // NOTE: placeholder for future funcitonality
-void QSOURCE(_reset)(QSOURCE() _q)
+int QSOURCE(_reset)(QSOURCE() _q)
 {
+    return LIQUID_OK;
 }
 
 // set internal object identifier
-void QSOURCE(_set_id)(QSOURCE() _q,
-                      int       _id)
+int QSOURCE(_set_id)(QSOURCE() _q,
+                     int       _id)
 {
     _q->id = _id;
+    return LIQUID_OK;
 }
 
 // get internal object identifier
@@ -312,23 +316,26 @@ int QSOURCE(_get_id)(QSOURCE() _q)
 }
 
 // enable source generation
-void QSOURCE(_enable)(QSOURCE() _q)
+int QSOURCE(_enable)(QSOURCE() _q)
 {
     _q->enabled = 1;
+    return LIQUID_OK;
 }
 
 // disable source generation
-void QSOURCE(_disable)(QSOURCE() _q)
+int QSOURCE(_disable)(QSOURCE() _q)
 {
     _q->enabled = 0;
+    return LIQUID_OK;
 }
 
 // set signal gain in dB
-void QSOURCE(_set_gain)(QSOURCE() _q,
-                        float     _gain_dB)
+int QSOURCE(_set_gain)(QSOURCE() _q,
+                       float     _gain_dB)
 {
     // convert from dB
     _q->gain = powf(10.0f, _gain_dB/20.0f);
+    return LIQUID_OK;
 }
 
 // get signal gain in dB
@@ -344,10 +351,11 @@ uint64_t QSOURCE(_get_num_samples)(QSOURCE() _q)
 }
 
 // set mixer frequency
-void QSOURCE(_set_frequency)(QSOURCE() _q,
-                             float     _dphi)
+int QSOURCE(_set_frequency)(QSOURCE() _q,
+                            float     _dphi)
 {
     NCO(_set_frequency)(_q->mixer, _dphi);
+    return LIQUID_OK;
 }
 
 // get mixer frequency
@@ -357,8 +365,8 @@ float QSOURCE(_get_frequency)(QSOURCE() _q)
 }
 
 // generate a single sample
-void QSOURCE(_generate)(QSOURCE() _q,
-                        TO *      _v)
+int QSOURCE(_generate)(QSOURCE() _q,
+                       TO *      _v)
 {
     // generate type-specific sample
     TO sample;
@@ -409,8 +417,7 @@ void QSOURCE(_generate)(QSOURCE() _q,
         _q->source.gmsk.index &= 1; // reset index every 2 samples
         break;
     default:
-        fprintf(stderr,"error: qsource%s_generate(), internal logic error\n", EXTENSION);
-        exit(1);
+        return liquid_error(LIQUID_EINT,"qsource%s_generate(), invalid internal state",EXTENSION);
     }
     
     if (!_q->enabled)
@@ -423,12 +430,13 @@ void QSOURCE(_generate)(QSOURCE() _q,
 
     // step mixer
     NCO(_step)(_q->mixer);
+    return LIQUID_OK;
 }
 
 // generate a block of samples, convert to frequency domain, and write
 // result into parent channelizer buffer at appropriate frequency location
-void QSOURCE(_generate_into)(QSOURCE() _q,
-                             TO *      _buf)
+int QSOURCE(_generate_into)(QSOURCE() _q,
+                            TO *      _buf)
 {
     // add into output buffer, applying appropriate scaling
     unsigned int i;
@@ -458,5 +466,6 @@ void QSOURCE(_generate_into)(QSOURCE() _q,
         _buf[ (base_index+i) % _q->M ] += _q->buf_freq[i+P2] * g;
     
     _q->num_samples += P2;
+    return LIQUID_OK;
 }
 
