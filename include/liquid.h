@@ -4600,9 +4600,9 @@ typedef struct qpacketmodem_s * qpacketmodem;
 
 // create packet encoder
 qpacketmodem qpacketmodem_create ();
-void         qpacketmodem_destroy(qpacketmodem _q);
-void         qpacketmodem_reset  (qpacketmodem _q);
-void         qpacketmodem_print  (qpacketmodem _q);
+int          qpacketmodem_destroy(qpacketmodem _q);
+int          qpacketmodem_reset  (qpacketmodem _q);
+int          qpacketmodem_print  (qpacketmodem _q);
 
 int qpacketmodem_configure(qpacketmodem _q,
                            unsigned int _payload_len,
@@ -4630,9 +4630,9 @@ float qpacketmodem_get_demodulator_evm(qpacketmodem _q);
 //  _q          :   qpacketmodem object
 //  _payload    :   unencoded payload bytes
 //  _syms       :   encoded but un-modulated payload symbol indices
-void qpacketmodem_encode_syms(qpacketmodem          _q,
-                              const unsigned char * _payload,
-                              unsigned char *       _syms);
+int qpacketmodem_encode_syms(qpacketmodem          _q,
+                             const unsigned char * _payload,
+                             unsigned char *       _syms);
 
 // decode packet from demodulated frame symbol indices (hard-decision decoding)
 //  _q          :   qpacketmodem object
@@ -4654,9 +4654,9 @@ int qpacketmodem_decode_bits(qpacketmodem    _q,
 //  _q          :   qpacketmodem object
 //  _payload    :   unencoded payload bytes
 //  _frame      :   encoded/modulated payload symbols
-void qpacketmodem_encode(qpacketmodem           _q,
-                         const unsigned char *  _payload,
-                         liquid_float_complex * _frame);
+int qpacketmodem_encode(qpacketmodem           _q,
+                        const unsigned char *  _payload,
+                        liquid_float_complex * _frame);
 
 // decode packet from modulated frame samples, returning flag if CRC passed
 // NOTE: hard-decision decoding

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2016 Joseph Gaeddert
+ * Copyright (c) 2007 - 2020 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -90,7 +90,7 @@ qpacketmodem qpacketmodem_create()
 }
 
 // destroy object, freeing all internal arrays
-void qpacketmodem_destroy(qpacketmodem _q)
+int qpacketmodem_destroy(qpacketmodem _q)
 {
     // free objects
     packetizer_destroy(_q->p);
@@ -101,16 +101,17 @@ void qpacketmodem_destroy(qpacketmodem _q)
     free(_q->payload_mod);
 
     free(_q);
+    return LIQUID_OK;
 }
 
 // reset object
-void qpacketmodem_reset(qpacketmodem _q)
+int qpacketmodem_reset(qpacketmodem _q)
 {
-    modem_reset(_q->mod_payload);
+    return modem_reset(_q->mod_payload);
 }
 
 // print object internals
-void qpacketmodem_print(qpacketmodem _q)
+int qpacketmodem_print(qpacketmodem _q)
 {
     printf("qpacketmodem:\n");
     printf("  check             :   %s\n", crc_scheme_str[packetizer_get_crc(_q->p)][1]);
@@ -121,6 +122,7 @@ void qpacketmodem_print(qpacketmodem _q)
     printf("  payload enc len   :   %u\n", _q->payload_enc_len);
     printf("  payload bit len   :   %u\n", _q->payload_bit_len);
     printf("  payload mod len   :   %u\n", _q->payload_mod_len);
+    return LIQUID_OK;
 }
 
 //
@@ -159,7 +161,7 @@ int qpacketmodem_configure(qpacketmodem _q,
 
     _q->n = 0;
 
-    return 0;
+    return LIQUID_OK;
 }
 
 // get length of encoded frame in symbols
@@ -209,9 +211,9 @@ float qpacketmodem_get_demodulator_evm(qpacketmodem _q)
 //  _q          :   qpacketmodem object
 //  _payload    :   unencoded payload bytes
 //  _syms       :   encoded but un-modulated payload symbol indices
-void qpacketmodem_encode_syms(qpacketmodem          _q,
-                              const unsigned char * _payload,
-                              unsigned char *       _syms)
+int qpacketmodem_encode_syms(qpacketmodem          _q,
+                             const unsigned char * _payload,
+                             unsigned char *       _syms)
 {
     // encode payload
     packetizer_encode(_q->p, _payload, _q->payload_enc);
@@ -225,7 +227,9 @@ void qpacketmodem_encode_syms(qpacketmodem          _q,
     liquid_repack_bytes(_q->payload_enc,  8,  _q->payload_enc_len,
                         _syms,           bps, _q->payload_mod_len,
                         &num_written);
-    assert(num_written == _q->payload_mod_len);
+    if (num_written != _q->payload_mod_len)
+        return liquid_error(LIQUID_EINT,"qpacketmodem_encode_syms(), internal unexpected number of symbols");
+    return LIQUID_OK;
 }
 
 // decode packet from demodulated frame symbol indices (hard-decision decoding)
@@ -246,7 +250,6 @@ int qpacketmodem_decode_syms(qpacketmodem    _q,
 
     // decode payload
     return packetizer_decode(_q->p, _q->payload_enc, _payload);
-
 }
 
 // decode packet from demodulated frame bits (soft-decision decoding)
@@ -265,9 +268,9 @@ int qpacketmodem_decode_bits(qpacketmodem    _q,
 //  _q          :   qpacketmodem object
 //  _payload    :   unencoded payload bytes
 //  _frame      :   encoded/modulated payload symbols
-void qpacketmodem_encode(qpacketmodem          _q,
-                         const unsigned char * _payload,
-                         float complex *       _frame)
+int qpacketmodem_encode(qpacketmodem          _q,
+                        const unsigned char * _payload,
+                        float complex *       _frame)
 {
     // encode payload symbols into internal buffer
     qpacketmodem_encode_syms(_q, _payload, _q->payload_mod);
@@ -276,6 +279,7 @@ void qpacketmodem_encode(qpacketmodem          _q,
     unsigned int i;
     for (i=0; i<_q->payload_mod_len; i++)
         modem_modulate(_q->mod_payload, _q->payload_mod[i], &_frame[i]);
+    return LIQUID_OK;
 }
 
 // decode packet from modulated frame samples, returning flag if CRC passed
