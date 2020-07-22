@@ -5608,25 +5608,25 @@ SYMSTREAM() SYMSTREAM(_create_linear)(int          _ftype,                  \
                                       int          _ms);                    \
                                                                             \
 /* Destroy symstream object, freeing all internal memory                */  \
-void SYMSTREAM(_destroy)(SYMSTREAM() _q);                                   \
+int SYMSTREAM(_destroy)(SYMSTREAM() _q);                                    \
                                                                             \
 /* Print symstream object's parameters                                  */  \
-void SYMSTREAM(_print)(SYMSTREAM() _q);                                     \
+int SYMSTREAM(_print)(SYMSTREAM() _q);                                      \
                                                                             \
 /* Reset symstream internal state                                       */  \
-void SYMSTREAM(_reset)(SYMSTREAM() _q);                                     \
+int SYMSTREAM(_reset)(SYMSTREAM() _q);                                      \
                                                                             \
 /* Set internal linear modulation scheme, leaving the filter parameters */  \
 /* (interpolator) unmodified                                            */  \
-void SYMSTREAM(_set_scheme)(SYMSTREAM() _q,                                 \
-                            int         _ms);                               \
+int SYMSTREAM(_set_scheme)(SYMSTREAM() _q,                                  \
+                           int         _ms);                                \
                                                                             \
 /* Get internal linear modulation scheme                                */  \
 int SYMSTREAM(_get_scheme)(SYMSTREAM() _q);                                 \
                                                                             \
 /* Set internal linear gain (before interpolation)                      */  \
-void SYMSTREAM(_set_gain)(SYMSTREAM() _q,                                   \
-                          float       _gain);                               \
+int SYMSTREAM(_set_gain)(SYMSTREAM() _q,                                    \
+                         float       _gain);                                \
                                                                             \
 /* Get internal linear gain (before interpolation)                      */  \
 float SYMSTREAM(_get_gain)(SYMSTREAM() _q);                                 \
@@ -5635,9 +5635,9 @@ float SYMSTREAM(_get_gain)(SYMSTREAM() _q);                                 \
 /*  _q      : synchronizer object                                       */  \
 /*  _buf    : output buffer [size: _buf_len x 1]                        */  \
 /*  _buf_len: output buffer size                                        */  \
-void SYMSTREAM(_write_samples)(SYMSTREAM()  _q,                             \
-                               TO *         _buf,                           \
-                               unsigned int _buf_len);                      \
+int SYMSTREAM(_write_samples)(SYMSTREAM()  _q,                              \
+                              TO *         _buf,                            \
+                              unsigned int _buf_len);                       \
 
 LIQUID_SYMSTREAM_DEFINE_API(LIQUID_SYMSTREAM_MANGLE_CFLOAT, liquid_float_complex)
 
