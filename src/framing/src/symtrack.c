@@ -167,12 +167,19 @@ void SYMTRACK(_destroy)(SYMTRACK() _q)
 void SYMTRACK(_print)(SYMTRACK() _q)
 {
     printf("symtrack_%s:\n", EXTENSION_FULL);
+    printf("  k:%u, m:%u, beta:%.3f, ms:%s\n", _q->k, _q->m, _q->beta,
+            modulation_types[_q->mod_scheme].name);
 }
 
 // reset symtrack internal state
 void SYMTRACK(_reset)(SYMTRACK() _q)
 {
     // reset objects
+    AGC    (_reset)(_q->agc);
+    SYMSYNC(_reset)(_q->symsync);
+    EQLMS  (_reset)(_q->eq);
+    NCO    (_reset)(_q->nco);
+    MODEM  (_reset)(_q->demod);
 
     // reset internal counters
     _q->symsync_index = 0;
