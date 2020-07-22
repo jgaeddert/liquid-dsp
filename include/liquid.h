@@ -6905,7 +6905,7 @@ struct modulation_type_s {
 extern const struct modulation_type_s modulation_types[LIQUID_MODEM_NUM_SCHEMES];
 
 // Print compact list of existing and available modulation schemes
-void liquid_print_modulation_schemes();
+int liquid_print_modulation_schemes();
 
 // returns modulation_scheme based on input string
 modulation_scheme liquid_getopt_str2mod(const char * _str);
@@ -6941,17 +6941,17 @@ unsigned int gray_decode(unsigned int symbol_in);
 //  _soft_bits  :   soft input bits [size: _bps x 1]
 //  _bps        :   bits per symbol
 //  _sym_out    :   output symbol, value in [0,2^_bps)
-void liquid_pack_soft_bits(unsigned char * _soft_bits,
-                           unsigned int _bps,
-                           unsigned int * _sym_out);
+int liquid_pack_soft_bits(unsigned char * _soft_bits,
+                          unsigned int _bps,
+                          unsigned int * _sym_out);
 
 // unpack soft bits into symbol
 //  _sym_in     :   input symbol, value in [0,2^_bps)
 //  _bps        :   bits per symbol
 //  _soft_bits  :   soft output bits [size: _bps x 1]
-void liquid_unpack_soft_bits(unsigned int _sym_in,
-                             unsigned int _bps,
-                             unsigned char * _soft_bits);
+int liquid_unpack_soft_bits(unsigned int _sym_in,
+                            unsigned int _bps,
+                            unsigned char * _soft_bits);
 
 
 //
@@ -6988,15 +6988,15 @@ MODEM() MODEM(_recreate)(MODEM()           _q,                              \
                          modulation_scheme _scheme);                        \
                                                                             \
 /* Destroy modem object, freeing all allocated memory                   */  \
-void MODEM(_destroy)(MODEM() _q);                                           \
+int MODEM(_destroy)(MODEM() _q);                                            \
                                                                             \
 /* Print modem status to stdout                                         */  \
-void MODEM(_print)(MODEM() _q);                                             \
+int MODEM(_print)(MODEM() _q);                                              \
                                                                             \
 /* Reset internal state of modem object; note that this is only         */  \
 /* relevant for modulation types that retain an internal state such as  */  \
 /* LIQUID_MODEM_DPSK4 as most linear modulation types are stateless     */  \
-void MODEM(_reset)(MODEM() _q);                                             \
+int MODEM(_reset)(MODEM() _q);                                              \
                                                                             \
 /* Generate random symbol for modulation                                */  \
 unsigned int MODEM(_gen_rand_sym)(MODEM() _q);                              \
@@ -7011,9 +7011,9 @@ modulation_scheme MODEM(_get_scheme)(MODEM() _q);                           \
 /*  _q  : modem object                                                  */  \
 /*  _s  : input symbol, 0 <= _s <= M-1                                  */  \
 /*  _y  : output complex sample                                         */  \
-void MODEM(_modulate)(MODEM()      _q,                                      \
-                      unsigned int _s,                                      \
-                      TC *         _y);                                     \
+int MODEM(_modulate)(MODEM()      _q,                                       \
+                     unsigned int _s,                                       \
+                     TC *         _y);                                      \
                                                                             \
 /* Demodulate input sample and provide maximum-likelihood estimate of   */  \
 /* symbol that would have generated it.                                 */  \
@@ -7030,9 +7030,9 @@ void MODEM(_modulate)(MODEM()      _q,                                      \
 /*  _q  :   modem object                                                */  \
 /*  _x  :   input sample                                                */  \
 /*  _s  : output hard symbol, 0 <= _s <= M-1                            */  \
-void MODEM(_demodulate)(MODEM()        _q,                                  \
-                        TC             _x,                                  \
-                        unsigned int * _s);                                 \
+int MODEM(_demodulate)(MODEM()        _q,                                   \
+                       TC             _x,                                   \
+                       unsigned int * _s);                                  \
                                                                             \
 /* Demodulate input sample and provide (approximate) log-likelihood     */  \
 /* ratio (LLR, soft bits) as an output.                                 */  \
@@ -7042,14 +7042,14 @@ void MODEM(_demodulate)(MODEM()        _q,                                  \
 /*  _x          : input sample                                          */  \
 /*  _s          : output hard symbol, 0 <= _s <= M-1                    */  \
 /*  _soft_bits  : output soft bits, [size: log2(M) x 1]                 */  \
-void MODEM(_demodulate_soft)(MODEM()         _q,                            \
-                             TC              _x,                            \
-                             unsigned int  * _s,                            \
-                             unsigned char * _soft_bits);                   \
+int MODEM(_demodulate_soft)(MODEM()         _q,                             \
+                            TC              _x,                             \
+                            unsigned int  * _s,                             \
+                            unsigned char * _soft_bits);                    \
                                                                             \
 /* Get demodulator's estimated transmit sample                          */  \
-void MODEM(_get_demodulator_sample)(MODEM() _q,                             \
-                                    TC *    _x_hat);                        \
+int MODEM(_get_demodulator_sample)(MODEM() _q,                              \
+                                   TC *    _x_hat);                         \
                                                                             \
 /* Get demodulator phase error                                          */  \
 float MODEM(_get_demodulator_phase_error)(MODEM() _q);                      \

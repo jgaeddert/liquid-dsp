@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2015 Joseph Gaeddert
+ * Copyright (c) 2007 - 2020 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -29,10 +29,8 @@
 // create a qam (quaternary amplitude-shift keying) modem object
 MODEM() MODEM(_create_qam)(unsigned int _bits_per_symbol)
 {
-    if (_bits_per_symbol < 1 ) {
-        fprintf(stderr,"error: modem_create_qam(), modem must have at least 2 bits/symbol\n");
-        exit(1);
-    }
+    if (_bits_per_symbol < 1 )
+        return liquid_error_config("modem_create_qam(), modem must have at least 2 bits/symbol");
 
     MODEM() q = (MODEM()) malloc( sizeof(struct MODEM(_s)) );
 
@@ -73,8 +71,7 @@ MODEM() MODEM(_create_qam)(unsigned int _bits_per_symbol)
         q->data.qam.alpha = sqrtf(2.0f / (T)(q->M) );
 #else
     default:
-        fprintf(stderr,"error: modem_create_qam(), cannot support QAM with m > 8\n");
-        exit(1);
+        return liquid_error_config("modem_create_qam(), cannot support QAM with m > 8");
 #endif
     }
 
@@ -100,9 +97,9 @@ MODEM() MODEM(_create_qam)(unsigned int _bits_per_symbol)
 }
 
 // modulate QAM
-void MODEM(_modulate_qam)(MODEM()      _q,
-                          unsigned int _sym_in,
-                          TC *         _y)
+int MODEM(_modulate_qam)(MODEM()      _q,
+                         unsigned int _sym_in,
+                         TC *         _y)
 {
     unsigned int s_i;   // in-phase symbol
     unsigned int s_q;   // quadrature symbol
@@ -116,12 +113,13 @@ void MODEM(_modulate_qam)(MODEM()      _q,
     // compute output sample
     *_y = (2*(int)s_i - (int)(_q->data.qam.M_i) + 1) * _q->data.qam.alpha +
           (2*(int)s_q - (int)(_q->data.qam.M_q) + 1) * _q->data.qam.alpha * _Complex_I;
+    return LIQUID_OK;
 }
 
 // demodulate QAM
-void MODEM(_demodulate_qam)(MODEM()      _q,
-                          TC             _x,
-                          unsigned int * _sym_out)
+int MODEM(_demodulate_qam)(MODEM()        _q,
+                           TC             _x,
+                           unsigned int * _sym_out)
 {
     // demodulate in-phase component on linearly-spaced array
     unsigned int s_i;   // in-phase symbol
@@ -141,5 +139,6 @@ void MODEM(_demodulate_qam)(MODEM()      _q,
     // re-modulate symbol (subtract residual) and store state
     _q->x_hat = _x - (res_i + _Complex_I*res_q);
     _q->r = _x;
+    return LIQUID_OK;
 }
 

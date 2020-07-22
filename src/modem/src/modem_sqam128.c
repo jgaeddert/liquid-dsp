@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2015 Joseph Gaeddert
+ * Copyright (c) 2007 - 2020 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -48,9 +48,9 @@ MODEM() MODEM(_create_sqam128)()
 }
 
 // modulate symbol with 'square' 128-QAM
-void MODEM(_modulate_sqam128)(MODEM()      _q,
-                              unsigned int _sym_in,
-                              TC *         _y)
+int MODEM(_modulate_sqam128)(MODEM()      _q,
+                             unsigned int _sym_in,
+                             TC *         _y)
 {
     // strip off most-significant two bits (quadrant)
     unsigned int quad = (_sym_in >> 5) & 0x03;
@@ -60,22 +60,22 @@ void MODEM(_modulate_sqam128)(MODEM()      _q,
     TC p = _q->data.sqam128.map[s];
     
     switch (quad) {
-    case 0: *_y =  p;           return;
-    case 1: *_y =  conjf(p);    return;
-    case 2: *_y = -conjf(p);    return;
-    case 3: *_y = -p;           return;
+    case 0: *_y =  p;        break;
+    case 1: *_y =  conjf(p); break;
+    case 2: *_y = -conjf(p); break;
+    case 3: *_y = -p;        break;
     default:
         // should never get to this point
-        fprintf(stderr,"error: modem_modulate_sqam128(), logic error\n");
-        exit(1);
+        return liquid_error(LIQUID_EINT,"modem_modulate_sqam128(), logic error");
     }
+    return LIQUID_OK;
 }
 
 
 // demodulate 'square' 128-QAM
-void MODEM(_demodulate_sqam128)(MODEM()        _q,
-                                TC             _x,
-                                unsigned int * _sym_out)
+int MODEM(_demodulate_sqam128)(MODEM()        _q,
+                               TC             _x,
+                               unsigned int * _sym_out)
 {
     // determine quadrant and de-rotate to first quadrant
     // 10 | 00
@@ -91,8 +91,7 @@ void MODEM(_demodulate_sqam128)(MODEM()        _q,
     case 3: x_prime = -_x;          break;
     default:
         // should never get to this point
-        fprintf(stderr,"error: modem_demodulate_sqam128(), logic error\n");
-        exit(1);
+        return liquid_error(LIQUID_EINT,"modem_demodulate_sqam128(), logic error");
     }
     //printf(" x = %12.8f +j*%12.8f, quad = %1u, r = %12.8f + j*%12.8f\n",
     //        crealf(_x), cimagf(_x), quad, crealf(r), cimagf(r));
@@ -117,5 +116,6 @@ void MODEM(_demodulate_sqam128)(MODEM()        _q,
     // re-modulate symbol and store state
     MODEM(_modulate_sqam128)(_q, *_sym_out, &_q->x_hat);
     _q->r = _x;
+    return LIQUID_OK;
 }
 

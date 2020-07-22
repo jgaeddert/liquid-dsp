@@ -1363,10 +1363,10 @@ unsigned short int smatrix_indexsearch(unsigned short int * _list,
 #define LIQUID_MODEM_DEFINE_INTERNAL_API(MODEM,T,TC)            \
                                                                 \
 /* initialize a generic modem object */                         \
-void MODEM(_init)(MODEM() _q, unsigned int _bits_per_symbol);   \
+int MODEM(_init)(MODEM() _q, unsigned int _bits_per_symbol);    \
                                                                 \
 /* initialize symbol map for fast modulation */                 \
-void MODEM(_init_map)(MODEM() _q);                              \
+int MODEM(_init_map)(MODEM() _q);                               \
                                                                 \
 /* generic modem create routines */                             \
 MODEM() MODEM(_create_ask)( unsigned int _bits_per_symbol);     \
@@ -1377,12 +1377,12 @@ MODEM() MODEM(_create_apsk)(unsigned int _bits_per_symbol);     \
 MODEM() MODEM(_create_arb)( unsigned int _bits_per_symbol);     \
                                                                 \
 /* Initialize arbitrary modem constellation */                  \
-void MODEM(_arb_init)(MODEM()         _q,                       \
+int MODEM(_arb_init)(MODEM()         _q,                        \
                       float complex * _symbol_map,              \
                       unsigned int    _len);                    \
                                                                 \
 /* Initialize arb modem constellation from external file */     \
-void MODEM(_arb_init_file)(MODEM() _q, char * _filename);       \
+int MODEM(_arb_init_file)(MODEM() _q, char * _filename);        \
                                                                 \
 /* specific modem create routines */                            \
 MODEM() MODEM(_create_bpsk)(void);                              \
@@ -1399,66 +1399,66 @@ MODEM() MODEM(_create_arb256opt)(void);                         \
 MODEM() MODEM(_create_arb64vt)(void);                           \
                                                                 \
 /* Scale arbitrary modem energy to unity */                     \
-void MODEM(_arb_scale)(MODEM() _q);                             \
+int MODEM(_arb_scale)(MODEM() _q);                              \
                                                                 \
 /* Balance I/Q */                                               \
-void MODEM(_arb_balance_iq)(MODEM() _q);                        \
+int MODEM(_arb_balance_iq)(MODEM() _q);                         \
                                                                 \
 /* modulate using symbol map (look-up table) */                 \
-void MODEM(_modulate_map)(MODEM()      _q,                      \
+int MODEM(_modulate_map)(MODEM()      _q,                       \
                           unsigned int _sym_in,                 \
                           TC *         _y);                     \
                                                                 \
 /* modem modulate routines */                                   \
-void MODEM(_modulate_ask)      ( MODEM(), unsigned int, TC *);  \
-void MODEM(_modulate_qam)      ( MODEM(), unsigned int, TC *);  \
-void MODEM(_modulate_psk)      ( MODEM(), unsigned int, TC *);  \
-void MODEM(_modulate_dpsk)     ( MODEM(), unsigned int, TC *);  \
-void MODEM(_modulate_arb)      ( MODEM(), unsigned int, TC *);  \
-void MODEM(_modulate_apsk)     ( MODEM(), unsigned int, TC *);  \
-void MODEM(_modulate_bpsk)     ( MODEM(), unsigned int, TC *);  \
-void MODEM(_modulate_qpsk)     ( MODEM(), unsigned int, TC *);  \
-void MODEM(_modulate_ook)      ( MODEM(), unsigned int, TC *);  \
-void MODEM(_modulate_sqam32)   ( MODEM(), unsigned int, TC *);  \
-void MODEM(_modulate_sqam128)  ( MODEM(), unsigned int, TC *);  \
+int MODEM(_modulate_ask)      ( MODEM(), unsigned int, TC *);   \
+int MODEM(_modulate_qam)      ( MODEM(), unsigned int, TC *);   \
+int MODEM(_modulate_psk)      ( MODEM(), unsigned int, TC *);   \
+int MODEM(_modulate_dpsk)     ( MODEM(), unsigned int, TC *);   \
+int MODEM(_modulate_arb)      ( MODEM(), unsigned int, TC *);   \
+int MODEM(_modulate_apsk)     ( MODEM(), unsigned int, TC *);   \
+int MODEM(_modulate_bpsk)     ( MODEM(), unsigned int, TC *);   \
+int MODEM(_modulate_qpsk)     ( MODEM(), unsigned int, TC *);   \
+int MODEM(_modulate_ook)      ( MODEM(), unsigned int, TC *);   \
+int MODEM(_modulate_sqam32)   ( MODEM(), unsigned int, TC *);   \
+int MODEM(_modulate_sqam128)  ( MODEM(), unsigned int, TC *);   \
                                                                 \
 /* modem demodulate routines */                                 \
-void MODEM(_demodulate_ask)    ( MODEM(), TC, unsigned int *);  \
-void MODEM(_demodulate_qam)    ( MODEM(), TC, unsigned int *);  \
-void MODEM(_demodulate_psk)    ( MODEM(), TC, unsigned int *);  \
-void MODEM(_demodulate_dpsk)   ( MODEM(), TC, unsigned int *);  \
-void MODEM(_demodulate_arb)    ( MODEM(), TC, unsigned int *);  \
-void MODEM(_demodulate_apsk)   ( MODEM(), TC, unsigned int *);  \
-void MODEM(_demodulate_bpsk)   ( MODEM(), TC, unsigned int *);  \
-void MODEM(_demodulate_qpsk)   ( MODEM(), TC, unsigned int *);  \
-void MODEM(_demodulate_ook)    ( MODEM(), TC, unsigned int *);  \
-void MODEM(_demodulate_sqam32) ( MODEM(), TC, unsigned int *);  \
-void MODEM(_demodulate_sqam128)( MODEM(), TC, unsigned int *);  \
+int MODEM(_demodulate_ask)    ( MODEM(), TC, unsigned int *);   \
+int MODEM(_demodulate_qam)    ( MODEM(), TC, unsigned int *);   \
+int MODEM(_demodulate_psk)    ( MODEM(), TC, unsigned int *);   \
+int MODEM(_demodulate_dpsk)   ( MODEM(), TC, unsigned int *);   \
+int MODEM(_demodulate_arb)    ( MODEM(), TC, unsigned int *);   \
+int MODEM(_demodulate_apsk)   ( MODEM(), TC, unsigned int *);   \
+int MODEM(_demodulate_bpsk)   ( MODEM(), TC, unsigned int *);   \
+int MODEM(_demodulate_qpsk)   ( MODEM(), TC, unsigned int *);   \
+int MODEM(_demodulate_ook)    ( MODEM(), TC, unsigned int *);   \
+int MODEM(_demodulate_sqam32) ( MODEM(), TC, unsigned int *);   \
+int MODEM(_demodulate_sqam128)( MODEM(), TC, unsigned int *);   \
                                                                 \
 /* modem demodulate (soft) routines */                          \
-void MODEM(_demodulate_soft_bpsk)(MODEM()         _q,           \
-                                  TC              _x,           \
-                                  unsigned int *  _sym_out,     \
-                                  unsigned char * _soft_bits);  \
-void MODEM(_demodulate_soft_qpsk)(MODEM()         _q,           \
-                                  TC              _x,           \
-                                  unsigned int *  _sym_out,     \
-                                  unsigned char * _soft_bits);  \
-void MODEM(_demodulate_soft_arb)( MODEM()         _q,           \
-                                  TC              _x,           \
-                                  unsigned int *  _sym_out,     \
-                                  unsigned char * _soft_bits);  \
+int MODEM(_demodulate_soft_bpsk)(MODEM()         _q,            \
+                                 TC              _x,            \
+                                 unsigned int *  _sym_out,      \
+                                 unsigned char * _soft_bits);   \
+int MODEM(_demodulate_soft_qpsk)(MODEM()         _q,            \
+                                 TC              _x,            \
+                                 unsigned int *  _sym_out,      \
+                                 unsigned char * _soft_bits);   \
+int MODEM(_demodulate_soft_arb)( MODEM()         _q,            \
+                                 TC              _x,            \
+                                 unsigned int *  _sym_out,      \
+                                 unsigned char * _soft_bits);   \
                                                                 \
 /* generate soft demodulation look-up table */                  \
-void MODEM(_demodsoft_gentab)(MODEM()      _q,                  \
+int MODEM(_demodsoft_gentab)(MODEM()      _q,                   \
                               unsigned int _p);                 \
                                                                 \
 /* generic soft demodulation routine using nearest-neighbors */ \
 /* look-up table                                             */ \
-void MODEM(_demodulate_soft_table)(MODEM()         _q,          \
-                                   TC              _x,          \
-                                   unsigned int *  _sym_out,    \
-                                   unsigned char * _soft_bits); \
+int MODEM(_demodulate_soft_table)(MODEM()         _q,           \
+                                  TC              _x,           \
+                                  unsigned int *  _sym_out,     \
+                                  unsigned char * _soft_bits);  \
                                                                 \
 /* Demodulate a linear symbol constellation using dynamic   */  \
 /* threshold calculation                                    */  \
@@ -1467,11 +1467,11 @@ void MODEM(_demodulate_soft_table)(MODEM()         _q,          \
 /*  _alpha  :   scaling factor          */                      \
 /*  _s      :   demodulated symbol      */                      \
 /*  _res    :   residual                */                      \
-void MODEM(_demodulate_linear_array)(T              _v,         \
-                                     unsigned int   _m,         \
-                                     T              _alpha,     \
-                                     unsigned int * _s,         \
-                                     T *            _res);      \
+int MODEM(_demodulate_linear_array)(T              _v,          \
+                                    unsigned int   _m,          \
+                                    T              _alpha,      \
+                                    unsigned int * _s,          \
+                                    T *            _res);       \
                                                                 \
 /* Demodulate a linear symbol constellation using           */  \
 /* refereneced lookup table                                 */  \
@@ -1480,11 +1480,11 @@ void MODEM(_demodulate_linear_array)(T              _v,         \
 /*  _ref    :   array of thresholds     */                      \
 /*  _s      :   demodulated symbol      */                      \
 /*  _res    :   residual                */                      \
-void MODEM(_demodulate_linear_array_ref)(T              _v,     \
-                                         unsigned int   _m,     \
-                                         T *            _ref,   \
-                                         unsigned int * _s,     \
-                                         T *            _res);  \
+int MODEM(_demodulate_linear_array_ref)(T              _v,      \
+                                        unsigned int   _m,      \
+                                        T *            _ref,    \
+                                        unsigned int * _s,      \
+                                        T *            _res);   \
 
 
 

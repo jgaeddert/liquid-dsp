@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2015 Joseph Gaeddert
+ * Copyright (c) 2007 - 2020 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -50,31 +50,33 @@ MODEM() MODEM(_create_qpsk)()
 
 
 // modulate QPSK
-void MODEM(_modulate_qpsk)(MODEM()      _q,
+int MODEM(_modulate_qpsk)(MODEM()      _q,
                            unsigned int _sym_in,
                            TC *         _y)
 {
     // compute output sample directly from input
     *_y  = (_sym_in & 0x01 ? -M_SQRT1_2 : M_SQRT1_2) +
            (_sym_in & 0x02 ? -M_SQRT1_2 : M_SQRT1_2)*_Complex_I;
+    return LIQUID_OK;
 }
 
 // demodulate QPSK
-void MODEM(_demodulate_qpsk)(MODEM() _q,
-                             TC _x,
-                             unsigned int * _sym_out)
+int MODEM(_demodulate_qpsk)(MODEM() _q,
+                            TC _x,
+                            unsigned int * _sym_out)
 {
     // slice directly to output symbol
     *_sym_out  = (crealf(_x) > 0 ? 0 : 1) +
-                    (cimagf(_x) > 0 ? 0 : 2);
+                 (cimagf(_x) > 0 ? 0 : 2);
 
     // re-modulate symbol and store state
     MODEM(_modulate_qpsk)(_q, *_sym_out, &_q->x_hat);
     _q->r = _x;
+    return LIQUID_OK;
 }
 
 // demodulate QPSK (soft)
-void MODEM(_demodulate_soft_qpsk)(MODEM()         _q,
+int MODEM(_demodulate_soft_qpsk)(MODEM()         _q,
                                   TC              _x,
                                   unsigned int  * _s,
                                   unsigned char * _soft_bits)
@@ -105,5 +107,6 @@ void MODEM(_demodulate_soft_qpsk)(MODEM()         _q,
            (cimagf(_x) > 0 ? 0 : 2);
     MODEM(_modulate_qpsk)(_q, *_s, &_q->x_hat);
     _q->r = _x;
+    return LIQUID_OK;
 }
 

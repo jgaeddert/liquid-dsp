@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2015 Joseph Gaeddert
+ * Copyright (c) 2007 - 2020 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -39,8 +39,7 @@ MODEM() MODEM(_create_psk)(unsigned int _bits_per_symbol)
     case 7: q->scheme = LIQUID_MODEM_PSK128; break;
     case 8: q->scheme = LIQUID_MODEM_PSK256; break;
     default:
-        fprintf(stderr,"error: modem_create_psk(), cannot support PSK with m > 8\n");
-        exit(1);
+        return liquid_error_config("modem_create_psk(), cannot support PSK with m > 8");
     }
 
     // initialize basic modem structure
@@ -76,21 +75,22 @@ MODEM() MODEM(_create_psk)(unsigned int _bits_per_symbol)
 }
 
 // modulate PSK
-void MODEM(_modulate_psk)(MODEM()      _q,
-                          unsigned int _sym_in,
-                          TC *         _y)
+int MODEM(_modulate_psk)(MODEM()      _q,
+                         unsigned int _sym_in,
+                         TC *         _y)
 {
     // 'encode' input symbol (actually gray decoding)
     _sym_in = gray_decode(_sym_in);
 
     // compute output sample
     *_y = liquid_cexpjf(_sym_in * 2 * _q->data.psk.alpha );
+    return LIQUID_OK;
 }
 
 // demodulate PSK
-void MODEM(_demodulate_psk)(MODEM()        _q,
-                            TC             _x,
-                            unsigned int * _sym_out)
+int MODEM(_demodulate_psk)(MODEM()        _q,
+                           TC             _x,
+                           unsigned int * _sym_out)
 {
     // compute angle and subtract phase offset, ensuring phase is in [-pi,pi)
     T theta = cargf(_x);
@@ -109,5 +109,6 @@ void MODEM(_demodulate_psk)(MODEM()        _q,
     // re-modulate symbol and store state
     MODEM(_modulate_psk)(_q, *_sym_out, &_q->x_hat);
     _q->r = _x;
+    return LIQUID_OK;
 }
 

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2015 Joseph Gaeddert
+ * Copyright (c) 2007 - 2020 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -45,8 +45,7 @@ MODEM() MODEM(_create_ask)(unsigned int _bits_per_symbol)
         // calculate alpha dynamically
         q->data.ask.alpha = expf(-0.70735 + 0.63653*q->m);
 #else
-        fprintf(stderr,"error: modem_create_ask(), cannot support ASK with m > 8\n");
-        exit(1);
+        return liquid_error_config("modem_create_ask(), cannot support ASK with m > 8");
 #endif
     }
 
@@ -67,21 +66,22 @@ MODEM() MODEM(_create_ask)(unsigned int _bits_per_symbol)
 }
 
 // modulate ASK
-void MODEM(_modulate_ask)(MODEM()      _q,
-                          unsigned int _sym_in,
-                          TC *         _y)
+int MODEM(_modulate_ask)(MODEM()      _q,
+                         unsigned int _sym_in,
+                         TC *         _y)
 {
     // 'encode' input symbol (actually gray decoding)
     _sym_in = gray_decode(_sym_in);
 
     // modulate symbol
     *_y = (2*(int)_sym_in - (int)(_q->M) + 1) * _q->data.ask.alpha;
+    return LIQUID_OK;
 }
 
 // demodulate ASK
-void MODEM(_demodulate_ask)(MODEM()        _q,
-                            TC             _x,
-                            unsigned int * _sym_out)
+int MODEM(_demodulate_ask)(MODEM()        _q,
+                           TC             _x,
+                           unsigned int * _sym_out)
 {
     // demodulate on linearly-spaced array
     unsigned int s;
@@ -94,5 +94,6 @@ void MODEM(_demodulate_ask)(MODEM()        _q,
     // re-modulate symbol and store state
     MODEM(_modulate_ask)(_q, *_sym_out, &_q->x_hat);
     _q->r = _x;
+    return LIQUID_OK;
 }
 
