@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2018 Joseph Gaeddert
+ * Copyright (c) 2007 - 2020 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -86,19 +86,14 @@ SYMTRACK() SYMTRACK(_create)(int          _ftype,
                              int          _ms)
 {
     // validate input
-    if (_k < 2) {
-        fprintf(stderr,"error: symtrack_%s_create(), filter samples/symbol must be at least 2\n", EXTENSION_FULL);
-        exit(1);
-    } else if (_m == 0) {
-        fprintf(stderr,"error: symtrack_%s_create(), filter delay must be greater than zero\n", EXTENSION_FULL);
-        exit(1);
-    } else if (_beta <= 0.0f || _beta > 1.0f) {
-        fprintf(stderr,"error: symtrack_%s_create(), filter excess bandwidth must be in (0,1]\n", EXTENSION_FULL);
-        exit(1);
-    } else if (_ms == LIQUID_MODEM_UNKNOWN || _ms >= LIQUID_MODEM_NUM_SCHEMES) {
-        fprintf(stderr,"error: symtrack_%s_create(), invalid modulation scheme\n", EXTENSION_FULL);
-        exit(1);
-    }
+    if (_k < 2)
+        return liquid_error_config("symtrack_%s_create(), filter samples/symbol must be at least 2", EXTENSION_FULL);
+    if (_m == 0)
+        return liquid_error_config("symtrack_%s_create(), filter delay must be greater than zero", EXTENSION_FULL);
+    if (_beta <= 0.0f || _beta > 1.0f)
+        return liquid_error_config("symtrack_%s_create(), filter excess bandwidth must be in (0,1]", EXTENSION_FULL);
+    if (_ms == LIQUID_MODEM_UNKNOWN || _ms >= LIQUID_MODEM_NUM_SCHEMES)
+        return liquid_error_config("symtrack_%s_create(), invalid modulation scheme", EXTENSION_FULL);
 
     // allocate memory for main object
     SYMTRACK() q = (SYMTRACK()) malloc( sizeof(struct SYMTRACK(_s)) );
@@ -150,7 +145,7 @@ SYMTRACK() SYMTRACK(_create_default)()
 
 
 // destroy symtrack object, freeing all internal memory
-void SYMTRACK(_destroy)(SYMTRACK() _q)
+int SYMTRACK(_destroy)(SYMTRACK() _q)
 {
     // destroy objects
     AGC    (_destroy)(_q->agc);
@@ -161,18 +156,20 @@ void SYMTRACK(_destroy)(SYMTRACK() _q)
 
     // free main object
     free(_q);
+    return LIQUID_OK;
 }
 
 // print symtrack object's parameters
-void SYMTRACK(_print)(SYMTRACK() _q)
+int SYMTRACK(_print)(SYMTRACK() _q)
 {
     printf("symtrack_%s:\n", EXTENSION_FULL);
     printf("  k:%u, m:%u, beta:%.3f, ms:%s\n", _q->k, _q->m, _q->beta,
             modulation_types[_q->mod_scheme].name);
+    return LIQUID_OK;
 }
 
 // reset symtrack internal state
-void SYMTRACK(_reset)(SYMTRACK() _q)
+int SYMTRACK(_reset)(SYMTRACK() _q)
 {
     // reset objects
     AGC    (_reset)(_q->agc);
@@ -184,34 +181,32 @@ void SYMTRACK(_reset)(SYMTRACK() _q)
     // reset internal counters
     _q->symsync_index = 0;
     _q->num_syms_rx = 0;
+    return LIQUID_OK;
 }
 
 // set symtrack modulation scheme
-void SYMTRACK(_set_modscheme)(SYMTRACK() _q,
-                              int        _ms)
+int SYMTRACK(_set_modscheme)(SYMTRACK() _q,
+                             int        _ms)
 {
     // validate input
-    if (_ms >= LIQUID_MODEM_NUM_SCHEMES) {
-        fprintf(stderr,"error: symtrack_%s_set_modscheme(), invalid/unsupported modulation scheme\n", EXTENSION_FULL);
-        exit(1);
-    }
+    if (_ms >= LIQUID_MODEM_NUM_SCHEMES)
+        return liquid_error(LIQUID_EICONFIG,"symtrack_%s_set_modscheme(), invalid/unsupported modulation scheme", EXTENSION_FULL);
 
     // set internal modulation scheme
     _q->mod_scheme = _ms == LIQUID_MODEM_UNKNOWN ? LIQUID_MODEM_BPSK : _ms;
 
     // re-create modem
     _q->demod = MODEM(_recreate)(_q->demod, _q->mod_scheme);
+    return LIQUID_OK;
 }
 
 // set symtrack internal bandwidth
-void SYMTRACK(_set_bandwidth)(SYMTRACK() _q,
-                              float      _bw)
+int SYMTRACK(_set_bandwidth)(SYMTRACK() _q,
+                             float      _bw)
 {
     // validate input
-    if (_bw < 0) {
-        fprintf(stderr,"error: symtrack_%s_set_bandwidth(), bandwidth must be in [0,1]\n", EXTENSION_FULL);
-        exit(1);
-    }
+    if (_bw < 0)
+        return liquid_error(LIQUID_EICONFIG,"symtrack_%s_set_bandwidth(), bandwidth must be in [0,1]", EXTENSION_FULL);
 
     // set bandwidths accordingly
     float agc_bandwidth     = 0.02f  * _bw;
@@ -230,14 +225,16 @@ void SYMTRACK(_set_bandwidth)(SYMTRACK() _q,
     
     // phase-locked loop
     NCO(_pll_set_bandwidth)(_q->nco, pll_bandwidth);
+    return LIQUID_OK;
 }
 
 // adjust internal nco by requested phase
-void SYMTRACK(_adjust_phase)(SYMTRACK() _q,
-                             T          _dphi)
+int SYMTRACK(_adjust_phase)(SYMTRACK() _q,
+                            T          _dphi)
 {
     // adjust internal nco phase
     NCO(_adjust_phase)(_q->nco, _dphi);
+    return LIQUID_OK;
 }
 
 // execute synchronizer on single input sample
@@ -245,10 +242,10 @@ void SYMTRACK(_adjust_phase)(SYMTRACK() _q,
 //  _x      : input data sample
 //  _y      : output data array
 //  _ny     : number of samples written to output buffer
-void SYMTRACK(_execute)(SYMTRACK()     _q,
-                        TI             _x,
-                        TO *           _y,
-                        unsigned int * _ny)
+int SYMTRACK(_execute)(SYMTRACK()     _q,
+                       TI             _x,
+                       TO *           _y,
+                       unsigned int * _ny)
 {
     TO v;   // output sample
     unsigned int i;
@@ -307,6 +304,7 @@ void SYMTRACK(_execute)(SYMTRACK()     _q,
 
     //
     *_ny = num_outputs;
+    return LIQUID_OK;
 }
 
 // execute synchronizer on input data array
@@ -315,11 +313,11 @@ void SYMTRACK(_execute)(SYMTRACK()     _q,
 //  _nx     : number of input samples
 //  _y      : output data array
 //  _ny     : number of samples written to output buffer
-void SYMTRACK(_execute_block)(SYMTRACK()     _q,
-                              TI *           _x,
-                              unsigned int   _nx,
-                              TO *           _y,
-                              unsigned int * _ny)
+int SYMTRACK(_execute_block)(SYMTRACK()     _q,
+                             TI *           _x,
+                             unsigned int   _nx,
+                             TO *           _y,
+                             unsigned int * _ny)
 {
     //
     unsigned int i;
@@ -335,5 +333,6 @@ void SYMTRACK(_execute_block)(SYMTRACK()     _q,
 
     //
     *_ny = num_written;
+    return LIQUID_OK;
 }
 

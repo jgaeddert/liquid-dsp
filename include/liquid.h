@@ -5856,41 +5856,41 @@ SYMTRACK() SYMTRACK(_create)(int          _ftype,                           \
 SYMTRACK() SYMTRACK(_create_default)();                                     \
                                                                             \
 /* Destroy symtrack object, freeing all internal memory                 */  \
-void SYMTRACK(_destroy)(SYMTRACK() _q);                                     \
+int SYMTRACK(_destroy)(SYMTRACK() _q);                                      \
                                                                             \
 /* Print symtrack object's parameters                                   */  \
-void SYMTRACK(_print)(SYMTRACK() _q);                                       \
+int SYMTRACK(_print)(SYMTRACK() _q);                                        \
                                                                             \
 /* Reset symtrack internal state                                        */  \
-void SYMTRACK(_reset)(SYMTRACK() _q);                                       \
+int SYMTRACK(_reset)(SYMTRACK() _q);                                        \
                                                                             \
 /* Set symtrack modulation scheme                                       */  \
 /*  _q      : symtrack object                                           */  \
 /*  _ms     : modulation scheme, _ms(LIQUID_MODEM_BPSK)                 */  \
-void SYMTRACK(_set_modscheme)(SYMTRACK() _q,                                \
-                             int         _ms);                              \
+int SYMTRACK(_set_modscheme)(SYMTRACK() _q,                                 \
+                             int        _ms);                               \
                                                                             \
 /* Set symtrack internal bandwidth                                      */  \
 /*  _q      : symtrack object                                           */  \
 /*  _bw     : tracking bandwidth, _bw > 0                               */  \
-void SYMTRACK(_set_bandwidth)(SYMTRACK() _q,                                \
-                              float _bw);                                   \
+int SYMTRACK(_set_bandwidth)(SYMTRACK() _q,                                 \
+                             float _bw);                                    \
                                                                             \
 /* Adjust internal NCO by requested phase                               */  \
 /*  _q      : symtrack object                                           */  \
 /*  _dphi   : NCO phase adjustment [radians]                            */  \
-void SYMTRACK(_adjust_phase)(SYMTRACK() _q,                                 \
-                             T          _dphi);                             \
+int SYMTRACK(_adjust_phase)(SYMTRACK() _q,                                  \
+                            T          _dphi);                              \
                                                                             \
 /* Execute synchronizer on single input sample                          */  \
 /*  _q      : synchronizer object                                       */  \
 /*  _x      : input data sample                                         */  \
 /*  _y      : output data array, [size: 2 x 1]                          */  \
 /*  _ny     : number of samples written to output buffer (0, 1, or 2)   */  \
-void SYMTRACK(_execute)(SYMTRACK()     _q,                                  \
-                        TI             _x,                                  \
-                        TO *           _y,                                  \
-                        unsigned int * _ny);                                \
+int SYMTRACK(_execute)(SYMTRACK()     _q,                                   \
+                       TI             _x,                                   \
+                       TO *           _y,                                   \
+                       unsigned int * _ny);                                 \
                                                                             \
 /* execute synchronizer on input data array                             */  \
 /*  _q      : synchronizer object                                       */  \
@@ -5898,11 +5898,11 @@ void SYMTRACK(_execute)(SYMTRACK()     _q,                                  \
 /*  _nx     : number of input samples                                   */  \
 /*  _y      : output data array, [size: 2 _nx x 1]                      */  \
 /*  _ny     : number of samples written to output buffer                */  \
-void SYMTRACK(_execute_block)(SYMTRACK()     _q,                            \
-                              TI *           _x,                            \
-                              unsigned int   _nx,                           \
-                              TO *           _y,                            \
-                              unsigned int * _ny);                          \
+int SYMTRACK(_execute_block)(SYMTRACK()     _q,                             \
+                             TI *           _x,                             \
+                             unsigned int   _nx,                            \
+                             TO *           _y,                             \
+                             unsigned int * _ny);                           \
 
 LIQUID_SYMTRACK_DEFINE_API(LIQUID_SYMTRACK_MANGLE_RRRF,
                            float,
