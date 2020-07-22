@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2019 Joseph Gaeddert
+ * Copyright (c) 2007 - 2020 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -56,6 +56,12 @@ struct MSOURCE(_s)
 //
 // internal methods
 //
+
+// find index of qsource object by id within list, return -1 if not found
+int MSOURCE(_find)(MSOURCE() _q, int _id);
+
+// find qsource object by id within list, return NULL if not found
+QSOURCE() MSOURCE(_get_source)(MSOURCE() _q, int _id);
 
 // add source to list
 int MSOURCE(_add_source)(MSOURCE() _q,
@@ -270,15 +276,15 @@ int MSOURCE(_remove)(MSOURCE() _q,
 int MSOURCE(_enable)(MSOURCE() _q,
                      int       _id)
 {
-    // validate input
-    if (_id > _q->num_sources) {
+    QSOURCE() source = MSOURCE(_get_source)(_q, _id);
+    if (source == NULL) {
         fprintf(stderr,"warning: qsource%s_enable(), signal id (%d) out of range (%u)\n",
                 EXTENSION, _id, _q->num_sources);
         return -1;
     }
 
     // set source gain
-    QSOURCE(_enable)(_q->sources[_id]);
+    QSOURCE(_enable)(source);
 
     // everything ok
     return 0;
@@ -287,15 +293,15 @@ int MSOURCE(_enable)(MSOURCE() _q,
 int MSOURCE(_disable)(MSOURCE() _q,
                       int       _id)
 {
-    // validate input
-    if (_id > _q->num_sources) {
+    QSOURCE() source = MSOURCE(_get_source)(_q, _id);
+    if (source == NULL) {
         fprintf(stderr,"warning: qsource%s_disable(), signal id (%d) out of range (%u)\n",
                 EXTENSION, _id, _q->num_sources);
         return -1;
     }
 
     // set source gain
-    QSOURCE(_disable)(_q->sources[_id]);
+    QSOURCE(_disable)(source);
 
     // everything ok
     return 0;
@@ -309,15 +315,15 @@ int MSOURCE(_set_gain)(MSOURCE() _q,
                        int       _id,
                        float     _gain_dB)
 {
-    // validate input
-    if (_id > _q->num_sources) {
+    QSOURCE() source = MSOURCE(_get_source)(_q, _id);
+    if (source == NULL) {
         fprintf(stderr,"error: qsource%s_set_gain(), signal id (%d) out of range (%u)\n",
                 EXTENSION, _id, _q->num_sources);
         return -1;
     }
 
     // set source gain
-    QSOURCE(_set_gain)(_q->sources[_id], _gain_dB);
+    QSOURCE(_set_gain)(source, _gain_dB);
 
     // everything ok
     return 0;
@@ -331,15 +337,15 @@ int MSOURCE(_get_gain)(MSOURCE() _q,
                        int       _id,
                        float *   _gain_dB)
 {
-    // validate input
-    if (_id > _q->num_sources) {
+    QSOURCE() source = MSOURCE(_get_source)(_q, _id);
+    if (source == NULL) {
         fprintf(stderr,"error: qsource%s_get_gain(), signal id (%d) out of range (%u)\n",
                 EXTENSION, _id, _q->num_sources);
         return -1;
     }
 
     // set source gain
-    *_gain_dB = QSOURCE(_get_gain)(_q->sources[_id]);
+    *_gain_dB = QSOURCE(_get_gain)(source);
 
     // everything ok
     return 0;
@@ -359,15 +365,15 @@ int MSOURCE(_set_frequency)(MSOURCE() _q,
                             int       _id,
                             float     _dphi)
 {
-    // validate input
-    if (_id > _q->num_sources) {
+    QSOURCE() source = MSOURCE(_get_source)(_q, _id);
+    if (source == NULL) {
         fprintf(stderr,"error: qsource%s_set_frequency(), signal id (%d) out of range (%u)\n",
                 EXTENSION, _id, _q->num_sources);
         return -1;
     
     }
     // set source frequency
-    QSOURCE(_set_frequency)(_q->sources[_id], _dphi);
+    QSOURCE(_set_frequency)(source, _dphi);
 
     // everything ok
     return 0;
@@ -381,15 +387,15 @@ int MSOURCE(_get_frequency)(MSOURCE() _q,
                             int       _id,
                             float *   _dphi)
 {
-    // validate input
-    if (_id > _q->num_sources) {
+    QSOURCE() source = MSOURCE(_get_source)(_q, _id);
+    if (source == NULL) {
         fprintf(stderr,"error: qsource%s_get_frequency(), signal id (%d) out of range (%u)\n",
                 EXTENSION, _id, _q->num_sources);
         return -1;
     
     }
     // set source frequency
-    *_dphi = QSOURCE(_get_frequency)(_q->sources[_id]);
+    *_dphi = QSOURCE(_get_frequency)(source);
 
     // everything ok
     return 0;
@@ -419,6 +425,28 @@ void MSOURCE(_write_samples)(MSOURCE()    _q,
 // internal msource methods
 //
 
+// find qsource object by id within list, return -1 if not found
+int MSOURCE(_find)(MSOURCE() _q, int _id)
+{
+    unsigned int i;
+    for (i=0; i<_q->num_sources; i++) {
+        if (QSOURCE(_get_id)(_q->sources[i]) == _id)
+            return (int)i;
+    }
+    return -1;
+}
+
+// get source by id
+QSOURCE() MSOURCE(_get_source)(MSOURCE() _q,
+                               int       _id)
+{
+    int index = MSOURCE(_find)(_q, _id);
+    if (index < 0)
+        return NULL;
+
+    return _q->sources[index];
+}
+
 // add source to list
 int MSOURCE(_add_source)(MSOURCE() _q,
                          QSOURCE() _s)
@@ -447,20 +475,6 @@ int MSOURCE(_add_source)(MSOURCE() _q,
     return id;
 }
 
-// get source by id
-QSOURCE() MSOURCE(_get_source)(MSOURCE() _q,
-                               int       _id)
-{
-    unsigned int i;
-    for (i=0; i<_q->num_sources; i++) {
-        if (QSOURCE(_get_id)(_q->sources[i]) == _id) {
-            return _q->sources[i];
-        }
-    }
-
-    return NULL;
-}
-
 // generate samples internally
 void MSOURCE(_generate)(MSOURCE() _q)
 {
@@ -480,5 +494,4 @@ void MSOURCE(_generate)(MSOURCE() _q)
     _q->num_blocks++;
     _q->num_samples += _q->M / 2;
 }
-
 
