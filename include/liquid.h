@@ -4763,20 +4763,20 @@ typedef struct framegen64_s * framegen64;
 framegen64 framegen64_create();
 
 // destroy frame generator
-void framegen64_destroy(framegen64 _q);
+int framegen64_destroy(framegen64 _q);
 
 // print frame generator internal properties
-void framegen64_print(framegen64 _q);
+int framegen64_print(framegen64 _q);
 
 // generate frame
 //  _q          :   frame generator object
 //  _header     :   8-byte header data, NULL for random
 //  _payload    :   64-byte payload data, NULL for random
 //  _frame      :   output frame samples [size: LIQUID_FRAME64_LEN x 1]
-void framegen64_execute(framegen64             _q,
-                        unsigned char *        _header,
-                        unsigned char *        _payload,
-                        liquid_float_complex * _frame);
+int framegen64_execute(framegen64             _q,
+                       unsigned char *        _header,
+                       unsigned char *        _payload,
+                       liquid_float_complex * _frame);
 
 typedef struct framesync64_s * framesync64;
 
@@ -4787,37 +4787,37 @@ framesync64 framesync64_create(framesync_callback _callback,
                                void *             _userdata);
 
 // destroy frame synchronizer
-void framesync64_destroy(framesync64 _q);
+int framesync64_destroy(framesync64 _q);
 
 // print frame synchronizer internal properties
-void framesync64_print(framesync64 _q);
+int framesync64_print(framesync64 _q);
 
 // reset frame synchronizer internal state
-void framesync64_reset(framesync64 _q);
+int framesync64_reset(framesync64 _q);
 
 // push samples through frame synchronizer
 //  _q      :   frame synchronizer object
 //  _x      :   input samples [size: _n x 1]
 //  _n      :   number of input samples
-void framesync64_execute(framesync64            _q,
-                         liquid_float_complex * _x,
-                         unsigned int           _n);
+int framesync64_execute(framesync64            _q,
+                        liquid_float_complex * _x,
+                        unsigned int           _n);
 
 // enable/disable debugging
-void framesync64_debug_enable(framesync64 _q);
-void framesync64_debug_disable(framesync64 _q);
-void framesync64_debug_print(framesync64 _q, const char * _filename);
+int framesync64_debug_enable(framesync64 _q);
+int framesync64_debug_disable(framesync64 _q);
+int framesync64_debug_print(framesync64 _q, const char * _filename);
 
 // frame data statistics
-void             framesync64_reset_framedatastats(framesync64 _q);
+int              framesync64_reset_framedatastats(framesync64 _q);
 framedatastats_s framesync64_get_framedatastats  (framesync64 _q);
 
 #if 0
 // advanced modes
-void framesync64_set_csma_callbacks(framesync64             _q,
-                                    framesync_csma_callback _csma_lock,
-                                    framesync_csma_callback _csma_unlock,
-                                    void *                  _csma_userdata);
+int framesync64_set_csma_callbacks(framesync64             _q,
+                                   framesync_csma_callback _csma_lock,
+                                   framesync_csma_callback _csma_unlock,
+                                   void *                  _csma_userdata);
 #endif
 
 //
