@@ -1543,11 +1543,11 @@ extern const float complex modem_arb256opt[256];
 //  _S0     :   output symbol (freq)
 //  _s0     :   output symbol (time)
 //  _M_S0   :   total number of enabled subcarriers in S0
-void ofdmframe_init_S0(unsigned char * _p,
-                       unsigned int    _M,
-                       float complex * _S0,
-                       float complex * _s0,
-                       unsigned int *  _M_S0);
+int ofdmframe_init_S0(unsigned char * _p,
+                      unsigned int    _M,
+                      float complex * _S0,
+                      float complex * _s0,
+                      unsigned int *  _M_S0);
 
 // generate long sequence symbols
 //  _p      :   subcarrier allocation array
@@ -1555,60 +1555,60 @@ void ofdmframe_init_S0(unsigned char * _p,
 //  _S1     :   output symbol (freq)
 //  _s1     :   output symbol (time)
 //  _M_S1   :   total number of enabled subcarriers in S1
-void ofdmframe_init_S1(unsigned char * _p,
-                       unsigned int    _M,
-                       float complex * _S1,
-                       float complex * _s1,
-                       unsigned int *  _M_S1);
+int ofdmframe_init_S1(unsigned char * _p,
+                      unsigned int    _M,
+                      float complex * _S1,
+                      float complex * _s1,
+                      unsigned int *  _M_S1);
 
 // generate symbol (add cyclic prefix/postfix, overlap)
-void ofdmframegen_gensymbol(ofdmframegen    _q,
-                            float complex * _buffer);
+int ofdmframegen_gensymbol(ofdmframegen    _q,
+                           float complex * _buffer);
 
-void ofdmframesync_cpcorrelate(ofdmframesync _q);
-void ofdmframesync_findrxypeak(ofdmframesync _q);
-void ofdmframesync_rxpayload(ofdmframesync _q);
+int ofdmframesync_cpcorrelate(ofdmframesync _q);
+int ofdmframesync_findrxypeak(ofdmframesync _q);
+int ofdmframesync_rxpayload(ofdmframesync _q);
 
-void ofdmframesync_execute_seekplcp(ofdmframesync _q);
-void ofdmframesync_execute_S0a(ofdmframesync _q);
-void ofdmframesync_execute_S0b(ofdmframesync _q);
-void ofdmframesync_execute_S1( ofdmframesync _q);
-void ofdmframesync_execute_rxsymbols(ofdmframesync _q);
+int ofdmframesync_execute_seekplcp(ofdmframesync _q);
+int ofdmframesync_execute_S0a(ofdmframesync _q);
+int ofdmframesync_execute_S0b(ofdmframesync _q);
+int ofdmframesync_execute_S1( ofdmframesync _q);
+int ofdmframesync_execute_rxsymbols(ofdmframesync _q);
 
-void ofdmframesync_S0_metrics(ofdmframesync _q,
-                              float complex * _G,
-                              float complex * _s_hat);
+int ofdmframesync_S0_metrics(ofdmframesync   _q,
+                             float complex * _G,
+                             float complex * _s_hat);
 
 // estimate short sequence gain
 //  _q      :   ofdmframesync object
 //  _x      :   input array (time)
 //  _G      :   output gain (freq)
-void ofdmframesync_estimate_gain_S0(ofdmframesync   _q,
-                                    float complex * _x,
-                                    float complex * _G);
+int ofdmframesync_estimate_gain_S0(ofdmframesync   _q,
+                                   float complex * _x,
+                                   float complex * _G);
 
 // estimate long sequence gain
 //  _q      :   ofdmframesync object
 //  _x      :   input array (time)
 //  _G      :   output gain (freq)
-void ofdmframesync_estimate_gain_S1(ofdmframesync _q,
-                                    float complex * _x,
-                                    float complex * _G);
+int ofdmframesync_estimate_gain_S1(ofdmframesync _q,
+                                   float complex * _x,
+                                   float complex * _G);
 
 // estimate complex equalizer gain from G0 and G1
 //  _q      :   ofdmframesync object
 //  _ntaps  :   number of time-domain taps for smoothing
-void ofdmframesync_estimate_eqgain(ofdmframesync _q,
-                                   unsigned int _ntaps);
+int ofdmframesync_estimate_eqgain(ofdmframesync _q,
+                                  unsigned int _ntaps);
 
 // estimate complex equalizer gain from G0 and G1 using polynomial fit
 //  _q      :   ofdmframesync object
 //  _order  :   polynomial order
-void ofdmframesync_estimate_eqgain_poly(ofdmframesync _q,
-                                        unsigned int _order);
+int ofdmframesync_estimate_eqgain_poly(ofdmframesync _q,
+                                       unsigned int _order);
 
 // recover symbol, correcting for gain, pilot phase, etc.
-void ofdmframesync_rxsymbol(ofdmframesync _q);
+int ofdmframesync_rxsymbol(ofdmframesync _q);
 
 // 
 // MODULE : nco (numerically-controlled oscillator)

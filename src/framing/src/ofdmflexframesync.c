@@ -49,14 +49,14 @@ int ofdmflexframesync_internal_callback(float complex * _X,
                                         void * _userdata);
 
 // receive header data
-void ofdmflexframesync_rxheader(ofdmflexframesync _q,
-                                float complex * _X);
+int ofdmflexframesync_rxheader(ofdmflexframesync _q,
+                               float complex * _X);
 
 // decode header
-void ofdmflexframesync_decode_header(ofdmflexframesync _q);
+int ofdmflexframesync_decode_header(ofdmflexframesync _q);
 
 // receive payload data
-void ofdmflexframesync_rxpayload(ofdmflexframesync _q,
+int ofdmflexframesync_rxpayload(ofdmflexframesync _q,
                                 float complex * _X);
 
 static ofdmflexframegenprops_s ofdmflexframesyncprops_header_default = {
@@ -151,15 +151,12 @@ ofdmflexframesync ofdmflexframesync_create(unsigned int       _M,
     ofdmflexframesync q = (ofdmflexframesync) malloc(sizeof(struct ofdmflexframesync_s));
 
     // validate input
-    if (_M < 8) {
-        fprintf(stderr,"warning: ofdmflexframesync_create(), less than 8 subcarriers\n");
-    } else if (_M % 2) {
-        fprintf(stderr,"error: ofdmflexframesync_create(), number of subcarriers must be even\n");
-        exit(1);
-    } else if (_cp_len > _M) {
-        fprintf(stderr,"error: ofdmflexframesync_create(), cyclic prefix length cannot exceed number of subcarriers\n");
-        exit(1);
-    }
+    if (_M < 8)
+        return liquid_error_config("ofdmflexframesync_create(), less than 8 subcarriers");
+    if (_M % 2)
+        return liquid_error_config("ofdmflexframesync_create(), number of subcarriers must be even");
+    if (_cp_len > _M)
+        return liquid_error_config("ofdmflexframesync_create(), cyclic prefix length cannot exceed number of subcarriers");
 
     // set internal properties
     q->M         = _M;
@@ -221,7 +218,7 @@ ofdmflexframesync ofdmflexframesync_create(unsigned int       _M,
     return q;
 }
 
-void ofdmflexframesync_destroy(ofdmflexframesync _q)
+int ofdmflexframesync_destroy(ofdmflexframesync _q)
 {
     // destroy internal objects
     ofdmframesync_destroy(_q->fs);
@@ -241,9 +238,10 @@ void ofdmflexframesync_destroy(ofdmflexframesync _q)
 
     // free main object memory
     free(_q);
+    return LIQUID_OK;
 }
 
-void ofdmflexframesync_print(ofdmflexframesync _q)
+int ofdmflexframesync_print(ofdmflexframesync _q)
 {
     printf("ofdmflexframesync:\n");
     printf("    num subcarriers     :   %-u\n", _q->M);
@@ -252,11 +250,11 @@ void ofdmflexframesync_print(ofdmflexframesync _q)
     printf("      * data            :   %-u\n", _q->M_data);
     printf("    cyclic prefix len   :   %-u\n", _q->cp_len);
     printf("    taper len           :   %-u\n", _q->taper_len);
-    framedatastats_print(&_q->framedatastats);
+    return framedatastats_print(&_q->framedatastats);
 }
 
-void ofdmflexframesync_set_header_len(ofdmflexframesync _q,
-                                      unsigned int     _len)
+int ofdmflexframesync_set_header_len(ofdmflexframesync _q,
+                                     unsigned int     _len)
 {
     _q->header_user_len = _len;
     _q->header_dec_len = OFDMFLEXFRAME_H_DEC + _q->header_user_len;
@@ -286,21 +284,25 @@ void ofdmflexframesync_set_header_len(ofdmflexframesync _q,
         modem_destroy(_q->mod_header);
     }
     _q->mod_header = modem_create(_q->header_props.mod_scheme);
+    return LIQUID_OK;
 }
 
-void ofdmflexframesync_decode_header_soft(ofdmflexframesync _q,
-                                           int _soft) {
+int ofdmflexframesync_decode_header_soft(ofdmflexframesync _q,
+                                         int _soft)
+{
     _q->header_soft = _soft;
-    ofdmflexframesync_set_header_len(_q, _q->header_user_len);
+    return ofdmflexframesync_set_header_len(_q, _q->header_user_len);
 }
 
-void ofdmflexframesync_decode_payload_soft(ofdmflexframesync _q,
-                                           int _soft) {
+int ofdmflexframesync_decode_payload_soft(ofdmflexframesync _q,
+                                          int _soft)
+{
     _q->payload_soft = _soft;
+    return LIQUID_OK;
 }
 
-void ofdmflexframesync_set_header_props(ofdmflexframesync _q,
-                                        ofdmflexframegenprops_s * _props)
+int ofdmflexframesync_set_header_props(ofdmflexframesync _q,
+                                       ofdmflexframegenprops_s * _props)
 {
     // if properties object is NULL, initialize with defaults
     if (_props == NULL) {
@@ -308,25 +310,21 @@ void ofdmflexframesync_set_header_props(ofdmflexframesync _q,
     }
 
     // validate input
-    if (_props->check == LIQUID_CRC_UNKNOWN || _props->check >= LIQUID_CRC_NUM_SCHEMES) {
-        fprintf(stderr, "error: ofdmflexframesync_set_header_props(), invalid/unsupported CRC scheme\n");
-        exit(1);
-    } else if (_props->fec0 == LIQUID_FEC_UNKNOWN || _props->fec1 == LIQUID_FEC_UNKNOWN) {
-        fprintf(stderr, "error: ofdmflexframesync_set_header_props(), invalid/unsupported FEC scheme\n");
-        exit(1);
-    } else if (_props->mod_scheme == LIQUID_MODEM_UNKNOWN ) {
-        fprintf(stderr, "error: ofdmflexframesync_set_header_props(), invalid/unsupported modulation scheme\n");
-        exit(1);
-    }
+    if (_props->check == LIQUID_CRC_UNKNOWN || _props->check >= LIQUID_CRC_NUM_SCHEMES)
+        return liquid_error(LIQUID_EICONFIG,"ofdmflexframesync_set_header_props(), invalid/unsupported CRC scheme");
+    if (_props->fec0 == LIQUID_FEC_UNKNOWN || _props->fec1 == LIQUID_FEC_UNKNOWN)
+        return liquid_error(LIQUID_EICONFIG,"ofdmflexframesync_set_header_props(), invalid/unsupported FEC scheme");
+    if (_props->mod_scheme == LIQUID_MODEM_UNKNOWN )
+        return liquid_error(LIQUID_EICONFIG,"ofdmflexframesync_set_header_props(), invalid/unsupported modulation scheme");
 
     // copy properties to internal structure
     memmove(&_q->header_props, _props, sizeof(ofdmflexframegenprops_s));
 
     // reconfigure internal buffers, objects, etc.
-    ofdmflexframesync_set_header_len(_q, _q->header_user_len);
+    return ofdmflexframesync_set_header_len(_q, _q->header_user_len);
 }
 
-void ofdmflexframesync_reset(ofdmflexframesync _q)
+int ofdmflexframesync_reset(ofdmflexframesync _q)
 {
     // reset internal state
     _q->state = OFDMFLEXFRAMESYNC_STATE_HEADER;
@@ -344,7 +342,7 @@ void ofdmflexframesync_reset(ofdmflexframesync _q)
     framesyncstats_init_default(&_q->framesyncstats);
 
     // reset internal OFDM frame synchronizer object
-    ofdmframesync_reset(_q->fs);
+    return ofdmframesync_reset(_q->fs);
 }
 
 int ofdmflexframesync_is_frame_open(ofdmflexframesync _q)
@@ -353,12 +351,12 @@ int ofdmflexframesync_is_frame_open(ofdmflexframesync _q)
 }
 
 // execute synchronizer object on buffer of samples
-void ofdmflexframesync_execute(ofdmflexframesync _q,
-                               float complex * _x,
-                               unsigned int _n)
+int ofdmflexframesync_execute(ofdmflexframesync _q,
+                              float complex *   _x,
+                              unsigned int      _n)
 {
     // push samples through ofdmframesync object
-    ofdmframesync_execute(_q->fs, _x, _n);
+    return ofdmframesync_execute(_q->fs, _x, _n);
 }
 
 // 
@@ -378,9 +376,9 @@ float ofdmflexframesync_get_cfo(ofdmflexframesync _q)
 }
 
 // reset frame data statistics
-void ofdmflexframesync_reset_framedatastats(ofdmflexframesync _q)
+int ofdmflexframesync_reset_framedatastats(ofdmflexframesync _q)
 {
-    framedatastats_reset(&_q->framedatastats);
+    return framedatastats_reset(&_q->framedatastats);
 }
 
 // retrieve frame data statistics
@@ -394,7 +392,7 @@ framedatastats_s ofdmflexframesync_get_framedatastats(ofdmflexframesync _q)
 //
 
 // received carrier frequency offset
-void ofdmflexframesync_set_cfo(ofdmflexframesync _q, float _cfo)
+int ofdmflexframesync_set_cfo(ofdmflexframesync _q, float _cfo)
 {
     return ofdmframesync_set_cfo(_q->fs, _cfo);
 }
@@ -404,22 +402,22 @@ void ofdmflexframesync_set_cfo(ofdmflexframesync _q, float _cfo)
 //
 
 // enable debugging for internal ofdm frame synchronizer
-void ofdmflexframesync_debug_enable(ofdmflexframesync _q)
+int ofdmflexframesync_debug_enable(ofdmflexframesync _q)
 {
-    ofdmframesync_debug_enable(_q->fs);
+    return ofdmframesync_debug_enable(_q->fs);
 }
 
 // disable debugging for internal ofdm frame synchronizer
-void ofdmflexframesync_debug_disable(ofdmflexframesync _q)
+int ofdmflexframesync_debug_disable(ofdmflexframesync _q)
 {
-    ofdmframesync_debug_disable(_q->fs);
+    return ofdmframesync_debug_disable(_q->fs);
 }
 
 // print debugging file for internal ofdm frame synchronizer
-void ofdmflexframesync_debug_print(ofdmflexframesync _q,
+int ofdmflexframesync_debug_print(ofdmflexframesync _q,
                                    const char *      _filename)
 {
-    ofdmframesync_debug_print(_q->fs, _filename);
+    return ofdmframesync_debug_print(_q->fs, _filename);
 }
 
 //
@@ -434,7 +432,7 @@ void ofdmflexframesync_debug_print(ofdmflexframesync _q,
 int ofdmflexframesync_internal_callback(float complex * _X,
                                         unsigned char * _p,
                                         unsigned int    _M,
-                                        void * _userdata)
+                                        void *          _userdata)
 {
 #if DEBUG_OFDMFLEXFRAMESYNC
     printf("******* ofdmflexframesync callback invoked!\n");
@@ -450,24 +448,18 @@ int ofdmflexframesync_internal_callback(float complex * _X,
 
     // extract symbols
     switch (_q->state) {
-    case OFDMFLEXFRAMESYNC_STATE_HEADER:
-        ofdmflexframesync_rxheader(_q, _X);
-        break;
-    case OFDMFLEXFRAMESYNC_STATE_PAYLOAD:
-        ofdmflexframesync_rxpayload(_q, _X);
-        break;
-    default:
-        fprintf(stderr,"error: ofdmflexframesync_internal_callback(), unknown/unsupported internal state\n");
-        exit(1);
+    case OFDMFLEXFRAMESYNC_STATE_HEADER:  return ofdmflexframesync_rxheader (_q, _X);
+    case OFDMFLEXFRAMESYNC_STATE_PAYLOAD: return ofdmflexframesync_rxpayload(_q, _X);
+    default:;
     }
 
     // return
-    return 0;
+    return liquid_error(LIQUID_EINT,"ofdmflexframesync_internal_callback(), invalid internal state");
 }
 
 // receive header data
-void ofdmflexframesync_rxheader(ofdmflexframesync _q,
-                                float complex * _X)
+int ofdmflexframesync_rxheader(ofdmflexframesync _q,
+                               float complex * _X)
 {
 #if DEBUG_OFDMFLEXFRAMESYNC
     printf("  ofdmflexframesync extracting header...\n");
@@ -540,11 +532,14 @@ void ofdmflexframesync_rxheader(ofdmflexframesync _q,
             }
         }
     }
+    return LIQUID_OK;
 }
 
 // decode header
-void ofdmflexframesync_decode_header(ofdmflexframesync _q)
+int ofdmflexframesync_decode_header(ofdmflexframesync _q)
 {
+    _q->header_valid = 0;
+    int header_ok = 0;
     if (_q->header_soft) {
         // TODO: ensure lengths are the same
         memmove(_q->header_enc, _q->header_mod, _q->header_enc_len);
@@ -553,7 +548,7 @@ void ofdmflexframesync_decode_header(ofdmflexframesync _q)
         unscramble_data_soft(_q->header_enc, _q->header_enc_len/8);
 
         // run packet decoder
-        _q->header_valid = packetizer_decode_soft(_q->p_header, _q->header_enc, _q->header);
+        header_ok = packetizer_decode_soft(_q->p_header, _q->header_enc, _q->header);
     } else {
         // pack 1-bit header symbols into 8-bit bytes
         unsigned int num_written;
@@ -567,7 +562,7 @@ void ofdmflexframesync_decode_header(ofdmflexframesync _q)
         unscramble_data(_q->header_enc, _q->header_enc_len);
 
         // run packet decoder
-        _q->header_valid = packetizer_decode(_q->p_header, _q->header_enc, _q->header);
+        header_ok = packetizer_decode(_q->p_header, _q->header_enc, _q->header);
     }
 
 #if 0
@@ -585,29 +580,24 @@ void ofdmflexframesync_decode_header(ofdmflexframesync _q)
 #endif
 
 #if DEBUG_OFDMFLEXFRAMESYNC
-    printf("****** header extracted [%s]\n", _q->header_valid ? "valid" : "INVALID!");
+    printf("****** header extracted [%s]\n", header_ok ? "valid" : "INVALID!");
 #endif
-    if (!_q->header_valid)
-        return;
+    if (!header_ok)
+        return LIQUID_OK;
 
     unsigned int n = _q->header_user_len;
 
     // first byte is for expansion/version validation
-    if (_q->header[n+0] != OFDMFLEXFRAME_PROTOCOL) {
-        fprintf(stderr,"warning: ofdmflexframesync_decode_header(), invalid framing version\n");
-        _q->header_valid = 0;
-    }
+    if (_q->header[n+0] != OFDMFLEXFRAME_PROTOCOL)
+        return liquid_error(LIQUID_EICONFIG,"ofdmflexframesync_decode_header(), invalid framing version");
 
     // strip off payload length
     unsigned int payload_len = (_q->header[n+1] << 8) | (_q->header[n+2]);
 
     // strip off modulation scheme/depth
     unsigned int mod_scheme = _q->header[n+3];
-    if (mod_scheme == 0 || mod_scheme >= LIQUID_MODEM_NUM_SCHEMES) {
-        fprintf(stderr,"warning: ofdmflexframesync_decode_header(), invalid modulation scheme\n");
-        _q->header_valid = 0;
-        return;
-    }
+    if (mod_scheme == 0 || mod_scheme >= LIQUID_MODEM_NUM_SCHEMES)
+        return liquid_error(LIQUID_EICONFIG,"ofdmflexframesync_decode_header(), invalid modulation scheme");
 
     // strip off CRC, forward error-correction schemes
     //  CRC     : most-significant 3 bits of [n+4]
@@ -618,21 +608,12 @@ void ofdmflexframesync_decode_header(ofdmflexframesync _q)
     unsigned int fec1  = (_q->header[n+5]      ) & 0x1f;
 
     // validate properties
-    if (check >= LIQUID_CRC_NUM_SCHEMES) {
-        fprintf(stderr,"warning: ofdmflexframesync_decode_header(), decoded CRC exceeds available\n");
-        check = LIQUID_CRC_UNKNOWN;
-        _q->header_valid = 0;
-    }
-    if (fec0 >= LIQUID_FEC_NUM_SCHEMES) {
-        fprintf(stderr,"warning: ofdmflexframesync_decode_header(), decoded FEC (inner) exceeds available\n");
-        fec0 = LIQUID_FEC_UNKNOWN;
-        _q->header_valid = 0;
-    }
-    if (fec1 >= LIQUID_FEC_NUM_SCHEMES) {
-        fprintf(stderr,"warning: ofdmflexframesync_decode_header(), decoded FEC (outer) exceeds available\n");
-        fec1 = LIQUID_FEC_UNKNOWN;
-        _q->header_valid = 0;
-    }
+    if (check >= LIQUID_CRC_NUM_SCHEMES)
+        return liquid_error(LIQUID_EICONFIG,"ofdmflexframesync_decode_header(), decoded CRC exceeds available");
+    if (fec0 >= LIQUID_FEC_NUM_SCHEMES)
+        return liquid_error(LIQUID_EICONFIG,"ofdmflexframesync_decode_header(), decoded FEC (inner) exceeds available");
+    if (fec1 >= LIQUID_FEC_NUM_SCHEMES)
+        return liquid_error(LIQUID_EICONFIG,"ofdmflexframesync_decode_header(), decoded FEC (outer) exceeds available");
 
     // print results
 #if DEBUG_OFDMFLEXFRAMESYNC
@@ -644,61 +625,62 @@ void ofdmflexframesync_decode_header(ofdmflexframesync _q)
     printf("      * payload length  :   %u bytes\n", payload_len);
 #endif
 
-    // configure payload receiver
-    if (_q->header_valid) {
-        // configure modem
-        if (mod_scheme != _q->ms_payload) {
-            // set new properties
-            _q->ms_payload  = mod_scheme;
-            _q->bps_payload = modulation_types[mod_scheme].bps;
+    // at this point, header is valid
+    _q->header_valid = 1;
 
-            // recreate modem (destroy/create)
-            _q->mod_payload = modem_recreate(_q->mod_payload, _q->ms_payload);
-        }
+    // configure modem
+    if (mod_scheme != _q->ms_payload) {
+        // set new properties
+        _q->ms_payload  = mod_scheme;
+        _q->bps_payload = modulation_types[mod_scheme].bps;
 
-        // set new packetizer properties
-        _q->payload_len = payload_len;
-        _q->check       = check;
-        _q->fec0        = fec0;
-        _q->fec1        = fec1;
-        
-        // recreate packetizer object
-        _q->p_payload = packetizer_recreate(_q->p_payload,
-                                            _q->payload_len,
-                                            _q->check,
-                                            _q->fec0,
-                                            _q->fec1);
-
-        // re-compute payload encoded message length
-        if (_q->payload_soft) {
-            int packetizer_msg_len = packetizer_get_enc_msg_len(_q->p_payload);
-            div_t d = div((int)8*packetizer_msg_len, (int)_q->bps_payload);
-            _q->payload_mod_len = d.quot + (d.rem ? 1 : 0);
-            _q->payload_enc_len = _q->bps_payload*_q->payload_mod_len;
-        } else {
-            _q->payload_enc_len = packetizer_get_enc_msg_len(_q->p_payload);
-            // re-compute number of modulated payload symbols
-            div_t d = div(8*_q->payload_enc_len, _q->bps_payload);
-            _q->payload_mod_len = d.quot + (d.rem ? 1 : 0);
-        }
-
-#if DEBUG_OFDMFLEXFRAMESYNC
-        printf("      * payload encoded :   %u bytes\n", _q->payload_enc_len);
-#endif
-
-        // re-allocate buffers accordingly
-        _q->payload_enc = (unsigned char*) realloc(_q->payload_enc, _q->payload_enc_len*sizeof(unsigned char));
-        _q->payload_dec = (unsigned char*) realloc(_q->payload_dec, _q->payload_len*sizeof(unsigned char));
-        _q->payload_syms = (float complex*) realloc(_q->payload_syms, _q->payload_mod_len*sizeof(float complex));
-#if DEBUG_OFDMFLEXFRAMESYNC
-        printf("      * payload mod syms:   %u symbols\n", _q->payload_mod_len);
-#endif
+        // recreate modem (destroy/create)
+        _q->mod_payload = modem_recreate(_q->mod_payload, _q->ms_payload);
     }
+
+    // set new packetizer properties
+    _q->payload_len = payload_len;
+    _q->check       = check;
+    _q->fec0        = fec0;
+    _q->fec1        = fec1;
+    
+    // recreate packetizer object
+    _q->p_payload = packetizer_recreate(_q->p_payload,
+                                        _q->payload_len,
+                                        _q->check,
+                                        _q->fec0,
+                                        _q->fec1);
+
+    // re-compute payload encoded message length
+    if (_q->payload_soft) {
+        int packetizer_msg_len = packetizer_get_enc_msg_len(_q->p_payload);
+        div_t d = div((int)8*packetizer_msg_len, (int)_q->bps_payload);
+        _q->payload_mod_len = d.quot + (d.rem ? 1 : 0);
+        _q->payload_enc_len = _q->bps_payload*_q->payload_mod_len;
+    } else {
+        _q->payload_enc_len = packetizer_get_enc_msg_len(_q->p_payload);
+        // re-compute number of modulated payload symbols
+        div_t d = div(8*_q->payload_enc_len, _q->bps_payload);
+        _q->payload_mod_len = d.quot + (d.rem ? 1 : 0);
+    }
+
+#if DEBUG_OFDMFLEXFRAMESYNC
+    printf("      * payload encoded :   %u bytes\n", _q->payload_enc_len);
+#endif
+
+    // re-allocate buffers accordingly
+    _q->payload_enc = (unsigned char*) realloc(_q->payload_enc, _q->payload_enc_len*sizeof(unsigned char));
+    _q->payload_dec = (unsigned char*) realloc(_q->payload_dec, _q->payload_len*sizeof(unsigned char));
+    _q->payload_syms = (float complex*) realloc(_q->payload_syms, _q->payload_mod_len*sizeof(float complex));
+#if DEBUG_OFDMFLEXFRAMESYNC
+    printf("      * payload mod syms:   %u symbols\n", _q->payload_mod_len);
+#endif
+    return LIQUID_OK;
 }
 
 // receive payload data
-void ofdmflexframesync_rxpayload(ofdmflexframesync _q,
-                                 float complex * _X)
+int ofdmflexframesync_rxpayload(ofdmflexframesync _q,
+                                float complex * _X)
 {
     // demodulate paylod symbols
     unsigned int i;
@@ -781,6 +763,7 @@ void ofdmflexframesync_rxpayload(ofdmflexframesync _q,
             }
         }
     }
+    return LIQUID_OK;
 }
 
 

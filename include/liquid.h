@@ -5209,7 +5209,7 @@ typedef struct {
     unsigned int mod_scheme;    // modulation scheme
     //unsigned int block_size;  // framing block size
 } ofdmflexframegenprops_s;
-void ofdmflexframegenprops_init_default(ofdmflexframegenprops_s * _props);
+int ofdmflexframegenprops_init_default(ofdmflexframegenprops_s * _props);
 
 typedef struct ofdmflexframegen_s * ofdmflexframegen;
 
@@ -5226,31 +5226,31 @@ ofdmflexframegen ofdmflexframegen_create(unsigned int              _M,
                                          ofdmflexframegenprops_s * _fgprops);
 
 // destroy ofdmflexframegen object
-void ofdmflexframegen_destroy(ofdmflexframegen _q);
+int ofdmflexframegen_destroy(ofdmflexframegen _q);
 
 // print parameters, properties, etc.
-void ofdmflexframegen_print(ofdmflexframegen _q);
+int ofdmflexframegen_print(ofdmflexframegen _q);
 
 // reset ofdmflexframegen object internals
-void ofdmflexframegen_reset(ofdmflexframegen _q);
+int ofdmflexframegen_reset(ofdmflexframegen _q);
 
 // is frame assembled?
 int ofdmflexframegen_is_assembled(ofdmflexframegen _q);
 
 // get properties
-void ofdmflexframegen_getprops(ofdmflexframegen _q,
-                               ofdmflexframegenprops_s * _props);
+int ofdmflexframegen_getprops(ofdmflexframegen _q,
+                              ofdmflexframegenprops_s * _props);
 
 // set properties
-void ofdmflexframegen_setprops(ofdmflexframegen _q,
-                               ofdmflexframegenprops_s * _props);
+int ofdmflexframegen_setprops(ofdmflexframegen _q,
+                              ofdmflexframegenprops_s * _props);
 
 // set user-defined header length
-void ofdmflexframegen_set_header_len(ofdmflexframegen _q,
-                                     unsigned int     _len);
+int ofdmflexframegen_set_header_len(ofdmflexframegen _q,
+                                    unsigned int     _len);
 
-void ofdmflexframegen_set_header_props(ofdmflexframegen _q,
-                                       ofdmflexframegenprops_s * _props);
+int ofdmflexframegen_set_header_props(ofdmflexframegen _q,
+                                      ofdmflexframegenprops_s * _props);
 
 // get length of frame (symbols)
 //  _q              :   OFDM frame generator object
@@ -5261,18 +5261,18 @@ unsigned int ofdmflexframegen_getframelen(ofdmflexframegen _q);
 //  _header         :   frame header [8 bytes]
 //  _payload        :   payload data [size: _payload_len x 1]
 //  _payload_len    :   payload data length
-void ofdmflexframegen_assemble(ofdmflexframegen      _q,
-                               const unsigned char * _header,
-                               const unsigned char * _payload,
-                               unsigned int          _payload_len);
+int ofdmflexframegen_assemble(ofdmflexframegen      _q,
+                              const unsigned char * _header,
+                              const unsigned char * _payload,
+                              unsigned int          _payload_len);
 
 // write samples of assembled frame
 //  _q              :   OFDM frame generator object
 //  _buf            :   output buffer [size: _buf_len x 1]
 //  _buf_len        :   output buffer length
 int ofdmflexframegen_write(ofdmflexframegen       _q,
-                          liquid_float_complex * _buf,
-                          unsigned int           _buf_len);
+                           liquid_float_complex * _buf,
+                           unsigned int           _buf_len);
 
 //
 // OFDM flex frame synchronizer
@@ -5294,26 +5294,26 @@ ofdmflexframesync ofdmflexframesync_create(unsigned int       _M,
                                            framesync_callback _callback,
                                            void *             _userdata);
 
-void ofdmflexframesync_destroy(ofdmflexframesync _q);
-void ofdmflexframesync_print(ofdmflexframesync _q);
+int ofdmflexframesync_destroy(ofdmflexframesync _q);
+int ofdmflexframesync_print(ofdmflexframesync _q);
 // set user-defined header length
-void ofdmflexframesync_set_header_len(ofdmflexframesync _q,
-                                      unsigned int      _len);
+int ofdmflexframesync_set_header_len(ofdmflexframesync _q,
+                                     unsigned int      _len);
 
-void ofdmflexframesync_decode_header_soft(ofdmflexframesync _q,
-                                           int _soft);
+int ofdmflexframesync_decode_header_soft(ofdmflexframesync _q,
+                                         int _soft);
 
-void ofdmflexframesync_decode_payload_soft(ofdmflexframesync _q,
-                                           int _soft);
+int ofdmflexframesync_decode_payload_soft(ofdmflexframesync _q,
+                                          int _soft);
 
-void ofdmflexframesync_set_header_props(ofdmflexframesync _q,
-                                        ofdmflexframegenprops_s * _props);
+int ofdmflexframesync_set_header_props(ofdmflexframesync _q,
+                                       ofdmflexframegenprops_s * _props);
 
-void ofdmflexframesync_reset(ofdmflexframesync _q);
+int ofdmflexframesync_reset(ofdmflexframesync _q);
 int  ofdmflexframesync_is_frame_open(ofdmflexframesync _q);
-void ofdmflexframesync_execute(ofdmflexframesync _q,
-                               liquid_float_complex * _x,
-                               unsigned int _n);
+int ofdmflexframesync_execute(ofdmflexframesync _q,
+                              liquid_float_complex * _x,
+                              unsigned int _n);
 
 // query the received signal strength indication
 float ofdmflexframesync_get_rssi(ofdmflexframesync _q);
@@ -5322,17 +5322,17 @@ float ofdmflexframesync_get_rssi(ofdmflexframesync _q);
 float ofdmflexframesync_get_cfo(ofdmflexframesync _q);
 
 // frame data statistics
-void             ofdmflexframesync_reset_framedatastats(ofdmflexframesync _q);
+int              ofdmflexframesync_reset_framedatastats(ofdmflexframesync _q);
 framedatastats_s ofdmflexframesync_get_framedatastats  (ofdmflexframesync _q);
 
 // set the received carrier offset estimate
-void ofdmflexframesync_set_cfo(ofdmflexframesync _q, float _cfo);
+int ofdmflexframesync_set_cfo(ofdmflexframesync _q, float _cfo);
 
 // enable/disable debugging
-void ofdmflexframesync_debug_enable(ofdmflexframesync _q);
-void ofdmflexframesync_debug_disable(ofdmflexframesync _q);
-void ofdmflexframesync_debug_print(ofdmflexframesync _q,
-                                   const char *      _filename);
+int ofdmflexframesync_debug_enable(ofdmflexframesync _q);
+int ofdmflexframesync_debug_disable(ofdmflexframesync _q);
+int ofdmflexframesync_debug_print(ofdmflexframesync _q,
+                                  const char *      _filename);
 
 
 
@@ -7660,18 +7660,18 @@ LIQUID_FIRPFBCHR_DEFINE_API(LIQUID_FIRPFBCHR_MANGLE_CRCF,
 // initialize default subcarrier allocation
 //  _M      :   number of subcarriers
 //  _p      :   output subcarrier allocation array, [size: _M x 1]
-void ofdmframe_init_default_sctype(unsigned int    _M,
-                                   unsigned char * _p);
+int ofdmframe_init_default_sctype(unsigned int    _M,
+                                  unsigned char * _p);
 
 // initialize default subcarrier allocation
 //  _M      :   number of subcarriers
 //  _f0     :   lower frequency band, _f0 in [-0.5,0.5]
 //  _f1     :   upper frequency band, _f1 in [-0.5,0.5]
 //  _p      :   output subcarrier allocation array, [size: _M x 1]
-void ofdmframe_init_sctype_range(unsigned int    _M,
-                                 float           _f0,
-                                 float           _f1,
-                                 unsigned char * _p);
+int ofdmframe_init_sctype_range(unsigned int    _M,
+                                float           _f0,
+                                float           _f1,
+                                unsigned char * _p);
 
 // validate subcarrier type (count number of null, pilot, and data
 // subcarriers in the allocation)
@@ -7680,17 +7680,17 @@ void ofdmframe_init_sctype_range(unsigned int    _M,
 //  _M_null     :   output number of null subcarriers
 //  _M_pilot    :   output number of pilot subcarriers
 //  _M_data     :   output number of data subcarriers
-void ofdmframe_validate_sctype(unsigned char * _p,
-                               unsigned int _M,
-                               unsigned int * _M_null,
-                               unsigned int * _M_pilot,
-                               unsigned int * _M_data);
+int ofdmframe_validate_sctype(unsigned char * _p,
+                              unsigned int _M,
+                              unsigned int * _M_null,
+                              unsigned int * _M_pilot,
+                              unsigned int * _M_data);
 
 // print subcarrier allocation to screen
 //  _p      :   output subcarrier allocation array, [size: _M x 1]
 //  _M      :   number of subcarriers
-void ofdmframe_print_sctype(unsigned char * _p,
-                            unsigned int    _M);
+int ofdmframe_print_sctype(unsigned char * _p,
+                           unsigned int    _M);
 
 
 //
@@ -7708,32 +7708,32 @@ ofdmframegen ofdmframegen_create(unsigned int    _M,
                                  unsigned int    _taper_len,
                                  unsigned char * _p);
 
-void ofdmframegen_destroy(ofdmframegen _q);
+int ofdmframegen_destroy(ofdmframegen _q);
 
-void ofdmframegen_print(ofdmframegen _q);
+int ofdmframegen_print(ofdmframegen _q);
 
-void ofdmframegen_reset(ofdmframegen _q);
+int ofdmframegen_reset(ofdmframegen _q);
 
 // write first S0 symbol
-void ofdmframegen_write_S0a(ofdmframegen _q,
-                            liquid_float_complex *_y);
-
-// write second S0 symbol
-void ofdmframegen_write_S0b(ofdmframegen _q,
-                            liquid_float_complex *_y);
-
-// write S1 symbol
-void ofdmframegen_write_S1(ofdmframegen _q,
+int ofdmframegen_write_S0a(ofdmframegen _q,
                            liquid_float_complex *_y);
 
+// write second S0 symbol
+int ofdmframegen_write_S0b(ofdmframegen _q,
+                           liquid_float_complex *_y);
+
+// write S1 symbol
+int ofdmframegen_write_S1(ofdmframegen _q,
+                          liquid_float_complex *_y);
+
 // write data symbol
-void ofdmframegen_writesymbol(ofdmframegen _q,
-                              liquid_float_complex * _x,
-                              liquid_float_complex *_y);
+int ofdmframegen_writesymbol(ofdmframegen _q,
+                             liquid_float_complex * _x,
+                             liquid_float_complex *_y);
 
 // write tail
-void ofdmframegen_writetail(ofdmframegen _q,
-                            liquid_float_complex * _x);
+int ofdmframegen_writetail(ofdmframegen _q,
+                           liquid_float_complex * _x);
 
 //
 // OFDM frame (symbol) synchronizer
@@ -7757,25 +7757,25 @@ ofdmframesync ofdmframesync_create(unsigned int           _M,
                                    unsigned char *        _p,
                                    ofdmframesync_callback _callback,
                                    void *                 _userdata);
-void ofdmframesync_destroy(ofdmframesync _q);
-void ofdmframesync_print(ofdmframesync _q);
-void ofdmframesync_reset(ofdmframesync _q);
-int  ofdmframesync_is_frame_open(ofdmframesync _q);
-void ofdmframesync_execute(ofdmframesync _q,
-                           liquid_float_complex * _x,
-                           unsigned int _n);
+int ofdmframesync_destroy(ofdmframesync _q);
+int ofdmframesync_print(ofdmframesync _q);
+int ofdmframesync_reset(ofdmframesync _q);
+int ofdmframesync_is_frame_open(ofdmframesync _q);
+int ofdmframesync_execute(ofdmframesync _q,
+                          liquid_float_complex * _x,
+                          unsigned int _n);
 
 // query methods
 float ofdmframesync_get_rssi(ofdmframesync _q); // received signal strength indication
 float ofdmframesync_get_cfo(ofdmframesync _q);  // carrier offset estimate
 
 // set methods
-void ofdmframesync_set_cfo(ofdmframesync _q, float _cfo);  // set carrier offset estimate
+int ofdmframesync_set_cfo(ofdmframesync _q, float _cfo);  // set carrier offset estimate
 
 // debugging
-void ofdmframesync_debug_enable(ofdmframesync _q);
-void ofdmframesync_debug_disable(ofdmframesync _q);
-void ofdmframesync_debug_print(ofdmframesync _q, const char * _filename);
+int ofdmframesync_debug_enable(ofdmframesync _q);
+int ofdmframesync_debug_disable(ofdmframesync _q);
+int ofdmframesync_debug_print(ofdmframesync _q, const char * _filename);
 
 
 //

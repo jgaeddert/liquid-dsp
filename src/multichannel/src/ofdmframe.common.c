@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2015 Joseph Gaeddert
+ * Copyright (c) 2007 - 2020 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -38,11 +38,11 @@
 //  _S0     :   output symbol (freq)
 //  _s0     :   output symbol (time)
 //  _M_S0   :   total number of enabled subcarriers in S0
-void ofdmframe_init_S0(unsigned char * _p,
-                       unsigned int    _M,
-                       float complex * _S0,
-                       float complex * _s0,
-                       unsigned int *  _M_S0)
+int ofdmframe_init_S0(unsigned char * _p,
+                      unsigned int    _M,
+                      float complex * _S0,
+                      float complex * _s0,
+                      unsigned int *  _M_S0)
 {
     unsigned int i;
 
@@ -82,10 +82,8 @@ void ofdmframe_init_S0(unsigned char * _p,
     msequence_destroy(ms);
 
     // ensure at least one subcarrier was enabled
-    if (M_S0 == 0) {
-        fprintf(stderr,"error: ofdmframe_init_S0(), no subcarriers enabled; check allocation\n");
-        exit(1);
-    }
+    if (M_S0 == 0)
+        return liquid_error(LIQUID_EICONFIG,"ofdmframe_init_S0(), no subcarriers enabled; check allocation");
 
     // set return value(s)
     *_M_S0 = M_S0;
@@ -97,6 +95,7 @@ void ofdmframe_init_S0(unsigned char * _p,
     float g = 1.0f / sqrtf(M_S0);
     for (i=0; i<_M; i++)
         _s0[i] *= g;
+    return LIQUID_OK;
 }
 
 
@@ -106,11 +105,11 @@ void ofdmframe_init_S0(unsigned char * _p,
 //  _S1     :   output symbol (freq)
 //  _s1     :   output symbol (time)
 //  _M_S1   :   total number of enabled subcarriers in S1
-void ofdmframe_init_S1(unsigned char * _p,
-                       unsigned int    _M,
-                       float complex * _S1,
-                       float complex * _s1,
-                       unsigned int *  _M_S1)
+int ofdmframe_init_S1(unsigned char * _p,
+                      unsigned int    _M,
+                      float complex * _S1,
+                      float complex * _s1,
+                      unsigned int *  _M_S1)
 {
     unsigned int i;
 
@@ -149,10 +148,8 @@ void ofdmframe_init_S1(unsigned char * _p,
     msequence_destroy(ms);
 
     // ensure at least one subcarrier was enabled
-    if (M_S1 == 0) {
-        fprintf(stderr,"error: ofdmframe_init_S1(), no subcarriers enabled; check allocation\n");
-        exit(1);
-    }
+    if (M_S1 == 0)
+        return liquid_error(LIQUID_EICONFIG,"ofdmframe_init_S1(), no subcarriers enabled; check allocation");
 
     // set return value(s)
     *_M_S1 = M_S1;
@@ -164,6 +161,7 @@ void ofdmframe_init_S1(unsigned char * _p,
     float g = 1.0f / sqrtf(M_S1);
     for (i=0; i<_M; i++)
         _s1[i] *= g;
+    return LIQUID_OK;
 }
 
 // initialize default subcarrier allocation
@@ -173,13 +171,12 @@ void ofdmframe_init_S1(unsigned char * _p,
 // key: '.' (null), 'P' (pilot), '+' (data)
 // .+++P+++++++P.........P+++++++P+++
 //
-void ofdmframe_init_default_sctype(unsigned int _M,
-                                   unsigned char * _p)
+int ofdmframe_init_default_sctype(unsigned int    _M,
+                                  unsigned char * _p)
 {
     // validate input
-    if (_M < 6) {
-        fprintf(stderr,"warning: ofdmframe_init_default_sctype(), less than 6 subcarriers\n");
-    }
+    if (_M < 6)
+        return liquid_error(LIQUID_EICONFIG,"ofdmframe_init_default_sctype(), less than 6 subcarriers");
 
     unsigned int i;
     unsigned int M2 = _M/2;
@@ -212,6 +209,7 @@ void ofdmframe_init_default_sctype(unsigned int _M,
         else
             _p[k] = OFDMFRAME_SCTYPE_DATA;
     }
+    return LIQUID_OK;
 }
 
 // initialize default subcarrier allocation
@@ -219,24 +217,20 @@ void ofdmframe_init_default_sctype(unsigned int _M,
 //  _f0     :   lower frequency band, _f0 in [-0.5,0.5]
 //  _f1     :   upper frequency band, _f1 in [-0.5,0.5]
 //  _p      :   output subcarrier allocation array, [size: _M x 1]
-void ofdmframe_init_sctype_range(unsigned int    _M,
-                                 float           _f0,
-                                 float           _f1,
-                                 unsigned char * _p)
+int ofdmframe_init_sctype_range(unsigned int    _M,
+                                float           _f0,
+                                float           _f1,
+                                unsigned char * _p)
 {
     // validate input
-    if (_M < 6) {
-        fprintf(stderr,"warning: ofdmframe_init_sctype_range(), less than 6 subcarriers\n");
-    } else if (_f0 < -0.5f || _f0 > 0.5f) {
-        fprintf(stderr,"error: ofdmframe_init_sctype_range(), lower frequency edge must be in [-0.5,0.5]\n");
-        exit(1);
-    } else if (_f1 < -0.5f || _f1 > 0.5f) {
-        fprintf(stderr,"error: ofdmframe_init_sctype_range(), upper frequency edge must be in [-0.5,0.5]\n");
-        exit(1);
-    } else if (_f0 >= _f1) {
-        fprintf(stderr,"error: ofdmframe_init_sctype_range(), lower frequency edge must be below upper edge\n");
-        exit(1);
-    }
+    if (_M < 6)
+        return liquid_error(LIQUID_EICONFIG,"ofdmframe_init_sctype_range(), less than 6 subcarriers");
+    if (_f0 < -0.5f || _f0 > 0.5f)
+        return liquid_error(LIQUID_EICONFIG,"ofdmframe_init_sctype_range(), lower frequency edge must be in [-0.5,0.5]");
+    if (_f1 < -0.5f || _f1 > 0.5f)
+        return liquid_error(LIQUID_EICONFIG,"ofdmframe_init_sctype_range(), upper frequency edge must be in [-0.5,0.5]");
+    if (_f0 >= _f1)
+        return liquid_error(LIQUID_EICONFIG,"ofdmframe_init_sctype_range(), lower frequency edge must be below upper edge");
 
     // get relative edges
     int M0 = (int)((_f0 + 0.5f) * _M); // lower subcarrier index
@@ -245,8 +239,7 @@ void ofdmframe_init_sctype_range(unsigned int    _M,
     if (Mp > (int)_M) {
         Mp = (int)_M;
     } else if (Mp < 6) {
-        fprintf(stderr,"warning: ofdmframe_init_sctype_range(), less than 6 subcarriers (effectively)\n");
-        exit(1);
+        return liquid_error(LIQUID_EICONFIG,"ofdmframe_init_sctype_range(), less than 6 subcarriers (effectively)");
     }
 
     // designate pilot spacing
@@ -266,6 +259,7 @@ void ofdmframe_init_sctype_range(unsigned int    _M,
             _p[k] = OFDMFRAME_SCTYPE_DATA;
         }
     }
+    return LIQUID_OK;
 }
 
 // validate subcarrier type (count number of null, pilot, and data
@@ -275,11 +269,11 @@ void ofdmframe_init_sctype_range(unsigned int    _M,
 //  _M_null     :   output number of null subcarriers
 //  _M_pilot    :   output number of pilot subcarriers
 //  _M_data     :   output number of data subcarriers
-void ofdmframe_validate_sctype(unsigned char * _p,
-                               unsigned int _M,
-                               unsigned int * _M_null,
-                               unsigned int * _M_pilot,
-                               unsigned int * _M_data)
+int ofdmframe_validate_sctype(unsigned char * _p,
+                              unsigned int    _M,
+                              unsigned int *  _M_null,
+                              unsigned int *  _M_pilot,
+                              unsigned int *  _M_data)
 {
     // clear counters
     unsigned int M_null  = 0;
@@ -296,8 +290,7 @@ void ofdmframe_validate_sctype(unsigned char * _p,
         else if (_p[i] == OFDMFRAME_SCTYPE_DATA)
             M_data++;
         else {
-            fprintf(stderr,"error: ofdmframe_validate_sctype(), invalid subcarrier type (%u)\n", _p[i]);
-            exit(1);
+            return liquid_error(LIQUID_EICONFIG,"ofdmframe_validate_sctype(), invalid subcarrier type (%u)", _p[i]);
         }
     }
 
@@ -305,6 +298,7 @@ void ofdmframe_validate_sctype(unsigned char * _p,
     *_M_null  = M_null;
     *_M_pilot = M_pilot;
     *_M_data  = M_data;
+    return LIQUID_OK;
 }
 
 // print subcarrier allocation to screen
@@ -312,8 +306,8 @@ void ofdmframe_validate_sctype(unsigned char * _p,
 // key: '.' (null), 'P' (pilot), '+' (data)
 // .+++P+++++++P.........P+++++++P+++
 //
-void ofdmframe_print_sctype(unsigned char * _p,
-                            unsigned int    _M)
+int ofdmframe_print_sctype(unsigned char * _p,
+                           unsigned int    _M)
 {
     unsigned int i;
 
@@ -322,15 +316,14 @@ void ofdmframe_print_sctype(unsigned char * _p,
         unsigned int k = (i + _M/2) % _M;
 
         switch (_p[k]) {
-        case OFDMFRAME_SCTYPE_NULL:     printf(".");    break;
-        case OFDMFRAME_SCTYPE_PILOT:    printf("|");    break;
-        case OFDMFRAME_SCTYPE_DATA:     printf("+");    break;
+        case OFDMFRAME_SCTYPE_NULL:  printf("."); break;
+        case OFDMFRAME_SCTYPE_PILOT: printf("|"); break;
+        case OFDMFRAME_SCTYPE_DATA:  printf("+"); break;
         default:
-            fprintf(stderr,"error: ofdmframe_print_default_sctype(), invalid subcarrier type\n");
-            exit(1);
+            return liquid_error(LIQUID_EICONFIG,"ofdmframe_print_default_sctype(), invalid subcarrier type");
         }
     }
-
     printf("]\n");
+    return LIQUID_OK;
 }
 

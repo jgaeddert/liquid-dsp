@@ -869,6 +869,8 @@ int flexframesync_debug_print(flexframesync _q,
     unsigned int i;
     float complex * rc;
     FILE* fid = fopen(_filename,"w");
+    if (fid==NULL)
+        return liquid_error(LIQUID_EIO,"flexframesync_debug_print(), could not open '%s' for writing", _filename);
     fprintf(fid,"%% %s: auto-generated file", _filename);
     fprintf(fid,"\n\n");
     fprintf(fid,"clear all;\n");
