@@ -4708,16 +4708,16 @@ qpilotgen qpilotgen_recreate(qpilotgen    _q,
                              unsigned int _payload_len,
                              unsigned int _pilot_spacing);
 
-void qpilotgen_destroy(qpilotgen _q);
-void qpilotgen_reset(  qpilotgen _q);
-void qpilotgen_print(  qpilotgen _q);
+int qpilotgen_destroy(qpilotgen _q);
+int qpilotgen_reset(  qpilotgen _q);
+int qpilotgen_print(  qpilotgen _q);
 
 unsigned int qpilotgen_get_frame_len(qpilotgen _q);
 
 // insert pilot symbols
-void qpilotgen_execute(qpilotgen              _q,
-                       liquid_float_complex * _payload,
-                       liquid_float_complex * _frame);
+int qpilotgen_execute(qpilotgen              _q,
+                      liquid_float_complex * _payload,
+                      liquid_float_complex * _frame);
 
 //
 // pilot synchronizer for packet burst recovery
@@ -4732,16 +4732,16 @@ qpilotsync qpilotsync_recreate(qpilotsync   _q,
                                unsigned int _payload_len,
                                unsigned int _pilot_spacing);
 
-void qpilotsync_destroy(qpilotsync _q);
-void qpilotsync_reset(  qpilotsync _q);
-void qpilotsync_print(  qpilotsync _q);
+int qpilotsync_destroy(qpilotsync _q);
+int qpilotsync_reset(  qpilotsync _q);
+int qpilotsync_print(  qpilotsync _q);
 
 unsigned int qpilotsync_get_frame_len(qpilotsync _q);
 
 // recover frame symbols from received frame
-void qpilotsync_execute(qpilotsync             _q,
-                        liquid_float_complex * _frame,
-                        liquid_float_complex * _payload);
+int qpilotsync_execute(qpilotsync             _q,
+                       liquid_float_complex * _frame,
+                       liquid_float_complex * _payload);
 
 // get estimates
 float qpilotsync_get_dphi(qpilotsync _q);
