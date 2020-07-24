@@ -6089,9 +6089,9 @@ float liquid_kbd(unsigned int _i,
 //  _wlen   :   full window length (must be even)
 //  _beta   :   Kaiser window parameter (_beta > 0)
 //  _w      :   window output buffer, [size: _wlen x 1]
-void liquid_kbd_window(unsigned int _wlen,
-                       float        _beta,
-                       float *      _w);
+int liquid_kbd_window(unsigned int _wlen,
+                      float        _beta,
+                      float *      _w);
 
 
 // polynomials
