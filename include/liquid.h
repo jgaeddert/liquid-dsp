@@ -5094,18 +5094,18 @@ typedef struct gmskframegen_s * gmskframegen;
 
 // create GMSK frame generator
 gmskframegen gmskframegen_create();
-void gmskframegen_destroy       (gmskframegen _q);
-int  gmskframegen_is_assembled  (gmskframegen _q);
-void gmskframegen_print         (gmskframegen _q);
-void gmskframegen_set_header_len(gmskframegen _q, unsigned int _len);
-void gmskframegen_reset         (gmskframegen _q);
-void gmskframegen_assemble      (gmskframegen          _q,
-                                 const unsigned char * _header,
-                                 const unsigned char * _payload,
-                                 unsigned int          _payload_len,
-                                 crc_scheme            _check,
-                                 fec_scheme            _fec0,
-                                 fec_scheme            _fec1);
+int gmskframegen_destroy       (gmskframegen _q);
+int gmskframegen_is_assembled  (gmskframegen _q);
+int gmskframegen_print         (gmskframegen _q);
+int gmskframegen_set_header_len(gmskframegen _q, unsigned int _len);
+int gmskframegen_reset         (gmskframegen _q);
+int gmskframegen_assemble      (gmskframegen          _q,
+                                const unsigned char * _header,
+                                const unsigned char * _payload,
+                                unsigned int          _payload_len,
+                                crc_scheme            _check,
+                                fec_scheme            _fec0,
+                                fec_scheme            _fec1);
 unsigned int gmskframegen_getframelen(gmskframegen _q);
 int gmskframegen_write_samples(gmskframegen _q,
                                liquid_float_complex * _y);
@@ -5122,19 +5122,19 @@ typedef struct gmskframesync_s * gmskframesync;
 //  _userdata   :   user data pointer passed to callback function
 gmskframesync gmskframesync_create(framesync_callback _callback,
                                    void *             _userdata);
-void gmskframesync_destroy(gmskframesync _q);
-void gmskframesync_print(gmskframesync _q);
-void gmskframesync_set_header_len(gmskframesync _q, unsigned int _len);
-void gmskframesync_reset(gmskframesync _q);
-int  gmskframesync_is_frame_open(gmskframesync _q);
-void gmskframesync_execute(gmskframesync _q,
-                           liquid_float_complex * _x,
-                           unsigned int _n);
+int gmskframesync_destroy(gmskframesync _q);
+int gmskframesync_print(gmskframesync _q);
+int gmskframesync_set_header_len(gmskframesync _q, unsigned int _len);
+int gmskframesync_reset(gmskframesync _q);
+int gmskframesync_is_frame_open(gmskframesync _q);
+int gmskframesync_execute(gmskframesync _q,
+                          liquid_float_complex * _x,
+                          unsigned int _n);
 
 // debugging
-void gmskframesync_debug_enable(gmskframesync _q);
-void gmskframesync_debug_disable(gmskframesync _q);
-void gmskframesync_debug_print(gmskframesync _q, const char * _filename);
+int gmskframesync_debug_enable(gmskframesync _q);
+int gmskframesync_debug_disable(gmskframesync _q);
+int gmskframesync_debug_print(gmskframesync _q, const char * _filename);
 
 
 //
