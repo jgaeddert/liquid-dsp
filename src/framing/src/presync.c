@@ -68,13 +68,10 @@ PRESYNC() PRESYNC(_create)(TC *         _v,
                            unsigned int _m)
 {
     // validate input
-    if (_n < 1) {
-        fprintf(stderr, "error: bpresync_%s_create(), invalid input length\n", EXTENSION_FULL);
-        exit(1);
-    } else if (_m == 0) {
-        fprintf(stderr, "error: bpresync_%s_create(), number of correlators must be at least 1\n", EXTENSION_FULL);
-        exit(1);
-    }
+    if (_n < 1)
+        return liquid_error_config("bpresync_%s_create(), invalid input length", EXTENSION_FULL);
+    if (_m == 0)
+        return liquid_error_config("bpresync_%s_create(), number of correlators must be at least 1", EXTENSION_FULL);
 
     // allocate main object memory and initialize
     PRESYNC() _q = (PRESYNC()) malloc(sizeof(struct PRESYNC(_s)));
@@ -227,10 +224,8 @@ int PRESYNC(_correlate)(PRESYNC()       _q,
                         float complex * _rxy1)
 {
     // validate input...
-    if (_id >= _q->m) {
-        fprintf(stderr,"error: bpresync_%s_correlatex(), invalid id\n", EXTENSION_FULL);
-        exit(1);
-    }
+    if (_id >= _q->m)
+        return liquid_error(LIQUID_EICONFIG,"bpresync_%s_correlatex(), invalid id", EXTENSION_FULL);
 
     // get buffer pointers
     T * ri = NULL;
