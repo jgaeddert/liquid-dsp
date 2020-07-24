@@ -5044,16 +5044,16 @@ typedef struct fskframegen_s * fskframegen;
 
 // create M-FSK frame generator
 fskframegen fskframegen_create();
-void fskframegen_destroy (fskframegen     _fg);
-void fskframegen_print   (fskframegen     _fg);
-void fskframegen_reset   (fskframegen     _fg);
-void fskframegen_assemble(fskframegen     _fg,
-                          unsigned char * _header,
-                          unsigned char * _payload,
-                          unsigned int    _payload_len,
-                          crc_scheme      _check,
-                          fec_scheme      _fec0,
-                          fec_scheme      _fec1);
+int fskframegen_destroy (fskframegen     _fg);
+int fskframegen_print   (fskframegen     _fg);
+int fskframegen_reset   (fskframegen     _fg);
+int fskframegen_assemble(fskframegen     _fg,
+                         unsigned char * _header,
+                         unsigned char * _payload,
+                         unsigned int    _payload_len,
+                         crc_scheme      _check,
+                         fec_scheme      _fec0,
+                         fec_scheme      _fec1);
 unsigned int fskframegen_getframelen(fskframegen _q);
 int fskframegen_write_samples(fskframegen            _fg,
                               liquid_float_complex * _buf,
@@ -5071,19 +5071,19 @@ typedef struct fskframesync_s * fskframesync;
 //  _userdata   :   user data pointer passed to callback function
 fskframesync fskframesync_create(framesync_callback _callback,
                                  void *             _userdata);
-void fskframesync_destroy(fskframesync _q);
-void fskframesync_print  (fskframesync _q);
-void fskframesync_reset  (fskframesync _q);
-void fskframesync_execute(fskframesync         _q,
-                          liquid_float_complex _x);
-void fskframesync_execute_block(fskframesync           _q,
-                                liquid_float_complex * _x,
-                                unsigned int           _n);
+int fskframesync_destroy(fskframesync _q);
+int fskframesync_print  (fskframesync _q);
+int fskframesync_reset  (fskframesync _q);
+int fskframesync_execute(fskframesync         _q,
+                         liquid_float_complex _x);
+int fskframesync_execute_block(fskframesync           _q,
+                               liquid_float_complex * _x,
+                               unsigned int           _n);
 
 // debugging
-void fskframesync_debug_enable (fskframesync _q);
-void fskframesync_debug_disable(fskframesync _q);
-void fskframesync_debug_export (fskframesync _q, const char * _filename);
+int fskframesync_debug_enable (fskframesync _q);
+int fskframesync_debug_disable(fskframesync _q);
+int fskframesync_debug_export (fskframesync _q, const char * _filename);
 
 
 //
