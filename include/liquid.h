@@ -1558,17 +1558,17 @@ SPGRAM() SPGRAM(_create)(unsigned int _nfft,                                \
 SPGRAM() SPGRAM(_create_default)(unsigned int _nfft);                       \
                                                                             \
 /* Destroy spgram object, freeing all internally-allocated memory       */  \
-void SPGRAM(_destroy)(SPGRAM() _q);                                         \
+int SPGRAM(_destroy)(SPGRAM() _q);                                          \
                                                                             \
 /* Clears the internal state of the object, but not the internal buffer */  \
-void SPGRAM(_clear)(SPGRAM() _q);                                           \
+int SPGRAM(_clear)(SPGRAM() _q);                                            \
                                                                             \
 /* Reset the object to its original state completely. This effectively  */  \
 /* executes the clear() method and then resets the internal buffer      */  \
-void SPGRAM(_reset)(SPGRAM() _q);                                           \
+int SPGRAM(_reset)(SPGRAM() _q);                                            \
                                                                             \
 /* Print internal state of the object to stdout                         */  \
-void SPGRAM(_print)(SPGRAM() _q);                                           \
+int SPGRAM(_print)(SPGRAM() _q);                                            \
                                                                             \
 /* Set the filter bandwidth for accumulating independent transform      */  \
 /* squared magnitude outputs.                                           */  \
@@ -1631,24 +1631,24 @@ unsigned long long int SPGRAM(_get_num_transforms_total)(SPGRAM() _q);      \
 /* as necessary.                                                        */  \
 /*  _q  : spgram object                                                 */  \
 /*  _x  : input sample                                                  */  \
-void SPGRAM(_push)(SPGRAM() _q,                                             \
-                   TI       _x);                                            \
+int SPGRAM(_push)(SPGRAM() _q,                                              \
+                  TI       _x);                                             \
                                                                             \
 /* Write a block of samples to the object, executing internal           */  \
 /* transform as necessary.                                              */  \
 /*  _q  : spgram object                                                 */  \
 /*  _x  : input buffer [size: _n x 1]                                   */  \
 /*  _n  : input buffer length                                           */  \
-void SPGRAM(_write)(SPGRAM()     _q,                                        \
-                    TI *         _x,                                        \
-                    unsigned int _n);                                       \
+int SPGRAM(_write)(SPGRAM()     _q,                                         \
+                   TI *         _x,                                         \
+                   unsigned int _n);                                        \
                                                                             \
 /* Compute spectral periodogram output (fft-shifted values in dB) from  */  \
 /* current buffer contents                                              */  \
 /*  _q  : spgram object                                                 */  \
 /*  _X  : output spectrum (dB), [size: _nfft x 1]                       */  \
-void SPGRAM(_get_psd)(SPGRAM() _q,                                          \
-                      T *      _X);                                         \
+int SPGRAM(_get_psd)(SPGRAM() _q,                                           \
+                     T *      _X);                                          \
                                                                             \
 /* Export stand-alone gnuplot file for plotting output spectrum,        */  \
 /* returning 0 on sucess, anything other than 0 for failure             */  \
@@ -1663,10 +1663,10 @@ int SPGRAM(_export_gnuplot)(SPGRAM()     _q,                                \
 /*  _x      : input signal [size: _n x 1]                               */  \
 /*  _n      : input signal length                                       */  \
 /*  _psd    : output spectrum, [size: _nfft x 1]                        */  \
-void SPGRAM(_estimate_psd)(unsigned int _nfft,                              \
-                           TI *         _x,                                 \
-                           unsigned int _n,                                 \
-                           T *          _psd);                              \
+int SPGRAM(_estimate_psd)(unsigned int _nfft,                               \
+                          TI *         _x,                                  \
+                          unsigned int _n,                                  \
+                          T *          _psd);                               \
 
 LIQUID_SPGRAM_DEFINE_API(LIQUID_SPGRAM_MANGLE_CFLOAT,
                          float,
@@ -1801,17 +1801,17 @@ SPWATERFALL() SPWATERFALL(_create_default)(unsigned int _nfft,              \
                                            unsigned int _time);             \
                                                                             \
 /* Destroy spwaterfall object, freeing all internally-allocated memory  */  \
-void SPWATERFALL(_destroy)(SPWATERFALL() _q);                               \
+int SPWATERFALL(_destroy)(SPWATERFALL() _q);                                \
                                                                             \
 /* Clears the internal state of the object, but not the internal buffer */  \
-void SPWATERFALL(_clear)(SPWATERFALL() _q);                                 \
+int SPWATERFALL(_clear)(SPWATERFALL() _q);                                  \
                                                                             \
 /* Reset the object to its original state completely. This effectively  */  \
 /* executes the clear() method and then resets the internal buffer      */  \
-void SPWATERFALL(_reset)(SPWATERFALL() _q);                                 \
+int SPWATERFALL(_reset)(SPWATERFALL() _q);                                  \
                                                                             \
 /* Print internal state of the object to stdout                         */  \
-void SPWATERFALL(_print)(SPWATERFALL() _q);                                 \
+int SPWATERFALL(_print)(SPWATERFALL() _q);                                  \
                                                                             \
 /* Get number of samples processed since object was created             */  \
 uint64_t SPWATERFALL(_get_num_samples_total)(SPWATERFALL() _q);             \
@@ -1858,17 +1858,17 @@ int SPWATERFALL(_set_commands)(SPWATERFALL() _q,                            \
 /* as necessary.                                                        */  \
 /*  _q  : spwaterfall object                                            */  \
 /*  _x  : input sample                                                  */  \
-void SPWATERFALL(_push)(SPWATERFALL() _q,                                   \
-                        TI            _x);                                  \
+int SPWATERFALL(_push)(SPWATERFALL() _q,                                    \
+                       TI            _x);                                   \
                                                                             \
 /* Write a block of samples to the object, executing internal           */  \
 /* transform as necessary.                                              */  \
 /*  _q  : spwaterfall object                                            */  \
 /*  _x  : input buffer, [size: _n x 1]                                  */  \
 /*  _n  : input buffer length                                           */  \
-void SPWATERFALL(_write)(SPWATERFALL() _q,                                  \
-                         TI *          _x,                                  \
-                         unsigned int  _n);                                 \
+int SPWATERFALL(_write)(SPWATERFALL() _q,                                   \
+                        TI *          _x,                                   \
+                        unsigned int  _n);                                  \
                                                                             \
 /* Export set of files for plotting                                     */  \
 /*  _q    : spwaterfall object                                          */  \

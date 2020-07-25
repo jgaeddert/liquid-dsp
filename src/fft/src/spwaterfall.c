@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2019 Joseph Gaeddert
+ * Copyright (c) 2007 - 2020 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -57,10 +57,10 @@ struct SPWATERFALL(_s) {
 //
 
 // compute spectral periodogram output (complex values) from internal periodogram object
-void SPWATERFALL(_step)(SPWATERFALL() _q);
+int SPWATERFALL(_step)(SPWATERFALL() _q);
 
 // consolidate buffer by taking log-average of two separate spectral estimates in time
-void SPWATERFALL(_consolidate_buffer)(SPWATERFALL() _q);
+int SPWATERFALL(_consolidate_buffer)(SPWATERFALL() _q);
 
 // export files
 int SPWATERFALL(_export_bin)(SPWATERFALL() _q, const char * _base);
@@ -78,25 +78,18 @@ SPWATERFALL() SPWATERFALL(_create)(unsigned int _nfft,
                                    unsigned int _time)
 {
     // validate input
-    if (_nfft < 2) {
-        fprintf(stderr,"error: spwaterfall%s_create(), fft size must be at least 2\n", EXTENSION);
-        exit(1);
-    } else if (_window_len > _nfft) {
-        fprintf(stderr,"error: spwaterfall%s_create(), window size cannot exceed fft size\n", EXTENSION);
-        exit(1);
-    } else if (_window_len == 0) {
-        fprintf(stderr,"error: spwaterfall%s_create(), window size must be greater than zero\n", EXTENSION);
-        exit(1);
-    } else if (_wtype == LIQUID_WINDOW_KBD && _window_len % 2) {
-        fprintf(stderr,"error: spwaterfall%s_create(), KBD window length must be even\n", EXTENSION);
-        exit(1);
-    } else if (_delay == 0) {
-        fprintf(stderr,"error: spwaterfall%s_create(), delay must be greater than 0\n", EXTENSION);
-        exit(1);
-    } else if (_time == 0) {
-        fprintf(stderr,"error: spwaterfall%s_create(), time must be greater than 0\n", EXTENSION);
-        exit(1);
-    }
+    if (_nfft < 2)
+        return liquid_error_config("spwaterfall%s_create(), fft size must be at least 2", EXTENSION);
+    if (_window_len > _nfft)
+        return liquid_error_config("spwaterfall%s_create(), window size cannot exceed fft size", EXTENSION);
+    if (_window_len == 0)
+        return liquid_error_config("spwaterfall%s_create(), window size must be greater than zero", EXTENSION);
+    if (_wtype == LIQUID_WINDOW_KBD && _window_len % 2)
+        return liquid_error_config("spwaterfall%s_create(), KBD window length must be even", EXTENSION);
+    if (_delay == 0)
+        return liquid_error_config("spwaterfall%s_create(), delay must be greater than 0", EXTENSION);
+    if (_time == 0)
+        return liquid_error_config("spwaterfall%s_create(), time must be greater than 0", EXTENSION);
 
     // allocate memory for main object
     SPWATERFALL() q = (SPWATERFALL()) malloc(sizeof(struct SPWATERFALL(_s)));
@@ -131,19 +124,16 @@ SPWATERFALL() SPWATERFALL(_create_default)(unsigned int _nfft,
                                            unsigned int _time)
 {
     // validate input
-    if (_nfft < 2) {
-        fprintf(stderr,"error: spwaterfall%s_create_default(), fft size must be at least 2\n", EXTENSION);
-        exit(1);
-    } else if (_time < 2) {
-        fprintf(stderr,"error: spwaterfall%s_create_default(), fft size must be at least 2\n", EXTENSION);
-        exit(1);
-    }
+    if (_nfft < 2)
+        return liquid_error_config("spwaterfall%s_create_default(), fft size must be at least 2", EXTENSION);
+    if (_time < 2)
+        return liquid_error_config("spwaterfall%s_create_default(), fft size must be at least 2", EXTENSION);
 
     return SPWATERFALL(_create)(_nfft, LIQUID_WINDOW_KAISER, _nfft/2, _nfft/4, _time);
 }
 
 // destroy spwaterfall object
-void SPWATERFALL(_destroy)(SPWATERFALL() _q)
+int SPWATERFALL(_destroy)(SPWATERFALL() _q)
 {
     // free allocated memory
     free(_q->psd);
@@ -154,29 +144,33 @@ void SPWATERFALL(_destroy)(SPWATERFALL() _q)
 
     // free main object
     free(_q);
+    return LIQUID_OK;
 }
 
 // clears the internal state of the spwaterfall object, but not
 // the internal buffer
-void SPWATERFALL(_clear)(SPWATERFALL() _q)
+int SPWATERFALL(_clear)(SPWATERFALL() _q)
 {
     SPGRAM(_clear)(_q->periodogram);
     memset(_q->psd, 0x00, 2*_q->nfft*_q->time*sizeof(T));
     _q->index_time = 0;
+    return LIQUID_OK;
 }
 
 // reset the spwaterfall object to its original state completely
-void SPWATERFALL(_reset)(SPWATERFALL() _q)
+int SPWATERFALL(_reset)(SPWATERFALL() _q)
 {
     SPWATERFALL(_clear)(_q);
     SPGRAM(_reset)(_q->periodogram);
     _q->rollover = 1;
+    return LIQUID_OK;
 }
 
 // prints the spwaterfall object's parameters
-void SPWATERFALL(_print)(SPWATERFALL() _q)
+int SPWATERFALL(_print)(SPWATERFALL() _q)
 {
     printf("spwaterfall%s: nfft=%u, time=%u\n", EXTENSION, _q->nfft, _q->time);
+    return LIQUID_OK;
 }
 
 // Get number of samples processed since object was created
@@ -208,7 +202,7 @@ int SPWATERFALL(_set_freq)(SPWATERFALL() _q,
                            float         _freq)
 {
     _q->frequency = _freq;
-    return 0;
+    return LIQUID_OK;
 }
 
 // set sample rate
@@ -216,12 +210,11 @@ int SPWATERFALL(_set_rate)(SPWATERFALL() _q,
                            float         _rate)
 {
     // validate input
-    if (_rate <= 0.0f) {
-        fprintf(stderr,"error: spwaterfall%s_set_rate(), sample rate must be greater than zero\n", EXTENSION);
-        return -1;
-    }
+    if (_rate <= 0.0f)
+        return liquid_error(LIQUID_EICONFIG,"spwaterfall%s_set_rate(), sample rate must be greater than zero", EXTENSION);
+
     _q->sample_rate = _rate;
-    return 0;
+    return LIQUID_OK;
 }
 
 // set image dimensions
@@ -231,7 +224,7 @@ int SPWATERFALL(_set_dims)(SPWATERFALL() _q,
 {
     _q->width  = _width;
     _q->height = _height;
-    return 0;
+    return LIQUID_OK;
 }
 
 // set image dimensions
@@ -242,46 +235,49 @@ int SPWATERFALL(_set_commands)(SPWATERFALL() _q,
     if (_commands == NULL) {
         free(_q->commands);
         _q->commands = NULL;
-        return 0;
+        return LIQUID_OK;
     }
 
     // sanity check
     unsigned int n = strlen(_commands);
-    if (n > 1<<14) {
-        fprintf(stderr,"error: spwaterfall%s_set_commands(), input string size exceeds reasonable limits\n",EXTENSION);
+    if (n > 1<<14)
         SPWATERFALL(_set_commands)(_q, "# error: input string size limit exceeded");
-        return -1;
-    }
+        return liquid_error(LIQUID_EICONFIG,"spwaterfall%s_set_commands(), input string size exceeds reasonable limits",EXTENSION);
 
     // reallocate memory, copy input, and return
     _q->commands = (char*) realloc(_q->commands, n+1);
     memmove(_q->commands, _commands, n);
     _q->commands[n] = '\0';
-    return 0;
+    return LIQUID_OK;
 }
 
 // push a single sample into the spwaterfall object
 //  _q      :   spwaterfall object
 //  _x      :   input sample
-void SPWATERFALL(_push)(SPWATERFALL() _q,
-                        TI            _x)
+int SPWATERFALL(_push)(SPWATERFALL() _q,
+                       TI            _x)
 {
-    SPGRAM(_push)(_q->periodogram, _x);
-    SPWATERFALL(_step)(_q);
+    if (SPGRAM(_push)(_q->periodogram, _x))
+        return liquid_error(LIQUID_EINT,"spwaterfall%s_push(), could not push to internal spgram object",EXTENSION);
+    if (SPWATERFALL(_step)(_q))
+        return liquid_error(LIQUID_EINT,"spwaterfall%s_push(), could not step internal state",EXTENSION);
+
+    return LIQUID_OK;
 }
 
 // write a block of samples to the spwaterfall object
 //  _q      :   spwaterfall object
 //  _x      :   input buffer [size: _n x 1]
 //  _n      :   input buffer length
-void SPWATERFALL(_write)(SPWATERFALL() _q,
-                         TI *          _x,
-                         unsigned int  _n)
+int SPWATERFALL(_write)(SPWATERFALL() _q,
+                        TI *          _x,
+                        unsigned int  _n)
 {
     // TODO: be smarter about how to write and execute samples
     unsigned int i;
     for (i=0; i<_n; i++)
         SPWATERFALL(_push)(_q, _x[i]);
+    return LIQUID_OK;
 }
 
 // export output files
@@ -290,14 +286,16 @@ void SPWATERFALL(_write)(SPWATERFALL() _q,
 int SPWATERFALL(_export)(SPWATERFALL() _q,
                          const char *  _base)
 {
-    return
-    SPWATERFALL(_export_bin)(_q, _base) +
-    SPWATERFALL(_export_gnu)(_q, _base);
+    if (SPWATERFALL(_export_bin)(_q, _base))
+        return liquid_error(LIQUID_EIO,"spwaterfall%s_export(), could not export binary file to '%s.bin'",EXTENSION,_base);
+    if (SPWATERFALL(_export_gnu)(_q, _base))
+        return liquid_error(LIQUID_EIO,"spwaterfall%s_export(), could not export gnuplot file to '%s.gnu'",EXTENSION,_base);
+    return LIQUID_OK;
 }
 
 // compute spectral periodogram output from current buffer contents
 //  _q : spwaterfall object
-void SPWATERFALL(_step)(SPWATERFALL() _q)
+int SPWATERFALL(_step)(SPWATERFALL() _q)
 {
     // determine if we need to extract PSD estimate from periodogram
     if (SPGRAM(_get_num_transforms)(_q->periodogram) >= _q->rollover) {
@@ -316,11 +314,12 @@ void SPWATERFALL(_step)(SPWATERFALL() _q)
         if (_q->index_time == 2*_q->time)
             SPWATERFALL(_consolidate_buffer)(_q);
     }
+    return LIQUID_OK;
 }
 
 // consolidate buffer by taking log-average of two separate spectral estimates in time
 //  _q : spwaterfall object
-void SPWATERFALL(_consolidate_buffer)(SPWATERFALL() _q)
+int SPWATERFALL(_consolidate_buffer)(SPWATERFALL() _q)
 {
     // assert(_q->index_time == 2*_q->time);
     //printf("consolidating... (rollover = %10u, total samples : %16llu, index : %u)\n",
@@ -343,6 +342,7 @@ void SPWATERFALL(_consolidate_buffer)(SPWATERFALL() _q)
 
     // update rollover counter
     _q->rollover *= 2;
+    return LIQUID_OK;
 }
 
 // export gnuplot file
@@ -359,7 +359,7 @@ int SPWATERFALL(_export_bin)(SPWATERFALL() _q,
     // open output file for writing
     FILE * fid = fopen(filename,"w");
     if (fid == NULL) {
-        fprintf(stderr,"error: spwaterfall%s_export_bin(), could not open '%s' for writing\n",
+        liquid_error(LIQUID_EICONFIG,"spwaterfall%s_export_bin(), could not open '%s' for writing",
                 EXTENSION, filename);
         return -1;
     }
@@ -386,7 +386,7 @@ int SPWATERFALL(_export_bin)(SPWATERFALL() _q,
     // close it up
     fclose(fid);
     //printf("results written to %s\n", filename);
-    return 0;
+    return LIQUID_OK;
 }
 
 // export gnuplot file
@@ -402,11 +402,8 @@ int SPWATERFALL(_export_gnu)(SPWATERFALL() _q,
 
     // open output file for writing
     FILE * fid = fopen(filename,"w");
-    if (fid == NULL) {
-        fprintf(stderr,"error: spwaterfall%s_export_gnu(), could not open '%s' for writing\n",
-                EXTENSION, filename);
-        return -1;
-    }
+    if (fid == NULL)
+        return liquid_error(LIQUID_EICONFIG,"spwaterfall%s_export_gnu(), could not open '%s' for writing",EXTENSION,filename);
     
     // scale to thousands, millions, billions (etc.) automatically
     uint64_t total_samples = SPGRAM(_get_num_samples_total)(_q->periodogram);
@@ -487,6 +484,6 @@ int SPWATERFALL(_export_gnu)(SPWATERFALL() _q,
     printf("rollover         : %u\n", _q->rollover);
     printf("total transforms : %llu\n", SPGRAM(_get_num_transforms_total)(_q->periodogram));
 #endif
-    return 0;
+    return LIQUID_OK;
 }
 
