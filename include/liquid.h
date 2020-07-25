@@ -898,13 +898,13 @@ EQLMS() EQLMS(_recreate)(EQLMS()      _q,                                   \
                          unsigned int _h_len);                              \
                                                                             \
 /* Destroy equalizer object, freeing all internal memory                */  \
-void EQLMS(_destroy)(EQLMS() _q);                                           \
+int EQLMS(_destroy)(EQLMS() _q);                                            \
                                                                             \
 /* Reset equalizer object, clearing internal state                      */  \
-void EQLMS(_reset)(EQLMS() _q);                                             \
+int EQLMS(_reset)(EQLMS() _q);                                              \
                                                                             \
 /* Print equalizer internal state                                       */  \
-void EQLMS(_print)(EQLMS() _q);                                             \
+int EQLMS(_print)(EQLMS() _q);                                              \
                                                                             \
 /* Get equalizer learning rate                                          */  \
 float EQLMS(_get_bw)(EQLMS() _q);                                           \
@@ -912,28 +912,28 @@ float EQLMS(_get_bw)(EQLMS() _q);                                           \
 /* Set equalizer learning rate                                          */  \
 /*  _q      :   equalizer object                                        */  \
 /*  _lambda :   learning rate, _lambda > 0                              */  \
-void  EQLMS(_set_bw)(EQLMS() _q,                                            \
-                     float   _lambda);                                      \
+int EQLMS(_set_bw)(EQLMS() _q,                                              \
+                   float   _lambda);                                        \
                                                                             \
 /* Push sample into equalizer internal buffer                           */  \
 /*  _q      :   equalizer object                                        */  \
 /*  _x      :   input sample                                            */  \
-void EQLMS(_push)(EQLMS() _q,                                               \
-                  T       _x);                                              \
+int EQLMS(_push)(EQLMS() _q,                                                \
+                 T       _x);                                               \
                                                                             \
 /* Push block of samples into internal buffer of equalizer object       */  \
 /*  _q      :   equalizer object                                        */  \
 /*  _x      :   input sample array, [size: _n x 1]                      */  \
 /*  _n      :   input sample array length                               */  \
-void EQLMS(_push_block)(EQLMS()      _q,                                    \
-                        T *          _x,                                    \
-                        unsigned int _n);                                   \
+int EQLMS(_push_block)(EQLMS()      _q,                                     \
+                       T *          _x,                                     \
+                       unsigned int _n);                                    \
                                                                             \
 /* Execute internal dot product and return result                       */  \
 /*  _q      :   equalizer object                                        */  \
 /*  _y      :   output sample                                           */  \
-void EQLMS(_execute)(EQLMS() _q,                                            \
-                     T *     _y);                                           \
+int EQLMS(_execute)(EQLMS() _q,                                             \
+                    T *     _y);                                            \
                                                                             \
 /* Execute equalizer with block of samples using constant               */  \
 /* modulus algorithm, operating on a decimation rate of _k              */  \
@@ -943,31 +943,31 @@ void EQLMS(_execute)(EQLMS() _q,                                            \
 /*  _x      :   input sample array [size: _n x 1]                       */  \
 /*  _n      :   input sample array length                               */  \
 /*  _y      :   output sample array [size: _n x 1]                      */  \
-void EQLMS(_execute_block)(EQLMS()      _q,                                 \
-                           unsigned int _k,                                 \
-                           T *          _x,                                 \
-                           unsigned int _n,                                 \
-                           T *          _y);                                \
+int EQLMS(_execute_block)(EQLMS()      _q,                                  \
+                          unsigned int _k,                                  \
+                          T *          _x,                                  \
+                          unsigned int _n,                                  \
+                          T *          _y);                                 \
                                                                             \
 /* Step through one cycle of equalizer training                         */  \
 /*  _q      :   equalizer object                                        */  \
 /*  _d      :   desired output                                          */  \
 /*  _d_hat  :   actual output                                           */  \
-void EQLMS(_step)(EQLMS() _q,                                               \
-                  T       _d,                                               \
-                  T       _d_hat);                                          \
+int EQLMS(_step)(EQLMS() _q,                                                \
+                 T       _d,                                                \
+                 T       _d_hat);                                           \
                                                                             \
 /* Step through one cycle of equalizer training (blind)                 */  \
 /*  _q      :   equalizer object                                        */  \
 /*  _d_hat  :   actual output                                           */  \
-void EQLMS(_step_blind)(EQLMS() _q,                                         \
-                        T       _d_hat);                                    \
+int EQLMS(_step_blind)(EQLMS() _q,                                          \
+                       T       _d_hat);                                     \
                                                                             \
 /* Get equalizer's internal coefficients                                */  \
 /*  _q      :   equalizer object                                        */  \
 /*  _w      :   weights, [size: _p x 1]                                 */  \
-void EQLMS(_get_weights)(EQLMS() _q,                                        \
-                         T *     _w);                                       \
+int EQLMS(_get_weights)(EQLMS() _q,                                         \
+                        T *     _w);                                        \
                                                                             \
 /* Train equalizer object on group of samples                           */  \
 /*  _q      :   equalizer object                                        */  \
@@ -975,11 +975,11 @@ void EQLMS(_get_weights)(EQLMS() _q,                                        \
 /*  _x      :   received sample vector,[size: _n x 1]                   */  \
 /*  _d      :   desired output vector, [size: _n x 1]                   */  \
 /*  _n      :   input, output vector length                             */  \
-void EQLMS(_train)(EQLMS()      _q,                                         \
-                   T *          _w,                                         \
-                   T *          _x,                                         \
-                   T *          _d,                                         \
-                   unsigned int _n);                                        \
+int EQLMS(_train)(EQLMS()      _q,                                          \
+                  T *          _w,                                          \
+                  T *          _x,                                          \
+                  T *          _d,                                          \
+                  unsigned int _n);                                         \
 
 LIQUID_EQLMS_DEFINE_API(LIQUID_EQLMS_MANGLE_RRRF, float)
 LIQUID_EQLMS_DEFINE_API(LIQUID_EQLMS_MANGLE_CCCF, liquid_float_complex)
