@@ -7559,22 +7559,22 @@ FIRPFBCH2() FIRPFBCH2(_create_kaiser)(int          _type,       \
                                       float        _As);        \
                                                                 \
 /* destroy firpfbch2 object, freeing internal memory        */  \
-void FIRPFBCH2(_destroy)(FIRPFBCH2() _q);                       \
+int FIRPFBCH2(_destroy)(FIRPFBCH2() _q);                        \
                                                                 \
 /* reset firpfbch2 object internals                         */  \
-void FIRPFBCH2(_reset)(FIRPFBCH2() _q);                         \
+int FIRPFBCH2(_reset)(FIRPFBCH2() _q);                          \
                                                                 \
 /* print firpfbch2 object internals                         */  \
-void FIRPFBCH2(_print)(FIRPFBCH2() _q);                         \
+int FIRPFBCH2(_print)(FIRPFBCH2() _q);                          \
                                                                 \
 /* execute filterbank channelizer                           */  \
 /* LIQUID_ANALYZER:     input: M/2, output: M               */  \
 /* LIQUID_SYNTHESIZER:  input: M,   output: M/2             */  \
 /*  _x      :   channelizer input                           */  \
 /*  _y      :   channelizer output                          */  \
-void FIRPFBCH2(_execute)(FIRPFBCH2() _q,                        \
-                         TI *        _x,                        \
-                         TO *        _y);                       \
+int FIRPFBCH2(_execute)(FIRPFBCH2() _q,                         \
+                        TI *        _x,                         \
+                        TO *        _y);                        \
 
 
 LIQUID_FIRPFBCH2_DEFINE_API(LIQUID_FIRPFBCH2_MANGLE_CRCF,
