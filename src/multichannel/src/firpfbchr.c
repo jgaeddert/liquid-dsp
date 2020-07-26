@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2019 Joseph Gaeddert
+ * Copyright (c) 2007 - 2020 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -67,13 +67,10 @@ FIRPFBCHR() FIRPFBCHR(_create)(unsigned int _M,
                                TC *         _h)
 {
     // validate input
-    if (_M < 2 || _M % 2) {
-        fprintf(stderr,"error: firpfbchr_%s_create(), number of channels must be greater than 2 and even\n", EXTENSION_FULL);
-        exit(1);
-    } else if (_m < 1) {
-        fprintf(stderr,"error: firpfbchr_%s_create(), filter semi-length must be at least 1\n", EXTENSION_FULL);
-        exit(1);
-    }
+    if (_M < 2 || _M % 2)
+        return liquid_error_config("firpfbchr_%s_create(), number of channels must be greater than 2 and even", EXTENSION_FULL);
+    if (_m < 1)
+        return liquid_error_config("firpfbchr_%s_create(), filter semi-length must be at least 1", EXTENSION_FULL);
 
     // create object
     FIRPFBCHR() q = (FIRPFBCHR()) malloc(sizeof(struct FIRPFBCHR(_s)));
@@ -130,13 +127,10 @@ FIRPFBCHR() FIRPFBCHR(_create_kaiser)(unsigned int _M,
                                       float        _As)
 {
     // validate input
-    if (_M < 2 || _M % 2) {
-        fprintf(stderr,"error: firpfbchr_%s_create_kaiser(), number of channels must be greater than 2 and even\n", EXTENSION_FULL);
-        exit(1);
-    } else if (_m < 1) {
-        fprintf(stderr,"error: firpfbchr_%s_create_kaiser(), filter semi-length must be at least 1\n", EXTENSION_FULL);
-        exit(1);
-    }
+    if (_M < 2 || _M % 2)
+        return liquid_error_config("firpfbchr_%s_create_kaiser(), number of channels must be greater than 2 and even", EXTENSION_FULL);
+    if (_m < 1)
+        return liquid_error_config("firpfbchr_%s_create_kaiser(), filter semi-length must be at least 1", EXTENSION_FULL);
 
     // design prototype filter
     unsigned int h_len = 2*_M*_m+1;
@@ -171,7 +165,7 @@ FIRPFBCHR() FIRPFBCHR(_create_kaiser)(unsigned int _M,
 }
 
 // destroy firpfbchr object, freeing internal memory
-void FIRPFBCHR(_destroy)(FIRPFBCHR() _q)
+int FIRPFBCHR(_destroy)(FIRPFBCHR() _q)
 {
     unsigned int i;
 
@@ -192,10 +186,11 @@ void FIRPFBCHR(_destroy)(FIRPFBCHR() _q)
 
     // free main object memory
     free(_q);
+    return LIQUID_OK;
 }
 
 // reset firpfbchr object internals
-void FIRPFBCHR(_reset)(FIRPFBCHR() _q)
+int FIRPFBCHR(_reset)(FIRPFBCHR() _q)
 {
     unsigned int i;
 
@@ -205,16 +200,18 @@ void FIRPFBCHR(_reset)(FIRPFBCHR() _q)
 
     // reset filter/buffer alignment flag
     _q->base_index = _q->M - 1;
+    return LIQUID_OK;
 }
 
 // print firpfbchr object internals
-void FIRPFBCHR(_print)(FIRPFBCHR() _q)
+int FIRPFBCHR(_print)(FIRPFBCHR() _q)
 {
     printf("firpfbchr_%s:\n", EXTENSION_FULL);
     printf("    channels    :   %u\n", _q->M);
     printf("    decim (P)   :   %u\n", _q->P);
     printf("    h_len       :   %u\n", _q->h_len);
     printf("    semi-length :   %u\n", _q->m);
+    return LIQUID_OK;
 }
 
 // get number of output channels to channelizer
@@ -238,8 +235,8 @@ unsigned int FIRPFBCHR(_get_m)(FIRPFBCHR() _q)
 // push samples into filter bank
 //  _q      : channelizer object
 //  _x      : channelizer input, [size: P x 1]
-void FIRPFBCHR(_push)(FIRPFBCHR() _q,
-                      TI *        _x)
+int FIRPFBCHR(_push)(FIRPFBCHR() _q,
+                     TI *        _x)
 {
     // load buffers in blocks of _P in the reverse direction
     unsigned int i;
@@ -250,13 +247,14 @@ void FIRPFBCHR(_push)(FIRPFBCHR() _q,
         // decrement base index, wrapping around
         _q->base_index = _q->base_index == 0 ? _q->M-1 : _q->base_index-1;
     }
+    return LIQUID_OK;
 }
 
 // execute filterbank channelizer (synthesizer)
 //  _q      : channelizer object
 //  _y      : channelizer output, [size: M x 1]
-void FIRPFBCHR(_execute)(FIRPFBCHR() _q,
-                         TO *        _y)
+int FIRPFBCHR(_execute)(FIRPFBCHR() _q,
+                        TO *        _y)
 {
     unsigned int i;
 
@@ -280,5 +278,6 @@ void FIRPFBCHR(_execute)(FIRPFBCHR() _q,
     float g = 1.0f / (float)(_q->M);
     for (i=0; i<_q->M; i++)
         _y[i] = _q->x[i] * g;
+    return LIQUID_OK;
 }
 

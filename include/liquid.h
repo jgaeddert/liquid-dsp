@@ -7615,13 +7615,13 @@ FIRPFBCHR() FIRPFBCHR(_create_kaiser)(unsigned int _M,                      \
                                       float        _As);                    \
                                                                             \
 /* destroy firpfbchr object, freeing internal memory                    */  \
-void FIRPFBCHR(_destroy)(FIRPFBCHR() _q);                                   \
+int FIRPFBCHR(_destroy)(FIRPFBCHR() _q);                                    \
                                                                             \
 /* reset firpfbchr object internal state and buffers                    */  \
-void FIRPFBCHR(_reset)(FIRPFBCHR() _q);                                     \
+int FIRPFBCHR(_reset)(FIRPFBCHR() _q);                                      \
                                                                             \
 /* print firpfbchr object internals to stdout                           */  \
-void FIRPFBCHR(_print)(FIRPFBCHR() _q);                                     \
+int FIRPFBCHR(_print)(FIRPFBCHR() _q);                                      \
                                                                             \
 /* get number of output channels to channelizer                         */  \
 unsigned int FIRPFBCHR(_get_M)(FIRPFBCHR() _q);                             \
@@ -7635,15 +7635,15 @@ unsigned int FIRPFBCHR(_get_m)(FIRPFBCHR() _q);                             \
 /* push buffer of samples into filter bank                              */  \
 /*  _q      : channelizer object                                        */  \
 /*  _x      : channelizer input [size: P x 1]                           */  \
-void FIRPFBCHR(_push)(FIRPFBCHR() _q,                                       \
-                      TI *        _x);                                      \
+int FIRPFBCHR(_push)(FIRPFBCHR() _q,                                        \
+                     TI *        _x);                                       \
                                                                             \
 /* execute filterbank channelizer, writing complex baseband samples for */  \
 /* each channel into output array                                       */  \
 /*  _q      : channelizer object                                        */  \
 /*  _y      : channelizer output [size: _M x 1]                         */  \
-void FIRPFBCHR(_execute)(FIRPFBCHR() _q,                                    \
-                         TO *        _y);                                   \
+int FIRPFBCHR(_execute)(FIRPFBCHR() _q,                                     \
+                        TO *        _y);                                    \
 
 
 LIQUID_FIRPFBCHR_DEFINE_API(LIQUID_FIRPFBCHR_MANGLE_CRCF,
