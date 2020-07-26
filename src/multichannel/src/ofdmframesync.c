@@ -494,9 +494,6 @@ int ofdmframesync_execute_seekplcp(ofdmframesync _q)
         printf("    dt      :   %12d\n", dt);
         printf("    timer   :   %12u\n", _q->timer);
 #endif
-        //printf("exiting prematurely\n");
-        //ofdmframesync_destroy(_q);
-        //exit(1);
     }
     return LIQUID_OK;
 }
@@ -703,13 +700,7 @@ int ofdmframesync_execute_S1(ofdmframesync _q)
         for (i=0; i<_q->M; i++)
             _q->R[i] = _q->B[i] / _q->G[i];
 #endif
-
         return LIQUID_OK;
-#if 0
-        printf("exiting prematurely\n");
-        ofdmframesync_destroy(_q);
-        exit(1);
-#endif
     }
 
     // check if we are stuck searching for the S1 symbol
