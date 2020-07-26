@@ -7487,29 +7487,29 @@ FIRPFBCH() FIRPFBCH(_create_rnyquist)(int          _type,       \
                                       int          _ftype);     \
                                                                 \
 /* destroy firpfbch object                                  */  \
-void FIRPFBCH(_destroy)(FIRPFBCH() _q);                         \
+int FIRPFBCH(_destroy)(FIRPFBCH() _q);                          \
                                                                 \
 /* clear/reset firpfbch internal state                      */  \
-void FIRPFBCH(_reset)(FIRPFBCH() _q);                           \
+int FIRPFBCH(_reset)(FIRPFBCH() _q);                            \
                                                                 \
 /* print firpfbch internal parameters to stdout             */  \
-void FIRPFBCH(_print)(FIRPFBCH() _q);                           \
+int FIRPFBCH(_print)(FIRPFBCH() _q);                            \
                                                                 \
 /* execute filterbank as synthesizer on block of samples    */  \
 /*  _q      : filterbank channelizer object                 */  \
 /*  _x      : channelized input, [size: num_channels x 1]   */  \
 /*  _y      : output time series, [size: num_channels x 1]  */  \
-void FIRPFBCH(_synthesizer_execute)(FIRPFBCH() _q,              \
-                                    TI *       _x,              \
-                                    TO *       _y);             \
+int FIRPFBCH(_synthesizer_execute)(FIRPFBCH() _q,               \
+                                   TI *       _x,               \
+                                   TO *       _y);              \
                                                                 \
 /* execute filterbank as analyzer on block of samples       */  \
 /*  _q      : filterbank channelizer object                 */  \
 /*  _x      : input time series, [size: num_channels x 1]   */  \
 /*  _y      : channelized output, [size: num_channels x 1]  */  \
-void FIRPFBCH(_analyzer_execute)(FIRPFBCH() _q,                 \
-                                 TI *       _x,                 \
-                                 TO *       _y);                \
+int FIRPFBCH(_analyzer_execute)(FIRPFBCH() _q,                  \
+                                TI *       _x,                  \
+                                TO *       _y);                 \
 
 
 LIQUID_FIRPFBCH_DEFINE_API(LIQUID_FIRPFBCH_MANGLE_CRCF,
