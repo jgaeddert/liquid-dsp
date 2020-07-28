@@ -82,6 +82,7 @@ void autotest_qpacketmodem_sqam32() { qpacketmodem_modulated(400,LIQUID_CRC_32,L
 void autotest_qpacketmodem_qam64()  { qpacketmodem_modulated(400,LIQUID_CRC_32,LIQUID_FEC_NONE,LIQUID_FEC_NONE, LIQUID_MODEM_QAM64);   }
 void autotest_qpacketmodem_sqam128(){ qpacketmodem_modulated(400,LIQUID_CRC_32,LIQUID_FEC_NONE,LIQUID_FEC_NONE, LIQUID_MODEM_SQAM128); }
 void autotest_qpacketmodem_qam256() { qpacketmodem_modulated(400,LIQUID_CRC_32,LIQUID_FEC_NONE,LIQUID_FEC_NONE, LIQUID_MODEM_QAM256);  }
+void autotest_qpacketmodem_qam512() { qpacketmodem_modulated(400,LIQUID_CRC_32,LIQUID_FEC_NONE,LIQUID_FEC_NONE, LIQUID_MODEM_QAM512);  }
 
 // 
 // AUTOTEST : test un-modulated frame symbols (hard-decision demod)
@@ -115,7 +116,7 @@ void qpacketmodem_unmodulated(unsigned int _payload_len,
     unsigned int frame_len = qpacketmodem_get_frame_len(q);
 
     // allocate memory for frame samples
-    unsigned char frame_syms[frame_len];
+    unsigned int frame_syms[frame_len];
 
     // encode frame symbols
     qpacketmodem_encode_syms(q, payload_tx, frame_syms);
@@ -139,4 +140,4 @@ void autotest_qpacketmodem_unmod_sqam32() { qpacketmodem_unmodulated(400,LIQUID_
 void autotest_qpacketmodem_unmod_qam64()  { qpacketmodem_unmodulated(400,LIQUID_CRC_32,LIQUID_FEC_NONE,LIQUID_FEC_NONE, LIQUID_MODEM_QAM64);   }
 void autotest_qpacketmodem_unmod_sqam128(){ qpacketmodem_unmodulated(400,LIQUID_CRC_32,LIQUID_FEC_NONE,LIQUID_FEC_NONE, LIQUID_MODEM_SQAM128); }
 void autotest_qpacketmodem_unmod_qam256() { qpacketmodem_unmodulated(400,LIQUID_CRC_32,LIQUID_FEC_NONE,LIQUID_FEC_NONE, LIQUID_MODEM_QAM256);  }
-
+void autotest_qpacketmodem_unmod_qam512() { qpacketmodem_unmodulated(400,LIQUID_CRC_32,LIQUID_FEC_NONE,LIQUID_FEC_NONE, LIQUID_MODEM_QAM512);  }

@@ -4573,16 +4573,16 @@ float qpacketmodem_get_demodulator_evm(qpacketmodem _q);
 //  _q          :   qpacketmodem object
 //  _payload    :   unencoded payload bytes
 //  _syms       :   encoded but un-modulated payload symbol indices
-void qpacketmodem_encode_syms(qpacketmodem          _q,
+void qpacketmodem_encode_syms(qpacketmodem    _q,
                               const unsigned char * _payload,
-                              unsigned char *       _syms);
+                              unsigned int  * _syms);
 
 // decode packet from demodulated frame symbol indices (hard-decision decoding)
 //  _q          :   qpacketmodem object
 //  _syms       :   received hard-decision symbol indices [size: frame_len x 1]
 //  _payload    :   recovered decoded payload bytes
 int qpacketmodem_decode_syms(qpacketmodem    _q,
-                             unsigned char * _syms,
+                             unsigned int  * _syms,
                              unsigned char * _payload);
 
 // decode packet from demodulated frame bits (soft-decision decoding)
@@ -6787,10 +6787,10 @@ void smatrixb_vmulf(smatrixb _q,
 //
 
 // Maximum number of allowed bits per symbol
-#define MAX_MOD_BITS_PER_SYMBOL 8
+#define MAX_MOD_BITS_PER_SYMBOL 16
 
 // Modulation schemes available
-#define LIQUID_MODEM_NUM_SCHEMES      (52)
+#define LIQUID_MODEM_NUM_SCHEMES      (60)
 
 typedef enum {
     LIQUID_MODEM_UNKNOWN=0, // Unknown modulation scheme
@@ -6818,6 +6818,10 @@ typedef enum {
     LIQUID_MODEM_QAM8,      LIQUID_MODEM_QAM16,
     LIQUID_MODEM_QAM32,     LIQUID_MODEM_QAM64,
     LIQUID_MODEM_QAM128,    LIQUID_MODEM_QAM256,
+    LIQUID_MODEM_QAM512,    LIQUID_MODEM_QAM1024,
+    LIQUID_MODEM_QAM2048,   LIQUID_MODEM_QAM4096,
+    LIQUID_MODEM_QAM8192,   LIQUID_MODEM_QAM16384,
+    LIQUID_MODEM_QAM32768,  LIQUID_MODEM_QAM65536,
 
     // amplitude phase-shift keying (APSK)
     LIQUID_MODEM_APSK4,
@@ -8500,17 +8504,29 @@ void msequence_set_state(msequence    _ms,
 // MODULE : utility
 //
 
-// pack binary array with symbol(s)
-//  _src        :   source array [size: _n x 1]
-//  _n          :   input source array length
+// pack binary array with a symbol
+//  _src        :   destination array [size: _n x 1]
+//  _n          :   output source array length
 //  _k          :   bit index to write in _src
 //  _b          :   number of bits in input symbol
 //  _sym_in     :   input symbol
-void liquid_pack_array(unsigned char * _src,
+void liquid_pack_array(unsigned char * _dest,
                        unsigned int _n,
                        unsigned int _k,
                        unsigned int _b,
-                       unsigned char _sym_in);
+                       unsigned int _sym_in);
+
+// pack binary array with block of equally-sized symbols
+//  _dest       :   destination array [size: _n x 1]
+//  _n          :   output source array length
+//  _b          :   number of bits in input symbol
+//  _m          :   input symbol array length
+//  _syms_in    :   input symbol array [size: _m x 1]
+void liquid_pack_array_block(unsigned char * _dest,
+                             unsigned int _n,
+                             unsigned int _b,
+                             unsigned int _m,
+                             unsigned int * _syms_in);
 
 // unpack symbols from binary array
 //  _src        :   source array [size: _n x 1]
@@ -8522,7 +8538,19 @@ void liquid_unpack_array(unsigned char * _src,
                          unsigned int _n,
                          unsigned int _k,
                          unsigned int _b,
-                         unsigned char * _sym_out);
+                         unsigned int * _sym_out);
+
+// unpack symbols from binary array
+//  _src        :   source array [size: _n x 1]
+//  _n          :   input source array length
+//  _b          :   number of bits in output symbol
+//  _m          :   output symbol array length
+//  _syms_out   :   output symbol array [size: _m x 1]
+void liquid_unpack_array_block(unsigned char * _src,
+                               unsigned int _n,
+                               unsigned int _b,
+                               unsigned int _m,
+                               unsigned int * _syms_out);
 
 // pack one-bit symbols into bytes (8-bit symbols)
 //  _sym_in             :   input symbols array [size: _sym_in_len x 1]

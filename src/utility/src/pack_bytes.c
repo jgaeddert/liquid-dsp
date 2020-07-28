@@ -31,24 +31,21 @@
 
 #include "liquid.internal.h"
 
-// pack binary array with symbol(s)
-//  _src        :   source array [size: _n x 1]
-//  _n          :   input source array length
-//  _k          :   bit index to write in _src
+// pack binary array with a symbol
+//  _dest       :   destination array [size: _n x 1]
+//  _n          :   output source array length
+//  _k          :   bit index to write in _dest
 //  _b          :   number of bits in input symbol
 //  _sym_in     :   input symbol
-void liquid_pack_array(unsigned char * _src,
+void liquid_pack_array(unsigned char * _dest,
                        unsigned int _n,
                        unsigned int _k,
                        unsigned int _b,
-                       unsigned char _sym_in)
+                       unsigned int _sym_in)
 {
     // validate input
     if (_k >= 8*_n) {
         fprintf(stderr,"error: liquid_pack_array(), bit index exceeds array length\n");
-        exit(1);
-    } else if (_b > 8) {
-        fprintf(stderr,"error: liquid_pack_array(), symbol size cannot exceed 8 bits\n");
         exit(1);
     }
 
@@ -57,74 +54,82 @@ void liquid_pack_array(unsigned char * _src,
     unsigned int b0 = _k - 8*i0;    // bit index
     //printf("base index : %2u, %2u\n", i0, b0);
 
-    // determine if index spans multiple bytes
-    if (b0 + _b > 8) {
-        // compute number of bits in each symbol
-        unsigned int n0 = 8 - b0;
-        unsigned int n1 = _b - n0;
-
-        // generate mask for each symbol
-        unsigned char mask_0 =  0xff >> (8-n0);
-        unsigned char mask_1 = (0xff >> (8-n1)) << (8-n1);
-
-        // shift then mask
-        unsigned char sym_0 = (_sym_in >>    n1 ) & mask_0;
-        unsigned char sym_1 = (_sym_in << (8-n1)) & mask_1;
-
-        // mask and pack first byte
-        _src[i0] &= ~mask_0;        // clear relevant bits
-        _src[i0] |= sym_0;          // set relevant bits
-
-        // mask and pack second byte (if not exceeding array size)
-        if (i0 < _n-1) {
-            _src[i0+1] &= ~mask_1;  // clear relevant bits
-            _src[i0+1] |= sym_1;    // set relevant bits
+    // take chunks of bits from _sym_in until it is depleted
+    // we'll first fill what's left of (8 - b0) and then go one byte at a time
+    while (_b > 0 && i0 < _n) {
+        unsigned int n = 8 - b0;
+        // clamp at the smaller of (8 - b0, _b)
+        if (_b < n) {
+            n = _b;
         }
 
-#if 0
-        printf("  output symbol spans multiple bytes\n");
-        printf("  n0    : %u\n", n0);
-        printf("  n1    : %u\n", n1);
-        printf("  mask0 : 0x%.2x\n", mask_0);
-        printf("  mask1 : 0x%.2x\n", mask_1);
-        printf("  sym 0 : 0x%.2x\n", sym_0);
-        printf("  sym 1 : 0x%.2x\n", sym_1);
-#endif
-    } else {
-        // compute mask
-        unsigned char mask_0 = (0xff >> (8-_b)) << (8-_b-b0);
-        unsigned char sym_0  = (_sym_in << (8-_b-b0)) & mask_0;
+        // build a right-justified 1s mask
+        unsigned char mask = 0xff >> (8-n);
+        // mask out n bits, 1 <= n <= 8. shift right to get the top bits
+        // if _b > (8 - b0) then we take the top (8 - b0) bits of sym
+        // if _b <= (8 - b0) then we take all the bits
+        unsigned char sym = (_sym_in >> (_b - n)) & mask;
 
-        // shift then mask
-        _src[i0] &= ~mask_0;    // clear relevant bits
-        _src[i0] |= sym_0;      // set relevant bits
+        // now move the mask and the masked bits left to accomodate b0
+        mask <<= (8-n-b0);
+        sym <<= (8-n-b0);
+
+        // mask in place
+        _dest[i0] &= ~mask;
+        _dest[i0] |= sym;
 
 #if 0
-        printf("  _b   : %u\n", _b);
-        printf("  b0   : %u\n", b0);
-        printf("  mask : 0x%.2x\n", mask_0);
+        printf("  output symbol byte iteration\n");
+        printf("  n    : %u\n", n);
+        printf("  _b   : %u\n" _b);
+        printf("  mask : 0x%.2x\n", mask);
+        printf("  sym  : 0x%.2x\n", sym);
 #endif
+
+        b0 += n;
+        if (b0 >= 8) {
+            b0 %= 8;
+            i0++;
+        }
+        _b -= n;
     }
 }
+
+// pack binary array with block of equally-sized symbols
+//  _dest       :   destination array [size: _n x 1]
+//  _n          :   output source array length
+//  _b          :   number of bits in input symbol
+//  _m          :   input symbol array length
+//  _syms_in    :   input symbol array [size: _m x 1]
+void liquid_pack_array_block(unsigned char * _dest,
+                             unsigned int _n,
+                             unsigned int _b,
+                             unsigned int _m,
+                             unsigned int * _syms_in)
+{
+    unsigned int k = 0;
+    unsigned int i;
+    for (i = 0; i < _m; i++, k += _b) {
+        liquid_pack_array(_dest, _n, k, _b, _syms_in[i]);
+    }
+}
+
 
 // unpack symbols from binary array
 //  _src        :   source array [size: _n x 1]
 //  _n          :   input source array length
-//  _k          :   bit index to write in _src
+//  _k          :   bit index to read from _src
 //  _b          :   number of bits in output symbol
 //  _sym_out    :   output symbol
 void liquid_unpack_array(unsigned char * _src,
                          unsigned int _n,
                          unsigned int _k,
                          unsigned int _b,
-                         unsigned char * _sym_out)
+                         unsigned int * _sym_out)
 {
     // validate input
     if (_k >= 8*_n) {
         fprintf(stderr,"error: liquid_unpack_array(), bit index exceeds array length\n");
-        exit(1);
-    } else if (_b > 8) {
-        fprintf(stderr,"error: liquid_unpack_array(), symbol size cannot exceed 8 bits\n");
         exit(1);
     }
 
@@ -133,48 +138,63 @@ void liquid_unpack_array(unsigned char * _src,
     unsigned int b0 = _k - 8*i0;    // bit index
     //printf("base index : %2u, %2u\n", i0, b0);
 
-    // determine if index spans multiple bytes
-    if (b0 + _b > 8) {
-        // compute number of bits in each symbol
-        unsigned int n0 = 8 - b0;
-        unsigned int n1 = _b - n0;
+    unsigned int out = 0;
 
-        // generate mask for each symbol
-        unsigned char mask_0 = 0xff >> (8-n0);
-        unsigned char mask_1 = 0xff >> (8-n1);
+    // take chunks of bits from _src until _sym_out is big enough
+    // we'll first fill what's left of (8 - b0) and then go one byte at a time
+    while (_b > 0 && i0 < _n) {
+        unsigned int n = 8 - b0;
+        // clamp at the smaller of (8 - b0, _b)
+        if (_b < n) {
+            n = _b;
+        }
 
-        // shift then mask
-        unsigned char sym_0 = _src[i0] & mask_0;
-        unsigned char sym_1 = (i0==_n-1) ? 0x00 : (_src[i0+1] >> (8-n1)) & mask_1;
+        // build a right-justified 1s mask
+        unsigned char mask = 0xff >> (8-n);
+        // mask out n bits, 1 <= n <= 8. shift right to get the top bits
+        // if _b >= (8 - b0) then we don't shift at all (use all bits)
+        // if _b < (8 - b0) then we shift by the number of bits we have but aren't using
+        unsigned char sym = (_src[i0] >> ((8 - b0) - n)) & mask;
 
-        // concatenate output symbols
-        *_sym_out = (sym_0 << n1) | sym_1;
-
+        out <<= n;
+        out |= sym;
 #if 0
-        printf("  output symbol spans multiple bytes\n");
-        printf("  n0    : %u\n", n0);
-        printf("  n1    : %u\n", n1);
-        printf("  mask0 : 0x%.2x\n", mask_0);
-        printf("  mask1 : 0x%.2x\n", mask_1);
-        printf("  sym 0 : 0x%.2x\n", sym_0);
-        printf("  sym 1 : 0x%.2x\n", sym_1);
+        printf("  output symbol iteration\n");
+        printf("  n    : %u\n", n);
+        printf("  _b   : %u\n" _b);
+        printf("  mask : 0x%.2x\n", mask);
+        printf("  sym  : 0x%.2x\n", sym);
 #endif
-    } else {
-        // compute mask
-        unsigned char mask_0 = ((1 << _b) - 1);
 
-        // shift then mask
-        *_sym_out = (_src[i0] >> (8-_b-b0)) & mask_0;
+        b0 += n;
+        if (b0 >= 8) {
+            b0 %= 8;
+            i0++;
+        }
+        _b -= n;
 
-#if 0
-        printf("  _b   : %u\n", _b);
-        printf("  b0   : %u\n", b0);
-        printf("  mask : 0x%.2x\n", mask_0);
-#endif
     }
+    out <<= _b;
+    *_sym_out = out;
 }
 
-
+// unpack symbols from binary array
+//  _src        :   source array [size: _n x 1]
+//  _n          :   input source array length
+//  _b          :   number of bits in output symbol
+//  _m          :   output symbol array length
+//  _syms_out   :   output symbol array [size: _m x 1]
+void liquid_unpack_array_block(unsigned char * _src,
+                               unsigned int _n,
+                               unsigned int _b,
+                               unsigned int _m,
+                               unsigned int * _syms_out)
+{
+    unsigned int i, k;
+    for (i = 0, k = 0; i < _m && k < 8*_n; i++, k += _b) {
+        liquid_unpack_array(_src, _n, k, _b, &_syms_out[i]);
+    }
+}
 
 
 // pack one-bit symbols into bytes (8-bit symbols)

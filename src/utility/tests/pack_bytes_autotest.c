@@ -29,30 +29,56 @@
 //
 void autotest_pack_array() {
     // input symbols
-    unsigned int sym_size[9] = {8, 2, 3, 6, 1, 3, 3, 4, 3};
-    unsigned char input[9] = {
-        0x81,   // 1000 0001
-        0x03,   //        11
-        0x05,   //       101
-        0x3a,   //   11 1010
-        0x01,   //         1
-        0x07,   //       111
-        0x06,   //       110
-        0x0a,   //      1010
-        0x04    //     10[0] <- last bit is stripped
+    unsigned int sym_size[11] = {8, 2, 3, 6, 1, 3, 3, 4, 2, 12, 6};
+    unsigned int input[11] = {
+        0x81,   //           1000 0001
+        0x03,   //                  11
+        0x05,   //                 101
+        0x3a,   //             11 1010
+        0x01,   //                   1
+        0x07,   //                 111
+        0x06,   //                 110
+        0x0a,   //                1010
+        0x02,   //                  10
+        0x0a14, // 0000 0101 0001 0100
+        0x20,   //           10 00[00] (implied)
     };
 
-    // output       : 1000 0001 1110 1111 0101 1111 1010 1010
-    // symbol       : 0000 0000 1122 2333 3334 5556 6677 7788
-    unsigned char output_test[4] = {0x81, 0xEF, 0x5F, 0xAA};
-    unsigned char output[4]      = {0xff, 0xff, 0xff, 0xff};
+    // output       : 1000 0001 1110 1111 0101 1111 1010 1010 0101 0001 0100 1000
+    // symbol       : 0000 0000 1122 2333 3334 5556 6677 7788 9999 9999 9999 AAAA
+    unsigned char output_test[6] = {0x81, 0xEF, 0x5F, 0xAA, 0xA1, 0x48};
+    unsigned char output[6]      = {0xff, 0xff, 0xff, 0xff, 0xff, 0xff};
 
     unsigned int k=0;
     unsigned int i;
-    for (i=0; i<9; i++) {
-        liquid_pack_array(output, 4, k, sym_size[i], input[i]);
+    for (i=0; i<11; i++) {
+        liquid_pack_array(output, 6, k, sym_size[i], input[i]);
         k += sym_size[i];
     }
+    
+    CONTEND_SAME_DATA( output, output_test, 6 );
+}
+
+//
+// AUTOTEST : pack_array_block
+//
+void autotest_pack_array_block() {
+    // input symbols
+    unsigned int sym_size = 6;
+    unsigned int input[6] = {
+        0x21,   //   10 0001
+        0x37,   //   11 0111
+        0x01,   //   00 0001
+        0x3a,   //   11 1010
+        0x18,   //   01 1000
+        0x30,   //   11 [0000]
+    };
+
+    // output       : 1000 0111 0111 0000 0111 1010 0110 0011
+    unsigned char output_test[4] = {0x87, 0x70, 0x7A, 0x63};
+    unsigned char output[4]      = {0xff, 0xff, 0xff, 0xff};
+
+    liquid_pack_array_block(output, 4, sym_size, 6, input);
     
     CONTEND_SAME_DATA( output, output_test, 4 );
 }
@@ -62,34 +88,61 @@ void autotest_pack_array() {
 // AUTOTEST : unpack_array
 //
 void autotest_unpack_array() {
-    // input        : 1000 0001 1110 1111 0101 1111 1010 1010
-    // symbol       : 0000 0000 1122 2333 3334 5556 6677 7788
-    unsigned char input[4] = {0x81, 0xEF, 0x5F, 0xAA};
-    unsigned int sym_size[9] = {8, 2, 3, 6, 1, 3, 3, 4, 3};
+    // input        : 1000 0001 1110 1111 0101 1111 1010 1010 0101 0001 0100 1000
+    // symbol       : 0000 0000 1122 2333 3334 5556 6677 7788 9999 9999 9999 AAAA
+    unsigned char input[6] = {0x81, 0xEF, 0x5F, 0xAA, 0xA1, 0x48};
+    unsigned int sym_size[11] = {8, 2, 3, 6, 1, 3, 3, 4, 2, 12, 6};
 
     // output syms
-    unsigned char output_test[9] = {
-        0x81,   // 1000 0001
-        0x03,   //        11
-        0x05,   //       101
-        0x3a,   //   11 1010
-        0x01,   //         1
-        0x07,   //       111
-        0x06,   //       110
-        0x0a,   //      1010
-        0x04    //     10[0] <- last bit is implied
+    unsigned int output_test[11] = {
+        0x81,   //           1000 0001
+        0x03,   //                  11
+        0x05,   //                 101
+        0x3a,   //             11 1010
+        0x01,   //                   1
+        0x07,   //                 111
+        0x06,   //                 110
+        0x0a,   //                1010
+        0x02,   //                  10
+        0x0a14, // 0000 0101 0001 0100
+        0x20,   //           10 00[00] (implied)
     };
 
-    unsigned char output[9];
+    unsigned int output[11];
 
     unsigned int k=0;
     unsigned int i;
-    for (i=0; i<9; i++) {
-        liquid_unpack_array(input, 4, k, sym_size[i], &output[i]);
+    for (i=0; i<11; i++) {
+        liquid_unpack_array(input, 6, k, sym_size[i], &output[i]);
         k += sym_size[i];
     }
     
-    CONTEND_SAME_DATA( output, output_test, 9 );
+    CONTEND_SAME_DATA( output, output_test, 11 * sizeof(unsigned int) );
+}
+
+//
+// AUTOTEST : unpack_array_block
+//
+void autotest_unpack_array_block() {
+    unsigned int sym_size = 6;
+    // output       : 1000 0111 0111 0000 0111 1010 0110 0011
+    unsigned char input[4] = {0x87, 0x70, 0x7A, 0x63};
+
+    // output syms
+    unsigned int output_test[6] = {
+        0x21,   //   10 0001
+        0x37,   //   11 0111
+        0x01,   //   00 0001
+        0x3a,   //   11 1010
+        0x18,   //   01 1000
+        0x30,   //   11 [0000]
+    };
+
+    unsigned int output[6];
+
+    liquid_unpack_array_block(input, 4, sym_size, 6, output);
+    
+    CONTEND_SAME_DATA( output, output_test, 6 * sizeof(unsigned int) );
 }
 
 //
@@ -108,11 +161,15 @@ void autotest_repack_array() {
     }
 
     unsigned int k=0;
-    unsigned char sym=0;
+    unsigned int sym=0;
     unsigned int sym_size=0;
     while (k < 8*n) {
         // random symbol size
         sym_size = (rand()%8) + 1;
+
+        if (sym_size + k > 8*n) {
+            sym_size = 8*n - k;
+        }
 
         // unpack symbol from input array
         liquid_unpack_array(src, n, k, sym_size, &sym);
