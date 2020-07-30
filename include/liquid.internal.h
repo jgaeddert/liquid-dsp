@@ -692,8 +692,8 @@ typedef enum {
 #define LIQUID_FFT_DEFINE_INTERNAL_API(FFT,T,TC)                \
                                                                 \
 /* print plan recursively */                                    \
-void FFT(_print_plan_recursive)(FFT(plan)    _q,                \
-                                unsigned int _level);           \
+int FFT(_print_plan_recursive)(FFT(plan)    _q,                 \
+                               unsigned int _level);            \
                                                                 \
 /* type definitions for create/destroy/execute functions */     \
 typedef FFT(plan)(FFT(_create_t)) (unsigned int _nfft,          \
@@ -701,8 +701,8 @@ typedef FFT(plan)(FFT(_create_t)) (unsigned int _nfft,          \
                                    TC *         _y,             \
                                    int          _dir,           \
                                    int          _flags);        \
-typedef void (FFT(_destroy_t))(FFT(plan) _q);                   \
-typedef void (FFT(_execute_t))(FFT(plan) _q);                   \
+typedef int (FFT(_destroy_t))(FFT(plan) _q);                    \
+typedef int (FFT(_execute_t))(FFT(plan) _q);                    \
                                                                 \
 /* FFT create methods */                                        \
 FFT(_create_t) FFT(_create_plan_dft);                           \
@@ -739,22 +739,22 @@ FFT(_execute_t) FFT(_execute_dft_16);                           \
 unsigned int FFT(_estimate_mixed_radix)(unsigned int _nfft);    \
                                                                 \
 /* discrete cosine transform (DCT) prototypes */                \
-void FFT(_execute_REDFT00)(FFT(plan) _q);   /* DCT-I   */       \
-void FFT(_execute_REDFT10)(FFT(plan) _q);   /* DCT-II  */       \
-void FFT(_execute_REDFT01)(FFT(plan) _q);   /* DCT-III */       \
-void FFT(_execute_REDFT11)(FFT(plan) _q);   /* DCT-IV  */       \
+int FFT(_execute_REDFT00)(FFT(plan) _q);    /* DCT-I   */       \
+int FFT(_execute_REDFT10)(FFT(plan) _q);    /* DCT-II  */       \
+int FFT(_execute_REDFT01)(FFT(plan) _q);    /* DCT-III */       \
+int FFT(_execute_REDFT11)(FFT(plan) _q);    /* DCT-IV  */       \
                                                                 \
 /* discrete sine transform (DST) prototypes */                  \
-void FFT(_execute_RODFT00)(FFT(plan) _q);   /* DST-I   */       \
-void FFT(_execute_RODFT10)(FFT(plan) _q);   /* DST-II  */       \
-void FFT(_execute_RODFT01)(FFT(plan) _q);   /* DST-III */       \
-void FFT(_execute_RODFT11)(FFT(plan) _q);   /* DST-IV  */       \
+int FFT(_execute_RODFT00)(FFT(plan) _q);    /* DST-I   */       \
+int FFT(_execute_RODFT10)(FFT(plan) _q);    /* DST-II  */       \
+int FFT(_execute_RODFT01)(FFT(plan) _q);    /* DST-III */       \
+int FFT(_execute_RODFT11)(FFT(plan) _q);    /* DST-IV  */       \
                                                                 \
 /* destroy real-to-real one-dimensional plan */                 \
-void FFT(_destroy_plan_r2r_1d)(FFT(plan) _q);                   \
+int FFT(_destroy_plan_r2r_1d)(FFT(plan) _q);                    \
                                                                 \
 /* print real-to-real one-dimensional plan */                   \
-void FFT(_print_plan_r2r_1d)(FFT(plan) _q);                     \
+int FFT(_print_plan_r2r_1d)(FFT(plan) _q);                      \
 
 // determine best FFT method based on size
 liquid_fft_method liquid_fft_estimate_method(unsigned int _nfft);

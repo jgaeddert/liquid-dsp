@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2015 Joseph Gaeddert
+ * Copyright (c) 2007 - 2020 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -63,7 +63,7 @@ FFT(plan) FFT(_create_plan_dft)(unsigned int _nfft,
     else if (q->nfft == 6) q->execute = FFT(_execute_dft_6);
     else if (q->nfft == 7) q->execute = FFT(_execute_dft_7);
     else if (q->nfft == 8) q->execute = FFT(_execute_dft_8);
-    else if (q->nfft == 16) q->execute = FFT(_execute_dft_16);
+    else if (q->nfft ==16) q->execute = FFT(_execute_dft_16);
     else {
         q->execute = FFT(_execute_dft);
 
@@ -100,7 +100,7 @@ FFT(plan) FFT(_create_plan_dft)(unsigned int _nfft,
 }
 
 // destroy FFT plan
-void FFT(_destroy_plan_dft)(FFT(plan) _q)
+int FFT(_destroy_plan_dft)(FFT(plan) _q)
 {
     // free twiddle factors
     if (_q->data.dft.twiddle != NULL)
@@ -118,10 +118,11 @@ void FFT(_destroy_plan_dft)(FFT(plan) _q)
 
     // free main object memory
     free(_q);
+    return LIQUID_OK;
 }
 
 // execute DFT (slow but functionally correct)
-void FFT(_execute_dft)(FFT(plan) _q)
+int FFT(_execute_dft)(FFT(plan) _q)
 {
     unsigned int i;
     unsigned int nfft = _q->nfft;
@@ -148,6 +149,7 @@ void FFT(_execute_dft)(FFT(plan) _q)
         _q->y[i] += _q->x[0];
     }
 #endif
+    return LIQUID_OK;
 }
 
 // 
@@ -155,14 +157,15 @@ void FFT(_execute_dft)(FFT(plan) _q)
 //
 
 // 
-void FFT(_execute_dft_2)(FFT(plan) _q)
+int FFT(_execute_dft_2)(FFT(plan) _q)
 {
     _q->y[0] = _q->x[0] + _q->x[1];
     _q->y[1] = _q->x[0] - _q->x[1];
+    return LIQUID_OK;
 }
 
 //
-void FFT(_execute_dft_3)(FFT(plan) _q)
+int FFT(_execute_dft_3)(FFT(plan) _q)
 {
 #if 0
     // NOTE: not as fast as other method, but perhaps useful for
@@ -232,10 +235,11 @@ void FFT(_execute_dft_3)(FFT(plan) _q)
         _q->y[2] = ta;
     }
 #endif
+    return LIQUID_OK;
 }
 
 //
-void FFT(_execute_dft_4)(FFT(plan) _q)
+int FFT(_execute_dft_4)(FFT(plan) _q)
 {
     TC yp;
     TC * x = _q->x;
@@ -268,10 +272,11 @@ void FFT(_execute_dft_4)(FFT(plan) _q)
         yp = -yp;
     y[3] = y[1] - yp;
     y[1] = y[1] + yp;
+    return LIQUID_OK;
 }
 
 //
-void FFT(_execute_dft_5)(FFT(plan) _q)
+int FFT(_execute_dft_5)(FFT(plan) _q)
 {
     TC * x = _q->x;
     TC * y = _q->y;
@@ -296,10 +301,11 @@ void FFT(_execute_dft_5)(FFT(plan) _q)
     y[2] = x[0] + x[1]*g1      + x[2]*g0_conj + x[3]*g0      + x[4]*g1_conj;
     y[3] = x[0] + x[1]*g1_conj + x[2]*g0      + x[3]*g0_conj + x[4]*g1;
     y[4] = x[0] + x[1]*g0_conj + x[2]*g1_conj + x[3]*g1      + x[4]*g0;
+    return LIQUID_OK;
 }
 
 //
-void FFT(_execute_dft_6)(FFT(plan) _q)
+int FFT(_execute_dft_6)(FFT(plan) _q)
 {
     TC * x = _q->x;
     TC * y = _q->y;
@@ -329,10 +335,11 @@ void FFT(_execute_dft_6)(FFT(plan) _q)
     y[3] = x[0] - x[1]    + x[2]    - x[3] + x[4]    - x[5];
     y[4] = x[0] + x[1]*g4 + x[2]*g2 + x[3] + x[4]*g4 + x[5]*g2;
     y[5] = x[0] + x[1]*g5 + x[2]*g4 - x[3] + x[4]*g2 + x[5]*g1;
+    return LIQUID_OK;
 }
 
 //
-void FFT(_execute_dft_7)(FFT(plan) _q)
+int FFT(_execute_dft_7)(FFT(plan) _q)
 {
     TC * x = _q->x;
     TC * y = _q->y;
@@ -362,10 +369,11 @@ void FFT(_execute_dft_7)(FFT(plan) _q)
     y[4] = x[0] + x[1]*g4 + x[2]*g1 + x[3]*g5 + x[4]*g2 + x[5]*g6 + x[6]*g3;
     y[5] = x[0] + x[1]*g5 + x[2]*g3 + x[3]*g1 + x[4]*g6 + x[5]*g4 + x[6]*g2;
     y[6] = x[0] + x[1]*g6 + x[2]*g5 + x[3]*g4 + x[4]*g3 + x[5]*g2 + x[6]*g1;
+    return LIQUID_OK;
 }
 
 //
-void FFT(_execute_dft_8)(FFT(plan) _q)
+int FFT(_execute_dft_8)(FFT(plan) _q)
 {
     TC yp;
     TC * x = _q->x;
@@ -423,11 +431,11 @@ void FFT(_execute_dft_8)(FFT(plan) _q)
     else     yp = y[7]*(-M_SQRT1_2 + M_SQRT1_2*_Complex_I);
     y[7] = y[3]-yp;
     y[3] += yp;
+    return LIQUID_OK;
 }
 
-
 //
-void FFT(_execute_dft_16)(FFT(plan) _q)
+int FFT(_execute_dft_16)(FFT(plan) _q)
 {
     TC yp;
     TC * x = _q->x;
@@ -519,5 +527,6 @@ void FFT(_execute_dft_16)(FFT(plan) _q)
         yp =  y[14]*( -0.70710677 - _Complex_I* -0.70710677);  y[14]  = y[ 6] - yp;  y[ 6] += yp;
         yp =  y[15]*( -0.92387950 - _Complex_I* -0.38268349);  y[15]  = y[ 7] - yp;  y[ 7] += yp;
     }
+    return LIQUID_OK;
 }
 

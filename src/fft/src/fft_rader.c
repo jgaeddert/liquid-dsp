@@ -107,7 +107,7 @@ FFT(plan) FFT(_create_plan_rader)(unsigned int _nfft,
 }
 
 // destroy FFT plan
-void FFT(_destroy_plan_rader)(FFT(plan) _q)
+int FFT(_destroy_plan_rader)(FFT(plan) _q)
 {
     // free data specific to Rader's algorithm
     free(_q->data.rader.seq);       // sequence
@@ -120,10 +120,11 @@ void FFT(_destroy_plan_rader)(FFT(plan) _q)
 
     // free main object memory
     free(_q);
+    return LIQUID_OK;
 }
 
 // execute Rader's algorithm
-void FFT(_execute_rader)(FFT(plan) _q)
+int FFT(_execute_rader)(FFT(plan) _q)
 {
     unsigned int i;
 
@@ -156,5 +157,6 @@ void FFT(_execute_rader)(FFT(plan) _q)
 
         _q->y[k] = _q->data.rader.x_prime[i] / (T)(_q->nfft-1) + _q->x[0];
     }
+    return LIQUID_OK;
 }
 

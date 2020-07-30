@@ -1470,15 +1470,15 @@ FFT(plan) FFT(_create_plan_r2r_1d)(unsigned int _n,                         \
                                    int          _flags);                    \
                                                                             \
 /* Destroy transform and free all internally-allocated memory           */  \
-void FFT(_destroy_plan)(FFT(plan) _p);                                      \
+int FFT(_destroy_plan)(FFT(plan) _p);                                       \
                                                                             \
 /* Print transform plan and internal strategy to stdout. This includes  */  \
 /* information on the strategy for computing large transforms with many */  \
 /* prime factors or with large prime factors.                           */  \
-void FFT(_print_plan)(FFT(plan) _p);                                        \
+int FFT(_print_plan)(FFT(plan) _p);                                         \
                                                                             \
 /* Run the transform                                                    */  \
-void FFT(_execute)(FFT(plan) _p);                                           \
+int FFT(_execute)(FFT(plan) _p);                                            \
                                                                             \
 /* Perform n-point FFT allocating plan internally                       */  \
 /*  _nfft   : fft size                                                  */  \
@@ -1486,11 +1486,11 @@ void FFT(_execute)(FFT(plan) _p);                                           \
 /*  _y      : output array [size: _nfft x 1]                            */  \
 /*  _dir    : fft direction: LIQUID_FFT_{FORWARD,BACKWARD}              */  \
 /*  _flags  : fft flags                                                 */  \
-void FFT(_run)(unsigned int _n,                                             \
-               TC *         _x,                                             \
-               TC *         _y,                                             \
-               int          _dir,                                           \
-               int          _flags);                                        \
+int FFT(_run)(unsigned int _n,                                              \
+              TC *         _x,                                              \
+              TC *         _y,                                              \
+              int          _dir,                                            \
+              int          _flags);                                         \
                                                                             \
 /* Perform n-point real one-dimensional FFT allocating plan internally  */  \
 /*  _nfft   : fft size                                                  */  \
@@ -1498,17 +1498,17 @@ void FFT(_run)(unsigned int _n,                                             \
 /*  _y      : output array [size: _nfft x 1]                            */  \
 /*  _type   : fft type, e.g. LIQUID_FFT_REDFT10                         */  \
 /*  _flags  : fft flags                                                 */  \
-void FFT(_r2r_1d_run)(unsigned int _n,                                      \
-                      T *          _x,                                      \
-                      T *          _y,                                      \
-                      int          _type,                                   \
-                      int          _flags);                                 \
+int FFT(_r2r_1d_run)(unsigned int _n,                                       \
+                     T *          _x,                                       \
+                     T *          _y,                                       \
+                     int          _type,                                    \
+                     int          _flags);                                  \
                                                                             \
 /* Perform _n-point fft shift                                           */  \
 /*  _x      : input array [size: _n x 1]                                */  \
 /*  _n      : input array size                                          */  \
-void FFT(_shift)(TC *         _x,                                           \
-                 unsigned int _n);                                          \
+int FFT(_shift)(TC *         _x,                                            \
+                unsigned int _n);                                           \
 
 
 LIQUID_FFT_DEFINE_API(LIQUID_FFT_MANGLE_FLOAT,float,liquid_float_complex)
