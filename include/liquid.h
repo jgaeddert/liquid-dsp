@@ -707,35 +707,35 @@ TVMPCH() TVMPCH(_create)(unsigned int _n,                                   \
                          float        _tau);                                \
                                                                             \
 /* Destroy channel object, freeing all internal memory                  */  \
-void TVMPCH(_destroy)(TVMPCH() _q);                                         \
+int TVMPCH(_destroy)(TVMPCH() _q);                                          \
                                                                             \
 /* Reset object                                                         */  \
-void TVMPCH(_reset)(TVMPCH() _q);                                           \
+int TVMPCH(_reset)(TVMPCH() _q);                                            \
                                                                             \
 /* Print channel object internals to standard output                    */  \
-void TVMPCH(_print)(TVMPCH() _q);                                           \
+int TVMPCH(_print)(TVMPCH() _q);                                            \
                                                                             \
 /* Push sample into emulator                                            */  \
 /*  _q      : channel object                                            */  \
 /*  _x      : input sample                                              */  \
-void TVMPCH(_push)(TVMPCH() _q,                                             \
-                   TI       _x);                                            \
+int TVMPCH(_push)(TVMPCH() _q,                                              \
+                  TI       _x);                                             \
                                                                             \
 /* Compute output sample                                                */  \
 /*  _q      : channel object                                            */  \
 /*  _y      : output sample                                             */  \
-void TVMPCH(_execute)(TVMPCH() _q,                                          \
-                      TO *     _y);                                         \
+int TVMPCH(_execute)(TVMPCH() _q,                                           \
+                     TO *     _y);                                          \
                                                                             \
 /* Apply channel impairments on a block of samples                      */  \
 /*  _q      : channel object                                            */  \
 /*  _x      : input array, [size: _n x 1]                               */  \
 /*  _n      : input array length                                        */  \
 /*  _y      : output array, [size: _n x 1]                              */  \
-void TVMPCH(_execute_block)(TVMPCH()     _q,                                \
-                            TI *         _x,                                \
-                            unsigned int _n,                                \
-                            TO *         _y);                               \
+int TVMPCH(_execute_block)(TVMPCH()     _q,                                 \
+                           TI *         _x,                                 \
+                           unsigned int _n,                                 \
+                           TO *         _y);                                \
 
 LIQUID_TVMPCH_DEFINE_API(LIQUID_TVMPCH_MANGLE_CCCF,
                          liquid_float_complex,

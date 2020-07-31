@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2018 Joseph Gaeddert
+ * Copyright (c) 2007 - 2020 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -51,16 +51,12 @@ TVMPCH() TVMPCH(_create)(unsigned int _n,
                          float        _tau)
 {
     // validate input
-    if (_n < 1) {
-        fprintf(stderr,"error: tvmpch_%s_create(), filter length must be greater than one\n", EXTENSION_FULL);
-        exit(1);
-    } else if (_std < 0.0f) {
-        fprintf(stderr,"error: tvmpch_%s_create(), standard deviation must be positive\n", EXTENSION_FULL);
-        exit(1);
-    } else if (_tau < 0.0f || _tau > 1.0f) {
-        fprintf(stderr,"error: tvmpch_%s_create(), coherence time must be in [0,1]\n", EXTENSION_FULL);
-        exit(1);
-    }
+    if (_n < 1)
+        return liquid_error_config("tvmpch_%s_create(), filter length must be greater than one", EXTENSION_FULL);
+    if (_std < 0.0f)
+        return liquid_error_config("tvmpch_%s_create(), standard deviation must be positive", EXTENSION_FULL);
+    if (_tau < 0.0f || _tau > 1.0f)
+        return liquid_error_config("tvmpch_%s_create(), coherence time must be in [0,1]", EXTENSION_FULL);
 
     // create filter object and initialize
     TVMPCH() q = (TVMPCH()) malloc(sizeof(struct TVMPCH(_s)));
@@ -87,21 +83,23 @@ TVMPCH() TVMPCH(_create)(unsigned int _n,
 }
 
 // destroy tvmpch object
-void TVMPCH(_destroy)(TVMPCH() _q)
+int TVMPCH(_destroy)(TVMPCH() _q)
 {
     WINDOW(_destroy)(_q->w);
     free(_q->h);
     free(_q);
+    return LIQUID_OK;
 }
 
 // reset internal state of filter object
-void TVMPCH(_reset)(TVMPCH() _q)
+int TVMPCH(_reset)(TVMPCH() _q)
 {
     WINDOW(_reset)(_q->w);
+    return LIQUID_OK;
 }
 
 // print filter object internals (taps, buffer)
-void TVMPCH(_print)(TVMPCH() _q)
+int TVMPCH(_print)(TVMPCH() _q)
 {
     printf("tvmpch_%s:\n", EXTENSION_FULL);
     unsigned int i;
@@ -111,14 +109,14 @@ void TVMPCH(_print)(TVMPCH() _q)
         PRINTVAL_TC(_q->h[n-i-1],%12.8f);
         printf(";\n");
     }
-    //WINDOW(_print)(_q->w);
+    return LIQUID_OK;
 }
 
 // push sample into filter object's internal buffer
 //  _q      :   filter object
 //  _x      :   input sample
-void TVMPCH(_push)(TVMPCH() _q,
-                   TI       _x)
+int TVMPCH(_push)(TVMPCH() _q,
+                  TI       _x)
 {
     // update coefficients
     unsigned int i;
@@ -127,14 +125,15 @@ void TVMPCH(_push)(TVMPCH() _q,
 
     // push sample into window buffer
     WINDOW(_push)(_q->w, _x);
+    return LIQUID_OK;
 }
 
 // compute output sample (dot product between internal
 // filter coefficients and internal buffer)
 //  _q      :   filter object
 //  _y      :   output sample pointer
-void TVMPCH(_execute)(TVMPCH() _q,
-                      TO *     _y)
+int TVMPCH(_execute)(TVMPCH() _q,
+                     TO *     _y)
 {
     // read buffer (retrieve pointer to aligned memory array)
     TI *r;
@@ -142,6 +141,7 @@ void TVMPCH(_execute)(TVMPCH() _q,
 
     // execute dot product
     DOTPROD(_run4)(r, _q->h, _q->h_len, _y);
+    return LIQUID_OK;
 }
 
 // execute the filter on a block of input samples; the
@@ -150,10 +150,10 @@ void TVMPCH(_execute)(TVMPCH() _q,
 //  _x      : pointer to input array [size: _n x 1]
 //  _n      : number of input, output samples
 //  _y      : pointer to output array [size: _n x 1]
-void TVMPCH(_execute_block)(TVMPCH()     _q,
-                            TI *         _x,
-                            unsigned int _n,
-                            TO *         _y)
+int TVMPCH(_execute_block)(TVMPCH()     _q,
+                           TI *         _x,
+                           unsigned int _n,
+                           TO *         _y)
 {
     unsigned int i;
     for (i=0; i<_n; i++) {
@@ -163,6 +163,7 @@ void TVMPCH(_execute_block)(TVMPCH()     _q,
         // compute output sample
         TVMPCH(_execute)(_q, &_y[i]);
     }
+    return LIQUID_OK;
 }
 
 #if 0
@@ -176,9 +177,9 @@ unsigned int TVMPCH(_get_length)(TVMPCH() _q)
 //  _q      :   filter object
 //  _fc     :   frequency
 //  _H      :   output frequency response
-void TVMPCH(_freqresponse)(TVMPCH()        _q,
-                           float           _fc,
-                           float complex * _H)
+int TVMPCH(_freqresponse)(TVMPCH()        _q,
+                          float           _fc,
+                          float complex * _H)
 {
     unsigned int i;
     float complex H = 0.0f;
@@ -192,6 +193,7 @@ void TVMPCH(_freqresponse)(TVMPCH()        _q,
 
     // set return value
     *_H = H;
+    return LIQUID_OK;
 }
 
 
