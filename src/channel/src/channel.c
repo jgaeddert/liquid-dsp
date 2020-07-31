@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2016 Joseph Gaeddert
+ * Copyright (c) 2007 - 2020 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -81,7 +81,7 @@ CHANNEL() CHANNEL(_create)(void)
 }
 
 // destroy channel object
-void CHANNEL(_destroy)(CHANNEL() _q)
+int CHANNEL(_destroy)(CHANNEL() _q)
 {
     // destroy internal objects
     NCO(_destroy)(_q->nco);
@@ -92,25 +92,27 @@ void CHANNEL(_destroy)(CHANNEL() _q)
 
     // free main object memory
     free(_q);
+    return LIQUID_OK;
 }
 
 // print channel object
-void CHANNEL(_print)(CHANNEL() _q)
+int CHANNEL(_print)(CHANNEL() _q)
 {
     printf("channel\n");
     if (_q->enabled_awgn)       printf("  AWGN:      SNR=%.3f dB, gamma=%.3f, std=%.6f\n", _q->SNRdB, _q->gamma, _q->nstd);
     if (_q->enabled_carrier)    printf("  carrier:   dphi=%.3f, phi=%.3f\n", _q->dphi, _q->phi);
     if (_q->enabled_multipath)  printf("  multipath: h_len=%u\n", _q->h_len);
     if (_q->enabled_shadowing)  printf("  shadowing: std=%.3fdB, fd=%.3f\n", _q->shadowing_std, _q->shadowing_fd);
+    return LIQUID_OK;
 }
 
 // apply additive white Gausss noise impairment
 //  _q              : channel object
 //  _noise_floor_dB : noise floor power spectral density
 //  _SNR_dB         : signal-to-noise ratio [dB]
-void CHANNEL(_add_awgn)(CHANNEL() _q,
-                        float     _noise_floor_dB,
-                        float     _SNRdB)
+int CHANNEL(_add_awgn)(CHANNEL() _q,
+                       float     _noise_floor_dB,
+                       float     _SNRdB)
 {
     // enable module
     _q->enabled_awgn = 1;
@@ -122,15 +124,16 @@ void CHANNEL(_add_awgn)(CHANNEL() _q,
     // set values appropriately
     _q->nstd  = powf(10.0f, _noise_floor_dB/20.0f);
     _q->gamma = powf(10.0f, (_q->SNRdB+_q->noise_floor_dB)/20.0f);
+    return LIQUID_OK;
 }
 
 // apply carrier offset impairment
 //  _q          : channel object
 //  _frequency  : carrier frequency offse [radians/sample
 //  _phase      : carrier phase offset    [radians]
-void CHANNEL(_add_carrier_offset)(CHANNEL() _q,
-                                  float     _frequency,
-                                  float     _phase)
+int CHANNEL(_add_carrier_offset)(CHANNEL() _q,
+                                 float     _frequency,
+                                 float     _phase)
 {
     // enable module
     _q->enabled_carrier = 1;
@@ -142,23 +145,21 @@ void CHANNEL(_add_carrier_offset)(CHANNEL() _q,
     // set values appropriately
     NCO(_set_frequency)(_q->nco, _q->dphi);
     NCO(_set_phase)    (_q->nco, _q->phi);
+    return LIQUID_OK;
 }
 
 // apply multi-path channel impairment
 //  _q          : channel object
 //  _h          : channel coefficients (NULL for random)
 //  _h_len      : number of channel coefficients
-void CHANNEL(_add_multipath)(CHANNEL()    _q,
-                             TC *         _h,
-                             unsigned int _h_len)
+int CHANNEL(_add_multipath)(CHANNEL()    _q,
+                            TC *         _h,
+                            unsigned int _h_len)
 {
-    if (_h_len == 0) {
-        fprintf(stderr,"warning: channel_%s_add_multipath(), filter length is zero (ignoring)\n", EXTENSION_FULL);
-        return;
-    } else if (_h_len > 1000) {
-        fprintf(stderr,"warning: channel_%s_add_multipath(), filter length exceeds maximum\n", EXTENSION_FULL);
-        exit(1);
-    }
+    if (_h_len == 0)
+        return liquid_error(LIQUID_EIMODE,"channel_%s_add_multipath(), filter length is zero (ignoring)", EXTENSION_FULL);
+    if (_h_len > 1000)
+        return liquid_error(LIQUID_EIMODE,"channel_%s_add_multipath(), filter length exceeds maximum", EXTENSION_FULL);
 
     // enable module
     _q->enabled_multipath = 1;
@@ -191,26 +192,23 @@ void CHANNEL(_add_multipath)(CHANNEL()    _q,
 
     // re-create channel filter
     _q->channel_filter = FIRFILT(_recreate)(_q->channel_filter, _q->h, _q->h_len);
+    return LIQUID_OK;
 }
 
 // apply slowly-varying shadowing impairment
 //  _q          : channel object
 //  _sigma      : std. deviation for log-normal shadowing
 //  _fd         : Doppler frequency, _fd in (0,0.5)
-void CHANNEL(_add_shadowing)(CHANNEL() _q,
-                             float     _sigma,
-                             float     _fd)
+int CHANNEL(_add_shadowing)(CHANNEL() _q,
+                            float     _sigma,
+                            float     _fd)
 {
-    if (_q->enabled_shadowing) {
-        fprintf(stderr,"warning: channel_%s_add_shadowing(), shadowing already enabled\n", EXTENSION_FULL);
-        return;
-    } else if (_sigma <= 0) {
-        fprintf(stderr,"warning: channel_%s_add_shadowing(), standard deviation less than or equal to zero\n", EXTENSION_FULL);
-        exit(1);
-    } else if (_fd <= 0 || _fd >= 0.5) {
-        fprintf(stderr,"warning: channel_%s_add_shadowing(), Doppler frequency must be in (0,0.5)\n", EXTENSION_FULL);
-        exit(1);
-    }
+    if (_q->enabled_shadowing)
+        return liquid_error(LIQUID_EIMODE,"channel_%s_add_shadowing(), shadowing already enabled", EXTENSION_FULL);
+    if (_sigma <= 0)
+        return liquid_error(LIQUID_EIMODE,"channel_%s_add_shadowing(), standard deviation less than or equal to zero", EXTENSION_FULL);
+    if (_fd <= 0 || _fd >= 0.5)
+        return liquid_error(LIQUID_EIMODE,"channel_%s_add_shadowing(), Doppler frequency must be in (0,0.5)", EXTENSION_FULL);
 
     // enable module
     _q->enabled_shadowing = 1;
@@ -226,15 +224,16 @@ void CHANNEL(_add_shadowing)(CHANNEL() _q,
     float a[2] = {1.0f, alpha-1.0f};
     float b[2] = {alpha, 0};
     _q->shadowing_filter = IIRFILT(_create)(b,2,a,2);
+    return LIQUID_OK;
 }
 
 // apply channel impairments on single input sample
 //  _q      : channel object
 //  _x      : input sample
 //  _y      : output sample pointer
-void CHANNEL(_execute)(CHANNEL() _q,
-                       TI        _x,
-                       TO *      _y)
+int CHANNEL(_execute)(CHANNEL() _q,
+                      TI        _x,
+                      TO *      _y)
 {
     float complex r;
     // apply filter
@@ -269,6 +268,7 @@ void CHANNEL(_execute)(CHANNEL() _q,
 
     // set output value
     *_y = r;
+    return LIQUID_OK;
 }
 
 // apply channel impairments on single input sample
@@ -276,15 +276,16 @@ void CHANNEL(_execute)(CHANNEL() _q,
 //  _x      : input array [size: _n x 1]
 //  _n      : input array length
 //  _y      : output array [size: _n x 1]
-void CHANNEL(_execute_block)(CHANNEL()    _q,
-                             TI *         _x,
-                             unsigned int _n,
-                             TO *         _y)
+int CHANNEL(_execute_block)(CHANNEL()    _q,
+                            TI *         _x,
+                            unsigned int _n,
+                            TO *         _y)
 {
     // apply channel effects on each input sample
     // TODO: apply in blocks
     unsigned int i;
     for (i=0; i<_n; i++)
         CHANNEL(_execute)(_q, _x[i], &_y[i]);
+    return LIQUID_OK;
 }
 
