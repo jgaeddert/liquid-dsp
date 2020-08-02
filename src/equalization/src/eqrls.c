@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2015 Joseph Gaeddert
+ * Copyright (c) 2007 - 2020 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -59,6 +59,9 @@ struct EQRLS(_s) {
 EQRLS() EQRLS(_create)(T *          _h,
                        unsigned int _p)
 {
+    if (_p==0)
+        return liquid_error_config("eqrls_%s_create(), equalier length must be greater than 0",EXTENSION_FULL);
+
     EQRLS() q = (EQRLS()) malloc(sizeof(struct EQRLS(_s)));
 
     // set filter order, other parameters
@@ -124,7 +127,7 @@ EQRLS() EQRLS(_recreate)(EQRLS()      _q,
 }
 
 // destroy eqrls object
-void EQRLS(_destroy)(EQRLS() _q)
+int EQRLS(_destroy)(EQRLS() _q)
 {
     // free vectors and matrices
     free(_q->h0);
@@ -143,10 +146,11 @@ void EQRLS(_destroy)(EQRLS() _q)
 
     // free main object memory
     free(_q);
+    return LIQUID_OK;
 }
 
 // print eqrls object internals
-void EQRLS(_print)(EQRLS() _q)
+int EQRLS(_print)(EQRLS() _q)
 {
     printf("equalizer (RLS):\n");
     printf("    order:      %u\n", _q->p);
@@ -177,10 +181,11 @@ void EQRLS(_print)(EQRLS() _q)
         printf("\n");
     }
 #endif
+    return LIQUID_OK;
 }
 
 // reset equalizer
-void EQRLS(_reset)(EQRLS() _q)
+int EQRLS(_reset)(EQRLS() _q)
 {
     // reset input counter
     _q->n = 0;
@@ -199,6 +204,7 @@ void EQRLS(_reset)(EQRLS() _q)
 
     // clear window object
     WINDOW(_reset)(_q->buffer);
+    return LIQUID_OK;
 }
 
 // get learning rate of equalizer
@@ -210,38 +216,39 @@ float EQRLS(_get_bw)(EQRLS() _q)
 // set learning rate of equalizer
 //  _q     :   equalizer object
 //  _lambda :   RLS learning rate (should be close to 1.0), 0 < _lambda < 1
-void EQRLS(_set_bw)(EQRLS() _q,
-                    float   _lambda)
+int EQRLS(_set_bw)(EQRLS() _q,
+                   float   _lambda)
 {
-    if (_lambda < 0.0f || _lambda > 1.0f) {
-        printf("error: eqrls_%s_set_bw(), learning rate must be in (0,1)\n", EXTENSION_FULL);
-        exit(1);
-    }
+    if (_lambda < 0.0f || _lambda > 1.0f)
+        return liquid_error(LIQUID_EICONFIG,"eqrls_%s_set_bw(), learning rate must be in (0,1)", EXTENSION_FULL);
 
     // set internal value
     _q->lambda = _lambda;
+    return LIQUID_OK;
 }
 
 // push sample into equalizer internal buffer
 //  _q  :   equalizer object
 //  _x  :   received sample
-void EQRLS(_push)(EQRLS() _q,
-                  T _x)
+int EQRLS(_push)(EQRLS() _q,
+                 T       _x)
 {
     // push value into buffer
     WINDOW(_push)(_q->buffer, _x);
+    return LIQUID_OK;
 }
 
 // execute internal dot product
 //  _q      :   equalizer object
 //  _y      :   output sample
-void EQRLS(_execute)(EQRLS() _q,
-                     T *     _y)
+int EQRLS(_execute)(EQRLS() _q,
+                    T *     _y)
 {
     // compute vector dot product
     T * r;      // read buffer
     WINDOW(_read)(_q->buffer, &r);
     DOTPROD(_run)(_q->w0, r, _q->p, _y);
+    return LIQUID_OK;
 }
 
 // execute cycle of equalizer, filtering output
@@ -249,9 +256,9 @@ void EQRLS(_execute)(EQRLS() _q,
 //  _x      :   received sample
 //  _d      :   desired output
 //  _d_hat  :   filtered output
-void EQRLS(_step)(EQRLS() _q,
-                  T       _d,
-                  T       _d_hat)
+int EQRLS(_step)(EQRLS() _q,
+                 T       _d,
+                 T       _d_hat)
 {
     unsigned int i,r,c;
     unsigned int p=_q->p;
@@ -345,27 +352,25 @@ void EQRLS(_step)(EQRLS() _q,
         printf("\n");
     EQRLS(_print)(_q);
     }
-    //if (_q->n == 7)
-    //    exit(0);
-
 #endif
 
     // copy old values
     memmove(_q->w0, _q->w1,   p*sizeof(T));
     memmove(_q->P0, _q->P1, p*p*sizeof(T));
-
+    return LIQUID_OK;
 }
 
 // retrieve internal filter coefficients
 //  _q      :   equalizer object
 //  _w      :   weights [size: _p x 1]
-void EQRLS(_get_weights)(EQRLS() _q,
-                         T *     _w)
+int EQRLS(_get_weights)(EQRLS() _q,
+                        T *     _w)
 {
     // copy output weight vector, reversing order
     unsigned int i;
     for (i=0; i<_q->p; i++)
         _w[i] = _q->w1[_q->p-i-1];
+    return LIQUID_OK;
 }
 
 // train equalizer object
@@ -374,18 +379,15 @@ void EQRLS(_get_weights)(EQRLS() _q,
 //  _x      :   received sample vector
 //  _d      :   desired output vector
 //  _n      :   vector length
-void EQRLS(_train)(EQRLS()      _q,
-                   T *          _w,
-                   T *          _x,
-                   T *          _d,
-                   unsigned int _n)
+int EQRLS(_train)(EQRLS()      _q,
+                  T *          _w,
+                  T *          _x,
+                  T *          _d,
+                  unsigned int _n)
 {
     unsigned int i;
-    if (_n < _q->p) {
-        printf("warning: eqrls_%s_train(), traning sequence less than filter order\n",
-                EXTENSION_FULL);
-        return;
-    }
+    if (_n < _q->p)
+        return liquid_error(LIQUID_EIVAL,"eqrls_%s_train(), traning sequence less than filter order",EXTENSION_FULL);
 
     // reset equalizer state
     EQRLS(_reset)(_q);
@@ -407,5 +409,5 @@ void EQRLS(_train)(EQRLS()      _q,
     }
 
     // copy output weight vector
-    EQRLS(_get_weights)(_q, _w);
+    return EQRLS(_get_weights)(_q, _w);
 }
