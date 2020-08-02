@@ -7133,13 +7133,13 @@ cpfskmod cpfskmod_create(unsigned int _bps,
 //cpfskmod cpfskmod_create_gmsk(unsigned int _k, float _BT);
 
 // destroy cpfskmod object
-void cpfskmod_destroy(cpfskmod _q);
+int cpfskmod_destroy(cpfskmod _q);
 
 // print cpfskmod object internals
-void cpfskmod_print(cpfskmod _q);
+int cpfskmod_print(cpfskmod _q);
 
 // reset state
-void cpfskmod_reset(cpfskmod _q);
+int cpfskmod_reset(cpfskmod _q);
 
 // get transmit delay [symbols]
 unsigned int cpfskmod_get_delay(cpfskmod _q);
@@ -7148,9 +7148,9 @@ unsigned int cpfskmod_get_delay(cpfskmod _q);
 //  _q      :   frequency modulator object
 //  _s      :   input symbol
 //  _y      :   output sample array [size: _k x 1]
-void cpfskmod_modulate(cpfskmod               _q,
-                       unsigned int           _s,
-                       liquid_float_complex * _y);
+int cpfskmod_modulate(cpfskmod               _q,
+                      unsigned int           _s,
+                      liquid_float_complex * _y);
 
 
 
@@ -7174,13 +7174,13 @@ cpfskdem cpfskdem_create(unsigned int _bps,
 //cpfskdem cpfskdem_create_gmsk(unsigned int _k, float _BT);
 
 // destroy cpfskdem object
-void cpfskdem_destroy(cpfskdem _q);
+int cpfskdem_destroy(cpfskdem _q);
 
 // print cpfskdem object internals
-void cpfskdem_print(cpfskdem _q);
+int cpfskdem_print(cpfskdem _q);
 
 // reset state
-void cpfskdem_reset(cpfskdem _q);
+int cpfskdem_reset(cpfskdem _q);
 
 // get receive delay [symbols]
 unsigned int cpfskdem_get_delay(cpfskdem _q);
@@ -7192,11 +7192,11 @@ unsigned int cpfskdem_get_delay(cpfskdem _q);
 //  _n      :   input sample array length
 //  _s      :   output symbol array
 //  _nw     :   number of output symbols written
-void cpfskdem_demodulate(cpfskdem               _q,
-                         liquid_float_complex * _y,
-                         unsigned int           _n,
-                         unsigned int         * _s,
-                         unsigned int         * _nw);
+int cpfskdem_demodulate(cpfskdem               _q,
+                        liquid_float_complex * _y,
+                        unsigned int           _n,
+                        unsigned int         * _s,
+                        unsigned int         * _nw);
 #else
 // demodulate array of samples, assuming perfect timing
 //  _q      :   continuous-phase frequency demodulator object

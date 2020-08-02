@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2019 Joseph Gaeddert
+ * Copyright (c) 2007 - 2020 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -37,23 +37,23 @@
 //
 
 // initialize coherent demodulator
-void cpfskdem_init_coherent(cpfskdem _q);
+int cpfskdem_init_coherent(cpfskdem _q);
 
 // initialize non-coherent demodulator
-void cpfskdem_init_noncoherent(cpfskdem _q);
+int cpfskdem_init_noncoherent(cpfskdem _q);
 
 #if 0
 // demodulate array of samples (coherent)
-void cpfskdem_demodulate_coherent(cpfskdem        _q,
-                                  float complex   _y,
-                                  unsigned int  * _s,
-                                  unsigned int  * _nw);
+int cpfskdem_demodulate_coherent(cpfskdem        _q,
+                                 float complex   _y,
+                                 unsigned int  * _s,
+                                 unsigned int  * _nw);
 
 // demodulate array of samples (non-coherent)
-void cpfskdem_demodulate_noncoherent(cpfskdem        _q,
-                                     float complex   _y,
-                                     unsigned int  * _s,
-                                     unsigned int  * _nw);
+int cpfskdem_demodulate_noncoherent(cpfskdem        _q,
+                                    float complex   _y,
+                                    unsigned int  * _s,
+                                    unsigned int  * _nw);
 #else
 // demodulate array of samples (coherent)
 unsigned int cpfskdem_demodulate_coherent(cpfskdem        _q,
@@ -136,21 +136,16 @@ cpfskdem cpfskdem_create(unsigned int _bps,
                          int          _type)
 {
     // validate input
-    if (_bps == 0) {
-        fprintf(stderr,"error: cpfskdem_create(), bits/symbol must be greater than 0\n");
-        exit(1);
-    } else if (_k < 2 || (_k%2)) {
-        fprintf(stderr,"error: cpfskmod_create(), samples/symbol must be greater than 2 and even\n");
-    } else if (_m == 0) {
-        fprintf(stderr,"error: cpfskdem_create(), filter delay must be greater than 0\n");
-        exit(1);
-    } else if (_beta <= 0.0f || _beta > 1.0f) {
-        fprintf(stderr,"error: cpfskdem_create(), filter roll-off must be in (0,1]\n");
-        exit(1);
-    } else if (_h <= 0.0f) {
-        fprintf(stderr,"error: cpfskdem_create(), modulation index must be greater than 0\n");
-        exit(1);
-    }
+    if (_bps == 0)
+        return liquid_error_config("cpfskdem_create(), bits/symbol must be greater than 0");
+    if (_k < 2 || (_k%2))
+        return liquid_error_config("cpfskmod_create(), samples/symbol must be greater than 2 and even");
+    if (_m == 0)
+        return liquid_error_config("cpfskdem_create(), filter delay must be greater than 0");
+    if (_beta <= 0.0f || _beta > 1.0f)
+        return liquid_error_config("cpfskdem_create(), filter roll-off must be in (0,1]");
+    if (_h <= 0.0f)
+        return liquid_error_config("cpfskdem_create(), modulation index must be greater than 0");
 
     // create main object memory
     cpfskdem q = (cpfskdem) malloc(sizeof(struct cpfskdem_s));
@@ -181,7 +176,7 @@ cpfskdem cpfskdem_create(unsigned int _bps,
 }
 
 // initialize coherent demodulator
-void cpfskdem_init_coherent(cpfskdem _q)
+int cpfskdem_init_coherent(cpfskdem _q)
 {
     // specify coherent receiver
     _q->demod_type = CPFSKDEM_COHERENT;
@@ -232,13 +227,13 @@ void cpfskdem_init_coherent(cpfskdem _q)
         _q->symbol_delay = _q->m;
         break;
     default:
-        fprintf(stderr,"error: cpfskdem_init_coherent(), invalid tx filter type\n");
-        exit(1);
+        return liquid_error(LIQUID_EICONFIG,"cpfskdem_init_coherent(), invalid tx filter type");
     }
+    return LIQUID_OK;
 }
 
 // initialize non-coherent demodulator
-void cpfskdem_init_noncoherent(cpfskdem _q)
+int cpfskdem_init_noncoherent(cpfskdem _q)
 {
     // specify non-coherent receiver
     _q->demod_type = CPFSKDEM_NONCOHERENT;
@@ -254,11 +249,11 @@ void cpfskdem_init_noncoherent(cpfskdem _q)
     case LIQUID_CPFSK_GMSK:
         break;
     }
-
+    return LIQUID_OK;
 }
 
 // destroy modem object
-void cpfskdem_destroy(cpfskdem _q)
+int cpfskdem_destroy(cpfskdem _q)
 {
     switch(_q->demod_type) {
     case CPFSKDEM_COHERENT:
@@ -270,17 +265,19 @@ void cpfskdem_destroy(cpfskdem _q)
 
     // free main object memory
     free(_q);
+    return LIQUID_OK;
 }
 
 // print modulation internals
-void cpfskdem_print(cpfskdem _q)
+int cpfskdem_print(cpfskdem _q)
 {
     printf("cpfskdem:\n");
     printf("    k   :   %u\n", _q->k);
+    return LIQUID_OK;
 }
 
 // reset modem object
-void cpfskdem_reset(cpfskdem _q)
+int cpfskdem_reset(cpfskdem _q)
 {
     switch(_q->demod_type) {
     case CPFSKDEM_COHERENT:
@@ -295,6 +292,7 @@ void cpfskdem_reset(cpfskdem _q)
     _q->index   = 0;
     _q->counter = _q->k-1;
     _q->z_prime = 0;
+    return LIQUID_OK;
 }
 
 // get transmit delay [symbols]
@@ -310,11 +308,11 @@ unsigned int cpfskdem_get_delay(cpfskdem _q)
 //  _n      :   input sample array length
 //  _s      :   output symbol array
 //  _nw     :   number of output symbols written
-void cpfskdem_demodulate(cpfskdem        _q,
-                         float complex * _y,
-                         unsigned int    _n,
-                         unsigned int  * _s,
-                         unsigned int  * _nw)
+int cpfskdem_demodulate(cpfskdem        _q,
+                        float complex * _y,
+                        unsigned int    _n,
+                        unsigned int  * _s,
+                        unsigned int  * _nw)
 {
     // iterate through each sample calling type-specific demodulation function
     unsigned int i;
@@ -329,13 +327,14 @@ void cpfskdem_demodulate(cpfskdem        _q,
 
     // set output number of bits written
     *_nw = num_written;
+    return LIQUID_OK;
 }
 
 // demodulate array of samples (coherent)
-void cpfskdem_demodulate_coherent(cpfskdem        _q,
-                                  float complex   _y,
-                                  unsigned int  * _s,
-                                  unsigned int  * _nw)
+int cpfskdem_demodulate_coherent(cpfskdem        _q,
+                                 float complex   _y,
+                                 unsigned int  * _s,
+                                 unsigned int  * _nw)
 {
     // clear output counter
     *_nw = 0;
@@ -382,15 +381,17 @@ void cpfskdem_demodulate_coherent(cpfskdem        _q,
         *_s  = sym_out;
         *_nw = 1;
     }
+    return LIQUID_OK;
 }
 
 // demodulate array of samples (non-coherent)
-void cpfskdem_demodulate_noncoherent(cpfskdem        _q,
-                                     float complex   _y,
-                                     unsigned int  * _s,
-                                     unsigned int  * _nw)
+int cpfskdem_demodulate_noncoherent(cpfskdem        _q,
+                                    float complex   _y,
+                                    unsigned int  * _s,
+                                    unsigned int  * _nw)
 {
     *_nw = 0;
+    return LIQUID_OK;
 }
 
 #else
