@@ -1296,20 +1296,6 @@ LIQUID_MATRIX_DEFINE_INTERNAL_API(LIQUID_MATRIX_MANGLE_DOUBLE,  double)
 LIQUID_MATRIX_DEFINE_INTERNAL_API(LIQUID_MATRIX_MANGLE_CFLOAT,  liquid_float_complex)
 LIQUID_MATRIX_DEFINE_INTERNAL_API(LIQUID_MATRIX_MANGLE_CDOUBLE, liquid_double_complex)
 
-
-// sparse 'alist' matrix type (similar to MacKay, Davey Lafferty convention)
-// large macro
-//   SMATRIX    : name-mangling macro
-//   T          : primitive data type
-#define LIQUID_SMATRIX_DEFINE_INTERNAL_API(SMATRIX,T)           \
-                                                                \
-void SMATRIX(_reset_max_mlist)(SMATRIX() _q);                   \
-void SMATRIX(_reset_max_nlist)(SMATRIX() _q);                   \
-
-LIQUID_SMATRIX_DEFINE_INTERNAL_API(LIQUID_SMATRIX_MANGLE_BOOL,  unsigned char)
-LIQUID_SMATRIX_DEFINE_INTERNAL_API(LIQUID_SMATRIX_MANGLE_FLOAT, float)
-LIQUID_SMATRIX_DEFINE_INTERNAL_API(LIQUID_SMATRIX_MANGLE_INT,   short int)
-
 // search for index placement in list
 unsigned short int smatrix_indexsearch(unsigned short int * _list,
                                        unsigned int         _num_elements,

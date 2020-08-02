@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2015 Joseph Gaeddert
+ * Copyright (c) 2007 - 2020 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -31,6 +31,7 @@
 
 // name-mangling macro
 #define SMATRIX(name)       LIQUID_CONCAT(smatrixi,name)
+#define EXTENSION           "i"
 
 // primitive type
 #define T                   short int
