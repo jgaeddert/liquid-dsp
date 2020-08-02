@@ -482,16 +482,16 @@ WINDOW() WINDOW(_create)(unsigned int _n);                                  \
 WINDOW() WINDOW(_recreate)(WINDOW() _q, unsigned int _n);                   \
                                                                             \
 /* Destroy window object, freeing all internally memory                 */  \
-void WINDOW(_destroy)(WINDOW() _q);                                         \
+int WINDOW(_destroy)(WINDOW() _q);                                          \
                                                                             \
 /* Print window object to stdout                                        */  \
-void WINDOW(_print)(WINDOW() _q);                                           \
+int WINDOW(_print)(WINDOW() _q);                                            \
                                                                             \
 /* Print window object to stdout (with extra information)               */  \
-void WINDOW(_debug_print)(WINDOW() _q);                                     \
+int WINDOW(_debug_print)(WINDOW() _q);                                      \
                                                                             \
 /* Reset window object (initialize to zeros)                            */  \
-void WINDOW(_reset)(WINDOW() _q);                                           \
+int WINDOW(_reset)(WINDOW() _q);                                            \
                                                                             \
 /* Read the contents of the window by returning a pointer to the        */  \
 /* aligned internal memory array. This method guarantees that the       */  \
@@ -501,8 +501,8 @@ void WINDOW(_reset)(WINDOW() _q);                                           \
 /* is performed on the window buffer object                             */  \
 /*  _q      : window object                                             */  \
 /*  _v      : output pointer (set to internal array)                    */  \
-void WINDOW(_read)(WINDOW() _q,                                             \
-                   T **     _v);                                            \
+int WINDOW(_read)(WINDOW() _q,                                              \
+                  T **     _v);                                             \
                                                                             \
 /* Index single element in buffer at a particular index                 */  \
 /* This retrieves the \(i^{th}\) sample in the window, storing the      */  \
@@ -514,9 +514,9 @@ void WINDOW(_read)(WINDOW() _q,                                             \
 /*  _q      : window object                                             */  \
 /*  _i      : index of element to read                                  */  \
 /*  _v      : output value pointer                                      */  \
-void WINDOW(_index)(WINDOW()     _q,                                        \
-                    unsigned int _i,                                        \
-                    T *          _v);                                       \
+int WINDOW(_index)(WINDOW()     _q,                                         \
+                   unsigned int _i,                                         \
+                   T *          _v);                                        \
                                                                             \
 /* Shifts a single sample into the right side of the window, pushing    */  \
 /* the oldest (left-most) sample out of the end. Unlike stacks, the     */  \
@@ -524,8 +524,8 @@ void WINDOW(_index)(WINDOW()     _q,                                        \
 /* in memory until they are overwritten.                                */  \
 /*  _q      : window object                                             */  \
 /*  _v      : single input element                                      */  \
-void WINDOW(_push)(WINDOW() _q,                                             \
-                   T        _v);                                            \
+int WINDOW(_push)(WINDOW() _q,                                              \
+                  T        _v);                                             \
                                                                             \
 /* Write array of elements onto window buffer                           */  \
 /* Effectively, this is equivalent to pushing each sample one at a      */  \
@@ -533,9 +533,9 @@ void WINDOW(_push)(WINDOW() _q,                                             \
 /*  _q      : window object                                             */  \
 /*  _v      : input array of values to write                            */  \
 /*  _n      : number of input values to write                           */  \
-void WINDOW(_write)(WINDOW()     _q,                                        \
-                    T *          _v,                                        \
-                    unsigned int _n);                                       \
+int WINDOW(_write)(WINDOW()     _q,                                         \
+                   T *          _v,                                         \
+                   unsigned int _n);                                        \
 
 // Define window APIs
 LIQUID_WINDOW_DEFINE_API(LIQUID_WINDOW_MANGLE_FLOAT,  float)

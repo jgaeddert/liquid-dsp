@@ -108,17 +108,18 @@ WINDOW() WINDOW(_recreate)(WINDOW() _q, unsigned int _n)
 }
 
 // destroy window object, freeing all internally memory
-void WINDOW(_destroy)(WINDOW() _q)
+int WINDOW(_destroy)(WINDOW() _q)
 {
     // free internal memory array
     free(_q->v);
 
     // free main object memory
     free(_q);
+    return LIQUID_OK;
 }
 
 // print window object to stdout
-void WINDOW(_print)(WINDOW() _q)
+int WINDOW(_print)(WINDOW() _q)
 {
     printf("window [%u elements] :\n", _q->len);
     unsigned int i;
@@ -129,10 +130,11 @@ void WINDOW(_print)(WINDOW() _q)
         BUFFER_PRINT_VALUE(r[i]);
         printf("\n");
     }
+    return LIQUID_OK;
 }
 
 // print window object to stdout (with extra information)
-void WINDOW(_debug_print)(WINDOW() _q)
+int WINDOW(_debug_print)(WINDOW() _q)
 {
     printf("window [%u elements] :\n", _q->len);
     unsigned int i;
@@ -152,10 +154,11 @@ void WINDOW(_debug_print)(WINDOW() _q)
         BUFFER_PRINT_LINE(_q,i)
         printf("\n");
     }
+    return LIQUID_OK;
 }
 
 // reset window object (initialize to zeros)
-void WINDOW(_reset)(WINDOW() _q)
+int WINDOW(_reset)(WINDOW() _q)
 {
     // reset read index
     _q->read_index = 0;
@@ -167,34 +170,34 @@ void WINDOW(_reset)(WINDOW() _q)
 // read window buffer contents
 //  _q      : window object
 //  _v      : output pointer (set to internal array)
-void WINDOW(_read)(WINDOW() _q, T ** _v)
+int WINDOW(_read)(WINDOW() _q, T ** _v)
 {
     // return pointer to buffer
     *_v = _q->v + _q->read_index;
+    return LIQUID_OK;
 }
 
 // index single element in buffer at a particular index
 //  _q      : window object
 //  _i      : index of element to read
 //  _v      : output value pointer
-void WINDOW(_index)(WINDOW()     _q,
-                    unsigned int _i,
-                    T *          _v)
+int WINDOW(_index)(WINDOW()     _q,
+                   unsigned int _i,
+                   T *          _v)
 {
     // validate input
-    if (_i >= _q->len) {
-        liquid_error(LIQUID_EIRANGE,"error: window_index(), index value out of range");
-        return;
-    }
+    if (_i >= _q->len)
+        return liquid_error(LIQUID_EIRANGE,"error: window_index(), index value out of range");
 
     // return value at index
     *_v = _q->v[_q->read_index + _i];
+    return LIQUID_OK;
 }
 
 // push single element onto window buffer
 //  _q      : window object
 //  _v      : single input element
-void WINDOW(_push)(WINDOW() _q, T _v)
+int WINDOW(_push)(WINDOW() _q, T _v)
 {
     // increment index
     _q->read_index++;
@@ -208,19 +211,21 @@ void WINDOW(_push)(WINDOW() _q, T _v)
 
     // append value to end of buffer
     _q->v[_q->read_index + _q->len - 1] = _v;
+    return LIQUID_OK;
 }
 
 // write array of elements onto window buffer
 //  _q      : window object
 //  _v      : input array of values to write
 //  _n      : number of input values to write
-void WINDOW(_write)(WINDOW()     _q,
-                    T *          _v,
-                    unsigned int _n)
+int WINDOW(_write)(WINDOW()     _q,
+                   T *          _v,
+                   unsigned int _n)
 {
     // TODO make this more efficient
     unsigned int i;
     for (i=0; i<_n; i++)
         WINDOW(_push)(_q, _v[i]);
+    return LIQUID_OK;
 }
 
