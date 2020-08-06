@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2015 Joseph Gaeddert
+ * Copyright (c) 2007 - 2020 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -37,10 +37,10 @@ float randweibf(float _alpha,
 {
     // validate input
     if (_alpha <= 0) {
-        fprintf(stderr,"error: randweibf(), alpha must be greater than zero\n");
+        liquid_error(LIQUID_EICONFIG,"randweibf(), alpha must be greater than zero");
         return 0.0f;
     } else if (_beta <= 0) {
-        fprintf(stderr,"error: randweibf(), beta must be greater than zero\n");
+        liquid_error(LIQUID_EICONFIG,"randweibf(), beta must be greater than zero");
         return 0.0f;
     }
 
@@ -61,10 +61,10 @@ float randweibf_pdf(float _x,
 #ifdef LIQUID_VALIDATE_INPUT
     // validate input
     if (_alpha <= 0) {
-        fprintf(stderr,"error: randweibf_pdf(), alpha must be greater than zero\n");
+        liquid_error(LIQUID_EICONFIG,"randweibf_pdf(), alpha must be greater than zero");
         return 0.0f;
     } else if (_beta <= 0) {
-        fprintf(stderr,"error: randweibf_pdf(), beta must be greater than zero\n");
+        liquid_error(LIQUID_EICONFIG,"randweibf_pdf(), beta must be greater than zero");
         return 0.0f;
     }
 #endif
@@ -85,10 +85,10 @@ float randweibf_cdf(float _x,
 #ifdef LIQUID_VALIDATE_INPUT
     // validate input
     if (_alpha <= 0) {
-        fprintf(stderr,"error: randweibf_cdf(), alpha must be greater than zero\n");
+        liquid_error(LIQUID_EICONFIG,"randweibf_cdf(), alpha must be greater than zero");
         return 0.0f;
     } else if (_beta <= 0) {
-        fprintf(stderr,"error: randweibf_cdf(), beta must be greater than zero\n");
+        liquid_error(LIQUID_EICONFIG,"randweibf_cdf(), beta must be greater than zero");
         return 0.0f;
     }
 #endif
