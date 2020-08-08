@@ -8211,41 +8211,41 @@ gasearch gasearch_create_advanced(gasearch_utility _utility,
 
 
 // Destroy a gasearch object
-void gasearch_destroy(gasearch _q);
+int gasearch_destroy(gasearch _q);
 
 // print search parameter internals
-void gasearch_print(gasearch _q);
+int gasearch_print(gasearch _q);
 
 // set mutation rate
-void gasearch_set_mutation_rate(gasearch _q,
-                                float _mutation_rate);
+int gasearch_set_mutation_rate(gasearch _q,
+                               float    _mutation_rate);
 
 // set population/selection size
 //  _q                  :   ga search object
 //  _population_size    :   new population size (number of chromosomes)
 //  _selection_size     :   selection size (number of parents for new generation)
-void gasearch_set_population_size(gasearch _q,
-                                  unsigned int _population_size,
-                                  unsigned int _selection_size);
+int gasearch_set_population_size(gasearch     _q,
+                                 unsigned int _population_size,
+                                 unsigned int _selection_size);
 
 // Execute the search
 //  _q              :   ga search object
 //  _max_iterations :   maximum number of iterations to run before bailing
 //  _target_utility :   target utility
-float gasearch_run(gasearch _q,
-                    unsigned int _max_iterations,
-                    float _target_utility);
+float gasearch_run(gasearch     _q,
+                   unsigned int _max_iterations,
+                   float        _target_utility);
 
 // iterate over one evolution of the search algorithm
-void gasearch_evolve(gasearch _q);
+int gasearch_evolve(gasearch _q);
 
 // get optimal chromosome
 //  _q              :   ga search object
 //  _c              :   output optimal chromosome
 //  _utility_opt    :   fitness of _c
-void gasearch_getopt(gasearch _q,
-                     chromosome _c,
-                     float * _utility_opt);
+int gasearch_getopt(gasearch   _q,
+                    chromosome _c,
+                    float *    _utility_opt);
 
 //
 // MODULE : quantization

@@ -1776,16 +1776,16 @@ struct gasearch_s {
 //
 
 // evaluate fitness of entire population
-void gasearch_evaluate(gasearch _q);
+int gasearch_evaluate(gasearch _q);
 
 // crossover population
-void gasearch_crossover(gasearch _q);
+int gasearch_crossover(gasearch _q);
 
 // mutate population
-void gasearch_mutate(gasearch _q);
+int gasearch_mutate(gasearch _q);
 
 // rank population by fitness
-void gasearch_rank(gasearch _q);
+int gasearch_rank(gasearch _q);
 
 // sort values by index
 //  _v          :   input values [size: _len x 1]
