@@ -8134,46 +8134,45 @@ chromosome chromosome_create_clone(chromosome _parent);
 
 // copy existing chromosomes' internal traits (all other internal
 // parameters must be equal)
-void chromosome_copy(chromosome _parent, chromosome _child);
+int chromosome_copy(chromosome _parent, chromosome _child);
 
 // Destroy a chromosome object
-void chromosome_destroy(chromosome _c);
+int chromosome_destroy(chromosome _c);
 
 // get number of traits in chromosome
 unsigned int chromosome_get_num_traits(chromosome _c);
 
 // Print chromosome values to screen (binary representation)
-void chromosome_print(chromosome _c);
+int chromosome_print(chromosome _c);
 
 // Print chromosome values to screen (floating-point representation)
-void chromosome_printf(chromosome _c);
+int chromosome_printf(chromosome _c);
 
 // clear chromosome (set traits to zero)
-void chromosome_reset(chromosome _c);
+int chromosome_reset(chromosome _c);
 
 // initialize chromosome on integer values
-void chromosome_init(chromosome _c,
+int chromosome_init(chromosome _c,
                      unsigned int * _v);
 
 // initialize chromosome on floating-point values
-void chromosome_initf(chromosome _c,
-                      float * _v);
+int chromosome_initf(chromosome _c, float * _v);
 
 // Mutates chromosome _c at _index
-void chromosome_mutate(chromosome _c, unsigned int _index);
+int chromosome_mutate(chromosome _c, unsigned int _index);
 
 // Resulting chromosome _c is a crossover of parents _p1 and _p2 at _threshold
-void chromosome_crossover(chromosome _p1,
-                          chromosome _p2,
-                          chromosome _c,
-                          unsigned int _threshold);
+int chromosome_crossover(chromosome   _p1,
+                         chromosome   _p2,
+                         chromosome   _c,
+                         unsigned int _threshold);
 
 // Initializes chromosome to random value
-void chromosome_init_random(chromosome _c);
+int chromosome_init_random(chromosome _c);
 
 // Returns integer representation of chromosome
-unsigned int chromosome_value(chromosome _c,
-                              unsigned int _index);
+unsigned int chromosome_value(chromosome    _c,
+                               unsigned int _index);
 
 // Returns floating-point representation of chromosome
 float chromosome_valuef(chromosome _c,
