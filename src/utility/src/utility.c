@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2018 Joseph Gaeddert
+ * Copyright (c) 2007 - 2020 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -36,9 +36,9 @@
 //  _val    : input value (e.g. 100e6)
 //  _unit   : output unit character (e.g. 'M')
 //  _scale  : output scale (e.g. 1e-6)
-void liquid_get_scale(float   _val,
-                      char *  _unit,
-                      float * _scale)
+int liquid_get_scale(float   _val,
+                     char *  _unit,
+                     float * _scale)
 {
     float v = fabsf(_val);
     if      (v < 1e-9) { *_scale = 1e12;  *_unit = 'p'; }
@@ -51,5 +51,6 @@ void liquid_get_scale(float   _val,
     else if (v < 1e12) { *_scale = 1e-9;  *_unit = 'G'; }
     else if (v < 1e15) { *_scale = 1e-12; *_unit = 'T'; }
     else               { *_scale = 1e-15; *_unit = 'P'; }
+    return LIQUID_OK;
 }
 

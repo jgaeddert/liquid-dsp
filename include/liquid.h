@@ -8556,11 +8556,11 @@ void msequence_set_state(msequence    _ms,
 //  _k          :   bit index to write in _src
 //  _b          :   number of bits in input symbol
 //  _sym_in     :   input symbol
-void liquid_pack_array(unsigned char * _src,
-                       unsigned int _n,
-                       unsigned int _k,
-                       unsigned int _b,
-                       unsigned char _sym_in);
+int liquid_pack_array(unsigned char * _src,
+                      unsigned int _n,
+                      unsigned int _k,
+                      unsigned int _b,
+                      unsigned char _sym_in);
 
 // unpack symbols from binary array
 //  _src        :   source array [size: _n x 1]
@@ -8568,11 +8568,11 @@ void liquid_pack_array(unsigned char * _src,
 //  _k          :   bit index to write in _src
 //  _b          :   number of bits in output symbol
 //  _sym_out    :   output symbol
-void liquid_unpack_array(unsigned char * _src,
-                         unsigned int _n,
-                         unsigned int _k,
-                         unsigned int _b,
-                         unsigned char * _sym_out);
+int liquid_unpack_array(unsigned char * _src,
+                        unsigned int _n,
+                        unsigned int _k,
+                        unsigned int _b,
+                        unsigned char * _sym_out);
 
 // pack one-bit symbols into bytes (8-bit symbols)
 //  _sym_in             :   input symbols array [size: _sym_in_len x 1]
@@ -8580,11 +8580,11 @@ void liquid_unpack_array(unsigned char * _src,
 //  _sym_out            :   output symbols
 //  _sym_out_len        :   number of bytes allocated to output symbols array
 //  _num_written        :   number of output symbols actually written
-void liquid_pack_bytes(unsigned char * _sym_in,
-                       unsigned int _sym_in_len,
-                       unsigned char * _sym_out,
-                       unsigned int _sym_out_len,
-                       unsigned int * _num_written);
+int liquid_pack_bytes(unsigned char * _sym_in,
+                      unsigned int _sym_in_len,
+                      unsigned char * _sym_out,
+                      unsigned int _sym_out_len,
+                      unsigned int * _num_written);
 
 // unpack 8-bit symbols (full bytes) into one-bit symbols
 //  _sym_in             :   input symbols array [size: _sym_in_len x 1]
@@ -8592,11 +8592,11 @@ void liquid_pack_bytes(unsigned char * _sym_in,
 //  _sym_out            :   output symbols array
 //  _sym_out_len        :   number of bytes allocated to output symbols array
 //  _num_written        :   number of output symbols actually written
-void liquid_unpack_bytes(unsigned char * _sym_in,
-                         unsigned int _sym_in_len,
-                         unsigned char * _sym_out,
-                         unsigned int _sym_out_len,
-                         unsigned int * _num_written);
+int liquid_unpack_bytes(unsigned char * _sym_in,
+                        unsigned int _sym_in_len,
+                        unsigned char * _sym_out,
+                        unsigned int _sym_out_len,
+                        unsigned int * _num_written);
 
 // repack bytes with arbitrary symbol sizes
 //  _sym_in             :   input symbols array [size: _sym_in_len x 1]
@@ -8606,80 +8606,77 @@ void liquid_unpack_bytes(unsigned char * _sym_in,
 //  _sym_out_bps        :   number of bits per output symbol
 //  _sym_out_len        :   number of bytes allocated to output symbols array
 //  _num_written        :   number of output symbols actually written
-void liquid_repack_bytes(unsigned char * _sym_in,
-                         unsigned int _sym_in_bps,
-                         unsigned int _sym_in_len,
-                         unsigned char * _sym_out,
-                         unsigned int _sym_out_bps,
-                         unsigned int _sym_out_len,
-                         unsigned int * _num_written);
+int liquid_repack_bytes(unsigned char * _sym_in,
+                        unsigned int _sym_in_bps,
+                        unsigned int _sym_in_len,
+                        unsigned char * _sym_out,
+                        unsigned int _sym_out_bps,
+                        unsigned int _sym_out_len,
+                        unsigned int * _num_written);
 
 // shift array to the left _b bits, filling in zeros
 //  _src        :   source address [size: _n x 1]
 //  _n          :   input data array size
 //  _b          :   number of bits to shift
-void liquid_lbshift(unsigned char * _src,
-                    unsigned int _n,
-                    unsigned int _b);
+int liquid_lbshift(unsigned char * _src,
+                   unsigned int _n,
+                   unsigned int _b);
 
 // shift array to the right _b bits, filling in zeros
 //  _src        :   source address [size: _n x 1]
 //  _n          :   input data array size
 //  _b          :   number of bits to shift
-void liquid_rbshift(unsigned char * _src,
-                    unsigned int _n,
-                    unsigned int _b);
+int liquid_rbshift(unsigned char * _src,
+                   unsigned int _n,
+                   unsigned int _b);
 
 // circularly shift array to the left _b bits
 //  _src        :   source address [size: _n x 1]
 //  _n          :   input data array size
 //  _b          :   number of bits to shift
-void liquid_lbcircshift(unsigned char * _src,
-                        unsigned int _n,
-                        unsigned int _b);
+int liquid_lbcircshift(unsigned char * _src,
+                       unsigned int _n,
+                       unsigned int _b);
 
 // circularly shift array to the right _b bits
 //  _src        :   source address [size: _n x 1]
 //  _n          :   input data array size
 //  _b          :   number of bits to shift
-void liquid_rbcircshift(unsigned char * _src,
-                        unsigned int _n,
-                        unsigned int _b);
-
-
-
+int liquid_rbcircshift(unsigned char * _src,
+                       unsigned int _n,
+                       unsigned int _b);
 
 // shift array to the left _b bytes, filling in zeros
 //  _src        :   source address [size: _n x 1]
 //  _n          :   input data array size
 //  _b          :   number of bytes to shift
-void liquid_lshift(unsigned char * _src,
-                   unsigned int _n,
-                   unsigned int _b);
+int liquid_lshift(unsigned char * _src,
+                  unsigned int _n,
+                  unsigned int _b);
 
 // shift array to the right _b bytes, filling in zeros
 //  _src        :   source address [size: _n x 1]
 //  _n          :   input data array size
 //  _b          :   number of bytes to shift
-void liquid_rshift(unsigned char * _src,
-                   unsigned int _n,
-                   unsigned int _b);
+int liquid_rshift(unsigned char * _src,
+                  unsigned int _n,
+                  unsigned int _b);
 
 // circular shift array to the left _b bytes
 //  _src        :   source address [size: _n x 1]
 //  _n          :   input data array size
 //  _b          :   number of bytes to shift
-void liquid_lcircshift(unsigned char * _src,
-                       unsigned int _n,
-                       unsigned int _b);
+int liquid_lcircshift(unsigned char * _src,
+                      unsigned int _n,
+                      unsigned int _b);
 
 // circular shift array to the right _b bytes
 //  _src        :   source address [size: _n x 1]
 //  _n          :   input data array size
 //  _b          :   number of bytes to shift
-void liquid_rcircshift(unsigned char * _src,
-                       unsigned int _n,
-                       unsigned int _b);
+int liquid_rcircshift(unsigned char * _src,
+                      unsigned int _n,
+                      unsigned int _b);
 
 // Count the number of ones in an integer
 unsigned int liquid_count_ones(unsigned int _x);
@@ -8698,8 +8695,7 @@ unsigned int liquid_count_leading_zeros(unsigned int _x);
 unsigned int liquid_msb_index(unsigned int _x);
 
 // Print string of bits to stdout
-void liquid_print_bitstring(unsigned int _x,
-                            unsigned int _n);
+int liquid_print_bitstring(unsigned int _x, unsigned int _n);
 
 // reverse byte, word, etc.
 unsigned char liquid_reverse_byte(  unsigned char _x);
@@ -8711,9 +8707,9 @@ unsigned int  liquid_reverse_uint32(unsigned int  _x);
 //  _val    : input value (e.g. 100e6)
 //  _unit   : output unit character (e.g. 'M')
 //  _scale  : output scale (e.g. 1e-6)
-void liquid_get_scale(float   _val,
-                      char *  _unit,
-                      float * _scale);
+int liquid_get_scale(float   _val,
+                     char *  _unit,
+                     float * _scale);
 
 //
 // MODULE : vector

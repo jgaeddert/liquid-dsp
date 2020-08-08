@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2015 Joseph Gaeddert
+ * Copyright (c) 2007 - 2020 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -111,12 +111,13 @@ unsigned int count_bit_errors_array(unsigned char * _msg0,
 }
 
 // print string of bits to standard output
-void liquid_print_bitstring(unsigned int _x,
-                            unsigned int _n)
+int liquid_print_bitstring(unsigned int _x,
+                           unsigned int _n)
 {
     unsigned int i;
     for (i=0; i<_n; i++)
         printf("%1u", (_x >> (_n-i-1)) & 1);
+    return LIQUID_OK;
 }
 
 // number of ones in a byte
