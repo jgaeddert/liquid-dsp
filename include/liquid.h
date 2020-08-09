@@ -8100,16 +8100,16 @@ qnsearch qnsearch_create(void *           _userdata,
                          int              _direction);
 
 // Destroy a qnsearch object
-void qnsearch_destroy(qnsearch _g);
+int qnsearch_destroy(qnsearch _g);
 
 // Prints current status of search
-void qnsearch_print(qnsearch _g);
+int qnsearch_print(qnsearch _g);
 
 // Resets internal state
-void qnsearch_reset(qnsearch _g);
+int qnsearch_reset(qnsearch _g);
 
 // Iterate once
-void qnsearch_step(qnsearch _g);
+int qnsearch_step(qnsearch _g);
 
 // Execute the search
 float qnsearch_execute(qnsearch _g,

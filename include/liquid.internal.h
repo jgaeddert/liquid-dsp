@@ -1691,46 +1691,6 @@ float gradsearch_norm(float *      _v,
                       unsigned int _n);
 
 
-// quasi-Newton search object
-struct qnsearch_s {
-    float* v;           // vector to optimize (externally allocated)
-    unsigned int num_parameters;    // number of parameters to optimize [n]
-
-    float gamma;        // nominal stepsize
-    float delta;        // differential used to compute (estimate) derivative
-    float dgamma;       // decremental gamma parameter
-    float gamma_hat;    // step size (decreases each epoch)
-    float* v_prime;     // temporary vector array
-    float* dv;          // parameter step vector
-
-    float * B;          // approximate Hessian matrix inverse [n x n]
-    float * H;          // Hessian matrix
-
-    float* p;           // search direction
-    float* gradient;    // gradient approximation
-    float* gradient0;   // gradient approximation (previous step)
-
-    // External utility function.
-    utility_function get_utility;
-    float utility;      // current utility
-    void * userdata;    // userdata pointer passed to utility callback
-    int minimize;       // minimize/maximimze utility (search direction)
-};
-
-// compute gradient(x_k)
-void qnsearch_compute_gradient(qnsearch _q);
-
-// compute the norm of the gradient(x_k)
-void qnsearch_normalize_gradient(qnsearch _q);
-
-// compute Hessian (estimate)
-void qnsearch_compute_Hessian(qnsearch _q);
-
-// compute the updated inverse hessian matrix using the Broyden, Fletcher,
-// Goldfarb & Shanno method (BFGS)
-void qnsearch_update_hessian_bfgs(qnsearch _q);
-
-
 // Chromosome structure used in genetic algorithm searches
 struct chromosome_s {
     unsigned int num_traits;            // number of represented traits
