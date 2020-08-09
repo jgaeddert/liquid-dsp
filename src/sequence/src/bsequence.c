@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2015 Joseph Gaeddert
+ * Copyright (c) 2007 - 2020 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -79,20 +79,22 @@ bsequence bsequence_create(unsigned int _num_bits)
 }
 
 // Free memory in a binary sequence
-void bsequence_destroy(bsequence _bs)
+int bsequence_destroy(bsequence _bs)
 {
     free( _bs->s );
     free( _bs );
+    return LIQUID_OK;
 }
 
-void bsequence_reset(bsequence _bs)
+int bsequence_reset(bsequence _bs)
 {
     memset( _bs->s, 0x00, (_bs->s_len)*sizeof(unsigned int) );
+    return LIQUID_OK;
 }
 
 // initialize sequence on external array
-void bsequence_init(bsequence _bs,
-                    unsigned char * _v)
+int bsequence_init(bsequence       _bs,
+                   unsigned char * _v)
 {
     // push single bit at a time
     unsigned int i;
@@ -108,10 +110,11 @@ void bsequence_init(bsequence _bs,
         bsequence_push(_bs, byte & mask ? 1 : 0);
         mask >>= 1;
     }
+    return LIQUID_OK;
 }
 
 // Print sequence to the screen
-void bsequence_print(bsequence _bs)
+int bsequence_print(bsequence _bs)
 {
     unsigned int i, j;
     unsigned int chunk;
@@ -133,11 +136,12 @@ void bsequence_print(bsequence _bs)
         }
     }
     printf("\n");
+    return LIQUID_OK;
 }
 
 // push bits in from the right
-void bsequence_push(bsequence _bs,
-                    unsigned int _bit)
+int bsequence_push(bsequence    _bs,
+                   unsigned int _bit)
 {
     unsigned int overflow;
     unsigned int i;
@@ -160,29 +164,30 @@ void bsequence_push(bsequence _bs,
 
     // apply input bit to LSB of last block
     _bs->s[_bs->s_len-1] |= ( _bit & 1 );
+    return LIQUID_OK;
 }
 
 // circular shift (left)
-void bsequence_circshift(bsequence _bs)
+int bsequence_circshift(bsequence _bs)
 {
     // extract most-significant (left-most) bit
     unsigned int msb_mask = 1 << (_bs->num_bits_msb-1);
     unsigned int b = (_bs->s[0] & msb_mask) >> (_bs->num_bits_msb-1);
 
     // push bit into sequence
-    bsequence_push(_bs, b);
+    return bsequence_push(_bs, b);
 }
 
 // Correlate two binary sequences together
-signed int bsequence_correlate(bsequence _bs1,
-                               bsequence _bs2)
+int bsequence_correlate(bsequence _bs1,
+                        bsequence _bs2)
 {
-    signed int rxy = 0;
+    int rxy = 0;
     unsigned int i;
     
     if ( _bs1->s_len != _bs2->s_len ) {
-        printf("error: bsequence_correlate(), binary sequences must be the same length!\n");
-        exit(-1);
+        liquid_error(LIQUID_EICONFIG,"bsequence_correlate(), binary sequences must be the same length!");
+        return 0;
     }
     
     unsigned int chunk;
@@ -201,17 +206,16 @@ signed int bsequence_correlate(bsequence _bs1,
 }
 
 // compute the binary addition of two bit sequences
-void bsequence_add(bsequence _bs1,
-                   bsequence _bs2,
-                   bsequence _bs3)
+int bsequence_add(bsequence _bs1,
+                  bsequence _bs2,
+                  bsequence _bs3)
 {
     // test lengths of all sequences
     if ( _bs1->s_len != _bs2->s_len ||
          _bs1->s_len != _bs3->s_len ||
          _bs2->s_len != _bs3->s_len )
     {
-        fprintf(stderr,"error: bsequence_add(), binary sequences must be same length!\n");
-        exit(-1);
+        return liquid_error(LIQUID_EICONFIG,"bsequence_add(), binary sequences must be same length!");
     }
 
     // b3 = b1 + b2
@@ -220,20 +224,20 @@ void bsequence_add(bsequence _bs1,
         _bs3->s[i] = _bs1->s[i] ^ _bs2->s[i];
 
     // no need to mask most-significant byte
+    return LIQUID_OK;
 }
 
 // compute the binary multiplication of two bit sequences
-void bsequence_mul(bsequence _bs1,
-                   bsequence _bs2,
-                   bsequence _bs3)
+int bsequence_mul(bsequence _bs1,
+                  bsequence _bs2,
+                  bsequence _bs3)
 {
     // test lengths of all sequences
     if ( _bs1->s_len != _bs2->s_len ||
          _bs1->s_len != _bs3->s_len ||
          _bs2->s_len != _bs3->s_len )
     {
-        fprintf(stderr,"error: bsequence_mul(), binary sequences must be same length!\n");
-        exit(-1);
+        return liquid_error(LIQUID_EICONFIG,"bsequence_mul(), binary sequences must be same length!");
     }
 
     // b3 = b1 * b2
@@ -242,6 +246,7 @@ void bsequence_mul(bsequence _bs1,
         _bs3->s[i] = _bs1->s[i] & _bs2->s[i];
 
     // no need to mask most-significant byte
+    return LIQUID_OK;
 }
 
 // accumulate the 1's in a binary sequence
@@ -267,8 +272,8 @@ unsigned int bsequence_index(bsequence _bs,
                              unsigned int _i)
 {
     if (_i >= _bs->num_bits) {
-        fprintf(stderr,"error: bsequence_index(), invalid index %u\n", _i);
-        exit(-1);
+        liquid_error(LIQUID_EICONFIG,"bsequence_index(), invalid index %u", _i);
+        return 0;
     }
     div_t d = div( _i, 8*sizeof(unsigned int) );
 
@@ -281,19 +286,15 @@ unsigned int bsequence_index(bsequence _bs,
 
 // intialize two sequences to complementary codes.  sequences must
 // be of length at least 8 and a power of 2 (e.g. 8, 16, 32, 64,...)
-void bsequence_create_ccodes(bsequence _qa, bsequence _qb)
+int bsequence_create_ccodes(bsequence _qa, bsequence _qb)
 {
     // make sure sequences are the same length
-    if (_qa->num_bits != _qb->num_bits) {
-        printf("error: bsequence_create_ccodes(), sequence lengths must match\n");
-        exit(1);
-    } else if (_qa->num_bits < 8) {
-        printf("error: bsequence_create_ccodes(), sequence too short\n");
-        exit(1);
-    } else if ( (_qa->num_bits)%8 != 0 ) {
-        printf("error: bsequence_create_ccodes(), sequence must be multiple of 8\n");
-        exit(1);
-    }
+    if (_qa->num_bits != _qb->num_bits)
+        return liquid_error(LIQUID_EICONFIG,"bsequence_create_ccodes(), sequence lengths must match");
+    if (_qa->num_bits < 8)
+        return liquid_error(LIQUID_EICONFIG,"bsequence_create_ccodes(), sequence too short");
+    if ( (_qa->num_bits)%8 != 0 )
+        return liquid_error(LIQUID_EICONFIG,"bsequence_create_ccodes(), sequence must be multiple of 8");
 
     // generate two temporary arrays
     unsigned int num_bytes = _qa->num_bits / 8;
@@ -312,7 +313,6 @@ void bsequence_create_ccodes(bsequence _qa, bsequence _qb)
     unsigned int i_n1;
     unsigned int i_n0;
     while (n < num_bytes) {
-
         i_n1 = num_bytes - n;
         i_n0 = num_bytes - 2*n;
 
@@ -334,5 +334,6 @@ void bsequence_create_ccodes(bsequence _qa, bsequence _qb)
     // initialize on generated sequences
     bsequence_init(_qa, a);
     bsequence_init(_qb, b);
+    return LIQUID_OK;
 }
 

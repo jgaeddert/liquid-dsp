@@ -8427,33 +8427,33 @@ typedef struct bsequence_s * bsequence;
 bsequence bsequence_create(unsigned int num_bits);
 
 // Free memory in a binary sequence
-void bsequence_destroy(bsequence _bs);
+int bsequence_destroy(bsequence _bs);
 
 // Clear binary sequence (set to 0's)
-void bsequence_reset(bsequence _bs);
+int bsequence_reset(bsequence _bs);
 
 // initialize sequence on external array
-void bsequence_init(bsequence _bs,
-                    unsigned char * _v);
+int bsequence_init(bsequence       _bs,
+                   unsigned char * _v);
 
 // Print sequence to the screen
-void bsequence_print(bsequence _bs);
+int bsequence_print(bsequence _bs);
 
 // Push bit into to back of a binary sequence
-void bsequence_push(bsequence _bs,
-                    unsigned int _bit);
+int bsequence_push(bsequence    _bs,
+                   unsigned int _bit);
 
 // circular shift (left)
-void bsequence_circshift(bsequence _bs);
+int bsequence_circshift(bsequence _bs);
 
 // Correlate two binary sequences together
 int bsequence_correlate(bsequence _bs1, bsequence _bs2);
 
 // compute the binary addition of two bit sequences
-void bsequence_add(bsequence _bs1, bsequence _bs2, bsequence _bs3);
+int bsequence_add(bsequence _bs1, bsequence _bs2, bsequence _bs3);
 
 // compute the binary multiplication of two bit sequences
-void bsequence_mul(bsequence _bs1, bsequence _bs2, bsequence _bs3);
+int bsequence_mul(bsequence _bs1, bsequence _bs2, bsequence _bs3);
 
 // accumulate the 1's in a binary sequence
 unsigned int bsequence_accumulate(bsequence _bs);
@@ -8468,8 +8468,7 @@ unsigned int bsequence_index(bsequence _bs, unsigned int _i);
 // be of length at least 8 and a power of 2 (e.g. 8, 16, 32, 64,...)
 //  _a      :   sequence 'a' (bsequence object)
 //  _b      :   sequence 'b' (bsequence object)
-void bsequence_create_ccodes(bsequence _a,
-                             bsequence _b);
+int bsequence_create_ccodes(bsequence _a, bsequence _b);
 
 
 // M-Sequence
@@ -8510,10 +8509,10 @@ msequence msequence_create_genpoly(unsigned int _g);
 msequence msequence_create_default(unsigned int _m);
 
 // destroy an msequence object, freeing all internal memory
-void msequence_destroy(msequence _m);
+int msequence_destroy(msequence _m);
 
 // prints the sequence's internal state to the screen
-void msequence_print(msequence _m);
+int msequence_print(msequence _m);
 
 // advance msequence on shift register, returning output bit
 unsigned int msequence_advance(msequence _ms);
@@ -8526,13 +8525,13 @@ unsigned int msequence_generate_symbol(msequence _ms,
                                        unsigned int _bps);
 
 // reset msequence shift register to original state, typically '1'
-void msequence_reset(msequence _ms);
+int msequence_reset(msequence _ms);
 
 // initialize a bsequence object on an msequence object
 //  _bs     :   bsequence object
 //  _ms     :   msequence object
-void bsequence_init_msequence(bsequence _bs,
-                              msequence _ms);
+int bsequence_init_msequence(bsequence _bs,
+                             msequence _ms);
 
 // get the length of the sequence
 unsigned int msequence_get_length(msequence _ms);
@@ -8541,8 +8540,8 @@ unsigned int msequence_get_length(msequence _ms);
 unsigned int msequence_get_state(msequence _ms);
 
 // set the internal state of the sequence
-void msequence_set_state(msequence    _ms,
-                         unsigned int _a);
+int msequence_set_state(msequence    _ms,
+                        unsigned int _a);
 
 
 //

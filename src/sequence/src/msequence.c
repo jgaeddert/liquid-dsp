@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2015 Joseph Gaeddert
+ * Copyright (c) 2007 - 2020 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -68,10 +68,8 @@ msequence msequence_create(unsigned int _m,
                            unsigned int _a)
 {
     // validate input
-    if (_m > LIQUID_MAX_MSEQUENCE_M || _m < LIQUID_MIN_MSEQUENCE_M) {
-        fprintf(stderr,"error: msequence_create(), m not in range\n");
-        exit(1);
-    }
+    if (_m > LIQUID_MAX_MSEQUENCE_M || _m < LIQUID_MIN_MSEQUENCE_M)
+        return liquid_error_config("msequence_create(), m not in range");
     
     // allocate memory for msequence object
     msequence ms = (msequence) malloc(sizeof(struct msequence_s));
@@ -104,10 +102,8 @@ msequence msequence_create_genpoly(unsigned int _g)
     unsigned int t = liquid_msb_index(_g);
     
     // validate input
-    if (t < 2) {
-        fprintf(stderr,"error: msequence_create_genpoly(), invalid generator polynomial: 0x%x\n", _g);
-        exit(1);
-    }
+    if (t < 2)
+        return liquid_error_config("msequence_create_genpoly(), invalid generator polynomial: 0x%x", _g);
 
     // compute derived values
     unsigned int m = t - 1; // m-sequence shift register length
@@ -121,10 +117,8 @@ msequence msequence_create_genpoly(unsigned int _g)
 msequence msequence_create_default(unsigned int _m)
 {
     // validate input
-    if (_m > LIQUID_MAX_MSEQUENCE_M || _m < LIQUID_MIN_MSEQUENCE_M) {
-        fprintf(stderr,"error: msequence_create(), m not in range\n");
-        exit(1);
-    }
+    if (_m > LIQUID_MAX_MSEQUENCE_M || _m < LIQUID_MIN_MSEQUENCE_M)
+        return liquid_error_config("msequence_create(), m not in range");
     
     // allocate memory for msequence object
     msequence ms = (msequence) malloc(sizeof(struct msequence_s));
@@ -137,13 +131,14 @@ msequence msequence_create_default(unsigned int _m)
 }
 
 // destroy an msequence object, freeing all internal memory
-void msequence_destroy(msequence _ms)
+int msequence_destroy(msequence _ms)
 {
     free(_ms);
+    return LIQUID_OK;
 }
 
 // prints the sequence's internal state to the screen
-void msequence_print(msequence _m)
+int msequence_print(msequence _m)
 {
     unsigned int i;
 
@@ -160,6 +155,7 @@ void msequence_print(msequence _m)
     for (i=0; i<_m->m; i++)
         printf("%c", ((_m->g) >> (_m->m-i-1)) & 0x01 ? '1' : '0');
     printf("\n");
+    return LIQUID_OK;
 }
 
 // advance msequence on shift register, returning output bit
@@ -180,7 +176,7 @@ unsigned int msequence_advance(msequence _ms)
 // generate pseudo-random symbol from shift register
 //  _ms     :   m-sequence object
 //  _bps    :   bits per symbol of output
-unsigned int msequence_generate_symbol(msequence _ms,
+unsigned int msequence_generate_symbol(msequence    _ms,
                                        unsigned int _bps)
 {
     unsigned int i;
@@ -193,30 +189,25 @@ unsigned int msequence_generate_symbol(msequence _ms,
 }
 
 // reset msequence shift register to original state, typically '1'
-void msequence_reset(msequence _ms)
+int msequence_reset(msequence _ms)
 {
     _ms->v = _ms->a;
+    return LIQUID_OK;
 }
 
 // initialize a bsequence object on an msequence object
 //  _bs     :   bsequence object
 //  _ms     :   msequence object
-void bsequence_init_msequence(bsequence _bs,
-                              msequence _ms)
+int bsequence_init_msequence(bsequence _bs,
+                             msequence _ms)
 {
-#if 0
-    if (_ms->n > LIQUID_MAX_MSEQUENCE_LENGTH) {
-        fprintf(stderr,"error: bsequence_init_msequence(), msequence length exceeds maximum\n");
-        exit(1);
-    }
-#endif
-
     // clear binary sequence
     bsequence_reset(_bs);
 
     unsigned int i;
     for (i=0; i<(_ms->n); i++)
         bsequence_push(_bs, msequence_advance(_ms));
+    return LIQUID_OK;
 }
 
 // get the length of the sequence
@@ -232,12 +223,13 @@ unsigned int msequence_get_state(msequence _ms)
 }
 
 // set the internal state of the sequence
-void msequence_set_state(msequence    _ms,
-                         unsigned int _a)
+int msequence_set_state(msequence    _ms,
+                        unsigned int _a)
 {
     // set internal state
     // NOTE: if state is set to zero, this will lock the sequence generator,
     //       but let the user set this value if they wish
     _ms->v = _a;
+    return LIQUID_OK;
 }
 
