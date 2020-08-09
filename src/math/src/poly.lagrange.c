@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2015 Joseph Gaeddert
+ * Copyright (c) 2007 - 2020 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -28,10 +28,10 @@
 #include <string.h>
 
 // Lagrange polynomial exact fit (order _n-1)
-void POLY(_fit_lagrange)(T * _x,
-                         T * _y,
-                         unsigned int _n,
-                         T * _p)
+int POLY(_fit_lagrange)(T *          _x,
+                        T *          _y,
+                        unsigned int _n,
+                        T *          _p)
 {
     unsigned int k=_n-1;    // polynomial order
 
@@ -76,7 +76,7 @@ void POLY(_fit_lagrange)(T * _x,
             printf("  c[%3u] = %16.6f > %16.6f\n", j, crealf(c[j]), crealf(g*c[j]));
 #endif
     }
-
+    return LIQUID_OK;
 }
 
 // Lagrange polynomial interpolation
@@ -101,9 +101,9 @@ T POLY(_interp_lagrange)(T * _x,
     return y0;
 }
 // Lagrange polynomial fit (barycentric form)
-void POLY(_fit_lagrange_barycentric)(T * _x,
-                                     unsigned int _n,
-                                     T * _w)
+int POLY(_fit_lagrange_barycentric)(T *         _x,
+                                   unsigned int _n,
+                                   T *          _w)
 {
     // compute barycentric weights (slow method)
     unsigned int j, k;
@@ -121,13 +121,14 @@ void POLY(_fit_lagrange_barycentric)(T * _x,
     T w0 = _w[0];
     for (j=0; j<_n; j++)
         _w[j] /= w0;
+    return LIQUID_OK;
 }
 
 // Lagrange polynomial interpolation (barycentric form)
-T POLY(_val_lagrange_barycentric)(T * _x,
-                                  T * _y,
-                                  T * _w,
-                                  T   _x0,
+T POLY(_val_lagrange_barycentric)(T *          _x,
+                                  T *          _y,
+                                  T *          _w,
+                                  T            _x0,
                                   unsigned int _n)
 {
     T t0 = 0.;  // numerator sum

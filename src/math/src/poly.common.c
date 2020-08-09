@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2015 Joseph Gaeddert
+ * Copyright (c) 2007 - 2020 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -43,11 +43,11 @@ T POLY(_val)(T * _p, unsigned int _k, T _x)
     return y;
 }
 
-void POLY(_fit)(T * _x,
-                T * _y,
-                unsigned int _n,
-                T * _p,
-                unsigned int _k)
+int POLY(_fit)(T *          _x,
+               T *          _y,
+               unsigned int _n,
+               T *          _p,
+               unsigned int _k)
 {
 
     // ...
@@ -88,5 +88,6 @@ void POLY(_fit)(T * _x,
     MATRIX(_mul)(G,  _k, _k,
                  Xty,_k, 1,
                  _p, _k, 1);
+    return LIQUID_OK;
 }
 

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2018 Joseph Gaeddert
+ * Copyright (c) 2007 - 2020 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -35,13 +35,13 @@
 // as
 //  P_n(x) = p[0] + p[1]*x + p[2]*x^2 + ... + p[n]x^n
 // NOTE: _p has order n=m+k (array is length n+1)
-void POLY(_expandbinomial)(unsigned int _n,
-                           T * _c)
+int POLY(_expandbinomial)(unsigned int _n,
+                          T *          _c)
 {
     // no roots; return zero
     if (_n == 0) {
         _c[0] = 0.;
-        return;
+        return LIQUID_OK;
     }
 
     int i, j;
@@ -55,6 +55,7 @@ void POLY(_expandbinomial)(unsigned int _n,
             _c[j] = _c[j] + _c[j-1];
     }
     // assert(_c[0]==1.0f);
+    return LIQUID_OK;
 }
 
 // expands the polynomial:
@@ -62,16 +63,16 @@ void POLY(_expandbinomial)(unsigned int _n,
 // as
 //  P_n(x) = p[0] + p[1]*x + p[2]*x^2 + ... + p[n]x^n
 // NOTE: _p has order n=m+k (array is length n+1)
-void POLY(_expandbinomial_pm)(unsigned int _m,
-                              unsigned int _k,
-                              T * _c)
+int POLY(_expandbinomial_pm)(unsigned int _m,
+                             unsigned int _k,
+                             T *          _c)
 {
     unsigned int n = _m + _k;
 
     // no roots; return zero
     if (n == 0) {
         _c[0] = 0.;
-        return;
+        return LIQUID_OK;
     }
 
     int i, j;
@@ -91,6 +92,7 @@ void POLY(_expandbinomial_pm)(unsigned int _m,
             _c[j] = _c[j] - _c[j-1];
     }
     // assert(_c[0]==1.0f);
+    return LIQUID_OK;
 }
 
 #if 0
@@ -98,14 +100,14 @@ void POLY(_expandbinomial_pm)(unsigned int _m,
 //  (1+x*a[0])*(1+x*a[1]) * ... * (1+x*a[n-1])
 // as
 //  c[0] + c[1]*x + c[2]*x^2 + ... + c[n]*x^n
-void POLY(_expandbinomial)(T * _a,
-                           unsigned int _n,
-                           T * _c)
+int POLY(_expandbinomial)(T *          _a,
+                          unsigned int _n,
+                          T *          _c)
 {
     // no roots; return zero
     if (_n == 0) {
         _c[0] = 0.;
-        return;
+        return LIQUID_OK;
     }
 
     int i, j;
@@ -132,6 +134,7 @@ void POLY(_expandbinomial)(T * _a,
     }
 
     // assert(_c[0]==1.0f);
+    return LIQUID_OK;
 }
 #endif
 
@@ -144,14 +147,14 @@ void POLY(_expandbinomial)(T * _a,
 //  _r      : roots of polynomial [size: _n x 1]
 //  _n      : number of roots in polynomial
 //  _p      : polynomial coefficients [size: _n+1 x 1]
-void POLY(_expandroots)(T *          _r,
-                        unsigned int _n,
-                        T *          _p)
+int POLY(_expandroots)(T *          _r,
+                       unsigned int _n,
+                       T *          _p)
 {
     // no roots; return zero
     if (_n == 0) {
         _p[0] = 0.;
-        return;
+        return LIQUID_OK;
     }
 
     int i, j;
@@ -168,6 +171,7 @@ void POLY(_expandroots)(T *          _r,
     }
 
     // assert(c[_n]==1.0f)
+    return LIQUID_OK;
 }
 
 // Perform root expansion on the polynomial
@@ -179,10 +183,10 @@ void POLY(_expandroots)(T *          _r,
 //  _b      : multiplicant of polynomial roots [size: _n x 1]
 //  _n      : number of roots in polynomial
 //  _p      : polynomial coefficients [size: _n+1 x 1]
-void POLY(_expandroots2)(T *          _a,
-                         T *          _b,
-                         unsigned int _n,
-                         T *          _p)
+int POLY(_expandroots2)(T *          _a,
+                        T *          _b,
+                        unsigned int _n,
+                        T *          _p)
 {
     unsigned int i;
 
@@ -200,6 +204,7 @@ void POLY(_expandroots2)(T *          _a,
     // multiply by gain
     for (i=0; i<_n+1; i++)
         _p[i] *= g;
+    return LIQUID_OK;
 }
 
 // expands the multiplication of two polynomials
@@ -216,11 +221,11 @@ void POLY(_expandroots2)(T *          _a,
 //  _b          :   2nd polynomial coefficients (length is _order_b+1)
 //  _order_b    :   2nd polynomial order
 //  _c          :   output polynomial coefficients (length is _order_a + _order_b + 1)
-void POLY(_mul)(T * _a,
-                unsigned int _order_a,
-                T * _b,
-                unsigned int _order_b,
-                T * _c)
+int POLY(_mul)(T *          _a,
+               unsigned int _order_a,
+               T *          _b,
+               unsigned int _order_b,
+               T *          _c)
 {
     unsigned int na = _order_a + 1;
     unsigned int nb = _order_b + 1;
@@ -235,5 +240,6 @@ void POLY(_mul)(T * _a,
             _c[i+j] += _a[i]*_b[j];
         }
     }
+    return LIQUID_OK;
 }
 

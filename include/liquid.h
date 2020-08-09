@@ -6123,21 +6123,21 @@ T POLY(_val)(T *          _p,                                               \
 /*  _n      : number of samples in _x and _y                            */  \
 /*  _p      : polynomial coefficients output [size _k x 1]              */  \
 /*  _k      : polynomial coefficients length, order is _k - 1           */  \
-void POLY(_fit)(T *          _x,                                            \
-                T *          _y,                                            \
-                unsigned int _n,                                            \
-                T *          _p,                                            \
-                unsigned int _k);                                           \
+int POLY(_fit)(T *          _x,                                             \
+               T *          _y,                                             \
+               unsigned int _n,                                             \
+               T *          _p,                                             \
+               unsigned int _k);                                            \
                                                                             \
 /* Perform Lagrange polynomial exact fit on data set                    */  \
 /*  _x      : x-value sample set, size [_n x 1]                         */  \
 /*  _y      : y-value sample set, size [_n x 1]                         */  \
 /*  _n      : number of samples in _x and _y                            */  \
 /*  _p      : polynomial coefficients output [size _n x 1]              */  \
-void POLY(_fit_lagrange)(T *          _x,                                   \
-                         T *          _y,                                   \
-                         unsigned int _n,                                   \
-                         T *          _p);                                  \
+int POLY(_fit_lagrange)(T *          _x,                                    \
+                        T *          _y,                                    \
+                        unsigned int _n,                                    \
+                        T *          _p);                                   \
                                                                             \
 /* Perform Lagrange polynomial interpolation on data set without        */  \
 /* computing coefficients as an intermediate step.                      */  \
@@ -6154,9 +6154,9 @@ T POLY(_interp_lagrange)(T *          _x,                                   \
 /*  _x      : x-value sample set, size [_n x 1]                         */  \
 /*  _n      : number of samples in _x                                   */  \
 /*  _w      : barycentric weights normalized so _w[0]=1, size [_n x 1]  */  \
-void POLY(_fit_lagrange_barycentric)(T *          _x,                       \
-                                     unsigned int _n,                       \
-                                     T *          _w);                      \
+int POLY(_fit_lagrange_barycentric)(T *          _x,                        \
+                                    unsigned int _n,                        \
+                                    T *          _w);                       \
                                                                             \
 /* Perform Lagrange polynomial interpolation using the barycentric form */  \
 /* of the weights.                                                      */  \
@@ -6178,8 +6178,8 @@ T POLY(_val_lagrange_barycentric)(T *          _x,                          \
 /* NOTE: _p has order n (coefficients has length n+1)                   */  \
 /*  _n      : polynomial order                                          */  \
 /*  _p      : polynomial coefficients [size: _n+1 x 1]                  */  \
-void POLY(_expandbinomial)(unsigned int _n,                                 \
-                           T *          _p);                                \
+int POLY(_expandbinomial)(unsigned int _n,                                  \
+                          T *          _p);                                 \
                                                                             \
 /* Perform positive/negative binomial expansion on the polynomial       */  \
 /*  \( P_n(x) = (1+x)^m (1-x)^k \)                                      */  \
@@ -6189,9 +6189,9 @@ void POLY(_expandbinomial)(unsigned int _n,                                 \
 /*  _m      : number of '1+x' terms                                     */  \
 /*  _k      : number of '1-x' terms                                     */  \
 /*  _p      : polynomial coefficients [size: _m+_k+1 x 1]               */  \
-void POLY(_expandbinomial_pm)(unsigned int _m,                              \
-                              unsigned int _k,                              \
-                              T *          _p);                             \
+int POLY(_expandbinomial_pm)(unsigned int _m,                               \
+                             unsigned int _k,                               \
+                             T *          _p);                              \
                                                                             \
 /* Perform root expansion on the polynomial                             */  \
 /*  \( P_n(x) = (x-r[0]) (x-r[1]) ... (x-r[n-1]) \)                     */  \
@@ -6202,9 +6202,9 @@ void POLY(_expandbinomial_pm)(unsigned int _m,                              \
 /*  _r      : roots of polynomial [size: _n x 1]                        */  \
 /*  _n      : number of roots in polynomial                             */  \
 /*  _p      : polynomial coefficients [size: _n+1 x 1]                  */  \
-void POLY(_expandroots)(T *          _r,                                    \
-                        unsigned int _n,                                    \
-                        T *          _p);                                   \
+int POLY(_expandroots)(T *          _r,                                     \
+                       unsigned int _n,                                     \
+                       T *          _p);                                    \
                                                                             \
 /* Perform root expansion on the polynomial                             */  \
 /*  \( P_n(x) = (xb[0]-a[0]) (xb[1]-a[1])...(xb[n-1]-a[n-1]) \)         */  \
@@ -6215,35 +6215,35 @@ void POLY(_expandroots)(T *          _r,                                    \
 /*  _b      : multiplicant of polynomial roots [size: _n x 1]           */  \
 /*  _n      : number of roots in polynomial                             */  \
 /*  _p      : polynomial coefficients [size: _n+1 x 1]                  */  \
-void POLY(_expandroots2)(T *          _a,                                   \
-                         T *          _b,                                   \
-                         unsigned int _n,                                   \
-                         T *          _p);                                  \
+int POLY(_expandroots2)(T *          _a,                                    \
+                        T *          _b,                                    \
+                        unsigned int _n,                                    \
+                        T *          _p);                                   \
                                                                             \
 /* Find the complex roots of a polynomial.                              */  \
 /*  _p      : polynomial coefficients [size: _n x 1]                    */  \
 /*  _k      : polynomial length                                         */  \
 /*  _roots  : resulting complex roots [size: _k-1 x 1]                  */  \
-void POLY(_findroots)(T *          _poly,                                   \
-                      unsigned int _n,                                      \
-                      TC *         _roots);                                 \
+int POLY(_findroots)(T *          _poly,                                    \
+                     unsigned int _n,                                       \
+                     TC *         _roots);                                  \
                                                                             \
 /* Find the complex roots of the polynomial using the Durand-Kerner     */  \
 /* method                                                               */  \
 /*  _p      : polynomial coefficients [size: _n x 1]                    */  \
 /*  _k      : polynomial length                                         */  \
 /*  _roots  : resulting complex roots [size: _k-1 x 1]                  */  \
-void POLY(_findroots_durandkerner)(T *          _p,                         \
-                                   unsigned int _k,                         \
-                                   TC *         _roots);                    \
+int POLY(_findroots_durandkerner)(T *          _p,                          \
+                                  unsigned int _k,                          \
+                                  TC *         _roots);                     \
                                                                             \
 /* Find the complex roots of the polynomial using Bairstow's method.    */  \
 /*  _p      : polynomial coefficients [size: _n x 1]                    */  \
 /*  _k      : polynomial length                                         */  \
 /*  _roots  : resulting complex roots [size: _k-1 x 1]                  */  \
-void POLY(_findroots_bairstow)(T *          _p,                             \
-                               unsigned int _k,                             \
-                               TC *         _roots);                        \
+int POLY(_findroots_bairstow)(T *          _p,                              \
+                              unsigned int _k,                              \
+                              TC *         _roots);                         \
                                                                             \
 /* Expand the multiplication of two polynomials                         */  \
 /*  \( ( a[0] + a[1]x + a[2]x^2 + ...) (b[0] + b[1]x + b[]x^2 + ...) \) */  \
@@ -6256,11 +6256,11 @@ void POLY(_findroots_bairstow)(T *          _p,                             \
 /*  _b          : 2nd polynomial coefficients (length is _order_b+1)    */  \
 /*  _order_b    : 2nd polynomial order                                  */  \
 /*  _c          : output polynomial [size: _order_a+_order_b+1 x 1]     */  \
-void POLY(_mul)(T *          _a,                                            \
-                unsigned int _order_a,                                      \
-                T *          _b,                                            \
-                unsigned int _order_b,                                      \
-                T *          _c);                                           \
+int POLY(_mul)(T *          _a,                                             \
+               unsigned int _order_a,                                       \
+               T *          _b,                                             \
+               unsigned int _order_b,                                       \
+               T *          _c);                                            \
 
 LIQUID_POLY_DEFINE_API(LIQUID_POLY_MANGLE_DOUBLE,
                        double,
@@ -6302,17 +6302,17 @@ int liquid_is_prime(unsigned int _n);
 //  _n          :   number to factor
 //  _factors    :   pre-allocated array of factors [size: LIQUID_MAX_FACTORS x 1]
 //  _num_factors:   number of factors found, sorted ascending
-void liquid_factor(unsigned int   _n,
-                   unsigned int * _factors,
-                   unsigned int * _num_factors);
+int liquid_factor(unsigned int   _n,
+                  unsigned int * _factors,
+                  unsigned int * _num_factors);
 
 // compute number's unique prime factors
 //  _n          :   number to factor
 //  _factors    :   pre-allocated array of factors [size: LIQUID_MAX_FACTORS x 1]
 //  _num_factors:   number of unique factors found, sorted ascending
-void liquid_unique_factor(unsigned int   _n,
-                          unsigned int * _factors,
-                          unsigned int * _num_factors);
+int liquid_unique_factor(unsigned int   _n,
+                         unsigned int * _factors,
+                         unsigned int * _num_factors);
 
 // compute greatest common divisor between to numbers P and Q
 unsigned int liquid_gcd(unsigned int _P,

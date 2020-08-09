@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2015 Joseph Gaeddert
+ * Copyright (c) 2007 - 2020 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -135,8 +135,8 @@ float sincf(float _x) {
 unsigned int liquid_nextpow2(unsigned int _x)
 {
     if (_x == 0) {
-        fprintf(stderr,"error: liquid_nextpow2(), input must be greater than zero\n");
-        exit(1);
+        liquid_error(LIQUID_EICONFIG,"liquid_nextpow2(), input must be greater than zero");
+        return 0;
     }
 
     _x--;
@@ -153,10 +153,10 @@ float liquid_nchoosek(unsigned int _n, unsigned int _k)
 {
     // 
     if (_k > _n) {
-        fprintf(stderr,"error: liquid_nchoosek(), _k cannot exceed _n\n");
-        exit(1);
+        liquid_error(LIQUID_EICONFIG,"liquid_nchoosek(), _k cannot exceed _n");
+        return 0.0f;
     } else if (_k == 0 || _k == _n) {
-        return 1;
+        return 1.0f;
     }
 
     // take advantage of symmetry and take larger value

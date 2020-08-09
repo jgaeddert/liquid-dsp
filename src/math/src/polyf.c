@@ -29,6 +29,7 @@
 #define MATRIX(name)    LIQUID_CONCAT(matrixf, name)
 #define POLY(name)      LIQUID_CONCAT(polyf,   name)
 #define POLY_NAME       "polyf"
+#define EXTENSION       "f"
 #define T               float
 #define TC              float complex
 
