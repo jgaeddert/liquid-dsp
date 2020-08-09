@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2015 Joseph Gaeddert
+ * Copyright (c) 2007 - 2020 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -27,18 +27,17 @@
 #include "liquid.internal.h"
 
 // L/U/P decomposition, Crout's method
-void MATRIX(_ludecomp_crout)(T * _x,
-                             unsigned int _rx,
-                             unsigned int _cx,
-                             T * _L,
-                             T * _U,
-                             T * _P)
+int MATRIX(_ludecomp_crout)(T *          _x,
+                            unsigned int _rx,
+                            unsigned int _cx,
+                            T *          _L,
+                            T *          _U,
+                            T *          _P)
 {
     // validate input
-    if (_rx != _cx) {
-        fprintf(stderr,"error: matrix_ludecomp_crout(), input matrix not square\n");
-        exit(-1);
-    }
+    if (_rx != _cx)
+        return liquid_error(LIQUID_EICONFIG,"matrix_ludecomp_crout(), input matrix not square");
+
     unsigned int n = _rx;
 
     // reset L, U
@@ -79,22 +78,21 @@ void MATRIX(_ludecomp_crout)(T * _x,
     }
 
     // set output permutation matrix to identity matrix
-    MATRIX(_eye)(_P,n);
+    return MATRIX(_eye)(_P,n);
 }
 
 // L/U/P decomposition, Doolittle's method
-void MATRIX(_ludecomp_doolittle)(T * _x,
-                                 unsigned int _rx,
-                                 unsigned int _cx,
-                                 T * _L,
-                                 T * _U,
-                                 T * _P)
+int MATRIX(_ludecomp_doolittle)(T *          _x,
+                                unsigned int _rx,
+                                unsigned int _cx,
+                                T *          _L,
+                                T *          _U,
+                                T *          _P)
 {
     // validate input
-    if (_rx != _cx) {
-        fprintf(stderr,"error: matrix_ludecomp_doolittle(), input matrix not square\n");
-        exit(-1);
-    }
+    if (_rx != _cx)
+        return liquid_error(LIQUID_EICONFIG,"matrix_ludecomp_doolittle(), input matrix not square");
+
     unsigned int n = _rx;
 
     // reset L, U
@@ -137,6 +135,6 @@ void MATRIX(_ludecomp_doolittle)(T * _x,
     }
 
     // set output permutation matrix to identity matrix
-    MATRIX(_eye)(_P,n);
+    return MATRIX(_eye)(_P,n);
 }
 

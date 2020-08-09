@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2015 Joseph Gaeddert
+ * Copyright (c) 2007 - 2020 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -30,10 +30,10 @@
 #define DEBUG_MATRIX_GRAMSCHMIDT 0
 
 // compute projection of _u onto _v, store in _e
-void MATRIX(_proj)(T * _u,
-                   T * _v,
-                   unsigned int _n,
-                   T * _e)
+int MATRIX(_proj)(T *          _u,
+                  T *          _v,
+                  unsigned int _n,
+                  T *          _e)
 {
     // compute dot-product between _u and _v
     unsigned int i;
@@ -48,19 +48,18 @@ void MATRIX(_proj)(T * _u,
     T g = uv / uu;
     for (i=0; i<_n; i++)
         _e[i] = _u[i] * g;
+    return LIQUID_OK;
 }
 
 // Orthnormalization using the Gram-Schmidt algorithm
-void MATRIX(_gramschmidt)(T *          _x,
-                          unsigned int _rx,
-                          unsigned int _cx,
-                          T *          _v)
+int MATRIX(_gramschmidt)(T *          _x,
+                         unsigned int _rx,
+                         unsigned int _cx,
+                         T *          _v)
 {
     // validate input
-    if (_rx == 0 || _cx == 0) {
-        fprintf(stderr,"error: matrix_gramschmidt(), input matrix cannot have zero-length dimensions\n");
-        exit(1);
-    }
+    if (_rx == 0 || _cx == 0)
+        return liquid_error(LIQUID_EICONFIG,"matrix_gramschmidt(), input matrix cannot have zero-length dimensions");
 
     unsigned int i;
     unsigned int j;
@@ -123,5 +122,6 @@ void MATRIX(_gramschmidt)(T *          _x,
         MATRIX(_print)(_v, _rx, _cx);
 #endif
     }
+    return LIQUID_OK;
 }
 

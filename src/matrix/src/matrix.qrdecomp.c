@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2015 Joseph Gaeddert
+ * Copyright (c) 2007 - 2020 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -30,17 +30,16 @@
 #define DEBUG_MATRIX_QRDECOMP 1
 
 // Q/R decomposition using the Gram-Schmidt algorithm
-void MATRIX(_qrdecomp_gramschmidt)(T *          _x,
-                                   unsigned int _rx,
-                                   unsigned int _cx,
-                                   T *          _Q,
-                                   T *          _R)
+int MATRIX(_qrdecomp_gramschmidt)(T *          _x,
+                                  unsigned int _rx,
+                                  unsigned int _cx,
+                                  T *          _Q,
+                                  T *          _R)
 {
     // validate input
-    if (_rx != _cx) {
-        fprintf(stderr,"error: matrix_qrdecomp_gramschmidt(), input matrix not square\n");
-        exit(-1);
-    }
+    if (_rx != _cx)
+        return liquid_error(LIQUID_EIRANGE,"matrix_qrdecomp_gramschmidt(), input matrix not square");
+
     unsigned int n = _rx;
 
     unsigned int i;
@@ -108,5 +107,6 @@ void MATRIX(_qrdecomp_gramschmidt)(T *          _x,
             }
         }
     }
+    return LIQUID_OK;
 }
 

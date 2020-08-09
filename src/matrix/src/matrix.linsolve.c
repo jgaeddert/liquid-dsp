@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2015 Joseph Gaeddert
+ * Copyright (c) 2007 - 2020 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -34,11 +34,11 @@
 //  _b      :   equality vector [size: _n x 1]
 //  _x      :   solution vector [size: _n x 1]
 //  _opts   :   options (ignored for now)
-void MATRIX(_linsolve)(T *          _A,
-                       unsigned int _n,
-                       T *          _b,
-                       T *          _x,
-                       void *       _opts)
+int MATRIX(_linsolve)(T *          _A,
+                      unsigned int _n,
+                      T *          _b,
+                      T *          _x,
+                      void *       _opts)
 {
 #if 0
     T A_inv[_n*_n];
@@ -82,5 +82,6 @@ void MATRIX(_linsolve)(T *          _A,
     for (r=0; r<_n; r++)
         _x[r] = M[(_n+1)*(r+1)-1];
 #endif
+    return LIQUID_OK;
 }
 

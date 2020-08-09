@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2015 Joseph Gaeddert
+ * Copyright (c) 2007 - 2020 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -26,13 +26,11 @@
 
 #include "liquid.internal.h"
 
-void MATRIX(_inv)(T * _X, unsigned int _XR, unsigned int _XC)
+int MATRIX(_inv)(T * _X, unsigned int _XR, unsigned int _XC)
 {
     // ensure lengths are valid
-    if (_XR != _XC ) {
-        fprintf(stderr, "error: matrix_inv(), invalid dimensions\n");
-        exit(1);
-    }
+    if (_XR != _XC )
+        return liquid_error(LIQUID_EICONFIG,"matrix_inv(), invalid dimensions");
 
     // X:
     //  x11 x12 ... x1n
@@ -74,10 +72,11 @@ void MATRIX(_inv)(T * _X, unsigned int _XR, unsigned int _XC)
         for (c=0; c<_XC; c++)
             matrix_access(_X,_XR,_XC,r,c) = matrix_access(x,xr,xc,r,_XC+c);
     }
+    return LIQUID_OK;
 }
 
 // Gauss-Jordan elmination
-void MATRIX(_gjelim)(T * _X, unsigned int _XR, unsigned int _XC)
+int MATRIX(_gjelim)(T * _X, unsigned int _XR, unsigned int _XC)
 {
     unsigned int r, c;
 
@@ -99,9 +98,8 @@ void MATRIX(_gjelim)(T * _X, unsigned int _XR, unsigned int _XC)
         }
 
         // if the maximum is zero, matrix is singular
-        if (v_max == 0.0f) {
-            fprintf(stderr,"warning: matrix_gjelim(), matrix singular to machine precision\n");
-        }
+        if (v_max == 0.0f)
+            return liquid_error(LIQUID_EICONFIG,"matrix_gjelim(), matrix singular to machine precision");
 
         // if row does not match column (e.g. maximum value does not
         // lie on the diagonal) swap the rows
@@ -120,16 +118,16 @@ void MATRIX(_gjelim)(T * _X, unsigned int _XR, unsigned int _XC)
         for (c=0; c<_XC; c++)
             matrix_access(_X,_XR,_XC,r,c) *= g;
     }
+    return LIQUID_OK;
 }
 
 // pivot on element _r, _c
-void MATRIX(_pivot)(T * _X, unsigned int _XR, unsigned int _XC, unsigned int _r, unsigned int _c)
+int MATRIX(_pivot)(T * _X, unsigned int _XR, unsigned int _XC, unsigned int _r, unsigned int _c)
 {
     T v = matrix_access(_X,_XR,_XC,_r,_c);
-    if (v==0) {
-        fprintf(stderr, "warning: matrix_pivot(), pivoting on zero\n");
-        return;
-    }
+    if (v==0)
+        return liquid_error(LIQUID_EICONFIG,"matrix_pivot(), pivoting on zero");
+
     unsigned int r,c;
 
     // pivot using back-substitution
@@ -149,12 +147,13 @@ void MATRIX(_pivot)(T * _X, unsigned int _XR, unsigned int _XC, unsigned int _r,
                                               matrix_access(_X,_XR,_XC, r,c);
         }
     }
+    return LIQUID_OK;
 }
 
-void MATRIX(_swaprows)(T * _X, unsigned int _XR, unsigned int _XC, unsigned int _r1, unsigned int _r2)
+int MATRIX(_swaprows)(T * _X, unsigned int _XR, unsigned int _XC, unsigned int _r1, unsigned int _r2)
 {
     if (_r1 == _r2)
-        return;
+        return LIQUID_OK;
 
     unsigned int c;
     T v_tmp;
@@ -163,4 +162,5 @@ void MATRIX(_swaprows)(T * _X, unsigned int _XR, unsigned int _XC, unsigned int 
         matrix_access(_X,_XR,_XC,_r1,c) = matrix_access(_X,_XR,_XC,_r2,c);
         matrix_access(_X,_XR,_XC,_r2,c) = v_tmp;
     }
+    return LIQUID_OK;
 }
