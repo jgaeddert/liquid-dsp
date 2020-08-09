@@ -165,6 +165,7 @@ int WINDOW(_reset)(WINDOW() _q)
 
     // clear all allocated memory
     memset(_q->v, 0, (_q->num_allocated)*sizeof(T));
+    return LIQUID_OK;
 }
 
 // read window buffer contents
