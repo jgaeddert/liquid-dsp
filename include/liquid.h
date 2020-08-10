@@ -6816,21 +6816,21 @@ LIQUID_SMATRIX_DEFINE_API(LIQUID_SMATRIX_MANGLE_INT,   short int)
 //  _q  :   sparse matrix [size: A->M x A->N]
 //  _x  :   input vector  [size:  mx  x  nx ]
 //  _y  :   output vector [size:  my  x  ny ]
-void smatrixb_mulf(smatrixb     _A,
-                   float *      _x,
-                   unsigned int _mx,
-                   unsigned int _nx,
-                   float *      _y,
-                   unsigned int _my,
-                   unsigned int _ny);
+int smatrixb_mulf(smatrixb     _A,
+                  float *      _x,
+                  unsigned int _mx,
+                  unsigned int _nx,
+                  float *      _y,
+                  unsigned int _my,
+                  unsigned int _ny);
 
 // multiply sparse binary matrix by floating-point vector
 //  _q  :   sparse matrix
 //  _x  :   input vector [size: _N x 1]
 //  _y  :   output vector [size: _M x 1]
-void smatrixb_vmulf(smatrixb _q,
-                    float *  _x,
-                    float *  _y);
+int smatrixb_vmulf(smatrixb _q,
+                   float *  _x,
+                   float *  _y);
 
 
 //
