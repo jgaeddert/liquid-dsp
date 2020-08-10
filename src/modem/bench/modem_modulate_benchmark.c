@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2015 Joseph Gaeddert
+ * Copyright (c) 2007 - 2020 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,7 +23,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <sys/resource.h>
-#include "liquid.h"
+#include "liquid.internal.h"
 
 #define MODEM_MODULATE_BENCH_API(MS)    \
 (   struct rusage *_start,              \
@@ -40,8 +40,8 @@ void modem_modulate_bench(struct rusage *_start,
     // normalize number of iterations
     switch (_ms) {
     case LIQUID_MODEM_UNKNOWN:
-        fprintf(stderr,"error: modem_modulate_bench(), unknown modem scheme\n");
-        exit(1);
+        liquid_error(LIQUID_EINT,"modem_modulate_bench(), unknown modem scheme");
+        return;
     case LIQUID_MODEM_BPSK:     *_num_iterations *= 64;     break;
     case LIQUID_MODEM_QPSK:     *_num_iterations *= 64;     break;
     case LIQUID_MODEM_OOK:      *_num_iterations *= 64;     break;
