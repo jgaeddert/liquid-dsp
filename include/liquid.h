@@ -1992,14 +1992,14 @@ typedef enum {
 //  _wtype      :   weight types (e.g. LIQUID_FIRDESPM_FLATWEIGHT) [size: _num_bands x 1]
 //  _btype      :   band type (e.g. LIQUID_FIRDESPM_BANDPASS)
 //  _h          :   output coefficients array [size: _h_len x 1]
-void firdespm_run(unsigned int            _h_len,
-                  unsigned int            _num_bands,
-                  float *                 _bands,
-                  float *                 _des,
-                  float *                 _weights,
-                  liquid_firdespm_wtype * _wtype,
-                  liquid_firdespm_btype   _btype,
-                  float *                 _h);
+int firdespm_run(unsigned int            _h_len,
+                 unsigned int            _num_bands,
+                 float *                 _bands,
+                 float *                 _des,
+                 float *                 _weights,
+                 liquid_firdespm_wtype * _wtype,
+                 liquid_firdespm_btype   _btype,
+                 float *                 _h);
 
 // run filter design for basic low-pass filter
 //  _n      : filter length, _n > 0
@@ -2007,7 +2007,7 @@ void firdespm_run(unsigned int            _h_len,
 //  _As     : stop-band attenuation [dB], _As > 0
 //  _mu     : fractional sample offset, -0.5 < _mu < 0.5 [ignored]
 //  _h      : output coefficient buffer, [size: _n x 1]
-void firdespm_lowpass(unsigned int _n,
+int firdespm_lowpass(unsigned int _n,
                       float        _fc,
                       float        _As,
                       float        _mu,
@@ -2057,13 +2057,13 @@ firdespm firdespm_create_callback(unsigned int          _h_len,
                                   void *                _userdata);
 
 // destroy firdespm object
-void firdespm_destroy(firdespm _q);
+int firdespm_destroy(firdespm _q);
 
 // print firdespm object internals
-void firdespm_print(firdespm _q);
+int firdespm_print(firdespm _q);
 
 // execute filter design, storing result in _h
-void firdespm_execute(firdespm _q, float * _h);
+int firdespm_execute(firdespm _q, float * _h);
 
 
 // Design FIR using kaiser window
