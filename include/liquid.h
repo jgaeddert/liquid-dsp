@@ -7076,12 +7076,12 @@ typedef struct gmskmod_s * gmskmod;
 gmskmod gmskmod_create(unsigned int _k,
                        unsigned int _m,
                        float        _BT);
-void gmskmod_destroy(gmskmod _q);
-void gmskmod_print(gmskmod _q);
-void gmskmod_reset(gmskmod _q);
-void gmskmod_modulate(gmskmod _q,
-                      unsigned int _sym,
-                      liquid_float_complex * _y);
+int gmskmod_destroy(gmskmod _q);
+int gmskmod_print(gmskmod _q);
+int gmskmod_reset(gmskmod _q);
+int gmskmod_modulate(gmskmod                _q,
+                     unsigned int           _sym,
+                     liquid_float_complex * _y);
 
 
 // gmskdem : GMSK demodulator
@@ -7094,13 +7094,13 @@ typedef struct gmskdem_s * gmskdem;
 gmskdem gmskdem_create(unsigned int _k,
                        unsigned int _m,
                        float        _BT);
-void gmskdem_destroy(gmskdem _q);
-void gmskdem_print(gmskdem _q);
-void gmskdem_reset(gmskdem _q);
-void gmskdem_set_eq_bw(gmskdem _q, float _bw);
-void gmskdem_demodulate(gmskdem _q,
-                        liquid_float_complex * _y,
-                        unsigned int * _sym);
+int gmskdem_destroy(gmskdem _q);
+int gmskdem_print(gmskdem _q);
+int gmskdem_reset(gmskdem _q);
+int gmskdem_set_eq_bw(gmskdem _q, float _bw);
+int gmskdem_demodulate(gmskdem                _q,
+                       liquid_float_complex * _y,
+                       unsigned int *         _sym);
 
 //
 // continuous phase frequency-shift keying (CP-FSK) modems
