@@ -7393,37 +7393,37 @@ ampmodem ampmodem_create(float                _mod_index,
                          int                  _suppressed_carrier);
 
 // destroy ampmodem object
-void ampmodem_destroy(ampmodem _q);
+int ampmodem_destroy(ampmodem _q);
 
 // print ampmodem object internals
-void ampmodem_print(ampmodem _q);
+int ampmodem_print(ampmodem _q);
 
 // reset ampmodem object state
-void ampmodem_reset(ampmodem _q);
+int ampmodem_reset(ampmodem _q);
 
 // accessor methods
 unsigned int ampmodem_get_delay_mod  (ampmodem _q);
 unsigned int ampmodem_get_delay_demod(ampmodem _q);
 
 // modulate sample
-void ampmodem_modulate(ampmodem               _q,
-                       float                  _x,
-                       liquid_float_complex * _y);
+int ampmodem_modulate(ampmodem               _q,
+                      float                  _x,
+                      liquid_float_complex * _y);
 
-void ampmodem_modulate_block(ampmodem               _q,
-                             float *                _m,
-                             unsigned int           _n,
-                             liquid_float_complex * _s);
+int ampmodem_modulate_block(ampmodem               _q,
+                            float *                _m,
+                            unsigned int           _n,
+                            liquid_float_complex * _s);
 
 // demodulate sample
-void ampmodem_demodulate(ampmodem             _q,
-                         liquid_float_complex _y,
-                         float *              _x);
+int ampmodem_demodulate(ampmodem             _q,
+                        liquid_float_complex _y,
+                        float *              _x);
 
-void ampmodem_demodulate_block(ampmodem               _q,
-                               liquid_float_complex * _r,
-                               unsigned int           _n,
-                               float *                _m);
+int ampmodem_demodulate_block(ampmodem               _q,
+                              liquid_float_complex * _r,
+                              unsigned int           _n,
+                              float *                _m);
 
 //
 // MODULE : multichannel
