@@ -7296,32 +7296,32 @@ typedef struct FREQMOD(_s) * FREQMOD();                                     \
 FREQMOD() FREQMOD(_create)(float _kf);                                      \
                                                                             \
 /* Destroy freqmod object, freeing all internal memory                  */  \
-void FREQMOD(_destroy)(FREQMOD() _q);                                       \
+int FREQMOD(_destroy)(FREQMOD() _q);                                        \
                                                                             \
 /* Print freqmod object internals to stdout                             */  \
-void FREQMOD(_print)(FREQMOD() _q);                                         \
+int FREQMOD(_print)(FREQMOD() _q);                                          \
                                                                             \
 /* Reset state                                                          */  \
-void FREQMOD(_reset)(FREQMOD() _q);                                         \
+int FREQMOD(_reset)(FREQMOD() _q);                                          \
                                                                             \
 /* Modulate single sample, producing single output sample at complex    */  \
 /* baseband.                                                            */  \
 /*  _q  : frequency modulator object                                    */  \
 /*  _m  : message signal \( m(t) \)                                     */  \
 /*  _s  : complex baseband signal \( s(t) \)                            */  \
-void FREQMOD(_modulate)(FREQMOD() _q,                                       \
-                        T         _m,                                       \
-                        TC *      _s);                                      \
+int FREQMOD(_modulate)(FREQMOD() _q,                                        \
+                       T         _m,                                        \
+                       TC *      _s);                                       \
                                                                             \
 /* Modulate block of samples                                            */  \
 /*  _q  : frequency modulator object                                    */  \
 /*  _m  : message signal \( m(t) \), [size: _n x 1]                     */  \
 /*  _n  : number of input, output samples                               */  \
 /*  _s  : complex baseband signal \( s(t) \),  [size: _n x 1]           */  \
-void FREQMOD(_modulate_block)(FREQMOD()    _q,                              \
-                              T *          _m,                              \
-                              unsigned int _n,                              \
-                              TC *         _s);                             \
+int FREQMOD(_modulate_block)(FREQMOD()    _q,                               \
+                             T *          _m,                               \
+                             unsigned int _n,                               \
+                             TC *         _s);                              \
 
 // define freqmod APIs
 LIQUID_FREQMOD_DEFINE_API(LIQUID_FREQMOD_MANGLE_FLOAT,float,liquid_float_complex)
@@ -7344,31 +7344,31 @@ typedef struct FREQDEM(_s) * FREQDEM();                         \
 FREQDEM() FREQDEM(_create)(float _kf);                          \
                                                                 \
 /* destroy freqdem object                                   */  \
-void FREQDEM(_destroy)(FREQDEM() _q);                           \
+int FREQDEM(_destroy)(FREQDEM() _q);                            \
                                                                 \
 /* print freqdem object internals                           */  \
-void FREQDEM(_print)(FREQDEM() _q);                             \
+int FREQDEM(_print)(FREQDEM() _q);                              \
                                                                 \
 /* reset state                                              */  \
-void FREQDEM(_reset)(FREQDEM() _q);                             \
+int FREQDEM(_reset)(FREQDEM() _q);                              \
                                                                 \
 /* demodulate sample                                        */  \
 /*  _q      :   frequency modulator object                  */  \
 /*  _r      :   received signal r(t)                        */  \
 /*  _m      :   output message signal m(t)                  */  \
-void FREQDEM(_demodulate)(FREQDEM() _q,                         \
-                          TC        _r,                         \
-                          T *       _m);                        \
+int FREQDEM(_demodulate)(FREQDEM() _q,                          \
+                         TC        _r,                          \
+                         T *       _m);                         \
                                                                 \
 /* demodulate block of samples                              */  \
 /*  _q      :   frequency demodulator object                */  \
 /*  _r      :   received signal r(t) [size: _n x 1]         */  \
 /*  _n      :   number of input, output samples             */  \
 /*  _m      :   message signal m(t), [size: _n x 1]         */  \
-void FREQDEM(_demodulate_block)(FREQDEM()    _q,                \
-                                TC *         _r,                \
-                                unsigned int _n,                \
-                                T *          _m);               \
+int FREQDEM(_demodulate_block)(FREQDEM()    _q,                 \
+                               TC *         _r,                 \
+                               unsigned int _n,                 \
+                               T *          _m);                \
 
 // define freqdem APIs
 LIQUID_FREQDEM_DEFINE_API(LIQUID_FREQDEM_MANGLE_FLOAT,float,liquid_float_complex)
