@@ -7224,21 +7224,21 @@ fskmod fskmod_create(unsigned int _m,
                      float        _bandwidth);
 
 // destroy fskmod object
-void fskmod_destroy(fskmod _q);
+int fskmod_destroy(fskmod _q);
 
 // print fskmod object internals
-void fskmod_print(fskmod _q);
+int fskmod_print(fskmod _q);
 
 // reset state
-void fskmod_reset(fskmod _q);
+int fskmod_reset(fskmod _q);
 
 // modulate sample
 //  _q      :   frequency modulator object
 //  _s      :   input symbol
 //  _y      :   output sample array [size: _k x 1]
-void fskmod_modulate(fskmod                 _q,
-                     unsigned int           _s,
-                     liquid_float_complex * _y);
+int fskmod_modulate(fskmod                 _q,
+                    unsigned int           _s,
+                    liquid_float_complex * _y);
 
 
 
@@ -7254,13 +7254,13 @@ fskdem fskdem_create(unsigned int _m,
                      float        _bandwidth);
 
 // destroy fskdem object
-void fskdem_destroy(fskdem _q);
+int fskdem_destroy(fskdem _q);
 
 // print fskdem object internals
-void fskdem_print(fskdem _q);
+int fskdem_print(fskdem _q);
 
 // reset state
-void fskdem_reset(fskdem _q);
+int fskdem_reset(fskdem _q);
 
 // demodulate symbol, assuming perfect symbol timing
 //  _q      :   fskdem object
