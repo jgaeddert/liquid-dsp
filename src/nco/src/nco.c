@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2019 Joseph Gaeddert
+ * Copyright (c) 2007 - 2020 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -46,6 +46,18 @@ struct NCO(_s) {
     T               beta;           // phase proportion
 };
 
+
+// constrain phase/frequency to be in [-pi,pi)
+int NCO(_constrain_phase)(NCO() _q);
+int NCO(_constrain_frequency)(NCO() _q);
+
+// compute trigonometric functions for nco/vco type
+int NCO(_compute_sincos_nco)(NCO() _q);
+int NCO(_compute_sincos_vco)(NCO() _q);
+
+// reset internal phase-locked loop filter
+int NCO(_pll_reset)(NCO() _q);
+
 // constrain phase (or frequency) and convert to fixed-point
 uint32_t NCO(_constrain)(float _theta);
 
@@ -72,17 +84,17 @@ NCO() NCO(_create)(liquid_ncotype _type)
 }
 
 // destroy nco object
-void NCO(_destroy)(NCO() _q)
+int NCO(_destroy)(NCO() _q)
 {
-    if (!_q) {
-        return;
-    }
+    if (_q==NULL)
+        return liquid_error(LIQUID_EIOBJ,"nco_%s_destroy(), object is null", EXTENSION);
 
     free(_q);
+    return LIQUID_OK;
 }
 
 // Print nco object internals to stdout
-void NCO(_print)(NCO() _q)
+int NCO(_print)(NCO() _q)
 {
     printf("nco [phase: 0x%.8x rad, freq: 0x%.8x rad/sample]\n",
             _q->theta, _q->d_theta);
@@ -92,51 +104,57 @@ void NCO(_print)(NCO() _q)
     for (i=0; i<1024; i++)
         printf("  sintab[%4u] = %16.12f\n", i, _q->sintab[i]);
 #endif
+    return LIQUID_OK;
 }
 
 // reset internal state of nco object
-void NCO(_reset)(NCO() _q)
+int NCO(_reset)(NCO() _q)
 {
     // reset phase and frequency states
     _q->theta   = 0;
     _q->d_theta = 0;
 
     // reset pll filter state
-    NCO(_pll_reset)(_q);
+    return NCO(_pll_reset)(_q);
 }
 
 // set frequency of nco object
-void NCO(_set_frequency)(NCO() _q,
-                         T     _dtheta)
+int NCO(_set_frequency)(NCO() _q,
+                        T     _dtheta)
 {
     _q->d_theta = NCO(_constrain)(_dtheta);
+    return LIQUID_OK;
 }
 
 // adjust frequency of nco object
-void NCO(_adjust_frequency)(NCO() _q,
-                            T     _df)
+int NCO(_adjust_frequency)(NCO() _q,
+                           T     _df)
 {
     _q->d_theta += NCO(_constrain)(_df);
+    return LIQUID_OK;
 }
 
 // set phase of nco object, constraining phase
-void NCO(_set_phase)(NCO() _q,
-                     T     _phi)
+int NCO(_set_phase)(NCO() _q,
+                    T     _phi)
 {
     _q->theta = NCO(_constrain)(_phi);
+    return LIQUID_OK;
 }
 
 // adjust phase of nco object, constraining phase
-void NCO(_adjust_phase)(NCO() _q,
-                        T     _dphi)
+int NCO(_adjust_phase)(NCO() _q,
+                       T     _dphi)
 {
     _q->theta += NCO(_constrain)(_dphi);
+    return LIQUID_OK;
 }
 
 // increment internal phase of nco object
-void NCO(_step)(NCO() _q)
+int NCO(_step)(NCO() _q)
 {
     _q->theta += _q->d_theta;
+    return LIQUID_OK;
 }
 
 // get phase [radians]
@@ -167,9 +185,9 @@ T NCO(_cos)(NCO() _q)
 }
 
 // compute sin, cos of internal phase
-void NCO(_sincos)(NCO() _q,
-                  T *   _s,
-                  T *   _c)
+int NCO(_sincos)(NCO() _q,
+                 T *   _s,
+                 T *   _c)
 {
     // add pi/2 phase shift
     unsigned int index = NCO(_index)(_q);
@@ -177,44 +195,46 @@ void NCO(_sincos)(NCO() _q,
     // return result
     *_s = _q->sintab[(index    )        ];
     *_c = _q->sintab[(index+256) & 0x3ff];
+    return LIQUID_OK;
 }
 
 // compute complex exponential of internal phase
-void NCO(_cexpf)(NCO() _q,
-                 TC *  _y)
+int NCO(_cexpf)(NCO() _q,
+                TC *  _y)
 {
     float vsin;
     float vcos;
     NCO(_sincos)(_q, &vsin, &vcos);
     *_y = vcos + _Complex_I*vsin;
+    return LIQUID_OK;
 }
 
 // pll methods
 
 // reset pll state, retaining base frequency
-void NCO(_pll_reset)(NCO() _q)
+int NCO(_pll_reset)(NCO() _q)
 {
+    return LIQUID_OK;
 }
 
 // set pll bandwidth
-void NCO(_pll_set_bandwidth)(NCO() _q,
-                             T     _bw)
+int NCO(_pll_set_bandwidth)(NCO() _q,
+                            T     _bw)
 {
     // validate input
-    if (_bw < 0.0f) {
-        fprintf(stderr,"error: nco_pll_set_bandwidth(), bandwidth must be positive\n");
-        exit(1);
-    }
+    if (_bw < 0.0f)
+        return liquid_error(LIQUID_EIRANGE,"nco_pll_set_bandwidth(), bandwidth must be positive");
 
     _q->alpha = _bw;                // frequency proportion
     _q->beta  = sqrtf(_q->alpha);   // phase proportion
+    return LIQUID_OK;
 }
 
 // advance pll phase
 //  _q      :   nco object
 //  _dphi   :   phase error
-void NCO(_pll_step)(NCO() _q,
-                    T     _dphi)
+int NCO(_pll_step)(NCO() _q,
+                   T     _dphi)
 {
     // increase frequency proportional to error
     NCO(_adjust_frequency)(_q, _dphi*_q->alpha);
@@ -224,6 +244,7 @@ void NCO(_pll_step)(NCO() _q,
 
     // constrain frequency
     //NCO(_constrain_frequency)(_q);
+    return LIQUID_OK;
 }
 
 // mixing functions
@@ -232,9 +253,9 @@ void NCO(_pll_step)(NCO() _q,
 //  _q      :   nco object
 //  _x      :   input sample
 //  _y      :   output sample
-void NCO(_mix_up)(NCO() _q,
-                  TC    _x,
-                  TC *  _y)
+int NCO(_mix_up)(NCO() _q,
+                 TC    _x,
+                 TC *  _y)
 {
     // compute complex phasor
     TC v;
@@ -242,15 +263,16 @@ void NCO(_mix_up)(NCO() _q,
 
     // rotate input
     *_y = _x * v;
+    return LIQUID_OK;
 }
 
 // Rotate input vector down by NCO angle, y = x exp{-j theta}
 //  _q      :   nco object
 //  _x      :   input sample
 //  _y      :   output sample
-void NCO(_mix_down)(NCO() _q,
-                    TC _x,
-                    TC *_y)
+int NCO(_mix_down)(NCO() _q,
+                   TC    _x,
+                   TC *  _y)
 {
     // compute complex phasor
     TC v;
@@ -258,6 +280,7 @@ void NCO(_mix_down)(NCO() _q,
 
     // rotate input (negative direction)
     *_y = _x * conj(v);
+    return LIQUID_OK;
 }
 
 
@@ -268,10 +291,10 @@ void NCO(_mix_down)(NCO() _q,
 //  _x      :   input array [size: _n x 1]
 //  _y      :   output sample [size: _n x 1]
 //  _n      :   number of input, output samples
-void NCO(_mix_block_up)(NCO() _q,
-                        TC *_x,
-                        TC *_y,
-                        unsigned int _n)
+int NCO(_mix_block_up)(NCO()        _q,
+                       TC *         _x,
+                       TC *         _y,
+                       unsigned int _n)
 {
     unsigned int i;
     // FIXME: this method should be more efficient but is causing occasional
@@ -296,6 +319,7 @@ void NCO(_mix_block_up)(NCO() _q,
         NCO(_step)(_q);
     }
 #endif
+    return LIQUID_OK;
 }
 
 // Rotate input vector array down by NCO angle:
@@ -305,10 +329,10 @@ void NCO(_mix_block_up)(NCO() _q,
 //  _x      :   input array [size: _n x 1]
 //  _y      :   output sample [size: _n x 1]
 //  _n      :   number of input, output samples
-void NCO(_mix_block_down)(NCO() _q,
-                          TC *_x,
-                          TC *_y,
-                          unsigned int _n)
+int NCO(_mix_block_down)(NCO()        _q,
+                         TC *         _x,
+                         TC *         _y,
+                         unsigned int _n)
 {
     unsigned int i;
     // FIXME: this method should be more efficient but is causing occasional
@@ -333,6 +357,7 @@ void NCO(_mix_block_down)(NCO() _q,
         NCO(_step)(_q);
     }
 #endif
+    return LIQUID_OK;
 }
 
 //
