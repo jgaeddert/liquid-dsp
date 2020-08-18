@@ -39,8 +39,8 @@ unsigned int quantize_adc(float _x, unsigned int _num_bits)
 {
 #ifdef LIQUID_VALIDATE_INPUT
     if (_num_bits > QUANTIZER_MAX_BITS) {
-        printf("error: quantize_adc(), maximum bits exceeded\n");
-        exit(1);
+        liquid_error(LIQUID_EIRANGE,"quantize_adc(), maximum bits exceeded");
+        return 0;
     }
 #endif
 
@@ -69,8 +69,8 @@ float quantize_dac(unsigned int _s, unsigned int _num_bits)
 {
 #ifdef LIQUID_VALIDATE_INPUT
     if (_num_bits > QUANTIZER_MAX_BITS) {
-        printf("error: quantize_dac(), maximum bits exceeded\n");
-        exit(1);
+        liquid_error(LIQUID_EIRANGE,"quantize_dac(), maximum bits exceeded");
+        return 0.0f;
     }
 #endif
     if (_num_bits == 0)

@@ -8255,8 +8255,8 @@ int gasearch_getopt(gasearch   _q,
 float compress_mulaw(float _x, float _mu);
 float expand_mulaw(float _x, float _mu);
 
-void compress_cf_mulaw(liquid_float_complex _x, float _mu, liquid_float_complex * _y);
-void expand_cf_mulaw(liquid_float_complex _y, float _mu, liquid_float_complex * _x);
+int compress_cf_mulaw(liquid_float_complex _x, float _mu, liquid_float_complex * _y);
+int expand_cf_mulaw(liquid_float_complex _y, float _mu, liquid_float_complex * _x);
 
 //float compress_alaw(float _x, float _a);
 //float expand_alaw(float _x, float _a);
@@ -8295,29 +8295,29 @@ QUANTIZER() QUANTIZER(_create)(liquid_compander_type _ctype,                \
                                unsigned int          _num_bits);            \
                                                                             \
 /* Destroy object, freeing all internally-allocated memory.             */  \
-void QUANTIZER(_destroy)(QUANTIZER() _q);                                   \
+int QUANTIZER(_destroy)(QUANTIZER() _q);                                    \
                                                                             \
 /* Print object properties to stdout, including compander type and      */  \
 /* number of bits per sample                                            */  \
-void QUANTIZER(_print)(QUANTIZER() _q);                                     \
+int QUANTIZER(_print)(QUANTIZER() _q);                                      \
                                                                             \
 /* Execute quantizer as analog-to-digital converter, accepting input    */  \
 /* sample and returning digitized output bits                           */  \
 /*  _q  : quantizer object                                              */  \
 /*  _x  : input sample                                                  */  \
 /*  _s  : output bits                                                   */  \
-void QUANTIZER(_execute_adc)(QUANTIZER()    _q,                             \
-                             T              _x,                             \
-                             unsigned int * _s);                            \
+int QUANTIZER(_execute_adc)(QUANTIZER()    _q,                              \
+                            T              _x,                              \
+                            unsigned int * _s);                             \
                                                                             \
 /* Execute quantizer as digital-to-analog converter, accepting input    */  \
 /* bits and returning representation of original input sample           */  \
 /*  _q  : quantizer object                                              */  \
 /*  _s  : input bits                                                    */  \
 /*  _x  : output sample                                                 */  \
-void QUANTIZER(_execute_dac)(QUANTIZER()  _q,                               \
-                             unsigned int _s,                               \
-                             T *          _x);                              \
+int QUANTIZER(_execute_dac)(QUANTIZER()  _q,                                \
+                            unsigned int _s,                                \
+                            T *          _x);                               \
 
 LIQUID_QUANTIZER_DEFINE_API(LIQUID_QUANTIZER_MANGLE_FLOAT,  float)
 LIQUID_QUANTIZER_DEFINE_API(LIQUID_QUANTIZER_MANGLE_CFLOAT, liquid_float_complex)
