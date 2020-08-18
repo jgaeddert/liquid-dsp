@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 - 2015 Joseph Gaeddert
+ * Copyright (c) 2007 - 2020 Joseph Gaeddert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -168,8 +168,8 @@ void SYNTH(_pll_set_bandwidth)(SYNTH() _q, T _bandwidth)
 {
     // validate input
     if (_bandwidth < 0.0f) {
-        fprintf(stderr, "error: synth_pll_set_bandwidth(), bandwidth must be positive\n");
-        exit(1);
+        liquid_error(LIQUID_EIRANGE,"synth_pll_set_bandwidth(), bandwidth must be positive");
+        return;
     }
 
     _q->alpha = _bandwidth;       // frequency proportion
