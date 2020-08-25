@@ -55,6 +55,7 @@ include_dirs	:= . include
 
 # programs
 CC		:= @CC@
+CXX		:= g++
 MV		:= mv -f
 RM		:= rm -f
 SED		:= @SED@
@@ -1340,10 +1341,10 @@ readme.cc.example.cc : README.md
 	${SED} -n '151,172p' $< | ${SED} "s/<liquid\/liquid.h>/\"liquid.h\"/g" > $@
 
 readme.cc.example.o : %.o : %.cc ${include_headers}
-	${CC} ${CPPFLAGS} ${CFLAGS} $< -c -o $@
+	${CXX} ${CPPFLAGS} ${CFLAGS} $< -c -o $@
 
 readme.cc.example : % : %.o ${ARCHIVE_LIB}
-	${CC} ${CFLAGS} ${LDFLAGS} $^ -o $@ ${LIBS}
+	${CXX} ${CFLAGS} ${LDFLAGS} $^ -o $@ ${LIBS}
 
 doc-check : readme.c.example readme.cc.example ; ./readme.c.example && ./readme.cc.example
 
