@@ -56,6 +56,7 @@ include_dirs	:= . include
 
 # programs
 CC		:= @CC@
+CXX		:= g++
 MV		:= mv -f
 RM		:= rm -f
 SED		:= @SED@
@@ -1330,19 +1331,28 @@ clean-check:
 ## TARGET : doc-check - build and run basic documentation checks
 ##
 
-readme.example.c : README.md
+readme.c.example.c : README.md
 	${SED} -n '22,42p' $< | ${SED} "s/<liquid\/liquid.h>/\"liquid.h\"/g" > $@
 
-readme.example.o : %.o : %.c ${include_headers}
+readme.c.example.o : %.o : %.c ${include_headers}
 	${CC} ${CPPFLAGS} ${CFLAGS} $< -c -o $@
 
-readme.example : % : %.o ${ARCHIVE_LIB}
+readme.c.example : % : %.o ${ARCHIVE_LIB}
 	${CC} ${CFLAGS} ${LDFLAGS} $^ -o $@ ${LIBS}
 
-doc-check : readme.example ; ./readme.example
+readme.cc.example.cc : README.md
+	${SED} -n '151,172p' $< | ${SED} "s/<liquid\/liquid.h>/\"liquid.h\"/g" > $@
+
+readme.cc.example.o : %.o : %.cc ${include_headers}
+	${CXX} ${CPPFLAGS} ${CFLAGS} $< -c -o $@
+
+readme.cc.example : % : %.o ${ARCHIVE_LIB}
+	${CXX} ${CFLAGS} ${LDFLAGS} $^ -o $@ ${LIBS}
+
+doc-check : readme.c.example readme.cc.example ; ./readme.c.example && ./readme.cc.example
 
 clean-doc-check:
-	${RM} readme.example*
+	${RM} readme.*.example*
 
 ##
 ## TARGET : coverage  - run coverage test and produce report
