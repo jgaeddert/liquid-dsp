@@ -61,6 +61,10 @@ struct SYMTRACK(_s) {
     EQLMS()         eq;                 // equalizer (LMS)
     unsigned int    eq_len;             // equalizer length
     float           eq_bandwidth;       // equalizer bandwidth
+    enum {
+                    SYMTRACK_EQ_CM,     // equalizer strategy: constant modulus
+                    SYMTRACK_EQ_DD,     // equalizer strategy: decision directed
+    }               eq_strategy;
 
     // nco/phase-locked loop
     NCO()           nco;                // nco (carrier recovery)
@@ -118,6 +122,7 @@ SYMTRACK() SYMTRACK(_create)(int          _ftype,
     // create equalizer as default low-pass filter with integer symbol delay (2 samples/symbol)
     q->eq_len = 2 * 4 + 1;
     q->eq = EQLMS(_create_lowpass)(q->eq_len,0.45f);
+    q->eq_strategy = SYMTRACK_EQ_CM;
 
     // nco and phase-locked loop
     q->nco = NCO(_create)(LIQUID_VCO);
@@ -165,6 +170,8 @@ int SYMTRACK(_print)(SYMTRACK() _q)
     printf("symtrack_%s:\n", EXTENSION_FULL);
     printf("  k:%u, m:%u, beta:%.3f, ms:%s\n", _q->k, _q->m, _q->beta,
             modulation_types[_q->mod_scheme].name);
+    printf("  equalization strategy: %s\n",
+            _q->eq_strategy==SYMTRACK_EQ_CM ? "constant modulus" : "decision directed");
     return LIQUID_OK;
 }
 
@@ -237,6 +244,20 @@ int SYMTRACK(_adjust_phase)(SYMTRACK() _q,
     return LIQUID_OK;
 }
 
+// set equalization strategy to constant modulus (default)
+int SYMTRACK(_set_eq_cm)(SYMTRACK() _q)
+{
+    _q->eq_strategy = SYMTRACK_EQ_CM;
+    return LIQUID_OK;
+}
+
+// set equalization strategy to decision directed
+int SYMTRACK(_set_eq_dd)(SYMTRACK() _q)
+{
+    _q->eq_strategy = SYMTRACK_EQ_DD;
+    return LIQUID_OK;
+}
+
 // execute synchronizer on single input sample
 //  _q      : synchronizer object
 //  _x      : input data sample
@@ -283,13 +304,21 @@ int SYMTRACK(_execute)(SYMTRACK()     _q,
         unsigned int sym_out;
         MODEM(_demodulate)(_q->demod, d_hat, &sym_out);
         float phase_error = MODEM(_get_demodulator_phase_error)(_q->demod);
+        float complex d_prime = 0.0f;
 
         // update equalizer independent of the signal: estimate error
         // assuming constant modulus signal
         // TODO: use decision-directed feedback when modulation scheme is known
         // TODO: check lock conditions of previous object to determine when to run equalizer
-        if (_q->num_syms_rx > 200)
-            EQLMS(_step)(_q->eq, d_hat/cabsf(d_hat), d_hat);
+        if (_q->num_syms_rx > 200) {
+            switch (_q->eq_strategy) {
+            case SYMTRACK_EQ_CM: d_prime = d_hat/cabsf(d_hat); break;
+            case SYMTRACK_EQ_DD: MODEM(_get_demodulator_sample)(_q->demod, &d_prime); break;
+            default:
+                return liquid_error(LIQUID_EINT,"symtrack_%s_execute(), invalid equalizer strategy", EXTENSION_FULL);
+            }
+            EQLMS(_step)(_q->eq, d_prime, d_hat);
+        }
 
         // update pll
         NCO(_pll_step)(_q->nco, phase_error);

@@ -5883,6 +5883,12 @@ int SYMTRACK(_set_bandwidth)(SYMTRACK() _q,                                 \
 int SYMTRACK(_adjust_phase)(SYMTRACK() _q,                                  \
                             T          _dphi);                              \
                                                                             \
+/* Set symtrack equalization strategy to constant modulus (default)     */  \
+int SYMTRACK(_set_eq_cm)(SYMTRACK() _q);                                    \
+                                                                            \
+/* Set symtrack equalization strategy to decision directed              */  \
+int SYMTRACK(_set_eq_dd)(SYMTRACK() _q);                                    \
+                                                                            \
 /* Execute synchronizer on single input sample                          */  \
 /*  _q      : synchronizer object                                       */  \
 /*  _x      : input data sample                                         */  \
