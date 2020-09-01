@@ -5889,6 +5889,9 @@ int SYMTRACK(_set_eq_cm)(SYMTRACK() _q);                                    \
 /* Set symtrack equalization strategy to decision directed              */  \
 int SYMTRACK(_set_eq_dd)(SYMTRACK() _q);                                    \
                                                                             \
+/* Disable symtrack equalization                                        */  \
+int SYMTRACK(_set_eq_off)(SYMTRACK() _q);                                   \
+                                                                            \
 /* Execute synchronizer on single input sample                          */  \
 /*  _q      : synchronizer object                                       */  \
 /*  _x      : input data sample                                         */  \

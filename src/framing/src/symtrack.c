@@ -64,6 +64,7 @@ struct SYMTRACK(_s) {
     enum {
                     SYMTRACK_EQ_CM,     // equalizer strategy: constant modulus
                     SYMTRACK_EQ_DD,     // equalizer strategy: decision directed
+                    SYMTRACK_EQ_OFF,    // equalizer strategy: disabled
     }               eq_strategy;
 
     // nco/phase-locked loop
@@ -170,8 +171,15 @@ int SYMTRACK(_print)(SYMTRACK() _q)
     printf("symtrack_%s:\n", EXTENSION_FULL);
     printf("  k:%u, m:%u, beta:%.3f, ms:%s\n", _q->k, _q->m, _q->beta,
             modulation_types[_q->mod_scheme].name);
-    printf("  equalization strategy: %s\n",
-            _q->eq_strategy==SYMTRACK_EQ_CM ? "constant modulus" : "decision directed");
+    printf("  equalization strategy: ");
+    switch (_q->eq_strategy) {
+    case SYMTRACK_EQ_CM:  printf("constant modulus\n");  break;
+    case SYMTRACK_EQ_DD:  printf("decision directed\n"); break;
+    case SYMTRACK_EQ_OFF: printf("disabled\n");          break;
+    default:
+        printf("?\n");
+        return liquid_error(LIQUID_EINT,"symtrack_%s_print(), invalid equalization strategy");
+    }
     return LIQUID_OK;
 }
 
@@ -258,6 +266,13 @@ int SYMTRACK(_set_eq_dd)(SYMTRACK() _q)
     return LIQUID_OK;
 }
 
+// disable equalization
+int SYMTRACK(_set_eq_off)(SYMTRACK() _q)
+{
+    _q->eq_strategy = SYMTRACK_EQ_OFF;
+    return LIQUID_OK;
+}
+
 // execute synchronizer on single input sample
 //  _q      : synchronizer object
 //  _x      : input data sample
@@ -296,7 +311,7 @@ int SYMTRACK(_execute)(SYMTRACK()     _q,
         // increment number of symbols received
         _q->num_syms_rx++;
 
-        // compute equalizer output
+        // compute equalizer filter output; updating coefficients is dependent upon strategy
         TO d_hat;
         EQLMS(_execute)(_q->eq, &d_hat);
 
@@ -304,13 +319,15 @@ int SYMTRACK(_execute)(SYMTRACK()     _q,
         unsigned int sym_out;
         MODEM(_demodulate)(_q->demod, d_hat, &sym_out);
         float phase_error = MODEM(_get_demodulator_phase_error)(_q->demod);
-        float complex d_prime = 0.0f;
+
+        // update pll
+        NCO(_pll_step)(_q->nco, phase_error);
 
         // update equalizer independent of the signal: estimate error
         // assuming constant modulus signal
-        // TODO: use decision-directed feedback when modulation scheme is known
         // TODO: check lock conditions of previous object to determine when to run equalizer
-        if (_q->num_syms_rx > 200) {
+        float complex d_prime = 0.0f;
+        if (_q->num_syms_rx > 200 && _q->eq_strategy != SYMTRACK_EQ_OFF) {
             switch (_q->eq_strategy) {
             case SYMTRACK_EQ_CM: d_prime = d_hat/cabsf(d_hat); break;
             case SYMTRACK_EQ_DD: MODEM(_get_demodulator_sample)(_q->demod, &d_prime); break;
@@ -319,9 +336,6 @@ int SYMTRACK(_execute)(SYMTRACK()     _q,
             }
             EQLMS(_step)(_q->eq, d_prime, d_hat);
         }
-
-        // update pll
-        NCO(_pll_step)(_q->nco, phase_error);
 
         // save result to output
         _y[num_outputs++] = d_hat;
