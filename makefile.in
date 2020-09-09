@@ -1227,12 +1227,11 @@ help:
 install: all
 	@echo "installing..."
 	@echo ""
-	mkdir -p $(DESTDIR)$(prefix)/include
-	mkdir -p $(DESTDIR)$(prefix)/include/liquid
-	mkdir -p $(DESTDIR)$(exec_prefix)$(libdir)
-	#install -m 644 -p $(SHARED_LIB) libliquid.a $(DESTDIR)$(libdir)
-	install -m 644 -p ${ARCHIVE_LIB} ${SHARED_LIB} $(DESTDIR)$(exec_prefix)$(libdir)
-	install -m 644 -p $(addprefix include/,$(headers_install)) $(DESTDIR)$(prefix)/include/liquid
+	mkdir -p $(prefix)/include
+	mkdir -p $(prefix)/include/liquid
+	mkdir -p $(libdir)
+	install -m 644 -p ${ARCHIVE_LIB} ${SHARED_LIB} $(libdir)
+	install -m 644 -p $(addprefix include/,$(headers_install)) $(prefix)/include/liquid
 	@echo ""
 	@echo "---------------------------------------------------------"
 	@echo "  liquid-dsp was successfully installed.     "
@@ -1241,7 +1240,7 @@ install: all
 	@echo "  libraries by running 'ldconfig' to make the shared"
 	@echo "  object available.  You might also need to modify your"
 	@echo "  LD_LIBRARY_PATH environment variable to include the"
-	@echo "  directory $(DESTDIR)$(exec_prefix)"
+	@echo "  directory $(exec_prefix)"
 	@echo ""
 	@echo "  Please report bugs to $(BUGREPORT)"
 	@echo "---------------------------------------------------------"
@@ -1253,9 +1252,9 @@ install: all
 
 uninstall:
 	@echo "uninstalling..."
-	$(RM) $(addprefix $(DESTDIR)$(prefix)/include/liquid/, $(headers_install))
-	$(RM) $(DESTDIR)$(exec_prefix)$(libdir)/${ARCHIVE_LIB}
-	$(RM) $(DESTDIR)$(exec_prefix)$(libdir)/${SHARED_LIB}
+	$(RM) $(addprefix $(prefix)/include/liquid/, $(headers_install))
+	$(RM) $(libdir)/${ARCHIVE_LIB}
+	$(RM) $(libdir)/${SHARED_LIB}
 	@echo "done."
 
 ##
